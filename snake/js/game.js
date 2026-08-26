@@ -12,6 +12,7 @@
   let state = null; // 현재 플레이 중인 게임 상태 (레벨 선택 화면일 땐 null)
   let rafId = null;
   let lastTime = 0;
+  let sharedInput = null; // .play-area는 재생성 안 되는 고정 DOM이므로 Input은 세션당 한 번만 생성해 재사용
 
   // ---------- 진행 상황 저장 (레벨 해금/별) ----------
   function loadProgress() {
@@ -112,7 +113,8 @@
       viewHeight: canvas.height
     });
 
-    const input = SG.Input.create(playArea);
+    if (!sharedInput) sharedInput = SG.Input.create(playArea);
+    const input = sharedInput;
 
     const emojiProgress = SG.EmojiProgress.create({
       imgEl: document.getElementById('emoji-progress-img'),
@@ -165,21 +167,26 @@
     s.player.setDirection(dir.x, dir.y);
     s.player.update(dt);
 
-    // 적 이동 — 맵 경계에서 반사(스펙 §6.2: 적도 맵 안에서만 이동)
+    // 적 이동 — 맵 경계 안에 고정(스펙 §6.2: 적도 맵 안에서만 이동)
     s.enemies.forEach((e) => {
       const d = e.ai.update(dt);
       e.worm.setDirection(d.x, d.y);
       e.worm.update(dt);
-      const h = e.worm.head;
-      if (h.x < 0 || h.x > s.levelData.mapWidth) e.worm.direction.x *= -1;
-      if (h.y < 0 || h.y > s.levelData.mapHeight) e.worm.direction.y *= -1;
+      // 방향을 반사시키는 방식(worm.direction을 뒤집기)은 다음 프레임에 e.ai.update(dt)가
+      // 돌려주는 AI 자신의 방향으로 setDirection이 즉시 덮어써버려 아무 효과가 없다 — 대신
+      // 위치 자체를 경계 안으로 고정한다.
+      const head = e.worm.trail[0];
+      head.x = Math.max(0, Math.min(s.levelData.mapWidth, head.x));
+      head.y = Math.max(0, Math.min(s.levelData.mapHeight, head.y));
     });
 
     // 충돌 (무적 중이 아닐 때만)
     if (!invincible) {
       let hit = false;
+      let boundaryHit = false;
       if (SG.Collision.checkBoundaryCollision(s.player.head.x, s.player.head.y, s.levelData.mapWidth, s.levelData.mapHeight)) {
         hit = true;
+        boundaryHit = true;
       }
       if (!hit && SG.Collision.checkSelfCollision(s.player.head, s.player.getSegments(), COLLISION_RADIUS)) {
         hit = true;
@@ -193,6 +200,13 @@
         }
       }
       if (hit) {
+        if (boundaryHit) {
+          // 경계 충돌 위치를 그대로 두면 무적 1초가 끝나는 순간에도 여전히 "경계 밖"이라
+          // 또 충돌 처리되어 하트가 연쇄로 깎일 수 있다 — 충돌 즉시 위치를 경계 안으로 밀어넣는다.
+          const head = s.player.trail[0];
+          head.x = Math.max(0, Math.min(s.levelData.mapWidth, head.x));
+          head.y = Math.max(0, Math.min(s.levelData.mapHeight, head.y));
+        }
         s.hearts -= 1;
         s.collisions += 1;
         s.invincibleUntil = nowSec + INVINCIBLE_SECONDS;
