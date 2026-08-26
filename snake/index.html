@@ -5,42 +5,80 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>지렁이 게임</title>
 <link rel="stylesheet" href="../cosmic-theme.css">
-<style>
-  .placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100dvh;
-    gap: 18px;
-    text-align: center;
-    padding: 20px;
-  }
-  .placeholder-emoji { font-size: 4rem; }
-  .placeholder-title { font-size: 1.5rem; font-weight: 700; margin: 0; }
-  .placeholder-desc { color: var(--muted); margin: 0; }
-  .back-btn {
-    margin-top: 12px;
-    padding: 12px 28px;
-    border-radius: 999px;
-    border: none;
-    background: var(--brand);
-    color: #fff;
-    font-size: 1rem;
-    font-weight: 700;
-    text-decoration: none;
-    box-shadow: var(--shadow);
-  }
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="cosmic-bg">
-  <div class="placeholder cosmic-content">
-    <div class="placeholder-emoji">🐛</div>
-    <h1 class="placeholder-title">지렁이 게임</h1>
-    <p class="placeholder-desc">준비 중이에요. 곧 만나요!</p>
-    <a class="back-btn" href="../index.html">← 허브로</a>
+
+  <!-- 레벨 선택 화면 -->
+  <section id="level-select-screen" class="screen cosmic-content">
+    <header class="screen-header">
+      <a class="icon-btn" href="../index.html" aria-label="허브로">←</a>
+      <h1>🪱 지렁이 게임</h1>
+    </header>
+    <div id="level-grid" class="level-grid"></div>
+  </section>
+
+  <!-- 플레이 화면 -->
+  <section id="game-screen" class="screen cosmic-content" hidden>
+    <div class="game-hud">
+      <button id="btn-back-to-hub" class="icon-btn" aria-label="나가기">←</button>
+      <div class="hud-mid">
+        <span id="hud-level">Level 1</span>
+        <span id="hud-hearts">❤️❤️❤️</span>
+        <span id="hud-food-count">0 / 20</span>
+      </div>
+    </div>
+    <div id="emoji-progress" class="emoji-progress">
+      <img id="emoji-progress-img" alt="">
+      <div id="emoji-progress-grid" class="emoji-progress-grid"></div>
+    </div>
+    <div class="play-area">
+      <canvas id="game-canvas"></canvas>
+      <canvas id="minimap-canvas" width="96" height="72"></canvas>
+    </div>
+  </section>
+
+  <!-- 클리어 오버레이 -->
+  <div id="clear-overlay" class="overlay" hidden>
+    <div class="overlay-card">
+      <h2>🎉 LEVEL CLEAR</h2>
+      <div id="clear-stars" class="stars">⭐⭐⭐</div>
+      <div class="overlay-btn-row">
+        <button id="clear-retry-btn">다시하기</button>
+        <button id="clear-select-btn">레벨 선택</button>
+        <button id="clear-next-btn">다음 레벨</button>
+      </div>
+    </div>
   </div>
+
+  <!-- 게임오버 오버레이 -->
+  <div id="gameover-overlay" class="overlay" hidden>
+    <div class="overlay-card">
+      <h2>GAME OVER</h2>
+      <p id="gameover-level">Level 1</p>
+      <p id="gameover-food-count">먹이 0 / 20</p>
+      <div class="overlay-btn-row">
+        <button id="gameover-retry-btn">다시하기</button>
+        <button id="gameover-select-btn">레벨 선택</button>
+      </div>
+    </div>
+  </div>
+
 </div>
+
+<script src="js/levels.js"></script>
+<script src="js/rng.js"></script>
+<script src="js/food-placement.js"></script>
+<script src="js/worm.js"></script>
+<script src="js/enemy-ai.js"></script>
+<script src="js/collision.js"></script>
+<script src="js/camera.js"></script>
+<script src="js/emoji-progress.js"></script>
+<script src="js/input.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/hud.js"></script>
+<script src="js/minimap.js"></script>
+<script src="js/game.js"></script>
 </body>
 </html>
