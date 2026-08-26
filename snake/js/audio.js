@@ -6,7 +6,11 @@
     if (!ctx) {
       const AC = (root && (root.AudioContext || root.webkitAudioContext));
       if (!AC) return null;
-      ctx = new AC();
+      try {
+        ctx = new AC();
+      } catch (e) {
+        return null; // 생성 자체가 실패해도(제한된 환경 등) 게임 진행에 영향 없이 조용히 무시
+      }
     }
     return ctx;
   }
