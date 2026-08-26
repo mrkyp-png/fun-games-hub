@@ -41,6 +41,7 @@ fun-games-hub/snake/
     enemy-ai.js                 # SnakeGame.EnemyAI.create (순수, dual export)
     collision.js                # SnakeGame.Collision.* (순수, dual export)
     camera.js                   # SnakeGame.Camera.create (순수, dual export)
+    star-rating.js               # SnakeGame.StarRating.computeStars (순수, dual export — 최종 리뷰에서 추가)
     emoji-progress.js           # SnakeGame.EmojiProgress (DOM)
     input.js                    # SnakeGame.Input.create (DOM, pointer events)
     audio.js                    # SnakeGame.Audio.playEatSound (WebAudio)
@@ -54,7 +55,8 @@ fun-games-hub/snake/
     test-enemy-ai.js
     test-collision.js
     test-camera.js
-    run-all-tests.js            # 위 6개를 순서대로 실행
+    test-star-rating.js          # 최종 리뷰에서 추가
+    run-all-tests.js            # 위 7개를 순서대로 실행
     verify-snake-smoke.js       # puppeteer 통합 스모크 테스트
 ```
 
@@ -611,7 +613,7 @@ assert.strictEqual(
 );
 
 // 자기 몸: 머리 바로 뒤 skipCount 세그먼트는 무시해야 함 (항상 가까이 있으므로)
-const nearSegments = [{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 4, y: 0 }, { x: 6, y: 0 }, { x: 8, y: 0 }];
+const nearSegments = [{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 4, y: 0 }, { x: 6, y: 0 }, { x: 100, y: 0 }];
 assert.strictEqual(
   checkSelfCollision({ x: 0, y: 0 }, nearSegments, 10, 4),
   false,
@@ -788,6 +790,60 @@ git -C fun-games-hub commit -m "feat(snake): add smooth-follow camera"
 
 ---
 
+### Post-review addition: 별 등급 계산 분리 (`star-rating.js`)
+
+최종 전체 리뷰에서 지적: `computeStars()`가 `game.js`(브라우저 전용, dual export 없음) 안에만
+있어서 스펙 §29의 "충돌 0회=⭐3 / 1회 이하=⭐2 / 그 외=⭐1" 3분기 중 실제로 Node 유닛테스트로
+커버된 건 없었다(스모크 테스트는 항상 충돌 0회 경로만 탐). 다른 순수 로직 6개와 동일한 패턴으로
+분리해 유닛테스트를 붙인다.
+
+**Files:**
+- Create: `snake/js/star-rating.js`
+- Test: `snake/scripts/test-star-rating.js`
+- Modify: `snake/js/game.js` — `computeStars` 함수 정의 삭제, 호출부를 `SG.StarRating.computeStars(s.collisions)`로 교체
+- Modify: `snake/index.html` — `<script src="js/camera.js"></script>` 다음 줄에 `<script src="js/star-rating.js"></script>` 추가
+- Modify: `snake/scripts/run-all-tests.js` — `tests` 배열에 `'test-star-rating.js'` 추가
+
+`snake/scripts/test-star-rating.js`:
+```js
+const assert = require('assert');
+const { computeStars } = require('../js/star-rating.js');
+
+assert.strictEqual(computeStars(0), 3, '충돌 0회는 별 3개');
+assert.strictEqual(computeStars(1), 2, '충돌 1회는 별 2개');
+assert.strictEqual(computeStars(2), 1, '충돌 2회는 별 1개');
+assert.strictEqual(computeStars(7), 1, '충돌이 몇 번이든 2회 초과면 별 1개');
+
+console.log('test-star-rating.js: all assertions passed');
+```
+
+`snake/js/star-rating.js`:
+```js
+(function (root) {
+  'use strict';
+
+  // 스펙 §29: 클리어=⭐1, 충돌 1회 이하=⭐2, 충돌 0회=⭐3.
+  function computeStars(collisions) {
+    if (collisions === 0) return 3;
+    if (collisions <= 1) return 2;
+    return 1;
+  }
+
+  const api = { computeStars };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  if (root) { root.SnakeGame = root.SnakeGame || {}; root.SnakeGame.StarRating = api; }
+})(typeof window !== 'undefined' ? window : null);
+```
+
+Verify: `node snake/scripts/test-star-rating.js` → `test-star-rating.js: all assertions passed`, then re-run `node snake/scripts/run-all-tests.js` (now 7 tests) and `node snake/scripts/verify-snake-smoke.js` to confirm `game.js`'s call-site change didn't break the clear-flow (star text still renders, still ⭐⭐⭐ under the smoke test's zero-collision debug path).
+
+```bash
+git -C fun-games-hub add snake/js/star-rating.js snake/scripts/test-star-rating.js snake/js/game.js snake/index.html snake/scripts/run-all-tests.js
+git -C fun-games-hub commit -m "refactor(snake): extract computeStars into a testable pure module"
+```
+
+---
+
 ### Task 7: 순수 로직 테스트 러너 (`run-all-tests.js`)
 
 **Files:**
@@ -812,7 +868,8 @@ const tests = [
   'test-worm.js',
   'test-enemy-ai.js',
   'test-collision.js',
-  'test-camera.js'
+  'test-camera.js',
+  'test-star-rating.js'
 ];
 
 let failed = false;
@@ -860,7 +917,7 @@ git -C fun-games-hub commit -m "test(snake): add combined logic test runner"
   - `#level-select-screen`, `#level-grid` (레벨 버튼 10개가 채워질 컨테이너)
   - `#game-screen`, `#game-canvas`, `#minimap-canvas`
   - HUD: `#hud-level`, `#hud-hearts`, `#hud-food-count`
-  - `#emoji-progress` (10칸 진행 그리드 컨테이너), `#emoji-progress-img` (배경 완성 이미지 `<img>`)
+  - `#emoji-progress` (진행 표시 wrapper), `#emoji-progress-img` (배경 완성 이미지 `<img>`), `#emoji-progress-grid` (10칸 커버 그리드 컨테이너 — Task 9가 여기에 `.cover-cell`을 채운다)
   - `#clear-overlay`, `#clear-stars`, `#clear-next-btn`, `#clear-retry-btn`, `#clear-select-btn`
   - `#gameover-overlay`, `#gameover-level`, `#gameover-food-count`, `#gameover-retry-btn`, `#gameover-select-btn`
   - `#btn-back-to-hub` (게임 화면에서 허브로)
@@ -944,6 +1001,7 @@ git -C fun-games-hub commit -m "test(snake): add combined logic test runner"
 <script src="js/enemy-ai.js"></script>
 <script src="js/collision.js"></script>
 <script src="js/camera.js"></script>
+<script src="js/star-rating.js"></script>
 <script src="js/emoji-progress.js"></script>
 <script src="js/input.js"></script>
 <script src="js/audio.js"></script>
@@ -1375,7 +1433,11 @@ git -C fun-games-hub commit -m "feat(snake): add drag-anywhere touch input"
     if (!ctx) {
       const AC = (root && (root.AudioContext || root.webkitAudioContext));
       if (!AC) return null;
-      ctx = new AC();
+      try {
+        ctx = new AC();
+      } catch (e) {
+        return null; // 생성 자체가 실패해도(제한된 환경 등) 게임 진행에 영향 없이 조용히 무시
+      }
     }
     return ctx;
   }
@@ -1546,6 +1608,12 @@ git -C fun-games-hub commit -m "feat(snake): add minimap rendering"
   let state = null; // 현재 플레이 중인 게임 상태 (레벨 선택 화면일 땐 null)
   let rafId = null;
   let lastTime = 0;
+  // .play-area는 game-screen 안에 고정으로 하나만 존재하는 DOM(재생성 안 됨) — Input은
+  // 세션당 한 번만 만들어 재사용한다. startLevel()마다 새로 만들면 매번 pointerdown/move/up/
+  // cancel 리스너 4개가 이전 것들 위에 계속 누적되어(input.js에 해제 메서드가 없음) 재도전을
+  // 반복할수록 리스너가 무한정 쌓이는 누수가 생김 — 리뷰에서 발견, 아예 재생성을 안 하는
+  // 쪽으로 근본 해결.
+  let sharedInput = null;
 
   // ---------- 진행 상황 저장 (레벨 해금/별) ----------
   function loadProgress() {
@@ -1646,7 +1714,8 @@ git -C fun-games-hub commit -m "feat(snake): add minimap rendering"
       viewHeight: canvas.height
     });
 
-    const input = SG.Input.create(playArea);
+    if (!sharedInput) sharedInput = SG.Input.create(playArea);
+    const input = sharedInput;
 
     const emojiProgress = SG.EmojiProgress.create({
       imgEl: document.getElementById('emoji-progress-img'),
@@ -1699,20 +1768,35 @@ git -C fun-games-hub commit -m "feat(snake): add minimap rendering"
     s.player.setDirection(dir.x, dir.y);
     s.player.update(dt);
 
-    // 적 이동 — 맵 경계에서 반사(스펙 §6.2: 적도 맵 안에서만 이동)
+    // 플레이어도 적과 동일하게 매 프레임 맵 경계 안으로 위치를 고정한다(스펙 §6.2) — 예전엔
+    // "무적이 아닐 때 충돌이 감지된 순간"에만 한 번 밀어넣었는데, 무적 1초 동안은 이 블록
+    // 전체가 통째로 건너뛰어져서 계속 같은 방향으로 드래그하면 화면 밖까지 흘러나갈 수 있었다
+    // (최종 리뷰에서 실측: 최대 140px = playerSpeed × 무적시간, 프레임의 28%가 맵 밖). 경계
+    // 충돌 판정은 클램프 "이전" 좌표로 먼저 확인해야 한다 — 클램프부터 하면 x===0 같은 경계
+    // 값이 다시는 충돌로 안 잡힌다.
+    const ph = s.player.trail[0];
+    const playerOutOfBounds = SG.Collision.checkBoundaryCollision(ph.x, ph.y, s.levelData.mapWidth, s.levelData.mapHeight);
+    ph.x = Math.max(0, Math.min(s.levelData.mapWidth, ph.x));
+    ph.y = Math.max(0, Math.min(s.levelData.mapHeight, ph.y));
+
+    // 적 이동 — 맵 경계 안에 고정(스펙 §6.2: 적도 맵 안에서만 이동)
     s.enemies.forEach((e) => {
       const d = e.ai.update(dt);
       e.worm.setDirection(d.x, d.y);
       e.worm.update(dt);
-      const h = e.worm.head;
-      if (h.x < 0 || h.x > s.levelData.mapWidth) e.worm.direction.x *= -1;
-      if (h.y < 0 || h.y > s.levelData.mapHeight) e.worm.direction.y *= -1;
+      // 방향을 반사시키는 방식(worm.direction을 뒤집기)은 다음 프레임에 e.ai.update(dt)가
+      // 돌려주는 AI 자신의 방향으로 setDirection이 즉시 덮어써버려 아무 효과가 없다(리뷰에서
+      // 발견) — 대신 위치 자체를 경계 안으로 고정한다. 경계에 붙어 미끄러지듯 이동하다가
+      // AI의 다음 주기적 방향전환 때 자연스럽게 다시 안쪽으로 향하게 된다.
+      const head = e.worm.trail[0];
+      head.x = Math.max(0, Math.min(s.levelData.mapWidth, head.x));
+      head.y = Math.max(0, Math.min(s.levelData.mapHeight, head.y));
     });
 
     // 충돌 (무적 중이 아닐 때만)
     if (!invincible) {
       let hit = false;
-      if (SG.Collision.checkBoundaryCollision(s.player.head.x, s.player.head.y, s.levelData.mapWidth, s.levelData.mapHeight)) {
+      if (playerOutOfBounds) {
         hit = true;
       }
       if (!hit && SG.Collision.checkSelfCollision(s.player.head, s.player.getSegments(), COLLISION_RADIUS)) {
@@ -1809,12 +1893,9 @@ git -C fun-games-hub commit -m "feat(snake): add minimap rendering"
   }
 
   // ---------- 종료 처리 ----------
-  function computeStars(collisions) {
-    // 스펙 §29: 클리어=1, 충돌 1회 이하=2, 충돌 0회=3
-    if (collisions === 0) return 3;
-    if (collisions <= 1) return 2;
-    return 1;
-  }
+  // 별 등급 계산(computeStars)은 snake/js/star-rating.js로 분리됨(최종 리뷰에서 지적 —
+  // game.js 안에만 있으면 순수 로직인데도 Node 유닛테스트로 커버할 수 없었음). 여기서는
+  // SG.StarRating.computeStars(...)를 그대로 호출한다.
 
   function levelClear() {
     const s = state;
@@ -1822,7 +1903,7 @@ git -C fun-games-hub commit -m "feat(snake): add minimap rendering"
     if (rafId) cancelAnimationFrame(rafId);
     s.emojiProgress.revealAll();
 
-    const stars = computeStars(s.collisions);
+    const stars = SG.StarRating.computeStars(s.collisions);
     const progress = loadProgress();
     const prevStars = (progress[s.levelData.level] && progress[s.levelData.level].stars) || 0;
     progress[s.levelData.level] = { cleared: true, stars: Math.max(prevStars, stars) };
@@ -1932,13 +2013,13 @@ git -C fun-games-hub commit -m "feat(snake): wire up main game loop and state ma
 // 지렁이 게임 통합 스모크 테스트 — 색칠앱 verify-full-clear.js와 같은 패턴(디버그 훅으로
 // 실제 UI 흐름을 헤드리스로 재현). fun-games-hub/scripts/serve.js가 8844 포트에 떠 있어야 한다.
 const puppeteer = require('puppeteer-core');
-const path = require('path');
 const assert = require('assert');
 
 const EDGE_PATH = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
 
 (async () => {
   const browser = await puppeteer.launch({ executablePath: EDGE_PATH, headless: true });
+  try {
   const page = await browser.newPage();
   await page.setViewport({ width: 390, height: 780 });
   await page.goto('http://localhost:8844/snake/index.html', { waitUntil: 'load' });
@@ -1988,22 +2069,37 @@ const EDGE_PATH = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge
   );
   assert.strictEqual(lvl2Locked, 'false', 'Level 2 must unlock after clearing Level 1');
 
-  // 5) GAME OVER 경로 — 생명 0 → 오버레이 표시 + 필수 항목(Level/먹이 수) 노출
+  // 5) GAME OVER 경로 — 생명 0 → 오버레이 표시 + 필수 항목(제목/Level/먹이 수) 노출
   await page.evaluate(() => window.__debugStartLevel(1));
   await new Promise((r) => setTimeout(r, 200));
   await page.evaluate(() => window.__debugForceGameOver());
   await new Promise((r) => setTimeout(r, 200));
   const afterGameOver = await page.evaluate(() => ({
     overlayHidden: document.getElementById('gameover-overlay').hidden,
+    heading: document.querySelector('#gameover-overlay h2').textContent,
     levelText: document.getElementById('gameover-level').textContent,
     foodText: document.getElementById('gameover-food-count').textContent
   }));
   assert.strictEqual(afterGameOver.overlayHidden, false, 'gameover overlay must show when hearts reach 0');
+  assert.strictEqual(afterGameOver.heading, 'GAME OVER', 'gameover overlay must show the GAME OVER heading (spec §24)');
   assert.strictEqual(afterGameOver.levelText, 'Level 1', 'gameover overlay must show the current level (spec §24)');
   assert.ok(/^먹이 \d+ \/ 20$/.test(afterGameOver.foodText), 'gameover overlay must show food collected count (spec §24)');
 
+  // 6) GAME OVER의 "레벨 선택" 버튼이 실제로 레벨 선택 화면으로 돌아가는가
+  //    (스펙 §24: "Level 선택/나가기" 필수 항목의 실제 동작 확인)
+  await page.click('#gameover-select-btn');
+  await new Promise((r) => setTimeout(r, 200));
+  const afterGameOverExit = await page.evaluate(() => ({
+    levelSelectHidden: document.getElementById('level-select-screen').hidden,
+    gameoverOverlayHidden: document.getElementById('gameover-overlay').hidden
+  }));
+  assert.strictEqual(afterGameOverExit.levelSelectHidden, false, '"레벨 선택" 버튼은 레벨 선택 화면으로 돌아가야 한다');
+  assert.strictEqual(afterGameOverExit.gameoverOverlayHidden, true, '"레벨 선택" 버튼은 GAME OVER 오버레이를 닫아야 한다');
+
   console.log('verify-snake-smoke.js: all checks passed');
-  await browser.close();
+  } finally {
+    await browser.close(); // 어서션이 실패해도 헤드리스 Edge 프로세스가 남지 않도록 항상 정리
+  }
 })().catch((e) => {
   console.error('SMOKE TEST FAILED:', e.message);
   process.exit(1);

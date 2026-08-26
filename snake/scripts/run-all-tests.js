@@ -9,7 +9,8 @@ const tests = [
   'test-worm.js',
   'test-enemy-ai.js',
   'test-collision.js',
-  'test-camera.js'
+  'test-camera.js',
+  'test-star-rating.js'
 ];
 
 let failed = false;
