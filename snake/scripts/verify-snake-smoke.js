@@ -1,13 +1,13 @@
 // 지렁이 게임 통합 스모크 테스트 — 색칠앱 verify-full-clear.js와 같은 패턴(디버그 훅으로
 // 실제 UI 흐름을 헤드리스로 재현). fun-games-hub/scripts/serve.js가 8844 포트에 떠 있어야 한다.
 const puppeteer = require('puppeteer-core');
-const path = require('path');
 const assert = require('assert');
 
 const EDGE_PATH = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
 
 (async () => {
   const browser = await puppeteer.launch({ executablePath: EDGE_PATH, headless: true });
+  try {
   const page = await browser.newPage();
   await page.setViewport({ width: 390, height: 780 });
   await page.goto('http://localhost:8844/snake/index.html', { waitUntil: 'load' });
@@ -57,22 +57,37 @@ const EDGE_PATH = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge
   );
   assert.strictEqual(lvl2Locked, 'false', 'Level 2 must unlock after clearing Level 1');
 
-  // 5) GAME OVER 경로 — 생명 0 → 오버레이 표시 + 필수 항목(Level/먹이 수) 노출
+  // 5) GAME OVER 경로 — 생명 0 → 오버레이 표시 + 필수 항목(제목/Level/먹이 수) 노출
   await page.evaluate(() => window.__debugStartLevel(1));
   await new Promise((r) => setTimeout(r, 200));
   await page.evaluate(() => window.__debugForceGameOver());
   await new Promise((r) => setTimeout(r, 200));
   const afterGameOver = await page.evaluate(() => ({
     overlayHidden: document.getElementById('gameover-overlay').hidden,
+    heading: document.querySelector('#gameover-overlay h2').textContent,
     levelText: document.getElementById('gameover-level').textContent,
     foodText: document.getElementById('gameover-food-count').textContent
   }));
   assert.strictEqual(afterGameOver.overlayHidden, false, 'gameover overlay must show when hearts reach 0');
+  assert.strictEqual(afterGameOver.heading, 'GAME OVER', 'gameover overlay must show the GAME OVER heading (spec §24)');
   assert.strictEqual(afterGameOver.levelText, 'Level 1', 'gameover overlay must show the current level (spec §24)');
   assert.ok(/^먹이 \d+ \/ 20$/.test(afterGameOver.foodText), 'gameover overlay must show food collected count (spec §24)');
 
+  // 6) GAME OVER의 "레벨 선택" 버튼이 실제로 레벨 선택 화면으로 돌아가는가
+  //    (스펙 §24: "Level 선택/나가기" 필수 항목의 실제 동작 확인)
+  await page.click('#gameover-select-btn');
+  await new Promise((r) => setTimeout(r, 200));
+  const afterGameOverExit = await page.evaluate(() => ({
+    levelSelectHidden: document.getElementById('level-select-screen').hidden,
+    gameoverOverlayHidden: document.getElementById('gameover-overlay').hidden
+  }));
+  assert.strictEqual(afterGameOverExit.levelSelectHidden, false, '"레벨 선택" 버튼은 레벨 선택 화면으로 돌아가야 한다');
+  assert.strictEqual(afterGameOverExit.gameoverOverlayHidden, true, '"레벨 선택" 버튼은 GAME OVER 오버레이를 닫아야 한다');
+
   console.log('verify-snake-smoke.js: all checks passed');
-  await browser.close();
+  } finally {
+    await browser.close(); // 어서션이 실패해도 헤드리스 Edge 프로세스가 남지 않도록 항상 정리
+  }
 })().catch((e) => {
   console.error('SMOKE TEST FAILED:', e.message);
   process.exit(1);
