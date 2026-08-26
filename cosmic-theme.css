@@ -1,0 +1,81 @@
+/* 색칠앱(coloring/style.css)의 "신비한 우주" 다크테마를 허브 전용으로 뽑아온 공용 스타일.
+   .cosmic-bg 클래스를 화면 컨테이너에 붙이면 별(반짝임+흐름) + 성운(뭉게뭉게 이동) 배경이
+   ::before/::after로 얹힌다. 색칠앱과 같은 애니메이션/색상 값을 그대로 재사용 — 두 프로젝트가
+   같은 톤을 유지하도록, 값을 바꿀 땐 두 파일 모두 같이 손볼 것. */
+
+:root {
+  --bg: #0d0a24;
+  --card-bg: #241c47;
+  --ink: #EDE9FF;
+  --muted: #A99FD6;
+  --brand: #8b7fff;
+  --brand-soft: #362a5e;
+  --shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+
+.cosmic-bg {
+  position: relative;
+  overflow: hidden;
+  min-height: 100dvh;
+  background: var(--bg);
+}
+.cosmic-bg::before,
+.cosmic-bg::after {
+  content: '';
+  position: absolute;
+  inset: -15%;
+  pointer-events: none;
+  z-index: 0;
+}
+/* 별 */
+.cosmic-bg::before {
+  background-image:
+    radial-gradient(1.6px 1.6px at 15% 25%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 55% 8%, #fff, transparent),
+    radial-gradient(2px 2px at 80% 40%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 30% 70%, #fff, transparent),
+    radial-gradient(1.6px 1.6px at 65% 85%, #fff, transparent),
+    radial-gradient(1px 1px at 90% 15%, #fff, transparent),
+    radial-gradient(1.4px 1.4px at 10% 90%, #fff, transparent);
+  background-repeat: repeat;
+  background-size: 220px 220px;
+  opacity: 0.75;
+  animation: cosmic-star-drift 70s linear infinite, cosmic-star-twinkle 3.4s ease-in-out infinite;
+}
+/* 성운 */
+.cosmic-bg::after {
+  background:
+    radial-gradient(circle at 20% 25%, rgba(139, 127, 255, 0.55), transparent 45%),
+    radial-gradient(circle at 82% 65%, rgba(255, 140, 200, 0.38), transparent 42%),
+    radial-gradient(circle at 45% 90%, rgba(100, 210, 220, 0.32), transparent 40%);
+  filter: blur(14px);
+  animation: cosmic-nebula-drift 26s ease-in-out infinite alternate;
+}
+@keyframes cosmic-star-drift {
+  from { background-position: 0 0; }
+  to { background-position: -220px -220px; }
+}
+@keyframes cosmic-star-twinkle {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.95; }
+}
+@keyframes cosmic-nebula-drift {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-6%, 5%) scale(1.12); }
+}
+
+.cosmic-content {
+  position: relative;
+  z-index: 1;
+}

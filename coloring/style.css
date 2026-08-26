@@ -1,0 +1,3144 @@
+/* 2026-08-11: 아동용 색칠앱 느낌에 맞춰 통통하고 둥근 "Fredoka"(Google Fonts, OFL 라이선스)를
+   기본 글씨체로 적용. 가변 폰트(variable font) 파일 하나로 300~700 굵기를 전부 커버해서
+   .ttf 한 개만 내장하면 됨(오프라인 PWA라 CDN 대신 항상 내장하는 프로젝트 관례를 따름).
+   한글은 이 폰트에 글리프가 없어서 시스템 한글 폰트로 자동 대체됨 — 지금 UI 텍스트는 전부
+   영어라 문제 없음. */
+/* 2026-08-11: 다국어(i18n.js) 도입 — Fredoka는 라틴 문자만 지원하는 가변 폰트라 한글/일본어/중국어
+   문구는 자동으로 시스템 폰트(Apple SD Gothic Neo/Malgun Gothic/sans-serif 등, 아래 font-family
+   스택 참고)로 대체된다. 영어/스페인어만 Fredoka로 그려짐 — 의도된 동작, 버그 아님. */
+@font-face {
+  font-family: 'Fredoka';
+  src: url('assets/fonts/Fredoka.ttf') format('truetype-variations'), url('assets/fonts/Fredoka.ttf') format('truetype');
+  font-weight: 300 700;
+  font-stretch: 75% 125%;
+  font-display: swap;
+}
+
+/* 2026-08-16: 레벨클리어 칭찬 문구(.level-reward-praise) 전용 — 언어별로 통통하고 굵은 폰트를
+   씀. Fredoka는 라틴 문자 전용이라 en/es만 커버하고, ko/ja/zh는 각 언어권에서 널리 쓰이는
+   무료(OFL) 통통한 폰트를 별도로 얹는다. 이 칭찬 문구에만 실제 쓰이는 글자로 서브셋(구글 폰트
+   공식 subset API)해서 각 파일이 5~8KB 수준 — 전체 글자셋(수 MB~십수 MB)을 오프라인 PWA에
+   그대로 박아넣지 않기 위함. 새 문구를 추가하면 이 서브셋도 다시 받아야 함. */
+@font-face {
+  font-family: 'BlackHanSans';
+  src: url('assets/fonts/BlackHanSans-subset.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'MPLUSRoundedBlack';
+  src: url('assets/fonts/MPLUSRounded1c-Black-subset.woff2') format('woff2');
+  font-weight: 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'NotoSansSCBlack';
+  src: url('assets/fonts/NotoSansSC-Black-subset.woff2') format('woff2');
+  font-weight: 900;
+  font-display: swap;
+}
+
+:root {
+  --bg: #FFF8ED;
+  --card-bg: #FFFFFF;
+  --ink: #3A3A3A;
+  --muted: #8A8A8A;
+  --brand: #6C5CE7;
+  --brand-soft: #EFE9FF;
+  --accent: #FF9F43;
+  --good: #2ECC71;
+  --bad: #FF5B5B;
+  --shadow: 0 6px 16px rgba(0,0,0,0.10);
+  --radius-lg: 28px;
+  --radius-md: 18px;
+  --cleared-bg: #FFE1EC;
+  --cleared-bezel: #F5AFCB;
+
+  /* 2026-08-11: "박스 색깔이 촌스럽다" 개선 — 맵 화면 레벨 1~10 박스를 전부 크림/흰색 단색
+     대신 무지개처럼 색을 순환시켜서 알록달록하게(60-30-10 비율 참고 — 배경은 중성, 박스만
+     파스텔로 포인트). hue를 36도씩 10단계로 고르게 나눠서 옆 박스와 색이 안 겹치게 함. */
+  --lv-hue-1: 350; --lv-hue-2: 22; --lv-hue-3: 42; --lv-hue-4: 100; --lv-hue-5: 152;
+  --lv-hue-6: 188; --lv-hue-7: 212; --lv-hue-8: 248; --lv-hue-9: 278; --lv-hue-10: 318;
+  /* 2026-08-11: "투명처럼 보이니깐 밋밋하다" 피드백으로 파스텔(88%)에서 훨씬 쨍한 원색 느낌
+     (72%)으로 명도 내리고 채도도 올림 — 숫자(--brand, 진보라)는 여전히 잘 읽힘.
+     2026-08-23: "색깔이 선명하지 않다" 피드백으로 원색(hsl L50%)에 더 가깝게 한 번 더 내림.
+     --lv-bezel-light도 같은 폭(20p)만큼 같이 내려서 배경 대비 테두리 입체감 유지. */
+  --lv-sat: 90%; --lv-light: 50%; --lv-bezel-light: 32%;
+  --cover-mid: #FFE8E0;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+/* display:flex 등 클래스 스타일이 hidden 속성을 덮어쓰지 않도록 항상 최우선 적용 */
+[hidden] { display: none !important; }
+
+/* 2026-08-11: "전체적으로 글자크기를 가독성 좋게" — 거의 모든 텍스트가 rem 단위라 루트 크기를
+   올리면 전체가 비례해서 커짐(기존 상대적 크기 관계는 그대로 유지). 겹침 안 생기는지 여러 화면
+   작은 뷰포트(360px)에서 스크린샷으로 확인 후 적용. */
+html { font-size: 18px; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Fredoka', "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+button {
+  font-family: inherit;
+  color: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+button:active { transform: scale(0.94); }
+
+/* ---------- 로딩 화면(마스코트) ---------- */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100; /* 온보딩 모달(50)보다도 위 — 로딩 끝나기 전엔 뭐든 다 가림 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  background: linear-gradient(160deg, var(--bg), var(--brand-soft));
+  transition: opacity 0.35s ease;
+}
+.loading-screen.is-hiding { opacity: 0; pointer-events: none; }
+.loading-mascot {
+  width: clamp(72px, 22vw, 110px);
+  height: clamp(72px, 22vw, 110px);
+  border-radius: 50%;
+  background: var(--card-bg);
+  box-shadow: var(--shadow);
+  object-fit: cover;
+  animation: boss-fairy-hover 2.2s ease-in-out infinite; /* 표지 화면 요정 애니메이션 재사용 */
+}
+.loading-spinner {
+  width: 34px;
+  height: 34px;
+  border: 5px solid var(--brand-soft);
+  border-top-color: var(--brand);
+  border-radius: 50%;
+  animation: loading-spin 0.8s linear infinite;
+}
+@keyframes loading-spin { to { transform: rotate(360deg); } }
+.loading-text {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.screen {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+}
+
+/* ---------- 표지 화면(제목 + 제목 아래 파이널 보스 4종 얼굴 한 줄 + 가운데 시작 버튼) ---------- */
+.cover-screen {
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, var(--bg) 0%, var(--cover-mid) 45%, var(--brand-soft) 100%);
+  padding: 20px;
+  text-align: center;
+  overflow: hidden;
+}
+/* 2026-08-11: 다국어 지원 — 표지 화면 우상단 🌐 버튼 + 드롭다운 언어 목록 (i18n.js가 채우고 연결). */
+.lang-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 3;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #E6E0FF;
+  background: var(--card-bg);
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+}
+/* 2026-08-23: 언어 버튼 왼쪽에 나란히 — 톱니바퀴로 설정 모달(음악/진동/소리)을 연다. */
+.settings-btn {
+  right: 64px;
+}
+.lang-menu {
+  position: absolute;
+  top: 60px;
+  right: 16px;
+  z-index: 3;
+  background: var(--card-bg);
+  border: 2px solid #E6E0FF;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 130px;
+}
+.lang-menu button {
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.lang-menu button.is-active {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.cover-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+  max-width: 420px;
+  width: 100%;
+  z-index: 1;
+}
+/* ---------- 2026-08-23(11)~(13): 표지 칠판(배경 제거된 PNG, assets/cover/chalkboard.png,
+   460x816) + 그 안의 큰 아이콘 버튼 2개(글자 없이) + 장식 이모지 ----------
+   PNG 실제 비율로 wrap을 고정하고, 버튼/장식은 칠판 검은 면 안에 %로 앉힌다 — 화면 크기가
+   달라져도 항상 칠판 안쪽에 위치.
+   2026-08-23(13): "휴대폰에서 꽉차게" 요청으로 폭을 74vw→94vw로 확대, "글자 빼고 아이콘만
+   크게" 요청으로 텍스트 라벨(.chalk-label) 대신 이미지 아이콘 버튼(.chalk-icon-btn)으로 교체.
+   2026-08-23(25): "칠판이 우측으로 치우쳐 보인다" 버그 — 94vw는 표지 화면 좌우 패딩(20px×2,
+   .cover-screen)을 안 빼고 뷰포트 전체 기준으로 계산돼서, 실제 쓸 수 있는 폭(패딩 뺀 값)보다
+   넓어져 컨테이너 밖으로 삐져나가며 한쪽으로 쏠려 보였다. 부모(.cover-content)가 이미 패딩 뺀
+   폭에 꽉 채워져 있으니, vw 대신 100%(부모 기준)로 바꾸면 항상 그 안에 딱 맞아 절대 안 넘침. */
+.cover-chalkboard-wrap {
+  position: relative;
+  width: min(460px, 100%);
+  /* 2026-08-24(2): GPT로 그린 고화질 통합 그림(1205×1305, 이젤+칠판+선반+물감통+붓통+흉상+공+책이
+     전부 하나로 합쳐짐)으로 교체 — object-fit:contain과 짝이 안 맞으면 레터박스가 생겨 SAFE 박스
+     (app.js) 좌표가 실제 화면과 어긋난다. 이 그림 하나가 예전의 chalkboard-wrap+shelf-wrap을 모두
+     대체하므로, 선반/물감통을 별도 블록으로 두던 CSS(cover-shelf-wrap 등)는 전부 삭제했다. */
+  aspect-ratio: 1205 / 1305;
+  margin: 0 auto;
+}
+/* 2026-08-23(21): "외곽선 + 글로우" 요청 — 칠판 PNG가 투명배경 위 액자+다리 모양(사각형이
+   아님)이라 일반 border는 못 씀. drop-shadow를 상하좌우로 겹쳐서(0 블러) 실루엣을 따라가는
+   테두리 선을 만들고, 큰 블러의 drop-shadow 하나를 더 얹어 그 밖으로 은은하게 번지는 빛을
+   더한다(둘 다 같은 filter 체인 안에 이어 붙임, 기존 그림자는 맨 앞에 그대로 유지).
+   2026-08-23(22): "외곽선이 안 보인다 + 우주 밤하늘 색으로" 요청 — 옅은 크림색은 밝은 배경과
+   대비가 약해 거의 안 보였음. 진한 남보라(우주 밤하늘 톤)로 바꾸고 두께도 살짝 키움. 글로우도
+   같은 톤으로 2겹(안쪽 선명한 보라 + 바깥쪽 넓게 퍼지는 남색)으로 밤하늘 느낌을 냄. */
+/* 2026-08-23(23): "밝아졌다 안밝아졌다" 요청 — 글로우 두 겹(블러/투명도)만 숨쉬듯 커졌다
+   작아졌다 하게 애니메이션(테두리선·그림자는 고정, 글로우만 움직임).
+   2026-08-23(24): "색깔 더 연하게, 있는둥 없는둥" 요청 — 투명도를 확 낮춰서 있는 듯 없는 듯한
+   정도로. */
+.cover-chalkboard-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  animation: cosmic-glow-pulse 3s ease-in-out infinite;
+}
+@keyframes cosmic-glow-pulse {
+  0%, 100% {
+    filter:
+      drop-shadow(0 10px 18px rgba(0, 0, 0, 0.25))
+      drop-shadow(2px 0 0 rgba(45, 27, 105, 0.35))
+      drop-shadow(-2px 0 0 rgba(45, 27, 105, 0.35))
+      drop-shadow(0 2px 0 rgba(45, 27, 105, 0.35))
+      drop-shadow(0 -2px 0 rgba(45, 27, 105, 0.35))
+      drop-shadow(0 0 14px rgba(108, 92, 231, 0.08))
+      drop-shadow(0 0 30px rgba(45, 27, 105, 0.05));
+  }
+  50% {
+    filter:
+      drop-shadow(0 10px 18px rgba(0, 0, 0, 0.25))
+      drop-shadow(2px 0 0 rgba(45, 27, 105, 0.35))
+      drop-shadow(-2px 0 0 rgba(45, 27, 105, 0.35))
+      drop-shadow(0 2px 0 rgba(45, 27, 105, 0.35))
+      drop-shadow(0 -2px 0 rgba(45, 27, 105, 0.35))
+      drop-shadow(0 0 24px rgba(108, 92, 231, 0.18))
+      drop-shadow(0 0 46px rgba(45, 27, 105, 0.12));
+  }
+}
+.chalk-icon-btn {
+  position: absolute;
+  width: 24%;
+  /* 2026-08-23(27): "확대 애니메이션은 없애고 글로우는 유지" 요청 — chalk-pulse(커졌다작아졌다) 제거.
+     2026-08-23(28): "장식 이미지들과 같은 애니메이션 효과" 요청 — 장식(.chalk-deco)이 쓰는
+     회전 흔들림(chalk-rotate-wobble)을 글로우와 같이 추가(위치는 고정 버튼이라 그대로 두고
+     회전만 맞춤). 둘이 완전히 같은 박자로 흔들리면 부자연스러워서 시간을 살짝 다르게 준다. */
+  animation: chalk-icon-glow 1.8s ease-in-out infinite, chalk-rotate-wobble 5s ease-in-out infinite;
+  z-index: 1;
+}
+.chalk-icon-btn img { width: 100%; height: 100%; object-fit: contain; display: block; }
+/* 2026-08-23(29): "선택 아이콘도 장식처럼 돌아다니게" 요청 — 고정 top/left를 지움. 이제
+   app.js의 물리 시뮬레이션이 장식과 똑같이 이 둘의 left/top도 매 프레임 직접 갱신한다. */
+.chalk-icon-challenge { animation-duration: 1.8s, 6s; animation-direction: normal, reverse; }
+
+/* 2026-08-24: "기존 이모지/글자 다 없애고 메인페이지 분리 파일에 있는 것으로만" 요청 — CSS
+   레인보우 텍스트(.chalk-board-title span들)와 분필 트레이(.chalk-tray/.chalk-stick, 새 그림
+   세트엔 대응 소품이 없음)를 전부 삭제.
+   2026-08-24(2): 로고 이미지 오버레이(.chalk-board-logo)로 한 번 교체했다가, 더 고화질인 통합
+   그림(이젤+로고+선반+물감통+붓통+흉상+공+책이 전부 하나로 합쳐진 GPT 그림)으로 chalkboard.png
+   자체를 바꾸면서 로고가 그림 안에 이미 있어 이 오버레이도 삭제. 같은 이유로 선반/물감통을
+   별도 블록(cover-shelf-wrap 등)으로 얹던 CSS와 물감통 개별 글로우+통통튀기 애니메이션
+   (cover-jar-wave), 선반 빛줄기 스윕(shelf-shine-sweep)도 전부 삭제 — 지금은 정적 그림의 일부.
+   물감통을 나중에 고화질로 따로 받으면(현재 토큰 소진으로 보류 중) 이 자리에 다시 레이어로
+   얹으면서 애니메이션도 복원할 예정. */
+
+/* 장식 이모지 — 원본 사진의 말린 꽃/분필 낙서 느낌을 재현.
+   2026-08-23(18): "칠판 전체를 렌덤하게, 안 겹치게" 요청 — 고정 좌표+작은 흔들림 대신 JS가
+   위치를 직접 관리(app.js의 initChalkDecoRoaming).
+   2026-08-23(22): "이동 중 서로 겹친다, 만나면 튕겨나가게" 요청으로 CSS transition 기반 목적지
+   이동 방식을 버리고 매 프레임(requestAnimationFrame) 직접 좌표를 갱신하는 당구공 튕김 물리로
+   교체 — transition을 걸어두면 물리 갱신과 서로 어긋나 밀리는 느낌이 나서 제거함(위치는 JS가
+   매 프레임 즉시 반영, 회전만 순수 CSS로 계속 살랑거리게 역할 분리는 그대로 유지). */
+/* 2026-08-25: "장식 2배 크게, 랜덤하게 고정(더 이상 안 돌아다니게), 흔들림 효과도 제거" 요청 —
+   width 5%→10%로 키우고, 회전 흔들림(chalk-rotate-wobble) 적용을 지웠다(HTML의
+   chalk-deco-wobble-a/b/c 클래스 자체는 그대로 남아있지만 이 애니메이션이 없으니 비활성).
+   위치는 이제 app.js가 로드 시 한 번만 랜덤 배치하고 그 뒤로 안 움직인다(당구공 물리는 선택
+   아이콘 2개만). */
+.chalk-deco {
+  position: absolute;
+  width: 10%;
+  pointer-events: none;
+}
+@keyframes chalk-rotate-wobble {
+  0%, 100% { transform: rotate(-10deg); }
+  50% { transform: rotate(10deg); }
+}
+@keyframes chalk-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+@keyframes chalk-icon-glow {
+  0%, 100% { filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5)); }
+  50% { filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 22px rgba(255, 255, 255, 0.5)); }
+}
+
+/* ---------- 하단 탭바(나의 스코어/일일/Home/상점/더보기) — 2026-08-23 신규.
+   "허브" 화면(표지 + 아래 3개 신규 화면)에서만 보이고, 실제 색칠/챌린지 플레이 중엔
+   숨긴다(showTabBar/hideTabBar, app.js). ---------- */
+.tab-bar {
+  /* 2026-08-23(30): #tab-bar는 <section class="hub-screen">의 자식이 아니라 body 레벨 형제라
+     .hub-screen에서 재정의한 우주 테마 변수를 못 물려받는다 — 여기서 직접 같은 값으로. */
+  --card-bg: #241c47;
+  --muted: #A99FD6;
+  --brand: #8b7fff;
+  --brand-soft: #362a5e;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+  display: flex;
+  background: var(--card-bg);
+  box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.08);
+  padding-bottom: var(--safe-bottom);
+}
+/* 2026-08-23(10): "윗 외각선을 0.5mm 내려" 요청 — border-top 대신 top 오프셋을 줄 수 있는
+   ::before 선으로 바꿔서, 다른 요소는 그대로 두고 선 위치만 0.5mm 아래로 내림. */
+.tab-bar::before {
+  content: '';
+  position: absolute;
+  top: 0.5mm;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--brand-soft);
+}
+/* 2026-08-23(3): "터치 애니메이션도 있으면" 요청 — 활성 탭 위에 뜨는 슬라이딩 인디케이터. 폭을
+   탭 하나와 똑같이(100%/5) 잡아서 translateX(N * 100%)가 항상 정확히 N칸 이동 — 픽셀 계산 없이
+   화면 크기와 무관하게 항상 맞음. 기본 위치(N=2, 5개 중 세 번째)는 Home. */
+.tab-bar-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% / 5);
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(90deg, var(--brand), #9b8cf0);
+  transform: translateX(200%);
+  transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+.tab-bar-btn {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 4px 6px;
+  color: var(--muted);
+  overflow: visible; /* 아이콘이 탭바 위 테두리 밖으로 튀어나와 보이게(아래 margin-top 참고) */
+}
+/* 2026-08-23(2)~(8) 여러 차례 시도(그라디언트 배지+바운스 → Lucide 라인 아이콘 → 배지 없는
+   Twemoji) 끝에 "배경이 아이콘과 겹치게" 다시 요청 — 배지(::before)를 아이콘보다 작고 낮게
+   (하단 anchored) 둬서 아이콘 위쪽이 배지 밖으로 튀어나와 보이게 복원. z-index로 아이콘을
+   배지 위에 그린다. */
+.tab-bar-icon-wrap {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  margin-top: -14px; /* "탭바 위로 아이콘이 튀어나와 보인다" 요청 — 탭바 테두리 위로 살짝 걸침 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.tab-bar-icon-wrap::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: 58px;
+  height: 30px;
+  border-radius: 16px 16px 22px 22px;
+  transform: translateX(-50%);
+  background: linear-gradient(155deg, #b8a5f0 0%, var(--brand) 100%);
+  box-shadow: 0 3px 0 #4834a8, 0 5px 9px rgba(0, 0, 0, 0.22);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  z-index: 0;
+}
+.tab-bar-btn.is-active .tab-bar-icon-wrap::before { opacity: 1; }
+.tab-bar-icon {
+  position: relative;
+  z-index: 1;
+  width: 51px; /* 34px 대비 1.5배 확대 요청 반영 */
+  height: 51px;
+  object-fit: contain;
+  transition: transform 0.18s ease;
+  /* 2026-08-23(38): "탭바 아이콘 입체감" 요청 — 배지 없이 아이콘 자체에만 깊이를 준다.
+     드롭섀도우 2겹(선명한 2px 턱 + 부드러운 확산 그림자)으로 다른 곳의 키캡 그림자 턱과
+     같은 느낌을 아이콘 실루엣에 그대로 입힘(box-shadow와 달리 drop-shadow는 투명 배경을
+     따라가서 사각형이 아니라 아이콘 모양대로 그림자가 진다). */
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.22)) drop-shadow(0 4px 5px rgba(0, 0, 0, 0.25));
+}
+/* "더보기"만 매칭되는 Twemoji가 없어 이모지(⋯) 유지 — 위 .tab-bar-icon의 width/height는
+   <img> 전용이라 이 텍스트 아이콘엔 안 먹으니 font-size로 같은 시각 크기를 맞춘다. */
+.tab-bar-icon-emoji {
+  font-size: 2.85rem;
+  width: auto;
+  height: auto;
+  /* 2026-08-23(38): 위 .tab-bar-icon과 같은 입체감 — 이미지가 아니라 텍스트 글리프라
+     drop-shadow 대신 text-shadow로 동일한 2겹 레시피 적용. */
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.22), 0 4px 5px rgba(0, 0, 0, 0.25);
+}
+/* "일일" 탭 전용 — 오늘 날짜를 보여주는 미니 달력 카드(월 약자는 app.js가 채움). */
+.tab-bar-calendar-icon {
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  overflow: hidden;
+  /* 2026-08-23(38): "그림자만 키캡화" 요청 — 카드 모양/배경은 그대로 두고, 옅은 그림자 한 겹을
+     다른 키캡 버튼과 같은 레시피(선명한 색 턱 + 부드러운 확산 그림자 + 안쪽 하이라이트)로 교체. */
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.28), 0 5px 8px rgba(0, 0, 0, 0.22), inset 0 1.5px 1.5px rgba(255, 255, 255, 0.9);
+  background: #fff;
+}
+.tab-bar-calendar-month {
+  background: #F4483F;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-align: center;
+  letter-spacing: 0.02em;
+  padding: 2px 0;
+  line-height: 1.2;
+}
+.tab-bar-calendar-day {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+.tab-bar-label { font-size: 0.68rem; font-weight: 700; }
+.tab-bar-btn.is-active { color: var(--brand); }
+.tab-bar-btn.is-active .tab-bar-icon-wrap {
+  animation: tab-bounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes tab-bounce {
+  0% { transform: translateY(0) scale(1); }
+  40% { transform: translateY(-8px) scale(1.18); }
+  70% { transform: translateY(-2px) scale(0.96); }
+  100% { transform: translateY(0) scale(1); }
+}
+.tab-bar-btn.is-active .tab-bar-icon-wrap {
+  transform: translateY(-4px);
+}
+
+/* 2026-08-25: "홈/상점/스코어 터치 애니메이션" 요청 — 세 아이콘이 공유하는 1회성 스프라이트
+   연출(app.js spawnTabFx()). .tab-bar-icon-wrap이 이미 position:relative + overflow:visible라
+   그 안에 절대좌표로 잠깐 얹었다 지운다. */
+.tab-fx-sprite {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  animation: tab-fx-float 0.75s ease-out forwards;
+  animation-delay: var(--fx-delay, 0ms);
+  z-index: 2;
+}
+@keyframes tab-fx-float {
+  0% { opacity: 0; transform: translate(-50%, -50%) translate(0, 0) scale(0.5); }
+  18% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--fx-x, 0px), -42px) scale(1.05); }
+}
+/* 홈 전용 — 문 열림 그래픽이 기본 아이콘(닫힌 문) 위, 실제 문이 있는 자리(오른쪽 아래쪽)에
+   잠깐 겹쳐 보였다 사라진다. 두 그림이 같은 캔버스에서 나온 게 아니라 좌표가 딱 안 맞을 수
+   있지만, 51px짜리 작은 아이콘이라 어긋나도 티가 거의 안 난다. */
+.tab-fx-door {
+  position: absolute;
+  left: 68%;
+  top: 58%;
+  width: 60%;
+  height: 60%;
+  object-fit: contain;
+  transform: translate(-50%, -50%) scale(0.85);
+  opacity: 0;
+  pointer-events: none;
+  animation: tab-fx-door-flash 0.6s ease-out forwards;
+  z-index: 2;
+}
+@keyframes tab-fx-door-flash {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+  30% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  75% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* 탭바가 떠 있는 허브 화면은 콘텐츠가 탭바 밑에 가려지지 않게 그만큼 아래 여백을 더 둔다. */
+.hub-screen { padding-bottom: calc(var(--safe-bottom) + 96px); }
+
+/* ---------- 2026-08-23(30): "신비한 우주에서 게임하는 느낌, 모든 페이지" 요청 — 1단계로
+   표지+탭바 5개 화면(.hub-screen)부터 어두운 밤하늘 테마로 전환. 전역 :root는 그대로 두고
+   (지도/갤러리/색칠 화면은 아직 밝은 테마 그대로라 손대면 안 됨) .hub-screen 안에서만 공용
+   변수(--bg/--card-bg/--ink 등)를 다시 정의 — 이 화면들은 이미 그 변수들로 배경/글자색을
+   그려서(예: .cover-screen 배경 그라디언트, .more-menu-item 카드) 이 재정의 하나로 대부분
+   자동으로 어두운 톤이 된다. 그 위에 별(twinkle+drift)·성운(drift) 두 겹을 ::before/::after로
+   얹어 "가만히 있지 않고" 자연스럽게 움직이는 배경을 만든다. */
+.hub-screen {
+  --bg: #0d0a24;
+  --card-bg: #241c47;
+  --ink: #EDE9FF;
+  --muted: #A99FD6;
+  --brand: #8b7fff;
+  --brand-soft: #362a5e;
+  --cover-mid: #1a1440;
+  --shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+/* 표지 화면(.cover-screen)은 자기 전용 그라디언트 배경이 있으니 그대로 두고, 나머지 4개
+   (스코어/일일/상점/더보기)는 .screen 기본값이 배경 없음(투명)이라 body의 밝은 크림색이
+   비쳐 보이는 문제가 있었음 — 불투명한 --bg로 확실히 덮는다. */
+.hub-screen:not(.cover-screen) { background: var(--bg); }
+.hub-screen::before,
+.hub-screen::after {
+  content: '';
+  position: absolute;
+  inset: -15%;
+  pointer-events: none;
+  z-index: 0;
+}
+/* 별 — 크기가 다른 점 5개를 흩뿌려 타일링, 반짝임(밝기)과 흘러가는 이동을 동시에. */
+.hub-screen::before {
+  background-image:
+    radial-gradient(1.6px 1.6px at 15% 25%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 55% 8%, #fff, transparent),
+    radial-gradient(2px 2px at 80% 40%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 30% 70%, #fff, transparent),
+    radial-gradient(1.6px 1.6px at 65% 85%, #fff, transparent),
+    radial-gradient(1px 1px at 90% 15%, #fff, transparent),
+    radial-gradient(1.4px 1.4px at 10% 90%, #fff, transparent);
+  background-repeat: repeat;
+  background-size: 220px 220px;
+  opacity: 0.75;
+  animation: cosmic-star-drift 70s linear infinite, cosmic-star-twinkle 3.4s ease-in-out infinite;
+}
+/* 성운 — 흐릿한 색 뭉치 3개가 천천히 위치/크기를 바꾸며 일렁임. */
+.hub-screen::after {
+  /* 2026-08-23(33): "성운이 안 보인다, 더 진하고 뚜렷하게" 요청 — 투명도를 2배 가까이 올리고
+     블러도 22px→14px로 줄여서 색 뭉치 경계가 더 또렷하게 보이게 함. */
+  background:
+    radial-gradient(circle at 20% 25%, rgba(139, 127, 255, 0.55), transparent 45%),
+    radial-gradient(circle at 82% 65%, rgba(255, 140, 200, 0.38), transparent 42%),
+    radial-gradient(circle at 45% 90%, rgba(100, 210, 220, 0.32), transparent 40%);
+  filter: blur(14px);
+  animation: cosmic-nebula-drift 26s ease-in-out infinite alternate;
+}
+@keyframes cosmic-star-drift {
+  from { background-position: 0 0; }
+  to { background-position: -220px -220px; }
+}
+@keyframes cosmic-star-twinkle {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.95; }
+}
+@keyframes cosmic-nebula-drift {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-6%, 5%) scale(1.12); }
+}
+
+/* 2026-08-23(33): "별똥별 추가" 요청 — 별/성운은 ::before/::after 두 자리를 이미 다 써서,
+   실제 엘리먼트(app.js가 각 우주 테마 화면에 2개씩 주입)로 따로 만든다. 점(머리) + 꼬리
+   그라디언트를 대각선으로 길게 그린 뒤, 화면을 가로지르며 날아가고 대부분의 시간은
+   투명하게 숨어있다가 아주 잠깐만 반짝 지나가게(opacity 스파이크) 한다. */
+.shooting-star {
+  position: absolute;
+  /* 2026-08-23(35): "한곳에서만 지나가지 말고 랜덤한 방향에서" 요청 — 시작 위치/이동 방향을
+     고정값 대신 app.js가 매 회전마다 새로 뽑아 넣는 CSS 변수(--ss-top/--ss-left/--ss-dx/--ss-dy)
+     로 받는다. 변수가 아직 안 채워진 최초 순간을 위한 기본값만 여기 남겨둠. */
+  top: var(--ss-top, 8%);
+  left: var(--ss-left, -12%);
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.9);
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+.shooting-star::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 90px;
+  height: 1.5px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.95), transparent);
+  transform: translateY(-50%) rotate(var(--ss-angle, 180deg));
+  transform-origin: right center;
+}
+.shooting-star-0 { animation: shooting-fly-a 9s linear infinite; animation-delay: 1.5s; }
+.shooting-star-1 { animation: shooting-fly-b 13s linear infinite; animation-delay: 6s; }
+@keyframes shooting-fly-a {
+  0%, 55% { opacity: 0; transform: translate(0, 0); }
+  57% { opacity: 1; }
+  68% { opacity: 0; transform: translate(var(--ss-dx, 130vw), var(--ss-dy, 65vh)); }
+  100% { opacity: 0; transform: translate(var(--ss-dx, 130vw), var(--ss-dy, 65vh)); }
+}
+@keyframes shooting-fly-b {
+  0%, 30% { opacity: 0; transform: translate(0, 0); }
+  32% { opacity: 1; }
+  42% { opacity: 0; transform: translate(var(--ss-dx, 110vw), var(--ss-dy, 50vh)); }
+  100% { opacity: 0; transform: translate(var(--ss-dx, 110vw), var(--ss-dy, 50vh)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shooting-star { display: none; }
+}
+/* 실제 콘텐츠(제목/버튼/탭바 등)는 이미 z-index:1 이상이라 별/성운 레이어(z-index:0) 위에 그대로 뜬다. */
+
+/* ---------- 2026-08-23(31): "모든 페이지" 요청 2단계 — 지도/레벨갤러리 화면도 같은 우주 테마.
+   방식은 표지/탭바와 동일(변수 재정의 + 불투명 배경 + 별/성운 레이어).
+   2026-08-23(36): 3단계 — 챌린지 선택 화면/색칠 화면도 포함. #coloring-screen은 "goal 이미지
+   박스와 색칠 이미지 박스는 지금 그대로 유지" 요청이 있어서 그 두 박스(.goal-panel/.canvas-wrap)
+   만 아래에서 따로 원래 색을 고정해 제외한다. ---------- */
+#map-screen, #gallery-screen, #challenge-select-screen, #coloring-screen {
+  --bg: #0d0a24;
+  --card-bg: #241c47;
+  --ink: #EDE9FF;
+  --muted: #A99FD6;
+  --brand: #8b7fff;
+  --brand-soft: #362a5e;
+  --shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  background: var(--bg);
+}
+#map-screen::before, #map-screen::after,
+#gallery-screen::before, #gallery-screen::after,
+#challenge-select-screen::before, #challenge-select-screen::after,
+#coloring-screen::before, #coloring-screen::after {
+  content: '';
+  position: absolute;
+  inset: -15%;
+  pointer-events: none;
+  z-index: 0;
+}
+#map-screen::before, #gallery-screen::before,
+#challenge-select-screen::before, #coloring-screen::before {
+  background-image:
+    radial-gradient(1.6px 1.6px at 15% 25%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 55% 8%, #fff, transparent),
+    radial-gradient(2px 2px at 80% 40%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 30% 70%, #fff, transparent),
+    radial-gradient(1.6px 1.6px at 65% 85%, #fff, transparent),
+    radial-gradient(1px 1px at 90% 15%, #fff, transparent),
+    radial-gradient(1.4px 1.4px at 10% 90%, #fff, transparent);
+  background-repeat: repeat;
+  background-size: 220px 220px;
+  opacity: 0.75;
+  animation: cosmic-star-drift 70s linear infinite, cosmic-star-twinkle 3.4s ease-in-out infinite;
+}
+#map-screen::after, #gallery-screen::after,
+#challenge-select-screen::after, #coloring-screen::after {
+  /* 2026-08-23(33): "성운이 안 보인다, 더 진하고 뚜렷하게" 요청 — 투명도를 2배 가까이 올리고
+     블러도 22px→14px로 줄여서 색 뭉치 경계가 더 또렷하게 보이게 함. */
+  background:
+    radial-gradient(circle at 20% 25%, rgba(139, 127, 255, 0.55), transparent 45%),
+    radial-gradient(circle at 82% 65%, rgba(255, 140, 200, 0.38), transparent 42%),
+    radial-gradient(circle at 45% 90%, rgba(100, 210, 220, 0.32), transparent 40%);
+  filter: blur(14px);
+  animation: cosmic-nebula-drift 26s ease-in-out infinite alternate;
+}
+/* map-screen/gallery-screen의 실제 콘텐츠(헤더/그리드/카드 등)는 이 두 화면 바로 아래 규칙에서
+   보듯 대부분 position:static/relative에 z-index 없음 — 별/성운(z-index:0)보다 위에 확실히
+   뜨도록 감싸는 컨테이너에 최소한만 지정한다. */
+.map-top-bar, .map-grid, #stat-line, #levels-left-line, .gallery-header, .level-reward,
+#boss-grid, .challenge-select-header, .challenge-tiers,
+.challenge-hud, .coloring-header, .goal-panel, #frame-top, #palette-left, #canvas-wrap,
+#palette-right, #frame-bottom { position: relative; z-index: 1; }
+
+/* ---------- 나의 스코어/일일/상점 — 아직 스펙 미정, 가운데 정렬 플레이스홀더 ---------- */
+.hub-placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  padding: 20px;
+}
+.hub-placeholder-emoji { font-size: 3rem; margin: 0; }
+.hub-placeholder-title { margin: 0; font-size: 1.6rem; color: var(--brand); }
+.hub-placeholder-sub { margin: 0; color: var(--muted); }
+/* 더보기 화면은 위에 붙이고 그 아래로 메뉴 목록이 이어진다. */
+.hub-placeholder-top { flex: 0 0 auto; padding: 32px 20px 12px; }
+
+/* ---------- 더보기 — 설정/개인정보/문의 목록 ---------- */
+.more-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 8px 20px;
+}
+.more-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--card-bg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--ink);
+  text-decoration: none;
+}
+.more-menu-icon { font-size: 1.3rem; }
+
+/* ---------- 난이도(타이머) 모드 선택 — 2x2, 칸 크기 전부 동일(고정 폭 그리드) ---------- */
+/* 2026-08-11: "coloring fun 삭제" 요청으로 제목(h1)이 없어져서 이 자리를 잡아주던 title-row
+   래퍼도 필요 없어짐(mode-selector는 absolute라 gallery-header 기준으로 그대로 위치 유지). */
+.mode-selector {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: 1fr;
+  gap: 6px;
+  width: 150px;
+  z-index: 2;
+}
+.mode-btn {
+  /* 2026-08-11: "모드 4개 아이콘도 3D 입체감" 요청 — 다른 곳과 같은 키캡 스타일(그라디언트 +
+     아래쪽 그림자 턱 + 누르면 눌리는 애니메이션) 적용. */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.15;
+  background: linear-gradient(180deg, #fff 0%, var(--card-bg) 60%, #F3EFFF 100%);
+  color: var(--muted);
+  border: 2px solid #E6E0FF;
+  border-radius: 10px;
+  padding: 6px 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 3px 0 #D8CFF5, 0 4px 6px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.mode-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #D8CFF5, 0 2px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+.mode-btn .mode-btn-time {
+  font-size: 0.62rem;
+  font-weight: 600;
+  opacity: 0.8;
+}
+.mode-btn .mode-btn-lock {
+  display: none;
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  font-size: 0.85rem;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: var(--shadow);
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+}
+.mode-btn.active {
+  background: linear-gradient(180deg, #8f82f2 0%, var(--brand) 55%, #5645c9 100%);
+  border-color: var(--brand);
+  color: #fff;
+  box-shadow: 0 3px 0 #4834a8, 0 4px 6px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.mode-btn.active:active {
+  box-shadow: 0 1px 0 #4834a8, 0 2px 3px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.mode-btn.mode-locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+/* 이전 모드의 보스를 아직 못 이겨서 잠긴 모드 — 진행 중이라 잠깐 잠긴 것과 구분되게 자물쇠 배지 표시 */
+.mode-btn.mode-boss-locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.mode-btn.mode-boss-locked .mode-btn-lock {
+  display: flex;
+}
+
+/* ---------- 색칠 화면 타이머(제목 밑 서브타이틀 자리, 아이콘 버튼과 안 겹침) ---------- */
+.timer-subtitle {
+  color: var(--brand);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.timer-subtitle.warn {
+  color: var(--bad);
+  animation: timer-pulse 1s infinite;
+}
+@keyframes timer-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* ---------- 갤러리 ---------- */
+/* 2026-08-16: "버튼 4개 맨 위 한 줄로 + 레벨 1~10 스크롤 없이 한 화면" 요청 — map-screen을
+   뷰포트 높이에 딱 맞는 flex 세로 컬럼으로 만들고(header는 콘텐츠 높이만큼만, 레벨 그리드는
+   나머지 전부), 페이지 자체는 스크롤되지 않게 한다. dvh는 모바일 브라우저 주소창 접힘/펼침에
+   따라 100vh가 흔들리는 문제를 막아줌(미지원 브라우저는 바로 위 100vh 값으로 자연히 대체됨). */
+#map-screen {
+  position: relative;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.gallery-header {
+  position: relative;
+  text-align: center;
+  flex: 0 0 auto;
+  padding: 6px 12px 4px;
+}
+.map-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.map-top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+.stat-line {
+  margin: 10px auto 0;
+  display: inline-block;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  /* 2026-08-11: "완성했어요 문구 아이콘도 3D" 요청 — 알약 자체에 살짝 입체 그림자 */
+  box-shadow: 0 2px 0 rgba(108, 92, 231, 0.22), 0 3px 5px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.level-header-mid {
+  flex: 1;
+  text-align: center;
+  min-width: 0;
+}
+.level-header-mid .coloring-title { font-size: 1.3rem; }
+.level-header-mid .subtitle { font-size: 0.85rem; margin-top: 2px; }
+.icon-btn-spacer { width: 56px; height: 56px; flex: 0 0 auto; }
+/* 2026-08-22: 퍼즐 미리보기 버튼 — 제목 바로 옆에 붙인다(위치는 임시, 추후 조정 예정). */
+.level-title-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.level-magnify-btn {
+  padding: 0;
+  overflow: hidden; /* 안의 이미지가 원형 밖으로 안 삐져나가게 */
+}
+.level-magnify-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---------- 레벨 지도 ---------- */
+/* 2026-08-16: "레벨 1~10이 스크롤 없이 한 화면에" 요청으로 2열×5행 고정 + overflow:hidden이었음.
+   2026-08-21: 컬러링 모드 개편(카테고리 10개) — 참고 영상처럼 레벨 하나가 화면을 거의 다
+   채우고 위/아래로 넘기면 다음 레벨이 나오는 방식으로 바꿈.
+   2026-08-21(8): "원 3개는 고정" 요청 — 위/중앙/아래 3자리의 화면 위치는 절대 움직이지
+   않는다. .level-node-wrap은 딱 하나만 있고, 스와이프/휠하면 app.js가 그 자리 안의 그림만
+   다시 채운다(위치 이동/애니메이션 없음). */
+.map-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 8px 16px 12px;
+  max-width: 420px;
+  margin: 0 auto;
+  width: 100%;
+  cursor: grab;
+  /* 터치로 드래그하는 동안 브라우저의 기본 세로 스크롤/패닝 제스처가 끼어들지 않게 함 —
+     레벨 전환은 전부 JS(pointer 이벤트)가 담당. */
+  touch-action: none;
+}
+.map-grid:active {
+  cursor: grabbing;
+}
+.level-node-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 30px; /* 2026-08-21: "간격을 지금의 3배로" 요청 — 10px → 30px */
+  height: 100%;
+  /* 2026-08-16: 배경 장식(z-index:0)이 레벨 박스의 둥근 모서리 바깥쪽(투명한 네 귀퉁이) 틈으로
+     살짝 비쳐 보이는 문제 발견 — 그리드 전체를 막으면 장식이 여백에서도 거의 안 보이게
+     되므로, 박스 모서리가 각진 이 래퍼(.level-node 자체보다 한 겹 바깥, 각진 사각형)에만
+     배경색을 깔아서 딱 박스 크기만큼만 막는다. 격자 사이 여백/화면 여백엔 장식이 그대로 보임. */
+  /* 2026-08-23(35): "선택화면(레벨선택)에서 원 3개 빼고는 배경화면과 같이 처리" 요청 — 위 배경은
+     구 라이트테마 시절 장식이 원 모서리 틈으로 비치는 걸 막으려고 깐 불투명 판이었는데, 우주
+     테마에선 이게 오히려 별/성운(#map-screen::before/::after)을 가리는 네모난 "박스"로 보였다.
+     투명하게 바꿔 별/성운이 원 3개 주변까지 그대로 비치게 한다. */
+  padding: 12px 0;
+}
+/* 2026-08-21: "위에는 이전 카테고리가 70% 크기로, 아래에는 다음 카테고리가 70% 크기로 살짝
+   보이게" 요청 — 슬라이드(레벨 하나 = 화면 하나) 안에 미리보기용 작은 원을 위/아래에 하나씩
+   더 넣는다. 터치로 스크롤하면 이 슬라이드 전체가 손가락을 따라 움직이다가 다음 슬라이드
+   경계에서 스냅되고, 새 슬라이드의 "아래 미리보기"였던 원이 중앙의 큰 원 자리로 온다.
+   2026-08-21(2): "PC에서 vw 기준이라 비율이 깨짐" + "원 사이 간격이 너무 멀다" 수정 —
+   뷰포트 기준(vw) 대신 .map-grid(PC에서도 420px로 고정된 폭) 기준 %로 바꾸고, wrap을
+   space-between(위/아래 끝까지 벌림) 대신 gap 10px로 가운데 모아 붙인다. */
+.lv-peek {
+  flex: 0 0 auto;
+  width: 31.5%; /* 큰 원(45%)의 70% */
+  opacity: 0.7;
+}
+.lv-peek .lv-circle {
+  width: 100%;
+}
+/* 2026-08-21(14): "원 위/아래"는 원 바깥이 아니라 원 안쪽(그림 위에 얹힘)이라는 뜻이었음 —
+   진행도(.lv-progress)는 원 안쪽 위, 타이머(.lv-time)는 원 안쪽 아래에 작은 알약칩으로 얹는다.
+   자물쇠(중앙)·체크뱃지(우측 상단)와는 안 겹치는 자리. */
+.lv-time {
+  position: absolute;
+  bottom: 6%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.82);
+  padding: 2px 9px;
+  border-radius: 999px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--brand);
+}
+/* 2026-08-21: "박스는 아예 없애고, 좌상단 원을 중앙에 30% 크기로, 카테고리N 글자는 원
+   위쪽에 원처럼 곡선지게" 요청 — 사각 박스(.level-node)를 통째로 원형 버튼(.lv-circle)으로
+   교체.
+   2026-08-21(3): "원 사이 간격이 안 맞다" 수정 — stage 자체 레이아웃 높이는 원 하나뿐이 되게
+   하고(position:relative), 곡선 글자/진행도는 position:absolute로 원 위·아래에 겹쳐서
+   "얹기만" 한다 — 그래야 위/아래 이웃 원과의 간격(.level-node-wrap의 gap)이 라벨/글자 유무와
+   무관하게 항상 똑같다. */
+.lv-circle-stage {
+  position: relative;
+  width: 45%; /* .map-grid(PC에서도 420px 고정) 기준 — vw였다가 PC에서 비율 깨지던 버그 수정 */
+  container-type: inline-size; /* 아래 .lv-curve-label의 cqw가 이 30% 폭을 기준으로 계산되게 */
+}
+/* 2026-08-22: "탭하면 바로 들어가던 것" → "원 밖 링이 다 찰 때까지 눌러야 들어감" 요청 —
+   중앙 원 바깥을 감싸는 진행 링. 평소엔 완전히 빈 채로 숨어있다가, 누르는 동안(.lv-charging)
+   700ms에 걸쳐 시계방향으로 꽉 찬다. 중간에 손을 떼면(클래스 제거) 그 자리에서부터 스르륵
+   되감긴다 — 기본 규칙의 0.3s가 "취소 시 되감기 속도", .lv-charging 규칙의 700ms가
+   "채워지는 속도"라 트랜지션 지속시간이 상황마다 달라짐.
+   viewBox 100 기준 r=47 원의 둘레(2πr ≈ 295.3)를 stroke-dasharray/dashoffset에 그대로 씀. */
+.lv-hold-ring {
+  position: absolute;
+  inset: -8%;
+  pointer-events: none;
+  transform: rotate(-90deg); /* 12시 방향에서 시작해 시계방향으로 채워지게 */
+}
+.lv-hold-ring circle { fill: none; stroke-width: 5; }
+.lv-hold-ring-track { stroke: rgba(0, 0, 0, 0.08); }
+.lv-hold-ring-fill {
+  stroke: var(--lv-bezel, #7C6FEA);
+  stroke-linecap: round;
+  stroke-dasharray: 295.3;
+  stroke-dashoffset: 295.3;
+  transition: stroke-dashoffset 0.3s ease;
+}
+.lv-circle-stage.lv-charging .lv-hold-ring-fill {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 700ms linear;
+}
+/* 채워지는 동안 링이 두근거리듯 밝기가 맥동하고, 원도 눌린 채(5px, 기존 키캡 눌림과 동일)로
+   아주 살짝 숨쉬듯 커졌다 작아졌다 — "충전 중"이라는 느낌을 손맛+시각 둘 다로 준다. */
+.lv-charging .lv-hold-ring-fill { animation: lv-hold-pulse 0.35s ease-in-out infinite; }
+.lv-circle-stage.lv-charging .lv-circle { animation: lv-hold-breathe 0.35s ease-in-out infinite; }
+@keyframes lv-hold-pulse {
+  0%, 100% { stroke-opacity: 0.65; }
+  50% { stroke-opacity: 1; }
+}
+@keyframes lv-hold-breathe {
+  0%, 100% { transform: translateY(5px) scale(1); }
+  50% { transform: translateY(5px) scale(1.025); }
+}
+/* 링이 차는 트랜지션 자체는 "다 찼는지"를 판단하는 신호(app.js transitionend)라 기능상
+   필요 — reduced-motion에서도 유지하고, 순수 장식용 맥동/숨쉬기만 끈다. */
+@media (prefers-reduced-motion: reduce) {
+  .lv-charging .lv-hold-ring-fill, .lv-circle-stage.lv-charging .lv-circle { animation: none; }
+}
+.lv-curve-label {
+  display: none; /* 2026-08-21(15): "카테고리 글자는 일단 없애고" 요청 — 임시로 숨김 */
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  width: 100%;
+  /* 2026-08-21(3): 간격을 10px로 좁히면서 라벨이 위 미리보기 원과 겹치지 않도록 높이도
+     같이 줄임(50cqw→18cqw). 곡선 자체(SVG path)는 그대로 두고 뷰포트만 낮춰서 글자가
+     살짝 잘려도 위쪽 절반만 보이면 되므로 무방함. */
+  height: 18cqw;
+  overflow: visible;
+}
+.lv-curve-label text {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  fill: var(--brand);
+}
+/* 2026-08-11(원래 사각 박스에 쓰던) "키보드 형태로 입체감있게" 요청을 그대로 원형에 적용 —
+   아래쪽 두꺼운 "테두리" 그림자로 키캡처럼 도드라져 보이게 하고 누르면(:active) 눌리는
+   애니메이션. */
+.lv-circle {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--lv-bg, var(--card-bg));
+  border: 3px solid var(--lv-bezel, #E6E0FF);
+  box-shadow: 0 6px 0 var(--lv-bezel, rgba(0, 0, 0, 0.16)), 0 10px 16px rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* 2026-08-21(11): "터치로 움직이면 안 움직이거나 이상한 방향으로 감" 제보 — html,body의
+     touch-action:manipulation과, 이 버튼(.lv-circle)이 실제 터치 대상일 때 조상(.map-grid)의
+     touch-action:none이 안 먹히는 경우가 있어(다른 드래그 요소 .reward-puzzle-piece도 같은
+     이유로 자기 자신에 touch-action:none을 직접 걸어둠) 여기도 대상 요소 자신에 명시한다. */
+  touch-action: none;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+/* 2026-08-21(14): "볼록거울처럼 입체감" 요청 — 왼쪽위 밝은 하이라이트 + 오른쪽아래 옅은
+   그림자를 얹은 유리구슬 느낌의 오버레이. pointer-events:none이라 클릭/드래그엔 안 끼어들고,
+   overflow:hidden 덕분에 원 밖으로는 안 삐져나간다. */
+.lv-circle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.22) 24%, rgba(255, 255, 255, 0) 48%),
+    radial-gradient(circle at 70% 78%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 55%);
+  pointer-events: none;
+}
+/* 2026-08-21(9): 원 위치는 고정이라 안 움직이지만, 넘길 때 그 자리 그림이 바뀌었다는 걸
+   눈에 보이게 살짝 페이드인만 준다(위치 이동은 없음). */
+.lv-swap-fade {
+  animation: lv-swap-fade-in 0.2s ease;
+}
+@keyframes lv-swap-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.lv-circle:not(:disabled):active, .lv-circle:not(:disabled).lv-pressed {
+  transform: translateY(5px);
+  box-shadow: 0 1px 0 var(--lv-bezel, rgba(0, 0, 0, 0.16)), 0 3px 6px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.lv-progress {
+  position: absolute;
+  top: 6%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.82);
+  padding: 2px 9px;
+  border-radius: 999px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 700;
+}
+.lv-circle.locked {
+  opacity: 0.55;
+}
+
+/* 레벨 1~10 순서대로 색을 순환. box-shadow/background를 여기서 직접 못 박지 않고 --lv-bg/--lv-bezel
+   변수만 세팅해서, 실제 칠하는 곳(.lv-circle 기본 규칙과 :active 규칙)이 그 값을 var()로 읽게
+   한다 — 이렇게 안 하면 :active 눌림 그림자 규칙이랑 이 규칙이 서로 우선순위(specificity) 싸움을
+   해서 누르면 색이 도로 회색으로 튀는 버그가 생긴다. 클리어 상태는 .cleared가 리터럴 값으로 또
+   덮어써서(이 변수를 안 씀) 그대로 분홍 유지. */
+/* 2026-08-21: 위/아래 70% 미리보기 원 추가로 슬라이드(.level-node-wrap) 하나 안에 서로 다른
+   레벨의 원이 여러 개(이전/현재/다음) 같이 들어오게 되면서, "몇 번째 슬라이드인가"(nth-child)로
+   색을 정하던 방식이 더는 안 맞음(같은 슬라이드 안에 색이 달라야 할 원이 여러 개) — 원 자체에
+   data-lv 속성을 찍어서 그 원이 "실제로 몇 번 레벨을 나타내는지" 기준으로 색을 고른다. */
+.lv-circle[data-lv="1"]:not(.cleared) { --lv-bg: hsl(var(--lv-hue-1), var(--lv-sat), var(--lv-light)); --lv-bezel: hsl(var(--lv-hue-1), var(--lv-sat), var(--lv-bezel-light)); }
+.lv-circle[data-lv="2"]:not(.cleared) { --lv-bg: hsl(var(--lv-hue-2), var(--lv-sat), var(--lv-light)); --lv-bezel: hsl(var(--lv-hue-2), var(--lv-sat), var(--lv-bezel-light)); }
+.lv-circle[data-lv="3"]:not(.cleared) { --lv-bg: hsl(var(--lv-hue-3), var(--lv-sat), var(--lv-light)); --lv-bezel: hsl(var(--lv-hue-3), var(--lv-sat), var(--lv-bezel-light)); }
+.lv-circle[data-lv="4"]:not(.cleared) { --lv-bg: hsl(var(--lv-hue-4), var(--lv-sat), var(--lv-light)); --lv-bezel: hsl(var(--lv-hue-4), var(--lv-sat), var(--lv-bezel-light)); }
+.lv-circle[data-lv="5"]:not(.cleared) { --lv-bg: hsl(var(--lv-hue-5), var(--lv-sat), var(--lv-light)); --lv-bezel: hsl(var(--lv-hue-5), var(--lv-sat), var(--lv-bezel-light)); }
+.lv-circle[data-lv="6"]:not(.cleared) { --lv-bg: hsl(var(--lv-hue-6), var(--lv-sat), var(--lv-light)); --lv-bezel: hsl(var(--lv-hue-6), var(--lv-sat), var(--lv-bezel-light)); }
+.lv-circle[data-lv="7"]:not(.cleared) { --lv-bg: hsl(var(--lv-hue-7), var(--lv-sat), var(--lv-light)); --lv-bezel: hsl(var(--lv-hue-7), var(--lv-sat), var(--lv-bezel-light)); }
+.lv-circle[data-lv="8"]:not(.cleared) { --lv-bg: hsl(var(--lv-hue-8), var(--lv-sat), var(--lv-light)); --lv-bezel: hsl(var(--lv-hue-8), var(--lv-sat), var(--lv-bezel-light)); }
+.lv-circle[data-lv="9"]:not(.cleared) { --lv-bg: hsl(var(--lv-hue-9), var(--lv-sat), var(--lv-light)); --lv-bezel: hsl(var(--lv-hue-9), var(--lv-sat), var(--lv-bezel-light)); }
+.lv-circle[data-lv="10"]:not(.cleared) { --lv-bg: hsl(var(--lv-hue-10), var(--lv-sat), var(--lv-light)); --lv-bezel: hsl(var(--lv-hue-10), var(--lv-sat), var(--lv-bezel-light)); }
+
+.lv-circle.cleared {
+  /* 2026-08-11: "클리어시 연한 분홍색 처리" 요청 — 기존 브랜드색(연보라) 대신 연한 분홍으로 변경 */
+  background: var(--cleared-bg);
+  box-shadow: 0 6px 0 var(--cleared-bezel), 0 10px 16px rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.lv-circle.cleared:not(:disabled):active, .lv-circle.cleared:not(:disabled).lv-pressed {
+  box-shadow: 0 1px 0 var(--cleared-bezel), 0 3px 6px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+/* 2026-08-21: "원 안 이미지는 그 카테고리 첫 도안의 goal 이미지" 요청 — 원 전체를 채우는
+   실제 트위모지 SVG(renderMap()에서 <img>로 삽입). */
+.lv-circle-emoji {
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
+}
+.lv-circle .lv-clear-badge,
+.tpl-badge .lv-clear-badge {
+  position: absolute;
+  /* 2026-08-21(12): "우측 상단에 색깔이 좀 남아있다" 제보 — top/right를 정사각형 박스 기준
+     %로 주면 원(border-radius:50%)의 실제 둥근 테두리 밖으로 배지 대부분이 나가서
+     overflow:hidden에 잘려 초록색 조각만 남아 보였음. 원 중심에서 45도 방향, 반지름
+     안쪽으로 배지 반지름(13px)만큼 뺀 자리에 배지 중심을 두면 박스 크기와 무관하게 항상
+     원 안쪽에 완전히 들어간다. */
+  left: calc(50% + (50% - 13px) * 0.7071);
+  top: calc(50% - (50% - 13px) * 0.7071);
+  transform: translate(-50%, -50%);
+  background: var(--good);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 800;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+}
+.lv-circle .lv-lock {
+  position: absolute;
+  font-size: 2rem;
+}
+/* 2026-08-21(17): "클리어! 다음▶ 배너 없애고, goal 이미지 자리 최대한 확보" 요청 — 배너
+   박스(.level-next-banner/.next-btn/.back-btn)를 통째로 없애고, 이전/다음은 헤더 우측 상단
+   아이콘 버튼(.level-header-nav-group, index.html에서 icon-btn icon-btn-sm 재사용)으로,
+   진행 중 경과시간 표시(예전 .level-next-banner 안의 텍스트)는 제목 밑으로 옮겼다. */
+.level-header-nav-group {
+  display: flex;
+  gap: 6px;
+}
+.level-timer-text {
+  display: block;
+  margin-top: 2px;
+  font-weight: 700;
+  color: var(--brand);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.tpl-card .tpl-done-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 900;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tpl-card .tpl-badge-good { background: var(--good); }
+.tpl-card .tpl-badge-bad { background: var(--bad); }
+
+/* 2026-08-22: "박스가 계속 아래로 밀린다" 신고 — .gallery-grid에 display:flex가 있으면
+   [hidden] 속성을 줘도(자바스크립트로 galleryGrid.hidden=true) 브라우저 기본 [hidden]{display:
+   none} 규칙과 우선순위가 같아 나중에 선언된(=여기) display:flex가 이겨버려 실제로는 안 사라짐
+   — 내용 없이 빈 채로 flex:1만큼 공간을 계속 차지해서 그 아래(퍼즐 박스 등)가 밀려났다. */
+.gallery-grid[hidden] { display: none; }
+.gallery-grid {
+  flex: 1;
+  min-height: 0; /* flex 자식이 내용만큼 커지지 않고 실제로 줄어들어 스크롤되게 하는 필수 설정 */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  /* 2026-08-17: "보상 이미지랑 아래 박스가 거의 붙어있다/겹친다" 버그 수정 — center로 세로
+     가운데 정렬하면 화면이 작을수록 위쪽 여백(margin-bottom)이 그 가운데 정렬 계산에 묻혀서
+     실제로는 거의/완전히 사라졌다(작은 화면에서 실측 시 음수 간격, 즉 겹침까지 확인됨).
+     flex-start로 위에 붙여야 위 여백이 화면 크기와 무관하게 항상 보장된다. */
+  justify-content: flex-start;
+  gap: 14px;
+  padding: 16px;
+  max-width: 480px;
+  margin: 0 auto;
+  width: 100%;
+}
+/* 2026-08-22: 레벨1 — 변신 시작 전에 아이콘 목록이 아래로 슬라이드되며 사라지는 연출
+   (app.js moveRewardBoxToCenter가 붙였다 뗌). */
+.gallery-grid-hiding { transition: opacity 0.3s ease, transform 0.3s ease; opacity: 0; transform: translateY(20px); }
+@media (prefers-reduced-motion: reduce) {
+  .gallery-grid-hiding { transition: none; }
+}
+/* 2026-08-16: 레벨1 "로켓 퍼즐" 보상 그래픽. 처음엔 gallery-grid와 flex:1을 반반 나눴는데,
+   카드가 많아 그리드를 스크롤하면 로켓이 화면 밖으로 같이 밀려나가 진행상황을 못 보는 문제가
+   있어서 — 화면(#gallery-screen) 자체를 고정 높이로 만들고, 보상 그래픽은 고정 높이로 항상
+   보이게 두고, 그리드만 그 아래에서 내부 스크롤되도록 바꿈. */
+#gallery-screen {
+  position: relative;
+  /* 2026-08-16: "박스가 잘리고 겹쳐 보임" 제보 — 모바일 브라우저 주소창이 나타났다 사라졌다
+     하면서 100dvh 값이 시점마다 달라져(레이아웃 계산 때와 실제 화면에 그려질 때가 어긋남)
+     내용이 화면 밖으로 밀리거나 겹쳐 보이는 경우가 있었음. 100svh(주소창이 항상 떠 있다고
+     가정하는 가장 작은 값)로 바꿔서 항상 화면 안에 확실히 들어가게 함(주소창이 사라지면
+     아래쪽에 약간의 여백이 남을 순 있지만, 잘리는 것보단 안전). */
+  height: 100svh;
+  overflow: hidden;
+}
+.level-reward {
+  flex: 0 0 auto;
+  /* 2026-08-17(2차): "보상 이미지와 아래 색칠입장 박스/뱃지가 거의 붙어있다" 피드백 — 바로
+     아래 오는 게 대기열 카드든 뱃지 그리드든 항상 이 여백이 먼저 적용되게 여기서 관리한다. */
+  margin-bottom: 28px;
+  /* 2026-08-22: #gallery-screen의 .screen이 align-items 기본값(stretch)이라, 이 안의
+     .level-reward-stage(고정 width)가 그냥 두면 왼쪽에 붙어버림 — 가운데로 정렬. */
+  display: flex;
+  justify-content: center;
+  /* 2026-08-22(2차): "위/아래 트레이 간격이 다르다" 신고 — align-items 기본값(stretch)에서는
+     고정 높이인 stage가 이 박스의 세로축 시작(위쪽)에 붙어, 박스 자체 높이가 stage보다
+     조금이라도 크면 그 여분이 전부 아래쪽에만 남아 위/아래 트레이 간격이 달라졌다.
+     center로 stage를 항상 세로 가운데 고정. */
+  align-items: center;
+}
+/* 2026-08-22(3차): "박스 위아래로 거대한 빈 공간" — 원인은 트레이 크기 계산이 아니라, 박스
+   하나에만 margin:auto를 줬던 것 자체였다. 화면(창)이 트레이+박스를 합친 실제 필요 높이보다
+   훨씬 크면, 남는 공간이 전부 박스 위/아래(=트레이와 박스 사이)로만 몰려서 이런 틈이 생김.
+   고정: margin:auto를 박스가 아니라 "트레이 위쪽 끝"과 "트레이 아래쪽 끝"으로 옮긴다 —
+   그러면 남는 공간은 전부 (헤더~트레이 위) 바깥쪽과 (트레이 아래~화면 끝) 바깥쪽으로만 가고,
+   트레이-박스-트레이 세 개는 화면 크기와 무관하게 항상 붙어있는 한 덩어리로 화면 중앙에
+   자리잡는다. */
+.level-reward.reward-centered { margin-top: 0; margin-bottom: 0; z-index: 40; }
+.reward-puzzle-tray.reward-tray-anchor-top { margin-top: auto; }
+.reward-puzzle-tray.reward-tray-anchor-bottom { margin-bottom: auto; }
+/* 2026-08-22: 모자이크/변신 영상/퍼즐 세 단계가 전부 이 정사각형 무대 하나를 공유한다 —
+   "단계마다 그림 크기/위치가 튄다" 피드백으로, 각 단계가 저마다 다른 크기 공식을 쓰던 걸
+   그만두고 여기 하나로 통일했다(art/video/target-grid 전부 width:100%;height:100%로 이
+   무대를 그대로 채움). */
+.level-reward-stage {
+  position: relative;
+  width: min(78vw, 320px);
+  height: min(78vw, 320px);
+  display: grid;
+  grid-template-rows: 100%;
+  place-items: center;
+  /* 2026-08-17: "날아가기 전 로켓이 잘려" 제보 — overflow:hidden이면 날아가는 연출이 이
+     고정 높이 박스 위쪽 경계를 넘어가는 순간 뭉텅 잘려 보임. 날아가며 사라지는 연출은
+     화면 밖으로 자연스럽게 나가야 하므로 visible로 바꿔서 박스 경계에 안 걸리게 함. */
+  overflow: visible;
+}
+.level-reward-stage-bg {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
+  /* 2026-08-24: 우주 다크테마가 #gallery-screen까지 확장되며 var(--bg)가 어두운 색으로
+     바뀌어 이 박스도 같이 어두워졌었음 — goal/캔버스 박스와 같은 패턴으로 고정 흰색 복원. */
+  background: #FFF8ED;
+  border-radius: 16px; /* 퍼즐 박스(.reward-puzzle-target-grid)와 모서리 둥글기 통일 */
+  transition: background-color 0.6s ease;
+}
+.level-reward-stage-bg.is-dark { background: #000; }
+/* 2026-08-24: 16개 완료 후 회전하며 사라졌다 돌아오는 구간, 퍼즐 완성 후 클로즈업 확대되는
+   구간에서 박스 자체가 안 보이고 그림만 우주 배경 위에 떠 있는 것처럼 보이게 함(app.js
+   maybeShowRewardPuzzle/finishRewardPuzzle 참고 — 전환(0.6s)이 끝난 뒤에야 다음 애니메이션을 시작). */
+.level-reward-stage-bg.is-transparent { background: transparent; }
+/* 2026-08-22: "박스가 나타나는" 연출(회전+확대, 위아래로만 커지기 등 여러 시도)이 느린
+   기기에서 전부 순간이동처럼 보여 포기 — 대신 방금 사라졌던 양 그림이 같은 자리로 되돌아오는
+   걸로 대체한다(사용자 확인: "1번"). 사라지는 쪽(scatterMosaicIn)은 이 기기에서도 문제없이
+   보였으니, 그 반대 방향(작고 회전된 상태 → 원래 크기)이 같은 이유로 잘 보일 가능성이 높다. */
+@keyframes reward-art-return {
+  from { transform: scale(0.2) rotate(540deg); opacity: 0; }
+  to { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.level-reward-art.reward-art-return {
+  animation: reward-art-return 1.1s cubic-bezier(0.34, 1.2, 0.4, 1) forwards;
+}
+/* 2026-08-22: "모자이크/영상은 모서리가 직각인데 퍼즐 박스는 완만하다" 피드백 — 기본은
+   퍼즐 박스와 같은 16px 둥근 모서리로 잘라내고(overflow:hidden), 조각을 날려보내는
+   연출(.launched 등, 아래)만 그 경계를 넘어가야 해서 그때만 다시 overflow:visible로 푼다. */
+.level-reward-art {
+  grid-area: 1 / 1; /* .reward-puzzle-target-grid/video와 같은 칸에 둬서 겹치게 함 */
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 16px;
+  transform-box: border-box;
+  transform-origin: center;
+  /* 2026-08-22: 영상이 끝난 직후 이 위에 완성 이미지를 크로스페이드로 겹쳐 보여줄 때(깜빡임
+     방지, app.js playLevelTransform 참고), DOM 순서상 뒤에 오는 video보다 위에 그려져야 함. */
+  z-index: 1;
+}
+.level-reward-art.launched,
+.level-reward-art.reward-fly-up,
+.level-reward-art.reward-fly-left,
+.level-reward-art.reward-fly-diagonal {
+  /* 2026-08-17: "날아가기 전 로켓이 잘려" — 날아가며 사라지는 연출은 이 박스 경계를 넘어가야
+     하므로 그 순간만 다시 풀어준다. */
+  overflow: visible;
+}
+.level-reward-video {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 16px; /* 퍼즐 박스와 모서리 둥글기 통일 */
+}
+/* 2026-08-16: 조각 맞추기 미니게임(레벨1만 테스트하다 2026-08-17부터 전체 레벨로 확장).
+   2026-08-16(2차): "목표박스와 선택박스 크기가 달라요, 정사각형으로" 피드백 — 정답 칸(가운데)과
+   트레이 조각을 서로 다른 좌표계(SVG 전체 vs 개별 박스)로 따로 만들다 보니 크기가 어긋났었음.
+   이제 둘 다 같은 타일 클래스(.reward-puzzle-tile)를 공유해서 완전히 같은 크기가 되도록 통일.
+   2026-08-17: "진짜 직소퍼즐 모양(돌출부/홈)" 요청 — 네모난 카드 배경/테두리는 빼고, 모양
+   자체가 조각 윤곽(흰 테두리+그림자는 SVG 안에서 path로 직접 그림, puzzleTileInnerSvg 참고)을
+   그대로 드러내도록 함. viewBox에 돌출부가 들어갈 여백(JIG_PAD)까지 미리 포함돼 있어서
+   overflow:hidden이어도 안 잘림. */
+/* 2026-08-17(3차): "조각/타겟박스가 너무 작고, 트레이가 타겟박스와 너무 멀다" 피드백 —
+   타일을 72px→96px로 키우고(target-grid도 같이 키워야 어긋나지 않음), 트레이를 위/아래
+   보상 박스 쪽으로 음수 마진으로 당겨서 더 가깝게 붙인다. */
+.reward-puzzle-tile {
+  width: 96px;
+  height: 96px;
+  /* 2026-08-22: overflow:hidden이면 puzzleTileInnerSvg가 JIG_PAD만큼 여유를 두고 그린
+     돌출부(tab)까지 이 박스 경계에서 잘려서, 트레이/드래그 중인 조각이 정답 칸(잘리지 않는
+     하나짜리 배경 SVG)과 달리 밋밋한 네모로 보였다 — "조각과 박스 크기가 안 맞다" 신고의
+     실제 원인. 클리핑을 없애 조각 자체도 진짜 직소 돌출부 모양 그대로 보이게 함. */
+  overflow: visible;
+  position: relative;
+}
+/* 2026-08-22(2차): svg를 100%/100%로 꽉 채우면 viewBox(-20 -20 140 140) 전체가 그 100%
+   안에 눌려 들어가서, 정작 몸통(JIG=100단위)은 칸의 100/140≈71%밖에 안 차 보였다(정답
+   박스 배경은 칸을 여백 없이 꽉 채워 그려서 서로 크기가 달라 보임). svg 자체를 140%로
+   키우고 -20%만큼 밀어 넣어서 몸통이 칸을 정확히 꽉 채우게 하고, 돌출부(나머지 20%)는
+   칸 밖으로 자연스럽게 넘치게(overflow:visible) 둔다. */
+.reward-puzzle-tile svg {
+  position: absolute;
+  top: -20%;
+  left: -20%;
+  width: 140%;
+  height: 140%;
+  display: block;
+  overflow: visible;
+}
+.reward-puzzle-tray {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  /* 2026-08-22: "퍼즐이 퍼즐박스에 가려진다" — watchdog 고정(app.js lockRewardTrioPosition)이
+     트레이도 position:fixed로 바꾸면서, 트레이가 새 쌓임 맥락(stacking context)이 돼버려
+     안의 조각(z-index 높음)이 그 맥락 안에 갇히고, 트레이 자체는 박스(z-index:40)보다 낮은
+     자동값이라 조각째로 박스 아래에 깔렸다. 박스보다 높은 z-index로 트레이 전체를 올린다. */
+  z-index: 45;
+  /* 2026-08-22: "8개가 2줄로 안 들어가고 3줄로 밀린다" 신고 — 조각 4개(=칸 크기 그대로)가
+     한 줄에 들어가려면 필요한 폭(4×타일+간격)과 이 트레이가 실제로 가진 폭(바깥
+     .screen 컨테이너 padding+이 padding을 뺀 나머지) 사이 여유가 좁은 화면에서는 몇 px밖에
+     안 남아, 스크롤바/노치 등 아주 작은 차이로도 3줄로 밀렸다. 좌우 padding을 줄여 여유를
+     넉넉히 둔다. */
+  padding: 0 4px;
+}
+#reward-puzzle-tray-top { margin-bottom: -24px; }
+/* 아래쪽은 .level-reward 자체에 이미 margin-bottom:28px가 있어서(보상 이미지 아래 콘텐츠와의
+   기본 여백), 위쪽과 같은 정도로 당기려면 그만큼(28px)을 더 빼야 한다(-24-28=-52). */
+#reward-puzzle-tray-bottom { margin-top: -52px; }
+/* 2026-08-22: 레벨1(84px 타일)은 조각이 2x2(96px 기준 음수 마진)보다 커서 트레이와 정답
+   박스가 겹친다. explodeIntoPuzzle이 트레이에도 reward-puzzle-4x4 클래스를 붙여주므로
+   그걸로 직접 겹치지 않는 간격을 준다. */
+#reward-puzzle-tray-top { margin-bottom: 12px; }
+#reward-puzzle-tray-bottom { margin-top: 12px; }
+.reward-puzzle-target-grid {
+  grid-area: 1 / 1; /* .level-reward-art/video와 같은 칸에 둬서 겹치게 함 */
+  /* 2026-08-22: "단계마다 그림 크기가 튄다" 피드백 — 예전엔 타일 개당 고정 px(96/84)로
+     박스 크기가 정해져서 goal 박스(min(78vw,320px))와 안 맞았다. 이제 박스를 무대와
+     100%/100%로 똑같이 채우고, 열 개수만큼 1fr로 나눠서 칸 크기가 자동으로 맞춰진다
+     (2칸이든 16칸이든 같은 무대 크기 유지). grid-template-columns의 열 개수는
+     explodeIntoPuzzle이 인라인 style로 넣는다. */
+  width: 100%;
+  height: 100%;
+  display: grid;
+  /* 2026-08-17: "조각 4개가 합쳐지는 게 어색해" 제보 — 칸 사이 빈틈(gap)이 있는 채로
+     완성 그림에 오퍼시티 크로스페이드하면 두 그림이 서로 어긋난 채 겹쳐 보여(이중노출)
+     지저분했음. 빈틈을 없애 조각들이 서로 딱 붙게 하고, 흰 테두리선만 먼저 사라지게
+     한 뒤(아래 reward-puzzle-outline) 바꿔치기하면 훨씬 티가 안 남. */
+  gap: 0;
+  /* 2026-08-22: "16칸이 따로 떨어져 보인다" 피드백 — 칸 하나하나가 아니라 박스 전체를
+     하나의 카드로 보이게 바깥 테두리/배경을 여기(컨테이너)에 준다. */
+  background: #EDEBF9;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+}
+/* 2026-08-23(35): "완성되면 보상 이미지 박스 배경이 게임 배경화면과 같아지게" 요청 — 진행 중엔
+   기존 밝은 색(#EDEBF9)을 유지하고, 퍼즐을 다 맞춘 순간(app.js finishRewardPuzzle)에만 이
+   클래스가 붙어 우주 배경색으로 바뀐다.
+   2026-08-23(35-2): "안 바뀌고 그대로 남아있다" 신고 — finishRewardPuzzle이 이 클래스를 붙인 지
+   400ms 뒤에 박스를 페이드아웃(opacity, 0.35s)시켜서 배경색이 원래 전환(0.6s) 다 끝나기도 전에
+   같이 투명해져버려 눈에 안 띄었다. 전환을 0.25s로 줄여 페이드아웃 시작 전에 완전히 어두워지게 함. */
+.reward-puzzle-target-grid.reward-puzzle-done { background: var(--bg); transition: background-color 0.25s ease; }
+.reward-puzzle-target-grid .reward-puzzle-tile {
+  /* 정답 칸은 그리드 셀을 그대로 채운다(위 1fr 열이 크기를 정함) — 트레이 조각만 아래에서
+     별도로 px 크기를 받는다(explodeIntoPuzzle이 계산해서 인라인으로 넣음). */
+  width: 100%;
+  height: 100%;
+}
+/* 2026-08-22: 빈 칸 배경(돌출부/홈 전부)을 박스 전체 SVG 하나로 한 번에 그린다(자르지 않음 —
+   칸마다 따로 클리핑하면 이웃 칸으로 튀어나오는 돌출부가 잘려서 이어져 보이지 않았다).
+   실제 정답 칸 div(.reward-puzzle-target)들은 이 위에 투명하게 얹혀 드래그 히트테스트
+   자리만 잡고, 조각이 맞춰지면 그 자리에 실제 이미지가 이 배경을 덮는다. */
+.reward-puzzle-target-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 0;
+}
+.reward-puzzle-target-grid .reward-puzzle-target {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+/* 조각 하나하나의 흰 윤곽선 — 다 맞춘 직후 이 선만 먼저 슬쩍 지운다(빈틈도 이미 없어서
+   그 다음 완성 그림으로 바꿔치기해도 거의 티가 안 남). */
+.reward-puzzle-outline { transition: stroke-opacity 0.4s ease; }
+.reward-puzzle-target-grid.reward-puzzle-seams-clean .reward-puzzle-outline { stroke-opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .reward-puzzle-outline { transition: none; }
+}
+/* 정답 칸(가운데, 아직 안 채워짐)과 조각 자체의 테두리/음영은 이제 SVG path에 직접 그려서
+   (puzzleEmptySlotSvg/puzzleTileInnerSvg 참고) 조각 윤곽 그대로 표시 — 여기선 크기/드래그
+   동작만 관리. */
+.reward-puzzle-piece {
+  touch-action: none; /* 드래그 중 화면 스크롤 방지 */
+  cursor: grab;
+  transition: opacity 0.15s ease;
+}
+.reward-puzzle-piece.dragging {
+  position: fixed;
+  z-index: 600;
+  cursor: grabbing;
+}
+.reward-puzzle-piece.dragging svg { filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.3)); }
+.reward-puzzle-piece.placed { opacity: 0; pointer-events: none; }
+.reward-puzzle-piece.reward-puzzle-reject { animation: reward-puzzle-reject-shake 0.4s ease; }
+@keyframes reward-puzzle-reject-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reward-puzzle-piece.reward-puzzle-reject { animation: none; }
+}
+
+/* 칸(퍼즐 조각) — 미완료면 이모지 위를 옅은 색으로 덮고, 완료되면 투명해지며 안의 그림이 드러남.
+   테두리는 살짝 남겨서 격자 구분이 보이고, 열릴 때 그림자로 "떠오르는" 입체감을 준다. */
+.reward-piece.reward-cell {
+  fill: #EDEBF9;
+  stroke: #FFF8ED;
+  stroke-width: 0.6;
+  transition: fill 0.4s ease, opacity 0.4s ease;
+}
+.reward-piece.reward-cell.is-active {
+  fill: transparent;
+  stroke: rgba(255, 255, 255, 0.55);
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.18));
+}
+/* 완성되면(전부 열리고 나서) 칸 구분선을 마저 지워서, "격자" 대신 깔끔하게 완성된 그림
+   한 장으로 보이게 마무리한다. 레벨1 퍼즐 실험 기능은 .launched를 일부러 안 거치므로(날아
+   가기 전에 퍼즐부터 풀어야 해서) reward-puzzle-clean으로 같은 효과를 별도로 낸다. */
+.level-reward-art.launched .reward-cell,
+.level-reward-art.reward-puzzle-clean .reward-cell {
+  stroke-opacity: 0;
+  transition: stroke-opacity 0.6s ease 0.3s;
+}
+
+/* 레벨을 방금 클리어한 순간에만 잠깐 뜨는 칭찬 문구 — 언어별 폰트는 위 @font-face 참고.
+   등장은 통통 튀는 팝인 + 살짝 갸우뚱, 2.8초 뒤 app.js가 그냥 hidden 처리(=바로 사라짐,
+   .praise-overlay와 동일한 관례 — 이 앱은 사라질 때 별도 페이드아웃을 안 씀). */
+.level-reward-praise {
+  flex: 0 0 auto;
+  width: 100%;
+  text-align: center;
+  /* 2026-08-17: "칭찬 메시지가 이미지와 겹친다" 제보 — 커지는 보상 이미지가 자기 박스보다
+     아래로 삐져나올 수 있어서(overflow:visible) 위쪽 여백을 약 1cm(38px)로 늘려 안 겹치게 함. */
+  padding: 38px 16px 16px;
+  font-family: 'Fredoka', "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.25rem, 6vw, 1.7rem);
+  color: var(--brand);
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.6);
+}
+html:lang(ko) .level-reward-praise { font-family: 'BlackHanSans', "Malgun Gothic", sans-serif; font-weight: 400; }
+html:lang(ja) .level-reward-praise { font-family: 'MPLUSRoundedBlack', "Hiragino Maru Gothic ProN", sans-serif; font-weight: 900; }
+html:lang(zh) .level-reward-praise { font-family: 'NotoSansSCBlack', "Microsoft YaHei", sans-serif; font-weight: 900; }
+.level-reward-praise.show { animation: praise-pop-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+@keyframes praise-pop-in {
+  0% { transform: scale(0.3) rotate(-6deg); opacity: 0; }
+  60% { transform: scale(1.12) rotate(3deg); opacity: 1; }
+  80% { transform: scale(0.96) rotate(-1deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .level-reward-praise.show { animation: none; }
+}
+
+/* 반짝이 별빛 파티클 — 로켓(꼬리 화염) 전용.
+   2026-08-16: "로켓 화염 반짝임이 안 보인다" 제보 — 원래 색(#FFF3BF, 아주 옅은 크림색)이
+   배경(--bg: #FFF8ED)이랑 거의 같은 색이라 있어도 안 보이는 거나 마찬가지였음. 눈에 확 띄는
+   골드로 바꿈. */
+.reward-sparkles { opacity: 0; }
+.reward-sparkle { fill: #FFD43B; transform-box: fill-box; transform-origin: center; }
+.level-reward-art.launched .reward-sparkles { opacity: 1; }
+.level-reward-art.launched .reward-sparkle {
+  animation: reward-sparkle-twinkle 0.5s ease-in-out infinite;
+}
+.reward-sparkle:nth-child(2) { animation-delay: 0.12s; }
+.reward-sparkle:nth-child(3) { animation-delay: 0.24s; }
+.reward-sparkle:nth-child(4) { animation-delay: 0.06s; }
+.reward-sparkle:nth-child(5) { animation-delay: 0.18s; }
+.reward-sparkle:nth-child(6) { animation-delay: 0.3s; }
+.reward-sparkle:nth-child(7) { animation-delay: 0.15s; }
+.reward-sparkle:nth-child(8) { animation-delay: 0.27s; }
+@keyframes reward-sparkle-twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.6); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* 완료한 카드 이모지가 보상 이미지 칸으로 날아가 흡수되는 잔상 (JS가 body에 붙였다 뗌) */
+.reward-absorb-ghost {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 500;
+  transition: transform 1.1s cubic-bezier(0.3, 0, 0.2, 1), opacity 1.1s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reward-absorb-ghost { display: none; }
+}
+
+/* 2026-08-17: "보상이미지가 입체적으로 보이게" 요청 — 아래로 살짝 떨어지는 그림자를 겹쳐서
+   그림이 배경 위에 떠 있는 듯한 입체감을 준다(그림 자체를 다시 그리지 않고 CSS만으로). */
+.reward-emoji-img {
+  filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.2)) drop-shadow(0 6px 6px rgba(0, 0, 0, 0.15));
+}
+
+/* 2026-08-17: "레벨1 불꽃 반짝임처럼 나머지 레벨에도 그 탈것다운 장식" 요청 — 완성되면
+   재생되고 날아가는 연출로 이어짐. */
+.reward-decor-lines, .reward-decor-drops, .reward-decor-swirl, .reward-decor-smoke,
+.reward-decor-hearts, .reward-decor-contrail {
+  opacity: 0;
+}
+.level-reward-art.launched .reward-decor-lines,
+.level-reward-art.launched .reward-decor-drops,
+.level-reward-art.launched .reward-decor-swirl,
+.level-reward-art.launched .reward-decor-smoke,
+.level-reward-art.launched .reward-decor-hearts,
+.level-reward-art.launched .reward-decor-contrail {
+  opacity: 1;
+}
+.reward-decor-hearts .reward-sparkle { fill: #FF6B81; }
+/* 오토바이/자전거/경주차/스쿠터 — 뒤로 흩날리는 스피드선(차체보다 먼저 그려서 뒤에 깔림,
+   순서는 buildRewardSvg 참고). 흰색은 크림 배경에 묻히므로 대비되는 회청색을 씀. */
+.reward-decor-lines line {
+  stroke: #8C97A6;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+.level-reward-art.launched .reward-decor-lines line {
+  animation: reward-speedline-flick 0.5s ease-out infinite;
+}
+.reward-decor-lines line:nth-child(2) { animation-delay: 0.08s; }
+.reward-decor-lines line:nth-child(3) { animation-delay: 0.16s; }
+@keyframes reward-speedline-flick {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.9; }
+}
+/* 비행기 — 곧은 잔상(비행운) 두 줄. 날아가는 연출과 함께 계속 보임(반복 애니메이션 없음). */
+.reward-decor-contrail line {
+  stroke: #E8EDF2;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+/* 카누 물방울 / 기차 연기 / 헬리콥터 바람 소용돌이 — 둥실 떠오르며 사라짐. */
+.reward-decor-drops circle, .reward-decor-smoke circle, .reward-decor-swirl circle {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+/* 2026-08-17: 물방울 색이 카누 물 색(#55ACEE)과 똑같아 안 보이던 버그 — 밝은 색으로 대비 확보 */
+.reward-decor-drops circle { fill: #E8F6FF; stroke: #55ACEE; stroke-width: 0.6; }
+.reward-decor-smoke circle { fill: #E8EDF2; }
+.reward-decor-swirl circle { fill: none; stroke: #B8C4D0; stroke-width: 1.4; }
+/* 2026-08-17: "카누 물방울/기차 연기는 한 번이 아니라 사라질 때까지 계속" 요청 — infinite로. */
+.level-reward-art.launched .reward-decor-drops circle,
+.level-reward-art.launched .reward-decor-smoke circle {
+  animation: reward-puff-float 0.9s ease-out infinite;
+}
+.level-reward-art.launched .reward-decor-swirl circle {
+  animation: reward-swirl-spin 0.9s ease-out both;
+}
+.reward-decor-drops circle:nth-child(2), .reward-decor-smoke circle:nth-child(2), .reward-decor-swirl circle:nth-child(2) { animation-delay: 0.15s; }
+.reward-decor-drops circle:nth-child(3), .reward-decor-smoke circle:nth-child(3), .reward-decor-swirl circle:nth-child(3) { animation-delay: 0.3s; }
+@keyframes reward-puff-float {
+  0% { opacity: 0; transform: translateY(4px) scale(0.6); }
+  40% { opacity: 0.85; }
+  100% { opacity: 0; transform: translateY(-10px) scale(1.15); }
+}
+@keyframes reward-swirl-spin {
+  0% { opacity: 0; transform: rotate(0deg) scale(0.6); }
+  40% { opacity: 0.7; }
+  100% { opacity: 0; transform: rotate(140deg) scale(1.1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .level-reward-art.launched .reward-decor-lines line,
+  .level-reward-art.launched .reward-decor-drops circle,
+  .level-reward-art.launched .reward-decor-smoke circle,
+  .level-reward-art.launched .reward-decor-swirl circle { animation: none; }
+}
+
+/* 카누 노(레벨3) — 계속 좌우로 젓는 동작을 반복하다가 카누와 함께 날아가며 사라진다. */
+.reward-paddle { transform-box: fill-box; transform-origin: center; }
+.level-reward-art.launched .reward-paddle {
+  animation: reward-paddle-row 0.5s ease-in-out infinite;
+}
+@keyframes reward-paddle-row {
+  0%, 100% { transform: rotate(-16deg); }
+  50% { transform: rotate(16deg); }
+}
+
+/* 바퀴 달린 탈것들(자전거/오토바이/기차/경주차/스쿠터) 공용 — 바퀴 하나하나가 자기
+   중심(fill-box)으로 계속 회전. */
+.reward-bike-wheel { transform-box: fill-box; transform-origin: center; }
+.level-reward-art.launched .reward-bike-wheel {
+  animation: reward-bike-wheel-spin 0.5s linear infinite;
+}
+@keyframes reward-bike-wheel-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 헬리콥터 프로펠러(레벨6) — 위쪽 회전날개 두 짝이 한 축을 중심으로 빠르게 회전. */
+.reward-heli-rotor { transform-box: fill-box; transform-origin: center; }
+.level-reward-art.launched .reward-heli-rotor {
+  animation: reward-bike-wheel-spin 0.15s linear infinite;
+}
+
+/* 완성 연출: 2026-08-17부터 10개 레벨 전부 flyDirection을 가지므로(로켓/비행기=대각선,
+   풍선/나비/헬리콥터/불꽃놀이=위, 기차/오토바이/카누/경주차/스쿠터=왼쪽) 완성되면 항상
+   화면 밖으로 날아가며 사라진다. */
+.level-reward-art.reward-fly-up.launched {
+  animation: reward-launch-up 1.8s cubic-bezier(0.55, 0, 0.85, 0.35) 0.5s forwards;
+}
+.level-reward-art.reward-fly-left.launched {
+  animation: reward-launch-left 1.8s cubic-bezier(0.55, 0, 0.85, 0.35) 0.5s forwards;
+}
+.level-reward-art.reward-fly-diagonal.launched {
+  animation: reward-launch-diagonal 1.8s cubic-bezier(0.55, 0, 0.85, 0.35) 0.5s forwards;
+}
+@keyframes reward-launch-up {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-320px); opacity: 0; }
+}
+@keyframes reward-launch-left {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-280px, -10px); opacity: 0; }
+}
+@keyframes reward-launch-diagonal {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(230px, -230px); opacity: 0; }
+}
+/* 2026-08-22: "밋밋하다" 피드백 — 그림 전체가 위에서 살짝 미끄러져 내려오던 연출을, 칸
+   하나하나가 흩뿌려지듯 각자 떨어져 제자리에 맞춰지는 연출(app.js scatterMosaicIn)로 교체. */
+/* 조각 맞추기 미니게임 — 색칠이 끝난 완성 그림이 퍼즐 트레이 크기로 줄어들며 살짝 아래로
+   자리잡는 연출(조각 4개로 흩어지기 직전 한 번만 재생). */
+.reward-puzzle-shrink { animation: reward-puzzle-shrink-anim 0.5s ease-in both; }
+@keyframes reward-puzzle-shrink-anim {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(28px) scale(0.46); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reward-puzzle-shrink { animation: none; }
+}
+/* 축소된 채로 고정(애니메이션 없이) — 조각 4개가 맞춰져 그림으로 합쳐지는 크로스페이드가
+   "분리되기 전" 크기(=조각들이 있던 축소 크기)에서 시작하도록 위 축소 연출의 끝 상태를
+   그대로 재사용. */
+.reward-puzzle-shrunk { transform: translateY(28px) scale(0.46); }
+/* 조각 맞추기 미니게임 — 조각이 합쳐진 축소 크기 그림이 그 자리에서 천천히 원래(색칠 막 끝났을
+   때) 크기로 커진다(=위 축소 연출을 반대로 재생, 이후 공용 날아가는 연출로 이어짐. 최종
+   크기가 원본 그대로(scale 1)라 별도 보정 없이 공용 연출을 그대로 써도 됨). */
+.reward-puzzle-grow { animation: reward-puzzle-grow-anim 2s ease-out both; }
+@keyframes reward-puzzle-grow-anim {
+  0% { transform: translateY(28px) scale(0.46); }
+  100% { transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reward-puzzle-grow { animation: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reward-piece.reward-cell { transition: fill 0.2s ease; }
+  .level-reward-art.launched { animation: none; }
+  .level-reward-art.reward-fly-up.launched,
+  .level-reward-art.reward-fly-left.launched,
+  .level-reward-art.reward-fly-diagonal.launched { opacity: 0; }
+  .level-reward-art.launched .reward-sparkle,
+  .level-reward-art.launched .reward-paddle,
+  .level-reward-art.launched .reward-bike-wheel,
+  .level-reward-art.launched .reward-heli-rotor { animation: none; }
+}
+
+.tpl-badge .tpl-emoji {
+  font-size: 1.85rem;
+  line-height: 1;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.8) 55%, rgba(255, 255, 255, 0.55) 100%);
+  box-shadow:
+    0 4px 0 rgba(0, 0, 0, 0.16),
+    0 6px 12px rgba(0, 0, 0, 0.22),
+    inset 0 2px 2px rgba(255, 255, 255, 0.95),
+    inset 0 -3px 4px rgba(0, 0, 0, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* 2026-08-21(19): 처음 진입부터 항상 원형 아이콘 16개 그리드로 보여준다(예전 "대기열 2개씩"
+   카드 방식은 폐지) — 이름표 없이 줄바꿈 그리드로 스크롤 없이 한 화면에 다 들어온다. */
+.gallery-grid.gallery-grid-cleared {
+  display: grid;
+  /* 실제 칸 수(예: 10개면 5열)는 위 보상 이미지와 같은 gridDims()로 정해서 JS(app.js
+     paintClearedGrid)가 인라인으로 지정 — 여기 값은 JS 실행 전 잠깐 보일 기본값일 뿐. */
+  grid-template-columns: repeat(5, 1fr);
+  justify-items: center;
+  align-content: start;
+}
+.tpl-badge {
+  position: relative; /* 안의 .lv-clear-badge(완료 체크) 위치 기준점 */
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.08s ease;
+}
+.tpl-badge:active {
+  transform: translateY(3px) scale(0.94);
+}
+/* 2026-08-21(17): "동그란 아이콘 16개" 요청 — 실제 그림이 아직 없는 자리는 점선 빈 원으로
+   미리 자리만 잡아둔다(클릭 안 됨, 순수 레이아웃 미리보기용). */
+.tpl-badge-placeholder {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px dashed var(--muted, #B0A8C4);
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ---------- 색칠 화면 ---------- */
+/* 2026-08-10, 세 차례 피드백이 누적된 구조 — 바꿀 때 아래 순서/이유를 이해하고 손댈 것:
+   1) "목표 이미지와 캔버스가 항상 같은 크기여야" + "미세한 부분 색 구분이 어렵다": 공유 클래스
+      .screen은 flex(column)인데 여기서만 grid로 바꿈(flex-grow로는 goal-panel/canvas-wrap이
+      왜인지 50:50으로 안 갈렸다 — 원인 불명). height:100dvh를 명시(안 그러면 min-height만 있어
+      "줄어야 할 압박"이 없어 내용물 크기대로 뷰포트보다 커짐) + minmax(0,1fr)(bare 1fr은 grid
+      기본 min이 내용물 최소크기라 못 줄어듦). 정사각형 두 개(goal-canvas-wrap, .stack-canvas/
+      .tap-layer)는 컨테이너 쿼리 단위(cqw/cqh)로 "더 좁은 쪽"에 맞춰 정사각형 유지하며 줄어듦
+      — aspect-ratio는 단방향(확정값→유도값)이라 반대 방향엔 안 먹혀서 못 씀.
+   2) "캔버스가 작아졌다": 팔레트를 캔버스 밑 가로줄 → 오른쪽 세로줄로. 처음엔 canvas-wrap하고만
+      같은 행을 공유하게 했더니 goal-panel만 전체 폭을 다 써서 둘이 어긋났고, padding으로 억지로
+      맞췄었음(118px 하드코딩) — 아래 3번에서 더 나은 방법으로 대체됨.
+   3) "팔레트가 캔버스 높이만큼만 있고 헤더 소리 아이콘 높이까지 안 올라온다": 팔레트를 아예 별도
+      grid 열로 분리(2열 구성: 본문 1fr + 팔레트 88px), goal-panel/canvas-wrap 두 행에 걸쳐
+      (grid-row: 2/4) 세로로 길게 배치 — 헤더 바로 밑부터 툴바 바로 위까지 통으로 이어짐. 이러면
+      goal-panel과 canvas-wrap이 다시 같은 열 폭을 그냥 자연히 공유해서 2번의 118px 패딩 땜빵이
+      더 이상 필요 없어짐(삭제함) — 훨씬 깔끔한 해법이라 이 방식을 기본으로 유지할 것. */
+#coloring-screen {
+  position: relative; /* 아래 별/성운 레이어(::before/::after)가 이 화면 폭(PC에서는 596px로 제한) 기준으로 자리잡게 함 */
+  overflow: hidden; /* 레이어가 -15% 밖으로 새어나가 스크롤이 생기지 않게 */
+  display: grid;
+  /* 2026-08-23(36-2): "색칠 페이지 아래쪽이 일부는 검정, 일부는 흰색" 신고 — 100dvh는 모바일
+     주소창이 나타났다 사라졌다 하면서 시점마다 값이 달라져(#gallery-screen이 이미 겪은 문제,
+     위 참고) 화면이 실제 뷰포트보다 짧아지는 순간 그 아래로 body 배경(밝은 크림)이 비쳤다 —
+     예전엔 이 화면이 다크 테마가 아니어서 안 보이던 틈이 이제는 검정/흰색 경계로 드러남.
+     100svh(주소창이 항상 떠 있다고 가정하는 가장 작은 값)로 바꿔 항상 화면을 다 채우게 함. */
+  height: 100svh;
+  /* 2026-08-20: PC/넓은 화면 캡처에서 캔버스(최대 420px 정사각형)만 가운데 뜨고 좌우 팔레트 열은
+     화면 맨 끝에 붙어서 큰 빈 간격이 생기는 문제 — 가운데 열이 1fr라 화면 폭만큼 무한정 늘어나던
+     게 원인. 그리드 자체 폭을 팔레트 두 열(88×2)+캔버스 최대치(420)=596px로 캡하고 가운데 정렬해서
+     폰 화면 그대로 보이게 함(이 앱은 원래 폰 전용 UI라 PC에서도 폰 폭으로 보이는 게 맞음). */
+  max-width: 596px;
+  margin: 0 auto;
+  /* 2026-08-20: "색상 스와치가 캔버스를 액자처럼 좌우로 둘러싸게" 요청 — 팔레트 열을 오른쪽 하나에서
+     좌/우 두 열로 분리. 폭 60px 산출 근거는 아래 .palette-col 주석 참고(양쪽 다 동일해야 함).
+     2026-08-21: "버튼은 최소한으로 줄이고 goal/캔버스 박스를 최대한 키워달라" 요청 — 열 폭을
+     줄인 만큼 그대로 가운데 열(goal/캔버스)이 커진다(app.js syncRingSquareSize 참고). */
+  grid-template-columns: 60px 1fr 60px;
+  /* 2026-08-14(I3, 최종 리뷰): 챌린지 HUD를 위해 맨 위에 1행 추가.
+     2026-08-20: 기존 툴바 1행을 캔버스 위/아래 기능버튼 2행(frame-top/frame-bottom)으로 분리.
+     2026-08-20(2): "버튼 링도 캔버스처럼 정사각형이어야" 요청 — 세 차례 시도 끝에 정리됨.
+     1차: frame-top/bottom만 88px로 고정 — 부족. goal-panel/canvas-row가 minmax(0,1fr)로 남은
+     세로공간을 나눠 가지면 그 높이(cqh)가 정사각형의 폭(cqw)보다 항상 커서(실측 cqh 280 vs
+     캔버스 240) 좌우 팔레트 열이 그 큰 높이까지 늘어나버림.
+     2차: 행을 auto로, 정사각형은 aspect-ratio:1로(cqh 대신 폭에서 높이 유도) — 그래도 부족.
+     팔레트 열 자체의 내용물(스와치 여러 개, 최대 7개=52px×7+간격≈400px)이 정사각형보다 커서
+     grid의 auto 트랙이 팔레트 내용물 높이에 맞춰 오히려 더 늘어나버림 — CSS만으로는 "이 트랙은
+     팔레트 내용물 크기 말고 저 정사각형 하나만 보고 정해라"를 표현할 방법이 없음(다른 열의
+     content-based auto 크기를 무시시키는 순수 CSS 수단이 없다).
+     3차(최종): 행 높이를 --ring-square 커스텀 프로퍼티로 고정 — app.js의 syncRingSquareSize()가
+     "가운데 열 폭(=이 뷰포트에서 정사각형이 실제로 될 크기)"을 계산해 이 값을 채워 넣는다(색칠
+     화면을 열 때마다 동기 실행 + resize 리스너, 화면에 그려지기 전에 세팅되므로 깜빡임 없음).
+     팔레트 열은 이 고정 행 높이에 맞춰 stretch되고, 넘치는 스와치는 기존 overflow-y:auto로
+     스크롤된다. */
+  grid-template-rows: auto auto var(--ring-square, 280px) 60px var(--ring-square, 280px) 60px;
+  /* 2026-08-23(36): "챌린지 색칠페이지도 우주 배경과 동일하게" 요청 — 위 크림 배경 위 옅은 별/성운
+     자체 표현(2026-08-20)은 다른 화면들이 쓰는 진짜 우주 테마(::before/::after 레이어)로
+     대체한다. 예전 옅은 패턴은 .canvas-wrap이 그대로 물려받아 유지(아래 참고, "박스는 지금 그대로
+     유지" 요청). */
+  background: var(--bg);
+}
+.challenge-hud { grid-column: 1 / -1; grid-row: 1; }
+.coloring-header { grid-column: 1 / -1; grid-row: 2; }
+.goal-panel { grid-column: 1 / -1; grid-row: 3; }
+#frame-top { grid-column: 1 / -1; grid-row: 4; }
+#palette-left { grid-column: 1; grid-row: 5; }
+.canvas-wrap { grid-column: 2; grid-row: 5; }
+#palette-right { grid-column: 3; grid-row: 5; }
+#frame-bottom { grid-column: 1 / -1; grid-row: 6; }
+.coloring-header {
+  /* 2026-08-10: "이미지를 최대한 키워달라, 아이콘과 안 겹치는 조건" — 아이콘 크기(56px, 탭 타겟)는
+     그대로 두고 순수 여백만 줄여서 goal/canvas 행에 세로 공간을 더 돌려줌.
+     2026-08-25: "버튼 세로줄이 안 맞는다" 제보 — 좌우 padding 12px는 링 트랙이 88px였을 때
+     기준값이 그대로 남은 것(8/21에 60px로 줄었는데 여기는 안 따라감). 56px 버튼이 60px 트랙
+     칸 중앙에 오도록 (60-56)/2=2px로 맞춰서, 아래 .ring-corner-slot/.palette-col과 같은
+     세로줄에 서게 한다. */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 2px;
+}
+.coloring-title {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--brand);
+}
+/* 2026-08-15: 이모지 유니코드 글리프 대신 Twemoji SVG 파일로 통일(기기 폰트 의존 제거) */
+.title-emoji-icon {
+  width: 1.2em;
+  height: 1.2em;
+  vertical-align: -0.2em;
+}
+.icon-btn {
+  /* 2026-08-11: "왼쪽 상단 홈버튼도 3D 형태" 요청 — 키캡 스타일(그라디언트 + 아래쪽 그림자 턱 +
+     누르면 눌리는 애니메이션) 적용. 이 클래스를 공유하는 지도 버튼(🗺️)에도 같이 적용됨. */
+  font-size: 1.8rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(155deg, #fff 0%, var(--card-bg) 55%, #F3EFFF 100%);
+  box-shadow: 0 3px 0 #D8CFF5, 0 5px 8px rgba(0, 0, 0, 0.16), inset 0 1.5px 1.5px rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.icon-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #D8CFF5, 0 2px 4px rgba(0, 0, 0, 0.12), inset 0 1.5px 1.5px rgba(255, 255, 255, 0.9);
+}
+/* 2026-08-11: "음악/소리 이모티콘도 메인페이지쪽으로 옮겨, 좀 작게 만들어서" — 맵 화면에서는
+   Ranking 알약 밑에 작게 두 개만 들어가면 되므로 더 작은 사이즈 변형. */
+.icon-btn-sm {
+  font-size: 1.1rem;
+  width: 36px;
+  height: 36px;
+}
+/* 2026-08-24: 뒤로가기/다음/홈 버튼을 유니코드 이모지 글자 대신 Twemoji SVG(<img>)로 교체 —
+   font-size로는 이미지 크기를 못 정하므로 명시적 크기를 준다(기존 글자 크기와 비슷한 비율). */
+.icon-btn img { width: 30px; height: 30px; }
+.icon-btn-sm img { width: 20px; height: 20px; }
+.ring-circle img { width: 20px; height: 20px; }
+
+/* 2026-08-24: "바탕화면 back/next/reset 이미지로 교체" 요청 — 자체 배지 디자인이 담긴 커스텀
+   이미지라 .icon-btn의 키캡 배경/그림자를 지우고, 대신 글로우로 우주 배경 위에서 도드라지게
+   한다(다른 .icon-btn 버튼들 — 홈🏠·지도🗺️ 등 — 은 이 선택자에 없으므로 그대로 키캡 유지). */
+#btn-map-back, #btn-home, #btn-level-next, #btn-reset-all, .challenge-tier-reset {
+  background: none;
+  box-shadow: none;
+}
+#btn-map-back img, #btn-home img, #btn-level-next img, #btn-reset-all img, .challenge-tier-reset img {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  transition: transform 0.08s ease, filter 0.08s ease;
+}
+#btn-map-back img, #btn-home img {
+  filter: drop-shadow(0 0 6px rgba(142, 197, 255, 0.9)) drop-shadow(0 0 12px rgba(142, 197, 255, 0.55));
+}
+#btn-level-next img {
+  filter: drop-shadow(0 0 6px rgba(124, 228, 149, 0.9)) drop-shadow(0 0 12px rgba(124, 228, 149, 0.55));
+}
+#btn-reset-all img, .challenge-tier-reset img {
+  filter: drop-shadow(0 0 6px rgba(245, 201, 93, 0.9)) drop-shadow(0 0 12px rgba(245, 201, 93, 0.55));
+}
+/* 2026-08-25: "버튼 누를 때 입체감을 못 느끼겠다" 제보 — 배경/그림자를 지운 자리라 .icon-btn:active의
+   눌림 box-shadow(0 1px 0 ...)가 나올 배경 자체가 없어서(대비할 "튀어나온" 그림자가 없음) 눌러도
+   티가 안 났다. img 자체를 눌렀을 때 작아지고 어두워지게 해서 눌리는 느낌을 img에 직접 준다. */
+#btn-map-back:active img, #btn-home:active img {
+  transform: scale(0.86);
+  filter: brightness(0.8) drop-shadow(0 0 4px rgba(142, 197, 255, 0.7));
+}
+#btn-level-next:active img {
+  transform: scale(0.86);
+  filter: brightness(0.8) drop-shadow(0 0 4px rgba(124, 228, 149, 0.7));
+}
+#btn-reset-all:active img, .challenge-tier-reset:active img {
+  transform: scale(0.86);
+  filter: brightness(0.8) drop-shadow(0 0 4px rgba(245, 201, 93, 0.7));
+}
+
+.panel-label {
+  margin: 2px 0;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.goal-panel {
+  /* 위 #coloring-screen 주석 참고. flex/min-height:0/overflow:hidden은 grid 셀 안에서 이
+     박스가 실제로 줄어들 수 있게 하는 부분, container-type:size는 아래 .goal-canvas-wrap이
+     cqw/cqh로 정사각형을 유지하며 줄어들 수 있게 하는 부분. 팔레트가 이제 별도 grid 열이라
+     canvas-wrap과 같은 열 폭을 자연히 공유함 — 예전에 여기 있던 118px 패딩 땜빵은 필요 없어짐.
+     2026-08-10: padding을 canvas-wrap과 똑같이 대칭(6px 전체)으로, align-items/justify-content도
+     canvas-wrap과 똑같이 명시 — 예전엔 오른쪽만 padding 있고 align-items도 없어서(기본값 stretch가
+     명시적 높이 앞에서 flex-start로 무너짐) 목표 이미지가 캔버스랑 살짝 어긋나 보였음(세로 중앙
+     정렬 요청으로 발견). */
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  /* 2026-08-21: "색칠 이미지 박스를 상하좌우 2~3mm 더 키워달라" 요청 — 아래 .goal-canvas-wrap의
+     -34px 여유 중 실제로 필요한 건 지렁이 도로 쪽 아래 17px뿐이고, 위쪽 17px은 그냥 가운데
+     정렬 때문에 낭비되던 여백이었다. align-items를 center에서 flex-start로 바꿔 그 위쪽 여백을
+     없애고 박스 쪽으로 돌려주면(아래 -34px→-17px과 세트), 지렁이 여유는 그대로 유지하면서
+     박스만 커진다. justify-content(가로 중앙정렬)는 그대로 둬서 canvas-wrap과 가로 위치는 계속
+     똑같이 맞는다(세로 정렬만 다름 — 가로만 어긋났던 예전 버그와는 다른 축이라 안전). */
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2px; /* canvas-wrap과 반드시 동일해야 함(안 그러면 둘이 다시 어긋남) */
+  position: relative; /* 아래 지렁이(::after)가 이 안에서 기어가도록 기준점 */
+  /* 2026-08-11: "직선 말고 갈색으로, 길처럼 울퉁불퉁하게" 요청 — 보라 그라디언트 대신 흙길
+     느낌의 갈색 톤을 불규칙한 폭으로 반복해서 울퉁불퉁한 비포장길처럼 보이게 함. */
+  background-image: repeating-linear-gradient(90deg,
+    #C19A6B 0 5px, #A67C52 5px 9px, #8B5E34 9px 13px, #B08654 13px 19px, #966A3D 19px 24px);
+  background-size: 48px 5px;
+  background-position: 0 100%;
+  background-repeat: repeat-x;
+}
+/* 2026-08-14: "유아용 모드는 타이머/지렁이 없이" 요청 — 보스가 아닌 색칠 화면(app.js가
+   goalPanelEl에 no-timer 클래스를 붙임)에서는 지렁이 자체를 렌더링하지 않는다. */
+.goal-panel.no-timer::after {
+  display: none;
+}
+.goal-panel::after {
+  /* 2026-08-11: "지렁이 위치 = 남은 시간 총 타이머 개념" 요청 — 랜덤 왕복 대신 app.js가
+     setWormProgress()로 --worm-progress(0~1)를 갱신하면 그만큼 오른쪽으로 기어가서,
+     보고만 있어도 시간이 얼마나 남았는지 느낌으로 알 수 있게 함. 타이머 없는 도안은 0으로
+     고정(왼쪽 끝에 가만히). */
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: calc((100% - 36px) * var(--worm-progress, 0));
+  width: 36px;
+  height: 9px;
+  background:
+    radial-gradient(circle at 4px 4.5px, var(--worm-color-dot, #3E2418) 2.4px, transparent 2.5px),
+    repeating-linear-gradient(90deg, var(--worm-color-a, #7F5539) 0 4px, var(--worm-color-b, #5c3d28) 4px 5px);
+  border-radius: 5px;
+  z-index: 3;
+  transform-origin: center bottom;
+  transition: left 0.6s linear;
+  animation: goal-divider-worm-gait 2s ease-in-out infinite;
+}
+/* 2026-08-14: "60초 끝나면 지렁이가 오른쪽으로 사라지고, 다음 문제는 다른 색 지렁이" 요청 —
+   새 문제로 넘어가며 진행률을 0으로 되돌릴 때는(직전 문제 지렁이가 오른쪽 밖으로 나간 뒤)
+   이 슬라이드 애니메이션 없이 순간이동시켜야 왼쪽 끝에서 "새로" 나타나는 것처럼 보인다. */
+.goal-panel.worm-no-transition::after {
+  transition: none;
+}
+/* 2026-08-11: "쭉 늘어났다 몸을 모았다가 다시 쭉 — 자벌레처럼" 요청 — 좌우 이동(위 left, 시간
+   진행률 연동)과는 별개로 몸통만 계속 늘었다 줄었다 하는 자벌레 걸음걸이 루프를 추가. */
+@keyframes goal-divider-worm-gait {
+  0%, 100% { transform: scaleX(1.15) scaleY(0.85); }
+  50% { transform: scaleX(0.65) scaleY(1.3); }
+}
+.goal-canvas-wrap {
+  /* 2026-08-20: 실측 버그 — goal-panel은 그리드 전체 폭(3열)에 걸쳐 있어서 100cqw가 "가운데 열
+     폭"이 아니라 "화면 전체 폭"을 기준으로 계산됐다(예: 390 vs 실제 필요한 214). 그 결과 이
+     박스가 자기 행(--ring-square=214)보다 훨씬 커져서(386) 아래로 넘쳐 흘러 도로/애벌레
+     장식선과 겹쳤다. .canvas-square와 똑같이 --ring-square를 직접 써서 캔버스와 정확히 같은
+     크기가 되도록 고침(애초에 "goal 이미지와 캔버스는 항상 같은 크기" 불변식과도 맞음).
+     2026-08-20(3): "경계선과 2mm 여유" 요청 — 처음에 8px만 뺐더니 실측 결과 -5px(즉 5px 겹침)
+     이었다: 가운데 정렬이라 절반(4px)만 아래쪽 여유가 되는데, 도로선 자체가 9px 높이라 4px로는
+     어림도 없었음. 필요한 아래쪽 여유 = 도로선 높이(9px) + 원하는 간격(8px) = 17px.
+     2026-08-21: "박스를 상하좌우 2~3mm 더 키워달라" 요청 — 위 17px는 원래 아래쪽에만 필요한데,
+     가운데 정렬 때문에 위/아래 반반(17+17=34)씩 빼고 있었다. 위 .goal-panel의 align-items를
+     flex-start로 바꾸고, 남는 공간이 전부 아래쪽에만 생기게 했다 — 이때 goal-panel 자체의
+     padding(2px×위아래)이 flex-start 기준점을 아래로 2px 밀어 넣는 만큼 그대로 여유가 줄어드니,
+     17px가 아니라 19px를 빼야 실측 아래쪽 여유가 정확히 17px(도로선9+간격8)로 나온다(헤드리스
+     브라우저로 실측 확인, .canvas-square도 동일 공식 — "같은 크기" 불변식 유지).
+     2026-08-23(39): "goal 박스도 흰색으로" 요청 — .canvas-square와 같은 고정 흰색/크림 배경을
+     다시 준다(바깥 .goal-panel은 투명한 채로 유지). */
+  background: #FFF8ED;
+  width: min(calc(var(--ring-square, 280px) - 19px), 420px);
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: zoom-in;
+  /* 2026-08-20: "색칠 박스는 오목한데, goal 박스는 볼록 튀어나온 느낌으로" 요청 — 인셋 방향만
+     뒤집어서(위쪽 밝은 하이라이트=빛이 볼록한 윗면에 닿는 느낌, 아래쪽 어두운 그림자=볼록한
+     아랫면) 입체감만 주고, 바깥 링(흰색+브랜드색 테두리)은 뺐다 — goal-panel 바닥의 도로/애벌레
+     장식선과 겹쳐 보이는 문제가 있었음(2026-08-20(2), "외곽선이 안 보이게" 요청). */
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 3px 5px rgba(255, 255, 255, 0.7),
+    inset 0 -3px 5px rgba(0, 0, 0, 0.15);
+}
+.goal-emoji {
+  font-size: min(64vw, 340px);
+  line-height: 1;
+}
+.goal-canvas {
+  /* 2026-08-10: "캔버스를 지우고 물체만 나오게" — 흰 배경/그림자/테두리 카드 다 제거. 도안
+     비그림 영역은 애초에 투명 픽셀로 그려지므로(renderGoalPreview) 배경만 없애면 그림만 남음. */
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.canvas-wrap {
+  /* 2026-08-10: "캔버스를 지우고 물체만 나오게" 요청으로 흰 배경 카드 완전히 제거(wrap도,
+     #fill-canvas 자체도) — 안 칠한 영역은 페이지 배경이 그대로 비쳐 보임.
+     2026-08-23(37): "나머지(이 바깥 여백)는 goal 박스처럼 투명하게" 요청 — var(--bg) 고정 색을
+     쓰면 뒤 #coloring-screen의 별/성운 애니메이션(::before/::after)을 그 색으로 덮어버려서
+     "그냥 검은 블록"으로 보였음. .goal-panel처럼 배경을 아예 없애 애니메이션이 비쳐 보이게 함. */
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px; /* .goal-panel과 반드시 동일해야 함(안 그러면 둘이 다시 어긋남) */
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+/* 2026-08-20: "색칠 박스가 정사각형으로 안 보인다"(실측 244×308) — canvas-wrap은 그리드 셀이라
+   직사각형인데 베젤을 거기 그려서 그랬음. 정사각형 전용 래퍼(.stack-canvas/.tap-layer와 똑같은
+   cqw/cqh 공식이라 항상 같은 크기)를 따로 두고 베젤은 이쪽으로 옮김 — "오목한 화면" 느낌은 그대로,
+   border 대신 box-shadow만 쓰는 이유는 아래 .canvas-wrap padding이 .goal-panel과 반드시 같아야
+   하는 것과 무관하게(래퍼가 별도 레이어라) 안전하기 때문. */
+.canvas-square {
+  /* 2026-08-20: goal-canvas-wrap과 같은 공식(--ring-square 기반, 위 .goal-canvas-wrap 주석
+     참고)을 그대로 써서 "goal 이미지와 캔버스는 항상 같은 크기" 불변식을 보장한다 — 전엔
+     cqw로 따로 계산했는데 goal-canvas-wrap이 --ring-square 직접 참조로 바뀌면서, 반올림 등에
+     의해 미묘하게 어긋날 여지를 없애려고 여기도 통일함(같은 -19px도 그대로 맞춤, 위
+     .goal-canvas-wrap 주석 참고 — 2026-08-21에 34px→19px로 축소). 캔버스 행(row 5) 높이는
+     --ring-square 그대로 유지되므로(박스만 작아짐) 좌우 팔레트 열은 여전히 그 행 높이에 맞춰
+     늘어나 링 전체는 정사각형 그대로.
+     2026-08-23(36-5): "음각으로 들어간 부분만 흰색" 요청 — 실제로 색칠하는 이 오목한 박스에만
+     고정 흰색/크림 배경을 준다(바깥 .canvas-wrap은 화면과 같은 검은색). */
+  background: #FFF8ED;
+  position: relative;
+  width: min(calc(var(--ring-square, 280px) - 19px), 420px);
+  aspect-ratio: 1;
+  border-radius: var(--radius-lg);
+  /* 2026-08-20: "대각선에 흰색·파란(보라)색 링이 보이는데 파란색만 없애줘" 요청 — 브랜드색
+     바깥 링만 제거, 흰 링은 유지. */
+  box-shadow:
+    inset 0 4px 10px rgba(0, 0, 0, 0.28),
+    inset 0 -2px 4px rgba(255, 255, 255, 0.35),
+    0 0 0 4px #fff,
+    0 3px 8px rgba(0, 0, 0, 0.15);
+}
+.stack-canvas {
+  position: absolute;
+  inset: 0;
+  /* 2026-08-20: 실측 버그 — <canvas>는 inset:0만으론 부모 크기에 안 맞춰지고 원본 해상도(예:
+     640×640) 그대로 CSS 크기로 렌더링된다(대체 요소라 자체 고유 크기를 우선함). width/height:
+     100%를 명시해야 .canvas-square 크기에 맞게 실제로 줄어든다. */
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-lg);
+}
+#line-canvas { pointer-events: none; }
+.tap-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-lg);
+  /* PC(마우스)에서는 색칠 중이라는 게 바로 보이게 연필 커서로 — 터치 기기는 어차피 커서가
+     안 보이니 그대로 둬도 무관하다(2026-08-11 요청). 팁(끝) 좌표가 클릭 지점이 되도록 hotspot을
+     이모지 연필 끝(좌하단)에 맞춰뒀다. */
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ctext x='0' y='28' font-size='28'%3E%E2%9C%8F%EF%B8%8F%3C/text%3E%3C/svg%3E") 3 29, pointer;
+}
+
+/* 2026-08-17: 구역을 하나씩 채울 때마다 잠깐 뜨는 단계별 칭찬(GOOD~PERFECT, 7단계) — 유아모드
+   전용. 텍스트는 언어 상관없이 항상 영어 고정이라(REGION_STAGE_TEXT 참고) 언어별 폰트 전환 없이
+   Fredoka(라틴 전용 가변 폰트) 하나만 쓴다. 단계(--tier, app.js가 인라인으로 설정)가 오를수록
+   글자만 커지고 애니메이션/진동은 공용 — 도안마다 구역 4~40개로 편차가 커서 단계별로 다른
+   연출을 다 만들면 과할 것 같아 세기 변화만 준다. */
+.region-stage-praise {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 4;
+  pointer-events: none;
+  text-align: center;
+  white-space: nowrap;
+  font-family: 'Fredoka', "Segoe UI", sans-serif;
+  font-weight: 700;
+  font-size: calc(1.1rem + (var(--tier, 1) - 1) * 0.2rem);
+  color: var(--brand);
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.75);
+}
+.region-stage-praise.show { animation: region-stage-pop-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+@keyframes region-stage-pop-in {
+  0% { transform: translate(-50%, -50%) scale(0.3) rotate(-6deg); opacity: 0; }
+  60% { transform: translate(-50%, -50%) scale(1.15) rotate(3deg); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .region-stage-praise.show { animation: none; }
+}
+
+/* 2026-08-17: 그림 1장 완료(N단계, PERFECT) 축하 — #region-stage-praise와 달리 캔버스에 묶이지
+   않고 화면 전체에 고정(position:fixed)돼서, goHome()이 곧장 실행돼 갤러리로 화면이 바뀌어도
+   그 위에 계속 떠 있는다(#praise-overlay와 같은 관례). */
+.picture-complete-praise {
+  position: fixed;
+  left: 50%;
+  top: 20%;
+  transform: translate(-50%, -50%);
+  z-index: 65; /* .praise-overlay(60)보다 위 */
+  pointer-events: none;
+  text-align: center;
+  /* 2026-08-17: 문구가 항상 짧은 "PERFECT! ⭐" 고정이었을 땐 nowrap 고정 크기로도 안 잘렸지만,
+     이제 음성과 맞추려고 더 긴 영어 문구(예: "Woohoo, way to go!")도 뜰 수 있어서, 좁은 화면에서
+     안 잘리게 폭 제한 + 화면 폭 비례 크기(clamp)로 바꿨다. */
+  max-width: 90vw;
+  white-space: normal;
+  font-family: 'Fredoka', "Segoe UI", sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.5rem, 7vw, 2.4rem);
+  color: var(--brand);
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.85);
+}
+.picture-complete-praise.show { animation: region-stage-pop-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .picture-complete-praise.show { animation: none; }
+}
+
+.palette-col {
+  /* 2026-08-20: 캔버스를 액자처럼 좌우로 둘러싸는 색상 열(예전 우측 단일 .palette를 좌/우로 분리).
+     grid-template-columns의 60px 트랙과 맞춰져 있어야 함(양쪽 다 60이어야 함, 하드코딩된 곳들).
+     2026-08-23(26): "원이 작아서 터치 성공률이 낮다, 빈틈 없이 채워달라" 요청 — space-evenly로
+     고정폭(44px) 스와치 사이를 벌리던 방식을 버리고, .ring-edge-v가 flex:1로 이 열의 남는
+     세로 공간을 스와치 개수만큼 똑같이 나눠 채우게 바꿈(색이 몇 개든 빈 공간이 안 남고, flex라
+     서로 겹칠 수도 없다). 이제 스와치 자체가 열 높이를 꽉 채우므로 예전에 필요했던 -8px 마진
+     보정(60px 행의 여백만큼 밀어 넣던 것)도 필요 없어져 지움 — grid에 행 간격이 없어서
+     프레임 행의 모서리 버튼과 자연스럽게 이어붙음. 색 개수가 아주 많아 min-height(32px, 위
+     .ring-edge-v)보다 작아지려 하면 기존처럼 세로 스크롤. */
+  width: 60px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px 4px;
+}
+/* 2026-08-20: "뒤로가기/완료/스킬도 색칠버튼과 동일한 원형이어야 하고, 사각 링 배치 개수에
+   포함된다" 요청 — 색상 스와치와 완전히 같은 크기/입체감을 공유하는 기반 클래스로 뺀다.
+   배경색만 각자 다르게 주면 되므로(스와치는 인라인 style, 기능버튼은 아래 .ring-btn-* 클래스),
+   임의의 색에도 공통으로 먹히는 인셋 하이라이트/그림자 레이어만으로 볼록한 캔디버튼 느낌을 낸다. */
+/* 2026-08-23(26): "원이 작아서 터치 성공률이 낮다 — 대각선(모서리)은 정사각형, 사이(변)는
+   그 방향으로 긴 직사각형으로, 버튼끼리 안 겹치게" 요청 — 원형(44px, 60px 트랙 안에 8px씩
+   여백)을 버리고, 모서리/변 모두 트랙(60px) 안을 꽉 채우는 52px 두께로 키우고 모양만
+   나눈다(.ring-corner=정사각형 고정크기, .ring-edge-h/.ring-edge-v=flex:1로 남는 공간을
+   똑같이 나눠 채우는 직사각형 — 화면·색 개수가 달라져도 항상 빈틈 없이 꽉 차고, flex라서
+   서로 겹칠 수도 없다). 공통 입체감(그림자/테두리)은 이 기반 클래스가 그대로 담당. */
+.ring-circle {
+  /* 2026-08-25: 아래 .active::after(선택 테두리)가 이 버튼 자신을 기준으로 자리잡게 하려면
+     position:relative가 있어야 한다(없으면 더 위쪽 조상인 #coloring-screen 기준으로 잘못 앉는다). */
+  position: relative;
+  border: 3px solid #fff;
+  border-radius: 14px;
+  box-shadow:
+    0 3px 0 rgba(0, 0, 0, 0.22),
+    0 5px 8px rgba(0, 0, 0, 0.16),
+    inset 0 2px 3px rgba(255, 255, 255, 0.55),
+    inset 0 -3px 4px rgba(0, 0, 0, 0.22);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.ring-circle:active {
+  transform: translateY(2px);
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.22),
+    0 2px 4px rgba(0, 0, 0, 0.12),
+    inset 0 2px 3px rgba(255, 255, 255, 0.55),
+    inset 0 -3px 4px rgba(0, 0, 0, 0.22);
+}
+/* 2026-08-25: "색칠버튼(색상 스와치)도 버튼 누를 때 입체감 효과 달라" 요청 — 뒤로가기 등 커스텀
+   이미지 버튼에 준 눌림 효과(살짝 작아지고 어두워짐)를 색상 스와치에도 같이 얹는다. 기존
+   .ring-circle:active의 눌림 그림자/이동은 그대로 유지, transform만 scale을 더해 대체. */
+.color-swatch:active {
+  transform: translateY(2px) scale(0.9);
+  filter: brightness(0.85);
+}
+/* 모서리(대각선) — 정사각형, 링 트랙 두께(60px)에서 패딩(4px×2)을 뺀 52px 고정. */
+.ring-corner { flex: 0 0 auto; width: 52px; height: 52px; }
+/* 위/아래 변 — 세로는 트랙 두께에 맞춘 52px 고정, 가로는 flex:1로 그 변의 남은 폭을 똑같이 나눠 채움. */
+.ring-edge-h { flex: 1 1 0; min-width: 0; height: 52px; }
+/* 좌/우 변 — 가로는 52px 고정, 세로는 flex:1로 그 열의 남은 높이를 똑같이 나눠 채움. */
+.ring-edge-v { flex: 1 1 0; min-height: 32px; width: 52px; }
+.color-swatch.active::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 18px; /* 2026-08-23(26): 원형(50%)에서 사각/직사각 모양에 맞는 둥근 사각으로 */
+  border: 2px solid var(--brand);
+}
+/* 2026-08-25(4): "글로우 효과 줄 수 있어?" 요청 — 바운스(scale)는 세로로 긴 스와치에서 옆 칸을
+   침범해 "bar"로 보이는 문제가 있었으니, 이번엔 크기를 안 바꾸고 box-shadow 글로우만 덧붙인다
+   (칠 자체는 그대로라 이웃 칸을 침범하지 않는다). 기존 .ring-circle:active의 눌림 그림자 위에
+   흰색 글로우 레이어 하나만 추가. */
+.color-swatch:active {
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.22),
+    0 2px 4px rgba(0, 0, 0, 0.12),
+    inset 0 2px 3px rgba(255, 255, 255, 0.55),
+    inset 0 -3px 4px rgba(0, 0, 0, 0.22),
+    0 0 14px 2px rgba(255, 255, 255, 0.9);
+}
+/* 2026-08-25(4): "회색/빨강에 bar 또 생긴다" 실사용 재확인 — 바로 위에서 복원한 바운스
+   (scale 1.18배)가 세로로 긴 좌/우 열 스와치(52×82)에서 옆 칸을 침범해 그게 "bar"의 정체였다.
+   바운스도 다시 뺀다 — .active::after 테두리만 선택 표시로 남긴다. */
+/* 2026-08-24: "바탕화면 undo 이미지로 교체" 요청 — 자체 배지 디자인이 담긴 커스텀 이미지라
+   .ring-circle의 흰 테두리/그림자/배경을 지우고, 대신 글로우로 우주 배경 위에서 도드라지게 한다. */
+.ring-btn-back { background: none; border: none; box-shadow: none; }
+.ring-btn-back img {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  filter: drop-shadow(0 0 6px rgba(142, 197, 255, 0.9)) drop-shadow(0 0 12px rgba(142, 197, 255, 0.55));
+  transition: transform 0.08s ease, filter 0.08s ease;
+}
+/* 2026-08-25: 위 .icon-btn 계열과 같은 이유("배경/그림자 없는 자리라 .ring-circle:active 눌림
+   그림자가 안 보임") — img 자체에 눌리는 느낌을 직접 준다. */
+.ring-btn-back:active img {
+  transform: scale(0.86) !important;
+  filter: brightness(0.8) drop-shadow(0 0 4px rgba(142, 197, 255, 0.7));
+}
+.ring-btn-done { background: #C9F2D6; }
+.ring-btn-skill { background: #E4DBFF; }
+/* 2026-08-25(2): "우측상단/우측하단/좌측하단 버튼이 깊게 안눌러진다" 제보 — 되돌리기/다음/리셋
+   버튼(커스텀 이미지)엔 이미 scale+어둡게 눌림 효과를 줬는데, 이모지 텍스트인 스킬1/2·완료(🍀)
+   버튼 3개만 그 업그레이드에서 빠져있었다. 같은 강도의 눌림 효과를 준다(이 버튼들은 배경/테두리가
+   남아있어 img가 아니라 버튼 자신에 transform을 줘도 된다). 글자 크기도 키워 스와치 옆에서
+   존재감이 약해 보이던 것(특히 초록 배경 위 🍀)을 보완한다. */
+.ring-btn-skill, .ring-btn-done {
+  font-size: 1.5rem;
+}
+.ring-btn-skill:active, .ring-btn-done:active {
+  transform: translateY(2px) scale(0.86);
+  filter: brightness(0.85);
+}
+
+/* 2026-08-20: 캔버스 위/아래 면 — 스킬 자리(챌린지 전용) + 색상 스와치 일부 + 뒤로가기/완료.
+   좌/우 열(.palette-col)과 합쳐 색상 스와치가 캔버스 네 면을 다 두르는 사각 링을 이룬다
+   (유아 12개=색10+뒤로가기+완료, 챌린지 16개=색12+뒤로가기+완료+스킬1+스킬2, 한 면당 개수 동일). */
+/* 2026-08-20: "간격이 동일해야" + "모서리에 버튼이 있어야"(뒤로가기/완료가 팔레트 좌/우 열과
+   진짜 같은 자리에 와야 함) 요청 — 두 가지를 동시에 만족시켜야 한다.
+   1) .palette-row를 display:contents로 빼서, 모서리 버튼(back/corner-tr 등)과 색상 스와치가
+      .color-frame-row의 flex 아이템으로 다 같이 참여 → gap 하나만 공유(색↔색, 모서리↔색 동일).
+   2) justify-content를 center 대신 space-between으로 — 첫 아이템(모서리)이 줄 왼쪽 끝에,
+      마지막 아이템(모서리)이 오른쪽 끝에 딱 붙고, 남는 공간은 gap들 사이에 "균등하게" 더
+      배분된다(space-between + gap 조합은 나머지 여백을 모든 내부 간격에 똑같이 나눠줌 —
+      결과적으로 간격은 여전히 서로 다 같음).
+   3) 좌우 패딩은 0으로(2026-08-20(4)) — 모서리 버튼을 감싸는 .ring-corner-slot이 이제 88px로
+      .palette-col과 폭이 같으므로, 이 줄 자체는 패딩 없이 딱 붙어야 두 88px 박스의 좌표가
+      정확히 일치한다(패딩을 주면 모서리 박스가 그만큼 안쪽으로 밀려 팔레트 열과 어긋남).
+   2026-08-23(26): 변 버튼(.ring-edge-h)이 flex:1로 남는 폭을 다 채우게 되면서 justify-content는
+   더 이상 할 일이 없어짐(빈 공간 자체가 없어짐) — 남겨둬도 무해하지만 의도를 명확히 flex-start로. */
+.color-frame-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 4px 0;
+}
+.palette-row {
+  display: contents;
+}
+/* 2026-08-20: 모서리 칸 — 챌린지 모드에선 스킬 버튼, 유아모드에선 renderPalette()가 색상
+   스와치를 대신 넣는다. 뒤로가기·완료도 이 클래스로 감싼다.
+   2026-08-23(26): 예전엔 44px 원을 88px 슬롯 중앙에 놓고 margin으로 미세 보정했는데, 이제
+   .ring-corner 자체가 슬롯을 꽉 채우는 52px 정사각형이라 그 보정이 필요 없어져 지움.
+   2026-08-25: "버튼 세로줄이 안 맞는다" 제보 — 위 설명은 트랙이 88px였을 때 얘기이고, 지금
+   트랙은 60px(.palette-col과 동일)인데 이 슬롯은 폭 지정이 없어 버튼(52px) 크기 그대로
+   flush(0부터 시작)라 팔레트 열(60px 칸 중앙)보다 왼쪽으로 치우쳐 있었다. width:60px를
+   명시해서 .palette-col과 같은 폭으로 맞추면 안쪽 52px 버튼도 같은 세로줄에 선다. */
+.ring-corner-slot {
+  flex: 0 0 auto;
+  width: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* 2026-08-11: 다른 버튼들(Start, 레벨박스)과 같은 키캡 입체감을 툴바/모달 버튼에도 통일 적용. */
+.tool-btn {
+  flex: 1;
+  background: var(--lv-bg, var(--card-bg));
+  box-shadow: 0 4px 0 var(--lv-bezel, rgba(0, 0, 0, 0.14)), 0 6px 10px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border-radius: var(--radius-md);
+  padding: 7px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  font-size: 0.9rem;
+  min-height: 38px;
+  color: var(--ink);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.tool-btn:not(:disabled):active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--lv-bezel, rgba(0, 0, 0, 0.14)), 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.tool-btn:disabled { opacity: 0.5; }
+/* 2026-08-10: "셀 안에서 안 벗어나는 수준으로 최대한 크게" — 0.4rem(거의 안 보임)이었던 걸 버튼
+   폭 안에서 "Undo/Clear/Done!" 다 안 잘리고 안 줄바꿈되는 한도까지 키움. */
+.tool-btn span { font-size: 0.68rem; font-weight: 600; white-space: nowrap; }
+.tool-btn-primary {
+  --lv-bg: var(--good);
+  --lv-bezel: #22A857;
+  color: #fff;
+}
+
+/* ---------- 부모 평가 모달 ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 50;
+}
+.modal-card {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.modal-card h2 { margin: 0 0 4px; font-size: 1.4rem; color: var(--brand); }
+.modal-sub { margin: 0 0 16px; color: var(--muted); }
+
+/* 2026-08-23: 설정 모달(음악/진동/소리) 아이콘 3개를 가로로 나열 — 참고 영상의 SETTINGS 창과
+   같은 구성. 버튼 자체는 기존 .icon-btn(키캡 스타일) 그대로 재사용. */
+.settings-icon-row {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin: 20px 0 24px;
+}
+
+/* ---------- goal 이미지 확대 모달(2026-08-11) — 탭하면 열림/탭하면 닫힘, 텍스트 없이 그림만 ---------- */
+.goal-zoom-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.82);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 20px;
+  z-index: 60; /* 다른 모달(50)보다 위 — 색칠화면 안에서 열리므로 겹칠 일은 없지만 안전하게 */
+  cursor: zoom-out;
+}
+.goal-zoom-canvas {
+  width: min(92vw, 80vh);
+  height: min(92vw, 80vh);
+  background: #fff;
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+}
+.goal-zoom-hint {
+  margin: 0;
+  color: rgba(255,255,255,0.85);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* ---------- 보상 카드(레벨 클리어 완료 캐릭터 탭 시) — 2026-08-24 ---------- */
+.reward-card-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 6, 30, 0.86);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 24px;
+  z-index: 70; /* goal-zoom-modal(60)보다 위 — 갤러리 화면 안에서 열리므로 겹칠 일은 없지만 안전하게 */
+}
+.reward-card-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reward-card-light-sweep {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.65) 48%, rgba(255, 255, 255, 0.65) 52%, transparent 70%);
+  background-size: 250% 250%;
+  background-position: -50% -50%;
+}
+.reward-card-light-sweep.sweep-play { animation: reward-light-sweep 0.9s ease-out; }
+@keyframes reward-light-sweep {
+  0% { opacity: 0; background-position: -80% -80%; }
+  15% { opacity: 1; }
+  60% { opacity: 0.6; }
+  100% { opacity: 0; background-position: 80% 80%; }
+}
+
+.reward-card-stage {
+  position: relative;
+  width: min(70vw, 300px);
+  height: min(70vw, 300px);
+  perspective: 1000px;
+}
+.reward-card-box {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reward-card-box img { width: 55%; height: 55%; filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.4)); }
+.reward-card-box.box-wobble { animation: reward-box-wobble 0.5s ease-in-out 2; }
+@keyframes reward-box-wobble {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-8deg) scale(1.03); }
+  75% { transform: rotate(8deg) scale(1.03); }
+}
+.reward-card-box.box-burst { animation: reward-box-burst 0.35s ease-in forwards; }
+@keyframes reward-box-burst {
+  0% { transform: scale(1); opacity: 1; filter: brightness(1) drop-shadow(0 8px 16px rgba(0, 0, 0, 0.4)); }
+  60% { transform: scale(1.3); opacity: 1; filter: brightness(3) drop-shadow(0 0 30px #fff); }
+  100% { transform: scale(1.5); opacity: 0; filter: brightness(3); }
+}
+
+/* 상자가 열리며 그 자리에서 카드가 3D로 뒤집혀 나타남(뒷면 -> 앞면). */
+.reward-card {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  opacity: 0;
+  transform: scale(0.3) rotateY(180deg);
+}
+.reward-card.card-reveal { animation: reward-card-flip-in 0.9s cubic-bezier(0.34, 1.1, 0.4, 1) forwards; }
+@keyframes reward-card-flip-in {
+  0% { opacity: 0; transform: scale(0.3) rotateY(180deg); }
+  40% { opacity: 1; }
+  100% { opacity: 1; transform: scale(1) rotateY(0deg); }
+}
+.reward-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.1s ease-out; /* 손가락으로 기울일 때(app.js) 부드럽게 따라오게 */
+}
+.reward-card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 20px;
+  overflow: hidden;
+}
+/* .reward-card(바깥)가 rotateY(180deg)->0deg로 도는 동안 어느 쪽이 보이는지는 이 두 면의
+   기본 회전값이 결정한다 — back에 180deg를 줘야 바깥이 180deg(초기값)일 때 back의 실제
+   회전이 180+180=360(=0, 정면)이 되어 보이고, 바깥이 0deg(플립 끝)일 때는 back이
+   180(뒤쪽, 안 보임)/front가 0(정면, 보임)으로 뒤바뀐다. */
+.reward-card-back { transform: rotateY(180deg); background: linear-gradient(135deg, #2a2255, #4b3c8c); border: 4px solid #d4af37; }
+.reward-card-front {
+  background: linear-gradient(160deg, #241c47, #0d0a24);
+  border: 4px solid;
+  border-image: linear-gradient(135deg, #fff6d6, #d4af37, #a97c1a, #ffe9a8) 1;
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.5), inset 0 0 20px rgba(212, 175, 55, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* 홀로그램 광택 — 평소엔 천천히 idle로 흐르다가, 카드를 손가락으로 잡고 기울이는 동안(app.js)엔
+   이 애니메이션을 멈추고 손가락 위치를 따라 광택 위치를 직접 옮긴다. */
+.reward-card-holo {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 20%, rgba(255, 105, 180, 0.35) 32%, rgba(120, 200, 255, 0.35) 40%, rgba(255, 230, 120, 0.35) 48%, transparent 60%);
+  mix-blend-mode: screen;
+  background-size: 200% 200%;
+  animation: reward-holo-idle 3.5s ease-in-out infinite;
+}
+@keyframes reward-holo-idle {
+  0%, 100% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+}
+.reward-card-badge {
+  position: absolute;
+  top: 14px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #ffe9a8;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+.reward-card-img {
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.5));
+}
+
+.reward-card-download-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 24px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffe9a8, #d4af37);
+  color: #3a2a00;
+  font-weight: 800;
+  font-size: 0.95rem;
+  box-shadow: 0 6px 16px rgba(212, 175, 55, 0.4);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.reward-card-download-btn.show { opacity: 1; transform: translateY(0); }
+/* REWARD_CARD_IMAGE(app.js)에 등록된 레벨의 클리어 완료 그림에만 붙어서 탭 가능함을 알려줌. */
+.level-reward-art.reward-card-tappable { cursor: pointer; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reward-card-box.box-wobble, .reward-card-box.box-burst { animation: none; }
+  .reward-card.card-reveal { animation: none; opacity: 1; transform: scale(1) rotateY(0deg); }
+  .reward-card-holo { animation: none; }
+  .reward-card-light-sweep.sweep-play { animation: none; opacity: 0; }
+}
+
+/* ---------- 최초 실행 온보딩(보호자 확인 게이트 + 이용 안내) ---------- */
+.onboarding-gate-question {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--brand);
+  margin: 8px 0 16px;
+}
+.onboarding-gate-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.onboarding-gate-choices button {
+  background: var(--card-bg);
+  box-shadow: var(--shadow);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.onboarding-gate-retry {
+  margin: 12px 0 0;
+  color: var(--bad);
+  font-weight: 700;
+}
+.onboarding-consent-list {
+  text-align: left;
+  margin: 0 0 14px;
+  padding-left: 4px;
+  list-style: none;
+  color: var(--ink);
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.text-link-btn {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 0.95rem;
+  text-decoration: underline;
+  min-height: 44px;
+}
+
+/* ---------- 헤더 오른쪽: 음악/소리 버튼 묶음 ---------- */
+.header-right-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---------- 랭킹 ---------- */
+.ranking-btn {
+  /* 2026-08-11: "랭킹 아이콘도 3D" 요청 — 키캡 스타일 적용.
+     2026-08-16: 리셋 버튼은 icon-btn-sm(음악/소리와 동일)으로 옮겨가서 더 이상 이 클래스를
+     안 씀. 예전엔 우상단에 position:absolute로 떠 있었는데, 이제 .map-top-bar(flex row)
+     안에 다른 버튼들과 나란히 놓이므로 absolute 좌표를 뺐다. */
+  margin: 0;
+  background: linear-gradient(180deg, #fff 0%, #fdfcff 55%, #F3EFFF 100%);
+  color: var(--brand);
+  font-weight: 800;
+  font-size: 0.9rem;
+  padding: 10px 12px;
+  /* 2026-08-11: "랭킹이랑 리셋모드 크기 같게" 요청 — 텍스트 길이가 달라서(Ranking vs Reset
+     Mode) 자동폭이 서로 달랐던 걸 고정폭으로 통일(둘 다 이 클래스를 공유하므로 한 번에 적용됨). */
+  width: 148px;
+  text-align: center;
+  border-radius: 999px;
+  border: 2px solid var(--brand);
+  box-shadow: 0 3px 0 var(--brand), 0 5px 8px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.ranking-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--brand), 0 2px 4px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+.ranking-entry-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+  margin-top: 4px;
+}
+.ranking-entry-form input {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 2px solid #E6E0FF;
+  background: var(--bg);
+  color: var(--ink);
+}
+.ranking-entry-form input:focus { outline: 2px solid var(--brand); }
+.ranking-entry-form select {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 2px solid #E6E0FF;
+  background: var(--bg);
+  color: var(--ink);
+}
+.ranking-entry-form input:disabled, .ranking-entry-form select:disabled {
+  opacity: 0.65;
+}
+.player-entry-warning, .ranking-entry-status {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.ranking-entry-status { color: var(--muted); }
+.ranking-entry-status.is-error { color: var(--bad); }
+.ranking-entry-status.is-ok { color: var(--good); }
+
+.ranking-board-card { max-width: 460px; text-align: left; }
+.ranking-board-card h2, .ranking-board-card .modal-sub { text-align: center; }
+.ranking-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  margin-bottom: 14px;
+}
+.ranking-tab {
+  padding: 8px 4px;
+  border-radius: 10px;
+  border: 2px solid #E6E0FF;
+  background: var(--card-bg);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.ranking-tab.active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 45vh;
+  overflow-y: auto;
+}
+.ranking-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--brand-soft);
+}
+.ranking-row .r-rank {
+  flex: 0 0 28px;
+  font-weight: 800;
+  color: var(--brand);
+  text-align: center;
+}
+.ranking-row .r-info {
+  flex: 1;
+  min-width: 0;
+}
+.ranking-row .r-name { font-weight: 700; }
+.ranking-row .r-meta { font-size: 0.78rem; color: var(--muted); }
+.ranking-row .r-time {
+  font-weight: 800;
+  color: var(--brand);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ranking-empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 24px 0;
+}
+
+/* ---------- 격려 오버레이(성공 축하 / 실패 "다시 도전!" 겸용) ---------- */
+/* 2026-08-11: Done! 누르면 중간 점수 확인 모달 없이 바로 이 화면이 뜨도록 바꿈 — 전부 맞으면
+   보라색 축하(기존과 동일), 하나라도 틀리면 .fail 클래스가 붙어 빨간 계열로 바뀌고 "Try again!" +
+   맞은 개수만 보여준 뒤 저장 없이 색칠 화면으로 돌아감(별도 화면 전환 없음, 오버레이만 닫힘). */
+.praise-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(108,92,231,0.92);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+}
+.praise-overlay.fail {
+  background: rgba(214,40,57,0.94);
+}
+.praise-emoji {
+  font-size: 5rem;
+  animation: pop 0.5s ease;
+}
+.praise-text {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-top: 12px;
+}
+.praise-count {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-top: 8px;
+  opacity: 0.9;
+}
+@keyframes pop {
+  0% { transform: scale(0.3); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+/* ---------- 남은 레벨 안내(맵 화면) ---------- */
+.levels-left-line {
+  text-align: center;
+  font-weight: 700;
+  color: var(--brand);
+  margin: 6px 0 0;
+}
+
+/* ---------- 파이널 보스 섹션(맵 화면) ---------- */
+.boss-section {
+  max-width: 700px;
+  margin: 8px auto 24px;
+  padding: 0 16px;
+  width: 100%;
+}
+.boss-section-title {
+  text-align: center;
+  margin: 8px 0 2px;
+  font-size: 1.2rem;
+  color: var(--brand);
+}
+.boss-section-sub {
+  text-align: center;
+  margin: 0 0 12px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.boss-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+.boss-card {
+  /* 2026-08-11: "보스 4개 카드도 왼쪽 상단 모드 버튼처럼 3D" 요청 — 같은 키캡 스타일(아래쪽 그림자
+     턱 + 누르면 눌리는 애니메이션) 적용. */
+  background: linear-gradient(160deg, #3A2E5C, #6C5CE7);
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: var(--radius-md);
+  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.28), 0 8px 14px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  padding: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 108px;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.boss-card:not(:disabled):active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.28), 0 3px 6px rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+.boss-card .boss-mode-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+  text-transform: uppercase;
+}
+.boss-card .boss-crown { font-size: 2rem; text-shadow: 0 3px 2px rgba(0, 0, 0, 0.35); }
+.boss-card .boss-crown.pulse { animation: bossPulse 1.4s ease-in-out infinite; }
+@keyframes bossPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+.boss-card .boss-name { font-size: 0.85rem; font-weight: 800; text-align: center; }
+.boss-card .boss-cta { font-size: 0.72rem; opacity: 0.9; }
+.boss-card .boss-cleared-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  background: var(--good);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.boss-card.locked {
+  color: var(--muted);
+  opacity: 0.75;
+}
+/* 2026-08-11: 잠긴 보스 카드가 전부 똑같이 회백색이라 밋밋했음 — "잠겨있어도 이 모드 색깔은
+   살짝 보인다"는 느낌으로 모드별로 아주 옅은 색조만 살짝 입힘(채도 낮게, locked라는 인상은
+   그대로 유지). bossGrid는 항상 easy/normal/hard/veryhard 4개 고정 순서라 nth-child 안전함. */
+.boss-grid > .boss-card.locked:nth-child(1) { background: #F7DCE6; }
+.boss-grid > .boss-card.locked:nth-child(2) { background: #DCEDE6; }
+.boss-grid > .boss-card.locked:nth-child(3) { background: #E5DCF2; }
+.boss-grid > .boss-card.locked:nth-child(4) { background: #F2E3DC; }
+.boss-card.locked .boss-lock { font-size: 1.6rem; text-shadow: 0 2px 2px rgba(0, 0, 0, 0.3); }
+.boss-card.boss-cleared {
+  background: linear-gradient(160deg, #C2185B, #F368E0);
+}
+
+/* ---------- 파이널 보스 클리어 축하 모달(팡파레 + 컨페티) ---------- */
+.boss-fanfare-card { position: relative; overflow: hidden; }
+.confetti-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.confetti-piece {
+  position: absolute;
+  top: -12px;
+  width: 8px;
+  height: 14px;
+  opacity: 0.9;
+  animation-name: confettiFall;
+  animation-timing-function: ease-in;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+@keyframes confettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(360px) rotate(540deg); opacity: 0; }
+}
+
+/* 2026-08-11: "배경색도 검은색 계통이 아니라 베이지색 밝은 느낌으로" 요청 — 폰이 시스템
+   다크모드여도 이 앱은 늘 밝은 베이지 테마로 통일하기로 결정, 다크모드 대응(위에 있던
+   @media (prefers-color-scheme: dark) 블록)을 통째로 제거함. 아이용 색칠앱은 시간대와
+   무관하게 항상 밝고 화사한 느낌이 맞다는 판단. */
+
+/* ===== 챌린지 모드 (Phase 1) ===== */
+.challenge-select-header { display: flex; align-items: center; gap: 8px; padding: 12px; }
+/* 2026-08-23(2): "화면 위/중간/아래 = 쉬움/보통/어려움, 셋이 항상 동시에 보이고 구역마다 따로
+   좌우 캐러셀로 스테이지 1~10을 넘긴다" — 난이도 하나를 먼저 고르는 버전(직전 커밋)을 대체.
+   .screen의 min-height(바닥값)만으론 3구역이 화면을 정확히 3등분 못 하고 페이지가 그냥
+   늘어나므로(예전 #coloring-screen 때와 같은 이유), 이 화면만 실제 height를 준다. */
+#challenge-select-screen { position: relative; overflow: hidden; height: 100svh; background: var(--bg); }
+.challenge-tiers { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.challenge-tier-zone {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  container-type: size; /* 아래 원 크기를 이 구역의 실제 폭/높이 중 더 빡빡한 쪽 기준으로 잡기 위함 */
+}
+/* 2026-08-24: "각 리그 우측상단에 리셋 버튼(모드별 리셋)" 요청 — 리셋 버튼과 라벨을 한 줄(flex)로
+   묶어서 vertical-align 대신 align-items:center로 정확히 높이를 맞춘다("버튼이 라벨보다 위에 떠
+   있다" 지적으로 구조 변경 — 구역 전체 기준 절대좌표는 라벨 높이를 몰라서 안 맞았음). */
+.challenge-tier-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+.challenge-tier-reset {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+/* .icon-btn:active의 translateY(2px)가 위 -50% 중앙정렬을 그대로 덮어써서 눌렀을 때 버튼이
+   위로 튀어보였다 — 두 오프셋을 합쳐서 눌러도 제자리에서만 눌리게. */
+.challenge-tier-reset:active {
+  transform: translateY(calc(-50% + 2px));
+}
+/* 2026-08-24: "마이너/메이저/챔피언스리그로 이름 변경, 글자 3배로, 귀여운 글자체로" 요청 —
+   크기는 0.8rem→2.4rem(3배), 글꼴은 다른 곳(레벨 원 숫자 등)과 같은 Fredoka(라틴 전용 가변
+   폰트)+한글 대체 스택을 재사용(위 :root의 body font-family와 같은 조합, 새 폰트 안 들여옴). */
+.challenge-tier-label {
+  margin: 0 0 2px;
+  font-weight: 800;
+  font-size: 2.4rem;
+  font-family: 'Fredoka', "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+.challenge-tier-zone[data-tier="easy"] .challenge-tier-label { color: #2f9e44; }
+.challenge-tier-zone[data-tier="normal"] .challenge-tier-label { color: #e8590c; }
+.challenge-tier-zone[data-tier="hard"] .challenge-tier-label { color: #e03131; }
+
+/* .lv-circle, .lv-circle-stage, .lv-peek, .lv-hold-ring 계열을 지도 화면에서 그대로 재사용하고,
+   이 캐러셀(구역 하나 = 스테이지 1~10 좌우 캐러셀) 안에서만 가로 배치·크기·색을 덮어쓴다. */
+.diff-node-wrap { display: flex; align-items: center; justify-content: center; gap: 20px; width: 100%; }
+.challenge-tier-zone .lv-circle-stage { width: min(34cqw, 62cqh); }
+.challenge-tier-zone .lv-peek { width: min(24cqw, 44cqh); }
+.challenge-tier-zone .lv-circle {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 800;
+  color: var(--lv-bezel, #333);
+}
+.challenge-tier-zone .lv-circle-stage .lv-circle { font-size: min(11cqw, 20cqh); }
+.challenge-tier-zone .lv-peek .lv-circle { font-size: min(8cqw, 15cqh); }
+/* 신호등 관례: 쉬움=초록/보통=주황/어려움=빨강. 레벨 원의 --lv-bg/--lv-bezel 변수를 그대로
+   읽는 기존 .lv-circle 규칙을 재사용 — data-lv 대신 data-diff로 그 구역의 난이도 값을 꽂는다
+   (구역 안 10칸 전부 같은 값 — "어떤 스테이지인지"가 아니라 "어떤 난이도 구역인지"의 색). */
+.lv-circle[data-diff="easy"] { --lv-bg: #eafbea; --lv-bezel: #40c057; }
+.lv-circle[data-diff="normal"] { --lv-bg: #fff4e0; --lv-bezel: #ff922b; }
+.lv-circle[data-diff="hard"] { --lv-bg: #ffe8e8; --lv-bezel: #ff6b6b; }
+.challenge-hud {
+  display: flex; justify-content: space-between; gap: 8px;
+  padding: 8px 12px; font-weight: 700; font-size: 0.9rem;
+  /* 2026-08-23(36): "챌린지 색칠페이지도 우주 배경과 동일하게" — 고정 크림색 대신 화면 테마 변수를
+     따라가게 바꿔서, #coloring-screen이 다크로 스코프되면 이 HUD도 같이 어두워진다. */
+  background: var(--card-bg); border-bottom: 2px solid var(--brand-soft); color: var(--ink);
+}
+.challenge-goal-mask {
+  clip-path: circle(90px at 50% 50%); /* JS가 매 이동마다 style.clipPath로 좌표 갱신 */
+}
+
+/* 2026-08-15: 챌린지 LEVEL2 1~6번용 — goal은 항상 보이고, 이 원이 배경색으로 덮어서 그
+   부분만 안 보이게 한다. challenge.js가 매 프레임 left/top/width/height(%)를 갱신. */
+.challenge-goal-occluder {
+  position: absolute;
+  border-radius: 50%;
+  /* 2026-08-23(36): goal 이미지 박스 안에 있는 요소라 "goal 박스는 그대로 유지" 대상 — var(--bg)를
+     쓰면 #coloring-screen이 다크로 바뀔 때 같이 어두워져 버려서, 원래 크림색을 고정값으로 둔다. */
+  background: #FFF8ED;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ===== 챌린지 LEVEL 3: 구름/비/눈이 실제로 움직이는 날씨 효과 =====
+   2026-08-14 피드백(2차): goal 실루엣으로 마스킹하지 않고 LEVEL 7처럼 박스 전체를 가로지르게
+   변경. 구름은 뭉게구름 모양 SVG로, 비/눈 입자 크기는 10배 키움(너무 작아서 안 가려짐). */
+.challenge-weather-layer {
+  position: absolute;
+  /* 2026-08-15 피드백: 비/눈이 떨어지다 사라질 때 박스 바로 아래 경계선(지렁이 진행바)에
+     딱 붙어 겹쳐 보임 — 여전히 몇 개는 걸쳐 보인다는 재확인 피드백으로 대략치(5%) 대신
+     실측 단위(5mm, CSS 절대 길이)로 명확히 지정. 좌/우/상단은 손대지 않음 — 구름이 왼쪽
+     밖에서 진입하다 잘려 보이던 과거 버그(-70% -> -120% 수정, 위 주석 참고)를 다시 만들면
+     안 되므로 바닥(하단)만 띄운다. */
+  inset: 0 0 5mm 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: var(--challenge-occlude-opacity, 0.55);
+}
+
+.challenge-cloud {
+  /* 2026-08-14 피드백: "구름이 중간에서 사라진다" — CSS infinite 애니메이션(항상 위치가
+     예측 불가능하게 어긋날 수 있음) 대신 challenge.js가 LEVEL7과 같은 방식(JS로 transform을
+     명시적으로 옮기고 transition)으로 왼쪽 밖 -> 오른쪽 밖까지 직접 이동시킨다. */
+  position: absolute;
+  top: var(--cloud-top, 20%);
+  width: var(--cloud-size, 40%);
+  aspect-ratio: 5 / 3;
+  /* 2026-08-15 피드백: 낱개 입자가 잘 구분되게 얇은 외곽선 추가 — path 자체에 stroke를 넣고
+     viewBox를 여유만큼 넓혀서(패딩 없으면 외곽선이 잘림) 잘리지 않게 함. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-5 -5 110 70'%3E%3Cpath fill='white' stroke='%232E2E2E' stroke-width='2.5' stroke-linejoin='round' d='M25 50c-11 0-20-8-20-18 0-9 7-17 16-18 2-10 11-17 21-17 9 0 17 5 21 13 10 1 18 9 18 20 0 10-9 20-20 20H25z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+/* 2026-08-14 피드백: 대각선 줄무늬 대신 실제 물방울 모양 이미지가 위->아래로 떨어짐.
+   challenge.js가 --drop-size(goal 크기의 1/10, 1/11, 1/12)와 --drop-left를 랜덤 배정. */
+.challenge-raindrop {
+  position: absolute;
+  left: var(--drop-left, 50%);
+  width: var(--drop-size, 10%);
+  aspect-ratio: 3 / 4;
+  /* 2026-08-14 피드백: 그라디언트+하이라이트 입체감이 어색하다는 피드백으로 단색 원복 */
+  /* 2026-08-15 피드백: 얇은 외곽선 추가(viewBox도 그만큼 패딩) */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-2 -2 28 36'%3E%3Cpath fill='%234a90d9' stroke='%232E2E2E' stroke-width='1.4' stroke-linejoin='round' d='M12 2C12 2 3 15 3 22a9 9 0 0018 0C21 15 12 2 12 2z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+/* 2026-08-14 피드백: "개수가 적어 goal을 못 가리고, 박스 경계에 잘려 보인다" — 배경 타일
+   패턴 대신 빗방울과 같은 개별 엘리먼트 방식, 개수를 대폭 늘리고(25~35개) 박스 안(-8%~108%)
+   에서만 떨어지게 함. challenge.js가 --flake-size/--flake-left를 랜덤 배정. */
+.challenge-snowflake {
+  position: absolute;
+  left: var(--flake-left, 50%);
+  width: var(--flake-size, 6%);
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  background: #fff;
+  /* 2026-08-15 피드백: 구름 외곽선 굵기와 맞춤 — 구름은 SVG stroke-width 2.5(viewBox 110
+     기준, 약 2.27%)라 실제 렌더 크기(중간 크기 구름 기준)로 환산하면 대략 3.5px 안팎이라
+     그 값으로 통일. (눈송이는 border라 구름처럼 원본 도형 크기에 비례해 스케일되진 않음) */
+  border: 3.5px solid #2E2E2E;
+}
+
+/* ===== 챌린지 LEVEL 4: Goal이 사라지는 3가지 연출 ===== */
+.challenge-vanish-fade { transition: opacity var(--challenge-vanish-ms, 600ms) ease-out; }
+.challenge-vanish-fade.is-vanishing { opacity: 0; }
+.challenge-vanish-shrink { transition: transform var(--challenge-vanish-ms, 600ms) ease-in; }
+.challenge-vanish-shrink.is-vanishing { transform: scale(0); }
+.challenge-vanish-fragment { transition: transform var(--challenge-vanish-ms, 600ms) ease-in, opacity var(--challenge-vanish-ms, 600ms) ease-in; }
+.challenge-vanish-fragment.is-vanishing { transform: translateY(60%) rotate(25deg); opacity: 0; }

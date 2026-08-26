@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fun Games</title>
+<link rel="stylesheet" href="cosmic-theme.css">
+<style>
+  .hub {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 20px 40px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .hub-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 8px 0 28px;
+    text-align: center;
+  }
+  .theme-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    width: 100%;
+  }
+  .theme-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    aspect-ratio: 1;
+    border-radius: 24px;
+    background: var(--card-bg);
+    box-shadow: var(--shadow);
+    border: none;
+    color: var(--ink);
+    cursor: pointer;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s ease;
+  }
+  .theme-card:active { transform: scale(0.95); }
+  .theme-emoji { font-size: 3rem; line-height: 1; }
+  .theme-label { font-size: 1.05rem; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="cosmic-bg">
+  <div class="hub cosmic-content">
+    <h1 class="hub-title">Fun Games</h1>
+    <div class="theme-grid">
+      <a class="theme-card" href="snake/index.html">
+        <span class="theme-emoji">🐛</span>
+        <span class="theme-label">지렁이</span>
+      </a>
+      <a class="theme-card" href="mole/index.html">
+        <span class="theme-emoji">🕳️</span>
+        <span class="theme-label">두더지</span>
+      </a>
+      <a class="theme-card" href="match/index.html">
+        <span class="theme-emoji">🧩</span>
+        <span class="theme-label">그림맞추기</span>
+      </a>
+      <a class="theme-card" href="coloring/index.html">
+        <span class="theme-emoji">🎨</span>
+        <span class="theme-label">색칠하기</span>
+      </a>
+    </div>
+  </div>
+</div>
+</body>
+</html>
