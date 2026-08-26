@@ -167,6 +167,17 @@
     s.player.setDirection(dir.x, dir.y);
     s.player.update(dt);
 
+    // 플레이어도 적과 동일하게 매 프레임 맵 경계 안으로 위치를 고정한다(스펙 §6.2) — 예전엔
+    // "무적이 아닐 때 충돌이 감지된 순간"에만 한 번 밀어넣었는데, 무적 1초 동안은 이 블록
+    // 전체가 통째로 건너뛰어져서 계속 같은 방향으로 드래그하면 화면 밖까지 흘러나갈 수 있었다
+    // (최종 리뷰에서 실측: 최대 140px = playerSpeed × 무적시간, 프레임의 28%가 맵 밖). 경계
+    // 충돌 판정은 클램프 "이전" 좌표로 먼저 확인해야 한다 — 클램프부터 하면 x===0 같은 경계
+    // 값이 다시는 충돌로 안 잡힌다.
+    const ph = s.player.trail[0];
+    const playerOutOfBounds = SG.Collision.checkBoundaryCollision(ph.x, ph.y, s.levelData.mapWidth, s.levelData.mapHeight);
+    ph.x = Math.max(0, Math.min(s.levelData.mapWidth, ph.x));
+    ph.y = Math.max(0, Math.min(s.levelData.mapHeight, ph.y));
+
     // 적 이동 — 맵 경계 안에 고정(스펙 §6.2: 적도 맵 안에서만 이동)
     s.enemies.forEach((e) => {
       const d = e.ai.update(dt);
@@ -183,10 +194,8 @@
     // 충돌 (무적 중이 아닐 때만)
     if (!invincible) {
       let hit = false;
-      let boundaryHit = false;
-      if (SG.Collision.checkBoundaryCollision(s.player.head.x, s.player.head.y, s.levelData.mapWidth, s.levelData.mapHeight)) {
+      if (playerOutOfBounds) {
         hit = true;
-        boundaryHit = true;
       }
       if (!hit && SG.Collision.checkSelfCollision(s.player.head, s.player.getSegments(), COLLISION_RADIUS)) {
         hit = true;
@@ -200,13 +209,6 @@
         }
       }
       if (hit) {
-        if (boundaryHit) {
-          // 경계 충돌 위치를 그대로 두면 무적 1초가 끝나는 순간에도 여전히 "경계 밖"이라
-          // 또 충돌 처리되어 하트가 연쇄로 깎일 수 있다 — 충돌 즉시 위치를 경계 안으로 밀어넣는다.
-          const head = s.player.trail[0];
-          head.x = Math.max(0, Math.min(s.levelData.mapWidth, head.x));
-          head.y = Math.max(0, Math.min(s.levelData.mapHeight, head.y));
-        }
         s.hearts -= 1;
         s.collisions += 1;
         s.invincibleUntil = nowSec + INVINCIBLE_SECONDS;
@@ -289,20 +291,13 @@
   }
 
   // ---------- 종료 처리 ----------
-  function computeStars(collisions) {
-    // 스펙 §29: 클리어=1, 충돌 1회 이하=2, 충돌 0회=3
-    if (collisions === 0) return 3;
-    if (collisions <= 1) return 2;
-    return 1;
-  }
-
   function levelClear() {
     const s = state;
     s.ended = true;
     if (rafId) cancelAnimationFrame(rafId);
     s.emojiProgress.revealAll();
 
-    const stars = computeStars(s.collisions);
+    const stars = SG.StarRating.computeStars(s.collisions);
     const progress = loadProgress();
     const prevStars = (progress[s.levelData.level] && progress[s.levelData.level].stars) || 0;
     progress[s.levelData.level] = { cleared: true, stars: Math.max(prevStars, stars) };
