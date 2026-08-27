@@ -260,25 +260,15 @@
     });
 
     // 적 지렁이
-    ctx.fillStyle = '#e34948';
     s.enemies.forEach((e) => {
-      e.worm.getSegments().forEach((seg) => {
-        ctx.beginPath();
-        ctx.arc(seg.x, seg.y, 8, 0, Math.PI * 2);
-        ctx.fill();
-      });
+      drawWorm(ctx, e.worm, SG.Sprites.enemy, 1);
     });
 
     // 플레이어 (무적 중 깜빡임 — 스펙 §23)
     const nowSec = performance.now() / 1000;
     const invincible = nowSec < s.invincibleUntil;
-    const blink = invincible && Math.floor(nowSec * 10) % 2 === 0;
-    ctx.fillStyle = blink ? 'rgba(74,222,128,0.35)' : '#4ade80';
-    s.player.getSegments().forEach((seg) => {
-      ctx.beginPath();
-      ctx.arc(seg.x, seg.y, 9, 0, Math.PI * 2);
-      ctx.fill();
-    });
+    const alpha = invincible && Math.floor(nowSec * 10) % 2 === 0 ? 0.35 : 1;
+    drawWorm(ctx, s.player, SG.Sprites.player, alpha);
 
     ctx.restore();
 
@@ -288,6 +278,40 @@
       player: s.player.head,
       foods: s.foods
     });
+  }
+
+  // 세그먼트 배열(머리가 [0])을 실제 캐릭터 스프라이트로 그린다 — 꼬리부터 그려서 머리가
+  // 항상 위에 겹치도록 한다. 몸통/꼬리 스프라이트는 원본 시트에서 "오른쪽을 향한" 상태로
+  // 잘라냈고(가로로 나열된 행이라 오른쪽이 기본 방향), 머리 스프라이트는 "위를 향한" 상태로
+  // 잘라냈다(세로 인물샷이라 위가 기본 방향) — 그래서 회전 기준각이 서로 다르다.
+  function drawWorm(ctx, worm, sprites, alpha) {
+    const segs = worm.getSegments();
+    ctx.globalAlpha = alpha;
+    for (let i = segs.length - 1; i >= 1; i--) {
+      const seg = segs[i];
+      const prev = segs[i - 1]; // 머리 쪽 이웃 — 몸이 이어지는 방향
+      const forwardAngle = Math.atan2(prev.y - seg.y, prev.x - seg.x);
+      const isTail = i === segs.length - 1;
+      // 꼬리의 뾰족한 끝은 몸통 반대(뒤쪽)를 향해야 자연스럽다
+      const angle = isTail ? forwardAngle + Math.PI : forwardAngle;
+      drawSprite(ctx, isTail ? sprites.tail : sprites.body, seg.x, seg.y, angle, isTail ? 22 : 22);
+    }
+    const head = segs[0];
+    const headAngle = Math.atan2(worm.direction.y, worm.direction.x) + Math.PI / 2;
+    drawSprite(ctx, sprites.head, head.x, head.y, headAngle, 30);
+    ctx.globalAlpha = 1;
+  }
+
+  function drawSprite(ctx, img, x, y, angle, targetWidth) {
+    if (!img.complete || !img.naturalWidth) return; // 아직 로드 전이면 이번 프레임은 건너뜀
+    const scale = targetWidth / img.naturalWidth;
+    const w = img.naturalWidth * scale;
+    const h = img.naturalHeight * scale;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.drawImage(img, -w / 2, -h / 2, w, h);
+    ctx.restore();
   }
 
   // ---------- 종료 처리 ----------
