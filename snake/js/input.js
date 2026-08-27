@@ -24,20 +24,21 @@
     }
 
     function onMove(e) {
-      // 마우스는 버튼을 누르고 있지 않아도 화면 중심 기준 커서 위치로 계속 조종한다(PC
-      // 슬리더리오류 게임의 일반적인 관례) — 버튼을 눌러야만 반응하던 예전 방식은 터치
-      // 전용 드래그를 그대로 마우스에 적용한 것이라 "마우스로 조작이 안 된다"는 문제가
-      // 있었다. 터치/펜은 원래 스펙대로 누른 지점을 앵커로 하는 드래그를 그대로 쓴다
-      // (터치는 화면에 손가락이 닿아있지 않으면 애초에 pointermove 자체가 오지 않는다).
-      if (e.pointerType === 'mouse') {
-        const rect = targetEl.getBoundingClientRect();
-        const p = toLocal(e);
-        applyDirection(p.x, p.y, rect.left + rect.width / 2, rect.top + rect.height / 2);
+      const p = toLocal(e);
+      if (anchor) {
+        // 실제로 누른 채 드래그 중(터치/펜/마우스 클릭-드래그 전부 해당) — 누른 지점을
+        // 앵커로 한 상대 방향, 원래 스펙대로.
+        applyDirection(p.x, p.y, anchor.x, anchor.y);
         return;
       }
-      if (!anchor) return;
-      const p = toLocal(e);
-      applyDirection(p.x, p.y, anchor.x, anchor.y);
+      // 버튼을 누르지 않은 상태의 움직임 — 화면 중심 기준 커서 위치로 계속 조종한다(PC
+      // 슬리더리오류 게임의 일반적인 관례). 예전엔 `e.pointerType === 'mouse'`로 이 분기를
+      // 탔는데, 실제 하드웨어 마우스에서도 이 값이 기대와 다르게 들어와 "마우스로 조작이
+      // 안 된다" 문제가 재발했다 — pointerType을 신뢰하는 대신 "지금 누르고 있는지"(anchor
+      // 존재 여부)만으로 분기하면 브라우저가 입력장치를 뭘로 분류하든 항상 동작한다(터치는
+      // 손가락이 안 닿으면 애초에 pointermove 자체가 안 오므로 이 분기가 실행될 일이 없다).
+      const rect = targetEl.getBoundingClientRect();
+      applyDirection(p.x, p.y, rect.left + rect.width / 2, rect.top + rect.height / 2);
     }
 
     function onUp() {
