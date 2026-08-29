@@ -3,7 +3,11 @@
 
   // 영역 크기 등급별 출현 포인트 개수 (기획서 §3의 범위값 1~2/2~3 중 Claude가 고정값으로 결정).
   const SPAWN_COUNT_BY_SIZE = { small: 1, medium: 2, large: 3 };
-  const DEFAULT_MIN_DISTANCE_FRAC = 0.09; // 보드 최대 변 길이 대비 최소 간격 비율 (Claude 결정치)
+  // 보드 최대 변 길이 대비 최소 간격 비율 (Claude 결정치).
+  // .mole-pop 히트박스 width가 board의 12%이므로, 동시에 활성화된 두 pop의 히트박스가
+  // 겹치지 않으려면 중심 간 거리가 최소 0.12(히트박스 폭의 합인 0.06+0.06) 이상이어야
+  // 한다. 여유 마진을 두기 위해 0.13으로 설정 (기획서 §4: 동시 출현 두더지끼리 겹치지 않음).
+  const DEFAULT_MIN_DISTANCE_FRAC = 0.13;
   const MAX_TRIES_PER_POINT = 200;
 
   function dist(a, b) {
