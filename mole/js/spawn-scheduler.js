@@ -31,7 +31,16 @@
     function candidateSpawnPointsFor(type) {
       // 두더지는 아직 완성 안 된 영역에서만, 방해물은 완성 여부와 무관하게 아무 지점에서나 등장.
       if (type === 'mole') {
-        return spawnPoints.filter((sp) => !completedRegions.has(sp.regionId) && !occupiedSpawnPointIds.has(sp.id));
+        // Build set of regionIds that currently have an active mole
+        const regionsWithActiveMoles = new Set();
+        active.forEach((pop) => {
+          if (pop.type === 'mole') regionsWithActiveMoles.add(pop.regionId);
+        });
+        return spawnPoints.filter((sp) =>
+          !completedRegions.has(sp.regionId) &&
+          !occupiedSpawnPointIds.has(sp.id) &&
+          !regionsWithActiveMoles.has(sp.regionId)
+        );
       }
       return spawnPoints.filter((sp) => !occupiedSpawnPointIds.has(sp.id));
     }

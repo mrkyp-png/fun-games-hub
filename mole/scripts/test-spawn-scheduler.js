@@ -74,4 +74,23 @@ function makeSpawnPoints(regionIds) {
   assert.ok(scheduler.isComplete(), 'forceCompleteAll must mark every region complete');
 }
 
+// 6) 한 영역에 여러 스폰 포인트가 있어도 동시에 최대 한 개의 두더지만 활성화된다
+{
+  const regions = [{ id: 0 }, { id: 1 }];
+  const spawnPoints = makeSpawnPoints([0, 0, 1, 1]); // region 0: spawn points [0, 1], region 1: spawn points [2, 3]
+  const config = { maxConcurrentMoles: 2, maxConcurrentAnimals: 0, maxConcurrentBombs: 0, popDuration: 3 };
+  const scheduler = create({ regions, spawnPoints, config, rng: makeRng(6) });
+  for (let t = 0; t < 150; t++) {
+    scheduler.tick(0.1);
+    const pops = scheduler.getActivePops().filter((p) => p.type === 'mole');
+    const regionCounts = new Map();
+    pops.forEach((p) => {
+      regionCounts.set(p.regionId, (regionCounts.get(p.regionId) || 0) + 1);
+    });
+    regionCounts.forEach((count, regionId) => {
+      assert.strictEqual(count, 1, `region ${regionId} must have at most 1 active mole, but has ${count}`);
+    });
+  }
+}
+
 console.log('test-spawn-scheduler.js: all assertions passed');
