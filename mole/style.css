@@ -74,13 +74,13 @@
 
 .mole-board {
   position: relative;
-  flex: 1;
-  margin: 0 12px 12px;
+  flex: 0 0 auto;
+  width: min(calc(100% - 24px), calc(100dvh - 160px));
+  aspect-ratio: 1;
+  margin: 0 auto 12px;
   border-radius: 16px;
   overflow: hidden;
   background: #060417;
-  aspect-ratio: 1;
-  max-height: 100%;
 }
 .mole-board-layer {
   position: absolute;
