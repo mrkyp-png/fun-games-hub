@@ -41,4 +41,17 @@ function makeSquarePoints(w, h) {
   assert.ok(sizes.has('small') && sizes.has('medium') && sizes.has('large'), 'all three size tiers must appear');
 }
 
+// 4) 빈 클러스터 복구 테스트: 동일 좌표 점들로 강제로 빈 클러스터 유발
+// 같은 좌표에서는 k-means 초기화 후 일부 클러스터가 영원히 비울 수 있다.
+// 빈 클러스터 복구가 제대로 작동하면 모든 영역이 최소 1개 이상의 점을 갖는다.
+{
+  const points = Array(50).fill(null).map(() => ({ x: 0, y: 0 }));
+  const rng = { next: mulberry32(5) };
+  const { regions } = partition({ width: 1, height: 1, points, regionCount: 6, rng });
+  assert.strictEqual(regions.length, 6, 'must produce exactly regionCount regions even with duplicate coordinates');
+  const totalAssigned = regions.reduce((sum, r) => sum + r.points.length, 0);
+  assert.strictEqual(totalAssigned, points.length, 'all 50 points must be assigned across all regions');
+  assert.ok(regions.every(r => r.points.length > 0), 'no region must be left empty after reseed recovery');
+}
+
 console.log('test-region-partition.js: all assertions passed');

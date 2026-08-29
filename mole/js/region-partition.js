@@ -31,7 +31,8 @@
         let best = 0, bestDist = Infinity;
         for (let c = 0; c < centroids.length; c++) {
           const d = dist2(points[i], centroids[c]);
-          if (d < bestDist) { bestDist = d; best = c; }
+          // 중복 좌표 입력에서도 클러스터를 구분하기 위해 동일 거리에서 RNG으로 타이브레이크.
+          if (d < bestDist || (d === bestDist && rng.next() < 0.5)) { bestDist = d; best = c; }
         }
         assignment[i] = best;
       }
@@ -41,19 +42,34 @@
         const s = sums[assignment[i]];
         s.x += points[i].x; s.y += points[i].y; s.n += 1;
       }
+      const reusedForReseed = new Set();
       for (let c = 0; c < centroids.length; c++) {
         if (sums[c].n === 0) {
           // 빈 클러스터: 현재 가장 먼 점을 새 중심으로 삼는다 (결정론 유지를 위해 첫 최댓값 사용).
+          // 같은 반복 내에서 이미 다른 빈 클러스터의 시드로 쓰인 점은 제외한다.
           let farIdx = 0, farDist = -1;
           for (let i = 0; i < points.length; i++) {
+            if (reusedForReseed.has(i)) continue;
             const d = dist2(points[i], centroids[assignment[i]]);
             if (d > farDist) { farDist = d; farIdx = i; }
           }
           centroids[c] = { x: points[farIdx].x, y: points[farIdx].y };
+          reusedForReseed.add(farIdx);
         } else {
           centroids[c] = { x: sums[c].x / sums[c].n, y: sums[c].y / sums[c].n };
         }
       }
+    }
+
+    // 마지막 centroid 업데이트 후, 모든 점을 최종 assignment해야 공급된 centroid가 실제로 사용된다.
+    // 특히 reseed된 클러스터가 실제로 점을 할당받도록 보장한다.
+    for (let i = 0; i < points.length; i++) {
+      let best = 0, bestDist = Infinity;
+      for (let c = 0; c < centroids.length; c++) {
+        const d = dist2(points[i], centroids[c]);
+        if (d < bestDist || (d === bestDist && rng.next() < 0.5)) { bestDist = d; best = c; }
+      }
+      assignment[i] = best;
     }
 
     const buckets = centroids.map(() => []);
