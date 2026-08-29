@@ -1,5 +1,5 @@
 // 두더지 게임 통합 스모크 테스트 — snake/scripts/verify-snake-smoke.js와 동일 패턴
-// (디버그 훅으로 실제 UI 흐름을 헤드리스로 재현). scripts/serve.js가 8844 포트에 떠 있어야 한다.
+// (디버그 훅으로 실제 UI 흐름을 헤드리스로 재현). scripts/serve.js가 8845 포트에 떠 있어야 한다.
 const puppeteer = require('puppeteer-core');
 const assert = require('assert');
 
@@ -62,10 +62,12 @@ const EDGE_PATH = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge
     await new Promise((r) => setTimeout(r, 200));
     const afterGameOver = await page.evaluate(() => ({
       overlayHidden: document.getElementById('gameover-overlay').hidden,
-      levelText: document.getElementById('gameover-level').textContent
+      levelText: document.getElementById('gameover-level').textContent,
+      reasonText: document.getElementById('gameover-reason').textContent
     }));
     assert.strictEqual(afterGameOver.overlayHidden, false, 'game over overlay must show when lives reach 0');
     assert.strictEqual(afterGameOver.levelText, 'Level 2', 'game over overlay must show the current level');
+    assert.strictEqual(afterGameOver.reasonText, '목숨 소진', 'game over overlay must show the reason text for the lives-exhausted case');
 
     console.log('verify-mole-smoke.js: all assertions passed');
   } finally {
