@@ -47,6 +47,7 @@
 
   function backToSelect() {
     if (rafId) cancelAnimationFrame(rafId);
+    if (sharedPopElements) sharedPopElements.clear();
     state = null;
     document.getElementById('game-screen').hidden = true;
     document.getElementById('clear-overlay').hidden = true;
@@ -192,10 +193,16 @@
     state.ended = true;
     if (rafId) cancelAnimationFrame(rafId);
 
+    // 반짝임 연출 도중 완성 전 두더지/방해물 pop이 남아 보이지 않도록 먼저 정리한다.
+    sharedPopElements.clear();
+
     const stars = MG.ComboScore.computeStars(state.lives, START_LIVES);
     const coins = Math.floor(state.comboScore.score / 50); // 코인 지급량은 스펙 미지정, Claude 결정치
 
-    // 스펙 §14: 마지막 영역 완성은 일반 영역 완성보다 강한 연출 (반짝임 플래시).
+    // 스펙 §14: 마지막 영역 완성은 일반 영역 완성보다 강한 연출 (반짝임 플래시) →
+    // 그 다음 CLEAR 화면. 반짝임이 opaque한 clear-overlay(z-index 10)에 곧바로
+    // 가려지지 않도록, mole-board-sparkle 애니메이션(0.6s) 재생 시간만큼 오버레이
+    // 표시를 지연시킨다.
     const board = document.getElementById('mole-board');
     board.classList.add('sparkle');
     setTimeout(() => board.classList.remove('sparkle'), 700);
@@ -205,11 +212,13 @@
     progress[state.levelData.level] = { cleared: true, stars: Math.max(stars, prevStars) };
     saveProgress(progress);
 
-    document.getElementById('clear-stars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
-    document.getElementById('clear-score').textContent = state.comboScore.score + '점';
-    document.getElementById('clear-coins').textContent = '🪙 ' + coins;
-    document.getElementById('clear-next-btn').hidden = state.levelData.level >= 10;
-    document.getElementById('clear-overlay').hidden = false;
+    setTimeout(() => {
+      document.getElementById('clear-stars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+      document.getElementById('clear-score').textContent = state.comboScore.score + '점';
+      document.getElementById('clear-coins').textContent = '🪙 ' + coins;
+      document.getElementById('clear-next-btn').hidden = state.levelData.level >= 10;
+      document.getElementById('clear-overlay').hidden = false;
+    }, 650);
   }
 
   function gameOver(reason) {

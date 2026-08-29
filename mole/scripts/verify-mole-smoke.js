@@ -1,5 +1,9 @@
 // 두더지 게임 통합 스모크 테스트 — snake/scripts/verify-snake-smoke.js와 동일 패턴
 // (디버그 훅으로 실제 UI 흐름을 헤드리스로 재현). scripts/serve.js가 8845 포트에 떠 있어야 한다.
+// 8845를 쓰는 이유: scripts/serve.js의 기본 포트는 8844이지만, 이 게임을 개발하는 동안
+// 8844는 무관한 외부 서버가 이미 점유하고 있어 충돌을 피하려고 이 테스트만 8845를 하드코딩함.
+// 실행 전에 반드시 `PORT=8845 node scripts/serve.js`로 별도 서버를 띄워둘 것 —
+// 안 띄우면 ECONNREFUSED로 실패한다.
 const puppeteer = require('puppeteer-core');
 const assert = require('assert');
 
@@ -39,8 +43,9 @@ const EDGE_PATH = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge
     assert.ok(sawPop, 'at least one mole/animal/bomb pop must appear within 3 seconds');
 
     // 4) 모든 영역 강제 완성 → 클리어 오버레이 등장 + localStorage 진행 저장
+    // §14: 반짝임 연출(0.6s) 후에 오버레이가 뜨도록 game.js가 ~650ms 지연시키므로 그만큼 대기.
     await page.evaluate(() => window.__debugClearAllRegions());
-    await new Promise((r) => setTimeout(r, 300));
+    await new Promise((r) => setTimeout(r, 800));
     const afterClear = await page.evaluate(() => ({
       clearOverlayHidden: document.getElementById('clear-overlay').hidden,
       progress: JSON.parse(localStorage.getItem('moleGameProgress') || '{}')
