@@ -50,4 +50,30 @@ function makeRegion(id, size, x0, y0, w, h) {
   });
 }
 
+// 4) 빽빽하게 붙은 작은 영역들 — 고정 전에는 일부 영역이 배치 공간 부족으로 0개까지
+//    떨어질 수 있었던 케이스 (Critical 1 회귀 테스트). 20x20 공간에 3x3짜리 작은 영역
+//    16개를 촘촘히 채워 넣고, minDistanceFrac을 크게 잡아 rejection-sampling이 거의
+//    항상 실패하도록 강제한다.
+{
+  const regions = [];
+  let id = 0;
+  for (let gy = 0; gy < 4; gy++) {
+    for (let gx = 0; gx < 4; gx++) {
+      regions.push(makeRegion(id++, 'medium', gx * 5, gy * 5, 3, 3));
+    }
+  }
+  const width = 20, height = 20;
+  const { spawnPoints } = place({
+    regions, width, height,
+    rng: { next: mulberry32(7) },
+    minDistanceFrac: 0.5 // 최대 변(20) * 0.5 = 10px, 3x3짜리 영역들 사이에서는 사실상 항상 충돌
+  });
+  regions.forEach((region) => {
+    assert.ok(
+      spawnPoints.some((p) => p.regionId === region.id),
+      `region ${region.id} must have at least one spawn point even under tight packing (Critical 1 fix)`
+    );
+  });
+}
+
 console.log('test-spawn-placement.js: all assertions passed');
