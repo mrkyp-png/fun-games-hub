@@ -39,9 +39,9 @@ function lanIPs() {
     .map((n) => n.address);
 }
 
-http.createServer(handler).listen(PORT, '0.0.0.0', () => {
-  console.log('serving on http://localhost:' + PORT);
-});
+http.createServer(handler)
+  .on('error', (e) => console.log('http :' + PORT + ' 안 뜸 (' + e.code + ') — https 만 사용'))
+  .listen(PORT, '0.0.0.0', () => console.log('serving on http://localhost:' + PORT));
 
 let cert, key;
 try {
