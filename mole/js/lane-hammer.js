@@ -7,18 +7,18 @@
   // 순수 비주얼 — 게임 상태 모름. update(dt) 를 메인 루프가 매 프레임 호출.
 
   const FLY_SEC = 0.09;     // 대기/이전 열 → 목표 열 위로 (예비동작)
-  const CHOP_SEC = 0.05;    // 내리찍기
-  const RISE_SEC = 0.09;    // 찍고 살짝 올라옴
+  const CHOP_SEC = 0.04;    // 내리찍기 — 빠르게 스냅
+  const RISE_SEC = 0.10;    // 찍고 살짝 올라옴
   const HOME_SEC = 0.22;    // 다음 입력 없으면 우측 하단으로 복귀
 
   const HEAD_X = 16;   // 이미지 안 "머리 타격점" 위치 (%)
   const HEAD_Y = 42;
   const HOME_X = 0.9, HOME_Y = 0.92;   // 대기 위치 (보드 분수) — 우측 하단, 살짝 보이게
-  const HOME_DEG = -120;               // 대기: 옆으로 뉘어 홀스터
-  const READY_DEG = -78;               // 조준: 머리 아래로 세움
-  const HIT_DEG = -96;                 // 찍는 순간 살짝 넘김
-  const AIM_LIFT = 0.14;               // 조준 시 목표보다 이만큼 위 (보드 높이 분수)
-  const CHOP_DROP = 0.10;              // 내리찍기 낙폭 (보드 높이 분수)
+  const HOME_DEG = -118;               // 대기: 옆으로 뉘어 홀스터
+  const READY_DEG = -70;               // 조준: 머리 아래로 (살짝 대각)
+  const HIT_DEG = -88;                 // 찍는 순간 넘김
+  const AIM_LIFT = 0.16;               // 조준 시 목표보다 이만큼 위 (보드 높이 분수)
+  const CHOP_DROP = 0.15;              // 내리찍기 낙폭 (보드 높이 분수)
 
   function lerp(a, b, k) { return a + (b - a) * k; }
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
@@ -69,6 +69,9 @@
         deg = lerp(READY_DEG, HIT_DEG, k);
         if (!fired && t >= CHOP_SEC) {
           fired = true;
+          img.classList.remove('lane-hammer-img--hit');
+          void img.offsetWidth;
+          img.classList.add('lane-hammer-img--hit');
           if (impactCb) { const cb = impactCb; impactCb = null; cb(); }
           phase = 'rise'; t = 0; fromY = y; fromDeg = deg;
         }

@@ -211,10 +211,16 @@
 #mole-hammer-layer { pointer-events: none; overflow: visible; }
 .lane-hammer {
   position: absolute;
-  width: 42%;
+  width: 37%;
   will-change: transform;
 }
 .lane-hammer img { display: block; width: 100%; filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.5)); }
+.lane-hammer-img--hit { animation: lane-hammer-squash 0.16s ease-out; }
+@keyframes lane-hammer-squash {
+  0% { transform: scale(1, 1); }
+  35% { transform: scale(1.12, 0.9); }
+  100% { transform: scale(1, 1); }
+}
 
 /* ---- 타격 연출 ---- */
 .mole-board--shake { animation: mole-shake 0.2s ease-out; }
