@@ -20,6 +20,8 @@
   const GRIP_OFF_X = 0.11;             // grip 을 목표보다 이만큼 오른쪽 (보드 폭 분수)
   const GRIP_OFF_Y = 0.10;             // grip 을 목표보다 이만큼 아래 (보드 높이 분수)
   const CLAMP = 0.12;                  // grip 이 보드 가장자리 이 안쪽까지만 (화면밖 방지)
+  const AIM_DX = 0.005;                // 타격점 미세보정: + = 오른쪽 (보드 폭 분수, 0.5mm ≈ 0.005)
+  const AIM_DY = -0.005;               // 타격점 미세보정: - = 위
 
   function lerp(a, b, k) { return a + (b - a) * k; }
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
@@ -46,8 +48,8 @@
       const tx = (typeof targetXFrac === 'number') ? targetXFrac : 0.5;
       const ty = (typeof targetYFrac === 'number') ? targetYFrac : 0.5;
       fromX = gx; fromY = gy; fromDeg = deg;
-      aimX = Math.max(CLAMP, Math.min(1 - CLAMP, tx + GRIP_OFF_X));
-      aimY = Math.max(CLAMP, Math.min(1 - CLAMP, ty + GRIP_OFF_Y));
+      aimX = Math.max(CLAMP, Math.min(1 - CLAMP, tx + GRIP_OFF_X + AIM_DX));
+      aimY = Math.max(CLAMP, Math.min(1 - CLAMP, ty + GRIP_OFF_Y + AIM_DY));
       impactCb = onImpact || null;
       fired = false;
       phase = 'fly';
