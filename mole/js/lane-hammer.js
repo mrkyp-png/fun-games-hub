@@ -13,7 +13,7 @@
 
   const GRIP_X = 24;   // 스프라이트 안 손잡이 잡는 점 (%)
   const GRIP_Y = 84;
-  const HOME_X = 0.82, HOME_Y = 0.86;  // 대기 위치 (보드 분수) — 우측 하단, 화면 안
+  const HOME_X = 0.82, HOME_Y = 0.91;  // 대기 위치 (보드 분수) — 우측 하단, 화면 안
   const HOME_DEG = 26;                 // 대기: 옆으로 뉘어 홀스터
   const READY_DEG = -30;               // 조준: 오른쪽에서 머리 들어올림
   const HIT_DEG = -82;                 // 타격: 머리를 대각선 아래로 휘두름
