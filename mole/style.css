@@ -277,6 +277,37 @@
   0%, 100% { filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); }
   40% { filter: brightness(2.6) drop-shadow(0 0 10px #fff); }
 }
+
+/* ---- 두더지 등장 연출 (hit-fx.js emerge) ---- */
+.hit-fx-ring {
+  position: absolute;
+  width: 22%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 3px solid var(--ring, #ffe9a8);
+  transform: translate(-50%, -50%) scale(0.25);
+  pointer-events: none;
+  animation: hit-ring 0.42s ease-out forwards;
+}
+@keyframes hit-ring {
+  0% { transform: translate(-50%, -50%) scale(0.25); opacity: 0.95; }
+  100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+}
+.hit-fx-glow {
+  position: absolute;
+  width: 30%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--glow, rgba(255, 225, 150, 0.6)), transparent 70%);
+  transform: translate(-50%, -50%) scale(0.6);
+  pointer-events: none;
+  animation: hit-glow 0.38s ease-out forwards;
+}
+@keyframes hit-glow {
+  0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+  30% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.15); opacity: 0; }
+}
 .hud-flash { animation: hud-flash 0.3s ease-out; }
 @keyframes hud-flash {
   0%, 100% { color: inherit; }

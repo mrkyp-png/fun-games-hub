@@ -14,7 +14,7 @@
   const STEP_SEC = 0.055;       // 등장/빠끔 이동: 깊이 한 칸이 화면에 머무는 시간 — 빠르게
   const DYING_STEP_SEC = 0.144; // 타격 후: 전신 그대로 구멍 아래로 "천천히" 미끄러진다 (0→4 ≈ 0.58s)
 
-  function create({ container }) {
+  function create({ container, onEmerge }) {
     const pops = new Map();  // popId -> { el, img, kind, poseIndex, shownDepth, targetDepth, shownFile }
     let lastNow = 0;
 
@@ -28,6 +28,7 @@
       img.alt = '';
       el.appendChild(img);
       container.appendChild(el);
+      if (onEmerge) onEmerge(pop.x, pop.y, pop.type); // 구멍에서 올라오는 순간 연출 (흙먼지·링·글로우)
       const m = {
         el, img, kind: pop.type, poseIndex: pop.poseIndex || 0,
         shownDepth: GONE_DEPTH, targetDepth: 0, shownFile: null, dying: false

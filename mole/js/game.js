@@ -99,7 +99,8 @@
 
     if (!sharedPopElements) {
       sharedPopElements = MG.PopElements.create({
-        container: document.getElementById('mole-pop-layer')
+        container: document.getElementById('mole-pop-layer'),
+        onEmerge: (x, y, type) => MG.HitFx.emerge(document.getElementById('mole-board'), x, y, type)
       });
     }
     sharedPopElements.clear();

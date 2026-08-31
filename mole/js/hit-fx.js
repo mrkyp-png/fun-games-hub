@@ -72,6 +72,20 @@
     tone(90, 'sine');
   }
 
-  const api = { moleHit, obstacleHit, whiff };
+  // 두더지/방해물이 구멍에서 올라오는 순간: 흙먼지 + 충격파 링 + 구멍 글로우.
+  // 두더지 = 흰/금빛, 방해물 = 붉은빛 (버튼 누르기 전 tell).
+  function emerge(boardEl, xFrac, yFrac, type) {
+    const warn = (type !== 'mole');
+    for (let i = 0; i < 5; i++) {
+      const p = spawnAt(boardEl, 'hit-fx-dust', xFrac, yFrac + 0.02);
+      p.style.setProperty('--dx', (Math.round((Math.random() - 0.5) * 46)) + 'px');
+    }
+    const ring = spawnAt(boardEl, 'hit-fx-ring', xFrac, yFrac);
+    ring.style.setProperty('--ring', warn ? '#ff6a4d' : '#ffe9a8');
+    const glow = spawnAt(boardEl, 'hit-fx-glow', xFrac, yFrac);
+    glow.style.setProperty('--glow', warn ? 'rgba(255,90,60,0.55)' : 'rgba(255,225,150,0.6)');
+  }
+
+  const api = { moleHit, obstacleHit, whiff, emerge };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);
