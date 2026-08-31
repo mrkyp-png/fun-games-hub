@@ -5,10 +5,9 @@ const tests = [
   'test-levels.js',
   'test-rng.js',
   'test-combo-score.js',
-  'test-emoji-mask.js',
-  'test-region-partition.js',
-  'test-spawn-placement.js',
-  'test-spawn-scheduler.js'
+  'test-grid-partition.js',
+  'test-spawn-scheduler.js',
+  'test-mole-sprites.js'
 ];
 
 let failed = false;

@@ -1,34 +1,31 @@
 (function (root) {
   'use strict';
 
-  // maskSize 해상도의 커버 캔버스를 이모지 이미지 위에 얹고, 영역이 완성되면 그 영역의
-  // 픽셀만 destination-out으로 투명하게 뚫어서 아래 실제 이모지가 드러나게 한다.
-  // (SVG clipPath 폴리곤 근사보다 단순하고, k-means가 만든 픽셀 단위 영역과 정확히 일치.)
-  function create({ canvas, width, height }) {
-    canvas.width = width;
-    canvas.height = height;
+  // 배경 이모지 위의 어두운 실루엣 막 (사용자 확정): 칸별로 뚫는 게 아니라, 전체가
+  // 90% 실루엣에서 시작해 두더지를 한 칸 잡을 때마다 5%씩 통째로 옅어진다.
+  // 16칸 다 잡으면 0.90 - 16*0.05 = 0.10 → 그림이 거의 다 드러난다.
+
+  const START = 0.90;
+  const STEP = 0.05;
+  const MIN = 0.08;
+
+  function create({ canvas }) {
+    canvas.width = 8;
+    canvas.height = 8;
     const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#0a0818';
+    ctx.fillRect(0, 0, 8, 8); // 단색 채우고 불투명도만 CSS 로 조절
+    canvas.style.transition = 'opacity 0.5s ease';
+    let darkness = START;
 
-    function reset(coverColor) {
-      ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = coverColor || 'rgba(20, 20, 40, 0.92)';
-      ctx.fillRect(0, 0, width, height);
-    }
+    function apply() { canvas.style.opacity = String(darkness); }
+    function reset() { darkness = START; apply(); }
+    function lighten() { darkness = Math.max(MIN, darkness - STEP); apply(); }
 
-    function revealRegion(region) {
-      ctx.save();
-      ctx.globalCompositeOperation = 'destination-out';
-      region.points.forEach((p) => ctx.fillRect(p.x, p.y, 1, 1));
-      ctx.restore();
-    }
-
-    function revealAll(regions) {
-      regions.forEach(revealRegion);
-    }
-
-    return { reset, revealRegion, revealAll };
+    return { reset, lighten };
   }
 
-  const api = { create };
+  const api = { create, START, STEP, MIN };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.RegionReveal = api; }
 })(typeof window !== 'undefined' ? window : null);

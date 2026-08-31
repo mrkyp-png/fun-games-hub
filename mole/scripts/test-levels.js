@@ -3,7 +3,6 @@ const { LEVELS } = require('../js/levels.js');
 
 assert.strictEqual(LEVELS.length, 10, 'LEVELS must have exactly 10 entries');
 
-const expectedRegionCount = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
 const expectedMoleDuration = [2.5, 2.4, 2.3, 2.2, 2.0, 1.8, 1.6, 1.4, 1.2, 1.0];
 const expectedMaxMoles = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5];
 const expectedMaxAnimals = [0, 1, 1, 2, 0, 1, 1, 2, 2, 3];
@@ -16,7 +15,7 @@ const expectedEmoji = [
 
 LEVELS.forEach((lv, i) => {
   assert.strictEqual(lv.level, i + 1, `level field must be ${i + 1}`);
-  assert.strictEqual(lv.regionCount, expectedRegionCount[i], `Level ${i + 1} regionCount`);
+  assert.strictEqual(lv.regionCount, 16, `Level ${i + 1} regionCount is a fixed 4x4 grid`);
   assert.strictEqual(lv.moleDuration, expectedMoleDuration[i], `Level ${i + 1} moleDuration`);
   assert.strictEqual(lv.maxConcurrentMoles, expectedMaxMoles[i], `Level ${i + 1} maxConcurrentMoles`);
   assert.strictEqual(lv.maxConcurrentAnimals, expectedMaxAnimals[i], `Level ${i + 1} maxConcurrentAnimals`);
