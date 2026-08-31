@@ -72,18 +72,14 @@
     tone(90, 'sine');
   }
 
-  // 두더지/방해물이 구멍에서 올라오는 순간: 흙먼지 + 충격파 링 + 구멍 글로우.
-  // 두더지 = 흰/금빛, 방해물 = 붉은빛 (버튼 누르기 전 tell).
-  function emerge(boardEl, xFrac, yFrac, type) {
-    const warn = (type !== 'mole');
+  // 두더지가 구멍에서 올라오는 순간: 흙먼지 + 충격파 링 + 구멍 글로우 (동물엔 안 붙임).
+  function emerge(boardEl, xFrac, yFrac) {
     for (let i = 0; i < 5; i++) {
       const p = spawnAt(boardEl, 'hit-fx-dust', xFrac, yFrac + 0.02);
       p.style.setProperty('--dx', (Math.round((Math.random() - 0.5) * 46)) + 'px');
     }
-    const ring = spawnAt(boardEl, 'hit-fx-ring', xFrac, yFrac);
-    ring.style.setProperty('--ring', warn ? '#ff6a4d' : '#ffe9a8');
-    const glow = spawnAt(boardEl, 'hit-fx-glow', xFrac, yFrac);
-    glow.style.setProperty('--glow', warn ? 'rgba(255,90,60,0.55)' : 'rgba(255,225,150,0.6)');
+    spawnAt(boardEl, 'hit-fx-ring', xFrac, yFrac).style.setProperty('--ring', '#ffe9a8');
+    spawnAt(boardEl, 'hit-fx-glow', xFrac, yFrac).style.setProperty('--glow', 'rgba(255,225,150,0.6)');
   }
 
   const api = { moleHit, obstacleHit, whiff, emerge };
