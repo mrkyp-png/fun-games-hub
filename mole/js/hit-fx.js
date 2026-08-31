@@ -53,7 +53,7 @@
       const p = spawnAt(boardEl, 'hit-fx-dust', xFrac, yFrac);
       p.style.setProperty('--dx', (Math.round((Math.random() - 0.5) * 60)) + 'px');
     }
-    vibrate(15);
+    vibrate(35); // 두더지 처치 — 체감되게
     tone(320);
   }
 
