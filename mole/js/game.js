@@ -4,7 +4,7 @@
   const MG = window.MoleGame;
   const PROGRESS_KEY = 'moleGameProgress';
   const START_LIVES = 3; // 스펙 §11
-  const MASK_SIZE = 96;
+  const GRID_SIZE = 4; // 사용자 확정: 그림을 4x4 = 16칸 고정 격자로 분할
 
   let state = null; // 현재 플레이 중인 게임 상태 (레벨 선택 화면일 땐 null)
   let rafId = null;
@@ -48,6 +48,8 @@
   function backToSelect() {
     if (rafId) cancelAnimationFrame(rafId);
     if (sharedPopElements) sharedPopElements.clear();
+    if (state && state.holeLayer) state.holeLayer.clear();
+    if (state && state.laneControls) state.laneControls.clear();
     state = null;
     document.getElementById('game-screen').hidden = true;
     document.getElementById('clear-overlay').hidden = true;
@@ -59,6 +61,8 @@
   // ---------- 레벨 시작 ----------
   async function startLevel(levelNum) {
     if (rafId) cancelAnimationFrame(rafId);
+    if (state && state.holeLayer) state.holeLayer.clear();
+    if (state && state.laneControls) state.laneControls.clear();
     const levelData = MG.LEVELS[levelNum - 1];
 
     document.getElementById('level-select-screen').hidden = true;
@@ -71,12 +75,7 @@
 
     const rng = { next: MG.RNG.mulberry32(MG.RNG.hashSeed('mole-level-' + levelNum + '-' + Date.now())) };
 
-    const mask = await MG.EmojiMask.loadMask(emojiUrl, MASK_SIZE);
-    const { regions } = MG.RegionPartition.partition({
-      width: mask.width, height: mask.height, points: mask.points,
-      regionCount: levelData.regionCount, rng
-    });
-    const { spawnPoints } = MG.SpawnPlacement.place({ regions, width: mask.width, height: mask.height, rng });
+    const { regions, spawnPoints } = MG.GridPartition.partition({ gridSize: GRID_SIZE });
 
     const scheduler = MG.SpawnScheduler.create({
       regions, spawnPoints,
@@ -84,30 +83,48 @@
         maxConcurrentMoles: levelData.maxConcurrentMoles,
         maxConcurrentAnimals: levelData.maxConcurrentAnimals,
         maxConcurrentBombs: levelData.maxConcurrentBombs,
-        popDuration: levelData.moleDuration
+        popDuration: levelData.moleDuration,
+        molePoseCount: MG.MoleSprites.POSE_COUNT,
+        obstacleCount: MG.MoleSprites.OBSTACLE_COUNT
       },
       rng
     });
 
     const regionReveal = MG.RegionReveal.create({
-      canvas: document.getElementById('mole-reveal-canvas'),
-      width: mask.width, height: mask.height
+      canvas: document.getElementById('mole-reveal-canvas')
     });
     regionReveal.reset();
 
     if (!sharedPopElements) {
       sharedPopElements = MG.PopElements.create({
-        container: document.getElementById('mole-pop-layer'),
-        onHit: handlePopHit
+        container: document.getElementById('mole-pop-layer')
       });
     }
     sharedPopElements.clear();
 
+    const holeLayer = MG.HoleLayer.create({
+      container: document.getElementById('mole-hole-layer'),
+      frontContainer: document.getElementById('mole-hole-front-layer'),
+      spawnPoints
+    });
+
+    const laneHammer = MG.LaneHammer.create({
+      layer: document.getElementById('mole-hammer-layer'),
+      gridSize: GRID_SIZE
+    });
+    const laneControls = MG.LaneControls.create({
+      buttonBar: document.getElementById('lane-button-bar'),
+      gridSize: GRID_SIZE,
+      onColumn: handleColumn
+    });
+
     state = {
-      levelData, regions, spawnPoints, scheduler, regionReveal,
+      levelData, regions, spawnPoints, scheduler, regionReveal, holeLayer,
+      laneHammer, laneControls,
       comboScore: MG.ComboScore.create(),
       lives: START_LIVES,
       timeRemaining: levelData.timeLimit,
+      hitstopUntil: 0,
       ended: false
     };
 
@@ -119,8 +136,10 @@
   // ---------- 메인 루프 ----------
   function loop(now) {
     if (!state || state.ended) return;
-    const dt = Math.min(0.1, (now - lastTime) / 1000);
+    const rawDt = Math.min(0.1, (now - lastTime) / 1000);
     lastTime = now;
+    // 히트스톱: 성공타 직후 잠깐 게임 시간을 멈춘다 (루프는 계속 돈다).
+    const dt = (now < state.hitstopUntil) ? 0 : rawDt;
 
     state.timeRemaining -= dt;
     if (state.timeRemaining <= 0) {
@@ -131,10 +150,19 @@
     }
 
     state.scheduler.tick(dt);
-    sharedPopElements.sync(state.scheduler.getActivePops());
+    state.laneHammer.update(rawDt); // 망치는 히트스톱과 무관하게 부드럽게
+    syncPops();
+
+    // 열별 버튼 hot: 그 열에 두더지(방해물 아님)가 떠 있으면 빛낸다 (스펙 §2.3).
+    const moleCols = new Set();
+    state.scheduler.getActivePops().forEach((p) => {
+      if (p.type === 'mole' && !p.dying) moleCols.add(p.col);
+    });
+    for (let c = 0; c < GRID_SIZE; c++) state.laneControls.setColumnHot(c, moleCols.has(c));
+
     updateHUD();
 
-    if (state.scheduler.isComplete()) {
+    if (state.scheduler.isComplete() && !state.laneHammer.isBusy()) {
       levelClear();
       return;
     }
@@ -155,36 +183,69 @@
     });
   }
 
-  // ---------- 터치 처리 ----------
-  function handlePopHit(popId, x, y) {
+  function syncPops() {
+    sharedPopElements.sync(state.scheduler.getActivePops());
+  }
+
+  // ---------- 레인 버튼 입력 → 열 강타 (기획서 §4/§5 v1.4) ----------
+  function handleColumn(col) {
     if (!state || state.ended) return;
-    const result = state.scheduler.resolveHit(popId);
-    if (!result) return; // 이미 만료된 뒤 늦게 도착한 이벤트
+    const results = state.scheduler.resolveColumn(col);
 
-    MG.HammerFx.trigger(document.getElementById('mole-pop-layer'), x, y);
+    // 망치 목표 정수리: 그 열 결과 중 done 인 두더지 우선, 없으면 첫 결과, 없으면 열 중앙.
+    const primary = results.find((r) => r.type === 'mole' && r.done) || results[0] || null;
+    const targetY = primary ? primary.yFrac : 0.5;
 
-    if (result.type === 'mole') {
-      state.comboScore.onMoleHit(); // 스펙 §12
-      state.regionReveal.revealRegion(state.regions[result.regionId]); // 스펙 §13
-    } else if (result.type === 'animal') {
-      state.comboScore.onObstacleHit();
-      state.lives -= 1; // 스펙 §8/§11
-      if (state.lives <= 0) {
-        sharedPopElements.sync(state.scheduler.getActivePops());
-        updateHUD();
-        gameOver('lives');
-        return;
+    state.laneHammer.strike(col, targetY, () => onHammerImpact(col, results));
+  }
+
+  function onHammerImpact(col, results) {
+    if (!state || state.ended) return;
+    const board = document.getElementById('mole-board');
+    let moleHits = 0;
+
+    results.forEach((r) => {
+      if (r.type === 'mole') {
+        if (r.done) {
+          state.comboScore.onMoleHit();   // 스펙 §12 — 마리당 1콤보
+          state.regionReveal.lighten();   // 배경 실루엣 옅게 (스펙 §13)
+          MG.HitFx.moleHit(board, r.xFrac, r.yFrac);
+          moleHits += 1;
+        }
+      } else if (r.type === 'animal') {
+        state.lives -= 1;                 // 스펙 §8/§11
+        state.comboScore.onObstacleHit();
+        MG.HitFx.obstacleHit(board, r.xFrac, r.yFrac, 'animal');
+        flashHud('hud-hearts');
+      } else if (r.type === 'bomb') {
+        state.timeRemaining = Math.max(0, state.timeRemaining - 3); // 스펙 §8
+        state.comboScore.onObstacleHit();
+        MG.HitFx.obstacleHit(board, r.xFrac, r.yFrac, 'bomb');
+        flashHud('hud-time');
       }
-    } else if (result.type === 'bomb') {
-      state.comboScore.onObstacleHit();
-      state.timeRemaining = Math.max(0, state.timeRemaining - 3); // 스펙 §8
-      MG.HammerFx.trigger(document.getElementById('mole-pop-layer'), x, y, '💥'); // §8 폭발 연출
+    });
+
+    if (results.length === 0) {
+      MG.HitFx.whiff(board, (col + 0.5) / GRID_SIZE); // 빈 열 헛스윙
+    }
+    if (moleHits > 0) {
+      state.hitstopUntil = performance.now() + Math.min(120, 70 + state.comboScore.combo * 10);
     }
 
-    sharedPopElements.sync(state.scheduler.getActivePops());
+    syncPops();
     updateHUD();
+    if (state.lives <= 0) {
+      gameOver('lives');
+    }
+    // 레벨 완성 판정은 메인 루프가 망치 스윙이 끝난 뒤 처리한다 (loop 참고).
+  }
 
-    if (state.scheduler.isComplete()) levelClear();
+  function flashHud(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('hud-flash');
+    void el.offsetWidth;
+    el.classList.add('hud-flash');
   }
 
   // ---------- 종료 처리 ----------
@@ -247,13 +308,16 @@
     window.__debugClearAllRegions = function () {
       if (!state) return;
       state.scheduler.forceCompleteAll();
-      sharedPopElements.sync(state.scheduler.getActivePops());
+      syncPops();
       levelClear();
     };
     window.__debugForceGameOver = function () {
       if (!state) return;
       state.lives = 0;
       gameOver('lives');
+    };
+    window.__debugHitColumn = function (col) {
+      if (state) handleColumn(col);
     };
   });
 })();

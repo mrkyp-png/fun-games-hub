@@ -75,7 +75,7 @@
 .mole-board {
   position: relative;
   flex: 0 0 auto;
-  width: min(calc(100% - 24px), calc(100dvh - 160px));
+  width: min(calc(100% - 24px), calc(100dvh - 260px));
   aspect-ratio: 1;
   margin: 0 auto 12px;
   border-radius: 16px;
@@ -89,46 +89,44 @@
   height: 100%;
 }
 #mole-emoji-img { object-fit: contain; }
+/* 두더지 직접 터치 없음 (기획서 v1.4) — 조작은 레인 버튼. */
 #mole-pop-layer { pointer-events: none; }
-#mole-pop-layer .mole-pop { pointer-events: auto; }
+#mole-pop-layer .mole-pop { pointer-events: none; }
 
+#mole-hole-layer,
+#mole-hole-front-layer { pointer-events: none; }
+/* 4x4 격자 구멍 — 게임 끝날 때까지 상시 표시 (사라지지 않음).
+   .mole-hole = 뒤(pop 아래), .mole-hole-front = 앞턱(pop 위). 같은 위치·크기라야 겹친다. */
+.mole-hole,
+.mole-hole-front {
+  position: absolute;
+  width: 21%;
+  transform: translate(-50%, -38%);
+  margin-top: 0.7%;
+  object-fit: contain;
+}
+
+/* .mole-pop = 구멍 위 클립박스. 스프라이트는 "발치가 캔버스 바닥"에 정렬돼 있고,
+   이 박스의 아래 끝을 구멍 입구에 놓는다. 그래서 어떤 포즈든 발치가 구멍에 박히고,
+   translateY 로 더 내려가면 박스 밖으로 잘려 "구멍 속으로" 사라진다. */
 .mole-pop {
   position: absolute;
-  transform: translate(-50%, -50%);
-  width: 12%;
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
+  left: 0;
+  width: 27%;
+  aspect-ratio: 6 / 7; /* = slice-mole-sprites.py 의 OUT_W:OUT_H */
+  transform: translate(-50%, calc(-100% + 8%));
+  /* 아래쪽(구멍 입구)만 자르고 머리 쪽은 자유롭게 위로 나오게 한다 — 윗줄 두더지 머리 잘림 방지 */
+  clip-path: inset(-300% -300% 0 -300%);
 }
-.mole-pop-hole {
+.mole-pop-img {
   position: absolute;
-  inset: 10%;
-  border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.3));
-}
-.mole-pop-glyph {
-  position: relative;
-  font-size: min(8vw, 40px);
-  animation: mole-pop-up 0.18s ease-out;
-}
-@keyframes mole-pop-up {
-  from { transform: translateY(60%) scale(0.6); opacity: 0; }
-  to { transform: translateY(0) scale(1); opacity: 1; }
-}
-
-.hammer-fx {
-  position: absolute;
-  transform: translate(-50%, -70%);
-  font-size: min(9vw, 46px);
+  left: 50%;
+  bottom: -4%; /* 대기 상태에서도 발치가 살짝 구멍에 잠기게 */
+  width: 100%;
+  /* transform(translateY sink %) 은 pop-elements.js 가 깊이에 따라 설정 */
+  transform: translate(-50%, 0);
   pointer-events: none;
-  animation: hammer-swing 0.28s ease-in;
-}
-@keyframes hammer-swing {
-  0% { transform: translate(-50%, -140%) rotate(-30deg); opacity: 0; }
-  40% { transform: translate(-50%, -110%) rotate(-10deg); opacity: 1; }
-  100% { transform: translate(-50%, -40%) rotate(20deg); opacity: 1; }
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
 }
 
 /* 기획서 §14: 마지막 영역 완성 시 일반 영역 완성보다 강한 연출 (반짝임 플래시). */
@@ -180,4 +178,103 @@
   color: #fff;
   font-weight: 700;
   cursor: pointer;
+}
+
+/* ---- 레인 버튼 바 (기획서 §4 v1.4) ---- */
+#lane-button-bar {
+  display: flex;
+  gap: 8px;
+  padding: 0 12px 16px;
+  flex: 0 0 auto;
+}
+.lane-button {
+  flex: 1;
+  height: 76px;
+  border: none;
+  border-radius: 16px;
+  background: var(--card-bg);
+  color: var(--ink);
+  font-size: 1.4rem;
+  font-weight: 800;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.06s, box-shadow 0.12s, background 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.lane-button:active { transform: translateY(3px) scale(0.97); }
+.lane-button--hot {
+  background: #6d5bd0;
+  box-shadow: 0 0 14px 2px rgba(150, 130, 255, 0.7);
+}
+
+/* ---- 망치 ---- */
+#mole-hammer-layer { pointer-events: none; overflow: visible; }
+.lane-hammer {
+  position: absolute;
+  width: 34%;
+  transform-origin: 100% 100%;
+  will-change: transform, left, top;
+}
+.lane-hammer img { display: block; width: 100%; filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.45)); }
+
+/* ---- 타격 연출 ---- */
+.mole-board--shake { animation: mole-shake 0.2s ease-out; }
+@keyframes mole-shake {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-4px, 3px); }
+  50% { transform: translate(3px, -2px); }
+  75% { transform: translate(-2px, 2px); }
+  100% { transform: translate(0, 0); }
+}
+.hit-fx-burst, .hit-fx-clang {
+  position: absolute;
+  transform: translate(-50%, -60%);
+  font-weight: 900;
+  font-size: 1.8rem;
+  color: #ffe14d;
+  text-shadow: 0 2px 0 #b26a00, 0 0 10px rgba(255, 225, 77, 0.8);
+  pointer-events: none;
+  animation: hit-pop 0.4s ease-out forwards;
+}
+.hit-fx-clang { color: #cfd8ff; text-shadow: 0 2px 0 #445, 0 0 10px rgba(200, 210, 255, 0.8); }
+@keyframes hit-pop {
+  0% { transform: translate(-50%, -60%) scale(0.4); opacity: 0; }
+  30% { transform: translate(-50%, -75%) scale(1.15); opacity: 1; }
+  100% { transform: translate(-50%, -95%) scale(1); opacity: 0; }
+}
+.hit-fx-helmet {
+  position: absolute;
+  width: 12%;
+  height: 12%;
+  background: no-repeat center / contain url('assets/moles/helmet.png');
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: hit-helmet 0.5s ease-in forwards;
+}
+@keyframes hit-helmet {
+  0% { transform: translate(-50%, -50%) rotate(0) scale(1); opacity: 1; }
+  100% { transform: translate(-120%, 40%) rotate(-140deg) scale(0.7); opacity: 0; }
+}
+.hit-fx-dust {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #7a5230;
+  pointer-events: none;
+  animation: hit-dust 0.45s ease-out forwards;
+}
+@keyframes hit-dust {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+  100% { transform: translate(calc(-50% + var(--dx, 20px)), calc(-50% - 30px)) scale(0.2); opacity: 0; }
+}
+.mole-pop-img--hit { animation: mole-pop-hit 0.15s ease-out; }
+@keyframes mole-pop-hit {
+  0%, 100% { filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); }
+  40% { filter: brightness(2.6) drop-shadow(0 0 10px #fff); }
+}
+.hud-flash { animation: hud-flash 0.3s ease-out; }
+@keyframes hud-flash {
+  0%, 100% { color: inherit; }
+  40% { color: #ff5a5a; text-shadow: 0 0 8px rgba(255, 90, 90, 0.9); }
 }

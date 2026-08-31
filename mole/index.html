@@ -35,8 +35,12 @@
     <div id="mole-board" class="mole-board">
       <img id="mole-emoji-img" class="mole-board-layer" alt="">
       <canvas id="mole-reveal-canvas" class="mole-board-layer"></canvas>
+      <div id="mole-hole-layer" class="mole-board-layer"></div>
       <div id="mole-pop-layer" class="mole-board-layer"></div>
+      <div id="mole-hole-front-layer" class="mole-board-layer"></div>
+      <div id="mole-hammer-layer" class="mole-board-layer"></div>
     </div>
+    <div id="lane-button-bar"></div>
   </section>
 
   <!-- 클리어 오버레이 -->
@@ -72,12 +76,14 @@
 <script src="js/levels.js"></script>
 <script src="js/rng.js"></script>
 <script src="js/combo-score.js"></script>
-<script src="js/emoji-mask.js"></script>
-<script src="js/region-partition.js"></script>
-<script src="js/spawn-placement.js"></script>
+<script src="js/grid-partition.js"></script>
 <script src="js/spawn-scheduler.js"></script>
+<script src="js/mole-sprites.js"></script>
 <script src="js/pop-elements.js"></script>
-<script src="js/hammer-fx.js"></script>
+<script src="js/hole-layer.js"></script>
+<script src="js/hit-fx.js"></script>
+<script src="js/lane-hammer.js"></script>
+<script src="js/lane-controls.js"></script>
 <script src="js/region-reveal.js"></script>
 <script src="js/hud.js"></script>
 <script src="js/game.js"></script>
