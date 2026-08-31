@@ -3,8 +3,11 @@ const { create } = require('../js/spawn-scheduler.js');
 const { mulberry32 } = require('../js/rng.js');
 
 function makeRng(seed) { return { next: mulberry32(seed) }; }
-function makeSpawnPoints(regionIds) {
-  return regionIds.map((regionId, i) => ({ id: i, regionId, x: i / regionIds.length, y: 0.5 }));
+function makeSpawnPoints(regionIds, cols) {
+  return regionIds.map((regionId, i) => ({
+    id: i, regionId, x: i / regionIds.length, y: 0.5,
+    col: cols ? cols[i] : 0
+  }));
 }
 
 // 1) 동시 활성 개수가 절대 max를 넘지 않는다
@@ -91,6 +94,172 @@ function makeSpawnPoints(regionIds) {
       assert.strictEqual(count, 1, `region ${regionId} must have at most 1 active mole, but has ${count}`);
     });
   }
+}
+
+// 7) 두더지마다 hitsRequired(1/2/3) 와 poseIndex 가 붙는다.
+// 잡지 않고 시간 초과로 순환시키며 표본을 모은다 (시간 초과는 영역을 완성시키지 않음).
+{
+  const regions = [{ id: 0 }];
+  const spawnPoints = makeSpawnPoints([0]);
+  const config = { maxConcurrentMoles: 1, maxConcurrentAnimals: 0, maxConcurrentBombs: 0, popDuration: 0.15, molePoseCount: 8 };
+  const scheduler = create({ regions, spawnPoints, config, rng: makeRng(11) });
+  let seen = 0;
+  for (let t = 0; t < 400 && seen < 6; t++) {
+    const { spawned } = scheduler.tick(0.1);
+    spawned.filter((p) => p.type === 'mole').forEach((p) => {
+      seen++;
+      assert.ok([1, 2, 3].includes(p.hitsRequired), 'mole must carry hitsRequired of 1, 2, or 3');
+      assert.strictEqual(p.hitsTaken, 0, 'a fresh mole has taken 0 hits');
+      assert.ok(Number.isInteger(p.poseIndex) && p.poseIndex >= 0 && p.poseIndex < 8, 'poseIndex within pose count');
+    });
+  }
+  assert.ok(seen >= 6, `sampled at least 6 moles (got ${seen})`);
+}
+
+// 8) 다타(多打) 두더지: 마지막 타격 전까지는 영역이 완성되지 않는다
+{
+  const regions = [{ id: 0 }];
+  const spawnPoints = makeSpawnPoints([0]);
+  const config = { maxConcurrentMoles: 1, maxConcurrentAnimals: 0, maxConcurrentBombs: 0, popDuration: 30, molePoseCount: 8 };
+  // 3히트 두더지가 나올 때까지 시드를 돌려 찾는다
+  let scheduler, mole;
+  for (let seed = 1; seed < 400 && !mole; seed++) {
+    scheduler = create({ regions, spawnPoints, config, rng: makeRng(seed) });
+    for (let t = 0; t < 40 && !mole; t++) {
+      const { spawned } = scheduler.tick(0.1);
+      const m = spawned.find((p) => p.type === 'mole' && p.hitsRequired === 3);
+      if (m) mole = m;
+    }
+  }
+  assert.ok(mole, 'expected to find a 3-hit mole within the seed sweep');
+
+  const r1 = scheduler.resolveHit(mole.id);
+  assert.strictEqual(r1.done, false, 'first hit on a 3-hit mole is not final');
+  assert.ok(!scheduler.isComplete(), 'region must not complete on a non-final hit');
+  scheduler.tick(0.2); // 쿨다운 해제
+
+  const r2 = scheduler.resolveHit(mole.id);
+  assert.strictEqual(r2.done, false, 'second hit still not final');
+  assert.ok(!scheduler.isComplete(), 'region still incomplete after 2 of 3 hits');
+  scheduler.tick(0.2);
+
+  const r3 = scheduler.resolveHit(mole.id);
+  assert.strictEqual(r3.done, true, 'third hit is final');
+  assert.ok(scheduler.isComplete(), 'region completes immediately on the final hit');
+}
+
+// 9) 히트 쿨다운: 직후 재타격은 무시된다 (연타 방지)
+{
+  const regions = [{ id: 0 }];
+  const spawnPoints = makeSpawnPoints([0]);
+  const config = { maxConcurrentMoles: 1, maxConcurrentAnimals: 0, maxConcurrentBombs: 0, popDuration: 30, molePoseCount: 8 };
+  let scheduler, mole;
+  for (let seed = 1; seed < 400 && !mole; seed++) {
+    scheduler = create({ regions, spawnPoints, config, rng: makeRng(seed) });
+    for (let t = 0; t < 40 && !mole; t++) {
+      const { spawned } = scheduler.tick(0.1);
+      const m = spawned.find((p) => p.type === 'mole' && p.hitsRequired >= 2);
+      if (m) mole = m;
+    }
+  }
+  assert.ok(mole, 'expected a multi-hit mole');
+  assert.strictEqual(scheduler.resolveHit(mole.id).done, false, 'first hit lands');
+  assert.strictEqual(scheduler.resolveHit(mole.id), null, 'immediate second hit is swallowed by cooldown');
+}
+
+// 10) 다타 두더지 종류 분포 ~ 80/15/5 (시드 고정이라 결정론적, 여유 있게 검사)
+{
+  const regions = [{ id: 0 }];
+  const spawnPoints = makeSpawnPoints([0]);
+  const config = { maxConcurrentMoles: 1, maxConcurrentAnimals: 0, maxConcurrentBombs: 0, popDuration: 0.15, molePoseCount: 8 };
+  const scheduler = create({ regions, spawnPoints, config, rng: makeRng(99) });
+  const counts = { 1: 0, 2: 0, 3: 0 };
+  let total = 0;
+  for (let t = 0; t < 30000; t++) {
+    const { spawned } = scheduler.tick(0.1);
+    spawned.filter((p) => p.type === 'mole').forEach((p) => { counts[p.hitsRequired]++; total++; });
+  }
+  assert.ok(total > 500, `sampled enough moles (got ${total})`);
+  assert.ok(Math.abs(counts[1] / total - 0.80) < 0.06, `~80% single-hit (got ${(counts[1] / total * 100).toFixed(1)}%)`);
+  assert.ok(Math.abs(counts[2] / total - 0.15) < 0.05, `~15% two-hit (got ${(counts[2] / total * 100).toFixed(1)}%)`);
+  assert.ok(Math.abs(counts[3] / total - 0.05) < 0.04, `~5% three-hit (got ${(counts[3] / total * 100).toFixed(1)}%)`);
+}
+
+// 11) resolveColumn: 그 열의 두더지 1마리 → 결과 1개 done:true, 영역 완성
+{
+  const regions = [{ id: 0 }, { id: 1 }];
+  const spawnPoints = makeSpawnPoints([0, 1], [0, 1]);
+  const config = { maxConcurrentMoles: 2, maxConcurrentAnimals: 0, maxConcurrentBombs: 0, popDuration: 30, molePoseCount: 8 };
+  const scheduler = create({ regions, spawnPoints, config, rng: makeRng(21) });
+  let mole;
+  for (let t = 0; t < 50 && !mole; t++) {
+    const { spawned } = scheduler.tick(0.1);
+    mole = spawned.find((p) => p.type === 'mole');
+  }
+  assert.ok(mole, 'a mole spawned');
+  const res = scheduler.resolveColumn(mole.col);
+  assert.strictEqual(res.length, 1, 'one result for one mole in the column');
+  assert.strictEqual(res[0].type, 'mole');
+  assert.strictEqual(res[0].done, true);
+  assert.strictEqual(typeof res[0].xFrac, 'number');
+  assert.strictEqual(typeof res[0].yFrac, 'number');
+  assert.strictEqual(scheduler.resolveColumn(mole.col === 0 ? 1 : 0).length, 0);
+}
+
+// 12) resolveColumn: 빈 열 → 빈 배열
+{
+  const regions = [{ id: 0 }];
+  const spawnPoints = makeSpawnPoints([0], [2]);
+  const config = { maxConcurrentMoles: 1, maxConcurrentAnimals: 0, maxConcurrentBombs: 0, popDuration: 30 };
+  const scheduler = create({ regions, spawnPoints, config, rng: makeRng(22) });
+  scheduler.tick(0.1);
+  assert.deepStrictEqual(scheduler.resolveColumn(0), []);
+  assert.deepStrictEqual(scheduler.resolveColumn(3), []);
+}
+
+// 13) resolveColumn: 두더지 + 동물이 같은 열 → 결과 2개, 영역 완성 + 동물 결과 존재
+{
+  const regions = [{ id: 0 }, { id: 1 }];
+  const spawnPoints = makeSpawnPoints([0, 1], [0, 0]);
+  const config = { maxConcurrentMoles: 1, maxConcurrentAnimals: 1, maxConcurrentBombs: 0, popDuration: 30, molePoseCount: 8 };
+  let scheduler, ok = false;
+  for (let seed = 1; seed < 400 && !ok; seed++) {
+    scheduler = create({ regions, spawnPoints, config, rng: makeRng(seed) });
+    for (let t = 0; t < 200 && !ok; t++) {
+      scheduler.tick(0.1);
+      const pops = scheduler.getActivePops();
+      ok = pops.some((p) => p.type === 'mole' && p.col === 0) &&
+           pops.some((p) => p.type === 'animal' && p.col === 0);
+    }
+  }
+  assert.ok(ok, 'a mole and an animal are both up in column 0');
+  const res = scheduler.resolveColumn(0);
+  assert.strictEqual(res.length, 2, 'both pops resolved');
+  assert.ok(res.some((r) => r.type === 'mole' && r.done), 'mole finished');
+  assert.ok(res.some((r) => r.type === 'animal'), 'animal hit reported');
+}
+
+// 14) resolveColumn: 2히트 두더지는 열 강타 2번에 처치
+{
+  const regions = [{ id: 0 }];
+  const spawnPoints = makeSpawnPoints([0], [1]);
+  const config = { maxConcurrentMoles: 1, maxConcurrentAnimals: 0, maxConcurrentBombs: 0, popDuration: 60, molePoseCount: 8 };
+  let scheduler, mole;
+  for (let seed = 1; seed < 400 && !mole; seed++) {
+    scheduler = create({ regions, spawnPoints, config, rng: makeRng(seed) });
+    for (let t = 0; t < 40 && !mole; t++) {
+      const m = scheduler.tick(0.1).spawned.find((p) => p.type === 'mole' && p.hitsRequired === 2);
+      if (m) mole = m;
+    }
+  }
+  assert.ok(mole, 'found a 2-hit mole');
+  const r1 = scheduler.resolveColumn(1);
+  assert.strictEqual(r1[0].done, false, 'first column smash knocks it down');
+  assert.ok(!scheduler.isComplete());
+  scheduler.tick(0.2);
+  const r2 = scheduler.resolveColumn(1);
+  assert.strictEqual(r2[0].done, true, 'second column smash finishes it');
+  assert.ok(scheduler.isComplete());
 }
 
 console.log('test-spawn-scheduler.js: all assertions passed');
