@@ -210,7 +210,7 @@
 #mole-hammer-layer { pointer-events: none; overflow: visible; }
 .lane-hammer {
   position: absolute;
-  width: 18.5%;
+  width: 13%;
   will-change: transform;
 }
 .lane-hammer img { display: block; width: 100%; filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.5)); }
