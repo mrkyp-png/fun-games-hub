@@ -197,10 +197,10 @@
     const results = state.scheduler.resolveRegion(regionId);
     const sp = state.spawnPoints[regionId];
 
-    // 망치 목표: 그 구멍 x, 그리고 두더지 "모자" 높이 (spawn 지점보다 위 — 다 올라온 두더지 기준).
-    const HAT_LIFT = 0.07; // 보드 높이 분수. 구멍 → 모자 정수리
-    const targetX = results[0] ? results[0].xFrac : sp.x;
-    const targetY = (results[0] ? results[0].yFrac : sp.y) - HAT_LIFT;
+    // 망치 목표: 그 구멍의 pop 좌표(있으면), 없으면 그 구멍 위치.
+    const primary = results[0] || null;
+    const targetX = primary ? primary.xFrac : sp.x;
+    const targetY = primary ? primary.yFrac : sp.y;
 
     state.laneHammer.strike(targetX, targetY, () => onHammerImpact(targetX, results));
   }
