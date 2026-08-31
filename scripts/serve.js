@@ -4,6 +4,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
 const ROOT = path.resolve(__dirname, '..');
 const PORT = process.env.PORT || 8844;
@@ -26,4 +27,11 @@ http.createServer((req, res) => {
     });
     res.end(data);
   });
-}).listen(PORT, () => console.log('serving on http://localhost:' + PORT));
+}).listen(PORT, '0.0.0.0', () => {
+  console.log('serving on http://localhost:' + PORT);
+  // 같은 와이파이의 휴대폰에서 접속할 LAN 주소도 안내
+  const lan = [].concat(...Object.values(os.networkInterfaces()))
+    .filter((n) => n.family === 'IPv4' && !n.internal)
+    .map((n) => n.address);
+  lan.forEach((ip) => console.log('  phone: http://' + ip + ':' + PORT + '/mole/index.html'));
+});
