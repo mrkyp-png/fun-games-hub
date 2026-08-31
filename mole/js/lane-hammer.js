@@ -17,11 +17,12 @@
   const HOME_DEG = 26;                 // 대기: 옆으로 뉘어 홀스터
   const READY_DEG = -30;               // 조준: 오른쪽에서 머리 들어올림
   const HIT_DEG = -82;                 // 타격: 머리를 대각선 아래로 휘두름
-  const GRIP_OFF_X = 0.11;             // grip 을 목표보다 이만큼 오른쪽 (보드 폭 분수)
-  const GRIP_OFF_Y = 0.10;             // grip 을 목표보다 이만큼 아래 (보드 높이 분수)
+  // grip 을 목표에서 이만큼 떨어뜨리면 (머리가 grip 왼쪽-위 0.135/0.064 지점이므로) 머리가 목표에 착지.
+  const GRIP_OFF_X = 0.135;            // grip 을 목표보다 이만큼 오른쪽 (보드 폭 분수)
+  const GRIP_OFF_Y = 0.064;            // grip 을 목표보다 이만큼 아래 (보드 높이 분수)
   const CLAMP = -0.15;                 // grip 이 보드 가장자리에서 이만큼까지 나가도 됨 (- = 밖 허용)
-  const AIM_DX = 0.102;                // 타격점 보정: + = 오른쪽 (보드 폭 분수, 0.5mm ≈ 0.005 / 1cm ≈ 0.1)
-  const AIM_DY = -0.010;               // 타격점 보정: - = 위
+  const AIM_DX = 0;                    // 타격점 미세보정: + = 오른쪽 (보드 폭 분수, 0.5mm ≈ 0.005 / 1cm ≈ 0.1)
+  const AIM_DY = 0;                    // 타격점 미세보정: - = 위
 
   function lerp(a, b, k) { return a + (b - a) * k; }
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
