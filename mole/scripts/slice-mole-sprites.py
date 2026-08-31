@@ -156,13 +156,36 @@ def defringe(im, erode_px=2):
     return im
 
 
-def eat_fringe(im, chroma=34, lo=90):
+def eat_fringe(im, chroma=34, lo=90, band=5):
     """투명 경계에서 안쪽으로 '무채색' 픽셀(체커 잔여 + 어두운 외곽선과 체커 사이 AA 밴드)을
-    계속 파먹는다 (flood). 캐릭터는 luma ~50 의 진한 외곽선(+ 유채색 몸)으로 둘러싸여 있어
-    거기서 멈춘다 — 별/스월 사이에 갇힌 체커 조각도 틈으로 파고들어 지워진다.
-    key_out 보다 관대한 2차 패스라고 보면 됨. 본체는 외곽선 안이라 flood 가 못 들어간다."""
+    파먹는다 (flood). 단 **원본 실루엣 경계에서 band(px) 이내**만 먹는다 — 그래야
+    흰 토끼 얼굴처럼 넓고 밝은 본체는 안 건드리고(중심이 경계에서 멀다), 별/스월 사이
+    좁은 틈에 갇힌 체커는 (전부 경계 근처라) 지워진다. key_out 다음 2차 패스."""
     w, h = im.size
     px = im.load()
+
+    # 1) 원본 투명 마스크에서 band px 확장 = "경계 근처" 마스크
+    orig_transparent = bytearray(w * h)
+    for y in range(h):
+        for x in range(w):
+            if px[x, y][3] < 20:
+                orig_transparent[y * w + x] = 1
+    near_edge = bytearray(w * h)
+    for y in range(h):
+        for x in range(w):
+            hit = False
+            for dy in range(-band, band + 1):
+                if hit:
+                    break
+                for dx in range(-band, band + 1):
+                    nx, ny = x + dx, y + dy
+                    if 0 <= nx < w and 0 <= ny < h and orig_transparent[ny * w + nx]:
+                        hit = True
+                        break
+            if hit:
+                near_edge[y * w + x] = 1
+
+    # 2) 투명 경계에서 flood, near_edge 안의 무채색 픽셀만 제거
     seen = bytearray(w * h)
     dq = deque()
 
@@ -177,6 +200,8 @@ def eat_fringe(im, chroma=34, lo=90):
                 enqueue(x - 1, y); enqueue(x + 1, y); enqueue(x, y - 1); enqueue(x, y + 1)
     while dq:
         x, y = dq.popleft()
+        if not near_edge[y * w + x]:
+            continue
         r, g, b, a = px[x, y]
         if a < 20 or (r + g + b) / 3 < lo or max(abs(r - g), abs(g - b), abs(r - b)) > chroma:
             continue
