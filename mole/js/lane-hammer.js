@@ -24,7 +24,7 @@
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
   function ease(k) { return k * k; }
 
-  function create({ layer, gridSize, sprite }) {
+  function create({ layer, sprite }) {
     const el = document.createElement('div');
     el.className = 'lane-hammer';
     const img = document.createElement('img');
@@ -42,11 +42,10 @@
     let impactCb = null;
     let fired = false;
 
-    function strike(col, targetYFrac, onImpact) {
-      const ty = (typeof targetYFrac === 'number') ? targetYFrac : 0.5;
+    function strike(targetXFrac, targetYFrac, onImpact) {
       fromX = x; fromY = y; fromDeg = deg;
-      aimX = (col + 0.5) / gridSize;
-      aimY = ty - AIM_LIFT;
+      aimX = (typeof targetXFrac === 'number') ? targetXFrac : 0.5;
+      aimY = ((typeof targetYFrac === 'number') ? targetYFrac : 0.5) - AIM_LIFT;
       impactCb = onImpact || null;
       fired = false;
       phase = 'fly';
@@ -100,10 +99,10 @@
     // 스윙이 진행 중(레벨 클리어 판정을 미뤄야 하는 상태)인가.
     function isBusy() { return phase === 'fly' || phase === 'chop' || phase === 'rise'; }
 
+    // 레벨/화면 전환 시 DOM 에서 완전히 제거 (안 하면 startLevel 마다 망치가 쌓인다).
     function clear() {
-      phase = 'home'; t = 0; fired = false; impactCb = null;
-      x = HOME_X; y = HOME_Y; deg = HOME_DEG;
-      paint();
+      impactCb = null;
+      el.remove();
     }
 
     paint();

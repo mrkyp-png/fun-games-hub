@@ -50,6 +50,7 @@
     if (sharedPopElements) sharedPopElements.clear();
     if (state && state.holeLayer) state.holeLayer.clear();
     if (state && state.laneControls) state.laneControls.clear();
+    if (state && state.laneHammer) state.laneHammer.clear();
     state = null;
     document.getElementById('game-screen').hidden = true;
     document.getElementById('clear-overlay').hidden = true;
@@ -63,6 +64,7 @@
     if (rafId) cancelAnimationFrame(rafId);
     if (state && state.holeLayer) state.holeLayer.clear();
     if (state && state.laneControls) state.laneControls.clear();
+    if (state && state.laneHammer) state.laneHammer.clear();
     const levelData = MG.LEVELS[levelNum - 1];
 
     document.getElementById('level-select-screen').hidden = true;
@@ -109,13 +111,12 @@
     });
 
     const laneHammer = MG.LaneHammer.create({
-      layer: document.getElementById('mole-hammer-layer'),
-      gridSize: GRID_SIZE
+      layer: document.getElementById('mole-hammer-layer')
     });
     const laneControls = MG.LaneControls.create({
       buttonBar: document.getElementById('lane-button-bar'),
       gridSize: GRID_SIZE,
-      onColumn: handleColumn
+      onCell: handleCell
     });
 
     state = {
@@ -153,12 +154,14 @@
     state.laneHammer.update(rawDt); // 망치는 히트스톱과 무관하게 부드럽게
     syncPops();
 
-    // 열별 버튼 hot: 그 열에 두더지(방해물 아님)가 떠 있으면 빛낸다 (스펙 §2.3).
-    const moleCols = new Set();
+    // 구멍별 버튼 hot: 그 구멍에 두더지(방해물 아님)가 떠 있으면 빛낸다 (스펙 §2.3).
+    const moleRegions = new Set();
     state.scheduler.getActivePops().forEach((p) => {
-      if (p.type === 'mole' && !p.dying) moleCols.add(p.col);
+      if (p.type === 'mole' && !p.dying) moleRegions.add(p.regionId);
     });
-    for (let c = 0; c < GRID_SIZE; c++) state.laneControls.setColumnHot(c, moleCols.has(c));
+    for (let id = 0; id < GRID_SIZE * GRID_SIZE; id++) {
+      state.laneControls.setCellHot(id, moleRegions.has(id));
+    }
 
     updateHUD();
 
@@ -187,19 +190,21 @@
     sharedPopElements.sync(state.scheduler.getActivePops());
   }
 
-  // ---------- 레인 버튼 입력 → 열 강타 (기획서 §4/§5 v1.4) ----------
-  function handleColumn(col) {
+  // ---------- 구멍 버튼 입력 → 그 구멍 타격 (기획서 §4/§5 v1.5) ----------
+  function handleCell(regionId) {
     if (!state || state.ended) return;
-    const results = state.scheduler.resolveColumn(col);
+    const results = state.scheduler.resolveRegion(regionId);
+    const sp = state.spawnPoints[regionId];
 
-    // 망치 목표 정수리: 그 열 결과 중 done 인 두더지 우선, 없으면 첫 결과, 없으면 열 중앙.
-    const primary = results.find((r) => r.type === 'mole' && r.done) || results[0] || null;
-    const targetY = primary ? primary.yFrac : 0.5;
+    // 망치 목표: 그 구멍의 pop 좌표(있으면), 없으면 그 구멍 위치.
+    const primary = results[0] || null;
+    const targetX = primary ? primary.xFrac : sp.x;
+    const targetY = primary ? primary.yFrac : sp.y;
 
-    state.laneHammer.strike(col, targetY, () => onHammerImpact(col, results));
+    state.laneHammer.strike(targetX, targetY, () => onHammerImpact(targetX, results));
   }
 
-  function onHammerImpact(col, results) {
+  function onHammerImpact(hitXFrac, results) {
     if (!state || state.ended) return;
     const board = document.getElementById('mole-board');
     let moleHits = 0;
@@ -226,7 +231,7 @@
     });
 
     if (results.length === 0) {
-      MG.HitFx.whiff(board, (col + 0.5) / GRID_SIZE); // 빈 열 헛스윙
+      MG.HitFx.whiff(board, hitXFrac); // 빈 구멍 헛스윙
     }
     if (moleHits > 0) {
       state.hitstopUntil = performance.now() + Math.min(120, 70 + state.comboScore.combo * 10);
@@ -316,8 +321,8 @@
       state.lives = 0;
       gameOver('lives');
     };
-    window.__debugHitColumn = function (col) {
-      if (state) handleColumn(col);
+    window.__debugHitCell = function (regionId) {
+      if (state) handleCell(regionId);
     };
   });
 })();

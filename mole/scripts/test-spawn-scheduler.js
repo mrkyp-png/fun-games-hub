@@ -3,10 +3,9 @@ const { create } = require('../js/spawn-scheduler.js');
 const { mulberry32 } = require('../js/rng.js');
 
 function makeRng(seed) { return { next: mulberry32(seed) }; }
-function makeSpawnPoints(regionIds, cols) {
+function makeSpawnPoints(regionIds) {
   return regionIds.map((regionId, i) => ({
-    id: i, regionId, x: i / regionIds.length, y: 0.5,
-    col: cols ? cols[i] : 0
+    id: i, regionId, col: i % 4, row: Math.floor(i / 4), x: i / regionIds.length, y: 0.5
   }));
 }
 
@@ -185,10 +184,10 @@ function makeSpawnPoints(regionIds, cols) {
   assert.ok(Math.abs(counts[3] / total - 0.05) < 0.04, `~5% three-hit (got ${(counts[3] / total * 100).toFixed(1)}%)`);
 }
 
-// 11) resolveColumn: 그 열의 두더지 1마리 → 결과 1개 done:true, 영역 완성
+// 11) resolveRegion: 그 영역의 두더지 1마리 → 결과 1개 done:true, 영역 완성
 {
   const regions = [{ id: 0 }, { id: 1 }];
-  const spawnPoints = makeSpawnPoints([0, 1], [0, 1]);
+  const spawnPoints = makeSpawnPoints([0, 1]);
   const config = { maxConcurrentMoles: 2, maxConcurrentAnimals: 0, maxConcurrentBombs: 0, popDuration: 30, molePoseCount: 8 };
   const scheduler = create({ regions, spawnPoints, config, rng: makeRng(21) });
   let mole;
@@ -197,52 +196,48 @@ function makeSpawnPoints(regionIds, cols) {
     mole = spawned.find((p) => p.type === 'mole');
   }
   assert.ok(mole, 'a mole spawned');
-  const res = scheduler.resolveColumn(mole.col);
-  assert.strictEqual(res.length, 1, 'one result for one mole in the column');
+  const res = scheduler.resolveRegion(mole.regionId);
+  assert.strictEqual(res.length, 1, 'one result for the mole in that region');
   assert.strictEqual(res[0].type, 'mole');
   assert.strictEqual(res[0].done, true);
   assert.strictEqual(typeof res[0].xFrac, 'number');
   assert.strictEqual(typeof res[0].yFrac, 'number');
-  assert.strictEqual(scheduler.resolveColumn(mole.col === 0 ? 1 : 0).length, 0);
+  assert.strictEqual(scheduler.resolveRegion(mole.regionId === 0 ? 1 : 0).length, 0);
 }
 
-// 12) resolveColumn: 빈 열 → 빈 배열
+// 12) resolveRegion: 빈 영역 → 빈 배열
 {
   const regions = [{ id: 0 }];
-  const spawnPoints = makeSpawnPoints([0], [2]);
+  const spawnPoints = makeSpawnPoints([0]);
   const config = { maxConcurrentMoles: 1, maxConcurrentAnimals: 0, maxConcurrentBombs: 0, popDuration: 30 };
   const scheduler = create({ regions, spawnPoints, config, rng: makeRng(22) });
   scheduler.tick(0.1);
-  assert.deepStrictEqual(scheduler.resolveColumn(0), []);
-  assert.deepStrictEqual(scheduler.resolveColumn(3), []);
+  assert.deepStrictEqual(scheduler.resolveRegion(5), []);
 }
 
-// 13) resolveColumn: 두더지 + 동물이 같은 열 → 결과 2개, 영역 완성 + 동물 결과 존재
-{
-  const regions = [{ id: 0 }, { id: 1 }];
-  const spawnPoints = makeSpawnPoints([0, 1], [0, 0]);
-  const config = { maxConcurrentMoles: 1, maxConcurrentAnimals: 1, maxConcurrentBombs: 0, popDuration: 30, molePoseCount: 8 };
-  let scheduler, ok = false;
-  for (let seed = 1; seed < 400 && !ok; seed++) {
-    scheduler = create({ regions, spawnPoints, config, rng: makeRng(seed) });
-    for (let t = 0; t < 200 && !ok; t++) {
-      scheduler.tick(0.1);
-      const pops = scheduler.getActivePops();
-      ok = pops.some((p) => p.type === 'mole' && p.col === 0) &&
-           pops.some((p) => p.type === 'animal' && p.col === 0);
-    }
-  }
-  assert.ok(ok, 'a mole and an animal are both up in column 0');
-  const res = scheduler.resolveColumn(0);
-  assert.strictEqual(res.length, 2, 'both pops resolved');
-  assert.ok(res.some((r) => r.type === 'mole' && r.done), 'mole finished');
-  assert.ok(res.some((r) => r.type === 'animal'), 'animal hit reported');
-}
-
-// 14) resolveColumn: 2히트 두더지는 열 강타 2번에 처치
+// 13) resolveRegion: 동물이 뜬 영역을 치면 동물 결과가 나온다 (두더지 아님)
 {
   const regions = [{ id: 0 }];
-  const spawnPoints = makeSpawnPoints([0], [1]);
+  const spawnPoints = makeSpawnPoints([0]);
+  const config = { maxConcurrentMoles: 0, maxConcurrentAnimals: 1, maxConcurrentBombs: 0, popDuration: 30 };
+  let scheduler, animal;
+  for (let seed = 1; seed < 200 && !animal; seed++) {
+    scheduler = create({ regions, spawnPoints, config, rng: makeRng(seed) });
+    for (let t = 0; t < 60 && !animal; t++) {
+      animal = scheduler.tick(0.1).spawned.find((p) => p.type === 'animal');
+    }
+  }
+  assert.ok(animal, 'an animal spawned');
+  const res = scheduler.resolveRegion(animal.regionId);
+  assert.strictEqual(res.length, 1);
+  assert.strictEqual(res[0].type, 'animal');
+  assert.ok(!scheduler.isComplete(), 'hitting an animal does not complete a region');
+}
+
+// 14) resolveRegion: 2히트 두더지는 두 번에 처치
+{
+  const regions = [{ id: 0 }];
+  const spawnPoints = makeSpawnPoints([0]);
   const config = { maxConcurrentMoles: 1, maxConcurrentAnimals: 0, maxConcurrentBombs: 0, popDuration: 60, molePoseCount: 8 };
   let scheduler, mole;
   for (let seed = 1; seed < 400 && !mole; seed++) {
@@ -253,12 +248,12 @@ function makeSpawnPoints(regionIds, cols) {
     }
   }
   assert.ok(mole, 'found a 2-hit mole');
-  const r1 = scheduler.resolveColumn(1);
-  assert.strictEqual(r1[0].done, false, 'first column smash knocks it down');
+  const r1 = scheduler.resolveRegion(0);
+  assert.strictEqual(r1[0].done, false, 'first hit knocks it down');
   assert.ok(!scheduler.isComplete());
   scheduler.tick(0.2);
-  const r2 = scheduler.resolveColumn(1);
-  assert.strictEqual(r2[0].done, true, 'second column smash finishes it');
+  const r2 = scheduler.resolveRegion(0);
+  assert.strictEqual(r2[0].done, true, 'second hit finishes it');
   assert.ok(scheduler.isComplete());
 }
 

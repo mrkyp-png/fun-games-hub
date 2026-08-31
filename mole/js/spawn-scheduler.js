@@ -141,11 +141,12 @@
       return pop ? resolveOne(pop) : null;
     }
 
-    // 열 강타: 그 열의 활성 pop 을 전부 판정한다 (기획서 v1.4 조작).
-    function resolveColumn(col) {
+    // 구멍(영역) 타격: 그 영역의 활성 pop 을 판정한다 (기획서 v1.5 — 구멍별 버튼).
+    // 영역당 스폰 지점 1개라 결과는 0개 또는 1개지만, 호출부 편의를 위해 배열로 돌려준다.
+    function resolveRegion(regionId) {
       const out = [];
       active.forEach((pop) => {
-        if (pop.col !== col) return;
+        if (pop.regionId !== regionId) return;
         const r = resolveOne(pop);
         if (r) out.push(r);
       });
@@ -168,7 +169,7 @@
       regions.forEach((r) => completedRegions.add(r.id));
     }
 
-    return { tick, resolveHit, resolveColumn, isComplete, completedRegionCount, getActivePops, forceCompleteAll };
+    return { tick, resolveHit, resolveRegion, isComplete, completedRegionCount, getActivePops, forceCompleteAll };
   }
 
   const api = { create };

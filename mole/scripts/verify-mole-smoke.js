@@ -61,9 +61,9 @@ const EDGE_PATH = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge
     assert.ok(moleImg, 'a mole must render as <img class="mole-pop-img">');
     assert.ok(/assets\/moles\/.+\.png$/.test(moleImg.src), `mole image src must point at a sprite (got ${moleImg.src})`);
 
-    // 3d) 레인 버튼 4개가 렌더된다 (기획서 v1.4 조작)
+    // 3d) 구멍 버튼 16개가 렌더된다 (기획서 v1.5 — 4x4 패드)
     const laneButtonCount = await page.evaluate(() => document.querySelectorAll('#lane-button-bar .lane-button').length);
-    assert.strictEqual(laneButtonCount, 4, 'exactly 4 lane buttons render');
+    assert.strictEqual(laneButtonCount, 16, 'exactly 16 hole buttons render (4x4)');
 
     // 3e) 두더지를 직접 터치해도 아무 일이 없다 (회귀 방지)
     const beforeDirect = await page.evaluate(() => document.getElementById('hud-region-count').textContent);
@@ -75,14 +75,17 @@ const EDGE_PATH = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge
     const afterDirect = await page.evaluate(() => document.getElementById('hud-region-count').textContent);
     assert.strictEqual(afterDirect, beforeDirect, 'tapping a mole directly must do nothing');
 
-    // 헬퍼: 살아있는(dying 아님) 두더지의 열을 알아낸다. sink translateY 로 dying 을 거른다.
-    const liveMoleCol = () => page.evaluate(() => {
-      const els = [...document.querySelectorAll('.mole-pop--mole')];
-      for (const el of els) {
+    // 헬퍼: 살아있는(dying 아님) 두더지의 regionId 를 알아낸다. left/top % 로 col/row 계산.
+    const liveMoleRegion = () => page.evaluate(() => {
+      for (const el of document.querySelectorAll('.mole-pop--mole')) {
         const img = el.querySelector('.mole-pop-img');
         const ty = img ? new DOMMatrix(getComputedStyle(img).transform).m42 : 0;
         if (Math.abs(ty) < 8 && img && img.style.visibility !== 'hidden') {
-          return Math.floor(parseFloat(el.style.left) / 100 * 4);
+          const col = Math.round(parseFloat(el.style.left) / 100 * 4 - 0.5);
+          const holeY = parseFloat(el.style.top) / 100;
+          // top% 는 spawnPoint.y = 0.17 + row*vStep, vStep = (0.84-0.17)/3
+          const row = Math.round((holeY - 0.17) / ((0.84 - 0.17) / 3));
+          return Math.max(0, Math.min(15, row * 4 + col));
         }
       }
       return null;
@@ -90,37 +93,45 @@ const EDGE_PATH = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge
     const regionCount = () => page.evaluate(() =>
       +document.getElementById('hud-region-count').textContent.split('/')[0]);
 
-    // 3f) 두더지가 뜬 열의 레인 버튼을 누르면 그 영역이 완성된다
-    let laneOk = false;
-    let sawHammerSwing = false;
-    for (let i = 0; i < 60 && !laneOk; i++) {
+    // 3f) 두더지가 뜬 구멍의 버튼을 누르면 그 영역이 완성된다 + 망치가 움직인다
+    let hitOk = false;
+    let sawHammerMove = false;
+    for (let i = 0; i < 60 && !hitOk; i++) {
       await new Promise((r) => setTimeout(r, 100));
-      const col = await liveMoleCol();
-      if (col === null) continue;
+      const region = await liveMoleRegion();
+      if (region === null) continue;
       const before = await regionCount();
-      await page.evaluate((c) => {
-        document.querySelector(`#lane-button-bar .lane-button[data-col="${c}"]`)
+      const left0 = await page.evaluate(() => {
+        const h = document.querySelector('.lane-hammer');
+        return h ? h.style.left : null;
+      });
+      await page.evaluate((id) => {
+        document.querySelector(`#lane-button-bar .lane-button[data-region="${id}"]`)
           .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
-      }, col);
-      await new Promise((r) => setTimeout(r, 450));
-      const xform = await page.evaluate(() =>
-        getComputedStyle(document.querySelector('.lane-hammer')).transform);
-      if (xform && xform !== 'none' && xform !== 'matrix(1, 0, 0, 1, 0, 0)') sawHammerSwing = true;
-      if ((await regionCount()) > before) laneOk = true;
+      }, region);
+      await new Promise((r) => setTimeout(r, 120));
+      const left1 = await page.evaluate(() => {
+        const h = document.querySelector('.lane-hammer');
+        return h ? h.style.left : null;
+      });
+      if (left1 && left1 !== left0) sawHammerMove = true;
+      await new Promise((r) => setTimeout(r, 400));
+      if ((await regionCount()) > before) hitOk = true;
     }
-    assert.ok(laneOk, 'pressing the lane button of a live mole completes its region');
-    assert.ok(sawHammerSwing, 'the hammer element carries a swing transform');
+    assert.ok(hitOk, 'pressing the hole button of a live mole completes its region');
+    assert.ok(sawHammerMove, 'the hammer moves toward the pressed hole');
 
-    // 3g) 키보드 1~4 로도 열을 칠 수 있다
+    // 3g) 키보드 격자(1234/qwer/asdf/zxcv)로도 구멍을 칠 수 있다
     await page.evaluate(() => window.__debugStartLevel(1));
     await new Promise((r) => setTimeout(r, 300));
+    const KEYS = '1234qwerasdfzxcv';
     let kbOk = false;
     for (let i = 0; i < 60 && !kbOk; i++) {
       await new Promise((r) => setTimeout(r, 100));
-      const col = await liveMoleCol();
-      if (col === null) continue;
+      const region = await liveMoleRegion();
+      if (region === null) continue;
       const before = await regionCount();
-      await page.evaluate((c) => window.dispatchEvent(new KeyboardEvent('keydown', { key: String(c + 1) })), col);
+      await page.evaluate((k) => window.dispatchEvent(new KeyboardEvent('keydown', { key: k })), KEYS[region]);
       await new Promise((r) => setTimeout(r, 450));
       if ((await regionCount()) > before) kbOk = true;
     }
