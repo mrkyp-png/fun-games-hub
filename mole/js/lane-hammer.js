@@ -96,6 +96,7 @@
       el.style.left = (gx * 100).toFixed(2) + '%';
       el.style.top = (gy * 100).toFixed(2) + '%';
       el.style.transform = 'translate(-' + GRIP_X + '%, -' + GRIP_Y + '%) rotate(' + deg.toFixed(1) + 'deg)';
+      el.style.opacity = (phase === 'home') ? '0.5' : '1'; // 대기 상태만 반투명
     }
 
     function isBusy() { return phase === 'fly' || phase === 'chop' || phase === 'rise'; }
