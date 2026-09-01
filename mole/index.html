@@ -59,17 +59,17 @@
     <div id="lane-button-bar"></div>
   </section>
 
-  <!-- 클리어 오버레이 -->
+  <!-- 성공(클리어) 오버레이 — 라운드 1~9는 버튼 없이 잠깐 보여준 뒤 자동으로 다음 라운드 카운트다운.
+       라운드 10(마지막)만 버튼(라운드 선택)을 보여준다. -->
   <div id="clear-overlay" class="overlay" hidden>
     <div class="overlay-card">
-      <h2>🎉 STAGE CLEAR</h2>
+      <h2>🎉 성공!</h2>
       <div id="clear-stars" class="stars">⭐⭐⭐</div>
       <p id="clear-score">0점</p>
       <p id="clear-coins">🪙 0</p>
-      <div class="overlay-btn-row">
-        <button id="clear-retry-btn">다시하기</button>
-        <button id="clear-select-btn">레벨 선택</button>
-        <button id="clear-next-btn">다음 레벨</button>
+      <p id="clear-total" class="clear-total"></p>
+      <div class="overlay-btn-row" id="clear-final-actions" hidden>
+        <button id="clear-select-btn">라운드 선택</button>
       </div>
     </div>
   </div>
@@ -77,14 +77,20 @@
   <!-- 실패 오버레이 -->
   <div id="gameover-overlay" class="overlay" hidden>
     <div class="overlay-card">
-      <h2>GAME OVER</h2>
-      <p id="gameover-level">Level 1</p>
+      <h2>😵 실패!</h2>
+      <p id="gameover-level">라운드 1</p>
       <p id="gameover-reason">시간 초과</p>
       <div class="overlay-btn-row">
         <button id="gameover-retry-btn">다시하기</button>
-        <button id="gameover-select-btn">레벨 선택</button>
+        <button id="gameover-select-btn">라운드 선택</button>
       </div>
     </div>
+  </div>
+
+  <!-- 라운드 시작 카운트다운 (매 시작마다: 첫 시작·다시하기·자동 다음 라운드 전부) -->
+  <div id="round-intro-overlay" class="overlay round-intro" hidden aria-hidden="true">
+    <div id="round-intro-title" class="round-intro-title">ROUND 1</div>
+    <div id="round-intro-count" class="round-intro-count">3</div>
   </div>
 
 </div>

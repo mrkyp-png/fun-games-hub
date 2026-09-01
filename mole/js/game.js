@@ -7,9 +7,13 @@
   const GRID_SIZE = 4; // 사용자 확정: 그림을 4x4 = 16칸 고정 격자로 분할
 
   let state = null; // 현재 플레이 중인 게임 상태 (레벨 선택 화면일 땐 null)
+  let runBanked = 0; // 지금 연속 도전에서 이미 확정된 이전 라운드들의 점수 합계.
+                      // (사용자 요청: 점수는 라운드 10까지 합계로 진행.)
   let rafId = null;
   let lastTime = 0;
   let sharedPopElements = null; // #mole-pop-layer는 재생성 안 되는 고정 DOM이므로 세션당 한 번만 생성
+  let sessionGen = 0; // startLevel/backToSelect 호출마다 +1 — 카운트다운·자동진행 타이머가
+                       // 그 사이 사용자가 다른 라운드로 넘어갔는지 확인하는 취소 토큰
 
   // ---------- 진행 상황 저장 (레벨 해금/별) ----------
   function loadProgress() {
@@ -46,6 +50,7 @@
   }
 
   function backToSelect() {
+    sessionGen++; // 진행 중이던 카운트다운/자동진행 타이머 전부 무효화
     if (rafId) cancelAnimationFrame(rafId);
     if (sharedPopElements) sharedPopElements.clear();
     if (state && state.holeLayer) state.holeLayer.clear();
@@ -55,12 +60,19 @@
     document.getElementById('game-screen').hidden = true;
     document.getElementById('clear-overlay').hidden = true;
     document.getElementById('gameover-overlay').hidden = true;
+    document.getElementById('round-intro-overlay').hidden = true;
     document.getElementById('level-select-screen').hidden = false;
+    runBanked = 0; // 라운드 선택으로 나가면 연속 도전 종료 — 다음 시작은 새 판
     renderLevelSelect();
   }
 
-  // ---------- 레벨 시작 ----------
-  async function startLevel(levelNum) {
+  // ---------- 라운드 시작 ----------
+  // opts.keepRun: true 면 누적 점수(runBanked)를 안 건드림 (다시하기/자동 다음 라운드).
+  // 없으면(라운드 선택 화면에서 카드 직접 선택) 새 판으로 보고 0으로 리셋.
+  async function startLevel(levelNum, opts) {
+    sessionGen++;
+    const myGen = sessionGen;
+    if (!(opts && opts.keepRun)) runBanked = 0;
     if (rafId) cancelAnimationFrame(rafId);
     if (state && state.holeLayer) state.holeLayer.clear();
     if (state && state.laneControls) state.laneControls.clear();
@@ -129,12 +141,47 @@
       lives: START_LIVES,
       timeRemaining: levelData.timeLimit,
       hitstopUntil: 0,
-      ended: false
+      ended: false,
+      introActive: true // 카운트다운 동안은 시간도 안 흐르고 구멍 입력도 무시 (아래 handleCell 참고)
     };
 
     updateHUD();
-    lastTime = performance.now();
-    rafId = requestAnimationFrame(loop);
+    playRoundIntro(levelNum, () => {
+      if (myGen !== sessionGen || !state) return; // 그 사이 다른 라운드로 넘어감 — 이 콜백 무효
+      state.introActive = false;
+      lastTime = performance.now();
+      rafId = requestAnimationFrame(loop);
+    });
+  }
+
+  // "라운드 N" 타이틀 → 3·2·1·시작! 순으로 보여주고 onDone 호출 (사용자 요청: 매 시작마다).
+  function playRoundIntro(levelNum, onDone) {
+    const myGen = sessionGen;
+    const overlay = document.getElementById('round-intro-overlay');
+    const title = document.getElementById('round-intro-title');
+    const count = document.getElementById('round-intro-count');
+    title.textContent = '라운드 ' + levelNum;
+    overlay.hidden = false;
+    const STEPS = ['3', '2', '1', '시작!'];
+    let i = 0;
+    function tick() {
+      if (myGen !== sessionGen) return; // 도중에 나가버림
+      count.textContent = STEPS[i];
+      count.classList.remove('pop');
+      void count.offsetWidth;
+      count.classList.add('pop');
+      i++;
+      if (i < STEPS.length) {
+        setTimeout(tick, 650);
+      } else {
+        setTimeout(() => {
+          if (myGen !== sessionGen) return;
+          overlay.hidden = true;
+          onDone();
+        }, 450);
+      }
+    }
+    tick();
   }
 
   // ---------- 메인 루프 ----------
@@ -183,7 +230,7 @@
       timeRemaining: state.timeRemaining,
       combo: state.comboScore.combo,
       isMaxCombo: state.comboScore.isMaxCombo(),
-      score: state.comboScore.score,
+      score: runBanked + state.comboScore.score, // 레벨 10까지 이어가는 누적 (다시하기는 손해 없음)
       completedRegions: state.scheduler.completedRegionCount(),
       regionCount: state.levelData.regionCount
     });
@@ -195,7 +242,7 @@
 
   // ---------- 구멍 버튼 입력 → 그 구멍 타격 (기획서 §4/§5 v1.5) ----------
   function handleCell(regionId) {
-    if (!state || state.ended) return;
+    if (!state || state.ended || state.introActive) return;
     const results = state.scheduler.resolveRegion(regionId);
     const sp = state.spawnPoints[regionId];
 
@@ -263,6 +310,9 @@
   function levelClear() {
     if (!state || state.ended) return;
     state.ended = true;
+    const myGen = sessionGen;
+    const clearedLevel = state.levelData.level;
+    const isLast = clearedLevel >= 10;
     if (rafId) cancelAnimationFrame(rafId);
 
     // 반짝임 연출 도중 완성 전 두더지/방해물 pop이 남아 보이지 않도록 먼저 정리한다.
@@ -270,6 +320,7 @@
 
     const stars = MG.ComboScore.computeStars(state.lives, START_LIVES);
     const coins = Math.floor(state.comboScore.score / 50); // 코인 지급량은 스펙 미지정, Claude 결정치
+    runBanked += state.comboScore.score; // 자동 진행이라 다시하기 버튼이 없음 → 클리어 즉시 확정 반영
 
     // 스펙 §14: 마지막 영역 완성은 일반 영역 완성보다 강한 연출 (반짝임 플래시) →
     // 그 다음 CLEAR 화면. 반짝임이 opaque한 clear-overlay(z-index 10)에 곧바로
@@ -280,16 +331,26 @@
     setTimeout(() => board.classList.remove('sparkle'), 700);
 
     const progress = loadProgress();
-    const prevStars = (progress[state.levelData.level] && progress[state.levelData.level].stars) || 0;
-    progress[state.levelData.level] = { cleared: true, stars: Math.max(stars, prevStars) };
+    const prevStars = (progress[clearedLevel] && progress[clearedLevel].stars) || 0;
+    progress[clearedLevel] = { cleared: true, stars: Math.max(stars, prevStars) };
     saveProgress(progress);
 
     setTimeout(() => {
+      if (myGen !== sessionGen) return; // 그 사이 나가버림 — 뒤늦게 오버레이 띄우지 않음
       document.getElementById('clear-stars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
       document.getElementById('clear-score').textContent = state.comboScore.score + '점';
       document.getElementById('clear-coins').textContent = '🪙 ' + coins;
-      document.getElementById('clear-next-btn').hidden = state.levelData.level >= 10;
+      document.getElementById('clear-total').textContent = '누적 ' + runBanked.toLocaleString() + '점';
+      document.getElementById('clear-final-actions').hidden = !isLast; // 라운드 10만 버튼(그 외엔 자동 진행)
       document.getElementById('clear-overlay').hidden = false;
+
+      if (!isLast) {
+        setTimeout(() => {
+          if (myGen !== sessionGen) return;
+          document.getElementById('clear-overlay').hidden = true;
+          startLevel(clearedLevel + 1, { keepRun: true });
+        }, 1200);
+      }
     }, 650);
   }
 
@@ -298,7 +359,7 @@
     state.ended = true;
     if (rafId) cancelAnimationFrame(rafId);
 
-    document.getElementById('gameover-level').textContent = 'Level ' + state.levelData.level;
+    document.getElementById('gameover-level').textContent = '라운드 ' + state.levelData.level;
     document.getElementById('gameover-reason').textContent = reason === 'time' ? '시간 초과' : '목숨 소진';
     document.getElementById('gameover-overlay').hidden = false;
   }
@@ -308,10 +369,8 @@
     renderLevelSelect();
 
     document.getElementById('btn-back-to-hub').addEventListener('click', backToSelect);
-    document.getElementById('clear-retry-btn').addEventListener('click', () => startLevel(state.levelData.level));
-    document.getElementById('clear-select-btn').addEventListener('click', backToSelect);
-    document.getElementById('clear-next-btn').addEventListener('click', () => startLevel(state.levelData.level + 1));
-    document.getElementById('gameover-retry-btn').addEventListener('click', () => startLevel(state.levelData.level));
+    document.getElementById('clear-select-btn').addEventListener('click', backToSelect); // 라운드 10 클리어 시에만 보임
+    document.getElementById('gameover-retry-btn').addEventListener('click', () => startLevel(state.levelData.level, { keepRun: true }));
     document.getElementById('gameover-select-btn').addEventListener('click', backToSelect);
 
     // 디버그 훅 — 지렁이 게임(__debugStartLevel 등)과 동일 컨벤션, 영구 보존.
@@ -329,6 +388,9 @@
     };
     window.__debugHitCell = function (regionId) {
       if (state) handleCell(regionId);
+    };
+    window.__debugIntroActive = function () {
+      return !!(state && state.introActive);
     };
   });
 })();

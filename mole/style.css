@@ -369,6 +369,30 @@ body { background: #16301a; }
   font-weight: 700;
   cursor: pointer;
 }
+.clear-total { color: var(--muted); font-weight: 700; margin-top: -8px; }
+
+/* 라운드 시작 카운트다운 — 매 시작마다(첫 시작·다시하기·자동 다음 라운드) 재생 */
+.round-intro { background: rgba(6, 4, 23, 0.72); flex-direction: column; gap: 6px; }
+.round-intro-title {
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+.round-intro-count {
+  color: #ffe08a;
+  font-size: 4.4rem;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+}
+.round-intro-count.pop { animation: round-intro-pop 0.42s cubic-bezier(.2, 1.6, .4, 1); }
+@keyframes round-intro-pop {
+  0% { transform: scale(0.3); opacity: 0; }
+  60% { transform: scale(1.18); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
 
 /* ---- 버튼 패드 = 전화 다이얼러로 위장 (사용자 요청) ----
    4x4 격자 = 16 구멍과 1:1 그대로. 왼쪽 3열 = 숫자패드, 오른쪽 열 = 연락처/키패드/최근기록/통화.
