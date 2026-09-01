@@ -1,0 +1,82 @@
+/* FGH 공용 설정 UI — 허브에 주입. cosmic-theme.css 변수(--card-bg/--ink/--brand/--shadow) 사용. */
+
+/* 안전장치: 아래 #fgh-settings-modal 이 display:flex 라 hidden 속성을 조용히 덮어쓴다.
+   settings.css 는 [hidden] 규칙 없는 페이지에도 로드되므로 여기서 직접 보장한다. */
+[hidden] { display: none !important; }
+#fgh-topright {
+  position: fixed;
+  top: calc(10px + env(safe-area-inset-top));
+  right: calc(10px + env(safe-area-inset-right));
+  z-index: 50;
+  display: flex;
+  gap: 8px;
+}
+.fgh-icon-btn {
+  width: 42px; height: 42px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: var(--card-bg, #2a2350);
+  color: var(--ink, #fff);
+  border: none; cursor: pointer;
+  box-shadow: var(--shadow, 0 3px 8px rgba(0, 0, 0, .3));
+}
+.fgh-icon-btn svg { width: 22px; height: 22px; }
+
+#fgh-lang-menu {
+  position: fixed;
+  top: calc(58px + env(safe-area-inset-top));
+  right: calc(10px + env(safe-area-inset-right));
+  z-index: 51;
+  background: var(--card-bg, #2a2350);
+  border-radius: 12px;
+  box-shadow: var(--shadow, 0 6px 16px rgba(0, 0, 0, .4));
+  overflow: hidden;
+}
+#fgh-lang-menu button {
+  display: block; width: 100%;
+  padding: 10px 20px;
+  background: none; border: none;
+  color: var(--ink, #fff); font-size: 0.95rem; text-align: left; cursor: pointer;
+}
+#fgh-lang-menu button.is-active { background: var(--brand, #7c5cff); color: #fff; }
+
+#fgh-settings-modal {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(6, 4, 23, 0.82);
+  display: flex; align-items: center; justify-content: center;
+}
+#fgh-settings-card {
+  background: var(--card-bg, #2a2350);
+  color: var(--ink, #fff);
+  border-radius: 20px;
+  padding: 24px;
+  min-width: 260px;
+  box-shadow: var(--shadow, 0 10px 30px rgba(0, 0, 0, .5));
+}
+#fgh-settings-card h2 { margin: 0 0 16px; font-size: 1.2rem; }
+.fgh-set-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0;
+}
+.fgh-set-row .fgh-set-ico { width: 24px; height: 24px; flex: 0 0 auto; }
+.fgh-set-row .fgh-set-ico svg { width: 24px; height: 24px; display: block; }
+.fgh-set-row .fgh-set-lbl { flex: 1; font-weight: 700; }
+.fgh-set-toggle {
+  width: 52px; height: 30px; border-radius: 999px;
+  border: none; cursor: pointer; position: relative;
+  background: #55506e;
+  transition: background 0.15s ease;
+  flex: 0 0 auto;
+}
+.fgh-set-toggle::after {
+  content: ""; position: absolute; top: 3px; left: 3px;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: #fff; transition: transform 0.15s ease;
+}
+.fgh-set-toggle[aria-pressed="true"] { background: var(--brand, #7c5cff); }
+.fgh-set-toggle[aria-pressed="true"]::after { transform: translateX(22px); }
+#fgh-settings-close {
+  margin-top: 16px; width: 100%;
+  padding: 10px; border-radius: 999px; border: none;
+  background: var(--brand, #7c5cff); color: #fff; font-weight: 700; cursor: pointer;
+}
