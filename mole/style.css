@@ -65,23 +65,20 @@ body { background: #16301a; }
 .level-card .level-num { font-size: 1.6rem; font-weight: 700; }
 .level-card .level-stars { font-size: 0.95rem; letter-spacing: 1px; }
 
-/* 게임 화면은 폰 화면(100dvh) 안에 딱 맞춘다 — 넘치는 부분이 잘리지 않도록 고정 높이.
-   두더지 보드와 버튼 패드는 같은 계산식(--board-edge)을 써서 항상 같은 크기가 되고,
-   세로로 남는 공간은 위/아래 auto 마진이 나눠 가져 두 정사각형이 가운데 정렬된다. */
+/* 게임 화면은 폰 화면(100dvh)을 여백 없이 꽉 채운다 (사용자 요청).
+   HUD(자연 높이) + 보드(가로 100%, 정사각) + 다이얼러(남은 세로 전부) = 100dvh.
+   화면이 너무 짧으면 보드가 max-width 로 줄어 다이얼러 최소 높이를 확보한다. */
 #game-screen {
   height: 100dvh;
   min-height: 0;
   overflow: hidden;
-  /* 정사각형 한 변 = (100dvh − hud 64px − 보드/패드 마진 18px − 아래 여백 10px) 의 절반.
-     가로가 더 좁은 폰이면 가로 폭(100% − 16px)에 맞춘다. */
-  --board-edge: min(calc(100% - 16px), calc((100dvh - 92px) / 2));
 }
 
 .game-hud {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 5px 10px;
   flex: 0 0 auto;
   flex-wrap: nowrap;
 }
@@ -99,10 +96,10 @@ body { background: #16301a; }
 .mole-board {
   position: relative;
   flex: 0 0 auto;
-  width: var(--board-edge);
+  width: 100%;
+  max-width: calc(100dvh - 52px - 190px); /* 52=hud, 190=다이얼러 최소 높이 — 짧은 화면 대비 */
   aspect-ratio: 1;
-  margin: auto auto 4px;
-  border-radius: 16px;
+  margin: 0 auto;
   overflow: hidden;
   background: #1b2b4a url('assets/board-scene.jpg') center / cover no-repeat;
 }
@@ -241,16 +238,15 @@ body { background: #16301a; }
    4x4 격자 = 16 구멍과 1:1 그대로. 왼쪽 3열 = 숫자패드, 오른쪽 열 = 연락처/키패드/최근기록/통화.
    동작(누르면 그 구멍 타격, 키보드, 두더지 있으면 --hot)은 변함 없음. */
 #lane-button-bar {
-  width: var(--board-edge);
-  aspect-ratio: 1;
-  margin: 4px auto 10px;
-  flex: 0 0 auto;
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  margin: 0;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(4, 1fr);
   gap: 2px;
-  padding: 10px 8px;
-  border-radius: 22px;
+  padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
   background: #0f1012;
 }
 .lane-button {
