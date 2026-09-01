@@ -147,33 +147,73 @@ body { background: #16301a; }
 #mole-emoji-img,
 #mole-reveal-canvas { display: none; }
 
-/* 배경 이미지 밤하늘 위에 반짝이는 별 (::before = bg 위, 구멍/두더지 아래). 하늘 영역만. */
-.mole-board::before {
-  content: '';
+/* 밤하늘 레이어 — 반짝이는 별(두 세트가 엇갈려 깜빡) + 왼→오 흐르는 구름. 하늘 영역만, 구멍/두더지 아래. */
+#mole-sky {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 24%;
+  height: 27%;
+  overflow: hidden;
   pointer-events: none;
-  background-image:
-    radial-gradient(1.5px 1.5px at 9% 22%, #fff, transparent),
-    radial-gradient(1px 1px at 21% 52%, #fff, transparent),
-    radial-gradient(1.6px 1.6px at 33% 14%, #fff, transparent),
-    radial-gradient(1px 1px at 44% 40%, #cfe3ff, transparent),
-    radial-gradient(1.4px 1.4px at 56% 26%, #fff, transparent),
-    radial-gradient(1px 1px at 67% 55%, #fff, transparent),
-    radial-gradient(1.6px 1.6px at 79% 18%, #fff, transparent),
-    radial-gradient(1px 1px at 90% 44%, #cfe3ff, transparent),
-    radial-gradient(1.2px 1.2px at 15% 72%, #fff, transparent),
-    radial-gradient(1.2px 1.2px at 73% 74%, #fff, transparent);
-  -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent);
-  mask-image: linear-gradient(180deg, #000 55%, transparent);
-  animation: mole-star-twinkle 3.4s ease-in-out infinite;
+  -webkit-mask-image: linear-gradient(180deg, #000 62%, transparent);
+  mask-image: linear-gradient(180deg, #000 62%, transparent);
 }
-@keyframes mole-star-twinkle {
-  0%, 100% { opacity: 0.35; }
-  50% { opacity: 1; }
+/* 별 두 세트 — 서로 다른 주기/위상으로 opacity 가 오가서 "각자 반짝"이는 느낌 */
+#mole-sky::before,
+#mole-sky::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+#mole-sky::before {
+  background-image:
+    radial-gradient(1.7px 1.7px at 8% 20%, #fff, transparent),
+    radial-gradient(1.4px 1.4px at 24% 46%, #fff, transparent),
+    radial-gradient(2.1px 2.1px at 40% 15%, #fff, transparent),
+    radial-gradient(1.4px 1.4px at 58% 38%, #fff, transparent),
+    radial-gradient(1.7px 1.7px at 77% 22%, #dbe8ff, transparent),
+    radial-gradient(1.4px 1.4px at 92% 47%, #fff, transparent);
+  animation: mole-twinkle-a 2.3s ease-in-out infinite;
+}
+#mole-sky::after {
+  background-image:
+    radial-gradient(1.4px 1.4px at 15% 34%, #fff, transparent),
+    radial-gradient(2.1px 2.1px at 33% 25%, #fff, transparent),
+    radial-gradient(1.4px 1.4px at 50% 49%, #fff, transparent),
+    radial-gradient(1.7px 1.7px at 68% 13%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 85% 37%, #cfe0ff, transparent),
+    radial-gradient(1.6px 1.6px at 4% 52%, #fff, transparent);
+  animation: mole-twinkle-b 3.7s ease-in-out infinite -1.4s;
+}
+@keyframes mole-twinkle-a { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+@keyframes mole-twinkle-b { 0%, 100% { opacity: 1; } 45% { opacity: 0.25; } }
+
+.mole-cloud {
+  position: absolute;
+  top: 0;
+  background: no-repeat center / contain;
+  will-change: transform;
+}
+.mole-cloud--1 {
+  width: 34%;
+  aspect-ratio: 122 / 64;
+  top: 14%;
+  opacity: 0.82;
+  background-image: url('assets/cloud1.png');
+  animation: mole-cloud-drift 58s linear infinite;
+}
+.mole-cloud--2 {
+  width: 42%;
+  aspect-ratio: 138 / 62;
+  top: 40%;
+  opacity: 0.62;
+  background-image: url('assets/cloud2.png');
+  animation: mole-cloud-drift 84s linear infinite -34s;
+}
+@keyframes mole-cloud-drift {
+  from { transform: translateX(-135%); }
+  to { transform: translateX(345%); }
 }
 .mole-board-layer {
   position: absolute;
