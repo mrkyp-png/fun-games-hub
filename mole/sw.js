@@ -1,7 +1,9 @@
-// 두더지 게임 서비스워커. 색칠앱(coloring/sw.js)과 같은 패턴:
-// 필수 셸만 원자적으로 캐싱하고, 나머지(스프라이트·이모지 등)는 런타임에 캐시-우선으로 채운다.
-// 게임 코드가 바뀌면 CACHE 값을 올린다 (버전 갱신 = 새 SW 설치 = 셸 재캐싱).
-const CACHE = 'mole-game-v3';
+// 두더지 게임 서비스워커.
+// fetch 전략 = stale-while-revalidate: 캐시본을 즉시 주되 백그라운드로 최신본을 받아 캐시를 갱신한다.
+// → 파일이 바뀌면 CACHE 버전을 안 올려도 "다음 실행"에 자동 반영된다 (이전엔 캐시-우선이라
+//   sw.js 자체가 안 바뀌면 style.css/이미지 변경이 폰에 영영 안 걸렸음).
+// SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
+const CACHE = 'mole-game-v4';
 
 const SHELL = [
   './',
@@ -42,23 +44,26 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
-  e.respondWith((async () => {
-    const hit = await caches.match(e.request);
-    if (hit) return hit;
-    try {
-      const res = await fetch(e.request);
-      if (res && res.ok && res.type === 'basic') {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(e.request, copy));
-      }
-      return res;
-    } catch (err) {
-      // 오프라인 + 캐시에 없음: 네비게이션은 캐시된 셸로, 그 외는 명시적 에러 응답.
-      // (여기서 undefined 를 반환하면 브라우저가 "인터넷 연결 없음" 페이지를 띄운다.)
-      if (e.request.mode === 'navigate') {
-        return (await caches.match('./index.html')) || (await caches.match('./')) || Response.error();
-      }
-      return Response.error();
+
+  // 백그라운드로 항상 네트워크에서 받아 캐시를 갱신 (다음 로드에 최신본 반영).
+  const network = fetch(e.request).then((res) => {
+    if (res && res.ok && (res.type === 'basic' || res.type === 'cors')) {
+      const copy = res.clone();
+      caches.open(CACHE).then((c) => c.put(e.request, copy));
     }
+    return res;
+  }).catch(() => null);
+  e.waitUntil(network);
+
+  e.respondWith((async () => {
+    const cached = await caches.match(e.request);
+    if (cached) return cached;            // 캐시 있으면 즉시 (갱신은 위에서 백그라운드로)
+    const res = await network;
+    if (res) return res;
+    // 오프라인 + 캐시에 없음. undefined 를 반환하면 브라우저가 "인터넷 연결 없음" 페이지를 띄우므로 금지.
+    if (e.request.mode === 'navigate') {
+      return (await caches.match('./index.html')) || (await caches.match('./')) || Response.error();
+    }
+    return Response.error();
   })());
 });
