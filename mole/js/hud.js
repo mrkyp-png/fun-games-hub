@@ -11,12 +11,10 @@
 
   function update(state) {
     setAll('tk-mode', MODE_TITLE);
-    setAll('tk-lv', '라운드 ' + state.level);
     setAll('tk-t', Math.max(0, Math.ceil(state.timeRemaining)) + '초');
     setAll('tk-c', state.combo > 0
       ? (state.isMaxCombo ? 'MAX COMBO ' : 'COMBO ') + state.combo
       : 'COMBO 0');
-    setAll('tk-r', state.completedRegions + ' / ' + state.regionCount);
 
     var score = document.getElementById('hud-score');
     if (score) score.textContent = (state.score || 0).toLocaleString();

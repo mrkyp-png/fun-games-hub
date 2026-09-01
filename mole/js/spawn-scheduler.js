@@ -1,8 +1,8 @@
 (function (root) {
   'use strict';
 
-  const MIN_SPAWN_GAP = 0.2; // 기획서 §6: 두더지 사이 0.2~0.5초 간격
-  const MAX_SPAWN_GAP = 0.5;
+  const MIN_SPAWN_GAP = 0.15; // 두더지 사이 등장 간격 (점수 어택 모드: 조금 더 빠르게, 원래 0.2~0.5)
+  const MAX_SPAWN_GAP = 0.35;
 
   // 다타(多打) 두더지: 뽕망치로 여러 번 때려야 잡힌다 (사용자 확정).
   // 등장 시 굴림 한 번으로 종류를 정한다: 5% 3히트 / 다음 15% 2히트 / 나머지 80% 1히트.
@@ -39,15 +39,14 @@
     }
 
     function candidateSpawnPointsFor(type) {
-      // 두더지는 아직 완성 안 된 영역에서만, 방해물은 완성 여부와 무관하게 아무 지점에서나 등장.
+      // 점수 어택 모드: 두더지는 16칸 아무 데나 랜덤 반복 등장 (잡은 칸도 다시 나온다).
+      // 한 칸에 두더지 1마리 제약만 유지 — 방해물은 완성 개념 없이 빈 지점 아무 데나.
       if (type === 'mole') {
-        // Build set of regionIds that currently have an active mole
         const regionsWithActiveMoles = new Set();
         active.forEach((pop) => {
           if (pop.type === 'mole') regionsWithActiveMoles.add(pop.regionId);
         });
         return spawnPoints.filter((sp) =>
-          !completedRegions.has(sp.regionId) &&
           !occupiedSpawnPointIds.has(sp.id) &&
           !regionsWithActiveMoles.has(sp.regionId)
         );

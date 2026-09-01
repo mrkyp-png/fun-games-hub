@@ -16,29 +16,33 @@
 <body>
 <div class="cosmic-bg">
 
-  <!-- 레벨 선택 화면 -->
-  <section id="level-select-screen" class="screen cosmic-content">
+  <!-- 시작 화면 (점수 어택: 60초 한 판. 나중에 스테이지/모드 버튼을 여기에 추가) -->
+  <section id="start-screen" class="screen cosmic-content">
     <header class="screen-header">
       <a class="icon-btn" href="../index.html" aria-label="허브로"><img src="assets/emoji/house.svg" alt=""></a>
-      <h1>🦫 두더지 게임</h1>
+      <h1>두더지 게임</h1>
     </header>
-    <div id="level-grid" class="level-grid"></div>
+    <div class="start-body">
+      <p class="start-tag">1분 동안 두더지를 최대한 많이 잡아 점수를 올려요!</p>
+      <button id="start-btn" class="start-btn">시작</button>
+      <p id="start-best" class="start-best"></p>
+    </div>
   </section>
 
   <!-- 플레이 화면 -->
   <section id="game-screen" class="screen cosmic-content" hidden>
     <div class="game-hud">
       <button id="btn-back-to-hub" class="icon-btn" aria-label="나가기"><img src="assets/emoji/house.svg" alt=""></button>
-      <!-- 증권 전광판 스타일 티커: 모드 제목 + 레벨/시간/콤보/진행도 가 흐른다. 점수는 밤하늘 중앙 별도. -->
+      <!-- 증권 전광판 스타일 티커: 모드 제목 + 남은 시간 + 콤보 가 흐른다. 점수는 밤하늘 중앙 별도. -->
       <div id="hud-ticker" aria-hidden="true">
         <span class="tk-search">🔍</span>
         <div class="ticker-viewport">
           <div class="ticker-track">
             <span class="ticker-seg">
-              <b class="tk-mode"></b><i id="hud-level" class="tk-lv"></i><i class="tk-t"></i><i class="tk-c"></i><i id="hud-region-count" class="tk-r"></i>
+              <b class="tk-mode"></b><i class="tk-t"></i><i class="tk-c"></i>
             </span>
             <span class="ticker-seg">
-              <b class="tk-mode"></b><i class="tk-lv"></i><i class="tk-t"></i><i class="tk-c"></i><i class="tk-r"></i>
+              <b class="tk-mode"></b><i class="tk-t"></i><i class="tk-c"></i>
             </span>
           </div>
         </div>
@@ -59,37 +63,22 @@
     <div id="lane-button-bar"></div>
   </section>
 
-  <!-- 성공(클리어) 오버레이 — 라운드 1~9는 버튼 없이 잠깐 보여준 뒤 자동으로 다음 라운드 카운트다운.
-       라운드 10(마지막)만 버튼(라운드 선택)을 보여준다. -->
-  <div id="clear-overlay" class="overlay" hidden>
-    <div class="overlay-card">
-      <h2>🎉 성공!</h2>
-      <div id="clear-stars" class="stars">⭐⭐⭐</div>
-      <p id="clear-score">0점</p>
-      <p id="clear-coins">🪙 0</p>
-      <p id="clear-total" class="clear-total"></p>
-      <div class="overlay-btn-row" id="clear-final-actions" hidden>
-        <button id="clear-select-btn">라운드 선택</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 실패 오버레이 -->
+  <!-- 결과 오버레이 (60초 종료 또는 목숨 소진) -->
   <div id="gameover-overlay" class="overlay" hidden>
     <div class="overlay-card">
-      <h2>😵 실패!</h2>
-      <p id="gameover-level">라운드 1</p>
-      <p id="gameover-reason">시간 초과</p>
+      <h2 id="gameover-reason">시간 종료!</h2>
+      <p id="gameover-score" class="gameover-score">0점</p>
+      <p id="gameover-best" class="clear-total"></p>
       <div class="overlay-btn-row">
         <button id="gameover-retry-btn">다시하기</button>
-        <button id="gameover-select-btn">라운드 선택</button>
+        <button id="gameover-select-btn">나가기</button>
       </div>
     </div>
   </div>
 
-  <!-- 라운드 시작 카운트다운 (매 시작마다: 첫 시작·다시하기·자동 다음 라운드 전부) -->
+  <!-- 시작 카운트다운 (첫 시작·다시하기 전부) -->
   <div id="round-intro-overlay" class="overlay round-intro" hidden aria-hidden="true">
-    <div id="round-intro-title" class="round-intro-title">ROUND 1</div>
+    <div id="round-intro-title" class="round-intro-title">두더지 잡기</div>
     <div id="round-intro-count" class="round-intro-count">3</div>
   </div>
 

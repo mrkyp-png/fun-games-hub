@@ -257,4 +257,27 @@ function makeSpawnPoints(regionIds) {
   assert.ok(scheduler.isComplete());
 }
 
+// 15) 점수 어택: 두더지를 잡은 칸에도 잠시 뒤 새 두더지가 다시 등장한다
+{
+  const regions = [{ id: 0 }];
+  const spawnPoints = makeSpawnPoints([0]);
+  const config = { maxConcurrentMoles: 1, maxConcurrentAnimals: 0, maxConcurrentBombs: 0, popDuration: 30, molePoseCount: 8 };
+  const scheduler = create({ regions, spawnPoints, config, rng: makeRng(7) });
+
+  let first;
+  for (let t = 0; t < 50 && !first; t++) {
+    first = scheduler.tick(0.1).spawned.find((p) => p.type === 'mole');
+  }
+  assert.ok(first, 'a first mole spawned');
+
+  assert.strictEqual(scheduler.resolveRegion(0)[0].done, true, 'first mole killed');
+
+  let second;
+  for (let t = 0; t < 60 && !second; t++) {
+    scheduler.tick(0.1);
+    second = scheduler.getActivePops().find((p) => p.type === 'mole' && !p.dying && p.id !== first.id);
+  }
+  assert.ok(second, 'a new mole must re-spawn in the same (already-cleared) cell');
+}
+
 console.log('test-spawn-scheduler.js: all assertions passed');

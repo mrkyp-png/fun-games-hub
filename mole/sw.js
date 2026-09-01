@@ -3,7 +3,7 @@
 // → 파일이 바뀌면 CACHE 버전을 안 올려도 "다음 실행"에 자동 반영된다 (이전엔 캐시-우선이라
 //   sw.js 자체가 안 바뀌면 style.css/이미지 변경이 폰에 영영 안 걸렸음).
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-const CACHE = 'mole-game-v4';
+const CACHE = 'mole-game-v5';
 
 const SHELL = [
   './',
