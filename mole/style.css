@@ -71,6 +71,8 @@ body { background: #16301a; }
   height: 100dvh;
   min-height: 0;
   overflow: hidden;
+  /* 정사각 박스 양옆/위에 남는 여백 = 폴더폰 몸체(어두운 베젤). 초록 배경이 비치지 않게. */
+  background: #0c0c0e;
   --hud-h: 46px;
   --hinge-h: 14px;
   --sq: min(100%, calc((100dvh - var(--hud-h) - var(--hinge-h)) / 2));
