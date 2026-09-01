@@ -29,6 +29,7 @@ const SHELL = [
   './js/lane-controls.js',
   './js/region-reveal.js',
   './js/hud.js',
+  './js/sky.js',
   './js/game.js'
 ];
 
