@@ -1,6 +1,15 @@
-/* ../cosmic-theme.css의 색상 변수/우주 배경을 그대로 쓰고, 두더지 게임 화면 레이아웃만 추가.
+/* ../cosmic-theme.css의 색상 변수는 그대로 쓰되, 두더지 게임만 우주 배경 대신 푸른 초원 배경을 쓴다
+   (사용자 확정). cosmic-theme.css 는 허브/지렁이와 공유하므로 건드리지 않고 여기서 덮어쓴다.
    [hidden] 안전장치: 클래스의 display가 hidden 속성을 조용히 덮어쓰는 버그를 원천 차단. */
 [hidden] { display: none !important; }
+
+/* 화면 전체 배경: 어두운 초록 단색 (사용자 확정 — 이미지 아님). 별/성운 레이어는 끈다.
+   두더지 박스(.mole-board)만 잔디 이미지를 쓴다. */
+body { background: #16301a; }
+.cosmic-bg { background: #16301a; }
+.cosmic-bg::before,
+.cosmic-bg::after { display: none; }
+.screen-header h1 { text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35); }
 
 .screen {
   min-height: 100dvh;
@@ -56,31 +65,79 @@
 .level-card .level-num { font-size: 1.6rem; font-weight: 700; }
 .level-card .level-stars { font-size: 0.95rem; letter-spacing: 1px; }
 
+/* 게임 화면은 폰 화면(100dvh) 안에 딱 맞춘다 — 넘치는 부분이 잘리지 않도록 고정 높이.
+   두더지 보드와 버튼 패드는 같은 계산식(--board-edge)을 써서 항상 같은 크기가 되고,
+   세로로 남는 공간은 위/아래 auto 마진이 나눠 가져 두 정사각형이 가운데 정렬된다. */
+#game-screen {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  /* 정사각형 한 변 = (100dvh − hud 64px − 보드/패드 마진 18px − 아래 여백 10px) 의 절반.
+     가로가 더 좁은 폰이면 가로 폭(100% − 16px)에 맞춘다. */
+  --board-edge: min(calc(100% - 16px), calc((100dvh - 92px) / 2));
+}
+
 .game-hud {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  flex-wrap: wrap;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
 }
 .hud-mid {
   display: flex;
-  gap: 14px;
+  gap: 10px;
   flex: 1;
-  flex-wrap: wrap;
-  font-size: 0.9rem;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: clamp(0.68rem, 2.7vw, 0.9rem);
   font-weight: 700;
 }
 
 .mole-board {
   position: relative;
   flex: 0 0 auto;
-  width: min(calc(100% - 24px), calc(100dvh - 400px));
+  width: var(--board-edge);
   aspect-ratio: 1;
-  margin: 0 auto 12px;
+  margin: auto auto 4px;
   border-radius: 16px;
   overflow: hidden;
-  background: #060417;
+  background: #1b2b4a url('assets/board-scene.jpg') center / cover no-repeat;
+}
+/* 그림 완성 보상(어두운 막 + 우주 이모지) 사용 안 함 — 잔디 배경이 항상 보이게 (사용자 확정 3안).
+   JS/HTML 은 그대로 두고 여기서만 숨김 — 되돌리기 쉽게. */
+#mole-emoji-img,
+#mole-reveal-canvas { display: none; }
+
+/* 배경 이미지 밤하늘 위에 반짝이는 별 (::before = bg 위, 구멍/두더지 아래). 하늘 영역만. */
+.mole-board::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 24%;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1.5px 1.5px at 9% 22%, #fff, transparent),
+    radial-gradient(1px 1px at 21% 52%, #fff, transparent),
+    radial-gradient(1.6px 1.6px at 33% 14%, #fff, transparent),
+    radial-gradient(1px 1px at 44% 40%, #cfe3ff, transparent),
+    radial-gradient(1.4px 1.4px at 56% 26%, #fff, transparent),
+    radial-gradient(1px 1px at 67% 55%, #fff, transparent),
+    radial-gradient(1.6px 1.6px at 79% 18%, #fff, transparent),
+    radial-gradient(1px 1px at 90% 44%, #cfe3ff, transparent),
+    radial-gradient(1.2px 1.2px at 15% 72%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 73% 74%, #fff, transparent);
+  -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent);
+  mask-image: linear-gradient(180deg, #000 55%, transparent);
+  animation: mole-star-twinkle 3.4s ease-in-out infinite;
+}
+@keyframes mole-star-twinkle {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
 }
 .mole-board-layer {
   position: absolute;
@@ -180,31 +237,62 @@
   cursor: pointer;
 }
 
-/* ---- 구멍 버튼 패드 (기획서 §4 v1.5) — 정사각형을 4x4 로 쪼갠 16칸, 구멍 배치와 1:1 ---- */
+/* ---- 버튼 패드 = 전화 다이얼러로 위장 (사용자 요청) ----
+   4x4 격자 = 16 구멍과 1:1 그대로. 왼쪽 3열 = 숫자패드, 오른쪽 열 = 연락처/키패드/최근기록/통화.
+   동작(누르면 그 구멍 타격, 키보드, 두더지 있으면 --hot)은 변함 없음. */
 #lane-button-bar {
-  width: min(calc(100% - 24px), 320px);
+  width: var(--board-edge);
   aspect-ratio: 1;
-  margin: 4px auto 14px;
+  margin: 4px auto 10px;
   flex: 0 0 auto;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(4, 1fr);
-  gap: 6px;
+  gap: 2px;
+  padding: 10px 8px;
+  border-radius: 22px;
+  background: #0f1012;
 }
 .lane-button {
   border: none;
-  border-radius: 12px;
-  background: var(--card-bg);
-  box-shadow: var(--shadow);
+  background: transparent;
+  color: #f2f2f4;
   cursor: pointer;
-  transition: transform 0.06s, box-shadow 0.12s, background 0.12s;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
   -webkit-tap-highlight-color: transparent;
+  transition: transform 0.06s, background 0.12s, box-shadow 0.15s;
 }
-.lane-button:active { transform: scale(0.92); }
-.lane-button--hot {
-  background: #6d5bd0;
-  box-shadow: 0 0 12px 2px rgba(150, 130, 255, 0.75);
+.lane-button:active { transform: scale(0.9); background: rgba(255, 255, 255, 0.14); }
+
+.lane-num { font-size: clamp(1rem, 6vw, 1.9rem); font-weight: 400; line-height: 1; }
+.lane-sub {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  color: #9aa0a6;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
+.lane-kr { font-size: clamp(0.42rem, 2vw, 0.62rem); }
+.lane-en { font-size: clamp(0.36rem, 1.7vw, 0.52rem); letter-spacing: 0.08em; }
+
+/* 오른쪽 열 — 내비 4칸 */
+.lane-button--nav { flex-direction: column; gap: 3px; color: #d6d8db; }
+.lane-ico { width: clamp(16px, 6vw, 24px); height: clamp(16px, 6vw, 24px); display: block; }
+.lane-ico svg { width: 100%; height: 100%; display: block; }
+.lane-lbl { font-size: clamp(0.4rem, 1.9vw, 0.56rem); font-weight: 600; color: #9aa0a6; }
+.lane-button--call { background: #2ecc57; color: #fff; }
+.lane-button--call .lane-lbl { color: rgba(255, 255, 255, 0.85); }
+.lane-button--call:active { background: #29b84e; }
+
+/* 두더지가 그 구멍에 있음 — 눌러야 할 키. 다이얼러처럼 보이게 은은한 하이라이트. */
+.lane-button--hot { background: rgba(120, 170, 255, 0.28); box-shadow: 0 0 10px 1px rgba(120, 170, 255, 0.4); }
+.lane-button--call.lane-button--hot { background: #37e066; box-shadow: 0 0 12px 2px rgba(90, 240, 130, 0.6); }
 
 /* ---- 망치 ---- transform-origin 과 translate/rotate 는 lane-hammer.js 가 넣는다 ---- */
 #mole-hammer-layer { pointer-events: none; overflow: visible; }

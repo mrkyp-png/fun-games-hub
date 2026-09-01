@@ -95,7 +95,18 @@
 <script src="js/game.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    // 미리보기(localhost)에서는 서비스워커를 쓰지 않는다 — 캐시가 옛 파일을 붙잡아 수정이 안 보이는 문제 방지.
+    // 이미 등록돼 있으면 해제한다. 배포(GitHub Pages)에서만 PWA 로 동작.
+    var local = ['localhost', '127.0.0.1', ''].indexOf(location.hostname) !== -1 ||
+      /^192\.168\./.test(location.hostname);
+    window.addEventListener('load', function () {
+      if (local) {
+        navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); });
+        if (window.caches) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); });
+      } else {
+        navigator.serviceWorker.register('sw.js').catch(function () {});
+      }
+    });
   }
 </script>
 </body>

@@ -17,13 +17,14 @@ const { partition } = require('../js/grid-partition.js');
   assert.deepStrictEqual(spawnPoints.map((s) => s.regionId), [...Array(16).keys()]);
 }
 
-// 3) 열은 각 칸 중앙(1/8..7/8), 행은 위 17% ~ 아래 84% 범위에 균등 배치 (머리 공간 확보 + 1mm 위로)
+// 3) 열은 각 칸 중앙(1/8..7/8), 행은 위 27% ~ 아래 88% 범위에 균등 배치
+//    (윗줄 구멍이 배경 지평선 아래 잔디 위에 앉도록)
 {
   const { spawnPoints } = partition({ gridSize: 4 });
   assert.ok(Math.abs(spawnPoints[0].x - 1 / 8) < 1e-9, 'first column center');
   assert.ok(Math.abs(spawnPoints[15].x - 7 / 8) < 1e-9, 'last column center');
-  assert.ok(Math.abs(spawnPoints[0].y - 0.17) < 1e-9, 'top row at 17%');
-  assert.ok(Math.abs(spawnPoints[15].y - 0.84) < 1e-9, 'bottom row at 84%');
+  assert.ok(Math.abs(spawnPoints[0].y - 0.27) < 1e-9, 'top row at 27%');
+  assert.ok(Math.abs(spawnPoints[15].y - 0.88) < 1e-9, 'bottom row at 88%');
 }
 
 // 4) 출현 포인트가 격자 행/열을 순서대로 채운다 (행 우선), 한 행은 y가 같다

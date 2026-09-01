@@ -219,6 +219,9 @@
           state.regionReveal.lighten();   // 배경 실루엣 옅게 (스펙 §13)
           MG.HitFx.moleHit(board, r.xFrac, r.yFrac);
           moleHits += 1;
+        } else {
+          // 다타 두더지 빼꼼/모자 단계 타격 — 점수/콤보/실루엣은 마지막 타격에만 (스펙 §12).
+          MG.HitFx.moleTap(board, r.xFrac, r.yFrac);
         }
       } else if (r.type === 'animal') {
         state.lives -= 1;                 // 스펙 §8/§11

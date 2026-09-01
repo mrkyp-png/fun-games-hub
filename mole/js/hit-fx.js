@@ -57,6 +57,14 @@
     tone(320);
   }
 
+  // 다타 두더지의 마지막이 아닌 타격 (빼꼼/모자 단계) — 처치는 아니지만 맞은 느낌을 준다.
+  function moleTap(boardEl, xFrac, yFrac) {
+    shake(boardEl);
+    spawnAt(boardEl, 'hit-fx-burst', xFrac, yFrac, '<span>톡!</span>');
+    vibrate(15);
+    tone(470); // 처치음(320)보다 높게 — "아직 안 죽음"
+  }
+
   function obstacleHit(boardEl, xFrac, yFrac /*, kind */) {
     shake(boardEl);
     spawnAt(boardEl, 'hit-fx-clang', xFrac, yFrac, '<span>깡!</span>');
@@ -82,6 +90,6 @@
     spawnAt(boardEl, 'hit-fx-glow', xFrac, yFrac).style.setProperty('--glow', 'rgba(255,225,150,0.6)');
   }
 
-  const api = { moleHit, obstacleHit, whiff, emerge };
+  const api = { moleHit, moleTap, obstacleHit, whiff, emerge };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);

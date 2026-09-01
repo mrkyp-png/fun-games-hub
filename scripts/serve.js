@@ -21,16 +21,24 @@ const MIME = {
 
 function handler(req, res) {
   let p = decodeURIComponent(req.url.split('?')[0]);
-  if (p === '/') p = '/index.html';
-  const full = path.join(ROOT, p);
+  if (p.endsWith('/')) p += 'index.html';   // 폴더 경로(/ , /mole/ 등) → index.html (GitHub Pages 와 동일)
+  let full = path.join(ROOT, p);
   fs.readFile(full, (err, data) => {
+    if (err && err.code === 'EISDIR') {     // 슬래시 없이 폴더를 요청한 경우
+      full = path.join(full, 'index.html');
+      return fs.readFile(full, (e2, d2) => finish(e2, d2, full));
+    }
+    finish(err, data, full);
+  });
+
+  function finish(err, data, full) {
     if (err) { res.writeHead(404); res.end('not found'); return; }
     res.writeHead(200, {
       'Content-Type': MIME[path.extname(full)] || 'application/octet-stream',
       'Cache-Control': 'no-store' // 미리보기는 항상 최신 파일을 봐야 하므로 브라우저 캐시 금지
     });
     res.end(data);
-  });
+  }
 }
 
 function lanIPs() {
@@ -50,11 +58,13 @@ try {
 } catch (e) { /* 인증서 없으면 https 생략 */ }
 
 if (cert && key) {
-  https.createServer({ cert, key }, handler).listen(HTTPS_PORT, '0.0.0.0', () => {
-    console.log('serving on https://localhost:' + HTTPS_PORT + ' (self-signed)');
-    lanIPs().forEach((ip) =>
-      console.log('  phone: https://' + ip + ':' + HTTPS_PORT + '/mole/index.html'));
-  });
+  https.createServer({ cert, key }, handler)
+    .on('error', (e) => console.log('https :' + HTTPS_PORT + ' 안 뜸 (' + e.code + ') — http 만 사용'))
+    .listen(HTTPS_PORT, '0.0.0.0', () => {
+      console.log('serving on https://localhost:' + HTTPS_PORT + ' (self-signed)');
+      lanIPs().forEach((ip) =>
+        console.log('  phone: https://' + ip + ':' + HTTPS_PORT + '/mole/index.html'));
+    });
 } else {
   lanIPs().forEach((ip) =>
     console.log('  phone: http://' + ip + ':' + PORT + '/mole/index.html'));
