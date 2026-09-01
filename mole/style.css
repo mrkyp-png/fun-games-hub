@@ -65,20 +65,24 @@ body { background: #16301a; }
 .level-card .level-num { font-size: 1.6rem; font-weight: 700; }
 .level-card .level-stars { font-size: 0.95rem; letter-spacing: 1px; }
 
-/* 게임 화면은 폰 화면(100dvh)을 여백 없이 꽉 채운다 (사용자 요청).
-   HUD(자연 높이) + 보드(가로 100%, 정사각) + 다이얼러(남은 세로 전부) = 100dvh.
-   화면이 너무 짧으면 보드가 max-width 로 줄어 다이얼러 최소 높이를 확보한다. */
+/* 게임 화면 = 폴더폰 모양: 컴팩트 HUD + [게임 정사각] + 힌지 + [다이얼러 정사각].
+   HUD + 2*정사각 + 힌지 = 100dvh. 정사각 한 변(--sq)은 세로에 맞추되 가로를 넘지 않는다. */
 #game-screen {
   height: 100dvh;
   min-height: 0;
   overflow: hidden;
+  --hud-h: 46px;
+  --hinge-h: 14px;
+  --sq: min(100%, calc((100dvh - var(--hud-h) - var(--hinge-h)) / 2));
 }
+#game-screen .icon-btn { width: 38px; height: 38px; font-size: 1.05rem; }
 
 .game-hud {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 5px 10px;
+  gap: 8px;
+  padding: 3px 8px;
+  height: var(--hud-h);
   flex: 0 0 auto;
   flex-wrap: nowrap;
 }
@@ -96,12 +100,45 @@ body { background: #16301a; }
 .mole-board {
   position: relative;
   flex: 0 0 auto;
-  width: 100%;
-  max-width: calc(100dvh - 52px - 190px); /* 52=hud, 190=다이얼러 최소 높이 — 짧은 화면 대비 */
+  width: var(--sq);
   aspect-ratio: 1;
   margin: 0 auto;
   overflow: hidden;
+  border-radius: 0 0 8px 8px;
   background: #1b2b4a url('assets/board-scene.jpg') center / cover no-repeat;
+}
+
+/* 폴더폰 힌지 — 게임 박스와 다이얼러가 접히는 경계 (사용자 요청 ㅎㅎ) */
+#fold-hinge {
+  position: relative;
+  z-index: 5;
+  flex: 0 0 auto;
+  width: var(--sq);
+  height: var(--hinge-h);
+  margin: 0 auto;
+  background: linear-gradient(180deg, #23232a 0%, #4c4c55 46%, #4c4c55 54%, #141418 100%);
+  box-shadow: 0 -4px 9px rgba(0, 0, 0, 0.5), 0 4px 9px rgba(0, 0, 0, 0.5);
+}
+#fold-hinge::before { /* 가운데 접힘선 */
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.22);
+}
+#fold-hinge::after { /* 힌지 축 (양끝만 살짝 남긴 원통) */
+  content: '';
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #6e6e78, #26262b);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
 }
 /* 그림 완성 보상(어두운 막 + 우주 이모지) 사용 안 함 — 잔디 배경이 항상 보이게 (사용자 확정 3안).
    JS/HTML 은 그대로 두고 여기서만 숨김 — 되돌리기 쉽게. */
@@ -238,17 +275,16 @@ body { background: #16301a; }
    4x4 격자 = 16 구멍과 1:1 그대로. 왼쪽 3열 = 숫자패드, 오른쪽 열 = 연락처/키패드/최근기록/통화.
    동작(누르면 그 구멍 타격, 키보드, 두더지 있으면 --hot)은 변함 없음. */
 #lane-button-bar {
-  width: 100%;
-  max-width: calc(100dvh - 52px - 190px); /* 보드와 같은 폭 — 가로 넓은 화면(데스크톱 미리보기)에서
-                                             다이얼러가 창 전체로 퍼져 납작해지는 것 방지 */
-  flex: 1 1 0;
-  min-height: 0;
+  width: var(--sq);
+  aspect-ratio: 1;
+  flex: 0 0 auto;
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(4, 1fr);
   gap: 2px;
   padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
+  border-radius: 8px 8px 0 0;
   background: #0f1012;
 }
 .lane-button {
