@@ -204,10 +204,10 @@
     const targetX = primary ? primary.xFrac : sp.x;
     const targetY = primary ? primary.yFrac : sp.y;
 
-    state.laneHammer.strike(targetX, targetY, () => onHammerImpact(targetX, results));
+    state.laneHammer.strike(targetX, targetY, () => onHammerImpact(targetX, targetY, results));
   }
 
-  function onHammerImpact(hitXFrac, results) {
+  function onHammerImpact(hitXFrac, hitYFrac, results) {
     if (!state || state.ended) return;
     const board = document.getElementById('mole-board');
     let moleHits = 0;
@@ -237,7 +237,7 @@
     });
 
     if (results.length === 0) {
-      MG.HitFx.whiff(board, hitXFrac); // 빈 구멍 헛스윙
+      MG.HitFx.whiff(board, hitXFrac, hitYFrac); // 빈 구멍 헛스윙 — 누른 그 구멍 위치에서
     }
     if (moleHits > 0) {
       state.hitstopUntil = performance.now() + Math.min(120, 70 + state.comboScore.combo * 10);

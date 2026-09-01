@@ -72,9 +72,10 @@
     tone(140, 'sawtooth');
   }
 
-  function whiff(boardEl, xFrac) {
+  function whiff(boardEl, xFrac, yFrac) {
+    const y = (typeof yFrac === 'number') ? yFrac : 0.9;
     for (let i = 0; i < 3; i++) {
-      const p = spawnAt(boardEl, 'hit-fx-dust', xFrac, 0.9);
+      const p = spawnAt(boardEl, 'hit-fx-dust', xFrac, y);
       p.style.setProperty('--dx', (Math.round((Math.random() - 0.5) * 40)) + 'px');
     }
     tone(90, 'sine');
