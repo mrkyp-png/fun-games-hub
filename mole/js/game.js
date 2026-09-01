@@ -4,21 +4,22 @@
   const MG = window.MoleGame;
   const I18N = window.FGH.I18N;
   const BEST_KEY = 'moleBestScore';
-  const START_LIVES = 3; // 스펙 §11
-  const GRID_SIZE = 4;   // 4x4 = 16칸 고정 격자
-  const ROUND_SECONDS = 60; // 점수 어택: 1분 한 판
+  const START_LIVES = 3;      // 스펙 §11
+  const GRID_SIZE = 4;        // 4x4 = 16칸 고정 격자
+  const ROUND_SECONDS = 60;   // 라운드마다 60초 점수 어택
+  const FINAL_ROUND = 10;     // 라운드 1~10
 
-  // 점수 어택 난이도 — 60초에 걸쳐 동시 두더지 수만 완만히 2→4로 올린다.
-  // (레벨별 난이도 표 MG.LEVELS 는 나중에 스테이지/모드를 붙일 때 쓰려고 남겨둠.)
-  const MOLES_START = 2;
-  const MOLES_END = 4;
-  const MOLE_DURATION = 1.5;
-  const MAX_ANIMALS = 1;
-  const MAX_BOMBS = 1;
-  const BGM_VOLUME = 0.35;
+  // 라운드별 난이도는 MG.LEVELS 표(동시 두더지 1→5, 유지시간 2.5→1.0s, 방해물 증가)를 쓴다.
+  // 16칸 클리어 개념은 없다 — 두더지는 16칸 아무 데나 랜덤 반복 등장, 60초가 끝나면 다음 라운드.
 
-  let bgm = null; // <audio id="bgm"> — DOMContentLoaded 에서 잡는다
-  // playIntent=true 이고 설정에서 BGM 이 켜져 있을 때만 재생. 아니면 정지.
+  let state = null;   // 플레이 중인 라운드 상태 (시작 화면일 땐 null)
+  let runBanked = 0;  // 지금 연속 도전에서 완료된 이전 라운드들의 점수 합계
+  let rafId = null;
+  let lastTime = 0;
+  let sharedPopElements = null; // #mole-pop-layer는 재생성 안 되는 고정 DOM이므로 세션당 한 번만 생성
+  let sessionGen = 0; // startRound/showStartScreen 호출마다 +1 — 카운트다운·자동진행 타이머 취소 토큰
+
+  let bgm = null; // <audio id="bgm">
   function syncBgm(playIntent) {
     if (!bgm) return;
     if (window.FGH.Settings.get('music') && playIntent) {
@@ -27,12 +28,6 @@
       bgm.pause();
     }
   }
-
-  let state = null; // 플레이 중인 게임 상태 (시작 화면일 땐 null)
-  let rafId = null;
-  let lastTime = 0;
-  let sharedPopElements = null; // #mole-pop-layer는 재생성 안 되는 고정 DOM이므로 세션당 한 번만 생성
-  let sessionGen = 0; // startGame/showStartScreen 호출마다 +1 — 카운트다운 타이머 취소 토큰
 
   function loadBest() {
     const v = parseInt(localStorage.getItem(BEST_KEY), 10);
@@ -44,16 +39,18 @@
 
   // ---------- 시작 화면 ----------
   function showStartScreen() {
-    sessionGen++; // 진행 중이던 카운트다운 타이머 무효화
+    sessionGen++; // 진행 중이던 카운트다운/자동진행 타이머 무효화
     if (rafId) cancelAnimationFrame(rafId);
     if (sharedPopElements) sharedPopElements.clear();
     if (state && state.holeLayer) state.holeLayer.clear();
     if (state && state.laneControls) state.laneControls.clear();
     if (state && state.laneHammer) state.laneHammer.clear();
     state = null;
+    runBanked = 0;
     syncBgm(false); // 허브 시작 화면으로 나오면 BGM 정지
     document.getElementById('game-screen').hidden = true;
     document.getElementById('gameover-overlay').hidden = true;
+    document.getElementById('round-done-overlay').hidden = true;
     document.getElementById('round-intro-overlay').hidden = true;
     document.getElementById('start-screen').hidden = false;
 
@@ -62,30 +59,34 @@
       best > 0 ? I18N.t('mole.start.best', { n: best.toLocaleString() }) : '';
   }
 
-  // ---------- 게임 시작 ----------
-  function startGame() {
+  // ---------- 라운드 시작 ----------
+  // opts.fresh: true면 누적 점수(runBanked)를 0으로 리셋 (시작 버튼/다시하기).
+  //             없으면 자동 다음 라운드로 보고 누적 유지.
+  function startRound(roundNum, opts) {
     sessionGen++;
     const myGen = sessionGen;
+    if (opts && opts.fresh) runBanked = 0;
     if (rafId) cancelAnimationFrame(rafId);
     if (state && state.holeLayer) state.holeLayer.clear();
     if (state && state.laneControls) state.laneControls.clear();
     if (state && state.laneHammer) state.laneHammer.clear();
 
+    const levelData = MG.LEVELS[roundNum - 1];
+
     document.getElementById('start-screen').hidden = true;
     document.getElementById('gameover-overlay').hidden = true;
+    document.getElementById('round-done-overlay').hidden = true;
     document.getElementById('game-screen').hidden = false;
-    syncBgm(true); // 시작 버튼(사용자 제스처) 직후 — 설정에서 켜져 있으면 재생
+    syncBgm(true); // 시작 버튼(사용자 제스처) 이후 — 설정에서 켜져 있으면 재생
 
-    const rng = { next: MG.RNG.mulberry32(MG.RNG.hashSeed('mole-' + Date.now())) };
+    const rng = { next: MG.RNG.mulberry32(MG.RNG.hashSeed('mole-r' + roundNum + '-' + Date.now())) };
     const { regions, spawnPoints } = MG.GridPartition.partition({ gridSize: GRID_SIZE });
 
-    // 동시 두더지 수(maxConcurrentMoles)는 매 프레임 loop()에서 갱신한다 —
-    // 스케줄러는 이 config 객체를 즉석으로 읽으므로 참조만 넘겨두면 램프가 걸린다.
     const config = {
-      maxConcurrentMoles: MOLES_START,
-      maxConcurrentAnimals: MAX_ANIMALS,
-      maxConcurrentBombs: MAX_BOMBS,
-      popDuration: MOLE_DURATION,
+      maxConcurrentMoles: levelData.maxConcurrentMoles,
+      maxConcurrentAnimals: levelData.maxConcurrentAnimals,
+      maxConcurrentBombs: levelData.maxConcurrentBombs,
+      popDuration: levelData.moleDuration,
       molePoseCount: MG.MoleSprites.POSE_COUNT,
       obstacleCount: MG.MoleSprites.OBSTACLE_COUNT
     };
@@ -118,7 +119,7 @@
     });
 
     state = {
-      config, regions, spawnPoints, scheduler, holeLayer, laneHammer, laneControls,
+      round: roundNum, levelData, regions, spawnPoints, scheduler, holeLayer, laneHammer, laneControls,
       comboScore: MG.ComboScore.create(),
       lives: START_LIVES,
       timeRemaining: ROUND_SECONDS,
@@ -128,7 +129,7 @@
     };
 
     updateHUD();
-    playRoundIntro(() => {
+    playRoundIntro(roundNum, () => {
       if (myGen !== sessionGen || !state) return; // 그 사이 나가버림 — 이 콜백 무효
       state.introActive = false;
       lastTime = performance.now();
@@ -136,11 +137,13 @@
     });
   }
 
-  // 3·2·1·시작! 카운트다운을 보여주고 onDone 호출.
-  function playRoundIntro(onDone) {
+  // "라운드 N" → 3·2·1·시작! 카운트다운을 보여주고 onDone 호출.
+  function playRoundIntro(roundNum, onDone) {
     const myGen = sessionGen;
     const overlay = document.getElementById('round-intro-overlay');
+    const title = document.getElementById('round-intro-title');
     const count = document.getElementById('round-intro-count');
+    title.textContent = I18N.t('mole.round', { n: roundNum });
     overlay.hidden = false;
     const STEPS = ['3', '2', '1', I18N.t('mole.count.go')];
     let i = 0;
@@ -176,14 +179,9 @@
     if (state.timeRemaining <= 0) {
       state.timeRemaining = 0;
       updateHUD();
-      endGame('time');
+      roundComplete();
       return;
     }
-
-    // 흐른 시간 비율로 동시 두더지 수를 MOLES_START → MOLES_END 로 끌어올린다.
-    const elapsedFrac = 1 - state.timeRemaining / ROUND_SECONDS;
-    state.config.maxConcurrentMoles =
-      Math.round(MOLES_START + (MOLES_END - MOLES_START) * elapsedFrac);
 
     state.scheduler.tick(dt);
     state.laneHammer.update(rawDt); // 망치는 히트스톱과 무관하게 부드럽게
@@ -204,11 +202,12 @@
 
   function updateHUD() {
     MG.HUD.update({
+      round: state.round,
       lives: state.lives,
       timeRemaining: state.timeRemaining,
       combo: state.comboScore.combo,
       isMaxCombo: state.comboScore.isMaxCombo(),
-      score: state.comboScore.score
+      score: runBanked + state.comboScore.score // 10라운드 누적
     });
   }
 
@@ -222,7 +221,6 @@
     const results = state.scheduler.resolveRegion(regionId);
     const sp = state.spawnPoints[regionId];
 
-    // 망치 목표: 그 구멍의 pop 좌표(있으면), 없으면 그 구멍 위치.
     const primary = results[0] || null;
     const targetX = primary ? primary.xFrac : sp.x;
     const targetY = primary ? primary.yFrac : sp.y;
@@ -242,7 +240,6 @@
           MG.HitFx.moleHit(board, r.xFrac, r.yFrac);
           moleHits += 1;
         } else {
-          // 다타 두더지 빼꼼/모자 단계 타격 — 점수/콤보는 마지막 타격에만.
           MG.HitFx.moleTap(board, r.xFrac, r.yFrac);
         }
       } else if (r.type === 'animal') {
@@ -268,7 +265,7 @@
     syncPops();
     updateHUD();
     if (state.lives <= 0) {
-      endGame('lives');
+      finish('lives');
     }
   }
 
@@ -280,52 +277,88 @@
     el.classList.add('hud-flash');
   }
 
-  // ---------- 종료 → 결과 화면 ----------
-  function endGame(reason) {
+  // ---------- 라운드 종료 → 다음 라운드 or 최종 결과 ----------
+  function roundComplete() {
+    if (!state || state.ended) return;
+    state.ended = true;
+    const myGen = sessionGen;
+    const finishedRound = state.round;
+    if (rafId) cancelAnimationFrame(rafId);
+    sharedPopElements.clear();
+
+    runBanked += state.comboScore.score;
+
+    if (finishedRound >= FINAL_ROUND) {
+      finishFromRound('done');
+      return;
+    }
+
+    // 라운드 사이 짧은 안내 후 자동으로 다음 라운드.
+    document.getElementById('round-done-title').textContent =
+      I18N.t('mole.roundDone', { n: finishedRound });
+    document.getElementById('round-done-total').textContent =
+      I18N.t('mole.cumulative', { n: runBanked.toLocaleString() });
+    document.getElementById('round-done-overlay').hidden = false;
+
+    setTimeout(() => {
+      if (myGen !== sessionGen) return; // 그 사이 나가버림
+      document.getElementById('round-done-overlay').hidden = true;
+      startRound(finishedRound + 1); // fresh 아님 → 누적 유지
+    }, 1400);
+  }
+
+  // 목숨 소진(라운드 도중) — 지금까지 친 점수까지 반영하고 최종 결과.
+  function finish(reason) {
     if (!state || state.ended) return;
     state.ended = true;
     if (rafId) cancelAnimationFrame(rafId);
     sharedPopElements.clear();
+    runBanked += state.comboScore.score;
+    finishFromRound(reason);
+  }
 
-    const score = state.comboScore.score;
+  // 최종 결과 화면 (10라운드 완주 or 목숨 소진). runBanked 는 이미 확정된 상태.
+  function finishFromRound(reason) {
+    const total = runBanked;
     const best = loadBest();
-    const isNewBest = score > best;
-    if (isNewBest) saveBest(score);
+    const isNewBest = total > best;
+    if (isNewBest) saveBest(total);
 
     document.getElementById('gameover-reason').textContent =
-      I18N.t(reason === 'lives' ? 'mole.result.lives' : 'mole.result.time');
+      I18N.t(reason === 'lives' ? 'mole.result.lives' : 'mole.result.allClear');
     document.getElementById('gameover-score').textContent =
-      I18N.t('mole.result.score', { n: score.toLocaleString() });
+      I18N.t('mole.result.score', { n: total.toLocaleString() });
     document.getElementById('gameover-best').textContent = isNewBest
-      ? I18N.t('mole.result.newBest', { n: score.toLocaleString() })
-      : I18N.t('mole.result.best', { n: Math.max(best, score).toLocaleString() });
+      ? I18N.t('mole.result.newBest', { n: total.toLocaleString() })
+      : I18N.t('mole.result.best', { n: Math.max(best, total).toLocaleString() });
     document.getElementById('gameover-overlay').hidden = false;
   }
 
   // ---------- 초기화 ----------
   document.addEventListener('DOMContentLoaded', () => {
     bgm = document.getElementById('bgm');
-    bgm.volume = BGM_VOLUME;
+    bgm.volume = 0.35;
     window.FGH.Settings.onChange((name) => {
       if (name === 'music') syncBgm(state && !state.ended);
     });
 
     showStartScreen();
 
-    document.getElementById('start-btn').addEventListener('click', () => startGame());
+    document.getElementById('start-btn').addEventListener('click', () => startRound(1, { fresh: true }));
     document.getElementById('btn-back-to-hub').addEventListener('click', showStartScreen);
-    document.getElementById('gameover-retry-btn').addEventListener('click', () => startGame());
+    document.getElementById('gameover-retry-btn').addEventListener('click', () => startRound(1, { fresh: true }));
     document.getElementById('gameover-select-btn').addEventListener('click', showStartScreen);
 
     // 디버그 훅 — 지렁이 게임과 동일 컨벤션, 영구 보존.
-    window.__debugStartGame = startGame;
+    window.__debugStartGame = () => startRound(1, { fresh: true });
+    window.__debugStartRound = (n) => startRound(n, { fresh: true });
     window.__debugEndRound = function () {
-      if (state) endGame('time');
+      if (state && !state.ended) { state.timeRemaining = 0; roundComplete(); }
     };
     window.__debugForceGameOver = function () {
       if (!state) return;
       state.lives = 0;
-      endGame('lives');
+      finish('lives');
     };
     window.__debugHitCell = function (regionId) {
       if (state) handleCell(regionId);

@@ -50,10 +50,12 @@ const PORT = process.env.SMOKE_PORT || 8845;
     const afterStart = await page.evaluate(() => ({
       gameScreenHidden: document.getElementById('game-screen').hidden,
       startScreenHidden: document.getElementById('start-screen').hidden,
-      hudTime: document.querySelector('#hud-ticker .tk-t').textContent
+      hudTime: document.querySelector('#hud-ticker .tk-t').textContent,
+      hudRound: document.querySelector('#hud-ticker .tk-lv').textContent
     }));
     assert.strictEqual(afterStart.gameScreenHidden, false, 'game screen must become visible');
     assert.strictEqual(afterStart.startScreenHidden, true, 'start screen must hide');
+    assert.strictEqual(afterStart.hudRound, '라운드 1', 'HUD shows the current round');
     assert.ok(/\d+초/.test(afterStart.hudTime), 'HUD ticker shows the remaining time');
     assert.strictEqual(await score(), 0, 'score starts at 0');
 
@@ -171,22 +173,43 @@ const PORT = process.env.SMOKE_PORT || 8845;
     }
     assert.ok(kbOk, 'keyboard grid raises the score');
 
-    // 4) 시간 종료 → 결과 오버레이 (점수 + 최고 기록 저장)
-    const endScore = await score();
+    // 4) 라운드 시간 종료 → 라운드 사이 안내 → 자동으로 다음 라운드 (점수 누적)
+    const scoreBeforeEnd = await score();
     await page.evaluate(() => window.__debugEndRound());
     await new Promise((r) => setTimeout(r, 200));
-    const afterEnd = await page.evaluate(() => ({
+    assert.strictEqual(await page.evaluate(() => document.getElementById('round-done-overlay').hidden), false, 'round-done overlay shows between rounds');
+    assert.strictEqual(await page.evaluate(() => document.getElementById('gameover-overlay').hidden), true, 'no game-over between rounds');
+    await new Promise((r) => setTimeout(r, 1500)); // 자동진행(1.4s) 대기
+    await waitIntroDone();
+    await new Promise((r) => setTimeout(r, 200));
+    assert.strictEqual(await page.evaluate(() => document.querySelector('#hud-ticker .tk-lv').textContent), '라운드 2', 'auto-advanced into round 2');
+    assert.ok((await score()) >= scoreBeforeEnd, 'cumulative score carried into round 2');
+
+    // 4b) 라운드 10 종료 → 최종 결과 오버레이 (전체 클리어 + 누적 점수 저장)
+    await page.evaluate(() => window.__debugStartRound(10));
+    await waitIntroDone();
+    await new Promise((r) => setTimeout(r, 200));
+    // 라운드 10에서 두더지 몇 마리 잡아 점수 확보
+    for (let i = 0; i < 25; i++) {
+      const region = await liveMoleRegion();
+      if (region !== null) await page.evaluate((id) => document.querySelector(`#lane-button-bar .lane-button[data-region="${id}"]`).dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })), region);
+      await new Promise((r) => setTimeout(r, 120));
+    }
+    const finalScore = await score();
+    await page.evaluate(() => window.__debugEndRound());
+    await new Promise((r) => setTimeout(r, 300));
+    const afterFinal = await page.evaluate(() => ({
       overlayHidden: document.getElementById('gameover-overlay').hidden,
       reason: document.getElementById('gameover-reason').textContent,
       scoreText: document.getElementById('gameover-score').textContent,
       best: parseInt(localStorage.getItem('moleBestScore'), 10)
     }));
-    assert.strictEqual(afterEnd.overlayHidden, false, 'result overlay shows when time runs out');
-    assert.strictEqual(afterEnd.reason, '시간 종료!', 'result overlay states the time-up reason');
-    assert.ok(/\d+점/.test(afterEnd.scoreText), 'result overlay shows the final score');
-    assert.strictEqual(afterEnd.best, endScore, 'best score is persisted to localStorage');
+    assert.strictEqual(afterFinal.overlayHidden, false, 'final result overlay shows after round 10');
+    assert.strictEqual(afterFinal.reason, '전체 클리어!', 'final overlay states all-rounds-clear');
+    assert.ok(/\d+점/.test(afterFinal.scoreText), 'final overlay shows the total score');
+    assert.strictEqual(afterFinal.best, finalScore, 'total score persisted to moleBestScore');
 
-    // 5) 목숨 소진 경로 — 새 게임에서 목숨 0 → 결과 오버레이
+    // 5) 목숨 소진 경로 — 새 게임에서 목숨 0 → 최종 결과 오버레이
     await page.evaluate(() => window.__debugStartGame());
     await waitIntroDone();
     await new Promise((r) => setTimeout(r, 200));

@@ -42,10 +42,10 @@
         <div class="ticker-viewport">
           <div class="ticker-track">
             <span class="ticker-seg">
-              <b class="tk-mode"></b><i class="tk-t"></i><i class="tk-c"></i>
+              <b class="tk-mode"></b><i class="tk-lv"></i><i class="tk-t"></i><i class="tk-c"></i>
             </span>
             <span class="ticker-seg">
-              <b class="tk-mode"></b><i class="tk-t"></i><i class="tk-c"></i>
+              <b class="tk-mode"></b><i class="tk-lv"></i><i class="tk-t"></i><i class="tk-c"></i>
             </span>
           </div>
         </div>
@@ -66,10 +66,18 @@
     <div id="lane-button-bar"></div>
   </section>
 
-  <!-- 결과 오버레이 (60초 종료 또는 목숨 소진) -->
+  <!-- 라운드 사이 안내 (1~9 클리어 시 잠깐 → 자동으로 다음 라운드) -->
+  <div id="round-done-overlay" class="overlay" hidden aria-hidden="true">
+    <div class="overlay-card">
+      <h2 id="round-done-title">라운드 완료!</h2>
+      <p id="round-done-total" class="clear-total"></p>
+    </div>
+  </div>
+
+  <!-- 최종 결과 오버레이 (10라운드 완주 또는 목숨 소진) -->
   <div id="gameover-overlay" class="overlay" hidden>
     <div class="overlay-card">
-      <h2 id="gameover-reason">시간 종료!</h2>
+      <h2 id="gameover-reason">전체 클리어!</h2>
       <p id="gameover-score" class="gameover-score">0점</p>
       <p id="gameover-best" class="clear-total"></p>
       <div class="overlay-btn-row">
@@ -79,9 +87,9 @@
     </div>
   </div>
 
-  <!-- 시작 카운트다운 (첫 시작·다시하기 전부) -->
+  <!-- 라운드 시작 카운트다운 (매 라운드: "라운드 N" → 3·2·1·시작!) -->
   <div id="round-intro-overlay" class="overlay round-intro" hidden aria-hidden="true">
-    <div id="round-intro-title" class="round-intro-title" data-i18n="mole.ready">준비!</div>
+    <div id="round-intro-title" class="round-intro-title">라운드 1</div>
     <div id="round-intro-count" class="round-intro-count">3</div>
   </div>
 

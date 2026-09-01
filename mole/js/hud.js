@@ -9,6 +9,7 @@
   function update(state) {
     var I = window.FGH.I18N;
     setAll('tk-mode', I.t('mole.mode'));
+    setAll('tk-lv', I.t('mole.round', { n: state.round }));
     setAll('tk-t', I.t('mole.hud.sec', { n: Math.max(0, Math.ceil(state.timeRemaining)) }));
     setAll('tk-c', state.combo > 0
       ? I.t(state.isMaxCombo ? 'mole.hud.maxCombo' : 'mole.hud.combo', { n: state.combo })
