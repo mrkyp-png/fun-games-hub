@@ -15,6 +15,18 @@
   const MOLE_DURATION = 1.5;
   const MAX_ANIMALS = 1;
   const MAX_BOMBS = 1;
+  const BGM_VOLUME = 0.35;
+
+  let bgm = null; // <audio id="bgm"> — DOMContentLoaded 에서 잡는다
+  // playIntent=true 이고 설정에서 BGM 이 켜져 있을 때만 재생. 아니면 정지.
+  function syncBgm(playIntent) {
+    if (!bgm) return;
+    if (window.FGH.Settings.get('music') && playIntent) {
+      bgm.play().catch(() => { /* 자동재생 차단 — 다음 제스처/토글에 재시도 */ });
+    } else {
+      bgm.pause();
+    }
+  }
 
   let state = null; // 플레이 중인 게임 상태 (시작 화면일 땐 null)
   let rafId = null;
@@ -39,6 +51,7 @@
     if (state && state.laneControls) state.laneControls.clear();
     if (state && state.laneHammer) state.laneHammer.clear();
     state = null;
+    syncBgm(false); // 허브 시작 화면으로 나오면 BGM 정지
     document.getElementById('game-screen').hidden = true;
     document.getElementById('gameover-overlay').hidden = true;
     document.getElementById('round-intro-overlay').hidden = true;
@@ -61,6 +74,7 @@
     document.getElementById('start-screen').hidden = true;
     document.getElementById('gameover-overlay').hidden = true;
     document.getElementById('game-screen').hidden = false;
+    syncBgm(true); // 시작 버튼(사용자 제스처) 직후 — 설정에서 켜져 있으면 재생
 
     const rng = { next: MG.RNG.mulberry32(MG.RNG.hashSeed('mole-' + Date.now())) };
     const { regions, spawnPoints } = MG.GridPartition.partition({ gridSize: GRID_SIZE });
@@ -290,6 +304,12 @@
 
   // ---------- 초기화 ----------
   document.addEventListener('DOMContentLoaded', () => {
+    bgm = document.getElementById('bgm');
+    bgm.volume = BGM_VOLUME;
+    window.FGH.Settings.onChange((name) => {
+      if (name === 'music') syncBgm(state && !state.ended);
+    });
+
     showStartScreen();
 
     document.getElementById('start-btn').addEventListener('click', () => startGame());

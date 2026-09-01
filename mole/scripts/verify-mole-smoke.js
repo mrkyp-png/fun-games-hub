@@ -87,6 +87,21 @@ const PORT = process.env.SMOKE_PORT || 8845;
     const laneButtonCount = await page.evaluate(() => document.querySelectorAll('#lane-button-bar .lane-button').length);
     assert.strictEqual(laneButtonCount, 16, 'exactly 16 hole buttons (4x4)');
 
+    // 3h) BGM: <audio> 존재 + 트랙 경로
+    const audioSrc = await page.evaluate(() => {
+      const a = document.getElementById('bgm');
+      return a ? a.getAttribute('src') : null;
+    });
+    assert.ok(audioSrc && /audio\/bgm-boss-battle\.mp3$/.test(audioSrc), `bgm audio src points at the track (got ${audioSrc})`);
+
+    // 3i) 효과음 게이팅 훅 — soundOn=0 이면 sfxEnabled() false
+    const sfxGated = await page.evaluate(() => {
+      localStorage.setItem('soundOn', '0');
+      return window.FGH.Settings.sfxEnabled();
+    });
+    assert.strictEqual(sfxGated, false, 'sfxEnabled() reflects soundOn=0');
+    await page.evaluate(() => localStorage.setItem('soundOn', '1'));
+
     // 3e) 두더지를 직접 터치해도 아무 일이 없다 (회귀 방지)
     const beforeDirect = await score();
     await page.evaluate(() => {
@@ -189,6 +204,23 @@ const PORT = process.env.SMOKE_PORT || 8845;
     await new Promise((r) => setTimeout(r, 200));
     const backToStart = await page.evaluate(() => document.getElementById('start-screen').hidden);
     assert.strictEqual(backToStart, false, 'leaving the result screen returns to the start screen');
+
+    // 7) musicOn=1 로 새 게임 → bgm 재생, 설정에서 끄면 정지, 허브로 나가면 정지
+    await page.evaluate(() => localStorage.setItem('musicOn', '1'));
+    await page.evaluate(() => window.__debugStartGame());
+    await waitIntroDone();
+    await new Promise((r) => setTimeout(r, 300));
+    assert.strictEqual(await page.evaluate(() => document.getElementById('bgm').paused), false, 'bgm plays after start when musicOn=1');
+    await page.evaluate(() => window.FGH.Settings.set('music', false));
+    await new Promise((r) => setTimeout(r, 150));
+    assert.strictEqual(await page.evaluate(() => document.getElementById('bgm').paused), true, 'bgm pauses when music turned off');
+    await page.evaluate(() => window.FGH.Settings.set('music', true));
+    await new Promise((r) => setTimeout(r, 150));
+    assert.strictEqual(await page.evaluate(() => document.getElementById('bgm').paused), false, 'bgm resumes when music turned back on mid-round');
+    await page.click('#btn-back-to-hub');
+    await new Promise((r) => setTimeout(r, 150));
+    assert.strictEqual(await page.evaluate(() => document.getElementById('bgm').paused), true, 'bgm stops when returning to the start screen');
+    await page.evaluate(() => localStorage.removeItem('musicOn'));
 
     console.log('verify-mole-smoke.js: all assertions passed');
   } finally {

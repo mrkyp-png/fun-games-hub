@@ -25,6 +25,7 @@
   }
 
   function tone(freq, type) {
+    if (window.FGH && window.FGH.Settings && !window.FGH.Settings.sfxEnabled()) return; // 소리 설정 OFF
     try {
       const Ctx = window.AudioContext || window.webkitAudioContext;
       if (!Ctx) return;
@@ -42,7 +43,11 @@
   }
 
   function vibrate(pattern) {
-    if (navigator.vibrate) { try { navigator.vibrate(pattern); } catch (e) { /* noop */ } }
+    if (window.FGH && window.FGH.Settings) {
+      window.FGH.Settings.vibrate(pattern); // 진동 설정 반영
+    } else if (navigator.vibrate) {
+      try { navigator.vibrate(pattern); } catch (e) { /* noop */ }
+    }
   }
 
   function moleHit(boardEl, xFrac, yFrac) {
