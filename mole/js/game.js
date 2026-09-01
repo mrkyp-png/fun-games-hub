@@ -6,7 +6,7 @@
   const BEST_KEY = 'moleBestScore';
   const START_LIVES = 3;      // 스펙 §11
   const GRID_SIZE = 4;        // 4x4 = 16칸 고정 격자
-  const ROUND_SECONDS = 60;   // 라운드마다 60초 점수 어택
+  const ROUND_SECONDS = 30;   // 라운드마다 30초 점수 어택
   const FINAL_ROUND = 10;     // 라운드 1~10
 
   // 라운드별 난이도는 MG.LEVELS 표(동시 두더지 1→5, 유지시간 2.5→1.0s, 방해물 증가)를 쓴다.
