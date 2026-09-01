@@ -4,19 +4,17 @@
   var S = root.FGH && root.FGH.Settings;
   var I = root.FGH && root.FGH.I18N;
 
-  // 공용 문구 (settings-ui 가 소유). 허브/게임의 공통 버튼 문구도 여기 둔다.
+  // 설정 모달 문구 (허브 전용). common.* 는 i18n.js 가 이미 등록해 둔다.
   if (I) I.register({
     ko: {
       'settings.title': '설정', 'settings.sound': '소리', 'settings.music': '배경음악',
       'settings.vibration': '진동', 'settings.lang': '언어',
-      'lang.ko': '한국어', 'lang.en': 'English',
-      'common.close': '닫기', 'common.toHub': '허브로', 'common.back': '나가기', 'common.retry': '다시하기'
+      'lang.ko': '한국어', 'lang.en': 'English'
     },
     en: {
       'settings.title': 'Settings', 'settings.sound': 'Sound', 'settings.music': 'Music',
       'settings.vibration': 'Vibration', 'settings.lang': 'Language',
-      'lang.ko': '한국어', 'lang.en': 'English',
-      'common.close': 'Close', 'common.toHub': 'Hub', 'common.back': 'Exit', 'common.retry': 'Retry'
+      'lang.ko': '한국어', 'lang.en': 'English'
     }
   });
 

@@ -16,6 +16,13 @@
     });
   }
 
+  // 모든 화면 공통 문구 — i18n.js 는 허브·게임 어디서나 로드되므로 여기 둔다.
+  // (허브 전용인 settings.*/lang.* 는 settings-ui.js 가 등록한다.)
+  register({
+    ko: { 'common.close': '닫기', 'common.toHub': '허브로', 'common.back': '나가기', 'common.retry': '다시하기' },
+    en: { 'common.close': 'Close', 'common.toHub': 'Hub', 'common.back': 'Exit', 'common.retry': 'Retry' }
+  });
+
   function currentLang() { return Settings ? Settings.get('lang') : 'en'; }
 
   function t(key, vars) {
