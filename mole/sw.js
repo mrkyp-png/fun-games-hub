@@ -16,6 +16,7 @@ const SHELL = [
   './assets/board-scene.jpg',
   './assets/cloud1.png',
   './assets/cloud2.png',
+  './assets/emoji/house.svg',
   './js/levels.js',
   './js/rng.js',
   './js/combo-score.js',

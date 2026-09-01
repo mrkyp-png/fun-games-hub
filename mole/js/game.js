@@ -232,7 +232,7 @@
         state.timeRemaining = Math.max(0, state.timeRemaining - 3); // 스펙 §8
         state.comboScore.onObstacleHit();
         MG.HitFx.obstacleHit(board, r.xFrac, r.yFrac, 'bomb');
-        flashHud('hud-time');
+        flashHud('hud-ticker'); // 시간 −3 — 티커 전체를 잠깐 번쩍
       }
     });
 

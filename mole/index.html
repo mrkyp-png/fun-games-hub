@@ -19,7 +19,7 @@
   <!-- 레벨 선택 화면 -->
   <section id="level-select-screen" class="screen cosmic-content">
     <header class="screen-header">
-      <a class="icon-btn" href="../index.html" aria-label="허브로">←</a>
+      <a class="icon-btn" href="../index.html" aria-label="허브로"><img src="assets/emoji/house.svg" alt=""></a>
       <h1>🦫 두더지 게임</h1>
     </header>
     <div id="level-grid" class="level-grid"></div>
@@ -28,14 +28,20 @@
   <!-- 플레이 화면 -->
   <section id="game-screen" class="screen cosmic-content" hidden>
     <div class="game-hud">
-      <button id="btn-back-to-hub" class="icon-btn" aria-label="나가기">←</button>
-      <div class="hud-mid">
-        <span id="hud-level">Level 1</span>
-        <span id="hud-hearts">❤️❤️❤️</span>
-        <span id="hud-time">60초</span>
-        <span id="hud-combo"></span>
-        <span id="hud-score">0점</span>
-        <span id="hud-region-count">0 / 9</span>
+      <button id="btn-back-to-hub" class="icon-btn" aria-label="나가기"><img src="assets/emoji/house.svg" alt=""></button>
+      <!-- 증권 전광판 스타일 티커: 모드 제목 + 레벨/시간/콤보/진행도 가 흐른다. 점수는 밤하늘 중앙 별도. -->
+      <div id="hud-ticker" aria-hidden="true">
+        <span class="tk-search">🔍</span>
+        <div class="ticker-viewport">
+          <div class="ticker-track">
+            <span class="ticker-seg">
+              <b class="tk-mode"></b><i id="hud-level" class="tk-lv"></i><i class="tk-t"></i><i class="tk-c"></i><i id="hud-region-count" class="tk-r"></i>
+            </span>
+            <span class="ticker-seg">
+              <b class="tk-mode"></b><i class="tk-lv"></i><i class="tk-t"></i><i class="tk-c"></i><i class="tk-r"></i>
+            </span>
+          </div>
+        </div>
       </div>
     </div>
     <div id="mole-board" class="mole-board">
@@ -46,6 +52,8 @@
       <div id="mole-pop-layer" class="mole-board-layer"></div>
       <div id="mole-hole-front-layer" class="mole-board-layer"></div>
       <div id="mole-hammer-layer" class="mole-board-layer"></div>
+      <div id="hud-score" aria-hidden="true">0</div>
+      <div id="hud-hearts" class="board-hearts" aria-hidden="true"></div>
     </div>
     <div id="fold-hinge" aria-hidden="true"></div>
     <div id="lane-button-bar"></div>
