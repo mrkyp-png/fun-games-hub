@@ -239,9 +239,11 @@ body { background: #16301a; }
    동작(누르면 그 구멍 타격, 키보드, 두더지 있으면 --hot)은 변함 없음. */
 #lane-button-bar {
   width: 100%;
+  max-width: calc(100dvh - 52px - 190px); /* 보드와 같은 폭 — 가로 넓은 화면(데스크톱 미리보기)에서
+                                             다이얼러가 창 전체로 퍼져 납작해지는 것 방지 */
   flex: 1 1 0;
   min-height: 0;
-  margin: 0;
+  margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(4, 1fr);
