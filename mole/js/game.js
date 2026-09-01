@@ -2,6 +2,7 @@
   'use strict';
 
   const MG = window.MoleGame;
+  const I18N = window.FGH.I18N;
   const BEST_KEY = 'moleBestScore';
   const START_LIVES = 3; // 스펙 §11
   const GRID_SIZE = 4;   // 4x4 = 16칸 고정 격자
@@ -45,7 +46,7 @@
 
     const best = loadBest();
     document.getElementById('start-best').textContent =
-      best > 0 ? '최고 기록 ' + best.toLocaleString() + '점' : '';
+      best > 0 ? I18N.t('mole.start.best', { n: best.toLocaleString() }) : '';
   }
 
   // ---------- 게임 시작 ----------
@@ -127,7 +128,7 @@
     const overlay = document.getElementById('round-intro-overlay');
     const count = document.getElementById('round-intro-count');
     overlay.hidden = false;
-    const STEPS = ['3', '2', '1', '시작!'];
+    const STEPS = ['3', '2', '1', I18N.t('mole.count.go')];
     let i = 0;
     function tick() {
       if (myGen !== sessionGen) return; // 도중에 나가버림
@@ -278,11 +279,12 @@
     if (isNewBest) saveBest(score);
 
     document.getElementById('gameover-reason').textContent =
-      reason === 'lives' ? '목숨 소진!' : '시간 종료!';
-    document.getElementById('gameover-score').textContent = score.toLocaleString() + '점';
+      I18N.t(reason === 'lives' ? 'mole.result.lives' : 'mole.result.time');
+    document.getElementById('gameover-score').textContent =
+      I18N.t('mole.result.score', { n: score.toLocaleString() });
     document.getElementById('gameover-best').textContent = isNewBest
-      ? '최고 기록 달성! ' + score.toLocaleString() + '점'
-      : '최고 기록 ' + Math.max(best, score).toLocaleString() + '점';
+      ? I18N.t('mole.result.newBest', { n: score.toLocaleString() })
+      : I18N.t('mole.result.best', { n: Math.max(best, score).toLocaleString() });
     document.getElementById('gameover-overlay').hidden = false;
   }
 

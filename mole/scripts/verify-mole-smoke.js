@@ -34,6 +34,15 @@ const PORT = process.env.SMOKE_PORT || 8845;
     const startBtn = await page.evaluate(() => !!document.getElementById('start-btn'));
     assert.ok(startBtn, 'a single start button is shown');
 
+    // 1b) appLang=en 이면 시작 버튼이 영어
+    await page.evaluate(() => localStorage.setItem('appLang', 'en'));
+    await page.reload({ waitUntil: 'load' });
+    await new Promise((r) => setTimeout(r, 200));
+    const startLabel = await page.evaluate(() => document.getElementById('start-btn').textContent.trim());
+    assert.strictEqual(startLabel, 'Start', 'start button localized to en when appLang=en');
+    await page.evaluate(() => localStorage.removeItem('appLang'));
+    await page.reload({ waitUntil: 'load' });
+
     // 2) 시작 → 카운트다운 → 게임 화면/HUD 렌더
     await page.evaluate(() => window.__debugStartGame());
     await waitIntroDone();

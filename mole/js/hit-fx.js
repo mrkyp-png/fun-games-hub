@@ -47,7 +47,7 @@
 
   function moleHit(boardEl, xFrac, yFrac) {
     shake(boardEl);
-    spawnAt(boardEl, 'hit-fx-burst', xFrac, yFrac, '<span>쾅!</span>');
+    spawnAt(boardEl, 'hit-fx-burst', xFrac, yFrac, '<span>' + window.FGH.I18N.t('mole.fx.bam') + '</span>');
     spawnAt(boardEl, 'hit-fx-helmet', xFrac, yFrac);
     for (let i = 0; i < 5; i++) {
       const p = spawnAt(boardEl, 'hit-fx-dust', xFrac, yFrac);
@@ -60,14 +60,14 @@
   // 다타 두더지의 마지막이 아닌 타격 (빼꼼/모자 단계) — 처치는 아니지만 맞은 느낌을 준다.
   function moleTap(boardEl, xFrac, yFrac) {
     shake(boardEl);
-    spawnAt(boardEl, 'hit-fx-burst', xFrac, yFrac, '<span>톡!</span>');
+    spawnAt(boardEl, 'hit-fx-burst', xFrac, yFrac, '<span>' + window.FGH.I18N.t('mole.fx.tap') + '</span>');
     vibrate(15);
     tone(470); // 처치음(320)보다 높게 — "아직 안 죽음"
   }
 
   function obstacleHit(boardEl, xFrac, yFrac /*, kind */) {
     shake(boardEl);
-    spawnAt(boardEl, 'hit-fx-clang', xFrac, yFrac, '<span>깡!</span>');
+    spawnAt(boardEl, 'hit-fx-clang', xFrac, yFrac, '<span>' + window.FGH.I18N.t('mole.fx.clang') + '</span>');
     vibrate([10, 25, 10]);
     tone(140, 'sawtooth');
   }
