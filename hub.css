@@ -1,0 +1,40 @@
+.hub {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 32px 20px 96px; /* 하단 탭바 높이만큼 여유 */
+  max-width: 480px; margin: 0 auto;
+}
+.hub-title { font-size: 1.8rem; font-weight: 700; margin: 8px 0 28px; text-align: center; }
+.theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
+.theme-card {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; aspect-ratio: 1; border-radius: 24px;
+  background: var(--card-bg); box-shadow: var(--shadow);
+  border: none; color: var(--ink); cursor: pointer; text-decoration: none;
+  -webkit-tap-highlight-color: transparent; transition: transform 0.15s ease;
+}
+.theme-card:active { transform: scale(0.95); }
+.theme-emoji { font-size: 3rem; line-height: 1; }
+.theme-label { font-size: 1.05rem; font-weight: 700; }
+
+.hub-screen { min-height: 60dvh; }
+.hub-placeholder {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 60dvh; gap: 12px; text-align: center; color: var(--muted);
+}
+.hub-placeholder-emoji { font-size: 3.4rem; }
+
+#tab-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+  display: flex;
+  background: var(--card-bg);
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.35);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.fgh-tab {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 10px 0; background: none; border: none; cursor: pointer;
+  color: var(--muted); font: inherit;
+}
+.fgh-tab[aria-selected="true"] { color: var(--ink); }
+.fgh-tab svg { width: 22px; height: 22px; }
+.fgh-tab-lbl { font-size: 0.72rem; font-weight: 700; }
