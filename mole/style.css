@@ -158,6 +158,58 @@ body { background: #16301a; }
     inset 0 1.5px 2px rgba(255, 255, 255, 0.5);
 }
 
+/* 이모티콘만 보낸 메시지 = 말풍선 없이 크게 (카톡) */
+.chat-row--emoji { align-items: center; }
+.chat-emoji {
+  position: relative;
+  font-size: 2.7rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+/* 폭죽 — 축하 이모티콘 뒤에서 색점이 한 번 터진다 (그 줄이 뜰 때) */
+.chat-burst {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.chat-burst i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  opacity: 0;
+}
+.chat-burst i:nth-child(1)  { background: #ff5a5a; --dx: 34px;  --dy: 0; }
+.chat-burst i:nth-child(2)  { background: #ffd43b; --dx: 27px;  --dy: 20px; }
+.chat-burst i:nth-child(3)  { background: #4dabf7; --dx: 10px;  --dy: 32px; }
+.chat-burst i:nth-child(4)  { background: #69db7c; --dx: -14px; --dy: 30px; }
+.chat-burst i:nth-child(5)  { background: #da77f2; --dx: -30px; --dy: 16px; }
+.chat-burst i:nth-child(6)  { background: #ffa94d; --dx: -34px; --dy: -6px; }
+.chat-burst i:nth-child(7)  { background: #ff5a5a; --dx: -24px; --dy: -24px; }
+.chat-burst i:nth-child(8)  { background: #ffd43b; --dx: -4px;  --dy: -34px; }
+.chat-burst i:nth-child(9)  { background: #4dabf7; --dx: 18px;  --dy: -28px; }
+.chat-burst i:nth-child(10) { background: #69db7c; --dx: 32px;  --dy: -12px; }
+.chat-row.chat-appear .chat-burst i { animation: chat-burst-pop 0.6s 0.05s ease-out forwards; }
+@keyframes chat-burst-pop {
+  0%   { opacity: 1; transform: translate(0, 0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.3); }
+}
+
+/* 시작 버튼만 있는 줄 (다시하기 리액션 끝) */
+.chat-startrow { justify-content: center; margin-top: 4px; }
+.chat-startrow .chat-start-btn {
+  margin-left: 0;
+  padding: 9px 30px;
+  font-size: 1.05rem;
+  border-radius: 12px;
+}
+
 /* 최고 스코어 = 위에서 툭 내려오는 문자 알림 */
 .chat-sms {
   position: absolute;

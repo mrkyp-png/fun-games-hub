@@ -15,21 +15,33 @@
   // 라운드별 난이도는 MG.LEVELS 표(동시 두더지 1→5, 유지시간 2.5→1.0s, 방해물 증가)를 쓴다.
   // 16칸 클리어 개념은 없다 — 두더지는 16칸 아무 데나 랜덤 반복 등장, 60초가 끝나면 다음 라운드.
 
-  // 재방문 시 두더지 오빠 한 줄 (첫 방문만 전체 인트로). 상황별 풀 + 방문 횟수 마일스톤.
-  const RETURN_LINES = {
-    best:  ['방금 그 점수 뭐야 ㅋㅋ 또 깰 수 있어?', '신기록 봤어. 오빠가 다 봤어 ㅜㅜ', '천재냐? 한 판 더 가자'],
-    bad:   ['아까 건 봐줄게. 다시 ㄱ', '워밍업이었지? 이번엔 진짜로', '괜찮아 오빠도 처음엔 못했어'],
-    away:  ['오랜만이네, 어디 갔었어', '{d}일만이야... 안 보고싶었어?', '살아있었네 ㅋㅋ'],
-    normal:['또 왔네 ㅋㅋ', '왜 이제 와, 기다렸잖아', '오늘은 몇 마리 잡을 거야?', '연습 좀 했어?', '바로 갈까?', '심심했지? 오빠도'],
-    milestone: {
-      5:   '벌써 5판째네. 재밌지?',
-      10:  '10판이면 이제 프로 아냐? ㅋㅋ',
-      30:  '30판... 우리 사이 뭐지',
-      50:  '50판 돌파! 오빠가 뿌듯하다',
-      100: '100판 기념으로 오빠가 쏜다 (아무것도 안 줌)'
-    }
-  };
-  const RETURN_REPLIES = ['ㅇㅇ', 'ㄱㄱ', '감', '...', '해', 'ㅇㅋ'];
+  // 재접/홈복귀 시 두더지 오빠 한 줄 — 짧은 문구 풀에서 랜덤 (첫 방문만 전체 인트로).
+  const RETURN_PHRASES = [
+    '왔어?', '왜 이제 와', '빨리 와', '늦었네', '기다렸잖아', '왔구나 ㅎㅎ', '또 왔네', '오늘도 오셨네',
+    '딱 맞춰 왔다', '잠깐 시간 돼?', '5분만 하자', '한 판만', '딱 한 판만 진짜', '겜 ㄱ?',
+    '보고싶었어', '나 안 보고싶었어?', '답장 좀 하지', '왜 안 읽어', '어제 왜 씹었어', '나 삐졌어',
+    '화 안 났어', '요즘 뭐 하고 지내', '연락 좀 하자', '요즘 바빠?', '나만 안 바쁜가 봐', '오늘 하루 어땠어',
+    '힘든 일 있었어?', '얘기 들어줄게', '오빠가 있잖아', '옆에 있어 줄게', '무슨 일 있으면 말해',
+    '준비됐어?', '손 풀었어?', '컨디션 어때', '오늘 각 나온다', '느낌 좋아', '오늘은 신기록이야',
+    '넌 할 수 있어', '오빠가 믿는다', '가보자고', '두더지 떨고 있어', '걔네 오늘 각오해', '살살 안 봐줄 거지?',
+    '다 때려잡자', '몇 마리 목표야?', '최고 기록 깨자', '오늘 미친 척 하자', '집중 모드 ON',
+    '자신 있어?', '지난번 그 점수 뭐야', '오늘은 좀 하냐', '또 질 거야?', '내기할까', '지면 뭐 해줄 거야',
+    '겁먹었어?', '손 떨고 있네', '긴장했지', '이번엔 다르다며', '말만 하지 말고',
+    '밥 먹었어?', '잠은 잤어?', '커피 마셨어?', '날씨 좋더라', '주말이다 ㅎㅎ', '월요일 화이팅',
+    '오늘 금요일이야', '비 온대 우산 챙겨', '환절기 감기 조심', '물 좀 마셔',
+    '회사지 지금?', '팀장 뒤에 있어?', '걸리지 마', '소리 껐지?', '화면 밝기 낮춰', '통화하는 척 해',
+    '이거 업무 전화야', '완벽한 위장이지', '아무도 몰라 이게 게임인지', '상사 오면 통화 버튼',
+    '근무 시간엔 조용히', '딴짓 아니야 이거',
+    '두더지들이 파업했대', '오늘 운세 대박이래', '나 꿈에 나왔어?', '로또 번호 불러줄까', '두더지 왕이 화났어',
+    '우리 전생에 봤나?', 'MBTI 뭐야 너', '갑자기 배고프다', '두더지가 안부 전해달래', '오늘 밤에 별똥별 온대'
+  ];
+  const HIPPO_REPLIES = ['ㅇㅇ', 'ㄱㄱ', '감', '...', '해', 'ㅇㅋ', '뭐', '왜', 'ㅎ', '바빠', '조용히 해', '알겠어'];
+
+  // 다시하기(방금 점수 남김) — 두더지는 항상 축하 이모티콘(말풍선 없이 큼) + 폭죽, 그리고 따로 글자.
+  // 하마는 말풍선 없는 큰 이모티콘 랜덤 (두더지 축하하는데 하마는 😡 → 개그).
+  const CELEBRATE_EMOJI = '🎉';
+  const RETRY_TEXT = { best: '미쳤다 신기록!', clear: '잘했어!', bad: 'ㅋㅋ 그럴 수 있어' };
+  const HIPPO_MOODS = ['❓', '❤️', '😡', '😂', '😐', '🙄', '✋', '🔥', '😅', '👍'];
 
   let state = null;   // 플레이 중인 라운드 상태 (시작 화면일 땐 null)
   let runBanked = 0;  // 지금 연속 도전에서 완료된 이전 라운드들의 점수 합계
@@ -58,7 +70,7 @@
   }
 
   // ---------- 시작 화면 ----------
-  function showStartScreen() {
+  function showStartScreen(opts) {
     sessionGen++; // 진행 중이던 카운트다운/자동진행 타이머 무효화
     if (rafId) cancelAnimationFrame(rafId);
     if (sharedPopElements) sharedPopElements.clear();
@@ -84,43 +96,87 @@
     void sms.offsetWidth;
     sms.classList.add('sms-anim');
 
-    // 첫 방문이면 전체 인트로, 아니면 두더지 오빠 한 줄 (상황 인식).
+    // 첫 방문 = 전체 인트로. 아니면 재방문 대화(재접=랜덤 문구 / 다시하기=축하 이모티콘 리액션).
+    const isRetry = !!(opts && opts.retry);
     const visits = parseInt(localStorage.getItem('mole.visits'), 10) || 0;
-    localStorage.setItem('mole.visits', String(visits + 1));
-    const firstVisit = visits === 0;
+    if (!isRetry) localStorage.setItem('mole.visits', String(visits + 1));
+    const firstVisit = !isRetry && visits === 0;
     const firstEl = document.getElementById('chat-first');
     const returnEl = document.getElementById('chat-return');
     firstEl.hidden = !firstVisit;
     returnEl.hidden = firstVisit;
 
-    if (!firstVisit) fillReturnChat();
+    if (!firstVisit) buildReturnChat(isRetry ? 'retry' : 'phrase');
     revealThread(firstVisit ? firstEl : returnEl);
   }
 
-  // 재방문 인사 — 방문 횟수 마일스톤 우선, 없으면 마지막 결과/공백에 따라.
-  function fillReturnChat() {
-    const visits = parseInt(localStorage.getItem('mole.visits'), 10) || 1;
-    const lastPlayed = parseInt(localStorage.getItem('mole.lastPlayed'), 10) || 0;
-    const daysAway = lastPlayed ? Math.floor((Date.now() - lastPlayed) / 86400000) : 0;
-    const wasBest = localStorage.getItem('mole.lastWasBest') === '1';
-    const wasBad = localStorage.getItem('mole.lastWasBad') === '1';
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-    let line;
-    if (RETURN_LINES.milestone[visits]) {
-      line = RETURN_LINES.milestone[visits];
-    } else {
-      let pool;
-      if (daysAway >= 3) pool = RETURN_LINES.away;
-      else if (wasBest) pool = RETURN_LINES.best;
-      else if (wasBad) pool = RETURN_LINES.bad;
-      else pool = RETURN_LINES.normal;
-      line = pick(pool).replace('{d}', String(daysAway));
+  // --- 재방문 대화 조립 (말풍선 줄 / 이모티콘 줄) ---
+  function avatarEl(kind) {
+    const d = document.createElement('div');
+    d.className = 'chat-avatar chat-avatar--' + kind;
+    d.setAttribute('aria-hidden', 'true');
+    return d;
+  }
+  function bubbleRow(side, text, withStart) {
+    const row = document.createElement('div');
+    row.className = 'chat-row chat-row--' + side;
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble chat-bubble--' + side;
+    bubble.appendChild(document.createTextNode(text));
+    if (withStart) bubble.appendChild(makeStartBtn());
+    if (side === 'them') { row.appendChild(avatarEl('mole')); row.appendChild(bubble); }
+    else { row.appendChild(bubble); row.appendChild(avatarEl('hippo')); }
+    return row;
+  }
+  // 이모티콘만 = 말풍선 없이 큼 (카톡)
+  function emojiRow(side, emoji, withBurst) {
+    const row = document.createElement('div');
+    row.className = 'chat-row chat-row--' + side + ' chat-row--emoji';
+    const em = document.createElement('div');
+    em.className = 'chat-emoji';
+    em.textContent = emoji;
+    if (withBurst) {
+      const b = document.createElement('span');
+      b.className = 'chat-burst';
+      b.setAttribute('aria-hidden', 'true');
+      for (let i = 0; i < 10; i++) b.appendChild(document.createElement('i'));
+      em.appendChild(b);
     }
-    document.getElementById('return-line').textContent = line;
-    document.getElementById('return-reply').textContent = pick(RETURN_REPLIES);
+    if (side === 'them') { row.appendChild(avatarEl('mole')); row.appendChild(em); }
+    else { row.appendChild(em); row.appendChild(avatarEl('hippo')); }
+    return row;
+  }
+  function startRow() {
+    const row = document.createElement('div');
+    row.className = 'chat-row chat-startrow';
+    row.appendChild(makeStartBtn());
+    return row;
+  }
+  function makeStartBtn() {
+    const b = document.createElement('button');
+    b.className = 'chat-start-btn';
+    b.textContent = I18N.t('mole.start.btn');
+    b.addEventListener('click', () => startRound(1, { fresh: true }));
+    return b;
   }
 
-  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+  function buildReturnChat(mode) {
+    const el = document.getElementById('chat-return');
+    el.innerHTML = '';
+    if (mode === 'retry') {
+      const kind = localStorage.getItem('mole.lastWasBest') === '1' ? 'best'
+        : localStorage.getItem('mole.lastWasBad') === '1' ? 'bad' : 'clear';
+      el.appendChild(emojiRow('them', CELEBRATE_EMOJI, true)); // 축하 이모티콘(큼) + 폭죽
+      el.appendChild(bubbleRow('them', RETRY_TEXT[kind]));     // 글자는 따로
+      el.appendChild(emojiRow('me', pick(HIPPO_MOODS)));       // 하마 랜덤 이모티콘(큼)
+      el.appendChild(startRow());                              // 시작 버튼 (눌러야 함)
+    } else {
+      el.appendChild(bubbleRow('them', pick(RETURN_PHRASES)));
+      el.appendChild(bubbleRow('me', pick(HIPPO_REPLIES), true)); // 답 + 시작 버튼
+    }
+  }
 
   // 카톡처럼 메시지를 한 줄씩 공개하며 아래로 따라 스크롤
   function revealThread(thread) {
@@ -449,9 +505,8 @@
 
     showStartScreen();
 
-    const startNow = () => startRound(1, { fresh: true });
-    document.getElementById('start-btn').addEventListener('click', startNow);
-    document.getElementById('start-btn-return').addEventListener('click', startNow);
+    // 첫 방문 대화의 시작 버튼(정적). 재방문 대화의 버튼은 buildReturnChat 이 직접 연결한다.
+    document.getElementById('start-btn').addEventListener('click', () => startRound(1, { fresh: true }));
     // 대화 공개 중 아무 데나 탭하면 나머지 메시지 즉시 표시 (건너뛰기)
     document.getElementById('board-start').addEventListener('click', (e) => {
       if (e.target.closest('.chat-start-btn')) return;
@@ -466,8 +521,8 @@
       if (state) showStartScreen();
       else window.location.href = '../index.html';
     });
-    document.getElementById('gameover-retry-btn').addEventListener('click', () => startRound(1, { fresh: true }));
-    document.getElementById('gameover-select-btn').addEventListener('click', showStartScreen);
+    document.getElementById('gameover-retry-btn').addEventListener('click', () => showStartScreen({ retry: true }));
+    document.getElementById('gameover-select-btn').addEventListener('click', () => showStartScreen());
 
     // 디버그 훅 — 지렁이 게임과 동일 컨벤션, 영구 보존.
     window.__debugStartGame = () => startRound(1, { fresh: true });
