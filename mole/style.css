@@ -10,11 +10,12 @@ html { color-scheme: light dark; }
 /* 배포 버전 표식 (스크린샷으로 어느 버전인지 확인용) — 시작 화면 좌하단 아주 작게 */
 #build-tag {
   position: absolute;
-  left: 4px;
-  bottom: 2px;
+  left: 6px;
+  bottom: 4px;
   z-index: 9;
-  font-size: 8px;
-  color: rgba(255, 255, 255, 0.28);
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.55);
   pointer-events: none;
 }
 #game-screen:not(.is-start) #build-tag { display: none; }
