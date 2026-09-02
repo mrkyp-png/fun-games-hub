@@ -117,7 +117,9 @@
         active.delete(id);
       });
 
-      ['mole', 'animal', 'bomb'].forEach((type) => {
+      // 난이도별 방해물 토글: config.obstacles === false 면 두더지만 (하수·고수).
+      const spawnTypes = (config.obstacles === false) ? ['mole'] : ['mole', 'animal', 'bomb'];
+      spawnTypes.forEach((type) => {
         cooldown[type] -= dt;
         if (cooldown[type] <= 0) {
           const pop = trySpawn(type);

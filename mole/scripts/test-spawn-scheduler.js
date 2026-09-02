@@ -311,4 +311,40 @@ function makeSpawnPoints(regionIds) {
   assert.deepStrictEqual(scheduler.resolveRegion(0), [], 're-hitting a struck mole does nothing');
 }
 
+// 17) config.obstacles=false → 동물/폭탄 안 나옴 (하수·고수 난이도)
+{
+  const regions = [{ id: 0 }, { id: 1 }, { id: 2 }, { id: 3 }];
+  const spawnPoints = makeSpawnPoints([0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3]);
+  const config = {
+    maxConcurrentMoles: 5, maxConcurrentAnimals: 3, maxConcurrentBombs: 3,
+    popDuration: 1.5, molePoseCount: 8, obstacleCount: 5, obstacles: false
+  };
+  const scheduler = create({ regions, spawnPoints, config, rng: makeRng(12345) });
+  let sawObstacle = false;
+  for (let i = 0; i < 4000; i++) {
+    scheduler.tick(0.05).spawned.forEach((p) => {
+      if (p.type === 'animal' || p.type === 'bomb') sawObstacle = true;
+    });
+  }
+  assert.strictEqual(sawObstacle, false, 'obstacles:false → 방해물 스폰 없음');
+}
+
+// 18) config.obstacles 미지정 → 기존대로 방해물 나옴
+{
+  const regions = [{ id: 0 }, { id: 1 }, { id: 2 }, { id: 3 }];
+  const spawnPoints = makeSpawnPoints([0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3]);
+  const config = {
+    maxConcurrentMoles: 3, maxConcurrentAnimals: 2, maxConcurrentBombs: 2,
+    popDuration: 1.5, molePoseCount: 8, obstacleCount: 5
+  };
+  const scheduler = create({ regions, spawnPoints, config, rng: makeRng(777) });
+  let sawObstacle = false;
+  for (let i = 0; i < 4000; i++) {
+    scheduler.tick(0.05).spawned.forEach((p) => {
+      if (p.type === 'animal' || p.type === 'bomb') sawObstacle = true;
+    });
+  }
+  assert.strictEqual(sawObstacle, true, '기본값 → 방해물 나옴');
+}
+
 console.log('test-spawn-scheduler.js: all assertions passed');
