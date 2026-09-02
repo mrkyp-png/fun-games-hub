@@ -3,6 +3,11 @@
    [hidden] 안전장치: 클래스의 display가 hidden 속성을 조용히 덮어쓰는 버그를 원천 차단. */
 [hidden] { display: none !important; }
 
+/* 삼성 인터넷/크롬의 자동 다크모드가 말풍선·캐릭터 색을 마음대로 바꾸지 않게.
+   이 페이지는 이미 다크 디자인이라고 선언 → 브라우저 재채색 안 함. */
+html { color-scheme: dark; }
+img, .chat-emoji, .lane-hammer, .mole-pop, .mole-hole, .mole-hole-front { forced-color-adjust: none; }
+
 /* 화면 전체 배경: 어두운 초록 단색 (사용자 확정 — 이미지 아님). 별/성운 레이어는 끈다.
    두더지 박스(.mole-board)만 잔디 이미지를 쓴다. */
 body { background: #16301a; }
