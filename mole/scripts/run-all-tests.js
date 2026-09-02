@@ -8,7 +8,8 @@ const tests = [
   'test-grid-partition.js',
   'test-spawn-scheduler.js',
   'test-mole-sprites.js',
-  'test-economy.js'
+  'test-economy.js',
+  'test-face-store.js'
 ];
 
 let failed = false;
