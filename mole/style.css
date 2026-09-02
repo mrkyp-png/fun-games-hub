@@ -2,6 +2,8 @@
    (사용자 확정). cosmic-theme.css 는 허브/지렁이와 공유하므로 건드리지 않고 여기서 덮어쓴다.
    [hidden] 안전장치: 클래스의 display가 hidden 속성을 조용히 덮어쓰는 버그를 원천 차단. */
 [hidden] { display: none !important; }
+/* 모바일에서 버튼/링크 탭 시 나오는 사각 하이라이트 박스 제거 (전역) */
+* { -webkit-tap-highlight-color: transparent; }
 
 /* 삼성 인터넷/크롬 자동 다크모드가 말풍선·문자칸 색을 재채색하지 않게.
    'light dark' + 아래 prefers-color-scheme 블록 = "이 페이지는 다크모드를 직접 처리함" 선언
@@ -54,9 +56,12 @@ body { background: #16301a; }
   color: #2a2350;
   text-decoration: none;
   border: none;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;   /* 탭 시 사각 하이라이트 제거 */
   cursor: pointer;
   transition: transform 0.08s ease, box-shadow 0.08s ease;
 }
+.icon-btn:focus, .icon-btn:focus-visible { outline: none; }
 .icon-btn:active {
   transform: translateY(2px);
   box-shadow: 0 1px 0 #d8cff5, 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 1.5px 1.5px rgba(255, 255, 255, 0.9);
@@ -254,6 +259,7 @@ body { background: #16301a; }
    툭 내려옴 → 2초 머묾 → 그냥 사라짐(페이드) → 잠깐 뒤 다시 내려옴 → 반복. 5초 주기. */
 .chat-sms.sms-anim { animation: sms-loop 5s 0.3s infinite; }
 .chat-sms.sms-anim .chat-sms-party { animation: sms-party-loop 5s 0.3s infinite; }
+.chat-sms.sms-anim .chat-sms-fx i { animation: sms-fx-loop 5s 0.3s infinite; }
 .chat-sms-ic { width: 20px; height: 20px; flex: 0 0 auto; color: #35b35a; }
 .chat-sms-txt { flex: 1; }
 @keyframes sms-loop {
@@ -264,19 +270,56 @@ body { background: #16301a; }
   100% { transform: translateY(0); opacity: 0; }                        /* 사라진 채 대기 → 다시 0% */
 }
 
-/* 점수 옆 작은 축하 아이콘 — 문자칸과 함께 뜨고 사라짐 */
+/* 축하 이모티콘 — 크고 또렷하게. 문자칸이랑 같이 사라짐(부모 opacity가 처리, 자체 페이드 X). */
 .chat-sms-party {
-  width: 15px;
-  height: 15px;
+  width: 26px;
+  height: 26px;
   flex: 0 0 auto;
-  color: #ff9f1c;
+  margin-right: 2px;
+  color: #ff9a1e;
+  filter: drop-shadow(0 0 4px rgba(255, 190, 60, 0.85));
   transform: scale(0);
 }
 @keyframes sms-party-loop {
-  0%, 5%    { transform: scale(0); }
-  11%       { transform: scale(1.4) rotate(12deg); }
-  16%, 52%  { transform: scale(1) rotate(0); }
-  62%, 100% { transform: scale(0.6) rotate(0); opacity: 0; }
+  0%, 6%    { transform: scale(0) rotate(-20deg); }
+  13%       { transform: scale(1.45) rotate(12deg); }
+  20%, 100% { transform: scale(1) rotate(0); }
+}
+
+/* 폭죽 — 문자칸 내려오는 순간 색점 12개가 사방으로 크게 터진다 (매 등장마다). */
+.chat-sms-fx {
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.chat-sms-fx i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  opacity: 0;
+}
+.chat-sms-fx i:nth-child(1)  { background: #ff5a5a; --dx: 46px;  --dy: 4px; }
+.chat-sms-fx i:nth-child(2)  { background: #ffd43b; --dx: 38px;  --dy: 22px; }
+.chat-sms-fx i:nth-child(3)  { background: #4dabf7; --dx: 20px;  --dy: 34px; }
+.chat-sms-fx i:nth-child(4)  { background: #69db7c; --dx: -6px;  --dy: 38px; }
+.chat-sms-fx i:nth-child(5)  { background: #da77f2; --dx: -30px; --dy: 26px; }
+.chat-sms-fx i:nth-child(6)  { background: #ffa94d; --dx: -46px; --dy: 4px; }
+.chat-sms-fx i:nth-child(7)  { background: #ff5a5a; --dx: -38px; --dy: -20px; }
+.chat-sms-fx i:nth-child(8)  { background: #ffd43b; --dx: -14px; --dy: -34px; }
+.chat-sms-fx i:nth-child(9)  { background: #4dabf7; --dx: 12px;  --dy: -36px; }
+.chat-sms-fx i:nth-child(10) { background: #69db7c; --dx: 34px;  --dy: -24px; }
+.chat-sms-fx i:nth-child(11) { background: #da77f2; --dx: 50px;  --dy: -8px; }
+.chat-sms-fx i:nth-child(12) { background: #ffa94d; --dx: -50px; --dy: -6px; }
+@keyframes sms-fx-loop {
+  0%, 10%   { opacity: 0; transform: translate(0, 0) scale(0.5); }
+  13%       { opacity: 1; transform: translate(0, 0) scale(1); }
+  26%, 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.35); }
 }
 
 /* HUD: 시작 상태엔 브라우저 주소창, 플레이 상태엔 티커. #game-screen.is-start 로 스위치. */
