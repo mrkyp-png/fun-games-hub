@@ -7,6 +7,17 @@
    'light dark' + 아래 prefers-color-scheme 블록 = "이 페이지는 다크모드를 직접 처리함" 선언
    → 브라우저 자동 재채색 중단. */
 html { color-scheme: light dark; }
+/* 배포 버전 표식 (스크린샷으로 어느 버전인지 확인용) — 시작 화면 좌하단 아주 작게 */
+#build-tag {
+  position: absolute;
+  left: 4px;
+  bottom: 2px;
+  z-index: 9;
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.28);
+  pointer-events: none;
+}
+#game-screen:not(.is-start) #build-tag { display: none; }
 img, .chat-emoji, .lane-hammer, .mole-pop, .mole-hole, .mole-hole-front { forced-color-adjust: none; }
 /* 다크모드에서도 색은 그대로 (재선언 = 브라우저에게 "의도된 다크 색"임을 명시) */
 @media (prefers-color-scheme: dark) {
