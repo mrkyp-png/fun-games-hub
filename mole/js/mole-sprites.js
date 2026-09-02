@@ -16,6 +16,27 @@
   // translateY 는 내려가는 "움직임"만 살짝 더한다. 4는 클립 밖으로 완전히 내려보냄.
   const DEPTH_SINK = [0, 6, 11, 15, 120];
 
+  // 사람두더지 합성: 포즈별 얼굴 원(중심 cx,cy / 반지름 r) — 스프라이트 470x548 박스 대비 비율.
+  // 스프라이트는 콘텐츠가 캔버스 바닥에 정렬돼 있어(투명 상단 여백) 얼굴이 아래쪽(cy 0.7~0.9).
+  // measure-head-anchor.py 산출값. 재측정: python scripts/measure-head-anchor.py
+  const HEAD_ANCHOR = {
+    mole1: { cx: 0.4979, cy: 0.7119, r: 0.1709 },
+    mole2: { cx: 0.5255, cy: 0.7175, r: 0.1545 },
+    mole3: { cx: 0.5181, cy: 0.7218, r: 0.1439 },
+    mole4: { cx: 0.4851, cy: 0.7476, r: 0.1662 },
+    mole5: { cx: 0.5223, cy: 0.7271, r: 0.1369 },
+    mole6: { cx: 0.4660, cy: 0.7527, r: 0.1755 },
+    mole7: { cx: 0.5064, cy: 0.8027, r: 0.1568 },
+    mole8: { cx: 0.5362, cy: 0.7958, r: 0.1474 },
+    peek1: { cx: 0.4989, cy: 0.7892, r: 0.1697 },
+    peek2: { cx: 0.4968, cy: 0.8053, r: 0.1650 },
+    helmet: { cx: 0.4426, cy: 0.8887, r: 0.1755 }
+  };
+
+  function headAnchor(spriteFile) {
+    return HEAD_ANCHOR[spriteFile] || HEAD_ANCHOR.mole1;
+  }
+
   function restingDepth(hitsRequired, hitsTaken) {
     if (hitsRequired === 2) return hitsTaken === 0 ? 0 : 2;
     if (hitsRequired === 3) return hitsTaken; // 0,1,2
@@ -72,8 +93,8 @@
   }
 
   const api = {
-    POSE_COUNT, OBSTACLE_COUNT,
-    restingDepth, fileForDepth, sinkForDepth, obstacleFile, spriteUrl, preloadAll
+    POSE_COUNT, OBSTACLE_COUNT, HEAD_ANCHOR,
+    restingDepth, fileForDepth, sinkForDepth, obstacleFile, spriteUrl, preloadAll, headAnchor
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.MoleSprites = api; }

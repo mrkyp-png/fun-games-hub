@@ -60,4 +60,18 @@ const S = require('../js/mole-sprites.js');
   assert.strictEqual(S.obstacleFile('animal', 5), 'rabbit', 'index wraps by OBSTACLE_COUNT');
 }
 
+// 9) HEAD_ANCHOR: 11개 포즈, 각 값이 정상 범위 (스프라이트는 콘텐츠 바닥정렬 = 얼굴이 캔버스 아래쪽)
+{
+  const A = S.HEAD_ANCHOR;
+  const keys = ['mole1', 'mole2', 'mole3', 'mole4', 'mole5', 'mole6', 'mole7', 'mole8', 'peek1', 'peek2', 'helmet'];
+  keys.forEach((k) => {
+    assert.ok(A[k], k + ' 앵커 존재');
+    assert.ok(A[k].cx > 0.3 && A[k].cx < 0.75, k + ' cx 범위 (' + A[k].cx + ')');
+    assert.ok(A[k].cy > 0.55 && A[k].cy < 0.95, k + ' cy 범위 (' + A[k].cy + ')');
+    assert.ok(A[k].r > 0.08 && A[k].r < 0.3, k + ' r 범위 (' + A[k].r + ')');
+  });
+  assert.deepStrictEqual(S.headAnchor('mole3'), A.mole3);
+  assert.deepStrictEqual(S.headAnchor('nonesuch'), A.mole1, '미지 파일 → mole1 폴백');
+}
+
 console.log('test-mole-sprites.js: all assertions passed');
