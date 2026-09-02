@@ -3,7 +3,6 @@
 
   const MG = window.MoleGame;
   const I18N = window.FGH.I18N;
-  const BEST_KEY = 'moleBestScore';
   const START_LIVES = 3;      // 스펙 §11
   const GRID_SIZE = 4;        // 4x4 = 16칸 고정 격자
   const ROUND_SECONDS = 30;   // 라운드마다 30초 점수 어택
@@ -15,43 +14,60 @@
   // 라운드별 난이도는 MG.LEVELS 표(동시 두더지 1→5, 유지시간 2.5→1.0s, 방해물 증가)를 쓴다.
   // 16칸 클리어 개념은 없다 — 두더지는 16칸 아무 데나 랜덤 반복 등장, 60초가 끝나면 다음 라운드.
 
-  // 재접/홈복귀 시 두더지 오빠 한 줄 — 짧은 문구 풀에서 랜덤 (첫 방문만 전체 인트로).
-  const RETURN_PHRASES = [
-    '왔어?', '왜 이제 와', '빨리 와', '늦었네', '기다렸잖아', '왔구나 ㅎㅎ', '또 왔네', '오늘도 오셨네',
-    '딱 맞춰 왔다', '잠깐 시간 돼?', '5분만 하자', '한 판만', '딱 한 판만 진짜', '겜 ㄱ?',
-    '보고싶었어', '나 안 보고싶었어?', '답장 좀 하지', '왜 안 읽어', '어제 왜 씹었어', '나 삐졌어',
-    '화 안 났어', '요즘 뭐 하고 지내', '연락 좀 하자', '요즘 바빠?', '나만 안 바쁜가 봐', '오늘 하루 어땠어',
-    '힘든 일 있었어?', '얘기 들어줄게', '오빠가 있잖아', '옆에 있어 줄게', '무슨 일 있으면 말해',
-    '준비됐어?', '손 풀었어?', '컨디션 어때', '오늘 각 나온다', '느낌 좋아', '오늘은 신기록이야',
-    '넌 할 수 있어', '오빠가 믿는다', '가보자고', '두더지 떨고 있어', '걔네 오늘 각오해', '살살 안 봐줄 거지?',
-    '다 때려잡자', '몇 마리 목표야?', '최고 기록 깨자', '오늘 미친 척 하자', '집중 모드 ON',
-    '자신 있어?', '지난번 그 점수 뭐야', '오늘은 좀 하냐', '또 질 거야?', '내기할까', '지면 뭐 해줄 거야',
-    '겁먹었어?', '손 떨고 있네', '긴장했지', '이번엔 다르다며', '말만 하지 말고',
-    '밥 먹었어?', '잠은 잤어?', '커피 마셨어?', '날씨 좋더라', '주말이다 ㅎㅎ', '월요일 화이팅',
-    '오늘 금요일이야', '비 온대 우산 챙겨', '환절기 감기 조심', '물 좀 마셔',
-    '회사지 지금?', '팀장 뒤에 있어?', '걸리지 마', '소리 껐지?', '화면 밝기 낮춰', '통화하는 척 해',
-    '이거 업무 전화야', '완벽한 위장이지', '아무도 몰라 이게 게임인지', '상사 오면 통화 버튼',
-    '근무 시간엔 조용히', '딴짓 아니야 이거',
-    '두더지들이 파업했대', '오늘 운세 대박이래', '나 꿈에 나왔어?', '로또 번호 불러줄까', '두더지 왕이 화났어',
-    '우리 전생에 봤나?', 'MBTI 뭐야 너', '갑자기 배고프다', '두더지가 안부 전해달래', '오늘 밤에 별똥별 온대'
-  ];
-  const HIPPO_REPLIES = ['ㅇㅇ', 'ㄱㄱ', '감', '...', '해', 'ㅇㅋ', '뭐', '왜', 'ㅎ', '바빠', '조용히 해', '알겠어'];
-
-  // 다시하기(방금 점수 남김) — 두더지는 항상 축하 이모티콘(말풍선 없이 큼) + 폭죽, 그리고 따로 글자.
-  // 하마는 말풍선 없는 큰 이모티콘 랜덤 (두더지 축하하는데 하마는 😡 → 개그).
-  const CELEBRATE_EMOJI = '🎉';
-  const RETRY_TEXT = { best: '미쳤다 신기록!', clear: '잘했어!', bad: 'ㅋㅋ 그럴 수 있어' };
-  const HIPPO_MOODS = ['❓', '❤️', '😡', '😂', '😐', '🙄', '✋', '🔥', '😅', '👍'];
-
-  let state = null;   // 현재 라운드 상태 (시작 화면일 땐 null)
+  let state = null;   // 현재 라운드 상태 (홈 화면일 땐 null)
   // 10라운드를 통틀어 유지되는 것: 콤보·점수(1라운드부터 누적)와 목숨.
   let run = null;     // { combo: ComboScore, lives, comboMilestone }
   const COMBO_LIFE_STEP = 100; // 콤보가 이 배수를 넘길 때마다 목숨 +1
   let rafId = null;
   let lastTime = 0;
   let sharedPopElements = null; // #mole-pop-layer는 재생성 안 되는 고정 DOM이므로 세션당 한 번만 생성
-  let sharedLaneControls = null; // 다이얼러 버튼 — 시작 화면에도 (비활성으로) 계속 보여야 하므로 세션당 한 번만 생성
-  let sessionGen = 0; // startRound/showStartScreen 호출마다 +1 — 카운트다운·자동진행 타이머 취소 토큰
+  let sharedLaneControls = null; // 다이얼러 버튼 — 홈 화면에도 (비활성으로) 계속 보여야 하므로 세션당 한 번만 생성
+  let sessionGen = 0; // startRound/showHome 호출마다 +1 — 카운트다운·자동진행 타이머 취소 토큰
+
+  // 화면/메타 모듈 인스턴스 (DOMContentLoaded 에서 생성).
+  let screenNav = null;
+  let homeScreen = null;
+  let faceMaker = null;
+  let faceLocker = null;
+  let shop = null;
+  let daily = null;
+  let scoreScreen = null;
+
+  let currentDiff = 'easy';        // 현재 판 난이도 ('easy'|'mid'|'legend')
+  let activeFaceUrl = null;        // 활성 사람두더지 얼굴 objectURL
+  let pendingOnboardStart = false; // 온보딩 첫 저장 뒤 하수 게임 자동 시작 대기
+
+  const DIFFS = ['easy', 'mid', 'legend'];
+  function currentDifficulty() {
+    const d = localStorage.getItem('mole.difficulty');
+    return DIFFS.indexOf(d) > -1 ? d : 'easy';
+  }
+  function bestFor(diff) {
+    const v = parseInt(localStorage.getItem('mole.best.' + diff), 10);
+    return Number.isFinite(v) ? v : 0;
+  }
+  function saveBestFor(diff, score) {
+    localStorage.setItem('mole.best.' + diff, String(score));
+  }
+  // 구 단일 키(moleBestScore) → mole.best.easy 마이그레이션 (1회).
+  function migrateBest() {
+    const old = localStorage.getItem('moleBestScore');
+    if (old != null && localStorage.getItem('mole.best.easy') == null) {
+      localStorage.setItem('mole.best.easy', old);
+      localStorage.removeItem('moleBestScore');
+    }
+  }
+
+  // 활성 사람두더지 얼굴 blob → objectURL (게임 시작 전 호출).
+  function loadActiveFace() {
+    const id = MG.FaceStore.getActiveId();
+    if (activeFaceUrl) { URL.revokeObjectURL(activeFaceUrl); activeFaceUrl = null; }
+    if (!id) return Promise.resolve(null);
+    return MG.FaceStore.getFace(id).then((rec) => {
+      activeFaceUrl = rec ? URL.createObjectURL(rec.blob) : null;
+      return activeFaceUrl;
+    });
+  }
 
   let bgm = null; // <audio id="bgm">
   function syncBgm(playIntent) {
@@ -63,16 +79,8 @@
     }
   }
 
-  function loadBest() {
-    const v = parseInt(localStorage.getItem(BEST_KEY), 10);
-    return Number.isFinite(v) ? v : 0;
-  }
-  function saveBest(score) {
-    localStorage.setItem(BEST_KEY, String(score));
-  }
-
-  // ---------- 시작 화면 ----------
-  function showStartScreen(opts) {
+  // ---------- 홈 화면 ----------
+  function showHome() {
     sessionGen++; // 진행 중이던 카운트다운/자동진행 타이머 무효화
     if (rafId) cancelAnimationFrame(rafId);
     if (sharedPopElements) sharedPopElements.clear();
@@ -82,118 +90,87 @@
     state = null;
     run = null;
     setPauseUI(false);
-    syncBgm(false); // 허브 시작 화면으로 나오면 BGM 정지
+    syncBgm(false); // 홈으로 나오면 BGM 정지
     document.getElementById('gameover-overlay').hidden = true;
     document.getElementById('round-done-overlay').hidden = true;
     document.getElementById('round-intro-overlay').hidden = true;
     document.getElementById('board-start').hidden = false;
     document.getElementById('game-screen').classList.add('is-start');
+    if (screenNav) screenNav.show('home-screen');
+    if (homeScreen) homeScreen.refresh();
+    retriggerBestSms();
+  }
 
-    // 최고 스코어 = 위에서 내려오는 문자 알림. 기록 없으면 숨김.
-    const best = loadBest();
+  // 최고 기록 문자 알림 — 홈 열 때마다 위에서 툭↓ 리트리거. 현재 난이도 최고점.
+  function retriggerBestSms() {
+    const b = bestFor(currentDifficulty());
     const sms = document.getElementById('start-best');
+    if (!sms) return;
     sms.querySelector('.chat-sms-txt').textContent =
-      best > 0 ? I18N.t('mole.start.best', { n: best.toLocaleString() }) : '';
-    sms.classList.toggle('is-empty', best <= 0);
-    sms.classList.remove('sms-anim');   // 시작화면 열 때마다 문자 툭↓ + 폭죽 리트리거
+      b > 0 ? I18N.t('mole.start.best', { n: b.toLocaleString() }) : '';
+    sms.classList.toggle('is-empty', b <= 0);
+    sms.classList.remove('sms-anim');
     void sms.offsetWidth;
     sms.classList.add('sms-anim');
-
-    // 첫 방문 = 전체 인트로. 아니면 재방문 대화(재접=랜덤 문구 / 다시하기=축하 이모티콘 리액션).
-    const isRetry = !!(opts && opts.retry);
-    const visits = parseInt(localStorage.getItem('mole.visits'), 10) || 0;
-    if (!isRetry) localStorage.setItem('mole.visits', String(visits + 1));
-    const firstVisit = !isRetry && visits === 0;
-    const firstEl = document.getElementById('chat-first');
-    const returnEl = document.getElementById('chat-return');
-    firstEl.hidden = !firstVisit;
-    returnEl.hidden = firstVisit;
-
-    if (!firstVisit) buildReturnChat(isRetry ? 'retry' : 'phrase');
-    revealThread(firstVisit ? firstEl : returnEl);
   }
 
-  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+  // ---------- 게임 시작 (홈 난이도 pill / 다시하기) ----------
+  function startGame(difficulty) {
+    const diff = DIFFS.indexOf(difficulty) > -1 ? difficulty : 'easy';
 
-  // --- 재방문 대화 조립 (말풍선 줄 / 이모티콘 줄) ---
-  function avatarEl(kind) {
-    const d = document.createElement('div');
-    d.className = 'chat-avatar chat-avatar--' + kind;
-    d.setAttribute('aria-hidden', 'true');
-    return d;
-  }
-  function bubbleRow(side, text, withStart) {
-    const row = document.createElement('div');
-    row.className = 'chat-row chat-row--' + side;
-    const bubble = document.createElement('div');
-    bubble.className = 'chat-bubble chat-bubble--' + side;
-    bubble.appendChild(document.createTextNode(text));
-    if (withStart) bubble.appendChild(makeStartBtn());
-    if (side === 'them') { row.appendChild(avatarEl('mole')); row.appendChild(bubble); }
-    else { row.appendChild(bubble); row.appendChild(avatarEl('hippo')); }
-    return row;
-  }
-  // 이모티콘만 = 말풍선 없이 큼 (카톡). withStart: 하마 아바타 바로 옆에 시작 버튼도.
-  function emojiRow(side, emoji, withBurst, withStart) {
-    const row = document.createElement('div');
-    row.className = 'chat-row chat-row--' + side + ' chat-row--emoji';
-    const em = document.createElement('div');
-    em.className = 'chat-emoji';
-    em.textContent = emoji;
-    if (withBurst) {
-      const b = document.createElement('span');
-      b.className = 'chat-burst';
-      b.setAttribute('aria-hidden', 'true');
-      for (let i = 0; i < 10; i++) b.appendChild(document.createElement('i'));
-      em.appendChild(b);
+    // 첫 실행 온보딩: 사람두더지 만들기 강제 → 저장 후 하수 게임(하트 무료).
+    if (!localStorage.getItem('mole.onboarded')) {
+      pendingOnboardStart = true;
+      screenNav.show('face-maker');
+      faceMaker.open({ forced: true });
+      return;
     }
-    if (side === 'them') { row.appendChild(avatarEl('mole')); row.appendChild(em); }
-    else {
-      row.appendChild(em);
-      if (withStart) row.appendChild(makeStartBtn());
-      row.appendChild(avatarEl('hippo'));
+    if (!MG.FaceStore.getActiveId()) {
+      alert(I18N.t('mole.home.needFace'));
+      screenNav.show('face-maker');
+      faceMaker.open({});
+      return;
     }
-    return row;
-  }
-  function makeStartBtn() {
-    const b = document.createElement('button');
-    b.className = 'chat-start-btn';
-    b.textContent = I18N.t('mole.start.btn');
-    b.addEventListener('click', () => startRound(1, { fresh: true }));
-    return b;
+    if (!MG.Economy.spendHeart()) {
+      showNoHeartModal();
+      return;
+    }
+
+    localStorage.setItem('mole.difficulty', diff);
+    applyDiffClass(diff);
+    loadActiveFace().then(() => {
+      currentDiff = diff;
+      startRound(1, { fresh: true });
+    });
   }
 
-  function buildReturnChat(mode) {
-    const el = document.getElementById('chat-return');
-    el.innerHTML = '';
-    if (mode === 'retry') {
-      const kind = localStorage.getItem('mole.lastWasBest') === '1' ? 'best'
-        : localStorage.getItem('mole.lastWasBad') === '1' ? 'bad' : 'clear';
-      el.appendChild(emojiRow('them', CELEBRATE_EMOJI, true));        // 축하 이모티콘(큼) + 폭죽
-      el.appendChild(bubbleRow('them', RETRY_TEXT[kind]));            // 글자는 따로
-      el.appendChild(emojiRow('me', pick(HIPPO_MOODS), false, true)); // 하마 이모티콘(큼) + 아바타 옆 시작 버튼
-    } else {
-      el.appendChild(bubbleRow('them', pick(RETURN_PHRASES)));
-      el.appendChild(bubbleRow('me', pick(HIPPO_REPLIES), true)); // 답 + 시작 버튼
-    }
+  function applyDiffClass(diff) {
+    const gs = document.getElementById('game-screen');
+    DIFFS.forEach((d) => gs.classList.remove('diff-' + d));
+    gs.classList.add('diff-' + diff);
   }
 
-  // 카톡처럼 메시지를 한 줄씩 공개하며 아래로 따라 스크롤
-  function revealThread(thread) {
-    if (!thread) return;
-    const rows = Array.prototype.slice.call(thread.querySelectorAll('.chat-row'));
-    const myGen = sessionGen;
-    rows.forEach((r) => { r.classList.add('chat-pending'); r.classList.remove('chat-appear'); });
-    let i = 0;
-    const step = () => {
-      if (myGen !== sessionGen || i >= rows.length) return;
-      rows[i].classList.remove('chat-pending');
-      rows[i].classList.add('chat-appear');
-      thread.scrollTop = thread.scrollHeight;
-      i += 1;
-      setTimeout(step, 560);
-    };
-    setTimeout(step, 450);
+  function showNoHeartModal() {
+    const v = document.createElement('div');
+    v.className = 'ad-overlay';
+    v.innerHTML = '<div class="ad-overlay-card">' +
+      '<div class="nh-title">' + I18N.t('mole.home.noHearts') + '</div>' +
+      '<div class="nh-btns">' +
+        '<button type="button" data-nh="ad">' + I18N.t('mole.shop.watchHeart') + '</button>' +
+        '<button type="button" data-nh="shop">' + I18N.t('mole.home.shop') + '</button>' +
+        '<button type="button" data-nh="close">' + I18N.t('mole.common.close') + '</button>' +
+      '</div></div>';
+    document.body.appendChild(v);
+    v.querySelector('[data-nh="ad"]').addEventListener('click', () => {
+      v.remove();
+      MG.Ads.rewarded().then((ok) => { if (ok) { MG.Economy.addHearts(1); if (homeScreen) homeScreen.refresh(); } });
+    });
+    v.querySelector('[data-nh="shop"]').addEventListener('click', () => {
+      v.remove();
+      screenNav.show('shop');
+      if (shop) shop.show();
+    });
+    v.querySelector('[data-nh="close"]').addEventListener('click', () => v.remove());
   }
 
   // ---------- 라운드 시작 ----------
@@ -229,7 +206,8 @@
       maxConcurrentBombs: levelData.maxConcurrentBombs,
       popDuration: levelData.moleDuration,
       molePoseCount: MG.MoleSprites.POSE_COUNT,
-      obstacleCount: MG.MoleSprites.OBSTACLE_COUNT
+      obstacleCount: MG.MoleSprites.OBSTACLE_COUNT,
+      obstacles: currentDiff === 'legend' // 하수·고수는 두더지만, 전설만 동물
     };
 
     const scheduler = MG.SpawnScheduler.create({ regions, spawnPoints, config, rng });
@@ -243,6 +221,7 @@
       });
     }
     sharedPopElements.clear();
+    if (sharedPopElements.setFaceUrl) sharedPopElements.setFaceUrl(activeFaceUrl);
 
     const holeLayer = MG.HoleLayer.create({
       container: document.getElementById('mole-hole-layer'),
@@ -490,17 +469,21 @@
   // 최종 결과 화면 (10라운드 완주 or 목숨 소진).
   function finishFromRound(reason) {
     const total = run.combo.score;
-    const best = loadBest();
+    const diff = currentDiff;
+    const best = bestFor(diff);
     const isNewBest = total > best;
-    if (isNewBest) saveBest(total);
+    if (isNewBest) saveBestFor(diff, total);
 
-    // 재방문 인사용 + 기록 보관 (100판 이상도 문제없음, 개당 수십 바이트).
+    const coins = Math.floor(total / 200);
+    if (coins > 0) MG.Economy.addCoins(coins);
+
+    // 기록 보관 (100판 이상도 문제없음, 개당 수십 바이트).
     try {
       localStorage.setItem('mole.lastPlayed', String(Date.now()));
       localStorage.setItem('mole.lastWasBest', isNewBest ? '1' : '0');
       localStorage.setItem('mole.lastWasBad', reason === 'lives' ? '1' : '0');
       const hist = JSON.parse(localStorage.getItem('mole.history') || '[]');
-      hist.push({ t: Date.now(), score: total, best: isNewBest, reason: reason });
+      hist.push({ t: Date.now(), score: total, best: isNewBest, reason: reason, diff: diff });
       if (hist.length > 500) hist.splice(0, hist.length - 500); // 안전 상한
       localStorage.setItem('mole.history', JSON.stringify(hist));
     } catch (e) { /* localStorage 불가 환경 무시 */ }
@@ -509,9 +492,11 @@
       I18N.t(reason === 'lives' ? 'mole.result.lives' : 'mole.result.allClear');
     document.getElementById('gameover-score').textContent =
       I18N.t('mole.result.score', { n: total.toLocaleString() });
-    document.getElementById('gameover-best').textContent = isNewBest
+    let line = isNewBest
       ? I18N.t('mole.result.newBest', { n: total.toLocaleString() })
       : I18N.t('mole.result.best', { n: Math.max(best, total).toLocaleString() });
+    if (coins > 0) line += '   +' + coins + '🪙';
+    document.getElementById('gameover-best').textContent = line;
     document.getElementById('gameover-overlay').hidden = false;
   }
 
@@ -523,42 +508,56 @@
       if (name === 'music') syncBgm(state && !state.ended);
     });
 
-    // 두더지/방해물/구멍/망치 스프라이트를 지금 미리 디코드 (시작화면 대화 도는 동안).
+    // 두더지/방해물/구멍/망치 스프라이트를 지금 미리 디코드.
     // 안 하면 첫 라운드에서 두더지가 올라오며 프레임 바꿀 때 디코드 hitch 로 끊긴다.
     MG.MoleSprites.preloadAll();
 
-    // 다이얼러 버튼은 시작 화면에도 계속 보인다 (폰 컨셉) — 세션당 한 번만 생성.
-    // 시작 화면/카운트다운 동안엔 handleCell 이 앞에서 막으므로 눌러도 아무 일 없다.
+    // 다이얼러 버튼은 홈 화면에도 계속 보인다 (폰 컨셉) — 세션당 한 번만 생성.
+    // 홈/화면 패널/카운트다운 동안엔 handleCell 이 앞에서 막으므로 눌러도 아무 일 없다.
     sharedLaneControls = MG.LaneControls.create({
       buttonBar: document.getElementById('lane-button-bar'),
       gridSize: GRID_SIZE,
       onCell: handleCell
     });
 
-    showStartScreen();
+    migrateBest();
 
-    // 첫 방문 대화의 시작 버튼(정적). 재방문 대화의 버튼은 buildReturnChat 이 직접 연결한다.
-    document.getElementById('start-btn').addEventListener('click', () => startRound(1, { fresh: true }));
-    // 대화 공개 중 아무 데나 탭하면 나머지 메시지 즉시 표시 (건너뛰기)
-    document.getElementById('board-start').addEventListener('click', (e) => {
-      if (e.target.closest('.chat-start-btn')) return;
-      const thread = document.querySelector('#board-start .chat-thread:not([hidden])');
-      const pending = thread && thread.querySelectorAll('.chat-row.chat-pending');
-      if (!pending || !pending.length) return;
-      pending.forEach((r) => { r.classList.remove('chat-pending'); r.classList.add('chat-appear'); });
-      thread.scrollTop = thread.scrollHeight;
+    screenNav = MG.ScreenNav.create({
+      screens: ['home-screen', 'face-maker', 'face-locker', 'shop', 'daily',
+                'score-screen', 'help-screen', 'privacy-screen']
     });
-    // 시작 화면(state 없음)에선 허브로, 플레이 중엔 시작 화면으로.
+
+    wireScreenModules();
+
+    // 첫 진입: 온보딩 여부에 따라.
+    if (!localStorage.getItem('mole.onboarded') && faceMaker) {
+      document.getElementById('game-screen').classList.add('is-start');
+      document.getElementById('board-start').hidden = false;
+      pendingOnboardStart = true;
+      screenNav.show('face-maker');
+      faceMaker.open({ forced: true });
+    } else {
+      showHome();
+    }
+
     document.getElementById('btn-back-to-hub').addEventListener('click', () => {
-      if (state) showStartScreen();
-      else window.location.href = '../index.html';
+      if (state) showHome();        // 플레이 중 → 홈 (판 버림)
+      else screenNav.back();        // 화면 스택에서 뒤로 (홈이면 그대로)
     });
-    document.getElementById('gameover-retry-btn').addEventListener('click', () => showStartScreen({ retry: true }));
-    document.getElementById('gameover-select-btn').addEventListener('click', () => showStartScreen());
+    document.getElementById('gameover-retry-btn').addEventListener('click', () => startGame(currentDifficulty()));
+    document.getElementById('gameover-select-btn').addEventListener('click', () => showHome());
     document.getElementById('btn-pause').addEventListener('click', togglePause);
 
     // 디버그 훅 — 지렁이 게임과 동일 컨벤션, 영구 보존.
-    window.__debugStartGame = () => startRound(1, { fresh: true });
+    window.__debugStartGame = (diff) => {
+      localStorage.setItem('mole.onboarded', '1');
+      loadActiveFace().then(() => {
+        currentDiff = DIFFS.indexOf(diff) > -1 ? diff : 'easy';
+        localStorage.setItem('mole.difficulty', currentDiff);
+        applyDiffClass(currentDiff);
+        startRound(1, { fresh: true });
+      });
+    };
     window.__debugStartRound = (n) => startRound(n, { fresh: true });
     window.__debugEndRound = function () {
       if (state && !state.ended) { state.timeRemaining = 0; roundComplete(); }
@@ -589,15 +588,106 @@
         m.type === 'mole' && !m.dying && !m.sinkIn && (m.hitCooldown || 0) <= 0);
       return p ? p.regionId : null;
     };
-    // 첫 방문/재방문 대화 테스트용.
-    window.__debugSetVisits = function (n) {
-      localStorage.setItem('mole.visits', String(Math.max(0, n - 1)));
-      showStartScreen();  // 안에서 +1 → n번째 방문으로 표시
+    window.__debugShowHome = () => showHome();
+    window.__debugSkipOnboarding = () => localStorage.setItem('mole.onboarded', '1');
+    window.__debugSetHearts = function (n) {
+      localStorage.setItem('mole.hearts', String(n));
+      localStorage.setItem('mole.heartsAt', String(Date.now()));
+      if (homeScreen) homeScreen.refresh();
     };
-    window.__debugResetIntro = function () {
-      ['mole.visits', 'mole.lastPlayed', 'mole.lastWasBest', 'mole.lastWasBad', 'mole.history']
-        .forEach((k) => localStorage.removeItem(k));
-      showStartScreen();
+    window.__debugSetCoins = function (n) {
+      localStorage.setItem('mole.coins', String(n));
+      if (homeScreen) homeScreen.refresh();
     };
+    window.__debugAddFace = function () {
+      // 1x1 투명 PNG blob → 저장 + 활성
+      return fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=')
+        .then((r) => r.blob())
+        .then((b) => MG.FaceStore.saveFace(b, '테스트'))
+        .then((id) => { MG.FaceStore.setActive(id); if (homeScreen) homeScreen.refresh(); return id; });
+    };
+    window.__debugOpenMaker = () => { if (faceMaker) { screenNav.show('face-maker'); faceMaker.open({}); } };
+    window.__debugOpenLocker = () => { if (faceLocker) { screenNav.show('face-locker'); faceLocker.show(); } };
   });
+
+  // 화면/메타 모듈 인스턴스 생성 + 배선. 각 모듈 파일이 로드돼 있을 때만 생성한다
+  // (Phase 1 태스크가 하나씩 추가 — 없으면 그 화면만 비활성).
+  function wireScreenModules() {
+    if (MG.FaceMaker) {
+      faceMaker = MG.FaceMaker.create({
+        root: document.getElementById('face-maker'),
+        onDone: onFaceMade,
+        onCancel: () => screenNav.back()
+      });
+    }
+    if (MG.FaceLocker) {
+      faceLocker = MG.FaceLocker.create({
+        root: document.getElementById('face-locker'),
+        onMake: () => { screenNav.show('face-maker'); faceMaker.open({}); },
+        onPick: () => screenNav.back(),
+        onClose: () => screenNav.back()
+      });
+    }
+    if (MG.Shop) {
+      shop = MG.Shop.create({
+        root: document.getElementById('shop'),
+        onClose: () => screenNav.back(),
+        onChange: () => { if (homeScreen) homeScreen.refresh(); }
+      });
+    }
+    if (MG.Daily) {
+      daily = MG.Daily.create({
+        root: document.getElementById('daily'),
+        onClose: () => screenNav.back(),
+        onChange: () => { if (homeScreen) homeScreen.refresh(); }
+      });
+    }
+    if (MG.ScoreScreen) {
+      scoreScreen = MG.ScoreScreen.create({
+        root: document.getElementById('score-screen'),
+        onClose: () => screenNav.back()
+      });
+    }
+    ['help', 'privacy'].forEach((k) => {
+      const b = document.querySelector('[data-back="' + k + '"]');
+      if (b) b.addEventListener('click', () => screenNav.back());
+    });
+    if (MG.HomeScreen) {
+      homeScreen = MG.HomeScreen.create({
+        root: document.getElementById('home-screen'),
+        on: {
+          make: () => { screenNav.show('face-maker'); faceMaker.open({}); },
+          locker: () => { screenNav.show('face-locker'); faceLocker.show(); },
+          play: (diff) => startGame(diff),
+          shop: () => { screenNav.show('shop'); shop.show(); },
+          daily: () => { screenNav.show('daily'); daily.show(); },
+          score: () => { screenNav.show('score-screen'); scoreScreen.show(); },
+          help: () => screenNav.show('help-screen'),
+          privacy: () => screenNav.show('privacy-screen'),
+          contact: () => { window.location.href = 'mailto:mrkyp@hanmail.net'; },
+          settings: () => { if (window.FGH.SettingsUI && window.FGH.SettingsUI.open) window.FGH.SettingsUI.open(); },
+          editName: () => {
+            const n = prompt(I18N.t('mole.home.nickPrompt'), localStorage.getItem('mole.nick') || '');
+            if (n != null) { localStorage.setItem('mole.nick', n.trim().slice(0, 12)); homeScreen.refresh(); }
+          }
+        }
+      });
+    }
+  }
+
+  // 사람두더지 저장 완료 콜백. 온보딩 첫 저장이면 바로 하수 게임(하트 무료).
+  function onFaceMade() {
+    if (pendingOnboardStart || !localStorage.getItem('mole.onboarded')) {
+      localStorage.setItem('mole.onboarded', '1');
+      pendingOnboardStart = false;
+      screenNav.show('home-screen');
+      currentDiff = 'easy';
+      localStorage.setItem('mole.difficulty', 'easy');
+      applyDiffClass('easy');
+      loadActiveFace().then(() => startRound(1, { fresh: true }));
+    } else {
+      screenNav.back();
+      if (homeScreen) homeScreen.refresh();
+    }
+  }
 })();

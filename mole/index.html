@@ -71,37 +71,15 @@
           <span class="chat-sms-fx" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
         </div>
 
-        <!-- 첫 방문: 전체 인트로 대화 -->
-        <div class="chat-thread" id="chat-first">
-          <div class="chat-row chat-row--them">
-            <div class="chat-avatar chat-avatar--mole" aria-hidden="true"></div>
-            <div class="chat-bubble chat-bubble--them">나 <b>두더지 오빠</b>야, 잘 지내지? ㅎㅎ</div>
-          </div>
-          <div class="chat-row chat-row--me">
-            <div class="chat-bubble chat-bubble--me">누구세요?</div>
-            <div class="chat-avatar chat-avatar--hippo" aria-hidden="true"></div>
-          </div>
-          <div class="chat-row chat-row--them">
-            <div class="chat-avatar chat-avatar--mole" aria-hidden="true"></div>
-            <div class="chat-bubble chat-bubble--them">게임 간단히 설명해줄게!</div>
-          </div>
-          <div class="chat-row chat-row--them">
-            <div class="chat-avatar chat-avatar--spacer" aria-hidden="true"></div>
-            <div class="chat-bubble chat-bubble--them">10개 라운드, 각 30초! 두더지를 최대한 많이 때려서 점수를 획득해야 돼. 쉽지?</div>
-          </div>
-          <div class="chat-row chat-row--them">
-            <div class="chat-avatar chat-avatar--spacer" aria-hidden="true"></div>
-            <div class="chat-bubble chat-bubble--them">자기야 사랑해~~</div>
-          </div>
-          <div class="chat-row chat-row--me">
-            <div class="chat-bubble chat-bubble--me">하아.....뭐지? ... ...</div>
-            <button id="start-btn" class="chat-start-btn" data-i18n="mole.start.btn">시작</button>
-            <div class="chat-avatar chat-avatar--hippo" aria-hidden="true"></div>
-          </div>
-        </div>
-
-        <!-- 재방문(재접·다시하기): game.js 가 상황에 맞춰 말풍선/이모티콘 줄을 채운다 -->
-        <div class="chat-thread" id="chat-return" hidden></div>
+        <!-- 홈 + 화면 패널 스택 (screen-nav.js 가 배타 토글). 각 화면 내용은 해당 모듈이 채운다. -->
+        <div class="board-screen home-screen" id="home-screen" hidden></div>
+        <div class="board-screen face-maker" id="face-maker" hidden></div>
+        <div class="board-screen face-locker" id="face-locker" hidden></div>
+        <div class="board-screen shop" id="shop" hidden></div>
+        <div class="board-screen daily" id="daily" hidden></div>
+        <div class="board-screen" id="score-screen" hidden></div>
+        <div class="board-screen info-screen" id="help-screen" hidden></div>
+        <div class="board-screen info-screen" id="privacy-screen" hidden></div>
       </div>
 
       <!-- 라운드 사이 안내 (1~9 클리어 시 잠깐 → 자동으로 다음 라운드) -->
@@ -140,6 +118,10 @@
 <script src="../common/settings.js"></script>
 <script src="../common/i18n.js"></script>
 <script src="js/i18n-strings.js"></script>
+<script src="js/screen-nav.js"></script>
+<script src="js/economy.js"></script>
+<script src="js/face-store.js"></script>
+<script src="js/ads.js"></script>
 <script src="js/levels.js"></script>
 <script src="js/rng.js"></script>
 <script src="js/combo-score.js"></script>

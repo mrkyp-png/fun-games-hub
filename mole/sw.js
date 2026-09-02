@@ -20,8 +20,6 @@ const SHELL = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './assets/board-scene.jpg',
-  './assets/avatar-mole.png',
-  './assets/avatar-hippo.png',
   './assets/cloud1.png',
   './assets/cloud2.png',
   './assets/hammer.png',
