@@ -2,3 +2,8 @@ node_modules/
 scripts/_tmp*
 
 scripts/.devcert/
+
+# 사용자 개인 원본 자료 (커밋 금지 — git add -A 사고 방지)
+/기획서/
+/소리/
+_shot.js
