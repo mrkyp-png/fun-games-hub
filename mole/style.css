@@ -36,7 +36,7 @@ body { background: #16301a; }
   transform: translateY(2px);
   box-shadow: 0 1px 0 #d8cff5, 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 1.5px 1.5px rgba(255, 255, 255, 0.9);
 }
-.icon-btn img { width: 26px; height: 26px; display: block; }
+.icon-btn img, .icon-btn svg { width: 26px; height: 26px; display: block; }
 
 /* 시작 UI — 폰 화면(#mole-board) 안에 얹히는 패널. 큰 시작 버튼 하나
    (나중에 스테이지/모드 버튼을 이 자리에 추가). */
@@ -110,7 +110,7 @@ body { background: #16301a; }
   --sq: min(100%, calc((100dvh - var(--hud-h) - var(--hinge-h)) / 2));
 }
 #game-screen .icon-btn { width: 34px; height: 34px; }
-#game-screen .icon-btn img { width: 22px; height: 22px; }
+#game-screen .icon-btn img, #game-screen .icon-btn svg { width: 22px; height: 22px; }
 
 .game-hud {
   display: flex;
