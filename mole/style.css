@@ -61,10 +61,11 @@ body { background: #16301a; }
   display: flex;
   flex-direction: column;
   gap: 16px;                   /* 말풍선 사이 넉넉히 */
-  padding: 4px 2px;
-  margin-top: 62px;            /* 문자칸(알림) 영역을 스크롤 밖에 둠 → 말풍선이 절대 안 겹침 */
+  padding: 8px 2px 4px;        /* 문자칸은 z-index 로 이 위를 덮어도 됨 (사용자 확정) */
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;       /* 스크롤바 숨김 — 손으로 올리고 내리기만 */
 }
+.chat-thread::-webkit-scrollbar { width: 0; height: 0; display: none; }
 /* 대화가 짧으면 아래에 붙고, 넘치면 위로 스크롤 가능 (flex-end 클리핑 회피) */
 .chat-thread::before { content: ''; flex: 1 0 auto; }
 
@@ -174,22 +175,25 @@ body { background: #16301a; }
   font-size: 0.9rem;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
   transform: translateY(-175%);
+  z-index: 5;                  /* 제일 앞 — 흩뿌려질 때 말풍선 위로 */
+  will-change: transform, opacity, filter;
 }
 .chat-sms.is-empty { display: none; }
-/* .sms-anim = game.js가 시작화면 열 때 붙임. 문자칸이 툭 내려와 2초 머물고 아주 천천히 올라가고 반복. */
-.chat-sms.sms-anim { animation: sms-loop 7s 0.3s infinite; }
-.chat-sms.sms-anim .chat-sms-party { animation: party-pop 0.5s 0.7s cubic-bezier(.2, 1.6, .4, 1) forwards; }
-.chat-sms.sms-anim .chat-sms-fx i { animation: sms-spark 0.6s 0.8s ease-out forwards; }
+/* .sms-anim = game.js가 시작화면 열 때 붙임.
+   툭 내려옴 → 2초 머묾 → 그냥 사라짐(페이드) → 잠깐 뒤 다시 내려옴 → 반복. 5초 주기. */
+.chat-sms.sms-anim { animation: sms-loop 5s 0.3s infinite; }
+.chat-sms.sms-anim .chat-sms-party { animation: sms-party-loop 5s 0.3s infinite; }
 .chat-sms-ic { width: 20px; height: 20px; flex: 0 0 auto; color: #35b35a; }
 .chat-sms-txt { flex: 1; }
 @keyframes sms-loop {
-  0%   { transform: translateY(-175%); animation-timing-function: cubic-bezier(.2, 1.35, .4, 1); }
-  8%   { transform: translateY(0); animation-timing-function: linear; }      /* 내려옴 (~0.55s) */
-  36%  { transform: translateY(0); animation-timing-function: ease-in; }     /* 2초 머묾 */
-  100% { transform: translateY(-175%); }                                    /* 아주 천천히 올라감 (~4.5s) */
+  0%   { transform: translateY(-175%); opacity: 1; animation-timing-function: cubic-bezier(.2, 1.35, .4, 1); }
+  12%  { transform: translateY(0); opacity: 1; }                        /* 내려옴 (~0.6s) */
+  52%  { transform: translateY(0); opacity: 1; animation-timing-function: ease-out; }  /* 2초 머묾 */
+  62%  { transform: translateY(0); opacity: 0; }                        /* 그냥 사라짐 (페이드) */
+  100% { transform: translateY(0); opacity: 0; }                        /* 사라진 채 대기 → 다시 0% */
 }
 
-/* 점수 옆 작은 축하 아이콘 — 툭 튀어나옴 */
+/* 점수 옆 작은 축하 아이콘 — 문자칸과 함께 뜨고 사라짐 */
 .chat-sms-party {
   width: 15px;
   height: 15px;
@@ -197,35 +201,11 @@ body { background: #16301a; }
   color: #ff9f1c;
   transform: scale(0);
 }
-@keyframes party-pop {
-  60% { transform: scale(1.35) rotate(12deg); }
-  100% { transform: scale(1) rotate(0); }
-}
-
-/* 아주 작은 폭죽 — 축하 아이콘 근처에서 점 6개가 한 번 튄다 */
-.chat-sms-fx {
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  width: 0;
-  height: 0;
-}
-.chat-sms-fx i {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  border-radius: 1px;
-  opacity: 0;
-}
-.chat-sms-fx i:nth-child(1) { background: #ff5a5a; --a: -60deg; }
-.chat-sms-fx i:nth-child(2) { background: #ffd43b; --a: -10deg; }
-.chat-sms-fx i:nth-child(3) { background: #4dabf7; --a: 40deg; }
-.chat-sms-fx i:nth-child(4) { background: #69db7c; --a: 130deg; }
-.chat-sms-fx i:nth-child(5) { background: #da77f2; --a: 200deg; }
-.chat-sms-fx i:nth-child(6) { background: #ffa94d; --a: 250deg; }
-@keyframes sms-spark {
-  0% { opacity: 1; transform: rotate(var(--a)) translateX(0) scale(1); }
-  100% { opacity: 0; transform: rotate(var(--a)) translateX(22px) scale(0.3); }
+@keyframes sms-party-loop {
+  0%, 5%    { transform: scale(0); }
+  11%       { transform: scale(1.4) rotate(12deg); }
+  16%, 52%  { transform: scale(1) rotate(0); }
+  62%, 100% { transform: scale(0.6) rotate(0); opacity: 0; }
 }
 
 /* HUD: 시작 상태엔 브라우저 주소창, 플레이 상태엔 티커. #game-screen.is-start 로 스위치. */
