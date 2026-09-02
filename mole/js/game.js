@@ -523,6 +523,10 @@
       if (name === 'music') syncBgm(state && !state.ended);
     });
 
+    // 두더지/방해물/구멍/망치 스프라이트를 지금 미리 디코드 (시작화면 대화 도는 동안).
+    // 안 하면 첫 라운드에서 두더지가 올라오며 프레임 바꿀 때 디코드 hitch 로 끊긴다.
+    MG.MoleSprites.preloadAll();
+
     // 다이얼러 버튼은 시작 화면에도 계속 보인다 (폰 컨셉) — 세션당 한 번만 생성.
     // 시작 화면/카운트다운 동안엔 handleCell 이 앞에서 막으므로 눌러도 아무 일 없다.
     sharedLaneControls = MG.LaneControls.create({

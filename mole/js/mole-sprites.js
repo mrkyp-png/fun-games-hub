@@ -48,9 +48,32 @@
     return 'assets/moles/' + file + '.png';
   }
 
+  // 모든 두더지/방해물/구멍/망치 스프라이트를 미리 받아 디코드해 둔다.
+  // 안 하면 라운드 중 두더지가 올라오며 프레임(전신/빠끔/모자)을 처음 바꿀 때마다
+  // PNG 디코드가 메인 스레드에서 일어나 화면이 끊긴다. 이미지 객체 참조를 붙잡아 캐시 유지.
+  let preloadRefs = null;
+  function preloadAll() {
+    if (preloadRefs) return preloadRefs;
+    const files = [];
+    for (let i = 1; i <= POSE_COUNT; i++) files.push('mole' + i);
+    files.push('peek1', 'peek2', 'helmet', 'hole', 'hole-front');
+    OBSTACLES.forEach(function (o) { files.push(o, o + '-x'); });
+    preloadRefs = files.map(function (f) {
+      const img = new Image();
+      img.src = spriteUrl(f);
+      if (img.decode) img.decode().catch(function () {});
+      return img;
+    });
+    const hammer = new Image();
+    hammer.src = 'assets/hammer.png';
+    if (hammer.decode) hammer.decode().catch(function () {});
+    preloadRefs.push(hammer);
+    return preloadRefs;
+  }
+
   const api = {
     POSE_COUNT, OBSTACLE_COUNT,
-    restingDepth, fileForDepth, sinkForDepth, obstacleFile, spriteUrl
+    restingDepth, fileForDepth, sinkForDepth, obstacleFile, spriteUrl, preloadAll
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.MoleSprites = api; }
