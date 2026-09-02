@@ -24,8 +24,11 @@
   <section id="game-screen" class="screen cosmic-content is-start">
     <div class="game-hud">
       <button id="btn-back-to-hub" class="icon-btn" aria-label="나가기" data-i18n-aria-label="common.back"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3.5" y="3.5" width="7.5" height="7.5" rx="2.2"/><rect x="13" y="3.5" width="7.5" height="7.5" rx="2.2"/><rect x="3.5" y="13" width="7.5" height="7.5" rx="2.2"/><rect x="13" y="13" width="7.5" height="7.5" rx="2.2"/></svg></button>
-      <!-- 시작 상태: 앱 제목만 (폰 앱 헤더처럼). 플레이 상태: 증권 전광판 스타일 티커. -->
-      <h1 id="hud-title" data-i18n="mole.title">두더지 게임</h1>
+      <!-- 시작 상태: 브라우저 주소창 (게임 URL). 플레이 상태: 증권 전광판 스타일 티커. -->
+      <div id="hud-addr" class="hud-addr" aria-hidden="true">
+        <svg class="hud-addr-lock" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 1 1 6 0v3z"/></svg>
+        <span class="hud-addr-url">두더지게임.app</span>
+      </div>
       <div id="hud-ticker" aria-hidden="true">
         <span class="tk-search">🔍</span>
         <div class="ticker-viewport">
@@ -51,11 +54,37 @@
       <div id="hud-score" aria-hidden="true">0</div>
       <div id="hud-hearts" class="board-hearts" aria-hidden="true"></div>
 
-      <!-- 시작 UI (폰 화면 = 보드 안) -->
+      <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
       <div id="board-start" class="board-panel board-start">
-        <p id="start-best" class="start-best"></p>
-        <button id="start-btn" class="start-btn" data-i18n="mole.start.btn">시작</button>
-        <p class="start-tag" data-i18n="mole.start.tag">10개 라운드, 각 30초! 두더지를 최대한 많이 잡아 점수를 올려요.</p>
+        <!-- 최고 스코어: 위에서 툭 내려오는 문자 알림 -->
+        <div id="start-best" class="chat-sms" aria-hidden="true">
+          <svg class="chat-sms-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 6.5 8.5 6 8.5-6"/></svg>
+          <span class="chat-sms-txt"></span>
+          <svg class="chat-sms-party" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 21 8.5 8l7.5 7.5zm7.8-11.3 1.2-2.4 2.4-1.2-2.4-1.2L10.8 2 9.6 4.4 7.2 5.6l2.4 1.2zM19 11l.8-1.7 1.7-.8-1.7-.8L19 6l-.8 1.7-1.7.8 1.7.8zm2.5 3.5-1.2-.6-.6-1.2-.6 1.2-1.2.6 1.2.6.6 1.2.6-1.2z"/></svg>
+          <span class="chat-sms-fx" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        </div>
+
+        <div class="chat-thread">
+          <div class="chat-row chat-row--them">
+            <div class="chat-avatar chat-avatar--mole" aria-hidden="true"></div>
+            <div class="chat-bubble chat-bubble--them">안녕! 난 이 게임 진행자, 필명 <b>두더지 오빠</b>야. 규칙 설명해줄게—</div>
+          </div>
+          <div class="chat-row chat-row--me">
+            <div class="chat-bubble chat-bubble--me">
+              <span>갑자기 반말이네? …뭐, 두더지들을 때려잡으면 되는 거지. 바로 시작하자.</span>
+              <button id="start-btn" class="chat-start-btn" data-i18n="mole.start.btn">시작</button>
+            </div>
+            <div class="chat-avatar chat-avatar--me" aria-hidden="true">
+              <svg viewBox="0 0 44 44">
+                <circle cx="22" cy="22" r="22" fill="#ffd9ad"/>
+                <path d="M22 3c8.5 0 12.5 6.2 12.5 13.5 0 2-.8 4.7-.8 4.7l-2.4-3.6C30 12 27 10 22 10s-8 2-9.3 7.6L10.3 21.2S9.5 18.5 9.5 16.5C9.5 9.2 13.5 3 22 3z" fill="#5c3b26"/>
+                <circle cx="17" cy="21.5" r="2" fill="#3a2a1e"/>
+                <circle cx="27" cy="21.5" r="2" fill="#3a2a1e"/>
+                <path d="M17.5 28c2.2 2.4 6.8 2.4 9 0" stroke="#3a2a1e" stroke-width="2" fill="none" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- 라운드 사이 안내 (1~9 클리어 시 잠깐 → 자동으로 다음 라운드) -->

@@ -58,9 +58,15 @@
     document.getElementById('board-start').hidden = false;
     document.getElementById('game-screen').classList.add('is-start');
 
+    // 최고 스코어 = 위에서 내려오는 문자 알림. 기록 없으면 숨김.
     const best = loadBest();
-    document.getElementById('start-best').textContent =
+    const sms = document.getElementById('start-best');
+    sms.querySelector('.chat-sms-txt').textContent =
       best > 0 ? I18N.t('mole.start.best', { n: best.toLocaleString() }) : '';
+    sms.classList.toggle('is-empty', best <= 0);
+    sms.classList.remove('sms-anim');   // 시작화면 열 때마다 문자 툭↓ + 폭죽 리트리거
+    void sms.offsetWidth;
+    sms.classList.add('sms-anim');
   }
 
   // ---------- 라운드 시작 ----------
