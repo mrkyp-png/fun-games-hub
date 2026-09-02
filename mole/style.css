@@ -158,11 +158,12 @@ body { background: #16301a; }
   border-bottom-right-radius: 5px;
 }
 
-/* 시작 = 말풍선 안, 글자 옆 작은 3D 버튼 (누를 수 있을 만큼만) */
+/* 시작 = 작은 3D 버튼. 말풍선 오른쪽, 하마 아바타 바로 옆에 붙는다. */
 .chat-start-btn {
   display: inline-flex;
   align-items: center;
-  margin-left: 8px;
+  align-self: center;
+  margin: 0 6px;
   vertical-align: middle;
   padding: 6px 15px;
   border: none;
@@ -227,7 +228,6 @@ body { background: #16301a; }
 }
 
 /* 이모티콘 줄의 시작 버튼 (다시하기) — 하마 아바타 바로 옆, 첫 방문과 같은 크기 */
-.chat-row--emoji .chat-start-btn { margin: 0 6px; }
 
 /* 최고 스코어 = 위에서 툭 내려오는 문자 알림 */
 .chat-sms {
