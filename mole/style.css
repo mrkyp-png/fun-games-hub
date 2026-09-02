@@ -893,3 +893,18 @@ body { background: #16301a; }
   0%, 100% { color: inherit; }
   40% { color: #ff5a5a; text-shadow: 0 0 8px rgba(255, 90, 90, 0.9); }
 }
+
+/* ---------- 광고 (Phase 1 스텁) ---------- */
+.ad-banner { display: flex; align-items: center; justify-content: center;
+  min-height: 48px; background: #1b1c22; color: #6b6d78; font-size: 0.8rem;
+  letter-spacing: 0.1em; border-radius: 8px; }
+.ad-overlay { position: fixed; inset: 0; z-index: 50; display: flex;
+  align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.72); }
+.ad-overlay-card { position: relative; width: 78%; max-width: 320px; padding: 28px 18px;
+  background: #202129; border-radius: 14px; text-align: center; color: #cfd0d8; }
+.ad-overlay-tag { font-size: 0.75rem; letter-spacing: 0.2em; color: #7c7e8a; }
+.ad-overlay-bar { margin-top: 14px; height: 4px; background: #33343e; border-radius: 2px; overflow: hidden; }
+.ad-overlay-bar i { display: block; height: 100%; width: 0; background: #57d977; animation: ad-fill 1.6s linear forwards; }
+@keyframes ad-fill { to { width: 100%; } }
+.ad-overlay-x { position: absolute; top: 8px; right: 10px; background: none; border: none;
+  color: #8a8c98; font-size: 1rem; cursor: pointer; }
