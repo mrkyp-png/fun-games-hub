@@ -43,8 +43,10 @@
   const RETRY_TEXT = { best: '미쳤다 신기록!', clear: '잘했어!', bad: 'ㅋㅋ 그럴 수 있어' };
   const HIPPO_MOODS = ['❓', '❤️', '😡', '😂', '😐', '🙄', '✋', '🔥', '😅', '👍'];
 
-  let state = null;   // 플레이 중인 라운드 상태 (시작 화면일 땐 null)
-  let runBanked = 0;  // 지금 연속 도전에서 완료된 이전 라운드들의 점수 합계
+  let state = null;   // 현재 라운드 상태 (시작 화면일 땐 null)
+  // 10라운드를 통틀어 유지되는 것: 콤보·점수(1라운드부터 누적)와 목숨.
+  let run = null;     // { combo: ComboScore, lives, comboMilestone }
+  const COMBO_LIFE_STEP = 100; // 콤보가 이 배수를 넘길 때마다 목숨 +1
   let rafId = null;
   let lastTime = 0;
   let sharedPopElements = null; // #mole-pop-layer는 재생성 안 되는 고정 DOM이므로 세션당 한 번만 생성
@@ -78,7 +80,8 @@
     if (state && state.laneHammer) state.laneHammer.clear();
     resetHot();
     state = null;
-    runBanked = 0;
+    run = null;
+    setPauseUI(false);
     syncBgm(false); // 허브 시작 화면으로 나오면 BGM 정지
     document.getElementById('gameover-overlay').hidden = true;
     document.getElementById('round-done-overlay').hidden = true;
@@ -130,8 +133,8 @@
     else { row.appendChild(bubble); row.appendChild(avatarEl('hippo')); }
     return row;
   }
-  // 이모티콘만 = 말풍선 없이 큼 (카톡)
-  function emojiRow(side, emoji, withBurst) {
+  // 이모티콘만 = 말풍선 없이 큼 (카톡). withStart: 하마 아바타 바로 옆에 시작 버튼도.
+  function emojiRow(side, emoji, withBurst, withStart) {
     const row = document.createElement('div');
     row.className = 'chat-row chat-row--' + side + ' chat-row--emoji';
     const em = document.createElement('div');
@@ -145,13 +148,11 @@
       em.appendChild(b);
     }
     if (side === 'them') { row.appendChild(avatarEl('mole')); row.appendChild(em); }
-    else { row.appendChild(em); row.appendChild(avatarEl('hippo')); }
-    return row;
-  }
-  function startRow() {
-    const row = document.createElement('div');
-    row.className = 'chat-row chat-startrow';
-    row.appendChild(makeStartBtn());
+    else {
+      row.appendChild(em);
+      if (withStart) row.appendChild(makeStartBtn());
+      row.appendChild(avatarEl('hippo'));
+    }
     return row;
   }
   function makeStartBtn() {
@@ -168,10 +169,9 @@
     if (mode === 'retry') {
       const kind = localStorage.getItem('mole.lastWasBest') === '1' ? 'best'
         : localStorage.getItem('mole.lastWasBad') === '1' ? 'bad' : 'clear';
-      el.appendChild(emojiRow('them', CELEBRATE_EMOJI, true)); // 축하 이모티콘(큼) + 폭죽
-      el.appendChild(bubbleRow('them', RETRY_TEXT[kind]));     // 글자는 따로
-      el.appendChild(emojiRow('me', pick(HIPPO_MOODS)));       // 하마 랜덤 이모티콘(큼)
-      el.appendChild(startRow());                              // 시작 버튼 (눌러야 함)
+      el.appendChild(emojiRow('them', CELEBRATE_EMOJI, true));        // 축하 이모티콘(큼) + 폭죽
+      el.appendChild(bubbleRow('them', RETRY_TEXT[kind]));            // 글자는 따로
+      el.appendChild(emojiRow('me', pick(HIPPO_MOODS), false, true)); // 하마 이모티콘(큼) + 아바타 옆 시작 버튼
     } else {
       el.appendChild(bubbleRow('them', pick(RETURN_PHRASES)));
       el.appendChild(bubbleRow('me', pick(HIPPO_REPLIES), true)); // 답 + 시작 버튼
@@ -197,12 +197,15 @@
   }
 
   // ---------- 라운드 시작 ----------
-  // opts.fresh: true면 누적 점수(runBanked)를 0으로 리셋 (시작 버튼/다시하기).
-  //             없으면 자동 다음 라운드로 보고 누적 유지.
+  // opts.fresh: true면 콤보·점수·목숨을 리셋 (시작 버튼/다시하기).
+  //             없으면 자동 다음 라운드로 보고 그대로 이어간다.
   function startRound(roundNum, opts) {
     sessionGen++;
     const myGen = sessionGen;
-    if (opts && opts.fresh) runBanked = 0;
+    // fresh(시작/다시하기)면 콤보·점수·목숨 전부 리셋. 자동 다음 라운드면 그대로 이어간다.
+    if (opts && opts.fresh) {
+      run = { combo: MG.ComboScore.create(), lives: START_LIVES, comboMilestone: 0 };
+    }
     if (rafId) cancelAnimationFrame(rafId);
     if (state && state.holeLayer) state.holeLayer.clear();
     if (state && state.laneHammer) state.laneHammer.clear();
@@ -253,13 +256,13 @@
 
     state = {
       round: roundNum, levelData, regions, spawnPoints, scheduler, holeLayer, laneHammer,
-      comboScore: MG.ComboScore.create(),
-      lives: START_LIVES,
       timeRemaining: ROUND_SECONDS,
       hitstopUntil: 0,
       ended: false,
+      paused: false,
       introActive: true // 카운트다운 동안은 시간도 안 흐르고 구멍 입력도 무시 (handleCell 참고)
     };
+    setPauseUI(false);
 
     updateHUD();
     playRoundIntro(roundNum, () => {
@@ -303,6 +306,7 @@
   // ---------- 메인 루프 ----------
   function loop(now) {
     if (!state || state.ended) return;
+    if (state.paused) { lastTime = now; rafId = requestAnimationFrame(loop); return; } // 일시정지: 시간·스폰 정지, 루프만 유지
     const rawDt = Math.min(0.1, (now - lastTime) / 1000);
     lastTime = now;
     // 히트스톱: 성공타 직후 잠깐 게임 시간을 멈춘다 (루프는 계속 돈다).
@@ -336,11 +340,11 @@
   function updateHUD() {
     MG.HUD.update({
       round: state.round,
-      lives: state.lives,
+      lives: run.lives,
       timeRemaining: state.timeRemaining,
-      combo: state.comboScore.combo,
-      isMaxCombo: state.comboScore.isMaxCombo(),
-      score: runBanked + state.comboScore.score // 10라운드 누적
+      combo: run.combo.combo,
+      isMaxCombo: run.combo.isMaxCombo(),
+      score: run.combo.score // 1라운드부터 누적 (콤보·점수 한 통)
     });
   }
 
@@ -356,7 +360,7 @@
 
   // ---------- 구멍 버튼 입력 → 그 구멍 타격 ----------
   function handleCell(regionId) {
-    if (!state || state.ended || state.introActive) return;
+    if (!state || state.ended || state.introActive || state.paused) return;
     const results = state.scheduler.resolveRegion(regionId);
     const sp = state.spawnPoints[regionId];
 
@@ -375,20 +379,21 @@
     results.forEach((r) => {
       if (r.type === 'mole') {
         if (r.done) {
-          state.comboScore.onMoleHit();   // 스펙 §12 — 마리당 1콤보
+          run.combo.onMoleHit();   // 스펙 §12 — 마리당 1콤보
+          checkComboLifeBonus();   // 콤보 100단위 넘기면 목숨 +1
           MG.HitFx.moleHit(board, r.xFrac, r.yFrac);
           moleHits += 1;
         } else {
           MG.HitFx.moleTap(board, r.xFrac, r.yFrac);
         }
       } else if (r.type === 'animal') {
-        state.lives -= 1;                 // 스펙 §8/§11
-        state.comboScore.onObstacleHit();
+        run.lives -= 1;                 // 스펙 §8/§11 — 목숨은 10라운드 통틀어 3개
+        run.combo.onObstacleHit();
         MG.HitFx.obstacleHit(board, r.xFrac, r.yFrac, 'animal');
         flashHud('hud-hearts');
       } else if (r.type === 'bomb') {
         state.timeRemaining = Math.max(0, state.timeRemaining - 3); // 스펙 §8
-        state.comboScore.onObstacleHit();
+        run.combo.onObstacleHit();
         MG.HitFx.obstacleHit(board, r.xFrac, r.yFrac, 'bomb');
         flashHud('hud-ticker'); // 시간 −3 — 티커 전체를 잠깐 번쩍
       }
@@ -399,13 +404,25 @@
     }
     if (moleHits > 0) {
       state.hitstopUntil = performance.now() +
-        Math.min(HITSTOP_MAX_MS, HITSTOP_BASE_MS + state.comboScore.combo * 10);
+        Math.min(HITSTOP_MAX_MS, HITSTOP_BASE_MS + run.combo.combo * 10);
     }
 
     syncPops();
     updateHUD();
-    if (state.lives <= 0) {
+    if (run.lives <= 0) {
       finish('lives');
+    }
+  }
+
+  // 콤보가 100·200·300… 을 새로 넘겼으면 목숨 1개 보너스.
+  function checkComboLifeBonus() {
+    const step = Math.floor(run.combo.combo / COMBO_LIFE_STEP);
+    if (step > run.comboMilestone) {
+      run.lives += (step - run.comboMilestone);
+      run.comboMilestone = step;
+      flashHud('hud-hearts');
+      const h = document.getElementById('hud-hearts');
+      if (h) { h.classList.remove('life-bonus'); void h.offsetWidth; h.classList.add('life-bonus'); }
     }
   }
 
@@ -415,6 +432,20 @@
     el.classList.remove('hud-flash');
     void el.offsetWidth;
     el.classList.add('hud-flash');
+  }
+
+  // ---------- 일시정지 ----------
+  // 아이콘: 플레이 중 = ▶ / 일시정지 = ⏸ (사용자 요청 — 현재 상태 표시).
+  function setPauseUI(paused) {
+    const btn = document.getElementById('btn-pause');
+    if (btn) btn.classList.toggle('is-paused', paused);
+    document.getElementById('game-screen').classList.toggle('is-paused', paused);
+  }
+  function togglePause() {
+    if (!state || state.ended || state.introActive) return;
+    state.paused = !state.paused;
+    setPauseUI(state.paused);
+    if (!state.paused) lastTime = performance.now(); // 재개 시 시간 점프 방지
   }
 
   // ---------- 라운드 종료 → 다음 라운드 or 최종 결과 ----------
@@ -427,8 +458,6 @@
     sharedPopElements.clear();
     resetHot();
 
-    runBanked += state.comboScore.score;
-
     if (finishedRound >= FINAL_ROUND) {
       finishFromRound('done');
       return;
@@ -438,7 +467,7 @@
     document.getElementById('round-done-title').textContent =
       I18N.t('mole.roundDone', { n: finishedRound });
     document.getElementById('round-done-total').textContent =
-      I18N.t('mole.cumulative', { n: runBanked.toLocaleString() });
+      I18N.t('mole.cumulative', { n: run.combo.score.toLocaleString() });
     document.getElementById('round-done-overlay').hidden = false;
 
     setTimeout(() => {
@@ -455,13 +484,12 @@
     if (rafId) cancelAnimationFrame(rafId);
     sharedPopElements.clear();
     resetHot();
-    runBanked += state.comboScore.score;
     finishFromRound(reason);
   }
 
-  // 최종 결과 화면 (10라운드 완주 or 목숨 소진). runBanked 는 이미 확정된 상태.
+  // 최종 결과 화면 (10라운드 완주 or 목숨 소진).
   function finishFromRound(reason) {
-    const total = runBanked;
+    const total = run.combo.score;
     const best = loadBest();
     const isNewBest = total > best;
     if (isNewBest) saveBest(total);
@@ -523,6 +551,7 @@
     });
     document.getElementById('gameover-retry-btn').addEventListener('click', () => showStartScreen({ retry: true }));
     document.getElementById('gameover-select-btn').addEventListener('click', () => showStartScreen());
+    document.getElementById('btn-pause').addEventListener('click', togglePause);
 
     // 디버그 훅 — 지렁이 게임과 동일 컨벤션, 영구 보존.
     window.__debugStartGame = () => startRound(1, { fresh: true });
@@ -531,12 +560,19 @@
       if (state && !state.ended) { state.timeRemaining = 0; roundComplete(); }
     };
     window.__debugForceGameOver = function () {
-      if (!state) return;
-      state.lives = 0;
+      if (!state || !run) return;
+      run.lives = 0;
       finish('lives');
     };
     window.__debugHitCell = function (regionId) {
       if (state) handleCell(regionId);
+    };
+    // 콤보 강제 주입 — 100단위 목숨 보너스 테스트용.
+    window.__debugPumpCombo = function (n) {
+      if (!run) return null;
+      for (let i = 0; i < n; i++) { run.combo.onMoleHit(); checkComboLifeBonus(); }
+      updateHUD();
+      return { combo: run.combo.combo, lives: run.lives };
     };
     window.__debugIntroActive = function () {
       return !!(state && state.introActive);

@@ -201,14 +201,8 @@ body { background: #16301a; }
   100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.3); }
 }
 
-/* 시작 버튼만 있는 줄 (다시하기 리액션 끝) */
-.chat-startrow { justify-content: center; margin-top: 4px; }
-.chat-startrow .chat-start-btn {
-  margin-left: 0;
-  padding: 9px 30px;
-  font-size: 1.05rem;
-  border-radius: 12px;
-}
+/* 이모티콘 줄의 시작 버튼 (다시하기) — 하마 아바타 바로 옆, 첫 방문과 같은 크기 */
+.chat-row--emoji .chat-start-btn { margin: 0 6px; }
 
 /* 최고 스코어 = 위에서 툭 내려오는 문자 알림 */
 .chat-sms {
@@ -377,7 +371,7 @@ body { background: #16301a; }
 /* 하트 — 게임박스 우측 맨 아래 (아래줄 구멍과 겹치지 않도록 바닥에 붙임) */
 .board-hearts {
   position: absolute;
-  right: 3%;
+  left: 3%;
   bottom: 0.2%;
   z-index: 4;
   pointer-events: none;
@@ -385,6 +379,58 @@ body { background: #16301a; }
   letter-spacing: 1px;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
 }
+.board-hearts.life-bonus { animation: life-bonus 0.5s ease-out; }
+@keyframes life-bonus {
+  0%   { transform: scale(1); filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55)); }
+  40%  { transform: scale(1.35); filter: drop-shadow(0 0 8px #ff6b8a) drop-shadow(0 0 4px #fff); }
+  100% { transform: scale(1); }
+}
+
+/* 일시정지 버튼 — 보드 우측 하단. 플레이 중 ▶ / 눌러서 일시정지면 ⏸ (현재 상태 표시). */
+#btn-pause {
+  position: absolute;
+  right: 2.5%;
+  bottom: 1.5%;
+  z-index: 6;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  cursor: pointer;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), inset 0 0 0 1.5px rgba(255, 255, 255, 0.3);
+}
+#btn-pause svg { width: 20px; height: 20px; display: block; }
+#btn-pause .ic-pause { display: none; }
+#btn-pause.is-paused .ic-play { display: none; }
+#btn-pause.is-paused .ic-pause { display: block; }
+#game-screen.is-start #btn-pause { display: none; }
+
+/* 일시정지 상태 — 보드 흐리게 + 안내 */
+#game-screen.is-paused #mole-pop-layer,
+#game-screen.is-paused #mole-hole-layer,
+#game-screen.is-paused #mole-hole-front-layer,
+#game-screen.is-paused #mole-hammer-layer { filter: brightness(0.45) blur(1px); }
+#pause-veil {
+  display: none;
+  z-index: 5;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+  background: rgba(6, 8, 16, 0.5);
+  pointer-events: none;
+}
+#game-screen.is-paused #pause-veil { display: flex; }
 
 .mole-board {
   position: relative;
