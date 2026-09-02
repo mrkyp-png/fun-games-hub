@@ -15,6 +15,22 @@
   // 라운드별 난이도는 MG.LEVELS 표(동시 두더지 1→5, 유지시간 2.5→1.0s, 방해물 증가)를 쓴다.
   // 16칸 클리어 개념은 없다 — 두더지는 16칸 아무 데나 랜덤 반복 등장, 60초가 끝나면 다음 라운드.
 
+  // 재방문 시 두더지 오빠 한 줄 (첫 방문만 전체 인트로). 상황별 풀 + 방문 횟수 마일스톤.
+  const RETURN_LINES = {
+    best:  ['방금 그 점수 뭐야 ㅋㅋ 또 깰 수 있어?', '신기록 봤어. 오빠가 다 봤어 ㅜㅜ', '천재냐? 한 판 더 가자'],
+    bad:   ['아까 건 봐줄게. 다시 ㄱ', '워밍업이었지? 이번엔 진짜로', '괜찮아 오빠도 처음엔 못했어'],
+    away:  ['오랜만이네, 어디 갔었어', '{d}일만이야... 안 보고싶었어?', '살아있었네 ㅋㅋ'],
+    normal:['또 왔네 ㅋㅋ', '왜 이제 와, 기다렸잖아', '오늘은 몇 마리 잡을 거야?', '연습 좀 했어?', '바로 갈까?', '심심했지? 오빠도'],
+    milestone: {
+      5:   '벌써 5판째네. 재밌지?',
+      10:  '10판이면 이제 프로 아냐? ㅋㅋ',
+      30:  '30판... 우리 사이 뭐지',
+      50:  '50판 돌파! 오빠가 뿌듯하다',
+      100: '100판 기념으로 오빠가 쏜다 (아무것도 안 줌)'
+    }
+  };
+  const RETURN_REPLIES = ['ㅇㅇ', 'ㄱㄱ', '감', '...', '해', 'ㅇㅋ'];
+
   let state = null;   // 플레이 중인 라운드 상태 (시작 화면일 땐 null)
   let runBanked = 0;  // 지금 연속 도전에서 완료된 이전 라운드들의 점수 합계
   let rafId = null;
@@ -68,23 +84,60 @@
     void sms.offsetWidth;
     sms.classList.add('sms-anim');
 
-    // 카톡처럼 메시지를 한 줄씩 공개하며 아래로 따라 스크롤
-    const thread = document.querySelector('#board-start .chat-thread');
-    if (thread) {
-      const rows = Array.prototype.slice.call(thread.querySelectorAll('.chat-row'));
-      const myGen = sessionGen;
-      rows.forEach((r) => { r.classList.add('chat-pending'); r.classList.remove('chat-appear'); });
-      let i = 0;
-      const step = () => {
-        if (myGen !== sessionGen || i >= rows.length) return;
-        rows[i].classList.remove('chat-pending');
-        rows[i].classList.add('chat-appear');
-        thread.scrollTop = thread.scrollHeight;
-        i += 1;
-        setTimeout(step, 560);
-      };
-      setTimeout(step, 450);
+    // 첫 방문이면 전체 인트로, 아니면 두더지 오빠 한 줄 (상황 인식).
+    const visits = parseInt(localStorage.getItem('mole.visits'), 10) || 0;
+    localStorage.setItem('mole.visits', String(visits + 1));
+    const firstVisit = visits === 0;
+    const firstEl = document.getElementById('chat-first');
+    const returnEl = document.getElementById('chat-return');
+    firstEl.hidden = !firstVisit;
+    returnEl.hidden = firstVisit;
+
+    if (!firstVisit) fillReturnChat();
+    revealThread(firstVisit ? firstEl : returnEl);
+  }
+
+  // 재방문 인사 — 방문 횟수 마일스톤 우선, 없으면 마지막 결과/공백에 따라.
+  function fillReturnChat() {
+    const visits = parseInt(localStorage.getItem('mole.visits'), 10) || 1;
+    const lastPlayed = parseInt(localStorage.getItem('mole.lastPlayed'), 10) || 0;
+    const daysAway = lastPlayed ? Math.floor((Date.now() - lastPlayed) / 86400000) : 0;
+    const wasBest = localStorage.getItem('mole.lastWasBest') === '1';
+    const wasBad = localStorage.getItem('mole.lastWasBad') === '1';
+
+    let line;
+    if (RETURN_LINES.milestone[visits]) {
+      line = RETURN_LINES.milestone[visits];
+    } else {
+      let pool;
+      if (daysAway >= 3) pool = RETURN_LINES.away;
+      else if (wasBest) pool = RETURN_LINES.best;
+      else if (wasBad) pool = RETURN_LINES.bad;
+      else pool = RETURN_LINES.normal;
+      line = pick(pool).replace('{d}', String(daysAway));
     }
+    document.getElementById('return-line').textContent = line;
+    document.getElementById('return-reply').textContent = pick(RETURN_REPLIES);
+  }
+
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  // 카톡처럼 메시지를 한 줄씩 공개하며 아래로 따라 스크롤
+  function revealThread(thread) {
+    if (!thread) return;
+    const rows = Array.prototype.slice.call(thread.querySelectorAll('.chat-row'));
+    const myGen = sessionGen;
+    rows.forEach((r) => { r.classList.add('chat-pending'); r.classList.remove('chat-appear'); });
+    let i = 0;
+    const step = () => {
+      if (myGen !== sessionGen || i >= rows.length) return;
+      rows[i].classList.remove('chat-pending');
+      rows[i].classList.add('chat-appear');
+      thread.scrollTop = thread.scrollHeight;
+      i += 1;
+      setTimeout(step, 560);
+    };
+    setTimeout(step, 450);
   }
 
   // ---------- 라운드 시작 ----------
@@ -357,6 +410,17 @@
     const isNewBest = total > best;
     if (isNewBest) saveBest(total);
 
+    // 재방문 인사용 + 기록 보관 (100판 이상도 문제없음, 개당 수십 바이트).
+    try {
+      localStorage.setItem('mole.lastPlayed', String(Date.now()));
+      localStorage.setItem('mole.lastWasBest', isNewBest ? '1' : '0');
+      localStorage.setItem('mole.lastWasBad', reason === 'lives' ? '1' : '0');
+      const hist = JSON.parse(localStorage.getItem('mole.history') || '[]');
+      hist.push({ t: Date.now(), score: total, best: isNewBest, reason: reason });
+      if (hist.length > 500) hist.splice(0, hist.length - 500); // 안전 상한
+      localStorage.setItem('mole.history', JSON.stringify(hist));
+    } catch (e) { /* localStorage 불가 환경 무시 */ }
+
     document.getElementById('gameover-reason').textContent =
       I18N.t(reason === 'lives' ? 'mole.result.lives' : 'mole.result.allClear');
     document.getElementById('gameover-score').textContent =
@@ -385,11 +449,13 @@
 
     showStartScreen();
 
-    document.getElementById('start-btn').addEventListener('click', () => startRound(1, { fresh: true }));
+    const startNow = () => startRound(1, { fresh: true });
+    document.getElementById('start-btn').addEventListener('click', startNow);
+    document.getElementById('start-btn-return').addEventListener('click', startNow);
     // 대화 공개 중 아무 데나 탭하면 나머지 메시지 즉시 표시 (건너뛰기)
     document.getElementById('board-start').addEventListener('click', (e) => {
-      if (e.target.closest('#start-btn')) return;
-      const thread = document.querySelector('#board-start .chat-thread');
+      if (e.target.closest('.chat-start-btn')) return;
+      const thread = document.querySelector('#board-start .chat-thread:not([hidden])');
       const pending = thread && thread.querySelectorAll('.chat-row.chat-pending');
       if (!pending || !pending.length) return;
       pending.forEach((r) => { r.classList.remove('chat-pending'); r.classList.add('chat-appear'); });
@@ -427,6 +493,16 @@
       const p = state.scheduler.getActivePops().find((m) =>
         m.type === 'mole' && !m.dying && !m.sinkIn && (m.hitCooldown || 0) <= 0);
       return p ? p.regionId : null;
+    };
+    // 첫 방문/재방문 대화 테스트용.
+    window.__debugSetVisits = function (n) {
+      localStorage.setItem('mole.visits', String(Math.max(0, n - 1)));
+      showStartScreen();  // 안에서 +1 → n번째 방문으로 표시
+    };
+    window.__debugResetIntro = function () {
+      ['mole.visits', 'mole.lastPlayed', 'mole.lastWasBest', 'mole.lastWasBad', 'mole.history']
+        .forEach((k) => localStorage.removeItem(k));
+      showStartScreen();
     };
   });
 })();

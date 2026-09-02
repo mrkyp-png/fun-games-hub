@@ -63,7 +63,8 @@
           <svg class="chat-sms-party" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 21 8.5 8l7.5 7.5zm7.8-11.3 1.2-2.4 2.4-1.2-2.4-1.2L10.8 2 9.6 4.4 7.2 5.6l2.4 1.2zM19 11l.8-1.7 1.7-.8-1.7-.8L19 6l-.8 1.7-1.7.8 1.7.8zm2.5 3.5-1.2-.6-.6-1.2-.6 1.2-1.2.6 1.2.6.6 1.2.6-1.2z"/></svg>
         </div>
 
-        <div class="chat-thread">
+        <!-- 첫 방문: 전체 인트로 대화 -->
+        <div class="chat-thread" id="chat-first">
           <div class="chat-row chat-row--them">
             <div class="chat-avatar chat-avatar--mole" aria-hidden="true"></div>
             <div class="chat-bubble chat-bubble--them">나 <b>두더지 오빠</b>야, 잘 지내지? ㅎㅎ</div>
@@ -88,6 +89,21 @@
             <div class="chat-bubble chat-bubble--me">
               <span>하아.....뭐지? ... ...</span>
               <button id="start-btn" class="chat-start-btn" data-i18n="mole.start.btn">시작</button>
+            </div>
+            <div class="chat-avatar chat-avatar--hippo" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <!-- 재방문: 두더지 오빠 한 줄 (상황 인식) -->
+        <div class="chat-thread" id="chat-return" hidden>
+          <div class="chat-row chat-row--them">
+            <div class="chat-avatar chat-avatar--mole" aria-hidden="true"></div>
+            <div class="chat-bubble chat-bubble--them" id="return-line">또 왔네 ㅋㅋ</div>
+          </div>
+          <div class="chat-row chat-row--me">
+            <div class="chat-bubble chat-bubble--me">
+              <span id="return-reply">ㅇㅇ</span>
+              <button id="start-btn-return" class="chat-start-btn" data-i18n="mole.start.btn">시작</button>
             </div>
             <div class="chat-avatar chat-avatar--hippo" aria-hidden="true"></div>
           </div>
