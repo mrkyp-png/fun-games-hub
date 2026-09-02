@@ -8,6 +8,9 @@
   const GRID_SIZE = 4;        // 4x4 = 16칸 고정 격자
   const ROUND_SECONDS = 30;   // 라운드마다 30초 점수 어택
   const FINAL_ROUND = 10;     // 라운드 1~10
+  // 처치 순간 게임 시간을 잠깐 멈춘다 (히트스톱) — 타격감. 콤보가 쌓일수록 조금 더 길게.
+  const HITSTOP_BASE_MS = 90;
+  const HITSTOP_MAX_MS = 150;
 
   // 라운드별 난이도는 MG.LEVELS 표(동시 두더지 1→5, 유지시간 2.5→1.0s, 방해물 증가)를 쓴다.
   // 16칸 클리어 개념은 없다 — 두더지는 16칸 아무 데나 랜덤 반복 등장, 60초가 끝나면 다음 라운드.
@@ -17,6 +20,7 @@
   let rafId = null;
   let lastTime = 0;
   let sharedPopElements = null; // #mole-pop-layer는 재생성 안 되는 고정 DOM이므로 세션당 한 번만 생성
+  let sharedLaneControls = null; // 다이얼러 버튼 — 시작 화면에도 (비활성으로) 계속 보여야 하므로 세션당 한 번만 생성
   let sessionGen = 0; // startRound/showStartScreen 호출마다 +1 — 카운트다운·자동진행 타이머 취소 토큰
 
   let bgm = null; // <audio id="bgm">
@@ -43,16 +47,16 @@
     if (rafId) cancelAnimationFrame(rafId);
     if (sharedPopElements) sharedPopElements.clear();
     if (state && state.holeLayer) state.holeLayer.clear();
-    if (state && state.laneControls) state.laneControls.clear();
     if (state && state.laneHammer) state.laneHammer.clear();
+    resetHot();
     state = null;
     runBanked = 0;
     syncBgm(false); // 허브 시작 화면으로 나오면 BGM 정지
-    document.getElementById('game-screen').hidden = true;
     document.getElementById('gameover-overlay').hidden = true;
     document.getElementById('round-done-overlay').hidden = true;
     document.getElementById('round-intro-overlay').hidden = true;
-    document.getElementById('start-screen').hidden = false;
+    document.getElementById('board-start').hidden = false;
+    document.getElementById('game-screen').classList.add('is-start');
 
     const best = loadBest();
     document.getElementById('start-best').textContent =
@@ -68,16 +72,17 @@
     if (opts && opts.fresh) runBanked = 0;
     if (rafId) cancelAnimationFrame(rafId);
     if (state && state.holeLayer) state.holeLayer.clear();
-    if (state && state.laneControls) state.laneControls.clear();
     if (state && state.laneHammer) state.laneHammer.clear();
+    resetHot();
 
     const levelData = MG.LEVELS[roundNum - 1];
 
-    document.getElementById('start-screen').hidden = true;
+    document.getElementById('board-start').hidden = true;
     document.getElementById('gameover-overlay').hidden = true;
     document.getElementById('round-done-overlay').hidden = true;
-    document.getElementById('game-screen').hidden = false;
+    document.getElementById('game-screen').classList.remove('is-start');
     syncBgm(true); // 시작 버튼(사용자 제스처) 이후 — 설정에서 켜져 있으면 재생
+    MG.HitFx.warmup(); // 오디오 컨텍스트 + 타격음 파일 프리로드 (카운트다운 동안)
 
     const rng = { next: MG.RNG.mulberry32(MG.RNG.hashSeed('mole-r' + roundNum + '-' + Date.now())) };
     const { regions, spawnPoints } = MG.GridPartition.partition({ gridSize: GRID_SIZE });
@@ -112,14 +117,9 @@
     const laneHammer = MG.LaneHammer.create({
       layer: document.getElementById('mole-hammer-layer')
     });
-    const laneControls = MG.LaneControls.create({
-      buttonBar: document.getElementById('lane-button-bar'),
-      gridSize: GRID_SIZE,
-      onCell: handleCell
-    });
 
     state = {
-      round: roundNum, levelData, regions, spawnPoints, scheduler, holeLayer, laneHammer, laneControls,
+      round: roundNum, levelData, regions, spawnPoints, scheduler, holeLayer, laneHammer,
       comboScore: MG.ComboScore.create(),
       lives: START_LIVES,
       timeRemaining: ROUND_SECONDS,
@@ -193,7 +193,7 @@
       if (p.type === 'mole' && !p.dying) moleRegions.add(p.regionId);
     });
     for (let id = 0; id < GRID_SIZE * GRID_SIZE; id++) {
-      state.laneControls.setCellHot(id, moleRegions.has(id));
+      sharedLaneControls.setCellHot(id, moleRegions.has(id));
     }
 
     updateHUD();
@@ -213,6 +213,12 @@
 
   function syncPops() {
     sharedPopElements.sync(state.scheduler.getActivePops());
+  }
+
+  // 모든 구멍 버튼의 hot 하이라이트를 끈다 (라운드 시작/시작 화면 복귀 시).
+  function resetHot() {
+    if (!sharedLaneControls) return;
+    for (let id = 0; id < GRID_SIZE * GRID_SIZE; id++) sharedLaneControls.setCellHot(id, false);
   }
 
   // ---------- 구멍 버튼 입력 → 그 구멍 타격 ----------
@@ -259,7 +265,8 @@
       MG.HitFx.whiff(board, hitXFrac, hitYFrac); // 빈 구멍 헛스윙
     }
     if (moleHits > 0) {
-      state.hitstopUntil = performance.now() + Math.min(120, 70 + state.comboScore.combo * 10);
+      state.hitstopUntil = performance.now() +
+        Math.min(HITSTOP_MAX_MS, HITSTOP_BASE_MS + state.comboScore.combo * 10);
     }
 
     syncPops();
@@ -285,6 +292,7 @@
     const finishedRound = state.round;
     if (rafId) cancelAnimationFrame(rafId);
     sharedPopElements.clear();
+    resetHot();
 
     runBanked += state.comboScore.score;
 
@@ -313,6 +321,7 @@
     state.ended = true;
     if (rafId) cancelAnimationFrame(rafId);
     sharedPopElements.clear();
+    resetHot();
     runBanked += state.comboScore.score;
     finishFromRound(reason);
   }
@@ -342,10 +351,22 @@
       if (name === 'music') syncBgm(state && !state.ended);
     });
 
+    // 다이얼러 버튼은 시작 화면에도 계속 보인다 (폰 컨셉) — 세션당 한 번만 생성.
+    // 시작 화면/카운트다운 동안엔 handleCell 이 앞에서 막으므로 눌러도 아무 일 없다.
+    sharedLaneControls = MG.LaneControls.create({
+      buttonBar: document.getElementById('lane-button-bar'),
+      gridSize: GRID_SIZE,
+      onCell: handleCell
+    });
+
     showStartScreen();
 
     document.getElementById('start-btn').addEventListener('click', () => startRound(1, { fresh: true }));
-    document.getElementById('btn-back-to-hub').addEventListener('click', showStartScreen);
+    // 시작 화면(state 없음)에선 허브로, 플레이 중엔 시작 화면으로.
+    document.getElementById('btn-back-to-hub').addEventListener('click', () => {
+      if (state) showStartScreen();
+      else window.location.href = '../index.html';
+    });
     document.getElementById('gameover-retry-btn').addEventListener('click', () => startRound(1, { fresh: true }));
     document.getElementById('gameover-select-btn').addEventListener('click', showStartScreen);
 
@@ -365,6 +386,14 @@
     };
     window.__debugIntroActive = function () {
       return !!(state && state.introActive);
+    };
+    // 지금 실제로 때릴 수 있는(살아있고 아직 안 맞은) 두더지의 regionId — 없으면 null.
+    // sinkIn(타격 후 침몰 대기) 창에는 두더지가 아직 서 있어 보이지만 이미 처치된 상태라 제외한다.
+    window.__debugHittableMoleRegion = function () {
+      if (!state || state.ended) return null;
+      const p = state.scheduler.getActivePops().find((m) =>
+        m.type === 'mole' && !m.dying && !m.sinkIn && (m.hitCooldown || 0) <= 0);
+      return p ? p.regionId : null;
     };
   });
 })();

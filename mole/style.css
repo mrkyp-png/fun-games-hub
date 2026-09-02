@@ -9,21 +9,12 @@ body { background: #16301a; }
 .cosmic-bg { background: #16301a; }
 .cosmic-bg::before,
 .cosmic-bg::after { display: none; }
-.screen-header h1 { text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35); }
 
 .screen {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
-
-.screen-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-}
-.screen-header h1 { font-size: 1.3rem; margin: 0; }
 
 /* 뒤로/홈 버튼 — 색칠앱과 동일한 3D 키캡 스타일 (사용자 요청). */
 .icon-btn {
@@ -47,18 +38,31 @@ body { background: #16301a; }
 }
 .icon-btn img { width: 26px; height: 26px; display: block; }
 
-/* 시작 화면 — 큰 시작 버튼 하나 (나중에 스테이지/모드 버튼을 이 자리에 추가) */
-.start-body {
-  flex: 1;
+/* 시작 UI — 폰 화면(#mole-board) 안에 얹히는 패널. 큰 시작 버튼 하나
+   (나중에 스테이지/모드 버튼을 이 자리에 추가). */
+.board-panel {
+  position: absolute;
+  inset: 0;
+}
+.board-start {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 18px;
-  padding: 0 24px 40px;
+  gap: 16px;
+  padding: 0 24px;
   text-align: center;
+  z-index: 7;
+  /* 밝은 잔디 위에서도 글자가 읽히게 아주 옅은 어둠막 */
+  background: linear-gradient(180deg, rgba(6, 4, 23, 0.12), rgba(6, 4, 23, 0.34));
 }
-.start-tag { color: var(--ink); font-size: 1rem; font-weight: 700; max-width: 16em; }
+.start-tag {
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  max-width: 16em;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
 .start-btn {
   padding: 16px 52px;
   border-radius: 999px;
@@ -72,7 +76,26 @@ body { background: #16301a; }
   cursor: pointer;
 }
 .start-btn:active { transform: translateY(2px); }
-.start-best { color: var(--muted); font-weight: 700; min-height: 1.2em; }
+.start-best {
+  color: #ffe08a;
+  font-weight: 800;
+  min-height: 1.2em;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+/* HUD: 시작 상태엔 앱 제목만, 플레이 상태엔 티커. #game-screen.is-start 로 스위치. */
+#hud-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--ink);
+  white-space: nowrap;
+  display: none;
+}
+#game-screen.is-start #hud-title { display: block; }
+#game-screen.is-start #hud-ticker { display: none; }
+#game-screen.is-start #hud-score,
+#game-screen.is-start #hud-hearts { display: none; }
 
 /* 게임 화면 = 폴더폰 모양: 컴팩트 HUD + [게임 정사각] + 힌지 + [다이얼러 정사각].
    HUD + 2*정사각 + 힌지 = 100dvh. 정사각 한 변(--sq)은 세로에 맞추되 가로를 넘지 않는다. */
@@ -297,6 +320,9 @@ body { background: #16301a; }
   transform: translate(-50%, -38%);
   margin-top: 0.7%;
   object-fit: contain;
+  /* 구멍을 회색 돌턱 톤으로 — 흙색 두더지와 색이 겹쳐 구분이 안 되던 문제 해결 (사용자 요청).
+     PNG 원본은 그대로(재슬라이스해도 유지) 두고 여기서만 탈색. 밝기 값만 조절하면 됨. */
+  filter: grayscale(1) brightness(1.4) contrast(0.98);
 }
 
 /* .mole-pop = 구멍 위 클립박스. 스프라이트는 "발치가 캔버스 바닥"에 정렬돼 있고,
@@ -337,8 +363,9 @@ body { background: #16301a; }
   100% { opacity: 0; transform: scale(1.4); }
 }
 
+/* 오버레이는 폰 화면(#mole-board) 안에서만 뜬다 — 다이얼러(키패드)는 안 가린다 (사용자 요청). */
 .overlay {
-  position: fixed;
+  position: absolute;
   inset: 0;
   background: rgba(6, 4, 23, 0.82);
   display: flex;
@@ -353,7 +380,8 @@ body { background: #16301a; }
   text-align: center;
   color: var(--ink);
   box-shadow: var(--shadow);
-  min-width: 260px;
+  min-width: 220px;
+  max-width: 88%;
 }
 .overlay-card h2 { margin: 0 0 12px; }
 .gameover-score { font-size: 2rem; font-weight: 800; margin: 4px 0 8px; color: var(--ink); }

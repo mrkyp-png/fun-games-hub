@@ -49,12 +49,14 @@ const PORT = process.env.SMOKE_PORT || 8845;
     await new Promise((r) => setTimeout(r, 300));
     const afterStart = await page.evaluate(() => ({
       gameScreenHidden: document.getElementById('game-screen').hidden,
-      startScreenHidden: document.getElementById('start-screen').hidden,
+      boardStartHidden: document.getElementById('board-start').hidden,
+      isStart: document.getElementById('game-screen').classList.contains('is-start'),
       hudTime: document.querySelector('#hud-ticker .tk-t').textContent,
       hudRound: document.querySelector('#hud-ticker .tk-lv').textContent
     }));
     assert.strictEqual(afterStart.gameScreenHidden, false, 'game screen must become visible');
-    assert.strictEqual(afterStart.startScreenHidden, true, 'start screen must hide');
+    assert.strictEqual(afterStart.boardStartHidden, true, 'the in-board start panel must hide once a round starts');
+    assert.strictEqual(afterStart.isStart, false, 'is-start class is removed during play');
     assert.strictEqual(afterStart.hudRound, '라운드 1', 'HUD shows the current round');
     assert.ok(/\d+초/.test(afterStart.hudTime), 'HUD ticker shows the remaining time');
     assert.strictEqual(await score(), 0, 'score starts at 0');
@@ -113,20 +115,9 @@ const PORT = process.env.SMOKE_PORT || 8845;
     await new Promise((r) => setTimeout(r, 150));
     assert.strictEqual(await score(), beforeDirect, 'tapping a mole directly must do nothing');
 
-    // 헬퍼: 살아있는(dying 아님) 두더지의 regionId 를 left/top % 로 계산
-    const liveMoleRegion = () => page.evaluate(() => {
-      for (const el of document.querySelectorAll('.mole-pop--mole')) {
-        const img = el.querySelector('.mole-pop-img');
-        const ty = img ? new DOMMatrix(getComputedStyle(img).transform).m42 : 0;
-        if (Math.abs(ty) < 8 && img && img.style.visibility !== 'hidden') {
-          const col = Math.round(parseFloat(el.style.left) / 100 * 4 - 0.5);
-          const holeY = parseFloat(el.style.top) / 100;
-          const row = Math.round((holeY - 0.27) / ((0.88 - 0.27) / 3));
-          return Math.max(0, Math.min(15, row * 4 + col));
-        }
-      }
-      return null;
-    });
+    // 헬퍼: 지금 실제로 때릴 수 있는 두더지의 regionId (스케줄러 상태 기준 — 이미 맞아 침몰
+    // 대기 중인 두더지는 화면엔 아직 서 있어 보여도 제외된다).
+    const liveMoleRegion = () => page.evaluate(() => window.__debugHittableMoleRegion());
 
     // 3f) 두더지가 뜬 구멍의 버튼을 누르면 점수가 오른다 + 망치가 움직인다
     let hitOk = false;
@@ -222,11 +213,17 @@ const PORT = process.env.SMOKE_PORT || 8845;
     assert.strictEqual(afterLives.overlayHidden, false, 'result overlay shows when lives reach 0');
     assert.strictEqual(afterLives.reason, '목숨 소진!', 'result overlay states the lives-exhausted reason');
 
-    // 6) 결과 화면에서 "나가기" → 시작 화면 복귀
+    // 6) 결과 화면에서 "나가기" → 시작 화면(보드 안) 복귀
     await page.click('#gameover-select-btn');
     await new Promise((r) => setTimeout(r, 200));
-    const backToStart = await page.evaluate(() => document.getElementById('start-screen').hidden);
-    assert.strictEqual(backToStart, false, 'leaving the result screen returns to the start screen');
+    const backToStart = await page.evaluate(() => ({
+      boardStartHidden: document.getElementById('board-start').hidden,
+      isStart: document.getElementById('game-screen').classList.contains('is-start'),
+      overlayHidden: document.getElementById('gameover-overlay').hidden
+    }));
+    assert.strictEqual(backToStart.boardStartHidden, false, 'leaving the result screen shows the in-board start panel');
+    assert.strictEqual(backToStart.isStart, true, 'is-start class is back on the start screen');
+    assert.strictEqual(backToStart.overlayHidden, true, 'result overlay is dismissed');
 
     // 7) musicOn=1 로 새 게임 → bgm 재생, 설정에서 끄면 정지, 허브로 나가면 정지
     await page.evaluate(() => localStorage.setItem('musicOn', '1'));

@@ -280,4 +280,35 @@ function makeSpawnPoints(regionIds) {
   assert.ok(second, 'a new mole must re-spawn in the same (already-cleared) cell');
 }
 
+// 16) 최종 타격 후 두더지는 잠깐(SINK_DELAY) 그대로 서 있다가 내려간다 —
+//     버튼 누른 즉시가 아니라 망치가 화면에서 닿는 순간에 맞춰 침몰 (사용자 리포트: "망치 맞기 전에 내려감")
+{
+  const regions = [{ id: 0 }];
+  const spawnPoints = makeSpawnPoints([0]);
+  const config = { maxConcurrentMoles: 1, maxConcurrentAnimals: 0, maxConcurrentBombs: 0, popDuration: 30, molePoseCount: 8 };
+  let scheduler, mole;
+  for (let seed = 1; seed < 400 && !mole; seed++) {
+    scheduler = create({ regions, spawnPoints, config, rng: makeRng(seed) });
+    for (let t = 0; t < 40 && !mole; t++) {
+      const m = scheduler.tick(0.1).spawned.find((p) => p.type === 'mole' && p.hitsRequired === 1);
+      if (m) mole = m;
+    }
+  }
+  assert.ok(mole, 'found a 1-hit mole');
+  assert.strictEqual(scheduler.resolveRegion(0)[0].done, true, 'final hit registers (score/region) immediately');
+  assert.ok(scheduler.isComplete(), 'region completes immediately on the hit');
+
+  scheduler.tick(0.03); // 타격 직후 몇 프레임
+  assert.strictEqual(scheduler.getActivePops()[0].dying, false,
+    'mole is NOT sinking yet right after the hit — it waits for the hammer');
+
+  scheduler.tick(0.2); // 망치가 도달했을 시점
+  const p = scheduler.getActivePops()[0];
+  assert.ok(p && p.dying, 'mole starts sinking once the hammer would have landed');
+
+  // 다시 때려도 무시 (이미 처치, 침몰 대기/진행 중)
+  scheduler.tick(0.05);
+  assert.deepStrictEqual(scheduler.resolveRegion(0), [], 're-hitting a struck mole does nothing');
+}
+
 console.log('test-spawn-scheduler.js: all assertions passed');
