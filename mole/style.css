@@ -3,10 +3,18 @@
    [hidden] 안전장치: 클래스의 display가 hidden 속성을 조용히 덮어쓰는 버그를 원천 차단. */
 [hidden] { display: none !important; }
 
-/* 삼성 인터넷/크롬의 자동 다크모드가 말풍선·캐릭터 색을 마음대로 바꾸지 않게.
-   'only dark' = UA 가 이 페이지 색을 절대 덮어쓰지 못하게 (이미 완성된 다크 디자인). */
-html { color-scheme: only dark; }
+/* 삼성 인터넷/크롬 자동 다크모드가 말풍선·문자칸 색을 재채색하지 않게.
+   'light dark' + 아래 prefers-color-scheme 블록 = "이 페이지는 다크모드를 직접 처리함" 선언
+   → 브라우저 자동 재채색 중단. */
+html { color-scheme: light dark; }
 img, .chat-emoji, .lane-hammer, .mole-pop, .mole-hole, .mole-hole-front { forced-color-adjust: none; }
+/* 다크모드에서도 색은 그대로 (재선언 = 브라우저에게 "의도된 다크 색"임을 명시) */
+@media (prefers-color-scheme: dark) {
+  .chat-sms { background: #fff; color: #22242a; }
+  .chat-bubble--them { background: linear-gradient(180deg, #35c866, #23b153); color: #fff; }
+  .chat-bubble--me { background: #fee500; color: #1c1c14; }
+  .chat-start-btn { background: linear-gradient(180deg, #57d977, #2fb457); color: #fff; }
+}
 
 /* 화면 전체 배경: 어두운 초록 단색 (사용자 확정 — 이미지 아님). 별/성운 레이어는 끈다.
    두더지 박스(.mole-board)만 잔디 이미지를 쓴다. */
