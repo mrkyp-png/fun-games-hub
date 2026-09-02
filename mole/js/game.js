@@ -67,6 +67,24 @@
     sms.classList.remove('sms-anim');   // 시작화면 열 때마다 문자 툭↓ + 폭죽 리트리거
     void sms.offsetWidth;
     sms.classList.add('sms-anim');
+
+    // 카톡처럼 메시지를 한 줄씩 공개하며 아래로 따라 스크롤
+    const thread = document.querySelector('#board-start .chat-thread');
+    if (thread) {
+      const rows = Array.prototype.slice.call(thread.querySelectorAll('.chat-row'));
+      const myGen = sessionGen;
+      rows.forEach((r) => { r.classList.add('chat-pending'); r.classList.remove('chat-appear'); });
+      let i = 0;
+      const step = () => {
+        if (myGen !== sessionGen || i >= rows.length) return;
+        rows[i].classList.remove('chat-pending');
+        rows[i].classList.add('chat-appear');
+        thread.scrollTop = thread.scrollHeight;
+        i += 1;
+        setTimeout(step, 560);
+      };
+      setTimeout(step, 450);
+    }
   }
 
   // ---------- 라운드 시작 ----------
@@ -368,6 +386,15 @@
     showStartScreen();
 
     document.getElementById('start-btn').addEventListener('click', () => startRound(1, { fresh: true }));
+    // 대화 공개 중 아무 데나 탭하면 나머지 메시지 즉시 표시 (건너뛰기)
+    document.getElementById('board-start').addEventListener('click', (e) => {
+      if (e.target.closest('#start-btn')) return;
+      const thread = document.querySelector('#board-start .chat-thread');
+      const pending = thread && thread.querySelectorAll('.chat-row.chat-pending');
+      if (!pending || !pending.length) return;
+      pending.forEach((r) => { r.classList.remove('chat-pending'); r.classList.add('chat-appear'); });
+      thread.scrollTop = thread.scrollHeight;
+    });
     // 시작 화면(state 없음)에선 허브로, 플레이 중엔 시작 화면으로.
     document.getElementById('btn-back-to-hub').addEventListener('click', () => {
       if (state) showStartScreen();
