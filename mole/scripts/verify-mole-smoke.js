@@ -1,19 +1,14 @@
-// 두더지 게임 통합 스모크 — 디버그 훅으로 실제 UI 흐름을 헤드리스로 재현.
-// 실행 전 repo 루트에서 `SMOKE_PORT=8846 node scripts/serve.js` 로 서버를 띄워둘 것.
-// (사용자의 미리보기 서버가 8844/8845 를 쓰므로 이 테스트만 8846 을 기본으로 함.)
+// 두더지 게임 통합 스모크 테스트 — snake/scripts/verify-snake-smoke.js와 동일 패턴
+// (디버그 훅으로 실제 UI 흐름을 헤드리스로 재현). scripts/serve.js가 8845 포트에 떠 있어야 한다.
+// 8845를 쓰는 이유: scripts/serve.js의 기본 포트는 8844이지만, 이 게임을 개발하는 동안
+// 8844는 무관한 외부 서버가 이미 점유하고 있어 충돌을 피하려고 이 테스트만 8845를 하드코딩함.
+// 실행 전에 반드시 repo 루트에서 `PORT=8845 node scripts/serve.js`로 별도 서버를 띄워둘 것 —
+// 안 띄우면 ECONNREFUSED로 실패한다.
 const puppeteer = require('puppeteer-core');
 const assert = require('assert');
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
 
 const EDGE_PATH = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
-const PORT = process.env.SMOKE_PORT || 8846;
-
-// 128x128 빨강 PNG (테스트용 사진)
-const FACE_PNG_B64 =
-  'iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAAOklEQVR4nO3BAQ0AAADCoPdPbQ8H' +
-  'FAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADwGxNwAAF3nQ3EAAAAAElFTkSuQmCC';
+const PORT = process.env.SMOKE_PORT || 8845;
 
 (async () => {
   const browser = await puppeteer.launch({ executablePath: EDGE_PATH, headless: true });
@@ -29,84 +24,131 @@ const FACE_PNG_B64 =
       }
       throw new Error('round intro never finished');
     }
+
     const score = () => page.evaluate(() =>
       parseInt(document.getElementById('hud-score').textContent.replace(/[^0-9]/g, ''), 10) || 0);
-    const liveMoleRegion = () => page.evaluate(() => window.__debugHittableMoleRegion());
 
-    // 테스트용 얼굴 하나 만들고 온보딩 스킵
-    async function seedFace() {
-      await page.evaluate(() => window.__debugSkipOnboarding());
-      await page.evaluate(() => window.__debugAddFace());
-      await page.waitForFunction(() => !!window.MoleGame.FaceStore.getActiveId(), { timeout: 4000 });
-    }
+    // 1) 시작 화면 — 레벨 카드가 아니라 시작 버튼 하나만 있다
+    const cardCount = await page.evaluate(() => document.querySelectorAll('.level-card').length);
+    assert.strictEqual(cardCount, 0, 'no level-select cards in score-attack mode');
+    const startBtn = await page.evaluate(() => !!document.getElementById('start-btn'));
+    assert.ok(startBtn, 'a single start button is shown');
 
-    // 1) 부팅: 홈 화면 컨테이너 존재, 다이얼러 16버튼
-    assert.ok(await page.$('#home-screen'), '#home-screen exists');
-    const laneButtonCount = await page.evaluate(() => document.querySelectorAll('#lane-button-bar .lane-button').length);
-    assert.strictEqual(laneButtonCount, 16, 'exactly 16 hole buttons (4x4)');
+    // 1b) appLang=en 이면 시작 버튼이 영어
+    await page.evaluate(() => localStorage.setItem('appLang', 'en'));
+    await page.reload({ waitUntil: 'load' });
+    await new Promise((r) => setTimeout(r, 200));
+    const startLabel = await page.evaluate(() => document.getElementById('start-btn').textContent.trim());
+    assert.strictEqual(startLabel, 'Start', 'start button localized to en when appLang=en');
+    await page.evaluate(() => localStorage.removeItem('appLang'));
+    await page.reload({ waitUntil: 'load' });
 
-    // 2) __debugStartGame → 카운트다운 → 플레이
-    await seedFace();
-    await page.evaluate(() => window.__debugStartGame('easy'));
+    // 2) 시작 → 카운트다운 → 게임 화면/HUD 렌더
+    await page.evaluate(() => window.__debugStartGame());
     await waitIntroDone();
     await new Promise((r) => setTimeout(r, 300));
     const afterStart = await page.evaluate(() => ({
+      gameScreenHidden: document.getElementById('game-screen').hidden,
+      boardStartHidden: document.getElementById('board-start').hidden,
       isStart: document.getElementById('game-screen').classList.contains('is-start'),
-      diffEasy: document.getElementById('game-screen').classList.contains('diff-easy'),
-      boardStartHidden: document.getElementById('board-start').hidden
+      hudTime: document.querySelector('#hud-ticker .tk-t').textContent,
+      hudRound: document.querySelector('#hud-ticker .tk-lv').textContent
     }));
-    assert.strictEqual(afterStart.isStart, false, 'is-start removed during play');
-    assert.strictEqual(afterStart.diffEasy, true, 'diff-easy class applied');
-    assert.strictEqual(afterStart.boardStartHidden, true, 'board-start hidden during play');
+    assert.strictEqual(afterStart.gameScreenHidden, false, 'game screen must become visible');
+    assert.strictEqual(afterStart.boardStartHidden, true, 'the in-board start panel must hide once a round starts');
+    assert.strictEqual(afterStart.isStart, false, 'is-start class is removed during play');
+    assert.strictEqual(afterStart.hudRound, '라운드 1', 'HUD shows the current round');
+    assert.ok(/\d+초/.test(afterStart.hudTime), 'HUD ticker shows the remaining time');
     assert.strictEqual(await score(), 0, 'score starts at 0');
 
-    // 3) 두더지 스프라이트 + 구멍 + 얼굴 레이어
+    // 3) 두더지가 실제로 화면에 나타나는가 (최대 3초 대기)
+    let sawPop = false;
+    for (let i = 0; i < 30 && !sawPop; i++) {
+      await new Promise((r) => setTimeout(r, 100));
+      sawPop = await page.evaluate(() => document.querySelectorAll('.mole-pop').length > 0);
+    }
+    assert.ok(sawPop, 'at least one pop must appear within 3 seconds');
+
+    // 3b) 16개 구멍 + 앞테두리 오버레이가 상시 배치돼 있는가
+    const holeCount = await page.evaluate(() => document.querySelectorAll('#mole-hole-layer .mole-hole').length);
+    assert.strictEqual(holeCount, 16, 'a fixed 4x4 grid of 16 holes');
+    const holeFrontCount = await page.evaluate(() => document.querySelectorAll('#mole-hole-front-layer .mole-hole-front').length);
+    assert.strictEqual(holeFrontCount, 16, 'a matching front-rim overlay for every hole');
+
+    // 3c) 두더지가 이모지 글리프가 아니라 실제 스프라이트 이미지로 렌더되는가 (□ 회귀 방지)
     let moleImg = null;
     for (let i = 0; i < 30 && !moleImg; i++) {
       await new Promise((r) => setTimeout(r, 100));
       moleImg = await page.evaluate(() => {
         const img = document.querySelector('.mole-pop--mole .mole-pop-img');
-        return img ? img.getAttribute('src') : null;
+        return img ? { src: img.getAttribute('src') } : null;
       });
     }
-    assert.ok(moleImg && /assets\/moles\/.+\.png$/.test(moleImg), `mole renders as sprite <img> (got ${moleImg})`);
-    const holeCount = await page.evaluate(() => document.querySelectorAll('#mole-hole-layer .mole-hole').length);
-    assert.strictEqual(holeCount, 16, '16 holes');
-    const frontCount = await page.evaluate(() => document.querySelectorAll('#mole-hole-front-layer .mole-hole-front').length);
-    assert.strictEqual(frontCount, 16, '16 front rims');
-    const hasFace = await page.evaluate(() => !!document.querySelector('.mole-pop--mole .mole-face'));
-    assert.ok(hasFace, '활성 얼굴 있으면 두더지에 .mole-face 레이어');
+    assert.ok(moleImg, 'a mole must render as <img class="mole-pop-img">');
+    assert.ok(/assets\/moles\/.+\.png$/.test(moleImg.src), `mole image src must point at a sprite (got ${moleImg.src})`);
 
-    // 4) 직접 터치 무효
+    // 3d) 구멍 버튼 16개
+    const laneButtonCount = await page.evaluate(() => document.querySelectorAll('#lane-button-bar .lane-button').length);
+    assert.strictEqual(laneButtonCount, 16, 'exactly 16 hole buttons (4x4)');
+
+    // 3h) BGM: <audio> 존재 + 트랙 경로
+    const audioSrc = await page.evaluate(() => {
+      const a = document.getElementById('bgm');
+      return a ? a.getAttribute('src') : null;
+    });
+    assert.ok(audioSrc && /audio\/bgm-boss-battle\.mp3$/.test(audioSrc), `bgm audio src points at the track (got ${audioSrc})`);
+
+    // 3i) 효과음 게이팅 훅 — soundOn=0 이면 sfxEnabled() false
+    const sfxGated = await page.evaluate(() => {
+      localStorage.setItem('soundOn', '0');
+      return window.FGH.Settings.sfxEnabled();
+    });
+    assert.strictEqual(sfxGated, false, 'sfxEnabled() reflects soundOn=0');
+    await page.evaluate(() => localStorage.setItem('soundOn', '1'));
+
+    // 3e) 두더지를 직접 터치해도 아무 일이 없다 (회귀 방지)
     const beforeDirect = await score();
     await page.evaluate(() => {
       const el = document.querySelector('.mole-pop--mole');
       if (el) el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
     });
     await new Promise((r) => setTimeout(r, 150));
-    assert.strictEqual(await score(), beforeDirect, 'tapping a mole directly does nothing');
+    assert.strictEqual(await score(), beforeDirect, 'tapping a mole directly must do nothing');
 
-    // 5) 버튼 누르면 점수 오르고 망치가 움직인다
-    let hitOk = false, sawHammerMove = false;
+    // 헬퍼: 지금 실제로 때릴 수 있는 두더지의 regionId (스케줄러 상태 기준 — 이미 맞아 침몰
+    // 대기 중인 두더지는 화면엔 아직 서 있어 보여도 제외된다).
+    const liveMoleRegion = () => page.evaluate(() => window.__debugHittableMoleRegion());
+
+    // 3f) 두더지가 뜬 구멍의 버튼을 누르면 점수가 오른다 + 망치가 움직인다
+    let hitOk = false;
+    let sawHammerMove = false;
     for (let i = 0; i < 80 && !hitOk; i++) {
       await new Promise((r) => setTimeout(r, 100));
       const region = await liveMoleRegion();
       if (region === null) continue;
       const before = await score();
-      const left0 = await page.evaluate(() => { const h = document.querySelector('.lane-hammer'); return h ? h.style.left : null; });
-      await page.evaluate((id) => document.querySelector(`#lane-button-bar .lane-button[data-region="${id}"]`)
-        .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })), region);
+      const left0 = await page.evaluate(() => {
+        const h = document.querySelector('.lane-hammer');
+        return h ? h.style.left : null;
+      });
+      await page.evaluate((id) => {
+        document.querySelector(`#lane-button-bar .lane-button[data-region="${id}"]`)
+          .dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      }, region);
       await new Promise((r) => setTimeout(r, 120));
-      const left1 = await page.evaluate(() => { const h = document.querySelector('.lane-hammer'); return h ? h.style.left : null; });
+      const left1 = await page.evaluate(() => {
+        const h = document.querySelector('.lane-hammer');
+        return h ? h.style.left : null;
+      });
       if (left1 && left1 !== left0) sawHammerMove = true;
       await new Promise((r) => setTimeout(r, 400));
       if ((await score()) > before) hitOk = true;
     }
-    assert.ok(hitOk, 'pressing a live mole button raises the score');
+    assert.ok(hitOk, 'pressing the hole button of a live mole raises the score');
     assert.ok(sawHammerMove, 'the hammer moves toward the pressed hole');
 
-    // 6) 키보드 격자
-    await page.evaluate(() => window.__debugStartGame('easy'));
+    // 3g) 키보드 격자(1234/qwer/asdf/zxcv)로도 두더지를 잡을 수 있다
+    await page.evaluate(() => window.__debugStartGame());
     await waitIntroDone();
     await new Promise((r) => setTimeout(r, 200));
     const KEYS = '1234qwerasdfzxcv';
@@ -122,74 +164,82 @@ const FACE_PNG_B64 =
     }
     assert.ok(kbOk, 'keyboard grid raises the score');
 
-    // 7) 라운드 종료 → 라운드 사이 안내 → 다음 라운드 (점수 누적)
+    // 4) 라운드 시간 종료 → 라운드 사이 안내 → 자동으로 다음 라운드 (점수 누적)
     const scoreBeforeEnd = await score();
     await page.evaluate(() => window.__debugEndRound());
     await new Promise((r) => setTimeout(r, 200));
-    assert.strictEqual(await page.evaluate(() => document.getElementById('round-done-overlay').hidden), false, 'round-done overlay shows');
-    await new Promise((r) => setTimeout(r, 1500));
+    assert.strictEqual(await page.evaluate(() => document.getElementById('round-done-overlay').hidden), false, 'round-done overlay shows between rounds');
+    assert.strictEqual(await page.evaluate(() => document.getElementById('gameover-overlay').hidden), true, 'no game-over between rounds');
+    await new Promise((r) => setTimeout(r, 1500)); // 자동진행(1.4s) 대기
     await waitIntroDone();
     await new Promise((r) => setTimeout(r, 200));
     assert.strictEqual(await page.evaluate(() => document.querySelector('#hud-ticker .tk-lv').textContent), '라운드 2', 'auto-advanced into round 2');
     assert.ok((await score()) >= scoreBeforeEnd, 'cumulative score carried into round 2');
 
-    // 8) 목숨 소진 → 최종 결과 + mole.best.easy 저장 + 코인 지급 시도
-    await page.evaluate(() => { localStorage.setItem('mole.coins', '0'); localStorage.removeItem('mole.best.easy'); });
-    await page.evaluate(() => window.__debugStartGame('easy'));
+    // 4b) 라운드 10 종료 → 최종 결과 오버레이 (전체 클리어 + 누적 점수 저장)
+    await page.evaluate(() => window.__debugStartRound(10));
     await waitIntroDone();
     await new Promise((r) => setTimeout(r, 200));
-    // 점수 좀 확보
-    for (let i = 0; i < 20; i++) {
+    // 라운드 10에서 두더지 몇 마리 잡아 점수 확보
+    for (let i = 0; i < 25; i++) {
       const region = await liveMoleRegion();
       if (region !== null) await page.evaluate((id) => document.querySelector(`#lane-button-bar .lane-button[data-region="${id}"]`).dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })), region);
       await new Promise((r) => setTimeout(r, 120));
     }
     const finalScore = await score();
-    await page.evaluate(() => window.__debugForceGameOver());
+    await page.evaluate(() => window.__debugEndRound());
     await new Promise((r) => setTimeout(r, 300));
-    const afterLives = await page.evaluate(() => ({
+    const afterFinal = await page.evaluate(() => ({
       overlayHidden: document.getElementById('gameover-overlay').hidden,
       reason: document.getElementById('gameover-reason').textContent,
-      best: parseInt(localStorage.getItem('mole.best.easy'), 10)
+      scoreText: document.getElementById('gameover-score').textContent,
+      best: parseInt(localStorage.getItem('moleBestScore'), 10)
+    }));
+    assert.strictEqual(afterFinal.overlayHidden, false, 'final result overlay shows after round 10');
+    assert.strictEqual(afterFinal.reason, '전체 클리어!', 'final overlay states all-rounds-clear');
+    assert.ok(/\d+점/.test(afterFinal.scoreText), 'final overlay shows the total score');
+    assert.strictEqual(afterFinal.best, finalScore, 'total score persisted to moleBestScore');
+
+    // 5) 목숨 소진 경로 — 새 게임에서 목숨 0 → 최종 결과 오버레이
+    await page.evaluate(() => window.__debugStartGame());
+    await waitIntroDone();
+    await new Promise((r) => setTimeout(r, 200));
+    await page.evaluate(() => window.__debugForceGameOver());
+    await new Promise((r) => setTimeout(r, 200));
+    const afterLives = await page.evaluate(() => ({
+      overlayHidden: document.getElementById('gameover-overlay').hidden,
+      reason: document.getElementById('gameover-reason').textContent
     }));
     assert.strictEqual(afterLives.overlayHidden, false, 'result overlay shows when lives reach 0');
-    assert.strictEqual(afterLives.reason, '목숨 소진!', 'result overlay states lives-exhausted');
-    assert.strictEqual(afterLives.best, finalScore, 'total score persisted to mole.best.easy');
+    assert.strictEqual(afterLives.reason, '목숨 소진!', 'result overlay states the lives-exhausted reason');
 
-    // 9) 결과 → "나가기" → 홈 복귀
+    // 6) 결과 화면에서 "나가기" → 시작 화면(보드 안) 복귀
     await page.click('#gameover-select-btn');
     await new Promise((r) => setTimeout(r, 200));
-    const backHome = await page.evaluate(() => ({
+    const backToStart = await page.evaluate(() => ({
       boardStartHidden: document.getElementById('board-start').hidden,
       isStart: document.getElementById('game-screen').classList.contains('is-start'),
-      homeShown: !document.getElementById('home-screen').hidden,
       overlayHidden: document.getElementById('gameover-overlay').hidden
     }));
-    assert.strictEqual(backHome.boardStartHidden, false, 'leaving result shows the in-board panel');
-    assert.strictEqual(backHome.isStart, true, 'is-start back on');
-    assert.strictEqual(backHome.homeShown, true, 'home screen shown');
-    assert.strictEqual(backHome.overlayHidden, true, 'result overlay dismissed');
+    assert.strictEqual(backToStart.boardStartHidden, false, 'leaving the result screen shows the in-board start panel');
+    assert.strictEqual(backToStart.isStart, true, 'is-start class is back on the start screen');
+    assert.strictEqual(backToStart.overlayHidden, true, 'result overlay is dismissed');
 
-    // 10) moleBestScore 마이그레이션
-    await page.evaluate(() => { localStorage.clear(); localStorage.setItem('moleBestScore', '4321'); });
-    await page.reload({ waitUntil: 'load' });
-    await new Promise((r) => setTimeout(r, 200));
-    const migrated = await page.evaluate(() => localStorage.getItem('mole.best.easy'));
-    assert.strictEqual(migrated, '4321', 'moleBestScore → mole.best.easy migration');
-
-    // 11) BGM
+    // 7) musicOn=1 로 새 게임 → bgm 재생, 설정에서 끄면 정지, 허브로 나가면 정지
     await page.evaluate(() => localStorage.setItem('musicOn', '1'));
-    await seedFace();
-    await page.evaluate(() => window.__debugStartGame('easy'));
+    await page.evaluate(() => window.__debugStartGame());
     await waitIntroDone();
     await new Promise((r) => setTimeout(r, 300));
     assert.strictEqual(await page.evaluate(() => document.getElementById('bgm').paused), false, 'bgm plays after start when musicOn=1');
     await page.evaluate(() => window.FGH.Settings.set('music', false));
     await new Promise((r) => setTimeout(r, 150));
-    assert.strictEqual(await page.evaluate(() => document.getElementById('bgm').paused), true, 'bgm pauses when music off');
+    assert.strictEqual(await page.evaluate(() => document.getElementById('bgm').paused), true, 'bgm pauses when music turned off');
+    await page.evaluate(() => window.FGH.Settings.set('music', true));
+    await new Promise((r) => setTimeout(r, 150));
+    assert.strictEqual(await page.evaluate(() => document.getElementById('bgm').paused), false, 'bgm resumes when music turned back on mid-round');
     await page.click('#btn-back-to-hub');
     await new Promise((r) => setTimeout(r, 150));
-    assert.strictEqual(await page.evaluate(() => document.getElementById('bgm').paused), true, 'bgm stops on returning home');
+    assert.strictEqual(await page.evaluate(() => document.getElementById('bgm').paused), true, 'bgm stops when returning to the start screen');
     await page.evaluate(() => localStorage.removeItem('musicOn'));
 
     console.log('verify-mole-smoke.js: all assertions passed');
