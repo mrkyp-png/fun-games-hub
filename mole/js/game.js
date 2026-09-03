@@ -168,11 +168,11 @@
     ri.classList.add('is-opening'); // 커튼 열린 상태로 시작
     ri.hidden = false;
     setHammerLayerVisible(false);
-    void ri.offsetWidth;              // 리플로우 — 열린 상태를 먼저 렌더
-    ri.classList.remove('is-opening'); // → 커튼이 가운데로 닫힘 (0.26s)
-    setTimeout(() => {
-      ri.querySelector('.round-intro-title').textContent = I18N.t('mole.quit.bye');
-    }, 280);
+    // display:none → 표시 직후엔 transition 시작점이 안 잡힌다. 열린 상태를
+    // 두 프레임 렌더한 뒤 클래스를 빼야 커튼이 가운데로 닫히는 게 애니메이션된다.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => { ri.classList.remove('is-opening'); });
+    });
     try { window.close(); } catch (e) { /* 무시 */ }
   }
 
@@ -1031,6 +1031,7 @@
       localStorage.setItem('mole.coins', String(n));
       if (moreMenu) moreMenu.refresh();
     };
+    window.__debugExitApp = () => exitApp();
     window.__debugAddFace = function () {
       return fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=')
         .then((r) => r.blob())
