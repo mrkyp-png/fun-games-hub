@@ -165,17 +165,19 @@ body { background: #16301a; }
 
 /* "광고 보고 하트/코인" = 두더지 말풍선. 위치 고정(스크롤 X). 첫 방문 인트로에선 숨김.
    시작은 다이얼러 초록 버튼이 담당. */
-.chat-ad-fixed { flex: 0 0 auto; margin-top: 8px; }
-.chat-ad-bubble { display: flex; flex-direction: column; gap: 7px; max-width: 80%; }
-.chat-ad-say { font-size: 0.82rem; font-weight: 700; line-height: 1.25; }
+.chat-ad-fixed { flex: 0 0 auto; margin-top: 8px; margin-right: 6px; }
+/* 아바타(44) + 간격(8) 만큼 빼서 오른쪽으로 안 넘치게 — 대신 남는 폭을 꽉 쓴다(길게). */
+.chat-ad-bubble { display: flex; flex-direction: column; gap: 7px; width: calc(100% - 56px); max-width: 300px; }
+.chat-ad-say { font-size: 0.82rem; font-weight: 700; line-height: 1.25; white-space: nowrap; }
 .chat-ad-btns { display: flex; gap: 7px; }
 .chat-ad-btn {
   flex: 1;
+  min-width: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 7px 8px;
+  padding: 7px 6px;
   border: none;
   border-radius: 11px;
   background: rgba(255, 255, 255, 0.95);
