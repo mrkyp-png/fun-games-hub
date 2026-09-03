@@ -69,7 +69,6 @@
       <div id="mole-hole-layer" class="mole-board-layer"></div>
       <div id="mole-pop-layer" class="mole-board-layer"></div>
       <div id="mole-hole-front-layer" class="mole-board-layer"></div>
-      <div id="mole-hammer-layer" class="mole-board-layer"></div>
       <div id="hud-score" aria-hidden="true">0</div>
       <div id="hud-hearts" class="board-hearts" aria-hidden="true"></div>
       <button id="btn-pause" type="button" aria-label="일시정지">
@@ -79,7 +78,7 @@
       <div id="pause-veil" class="mole-board-layer" aria-hidden="true">일시정지</div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v51</div>
+      <div id="build-tag" aria-hidden="true">v52</div>
       <div id="board-start" class="board-panel board-start">
         <!-- 최고 스코어: 위에서 툭 내려오는 문자 알림 -->
         <div id="start-best" class="chat-sms" aria-hidden="true">
@@ -320,6 +319,8 @@
         </div>
       </div>
     </div>
+    <!-- 뽕망치 = 보드 밖(클리핑 없음) — 우측 끝 스윙이 베젤까지 다 보이게 -->
+    <div id="mole-hammer-layer"></div>
     <div id="fold-hinge" aria-hidden="true"></div>
     <div class="dialpad">
       <p class="start-hint" data-i18n="mole.start.quitHint">시작 버튼을 꾹 눌렀다 다시 누르면 종료</p>

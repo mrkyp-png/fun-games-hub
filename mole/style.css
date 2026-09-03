@@ -365,6 +365,7 @@ body { background: #16301a; }
 /* 게임 화면 = 폴더폰 모양: 컴팩트 HUD + [게임 정사각] + 힌지 + [다이얼러 정사각].
    HUD + 2*정사각 + 힌지 = 100dvh. 정사각 한 변(--sq)은 세로에 맞추되 가로를 넘지 않는다. */
 #game-screen {
+  position: relative;
   height: 100dvh;
   min-height: 0;
   overflow: hidden;
@@ -864,7 +865,19 @@ body { background: #16301a; }
 .lane-button--call.lane-button--hot { background: #37e066; box-shadow: 0 0 12px 2px rgba(90, 240, 130, 0.6); }
 
 /* ---- 망치 ---- transform-origin 과 translate/rotate 는 lane-hammer.js 가 넣는다 ---- */
-#mole-hammer-layer { pointer-events: none; overflow: visible; }
+/* 뽕망치 레이어 = 보드 밖(#game-screen 직속). 보드 박스와 똑같은 위치·크기로 얹되
+   .mole-board 의 overflow:hidden 에 안 잘려서 우측 끝 스윙이 베젤까지 다 보인다. */
+#mole-hammer-layer {
+  position: absolute;
+  top: var(--hud-h);
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--sq);
+  height: var(--sq);
+  pointer-events: none;
+  overflow: visible;
+  z-index: 20;
+}
 .lane-hammer {
   position: absolute;
   width: 13%;
