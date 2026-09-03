@@ -161,10 +161,18 @@
 
   function exitApp() {
     // 안드로이드 앱/standalone PWA 에선 실제로 닫힌다. Phase 2: Capacitor App.exitApp().
-    const bye = document.createElement('div');
-    bye.className = 'bye-screen';
-    bye.textContent = I18N.t('mole.quit.bye');
-    document.body.appendChild(bye);
+    // 그냥 검은 화면이 아니라 라운드 전환과 같은 커튼이 닫히며 종료 (사용자 요청).
+    const ri = document.getElementById('round-intro-overlay');
+    ri.querySelector('.round-intro-title').textContent = '';
+    ri.querySelector('.round-intro-count').textContent = '';
+    ri.classList.add('is-opening'); // 커튼 열린 상태로 시작
+    ri.hidden = false;
+    setHammerLayerVisible(false);
+    void ri.offsetWidth;              // 리플로우 — 열린 상태를 먼저 렌더
+    ri.classList.remove('is-opening'); // → 커튼이 가운데로 닫힘 (0.26s)
+    setTimeout(() => {
+      ri.querySelector('.round-intro-title').textContent = I18N.t('mole.quit.bye');
+    }, 280);
     try { window.close(); } catch (e) { /* 무시 */ }
   }
 
@@ -363,6 +371,11 @@
     else { row.appendChild(em); row.appendChild(avatarEl('hippo')); }
     return row;
   }
+  // chat-phrases.js 가 (스테일 캐시 등으로) 없어도 대화가 죽지 않게 최소 폴백.
+  const CP = MG.ChatPhrases || {
+    returnPhrases: () => ['왔어?'], hippoReplies: () => ['ㅇㅇ'],
+    retryText: (k) => (k === 'best' ? '신기록!' : k === 'bad' ? 'ㅋㅋ' : '잘했어!')
+  };
   function buildReturnChat(mode) {
     const el = document.getElementById('chat-return');
     el.innerHTML = '';
@@ -370,11 +383,11 @@
       const kind = localStorage.getItem('mole.lastWasBest') === '1' ? 'best'
         : localStorage.getItem('mole.lastWasBad') === '1' ? 'bad' : 'clear';
       el.appendChild(emojiRow('them', CELEBRATE_EMOJI, true));        // 축하 이모티콘(큼) + 폭죽
-      el.appendChild(bubbleRow('them', MG.ChatPhrases.retryText(kind))); // 글자는 따로
+      el.appendChild(bubbleRow('them', CP.retryText(kind)));         // 글자는 따로
       el.appendChild(emojiRow('me', pick(HIPPO_MOODS), false));       // 하마 이모티콘(큼)
     } else {
-      el.appendChild(bubbleRow('them', pick(MG.ChatPhrases.returnPhrases())));
-      el.appendChild(bubbleRow('me', pick(MG.ChatPhrases.hippoReplies())));
+      el.appendChild(bubbleRow('them', pick(CP.returnPhrases())));
+      el.appendChild(bubbleRow('me', pick(CP.hippoReplies())));
     }
     el.appendChild(adRow());   // 두더지 마지막 말풍선 = "하트나 코인 필요하면 눌러" (일반 대화 줄)
   }
@@ -553,6 +566,7 @@
         setTimeout(() => {
           if (myGen !== sessionGen) return;
           overlay.classList.add('is-opening');
+          setHammerLayerVisible(true); // 전환 중 숨겨둔 망치(z 20, 커튼 위)를 커튼 열리며 복귀
           onDone(); // 게임 루프는 커튼 열리는 동안 바로 시작
           setTimeout(() => {
             if (myGen !== sessionGen) return; // 다음 라운드 전환이 이미 커튼 다시 닫았으면 건드리지 않음
@@ -913,20 +927,11 @@
     migrateBest();
     wireMoreMenu();
 
-    // 첫 화면 = 두더지 오빠 대화 (그대로). 사람두더지는 더보기 메뉴에서 원할 때 만든다.
-    showStartScreen();
-
-    // 대화 공개 중 아무 데나 탭하면 나머지 메시지 즉시 표시 (건너뛰기)
-    document.getElementById('board-start').addEventListener('click', (e) => {
-      if (e.target.closest('.chat-ad-btn')) return;
-      const thread = document.querySelector('#board-start .chat-thread:not([hidden])');
-      const pending = thread && thread.querySelectorAll('.chat-row.chat-pending');
-      if (!pending || !pending.length) return;
-      pending.forEach((r) => { r.classList.remove('chat-pending'); r.classList.add('chat-appear'); });
-      thread.scrollTop = thread.scrollHeight;
-    });
-    // 좌상단 ⊞ = 더보기 메뉴 열기 (대화 화면에서든 플레이 중에든).
+    // ⚠️ 핵심 리스너 배선을 showStartScreen() 보다 먼저 — showStartScreen 안에서 예외가 나도
+    // (예: 스테일 캐시로 모듈 하나 누락) ⊞ 홈버튼·일시정지 등이 죽지 않도록.
+    // 좌상단 ⊞ = 더보기 메뉴 열기.
     document.getElementById('btn-back-to-hub').addEventListener('click', () => openMore());
+    document.getElementById('btn-pause').addEventListener('click', togglePause);
     document.getElementById('gameover-retry-btn').addEventListener('click', () => showStartScreen({ retry: true }));
     document.getElementById('gameover-select-btn').addEventListener('click', () => showStartScreen());
     document.getElementById('nc-back-btn').addEventListener('click', () => {
@@ -946,7 +951,18 @@
       });
     });
     wireResultSwipe(); // 승리 화면 왼쪽 스와이프 → 다음 챕터 화면
-    document.getElementById('btn-pause').addEventListener('click', togglePause);
+    // 대화 공개 중 아무 데나 탭하면 나머지 메시지 즉시 표시 (건너뛰기)
+    document.getElementById('board-start').addEventListener('click', (e) => {
+      if (e.target.closest('.chat-ad-btn')) return;
+      const thread = document.querySelector('#board-start .chat-thread:not([hidden])');
+      const pending = thread && thread.querySelectorAll('.chat-row.chat-pending');
+      if (!pending || !pending.length) return;
+      pending.forEach((r) => { r.classList.remove('chat-pending'); r.classList.add('chat-appear'); });
+      thread.scrollTop = thread.scrollHeight;
+    });
+
+    // 첫 화면 = 두더지 오빠 대화. (예외가 나도 위 배선은 이미 끝났음.)
+    try { showStartScreen(); } catch (e) { console.error('showStartScreen failed', e); }
 
     // 디버그 훅 — 지렁이 게임과 동일 컨벤션, 영구 보존.
     window.__debugStartGame = (diff, chapter) => {

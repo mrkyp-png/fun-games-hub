@@ -1215,11 +1215,6 @@ body { background: #16301a; }
 .quit-btns { display: flex; gap: 8px; }
 .quit-btns button { flex: 1; padding: 11px; border: none; border-radius: 8px; background: #33343e; color: #d0d0d6; font-weight: 700; cursor: pointer; }
 .quit-btns .quit-yes { background: #e53935; color: #fff; }
-.bye-screen {
-  position: fixed; inset: 0; z-index: 100;
-  display: flex; align-items: center; justify-content: center;
-  background: #0d0a24; color: #c9c6dd; font-size: 1.1rem; font-weight: 700;
-}
 
 /* 메이커 */
 .face-maker { align-items: center; }
