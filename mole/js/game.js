@@ -859,31 +859,39 @@
     const ov = document.getElementById('gameover-overlay');
     ov.classList.toggle('is-win', win);
     ov.classList.toggle('is-lose', !win);
-    document.getElementById('gameover-select-btn').hidden = true; // "나가기" 제거 — 항상 다시하기만
 
-    // 축하/실패 파티클 채우기 (계속 반복)
+    // 축하 색종이+반짝이 / 실패 빗줄기 채우기 (계속 반복)
     const conf = ov.querySelector('.go-confetti');
     conf.innerHTML = '';
-    const n = win ? 16 : 10;
+    const n = win ? 18 : 12;
     for (let k = 0; k < n; k++) {
       const p = document.createElement('i');
       p.style.left = (Math.random() * 100) + '%';
       p.style.animationDelay = (Math.random() * 2.4) + 's';
-      p.style.animationDuration = (win ? 1.6 + Math.random() * 1.4 : 3 + Math.random() * 2) + 's';
-      if (win) p.style.setProperty('--h', String(Math.floor(Math.random() * 360)));
+      p.style.animationDuration = (win ? 1.6 + Math.random() * 1.4 : 2.4 + Math.random() * 1.8) + 's';
+      if (win) p.style.setProperty('--h', String(20 + Math.floor(Math.random() * 70))); // 금~주황 편향
       conf.appendChild(p);
     }
+    if (win) {
+      for (let k = 0; k < 8; k++) {
+        const s = document.createElement('span');
+        s.className = 'go-spark';
+        s.style.left = (8 + Math.random() * 84) + '%';
+        s.style.top = (10 + Math.random() * 70) + '%';
+        s.style.animationDelay = (Math.random() * 1.8) + 's';
+        conf.appendChild(s);
+      }
+    }
 
-    document.getElementById('gameover-reason').textContent = I18N.t(
-      win ? (prog.newClear ? 'mole.result.chapterClear' : 'mole.result.win')
-        : reason === 'lives' ? 'mole.result.lives'
-          : 'mole.result.miss'  // 10라운드 완주했지만 목표 미달
-    );
+    // 하마 = 기쁨/슬픔 3포즈 중 랜덤 1개
+    const poseN = 1 + Math.floor(Math.random() * 3);
+    document.getElementById('gameover-hippo').src =
+      'assets/hippo/' + (win ? 'happy' : 'sad') + poseN + '.png';
+
+    document.getElementById('gameover-reason').textContent =
+      I18N.t(win ? 'mole.result.success' : 'mole.result.fail');
     document.getElementById('gameover-score').textContent =
       I18N.t('mole.result.score', { n: total.toLocaleString() });
-    let line = I18N.t('mole.result.target', { n: prog.target.toLocaleString() });
-    if (coins > 0) line += '   +' + coins + ' ' + I18N.t('mole.coin');
-    document.getElementById('gameover-best').textContent = line;
 
     // 실패 시에만 "광고 보고 코인 +50" 버튼 (실패 후 코인 파밍).
     const adBtn = document.getElementById('gameover-ad-btn');
@@ -933,7 +941,6 @@
     document.getElementById('btn-back-to-hub').addEventListener('click', () => openMore());
     document.getElementById('btn-pause').addEventListener('click', togglePause);
     document.getElementById('gameover-retry-btn').addEventListener('click', () => showStartScreen({ retry: true }));
-    document.getElementById('gameover-select-btn').addEventListener('click', () => showStartScreen());
     document.getElementById('nc-back-btn').addEventListener('click', () => {
       const panel = document.getElementById('next-chapter-panel');
       panel.classList.remove('is-in');

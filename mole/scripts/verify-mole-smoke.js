@@ -344,7 +344,7 @@ const FACE_PNG_B64 =
       localStorage.removeItem('mole.best.easy');
       localStorage.removeItem('mole.progress');
     });
-    // (a) 챕터2 라운드 도중 목숨 소진 → "목숨 소진!" + 광고버튼 + 나가기 숨김
+    // (a) 챕터2 라운드 도중 목숨 소진 → "실패" + 슬픈 하마 + 광고버튼
     await page.evaluate(() => window.__debugStartGame('easy', 2));
     await waitIntroDone();
     await page.evaluate(() => window.__debugForceGameOver());
@@ -354,11 +354,12 @@ const FACE_PNG_B64 =
       reason: document.getElementById('gameover-reason').textContent,
       isLose: document.getElementById('gameover-overlay').classList.contains('is-lose'),
       adHidden: document.getElementById('gameover-ad-btn').hidden,
-      selectHidden: document.getElementById('gameover-select-btn').hidden,
+      hippo: document.getElementById('gameover-hippo').getAttribute('src') || '',
     }));
     assert.strictEqual(lose.overlayHidden, false, 'result overlay shows');
-    assert.strictEqual(lose.reason, '목숨 소진!', 'mid-round death = out of lives');
-    assert.ok(lose.isLose && !lose.adHidden && lose.selectHidden, 'lose: is-lose class, ad button shown, exit button hidden');
+    assert.strictEqual(lose.reason, '실패', 'mid-round death = 실패');
+    assert.ok(lose.isLose && !lose.adHidden, 'lose: is-lose class, ad button shown');
+    assert.ok(/hippo\/sad[123]\.png$/.test(lose.hippo), 'lose shows a sad hippo pose');
     await page.evaluate(() => window.__debugSetChapter(1));
 
     // (b) 10라운드 완주 · 목표 미달 → "목표 점수 미달"
@@ -374,11 +375,11 @@ const FACE_PNG_B64 =
     const miss = await page.evaluate(() => ({
       reason: document.getElementById('gameover-reason').textContent,
       best: parseInt(localStorage.getItem('mole.best.easy'), 10),
-      target: document.getElementById('gameover-best').textContent,
+      isLose: document.getElementById('gameover-overlay').classList.contains('is-lose'),
       ch1cleared: !!(JSON.parse(localStorage.getItem('mole.progress') || '{}')['c1-easy'] || {}).cleared,
     }));
-    assert.strictEqual(miss.reason, '목표 점수 미달', '10 rounds done but below target');
-    assert.ok(/목표/.test(miss.target), 'shows target line');
+    assert.strictEqual(miss.reason, '실패', '10 rounds done but below target = 실패');
+    assert.ok(miss.isLose, 'miss = is-lose');
     assert.strictEqual(miss.ch1cleared, false, 'not cleared on a miss');
     assert.ok(scAtR10 > 0 && miss.best === scAtR10, 'total persisted to mole.best.easy');
 
@@ -396,11 +397,13 @@ const FACE_PNG_B64 =
       isWin: document.getElementById('gameover-overlay').classList.contains('is-win'),
       adHidden: document.getElementById('gameover-ad-btn').hidden,
       confetti: document.querySelectorAll('#gameover-overlay .go-confetti i').length,
+      hippo: document.getElementById('gameover-hippo').getAttribute('src') || '',
       unlocked: window.MoleGame.Progress.isUnlocked(2, 'easy'),
       nextCh: document.getElementById('gameover-overlay').dataset.nextChapter,
     }));
-    assert.strictEqual(won.reason, '챕터 클리어! 다음 챕터 열림', 'first clear = chapter clear headline');
+    assert.strictEqual(won.reason, '성공', 'clear = 성공');
     assert.ok(won.isWin && won.adHidden && won.confetti > 0, 'win: is-win, no ad button, confetti pieces');
+    assert.ok(/hippo\/happy[123]\.png$/.test(won.hippo), 'win shows a happy hippo pose');
     assert.ok(won.unlocked, 'chapter 2 unlocked');
     assert.strictEqual(won.nextCh, '2', 'swipe-left target = chapter 2');
 

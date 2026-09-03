@@ -717,18 +717,7 @@ body { background: #16301a; }
   justify-content: center;
   z-index: 10;
 }
-.overlay-card {
-  background: var(--card-bg);
-  border-radius: 20px;
-  padding: 28px 24px;
-  text-align: center;
-  color: var(--ink);
-  box-shadow: var(--shadow);
-  min-width: 220px;
-  max-width: 88%;
-}
-.overlay-card h2 { margin: 0 0 12px; }
-.gameover-score { font-size: 2rem; font-weight: 800; margin: 4px 0 8px; color: var(--ink); }
+.gameover-score { font-size: 1.7rem; font-weight: 800; margin: 2px 0 6px; color: #fff; }
 .overlay-btn-row {
   display: flex;
   gap: 10px;
@@ -744,13 +733,50 @@ body { background: #16301a; }
   font-weight: 700;
   cursor: pointer;
 }
-.clear-total { color: var(--muted); font-weight: 700; margin-top: -8px; }
-
-/* ---- 최종 결과: 승리(축하 계속) / 실패(차분) ---- */
-#gameover-overlay { overflow: hidden; transition: transform 0.34s cubic-bezier(.4, 0, .3, 1); touch-action: pan-y; }
+/* ---- 최종 결과: 박스 없이 전체화면 연출 위에. 승리(광선+색종이+하마) / 실패(빗줄기+하마) ---- */
+#gameover-overlay {
+  overflow: hidden; flex-direction: column; gap: 14px;
+  transition: transform 0.34s cubic-bezier(.4, 0, .3, 1); touch-action: pan-y;
+}
 #gameover-overlay.is-sliding { transform: translateX(-100%); }
-#gameover-overlay .overlay-card { position: relative; z-index: 1; }
-#gameover-select-btn[hidden] { display: none !important; }
+#gameover-overlay.is-win { background: radial-gradient(circle at 50% 42%, #2a1f3d 0%, #0a0818 72%); }
+#gameover-overlay.is-lose { background: radial-gradient(circle at 50% 40%, #1a2233 0%, #0a0d16 76%); }
+
+.go-body { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.go-word { margin: 0; font-size: 2.6rem; font-weight: 900; letter-spacing: 0.06em; }
+#gameover-overlay.is-win .go-word { color: #ffd75e; text-shadow: 0 2px 0 #a56b00, 0 5px 14px rgba(255, 190, 60, 0.5); }
+#gameover-overlay.is-lose .go-word { color: #9098ad; }
+
+.go-hippo-wrap { position: relative; z-index: 2; }
+#gameover-overlay:not([hidden]) .go-hippo-wrap { animation: go-pop 0.5s cubic-bezier(.2, 1.3, .4, 1) both; }
+.go-hippo { display: block; width: min(48vw, 200px); height: auto; filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.45)); }
+#gameover-overlay.is-win .go-hippo { animation: go-bob 1.6s ease-in-out infinite; }
+#gameover-overlay.is-lose .go-hippo { animation: go-sway 3.2s ease-in-out infinite; }
+@keyframes go-pop { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+@keyframes go-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6%); } }
+@keyframes go-sway { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
+
+/* 승리: 뒤에서 도는 방사형 광선 */
+.go-rays {
+  position: absolute; inset: -45%; z-index: 0; opacity: 0; pointer-events: none;
+  background: repeating-conic-gradient(from 0deg at 50% 50%,
+    rgba(255, 224, 150, 0.15) 0deg 6deg, transparent 6deg 15deg);
+  animation: go-rays-spin 16s linear infinite;
+}
+#gameover-overlay.is-win .go-rays { opacity: 1; }
+@keyframes go-rays-spin { to { transform: rotate(360deg); } }
+
+/* 승리: 반짝이는 금빛 별 (제자리 트윙클) */
+.go-spark {
+  position: absolute; z-index: 1; width: 8px; height: 8px; background: #ffe6a0; pointer-events: none;
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+  animation: go-twinkle 1.8s ease-in-out infinite;
+}
+@keyframes go-twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.6) rotate(0); }
+  50% { opacity: 1; transform: scale(1) rotate(45deg); }
+}
+
 /* 실패 시 광고 버튼 = 흰 알약 + 코인 아이콘 (chat-ad 스타일 재사용) */
 .go-ad-btn {
   display: inline-flex; align-items: center; gap: 5px;
@@ -762,8 +788,8 @@ body { background: #16301a; }
 .go-ad-btn > span[aria-hidden] { color: #23b153; font-size: 0.7rem; }
 .go-ad-btn .chat-ad-ic { width: 17px; height: 17px; }
 
-/* 축하/실패 파티클 — 계속 반복 */
-.go-confetti { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+/* 축하 색종이 / 실패 빗줄기 — 계속 반복 */
+.go-confetti { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
 .go-confetti i {
   position: absolute; top: -12%;
   width: 9px; height: 14px; border-radius: 2px;
@@ -773,12 +799,17 @@ body { background: #16301a; }
   background: hsl(var(--h, 40) 90% 60%);
 }
 #gameover-overlay.is-lose .go-confetti i {
-  width: 3px; height: 3px; border-radius: 50%;
-  background: rgba(150, 150, 165, 0.5);
+  width: 2px; height: 18px; border-radius: 0;
+  background: linear-gradient(rgba(175, 195, 225, 0), rgba(175, 195, 225, 0.55));
+  animation-name: go-rain;
 }
 @keyframes go-fall {
   0% { transform: translateY(0) rotate(0); }
   100% { transform: translateY(140vh) rotate(540deg); }
+}
+@keyframes go-rain {
+  0% { transform: translateY(-10vh); }
+  100% { transform: translateY(150vh); }
 }
 
 /* 다음 챕터 placeholder — 오른쪽에서 슬라이드 인 */
