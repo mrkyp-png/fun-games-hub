@@ -34,12 +34,23 @@ const FACE_PNG_B64 =
     await page.evaluate(() => localStorage.clear());
     await page.reload({ waitUntil: 'load' });
     await new Promise((r) => setTimeout(r, 300));
-    assert.strictEqual(await page.evaluate(() => document.getElementById('face-maker').hidden), false,
-      'onboarding forces the maker open on first run');
-    assert.strictEqual(await page.evaluate(() => !!document.querySelector('#face-maker [data-fm-cancel]:not([hidden])')), false,
-      'forced maker hides the cancel button');
+    // 첫 실행 = 바로 대화 화면 (온보딩 강제 없음)
+    assert.strictEqual(await page.evaluate(() => document.getElementById('board-start').hidden), false,
+      'first run goes straight to the chat start screen');
+    assert.strictEqual(await page.evaluate(() => document.getElementById('face-maker').hidden), true,
+      'the maker does NOT force open on first run');
+    assert.ok(await page.evaluate(() => !!document.getElementById('start-btn')), 'chat has a start button');
 
-    // 사진 주입 → 크롭 → 저장
+    // ---- 1) 더보기 메뉴: ⊞ 아이콘 뒤 → 메이커도 여기서 ----
+    await page.click('#btn-back-to-hub');
+    await new Promise((r) => setTimeout(r, 150));
+    assert.strictEqual(await page.evaluate(() => document.getElementById('more-menu').hidden), false, 'more-menu opens');
+
+    // 메이커: 더보기 메뉴 [만들기] → 사진 주입 → 크롭 → 저장
+    await page.click('#more-menu [data-mm-make]');
+    await page.waitForSelector('#face-maker [data-fm-stage="pick"]:not([hidden])');
+    assert.ok(await page.evaluate(() => !!document.querySelector('#face-maker [data-fm-cancel]:not([hidden])')),
+      'maker from the menu shows a cancel button');
     const tmp = path.join(os.tmpdir(), 'smokeface_' + Date.now() + '.png');
     fs.writeFileSync(tmp, Buffer.from(FACE_PNG_B64, 'base64'));
     await (await page.$('#face-maker [data-fm-file]')).uploadFile(tmp);
@@ -50,17 +61,8 @@ const FACE_PNG_B64 =
     await page.waitForFunction(() => !!window.MoleGame.FaceStore.getActiveId(), { timeout: 4000 });
     fs.unlinkSync(tmp);
     assert.strictEqual(await page.evaluate(() => window.MoleGame.FaceStore.count()), 1, 'maker saved one face');
-
-    // 온보딩 후 대화 화면
-    await new Promise((r) => setTimeout(r, 200));
-    assert.strictEqual(await page.evaluate(() => document.getElementById('board-start').hidden), false,
-      'after onboarding the chat start screen shows');
-    assert.ok(await page.evaluate(() => !!document.getElementById('start-btn')), 'chat has a start button');
-
-    // ---- 1) 더보기 메뉴: ⊞ 아이콘 뒤 ----
-    await page.click('#btn-back-to-hub');
-    await new Promise((r) => setTimeout(r, 150));
-    assert.strictEqual(await page.evaluate(() => document.getElementById('more-menu').hidden), false, 'more-menu opens');
+    // 저장 후 더보기 메뉴로 복귀
+    assert.strictEqual(await page.evaluate(() => document.getElementById('more-menu').hidden), false, 'back to more-menu after save');
     const pills = await page.evaluate(() => document.querySelectorAll('#more-menu [data-mm-diff]').length);
     assert.strictEqual(pills, 3, '3 difficulty pills');
     const gridItems = await page.evaluate(() => document.querySelectorAll('#more-menu [data-mm-nav]').length);
@@ -212,13 +214,13 @@ const FACE_PNG_B64 =
     assert.strictEqual(back.chatReturn, true, 'return chat thread shown (visits > 0)');
 
     // ---- 11) moleBestScore 마이그레이션 ----
-    await page.evaluate(() => { localStorage.clear(); localStorage.setItem('moleBestScore', '4321'); localStorage.setItem('mole.onboarded', '1'); });
+    await page.evaluate(() => { localStorage.clear(); localStorage.setItem('moleBestScore', '4321'); });
     await page.reload({ waitUntil: 'load' });
     await new Promise((r) => setTimeout(r, 200));
     assert.strictEqual(await page.evaluate(() => localStorage.getItem('mole.best.easy')), '4321', 'moleBestScore → mole.best.easy');
 
     // ---- 12) BGM ----
-    await page.evaluate(() => { localStorage.setItem('musicOn', '1'); window.__debugSkipOnboarding(); });
+    await page.evaluate(() => { localStorage.setItem('musicOn', '1'); });
     await page.evaluate(() => window.__debugAddFace());
     await page.evaluate(() => window.__debugStartGame('easy'));
     await waitIntroDone();

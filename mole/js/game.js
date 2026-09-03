@@ -67,7 +67,6 @@
   let shop = null, daily = null, scoreScreen = null;
   let currentDiff = 'easy';        // 현재 판 난이도
   let activeFaceUrl = null;        // 활성 사람두더지 얼굴 objectURL
-  let pendingOnboardStart = false; // 온보딩 첫 저장 뒤 대화 화면으로
 
   const DIFFS = ['easy', 'mid', 'legend'];
   function currentDifficulty() {
@@ -625,17 +624,8 @@
     migrateBest();
     wireMoreMenu();
 
-    // 첫 실행 온보딩: 대화 화면 앞에 사람두더지 메이커를 1회 강제.
-    if (!localStorage.getItem('mole.onboarded') && faceMaker) {
-      document.getElementById('game-screen').classList.add('is-start');
-      document.getElementById('board-start').hidden = false;
-      document.getElementById('more-menu').hidden = false;
-      pendingOnboardStart = true;
-      screenNav.show('face-maker');
-      faceMaker.open({ forced: true });
-    } else {
-      showStartScreen();
-    }
+    // 첫 화면 = 두더지 오빠 대화 (그대로). 사람두더지는 더보기 메뉴에서 원할 때 만든다.
+    showStartScreen();
 
     // 첫 방문 대화의 시작 버튼(정적). 재방문 대화의 버튼은 buildReturnChat 이 직접 연결한다.
     document.getElementById('start-btn').addEventListener('click', beginGame);
@@ -656,7 +646,6 @@
 
     // 디버그 훅 — 지렁이 게임과 동일 컨벤션, 영구 보존.
     window.__debugStartGame = (diff) => {
-      localStorage.setItem('mole.onboarded', '1');
       loadActiveFace().then(() => {
         currentDiff = DIFFS.indexOf(diff) > -1 ? diff : 'easy';
         localStorage.setItem('mole.difficulty', currentDiff);
@@ -705,7 +694,6 @@
       showStartScreen();
     };
     window.__debugOpenMore = (sub) => openMore(sub);
-    window.__debugSkipOnboarding = () => localStorage.setItem('mole.onboarded', '1');
     window.__debugSetHearts = function (n) {
       localStorage.setItem('mole.hearts', String(n));
       localStorage.setItem('mole.heartsAt', String(Date.now()));
@@ -789,16 +777,9 @@
   }
 
   // 사람두더지 저장 완료 콜백.
+  // 사람두더지 저장 완료 → 보관함/메뉴로 돌아가고 갱신.
   function onFaceMade() {
-    if (pendingOnboardStart || !localStorage.getItem('mole.onboarded')) {
-      localStorage.setItem('mole.onboarded', '1');
-      pendingOnboardStart = false;
-      screenNav.reset();
-      document.getElementById('more-menu').hidden = true;
-      showStartScreen(); // 온보딩 후 첫 방문 대화 인트로
-    } else {
-      screenNav.back();
-      if (moreMenu) moreMenu.refresh();
-    }
+    screenNav.back();
+    if (moreMenu) moreMenu.refresh();
   }
 })();
