@@ -31,7 +31,7 @@
       'mole.hud.sec': '{n}초',
       'mole.hud.combo': 'COMBO {n}',
       'mole.hud.maxCombo': 'MAX COMBO {n}',
-      'mole.fx.tap': '톡!', 'mole.fx.bam': '쾅!', 'mole.fx.clang': '깡!',
+      'mole.fx.tap': '톡!', 'mole.fx.bam': '쾅!', 'mole.fx.clang': '깡!', 'mole.fx.double': '더블!',
 
       'mole.common.close': '닫기',
       'mole.more.title': '더보기',
@@ -163,7 +163,7 @@
       'mole.hud.sec': '{n}s',
       'mole.hud.combo': 'COMBO {n}',
       'mole.hud.maxCombo': 'MAX COMBO {n}',
-      'mole.fx.tap': 'Tap!', 'mole.fx.bam': 'Bam!', 'mole.fx.clang': 'Clang!',
+      'mole.fx.tap': 'Tap!', 'mole.fx.bam': 'Bam!', 'mole.fx.clang': 'Clang!', 'mole.fx.double': 'DOUBLE!',
 
       'mole.common.close': 'Close',
       'mole.more.title': 'More',

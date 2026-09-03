@@ -184,6 +184,14 @@
     punch();
   }
 
+  // 저글 보너스 — 잡은 두더지가 내려갈 때 한 번 더 맞힘. 가볍고 경쾌하게 + "더블!" 텍스트.
+  function juggle(boardEl, xFrac, yFrac) {
+    spawnAt(boardEl, 'hit-fx-burst hit-fx-burst--juggle', xFrac, yFrac,
+      '<span>' + window.FGH.I18N.t('mole.fx.double') + '</span>');
+    vibrate(12);
+    punch({ light: true });
+  }
+
   // 다타 두더지의 마지막이 아닌 타격 (빼꼼/모자 단계) — 처치는 아니지만 맞은 느낌을 준다.
   function moleTap(boardEl, xFrac, yFrac) {
     shake(boardEl);
@@ -221,6 +229,6 @@
   // 게임 시작(사용자 제스처) 직후 호출 — 카운트다운 동안 오디오 컨텍스트 + 타격음 파일을 미리 준비.
   function warmup() { try { getCtx(); } catch (e) { /* noop */ } }
 
-  const api = { moleHit, moleTap, obstacleHit, whiff, emerge, warmup };
+  const api = { moleHit, juggle, moleTap, obstacleHit, whiff, emerge, warmup };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);

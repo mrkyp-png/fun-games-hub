@@ -605,7 +605,12 @@
 
     results.forEach((r) => {
       if (r.type === 'mole') {
-        if (r.done) {
+        if (r.juggle) {
+          run.combo.onMoleHit();   // 저글 보너스 — 콤보 +1 + 그 콤보 점수
+          checkComboLifeBonus();
+          MG.HitFx.juggle(board, r.xFrac, r.yFrac);
+          moleHits += 1;
+        } else if (r.done) {
           run.combo.onMoleHit();   // 스펙 §12 — 마리당 1콤보
           checkComboLifeBonus();   // 콤보 100단위 넘기면 목숨 +1
           MG.HitFx.moleHit(board, r.xFrac, r.yFrac);

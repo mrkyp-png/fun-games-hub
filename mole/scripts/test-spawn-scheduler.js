@@ -306,9 +306,34 @@ function makeSpawnPoints(regionIds) {
   const p = scheduler.getActivePops()[0];
   assert.ok(p && p.dying, 'mole starts sinking once the hammer would have landed');
 
-  // 다시 때려도 무시 (이미 처치, 침몰 대기/진행 중)
+  // 저글 보너스: 침몰 중 1방 두더지를 한 번 더 치면 juggle:true (1회), 그다음은 빈 배열
   scheduler.tick(0.05);
-  assert.deepStrictEqual(scheduler.resolveRegion(0), [], 're-hitting a struck mole does nothing');
+  const j1 = scheduler.resolveRegion(0);
+  assert.strictEqual(j1.length, 1, '침몰 중 재타격 = 결과 1개');
+  assert.strictEqual(j1[0].juggle, true, '저글 보너스');
+  assert.ok(!j1[0].done, '저글 결과에 done 플래그 없음');
+  assert.deepStrictEqual(scheduler.resolveRegion(0), [], '저글은 두더지당 1회 — 두 번째 재타격은 무시');
+}
+
+// 16b) 저글 보너스는 2·3방 다타 두더지에는 안 붙는다 (마지막 타격 후 재타격 무시)
+{
+  const regions = [{ id: 0 }];
+  const spawnPoints = makeSpawnPoints([0]);
+  const config = { maxConcurrentMoles: 1, maxConcurrentAnimals: 0, maxConcurrentBombs: 0, popDuration: 60, molePoseCount: 8 };
+  let scheduler, mole;
+  for (let seed = 1; seed < 400 && !mole; seed++) {
+    scheduler = create({ regions, spawnPoints, config, rng: makeRng(seed) });
+    for (let t = 0; t < 40 && !mole; t++) {
+      const m = scheduler.tick(0.1).spawned.find((p) => p.type === 'mole' && p.hitsRequired === 2);
+      if (m) mole = m;
+    }
+  }
+  assert.ok(mole, 'found a 2-hit mole');
+  assert.strictEqual(scheduler.resolveRegion(0)[0].done, false, '1타');
+  scheduler.tick(0.2);
+  assert.strictEqual(scheduler.resolveRegion(0)[0].done, true, '2타 = 처치');
+  scheduler.tick(0.25);
+  assert.deepStrictEqual(scheduler.resolveRegion(0), [], '다타 두더지는 침몰 중 재타격해도 저글 없음');
 }
 
 // 17) config.obstacles=false → 동물/폭탄 안 나옴 (하수·고수 난이도)
