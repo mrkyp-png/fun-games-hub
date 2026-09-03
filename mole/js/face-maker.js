@@ -2,7 +2,7 @@
   'use strict';
   // 사진 선택 → 원형 크롭 → 미리보기 → 저장. 원본 사진은 메모리에서만 쓰고 저장 안 함.
   var MG = root.MoleGame;
-  var OUT = 256;
+  var OUT = 320;
   var MOLE_BODY = 'assets/moles/mole1.png';
 
   function create(opts) {
@@ -21,6 +21,7 @@
     var pointers = new Map();
     var pinchStart = null;
     var lastCropDataUrl = null;
+    var detected = null;   // FaceDetect 결과 {oval(자연 px), box} — 못 찾으면 null (원형 폴백)
     var session = {};  // 이번 open() 옵션 (profile 모드 / done 오버라이드)
 
     function stage(name) {
@@ -40,6 +41,7 @@
       fileInput.value = '';
       nameInput.value = '';
       lastCropDataUrl = null;
+      detected = null;
       stage('pick');
     }
 
@@ -61,33 +63,27 @@
       reader.readAsDataURL(f);
     });
 
-    // FaceDetector 로 얼굴 영역을 찾아 크롭 원을 그 위에 자동 정렬. 지원 안 하거나 못 찾으면 아무것도 안 함.
+    // MediaPipe FaceMesh 로 얼굴 윤곽을 찾아 크롭을 그 위에 자동 정렬 + 윤곽대로 잘라내기 준비.
+    // 못 찾으면 detected=null → renderCrop 이 기존 원형 크롭으로 폴백.
     function autoFitFace() {
-      if (typeof FaceDetector === 'undefined') return;
+      if (!MG.FaceDetect) { detected = null; return; }
       var hint = el.querySelector('.fm-hint');
-      var busy = hint ? hint.textContent : '';
+      var idle = root.FGH.I18N.t('mole.fm.cropHint');
       if (hint) hint.textContent = root.FGH.I18N.t('mole.fm.detecting');
-      try {
-        new FaceDetector({ fastMode: true, maxDetectedFaces: 1 }).detect(cropImg).then(function (faces) {
-          if (hint) hint.textContent = busy || root.FGH.I18N.t('mole.fm.cropHint');
-          if (!faces || !faces.length) return;
-          var bb = faces[0].boundingBox;
-          // 머리 전체(머리카락~턱)를 담는다 — 합성 시 헬멧 자리까지 얼굴로 덮으므로.
-          var fcx = bb.x + bb.width / 2;
-          var fcy = bb.y + bb.height * 0.34;
-          var diam = Math.max(bb.width, bb.height) * 2.1;
-          var b = boxSize();
-          view.scale = b.w / diam;
-          view.x = (natural.w / 2 - fcx) * view.scale;
-          view.y = (natural.h / 2 - fcy) * view.scale;
-          clampView();
-          applyView();
-        }).catch(function () {
-          if (hint) hint.textContent = busy || root.FGH.I18N.t('mole.fm.cropHint');
-        });
-      } catch (e) {
-        if (hint) hint.textContent = busy || root.FGH.I18N.t('mole.fm.cropHint');
-      }
+      MG.FaceDetect.detect(cropImg).then(function (res) {
+        if (hint) hint.textContent = res.ok ? root.FGH.I18N.t('mole.fm.detected') : idle;
+        if (!res.ok) { detected = null; return; }
+        detected = res;
+        // 얼굴 박스가 크롭 사각형의 ~86% 를 채우도록 스케일 + 중앙 정렬.
+        var bx = res.box, b = boxSize();
+        var fcx = bx.x + bx.w / 2, fcy = bx.y + bx.h / 2;
+        var span = Math.max(bx.w, bx.h);
+        view.scale = (b.w * 0.86) / span;
+        view.x = (natural.w / 2 - fcx) * view.scale;
+        view.y = (natural.h / 2 - fcy) * view.scale;
+        clampView();
+        applyView();
+      });
     }
 
     function boxSize() { var r = cropBox.getBoundingClientRect(); return { w: r.width, h: r.height }; }
@@ -135,6 +131,8 @@
       clampView(); applyView();
     }, { passive: false });
 
+    var lastShape = null;  // 저장/합성에 넘길 윤곽 {oval:[정규화 0~1], box} — 원형 폴백이면 null
+
     function renderCrop() {
       var b = boxSize();
       var srcSize = b.w / view.scale;
@@ -144,10 +142,40 @@
       c.width = OUT; c.height = OUT;
       var ctx = c.getContext('2d');
       ctx.drawImage(cropImg, srcX, srcY, srcSize, srcSize, 0, 0, OUT, OUT);
-      ctx.globalCompositeOperation = 'destination-in';
-      ctx.beginPath();
-      ctx.arc(OUT / 2, OUT / 2, OUT / 2, 0, Math.PI * 2);
-      ctx.fill();
+
+      var toOut = function (p) {
+        return { x: (p.x - srcX) / srcSize * OUT, y: (p.y - srcY) / srcSize * OUT };
+      };
+      lastShape = null;
+      if (detected && detected.oval.length) {
+        // 윤곽을 살짝 부풀린 폴리곤 → 페더(블러) 마스크로 잘라냄.
+        var poly = MG.FaceDetect.expand(detected.oval, 1.06).map(toOut);
+        var mask = document.createElement('canvas');
+        mask.width = OUT; mask.height = OUT;
+        var mx = mask.getContext('2d');
+        mx.filter = 'blur(' + Math.round(OUT * 0.03) + 'px)';
+        mx.fillStyle = '#fff';
+        mx.beginPath();
+        poly.forEach(function (p, i) { i ? mx.lineTo(p.x, p.y) : mx.moveTo(p.x, p.y); });
+        mx.closePath(); mx.fill();
+        ctx.globalCompositeOperation = 'destination-in';
+        ctx.drawImage(mask, 0, 0);
+        var nxs = poly.map(function (p) { return p.x / OUT; });
+        var nys = poly.map(function (p) { return p.y / OUT; });
+        lastShape = {
+          oval: poly.map(function (p) { return { x: p.x / OUT, y: p.y / OUT }; }),
+          box: {
+            x: Math.min.apply(null, nxs), y: Math.min.apply(null, nys),
+            w: Math.max.apply(null, nxs) - Math.min.apply(null, nxs),
+            h: Math.max.apply(null, nys) - Math.min.apply(null, nys)
+          }
+        };
+      } else {
+        ctx.globalCompositeOperation = 'destination-in';
+        ctx.beginPath();
+        ctx.arc(OUT / 2, OUT / 2, OUT / 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
       return c.toDataURL('image/png');
     }
 
@@ -161,7 +189,7 @@
         // 게임과 동일하게 "얼굴+몸체 합성 완료" 이미지를 미리보기 (원본 사진 노출 없음)
         previewBox.innerHTML = '<div class="fm-preview-mole"><img src="' + MOLE_BODY + '" alt=""></div>';
         stage('preview');
-        MG.MoleComposite.buildOne(lastCropDataUrl, 'mole1').then(function (url) {
+        MG.MoleComposite.buildOne(lastCropDataUrl, null, 'mole1', lastShape).then(function (url) {
           var img = previewBox.querySelector('img');
           if (img) img.src = url;
         });
@@ -174,7 +202,7 @@
         return;
       }
       dataUrlToBlob(lastCropDataUrl)
-        .then(function (blob) { return MG.FaceStore.saveFace(blob, nameInput.value.trim()); })
+        .then(function (blob) { return MG.FaceStore.saveFace(blob, nameInput.value.trim(), null, lastShape); })
         .then(function (id) { MG.FaceStore.setActive(id); onDone(id); })
         .catch(function (err) {
           alert(root.FGH.I18N.t(err && err.message === 'full' ? 'mole.fm.full' : 'mole.fm.priv'));

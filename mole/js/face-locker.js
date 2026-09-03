@@ -33,7 +33,7 @@
             '<button type="button" data-act="rename">' + T('mole.fl.rename') + '</button>' +
             '<button type="button" data-act="del">' + T('mole.fl.del') + '</button></div>';
           // 원본 사진 안 보이게 — 몸+얼굴+모자+안경 합성 완료 이미지 하나만
-          MG.MoleComposite.buildOne(url, f.costume, 'mole1').then(function (composed) {
+          MG.MoleComposite.buildOne(url, f.costume, 'mole1', f.shape).then(function (composed) {
             urls.push(composed);
             var img = card.querySelector('.fl-thumb-img');
             if (img) img.src = composed;

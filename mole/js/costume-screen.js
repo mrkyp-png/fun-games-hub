@@ -14,6 +14,7 @@
 
     var faceUrl = null;      // 활성 얼굴 크롭 objectURL
     var faceId = null;
+    var faceShape = null;    // 얼굴 윤곽 (있으면 합성이 윤곽대로 자름)
     var sel = { hat: 'helmet', body: 'default', glasses: 'none' };
     var layerUrls = [];      // revoke 관리
     var resultUrl = null;
@@ -25,10 +26,11 @@
       if (resultUrl) { URL.revokeObjectURL(resultUrl); resultUrl = null; }
     }
 
-    // faceRec: { id, blob, name, costume }
+    // faceRec: { id, blob, name, costume, shape }
     function open(faceRec) {
       cleanup();
       faceId = faceRec.id;
+      faceShape = faceRec.shape || null;
       if (faceUrl) URL.revokeObjectURL(faceUrl);
       faceUrl = URL.createObjectURL(faceRec.blob);
       sel = MG.Costume.normalize(faceRec.costume);
@@ -114,7 +116,7 @@
       composeBtn.disabled = true;
       stage.classList.add('cs-stage--merge'); // CSS transition 이 4박스를 가운데로 모음
       setTimeout(function () {
-        MG.MoleComposite.buildOne(faceUrl, sel, 'mole1').then(function (url) {
+        MG.MoleComposite.buildOne(faceUrl, sel, 'mole1', faceShape).then(function (url) {
           resultUrl = url;
           result.querySelector('[data-cs-card]').src = url;
           result.hidden = false;

@@ -37,12 +37,13 @@
     });
   }
 
-  function saveFace(blob, name, costume) {
+  function saveFace(blob, name, costume, shape) {
     return count().then(function (n) {
       if (n >= MAX) throw new Error('full');
       var rec = {
         id: 'f' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
-        name: name || '', blob: blob, costume: costume || null, createdAt: Date.now()
+        name: name || '', blob: blob, costume: costume || null,
+        shape: shape || null, createdAt: Date.now()
       };
       return openDb().then(function (db) {
         return reqValue(db.transaction(STORE, 'readwrite').objectStore(STORE).add(rec));

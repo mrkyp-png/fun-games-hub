@@ -100,7 +100,7 @@
     return MG.FaceStore.getFace(id).then((rec) => {
       if (!rec) return null;
       activeFaceUrl = URL.createObjectURL(rec.blob);
-      return MG.MoleComposite.build(activeFaceUrl, rec.costume).then((map) => {
+      return MG.MoleComposite.build(activeFaceUrl, rec.costume, rec.shape).then((map) => {
         activeFaceMap = map;
         return map;
       }).catch(() => null);

@@ -60,7 +60,7 @@
           var a = mini(), s = mini();
           box.appendChild(a); strip.appendChild(s);
           // 원본 사진 안 보이게 — 몸+얼굴+모자+안경 합성 완료 썸네일
-          MG.MoleComposite.buildOne(src, f.costume, 'mole1').then(function (url) {
+          MG.MoleComposite.buildOne(src, f.costume, 'mole1', f.shape).then(function (url) {
             faceUrls.push(url);
             a.querySelector('img').src = url;
             s.querySelector('img').src = url;

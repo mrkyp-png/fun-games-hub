@@ -13,7 +13,10 @@ const FACE_PNG_B64 =
   'FAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADwGxNwAAF3nQ3EAAAAAElFTkSuQmCC';
 
 (async () => {
-  const browser = await puppeteer.launch({ executablePath: EDGE_PATH, headless: true });
+  const browser = await puppeteer.launch({
+    executablePath: EDGE_PATH, headless: true,
+    args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
+  });
   try {
     const page = await browser.newPage();
     await page.setViewport({ width: 390, height: 780 });
@@ -59,6 +62,18 @@ const FACE_PNG_B64 =
     await page.click('#btn-back-to-hub');
     await new Promise((r) => setTimeout(r, 150));
     assert.strictEqual(await page.evaluate(() => document.getElementById('more-menu').hidden), false, 'more-menu opens');
+
+    // 얼굴인식 모듈 존재 + 얼굴 아닌 이미지엔 우아하게 실패(원형 폴백)
+    assert.ok(await page.evaluate(() => !!(window.MoleGame.FaceDetect && window.MoleGame.FaceDetect.detect)),
+      'FaceDetect module present');
+    assert.strictEqual(
+      await page.evaluate(async () => {
+        const c = document.createElement('canvas'); c.width = c.height = 64;
+        c.getContext('2d').fillStyle = '#888'; c.getContext('2d').fillRect(0, 0, 64, 64);
+        const r = await window.MoleGame.FaceDetect.detect(c);
+        return r && r.ok === false;
+      }),
+      true, 'FaceDetect returns {ok:false} for a non-face image (composite falls back to circle)');
 
     // 메이커: 더보기 메뉴 [만들기] → 사진 주입 → 크롭 → 저장
     await page.click('#more-menu [data-mm-make]');
