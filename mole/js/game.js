@@ -76,6 +76,7 @@
     const d = localStorage.getItem('mole.difficulty');
     return DIFFS.indexOf(d) > -1 ? d : 'easy';
   }
+  const currentLight = currentDifficulty; // 라이트 = 힌트 축 (easy/mid/legend = ON/DIM/OFF)
   // 챕터 축 (콘텐츠) — Phase A 는 챕터1 고정. 챕터2~ 는 다음 단계.
   function currentChapter() {
     const c = parseInt(localStorage.getItem('mole.chapter'), 10);
@@ -732,10 +733,14 @@
   // 최종 결과 화면 (10라운드 완주 or 목숨 소진).
   function finishFromRound(reason) {
     const total = run.combo.score;
-    const diff = currentDiff;
-    const best = bestFor(diff);
+    const light = currentLight();
+    const chapter = currentChapter();
+    const best = bestFor(light);
     const isNewBest = total > best;
-    if (isNewBest) saveBestFor(diff, total);
+    if (isNewBest) saveBestFor(light, total);
+
+    // 클리어 판정 = 누적점수 ≥ 목표(완벽 플레이 90%). 통과 시 다음 챕터 해금.
+    const prog = MG.Progress.record(chapter, light, total);
 
     const coins = Math.floor(total / 200);
     if (coins > 0) MG.Economy.addCoins(coins);
@@ -743,23 +748,24 @@
     // 재방문 인사용 + 기록 보관 (100판 이상도 문제없음, 개당 수십 바이트).
     try {
       localStorage.setItem('mole.lastPlayed', String(Date.now()));
-      localStorage.setItem('mole.lastWasBest', isNewBest ? '1' : '0');
-      localStorage.setItem('mole.lastWasBad', reason === 'lives' ? '1' : '0');
+      localStorage.setItem('mole.lastWasBest', prog.passed ? '1' : '0');
+      localStorage.setItem('mole.lastWasBad', prog.passed ? '0' : '1');
       const hist = JSON.parse(localStorage.getItem('mole.history') || '[]');
-      hist.push({ t: Date.now(), score: total, best: isNewBest, reason: reason, diff: diff });
+      hist.push({ t: Date.now(), score: total, passed: prog.passed, reason: reason, ch: chapter, light: light });
       if (hist.length > 500) hist.splice(0, hist.length - 500); // 안전 상한
       localStorage.setItem('mole.history', JSON.stringify(hist));
     } catch (e) { /* localStorage 불가 환경 무시 */ }
 
-    document.getElementById('gameover-reason').textContent =
-      I18N.t(reason === 'lives' ? 'mole.result.lives' : 'mole.result.allClear');
+    document.getElementById('gameover-reason').textContent = I18N.t(
+      prog.newClear ? 'mole.result.chapterClear'
+        : prog.passed ? 'mole.result.pass'
+          : 'mole.result.miss'  // 목표 미달 (목숨 소진이든 완주든)
+    );
     document.getElementById('gameover-score').textContent =
       I18N.t('mole.result.score', { n: total.toLocaleString() });
-    let bestLine = isNewBest
-      ? I18N.t('mole.result.newBest', { n: total.toLocaleString() })
-      : I18N.t('mole.result.best', { n: Math.max(best, total).toLocaleString() });
-    if (coins > 0) bestLine += '   +' + coins + '🪙';
-    document.getElementById('gameover-best').textContent = bestLine;
+    let line = I18N.t('mole.result.target', { n: prog.target.toLocaleString() });
+    if (coins > 0) line += '   +' + coins + '🪙';
+    document.getElementById('gameover-best').textContent = line;
     document.getElementById('gameover-overlay').hidden = false;
   }
 
@@ -816,6 +822,12 @@
       });
     };
     window.__debugSetChapter = (n) => { localStorage.setItem('mole.chapter', String(n)); };
+    window.__debugUnlockAll = () => { localStorage.setItem('mole.unlockAll', '1'); };
+    window.__debugProgress = () => ({
+      chapter: currentChapter(), light: currentLight(),
+      target: MG.Progress.target(currentChapter()),
+      rec: MG.Progress.get(currentChapter(), currentLight())
+    });
     window.__debugStartRound = (n) => startRound(n, { fresh: true });
     window.__debugEndRound = function () {
       if (state && !state.ended) { state.timeRemaining = 0; roundComplete(); }

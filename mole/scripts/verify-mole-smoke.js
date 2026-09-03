@@ -334,9 +334,13 @@ const FACE_PNG_B64 =
     assert.strictEqual(await page.evaluate(() => document.querySelector('#hud-ticker .tk-lv').textContent), '라운드 3',
       'round advances once the menu is closed');
 
-    // ---- 9) 목숨 소진 → 결과 + mole.best.easy + 코인 ----
-    await page.evaluate(() => { localStorage.setItem('mole.coins', '0'); localStorage.removeItem('mole.best.easy'); });
-    await page.evaluate(() => window.__debugStartGame('easy'));
+    // ---- 9) 목숨 소진 → 결과 + 목표 미달 + best + 코인 ----
+    await page.evaluate(() => {
+      localStorage.setItem('mole.coins', '0');
+      localStorage.removeItem('mole.best.easy');
+      localStorage.removeItem('mole.progress');
+    });
+    await page.evaluate(() => window.__debugStartGame('easy', 1));
     await waitIntroDone();
     await new Promise((r) => setTimeout(r, 200));
     for (let i = 0; i < 20; i++) {
@@ -350,11 +354,30 @@ const FACE_PNG_B64 =
     const afterLives = await page.evaluate(() => ({
       overlayHidden: document.getElementById('gameover-overlay').hidden,
       reason: document.getElementById('gameover-reason').textContent,
-      best: parseInt(localStorage.getItem('mole.best.easy'), 10)
+      best: parseInt(localStorage.getItem('mole.best.easy'), 10),
+      target: document.getElementById('gameover-best').textContent,
+      ch1cleared: !!(JSON.parse(localStorage.getItem('mole.progress') || '{}')['c1-easy'] || {}).cleared
     }));
     assert.strictEqual(afterLives.overlayHidden, false, 'result overlay shows on 0 lives');
-    assert.strictEqual(afterLives.reason, '목숨 소진!', 'result states lives-exhausted');
+    // 소액 점수라 목표 미달 → 클리어 표시 아님
+    assert.strictEqual(afterLives.reason, '목표 점수 미달', 'low score = below target');
+    assert.ok(/목표/.test(afterLives.target), 'shows target score line');
+    assert.strictEqual(afterLives.ch1cleared, false, 'chapter1 not cleared on a low score');
     assert.strictEqual(afterLives.best, finalScore, 'total persisted to mole.best.easy');
+
+    // 목표 달성(디버그로 콤보 펌프) → 클리어 + 챕터2 해금
+    await page.evaluate(() => { localStorage.removeItem('mole.progress'); });
+    await page.evaluate(() => window.__debugStartGame('easy', 1));
+    await waitIntroDone();
+    await page.evaluate(() => { const t = window.__debugProgress().target; window.__debugPumpCombo(Math.ceil(t / 200) + 40); });
+    await page.evaluate(() => window.__debugForceGameOver());
+    await new Promise((r) => setTimeout(r, 300));
+    const cleared = await page.evaluate(() => ({
+      reason: document.getElementById('gameover-reason').textContent,
+      unlocked: window.MoleGame.Progress.isUnlocked(2, 'easy')
+    }));
+    assert.strictEqual(cleared.reason, '챕터 클리어! 다음 챕터 열림', 'hitting target = chapter clear');
+    assert.ok(cleared.unlocked, 'chapter 2 (same light) unlocked');
 
     // ---- 10) 결과 → 나가기 → 대화 화면 (재방문 대화) ----
     await page.click('#gameover-select-btn');

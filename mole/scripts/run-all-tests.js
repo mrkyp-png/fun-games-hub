@@ -3,6 +3,7 @@ const path = require('path');
 
 const tests = [
   'test-levels.js',
+  'test-progress.js',
   'test-rng.js',
   'test-combo-score.js',
   'test-grid-partition.js',
