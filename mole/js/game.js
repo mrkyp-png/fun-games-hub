@@ -233,10 +233,15 @@
     run = null;
     setPauseUI(false);
     syncBgm(false); // 허브 시작 화면으로 나오면 BGM 정지
-    document.getElementById('gameover-overlay').hidden = true;
+    const go = document.getElementById('gameover-overlay');
+    go.hidden = true; go.classList.remove('is-win', 'is-lose', 'is-sliding');
+    const cf = go.querySelector('.go-confetti'); if (cf) cf.innerHTML = '';
+    const ncp = document.getElementById('next-chapter-panel');
+    ncp.hidden = true; ncp.classList.remove('is-in');
     document.getElementById('round-done-overlay').hidden = true;
     const ri = document.getElementById('round-intro-overlay');
     ri.hidden = true; ri.classList.remove('is-opening');
+    setHammerLayerVisible(true);
     document.getElementById('board-start').hidden = false;
     document.getElementById('game-screen').classList.add('is-start');
     setCallLabel('home'); // 홈: 초록 버튼 "시작" (빨간 대기 상태였으면 해제)
@@ -552,6 +557,7 @@
           overlay.classList.add('is-opening');
           onDone(); // 게임 루프는 커튼 열리는 동안 바로 시작
           setTimeout(() => {
+            if (myGen !== sessionGen) return; // 다음 라운드 전환이 이미 커튼 다시 닫았으면 건드리지 않음
             overlay.hidden = true;
             overlay.classList.remove('is-opening');
           }, 300); // 커튼 transition(0.26s) 후 정리
@@ -716,6 +722,7 @@
   function roundComplete() {
     if (!state || state.ended) return;
     state.ended = true;
+    sessionGen++; // 이 전환 = 새 세션 토큰 (직전 카운트다운의 정리 타이머를 무효화)
     const myGen = sessionGen;
     const finishedRound = state.round;
     if (rafId) cancelAnimationFrame(rafId);
@@ -724,36 +731,88 @@
     resetHot();
 
     if (finishedRound >= FINAL_ROUND) {
-      finishFromRound('done');
+      closeCurtain(() => { finishFromRound('done'); }); // 10라운드 완주 → 커튼 닫고 결과
       return;
     }
 
-    // 라운드 사이 짧은 안내 후 자동으로 다음 라운드.
-    document.getElementById('round-done-title').textContent =
-      I18N.t('mole.roundDone', { n: finishedRound });
-    document.getElementById('round-done-total').textContent =
-      I18N.t('mole.cumulative', { n: run.combo.score.toLocaleString() });
-    document.getElementById('round-done-overlay').hidden = false;
+    // "라운드 완료!" 카드 없앰 — 커튼을 바로 닫아 직전 라운드 화면을 완전히 가리고,
+    // 짧게 뒤 다음 라운드 카운트다운(같은 커튼)으로 이어진다.
+    const ri = document.getElementById('round-intro-overlay');
+    ri.classList.remove('is-opening');
+    ri.querySelector('.round-intro-title').textContent = '';
+    ri.querySelector('.round-intro-count').textContent = '';
+    ri.hidden = false;
+    setHammerLayerVisible(false);
 
     const advance = () => {
       if (myGen !== sessionGen) return; // 그 사이 나가버림
       // 더보기 메뉴가 열려 있으면 닫힐 때까지 대기 (메뉴 뒤에서 라운드가 넘어가지 않게).
       if (!document.getElementById('more-menu').hidden) { setTimeout(advance, 300); return; }
-      document.getElementById('round-done-overlay').hidden = true;
-      startRound(finishedRound + 1); // fresh 아님 → 누적 유지
+      startRound(finishedRound + 1); // fresh 아님 → 누적 유지 (커튼은 계속 닫힌 채)
     };
-    setTimeout(advance, 1400);
+    setTimeout(advance, 550);
+  }
+
+  // 뽕망치 레이어(보드 밖, z 높음)는 커튼 위에 뜨므로 전환/결과 동안 같이 숨긴다.
+  function setHammerLayerVisible(v) {
+    const h = document.getElementById('mole-hammer-layer');
+    if (h) h.style.visibility = v ? '' : 'hidden';
+  }
+
+  // 커튼을 바로 닫아 직전 화면을 가림 → cb (결과/카운트다운) 로 이어짐.
+  function closeCurtain(cb) {
+    const ri = document.getElementById('round-intro-overlay');
+    ri.classList.remove('is-opening');
+    ri.querySelector('.round-intro-title').textContent = '';
+    ri.querySelector('.round-intro-count').textContent = '';
+    ri.hidden = false;
+    setHammerLayerVisible(false);
+    setTimeout(cb, 240);
   }
 
   // 목숨 소진(라운드 도중) — 지금까지 친 점수까지 반영하고 최종 결과.
   function finish(reason) {
     if (!state || state.ended) return;
     state.ended = true;
+    sessionGen++; // 직전 카운트다운 정리 타이머 무효화
     if (rafId) cancelAnimationFrame(rafId);
     if (state.laneHammer) state.laneHammer.home(); // 망치 대기위치로 스냅
     sharedPopElements.clear();
     resetHot();
-    finishFromRound(reason);
+    // 실패 순간 커튼이 확 닫히고 나서 결과 멘트 (사용자 요청).
+    closeCurtain(() => { finishFromRound(reason); });
+  }
+
+  // 승리 결과 화면에서 왼쪽으로 스와이프 → 화면이 왼쪽으로 사라지고 "챕터 N" 화면.
+  // (다음 챕터가 열려 있을 때만. 실제 챕터 콘텐츠는 Phase B — 지금은 글자 placeholder.)
+  function wireResultSwipe() {
+    const ov = document.getElementById('gameover-overlay');
+    let x0 = null;
+    ov.addEventListener('pointerdown', (e) => {
+      if (!ov.dataset.nextChapter) return;
+      x0 = e.clientX;
+    });
+    ov.addEventListener('pointerup', (e) => {
+      if (x0 == null) return;
+      const dx = e.clientX - x0;
+      x0 = null;
+      if (dx < -60 && ov.dataset.nextChapter) goToNextChapter(parseInt(ov.dataset.nextChapter, 10));
+    });
+  }
+  function goToNextChapter(ch) {
+    localStorage.setItem('mole.chapter', String(ch));
+    const ov = document.getElementById('gameover-overlay');
+    const panel = document.getElementById('next-chapter-panel');
+    panel.querySelector('[data-nc-label]').textContent = I18N.t('mole.chapter.n', { n: ch });
+    panel.hidden = false;
+    void panel.offsetWidth;
+    ov.classList.add('is-sliding');      // 축하 화면 왼쪽으로
+    panel.classList.add('is-in');        // 챕터 화면 오른쪽에서 들어옴
+    setTimeout(() => {
+      ov.hidden = true;
+      ov.classList.remove('is-sliding', 'is-win', 'is-lose');
+      ov.querySelector('.go-confetti').innerHTML = '';
+    }, 360);
   }
 
   // 최종 결과 화면 (10라운드 완주 or 목숨 소진).
@@ -782,17 +841,53 @@
       localStorage.setItem('mole.history', JSON.stringify(hist));
     } catch (e) { /* localStorage 불가 환경 무시 */ }
 
+    // 10라운드 완주 + 목표 달성 = 승리(축하 연출 계속) / 아니면 실패(실패 연출).
+    // 두 경우 다 아래 버튼은 "다시하기" 하나 (누르면 홈 화면).
+    const win = reason === 'done' && prog.passed;
+    const ov = document.getElementById('gameover-overlay');
+    ov.classList.toggle('is-win', win);
+    ov.classList.toggle('is-lose', !win);
+    document.getElementById('gameover-select-btn').hidden = true; // "나가기" 제거 — 항상 다시하기만
+
+    // 축하/실패 파티클 채우기 (계속 반복)
+    const conf = ov.querySelector('.go-confetti');
+    conf.innerHTML = '';
+    const n = win ? 16 : 10;
+    for (let k = 0; k < n; k++) {
+      const p = document.createElement('i');
+      p.style.left = (Math.random() * 100) + '%';
+      p.style.animationDelay = (Math.random() * 2.4) + 's';
+      p.style.animationDuration = (win ? 1.6 + Math.random() * 1.4 : 3 + Math.random() * 2) + 's';
+      if (win) p.style.setProperty('--h', String(Math.floor(Math.random() * 360)));
+      conf.appendChild(p);
+    }
+
     document.getElementById('gameover-reason').textContent = I18N.t(
-      prog.newClear ? 'mole.result.chapterClear'
-        : prog.passed ? 'mole.result.pass'
-          : 'mole.result.miss'  // 목표 미달 (목숨 소진이든 완주든)
+      win ? (prog.newClear ? 'mole.result.chapterClear' : 'mole.result.win')
+        : reason === 'lives' ? 'mole.result.lives'
+          : 'mole.result.miss'  // 10라운드 완주했지만 목표 미달
     );
     document.getElementById('gameover-score').textContent =
       I18N.t('mole.result.score', { n: total.toLocaleString() });
     let line = I18N.t('mole.result.target', { n: prog.target.toLocaleString() });
     if (coins > 0) line += '   +' + coins + ' ' + I18N.t('mole.coin');
     document.getElementById('gameover-best').textContent = line;
-    document.getElementById('gameover-overlay').hidden = false;
+
+    // 실패 시에만 "광고 보고 코인 +50" 버튼 (실패 후 코인 파밍).
+    const adBtn = document.getElementById('gameover-ad-btn');
+    adBtn.hidden = win;
+    adBtn.disabled = false;
+    adBtn.querySelector('.chat-ad-n').textContent = '+50';
+
+    // 승리 시 다음 챕터가 열렸으면: 왼쪽 스와이프로 "챕터 N" 화면으로 넘어갈 수 있다는 힌트.
+    const nextCh = win ? chapter + 1 : 0;
+    ov.dataset.nextChapter = (nextCh && MG.Progress.isUnlocked(nextCh, light)) ? String(nextCh) : '';
+
+    // 커튼 오버레이는 결과 카드로 교체 (둘 다 z-index 10, ri 가 DOM 상 뒤라 안 치우면 위를 덮음).
+    document.getElementById('round-intro-overlay').hidden = true;
+    setHammerLayerVisible(false);
+    ov.classList.remove('is-sliding');
+    ov.hidden = false;
   }
 
   // ---------- 초기화 ----------
@@ -836,6 +931,23 @@
     document.getElementById('btn-back-to-hub').addEventListener('click', () => openMore());
     document.getElementById('gameover-retry-btn').addEventListener('click', () => showStartScreen({ retry: true }));
     document.getElementById('gameover-select-btn').addEventListener('click', () => showStartScreen());
+    document.getElementById('nc-back-btn').addEventListener('click', () => {
+      const panel = document.getElementById('next-chapter-panel');
+      panel.classList.remove('is-in');
+      panel.hidden = true;
+      showStartScreen();
+    });
+    document.getElementById('gameover-ad-btn').addEventListener('click', function () {
+      if (this.disabled) return;
+      const btn = this;
+      MG.Ads.rewarded().then((ok) => {
+        if (!ok) return;
+        MG.Economy.addCoins(50);
+        btn.disabled = true;
+        btn.querySelector('.chat-ad-n').textContent = '✓';
+      });
+    });
+    wireResultSwipe(); // 승리 화면 왼쪽 스와이프 → 다음 챕터 화면
     document.getElementById('btn-pause').addEventListener('click', togglePause);
 
     // 디버그 훅 — 지렁이 게임과 동일 컨벤션, 영구 보존.

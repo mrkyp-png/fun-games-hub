@@ -711,7 +711,7 @@ body { background: #16301a; }
 .overlay {
   position: absolute;
   inset: 0;
-  background: rgba(6, 4, 23, 0.82);
+  background: #0a0818;   /* 불투명 — 직전 라운드/게임 화면이 안 비치게 (사용자 요청) */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -745,6 +745,56 @@ body { background: #16301a; }
   cursor: pointer;
 }
 .clear-total { color: var(--muted); font-weight: 700; margin-top: -8px; }
+
+/* ---- 최종 결과: 승리(축하 계속) / 실패(차분) ---- */
+#gameover-overlay { overflow: hidden; transition: transform 0.34s cubic-bezier(.4, 0, .3, 1); touch-action: pan-y; }
+#gameover-overlay.is-sliding { transform: translateX(-100%); }
+#gameover-overlay .overlay-card { position: relative; z-index: 1; }
+#gameover-select-btn[hidden] { display: none !important; }
+/* 실패 시 광고 버튼 = 흰 알약 + 코인 아이콘 (chat-ad 스타일 재사용) */
+.go-ad-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 10px 14px; border: none; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95); color: #17703c;
+  font-weight: 900; cursor: pointer;
+}
+.go-ad-btn:disabled { opacity: 0.5; cursor: default; }
+.go-ad-btn > span[aria-hidden] { color: #23b153; font-size: 0.7rem; }
+.go-ad-btn .chat-ad-ic { width: 17px; height: 17px; }
+
+/* 축하/실패 파티클 — 계속 반복 */
+.go-confetti { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.go-confetti i {
+  position: absolute; top: -12%;
+  width: 9px; height: 14px; border-radius: 2px;
+  animation: go-fall linear infinite;
+}
+#gameover-overlay.is-win .go-confetti i {
+  background: hsl(var(--h, 40) 90% 60%);
+}
+#gameover-overlay.is-lose .go-confetti i {
+  width: 3px; height: 3px; border-radius: 50%;
+  background: rgba(150, 150, 165, 0.5);
+}
+@keyframes go-fall {
+  0% { transform: translateY(0) rotate(0); }
+  100% { transform: translateY(140vh) rotate(540deg); }
+}
+
+/* 다음 챕터 placeholder — 오른쪽에서 슬라이드 인 */
+#next-chapter-panel {
+  background: radial-gradient(circle at 50% 40%, #241a3d 0%, #0d0a24 70%);
+  flex-direction: column; gap: 10px;
+  transform: translateX(100%);
+  transition: transform 0.34s cubic-bezier(.4, 0, .3, 1);
+}
+#next-chapter-panel.is-in { transform: translateX(0); }
+.nc-big { color: #fff; font-size: 2.4rem; font-weight: 900; letter-spacing: 0.04em; }
+.nc-sub { color: #b7b3cf; font-weight: 700; }
+.nc-back {
+  margin-top: 14px; padding: 10px 20px; border: none; border-radius: 999px;
+  background: var(--brand); color: #fff; font-weight: 700; cursor: pointer;
+}
 
 /* 라운드 시작 카운트다운 — 매 시작마다(첫 시작·다시하기·자동 다음 라운드) 재생.
    불투명 커튼(좌/우 반쪽)이 보드를 완전히 가리고, 카운트 끝나면 커튼이 양쪽으로 확 열린다. */

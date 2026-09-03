@@ -84,7 +84,7 @@
       <div id="pause-veil" class="mole-board-layer" aria-hidden="true">일시정지</div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v68</div>
+      <div id="build-tag" aria-hidden="true">v69</div>
       <div id="board-start" class="board-panel board-start">
         <!-- 최고 스코어: 위에서 툭 내려오는 문자 알림 -->
         <div id="start-best" class="chat-sms" aria-hidden="true">
@@ -135,8 +135,9 @@
         </div>
       </div>
 
-      <!-- 최종 결과 (10라운드 완주 또는 목숨 소진) -->
+      <!-- 최종 결과 (10라운드 완주 또는 목숨 소진). is-win 이면 축하 연출 + 다시하기만. -->
       <div id="gameover-overlay" class="overlay board-panel" hidden>
+        <div class="go-confetti" aria-hidden="true"></div>
         <div class="overlay-card">
           <h2 id="gameover-reason">전체 클리어!</h2>
           <p id="gameover-score" class="gameover-score">0점</p>
@@ -144,6 +145,11 @@
           <div class="overlay-btn-row">
             <button id="gameover-retry-btn" data-i18n="common.retry">다시하기</button>
             <button id="gameover-select-btn" data-i18n="common.back">나가기</button>
+            <button id="gameover-ad-btn" class="go-ad-btn" hidden>
+              <span aria-hidden="true">▶</span>
+              <svg class="chat-ad-ic chat-ad-ic--coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="currentColor"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="1.6"/></svg>
+              <span class="chat-ad-n">+50</span>
+            </button>
           </div>
         </div>
       </div>
@@ -154,6 +160,13 @@
         <div class="ri-curtain ri-curtain--r"></div>
         <div id="round-intro-title" class="round-intro-title">라운드 1</div>
         <div id="round-intro-count" class="round-intro-count">3</div>
+      </div>
+
+      <!-- 승리 화면에서 왼쪽 스와이프 시 나타나는 다음 챕터 화면 (placeholder — Phase B 대기) -->
+      <div id="next-chapter-panel" class="overlay board-panel" hidden>
+        <div class="nc-big" data-nc-label>챕터 2</div>
+        <div class="nc-sub" data-i18n="mole.chapter.soon">준비 중이에요</div>
+        <button type="button" class="nc-back" id="nc-back-btn" data-i18n="common.back">나가기</button>
       </div>
 
       <!-- 더보기 메뉴 = 게임 화면 좌상단 ⊞ 아이콘 뒤. 카톡 "더보기" 탭 스타일, 다크. -->

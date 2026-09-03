@@ -305,13 +305,17 @@ const FACE_PNG_B64 =
     await page.evaluate(() => window.__debugSetChapter(1));
 
     // ---- 8) 라운드 진행 (점수 누적) ----
-    await page.evaluate(() => window.__debugStartGame('easy'));
+    await page.evaluate(() => window.__debugStartGame('easy', 1));
+    await new Promise((r) => setTimeout(r, 300)); // startRound(1) 이 실제로 돌 시간 (loadActiveFace async)
     await waitIntroDone();
     await new Promise((r) => setTimeout(r, 200));
+    const roundAtStart = await page.evaluate(() => document.querySelector('#hud-ticker .tk-lv').textContent);
+    assert.strictEqual(roundAtStart, '라운드 1', 'fresh game starts at round 1');
     const scoreBeforeEnd = await score();
     await page.evaluate(() => window.__debugEndRound());
-    await new Promise((r) => setTimeout(r, 200));
-    assert.strictEqual(await page.evaluate(() => document.getElementById('round-done-overlay').hidden), false, 'round-done overlay shows');
+    await new Promise((r) => setTimeout(r, 150));
+    // 라운드 완료 카드 없앰 → 커튼(#round-intro-overlay)이 닫힌 채로 전환
+    assert.strictEqual(await page.evaluate(() => document.getElementById('round-intro-overlay').hidden), false, 'curtain covers during round transition');
     await new Promise((r) => setTimeout(r, 1500));
     await waitIntroDone();
     await new Promise((r) => setTimeout(r, 200));
@@ -334,53 +338,96 @@ const FACE_PNG_B64 =
     assert.strictEqual(await page.evaluate(() => document.querySelector('#hud-ticker .tk-lv').textContent), '라운드 3',
       'round advances once the menu is closed');
 
-    // ---- 9) 목숨 소진 → 결과 + 목표 미달 + best + 코인 ----
+    // ---- 9) 결과 화면: 실패(목숨소진) / 실패(완주·목표미달) / 승리(완주·목표달성) ----
     await page.evaluate(() => {
       localStorage.setItem('mole.coins', '0');
       localStorage.removeItem('mole.best.easy');
       localStorage.removeItem('mole.progress');
     });
-    await page.evaluate(() => window.__debugStartGame('easy', 1));
+    // (a) 챕터2 라운드 도중 목숨 소진 → "목숨 소진!" + 광고버튼 + 나가기 숨김
+    await page.evaluate(() => window.__debugStartGame('easy', 2));
     await waitIntroDone();
-    await new Promise((r) => setTimeout(r, 200));
-    for (let i = 0; i < 20; i++) {
-      const region = await liveMoleRegion();
-      if (region !== null) await page.evaluate((id) => document.querySelector(`#lane-button-bar .lane-button[data-region="${id}"]`).dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })), region);
-      await new Promise((r) => setTimeout(r, 120));
-    }
-    const finalScore = await score();
     await page.evaluate(() => window.__debugForceGameOver());
-    await new Promise((r) => setTimeout(r, 300));
-    const afterLives = await page.evaluate(() => ({
+    await new Promise((r) => setTimeout(r, 550));
+    const lose = await page.evaluate(() => ({
       overlayHidden: document.getElementById('gameover-overlay').hidden,
       reason: document.getElementById('gameover-reason').textContent,
-      best: parseInt(localStorage.getItem('mole.best.easy'), 10),
-      target: document.getElementById('gameover-best').textContent,
-      ch1cleared: !!(JSON.parse(localStorage.getItem('mole.progress') || '{}')['c1-easy'] || {}).cleared
+      isLose: document.getElementById('gameover-overlay').classList.contains('is-lose'),
+      adHidden: document.getElementById('gameover-ad-btn').hidden,
+      selectHidden: document.getElementById('gameover-select-btn').hidden,
     }));
-    assert.strictEqual(afterLives.overlayHidden, false, 'result overlay shows on 0 lives');
-    // 소액 점수라 목표 미달 → 클리어 표시 아님
-    assert.strictEqual(afterLives.reason, '목표 점수 미달', 'low score = below target');
-    assert.ok(/목표/.test(afterLives.target), 'shows target score line');
-    assert.strictEqual(afterLives.ch1cleared, false, 'chapter1 not cleared on a low score');
-    assert.strictEqual(afterLives.best, finalScore, 'total persisted to mole.best.easy');
+    assert.strictEqual(lose.overlayHidden, false, 'result overlay shows');
+    assert.strictEqual(lose.reason, '목숨 소진!', 'mid-round death = out of lives');
+    assert.ok(lose.isLose && !lose.adHidden && lose.selectHidden, 'lose: is-lose class, ad button shown, exit button hidden');
+    await page.evaluate(() => window.__debugSetChapter(1));
 
-    // 목표 달성(디버그로 콤보 펌프) → 클리어 + 챕터2 해금
+    // (b) 10라운드 완주 · 목표 미달 → "목표 점수 미달"
     await page.evaluate(() => { localStorage.removeItem('mole.progress'); });
     await page.evaluate(() => window.__debugStartGame('easy', 1));
     await waitIntroDone();
-    await page.evaluate(() => { const t = window.__debugProgress().target; window.__debugPumpCombo(Math.ceil(t / 200) + 40); });
-    await page.evaluate(() => window.__debugForceGameOver());
-    await new Promise((r) => setTimeout(r, 300));
-    const cleared = await page.evaluate(() => ({
+    await page.evaluate(() => window.__debugStartRound(10));
+    await waitIntroDone();
+    await page.evaluate(() => window.__debugPumpCombo(3)); // 소액 점수 (목표엔 한참 못 미침)
+    const scAtR10 = await score();
+    await page.evaluate(() => window.__debugEndRound());
+    await new Promise((r) => setTimeout(r, 600));
+    const miss = await page.evaluate(() => ({
       reason: document.getElementById('gameover-reason').textContent,
-      unlocked: window.MoleGame.Progress.isUnlocked(2, 'easy')
+      best: parseInt(localStorage.getItem('mole.best.easy'), 10),
+      target: document.getElementById('gameover-best').textContent,
+      ch1cleared: !!(JSON.parse(localStorage.getItem('mole.progress') || '{}')['c1-easy'] || {}).cleared,
     }));
-    assert.strictEqual(cleared.reason, '챕터 클리어! 다음 챕터 열림', 'hitting target = chapter clear');
-    assert.ok(cleared.unlocked, 'chapter 2 (same light) unlocked');
+    assert.strictEqual(miss.reason, '목표 점수 미달', '10 rounds done but below target');
+    assert.ok(/목표/.test(miss.target), 'shows target line');
+    assert.strictEqual(miss.ch1cleared, false, 'not cleared on a miss');
+    assert.ok(scAtR10 > 0 && miss.best === scAtR10, 'total persisted to mole.best.easy');
 
-    // ---- 10) 결과 → 나가기 → 대화 화면 (재방문 대화) ----
-    await page.click('#gameover-select-btn');
+    // (c) 10라운드 완주 · 목표 달성 → 승리(is-win) + 챕터2 해금 + 광고버튼 숨김
+    await page.evaluate(() => { localStorage.removeItem('mole.progress'); });
+    await page.evaluate(() => window.__debugStartGame('easy', 1));
+    await waitIntroDone();
+    await page.evaluate(() => window.__debugStartRound(10));
+    await waitIntroDone();
+    await page.evaluate(() => { const t = window.__debugProgress().target; window.__debugPumpCombo(Math.ceil(t / 200) + 60); });
+    await page.evaluate(() => window.__debugEndRound());
+    await new Promise((r) => setTimeout(r, 600));
+    const won = await page.evaluate(() => ({
+      reason: document.getElementById('gameover-reason').textContent,
+      isWin: document.getElementById('gameover-overlay').classList.contains('is-win'),
+      adHidden: document.getElementById('gameover-ad-btn').hidden,
+      confetti: document.querySelectorAll('#gameover-overlay .go-confetti i').length,
+      unlocked: window.MoleGame.Progress.isUnlocked(2, 'easy'),
+      nextCh: document.getElementById('gameover-overlay').dataset.nextChapter,
+    }));
+    assert.strictEqual(won.reason, '챕터 클리어! 다음 챕터 열림', 'first clear = chapter clear headline');
+    assert.ok(won.isWin && won.adHidden && won.confetti > 0, 'win: is-win, no ad button, confetti pieces');
+    assert.ok(won.unlocked, 'chapter 2 unlocked');
+    assert.strictEqual(won.nextCh, '2', 'swipe-left target = chapter 2');
+
+    // 왼쪽 스와이프 → "챕터 2" placeholder
+    await page.evaluate(() => {
+      const ov = document.getElementById('gameover-overlay');
+      const r = ov.getBoundingClientRect();
+      ov.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: r.right - 20 }));
+      ov.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, clientX: r.left + 20 }));
+    });
+    await new Promise((r) => setTimeout(r, 450));
+    const nc = await page.evaluate(() => ({
+      panelShown: !document.getElementById('next-chapter-panel').hidden,
+      label: document.querySelector('#next-chapter-panel [data-nc-label]').textContent,
+      chapter: localStorage.getItem('mole.chapter'),
+    }));
+    assert.ok(nc.panelShown && nc.chapter === '2', 'swipe-left opens chapter 2 placeholder');
+    await page.click('#nc-back-btn');
+    await new Promise((r) => setTimeout(r, 200));
+    await page.evaluate(() => { localStorage.setItem('mole.chapter', '1'); localStorage.removeItem('mole.progress'); });
+
+    // ---- 10) 결과 → 다시하기 → 대화 화면 (재방문 대화) ----
+    await page.evaluate(() => window.__debugStartGame('easy', 1));
+    await waitIntroDone();
+    await page.evaluate(() => window.__debugForceGameOver());
+    await new Promise((r) => setTimeout(r, 550));
+    await page.click('#gameover-retry-btn');
     await new Promise((r) => setTimeout(r, 200));
     const back = await page.evaluate(() => ({
       boardStartHidden: document.getElementById('board-start').hidden,
