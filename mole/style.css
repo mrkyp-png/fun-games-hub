@@ -975,6 +975,25 @@ body { background: #16301a; }
 .mm-grid i { font-style: normal; text-align: center; }
 .mm-ad { margin: auto 14px 6px; }
 
+/* 더보기 메뉴 "시작" — 다이얼러 초록 통화 버튼과 같은 위치·모양 (화면 우하단 원형 초록) */
+.mm-start {
+  position: absolute;
+  right: 22px;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  width: 64px;
+  height: 64px;
+  border: none;
+  border-radius: 50%;
+  background: #2ecc57;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(46, 204, 87, 0.45);
+}
+.mm-start:active { background: #29b84e; transform: scale(0.94); }
+
 /* 하트 없음 모달 */
 .nh-title { font-weight: 800; margin-bottom: 14px; }
 .nh-btns { display: flex; flex-direction: column; gap: 8px; }
@@ -1045,15 +1064,35 @@ body { background: #16301a; }
 .score-hist-row i { color: #f2c14e; font-style: normal; }
 .score-empty { padding: 24px; text-align: center; color: #6d6d76; }
 
+/* 설정 화면 */
+.set-list { padding: 8px 4px 20px; }
+.set-row { display: flex; align-items: center; gap: 12px; padding: 16px 16px; border-bottom: 1px solid #17171b; }
+.set-ic { width: 22px; height: 22px; flex: 0 0 auto; fill: none; stroke: #cfcfd4; stroke-width: 1.6;
+  stroke-linecap: round; stroke-linejoin: round; }
+.set-lbl { flex: 1; font-size: 0.9rem; }
+.set-toggle { position: relative; width: 46px; height: 26px; border: none; border-radius: 13px;
+  background: #3a3b44; cursor: pointer; transition: background 0.15s; flex: 0 0 auto; }
+.set-toggle--on { background: #34c759; }
+.set-knob { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+  background: #fff; transition: transform 0.15s; }
+.set-toggle--on .set-knob { transform: translateX(20px); }
+.set-lang { padding: 6px 12px; border: 1px solid #33343e; border-radius: 8px; background: #17181d;
+  color: #b8b8c0; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+.set-lang--on { background: #2fb457; border-color: #2fb457; color: #fff; }
+.set-row--reset { justify-content: center; border-bottom: none; padding-top: 24px; }
+.set-reset { padding: 10px 24px; border: 1px solid #5a2b2b; border-radius: 8px; background: transparent;
+  color: #e07a7a; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+
 /* 난이도: 고수·전설은 버튼 불(어느 구멍에 두더지) 끔 */
-/* 라이트 DIM (고수): 버튼 배경 불빛은 끄고, 숫자·작은 글씨만 살짝 빛난다 */
+/* 라이트 DIM (고수): 버튼 배경 불빛은 끄고, 숫자·글씨·아이콘 색만 앰버로 바꾼다 ("불 켜진" 느낌) */
 #game-screen.diff-mid .lane-button--hot { background: transparent; box-shadow: none; }
-#game-screen.diff-mid .lane-button--hot .lane-num { color: #d6e4ff; text-shadow: 0 0 7px rgba(150, 190, 255, 0.95); }
+#game-screen.diff-mid .lane-button--hot .lane-num,
 #game-screen.diff-mid .lane-button--hot .lane-sub,
 #game-screen.diff-mid .lane-button--hot .lane-kr,
-#game-screen.diff-mid .lane-button--hot .lane-en { color: #b7ccf5; text-shadow: 0 0 5px rgba(150, 190, 255, 0.8); }
+#game-screen.diff-mid .lane-button--hot .lane-en,
+#game-screen.diff-mid .lane-button--hot .lane-lbl { color: #ffcf4a; }
+#game-screen.diff-mid .lane-button--hot .lane-ico svg { stroke: #ffcf4a; fill: #ffcf4a; }
 #game-screen.diff-mid .lane-button--call.lane-button--hot { background: #2ecc57; box-shadow: none; }
-#game-screen.diff-mid .lane-button--call.lane-button--hot .lane-lbl { text-shadow: 0 0 6px rgba(255, 255, 255, 0.9); }
 
 /* 라이트 OFF (전설): 아무 표시 없음 */
 #game-screen.diff-legend .lane-button--hot { background: transparent; box-shadow: none; }

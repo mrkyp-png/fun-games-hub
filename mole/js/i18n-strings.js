@@ -87,6 +87,15 @@
       'mole.score.noHist': '아직 플레이 기록이 없어요',
       'mole.score.bestOf': '{d} 최고 {n}점',
 
+      'mole.set.bgm': '배경음악',
+      'mole.set.sfx': '효과음',
+      'mole.set.vib': '진동',
+      'mole.set.lang': '언어',
+      'mole.set.reset': '데이터 초기화',
+      'mole.set.resetConfirm': '점수·사람두더지·설정을 모두 지울까요?',
+      'mole.set.on': 'ON',
+      'mole.set.off': 'OFF',
+
       'mole.help.p1': '두더지를 망치로 때려서 점수를 얻어요. 10라운드, 각 30초.',
       'mole.help.p2': '아래 키패드 16칸은 구멍 16개와 1:1이에요. 두더지가 있는 칸을 누르면 망치가 내려쳐요.',
       'mole.help.p3': '라이트 ON: 두더지 있는 칸 버튼이 빛나요. 라이트 DIM: 숫자만 살짝 빛나요. 라이트 OFF: 아무 표시 없어요 (+동물 등장, 때리면 손해!).',
@@ -180,6 +189,15 @@
 
       'mole.score.noHist': 'No plays yet',
       'mole.score.bestOf': '{d} best {n}',
+
+      'mole.set.bgm': 'Music',
+      'mole.set.sfx': 'Sound FX',
+      'mole.set.vib': 'Vibration',
+      'mole.set.lang': 'Language',
+      'mole.set.reset': 'Reset data',
+      'mole.set.resetConfirm': 'Erase all scores, face moles and settings?',
+      'mole.set.on': 'ON',
+      'mole.set.off': 'OFF',
 
       'mole.help.p1': 'Whack moles with the hammer to score. 10 rounds, 30s each.',
       'mole.help.p2': 'The 16 keypad cells map 1:1 to the 16 holes. Press a cell with a mole and the hammer strikes.',

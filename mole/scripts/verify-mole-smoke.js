@@ -75,10 +75,35 @@ const FACE_PNG_B64 =
     const gridItems = await page.evaluate(() => document.querySelectorAll('#more-menu [data-mm-nav]').length);
     assert.strictEqual(gridItems, 8, '8 grid items');
     assert.ok(await page.evaluate(() => /\d/.test(document.querySelector('#more-menu [data-mm-hearts] b').textContent)), 'hearts count shown');
+    // 설정 화면: BGM/소리/진동 토글이 실제로 동작
+    await page.click('#more-menu [data-mm-nav="settings"]');
+    await page.waitForSelector('#settings-screen:not([hidden])');
+    const toggles = await page.evaluate(() => document.querySelectorAll('#settings-screen .set-toggle').length);
+    assert.strictEqual(toggles, 3, '3 toggles (BGM/SFX/vibration)');
+    await page.evaluate(() => window.FGH.Settings.set('music', true));
+    await page.evaluate(() => { document.querySelector('#settings-screen .set-toggle').click(); }); // first row = music
+    assert.strictEqual(await page.evaluate(() => window.FGH.Settings.get('music')), false, 'toggling BGM row flips the setting');
+    await page.click('#settings-screen [data-back="settings"]');
+    await new Promise((r) => setTimeout(r, 100));
+    assert.strictEqual(await page.evaluate(() => document.getElementById('more-menu').hidden), false, 'back from settings → more-menu');
+
     // 닫기 → 대화 화면
     await page.click('#more-menu [data-mm-close]');
     await new Promise((r) => setTimeout(r, 150));
     assert.strictEqual(await page.evaluate(() => document.getElementById('more-menu').hidden), true, 'more-menu closes');
+
+    // 더보기 "시작" 버튼(통화 자리) → 더보기 닫고 바로 게임
+    await page.evaluate(() => window.__debugSetHearts(5));
+    await page.click('#btn-back-to-hub');
+    await new Promise((r) => setTimeout(r, 150));
+    await page.click('#more-menu [data-mm-start]');
+    await waitIntroDone();
+    await new Promise((r) => setTimeout(r, 200));
+    assert.strictEqual(await page.evaluate(() => document.getElementById('more-menu').hidden), true, 'more-menu closed after 시작');
+    assert.strictEqual(await page.evaluate(() => document.getElementById('game-screen').classList.contains('is-start')), false, '시작 goes straight into the game');
+    // 다음 섹션을 위해 리로드로 상태 초기화
+    await page.reload({ waitUntil: 'load' });
+    await new Promise((r) => setTimeout(r, 300));
 
     // ---- 2) __debugStartGame → 플레이 ----
     await page.evaluate(() => { window.__debugSetHearts(5); });

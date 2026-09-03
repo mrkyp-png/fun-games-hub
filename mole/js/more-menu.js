@@ -14,6 +14,7 @@
     el.querySelector('[data-mm-make]').addEventListener('click', on.make);
     el.querySelector('[data-mm-locker]').addEventListener('click', on.locker);
     el.querySelector('[data-mm-name]').addEventListener('click', on.editName);
+    el.querySelector('[data-mm-start]').addEventListener('click', on.start);
     el.querySelectorAll('[data-mm-diff]').forEach(function (b) {
       b.addEventListener('click', function () { on.diff(b.getAttribute('data-mm-diff')); });
     });

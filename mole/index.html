@@ -61,7 +61,7 @@
       <div id="pause-veil" class="mole-board-layer" aria-hidden="true">일시정지</div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v30</div>
+      <div id="build-tag" aria-hidden="true">v31</div>
       <div id="board-start" class="board-panel board-start">
         <!-- 최고 스코어: 위에서 툭 내려오는 문자 알림 -->
         <div id="start-best" class="chat-sms" aria-hidden="true">
@@ -178,6 +178,7 @@
           <button type="button" data-mm-nav="settings"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 13a7.8 7.8 0 000-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 00-1.7-1L14 3h-4l-.6 2.6a7.6 7.6 0 00-1.7 1l-2.4-1-2 3.4L4.6 11a7.8 7.8 0 000 2l-2 1.6 2 3.4 2.4-1c.5.4 1.1.7 1.7 1L10 21h4l.6-2.6c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.4-2-1.6z"/><circle cx="12" cy="12" r="2.6"/></svg><i data-i18n="mole.more.settings">설정</i></button>
         </div>
         <div class="mm-ad" data-mm-ad></div>
+        <button type="button" class="mm-start" data-mm-start data-i18n="mole.start.btn">시작</button>
       </div>
 
       <!-- 더보기 메뉴 하위 화면들 (screen-nav.js 가 배타 토글) -->
@@ -263,6 +264,14 @@
         </div>
       </div>
 
+      <div class="board-screen settings-screen" id="settings-screen" hidden>
+        <div class="board-screen-bar">
+          <button type="button" class="bs-back" data-back="settings" aria-label="뒤로">‹</button>
+          <span class="bs-title" data-i18n="mole.more.settings">설정</span>
+        </div>
+        <div class="set-list" data-set-list></div>
+      </div>
+
       <div class="board-screen info-screen" id="privacy-screen" hidden>
         <div class="board-screen-bar">
           <button type="button" class="bs-back" data-back="privacy" aria-label="뒤로">‹</button>
@@ -301,6 +310,7 @@
 <script src="js/shop.js"></script>
 <script src="js/daily.js"></script>
 <script src="js/score-screen.js"></script>
+<script src="js/settings-screen.js"></script>
 <script src="js/pop-elements.js"></script>
 <script src="js/hole-layer.js"></script>
 <script src="js/hit-fx.js"></script>

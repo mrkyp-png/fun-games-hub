@@ -64,7 +64,7 @@
 
   // ---------- 더보기 메뉴 / 난이도 / 사람두더지 (독립앱 Phase 1) ----------
   let screenNav = null, moreMenu = null, faceMaker = null, faceLocker = null;
-  let shop = null, daily = null, scoreScreen = null;
+  let shop = null, daily = null, scoreScreen = null, settingsScreen = null;
   let currentDiff = 'easy';        // 현재 판 난이도
   let activeFaceUrl = null;        // 활성 사람두더지 얼굴 objectURL
 
@@ -135,6 +135,7 @@
       if (sub === 'shop-screen' && shop) shop.show();
       if (sub === 'daily-screen' && daily) daily.show();
       if (sub === 'score-screen' && scoreScreen) scoreScreen.show();
+      if (sub === 'settings-screen' && settingsScreen) settingsScreen.show();
     }
   }
   function closeMore() {
@@ -714,7 +715,7 @@
   // 더보기 메뉴 + 하위 화면 모듈 인스턴스 생성·배선.
   function wireMoreMenu() {
     screenNav = MG.ScreenNav.create({
-      screens: ['face-maker', 'face-locker', 'shop-screen', 'daily-screen', 'score-screen', 'help-screen', 'privacy-screen']
+      screens: ['face-maker', 'face-locker', 'shop-screen', 'daily-screen', 'score-screen', 'settings-screen', 'help-screen', 'privacy-screen']
     });
 
     faceMaker = MG.FaceMaker.create({
@@ -742,6 +743,10 @@
       root: document.getElementById('score-screen'),
       onClose: () => screenNav.back()
     });
+    settingsScreen = MG.SettingsScreen.create({
+      root: document.getElementById('settings-screen'),
+      onClose: () => screenNav.back()
+    });
     ['help', 'privacy'].forEach((k) => {
       const b = document.querySelector('[data-back="' + k + '"]');
       if (b) b.addEventListener('click', () => screenNav.back());
@@ -758,13 +763,19 @@
           localStorage.setItem('mole.difficulty', d);
           moreMenu.refresh();
         },
+        start: () => {
+          // 더보기 메뉴의 "시작" (통화 버튼 자리) → 더보기 닫고 바로 게임 화면.
+          screenNav.reset();
+          document.getElementById('more-menu').hidden = true;
+          beginGame();
+        },
         shop: () => { screenNav.show('shop-screen'); shop.show(); },
         daily: () => { screenNav.show('daily-screen'); daily.show(); },
         score: () => { screenNav.show('score-screen'); scoreScreen.show(); },
         help: () => screenNav.show('help-screen'),
         privacy: () => screenNav.show('privacy-screen'),
         contact: () => { window.location.href = 'mailto:mrkyp@hanmail.net'; },
-        settings: () => { if (window.FGH.SettingsUI && window.FGH.SettingsUI.open) window.FGH.SettingsUI.open(); },
+        settings: () => { screenNav.show('settings-screen'); settingsScreen.show(); },
         editName: () => {
           const n = prompt(I18N.t('mole.more.nickPrompt'), localStorage.getItem('mole.nick') || '');
           if (n != null) { localStorage.setItem('mole.nick', n.trim().slice(0, 12)); moreMenu.refresh(); }
