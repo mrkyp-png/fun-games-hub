@@ -27,7 +27,7 @@ img, .chat-emoji, .lane-hammer, .mole-pop, .mole-hole, .mole-hole-front { forced
   .chat-sms { background: #fff; color: #22242a; }
   .chat-bubble--them { background: linear-gradient(180deg, #35c866, #23b153); color: #fff; }
   .chat-bubble--me { background: #fee500; color: #1c1c14; }
-  .chat-ad-btn { background: #26272c; color: #d6d8db; }
+  .chat-ad-btn { background: rgba(255, 255, 255, 0.95); color: #17703c; }
 }
 
 /* 화면 전체 배경: 어두운 초록 단색 (사용자 확정 — 이미지 아님). 별/성운 레이어는 끈다.
@@ -163,26 +163,34 @@ body { background: #16301a; }
   border-bottom-right-radius: 5px;
 }
 
-/* "광고 보고 생명/코인" — 대화 마지막 줄. 시작은 다이얼러 초록 버튼이 담당. */
-.chat-ad-row { justify-content: center; gap: 8px; flex-wrap: wrap; }
+/* "광고 보고 하트/코인" = 두더지 말풍선. 위치 고정(스크롤 X). 첫 방문 인트로에선 숨김.
+   시작은 다이얼러 초록 버튼이 담당. */
+.chat-ad-fixed { flex: 0 0 auto; margin-top: 8px; }
+.chat-ad-bubble { display: flex; flex-direction: column; gap: 7px; max-width: 80%; }
+.chat-ad-say { font-size: 0.82rem; font-weight: 700; line-height: 1.25; }
+.chat-ad-btns { display: flex; gap: 7px; }
 .chat-ad-btn {
+  flex: 1;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border: 1px solid #3a3b42;
-  border-radius: 16px;
-  background: #26272c;
-  color: #d6d8db;
-  font-size: 0.82rem;
-  font-weight: 700;
+  justify-content: center;
+  gap: 4px;
+  padding: 7px 8px;
+  border: none;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #17703c;
+  font-size: 0.88rem;
+  font-weight: 900;
   cursor: pointer;
-  transition: transform 0.06s, background 0.12s;
+  transition: transform 0.06s, opacity 0.12s;
 }
-.chat-ad-btn b { color: #35c866; font-size: 0.7rem; }
-.chat-ad-btn:active { transform: scale(0.96); background: #303138; }
-.chat-ad-btn:disabled { color: #7c7e86; border-color: #303138; cursor: default; }
-.chat-ad-btn:disabled b { color: #7c7e86; }
+.chat-ad-btn:active { transform: scale(0.95); }
+.chat-ad-btn:disabled { opacity: 0.5; cursor: default; }
+.chat-ad-play { color: #23b153; font-size: 0.6rem; }
+.chat-ad-ic { width: 17px; height: 17px; flex: 0 0 auto; }
+.chat-ad-ic--heart { color: #ff5a63; }
+.chat-ad-ic--coin { color: #f4c430; }
 
 /* 이모티콘만 보낸 메시지 = 말풍선 없이 크게 (카톡) */
 .chat-row--emoji { align-items: center; }

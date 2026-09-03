@@ -3,7 +3,7 @@
 // → 파일이 바뀌면 CACHE 버전을 안 올려도 "다음 실행"에 자동 반영된다 (이전엔 캐시-우선이라
 //   sw.js 자체가 안 바뀌면 style.css/이미지 변경이 폰에 영영 안 걸렸음).
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-const CACHE = 'mole-game-v45';
+const CACHE = 'mole-game-v46';
 
 // bgm-boss-battle.mp3(6.8MB)는 SHELL 에 안 넣는다 — BGM 은 기본 꺼짐이라 켜는 사람만 받으면 된다.
 // vendor/face_mesh/*(약 10MB, 얼굴인식)도 SHELL 제외 — 사람두더지 메이커 처음 열 때만 필요.

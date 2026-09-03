@@ -269,6 +269,8 @@
     const returnEl = document.getElementById('chat-return');
     firstEl.hidden = !firstVisit;
     returnEl.hidden = firstVisit;
+    // 광고 보기 두더지 말풍선 = 위치 고정. 첫 방문 인트로에서만 숨긴다.
+    document.getElementById('chat-ads').hidden = firstVisit;
 
     if (!firstVisit) buildReturnChat(isRetry ? 'retry' : 'phrase');
     revealThread(firstVisit ? firstEl : returnEl);
@@ -326,19 +328,6 @@
     else { row.appendChild(em); row.appendChild(avatarEl('hippo')); }
     return row;
   }
-  // "광고 보고 생명/코인" 줄 — 시작은 다이얼러 초록 버튼이 담당하므로 대화엔 이것만.
-  function adRow() {
-    const row = document.createElement('div');
-    row.className = 'chat-row chat-ad-row';
-    row.innerHTML =
-      '<button type="button" class="chat-ad-btn" data-ad="life"><b>▶</b>' +
-      '<span>' + I18N.t('mole.start.adLife') + '</span></button>' +
-      '<button type="button" class="chat-ad-btn" data-ad="coin"><b>▶</b>' +
-      '<span>' + I18N.t('mole.shop.watchCoin') + '</span></button>';
-    wireChatAds(row);
-    return row;
-  }
-
   function buildReturnChat(mode) {
     const el = document.getElementById('chat-return');
     el.innerHTML = '';
@@ -355,7 +344,7 @@
     el.appendChild(adRow());
   }
 
-  // 대화 안 "광고 보고 생명/코인" 버튼 연결 (scope = 대화 줄 또는 document).
+  // "광고 보고 하트/코인" 두더지 말풍선 버튼 연결.
   function wireChatAds(scope) {
     const life = scope.querySelector('[data-ad="life"]');
     const coin = scope.querySelector('[data-ad="coin"]');
@@ -365,7 +354,7 @@
         if (!ok) return;
         adBonusLives += 1;
         life.disabled = true;
-        life.querySelector('span').textContent = I18N.t('mole.start.adLifeGot');
+        life.querySelector('.chat-ad-n').textContent = '✓';
       }));
     }
     if (coin && !coin.dataset.wired) {
