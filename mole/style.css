@@ -975,27 +975,22 @@ body { background: #16301a; }
 .mm-grid i { font-style: normal; text-align: center; }
 .mm-ad { margin: auto 14px 6px; }
 
-/* 더보기 메뉴 "GO" — 게임 화면 초록 통화 버튼과 같은 크기·모양 (아이콘+라벨, 우하단, 3D) */
-.mm-start {
-  position: absolute;
-  right: 20px;
-  bottom: calc(83px + env(safe-area-inset-bottom));   /* 광고 배너 위 + 0.5cm */
-  width: 23vw;
-  height: 23vw;
-  max-width: 92px;
-  max-height: 92px;
-  gap: 3px;                 /* .lane-button--nav 와 동일 */
-  /* 입체 버튼: 아래쪽 짙은 초록 립 + 그림자 */
-  box-shadow: 0 6px 0 #1b7e3a, 0 10px 18px rgba(0, 0, 0, 0.45);
-  transition: transform 0.08s ease, box-shadow 0.08s ease;
+/* 더보기 그리드의 "GO" — 설정 아래 칸. 통화 아이콘 + GO, 색으로 구분 (앰버). */
+.mm-go {
+  grid-column: 4;          /* 설정 바로 아래 (4번째 열) */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 14px 2px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-style: normal;
 }
-.mm-start .lane-ico { width: 24px; height: 24px; }
-.mm-start .lane-lbl { font-size: 0.55rem; color: #fff; letter-spacing: 0.08em; }
-.mm-start:active {
-  transform: translateY(5px);
-  box-shadow: 0 1px 0 #1b7e3a, 0 3px 8px rgba(0, 0, 0, 0.4);
-  background: #29b84e;
-}
+.mm-go .mm-ic { width: 26px; height: 26px; fill: #ffcf4a; stroke: none; }
+.mm-go i { font-style: normal; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em; color: #ffcf4a; }
+.mm-go:active { transform: scale(0.92); }
 
 /* 하트 없음 모달 */
 .nh-title { font-weight: 800; margin-bottom: 14px; }
