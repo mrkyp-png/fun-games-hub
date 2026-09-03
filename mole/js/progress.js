@@ -12,9 +12,10 @@
   var LIGHTS = ['easy', 'mid', 'legend']; // = ON / DIM / OFF
   var MAX_CHAPTER = 3;
 
-  // 챕터별 클리어 목표 점수. measure-clear-target.js 산출값 (완벽 플레이 × 0.9).
-  // 챕터2·3 은 착수 시 측정해 채운다 (그전까진 챕터1 값 기준의 추정).
-  var CLEAR_TARGET = { 1: 60000, 2: 66000, 3: 72000 };
+  // 챕터별 클리어 목표 점수. 잠정값 — 폰 플레이테스트 후 조정.
+  //  봇(헛방X·저글X·전 두더지 즉시처치) 천장 ≈ 170,000. 사람은 그보다 한참 낮음.
+  //  저글 축소(v60)·헛방 콤보리셋(v61) 이후라 막두드리기로는 점수 안 오름.
+  var CLEAR_TARGET = { 1: 130000, 2: 145000, 3: 160000 };
 
   function ls() { return (typeof localStorage !== 'undefined') ? localStorage : null; }
   function key(ch, light) { return 'c' + ch + '-' + light; }
