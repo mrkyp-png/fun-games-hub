@@ -100,10 +100,11 @@
     });
   }
 
-  // 대화 화면 "시작" 버튼(들)이 부르는 진입점. 하트 1 소모 → 활성 얼굴 로드 → 라운드 1.
+  // 대화 화면 "시작" 버튼(들)이 부르는 진입점. 활성 얼굴 로드 → 라운드 1.
+  // Phase 1: 하트 소모 게이트는 비활성 (게임 완성 우선). Phase 2에서 재활성 — 아래 한 줄 주석 해제.
   function beginGame() {
     currentDiff = currentDifficulty();
-    if (!MG.Economy.spendHeart()) { showNoHeartModal(); return; }
+    // if (!MG.Economy.spendHeart()) { showNoHeartModal(); return; }
     applyDiffClass(currentDiff);
     loadActiveFace().then(() => startRound(1, { fresh: true }));
   }
@@ -764,10 +765,11 @@
           moreMenu.refresh();
         },
         start: () => {
-          // 더보기 메뉴의 "시작" (통화 버튼 자리) → 더보기 닫고 바로 게임 화면.
+          // 더보기 메뉴의 "시작" (통화 버튼 자리) → 더보기 닫고 대화 화면으로.
+          // (대화 화면 시작 버튼을 눌러야 그 난이도로 게임이 시작된다.)
           screenNav.reset();
           document.getElementById('more-menu').hidden = true;
-          beginGame();
+          showStartScreen();
         },
         shop: () => { screenNav.show('shop-screen'); shop.show(); },
         daily: () => { screenNav.show('daily-screen'); daily.show(); },

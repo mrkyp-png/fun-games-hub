@@ -975,23 +975,18 @@ body { background: #16301a; }
 .mm-grid i { font-style: normal; text-align: center; }
 .mm-ad { margin: auto 14px 6px; }
 
-/* 더보기 메뉴 "시작" — 다이얼러 초록 통화 버튼과 같은 위치·모양 (화면 우하단 원형 초록) */
+/* 더보기 메뉴 "시작" — 게임 화면 초록 통화 버튼과 똑같은 모양 (아이콘+라벨, 우하단) */
 .mm-start {
   position: absolute;
-  right: 22px;
-  bottom: calc(20px + env(safe-area-inset-bottom));
-  width: 64px;
-  height: 64px;
-  border: none;
-  border-radius: 50%;
-  background: #2ecc57;
-  color: #fff;
-  font-size: 0.95rem;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  cursor: pointer;
+  right: 20px;
+  bottom: calc(64px + env(safe-area-inset-bottom));   /* 광고 배너 위로 */
+  width: 66px;
+  height: 66px;
+  gap: 3px;                 /* .lane-button--nav 와 동일 */
   box-shadow: 0 6px 16px rgba(46, 204, 87, 0.45);
 }
+.mm-start .lane-ico { width: 24px; height: 24px; }
+.mm-start .lane-lbl { font-size: 0.62rem; color: #fff; }
 .mm-start:active { background: #29b84e; transform: scale(0.94); }
 
 /* 하트 없음 모달 */

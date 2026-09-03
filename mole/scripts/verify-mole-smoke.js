@@ -92,18 +92,14 @@ const FACE_PNG_B64 =
     await new Promise((r) => setTimeout(r, 150));
     assert.strictEqual(await page.evaluate(() => document.getElementById('more-menu').hidden), true, 'more-menu closes');
 
-    // 더보기 "시작" 버튼(통화 자리) → 더보기 닫고 바로 게임
-    await page.evaluate(() => window.__debugSetHearts(5));
+    // 더보기 "시작" 버튼(통화 자리) → 더보기 닫고 대화 화면으로 (게임은 대화의 시작 버튼에서)
     await page.click('#btn-back-to-hub');
     await new Promise((r) => setTimeout(r, 150));
     await page.click('#more-menu [data-mm-start]');
-    await waitIntroDone();
     await new Promise((r) => setTimeout(r, 200));
     assert.strictEqual(await page.evaluate(() => document.getElementById('more-menu').hidden), true, 'more-menu closed after 시작');
-    assert.strictEqual(await page.evaluate(() => document.getElementById('game-screen').classList.contains('is-start')), false, '시작 goes straight into the game');
-    // 다음 섹션을 위해 리로드로 상태 초기화
-    await page.reload({ waitUntil: 'load' });
-    await new Promise((r) => setTimeout(r, 300));
+    assert.strictEqual(await page.evaluate(() => document.getElementById('board-start').hidden), false, '더보기 시작 → 대화 화면');
+    assert.strictEqual(await page.evaluate(() => document.getElementById('game-screen').classList.contains('is-start')), true, 'is-start on (대화 화면)');
 
     // ---- 2) __debugStartGame → 플레이 ----
     await page.evaluate(() => { window.__debugSetHearts(5); });
