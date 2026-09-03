@@ -54,15 +54,45 @@
           stage('crop');
           resetView();
           applyView();
+          autoFitFace();  // 얼굴 인식되면 그 윤곽에 맞춰 크롭을 자동 배치 (안 되면 수동 그대로)
         };
         cropImg.src = reader.result;
       };
       reader.readAsDataURL(f);
     });
 
+    // FaceDetector 로 얼굴 영역을 찾아 크롭 원을 그 위에 자동 정렬. 지원 안 하거나 못 찾으면 아무것도 안 함.
+    function autoFitFace() {
+      if (typeof FaceDetector === 'undefined') return;
+      var hint = el.querySelector('.fm-hint');
+      var busy = hint ? hint.textContent : '';
+      if (hint) hint.textContent = root.FGH.I18N.t('mole.fm.detecting');
+      try {
+        new FaceDetector({ fastMode: true, maxDetectedFaces: 1 }).detect(cropImg).then(function (faces) {
+          if (hint) hint.textContent = busy || root.FGH.I18N.t('mole.fm.cropHint');
+          if (!faces || !faces.length) return;
+          var bb = faces[0].boundingBox;
+          // 머리 전체(머리카락~턱)를 담는다 — 합성 시 헬멧 자리까지 얼굴로 덮으므로.
+          var fcx = bb.x + bb.width / 2;
+          var fcy = bb.y + bb.height * 0.34;
+          var diam = Math.max(bb.width, bb.height) * 2.1;
+          var b = boxSize();
+          view.scale = b.w / diam;
+          view.x = (natural.w / 2 - fcx) * view.scale;
+          view.y = (natural.h / 2 - fcy) * view.scale;
+          clampView();
+          applyView();
+        }).catch(function () {
+          if (hint) hint.textContent = busy || root.FGH.I18N.t('mole.fm.cropHint');
+        });
+      } catch (e) {
+        if (hint) hint.textContent = busy || root.FGH.I18N.t('mole.fm.cropHint');
+      }
+    }
+
     function boxSize() { var r = cropBox.getBoundingClientRect(); return { w: r.width, h: r.height }; }
     function minScale() { var b = boxSize(); return Math.max(b.w / natural.w, b.h / natural.h); }
-    function resetView() { view.scale = minScale(); view.x = 0; view.y = 0; clampView(); }
+    function resetView() { view.scale = minScale() * 1.08; view.x = 0; view.y = 0; clampView(); }
     function clampView() {
       var b = boxSize();
       if (view.scale < minScale()) view.scale = minScale();
