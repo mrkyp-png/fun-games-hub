@@ -63,10 +63,8 @@ const FACE_PNG_B64 =
       return b && b.textContent.trim() === '시작';
     }), 'green dialer button is labelled 시작');
     assert.strictEqual(
-      await page.evaluate(() => document.querySelectorAll('#chat-ads [data-ad]').length), 2,
-      'the ad bubble has the two watch-ad buttons (heart / coin)');
-    assert.strictEqual(await page.evaluate(() => document.getElementById('chat-ads').hidden), true,
-      'ad bubble is hidden on the first-visit intro');
+      await page.evaluate(() => document.querySelectorAll('#board-start [data-ad]').length), 0,
+      'no ad buttons on the first-visit intro');
 
     // 초록 버튼 꾹 누르기 → 빨간 "종료 대기" → 다시 탭 → 종료창
     await page.evaluate(() => {
@@ -360,12 +358,12 @@ const FACE_PNG_B64 =
       boardStartHidden: document.getElementById('board-start').hidden,
       isStart: document.getElementById('game-screen').classList.contains('is-start'),
       chatReturn: !document.getElementById('chat-return').hidden,
-      adBubble: !document.getElementById('chat-ads').hidden
+      adBtns: document.querySelectorAll('#chat-return .chat-ad-btn[data-ad]').length
     }));
     assert.strictEqual(back.boardStartHidden, false, 'chat start screen shows');
     assert.strictEqual(back.isStart, true, 'is-start back on');
     assert.strictEqual(back.chatReturn, true, 'return chat thread shown (visits > 0)');
-    assert.strictEqual(back.adBubble, true, 'ad bubble is shown on return visits (not first-visit intro)');
+    assert.strictEqual(back.adBtns, 2, 'return chat ends with the mole ad bubble (2 watch-ad buttons, in-flow)');
 
     // ---- 11) moleBestScore 마이그레이션 ----
     await page.evaluate(() => { localStorage.clear(); localStorage.setItem('moleBestScore', '4321'); });

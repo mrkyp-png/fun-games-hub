@@ -79,7 +79,7 @@
       <div id="pause-veil" class="mole-board-layer" aria-hidden="true">일시정지</div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v49</div>
+      <div id="build-tag" aria-hidden="true">v50</div>
       <div id="board-start" class="board-panel board-start">
         <!-- 최고 스코어: 위에서 툭 내려오는 문자 알림 -->
         <div id="start-best" class="chat-sms" aria-hidden="true">
@@ -117,28 +117,9 @@
           </div>
         </div>
 
-        <!-- 재방문(재접·다시하기): game.js 가 상황에 맞춰 말풍선/이모티콘 줄을 채운다 -->
+        <!-- 재방문(재접·다시하기): game.js 가 상황에 맞춰 말풍선/이모티콘 줄을 채운다.
+             마지막 줄 = 두더지 "하트나 코인 필요하면 눌러" 광고 말풍선 (adRow, 일반 대화처럼). -->
         <div class="chat-thread" id="chat-return" hidden></div>
-
-        <!-- 광고 보기 = 두더지 말풍선. 위치 고정(스크롤 안 됨). 첫 방문 인트로에선 숨김. -->
-        <div class="chat-row chat-row--them chat-ad-fixed" id="chat-ads">
-          <div class="chat-avatar chat-avatar--mole" aria-hidden="true"></div>
-          <div class="chat-bubble chat-bubble--them chat-ad-bubble">
-            <span class="chat-ad-say" data-i18n="mole.start.adIntro">하트나 코인 필요하면 눌러!</span>
-            <span class="chat-ad-btns">
-              <button type="button" class="chat-ad-btn" data-ad="life" aria-label="광고 보고 하트 +1" data-i18n-aria-label="mole.start.adLife">
-                <span class="chat-ad-play" aria-hidden="true">▶</span>
-                <svg class="chat-ad-ic chat-ad-ic--heart" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg>
-                <span class="chat-ad-n">+1</span>
-              </button>
-              <button type="button" class="chat-ad-btn" data-ad="coin" aria-label="광고 보고 코인 +50" data-i18n-aria-label="mole.shop.watchCoin">
-                <span class="chat-ad-play" aria-hidden="true">▶</span>
-                <svg class="chat-ad-ic chat-ad-ic--coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="currentColor"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="1.6"/></svg>
-                <span class="chat-ad-n">+50</span>
-              </button>
-            </span>
-          </div>
-        </div>
       </div>
 
       <!-- 라운드 사이 안내 (1~9 클리어 시 잠깐 → 자동으로 다음 라운드) -->

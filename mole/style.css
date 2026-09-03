@@ -165,10 +165,8 @@ body { background: #16301a; }
   border-bottom-right-radius: 5px;
 }
 
-/* "광고 보고 하트/코인" = 두더지 말풍선. 위치 고정(스크롤 X). 첫 방문 인트로에선 숨김.
-   시작은 다이얼러 초록 버튼이 담당. */
-.chat-ad-fixed { flex: 0 0 auto; margin-top: 8px; }
-/* 아바타(44) + 간격(8) 을 뺀 폭을 상한으로 — 어떤 폰 폰트에서도 오른쪽이 안 잘리게. */
+/* "광고 보고 하트/코인" = 재방문 대화 마지막 두더지 말풍선 (일반 대화 줄, adRow).
+   아바타(44) + 간격(8) 을 뺀 폭을 상한으로 — 어떤 폰 폰트에서도 오른쪽이 안 잘리게. */
 .chat-ad-bubble {
   box-sizing: border-box;
   display: flex;

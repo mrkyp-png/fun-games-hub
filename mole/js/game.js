@@ -277,8 +277,6 @@
     const returnEl = document.getElementById('chat-return');
     firstEl.hidden = !firstVisit;
     returnEl.hidden = firstVisit;
-    // 광고 보기 두더지 말풍선 = 위치 고정. 첫 방문 인트로에서만 숨긴다.
-    document.getElementById('chat-ads').hidden = firstVisit;
 
     if (!firstVisit) buildReturnChat(isRetry ? 'retry' : 'phrase');
     revealThread(firstVisit ? firstEl : returnEl);
@@ -349,10 +347,34 @@
       el.appendChild(bubbleRow('them', pick(RETURN_PHRASES)));
       el.appendChild(bubbleRow('me', pick(HIPPO_REPLIES)));
     }
-    // 광고 말풍선은 #chat-ads (고정) 가 담당 — 여기서 안 붙인다.
+    el.appendChild(adRow());   // 두더지 마지막 말풍선 = "하트나 코인 필요하면 눌러" (일반 대화 줄)
   }
 
-  // "광고 보고 하트/코인" 두더지 말풍선 버튼 연결.
+  // 광고 보기 = 두더지 말풍선 (재방문 대화 마지막 줄). 일반 대화처럼 한 줄씩 공개·스크롤.
+  function adRow() {
+    const row = document.createElement('div');
+    row.className = 'chat-row chat-row--them';
+    row.appendChild(avatarEl('mole'));
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble chat-bubble--them chat-ad-bubble';
+    bubble.innerHTML =
+      '<span class="chat-ad-say">' + I18N.t('mole.start.adIntro') + '</span>' +
+      '<span class="chat-ad-btns">' +
+        '<button type="button" class="chat-ad-btn" data-ad="life" aria-label="' + I18N.t('mole.start.adLife') + '">' +
+          '<span class="chat-ad-play" aria-hidden="true">▶</span>' +
+          '<svg class="chat-ad-ic chat-ad-ic--heart" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg>' +
+          '<span class="chat-ad-n">+1</span></button>' +
+        '<button type="button" class="chat-ad-btn" data-ad="coin" aria-label="' + I18N.t('mole.shop.watchCoin') + '">' +
+          '<span class="chat-ad-play" aria-hidden="true">▶</span>' +
+          '<svg class="chat-ad-ic chat-ad-ic--coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="currentColor"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="1.6"/></svg>' +
+          '<span class="chat-ad-n">+50</span></button>' +
+      '</span>';
+    row.appendChild(bubble);
+    wireChatAds(row);
+    return row;
+  }
+
+  // "광고 보고 하트/코인" 버튼 연결.
   function wireChatAds(scope) {
     const life = scope.querySelector('[data-ad="life"]');
     const coin = scope.querySelector('[data-ad="coin"]');
@@ -756,8 +778,6 @@
     // 첫 화면 = 두더지 오빠 대화 (그대로). 사람두더지는 더보기 메뉴에서 원할 때 만든다.
     showStartScreen();
 
-    // 첫 방문 대화의 "광고 보고 생명/코인" 버튼. 재방문 대화 버튼은 adRow() 가 직접 연결한다.
-    wireChatAds(document);
     // 대화 공개 중 아무 데나 탭하면 나머지 메시지 즉시 표시 (건너뛰기)
     document.getElementById('board-start').addEventListener('click', (e) => {
       if (e.target.closest('.chat-ad-btn')) return;
