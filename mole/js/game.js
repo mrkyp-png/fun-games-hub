@@ -643,6 +643,7 @@
     });
 
     if (results.length === 0) {
+      run.combo.onObstacleHit(); // 헛방 = 콤보 처음으로 회귀 (막 두드리기 방지)
       MG.HitFx.whiff(board, hitXFrac, hitYFrac); // 빈 구멍 헛스윙
     }
     if (moleHits > 0) {
