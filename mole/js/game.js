@@ -235,7 +235,8 @@
     syncBgm(false); // 허브 시작 화면으로 나오면 BGM 정지
     document.getElementById('gameover-overlay').hidden = true;
     document.getElementById('round-done-overlay').hidden = true;
-    document.getElementById('round-intro-overlay').hidden = true;
+    const ri = document.getElementById('round-intro-overlay');
+    ri.hidden = true; ri.classList.remove('is-opening');
     document.getElementById('board-start').hidden = false;
     document.getElementById('game-screen').classList.add('is-start');
     setCallLabel('home'); // 홈: 초록 버튼 "시작" (빨간 대기 상태였으면 해제)
@@ -545,11 +546,16 @@
       if (i < STEPS.length) {
         setTimeout(tick, 650);
       } else {
+        // 마지막("시작!") 잠깐 보여준 뒤 커튼을 양쪽으로 확 연다.
         setTimeout(() => {
           if (myGen !== sessionGen) return;
-          overlay.hidden = true;
-          onDone();
-        }, 450);
+          overlay.classList.add('is-opening');
+          onDone(); // 게임 루프는 커튼 열리는 동안 바로 시작
+          setTimeout(() => {
+            overlay.hidden = true;
+            overlay.classList.remove('is-opening');
+          }, 300); // 커튼 transition(0.26s) 후 정리
+        }, 380);
       }
     }
     tick();

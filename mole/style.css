@@ -746,9 +746,25 @@ body { background: #16301a; }
 }
 .clear-total { color: var(--muted); font-weight: 700; margin-top: -8px; }
 
-/* 라운드 시작 카운트다운 — 매 시작마다(첫 시작·다시하기·자동 다음 라운드) 재생 */
-.round-intro { background: rgba(6, 4, 23, 0.72); flex-direction: column; gap: 6px; }
+/* 라운드 시작 카운트다운 — 매 시작마다(첫 시작·다시하기·자동 다음 라운드) 재생.
+   불투명 커튼(좌/우 반쪽)이 보드를 완전히 가리고, 카운트 끝나면 커튼이 양쪽으로 확 열린다. */
+.round-intro { background: transparent; flex-direction: column; gap: 6px; overflow: hidden; }
+.ri-curtain {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 50%;
+  background: #0a0818;
+  z-index: 0;
+  transition: transform 0.26s cubic-bezier(.5, 0, .75, 0);
+}
+.ri-curtain--l { left: 0; box-shadow: inset -8px 0 14px rgba(0, 0, 0, 0.5); }
+.ri-curtain--r { right: 0; box-shadow: inset 8px 0 14px rgba(0, 0, 0, 0.5); }
+.round-intro.is-opening .ri-curtain--l { transform: translateX(-101%); }
+.round-intro.is-opening .ri-curtain--r { transform: translateX(101%); }
+.round-intro.is-opening .round-intro-title,
+.round-intro.is-opening .round-intro-count { opacity: 0; transition: opacity 0.12s; }
 .round-intro-title {
+  position: relative; z-index: 1;
   color: #fff;
   font-size: 1.4rem;
   font-weight: 800;
@@ -756,6 +772,7 @@ body { background: #16301a; }
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 .round-intro-count {
+  position: relative; z-index: 1;
   color: #ffe08a;
   font-size: 4.4rem;
   font-weight: 900;
