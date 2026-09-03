@@ -754,12 +754,9 @@
         make: () => { screenNav.show('face-maker'); faceMaker.open({}); },
         locker: () => { screenNav.show('face-locker'); faceLocker.show(); },
         diff: (d) => {
+          // 라이트 모드는 "설정만" — 선택 표시만 바꾸고 화면 이동 없음.
           localStorage.setItem('mole.difficulty', d);
           moreMenu.refresh();
-          // 난이도 선택 → 더보기 닫고 대화 화면으로 (시작 버튼 누르면 그 난이도로 게임)
-          screenNav.reset();
-          document.getElementById('more-menu').hidden = true;
-          showStartScreen();
         },
         shop: () => { screenNav.show('shop-screen'); shop.show(); },
         daily: () => { screenNav.show('daily-screen'); daily.show(); },

@@ -65,6 +65,13 @@ const FACE_PNG_B64 =
     assert.strictEqual(await page.evaluate(() => document.getElementById('more-menu').hidden), false, 'back to more-menu after save');
     const pills = await page.evaluate(() => document.querySelectorAll('#more-menu [data-mm-diff]').length);
     assert.strictEqual(pills, 3, '3 difficulty pills');
+    // 라이트 모드 pill = 설정만 (화면 이동 없음)
+    await page.evaluate(() => document.querySelector('#more-menu [data-mm-diff="legend"]').click());
+    await new Promise((r) => setTimeout(r, 100));
+    assert.strictEqual(await page.evaluate(() => localStorage.getItem('mole.difficulty')), 'legend', 'pill sets mole.difficulty');
+    assert.strictEqual(await page.evaluate(() => document.getElementById('more-menu').hidden), false, 'pill does NOT navigate away — stays on the menu');
+    assert.ok(await page.evaluate(() => document.querySelector('#more-menu [data-mm-diff="legend"]').classList.contains('mm-pill--on')), 'selected pill highlighted');
+    await page.evaluate(() => document.querySelector('#more-menu [data-mm-diff="easy"]').click());
     const gridItems = await page.evaluate(() => document.querySelectorAll('#more-menu [data-mm-nav]').length);
     assert.strictEqual(gridItems, 8, '8 grid items');
     assert.ok(await page.evaluate(() => /\d/.test(document.querySelector('#more-menu [data-mm-hearts] b').textContent)), 'hearts count shown');
