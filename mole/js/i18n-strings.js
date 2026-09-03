@@ -80,6 +80,9 @@
       'mole.fl.del': '삭제',
       'mole.fl.delConfirm': '삭제할까요?',
 
+      'mole.shop.hearts': '하트 / 코인',
+      'mole.shop.sets': '코스튬 세트',
+      'mole.shop.hammer': '망치 스킨',
       'mole.shop.heart1': '하트 +1',
       'mole.shop.heartFull': '하트 가득 채우기',
       'mole.shop.watchHeart': '광고 보고 하트 +1',
@@ -197,6 +200,9 @@
       'mole.fl.del': 'Delete',
       'mole.fl.delConfirm': 'Delete this?',
 
+      'mole.shop.hearts': 'Hearts / Coins',
+      'mole.shop.sets': 'Costume Sets',
+      'mole.shop.hammer': 'Hammer Skin',
       'mole.shop.heart1': '+1 heart',
       'mole.shop.heartFull': 'Refill hearts',
       'mole.shop.watchHeart': 'Watch ad: +1 heart',

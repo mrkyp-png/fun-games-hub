@@ -1101,6 +1101,13 @@ body { background: #16301a; }
 .shop-row span { flex: 1; }
 .shop-row button { padding: 6px 14px; border: none; border-radius: 8px; background: #2fb457; color: #fff; font-weight: 800; cursor: pointer; }
 .shop-row button:disabled { background: #33343e; color: #77787f; cursor: default; }
+.shop-head { padding: 14px 4px 4px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; color: #7c7e8a; }
+.shop-set { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #16171c; border-radius: 10px; }
+.shop-set-thumbs { display: flex; gap: 3px; flex: 0 0 auto; }
+.shop-set-thumbs .cs-thumb { width: 26px; height: 26px; background: #23242b; border-radius: 6px; }
+.shop-set-name { flex: 1; font-size: 0.86rem; font-weight: 700; }
+.shop-set button { padding: 6px 14px; border: none; border-radius: 8px; background: #f0a800; color: #3a2600; font-weight: 800; font-size: 0.78rem; cursor: pointer; }
+.shop-set button:disabled { background: #33343e; color: #77787f; }
 
 /* 일일 */
 .daily-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 14px; }

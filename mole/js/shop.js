@@ -26,6 +26,10 @@
     function show() {
       el.querySelector('[data-shop-bal]').textContent = T('mole.shop.bal', { n: MG.Economy.getCoins().toLocaleString() });
       list.innerHTML = '';
+      var hh = document.createElement('div');
+      hh.className = 'shop-head';
+      hh.textContent = T('mole.shop.hearts');
+      list.appendChild(hh);
       row(T('mole.shop.heart1') + ' (100🪙)', T('mole.shop.buy'), MG.Economy.getCoins() < 100, function () {
         if (MG.Economy.spendCoins(100)) { MG.Economy.addHearts(1); done(); } else alert(T('mole.shop.noCoin'));
       });
@@ -39,6 +43,33 @@
         MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addCoins(50); done(); } });
       });
 
+      // ---- 코스튬 세트 ----
+      var head = document.createElement('div');
+      head.className = 'shop-head';
+      head.textContent = T('mole.shop.sets');
+      list.appendChild(head);
+      MG.Costume.sets().forEach(function (s) {
+        if (s.id === 'starter') return;
+        var owned = MG.Costume.ownsSet(s.id);
+        var card = document.createElement('div');
+        card.className = 'shop-set';
+        card.innerHTML =
+          '<div class="shop-set-thumbs">' +
+            MG.CostumeArt.chip('hat', s.hat) + MG.CostumeArt.chip('body', s.body) + MG.CostumeArt.chip('glasses', s.glasses) +
+          '</div>' +
+          '<span class="shop-set-name">' + s.name + '</span>' +
+          '<button type="button"' + (owned ? ' disabled' : '') + '>' +
+            (owned ? T('mole.cos.setOwned') : T('mole.cos.setBuy', { n: s.price.toLocaleString() })) + '</button>';
+        card.querySelector('button').addEventListener('click', function () {
+          if (MG.Costume.buySet(s.id)) done(); else alert(T('mole.shop.noCoin'));
+        });
+        list.appendChild(card);
+      });
+
+      var hbHead = document.createElement('div');
+      hbHead.className = 'shop-head';
+      hbHead.textContent = T('mole.shop.hammer');
+      list.appendChild(hbHead);
       var goldOwned = localStorage.getItem(GOLD_KEY) === '1';
       var skin = localStorage.getItem(SKIN_KEY) || 'basic';
       row(T('mole.shop.skin') + ': ' + T('mole.shop.skinBasic'),
