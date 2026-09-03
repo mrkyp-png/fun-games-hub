@@ -864,17 +864,17 @@
     // 축하 색종이+반짝이 / 실패 빗줄기 채우기 (계속 반복)
     const conf = ov.querySelector('.go-confetti');
     conf.innerHTML = '';
-    const n = win ? 18 : 12;
+    const n = win ? 46 : 12;
     for (let k = 0; k < n; k++) {
       const p = document.createElement('i');
       p.style.left = (Math.random() * 100) + '%';
-      p.style.animationDelay = (Math.random() * 2.4) + 's';
-      p.style.animationDuration = (win ? 1.6 + Math.random() * 1.4 : 2.4 + Math.random() * 1.8) + 's';
-      if (win) p.style.setProperty('--h', String(20 + Math.floor(Math.random() * 70))); // 금~주황 편향
+      p.style.animationDelay = (Math.random() * 2.8) + 's';
+      p.style.animationDuration = (win ? 1.5 + Math.random() * 1.6 : 2.4 + Math.random() * 1.8) + 's';
+      if (win) p.style.setProperty('--h', String(Math.floor(Math.random() * 360))); // 알록달록
       conf.appendChild(p);
     }
     if (win) {
-      for (let k = 0; k < 8; k++) {
+      for (let k = 0; k < 14; k++) {
         const s = document.createElement('span');
         s.className = 'go-spark';
         s.style.left = (8 + Math.random() * 84) + '%';
@@ -894,7 +894,8 @@
     document.getElementById('gameover-score').textContent =
       I18N.t('mole.result.score', { n: total.toLocaleString() });
 
-    // 실패 시에만 "광고 보고 코인 +50" 버튼 (실패 후 코인 파밍).
+    // 성공 = 버튼 없음 (좌상단 ⊞ 로 홈). 실패 = 다시하기 + "광고 보고 코인 +50".
+    document.getElementById('gameover-retry-btn').hidden = win;
     const adBtn = document.getElementById('gameover-ad-btn');
     adBtn.hidden = win;
     adBtn.disabled = false;
@@ -939,7 +940,11 @@
     // ⚠️ 핵심 리스너 배선을 showStartScreen() 보다 먼저 — showStartScreen 안에서 예외가 나도
     // (예: 스테일 캐시로 모듈 하나 누락) ⊞ 홈버튼·일시정지 등이 죽지 않도록.
     // 좌상단 ⊞ = 더보기 메뉴 열기.
-    document.getElementById('btn-back-to-hub').addEventListener('click', () => openMore());
+    document.getElementById('btn-back-to-hub').addEventListener('click', () => {
+      // 결과 화면에선 ⊞ = 곧장 홈(대화)으로. 그 외엔 더보기 메뉴.
+      if (!document.getElementById('gameover-overlay').hidden) { showStartScreen(); return; }
+      openMore();
+    });
     document.getElementById('btn-pause').addEventListener('click', togglePause);
     document.getElementById('gameover-retry-btn').addEventListener('click', () => showStartScreen({ retry: true }));
     document.getElementById('nc-back-btn').addEventListener('click', () => {
