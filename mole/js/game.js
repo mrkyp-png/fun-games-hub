@@ -265,12 +265,14 @@
     const mm = document.getElementById('more-menu');
     if (mm) mm.hidden = true;
 
-    // 최고 스코어 = 위에서 내려오는 문자 알림 (현재 난이도 기준). 기록 없으면 숨김.
-    const best = bestFor(currentDifficulty());
+    // 위에서 내려오는 문자 알림 = 이번 판 목표 점수 (+ 최고 기록이 있으면 함께).
+    const best = bestFor(currentLight());
+    const goal = MG.Progress.target(currentChapter());
     const sms = document.getElementById('start-best');
-    sms.querySelector('.chat-sms-txt').textContent =
-      best > 0 ? I18N.t('mole.start.best', { n: best.toLocaleString() }) : '';
-    sms.classList.toggle('is-empty', best <= 0);
+    let smsTxt = I18N.t('mole.start.goal', { n: goal.toLocaleString() });
+    if (best > 0) smsTxt += '  ·  ' + I18N.t('mole.start.best', { n: best.toLocaleString() });
+    sms.querySelector('.chat-sms-txt').textContent = smsTxt;
+    sms.classList.toggle('is-empty', false);
     sms.classList.remove('sms-anim');   // 시작화면 열 때마다 문자 툭↓ + 폭죽 리트리거
     void sms.offsetWidth;
     sms.classList.add('sms-anim');
