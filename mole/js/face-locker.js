@@ -20,24 +20,23 @@
       MG.FaceStore.listFaces().then(function (faces) {
         empty.hidden = faces.length > 0;
         var activeId = MG.FaceStore.getActiveId();
-        var a = MG.MoleSprites.headAnchor('mole1');
         faces.forEach(function (f) {
           var url = URL.createObjectURL(f.blob);
           urls.push(url);
           var card = document.createElement('div');
           card.className = 'fl-card' + (f.id === activeId ? ' fl-card--active' : '');
           card.innerHTML =
-            '<div class="fl-thumb"><img class="fl-thumb-body" src="assets/moles/mole1.png" alt="">' +
-            '<img class="fl-thumb-face" alt=""></div><div class="fl-name"></div>' +
+            '<div class="fl-thumb"><img class="fl-thumb-img" alt=""></div><div class="fl-name"></div>' +
             '<div class="fl-actions">' +
             '<button type="button" data-act="use">' + T('mole.fl.use') + '</button>' +
             '<button type="button" data-act="rename">' + T('mole.fl.rename') + '</button>' +
             '<button type="button" data-act="del">' + T('mole.fl.del') + '</button></div>';
-          var face = card.querySelector('.fl-thumb-face');
-          face.src = url;
-          face.style.left = (a.cx * 100) + '%';
-          face.style.top = (a.cy * 100) + '%';
-          face.style.width = (a.r * 2 * 100) + '%';
+          // 원본 사진 안 보이게 — 얼굴+몸체 합성 완료 이미지 하나만
+          MG.MoleComposite.buildOne(url, 'mole1').then(function (composed) {
+            urls.push(composed);
+            var img = card.querySelector('.fl-thumb-img');
+            if (img) img.src = composed;
+          });
           card.querySelector('.fl-name').textContent = f.name || (f.id === activeId ? T('mole.fl.active') : '');
           card.querySelector('[data-act="use"]').addEventListener('click', function () {
             MG.FaceStore.setActive(f.id); opts.onPick(f.id);

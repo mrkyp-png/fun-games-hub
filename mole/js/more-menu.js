@@ -51,28 +51,27 @@
 
       revokeFaces();
       MG.FaceStore.listFaces().then(function (faces) {
-        var a = MG.MoleSprites.headAnchor('mole1');
         var box = el.querySelector('[data-mm-faces]');
         var strip = el.querySelector('[data-mm-lthumbs]');
         box.innerHTML = ''; strip.innerHTML = '';
         faces.slice(0, 4).forEach(function (f) {
-          var url = URL.createObjectURL(f.blob);
-          faceUrls.push(url);
-          box.appendChild(mini(url, a));
-          strip.appendChild(mini(url, a));
+          var src = URL.createObjectURL(f.blob);
+          faceUrls.push(src);
+          var a = mini(), s = mini();
+          box.appendChild(a); strip.appendChild(s);
+          // 원본 사진 안 보이게 — 얼굴+몸체 합성 완료 썸네일
+          MG.MoleComposite.buildOne(src, 'mole1').then(function (url) {
+            faceUrls.push(url);
+            a.querySelector('img').src = url;
+            s.querySelector('img').src = url;
+          });
         });
       });
     }
-    function mini(url, a) {
+    function mini() {
       var d = document.createElement('span');
       d.className = 'mm-mini-mole';
-      d.innerHTML = '<img class="mm-mini-body" src="assets/moles/mole1.png" alt="">' +
-                    '<img class="mm-mini-face" alt="">';
-      var face = d.querySelector('.mm-mini-face');
-      face.src = url;
-      face.style.left = (a.cx * 100) + '%';
-      face.style.top = (a.cy * 100) + '%';
-      face.style.width = (a.r * 2 * 100) + '%';
+      d.innerHTML = '<img alt="">';
       return d;
     }
     return { refresh: refresh };

@@ -20,6 +20,14 @@ const FACE_PNG_B64 =
     await page.goto(`http://localhost:${PORT}/mole/index.html`, { waitUntil: 'load' });
 
     async function waitIntroDone() {
+      // 1) 인트로가 뜰 때까지 (startRound 가 얼굴 합성 빌드 후에 도는 경우 대비)
+      let appeared = false;
+      for (let i = 0; i < 120 && !appeared; i++) {
+        appeared = await page.evaluate(() => window.__debugIntroActive());
+        if (!appeared) await new Promise((r) => setTimeout(r, 100));
+      }
+      if (!appeared) throw new Error('round intro never appeared');
+      // 2) 인트로가 끝날 때까지
       for (let i = 0; i < 60; i++) {
         if (!(await page.evaluate(() => window.__debugIntroActive()))) return;
         await new Promise((r) => setTimeout(r, 100));
@@ -131,7 +139,7 @@ const FACE_PNG_B64 =
     assert.strictEqual(afterStart.boardStartHidden, true, 'board-start hidden during play');
     assert.strictEqual(await score(), 0, 'score starts at 0');
 
-    // ---- 3) 스프라이트 + 구멍 + 얼굴 레이어 ----
+    // ---- 3) 두더지 = 하나의 합성 이미지 (원본 사진/레이어 없음) ----
     let moleImg = null;
     for (let i = 0; i < 30 && !moleImg; i++) {
       await new Promise((r) => setTimeout(r, 100));
@@ -140,10 +148,23 @@ const FACE_PNG_B64 =
         return img ? img.getAttribute('src') : null;
       });
     }
-    assert.ok(moleImg && /assets\/moles\/.+\.png$/.test(moleImg), `mole renders as sprite <img> (got ${moleImg})`);
+    // 활성 얼굴이 있으므로 두더지 이미지는 합성본(blob:) 이어야 한다
+    assert.ok(moleImg && /^blob:/.test(moleImg), `mole renders as ONE composited image (got ${moleImg})`);
+    // 별도 얼굴 레이어(.mole-face)나 원본 사진 img 가 없어야 한다
+    assert.strictEqual(await page.evaluate(() => document.querySelectorAll('#mole-pop-layer .mole-face, #mole-pop-layer img:not(.mole-pop-img)').length), 0,
+      'no separate face/photo layer — only the composited .mole-pop-img');
+    assert.strictEqual(await page.evaluate(() => document.querySelectorAll('.mole-pop--mole .mole-pop-img').length),
+      await page.evaluate(() => document.querySelectorAll('.mole-pop--mole').length), 'one image per mole pop');
     assert.strictEqual(await page.evaluate(() => document.querySelectorAll('#mole-hole-layer .mole-hole').length), 16, '16 holes');
     assert.strictEqual(await page.evaluate(() => document.querySelectorAll('#mole-hole-front-layer .mole-hole-front').length), 16, '16 front rims');
-    assert.ok(await page.evaluate(() => !!document.querySelector('.mole-pop--mole .mole-face')), '활성 얼굴 → 두더지에 .mole-face');
+    // 얼굴 없는 게임은 기본 스프라이트
+    await page.evaluate(() => { window.MoleGame.FaceStore.clearActive(); });
+    await page.evaluate(() => window.__debugStartGame('easy'));
+    await waitIntroDone();
+    await page.waitForFunction(() => {
+      const img = document.querySelector('.mole-pop--mole .mole-pop-img');
+      return img && /assets\/moles\//.test(img.src);
+    }, { timeout: 8000 });
 
     // ---- 4) 직접 터치 무효 ----
     const beforeDirect = await score();

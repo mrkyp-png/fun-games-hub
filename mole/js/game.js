@@ -66,7 +66,8 @@
   let screenNav = null, moreMenu = null, faceMaker = null, faceLocker = null;
   let shop = null, daily = null, scoreScreen = null, settingsScreen = null;
   let currentDiff = 'easy';        // 현재 판 난이도
-  let activeFaceUrl = null;        // 활성 사람두더지 얼굴 objectURL
+  let activeFaceUrl = null;        // 활성 사람두더지 얼굴 원본 크롭 objectURL (합성 재료)
+  let activeFaceMap = null;        // 포즈별 "얼굴+몸체 합성 완료" 이미지 맵 (게임에 넘김)
 
   const DIFFS = ['easy', 'mid', 'legend'];
   function currentDifficulty() {
@@ -90,13 +91,19 @@
     DIFFS.forEach((d) => gs.classList.remove('diff-' + d));
     gs.classList.add('diff-' + diff);
   }
+  // 활성 사람두더지 얼굴 → 포즈별 합성 이미지 맵을 만든다. 원본 사진/얼굴 원은 게임에 안 넘긴다.
   function loadActiveFace() {
     const id = MG.FaceStore.getActiveId();
     if (activeFaceUrl) { URL.revokeObjectURL(activeFaceUrl); activeFaceUrl = null; }
+    if (activeFaceMap) { MG.MoleComposite.revoke(activeFaceMap); activeFaceMap = null; }
     if (!id) return Promise.resolve(null);
     return MG.FaceStore.getFace(id).then((rec) => {
-      activeFaceUrl = rec ? URL.createObjectURL(rec.blob) : null;
-      return activeFaceUrl;
+      if (!rec) return null;
+      activeFaceUrl = URL.createObjectURL(rec.blob);
+      return MG.MoleComposite.build(activeFaceUrl).then((map) => {
+        activeFaceMap = map;
+        return map;
+      }).catch(() => null);
     });
   }
 
@@ -324,7 +331,7 @@
       });
     }
     sharedPopElements.clear();
-    if (sharedPopElements.setFaceUrl) sharedPopElements.setFaceUrl(activeFaceUrl);
+    if (sharedPopElements.setFace) sharedPopElements.setFace(activeFaceMap);
 
     const holeLayer = MG.HoleLayer.create({
       container: document.getElementById('mole-hole-layer'),

@@ -912,7 +912,6 @@ body { background: #16301a; }
 /* ============ 독립앱 Phase 1 — 더보기 메뉴 + 하위 화면 ============ */
 
 /* 사람두더지 얼굴 레이어 (pop-elements.js 가 위치·크기 설정) */
-.mole-face { position: absolute; border-radius: 50%; aspect-ratio: 1; object-fit: cover; pointer-events: none; z-index: 1; }
 
 /* 하위 화면 공통 (screen-nav.js 배타 토글) — 전체 화면 (키패드 위까지 덮는다) */
 .board-screen { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column;
@@ -955,9 +954,8 @@ body { background: #16301a; }
   background: none; border: none; color: #c8c8ce; font-size: 0.82rem; cursor: pointer; border-bottom: 1px solid #17171b; }
 .mm-locker-thumbs { display: flex; margin-left: auto; }
 .mm-chev { color: #6d6d76; }
-.mm-mini-mole { position: relative; width: 26px; aspect-ratio: 470/548; margin-left: -4px; flex: 0 0 auto; }
-.mm-mini-body { position: absolute; inset: 0; width: 100%; }
-.mm-mini-face { position: absolute; transform: translate(-50%, -50%); border-radius: 50%; aspect-ratio: 1; object-fit: cover; }
+.mm-mini-mole { width: 26px; aspect-ratio: 470/548; margin-left: -4px; flex: 0 0 auto; }
+.mm-mini-mole img { width: 100%; display: block; }
 .mm-pills { display: flex; gap: 8px; padding: 14px; }
 .mm-pill { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
   padding: 10px 0; border: none; border-radius: 10px; background: #1c1d24;
@@ -1016,9 +1014,8 @@ body { background: #16301a; }
 .fm-redo { background: #33343e; color: #d0d0d6; }
 .fm-preview-btns { display: flex; gap: 10px; }
 .fm-name { width: 70%; padding: 8px 10px; border-radius: 8px; border: 1px solid #33343e; background: #17181d; color: #e8e8ea; text-align: center; }
-.fm-preview-mole { position: relative; width: 46%; margin: 0 auto; aspect-ratio: 470/548; }
-.fm-preview-body { position: absolute; inset: 0; width: 100%; }
-.fm-preview-face { position: absolute; transform: translate(-50%,-50%); border-radius: 50%; aspect-ratio: 1; object-fit: cover; }
+.fm-preview-mole { width: 46%; margin: 0 auto; aspect-ratio: 470/548; }
+.fm-preview-mole img { width: 100%; display: block; }
 .fm-preview-face-only { width: 46%; margin: 0 auto; }
 .fm-preview-face-only img { width: 100%; aspect-ratio: 1; border-radius: 50%; object-fit: cover; display: block; }
 .fm-priv { margin-top: auto; padding: 8px 14px 12px; font-size: 0.72rem; color: #6d6d76; text-align: center; }
@@ -1028,9 +1025,8 @@ body { background: #16301a; }
 .fl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 14px; }
 .fl-card { background: #16171c; border-radius: 12px; padding: 10px; text-align: center; border: 2px solid transparent; }
 .fl-card--active { border-color: #57d977; }
-.fl-thumb { position: relative; width: 68%; margin: 0 auto; aspect-ratio: 470/548; }
-.fl-thumb-body { position: absolute; inset: 0; width: 100%; }
-.fl-thumb-face { position: absolute; transform: translate(-50%,-50%); border-radius: 50%; aspect-ratio: 1; object-fit: cover; }
+.fl-thumb { width: 68%; margin: 0 auto; aspect-ratio: 470/548; }
+.fl-thumb-img { width: 100%; display: block; }
 .fl-name { margin-top: 4px; font-size: 0.8rem; color: #c8c8ce; min-height: 1em; }
 .fl-actions { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
 .fl-actions button { padding: 5px 0; border: none; border-radius: 6px; background: #2a2b33; color: #d8d8de; font-size: 0.72rem; cursor: pointer; }

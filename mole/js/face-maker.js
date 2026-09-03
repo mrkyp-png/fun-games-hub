@@ -126,17 +126,16 @@
       if (session.profile) {
         // 프로필 사진 모드: 두더지 몸 합성 없이 원형 얼굴만 미리보기
         previewBox.innerHTML = '<div class="fm-preview-face-only"><img src="' + lastCropDataUrl + '" alt=""></div>';
+        stage('preview');
       } else {
-        var a = MG.MoleSprites.headAnchor('mole1');
-        previewBox.innerHTML =
-          '<div class="fm-preview-mole"><img class="fm-preview-body" src="' + MOLE_BODY + '" alt="">' +
-          '<img class="fm-preview-face" src="' + lastCropDataUrl + '" alt=""></div>';
-        var face = previewBox.querySelector('.fm-preview-face');
-        face.style.left = (a.cx * 100) + '%';
-        face.style.top = (a.cy * 100) + '%';
-        face.style.width = (a.r * 2 * 100) + '%';
+        // 게임과 동일하게 "얼굴+몸체 합성 완료" 이미지를 미리보기 (원본 사진 노출 없음)
+        previewBox.innerHTML = '<div class="fm-preview-mole"><img src="' + MOLE_BODY + '" alt=""></div>';
+        stage('preview');
+        MG.MoleComposite.buildOne(lastCropDataUrl, 'mole1').then(function (url) {
+          var img = previewBox.querySelector('img');
+          if (img) img.src = url;
+        });
       }
-      stage('preview');
     });
     el.querySelector('[data-fm-redo]').addEventListener('click', function () { stage('crop'); });
     el.querySelector('[data-fm-save]').addEventListener('click', function () {
