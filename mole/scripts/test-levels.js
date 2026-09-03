@@ -4,7 +4,7 @@ const { LEVELS } = require('../js/levels.js');
 assert.strictEqual(LEVELS.length, 10, 'LEVELS must have exactly 10 entries');
 
 const expectedMoleDuration = [2.5, 2.4, 2.3, 2.2, 2.0, 1.8, 1.6, 1.4, 1.2, 1.0];
-const expectedMaxMoles = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5];
+const expectedMaxMoles = [2, 3, 3, 4, 4, 5, 5, 6, 6, 7];   // 챕터 안B
 const expectedMaxAnimals = [0, 1, 1, 2, 0, 1, 1, 2, 2, 3];
 const expectedMaxBombs = [0, 0, 0, 0, 1, 1, 2, 2, 3, 3];
 const expectedTimeLimit = [60, 60, 60, 55, 55, 55, 50, 50, 45, 45];

@@ -12,7 +12,8 @@
     'flyingsaucer', 'fullmoon', 'sun', 'telescope', 'milkyway'
   ];
   const MOLE_DURATION = [2.5, 2.4, 2.3, 2.2, 2.0, 1.8, 1.6, 1.4, 1.2, 1.0];
-  const MAX_CONCURRENT_MOLES = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5];
+  // 챕터 시스템(2026-09-04): 동시 두더지 수 안B — 초반 R1~2가 1마리라 심심했던 것 상향.
+  const MAX_CONCURRENT_MOLES = [2, 3, 3, 4, 4, 5, 5, 6, 6, 7];
   const MAX_CONCURRENT_ANIMALS = [0, 1, 1, 2, 0, 1, 1, 2, 2, 3];
   const MAX_CONCURRENT_BOMBS = [0, 0, 0, 0, 1, 1, 2, 2, 3, 3];
   const TIME_LIMIT = [60, 60, 60, 55, 55, 55, 50, 50, 45, 45];
