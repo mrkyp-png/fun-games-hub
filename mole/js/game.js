@@ -766,7 +766,7 @@
     document.getElementById('gameover-score').textContent =
       I18N.t('mole.result.score', { n: total.toLocaleString() });
     let line = I18N.t('mole.result.target', { n: prog.target.toLocaleString() });
-    if (coins > 0) line += '   +' + coins + '🪙';
+    if (coins > 0) line += '   +' + coins + ' ' + I18N.t('mole.coin');
     document.getElementById('gameover-best').textContent = line;
     document.getElementById('gameover-overlay').hidden = false;
   }
