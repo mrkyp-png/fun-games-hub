@@ -35,6 +35,7 @@
 
       'mole.common.close': '닫기',
       'mole.more.title': '더보기',
+      'mole.more.resume': '이어하기',
       'mole.more.make': '사진으로 사람두더지 만들기',
       'mole.more.makeBtn': '만들기',
       'mole.more.locker': '내 사람두더지',
@@ -166,6 +167,7 @@
 
       'mole.common.close': 'Close',
       'mole.more.title': 'More',
+      'mole.more.resume': 'Resume',
       'mole.more.make': 'Make a face mole from a photo',
       'mole.more.makeBtn': 'Make',
       'mole.more.locker': 'My face moles',

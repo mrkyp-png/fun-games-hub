@@ -207,7 +207,10 @@
       state.paused = true;
       state.pausedByMenu = true;
     }
-    document.getElementById('more-menu').hidden = false;
+    var mm = document.getElementById('more-menu');
+    // 일시정지 중이면 상단 = "‹ 이어하기" 박스, 아니면 = "‹ 더보기"
+    mm.classList.toggle('mm-paused', !!(state && state.pausedByMenu));
+    mm.hidden = false;
     if (moreMenu) moreMenu.refresh();
     if (sub) {
       screenNav.show(sub);
@@ -220,7 +223,9 @@
   }
   function closeMore() {
     screenNav.reset();
-    document.getElementById('more-menu').hidden = true;
+    var mm = document.getElementById('more-menu');
+    mm.hidden = true;
+    mm.classList.remove('mm-paused');
     // 열 때 멈춘 게임이면 재개.
     if (state && state.pausedByMenu) {
       state.paused = false;

@@ -9,6 +9,8 @@
    'light dark' + 아래 prefers-color-scheme 블록 = "이 페이지는 다크모드를 직접 처리함" 선언
    → 브라우저 자동 재채색 중단. */
 html { color-scheme: light dark; }
+/* 당겨서 새로고침 / 오버스크롤 바운스 차단 (전 페이지) */
+html, body { overscroll-behavior: none; }
 /* 배포 버전 표식 (스크린샷으로 어느 버전인지 확인용) — 시작 화면 좌하단 아주 작게 */
 #build-tag {
   position: absolute;
@@ -1009,6 +1011,33 @@ body { background: #16301a; }
 .mm-stat { display: inline-flex; align-items: center; gap: 3px; font-size: 0.82rem; color: #cfcfd4; }
 .mm-stat:first-of-type { margin-left: auto; }
 .mm-stat svg { width: 15px; height: 15px; }
+/* 상단: 게임 안 함 = "‹ 더보기" / 게임 일시정지 중 = "‹ 이어하기" 3D 박스 */
+#more-menu:not(.mm-paused) .mm-resume { display: none; }
+#more-menu.mm-paused .mm-close,
+#more-menu.mm-paused .mm-title { display: none; }
+.mm-resume {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px 6px 10px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #57d977, #2fb457);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #1f8a41, 0 5px 10px rgba(0, 0, 0, 0.35),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.5);
+  transition: transform 0.06s, box-shadow 0.06s;
+}
+.mm-resume:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #1f8a41, 0 2px 5px rgba(0, 0, 0, 0.25),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.5);
+}
+.mm-resume span:first-child { font-size: 1.15rem; line-height: 1; margin-top: -2px; }
 .mm-hearts svg { fill: #e05a6e; }
 .mm-coins svg { fill: #f2c14e; }
 .mm-profile { display: flex; align-items: center; gap: 10px; width: 100%; padding: 14px;
@@ -1027,10 +1056,6 @@ body { background: #16301a; }
 .mm-maker-txt { flex: 1; font-size: 0.86rem; }
 .mm-maker-btn { padding: 6px 14px; border-radius: 8px; background: linear-gradient(180deg, #57d977, #2fb457);
   color: #fff; font-weight: 800; font-size: 0.82rem; flex: 0 0 auto; }
-.mm-locker { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 16px 14px;
-  background: none; border: none; color: #c8c8ce; font-size: 0.82rem; cursor: pointer; border-bottom: 1px solid #17171b; }
-.mm-locker-thumbs { display: flex; margin-left: auto; }
-.mm-chev { color: #6d6d76; }
 .mm-mini-mole { width: 26px; aspect-ratio: 470/548; margin-left: -4px; flex: 0 0 auto; }
 .mm-mini-mole img { width: 100%; display: block; }
 .mm-pills { display: flex; gap: 8px; padding: 14px; }

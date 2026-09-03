@@ -10,9 +10,8 @@
     var on = opts.on;
     var faceUrls = [];
 
-    el.querySelector('[data-mm-close]').addEventListener('click', on.close);
+    el.querySelectorAll('[data-mm-close]').forEach(function (b) { b.addEventListener('click', on.close); });
     el.querySelector('[data-mm-make]').addEventListener('click', on.make);
-    el.querySelector('[data-mm-locker]').addEventListener('click', on.locker);
     el.querySelector('[data-mm-name]').addEventListener('click', on.editName);
     el.querySelector('[data-mm-avatar]').addEventListener('click', on.editAvatar);
     el.querySelector('[data-mm-start]').addEventListener('click', on.start);
@@ -52,18 +51,16 @@
       revokeFaces();
       MG.FaceStore.listFaces().then(function (faces) {
         var box = el.querySelector('[data-mm-faces]');
-        var strip = el.querySelector('[data-mm-lthumbs]');
-        box.innerHTML = ''; strip.innerHTML = '';
+        box.innerHTML = '';
         faces.slice(0, 4).forEach(function (f) {
           var src = URL.createObjectURL(f.blob);
           faceUrls.push(src);
-          var a = mini(), s = mini();
-          box.appendChild(a); strip.appendChild(s);
+          var a = mini();
+          box.appendChild(a);
           // 원본 사진 안 보이게 — 몸+얼굴+모자+안경 합성 완료 썸네일
           MG.MoleComposite.buildOne(src, f.costume, 'mole1', f.shape).then(function (url) {
             faceUrls.push(url);
             a.querySelector('img').src = url;
-            s.querySelector('img').src = url;
           });
         });
       });
