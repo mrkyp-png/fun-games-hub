@@ -41,9 +41,9 @@
       'mole.more.nickPrompt': '닉네임',
       'mole.more.noHearts': '하트가 없어요',
       'mole.more.needFace': '먼저 사람두더지를 만들어주세요',
-      'mole.diff.easy': '하수',
-      'mole.diff.mid': '고수',
-      'mole.diff.legend': '전설',
+      'mole.diff.easy': '라이트 ON',
+      'mole.diff.mid': '라이트 DIM',
+      'mole.diff.legend': '라이트 OFF',
 
       'mole.fm.title': '사람두더지 만들기',
       'mole.fm.pickHint': '사진을 골라주세요',
@@ -89,7 +89,7 @@
 
       'mole.help.p1': '두더지를 망치로 때려서 점수를 얻어요. 10라운드, 각 30초.',
       'mole.help.p2': '아래 키패드 16칸은 구멍 16개와 1:1이에요. 두더지가 있는 칸을 누르면 망치가 내려쳐요.',
-      'mole.help.p3': '하수는 두더지가 있는 칸에 불이 들어와요. 고수·전설은 불이 없어요. 전설엔 동물이 섞여요 — 동물을 때리면 손해!',
+      'mole.help.p3': '라이트 ON: 두더지 있는 칸 버튼이 빛나요. 라이트 DIM: 숫자만 살짝 빛나요. 라이트 OFF: 아무 표시 없어요 (+동물 등장, 때리면 손해!).',
       'mole.help.p4': '목숨 3개는 10라운드 전체에 적용돼요. 콤보 100마다 목숨 +1.',
       'mole.help.p5': '사람두더지: 사진으로 얼굴을 만들면 두더지 머리에 그 얼굴이 붙어요.',
       'mole.priv.h1': '사진',
@@ -135,9 +135,9 @@
       'mole.more.nickPrompt': 'Nickname',
       'mole.more.noHearts': 'Out of hearts',
       'mole.more.needFace': 'Make a face mole first',
-      'mole.diff.easy': 'Rookie',
-      'mole.diff.mid': 'Pro',
-      'mole.diff.legend': 'Legend',
+      'mole.diff.easy': 'Light ON',
+      'mole.diff.mid': 'Light DIM',
+      'mole.diff.legend': 'Light OFF',
 
       'mole.fm.title': 'Make a Face Mole',
       'mole.fm.pickHint': 'Pick a photo',
@@ -183,7 +183,7 @@
 
       'mole.help.p1': 'Whack moles with the hammer to score. 10 rounds, 30s each.',
       'mole.help.p2': 'The 16 keypad cells map 1:1 to the 16 holes. Press a cell with a mole and the hammer strikes.',
-      'mole.help.p3': 'Rookie lights up cells with a mole. Pro and Legend have no light. Legend mixes in animals — hitting one hurts!',
+      'mole.help.p3': 'Light ON: the button glows for a mole. Light DIM: only the digit glows. Light OFF: no hint at all (+animals appear — hitting one hurts!).',
       'mole.help.p4': '3 lives span all 10 rounds. Every 100 combo gives +1 life.',
       'mole.help.p5': 'Face mole: make a face from a photo and it rides on the mole’s head.',
       'mole.priv.h1': 'Photos',

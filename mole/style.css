@@ -935,8 +935,6 @@ body { background: #16301a; }
 .mm-stat svg { width: 15px; height: 15px; }
 .mm-hearts svg { fill: #e05a6e; }
 .mm-coins svg { fill: #f2c14e; }
-.mm-gear { background: none; border: none; padding: 0; cursor: pointer; }
-.mm-gear svg { width: 19px; height: 19px; fill: #b8b8be; }
 .mm-profile { display: flex; align-items: center; gap: 10px; width: 100%; padding: 14px;
   background: none; border: none; color: inherit; text-align: left; cursor: pointer; border-bottom: 1px solid #17171b; }
 .mm-avatar { width: 40px; height: 40px; border-radius: 14px; flex: 0 0 auto;
@@ -957,9 +955,17 @@ body { background: #16301a; }
 .mm-mini-body { position: absolute; inset: 0; width: 100%; }
 .mm-mini-face { position: absolute; transform: translate(-50%, -50%); border-radius: 50%; aspect-ratio: 1; object-fit: cover; }
 .mm-pills { display: flex; gap: 8px; padding: 14px; }
-.mm-pill { flex: 1; padding: 12px 0; border: none; border-radius: 10px; background: #1c1d24;
-  color: #b8b8c0; font-weight: 800; font-size: 0.9rem; cursor: pointer; }
+.mm-pill { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 10px 0; border: none; border-radius: 10px; background: #1c1d24;
+  color: #b8b8c0; font-weight: 800; font-size: 0.78rem; cursor: pointer; }
+.mm-pill-ic { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6;
+  stroke-linecap: round; stroke-linejoin: round; }
+/* 전구 밝기 = 난이도 표현: ON 노랑/글로우, DIM 은은, OFF 어둑 */
+.mm-pill[data-mm-diff="easy"] .mm-pill-ic { stroke: #ffcf4a; filter: drop-shadow(0 0 4px rgba(255, 200, 70, 0.9)); }
+.mm-pill[data-mm-diff="mid"] .mm-pill-ic { stroke: #cdd4de; }
+.mm-pill[data-mm-diff="legend"] .mm-pill-ic { stroke: #6a6d78; }
 .mm-pill--on { background: linear-gradient(180deg, #3ac06a, #2a9c54); color: #fff; }
+.mm-pill--on .mm-pill-ic { stroke: #fff; filter: none; }
 .mm-grid { display: grid; grid-template-columns: repeat(4, 1fr); padding: 8px 6px 12px; }
 .mm-grid button { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 14px 2px;
   background: none; border: none; color: #d6d6db; font-size: 0.7rem; cursor: pointer; }
@@ -1040,7 +1046,15 @@ body { background: #16301a; }
 .score-empty { padding: 24px; text-align: center; color: #6d6d76; }
 
 /* 난이도: 고수·전설은 버튼 불(어느 구멍에 두더지) 끔 */
-#game-screen.diff-mid .lane-button--hot,
-#game-screen.diff-legend .lane-button--hot { background: rgba(255,255,255,0.06); box-shadow: none; }
-#game-screen.diff-mid .lane-button--call.lane-button--hot,
+/* 라이트 DIM (고수): 버튼 배경 불빛은 끄고, 숫자·작은 글씨만 살짝 빛난다 */
+#game-screen.diff-mid .lane-button--hot { background: transparent; box-shadow: none; }
+#game-screen.diff-mid .lane-button--hot .lane-num { color: #d6e4ff; text-shadow: 0 0 7px rgba(150, 190, 255, 0.95); }
+#game-screen.diff-mid .lane-button--hot .lane-sub,
+#game-screen.diff-mid .lane-button--hot .lane-kr,
+#game-screen.diff-mid .lane-button--hot .lane-en { color: #b7ccf5; text-shadow: 0 0 5px rgba(150, 190, 255, 0.8); }
+#game-screen.diff-mid .lane-button--call.lane-button--hot { background: #2ecc57; box-shadow: none; }
+#game-screen.diff-mid .lane-button--call.lane-button--hot .lane-lbl { text-shadow: 0 0 6px rgba(255, 255, 255, 0.9); }
+
+/* 라이트 OFF (전설): 아무 표시 없음 */
+#game-screen.diff-legend .lane-button--hot { background: transparent; box-shadow: none; }
 #game-screen.diff-legend .lane-button--call.lane-button--hot { background: #2ecc57; box-shadow: none; }
