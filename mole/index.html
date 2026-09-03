@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
-<title data-i18n="mole.title">두더지 게임</title>
+<title data-i18n="mole.title">두더지팡!</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0d0a24">
 <meta name="mobile-web-app-capable" content="yes">
@@ -14,8 +14,26 @@
 <link rel="stylesheet" href="../cosmic-theme.css">
 <link rel="stylesheet" href="../common/settings.css">
 <link rel="stylesheet" href="style.css">
+<style>
+  /* 로딩 스플래시 — style.css 로딩 전에도 바로 뜨게 인라인. */
+  #splash {
+    position: fixed; inset: 0; z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 42%, #241a3d 0%, #0d0a24 68%);
+    transition: opacity 0.45s ease;
+  }
+  #splash img {
+    width: min(78vw, 60vh); height: auto;
+    filter: drop-shadow(0 8px 26px rgba(0, 0, 0, 0.45));
+    animation: splash-in 0.5s ease both;
+  }
+  #splash.is-hiding { opacity: 0; pointer-events: none; }
+  @keyframes splash-in { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
+  @media (prefers-reduced-motion: reduce) { #splash img { animation: none; } }
+</style>
 </head>
 <body>
+<div id="splash" role="img" aria-label="두더지팡!"><img src="assets/loading.png" alt=""></div>
 <div class="cosmic-bg">
 
   <audio id="bgm" loop preload="auto" src="audio/bgm-boss-battle.mp3"></audio>
@@ -28,7 +46,7 @@
       <!-- 시작 상태: 브라우저 주소창 (게임 URL). 플레이 상태: 증권 전광판 스타일 티커. -->
       <div id="hud-addr" class="hud-addr" aria-hidden="true">
         <svg class="hud-addr-lock" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 1 1 6 0v3z"/></svg>
-        <span class="hud-addr-url">두더지게임.app</span>
+        <span class="hud-addr-url">두더지팡.app</span>
       </div>
       <div id="hud-ticker" aria-hidden="true">
         <span class="tk-search">🔍</span>
@@ -61,7 +79,7 @@
       <div id="pause-veil" class="mole-board-layer" aria-hidden="true">일시정지</div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v41</div>
+      <div id="build-tag" aria-hidden="true">v42</div>
       <div id="board-start" class="board-panel board-start">
         <!-- 최고 스코어: 위에서 툭 내려오는 문자 알림 -->
         <div id="start-best" class="chat-sms" aria-hidden="true">
@@ -344,6 +362,23 @@
 <script src="js/sky.js"></script>
 <script src="js/game.js"></script>
 <script>window.FGH.I18N.applyStatic(document);</script>
+<script>
+  // 로딩 스플래시 — 최소 1.5초 노출 후 페이드아웃.
+  (function () {
+    var s = document.getElementById('splash');
+    if (!s) return;
+    var start = performance.now();
+    function hide() {
+      var wait = Math.max(0, 1500 - (performance.now() - start));
+      setTimeout(function () {
+        s.classList.add('is-hiding');
+        setTimeout(function () { s.remove(); }, 500);
+      }, wait);
+    }
+    if (document.readyState === 'complete') hide();
+    else window.addEventListener('load', hide);
+  })();
+</script>
 <script>
   if ('serviceWorker' in navigator) {
     // 미리보기(localhost)에서는 서비스워커를 쓰지 않는다 — 캐시가 옛 파일을 붙잡아 수정이 안 보이는 문제 방지.

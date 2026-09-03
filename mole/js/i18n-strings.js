@@ -4,7 +4,7 @@
   if (!I) return;
   I.register({
     ko: {
-      'mole.title': '두더지 게임',
+      'mole.title': '두더지팡!',
       'mole.start.tag': '10개 라운드, 각 30초! 두더지를 최대한 많이 잡아 점수를 올려요.',
       'mole.start.btn': '시작',
       'mole.start.best': '최고 기록 {n}점',
@@ -124,7 +124,7 @@
       'mole.priv.p2': '타격 효과음: 효과음ラボ(soundeffect-lab.info) — 상용 무료, 크레딧 불필요. BGM: CC0.'
     },
     en: {
-      'mole.title': 'Whack-a-Mole',
+      'mole.title': 'Mole Pang!',
       'mole.start.tag': '10 rounds, 30 seconds each! Whack as many moles as you can.',
       'mole.start.btn': 'Start',
       'mole.start.best': 'Best {n}',

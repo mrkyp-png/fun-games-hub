@@ -17,7 +17,12 @@ const FACE_PNG_B64 =
   try {
     const page = await browser.newPage();
     await page.setViewport({ width: 390, height: 780 });
+    // 로딩 스플래시(#splash)가 DOM 에서 사라질 때까지 — 그전엔 클릭이 스플래시에 먹힘.
+    const waitSplashGone = () =>
+      page.waitForFunction(() => !document.getElementById('splash'), { timeout: 5000 });
+
     await page.goto(`http://localhost:${PORT}/mole/index.html`, { waitUntil: 'load' });
+    await waitSplashGone();
 
     async function waitIntroDone() {
       // 1) 인트로가 뜰 때까지 (startRound 가 얼굴 합성 빌드 후에 도는 경우 대비)
@@ -41,6 +46,7 @@ const FACE_PNG_B64 =
     // ---- 0) 첫 실행 온보딩: 대화 앞에 메이커 강제 ----
     await page.evaluate(() => localStorage.clear());
     await page.reload({ waitUntil: 'load' });
+    await waitSplashGone();
     await new Promise((r) => setTimeout(r, 300));
     // 첫 실행 = 바로 대화 화면 (온보딩 강제 없음)
     assert.strictEqual(await page.evaluate(() => document.getElementById('board-start').hidden), false,
@@ -294,6 +300,7 @@ const FACE_PNG_B64 =
     // ---- 11) moleBestScore 마이그레이션 ----
     await page.evaluate(() => { localStorage.clear(); localStorage.setItem('moleBestScore', '4321'); });
     await page.reload({ waitUntil: 'load' });
+    await waitSplashGone();
     await new Promise((r) => setTimeout(r, 200));
     assert.strictEqual(await page.evaluate(() => localStorage.getItem('mole.best.easy')), '4321', 'moleBestScore → mole.best.easy');
 

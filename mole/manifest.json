@@ -1,6 +1,6 @@
 {
-  "name": "두더지 게임",
-  "short_name": "두더지",
+  "name": "두더지팡!",
+  "short_name": "두더지팡!",
   "description": "레인 버튼으로 두더지를 잡아 우주 그림을 완성하는 게임",
   "start_url": "./index.html",
   "scope": "./",
