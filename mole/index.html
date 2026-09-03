@@ -48,6 +48,12 @@
         <svg class="hud-addr-lock" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 1 1 6 0v3z"/></svg>
         <span class="hud-addr-url">두더지팡.app</span>
       </div>
+      <!-- 챕터 선택 ◀ 챕터 N ▶ — 시작 상태 + 열린 챕터 2개 이상일 때만 (그때 주소창 숨김) -->
+      <div id="chapter-nav" hidden>
+        <button type="button" class="ch-arrow" data-ch-prev aria-label="이전 챕터">‹</button>
+        <span class="ch-label" data-ch-label>챕터 1</span>
+        <button type="button" class="ch-arrow" data-ch-next aria-label="다음 챕터">›</button>
+      </div>
       <div id="hud-ticker" aria-hidden="true">
         <span class="tk-search">🔍</span>
         <div class="ticker-viewport">
@@ -78,7 +84,7 @@
       <div id="pause-veil" class="mole-board-layer" aria-hidden="true">일시정지</div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v62</div>
+      <div id="build-tag" aria-hidden="true">v63</div>
       <div id="board-start" class="board-panel board-start">
         <!-- 최고 스코어: 위에서 툭 내려오는 문자 알림 -->
         <div id="start-best" class="chat-sms" aria-hidden="true">

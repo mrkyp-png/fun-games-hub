@@ -266,6 +266,8 @@
     const mm = document.getElementById('more-menu');
     if (mm) mm.hidden = true;
 
+    refreshChapterNav();
+
     // 위에서 내려오는 문자 알림 = 이번 판 목표 점수 (+ 최고 기록이 있으면 함께).
     const best = bestFor(currentLight());
     const goal = MG.Progress.target(currentChapter());
@@ -291,6 +293,41 @@
     if (!firstVisit) buildReturnChat(isRetry ? 'retry' : 'phrase');
     revealThread(firstVisit ? firstEl : returnEl);
     maybeShowStartCoach();
+  }
+
+  // 챕터 선택 ◀ 챕터 N ▶ — 열린 챕터가 2개 이상일 때만 표시. mole.chapter 를 설정.
+  // HUD 주소창 자리를 차지 → 그때 주소창 숨김.
+  function refreshChapterNav() {
+    const nav = document.getElementById('chapter-nav');
+    const addr = document.getElementById('hud-addr');
+    if (!nav) return;
+    const maxCh = MG.Progress.maxChapterFor(currentLight());
+    if (maxCh <= 1) { nav.hidden = true; if (addr) addr.hidden = false; return; }
+    let ch = currentChapter();
+    if (ch > maxCh) { ch = maxCh; localStorage.setItem('mole.chapter', String(ch)); }
+    nav.hidden = false;
+    if (addr) addr.hidden = true;
+    nav.querySelector('[data-ch-label]').textContent = I18N.t('mole.chapter.n', { n: ch });
+    nav.querySelector('[data-ch-prev]').disabled = ch <= 1;
+    nav.querySelector('[data-ch-next]').disabled = ch >= maxCh;
+  }
+  function wireChapterNav() {
+    const nav = document.getElementById('chapter-nav');
+    if (!nav) return;
+    const step = (d) => {
+      const maxCh = MG.Progress.maxChapterFor(currentLight());
+      const ch = Math.max(1, Math.min(maxCh, currentChapter() + d));
+      localStorage.setItem('mole.chapter', String(ch));
+      refreshChapterNav();
+      // 목표 점수 문자알림 갱신
+      const sms = document.getElementById('start-best');
+      const best = bestFor(currentLight());
+      let t = I18N.t('mole.start.goal', { n: MG.Progress.target(ch).toLocaleString() });
+      if (best > 0) t += '  ·  ' + I18N.t('mole.start.best', { n: best.toLocaleString() });
+      sms.querySelector('.chat-sms-txt').textContent = t;
+    };
+    nav.querySelector('[data-ch-prev]').addEventListener('click', () => step(-1));
+    nav.querySelector('[data-ch-next]').addEventListener('click', () => step(1));
   }
 
   // 초록 버튼 롱프레스=종료 안내 말풍선 — 1회만.
@@ -699,6 +736,7 @@
     const myGen = sessionGen;
     const finishedRound = state.round;
     if (rafId) cancelAnimationFrame(rafId);
+    if (state.laneHammer) state.laneHammer.home(); // 루프 멈추기 전 망치 대기위치로 스냅
     sharedPopElements.clear();
     resetHot();
 
@@ -729,6 +767,7 @@
     if (!state || state.ended) return;
     state.ended = true;
     if (rafId) cancelAnimationFrame(rafId);
+    if (state.laneHammer) state.laneHammer.home(); // 망치 대기위치로 스냅
     sharedPopElements.clear();
     resetHot();
     finishFromRound(reason);
@@ -793,6 +832,7 @@
       onCell: handleCell
     });
     wireStartButton(); // 다이얼러 초록 버튼: 홈에서 탭=시작 / 꾹=종료 대기
+    wireChapterNav();  // ◀ 챕터 N ▶ (열린 챕터 2개 이상일 때만 노출)
 
     migrateBest();
     wireMoreMenu();

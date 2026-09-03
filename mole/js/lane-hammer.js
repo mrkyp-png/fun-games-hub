@@ -103,6 +103,18 @@
 
     function isBusy() { return phase === 'fly' || phase === 'chop' || phase === 'rise'; }
 
+    // 라운드 종료/게임오버 순간 — 메인 루프가 멈춰 update 가 안 돌면 망치가 스윙 도중에 얼어붙는다.
+    // 즉시 대기 위치로 스냅 (사용자 리포트: 라운드 종료 박스에 망치가 정지).
+    function home() {
+      impactCb = null;
+      phase = 'home'; t = 0;
+      gx = HOME_X; gy = HOME_Y; deg = HOME_DEG;
+      fromX = HOME_X; fromY = HOME_Y; fromDeg = HOME_DEG;
+      aimX = HOME_X; aimY = HOME_Y;
+      fired = false;
+      paint();
+    }
+
     // 레벨/화면 전환 시 DOM 에서 완전히 제거 (안 하면 startLevel 마다 망치가 쌓인다).
     function clear() {
       impactCb = null;
@@ -110,7 +122,7 @@
     }
 
     paint();
-    return { strike, update, isBusy, clear };
+    return { strike, update, isBusy, home, clear };
   }
 
   const api = { create };

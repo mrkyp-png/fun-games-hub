@@ -85,6 +85,28 @@ body { background: #16301a; }
   background: #0c0c0e;   /* 검은 배경 = 아래 키패드와 이어지는 폰 화면 (잔디는 플레이 중에만) */
   overflow: hidden;
 }
+/* 챕터 선택 ◀ 챕터 N ▶ — HUD 주소창 자리 (시작 상태 + 열린 챕터 2개 이상). */
+#chapter-nav {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+}
+.ch-arrow {
+  width: 30px; height: 30px;
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: #e8e8ea;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.ch-arrow:disabled { opacity: 0.3; cursor: default; }
+.ch-label { font-size: 0.88rem; font-weight: 800; color: #e8e8ea; min-width: 60px; text-align: center; }
 
 .chat-thread {
   flex: 1;
@@ -359,6 +381,10 @@ body { background: #16301a; }
 }
 #game-screen.is-start #hud-addr { display: flex; }
 #game-screen.is-start #hud-ticker { display: none; }
+/* 챕터 선택 = 시작 상태에서만 (플레이 중엔 티커) */
+#chapter-nav { display: none; }
+#game-screen.is-start #chapter-nav:not([hidden]) { display: flex; }
+#game-screen.is-start #hud-addr[hidden] { display: none; }
 #game-screen.is-start #hud-score,
 #game-screen.is-start #hud-hearts { display: none; }
 
