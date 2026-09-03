@@ -1020,6 +1020,63 @@ body { background: #16301a; }
 .fm-preview-face-only img { width: 100%; aspect-ratio: 1; border-radius: 50%; object-fit: cover; display: block; }
 .fm-priv { margin-top: auto; padding: 8px 14px 12px; font-size: 0.72rem; color: #6d6d76; text-align: center; }
 
+/* ---------- 사람두더지 꾸미기 ---------- */
+.costume-screen { align-items: stretch; }
+.cs-stage { position: relative; width: 52%; margin: 12px auto 6px; aspect-ratio: 470/548; }
+.cs-layer { position: absolute; inset: 0; width: 100%; will-change: transform, opacity;
+  transition: transform 0.55s cubic-bezier(.2,.9,.3,1.15), opacity 0.35s; }
+/* 흩어진 상태 — 4부위가 사방에서 */
+.cs-stage--scatter .cs-layer--body    { transform: translate(0, 34%) rotate(-6deg); }
+.cs-stage--scatter .cs-layer--face    { transform: translate(-46%, 4%) rotate(-10deg) scale(0.9); }
+.cs-stage--scatter .cs-layer--hat     { transform: translate(6%, -40%) rotate(12deg); }
+.cs-stage--scatter .cs-layer--glasses { transform: translate(48%, 8%) rotate(9deg) scale(0.9); }
+.cs-stage--assembled .cs-layer        { transform: none; }
+
+.cs-rows { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; padding: 4px 0 8px; }
+.cs-rows::-webkit-scrollbar { display: none; }
+.cs-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; }
+.cs-row-lbl { flex: 0 0 34px; font-size: 0.72rem; font-weight: 800; color: #9a9aa2; }
+.cs-strip { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px; }
+.cs-strip::-webkit-scrollbar { display: none; }
+.cs-chip { position: relative; flex: 0 0 auto; width: 48px; height: 48px; border-radius: 12px;
+  border: 2px solid transparent; background: #1a1b21; cursor: pointer; padding: 4px;
+  display: flex; align-items: center; justify-content: center; }
+.cs-chip img, .cs-chip .cs-thumb { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+.cs-chip--on { border-color: #57d977; }
+.cs-chip--lock { opacity: 0.5; }
+.cs-lock { position: absolute; right: -2px; bottom: -2px; font-size: 11px; }
+
+.cs-compose { margin: 6px 14px 14px; padding: 14px; border: none; border-radius: 12px;
+  background: linear-gradient(180deg, #ffcf4a, #f0a800); color: #3a2600; font-weight: 900;
+  font-size: 1rem; letter-spacing: 0.1em; cursor: pointer;
+  box-shadow: 0 5px 0 #b98200, 0 8px 16px rgba(0,0,0,0.4); }
+.cs-compose:active { transform: translateY(4px); box-shadow: 0 1px 0 #b98200; }
+
+.cs-result { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px; background: rgba(8,9,14,0.94); }
+.cs-card { width: 58%; aspect-ratio: 470/548; }
+.cs-result-btns { display: flex; gap: 12px; }
+.cs-redo, .cs-save { padding: 10px 26px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; }
+.cs-redo { background: #33343e; color: #d0d0d6; }
+.cs-save { background: linear-gradient(180deg,#57d977,#2fb457); color: #fff; }
+.cs-result--in .cs-card { animation: cs-pop 0.5s cubic-bezier(.2,1.5,.4,1) both; }
+@keyframes cs-pop {
+  0% { transform: scale(0.2) rotate(-12deg); opacity: 0; }
+  60% { transform: scale(1.12) rotate(3deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); }
+}
+.cs-result--in::before {
+  content: ''; position: absolute; left: 50%; top: 42%; width: 8px; height: 8px;
+  border-radius: 50%; box-shadow:
+    40px -20px 0 2px #ffd93b, -44px -10px 0 2px #4dd0ff, 10px -50px 0 2px #ff5a8a,
+    -20px 40px 0 2px #69db7c, 50px 24px 0 2px #da77f2, -50px 20px 0 2px #ffa94d;
+  animation: cs-spark 0.6s 0.1s ease-out both;
+}
+@keyframes cs-spark {
+  0% { transform: translate(-50%,-50%) scale(0.2); opacity: 1; }
+  100% { transform: translate(-50%,-50%) scale(2.4); opacity: 0; }
+}
+
 /* 보관함 */
 .face-locker .fl-new { margin-left: auto; background: none; border: none; color: #57d977; font-weight: 800; cursor: pointer; }
 .fl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 14px; }

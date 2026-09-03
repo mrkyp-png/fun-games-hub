@@ -64,7 +64,7 @@
 
   // ---------- 더보기 메뉴 / 난이도 / 사람두더지 (독립앱 Phase 1) ----------
   let screenNav = null, moreMenu = null, faceMaker = null, faceLocker = null;
-  let shop = null, daily = null, scoreScreen = null, settingsScreen = null;
+  let shop = null, daily = null, scoreScreen = null, settingsScreen = null, costumeScreen = null;
   let currentDiff = 'easy';        // 현재 판 난이도
   let activeFaceUrl = null;        // 활성 사람두더지 얼굴 원본 크롭 objectURL (합성 재료)
   let activeFaceMap = null;        // 포즈별 "얼굴+몸체 합성 완료" 이미지 맵 (게임에 넘김)
@@ -100,7 +100,7 @@
     return MG.FaceStore.getFace(id).then((rec) => {
       if (!rec) return null;
       activeFaceUrl = URL.createObjectURL(rec.blob);
-      return MG.MoleComposite.build(activeFaceUrl).then((map) => {
+      return MG.MoleComposite.build(activeFaceUrl, rec.costume).then((map) => {
         activeFaceMap = map;
         return map;
       }).catch(() => null);
@@ -723,7 +723,7 @@
   // 더보기 메뉴 + 하위 화면 모듈 인스턴스 생성·배선.
   function wireMoreMenu() {
     screenNav = MG.ScreenNav.create({
-      screens: ['face-maker', 'face-locker', 'shop-screen', 'daily-screen', 'score-screen', 'settings-screen', 'help-screen', 'privacy-screen']
+      screens: ['face-maker', 'costume-screen', 'face-locker', 'shop-screen', 'daily-screen', 'score-screen', 'settings-screen', 'help-screen', 'privacy-screen']
     });
 
     faceMaker = MG.FaceMaker.create({
@@ -731,9 +731,23 @@
       onDone: onFaceMade,
       onCancel: () => screenNav.back()
     });
+    costumeScreen = MG.CostumeScreen.create({
+      root: document.getElementById('costume-screen'),
+      onClose: () => { screenNav.reset(); document.getElementById('more-menu').hidden = true; if (!state) showStartScreen(); },
+      onSave: (faceId, costume) => {
+        MG.FaceStore.setCostume(faceId, costume).then(() => {
+          MG.FaceStore.setActive(faceId);
+          screenNav.reset();
+          document.getElementById('more-menu').hidden = true;
+          if (moreMenu) moreMenu.refresh();
+          if (!state) showStartScreen();
+        });
+      }
+    });
     faceLocker = MG.FaceLocker.create({
       root: document.getElementById('face-locker'),
       onMake: () => { screenNav.show('face-maker'); faceMaker.open({}); },
+      onEdit: (rec) => { screenNav.show('costume-screen'); costumeScreen.open(rec); },
       onPick: () => screenNav.back(),
       onClose: () => screenNav.back()
     });
@@ -804,10 +818,12 @@
     });
   }
 
-  // 사람두더지 저장 완료 콜백.
-  // 사람두더지 저장 완료 → 보관함/메뉴로 돌아가고 갱신.
-  function onFaceMade() {
-    screenNav.back();
-    if (moreMenu) moreMenu.refresh();
+  // 얼굴 크롭 저장 완료 → 바로 꾸미기 화면으로.
+  function onFaceMade(id) {
+    MG.FaceStore.getFace(id).then((rec) => {
+      if (!rec) { screenNav.back(); return; }
+      screenNav.show('costume-screen');
+      costumeScreen.open(rec);
+    });
   }
 })();

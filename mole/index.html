@@ -61,7 +61,7 @@
       <div id="pause-veil" class="mole-board-layer" aria-hidden="true">일시정지</div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v38</div>
+      <div id="build-tag" aria-hidden="true">v39</div>
       <div id="board-start" class="board-panel board-start">
         <!-- 최고 스코어: 위에서 툭 내려오는 문자 알림 -->
         <div id="start-best" class="chat-sms" aria-hidden="true">
@@ -214,6 +214,23 @@
         <p class="fm-priv" data-i18n="mole.fm.priv">사진은 이 기기에서만 처리돼요. 업로드하지 않아요.</p>
       </div>
 
+      <div class="board-screen costume-screen" id="costume-screen" hidden>
+        <div class="board-screen-bar">
+          <button type="button" class="bs-back" data-cs-back aria-label="뒤로">‹</button>
+          <span class="bs-title" data-i18n="mole.cos.title">사람두더지 꾸미기</span>
+        </div>
+        <div class="cs-stage cs-stage--scatter" data-cs-stage></div>
+        <div class="cs-rows" data-cs-rows></div>
+        <button type="button" class="cs-compose" data-cs-compose data-i18n="mole.cos.compose">합성</button>
+        <div class="cs-result" data-cs-result hidden>
+          <img class="cs-card" data-cs-card alt="">
+          <div class="cs-result-btns">
+            <button type="button" class="cs-redo" data-cs-redo data-i18n="mole.cos.redo">다시</button>
+            <button type="button" class="cs-save" data-cs-save data-i18n="mole.cos.save">저장</button>
+          </div>
+        </div>
+      </div>
+
       <div class="board-screen face-locker" id="face-locker" hidden>
         <div class="board-screen-bar">
           <button type="button" class="bs-back" data-fl-close aria-label="뒤로">‹</button>
@@ -306,8 +323,11 @@
 <script src="js/grid-partition.js"></script>
 <script src="js/spawn-scheduler.js"></script>
 <script src="js/mole-sprites.js"></script>
+<script src="js/costume.js"></script>
+<script src="js/costume-art.js"></script>
 <script src="js/mole-composite.js"></script>
 <script src="js/face-maker.js"></script>
+<script src="js/costume-screen.js"></script>
 <script src="js/face-locker.js"></script>
 <script src="js/more-menu.js"></script>
 <script src="js/shop.js"></script>

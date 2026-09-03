@@ -37,16 +37,26 @@
     });
   }
 
-  function saveFace(blob, name) {
+  function saveFace(blob, name, costume) {
     return count().then(function (n) {
       if (n >= MAX) throw new Error('full');
       var rec = {
         id: 'f' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
-        name: name || '', blob: blob, createdAt: Date.now()
+        name: name || '', blob: blob, costume: costume || null, createdAt: Date.now()
       };
       return openDb().then(function (db) {
         return reqValue(db.transaction(STORE, 'readwrite').objectStore(STORE).add(rec));
       }).then(function () { return rec.id; });
+    });
+  }
+
+  function setCostume(id, costume) {
+    return getFace(id).then(function (rec) {
+      if (!rec) return;
+      rec.costume = costume || null;
+      return openDb().then(function (db) {
+        return reqValue(db.transaction(STORE, 'readwrite').objectStore(STORE).put(rec));
+      });
     });
   }
 
@@ -97,7 +107,7 @@
 
   var api = {
     MAX: MAX,
-    saveFace: saveFace, listFaces: listFaces, getFace: getFace,
+    saveFace: saveFace, setCostume: setCostume, listFaces: listFaces, getFace: getFace,
     renameFace: renameFace, deleteFace: deleteFace, count: count,
     getActiveId: getActiveId, setActive: setActive, clearActive: clearActive
   };

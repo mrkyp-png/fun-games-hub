@@ -3,7 +3,7 @@
 // → 파일이 바뀌면 CACHE 버전을 안 올려도 "다음 실행"에 자동 반영된다 (이전엔 캐시-우선이라
 //   sw.js 자체가 안 바뀌면 style.css/이미지 변경이 폰에 영영 안 걸렸음).
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-const CACHE = 'mole-game-v38';
+const CACHE = 'mole-game-v39';
 
 // bgm-boss-battle.mp3(6.8MB)는 SHELL 에 안 넣는다 — BGM 은 기본 꺼짐이라 켜는 사람만 받으면 된다.
 // 처음 재생될 때 아래 fetch 핸들러(stale-while-revalidate)가 알아서 캐시한다.
@@ -58,6 +58,8 @@ const SHELL = [
   './js/grid-partition.js',
   './js/spawn-scheduler.js',
   './js/mole-sprites.js',
+  './js/costume.js',
+  './js/costume-art.js',
   './js/mole-composite.js',
   './js/pop-elements.js',
   './js/hole-layer.js',
@@ -72,6 +74,7 @@ const SHELL = [
   './js/face-store.js',
   './js/ads.js',
   './js/face-maker.js',
+  './js/costume-screen.js',
   './js/face-locker.js',
   './js/more-menu.js',
   './js/shop.js',

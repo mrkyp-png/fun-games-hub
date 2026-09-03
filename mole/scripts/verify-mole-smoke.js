@@ -69,8 +69,22 @@ const FACE_PNG_B64 =
     await page.waitForFunction(() => !!window.MoleGame.FaceStore.getActiveId(), { timeout: 4000 });
     fs.unlinkSync(tmp);
     assert.strictEqual(await page.evaluate(() => window.MoleGame.FaceStore.count()), 1, 'maker saved one face');
-    // 저장 후 더보기 메뉴로 복귀
-    assert.strictEqual(await page.evaluate(() => document.getElementById('more-menu').hidden), false, 'back to more-menu after save');
+
+    // 크롭 저장 → 꾸미기 화면 → [합성] → 짜잔 카드 → [저장]
+    await page.waitForSelector('#costume-screen:not([hidden])', { timeout: 4000 });
+    const rows = await page.evaluate(() => document.querySelectorAll('#costume-screen .cs-row').length);
+    assert.ok(rows >= 4, '꾸미기 4줄 (모자/얼굴/몸/안경)');
+    await page.click('#costume-screen [data-cs-compose]');
+    await page.waitForSelector('#costume-screen [data-cs-result]:not([hidden])', { timeout: 8000 });
+    assert.ok(await page.evaluate(() => /^blob:/.test(document.querySelector('#costume-screen [data-cs-card]').src)), '합성 결과 카드');
+    await page.click('#costume-screen [data-cs-save]');
+    await new Promise((r) => setTimeout(r, 400));
+    assert.strictEqual(await page.evaluate(() => document.getElementById('costume-screen').hidden), true, '저장 후 꾸미기 닫힘');
+
+    // 이후 섹션 위해 더보기 메뉴 다시 열기
+    await page.click('#btn-back-to-hub');
+    await new Promise((r) => setTimeout(r, 150));
+    assert.strictEqual(await page.evaluate(() => document.getElementById('more-menu').hidden), false, 'more-menu re-opens');
 
     // 프로필 사진: 아바타 탭 → 메이커(프로필 모드) → 저장 → mole.profilePic
     await page.click('#more-menu [data-mm-avatar]');
