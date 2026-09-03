@@ -9,16 +9,19 @@
   function ls() { return root && root.localStorage ? root.localStorage : null; }
   function nav() { return root && root.navigator ? root.navigator : null; }
 
+  // 지원 언어 — 여기에 코드만 추가하면 확장됨 (문구는 각 i18n register 에서).
+  var LANGS = ['ko', 'en'];
+
   function detectLang() {
     var n = nav();
-    var l = (n && (n.language || (n.languages && n.languages[0]))) || 'en';
-    return /^ko/i.test(l) ? 'ko' : 'en';
+    var l = ((n && (n.language || (n.languages && n.languages[0]))) || 'en').slice(0, 2).toLowerCase();
+    return LANGS.indexOf(l) > -1 ? l : 'en';
   }
 
   function get(name) {
     if (name === 'lang') {
       var v = ls() && ls().getItem(KEYS.lang);
-      return (v === 'ko' || v === 'en') ? v : detectLang();
+      return (LANGS.indexOf(v) > -1) ? v : detectLang();
     }
     if (!(name in BOOL_DEFAULT)) return undefined;
     var raw = ls() && ls().getItem(KEYS[name]);
@@ -34,7 +37,7 @@
 
   function set(name, value) {
     if (name === 'lang') {
-      var l = (value === 'ko') ? 'ko' : 'en';
+      var l = (LANGS.indexOf(value) > -1) ? value : 'en';
       if (ls()) ls().setItem(KEYS.lang, l);
       notify('lang', l);
       return;
@@ -71,7 +74,7 @@
 
   function sfxEnabled() { return get('sound'); }
 
-  var api = { get: get, set: set, onChange: onChange, vibrate: vibrate, sfxEnabled: sfxEnabled, KEYS: KEYS };
+  var api = { get: get, set: set, onChange: onChange, vibrate: vibrate, sfxEnabled: sfxEnabled, KEYS: KEYS, LANGS: LANGS };
   if (typeof module !== 'undefined' && module.exports) module.exports = { Settings: api };
   if (root) { root.FGH = root.FGH || {}; root.FGH.Settings = api; }
 })(typeof window !== 'undefined' ? window : null);

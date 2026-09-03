@@ -6,14 +6,16 @@
     Settings = require('./settings.js').Settings;
   }
 
-  var DICT = { ko: {}, en: {} };
+  // 언어 무관 — register 가 넘겨준 어떤 언어 코드든 받는다 (5개국어 확장 대비).
+  var DICT = {};
 
   function register(dict) {
-    ['ko', 'en'].forEach(function (l) {
-      if (dict && dict[l]) {
-        for (var k in dict[l]) DICT[l][k] = dict[l][k];
-      }
-    });
+    if (!dict) return;
+    for (var l in dict) {
+      if (!dict[l]) continue;
+      DICT[l] = DICT[l] || {};
+      for (var k in dict[l]) DICT[l][k] = dict[l][k];
+    }
   }
 
   // 모든 화면 공통 문구 — i18n.js 는 허브·게임 어디서나 로드되므로 여기 둔다.
@@ -28,7 +30,8 @@
   function t(key, vars) {
     var l = currentLang();
     var s = (DICT[l] && DICT[l][key]);
-    if (s == null) s = (DICT.en && DICT.en[key]);
+    if (s == null) s = (DICT.en && DICT.en[key]);   // 폴백 1: 영어
+    if (s == null) s = (DICT.ko && DICT.ko[key]);   // 폴백 2: 한국어
     if (s == null) s = key;
     if (vars) {
       for (var name in vars) s = s.split('{' + name + '}').join(String(vars[name]));

@@ -412,6 +412,26 @@ const FACE_PNG_B64 =
     assert.strictEqual(await page.evaluate(() => document.getElementById('bgm').paused), true, 'bgm pauses when music off');
     await page.evaluate(() => localStorage.removeItem('musicOn'));
 
+    // ---- 13) 언어 전환 → 홈 대화도 영어 ----
+    await page.evaluate(() => { localStorage.clear(); localStorage.setItem('mole.visits', '3'); localStorage.setItem('appLang', 'en'); });
+    await page.reload({ waitUntil: 'load' });
+    await waitSplashGone();
+    await new Promise((r) => setTimeout(r, 500));
+    const enChat = await page.evaluate(() => {
+      const rows = Array.from(document.querySelectorAll('#chat-return .chat-bubble'));
+      return rows.map((b) => b.textContent).join(' | ');
+    });
+    // 재방문 대화 = ChatPhrases(en). 한글이 없어야 한다.
+    assert.ok(!/[가-힣]/.test(enChat), 'return chat is English when lang=en (got: ' + enChat + ')');
+    // 첫 방문 인트로도 영어
+    await page.evaluate(() => { localStorage.setItem('mole.visits', '0'); });
+    await page.reload({ waitUntil: 'load' });
+    await waitSplashGone();
+    await new Promise((r) => setTimeout(r, 400));
+    const enIntro = await page.evaluate(() => document.querySelector('#chat-first .chat-bubble').textContent);
+    assert.ok(!/[가-힣]/.test(enIntro), 'first-visit intro is English when lang=en (got: ' + enIntro + ')');
+    await page.evaluate(() => localStorage.removeItem('appLang'));
+
     console.log('verify-mole-smoke.js: all assertions passed');
   } finally {
     await browser.close();
