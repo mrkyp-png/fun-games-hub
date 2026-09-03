@@ -51,6 +51,7 @@
   let sharedPopElements = null; // #mole-pop-layer는 재생성 안 되는 고정 DOM이므로 세션당 한 번만 생성
   let sharedLaneControls = null; // 다이얼러 버튼 — 시작 화면에도 (비활성으로) 계속 보여야 하므로 세션당 한 번만 생성
   let sessionGen = 0; // startRound/showStartScreen 호출마다 +1 — 카운트다운·자동진행 타이머 취소 토큰
+  let adBonusLives = 0; // "광고 보고 생명 +1" → 다음 판 목숨에 더해지고 소비됨
 
   let bgm = null; // <audio id="bgm">
   function syncBgm(playIntent) {
@@ -116,6 +117,69 @@
     loadActiveFace().then(() => startRound(1, { fresh: true }));
   }
 
+  // ---------- 시작화면 초록 버튼: 탭=시작 / 꾹=종료 대기 / 다시 탭=종료창 ----------
+  // (홈 화면에서만. 게임 중엔 이 버튼은 15번 구멍 타격이라 handleCell 이 담당.)
+  const armState = { armed: false, revertT: null };
+  let disarmStartButton = () => {};
+  function wireStartButton() {
+    const btn = document.querySelector('#lane-button-bar .lane-button--call');
+    if (!btn) return;
+    const isHome = () => document.getElementById('game-screen').classList.contains('is-start');
+    let holdT = null, longFired = false;
+
+    function setArmed(on) {
+      armState.armed = on;
+      clearTimeout(armState.revertT);
+      btn.classList.toggle('lane-button--armed', on);
+      const lbl = btn.querySelector('.lane-lbl');
+      if (lbl) lbl.textContent = I18N.t(on ? 'mole.start.armLabel' : 'mole.start.btn');
+      if (on) armState.revertT = setTimeout(() => setArmed(false), 3200);
+    }
+    disarmStartButton = () => setArmed(false);
+
+    btn.addEventListener('pointerdown', () => {
+      if (!isHome()) return;
+      longFired = false;
+      holdT = setTimeout(() => {
+        longFired = true;
+        setArmed(true);
+        if (window.FGH.Settings.vibrate) window.FGH.Settings.vibrate();
+      }, 600);
+    });
+    const cancelHold = () => clearTimeout(holdT);
+    btn.addEventListener('pointercancel', cancelHold);
+    btn.addEventListener('pointerleave', cancelHold);
+    btn.addEventListener('pointerup', () => {
+      if (!isHome()) return;
+      clearTimeout(holdT);
+      if (longFired) { longFired = false; return; } // 방금 꾹 눌러 무장 → 이 up 은 무시
+      if (armState.armed) { setArmed(false); showQuitDialog(); }
+      else beginGame();
+    });
+  }
+
+  function showQuitDialog() {
+    const v = document.createElement('div');
+    v.className = 'ad-overlay';
+    v.innerHTML = '<div class="ad-overlay-card quit-card">' +
+      '<div class="quit-title">' + I18N.t('mole.quit.title') + '</div>' +
+      '<div class="quit-btns">' +
+      '<button type="button" class="quit-yes" data-q="yes">' + I18N.t('mole.quit.yes') + '</button>' +
+      '<button type="button" data-q="no">' + I18N.t('mole.quit.no') + '</button></div></div>';
+    document.body.appendChild(v);
+    v.querySelector('[data-q="no"]').addEventListener('click', () => v.remove());
+    v.querySelector('[data-q="yes"]').addEventListener('click', () => { v.remove(); exitApp(); });
+  }
+
+  function exitApp() {
+    // 안드로이드 앱/standalone PWA 에선 실제로 닫힌다. Phase 2: Capacitor App.exitApp().
+    const bye = document.createElement('div');
+    bye.className = 'bye-screen';
+    bye.textContent = I18N.t('mole.quit.bye');
+    document.body.appendChild(bye);
+    try { window.close(); } catch (e) { /* 무시 */ }
+  }
+
   function showNoHeartModal() {
     const v = document.createElement('div');
     v.className = 'ad-overlay';
@@ -170,6 +234,7 @@
     document.getElementById('round-intro-overlay').hidden = true;
     document.getElementById('board-start').hidden = false;
     document.getElementById('game-screen').classList.add('is-start');
+    disarmStartButton(); // 초록 버튼이 빨간 대기 상태로 남아있으면 초기화
     if (screenNav) screenNav.reset();
     const mm = document.getElementById('more-menu');
     if (mm) mm.hidden = true;
@@ -196,6 +261,21 @@
 
     if (!firstVisit) buildReturnChat(isRetry ? 'retry' : 'phrase');
     revealThread(firstVisit ? firstEl : returnEl);
+    maybeShowStartCoach();
+  }
+
+  // 초록 버튼 롱프레스=종료 안내 말풍선 — 1회만.
+  function maybeShowStartCoach() {
+    const coach = document.querySelector('[data-start-coach]');
+    if (!coach || localStorage.getItem('mole.startCoachSeen') === '1') return;
+    localStorage.setItem('mole.startCoachSeen', '1');
+    setTimeout(() => {
+      if (!document.getElementById('game-screen').classList.contains('is-start')) return;
+      coach.classList.add('is-on');
+      const hide = () => coach.classList.remove('is-on');
+      setTimeout(hide, 6000);
+      document.addEventListener('pointerdown', hide, { once: true });
+    }, 1400);
   }
 
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
@@ -207,19 +287,18 @@
     d.setAttribute('aria-hidden', 'true');
     return d;
   }
-  function bubbleRow(side, text, withStart) {
+  function bubbleRow(side, text) {
     const row = document.createElement('div');
     row.className = 'chat-row chat-row--' + side;
     const bubble = document.createElement('div');
     bubble.className = 'chat-bubble chat-bubble--' + side;
     bubble.appendChild(document.createTextNode(text));
-    if (withStart) bubble.appendChild(makeStartBtn());
     if (side === 'them') { row.appendChild(avatarEl('mole')); row.appendChild(bubble); }
     else { row.appendChild(bubble); row.appendChild(avatarEl('hippo')); }
     return row;
   }
-  // 이모티콘만 = 말풍선 없이 큼 (카톡). withStart: 하마 아바타 바로 옆에 시작 버튼도.
-  function emojiRow(side, emoji, withBurst, withStart) {
+  // 이모티콘만 = 말풍선 없이 큼 (카톡).
+  function emojiRow(side, emoji, withBurst) {
     const row = document.createElement('div');
     row.className = 'chat-row chat-row--' + side + ' chat-row--emoji';
     const em = document.createElement('div');
@@ -233,19 +312,20 @@
       em.appendChild(b);
     }
     if (side === 'them') { row.appendChild(avatarEl('mole')); row.appendChild(em); }
-    else {
-      row.appendChild(em);
-      if (withStart) row.appendChild(makeStartBtn());
-      row.appendChild(avatarEl('hippo'));
-    }
+    else { row.appendChild(em); row.appendChild(avatarEl('hippo')); }
     return row;
   }
-  function makeStartBtn() {
-    const b = document.createElement('button');
-    b.className = 'chat-start-btn';
-    b.textContent = I18N.t('mole.start.btn');
-    b.addEventListener('click', beginGame);
-    return b;
+  // "광고 보고 생명/코인" 줄 — 시작은 다이얼러 초록 버튼이 담당하므로 대화엔 이것만.
+  function adRow() {
+    const row = document.createElement('div');
+    row.className = 'chat-row chat-ad-row';
+    row.innerHTML =
+      '<button type="button" class="chat-ad-btn" data-ad="life"><b>▶</b>' +
+      '<span>' + I18N.t('mole.start.adLife') + '</span></button>' +
+      '<button type="button" class="chat-ad-btn" data-ad="coin"><b>▶</b>' +
+      '<span>' + I18N.t('mole.shop.watchCoin') + '</span></button>';
+    wireChatAds(row);
+    return row;
   }
 
   function buildReturnChat(mode) {
@@ -256,10 +336,32 @@
         : localStorage.getItem('mole.lastWasBad') === '1' ? 'bad' : 'clear';
       el.appendChild(emojiRow('them', CELEBRATE_EMOJI, true));        // 축하 이모티콘(큼) + 폭죽
       el.appendChild(bubbleRow('them', RETRY_TEXT[kind]));            // 글자는 따로
-      el.appendChild(emojiRow('me', pick(HIPPO_MOODS), false, true)); // 하마 이모티콘(큼) + 아바타 옆 시작 버튼
+      el.appendChild(emojiRow('me', pick(HIPPO_MOODS), false));       // 하마 이모티콘(큼)
     } else {
       el.appendChild(bubbleRow('them', pick(RETURN_PHRASES)));
-      el.appendChild(bubbleRow('me', pick(HIPPO_REPLIES), true)); // 답 + 시작 버튼
+      el.appendChild(bubbleRow('me', pick(HIPPO_REPLIES)));
+    }
+    el.appendChild(adRow());
+  }
+
+  // 대화 안 "광고 보고 생명/코인" 버튼 연결 (scope = 대화 줄 또는 document).
+  function wireChatAds(scope) {
+    const life = scope.querySelector('[data-ad="life"]');
+    const coin = scope.querySelector('[data-ad="coin"]');
+    if (life && !life.dataset.wired) {
+      life.dataset.wired = '1';
+      life.addEventListener('click', () => MG.Ads.rewarded().then((ok) => {
+        if (!ok) return;
+        adBonusLives += 1;
+        life.disabled = true;
+        life.querySelector('span').textContent = I18N.t('mole.start.adLifeGot');
+      }));
+    }
+    if (coin && !coin.dataset.wired) {
+      coin.dataset.wired = '1';
+      coin.addEventListener('click', () => MG.Ads.rewarded().then((ok) => {
+        if (ok) MG.Economy.addCoins(50);
+      }));
     }
   }
 
@@ -289,7 +391,8 @@
     const myGen = sessionGen;
     // fresh(시작/다시하기)면 콤보·점수·목숨 전부 리셋. 자동 다음 라운드면 그대로 이어간다.
     if (opts && opts.fresh) {
-      run = { combo: MG.ComboScore.create(), lives: START_LIVES, comboMilestone: 0 };
+      run = { combo: MG.ComboScore.create(), lives: START_LIVES + adBonusLives, comboMilestone: 0 };
+      adBonusLives = 0; // 광고 보너스 목숨은 한 판만
     }
     if (rafId) cancelAnimationFrame(rafId);
     if (state && state.holeLayer) state.holeLayer.clear();
@@ -629,6 +732,7 @@
       gridSize: GRID_SIZE,
       onCell: handleCell
     });
+    wireStartButton(); // 다이얼러 초록 버튼: 홈에서 탭=시작 / 꾹=종료 대기
 
     migrateBest();
     wireMoreMenu();
@@ -636,11 +740,11 @@
     // 첫 화면 = 두더지 오빠 대화 (그대로). 사람두더지는 더보기 메뉴에서 원할 때 만든다.
     showStartScreen();
 
-    // 첫 방문 대화의 시작 버튼(정적). 재방문 대화의 버튼은 buildReturnChat 이 직접 연결한다.
-    document.getElementById('start-btn').addEventListener('click', beginGame);
+    // 첫 방문 대화의 "광고 보고 생명/코인" 버튼. 재방문 대화 버튼은 adRow() 가 직접 연결한다.
+    wireChatAds(document);
     // 대화 공개 중 아무 데나 탭하면 나머지 메시지 즉시 표시 (건너뛰기)
     document.getElementById('board-start').addEventListener('click', (e) => {
-      if (e.target.closest('.chat-start-btn')) return;
+      if (e.target.closest('.chat-ad-btn')) return;
       const thread = document.querySelector('#board-start .chat-thread:not([hidden])');
       const pending = thread && thread.querySelectorAll('.chat-row.chat-pending');
       if (!pending || !pending.length) return;

@@ -56,7 +56,42 @@ const FACE_PNG_B64 =
       'first run goes straight to the chat start screen');
     assert.strictEqual(await page.evaluate(() => document.getElementById('face-maker').hidden), true,
       'the maker does NOT force open on first run');
-    assert.ok(await page.evaluate(() => !!document.getElementById('start-btn')), 'chat has a start button');
+    assert.ok(await page.evaluate(() => !document.getElementById('start-btn')),
+      'the in-chat start button is gone (start moved to the green dialer button)');
+    assert.ok(await page.evaluate(() => {
+      const b = document.querySelector('#lane-button-bar .lane-button--call .lane-lbl');
+      return b && b.textContent.trim() === '시작';
+    }), 'green dialer button is labelled 시작');
+    assert.strictEqual(
+      await page.evaluate(() => document.querySelectorAll('#chat-first [data-ad]').length), 2,
+      'chat has the two watch-ad buttons (life / coin)');
+
+    // 초록 버튼 꾹 누르기 → 빨간 "종료 대기" → 다시 탭 → 종료창
+    await page.evaluate(() => {
+      const b = document.querySelector('#lane-button-bar .lane-button--call');
+      b.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    });
+    await new Promise((r) => setTimeout(r, 750));
+    await page.evaluate(() => {
+      const b = document.querySelector('#lane-button-bar .lane-button--call');
+      b.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+    });
+    assert.ok(await page.evaluate(() =>
+      document.querySelector('#lane-button-bar .lane-button--call').classList.contains('lane-button--armed')),
+      'long-press arms the button (red 종료 대기)');
+    await page.evaluate(() => {
+      const b = document.querySelector('#lane-button-bar .lane-button--call');
+      b.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      b.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+    });
+    await new Promise((r) => setTimeout(r, 60));
+    assert.ok(await page.evaluate(() => !!document.querySelector('.quit-card')),
+      'tapping the armed button opens the quit dialog');
+    await page.evaluate(() => document.querySelector('.quit-card [data-q="no"]').click());
+    assert.ok(await page.evaluate(() => !document.querySelector('.quit-card')), 'quit dialog closes on 계속하기');
+    assert.ok(await page.evaluate(() =>
+      !document.querySelector('#lane-button-bar .lane-button--call').classList.contains('lane-button--armed')),
+      'button disarmed after closing the quit dialog');
 
     // ---- 1) 더보기 메뉴: ⊞ 아이콘 뒤 → 메이커도 여기서 ----
     await page.click('#btn-back-to-hub');

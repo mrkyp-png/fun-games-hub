@@ -27,7 +27,7 @@ img, .chat-emoji, .lane-hammer, .mole-pop, .mole-hole, .mole-hole-front { forced
   .chat-sms { background: #fff; color: #22242a; }
   .chat-bubble--them { background: linear-gradient(180deg, #35c866, #23b153); color: #fff; }
   .chat-bubble--me { background: #fee500; color: #1c1c14; }
-  .chat-start-btn { background: linear-gradient(180deg, #57d977, #2fb457); color: #fff; }
+  .chat-ad-btn { background: #26272c; color: #d6d8db; }
 }
 
 /* 화면 전체 배경: 어두운 초록 단색 (사용자 확정 — 이미지 아님). 별/성운 레이어는 끈다.
@@ -163,31 +163,26 @@ body { background: #16301a; }
   border-bottom-right-radius: 5px;
 }
 
-/* 시작 = 작은 3D 버튼. 말풍선 오른쪽, 하마 아바타 바로 옆에 붙는다. */
-.chat-start-btn {
+/* "광고 보고 생명/코인" — 대화 마지막 줄. 시작은 다이얼러 초록 버튼이 담당. */
+.chat-ad-row { justify-content: center; gap: 8px; flex-wrap: wrap; }
+.chat-ad-btn {
   display: inline-flex;
   align-items: center;
-  align-self: center;
-  margin: 0 6px;
-  vertical-align: middle;
-  padding: 6px 15px;
-  border: none;
-  border-radius: 10px;
-  background: linear-gradient(180deg, #57d977, #2fb457);
-  color: #fff;
-  font-size: 0.9rem;
-  font-weight: 900;
-  letter-spacing: 0.06em;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid #3a3b42;
+  border-radius: 16px;
+  background: #26272c;
+  color: #d6d8db;
+  font-size: 0.82rem;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 3px 0 #1f8a41, 0 5px 9px rgba(0, 0, 0, 0.3),
-    inset 0 1.5px 2px rgba(255, 255, 255, 0.5);
-  transition: transform 0.06s, box-shadow 0.06s;
+  transition: transform 0.06s, background 0.12s;
 }
-.chat-start-btn:active {
-  transform: translateY(2px);
-  box-shadow: 0 1px 0 #1f8a41, 0 2px 5px rgba(0, 0, 0, 0.25),
-    inset 0 1.5px 2px rgba(255, 255, 255, 0.5);
-}
+.chat-ad-btn b { color: #35c866; font-size: 0.7rem; }
+.chat-ad-btn:active { transform: scale(0.96); background: #303138; }
+.chat-ad-btn:disabled { color: #7c7e86; border-color: #303138; cursor: default; }
+.chat-ad-btn:disabled b { color: #7c7e86; }
 
 /* 이모티콘만 보낸 메시지 = 말풍선 없이 크게 (카톡) */
 .chat-row--emoji { align-items: center; }
@@ -745,6 +740,53 @@ body { background: #16301a; }
   border-radius: 8px 8px 0 0;
   background: #0f1012;
 }
+/* 다이얼패드 래퍼 — 안내문구/첫방문 말풍선을 절대배치로 얹기 위함 (세로 레이아웃 예산 0). */
+.dialpad { position: relative; flex: 0 0 auto; }
+.start-hint {
+  display: none;
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  z-index: 3;
+  padding: 3px 6px;
+  border-radius: 8px 8px 0 0;
+  background: #0f1012;
+  color: #7c7e86;
+  font-size: 0.6rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+#game-screen.is-start .start-hint { display: block; }
+.start-coach {
+  display: none;
+  position: absolute;
+  right: 8px;
+  bottom: 27%;                 /* 초록 "시작" 버튼(맨 아래 행) 바로 위 */
+  z-index: 6;
+  max-width: 60vw;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #ffd54a;
+  color: #3a2c00;
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: pre-line;
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+}
+.start-coach.is-on { display: block; animation: coach-in 0.3s ease both; }
+.start-coach::after {
+  content: '';
+  position: absolute;
+  right: 26px;
+  top: 100%;
+  border: 7px solid transparent;
+  border-top-color: #ffd54a;
+}
+@keyframes coach-in { from { opacity: 0; transform: translateY(6px); } }
 .lane-button {
   border: none;
   background: transparent;
@@ -779,8 +821,25 @@ body { background: #16301a; }
 .lane-ico svg { width: 100%; height: 100%; display: block; }
 .lane-lbl { font-size: clamp(0.4rem, 1.9vw, 0.56rem); font-weight: 600; color: #9aa0a6; }
 .lane-button--call { background: #2ecc57; color: #fff; }
-.lane-button--call .lane-lbl { color: rgba(255, 255, 255, 0.85); }
+.lane-button--call .lane-lbl {
+  color: #fff;
+  font-size: clamp(0.62rem, 2.7vw, 0.82rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
 .lane-button--call:active { background: #29b84e; }
+/* 꾹 눌러 "종료 대기" — 빨강 + 라벨 교체(한 번 더 누르면 종료). */
+.lane-button--call.lane-button--armed { background: #e53935; animation: call-arm-pulse 1s ease-in-out infinite; }
+.lane-button--call.lane-button--armed:active { background: #c62828; }
+.lane-button--call.lane-button--armed .lane-ico { display: none; }
+.lane-button--call.lane-button--armed .lane-lbl {
+  font-size: clamp(0.44rem, 2vw, 0.58rem);
+  font-weight: 800;
+  line-height: 1.15;
+  white-space: pre-line;
+  text-align: center;
+}
+@keyframes call-arm-pulse { 50% { background: #ff5a52; } }
 
 /* 두더지가 그 구멍에 있음 — 눌러야 할 키. 다이얼러처럼 보이게 은은한 하이라이트. */
 .lane-button--hot { background: rgba(120, 170, 255, 0.28); box-shadow: 0 0 10px 1px rgba(120, 170, 255, 0.4); }
@@ -999,6 +1058,18 @@ body { background: #16301a; }
 .nh-btns { display: flex; flex-direction: column; gap: 8px; }
 .nh-btns button { padding: 10px; border: none; border-radius: 8px; background: #2fb457; color: #fff; font-weight: 700; cursor: pointer; }
 .nh-btns button[data-nh="close"] { background: #33343e; color: #d0d0d6; }
+
+/* 종료 확인창 */
+.quit-card { text-align: center; }
+.quit-title { font-weight: 800; font-size: 1rem; margin-bottom: 18px; }
+.quit-btns { display: flex; gap: 8px; }
+.quit-btns button { flex: 1; padding: 11px; border: none; border-radius: 8px; background: #33343e; color: #d0d0d6; font-weight: 700; cursor: pointer; }
+.quit-btns .quit-yes { background: #e53935; color: #fff; }
+.bye-screen {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  background: #0d0a24; color: #c9c6dd; font-size: 1.1rem; font-weight: 700;
+}
 
 /* 메이커 */
 .face-maker { align-items: center; }

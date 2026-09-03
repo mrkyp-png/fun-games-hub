@@ -23,14 +23,18 @@
     { num: '1', kr: 'ㄱㅋ', en: '.QZ' }, { num: '2', kr: 'ㄴ', en: 'ABC' }, { num: '3', kr: 'ㄷㅌ', en: 'DEF' }, { nav: '연락처', svg: SVG.person },
     { num: '4', kr: 'ㄹ', en: 'GHI' }, { num: '5', kr: 'ㅁ', en: 'JKL' }, { num: '6', kr: 'ㅂㅍ', en: 'MNO' }, { nav: '키패드', svg: SVG.pad },
     { num: '7', kr: 'ㅅ', en: 'PRS' }, { num: '8', kr: 'ㅇ', en: 'TUV' }, { num: '9', kr: 'ㅈㅊ', en: 'WXY' }, { nav: '최근기록', svg: SVG.clock },
-    { num: '✱', kr: '', en: '' }, { num: '0', kr: '', en: '+' }, { num: '#', kr: '', en: '' }, { nav: '통화', svg: SVG.phone, call: true }
+    { num: '✱', kr: '', en: '' }, { num: '0', kr: '', en: '+' }, { num: '#', kr: '', en: '' },
+    { nav: '시작', svg: SVG.phone, call: true, i18n: 'mole.start.btn' }
   ];
 
   function fillFace(btn, f) {
     if (f.nav) {
       btn.classList.add('lane-button--nav');
       if (f.call) btn.classList.add('lane-button--call');
-      btn.innerHTML = '<span class="lane-ico">' + f.svg + '</span><span class="lane-lbl">' + f.nav + '</span>';
+      var I = root.FGH && root.FGH.I18N;
+      var label = f.i18n && I ? I.t(f.i18n) : f.nav;
+      var attr = f.i18n ? ' data-i18n="' + f.i18n + '"' : '';
+      btn.innerHTML = '<span class="lane-ico">' + f.svg + '</span><span class="lane-lbl"' + attr + '>' + label + '</span>';
     } else {
       btn.innerHTML = '<span class="lane-num">' + f.num + '</span>' +
         '<span class="lane-sub">' + (f.kr ? '<span class="lane-kr">' + f.kr + '</span>' : '') +

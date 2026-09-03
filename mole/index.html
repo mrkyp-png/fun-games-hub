@@ -79,7 +79,7 @@
       <div id="pause-veil" class="mole-board-layer" aria-hidden="true">일시정지</div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v43</div>
+      <div id="build-tag" aria-hidden="true">v44</div>
       <div id="board-start" class="board-panel board-start">
         <!-- 최고 스코어: 위에서 툭 내려오는 문자 알림 -->
         <div id="start-best" class="chat-sms" aria-hidden="true">
@@ -113,8 +113,11 @@
           </div>
           <div class="chat-row chat-row--me">
             <div class="chat-bubble chat-bubble--me">하아.....뭐지? ... ...</div>
-            <button id="start-btn" class="chat-start-btn" data-i18n="mole.start.btn">시작</button>
             <div class="chat-avatar chat-avatar--hippo" aria-hidden="true"></div>
+          </div>
+          <div class="chat-row chat-ad-row" data-chat-ads>
+            <button type="button" class="chat-ad-btn" data-ad="life"><b>▶</b><span data-i18n="mole.start.adLife">광고 보고 생명 +1</span></button>
+            <button type="button" class="chat-ad-btn" data-ad="coin"><b>▶</b><span data-i18n="mole.shop.watchCoin">광고 보고 코인 +50</span></button>
           </div>
         </div>
 
@@ -323,7 +326,13 @@
       </div>
     </div>
     <div id="fold-hinge" aria-hidden="true"></div>
-    <div id="lane-button-bar"></div>
+    <div class="dialpad">
+      <p class="start-hint" data-i18n="mole.start.quitHint">시작 버튼을 꾹 눌렀다 다시 누르면 종료</p>
+      <div class="start-coach" data-start-coach>
+        <span data-i18n="mole.start.coach">여기를 꾹 눌렀다 다시 누르면 게임을 종료할 수 있어요</span>
+      </div>
+      <div id="lane-button-bar"></div>
+    </div>
   </section>
 
 </div>
