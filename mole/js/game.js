@@ -120,10 +120,11 @@
   // ---------- 시작화면 초록 버튼: 탭=시작 / 꾹=종료 대기 / 다시 탭=종료창 ----------
   // (홈 화면에서만. 게임 중엔 이 버튼은 15번 구멍 타격이라 handleCell 이 담당.)
   const armState = { armed: false, revertT: null };
-  let disarmStartButton = () => {};
+  let setCallLabel = () => {}; // (mode) 'home' → "시작" / 'game' → "통화" (게임 중엔 15번 구멍 타격)
   function wireStartButton() {
     const btn = document.querySelector('#lane-button-bar .lane-button--call');
     if (!btn) return;
+    const lbl = btn.querySelector('.lane-lbl');
     const isHome = () => document.getElementById('game-screen').classList.contains('is-start');
     let holdT = null, longFired = false;
 
@@ -131,11 +132,13 @@
       armState.armed = on;
       clearTimeout(armState.revertT);
       btn.classList.toggle('lane-button--armed', on);
-      const lbl = btn.querySelector('.lane-lbl');
       if (lbl) lbl.textContent = I18N.t(on ? 'mole.start.armLabel' : 'mole.start.btn');
       if (on) armState.revertT = setTimeout(() => setArmed(false), 3200);
     }
-    disarmStartButton = () => setArmed(false);
+    setCallLabel = (mode) => {
+      if (armState.armed) setArmed(false);
+      if (lbl) lbl.textContent = I18N.t(mode === 'game' ? 'mole.start.callBtn' : 'mole.start.btn');
+    };
 
     btn.addEventListener('pointerdown', () => {
       if (!isHome()) return;
@@ -245,7 +248,7 @@
     document.getElementById('round-intro-overlay').hidden = true;
     document.getElementById('board-start').hidden = false;
     document.getElementById('game-screen').classList.add('is-start');
-    disarmStartButton(); // 초록 버튼이 빨간 대기 상태로 남아있으면 초기화
+    setCallLabel('home'); // 홈: 초록 버튼 "시작" (빨간 대기 상태였으면 해제)
     if (screenNav) screenNav.reset();
     const mm = document.getElementById('more-menu');
     if (mm) mm.hidden = true;
@@ -341,7 +344,7 @@
       el.appendChild(bubbleRow('them', pick(RETURN_PHRASES)));
       el.appendChild(bubbleRow('me', pick(HIPPO_REPLIES)));
     }
-    el.appendChild(adRow());
+    // 광고 말풍선은 #chat-ads (고정) 가 담당 — 여기서 안 붙인다.
   }
 
   // "광고 보고 하트/코인" 두더지 말풍선 버튼 연결.
@@ -405,6 +408,7 @@
     document.getElementById('gameover-overlay').hidden = true;
     document.getElementById('round-done-overlay').hidden = true;
     document.getElementById('game-screen').classList.remove('is-start');
+    setCallLabel('game'); // 게임 중: 초록 버튼은 "통화"(위장) — 15번 구멍 타격 담당
     // 새 게임 시작(fresh)일 때만 더보기 메뉴를 닫는다. 자동 다음 라운드는 메뉴를 건드리지 않음
     // (플레이 중 메뉴 열어둔 채 라운드가 넘어가도 화면이 안 튀게).
     if (opts && opts.fresh) {
