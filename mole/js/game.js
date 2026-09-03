@@ -864,7 +864,7 @@
     // 축하 색종이+반짝이 / 실패 빗줄기 채우기 (계속 반복)
     const conf = ov.querySelector('.go-confetti');
     conf.innerHTML = '';
-    const n = win ? 46 : 12;
+    const n = win ? 46 : 40;
     for (let k = 0; k < n; k++) {
       const p = document.createElement('i');
       p.style.left = (Math.random() * 100) + '%';
@@ -893,13 +893,7 @@
       I18N.t(win ? 'mole.result.success' : 'mole.result.fail');
     document.getElementById('gameover-score').textContent =
       I18N.t('mole.result.score', { n: total.toLocaleString() });
-
-    // 성공 = 버튼 없음 (좌상단 ⊞ 로 홈). 실패 = 다시하기 + "광고 보고 코인 +50".
-    document.getElementById('gameover-retry-btn').hidden = win;
-    const adBtn = document.getElementById('gameover-ad-btn');
-    adBtn.hidden = win;
-    adBtn.disabled = false;
-    adBtn.querySelector('.chat-ad-n').textContent = '+50';
+    // 버튼 없음 — 성공/실패 둘 다 좌상단 ⊞ 로 홈. (광고는 유저 피로도 때문에 뺌.)
 
     // 승리 시 다음 챕터가 열렸으면: 왼쪽 스와이프로 "챕터 N" 화면으로 넘어갈 수 있다는 힌트.
     const nextCh = win ? chapter + 1 : 0;
@@ -941,27 +935,16 @@
     // (예: 스테일 캐시로 모듈 하나 누락) ⊞ 홈버튼·일시정지 등이 죽지 않도록.
     // 좌상단 ⊞ = 더보기 메뉴 열기.
     document.getElementById('btn-back-to-hub').addEventListener('click', () => {
-      // 결과 화면에선 ⊞ = 곧장 홈(대화)으로. 그 외엔 더보기 메뉴.
-      if (!document.getElementById('gameover-overlay').hidden) { showStartScreen(); return; }
+      // 결과 화면에선 ⊞ = 곧장 홈(대화)으로 (다시하기 버튼 없앰 — 중복). 그 외엔 더보기 메뉴.
+      if (!document.getElementById('gameover-overlay').hidden) { showStartScreen({ retry: true }); return; }
       openMore();
     });
     document.getElementById('btn-pause').addEventListener('click', togglePause);
-    document.getElementById('gameover-retry-btn').addEventListener('click', () => showStartScreen({ retry: true }));
     document.getElementById('nc-back-btn').addEventListener('click', () => {
       const panel = document.getElementById('next-chapter-panel');
       panel.classList.remove('is-in');
       panel.hidden = true;
       showStartScreen();
-    });
-    document.getElementById('gameover-ad-btn').addEventListener('click', function () {
-      if (this.disabled) return;
-      const btn = this;
-      MG.Ads.rewarded().then((ok) => {
-        if (!ok) return;
-        MG.Economy.addCoins(50);
-        btn.disabled = true;
-        btn.querySelector('.chat-ad-n').textContent = '✓';
-      });
     });
     wireResultSwipe(); // 승리 화면 왼쪽 스와이프 → 다음 챕터 화면
     // 대화 공개 중 아무 데나 탭하면 나머지 메시지 즉시 표시 (건너뛰기)

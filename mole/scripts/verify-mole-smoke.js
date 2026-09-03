@@ -344,7 +344,7 @@ const FACE_PNG_B64 =
       localStorage.removeItem('mole.best.easy');
       localStorage.removeItem('mole.progress');
     });
-    // (a) 챕터2 라운드 도중 목숨 소진 → "실패" + 슬픈 하마 + 광고버튼
+    // (a) 챕터2 라운드 도중 목숨 소진 → "실패" + 슬픈 하마 (버튼 없음)
     await page.evaluate(() => window.__debugStartGame('easy', 2));
     await waitIntroDone();
     await page.evaluate(() => window.__debugForceGameOver());
@@ -353,12 +353,11 @@ const FACE_PNG_B64 =
       overlayHidden: document.getElementById('gameover-overlay').hidden,
       reason: document.getElementById('gameover-reason').textContent,
       isLose: document.getElementById('gameover-overlay').classList.contains('is-lose'),
-      adHidden: document.getElementById('gameover-ad-btn').hidden,
       hippo: document.getElementById('gameover-hippo').getAttribute('src') || '',
     }));
     assert.strictEqual(lose.overlayHidden, false, 'result overlay shows');
     assert.strictEqual(lose.reason, '실패', 'mid-round death = 실패');
-    assert.ok(lose.isLose && !lose.adHidden, 'lose: is-lose class, ad button shown');
+    assert.ok(lose.isLose, 'lose: is-lose class');
     assert.ok(/hippo\/sad[123]\.png$/.test(lose.hippo), 'lose shows a sad hippo pose');
     await page.evaluate(() => window.__debugSetChapter(1));
 
@@ -395,14 +394,13 @@ const FACE_PNG_B64 =
     const won = await page.evaluate(() => ({
       reason: document.getElementById('gameover-reason').textContent,
       isWin: document.getElementById('gameover-overlay').classList.contains('is-win'),
-      adHidden: document.getElementById('gameover-ad-btn').hidden,
       confetti: document.querySelectorAll('#gameover-overlay .go-confetti i').length,
       hippo: document.getElementById('gameover-hippo').getAttribute('src') || '',
       unlocked: window.MoleGame.Progress.isUnlocked(2, 'easy'),
       nextCh: document.getElementById('gameover-overlay').dataset.nextChapter,
     }));
     assert.strictEqual(won.reason, '성공', 'clear = 성공');
-    assert.ok(won.isWin && won.adHidden && won.confetti > 0, 'win: is-win, no ad button, confetti pieces');
+    assert.ok(won.isWin && won.confetti > 0, 'win: is-win, confetti pieces');
     assert.ok(/hippo\/happy[123]\.png$/.test(won.hippo), 'win shows a happy hippo pose');
     assert.ok(won.unlocked, 'chapter 2 unlocked');
     assert.strictEqual(won.nextCh, '2', 'swipe-left target = chapter 2');
@@ -425,12 +423,12 @@ const FACE_PNG_B64 =
     await new Promise((r) => setTimeout(r, 200));
     await page.evaluate(() => { localStorage.setItem('mole.chapter', '1'); localStorage.removeItem('mole.progress'); });
 
-    // ---- 10) 결과 → 다시하기 → 대화 화면 (재방문 대화) ----
+    // ---- 10) 결과 → ⊞(홈) → 대화 화면 (재방문 대화) ----
     await page.evaluate(() => window.__debugStartGame('easy', 1));
     await waitIntroDone();
     await page.evaluate(() => window.__debugForceGameOver());
     await new Promise((r) => setTimeout(r, 550));
-    await page.click('#gameover-retry-btn');
+    await page.click('#btn-back-to-hub');
     await new Promise((r) => setTimeout(r, 200));
     const back = await page.evaluate(() => ({
       boardStartHidden: document.getElementById('board-start').hidden,

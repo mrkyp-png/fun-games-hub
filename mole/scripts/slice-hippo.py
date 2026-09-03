@@ -83,6 +83,15 @@ def defringe(im, erode_px=1):
     return im
 
 
+def feather(im):
+    """key_out 은 이진 알파(계단현상)를 남긴다 — 크게 띄우는 결과화면 하마는 가장자리가
+    깨져 보임. 알파를 살짝 blur 해 AA 를 되살리되, 본체는 불투명 유지(대비 곡선)."""
+    a = im.split()[3].filter(ImageFilter.GaussianBlur(0.9))
+    a = a.point(lambda v: 0 if v < 28 else min(255, int(v * 1.28)))
+    im.putalpha(a)
+    return im
+
+
 def bands(sums, cuts_needed):
     n = len(sums)
     gaps, i = [], 0
@@ -123,7 +132,7 @@ def main():
     for r, (y0, y1) in enumerate(ybands):
         for c, (x0, x1) in enumerate(xbands):
             cell = im.crop((x0, y0, x1, y1))
-            cell = defringe(cell)
+            cell = feather(defringe(cell))
             bbox = cell.split()[3].getbbox()
             cell = cell.crop(bbox)
             path = os.path.join(OUT, NAMES[r][c] + '.png')
