@@ -238,7 +238,6 @@
     const cf = go.querySelector('.go-confetti'); if (cf) cf.innerHTML = '';
     const ncp = document.getElementById('next-chapter-panel');
     ncp.hidden = true; ncp.classList.remove('is-in');
-    document.getElementById('round-done-overlay').hidden = true;
     const ri = document.getElementById('round-intro-overlay');
     ri.hidden = true; ri.classList.remove('is-opening');
     setHammerLayerVisible(true);
@@ -463,7 +462,6 @@
 
     document.getElementById('board-start').hidden = true;
     document.getElementById('gameover-overlay').hidden = true;
-    document.getElementById('round-done-overlay').hidden = true;
     document.getElementById('game-screen').classList.remove('is-start');
     setCallLabel('game'); // 게임 중: 초록 버튼은 "통화"(위장) — 15번 구멍 타격 담당
     // 새 게임 시작(fresh)일 때만 더보기 메뉴를 닫는다. 자동 다음 라운드는 메뉴를 건드리지 않음
