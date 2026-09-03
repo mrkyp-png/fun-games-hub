@@ -14,9 +14,39 @@
   const STEP_SEC = 0.055;       // 등장/빠끔 이동: 깊이 한 칸이 화면에 머무는 시간 — 빠르게
   const DYING_STEP_SEC = 0.144; // 타격 후: 전신 그대로 구멍 아래로 "천천히" 미끄러진다 (0→4 ≈ 0.58s)
 
-  function create({ container, onEmerge }) {
-    const pops = new Map();  // popId -> { el, img, kind, poseIndex, shownDepth, targetDepth, shownFile }
+  function create({ container, onEmerge, faceUrl }) {
+    const pops = new Map();  // popId -> { el, img, faceImg, kind, poseIndex, shownDepth, targetDepth, shownFile }
     let lastNow = 0;
+    let face = faceUrl || null; // 활성 사람두더지 얼굴 objectURL (null 이면 안 얹음)
+
+    // 게임 시작 시 game.js 가 활성 얼굴 URL 을 넘긴다 (없으면 null).
+    function setFaceUrl(url) {
+      face = url || null;
+      pops.forEach((m) => {
+        if (m.kind !== 'mole') return;
+        if (face && !m.faceImg) attachFace(m);
+        if (!face && m.faceImg) { m.faceImg.remove(); m.faceImg = null; }
+        if (m.faceImg) positionFace(m);
+      });
+    }
+    function attachFace(m) {
+      const fi = document.createElement('img');
+      fi.className = 'mole-face';
+      fi.alt = '';
+      fi.src = face;
+      m.el.appendChild(fi);
+      m.faceImg = fi;
+    }
+    function positionFace(m) {
+      if (!m.faceImg) return;
+      const a = MS.headAnchor(m.shownFile || ('mole' + (m.poseIndex + 1)));
+      // sink 은 .mole-pop-img 의 translateY 와 같은 값 — top 에 더해 함께 내려간다.
+      const sink = m.dying ? (m.shownDepth / GONE_DEPTH) * 130 : MS.sinkForDepth(m.shownDepth);
+      m.faceImg.style.left = (a.cx * 100) + '%';
+      m.faceImg.style.top = (a.cy * 100 + sink) + '%';
+      m.faceImg.style.width = (a.r * 2 * 100) + '%';
+      m.faceImg.style.transform = 'translate(-50%, -50%)';
+    }
 
     function makePop(pop) {
       const el = document.createElement('div');
@@ -30,10 +60,11 @@
       container.appendChild(el);
       if (onEmerge) onEmerge(pop.x, pop.y, pop.type); // 구멍에서 올라오는 순간 연출 (흙먼지·링·글로우)
       const m = {
-        el, img, kind: pop.type, poseIndex: pop.poseIndex || 0,
+        el, img, faceImg: null, kind: pop.type, poseIndex: pop.poseIndex || 0,
         shownDepth: GONE_DEPTH, targetDepth: 0, shownFile: null, dying: false
       };
       render(m);
+      if (face && m.kind === 'mole') { attachFace(m); positionFace(m); }
       pops.set(pop.id, m);
       return m;
     }
@@ -57,6 +88,7 @@
       // dying 은 프레임 교체 없이 미끄러지므로 sink 를 선형(0→130%)으로.
       const sink = m.dying ? (m.shownDepth / GONE_DEPTH) * 130 : MS.sinkForDepth(m.shownDepth);
       m.img.style.transform = 'translate(-50%, ' + sink + '%)';
+      if (m.faceImg) positionFace(m);
     }
 
     function targetFor(pop) {
@@ -105,7 +137,7 @@
       }
     }
 
-    return { sync, clear, flash };
+    return { sync, clear, flash, setFaceUrl };
   }
 
   const api = { create };

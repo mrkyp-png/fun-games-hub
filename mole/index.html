@@ -61,7 +61,7 @@
       <div id="pause-veil" class="mole-board-layer" aria-hidden="true">일시정지</div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v27</div>
+      <div id="build-tag" aria-hidden="true">v28</div>
       <div id="board-start" class="board-panel board-start">
         <!-- 최고 스코어: 위에서 툭 내려오는 문자 알림 -->
         <div id="start-best" class="chat-sms" aria-hidden="true">
@@ -130,6 +130,143 @@
         <div id="round-intro-title" class="round-intro-title">라운드 1</div>
         <div id="round-intro-count" class="round-intro-count">3</div>
       </div>
+
+      <!-- 더보기 메뉴 = 게임 화면 좌상단 ⊞ 아이콘 뒤. 카톡 "더보기" 탭 스타일, 다크. -->
+      <div id="more-menu" class="board-panel more-menu" hidden>
+        <div class="mm-topbar">
+          <button type="button" class="mm-close" data-mm-close aria-label="닫기">‹</button>
+          <span class="mm-title" data-i18n="mole.more.title">더보기</span>
+          <span class="mm-stat mm-hearts" data-mm-hearts><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5.5 6 5.5c2 0 3.4 1.2 4 2.3.6-1.1 2-2.3 4-2.3 3.5 0 5 3.5 3.5 6.5C19 16.5 12 21 12 21z"/></svg><b>5</b></span>
+          <span class="mm-stat mm-coins" data-mm-coins><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg><b>0</b></span>
+          <button type="button" class="mm-gear" data-mm-settings aria-label="설정"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 13a7.8 7.8 0 000-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 00-1.7-1L14 3h-4l-.6 2.6a7.6 7.6 0 00-1.7 1l-2.4-1-2 3.4L4.6 11a7.8 7.8 0 000 2l-2 1.6 2 3.4 2.4-1c.5.4 1.1.7 1.7 1L10 21h4l.6-2.6c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.4-2-1.6zM12 15a3 3 0 110-6 3 3 0 010 6z"/></svg></button>
+        </div>
+        <button type="button" class="mm-profile" data-mm-name>
+          <span class="mm-avatar" aria-hidden="true"></span>
+          <span class="mm-profile-txt"><b data-mm-nick>두더지</b><i data-mm-sub></i></span>
+        </button>
+        <div class="mm-maker" data-mm-make>
+          <span class="mm-maker-faces" data-mm-faces></span>
+          <span class="mm-maker-txt" data-i18n="mole.more.make">사진으로 사람두더지 만들기</span>
+          <span class="mm-maker-btn" data-i18n="mole.more.makeBtn">만들기</span>
+        </div>
+        <button type="button" class="mm-locker" data-mm-locker>
+          <span data-i18n="mole.more.locker">내 사람두더지</span>
+          <span class="mm-locker-thumbs" data-mm-lthumbs></span>
+          <span class="mm-chev">›</span>
+        </button>
+        <div class="mm-pills">
+          <button type="button" class="mm-pill" data-mm-diff="easy" data-i18n="mole.diff.easy">하수</button>
+          <button type="button" class="mm-pill" data-mm-diff="mid" data-i18n="mole.diff.mid">고수</button>
+          <button type="button" class="mm-pill" data-mm-diff="legend" data-i18n="mole.diff.legend">전설</button>
+        </div>
+        <div class="mm-grid">
+          <button type="button" data-mm-nav="score"><span class="mm-ic">📊</span><i data-i18n="mole.more.score">스코어</i></button>
+          <button type="button" data-mm-nav="daily"><span class="mm-ic">📅</span><i data-i18n="mole.more.daily">일일</i></button>
+          <button type="button" data-mm-nav="shop"><span class="mm-ic">🛒</span><i data-i18n="mole.more.shop">상점</i></button>
+          <button type="button" data-mm-nav="locker"><span class="mm-ic">🗂</span><i data-i18n="mole.more.photos">사진보관</i></button>
+          <button type="button" data-mm-nav="help"><span class="mm-ic">📖</span><i data-i18n="mole.more.help">게임설명서</i></button>
+          <button type="button" data-mm-nav="privacy"><span class="mm-ic">📜</span><i data-i18n="mole.more.privacy">개인정보·라이센스</i></button>
+          <button type="button" data-mm-nav="contact"><span class="mm-ic">✉️</span><i data-i18n="mole.more.contact">문의하기</i></button>
+          <button type="button" data-mm-nav="settings"><span class="mm-ic">⚙️</span><i data-i18n="mole.more.settings">설정</i></button>
+        </div>
+        <div class="mm-ad" data-mm-ad></div>
+      </div>
+
+      <!-- 더보기 메뉴 하위 화면들 (screen-nav.js 가 배타 토글) -->
+      <div class="board-screen face-maker" id="face-maker" hidden>
+        <div class="board-screen-bar">
+          <button type="button" class="bs-back" data-fm-cancel aria-label="뒤로">‹</button>
+          <span class="bs-title" data-i18n="mole.fm.title">사람두더지 만들기</span>
+        </div>
+        <div class="fm-stage" data-fm-stage="pick">
+          <p class="fm-hint" data-i18n="mole.fm.pickHint">사진을 골라주세요</p>
+          <label class="fm-pick-btn"><span data-i18n="mole.fm.pick">사진 선택</span>
+            <input type="file" accept="image/*" data-fm-file hidden></label>
+        </div>
+        <div class="fm-stage" data-fm-stage="crop" hidden>
+          <p class="fm-hint" data-i18n="mole.fm.cropHint">얼굴을 원 안에 맞춰주세요</p>
+          <div class="fm-crop" data-fm-crop>
+            <img class="fm-crop-img" data-fm-img alt="">
+            <div class="fm-crop-ring" aria-hidden="true"></div>
+          </div>
+          <button type="button" class="fm-next" data-fm-next data-i18n="mole.fm.next">다음</button>
+        </div>
+        <div class="fm-stage" data-fm-stage="preview" hidden>
+          <p class="fm-hint" data-i18n="mole.fm.previewHint">이 두더지로 할까요?</p>
+          <div class="fm-preview" data-fm-preview></div>
+          <input type="text" class="fm-name" data-fm-name maxlength="12" placeholder="이름 (선택)" data-i18n-placeholder="mole.fm.namePh">
+          <div class="fm-preview-btns">
+            <button type="button" class="fm-redo" data-fm-redo data-i18n="mole.fm.redo">다시</button>
+            <button type="button" class="fm-save" data-fm-save data-i18n="mole.fm.save">저장</button>
+          </div>
+        </div>
+        <p class="fm-priv" data-i18n="mole.fm.priv">사진은 이 기기에서만 처리돼요. 업로드하지 않아요.</p>
+      </div>
+
+      <div class="board-screen face-locker" id="face-locker" hidden>
+        <div class="board-screen-bar">
+          <button type="button" class="bs-back" data-fl-close aria-label="뒤로">‹</button>
+          <span class="bs-title" data-i18n="mole.fl.title">내 사람두더지</span>
+          <button type="button" class="fl-new" data-fl-new data-i18n="mole.fl.new">+ 만들기</button>
+        </div>
+        <div class="fl-grid" data-fl-grid></div>
+        <p class="fl-empty" data-fl-empty hidden data-i18n="mole.fl.empty">아직 없어요. 사진으로 만들어보세요.</p>
+      </div>
+
+      <div class="board-screen" id="score-screen" hidden>
+        <div class="board-screen-bar">
+          <button type="button" class="bs-back" data-back="score" aria-label="뒤로">‹</button>
+          <span class="bs-title" data-i18n="mole.more.score">스코어</span>
+        </div>
+        <div class="score-best" data-score-best></div>
+        <div class="score-hist" data-score-hist></div>
+      </div>
+
+      <div class="board-screen" id="shop-screen" hidden>
+        <div class="board-screen-bar">
+          <button type="button" class="bs-back" data-back="shop" aria-label="뒤로">‹</button>
+          <span class="bs-title" data-i18n="mole.more.shop">상점</span>
+          <span class="shop-bal" data-shop-bal></span>
+        </div>
+        <div class="shop-list" data-shop-list></div>
+      </div>
+
+      <div class="board-screen" id="daily-screen" hidden>
+        <div class="board-screen-bar">
+          <button type="button" class="bs-back" data-back="daily" aria-label="뒤로">‹</button>
+          <span class="bs-title" data-i18n="mole.more.daily">일일 출석</span>
+        </div>
+        <div class="daily-grid" data-daily-grid></div>
+        <button type="button" class="daily-claim" data-daily-claim></button>
+        <button type="button" class="daily-2x" data-daily-2x hidden data-i18n="mole.daily.double">광고 보고 2배</button>
+      </div>
+
+      <div class="board-screen info-screen" id="help-screen" hidden>
+        <div class="board-screen-bar">
+          <button type="button" class="bs-back" data-back="help" aria-label="뒤로">‹</button>
+          <span class="bs-title" data-i18n="mole.more.help">게임설명서</span>
+        </div>
+        <div class="info-body">
+          <p data-i18n="mole.help.p1">두더지를 망치로 때려서 점수를 얻어요. 10라운드, 각 30초.</p>
+          <p data-i18n="mole.help.p2">아래 키패드 16칸은 구멍 16개와 1:1이에요. 두더지가 있는 칸을 누르면 망치가 내려쳐요.</p>
+          <p data-i18n="mole.help.p3">하수는 두더지가 있는 칸에 불이 들어와요. 고수·전설은 불이 없어요. 전설엔 동물이 섞여요 — 동물을 때리면 손해!</p>
+          <p data-i18n="mole.help.p4">목숨 3개는 10라운드 전체에 적용돼요. 콤보 100마다 목숨 +1.</p>
+          <p data-i18n="mole.help.p5">사람두더지: 사진으로 얼굴을 만들면 두더지 머리에 그 얼굴이 붙어요.</p>
+        </div>
+      </div>
+
+      <div class="board-screen info-screen" id="privacy-screen" hidden>
+        <div class="board-screen-bar">
+          <button type="button" class="bs-back" data-back="privacy" aria-label="뒤로">‹</button>
+          <span class="bs-title" data-i18n="mole.more.privacy">개인정보·라이센스</span>
+        </div>
+        <div class="info-body">
+          <h3 data-i18n="mole.priv.h1">사진</h3>
+          <p data-i18n="mole.priv.p1">사진은 이 기기 안에서만 처리돼요. 서버에 올리지 않아요. 저장되는 것은 얼굴을 원형으로 자른 이미지 한 장뿐이고, 기기에만 저장돼요(설정 → 데이터 초기화로 삭제).</p>
+          <h3 data-i18n="mole.priv.h2">라이센스·크레딧</h3>
+          <p data-i18n="mole.priv.p2">타격 효과음: 효과음ラボ(soundeffect-lab.info) — 상용 무료, 크레딧 불필요. BGM: CC0.</p>
+        </div>
+      </div>
     </div>
     <div id="fold-hinge" aria-hidden="true"></div>
     <div id="lane-button-bar"></div>
@@ -140,12 +277,22 @@
 <script src="../common/settings.js"></script>
 <script src="../common/i18n.js"></script>
 <script src="js/i18n-strings.js"></script>
+<script src="js/screen-nav.js"></script>
+<script src="js/economy.js"></script>
+<script src="js/face-store.js"></script>
+<script src="js/ads.js"></script>
 <script src="js/levels.js"></script>
 <script src="js/rng.js"></script>
 <script src="js/combo-score.js"></script>
 <script src="js/grid-partition.js"></script>
 <script src="js/spawn-scheduler.js"></script>
 <script src="js/mole-sprites.js"></script>
+<script src="js/face-maker.js"></script>
+<script src="js/face-locker.js"></script>
+<script src="js/more-menu.js"></script>
+<script src="js/shop.js"></script>
+<script src="js/daily.js"></script>
+<script src="js/score-screen.js"></script>
 <script src="js/pop-elements.js"></script>
 <script src="js/hole-layer.js"></script>
 <script src="js/hit-fx.js"></script>

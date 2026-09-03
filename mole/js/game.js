@@ -3,7 +3,6 @@
 
   const MG = window.MoleGame;
   const I18N = window.FGH.I18N;
-  const BEST_KEY = 'moleBestScore';
   const START_LIVES = 3;      // 스펙 §11
   const GRID_SIZE = 4;        // 4x4 = 16칸 고정 격자
   const ROUND_SECONDS = 30;   // 라운드마다 30초 점수 어택
@@ -63,12 +62,87 @@
     }
   }
 
-  function loadBest() {
-    const v = parseInt(localStorage.getItem(BEST_KEY), 10);
+  // ---------- 더보기 메뉴 / 난이도 / 사람두더지 (독립앱 Phase 1) ----------
+  let screenNav = null, moreMenu = null, faceMaker = null, faceLocker = null;
+  let shop = null, daily = null, scoreScreen = null;
+  let currentDiff = 'easy';        // 현재 판 난이도
+  let activeFaceUrl = null;        // 활성 사람두더지 얼굴 objectURL
+  let pendingOnboardStart = false; // 온보딩 첫 저장 뒤 대화 화면으로
+
+  const DIFFS = ['easy', 'mid', 'legend'];
+  function currentDifficulty() {
+    const d = localStorage.getItem('mole.difficulty');
+    return DIFFS.indexOf(d) > -1 ? d : 'easy';
+  }
+  function bestFor(diff) {
+    const v = parseInt(localStorage.getItem('mole.best.' + diff), 10);
     return Number.isFinite(v) ? v : 0;
   }
-  function saveBest(score) {
-    localStorage.setItem(BEST_KEY, String(score));
+  function saveBestFor(diff, score) { localStorage.setItem('mole.best.' + diff, String(score)); }
+  function migrateBest() {
+    const old = localStorage.getItem('moleBestScore');
+    if (old != null && localStorage.getItem('mole.best.easy') == null) {
+      localStorage.setItem('mole.best.easy', old);
+      localStorage.removeItem('moleBestScore');
+    }
+  }
+  function applyDiffClass(diff) {
+    const gs = document.getElementById('game-screen');
+    DIFFS.forEach((d) => gs.classList.remove('diff-' + d));
+    gs.classList.add('diff-' + diff);
+  }
+  function loadActiveFace() {
+    const id = MG.FaceStore.getActiveId();
+    if (activeFaceUrl) { URL.revokeObjectURL(activeFaceUrl); activeFaceUrl = null; }
+    if (!id) return Promise.resolve(null);
+    return MG.FaceStore.getFace(id).then((rec) => {
+      activeFaceUrl = rec ? URL.createObjectURL(rec.blob) : null;
+      return activeFaceUrl;
+    });
+  }
+
+  // 대화 화면 "시작" 버튼(들)이 부르는 진입점. 하트 1 소모 → 활성 얼굴 로드 → 라운드 1.
+  function beginGame() {
+    currentDiff = currentDifficulty();
+    if (!MG.Economy.spendHeart()) { showNoHeartModal(); return; }
+    applyDiffClass(currentDiff);
+    loadActiveFace().then(() => startRound(1, { fresh: true }));
+  }
+
+  function showNoHeartModal() {
+    const v = document.createElement('div');
+    v.className = 'ad-overlay';
+    v.innerHTML = '<div class="ad-overlay-card"><div class="nh-title">' + I18N.t('mole.more.noHearts') + '</div>' +
+      '<div class="nh-btns">' +
+      '<button type="button" data-nh="ad">' + I18N.t('mole.shop.watchHeart') + '</button>' +
+      '<button type="button" data-nh="shop">' + I18N.t('mole.more.shop') + '</button>' +
+      '<button type="button" data-nh="close">' + I18N.t('mole.common.close') + '</button></div></div>';
+    document.body.appendChild(v);
+    v.querySelector('[data-nh="ad"]').addEventListener('click', () => {
+      v.remove();
+      MG.Ads.rewarded().then((ok) => { if (ok) { MG.Economy.addHearts(1); if (moreMenu) moreMenu.refresh(); } });
+    });
+    v.querySelector('[data-nh="shop"]').addEventListener('click', () => { v.remove(); openMore('shop-screen'); });
+    v.querySelector('[data-nh="close"]').addEventListener('click', () => v.remove());
+  }
+
+  // 더보기 메뉴 열기/닫기.
+  function openMore(sub) {
+    document.getElementById('more-menu').hidden = false;
+    if (moreMenu) moreMenu.refresh();
+    if (sub) {
+      screenNav.show(sub);
+      if (sub === 'face-locker' && faceLocker) faceLocker.show();
+      if (sub === 'shop-screen' && shop) shop.show();
+      if (sub === 'daily-screen' && daily) daily.show();
+      if (sub === 'score-screen' && scoreScreen) scoreScreen.show();
+    }
+  }
+  function closeMore() {
+    screenNav.reset();
+    document.getElementById('more-menu').hidden = true;
+    // 진행 중이던 게임이 있으면 그대로, 없으면 대화 화면.
+    if (!state) showStartScreen();
   }
 
   // ---------- 시작 화면 ----------
@@ -88,9 +162,12 @@
     document.getElementById('round-intro-overlay').hidden = true;
     document.getElementById('board-start').hidden = false;
     document.getElementById('game-screen').classList.add('is-start');
+    if (screenNav) screenNav.reset();
+    const mm = document.getElementById('more-menu');
+    if (mm) mm.hidden = true;
 
-    // 최고 스코어 = 위에서 내려오는 문자 알림. 기록 없으면 숨김.
-    const best = loadBest();
+    // 최고 스코어 = 위에서 내려오는 문자 알림 (현재 난이도 기준). 기록 없으면 숨김.
+    const best = bestFor(currentDifficulty());
     const sms = document.getElementById('start-best');
     sms.querySelector('.chat-sms-txt').textContent =
       best > 0 ? I18N.t('mole.start.best', { n: best.toLocaleString() }) : '';
@@ -159,7 +236,7 @@
     const b = document.createElement('button');
     b.className = 'chat-start-btn';
     b.textContent = I18N.t('mole.start.btn');
-    b.addEventListener('click', () => startRound(1, { fresh: true }));
+    b.addEventListener('click', beginGame);
     return b;
   }
 
@@ -217,6 +294,8 @@
     document.getElementById('gameover-overlay').hidden = true;
     document.getElementById('round-done-overlay').hidden = true;
     document.getElementById('game-screen').classList.remove('is-start');
+    if (screenNav) screenNav.reset();
+    document.getElementById('more-menu').hidden = true;
     syncBgm(true); // 시작 버튼(사용자 제스처) 이후 — 설정에서 켜져 있으면 재생
     MG.HitFx.warmup(); // 오디오 컨텍스트 + 타격음 파일 프리로드 (카운트다운 동안)
 
@@ -229,7 +308,8 @@
       maxConcurrentBombs: levelData.maxConcurrentBombs,
       popDuration: levelData.moleDuration,
       molePoseCount: MG.MoleSprites.POSE_COUNT,
-      obstacleCount: MG.MoleSprites.OBSTACLE_COUNT
+      obstacleCount: MG.MoleSprites.OBSTACLE_COUNT,
+      obstacles: currentDiff === 'legend' // 하수·고수는 두더지만, 전설만 동물
     };
 
     const scheduler = MG.SpawnScheduler.create({ regions, spawnPoints, config, rng });
@@ -243,6 +323,7 @@
       });
     }
     sharedPopElements.clear();
+    if (sharedPopElements.setFaceUrl) sharedPopElements.setFaceUrl(activeFaceUrl);
 
     const holeLayer = MG.HoleLayer.create({
       container: document.getElementById('mole-hole-layer'),
@@ -490,9 +571,13 @@
   // 최종 결과 화면 (10라운드 완주 or 목숨 소진).
   function finishFromRound(reason) {
     const total = run.combo.score;
-    const best = loadBest();
+    const diff = currentDiff;
+    const best = bestFor(diff);
     const isNewBest = total > best;
-    if (isNewBest) saveBest(total);
+    if (isNewBest) saveBestFor(diff, total);
+
+    const coins = Math.floor(total / 200);
+    if (coins > 0) MG.Economy.addCoins(coins);
 
     // 재방문 인사용 + 기록 보관 (100판 이상도 문제없음, 개당 수십 바이트).
     try {
@@ -500,7 +585,7 @@
       localStorage.setItem('mole.lastWasBest', isNewBest ? '1' : '0');
       localStorage.setItem('mole.lastWasBad', reason === 'lives' ? '1' : '0');
       const hist = JSON.parse(localStorage.getItem('mole.history') || '[]');
-      hist.push({ t: Date.now(), score: total, best: isNewBest, reason: reason });
+      hist.push({ t: Date.now(), score: total, best: isNewBest, reason: reason, diff: diff });
       if (hist.length > 500) hist.splice(0, hist.length - 500); // 안전 상한
       localStorage.setItem('mole.history', JSON.stringify(hist));
     } catch (e) { /* localStorage 불가 환경 무시 */ }
@@ -509,9 +594,11 @@
       I18N.t(reason === 'lives' ? 'mole.result.lives' : 'mole.result.allClear');
     document.getElementById('gameover-score').textContent =
       I18N.t('mole.result.score', { n: total.toLocaleString() });
-    document.getElementById('gameover-best').textContent = isNewBest
+    let bestLine = isNewBest
       ? I18N.t('mole.result.newBest', { n: total.toLocaleString() })
       : I18N.t('mole.result.best', { n: Math.max(best, total).toLocaleString() });
+    if (coins > 0) bestLine += '   +' + coins + '🪙';
+    document.getElementById('gameover-best').textContent = bestLine;
     document.getElementById('gameover-overlay').hidden = false;
   }
 
@@ -535,10 +622,23 @@
       onCell: handleCell
     });
 
-    showStartScreen();
+    migrateBest();
+    wireMoreMenu();
+
+    // 첫 실행 온보딩: 대화 화면 앞에 사람두더지 메이커를 1회 강제.
+    if (!localStorage.getItem('mole.onboarded') && faceMaker) {
+      document.getElementById('game-screen').classList.add('is-start');
+      document.getElementById('board-start').hidden = false;
+      document.getElementById('more-menu').hidden = false;
+      pendingOnboardStart = true;
+      screenNav.show('face-maker');
+      faceMaker.open({ forced: true });
+    } else {
+      showStartScreen();
+    }
 
     // 첫 방문 대화의 시작 버튼(정적). 재방문 대화의 버튼은 buildReturnChat 이 직접 연결한다.
-    document.getElementById('start-btn').addEventListener('click', () => startRound(1, { fresh: true }));
+    document.getElementById('start-btn').addEventListener('click', beginGame);
     // 대화 공개 중 아무 데나 탭하면 나머지 메시지 즉시 표시 (건너뛰기)
     document.getElementById('board-start').addEventListener('click', (e) => {
       if (e.target.closest('.chat-start-btn')) return;
@@ -548,17 +648,22 @@
       pending.forEach((r) => { r.classList.remove('chat-pending'); r.classList.add('chat-appear'); });
       thread.scrollTop = thread.scrollHeight;
     });
-    // 시작 화면(state 없음)에선 허브로, 플레이 중엔 시작 화면으로.
-    document.getElementById('btn-back-to-hub').addEventListener('click', () => {
-      if (state) showStartScreen();
-      else window.location.href = '../index.html';
-    });
+    // 좌상단 ⊞ = 더보기 메뉴 열기 (대화 화면에서든 플레이 중에든).
+    document.getElementById('btn-back-to-hub').addEventListener('click', () => openMore());
     document.getElementById('gameover-retry-btn').addEventListener('click', () => showStartScreen({ retry: true }));
     document.getElementById('gameover-select-btn').addEventListener('click', () => showStartScreen());
     document.getElementById('btn-pause').addEventListener('click', togglePause);
 
     // 디버그 훅 — 지렁이 게임과 동일 컨벤션, 영구 보존.
-    window.__debugStartGame = () => startRound(1, { fresh: true });
+    window.__debugStartGame = (diff) => {
+      localStorage.setItem('mole.onboarded', '1');
+      loadActiveFace().then(() => {
+        currentDiff = DIFFS.indexOf(diff) > -1 ? diff : 'easy';
+        localStorage.setItem('mole.difficulty', currentDiff);
+        applyDiffClass(currentDiff);
+        startRound(1, { fresh: true });
+      });
+    };
     window.__debugStartRound = (n) => startRound(n, { fresh: true });
     window.__debugEndRound = function () {
       if (state && !state.ended) { state.timeRemaining = 0; roundComplete(); }
@@ -599,5 +704,101 @@
         .forEach((k) => localStorage.removeItem(k));
       showStartScreen();
     };
+    window.__debugOpenMore = (sub) => openMore(sub);
+    window.__debugSkipOnboarding = () => localStorage.setItem('mole.onboarded', '1');
+    window.__debugSetHearts = function (n) {
+      localStorage.setItem('mole.hearts', String(n));
+      localStorage.setItem('mole.heartsAt', String(Date.now()));
+      if (moreMenu) moreMenu.refresh();
+    };
+    window.__debugSetCoins = function (n) {
+      localStorage.setItem('mole.coins', String(n));
+      if (moreMenu) moreMenu.refresh();
+    };
+    window.__debugAddFace = function () {
+      return fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=')
+        .then((r) => r.blob())
+        .then((b) => MG.FaceStore.saveFace(b, '테스트'))
+        .then((id) => { MG.FaceStore.setActive(id); if (moreMenu) moreMenu.refresh(); return id; });
+    };
   });
+
+  // 더보기 메뉴 + 하위 화면 모듈 인스턴스 생성·배선.
+  function wireMoreMenu() {
+    screenNav = MG.ScreenNav.create({
+      screens: ['face-maker', 'face-locker', 'shop-screen', 'daily-screen', 'score-screen', 'help-screen', 'privacy-screen']
+    });
+
+    faceMaker = MG.FaceMaker.create({
+      root: document.getElementById('face-maker'),
+      onDone: onFaceMade,
+      onCancel: () => screenNav.back()
+    });
+    faceLocker = MG.FaceLocker.create({
+      root: document.getElementById('face-locker'),
+      onMake: () => { screenNav.show('face-maker'); faceMaker.open({}); },
+      onPick: () => screenNav.back(),
+      onClose: () => screenNav.back()
+    });
+    shop = MG.Shop.create({
+      root: document.getElementById('shop-screen'),
+      onClose: () => screenNav.back(),
+      onChange: () => { if (moreMenu) moreMenu.refresh(); }
+    });
+    daily = MG.Daily.create({
+      root: document.getElementById('daily-screen'),
+      onClose: () => screenNav.back(),
+      onChange: () => { if (moreMenu) moreMenu.refresh(); }
+    });
+    scoreScreen = MG.ScoreScreen.create({
+      root: document.getElementById('score-screen'),
+      onClose: () => screenNav.back()
+    });
+    ['help', 'privacy'].forEach((k) => {
+      const b = document.querySelector('[data-back="' + k + '"]');
+      if (b) b.addEventListener('click', () => screenNav.back());
+    });
+
+    moreMenu = MG.MoreMenu.create({
+      root: document.getElementById('more-menu'),
+      on: {
+        close: closeMore,
+        make: () => { screenNav.show('face-maker'); faceMaker.open({}); },
+        locker: () => { screenNav.show('face-locker'); faceLocker.show(); },
+        diff: (d) => {
+          localStorage.setItem('mole.difficulty', d);
+          moreMenu.refresh();
+          // 난이도 선택 → 더보기 닫고 대화 화면으로 (시작 버튼 누르면 그 난이도로 게임)
+          screenNav.reset();
+          document.getElementById('more-menu').hidden = true;
+          showStartScreen();
+        },
+        shop: () => { screenNav.show('shop-screen'); shop.show(); },
+        daily: () => { screenNav.show('daily-screen'); daily.show(); },
+        score: () => { screenNav.show('score-screen'); scoreScreen.show(); },
+        help: () => screenNav.show('help-screen'),
+        privacy: () => screenNav.show('privacy-screen'),
+        contact: () => { window.location.href = 'mailto:mrkyp@hanmail.net'; },
+        settings: () => { if (window.FGH.SettingsUI && window.FGH.SettingsUI.open) window.FGH.SettingsUI.open(); },
+        editName: () => {
+          const n = prompt(I18N.t('mole.more.nickPrompt'), localStorage.getItem('mole.nick') || '');
+          if (n != null) { localStorage.setItem('mole.nick', n.trim().slice(0, 12)); moreMenu.refresh(); }
+        }
+      }
+    });
+  }
+
+  // 사람두더지 저장 완료 콜백.
+  function onFaceMade() {
+    if (pendingOnboardStart || !localStorage.getItem('mole.onboarded')) {
+      localStorage.setItem('mole.onboarded', '1');
+      pendingOnboardStart = false;
+      screenNav.reset();
+      document.getElementById('more-menu').hidden = true;
+      showStartScreen(); // 온보딩 후 첫 방문 대화 인트로
+    } else {
+      screenNav.back();
+      if (moreMenu) moreMenu.refresh();
+    }
+  }
 })();
