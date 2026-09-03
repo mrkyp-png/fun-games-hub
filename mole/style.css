@@ -74,15 +74,22 @@ body { background: #16301a; }
   position: absolute;
   inset: 0;
 }
-/* 시작 화면 = 카톡풍 대화. 게임박스 안, 메신저 화면처럼. */
+/* 시작 화면 = 카톡풍 대화. 전체 화면 (주소창 HUD 아래 ~ 키패드 위까지). */
 .board-start {
+  position: fixed;
+  top: var(--hud-h, 46px);
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
   padding: 12px 12px 16px;
-  z-index: 7;
-  background: #0c0c0e;   /* 검은 배경 = 아래 키패드와 이어지는 폰 화면 (잔디는 플레이 중에만) */
+  z-index: 20;
+  background: #0c0c0e;
   overflow: hidden;
 }
+/* 게임 중엔 대화 숨김 → 키패드 보임 */
+#game-screen:not(.is-start) #board-start { display: none; }
 
 .chat-thread {
   flex: 1;
@@ -914,8 +921,8 @@ body { background: #16301a; }
 /* 사람두더지 얼굴 레이어 (pop-elements.js 가 위치·크기 설정) */
 .mole-face { position: absolute; border-radius: 50%; aspect-ratio: 1; object-fit: cover; pointer-events: none; z-index: 1; }
 
-/* 하위 화면 공통 (screen-nav.js 배타 토글) */
-.board-screen { position: absolute; inset: 0; z-index: 9; display: flex; flex-direction: column;
+/* 하위 화면 공통 (screen-nav.js 배타 토글) — 전체 화면 (키패드 위까지 덮는다) */
+.board-screen { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column;
   background: #0b0b0d; color: #e8e8ea; overflow-y: auto; scrollbar-width: none; }
 .board-screen::-webkit-scrollbar { display: none; }
 .board-screen-bar { display: flex; align-items: center; gap: 6px; padding: 10px 12px;
@@ -923,9 +930,9 @@ body { background: #16301a; }
 .bs-back { background: none; border: none; color: #e8e8ea; font-size: 1.4rem; line-height: 1; cursor: pointer; padding: 0 4px; }
 .bs-title { font-size: 0.95rem; }
 
-/* 더보기 메뉴 본체 */
-.more-menu { z-index: 8; display: flex; flex-direction: column; background: #0b0b0d; color: #e8e8ea;
-  overflow-y: auto; scrollbar-width: none; }
+/* 더보기 메뉴 본체 — 전체 화면 (키패드 위까지 덮는다) */
+.more-menu { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column;
+  background: #0b0b0d; color: #e8e8ea; overflow-y: auto; scrollbar-width: none; }
 .more-menu::-webkit-scrollbar { display: none; }
 .mm-topbar { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid #17171b; }
 .mm-close { background: none; border: none; color: #e8e8ea; font-size: 1.4rem; line-height: 1; cursor: pointer; padding: 0 2px; }
@@ -960,10 +967,12 @@ body { background: #16301a; }
 .mm-pill { flex: 1; padding: 12px 0; border: none; border-radius: 10px; background: #1c1d24;
   color: #b8b8c0; font-weight: 800; font-size: 0.9rem; cursor: pointer; }
 .mm-pill--on { background: linear-gradient(180deg, #3ac06a, #2a9c54); color: #fff; }
-.mm-grid { display: grid; grid-template-columns: repeat(4, 1fr); padding: 6px 6px 10px; }
-.mm-grid button { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 12px 2px;
-  background: none; border: none; color: #cfcfd4; font-size: 0.7rem; cursor: pointer; }
-.mm-grid .mm-ic { font-size: 1.3rem; line-height: 1; }
+.mm-grid { display: grid; grid-template-columns: repeat(4, 1fr); padding: 8px 6px 12px; }
+.mm-grid button { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 14px 2px;
+  background: none; border: none; color: #d6d6db; font-size: 0.7rem; cursor: pointer; }
+/* 카톡 더보기처럼 외곽선(흰색 stroke)만 있는 아이콘 */
+.mm-grid .mm-ic { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.6;
+  stroke-linecap: round; stroke-linejoin: round; }
 .mm-grid i { font-style: normal; text-align: center; }
 .mm-ad { margin: auto 14px 6px; }
 
