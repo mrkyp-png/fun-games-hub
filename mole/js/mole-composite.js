@@ -28,21 +28,23 @@
     return new Promise(function (res) { canvas.toBlob(function (b) { res(URL.createObjectURL(b)); }, 'image/png'); });
   }
 
-  // ---------- 몸 (8포즈 스프라이트) ----------
-  // default = 기존 두더지 스프라이트에서 빨간 헬멧을 키아웃하고 털색으로 메꾼 "민머리".
-  // 나머지 몸 id 는 아트 오기 전까지 default 를 색조만 바꿔 임시.
+  // ---------- 몸통 (8포즈) ----------
+  // 사용자가 줄 실제 아트 = 머리 없는 몸통 8포즈. 그때는 여기서 그 이미지를 로드만 하면 됨:
+  //   loadImg('assets/bodies/' + bodyId + '/' + pose + '.png')
+  // 지금은 임시로 두더지 스프라이트(헬멧 키아웃) + 몸id별 색조. 얼굴 원이 머리를 덮는다.
   var bodyCache = {};
+  var BODY_TINT = {
+    gray: 'rgba(150,150,162,0.5)', tux: 'rgba(24,24,36,0.42)',
+    hoodie: 'rgba(84,116,205,0.4)', work: 'rgba(208,164,82,0.36)', robe: 'rgba(122,62,148,0.42)'
+  };
   function bodyCanvas(bodyId, pose) {
     var key = bodyId + '|' + pose;
     if (bodyCache[key]) return Promise.resolve(bodyCache[key]);
     return loadImg(MG.MoleSprites.spriteUrl(pose)).then(function (sprite) {
       var c = mk(CW, CH), x = c.getContext('2d');
       x.drawImage(sprite, 0, 0, CW, CH);
-      keyOutHelmet(x);                 // 빨간 헬멧 제거 → 민머리
-      if (bodyId === 'gray') tint(x, 'rgba(150,150,160,0.5)', 'saturation');
-      else if (bodyId === 'tux') tint(x, 'rgba(20,20,30,0.35)', 'multiply', 0.55); // 하반신만 어둡게 대충
-      else if (bodyId === 'hoodie') tint(x, 'rgba(90,120,200,0.3)', 'multiply', 0.55);
-      else if (bodyId === 'work' || bodyId === 'robe') tint(x, 'rgba(200,160,90,0.22)', 'multiply', 0.55);
+      keyOutHelmet(x);
+      if (BODY_TINT[bodyId]) tint(x, BODY_TINT[bodyId]);
       bodyCache[key] = c;
       return c;
     });
@@ -62,23 +64,24 @@
     }
     ctx.putImageData(im, 0, 0);
   }
-  function tint(ctx, color, mode, bottomOnly) {
+  function tint(ctx, color, mode) {
     ctx.save();
-    ctx.globalCompositeOperation = mode || 'multiply';
-    if (bottomOnly) {
-      ctx.beginPath();
-      ctx.rect(0, CH * (1 - bottomOnly), CW, CH * bottomOnly);
-      ctx.clip();
-    }
+    ctx.globalCompositeOperation = 'source-atop'; // 몸 픽셀 위에만
     ctx.fillStyle = color;
+    ctx.globalAlpha = 1;
     ctx.fillRect(0, 0, CW, CH);
-    ctx.globalCompositeOperation = 'destination-in';
     ctx.restore();
+    void mode;
   }
 
-  // ---------- 얼굴 (원형+페더+색감, 스프라이트 실루엣에 클립) ----------
-  function faceLayer(faceImg, bodyC, a) {
-    var cx = a.cx * CW, cy = (a.cy - a.r * 0.26) * CH, r = a.r * CW * 1.2, size = Math.round(r * 2);
+  // ---------- 얼굴 = 머리 (원형+페더+색감, 몸통 위에 얹힘) ----------
+  // headGeom: 얼굴 원 중심·반지름. 두더지 머리(헬멧 자리 포함)를 덮는다.
+  function headGeom(a) {
+    return { cx: a.cx * CW, cy: (a.cy - a.r * 0.30) * CH, r: a.r * CW * 1.24 };
+  }
+  function faceLayer(faceImg, a) {
+    var G = headGeom(a);
+    var size = Math.round(G.r * 2);
     var pf = mk(size, size), px = pf.getContext('2d');
     var s = Math.min(faceImg.width, faceImg.height);
     px.drawImage(faceImg, (faceImg.width - s) / 2, (faceImg.height - s) / 2, s, s, 0, 0, size, size);
@@ -93,17 +96,16 @@
     px.fillStyle = g; px.fillRect(0, 0, size, size);
 
     var fl = mk(CW, CH), fx = fl.getContext('2d');
-    fx.drawImage(pf, cx - r, cy - r, size, size);
-    fx.globalCompositeOperation = 'destination-in';
-    fx.drawImage(bodyC, 0, 0);        // 몸 실루엣에 클립
-    return { canvas: fl, cx: cx, cy: cy, r: r };
+    fx.drawImage(pf, G.cx - G.r, G.cy - G.r, size, size);
+    return { canvas: fl, cx: G.cx, cy: G.cy, r: G.r };
   }
 
-  // ---------- 모자 / 안경 (임시 도형) ----------
+  // ---------- 모자 / 안경 (임시 도형, 얼굴 원 기준 배치) ----------
   function drawHat(hatId, a) {
     var c = mk(CW, CH), x = c.getContext('2d');
-    if (hatId === 'none') return c;
-    var hx = a.cx * CW, hw = a.r * CW * 2.5, hy = (a.cy - a.r * 1.05) * CH;
+    if (!hatId || hatId === 'none') return c;
+    var G = headGeom(a);
+    var hx = G.cx, hw = G.r * 2.2, hy = G.cy - G.r * 0.72; // 머리 위쪽
     x.save();
     if (hatId === 'helmet' || hatId === 'hardhat') {
       x.fillStyle = '#d23c2e'; x.beginPath();
@@ -130,8 +132,9 @@
   }
   function drawGlasses(gId, a) {
     var c = mk(CW, CH), x = c.getContext('2d');
-    if (gId === 'none') return c;
-    var ex = a.cx * CW, ey = a.cy * CH - a.r * CH * 0.12, ew = a.r * CW * 0.82, gap = ew * 0.55;
+    if (!gId || gId === 'none') return c; // 안경 없어도 OK
+    var G = headGeom(a);
+    var ex = G.cx, ey = G.cy - G.r * 0.06, ew = G.r * 0.9, gap = ew * 0.52; // 얼굴 원 눈높이
     x.save();
     x.lineWidth = ew * 0.14;
     if (gId === 'sun') {
@@ -150,24 +153,31 @@
     return c;
   }
 
-  // ---------- 한 포즈 합성 ----------
+  // ---------- 한 포즈 합성: 몸통 + 얼굴(머리) + 안경 + 모자 ----------
   function composePose(faceImg, costume, pose) {
     var a = MG.MoleSprites.headAnchor(pose);
     return bodyCanvas(costume.body, pose).then(function (bodyC) {
       var c = mk(CW, CH), ctx = c.getContext('2d');
-      ctx.drawImage(bodyC, 0, 0);                           // 1) 몸
-      var f = faceLayer(faceImg, bodyC, a);
-      ctx.drawImage(f.canvas, 0, 0);                        // 2) 얼굴 (몸 실루엣에 클립됨)
-      // 3) 이음새 그림자
+      var f = faceLayer(faceImg, a);
+      // 1) 몸통
+      ctx.drawImage(bodyC, 0, 0);
+      // 2) 얼굴(머리) — 몸 실루엣에 클립해 두더지 밖으로 안 나가게
+      var fclip = mk(CW, CH), fcx = fclip.getContext('2d');
+      fcx.drawImage(f.canvas, 0, 0);
+      fcx.globalCompositeOperation = 'destination-in';
+      fcx.drawImage(bodyC, 0, 0);
+      ctx.drawImage(fclip, 0, 0);
+      // 3) 이음새 안쪽 그림자
       ctx.save();
       ctx.beginPath(); ctx.arc(f.cx, f.cy, f.r, 0, Math.PI * 2); ctx.clip();
-      var sg = ctx.createRadialGradient(f.cx, f.cy, f.r * 0.66, f.cx, f.cy, f.r);
-      sg.addColorStop(0, 'rgba(0,0,0,0)'); sg.addColorStop(1, 'rgba(35,18,8,' + SEAM + ')');
+      var sg = ctx.createRadialGradient(f.cx, f.cy, f.r * 0.62, f.cx, f.cy, f.r);
+      sg.addColorStop(0, 'rgba(0,0,0,0)');
+      sg.addColorStop(1, 'rgba(30,16,8,' + SEAM + ')');
       ctx.fillStyle = sg; ctx.fillRect(f.cx - f.r, f.cy - f.r, f.r * 2, f.r * 2);
       ctx.restore();
-      // 4) 볼털 링 (경계 가림)
+      // 4) 볼털 링 — 두더지 털을 얼굴 바깥 가장자리에 다시 덮어 경계 가림
       var mask = mk(CW, CH), mc = mask.getContext('2d');
-      var rg = mc.createRadialGradient(f.cx, f.cy, f.r * (1 - FUR_RING), f.cx, f.cy, f.r * 1.04);
+      var rg = mc.createRadialGradient(f.cx, f.cy, f.r * (1 - FUR_RING), f.cx, f.cy, f.r * 1.05);
       rg.addColorStop(0, 'rgba(0,0,0,0)'); rg.addColorStop(1, 'rgba(0,0,0,1)');
       mc.fillStyle = rg; mc.fillRect(0, 0, CW, CH);
       var ring = mk(CW, CH), rc = ring.getContext('2d');
@@ -202,7 +212,7 @@
     var a = MG.MoleSprites.headAnchor(pose);
     return Promise.all([loadImg(faceSrc), bodyCanvas(costume.body, pose)]).then(function (r) {
       var faceImg = r[0], bodyC = r[1];
-      var fl = faceLayer(faceImg, bodyC, a);
+      var fl = faceLayer(faceImg, a);
       return Promise.all([
         toURL(bodyC),
         toURL(fl.canvas),

@@ -87,26 +87,32 @@
       });
     }
 
-    // 미리보기: 4레이어를 흩어놓은 상태로 표시
+    // 미리보기: 4부위를 상/하/좌/우 사각 박스에 넣어 보여준다. [합성] 누르면 가운데로 모여 합쳐짐.
+    var built = false;
+    function ensureSlots() {
+      if (built) return;
+      stage.innerHTML =
+        '<div class="cs-slot cs-slot--hat" data-slot="hat"><img alt=""></div>' +
+        '<div class="cs-slot cs-slot--face" data-slot="face"><img alt=""></div>' +
+        '<div class="cs-slot cs-slot--glasses" data-slot="glasses"><img alt=""></div>' +
+        '<div class="cs-slot cs-slot--body" data-slot="body"><img alt=""></div>';
+      built = true;
+    }
     function refreshStage() {
-      layerUrls.forEach(URL.revokeObjectURL); layerUrls = [];
-      MG.MoleComposite.layers(faceUrl, sel, 'mole1').then(function (L) {
-        layerUrls = [L.body, L.face, L.hat, L.glasses];
-        stage.innerHTML =
-          '<img class="cs-layer cs-layer--body" data-l="body" src="' + L.body + '">' +
-          '<img class="cs-layer cs-layer--face" data-l="face" src="' + L.face + '">' +
-          '<img class="cs-layer cs-layer--glasses" data-l="glasses" src="' + L.glasses + '">' +
-          '<img class="cs-layer cs-layer--hat" data-l="hat" src="' + L.hat + '">';
-        stage.classList.remove('cs-stage--assembled');
-        stage.classList.add('cs-stage--scatter');
+      ensureSlots();
+      stage.classList.remove('cs-stage--merge');
+      // 얼굴 박스 = 사진, 나머지 = 아이템 칩
+      var faceBox = stage.querySelector('.cs-slot--face');
+      faceBox.innerHTML = '<img alt="" src="' + faceUrl + '">';
+      ['hat', 'body', 'glasses'].forEach(function (k) {
+        stage.querySelector('.cs-slot--' + k).innerHTML = ICONS.chip(k, sel[k]);
       });
     }
 
-    // [합성] — 흩어진 4레이어가 모이는 애니메이션 → 짜잔 결과 카드
+    // [합성] — 상/하/좌/우 박스가 가운데로 모이는 애니메이션 → 짜잔 결과 카드
     composeBtn.addEventListener('click', function () {
       composeBtn.disabled = true;
-      stage.classList.remove('cs-stage--scatter');
-      stage.classList.add('cs-stage--assembled'); // CSS transition 이 레이어를 제자리로 모음
+      stage.classList.add('cs-stage--merge'); // CSS transition 이 4박스를 가운데로 모음
       setTimeout(function () {
         MG.MoleComposite.buildOne(faceUrl, sel, 'mole1').then(function (url) {
           resultUrl = url;

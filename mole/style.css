@@ -1022,15 +1022,20 @@ body { background: #16301a; }
 
 /* ---------- 사람두더지 꾸미기 ---------- */
 .costume-screen { align-items: stretch; }
-.cs-stage { position: relative; width: 52%; margin: 12px auto 6px; aspect-ratio: 470/548; }
-.cs-layer { position: absolute; inset: 0; width: 100%; will-change: transform, opacity;
-  transition: transform 0.55s cubic-bezier(.2,.9,.3,1.15), opacity 0.35s; }
-/* 흩어진 상태 — 4부위가 사방에서 */
-.cs-stage--scatter .cs-layer--body    { transform: translate(0, 34%) rotate(-6deg); }
-.cs-stage--scatter .cs-layer--face    { transform: translate(-46%, 4%) rotate(-10deg) scale(0.9); }
-.cs-stage--scatter .cs-layer--hat     { transform: translate(6%, -40%) rotate(12deg); }
-.cs-stage--scatter .cs-layer--glasses { transform: translate(48%, 8%) rotate(9deg) scale(0.9); }
-.cs-stage--assembled .cs-layer        { transform: none; }
+.cs-stage { position: relative; width: 200px; height: 200px; margin: 14px auto 8px; }
+.cs-slot { position: absolute; width: 66px; height: 66px; border: 2px dashed #3a3b45; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center; overflow: hidden; background: #16171d;
+  will-change: transform, opacity;
+  transition: transform 0.5s cubic-bezier(.3,.85,.25,1.25), opacity 0.35s, border-color 0.3s; }
+.cs-slot img, .cs-slot svg { width: 100%; height: 100%; object-fit: cover; }
+.cs-slot--hat     { left: 67px; top: 0; }
+.cs-slot--body    { left: 67px; bottom: 0; }
+.cs-slot--face    { left: 0; top: 67px; }
+.cs-slot--glasses { right: 0; top: 67px; }
+.cs-stage--merge .cs-slot {
+  left: 67px; top: 67px; right: auto; bottom: auto;
+  transform: scale(0.35); opacity: 0; border-color: transparent;
+}
 
 .cs-rows { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; padding: 4px 0 8px; }
 .cs-rows::-webkit-scrollbar { display: none; }

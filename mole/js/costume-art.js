@@ -13,11 +13,11 @@
     crown: '<path d="M8 28 L8 15 L14 21 L20 12 L26 21 L32 15 L32 28 Z" fill="#f2c14e"/>'
   };
   var GLASS = {
-    none: '<line x1="10" y1="20" x2="30" y2="20" stroke="#888" stroke-width="2"/>',
-    round: '<circle cx="14" cy="20" r="6" fill="none" stroke="#333" stroke-width="2.5"/><circle cx="26" cy="20" r="6" fill="none" stroke="#333" stroke-width="2.5"/><line x1="20" y1="20" x2="20" y2="20" stroke="#333" stroke-width="2.5"/>',
-    sun: '<ellipse cx="14" cy="20" rx="7" ry="5.5" fill="#1a1a20"/><ellipse cx="26" cy="20" rx="7" ry="5.5" fill="#1a1a20"/>',
-    goggle: '<ellipse cx="14" cy="20" rx="7.5" ry="6" fill="#9cd" stroke="#7a5a30" stroke-width="2"/><ellipse cx="26" cy="20" rx="7.5" ry="6" fill="#9cd" stroke="#7a5a30" stroke-width="2"/>',
-    monocle: '<circle cx="24" cy="20" r="7" fill="none" stroke="#d9a441" stroke-width="2.5"/>'
+    none: '<line x1="11" y1="20" x2="29" y2="20" stroke="#6d6d76" stroke-width="2.5" stroke-linecap="round"/>',
+    round: '<circle cx="14" cy="20" r="6" fill="none" stroke="#cfcfd4" stroke-width="2.5"/><circle cx="26" cy="20" r="6" fill="none" stroke="#cfcfd4" stroke-width="2.5"/><line x1="20" y1="20" x2="20" y2="20" stroke="#cfcfd4" stroke-width="2.5"/>',
+    sun: '<ellipse cx="14" cy="20" rx="7" ry="5.5" fill="#2b2b33" stroke="#8a8a92" stroke-width="1.5"/><ellipse cx="26" cy="20" rx="7" ry="5.5" fill="#2b2b33" stroke="#8a8a92" stroke-width="1.5"/>',
+    goggle: '<ellipse cx="14" cy="20" rx="7.5" ry="6" fill="#9ccfe0" stroke="#c79a4e" stroke-width="2"/><ellipse cx="26" cy="20" rx="7.5" ry="6" fill="#9ccfe0" stroke="#c79a4e" stroke-width="2"/>',
+    monocle: '<circle cx="24" cy="20" r="7" fill="none" stroke="#f2c14e" stroke-width="2.5"/>'
   };
   var BODY = {
     default: '<ellipse cx="20" cy="24" rx="12" ry="14" fill="#9a6c4c"/>',
