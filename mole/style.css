@@ -989,7 +989,7 @@ body { background: #16301a; }
   font-style: normal;
 }
 .mm-go .mm-ic { width: 26px; height: 26px; fill: #ffcf4a; stroke: none; }
-.mm-go i { font-style: normal; font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em; color: #ffcf4a; }
+.mm-go i { font-style: normal; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.06em; color: #ffcf4a; }
 .mm-go:active { transform: scale(0.92); }
 
 /* 하트 없음 모달 */
