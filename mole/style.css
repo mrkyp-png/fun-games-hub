@@ -1013,6 +1013,8 @@ body { background: #16301a; }
 #more-menu:not(.mm-paused) .mm-resume { display: none; }
 #more-menu.mm-paused .mm-close,
 #more-menu.mm-paused .mm-title { display: none; }
+/* 일시정지(이어하기) 중엔 라이트 변경 잠금 — 이어하기 = 그 게임의 라이트 그대로 복귀. */
+#more-menu.mm-paused .mm-pills { pointer-events: none; opacity: 0.4; }
 .mm-resume {
   display: inline-flex;
   align-items: center;
