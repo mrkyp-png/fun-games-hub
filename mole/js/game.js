@@ -5,7 +5,8 @@
   const I18N = window.FGH.I18N;
   const START_LIVES = 3;      // 스펙 §11
   const GRID_SIZE = 4;        // 4x4 = 16칸 고정 격자
-  const ROUND_SECONDS = 30;   // 라운드마다 30초 점수 어택
+  const ROUND_SECONDS = 15;   // ⚠️ 임시 테스트값 (챕터 전환 흐름 빨리 돌려보려고). 원래 30 — 출시 전 원복.
+                              //    (index.html 인트로·도움말의 "각 30초" 문구는 안 건드림 — 같이 원복)
   const FINAL_ROUND = 10;     // 라운드 1~10
   // 처치 순간 게임 시간을 잠깐 멈춘다 (히트스톱) — 타격감. 콤보가 쌓일수록 조금 더 길게.
   const HITSTOP_BASE_MS = 90;
