@@ -70,10 +70,16 @@
   let activeFaceUrl = null;        // 활성 사람두더지 얼굴 원본 크롭 objectURL (합성 재료)
   let activeFaceMap = null;        // 포즈별 "얼굴+몸체 합성 완료" 이미지 맵 (게임에 넘김)
 
+  // 라이트(힌트) 축 — 내부 id 는 easy/mid/legend 유지(= ON/DIM/OFF). 동물/폭탄은 이제 챕터가 결정.
   const DIFFS = ['easy', 'mid', 'legend'];
   function currentDifficulty() {
     const d = localStorage.getItem('mole.difficulty');
     return DIFFS.indexOf(d) > -1 ? d : 'easy';
+  }
+  // 챕터 축 (콘텐츠) — Phase A 는 챕터1 고정. 챕터2~ 는 다음 단계.
+  function currentChapter() {
+    const c = parseInt(localStorage.getItem('mole.chapter'), 10);
+    return (c >= 1 && c <= 3) ? c : 1;
   }
   function bestFor(diff) {
     const v = parseInt(localStorage.getItem('mole.best.' + diff), 10);
@@ -450,12 +456,13 @@
 
     const config = {
       maxConcurrentMoles: levelData.maxConcurrentMoles,
-      maxConcurrentAnimals: levelData.maxConcurrentAnimals,
-      maxConcurrentBombs: levelData.maxConcurrentBombs,
+      // 동물/폭탄 = 챕터가 결정 (라이트 무관). 챕터1 = 두더지만 / 챕터2 = +동물 / 챕터3 = +폭탄.
+      maxConcurrentAnimals: currentChapter() >= 2 ? levelData.maxConcurrentAnimals : 0,
+      maxConcurrentBombs: currentChapter() >= 3 ? levelData.maxConcurrentBombs : 0,
       popDuration: levelData.moleDuration,
       molePoseCount: MG.MoleSprites.POSE_COUNT,
       obstacleCount: MG.MoleSprites.OBSTACLE_COUNT,
-      obstacles: currentDiff === 'legend' // 하수·고수는 두더지만, 전설만 동물
+      obstacles: currentChapter() >= 2
     };
 
     const scheduler = MG.SpawnScheduler.create({ regions, spawnPoints, config, rng });
@@ -799,14 +806,16 @@
     document.getElementById('btn-pause').addEventListener('click', togglePause);
 
     // 디버그 훅 — 지렁이 게임과 동일 컨벤션, 영구 보존.
-    window.__debugStartGame = (diff) => {
+    window.__debugStartGame = (diff, chapter) => {
       loadActiveFace().then(() => {
         currentDiff = DIFFS.indexOf(diff) > -1 ? diff : 'easy';
         localStorage.setItem('mole.difficulty', currentDiff);
+        if (chapter >= 1 && chapter <= 3) localStorage.setItem('mole.chapter', String(chapter));
         applyDiffClass(currentDiff);
         startRound(1, { fresh: true });
       });
     };
+    window.__debugSetChapter = (n) => { localStorage.setItem('mole.chapter', String(n)); };
     window.__debugStartRound = (n) => startRound(n, { fresh: true });
     window.__debugEndRound = function () {
       if (state && !state.ended) { state.timeRemaining = 0; roundComplete(); }

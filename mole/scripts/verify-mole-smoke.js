@@ -281,23 +281,28 @@ const FACE_PNG_B64 =
     }
     assert.ok(kbOk, 'keyboard grid raises the score');
 
-    // ---- 7) 난이도 ----
-    // 전설: 동물 섞임 (레벨표상 라운드 1은 동물 0 → 라운드 4에서 확인)
-    await page.evaluate(() => window.__debugStartGame('legend'));
+    // ---- 7) 라이트 + 챕터 ----
+    // 라이트는 힌트만 (diff-* 클래스). 동물/폭탄은 챕터가 결정.
+    await page.evaluate(() => window.__debugStartGame('legend'));   // 라이트 OFF
     await waitIntroDone();
-    assert.ok(/diff-legend/.test(await page.evaluate(() => document.getElementById('game-screen').className)), 'diff-legend class');
-    await page.evaluate(() => window.__debugStartRound(4));
-    await waitIntroDone();
-    await page.waitForFunction(() => Array.from(document.querySelectorAll('#mole-pop-layer .mole-pop'))
-      .some((p) => /mole-pop--(animal|bomb)/.test(p.className)), { timeout: 15000 });
-    // 고수: 동물 없음 (라운드 4에서도)
-    await page.evaluate(() => window.__debugStartGame('mid'));
+    assert.ok(/diff-legend/.test(await page.evaluate(() => document.getElementById('game-screen').className)), 'diff-legend(OFF) class');
+    // 챕터1(라이트 무관): 라운드 4에서도 동물/폭탄 없음
+    await page.evaluate(() => window.__debugSetChapter(1));
+    await page.evaluate(() => window.__debugStartGame('legend', 1));
     await waitIntroDone();
     await page.evaluate(() => window.__debugStartRound(4));
     await waitIntroDone();
     await new Promise((r) => setTimeout(r, 3000));
     assert.strictEqual(await page.evaluate(() => Array.from(document.querySelectorAll('#mole-pop-layer .mole-pop'))
-      .some((p) => /mole-pop--(animal|bomb)/.test(p.className))), false, 'mid 난이도는 라운드 4에서도 동물 없음');
+      .some((p) => /mole-pop--(animal|bomb)/.test(p.className))), false, '챕터1은 라운드 4·라이트 OFF 에서도 동물 없음');
+    // 챕터2: 동물 섞임 (레벨표상 라운드 4)
+    await page.evaluate(() => window.__debugStartGame('easy', 2));
+    await waitIntroDone();
+    await page.evaluate(() => window.__debugStartRound(4));
+    await waitIntroDone();
+    await page.waitForFunction(() => Array.from(document.querySelectorAll('#mole-pop-layer .mole-pop'))
+      .some((p) => /mole-pop--animal/.test(p.className)), { timeout: 15000 });
+    await page.evaluate(() => window.__debugSetChapter(1));
 
     // ---- 8) 라운드 진행 (점수 누적) ----
     await page.evaluate(() => window.__debugStartGame('easy'));
