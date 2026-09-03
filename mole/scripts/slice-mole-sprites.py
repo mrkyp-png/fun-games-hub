@@ -399,6 +399,9 @@ def main():
     # --- 4) 뽕망치 (손잡이 포함 전체 — lane-hammer 가 우측 하단 축에서 대각 스윙) ---
     hammer = key_out(Image.open(os.path.join(SRC, 'hammer-source.png')), lo=150, hi=255)
     hammer = drop_specks(hammer, min_area=200)
+    # 외곽선 흰색 노이즈 제거 (동물/두더지와 동일 파이프라인) — 키아웃이 남긴 밝은 AA 밴드를
+    # 투명 경계에서 먹어들어가 없앤다 (진한 3D 하이라이트/색은 통과 못 함).
+    hammer = smooth_alpha(defringe(eat_fringe(hammer)))
     hbx = hammer.getbbox()
     hammer.crop(hbx).save(os.path.join(ASSETS_OUT, 'hammer.png'))
 
