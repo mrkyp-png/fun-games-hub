@@ -199,6 +199,11 @@
 
   // 더보기 메뉴 열기/닫기.
   function openMore(sub) {
+    // 플레이 중에 열면 게임을 멈춘다 (닫을 때 자동 재개) — 메뉴 뒤에서 라운드가 굴러가지 않게.
+    if (state && !state.ended && !state.introActive && !state.paused) {
+      state.paused = true;
+      state.pausedByMenu = true;
+    }
     document.getElementById('more-menu').hidden = false;
     if (moreMenu) moreMenu.refresh();
     if (sub) {
@@ -213,6 +218,12 @@
   function closeMore() {
     screenNav.reset();
     document.getElementById('more-menu').hidden = true;
+    // 열 때 멈춘 게임이면 재개.
+    if (state && state.pausedByMenu) {
+      state.paused = false;
+      state.pausedByMenu = false;
+      lastTime = performance.now();
+    }
     // 진행 중이던 게임이 있으면 그대로, 없으면 대화 화면.
     if (!state) showStartScreen();
   }
@@ -405,8 +416,12 @@
     document.getElementById('gameover-overlay').hidden = true;
     document.getElementById('round-done-overlay').hidden = true;
     document.getElementById('game-screen').classList.remove('is-start');
-    if (screenNav) screenNav.reset();
-    document.getElementById('more-menu').hidden = true;
+    // 새 게임 시작(fresh)일 때만 더보기 메뉴를 닫는다. 자동 다음 라운드는 메뉴를 건드리지 않음
+    // (플레이 중 메뉴 열어둔 채 라운드가 넘어가도 화면이 안 튀게).
+    if (opts && opts.fresh) {
+      if (screenNav) screenNav.reset();
+      document.getElementById('more-menu').hidden = true;
+    }
     syncBgm(true); // 시작 버튼(사용자 제스처) 이후 — 설정에서 켜져 있으면 재생
     MG.HitFx.warmup(); // 오디오 컨텍스트 + 타격음 파일 프리로드 (카운트다운 동안)
 
@@ -662,11 +677,14 @@
       I18N.t('mole.cumulative', { n: run.combo.score.toLocaleString() });
     document.getElementById('round-done-overlay').hidden = false;
 
-    setTimeout(() => {
+    const advance = () => {
       if (myGen !== sessionGen) return; // 그 사이 나가버림
+      // 더보기 메뉴가 열려 있으면 닫힐 때까지 대기 (메뉴 뒤에서 라운드가 넘어가지 않게).
+      if (!document.getElementById('more-menu').hidden) { setTimeout(advance, 300); return; }
       document.getElementById('round-done-overlay').hidden = true;
       startRound(finishedRound + 1); // fresh 아님 → 누적 유지
-    }, 1400);
+    };
+    setTimeout(advance, 1400);
   }
 
   // 목숨 소진(라운드 도중) — 지금까지 친 점수까지 반영하고 최종 결과.

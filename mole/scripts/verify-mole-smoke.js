@@ -313,6 +313,22 @@ const FACE_PNG_B64 =
     assert.strictEqual(await page.evaluate(() => document.querySelector('#hud-ticker .tk-lv').textContent), '라운드 2', 'auto-advanced to round 2');
     assert.ok((await score()) >= scoreBeforeEnd, 'cumulative score carried');
 
+    // ---- 8b) 더보기 메뉴 열어둔 채 라운드가 끝나도 메뉴가 유지되고 화면이 안 튄다 ----
+    await page.click('#btn-back-to-hub');
+    await new Promise((r) => setTimeout(r, 100));
+    assert.strictEqual(await page.evaluate(() => document.getElementById('more-menu').hidden), false, 'more-menu open mid-play');
+    await page.evaluate(() => window.__debugEndRound());
+    await new Promise((r) => setTimeout(r, 2000)); // 자동 진행 대기시간(1.4s) 넘김
+    assert.strictEqual(await page.evaluate(() => document.getElementById('more-menu').hidden), false,
+      'more-menu stays open even though the round ended (no forced switch to the game screen)');
+    assert.strictEqual(await page.evaluate(() => document.querySelector('#hud-ticker .tk-lv').textContent), '라운드 2',
+      'next round is held until the menu closes');
+    await page.evaluate(() => document.querySelector('#more-menu [data-mm-close]').click());
+    await new Promise((r) => setTimeout(r, 500));
+    await waitIntroDone();
+    assert.strictEqual(await page.evaluate(() => document.querySelector('#hud-ticker .tk-lv').textContent), '라운드 3',
+      'round advances once the menu is closed');
+
     // ---- 9) 목숨 소진 → 결과 + mole.best.easy + 코인 ----
     await page.evaluate(() => { localStorage.setItem('mole.coins', '0'); localStorage.removeItem('mole.best.easy'); });
     await page.evaluate(() => window.__debugStartGame('easy'));
