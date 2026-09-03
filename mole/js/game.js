@@ -46,6 +46,7 @@
   // 10라운드를 통틀어 유지되는 것: 콤보·점수(1라운드부터 누적)와 목숨.
   let run = null;     // { combo: ComboScore, lives, comboMilestone }
   const COMBO_LIFE_STEP = 100; // 콤보가 이 배수를 넘길 때마다 목숨 +1
+  const JUGGLE_BONUS = 30;     // 저글(더블) 점수 — 작은 덤 (콤보 점수표 안 씀)
   let rafId = null;
   let lastTime = 0;
   let sharedPopElements = null; // #mole-pop-layer는 재생성 안 되는 고정 DOM이므로 세션당 한 번만 생성
@@ -616,7 +617,7 @@
     results.forEach((r) => {
       if (r.type === 'mole') {
         if (r.juggle) {
-          run.combo.onMoleHit();   // 저글 보너스 — 콤보 +1 + 그 콤보 점수
+          run.combo.onJuggle(JUGGLE_BONUS); // 콤보 +1 + 작은 고정 보너스 (점수표 안 씀)
           checkComboLifeBonus();
           MG.HitFx.juggle(board, r.xFrac, r.yFrac);
           moleHits += 1;

@@ -20,6 +20,13 @@
       score += comboToPoints(combo);
     }
 
+    // 저글(더블) 보너스 — 콤보 카운트는 +1 (목숨 보너스 유지) 이지만 점수는 작은 고정값만.
+    // 콤보 점수표(최대 200)를 쓰면 두더지 1마리가 사실상 2배가 돼 너무 커서(사용자 지적).
+    function onJuggle(bonus) {
+      combo += 1;
+      score += (bonus || 0);
+    }
+
     function onObstacleHit() {
       combo = 0;
     }
@@ -30,6 +37,7 @@
 
     return {
       onMoleHit,
+      onJuggle,
       onObstacleHit,
       isMaxCombo,
       get combo() { return combo; },

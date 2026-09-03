@@ -29,6 +29,18 @@ assert.strictEqual(comboToPoints(9), 200, '5콤보 이상은 모두 200점(MAX)'
   assert.ok(!cs.isMaxCombo());
 }
 
+// 3b) 저글(더블) 보너스 — 콤보 +1, 점수는 고정 소액만 (콤보 점수표 안 씀)
+{
+  const cs = create();
+  cs.onMoleHit();                 // combo 1, +100
+  cs.onJuggle(30);                // combo 2, +30 (200 아님)
+  assert.strictEqual(cs.combo, 2, '저글도 콤보 +1');
+  assert.strictEqual(cs.score, 130, '저글 점수는 고정 30 (콤보 점수표 미사용)');
+  cs.onJuggle();                  // bonus 없이 호출 → +0
+  assert.strictEqual(cs.combo, 3);
+  assert.strictEqual(cs.score, 130);
+}
+
 // 4) 별 등급 (§15, Claude 결정: 남은 목숨 기준)
 assert.strictEqual(computeStars(3, 3), 3, '목숨 그대로면 3별');
 assert.strictEqual(computeStars(2, 3), 2, '1번 잃으면 2별');
