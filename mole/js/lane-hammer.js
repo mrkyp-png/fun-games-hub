@@ -13,8 +13,9 @@
 
   const GRIP_X = 24;   // 스프라이트 안 손잡이 잡는 점 (%)
   const GRIP_Y = 84;
-  const HOME_X = 0.82, HOME_Y = 0.91;  // 대기 위치 (보드 분수) — 우측 하단, 화면 안
-  const HOME_DEG = 26;                 // 대기: 옆으로 뉘어 홀스터
+  const HOME_X = 0.90, HOME_Y = 0.965; // 대기 위치 (보드 분수) — 우측 맨 아래 구석. 16번 구멍
+                                       // (~0.86,0.84) 아래로 비켜서 안 겹치고, 보드 안(<1)이라 버튼 안 닿음
+  const HOME_DEG = 18;                 // 대기: 살짝 눕힘 (머리는 좌상단 잔디 쪽 — 화면 밖으로 안 나가게)
   const READY_DEG = -30;               // 조준: 오른쪽에서 머리 들어올림
   const HIT_DEG = -82;                 // 타격: 머리를 대각선 아래로 휘두름
   // grip 을 목표에서 이만큼 떨어뜨리면 (머리가 grip 왼쪽-위 0.135/0.064 지점이므로) 머리가 목표에 착지.
@@ -97,7 +98,7 @@
       el.style.left = (gx * 100).toFixed(2) + '%';
       el.style.top = (gy * 100).toFixed(2) + '%';
       el.style.transform = 'translate(-' + GRIP_X + '%, -' + GRIP_Y + '%) rotate(' + deg.toFixed(1) + 'deg)';
-      el.style.opacity = (phase === 'home') ? '0.5' : '1'; // 대기 상태만 반투명
+      el.style.opacity = '1'; // 항상 불투명 — "현실 손이 게임화면을 때리는" 3D 느낌 (사용자 요청)
     }
 
     function isBusy() { return phase === 'fly' || phase === 'chop' || phase === 'rise'; }
