@@ -781,6 +781,17 @@
         editName: () => {
           const n = prompt(I18N.t('mole.more.nickPrompt'), localStorage.getItem('mole.nick') || '');
           if (n != null) { localStorage.setItem('mole.nick', n.trim().slice(0, 12)); moreMenu.refresh(); }
+        },
+        editAvatar: () => {
+          screenNav.show('face-maker');
+          faceMaker.open({
+            profile: true,
+            onDone: (dataUrl) => {
+              try { localStorage.setItem('mole.profilePic', dataUrl); } catch (e) { alert(I18N.t('mole.fm.priv')); }
+              screenNav.back();
+              moreMenu.refresh();
+            }
+          });
         }
       }
     });

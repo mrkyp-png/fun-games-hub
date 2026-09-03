@@ -63,6 +63,21 @@ const FACE_PNG_B64 =
     assert.strictEqual(await page.evaluate(() => window.MoleGame.FaceStore.count()), 1, 'maker saved one face');
     // 저장 후 더보기 메뉴로 복귀
     assert.strictEqual(await page.evaluate(() => document.getElementById('more-menu').hidden), false, 'back to more-menu after save');
+
+    // 프로필 사진: 아바타 탭 → 메이커(프로필 모드) → 저장 → mole.profilePic
+    await page.click('#more-menu [data-mm-avatar]');
+    await page.waitForSelector('#face-maker [data-fm-stage="pick"]:not([hidden])');
+    assert.strictEqual(await page.evaluate(() => document.querySelector('#face-maker [data-fm-name]').hidden), true, 'profile mode hides the name field');
+    const tmp2 = path.join(os.tmpdir(), 'smokepfp_' + Date.now() + '.png');
+    fs.writeFileSync(tmp2, Buffer.from(FACE_PNG_B64, 'base64'));
+    await (await page.$('#face-maker [data-fm-file]')).uploadFile(tmp2);
+    await page.waitForSelector('#face-maker [data-fm-stage="crop"]:not([hidden])', { timeout: 4000 });
+    await page.click('#face-maker [data-fm-next]');
+    await page.waitForSelector('#face-maker [data-fm-stage="preview"]:not([hidden])');
+    await page.click('#face-maker [data-fm-save]');
+    await page.waitForFunction(() => !!localStorage.getItem('mole.profilePic'), { timeout: 4000 });
+    fs.unlinkSync(tmp2);
+    assert.ok(await page.evaluate(() => /data:image/.test(document.querySelector('#more-menu [data-mm-avatar]').style.backgroundImage)), 'avatar shows the new profile pic');
     const pills = await page.evaluate(() => document.querySelectorAll('#more-menu [data-mm-diff]').length);
     assert.strictEqual(pills, 3, '3 difficulty pills');
     // 라이트 모드 pill = 설정만 (화면 이동 없음)

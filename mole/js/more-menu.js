@@ -14,6 +14,7 @@
     el.querySelector('[data-mm-make]').addEventListener('click', on.make);
     el.querySelector('[data-mm-locker]').addEventListener('click', on.locker);
     el.querySelector('[data-mm-name]').addEventListener('click', on.editName);
+    el.querySelector('[data-mm-avatar]').addEventListener('click', on.editAvatar);
     el.querySelector('[data-mm-start]').addEventListener('click', on.start);
     el.querySelectorAll('[data-mm-diff]').forEach(function (b) {
       b.addEventListener('click', function () { on.diff(b.getAttribute('data-mm-diff')); });
@@ -34,6 +35,9 @@
       el.querySelector('[data-mm-coins] b').textContent = MG.Economy.getCoins().toLocaleString();
 
       el.querySelector('[data-mm-nick]').textContent = localStorage.getItem('mole.nick') || '두더지';
+      var pic = localStorage.getItem('mole.profilePic');
+      var av = el.querySelector('[data-mm-avatar]');
+      av.style.backgroundImage = pic ? 'url("' + pic + '")' : 'url("assets/moles/mole1.png")';
       var diff = localStorage.getItem('mole.difficulty') || 'easy';
       var best = parseInt(localStorage.getItem('mole.best.' + diff), 10) || 0;
       el.querySelector('[data-mm-sub]').textContent = best > 0

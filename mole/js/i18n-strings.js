@@ -46,6 +46,7 @@
       'mole.diff.legend': '라이트 OFF',
 
       'mole.fm.title': '사람두더지 만들기',
+      'mole.fm.titleProfile': '프로필 사진',
       'mole.fm.pickHint': '사진을 골라주세요',
       'mole.fm.pick': '사진 선택',
       'mole.fm.cropHint': '얼굴을 원 안에 맞춰주세요',
@@ -149,6 +150,7 @@
       'mole.diff.legend': 'Light OFF',
 
       'mole.fm.title': 'Make a Face Mole',
+      'mole.fm.titleProfile': 'Profile photo',
       'mole.fm.pickHint': 'Pick a photo',
       'mole.fm.pick': 'Choose photo',
       'mole.fm.cropHint': 'Fit the face in the circle',

@@ -61,7 +61,7 @@
       <div id="pause-veil" class="mole-board-layer" aria-hidden="true">일시정지</div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v35</div>
+      <div id="build-tag" aria-hidden="true">v36</div>
       <div id="board-start" class="board-panel board-start">
         <!-- 최고 스코어: 위에서 툭 내려오는 문자 알림 -->
         <div id="start-best" class="chat-sms" aria-hidden="true">
@@ -139,10 +139,12 @@
           <span class="mm-stat mm-hearts" data-mm-hearts><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5.5 6 5.5c2 0 3.4 1.2 4 2.3.6-1.1 2-2.3 4-2.3 3.5 0 5 3.5 3.5 6.5C19 16.5 12 21 12 21z"/></svg><b>5</b></span>
           <span class="mm-stat mm-coins" data-mm-coins><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg><b>0</b></span>
         </div>
-        <button type="button" class="mm-profile" data-mm-name>
-          <span class="mm-avatar" aria-hidden="true"></span>
-          <span class="mm-profile-txt"><b data-mm-nick>두더지</b><i data-mm-sub></i></span>
-        </button>
+        <div class="mm-profile">
+          <button type="button" class="mm-avatar" data-mm-avatar aria-label="프로필 사진 변경"></button>
+          <button type="button" class="mm-profile-txt" data-mm-name>
+            <b data-mm-nick>두더지</b><i data-mm-sub></i>
+          </button>
+        </div>
         <div class="mm-maker" data-mm-make>
           <span class="mm-maker-faces" data-mm-faces></span>
           <span class="mm-maker-txt" data-i18n="mole.more.make">사진으로 사람두더지 만들기</span>

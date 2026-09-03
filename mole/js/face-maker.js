@@ -21,6 +21,7 @@
     var pointers = new Map();
     var pinchStart = null;
     var lastCropDataUrl = null;
+    var session = {};  // 이번 open() 옵션 (profile 모드 / done 오버라이드)
 
     function stage(name) {
       el.querySelectorAll('[data-fm-stage]').forEach(function (s) {
@@ -28,8 +29,14 @@
       });
     }
     function open(o) {
-      var forced = !!(o && o.forced);
+      session = o || {};
+      var forced = !!session.forced;
       el.querySelectorAll('[data-fm-cancel]').forEach(function (b) { b.hidden = forced; });
+      // 프로필 모드: 이름칸 숨김, 제목 문구 바꿈
+      var isProfile = !!session.profile;
+      if (nameInput) nameInput.hidden = isProfile;
+      var titleEl = el.querySelector('.bs-title');
+      if (titleEl) titleEl.textContent = root.FGH.I18N.t(isProfile ? 'mole.fm.titleProfile' : 'mole.fm.title');
       fileInput.value = '';
       nameInput.value = '';
       lastCropDataUrl = null;
@@ -116,18 +123,27 @@
 
     el.querySelector('[data-fm-next]').addEventListener('click', function () {
       lastCropDataUrl = renderCrop();
-      var a = MG.MoleSprites.headAnchor('mole1');
-      previewBox.innerHTML =
-        '<div class="fm-preview-mole"><img class="fm-preview-body" src="' + MOLE_BODY + '" alt="">' +
-        '<img class="fm-preview-face" src="' + lastCropDataUrl + '" alt=""></div>';
-      var face = previewBox.querySelector('.fm-preview-face');
-      face.style.left = (a.cx * 100) + '%';
-      face.style.top = (a.cy * 100) + '%';
-      face.style.width = (a.r * 2 * 100) + '%';
+      if (session.profile) {
+        // 프로필 사진 모드: 두더지 몸 합성 없이 원형 얼굴만 미리보기
+        previewBox.innerHTML = '<div class="fm-preview-face-only"><img src="' + lastCropDataUrl + '" alt=""></div>';
+      } else {
+        var a = MG.MoleSprites.headAnchor('mole1');
+        previewBox.innerHTML =
+          '<div class="fm-preview-mole"><img class="fm-preview-body" src="' + MOLE_BODY + '" alt="">' +
+          '<img class="fm-preview-face" src="' + lastCropDataUrl + '" alt=""></div>';
+        var face = previewBox.querySelector('.fm-preview-face');
+        face.style.left = (a.cx * 100) + '%';
+        face.style.top = (a.cy * 100) + '%';
+        face.style.width = (a.r * 2 * 100) + '%';
+      }
       stage('preview');
     });
     el.querySelector('[data-fm-redo]').addEventListener('click', function () { stage('crop'); });
     el.querySelector('[data-fm-save]').addEventListener('click', function () {
+      if (session.profile) {
+        (session.onDone || onDone)(lastCropDataUrl);
+        return;
+      }
       dataUrlToBlob(lastCropDataUrl)
         .then(function (blob) { return MG.FaceStore.saveFace(blob, nameInput.value.trim()); })
         .then(function (id) { MG.FaceStore.setActive(id); onDone(id); })
