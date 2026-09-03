@@ -975,19 +975,27 @@ body { background: #16301a; }
 .mm-grid i { font-style: normal; text-align: center; }
 .mm-ad { margin: auto 14px 6px; }
 
-/* 더보기 메뉴 "시작" — 게임 화면 초록 통화 버튼과 똑같은 모양 (아이콘+라벨, 우하단) */
+/* 더보기 메뉴 "GO" — 게임 화면 초록 통화 버튼과 같은 크기·모양 (아이콘+라벨, 우하단, 3D) */
 .mm-start {
   position: absolute;
   right: 20px;
-  bottom: calc(64px + env(safe-area-inset-bottom));   /* 광고 배너 위로 */
-  width: 66px;
-  height: 66px;
+  bottom: calc(83px + env(safe-area-inset-bottom));   /* 광고 배너 위 + 0.5cm */
+  width: 23vw;
+  height: 23vw;
+  max-width: 92px;
+  max-height: 92px;
   gap: 3px;                 /* .lane-button--nav 와 동일 */
-  box-shadow: 0 6px 16px rgba(46, 204, 87, 0.45);
+  /* 입체 버튼: 아래쪽 짙은 초록 립 + 그림자 */
+  box-shadow: 0 6px 0 #1b7e3a, 0 10px 18px rgba(0, 0, 0, 0.45);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
 }
 .mm-start .lane-ico { width: 24px; height: 24px; }
-.mm-start .lane-lbl { font-size: 0.62rem; color: #fff; }
-.mm-start:active { background: #29b84e; transform: scale(0.94); }
+.mm-start .lane-lbl { font-size: 0.55rem; color: #fff; letter-spacing: 0.08em; }
+.mm-start:active {
+  transform: translateY(5px);
+  box-shadow: 0 1px 0 #1b7e3a, 0 3px 8px rgba(0, 0, 0, 0.4);
+  background: #29b84e;
+}
 
 /* 하트 없음 모달 */
 .nh-title { font-weight: 800; margin-bottom: 14px; }
