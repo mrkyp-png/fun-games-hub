@@ -886,8 +886,8 @@
 
     // 하마 = 기쁨/슬픔 3포즈 중 랜덤 1개
     const poseN = 1 + Math.floor(Math.random() * 3);
-    document.getElementById('gameover-hippo').src =
-      'assets/hippo/' + (win ? 'happy' : 'sad') + poseN + '.png';
+    const hippo = document.getElementById('gameover-hippo');
+    hippo.src = 'assets/hippo/' + (win ? 'happy' : 'sad') + poseN + '.png';
 
     document.getElementById('gameover-reason').textContent =
       I18N.t(win ? 'mole.result.success' : 'mole.result.fail');
@@ -904,6 +904,8 @@
     setHammerLayerVisible(false);
     ov.classList.remove('is-sliding');
     ov.hidden = false;
+    // 하마 세로 크기 = 보드 높이의 40% (포즈마다 종횡비가 달라서 vh/% CSS 로는 머리가 잘렸음).
+    hippo.style.maxHeight = Math.round(ov.clientHeight * 0.4) + 'px';
   }
 
   // ---------- 초기화 ----------
