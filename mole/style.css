@@ -750,7 +750,7 @@ body { background: var(--lm-page); }
 .go-hippo-wrap { position: relative; z-index: 2; transform-origin: center top; } /* 등장 스케일이 위로 안 삐치게 */
 #gameover-overlay:not([hidden]) .go-hippo-wrap { animation: go-pop 0.5s cubic-bezier(.2, 1.1, .4, 1) both; }
 /* 세로 크기는 game.js 가 보드 높이 기준 px 로 지정 (하마 머리 안 잘리게). 여기선 가로 상한만. */
-.go-hippo { display: block; width: auto; height: auto; max-width: min(48vw, 172px); filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.22)); }
+.go-hippo { display: block; width: auto; height: auto; max-width: min(48vw, 172px); filter: drop-shadow(0 9px 11px rgba(0, 0, 0, 0.13)); }
 #gameover-overlay.is-win .go-hippo { animation: go-bob 1.6s ease-in-out infinite; }
 #gameover-overlay.is-lose .go-hippo { animation: go-sway 3.2s ease-in-out infinite; }
 @keyframes go-pop { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }

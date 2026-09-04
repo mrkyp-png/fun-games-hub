@@ -800,17 +800,29 @@
   // (다음 챕터가 열려 있을 때만. 실제 챕터 콘텐츠는 Phase B — 지금은 글자 placeholder.)
   function wireResultSwipe() {
     const ov = document.getElementById('gameover-overlay');
-    let x0 = null;
-    ov.addEventListener('pointerdown', (e) => {
-      if (!ov.dataset.nextChapter) return;
-      x0 = e.clientX;
-    });
-    ov.addEventListener('pointerup', (e) => {
-      if (x0 == null) return;
-      const dx = e.clientX - x0;
+    let x0 = null, y0 = 0, fired = false;
+    const start = (x, y) => { if (!ov.dataset.nextChapter) return; x0 = x; y0 = y; fired = false; };
+    const move = (x, y) => {
+      if (x0 == null || fired) return;
+      const dx = x - x0, dy = y - y0;
+      // 왼쪽으로 충분히, 그리고 세로보다 가로가 우세할 때
+      if (dx < -55 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+        fired = true; x0 = null;
+        goToNextChapter(parseInt(ov.dataset.nextChapter, 10));
+      }
+    };
+    const end = (x, y) => {
+      if (x0 != null && typeof x === 'number') move(x, y); // move 이벤트가 없던 경우 대비 (총 이동량으로 판정)
       x0 = null;
-      if (dx < -60 && ov.dataset.nextChapter) goToNextChapter(parseInt(ov.dataset.nextChapter, 10));
-    });
+    };
+    ov.addEventListener('pointerdown', (e) => start(e.clientX, e.clientY));
+    ov.addEventListener('pointermove', (e) => move(e.clientX, e.clientY));
+    ov.addEventListener('pointerup', (e) => end(e.clientX, e.clientY));
+    ov.addEventListener('pointercancel', () => end());
+    // 터치 폴백 (일부 안드로이드 웹뷰에서 스와이프 중 pointer 이벤트가 끊김)
+    ov.addEventListener('touchstart', (e) => { const t = e.touches[0]; start(t.clientX, t.clientY); }, { passive: true });
+    ov.addEventListener('touchmove', (e) => { const t = e.touches[0]; move(t.clientX, t.clientY); }, { passive: true });
+    ov.addEventListener('touchend', (e) => { const t = e.changedTouches[0]; end(t.clientX, t.clientY); });
   }
   function goToNextChapter(ch) {
     localStorage.setItem('mole.chapter', String(ch));

@@ -57,7 +57,8 @@ def key_out(im, lo=150, hi=255):
 
 
 def defringe(im, erode_px=1):
-    """알파를 erode_px 깎고, 투명에 붙은 near-white/회색 잔여 픽셀 제거."""
+    """알파 1px 깎고, 투명에 붙어 남은 '밝은 회색(체커 잔여)' 만 제거.
+    하마 몸통(보라-회색)은 안 건드리게 min(r,g,b)>=185 로 아주 밝은 것만."""
     a = im.split()[3].filter(ImageFilter.MinFilter(erode_px * 2 + 1))
     im.putalpha(a)
     w, h = im.size
@@ -68,8 +69,8 @@ def defringe(im, erode_px=1):
             r, g, b, al = px[x, y]
             if al == 0:
                 continue
-            grayish = max(abs(r - g), abs(g - b), abs(r - b)) <= 14 and min(r, g, b) >= 150
-            if not grayish:
+            near_gray = max(abs(r - g), abs(g - b), abs(r - b)) <= 16 and min(r, g, b) >= 185
+            if not near_gray:
                 continue
             for dx in (-1, 0, 1):
                 for dy in (-1, 0, 1):
@@ -83,11 +84,36 @@ def defringe(im, erode_px=1):
     return im
 
 
+def drop_specks(im, min_area=60):
+    """떨어져 나온 작은 알파 조각 제거 (경계 침식 후 남는 점 노이즈)."""
+    from collections import deque
+    w, h = im.size
+    px = im.load()
+    seen = bytearray(w * h)
+    for sy in range(h):
+        for sx in range(w):
+            if seen[sy * w + sx] or px[sx, sy][3] < 24:
+                continue
+            comp, dq = [], deque([(sx, sy)])
+            seen[sy * w + sx] = 1
+            while dq:
+                x, y = dq.popleft()
+                comp.append((x, y))
+                for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                    if 0 <= nx < w and 0 <= ny < h and not seen[ny * w + nx] and px[nx, ny][3] >= 24:
+                        seen[ny * w + nx] = 1
+                        dq.append((nx, ny))
+            if len(comp) < min_area:
+                for x, y in comp:
+                    r, g, b, _ = px[x, y]
+                    px[x, y] = (r, g, b, 0)
+    return im
+
+
 def feather(im):
-    """key_out 은 이진 알파(계단현상)를 남긴다 — 크게 띄우는 결과화면 하마는 가장자리가
-    깨져 보임. 알파를 살짝 blur 해 AA 를 되살리되, 본체는 불투명 유지(대비 곡선)."""
-    a = im.split()[3].filter(ImageFilter.GaussianBlur(0.9))
-    a = a.point(lambda v: 0 if v < 28 else min(255, int(v * 1.28)))
+    """이진 알파(계단현상)에 얕은 blur 로 AA 만. 본체는 불투명 유지(가파른 곡선)."""
+    a = im.split()[3].filter(ImageFilter.GaussianBlur(0.7))
+    a = a.point(lambda v: 0 if v < 40 else min(255, int((v - 40) * 1.8) + 40))
     im.putalpha(a)
     return im
 
@@ -132,7 +158,7 @@ def main():
     for r, (y0, y1) in enumerate(ybands):
         for c, (x0, x1) in enumerate(xbands):
             cell = im.crop((x0, y0, x1, y1))
-            cell = feather(defringe(cell))
+            cell = feather(drop_specks(defringe(cell)))
             bbox = cell.split()[3].getbbox()
             cell = cell.crop(bbox)
             path = os.path.join(OUT, NAMES[r][c] + '.png')
