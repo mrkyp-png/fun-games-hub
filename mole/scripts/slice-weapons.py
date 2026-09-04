@@ -156,6 +156,36 @@ def drop_specks(im, min_area=1200):
     return im
 
 
+def keep_largest(im):
+    """가장 큰 알파 연결요소만 남긴다 (크롭에 딸려온 옆 대포 조각 제거)."""
+    w, h = im.size
+    px = im.load()
+    seen = bytearray(w * h)
+    best = []
+    for sy in range(h):
+        for sx in range(w):
+            if seen[sy * w + sx] or px[sx, sy][3] < 24:
+                continue
+            comp, dq = [], deque([(sx, sy)])
+            seen[sy * w + sx] = 1
+            while dq:
+                x, y = dq.popleft()
+                comp.append((x, y))
+                for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                    if 0 <= nx < w and 0 <= ny < h and not seen[ny * w + nx] and px[nx, ny][3] >= 24:
+                        seen[ny * w + nx] = 1
+                        dq.append((nx, ny))
+            if len(comp) > len(best):
+                best = comp
+    keep = set(best)
+    for y in range(h):
+        for x in range(w):
+            if (x, y) not in keep:
+                r, g, b, _ = px[x, y]
+                px[x, y] = (r, g, b, 0)
+    return im
+
+
 def crop_bbox(im, box):
     c = drop_specks(im.crop(box))
     bb = c.split()[3].getbbox()
@@ -175,7 +205,7 @@ def main():
     # 조준 포즈 2개 (흰 배경 시트에서 키아웃 + bbox 트림) — 소스가 repo 안이라 항상 실행
     ang = Image.open(SRC_ANGLES).convert('RGBA')
     for name, box in ANGLE_BOXES.items():
-        sp = key_white(ang.crop(box))
+        sp = keep_largest(key_white(ang.crop(box)))
         bb = sp.split()[3].getbbox()
         if bb:
             sp = sp.crop(bb)

@@ -1046,8 +1046,8 @@ body { background: var(--lm-page); }
   transform-origin: 100% 50%;
   filter: drop-shadow(0 0 12px rgba(255, 150, 50, 0.8));
   /* 포신과 만나는 오른쪽 끝을 부드럽게 페이드 (하드 크롭 선 감춤) */
-  -webkit-mask-image: linear-gradient(to left, transparent 0, #000 22%);
-  mask-image: linear-gradient(to left, transparent 0, #000 22%);
+  -webkit-mask-image: linear-gradient(to left, transparent 0, #000 9%);
+  mask-image: linear-gradient(to left, transparent 0, #000 9%);
   z-index: 2;
 }
 .lc-flash.is-on { animation: lc-flash 0.2s ease-out forwards; }
@@ -1060,8 +1060,8 @@ body { background: var(--lm-page); }
   opacity: 0; --lc-rot: 0deg;
   transform: rotate(var(--lc-rot)) scale(0.6);
   transform-origin: 100% 50%;
-  -webkit-mask-image: linear-gradient(to left, transparent 0, #000 20%);
-  mask-image: linear-gradient(to left, transparent 0, #000 20%);
+  -webkit-mask-image: linear-gradient(to left, transparent 0, #000 9%);
+  mask-image: linear-gradient(to left, transparent 0, #000 9%);
   z-index: 0;
 }
 .lc-smoke.is-on { animation: lc-smoke 0.5s ease-out forwards; }

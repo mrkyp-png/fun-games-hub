@@ -28,13 +28,14 @@
     { key: 'mid',   src: 'assets/weapons/cannon.png',       w: 0.266, ar: 1.185,
       mu: 0.07,  mv: 0.15, aim: -138, tweak: 20, dx: -0.014 },
     { key: 'steep', src: 'assets/weapons/cannon-steep.png', w: 0.223, ar: 1.538,
-      mu: 0.50,  mv: 0.05, aim: -94,  tweak: 8, dx: 0.045 }
+      mu: 0.50,  mv: 0.05, aim: -94,  tweak: 0, dx: 0.045 }
   ];
 
   const REST_KEY = 'mid';                  // 발사 후 되돌아갈 기본 대기 포즈
   const FLASH_BASE_DEG = -150;             // 화염·연기 스프라이트가 기본으로 향한 방향
-  const FLASH_W = 0.15, FLASH_AR = 294 / 371;  // 화염 폭(보드분수) / 높이비 (cannon-flash 371x294)
-  const SMOKE_W = 0.08, SMOKE_AR = 254 / 211;  // 연기 폭 / 높이비 (cannon-smoke 211x254)
+  const FLASH_W = 0.18, FLASH_AR = 294 / 371;  // 화염 폭(보드분수) / 높이비 (cannon-flash 371x294)
+  const SMOKE_W = 0.096, SMOKE_AR = 254 / 211; // 연기 폭 / 높이비 (cannon-smoke 211x254)
+  const FX_INSET = 0.10;                        // 화염·연기 오른쪽 끝을 포구보다 이만큼(폭 비율) 안으로 — 포신에 묻히게
   const AIM_MS = 90;                       // 포즈 전환 + 미세 조준
   const RECOIL = [0.012, 0.024, 0.040];    // 살짝/보통/강 (보드 분수)
   const KICK_SEC = 0.06, SETTLE_SEC = 0.34;
@@ -81,7 +82,8 @@
     // 화염·연기: 오른쪽-중앙(포구 부착점)이 활성 포즈의 (ax,ay) 에 오도록 — showPose 에서 재배치.
     function placeFx(im, w, ar, p) {
       im.style.width = (w * 100).toFixed(2) + '%';
-      im.style.left = ((ax(p) - w) * 100).toFixed(2) + '%';
+      // 오른쪽 끝(포구 부착점)을 포구보다 FX_INSET 만큼 안쪽에 둔다 → 포신에 묻혀 자연스럽게.
+      im.style.left = ((ax(p) - w * (1 - FX_INSET)) * 100).toFixed(2) + '%';
       im.style.top = ((ay(p) - w * ar / 2) * 100).toFixed(2) + '%';
     }
 
