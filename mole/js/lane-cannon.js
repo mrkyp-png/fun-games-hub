@@ -69,6 +69,12 @@
   function ease(k) { return k * k; }
   function easeOut(k) { return 1 - (1 - k) * (1 - k); }
   function angDiff(a, b) { let d = (a - b) % 360; if (d > 180) d -= 360; if (d < -180) d += 360; return d; }
+  // 점 (px,py)를 축 (ox,oy) 기준으로 deg만큼 회전 (CSS rotate와 같은 방향, 화면좌표 y-down).
+  function rotateAround(px, py, ox, oy, deg) {
+    const r = deg * Math.PI / 180, c = Math.cos(r), s = Math.sin(r);
+    const dx = px - ox, dy = py - oy;
+    return { x: ox + dx * c - dy * s, y: oy + dx * s + dy * c };
+  }
 
   function create({ layer }) {
     const el = document.createElement('div');
@@ -93,6 +99,15 @@
     // 포즈별 유효 포구 고정점 (dx/dy 반영)
     function ax(p) { return MZX + (p && p.dx || 0); }
     function ay(p) { return MZY + (p && p.dy || 0); }
+
+    // steep 포즈의 바퀴(캐리지) 위치 — 3번 구멍 회전축용. 포구(mv=0.05)에서 세로로
+    // STEEP_WHEEL_MV 지점까지 내려간 곳(그림 세로 92% 부근, 바퀴가 있는 자리).
+    const steepPose = POSES.find((p) => p.key === 'steep');
+    const STEEP_WHEEL_MV = 0.92;
+    function steepWheelPivot() {
+      const height = steepPose.w * steepPose.ar;
+      return { x: ax(steepPose), y: ay(steepPose) + (STEEP_WHEEL_MV - steepPose.mv) * height };
+    }
 
     // 회전축 = 포구 고정점. 미세 조준·반동 모두 rig 통째로.
     rig.style.transformOrigin = (MZX * 100).toFixed(2) + '% ' + (MZY * 100).toFixed(2) + '%';
@@ -161,6 +176,9 @@
       showPose(best);
 
       // 3번 구멍이면 tweak 무시하고 정확히 필요한 각도로 고정 회전.
+      // 회전축도 포구가 아니라 바퀴(캐리지)로 바꿔서 — 바퀴는 그 자리에 박힌 채
+      // 포신만 부채꼴로 도는 것처럼 보이게(안 넘어짐). 다른 구멍은 회전이 항상 0이라
+      // 축을 바꿔도 시각적으로 차이가 없음(rotate(0)은 축과 무관).
       const isHole3 = Math.abs(tx - HOLE3_X) < 0.01 && Math.abs(ty - HOLE3_Y) < 0.01;
       resFrom = residual;
       resTo = isHole3 ? angDiff(want, best.aim) : clamp(angDiff(want, best.aim), -best.tweak, best.tweak);
@@ -168,13 +186,20 @@
       phase = 'aim'; t = 0;
       recoilAmt = RECOIL[Math.floor(Math.random() * RECOIL.length)];
 
+      const pivot = isHole3 ? steepWheelPivot() : { x: MZX, y: MZY };
+      rig.style.transformOrigin = (pivot.x * 100).toFixed(2) + '% ' + (pivot.y * 100).toFixed(2) + '%';
+
       after(AIM_MS, () => {
         phase = 'kick'; t = 0;
         playFx();
 
+        // 포탄은 회전된 실제 포구 위치(바퀴축 기준으로 resTo만큼 돈 자리)에서 나간다.
+        const muzzle = isHole3
+          ? rotateAround(ax(best), ay(best), pivot.x, pivot.y, resTo)
+          : { x: ax(best), y: ay(best) };
         ball.style.transition = 'none';
-        ball.style.left = (ax(best) * 100).toFixed(2) + '%';
-        ball.style.top = (ay(best) * 100).toFixed(2) + '%';
+        ball.style.left = (muzzle.x * 100).toFixed(2) + '%';
+        ball.style.top = (muzzle.y * 100).toFixed(2) + '%';
         ball.style.opacity = '1';
         ball.style.transform = 'translate(-50%,-50%) scale(1.15) rotate(0deg)';
         void ball.offsetWidth;
