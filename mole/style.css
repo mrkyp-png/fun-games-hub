@@ -1111,9 +1111,10 @@ body { background: var(--lm-page); }
   min-height: 48px; background: #f0f0f2; color: #9a9aa0; font-size: 0.8rem;
   letter-spacing: 0.1em; border-radius: 8px; }
 .ad-overlay { position: fixed; inset: 0; z-index: 50; display: flex;
-  align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.72); }
+  align-items: center; justify-content: center; background: rgba(20, 20, 28, 0.38); }
 .ad-overlay-card { position: relative; width: 78%; max-width: 320px; padding: 28px 18px;
-  background: #ffffff; border-radius: 14px; text-align: center; color: #3a3a41; }
+  background: #ffffff; border-radius: 14px; text-align: center; color: #3a3a41;
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.22); }
 .ad-overlay-tag { font-size: 0.75rem; letter-spacing: 0.2em; color: #8a8a90; }
 .ad-overlay-bar { margin-top: 14px; height: 4px; background: #e6e6ea; border-radius: 2px; overflow: hidden; }
 .ad-overlay-bar i { display: block; height: 100%; width: 0; background: #57d977; animation: ad-fill 1.6s linear forwards; }
