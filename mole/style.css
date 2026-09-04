@@ -1411,6 +1411,19 @@ body { background: var(--lm-page); }
 .set-row--reset { justify-content: center; border-bottom: none; padding-top: 24px; }
 .set-reset { padding: 10px 24px; border: 1px solid #e2b3b3; border-radius: 8px; background: transparent;
   color: #cf4a4a; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+.set-row--link { cursor: pointer; }
+.set-chev { color: var(--lm-muted); font-size: 1.2rem; line-height: 1; }
+
+/* 아이템 보관 — 탭 + placeholder */
+.inv-tabs { display: flex; gap: 6px; padding: 12px 12px 6px; }
+.inv-tab {
+  flex: 1; padding: 8px 0; border: none; border-radius: 8px;
+  background: var(--lm-fill); color: var(--lm-muted);
+  font-size: 0.82rem; font-weight: 700; cursor: pointer;
+}
+.inv-tab--on { background: #2fb457; color: #fff; }
+.inv-body { padding: 8px 14px; }
+.inv-soon { padding: 40px 0; text-align: center; color: var(--lm-muted); font-weight: 700; }
 
 /* 난이도: 고수·전설은 버튼 불(어느 구멍에 두더지) 끔 */
 /* 라이트 DIM (고수): 버튼 배경 불빛은 끄고, 숫자·글씨·아이콘 색만 앰버로 바꾼다 ("불 켜진" 느낌) */

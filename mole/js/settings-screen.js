@@ -59,6 +59,18 @@
       list.appendChild(row);
     }
 
+    function linkRow(iconSvg, labelKey, onClick) {
+      var row = document.createElement('div');
+      row.className = 'set-row set-row--link';
+      row.innerHTML =
+        '<svg class="set-ic" viewBox="0 0 24 24" aria-hidden="true">' + iconSvg + '</svg>' +
+        '<span class="set-lbl"></span>' +
+        '<span class="set-chev" aria-hidden="true">›</span>';
+      row.querySelector('.set-lbl').textContent = T(labelKey);
+      row.addEventListener('click', onClick);
+      list.appendChild(row);
+    }
+
     function resetRow() {
       var row = document.createElement('div');
       row.className = 'set-row set-row--reset';
@@ -80,6 +92,10 @@
       toggleRow('sfx', 'mole.set.sfx', 'sound');
       toggleRow('vib', 'mole.set.vib', 'vibration');
       langRow();
+      if (opts.onPrivacy) {
+        linkRow('<path d="M12 3l7 3v5.5c0 4.5-2.8 7.5-7 9-4.2-1.5-7-4.5-7-9V6z"/>',
+          'mole.more.privacy', opts.onPrivacy);
+      }
       resetRow();
     }
 

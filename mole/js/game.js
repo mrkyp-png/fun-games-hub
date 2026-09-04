@@ -44,7 +44,7 @@
 
   // ---------- 더보기 메뉴 / 난이도 / 사람두더지 (독립앱 Phase 1) ----------
   let screenNav = null, moreMenu = null, faceMaker = null, faceLocker = null;
-  let shop = null, daily = null, scoreScreen = null, settingsScreen = null, costumeScreen = null;
+  let shop = null, daily = null, scoreScreen = null, settingsScreen = null, costumeScreen = null, inventoryScreen = null;
   let currentDiff = 'easy';        // 현재 판 난이도
   let activeFaceUrl = null;        // 활성 사람두더지 얼굴 원본 크롭 objectURL (합성 재료)
   let activeFaceMap = null;        // 포즈별 "얼굴+몸체 합성 완료" 이미지 맵 (게임에 넘김)
@@ -213,6 +213,7 @@
       if (sub === 'daily-screen' && daily) daily.show();
       if (sub === 'score-screen' && scoreScreen) scoreScreen.show();
       if (sub === 'settings-screen' && settingsScreen) settingsScreen.show();
+      if (sub === 'inventory-screen' && inventoryScreen) inventoryScreen.show();
     }
   }
   function closeMore() {
@@ -1053,7 +1054,7 @@
   // 더보기 메뉴 + 하위 화면 모듈 인스턴스 생성·배선.
   function wireMoreMenu() {
     screenNav = MG.ScreenNav.create({
-      screens: ['face-maker', 'costume-screen', 'face-locker', 'shop-screen', 'daily-screen', 'score-screen', 'settings-screen', 'help-screen', 'privacy-screen']
+      screens: ['face-maker', 'costume-screen', 'face-locker', 'shop-screen', 'daily-screen', 'score-screen', 'settings-screen', 'inventory-screen', 'help-screen', 'privacy-screen']
     });
 
     faceMaker = MG.FaceMaker.create({
@@ -1097,6 +1098,11 @@
     });
     settingsScreen = MG.SettingsScreen.create({
       root: document.getElementById('settings-screen'),
+      onClose: () => screenNav.back(),
+      onPrivacy: () => screenNav.show('privacy-screen')
+    });
+    inventoryScreen = MG.InventoryScreen.create({
+      root: document.getElementById('inventory-screen'),
       onClose: () => screenNav.back()
     });
     ['help', 'privacy'].forEach((k) => {
@@ -1126,7 +1132,7 @@
         daily: () => { screenNav.show('daily-screen'); daily.show(); },
         score: () => { screenNav.show('score-screen'); scoreScreen.show(); },
         help: () => screenNav.show('help-screen'),
-        privacy: () => screenNav.show('privacy-screen'),
+        inventory: () => { screenNav.show('inventory-screen'); inventoryScreen.show(); },
         contact: () => { window.location.href = 'mailto:mrkyp@hanmail.net'; },
         settings: () => { screenNav.show('settings-screen'); settingsScreen.show(); },
         editName: () => {

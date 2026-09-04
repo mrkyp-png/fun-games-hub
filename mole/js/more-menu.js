@@ -19,7 +19,7 @@
       b.addEventListener('click', function () { on.diff(b.getAttribute('data-mm-diff')); });
     });
     var NAV = { score: on.score, daily: on.daily, shop: on.shop, locker: on.locker,
-               help: on.help, privacy: on.privacy, contact: on.contact, settings: on.settings };
+               help: on.help, inventory: on.inventory, contact: on.contact, settings: on.settings };
     el.querySelectorAll('[data-mm-nav]').forEach(function (b) {
       b.addEventListener('click', function () {
         var fn = NAV[b.getAttribute('data-mm-nav')];
