@@ -28,7 +28,7 @@
     { key: 'mid',   src: 'assets/weapons/cannon.png',       w: 0.266, ar: 1.185,
       mu: 0.07,  mv: 0.15, aim: -138, tweak: 20, dx: -0.014 },
     { key: 'steep', src: 'assets/weapons/cannon-steep.png', w: 0.223, ar: 1.538,
-      mu: 0.50,  mv: 0.05, aim: -94,  tweak: 0, dx: 0.045 }
+      mu: 0.50,  mv: 0.05, aim: -94,  tweak: 15, dx: 0.045 }
   ];
 
   const REST_KEY = 'mid';                  // 발사 후 되돌아갈 기본 대기 포즈
@@ -37,9 +37,10 @@
   // 발사 이펙트 = 5프레임 연속 (사용자 제공 '화염, 연기.png' → cannon-fx1~5).
   // 스파크 → 폭발 → 불+연기 → 사그라짐 → 연기. 모든 프레임 560² 캔버스, 밝은 코어가 (0.58,0.52).
   const FX_FRAMES = [1, 2, 3, 4, 5].map((n) => 'assets/weapons/cannon-fx' + n + '.png');
-  const FX_DUR = [40, 70, 80, 95, 150];   // 프레임별 노출 ms (합 ~435)
-  const FX_W = 0.32;                       // 이펙트 폭 (보드 정사각 분수, 캔버스가 정사각이라 높이도 동일)
+  const FX_DUR = [40, 70, 80, 95, 260];   // 프레임별 노출 ms (연기 프레임 150→260, 더 오래 보이게)
+  const FX_W = 0.24;                       // 이펙트 폭 (보드 정사각 분수, 캔버스가 정사각이라 높이도 동일) — 화염 과함 피드백으로 0.32→0.24
   const FX_CORE_X = 0.58, FX_CORE_Y = 0.52;
+  const FX_BASE_AIM = -138;                // 이펙트 원화가 그려진 기준 방향(=mid 포즈 aim) — 다른 포즈는 이 차이만큼 회전시켜 포신 방향에 맞춘다
   const AIM_MS = 90;                       // 포즈 전환 + 미세 조준
   const RECOIL = [0.012, 0.024, 0.040];    // 살짝/보통/강 (보드 분수)
   const KICK_SEC = 0.06, SETTLE_SEC = 0.34;
@@ -83,10 +84,13 @@
       im.style.top = ((ay(p) - p.mv * hFrac) * 100).toFixed(2) + '%';
     });
     // 발사 이펙트: 프레임 밝은 코어(FX_CORE)가 포구(ax,ay)에 오도록 배치.
+    // 회전/확대 기준점도 같은 코어 지점으로 잡아, 포즈별 회전이나 프레임별 확대에도
+    // 코어가 포구에서 이탈하지 않게 한다.
     function placeFx(p) {
       fx.style.width = (FX_W * 100).toFixed(2) + '%';
       fx.style.left = ((ax(p) - FX_CORE_X * FX_W) * 100).toFixed(2) + '%';
       fx.style.top = ((ay(p) - FX_CORE_Y * FX_W) * 100).toFixed(2) + '%';
+      fx.style.transformOrigin = (FX_CORE_X * 100).toFixed(2) + '% ' + (FX_CORE_Y * 100).toFixed(2) + '%';
     }
 
     const restPose = POSES.find((p) => p.key === REST_KEY) || POSES[0];
@@ -107,15 +111,17 @@
       }
     }
 
-    // 5프레임 발사 이펙트 재생.
+    // 5프레임 발사 이펙트 재생. 이펙트 원화는 mid 포즈 방향으로 그려져 있으므로,
+    // 현재 포즈 각도(pose.aim)와의 차이만큼 회전시켜 포신 방향에 맞춘다.
     function playFx() {
+      const rot = (pose ? pose.aim : FX_BASE_AIM) - FX_BASE_AIM;
       let acc = 0;
       FX_FRAMES.forEach((srcp, i) => {
         after(acc, () => {
           fx.src = srcp;
           fx.style.transition = 'none';
-          fx.style.opacity = (i >= FX_FRAMES.length - 1) ? '0.85' : '1';
-          fx.style.transform = 'scale(' + (0.85 + i * 0.11).toFixed(2) + ')';
+          fx.style.opacity = '1';
+          fx.style.transform = 'rotate(' + rot.toFixed(1) + 'deg) scale(' + (0.70 + i * 0.07).toFixed(2) + ')';
         });
         acc += FX_DUR[i];
       });
@@ -123,10 +129,10 @@
       after(acc - FX_DUR[FX_FRAMES.length - 1] + 30, () => {
         fx.style.transition = 'opacity 220ms ease-out, transform 260ms ease-out';
         fx.style.opacity = '0';
-        fx.style.transform = 'scale(1.6)';
+        fx.style.transform = 'rotate(' + rot.toFixed(1) + 'deg) scale(1.3)';
       });
     }
-    function resetFx() { fx.style.transition = 'none'; fx.style.opacity = '0'; fx.style.transform = 'scale(0.85)'; fx.removeAttribute('src'); }
+    function resetFx() { fx.style.transition = 'none'; fx.style.opacity = '0'; fx.style.transform = 'scale(0.7)'; fx.removeAttribute('src'); }
 
     function strike(targetXFrac, targetYFrac, onImpact) {
       const tx = (typeof targetXFrac === 'number') ? targetXFrac : 0.5;
