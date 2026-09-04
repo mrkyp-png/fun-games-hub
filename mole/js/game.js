@@ -521,7 +521,10 @@
       spawnPoints
     });
 
-    const laneHammer = MG.LaneHammer.create({
+    // 장착 무기 = 망치(기본) 또는 대포 스킨. 인터페이스 동일 (strike/update/home/clear/isBusy).
+    const weapon = localStorage.getItem('mole.weapon') === 'cannon' ? 'cannon' : 'hammer';
+    const WeaponMod = (weapon === 'cannon' && MG.LaneCannon) ? MG.LaneCannon : MG.LaneHammer;
+    const laneHammer = WeaponMod.create({
       layer: document.getElementById('mole-hammer-layer')
     });
 
@@ -1000,6 +1003,10 @@
       if (!state || !run) return;
       run.lives = 0;
       finish('lives');
+    };
+    window.__debugSetWeapon = (w) => { localStorage.setItem('mole.weapon', w === 'cannon' ? 'cannon' : 'hammer'); };
+    window.__debugFireWeapon = (xf, yf) => {
+      if (state && state.laneHammer) state.laneHammer.strike(xf == null ? 0.5 : xf, yf == null ? 0.35 : yf, () => {});
     };
     window.__debugHitCell = function (regionId) {
       if (state) handleCell(regionId);

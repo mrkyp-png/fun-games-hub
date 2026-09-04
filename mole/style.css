@@ -1027,6 +1027,15 @@ body { background: var(--lm-page); }
   100% { transform: scale(1, 1); }
 }
 
+/* ---- 무기 스킨: 대포 ---- left/top/width 는 lane-cannon.js 가 넣는다 ---- */
+.lane-cannon { position: absolute; inset: 0; pointer-events: none; }
+.lc-body {
+  position: absolute; display: block;
+  transform: translate(-50%, -100%);  /* 앵커 = 스프라이트 바닥 가운데 (캐리지 바닥) */
+  filter: drop-shadow(0 5px 6px rgba(0, 0, 0, 0.4));
+  will-change: left, top, width;
+}
+
 /* ---- 타격 연출 ---- */
 .mole-board--shake { animation: mole-shake 0.2s ease-out; }
 @keyframes mole-shake {
