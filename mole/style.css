@@ -8,9 +8,23 @@
 /* 삼성 인터넷/크롬 자동 다크모드가 말풍선·문자칸 색을 재채색하지 않게.
    'light dark' + 아래 prefers-color-scheme 블록 = "이 페이지는 다크모드를 직접 처리함" 선언
    → 브라우저 자동 재채색 중단. */
-html { color-scheme: light dark; }
+html { color-scheme: light; }
 /* 당겨서 새로고침 / 오버스크롤 바운스 차단 (전 페이지) */
 html, body { overscroll-behavior: none; }
+
+/* ── 밝은 모드 팔레트 — 삼성 기본 다이얼러(밝은) 레퍼런스: 깔끔한 흰색.
+   Desktop/밝은모드.jpg 참고. 게임 플레이 보드(잔디밭)와 강조색은 그대로. ── */
+:root {
+  --lm-page:    #ffffff;   /* 페이지 배경 (폰 몸체) */
+  --lm-bezel:   #f4f4f5;   /* 폰 베젤/힌지 (아주 옅은 회색) */
+  --lm-surface: #ffffff;   /* 대화 홈·오버레이·메뉴 면 */
+  --lm-pad:     #ffffff;   /* 다이얼러 패드 = 흰색 */
+  --lm-ink:     #17171a;   /* 본문 글자 (다이얼 숫자 = 거의 검정) */
+  --lm-muted:   #8a8a90;   /* 흐린 글자 (숫자 밑 알파벳·플레이스홀더) */
+  --lm-line:    rgba(0, 0, 0, 0.10);
+  --lm-line-2:  rgba(0, 0, 0, 0.055);
+  --lm-fill:    #f1f1f3;   /* 검색바 등 옅은 채움 */
+}
 /* 배포 버전 표식 (스크린샷으로 어느 버전인지 확인용) — 시작 화면 좌하단 아주 작게 */
 #build-tag {
   position: absolute;
@@ -19,7 +33,7 @@ html, body { overscroll-behavior: none; }
   z-index: 9;
   font-size: 12px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(0, 0, 0, 0.32);
   pointer-events: none;
 }
 #game-screen:not(.is-start) #build-tag { display: none; }
@@ -34,8 +48,8 @@ img, .chat-emoji, .lane-hammer, .mole-pop, .mole-hole, .mole-hole-front { forced
 
 /* 화면 전체 배경: 어두운 초록 단색 (사용자 확정 — 이미지 아님). 별/성운 레이어는 끈다.
    두더지 박스(.mole-board)만 잔디 이미지를 쓴다. */
-body { background: #16301a; }
-.cosmic-bg { background: #16301a; }
+body { background: var(--lm-page); }
+.cosmic-bg { background: var(--lm-page); }
 .cosmic-bg::before,
 .cosmic-bg::after { display: none; }
 
@@ -82,7 +96,7 @@ body { background: #16301a; }
   flex-direction: column;
   padding: 12px 12px 16px;
   z-index: 7;
-  background: #0c0c0e;   /* 검은 배경 = 아래 키패드와 이어지는 폰 화면 (잔디는 플레이 중에만) */
+  background: var(--lm-surface);   /* 대화 홈 = 밝은 면 (잔디는 플레이 중에만) */
   overflow: hidden;
 }
 /* 챕터 선택 ◀ 챕터 N ▶ — HUD 주소창 자리 (시작 상태 + 열린 챕터 2개 이상). */
@@ -99,14 +113,14 @@ body { background: #16301a; }
   flex: 0 0 auto;
   border: none;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
-  color: #e8e8ea;
+  background: var(--lm-line);
+  color: var(--lm-ink);
   font-size: 1.1rem;
   line-height: 1;
   cursor: pointer;
 }
 .ch-arrow:disabled { opacity: 0.3; cursor: default; }
-.ch-label { font-size: 0.88rem; font-weight: 800; color: #e8e8ea; min-width: 60px; text-align: center; }
+.ch-label { font-size: 0.88rem; font-weight: 800; color: var(--lm-ink); min-width: 60px; text-align: center; }
 
 .chat-thread {
   flex: 1;
@@ -367,8 +381,8 @@ body { background: #16301a; }
   height: 30px;
   padding: 0 12px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
-  color: #c9ccd3;
+  background: var(--lm-fill);
+  color: var(--lm-muted);
   font-size: 0.82rem;
   font-weight: 600;
 }
@@ -395,8 +409,8 @@ body { background: #16301a; }
   height: 100dvh;
   min-height: 0;
   overflow: hidden;
-  /* 정사각 박스 양옆/위에 남는 여백 = 폴더폰 몸체(어두운 베젤). 초록 배경이 비치지 않게. */
-  background: #0c0c0e;
+  /* 정사각 박스 양옆/위에 남는 여백 = 폴더폰 몸체(베젤). */
+  background: var(--lm-bezel);
   --hud-h: 46px;
   --hinge-h: 14px;
   --sq: min(100%, calc((100dvh - var(--hud-h) - var(--hinge-h)) / 2));
@@ -425,7 +439,7 @@ body { background: #16301a; }
   padding: 0 10px;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.09);
+  background: var(--lm-fill);
 }
 .tk-search { flex: 0 0 auto; font-size: 0.72rem; opacity: 0.55; }
 .ticker-viewport {
@@ -449,16 +463,16 @@ body { background: #16301a; }
   font-size: 0.74rem;
   font-weight: 700;
 }
-.ticker-seg .tk-mode { color: #ffe08a; letter-spacing: 0.02em; }
-.ticker-seg i { font-style: normal; color: #cfd2d8; font-weight: 600; }
+.ticker-seg .tk-mode { color: #b26a00; letter-spacing: 0.02em; }
+.ticker-seg i { font-style: normal; color: var(--lm-muted); font-weight: 600; }
 @keyframes ticker-scroll {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
 #hud-ticker.hud-flash { animation: ticker-flash 0.35s ease-out; } /* 폭탄으로 시간 −3 */
 @keyframes ticker-flash {
-  0%, 100% { background: rgba(255, 255, 255, 0.09); }
-  35% { background: rgba(255, 90, 90, 0.5); }
+  0%, 100% { background: var(--lm-fill); }
+  35% { background: rgba(255, 90, 90, 0.45); }
 }
 
 /* 점수 — 밤하늘 중앙에 크게 고정 (달 안 가리게 위쪽). 애니메이션은 나중에. */
@@ -559,8 +573,8 @@ body { background: #16301a; }
   width: var(--sq);
   height: var(--hinge-h);
   margin: 0 auto;
-  background: linear-gradient(180deg, #23232a 0%, #4c4c55 46%, #4c4c55 54%, #141418 100%);
-  box-shadow: 0 -4px 9px rgba(0, 0, 0, 0.5), 0 4px 9px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(180deg, #dcdce0 0%, #f2f2f4 46%, #f2f2f4 54%, #d2d2d7 100%);
+  box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.10), 0 3px 8px rgba(0, 0, 0, 0.10);
 }
 #fold-hinge::before { /* 가운데 접힘선 */
   content: '';
@@ -569,7 +583,7 @@ body { background: #16301a; }
   right: 0;
   top: 50%;
   height: 1px;
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.14);
 }
 #fold-hinge::after { /* 힌지 축 (양끝만 살짝 남긴 원통) */
   content: '';
@@ -580,8 +594,8 @@ body { background: #16301a; }
   transform: translateY(-50%);
   height: 6px;
   border-radius: 3px;
-  background: linear-gradient(180deg, #6e6e78, #26262b);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+  background: linear-gradient(180deg, #f4f4f6, #cbcbd1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(0, 0, 0, 0.14);
 }
 /* 그림 완성 보상(어두운 막 + 우주 이모지) 사용 안 함 — 잔디 배경이 항상 보이게 (사용자 확정 3안).
    JS/HTML 은 그대로 두고 여기서만 숨김 — 되돌리기 쉽게. */
@@ -711,59 +725,58 @@ body { background: #16301a; }
 .overlay {
   position: absolute;
   inset: 0;
-  background: #0c0c0e;   /* 불투명 + 아래 폰 화면(#game-screen)과 같은 검정 — 이음새 안 뜨게 */
+  background: var(--lm-surface);   /* 불투명 — 직전 화면 안 비치게 */
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10;
 }
-.gameover-score { font-size: 1.7rem; font-weight: 800; margin: 2px 0 6px; color: #fff; }
+.gameover-score { font-size: 1.7rem; font-weight: 800; margin: 2px 0 6px; color: var(--lm-ink); }
 /* ---- 최종 결과: 박스 없이 전체화면 연출 위에. 승리(광선+색종이+하마) / 실패(빗줄기+하마) ---- */
 #gameover-overlay {
   overflow: hidden; flex-direction: column; gap: 14px;
   transition: transform 0.34s cubic-bezier(.4, 0, .3, 1); touch-action: pan-y;
 }
 #gameover-overlay.is-sliding { transform: translateX(-100%); }
-#gameover-overlay.is-win { background: radial-gradient(circle at 50% 40%, #5b3a86 0%, #2a1550 45%, #170a2e 100%); }
-#gameover-overlay.is-lose { background: radial-gradient(circle at 50% 40%, #1a2233 0%, #0c0c0e 78%); }
+#gameover-overlay.is-win { background: radial-gradient(circle at 50% 38%, #ffffff 0%, #fff4dd 55%, #ffe6b8 100%); }
+#gameover-overlay.is-lose { background: radial-gradient(circle at 50% 40%, #fbfcfd 0%, #e6ebf1 100%); }
 /* 성공·실패 둘 다 버튼 없음 — 좌상단 ⊞ 로 홈 */
 
 .go-body { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .go-word { margin: 0; font-size: 2.6rem; font-weight: 900; letter-spacing: 0.06em; }
-#gameover-overlay.is-win .go-word { color: #ffd75e; text-shadow: 0 2px 0 #a56b00, 0 5px 14px rgba(255, 190, 60, 0.5); }
-#gameover-overlay.is-lose .go-word { color: #9098ad; }
+#gameover-overlay.is-win .go-word { color: #ef8a00; text-shadow: 0 2px 0 #fff, 0 4px 12px rgba(240, 150, 0, 0.35); }
+#gameover-overlay.is-lose .go-word { color: #7a8296; }
 
 .go-hippo-wrap { position: relative; z-index: 2; transform-origin: center top; } /* 등장 스케일이 위로 안 삐치게 */
 #gameover-overlay:not([hidden]) .go-hippo-wrap { animation: go-pop 0.5s cubic-bezier(.2, 1.1, .4, 1) both; }
 /* 세로 크기는 game.js 가 보드 높이 기준 px 로 지정 (하마 머리 안 잘리게). 여기선 가로 상한만. */
-.go-hippo { display: block; width: auto; height: auto; max-width: min(48vw, 172px); filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.45)); }
+.go-hippo { display: block; width: auto; height: auto; max-width: min(48vw, 172px); filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.22)); }
 #gameover-overlay.is-win .go-hippo { animation: go-bob 1.6s ease-in-out infinite; }
 #gameover-overlay.is-lose .go-hippo { animation: go-sway 3.2s ease-in-out infinite; }
 @keyframes go-pop { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
 @keyframes go-bob { 0%, 100% { transform: translateY(3%); } 50% { transform: translateY(-2%); } }
 @keyframes go-sway { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
 
-/* 승리: 뒤에서 도는 무지개 방사형 광선. screen 블렌드로 어두운 배경 위에서 빛처럼 살아난다. */
+/* 승리: 뒤에서 도는 무지개 방사형 광선 (밝은 배경 위 — 불투명 색으로 직접). */
 .go-rays {
   position: absolute; inset: -45%; z-index: 0; opacity: 0; pointer-events: none;
-  mix-blend-mode: screen;
   background:
     repeating-conic-gradient(from 0deg at 50% 50%,
-      rgba(255, 255, 255, 0.5) 0deg 4deg, transparent 4deg 13deg),
+      rgba(255, 255, 255, 0.65) 0deg 4deg, transparent 4deg 13deg),
     conic-gradient(from 0deg at 50% 50%,
-      #ff5252, #ffab2e, #ffe14d, #57e08a, #4ccfff, #9d6bff, #ff5aa8, #ff5252);
+      #ff6b6b, #ffb03a, #ffe14d, #63d98a, #4ccfff, #a879ff, #ff6fb0, #ff6b6b);
   animation: go-rays-spin 18s linear infinite;
 }
 #gameover-overlay.is-win .go-rays {
-  opacity: 1;
+  opacity: 0.42;
   animation: go-rays-spin 18s linear infinite, go-rays-pulse 2.6s ease-in-out infinite;
 }
 @keyframes go-rays-spin { to { transform: rotate(360deg); } }
-@keyframes go-rays-pulse { 0%, 100% { opacity: 0.72; } 50% { opacity: 1; } }
+@keyframes go-rays-pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.5; } }
 
 /* 승리: 반짝이는 금빛 별 (제자리 트윙클) */
 .go-spark {
-  position: absolute; z-index: 1; width: 8px; height: 8px; background: #ffe6a0; pointer-events: none;
+  position: absolute; z-index: 1; width: 8px; height: 8px; background: #f5a90a; pointer-events: none;
   clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
   animation: go-twinkle 1.8s ease-in-out infinite;
 }
@@ -784,7 +797,7 @@ body { background: #16301a; }
 }
 #gameover-overlay.is-lose .go-confetti i {
   width: 2px; height: 18px; border-radius: 0;
-  background: linear-gradient(rgba(175, 195, 225, 0), rgba(175, 195, 225, 0.55));
+  background: linear-gradient(rgba(120, 140, 170, 0), rgba(120, 140, 170, 0.6));
   animation-name: go-rain;
 }
 @keyframes go-fall {
@@ -818,31 +831,31 @@ body { background: #16301a; }
   position: absolute;
   top: 0; bottom: 0;
   width: 50%;
-  background: #0c0c0e;
+  background: #ecedef;
   z-index: 0;
   transition: transform 0.26s cubic-bezier(.5, 0, .75, 0);
 }
-.ri-curtain--l { left: 0; box-shadow: inset -8px 0 14px rgba(0, 0, 0, 0.5); }
-.ri-curtain--r { right: 0; box-shadow: inset 8px 0 14px rgba(0, 0, 0, 0.5); }
+.ri-curtain--l { left: 0; box-shadow: inset -8px 0 14px rgba(0, 0, 0, 0.14); }
+.ri-curtain--r { right: 0; box-shadow: inset 8px 0 14px rgba(0, 0, 0, 0.14); }
 .round-intro.is-opening .ri-curtain--l { transform: translateX(-101%); }
 .round-intro.is-opening .ri-curtain--r { transform: translateX(101%); }
 .round-intro.is-opening .round-intro-title,
 .round-intro.is-opening .round-intro-count { opacity: 0; transition: opacity 0.12s; }
 .round-intro-title {
   position: relative; z-index: 1;
-  color: #fff;
+  color: var(--lm-ink);
   font-size: 1.4rem;
   font-weight: 800;
   letter-spacing: 0.04em;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 .round-intro-count {
   position: relative; z-index: 1;
-  color: #ffe08a;
+  color: #e08a1e;
   font-size: 4.4rem;
   font-weight: 900;
   line-height: 1;
-  text-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+  text-shadow: 0 3px 10px rgba(224, 138, 30, 0.35);
 }
 .round-intro-count.pop { animation: round-intro-pop 0.42s cubic-bezier(.2, 1.6, .4, 1); }
 @keyframes round-intro-pop {
@@ -865,7 +878,7 @@ body { background: #16301a; }
   gap: 2px;
   padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
   border-radius: 8px 8px 0 0;
-  background: #0f1012;
+  background: var(--lm-pad);
 }
 /* 다이얼패드 래퍼 — 안내문구/첫방문 말풍선을 절대배치로 얹기 위함 (세로 레이아웃 예산 0). */
 .dialpad { position: relative; flex: 0 0 auto; }
@@ -876,8 +889,8 @@ body { background: #16301a; }
   z-index: 3;
   padding: 3px 6px;
   border-radius: 8px 8px 0 0;
-  background: #0f1012;
-  color: #7c7e86;
+  background: var(--lm-pad);
+  color: var(--lm-muted);
   font-size: 0.6rem;
   text-align: center;
   white-space: nowrap;
@@ -917,7 +930,7 @@ body { background: #16301a; }
 .lane-button {
   border: none;
   background: transparent;
-  color: #f2f2f4;
+  color: var(--lm-ink);
   cursor: pointer;
   border-radius: 50%;
   display: flex;
@@ -927,7 +940,7 @@ body { background: #16301a; }
   -webkit-tap-highlight-color: transparent;
   transition: transform 0.06s, background 0.12s, box-shadow 0.15s;
 }
-.lane-button:active { transform: scale(0.9); background: rgba(255, 255, 255, 0.14); }
+.lane-button:active { transform: scale(0.9); background: rgba(0, 0, 0, 0.07); }
 
 .lane-num { font-size: clamp(1rem, 6vw, 1.9rem); font-weight: 400; line-height: 1; }
 .lane-sub {
@@ -935,7 +948,7 @@ body { background: #16301a; }
   flex-direction: column;
   align-items: flex-start;
   gap: 1px;
-  color: #9aa0a6;
+  color: var(--lm-muted);
   font-weight: 600;
   letter-spacing: 0.02em;
 }
@@ -943,10 +956,10 @@ body { background: #16301a; }
 .lane-en { font-size: clamp(0.36rem, 1.7vw, 0.52rem); letter-spacing: 0.08em; }
 
 /* 오른쪽 열 — 내비 4칸 */
-.lane-button--nav { flex-direction: column; gap: 3px; color: #d6d8db; }
+.lane-button--nav { flex-direction: column; gap: 3px; color: #4b4b52; }
 .lane-ico { width: clamp(16px, 6vw, 24px); height: clamp(16px, 6vw, 24px); display: block; }
 .lane-ico svg { width: 100%; height: 100%; display: block; }
-.lane-lbl { font-size: clamp(0.4rem, 1.9vw, 0.56rem); font-weight: 600; color: #9aa0a6; }
+.lane-lbl { font-size: clamp(0.4rem, 1.9vw, 0.56rem); font-weight: 600; color: var(--lm-muted); }
 .lane-button--call { background: #2ecc57; color: #fff; }
 .lane-button--call .lane-lbl {
   color: #fff;
