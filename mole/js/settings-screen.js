@@ -92,6 +92,14 @@
       toggleRow('sfx', 'mole.set.sfx', 'sound');
       toggleRow('vib', 'mole.set.vib', 'vibration');
       langRow();
+      if (opts.onHelp) {
+        linkRow('<path d="M5 4.5A1.5 1.5 0 016.5 3H19v18H6.5A1.5 1.5 0 015 19.5zM9 3v18"/>',
+          'mole.more.help', opts.onHelp);
+      }
+      if (opts.onContact) {
+        linkRow('<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="m4 7 8 6 8-6"/>',
+          'mole.more.contact', opts.onContact);
+      }
       if (opts.onPrivacy) {
         linkRow('<path d="M12 3l7 3v5.5c0 4.5-2.8 7.5-7 9-4.2-1.5-7-4.5-7-9V6z"/>',
           'mole.more.privacy', opts.onPrivacy);

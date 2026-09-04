@@ -1068,7 +1068,7 @@
   // 더보기 메뉴 + 하위 화면 모듈 인스턴스 생성·배선.
   function wireMoreMenu() {
     screenNav = MG.ScreenNav.create({
-      screens: ['face-maker', 'costume-screen', 'face-locker', 'shop-screen', 'daily-screen', 'score-screen', 'settings-screen', 'inventory-screen', 'help-screen', 'privacy-screen']
+      screens: ['face-maker', 'costume-screen', 'face-locker', 'shop-screen', 'daily-screen', 'score-screen', 'settings-screen', 'inventory-screen', 'help-screen', 'privacy-screen', 'quest-screen', 'friends-screen']
     });
 
     faceMaker = MG.FaceMaker.create({
@@ -1113,13 +1113,15 @@
     settingsScreen = MG.SettingsScreen.create({
       root: document.getElementById('settings-screen'),
       onClose: () => screenNav.back(),
-      onPrivacy: () => screenNav.show('privacy-screen')
+      onPrivacy: () => screenNav.show('privacy-screen'),
+      onHelp: () => screenNav.show('help-screen'),
+      onContact: () => { window.location.href = 'mailto:mrkyp@hanmail.net'; }
     });
     inventoryScreen = MG.InventoryScreen.create({
       root: document.getElementById('inventory-screen'),
       onClose: () => screenNav.back()
     });
-    ['help', 'privacy'].forEach((k) => {
+    ['help', 'privacy', 'quest', 'friends'].forEach((k) => {
       const b = document.querySelector('[data-back="' + k + '"]');
       if (b) b.addEventListener('click', () => screenNav.back());
     });
@@ -1145,9 +1147,9 @@
         shop: () => { screenNav.show('shop-screen'); shop.show(); },
         daily: () => { screenNav.show('daily-screen'); daily.show(); },
         score: () => { screenNav.show('score-screen'); scoreScreen.show(); },
-        help: () => screenNav.show('help-screen'),
+        quest: () => screenNav.show('quest-screen'),
+        friends: () => screenNav.show('friends-screen'),
         inventory: () => { screenNav.show('inventory-screen'); inventoryScreen.show(); },
-        contact: () => { window.location.href = 'mailto:mrkyp@hanmail.net'; },
         settings: () => { screenNav.show('settings-screen'); settingsScreen.show(); },
         editName: () => {
           const n = prompt(I18N.t('mole.more.nickPrompt'), localStorage.getItem('mole.nick') || '');

@@ -1239,7 +1239,9 @@ body { background: var(--lm-page); }
 .mm-pills { display: flex; gap: 8px; padding: 14px; }
 .mm-pill { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
   padding: 10px 0; border: none; border-radius: 10px; background: #f0f0f2;
-  color: #55555c; font-weight: 800; font-size: 0.78rem; cursor: pointer; }
+  color: #55555c; font-weight: 800; font-size: 0.72rem; cursor: pointer; }
+.mm-pill--locked { color: #a9a9b0; cursor: not-allowed; }
+.mm-pill--locked .mm-pill-ic { stroke: #b4b4bb; }
 .mm-pill-ic { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6;
   stroke-linecap: round; stroke-linejoin: round; }
 /* 전구 밝기 = 난이도 표현: ON 노랑/글로우, DIM 은은, OFF 어둑 */
@@ -1248,6 +1250,7 @@ body { background: var(--lm-page); }
 .mm-pill[data-mm-diff="legend"] .mm-pill-ic { stroke: #c2c2c8; }
 .mm-pill--on { background: linear-gradient(180deg, #3ac06a, #2a9c54); color: #fff; }
 .mm-pill--on .mm-pill-ic { stroke: #fff; filter: none; }
+.bs-soon { text-align: center; color: #8a8a92; font-weight: 700; padding: 40px 20px; }
 .mm-grid { display: grid; grid-template-columns: repeat(4, 1fr); padding: 8px 6px 12px; }
 .mm-grid button { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 14px 2px;
   background: none; border: none; color: #3a3a41; font-size: 0.7rem; cursor: pointer; }
