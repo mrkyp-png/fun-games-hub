@@ -77,6 +77,11 @@
       <div id="mole-hole-front-layer" class="mole-board-layer"></div>
       <div id="hud-score" aria-hidden="true">0</div>
       <div id="hud-hearts" class="board-hearts" aria-hidden="true"></div>
+      <!-- 홈(시작) 화면: 게임박스 우측 상단에 하트·코인 -->
+      <div id="board-stats" class="board-stats" aria-hidden="true">
+        <span class="mm-stat mm-hearts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg><b data-bs-hearts>5</b></span>
+        <span class="mm-stat mm-coins"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg><b data-bs-coins>0</b></span>
+      </div>
       <button id="btn-pause" type="button" aria-label="일시정지">
         <svg class="ic-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
         <svg class="ic-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
@@ -84,7 +89,7 @@
       <div id="pause-veil" class="mole-board-layer" aria-hidden="true">일시정지</div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v110</div>
+      <div id="build-tag" aria-hidden="true">v111</div>
       <div id="board-start" class="board-panel board-start">
         <!-- 최고 스코어: 위에서 툭 내려오는 문자 알림 -->
         <div id="start-best" class="chat-sms" aria-hidden="true">
@@ -155,8 +160,6 @@
       <!-- 더보기 메뉴 = 게임 화면 좌상단 ⊞ 아이콘 뒤. 카톡 "더보기" 탭 스타일, 다크. -->
       <div id="more-menu" class="board-panel more-menu" hidden>
         <div class="mm-topbar">
-          <span class="mm-stat mm-hearts" data-mm-hearts><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg><b>5</b></span>
-          <span class="mm-stat mm-coins" data-mm-coins><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg><b>0</b></span>
           <button type="button" class="mm-close" data-mm-close aria-label="닫기">‹</button>
           <span class="mm-title" data-i18n="mole.more.title">더보기</span>
           <button type="button" class="mm-resume" data-mm-close>
@@ -164,6 +167,10 @@
           </button>
         </div>
         <div class="mm-profile">
+          <span class="mm-profile-stats">
+            <span class="mm-stat mm-hearts" data-mm-hearts><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg><b>5</b></span>
+            <span class="mm-stat mm-coins" data-mm-coins><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg><b>0</b></span>
+          </span>
           <button type="button" class="mm-avatar" data-mm-avatar aria-label="프로필 사진 변경"></button>
           <button type="button" class="mm-profile-txt" data-mm-name>
             <b data-mm-nick>두더지</b><i data-mm-sub></i>

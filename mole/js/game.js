@@ -271,9 +271,14 @@
     const best = bestFor(currentLight());
     const goal = MG.Progress.target(currentChapter());
     const sms = document.getElementById('start-best');
-    let smsTxt = I18N.t('mole.start.goal', { n: goal.toLocaleString() });
-    if (best > 0) smsTxt += '  ·  ' + I18N.t('mole.start.best', { n: best.toLocaleString() });
+    const smsTxt = I18N.t('mole.start.goal', { n: goal.toLocaleString() }) +
+      '  /  ' + I18N.t('mole.start.best', { n: best.toLocaleString() });
     sms.querySelector('.chat-sms-txt').textContent = smsTxt;
+    const bs = document.getElementById('board-stats');
+    if (bs) {
+      bs.querySelector('[data-bs-hearts]').textContent = String(MG.Economy.getHearts());
+      bs.querySelector('[data-bs-coins]').textContent = MG.Economy.getCoins().toLocaleString();
+    }
     sms.classList.toggle('is-empty', false);
     sms.classList.remove('sms-anim');   // 시작화면 열 때마다 문자 툭↓ + 폭죽 리트리거
     void sms.offsetWidth;
@@ -321,9 +326,9 @@
       // 목표 점수 문자알림 갱신
       const sms = document.getElementById('start-best');
       const best = bestFor(currentLight());
-      let t = I18N.t('mole.start.goal', { n: MG.Progress.target(ch).toLocaleString() });
-      if (best > 0) t += '  ·  ' + I18N.t('mole.start.best', { n: best.toLocaleString() });
-      sms.querySelector('.chat-sms-txt').textContent = t;
+      sms.querySelector('.chat-sms-txt').textContent =
+        I18N.t('mole.start.goal', { n: MG.Progress.target(ch).toLocaleString() }) +
+        '  /  ' + I18N.t('mole.start.best', { n: best.toLocaleString() });
     };
     nav.querySelector('[data-ch-prev]').addEventListener('click', () => step(-1));
     nav.querySelector('[data-ch-next]').addEventListener('click', () => step(1));

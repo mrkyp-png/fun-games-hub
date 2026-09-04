@@ -110,17 +110,17 @@ body { background: var(--lm-page); }
   min-width: 0;
 }
 .ch-arrow {
-  width: 30px; height: 30px;
+  width: 26px; height: 30px;
   flex: 0 0 auto;
   border: none;
-  border-radius: 50%;
-  background: var(--lm-line);
+  background: none;
   color: var(--lm-ink);
-  font-size: 1.1rem;
+  font-size: 1.5rem;
+  font-weight: 900;
   line-height: 1;
   cursor: pointer;
 }
-.ch-arrow:disabled { opacity: 0.3; cursor: default; }
+.ch-arrow:disabled { opacity: 0.25; cursor: default; }
 .ch-label { font-size: 0.8rem; font-weight: 800; color: var(--lm-ink); min-width: 60px; flex: 1 1 auto;
   text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -403,6 +403,15 @@ body { background: var(--lm-page); }
 #game-screen.is-start #hud-addr[hidden] { display: none; }
 #game-screen.is-start #hud-score,
 #game-screen.is-start #hud-hearts { display: none; }
+/* 홈(시작) 화면: 게임박스 우측 상단 하트·코인 */
+.board-stats { display: none; }
+#game-screen.is-start .board-stats {
+  display: inline-flex; gap: 12px;
+  position: absolute; top: 8px; right: 10px; z-index: 6;
+  background: rgba(0, 0, 0, 0.34); border-radius: 12px; padding: 4px 10px;
+  color: #fff; font-weight: 800;
+}
+.board-stats .mm-stat { color: #fff; }
 
 /* 게임 화면 = 폴더폰 모양: 컴팩트 HUD + [게임 정사각] + 힌지 + [다이얼러 정사각].
    HUD + 2*정사각 + 힌지 = 100dvh. 정사각 한 변(--sq)은 세로에 맞추되 가로를 넘지 않는다. */
@@ -1188,8 +1197,6 @@ body { background: var(--lm-page); }
 .mm-close { background: none; border: none; color: #1f1f24; font-size: 1.4rem; line-height: 1; cursor: pointer; padding: 0 2px; }
 .mm-title { font-weight: 800; font-size: 0.95rem; }
 .mm-stat { display: inline-flex; align-items: center; gap: 3px; font-size: 0.82rem; color: #3a3a41; }
-.mm-close { margin-left: 4px; }
-.mm-resume { margin-left: auto; }
 .mm-stat svg { width: 15px; height: 15px; }
 /* 상단: 게임 안 함 = "‹ 더보기" / 게임 일시정지 중 = "‹ 이어하기" 3D 박스 */
 #more-menu:not(.mm-paused) .mm-resume { display: none; }
@@ -1222,8 +1229,9 @@ body { background: var(--lm-page); }
 .mm-resume span:first-child { font-size: 1.15rem; line-height: 1; margin-top: -2px; }
 .mm-hearts svg { fill: #e05a6e; }
 .mm-coins svg { fill: #f2c14e; }
-.mm-profile { display: flex; align-items: center; gap: 10px; width: 100%; padding: 14px;
+.mm-profile { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; padding: 14px;
   border-bottom: 1px solid rgba(0,0,0,0.09); }
+.mm-profile-stats { position: absolute; top: 8px; right: 12px; display: inline-flex; gap: 10px; }
 .mm-avatar { width: 46px; height: 46px; border-radius: 16px; flex: 0 0 auto; border: none; cursor: pointer;
   background: #ececef url("assets/moles/mole1.png") center/150% no-repeat; background-size: cover;
   position: relative; }
