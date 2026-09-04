@@ -12,22 +12,23 @@
   // 순서: 포즈 선택 + 미세 조준 → 발사(화염·연기·포탄) → 반동 → 원위치.
   // 명중감은 game.js HitFx (impactCb = 포탄 도착 시).
 
-  const MZX = 0.865, MZY = 0.83;           // 포구 고정점 (보드 분수) — 여기서 포탄이 나간다.
+  const MZX = 0.822, MZY = 0.83;           // 포구 고정점 (보드 분수) — 여기서 포탄이 나간다.
                                           //  대포 본체는 여기서 우하단으로 뻗어 대부분 화면 밖(입체감).
 
   // 포즈 표 (튜닝 노브). 화면좌표 각도: 0=오른쪽, -90=위, 좌상향은 -180~-90.
   //  w    : 본체 폭 (보드 정사각 분수)
   //  ar   : 이미지 높이/폭 비 (cannon-low 586x479=0.817, cannon 287x340=1.185, cannon-steep 333x512=1.538)
-  //  mu,mv: 스프라이트 안 포구(포탄이 나오는 지점, 0~1) — 이 점이 (MZX,MZY) 에 온다
+  //  mu,mv: 스프라이트 안 포구(포탄이 나오는 지점, 0~1) — 이 점이 (MZX+dx, MZY+dy) 에 온다
+  //  dx,dy: 이 포즈만 포구 고정점에서 살짝 이동 (보드 분수, 없으면 0)
   //  aim  : 이 포즈 포신이 겨누는 방향 (deg, 화면좌표)
   //  tweak: 존 안에서 허용하는 미세 회전 최대치 (deg)
   const POSES = [
-    { key: 'low',   src: 'assets/weapons/cannon-low.png',   w: 0.34, ar: 0.817,
+    { key: 'low',   src: 'assets/weapons/cannon-low.png',   w: 0.323, ar: 0.817,
       mu: 0.055, mv: 0.15, aim: -152, tweak: 13 },
-    { key: 'mid',   src: 'assets/weapons/cannon.png',       w: 0.28, ar: 1.185,
+    { key: 'mid',   src: 'assets/weapons/cannon.png',       w: 0.266, ar: 1.185,
       mu: 0.07,  mv: 0.15, aim: -138, tweak: 20 },
-    { key: 'steep', src: 'assets/weapons/cannon-steep.png', w: 0.235, ar: 1.538,
-      mu: 0.50,  mv: 0.05, aim: -94,  tweak: 8 }
+    { key: 'steep', src: 'assets/weapons/cannon-steep.png', w: 0.223, ar: 1.538,
+      mu: 0.50,  mv: 0.05, aim: -94,  tweak: 8, dx: 0.03 }
   ];
 
   const REST_KEY = 'mid';                  // 발사 후 되돌아갈 기본 대기 포즈
@@ -63,24 +64,26 @@
     const bodies = {};
     POSES.forEach((p) => { bodies[p.key] = el.querySelector('.lc-body[data-pose="' + p.key + '"]'); });
 
+    // 포즈별 유효 포구 고정점 (dx/dy 반영)
+    function ax(p) { return MZX + (p && p.dx || 0); }
+    function ay(p) { return MZY + (p && p.dy || 0); }
+
     // 회전축 = 포구 고정점. 미세 조준·반동 모두 rig 통째로.
     rig.style.transformOrigin = (MZX * 100).toFixed(2) + '% ' + (MZY * 100).toFixed(2) + '%';
-    // 각 포즈 본체 배치 (top-left 기준) — 포즈의 포구점이 (MZX,MZY) 에 오도록.
+    // 각 포즈 본체 배치 (top-left 기준) — 포즈의 포구점이 (ax,ay) 에 오도록.
     POSES.forEach((p) => {
       const hFrac = p.w * p.ar;
       const im = bodies[p.key];
       im.style.width = (p.w * 100).toFixed(2) + '%';
-      im.style.left = ((MZX - p.mu * p.w) * 100).toFixed(2) + '%';
-      im.style.top = ((MZY - p.mv * hFrac) * 100).toFixed(2) + '%';
+      im.style.left = ((ax(p) - p.mu * p.w) * 100).toFixed(2) + '%';
+      im.style.top = ((ay(p) - p.mv * hFrac) * 100).toFixed(2) + '%';
     });
-    // 화염·연기: 오른쪽-중앙(포구 부착점)이 (MZX,MZY) 에 오도록 배치
-    function placeFx(im, w, ar) {
+    // 화염·연기: 오른쪽-중앙(포구 부착점)이 활성 포즈의 (ax,ay) 에 오도록 — showPose 에서 재배치.
+    function placeFx(im, w, ar, p) {
       im.style.width = (w * 100).toFixed(2) + '%';
-      im.style.left = ((MZX - w) * 100).toFixed(2) + '%';
-      im.style.top = ((MZY - w * ar / 2) * 100).toFixed(2) + '%';
+      im.style.left = ((ax(p) - w) * 100).toFixed(2) + '%';
+      im.style.top = ((ay(p) - w * ar / 2) * 100).toFixed(2) + '%';
     }
-    placeFx(flash, FLASH_W, FLASH_AR);
-    placeFx(smoke, SMOKE_W, SMOKE_AR);
 
     const restPose = POSES.find((p) => p.key === REST_KEY) || POSES[0];
     let pose = null;
@@ -96,6 +99,8 @@
         if (pose) bodies[pose.key].hidden = true;
         bodies[p.key].hidden = false;
         pose = p;
+        placeFx(flash, FLASH_W, FLASH_AR, p);
+        placeFx(smoke, SMOKE_W, SMOKE_AR, p);
       }
     }
 
@@ -124,8 +129,8 @@
         after(70, () => { smoke.classList.remove('is-on'); void smoke.offsetWidth; smoke.classList.add('is-on'); });
 
         ball.style.transition = 'none';
-        ball.style.left = (MZX * 100).toFixed(2) + '%';
-        ball.style.top = (MZY * 100).toFixed(2) + '%';
+        ball.style.left = (ax(best) * 100).toFixed(2) + '%';
+        ball.style.top = (ay(best) * 100).toFixed(2) + '%';
         ball.style.opacity = '1';
         ball.style.transform = 'translate(-50%,-50%) scale(1.15) rotate(0deg)';
         void ball.offsetWidth;
