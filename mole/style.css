@@ -1027,30 +1027,31 @@ body { background: var(--lm-page); }
   100% { transform: scale(1, 1); }
 }
 
-/* ---- 무기 스킨: 대포 ---- left/top/width 는 lane-cannon.js 가 넣는다 ---- */
+/* ---- 무기 스킨: 대포 ---- 위치·transform 은 lane-cannon.js 가 넣는다 ---- */
 .lane-cannon { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
-.lane-cannon img { position: absolute; display: block; }
+/* .lc-rig = 레이어 전체(--sq 정사각). transform-origin=회전축. rig 가 조준회전+반동. */
+.lc-rig { position: absolute; inset: 0; will-change: transform; }
+.lc-rig img { position: absolute; display: block; transform: translate(-50%, -50%); }
 .lc-body {
-  transform: translate(-50%, -100%);  /* 앵커 = 스프라이트 바닥 가운데 (캐리지 바닥) */
+  transform: translate(-50%, -50%);
   filter: drop-shadow(0 4px 5px rgba(0, 0, 0, 0.35));
-  will-change: left, top;
   z-index: 1;
 }
 .lc-flash {
-  width: 16%; opacity: 0;
-  transform: translate(-88%, -48%) scale(0.5);
+  width: 30%; opacity: 0;
+  transform: translate(-82%, -46%) scale(0.45);
   transform-origin: right center;
-  filter: drop-shadow(0 0 8px rgba(255, 150, 50, 0.7));
+  filter: drop-shadow(0 0 12px rgba(255, 150, 50, 0.8));
   z-index: 2;
 }
-.lc-flash.is-on { animation: lc-flash 0.17s ease-out forwards; }
+.lc-flash.is-on { animation: lc-flash 0.2s ease-out forwards; }
 @keyframes lc-flash {
-  0%   { opacity: 0;   transform: translate(-88%, -48%) scale(0.5); }
-  22%  { opacity: 1;   transform: translate(-88%, -48%) scale(1.05); }
-  100% { opacity: 0;   transform: translate(-88%, -48%) scale(1.5); }
+  0%   { opacity: 0; transform: translate(-82%, -46%) scale(0.45); }
+  18%  { opacity: 1; transform: translate(-82%, -46%) scale(1.08); }
+  100% { opacity: 0; transform: translate(-82%, -46%) scale(1.7); }
 }
 .lc-smoke {
-  width: 13%; opacity: 0;
+  width: calc(var(--sq) * 0.14); opacity: 0;
   transform: translate(-85%, -46%) scale(0.6);
   transform-origin: right center;
   z-index: 0;
@@ -1062,9 +1063,10 @@ body { background: var(--lm-page); }
   100% { opacity: 0;    transform: translate(-108%, -70%) scale(1.5); }
 }
 .lc-ball {
-  width: 4.5%; opacity: 0;
+  position: absolute; display: block;
+  width: calc(var(--sq) * 0.055); opacity: 0;
   transform: translate(-50%, -50%);
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
   z-index: 3;
 }
 

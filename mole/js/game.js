@@ -5,6 +5,7 @@
   const I18N = window.FGH.I18N;
   const START_LIVES = 3;      // 스펙 §11
   const GRID_SIZE = 4;        // 4x4 = 16칸 고정 격자
+  const CANNON_HOLE = 15;     // 대포 장착 시 없애는 구멍 (우하단 = row3·col3). 15구멍으로 플레이.
   const ROUND_SECONDS = 15;   // ⚠️ 임시 테스트값 (챕터 전환 흐름 빨리 돌려보려고). 원래 30 — 출시 전 원복.
                               //    (index.html 인트로·도움말의 "각 30초" 문구는 안 건드림 — 같이 원복)
   const FINAL_ROUND = 10;     // 라운드 1~10
@@ -489,7 +490,12 @@
     MG.HitFx.warmup(); // 오디오 컨텍스트 + 타격음 파일 프리로드 (카운트다운 동안)
 
     const rng = { next: MG.RNG.mulberry32(MG.RNG.hashSeed('mole-r' + roundNum + '-' + Date.now())) };
-    const { regions, spawnPoints } = MG.GridPartition.partition({ gridSize: GRID_SIZE });
+    const weapon = localStorage.getItem('mole.weapon') === 'cannon' ? 'cannon' : 'hammer';
+    let { regions, spawnPoints } = MG.GridPartition.partition({ gridSize: GRID_SIZE });
+    if (weapon === 'cannon') {  // 대포 자리 = 우하단 구멍 하나 빼고 15구멍 (모든 라운드)
+      regions = regions.filter((r) => r.id !== CANNON_HOLE);
+      spawnPoints = spawnPoints.filter((sp) => sp.regionId !== CANNON_HOLE);
+    }
 
     const config = {
       maxConcurrentMoles: levelData.maxConcurrentMoles,
@@ -522,7 +528,6 @@
     });
 
     // 장착 무기 = 망치(기본) 또는 대포 스킨. 인터페이스 동일 (strike/update/home/clear/isBusy).
-    const weapon = localStorage.getItem('mole.weapon') === 'cannon' ? 'cannon' : 'hammer';
     const WeaponMod = (weapon === 'cannon' && MG.LaneCannon) ? MG.LaneCannon : MG.LaneHammer;
     const laneHammer = WeaponMod.create({
       layer: document.getElementById('mole-hammer-layer')
@@ -642,8 +647,9 @@
   // ---------- 구멍 버튼 입력 → 그 구멍 타격 ----------
   function handleCell(regionId) {
     if (!state || state.ended || state.introActive || state.paused) return;
+    const sp = state.spawnPoints.find((s) => s.regionId === regionId);
+    if (!sp) return; // 대포 모드에서 없앤 구멍(15) 탭 = 무시 (헛방 처리 안 함)
     const results = state.scheduler.resolveRegion(regionId);
-    const sp = state.spawnPoints[regionId];
 
     const primary = results[0] || null;
     const targetX = primary ? primary.xFrac : sp.x;

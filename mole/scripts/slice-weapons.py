@@ -65,9 +65,9 @@ def main():
     cap(crop_bbox(cn, (1112, 40, 1522, 528)), 340).save(os.path.join(OUT, 'cannon.png'))
 
     fr = Image.open(SRC_FIRE).convert('RGBA')
-    # 화염·연기만 (포구 앞부분, 포신 금속 제외). 좌표는 격자 육안 측정.
-    cap(crop_bbox(fr, (128, 3, 402, 250)), 300).save(os.path.join(OUT, 'cannon-flash.png'))
-    cap(crop_bbox(fr, (798, 42, 1006, 280)), 250).save(os.path.join(OUT, 'cannon-smoke.png'))
+    # 화염 = 불꽃+스파크+바깥 연기 넓게 (사용자가 큰 화염 선호). 포신 금속만 제외.
+    cap(crop_bbox(fr, (14, 0, 408, 300)), 460).save(os.path.join(OUT, 'cannon-flash.png'))
+    cap(crop_bbox(fr, (792, 36, 1010, 290)), 280).save(os.path.join(OUT, 'cannon-smoke.png'))
     # 포탄 = 깨끗한 검은 철구 (불꼬리 제외 — 구는 회전해도 똑같아 각도 상관없음).
     cap(crop_bbox(fr, (2, 526, 80, 602)), 96).save(os.path.join(OUT, 'cannon-ball.png'))
 
