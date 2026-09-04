@@ -12,7 +12,7 @@
   // 순서: 포즈 선택 + 미세 조준 → 발사(화염·연기·포탄) → 반동 → 원위치.
   // 명중감은 game.js HitFx (impactCb = 포탄 도착 시).
 
-  const MZX = 0.82, MZY = 0.78;            // 포구 고정점 (보드 분수) — 여기서 포탄이 나간다.
+  const MZX = 0.865, MZY = 0.83;           // 포구 고정점 (보드 분수) — 여기서 포탄이 나간다.
                                           //  대포 본체는 여기서 우하단으로 뻗어 대부분 화면 밖(입체감).
 
   // 포즈 표 (튜닝 노브). 화면좌표 각도: 0=오른쪽, -90=위, 좌상향은 -180~-90.
@@ -22,14 +22,15 @@
   //  aim  : 이 포즈 포신이 겨누는 방향 (deg, 화면좌표)
   //  tweak: 존 안에서 허용하는 미세 회전 최대치 (deg)
   const POSES = [
-    { key: 'low',   src: 'assets/weapons/cannon-low.png',   w: 0.42, ar: 0.817,
+    { key: 'low',   src: 'assets/weapons/cannon-low.png',   w: 0.34, ar: 0.817,
       mu: 0.055, mv: 0.15, aim: -152, tweak: 13 },
-    { key: 'mid',   src: 'assets/weapons/cannon.png',       w: 0.34, ar: 1.185,
+    { key: 'mid',   src: 'assets/weapons/cannon.png',       w: 0.28, ar: 1.185,
       mu: 0.07,  mv: 0.15, aim: -138, tweak: 20 },
-    { key: 'steep', src: 'assets/weapons/cannon-steep.png', w: 0.285, ar: 1.538,
+    { key: 'steep', src: 'assets/weapons/cannon-steep.png', w: 0.235, ar: 1.538,
       mu: 0.50,  mv: 0.05, aim: -94,  tweak: 8 }
   ];
 
+  const REST_KEY = 'mid';                  // 발사 후 되돌아갈 기본 대기 포즈
   const FLASH_BASE_DEG = -150;             // 화염·연기 스프라이트가 기본으로 향한 방향
   const FLASH_W = 0.30, FLASH_AR = 294 / 371;  // 화염 폭(보드분수) / 높이비 (cannon-flash 371x294)
   const SMOKE_W = 0.16, SMOKE_AR = 254 / 211;  // 연기 폭 / 높이비 (cannon-smoke 211x254)
@@ -81,6 +82,7 @@
     placeFx(flash, FLASH_W, FLASH_AR);
     placeFx(smoke, SMOKE_W, SMOKE_AR);
 
+    const restPose = POSES.find((p) => p.key === REST_KEY) || POSES[0];
     let pose = null;
     let phase = 'home', t = 0;
     let residual = 0, resFrom = 0, resTo = 0, resT = 0;
@@ -148,7 +150,7 @@
         t += dt;
         const k = easeOut(clamp01(t / SETTLE_SEC));
         residual = resTo * (1 - k);
-        if (t >= SETTLE_SEC) { phase = 'home'; t = 0; residual = 0; }
+        if (t >= SETTLE_SEC) { phase = 'home'; t = 0; residual = 0; showPose(restPose); }
       }
       paint();
     }
@@ -173,12 +175,13 @@
       residual = resFrom = resTo = 0;
       flash.classList.remove('is-on'); smoke.classList.remove('is-on');
       ball.style.opacity = '0';
+      showPose(restPose);
       paint();
     }
 
     function clear() { clearTimers(); el.remove(); }
 
-    showPose(POSES[0]);
+    showPose(restPose);
     paint();
     return { strike, update, isBusy, home, clear };
   }
