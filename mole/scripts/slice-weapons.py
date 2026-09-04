@@ -2,19 +2,17 @@
 
 입력:
   Desktop/대포.png       (5포즈) — #3(우상단) = 대기 자세 (포신 좌상향, 우하단 코너용)
-  Desktop/대포 화염.png  (2행x3열 발사 시퀀스, #3와 같은 각도) — flash/smoke 프레임
+  Desktop/대포 화염.png  (발사 시퀀스, #3와 같은 각도) — 여기선 **화염·연기만** 크롭 (대포 제외).
+                         (fire 시트의 대포는 포구가 찌그러져 있어 본체로 못 씀.)
 
 출력 assets/weapons/:
-  cannon.png       대기 (대포.png #3, 연기 없음)
-  cannon-fire.png  발사 순간 (큰 총구 화염, 대포 포함)
-  cannon-smoke.png 직후 (연기, 대포 포함)
-  cannon-ball.png  포탄 + 짧은 불꼬리 (대포 화염 하단행에서)
-
-대기/발사/연기 3장은 캐리지 바닥(바퀴)이 같은 위치에 오도록 lane-cannon.js 가 배치 →
-포신 각도·화염 차이가 자연스러운 반동으로 보인다.
+  cannon.png       대포 본체 (대포.png #3) — 항상 표시
+  cannon-flash.png 총구 화염만 (좌상향, 오른쪽 끝 = 포구 부착점)
+  cannon-smoke.png 총구 연기만
 """
 
 import os
+from collections import deque
 from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -23,8 +21,32 @@ SRC_CANNON = os.path.join(os.path.expanduser('~'), 'Desktop', '대포.png')
 SRC_FIRE = os.path.join(os.path.expanduser('~'), 'Desktop', '대포 화염.png')
 
 
+def drop_specks(im, min_area=1200):
+    w, h = im.size
+    px = im.load()
+    seen = bytearray(w * h)
+    for sy in range(h):
+        for sx in range(w):
+            if seen[sy * w + sx] or px[sx, sy][3] < 24:
+                continue
+            comp, dq = [], deque([(sx, sy)])
+            seen[sy * w + sx] = 1
+            while dq:
+                x, y = dq.popleft()
+                comp.append((x, y))
+                for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                    if 0 <= nx < w and 0 <= ny < h and not seen[ny * w + nx] and px[nx, ny][3] >= 24:
+                        seen[ny * w + nx] = 1
+                        dq.append((nx, ny))
+            if len(comp) < min_area:
+                for x, y in comp:
+                    r, g, b, _ = px[x, y]
+                    px[x, y] = (r, g, b, 0)
+    return im
+
+
 def crop_bbox(im, box):
-    c = im.crop(box)
+    c = drop_specks(im.crop(box))
     bb = c.split()[3].getbbox()
     return c.crop(bb) if bb else c
 
@@ -43,11 +65,13 @@ def main():
     cap(crop_bbox(cn, (1112, 40, 1522, 528)), 340).save(os.path.join(OUT, 'cannon.png'))
 
     fr = Image.open(SRC_FIRE).convert('RGBA')
-    # 상단행 = 발사 시퀀스 (대포.png #3 와 같은 각도). f0=화염, f1=연기. (육안 측정 좌표)
-    cap(crop_bbox(fr, (150, 0, 775, 520)), 460).save(os.path.join(OUT, 'cannon-fire.png'))
-    cap(crop_bbox(fr, (800, 10, 1425, 512)), 440).save(os.path.join(OUT, 'cannon-smoke.png'))
+    # 화염·연기만 (포구 앞부분, 포신 금속 제외). 좌표는 격자 육안 측정.
+    cap(crop_bbox(fr, (128, 3, 402, 250)), 300).save(os.path.join(OUT, 'cannon-flash.png'))
+    cap(crop_bbox(fr, (798, 42, 1006, 280)), 250).save(os.path.join(OUT, 'cannon-smoke.png'))
+    # 포탄 = 깨끗한 검은 철구 (불꼬리 제외 — 구는 회전해도 똑같아 각도 상관없음).
+    cap(crop_bbox(fr, (2, 526, 80, 602)), 96).save(os.path.join(OUT, 'cannon-ball.png'))
 
-    for n in ('cannon', 'cannon-fire', 'cannon-smoke'):
+    for n in ('cannon', 'cannon-flash', 'cannon-smoke', 'cannon-ball'):
         p = os.path.join(OUT, n + '.png')
         print(n, Image.open(p).size, os.path.getsize(p) // 1024, 'KB')
 
