@@ -28,7 +28,10 @@
     { key: 'mid',   src: 'assets/weapons/cannon.png',       w: 0.266, ar: 1.185,
       mu: 0.07,  mv: 0.15, aim: -138, tweak: 20, dx: -0.014 },
     { key: 'steep', src: 'assets/weapons/cannon-steep.png', w: 0.223, ar: 1.538,
-      mu: 0.50,  mv: 0.05, aim: -94,  tweak: 15, dx: 0.045 }
+      // tweak=0 고정: steep은 회전축(포구)이 그림 맨 위, 바퀴가 한참 아래라 조금만 돌아도
+      // 바퀴 쪽이 크게 휩쓸려 "넘어지는" 것처럼 보인다(사용자가 스크린샷으로 확인) — 각도
+      // 정확도보다 "항상 수직으로 서있음"을 우선한다.
+      mu: 0.50,  mv: 0.05, aim: -94,  tweak: 0, dx: 0.045 }
   ];
 
   const REST_KEY = 'mid';                  // 발사 후 되돌아갈 기본 대기 포즈
