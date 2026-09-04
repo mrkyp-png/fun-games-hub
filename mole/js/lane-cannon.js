@@ -53,12 +53,15 @@
   // 전환 때 각도가 살짝 튀어 보임. 앵커(mu,mv)는 그림마다 실측한 값 그대로 유지.
   const FX_ADVANCE = 0.015;                // 포구보다 이만큼(보드분수) 더 앞으로
   const FX_BASE_AIM = -156;                // 세 장 공통 회전 기준각 (fx1 -149°, fx4 -163° 실측 평균)
+  // 앵커(mu,mv) = 밝은 코어와 "뒷끝(포신에 안 겹치는 경계)"의 중간점. 뒷끝만 쓰면 안 겹치긴
+  // 하는데 코어가 포구에서 26~30%나 멀어져 불빛이 동떨어져 보였다(실측 후 수정) — 코어 쪽으로
+  // 절반 당겨서 포구에 붙어 보이면서도 포신 겹침은 최소화.
   const SPARK_SRC = 'assets/weapons/cannon-fx1.png', SPARK_W = 0.14; // 점화 스파크 — 아주 짧게
-  const SPARK_MU = 0.825, SPARK_MV = 0.834; // fx1 실측 뒷끝
+  const SPARK_MU = 0.763, SPARK_MV = 0.718; // fx1: 코어(0.701,0.601)~뒷끝(0.825,0.834) 중간
   const BURN_SRC  = 'assets/weapons/cannon-fx4.png', BURN_W  = 0.18; // 불+연기 — 메인
-  const BURN_MU = 0.980, BURN_MV = 0.518;   // fx4 실측 뒷끝
+  const BURN_MU = 0.828, BURN_MV = 0.534;   // fx4: 코어(0.676,0.550)~뒷끝(0.980,0.518) 중간
   const SMOKE_SRC = 'assets/weapons/cannon-fx5.png', SMOKE_W = 0.17; // 잔여 연기 — 오래 옅어짐
-  const SMOKE_MU = 0.896, SMOKE_MV = 0.841; // fx5 실측 뒷끝
+  const SMOKE_MU = 0.740, SMOKE_MV = 0.686; // fx5: 무게중심(0.584,0.530)~뒷끝(0.896,0.841) 중간
   const AIM_MS = 90;                       // 포즈 전환 + 미세 조준
   const RECOIL = [0.012, 0.024, 0.040];    // 살짝/보통/강 (보드 분수)
   const KICK_SEC = 0.06, SETTLE_SEC = 0.34;
