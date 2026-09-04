@@ -39,13 +39,17 @@
   // 코어(무게중심)를 쓰면 그림의 절반이 앵커보다 뒤로 처져 포신에 겹쳐 보였다(사용자 피드백:
   // "화염이 포신을 넘어옴"). 뒷끝을 포구에 대면 그림 전체가 앵커보다 앞으로만 펼쳐진다.
   // + FX_ADVANCE 만큼 포즈 각도 방향으로 더 밀어서 포신에서 확실히 떨어지게.
+  // 회전 기준각(FX_BASE_AIM)은 세 장 다 하나로 통일 — 대포 몸통·화염·불꽃·연기가
+  // 항상 같은 방향으로 같이 움직여야 하기 때문(사용자 피드백). 장별로 다르면 스파크→화염
+  // 전환 때 각도가 살짝 튀어 보임. 앵커(mu,mv)는 그림마다 실측한 값 그대로 유지.
   const FX_ADVANCE = 0.015;                // 포구보다 이만큼(보드분수) 더 앞으로
+  const FX_BASE_AIM = -156;                // 세 장 공통 회전 기준각 (fx1 -149°, fx4 -163° 실측 평균)
   const SPARK_SRC = 'assets/weapons/cannon-fx1.png', SPARK_W = 0.14; // 점화 스파크 — 아주 짧게
-  const SPARK_MU = 0.825, SPARK_MV = 0.834, SPARK_BASE_AIM = -149; // fx1 실측 뒷끝/방향
+  const SPARK_MU = 0.825, SPARK_MV = 0.834; // fx1 실측 뒷끝
   const BURN_SRC  = 'assets/weapons/cannon-fx4.png', BURN_W  = 0.18; // 불+연기 — 메인
-  const BURN_MU = 0.980, BURN_MV = 0.518, BURN_BASE_AIM = -163;    // fx4 실측 뒷끝/방향
+  const BURN_MU = 0.980, BURN_MV = 0.518;   // fx4 실측 뒷끝
   const SMOKE_SRC = 'assets/weapons/cannon-fx5.png', SMOKE_W = 0.17; // 잔여 연기 — 오래 옅어짐
-  const SMOKE_MU = 0.896, SMOKE_MV = 0.841, SMOKE_BASE_AIM = -163; // fx5는 방향 실측 불가(순수 연기) → burn 값 재사용
+  const SMOKE_MU = 0.896, SMOKE_MV = 0.841; // fx5 실측 뒷끝
   const AIM_MS = 90;                       // 포즈 전환 + 미세 조준
   const RECOIL = [0.012, 0.024, 0.040];    // 살짝/보통/강 (보드 분수)
   const KICK_SEC = 0.06, SETTLE_SEC = 0.34;
@@ -94,7 +98,7 @@
     // 화염·연기 배치: 그림의 뒷끝 앵커(mu,mv, 정사각이라 ar=1)를 포구보다 FX_ADVANCE만큼
     // 더 앞(포즈 각도 방향)에 두고, 그 지점을 축으로 포즈 각도만큼 회전 — 그림 전체가
     // 앵커보다 앞으로만 펼쳐져서 포신에 안 넘치고, 포구에서 살짝 떨어져 나온다.
-    function placeOverlay(im, w, mu, mv, baseAim, p) {
+    function placeOverlay(im, w, mu, mv, p) {
       const rad = p.aim * Math.PI / 180;
       const fx0 = ax(p) + Math.cos(rad) * FX_ADVANCE;
       const fy0 = ay(p) + Math.sin(rad) * FX_ADVANCE;
@@ -102,19 +106,18 @@
       im.style.left = ((fx0 - mu * w) * 100).toFixed(2) + '%';
       im.style.top = ((fy0 - mv * w) * 100).toFixed(2) + '%';
       im.style.transformOrigin = (mu * 100).toFixed(2) + '% ' + (mv * 100).toFixed(2) + '%';
-      im.style.setProperty('--rot', (p.aim - baseAim).toFixed(1) + 'deg');
+      im.style.setProperty('--rot', (p.aim - FX_BASE_AIM).toFixed(1) + 'deg');
     }
     function placeFx(p) {
-      placeOverlay(spark, SPARK_W, SPARK_MU, SPARK_MV, SPARK_BASE_AIM, p);
-      placeOverlay(burn, BURN_W, BURN_MU, BURN_MV, BURN_BASE_AIM, p);
-      placeOverlay(smoke, SMOKE_W, SMOKE_MU, SMOKE_MV, SMOKE_BASE_AIM, p);
+      placeOverlay(spark, SPARK_W, SPARK_MU, SPARK_MV, p);
+      placeOverlay(burn, BURN_W, BURN_MU, BURN_MV, p);
+      placeOverlay(smoke, SMOKE_W, SMOKE_MU, SMOKE_MV, p);
     }
 
     const restPose = POSES.find((p) => p.key === REST_KEY) || POSES[0];
     let pose = null;
     let phase = 'home', t = 0;
     let residual = 0, resFrom = 0, resTo = 0, resT = 0;
-    let shotAim = AIM_DEG_FALLBACK;  // 발사 순간 고정하는 정확한 조준각(반동 방향용, 미세조준 애니메이션과 무관)
     let recoilAmt = 0;
     let timers = [];
     function clearTimers() { timers.forEach(clearTimeout); timers = []; }
@@ -150,7 +153,6 @@
 
       resFrom = residual;
       resTo = clamp(angDiff(want, best.aim), -best.tweak, best.tweak);
-      shotAim = best.aim + resTo;  // 포구→낙탄지점 직선 각도로 고정 — kick~settle 내내 안 변함
       resT = 0;
       phase = 'aim'; t = 0;
       recoilAmt = RECOIL[Math.floor(Math.random() * RECOIL.length)];
@@ -195,10 +197,10 @@
       let amt = 0;
       if (phase === 'kick') amt = recoilAmt * ease(clamp01(t / KICK_SEC));
       else if (phase === 'settle') amt = recoilAmt * (1 - easeOut(clamp01(t / SETTLE_SEC)));
-      // 반동 방향 = 발사 순간 고정한 shotAim(포구→낙탄지점 직선)만 쓴다. 매 프레임 변하는
-      // residual(포신이 원위치로 풀리는 시각적 회전)을 쓰면 반동 도중 각도가 휘어 버려서
-      // 직선이 아니라 곡선으로 새 보였다(사용자 피드백: "포구·낙탄지점·반동이 일직선이어야").
-      const rdir = (shotAim + 180) * Math.PI / 180;
+      // 반동 방향 = 몸통이 지금 실제로 향하는 각도(pose.aim+residual) 그대로.
+      // 몸통(머리-꼬리 축)·화염·불꽃이 항상 같은 방향으로 움직여야 하므로, 반동도 같은
+      // 값을 써야 몸통 각도와 밀리는 방향이 항상 일치한다(사용자 피드백).
+      const rdir = ((pose ? pose.aim : AIM_DEG_FALLBACK) + residual + 180) * Math.PI / 180;
       const dx = Math.cos(rdir) * amt, dy = Math.sin(rdir) * amt;
       rig.style.transform =
         'translate(' + (dx * 100).toFixed(3) + '%, ' + (dy * 100).toFixed(3) + '%) ' +
