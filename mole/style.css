@@ -121,7 +121,8 @@ body { background: var(--lm-page); }
   cursor: pointer;
 }
 .ch-arrow:disabled { opacity: 0.3; cursor: default; }
-.ch-label { font-size: 0.88rem; font-weight: 800; color: var(--lm-ink); min-width: 60px; text-align: center; }
+.ch-label { font-size: 0.8rem; font-weight: 800; color: var(--lm-ink); min-width: 60px; flex: 1 1 auto;
+  text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .chat-thread {
   flex: 1;
@@ -1185,7 +1186,8 @@ body { background: var(--lm-page); }
 .mm-close { background: none; border: none; color: #1f1f24; font-size: 1.4rem; line-height: 1; cursor: pointer; padding: 0 2px; }
 .mm-title { font-weight: 800; font-size: 0.95rem; }
 .mm-stat { display: inline-flex; align-items: center; gap: 3px; font-size: 0.82rem; color: #3a3a41; }
-.mm-stat:first-of-type { margin-left: auto; }
+.mm-close { margin-left: 4px; }
+.mm-resume { margin-left: auto; }
 .mm-stat svg { width: 15px; height: 15px; }
 /* 상단: 게임 안 함 = "‹ 더보기" / 게임 일시정지 중 = "‹ 이어하기" 3D 박스 */
 #more-menu:not(.mm-paused) .mm-resume { display: none; }

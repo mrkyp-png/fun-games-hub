@@ -62,6 +62,11 @@
     const c = parseInt(localStorage.getItem('mole.chapter'), 10);
     return (c >= 1 && c <= 3) ? c : 1;
   }
+  // 챕터 이름표 ("챕터 N : 부제"). 이름 없으면 "챕터 N".
+  function chapterLabel(n) {
+    const named = I18N.t('mole.chapter.name.' + n);
+    return (named && named !== 'mole.chapter.name.' + n) ? named : I18N.t('mole.chapter.n', { n: n });
+  }
   function bestFor(diff) {
     const v = parseInt(localStorage.getItem('mole.best.' + diff), 10);
     return Number.isFinite(v) ? v : 0;
@@ -301,7 +306,7 @@
     if (ch > maxCh) { ch = maxCh; localStorage.setItem('mole.chapter', String(ch)); }
     nav.hidden = false;
     if (addr) addr.hidden = true;
-    nav.querySelector('[data-ch-label]').textContent = I18N.t('mole.chapter.n', { n: ch });
+    nav.querySelector('[data-ch-label]').textContent = chapterLabel(ch);
     nav.querySelector('[data-ch-prev]').disabled = ch <= 1;
     nav.querySelector('[data-ch-next]').disabled = ch >= maxCh;
   }
@@ -839,7 +844,7 @@
     localStorage.setItem('mole.chapter', String(ch));
     const ov = document.getElementById('gameover-overlay');
     const panel = document.getElementById('next-chapter-panel');
-    panel.querySelector('[data-nc-label]').textContent = I18N.t('mole.chapter.n', { n: ch });
+    panel.querySelector('[data-nc-label]').textContent = chapterLabel(ch);
     panel.hidden = false;
     void panel.offsetWidth;
     ov.classList.add('is-sliding');      // 축하 화면 왼쪽으로
