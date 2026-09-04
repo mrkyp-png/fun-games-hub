@@ -24,6 +24,7 @@ html, body { overscroll-behavior: none; }
   --lm-line:    rgba(0, 0, 0, 0.10);
   --lm-line-2:  rgba(0, 0, 0, 0.055);
   --lm-fill:    #f1f1f3;   /* 검색바 등 옅은 채움 */
+  --lm-chat:    #f4f1ea;   /* 대화 홈 배경 — 순백 대신 연한 웜그레이 (메신저 느낌) */
 }
 /* 배포 버전 표식 (스크린샷으로 어느 버전인지 확인용) — 시작 화면 좌하단 아주 작게 */
 #build-tag {
@@ -96,7 +97,7 @@ body { background: var(--lm-page); }
   flex-direction: column;
   padding: 12px 12px 16px;
   z-index: 7;
-  background: var(--lm-surface);   /* 대화 홈 = 밝은 면 (잔디는 플레이 중에만) */
+  background: var(--lm-chat);   /* 대화 홈 = 연한 웜그레이 (잔디는 플레이 중에만) */
   overflow: hidden;
 }
 /* 챕터 선택 ◀ 챕터 N ▶ — HUD 주소창 자리 (시작 상태 + 열린 챕터 2개 이상). */
