@@ -326,6 +326,53 @@ def strip_bloom(im, iters=10):
     return im
 
 
+def clear_top_checker(im, frac=0.34):
+    """이미지 위쪽 frac 영역에서 '12px 피치 체커보드 패턴'을 이루는 픽셀만 제거.
+    (헬멧 램프광 위로 남은 작은 체커 얼룩. 램프광이 배어들어 warm-tint 돼도 잡힌다.
+     하마 피부·헬멧은 12px 규칙 격자가 아니라 안 걸림.)"""
+    w, h = im.size
+    px = im.load()
+    ap = im.split()[3].load()
+    lum = [[0] * (int(h * frac) + 26) for _ in range(w)]
+    ymax = min(h, int(h * frac) + 26)
+    for x in range(w):
+        for y in range(ymax):
+            r, g, b, _ = px[x, y]
+            lum[x][y] = (r + g + b) // 3
+
+    P, Q = 12, 6
+    kill = []
+    for y in range(min(h, int(h * frac))):
+        for x in range(w):
+            if ap[x, y] < 60:
+                continue
+            c = lum[x][y]
+            score = 0
+            for dx, dy in ((P, 0), (-P, 0), (0, P), (0, -P)):
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < w and 0 <= ny < ymax and abs(lum[nx][ny] - c) < 26:
+                    score += 1
+            for dx, dy in ((Q, 0), (-Q, 0), (0, Q), (0, -Q)):
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < w and 0 <= ny < ymax and abs(lum[nx][ny] - c) > 32:
+                    score += 1
+            if score >= 5:  # 같은위상 12px + 반대위상 6px 이 여러 방향 = 격자
+                kill.append((x, y))
+    # kill 마스크를 살짝 확장 (격자 사이 AA)
+    if kill:
+        km = bytearray(w * h)
+        for x, y in kill:
+            km[y * w + x] = 1
+        m = Image.frombytes('L', (w, h), bytes(255 if v else 0 for v in km)).filter(ImageFilter.MaxFilter(5))
+        mp = m.load()
+        for y in range(min(h, int(h * frac) + 4)):
+            for x in range(w):
+                if mp[x, y]:
+                    r, g, b, _ = px[x, y]
+                    px[x, y] = (r, g, b, 0)
+    return im
+
+
 def feather(im):
     """얕은 blur 로 AA 만. 본체는 불투명 유지(가파른 곡선)."""
     a = im.split()[3].filter(ImageFilter.GaussianBlur(0.7))
@@ -400,17 +447,15 @@ def main():
 
     for r, (y0, y1) in enumerate(ybands):
         for c, (x0, x1) in enumerate(xbands):
-            # 클리닝은 셀 단위로 — close/extend 가 옆 포즈로 번지지 않게.
+            # 최소·안전 파이프라인만: 구름/가장자리를 안 건드린다.
+            # (강한 체커-블룸 제거 heuristic 은 구름·하마 회색톤 가장자리를 파먹어서 뺌.
+            #  헬멧 램프광 위 작은 얼룩은 소스에 체커가 박혀 있어 남는다 — 진짜 해결은
+            #  투명 배경 PNG 재출력.)
             cell = raw.crop((x0, y0, x1, y1))
-            cell = drop_specks(cell, min_area=400)
-            cell = fill_holes(cell)              # 램프광 등 갇힌 구멍 복원
-            cell = drop_specks(cell, min_area=400)
-            cell = trim_floaters(cell, k=9)      # 헬멧에 붙은 체커 얼룩 잘라내기
-            cell = strip_bloom(cell)             # 헬멧 위로 번진 크림색 램프광 블룸 제거
-            cell = degrey(cell, iters=6)         # 유채색 옆 잔여 체커 얼룩
-            cell = drop_specks(cell, min_area=400)
+            cell = drop_specks(cell, min_area=300)
+            cell = fill_holes(cell)              # flood 가 파먹은 갇힌 구멍(램프광) 복원
             cell = feather(edge_extend(defringe(cell)))
-            cell = drop_specks(cell, min_area=80)
+            cell = drop_specks(cell, min_area=60)
             bbox = cell.split()[3].getbbox()
             cell = cell.crop(bbox)
             path = os.path.join(OUT, NAMES[r][c] + '.png')
