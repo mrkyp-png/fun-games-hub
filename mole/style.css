@@ -1037,38 +1037,34 @@ body { background: var(--lm-page); }
   filter: drop-shadow(0 4px 5px rgba(0, 0, 0, 0.35));
   z-index: 1;
 }
-/* 화염·연기: lane-cannon.js 가 width/left/top 지정 (오른쪽-중앙 = 포구 고정점).
-   transform-origin = 오른쪽 끝(포구 부착점), --lc-rot = 포신 각도.
-   회전·확대 모두 포구를 축으로 → 항상 포구에서 포신 방향으로 피어난다. */
+/* 화염·연기: lane-cannon.js 가 width/left/top 지정 (포구가 정중앙).
+   둘 다 포구를 축으로 사방으로 터진다 — 방향성 플룸이 포즈마다 어긋나 보여서. */
 .lc-flash {
-  opacity: 0; --lc-rot: 0deg;
-  transform: rotate(var(--lc-rot)) scale(0.45);
-  transform-origin: 100% 50%;
-  filter: drop-shadow(0 0 12px rgba(255, 150, 50, 0.8));
-  /* 포신과 만나는 오른쪽 끝을 부드럽게 페이드 (하드 크롭 선 감춤) */
-  -webkit-mask-image: linear-gradient(to left, transparent 0, #000 9%);
-  mask-image: linear-gradient(to left, transparent 0, #000 9%);
+  opacity: 0;
+  transform: scale(0.35);
+  transform-origin: 50% 50%;
+  filter: drop-shadow(0 0 16px rgba(255, 160, 60, 0.95)) brightness(1.15) saturate(1.15);
   z-index: 2;
 }
-.lc-flash.is-on { animation: lc-flash 0.2s ease-out forwards; }
+.lc-flash.is-on { animation: lc-flash 0.22s ease-out forwards; }
 @keyframes lc-flash {
-  0%   { opacity: 0; transform: rotate(var(--lc-rot)) scale(0.45); }
-  18%  { opacity: 1; transform: rotate(var(--lc-rot)) scale(1.08); }
-  100% { opacity: 0; transform: rotate(var(--lc-rot)) scale(1.7); }
+  0%   { opacity: 0;   transform: scale(0.35); }
+  15%  { opacity: 1;   transform: scale(1.0); }
+  45%  { opacity: 0.9; transform: scale(1.25); }
+  100% { opacity: 0;   transform: scale(1.7); }
 }
+/* 연기 = 포구 중심 사방으로 번지는 구름 (한쪽만 나면 "이빨 빠진" 느낌 — 사용자). */
 .lc-smoke {
-  opacity: 0; --lc-rot: 0deg;
-  transform: rotate(var(--lc-rot)) scale(0.6);
-  transform-origin: 100% 50%;
-  -webkit-mask-image: linear-gradient(to left, transparent 0, #000 9%);
-  mask-image: linear-gradient(to left, transparent 0, #000 9%);
+  opacity: 0;
+  transform: scale(0.45);
+  transform-origin: 50% 50%;
   z-index: 0;
 }
-.lc-smoke.is-on { animation: lc-smoke 0.5s ease-out forwards; }
+.lc-smoke.is-on { animation: lc-smoke 0.6s ease-out forwards; }
 @keyframes lc-smoke {
-  0%   { opacity: 0;    transform: rotate(var(--lc-rot)) scale(0.6); }
-  18%  { opacity: 0.85; transform: rotate(var(--lc-rot)) scale(0.9); }
-  100% { opacity: 0;    transform: rotate(var(--lc-rot)) translate(-14%, -22%) scale(1.5); }
+  0%   { opacity: 0;    transform: scale(0.45); }
+  20%  { opacity: 0.75; transform: scale(1.0); }
+  100% { opacity: 0;    transform: translate(-8%, -14%) scale(1.9); }
 }
 .lc-ball {
   position: absolute; display: block;
