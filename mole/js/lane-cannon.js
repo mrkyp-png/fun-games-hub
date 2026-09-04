@@ -32,7 +32,7 @@
     { key: 'mid',   src: 'assets/weapons/cannon.png',       w: 0.266, ar: 1.185,
       mu: 0.07,  mv: 0.15, aim: -138, tweak: 0, dx: -0.014 },
     { key: 'steep', src: 'assets/weapons/cannon-steep.png', w: 0.223, ar: 1.538,
-      mu: 0.50,  mv: 0.05, aim: -94,  tweak: 0, dx: 0.045, dy: -0.16 }
+      mu: 0.50,  mv: 0.05, aim: -94,  tweak: 0, dx: 0.045, dy: -0.24 }
   ];
 
   const REST_KEY = 'mid';                  // 발사 후 되돌아갈 기본 대기 포즈
