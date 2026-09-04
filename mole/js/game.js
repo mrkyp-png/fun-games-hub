@@ -904,7 +904,7 @@
     document.getElementById('gameover-reason').textContent =
       I18N.t(win ? 'mole.result.success' : 'mole.result.fail');
     document.getElementById('gameover-score').textContent =
-      I18N.t('mole.result.score', { n: total.toLocaleString() });
+      I18N.t('mole.result.scoreVs', { n: total.toLocaleString(), t: prog.target.toLocaleString() });
     // 버튼 없음 — 성공/실패 둘 다 좌상단 ⊞ 로 홈. (광고는 유저 피로도 때문에 뺌.)
 
     // 승리 시 다음 챕터가 열렸으면: 왼쪽 스와이프로 "챕터 N" 화면으로 넘어갈 수 있다는 힌트.

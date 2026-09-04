@@ -732,10 +732,14 @@ body { background: var(--lm-page); }
   justify-content: center;
   z-index: 10;
 }
-.gameover-score { font-size: 1.7rem; font-weight: 800; margin: 2px 0 6px; color: var(--lm-ink); }
-/* ---- 최종 결과: 박스 없이 전체화면 연출 위에. 승리(광선+색종이+하마) / 실패(빗줄기+하마) ---- */
+.gameover-score {
+  position: relative; z-index: 2; margin: 0;
+  font-size: 1.6rem; font-weight: 800; color: var(--lm-ink);
+}
+/* ---- 최종 결과: 박스 없이. 성공(맨위) / 하마(중앙) / 점수(맨아래) ---- */
 #gameover-overlay {
-  overflow: hidden; flex-direction: column; gap: 14px;
+  overflow: hidden; flex-direction: column;
+  justify-content: space-between; padding: 7% 0 6%;
   transition: transform 0.34s cubic-bezier(.4, 0, .3, 1); touch-action: pan-y;
 }
 #gameover-overlay.is-sliding { transform: translateX(-100%); }
@@ -743,8 +747,7 @@ body { background: var(--lm-page); }
 #gameover-overlay.is-lose { background: radial-gradient(circle at 50% 40%, #fbfcfd 0%, #e6ebf1 100%); }
 /* 성공·실패 둘 다 버튼 없음 — 좌상단 ⊞ 로 홈 */
 
-.go-body { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.go-word { margin: 0; font-size: 2.6rem; font-weight: 900; letter-spacing: 0.06em; }
+.go-word { position: relative; z-index: 2; margin: 0; font-size: 2.6rem; font-weight: 900; letter-spacing: 0.06em; }
 #gameover-overlay.is-win .go-word { color: #ef8a00; text-shadow: 0 2px 0 #fff, 0 4px 12px rgba(240, 150, 0, 0.35); }
 #gameover-overlay.is-lose .go-word { color: #5b6474; }
 
@@ -892,8 +895,9 @@ body { background: var(--lm-page); }
   z-index: 3;
   max-width: 92%;
   padding: 2px 12px 3px;
-  border-radius: 0 0 9px 9px;
-  background: rgba(0, 0, 0, 0.045);
+  border-radius: 0 0 10px 10px;
+  background: var(--lm-pad);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.10);
   color: var(--lm-muted);
   font-size: 0.6rem;
   text-align: center;
@@ -987,7 +991,16 @@ body { background: var(--lm-page); }
 
 /* 두더지가 그 구멍에 있음 — 눌러야 할 키. 다이얼러처럼 보이게 은은한 하이라이트. */
 .lane-button--hot { background: rgba(120, 170, 255, 0.28); box-shadow: 0 0 10px 1px rgba(120, 170, 255, 0.4); }
-.lane-button--call.lane-button--hot { background: #37e066; box-shadow: 0 0 12px 2px rgba(90, 240, 130, 0.6); }
+/* 통화 버튼도 두더지 있으면 다른 버튼과 똑같은 파란 하이라이트 (라이트 ON 에서만).
+   DIM/OFF 는 아래 diff-mid/legend 규칙이 다시 초록으로. */
+#game-screen:not(.diff-mid):not(.diff-legend) .lane-button--call.lane-button--hot {
+  background: rgba(120, 170, 255, 0.28);
+  box-shadow: 0 0 10px 1px rgba(120, 170, 255, 0.4);
+}
+#game-screen:not(.diff-mid):not(.diff-legend) .lane-button--call.lane-button--hot .lane-lbl,
+#game-screen:not(.diff-mid):not(.diff-legend) .lane-button--call.lane-button--hot .lane-ico {
+  color: var(--lm-ink);
+}
 
 /* ---- 망치 ---- transform-origin 과 translate/rotate 는 lane-hammer.js 가 넣는다 ---- */
 /* 뽕망치 레이어 = 보드 밖(#game-screen 직속). 보드 박스와 똑같은 위치·크기로 얹되
