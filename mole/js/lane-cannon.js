@@ -35,6 +35,11 @@
       mu: 0.50,  mv: 0.05, aim: -94,  tweak: 0, dx: 0.045, dy: -0.06 }
   ];
 
+  // 3번 버튼(row0,col2) 구멍만 예외: steep 각도(-94°)와 15.4° 차이나서 tweak=0이면
+  // 안 맞아 보임. 이 구멍만 "정확히 필요한 각도로 고정 회전 → 발사 → 반동" 순서로 처리
+  // (범위 허용이 아니라 그 각도 하나로 딱 돈다) — 나머지 steep 구멍은 그대로 고정.
+  const HOLE3_X = 0.625, HOLE3_Y = 0.27;
+
   const REST_KEY = 'mid';                  // 발사 후 되돌아갈 기본 대기 포즈
   const AIM_DEG_FALLBACK = -120;           // pose 없을 때 반동 방향 계산용
 
@@ -155,8 +160,10 @@
       POSES.forEach((p) => { const d = Math.abs(angDiff(want, p.aim)); if (d < bestD) { bestD = d; best = p; } });
       showPose(best);
 
+      // 3번 구멍이면 tweak 무시하고 정확히 필요한 각도로 고정 회전.
+      const isHole3 = Math.abs(tx - HOLE3_X) < 0.01 && Math.abs(ty - HOLE3_Y) < 0.01;
       resFrom = residual;
-      resTo = clamp(angDiff(want, best.aim), -best.tweak, best.tweak);
+      resTo = isHole3 ? angDiff(want, best.aim) : clamp(angDiff(want, best.aim), -best.tweak, best.tweak);
       resT = 0;
       phase = 'aim'; t = 0;
       recoilAmt = RECOIL[Math.floor(Math.random() * RECOIL.length)];
