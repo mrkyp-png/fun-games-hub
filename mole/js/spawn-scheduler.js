@@ -83,6 +83,7 @@
         pop.poseIndex = Math.floor(rng.next() * (config.obstacleCount || 5)); // 어느 동물인지
       }
       pop.sinkIn = 0; // > 0 이면: 최종 타격을 맞았고 이 시간 뒤에 침몰(dying) 시작
+      pop.killed = false; // 실제로 타격당해 처치됐는가 (시간초과로 내려간 것과 구분 — 저글 오발 방지)
       pop.juggled = false; // 저글 보너스 1회용
       active.set(pop.id, pop);
       occupiedSpawnPointIds.add(sp.id);
@@ -135,11 +136,11 @@
     function resolveOne(pop) {
       // 저글 보너스(스펙 2026-09-04 §4): 1방 두더지를 잡은 뒤 내려가는 창에 한 번 더 맞히면
       // 콤보 +1 보너스. 두더지당 1회. 못 맞혀도 페널티 없음. 2·3방 다타는 제외.
-      if ((pop.dying || pop.sinkIn > 0) && pop.type === 'mole' && pop.hitsRequired === 1 && !pop.juggled) {
+      if (pop.killed && (pop.dying || pop.sinkIn > 0) && pop.type === 'mole' && pop.hitsRequired === 1 && !pop.juggled) {
         pop.juggled = true;
         return { type: 'mole', regionId: pop.regionId, juggle: true, xFrac: pop.x, yFrac: pop.y };
       }
-      if (pop.dying || pop.sinkIn > 0) return null; // 이미 처치됨 (침몰 중이거나 침몰 대기 중)
+      if (pop.dying || pop.sinkIn > 0) return null; // 이미 처치됐거나(침몰) 시간초과로 내려가는 중 — 헛방
 
       if (pop.type === 'mole' && pop.hitsRequired > 1) {
         if (pop.hitCooldown > 0) return null; // 연타 무시
@@ -152,7 +153,7 @@
 
       // 최종 타격 — 영역 완성/점수는 지금 확정하되, 실제 "내려가는" 연출은 SINK_DELAY 뒤
       // (망치가 화면에서 두더지에 닿는 순간). tick() 이 sinkIn 을 세다가 dying 으로 넘긴다.
-      if (pop.type === 'mole') completedRegions.add(pop.regionId);
+      if (pop.type === 'mole') { completedRegions.add(pop.regionId); pop.killed = true; }
       pop.sinkIn = SINK_DELAY;
       return { type: pop.type, regionId: pop.regionId, done: true, xFrac: pop.x, yFrac: pop.y };
     }

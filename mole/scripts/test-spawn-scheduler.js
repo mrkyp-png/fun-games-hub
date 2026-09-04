@@ -336,6 +336,27 @@ function makeSpawnPoints(regionIds) {
   assert.deepStrictEqual(scheduler.resolveRegion(0), [], '다타 두더지는 침몰 중 재타격해도 저글 없음');
 }
 
+// 16c) 안 맞고 시간초과로 내려가는 두더지를 치면 저글 아님 — 그냥 헛방 (빈 배열)
+{
+  const regions = [{ id: 0 }];
+  const spawnPoints = makeSpawnPoints([0]);
+  const config = { maxConcurrentMoles: 1, maxConcurrentAnimals: 0, maxConcurrentBombs: 0, popDuration: 0.3, molePoseCount: 8 };
+  let scheduler, mole;
+  for (let seed = 1; seed < 400 && !mole; seed++) {
+    scheduler = create({ regions, spawnPoints, config, rng: makeRng(seed) });
+    for (let t = 0; t < 40 && !mole; t++) {
+      const m = scheduler.tick(0.05).spawned.find((p) => p.type === 'mole' && p.hitsRequired === 1);
+      if (m) mole = m;
+    }
+  }
+  assert.ok(mole, 'found a 1-hit mole');
+  // 안 치고 유지시간 넘김 → 스스로 내려감(dying)
+  for (let t = 0; t < 20; t++) scheduler.tick(0.1);
+  const p = scheduler.getActivePops()[0];
+  assert.ok(p && p.dying && !p.killed, '시간초과 두더지는 dying 이지만 killed 아님');
+  assert.deepStrictEqual(scheduler.resolveRegion(0), [], '시간초과로 내려가는 두더지 타격 = 저글 아님, 헛방');
+}
+
 // 17) config.obstacles=false → 동물/폭탄 안 나옴 (하수·고수 난이도)
 {
   const regions = [{ id: 0 }, { id: 1 }, { id: 2 }, { id: 3 }];
