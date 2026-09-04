@@ -290,8 +290,9 @@ body { background: var(--lm-page); }
   position: absolute;
   top: 10px;
   left: 12px;
-  right: 12px;
-  display: flex;
+  right: auto;
+  max-width: calc(100% - 120px);
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
@@ -308,11 +309,11 @@ body { background: var(--lm-page); }
 .chat-sms.is-empty { display: none; }
 /* .sms-anim = game.js가 시작화면 열 때 붙임.
    툭 내려옴 → 2초 머묾 → 그냥 사라짐(페이드) → 잠깐 뒤 다시 내려옴 → 반복. 5초 주기. */
-.chat-sms.sms-anim { animation: sms-loop 5s 0.3s infinite; }
-.chat-sms.sms-anim .chat-sms-party { animation: sms-party-loop 5s 0.3s infinite; }
-.chat-sms.sms-anim .chat-sms-fx i { animation: sms-fx-loop 5s 0.3s infinite; }
+.chat-sms.sms-anim { animation: sms-loop 7s 0.3s infinite; }
+.chat-sms.sms-anim .chat-sms-party { animation: sms-party-loop 7s 0.3s infinite; }
+.chat-sms.sms-anim .chat-sms-fx i { animation: sms-fx-loop 7s 0.3s infinite; }
 .chat-sms-ic { width: 20px; height: 20px; flex: 0 0 auto; color: #35b35a; }
-.chat-sms-txt { flex: 1; }
+.chat-sms-txt { flex: 1; white-space: nowrap; font-size: 0.82rem; }
 @keyframes sms-loop {
   0%   { transform: translateY(-175%); opacity: 1; animation-timing-function: cubic-bezier(.2, 1.35, .4, 1); }
   12%  { transform: translateY(0); opacity: 1; }                        /* 내려옴 (~0.6s) */
@@ -407,7 +408,7 @@ body { background: var(--lm-page); }
 .board-stats { display: none; }
 #game-screen.is-start .board-stats {
   display: inline-flex; gap: 12px;
-  position: absolute; top: 8px; right: 10px; z-index: 6;
+  position: absolute; top: 8px; right: 10px; z-index: 9;
   background: rgba(0, 0, 0, 0.34); border-radius: 12px; padding: 4px 10px;
   color: #fff; font-weight: 800;
 }
