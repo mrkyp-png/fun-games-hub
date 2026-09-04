@@ -197,14 +197,15 @@
 
   // 더보기 메뉴 열기/닫기.
   function openMore(sub) {
-    // 플레이 중에 열면 게임을 멈춘다 (닫을 때 자동 재개) — 메뉴 뒤에서 라운드가 굴러가지 않게.
-    if (state && !state.ended && !state.introActive && !state.paused) {
+    // 진행 중이던 게임이 있으면(직접 일시정지했든 아니든) 상단 = "‹ 이어하기" + 칩 잠금.
+    var resumable = !!(state && !state.ended);
+    // 플레이 중(일시정지 아님)에 열면 게임을 멈춘다 (닫을 때 자동 재개).
+    if (resumable && !state.introActive && !state.paused) {
       state.paused = true;
       state.pausedByMenu = true;
     }
     var mm = document.getElementById('more-menu');
-    // 일시정지 중이면 상단 = "‹ 이어하기" 박스, 아니면 = "‹ 더보기"
-    mm.classList.toggle('mm-paused', !!(state && state.pausedByMenu));
+    mm.classList.toggle('mm-paused', resumable);
     mm.hidden = false;
     if (moreMenu) moreMenu.refresh();
     if (sub) {
