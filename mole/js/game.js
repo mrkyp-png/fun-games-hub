@@ -67,6 +67,7 @@
     const named = I18N.t('mole.chapter.name.' + n);
     return (named && named !== 'mole.chapter.name.' + n) ? named : I18N.t('mole.chapter.n', { n: n });
   }
+  function lastScore() { return parseInt(localStorage.getItem('mole.lastScore'), 10) || 0; }
   function bestFor(diff) {
     const v = parseInt(localStorage.getItem('mole.best.' + diff), 10);
     return Number.isFinite(v) ? v : 0;
@@ -267,12 +268,11 @@
 
     refreshChapterNav();
 
-    // 위에서 내려오는 문자 알림 = 이번 판 목표 점수 (+ 최고 기록이 있으면 함께).
-    const best = bestFor(currentLight());
+    // 위에서 내려오는 문자 알림 = 이번 판 목표 점수 / 마지막 플레이 득점.
     const goal = MG.Progress.target(currentChapter());
     const sms = document.getElementById('start-best');
     const smsTxt = I18N.t('mole.start.goal', { n: goal.toLocaleString() }) +
-      '  /  ' + I18N.t('mole.start.best', { n: best.toLocaleString() });
+      '  /  ' + I18N.t('mole.start.best', { n: lastScore().toLocaleString() });
     sms.querySelector('.chat-sms-txt').textContent = smsTxt;
     const bs = document.getElementById('board-stats');
     if (bs) {
@@ -325,10 +325,9 @@
       refreshChapterNav();
       // 목표 점수 문자알림 갱신
       const sms = document.getElementById('start-best');
-      const best = bestFor(currentLight());
       sms.querySelector('.chat-sms-txt').textContent =
         I18N.t('mole.start.goal', { n: MG.Progress.target(ch).toLocaleString() }) +
-        '  /  ' + I18N.t('mole.start.best', { n: best.toLocaleString() });
+        '  /  ' + I18N.t('mole.start.best', { n: lastScore().toLocaleString() });
     };
     nav.querySelector('[data-ch-prev]').addEventListener('click', () => step(-1));
     nav.querySelector('[data-ch-next]').addEventListener('click', () => step(1));
@@ -900,6 +899,7 @@
     // 재방문 인사용 + 기록 보관 (100판 이상도 문제없음, 개당 수십 바이트).
     try {
       localStorage.setItem('mole.lastPlayed', String(Date.now()));
+      localStorage.setItem('mole.lastScore', String(total)); // 홈 문자칸 "득점" = 마지막 플레이 점수
       localStorage.setItem('mole.lastWasBest', prog.passed ? '1' : '0');
       localStorage.setItem('mole.lastWasBad', prog.passed ? '0' : '1');
       const hist = JSON.parse(localStorage.getItem('mole.history') || '[]');
