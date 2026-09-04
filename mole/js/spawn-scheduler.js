@@ -31,11 +31,12 @@
       return rng.next() * (MAX_SPAWN_GAP - MIN_SPAWN_GAP) + MIN_SPAWN_GAP;
     }
 
-    const cooldown = { mole: randomGap(), animal: randomGap(), bomb: randomGap() };
+    const cooldown = { mole: randomGap(), animal: randomGap(), bomb: randomGap(), item: 3 };
 
     function maxOf(type) {
       if (type === 'mole') return config.maxConcurrentMoles;
       if (type === 'animal') return config.maxConcurrentAnimals;
+      if (type === 'item') return config.maxConcurrentItems || 0;
       return config.maxConcurrentBombs;
     }
 
@@ -121,12 +122,14 @@
 
       // 난이도별 방해물 토글: config.obstacles === false 면 두더지만 (하수·고수).
       const spawnTypes = (config.obstacles === false) ? ['mole'] : ['mole', 'animal', 'bomb'];
+      if (config.shieldItems) spawnTypes.push('item');
       spawnTypes.forEach((type) => {
         cooldown[type] -= dt;
         if (cooldown[type] <= 0) {
           const pop = trySpawn(type);
           if (pop) spawned.push(pop);
-          cooldown[type] = randomGap();
+          // 실드 아이템은 드물게 (2.5~6초 간격), 나머지는 기본 간격.
+          cooldown[type] = (type === 'item') ? (2.5 + rng.next() * 3.5) : randomGap();
         }
       });
 

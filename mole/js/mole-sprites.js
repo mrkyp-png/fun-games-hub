@@ -77,7 +77,7 @@
     if (preloadRefs) return preloadRefs;
     const files = [];
     for (let i = 1; i <= POSE_COUNT; i++) files.push('mole' + i);
-    files.push('peek1', 'peek2', 'helmet', 'hole', 'hole-front');
+    files.push('peek1', 'peek2', 'helmet', 'hole', 'hole-front', 'shield');
     OBSTACLES.forEach(function (o) { files.push(o, o + '-x'); });
     preloadRefs = files.map(function (f) {
       const img = new Image();

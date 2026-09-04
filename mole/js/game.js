@@ -60,7 +60,7 @@
   // 챕터 축 (콘텐츠) — Phase A 는 챕터1 고정. 챕터2~ 는 다음 단계.
   function currentChapter() {
     const c = parseInt(localStorage.getItem('mole.chapter'), 10);
-    return (c >= 1 && c <= 3) ? c : 1;
+    return (c >= 1 && c <= MG.Progress.MAX_CHAPTER) ? c : 1;
   }
   // 챕터 이름표 ("챕터 N : 부제"). 이름 없으면 "챕터 N".
   function chapterLabel(n) {
@@ -472,9 +472,10 @@
     const myGen = sessionGen;
     // fresh(시작/다시하기)면 콤보·점수·목숨 전부 리셋. 자동 다음 라운드면 그대로 이어간다.
     if (opts && opts.fresh) {
-      run = { combo: MG.ComboScore.create(), lives: START_LIVES + adBonusLives, comboMilestone: 0 };
+      run = { combo: MG.ComboScore.create(), lives: START_LIVES + adBonusLives, comboMilestone: 0, shield: false };
       adBonusLives = 0; // 광고 보너스 목숨은 한 판만
     }
+    updateShieldHud();
     if (rafId) cancelAnimationFrame(rafId);
     if (state && state.holeLayer) state.holeLayer.clear();
     if (state && state.laneHammer) state.laneHammer.clear();
@@ -503,15 +504,18 @@
       spawnPoints = spawnPoints.filter((sp) => sp.regionId !== CANNON_HOLE);
     }
 
+    // 챕터 = 모드: 1 두더지만 / 2 +동물 / 3 +폭탄 / 4 +실드아이템 / 5 두더지 적게 + 방해물 최대.
+    const ch = currentChapter();
     const config = {
-      maxConcurrentMoles: levelData.maxConcurrentMoles,
-      // 동물/폭탄 = 챕터가 결정 (라이트 무관). 챕터1 = 두더지만 / 챕터2 = +동물 / 챕터3 = +폭탄.
-      maxConcurrentAnimals: currentChapter() >= 2 ? levelData.maxConcurrentAnimals : 0,
-      maxConcurrentBombs: currentChapter() >= 3 ? levelData.maxConcurrentBombs : 0,
+      maxConcurrentMoles: ch >= 5 ? Math.max(1, levelData.maxConcurrentMoles - 2) : levelData.maxConcurrentMoles,
+      maxConcurrentAnimals: ch >= 2 ? levelData.maxConcurrentAnimals + (ch >= 5 ? 1 : 0) : 0,
+      maxConcurrentBombs: ch >= 3 ? levelData.maxConcurrentBombs + (ch >= 5 ? 1 : 0) : 0,
+      maxConcurrentItems: ch >= 4 ? 1 : 0,   // 실드 아이템 (챕터 4~5)
+      shieldItems: ch >= 4,
       popDuration: levelData.moleDuration,
       molePoseCount: MG.MoleSprites.POSE_COUNT,
       obstacleCount: MG.MoleSprites.OBSTACLE_COUNT,
-      obstacles: currentChapter() >= 2
+      obstacles: ch >= 2
     };
 
     const scheduler = MG.SpawnScheduler.create({ regions, spawnPoints, config, rng });
@@ -684,16 +688,27 @@
         } else {
           MG.HitFx.moleTap(board, r.xFrac, r.yFrac);
         }
+      } else if (r.type === 'item') {
+        run.shield = true;              // 실드 아이템 획득 (챕터 4~5) — 폭탄 1회 방어
+        MG.HitFx.moleHit(board, r.xFrac, r.yFrac);
+        flashHud('hud-hearts');
+        updateShieldHud();
       } else if (r.type === 'animal') {
         run.lives -= 1;                 // 스펙 §8/§11 — 목숨은 10라운드 통틀어 3개
         run.combo.onObstacleHit();
         MG.HitFx.obstacleHit(board, r.xFrac, r.yFrac, 'animal');
         flashHud('hud-hearts');
       } else if (r.type === 'bomb') {
-        state.timeRemaining = Math.max(0, state.timeRemaining - 3); // 스펙 §8
-        run.combo.onObstacleHit();
-        MG.HitFx.obstacleHit(board, r.xFrac, r.yFrac, 'bomb');
-        flashHud('hud-ticker'); // 시간 −3 — 티커 전체를 잠깐 번쩍
+        if (run.shield) {               // 실드가 폭탄을 막는다 (페널티 무효)
+          run.shield = false;
+          MG.HitFx.juggle(board, r.xFrac, r.yFrac); // "방어!" 느낌의 가벼운 연출
+          updateShieldHud();
+        } else {
+          state.timeRemaining = Math.max(0, state.timeRemaining - 3); // 스펙 §8
+          run.combo.onObstacleHit();
+          MG.HitFx.obstacleHit(board, r.xFrac, r.yFrac, 'bomb');
+          flashHud('hud-ticker'); // 시간 −3 — 티커 전체를 잠깐 번쩍
+        }
       }
     });
 
@@ -731,6 +746,12 @@
     el.classList.remove('hud-flash');
     void el.offsetWidth;
     el.classList.add('hud-flash');
+  }
+
+  // 실드(챕터 4~5) 표시 = 보드에 파란 테두리 글로우 (별도 HUD 요소 없이).
+  function updateShieldHud() {
+    const b = document.getElementById('mole-board');
+    if (b) b.classList.toggle('mole-board--shielded', !!(run && run.shield));
   }
 
   // ---------- 일시정지 ----------
@@ -995,7 +1016,7 @@
       loadActiveFace().then(() => {
         currentDiff = DIFFS.indexOf(diff) > -1 ? diff : 'easy';
         localStorage.setItem('mole.difficulty', currentDiff);
-        if (chapter >= 1 && chapter <= 3) localStorage.setItem('mole.chapter', String(chapter));
+        if (chapter >= 1 && chapter <= MG.Progress.MAX_CHAPTER) localStorage.setItem('mole.chapter', String(chapter));
         applyDiffClass(currentDiff);
         startRound(1, { fresh: true });
       });

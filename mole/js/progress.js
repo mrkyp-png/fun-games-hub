@@ -10,13 +10,13 @@
 
   var K = 'mole.progress';
   var LIGHTS = ['easy', 'mid', 'legend']; // = ON / DIM / OFF
-  var MAX_CHAPTER = 3;
+  var MAX_CHAPTER = 5;
+  // 챕터 = 모드 진행 (사용자 확정): 1 기본 / 2 +동물 / 3 +폭탄 / 4 +실드아이템 / 5 두더지 적게+최대 방해물.
 
-  // ⚠️ 임시 테스트값 (챕터 전환 흐름 테스트용 — 매번 10라운드 5분 + 목표 못 넘으면
-  //    성공 연출도 못 봄). 출시 전 반드시 원복:
-  //      실제 잠정값 = { 1: 130000, 2: 145000, 3: 160000 }
+  // ⚠️ 임시 테스트값 (챕터 전환 흐름 테스트용). 출시 전 반드시 원복:
+  //      실제 잠정값 = { 1: 130000, 2: 145000, 3: 160000, 4: 175000, 5: 190000 }
   //      (봇 천장 ≈ 170,000. 저글 축소 v60 · 헛방 콤보리셋 v61 이후 기준. 폰 테스트 후 확정)
-  var CLEAR_TARGET = { 1: 1000, 2: 1000, 3: 1000 };
+  var CLEAR_TARGET = { 1: 1000, 2: 1000, 3: 1000, 4: 1000, 5: 1000 };
 
   function ls() { return (typeof localStorage !== 'undefined') ? localStorage : null; }
   function key(ch, light) { return 'c' + ch + '-' + light; }

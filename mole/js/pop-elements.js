@@ -48,6 +48,7 @@
 
     function fileFor(m, depth) {
       if (depth >= GONE_DEPTH) return null;
+      if (m.kind === 'item') return 'shield';   // 실드 아이템 — 고정 스프라이트
       // 타격 후(dying)엔 빠끔 프레임으로 안 바꾸고 전신 그대로 구멍 아래로 내려보낸다.
       if (m.kind === 'mole') {
         return m.dying ? 'mole' + (m.poseIndex + 1) : MS.fileForDepth(Math.round(depth), m.poseIndex);
