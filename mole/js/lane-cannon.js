@@ -32,10 +32,14 @@
   ];
 
   const REST_KEY = 'mid';                  // 발사 후 되돌아갈 기본 대기 포즈
-  const FLASH_BASE_DEG = -150;             // 화염·연기 스프라이트가 기본으로 향한 방향
-  const FLASH_W = 0.24, FLASH_AR = 294 / 371;  // 화염 폭(보드분수) / 높이비 (cannon-flash 371x294)
-  const SMOKE_W = 0.15, SMOKE_AR = 254 / 211;  // 연기 폭 / 높이비 (cannon-smoke 211x254)
-  // 화염·연기 둘 다 포구를 중심으로 터진다 (방향성 플룸이 각도마다 어긋나 보여서 — 사용자 피드백).
+  const AIM_DEG_FALLBACK = -120;           // pose 없을 때 반동 방향 계산용
+
+  // 발사 이펙트 = 5프레임 연속 (사용자 제공 '화염, 연기.png' → cannon-fx1~5).
+  // 스파크 → 폭발 → 불+연기 → 사그라짐 → 연기. 모든 프레임 560² 캔버스, 밝은 코어가 (0.58,0.52).
+  const FX_FRAMES = [1, 2, 3, 4, 5].map((n) => 'assets/weapons/cannon-fx' + n + '.png');
+  const FX_DUR = [40, 70, 80, 95, 150];   // 프레임별 노출 ms (합 ~435)
+  const FX_W = 0.32;                       // 이펙트 폭 (보드 정사각 분수, 캔버스가 정사각이라 높이도 동일)
+  const FX_CORE_X = 0.58, FX_CORE_Y = 0.52;
   const AIM_MS = 90;                       // 포즈 전환 + 미세 조준
   const RECOIL = [0.012, 0.024, 0.040];    // 살짝/보통/강 (보드 분수)
   const KICK_SEC = 0.06, SETTLE_SEC = 0.34;
@@ -53,15 +57,14 @@
     el.innerHTML =
       '<img class="lc-ball" alt="" src="assets/weapons/cannon-ball.png">' +
       '<div class="lc-rig">' +
-      '  <img class="lc-smoke" alt="" src="assets/weapons/cannon-smoke.png">' +
-      '  <img class="lc-flash" alt="" src="assets/weapons/cannon-flash.png">' +
+      '  <img class="lc-fx" alt="">' +
       POSES.map((p) => '  <img class="lc-body" data-pose="' + p.key + '" alt="" src="' + p.src + '" hidden>').join('') +
       '</div>';
     layer.appendChild(el);
     const rig = el.querySelector('.lc-rig');
-    const flash = el.querySelector('.lc-flash');
-    const smoke = el.querySelector('.lc-smoke');
+    const fx = el.querySelector('.lc-fx');
     const ball = el.querySelector('.lc-ball');
+    FX_FRAMES.forEach((s) => { const im = new Image(); im.src = s; }); // 프리로드 (디코드 hitch 방지)
     const bodies = {};
     POSES.forEach((p) => { bodies[p.key] = el.querySelector('.lc-body[data-pose="' + p.key + '"]'); });
 
@@ -79,11 +82,11 @@
       im.style.left = ((ax(p) - p.mu * p.w) * 100).toFixed(2) + '%';
       im.style.top = ((ay(p) - p.mv * hFrac) * 100).toFixed(2) + '%';
     });
-    // 화염·연기 둘 다 포구(ax,ay)를 정중앙에 두고 사방으로 터진다.
-    function placeFx(im, w, ar, p) {
-      im.style.width = (w * 100).toFixed(2) + '%';
-      im.style.left = ((ax(p) - w / 2) * 100).toFixed(2) + '%';
-      im.style.top = ((ay(p) - w * ar / 2) * 100).toFixed(2) + '%';
+    // 발사 이펙트: 프레임 밝은 코어(FX_CORE)가 포구(ax,ay)에 오도록 배치.
+    function placeFx(p) {
+      fx.style.width = (FX_W * 100).toFixed(2) + '%';
+      fx.style.left = ((ax(p) - FX_CORE_X * FX_W) * 100).toFixed(2) + '%';
+      fx.style.top = ((ay(p) - FX_CORE_Y * FX_W) * 100).toFixed(2) + '%';
     }
 
     const restPose = POSES.find((p) => p.key === REST_KEY) || POSES[0];
@@ -100,10 +103,30 @@
         if (pose) bodies[pose.key].hidden = true;
         bodies[p.key].hidden = false;
         pose = p;
-        placeFx(flash, FLASH_W, FLASH_AR, p);
-        placeFx(smoke, SMOKE_W, SMOKE_AR, p);
+        placeFx(p);
       }
     }
+
+    // 5프레임 발사 이펙트 재생.
+    function playFx() {
+      let acc = 0;
+      FX_FRAMES.forEach((srcp, i) => {
+        after(acc, () => {
+          fx.src = srcp;
+          fx.style.transition = 'none';
+          fx.style.opacity = (i >= FX_FRAMES.length - 1) ? '0.85' : '1';
+          fx.style.transform = 'scale(' + (0.85 + i * 0.11).toFixed(2) + ')';
+        });
+        acc += FX_DUR[i];
+      });
+      // 마지막 프레임 페이드아웃
+      after(acc - FX_DUR[FX_FRAMES.length - 1] + 30, () => {
+        fx.style.transition = 'opacity 220ms ease-out, transform 260ms ease-out';
+        fx.style.opacity = '0';
+        fx.style.transform = 'scale(1.6)';
+      });
+    }
+    function resetFx() { fx.style.transition = 'none'; fx.style.opacity = '0'; fx.style.transform = 'scale(0.85)'; fx.removeAttribute('src'); }
 
     function strike(targetXFrac, targetYFrac, onImpact) {
       const tx = (typeof targetXFrac === 'number') ? targetXFrac : 0.5;
@@ -124,8 +147,7 @@
 
       after(AIM_MS, () => {
         phase = 'kick'; t = 0;
-        flash.classList.remove('is-on'); void flash.offsetWidth; flash.classList.add('is-on');
-        after(70, () => { smoke.classList.remove('is-on'); void smoke.offsetWidth; smoke.classList.add('is-on'); });
+        playFx();
 
         ball.style.transition = 'none';
         ball.style.left = (ax(best) * 100).toFixed(2) + '%';
@@ -163,7 +185,7 @@
       let amt = 0;
       if (phase === 'kick') amt = recoilAmt * ease(clamp01(t / KICK_SEC));
       else if (phase === 'settle') amt = recoilAmt * (1 - easeOut(clamp01(t / SETTLE_SEC)));
-      const aim = (pose ? pose.aim : FLASH_BASE_DEG) + residual;
+      const aim = (pose ? pose.aim : AIM_DEG_FALLBACK) + residual;
       const rdir = (aim + 180) * Math.PI / 180;
       const dx = Math.cos(rdir) * amt, dy = Math.sin(rdir) * amt;
       rig.style.transform =
@@ -177,7 +199,7 @@
       clearTimers();
       phase = 'home'; t = 0; resT = 0;
       residual = resFrom = resTo = 0;
-      flash.classList.remove('is-on'); smoke.classList.remove('is-on');
+      resetFx();
       ball.style.opacity = '0';
       showPose(restPose);
       paint();

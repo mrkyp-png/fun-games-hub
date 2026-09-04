@@ -1037,34 +1037,14 @@ body { background: var(--lm-page); }
   filter: drop-shadow(0 4px 5px rgba(0, 0, 0, 0.35));
   z-index: 1;
 }
-/* 화염·연기: lane-cannon.js 가 width/left/top 지정 (포구가 정중앙).
-   둘 다 포구를 축으로 사방으로 터진다 — 방향성 플룸이 포즈마다 어긋나 보여서. */
-.lc-flash {
+/* 발사 이펙트: lane-cannon.js 가 width/left/top/src/opacity/transform 전부 제어.
+   5프레임(스파크→폭발→불연기→사그라짐→연기)을 포구 중심에서 재생. */
+.lc-fx {
   opacity: 0;
-  transform: scale(0.35);
+  transform: scale(0.85);
   transform-origin: 50% 50%;
-  filter: drop-shadow(0 0 16px rgba(255, 160, 60, 0.95)) brightness(1.15) saturate(1.15);
+  filter: drop-shadow(0 0 14px rgba(255, 150, 60, 0.6)) saturate(1.1);
   z-index: 2;
-}
-.lc-flash.is-on { animation: lc-flash 0.22s ease-out forwards; }
-@keyframes lc-flash {
-  0%   { opacity: 0;   transform: scale(0.35); }
-  15%  { opacity: 1;   transform: scale(1.0); }
-  45%  { opacity: 0.9; transform: scale(1.25); }
-  100% { opacity: 0;   transform: scale(1.7); }
-}
-/* 연기 = 포구 중심 사방으로 번지는 구름 (한쪽만 나면 "이빨 빠진" 느낌 — 사용자). */
-.lc-smoke {
-  opacity: 0;
-  transform: scale(0.45);
-  transform-origin: 50% 50%;
-  z-index: 0;
-}
-.lc-smoke.is-on { animation: lc-smoke 0.6s ease-out forwards; }
-@keyframes lc-smoke {
-  0%   { opacity: 0;    transform: scale(0.45); }
-  20%  { opacity: 0.75; transform: scale(1.0); }
-  100% { opacity: 0;    transform: translate(-8%, -14%) scale(1.9); }
 }
 .lc-ball {
   position: absolute; display: block;

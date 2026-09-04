@@ -38,12 +38,48 @@ def _find(repo_name, desk_name):
 SRC_CANNON = _find('cannon-poses.png', '대포.png')
 SRC_FIRE = _find('cannon-fire.png', '대포 화염.png')
 SRC_ANGLES = os.path.join(os.path.dirname(HERE), 'assets', 'src', 'cannon-angles.jpg')
+SRC_FXSHEET = os.path.join(SRC, 'cannon-fx-sheet.png')  # = Desktop/'화염, 연기.png' (5프레임, 검정 배경)
 
 # cannon-angles.jpg (2496x1664) 셀 박스 — 연결요소 검출로 잡은 값
 ANGLE_BOXES = {
     'cannon-steep': (627, 40, 975, 566),    # 위쪽줄 2번째 (정면, 포신 수직)
     'cannon-low':   (976, 551, 1576, 1037),  # 중간줄 2번째 (~28° 좌상향)
 }
+
+# cannon-fx-sheet.png (1536x1024) 5프레임: 스파크→폭발→불연기→사그라짐→연기.
+# 검정 배경 + 은은한 주황 글로우 → 프레임별 FLOOR 로 키아웃, 밝은 코어를 정렬.
+FX_BOXES = [(70, 150, 415, 390), (515, 95, 865, 455), (985, 150, 1455, 415),
+            (165, 590, 715, 885), (890, 615, 1480, 995)]
+FX_FLOORS = [96, 92, 88, 88, 60]
+FX_CANVAS = 560
+FX_CORE = (0.58, 0.52)
+
+
+def slice_fx():
+    import numpy as np
+    sheet = Image.open(SRC_FXSHEET).convert('RGB')
+    A = np.asarray(sheet).astype(np.float32)
+    for i, box in enumerate(FX_BOXES, 1):
+        c = A[box[1]:box[3], box[0]:box[2]]
+        mx = c.max(2)
+        al = np.power(np.clip((mx - FX_FLOORS[i - 1]) * 1.9, 0, 255) / 255.0, 1.4) * 255.0
+        soft = np.asarray(Image.fromarray(al.astype('uint8')).filter(ImageFilter.GaussianBlur(20))).astype(np.float32)
+        al = al * np.clip(soft / 45.0, 0, 1)                       # 확산된 사각 헤이즈 제거
+        ab = np.asarray(Image.fromarray(al.astype('uint8')).filter(ImageFilter.GaussianBlur(0.8))).astype(np.float32)
+        ab[ab < 4] = 0
+        im = Image.fromarray(np.dstack([np.clip(c, 0, 255).astype('uint8'), ab.astype('uint8')]), 'RGBA')
+        bb = im.split()[3].point(lambda v: 255 if v > 6 else 0).getbbox()
+        if bb:
+            im = im.crop(bb)
+        a2 = np.asarray(im)
+        wt = a2[:, :, :3].max(2).astype(float) * (a2[:, :, 3] / 255.0)
+        ys, xs = np.where(wt > wt.max() * (0.7 if i < 5 else 0.35))
+        cx, cy = xs.mean(), ys.mean()
+        sc = (FX_CANVAS * 0.92) / max(im.size)
+        im = im.resize((round(im.width * sc), round(im.height * sc)), Image.LANCZOS)
+        canv = Image.new('RGBA', (FX_CANVAS, FX_CANVAS), (0, 0, 0, 0))
+        canv.alpha_composite(im, (round(FX_CORE[0] * FX_CANVAS - cx * sc), round(FX_CORE[1] * FX_CANVAS - cy * sc)))
+        canv.save(os.path.join(OUT, 'cannon-fx%d.png' % i))
 
 
 def key_white(im, band=4):
@@ -217,15 +253,18 @@ def main():
         cap(crop_bbox(cn, (1112, 40, 1522, 528)), 340).save(os.path.join(OUT, 'cannon.png'))
     if os.path.exists(SRC_FIRE):
         fr = Image.open(SRC_FIRE).convert('RGBA')
-        # 화염 = 불꽃+스파크+바깥 연기 넓게. 포신 금속만 제외.
-        cap(crop_bbox(fr, (14, 0, 408, 300)), 460).save(os.path.join(OUT, 'cannon-flash.png'))
-        cap(crop_bbox(fr, (792, 36, 1010, 290)), 280).save(os.path.join(OUT, 'cannon-smoke.png'))
         # 포탄 = 깨끗한 원형 철구 (불꼬리 죽이고 원형 알파 마스크).
         round_ball(fr, 55, 576, 33).save(os.path.join(OUT, 'cannon-ball.png'))
 
-    for n in ('cannon', 'cannon-low', 'cannon-steep', 'cannon-flash', 'cannon-smoke', 'cannon-ball'):
+    # 발사 이펙트 5프레임 (사용자 제공 시트, repo 커밋본)
+    if os.path.exists(SRC_FXSHEET):
+        slice_fx()
+
+    names = ['cannon', 'cannon-low', 'cannon-steep', 'cannon-ball'] + ['cannon-fx%d' % i for i in range(1, 6)]
+    for n in names:
         p = os.path.join(OUT, n + '.png')
-        print(n, Image.open(p).size, os.path.getsize(p) // 1024, 'KB')
+        if os.path.exists(p):
+            print(n, Image.open(p).size, os.path.getsize(p) // 1024, 'KB')
 
 
 if __name__ == '__main__':
