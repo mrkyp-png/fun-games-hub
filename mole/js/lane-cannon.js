@@ -34,15 +34,15 @@
   const REST_KEY = 'mid';                  // 발사 후 되돌아갈 기본 대기 포즈
   const AIM_DEG_FALLBACK = -120;           // pose 없을 때 반동 방향 계산용
 
-  // 발사 이펙트 = 화염 1장 + 연기 1장 (cannon-flash.png, cannon-smoke.png).
-  // 둘 다 그림 안에 "포구에 붙는 지점"(FLASH_MU/MV, SMOKE_MU/MV — 그림 우하단, 총구가 그려진 자리)이
-  // 있고, 그 지점이 실제 포구(ax,ay)에 오도록 배치한 뒤 포즈 각도만큼 회전시킨다.
-  // → 화염·연기가 포신 뒤(본체 쪽)로 안 넘치고 포구에서 앞으로만 번지며, 포즈가 바뀌어도 포신 방향을 따라간다.
-  const FX_BASE_AIM = -140;                // 원화가 그려진 기준 방향 (그림에서 총구→불꽃 방향을 실측)
-  const FLASH_W = 0.20, FLASH_AR = 294 / 371;   // 화염 폭(보드분수) / 높이비 (cannon-flash 371x294) — 과했던 화염 피드백으로 축소
-  const FLASH_MU = 0.88, FLASH_MV = 0.68;       // 화염 그림 안의 총구 위치
-  const SMOKE_W = 0.16, SMOKE_AR = 254 / 211;   // 연기 폭 / 높이비 (cannon-smoke 211x254)
-  const SMOKE_MU = 0.85, SMOKE_MV = 0.62;       // 연기 그림 안의 총구 위치
+  // 발사 이펙트 = 스파크(fx1) → 불+연기(fx4) → 잔여 연기(fx5), 3장 순차 재생.
+  // 세 그림 다 560² 정사각 캔버스이고, 코어(밝은 지점) 위치를 실측해 평균으로 통일:
+  // 코어(FX_MU,FX_MV)가 실제 포구(ax,ay)에 오도록 배치한 뒤 포즈 각도만큼 회전시킨다.
+  // → 코어가 포구에서 안 벗어나고, 화염 방향이 포즈(포신)를 그대로 따라간다.
+  const FX_BASE_AIM = -156;                // 원화 기준 방향 (fx1 실측 -149°, fx4 실측 -163° 평균)
+  const FX_MU = 0.69, FX_MV = 0.575;       // 세 그림 공통 코어 위치 (fx1/fx4 실측 평균, ar=1)
+  const SPARK_SRC = 'assets/weapons/cannon-fx1.png', SPARK_W = 0.14; // 점화 스파크 — 아주 짧게
+  const BURN_SRC  = 'assets/weapons/cannon-fx4.png', BURN_W  = 0.18; // 불+연기 — 메인
+  const SMOKE_SRC = 'assets/weapons/cannon-fx5.png', SMOKE_W = 0.17; // 잔여 연기 — 오래 옅어짐
   const AIM_MS = 90;                       // 포즈 전환 + 미세 조준
   const RECOIL = [0.012, 0.024, 0.040];    // 살짝/보통/강 (보드 분수)
   const KICK_SEC = 0.06, SETTLE_SEC = 0.34;
@@ -60,13 +60,15 @@
     el.innerHTML =
       '<img class="lc-ball" alt="" src="assets/weapons/cannon-ball.png">' +
       '<div class="lc-rig">' +
-      '  <img class="lc-smoke" alt="" src="assets/weapons/cannon-smoke.png">' +
-      '  <img class="lc-flash" alt="" src="assets/weapons/cannon-flash.png">' +
+      '  <img class="lc-smoke" alt="" src="' + SMOKE_SRC + '">' +
+      '  <img class="lc-burn" alt="" src="' + BURN_SRC + '">' +
+      '  <img class="lc-spark" alt="" src="' + SPARK_SRC + '">' +
       POSES.map((p) => '  <img class="lc-body" data-pose="' + p.key + '" alt="" src="' + p.src + '" hidden>').join('') +
       '</div>';
     layer.appendChild(el);
     const rig = el.querySelector('.lc-rig');
-    const flash = el.querySelector('.lc-flash');
+    const spark = el.querySelector('.lc-spark');
+    const burn = el.querySelector('.lc-burn');
     const smoke = el.querySelector('.lc-smoke');
     const ball = el.querySelector('.lc-ball');
     const bodies = {};
@@ -86,18 +88,19 @@
       im.style.left = ((ax(p) - p.mu * p.w) * 100).toFixed(2) + '%';
       im.style.top = ((ay(p) - p.mv * hFrac) * 100).toFixed(2) + '%';
     });
-    // 화염·연기 배치: 그림 안의 총구 지점(MU,MV)이 실제 포구(ax,ay)에 오도록 놓고,
-    // 그 지점을 축으로 포즈 각도만큼 회전 — 포신 뒤로 안 넘치고 포즈를 따라간다.
-    function placeOverlay(im, w, ar, mu, mv, p) {
+    // 화염·연기 배치: 그림 안의 코어 지점(FX_MU,FX_MV, 정사각이라 ar=1)이 실제 포구(ax,ay)에
+    // 오도록 놓고, 그 지점을 축으로 포즈 각도만큼 회전 — 코어가 포구에 붙고 포즈를 따라간다.
+    function placeOverlay(im, w, p) {
       im.style.width = (w * 100).toFixed(2) + '%';
-      im.style.left = ((ax(p) - mu * w) * 100).toFixed(2) + '%';
-      im.style.top = ((ay(p) - mv * w * ar) * 100).toFixed(2) + '%';
-      im.style.transformOrigin = (mu * 100).toFixed(2) + '% ' + (mv * 100).toFixed(2) + '%';
+      im.style.left = ((ax(p) - FX_MU * w) * 100).toFixed(2) + '%';
+      im.style.top = ((ay(p) - FX_MV * w) * 100).toFixed(2) + '%';
+      im.style.transformOrigin = (FX_MU * 100).toFixed(2) + '% ' + (FX_MV * 100).toFixed(2) + '%';
       im.style.setProperty('--rot', (p.aim - FX_BASE_AIM).toFixed(1) + 'deg');
     }
     function placeFx(p) {
-      placeOverlay(flash, FLASH_W, FLASH_AR, FLASH_MU, FLASH_MV, p);
-      placeOverlay(smoke, SMOKE_W, SMOKE_AR, SMOKE_MU, SMOKE_MV, p);
+      placeOverlay(spark, SPARK_W, p);
+      placeOverlay(burn, BURN_W, p);
+      placeOverlay(smoke, SMOKE_W, p);
     }
 
     const restPose = POSES.find((p) => p.key === REST_KEY) || POSES[0];
@@ -118,12 +121,13 @@
       }
     }
 
-    // 화염 먼저, 그 다음 연기 (CSS 애니메이션 재생 — is-on 토글).
+    // 스파크 → 불+연기 → 잔여 연기 순서로 (CSS 애니메이션 — is-on 토글).
     function playFx() {
-      flash.classList.remove('is-on'); void flash.offsetWidth; flash.classList.add('is-on');
-      after(80, () => { smoke.classList.remove('is-on'); void smoke.offsetWidth; smoke.classList.add('is-on'); });
+      spark.classList.remove('is-on'); void spark.offsetWidth; spark.classList.add('is-on');
+      after(50, () => { burn.classList.remove('is-on'); void burn.offsetWidth; burn.classList.add('is-on'); });
+      after(150, () => { smoke.classList.remove('is-on'); void smoke.offsetWidth; smoke.classList.add('is-on'); });
     }
-    function resetFx() { flash.classList.remove('is-on'); smoke.classList.remove('is-on'); }
+    function resetFx() { spark.classList.remove('is-on'); burn.classList.remove('is-on'); smoke.classList.remove('is-on'); }
 
     function strike(targetXFrac, targetYFrac, onImpact) {
       const tx = (typeof targetXFrac === 'number') ? targetXFrac : 0.5;
@@ -182,8 +186,9 @@
       let amt = 0;
       if (phase === 'kick') amt = recoilAmt * ease(clamp01(t / KICK_SEC));
       else if (phase === 'settle') amt = recoilAmt * (1 - easeOut(clamp01(t / SETTLE_SEC)));
-      const aim = (pose ? pose.aim : AIM_DEG_FALLBACK) + residual;
-      const rdir = (aim + 180) * Math.PI / 180;
+      // 반동 방향은 포즈 기본 축만 쓴다(미세조준 tweak 제외) — 안 그러면 수직(steep) 포즈에서
+      // 타겟이 옆으로 살짝만 치우쳐도 반동이 옆으로 새 보임(사용자 피드백: "수직은 뒤로만").
+      const rdir = ((pose ? pose.aim : AIM_DEG_FALLBACK) + 180) * Math.PI / 180;
       const dx = Math.cos(rdir) * amt, dy = Math.sin(rdir) * amt;
       rig.style.transform =
         'translate(' + (dx * 100).toFixed(3) + '%, ' + (dy * 100).toFixed(3) + '%) ' +
