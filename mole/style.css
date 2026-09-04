@@ -880,25 +880,8 @@ body { background: var(--lm-page); }
   border-radius: 8px 8px 0 0;
   background: var(--lm-pad);
 }
-/* 다이얼패드 래퍼 — 안내문구/첫방문 말풍선을 절대배치로 얹기 위함 (세로 레이아웃 예산 0). */
+/* 다이얼패드 래퍼 — 첫방문 안내 말풍선(.start-coach)을 절대배치로 얹기 위함. */
 .dialpad { position: relative; flex: 0 0 auto; }
-.start-hint {
-  display: none;
-  position: absolute;
-  left: 0; right: 0; top: 0;
-  z-index: 3;
-  padding: 3px 6px;
-  border-radius: 8px 8px 0 0;
-  background: var(--lm-pad);
-  color: var(--lm-muted);
-  font-size: 0.6rem;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  pointer-events: none;
-}
-#game-screen.is-start .start-hint { display: block; }
 .start-coach {
   display: none;
   position: absolute;
