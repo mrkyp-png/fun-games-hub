@@ -1031,36 +1031,39 @@ body { background: var(--lm-page); }
 .lane-cannon { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
 /* .lc-rig = 레이어 전체(--sq 정사각). transform-origin=회전축. rig 가 조준회전+반동. */
 .lc-rig { position: absolute; inset: 0; will-change: transform; }
-.lc-rig img { position: absolute; display: block; transform: translate(-50%, -50%); }
-.lc-body {
-  transform: translate(-50%, -50%);
+.lc-rig img { position: absolute; display: block; }
+/* .lc-body = top-left 기준 배치 (lane-cannon.js 가 left/top/width 지정). 포즈 3개 중 1개만 표시. */
+.lc-rig .lc-body {
   filter: drop-shadow(0 4px 5px rgba(0, 0, 0, 0.35));
   z-index: 1;
 }
+/* 화염·연기: lane-cannon.js 가 width/left/top 지정 (오른쪽-중앙 = 포구 고정점).
+   transform-origin = 오른쪽 끝(포구 부착점), --lc-rot = 포신 각도.
+   회전·확대 모두 포구를 축으로 → 항상 포구에서 포신 방향으로 피어난다. */
 .lc-flash {
-  width: 30%; opacity: 0;
-  transform: translate(-82%, -46%) scale(0.45);
-  transform-origin: right center;
+  opacity: 0; --lc-rot: 0deg;
+  transform: rotate(var(--lc-rot)) scale(0.45);
+  transform-origin: 100% 50%;
   filter: drop-shadow(0 0 12px rgba(255, 150, 50, 0.8));
   z-index: 2;
 }
 .lc-flash.is-on { animation: lc-flash 0.2s ease-out forwards; }
 @keyframes lc-flash {
-  0%   { opacity: 0; transform: translate(-82%, -46%) scale(0.45); }
-  18%  { opacity: 1; transform: translate(-82%, -46%) scale(1.08); }
-  100% { opacity: 0; transform: translate(-82%, -46%) scale(1.7); }
+  0%   { opacity: 0; transform: rotate(var(--lc-rot)) scale(0.45); }
+  18%  { opacity: 1; transform: rotate(var(--lc-rot)) scale(1.08); }
+  100% { opacity: 0; transform: rotate(var(--lc-rot)) scale(1.7); }
 }
 .lc-smoke {
-  width: calc(var(--sq) * 0.14); opacity: 0;
-  transform: translate(-85%, -46%) scale(0.6);
-  transform-origin: right center;
+  opacity: 0; --lc-rot: 0deg;
+  transform: rotate(var(--lc-rot)) scale(0.6);
+  transform-origin: 100% 50%;
   z-index: 0;
 }
 .lc-smoke.is-on { animation: lc-smoke 0.5s ease-out forwards; }
 @keyframes lc-smoke {
-  0%   { opacity: 0;    transform: translate(-85%, -46%) scale(0.6); }
-  18%  { opacity: 0.85; transform: translate(-85%, -46%) scale(0.9); }
-  100% { opacity: 0;    transform: translate(-108%, -70%) scale(1.5); }
+  0%   { opacity: 0;    transform: rotate(var(--lc-rot)) scale(0.6); }
+  18%  { opacity: 0.85; transform: rotate(var(--lc-rot)) scale(0.9); }
+  100% { opacity: 0;    transform: rotate(var(--lc-rot)) translate(-14%, -22%) scale(1.5); }
 }
 .lc-ball {
   position: absolute; display: block;
