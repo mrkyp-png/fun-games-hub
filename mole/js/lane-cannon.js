@@ -23,18 +23,18 @@
   //  aim  : 이 포즈 포신이 겨누는 방향 (deg, 화면좌표)
   //  tweak: 존 안에서 허용하는 미세 회전 최대치 (deg)
   const POSES = [
-    { key: 'low',   src: 'assets/weapons/cannon-low.png',   w: 0.323, ar: 0.817,
-      mu: 0.055, mv: 0.15, aim: -152, tweak: 13 },
+    { key: 'low',   src: 'assets/weapons/cannon-low.png',   w: 0.291, ar: 0.817,
+      mu: 0.055, mv: 0.15, aim: -152, tweak: 13, dx: -0.07 },
     { key: 'mid',   src: 'assets/weapons/cannon.png',       w: 0.266, ar: 1.185,
-      mu: 0.07,  mv: 0.15, aim: -138, tweak: 20 },
+      mu: 0.07,  mv: 0.15, aim: -138, tweak: 20, dx: -0.014 },
     { key: 'steep', src: 'assets/weapons/cannon-steep.png', w: 0.223, ar: 1.538,
-      mu: 0.50,  mv: 0.05, aim: -94,  tweak: 8, dx: 0.03 }
+      mu: 0.50,  mv: 0.05, aim: -94,  tweak: 8, dx: 0.045 }
   ];
 
   const REST_KEY = 'mid';                  // 발사 후 되돌아갈 기본 대기 포즈
   const FLASH_BASE_DEG = -150;             // 화염·연기 스프라이트가 기본으로 향한 방향
-  const FLASH_W = 0.30, FLASH_AR = 294 / 371;  // 화염 폭(보드분수) / 높이비 (cannon-flash 371x294)
-  const SMOKE_W = 0.16, SMOKE_AR = 254 / 211;  // 연기 폭 / 높이비 (cannon-smoke 211x254)
+  const FLASH_W = 0.15, FLASH_AR = 294 / 371;  // 화염 폭(보드분수) / 높이비 (cannon-flash 371x294)
+  const SMOKE_W = 0.08, SMOKE_AR = 254 / 211;  // 연기 폭 / 높이비 (cannon-smoke 211x254)
   const AIM_MS = 90;                       // 포즈 전환 + 미세 조준
   const RECOIL = [0.012, 0.024, 0.040];    // 살짝/보통/강 (보드 분수)
   const KICK_SEC = 0.06, SETTLE_SEC = 0.34;

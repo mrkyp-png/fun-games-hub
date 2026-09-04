@@ -20,9 +20,23 @@ from collections import deque
 from PIL import Image, ImageFilter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+SRC = os.path.join(os.path.dirname(HERE), 'assets', 'src')
 OUT = os.path.join(os.path.dirname(HERE), 'assets', 'weapons')
-SRC_CANNON = os.path.join(os.path.expanduser('~'), 'Desktop', '대포.png')
-SRC_FIRE = os.path.join(os.path.expanduser('~'), 'Desktop', '대포 화염.png')
+_DESK = os.path.join(os.path.expanduser('~'), 'Desktop')
+
+
+def _find(repo_name, desk_name):
+    """repo assets/src (커밋본) 우선, 없으면 바탕화면 루트 / '대포 이미지/'."""
+    for c in (os.path.join(SRC, repo_name),
+              os.path.join(_DESK, desk_name),
+              os.path.join(_DESK, '대포 이미지', desk_name)):
+        if os.path.exists(c):
+            return c
+    return os.path.join(SRC, repo_name)
+
+
+SRC_CANNON = _find('cannon-poses.png', '대포.png')
+SRC_FIRE = _find('cannon-fire.png', '대포 화염.png')
 SRC_ANGLES = os.path.join(os.path.dirname(HERE), 'assets', 'src', 'cannon-angles.jpg')
 
 # cannon-angles.jpg (2496x1664) 셀 박스 — 연결요소 검출로 잡은 값
@@ -32,49 +46,90 @@ ANGLE_BOXES = {
 }
 
 
-def key_white(im):
-    """흰 배경을 테두리에서 flood 로 제거 (대포 내부엔 흰색 없음)."""
+def key_white(im, band=4):
+    """흰 배경을 테두리 flood 로 제거 + 경계의 밝은 AA 프린지(흰 테두리 노이즈)까지 먹는다.
+    대포 아웃라인은 어두워서(luma<80) flood 가 거기서 멈추고, 나무·문장·불꽃은 채도가
+    있어 안전. band = 실루엣 가장자리에서 몇 px 까지 프린지로 볼지."""
     im = im.convert('RGBA')
     px = im.load()
     w, h = im.size
 
-    def whiteish(x, y):
-        r, g, b, a = px[x, y]
-        return a > 0 and (r + g + b) / 3 > 225 and max(r, g, b) - min(r, g, b) < 24
+    def lum(x, y):
+        r, g, b, _ = px[x, y]
+        return (r + g + b) / 3
 
-    seen = bytearray(w * h)
+    def chroma(x, y):
+        r, g, b, _ = px[x, y]
+        return max(r, g, b) - min(r, g, b)
+
+    def bg_pure(x, y):        # 확실한 배경(흰색)
+        return px[x, y][3] > 0 and lum(x, y) > 208 and chroma(x, y) < 30
+
+    def fringe(x, y):         # 경계의 밝은 저채도 AA 밴드
+        return px[x, y][3] > 0 and lum(x, y) >= 132 and chroma(x, y) <= 44
+
+    # 1) 테두리에서 순수 배경 flood
+    dist = [-1] * (w * h)
     dq = deque()
     for x in range(w):
         for y in (0, h - 1):
-            if whiteish(x, y):
-                seen[y * w + x] = 1
+            if bg_pure(x, y):
+                dist[y * w + x] = 0
                 dq.append((x, y))
     for y in range(h):
         for x in (0, w - 1):
-            if whiteish(x, y):
-                seen[y * w + x] = 1
+            if bg_pure(x, y):
+                dist[y * w + x] = 0
                 dq.append((x, y))
     while dq:
         x, y = dq.popleft()
+        d = dist[y * w + x]
         for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
-            if 0 <= nx < w and 0 <= ny < h and not seen[ny * w + nx] and whiteish(nx, ny):
-                seen[ny * w + nx] = 1
+            if not (0 <= nx < w and 0 <= ny < h) or dist[ny * w + nx] != -1:
+                continue
+            i = ny * w + nx
+            if bg_pure(nx, ny):
+                dist[i] = 0
+                dq.append((nx, ny))
+            elif d < band and fringe(nx, ny):   # 경계 band px 안의 밝은 프린지도 먹음
+                dist[i] = d + 1
                 dq.append((nx, ny))
     for i in range(w * h):
-        if seen[i]:
+        if dist[i] >= 0:
             x, y = i % w, i // w
             r, g, b, _ = px[x, y]
             px[x, y] = (r, g, b, 0)
-    # 알파 1px 침식 + 남은 near-white 프린지 제거
-    al = im.split()[3].filter(ImageFilter.MinFilter(3))
+
+    # 2) 알파 1px 침식 + 살짝 블러로 계단 완화
+    al = im.split()[3].filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(0.6))
     im.putalpha(al)
+
+    # 3) 남은 밝은 반투명 프린지 제거
     px = im.load()
     for y in range(h):
         for x in range(w):
             r, g, b, a = px[x, y]
-            if 0 < a < 255 and min(r, g, b) > 200:
+            if 0 < a < 255 and lum(x, y) > 175 and chroma(x, y) < 40:
                 px[x, y] = (r, g, b, 0)
     return im
+
+
+def round_ball(src, cx, cy, r):
+    """대포 화염 시트에서 철구를 (cx,cy) 중심 반지름 r 로 잘라 원형 알파 마스크."""
+    from PIL import ImageDraw
+    crop = src.crop((cx - r, cy - r, cx + r, cy + r)).convert('RGBA')
+    n = crop.size[0]
+    px = crop.load()
+    for y in range(n):          # 밝은 주황 불꼬리 픽셀 제거
+        for x in range(n):
+            rr, gg, bb, a = px[x, y]
+            if rr > 150 and rr > bb + 60:
+                px[x, y] = (rr, gg, bb, 0)
+    m = Image.new('L', (n * 4, n * 4), 0)
+    ImageDraw.Draw(m).ellipse((2, 2, n * 4 - 2, n * 4 - 2), fill=255)
+    m = m.resize((n, n), Image.LANCZOS).filter(ImageFilter.GaussianBlur(0.6))
+    crop.putalpha(m)
+    return crop
 
 
 def drop_specks(im, min_area=1200):
@@ -117,10 +172,7 @@ def cap(im, mx):
 def main():
     os.makedirs(OUT, exist_ok=True)
 
-    cn = Image.open(SRC_CANNON).convert('RGBA')
-    cap(crop_bbox(cn, (1112, 40, 1522, 528)), 340).save(os.path.join(OUT, 'cannon.png'))
-
-    # 조준 포즈 2개 (흰 배경 시트에서 키아웃 + bbox 트림)
+    # 조준 포즈 2개 (흰 배경 시트에서 키아웃 + bbox 트림) — 소스가 repo 안이라 항상 실행
     ang = Image.open(SRC_ANGLES).convert('RGBA')
     for name, box in ANGLE_BOXES.items():
         sp = key_white(ang.crop(box))
@@ -129,12 +181,17 @@ def main():
             sp = sp.crop(bb)
         cap(sp, 600).save(os.path.join(OUT, name + '.png'))
 
-    fr = Image.open(SRC_FIRE).convert('RGBA')
-    # 화염 = 불꽃+스파크+바깥 연기 넓게 (사용자가 큰 화염 선호). 포신 금속만 제외.
-    cap(crop_bbox(fr, (14, 0, 408, 300)), 460).save(os.path.join(OUT, 'cannon-flash.png'))
-    cap(crop_bbox(fr, (792, 36, 1010, 290)), 280).save(os.path.join(OUT, 'cannon-smoke.png'))
-    # 포탄 = 깨끗한 검은 철구 (불꼬리 제외 — 구는 회전해도 똑같아 각도 상관없음).
-    cap(crop_bbox(fr, (2, 526, 80, 602)), 96).save(os.path.join(OUT, 'cannon-ball.png'))
+    # 아래는 바탕화면 원본이 있을 때만 (이미 생성·커밋돼 있음)
+    if os.path.exists(SRC_CANNON):
+        cn = Image.open(SRC_CANNON).convert('RGBA')
+        cap(crop_bbox(cn, (1112, 40, 1522, 528)), 340).save(os.path.join(OUT, 'cannon.png'))
+    if os.path.exists(SRC_FIRE):
+        fr = Image.open(SRC_FIRE).convert('RGBA')
+        # 화염 = 불꽃+스파크+바깥 연기 넓게. 포신 금속만 제외.
+        cap(crop_bbox(fr, (14, 0, 408, 300)), 460).save(os.path.join(OUT, 'cannon-flash.png'))
+        cap(crop_bbox(fr, (792, 36, 1010, 290)), 280).save(os.path.join(OUT, 'cannon-smoke.png'))
+        # 포탄 = 깨끗한 원형 철구 (불꼬리 죽이고 원형 알파 마스크).
+        round_ball(fr, 55, 576, 33).save(os.path.join(OUT, 'cannon-ball.png'))
 
     for n in ('cannon', 'cannon-low', 'cannon-steep', 'cannon-flash', 'cannon-smoke', 'cannon-ball'):
         p = os.path.join(OUT, n + '.png')
