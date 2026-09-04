@@ -886,18 +886,16 @@ body { background: var(--lm-page); }
 }
 /* 다이얼패드 래퍼 — 안내문구/첫방문 말풍선을 절대배치로 얹기 위함. */
 .dialpad { position: relative; flex: 0 0 auto; }
-/* 종료 제스처 안내 — 다이얼패드 상단 가운데 작은 탭 (전체폭 아님). */
+/* 종료 제스처 안내 — 박스 없이 글자만, 다이얼패드 상단 가운데. */
 .start-hint {
   display: none;
   position: absolute;
-  left: 50%; top: 0;
+  left: 50%; top: 1px;
   transform: translateX(-50%);
   z-index: 3;
-  max-width: 92%;
-  padding: 2px 12px 3px;
-  border-radius: 0 0 10px 10px;
-  background: var(--lm-pad);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.10);
+  max-width: 96%;
+  margin: 0;
+  background: transparent;
   color: var(--lm-muted);
   font-size: 0.6rem;
   text-align: center;
