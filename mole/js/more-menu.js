@@ -22,6 +22,7 @@
                friends: on.friends, inventory: on.inventory, settings: on.settings };
     el.querySelectorAll('[data-mm-nav]').forEach(function (b) {
       b.addEventListener('click', function () {
+        if (MG.HitFx) MG.HitFx.uiTap(); // 더보기 메뉴 아이콘 탭음
         var fn = NAV[b.getAttribute('data-mm-nav')];
         if (fn) fn();
       });

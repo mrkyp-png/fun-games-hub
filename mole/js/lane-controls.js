@@ -42,7 +42,7 @@
     }
   }
 
-  function create({ buttonBar, gridSize, onCell }) {
+  function create({ buttonBar, gridSize, onCell, onTap }) {
     const buttons = [];
     const keyMap = {};
 
@@ -57,6 +57,7 @@
         if (FACES[id].call) b.insertAdjacentHTML('beforeend', '<span class="lane-call-idle" aria-hidden="true"></span>');
         b.addEventListener('pointerdown', (e) => {
           e.preventDefault();
+          if (onTap) onTap(); // 다이얼패드(홈 화면) 전용 탭음 — game.js 가 상황(is-start) 판단
           const bad = onCell(id); // 헛방/폭탄이면 true — 링 색을 빨갛게
           b.classList.remove('lane-button--flash', 'lane-button--miss');
           void b.offsetWidth;

@@ -48,6 +48,37 @@
     try { return localStorage.getItem('mole.weapon') === 'cannon'; } catch (e) { return false; }
   }
 
+  // UI 탭음(다이얼패드 숫자/더보기 메뉴 아이콘) — 사용자 제공, 랜덤 1/2 + 지터. 게임 키패드
+  // 타격(punch)과는 별개 — 연타 잦은 자리라 여기 안 씀, 가끔 누르는 UI 버튼 전용.
+  const UI_TAP_URLS = ['audio/ui-tap1.mp3', 'audio/ui-tap2.mp3'];
+  const UI_TAP_GAIN = 0.5;
+  let tapBuffers = null;
+  let tapLoading = false;
+
+  function loadTapBuffers(ctx) {
+    if (tapBuffers || tapLoading || typeof fetch !== 'function') return;
+    tapLoading = true;
+    Promise.all(UI_TAP_URLS.map((u) =>
+      fetch(u).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b))
+    )).then((bufs) => { tapBuffers = bufs; })
+      .catch(() => { tapLoading = false; });
+  }
+
+  function uiTap() {
+    if (sfxOff()) return;
+    try {
+      const ctx = getCtx();
+      if (!ctx || !tapBuffers || !tapBuffers.length) return;
+      const src = ctx.createBufferSource();
+      src.buffer = tapBuffers[(Math.random() * tapBuffers.length) | 0];
+      src.playbackRate.value = 1 + (Math.random() * 2 - 1) * HIT_PITCH_JITTER;
+      const g = ctx.createGain();
+      g.gain.value = UI_TAP_GAIN * (1 + (Math.random() * 2 - 1) * HIT_GAIN_JITTER);
+      src.connect(g).connect(ctx.destination);
+      src.start();
+    } catch (e) { /* 오디오 불가 환경 무시 */ }
+  }
+
   // 파일 로드 전/실패 시 폴백용 합성 프리셋 5종.
   // [몸통시작Hz, 몸통끝Hz, 몸통길이s, 노이즈 로우패스Hz, 노이즈길이s, 노이즈비중]
   const PUNCH_PRESETS = [
@@ -75,6 +106,7 @@
     if (audioCtx.state === 'suspended' && audioCtx.resume) audioCtx.resume();
     loadHitBuffers(audioCtx); // ctx 생기는 즉시 타격음 파일 프리로드
     if (isCannonEquipped()) loadCannonBuffers(audioCtx); // 대포 장착 중일 때만 폭발음 로드(망치 유저는 불필요한 다운로드 안 함)
+    loadTapBuffers(audioCtx); // UI 탭음도 같이 프리로드
     return audioCtx;
   }
 
@@ -253,6 +285,6 @@
   // 게임 시작(사용자 제스처) 직후 호출 — 카운트다운 동안 오디오 컨텍스트 + 타격음 파일을 미리 준비.
   function warmup() { try { getCtx(); } catch (e) { /* noop */ } }
 
-  const api = { moleHit, juggle, moleTap, obstacleHit, whiff, emerge, warmup };
+  const api = { moleHit, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);

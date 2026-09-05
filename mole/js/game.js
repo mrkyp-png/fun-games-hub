@@ -1074,7 +1074,9 @@
     sharedLaneControls = MG.LaneControls.create({
       buttonBar: document.getElementById('lane-button-bar'),
       gridSize: GRID_SIZE,
-      onCell: handleCell
+      onCell: handleCell,
+      // 홈 화면(전화 다이얼러로 위장 중)일 때만 탭음 — 플레이 중엔 연타가 잦아 타격음과 겹치므로 안 씀.
+      onTap: () => { if (document.getElementById('game-screen').classList.contains('is-start')) MG.HitFx.uiTap(); }
     });
     wireStartButton(); // 다이얼러 초록 버튼: 홈에서 탭=시작 / 꾹=종료 대기
     wireChapterNav();  // ◀ 챕터 N ▶ (열린 챕터 2개 이상일 때만 노출)

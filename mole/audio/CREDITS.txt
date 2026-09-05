@@ -16,3 +16,7 @@
 ■ cannon-boom1.mp3 ~ cannon-boom8.mp3  (대포 무기 스킨 타격음, 폭발)
   출처: Pixabay (사용자 제공)
   라이선스: Pixabay 로열티 프리 (사용자 확인)
+
+■ ui-tap1.mp3, ui-tap2.mp3  (다이얼패드/더보기 메뉴 아이콘 탭 사운드)
+  출처: 効果音ラボ (Sound Effect Lab) — hit1~4.mp3 와 동일 사이트 (사용자 확인)
+  라이선스: 商用利用無料 (상업적 이용 무료), 크레딧 표기 불필요 (위 hit1~4 항목과 동일 조건)
