@@ -52,8 +52,8 @@
       'mole.channel.hint': '구경하고 다시 돌아오세요!\n최근 앱 목록에서 두더지팡을 찾아주세요',
       'mole.channel.discoverHint': '숫자패드 버튼을 길게 누르면 짧은 광고가 나온 뒤 추천 유튜브 채널로 이동해요',
       'mole.startintro.tip': '손을 풀어 봅시다, 버튼에 적응하세요!',
-      'mole.hud.combo': 'COMBO {n}',
-      'mole.hud.maxCombo': 'MAX COMBO {n}',
+      'mole.hud.combo': '{n}',
+      'mole.hud.maxCombo': '{n}',
       'mole.fx.tap': '톡!', 'mole.fx.bam': '쾅!', 'mole.fx.clang': '깡!', 'mole.fx.double': '더블!',
 
       'mole.common.close': '닫기',
@@ -219,8 +219,8 @@
       'mole.channel.hint': 'Enjoy, then come back!\nFind 두더지팡 in your recent apps',
       'mole.channel.discoverHint': 'Hold a number pad button — after a short ad, you\'ll be taken to a recommended YouTube channel',
       'mole.startintro.tip': 'Let\'s warm up and get used to the buttons!',
-      'mole.hud.combo': 'COMBO {n}',
-      'mole.hud.maxCombo': 'MAX COMBO {n}',
+      'mole.hud.combo': '{n}',
+      'mole.hud.maxCombo': '{n}',
       'mole.fx.tap': 'Tap!', 'mole.fx.bam': 'Bam!', 'mole.fx.clang': 'Clang!', 'mole.fx.double': 'DOUBLE!',
 
       'mole.common.close': 'Close',
