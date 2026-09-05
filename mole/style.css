@@ -991,22 +991,23 @@ body { background: var(--lm-page); }
   --flash-fill: rgba(80, 230, 110, 0.55);      /* 클릭 순간 배경에 도는 초록 글로우 */
 }
 .lane-button--miss { --flash-ring: #ff5344; --flash-fill: rgba(255, 90, 70, 0.5); }  /* 헛방/폭탄 = 빨강 */
-/* 누를 때 굵은 네온 링이 확 밝아졌다 사그라드는 이펙트 (아웃라인 셰이더 느낌, 참고 영상 그대로). */
+/* 누를 때 굵은 네온 링이 확 밝아졌다 사그라드는 이펙트 (아웃라인 셰이더 느낌, 참고 영상 그대로).
+   버튼 원 밖으로 삐져나가 옆 버튼을 침범하면 안 됨 — inset:0 으로 버튼 원 안에서만. */
 .lane-button::after {
   content: '';
   position: absolute;
-  inset: -4px;
+  inset: 0;
   border-radius: 50%;
   border: 3px solid var(--flash-ring);
   opacity: 0;
   pointer-events: none;
 }
 .lane-button.lane-button--flash::after { animation: lane-btn-ring 0.8s ease-out; }
-/* + 물결처럼 밖으로 퍼지는 링 (쉬머 셰이더 느낌) — 안쪽 야광 원이 바깥으로 번지며 사라짐. */
+/* + 물결처럼 안에서 번지는 링 (쉬머 셰이더 느낌) — 버튼 원 경계(1.0)를 절대 안 넘게, 작게 시작해 원 끝까지만 커짐. */
 .lane-button::before {
   content: '';
   position: absolute;
-  inset: -4px;
+  inset: 0;
   border-radius: 50%;
   border: 2px solid var(--flash-ring);
   opacity: 0;
@@ -1014,8 +1015,8 @@ body { background: var(--lm-page); }
 }
 .lane-button.lane-button--flash::before { animation: lane-btn-ripple 0.8s ease-out; }
 @keyframes lane-btn-ripple {
-  0%   { opacity: 0.85; transform: scale(1); }
-  100% { opacity: 0; transform: scale(1.55); }
+  0%   { opacity: 0.85; transform: scale(0.5); }
+  100% { opacity: 0; transform: scale(1); }
 }
 @keyframes lane-btn-ring {
   0%   { opacity: 1; box-shadow: inset 0 0 22px 8px var(--flash-fill), 0 0 14px 4px var(--flash-ring); }
