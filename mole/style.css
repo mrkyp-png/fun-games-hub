@@ -953,8 +953,8 @@ body { background: var(--lm-page); }
 }
 .ri-curtain::before { color: #ffd166; z-index: 1; } /* 노랑 — 뒤 */
 .ri-curtain::after  { color: #ff6f91; z-index: 2; } /* 분홍 — 앞, 결국 전체를 덮음 */
-.ri-curtain--pattern-play::before { animation: ri-curtain-grow-gold 1.3s ease-out forwards; }
-.ri-curtain--pattern-play::after  { animation: ri-curtain-grow-pink 1.3s ease-out forwards; }
+.ri-curtain--pattern-play::before { animation: ri-curtain-grow-gold 2.3s ease-out forwards; }
+.ri-curtain--pattern-play::after  { animation: ri-curtain-grow-pink 2.3s ease-out forwards; }
 @keyframes ri-curtain-grow-gold {
   0%   { background-size: 70px 70px; }
   60%  { background-size: 22px 22px; }

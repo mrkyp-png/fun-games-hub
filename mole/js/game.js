@@ -135,37 +135,46 @@
     curtains.forEach((c) => c.classList.add('ri-curtain--pattern-play'));
   }
 
-  // 라운드1 진입 전 한 번 — "챕터N" + "손을 풀어봅시다..." 타이핑, 끝나면 잠깐 멈췄다 커튼 오픈.
+  // 글자 하나씩 타이핑, 다 치면 onTyped 호출.
+  function typeText(el, text, onTyped) {
+    let i = 0;
+    (function step() {
+      el.textContent = text.slice(0, i);
+      i++;
+      if (i <= text.length) setTimeout(step, 45);
+      else onTyped();
+    })();
+  }
+
+  // 라운드1 진입 전 한 번 — 커튼 패턴(노랑->분홍, 2.3s) 이 다 끝난 뒤 "챕터N" 타이핑,
+  // 이어서 "손을 풀어봅시다..." 타이핑, 끝나면 잠깐 멈췄다 커튼 오픈.
   function playStartIntro(onDone) {
     const overlay = document.getElementById('start-intro-overlay');
     const chapterEl = document.getElementById('si-chapter');
     const tipEl = document.getElementById('si-tip-text');
-    chapterEl.textContent = chapterLabel(currentChapter());
+    chapterEl.textContent = '';
     tipEl.textContent = '';
     overlay.classList.remove('is-opening');
     overlay.hidden = false;
     restartCurtainPattern(overlay);
     setHammerLayerVisible(false);
+    const fullChapter = chapterLabel(currentChapter());
     const fullTip = I18N.t('mole.startintro.tip');
-    let i = 0;
-    function typeChar() {
-      if (i > fullTip.length) {
-        setTimeout(() => {
-          overlay.classList.add('is-opening');
-          setHammerLayerVisible(true);
-          onDone();
+    setTimeout(() => {
+      typeText(chapterEl, fullChapter, () => {
+        typeText(tipEl, fullTip, () => {
           setTimeout(() => {
-            overlay.hidden = true;
-            overlay.classList.remove('is-opening');
-          }, 300); // 커튼 transition(0.26s) 후 정리
-        }, 500); // 타이핑 끝난 뒤 잠깐 멈춤
-        return;
-      }
-      tipEl.textContent = fullTip.slice(0, i);
-      i++;
-      setTimeout(typeChar, 45);
-    }
-    typeChar();
+            overlay.classList.add('is-opening');
+            setHammerLayerVisible(true);
+            onDone();
+            setTimeout(() => {
+              overlay.hidden = true;
+              overlay.classList.remove('is-opening');
+            }, 300); // 커튼 transition(0.26s) 후 정리
+          }, 500); // 타이핑 끝난 뒤 잠깐 멈춤
+        });
+      });
+    }, 2300); // 커튼 패턴이 분홍으로 다 정리된 뒤에 타이핑 시작
   }
 
   // ---------- 시작화면 초록 버튼: 탭=시작 / 꾹=종료 대기 / 다시 탭=종료창 ----------
@@ -721,46 +730,53 @@
     const title = document.getElementById('round-intro-title');
     const count = document.getElementById('round-intro-count');
     const moleImg = document.getElementById('round-intro-mole');
-    title.textContent = I18N.t('mole.round', { n: roundNum });
     overlay.hidden = false;
     restartCurtainPattern(overlay);
 
     // 2라운드부터: 카운트다운 없이 두더지 이미지(8종 순환) 잠깐 보여주고 바로 커튼 오픈.
-    // 타이틀은 오른쪽에서, 이미지는 왼쪽에서 날아와 중앙에서 만남(has-mole 진입 애니메이션).
-    // 커튼 열릴 땐 반대로 — 타이틀은 왼쪽 커튼과, 이미지는 오른쪽 커튼과 같은 타이밍/방향으로 퇴장.
+    // 커튼 패턴(노랑->분홍, 2.3s) 이 다 끝난 뒤에 타이틀은 오른쪽에서, 이미지는 왼쪽에서
+    // 날아와 중앙에서 만남(has-mole 진입 애니메이션). 커튼 열릴 땐 반대로 — 타이틀은 왼쪽
+    // 커텐과, 이미지는 오른쪽 커튼과 같은 타이밍/방향으로 퇴장.
     if (roundNum > 1) {
       count.hidden = true;
-      overlay.classList.add('has-mole');
+      title.textContent = '';
+      moleImg.hidden = true;
       const idx = ((roundNum - 2) % 6) + 1; // 라운드2→mole1, 라운드3→mole2, ... 6개 돌면 반복(라운드8부터 다시 mole1)
       moleImg.src = 'assets/round-moles/mole' + idx + '.png';
-      moleImg.hidden = false;
       setTimeout(() => {
         if (myGen !== sessionGen) return;
-        // 입장 애니메이션(animation: ... forwards)이 끝나도 그 값이 transition보다 우선해
-        // 퇴장용 transform 전환이 아예 안 먹는 문제 — 애니메이션을 먼저 끄고 리플로우로
-        // 그 상태를 확정시킨 뒤에 is-opening을 걸어야 transition이 정상 작동한다.
-        title.style.animation = 'none';
-        moleImg.style.animation = 'none';
-        void title.offsetWidth;
-        overlay.classList.add('is-opening');
-        setHammerLayerVisible(true);
-        // 커튼(.ri-curtain, transition 0.26s) 이 다 사라지기 전에 두더지가 튀어나오는 게
-        // 보여서(사용자 보고) — 커튼 다 사라진 뒤 0.2초 더 쉬었다가 라운드 시작.
+        title.textContent = I18N.t('mole.round', { n: roundNum });
+        overlay.classList.add('has-mole');
+        moleImg.hidden = false;
         setTimeout(() => {
           if (myGen !== sessionGen) return;
-          overlay.hidden = true;
-          overlay.classList.remove('is-opening', 'has-mole');
-          moleImg.hidden = true;
-          title.style.animation = '';
-          moleImg.style.animation = '';
-        }, 260);
-        setTimeout(() => {
-          if (myGen !== sessionGen) return;
-          onDone();
-        }, 260 + 200);
-      }, 1300); // 커튼 패턴(노랑->분홍, 1.3s) 이 다 끝난 뒤에 열리도록 대기 시간도 맞춤
+          // 입장 애니메이션(animation: ... forwards)이 끝나도 그 값이 transition보다 우선해
+          // 퇴장용 transform 전환이 아예 안 먹는 문제 — 애니메이션을 먼저 끄고 리플로우로
+          // 그 상태를 확정시킨 뒤에 is-opening을 걸어야 transition이 정상 작동한다.
+          title.style.animation = 'none';
+          moleImg.style.animation = 'none';
+          void title.offsetWidth;
+          overlay.classList.add('is-opening');
+          setHammerLayerVisible(true);
+          // 커튼(.ri-curtain, transition 0.26s) 이 다 사라지기 전에 두더지가 튀어나오는 게
+          // 보여서(사용자 보고) — 커튼 다 사라진 뒤 0.2초 더 쉬었다가 라운드 시작.
+          setTimeout(() => {
+            if (myGen !== sessionGen) return;
+            overlay.hidden = true;
+            overlay.classList.remove('is-opening', 'has-mole');
+            moleImg.hidden = true;
+            title.style.animation = '';
+            moleImg.style.animation = '';
+          }, 260);
+          setTimeout(() => {
+            if (myGen !== sessionGen) return;
+            onDone();
+          }, 260 + 200);
+        }, 700);
+      }, 2300); // 커튼 패턴이 분홍으로 다 정리된 뒤에 타이틀/이미지 fly-in 시작
       return;
     }
+    title.textContent = I18N.t('mole.round', { n: roundNum });
     overlay.classList.remove('has-mole');
     moleImg.hidden = true;
     count.hidden = false;
