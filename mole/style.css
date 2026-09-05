@@ -310,7 +310,7 @@ body { background: var(--lm-page); }
   font-size: 0.9rem;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
   transform: translateY(-175%);
-  z-index: 5;                  /* 제일 앞 — 흩뿌려질 때 말풍선 위로 */
+  z-index: 10;                 /* 하트/코인박스(board-stats)보다 위 — 겹쳐도 이 박스가 다 보이게 */
   will-change: transform, opacity, filter;
 }
 .chat-sms.is-empty { display: none; }
@@ -416,7 +416,7 @@ body { background: var(--lm-page); }
 #game-screen.is-start .board-stats {
   display: inline-flex; gap: 12px;
   position: absolute; top: 8px; right: 10px; z-index: 9;
-  background: rgba(0, 0, 0, 0.34); border-radius: 12px; padding: 4px 10px;
+  background: transparent; border-radius: 12px; padding: 4px 10px;
   color: #fff; font-weight: 800;
 }
 .board-stats .mm-stat { color: #fff; }
