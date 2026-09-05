@@ -82,14 +82,16 @@
       <div id="hud-score" aria-hidden="true">0</div>
       <div id="hud-hearts" class="board-hearts" aria-hidden="true"></div>
       <div id="hud-combo" class="board-combo" aria-hidden="true"></div>
+      <!-- 챕터 선택 ◀ 챕터 N ▶ — 열린 챕터 2개 이상일 때만. 박스 없이 글자+화살표만.
+           하트/코인과 같은 줄이지만 반대쪽(왼쪽) 끝에 따로 고정 — 하트/코인 자릿수가
+           늘어도 이쪽으로 밀려와 겹치지 않게 분리(사용자 요청). -->
+      <div id="chapter-nav" class="chapter-nav-top" hidden>
+        <button type="button" class="ch-arrow" data-ch-prev aria-label="이전 챕터">‹</button>
+        <span class="ch-label" data-ch-label>챕터 1</span>
+        <button type="button" class="ch-arrow" data-ch-next aria-label="다음 챕터">›</button>
+      </div>
       <!-- 홈(시작) 화면: 게임박스 우측 상단에 하트·코인 -->
       <div id="board-stats" class="board-stats" aria-hidden="true">
-        <!-- 챕터 선택 ◀ 챕터 N ▶ — 열린 챕터 2개 이상일 때만. 박스 없이 글자+화살표만. -->
-        <div id="chapter-nav" hidden>
-          <button type="button" class="ch-arrow" data-ch-prev aria-label="이전 챕터">‹</button>
-          <span class="ch-label" data-ch-label>챕터 1</span>
-          <button type="button" class="ch-arrow" data-ch-next aria-label="다음 챕터">›</button>
-        </div>
         <span class="mm-stat mm-hearts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg><b data-bs-hearts>5</b></span>
         <span class="mm-stat mm-coins"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg><b data-bs-coins>0</b></span>
       </div>
@@ -109,7 +111,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v205</div>
+      <div id="build-tag" aria-hidden="true">v206</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -474,7 +476,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=205').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=206').catch(function () {});
       }
     });
   }

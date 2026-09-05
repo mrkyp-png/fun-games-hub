@@ -107,13 +107,18 @@ body { background: var(--lm-page); }
   background: var(--lm-chat);   /* 대화 홈 = 연한 웜그레이 (잔디는 플레이 중에만) */
   overflow: hidden;
 }
-/* 챕터 선택 ◀ 챕터 N ▶ — 하트·코인과 같은 줄(board-stats). 박스 없이 글자+화살표만,
-   흰 글자(board-stats 색 그대로 상속). [hidden] 이 아래 display:flex 에 덮이지 않게 별도 명시. */
-#chapter-nav {
+/* 챕터 선택 ◀ 챕터 N ▶ — 하트·코인(board-stats)과 같은 줄(top:8px)이지만 반대쪽(왼쪽)
+   끝에 별도 고정. 하트/코인 자릿수가 늘어 오른쪽에서 밀려와도 이쪽과 안 겹치게 분리.
+   박스 없이 글자+화살표만, 흰 글자. [hidden] 이 아래 display:flex 에 덮이지 않게 별도 명시. */
+.chapter-nav-top { display: none; }
+#game-screen.is-start .chapter-nav-top {
   display: flex;
   align-items: center;
   gap: 2px;
   min-width: 0;
+  position: absolute; top: 8px; left: 10px; z-index: 9;
+  color: #fff; font-weight: 800;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65), 0 0 4px rgba(0, 0, 0, 0.5);
 }
 #chapter-nav[hidden] { display: none; }
 .ch-arrow {
