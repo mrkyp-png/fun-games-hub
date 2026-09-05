@@ -188,8 +188,10 @@
     const overlay = document.getElementById('start-intro-overlay');
     const chapterEl = document.getElementById('si-chapter');
     const tipEl = document.getElementById('si-tip-text');
+    const caretEl = document.getElementById('si-caret');
     chapterEl.textContent = '';
     tipEl.textContent = '';
+    caretEl.hidden = true; // 타이핑 시작 전엔 깜빡이는 커서도 같이 숨김(사용자 보고)
     overlay.classList.remove('is-opening');
     overlay.hidden = false;
     restartCurtainPattern(overlay);
@@ -198,6 +200,7 @@
     const fullTip = I18N.t('mole.startintro.tip');
     setTimeout(() => {
       typeText(chapterEl, fullChapter, () => {
+        caretEl.hidden = false; // 이 줄 타이핑 시작하는 순간부터 커서 등장
         typeText(tipEl, fullTip, () => {
           setTimeout(() => {
             overlay.classList.add('is-opening');

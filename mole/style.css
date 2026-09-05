@@ -1023,6 +1023,7 @@ body { background: var(--lm-page); }
   padding: 0 10%;
 }
 .si-caret { display: inline-block; width: 2px; height: 1em; background: currentColor; animation: si-blink 0.8s step-end infinite; }
+.si-caret[hidden] { display: none; }
 @keyframes si-blink { 50% { opacity: 0; } }
 
 /* ---- 버튼 패드 = 전화 다이얼러로 위장 (사용자 요청) ----
