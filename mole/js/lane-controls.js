@@ -54,12 +54,9 @@
         b.type = 'button';
         b.dataset.region = String(id);
         fillFace(b, FACES[id]);
-        b.insertAdjacentHTML('beforeend',
-          '<svg class="lane-ding" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
-          '<path d="M12 2a1 1 0 0 1 1 1v1.06A7 7 0 0 1 19 11v3.5l1.6 2.4a1 1 0 0 1-.85 1.6H4.25a1 1 0 0 1-.85-1.53L5 14.5V11a7 7 0 0 1 6-6.94V3a1 1 0 0 1 1-1zm0 19a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 21z"/></svg>');
         b.addEventListener('pointerdown', (e) => {
           e.preventDefault();
-          const bad = onCell(id); // 헛방/폭탄이면 true — 종 색을 빨갛게
+          const bad = onCell(id); // 헛방/폭탄이면 true — 링 색을 빨갛게
           b.classList.remove('lane-button--flash', 'lane-button--miss');
           void b.offsetWidth;
           b.classList.toggle('lane-button--miss', !!bad);
