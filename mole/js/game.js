@@ -218,15 +218,11 @@
     el.classList.add('is-on');
   }
 
-  // 책장 넘기듯 전환 — 처음 3D 적용했던 버전으로 확정, 더 이상 변경하지 않음.
-  // outEl 은 뒤로 넘어가며 사라지고 inEl 은 앞에서 넘어와 나타남.
+  // 책장 넘기듯 전환 — 이어가기(더보기→게임화면)에서 정상 작동 확인된 방식 그대로,
+  // 다른 전환에도 동일하게 적용(mole-board 를 가리지 않음 — 그게 핵심 차이였음).
   const FLIP_MS = 700; // style.css 의 flip-out/flip-in 애니메이션 길이(0.7s)와 맞춤
   function flipSwap(outEl, inEl) {
     if (!outEl || !inEl || outEl === inEl) return;
-    // 회전 중(특히 90도 부근) 패널이 옆으로 서서 그 뒤의 초록 게임판(#mole-board)이
-    // 잠깐 비쳐 보이는 문제 — mole-board 자신이 전환 대상이 아닐 때만 숨긴다.
-    var board = document.getElementById('mole-board');
-    if (board && outEl !== board && inEl !== board) board.style.visibility = 'hidden';
     inEl.hidden = false;
     outEl.classList.remove('flip-out'); void outEl.offsetWidth; outEl.classList.add('flip-out');
     inEl.classList.remove('flip-in'); void inEl.offsetWidth; inEl.classList.add('flip-in');
@@ -234,7 +230,6 @@
       outEl.hidden = true;
       outEl.classList.remove('flip-out');
       inEl.classList.remove('flip-in');
-      if (board && outEl !== board && inEl !== board) board.style.visibility = '';
     }, FLIP_MS);
   }
 
