@@ -74,8 +74,9 @@
   const SMOKE_SRC = 'assets/weapons/cannon-fx5.png', SMOKE_W = 0.17; // 잔여 연기 — 오래 옅어짐
   const SMOKE_MU = 0.740, SMOKE_MV = 0.686; // fx5: 무게중심(0.584,0.530)~뒷끝(0.896,0.841) 중간
   const AIM_MS = 90;                       // 포즈 전환 + 미세 조준
-  const HOLE3_AIM_MS = 340;                // 3번 구멍만 — 15도 회전이 눈에 보이게 천천히
-                                            // (사용자: "반시계 15도 간 후, 쏘고, 반동 후 원위치")
+  const HOLE3_AIM_MS = 90;                 // 3번 구멍 — 처음엔 눈에 보이게 340ms로 늘렸으나
+                                            // 사용자가 "포탄이 다다다다 나와야해"(연사) 라서
+                                            // 원래 속도(다른 구멍과 동일)로 되돌림.
   const RECOIL = [0.012, 0.024, 0.040];    // 살짝/보통/강 (보드 분수)
   const KICK_SEC = 0.06, SETTLE_SEC = 0.34;
   const BALL_MS = 105;
@@ -159,8 +160,6 @@
     let pose = null;
     let phase = 'home', t = 0;
     let residual = 0, resFrom = 0, resTo = 0, resT = 0, curAimMs = AIM_MS;
-    let aimingHole3 = false; // 3번 조준(340ms) 도중 3번을 또 누르면 매번 처음부터 다시 시작돼서
-                              // 영원히 발사가 안 되는 문제 방지용 (사용자 보고: "포탄이 안 나온다")
     let recoilAmt = 0;
     let timers = [];
     function clearTimers() { timers.forEach(clearTimeout); timers = []; }
@@ -188,16 +187,10 @@
       const ty = (typeof targetYFrac === 'number') ? targetYFrac : 0.3;
 
       // 3번 구멍이면 tweak 무시하고 정확히 필요한 각도로 고정 회전(회전축도 바퀴로 교체 —
-      // 아래에서 계속 설명).
+      // 아래에서 계속 설명). HOLE3_AIM_MS 를 늘려 회전을 눈에 보이게 했다가, 그 대기시간
+      // 동안 재입력을 막는 부작용(연사 "다다다다" 안 됨)이 생겨 다시 다른 구멍과 같은
+      // 속도로 되돌림 — 연사가 최우선(사용자 요청).
       const isHole3 = Math.abs(tx - HOLE3_X) < 0.01 && Math.abs(ty - HOLE3_Y) < 0.01;
-      // 3번 발사 시퀀스(조준→발사→반동→원위치) 진행 중에 3번을 또 누르면 무시 — 끝까지
-      // 쏘고 원위치할 때까지 둔다. clearTimers() 보다 반드시 먼저 체크해야 한다 — 아래로
-      // 내려가면 clearTimers() 가 이미 실행된 뒤라 매번 처음부터 다시 시작되며 영원히
-      // 발사가 안 되는 버그가 났었다(사용자 보고: "포탄이 안 나온다"). 다른 구멍을 누르면
-      // (isHole3 다름) 여전히 즉시 재조준(원래 동작).
-      if (isHole3 && aimingHole3) return;
-      aimingHole3 = isHole3;
-
       clearTimers();
 
       // 포구 → 목표 방향
@@ -251,7 +244,7 @@
         t += dt;
         const k = easeOut(clamp01(t / SETTLE_SEC));
         residual = resTo * (1 - k);
-        if (t >= SETTLE_SEC) { phase = 'home'; t = 0; residual = 0; showPose(restPose); aimingHole3 = false; }
+        if (t >= SETTLE_SEC) { phase = 'home'; t = 0; residual = 0; showPose(restPose); }
       }
       paint();
     }
@@ -276,7 +269,6 @@
       clearTimers();
       phase = 'home'; t = 0; resT = 0;
       residual = resFrom = resTo = 0;
-      aimingHole3 = false;
       resetFx();
       ball.style.opacity = '0';
       showPose(restPose);
