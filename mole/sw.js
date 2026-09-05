@@ -1,9 +1,9 @@
 // 두더지 게임 서비스워커.
-// fetch 전략 = stale-while-revalidate: 캐시본을 즉시 주되 백그라운드로 최신본을 받아 캐시를 갱신한다.
-// → 파일이 바뀌면 CACHE 버전을 안 올려도 "다음 실행"에 자동 반영된다 (이전엔 캐시-우선이라
-//   sw.js 자체가 안 바뀌면 style.css/이미지 변경이 폰에 영영 안 걸렸음).
+// fetch 전략 = 네트워크 우선: 온라인이면 항상 네트워크에서 최신본을 받고, 캐시는 오프라인
+// 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
+// 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-const CACHE = 'mole-game-v152';
+const CACHE = 'mole-game-v153';
 
 // bgm-boss-battle.mp3(6.8MB)는 SHELL 에 안 넣는다 — BGM 은 기본 꺼짐이라 켜는 사람만 받으면 된다.
 // vendor/face_mesh/*(약 10MB, 얼굴인식)도 SHELL 제외 — 사람두더지 메이커 처음 열 때만 필요.
@@ -120,25 +120,25 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
 
-  // 백그라운드로 항상 네트워크에서 받아 캐시를 갱신 (다음 로드에 최신본 반영).
-  const network = fetch(e.request).then((res) => {
-    if (res && res.ok && (res.type === 'basic' || res.type === 'cors')) {
-      const copy = res.clone();
-      caches.open(CACHE).then((c) => c.put(e.request, copy));
-    }
-    return res;
-  }).catch(() => null);
-  e.waitUntil(network);
-
+  // 네트워크 우선: 온라인이면 항상 최신본을 바로 받는다(캐시는 오프라인 폴백용으로만 갱신).
+  // 예전엔 stale-while-revalidate(캐시본 먼저)라 "항상 한 번 밀려서 반영"됐음 — 사용자가
+  // 폰에서 대기가 길다고 느껴 네트워크 우선으로 변경.
   e.respondWith((async () => {
-    const cached = await caches.match(e.request);
-    if (cached) return cached;            // 캐시 있으면 즉시 (갱신은 위에서 백그라운드로)
-    const res = await network;
-    if (res) return res;
-    // 오프라인 + 캐시에 없음. undefined 를 반환하면 브라우저가 "인터넷 연결 없음" 페이지를 띄우므로 금지.
-    if (e.request.mode === 'navigate') {
-      return (await caches.match('./index.html')) || (await caches.match('./')) || Response.error();
+    try {
+      const res = await fetch(e.request);
+      if (res && res.ok && (res.type === 'basic' || res.type === 'cors')) {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(e.request, copy));
+      }
+      return res;
+    } catch (err) {
+      const cached = await caches.match(e.request);
+      if (cached) return cached;
+      // 오프라인 + 캐시에 없음. undefined 를 반환하면 브라우저가 "인터넷 연결 없음" 페이지를 띄우므로 금지.
+      if (e.request.mode === 'navigate') {
+        return (await caches.match('./index.html')) || (await caches.match('./')) || Response.error();
+      }
+      return Response.error();
     }
-    return Response.error();
   })());
 });
