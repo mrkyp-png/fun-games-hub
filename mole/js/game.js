@@ -235,13 +235,10 @@
 
   // 더보기 메뉴 열기/닫기.
   function openMore(sub, originEl) {
-    if (document.getElementById('game-screen').classList.contains('is-start')) {
-      var boardStart = document.getElementById('board-start');
-      openMoreNow(sub); // more-menu 내용 준비(hidden=false 는 flipSwap 이 처리)
-      flipSwap(boardStart, document.getElementById('more-menu'));
-      return;
-    }
-    openMoreNow(sub);
+    var isStart = document.getElementById('game-screen').classList.contains('is-start');
+    var outEl = document.getElementById(isStart ? 'board-start' : 'mole-board');
+    openMoreNow(sub); // more-menu 내용 준비(hidden=false 는 flipSwap 이 처리)
+    flipSwap(outEl, document.getElementById('more-menu'));
   }
   function openMoreNow(sub) {
     // 진행 중이던 게임이 있으면(직접 일시정지했든 아니든) 상단 = "‹ 이어하기" + 칩 잠금.
