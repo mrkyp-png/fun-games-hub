@@ -223,6 +223,10 @@
   const FLIP_MS = 500;
   function flipSwap(outEl, inEl) {
     if (!outEl || !inEl || outEl === inEl) return;
+    // 회전 중(특히 90도 부근) 패널이 옆으로 서서 그 뒤의 초록 게임판(#mole-board)이
+    // 잠깐 비쳐 보이는 문제 — 전환하는 동안만 숨긴다.
+    var board = document.getElementById('mole-board');
+    if (board) board.style.visibility = 'hidden';
     inEl.hidden = false;
     outEl.classList.remove('flip-out'); void outEl.offsetWidth; outEl.classList.add('flip-out');
     inEl.classList.remove('flip-in'); void inEl.offsetWidth; inEl.classList.add('flip-in');
@@ -230,6 +234,7 @@
       outEl.hidden = true;
       outEl.classList.remove('flip-out');
       inEl.classList.remove('flip-in');
+      if (board) board.style.visibility = '';
     }, FLIP_MS);
   }
 
