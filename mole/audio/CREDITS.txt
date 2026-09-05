@@ -12,3 +12,7 @@
 
 ■ bgm-boss-battle.mp3  (배경음악)
   coloring/ (색칠앱) 에서 복사. 원 출처는 색칠앱 쪽 기록 참조 (CC0 로 알려짐 — 재확인 필요).
+
+■ cannon-boom1.mp3 ~ cannon-boom8.mp3  (대포 무기 스킨 타격음, 폭발)
+  출처: Pixabay (사용자 제공)
+  라이선스: Pixabay 로열티 프리 (사용자 확인)

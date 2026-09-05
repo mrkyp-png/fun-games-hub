@@ -18,6 +18,14 @@
   let hitBuffers = null;   // AudioBuffer[] (디코드 완료 후)
   let hitLoading = false;
 
+  // 대포 무기 스킨 전용 타격음 = 폭발음 (사용자 제공, Pixabay 로열티 프리). 대포 장착 시
+  // 위 HIT_URLS 대신 이 풀에서 랜덤 1개.
+  const CANNON_URLS = ['audio/cannon-boom1.mp3', 'audio/cannon-boom2.mp3', 'audio/cannon-boom3.mp3',
+    'audio/cannon-boom4.mp3', 'audio/cannon-boom5.mp3', 'audio/cannon-boom6.mp3',
+    'audio/cannon-boom7.mp3', 'audio/cannon-boom8.mp3'];
+  let cannonBuffers = null;
+  let cannonLoading = false;
+
   function loadHitBuffers(ctx) {
     if (hitBuffers || hitLoading || typeof fetch !== 'function') return;
     hitLoading = true;
@@ -25,6 +33,19 @@
       fetch(u).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b))
     )).then((bufs) => { hitBuffers = bufs; })
       .catch(() => { hitLoading = false; }); // 실패 시 punchSynth 폴백
+  }
+
+  function loadCannonBuffers(ctx) {
+    if (cannonBuffers || cannonLoading || typeof fetch !== 'function') return;
+    cannonLoading = true;
+    Promise.all(CANNON_URLS.map((u) =>
+      fetch(u).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b))
+    )).then((bufs) => { cannonBuffers = bufs; })
+      .catch(() => { cannonLoading = false; }); // 실패 시 hitBuffers/punchSynth 폴백
+  }
+
+  function isCannonEquipped() {
+    try { return localStorage.getItem('mole.weapon') === 'cannon'; } catch (e) { return false; }
   }
 
   // 파일 로드 전/실패 시 폴백용 합성 프리셋 5종.
@@ -53,6 +74,7 @@
     audioCtx = audioCtx || new Ctx();
     if (audioCtx.state === 'suspended' && audioCtx.resume) audioCtx.resume();
     loadHitBuffers(audioCtx); // ctx 생기는 즉시 타격음 파일 프리로드
+    if (isCannonEquipped()) loadCannonBuffers(audioCtx); // 대포 장착 중일 때만 폭발음 로드(망치 유저는 불필요한 다운로드 안 함)
     return audioCtx;
   }
 
@@ -108,9 +130,11 @@
         (1 + (Math.random() * 2 - 1) * HIT_GAIN_JITTER));
       const rate = (light ? TAP_RATE : 1) * (1 + (Math.random() * 2 - 1) * HIT_PITCH_JITTER);
 
-      if (hitBuffers && hitBuffers.length) {
+      // 대포 장착 중이면 폭발음 풀에서, 아니면 기존 타격음 풀에서.
+      const pool = (isCannonEquipped() && cannonBuffers && cannonBuffers.length) ? cannonBuffers : hitBuffers;
+      if (pool && pool.length) {
         const src = ctx.createBufferSource();
-        src.buffer = hitBuffers[(Math.random() * hitBuffers.length) | 0];
+        src.buffer = pool[(Math.random() * pool.length) | 0];
         src.playbackRate.value = rate;
         const g = ctx.createGain();
         g.gain.value = gain;
