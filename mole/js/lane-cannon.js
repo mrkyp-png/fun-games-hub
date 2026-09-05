@@ -52,6 +52,14 @@
   // 항상 같은 방향으로 같이 움직여야 하기 때문(사용자 피드백). 장별로 다르면 스파크→화염
   // 전환 때 각도가 살짝 튀어 보임. 앵커(mu,mv)는 그림마다 실측한 값 그대로 유지.
   const FX_ADVANCE = 0.015;                // 포구보다 이만큼(보드분수) 더 앞으로
+  // mid 포즈만 화염(burn)이 포구와 위치가 안 맞음(사용자 실측) — 우측 0.2cm + 위쪽 0.4cm
+  // 이동, 각도 우측(시계방향)으로 10도 추가 회전. 스파크/연기는 이상 없어 그대로 둠.
+  // 보드 실측 가로폭을 안 주셔서 폰 화면 가로 ~7cm로 가정해 cm→보드분수 환산 — 실물이 다르면
+  // 아래 dx/dy를 (원하는cm / 7 * 실제cm) 로 재계산.
+  const BOARD_W_CM_ASSUMED = 7;
+  const BURN_NUDGE = {
+    mid: { dx: 0.2 / BOARD_W_CM_ASSUMED, dy: -0.4 / BOARD_W_CM_ASSUMED, rot: 10 }
+  };
   const FX_BASE_AIM = -156;                // 세 장 공통 회전 기준각 (fx1 -149°, fx4 -163° 실측 평균)
   // 앵커(mu,mv) = 밝은 코어와 "뒷끝(포신에 안 겹치는 경계)"의 중간점. 뒷끝만 쓰면 안 겹치긴
   // 하는데 코어가 포구에서 26~30%나 멀어져 불빛이 동떨어져 보였다(실측 후 수정) — 코어 쪽으로
@@ -125,19 +133,20 @@
     // 화염·연기 배치: 그림의 뒷끝 앵커(mu,mv, 정사각이라 ar=1)를 포구보다 FX_ADVANCE만큼
     // 더 앞(포즈 각도 방향)에 두고, 그 지점을 축으로 포즈 각도만큼 회전 — 그림 전체가
     // 앵커보다 앞으로만 펼쳐져서 포신에 안 넘치고, 포구에서 살짝 떨어져 나온다.
-    function placeOverlay(im, w, mu, mv, p) {
+    function placeOverlay(im, w, mu, mv, p, nudge) {
       const rad = p.aim * Math.PI / 180;
-      const fx0 = ax(p) + Math.cos(rad) * FX_ADVANCE;
-      const fy0 = ay(p) + Math.sin(rad) * FX_ADVANCE;
+      const nx = (nudge && nudge.dx) || 0, ny = (nudge && nudge.dy) || 0, nrot = (nudge && nudge.rot) || 0;
+      const fx0 = ax(p) + Math.cos(rad) * FX_ADVANCE + nx;
+      const fy0 = ay(p) + Math.sin(rad) * FX_ADVANCE + ny;
       im.style.width = (w * 100).toFixed(2) + '%';
       im.style.left = ((fx0 - mu * w) * 100).toFixed(2) + '%';
       im.style.top = ((fy0 - mv * w) * 100).toFixed(2) + '%';
       im.style.transformOrigin = (mu * 100).toFixed(2) + '% ' + (mv * 100).toFixed(2) + '%';
-      im.style.setProperty('--rot', (p.aim - FX_BASE_AIM).toFixed(1) + 'deg');
+      im.style.setProperty('--rot', (p.aim - FX_BASE_AIM + nrot).toFixed(1) + 'deg');
     }
     function placeFx(p) {
       placeOverlay(spark, SPARK_W, SPARK_MU, SPARK_MV, p);
-      placeOverlay(burn, BURN_W, BURN_MU, BURN_MV, p);
+      placeOverlay(burn, BURN_W, BURN_MU, BURN_MV, p, BURN_NUDGE[p.key]);
       placeOverlay(smoke, SMOKE_W, SMOKE_MU, SMOKE_MV, p);
     }
 
