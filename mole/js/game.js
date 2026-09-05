@@ -758,7 +758,7 @@
           if (myGen !== sessionGen) return;
           onDone();
         }, 260 + 200);
-      }, 700);
+      }, 1300); // 커튼 패턴(노랑->분홍, 1.3s) 이 다 끝난 뒤에 열리도록 대기 시간도 맞춤
       return;
     }
     overlay.classList.remove('has-mole');

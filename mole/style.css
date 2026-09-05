@@ -931,41 +931,45 @@ body { background: var(--lm-page); }
   position: absolute;
   top: 0; bottom: 0;
   width: 50%;
-  background-color: #2b2f77;
-  background-image:
-    radial-gradient(circle at 25% 25%, #ff8fa3 0 6px, transparent 7px),
-    radial-gradient(circle at 75% 75%, #ffd166 0 6px, transparent 7px);
-  background-size: 28px 28px;
   z-index: 0;
   overflow: hidden;
   transition: transform 0.26s cubic-bezier(.5, 0, .75, 0);
 }
 .ri-curtain--l { left: 0; box-shadow: inset -8px 0 14px rgba(0, 0, 0, 0.14); }
 .ri-curtain--r { right: 0; box-shadow: inset 8px 0 14px rgba(0, 0, 0, 0.14); }
-/* 참고 영상(화면전환.mp4)의 "패턴이 확 퍼졌다 단색으로 정리" 효과 — 커튼이 뜰 때마다
-   재생. JS(restartCurtainPattern)가 매번 클래스를 떼었다 다시 붙여 리트리거한다. */
+/* 참고 영상(화면전환.mp4) — 노란 원이 먼저 커지고, 뒤이어 분홍 원이 더 빠르게 커지며
+   전체를 덮어 분홍 단색이 된다. 두 겹(::before=노랑 뒤, ::after=분홍 앞)을 따로 키운다 —
+   background-size 가 작아질수록(고정 반지름 원 기준) 원이 서로 붙어 커 보이는 원리.
+   커튼이 뜰 때마다 재생 — JS(restartCurtainPattern)가 매번 클래스를 떼었다 다시 붙여 리트리거. */
+.ri-curtain::before,
 .ri-curtain::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: #ff6f91; /* 패턴 속 색(핑크)으로 정리 — 참고 영상처럼 흰색/회색으로 돌아가지 않음 */
-  opacity: 0;
+  background-image:
+    radial-gradient(circle at 25% 25%, currentColor 0 6px, transparent 7px),
+    radial-gradient(circle at 75% 75%, currentColor 0 6px, transparent 7px);
+  background-size: 70px 70px;
 }
-.ri-curtain--pattern-play { animation: ri-curtain-pattern-in 0.4s ease-out; }
-.ri-curtain--pattern-play::after { animation: ri-curtain-solidify 0.55s ease-in forwards; }
-@keyframes ri-curtain-pattern-in {
-  0% { background-size: 2px 2px; }
-  70% { background-size: 34px 34px; }
-  100% { background-size: 28px 28px; }
+.ri-curtain::before { color: #ffd166; z-index: 1; } /* 노랑 — 뒤 */
+.ri-curtain::after  { color: #ff6f91; z-index: 2; } /* 분홍 — 앞, 결국 전체를 덮음 */
+.ri-curtain--pattern-play::before { animation: ri-curtain-grow-gold 1.3s ease-out forwards; }
+.ri-curtain--pattern-play::after  { animation: ri-curtain-grow-pink 1.3s ease-out forwards; }
+@keyframes ri-curtain-grow-gold {
+  0%   { background-size: 70px 70px; }
+  60%  { background-size: 22px 22px; }
+  100% { background-size: 22px 22px; }
+}
+@keyframes ri-curtain-grow-pink {
+  0%   { background-size: 70px 70px; }
+  30%  { background-size: 70px 70px; } /* 노랑이 먼저 커질 동안 대기 */
+  100% { background-size: 3px 3px; }   /* 원끼리 붙어 분홍 단색처럼 됨 */
 }
 /* 라운드1 3·2·1 카운트다운만 배경 없이 — 보드가 그대로 비쳐 보이게. (라운드2+ 두더지 전환,
    시작 인트로 타이핑 화면은 커튼 패턴 유지.) */
 #round-intro-overlay:not(.has-mole) .ri-curtain { background: none; box-shadow: none; }
-#round-intro-overlay:not(.has-mole) .ri-curtain::after { background: none; }
-@keyframes ri-curtain-solidify {
-  0%, 45% { opacity: 0; }
-  100% { opacity: 1; }
-}
+#round-intro-overlay:not(.has-mole) .ri-curtain::before,
+#round-intro-overlay:not(.has-mole) .ri-curtain::after { display: none; }
 .round-intro.is-opening .ri-curtain--l { transform: translateX(-101%); }
 .round-intro.is-opening .ri-curtain--r { transform: translateX(101%); }
 .round-intro.is-opening .round-intro-title,
