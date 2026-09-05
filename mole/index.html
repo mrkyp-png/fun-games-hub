@@ -109,7 +109,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v184</div>
+      <div id="build-tag" aria-hidden="true">v185</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -156,10 +156,19 @@
       </div>
 
       <!-- 라운드 시작 카운트다운 (매 라운드: "라운드 N" → 3·2·1·시작!) -->
+      <!-- 시작 버튼 누르면 라운드1 카운트다운 전에 한 번 — 챕터 이름 + 준비 문구 타이핑, 끝나면 커튼 오픈. -->
+      <div id="start-intro-overlay" class="overlay round-intro board-panel" hidden aria-hidden="true">
+        <div class="ri-curtain ri-curtain--l"></div>
+        <div class="ri-curtain ri-curtain--r"></div>
+        <div id="si-chapter" class="si-line1"></div>
+        <div class="si-line2"><span id="si-tip-text"></span><span class="si-caret" aria-hidden="true"></span></div>
+      </div>
+
       <div id="round-intro-overlay" class="overlay round-intro board-panel" hidden aria-hidden="true">
         <div class="ri-curtain ri-curtain--l"></div>
         <div class="ri-curtain ri-curtain--r"></div>
         <div id="round-intro-title" class="round-intro-title">라운드 1</div>
+        <img id="round-intro-mole" class="round-intro-mole" alt="" hidden>
         <div id="round-intro-count" class="round-intro-count">3</div>
       </div>
 
@@ -465,7 +474,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=184').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=185').catch(function () {});
       }
     });
   }

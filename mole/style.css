@@ -942,7 +942,10 @@ body { background: var(--lm-page); }
 .round-intro.is-opening .ri-curtain--l { transform: translateX(-101%); }
 .round-intro.is-opening .ri-curtain--r { transform: translateX(101%); }
 .round-intro.is-opening .round-intro-title,
-.round-intro.is-opening .round-intro-count { opacity: 0; transition: opacity 0.12s; }
+.round-intro.is-opening .round-intro-count,
+.round-intro.is-opening .round-intro-mole,
+.round-intro.is-opening .si-line1,
+.round-intro.is-opening .si-line2 { opacity: 0; transition: opacity 0.12s; }
 .round-intro-title {
   position: relative; z-index: 1;
   color: var(--lm-ink);
@@ -965,6 +968,34 @@ body { background: var(--lm-page); }
   60% { transform: scale(1.18); opacity: 1; }
   100% { transform: scale(1); opacity: 1; }
 }
+/* 2라운드부터 카운트다운 대신 — 두더지 이미지(10종 순환) 잠깐 보여주고 바로 커튼 오픈. */
+.round-intro-mole {
+  position: relative; z-index: 1;
+  width: 52%;
+  max-width: 220px;
+  border-radius: 14px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+}
+
+/* 시작 버튼 → 라운드1 진입 전 타이핑 인트로. 커튼(.ri-curtain)은 .round-intro 클래스 공유. */
+.si-line1 {
+  position: relative; z-index: 1;
+  color: var(--lm-ink);
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+.si-line2 {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; gap: 2px;
+  color: var(--lm-muted);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 0 10%;
+}
+.si-caret { display: inline-block; width: 2px; height: 1em; background: currentColor; animation: si-blink 0.8s step-end infinite; }
+@keyframes si-blink { 50% { opacity: 0; } }
 
 /* ---- 버튼 패드 = 전화 다이얼러로 위장 (사용자 요청) ----
    4x4 격자 = 16 구멍과 1:1 그대로. 왼쪽 3열 = 숫자패드, 오른쪽 열 = 연락처/키패드/최근기록/통화.

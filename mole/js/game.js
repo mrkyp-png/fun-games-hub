@@ -101,13 +101,47 @@
     });
   }
 
-  // 대화 화면 "시작" 버튼(들)이 부르는 진입점. 활성 얼굴 로드 → 라운드 1.
+  // 대화 화면 "시작" 버튼(들)이 부르는 진입점. 타이핑 인트로(챕터+준비 문구) → 활성 얼굴 로드 → 라운드 1.
   // Phase 1: 하트 소모 게이트는 비활성 (게임 완성 우선). Phase 2에서 재활성 — 아래 한 줄 주석 해제.
   function beginGame() {
     currentDiff = currentDifficulty();
     // if (!MG.Economy.spendHeart()) { showNoHeartModal(); return; }
     applyDiffClass(currentDiff);
-    loadActiveFace().then(() => startRound(1, { fresh: true }));
+    playStartIntro(() => {
+      loadActiveFace().then(() => startRound(1, { fresh: true }));
+    });
+  }
+
+  // 라운드1 진입 전 한 번 — "챕터N" + "손을 풀어봅시다..." 타이핑, 끝나면 잠깐 멈췄다 커튼 오픈.
+  function playStartIntro(onDone) {
+    const overlay = document.getElementById('start-intro-overlay');
+    const chapterEl = document.getElementById('si-chapter');
+    const tipEl = document.getElementById('si-tip-text');
+    chapterEl.textContent = chapterLabel(currentChapter());
+    tipEl.textContent = '';
+    overlay.classList.remove('is-opening');
+    overlay.hidden = false;
+    setHammerLayerVisible(false);
+    const fullTip = I18N.t('mole.startintro.tip');
+    let i = 0;
+    function typeChar() {
+      if (i > fullTip.length) {
+        setTimeout(() => {
+          overlay.classList.add('is-opening');
+          setHammerLayerVisible(true);
+          onDone();
+          setTimeout(() => {
+            overlay.hidden = true;
+            overlay.classList.remove('is-opening');
+          }, 300); // 커튼 transition(0.26s) 후 정리
+        }, 500); // 타이핑 끝난 뒤 잠깐 멈춤
+        return;
+      }
+      tipEl.textContent = fullTip.slice(0, i);
+      i++;
+      setTimeout(typeChar, 45);
+    }
+    typeChar();
   }
 
   // ---------- 시작화면 초록 버튼: 탭=시작 / 꾹=종료 대기 / 다시 탭=종료창 ----------
@@ -577,9 +611,8 @@
 
     const levelData = MG.LEVELS[roundNum - 1];
 
-    // 홈 화면(대화)에서 바로 시작하는 경우만 전환 플래시.
+    // 홈→게임 진입 전환은 이제 타이핑 인트로+커튼(playStartIntro)이 담당 — 플래시 제거(사용자 요청).
     const boardStartEl = document.getElementById('board-start');
-    if (opts && opts.fresh && !boardStartEl.hidden) screenFlash(document.querySelector('.lane-button--call'));
     boardStartEl.hidden = true;
     document.getElementById('gameover-overlay').hidden = true;
     document.getElementById('game-screen').classList.remove('is-start');
@@ -665,8 +698,32 @@
     const overlay = document.getElementById('round-intro-overlay');
     const title = document.getElementById('round-intro-title');
     const count = document.getElementById('round-intro-count');
+    const moleImg = document.getElementById('round-intro-mole');
     title.textContent = I18N.t('mole.round', { n: roundNum });
     overlay.hidden = false;
+
+    // 2라운드부터: 카운트다운 없이 두더지 이미지(10종 순환) 잠깐 보여주고 바로 커튼 오픈.
+    if (roundNum > 1) {
+      count.hidden = true;
+      const idx = ((roundNum - 2) % 10) + 1; // 라운드2→mole1, 라운드3→mole2, ... 10개 돌면 반복
+      moleImg.src = 'assets/round-moles/mole' + idx + '.jpg';
+      moleImg.hidden = false;
+      setTimeout(() => {
+        if (myGen !== sessionGen) return;
+        overlay.classList.add('is-opening');
+        setHammerLayerVisible(true);
+        onDone();
+        setTimeout(() => {
+          if (myGen !== sessionGen) return;
+          overlay.hidden = true;
+          overlay.classList.remove('is-opening');
+          moleImg.hidden = true;
+        }, 300);
+      }, 700);
+      return;
+    }
+    moleImg.hidden = true;
+    count.hidden = false;
     const STEPS = ['3', '2', '1', I18N.t('mole.count.go')];
     let i = 0;
     function tick() {
