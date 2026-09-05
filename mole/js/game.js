@@ -1132,6 +1132,10 @@
     // 승리 시 다음 챕터가 열렸으면: 왼쪽 스와이프로 "챕터 N" 화면으로 넘어갈 수 있다는 힌트.
     const nextCh = win ? chapter + 1 : 0;
     ov.dataset.nextChapter = (nextCh && MG.Progress.isUnlocked(nextCh, light)) ? String(nextCh) : '';
+    // 챕터 해금 = 그 즉시 다음 챕터로 전환. (예전엔 승리화면에서 왼쪽 스와이프를 해야만
+    // mole.chapter 가 넘어가서, 스와이프 안 하면 다음에 시작 눌러도 이전 챕터 그대로 돌던 문제.)
+    // 스와이프는 축하 연출(next-chapter-panel)만 보여줄 뿐 — 값 자체는 여기서 바로 확정.
+    if (ov.dataset.nextChapter) localStorage.setItem('mole.chapter', ov.dataset.nextChapter);
 
     // 커튼 오버레이는 결과 카드로 교체 (둘 다 z-index 10, ri 가 DOM 상 뒤라 안 치우면 위를 덮음).
     document.getElementById('round-intro-overlay').hidden = true;
