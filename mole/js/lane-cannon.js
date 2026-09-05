@@ -159,6 +159,8 @@
     let pose = null;
     let phase = 'home', t = 0;
     let residual = 0, resFrom = 0, resTo = 0, resT = 0, curAimMs = AIM_MS;
+    let aimingHole3 = false; // 3번 조준(340ms) 도중 3번을 또 누르면 매번 처음부터 다시 시작돼서
+                              // 영원히 발사가 안 되는 문제 방지용 (사용자 보고: "포탄이 안 나온다")
     let recoilAmt = 0;
     let timers = [];
     function clearTimers() { timers.forEach(clearTimeout); timers = []; }
@@ -184,6 +186,18 @@
     function strike(targetXFrac, targetYFrac, onImpact) {
       const tx = (typeof targetXFrac === 'number') ? targetXFrac : 0.5;
       const ty = (typeof targetYFrac === 'number') ? targetYFrac : 0.3;
+
+      // 3번 구멍이면 tweak 무시하고 정확히 필요한 각도로 고정 회전(회전축도 바퀴로 교체 —
+      // 아래에서 계속 설명).
+      const isHole3 = Math.abs(tx - HOLE3_X) < 0.01 && Math.abs(ty - HOLE3_Y) < 0.01;
+      // 3번 발사 시퀀스(조준→발사→반동→원위치) 진행 중에 3번을 또 누르면 무시 — 끝까지
+      // 쏘고 원위치할 때까지 둔다. clearTimers() 보다 반드시 먼저 체크해야 한다 — 아래로
+      // 내려가면 clearTimers() 가 이미 실행된 뒤라 매번 처음부터 다시 시작되며 영원히
+      // 발사가 안 되는 버그가 났었다(사용자 보고: "포탄이 안 나온다"). 다른 구멍을 누르면
+      // (isHole3 다름) 여전히 즉시 재조준(원래 동작).
+      if (isHole3 && aimingHole3) return;
+      aimingHole3 = isHole3;
+
       clearTimers();
 
       // 포구 → 목표 방향
@@ -192,11 +206,6 @@
       POSES.forEach((p) => { const d = Math.abs(angDiff(want, p.aim)); if (d < bestD) { bestD = d; best = p; } });
       showPose(best);
 
-      // 3번 구멍이면 tweak 무시하고 정확히 필요한 각도로 고정 회전.
-      // 회전축도 포구가 아니라 바퀴(캐리지)로 바꿔서 — 바퀴는 그 자리에 박힌 채
-      // 포신만 부채꼴로 도는 것처럼 보이게(안 넘어짐). 다른 구멍은 회전이 항상 0이라
-      // 축을 바꿔도 시각적으로 차이가 없음(rotate(0)은 축과 무관).
-      const isHole3 = Math.abs(tx - HOLE3_X) < 0.01 && Math.abs(ty - HOLE3_Y) < 0.01;
       resFrom = residual;
       resTo = isHole3 ? angDiff(want, best.aim) : clamp(angDiff(want, best.aim), -best.tweak, best.tweak);
       resT = 0;
@@ -242,7 +251,7 @@
         t += dt;
         const k = easeOut(clamp01(t / SETTLE_SEC));
         residual = resTo * (1 - k);
-        if (t >= SETTLE_SEC) { phase = 'home'; t = 0; residual = 0; showPose(restPose); }
+        if (t >= SETTLE_SEC) { phase = 'home'; t = 0; residual = 0; showPose(restPose); aimingHole3 = false; }
       }
       paint();
     }
@@ -267,6 +276,7 @@
       clearTimers();
       phase = 'home'; t = 0; resT = 0;
       residual = resFrom = resTo = 0;
+      aimingHole3 = false;
       resetFx();
       ball.style.opacity = '0';
       showPose(restPose);
