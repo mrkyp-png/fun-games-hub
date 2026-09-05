@@ -1203,7 +1203,8 @@
     hippo.style.maxHeight = Math.round(ov.clientHeight * 0.4) + 'px';
 
     setTimeout(() => {
-      const n = win ? 46 : 40;
+      // 성공 = 색종이만(반짝이별/광선 제거, 사용자 요청). 색종이 2배, 실패 빗줄기 5배.
+      const n = win ? 92 : 200;
       for (let k = 0; k < n; k++) {
         const p = document.createElement('i');
         p.style.left = (Math.random() * 100) + '%';
@@ -1211,16 +1212,6 @@
         p.style.animationDuration = (win ? 1.5 + Math.random() * 1.6 : 2.4 + Math.random() * 1.8) + 's';
         if (win) p.style.setProperty('--h', String(Math.floor(Math.random() * 360))); // 알록달록
         conf.appendChild(p);
-      }
-      if (win) {
-        for (let k = 0; k < 14; k++) {
-          const s = document.createElement('span');
-          s.className = 'go-spark';
-          s.style.left = (8 + Math.random() * 84) + '%';
-          s.style.top = (10 + Math.random() * 70) + '%';
-          s.style.animationDelay = (Math.random() * 1.8) + 's';
-          conf.appendChild(s);
-        }
       }
     }, 400); // 글자·하마 fly-in(0.4s) 끝난 뒤
   }

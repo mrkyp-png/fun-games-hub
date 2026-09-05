@@ -868,23 +868,9 @@ body { background: var(--lm-page); }
       #ff6b6b, #ffb03a, #ffe14d, #63d98a, #4ccfff, #a879ff, #ff6fb0, #ff6b6b);
   animation: go-rays-spin 18s linear infinite;
 }
-#gameover-overlay.is-win .go-rays {
-  opacity: 0.42;
-  animation: go-rays-spin 18s linear infinite, go-rays-pulse 2.6s ease-in-out infinite;
-}
+/* 승리 화면은 색종이만(사용자 요청) — 광선 효과는 끔. */
+#gameover-overlay.is-win .go-rays { display: none; }
 @keyframes go-rays-spin { to { transform: rotate(360deg); } }
-@keyframes go-rays-pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.5; } }
-
-/* 승리: 반짝이는 금빛 별 (제자리 트윙클) */
-.go-spark {
-  position: absolute; z-index: 1; width: 8px; height: 8px; background: #f5a90a; pointer-events: none;
-  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
-  animation: go-twinkle 1.8s ease-in-out infinite;
-}
-@keyframes go-twinkle {
-  0%, 100% { opacity: 0.15; transform: scale(0.6) rotate(0); }
-  50% { opacity: 1; transform: scale(1) rotate(45deg); }
-}
 
 /* 축하 색종이 / 실패 빗줄기 — 계속 반복 */
 .go-confetti { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
