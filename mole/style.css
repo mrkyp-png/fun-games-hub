@@ -107,29 +107,29 @@ body { background: var(--lm-page); }
   background: var(--lm-chat);   /* 대화 홈 = 연한 웜그레이 (잔디는 플레이 중에만) */
   overflow: hidden;
 }
-/* 챕터 선택 ◀ 챕터 N ▶ — HUD 주소창 자리 (시작 상태 + 열린 챕터 2개 이상). */
+/* 챕터 선택 ◀ 챕터 N ▶ — 하트·코인과 같은 줄(board-stats). 박스 없이 글자+화살표만,
+   흰 글자(board-stats 색 그대로 상속). [hidden] 이 아래 display:flex 에 덮이지 않게 별도 명시. */
 #chapter-nav {
-  flex: 1;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
+  gap: 2px;
   min-width: 0;
 }
+#chapter-nav[hidden] { display: none; }
 .ch-arrow {
-  width: 26px; height: 30px;
+  width: 16px; height: 18px;
   flex: 0 0 auto;
   border: none;
   background: none;
-  color: var(--lm-ink);
-  font-size: 1.5rem;
+  color: inherit;
+  font-size: 1rem;
   font-weight: 900;
   line-height: 1;
   cursor: pointer;
 }
-.ch-arrow:disabled { opacity: 0.25; cursor: default; }
-.ch-label { font-size: 0.8rem; font-weight: 800; color: var(--lm-ink); min-width: 60px; flex: 1 1 auto;
-  text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ch-arrow:disabled { opacity: 0.35; cursor: default; }
+.ch-label { font-size: 0.7rem; font-weight: 800; color: inherit; max-width: 120px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .chat-thread {
   flex: 1;
@@ -425,10 +425,6 @@ body { background: var(--lm-page); }
 .hud-addr .ticker-seg { font-size: 0.82rem; font-weight: 600; }
 #game-screen.is-start #hud-addr { display: flex; }
 #game-screen.is-start #hud-ticker { display: none; }
-/* 챕터 선택 = 시작 상태에서만 (플레이 중엔 티커) */
-#chapter-nav { display: none; }
-#game-screen.is-start #chapter-nav:not([hidden]) { display: flex; }
-#game-screen.is-start #hud-addr[hidden] { display: none; }
 #game-screen.is-start #hud-score,
 #game-screen.is-start #hud-hearts,
 #game-screen.is-start #hud-combo,
@@ -437,7 +433,9 @@ body { background: var(--lm-page); }
 .board-stats { display: none; }
 #game-screen.is-start .board-stats {
   display: inline-flex; gap: 12px;
-  position: absolute; top: 8px; right: 10px; z-index: 9;
+  /* top: 56px — "목표/득점" 점수 알림 배너(#start-best, z10, 상시 표시)와 안 겹치게
+     그 아래로. 챕터 선택이 붙어 박스가 넓어지면서 배너와 겹쳐 가려지던 문제 수정. */
+  position: absolute; top: 56px; right: 10px; z-index: 9;
   background: transparent; border-radius: 12px; padding: 4px 10px;
   color: #fff; font-weight: 800;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65), 0 0 4px rgba(0, 0, 0, 0.5);
@@ -1028,19 +1026,24 @@ body { background: var(--lm-page); }
 }
 /* 다이얼패드 래퍼 — 안내문구/첫방문 말풍선을 절대배치로 얹기 위함. */
 .dialpad { position: relative; flex: 0 0 auto; }
-/* 종료 제스처 안내 — 박스 없이 글자만, 다이얼패드 상단 가운데. */
+/* 종료 제스처 안내 — 박스 없이 글자만. 다이얼패드 상단 가운데는 시작버튼과 겹쳐 보여
+   우측 버튼박스와 폰 사이 여백으로 이동, 세로쓰기. 그 여백이 실측 ~8px로 매우 좁아서
+   (.dialpad 는 화면 꽉 채운 폭, #lane-button-bar 만 --sq 로 가운데 정렬된 정사각형이라
+   생기는 틈) 글자 크기를 그에 맞게 작게(사용자 확인: "작게 나와도 되니 세로로"). */
 .start-hint {
   display: none;
   position: absolute;
-  left: 50%; top: 1px;
-  transform: translateX(-50%);
+  left: calc(50% + var(--sq) / 2); top: 50%;
+  transform: translateY(-50%);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
   z-index: 3;
-  max-width: 96%;
+  max-height: 92%;
   margin: 0;
   background: transparent;
   color: var(--lm-muted);
-  font-size: 0.6rem;
-  text-align: center;
+  font-size: 0.4rem;
+  letter-spacing: 0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

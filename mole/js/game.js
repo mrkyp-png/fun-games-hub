@@ -440,14 +440,12 @@
   // HUD 주소창 자리를 차지 → 그때 주소창 숨김.
   function refreshChapterNav() {
     const nav = document.getElementById('chapter-nav');
-    const addr = document.getElementById('hud-addr');
     if (!nav) return;
     const maxCh = MG.Progress.maxChapterFor(currentLight());
-    if (maxCh <= 1) { nav.hidden = true; if (addr) addr.hidden = false; return; }
+    if (maxCh <= 1) { nav.hidden = true; return; }
     let ch = currentChapter();
     if (ch > maxCh) { ch = maxCh; localStorage.setItem('mole.chapter', String(ch)); }
     nav.hidden = false;
-    if (addr) addr.hidden = true;
     nav.querySelector('[data-ch-label]').textContent = chapterLabel(ch);
     nav.querySelector('[data-ch-prev]').disabled = ch <= 1;
     nav.querySelector('[data-ch-next]').disabled = ch >= maxCh;
