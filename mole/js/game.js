@@ -107,9 +107,22 @@
     currentDiff = currentDifficulty();
     // if (!MG.Economy.spendHeart()) { showNoHeartModal(); return; }
     applyDiffClass(currentDiff);
+    preloadRoundMoles(); // 라운드1 플레이하는 동안 미리 받아둬야 라운드2 전환 때 안 늦음
     playStartIntro(() => {
       loadActiveFace().then(() => startRound(1, { fresh: true }));
     });
+  }
+
+  // 라운드 전환 두더지 이미지 10장 — 늦게 로드되면 "라운드N" 글자만 먼저 뜨고 이미지가
+  // 뒤늦게 팝인해 화면이 두 번 나오는 것처럼 보임(사용자 보고). 미리 캐시에 올려둔다.
+  let roundMolesPreloaded = false;
+  function preloadRoundMoles() {
+    if (roundMolesPreloaded) return;
+    roundMolesPreloaded = true;
+    for (let i = 1; i <= 10; i++) {
+      const img = new Image();
+      img.src = 'assets/round-moles/mole' + i + '.jpg';
+    }
   }
 
   // 라운드1 진입 전 한 번 — "챕터N" + "손을 풀어봅시다..." 타이핑, 끝나면 잠깐 멈췄다 커튼 오픈.
