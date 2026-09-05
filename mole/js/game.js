@@ -113,15 +113,15 @@
     });
   }
 
-  // 라운드 전환 두더지 이미지 10장 — 늦게 로드되면 "라운드N" 글자만 먼저 뜨고 이미지가
+  // 라운드 전환 두더지 이미지 8장 — 늦게 로드되면 "라운드N" 글자만 먼저 뜨고 이미지가
   // 뒤늦게 팝인해 화면이 두 번 나오는 것처럼 보임(사용자 보고). 미리 캐시에 올려둔다.
   let roundMolesPreloaded = false;
   function preloadRoundMoles() {
     if (roundMolesPreloaded) return;
     roundMolesPreloaded = true;
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 8; i++) {
       const img = new Image();
-      img.src = 'assets/round-moles/mole' + i + '.jpg';
+      img.src = 'assets/round-moles/mole' + i + '.png';
     }
   }
 
@@ -715,11 +715,14 @@
     title.textContent = I18N.t('mole.round', { n: roundNum });
     overlay.hidden = false;
 
-    // 2라운드부터: 카운트다운 없이 두더지 이미지(10종 순환) 잠깐 보여주고 바로 커튼 오픈.
+    // 2라운드부터: 카운트다운 없이 두더지 이미지(8종 순환) 잠깐 보여주고 바로 커튼 오픈.
+    // 타이틀은 오른쪽에서, 이미지는 왼쪽에서 날아와 중앙에서 만남(has-mole 진입 애니메이션).
+    // 커튼 열릴 땐 반대로 — 타이틀은 왼쪽 커튼과, 이미지는 오른쪽 커튼과 같은 타이밍/방향으로 퇴장.
     if (roundNum > 1) {
       count.hidden = true;
-      const idx = ((roundNum - 2) % 10) + 1; // 라운드2→mole1, 라운드3→mole2, ... 10개 돌면 반복
-      moleImg.src = 'assets/round-moles/mole' + idx + '.jpg';
+      overlay.classList.add('has-mole');
+      const idx = ((roundNum - 2) % 8) + 1; // 라운드2→mole1, 라운드3→mole2, ... 8개 돌면 반복
+      moleImg.src = 'assets/round-moles/mole' + idx + '.png';
       moleImg.hidden = false;
       setTimeout(() => {
         if (myGen !== sessionGen) return;
@@ -729,12 +732,13 @@
         setTimeout(() => {
           if (myGen !== sessionGen) return;
           overlay.hidden = true;
-          overlay.classList.remove('is-opening');
+          overlay.classList.remove('is-opening', 'has-mole');
           moleImg.hidden = true;
         }, 300);
       }, 700);
       return;
     }
+    overlay.classList.remove('has-mole');
     moleImg.hidden = true;
     count.hidden = false;
     const STEPS = ['3', '2', '1', I18N.t('mole.count.go')];

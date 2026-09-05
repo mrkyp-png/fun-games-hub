@@ -968,13 +968,26 @@ body { background: var(--lm-page); }
   60% { transform: scale(1.18); opacity: 1; }
   100% { transform: scale(1); opacity: 1; }
 }
-/* 2라운드부터 카운트다운 대신 — 두더지 이미지(10종 순환) 잠깐 보여주고 바로 커튼 오픈. */
+/* 2라운드부터 카운트다운 대신 — 두더지 이미지(8종 순환, 배경 제거된 PNG) 잠깐 보여주고 바로 커튼 오픈. */
 .round-intro-mole {
   position: relative; z-index: 1;
-  width: 52%;
-  max-width: 220px;
-  border-radius: 14px;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+  width: 62%;
+  max-width: 240px;
+}
+/* 입장: 타이틀은 오른쪽에서, 이미지는 왼쪽에서 날아와 중앙에서 만남. */
+@keyframes ri-title-fly-in { from { transform: translateX(70vw); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes ri-mole-fly-in { from { transform: translateX(-70vw); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.round-intro.has-mole .round-intro-title { animation: ri-title-fly-in 0.4s ease-out forwards; }
+.round-intro.has-mole .round-intro-mole { animation: ri-mole-fly-in 0.4s ease-out forwards; }
+/* 퇴장: 커튼 열릴 때 타이틀은 왼쪽 커튼과, 이미지는 오른쪽 커튼과 같은 시간/이징으로 같이 사라짐
+   (.ri-curtain 의 transition: 0.26s cubic-bezier(.5,0,.75,0) 과 동일하게 맞춤 — 타이밍 동기화). */
+.round-intro.has-mole.is-opening .round-intro-title {
+  transform: translateX(-90vw);
+  transition: transform 0.26s cubic-bezier(.5, 0, .75, 0), opacity 0.12s;
+}
+.round-intro.has-mole.is-opening .round-intro-mole {
+  transform: translateX(90vw);
+  transition: transform 0.26s cubic-bezier(.5, 0, .75, 0), opacity 0.12s;
 }
 
 /* 시작 버튼 → 라운드1 진입 전 타이핑 인트로. 커튼(.ri-curtain)은 .round-intro 클래스 공유. */
