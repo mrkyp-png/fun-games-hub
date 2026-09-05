@@ -477,6 +477,16 @@ body { background: var(--lm-page); }
   animation: idle-crown-sweep 2.8s ease-in-out infinite;
   pointer-events: none;
 }
+/* 홈 화면(is-start)에서만 4개 네모가 안으로 모였다 원 끝까지 다시 벌어지길 반복.
+   플레이 중엔 중앙에 시간 숫자가 들어가므로 애니메이션 없이 고정. */
+#game-screen.is-start #btn-back-to-hub svg {
+  transform-origin: 50% 50%;
+  animation: hub-icon-breathe 1.8s ease-in-out infinite;
+}
+@keyframes hub-icon-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.5); }
+}
 /* 시간 = 4개 네모(홈버튼 아이콘) 사이 중앙에 숫자로 표기 ("초" 단위 생략) */
 .hub-timer {
   position: absolute;
