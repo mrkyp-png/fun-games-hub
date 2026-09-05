@@ -276,8 +276,17 @@
     sms.querySelector('.chat-sms-txt').textContent = smsTxt;
     const bs = document.getElementById('board-stats');
     if (bs) {
-      bs.querySelector('[data-bs-hearts]').textContent = String(MG.Economy.getHearts());
-      bs.querySelector('[data-bs-coins]').textContent = MG.Economy.getCoins().toLocaleString();
+      // 숫자 자리수가 늘어나도 박스 크기/위치는 고정 — 폰트만 줄인다.
+      const fitStatNum = (el) => {
+        const digits = el.textContent.replace(/[^0-9]/g, '').length;
+        el.style.fontSize = digits <= 4 ? '' : digits <= 6 ? '0.82em' : digits <= 8 ? '0.68em' : '0.56em';
+      };
+      const heartsEl = bs.querySelector('[data-bs-hearts]');
+      const coinsEl = bs.querySelector('[data-bs-coins]');
+      heartsEl.textContent = String(MG.Economy.getHearts());
+      coinsEl.textContent = MG.Economy.getCoins().toLocaleString();
+      fitStatNum(heartsEl);
+      fitStatNum(coinsEl);
     }
     sms.classList.toggle('is-empty', false);
     sms.classList.remove('sms-anim');   // 시작화면 열 때마다 문자 툭↓ + 폭죽 리트리거
