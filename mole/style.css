@@ -948,7 +948,7 @@ body { background: var(--lm-page); }
   content: '';
   position: absolute;
   inset: 0;
-  background: #ecedef; /* 커튼 본래 색으로 정리 */
+  background: #ff6f91; /* 패턴 속 색(핑크)으로 정리 — 참고 영상처럼 흰색/회색으로 돌아가지 않음 */
   opacity: 0;
 }
 .ri-curtain--pattern-play::after { animation: ri-curtain-solidify 0.55s ease-in forwards; }
