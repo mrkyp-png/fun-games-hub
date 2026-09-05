@@ -201,8 +201,19 @@
     v.querySelector('[data-nh="close"]').addEventListener('click', () => v.remove());
   }
 
+  // 화면 전환 플래시(더보기↔홈, 게임종료→홈) — 보라/진한노랑 랜덤.
+  function screenFlash() {
+    var el = document.getElementById('screen-flash-fx');
+    if (!el) return;
+    el.classList.remove('is-on', 'fx-violet', 'fx-gold');
+    void el.offsetWidth;
+    el.classList.add(Math.random() < 0.5 ? 'fx-violet' : 'fx-gold');
+    el.classList.add('is-on');
+  }
+
   // 더보기 메뉴 열기/닫기.
   function openMore(sub) {
+    if (document.getElementById('game-screen').classList.contains('is-start')) screenFlash(); // 홈 → 더보기
     // 진행 중이던 게임이 있으면(직접 일시정지했든 아니든) 상단 = "‹ 이어하기" + 칩 잠금.
     var resumable = !!(state && !state.ended);
     // 플레이 중(일시정지 아님)에 열면 게임을 멈춘다 (닫을 때 자동 재개).
@@ -241,6 +252,7 @@
 
   // ---------- 시작 화면 ----------
   function showStartScreen(opts) {
+    if (!(opts && opts.skipFlash)) screenFlash(); // 더보기/게임종료 → 홈 (최초 진입만 예외)
     sessionGen++; // 진행 중이던 카운트다운/자동진행 타이머 무효화
     if (rafId) cancelAnimationFrame(rafId);
     if (sharedPopElements) sharedPopElements.clear();
@@ -1024,8 +1036,8 @@
       thread.scrollTop = thread.scrollHeight;
     });
 
-    // 첫 화면 = 두더지 오빠 대화. (예외가 나도 위 배선은 이미 끝났음.)
-    try { showStartScreen(); } catch (e) { console.error('showStartScreen failed', e); }
+    // 첫 화면 = 두더지 오빠 대화. (예외가 나도 위 배선은 이미 끝났음. 최초 진입은 플래시 없음.)
+    try { showStartScreen({ skipFlash: true }); } catch (e) { console.error('showStartScreen failed', e); }
 
     // 디버그 훅 — 지렁이 게임과 동일 컨벤션, 영구 보존.
     window.__debugStartGame = (diff, chapter) => {

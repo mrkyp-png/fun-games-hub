@@ -1103,6 +1103,32 @@ body { background: var(--lm-page); }
   color: var(--lm-ink);
 }
 
+/* 화면 전환 플래시 — 더보기↔홈, 게임종료→홈 전환마다 잠깐 번쩍(대각선 광선 스윕).
+   참고 영상은 순백색 플래시인데, 매번(일상적 메뉴 이동마다) 나오면 눈 피로가 커서
+   흰색 대신 색(보라/진한 노랑) 플래시로 톤다운 — 사용자 확정. 두 색 중 랜덤. */
+#screen-flash-fx {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  pointer-events: none;
+  opacity: 0;
+}
+#screen-flash-fx.is-on { animation: screen-flash-anim 0.45s ease-out; }
+#screen-flash-fx::before {
+  content: '';
+  position: absolute;
+  inset: -60%;
+  background: repeating-linear-gradient(115deg,
+    transparent 0 7%, rgba(255, 255, 255, 0.22) 8% 9%, transparent 10% 18%);
+}
+#screen-flash-fx.fx-violet { background: radial-gradient(circle at 50% 50%, rgba(130, 70, 230, 0.6), rgba(90, 40, 170, 0.35) 60%, transparent 100%); }
+#screen-flash-fx.fx-gold   { background: radial-gradient(circle at 50% 50%, rgba(153, 106, 4, 0.6), rgba(110, 74, 3, 0.35) 60%, transparent 100%); }
+@keyframes screen-flash-anim {
+  0%   { opacity: 0; }
+  22%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 /* ---- 망치 ---- transform-origin 과 translate/rotate 는 lane-hammer.js 가 넣는다 ---- */
 /* 뽕망치 레이어 = 보드 밖(#game-screen 직속). 보드 박스와 똑같은 위치·크기로 얹되
    .mole-board 의 overflow:hidden 에 안 잘려서 우측 끝 스윙이 베젤까지 다 보인다. */

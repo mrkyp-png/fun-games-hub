@@ -98,7 +98,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v150</div>
+      <div id="build-tag" aria-hidden="true">v151</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -376,6 +376,7 @@
       </div>
       <div id="lane-button-bar"></div>
     </div>
+    <div id="screen-flash-fx" aria-hidden="true"></div>
   </section>
 
 </div>
@@ -449,7 +450,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=150').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=151').catch(function () {});
       }
     });
   }
