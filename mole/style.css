@@ -951,7 +951,13 @@ body { background: var(--lm-page); }
   background: #ff6f91; /* 패턴 속 색(핑크)으로 정리 — 참고 영상처럼 흰색/회색으로 돌아가지 않음 */
   opacity: 0;
 }
+.ri-curtain--pattern-play { animation: ri-curtain-pattern-in 0.4s ease-out; }
 .ri-curtain--pattern-play::after { animation: ri-curtain-solidify 0.55s ease-in forwards; }
+@keyframes ri-curtain-pattern-in {
+  0% { background-size: 2px 2px; }
+  70% { background-size: 34px 34px; }
+  100% { background-size: 28px 28px; }
+}
 /* 라운드1 3·2·1 카운트다운만 배경 없이 — 보드가 그대로 비쳐 보이게. (라운드2+ 두더지 전환,
    시작 인트로 타이핑 화면은 커튼 패턴 유지.) */
 #round-intro-overlay:not(.has-mole) .ri-curtain { background: none; box-shadow: none; }
