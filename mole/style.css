@@ -1129,6 +1129,21 @@ body { background: var(--lm-page); }
   100% { opacity: 0; }
 }
 
+/* 대안 B: 책장 넘기듯 화면전환 (사용자 비교용 — 위 플래시와 둘 다 코드는 남겨두고
+   game.js 에서 어느 쪽을 호출하는지로 스위치). more-menu 가 position:fixed 라 조상의
+   perspective 가 안 먹어서, transform 자체에 perspective() 를 넣어 위치 무관하게 동작시킴. */
+.flip-out, .flip-in { backface-visibility: hidden; }
+.flip-out { animation: flip-out-anim 0.5s ease-in forwards; transform-origin: 100% 50%; }
+.flip-in  { animation: flip-in-anim 0.5s ease-out forwards; transform-origin: 0% 50%; }
+@keyframes flip-out-anim {
+  0%   { transform: perspective(1400px) rotateY(0deg); opacity: 1; }
+  100% { transform: perspective(1400px) rotateY(-100deg); opacity: 0; }
+}
+@keyframes flip-in-anim {
+  0%   { transform: perspective(1400px) rotateY(100deg); opacity: 0; }
+  100% { transform: perspective(1400px) rotateY(0deg); opacity: 1; }
+}
+
 /* ---- 망치 ---- transform-origin 과 translate/rotate 는 lane-hammer.js 가 넣는다 ---- */
 /* 뽕망치 레이어 = 보드 밖(#game-screen 직속). 보드 박스와 똑같은 위치·크기로 얹되
    .mole-board 의 overflow:hidden 에 안 잘려서 우측 끝 스윙이 베젤까지 다 보인다. */

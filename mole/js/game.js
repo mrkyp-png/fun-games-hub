@@ -218,11 +218,27 @@
     el.classList.add('is-on');
   }
 
+  // 대안 B: 책장 넘기듯 전환 — outEl 은 뒤로 넘어가며 사라지고 inEl 은 앞에서 넘어와 나타남.
+  // (사용자 비교 요청으로 screenFlash 와 나란히 유지 — 현재는 이쪽을 호출.)
+  const FLIP_MS = 500;
+  function flipSwap(outEl, inEl) {
+    if (!outEl || !inEl || outEl === inEl) return;
+    inEl.hidden = false;
+    outEl.classList.remove('flip-out'); void outEl.offsetWidth; outEl.classList.add('flip-out');
+    inEl.classList.remove('flip-in'); void inEl.offsetWidth; inEl.classList.add('flip-in');
+    setTimeout(function () {
+      outEl.hidden = true;
+      outEl.classList.remove('flip-out');
+      inEl.classList.remove('flip-in');
+    }, FLIP_MS);
+  }
+
   // 더보기 메뉴 열기/닫기.
   function openMore(sub, originEl) {
     if (document.getElementById('game-screen').classList.contains('is-start')) {
-      screenFlash(originEl || document.getElementById('btn-back-to-hub')); // 홈 → 더보기
-      setTimeout(function () { openMoreNow(sub); }, FLASH_DELAY_MS);
+      var boardStart = document.getElementById('board-start');
+      openMoreNow(sub); // more-menu 내용 준비(더보기는 flipSwap 이 hidden=false 로 보이게 함)
+      flipSwap(boardStart, document.getElementById('more-menu'));
       return;
     }
     openMoreNow(sub);
@@ -268,8 +284,16 @@
   // ---------- 시작 화면 ----------
   function showStartScreen(opts) {
     if (!(opts && opts.skipFlash)) {
-      screenFlash(opts && opts.originEl); // 더보기/게임종료 → 홈 (최초 진입만 예외)
-      setTimeout(function () { showStartScreenNow(opts); }, FLASH_DELAY_MS);
+      // 지금 보이는 패널(더보기/결과화면/다음챕터)에서 홈으로 책장 넘기듯 전환.
+      // showStartScreenNow 가 이 패널들을 hidden=true 로 만들기 전에 먼저 찾아둬야 함.
+      var mm = document.getElementById('more-menu');
+      var go = document.getElementById('gameover-overlay');
+      var ncp = document.getElementById('next-chapter-panel');
+      var outEl = !mm.hidden ? mm : !go.hidden ? go : !ncp.hidden ? ncp : null;
+      showStartScreenNow(opts);
+      // showStartScreenNow 가 이미 outEl 을 hidden=true 처리했을 수 있음 — flip-out 애니메이션이
+      // 보이려면 다시 잠깐 보여야 한다(끝나면 flipSwap 이 다시 hidden=true 로 되돌림).
+      if (outEl) { outEl.hidden = false; flipSwap(outEl, document.getElementById('board-start')); }
       return;
     }
     showStartScreenNow(opts);
