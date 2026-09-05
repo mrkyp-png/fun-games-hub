@@ -922,8 +922,8 @@ body { background: var(--lm-page); }
   overflow: hidden;
   transition: transform 0.26s cubic-bezier(.5, 0, .75, 0);
 }
-.ri-curtain--l { left: 0; box-shadow: inset -8px 0 14px rgba(0, 0, 0, 0.14); }
-.ri-curtain--r { right: 0; box-shadow: inset 8px 0 14px rgba(0, 0, 0, 0.14); }
+.ri-curtain--l { left: 0; }
+.ri-curtain--r { right: 0; }
 /* 참고 영상(화면전환.mp4) — 원 자체는 자리 이동 없음(고정 tile). 원 하나하나가
    노랑(바깥)+분홍(안쪽) 동심원 — 노랑이 제자리에서 천천히 커지고, 그 중심에서 분홍이
    더 빠르게 커져 노랑을 뒤덮으며 결국 화면 전체가 분홍이 된다. CSS @property 로
@@ -939,7 +939,7 @@ body { background: var(--lm-page); }
 }
 /* 라운드1 3·2·1 카운트다운만 배경 없이 — 보드가 그대로 비쳐 보이게. (라운드2+ 두더지 전환,
    시작 인트로 타이핑 화면은 커튼 패턴 유지.) */
-#round-intro-overlay:not(.has-mole) .ri-curtain { background: none; box-shadow: none; }
+#round-intro-overlay:not(.has-mole) .ri-curtain { background: none; }
 #round-intro-overlay:not(.has-mole) .ri-curtain::before { display: none; }
 .round-intro.is-opening .ri-curtain--l { transform: translateX(-101%); }
 .round-intro.is-opening .ri-curtain--r { transform: translateX(101%); }
@@ -1817,6 +1817,15 @@ body { background: var(--lm-page); }
 .inv-thumb { height: 92px; display: flex; align-items: center; justify-content: center; }
 .inv-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .inv-name { margin: 6px 0 8px; font-size: 0.86rem; font-weight: 800; color: var(--lm-ink); }
+
+/* 게임화면 둥근 글자체(Dongle, 사용자 선택) — 홈화면·다이얼패드 숫자·더보기메뉴는 그대로,
+   라운드전환/카운트다운/점수·하트·콤보/결과화면/타격 이펙트 텍스트만 적용. */
+#round-intro-title, #round-intro-count, .si-line1, .si-line2,
+#hud-score, .board-hearts, .board-combo, .hub-timer,
+.go-word, .gameover-score,
+.hit-fx-burst span {
+  font-family: 'Dongle', 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+}
 .inv-equip {
   width: 100%; padding: 7px 0; border: none; border-radius: 8px;
   background: #2fb457; color: #fff; font-weight: 800; font-size: 0.82rem; cursor: pointer;
