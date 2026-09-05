@@ -418,8 +418,10 @@ body { background: var(--lm-page); }
   position: absolute; top: 8px; right: 10px; z-index: 9;
   background: transparent; border-radius: 12px; padding: 4px 10px;
   color: #fff; font-weight: 800;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65), 0 0 4px rgba(0, 0, 0, 0.5);
 }
 .board-stats .mm-stat { color: #fff; }
+.board-stats .mm-stat svg { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55)); }
 
 /* 게임 화면 = 폴더폰 모양: 컴팩트 HUD + [게임 정사각] + 힌지 + [다이얼러 정사각].
    HUD + 2*정사각 + 힌지 = 100dvh. 정사각 한 변(--sq)은 세로에 맞추되 가로를 넘지 않는다. */
