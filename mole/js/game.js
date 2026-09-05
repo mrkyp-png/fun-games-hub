@@ -227,7 +227,6 @@
     // 잠깐 비쳐 보이는 문제 — 전환하는 동안만 숨긴다.
     var board = document.getElementById('mole-board');
     if (board) board.style.visibility = 'hidden';
-    setTimeout(function () { try { MG.HitFx.pageFlip(); } catch (e) { /* noop */ } }, 0); // 책장 넘기는 소리(분리 — 애니메이션 타이밍에 영향 안 주게)
     inEl.hidden = false;
     outEl.classList.remove('flip-out'); void outEl.offsetWidth; outEl.classList.add('flip-out');
     inEl.classList.remove('flip-in'); void inEl.offsetWidth; inEl.classList.add('flip-in');
@@ -244,7 +243,6 @@
   // flipSwap 처럼 숨기지 않고, 살짝 같이 넘어오는 느낌만 준다.
   function flipResumeGame(outEl) {
     if (!outEl) return;
-    if (MG.HitFx && MG.HitFx.pageFlip) MG.HitFx.pageFlip();
     var board = document.getElementById('mole-board');
     outEl.classList.remove('flip-out'); void outEl.offsetWidth; outEl.classList.add('flip-out');
     if (board) { board.classList.remove('flip-in'); void board.offsetWidth; board.classList.add('flip-in'); }
@@ -258,9 +256,8 @@
   // 더보기 메뉴 열기/닫기.
   function openMore(sub, originEl) {
     if (document.getElementById('game-screen').classList.contains('is-start')) {
-      var boardStart = document.getElementById('board-start');
-      openMoreNow(sub); // more-menu 내용 준비(더보기는 flipSwap 이 hidden=false 로 보이게 함)
-      flipSwap(boardStart, document.getElementById('more-menu'));
+      screenFlash(originEl || document.getElementById('btn-back-to-hub')); // 홈 → 더보기
+      setTimeout(function () { openMoreNow(sub); }, FLASH_DELAY_MS);
       return;
     }
     openMoreNow(sub);
@@ -293,7 +290,7 @@
     // more-menu 를 여기서 먼저 숨기지 않는다(showStartScreenNow 가 플래시 시점에 맞춰 처리).
     if (!state) { showStartScreen({ originEl: e && e.currentTarget }); return; }
     screenNav.reset();
-    flipResumeGame(mm); // 이어가기: 더보기가 넘어가며 게임화면이 드러남 (mm.hidden 은 여기서 처리)
+    flipResumeGame(mm); // 이어가기 → 게임화면 (3D 플립 — 이거 하나만 사용자 확인상 정상 작동)
     mm.classList.remove('mm-paused');
     // 열 때 멈춘 게임이면 재개.
     if (state.pausedByMenu) {
@@ -306,16 +303,8 @@
   // ---------- 시작 화면 ----------
   function showStartScreen(opts) {
     if (!(opts && opts.skipFlash)) {
-      // 지금 보이는 패널(더보기/결과화면/다음챕터)에서 홈으로 책장 넘기듯 전환.
-      // showStartScreenNow 가 이 패널들을 hidden=true 로 만들기 전에 먼저 찾아둬야 함.
-      var mm = document.getElementById('more-menu');
-      var go = document.getElementById('gameover-overlay');
-      var ncp = document.getElementById('next-chapter-panel');
-      var outEl = !mm.hidden ? mm : !go.hidden ? go : !ncp.hidden ? ncp : null;
-      showStartScreenNow(opts);
-      // showStartScreenNow 가 이미 outEl 을 hidden=true 처리했을 수 있음 — flip-out 애니메이션이
-      // 보이려면 다시 잠깐 보여야 한다(끝나면 flipSwap 이 다시 hidden=true 로 되돌림).
-      if (outEl) { outEl.hidden = false; flipSwap(outEl, document.getElementById('board-start')); }
+      screenFlash(opts && opts.originEl); // 더보기/게임종료 → 홈 (최초 진입만 예외)
+      setTimeout(function () { showStartScreenNow(opts); }, FLASH_DELAY_MS);
       return;
     }
     showStartScreenNow(opts);
@@ -576,11 +565,10 @@
 
     const levelData = MG.LEVELS[roundNum - 1];
 
-    // 홈 화면(대화)에서 바로 시작하는 경우만 책장 넘기듯 전환 — board-start 를 여기서
-    // 바로 숨기지 않고, round-intro 뜨는 시점에 flipSwap 이 애니메이션과 함께 처리한다.
+    // 홈 화면(대화)에서 바로 시작하는 경우만 전환 플래시.
     const boardStartEl = document.getElementById('board-start');
-    const cameFromHome = !!(opts && opts.fresh) && !boardStartEl.hidden;
-    if (!cameFromHome) boardStartEl.hidden = true;
+    if (opts && opts.fresh && !boardStartEl.hidden) screenFlash(document.querySelector('.lane-button--call'));
+    boardStartEl.hidden = true;
     document.getElementById('gameover-overlay').hidden = true;
     document.getElementById('game-screen').classList.remove('is-start');
     setCallLabel('game'); // 게임 중: 초록 버튼은 "통화"(위장) — 15번 구멍 타격 담당
@@ -651,7 +639,6 @@
     setPauseUI(false);
 
     updateHUD();
-    if (cameFromHome) flipSwap(boardStartEl, document.getElementById('round-intro-overlay'));
     playRoundIntro(roundNum, () => {
       if (myGen !== sessionGen || !state) return; // 그 사이 나가버림 — 이 콜백 무효
       state.introActive = false;
