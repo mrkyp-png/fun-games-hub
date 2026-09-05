@@ -316,7 +316,7 @@ body { background: var(--lm-page); }
   top: 10px;
   left: 12px;
   right: 12px;                  /* 좌측 두더지 아바타 시작 ~ 우측 하마 아바타 끝과 같은 폭(board-start 패딩과 동일) —
-                                    하트/코인박스는 신경 안 씀(z-index로 이 박스가 위에 오게 처리됨) */
+                                    하트/코인박스는 신경 안 씀(z-index로 이 박스가 위에 오게 처리, background 있어서 겹치면 뒤가 가려짐) */
   display: flex;
   align-items: center;
   gap: 8px;
@@ -332,6 +332,7 @@ body { background: var(--lm-page); }
   will-change: transform, opacity, filter;
 }
 .chat-sms.is-empty { display: none; }
+#game-screen:not(.is-start) .chat-sms { display: none; }  /* #board-start 밖으로 옮겨서 이제 직접 게이팅 */
 /* .sms-anim = game.js가 시작화면 열 때 붙임.
    툭 내려옴 → 2초 머묾 → 그냥 사라짐(페이드) → 잠깐 뒤 다시 내려옴 → 반복. 5초 주기. */
 .chat-sms.sms-anim { animation: sms-loop 7s 0.3s infinite; }
