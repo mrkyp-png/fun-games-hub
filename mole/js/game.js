@@ -1036,20 +1036,7 @@
     resetHot();
 
     if (finishedRound >= FINAL_ROUND) {
-      // 10라운드 완주 → 커튼 닫고 결과. 색 역할을 반대로(분홍이 먼저 천천히, 노랑이
-      // 따라잡아 최종 노랑) 재생해 라운드 전환(최종 분홍)과 구분(사용자 요청).
-      const ri = document.getElementById('round-intro-overlay');
-      ri.classList.remove('is-opening');
-      ri.querySelector('.round-intro-title').textContent = '';
-      ri.querySelector('.round-intro-count').textContent = '';
-      ri.hidden = false;
-      ri.classList.add('has-mole'); // :not(.has-mole) 규칙이 패턴을 안 보이게 하므로 필요
-      setHammerLayerVisible(false);
-      restartCurtainPattern(ri, true);
-      setTimeout(() => {
-        ri.classList.remove('has-mole');
-        finishFromRound('done');
-      }, 2300);
+      closeCurtain(() => { finishFromRound('done'); }); // 10라운드 완주 → 커튼 닫고 결과
       return;
     }
 
@@ -1080,15 +1067,22 @@
     if (h) h.style.visibility = v ? '' : 'hidden';
   }
 
-  // 커튼을 바로 닫아 직전 화면을 가림 → cb (결과/카운트다운) 로 이어짐.
+  // 게임 최종 종료(10라운드 완주 또는 목숨 소진) → 커튼 닫고 cb(결과화면)로 이어짐.
+  // 색 역할을 반대로(분홍이 먼저 천천히, 노랑이 따라잡아 최종 노랑) 재생해 라운드
+  // 전환(최종 분홍)과 구분(사용자 요청) — 목숨 소진 실패도 동일하게 적용.
   function closeCurtain(cb) {
     const ri = document.getElementById('round-intro-overlay');
     ri.classList.remove('is-opening');
     ri.querySelector('.round-intro-title').textContent = '';
     ri.querySelector('.round-intro-count').textContent = '';
     ri.hidden = false;
+    ri.classList.add('has-mole'); // :not(.has-mole) 규칙이 패턴을 안 보이게 하므로 필요
     setHammerLayerVisible(false);
-    setTimeout(cb, 240);
+    restartCurtainPattern(ri, true);
+    setTimeout(() => {
+      ri.classList.remove('has-mole');
+      cb();
+    }, 2300);
   }
 
   // 목숨 소진(라운드 도중) — 지금까지 친 점수까지 반영하고 최종 결과.

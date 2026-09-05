@@ -497,7 +497,7 @@ body { background: var(--lm-page); }
   left: 50%;
   transform: translate(-50%, -50%);
   font-weight: 900;
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1;
   pointer-events: none;
 }
@@ -525,7 +525,6 @@ body { background: var(--lm-page); }
   border-radius: 999px;
   background: var(--lm-fill);
 }
-.tk-search { flex: 0 0 auto; font-size: 0.72rem; opacity: 0.55; }
 .ticker-viewport {
   flex: 1;
   min-width: 0;
@@ -568,7 +567,7 @@ body { background: var(--lm-page); }
   z-index: 6;
   pointer-events: none;
   font-weight: 800;
-  font-size: clamp(1rem, 5.4vw, 1.7rem);
+  font-size: clamp(1.2rem, 6.5vw, 2.1rem);
   color: #fff;
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.65), 0 0 3px rgba(0, 0, 0, 0.9);
   letter-spacing: 0.01em;
@@ -581,7 +580,7 @@ body { background: var(--lm-page); }
   bottom: 0.2%;
   z-index: 4;
   pointer-events: none;
-  font-size: clamp(0.65rem, 3vw, 0.95rem);
+  font-size: clamp(0.8rem, 3.6vw, 1.15rem);
   letter-spacing: 1px;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
 }
@@ -596,7 +595,7 @@ body { background: var(--lm-page); }
   z-index: 4;
   pointer-events: none;
   font-weight: 800;
-  font-size: clamp(0.65rem, 3vw, 0.95rem);
+  font-size: clamp(0.8rem, 3.6vw, 1.15rem);
   color: #ffcf4a;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
 }
@@ -833,7 +832,7 @@ body { background: var(--lm-page); }
 }
 .gameover-score {
   position: relative; z-index: 2; margin: 0;
-  font-size: 1.6rem; font-weight: 800; color: var(--lm-ink);
+  font-size: 2rem; font-weight: 800; color: var(--lm-ink);
 }
 /* ---- 최종 결과: 박스 없이. 성공(맨위) / 하마(중앙) / 점수(맨아래) ---- */
 #gameover-overlay {
@@ -846,7 +845,7 @@ body { background: var(--lm-page); }
 #gameover-overlay.is-lose { background: radial-gradient(circle at 50% 40%, #fbfcfd 0%, #e6ebf1 100%); }
 /* 성공·실패 둘 다 버튼 없음 — 좌상단 ⊞ 로 홈 */
 
-.go-word { position: relative; z-index: 2; margin: 0; font-size: 2.6rem; font-weight: 900; letter-spacing: 0.06em; }
+.go-word { position: relative; z-index: 2; margin: 0; font-size: 3.2rem; font-weight: 900; letter-spacing: 0.06em; }
 #gameover-overlay.is-win .go-word { color: #ef8a00; text-shadow: 0 2px 0 #fff, 0 4px 12px rgba(240, 150, 0, 0.35); }
 #gameover-overlay.is-lose .go-word { color: #5b6474; }
 /* 화면전환(라운드 전환)과 같은 방식 — 글자는 오른쪽에서, 하마는 왼쪽에서 날아와 중앙에서 만남. */
@@ -952,7 +951,7 @@ body { background: var(--lm-page); }
 .round-intro-title {
   position: relative; z-index: 1;
   color: var(--lm-ink);
-  font-size: 1.4rem;
+  font-size: 1.75rem;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
@@ -960,10 +959,15 @@ body { background: var(--lm-page); }
 .round-intro-count {
   position: relative; z-index: 1;
   color: #e08a1e;
-  font-size: 4.4rem;
+  font-size: 5.2rem;
   font-weight: 900;
   line-height: 1;
-  text-shadow: 0 3px 10px rgba(224, 138, 30, 0.35);
+  /* 외곽 글로우 강조(사용자 요청) — 흰 글로우 + 주황 글로우 겹겹이 + 기존 그림자 */
+  text-shadow:
+    0 0 6px rgba(255, 255, 255, 0.95),
+    0 0 16px rgba(255, 200, 90, 0.9),
+    0 0 30px rgba(224, 138, 30, 0.6),
+    0 3px 10px rgba(224, 138, 30, 0.35);
 }
 .round-intro-count.pop { animation: round-intro-pop 0.42s cubic-bezier(.2, 1.6, .4, 1); }
 @keyframes round-intro-pop {
@@ -1005,15 +1009,15 @@ body { background: var(--lm-page); }
   align-self: flex-start;
   padding-left: 10%;
   color: #000;
-  font-size: 1.5rem;
+  font-size: 1.85rem;
   font-weight: 900;
   letter-spacing: 0.02em;
 }
 .si-line2 {
   position: relative; z-index: 1;
   display: flex; align-items: center; gap: 2px;
-  color: var(--lm-muted);
-  font-size: 0.95rem;
+  color: #000;
+  font-size: 1.15rem;
   font-weight: 700;
   text-align: center;
   padding: 0 10%;
