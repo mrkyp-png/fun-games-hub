@@ -9,7 +9,22 @@
   // 위장은 순전히 표시만 — 클릭/키보드/두더지-빛남 동작은 그대로.
 
   const KEY_GRID = ['1234', 'qwer', 'asdf', 'zxcv'];
-  const LONG_PRESS_MS = 600; // 채널 링크(onLongPress) 발동 기준 — 짧게 누르면 평소처럼 onCell만.
+  const LONG_PRESS_MS = 600;    // 채널 링크(onLongPress) 발동 기준 — 짧게 누르면 평소처럼 onCell만.
+  const DELETE_PRESS_MS = 2200; // 훨씬 더 오래 누르면 그 채널 등록을 이 기기에서만 해제(로컬).
+  const CHANNEL_HIDDEN_PREFIX = 'mole.channelHidden.';
+
+  function isChannelHidden(id) {
+    try { return localStorage.getItem(CHANNEL_HIDDEN_PREFIX + id) === '1'; } catch (e) { return false; }
+  }
+  function hideChannel(id) {
+    try { localStorage.setItem(CHANNEL_HIDDEN_PREFIX + id, '1'); } catch (e) { /* noop */ }
+  }
+  // 채널 링크 정적 설정(channel-links.js)을 읽되, 이 기기에서 해제됐으면 없는 것처럼 취급.
+  function channelFor(id) {
+    var CL = root.MoleGame && root.MoleGame.ChannelLinks;
+    if (!CL || isChannelHidden(id)) return null;
+    return CL.LINKS[id] || null;
+  }
 
   // 내비 아이콘 (이모지 렌더 편차 회피 — 인라인 SVG, currentColor).
   const SVG = {
@@ -28,7 +43,7 @@
     { nav: '시작', svg: SVG.phone, call: true, i18n: 'mole.start.btn' }
   ];
 
-  function fillFace(btn, f) {
+  function fillFace(btn, f, id) {
     if (f.nav) {
       btn.classList.add('lane-button--nav');
       if (f.call) btn.classList.add('lane-button--call');
@@ -40,6 +55,19 @@
       btn.innerHTML = '<span class="lane-num">' + f.num + '</span>' +
         '<span class="lane-sub">' + (f.kr ? '<span class="lane-kr">' + f.kr + '</span>' : '') +
         (f.en ? '<span class="lane-en">' + f.en + '</span>' : '') + '</span>';
+    }
+    // 채널 등록 + 아이콘이 있으면 평소 얼굴 위에 덮어 씌운다. 이미지 로드 실패하면(onerror)
+    // 스스로 지워져 원래 얼굴(숫자/내비 아이콘)로 자연스럽게 돌아간다.
+    if (!f.call) {
+      var ch = channelFor(id);
+      if (ch && ch.icon) {
+        var img = document.createElement('img');
+        img.className = 'lane-channel-icon';
+        img.src = ch.icon;
+        img.alt = '';
+        img.addEventListener('error', function () { img.remove(); });
+        btn.appendChild(img);
+      }
     }
   }
 
@@ -54,7 +82,7 @@
         b.className = 'lane-button';
         b.type = 'button';
         b.dataset.region = String(id);
-        fillFace(b, FACES[id]);
+        fillFace(b, FACES[id], id);
         if (FACES[id].call) b.insertAdjacentHTML('beforeend', '<span class="lane-call-idle" aria-hidden="true"></span>');
         b.addEventListener('pointerdown', (e) => {
           e.preventDefault();
@@ -65,19 +93,30 @@
           b.classList.toggle('lane-button--miss', !!bad);
           b.classList.add('lane-button--flash');
 
-          // 채널 링크 — 시작버튼 제외 나머지 버튼을 길게 누르면 발동(game.js 가 홈 화면인지,
-          // 등록된 채널이 있는지 판단). 짧게 누르면(뗌/취소) 아무 일도 없음 — onCell은 이미 위에서 처리됨.
-          if (onLongPress && !FACES[id].call) {
-            const timer = setTimeout(() => onLongPress(id), LONG_PRESS_MS);
-            const cancel = () => {
-              clearTimeout(timer);
-              b.removeEventListener('pointerup', cancel);
-              b.removeEventListener('pointerleave', cancel);
-              b.removeEventListener('pointercancel', cancel);
+          // 채널 링크 3단계 — 시작버튼은 제외. 짧게(뗌) = 위 onCell만. 중간 길게(LONG_PRESS_MS,
+          // game.js가 홈 화면인지/등록 여부 판단) = 채널 이동. 아주 길게(DELETE_PRESS_MS) =
+          // 이 기기에서만 등록 해제(아이콘 제거, 되돌릴 수 없음 — 재등록은 채널을 다시 알려줘야 함).
+          // 떼는 순간까지 어디까지 도달했는지로 판정(중간에 먼저 쏘지 않음) — 아주 길게 누르는 도중에
+          // 광고가 먼저 뜨는 걸 막기 위함.
+          if (!FACES[id].call) {
+            let stage = 0;
+            const mediumTimer = setTimeout(() => { stage = 1; }, LONG_PRESS_MS);
+            const deleteTimer = setTimeout(() => { stage = 2; }, DELETE_PRESS_MS);
+            const finish = () => {
+              clearTimeout(mediumTimer);
+              clearTimeout(deleteTimer);
+              b.removeEventListener('pointerup', finish);
+              b.removeEventListener('pointerleave', finish);
+              b.removeEventListener('pointercancel', finish);
+              if (stage === 2) {
+                if (channelFor(id)) { hideChannel(id); fillFace(b, FACES[id], id); }
+              } else if (stage === 1 && onLongPress) {
+                onLongPress(id);
+              }
             };
-            b.addEventListener('pointerup', cancel);
-            b.addEventListener('pointerleave', cancel);
-            b.addEventListener('pointercancel', cancel);
+            b.addEventListener('pointerup', finish);
+            b.addEventListener('pointerleave', finish);
+            b.addEventListener('pointercancel', finish);
           }
         });
         buttonBar.appendChild(b);
