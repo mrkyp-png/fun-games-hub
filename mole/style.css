@@ -117,8 +117,8 @@ body { background: var(--lm-page); }
   gap: 2px;
   min-width: 0;
   position: absolute; top: 8px; left: 10px; z-index: 9;
-  color: #fff; font-weight: 800;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65), 0 0 4px rgba(0, 0, 0, 0.5);
+  color: #000; font-weight: 800;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
 }
 #chapter-nav[hidden] { display: none; }
 .ch-arrow {
@@ -420,7 +420,6 @@ body { background: var(--lm-page); }
   font-size: 0.82rem;
   font-weight: 600;
 }
-.hud-addr-lock { width: 13px; height: 13px; flex: 0 0 auto; opacity: 0.7; }
 .hud-addr-url {
   letter-spacing: 0.01em;
   white-space: nowrap;
@@ -537,6 +536,8 @@ body { background: var(--lm-page); }
   width: max-content;
   white-space: nowrap;
   animation: ticker-scroll 20s linear infinite;
+  will-change: transform; /* 저사양 폰에서 스크롤 끊기는 것(사용자 보고) 방지 - GPU 합성 유도 */
+  backface-visibility: hidden;
 }
 .ticker-seg {
   display: inline-flex;

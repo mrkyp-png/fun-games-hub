@@ -48,7 +48,6 @@
       <button id="btn-back-to-hub" class="icon-btn" aria-label="나가기" data-i18n-aria-label="common.back"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="1.5" y="1.5" width="6" height="6" rx="1.8"/><rect x="16.5" y="1.5" width="6" height="6" rx="1.8"/><rect x="1.5" y="16.5" width="6" height="6" rx="1.8"/><rect x="16.5" y="16.5" width="6" height="6" rx="1.8"/></svg><span id="hud-timer" class="hub-timer" aria-hidden="true"></span></button>
       <!-- 시작 상태: 브라우저 주소창 (게임 URL). 플레이 상태: 증권 전광판 스타일 티커. -->
       <div id="hud-addr" class="hud-addr" aria-hidden="true">
-        <svg class="hud-addr-lock" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 1 1 6 0v3z"/></svg>
         <!-- 게임화면 티커(#hud-ticker)와 같은 방식 — "두더지팡.app" + 채널 힌트가 번갈아 스크롤. -->
         <div class="ticker-viewport">
           <div class="ticker-track">
@@ -113,7 +112,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v213</div>
+      <div id="build-tag" aria-hidden="true">v214</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -478,7 +477,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=212').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=214').catch(function () {});
       }
     });
   }
