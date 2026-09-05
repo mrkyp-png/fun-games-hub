@@ -59,10 +59,11 @@
           '<path d="M12 2a1 1 0 0 1 1 1v1.06A7 7 0 0 1 19 11v3.5l1.6 2.4a1 1 0 0 1-.85 1.6H4.25a1 1 0 0 1-.85-1.53L5 14.5V11a7 7 0 0 1 6-6.94V3a1 1 0 0 1 1-1zm0 19a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 21z"/></svg>');
         b.addEventListener('pointerdown', (e) => {
           e.preventDefault();
-          b.classList.remove('lane-button--flash');
+          const bad = onCell(id); // 헛방/폭탄이면 true — 종 색을 빨갛게
+          b.classList.remove('lane-button--flash', 'lane-button--miss');
           void b.offsetWidth;
+          b.classList.toggle('lane-button--miss', !!bad);
           b.classList.add('lane-button--flash');
-          onCell(id);
         });
         buttonBar.appendChild(b);
         buttons[id] = b;

@@ -669,9 +669,9 @@
 
   // ---------- 구멍 버튼 입력 → 그 구멍 타격 ----------
   function handleCell(regionId) {
-    if (!state || state.ended || state.introActive || state.paused) return;
+    if (!state || state.ended || state.introActive || state.paused) return false;
     const sp = state.spawnPoints.find((s) => s.regionId === regionId);
-    if (!sp) return; // 대포 모드에서 없앤 구멍(15) 탭 = 무시 (헛방 처리 안 함)
+    if (!sp) return false; // 대포 모드에서 없앤 구멍(15) 탭 = 무시 (헛방 처리 안 함)
     const results = state.scheduler.resolveRegion(regionId);
 
     const primary = results[0] || null;
@@ -679,6 +679,8 @@
     const targetY = primary ? primary.yFrac : sp.y;
 
     state.laneHammer.strike(targetX, targetY, () => onHammerImpact(targetX, targetY, results));
+    // 버튼 이펙트 색: 헛방(구멍에 아무것도 없음) 또는 폭탄이면 빨간색.
+    return results.length === 0 || results.some((r) => r.type === 'bomb');
   }
 
   function onHammerImpact(hitXFrac, hitYFrac, results) {
