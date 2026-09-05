@@ -54,6 +54,7 @@
         b.type = 'button';
         b.dataset.region = String(id);
         fillFace(b, FACES[id]);
+        if (FACES[id].call) b.insertAdjacentHTML('beforeend', '<span class="lane-call-idle" aria-hidden="true"></span>');
         b.addEventListener('pointerdown', (e) => {
           e.preventDefault();
           const bad = onCell(id); // 헛방/폭탄이면 true — 링 색을 빨갛게
