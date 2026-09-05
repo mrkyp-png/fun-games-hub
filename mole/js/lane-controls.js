@@ -44,34 +44,56 @@
   ];
 
   function fillFace(btn, f, id) {
+    btn.classList.remove('lane-button--flippable', 'is-flipped');
+    var faceHtml;
     if (f.nav) {
       btn.classList.add('lane-button--nav');
       if (f.call) btn.classList.add('lane-button--call');
       var I = root.FGH && root.FGH.I18N;
       var label = f.i18n && I ? I.t(f.i18n) : f.nav;
       var attr = f.i18n ? ' data-i18n="' + f.i18n + '"' : '';
-      btn.innerHTML = '<span class="lane-ico">' + f.svg + '</span><span class="lane-lbl"' + attr + '>' + label + '</span>';
+      faceHtml = '<span class="lane-ico">' + f.svg + '</span><span class="lane-lbl"' + attr + '>' + label + '</span>';
     } else {
-      btn.innerHTML = '<span class="lane-num">' + f.num + '</span>' +
+      faceHtml = '<span class="lane-num">' + f.num + '</span>' +
         '<span class="lane-sub">' + (f.kr ? '<span class="lane-kr">' + f.kr + '</span>' : '') +
         (f.en ? '<span class="lane-en">' + f.en + '</span>' : '') + '</span>';
     }
-    // 채널 등록 + 아이콘이 있으면 평소 얼굴 위에 덮어 씌운다. 이미지 로드 실패하면(onerror)
-    // 스스로 지워져 원래 얼굴(숫자/내비 아이콘)로 자연스럽게 돌아간다.
-    if (!f.call) {
-      var ch = channelFor(id);
-      if (ch && ch.icon) {
-        var img = document.createElement('img');
-        img.className = 'lane-channel-icon';
-        img.src = ch.icon;
-        img.alt = '';
-        img.addEventListener('error', function () { img.remove(); });
-        btn.appendChild(img);
-      }
+    // 채널 등록 + 아이콘이 있으면 평소 얼굴과 채널 아이콘을 동전 뒤집듯 3D 로 전환할 수 있게
+    // .lane-flip 카드(뒷면=lane-face--back 숫자/내비, 앞면=lane-face--front 채널 아이콘)로 감싼다.
+    // 짧게 누르면(동전이 몇 바퀴 빙글 돌다 착지) 서로 교대로 보인다 — flipChannelCard() 참고.
+    // 이미지 로드 실패하면(onerror) 뒤집기 자체를 없던 일로 하고 원래 얼굴만 남는다.
+    var ch = !f.call && channelFor(id);
+    if (ch && ch.icon) {
+      btn.classList.add('lane-button--flippable');
+      btn.innerHTML =
+        '<span class="lane-flip">' +
+        '<span class="lane-face lane-face--back">' + faceHtml + '</span>' +
+        '<span class="lane-face lane-face--front"><img class="lane-channel-icon" alt=""></span>' +
+        '</span>';
+      var img = btn.querySelector('.lane-channel-icon');
+      img.src = ch.icon;
+      img.addEventListener('error', function () {
+        btn.classList.remove('lane-button--flippable', 'is-flipped');
+        btn.innerHTML = faceHtml;
+      });
+    } else {
+      btn.innerHTML = faceHtml;
     }
   }
 
-  function create({ buttonBar, gridSize, onCell, onTap, onLongPress }) {
+  // 짧게 누르기 = 동전 뒤집기. 10바퀴 휙 돌다가(플레이스홀더 아님 — 사용자가 재미로 요청)
+  // 반 바퀴 더 돌아 반대 면에 착지 (누적 각도라 매번 반대 면으로 정확히 떨어진다).
+  const FLIP_SPINS_DEG = 10 * 360 + 180;
+  function flipChannelCard(btn) {
+    const flip = btn.querySelector('.lane-flip');
+    if (!flip) return;
+    const cur = parseFloat(flip.dataset.deg || '0');
+    const next = cur + FLIP_SPINS_DEG;
+    flip.dataset.deg = String(next);
+    flip.style.transform = 'rotateY(' + next + 'deg)';
+  }
+
+  function create({ buttonBar, gridSize, onCell, onTap, onLongPress, isHome }) {
     const buttons = [];
     const keyMap = {};
 
@@ -112,6 +134,8 @@
                 if (channelFor(id)) { hideChannel(id); fillFace(b, FACES[id], id); }
               } else if (stage === 1 && onLongPress) {
                 onLongPress(id);
+              } else if (stage === 0 && channelFor(id) && (!isHome || isHome())) {
+                flipChannelCard(b); // 짧게 누르면 채널아이콘 ↔ 평소 버튼 동전 뒤집기
               }
             };
             b.addEventListener('pointerup', finish);

@@ -1148,23 +1148,41 @@ body { background: var(--lm-page); }
 .lane-kr { font-size: clamp(0.42rem, 2vw, 0.62rem); }
 .lane-en { font-size: clamp(0.36rem, 1.7vw, 0.52rem); letter-spacing: 0.08em; }
 
-/* 채널 링크 등록된 버튼 — 평소 얼굴(숫자/내비) 위를 그 채널 아이콘으로 덮는다.
-   홈 화면(다이얼패드로 위장 중)에서만 — 플레이 중엔 이 버튼이 실제 구멍 타격 버튼이라
-   채널 로고가 떠 있으면 헷갈리므로 숨긴다. */
-.lane-channel-icon {
-  display: none;
+/* 채널 링크 등록된 버튼 — 평소 얼굴(숫자/내비)과 채널 아이콘을 동전 뒤집기(3D flip) 카드로
+   포갠다. 짧게 누르면 lane-controls.js 의 flipChannelCard() 가 몇 바퀴 휙 돌려 반대 면에
+   착지시킨다. 플레이 중엔(다이얼패드 아님) 이 버튼이 실제 구멍 타격 버튼이라 채널 로고가
+   떠 있으면 헷갈리므로 항상 평소 얼굴 쪽으로 고정. */
+.lane-button--flippable { perspective: 600px; }
+.lane-flip {
   position: absolute;
   inset: 0;
+  transform-style: preserve-3d;
+  transition: transform 0.9s cubic-bezier(.2, .7, .3, 1);
+}
+.lane-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  backface-visibility: hidden;
+  border-radius: 50%;
+}
+.lane-face--front { transform: rotateY(0deg); }
+.lane-face--back { transform: rotateY(180deg); }
+.lane-channel-icon {
   width: 100%;
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
   pointer-events: none;
 }
-#game-screen.is-start .lane-channel-icon { display: block; }
+#game-screen:not(.is-start) .lane-button--flippable .lane-flip { transform: rotateY(180deg) !important; transition: none; }
 
 /* 오른쪽 열 — 내비 4칸 */
 .lane-button--nav { flex-direction: column; gap: 3px; color: #4b4b52; }
+.lane-button--nav .lane-face { flex-direction: column; gap: 3px; }
 .lane-ico { width: clamp(16px, 6vw, 24px); height: clamp(16px, 6vw, 24px); display: block; }
 .lane-ico svg { width: 100%; height: 100%; display: block; }
 .lane-lbl { font-size: clamp(0.4rem, 1.9vw, 0.56rem); font-weight: 600; color: var(--lm-muted); }

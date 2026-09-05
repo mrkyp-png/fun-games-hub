@@ -1160,6 +1160,7 @@
       buttonBar: document.getElementById('lane-button-bar'),
       gridSize: GRID_SIZE,
       onCell: handleCell,
+      isHome: () => document.getElementById('game-screen').classList.contains('is-start'),
       // 홈 화면(전화 다이얼러로 위장 중)일 때만 탭음(버튼소리1 고정) — 플레이 중엔 연타가 잦아
       // 타격음과 겹치므로 안 씀.
       onTap: () => { if (document.getElementById('game-screen').classList.contains('is-start')) MG.HitFx.uiTap(0); },
