@@ -220,17 +220,35 @@
 
   // 책장 넘기듯 전환 — 이어가기(더보기→게임화면)에서 정상 작동 확인된 방식 그대로,
   // 다른 전환에도 동일하게 적용(mole-board 를 가리지 않음 — 그게 핵심 차이였음).
+  // mole-board 처럼 여러 방향(게임↔더보기)에서 재사용되는 요소는, 열자마자 바로
+  // 닫는 식으로 빠르게 연타하면 이전 호출의 "숨기기" 타이머가 나중에 잘못 발동해
+  // 방금 보여준 걸 다시 숨겨버릴 수 있다 — 요소별로 대기 중인 타이머를 취소한다.
   const FLIP_MS = 700; // style.css 의 flip-out/flip-in 애니메이션 길이(0.7s)와 맞춤
+  const pendingFlipTimers = new WeakMap();
+  function clearPendingFlip(el) {
+    var t = pendingFlipTimers.get(el);
+    if (t) {
+      clearTimeout(t);
+      pendingFlipTimers.delete(el);
+      el.classList.remove('flip-out', 'flip-in'); // 취소된 이전 애니메이션의 클래스 잔여물 제거
+    }
+  }
   function flipSwap(outEl, inEl) {
     if (!outEl || !inEl || outEl === inEl) return;
+    clearPendingFlip(outEl);
+    clearPendingFlip(inEl);
     inEl.hidden = false;
     outEl.classList.remove('flip-out'); void outEl.offsetWidth; outEl.classList.add('flip-out');
     inEl.classList.remove('flip-in'); void inEl.offsetWidth; inEl.classList.add('flip-in');
-    setTimeout(function () {
+    var timer = setTimeout(function () {
       outEl.hidden = true;
       outEl.classList.remove('flip-out');
       inEl.classList.remove('flip-in');
+      pendingFlipTimers.delete(outEl);
+      pendingFlipTimers.delete(inEl);
     }, FLIP_MS);
+    pendingFlipTimers.set(outEl, timer);
+    pendingFlipTimers.set(inEl, timer);
   }
 
   // 더보기 메뉴 열기/닫기.
