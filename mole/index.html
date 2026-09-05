@@ -42,7 +42,7 @@
        (게임 화면이 휴대폰 컨셉이라 — 사용자 요청). is-start 클래스가 붙어있으면 시작 상태. -->
   <section id="game-screen" class="screen cosmic-content is-start">
     <div class="game-hud">
-      <button id="btn-back-to-hub" class="icon-btn" aria-label="나가기" data-i18n-aria-label="common.back"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3.5" y="3.5" width="7.5" height="7.5" rx="2.2"/><rect x="13" y="3.5" width="7.5" height="7.5" rx="2.2"/><rect x="3.5" y="13" width="7.5" height="7.5" rx="2.2"/><rect x="13" y="13" width="7.5" height="7.5" rx="2.2"/></svg></button>
+      <button id="btn-back-to-hub" class="icon-btn" aria-label="나가기" data-i18n-aria-label="common.back"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="1.5" y="1.5" width="6" height="6" rx="1.8"/><rect x="16.5" y="1.5" width="6" height="6" rx="1.8"/><rect x="1.5" y="16.5" width="6" height="6" rx="1.8"/><rect x="16.5" y="16.5" width="6" height="6" rx="1.8"/></svg><span id="hud-timer" class="hub-timer" aria-hidden="true"></span></button>
       <!-- 시작 상태: 브라우저 주소창 (게임 URL). 플레이 상태: 증권 전광판 스타일 티커. -->
       <div id="hud-addr" class="hud-addr" aria-hidden="true">
         <svg class="hud-addr-lock" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 1 1 6 0v3z"/></svg>
@@ -59,10 +59,10 @@
         <div class="ticker-viewport">
           <div class="ticker-track">
             <span class="ticker-seg">
-              <b class="tk-mode"></b><i class="tk-lv"></i><i class="tk-t"></i><i class="tk-c"></i>
+              <b class="tk-mode"></b><i class="tk-tip1"></i><i class="tk-tip2"></i>
             </span>
             <span class="ticker-seg">
-              <b class="tk-mode"></b><i class="tk-lv"></i><i class="tk-t"></i><i class="tk-c"></i>
+              <b class="tk-mode"></b><i class="tk-tip1"></i><i class="tk-tip2"></i>
             </span>
           </div>
         </div>
@@ -77,6 +77,7 @@
       <div id="mole-hole-front-layer" class="mole-board-layer"></div>
       <div id="hud-score" aria-hidden="true">0</div>
       <div id="hud-hearts" class="board-hearts" aria-hidden="true"></div>
+      <div id="hud-combo" class="board-combo" aria-hidden="true"></div>
       <!-- 홈(시작) 화면: 게임박스 우측 상단에 하트·코인 -->
       <div id="board-stats" class="board-stats" aria-hidden="true">
         <span class="mm-stat mm-hearts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg><b data-bs-hearts>5</b></span>
@@ -98,7 +99,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v170</div>
+      <div id="build-tag" aria-hidden="true">v171</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -451,7 +452,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=170').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=171').catch(function () {});
       }
     });
   }

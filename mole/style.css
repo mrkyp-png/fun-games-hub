@@ -429,7 +429,9 @@ body { background: var(--lm-page); }
 #game-screen.is-start #chapter-nav:not([hidden]) { display: flex; }
 #game-screen.is-start #hud-addr[hidden] { display: none; }
 #game-screen.is-start #hud-score,
-#game-screen.is-start #hud-hearts { display: none; }
+#game-screen.is-start #hud-hearts,
+#game-screen.is-start #hud-combo,
+#game-screen.is-start .hub-timer { display: none; }
 /* 홈(시작) 화면: 게임박스 우측 상단 하트·코인 */
 .board-stats { display: none; }
 #game-screen.is-start .board-stats {
@@ -473,6 +475,17 @@ body { background: var(--lm-page); }
   inset: -60%;
   background: linear-gradient(115deg, transparent 42%, rgba(255, 240, 190, 0.9) 50%, transparent 58%);
   animation: idle-crown-sweep 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+/* 시간 = 4개 네모(홈버튼 아이콘) 사이 중앙에 숫자로 표기 ("초" 단위 생략) */
+.hub-timer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: 900;
+  font-size: 9px;
+  line-height: 1;
   pointer-events: none;
 }
 
@@ -560,6 +573,20 @@ body { background: var(--lm-page); }
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
 }
 .board-hearts.life-bonus { animation: life-bonus 0.5s ease-out; }
+
+/* 콤보 — 하트와 같은 줄(게임박스 맨 아래), 가운데. 0이면 빈 텍스트라 안 보임. */
+.board-combo {
+  position: absolute;
+  left: 50%;
+  bottom: 0.2%;
+  transform: translateX(-50%);
+  z-index: 4;
+  pointer-events: none;
+  font-weight: 800;
+  font-size: clamp(0.65rem, 3vw, 0.95rem);
+  color: #ffcf4a;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+}
 @keyframes life-bonus {
   0%   { transform: scale(1); filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55)); }
   40%  { transform: scale(1.35); filter: drop-shadow(0 0 8px #ff6b8a) drop-shadow(0 0 4px #fff); }
