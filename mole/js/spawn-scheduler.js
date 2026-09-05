@@ -3,6 +3,10 @@
 
   const MIN_SPAWN_GAP = 0.10; // 등장 간격 (점수 어택: 빈도 1.5배 상승 → 0.15/0.35 ÷ 1.5). 원래 0.2~0.5
   const MAX_SPAWN_GAP = 0.23;
+  // 두더지 전용 등장 간격 — 난이도 상향(전체 레벨, 사용자 요청): 동물/폭탄은 그대로 두고
+  // 두더지만 더 자주 나오게. MIN/MAX_SPAWN_GAP 대비 약 35% 더 촘촘함.
+  const MOLE_MIN_SPAWN_GAP = 0.07;
+  const MOLE_MAX_SPAWN_GAP = 0.15;
 
   // 다타(多打) 두더지: 뽕망치로 여러 번 때려야 잡힌다 (사용자 확정).
   // 등장 시 굴림 한 번으로 종류를 정한다: 5% 3히트 / 다음 15% 2히트 / 나머지 80% 1히트.
@@ -30,8 +34,11 @@
     function randomGap() {
       return rng.next() * (MAX_SPAWN_GAP - MIN_SPAWN_GAP) + MIN_SPAWN_GAP;
     }
+    function randomMoleGap() {
+      return rng.next() * (MOLE_MAX_SPAWN_GAP - MOLE_MIN_SPAWN_GAP) + MOLE_MIN_SPAWN_GAP;
+    }
 
-    const cooldown = { mole: randomGap(), animal: randomGap(), bomb: randomGap(), item: 3 };
+    const cooldown = { mole: randomMoleGap(), animal: randomGap(), bomb: randomGap(), item: 3 };
 
     function maxOf(type) {
       if (type === 'mole') return config.maxConcurrentMoles;
@@ -128,8 +135,8 @@
         if (cooldown[type] <= 0) {
           const pop = trySpawn(type);
           if (pop) spawned.push(pop);
-          // 실드 아이템은 드물게 (2.5~6초 간격), 나머지는 기본 간격.
-          cooldown[type] = (type === 'item') ? (2.5 + rng.next() * 3.5) : randomGap();
+          // 실드 아이템은 드물게 (2.5~6초 간격), 두더지는 전용(더 촘촘한) 간격, 나머지는 기본 간격.
+          cooldown[type] = (type === 'item') ? (2.5 + rng.next() * 3.5) : (type === 'mole') ? randomMoleGap() : randomGap();
         }
       });
 

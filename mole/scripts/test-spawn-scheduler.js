@@ -350,8 +350,11 @@ function makeSpawnPoints(regionIds) {
     }
   }
   assert.ok(mole, 'found a 1-hit mole');
-  // 안 치고 유지시간 넘김 → 스스로 내려감(dying)
-  for (let t = 0; t < 20; t++) scheduler.tick(0.1);
+  // 안 치고 유지시간(0.3s) 넘김 → 스스로 내려감(dying). 6틱(0.6s)까지만 —
+  // 완전히 사라지는 시점(popDuration+RETREAT_SEC=0.9s) 전에 멈춰야 다음 두더지가
+  // 그 자리에 리스폰해 같은 슬롯을 다시 채우는 것과 안 겹친다(등장 간격이 빨라질수록
+  // 리스폰이 더 빨리 일어나므로 이 여유를 넉넉히 두면 안 됨).
+  for (let t = 0; t < 6; t++) scheduler.tick(0.1);
   const p = scheduler.getActivePops()[0];
   assert.ok(p && p.dying && !p.killed, '시간초과 두더지는 dying 이지만 killed 아님');
   assert.deepStrictEqual(scheduler.resolveRegion(0), [], '시간초과로 내려가는 두더지 타격 = 저글 아님, 헛방');
