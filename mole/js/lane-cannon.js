@@ -74,6 +74,8 @@
   const SMOKE_SRC = 'assets/weapons/cannon-fx5.png', SMOKE_W = 0.17; // 잔여 연기 — 오래 옅어짐
   const SMOKE_MU = 0.740, SMOKE_MV = 0.686; // fx5: 무게중심(0.584,0.530)~뒷끝(0.896,0.841) 중간
   const AIM_MS = 90;                       // 포즈 전환 + 미세 조준
+  const HOLE3_AIM_MS = 340;                // 3번 구멍만 — 15도 회전이 눈에 보이게 천천히
+                                            // (사용자: "반시계 15도 간 후, 쏘고, 반동 후 원위치")
   const RECOIL = [0.012, 0.024, 0.040];    // 살짝/보통/강 (보드 분수)
   const KICK_SEC = 0.06, SETTLE_SEC = 0.34;
   const BALL_MS = 105;
@@ -156,7 +158,7 @@
     const restPose = POSES.find((p) => p.key === REST_KEY) || POSES[0];
     let pose = null;
     let phase = 'home', t = 0;
-    let residual = 0, resFrom = 0, resTo = 0, resT = 0;
+    let residual = 0, resFrom = 0, resTo = 0, resT = 0, curAimMs = AIM_MS;
     let recoilAmt = 0;
     let timers = [];
     function clearTimers() { timers.forEach(clearTimeout); timers = []; }
@@ -198,13 +200,14 @@
       resFrom = residual;
       resTo = isHole3 ? angDiff(want, best.aim) : clamp(angDiff(want, best.aim), -best.tweak, best.tweak);
       resT = 0;
+      curAimMs = isHole3 ? HOLE3_AIM_MS : AIM_MS;
       phase = 'aim'; t = 0;
       recoilAmt = RECOIL[Math.floor(Math.random() * RECOIL.length)];
 
       const pivot = isHole3 ? steepWheelPivot() : { x: MZX, y: MZY };
       rig.style.transformOrigin = (pivot.x * 100).toFixed(2) + '% ' + (pivot.y * 100).toFixed(2) + '%';
 
-      after(AIM_MS, () => {
+      after(curAimMs, () => {
         phase = 'kick'; t = 0;
         playFx();
 
@@ -230,7 +233,7 @@
     function update(dt) {
       if (phase === 'aim') {
         resT += dt;
-        const k = easeOut(clamp01(resT / (AIM_MS / 1000)));
+        const k = easeOut(clamp01(resT / (curAimMs / 1000)));
         residual = resFrom + (resTo - resFrom) * k;
       } else if (phase === 'kick') {
         t += dt;
