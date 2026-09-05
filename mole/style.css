@@ -991,7 +991,9 @@ body { background: var(--lm-page); }
 /* 시작 버튼 → 라운드1 진입 전 타이핑 인트로. 커튼(.ri-curtain)은 .round-intro 클래스 공유. */
 .si-line1 {
   position: relative; z-index: 1;
-  color: var(--lm-ink);
+  align-self: flex-start;
+  padding-left: 10%;
+  color: #000;
   font-size: 1.5rem;
   font-weight: 900;
   letter-spacing: 0.02em;

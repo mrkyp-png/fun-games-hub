@@ -119,7 +119,7 @@
   function preloadRoundMoles() {
     if (roundMolesPreloaded) return;
     roundMolesPreloaded = true;
-    for (let i = 1; i <= 7; i++) {
+    for (let i = 1; i <= 6; i++) {
       const img = new Image();
       img.src = 'assets/round-moles/mole' + i + '.png';
     }
@@ -719,7 +719,7 @@
     if (roundNum > 1) {
       count.hidden = true;
       overlay.classList.add('has-mole');
-      const idx = ((roundNum - 2) % 7) + 1; // 라운드2→mole1, 라운드3→mole2, ... 7개 돌면 반복
+      const idx = ((roundNum - 2) % 6) + 1; // 라운드2→mole1, 라운드3→mole2, ... 6개 돌면 반복(라운드8부터 다시 mole1)
       moleImg.src = 'assets/round-moles/mole' + idx + '.png';
       moleImg.hidden = false;
       setTimeout(() => {
