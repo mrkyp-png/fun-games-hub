@@ -1009,7 +1009,7 @@ body { background: var(--lm-page); }
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 2px solid var(--flash-ring);
+  border: 3px solid var(--flash-ring);
   opacity: 0;
   pointer-events: none;
 }
