@@ -227,7 +227,7 @@
     // 잠깐 비쳐 보이는 문제 — 전환하는 동안만 숨긴다.
     var board = document.getElementById('mole-board');
     if (board) board.style.visibility = 'hidden';
-    if (MG.HitFx && MG.HitFx.pageFlip) MG.HitFx.pageFlip(); // 책장 넘기는 소리
+    setTimeout(function () { try { MG.HitFx.pageFlip(); } catch (e) { /* noop */ } }, 0); // 책장 넘기는 소리(분리 — 애니메이션 타이밍에 영향 안 주게)
     inEl.hidden = false;
     outEl.classList.remove('flip-out'); void outEl.offsetWidth; outEl.classList.add('flip-out');
     inEl.classList.remove('flip-in'); void inEl.offsetWidth; inEl.classList.add('flip-in');
