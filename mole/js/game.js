@@ -113,13 +113,13 @@
     });
   }
 
-  // 라운드 전환 두더지 이미지 8장 — 늦게 로드되면 "라운드N" 글자만 먼저 뜨고 이미지가
+  // 라운드 전환 두더지 이미지 6장(텍스트 콜아웃 있던 2장 제외) — 늦게 로드되면 "라운드N" 글자만 먼저 뜨고 이미지가
   // 뒤늦게 팝인해 화면이 두 번 나오는 것처럼 보임(사용자 보고). 미리 캐시에 올려둔다.
   let roundMolesPreloaded = false;
   function preloadRoundMoles() {
     if (roundMolesPreloaded) return;
     roundMolesPreloaded = true;
-    for (let i = 1; i <= 8; i++) {
+    for (let i = 1; i <= 6; i++) {
       const img = new Image();
       img.src = 'assets/round-moles/mole' + i + '.png';
     }
@@ -719,7 +719,7 @@
     if (roundNum > 1) {
       count.hidden = true;
       overlay.classList.add('has-mole');
-      const idx = ((roundNum - 2) % 8) + 1; // 라운드2→mole1, 라운드3→mole2, ... 8개 돌면 반복
+      const idx = ((roundNum - 2) % 6) + 1; // 라운드2→mole1, 라운드3→mole2, ... 6개 돌면 반복
       moleImg.src = 'assets/round-moles/mole' + idx + '.png';
       moleImg.hidden = false;
       setTimeout(() => {
