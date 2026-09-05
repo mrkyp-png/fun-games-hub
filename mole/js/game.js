@@ -231,10 +231,14 @@
     var board = document.getElementById('mole-board');
     var boardInvolved = outs.indexOf(board) !== -1 || ins.indexOf(board) !== -1;
     if (board && !boardInvolved) board.style.visibility = 'hidden';
-    // position:fixed 인 요소(more-menu)는 #game-screen 의 perspective 를 못 받으므로
-    // 자체 perspective() 가 들어있는 -fixed 변형 클래스를 쓴다.
-    var outCls = function (el) { return getComputedStyle(el).position === 'fixed' ? 'flip-out-fixed' : 'flip-out'; };
-    var inCls = function (el) { return getComputedStyle(el).position === 'fixed' ? 'flip-in-fixed' : 'flip-in'; };
+    // position:fixed(more-menu)는 #game-screen 의 perspective 를 못 받고, board-start 는
+    // #mole-board(overflow:hidden) 안에 있어서 조상 perspective 상속이 깨져(회전이 안
+    // 보이거나 눌린 것처럼 보임) 둘 다 자체 perspective() 가 든 -fixed 변형을 써야 한다.
+    var needsOwnPerspective = function (el) {
+      return getComputedStyle(el).position === 'fixed' || (board && board.contains(el));
+    };
+    var outCls = function (el) { return needsOwnPerspective(el) ? 'flip-out-fixed' : 'flip-out'; };
+    var inCls = function (el) { return needsOwnPerspective(el) ? 'flip-in-fixed' : 'flip-in'; };
     ins.forEach(function (el) { el.hidden = false; });
     outs.forEach(function (el) { var c = outCls(el); el.classList.remove(c); void el.offsetWidth; el.classList.add(c); });
     ins.forEach(function (el) { var c = inCls(el); el.classList.remove(c); void el.offsetWidth; el.classList.add(c); });
