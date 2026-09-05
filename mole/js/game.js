@@ -724,15 +724,28 @@
       moleImg.hidden = false;
       setTimeout(() => {
         if (myGen !== sessionGen) return;
+        // 입장 애니메이션(animation: ... forwards)이 끝나도 그 값이 transition보다 우선해
+        // 퇴장용 transform 전환이 아예 안 먹는 문제 — 애니메이션을 먼저 끄고 리플로우로
+        // 그 상태를 확정시킨 뒤에 is-opening을 걸어야 transition이 정상 작동한다.
+        title.style.animation = 'none';
+        moleImg.style.animation = 'none';
+        void title.offsetWidth;
         overlay.classList.add('is-opening');
         setHammerLayerVisible(true);
-        onDone();
+        // 커튼(.ri-curtain, transition 0.26s) 이 다 사라지기 전에 두더지가 튀어나오는 게
+        // 보여서(사용자 보고) — 커튼 다 사라진 뒤 0.2초 더 쉬었다가 라운드 시작.
         setTimeout(() => {
           if (myGen !== sessionGen) return;
           overlay.hidden = true;
           overlay.classList.remove('is-opening', 'has-mole');
           moleImg.hidden = true;
-        }, 300);
+          title.style.animation = '';
+          moleImg.style.animation = '';
+        }, 260);
+        setTimeout(() => {
+          if (myGen !== sessionGen) return;
+          onDone();
+        }, 260 + 200);
       }, 700);
       return;
     }
