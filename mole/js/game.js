@@ -201,10 +201,17 @@
     v.querySelector('[data-nh="close"]').addEventListener('click', () => v.remove());
   }
 
-  // 화면 전환 플래시(더보기↔홈, 게임종료→홈) — 보라/진한노랑 랜덤.
-  function screenFlash() {
+  // 화면 전환 플래시(더보기↔홈, 게임종료→홈) — 보라/진한노랑 랜덤. 누른 버튼 위치에서
+  // 터져나가는 것처럼 origin 을 그 버튼 중심으로 잡는다(originEl 없으면 화면 중앙).
+  const FLASH_DELAY_MS = 100; // 광선이 화면을 덮는 시점(22% 키프레임)에 맞춰 실제 화면 전환
+  function screenFlash(originEl) {
     var el = document.getElementById('screen-flash-fx');
     if (!el) return;
+    var r = originEl && originEl.getBoundingClientRect ? originEl.getBoundingClientRect() : null;
+    var ox = r ? ((r.left + r.width / 2) / window.innerWidth * 100) : 50;
+    var oy = r ? ((r.top + r.height / 2) / window.innerHeight * 100) : 50;
+    el.style.setProperty('--fx-x', ox + '%');
+    el.style.setProperty('--fx-y', oy + '%');
     el.classList.remove('is-on', 'fx-violet', 'fx-gold');
     void el.offsetWidth;
     el.classList.add(Math.random() < 0.5 ? 'fx-violet' : 'fx-gold');
@@ -212,8 +219,15 @@
   }
 
   // 더보기 메뉴 열기/닫기.
-  function openMore(sub) {
-    if (document.getElementById('game-screen').classList.contains('is-start')) screenFlash(); // 홈 → 더보기
+  function openMore(sub, originEl) {
+    if (document.getElementById('game-screen').classList.contains('is-start')) {
+      screenFlash(originEl || document.getElementById('btn-back-to-hub')); // 홈 → 더보기
+      setTimeout(function () { openMoreNow(sub); }, FLASH_DELAY_MS);
+      return;
+    }
+    openMoreNow(sub);
+  }
+  function openMoreNow(sub) {
     // 진행 중이던 게임이 있으면(직접 일시정지했든 아니든) 상단 = "‹ 이어하기" + 칩 잠금.
     var resumable = !!(state && !state.ended);
     // 플레이 중(일시정지 아님)에 열면 게임을 멈춘다 (닫을 때 자동 재개).
@@ -235,24 +249,32 @@
       if (sub === 'inventory-screen' && inventoryScreen) inventoryScreen.show();
     }
   }
-  function closeMore() {
-    screenNav.reset();
+  function closeMore(e) {
     var mm = document.getElementById('more-menu');
+    // 진행 중이던 게임이 있으면 그대로 더보기만 닫고, 없으면 대화 화면 — 이 경우
+    // more-menu 를 여기서 먼저 숨기지 않는다(showStartScreenNow 가 플래시 시점에 맞춰 처리).
+    if (!state) { showStartScreen({ originEl: e && e.currentTarget }); return; }
+    screenNav.reset();
     mm.hidden = true;
     mm.classList.remove('mm-paused');
     // 열 때 멈춘 게임이면 재개.
-    if (state && state.pausedByMenu) {
+    if (state.pausedByMenu) {
       state.paused = false;
       state.pausedByMenu = false;
       lastTime = performance.now();
     }
-    // 진행 중이던 게임이 있으면 그대로, 없으면 대화 화면.
-    if (!state) showStartScreen();
   }
 
   // ---------- 시작 화면 ----------
   function showStartScreen(opts) {
-    if (!(opts && opts.skipFlash)) screenFlash(); // 더보기/게임종료 → 홈 (최초 진입만 예외)
+    if (!(opts && opts.skipFlash)) {
+      screenFlash(opts && opts.originEl); // 더보기/게임종료 → 홈 (최초 진입만 예외)
+      setTimeout(function () { showStartScreenNow(opts); }, FLASH_DELAY_MS);
+      return;
+    }
+    showStartScreenNow(opts);
+  }
+  function showStartScreenNow(opts) {
     sessionGen++; // 진행 중이던 카운트다운/자동진행 타이머 무효화
     if (rafId) cancelAnimationFrame(rafId);
     if (sharedPopElements) sharedPopElements.clear();
@@ -1013,10 +1035,10 @@
     // ⚠️ 핵심 리스너 배선을 showStartScreen() 보다 먼저 — showStartScreen 안에서 예외가 나도
     // (예: 스테일 캐시로 모듈 하나 누락) ⊞ 홈버튼·일시정지 등이 죽지 않도록.
     // 좌상단 ⊞ = 더보기 메뉴 열기.
-    document.getElementById('btn-back-to-hub').addEventListener('click', () => {
+    document.getElementById('btn-back-to-hub').addEventListener('click', (e) => {
       // 결과 화면에선 ⊞ = 곧장 홈(대화)으로 (다시하기 버튼 없앰 — 중복). 그 외엔 더보기 메뉴.
-      if (!document.getElementById('gameover-overlay').hidden) { showStartScreen({ retry: true }); return; }
-      openMore();
+      if (!document.getElementById('gameover-overlay').hidden) { showStartScreen({ retry: true, originEl: e.currentTarget }); return; }
+      openMore(undefined, e.currentTarget);
     });
     document.getElementById('btn-pause').addEventListener('click', togglePause);
     document.getElementById('nc-back-btn').addEventListener('click', () => {
@@ -1191,12 +1213,12 @@
           localStorage.setItem('mole.difficulty', d);
           moreMenu.refresh();
         },
-        start: () => {
+        start: (e) => {
           // 더보기 메뉴의 "시작" (통화 버튼 자리) → 더보기 닫고 대화 화면으로.
-          // (대화 화면 시작 버튼을 눌러야 그 난이도로 게임이 시작된다.)
-          screenNav.reset();
-          document.getElementById('more-menu').hidden = true;
-          showStartScreen();
+          // (대화 화면 시작 버튼을 눌러야 그 난이도로 게임이 시작된다. more-menu 숨김/screenNav
+          // 리셋은 showStartScreenNow 가 이미 처리하므로 여기서 먼저 하지 않는다 —
+          // 플래시가 화면을 덮은 순간에 맞춰 전환돼야 "그 버튼에서 펼쳐지는" 느낌이 남.)
+          showStartScreen({ originEl: e && e.currentTarget });
         },
         shop: () => { screenNav.show('shop-screen'); shop.show(); },
         daily: () => { screenNav.show('daily-screen'); daily.show(); },

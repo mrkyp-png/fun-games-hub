@@ -1121,8 +1121,8 @@ body { background: var(--lm-page); }
   background: repeating-linear-gradient(115deg,
     transparent 0 7%, rgba(255, 255, 255, 0.22) 8% 9%, transparent 10% 18%);
 }
-#screen-flash-fx.fx-violet { background: radial-gradient(circle at 50% 50%, rgba(130, 70, 230, 0.6), rgba(90, 40, 170, 0.35) 60%, transparent 100%); }
-#screen-flash-fx.fx-gold   { background: radial-gradient(circle at 50% 50%, rgba(153, 106, 4, 0.6), rgba(110, 74, 3, 0.35) 60%, transparent 100%); }
+#screen-flash-fx.fx-violet { background: radial-gradient(circle at var(--fx-x, 50%) var(--fx-y, 50%), rgba(130, 70, 230, 0.6), rgba(90, 40, 170, 0.35) 60%, transparent 100%); }
+#screen-flash-fx.fx-gold   { background: radial-gradient(circle at var(--fx-x, 50%) var(--fx-y, 50%), rgba(153, 106, 4, 0.6), rgba(110, 74, 3, 0.35) 60%, transparent 100%); }
 @keyframes screen-flash-anim {
   0%   { opacity: 0; }
   22%  { opacity: 1; }
