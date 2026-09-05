@@ -336,6 +336,9 @@ body { background: var(--lm-page); }
   z-index: 10;                 /* 하트/코인박스(board-stats)보다 위 — 겹쳐도 이 박스가 다 보이게 */
   will-change: transform, opacity, filter;
 }
+/* 클릭은 통과시켜야 함 — 안 그러면 내려와있는 동안 그 아래 챕터 선택(◀▶) 버튼이
+   안 눌림(사용자 보고: "챕터3에서 챕터1,2로 못 돌아간다"). 이 배너는 클릭 기능이 없다. */
+#start-best { pointer-events: none; }
 .chat-sms.is-empty { display: none; }
 #game-screen:not(.is-start) .chat-sms { display: none; }  /* #board-start 밖으로 옮겨서 이제 직접 게이팅 */
 /* .sms-anim = game.js가 시작화면 열 때 붙임.
