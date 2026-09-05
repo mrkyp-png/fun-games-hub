@@ -99,7 +99,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v174</div>
+      <div id="build-tag" aria-hidden="true">v175</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -159,9 +159,69 @@
         <div class="nc-sub" data-i18n="mole.chapter.soon">준비 중이에요</div>
         <button type="button" class="nc-back" id="nc-back-btn" data-i18n="common.back">나가기</button>
       </div>
-
-      <!-- 더보기 메뉴 하위 화면들 (screen-nav.js 가 배타 토글) -->
-      <div class="board-screen face-maker" id="face-maker" hidden>
+    </div>
+    <!-- 더보기 메뉴 = mole-board 형제(sibling)로 이동 — position:fixed 인데 mole-board 자식이면
+         mole-board 자체가 flipSwap 으로 rotateY 될 때 그게 more-menu 의 containing block 이
+         되어버려 화면 전체가 아니라 mole-board 박스 기준으로 깨져 렌더링됨(키패드/망치만 보이는 버그). -->
+    <div id="more-menu" class="board-panel more-menu" hidden>
+      <div class="mm-topbar">
+        <button type="button" class="mm-close" data-mm-close aria-label="닫기">‹</button>
+        <span class="mm-title" data-i18n="mole.more.title">더보기</span>
+        <button type="button" class="mm-resume" data-mm-close>
+          <span aria-hidden="true">‹</span><span data-i18n="mole.more.resume">이어하기</span>
+        </button>
+      </div>
+      <div class="mm-profile">
+        <span class="mm-profile-stats">
+          <span class="mm-stat mm-hearts" data-mm-hearts><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg><b>5</b></span>
+          <span class="mm-stat mm-coins" data-mm-coins><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg><b>0</b></span>
+        </span>
+        <button type="button" class="mm-avatar" data-mm-avatar aria-label="프로필 사진 변경"></button>
+        <button type="button" class="mm-profile-txt" data-mm-name>
+          <b data-mm-nick>두더지</b><i data-mm-sub></i>
+        </button>
+      </div>
+      <div class="mm-maker" data-mm-make>
+        <span class="mm-maker-faces" data-mm-faces></span>
+        <span class="mm-maker-txt" data-i18n="mole.more.make">사진으로 멋진 캐릭터 만들기</span>
+        <span class="mm-maker-btn" data-i18n="mole.more.makeBtn">만들기</span>
+      </div>
+      <div class="mm-pills">
+        <button type="button" class="mm-pill" data-mm-diff="easy">
+          <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"/></svg>
+          <span data-i18n="mole.diff.easy">라이트 ON</span>
+        </button>
+        <button type="button" class="mm-pill" data-mm-diff="mid">
+          <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"/></svg>
+          <span data-i18n="mole.diff.mid">라이트 DIM</span>
+        </button>
+        <button type="button" class="mm-pill" data-mm-diff="legend">
+          <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"/></svg>
+          <span data-i18n="mole.diff.legend">라이트 OFF</span>
+        </button>
+        <button type="button" class="mm-pill mm-pill--locked" data-mm-secret disabled aria-disabled="true">
+          <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>
+          <span data-i18n="mole.diff.secret">시크릿 모드</span>
+        </button>
+      </div>
+      <div class="mm-grid">
+        <button type="button" data-mm-nav="score"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v4a5 5 0 01-10 0zM7 5.5H4V8a3 3 0 003 3M17 5.5h3V8a3 3 0 01-3 3M12 13v4M8.5 20.5h7l-1-3h-5z"/></svg><i data-i18n="mole.more.score">스코어</i></button>
+        <button type="button" data-mm-nav="daily"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M8.5 3v4M15.5 3v4"/></svg><i data-i18n="mole.more.daily">일일</i></button>
+        <button type="button" data-mm-nav="shop"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8h11l1 11.5h-13zM9 8V6.5a3 3 0 016 0V8"/></svg><i data-i18n="mole.more.shop">상점</i></button>
+        <button type="button" data-mm-nav="quest"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h9l4 4v12H6zM15 4v4h4M9 12h6M9 16h6"/></svg><i data-i18n="mole.more.quest">퀘스트</i></button>
+        <button type="button" data-mm-nav="locker"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.4"/><path d="M8.5 7 10 4.5h4L15.5 7"/></svg><i data-i18n="mole.more.photos">사진보관</i></button>
+        <button type="button" data-mm-nav="friends"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c0-3.3 2.5-5.5 5.5-5.5s5.5 2.2 5.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.6c2.6.3 5 2.3 5 5.4"/></svg><i data-i18n="mole.more.friends">친구</i></button>
+        <button type="button" data-mm-nav="inventory"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8l1.6-3.4A1 1 0 015.5 4h13a1 1 0 01.9.6L21 8M4 8h16v11a1 1 0 01-1 1H5a1 1 0 01-1-1zM9.5 12h5"/></svg><i data-i18n="mole.more.inventory">아이템 보관</i></button>
+        <button type="button" data-mm-nav="settings"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 13a7.8 7.8 0 000-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 00-1.7-1L14 3h-4l-.6 2.6a7.6 7.6 0 00-1.7 1l-2.4-1-2 3.4L4.6 11a7.8 7.8 0 000 2l-2 1.6 2 3.4 2.4-1c.5.4 1.1.7 1.7 1L10 21h4l.6-2.6c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.4-2-1.6z"/><circle cx="12" cy="12" r="2.6"/></svg><i data-i18n="mole.more.settings">설정</i></button>
+        <button type="button" class="mm-go" data-mm-start><span class="mm-go-badge"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.4.6 3.6.6.6 0 1 .5 1 1V20c0 .6-.4 1-1 1C10.2 21 3 13.8 3 5c0-.6.5-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.2 1l-2.3 2.2z"/></svg><span class="idle-crown-fx" aria-hidden="true"></span></span><i>PLAY</i></button>
+      </div>
+      <div class="mm-ad" data-mm-ad></div>
+    </div>
+    <!-- 더보기 메뉴 하위 화면들 (screen-nav.js 가 배타 토글) — mole-board 형제로 이동.
+         이 화면들도 more-menu(v168)와 똑같이 position:fixed 인데 mole-board 자식이었음 —
+         플레이 중 더보기를 열면 mole-board 가 hidden 되어 그 자손인 이 화면들도 통째로
+         0x0 렌더링돼 "아이콘 눌러도 안 먹힘"(클릭 자체는 됐지만 화면이 안 보임)으로 보였음. -->
+    <div class="board-screen face-maker" id="face-maker" hidden>
         <div class="board-screen-bar">
           <button type="button" class="bs-back" data-fm-cancel aria-label="뒤로">‹</button>
           <span class="bs-title" data-i18n="mole.fm.title">사람두더지 만들기</span>
@@ -310,64 +370,6 @@
         </div>
         <p class="bs-soon" data-i18n="mole.soon">준비 중이에요</p>
       </div>
-    </div>
-    <!-- 더보기 메뉴 = mole-board 형제(sibling)로 이동 — position:fixed 인데 mole-board 자식이면
-         mole-board 자체가 flipSwap 으로 rotateY 될 때 그게 more-menu 의 containing block 이
-         되어버려 화면 전체가 아니라 mole-board 박스 기준으로 깨져 렌더링됨(키패드/망치만 보이는 버그). -->
-    <div id="more-menu" class="board-panel more-menu" hidden>
-      <div class="mm-topbar">
-        <button type="button" class="mm-close" data-mm-close aria-label="닫기">‹</button>
-        <span class="mm-title" data-i18n="mole.more.title">더보기</span>
-        <button type="button" class="mm-resume" data-mm-close>
-          <span aria-hidden="true">‹</span><span data-i18n="mole.more.resume">이어하기</span>
-        </button>
-      </div>
-      <div class="mm-profile">
-        <span class="mm-profile-stats">
-          <span class="mm-stat mm-hearts" data-mm-hearts><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg><b>5</b></span>
-          <span class="mm-stat mm-coins" data-mm-coins><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg><b>0</b></span>
-        </span>
-        <button type="button" class="mm-avatar" data-mm-avatar aria-label="프로필 사진 변경"></button>
-        <button type="button" class="mm-profile-txt" data-mm-name>
-          <b data-mm-nick>두더지</b><i data-mm-sub></i>
-        </button>
-      </div>
-      <div class="mm-maker" data-mm-make>
-        <span class="mm-maker-faces" data-mm-faces></span>
-        <span class="mm-maker-txt" data-i18n="mole.more.make">사진으로 멋진 캐릭터 만들기</span>
-        <span class="mm-maker-btn" data-i18n="mole.more.makeBtn">만들기</span>
-      </div>
-      <div class="mm-pills">
-        <button type="button" class="mm-pill" data-mm-diff="easy">
-          <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"/></svg>
-          <span data-i18n="mole.diff.easy">라이트 ON</span>
-        </button>
-        <button type="button" class="mm-pill" data-mm-diff="mid">
-          <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"/></svg>
-          <span data-i18n="mole.diff.mid">라이트 DIM</span>
-        </button>
-        <button type="button" class="mm-pill" data-mm-diff="legend">
-          <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"/></svg>
-          <span data-i18n="mole.diff.legend">라이트 OFF</span>
-        </button>
-        <button type="button" class="mm-pill mm-pill--locked" data-mm-secret disabled aria-disabled="true">
-          <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>
-          <span data-i18n="mole.diff.secret">시크릿 모드</span>
-        </button>
-      </div>
-      <div class="mm-grid">
-        <button type="button" data-mm-nav="score"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v4a5 5 0 01-10 0zM7 5.5H4V8a3 3 0 003 3M17 5.5h3V8a3 3 0 01-3 3M12 13v4M8.5 20.5h7l-1-3h-5z"/></svg><i data-i18n="mole.more.score">스코어</i></button>
-        <button type="button" data-mm-nav="daily"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M8.5 3v4M15.5 3v4"/></svg><i data-i18n="mole.more.daily">일일</i></button>
-        <button type="button" data-mm-nav="shop"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8h11l1 11.5h-13zM9 8V6.5a3 3 0 016 0V8"/></svg><i data-i18n="mole.more.shop">상점</i></button>
-        <button type="button" data-mm-nav="quest"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h9l4 4v12H6zM15 4v4h4M9 12h6M9 16h6"/></svg><i data-i18n="mole.more.quest">퀘스트</i></button>
-        <button type="button" data-mm-nav="locker"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.4"/><path d="M8.5 7 10 4.5h4L15.5 7"/></svg><i data-i18n="mole.more.photos">사진보관</i></button>
-        <button type="button" data-mm-nav="friends"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c0-3.3 2.5-5.5 5.5-5.5s5.5 2.2 5.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.6c2.6.3 5 2.3 5 5.4"/></svg><i data-i18n="mole.more.friends">친구</i></button>
-        <button type="button" data-mm-nav="inventory"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8l1.6-3.4A1 1 0 015.5 4h13a1 1 0 01.9.6L21 8M4 8h16v11a1 1 0 01-1 1H5a1 1 0 01-1-1zM9.5 12h5"/></svg><i data-i18n="mole.more.inventory">아이템 보관</i></button>
-        <button type="button" data-mm-nav="settings"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 13a7.8 7.8 0 000-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 00-1.7-1L14 3h-4l-.6 2.6a7.6 7.6 0 00-1.7 1l-2.4-1-2 3.4L4.6 11a7.8 7.8 0 000 2l-2 1.6 2 3.4 2.4-1c.5.4 1.1.7 1.7 1L10 21h4l.6-2.6c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.4-2-1.6z"/><circle cx="12" cy="12" r="2.6"/></svg><i data-i18n="mole.more.settings">설정</i></button>
-        <button type="button" class="mm-go" data-mm-start><span class="mm-go-badge"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.4.6 3.6.6.6 0 1 .5 1 1V20c0 .6-.4 1-1 1C10.2 21 3 13.8 3 5c0-.6.5-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.2 1l-2.3 2.2z"/></svg><span class="idle-crown-fx" aria-hidden="true"></span></span><i>PLAY</i></button>
-      </div>
-      <div class="mm-ad" data-mm-ad></div>
-    </div>
     <!-- 뽕망치 = 보드 밖(클리핑 없음) — 우측 끝 스윙이 베젤까지 다 보이게 -->
     <div id="mole-hammer-layer"></div>
     <div id="fold-hinge" aria-hidden="true"></div>
@@ -452,7 +454,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=174').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=175').catch(function () {});
       }
     });
   }
