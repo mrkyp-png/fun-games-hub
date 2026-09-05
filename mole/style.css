@@ -936,6 +936,7 @@ body { background: var(--lm-page); }
   inset: 0;
   background-image: var(--curtain-grad, none);
   background-size: 70px 70px; /* 고정 — 원 위치 불변 */
+  background-position: var(--curtain-pos, 0 0); /* 우측 패널만 JS 가 보정 — 아래 참고 */
 }
 /* 라운드1 3·2·1 카운트다운만 배경 없이 — 보드가 그대로 비쳐 보이게. (라운드2+ 두더지 전환,
    시작 인트로 타이핑 화면은 커튼 패턴 유지.) */

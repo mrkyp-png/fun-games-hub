@@ -135,6 +135,17 @@
   let curtainPatternGen = 0;
   function restartCurtainPattern(overlay, reversed) {
     const curtains = overlay.querySelectorAll('.ri-curtain');
+    // 좌/우 패널이 각자 자기 왼쪽 모서리(0,0) 기준으로 따로 타일링돼서, 우측 패널은
+    // 화면상 중앙(좌측 패널 너비만큼 떨어진 지점)부터 시작해 타일 위상이 어긋나 중앙에
+    // 폭이 좁은/이상한 구간이 생겼다(사용자 보고) — 우측 패널의 시작 위치를 타일
+    // 크기(70px)의 배수만큼 왼쪽으로 당겨서 좌측 패널과 같은 리듬으로 이어지게 보정.
+    const TILE = 70;
+    curtains.forEach((c) => {
+      if (c.classList.contains('ri-curtain--r')) {
+        const offset = c.offsetLeft % TILE;
+        c.style.setProperty('--curtain-pos', (-offset) + 'px 0');
+      }
+    });
     const myGen = ++curtainPatternGen;
     const DURATION = 2300;
     const SLOW_MAX = 45; // px — 먼저 보이는 색, 처음부터 끝까지 꾸준히(선형) 천천히 커짐
