@@ -218,48 +218,32 @@
     el.classList.add('is-on');
   }
 
-  // 책장 넘기듯 전환(SOP) — 화면 쌍마다 커버 범위가 다를 수 있어(더보기=전체화면,
-  // board-start=정사각 보드만) outEls/inEls 를 배열로 받아 "화면 하나" 취급으로 묶는다.
-  // outEls 는 뒤로 넘어가며 사라지고 inEls 는 앞에서 넘어와 나타남. 단일 요소도 그대로 받음.
+  // 책장 넘기듯 전환 — 처음 3D 적용했던 버전으로 확정, 더 이상 변경하지 않음.
+  // outEl 은 뒤로 넘어가며 사라지고 inEl 은 앞에서 넘어와 나타남.
   const FLIP_MS = 500;
-  function flipSwap(outEls, inEls) {
-    var outs = [].concat(outEls).filter(Boolean);
-    var ins = [].concat(inEls).filter(Boolean);
-    if (!outs.length || !ins.length) return;
-    // 회전 중(특히 90도 부근) 양쪽 다 옆으로 서서 그 뒤의 초록 게임판(#mole-board)이
+  function flipSwap(outEl, inEl) {
+    if (!outEl || !inEl || outEl === inEl) return;
+    // 회전 중(특히 90도 부근) 패널이 옆으로 서서 그 뒤의 초록 게임판(#mole-board)이
     // 잠깐 비쳐 보이는 문제 — mole-board 자신이 전환 대상이 아닐 때만 숨긴다.
     var board = document.getElementById('mole-board');
-    var boardInvolved = outs.indexOf(board) !== -1 || ins.indexOf(board) !== -1;
-    if (board && !boardInvolved) board.style.visibility = 'hidden';
-    // position:fixed(more-menu)는 #game-screen 의 perspective 를 못 받고, board-start 는
-    // #mole-board(overflow:hidden) 안에 있어서 조상 perspective 상속이 깨져(회전이 안
-    // 보이거나 눌린 것처럼 보임) 둘 다 자체 perspective() 가 든 -fixed 변형을 써야 한다.
-    var needsOwnPerspective = function (el) {
-      return getComputedStyle(el).position === 'fixed' || (board && board.contains(el));
-    };
-    var outCls = function (el) { return needsOwnPerspective(el) ? 'flip-out-fixed' : 'flip-out'; };
-    var inCls = function (el) { return needsOwnPerspective(el) ? 'flip-in-fixed' : 'flip-in'; };
-    ins.forEach(function (el) { el.hidden = false; });
-    outs.forEach(function (el) { var c = outCls(el); el.classList.remove(c); void el.offsetWidth; el.classList.add(c); });
-    ins.forEach(function (el) { var c = inCls(el); el.classList.remove(c); void el.offsetWidth; el.classList.add(c); });
+    if (board && outEl !== board && inEl !== board) board.style.visibility = 'hidden';
+    inEl.hidden = false;
+    outEl.classList.remove('flip-out'); void outEl.offsetWidth; outEl.classList.add('flip-out');
+    inEl.classList.remove('flip-in'); void inEl.offsetWidth; inEl.classList.add('flip-in');
     setTimeout(function () {
-      outs.forEach(function (el) { el.hidden = true; el.classList.remove(outCls(el)); });
-      ins.forEach(function (el) { el.classList.remove(inCls(el)); });
-      if (board && !boardInvolved) board.style.visibility = '';
+      outEl.hidden = true;
+      outEl.classList.remove('flip-out');
+      inEl.classList.remove('flip-in');
+      if (board && outEl !== board && inEl !== board) board.style.visibility = '';
     }, FLIP_MS);
   }
-  // 홈 화면 = HUD + 대화(board-start) + 다이얼패드, 세 요소를 하나의 "화면"으로 묶어서
-  // 더보기(전체화면)와 커버 범위를 맞춘다 — 안 맞으면 회전 중 일부만 안 넘어가는 것처럼 보임.
-  function homeScreenEls() {
-    return [document.querySelector('.game-hud'), document.getElementById('board-start'), document.querySelector('.dialpad')];
-  }
-
 
   // 더보기 메뉴 열기/닫기.
   function openMore(sub, originEl) {
     if (document.getElementById('game-screen').classList.contains('is-start')) {
+      var boardStart = document.getElementById('board-start');
       openMoreNow(sub); // more-menu 내용 준비(hidden=false 는 flipSwap 이 처리)
-      flipSwap(homeScreenEls(), document.getElementById('more-menu'));
+      flipSwap(boardStart, document.getElementById('more-menu'));
       return;
     }
     openMoreNow(sub);
@@ -311,11 +295,10 @@
       var go = document.getElementById('gameover-overlay');
       var ncp = document.getElementById('next-chapter-panel');
       var outEl = !mm.hidden ? mm : !go.hidden ? go : !ncp.hidden ? ncp : null;
-      // more-menu 는 전체화면이라 홈도 board-start+다이얼패드를 묶어야 범위가 맞음.
-      // 결과화면/다음챕터는 board-start 처럼 정사각 보드만 차지해서 board-start 하나로 충분.
-      var inEls = outEl === mm ? homeScreenEls() : document.getElementById('board-start');
       showStartScreenNow(opts);
-      if (outEl) { outEl.hidden = false; flipSwap(outEl, inEls); }
+      // showStartScreenNow 가 이미 outEl 을 hidden=true 처리했을 수 있음 — flip-out 애니메이션이
+      // 보이려면 다시 잠깐 보여야 한다(끝나면 flipSwap 이 다시 hidden=true 로 되돌림).
+      if (outEl) { outEl.hidden = false; flipSwap(outEl, document.getElementById('board-start')); }
       return;
     }
     showStartScreenNow(opts);
