@@ -125,6 +125,16 @@
     }
   }
 
+  // 커튼(.ri-curtain)이 뜰 때마다 "패턴이 확 퍼졌다 단색으로 정리"(ri-curtain-solidify)를
+  // 재생. animation 은 클래스가 붙어있는 동안 한 번만 재생되므로, 뗐다 리플로우 후 다시
+  // 붙여야 매번 재트리거된다.
+  function restartCurtainPattern(overlay) {
+    const curtains = overlay.querySelectorAll('.ri-curtain');
+    curtains.forEach((c) => c.classList.remove('ri-curtain--pattern-play'));
+    void overlay.offsetWidth;
+    curtains.forEach((c) => c.classList.add('ri-curtain--pattern-play'));
+  }
+
   // 라운드1 진입 전 한 번 — "챕터N" + "손을 풀어봅시다..." 타이핑, 끝나면 잠깐 멈췄다 커튼 오픈.
   function playStartIntro(onDone) {
     const overlay = document.getElementById('start-intro-overlay');
@@ -134,6 +144,7 @@
     tipEl.textContent = '';
     overlay.classList.remove('is-opening');
     overlay.hidden = false;
+    restartCurtainPattern(overlay);
     setHammerLayerVisible(false);
     const fullTip = I18N.t('mole.startintro.tip');
     let i = 0;
@@ -712,6 +723,7 @@
     const moleImg = document.getElementById('round-intro-mole');
     title.textContent = I18N.t('mole.round', { n: roundNum });
     overlay.hidden = false;
+    restartCurtainPattern(overlay);
 
     // 2라운드부터: 카운트다운 없이 두더지 이미지(8종 순환) 잠깐 보여주고 바로 커튼 오픈.
     // 타이틀은 오른쪽에서, 이미지는 왼쪽에서 날아와 중앙에서 만남(has-mole 진입 애니메이션).

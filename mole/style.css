@@ -931,12 +931,31 @@ body { background: var(--lm-page); }
   position: absolute;
   top: 0; bottom: 0;
   width: 50%;
-  background: #ecedef;
+  background-color: #2b2f77;
+  background-image:
+    radial-gradient(circle at 25% 25%, #ff8fa3 0 6px, transparent 7px),
+    radial-gradient(circle at 75% 75%, #ffd166 0 6px, transparent 7px);
+  background-size: 28px 28px;
   z-index: 0;
+  overflow: hidden;
   transition: transform 0.26s cubic-bezier(.5, 0, .75, 0);
 }
 .ri-curtain--l { left: 0; box-shadow: inset -8px 0 14px rgba(0, 0, 0, 0.14); }
 .ri-curtain--r { right: 0; box-shadow: inset 8px 0 14px rgba(0, 0, 0, 0.14); }
+/* 참고 영상(화면전환.mp4)의 "패턴이 확 퍼졌다 단색으로 정리" 효과 — 커튼이 뜰 때마다
+   재생. JS(restartCurtainPattern)가 매번 클래스를 떼었다 다시 붙여 리트리거한다. */
+.ri-curtain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #ecedef; /* 커튼 본래 색으로 정리 */
+  opacity: 0;
+}
+.ri-curtain--pattern-play::after { animation: ri-curtain-solidify 0.55s ease-in forwards; }
+@keyframes ri-curtain-solidify {
+  0%, 45% { opacity: 0; }
+  100% { opacity: 1; }
+}
 .round-intro.is-opening .ri-curtain--l { transform: translateX(-101%); }
 .round-intro.is-opening .ri-curtain--r { transform: translateX(101%); }
 .round-intro.is-opening .round-intro-title,
