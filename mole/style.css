@@ -938,39 +938,23 @@ body { background: var(--lm-page); }
 }
 .ri-curtain--l { left: 0; box-shadow: inset -8px 0 14px rgba(0, 0, 0, 0.14); }
 .ri-curtain--r { right: 0; box-shadow: inset 8px 0 14px rgba(0, 0, 0, 0.14); }
-/* 참고 영상(화면전환.mp4) — 노란 원이 먼저 커지고, 뒤이어 분홍 원이 더 빠르게 커지며
-   전체를 덮어 분홍 단색이 된다. 두 겹(::before=노랑 뒤, ::after=분홍 앞)을 따로 키운다 —
-   background-size 가 작아질수록(고정 반지름 원 기준) 원이 서로 붙어 커 보이는 원리.
-   커튼이 뜰 때마다 재생 — JS(restartCurtainPattern)가 매번 클래스를 떼었다 다시 붙여 리트리거. */
-.ri-curtain::before,
-.ri-curtain::after {
+/* 참고 영상(화면전환.mp4) — 원 자체는 자리 이동 없음(고정 tile). 원 하나하나가
+   노랑(바깥)+분홍(안쪽) 동심원 — 노랑이 제자리에서 천천히 커지고, 그 중심에서 분홍이
+   더 빠르게 커져 노랑을 뒤덮으며 결국 화면 전체가 분홍이 된다. CSS @property 로
+   그라디언트 stop 을 애니메이션했더니 브라우저에서 깨진 도형이 렌더링되는 버그가 있어
+   JS(restartCurtainPattern, game.js)가 requestAnimationFrame 으로 매 프레임 직접
+   background-image 문자열을 새로 그려 넣는다 — 정적 그라디언트라 렌더링이 안전하다. */
+.ri-curtain::before {
   content: '';
   position: absolute;
   inset: 0;
-  background-image:
-    radial-gradient(circle at 25% 25%, currentColor 0 6px, transparent 7px),
-    radial-gradient(circle at 75% 75%, currentColor 0 6px, transparent 7px);
-  background-size: 70px 70px;
-}
-.ri-curtain::before { color: #ffd166; z-index: 1; } /* 노랑 — 뒤 */
-.ri-curtain::after  { color: #ff6f91; z-index: 2; } /* 분홍 — 앞, 결국 전체를 덮음 */
-.ri-curtain--pattern-play::before { animation: ri-curtain-grow-gold 2.3s ease-out forwards; }
-.ri-curtain--pattern-play::after  { animation: ri-curtain-grow-pink 2.3s ease-out forwards; }
-@keyframes ri-curtain-grow-gold {
-  0%   { background-size: 70px 70px; }
-  60%  { background-size: 22px 22px; }
-  100% { background-size: 22px 22px; }
-}
-@keyframes ri-curtain-grow-pink {
-  0%   { background-size: 70px 70px; }
-  30%  { background-size: 70px 70px; } /* 노랑이 먼저 커질 동안 대기 */
-  100% { background-size: 3px 3px; }   /* 원끼리 붙어 분홍 단색처럼 됨 */
+  background-image: var(--curtain-grad, none);
+  background-size: 70px 70px; /* 고정 — 원 위치 불변 */
 }
 /* 라운드1 3·2·1 카운트다운만 배경 없이 — 보드가 그대로 비쳐 보이게. (라운드2+ 두더지 전환,
    시작 인트로 타이핑 화면은 커튼 패턴 유지.) */
 #round-intro-overlay:not(.has-mole) .ri-curtain { background: none; box-shadow: none; }
-#round-intro-overlay:not(.has-mole) .ri-curtain::before,
-#round-intro-overlay:not(.has-mole) .ri-curtain::after { display: none; }
+#round-intro-overlay:not(.has-mole) .ri-curtain::before { display: none; }
 .round-intro.is-opening .ri-curtain--l { transform: translateX(-101%); }
 .round-intro.is-opening .ri-curtain--r { transform: translateX(101%); }
 .round-intro.is-opening .round-intro-title,

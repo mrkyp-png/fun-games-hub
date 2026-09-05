@@ -125,14 +125,36 @@
     }
   }
 
-  // 커튼(.ri-curtain)이 뜰 때마다 "패턴이 확 퍼졌다 단색으로 정리"(ri-curtain-solidify)를
-  // 재생. animation 은 클래스가 붙어있는 동안 한 번만 재생되므로, 뗐다 리플로우 후 다시
-  // 붙여야 매번 재트리거된다.
-  function restartCurtainPattern(overlay) {
+  // 커튼(.ri-curtain)이 뜰 때마다 재생 — 원(노랑+분홍 동심원, 위치 고정)이 제자리에서
+  // 커진다: 노랑이 먼저 천천히 커지고, 그 중심에서 분홍이 더 빠르게 커져 노랑을 뒤덮으며
+  // 화면 전체가 분홍이 된다. CSS @property 로 그라디언트 stop 을 애니메이션했더니 브라우저
+  // 렌더링이 깨져서(도형이 이상하게 뜯김) — 매 프레임 JS 로 정적 그라디언트 문자열을 직접
+  // 새로 계산해 넣는 방식으로 변경(안전, 검증된 렌더 경로).
+  // reversed=true(10라운드 완주 결과화면 전환용) — 색 역할이 뒤바뀜: 분홍이 천천히 먼저
+  // 보이고, 노랑이 빠르게 따라잡아 앞질러서 최종 단색이 노랑이 된다.
+  let curtainPatternGen = 0;
+  function restartCurtainPattern(overlay, reversed) {
     const curtains = overlay.querySelectorAll('.ri-curtain');
-    curtains.forEach((c) => c.classList.remove('ri-curtain--pattern-play'));
-    void overlay.offsetWidth;
-    curtains.forEach((c) => c.classList.add('ri-curtain--pattern-play'));
+    const myGen = ++curtainPatternGen;
+    const DURATION = 2300;
+    const SLOW_MAX = 45; // px — 먼저 보이는 색, 처음부터 끝까지 꾸준히(선형) 천천히 커짐
+    const FAST_MAX = 70; // px — 나중 색, 처음엔 거의 안 보이다(cubic ease-in) 뒤늦게 확 커져
+                          // 앞의 색을 따라잡고 앞질러 타일 전체를 뒤덮는다("따라잡는 재미").
+    const slowColor = reversed ? '#ff6f91' : '#ffd166';
+    const fastColor = reversed ? '#ffd166' : '#ff6f91';
+    const t0 = performance.now();
+    function frame(now) {
+      if (myGen !== curtainPatternGen) return; // 새 재생이 시작돼 이 루프는 폐기
+      const t = Math.min(1, (now - t0) / DURATION);
+      const slowR = t * SLOW_MAX;
+      const fastR = t * t * t * FAST_MAX; // cubic ease-in — 뒤로 갈수록 급격히 따라잡음
+      const grad =
+        'radial-gradient(circle at 25% 25%, ' + fastColor + ' 0 ' + fastR + 'px, ' + slowColor + ' ' + fastR + 'px ' + slowR + 'px, transparent ' + slowR + 'px),' +
+        'radial-gradient(circle at 75% 75%, ' + fastColor + ' 0 ' + fastR + 'px, ' + slowColor + ' ' + fastR + 'px ' + slowR + 'px, transparent ' + slowR + 'px)';
+      curtains.forEach((c) => c.style.setProperty('--curtain-grad', grad));
+      if (t < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
   }
 
   // 글자 하나씩 타이핑, 다 치면 onTyped 호출.
@@ -1000,7 +1022,20 @@
     resetHot();
 
     if (finishedRound >= FINAL_ROUND) {
-      closeCurtain(() => { finishFromRound('done'); }); // 10라운드 완주 → 커튼 닫고 결과
+      // 10라운드 완주 → 커튼 닫고 결과. 색 역할을 반대로(분홍이 먼저 천천히, 노랑이
+      // 따라잡아 최종 노랑) 재생해 라운드 전환(최종 분홍)과 구분(사용자 요청).
+      const ri = document.getElementById('round-intro-overlay');
+      ri.classList.remove('is-opening');
+      ri.querySelector('.round-intro-title').textContent = '';
+      ri.querySelector('.round-intro-count').textContent = '';
+      ri.hidden = false;
+      ri.classList.add('has-mole'); // :not(.has-mole) 규칙이 패턴을 안 보이게 하므로 필요
+      setHammerLayerVisible(false);
+      restartCurtainPattern(ri, true);
+      setTimeout(() => {
+        ri.classList.remove('has-mole');
+        finishFromRound('done');
+      }, 2300);
       return;
     }
 
