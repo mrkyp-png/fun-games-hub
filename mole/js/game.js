@@ -218,24 +218,32 @@
     el.classList.add('is-on');
   }
 
-  // 대안 B: 책장 넘기듯 전환 — outEl 은 뒤로 넘어가며 사라지고 inEl 은 앞에서 넘어와 나타남.
-  // (사용자 비교 요청으로 screenFlash 와 나란히 유지 — 현재는 이쪽을 호출.)
+  // 책장 넘기듯 전환(SOP) — 화면 쌍마다 커버 범위가 다를 수 있어(더보기=전체화면,
+  // board-start=정사각 보드만) outEls/inEls 를 배열로 받아 "화면 하나" 취급으로 묶는다.
+  // outEls 는 뒤로 넘어가며 사라지고 inEls 는 앞에서 넘어와 나타남. 단일 요소도 그대로 받음.
   const FLIP_MS = 500;
-  function flipSwap(outEl, inEl) {
-    if (!outEl || !inEl || outEl === inEl) return;
-    // 회전 중(특히 90도 부근) 패널이 옆으로 서서 그 뒤의 초록 게임판(#mole-board)이
-    // 잠깐 비쳐 보이는 문제 — 전환하는 동안만 숨긴다.
+  function flipSwap(outEls, inEls) {
+    var outs = [].concat(outEls).filter(Boolean);
+    var ins = [].concat(inEls).filter(Boolean);
+    if (!outs.length || !ins.length) return;
+    // 회전 중(특히 90도 부근) 양쪽 다 옆으로 서서 그 뒤의 초록 게임판(#mole-board)이
+    // 잠깐 비쳐 보이는 문제 — mole-board 자신이 전환 대상이 아닐 때만 숨긴다.
     var board = document.getElementById('mole-board');
-    if (board) board.style.visibility = 'hidden';
-    inEl.hidden = false;
-    outEl.classList.remove('flip-out'); void outEl.offsetWidth; outEl.classList.add('flip-out');
-    inEl.classList.remove('flip-in'); void inEl.offsetWidth; inEl.classList.add('flip-in');
+    var boardInvolved = outs.indexOf(board) !== -1 || ins.indexOf(board) !== -1;
+    if (board && !boardInvolved) board.style.visibility = 'hidden';
+    ins.forEach(function (el) { el.hidden = false; });
+    outs.forEach(function (el) { el.classList.remove('flip-out'); void el.offsetWidth; el.classList.add('flip-out'); });
+    ins.forEach(function (el) { el.classList.remove('flip-in'); void el.offsetWidth; el.classList.add('flip-in'); });
     setTimeout(function () {
-      outEl.hidden = true;
-      outEl.classList.remove('flip-out');
-      inEl.classList.remove('flip-in');
-      if (board) board.style.visibility = '';
+      outs.forEach(function (el) { el.hidden = true; el.classList.remove('flip-out'); });
+      ins.forEach(function (el) { el.classList.remove('flip-in'); });
+      if (board && !boardInvolved) board.style.visibility = '';
     }, FLIP_MS);
+  }
+  // 홈 화면 = 대화(board-start) + 다이얼패드, 두 요소를 하나의 "화면"으로 묶어서
+  // 더보기(전체화면)와 커버 범위를 맞춘다 — 안 맞으면 회전 중 다이얼패드만 안 넘어가는 것처럼 보임.
+  function homeScreenEls() {
+    return [document.getElementById('board-start'), document.querySelector('.dialpad')];
   }
 
   // 이어가기: 더보기(outEl)만 넘어가며 사라지고, 그 뒤에 계속 있던 게임판(#mole-board)이
@@ -256,8 +264,8 @@
   // 더보기 메뉴 열기/닫기.
   function openMore(sub, originEl) {
     if (document.getElementById('game-screen').classList.contains('is-start')) {
-      screenFlash(originEl || document.getElementById('btn-back-to-hub')); // 홈 → 더보기
-      setTimeout(function () { openMoreNow(sub); }, FLASH_DELAY_MS);
+      openMoreNow(sub); // more-menu 내용 준비(hidden=false 는 flipSwap 이 처리)
+      flipSwap(homeScreenEls(), document.getElementById('more-menu'));
       return;
     }
     openMoreNow(sub);
@@ -303,8 +311,17 @@
   // ---------- 시작 화면 ----------
   function showStartScreen(opts) {
     if (!(opts && opts.skipFlash)) {
-      screenFlash(opts && opts.originEl); // 더보기/게임종료 → 홈 (최초 진입만 예외)
-      setTimeout(function () { showStartScreenNow(opts); }, FLASH_DELAY_MS);
+      // 지금 보이는 패널(더보기/결과화면/다음챕터)에서 홈으로 — showStartScreenNow 가
+      // 이 패널들을 hidden=true 로 만들기 전에 먼저 찾아둬야 함.
+      var mm = document.getElementById('more-menu');
+      var go = document.getElementById('gameover-overlay');
+      var ncp = document.getElementById('next-chapter-panel');
+      var outEl = !mm.hidden ? mm : !go.hidden ? go : !ncp.hidden ? ncp : null;
+      // more-menu 는 전체화면이라 홈도 board-start+다이얼패드를 묶어야 범위가 맞음.
+      // 결과화면/다음챕터는 board-start 처럼 정사각 보드만 차지해서 board-start 하나로 충분.
+      var inEls = outEl === mm ? homeScreenEls() : document.getElementById('board-start');
+      showStartScreenNow(opts);
+      if (outEl) { outEl.hidden = false; flipSwap(outEl, inEls); }
       return;
     }
     showStartScreenNow(opts);
