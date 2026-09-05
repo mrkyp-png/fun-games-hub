@@ -1075,8 +1075,9 @@
       buttonBar: document.getElementById('lane-button-bar'),
       gridSize: GRID_SIZE,
       onCell: handleCell,
-      // 홈 화면(전화 다이얼러로 위장 중)일 때만 탭음 — 플레이 중엔 연타가 잦아 타격음과 겹치므로 안 씀.
-      onTap: () => { if (document.getElementById('game-screen').classList.contains('is-start')) MG.HitFx.uiTap(); }
+      // 홈 화면(전화 다이얼러로 위장 중)일 때만 탭음(버튼소리1 고정) — 플레이 중엔 연타가 잦아
+      // 타격음과 겹치므로 안 씀.
+      onTap: () => { if (document.getElementById('game-screen').classList.contains('is-start')) MG.HitFx.uiTap(0); }
     });
     wireStartButton(); // 다이얼러 초록 버튼: 홈에서 탭=시작 / 꾹=종료 대기
     wireChapterNav();  // ◀ 챕터 N ▶ (열린 챕터 2개 이상일 때만 노출)
@@ -1088,6 +1089,7 @@
     // (예: 스테일 캐시로 모듈 하나 누락) ⊞ 홈버튼·일시정지 등이 죽지 않도록.
     // 좌상단 ⊞ = 더보기 메뉴 열기.
     document.getElementById('btn-back-to-hub').addEventListener('click', (e) => {
+      MG.HitFx.uiTap(1); // 홈버튼 탭음(버튼소리2 고정)
       // 결과 화면에선 ⊞ = 곧장 홈(대화)으로 (다시하기 버튼 없앰 — 중복). 그 외엔 더보기 메뉴.
       if (!document.getElementById('gameover-overlay').hidden) { showStartScreen({ retry: true, originEl: e.currentTarget }); return; }
       openMore(undefined, e.currentTarget);

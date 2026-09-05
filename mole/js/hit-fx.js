@@ -64,13 +64,15 @@
       .catch(() => { tapLoading = false; });
   }
 
-  function uiTap() {
+  // idx 0 = 다이얼패드 전용(ui-tap1), idx 1 = 그 외 UI 버튼(더보기 아이콘/만들기/홈버튼/PLAY, ui-tap2).
+  // 랜덤 아님 — 자리마다 항상 같은 소리로 고정(사용자 확정).
+  function uiTap(idx) {
     if (sfxOff()) return;
     try {
       const ctx = getCtx();
-      if (!ctx || !tapBuffers || !tapBuffers.length) return;
+      if (!ctx || !tapBuffers || !tapBuffers[idx]) return;
       const src = ctx.createBufferSource();
-      src.buffer = tapBuffers[(Math.random() * tapBuffers.length) | 0];
+      src.buffer = tapBuffers[idx];
       src.playbackRate.value = 1 + (Math.random() * 2 - 1) * HIT_PITCH_JITTER;
       const g = ctx.createGain();
       g.gain.value = UI_TAP_GAIN * (1 + (Math.random() * 2 - 1) * HIT_GAIN_JITTER);

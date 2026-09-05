@@ -10,11 +10,14 @@
     var on = opts.on;
     var faceUrls = [];
 
+    // 더보기 메뉴 안의 탭음 = 전부 버튼소리2(uiTap(1)) 고정 — 다이얼패드(버튼소리1)와 구분.
+    function tap() { if (MG.HitFx) MG.HitFx.uiTap(1); }
+
     el.querySelectorAll('[data-mm-close]').forEach(function (b) { b.addEventListener('click', on.close); });
-    el.querySelector('[data-mm-make]').addEventListener('click', on.make);
+    el.querySelector('[data-mm-make]').addEventListener('click', function () { tap(); on.make(); });
     el.querySelector('[data-mm-name]').addEventListener('click', on.editName);
     el.querySelector('[data-mm-avatar]').addEventListener('click', on.editAvatar);
-    el.querySelector('[data-mm-start]').addEventListener('click', on.start);
+    el.querySelector('[data-mm-start]').addEventListener('click', function (e) { tap(); on.start(e); });
     el.querySelectorAll('[data-mm-diff]').forEach(function (b) {
       b.addEventListener('click', function () { on.diff(b.getAttribute('data-mm-diff')); });
     });
@@ -22,7 +25,7 @@
                friends: on.friends, inventory: on.inventory, settings: on.settings };
     el.querySelectorAll('[data-mm-nav]').forEach(function (b) {
       b.addEventListener('click', function () {
-        if (MG.HitFx) MG.HitFx.uiTap(); // 더보기 메뉴 아이콘 탭음
+        tap();
         var fn = NAV[b.getAttribute('data-mm-nav')];
         if (fn) fn();
       });
