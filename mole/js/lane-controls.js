@@ -56,6 +56,9 @@
         fillFace(b, FACES[id]);
         b.addEventListener('pointerdown', (e) => {
           e.preventDefault();
+          b.classList.remove('lane-button--flash');
+          void b.offsetWidth;
+          b.classList.add('lane-button--flash');
           onCell(id);
         });
         buttonBar.appendChild(b);
