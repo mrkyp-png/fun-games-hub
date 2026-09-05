@@ -186,31 +186,40 @@
   // 이어서 "손을 풀어봅시다..." 타이핑, 끝나면 잠깐 멈췄다 커튼 오픈.
   function playStartIntro(onDone) {
     const overlay = document.getElementById('start-intro-overlay');
-    const chapterEl = document.getElementById('si-chapter');
+    const chapterNumEl = document.getElementById('si-chapter-num');
+    const chapterSubEl = document.getElementById('si-chapter-sub');
     const tipEl = document.getElementById('si-tip-text');
     const caretEl = document.getElementById('si-caret');
-    chapterEl.textContent = '';
+    chapterNumEl.textContent = '';
+    chapterSubEl.textContent = '';
     tipEl.textContent = '';
     caretEl.hidden = true; // 타이핑 시작 전엔 깜빡이는 커서도 같이 숨김(사용자 보고)
     overlay.classList.remove('is-opening');
     overlay.hidden = false;
     restartCurtainPattern(overlay);
     setHammerLayerVisible(false);
+    // "챕터N : 부제" 한 줄이던 걸 두 줄로 쪼갬(1줄=챕터N, 2줄=부제) + 팁 문구를 3번째
+    // 줄로 - 총 3줄이 순서대로 타이핑(사용자 요청).
     const fullChapter = chapterLabel(currentChapter());
+    const sepIdx = fullChapter.indexOf(' : ');
+    const chapterNum = sepIdx >= 0 ? fullChapter.slice(0, sepIdx) : fullChapter;
+    const chapterSub = sepIdx >= 0 ? fullChapter.slice(sepIdx + 3) : '';
     const fullTip = I18N.t('mole.startintro.tip');
     setTimeout(() => {
-      typeText(chapterEl, fullChapter, () => {
-        caretEl.hidden = false; // 이 줄 타이핑 시작하는 순간부터 커서 등장
-        typeText(tipEl, fullTip, () => {
-          setTimeout(() => {
-            overlay.classList.add('is-opening');
-            setHammerLayerVisible(true);
-            onDone();
+      typeText(chapterNumEl, chapterNum, () => {
+        typeText(chapterSubEl, chapterSub, () => {
+          caretEl.hidden = false; // 이 줄 타이핑 시작하는 순간부터 커서 등장
+          typeText(tipEl, fullTip, () => {
             setTimeout(() => {
-              overlay.hidden = true;
-              overlay.classList.remove('is-opening');
-            }, 300); // 커튼 transition(0.26s) 후 정리
-          }, 500); // 타이핑 끝난 뒤 잠깐 멈춤
+              overlay.classList.add('is-opening');
+              setHammerLayerVisible(true);
+              onDone();
+              setTimeout(() => {
+                overlay.hidden = true;
+                overlay.classList.remove('is-opening');
+              }, 300); // 커튼 transition(0.26s) 후 정리
+            }, 500); // 타이핑 끝난 뒤 잠깐 멈춤
+          });
         });
       });
     }, 2300); // 커튼 패턴이 분홍으로 다 정리된 뒤에 타이핑 시작

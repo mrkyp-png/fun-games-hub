@@ -954,7 +954,8 @@ body { background: var(--lm-page); }
 .round-intro.is-opening .round-intro-count,
 .round-intro.is-opening .round-intro-mole,
 .round-intro.is-opening .si-line1,
-.round-intro.is-opening .si-line2 { opacity: 0; transition: opacity 0.12s; }
+.round-intro.is-opening .si-line2,
+.round-intro.is-opening .si-line3 { opacity: 0; transition: opacity 0.12s; }
 .round-intro-title {
   position: relative; z-index: 1;
   margin-top: 14px; /* 구멍 그리드 상단과 살짝 간섭되던 것 완화(사용자 보고) */
@@ -1024,6 +1025,15 @@ body { background: var(--lm-page); }
   letter-spacing: 0.02em;
 }
 .si-line2 {
+  position: relative; z-index: 1;
+  align-self: flex-start;
+  padding-left: 10%;
+  color: #000;
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+.si-line3 {
   position: relative; z-index: 1;
   display: flex; align-items: center; gap: 2px;
   color: #000;
@@ -1836,7 +1846,7 @@ body { background: var(--lm-page); }
 
 /* 게임화면 둥근 글자체(Dongle, 사용자 선택) — 홈화면·다이얼패드 숫자·더보기메뉴는 그대로,
    라운드전환/카운트다운/점수·하트·콤보/결과화면/타격 이펙트 텍스트만 적용. */
-#round-intro-title, #round-intro-count, .si-line1, .si-line2,
+#round-intro-title, #round-intro-count, .si-line1, .si-line2, .si-line3,
 #hud-score, .board-hearts, .board-combo, .hub-timer,
 .go-word, .gameover-score,
 .hit-fx-burst span {

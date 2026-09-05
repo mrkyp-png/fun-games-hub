@@ -112,7 +112,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v217</div>
+      <div id="build-tag" aria-hidden="true">v218</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -163,8 +163,9 @@
       <div id="start-intro-overlay" class="overlay round-intro board-panel" hidden aria-hidden="true">
         <div class="ri-curtain ri-curtain--l"></div>
         <div class="ri-curtain ri-curtain--r"></div>
-        <div id="si-chapter" class="si-line1"></div>
-        <div class="si-line2"><span id="si-tip-text"></span><span id="si-caret" class="si-caret" aria-hidden="true" hidden></span></div>
+        <div id="si-chapter-num" class="si-line1"></div>
+        <div id="si-chapter-sub" class="si-line2"></div>
+        <div class="si-line3"><span id="si-tip-text"></span><span id="si-caret" class="si-caret" aria-hidden="true" hidden></span></div>
       </div>
 
       <div id="round-intro-overlay" class="overlay round-intro board-panel" hidden aria-hidden="true">
@@ -477,7 +478,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=217').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=218').catch(function () {});
       }
     });
   }
