@@ -741,12 +741,19 @@
       count.hidden = true;
       title.textContent = '';
       moleImg.hidden = true;
+      // has-mole = 커튼에 패턴을 보여줄지(round1과 구분)만 담당 — 즉시 건다. 이게 늦게
+      // 걸리면 :not(.has-mole) 규칙이 ::before/::after 를 display:none 시켜놔서 패턴
+      // 애니메이션이 그동안 아예 진행이 안 되다가(display:none 이면 애니메이션 멈춤)
+      // 뒤늦게 한꺼번에 시작해버려 "패턴 덜 끝났는데 캐릭터부터 날아옴" 버그가 났었다.
+      // 타이틀/이미지 fly-in 트리거는 별도의 mole-in 클래스로 분리 — 이건 늦게(패턴 다
+      // 끝난 뒤) 건다.
+      overlay.classList.add('has-mole');
       const idx = ((roundNum - 2) % 6) + 1; // 라운드2→mole1, 라운드3→mole2, ... 6개 돌면 반복(라운드8부터 다시 mole1)
       moleImg.src = 'assets/round-moles/mole' + idx + '.png';
       setTimeout(() => {
         if (myGen !== sessionGen) return;
         title.textContent = I18N.t('mole.round', { n: roundNum });
-        overlay.classList.add('has-mole');
+        overlay.classList.add('mole-in');
         moleImg.hidden = false;
         setTimeout(() => {
           if (myGen !== sessionGen) return;
@@ -763,7 +770,7 @@
           setTimeout(() => {
             if (myGen !== sessionGen) return;
             overlay.hidden = true;
-            overlay.classList.remove('is-opening', 'has-mole');
+            overlay.classList.remove('is-opening', 'has-mole', 'mole-in');
             moleImg.hidden = true;
             title.style.animation = '';
             moleImg.style.animation = '';
@@ -1012,7 +1019,10 @@
       if (!document.getElementById('more-menu').hidden) { setTimeout(advance, 300); return; }
       startRound(finishedRound + 1); // fresh 아님 → 누적 유지 (커튼은 계속 닫힌 채)
     };
-    setTimeout(advance, 550);
+    // 이제 다음 라운드 카운트다운(playRoundIntro) 자체가 커튼 패턴 애니메이션(2.3s+)을
+    // 갖고 있어 여기서 따로 더 기다릴 필요 없음 — 예전엔 패턴 없는 커튼이라 550ms 버퍼를
+    // 뒀었는데, 지금은 그만큼 대기가 늘어지기만 해서(사용자 보고) 없앰.
+    advance();
   }
 
   // 뽕망치 레이어(보드 밖, z 높음)는 커튼 위에 뜨므로 전환/결과 동안 같이 숨긴다.
@@ -1123,28 +1133,9 @@
     ov.classList.toggle('is-win', win);
     ov.classList.toggle('is-lose', !win);
 
-    // 축하 색종이+반짝이 / 실패 빗줄기 채우기 (계속 반복)
+    // 축하 색종이+반짝이 / 실패 빗줄기 — 글자·하마가 중앙에 다 날아온(fly-in 0.4s) 뒤에 채운다.
     const conf = ov.querySelector('.go-confetti');
     conf.innerHTML = '';
-    const n = win ? 46 : 40;
-    for (let k = 0; k < n; k++) {
-      const p = document.createElement('i');
-      p.style.left = (Math.random() * 100) + '%';
-      p.style.animationDelay = (Math.random() * 2.8) + 's';
-      p.style.animationDuration = (win ? 1.5 + Math.random() * 1.6 : 2.4 + Math.random() * 1.8) + 's';
-      if (win) p.style.setProperty('--h', String(Math.floor(Math.random() * 360))); // 알록달록
-      conf.appendChild(p);
-    }
-    if (win) {
-      for (let k = 0; k < 14; k++) {
-        const s = document.createElement('span');
-        s.className = 'go-spark';
-        s.style.left = (8 + Math.random() * 84) + '%';
-        s.style.top = (10 + Math.random() * 70) + '%';
-        s.style.animationDelay = (Math.random() * 1.8) + 's';
-        conf.appendChild(s);
-      }
-    }
 
     // 하마 = 기쁨/슬픔 3포즈 중 랜덤 1개
     const poseN = 1 + Math.floor(Math.random() * 3);
@@ -1172,6 +1163,28 @@
     ov.hidden = false;
     // 하마 세로 크기 = 보드 높이의 40% (포즈마다 종횡비가 달라서 vh/% CSS 로는 머리가 잘렸음).
     hippo.style.maxHeight = Math.round(ov.clientHeight * 0.4) + 'px';
+
+    setTimeout(() => {
+      const n = win ? 46 : 40;
+      for (let k = 0; k < n; k++) {
+        const p = document.createElement('i');
+        p.style.left = (Math.random() * 100) + '%';
+        p.style.animationDelay = (Math.random() * 2.8) + 's';
+        p.style.animationDuration = (win ? 1.5 + Math.random() * 1.6 : 2.4 + Math.random() * 1.8) + 's';
+        if (win) p.style.setProperty('--h', String(Math.floor(Math.random() * 360))); // 알록달록
+        conf.appendChild(p);
+      }
+      if (win) {
+        for (let k = 0; k < 14; k++) {
+          const s = document.createElement('span');
+          s.className = 'go-spark';
+          s.style.left = (8 + Math.random() * 84) + '%';
+          s.style.top = (10 + Math.random() * 70) + '%';
+          s.style.animationDelay = (Math.random() * 1.8) + 's';
+          conf.appendChild(s);
+        }
+      }
+    }, 400); // 글자·하마 fly-in(0.4s) 끝난 뒤
   }
 
   // ---------- 초기화 ----------

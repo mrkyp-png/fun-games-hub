@@ -846,12 +846,14 @@ body { background: var(--lm-page); }
 .go-word { position: relative; z-index: 2; margin: 0; font-size: 2.6rem; font-weight: 900; letter-spacing: 0.06em; }
 #gameover-overlay.is-win .go-word { color: #ef8a00; text-shadow: 0 2px 0 #fff, 0 4px 12px rgba(240, 150, 0, 0.35); }
 #gameover-overlay.is-lose .go-word { color: #5b6474; }
-
+/* 화면전환(라운드 전환)과 같은 방식 — 글자는 오른쪽에서, 하마는 왼쪽에서 날아와 중앙에서 만남. */
+#gameover-overlay:not([hidden]) .go-word { animation: go-word-fly-in 0.4s ease-out both; }
 .go-hippo-wrap { position: relative; z-index: 2; transform-origin: center top; } /* 등장 스케일이 위로 안 삐치게 */
-#gameover-overlay:not([hidden]) .go-hippo-wrap { animation: go-pop 0.5s cubic-bezier(.2, 1.1, .4, 1) both; }
+#gameover-overlay:not([hidden]) .go-hippo-wrap { animation: go-hippo-fly-in 0.4s ease-out both; }
 /* 세로 크기는 game.js 가 보드 높이 기준 px 로 지정 (하마 머리 안 잘리게). 여기선 가로 상한만. */
 .go-hippo { display: block; width: auto; height: auto; max-width: min(48vw, 172px); filter: drop-shadow(0 9px 11px rgba(0, 0, 0, 0.13)); }
-@keyframes go-pop { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+@keyframes go-word-fly-in { from { transform: translateX(70vw); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes go-hippo-fly-in { from { transform: translateX(-70vw); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
 /* 승리: 뒤에서 도는 무지개 방사형 광선 (밝은 배경 위 — 불투명 색으로 직접). */
 .go-rays {
@@ -1004,17 +1006,19 @@ body { background: var(--lm-page); }
 /* 입장: 타이틀은 오른쪽에서, 이미지는 왼쪽에서 날아와 중앙에서 만남. */
 @keyframes ri-title-fly-in { from { transform: translateX(70vw); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 @keyframes ri-mole-fly-in { from { transform: translateX(-70vw); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-.round-intro.has-mole .round-intro-title { animation: ri-title-fly-in 0.4s ease-out forwards; }
-.round-intro.has-mole .round-intro-mole { animation: ri-mole-fly-in 0.4s ease-out forwards; }
+/* mole-in = has-mole(커튼 패턴 표시 여부)와 분리된, "패턴 다 끝난 뒤 캐릭터 등장" 트리거.
+   has-mole 로 같이 걸면 커튼 패턴과 동시에(패턴이 채 안 끝났는데) 날아와버림. */
+.round-intro.mole-in .round-intro-title { animation: ri-title-fly-in 0.4s ease-out forwards; }
+.round-intro.mole-in .round-intro-mole { animation: ri-mole-fly-in 0.4s ease-out forwards; }
 /* 퇴장: 커튼 열릴 때 타이틀은 왼쪽 커튼과, 이미지는 오른쪽 커튼과 같은 시간/이징으로 같이 사라짐
    (.ri-curtain 의 transition: 0.26s cubic-bezier(.5,0,.75,0) 과 동일하게 맞춤 — 타이밍 동기화). */
-.round-intro.has-mole.is-opening .round-intro-title {
+.round-intro.mole-in.is-opening .round-intro-title {
   animation: none;
   transform: translateX(-90vw);
   opacity: 1;
   transition: transform 0.26s cubic-bezier(.5, 0, .75, 0);
 }
-.round-intro.has-mole.is-opening .round-intro-mole {
+.round-intro.mole-in.is-opening .round-intro-mole {
   animation: none;
   transform: translateX(90vw);
   opacity: 1;
