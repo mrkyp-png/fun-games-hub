@@ -333,6 +333,14 @@
     ri.hidden = true; ri.classList.remove('is-opening');
     setHammerLayerVisible(true);
     document.getElementById('board-start').hidden = false;
+    // board-start는 #mole-board 의 자식 — 플레이 중 더보기(openMore)가 mole-board 자체를
+    // flip-out 으로 hidden 처리해둔 상태일 수 있어(v166), 여기서도 같이 복구해야
+    // board-start 가 0x0으로 렌더링되지 않는다(키패드만 보이는 버그의 원인이었음).
+    // 더보기 여는 애니메이션(700ms) 중 바로 PLAY를 누른 경우 대기 중인 hide 타이머가
+    // 나중에 발동해 다시 숨기는 걸 막기 위해 취소도 같이 한다.
+    const board = document.getElementById('mole-board');
+    clearPendingFlip(board);
+    board.hidden = false;
     document.getElementById('game-screen').classList.add('is-start');
     setCallLabel('home'); // 홈: 초록 버튼 "시작" (빨간 대기 상태였으면 해제)
     if (screenNav) screenNav.reset();
