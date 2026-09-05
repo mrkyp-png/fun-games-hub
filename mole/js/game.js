@@ -154,7 +154,10 @@
       curtains.forEach((c) => c.style.setProperty('--curtain-grad', grad));
       if (t < 1) requestAnimationFrame(frame);
     }
-    requestAnimationFrame(frame);
+    // 첫 프레임을 rAF 로 미루면, 그 사이 커튼에 남아있던 "지난 전환의 마지막(단색)"
+    // 인라인 스타일이 한 프레임 그대로 보여서 분홍이 잠깐 번쩍이는 버그가 있었다(사용자
+    // 보고) — t=0 상태를 즉시(동기) 적용해 그 뒤부터 rAF 로 이어간다.
+    frame(t0);
   }
 
   // 글자 하나씩 타이핑, 다 치면 onTyped 호출.
