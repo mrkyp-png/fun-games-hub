@@ -1077,7 +1077,15 @@
       onCell: handleCell,
       // 홈 화면(전화 다이얼러로 위장 중)일 때만 탭음(버튼소리1 고정) — 플레이 중엔 연타가 잦아
       // 타격음과 겹치므로 안 씀.
-      onTap: () => { if (document.getElementById('game-screen').classList.contains('is-start')) MG.HitFx.uiTap(0); }
+      onTap: () => { if (document.getElementById('game-screen').classList.contains('is-start')) MG.HitFx.uiTap(0); },
+      // 채널 링크 — 시작버튼 제외 나머지 버튼 길게누르기. 홈 화면일 때만, 그 자리에 등록된
+      // 채널이 있을 때만 발동(channel-links.js LINKS 에서 뺀 자리는 자동으로 아무 일도 안 함).
+      onLongPress: (id) => {
+        if (!document.getElementById('game-screen').classList.contains('is-start')) return;
+        const link = MG.ChannelLinks && MG.ChannelLinks.LINKS[id];
+        if (!link) return;
+        MG.Ads.interstitial().then(() => { window.open(link.url, '_blank'); });
+      }
     });
     wireStartButton(); // 다이얼러 초록 버튼: 홈에서 탭=시작 / 꾹=종료 대기
     wireChapterNav();  // ◀ 챕터 N ▶ (열린 챕터 2개 이상일 때만 노출)

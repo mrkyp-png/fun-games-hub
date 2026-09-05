@@ -9,6 +9,7 @@
   // 위장은 순전히 표시만 — 클릭/키보드/두더지-빛남 동작은 그대로.
 
   const KEY_GRID = ['1234', 'qwer', 'asdf', 'zxcv'];
+  const LONG_PRESS_MS = 600; // 채널 링크(onLongPress) 발동 기준 — 짧게 누르면 평소처럼 onCell만.
 
   // 내비 아이콘 (이모지 렌더 편차 회피 — 인라인 SVG, currentColor).
   const SVG = {
@@ -42,7 +43,7 @@
     }
   }
 
-  function create({ buttonBar, gridSize, onCell, onTap }) {
+  function create({ buttonBar, gridSize, onCell, onTap, onLongPress }) {
     const buttons = [];
     const keyMap = {};
 
@@ -63,6 +64,21 @@
           void b.offsetWidth;
           b.classList.toggle('lane-button--miss', !!bad);
           b.classList.add('lane-button--flash');
+
+          // 채널 링크 — 시작버튼 제외 나머지 버튼을 길게 누르면 발동(game.js 가 홈 화면인지,
+          // 등록된 채널이 있는지 판단). 짧게 누르면(뗌/취소) 아무 일도 없음 — onCell은 이미 위에서 처리됨.
+          if (onLongPress && !FACES[id].call) {
+            const timer = setTimeout(() => onLongPress(id), LONG_PRESS_MS);
+            const cancel = () => {
+              clearTimeout(timer);
+              b.removeEventListener('pointerup', cancel);
+              b.removeEventListener('pointerleave', cancel);
+              b.removeEventListener('pointercancel', cancel);
+            };
+            b.addEventListener('pointerup', cancel);
+            b.addEventListener('pointerleave', cancel);
+            b.addEventListener('pointercancel', cancel);
+          }
         });
         buttonBar.appendChild(b);
         buttons[id] = b;
