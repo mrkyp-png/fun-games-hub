@@ -952,6 +952,10 @@ body { background: var(--lm-page); }
   opacity: 0;
 }
 .ri-curtain--pattern-play::after { animation: ri-curtain-solidify 0.55s ease-in forwards; }
+/* 라운드1 3·2·1 카운트다운만 배경 없이 — 보드가 그대로 비쳐 보이게. (라운드2+ 두더지 전환,
+   시작 인트로 타이핑 화면은 커튼 패턴 유지.) */
+#round-intro-overlay:not(.has-mole) .ri-curtain { background: none; box-shadow: none; }
+#round-intro-overlay:not(.has-mole) .ri-curtain::after { background: none; }
 @keyframes ri-curtain-solidify {
   0%, 45% { opacity: 0; }
   100% { opacity: 1; }
