@@ -1129,18 +1129,29 @@ body { background: var(--lm-page); }
   100% { opacity: 0; }
 }
 
-/* 대안 B: 책장 넘기듯 화면전환 (사용자 비교용 — 위 플래시와 둘 다 코드는 남겨두고
-   game.js 에서 어느 쪽을 호출하는지로 스위치). more-menu 가 position:fixed 라 조상의
-   perspective 가 안 먹어서, transform 자체에 perspective() 를 넣어 위치 무관하게 동작시킴.
-   (한때 3D가 안 보인다고 착각해 2D로 바꿨었는데, 실제 원인은 딴 데였음 — 3D로 되돌림.) */
-.flip-out, .flip-in { backface-visibility: hidden; }
+/* 책장 넘기듯 화면전환. board-start/.dialpad/gameover-overlay 등은 모두 #game-screen 의
+   자손이라 조상 perspective 하나를 공유해야 서로 "같은 3D 공간"에서 한 판처럼 돈다
+   (안 그러면 각자 따로 perspective 를 가져서 두 조각이 따로 노는 것처럼 보임).
+   more-menu 만 position:fixed 라 조상 perspective 를 못 받아 -fixed 변형(자체 perspective())을 쓴다. */
+#game-screen { perspective: 1400px; }
+.flip-out, .flip-in, .flip-out-fixed, .flip-in-fixed { backface-visibility: hidden; }
 .flip-out { animation: flip-out-anim 0.5s ease-in forwards; transform-origin: 100% 50%; }
 .flip-in  { animation: flip-in-anim 0.5s ease-out forwards; transform-origin: 0% 50%; }
 @keyframes flip-out-anim {
+  0%   { transform: rotateY(0deg); opacity: 1; }
+  100% { transform: rotateY(-100deg); opacity: 0; }
+}
+@keyframes flip-in-anim {
+  0%   { transform: rotateY(100deg); opacity: 0; }
+  100% { transform: rotateY(0deg); opacity: 1; }
+}
+.flip-out-fixed { animation: flip-out-fixed-anim 0.5s ease-in forwards; transform-origin: 100% 50%; }
+.flip-in-fixed  { animation: flip-in-fixed-anim 0.5s ease-out forwards; transform-origin: 0% 50%; }
+@keyframes flip-out-fixed-anim {
   0%   { transform: perspective(1400px) rotateY(0deg); opacity: 1; }
   100% { transform: perspective(1400px) rotateY(-100deg); opacity: 0; }
 }
-@keyframes flip-in-anim {
+@keyframes flip-in-fixed-anim {
   0%   { transform: perspective(1400px) rotateY(100deg); opacity: 0; }
   100% { transform: perspective(1400px) rotateY(0deg); opacity: 1; }
 }

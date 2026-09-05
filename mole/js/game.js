@@ -231,35 +231,25 @@
     var board = document.getElementById('mole-board');
     var boardInvolved = outs.indexOf(board) !== -1 || ins.indexOf(board) !== -1;
     if (board && !boardInvolved) board.style.visibility = 'hidden';
+    // position:fixed 인 요소(more-menu)는 #game-screen 의 perspective 를 못 받으므로
+    // 자체 perspective() 가 들어있는 -fixed 변형 클래스를 쓴다.
+    var outCls = function (el) { return getComputedStyle(el).position === 'fixed' ? 'flip-out-fixed' : 'flip-out'; };
+    var inCls = function (el) { return getComputedStyle(el).position === 'fixed' ? 'flip-in-fixed' : 'flip-in'; };
     ins.forEach(function (el) { el.hidden = false; });
-    outs.forEach(function (el) { el.classList.remove('flip-out'); void el.offsetWidth; el.classList.add('flip-out'); });
-    ins.forEach(function (el) { el.classList.remove('flip-in'); void el.offsetWidth; el.classList.add('flip-in'); });
+    outs.forEach(function (el) { var c = outCls(el); el.classList.remove(c); void el.offsetWidth; el.classList.add(c); });
+    ins.forEach(function (el) { var c = inCls(el); el.classList.remove(c); void el.offsetWidth; el.classList.add(c); });
     setTimeout(function () {
-      outs.forEach(function (el) { el.hidden = true; el.classList.remove('flip-out'); });
-      ins.forEach(function (el) { el.classList.remove('flip-in'); });
+      outs.forEach(function (el) { el.hidden = true; el.classList.remove(outCls(el)); });
+      ins.forEach(function (el) { el.classList.remove(inCls(el)); });
       if (board && !boardInvolved) board.style.visibility = '';
     }, FLIP_MS);
   }
-  // 홈 화면 = 대화(board-start) + 다이얼패드, 두 요소를 하나의 "화면"으로 묶어서
-  // 더보기(전체화면)와 커버 범위를 맞춘다 — 안 맞으면 회전 중 다이얼패드만 안 넘어가는 것처럼 보임.
+  // 홈 화면 = HUD + 대화(board-start) + 다이얼패드, 세 요소를 하나의 "화면"으로 묶어서
+  // 더보기(전체화면)와 커버 범위를 맞춘다 — 안 맞으면 회전 중 일부만 안 넘어가는 것처럼 보임.
   function homeScreenEls() {
-    return [document.getElementById('board-start'), document.querySelector('.dialpad')];
+    return [document.querySelector('.game-hud'), document.getElementById('board-start'), document.querySelector('.dialpad')];
   }
 
-  // 이어가기: 더보기(outEl)만 넘어가며 사라지고, 그 뒤에 계속 있던 게임판(#mole-board)이
-  // 드러난다 — mole-board 는 새로 나타나는 게 아니라 원래 있던 걸 보여주는 것뿐이라
-  // flipSwap 처럼 숨기지 않고, 살짝 같이 넘어오는 느낌만 준다.
-  function flipResumeGame(outEl) {
-    if (!outEl) return;
-    var board = document.getElementById('mole-board');
-    outEl.classList.remove('flip-out'); void outEl.offsetWidth; outEl.classList.add('flip-out');
-    if (board) { board.classList.remove('flip-in'); void board.offsetWidth; board.classList.add('flip-in'); }
-    setTimeout(function () {
-      outEl.hidden = true;
-      outEl.classList.remove('flip-out');
-      if (board) board.classList.remove('flip-in');
-    }, FLIP_MS);
-  }
 
   // 더보기 메뉴 열기/닫기.
   function openMore(sub, originEl) {
@@ -298,7 +288,7 @@
     // more-menu 를 여기서 먼저 숨기지 않는다(showStartScreenNow 가 플래시 시점에 맞춰 처리).
     if (!state) { showStartScreen({ originEl: e && e.currentTarget }); return; }
     screenNav.reset();
-    flipResumeGame(mm); // 이어가기 → 게임화면 (3D 플립 — 이거 하나만 사용자 확인상 정상 작동)
+    flipSwap(mm, document.getElementById('mole-board')); // 이어가기 → 게임화면 (3D 플립)
     mm.classList.remove('mm-paused');
     // 열 때 멈춘 게임이면 재개.
     if (state.pausedByMenu) {
