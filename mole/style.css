@@ -1071,7 +1071,7 @@ body { background: var(--lm-page); }
 .start-hint {
   display: none;
   position: absolute;
-  left: calc(50% + var(--sq) / 2); top: 50%;
+  left: calc(50% + var(--sq) / 2 - 5px); top: 50%;
   transform: translateY(-50%);
   writing-mode: vertical-rl;
   text-orientation: mixed;
@@ -1080,8 +1080,9 @@ body { background: var(--lm-page); }
   margin: 0;
   background: transparent;
   color: var(--lm-muted);
-  font-size: 0.4rem;
+  font-size: 0.6rem;
   letter-spacing: 0.01em;
+  word-spacing: 0.9em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
