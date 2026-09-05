@@ -988,20 +988,27 @@ body { background: var(--lm-page); }
   -webkit-tap-highlight-color: transparent;
   transition: transform 0.06s, background 0.12s, box-shadow 0.15s;
 }
-/* 누를 때 네온 링이 반짝하고 사라지는 이펙트 (참고 영상 버튼 애니메이션). */
-.lane-button::after {
-  content: '';
+/* 누를 때 종 모양 알림이 위로 팅 튀어오르며 딸랑거리는 이펙트. */
+.lane-ding {
   position: absolute;
-  inset: -3px;
-  border-radius: 50%;
-  border: 2px solid #baff29;
+  top: 0;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  color: #ffcf4a;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
   opacity: 0;
+  transform: translate(-50%, -50%) scale(0);
   pointer-events: none;
 }
-.lane-button.lane-button--flash::after { animation: lane-btn-flash 0.5s ease-out; }
-@keyframes lane-btn-flash {
-  0%   { opacity: 1; box-shadow: 0 0 10px 3px rgba(186, 255, 41, 0.75); }
-  100% { opacity: 0; box-shadow: 0 0 0 0 rgba(186, 255, 41, 0); }
+.lane-button.lane-button--flash .lane-ding { animation: lane-ding-pop 0.55s cubic-bezier(.34, 1.56, .64, 1); }
+@keyframes lane-ding-pop {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0) rotate(0deg); }
+  15%  { opacity: 1; transform: translate(-50%, -95%) scale(1.3) rotate(-14deg); }
+  30%  { transform: translate(-50%, -95%) scale(1.1) rotate(12deg); }
+  45%  { transform: translate(-50%, -95%) scale(1.05) rotate(-7deg); }
+  60%  { transform: translate(-50%, -95%) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(-50%, -140%) scale(0.6) rotate(0deg); }
 }
 .lane-button:active { transform: scale(0.9); background: rgba(0, 0, 0, 0.07); }
 
