@@ -59,7 +59,8 @@
   const BOARD_W_CM_ASSUMED = 7;
   const BURN_NUDGE = {
     mid: { dx: 0.2 / BOARD_W_CM_ASSUMED, dy: -0.4 / BOARD_W_CM_ASSUMED, rot: 10 },
-    steep: { rot: 5 }  // steep(가장 오른쪽 구멍들) 화염 각도만 시계방향 5도 추가 회전
+    // steep(가장 오른쪽 구멍들) 화염 — 스크린샷 보며 2차 조정: 우측 0.1cm 이동 + 각도 추가 5도(누적 10도)
+    steep: { dx: 0.1 / BOARD_W_CM_ASSUMED, rot: 10 }
   };
   const FX_BASE_AIM = -156;                // 세 장 공통 회전 기준각 (fx1 -149°, fx4 -163° 실측 평균)
   // 앵커(mu,mv) = 밝은 코어와 "뒷끝(포신에 안 겹치는 경계)"의 중간점. 뒷끝만 쓰면 안 겹치긴
