@@ -1051,6 +1051,12 @@ body { background: var(--lm-page); }
   letter-spacing: 0.04em;
 }
 .lane-button--call:active { background: #29b84e; }
+/* 대기 중(아직 안 누름) 왕관 이펙트처럼 은은하게 계속 빛나는 루프 — 눌러야 함을 알림. */
+.lane-button--call:not(.lane-button--armed) { animation: call-idle-glow 1.6s ease-in-out infinite; }
+@keyframes call-idle-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(46, 204, 87, 0); }
+  50%      { box-shadow: 0 0 14px 5px rgba(46, 204, 87, 0.75); }
+}
 /* 꾹 눌러 "종료 대기" — 빨강 + 라벨 교체(한 번 더 누르면 종료). */
 .lane-button--call.lane-button--armed { background: #e53935; animation: call-arm-pulse 1s ease-in-out infinite; }
 .lane-button--call.lane-button--armed:active { background: #c62828; }
@@ -1381,7 +1387,12 @@ body { background: var(--lm-page); }
   cursor: pointer;
   font-style: normal;
 }
-.mm-go .mm-ic { width: 26px; height: 26px; fill: #ffcf4a; stroke: none; }
+.mm-go .mm-ic { width: 26px; height: 26px; fill: #ffcf4a; stroke: none; animation: mm-go-idle-glow 1.6s ease-in-out infinite; }
+/* 대기 중 왕관 이펙트처럼 은은하게 계속 빛나는 루프. */
+@keyframes mm-go-idle-glow {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(255, 207, 74, 0)); }
+  50%      { filter: drop-shadow(0 0 6px rgba(255, 207, 74, 0.9)); }
+}
 .mm-go i { font-style: normal; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.06em; color: #ffcf4a; }
 .mm-go:active { transform: scale(0.92); }
 
