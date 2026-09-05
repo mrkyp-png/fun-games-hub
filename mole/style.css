@@ -987,8 +987,8 @@ body { background: var(--lm-page); }
   gap: 5px;
   -webkit-tap-highlight-color: transparent;
   transition: transform 0.06s, background 0.12s, box-shadow 0.15s;
-  --flash-ring: #d4ff2e;                       /* 참고 영상(버튼 터치.mp4) 비행기 버튼 = 야광 연두-노랑 */
-  --flash-fill: rgba(80, 230, 110, 0.55);      /* 클릭 순간 배경에 도는 초록 글로우 */
+  --flash-ring: #12d16a;                       /* 흰 배경에서도 또렷하게 — 앱 초록(통화버튼 #2ecc57)과 같은 계열, 더 진하게 */
+  --flash-fill: rgba(18, 209, 106, 0.5);       /* 클릭 순간 배경에 도는 초록 글로우 */
 }
 .lane-button--miss { --flash-ring: #ff5344; --flash-fill: rgba(255, 90, 70, 0.5); }  /* 헛방/폭탄 = 빨강 */
 /* 누를 때 굵은 네온 링이 확 밝아졌다 사그라드는 이펙트 (아웃라인 셰이더 느낌, 참고 영상 그대로).
