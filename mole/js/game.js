@@ -1084,7 +1084,7 @@
         if (!document.getElementById('game-screen').classList.contains('is-start')) return;
         const link = MG.ChannelLinks && MG.ChannelLinks.LINKS[id];
         if (!link) return;
-        MG.Ads.interstitial().then(() => { window.open(link.url, '_blank'); });
+        MG.Ads.interstitial(I18N.t('mole.channel.hint')).then(() => { window.open(link.url, '_blank'); });
       }
     });
     wireStartButton(); // 다이얼러 초록 버튼: 홈에서 탭=시작 / 꾹=종료 대기

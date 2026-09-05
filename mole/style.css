@@ -1394,6 +1394,7 @@ body { background: var(--lm-page); }
   background: #ffffff; border-radius: 14px; text-align: center; color: #3a3a41;
   box-shadow: 0 14px 44px rgba(0, 0, 0, 0.22); }
 .ad-overlay-tag { font-size: 0.75rem; letter-spacing: 0.2em; color: #8a8a90; }
+.ad-overlay-hint { margin-top: 10px; font-size: 0.8rem; font-weight: 700; color: #3a3a41; line-height: 1.4; white-space: pre-line; }
 .ad-overlay-bar { margin-top: 14px; height: 4px; background: #e6e6ea; border-radius: 2px; overflow: hidden; }
 .ad-overlay-bar i { display: block; height: 100%; width: 0; background: #57d977; animation: ad-fill 1.6s linear forwards; }
 @keyframes ad-fill { to { width: 100%; } }

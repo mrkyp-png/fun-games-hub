@@ -10,12 +10,14 @@
   }
 
   // 가짜 전면/리워드 오버레이. rewardMode=true 면 resolve 값이 boolean.
-  function fakeAd(rewardMode) {
+  // hint: 광고 카드에 덧붙일 안내 문구(선택) — 예: 채널 링크로 나가기 전 복귀 방법 안내.
+  function fakeAd(rewardMode, hint) {
     return new Promise(function (resolve) {
       var v = document.createElement('div');
       v.className = 'ad-overlay';
       v.innerHTML = '<div class="ad-overlay-card">' +
         '<div class="ad-overlay-tag">광고</div>' +
+        (hint ? '<div class="ad-overlay-hint">' + hint + '</div>' : '') +
         '<div class="ad-overlay-bar"><i></i></div>' +
         '<button type="button" class="ad-overlay-x" aria-label="닫기">✕</button></div>';
       document.body.appendChild(v);
@@ -32,7 +34,7 @@
       setTimeout(function () { finish(rewardMode ? true : undefined); }, 1600);
     });
   }
-  function interstitial() { return fakeAd(false); }
+  function interstitial(hint) { return fakeAd(false, hint); }
   function rewarded() { return fakeAd(true); }
 
   var api = { banner: banner, interstitial: interstitial, rewarded: rewarded };
