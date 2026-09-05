@@ -433,9 +433,7 @@ body { background: var(--lm-page); }
 .board-stats { display: none; }
 #game-screen.is-start .board-stats {
   display: inline-flex; gap: 12px;
-  /* top: 56px — "목표/득점" 점수 알림 배너(#start-best, z10, 상시 표시)와 안 겹치게
-     그 아래로. 챕터 선택이 붙어 박스가 넓어지면서 배너와 겹쳐 가려지던 문제 수정. */
-  position: absolute; top: 56px; right: 10px; z-index: 9;
+  position: absolute; top: 8px; right: 10px; z-index: 9;
   background: transparent; border-radius: 12px; padding: 4px 10px;
   color: #fff; font-weight: 800;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65), 0 0 4px rgba(0, 0, 0, 0.5);
