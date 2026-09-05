@@ -227,6 +227,7 @@
     // 잠깐 비쳐 보이는 문제 — 전환하는 동안만 숨긴다.
     var board = document.getElementById('mole-board');
     if (board) board.style.visibility = 'hidden';
+    if (MG.HitFx && MG.HitFx.pageFlip) MG.HitFx.pageFlip(); // 책장 넘기는 소리
     inEl.hidden = false;
     outEl.classList.remove('flip-out'); void outEl.offsetWidth; outEl.classList.add('flip-out');
     inEl.classList.remove('flip-in'); void inEl.offsetWidth; inEl.classList.add('flip-in');
@@ -235,6 +236,22 @@
       outEl.classList.remove('flip-out');
       inEl.classList.remove('flip-in');
       if (board) board.style.visibility = '';
+    }, FLIP_MS);
+  }
+
+  // 이어가기: 더보기(outEl)만 넘어가며 사라지고, 그 뒤에 계속 있던 게임판(#mole-board)이
+  // 드러난다 — mole-board 는 새로 나타나는 게 아니라 원래 있던 걸 보여주는 것뿐이라
+  // flipSwap 처럼 숨기지 않고, 살짝 같이 넘어오는 느낌만 준다.
+  function flipResumeGame(outEl) {
+    if (!outEl) return;
+    if (MG.HitFx && MG.HitFx.pageFlip) MG.HitFx.pageFlip();
+    var board = document.getElementById('mole-board');
+    outEl.classList.remove('flip-out'); void outEl.offsetWidth; outEl.classList.add('flip-out');
+    if (board) { board.classList.remove('flip-in'); void board.offsetWidth; board.classList.add('flip-in'); }
+    setTimeout(function () {
+      outEl.hidden = true;
+      outEl.classList.remove('flip-out');
+      if (board) board.classList.remove('flip-in');
     }, FLIP_MS);
   }
 
@@ -276,7 +293,7 @@
     // more-menu 를 여기서 먼저 숨기지 않는다(showStartScreenNow 가 플래시 시점에 맞춰 처리).
     if (!state) { showStartScreen({ originEl: e && e.currentTarget }); return; }
     screenNav.reset();
-    mm.hidden = true;
+    flipResumeGame(mm); // 이어가기: 더보기가 넘어가며 게임화면이 드러남 (mm.hidden 은 여기서 처리)
     mm.classList.remove('mm-paused');
     // 열 때 멈춘 게임이면 재개.
     if (state.pausedByMenu) {
@@ -559,7 +576,11 @@
 
     const levelData = MG.LEVELS[roundNum - 1];
 
-    document.getElementById('board-start').hidden = true;
+    // 홈 화면(대화)에서 바로 시작하는 경우만 책장 넘기듯 전환 — board-start 를 여기서
+    // 바로 숨기지 않고, round-intro 뜨는 시점에 flipSwap 이 애니메이션과 함께 처리한다.
+    const boardStartEl = document.getElementById('board-start');
+    const cameFromHome = !!(opts && opts.fresh) && !boardStartEl.hidden;
+    if (!cameFromHome) boardStartEl.hidden = true;
     document.getElementById('gameover-overlay').hidden = true;
     document.getElementById('game-screen').classList.remove('is-start');
     setCallLabel('game'); // 게임 중: 초록 버튼은 "통화"(위장) — 15번 구멍 타격 담당
@@ -630,6 +651,7 @@
     setPauseUI(false);
 
     updateHUD();
+    if (cameFromHome) flipSwap(boardStartEl, document.getElementById('round-intro-overlay'));
     playRoundIntro(roundNum, () => {
       if (myGen !== sessionGen || !state) return; // 그 사이 나가버림 — 이 콜백 무효
       state.introActive = false;

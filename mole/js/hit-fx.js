@@ -229,6 +229,51 @@
   // 게임 시작(사용자 제스처) 직후 호출 — 카운트다운 동안 오디오 컨텍스트 + 타격음 파일을 미리 준비.
   function warmup() { try { getCtx(); } catch (e) { /* noop */ } }
 
-  const api = { moleHit, juggle, moleTap, obstacleHit, whiff, emerge, warmup };
+  // 책장 넘기는 소리 (합성 — 실제 녹음 파일 없음). 밴드패스 노이즈를 짧게 스윕해서
+  // "샤락" 하는 종이 넘김 느낌 + 끝에 살짝 톡 (책장이 내려앉는 느낌).
+  function pageFlip() {
+    if (sfxOff()) return;
+    try {
+      const ctx = getCtx();
+      if (!ctx) return;
+      const t = ctx.currentTime;
+      const dur = 0.22;
+
+      const master = ctx.createGain();
+      master.gain.value = 0.22;
+      master.connect(ctx.destination);
+
+      const ns = ctx.createBufferSource();
+      ns.buffer = whiteNoise(ctx);
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.Q.value = 0.7;
+      bp.frequency.setValueAtTime(700, t);
+      bp.frequency.linearRampToValueAtTime(2600, t + dur * 0.55);
+      bp.frequency.linearRampToValueAtTime(1100, t + dur);
+      const ng = ctx.createGain();
+      ng.gain.setValueAtTime(0.0001, t);
+      ng.gain.exponentialRampToValueAtTime(1, t + 0.02);
+      ng.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      ns.connect(bp).connect(ng).connect(master);
+      ns.start(t);
+      ns.stop(t + dur + 0.02);
+
+      // 마무리 톡 — 페이지가 반대편에 내려앉는 소리.
+      const o = ctx.createOscillator();
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(220, t + dur);
+      o.frequency.exponentialRampToValueAtTime(90, t + dur + 0.05);
+      const og = ctx.createGain();
+      og.gain.setValueAtTime(0.0001, t + dur);
+      og.gain.exponentialRampToValueAtTime(0.35, t + dur + 0.006);
+      og.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.07);
+      o.connect(og).connect(master);
+      o.start(t + dur);
+      o.stop(t + dur + 0.08);
+    } catch (e) { /* 오디오 불가 환경 무시 */ }
+  }
+
+  const api = { moleHit, juggle, moleTap, obstacleHit, whiff, emerge, warmup, pageFlip };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);
