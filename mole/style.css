@@ -1132,15 +1132,20 @@ body { background: var(--lm-page); }
 /* 책장 넘기듯 화면전환 (처음 3D 적용했던 버전으로 확정 — 더 이상 변경하지 않음).
    more-menu 가 position:fixed 라 조상의 perspective 가 안 먹어서, transform 자체에
    perspective() 를 넣어 위치 무관하게 동작시킴. */
+/* ease-in/out + 100도 회전이면 회전이 눈에 보이기도 전에 훅 사라져 버그처럼 보였음
+   (사용자 확인) — linear로 일정 속도 유지하고, 회전의 80%까지는 안 사라지게 해서
+   실제로 페이지가 좁아지며 넘어가는 게 보이게 함(마지막 20%만 edge-on 으로 사라짐). */
 .flip-out, .flip-in { backface-visibility: hidden; }
-.flip-out { animation: flip-out-anim 0.5s ease-in forwards; transform-origin: 100% 50%; }
-.flip-in  { animation: flip-in-anim 0.5s ease-out forwards; transform-origin: 0% 50%; }
+.flip-out { animation: flip-out-anim 0.7s linear forwards; transform-origin: 100% 50%; }
+.flip-in  { animation: flip-in-anim 0.7s linear forwards; transform-origin: 0% 50%; }
 @keyframes flip-out-anim {
   0%   { transform: perspective(1400px) rotateY(0deg); opacity: 1; }
+  80%  { transform: perspective(1400px) rotateY(-80deg); opacity: 1; }
   100% { transform: perspective(1400px) rotateY(-100deg); opacity: 0; }
 }
 @keyframes flip-in-anim {
   0%   { transform: perspective(1400px) rotateY(100deg); opacity: 0; }
+  20%  { transform: perspective(1400px) rotateY(80deg); opacity: 1; }
   100% { transform: perspective(1400px) rotateY(0deg); opacity: 1; }
 }
 
