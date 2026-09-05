@@ -343,9 +343,9 @@ body { background: var(--lm-page); }
 #game-screen:not(.is-start) .chat-sms { display: none; }  /* #board-start 밖으로 옮겨서 이제 직접 게이팅 */
 /* .sms-anim = game.js가 시작화면 열 때 붙임.
    툭 내려옴 → 2초 머묾 → 그냥 사라짐(페이드) → 잠깐 뒤 다시 내려옴 → 반복. 5초 주기. */
-.chat-sms.sms-anim { animation: sms-loop 7s 0.3s infinite; }
-.chat-sms.sms-anim .chat-sms-party { animation: sms-party-loop 7s 0.3s infinite; }
-.chat-sms.sms-anim .chat-sms-fx i { animation: sms-fx-loop 7s 0.3s infinite; }
+.chat-sms.sms-anim { animation: sms-loop 15s 0.3s infinite; }
+.chat-sms.sms-anim .chat-sms-party { animation: sms-party-loop 15s 0.3s infinite; }
+.chat-sms.sms-anim .chat-sms-fx i { animation: sms-fx-loop 15s 0.3s infinite; }
 .chat-sms-ic { width: 20px; height: 20px; flex: 0 0 auto; color: #35b35a; }
 .chat-sms-txt { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.82rem; }
 @keyframes sms-loop {
@@ -1071,7 +1071,7 @@ body { background: var(--lm-page); }
 .start-hint {
   display: none;
   position: absolute;
-  left: calc(50% + var(--sq) / 2 - 5px); top: 50%;
+  left: calc(50% + var(--sq) / 2 - 4.4px); top: 50%; /* 우측 0.2cm 요청 - 남은 여백(~0.6px)만큼만 이동, 그 이상은 화면 밖으로 나가 안 보임 */
   transform: translateY(-50%);
   writing-mode: vertical-rl;
   text-orientation: mixed;
