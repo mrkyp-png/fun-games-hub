@@ -4,6 +4,13 @@
 [hidden] { display: none !important; }
 /* 모바일에서 버튼/링크 탭 시 나오는 사각 하이라이트 박스 제거 (전역) */
 * { -webkit-tap-highlight-color: transparent; }
+/* 키패드 등 버튼을 꾹 누르면 텍스트 선택 팝업(복사/번역/모두선택/웹검색)이 뜨는 문제 —
+   입력칸(닉네임)만 빼고 전역으로 선택/롱프레스 콜아웃 차단. */
+*:not(input):not(textarea) {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
 
 /* 삼성 인터넷/크롬 자동 다크모드가 말풍선·문자칸 색을 재채색하지 않게.
    'light dark' + 아래 prefers-color-scheme 블록 = "이 페이지는 다크모드를 직접 처리함" 선언
