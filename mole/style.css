@@ -117,32 +117,41 @@ body { background: var(--lm-page); }
   align-items: center;
   gap: 3px;
   flex: 0 0 auto;
-  padding: 2px 3px;
+  padding: 3px 5px;
   border-radius: 9px;
-  box-shadow: 0 0 0 1px var(--ch-glow-soft), 0 0 4px var(--ch-glow-soft); /* 은은한 사각 테두리 */
 }
 #chapter-nav[hidden] { display: none; }
 
-/* 손+챕터+손 전체를 감싸는 사각형 테두리를 타고 도는 불빛 (사용자 최종결정: 손 포함 사각 주행).
-   작은 빛 점이 위 모서리→오른쪽→아래→왼쪽 순으로 계속 돈다. ::before 는 absolute 라 flex 레이아웃엔 영향 없음. */
+/* 손+챕터+손 전체를 감싸는 둥근 사각 테두리에 도는 불빛 — 레퍼런스: 바탕화면 "챕터 박스 효과.mp4".
+   conic 그라디언트(밝은 지점이 회전)를 mask 로 "테두리만" 남기고, blur+drop-shadow 로 번지게. ::before 는
+   absolute 라 flex 레이아웃엔 영향 없음. */
+@property --ch-spin { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
 #chapter-nav::before {
   content: '';
   position: absolute;
-  width: 16px; height: 8px;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, var(--ch-glow-lt), var(--ch-glow) 50%, transparent 80%);
-  filter: blur(2px);
+  inset: -2px;
+  border-radius: 11px;
+  padding: 2.5px; /* 빛 테두리 두께 */
+  background: conic-gradient(from var(--ch-spin),
+    var(--ch-glow-dk) 0deg,
+    var(--ch-glow) 45deg,
+    var(--ch-glow-lt) 82deg,
+    #ffffff 100deg,
+    var(--ch-glow-lt) 120deg,
+    var(--ch-glow) 175deg,
+    var(--ch-glow-dk) 255deg,
+    var(--ch-glow) 320deg,
+    var(--ch-glow-dk) 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask-composite: exclude;
+  filter: blur(1px) drop-shadow(0 0 3px var(--ch-glow)) drop-shadow(0 0 7px var(--ch-glow-soft));
   pointer-events: none;
   z-index: 0;
 }
-#game-screen.is-start #chapter-nav::before { animation: ch-trace 2.6s linear infinite; }
-@keyframes ch-trace {
-  0%   { left: -2px;                 top: -3px; }
-  40%  { left: calc(100% - 14px);    top: -3px; }
-  50%  { left: calc(100% - 14px);    top: calc(100% - 5px); }
-  90%  { left: -2px;                 top: calc(100% - 5px); }
-  100% { left: -2px;                 top: -3px; }
-}
+#game-screen.is-start #chapter-nav::before { animation: ch-spin 2.6s linear infinite; }
+@keyframes ch-spin { to { --ch-spin: 360deg; } }
 
 /* 챕터별 불빛 색 (1 풀그린 → 2 스카이 → 3 앰버 → 4 바이올렛 → 5 크림슨: 난이도 상승 톤) */
 #chapter-nav { --ch-glow: #ff8a00; --ch-glow-lt: #ffd36b; --ch-glow-dk: #ff5e00; --ch-glow-soft: rgba(255, 130, 0, 0.5); }
@@ -166,7 +175,8 @@ body { background: var(--lm-page); }
 .ch-shine::before {
   content: '';
   position: absolute; inset: -60%;
-  background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.75) 50%, transparent 58%);
+  /* 흰색으로 글자를 덮지 않게 — 아주 옅은 빛만(사용자: "글자안 흰색 나오는거 투명으로") */
+  background: linear-gradient(115deg, transparent 44%, rgba(255, 255, 255, 0.2) 50%, transparent 56%);
   animation: idle-crown-sweep 2.8s ease-in-out infinite;
 }
 
@@ -198,7 +208,7 @@ body { background: var(--lm-page); }
   background: transparent; /* 박스는 배경에 녹고 — 테두리 불빛 + 글자만 */
   padding: 3px 8px;
   white-space: nowrap;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+  text-shadow: none;
 }
 .ch-txt { display: inline-block; }
 /* 챕터 바꿀 때 — 새 챕터 색 아우라가 확 부풀었다 가라앉음 (game.js 가 .ch-label 에 .ch-flare) */
@@ -535,8 +545,8 @@ body { background: var(--lm-page); }
 .board-stats { display: none; }
 #game-screen.is-start .board-stats {
   display: inline-flex; gap: 12px;
-  position: absolute; top: 8px; right: 10px; z-index: 9;
-  background: transparent; border-radius: 12px; padding: 4px 10px;
+  position: absolute; top: 8px; right: 4px; z-index: 9;    /* 아바타처럼 가장자리 4px — 코인 끝숫자가 여기 맞춰짐 */
+  background: transparent; border-radius: 12px; padding: 4px 0;
   color: #fff; font-weight: 800;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65), 0 0 4px rgba(0, 0, 0, 0.5);
 }
