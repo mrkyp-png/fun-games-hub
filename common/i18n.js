@@ -43,7 +43,10 @@
     rootEl = rootEl || (root && root.document);
     if (!rootEl || !rootEl.querySelectorAll) return;
     rootEl.querySelectorAll('[data-i18n]').forEach(function (el) {
-      el.textContent = t(el.getAttribute('data-i18n'));
+      var key = el.getAttribute('data-i18n');
+      var v = t(key);
+      // 번역이 있을 때만 교체 — 없으면(스테일 캐시로 사전 누락 등) 원래 텍스트 유지, 날 키를 노출하지 않는다.
+      if (v !== key) el.textContent = v;
     });
     rootEl.querySelectorAll('[data-i18n-aria-label]').forEach(function (el) {
       el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria-label')));
