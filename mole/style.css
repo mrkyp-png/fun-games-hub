@@ -1804,19 +1804,22 @@ html:not([lang="en"]) .lane-en { display: none; }
   color: #fff; font-weight: 800; font-size: 0.82rem; flex: 0 0 auto; }
 .mm-mini-mole { width: 26px; aspect-ratio: 470/548; margin-left: -4px; flex: 0 0 auto; }
 .mm-mini-mole img { width: 100%; display: block; }
-.mm-pills { display: flex; gap: 8px; padding: 14px 14px 6px; }
-.mm-pill { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px;
-  padding: 10px 0; border: none; border-radius: 10px; background: #f0f0f2;
+.mm-pills { display: flex; gap: 7px; padding: 14px 12px; }
+.mm-pill { flex: 1; min-width: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 4px;
+  padding: 9px 2px; border: none; border-radius: 10px; background: #f0f0f2;
   color: #55555c; font-weight: 800; font-size: 0.72rem; cursor: pointer; }
-.mm-pill span { white-space: nowrap; }
+.mm-pill > span { white-space: nowrap; }
 .mm-pill--locked { color: #a9a9b0; cursor: not-allowed; }
 .mm-pill--locked .mm-pill-ic { stroke: #b4b4bb; }
 .mm-pill-ic { width: 20px; height: 20px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.6;
   stroke-linecap: round; stroke-linejoin: round; }
-/* 배율 안내 — pill 밑에 한 줄씩 (pill 안에 넣으면 좁아서 이상함) */
-.mm-mult-note { display: flex; flex-direction: column; gap: 2px; padding: 0 16px 12px;
-  font-size: 0.68rem; color: #8a8a92; font-weight: 600; }
-.mm-mult-note b { font-weight: 800; color: #6a6a72; }
+/* DIM/OFF: 전구 좌측 + 오른쪽에 배율 2줄 (윗줄 ×1.2, 아랫줄 피버 ×1.5). 라벨은 그대로 하단. */
+.mm-pill--mult .mm-pill-row { display: flex; align-items: flex-start; gap: 4px; }
+.mm-pill--mult .mm-pill-ic { width: 16px; height: 16px; margin-top: 1px; }
+.mm-pill-mx { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; }
+.mm-pill-mx b { font-size: 0.62rem; font-weight: 900; white-space: nowrap; }
+.mm-pill-mx i { font-size: 0.5rem; font-weight: 700; font-style: normal; opacity: 0.78; white-space: nowrap; }
 /* 전구 밝기 = 난이도 표현: ON 노랑/글로우, DIM 은은, OFF 어둑 */
 .mm-pill[data-mm-diff="easy"] .mm-pill-ic { stroke: #ffcf4a; filter: drop-shadow(0 0 4px rgba(255, 200, 70, 0.9)); }
 .mm-pill[data-mm-diff="mid"] .mm-pill-ic { stroke: #9a9aa0; }

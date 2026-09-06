@@ -114,7 +114,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v229</div>
+      <div id="build-tag" aria-hidden="true">v230</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -225,22 +225,24 @@
           <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"/></svg>
           <span data-i18n="mole.diff.easy">라이트 ON</span>
         </button>
-        <button type="button" class="mm-pill" data-mm-diff="mid">
-          <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"/></svg>
+        <button type="button" class="mm-pill mm-pill--mult" data-mm-diff="mid">
+          <span class="mm-pill-row">
+            <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"/></svg>
+            <span class="mm-pill-mx"><b data-i18n="mole.diff.mid.mult">×1.2</b><i data-i18n="mole.diff.mid.fever">피버 ×1.5</i></span>
+          </span>
           <span data-i18n="mole.diff.mid">라이트 DIM</span>
         </button>
-        <button type="button" class="mm-pill" data-mm-diff="legend">
-          <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"/></svg>
+        <button type="button" class="mm-pill mm-pill--mult" data-mm-diff="legend">
+          <span class="mm-pill-row">
+            <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"/></svg>
+            <span class="mm-pill-mx"><b data-i18n="mole.diff.legend.mult">×2.0</b><i data-i18n="mole.diff.legend.fever">피버 ×3.0</i></span>
+          </span>
           <span data-i18n="mole.diff.legend">라이트 OFF</span>
         </button>
         <button type="button" class="mm-pill mm-pill--locked" data-mm-secret disabled aria-disabled="true">
           <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>
           <span data-i18n="mole.diff.secret">시크릿 모드</span>
         </button>
-      </div>
-      <div class="mm-mult-note">
-        <span><b data-i18n="mole.diff.mid">라이트 DIM</b> <span data-i18n="mole.diff.mid.mult">×1.2</span> · <span data-i18n="mole.diff.mid.fever">피버 ×1.5</span></span>
-        <span><b data-i18n="mole.diff.legend">라이트 OFF</b> <span data-i18n="mole.diff.legend.mult">×2.0</span> · <span data-i18n="mole.diff.legend.fever">피버 ×3.0</span></span>
       </div>
       <div class="mm-grid">
         <button type="button" data-mm-nav="score"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v4a5 5 0 01-10 0zM7 5.5H4V8a3 3 0 003 3M17 5.5h3V8a3 3 0 01-3 3M12 13v4M8.5 20.5h7l-1-3h-5z"/></svg><i data-i18n="mole.more.score">스코어</i></button>
@@ -495,7 +497,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=229').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=230').catch(function () {});
       }
     });
   }
