@@ -127,26 +127,31 @@ body { background: var(--lm-page); }
 #chapter-nav[data-ch="4"] { --ch-glow: #a855f7; --ch-glow-lt: #d8b4fe; --ch-glow-dk: #7c2fd4; --ch-glow-soft: rgba(168, 85, 247, 0.5); }
 #chapter-nav[data-ch="5"] { --ch-glow: #ef3b3b; --ch-glow-lt: #ff9a9a; --ch-glow-dk: #c81e1e; --ch-glow-soft: rgba(239, 59, 59, 0.5); }
 
+/* 박스 없이 화살표 그림만 — 살짝 입체(밝은 하이라이트 + 그림자), 누르면 쑥 들어가는 느낌. */
 .ch-arrow {
-  width: 26px; height: 26px;
+  width: 22px; height: 26px;
   flex: 0 0 auto;
   display: inline-flex; align-items: center; justify-content: center;
   border: none;
   padding: 0;
   cursor: pointer;
-  border-radius: 8px;
-  color: #33363d;
-  background: linear-gradient(#ffffff, #dde1e9);
-  box-shadow: 0 2px 0 #b4bac5, 0 3px 5px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  transition: transform 0.06s ease, box-shadow 0.06s ease, background 0.06s ease;
+  background: none;
+  color: #2c2f36;
+  transition: transform 0.06s ease, filter 0.06s ease;
 }
-.ch-arrow svg { width: 15px; height: 15px; display: block; filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.7)); }
+.ch-arrow svg {
+  width: 17px; height: 17px; display: block;
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.85)) drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.35));
+}
 .ch-arrow:active:not(:disabled) {
-  transform: translateY(2px);
-  background: linear-gradient(#e6e9ef, #d0d5de);
-  box-shadow: 0 0 0 #b4bac5, 0 1px 2px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.28);
+  transform: translateY(1.5px);
+  color: #14161a;
 }
-.ch-arrow:disabled { opacity: 0.3; cursor: default; box-shadow: 0 1px 0 #c4c8d0, inset 0 1px 0 rgba(255, 255, 255, 0.7); }
+.ch-arrow:active:not(:disabled) svg {
+  filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0.5)) drop-shadow(0 0 1px rgba(0, 0, 0, 0.4));
+}
+.ch-arrow:disabled { opacity: 0.3; cursor: default; }
+.ch-arrow:disabled svg { filter: none; }
 
 .ch-label {
   position: relative;
