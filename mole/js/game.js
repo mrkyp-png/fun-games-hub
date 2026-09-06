@@ -559,17 +559,18 @@
     void sms.offsetWidth;
     sms.classList.add('sms-anim');
 
-    // 첫 방문 = 전체 인트로. 아니면 재방문 대화(재접=랜덤 문구 / 다시하기=축하 이모티콘 리액션).
+    // 첫 방문 = 전체 인트로. 아니면 재방문 대화(재접=랜덤 문구 / 다시하기·챕터클리어=축하 이모티콘 리액션).
     const isRetry = !!(opts && opts.retry);
+    const isClear = !!(opts && opts.chapterClear);  // 승리 스와이프로 다음 챕터 홈에 도착
     const visits = parseInt(localStorage.getItem('mole.visits'), 10) || 0;
-    if (!isRetry) localStorage.setItem('mole.visits', String(visits + 1));
-    const firstVisit = !isRetry && visits === 0;
+    if (!isRetry && !isClear) localStorage.setItem('mole.visits', String(visits + 1));
+    const firstVisit = !isRetry && !isClear && visits === 0;
     const firstEl = document.getElementById('chat-first');
     const returnEl = document.getElementById('chat-return');
     firstEl.hidden = !firstVisit;
     returnEl.hidden = firstVisit;
 
-    if (!firstVisit) buildReturnChat(isRetry ? 'retry' : 'phrase');
+    if (!firstVisit) buildReturnChat(isClear ? 'clear' : isRetry ? 'retry' : 'phrase');
     revealThread(firstVisit ? firstEl : returnEl);
     maybeShowStartCoach();
   }
@@ -685,12 +686,17 @@
   // chat-phrases.js 가 (스테일 캐시 등으로) 없어도 대화가 죽지 않게 최소 폴백.
   const CP = MG.ChatPhrases || {
     returnPhrases: () => ['왔어?'], hippoReplies: () => ['ㅇㅇ'],
-    retryText: (k) => (k === 'best' ? '신기록!' : k === 'bad' ? 'ㅋㅋ' : '잘했어!')
+    retryText: (k) => (k === 'best' ? '신기록!' : k === 'bad' ? 'ㅋㅋ' : '잘했어!'),
+    clearPhrases: () => ['챕터 클리어!']
   };
   function buildReturnChat(mode) {
     const el = document.getElementById('chat-return');
     el.innerHTML = '';
-    if (mode === 'retry') {
+    if (mode === 'clear') {
+      el.appendChild(emojiRow('them', CELEBRATE_EMOJI, true));        // 축하 이모티콘(큼) + 폭죽
+      el.appendChild(bubbleRow('them', pick(CP.clearPhrases())));     // "챕터 클리어! 다음도 가보자" 류
+      el.appendChild(emojiRow('me', pick(HIPPO_MOODS), false));       // 하마 이모티콘(큼)
+    } else if (mode === 'retry') {
       const kind = localStorage.getItem('mole.lastWasBest') === '1' ? 'best'
         : localStorage.getItem('mole.lastWasBad') === '1' ? 'bad' : 'clear';
       el.appendChild(emojiRow('them', CELEBRATE_EMOJI, true));        // 축하 이모티콘(큼) + 폭죽
@@ -1317,7 +1323,7 @@
     // "다음 챕터로" = 그 챕터의 홈 화면으로 간다 (아래 키패드는 그대로, 위 보드만 교체).
     // showStartScreenNow 가 board-start 를 챕터 N 내용으로 빌드/표시하고 ov 를 숨기므로,
     // 슬라이드 연출용으로 ov 를 되살린다: 성공 카드는 왼쪽으로, 홈 화면은 오른쪽에서 들어옴.
-    showStartScreenNow();
+    showStartScreenNow({ chapterClear: true });
     bs.classList.add('nc-enter');
     ov.hidden = false;
     ov.classList.add('is-win', 'is-sliding');

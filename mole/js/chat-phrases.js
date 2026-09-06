@@ -26,7 +26,12 @@
         '우리 전생에 봤나?', 'MBTI 뭐야 너', '갑자기 배고프다', '두더지가 안부 전해달래', '오늘 밤에 별똥별 온대'
       ],
       hippo: ['ㅇㅇ', 'ㄱㄱ', '감', '...', '해', 'ㅇㅋ', '뭐', '왜', 'ㅎ', '바빠', '조용히 해', '알겠어'],
-      retry: { best: '미쳤다 신기록!', clear: '잘했어!', bad: 'ㅋㅋ 그럴 수 있어' }
+      retry: { best: '미쳤다 신기록!', clear: '잘했어!', bad: 'ㅋㅋ 그럴 수 있어' },
+      clears: [
+        '챕터 클리어! 다음도 가보자', '오 이번 챕터 깼네?', '역시 너야', '다음 챕터 열렸어',
+        '이 기세로 쭉 가자', '잘한다 진짜', '다음은 더 어려워 각오해', '한 챕터 더?',
+        '오빠가 뭐랬어, 된다고 했잖아', '축하해 ㅎㅎ 다음 판 ㄱ?', '두더지들 도망갔어', '클리어 축하 ㅋㅋ'
+      ]
     },
     en: {
       returns: [
@@ -49,7 +54,12 @@
         'have we met in a past life?', "what's your MBTI", 'suddenly hungry', 'a mole says hi', 'shooting stars tonight'
       ],
       hippo: ['k', 'kk', 'ok', '...', 'fine', 'yep', 'what', 'why', 'lol', 'busy', 'shush', 'got it'],
-      retry: { best: 'insane, new record!', clear: 'nice one!', bad: 'lol it happens' }
+      retry: { best: 'insane, new record!', clear: 'nice one!', bad: 'lol it happens' },
+      clears: [
+        'chapter clear! next one?', 'oh you beat this chapter?', 'knew you could', 'next chapter unlocked',
+        "let's keep this going", "you're on fire", 'next one is harder, brace yourself', 'one more chapter?',
+        'told you you could do it', 'nice!! next round?', 'the moles ran off', 'gg, onto the next'
+      ]
     }
   };
 
@@ -59,7 +69,8 @@
   var api = {
     returnPhrases: function () { return forLang(cur()).returns; },
     hippoReplies: function () { return forLang(cur()).hippo; },
-    retryText: function (kind) { return forLang(cur()).retry[kind] || forLang(cur()).retry.clear; }
+    retryText: function (kind) { return forLang(cur()).retry[kind] || forLang(cur()).retry.clear; },
+    clearPhrases: function () { return forLang(cur()).clears || ['chapter clear!']; }
   };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.ChatPhrases = api; }
 })(typeof window !== 'undefined' ? window : null);
