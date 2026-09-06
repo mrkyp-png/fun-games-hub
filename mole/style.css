@@ -941,9 +941,10 @@ body { background: var(--lm-page); }
 }
 
 /* 타겟 식별 글로우 — 굵은 외곽선 + 약한 번짐 (빛 세기는 이후 조정).
-   두더지/빠끔/모자 = 진한 황금색(때려라), 동물 = 시안(피해라).
+   두더지/빠끔/모자 = 진한 황금색(때려라), 동물·폭탄 = 시안(피해라).
    .mole-pop--mole 은 깊이에 따라 전신·빠끔(peek)·모자(helmet) 프레임을 갈아끼우므로
-   이 한 규칙이 셋 다 덮는다. bomb·item 은 대상 아님 — 손대지 않음. */
+   이 한 규칙이 셋 다 덮는다. 폭탄은 고글 낀 동물 스프라이트라 동물과 같은 시안.
+   item(실드)은 대상 아님 — 손대지 않음. */
 .mole-pop--mole .mole-pop-img {
   filter:
     drop-shadow(1.5px 0 0 #e0a400) drop-shadow(-1.5px 0 0 #e0a400)
@@ -951,7 +952,8 @@ body { background: var(--lm-page); }
     drop-shadow(0 0 5px rgba(224, 164, 0, 0.4))
     drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
 }
-.mole-pop--animal .mole-pop-img {
+.mole-pop--animal .mole-pop-img,
+.mole-pop--bomb .mole-pop-img {
   filter:
     drop-shadow(1.5px 0 0 #15c2d6) drop-shadow(-1.5px 0 0 #15c2d6)
     drop-shadow(0 1.5px 0 #15c2d6) drop-shadow(0 -1.5px 0 #15c2d6)
