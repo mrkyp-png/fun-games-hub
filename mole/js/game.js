@@ -594,9 +594,15 @@
     if (!nav) return;
     const step = (d) => {
       const maxCh = MG.Progress.maxChapterFor(currentLight());
-      const ch = Math.max(1, Math.min(maxCh, currentChapter() + d));
+      const before = currentChapter();
+      const ch = Math.max(1, Math.min(maxCh, before + d));
       localStorage.setItem('mole.chapter', String(ch));
       refreshChapterNav();
+      // 챕터가 실제로 바뀌었으면 박스에서 아우라가 확 터졌다 가라앉는 연출 (레퍼런스: 챕터 박스 효과.mp4)
+      if (ch !== before) {
+        const lbl = nav.querySelector('.ch-label');
+        if (lbl) { lbl.classList.remove('ch-flare'); void lbl.offsetWidth; lbl.classList.add('ch-flare'); }
+      }
       // 목표 점수 문자알림 갱신
       const sms = document.getElementById('start-best');
       sms.querySelector('.chat-sms-txt').textContent =
