@@ -104,8 +104,8 @@
       'mole.diff.legend': '라이트 OFF',
       'mole.diff.secret': '시크릿 모드',
       'mole.diff.easy.mult': '×1.0',
-      'mole.diff.mid.mult': '×1.2', 'mole.diff.mid.fever': '피버 ×1.5',
-      'mole.diff.legend.mult': '×2.0', 'mole.diff.legend.fever': '피버 ×3.0',
+      'mole.diff.mid.mult': '기본 ×1.2', 'mole.diff.mid.fever': '피버 ×1.5',
+      'mole.diff.legend.mult': '기본 ×2.0', 'mole.diff.legend.fever': '피버 ×3.0',
 
       'mole.cos.title': '사람두더지 꾸미기',
       'mole.cos.hat': '모자',
@@ -287,8 +287,8 @@
       'mole.diff.legend': 'Light OFF',
       'mole.diff.secret': 'Secret mode',
       'mole.diff.easy.mult': '×1.0',
-      'mole.diff.mid.mult': '×1.2', 'mole.diff.mid.fever': 'Fever ×1.5',
-      'mole.diff.legend.mult': '×2.0', 'mole.diff.legend.fever': 'Fever ×3.0',
+      'mole.diff.mid.mult': 'Base ×1.2', 'mole.diff.mid.fever': 'Fever ×1.5',
+      'mole.diff.legend.mult': 'Base ×2.0', 'mole.diff.legend.fever': 'Fever ×3.0',
 
       'mole.cos.title': 'Customize Face Mole',
       'mole.cos.hat': 'Hat',
