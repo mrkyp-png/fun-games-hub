@@ -1804,21 +1804,19 @@ html:not([lang="en"]) .lane-en { display: none; }
   color: #fff; font-weight: 800; font-size: 0.82rem; flex: 0 0 auto; }
 .mm-mini-mole { width: 26px; aspect-ratio: 470/548; margin-left: -4px; flex: 0 0 auto; }
 .mm-mini-mole img { width: 100%; display: block; }
-.mm-pills { display: flex; gap: 8px; padding: 14px; }
-.mm-pill { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding: 8px 3px; border: none; border-radius: 10px; background: #f0f0f2;
+.mm-pills { display: flex; gap: 8px; padding: 14px 14px 6px; }
+.mm-pill { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 10px 0; border: none; border-radius: 10px; background: #f0f0f2;
   color: #55555c; font-weight: 800; font-size: 0.72rem; cursor: pointer; }
-/* ON/시크릿 = 전구 위 + 라벨 아래 (기존 그대로). DIM/OFF = 전구 우측에 배율 2줄 + 라벨은 맨 아랫줄. */
-.mm-pill-top { display: flex; align-items: center; gap: 3px; }
-.mm-pill-mult { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.05; }
-.mm-pill-mult b { font-size: 0.6rem; font-weight: 800; white-space: nowrap; }
-.mm-pill-mult i { font-size: 0.46rem; font-weight: 700; font-style: normal; opacity: 0.8; white-space: nowrap; }
-.mm-pill-lbl { font-size: 0.66rem; font-weight: 800; white-space: nowrap; }
-.mm-pill--mult .mm-pill-lbl { font-size: 0.62rem; }
+.mm-pill span { white-space: nowrap; }
 .mm-pill--locked { color: #a9a9b0; cursor: not-allowed; }
 .mm-pill--locked .mm-pill-ic { stroke: #b4b4bb; }
 .mm-pill-ic { width: 20px; height: 20px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.6;
   stroke-linecap: round; stroke-linejoin: round; }
+/* 배율 안내 — pill 밑에 한 줄씩 (pill 안에 넣으면 좁아서 이상함) */
+.mm-mult-note { display: flex; flex-direction: column; gap: 2px; padding: 0 16px 12px;
+  font-size: 0.68rem; color: #8a8a92; font-weight: 600; }
+.mm-mult-note b { font-weight: 800; color: #6a6a72; }
 /* 전구 밝기 = 난이도 표현: ON 노랑/글로우, DIM 은은, OFF 어둑 */
 .mm-pill[data-mm-diff="easy"] .mm-pill-ic { stroke: #ffcf4a; filter: drop-shadow(0 0 4px rgba(255, 200, 70, 0.9)); }
 .mm-pill[data-mm-diff="mid"] .mm-pill-ic { stroke: #9a9aa0; }
@@ -1841,6 +1839,22 @@ html:not([lang="en"]) .lane-en { display: none; }
 .mm-ad:empty::after { content: '광고'; }
 
 /* 더보기 그리드의 "GO" — 설정 아래 칸. 통화 아이콘 + GO, 색으로 구분 (앰버). */
+/* 이어가기(mm-paused) 상태에서만: PLAY 왼쪽에 "이거 누르면 새로 시작" 안내 */
+.mm-go-note {
+  grid-column: 1 / 4;
+  display: none;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 8px 0 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #9a9aa2;
+  text-align: right;
+  white-space: pre-line;
+}
+#more-menu.mm-paused .mm-go-note { display: flex; }
+
 .mm-go {
   grid-column: 4;          /* 설정 바로 아래 (4번째 열) */
   display: flex;
