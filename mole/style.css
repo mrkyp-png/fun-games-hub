@@ -129,21 +129,39 @@ body { background: var(--lm-page); }
   padding: 0;
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.6);
 }
-.ch-arrow:disabled { opacity: 0.28; cursor: default; animation: none !important; }
-#game-screen.is-start .ch-arrow--prev { animation: ch-arrow-l 3.6s ease-in-out infinite; }
-#game-screen.is-start .ch-arrow--next { animation: ch-arrow-r 3.6s ease-in-out infinite; }
-@keyframes ch-arrow-l { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(2px); } }
-@keyframes ch-arrow-r { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-2px); } }
+.ch-arrow:disabled { opacity: 0.28; cursor: default; }
 .ch-label {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   font-size: 0.82rem; font-weight: 800; line-height: 1;
   color: #1c1c22;
-  background: rgba(255, 255, 255, 0.92);
+  background: #fff;
   border-radius: 999px;
-  padding: 3px 9px;
+  padding: 3px 10px;
   white-space: nowrap;
   text-shadow: none;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 6px rgba(255, 130, 0, 0.5);
 }
+/* 테두리를 타고 도는 불빛 (레퍼런스: 바탕화면 "챕터 박스 효과.mp4" = @UIMotionEffects 카드 연출).
+   회전하는 conic 그라디언트를 pill 모양으로 클리핑하고 ::after 흰 바탕이 가운데를 덮어 테두리만 빛난다. */
+.ch-label::before {
+  content: '';
+  position: absolute; z-index: -2;
+  left: 50%; top: 50%;
+  width: 240%; aspect-ratio: 1;
+  translate: -50% -50%;
+  background: conic-gradient(from 0deg,
+    transparent 0 52%, #ff7a00 66%, #ffd36b 74%, #ff5e00 82%, transparent 92% 100%);
+}
+#game-screen.is-start .ch-label::before { animation: ch-glow-spin 2.4s linear infinite; }
+.ch-label::after {
+  content: '';
+  position: absolute; z-index: -1; inset: 2px;
+  background: #fff;
+  border-radius: inherit;
+}
+@keyframes ch-glow-spin { to { rotate: 360deg; } }
 
 .chat-thread {
   flex: 1;
@@ -586,7 +604,7 @@ body { background: var(--lm-page); }
 .ticker-seg i { font-style: normal; color: var(--lm-muted); font-weight: 600; }
 @keyframes ticker-scroll {
   from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  to { transform: translateX(var(--tk-shift, -50%)); } /* --tk-shift = 세그먼트 1개 폭(px), game.js tuneTicker 가 설정 */
 }
 #hud-ticker.hud-flash { animation: ticker-flash 0.35s ease-out; } /* 폭탄으로 시간 −3 */
 @keyframes ticker-flash {

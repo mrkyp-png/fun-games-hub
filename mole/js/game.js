@@ -606,14 +606,20 @@
     nav.querySelector('[data-ch-next]').addEventListener('click', () => step(1));
   }
 
-  // 홈 상단 주소창 티커: 문구 길이가 달라도(언어/힌트) 스크롤 속도가 일정하도록 duration 을 폭에 맞춘다.
-  function tuneAddrTicker() {
-    const seg = document.querySelector('#hud-addr .ticker-seg');
-    const track = document.querySelector('#hud-addr .ticker-track');
+  // 티커: 문구 길이가 달라도(언어/힌트) 스크롤 속도가 일정하도록 duration 을 폭에 맞추고,
+  // 루프 이동량(--tk-shift)도 세그먼트 1개 폭 그대로 px 로 박아준다 — 키프레임의 -50%(트랙 절반)에
+  // 의존하면 기기별 서브픽셀 반올림으로 세그먼트 폭과 어긋나 "문장 중간에 끊고 처음으로" 버그가 남.
+  function tuneTicker(rootSel, pxPerSec) {
+    const seg = document.querySelector(rootSel + ' .ticker-seg');
+    const track = document.querySelector(rootSel + ' .ticker-track');
     if (!seg || !track) return;
     const w = seg.getBoundingClientRect().width;
-    if (w > 0) track.style.animationDuration = Math.max(12, w / 60).toFixed(1) + 's'; // ≈60px/s
+    if (w > 0) {
+      track.style.setProperty('--tk-shift', '-' + Math.round(w) + 'px');
+      track.style.animationDuration = Math.max(12, w / pxPerSec).toFixed(1) + 's';
+    }
   }
+  function tuneAddrTicker() { tuneTicker('#hud-addr', 60); }
 
   // 초록 버튼 롱프레스=종료 안내 말풍선 — 1회만.
   function maybeShowStartCoach() {
