@@ -1380,9 +1380,6 @@ body { background: var(--lm-page); }
 }
 .lane-kr { font-size: clamp(0.42rem, 2vw, 0.62rem); }
 .lane-en { font-size: clamp(0.36rem, 1.7vw, 0.52rem); letter-spacing: 0.08em; }
-/* 언어에 따라 자음(한글) / 알파벳 하나만 — 전화 키패드 표기 (game.js 가 <html lang> 설정) */
-html[lang="en"] .lane-kr,
-html:not([lang="en"]) .lane-en { display: none; }
 
 /* 채널 링크 등록된 버튼 — 평소 얼굴(숫자/내비)과 채널 아이콘을 동전 뒤집기(3D flip) 카드로
    포갠다. 짧게 누르면 lane-controls.js 의 flipChannelCard() 가 몇 바퀴 휙 돌려 반대 면에

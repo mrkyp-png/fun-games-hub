@@ -1421,9 +1421,7 @@
       if (name === 'music') syncBgm(state && !state.ended);
     });
     // 언어 전환 시 JS 로 채운 동적 문구도 다시 그린다 (applyStatic 이 못 건드리는 것들).
-    document.documentElement.lang = I18N.lang || 'ko';
     I18N.onChange(() => {
-      document.documentElement.lang = I18N.lang || 'ko'; // 키패드 자음↔알파벳 CSS 토글
       const mm = document.getElementById('more-menu');
       if (moreMenu && mm && !mm.hidden) moreMenu.refresh();
       tuneAddrTicker();
