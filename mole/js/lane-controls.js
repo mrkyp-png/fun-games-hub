@@ -206,8 +206,13 @@
       '<button type="button" data-a="delete"><span class="lch-ic">🗑️</span>' + T('mole.channel.delete') + '</button>';
     document.body.appendChild(m);
     const r = btn.getBoundingClientRect();
-    m.style.left = (r.left + r.width / 2) + 'px';
-    m.style.top = (r.top - 6) + 'px';
+    // 폰 밖으로 안 나가게 가로 클램프 + 꼬리는 버튼을 계속 가리키게 (--tail-x).
+    const mw = m.offsetWidth, mh = m.offsetHeight, mg = 8;
+    const btnCx = r.left + r.width / 2;
+    const cx = Math.max(mw / 2 + mg, Math.min(window.innerWidth - mw / 2 - mg, btnCx));
+    m.style.left = cx + 'px';
+    m.style.top = Math.max(mh + mg, r.top - 6) + 'px'; // 위로 못 나가면 아래로 안 넘어가게만 (translateY -100%)
+    m.style.setProperty('--tail-x', Math.max(12, Math.min(mw - 12, btnCx - (cx - mw / 2))) + 'px');
     m.querySelector('[data-a="secret"]').addEventListener('click', () => {
       lsSet(SECRET_P + id, true);
       secretWithSpin(btn, id);

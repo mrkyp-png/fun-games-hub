@@ -1183,39 +1183,43 @@ body { background: var(--lm-page); }
 /* 채널 버튼 길게 누르면 뜨는 말풍선 메뉴 [🕶 시크릿] [🗑 삭제] */
 .lane-ch-menu {
   position: fixed;
+  left: 50%; top: 0;
   transform: translate(-50%, -100%);
   z-index: 60;
   display: flex;
-  gap: 4px;
-  padding: 5px;
-  border-radius: 12px;
+  gap: 6px;
+  padding: 7px;
+  white-space: nowrap;
+  border-radius: 15px;
   background: linear-gradient(180deg, #35c866, #23b153); /* 대화 녹색 말풍선과 동일 */
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.38);
   animation: lch-pop 0.14s ease-out;
 }
 .lane-ch-menu::after {
   content: '';
   position: absolute;
-  left: 50%; bottom: -6px;
+  left: var(--tail-x, 50%); bottom: -8px;
   transform: translateX(-50%);
-  border: 7px solid transparent;
+  border: 9px solid transparent;
   border-top-color: #23b153; /* 그라데이션 아래쪽 색 */
   border-bottom: 0;
 }
 .lane-ch-menu button {
-  display: flex; align-items: center; gap: 4px;
-  padding: 7px 11px;
+  display: flex; align-items: center; gap: 5px;
+  flex: 0 0 auto;
+  padding: 11px 16px;
   border: none;
-  border-radius: 8px;
+  border-radius: 11px;
   background: rgba(255, 255, 255, 0.16);
   color: #fff;
-  font-size: 0.82rem;
+  font-size: 1rem;
   font-weight: 700;
+  white-space: nowrap;
   cursor: pointer;
 }
 .lane-ch-menu button:active { background: rgba(255, 255, 255, 0.32); }
 .lane-ch-menu [data-a="delete"] { color: #ffe0dd; }
-.lane-ch-menu .lch-ic { font-size: 0.95rem; }
+.lane-ch-menu .lch-ic { font-size: 1.2rem; }
 @keyframes lch-pop { from { opacity: 0; transform: translate(-50%, -92%); } }
 
 /* 아이콘 로드 실패 시 대체 유튜브 로고 */
