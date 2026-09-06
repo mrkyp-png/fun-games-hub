@@ -539,6 +539,8 @@
     const go = document.getElementById('gameover-overlay');
     go.hidden = true; go.classList.remove('is-win', 'is-lose', 'is-sliding');
     const cf = go.querySelector('.go-confetti'); if (cf) cf.innerHTML = '';
+    const rsh = document.getElementById('result-swipe-hint');
+    if (rsh) { rsh.hidden = true; rsh.classList.remove('is-on'); }
     const ncp = document.getElementById('next-chapter-panel');
     ncp.hidden = true; ncp.classList.remove('is-in');
     const ri = document.getElementById('round-intro-overlay');
@@ -1302,6 +1304,8 @@
   }
   function goToNextChapter(ch) {
     localStorage.setItem('mole.chapter', String(ch));
+    const sh = document.getElementById('result-swipe-hint');
+    if (sh) { sh.hidden = true; sh.classList.remove('is-on'); }
     const ov = document.getElementById('gameover-overlay');
     const panel = document.getElementById('next-chapter-panel');
     panel.querySelector('[data-nc-label]').textContent = chapterLabel(ch);
@@ -1394,6 +1398,19 @@
         conf.appendChild(p);
       }
     }, 400); // 글자·하마 fly-in(0.4s) 끝난 뒤
+
+    // 승리 + 다음 챕터가 열려 있으면: 축하 연출 5초 뒤 "왼쪽으로 밀어" 힌트 (손 이모지 + 화살표).
+    const sh = document.getElementById('result-swipe-hint');
+    if (sh) { sh.hidden = true; sh.classList.remove('is-on'); }
+    if (win && ov.dataset.nextChapter && sh) {
+      const myGen = sessionGen;
+      setTimeout(() => {
+        if (myGen !== sessionGen || ov.hidden || !ov.dataset.nextChapter) return;
+        sh.hidden = false;
+        void sh.offsetWidth;
+        sh.classList.add('is-on');
+      }, 5000);
+    }
   }
 
   // ---------- 초기화 ----------
@@ -1434,7 +1451,7 @@
         if (!document.getElementById('game-screen').classList.contains('is-start')) return;
         const link = MG.ChannelLinks && MG.ChannelLinks.LINKS[id];
         if (!link) return;
-        MG.Ads.interstitial(I18N.t('mole.channel.hint')).then(() => { window.location.href = link.url; });
+        MG.Ads.interstitial(I18N.t('mole.channel.hint')).then((ok) => { if (ok) window.location.href = link.url; });
       }
     });
     wireStartButton(); // 다이얼러 초록 버튼: 홈에서 탭=시작 / 꾹=종료 대기

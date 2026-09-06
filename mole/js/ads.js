@@ -11,6 +11,7 @@
 
   // 가짜 전면/리워드 오버레이. rewardMode=true 면 resolve 값이 boolean.
   // hint: 광고 카드에 덧붙일 안내 문구(선택) — 예: 채널 링크로 나가기 전 복귀 방법 안내.
+  // resolve 값: true = 끝까지 봄(1.6s) / false = X 로 닫음(취소). interstitial·rewarded 동일.
   function fakeAd(rewardMode, hint) {
     return new Promise(function (resolve) {
       var v = document.createElement('div');
@@ -28,10 +29,8 @@
         v.remove();
         resolve(val);
       }
-      v.querySelector('.ad-overlay-x').addEventListener('click', function () {
-        finish(rewardMode ? false : undefined);
-      });
-      setTimeout(function () { finish(rewardMode ? true : undefined); }, 1600);
+      v.querySelector('.ad-overlay-x').addEventListener('click', function () { finish(false); });
+      setTimeout(function () { finish(true); }, 1600);
     });
   }
   function interstitial(hint) { return fakeAd(false, hint); }

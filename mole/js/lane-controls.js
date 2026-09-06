@@ -15,19 +15,43 @@
   // 채널 버튼 상태 (로컬):
   //  - deleted (mole.channelHidden.<id>) : 채널 링크 완전 제거 → 그냥 숫자 버튼. 길게 눌러도 무반응.
   //  - secret  (mole.channelSecret.<id>) : 숫자로 위장(숨김). 길게 누르면 10회전하며 유튜브 아이콘 복구.
+  //  - user    (mole.channelUser.<id>)   : 유저가 이 기기에서 등록한 채널 {url, icon}. LINKS 보다 우선.
   const HIDDEN_P = 'mole.channelHidden.';
   const SECRET_P = 'mole.channelSecret.';
+  const USER_P = 'mole.channelUser.';
   function lsGet(k) { try { return localStorage.getItem(k) === '1'; } catch (e) { return false; } }
   function lsSet(k, on) { try { on ? localStorage.setItem(k, '1') : localStorage.removeItem(k); } catch (e) { /* noop */ } }
   function isDeleted(id) { return lsGet(HIDDEN_P + id); }
   function isSecret(id) { return lsGet(SECRET_P + id); }
+  function chUser(id) {
+    try { return JSON.parse(localStorage.getItem(USER_P + id) || 'null'); } catch (e) { return null; }
+  }
   function chLink(id) {
+    var u = chUser(id);
+    if (u && u.url) return u;
     var CL = root.MoleGame && root.MoleGame.ChannelLinks;
     return (CL && CL.LINKS[id]) || null;
   }
-  // 짧게 탭으로 유튜브 진입 가능한 "일반" 상태의 채널만 반환 (삭제/시크릿이면 null).
+  // 짧게 두 번(더블탭)으로 유튜브 진입 가능한 "일반" 상태의 채널만 반환 (삭제/시크릿이면 null).
   function channelFor(id) {
     return (!isDeleted(id) && !isSecret(id)) ? chLink(id) : null;
+  }
+
+  // 유튜브 URL 정규화 + 채널 핸들 추출 (아이콘 unavatar.io 용).
+  function normalizeYtUrl(s) {
+    s = (s || '').trim();
+    if (!s) return '';
+    if (/^@?[A-Za-z0-9_.\-]+$/.test(s)) s = 'https://www.youtube.com/@' + s.replace(/^@/, ''); // 핸들만 입력
+    if (!/^https?:\/\//i.test(s)) s = 'https://' + s;
+    try {
+      var u = new URL(s);
+      if (!/(^|\.)youtube\.com$|(^|\.)youtu\.be$/i.test(u.hostname)) return '';
+      return u.href;
+    } catch (e) { return ''; }
+  }
+  function ytHandle(url) {
+    var m = url.match(/@([A-Za-z0-9_.\-]+)/) || url.match(/\/(?:c|channel|user)\/([A-Za-z0-9_.\-]+)/);
+    return m ? m[1] : '';
   }
 
   // 내비 아이콘 (이모지 렌더 편차 회피 — 인라인 SVG, currentColor).
@@ -35,7 +59,9 @@
     person: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7.5 8-7.5s8 3.1 8 7.5z"/></svg>',
     pad: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="6" r="1.9"/><circle cx="12" cy="6" r="1.9"/><circle cx="18" cy="6" r="1.9"/><circle cx="6" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="18" cy="12" r="1.9"/><circle cx="6" cy="18" r="1.9"/><circle cx="12" cy="18" r="1.9"/><circle cx="18" cy="18" r="1.9"/></svg>',
     clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3.5 2"/></svg>',
-    phone: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.4.6 3.6.6.6 0 1 .5 1 1V20c0 .6-.4 1-1 1C10.2 21 3 13.8 3 5c0-.6.5-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.2 1l-2.3 2.2z"/></svg>'
+    phone: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.4.6 3.6.6.6 0 1 .5 1 1V20c0 .6-.4 1-1 1C10.2 21 3 13.8 3 5c0-.6.5-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.2 1l-2.3 2.2z"/></svg>',
+    // 채널 아이콘 로드 실패 시 대체용 유튜브 로고
+    youtube: '<svg class="lane-yt-glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="4" fill="#ff0000"/><path d="M10 8.5l6 3.5-6 3.5z" fill="#fff"/></svg>'
   };
 
   // regionId(0..15) → 버튼 표시. 왼쪽 3열 = 표준 다이얼(큰 숫자 + 자음 + 영문/기호), 오른쪽 열 = 내비.
@@ -62,27 +88,67 @@
         '<span class="lane-sub">' + (f.kr ? '<span class="lane-kr">' + f.kr + '</span>' : '') +
         (f.en ? '<span class="lane-en">' + f.en + '</span>' : '') + '</span>';
     }
-    // 채널 등록 + 아이콘이 있으면 평소 얼굴과 채널 아이콘을 동전 뒤집듯 3D 로 전환할 수 있게
-    // .lane-flip 카드(뒷면=lane-face--back 숫자/내비, 앞면=lane-face--front 채널 아이콘)로 감싼다.
-    // 짧게 누르면(동전이 몇 바퀴 빙글 돌다 착지) 서로 교대로 보인다 — flipChannelCard() 참고.
-    // 이미지 로드 실패하면(onerror) 뒤집기 자체를 없던 일로 하고 원래 얼굴만 남는다.
+    // 채널이 등록돼 있으면 평소 얼굴 ↔ 채널 아이콘을 동전처럼 3D 로 뒤집는 .lane-flip 카드로 감싼다.
+    // 아이콘 URL 이 없거나 로드 실패하면 유튜브 로고로 대체(채널 버튼임은 유지).
     var ch = !f.call && channelFor(id);
-    if (ch && ch.icon) {
+    if (ch) {
       btn.classList.add('lane-button--flippable');
       btn.innerHTML =
         '<span class="lane-flip">' +
         '<span class="lane-face lane-face--back">' + faceHtml + '</span>' +
-        '<span class="lane-face lane-face--front"><img class="lane-channel-icon" alt=""></span>' +
+        '<span class="lane-face lane-face--front">' +
+          (ch.icon ? '<img class="lane-channel-icon" alt="">' : SVG.youtube) +
+        '</span>' +
         '</span>';
       var img = btn.querySelector('.lane-channel-icon');
-      img.src = ch.icon;
-      img.addEventListener('error', function () {
-        btn.classList.remove('lane-button--flippable', 'is-flipped');
-        btn.innerHTML = faceHtml;
-      });
+      if (img) {
+        img.src = ch.icon;
+        img.addEventListener('error', function () {
+          var front = img.parentElement;
+          if (front) front.innerHTML = SVG.youtube;
+        });
+      }
     } else {
       btn.innerHTML = faceHtml;
     }
+  }
+
+  // 빈(채널 없는) 버튼을 더블탭하면 뜨는 "유튜브 채널 등록" 창.
+  let regModalEl = null;
+  function showRegisterModal(id, btn) {
+    if (regModalEl) return;
+    var I = root.FGH && root.FGH.I18N;
+    var T = function (k) { return I ? I.t(k) : k; };
+    var v = document.createElement('div');
+    v.className = 'ad-overlay ch-reg-overlay';
+    v.innerHTML =
+      '<div class="ad-overlay-card ch-reg-card">' +
+      '<div class="ch-reg-title">' + T('mole.channel.regTitle') + '</div>' +
+      '<div class="ch-reg-desc">' + T('mole.channel.regDesc') + '</div>' +
+      '<input type="url" class="ch-reg-input" placeholder="youtube.com/@..." autocomplete="off" spellcheck="false" />' +
+      '<div class="ch-reg-btns">' +
+        '<button type="button" data-r="ok">' + T('mole.channel.regOk') + '</button>' +
+        '<button type="button" data-r="cancel">' + T('mole.common.close') + '</button>' +
+      '</div></div>';
+    document.body.appendChild(v);
+    regModalEl = v;
+    var input = v.querySelector('.ch-reg-input');
+    setTimeout(function () { input.focus(); }, 50);
+    var close = function () { v.remove(); regModalEl = null; };
+    v.querySelector('[data-r="cancel"]').addEventListener('click', close);
+    v.addEventListener('click', function (e) { if (e.target === v) close(); });
+    input.addEventListener('keydown', function (e) { if (e.key === 'Enter') v.querySelector('[data-r="ok"]').click(); });
+    v.querySelector('[data-r="ok"]').addEventListener('click', function () {
+      var url = normalizeYtUrl(input.value);
+      if (!url) { input.classList.add('ch-reg-input--bad'); return; }
+      var h = ytHandle(url);
+      var rec = { url: url, icon: h ? ('https://unavatar.io/youtube/' + h) : '' };
+      lsSet(SECRET_P + id, false);
+      lsSet(HIDDEN_P + id, false);
+      try { localStorage.setItem(USER_P + id, JSON.stringify(rec)); } catch (e) { /* noop */ }
+      fillFace(btn, FACES[id], id);
+      close();
+    });
   }
 
   // 동전 뒤집기 — 10바퀴 휙 돌고 반 바퀴 더 돌아 반대 면에 착지 (누적 각도).
@@ -146,7 +212,8 @@
     });
     m.querySelector('[data-a="delete"]').addEventListener('click', () => {
       lsSet(HIDDEN_P + id, true);
-      fillFace(btn, FACES[id], id); // 즉시 평범한 숫자로
+      try { localStorage.removeItem(USER_P + id); } catch (e) { /* noop */ }
+      fillFace(btn, FACES[id], id); // 즉시 평범한 숫자로 (더블탭하면 등록창)
       closeChannelMenu();
     });
     chMenuEl = m;
@@ -191,7 +258,7 @@
           b.classList.add('lane-button--flash');
 
           // 채널 조작 (시작버튼 제외):
-          //   짧게 두 번(더블탭) = 유튜브 진입 (일반 상태 + 홈일 때만). 한 번만은 아무 일 없음 — 실수 진입 방지.
+          //   짧게 두 번(더블탭) = 채널 있음→유튜브 진입 / 빈 버튼(삭제·미등록)→채널 등록창. 한 번만은 무시(실수 방지).
           //   0.6초 길게        = onChannelHold — 일반: [시크릿|삭제] 메뉴 / 시크릿: 10회전 복구 / 삭제: 무반응
           // 포인터 캡처로 손가락이 버튼 밖으로 나가도 pointerup 을 여기서 받는다
           // (예전 pointerleave 로 판정하던 게 삭제 제스처가 안 먹던 원인).
@@ -208,13 +275,19 @@
               const wasHeld = held;
               cleanup();
               if (wasHeld) return; // 길게 = onChannelHold 가 이미 처리
-              if (!((!isHome || isHome()) && channelFor(id))) { lastTapAt = 0; return; }
-              const now = Date.now();
-              if (now - lastTapAt < DOUBLE_TAP_MS) { // 두 번째 탭 = 진입
-                lastTapAt = 0;
-                if (onChannelEnter) onChannelEnter(id);
+              if (!isHome || isHome()) {
+                // 홈: 시크릿 버튼(숨긴 채널)은 더블탭도 무시 — 나머지는 판정.
+                if (isSecret(id)) { lastTapAt = 0; return; }
+                const now = Date.now();
+                if (now - lastTapAt < DOUBLE_TAP_MS) { // 두 번째 탭
+                  lastTapAt = 0;
+                  if (channelFor(id)) { if (onChannelEnter) onChannelEnter(id); } // 채널 있음 → 진입
+                  else showRegisterModal(id, b);                                   // 빈 버튼 → 등록창
+                } else {
+                  lastTapAt = now; // 첫 탭 — 대기
+                }
               } else {
-                lastTapAt = now; // 첫 탭 — 대기
+                lastTapAt = 0;
               }
             };
             b.addEventListener('pointerup', up);

@@ -906,10 +906,36 @@ body { background: var(--lm-page); }
   position: relative; z-index: 2; margin: 0;
   font-size: 2.6rem; font-weight: 800; color: var(--lm-ink);
 }
+/* 승리 화면 "왼쪽으로 밀어" 힌트 — 축하 5초 뒤. 손 이모지 + 화살표가 왼쪽으로 까딱까딱. */
+.result-swipe-hint {
+  position: absolute;
+  left: 50%; bottom: 2%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 15px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+}
+.result-swipe-hint[hidden] { display: none !important; }
+.result-swipe-hint.is-on { animation: rsh-in 0.35s ease forwards; }
+.result-swipe-hint .rsh-hand { font-size: 1.35rem; line-height: 1; }
+.result-swipe-hint .rsh-arrows { color: #ffd54a; font-weight: 900; letter-spacing: -2px; }
+.result-swipe-hint.is-on .rsh-hand,
+.result-swipe-hint.is-on .rsh-arrows { animation: rsh-nudge 1.1s ease-in-out infinite; }
+@keyframes rsh-in { to { opacity: 1; } }
+@keyframes rsh-nudge { 0%, 100% { transform: translateX(4px); } 50% { transform: translateX(-6px); } }
+
 /* ---- 최종 결과: 박스 없이. 성공(맨위) / 하마(중앙) / 점수(맨아래) ---- */
 #gameover-overlay {
   overflow: hidden; flex-direction: column;
-  justify-content: space-between; padding: 7% 0 6%;
+  justify-content: space-between; padding: 7% 0 10%;
   transition: transform 0.34s cubic-bezier(.4, 0, .3, 1); touch-action: pan-y;
 }
 #gameover-overlay.is-sliding { transform: translateX(-100%); }
@@ -1163,8 +1189,8 @@ body { background: var(--lm-page); }
   gap: 4px;
   padding: 5px;
   border-radius: 12px;
-  background: #23242c;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+  background: linear-gradient(180deg, #35c866, #23b153); /* 대화 녹색 말풍선과 동일 */
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
   animation: lch-pop 0.14s ease-out;
 }
 .lane-ch-menu::after {
@@ -1173,7 +1199,7 @@ body { background: var(--lm-page); }
   left: 50%; bottom: -6px;
   transform: translateX(-50%);
   border: 7px solid transparent;
-  border-top-color: #23242c;
+  border-top-color: #23b153; /* 그라데이션 아래쪽 색 */
   border-bottom: 0;
 }
 .lane-ch-menu button {
@@ -1181,16 +1207,40 @@ body { background: var(--lm-page); }
   padding: 7px 11px;
   border: none;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.16);
   color: #fff;
   font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
 }
-.lane-ch-menu button:active { background: rgba(255, 255, 255, 0.2); }
-.lane-ch-menu [data-a="delete"] { color: #ff8a84; }
+.lane-ch-menu button:active { background: rgba(255, 255, 255, 0.32); }
+.lane-ch-menu [data-a="delete"] { color: #ffe0dd; }
 .lane-ch-menu .lch-ic { font-size: 0.95rem; }
 @keyframes lch-pop { from { opacity: 0; transform: translate(-50%, -92%); } }
+
+/* 아이콘 로드 실패 시 대체 유튜브 로고 */
+.lane-yt-glyph { width: 70%; height: 70%; }
+
+/* 유튜브 채널 등록 창 (빈 버튼 더블탭) — ad-overlay 스크림 재사용 */
+.ch-reg-card { display: flex; flex-direction: column; align-items: stretch; gap: 10px; max-width: 300px; }
+.ch-reg-title { font-weight: 800; font-size: 1rem; }
+.ch-reg-desc { font-size: 0.8rem; color: var(--lm-muted); line-height: 1.4; }
+.ch-reg-input {
+  width: 100%; box-sizing: border-box;
+  padding: 9px 11px;
+  border: 1.5px solid var(--lm-line, #d8d8dc);
+  border-radius: 9px;
+  font-size: 0.86rem;
+  background: #fff; color: #1c1c1c;
+}
+.ch-reg-input--bad { border-color: #e53935; background: #fff2f1; }
+.ch-reg-btns { display: flex; gap: 8px; width: 100%; }
+.ch-reg-btns button {
+  flex: 1; padding: 9px 0; border: none; border-radius: 9px;
+  font-size: 0.86rem; font-weight: 800; cursor: pointer;
+}
+.ch-reg-btns [data-r="ok"] { background: #ff0000; color: #fff; }
+.ch-reg-btns [data-r="cancel"] { background: rgba(0, 0, 0, 0.08); color: #333; }
 
 /* 이어가기 복귀 안내 말풍선 — 초록 통화버튼이 말하듯이, 그 위에서 왼쪽으로 펼쳐진다.
    다이얼패드 영역 안(보드 아래)이라 두더지/이모티콘과 안 겹친다. 3초 주기로 다시 뜸. */
@@ -1755,17 +1805,19 @@ html:not([lang="en"]) .lane-en { display: none; }
 .mm-mini-mole { width: 26px; aspect-ratio: 470/548; margin-left: -4px; flex: 0 0 auto; }
 .mm-mini-mole img { width: 100%; display: block; }
 .mm-pills { display: flex; gap: 8px; padding: 14px; }
-.mm-pill { flex: 1; min-width: 0; display: flex; flex-direction: row; align-items: center; gap: 5px;
-  padding: 8px 5px; border: none; border-radius: 10px; background: #f0f0f2;
+.mm-pill { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 8px 3px; border: none; border-radius: 10px; background: #f0f0f2;
   color: #55555c; font-weight: 800; font-size: 0.72rem; cursor: pointer; }
-.mm-pill-body { display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
-  min-width: 0; line-height: 1.12; }
-.mm-pill-body b { font-size: 0.66rem; font-weight: 800; white-space: nowrap; }
-.mm-pill-body i { font-size: 0.54rem; font-weight: 700; font-style: normal; opacity: 0.78; white-space: nowrap; }
-.mm-pill--locked .mm-pill-body i { display: none; }
+/* ON/시크릿 = 전구 위 + 라벨 아래 (기존 그대로). DIM/OFF = 전구 우측에 배율 2줄 + 라벨은 맨 아랫줄. */
+.mm-pill-top { display: flex; align-items: center; gap: 3px; }
+.mm-pill-mult { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.05; }
+.mm-pill-mult b { font-size: 0.6rem; font-weight: 800; white-space: nowrap; }
+.mm-pill-mult i { font-size: 0.46rem; font-weight: 700; font-style: normal; opacity: 0.8; white-space: nowrap; }
+.mm-pill-lbl { font-size: 0.66rem; font-weight: 800; white-space: nowrap; }
+.mm-pill--mult .mm-pill-lbl { font-size: 0.62rem; }
 .mm-pill--locked { color: #a9a9b0; cursor: not-allowed; }
 .mm-pill--locked .mm-pill-ic { stroke: #b4b4bb; }
-.mm-pill-ic { width: 18px; height: 18px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.6;
+.mm-pill-ic { width: 20px; height: 20px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.6;
   stroke-linecap: round; stroke-linejoin: round; }
 /* 전구 밝기 = 난이도 표현: ON 노랑/글로우, DIM 은은, OFF 어둑 */
 .mm-pill[data-mm-diff="easy"] .mm-pill-ic { stroke: #ffcf4a; filter: drop-shadow(0 0 4px rgba(255, 200, 70, 0.9)); }
