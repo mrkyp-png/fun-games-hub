@@ -1856,7 +1856,8 @@ html:not([lang="en"]) .lane-en { display: none; }
   text-align: right;
   white-space: pre-line;
 }
-#more-menu.mm-paused .mm-go-note { display: flex; }
+#more-menu.mm-paused .mm-go-note { display: flex; animation: mm-go-note-blink 1.8s ease-in-out infinite; }
+@keyframes mm-go-note-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
 .mm-go {
   grid-column: 4;          /* 설정 바로 아래 (4번째 열) */
