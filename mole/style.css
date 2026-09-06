@@ -111,47 +111,23 @@ body { background: var(--lm-page); }
    도는 불빛, 챕터별 색), 양옆은 꼬리 달린 3D 화살표 버튼(누르면 쑥 들어감). 항상 표시.
    코인 자릿수 늘면 board-stats 그룹 전체가 왼쪽으로 밀려 같이 이동(자리 고정 아님). */
 .chapter-nav-top { display: none; }
-#chapter-nav { position: relative; }
 #game-screen.is-start .chapter-nav-top {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  flex: 0 0 auto;
+  position: absolute; left: 4px; top: 8px; z-index: 9;  /* 좌측 상단 고정, 아바타처럼 가장자리 4px */
   padding: 3px 5px;
-  border-radius: 9px;
 }
 #chapter-nav[hidden] { display: none; }
 
-/* 손+챕터+손 전체를 감싸는 둥근 사각 테두리에 도는 불빛 — 레퍼런스: 바탕화면 "챕터 박스 효과.mp4".
-   conic 그라디언트(밝은 지점이 회전)를 mask 로 "테두리만" 남기고, blur+drop-shadow 로 번지게. ::before 는
-   absolute 라 flex 레이아웃엔 영향 없음. */
-@property --ch-spin { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
-#chapter-nav::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border-radius: 11px;
-  padding: 2.5px; /* 빛 테두리 두께 */
-  background: conic-gradient(from var(--ch-spin),
-    var(--ch-glow-dk) 0deg,
-    var(--ch-glow) 45deg,
-    var(--ch-glow-lt) 82deg,
-    #ffffff 100deg,
-    var(--ch-glow-lt) 120deg,
-    var(--ch-glow) 175deg,
-    var(--ch-glow-dk) 255deg,
-    var(--ch-glow) 320deg,
-    var(--ch-glow-dk) 360deg);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-          mask-composite: exclude;
-  filter: blur(1px) drop-shadow(0 0 3px var(--ch-glow)) drop-shadow(0 0 7px var(--ch-glow-soft));
-  pointer-events: none;
-  z-index: 0;
+/* 아우라는 "챕터 N" 글자에서 나온다 (사용자 요청) — 사각 테두리 대신 글자 자체가 챕터색으로 빛나며
+   숨쉬듯 번짐. 테두리·박스 없음. */
+#game-screen.is-start .ch-txt { animation: ch-txt-aura 2.4s ease-in-out infinite; }
+@keyframes ch-txt-aura {
+  0%, 100% { text-shadow: 0 0 2px var(--ch-glow), 0 0 6px var(--ch-glow-soft); }
+  50%      { text-shadow: 0 0 4px var(--ch-glow), 0 0 11px var(--ch-glow),
+             0 0 20px var(--ch-glow-soft), 0 0 30px var(--ch-glow-soft); }
 }
-#game-screen.is-start #chapter-nav::before { animation: ch-spin 2.6s linear infinite; }
-@keyframes ch-spin { to { --ch-spin: 360deg; } }
 
 /* 챕터별 불빛 색 (1 풀그린 → 2 스카이 → 3 앰버 → 4 바이올렛 → 5 크림슨: 난이도 상승 톤) */
 #chapter-nav { --ch-glow: #ff8a00; --ch-glow-lt: #ffd36b; --ch-glow-dk: #ff5e00; --ch-glow-soft: rgba(255, 130, 0, 0.5); }
@@ -165,7 +141,7 @@ body { background: var(--lm-page); }
    (a) 챕터 유닛 전체가 살짝 오므렸다 펴짐(홈버튼 네모 모이는 느낌을 scale 로),
    (b) 글자가 조금 커졌다 정상으로. → 박스가 조여지는 동안 글자가 부풀어 채웠다 같이 풀림. */
 #game-screen.is-start #chapter-nav[data-ch="1"] { animation: ch-breathe 3.6s ease-in-out infinite; }
-#game-screen.is-start #chapter-nav[data-ch="1"] .ch-txt { animation: ch-txt-pulse 3.6s ease-in-out infinite; }
+#game-screen.is-start #chapter-nav[data-ch="1"] .ch-txt { animation: ch-txt-aura 2.4s ease-in-out infinite, ch-txt-pulse 3.6s ease-in-out infinite; }
 @keyframes ch-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.95); } }
 @keyframes ch-txt-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
 
@@ -202,24 +178,25 @@ body { background: var(--lm-page); }
 
 .ch-label {
   position: relative;
-  z-index: 1; /* 도는 불빛(#chapter-nav::before, z0) 위 */
   font-size: 0.82rem; font-weight: 800; line-height: 1;
   color: #1c1c22;
-  background: transparent; /* 박스는 배경에 녹고 — 테두리 불빛 + 글자만 */
+  background: transparent;
   padding: 3px 8px;
   white-space: nowrap;
-  text-shadow: none;
 }
 .ch-txt { display: inline-block; }
-/* 챕터 바꿀 때 — 새 챕터 색 아우라가 확 부풀었다 가라앉음 (game.js 가 .ch-label 에 .ch-flare) */
+/* 챕터 바꿀 때 — 글자 아우라가 확 터졌다 가라앉음 (game.js 가 .ch-label 에 .ch-flare, 900ms 뒤 제거) */
 .ch-label.ch-flare { animation: ch-flare 0.85s ease-out; }
+.ch-label.ch-flare .ch-txt { animation: ch-flare-aura 0.85s ease-out; }
 @keyframes ch-flare {
-  0%   { transform: scale(1); box-shadow: none; }
-  16%  { transform: scale(1.09);
-         box-shadow: 0 0 14px 4px var(--ch-glow),
-           0 0 34px 13px var(--ch-glow-soft),
-           0 0 62px 26px var(--ch-glow-soft); }
-  100% { transform: scale(1); box-shadow: none; }
+  0%, 100% { transform: scale(1); }
+  16%      { transform: scale(1.12); }
+}
+@keyframes ch-flare-aura {
+  0%   { text-shadow: 0 0 2px var(--ch-glow), 0 0 6px var(--ch-glow-soft); }
+  16%  { text-shadow: 0 0 6px var(--ch-glow-lt), 0 0 16px var(--ch-glow),
+         0 0 32px var(--ch-glow), 0 0 50px var(--ch-glow-soft); }
+  100% { text-shadow: 0 0 2px var(--ch-glow), 0 0 6px var(--ch-glow-soft); }
 }
 
 .chat-thread {
