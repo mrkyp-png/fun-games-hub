@@ -1275,7 +1275,9 @@
   function wireResultSwipe() {
     const ov = document.getElementById('gameover-overlay');
     let x0 = null, y0 = 0, fired = false;
-    const start = (x, y) => { if (!ov.dataset.nextChapter) return; x0 = x; y0 = y; fired = false; };
+    // ov.hidden 체크 필수: 승리 후 홈으로 나가도 dataset.nextChapter 가 남아있어서,
+    // 이게 없으면 홈화면 다이얼러(같은 .dialpad)에서 왼쪽 스와이프 시 오작동한다.
+    const start = (x, y) => { if (ov.hidden || !ov.dataset.nextChapter) return; x0 = x; y0 = y; fired = false; };
     const move = (x, y) => {
       if (x0 == null || fired) return;
       const dx = x - x0, dy = y - y0;
@@ -1289,30 +1291,44 @@
       if (x0 != null && typeof x === 'number') move(x, y); // move 이벤트가 없던 경우 대비 (총 이동량으로 판정)
       x0 = null;
     };
-    ov.addEventListener('pointerdown', (e) => start(e.clientX, e.clientY));
-    ov.addEventListener('pointermove', (e) => move(e.clientX, e.clientY));
-    ov.addEventListener('pointerup', (e) => end(e.clientX, e.clientY));
-    ov.addEventListener('pointercancel', () => end());
-    // 터치 폴백 (일부 안드로이드 웹뷰에서 스와이프 중 pointer 이벤트가 끊김)
-    ov.addEventListener('touchstart', (e) => { const t = e.touches[0]; start(t.clientX, t.clientY); }, { passive: true });
-    ov.addEventListener('touchmove', (e) => { const t = e.touches[0]; move(t.clientX, t.clientY); }, { passive: true });
-    ov.addEventListener('touchend', (e) => { const t = e.changedTouches[0]; end(t.clientX, t.clientY); });
+    // 힌트(#result-swipe-hint)가 키패드 위 여백으로 내려갔으므로 스와이프도 키패드에서 먹혀야
+    // 한다 — 안 그러면 "힌트는 키패드에 있는데 여기선 안 밀리네" 로 헷갈림. start() 가
+    // ov.dataset.nextChapter 로 게이팅하니 플레이 중 키패드 탭엔 영향 없음.
+    [ov, document.querySelector('.dialpad')].forEach((el) => {
+      if (!el) return;
+      el.addEventListener('pointerdown', (e) => start(e.clientX, e.clientY));
+      el.addEventListener('pointermove', (e) => move(e.clientX, e.clientY));
+      el.addEventListener('pointerup', (e) => end(e.clientX, e.clientY));
+      el.addEventListener('pointercancel', () => end());
+      // 터치 폴백 (일부 안드로이드 웹뷰에서 스와이프 중 pointer 이벤트가 끊김)
+      el.addEventListener('touchstart', (e) => { const t = e.touches[0]; start(t.clientX, t.clientY); }, { passive: true });
+      el.addEventListener('touchmove', (e) => { const t = e.touches[0]; move(t.clientX, t.clientY); }, { passive: true });
+      el.addEventListener('touchend', (e) => { const t = e.changedTouches[0]; end(t.clientX, t.clientY); });
+    });
   }
   function goToNextChapter(ch) {
     localStorage.setItem('mole.chapter', String(ch));
     const sh = document.getElementById('result-swipe-hint');
     if (sh) { sh.hidden = true; sh.classList.remove('is-on'); }
+
     const ov = document.getElementById('gameover-overlay');
-    const panel = document.getElementById('next-chapter-panel');
-    panel.querySelector('[data-nc-label]').textContent = chapterLabel(ch);
-    panel.hidden = false;
-    void panel.offsetWidth;
-    ov.classList.add('is-sliding');      // 축하 화면 왼쪽으로
-    panel.classList.add('is-in');        // 챕터 화면 오른쪽에서 들어옴
+    const bs = document.getElementById('board-start');
+
+    // "다음 챕터로" = 그 챕터의 홈 화면으로 간다 (아래 키패드는 그대로, 위 보드만 교체).
+    // showStartScreenNow 가 board-start 를 챕터 N 내용으로 빌드/표시하고 ov 를 숨기므로,
+    // 슬라이드 연출용으로 ov 를 되살린다: 성공 카드는 왼쪽으로, 홈 화면은 오른쪽에서 들어옴.
+    showStartScreenNow();
+    bs.classList.add('nc-enter');
+    ov.hidden = false;
+    ov.classList.add('is-win', 'is-sliding');
+    void bs.offsetWidth;
+    bs.classList.add('nc-enter--on');
+
     setTimeout(() => {
       ov.hidden = true;
       ov.classList.remove('is-sliding', 'is-win', 'is-lose');
       ov.querySelector('.go-confetti').innerHTML = '';
+      bs.classList.remove('nc-enter', 'nc-enter--on');
     }, 360);
   }
 

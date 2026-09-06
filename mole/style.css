@@ -145,9 +145,9 @@ body { background: var(--lm-page); }
 @keyframes ch-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.95); } }
 @keyframes ch-txt-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
 
-/* (c) 시작(통화) 버튼과 똑같은 대각선 빛 쓸기(idle-crown-sweep, 2.8s) — 챕터1에서만. */
+/* (c) 시작(통화) 버튼과 똑같은 대각선 빛 쓸기(idle-crown-sweep, 2.8s) — 모든 챕터. */
 .ch-shine { position: absolute; inset: 0; z-index: 2; border-radius: inherit; overflow: hidden; pointer-events: none; display: none; }
-#game-screen.is-start #chapter-nav[data-ch="1"] .ch-shine { display: block; }
+#game-screen.is-start #chapter-nav .ch-shine { display: block; }
 .ch-shine::before {
   content: '';
   position: absolute; inset: -60%;
@@ -1108,6 +1108,15 @@ body { background: var(--lm-page); }
   transition: transform 0.34s cubic-bezier(.4, 0, .3, 1);
 }
 #next-chapter-panel.is-in { transform: translateX(0); }
+
+/* 승리 → 왼쪽 스와이프: 성공 카드는 왼쪽으로(#gameover-overlay.is-sliding),
+   다음 챕터 홈 화면(#board-start)은 오른쪽에서 슬라이드 인. */
+#board-start.nc-enter {
+  z-index: 12;
+  transform: translateX(100%);
+  transition: transform 0.34s cubic-bezier(.4, 0, .3, 1);
+}
+#board-start.nc-enter.nc-enter--on { transform: translateX(0); }
 .nc-big { color: #fff; font-size: 2.4rem; font-weight: 900; letter-spacing: 0.04em; }
 .nc-sub { color: #b7b3cf; font-weight: 700; }
 .nc-back {
