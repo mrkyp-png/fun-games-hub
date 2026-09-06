@@ -37,21 +37,27 @@
     return (!isDeleted(id) && !isSecret(id)) ? chLink(id) : null;
   }
 
-  // 유튜브 URL 정규화 + 채널 핸들 추출 (아이콘 unavatar.io 용).
+  // 유튜브 URL 정규화 + 채널 핸들 추출. 핸들에 한글 등 유니코드 허용 (@슈뻘맨 OK).
   function normalizeYtUrl(s) {
     s = (s || '').trim();
     if (!s) return '';
-    if (/^@?[A-Za-z0-9_.\-]+$/.test(s)) s = 'https://www.youtube.com/@' + s.replace(/^@/, ''); // 핸들만 입력
-    if (!/^https?:\/\//i.test(s)) s = 'https://' + s;
+    if (/^@\S+$/.test(s)) {
+      s = 'https://www.youtube.com/' + s;               // "@슈뻘맨" → 채널 핸들
+    } else if (!/^https?:\/\//i.test(s) && !/[\s/.]/.test(s)) {
+      s = 'https://www.youtube.com/@' + s;              // "슈뻘맨"(맨단어, @없음) → 핸들로 간주
+    } else if (!/^https?:\/\//i.test(s)) {
+      s = 'https://' + s;                               // "youtube.com/@..." → 스킴만 보충
+    }
     try {
-      var u = new URL(s);
-      if (!/(^|\.)youtube\.com$|(^|\.)youtu\.be$/i.test(u.hostname)) return '';
-      return u.href;
+      var host = new URL(s).hostname.toLowerCase();
+      if (host !== 'youtube.com' && host !== 'youtu.be' && !/\.youtube\.com$/.test(host)) return '';
+      return new URL(s).href;
     } catch (e) { return ''; }
   }
   function ytHandle(url) {
-    var m = url.match(/@([A-Za-z0-9_.\-]+)/) || url.match(/\/(?:c|channel|user)\/([A-Za-z0-9_.\-]+)/);
-    return m ? m[1] : '';
+    var m = url.match(/@([^/?#\s]+)/) || url.match(/\/(?:c|channel|user)\/([^/?#\s]+)/);
+    if (!m) return '';
+    try { return decodeURIComponent(m[1]); } catch (e) { return m[1]; }
   }
 
   // 내비 아이콘 (이모지 렌더 편차 회피 — 인라인 SVG, currentColor).
@@ -145,7 +151,7 @@
       var url = normalizeYtUrl(input.value);
       if (!url) { input.classList.add('ch-reg-input--bad'); return; }
       var h = ytHandle(url);
-      var rec = { url: url, icon: h ? ('https://unavatar.io/youtube/' + h) : '' };
+      var rec = { url: url, icon: h ? ('https://unavatar.io/youtube/' + encodeURIComponent(h)) : '' };
       lsSet(SECRET_P + id, false);
       lsSet(HIDDEN_P + id, false);
       try { localStorage.setItem(USER_P + id, JSON.stringify(rec)); } catch (e) { /* noop */ }
