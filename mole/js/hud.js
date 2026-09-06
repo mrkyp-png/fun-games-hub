@@ -18,8 +18,10 @@
 
     var hearts = document.getElementById('hud-hearts');
     if (hearts) {
-      hearts.textContent = '❤️'.repeat(state.lives) +
-        '🖤'.repeat(Math.max(0, 3 - state.lives));
+      // 5개 이상이면 아이콘 반복 대신 "❤️ N"
+      hearts.textContent = state.lives >= 5
+        ? '❤️ ' + state.lives
+        : '❤️'.repeat(state.lives) + '🖤'.repeat(Math.max(0, 3 - state.lives));
     }
 
     // 시간 = 홈버튼(⊞) 중앙 숫자로 표기 ("초" 단위 생략).

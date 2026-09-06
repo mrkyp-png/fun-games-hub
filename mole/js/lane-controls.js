@@ -9,21 +9,25 @@
   // 위장은 순전히 표시만 — 클릭/키보드/두더지-빛남 동작은 그대로.
 
   const KEY_GRID = ['1234', 'qwer', 'asdf', 'zxcv'];
-  const LONG_PRESS_MS = 600;    // 채널 링크(onLongPress) 발동 기준 — 짧게 누르면 평소처럼 onCell만.
-  const DELETE_PRESS_MS = 2200; // 훨씬 더 오래 누르면 그 채널 등록을 이 기기에서만 해제(로컬).
-  const CHANNEL_HIDDEN_PREFIX = 'mole.channelHidden.';
+  const HOLD_MS = 600;       // 길게 누름 = 채널 관리 메뉴 / 시크릿 복구
+  const DOUBLE_TAP_MS = 320; // 이 안에 두 번 짧게 = 유튜브 진입 (한 번은 무시 — 실수 방지)
 
-  function isChannelHidden(id) {
-    try { return localStorage.getItem(CHANNEL_HIDDEN_PREFIX + id) === '1'; } catch (e) { return false; }
-  }
-  function hideChannel(id) {
-    try { localStorage.setItem(CHANNEL_HIDDEN_PREFIX + id, '1'); } catch (e) { /* noop */ }
-  }
-  // 채널 링크 정적 설정(channel-links.js)을 읽되, 이 기기에서 해제됐으면 없는 것처럼 취급.
-  function channelFor(id) {
+  // 채널 버튼 상태 (로컬):
+  //  - deleted (mole.channelHidden.<id>) : 채널 링크 완전 제거 → 그냥 숫자 버튼. 길게 눌러도 무반응.
+  //  - secret  (mole.channelSecret.<id>) : 숫자로 위장(숨김). 길게 누르면 10회전하며 유튜브 아이콘 복구.
+  const HIDDEN_P = 'mole.channelHidden.';
+  const SECRET_P = 'mole.channelSecret.';
+  function lsGet(k) { try { return localStorage.getItem(k) === '1'; } catch (e) { return false; } }
+  function lsSet(k, on) { try { on ? localStorage.setItem(k, '1') : localStorage.removeItem(k); } catch (e) { /* noop */ } }
+  function isDeleted(id) { return lsGet(HIDDEN_P + id); }
+  function isSecret(id) { return lsGet(SECRET_P + id); }
+  function chLink(id) {
     var CL = root.MoleGame && root.MoleGame.ChannelLinks;
-    if (!CL || isChannelHidden(id)) return null;
-    return CL.LINKS[id] || null;
+    return (CL && CL.LINKS[id]) || null;
+  }
+  // 짧게 탭으로 유튜브 진입 가능한 "일반" 상태의 채널만 반환 (삭제/시크릿이면 null).
+  function channelFor(id) {
+    return (!isDeleted(id) && !isSecret(id)) ? chLink(id) : null;
   }
 
   // 내비 아이콘 (이모지 렌더 편차 회피 — 인라인 SVG, currentColor).
@@ -36,9 +40,9 @@
 
   // regionId(0..15) → 버튼 표시. 왼쪽 3열 = 표준 다이얼(큰 숫자 + 자음 + 영문/기호), 오른쪽 열 = 내비.
   const FACES = [
-    { num: '1', kr: 'ㄱㅋ', en: '.QZ' }, { num: '2', kr: 'ㄴ', en: 'ABC' }, { num: '3', kr: 'ㄷㅌ', en: 'DEF' }, { nav: '연락처', svg: SVG.person, i18n: 'mole.pad.contacts' },
+    { num: '1', kr: 'ㄱㅋ', en: '' }, { num: '2', kr: 'ㄴ', en: 'ABC' }, { num: '3', kr: 'ㄷㅌ', en: 'DEF' }, { nav: '연락처', svg: SVG.person, i18n: 'mole.pad.contacts' },
     { num: '4', kr: 'ㄹ', en: 'GHI' }, { num: '5', kr: 'ㅁ', en: 'JKL' }, { num: '6', kr: 'ㅂㅍ', en: 'MNO' }, { nav: '키패드', svg: SVG.pad, i18n: 'mole.pad.keypad' },
-    { num: '7', kr: 'ㅅ', en: 'PRS' }, { num: '8', kr: 'ㅇ', en: 'TUV' }, { num: '9', kr: 'ㅈㅊ', en: 'WXY' }, { nav: '최근기록', svg: SVG.clock, i18n: 'mole.pad.recent' },
+    { num: '7', kr: 'ㅅ', en: 'PQRS' }, { num: '8', kr: 'ㅇ', en: 'TUV' }, { num: '9', kr: 'ㅈㅊ', en: 'WXYZ' }, { nav: '최근기록', svg: SVG.clock, i18n: 'mole.pad.recent' },
     { num: '✱', kr: '', en: '' }, { num: '0', kr: '', en: '+' }, { num: '#', kr: '', en: '' },
     { nav: '시작', svg: SVG.phone, call: true, i18n: 'mole.start.btn' }
   ];
@@ -81,8 +85,7 @@
     }
   }
 
-  // 짧게 누르기 = 동전 뒤집기. 10바퀴 휙 돌다가(플레이스홀더 아님 — 사용자가 재미로 요청)
-  // 반 바퀴 더 돌아 반대 면에 착지 (누적 각도라 매번 반대 면으로 정확히 떨어진다).
+  // 동전 뒤집기 — 10바퀴 휙 돌고 반 바퀴 더 돌아 반대 면에 착지 (누적 각도).
   const FLIP_SPINS_DEG = 10 * 360 + 180;
   function flipChannelCard(btn) {
     const flip = btn.querySelector('.lane-flip');
@@ -92,8 +95,78 @@
     flip.dataset.deg = String(next);
     flip.style.transform = 'rotateY(' + next + 'deg)';
   }
+  // 시크릿: 유튜브 아이콘 → (10회전) → 숫자. 회전 끝나면 평범한 숫자 버튼으로 확정.
+  function secretWithSpin(btn, id) {
+    if (btn.querySelector('.lane-flip')) {
+      flipChannelCard(btn); // 아이콘(front) → 숫자(back)
+      setTimeout(() => fillFace(btn, FACES[id], id), 950);
+    } else {
+      fillFace(btn, FACES[id], id);
+    }
+  }
+  // 시크릿 해제: 숫자 → (10회전) → 유튜브 아이콘.
+  function restoreWithSpin(btn, id) {
+    fillFace(btn, FACES[id], id); // 채널 복구 → flip 카드 다시 렌더 (기본 아이콘 face)
+    const flip = btn.querySelector('.lane-flip');
+    if (!flip) return;
+    flip.style.transition = 'none';
+    flip.dataset.deg = '180';
+    flip.style.transform = 'rotateY(180deg)'; // 숫자 면에서 출발
+    void flip.offsetWidth;
+    flip.style.transition = '';
+    flipChannelCard(btn); // 180 → 아이콘 면으로 회전
+  }
 
-  function create({ buttonBar, gridSize, onCell, onTap, onLongPress, isHome }) {
+  // 길게 누르면 뜨는 채널 관리 말풍선 [🕶 시크릿] [🗑 삭제]
+  let chMenuEl = null;
+  function closeChannelMenu() {
+    document.removeEventListener('pointerdown', chMenuOutside, true);
+    if (chMenuEl) { chMenuEl.remove(); chMenuEl = null; }
+  }
+  function chMenuOutside(e) {
+    if (chMenuEl && !chMenuEl.contains(e.target)) closeChannelMenu();
+  }
+  function showChannelMenu(id, btn) {
+    closeChannelMenu();
+    const I = root.FGH && root.FGH.I18N;
+    const T = (k) => (I ? I.t(k) : k);
+    const m = document.createElement('div');
+    m.className = 'lane-ch-menu';
+    m.innerHTML =
+      '<button type="button" data-a="secret"><span class="lch-ic">🕶️</span>' + T('mole.channel.secret') + '</button>' +
+      '<button type="button" data-a="delete"><span class="lch-ic">🗑️</span>' + T('mole.channel.delete') + '</button>';
+    document.body.appendChild(m);
+    const r = btn.getBoundingClientRect();
+    m.style.left = (r.left + r.width / 2) + 'px';
+    m.style.top = (r.top - 6) + 'px';
+    m.querySelector('[data-a="secret"]').addEventListener('click', () => {
+      lsSet(SECRET_P + id, true);
+      secretWithSpin(btn, id);
+      closeChannelMenu();
+    });
+    m.querySelector('[data-a="delete"]').addEventListener('click', () => {
+      lsSet(HIDDEN_P + id, true);
+      fillFace(btn, FACES[id], id); // 즉시 평범한 숫자로
+      closeChannelMenu();
+    });
+    chMenuEl = m;
+    setTimeout(() => document.addEventListener('pointerdown', chMenuOutside, true), 0);
+  }
+
+  // 0.6초 길게 누름 처리 — 홈 화면에서만.
+  function onChannelHold(id, btn, isHome) {
+    if (isHome && !isHome()) return;
+    if (isDeleted(id)) return;      // 삭제됨 = 완전 숫자패드, 무반응
+    if (isSecret(id)) {             // 시크릿 → 유튜브로 복구 (10회전)
+      lsSet(SECRET_P + id, false);
+      restoreWithSpin(btn, id);
+      return;
+    }
+    if (!chLink(id)) return;        // 애초에 채널 없는 자리
+    showChannelMenu(id, btn);       // 일반 → [시크릿|삭제]
+  }
+
+  function create({ buttonBar, gridSize, onCell, onTap, onChannelEnter, isHome }) {
     const buttons = [];
     const keyMap = {};
 
@@ -106,6 +179,8 @@
         b.dataset.region = String(id);
         fillFace(b, FACES[id], id);
         if (FACES[id].call) b.insertAdjacentHTML('beforeend', '<span class="lane-call-idle" aria-hidden="true"></span>');
+        b.addEventListener('contextmenu', (e) => e.preventDefault()); // 길게 눌러도 브라우저 메뉴 안 뜨게
+        let lastTapAt = 0; // 이 버튼의 직전 짧은탭 시각 — 더블탭 판정용 (실수 진입 방지)
         b.addEventListener('pointerdown', (e) => {
           e.preventDefault();
           if (onTap) onTap(); // 다이얼패드(홈 화면) 전용 탭음 — game.js 가 상황(is-start) 판단
@@ -115,32 +190,35 @@
           b.classList.toggle('lane-button--miss', !!bad);
           b.classList.add('lane-button--flash');
 
-          // 채널 링크 3단계 — 시작버튼은 제외. 짧게(뗌) = 위 onCell만. 중간 길게(LONG_PRESS_MS,
-          // game.js가 홈 화면인지/등록 여부 판단) = 채널 이동. 아주 길게(DELETE_PRESS_MS) =
-          // 이 기기에서만 등록 해제(아이콘 제거, 되돌릴 수 없음 — 재등록은 채널을 다시 알려줘야 함).
-          // 떼는 순간까지 어디까지 도달했는지로 판정(중간에 먼저 쏘지 않음) — 아주 길게 누르는 도중에
-          // 광고가 먼저 뜨는 걸 막기 위함.
+          // 채널 조작 (시작버튼 제외):
+          //   짧게 두 번(더블탭) = 유튜브 진입 (일반 상태 + 홈일 때만). 한 번만은 아무 일 없음 — 실수 진입 방지.
+          //   0.6초 길게        = onChannelHold — 일반: [시크릿|삭제] 메뉴 / 시크릿: 10회전 복구 / 삭제: 무반응
+          // 포인터 캡처로 손가락이 버튼 밖으로 나가도 pointerup 을 여기서 받는다
+          // (예전 pointerleave 로 판정하던 게 삭제 제스처가 안 먹던 원인).
           if (!FACES[id].call) {
-            let stage = 0;
-            const mediumTimer = setTimeout(() => { stage = 1; }, LONG_PRESS_MS);
-            const deleteTimer = setTimeout(() => { stage = 2; }, DELETE_PRESS_MS);
-            const finish = () => {
-              clearTimeout(mediumTimer);
-              clearTimeout(deleteTimer);
-              b.removeEventListener('pointerup', finish);
-              b.removeEventListener('pointerleave', finish);
-              b.removeEventListener('pointercancel', finish);
-              if (stage === 2) {
-                if (channelFor(id)) { hideChannel(id); fillFace(b, FACES[id], id); }
-              } else if (stage === 1 && onLongPress) {
-                onLongPress(id);
-              } else if (stage === 0 && channelFor(id) && (!isHome || isHome())) {
-                flipChannelCard(b); // 짧게 누르면 채널아이콘 ↔ 평소 버튼 동전 뒤집기
+            let held = false;
+            try { b.setPointerCapture(e.pointerId); } catch (_) { /* 무시 */ }
+            const holdTimer = setTimeout(() => { held = true; lastTapAt = 0; onChannelHold(id, b, isHome); }, HOLD_MS);
+            const cleanup = () => {
+              clearTimeout(holdTimer);
+              b.removeEventListener('pointerup', up);
+              b.removeEventListener('pointercancel', cleanup);
+            };
+            const up = () => {
+              const wasHeld = held;
+              cleanup();
+              if (wasHeld) return; // 길게 = onChannelHold 가 이미 처리
+              if (!((!isHome || isHome()) && channelFor(id))) { lastTapAt = 0; return; }
+              const now = Date.now();
+              if (now - lastTapAt < DOUBLE_TAP_MS) { // 두 번째 탭 = 진입
+                lastTapAt = 0;
+                if (onChannelEnter) onChannelEnter(id);
+              } else {
+                lastTapAt = now; // 첫 탭 — 대기
               }
             };
-            b.addEventListener('pointerup', finish);
-            b.addEventListener('pointerleave', finish);
-            b.addEventListener('pointercancel', finish);
+            b.addEventListener('pointerup', up);
+            b.addEventListener('pointercancel', cleanup);
           }
         });
         buttonBar.appendChild(b);

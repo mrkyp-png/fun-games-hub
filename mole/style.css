@@ -116,7 +116,7 @@ body { background: var(--lm-page); }
   align-items: center;
   gap: 2px;
   min-width: 0;
-  position: absolute; top: 8px; left: 10px; z-index: 9;
+  position: absolute; top: 8px; left: 6px; z-index: 9;
   color: #000; font-weight: 800;
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
 }
@@ -242,10 +242,20 @@ body { background: var(--lm-page); }
   gap: 7px;
   width: 100%;
   max-width: calc(100% - 60px);
+  /* 말풍선이 길어 꼬리가 아바타(위)에서 멀어지므로 꼬리를 위로 — 위 대화 말풍선과 같은 방식(모서리에 붙어 자연스럽게) */
+  border-radius: 16px;
+  border-top-left-radius: 4px;
+}
+.chat-ad-bubble::after {
+  top: 0;
+  bottom: auto;
+  background: #35c866; /* 그라데이션 위쪽 색과 맞춤 (아래 대화 말풍선 꼬리는 #23b153) */
+  clip-path: polygon(100% 100%, 100% 0, 0 0);
 }
 .chat-ad-say { font-size: 0.82rem; font-weight: 700; line-height: 1.3; word-break: keep-all; }
 .chat-ad-btns { display: flex; gap: 7px; width: 100%; }
 .chat-ad-n { white-space: nowrap; }
+.chat-ad-cap { margin-left: 2px; font-size: 0.66rem; font-weight: 700; opacity: 0.72; white-space: nowrap; }
 .chat-ad-btn {
   flex: 1;
   min-width: 0;
@@ -426,7 +436,14 @@ body { background: var(--lm-page); }
 .hud-addr-url {
   letter-spacing: 0.01em;
   white-space: nowrap;
-  color: var(--lm-muted);
+  animation: addr-hue 4s linear infinite;
+}
+@keyframes addr-hue {
+  0%   { color: #e0559b; }
+  25%  { color: #f4a300; }
+  50%  { color: #16a34a; }
+  75%  { color: #3a7bd5; }
+  100% { color: #e0559b; }
 }
 /* "두더지팡.app" + 채널 힌트가 #hud-ticker 와 같은 방식으로 스크롤(.ticker-viewport/.ticker-track 재사용). */
 .hud-addr .ticker-seg { font-size: 0.82rem; font-weight: 600; }
@@ -435,6 +452,8 @@ body { background: var(--lm-page); }
 #game-screen.is-start #hud-score,
 #game-screen.is-start #hud-hearts,
 #game-screen.is-start #hud-combo,
+#game-screen.is-start #fever-badge,
+#game-screen.is-start #combo-heart-pop,
 #game-screen.is-start .hub-timer { display: none; }
 /* 홈(시작) 화면: 게임박스 우측 상단 하트·코인 */
 .board-stats { display: none; }
@@ -465,6 +484,10 @@ body { background: var(--lm-page); }
 #game-screen .icon-btn img, #game-screen .icon-btn svg { width: 22px; height: 22px; }
 /* 홈버튼(⊞) — 노란 원테두리 + PLAY/이어가기와 같은 쉬머 이펙트 (플레이중/홈 화면 공통, 같은 버튼) */
 #btn-back-to-hub { position: relative; overflow: hidden; }
+/* 인트로/카운트다운/라운드 전환 중 = 잠금(회색 음영). 클릭도 무시(JS navLocked). */
+#btn-back-to-hub.nav-locked { opacity: 0.4; filter: grayscale(0.8); pointer-events: none; }
+#btn-back-to-hub.nav-locked::before { box-shadow: inset 0 0 0 2px rgba(150, 150, 150, 0.6); }
+#btn-back-to-hub.nav-locked::after { display: none; }
 #btn-back-to-hub::before {
   content: '';
   position: absolute;
@@ -590,18 +613,63 @@ body { background: var(--lm-page); }
 }
 .board-hearts.life-bonus { animation: life-bonus 0.5s ease-out; }
 
-/* 콤보 — 하트와 같은 줄(게임박스 맨 아래), 가운데. 0이면 빈 텍스트라 안 보임. */
+/* 콤보 — 게임박스 맨 아래 가운데. 잔디 이미지 끝까지 내려도 됨(사용자 요청). 0이면 빈 텍스트라 안 보임. */
 .board-combo {
   position: absolute;
   left: 50%;
-  bottom: 0.2%;
+  bottom: 0;
   transform: translateX(-50%);
   z-index: 4;
   pointer-events: none;
   font-weight: 800;
-  font-size: clamp(1.8rem, 7.5vw, 2.6rem);
+  font-size: clamp(1.5rem, 6.2vw, 2.2rem);
   color: #ffcf4a;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+  -webkit-text-stroke: 3px #000;
+  paint-order: stroke;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.75);
+}
+
+/* 피버타임 배지 — 게임박스 상단 가운데(점수 아래). 콤보 50+ (챕터 3부터). */
+.fever-badge {
+  position: absolute;
+  top: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
+  pointer-events: none;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ff8a3c, #ff4d4d);
+  color: #fff;
+  font-weight: 900;
+  font-size: clamp(0.8rem, 3.6vw, 1.15rem);
+  letter-spacing: 0.03em;
+  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.35);
+  paint-order: stroke;
+  box-shadow: 0 2px 8px rgba(255, 80, 60, 0.55), 0 0 0 2px rgba(255, 255, 255, 0.35) inset;
+  animation: fever-pulse 0.7s ease-in-out infinite;
+}
+@keyframes fever-pulse {
+  0%, 100% { transform: translateX(-50%) scale(1); }
+  50%      { transform: translateX(-50%) scale(1.08); }
+}
+/* 콤보 100 → "+❤️" 떠오르며 사라짐 */
+.combo-heart-pop {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  z-index: 7;
+  pointer-events: none;
+  font-size: clamp(1.4rem, 6vw, 2rem);
+  font-weight: 900;
+  opacity: 0;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+}
+.combo-heart-pop.is-pop { animation: combo-heart-rise 1.1s ease-out; }
+@keyframes combo-heart-rise {
+  0%   { opacity: 0; transform: translate(-50%, 0) scale(0.6); }
+  20%  { opacity: 1; transform: translate(-50%, -18px) scale(1.15); }
+  100% { opacity: 0; transform: translate(-50%, -64px) scale(1); }
 }
 @keyframes life-bonus {
   0%   { transform: scale(1); filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55)); }
@@ -920,6 +988,8 @@ body { background: var(--lm-page); }
 /* 라운드 시작 카운트다운 — 매 시작마다(첫 시작·다시하기·자동 다음 라운드) 재생.
    불투명 커튼(좌/우 반쪽)이 보드를 완전히 가리고, 카운트 끝나면 커튼이 양쪽으로 확 열린다. */
 .round-intro { background: transparent; flex-direction: column; gap: 6px; overflow: hidden; }
+/* 종료 화면 — 커튼이 투명이라 뒤 밤하늘(#mole-sky)이 비쳤음. 불투명 배경으로 덮는다. */
+#round-intro-overlay.is-bye { background: #101018; }
 .ri-curtain {
   position: absolute;
   top: 0; bottom: 0;
@@ -967,6 +1037,25 @@ body { background: var(--lm-page); }
   letter-spacing: 0.04em;
   text-shadow: 0 0 8px rgba(255, 255, 255, 0.85), 0 0 18px rgba(255, 210, 100, 0.7);
 }
+/* 종료 안내 (exitApp) — 커튼 닫힌 위에 표시, 탭하면 다시 열림 */
+.bye-msg {
+  position: relative; z-index: 2;
+  margin: 0 auto;
+  max-width: 78%;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.6;
+  text-align: center;
+  white-space: pre-line;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  cursor: pointer;
+}
+.bye-msg[hidden] { display: none !important; }
+
 .round-intro-count {
   position: relative; z-index: 1;
   color: #e08a1e;
@@ -1064,31 +1153,88 @@ body { background: var(--lm-page); }
 }
 /* 다이얼패드 래퍼 — 안내문구/첫방문 말풍선을 절대배치로 얹기 위함. */
 .dialpad { position: relative; flex: 0 0 auto; }
+
+/* 채널 버튼 길게 누르면 뜨는 말풍선 메뉴 [🕶 시크릿] [🗑 삭제] */
+.lane-ch-menu {
+  position: fixed;
+  transform: translate(-50%, -100%);
+  z-index: 60;
+  display: flex;
+  gap: 4px;
+  padding: 5px;
+  border-radius: 12px;
+  background: #23242c;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+  animation: lch-pop 0.14s ease-out;
+}
+.lane-ch-menu::after {
+  content: '';
+  position: absolute;
+  left: 50%; bottom: -6px;
+  transform: translateX(-50%);
+  border: 7px solid transparent;
+  border-top-color: #23242c;
+  border-bottom: 0;
+}
+.lane-ch-menu button {
+  display: flex; align-items: center; gap: 4px;
+  padding: 7px 11px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.lane-ch-menu button:active { background: rgba(255, 255, 255, 0.2); }
+.lane-ch-menu [data-a="delete"] { color: #ff8a84; }
+.lane-ch-menu .lch-ic { font-size: 0.95rem; }
+@keyframes lch-pop { from { opacity: 0; transform: translate(-50%, -92%); } }
+
+/* 이어가기 복귀 안내 말풍선 — 초록 통화버튼이 말하듯이, 그 위에서 왼쪽으로 펼쳐진다.
+   다이얼패드 영역 안(보드 아래)이라 두더지/이모티콘과 안 겹친다. 3초 주기로 다시 뜸. */
+.resume-hint {
+  position: absolute;
+  right: calc(50% - var(--sq) / 2 + 2px);        /* 오른쪽 끝 = 버튼패드 오른쪽 끝(통화버튼 열) */
+  bottom: calc(var(--sq) / 4 + 10px);            /* 통화버튼(맨 아랫줄) 바로 위 */
+  z-index: 8;
+  max-width: min(74vw, calc(var(--sq) * 0.9));
+  padding: 7px 11px;
+  border-radius: 13px;
+  border-bottom-right-radius: 4px;
+  background: #2ecc57;
+  color: #fff;
+  font-size: clamp(0.66rem, 3vw, 0.82rem);
+  font-weight: 800;
+  line-height: 1.3;
+  text-align: center;
+  white-space: nowrap;
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  opacity: 0;
+}
+.resume-hint[hidden] { display: none !important; }
+.resume-hint::after {   /* 꼬리 — 오른쪽 아래, 통화버튼을 가리킴 */
+  content: '';
+  position: absolute;
+  right: 16px; bottom: -7px;
+  border: 7px solid transparent;
+  border-top-color: #2ecc57;
+  border-bottom: 0;
+}
+.resume-hint.is-on { animation: resume-hint-pulse 3s ease-in-out infinite; }
+@keyframes resume-hint-pulse {
+  0%   { opacity: 0; transform: translateY(8px) scale(0.9); }
+  10%  { opacity: 1; transform: translateY(0) scale(1); }
+  68%  { opacity: 1; transform: translateY(0) scale(1); }
+  90%  { opacity: 0; transform: translateY(-4px) scale(0.97); }
+  100% { opacity: 0; }
+}
 /* 종료 제스처 안내 — 박스 없이 글자만. 다이얼패드 상단 가운데는 시작버튼과 겹쳐 보여
    우측 버튼박스와 폰 사이 여백으로 이동, 세로쓰기. 그 여백이 실측 ~8px로 매우 좁아서
    (.dialpad 는 화면 꽉 채운 폭, #lane-button-bar 만 --sq 로 가운데 정렬된 정사각형이라
    생기는 틈) 글자 크기를 그에 맞게 작게(사용자 확인: "작게 나와도 되니 세로로"). */
-.start-hint {
-  display: none;
-  position: absolute;
-  left: calc(50% + var(--sq) / 2 - 4.4px); top: 50%; /* 우측 0.2cm 요청 - 남은 여백(~0.6px)만큼만 이동, 그 이상은 화면 밖으로 나가 안 보임 */
-  transform: translateY(-50%);
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  z-index: 3;
-  max-height: 92%;
-  margin: 0;
-  background: transparent;
-  color: var(--lm-muted);
-  font-size: 0.6rem;
-  letter-spacing: 0.01em;
-  word-spacing: 0.9em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  pointer-events: none;
-}
-#game-screen.is-start .start-hint { display: block; }
 .start-coach {
   display: none;
   position: absolute;
@@ -1129,6 +1275,10 @@ body { background: var(--lm-page); }
   justify-content: center;
   gap: 5px;
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
   transition: transform 0.06s, background 0.12s, box-shadow 0.15s;
   --flash-ring: #12d16a;                       /* 흰 배경에서도 또렷하게 — 앱 초록(통화버튼 #2ecc57)과 같은 계열, 더 진하게 */
   --flash-fill: rgba(18, 209, 106, 0.5);       /* 클릭 순간 배경에 도는 초록 글로우 */
@@ -1180,6 +1330,9 @@ body { background: var(--lm-page); }
 }
 .lane-kr { font-size: clamp(0.42rem, 2vw, 0.62rem); }
 .lane-en { font-size: clamp(0.36rem, 1.7vw, 0.52rem); letter-spacing: 0.08em; }
+/* 언어에 따라 자음(한글) / 알파벳 하나만 — 전화 키패드 표기 (game.js 가 <html lang> 설정) */
+html[lang="en"] .lane-kr,
+html:not([lang="en"]) .lane-en { display: none; }
 
 /* 채널 링크 등록된 버튼 — 평소 얼굴(숫자/내비)과 채널 아이콘을 동전 뒤집기(3D flip) 카드로
    포갠다. 짧게 누르면 lane-controls.js 의 flipChannelCard() 가 몇 바퀴 휙 돌려 반대 면에
@@ -1258,9 +1411,9 @@ body { background: var(--lm-page); }
 .lane-button--call.lane-button--armed:active { background: #c62828; }
 .lane-button--call.lane-button--armed .lane-ico { display: none; }
 .lane-button--call.lane-button--armed .lane-lbl {
-  font-size: clamp(0.44rem, 2vw, 0.58rem);
+  font-size: clamp(0.52rem, 2.5vw, 0.7rem);
   font-weight: 800;
-  line-height: 1.15;
+  line-height: 1.2;
   white-space: pre-line;
   text-align: center;
 }
@@ -1543,6 +1696,7 @@ body { background: var(--lm-page); }
 .mm-title { font-weight: 800; font-size: 0.95rem; }
 .mm-stat { display: inline-flex; align-items: center; gap: 3px; font-size: 0.82rem; color: #3a3a41; }
 .mm-stat svg { width: 15px; height: 15px; }
+.mm-regen { margin-left: 3px; font-size: 0.64rem; font-weight: 700; color: #8a8a92; font-variant-numeric: tabular-nums; }
 /* 상단: 게임 안 함 = "‹ 더보기" / 게임 일시정지 중 = "‹ 이어하기" 3D 박스 */
 #more-menu:not(.mm-paused) .mm-resume { display: none; }
 #more-menu.mm-paused .mm-close,
@@ -1601,12 +1755,17 @@ body { background: var(--lm-page); }
 .mm-mini-mole { width: 26px; aspect-ratio: 470/548; margin-left: -4px; flex: 0 0 auto; }
 .mm-mini-mole img { width: 100%; display: block; }
 .mm-pills { display: flex; gap: 8px; padding: 14px; }
-.mm-pill { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
-  padding: 10px 0; border: none; border-radius: 10px; background: #f0f0f2;
+.mm-pill { flex: 1; min-width: 0; display: flex; flex-direction: row; align-items: center; gap: 5px;
+  padding: 8px 5px; border: none; border-radius: 10px; background: #f0f0f2;
   color: #55555c; font-weight: 800; font-size: 0.72rem; cursor: pointer; }
+.mm-pill-body { display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
+  min-width: 0; line-height: 1.12; }
+.mm-pill-body b { font-size: 0.66rem; font-weight: 800; white-space: nowrap; }
+.mm-pill-body i { font-size: 0.54rem; font-weight: 700; font-style: normal; opacity: 0.78; white-space: nowrap; }
+.mm-pill--locked .mm-pill-body i { display: none; }
 .mm-pill--locked { color: #a9a9b0; cursor: not-allowed; }
 .mm-pill--locked .mm-pill-ic { stroke: #b4b4bb; }
-.mm-pill-ic { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6;
+.mm-pill-ic { width: 18px; height: 18px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.6;
   stroke-linecap: round; stroke-linejoin: round; }
 /* 전구 밝기 = 난이도 표현: ON 노랑/글로우, DIM 은은, OFF 어둑 */
 .mm-pill[data-mm-diff="easy"] .mm-pill-ic { stroke: #ffcf4a; filter: drop-shadow(0 0 4px rgba(255, 200, 70, 0.9)); }
@@ -1622,7 +1781,12 @@ body { background: var(--lm-page); }
 .mm-grid .mm-ic { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.6;
   stroke-linecap: round; stroke-linejoin: round; }
 .mm-grid i { font-style: normal; text-align: center; }
-.mm-ad { margin: auto 14px 6px; }
+/* 광고 박스 — PLAY 버튼 아래 여백을 채우되 버튼에 딱 붙지 않게 위쪽에 간격 (사용자 요청). */
+.mm-ad { margin: 20px 14px 12px; flex: 1 0 auto; min-height: 150px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 12px; background: #f2f2f4; color: #9a9aa0; font-weight: 700; overflow: hidden; }
+.mm-ad > * { max-width: 100%; }
+.mm-ad:empty::after { content: '광고'; }
 
 /* 더보기 그리드의 "GO" — 설정 아래 칸. 통화 아이콘 + GO, 색으로 구분 (앰버). */
 .mm-go {

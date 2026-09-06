@@ -29,9 +29,32 @@
 
     function revokeFaces() { faceUrls.forEach(URL.revokeObjectURL); faceUrls = []; }
 
+    // 생명 충전 타이머 — 더보기 화면에만 표시. 2개 이하일 때 4시간마다 +1, 3개면 숨김.
+    var regenTimer = null;
+    function fmt(ms) {
+      var s = Math.max(0, Math.ceil(ms / 1000));
+      var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+      return h + ':' + String(m).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+    }
+    function tickRegen() {
+      var slot = el.querySelector('[data-mm-regen]');
+      if (!slot) return;
+      if (document.getElementById('more-menu').hidden) { // 닫혔으면 타이머 정지
+        clearInterval(regenTimer); regenTimer = null; return;
+      }
+      var lives = MG.Economy.getHearts();
+      el.querySelector('[data-mm-hearts] b').textContent = String(lives);
+      var ms = MG.Economy.nextHeartMs();
+      if (lives >= MG.Economy.HEART_MAX || ms <= 0) { slot.hidden = true; slot.textContent = ''; }
+      else { slot.hidden = false; slot.textContent = fmt(ms); }
+    }
+
     function refresh() {
       el.querySelector('[data-mm-hearts] b').textContent = String(MG.Economy.getHearts());
       el.querySelector('[data-mm-coins] b').textContent = MG.Economy.getCoins().toLocaleString();
+      clearInterval(regenTimer);
+      tickRegen();
+      regenTimer = setInterval(tickRegen, 1000);
 
       el.querySelector('[data-mm-nick]').textContent = localStorage.getItem('mole.nick') || '두더지';
       var pic = localStorage.getItem('mole.profilePic');

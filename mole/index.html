@@ -52,10 +52,10 @@
         <div class="ticker-viewport">
           <div class="ticker-track">
             <span class="ticker-seg">
-              <b class="hud-addr-url">두더지팡.app</b><i class="hud-addr-hint" data-i18n="mole.channel.discoverHint"></i>
+              <b class="hud-addr-url" data-i18n="mole.addr.url">두더지팡.app</b><i class="hud-addr-hint" data-i18n="mole.channel.discoverHint"></i><i class="hud-addr-hint" data-i18n="mole.channel.discoverHint2"></i><i class="hud-addr-hint" data-i18n="mole.start.quitHint"></i>
             </span>
             <span class="ticker-seg">
-              <b class="hud-addr-url">두더지팡.app</b><i class="hud-addr-hint" data-i18n="mole.channel.discoverHint"></i>
+              <b class="hud-addr-url" data-i18n="mole.addr.url">두더지팡.app</b><i class="hud-addr-hint" data-i18n="mole.channel.discoverHint"></i><i class="hud-addr-hint" data-i18n="mole.channel.discoverHint2"></i><i class="hud-addr-hint" data-i18n="mole.start.quitHint"></i>
             </span>
           </div>
         </div>
@@ -83,6 +83,8 @@
       <div id="hud-score" aria-hidden="true">0</div>
       <div id="hud-hearts" class="board-hearts" aria-hidden="true"></div>
       <div id="hud-combo" class="board-combo" aria-hidden="true"></div>
+      <div id="fever-badge" class="fever-badge" aria-hidden="true" data-i18n="mole.hud.fever" hidden>피버타임!</div>
+      <div id="combo-heart-pop" class="combo-heart-pop" aria-hidden="true"></div>
       <!-- 챕터 선택 ◀ 챕터 N ▶ — 열린 챕터 2개 이상일 때만. 박스 없이 글자+화살표만.
            하트/코인과 같은 줄이지만 반대쪽(왼쪽) 끝에 따로 고정 — 하트/코인 자릿수가
            늘어도 이쪽으로 밀려와 겹치지 않게 분리(사용자 요청). -->
@@ -93,7 +95,7 @@
       </div>
       <!-- 홈(시작) 화면: 게임박스 우측 상단에 하트·코인 -->
       <div id="board-stats" class="board-stats" aria-hidden="true">
-        <span class="mm-stat mm-hearts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg><b data-bs-hearts>5</b></span>
+        <span class="mm-stat mm-hearts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg><b data-bs-hearts>3</b></span>
         <span class="mm-stat mm-coins"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg><b data-bs-coins>0</b></span>
       </div>
       <button id="btn-pause" type="button" aria-label="일시정지">
@@ -112,7 +114,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v225</div>
+      <div id="build-tag" aria-hidden="true">v226</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -174,6 +176,9 @@
         <div id="round-intro-title" class="round-intro-title">라운드 1</div>
         <img id="round-intro-mole" class="round-intro-mole" alt="" hidden>
         <div id="round-intro-count" class="round-intro-count">3</div>
+        <!-- 종료(exitApp) 시 커튼 닫힌 뒤: window.close() 가 안 먹히는 브라우저/홈화면 PWA 에서
+             정체불명 화면 대신 안내. 탭하면 다시 열림. 진짜 종료는 Phase 2 네이티브 래퍼. -->
+        <button type="button" id="bye-msg" class="bye-msg" hidden></button>
       </div>
 
       <!-- 승리 화면에서 왼쪽 스와이프 시 나타나는 다음 챕터 화면 (placeholder — Phase B 대기) -->
@@ -196,7 +201,7 @@
       </div>
       <div class="mm-profile">
         <span class="mm-profile-stats">
-          <span class="mm-stat mm-hearts" data-mm-hearts><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg><b>5</b></span>
+          <span class="mm-stat mm-hearts" data-mm-hearts><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg><b>3</b><small class="mm-regen" data-mm-regen hidden></small></span>
           <span class="mm-stat mm-coins" data-mm-coins><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg><b>0</b></span>
         </span>
         <button type="button" class="mm-avatar" data-mm-avatar aria-label="프로필 사진 변경"></button>
@@ -212,19 +217,19 @@
       <div class="mm-pills">
         <button type="button" class="mm-pill" data-mm-diff="easy">
           <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"/></svg>
-          <span data-i18n="mole.diff.easy">라이트 ON</span>
+          <span class="mm-pill-body"><b data-i18n="mole.diff.easy">라이트 ON</b><i data-i18n="mole.diff.easy.mult">×1.0</i></span>
         </button>
         <button type="button" class="mm-pill" data-mm-diff="mid">
           <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"/></svg>
-          <span data-i18n="mole.diff.mid">라이트 DIM</span>
+          <span class="mm-pill-body"><b data-i18n="mole.diff.mid">라이트 DIM</b><i data-i18n="mole.diff.mid.mult">×1.2 · 피버 ×1.5</i></span>
         </button>
         <button type="button" class="mm-pill" data-mm-diff="legend">
           <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"/></svg>
-          <span data-i18n="mole.diff.legend">라이트 OFF</span>
+          <span class="mm-pill-body"><b data-i18n="mole.diff.legend">라이트 OFF</b><i data-i18n="mole.diff.legend.mult">×2.0 · 피버 ×3.0</i></span>
         </button>
         <button type="button" class="mm-pill mm-pill--locked" data-mm-secret disabled aria-disabled="true">
           <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>
-          <span data-i18n="mole.diff.secret">시크릿 모드</span>
+          <span class="mm-pill-body"><b data-i18n="mole.diff.secret">시크릿 모드</b></span>
         </button>
       </div>
       <div class="mm-grid">
@@ -397,10 +402,11 @@
     <div id="mole-hammer-layer"></div>
     <div id="fold-hinge" aria-hidden="true"></div>
     <div class="dialpad">
-      <p class="start-hint" data-i18n="mole.start.quitHint">시작 버튼을 꾹 눌렀다 다시 누르면 종료</p>
       <div class="start-coach" data-start-coach>
         <span data-i18n="mole.start.coach">여기를 꾹 눌렀다 다시 누르면 게임을 종료할 수 있어요</span>
       </div>
+      <!-- 이어가기로 게임에 복귀했을 때: 초록 통화버튼이 "라운드 처음부터 시작됩니다" 라고 알려줌 -->
+      <div id="resume-hint" class="resume-hint" aria-hidden="true" data-i18n="mole.resume.hint" hidden>라운드 처음부터 시작됩니다</div>
       <div id="lane-button-bar"></div>
     </div>
     <div id="screen-flash-fx" aria-hidden="true"></div>
@@ -478,7 +484,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=225').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=226').catch(function () {});
       }
     });
   }

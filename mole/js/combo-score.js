@@ -14,17 +14,21 @@
   function create() {
     let combo = 0;
     let score = 0;
+    let mult = 1; // 난이도(라이트 ON/DIM/OFF)·피버타임 점수 배율 — game.js 가 매 타격 전 설정.
+
+    // 배율은 §12 점수표 위에 곱해진다 (사용자 요청: 라이트 DIM ×1.2 / OFF ×2.0, 피버 ×1.5 / ×3.0).
+    function setMult(m) { mult = (typeof m === 'number' && m > 0) ? m : 1; }
 
     function onMoleHit() {
       combo += 1;
-      score += comboToPoints(combo);
+      score += Math.round(comboToPoints(combo) * mult);
     }
 
     // 저글(더블) 보너스 — 콤보 카운트는 +1 (목숨 보너스 유지) 이지만 점수는 작은 고정값만.
     // 콤보 점수표(최대 200)를 쓰면 두더지 1마리가 사실상 2배가 돼 너무 커서(사용자 지적).
     function onJuggle(bonus) {
       combo += 1;
-      score += (bonus || 0);
+      score += Math.round((bonus || 0) * mult);
     }
 
     function onObstacleHit() {
@@ -40,8 +44,10 @@
       onJuggle,
       onObstacleHit,
       isMaxCombo,
+      setMult,
       get combo() { return combo; },
-      get score() { return score; }
+      get score() { return score; },
+      get mult() { return mult; }
     };
   }
 

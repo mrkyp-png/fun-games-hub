@@ -3,11 +3,11 @@
 
   const MG = window.MoleGame;
   const I18N = window.FGH.I18N;
-  const START_LIVES = 3;      // 스펙 §11
   const GRID_SIZE = 4;        // 4x4 = 16칸 고정 격자
   const CANNON_HOLE = 15;     // 대포 장착 시 없애는 구멍 (우하단 = row3·col3). 15구멍으로 플레이.
-  const ROUND_SECONDS = 15;   // ⚠️ 임시 테스트값 (챕터 전환 흐름 빨리 돌려보려고). 원래 30 — 출시 전 원복.
-                              //    (index.html 인트로·도움말의 "각 30초" 문구는 안 건드림 — 같이 원복)
+  const ROUND_SECONDS = 15;       // 챕터 1~2
+  const ROUND_SECONDS_LONG = 30;  // 챕터 3부터 (난이도 상승분 보정 — 사용자 요청)
+  function roundSeconds() { return currentChapter() >= 3 ? ROUND_SECONDS_LONG : ROUND_SECONDS; }
   const FINAL_ROUND = 10;     // 라운드 1~10
   // 처치 순간 게임 시간을 잠깐 멈춘다 (히트스톱) — 타격감. 콤보가 쌓일수록 조금 더 길게.
   const HITSTOP_BASE_MS = 90;
@@ -22,7 +22,9 @@
   const HIPPO_MOODS = ['❓', '❤️', '😡', '😂', '😐', '🙄', '✋', '🔥', '😅', '👍'];
 
   let state = null;   // 현재 라운드 상태 (시작 화면일 땐 null)
-  // 10라운드를 통틀어 유지되는 것: 콤보·점수(1라운드부터 누적)와 목숨.
+  // 10라운드를 통틀어 유지되는 것: 콤보·점수(1라운드부터 누적).
+  // 목숨(run.lives)은 허브 공유 생명(MG.Economy) 그 자체다 — 동물 -1 / 콤보 100마다 +1 이
+  // 즉시 공유 풀에 반영되고, 홈·더보기·게임 화면이 항상 같은 수를 보여준다. setRunLives() 로만 바꾼다.
   let run = null;     // { combo: ComboScore, lives, comboMilestone }
   const COMBO_LIFE_STEP = 100; // 콤보가 이 배수를 넘길 때마다 목숨 +1
   const JUGGLE_BONUS = 30;     // 저글(더블) 점수 — 작은 덤 (콤보 점수표 안 씀)
@@ -31,7 +33,33 @@
   let sharedPopElements = null; // #mole-pop-layer는 재생성 안 되는 고정 DOM이므로 세션당 한 번만 생성
   let sharedLaneControls = null; // 다이얼러 버튼 — 시작 화면에도 (비활성으로) 계속 보여야 하므로 세션당 한 번만 생성
   let sessionGen = 0; // startRound/showStartScreen 호출마다 +1 — 카운트다운·자동진행 타이머 취소 토큰
-  let adBonusLives = 0; // "광고 보고 생명 +1" → 다음 판 목숨에 더해지고 소비됨
+
+  // run.lives 는 공유 생명 풀(MG.Economy)과 항상 동기화된다.
+  function setRunLives(n) {
+    n = Math.max(0, n | 0);
+    if (run) run.lives = n;
+    MG.Economy.setHearts(n);
+    refreshBoardStats();
+  }
+
+  // 홈(시작) 화면 우측 상단 하트·코인 숫자 — 공유 풀에서 다시 읽어 그린다.
+  // 광고/콤보/동물 등으로 값이 바뀔 때마다 호출해 홈·더보기·게임이 같은 수를 보이게 한다.
+  function refreshBoardStats() {
+    const bs = document.getElementById('board-stats');
+    if (!bs) return;
+    const fit = (el) => {
+      const digits = el.textContent.replace(/[^0-9]/g, '').length;
+      el.style.fontSize = digits <= 4 ? '' : digits <= 6 ? '0.82em' : digits <= 8 ? '0.68em' : '0.56em';
+    };
+    const h = bs.querySelector('[data-bs-hearts]');
+    const c = bs.querySelector('[data-bs-coins]');
+    if (h) { h.textContent = String(MG.Economy.getHearts()); fit(h); }
+    if (c) { c.textContent = MG.Economy.getCoins().toLocaleString(); fit(c); }
+    if (moreMenu) {
+      const mm = document.getElementById('more-menu');
+      if (mm && !mm.hidden) moreMenu.refresh();
+    }
+  }
 
   let bgm = null; // <audio id="bgm">
   function syncBgm(playIntent) {
@@ -102,14 +130,19 @@
   }
 
   // 대화 화면 "시작" 버튼(들)이 부르는 진입점. 타이핑 인트로(챕터+준비 문구) → 활성 얼굴 로드 → 라운드 1.
-  // Phase 1: 하트 소모 게이트는 비활성 (게임 완성 우선). Phase 2에서 재활성 — 아래 한 줄 주석 해제.
+  // 시작 시 생명을 미리 깎지 않는다 — 현재 공유 풀 그대로 플레이하고, 동물 맞을 때만 -1.
+  // 단 풀이 0이면 플레이 자체가 불가(즉시 게임오버) → "생명 없음" 모달.
+  let gameStarting = false; // 시작 버튼 연타 방지 — 한 번 누르면 홈으로 돌아올 때까지 재진입 차단
   function beginGame() {
+    if (gameStarting || state) return;   // 이미 시작 진행 중이거나 게임 중 — 짧게 연타해도 무시 (길게=arm은 별개)
+    if (MG.Economy.getHearts() <= 0) { showNoHeartModal(); return; }
+    gameStarting = true;
+    setNavLock(true); // 인트로~카운트다운 동안 ⊞ 잠금
     currentDiff = currentDifficulty();
-    // if (!MG.Economy.spendHeart()) { showNoHeartModal(); return; }
     applyDiffClass(currentDiff);
     preloadRoundMoles(); // 라운드1 플레이하는 동안 미리 받아둬야 라운드2 전환 때 안 늦음
     playStartIntro(() => {
-      loadActiveFace().then(() => startRound(1, { fresh: true }));
+      loadActiveFace().catch(() => null).then(() => startRound(1, { fresh: true }));
     });
   }
 
@@ -185,6 +218,7 @@
   // 라운드1 진입 전 한 번 — 커튼 패턴(노랑->분홍, 2.3s) 이 다 끝난 뒤 "챕터N" 타이핑,
   // 이어서 "손을 풀어봅시다..." 타이핑, 끝나면 잠깐 멈췄다 커튼 오픈.
   function playStartIntro(onDone) {
+    const myGen = sessionGen; // 인트로 도중 홈버튼/메뉴로 나가면 sessionGen 이 바뀌어 이 체인이 중단됨
     const overlay = document.getElementById('start-intro-overlay');
     const chapterNumEl = document.getElementById('si-chapter-num');
     const chapterSubEl = document.getElementById('si-chapter-sub');
@@ -205,12 +239,18 @@
     const chapterNum = sepIdx >= 0 ? fullChapter.slice(0, sepIdx) : fullChapter;
     const chapterSub = sepIdx >= 0 ? fullChapter.slice(sepIdx + 3) : '';
     const fullTip = I18N.t('mole.startintro.tip');
+    const aborted = () => myGen !== sessionGen;
     setTimeout(() => {
+      if (aborted()) { overlay.hidden = true; overlay.classList.remove('is-opening'); return; }
       typeText(chapterNumEl, chapterNum, () => {
+        if (aborted()) return;
         typeText(chapterSubEl, chapterSub, () => {
+          if (aborted()) return;
           caretEl.hidden = false; // 이 줄 타이핑 시작하는 순간부터 커서 등장
           typeText(tipEl, fullTip, () => {
+            if (aborted()) return;
             setTimeout(() => {
+              if (aborted()) { overlay.hidden = true; overlay.classList.remove('is-opening'); return; }
               overlay.classList.add('is-opening');
               setHammerLayerVisible(true);
               onDone();
@@ -229,6 +269,37 @@
   // (홈 화면에서만. 게임 중엔 이 버튼은 15번 구멍 타격이라 handleCell 이 담당.)
   const armState = { armed: false, revertT: null };
   let setCallLabel = () => {}; // (mode) 'home' → "시작" / 'game' → "통화" (게임 중엔 15번 구멍 타격)
+
+  // 시작 인트로~카운트다운·라운드 전환 동안엔 ⊞(홈/더보기) 잠금 + 회색 음영 (사용자 요청).
+  // 이 시간엔 게임 상태가 불안정해 이탈 시 버그가 났음 — 아예 못 누르게 막는 게 근본 해결.
+  let navLocked = false;
+  function setNavLock(on) {
+    navLocked = !!on;
+    const btn = document.getElementById('btn-back-to-hub');
+    if (btn) {
+      btn.classList.toggle('nav-locked', navLocked);
+      btn.setAttribute('aria-disabled', navLocked ? 'true' : 'false');
+    }
+  }
+
+  // 이어가기로 게임 복귀 시: 초록 통화버튼이 "라운드 처음부터 시작됩니다" 라고 말풍선으로 알림.
+  // 3초 주기로 다시 나타나며(CSS 애니), 패드를 누르거나 메뉴를 열면 사라진다.
+  let resumeHintT = null;
+  function showResumeHint() {
+    const el = document.getElementById('resume-hint');
+    if (!el) return;
+    el.hidden = false;
+    el.classList.remove('is-on'); void el.offsetWidth; el.classList.add('is-on');
+    clearTimeout(resumeHintT);
+    resumeHintT = setTimeout(hideResumeHint, 15000); // 3초 펄스 ×5 후 자동 종료
+  }
+  function hideResumeHint() {
+    const el = document.getElementById('resume-hint');
+    if (!el) return;
+    clearTimeout(resumeHintT);
+    el.classList.remove('is-on');
+    el.hidden = true;
+  }
   function wireStartButton() {
     const btn = document.querySelector('#lane-button-bar .lane-button--call');
     if (!btn) return;
@@ -283,12 +354,13 @@
   }
 
   function exitApp() {
-    // 안드로이드 앱/standalone PWA 에선 실제로 닫힌다. Phase 2: Capacitor App.exitApp().
-    // 그냥 검은 화면이 아니라 라운드 전환과 같은 커튼이 닫히며 종료 (사용자 요청).
+    // 라운드 전환과 같은 커튼이 닫히며 종료 (사용자 요청).
     const ri = document.getElementById('round-intro-overlay');
     ri.querySelector('.round-intro-title').textContent = '';
     ri.querySelector('.round-intro-count').textContent = '';
-    ri.classList.add('is-opening'); // 커튼 열린 상태로 시작
+    const bye = document.getElementById('bye-msg');
+    if (bye) { bye.hidden = true; bye.textContent = ''; }
+    ri.classList.add('is-opening', 'is-bye'); // is-bye = 불투명 배경(뒤 밤하늘 안 비치게)
     ri.hidden = false;
     setHammerLayerVisible(false);
     // display:none → 표시 직후엔 transition 시작점이 안 잡힌다. 열린 상태를
@@ -296,7 +368,20 @@
     requestAnimationFrame(() => {
       requestAnimationFrame(() => { ri.classList.remove('is-opening'); });
     });
-    try { window.close(); } catch (e) { /* 무시 */ }
+    // 실제 종료 시도. window.close() 는 스크립트로 연 창에서만 동작 —
+    // 일반 브라우저 탭·홈화면 PWA 에선 무시된다(진짜 종료는 Phase 2 네이티브 래퍼: Capacitor App.exitApp).
+    setTimeout(() => { try { window.close(); } catch (e) { /* 무시 */ } }, 300);
+    // 안 닫혔으면 정체불명 화면 대신 안내 — 탭하면 다시 열림.
+    setTimeout(() => {
+      if (document.hidden || !bye) return;
+      bye.textContent = I18N.t('mole.quit.done');
+      bye.hidden = false;
+      bye.onclick = () => {
+        bye.hidden = true; bye.textContent = ''; bye.onclick = null;
+        ri.classList.remove('is-bye');
+        showStartScreen({ skipFlash: true });
+      };
+    }, 650);
   }
 
   function showNoHeartModal() {
@@ -310,7 +395,7 @@
     document.body.appendChild(v);
     v.querySelector('[data-nh="ad"]').addEventListener('click', () => {
       v.remove();
-      MG.Ads.rewarded().then((ok) => { if (ok) { MG.Economy.addHearts(1); if (moreMenu) moreMenu.refresh(); } });
+      MG.Ads.rewarded().then((ok) => { if (ok) { MG.Economy.addHearts(1); refreshBoardStats(); } });
     });
     v.querySelector('[data-nh="shop"]').addEventListener('click', () => { v.remove(); openMore('shop-screen'); });
     v.querySelector('[data-nh="close"]').addEventListener('click', () => v.remove());
@@ -374,6 +459,14 @@
     flipSwap(outEl, document.getElementById('more-menu'));
   }
   function openMoreNow(sub) {
+    hideResumeHint();
+    // 백스톱: 시작 인트로(챕터 타이핑) 도중 어떻게든 메뉴가 열리면 대기 중이던 라운드 시작을
+    // 취소하고 깨끗한 "더보기"만 연다. (평소엔 아래 navLock 으로 ⊞ 자체가 이 시간엔 안 먹힘.)
+    var si = document.getElementById('start-intro-overlay');
+    if (!state && si && !si.hidden) {
+      sessionGen++;
+      si.hidden = true; si.classList.remove('is-opening');
+    }
     // 진행 중이던 게임이 있으면(직접 일시정지했든 아니든) 상단 = "‹ 이어하기" + 칩 잠금.
     var resumable = !!(state && !state.ended);
     // 플레이 중(일시정지 아님)에 열면 게임을 멈춘다 (닫을 때 자동 재개).
@@ -409,6 +502,7 @@
       state.pausedByMenu = false;
       lastTime = performance.now();
     }
+    showResumeHint(); // 통화버튼 = 라운드 재시작 이라는 안내 말풍선
   }
 
   // ---------- 시작 화면 ----------
@@ -430,6 +524,9 @@
   }
   function showStartScreenNow(opts) {
     sessionGen++; // 진행 중이던 카운트다운/자동진행 타이머 무효화
+    gameStarting = false;
+    hideResumeHint();
+    setNavLock(false);
     if (rafId) cancelAnimationFrame(rafId);
     if (sharedPopElements) sharedPopElements.clear();
     if (state && state.holeLayer) state.holeLayer.clear();
@@ -445,7 +542,11 @@
     const ncp = document.getElementById('next-chapter-panel');
     ncp.hidden = true; ncp.classList.remove('is-in');
     const ri = document.getElementById('round-intro-overlay');
-    ri.hidden = true; ri.classList.remove('is-opening');
+    ri.hidden = true; ri.classList.remove('is-opening', 'is-bye');
+    const byeEl = document.getElementById('bye-msg');
+    if (byeEl) { byeEl.hidden = true; byeEl.textContent = ''; byeEl.onclick = null; }
+    const si = document.getElementById('start-intro-overlay');
+    if (si) { si.hidden = true; si.classList.remove('is-opening'); }
     setHammerLayerVisible(true);
     document.getElementById('board-start').hidden = false;
     // board-start는 #mole-board 의 자식 — 플레이 중 더보기(openMore)가 mole-board 자체를
@@ -470,20 +571,8 @@
     const smsTxt = I18N.t('mole.start.goal', { n: goal.toLocaleString() }) +
       '  /  ' + I18N.t('mole.start.best', { n: lastScore().toLocaleString() });
     sms.querySelector('.chat-sms-txt').textContent = smsTxt;
-    const bs = document.getElementById('board-stats');
-    if (bs) {
-      // 숫자 자리수가 늘어나도 박스 크기/위치는 고정 — 폰트만 줄인다.
-      const fitStatNum = (el) => {
-        const digits = el.textContent.replace(/[^0-9]/g, '').length;
-        el.style.fontSize = digits <= 4 ? '' : digits <= 6 ? '0.82em' : digits <= 8 ? '0.68em' : '0.56em';
-      };
-      const heartsEl = bs.querySelector('[data-bs-hearts]');
-      const coinsEl = bs.querySelector('[data-bs-coins]');
-      heartsEl.textContent = String(MG.Economy.getHearts());
-      coinsEl.textContent = MG.Economy.getCoins().toLocaleString();
-      fitStatNum(heartsEl);
-      fitStatNum(coinsEl);
-    }
+    refreshBoardStats();
+    tuneAddrTicker();
     sms.classList.toggle('is-empty', false);
     sms.classList.remove('sms-anim');   // 시작화면 열 때마다 문자 툭↓ + 폭죽 리트리거
     void sms.offsetWidth;
@@ -534,6 +623,15 @@
     };
     nav.querySelector('[data-ch-prev]').addEventListener('click', () => step(-1));
     nav.querySelector('[data-ch-next]').addEventListener('click', () => step(1));
+  }
+
+  // 홈 상단 주소창 티커: 문구 길이가 달라도(언어/힌트) 스크롤 속도가 일정하도록 duration 을 폭에 맞춘다.
+  function tuneAddrTicker() {
+    const seg = document.querySelector('#hud-addr .ticker-seg');
+    const track = document.querySelector('#hud-addr .ticker-track');
+    if (!seg || !track) return;
+    const w = seg.getBoundingClientRect().width;
+    if (w > 0) track.style.animationDuration = Math.max(12, w / 60).toFixed(1) + 's'; // ≈60px/s
   }
 
   // 초록 버튼 롱프레스=종료 안내 말풍선 — 1회만.
@@ -608,6 +706,32 @@
     el.appendChild(adRow());   // 두더지 마지막 말풍선 = "하트나 코인 필요하면 눌러" (일반 대화 줄)
   }
 
+  // 홈 광고 = 생명/코인 각각 하루 최대 3회. localStorage 에 날짜별 카운트.
+  const AD_DAILY_MAX = 3;
+  function adDailyDate() {
+    const d = new Date();
+    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+  }
+  function adDaily() {
+    let o;
+    try { o = JSON.parse(localStorage.getItem('mole.adDaily') || '{}'); } catch (e) { o = {}; }
+    if (!o || o.date !== adDailyDate()) o = { date: adDailyDate(), life: 0, coin: 0 };
+    return o;
+  }
+  function bumpAdDaily(kind) {
+    const o = adDaily();
+    o[kind] = (o[kind] || 0) + 1;
+    try { localStorage.setItem('mole.adDaily', JSON.stringify(o)); } catch (e) { /* noop */ }
+    return o[kind];
+  }
+  function syncAdBtn(btn, kind) {
+    if (!btn) return;
+    const n = adDaily()[kind] || 0;
+    const cap = btn.querySelector('.chat-ad-cap');
+    if (cap) cap.textContent = n + '/' + AD_DAILY_MAX;
+    btn.disabled = n >= AD_DAILY_MAX;
+  }
+
   // 광고 보기 = 두더지 말풍선 (재방문 대화 마지막 줄). 일반 대화처럼 한 줄씩 공개·스크롤.
   function adRow() {
     const row = document.createElement('div');
@@ -621,36 +745,37 @@
         '<button type="button" class="chat-ad-btn" data-ad="life" aria-label="' + I18N.t('mole.start.adLife') + '">' +
           '<span class="chat-ad-play" aria-hidden="true">▶</span>' +
           '<svg class="chat-ad-ic chat-ad-ic--heart" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg>' +
-          '<span class="chat-ad-n">+1</span></button>' +
+          '<span class="chat-ad-n">+1</span><span class="chat-ad-cap"></span></button>' +
         '<button type="button" class="chat-ad-btn" data-ad="coin" aria-label="' + I18N.t('mole.shop.watchCoin') + '">' +
           '<span class="chat-ad-play" aria-hidden="true">▶</span>' +
           '<svg class="chat-ad-ic chat-ad-ic--coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="currentColor"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="1.6"/></svg>' +
-          '<span class="chat-ad-n">+50</span></button>' +
+          '<span class="chat-ad-n">+50</span><span class="chat-ad-cap"></span></button>' +
       '</span>';
     row.appendChild(bubble);
     wireChatAds(row);
     return row;
   }
 
-  // "광고 보고 하트/코인" 버튼 연결.
+  // "광고 보고 하트/코인" 버튼 연결 — 하루 3회 제한 + "N/3" 카운터.
   function wireChatAds(scope) {
-    const life = scope.querySelector('[data-ad="life"]');
-    const coin = scope.querySelector('[data-ad="coin"]');
-    if (life && !life.dataset.wired) {
-      life.dataset.wired = '1';
-      life.addEventListener('click', () => MG.Ads.rewarded().then((ok) => {
-        if (!ok) return;
-        adBonusLives += 1;
-        life.disabled = true;
-        life.querySelector('.chat-ad-n').textContent = '✓';
-      }));
-    }
-    if (coin && !coin.dataset.wired) {
-      coin.dataset.wired = '1';
-      coin.addEventListener('click', () => MG.Ads.rewarded().then((ok) => {
-        if (ok) MG.Economy.addCoins(50);
-      }));
-    }
+    [['life', scope.querySelector('[data-ad="life"]')],
+     ['coin', scope.querySelector('[data-ad="coin"]')]].forEach(function (pair) {
+      const kind = pair[0], btn = pair[1];
+      if (!btn || btn.dataset.wired) return;
+      btn.dataset.wired = '1';
+      syncAdBtn(btn, kind);
+      btn.addEventListener('click', () => {
+        if ((adDaily()[kind] || 0) >= AD_DAILY_MAX) return;
+        MG.Ads.rewarded().then((ok) => {
+          if (!ok) return;
+          bumpAdDaily(kind);
+          if (kind === 'life') MG.Economy.addHearts(1);
+          else MG.Economy.addCoins(50);
+          refreshBoardStats();
+          syncAdBtn(btn, kind);
+        });
+      });
+    });
   }
 
   // 카톡처럼 메시지를 한 줄씩 공개하며 아래로 따라 스크롤
@@ -676,11 +801,14 @@
   //             없으면 자동 다음 라운드로 보고 그대로 이어간다.
   function startRound(roundNum, opts) {
     sessionGen++;
+    gameStarting = false; // 라운드 진입 성공 — 이후 재진입은 state 존재로 차단됨
+    hideResumeHint();
+    setNavLock(true); // 카운트다운 동안 ⊞ 잠금 (playRoundIntro onDone 에서 해제)
     const myGen = sessionGen;
-    // fresh(시작/다시하기)면 콤보·점수·목숨 전부 리셋. 자동 다음 라운드면 그대로 이어간다.
+    // fresh(시작/다시하기)면 콤보·점수 리셋. 목숨은 공유 생명 풀에서 이어받는다(리셋 아님).
+    // 자동 다음 라운드면 그대로 이어간다.
     if (opts && opts.fresh) {
-      run = { combo: MG.ComboScore.create(), lives: START_LIVES + adBonusLives, comboMilestone: 0, shield: false };
-      adBonusLives = 0; // 광고 보너스 목숨은 한 판만
+      run = { combo: MG.ComboScore.create(), lives: MG.Economy.getHearts(), comboMilestone: 0, shield: false };
     }
     updateShieldHud();
     if (rafId) cancelAnimationFrame(rafId);
@@ -754,7 +882,7 @@
 
     state = {
       round: roundNum, levelData, regions, spawnPoints, scheduler, holeLayer, laneHammer,
-      timeRemaining: ROUND_SECONDS,
+      timeRemaining: roundSeconds(),
       hitstopUntil: 0,
       ended: false,
       paused: false,
@@ -766,6 +894,7 @@
     playRoundIntro(roundNum, () => {
       if (myGen !== sessionGen || !state) return; // 그 사이 나가버림 — 이 콜백 무효
       state.introActive = false;
+      setNavLock(false); // 라운드 실제 진행 → ⊞ 다시 활성
       lastTime = performance.now();
       rafId = requestAnimationFrame(loop);
     });
@@ -898,6 +1027,34 @@
     rafId = requestAnimationFrame(loop);
   }
 
+  // 점수 배율 — 라이트(난이도) × 피버타임. 사용자 지정 표.
+  const SCORE_MULT = {
+    easy:   { base: 1,   fever: 1 },   // 라이트 ON
+    mid:    { base: 1.2, fever: 1.5 }, // 라이트 DIM
+    legend: { base: 2,   fever: 3 }    // 라이트 OFF
+  };
+  // 피버타임 = 콤보 50 이상 (챕터 3부터).
+  function isFever() {
+    return !!(run && run.combo.combo >= 50 && currentChapter() >= 3);
+  }
+  function currentScoreMult() {
+    const m = SCORE_MULT[currentDifficulty()] || SCORE_MULT.easy;
+    return isFever() ? m.fever : m.base;
+  }
+  function updateFeverHud() {
+    const b = document.getElementById('fever-badge');
+    if (b) b.hidden = !isFever();
+  }
+  // 콤보 100 달성 → 상단에 "+❤️" 이모티콘 잠깐.
+  function showComboHeartPop() {
+    const el = document.getElementById('combo-heart-pop');
+    if (!el) return;
+    el.textContent = '+❤️';
+    el.classList.remove('is-pop');
+    void el.offsetWidth;
+    el.classList.add('is-pop');
+  }
+
   function updateHUD() {
     MG.HUD.update({
       round: state.round,
@@ -907,6 +1064,7 @@
       isMaxCombo: run.combo.isMaxCombo(),
       score: run.combo.score // 1라운드부터 누적 (콤보·점수 한 통)
     });
+    updateFeverHud();
   }
 
   function syncPops() {
@@ -921,6 +1079,7 @@
 
   // ---------- 구멍 버튼 입력 → 그 구멍 타격 ----------
   function handleCell(regionId) {
+    hideResumeHint(); // 패드를 눌렀으면 이어가기 안내 말풍선은 치운다
     if (!state || state.ended || state.introActive || state.paused) return false;
     const sp = state.spawnPoints.find((s) => s.regionId === regionId);
     if (!sp) return false; // 대포 모드에서 없앤 구멍(15) 탭 = 무시 (헛방 처리 안 함)
@@ -939,6 +1098,7 @@
     if (!state || state.ended) return;
     const board = document.getElementById('mole-board');
     let moleHits = 0;
+    run.combo.setMult(currentScoreMult()); // 라이트·피버 배율 (이번 타격에 적용)
 
     results.forEach((r) => {
       if (r.type === 'mole') {
@@ -961,7 +1121,7 @@
         flashHud('hud-hearts');
         updateShieldHud();
       } else if (r.type === 'animal') {
-        run.lives -= 1;                 // 스펙 §8/§11 — 목숨은 10라운드 통틀어 3개
+        setRunLives(run.lives - 1);     // 동물 = 공유 생명 -1 (즉시 풀에 반영)
         run.combo.onObstacleHit();
         MG.HitFx.obstacleHit(board, r.xFrac, r.yFrac, 'animal');
         flashHud('hud-hearts');
@@ -995,15 +1155,16 @@
     }
   }
 
-  // 콤보가 100·200·300… 을 새로 넘겼으면 목숨 1개 보너스.
+  // 콤보가 100·200·300… 을 새로 넘겼으면 공유 생명 +1 (풀에 영구 반영).
   function checkComboLifeBonus() {
     const step = Math.floor(run.combo.combo / COMBO_LIFE_STEP);
     if (step > run.comboMilestone) {
-      run.lives += (step - run.comboMilestone);
+      setRunLives(run.lives + (step - run.comboMilestone));
       run.comboMilestone = step;
       flashHud('hud-hearts');
       const h = document.getElementById('hud-hearts');
       if (h) { h.classList.remove('life-bonus'); void h.offsetWidth; h.classList.add('life-bonus'); }
+      showComboHeartPop(); // 상단에 "+❤️" 이모티콘 (콤보 100 달성)
     }
   }
 
@@ -1039,6 +1200,7 @@
   function roundComplete() {
     if (!state || state.ended) return;
     state.ended = true;
+    setNavLock(true); // 라운드 전환(커튼~다음 카운트다운) 동안 ⊞ 잠금
     sessionGen++; // 이 전환 = 새 세션 토큰 (직전 카운트다운의 정리 타이머를 무효화)
     const myGen = sessionGen;
     const finishedRound = state.round;
@@ -1156,6 +1318,7 @@
 
   // 최종 결과 화면 (10라운드 완주 or 목숨 소진).
   function finishFromRound(reason) {
+    setNavLock(false); // 결과 화면에선 ⊞ = 홈으로 (활성)
     const total = run.combo.score;
     const light = currentLight();
     const chapter = currentChapter();
@@ -1240,6 +1403,14 @@
     window.FGH.Settings.onChange((name) => {
       if (name === 'music') syncBgm(state && !state.ended);
     });
+    // 언어 전환 시 JS 로 채운 동적 문구도 다시 그린다 (applyStatic 이 못 건드리는 것들).
+    document.documentElement.lang = I18N.lang || 'ko';
+    I18N.onChange(() => {
+      document.documentElement.lang = I18N.lang || 'ko'; // 키패드 자음↔알파벳 CSS 토글
+      const mm = document.getElementById('more-menu');
+      if (moreMenu && mm && !mm.hidden) moreMenu.refresh();
+      tuneAddrTicker();
+    });
 
     // 두더지/방해물/구멍/망치 스프라이트를 지금 미리 디코드 (시작화면 대화 도는 동안).
     // 안 하면 첫 라운드에서 두더지가 올라오며 프레임 바꿀 때 디코드 hitch 로 끊긴다.
@@ -1255,13 +1426,15 @@
       // 홈 화면(전화 다이얼러로 위장 중)일 때만 탭음(버튼소리1 고정) — 플레이 중엔 연타가 잦아
       // 타격음과 겹치므로 안 씀.
       onTap: () => { if (document.getElementById('game-screen').classList.contains('is-start')) MG.HitFx.uiTap(0); },
-      // 채널 링크 — 시작버튼 제외 나머지 버튼 길게누르기. 홈 화면일 때만, 그 자리에 등록된
-      // 채널이 있을 때만 발동(channel-links.js LINKS 에서 뺀 자리는 자동으로 아무 일도 안 함).
-      onLongPress: (id) => {
+      // 채널 링크 — 홈 화면에서 채널 버튼을 "두 번 톡톡"(더블탭)하면 광고 후 유튜브 채널로 이동.
+      // (lane-controls 가 삭제/시크릿 상태면 이 콜백을 안 부른다 — 여기선 그냥 신뢰.)
+      // window.open(_blank) 은 광고(비동기) 뒤엔 팝업 차단됨 → 같은 탭 이동(location.href).
+      // 안내문구가 이미 "구경하고 최근 앱에서 두더지팡 다시 찾기" 라 같은 탭이 자연스럽다.
+      onChannelEnter: (id) => {
         if (!document.getElementById('game-screen').classList.contains('is-start')) return;
         const link = MG.ChannelLinks && MG.ChannelLinks.LINKS[id];
         if (!link) return;
-        MG.Ads.interstitial(I18N.t('mole.channel.hint')).then(() => { window.open(link.url, '_blank'); });
+        MG.Ads.interstitial(I18N.t('mole.channel.hint')).then(() => { window.location.href = link.url; });
       }
     });
     wireStartButton(); // 다이얼러 초록 버튼: 홈에서 탭=시작 / 꾹=종료 대기
@@ -1274,6 +1447,7 @@
     // (예: 스테일 캐시로 모듈 하나 누락) ⊞ 홈버튼·일시정지 등이 죽지 않도록.
     // 좌상단 ⊞ = 더보기 메뉴 열기.
     document.getElementById('btn-back-to-hub').addEventListener('click', (e) => {
+      if (navLocked) return; // 인트로/카운트다운/라운드 전환 중엔 안 먹힘 (회색 음영)
       // 결과 화면에선 ⊞ = 곧장 홈(대화)으로 (다시하기 버튼 없앰 — 중복). 그 외엔 더보기 메뉴.
       if (!document.getElementById('gameover-overlay').hidden) { showStartScreen({ retry: true, originEl: e.currentTarget }); return; }
       openMore(undefined, e.currentTarget);
@@ -1330,7 +1504,7 @@
     };
     window.__debugForceGameOver = function () {
       if (!state || !run) return;
-      run.lives = 0;
+      setRunLives(0);
       finish('lives');
     };
     window.__debugSetWeapon = (w) => { localStorage.setItem('mole.weapon', w === 'cannon' ? 'cannon' : 'hammer'); };
@@ -1370,13 +1544,13 @@
     };
     window.__debugOpenMore = (sub) => openMore(sub);
     window.__debugSetHearts = function (n) {
-      localStorage.setItem('mole.hearts', String(n));
-      localStorage.setItem('mole.heartsAt', String(Date.now()));
-      if (moreMenu) moreMenu.refresh();
+      MG.Economy.setHearts(n);
+      if (run) run.lives = MG.Economy.getHearts();
+      refreshBoardStats();
     };
     window.__debugSetCoins = function (n) {
       localStorage.setItem('mole.coins', String(n));
-      if (moreMenu) moreMenu.refresh();
+      refreshBoardStats();
     };
     window.__debugExitApp = () => exitApp();
     window.__debugAddFace = function () {

@@ -29,4 +29,26 @@ const MIN = 60 * 1000;
   assert.strictEqual(r.at, 100 * MIN, '만땅에서 시간 지나도 at=now (충전 타이머 리셋)');
 })();
 
+// 상한/충전 규칙: 무료 상한 3, 4시간, 2 이하일 때만 카운팅
+(function testDefaults() {
+  assert.strictEqual(Economy.HEART_MAX, 3, '무료 충전 상한 3');
+  assert.strictEqual(Economy.REGEN_MS, 4 * 60 * 60 * 1000, '4시간');
+})();
+
+// setHearts: 상한 없음(콤보/광고로 3 초과 가능), 3 미만이면 nextHeartMs > 0
+(function testSetHeartsOverflow() {
+  const store = {};
+  global.localStorage = {
+    getItem: (k) => (k in store ? store[k] : null),
+    setItem: (k, v) => { store[k] = String(v); },
+  };
+  Economy.setHearts(5);
+  assert.strictEqual(Economy.getHearts(), 5, '콤보로 3 초과 보유 가능');
+  assert.strictEqual(Economy.nextHeartMs(), 0, '3 이상이면 충전 타이머 없음');
+  Economy.setHearts(1);
+  assert.strictEqual(Economy.getHearts(), 1);
+  assert.ok(Economy.nextHeartMs() > 0 && Economy.nextHeartMs() <= 4 * 60 * 60 * 1000, '2 이하면 충전 카운팅');
+  delete global.localStorage;
+})();
+
 console.log('test-economy: OK');
