@@ -8,8 +8,8 @@
 
   function update(state) {
     var I = window.FGH.I18N;
-    setAll('tk-mode', I.t('mole.mode'));
-    // 티커의 "두더지팡" 뒤에 이어지는 게임 팁 — 계속 추가될 예정, tk-tip{n} 패턴으로 늘려간다.
+    setAll('tk-mode', state.modeLabel || I.t('mole.mode')); // 현재 챕터 이름 (game.js), 없으면 "두더지팡"
+    // 티커의 챕터 이름 뒤에 이어지는 게임 팁 — 계속 추가될 예정, tk-tip{n} 패턴으로 늘려간다.
     setAll('tk-tip1', I.t('mole.tip.juggle'));
     setAll('tk-tip2', I.t('mole.tip.maxCombo'));
 

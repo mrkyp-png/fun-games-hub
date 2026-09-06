@@ -580,11 +580,11 @@
     const nav = document.getElementById('chapter-nav');
     if (!nav) return;
     const maxCh = MG.Progress.maxChapterFor(currentLight());
-    if (maxCh <= 1) { nav.hidden = true; return; }
+    // 항상 표시 — 챕터가 하나만 열렸어도 "챕터 1" 배지는 보이고, 양쪽 화살표만 비활성.
     let ch = currentChapter();
     if (ch > maxCh) { ch = maxCh; localStorage.setItem('mole.chapter', String(ch)); }
     nav.hidden = false;
-    nav.querySelector('[data-ch-label]').textContent = chapterLabel(ch);
+    nav.querySelector('[data-ch-label]').textContent = I18N.t('mole.chapter.n', { n: ch });
     nav.querySelector('[data-ch-prev]').disabled = ch <= 1;
     nav.querySelector('[data-ch-next]').disabled = ch >= maxCh;
   }
@@ -1044,7 +1044,8 @@
       timeRemaining: state.timeRemaining,
       combo: run.combo.combo,
       isMaxCombo: run.combo.isMaxCombo(),
-      score: run.combo.score // 1라운드부터 누적 (콤보·점수 한 통)
+      score: run.combo.score, // 1라운드부터 누적 (콤보·점수 한 통)
+      modeLabel: chapterLabel(currentChapter()) // 게임화면 티커 맨 앞 = 현재 챕터 이름 ("두더지팡" 대체)
     });
     updateFeverHud();
   }

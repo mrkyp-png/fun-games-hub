@@ -107,34 +107,43 @@ body { background: var(--lm-page); }
   background: var(--lm-chat);   /* 대화 홈 = 연한 웜그레이 (잔디는 플레이 중에만) */
   overflow: hidden;
 }
-/* 챕터 선택 ◀ 챕터 N ▶ — 하트·코인(board-stats)과 같은 줄(top:8px)이지만 반대쪽(왼쪽)
-   끝에 별도 고정. 하트/코인 자릿수가 늘어 오른쪽에서 밀려와도 이쪽과 안 겹치게 분리.
-   박스 없이 글자+화살표만, 흰 글자. [hidden] 이 아래 display:flex 에 덮이지 않게 별도 명시. */
+/* 챕터 ◀ 챕터 N ▶ — board-stats 안 맨 앞(하트 왼쪽). "챕터 N" 은 알약 박스,
+   양옆 굵은 삼각 화살표는 홈버튼 네모처럼 안팎으로 천천히 모였다 벌어짐. 항상 표시. */
 .chapter-nav-top { display: none; }
 #game-screen.is-start .chapter-nav-top {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 2px;
-  min-width: 0;
-  position: absolute; top: 8px; left: 6px; z-index: 9;
-  color: #000; font-weight: 800;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+  gap: 1px;
+  flex: 0 0 auto;
 }
 #chapter-nav[hidden] { display: none; }
 .ch-arrow {
-  width: 30px; height: 34px; /* 터치 잘 안 되던 것 확대(사용자 요청) */
+  width: 24px; height: 30px;
   flex: 0 0 auto;
   border: none;
   background: none;
-  color: inherit;
-  font-size: 1.4rem;
-  font-weight: 900;
+  color: #2a2a30;
+  font-size: 0.95rem;
   line-height: 1;
   cursor: pointer;
+  padding: 0;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.6);
 }
-.ch-arrow:disabled { opacity: 0.35; cursor: default; }
-.ch-label { font-size: 1.05rem; font-weight: 800; color: inherit; max-width: 160px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ch-arrow:disabled { opacity: 0.28; cursor: default; animation: none !important; }
+#game-screen.is-start .ch-arrow--prev { animation: ch-arrow-l 3.6s ease-in-out infinite; }
+#game-screen.is-start .ch-arrow--next { animation: ch-arrow-r 3.6s ease-in-out infinite; }
+@keyframes ch-arrow-l { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(2px); } }
+@keyframes ch-arrow-r { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-2px); } }
+.ch-label {
+  font-size: 0.82rem; font-weight: 800; line-height: 1;
+  color: #1c1c22;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 999px;
+  padding: 3px 9px;
+  white-space: nowrap;
+  text-shadow: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
 
 .chat-thread {
   flex: 1;
@@ -352,18 +361,18 @@ body { background: var(--lm-page); }
 .chat-sms.is-empty { display: none; }
 #game-screen:not(.is-start) .chat-sms { display: none; }  /* #board-start 밖으로 옮겨서 이제 직접 게이팅 */
 /* .sms-anim = game.js가 시작화면 열 때 붙임.
-   툭 내려옴 → 2초 머묾 → 그냥 사라짐(페이드) → 잠깐 뒤 다시 내려옴 → 반복. 5초 주기. */
-.chat-sms.sms-anim { animation: sms-loop 15s 0.3s infinite; }
-.chat-sms.sms-anim .chat-sms-party { animation: sms-party-loop 15s 0.3s infinite; }
-.chat-sms.sms-anim .chat-sms-fx i { animation: sms-fx-loop 15s 0.3s infinite; }
+   툭 내려옴 → 3초 보임 → 그냥 사라짐(페이드) → 15초 안 보임 → 다시 내려옴 → 반복. 19초 주기. */
+.chat-sms.sms-anim { animation: sms-loop 19s 0.3s infinite; }
+.chat-sms.sms-anim .chat-sms-party { animation: sms-party-loop 19s 0.3s infinite; }
+.chat-sms.sms-anim .chat-sms-fx i { animation: sms-fx-loop 19s 0.3s infinite; }
 .chat-sms-ic { width: 20px; height: 20px; flex: 0 0 auto; color: #35b35a; }
 .chat-sms-txt { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.82rem; }
 @keyframes sms-loop {
   0%   { transform: translateY(-175%); opacity: 1; animation-timing-function: cubic-bezier(.2, 1.35, .4, 1); }
-  12%  { transform: translateY(0); opacity: 1; }                        /* 내려옴 (~0.6s) */
-  52%  { transform: translateY(0); opacity: 1; animation-timing-function: ease-out; }  /* 2초 머묾 */
-  62%  { transform: translateY(0); opacity: 0; }                        /* 그냥 사라짐 (페이드) */
-  100% { transform: translateY(0); opacity: 0; }                        /* 사라진 채 대기 → 다시 0% */
+  3%   { transform: translateY(0); opacity: 1; }                        /* 내려옴 (~0.57s) */
+  19%  { transform: translateY(0); opacity: 1; animation-timing-function: ease-out; }  /* 내려온 뒤 3초 보임 */
+  22%  { transform: translateY(0); opacity: 0; }                        /* 그냥 사라짐 (페이드 ~0.57s) */
+  100% { transform: translateY(0); opacity: 0; }                        /* 15초 안 보인 채 대기 → 다시 0% */
 }
 
 /* 축하 이모티콘 — 크고 또렷하게. 문자칸이랑 같이 사라짐(부모 opacity가 처리, 자체 페이드 X). */
@@ -377,9 +386,9 @@ body { background: var(--lm-page); }
   transform: scale(0);
 }
 @keyframes sms-party-loop {
-  0%, 6%    { transform: scale(0) rotate(-20deg); }
-  13%       { transform: scale(1.45) rotate(12deg); }
-  20%, 100% { transform: scale(1) rotate(0); }
+  0%, 3%    { transform: scale(0) rotate(-20deg); }
+  9%        { transform: scale(1.45) rotate(12deg); }
+  16%, 100% { transform: scale(1) rotate(0); }
 }
 
 /* 폭죽 — 문자칸 내려오는 순간 색점 12개가 사방으로 크게 터진다 (매 등장마다). */
@@ -413,9 +422,9 @@ body { background: var(--lm-page); }
 .chat-sms-fx i:nth-child(11) { background: #da77f2; --dx: 50px;  --dy: -8px; }
 .chat-sms-fx i:nth-child(12) { background: #ffa94d; --dx: -50px; --dy: -6px; }
 @keyframes sms-fx-loop {
-  0%, 10%   { opacity: 0; transform: translate(0, 0) scale(0.5); }
-  13%       { opacity: 1; transform: translate(0, 0) scale(1); }
-  26%, 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.35); }
+  0%, 3%    { opacity: 0; transform: translate(0, 0) scale(0.5); }
+  6%        { opacity: 1; transform: translate(0, 0) scale(1); }
+  16%, 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.35); }
 }
 
 /* HUD: 시작 상태엔 브라우저 주소창, 플레이 상태엔 티커. #game-screen.is-start 로 스위치. */
