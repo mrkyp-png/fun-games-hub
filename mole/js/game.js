@@ -584,6 +584,7 @@
     let ch = currentChapter();
     if (ch > maxCh) { ch = maxCh; localStorage.setItem('mole.chapter', String(ch)); }
     nav.hidden = false;
+    nav.setAttribute('data-ch', String(ch)); // 챕터별 불빛 색 (style.css #chapter-nav[data-ch="N"])
     nav.querySelector('[data-ch-label]').textContent = I18N.t('mole.chapter.n', { n: ch });
     nav.querySelector('[data-ch-prev]').disabled = ch <= 1;
     nav.querySelector('[data-ch-next]').disabled = ch >= maxCh;

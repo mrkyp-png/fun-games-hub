@@ -107,29 +107,47 @@ body { background: var(--lm-page); }
   background: var(--lm-chat);   /* 대화 홈 = 연한 웜그레이 (잔디는 플레이 중에만) */
   overflow: hidden;
 }
-/* 챕터 ◀ 챕터 N ▶ — board-stats 안 맨 앞(하트 왼쪽). "챕터 N" 은 알약 박스,
-   양옆 굵은 삼각 화살표는 홈버튼 네모처럼 안팎으로 천천히 모였다 벌어짐. 항상 표시. */
+/* 챕터 ◀ 챕터 N ▶ — board-stats 안 맨 앞(하트 왼쪽). "챕터 N" 은 알약 박스(테두리를 타고
+   도는 불빛, 챕터별 색), 양옆은 꼬리 달린 3D 화살표 버튼(누르면 쑥 들어감). 항상 표시.
+   코인 자릿수 늘면 board-stats 그룹 전체가 왼쪽으로 밀려 같이 이동(자리 고정 아님). */
 .chapter-nav-top { display: none; }
 #game-screen.is-start .chapter-nav-top {
   display: inline-flex;
   align-items: center;
-  gap: 1px;
+  gap: 3px;
   flex: 0 0 auto;
 }
 #chapter-nav[hidden] { display: none; }
+
+/* 챕터별 불빛 색 (1 풀그린 → 2 스카이 → 3 앰버 → 4 바이올렛 → 5 크림슨: 난이도 상승 톤) */
+#chapter-nav { --ch-glow: #ff8a00; --ch-glow-lt: #ffd36b; --ch-glow-dk: #ff5e00; --ch-glow-soft: rgba(255, 130, 0, 0.5); }
+#chapter-nav[data-ch="1"] { --ch-glow: #16b364; --ch-glow-lt: #6ee7a8; --ch-glow-dk: #0b7a42; --ch-glow-soft: rgba(22, 179, 100, 0.5); }
+#chapter-nav[data-ch="2"] { --ch-glow: #3b9eff; --ch-glow-lt: #a5cdff; --ch-glow-dk: #1667c9; --ch-glow-soft: rgba(59, 158, 255, 0.5); }
+#chapter-nav[data-ch="3"] { --ch-glow: #ff8a00; --ch-glow-lt: #ffd36b; --ch-glow-dk: #ff5e00; --ch-glow-soft: rgba(255, 138, 0, 0.5); }
+#chapter-nav[data-ch="4"] { --ch-glow: #a855f7; --ch-glow-lt: #d8b4fe; --ch-glow-dk: #7c2fd4; --ch-glow-soft: rgba(168, 85, 247, 0.5); }
+#chapter-nav[data-ch="5"] { --ch-glow: #ef3b3b; --ch-glow-lt: #ff9a9a; --ch-glow-dk: #c81e1e; --ch-glow-soft: rgba(239, 59, 59, 0.5); }
+
 .ch-arrow {
-  width: 24px; height: 30px;
+  width: 26px; height: 26px;
   flex: 0 0 auto;
+  display: inline-flex; align-items: center; justify-content: center;
   border: none;
-  background: none;
-  color: #2a2a30;
-  font-size: 0.95rem;
-  line-height: 1;
-  cursor: pointer;
   padding: 0;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  border-radius: 8px;
+  color: #33363d;
+  background: linear-gradient(#ffffff, #dde1e9);
+  box-shadow: 0 2px 0 #b4bac5, 0 3px 5px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  transition: transform 0.06s ease, box-shadow 0.06s ease, background 0.06s ease;
 }
-.ch-arrow:disabled { opacity: 0.28; cursor: default; }
+.ch-arrow svg { width: 15px; height: 15px; display: block; filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.7)); }
+.ch-arrow:active:not(:disabled) {
+  transform: translateY(2px);
+  background: linear-gradient(#e6e9ef, #d0d5de);
+  box-shadow: 0 0 0 #b4bac5, 0 1px 2px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.28);
+}
+.ch-arrow:disabled { opacity: 0.3; cursor: default; box-shadow: 0 1px 0 #c4c8d0, inset 0 1px 0 rgba(255, 255, 255, 0.7); }
+
 .ch-label {
   position: relative;
   isolation: isolate;
@@ -141,7 +159,7 @@ body { background: var(--lm-page); }
   padding: 3px 10px;
   white-space: nowrap;
   text-shadow: none;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 6px rgba(255, 130, 0, 0.5);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 6px var(--ch-glow-soft);
 }
 /* 테두리를 타고 도는 불빛 (레퍼런스: 바탕화면 "챕터 박스 효과.mp4" = @UIMotionEffects 카드 연출).
    회전하는 conic 그라디언트를 pill 모양으로 클리핑하고 ::after 흰 바탕이 가운데를 덮어 테두리만 빛난다. */
@@ -152,7 +170,7 @@ body { background: var(--lm-page); }
   width: 240%; aspect-ratio: 1;
   translate: -50% -50%;
   background: conic-gradient(from 0deg,
-    transparent 0 52%, #ff7a00 66%, #ffd36b 74%, #ff5e00 82%, transparent 92% 100%);
+    transparent 0 52%, var(--ch-glow) 66%, var(--ch-glow-lt) 74%, var(--ch-glow-dk) 82%, transparent 92% 100%);
 }
 #game-screen.is-start .ch-label::before { animation: ch-glow-spin 2.4s linear infinite; }
 .ch-label::after {
