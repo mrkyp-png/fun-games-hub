@@ -804,6 +804,8 @@
     document.getElementById('gameover-overlay').hidden = true;
     document.getElementById('game-screen').classList.remove('is-start');
     setCallLabel('game'); // 게임 중: 초록 버튼은 "통화"(위장) — 15번 구멍 타격 담당
+    // 홈→게임 첫 진입(fresh)에만 — 채널(유튜브 아이콘) 버튼을 10바퀴 돌려 숫자 버튼으로 전환.
+    if (opts && opts.fresh && sharedLaneControls) sharedLaneControls.spinChannelsIn();
     // 새 게임 시작(fresh)일 때만 더보기 메뉴를 닫는다. 자동 다음 라운드는 메뉴를 건드리지 않음
     // (플레이 중 메뉴 열어둔 채 라운드가 넘어가도 화면이 안 튀게).
     if (opts && opts.fresh) {

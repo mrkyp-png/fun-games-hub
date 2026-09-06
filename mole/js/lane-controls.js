@@ -333,7 +333,30 @@
       buttons.length = 0;
     }
 
-    return { setCellHot, clear };
+    // 홈→게임 진입 연출: 채널(유튜브 아이콘)로 설정된 버튼을 10바퀴 휙 돌려 숫자 버튼 얼굴로 바꾼다.
+    // 게임 화면엔 키 버튼만 있어야 해서 채널 얼굴은 늘 숫자 쪽으로 고정되는데(style.css 고정 규칙),
+    // 원래 전환이 즉시 스냅이라 "아이콘이 그냥 사라짐". .lane-flip--spinning 이 붙은 동안만 그
+    // 고정 규칙을 비켜주고(style.css), 여기서 인라인으로 회전을 굴린다. 시크릿 복구 연출과 같은 느낌.
+    function spinChannelsIn() {
+      buttons.forEach((b) => {
+        if (!b || !b.classList.contains('lane-button--flippable')) return;
+        const flip = b.querySelector('.lane-flip');
+        if (!flip) return;
+        flip.style.transition = 'none';
+        flip.style.transform = 'rotateY(0deg)';        // 아이콘 면에서 출발
+        flip.classList.add('lane-flip--spinning');
+        void flip.offsetWidth;                          // 시작점 확정(리플로우)
+        flip.style.transition = 'transform 0.9s cubic-bezier(.2, .7, .3, 1)';
+        flip.style.transform = 'rotateY(' + FLIP_SPINS_DEG + 'deg)';  // 10.5바퀴 → 숫자 면
+        setTimeout(function () {
+          flip.classList.remove('lane-flip--spinning'); // 이후 고정 규칙이 rotateY(180deg)로 잡음 (3780 ≡ 180, 점프 없음)
+          flip.style.transition = '';
+          flip.style.transform = '';
+        }, 950);
+      });
+    }
+
+    return { setCellHot, clear, spinChannelsIn };
   }
 
   const api = { create };

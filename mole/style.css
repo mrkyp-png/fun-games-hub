@@ -1376,7 +1376,8 @@ body { background: var(--lm-page); }
   object-fit: cover;
   pointer-events: none;
 }
-#game-screen:not(.is-start) .lane-button--flippable .lane-flip { transform: rotateY(180deg) !important; transition: none; }
+/* 게임 화면에선 채널 얼굴 대신 숫자 얼굴로 고정 — 단 진입 회전 연출(.lane-flip--spinning) 중엔 비켜준다. */
+#game-screen:not(.is-start) .lane-button--flippable .lane-flip:not(.lane-flip--spinning) { transform: rotateY(180deg) !important; transition: none; }
 
 /* 오른쪽 열 — 내비 4칸 */
 .lane-button--nav { flex-direction: column; gap: 3px; color: #4b4b52; }
