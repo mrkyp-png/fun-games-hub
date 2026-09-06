@@ -114,7 +114,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v240</div>
+      <div id="build-tag" aria-hidden="true">v241</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -418,8 +418,6 @@
       <div class="start-coach" data-start-coach>
         <span data-i18n="mole.start.coach">여기를 꾹 눌렀다 다시 누르면 게임을 종료할 수 있어요</span>
       </div>
-      <!-- 이어가기로 게임에 복귀했을 때: 초록 통화버튼이 "라운드 처음부터 시작됩니다" 라고 알려줌 -->
-      <div id="resume-hint" class="resume-hint" aria-hidden="true" data-i18n="mole.resume.hint" hidden>라운드 처음부터 시작됩니다</div>
       <div id="lane-button-bar"></div>
     </div>
     <div id="screen-flash-fx" aria-hidden="true"></div>
@@ -497,7 +495,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=240').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=241').catch(function () {});
       }
     });
   }

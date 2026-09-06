@@ -282,24 +282,6 @@
     }
   }
 
-  // 이어가기로 게임 복귀 시: 초록 통화버튼이 "라운드 처음부터 시작됩니다" 라고 말풍선으로 알림.
-  // 3초 주기로 다시 나타나며(CSS 애니), 패드를 누르거나 메뉴를 열면 사라진다.
-  let resumeHintT = null;
-  function showResumeHint() {
-    const el = document.getElementById('resume-hint');
-    if (!el) return;
-    el.hidden = false;
-    el.classList.remove('is-on'); void el.offsetWidth; el.classList.add('is-on');
-    clearTimeout(resumeHintT);
-    resumeHintT = setTimeout(hideResumeHint, 15000); // 3초 펄스 ×5 후 자동 종료
-  }
-  function hideResumeHint() {
-    const el = document.getElementById('resume-hint');
-    if (!el) return;
-    clearTimeout(resumeHintT);
-    el.classList.remove('is-on');
-    el.hidden = true;
-  }
   function wireStartButton() {
     const btn = document.querySelector('#lane-button-bar .lane-button--call');
     if (!btn) return;
@@ -459,7 +441,6 @@
     flipSwap(outEl, document.getElementById('more-menu'));
   }
   function openMoreNow(sub) {
-    hideResumeHint();
     // 백스톱: 시작 인트로(챕터 타이핑) 도중 어떻게든 메뉴가 열리면 대기 중이던 라운드 시작을
     // 취소하고 깨끗한 "더보기"만 연다. (평소엔 아래 navLock 으로 ⊞ 자체가 이 시간엔 안 먹힘.)
     var si = document.getElementById('start-intro-overlay');
@@ -502,7 +483,6 @@
       state.pausedByMenu = false;
       lastTime = performance.now();
     }
-    showResumeHint(); // 통화버튼 = 라운드 재시작 이라는 안내 말풍선
   }
 
   // ---------- 시작 화면 ----------
@@ -525,7 +505,6 @@
   function showStartScreenNow(opts) {
     sessionGen++; // 진행 중이던 카운트다운/자동진행 타이머 무효화
     gameStarting = false;
-    hideResumeHint();
     setNavLock(false);
     if (rafId) cancelAnimationFrame(rafId);
     if (sharedPopElements) sharedPopElements.clear();
@@ -804,7 +783,6 @@
   function startRound(roundNum, opts) {
     sessionGen++;
     gameStarting = false; // 라운드 진입 성공 — 이후 재진입은 state 존재로 차단됨
-    hideResumeHint();
     setNavLock(true); // 카운트다운 동안 ⊞ 잠금 (playRoundIntro onDone 에서 해제)
     const myGen = sessionGen;
     // fresh(시작/다시하기)면 콤보·점수 리셋. 목숨은 공유 생명 풀에서 이어받는다(리셋 아님).
@@ -1081,7 +1059,6 @@
 
   // ---------- 구멍 버튼 입력 → 그 구멍 타격 ----------
   function handleCell(regionId) {
-    hideResumeHint(); // 패드를 눌렀으면 이어가기 안내 말풍선은 치운다
     if (!state || state.ended || state.introActive || state.paused) return false;
     const sp = state.spawnPoints.find((s) => s.regionId === regionId);
     if (!sp) return false; // 대포 모드에서 없앤 구멍(15) 탭 = 무시 (헛방 처리 안 함)
