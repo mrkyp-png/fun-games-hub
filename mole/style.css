@@ -135,6 +135,16 @@ body { background: var(--lm-page); }
 @keyframes ch-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.95); } }
 @keyframes ch-txt-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
 
+/* (c) 시작(통화) 버튼과 똑같은 대각선 빛 쓸기(idle-crown-sweep, 2.8s) — 챕터1에서만. */
+.ch-shine { position: absolute; inset: 0; z-index: 1; border-radius: inherit; overflow: hidden; pointer-events: none; display: none; }
+#game-screen.is-start #chapter-nav[data-ch="1"] .ch-shine { display: block; }
+.ch-shine::before {
+  content: '';
+  position: absolute; inset: -60%;
+  background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.75) 50%, transparent 58%);
+  animation: idle-crown-sweep 2.8s ease-in-out infinite;
+}
+
 /* 손가락 이모지(👈 👉). 박스 없이 — 그림자로 살짝 떠 있고, 누르면 쑥 들어가는 느낌. */
 .ch-arrow {
   width: 24px; height: 26px;
