@@ -127,31 +127,25 @@ body { background: var(--lm-page); }
 #chapter-nav[data-ch="4"] { --ch-glow: #a855f7; --ch-glow-lt: #d8b4fe; --ch-glow-dk: #7c2fd4; --ch-glow-soft: rgba(168, 85, 247, 0.5); }
 #chapter-nav[data-ch="5"] { --ch-glow: #ef3b3b; --ch-glow-lt: #ff9a9a; --ch-glow-dk: #c81e1e; --ch-glow-soft: rgba(239, 59, 59, 0.5); }
 
-/* 박스 없이 화살표 그림만 — 살짝 입체(밝은 하이라이트 + 그림자), 누르면 쑥 들어가는 느낌. */
+/* 손가락 이모지(👈 👉). 박스 없이 — 그림자로 살짝 떠 있고, 누르면 쑥 들어가는 느낌. */
 .ch-arrow {
-  width: 22px; height: 26px;
+  width: 24px; height: 26px;
   flex: 0 0 auto;
   display: inline-flex; align-items: center; justify-content: center;
   border: none;
   padding: 0;
   cursor: pointer;
   background: none;
-  color: #2c2f36;
-  transition: transform 0.06s ease, filter 0.06s ease;
-}
-.ch-arrow svg {
-  width: 17px; height: 17px; display: block;
-  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.85)) drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.35));
+  font-size: 17px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 1.5px rgba(0, 0, 0, 0.4)) drop-shadow(0 0 0.5px rgba(255, 255, 255, 0.6));
+  transition: transform 0.07s ease, filter 0.07s ease;
 }
 .ch-arrow:active:not(:disabled) {
-  transform: translateY(1.5px);
-  color: #14161a;
+  transform: translateY(2px) scale(0.9);
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.45));
 }
-.ch-arrow:active:not(:disabled) svg {
-  filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0.5)) drop-shadow(0 0 1px rgba(0, 0, 0, 0.4));
-}
-.ch-arrow:disabled { opacity: 0.3; cursor: default; }
-.ch-arrow:disabled svg { filter: none; }
+.ch-arrow:disabled { cursor: default; filter: grayscale(1) opacity(0.35); }
 
 .ch-label {
   position: relative;
