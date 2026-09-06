@@ -1818,7 +1818,7 @@ body { background: var(--lm-page); }
 .mm-pill-mx { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; line-height: 1.15; }
 .mm-pill-mx b, .mm-pill-mx i {
   font-size: clamp(0.6rem, 3.1vw, 0.72rem);
-  font-weight: 800;
+  font-weight: 400; /* 굵게 X — 아래 그리드 글자/아이콘 정도 */
   font-style: normal;
   opacity: 1;
   white-space: nowrap;
