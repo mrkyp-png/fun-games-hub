@@ -116,7 +116,7 @@
   // 빈(채널 없는) 버튼을 더블탭하면 뜨는 "유튜브 채널 등록" 창.
   let regModalEl = null;
   function showRegisterModal(id, btn) {
-    if (regModalEl) return;
+    if (regModalEl) { regModalEl.remove(); regModalEl = null; } // 혹시 이전 게 안 닫혔으면 치우고 새로 연다
     var I = root.FGH && root.FGH.I18N;
     var T = function (k) { return I ? I.t(k) : k; };
     var v = document.createElement('div');
@@ -136,7 +136,10 @@
     setTimeout(function () { input.focus(); }, 50);
     var close = function () { v.remove(); regModalEl = null; };
     v.querySelector('[data-r="cancel"]').addEventListener('click', close);
-    v.addEventListener('click', function (e) { if (e.target === v) close(); });
+    // 스크림 탭으로 닫기 — 단, 이 창을 연 더블탭의 합성 click 이 곧바로 닫아버리지 않게 잠깐 뒤 배선.
+    setTimeout(function () {
+      v.addEventListener('click', function (e) { if (e.target === v) close(); });
+    }, 120);
     input.addEventListener('keydown', function (e) { if (e.key === 'Enter') v.querySelector('[data-r="ok"]').click(); });
     v.querySelector('[data-r="ok"]').addEventListener('click', function () {
       var url = normalizeYtUrl(input.value);
@@ -281,8 +284,9 @@
                 const now = Date.now();
                 if (now - lastTapAt < DOUBLE_TAP_MS) { // 두 번째 탭
                   lastTapAt = 0;
-                  if (channelFor(id)) { if (onChannelEnter) onChannelEnter(id); } // 채널 있음 → 진입
-                  else showRegisterModal(id, b);                                   // 빈 버튼 → 등록창
+                  var ch = channelFor(id);
+                  if (ch) { if (onChannelEnter) onChannelEnter(ch.url); } // 채널 있음 → 진입 (URL 직접 전달 — 유저 등록분 포함)
+                  else showRegisterModal(id, b);                          // 빈 버튼 → 등록창
                 } else {
                   lastTapAt = now; // 첫 탭 — 대기
                 }

@@ -29,7 +29,10 @@
         v.remove();
         resolve(val);
       }
-      v.querySelector('.ad-overlay-x').addEventListener('click', function () { finish(false); });
+      // 닫기(✕)는 잠깐 뒤 배선 — 이 광고를 연 탭/더블탭의 합성 click 이 곧바로 닫는 것 방지.
+      setTimeout(function () {
+        v.querySelector('.ad-overlay-x').addEventListener('click', function () { finish(false); });
+      }, 200);
       setTimeout(function () { finish(true); }, 1600);
     });
   }

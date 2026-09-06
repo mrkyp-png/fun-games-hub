@@ -1442,14 +1442,11 @@
       // 타격음과 겹치므로 안 씀.
       onTap: () => { if (document.getElementById('game-screen').classList.contains('is-start')) MG.HitFx.uiTap(0); },
       // 채널 링크 — 홈 화면에서 채널 버튼을 "두 번 톡톡"(더블탭)하면 광고 후 유튜브 채널로 이동.
-      // (lane-controls 가 삭제/시크릿 상태면 이 콜백을 안 부른다 — 여기선 그냥 신뢰.)
+      // lane-controls 가 URL 을 직접 넘겨준다 (LINKS 하드코딩 + 유저가 이 기기에 등록한 것 둘 다 포함).
       // window.open(_blank) 은 광고(비동기) 뒤엔 팝업 차단됨 → 같은 탭 이동(location.href).
-      // 안내문구가 이미 "구경하고 최근 앱에서 두더지팡 다시 찾기" 라 같은 탭이 자연스럽다.
-      onChannelEnter: (id) => {
-        if (!document.getElementById('game-screen').classList.contains('is-start')) return;
-        const link = MG.ChannelLinks && MG.ChannelLinks.LINKS[id];
-        if (!link) return;
-        MG.Ads.interstitial(I18N.t('mole.channel.hint')).then((ok) => { if (ok) window.location.href = link.url; });
+      onChannelEnter: (url) => {
+        if (!url || !document.getElementById('game-screen').classList.contains('is-start')) return;
+        MG.Ads.interstitial(I18N.t('mole.channel.hint')).then((ok) => { if (ok) window.location.href = url; });
       }
     });
     wireStartButton(); // 다이얼러 초록 버튼: 홈에서 탭=시작 / 꾹=종료 대기
