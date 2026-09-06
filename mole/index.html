@@ -115,7 +115,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v257</div>
+      <div id="build-tag" aria-hidden="true">v258</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -159,12 +159,6 @@
         <p id="gameover-reason" class="go-word">성공</p>
         <div class="go-hippo-wrap"><img id="gameover-hippo" class="go-hippo" alt=""></div>
         <p id="gameover-score" class="gameover-score">0점</p>
-        <!-- 승리 + 다음 챕터 열림일 때, 축하 연출 5초 뒤 나타나는 "왼쪽으로 밀어" 힌트 -->
-        <div id="result-swipe-hint" class="result-swipe-hint" aria-hidden="true" hidden>
-          <span class="rsh-arrows" aria-hidden="true">‹‹‹</span>
-          <span class="rsh-hand" aria-hidden="true">👈</span>
-          <span class="rsh-txt" data-i18n="mole.result.swipeHint">왼쪽으로 밀어 다음 챕터로</span>
-        </div>
       </div>
 
       <!-- 라운드 시작 카운트다운 (매 라운드: "라운드 N" → 3·2·1·시작!) -->
@@ -418,6 +412,13 @@
     <div class="dialpad">
       <div class="start-coach" data-start-coach>
         <span data-i18n="mole.start.coach">여기를 꾹 눌렀다 다시 누르면 게임을 종료할 수 있어요</span>
+      </div>
+      <!-- 승리 + 다음 챕터 열림일 때: 키패드 상단(2·3번 키 위 여백)에 "왼쪽으로 밀어" 힌트.
+           보드는 overflow:hidden 이라 여기(.dialpad = position:relative)에 얹는다. -->
+      <div id="result-swipe-hint" class="result-swipe-hint" aria-hidden="true" hidden>
+        <span class="rsh-arrows" aria-hidden="true">‹‹‹</span>
+        <span class="rsh-hand" aria-hidden="true">👈</span>
+        <span class="rsh-txt" data-i18n="mole.result.swipeHint">왼쪽으로 밀어 다음 챕터로</span>
       </div>
       <div id="lane-button-bar"></div>
     </div>
