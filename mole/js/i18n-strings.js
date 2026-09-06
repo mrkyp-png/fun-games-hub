@@ -71,7 +71,7 @@
       'mole.common.close': '닫기',
       'mole.more.title': '더보기',
       'mole.more.resume': '이어하기',
-      'mole.more.playNote': '처음부터 다시 시작\n진행중인 라운드는 사라져요!',
+      'mole.more.playNote': '처음부터 다시 시작\n진행 중이던 라운드는 사라져요!',
       'mole.more.make': '내 사진으로 멋진 캐릭터 만들기',
       'mole.more.makeBtn': '만들기',
       'mole.more.locker': '내 사람두더지',
