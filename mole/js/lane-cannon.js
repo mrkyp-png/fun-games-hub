@@ -54,13 +54,15 @@
   // 이동, 각도 우측(시계방향)으로 10도 추가 회전. 스파크/연기는 이상 없어 그대로 둠.
   // 보드 실측 가로폭을 안 주셔서 폰 화면 가로 ~7cm로 가정해 cm→보드분수 환산 — 실물이 다르면
   // 아래 dx/dy를 (원하는cm / 7 * 실제cm) 로 재계산.
-  // 포즈별 화염(burn) 미세보정 { dx, dy, rot } — burn(fx4)에만 적용. rot 는 CSS 회전(+ 시계).
-  const BURN_NUDGE = {
-    a1: { rot: -10 },  // 4·7·8번 포: 화염 반시계 10도 (사용자 요청)
-    a3: { rot: -10 },  // 대기포(1·2·5·9): 화염 반시계 10도 (사용자 요청)
-    a4: { rot: 15, dx: 0.014, dy: -0.029 },  // 제일우측 포: 화염 시계 15도 + 우0.1cm/위0.2cm (사용자)
-    a5: { rot: 5, dx: 0.014, dy: -0.029 }    // 3·6번 포: 화염 시계 5도 + 우0.1cm/위0.2cm (사용자)
+  // 포즈별 이펙트 3겹 미세보정. 각 { dx, dy, rot } (보드분수 / CSS deg, + = 시계).
+  //   spark = 불꽃(fx1)   flame = 화염(fx4, 불+연기 메인)   smoke = 연기(fx5, 잔여)
+  const FX_NUDGE = {
+    a1: { flame: { rot: -10 } },                                          // 4·7·8번
+    a3: { flame: { rot: 25, dx: -0.036, dy: -0.014 }, smoke: { rot: 10, dx: -0.029 } },  // 대기포 1·2·5·9
+    a4: { flame: { rot: 15, dx: 0.014, dy: -0.029 } },                    // 제일우측 내비열
+    a5: { flame: { rot: 5, dx: 0.014, dy: -0.029 } }                      // 3·6번
   };
+  function fxn(key, which) { return (FX_NUDGE[key] || {})[which]; }
   const FX_BASE_AIM = -156;                // fx 스프라이트가 그려진 기준각 (fx1 -149°, fx4 -163° 평균)
   // 앵커(mu,mv) = 밝은 코어와 "뒷끝(포신에 안 겹치는 경계)"의 중간점. 뒷끝만 쓰면 안 겹치긴
   // 하는데 코어가 포구에서 26~30%나 멀어져 불빛이 동떨어져 보였다(실측 후 수정) — 코어 쪽으로
@@ -131,9 +133,9 @@
       im.style.setProperty('--rot', (p.aim - FX_BASE_AIM + nrot).toFixed(1) + 'deg');
     }
     function placeFx(p) {
-      placeOverlay(spark, SPARK_W, SPARK_MU, SPARK_MV, p);
-      placeOverlay(burn, BURN_W, BURN_MU, BURN_MV, p, BURN_NUDGE[p.key]);
-      placeOverlay(smoke, SMOKE_W, SMOKE_MU, SMOKE_MV, p);
+      placeOverlay(spark, SPARK_W, SPARK_MU, SPARK_MV, p, fxn(p.key, 'spark'));
+      placeOverlay(burn, BURN_W, BURN_MU, BURN_MV, p, fxn(p.key, 'flame'));
+      placeOverlay(smoke, SMOKE_W, SMOKE_MU, SMOKE_MV, p, fxn(p.key, 'smoke'));
     }
 
     const restPose = POSES.find((p) => p.key === REST_KEY) || POSES[0];
