@@ -30,7 +30,7 @@
   //   a5(-120°) = 3 6   a4(-92°) = 오른쪽 내비열(거의 수직)
   // v293 에서 MZX 우측 0.3cm 이동에 맞춰 aim 재보정. a4(최대각포)만 dx 로 상쇄해 제자리 고정(사용자 요청).
   const POSES = [
-    { key: 'a2', src: 'assets/weapons/cannon-a2.png', w: 0.245, ar: 0.72, mu: 0.07, mv: 0.18, aim: -191, tweak: 0, dx: -0.06, dy: 0.03 },
+    { key: 'a2', src: 'assets/weapons/cannon-a2.png', w: 0.270, ar: 0.72, mu: 0.07, mv: 0.18, aim: -191, tweak: 0, dx: -0.06, dy: 0.03 },
     { key: 'a1', src: 'assets/weapons/cannon-a1.png', w: 0.280, ar: 0.833, mu: 0.07, mv: 0.14, aim: -164, tweak: 0, dx: -0.05, dy: 0.03 },
     { key: 'a3', src: 'assets/weapons/cannon-a3.png', w: 0.242, ar: 1.159, mu: 0.32, mv: 0.09, aim: -144, tweak: 0, dx: -0.01, dy: -0.02 },
     { key: 'a5', src: 'assets/weapons/cannon-a5.png', w: 0.201, ar: 1.392, mu: 0.17, mv: 0.09, aim: -120, tweak: 0, dx: 0.02, dy: -0.03 },
