@@ -80,6 +80,8 @@
   }
 
   // screen: 'home' | 'more' | 'game'. 매 진입마다 해당 트랙을 처음부터.
+  // 게임곡은 loop 안 함 — 한 곡이 끝나면 ended 이벤트가 다음 곡을 틀어 2곡이 계속 번갈아 나온다
+  // (게임 중간에 곡이 바뀌어도 같은 곡을 다시 틀지 않는다 — 사용자 요청). 홈/더보기는 그대로 loop.
   function playScreenBgm(screen) {
     if (!bgm) return;
     let file;
@@ -92,6 +94,7 @@
     } else {
       file = 'audio/bgm-' + screen + '.mp3';
     }
+    bgm.loop = (screen !== 'game');
     if (currentBgm !== file) {
       currentBgm = file;
       bgm.src = file;
@@ -1484,6 +1487,10 @@
   document.addEventListener('DOMContentLoaded', () => {
     bgm = document.getElementById('bgm');
     bgm.volume = 0.35;
+    // 게임곡(loop=false)이 끝나면 다음 게임곡으로 — 2곡이 계속 번갈아.
+    bgm.addEventListener('ended', () => {
+      if (/\/bgm-game-\d/.test(currentBgm)) playScreenBgm('game');
+    });
     window.FGH.Settings.onChange((name) => {
       if (name === 'music') bgmPlayIfEnabled();
     });
