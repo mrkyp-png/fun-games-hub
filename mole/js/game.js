@@ -61,48 +61,43 @@
     }
   }
 
-  // 화면별 BGM. 홈은 bgm-home-1~4, 게임은 bgm-game-1~2 — 각 화면 재진입마다 다음 곡으로 순환.
-  // 화면에 들어올 때마다 playScreenBgm() 이 항상 처음부터 재생한다(사용자 요청).
+  // 화면별 BGM. 홈 bgm-home-1~4, 게임 bgm-game-1~2 (재진입마다 순환), 더보기 bgm-more.
   let bgm = null;          // <audio id="bgm">
   let currentBgm = 'audio/bgm-home-1.mp3'; // index.html 의 초기 src 와 일치
   const HOME_BGM_COUNT = 4;
   const GAME_BGM_COUNT = 2;
-  let homeBgmIdx = 0;      // 첫 홈 방문 = bgm-home-1
-  let gameBgmIdx = 0;      // 첫 게임 진입 = bgm-game-1
+  let homeBgmIdx = 0;
+  let gameBgmIdx = 0;
+  let bgmWantPlay = false; // 지금 화면이 BGM 을 원하는가 (홈/더보기/게임 진입 시 true)
 
-  function bgmPlayIfEnabled() {
+  // BGM 재생/정지의 유일한 결정 지점 — 화면 의도 · 앱 가시성 · 설정을 모두 본다.
+  function applyBgm() {
     if (!bgm) return;
-    if (window.FGH.Settings.get('music')) {
-      bgm.play().catch(() => { /* 자동재생 차단 — 다음 제스처/화면전환에 재시도 */ });
-    } else {
+    const want = bgmWantPlay && !document.hidden && window.FGH.Settings.get('music');
+    if (want) {
+      if (bgm.paused) bgm.play().catch(() => { /* 자동재생 차단 — 다음 신호(탭·canplay·복귀)에 재시도 */ });
+    } else if (!bgm.paused) {
       bgm.pause();
     }
   }
 
   // screen: 'home' | 'more' | 'game'. 매 진입마다 해당 트랙을 처음부터.
-  // 게임곡은 loop 안 함 — 한 곡이 끝나면 ended 이벤트가 다음 곡을 틀어 2곡이 계속 번갈아 나온다
-  // (게임 중간에 곡이 바뀌어도 같은 곡을 다시 틀지 않는다 — 사용자 요청). 홈/더보기는 그대로 loop.
+  // 게임곡은 loop 안 함 — 끝나면 ended 이벤트가 다음 곡(2곡 순환). 홈/더보기는 loop.
   function playScreenBgm(screen) {
     if (!bgm) return;
     let file;
-    if (screen === 'home') {
-      file = 'audio/bgm-home-' + (homeBgmIdx % HOME_BGM_COUNT + 1) + '.mp3';
-      homeBgmIdx++;
-    } else if (screen === 'game') {
-      file = 'audio/bgm-game-' + (gameBgmIdx % GAME_BGM_COUNT + 1) + '.mp3';
-      gameBgmIdx++;
-    } else {
-      file = 'audio/bgm-' + screen + '.mp3';
-    }
+    if (screen === 'home') { file = 'audio/bgm-home-' + (homeBgmIdx % HOME_BGM_COUNT + 1) + '.mp3'; homeBgmIdx++; }
+    else if (screen === 'game') { file = 'audio/bgm-game-' + (gameBgmIdx % GAME_BGM_COUNT + 1) + '.mp3'; gameBgmIdx++; }
+    else { file = 'audio/bgm-' + screen + '.mp3'; }
     bgm.loop = (screen !== 'game');
+    bgmWantPlay = true;
     if (currentBgm !== file) {
       currentBgm = file;
-      bgm.src = file;
-      bgm.load(); // 처음부터
-    } else {
-      bgm.currentTime = 0;
+      bgm.src = file; // src 를 바꾸면 자동으로 처음부터 (bgm.load() 는 로딩 직후 blip 원인이라 안 씀)
+    } else if (bgm.currentTime > 0.5) {
+      bgm.currentTime = 0; // 같은 곡 재진입 — 이미 재생 중일 때만 되감기(로딩 blip 방지)
     }
-    bgmPlayIfEnabled();
+    applyBgm();
   }
 
   // ---------- 더보기 메뉴 / 난이도 / 사람두더지 (독립앱 Phase 1) ----------
@@ -877,7 +872,7 @@
       document.getElementById('more-menu').hidden = true;
     }
     // fresh 는 beginGame 이 이미 게임 BGM 을 시작했음. 여기선 (혹시 막혔으면) 이어재생만.
-    bgmPlayIfEnabled();
+    applyBgm();
     MG.HitFx.warmup(); // 오디오 컨텍스트 + 타격음 파일 프리로드 (카운트다운 동안)
 
     const rng = { next: MG.RNG.mulberry32(MG.RNG.hashSeed('mole-r' + roundNum + '-' + Date.now())) };
@@ -1490,26 +1485,23 @@
       if (/\/bgm-game-\d/.test(currentBgm)) playScreenBgm('game');
     });
     window.FGH.Settings.onChange((name) => {
-      if (name === 'music') bgmPlayIfEnabled();
+      if (name === 'music') applyBgm();
     });
-    // 홈 BGM 선택·재생은 아래 showStartScreen({skipFlash:true}) 이 담당. 자동재생 정책에 막혀
-    // 소리가 안 났을 때를 대비해 여러 신호(모든 입력·앱 복귀·버퍼 완료·로딩 직후)에서 재시도한다.
-    // 설치형 PWA 는 로딩 직후 재생이 허용되기도 하므로 그 경우 첫 nudge 에서 바로 시작된다.
-    function nudgeBgm() {
-      if (bgm && bgm.paused && window.FGH.Settings.get('music')) bgm.play().catch(() => {});
-    }
+    // 자동재생 정책에 막혔을 때 대비 — 모든 입력·버퍼완료·복귀 신호에서 applyBgm() 재시도.
+    // 설치형 PWA 는 로딩 직후 재생이 허용되기도 해서 그 경우 첫 신호에 바로 시작된다.
     ['pointerdown', 'touchstart', 'click', 'keydown'].forEach((ev) =>
-      window.addEventListener(ev, nudgeBgm, { capture: true, passive: true }));
-    // 앱이 가려지면(유튜브 채널 이동·다른 앱 전환·화면 잠금 등) BGM 정지, 돌아오면 재개.
-    // 설치형 PWA 는 외부 URL 로 나가도 프로세스가 살아있어 BGM 이 계속 들리던 문제(사용자 보고).
+      window.addEventListener(ev, applyBgm, { capture: true, passive: true }));
+    window.addEventListener('pageshow', applyBgm);
+    bgm.addEventListener('canplay', applyBgm);
+    setTimeout(applyBgm, 400);
+    // 앱이 "오래" 가려지면(유튜브 채널 이동·다른 앱 전환·화면 잠금) BGM 정지, 돌아오면 재개.
+    // 500ms 디바운스 — PWA 실행 순간 잠깐 hidden 이 깜빡여서 로딩 때 "띡" 하고 끊기던 문제(사용자 보고).
+    let bgmHideTimer = null;
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) { if (bgm) bgm.pause(); }
-      else nudgeBgm();
+      clearTimeout(bgmHideTimer);
+      if (document.hidden) bgmHideTimer = setTimeout(() => { if (document.hidden && bgm) bgm.pause(); }, 500);
+      else applyBgm();
     });
-    window.addEventListener('pagehide', () => { if (bgm) bgm.pause(); });
-    window.addEventListener('pageshow', nudgeBgm);
-    bgm.addEventListener('canplay', nudgeBgm);
-    setTimeout(nudgeBgm, 400);
     // 언어 전환 시 JS 로 채운 동적 문구도 다시 그린다 (applyStatic 이 못 건드리는 것들).
     I18N.onChange(() => {
       const mm = document.getElementById('more-menu');

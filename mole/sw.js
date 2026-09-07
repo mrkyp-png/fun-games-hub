@@ -3,7 +3,7 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-const CACHE = 'mole-game-v274';
+const CACHE = 'mole-game-v275';
 
 // 화면별 BGM(audio/bgm-home-1~4.mp3, bgm-more.mp3, bgm-game-1~2.mp3)은 SHELL 에 안 넣는다 —
 // 켜져 있으면(v272 부터 기본 켜짐) 처음 재생될 때 fetch 핸들러가 캐시한다.
@@ -75,6 +75,13 @@ const SHELL = [
   './audio/hit2.mp3',
   './audio/hit3.mp3',
   './audio/hit4.mp3',
+  './audio/bgm-home-1.mp3',
+  './audio/bgm-home-2.mp3',
+  './audio/bgm-home-3.mp3',
+  './audio/bgm-home-4.mp3',
+  './audio/bgm-more.mp3',
+  './audio/bgm-game-1.mp3',
+  './audio/bgm-game-2.mp3',
   './js/levels.js',
   './js/progress.js',
   './js/chat-phrases.js',
