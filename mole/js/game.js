@@ -969,11 +969,22 @@
       overlay.classList.add('has-mole');
       const idx = ((roundNum - 2) % 6) + 1; // 라운드2→mole1, 라운드3→mole2, ... 6개 돌면 반복(라운드8부터 다시 mole1)
       moleImg.src = 'assets/round-moles/mole' + idx + '.png';
+      const FLY_IN_MS = 400;   // = ri-title-fly-in / ri-mole-fly-in 0.4s
+      const HOLD_AFTER_TYPE_MS = 480;
+      const full = I18N.t('mole.round', { n: roundNum });
+      const typeMs = full.replace(/ /g, '').length * 45; // typeText 는 45ms/글자
       setTimeout(() => {
         if (myGen !== sessionGen) return;
-        typeText(title, I18N.t('mole.round', { n: roundNum }), () => {}); // 글자 타이핑 + 타자기 소리
+        // 1) "라운드 N" 이 오른쪽에서, 두더지가 왼쪽에서 날아와 중앙에서 만남 (0.4s)
+        title.textContent = full;
         overlay.classList.add('mole-in');
         moleImg.hidden = false;
+        // 2) 중앙에 멈추면 "라운드 N" 을 한 글자씩 다시 타이핑(+ 타자기 소리)
+        setTimeout(() => {
+          if (myGen !== sessionGen) return;
+          typeText(title, full, () => {});
+        }, FLY_IN_MS + 40);
+        // 3) 타이핑 끝나고 잠깐 머문 뒤, 타이틀은 왼쪽·두더지는 오른쪽으로 다시 날아감
         setTimeout(() => {
           if (myGen !== sessionGen) return;
           // 입장 애니메이션(animation: ... forwards)이 끝나도 그 값이 transition보다 우선해
@@ -998,7 +1009,7 @@
             if (myGen !== sessionGen) return;
             onDone();
           }, 260 + 200);
-        }, 700);
+        }, FLY_IN_MS + 40 + typeMs + HOLD_AFTER_TYPE_MS); // 날아옴 → 타이핑 → 머무름 → 퇴장
       }, 2300); // 커튼 패턴이 분홍으로 다 정리된 뒤에 타이틀/이미지 fly-in 시작
       return;
     }
