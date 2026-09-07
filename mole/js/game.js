@@ -71,32 +71,14 @@
   let bgmWantPlay = false; // 지금 화면이 BGM 을 원하는가 (홈/더보기/게임 진입 시 true)
 
   // BGM 재생/정지의 유일한 결정 지점 — 화면 의도 · 앱 가시성 · 설정을 모두 본다.
-  let bgmLastPlayResult = 'init';
-  function bgmDiag(extra) {
-    const el = document.getElementById('bgm-diag');
-    if (!el || !bgm) return;
-    const music = window.FGH.Settings.get('music');
-    const raw = (function () { try { return localStorage.getItem('musicOn'); } catch (e) { return '?'; } })();
-    el.textContent =
-      'music=' + (music ? 'ON' : 'off') + '(ls:' + raw + ') want=' + (bgmWantPlay ? 1 : 0) +
-      ' hidden=' + (document.hidden ? 1 : 0) + ' paused=' + (bgm.paused ? 1 : 0) +
-      ' rs=' + bgm.readyState + (bgm.error ? ' ERR=' + bgm.error.code : '') +
-      ' vol=' + bgm.volume + ' muted=' + (bgm.muted ? 1 : 0) +
-      '\nsrc=' + (bgm.currentSrc || bgm.src || '').split('/').pop() +
-      ' t=' + bgm.currentTime.toFixed(1) + ' | ' + (extra || bgmLastPlayResult);
-  }
   function applyBgm() {
     if (!bgm) return;
     const want = bgmWantPlay && !document.hidden && window.FGH.Settings.get('music');
     if (want) {
-      if (bgm.paused) {
-        bgm.play().then(() => { bgmLastPlayResult = 'play OK'; bgmDiag(); })
-          .catch((e) => { bgmLastPlayResult = 'play FAIL: ' + (e && e.name || e); bgmDiag(); });
-      }
+      if (bgm.paused) bgm.play().catch(() => { /* 자동재생 차단 — 다음 제스처(스플래시 탭 등)에 재시도 */ });
     } else if (!bgm.paused) {
       bgm.pause();
     }
-    bgmDiag();
   }
 
   // screen: 'home' | 'more' | 'game'. 매 진입마다 해당 트랙을 처음부터.
@@ -1511,11 +1493,7 @@
       window.addEventListener(ev, applyBgm, { capture: true, passive: true }));
     window.addEventListener('pageshow', applyBgm);
     bgm.addEventListener('canplay', applyBgm);
-    bgm.addEventListener('playing', () => { bgmLastPlayResult = 'playing evt'; bgmDiag(); });
-    bgm.addEventListener('pause', () => { bgmDiag('pause evt'); });
-    bgm.addEventListener('error', () => { bgmLastPlayResult = 'MEDIA ERR ' + (bgm.error && bgm.error.code); bgmDiag(); });
     setTimeout(applyBgm, 400);
-    setInterval(bgmDiag, 1000); // 진단 표시 최신화 (임시)
     // 앱이 "오래" 가려지면(유튜브 채널 이동·다른 앱 전환·화면 잠금) BGM 정지, 돌아오면 재개.
     // 500ms 디바운스 — PWA 실행 순간 잠깐 hidden 이 깜빡여서 로딩 때 "띡" 하고 끊기던 문제(사용자 보고).
     let bgmHideTimer = null;
