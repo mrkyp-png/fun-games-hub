@@ -316,30 +316,31 @@
     tone(90, 'sine');
   }
 
-  // 두더지가 구멍에서 올라오는 순간 = 흙 폭발: 큰 흙덩어리 파편이 포물선으로 튀어오르고
-  // 작은 흙먼지 + 퍼지는 링이 뒤따른다 (동물엔 안 붙임).
-  function emerge(boardEl, xFrac, yFrac) {
-    const N = 8;
+  // 구멍에서 올라오는 순간 = 흙 폭발: 흙덩어리 파편이 포물선으로 튀어오르고 작은 흙먼지가 뒤따른다.
+  // opts.weak = 동물/폭탄용 (파편 적고 작게, 링 생략) — 타겟인 두더지와 구분.
+  function emerge(boardEl, xFrac, yFrac, opts) {
+    const weak = !!(opts && opts.weak);
+    const N = weak ? 5 : 8;
     for (let i = 0; i < N; i++) {
-      const c = spawnAt(boardEl, 'hit-fx-clod', xFrac, yFrac + 0.02);
+      const c = spawnAt(boardEl, 'hit-fx-clod' + (weak ? ' hit-fx-clod--weak' : ''), xFrac, yFrac + 0.02);
       const ang = -155 + (i / (N - 1)) * 130 + (Math.random() * 20 - 10); // 위쪽 부채꼴
-      const dist = 40 + Math.random() * 40;
+      const dist = (weak ? 26 : 40) + Math.random() * (weak ? 26 : 40);
       c.style.setProperty('--cx', (Math.cos(ang * Math.PI / 180) * dist).toFixed(1) + 'px');
       c.style.setProperty('--cy', (Math.sin(ang * Math.PI / 180) * dist).toFixed(1) + 'px');
       c.style.setProperty('--cr', Math.round(Math.random() * 540 - 270) + 'deg');
-      c.style.setProperty('--cs', (0.6 + Math.random() * 0.85).toFixed(2));
+      c.style.setProperty('--cs', ((weak ? 0.5 : 0.6) + Math.random() * (weak ? 0.5 : 0.85)).toFixed(2));
       c.style.animationDelay = Math.round(Math.random() * 45) + 'ms';
     }
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < (weak ? 3 : 4); i++) {
       const p = spawnAt(boardEl, 'hit-fx-dust', xFrac, yFrac + 0.02);
       p.style.setProperty('--dx', (Math.round((Math.random() - 0.5) * 46)) + 'px');
     }
-    spawnAt(boardEl, 'hit-fx-ring', xFrac, yFrac).style.setProperty('--ring', '#d9b382');
+    if (!weak) spawnAt(boardEl, 'hit-fx-ring', xFrac, yFrac).style.setProperty('--ring', '#d9b382');
   }
 
   // 게임 시작(사용자 제스처) 직후 호출 — 카운트다운 동안 오디오 컨텍스트 + 타격음 파일을 미리 준비.
   function warmup() { try { getCtx(); } catch (e) { /* noop */ } }
 
-  const api = { moleHit, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop };
+  const api = { moleHit, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, starBurst };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);

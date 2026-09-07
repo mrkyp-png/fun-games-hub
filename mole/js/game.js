@@ -908,7 +908,10 @@
       sharedPopElements = MG.PopElements.create({
         container: document.getElementById('mole-pop-layer'),
         onEmerge: (x, y, type) => {
-          if (type === 'mole') MG.HitFx.emerge(document.getElementById('mole-board'), x, y);
+          const bd = document.getElementById('mole-board');
+          if (type === 'mole') MG.HitFx.emerge(bd, x, y);
+          else if (type === 'animal' || type === 'bomb') MG.HitFx.emerge(bd, x, y, { weak: true }); // 동물/폭탄도 흙 폭발(약하게)
+          else if (type === 'item') MG.HitFx.starBurst(bd, x, y); // 실드 아이템 = 반짝이
         }
       });
     }

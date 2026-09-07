@@ -1776,6 +1776,7 @@ body { background: var(--lm-page); }
   pointer-events: none;
   animation: hit-clod 0.66s cubic-bezier(.2, .7, .45, 1) forwards;
 }
+.hit-fx-clod--weak { width: 14px; height: 12px; border-width: 1.5px; }
 @keyframes hit-clod {
   0%   { transform: translate(-50%, -50%) scale(0.4) rotate(0); opacity: 1; }
   15%  { transform: translate(calc(-50% + var(--cx, 0px) * 0.35), calc(-50% + var(--cy, 0px) * 0.6)) scale(var(--cs, 1)) rotate(calc(var(--cr, 180deg) * 0.3)); opacity: 1; }
