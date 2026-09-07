@@ -57,7 +57,7 @@
   // 포즈별 이펙트 3겹 미세보정. 각 { dx, dy, rot } (보드분수 / CSS deg, + = 시계).
   //   spark = 불꽃(fx1)   flame = 화염(fx4, 불+연기 메인)   smoke = 연기(fx5, 잔여)
   const FX_NUDGE = {
-    a2: { flame: { rot: 5, dx: -0.021, dy: -0.011 }, smoke: { dy: 0.014 } },  // ✱·0·# 제일아래줄
+    a2: { flame: { rot: 5, dx: -0.035, dy: -0.007 }, smoke: { dy: 0.014 } },  // ✱·0·# 제일아래줄
     a1: { flame: { rot: 15, dx: -0.014, dy: -0.018 }, smoke: { rot: 10, dy: 0.014 } },  // 4·7·8번
     a3: { flame: { rot: 22, dx: -0.043, dy: -0.021 }, smoke: { rot: 10, dx: -0.043, dy: 0.014 } },  // 대기포 1·2·5·9
     a4: { flame: { rot: 15, dx: 0.014, dy: -0.029 } },                    // 제일우측 내비열
