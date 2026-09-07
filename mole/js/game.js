@@ -965,7 +965,7 @@
     title.textContent = '';
     moleImg.hidden = true;
     if (isR1) {
-      overlay.classList.remove('has-mole', 'mole-in', 'is-opening', 'go-flash'); // 커튼 효과 없음(투명)
+      overlay.classList.remove('has-mole', 'mole-in', 'is-opening'); // 커튼 효과 없음(투명)
     } else {
       restartCurtainPattern(overlay);
       overlay.classList.add('has-mole'); // 분홍 커튼 패턴
@@ -991,7 +991,6 @@
         count.className = 'round-intro-count ' + (go ? 'cgo' : 'c' + (3 - i)); // 카운트별 색상
         void count.offsetWidth;
         count.classList.add('pop'); // 줌인 애니
-        if (go) overlay.classList.add('go-flash'); // 흰 플래시
         i++;
         if (i < STEPS.length) setTimeout(tick, 650);
         else setTimeout(finish, 360);
@@ -1010,7 +1009,7 @@
       setTimeout(() => {
         if (myGen !== sessionGen) return;
         overlay.hidden = true;
-        overlay.classList.remove('is-opening', 'has-mole', 'mole-in', 'go-flash');
+        overlay.classList.remove('is-opening', 'has-mole', 'mole-in');
         count.hidden = true;
         count.className = 'round-intro-count';
         moleImg.hidden = true;

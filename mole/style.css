@@ -1184,13 +1184,6 @@ body { background: var(--lm-page); }
   transition: transform 0.26s cubic-bezier(.5, 0, .75, 0);
   animation: none;
 }
-/* GO! 순간 흰 플래시 */
-.round-intro.go-flash::after {
-  content: ''; position: absolute; inset: 0; z-index: 3;
-  background: #fff; pointer-events: none;
-  animation: ri-go-flash 0.42s ease-out;
-}
-@keyframes ri-go-flash { 0% { opacity: 0; } 12% { opacity: 0.72; } 100% { opacity: 0; } }
 .round-intro-title {
   position: relative; z-index: 1;
   margin-top: 14px; /* 구멍 그리드 상단과 살짝 간섭되던 것 완화(사용자 보고) */
