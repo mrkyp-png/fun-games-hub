@@ -82,14 +82,15 @@
   }
 
   // screen: 'home' | 'more' | 'game'. 매 진입마다 해당 트랙을 처음부터.
-  // 게임곡은 loop 안 함 — 끝나면 ended 이벤트가 다음 곡(2곡 순환). 홈/더보기는 loop.
+  // 홈(4곡)·게임(2곡)은 loop 안 함 — 한 곡이 끝나면 ended 이벤트가 다음 곡을 틀어
+  // 플레이리스트처럼 순차 재생·순환한다. 더보기(1곡)만 loop.
   function playScreenBgm(screen) {
     if (!bgm) return;
     let file;
     if (screen === 'home') { file = 'audio/bgm-home-' + (homeBgmIdx % HOME_BGM_COUNT + 1) + '.mp3'; homeBgmIdx++; }
     else if (screen === 'game') { file = 'audio/bgm-game-' + (gameBgmIdx % GAME_BGM_COUNT + 1) + '.mp3'; gameBgmIdx++; }
     else { file = 'audio/bgm-' + screen + '.mp3'; }
-    bgm.loop = (screen !== 'game');
+    bgm.loop = (screen === 'more');
     bgmWantPlay = true;
     if (currentBgm !== file) {
       currentBgm = file;
@@ -1479,9 +1480,10 @@
   document.addEventListener('DOMContentLoaded', () => {
     bgm = document.getElementById('bgm');
     bgm.volume = 0.35;
-    // 게임곡(loop=false)이 끝나면 다음 게임곡으로 — 2곡이 계속 번갈아.
+    // 곡이 끝나면 다음 곡으로 — 홈은 4곡, 게임은 2곡을 순차 재생·순환 (플레이리스트).
     bgm.addEventListener('ended', () => {
       if (/\/bgm-game-\d/.test(currentBgm)) playScreenBgm('game');
+      else if (/\/bgm-home-\d/.test(currentBgm)) playScreenBgm('home');
     });
     window.FGH.Settings.onChange((name) => {
       if (name === 'music') applyBgm();
