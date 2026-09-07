@@ -51,11 +51,24 @@ def keep_largest(im):
     return im
 
 
-def eat_fringe(im, band=4):
-    # 반투명 가장자리(a<245)만 최대 band px 깊이로 정리. 불투명 픽셀은 건드리지 않음.
+def eat_fringe(im, band=5):
+    # 반투명 가장자리(a<245)는 최대 band px 깊이로 정리. 불투명이어도 테두리 3px 안쪽의
+    # 아주 밝은 픽셀(키아웃 흰 자국 = "외곽선 주변 흰색 노이즈")은 함께 제거. 그보다 안쪽의
+    # 불투명 픽셀(배럴 이음선 등)은 절대 안 건드림.
     im = im.convert('RGBA')
     w, h = im.size
     px = im.load()
+
+    def edible(nx, ny, d):
+        r, g, b, a = px[nx, ny]
+        if a == 0:
+            return False
+        if a < 245:
+            return True
+        if d < 3:
+            return (r + g + b) / 3 > 234
+        return False
+
     dist = [-1] * (w * h)
     dq = deque()
     for x in range(w):
@@ -75,11 +88,10 @@ def eat_fringe(im, band=4):
             if not (0 <= nx < w and 0 <= ny < h) or dist[ny*w+nx] != -1:
                 continue
             i = ny*w+nx
-            a = px[nx, ny][3]
-            if a == 0:
+            if px[nx, ny][3] == 0:
                 dist[i] = 0
                 dq.append((nx, ny))
-            elif d < band and a < 245:
+            elif d < band and edible(nx, ny, d):
                 dist[i] = d + 1
                 dq.append((nx, ny))
     for i in range(w*h):
@@ -89,6 +101,12 @@ def eat_fringe(im, band=4):
             px[x, y] = (r, g, b, 0)
     al = im.split()[3].filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(0.5))
     im.putalpha(al)
+    px = im.load()
+    for y in range(h):
+        for x in range(w):
+            r, g, b, a = px[x, y]
+            if 0 < a < 255 and (r + g + b) / 3 > 220:
+                px[x, y] = (r, g, b, 0)
     return im
 
 
