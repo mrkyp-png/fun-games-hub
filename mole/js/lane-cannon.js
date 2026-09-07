@@ -12,8 +12,8 @@
   // 순서: 포즈 선택 + 미세 조준 → 발사(화염·연기·포탄) → 반동 → 원위치.
   // 명중감은 game.js HitFx (impactCb = 포탄 도착 시).
 
-  const MZX = 0.827, MZY = 0.801;          // 포구 고정점 (보드 분수) — 여기서 포탄이 나간다.
-                                          //  v289: 기본 대포 위치 위로 0.2cm(≈0.029 보드분수) 이동 (사용자 요청).
+  const MZX = 0.870, MZY = 0.801;          // 포구 고정점 (보드 분수) — 여기서 포탄이 나간다.
+                                          //  v289: 위로 0.2cm(≈0.029). v293: 우측으로 0.3cm(≈0.043). (사용자 요청)
                                           //  대포 본체는 여기서 우하단으로 뻗어 대부분 화면 밖(입체감).
 
   // 포즈 표 (튜닝 노브). 화면좌표 각도: 0=오른쪽, -90=위, 좌상향은 -180~-90.
@@ -26,14 +26,15 @@
   // w 는 "최대 변(가로 or 세로*ar)이 대략 0.28" 이 되도록 ar 로 나눠 정규화 — 어떤 포즈든
   // 화면상 크기가 대기(a1) 자세와 비슷하게 보인다 (급각 a3~a5 가 너무 컸던 것 보정, 사용자 요청).
   // aim 은 키패드 버튼 그룹핑(사용자 지정, 포구기준 각도 최근접 선택)에 맞춰 조정:
-  //   a2(-188°) = ✱ 0 #(제일 아래줄)   a1(-163°) = 4 7 8   a3(-141°, 기본 대기포) = 1 2 5 9
-  //   a5(-113°) = 3 6   a4(-92°) = 오른쪽 내비열(거의 수직)
+  //   a2(-191°) = ✱ 0 #(제일 아래줄)   a1(-164°) = 4 7 8   a3(-144°, 기본 대기포) = 1 2 5 9
+  //   a5(-120°) = 3 6   a4(-92°) = 오른쪽 내비열(거의 수직)
+  // v293 에서 MZX 우측 0.3cm 이동에 맞춰 aim 재보정. a4(최대각포)만 dx 로 상쇄해 제자리 고정(사용자 요청).
   const POSES = [
-    { key: 'a2', src: 'assets/weapons/cannon-a2.png', w: 0.288, ar: 0.72, mu: 0.07, mv: 0.18, aim: -188, tweak: 0, dx: -0.06, dy: 0.03 },
-    { key: 'a1', src: 'assets/weapons/cannon-a1.png', w: 0.280, ar: 0.833, mu: 0.07, mv: 0.14, aim: -163, tweak: 0, dx: -0.05, dy: 0.03 },
-    { key: 'a3', src: 'assets/weapons/cannon-a3.png', w: 0.242, ar: 1.159, mu: 0.32, mv: 0.09, aim: -141, tweak: 0, dx: -0.01, dy: -0.02 },
-    { key: 'a5', src: 'assets/weapons/cannon-a5.png', w: 0.175, ar: 1.392, mu: 0.17, mv: 0.09, aim: -113, tweak: 0, dx: 0.02, dy: -0.03 },
-    { key: 'a4', src: 'assets/weapons/cannon-a4.png', w: 0.216, ar: 1.220, mu: 0.48, mv: 0.06, aim: -92,  tweak: 0, dx: 0.03, dy: -0.04 }
+    { key: 'a2', src: 'assets/weapons/cannon-a2.png', w: 0.245, ar: 0.72, mu: 0.07, mv: 0.18, aim: -191, tweak: 0, dx: -0.06, dy: 0.03 },
+    { key: 'a1', src: 'assets/weapons/cannon-a1.png', w: 0.280, ar: 0.833, mu: 0.07, mv: 0.14, aim: -164, tweak: 0, dx: -0.05, dy: 0.03 },
+    { key: 'a3', src: 'assets/weapons/cannon-a3.png', w: 0.242, ar: 1.159, mu: 0.32, mv: 0.09, aim: -144, tweak: 0, dx: -0.01, dy: -0.02 },
+    { key: 'a5', src: 'assets/weapons/cannon-a5.png', w: 0.201, ar: 1.392, mu: 0.17, mv: 0.09, aim: -120, tweak: 0, dx: 0.02, dy: -0.03 },
+    { key: 'a4', src: 'assets/weapons/cannon-a4.png', w: 0.216, ar: 1.220, mu: 0.48, mv: 0.06, aim: -92,  tweak: 0, dx: -0.013, dy: -0.04 }
   ];
   const STEEP_KEY = 'a4';  // 3번 구멍(거의 수직) 회전용 포즈
 
