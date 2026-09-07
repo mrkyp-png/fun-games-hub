@@ -35,7 +35,7 @@
     { key: 'a2', src: 'assets/weapons/cannon-a2.png', w: 0.270, ar: 0.924, mu: 0.08, mv: 0.52, aim: -191, tweak: 0, dx: -0.103, dy: 0.03, blx: -0.008, bly: -0.008 },
     { key: 'a1', src: 'assets/weapons/cannon-a1.png', w: 0.280, ar: 0.833, mu: 0.07, mv: 0.14, aim: -164, tweak: 0, dx: -0.05, dy: 0.03, blx: 0.017, bly: 0.005 },
     { key: 'a3', src: 'assets/weapons/cannon-a3.png', w: 0.242, ar: 1.159, mu: 0.32, mv: 0.09, aim: -144, tweak: 0, dx: 0.004, dy: -0.006, blx: -0.046, bly: -0.003 },
-    { key: 'a5', src: 'assets/weapons/cannon-a5.png', w: 0.225, ar: 1.256, mu: 0.17, mv: 0.09, aim: -120, tweak: 0, dx: -0.009, dy: -0.03, blx: 0.005, bly: -0.001 },
+    { key: 'a5', src: 'assets/weapons/cannon-a5.png', w: 0.225, ar: 1.256, mu: 0.17, mv: 0.09, aim: -120, tweak: 0, dx: -0.009, dy: -0.03, blx: 0.012, bly: 0.013 },
     { key: 'a4', src: 'assets/weapons/cannon-a4.png', w: 0.216, ar: 1.220, mu: 0.48, mv: 0.06, aim: -92,  tweak: 0, dx: 0.001, dy: -0.04, blx: 0.006, bly: 0.003 }
   ];
 
