@@ -5,10 +5,10 @@
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
 const CACHE = 'mole-game-v275';
 
-// 화면별 BGM(audio/bgm-home-1~4.mp3, bgm-more.mp3, bgm-game-1~2.mp3)은 SHELL 에 안 넣는다 —
-// 켜져 있으면(v272 부터 기본 켜짐) 처음 재생될 때 fetch 핸들러가 캐시한다.
-// vendor/face_mesh/*(약 10MB, 얼굴인식)도 SHELL 제외 — 사람두더지 메이커 처음 열 때만 필요.
-// 둘 다 처음 요청될 때 아래 fetch 핸들러(stale-while-revalidate)가 알아서 캐시한다.
+// 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
+// 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
+// vendor/face_mesh/*(약 10MB, 얼굴인식)는 SHELL 제외 — 사람두더지 메이커 처음 열 때만 필요.
+// 처음 요청될 때 아래 fetch 핸들러가 알아서 캐시한다.
 const SHELL = [
   './',
   './index.html',
