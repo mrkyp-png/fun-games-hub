@@ -60,6 +60,18 @@
   }
   #splash.is-ready .splash-hint { animation: splash-cta-pulse 1.2s ease-in-out infinite; }
   @keyframes splash-cta-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+  /* 누르면 쑥 들어간다 — 아래 단차(0 9px 0)가 줄고 버튼이 내려앉음 */
+  .splash-cta.is-pressed .splash-hint {
+    animation: none;
+    transform: translateY(7px);
+    box-shadow:
+      0 2px 0 #1c8340,
+      0 3px 3px rgba(0, 0, 0, 0.2),
+      0 6px 9px rgba(0, 0, 0, 0.26),
+      inset 0 3px 3px rgba(255, 255, 255, 0.7),
+      inset 0 -5px 8px rgba(0, 80, 35, 0.45);
+    transition: transform 0.09s ease, box-shadow 0.09s ease;
+  }
   .splash-hand {
     position: absolute;
     right: -8px; bottom: -24px;
@@ -159,7 +171,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v281</div>
+      <div id="build-tag" aria-hidden="true">v282</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -532,8 +544,11 @@
     function go() {
       if (!armed) return;
       s.removeEventListener('pointerdown', go);
-      s.classList.add('is-hiding');
-      setTimeout(function () { s.remove(); }, 500);
+      cta.classList.add('is-pressed'); // 눌리는 연출 잠깐 보여주고 사라짐
+      setTimeout(function () {
+        s.classList.add('is-hiding');
+        setTimeout(function () { s.remove(); }, 500);
+      }, 150);
     }
     s.addEventListener('pointerdown', go);
   })();
@@ -551,7 +566,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=281').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=282').catch(function () {});
       }
     });
   }
