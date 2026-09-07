@@ -29,8 +29,8 @@
     { key: 'a2', src: 'assets/weapons/cannon-a2.png', w: 0.288, ar: 0.72, mu: 0.07, mv: 0.18, aim: -162, tweak: 0, dx: -0.06, dy: 0.03 },
     { key: 'a1', src: 'assets/weapons/cannon-a1.png', w: 0.280, ar: 0.833, mu: 0.07, mv: 0.14, aim: -156, tweak: 0, dx: -0.05, dy: 0.03 },
     { key: 'a3', src: 'assets/weapons/cannon-a3.png', w: 0.242, ar: 1.159, mu: 0.32, mv: 0.09, aim: -128, tweak: 0, dx: -0.01, dy: -0.02 },
-    { key: 'a5', src: 'assets/weapons/cannon-a5.png', w: 0.201, ar: 1.392, mu: 0.17, mv: 0.09, aim: -113, tweak: 0, dx: 0.02, dy: -0.03 },
-    { key: 'a4', src: 'assets/weapons/cannon-a4.png', w: 0.230, ar: 1.220, mu: 0.48, mv: 0.06, aim: -92,  tweak: 0, dx: 0.03, dy: -0.04 }
+    { key: 'a5', src: 'assets/weapons/cannon-a5.png', w: 0.175, ar: 1.392, mu: 0.17, mv: 0.09, aim: -113, tweak: 0, dx: 0.02, dy: -0.03 },
+    { key: 'a4', src: 'assets/weapons/cannon-a4.png', w: 0.180, ar: 1.220, mu: 0.48, mv: 0.06, aim: -92,  tweak: 0, dx: 0.03, dy: -0.04 }
   ];
   const STEEP_KEY = 'a4';  // 3번 구멍(거의 수직) 회전용 포즈
 
