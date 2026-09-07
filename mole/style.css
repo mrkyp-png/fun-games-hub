@@ -1655,7 +1655,7 @@ body { background: var(--lm-page); }
 }
 .lane-hammer {
   position: absolute;
-  width: 13%;
+  width: 13.85%;   /* 검은 외곽선(약 9px) 추가로 스프라이트가 커진 만큼(301→321px) 보정해 망치 아트 자체 크기 유지 */
   will-change: transform;
 }
 .lane-hammer img { display: block; width: 100%; filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.5)); }
