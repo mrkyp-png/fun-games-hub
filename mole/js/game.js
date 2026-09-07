@@ -1500,7 +1500,13 @@
     }
     ['pointerdown', 'touchstart', 'click', 'keydown'].forEach((ev) =>
       window.addEventListener(ev, nudgeBgm, { capture: true, passive: true }));
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) nudgeBgm(); });
+    // 앱이 가려지면(유튜브 채널 이동·다른 앱 전환·화면 잠금 등) BGM 정지, 돌아오면 재개.
+    // 설치형 PWA 는 외부 URL 로 나가도 프로세스가 살아있어 BGM 이 계속 들리던 문제(사용자 보고).
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { if (bgm) bgm.pause(); }
+      else nudgeBgm();
+    });
+    window.addEventListener('pagehide', () => { if (bgm) bgm.pause(); });
     window.addEventListener('pageshow', nudgeBgm);
     bgm.addEventListener('canplay', nudgeBgm);
     setTimeout(nudgeBgm, 400);
@@ -1530,7 +1536,9 @@
       // window.open(_blank) 은 광고(비동기) 뒤엔 팝업 차단됨 → 같은 탭 이동(location.href).
       onChannelEnter: (url) => {
         if (!url || !document.getElementById('game-screen').classList.contains('is-start')) return;
-        MG.Ads.interstitial(I18N.t('mole.channel.hint')).then((ok) => { if (ok) window.location.href = url; });
+        MG.Ads.interstitial(I18N.t('mole.channel.hint')).then((ok) => {
+          if (ok) { if (bgm) bgm.pause(); window.location.href = url; } // 채널 이동 전 BGM 정지
+        });
       }
     });
     wireStartButton(); // 다이얼러 초록 버튼: 홈에서 탭=시작 / 꾹=종료 대기
