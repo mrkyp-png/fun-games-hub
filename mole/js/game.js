@@ -1412,7 +1412,8 @@
     // 클리어 판정 = 누적점수 ≥ 목표(완벽 플레이 90%). 통과 시 다음 챕터 해금.
     const prog = MG.Progress.record(chapter, light, total);
 
-    const coins = Math.floor(total / 10000); // 점수 ÷ 10000 (사용자 지정) — 예: 130,000점 → 13코인
+    // 코인 = 점수 ÷ 5000 (내림) + 10라운드 완주 보너스 20 (사용자 지정 v269 — 예전 ÷10000 은 너무 박했음).
+    const coins = Math.floor(total / 5000) + (reason === 'done' ? 20 : 0);
     if (coins > 0) MG.Economy.addCoins(coins);
 
     // 재방문 인사용 + 기록 보관 (100판 이상도 문제없음, 개당 수십 바이트).
