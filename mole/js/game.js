@@ -950,92 +950,92 @@
     });
   }
 
-  // 모든 라운드: 커튼 패턴(2.3s) 뒤 "라운드 N" 이 오른쪽에서(라운드2~ 는 두더지 이미지가
-  // 왼쪽에서) 날아와 중앙에 멈추면 한 글자씩 타이핑(+타자기 소리).
-  //  · 라운드 2~10: 잠깐 머문 뒤 타이틀은 왼쪽·두더지는 오른쪽으로 날아가며 커튼 오픈.
-  //  · 라운드 1: 타이핑 뒤 "라운드 1" 은 남고 3·2·1·GO 카운트다운(줌인 + 카운트별 색상, GO 는
-  //    흰 플래시). GO 에서 "라운드 1" 은 왼쪽으로, "GO" 는 오른쪽으로 날아가며 커튼 오픈.
-  //    (두더지 그림 없음. 카운트 효과음은 아직 미정 — 안 넣음.)
+  // 라운드 1: 챕터 인트로 커튼이 방금 열렸다 → 커튼/타이틀 없이 보드 위에서 바로 3·2·1·GO!
+  //           (영어 고정, 색상/플래시 없음, 두더지 그림 없음 — 사용자 지정.)
+  // 라운드 2~10: 커튼 패턴(2.3s) 뒤 "라운드 N" 이 오른쪽에서·두더지 이미지가 왼쪽에서 날아와
+  //           중앙에서 만나고, 멈추면 한 글자씩 타이핑(+타자기 소리), 잠깐 뒤 좌/우로 퇴장 + 커튼 오픈.
   function playRoundIntro(roundNum, onDone) {
     const myGen = sessionGen;
     const overlay = document.getElementById('round-intro-overlay');
     const title = document.getElementById('round-intro-title');
     const count = document.getElementById('round-intro-count');
     const moleImg = document.getElementById('round-intro-mole');
+
+    if (roundNum === 1) {
+      overlay.hidden = false;
+      overlay.classList.remove('has-mole', 'mole-in', 'is-opening', 'go-flash'); // 투명 오버레이 — 보드가 비침
+      title.textContent = '';
+      moleImg.hidden = true;
+      count.hidden = true;
+      count.className = 'round-intro-count';
+      const STEPS = ['3', '2', '1', 'GO!']; // 무조건 영어 (사용자 지정)
+      setTimeout(() => {                     // 챕터 커튼이 다 열린 뒤 바로 시작
+        if (myGen !== sessionGen) return;
+        count.hidden = false;
+        let i = 0;
+        (function tick() {
+          if (myGen !== sessionGen) return;
+          count.textContent = STEPS[i];
+          count.classList.remove('pop');
+          void count.offsetWidth;
+          count.classList.add('pop');
+          i++;
+          if (i < STEPS.length) setTimeout(tick, 650);
+          else setTimeout(() => {
+            if (myGen !== sessionGen) return;
+            overlay.hidden = true;
+            count.hidden = true;
+            count.classList.remove('pop');
+            setHammerLayerVisible(true);
+            onDone();
+          }, 460);
+        })();
+      }, 300);
+      return;
+    }
+
     overlay.hidden = false;
     restartCurtainPattern(overlay);
-
     count.hidden = true;
     count.className = 'round-intro-count';
     title.textContent = '';
     moleImg.hidden = true;
-    // has-mole = 커튼에 패턴을 보여줄지 담당 — 즉시 건다(늦게 걸면 display:none 규칙 때문에 패턴 애니가 멈춰있다 한꺼번에 시작).
     overlay.classList.add('has-mole');
-    const showMole = roundNum > 1; // 라운드1 은 글자만 (사용자 지정)
-    const idx = ((roundNum - 2) % 6 + 6) % 6 + 1;
+    const idx = ((roundNum - 2) % 6) + 1; // 라운드2→mole1 …
     moleImg.src = 'assets/round-moles/mole' + idx + '.png';
 
-    const FLY_IN_MS = 400;         // = ri-title-fly-in 0.4s
+    const FLY_IN_MS = 400;
     const HOLD_AFTER_TYPE_MS = 480;
     const full = I18N.t('mole.round', { n: roundNum });
-    const typeMs = full.replace(/ /g, '').length * 45; // typeText 는 45ms/글자
-
-    // 라운드1 전용: 타이핑 뒤 3·2·1·GO. 끝나면 finish() 호출.
-    function runCountdown(finish) {
-      count.hidden = false;
-      const STEPS = ['3', '2', '1', I18N.t('mole.count.go')];
-      let i = 0;
-      (function tick() {
-        if (myGen !== sessionGen) return;
-        const go = i >= 3;
-        count.textContent = STEPS[i];
-        count.className = 'round-intro-count ' + (go ? 'cgo' : 'c' + (3 - i)); // 카운트별 색상
-        void count.offsetWidth;
-        count.classList.add('pop'); // 줌인 애니
-        if (go) overlay.classList.add('go-flash'); // 흰 플래시
-        i++;
-        if (i < STEPS.length) setTimeout(tick, 650);
-        else setTimeout(finish, 360);
-      })();
-    }
-
-    // 커튼 오픈 + 정리 + onDone.
-    function openCurtainAndStart() {
-      if (myGen !== sessionGen) return;
-      // 입장 애니메이션(forwards)이 남아 transition 이 안 먹는 문제 — animation 먼저 끄고 리플로우 후 is-opening.
-      title.style.animation = 'none';
-      moleImg.style.animation = 'none';
-      void title.offsetWidth;
-      overlay.classList.add('is-opening'); // 타이틀 왼쪽 / 두더지·GO 오른쪽 / 커튼 오픈 (CSS)
-      setHammerLayerVisible(true);
-      setTimeout(() => {
-        if (myGen !== sessionGen) return;
-        overlay.hidden = true;
-        overlay.classList.remove('is-opening', 'has-mole', 'mole-in', 'go-flash');
-        count.hidden = true;
-        count.className = 'round-intro-count';
-        moleImg.hidden = true;
-        title.style.animation = '';
-        moleImg.style.animation = '';
-      }, 260);
-      setTimeout(() => { if (myGen === sessionGen) onDone(); }, 260 + 200);
-    }
+    const typeMs = full.replace(/ /g, '').length * 45;
 
     setTimeout(() => {
       if (myGen !== sessionGen) return;
-      // 1) "라운드 N" 오른쪽에서, (라운드2~) 두더지 왼쪽에서 날아와 중앙에서 만남 (0.4s)
+      // 1) "라운드 N" 오른쪽에서, 두더지 왼쪽에서 날아와 중앙에서 만남 (0.4s)
       title.textContent = full;
       overlay.classList.add('mole-in');
-      if (showMole) moleImg.hidden = false;
+      moleImg.hidden = false;
       // 2) 중앙에 멈추면 "라운드 N" 을 한 글자씩 다시 타이핑(+ 타자기 소리)
       setTimeout(() => { if (myGen === sessionGen) typeText(title, full, () => {}); }, FLY_IN_MS + 40);
-      // 3) 타이핑 끝난 뒤 — 라운드1: 3·2·1·GO 후 커튼 / 라운드2~: 바로 퇴장 + 커튼
+      // 3) 타이핑 끝나고 잠깐 머문 뒤 타이틀 왼쪽·두더지 오른쪽으로 퇴장 + 커튼 오픈
       setTimeout(() => {
         if (myGen !== sessionGen) return;
-        if (roundNum === 1) runCountdown(openCurtainAndStart);
-        else openCurtainAndStart();
+        title.style.animation = 'none';
+        moleImg.style.animation = 'none';
+        void title.offsetWidth;
+        overlay.classList.add('is-opening');
+        setHammerLayerVisible(true);
+        setTimeout(() => {
+          if (myGen !== sessionGen) return;
+          overlay.hidden = true;
+          overlay.classList.remove('is-opening', 'has-mole', 'mole-in');
+          moleImg.hidden = true;
+          title.style.animation = '';
+          moleImg.style.animation = '';
+        }, 260);
+        setTimeout(() => { if (myGen === sessionGen) onDone(); }, 260 + 200);
       }, FLY_IN_MS + 40 + typeMs + HOLD_AFTER_TYPE_MS);
-    }, 2300); // 커튼 패턴이 분홍으로 다 정리된 뒤에 타이틀 fly-in 시작
+    }, 2300);
   }
 
   // ---------- 메인 루프 ----------
@@ -1488,11 +1488,18 @@
     window.FGH.Settings.onChange((name) => {
       if (name === 'music') bgmPlayIfEnabled();
     });
-    // 홈 BGM 선택·재생은 아래 showStartScreen({skipFlash:true}) 이 담당.
-    // 자동재생 정책에 막혀 소리가 안 났을 때 — 아무 탭에서나 이어서 재시도(안전망).
-    window.addEventListener('pointerdown', () => {
+    // 홈 BGM 선택·재생은 아래 showStartScreen({skipFlash:true}) 이 담당. 자동재생 정책에 막혀
+    // 소리가 안 났을 때를 대비해 여러 신호(모든 입력·앱 복귀·버퍼 완료·로딩 직후)에서 재시도한다.
+    // 설치형 PWA 는 로딩 직후 재생이 허용되기도 하므로 그 경우 첫 nudge 에서 바로 시작된다.
+    function nudgeBgm() {
       if (bgm && bgm.paused && window.FGH.Settings.get('music')) bgm.play().catch(() => {});
-    });
+    }
+    ['pointerdown', 'touchstart', 'click', 'keydown'].forEach((ev) =>
+      window.addEventListener(ev, nudgeBgm, { capture: true, passive: true }));
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) nudgeBgm(); });
+    window.addEventListener('pageshow', nudgeBgm);
+    bgm.addEventListener('canplay', nudgeBgm);
+    setTimeout(nudgeBgm, 400);
     // 언어 전환 시 JS 로 채운 동적 문구도 다시 그린다 (applyStatic 이 못 건드리는 것들).
     I18N.onChange(() => {
       const mm = document.getElementById('more-menu');

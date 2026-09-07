@@ -1167,20 +1167,6 @@ body { background: var(--lm-page); }
 .round-intro.is-opening .si-line1,
 .round-intro.is-opening .si-line2,
 .round-intro.is-opening .si-line3 { opacity: 0; transition: opacity 0.12s; }
-/* 라운드1 GO: "라운드 1" 은 왼쪽(위 .mole-in.is-opening .round-intro-title 규칙), "GO" 는 오른쪽으로. */
-.round-intro.mole-in.is-opening .round-intro-count.cgo {
-  opacity: 1;
-  transform: translateX(90vw);
-  transition: transform 0.26s cubic-bezier(.5, 0, .75, 0);
-  animation: none;
-}
-/* GO 순간 흰 플래시 */
-.round-intro.go-flash::after {
-  content: ''; position: absolute; inset: 0; z-index: 3;
-  background: #fff; pointer-events: none;
-  animation: ri-go-flash 0.42s ease-out;
-}
-@keyframes ri-go-flash { 0% { opacity: 0; } 12% { opacity: 0.72; } 100% { opacity: 0; } }
 .round-intro-title {
   position: relative; z-index: 1;
   margin-top: 14px; /* 구멍 그리드 상단과 살짝 간섭되던 것 완화(사용자 보고) */
@@ -1224,19 +1210,12 @@ body { background: var(--lm-page); }
     0 0 30px rgba(224, 138, 30, 0.6),
     0 3px 10px rgba(224, 138, 30, 0.35);
 }
-/* 카운트 숫자 = 멀리서 확 줌인 (사용자: 진짜 카운트다운 느낌) */
-.round-intro-count.pop { animation: round-intro-pop 0.5s cubic-bezier(.16, 1, .3, 1); }
+.round-intro-count.pop { animation: round-intro-pop 0.42s cubic-bezier(.2, 1.6, .4, 1); }
 @keyframes round-intro-pop {
-  0%   { transform: scale(3.2); opacity: 0; }
-  35%  { opacity: 1; }
-  62%  { transform: scale(0.9); opacity: 1; }
+  0% { transform: scale(0.3); opacity: 0; }
+  60% { transform: scale(1.18); opacity: 1; }
   100% { transform: scale(1); opacity: 1; }
 }
-/* 카운트별 색상: 3 빨강 / 2 주황 / 1 노랑 / GO 초록 (+ 각 색 글로우) */
-.round-intro-count.c3  { color: #ff5a5a; text-shadow: 0 0 6px rgba(255,255,255,.95), 0 0 18px rgba(255,90,90,.9), 0 0 34px rgba(255,90,90,.5); }
-.round-intro-count.c2  { color: #ffa53c; text-shadow: 0 0 6px rgba(255,255,255,.95), 0 0 18px rgba(255,165,60,.9), 0 0 34px rgba(255,165,60,.5); }
-.round-intro-count.c1  { color: #ffd23c; text-shadow: 0 0 6px rgba(255,255,255,.95), 0 0 18px rgba(255,210,60,.9), 0 0 34px rgba(255,210,60,.5); }
-.round-intro-count.cgo { color: #5ef08a; text-shadow: 0 0 8px rgba(255,255,255,.95), 0 0 22px rgba(94,240,138,.95), 0 0 44px rgba(94,240,138,.6); }
 /* 2라운드부터 카운트다운 대신 — 두더지 이미지(8종 순환, 배경 제거된 PNG) 잠깐 보여주고 바로 커튼 오픈. */
 .round-intro-mole {
   position: relative; z-index: 1;
