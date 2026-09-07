@@ -172,6 +172,9 @@
     if (MG.Economy.getHearts() <= 0) { showNoHeartModal(); return; }
     gameStarting = true;
     setNavLock(true); // 인트로~카운트다운 동안 ⊞ 잠금
+    // 게임 BGM 은 여기서(시작 버튼 탭 = 사용자 제스처 콜스택 안) 튼다. startRound 는 인트로
+    // 2~4초 뒤라 그때 play() 하면 모바일/PWA 자동재생 정책에 막혀 소리가 안 났음(사용자 보고).
+    playScreenBgm('game');
     currentDiff = currentDifficulty();
     applyDiffClass(currentDiff);
     preloadRoundMoles(); // 라운드1 플레이하는 동안 미리 받아둬야 라운드2 전환 때 안 늦음
@@ -873,9 +876,8 @@
       if (screenNav) screenNav.reset();
       document.getElementById('more-menu').hidden = true;
     }
-    // 새 게임(fresh)일 때만 게임 BGM 을 처음부터. 라운드 2~10 전환에선 이어서 재생.
-    if (opts && opts.fresh) playScreenBgm('game');
-    else bgmPlayIfEnabled();
+    // fresh 는 beginGame 이 이미 게임 BGM 을 시작했음. 여기선 (혹시 막혔으면) 이어재생만.
+    bgmPlayIfEnabled();
     MG.HitFx.warmup(); // 오디오 컨텍스트 + 타격음 파일 프리로드 (카운트다운 동안)
 
     const rng = { next: MG.RNG.mulberry32(MG.RNG.hashSeed('mole-r' + roundNum + '-' + Date.now())) };
@@ -1499,11 +1501,10 @@
       if (name === 'music') bgmPlayIfEnabled();
     });
     // 홈 BGM 선택·재생은 아래 showStartScreen({skipFlash:true}) 이 담당.
-    // 자동재생은 보통 차단되므로 첫 사용자 제스처에 한 번 재시도.
-    window.addEventListener('pointerdown', function once() {
-      window.removeEventListener('pointerdown', once);
-      bgmPlayIfEnabled();
-    }, { once: true });
+    // 자동재생 정책에 막혀 소리가 안 났을 때 — 아무 탭에서나 이어서 재시도(안전망).
+    window.addEventListener('pointerdown', () => {
+      if (bgm && bgm.paused && window.FGH.Settings.get('music')) bgm.play().catch(() => {});
+    });
     // 언어 전환 시 JS 로 채운 동적 문구도 다시 그린다 (applyStatic 이 못 건드리는 것들).
     I18N.onChange(() => {
       const mm = document.getElementById('more-menu');
