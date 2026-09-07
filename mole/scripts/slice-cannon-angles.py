@@ -51,24 +51,14 @@ def keep_largest(im):
     return im
 
 
-def eat_fringe(im, band=5):
-    # 반투명 가장자리(a<245)는 최대 band px 깊이로 정리. 불투명이어도 테두리 3px 안쪽의
-    # 아주 밝은 픽셀(키아웃 흰 자국 = "외곽선 주변 흰색 노이즈")은 함께 제거. 그보다 안쪽의
-    # 불투명 픽셀(배럴 이음선 등)은 절대 안 건드림.
+def eat_fringe(im, band=4):
+    # 반투명 가장자리(a<245)만 최대 band px 깊이로 정리. 불투명 픽셀(빛 반사/빛광 포함)은
+    # 절대 안 건드림 — 밝은 픽셀까지 먹었더니 배럴 하이라이트가 사라지고 색이 죽어보였음
+    # (사용자: "빛광까지 제거, 그 과정에 녹색으로도 변경되는 것 같다"). 외곽선 주변 흰
+    # 키아웃 자국은 add_black_outline 이 검은 링을 실루엣 안쪽 1px 물려서 덮는다.
     im = im.convert('RGBA')
     w, h = im.size
     px = im.load()
-
-    def edible(nx, ny, d):
-        r, g, b, a = px[nx, ny]
-        if a == 0:
-            return False
-        if a < 245:
-            return True
-        if d < 3:
-            return (r + g + b) / 3 > 234
-        return False
-
     dist = [-1] * (w * h)
     dq = deque()
     for x in range(w):
@@ -88,10 +78,11 @@ def eat_fringe(im, band=5):
             if not (0 <= nx < w and 0 <= ny < h) or dist[ny*w+nx] != -1:
                 continue
             i = ny*w+nx
-            if px[nx, ny][3] == 0:
+            a = px[nx, ny][3]
+            if a == 0:
                 dist[i] = 0
                 dq.append((nx, ny))
-            elif d < band and edible(nx, ny, d):
+            elif d < band and a < 245:
                 dist[i] = d + 1
                 dq.append((nx, ny))
     for i in range(w*h):
@@ -101,22 +92,18 @@ def eat_fringe(im, band=5):
             px[x, y] = (r, g, b, 0)
     al = im.split()[3].filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(0.5))
     im.putalpha(al)
-    px = im.load()
-    for y in range(h):
-        for x in range(w):
-            r, g, b, a = px[x, y]
-            if 0 < a < 255 and (r + g + b) / 3 > 220:
-                px[x, y] = (r, g, b, 0)
     return im
 
 
 def add_black_outline(im, w=OUTLINE):
-    # 실루엣을 dilate 한 뒤 "바깥(테두리 flood)" 부분만 검게. 내부 틈/구멍은 제외.
+    # 검은 링을 "바깥(테두리 flood)" + "실루엣 경계 2px 밴드" 에 채우고, 본체는 1px 침식해
+    # 얹는다 -> 바깥 1px(밝은 키아웃 자국)만 검게 가려지고, 내부/빛광은 그대로.
     pad = w + 6
     canv = Image.new('RGBA', (im.width + pad*2, im.height + pad*2), (0, 0, 0, 0))
     canv.alpha_composite(im, (pad, pad))
     cw, ch = canv.size
-    ap = canv.split()[3].load()
+    a_full = canv.split()[3]
+    ap = a_full.load()
     solid = [1 if ap[x, y] >= 40 else 0 for y in range(ch) for x in range(cw)]
     outside = bytearray(cw * ch)
     dq = deque()
@@ -138,6 +125,8 @@ def add_black_outline(im, w=OUTLINE):
                 dq.append((nx, ny))
     solid_img = Image.new('L', (cw, ch), 0)
     solid_img.putdata([255 if s else 0 for s in solid])
+    solid_ero = solid_img.filter(ImageFilter.MinFilter(5))   # 2px 침식
+    erop = solid_ero.load()
     dil = solid_img.filter(ImageFilter.GaussianBlur(w * 0.85)).point(lambda v: 255 if v >= 26 else 0)
     dil = dil.filter(ImageFilter.GaussianBlur(1.0))
     dilp = dil.load()
@@ -145,11 +134,14 @@ def add_black_outline(im, w=OUTLINE):
     rp = ring.load()
     for y in range(ch):
         for x in range(cw):
-            if dilp[x, y] >= 40 and outside[y*cw+x]:
+            if dilp[x, y] >= 40 and (outside[y*cw+x] or erop[x, y] < 128):
                 rp[x, y] = dilp[x, y]
+    body_a = a_full.filter(ImageFilter.MinFilter(3))          # 본체 1px 침식
+    body = Image.new('RGBA', (cw, ch), (0, 0, 0, 0))
+    body.paste(canv, (0, 0), body_a)
     out = Image.new('RGBA', (cw, ch), (0, 0, 0, 0))
     out.paste(Image.new('RGBA', (cw, ch), (12, 12, 14, 255)), (0, 0), ring)
-    out.alpha_composite(canv)
+    out.alpha_composite(body)
     bb = out.split()[3].getbbox()
     return out.crop(bb) if bb else out
 
