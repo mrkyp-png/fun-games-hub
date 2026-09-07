@@ -20,7 +20,8 @@
   //  w    : 본체 폭 (보드 정사각 분수)  ·  ar : 이미지 높이/폭 비 (실측)
   //  mu,mv: 스프라이트 안 포구(포탄이 나오는 지점, 0~1) — 이 점이 (MZX+dx, MZY+dy) 에 온다
   //  dx,dy: 이 포즈만 포구 고정점에서 살짝 이동 (보드 분수, 없으면 0)
-  //  blx,bly: 이 포즈 포탄 발사시작점만 포구에서 추가 이동 (스프라이트는 안 움직임, 없으면 0)
+  //  blx,bly: 포탄 발사시작점 = 배럴 입구(포구) 검은 외곽선 중심. (fu-mu)*w, (fv-mv)*w*ar 로 계산
+  //           (fu,fv = 스프라이트 안 포구 opening 중심 실측). 스프라이트는 안 움직임.
   //  aim  : 이 포즈 포신이 겨누는 방향 (deg, 화면좌표)  ·  tweak : 미세 회전 허용치 (0 = 고정)
   // 새 대포 아트 5포즈 (Desktop 대포1~5 → cannon-a1~a5, 굵은 검은 외곽선). 얕은각→수직 순.
   // 값은 grid 스크린샷 실측 기반 1차치 — 스크린샷 보며 mu/mv/dx/dy/aim/w 조정.
@@ -31,11 +32,11 @@
   //   a5(-120°) = 3 6   a4(-92°) = 오른쪽 내비열(거의 수직)
   // v293 에서 MZX 우측 0.3cm 이동에 맞춰 aim 재보정. a4(최대각포)만 dx 로 상쇄해 제자리 고정(사용자 요청).
   const POSES = [
-    { key: 'a2', src: 'assets/weapons/cannon-a2.png', w: 0.270, ar: 0.924, mu: 0.08, mv: 0.52, aim: -191, tweak: 0, dx: -0.103, dy: 0.03 },
-    { key: 'a1', src: 'assets/weapons/cannon-a1.png', w: 0.280, ar: 0.833, mu: 0.07, mv: 0.14, aim: -164, tweak: 0, dx: -0.05, dy: 0.03, blx: -0.014 },
-    { key: 'a3', src: 'assets/weapons/cannon-a3.png', w: 0.242, ar: 1.159, mu: 0.32, mv: 0.09, aim: -144, tweak: 0, dx: 0.004, dy: -0.006, blx: -0.029 },
-    { key: 'a5', src: 'assets/weapons/cannon-a5.png', w: 0.225, ar: 1.256, mu: 0.17, mv: 0.09, aim: -120, tweak: 0, dx: -0.009, dy: -0.03 },
-    { key: 'a4', src: 'assets/weapons/cannon-a4.png', w: 0.216, ar: 1.220, mu: 0.48, mv: 0.06, aim: -92,  tweak: 0, dx: 0.001, dy: -0.04, bly: -0.029 }
+    { key: 'a2', src: 'assets/weapons/cannon-a2.png', w: 0.270, ar: 0.924, mu: 0.08, mv: 0.52, aim: -191, tweak: 0, dx: -0.103, dy: 0.03, blx: -0.001, bly: -0.022 },
+    { key: 'a1', src: 'assets/weapons/cannon-a1.png', w: 0.280, ar: 0.833, mu: 0.07, mv: 0.14, aim: -164, tweak: 0, dx: -0.05, dy: 0.03, blx: 0.003, bly: -0.002 },
+    { key: 'a3', src: 'assets/weapons/cannon-a3.png', w: 0.242, ar: 1.159, mu: 0.32, mv: 0.09, aim: -144, tweak: 0, dx: 0.004, dy: -0.006, blx: -0.046, bly: 0.011 },
+    { key: 'a5', src: 'assets/weapons/cannon-a5.png', w: 0.225, ar: 1.256, mu: 0.17, mv: 0.09, aim: -120, tweak: 0, dx: -0.009, dy: -0.03, blx: -0.002, bly: 0.006 },
+    { key: 'a4', src: 'assets/weapons/cannon-a4.png', w: 0.216, ar: 1.220, mu: 0.48, mv: 0.06, aim: -92,  tweak: 0, dx: 0.001, dy: -0.04, blx: 0.006, bly: 0.003 }
   ];
 
   const REST_KEY = 'a3';                   // 발사 후 되돌아갈 기본 대기 포즈 (1·2·5·9 담당, 사용자 지정)
