@@ -61,12 +61,14 @@
     }
   }
 
-  // 화면별 BGM. 파일 = audio/bgm-<screen>.mp3 (홈은 bgm-home-1~3, 방문마다 다음 곡).
+  // 화면별 BGM. 홈은 bgm-home-1~4, 게임은 bgm-game-1~2 — 각 화면 재진입마다 다음 곡으로 순환.
   // 화면에 들어올 때마다 playScreenBgm() 이 항상 처음부터 재생한다(사용자 요청).
   let bgm = null;          // <audio id="bgm">
   let currentBgm = 'audio/bgm-home-1.mp3'; // index.html 의 초기 src 와 일치
-  const HOME_BGM_COUNT = 3;
+  const HOME_BGM_COUNT = 4;
+  const GAME_BGM_COUNT = 2;
   let homeBgmIdx = 0;      // 첫 홈 방문 = bgm-home-1
+  let gameBgmIdx = 0;      // 첫 게임 진입 = bgm-game-1
 
   function bgmPlayIfEnabled() {
     if (!bgm) return;
@@ -84,6 +86,9 @@
     if (screen === 'home') {
       file = 'audio/bgm-home-' + (homeBgmIdx % HOME_BGM_COUNT + 1) + '.mp3';
       homeBgmIdx++;
+    } else if (screen === 'game') {
+      file = 'audio/bgm-game-' + (gameBgmIdx % GAME_BGM_COUNT + 1) + '.mp3';
+      gameBgmIdx++;
     } else {
       file = 'audio/bgm-' + screen + '.mp3';
     }
@@ -966,7 +971,7 @@
       moleImg.src = 'assets/round-moles/mole' + idx + '.png';
       setTimeout(() => {
         if (myGen !== sessionGen) return;
-        title.textContent = I18N.t('mole.round', { n: roundNum });
+        typeText(title, I18N.t('mole.round', { n: roundNum }), () => {}); // 글자 타이핑 + 타자기 소리
         overlay.classList.add('mole-in');
         moleImg.hidden = false;
         setTimeout(() => {

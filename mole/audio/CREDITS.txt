@@ -17,21 +17,27 @@
     NFT, 음원 스트리밍 서비스(Spotify 등)에 곡 자체로 등록. (게임 내장 BGM 사용은 허용)
   - 원본을 loudnorm(I=-16) + 128kbps 44.1kHz 스테레오로 재인코딩해 사용.
 
-  bgm-home-1.mp3  홈 화면 (3곡 순환 1/3)
+  bgm-home-1.mp3  홈 화면 (4곡 순환, 재진입마다 다음 곡)
     "Fun Kids Playful Comic Carefree Game Happy Positive Music" — REDproductions
     https://pixabay.com/music/upbeat-fun-kids-playful-comic-carefree-game-happy-positive-music-57026/
-  bgm-home-2.mp3  홈 화면 (3곡 순환 2/3)
+  bgm-home-2.mp3
     "Fun Game - Upbeat Happy Video Game Music" — Cyberwave-Orchestra
     https://pixabay.com/music/upbeat-fun-game-upbeat-happy-video-game-music-249646/
-  bgm-home-3.mp3  홈 화면 (3곡 순환 3/3)
+  bgm-home-3.mp3
     "Mobile Casual Video Game Music" — Ivan_Luzan
     https://pixabay.com/music/upbeat-mobile-casual-video-game-music-158301/
+  bgm-home-4.mp3
+    "Puzzle Game - Bright Casual Video Game Music" — Cyberwave-Orchestra
+    https://pixabay.com/music/video-games-puzzle-game-bright-casual-video-game-music-249202/
   bgm-more.mp3  더보기 메뉴 화면
     "Funny BGM Vol. 2" — Sekuora  (AI generated, Pixabay 등록곡)
     https://pixabay.com/music/upbeat-funny-bgm-vol-2-242432/
-  bgm-game.mp3  게임 플레이 화면
+  bgm-game-1.mp3  게임 플레이 화면 (2곡 순환, 재진입마다 다음 곡)
     "Energetic Party Game BGM" — Sekuora  (AI generated, Pixabay 등록곡)
     https://pixabay.com/music/video-games-energetic-party-game-bgm-242434/
+  bgm-game-2.mp3
+    "BGM Videogame Song" — Sekuora  (AI generated, Pixabay 등록곡)
+    https://pixabay.com/music/pop-bgm-videogame-song-242440/
 
   (구 bgm-boss-battle.mp3 는 v261 에서 삭제 — 화면별 BGM 으로 교체.)
 
