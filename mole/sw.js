@@ -3,7 +3,7 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-const CACHE = 'mole-game-v269';
+const CACHE = 'mole-game-v270';
 
 // 화면별 BGM(audio/bgm-home-1~4.mp3, bgm-more.mp3, bgm-game-1~2.mp3)은 SHELL 에 안 넣는다 —
 // BGM 은 기본 꺼짐이라 켜는 사람만 받으면 된다.

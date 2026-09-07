@@ -950,7 +950,12 @@
     });
   }
 
-  // "라운드 N" → 3·2·1·시작! 카운트다운을 보여주고 onDone 호출.
+  // 모든 라운드: 커튼 패턴(2.3s) 뒤 "라운드 N" 이 오른쪽에서(라운드2~ 는 두더지 이미지가
+  // 왼쪽에서) 날아와 중앙에 멈추면 한 글자씩 타이핑(+타자기 소리).
+  //  · 라운드 2~10: 잠깐 머문 뒤 타이틀은 왼쪽·두더지는 오른쪽으로 날아가며 커튼 오픈.
+  //  · 라운드 1: 타이핑 뒤 "라운드 1" 은 남고 3·2·1·GO 카운트다운(줌인 + 카운트별 색상, GO 는
+  //    흰 플래시). GO 에서 "라운드 1" 은 왼쪽으로, "GO" 는 오른쪽으로 날아가며 커튼 오픈.
+  //    (두더지 그림 없음. 카운트 효과음은 아직 미정 — 안 넣음.)
   function playRoundIntro(roundNum, onDone) {
     const myGen = sessionGen;
     const overlay = document.getElementById('round-intro-overlay');
@@ -960,98 +965,77 @@
     overlay.hidden = false;
     restartCurtainPattern(overlay);
 
-    // 2라운드부터: 카운트다운 없이 두더지 이미지(8종 순환) 잠깐 보여주고 바로 커튼 오픈.
-    // 커튼 패턴(노랑->분홍, 2.3s) 이 다 끝난 뒤에 타이틀은 오른쪽에서, 이미지는 왼쪽에서
-    // 날아와 중앙에서 만남(has-mole 진입 애니메이션). 커튼 열릴 땐 반대로 — 타이틀은 왼쪽
-    // 커텐과, 이미지는 오른쪽 커튼과 같은 타이밍/방향으로 퇴장.
-    if (roundNum > 1) {
-      count.hidden = true;
-      title.textContent = '';
-      moleImg.hidden = true;
-      // has-mole = 커튼에 패턴을 보여줄지(round1과 구분)만 담당 — 즉시 건다. 이게 늦게
-      // 걸리면 :not(.has-mole) 규칙이 ::before/::after 를 display:none 시켜놔서 패턴
-      // 애니메이션이 그동안 아예 진행이 안 되다가(display:none 이면 애니메이션 멈춤)
-      // 뒤늦게 한꺼번에 시작해버려 "패턴 덜 끝났는데 캐릭터부터 날아옴" 버그가 났었다.
-      // 타이틀/이미지 fly-in 트리거는 별도의 mole-in 클래스로 분리 — 이건 늦게(패턴 다
-      // 끝난 뒤) 건다.
-      overlay.classList.add('has-mole');
-      const idx = ((roundNum - 2) % 6) + 1; // 라운드2→mole1, 라운드3→mole2, ... 6개 돌면 반복(라운드8부터 다시 mole1)
-      moleImg.src = 'assets/round-moles/mole' + idx + '.png';
-      const FLY_IN_MS = 400;   // = ri-title-fly-in / ri-mole-fly-in 0.4s
-      const HOLD_AFTER_TYPE_MS = 480;
-      const full = I18N.t('mole.round', { n: roundNum });
-      const typeMs = full.replace(/ /g, '').length * 45; // typeText 는 45ms/글자
+    count.hidden = true;
+    count.className = 'round-intro-count';
+    title.textContent = '';
+    moleImg.hidden = true;
+    // has-mole = 커튼에 패턴을 보여줄지 담당 — 즉시 건다(늦게 걸면 display:none 규칙 때문에 패턴 애니가 멈춰있다 한꺼번에 시작).
+    overlay.classList.add('has-mole');
+    const showMole = roundNum > 1; // 라운드1 은 글자만 (사용자 지정)
+    const idx = ((roundNum - 2) % 6 + 6) % 6 + 1;
+    moleImg.src = 'assets/round-moles/mole' + idx + '.png';
+
+    const FLY_IN_MS = 400;         // = ri-title-fly-in 0.4s
+    const HOLD_AFTER_TYPE_MS = 480;
+    const full = I18N.t('mole.round', { n: roundNum });
+    const typeMs = full.replace(/ /g, '').length * 45; // typeText 는 45ms/글자
+
+    // 라운드1 전용: 타이핑 뒤 3·2·1·GO. 끝나면 finish() 호출.
+    function runCountdown(finish) {
+      count.hidden = false;
+      const STEPS = ['3', '2', '1', I18N.t('mole.count.go')];
+      let i = 0;
+      (function tick() {
+        if (myGen !== sessionGen) return;
+        const go = i >= 3;
+        count.textContent = STEPS[i];
+        count.className = 'round-intro-count ' + (go ? 'cgo' : 'c' + (3 - i)); // 카운트별 색상
+        void count.offsetWidth;
+        count.classList.add('pop'); // 줌인 애니
+        if (go) overlay.classList.add('go-flash'); // 흰 플래시
+        i++;
+        if (i < STEPS.length) setTimeout(tick, 650);
+        else setTimeout(finish, 360);
+      })();
+    }
+
+    // 커튼 오픈 + 정리 + onDone.
+    function openCurtainAndStart() {
+      if (myGen !== sessionGen) return;
+      // 입장 애니메이션(forwards)이 남아 transition 이 안 먹는 문제 — animation 먼저 끄고 리플로우 후 is-opening.
+      title.style.animation = 'none';
+      moleImg.style.animation = 'none';
+      void title.offsetWidth;
+      overlay.classList.add('is-opening'); // 타이틀 왼쪽 / 두더지·GO 오른쪽 / 커튼 오픈 (CSS)
+      setHammerLayerVisible(true);
       setTimeout(() => {
         if (myGen !== sessionGen) return;
-        // 1) "라운드 N" 이 오른쪽에서, 두더지가 왼쪽에서 날아와 중앙에서 만남 (0.4s)
-        title.textContent = full;
-        overlay.classList.add('mole-in');
-        moleImg.hidden = false;
-        // 2) 중앙에 멈추면 "라운드 N" 을 한 글자씩 다시 타이핑(+ 타자기 소리)
-        setTimeout(() => {
-          if (myGen !== sessionGen) return;
-          typeText(title, full, () => {});
-        }, FLY_IN_MS + 40);
-        // 3) 타이핑 끝나고 잠깐 머문 뒤, 타이틀은 왼쪽·두더지는 오른쪽으로 다시 날아감
-        setTimeout(() => {
-          if (myGen !== sessionGen) return;
-          // 입장 애니메이션(animation: ... forwards)이 끝나도 그 값이 transition보다 우선해
-          // 퇴장용 transform 전환이 아예 안 먹는 문제 — 애니메이션을 먼저 끄고 리플로우로
-          // 그 상태를 확정시킨 뒤에 is-opening을 걸어야 transition이 정상 작동한다.
-          title.style.animation = 'none';
-          moleImg.style.animation = 'none';
-          void title.offsetWidth;
-          overlay.classList.add('is-opening');
-          setHammerLayerVisible(true);
-          // 커튼(.ri-curtain, transition 0.26s) 이 다 사라지기 전에 두더지가 튀어나오는 게
-          // 보여서(사용자 보고) — 커튼 다 사라진 뒤 0.2초 더 쉬었다가 라운드 시작.
-          setTimeout(() => {
-            if (myGen !== sessionGen) return;
-            overlay.hidden = true;
-            overlay.classList.remove('is-opening', 'has-mole', 'mole-in');
-            moleImg.hidden = true;
-            title.style.animation = '';
-            moleImg.style.animation = '';
-          }, 260);
-          setTimeout(() => {
-            if (myGen !== sessionGen) return;
-            onDone();
-          }, 260 + 200);
-        }, FLY_IN_MS + 40 + typeMs + HOLD_AFTER_TYPE_MS); // 날아옴 → 타이핑 → 머무름 → 퇴장
-      }, 2300); // 커튼 패턴이 분홍으로 다 정리된 뒤에 타이틀/이미지 fly-in 시작
-      return;
+        overlay.hidden = true;
+        overlay.classList.remove('is-opening', 'has-mole', 'mole-in', 'go-flash');
+        count.hidden = true;
+        count.className = 'round-intro-count';
+        moleImg.hidden = true;
+        title.style.animation = '';
+        moleImg.style.animation = '';
+      }, 260);
+      setTimeout(() => { if (myGen === sessionGen) onDone(); }, 260 + 200);
     }
-    title.textContent = I18N.t('mole.round', { n: roundNum });
-    overlay.classList.remove('has-mole');
-    moleImg.hidden = true;
-    count.hidden = false;
-    const STEPS = ['3', '2', '1', I18N.t('mole.count.go')];
-    let i = 0;
-    function tick() {
-      if (myGen !== sessionGen) return; // 도중에 나가버림
-      count.textContent = STEPS[i];
-      count.classList.remove('pop');
-      void count.offsetWidth;
-      count.classList.add('pop');
-      i++;
-      if (i < STEPS.length) {
-        setTimeout(tick, 650);
-      } else {
-        // 마지막("시작!") 잠깐 보여준 뒤 커튼을 양쪽으로 확 연다.
-        setTimeout(() => {
-          if (myGen !== sessionGen) return;
-          overlay.classList.add('is-opening');
-          setHammerLayerVisible(true); // 전환 중 숨겨둔 망치(z 20, 커튼 위)를 커튼 열리며 복귀
-          onDone(); // 게임 루프는 커튼 열리는 동안 바로 시작
-          setTimeout(() => {
-            if (myGen !== sessionGen) return; // 다음 라운드 전환이 이미 커튼 다시 닫았으면 건드리지 않음
-            overlay.hidden = true;
-            overlay.classList.remove('is-opening');
-          }, 300); // 커튼 transition(0.26s) 후 정리
-        }, 380);
-      }
-    }
-    tick();
+
+    setTimeout(() => {
+      if (myGen !== sessionGen) return;
+      // 1) "라운드 N" 오른쪽에서, (라운드2~) 두더지 왼쪽에서 날아와 중앙에서 만남 (0.4s)
+      title.textContent = full;
+      overlay.classList.add('mole-in');
+      if (showMole) moleImg.hidden = false;
+      // 2) 중앙에 멈추면 "라운드 N" 을 한 글자씩 다시 타이핑(+ 타자기 소리)
+      setTimeout(() => { if (myGen === sessionGen) typeText(title, full, () => {}); }, FLY_IN_MS + 40);
+      // 3) 타이핑 끝난 뒤 — 라운드1: 3·2·1·GO 후 커튼 / 라운드2~: 바로 퇴장 + 커튼
+      setTimeout(() => {
+        if (myGen !== sessionGen) return;
+        if (roundNum === 1) runCountdown(openCurtainAndStart);
+        else openCurtainAndStart();
+      }, FLY_IN_MS + 40 + typeMs + HOLD_AFTER_TYPE_MS);
+    }, 2300); // 커튼 패턴이 분홍으로 다 정리된 뒤에 타이틀 fly-in 시작
   }
 
   // ---------- 메인 루프 ----------
