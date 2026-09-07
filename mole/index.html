@@ -39,7 +39,7 @@
 <div id="splash" role="img" aria-label="두더지팡!"><img src="assets/loading.png" alt=""></div>
 <div class="cosmic-bg">
 
-  <audio id="bgm" loop preload="auto" src="audio/bgm-boss-battle.mp3"></audio>
+  <audio id="bgm" loop preload="auto" src="audio/bgm-home-1.mp3"></audio>
 
   <!-- 화면은 하나 = 폴더폰. 시작 UI·카운트다운·라운드완료·결과 모두 게임 박스(#mole-board) 안에서 뜬다
        (게임 화면이 휴대폰 컨셉이라 — 사용자 요청). is-start 클래스가 붙어있으면 시작 상태. -->
@@ -115,7 +115,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v260</div>
+      <div id="build-tag" aria-hidden="true">v261</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -497,7 +497,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=254').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=261').catch(function () {});
       }
     });
   }

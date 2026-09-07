@@ -61,14 +61,40 @@
     }
   }
 
-  let bgm = null; // <audio id="bgm">
-  function syncBgm(playIntent) {
+  // 화면별 BGM. 파일 = audio/bgm-<screen>.mp3 (홈은 bgm-home-1~3, 방문마다 다음 곡).
+  // 화면에 들어올 때마다 playScreenBgm() 이 항상 처음부터 재생한다(사용자 요청).
+  let bgm = null;          // <audio id="bgm">
+  let currentBgm = 'audio/bgm-home-1.mp3'; // index.html 의 초기 src 와 일치
+  const HOME_BGM_COUNT = 3;
+  let homeBgmIdx = 0;      // 첫 홈 방문 = bgm-home-1
+
+  function bgmPlayIfEnabled() {
     if (!bgm) return;
-    if (window.FGH.Settings.get('music') && playIntent) {
-      bgm.play().catch(() => { /* 자동재생 차단 — 다음 제스처/토글에 재시도 */ });
+    if (window.FGH.Settings.get('music')) {
+      bgm.play().catch(() => { /* 자동재생 차단 — 다음 제스처/화면전환에 재시도 */ });
     } else {
       bgm.pause();
     }
+  }
+
+  // screen: 'home' | 'more' | 'game'. 매 진입마다 해당 트랙을 처음부터.
+  function playScreenBgm(screen) {
+    if (!bgm) return;
+    let file;
+    if (screen === 'home') {
+      file = 'audio/bgm-home-' + (homeBgmIdx % HOME_BGM_COUNT + 1) + '.mp3';
+      homeBgmIdx++;
+    } else {
+      file = 'audio/bgm-' + screen + '.mp3';
+    }
+    if (currentBgm !== file) {
+      currentBgm = file;
+      bgm.src = file;
+      bgm.load(); // 처음부터
+    } else {
+      bgm.currentTime = 0;
+    }
+    bgmPlayIfEnabled();
   }
 
   // ---------- 더보기 메뉴 / 난이도 / 사람두더지 (독립앱 Phase 1) ----------
@@ -204,11 +230,13 @@
     frame(t0);
   }
 
-  // 글자 하나씩 타이핑, 다 치면 onTyped 호출.
+  // 글자 하나씩 타이핑, 다 치면 onTyped 호출. 글자가 보일 때마다 타자기 소리(공백 제외).
   function typeText(el, text, onTyped) {
     let i = 0;
     (function step() {
       el.textContent = text.slice(0, i);
+      const ch = text[i - 1];
+      if (i > 0 && ch && ch !== ' ') MG.HitFx.typeTick();
       i++;
       if (i <= text.length) setTimeout(step, 45);
       else onTyped();
@@ -458,6 +486,7 @@
     var mm = document.getElementById('more-menu');
     mm.classList.toggle('mm-paused', resumable);
     mm.hidden = false;
+    playScreenBgm('more'); // 더보기 화면 진입 — 더보기 BGM 을 처음부터
     if (moreMenu) moreMenu.refresh();
     if (sub) {
       screenNav.show(sub);
@@ -477,6 +506,8 @@
     screenNav.reset();
     flipSwap(mm, document.getElementById('mole-board')); // 이어가기 → 게임화면 (3D 플립)
     mm.classList.remove('mm-paused');
+    playScreenBgm('game'); // 게임 화면으로 복귀 — 게임 BGM 을 처음부터
+
     // 열 때 멈춘 게임이면 재개.
     if (state.pausedByMenu) {
       state.paused = false;
@@ -514,7 +545,7 @@
     state = null;
     run = null;
     setPauseUI(false);
-    syncBgm(false); // 허브 시작 화면으로 나오면 BGM 정지
+    playScreenBgm('home'); // 홈 진입 — 홈 BGM(3곡 순환)을 처음부터
     const go = document.getElementById('gameover-overlay');
     go.hidden = true; go.classList.remove('is-win', 'is-lose', 'is-sliding');
     const cf = go.querySelector('.go-confetti'); if (cf) cf.innerHTML = '';
@@ -834,7 +865,9 @@
       if (screenNav) screenNav.reset();
       document.getElementById('more-menu').hidden = true;
     }
-    syncBgm(true); // 시작 버튼(사용자 제스처) 이후 — 설정에서 켜져 있으면 재생
+    // 새 게임(fresh)일 때만 게임 BGM 을 처음부터. 라운드 2~10 전환에선 이어서 재생.
+    if (opts && opts.fresh) playScreenBgm('game');
+    else bgmPlayIfEnabled();
     MG.HitFx.warmup(); // 오디오 컨텍스트 + 타격음 파일 프리로드 (카운트다운 동안)
 
     const rng = { next: MG.RNG.mulberry32(MG.RNG.hashSeed('mole-r' + roundNum + '-' + Date.now())) };
@@ -1436,8 +1469,14 @@
     bgm = document.getElementById('bgm');
     bgm.volume = 0.35;
     window.FGH.Settings.onChange((name) => {
-      if (name === 'music') syncBgm(state && !state.ended);
+      if (name === 'music') bgmPlayIfEnabled();
     });
+    // 홈 BGM 선택·재생은 아래 showStartScreen({skipFlash:true}) 이 담당.
+    // 자동재생은 보통 차단되므로 첫 사용자 제스처에 한 번 재시도.
+    window.addEventListener('pointerdown', function once() {
+      window.removeEventListener('pointerdown', once);
+      bgmPlayIfEnabled();
+    }, { once: true });
     // 언어 전환 시 JS 로 채운 동적 문구도 다시 그린다 (applyStatic 이 못 건드리는 것들).
     I18N.onChange(() => {
       const mm = document.getElementById('more-menu');

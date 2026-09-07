@@ -81,6 +81,26 @@
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
+  // 챕터 인트로 타이핑 — 글자 하나당 아주 짧은 "톡" (합성, 파일 불필요). sfx 설정 따름.
+  function typeTick() {
+    if (sfxOff()) return;
+    try {
+      const ctx = getCtx();
+      if (!ctx) return;
+      const t = ctx.currentTime;
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'square';
+      o.frequency.value = 1500 + Math.random() * 500;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.05, t + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.03);
+      o.connect(g).connect(ctx.destination);
+      o.start(t);
+      o.stop(t + 0.045);
+    } catch (e) { /* 오디오 불가 환경 무시 */ }
+  }
+
   // 파일 로드 전/실패 시 폴백용 합성 프리셋 5종.
   // [몸통시작Hz, 몸통끝Hz, 몸통길이s, 노이즈 로우패스Hz, 노이즈길이s, 노이즈비중]
   const PUNCH_PRESETS = [
@@ -287,6 +307,6 @@
   // 게임 시작(사용자 제스처) 직후 호출 — 카운트다운 동안 오디오 컨텍스트 + 타격음 파일을 미리 준비.
   function warmup() { try { getCtx(); } catch (e) { /* noop */ } }
 
-  const api = { moleHit, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap };
+  const api = { moleHit, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);
