@@ -7,7 +7,7 @@
 
   var WEAPONS = [
     { id: 'hammer', name: '뽕망치', nameEn: 'Mallet', thumb: 'assets/hammer.png' },
-    { id: 'cannon', name: '대포', nameEn: 'Cannon', thumb: 'assets/weapons/cannon.png' }
+    { id: 'cannon', name: '대포', nameEn: 'Cannon', thumb: 'assets/weapons/cannon-a1.png' }
   ];
 
   function create(opts) {

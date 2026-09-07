@@ -16,31 +16,27 @@
                                           //  대포 본체는 여기서 우하단으로 뻗어 대부분 화면 밖(입체감).
 
   // 포즈 표 (튜닝 노브). 화면좌표 각도: 0=오른쪽, -90=위, 좌상향은 -180~-90.
-  //  w    : 본체 폭 (보드 정사각 분수)
-  //  ar   : 이미지 높이/폭 비 (cannon-low 586x479=0.817, cannon 287x340=1.185, cannon-steep 333x512=1.538)
+  //  w    : 본체 폭 (보드 정사각 분수)  ·  ar : 이미지 높이/폭 비 (실측)
   //  mu,mv: 스프라이트 안 포구(포탄이 나오는 지점, 0~1) — 이 점이 (MZX+dx, MZY+dy) 에 온다
   //  dx,dy: 이 포즈만 포구 고정점에서 살짝 이동 (보드 분수, 없으면 0)
-  //  aim  : 이 포즈 포신이 겨누는 방향 (deg, 화면좌표)
-  //  tweak: 존 안에서 허용하는 미세 회전 최대치 (deg)
-  // tweak 전부 0: 미세조준 회전을 셋 다 없앤다. 회전축(포구)이 그림 위쪽에 있고 바퀴는
-  // 한참 아래라, 조금만 돌아도 바퀴 쪽이 크게 휩쓸려 "넘어지는" 것처럼 보였다(steep에서
-  // 스크린샷으로 확인). 각도 정확도보다 "항상 안정적으로 서있음"을 우선한다 — 포탄은
-  // 어차피 실제 목표 좌표로 직접 날아가므로 명중에는 지장 없다.
+  //  aim  : 이 포즈 포신이 겨누는 방향 (deg, 화면좌표)  ·  tweak : 미세 회전 허용치 (0 = 고정)
+  // 새 대포 아트 5포즈 (Desktop 대포1~5 → cannon-a1~a5, 굵은 검은 외곽선). 얕은각→수직 순.
+  // 값은 grid 스크린샷 실측 기반 1차치 — 스크린샷 보며 mu/mv/dx/dy/aim/w 조정.
   const POSES = [
-    { key: 'low',   src: 'assets/weapons/cannon-low.png',   w: 0.291, ar: 0.817,
-      mu: 0.055, mv: 0.15, aim: -152, tweak: 0, dx: -0.07 },
-    { key: 'mid',   src: 'assets/weapons/cannon.png',       w: 0.266, ar: 1.185,
-      mu: 0.07,  mv: 0.15, aim: -138, tweak: 0, dx: -0.014 },
-    { key: 'steep', src: 'assets/weapons/cannon-steep.png', w: 0.223, ar: 1.538,
-      mu: 0.50,  mv: 0.05, aim: -94,  tweak: 0, dx: 0.045, dy: -0.06 }
+    { key: 'a2', src: 'assets/weapons/cannon-a2.png', w: 0.32, ar: 0.909, mu: 0.07, mv: 0.16, aim: -162, tweak: 0, dx: -0.06, dy: 0.03 },
+    { key: 'a1', src: 'assets/weapons/cannon-a1.png', w: 0.31, ar: 0.833, mu: 0.07, mv: 0.14, aim: -156, tweak: 0, dx: -0.05, dy: 0.03 },
+    { key: 'a3', src: 'assets/weapons/cannon-a3.png', w: 0.28, ar: 1.159, mu: 0.32, mv: 0.09, aim: -128, tweak: 0, dx: -0.01, dy: -0.02 },
+    { key: 'a5', src: 'assets/weapons/cannon-a5.png', w: 0.25, ar: 1.392, mu: 0.17, mv: 0.09, aim: -113, tweak: 0, dx: 0.02, dy: -0.035 },
+    { key: 'a4', src: 'assets/weapons/cannon-a4.png', w: 0.26, ar: 1.220, mu: 0.48, mv: 0.06, aim: -92,  tweak: 0, dx: 0.03, dy: -0.05 }
   ];
+  const STEEP_KEY = 'a4';  // 3번 구멍(거의 수직) 회전용 포즈
 
   // 3번 버튼(row0,col2) 구멍만 예외: steep 각도(-94°)와 15.4° 차이나서 tweak=0이면
   // 안 맞아 보임. 이 구멍만 "정확히 필요한 각도로 고정 회전 → 발사 → 반동" 순서로 처리
   // (범위 허용이 아니라 그 각도 하나로 딱 돈다) — 나머지 steep 구멍은 그대로 고정.
   const HOLE3_X = 0.625, HOLE3_Y = 0.27;
 
-  const REST_KEY = 'mid';                  // 발사 후 되돌아갈 기본 대기 포즈
+  const REST_KEY = 'a1';                   // 발사 후 되돌아갈 기본 대기 포즈
   const AIM_DEG_FALLBACK = -120;           // pose 없을 때 반동 방향 계산용
 
   // 발사 이펙트 = 스파크(fx1) → 불+연기(fx4) → 잔여 연기(fx5), 3장 순차 재생.
@@ -56,14 +52,9 @@
   // 이동, 각도 우측(시계방향)으로 10도 추가 회전. 스파크/연기는 이상 없어 그대로 둠.
   // 보드 실측 가로폭을 안 주셔서 폰 화면 가로 ~7cm로 가정해 cm→보드분수 환산 — 실물이 다르면
   // 아래 dx/dy를 (원하는cm / 7 * 실제cm) 로 재계산.
-  const BOARD_W_CM_ASSUMED = 7;
-  const BURN_NUDGE = {
-    mid: { dx: 0.2 / BOARD_W_CM_ASSUMED, dy: -0.4 / BOARD_W_CM_ASSUMED, rot: 10 },
-    // steep(가장 오른쪽 구멍들) 화염 — 스크린샷 보며 2차 조정: 우측 0.1cm 이동 + 각도 추가 5도(누적 10도)
-    steep: { dx: 0.1 / BOARD_W_CM_ASSUMED, rot: 10 },
-    low: { rot: -5 }  // low(가장 왼쪽 구멍들) 화염 각도만 반시계 5도
-  };
-  const FX_BASE_AIM = -156;                // 세 장 공통 회전 기준각 (fx1 -149°, fx4 -163° 실측 평균)
+  // 포즈별 화염(burn) 미세보정 — 새 아트라 일단 비움. 스크린샷 보며 { dx, dy, rot } 채운다.
+  const BURN_NUDGE = {};
+  const FX_BASE_AIM = -156;                // fx 스프라이트가 그려진 기준각 (fx1 -149°, fx4 -163° 평균)
   // 앵커(mu,mv) = 밝은 코어와 "뒷끝(포신에 안 겹치는 경계)"의 중간점. 뒷끝만 쓰면 안 겹치긴
   // 하는데 코어가 포구에서 26~30%나 멀어져 불빛이 동떨어져 보였다(실측 후 수정) — 코어 쪽으로
   // 절반 당겨서 포구에 붙어 보이면서도 포신 겹침은 최소화.
@@ -119,7 +110,7 @@
 
     // steep 포즈의 바퀴(캐리지) 위치 — 3번 구멍 회전축용. 포구(mv=0.05)에서 세로로
     // STEEP_WHEEL_MV 지점까지 내려간 곳(그림 세로 92% 부근, 바퀴가 있는 자리).
-    const steepPose = POSES.find((p) => p.key === 'steep');
+    const steepPose = POSES.find((p) => p.key === STEEP_KEY) || POSES[POSES.length - 1];
     const STEEP_WHEEL_MV = 0.92;
     function steepWheelPivot() {
       const height = steepPose.w * steepPose.ar;

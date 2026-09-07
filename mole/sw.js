@@ -3,7 +3,7 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-const CACHE = 'mole-game-v285';
+const CACHE = 'mole-game-v286';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -28,9 +28,11 @@ const SHELL = [
   './assets/cloud1.png',
   './assets/cloud2.png',
   './assets/hammer.png',
-  './assets/weapons/cannon.png',
-  './assets/weapons/cannon-low.png',
-  './assets/weapons/cannon-steep.png',
+  './assets/weapons/cannon-a1.png',
+  './assets/weapons/cannon-a2.png',
+  './assets/weapons/cannon-a3.png',
+  './assets/weapons/cannon-a4.png',
+  './assets/weapons/cannon-a5.png',
   './assets/weapons/cannon-ball.png',
   './assets/weapons/cannon-fx1.png',
   './assets/weapons/cannon-fx4.png',
