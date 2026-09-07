@@ -4,12 +4,12 @@
   // 무기 스킨: 대포. lane-hammer.js 와 같은 인터페이스
   // (create({layer}) → { strike, update, isBusy, home, clear }).
   //
-  // 조준 = 스프라이트 1개 회전이 아니라 **3포즈**. 목표 구멍 각도로 가장 가까운
-  // 포즈를 골라 표시하고, 존 안에서만 살짝 회전(tweak)해 정확히 겨눈다.
-  // 포구는 항상 보드의 고정점(MZX,MZY)에 고정 — 포탄·화염·연기는 **무조건 거기서**
-  // 포신 각도로 나간다. 본체는 거기서 우하단으로 뻗어 거의 화면 밖.
+  // 조준 = 스프라이트 회전이 아니라 **5포즈**(키패드 버튼 그룹별). 목표 구멍 각도로 가장
+  // 가까운 포즈를 골라 표시한다 (tweak=0 = 포즈 각도 그대로, 미세회전 없음 — 모든 구멍 동일).
+  // 포구는 항상 보드의 고정점(MZX,MZY) 기준 — 포탄·화염·연기는 거기서 포신 각도로 나간다.
+  // 본체는 거기서 우하단으로 뻗어 거의 화면 밖.
   //
-  // 순서: 포즈 선택 + 미세 조준 → 발사(화염·연기·포탄) → 반동 → 원위치.
+  // 순서: 포즈 선택 → 발사(화염·연기·포탄) → 반동 → 원위치.
   // 명중감은 game.js HitFx (impactCb = 포탄 도착 시).
 
   const MZX = 0.870, MZY = 0.801;          // 포구 고정점 (보드 분수) — 여기서 포탄이 나간다.
@@ -20,6 +20,7 @@
   //  w    : 본체 폭 (보드 정사각 분수)  ·  ar : 이미지 높이/폭 비 (실측)
   //  mu,mv: 스프라이트 안 포구(포탄이 나오는 지점, 0~1) — 이 점이 (MZX+dx, MZY+dy) 에 온다
   //  dx,dy: 이 포즈만 포구 고정점에서 살짝 이동 (보드 분수, 없으면 0)
+  //  blx,bly: 이 포즈 포탄 발사시작점만 포구에서 추가 이동 (스프라이트는 안 움직임, 없으면 0)
   //  aim  : 이 포즈 포신이 겨누는 방향 (deg, 화면좌표)  ·  tweak : 미세 회전 허용치 (0 = 고정)
   // 새 대포 아트 5포즈 (Desktop 대포1~5 → cannon-a1~a5, 굵은 검은 외곽선). 얕은각→수직 순.
   // 값은 grid 스크린샷 실측 기반 1차치 — 스크린샷 보며 mu/mv/dx/dy/aim/w 조정.
@@ -31,17 +32,11 @@
   // v293 에서 MZX 우측 0.3cm 이동에 맞춰 aim 재보정. a4(최대각포)만 dx 로 상쇄해 제자리 고정(사용자 요청).
   const POSES = [
     { key: 'a2', src: 'assets/weapons/cannon-a2.png', w: 0.270, ar: 0.72, mu: 0.07, mv: 0.18, aim: -191, tweak: 0, dx: -0.06, dy: 0.03 },
-    { key: 'a1', src: 'assets/weapons/cannon-a1.png', w: 0.280, ar: 0.833, mu: 0.07, mv: 0.14, aim: -164, tweak: 0, dx: -0.05, dy: 0.03 },
-    { key: 'a3', src: 'assets/weapons/cannon-a3.png', w: 0.242, ar: 1.159, mu: 0.32, mv: 0.09, aim: -144, tweak: 0, dx: -0.01, dy: -0.02 },
-    { key: 'a5', src: 'assets/weapons/cannon-a5.png', w: 0.201, ar: 1.392, mu: 0.17, mv: 0.09, aim: -120, tweak: 0, dx: -0.009, dy: -0.03 },
-    { key: 'a4', src: 'assets/weapons/cannon-a4.png', w: 0.216, ar: 1.220, mu: 0.48, mv: 0.06, aim: -92,  tweak: 0, dx: 0.001, dy: -0.04 }
+    { key: 'a1', src: 'assets/weapons/cannon-a1.png', w: 0.280, ar: 0.833, mu: 0.07, mv: 0.14, aim: -164, tweak: 0, dx: -0.05, dy: 0.03, blx: -0.014 },
+    { key: 'a3', src: 'assets/weapons/cannon-a3.png', w: 0.242, ar: 1.159, mu: 0.32, mv: 0.09, aim: -144, tweak: 0, dx: 0.004, dy: -0.006, blx: -0.029 },
+    { key: 'a5', src: 'assets/weapons/cannon-a5.png', w: 0.225, ar: 1.256, mu: 0.17, mv: 0.09, aim: -120, tweak: 0, dx: -0.009, dy: -0.03 },
+    { key: 'a4', src: 'assets/weapons/cannon-a4.png', w: 0.216, ar: 1.220, mu: 0.48, mv: 0.06, aim: -92,  tweak: 0, dx: 0.001, dy: -0.04, bly: -0.029 }
   ];
-  const STEEP_KEY = 'a4';  // 3번 구멍(거의 수직) 회전용 포즈
-
-  // 3번 버튼(row0,col2) 구멍만 예외: steep 각도(-94°)와 15.4° 차이나서 tweak=0이면
-  // 안 맞아 보임. 이 구멍만 "정확히 필요한 각도로 고정 회전 → 발사 → 반동" 순서로 처리
-  // (범위 허용이 아니라 그 각도 하나로 딱 돈다) — 나머지 steep 구멍은 그대로 고정.
-  const HOLE3_X = 0.625, HOLE3_Y = 0.27;
 
   const REST_KEY = 'a3';                   // 발사 후 되돌아갈 기본 대기 포즈 (1·2·5·9 담당, 사용자 지정)
   const AIM_DEG_FALLBACK = -120;           // pose 없을 때 반동 방향 계산용
@@ -59,8 +54,12 @@
   // 이동, 각도 우측(시계방향)으로 10도 추가 회전. 스파크/연기는 이상 없어 그대로 둠.
   // 보드 실측 가로폭을 안 주셔서 폰 화면 가로 ~7cm로 가정해 cm→보드분수 환산 — 실물이 다르면
   // 아래 dx/dy를 (원하는cm / 7 * 실제cm) 로 재계산.
-  // 포즈별 화염(burn) 미세보정 — 새 아트라 일단 비움. 스크린샷 보며 { dx, dy, rot } 채운다.
-  const BURN_NUDGE = {};
+  // 포즈별 화염(burn) 미세보정 { dx, dy, rot } — burn(fx4)에만 적용. rot 는 CSS 회전(+ 시계).
+  const BURN_NUDGE = {
+    a1: { rot: -10 },  // 4·7·8번 포: 화염 반시계 10도 (사용자 요청)
+    a3: { rot: -10 },  // 대기포(1·2·5·9): 화염 반시계 10도 (사용자 요청)
+    a4: { rot: -10 }   // 제일우측 포: 화염 반시계 10도 (사용자 요청)
+  };
   const FX_BASE_AIM = -156;                // fx 스프라이트가 그려진 기준각 (fx1 -149°, fx4 -163° 평균)
   // 앵커(mu,mv) = 밝은 코어와 "뒷끝(포신에 안 겹치는 경계)"의 중간점. 뒷끝만 쓰면 안 겹치긴
   // 하는데 코어가 포구에서 26~30%나 멀어져 불빛이 동떨어져 보였다(실측 후 수정) — 코어 쪽으로
@@ -72,9 +71,6 @@
   const SMOKE_SRC = 'assets/weapons/cannon-fx5.png', SMOKE_W = 0.17; // 잔여 연기 — 오래 옅어짐
   const SMOKE_MU = 0.740, SMOKE_MV = 0.686; // fx5: 무게중심(0.584,0.530)~뒷끝(0.896,0.841) 중간
   const AIM_MS = 90;                       // 포즈 전환 + 미세 조준
-  const HOLE3_AIM_MS = 90;                 // 3번 구멍 — 처음엔 눈에 보이게 340ms로 늘렸으나
-                                            // 사용자가 "포탄이 다다다다 나와야해"(연사) 라서
-                                            // 원래 속도(다른 구멍과 동일)로 되돌림.
   const RECOIL = [0.012, 0.024, 0.040];    // 살짝/보통/강 (보드 분수)
   const KICK_SEC = 0.06, SETTLE_SEC = 0.34;
   const BALL_MS = 105;
@@ -84,12 +80,6 @@
   function ease(k) { return k * k; }
   function easeOut(k) { return 1 - (1 - k) * (1 - k); }
   function angDiff(a, b) { let d = (a - b) % 360; if (d > 180) d -= 360; if (d < -180) d += 360; return d; }
-  // 점 (px,py)를 축 (ox,oy) 기준으로 deg만큼 회전 (CSS rotate와 같은 방향, 화면좌표 y-down).
-  function rotateAround(px, py, ox, oy, deg) {
-    const r = deg * Math.PI / 180, c = Math.cos(r), s = Math.sin(r);
-    const dx = px - ox, dy = py - oy;
-    return { x: ox + dx * c - dy * s, y: oy + dx * s + dy * c };
-  }
 
   function create({ layer }) {
     const el = document.createElement('div');
@@ -114,15 +104,6 @@
     // 포즈별 유효 포구 고정점 (dx/dy 반영)
     function ax(p) { return MZX + (p && p.dx || 0); }
     function ay(p) { return MZY + (p && p.dy || 0); }
-
-    // steep 포즈의 바퀴(캐리지) 위치 — 3번 구멍 회전축용. 포구(mv=0.05)에서 세로로
-    // STEEP_WHEEL_MV 지점까지 내려간 곳(그림 세로 92% 부근, 바퀴가 있는 자리).
-    const steepPose = POSES.find((p) => p.key === STEEP_KEY) || POSES[POSES.length - 1];
-    const STEEP_WHEEL_MV = 0.92;
-    function steepWheelPivot() {
-      const height = steepPose.w * steepPose.ar;
-      return { x: ax(steepPose), y: ay(steepPose) + (STEEP_WHEEL_MV - steepPose.mv) * height };
-    }
 
     // 회전축 = 포구 고정점. 미세 조준·반동 모두 rig 통째로.
     rig.style.transformOrigin = (MZX * 100).toFixed(2) + '% ' + (MZY * 100).toFixed(2) + '%';
@@ -184,11 +165,6 @@
       const tx = (typeof targetXFrac === 'number') ? targetXFrac : 0.5;
       const ty = (typeof targetYFrac === 'number') ? targetYFrac : 0.3;
 
-      // 3번 구멍이면 tweak 무시하고 정확히 필요한 각도로 고정 회전(회전축도 바퀴로 교체 —
-      // 아래에서 계속 설명). HOLE3_AIM_MS 를 늘려 회전을 눈에 보이게 했다가, 그 대기시간
-      // 동안 재입력을 막는 부작용(연사 "다다다다" 안 됨)이 생겨 다시 다른 구멍과 같은
-      // 속도로 되돌림 — 연사가 최우선(사용자 요청).
-      const isHole3 = Math.abs(tx - HOLE3_X) < 0.01 && Math.abs(ty - HOLE3_Y) < 0.01;
       clearTimers();
 
       // 포구 → 목표 방향
@@ -198,23 +174,18 @@
       showPose(best);
 
       resFrom = residual;
-      resTo = isHole3 ? angDiff(want, best.aim) : clamp(angDiff(want, best.aim), -best.tweak, best.tweak);
+      resTo = clamp(angDiff(want, best.aim), -best.tweak, best.tweak);
       resT = 0;
-      curAimMs = isHole3 ? HOLE3_AIM_MS : AIM_MS;
+      curAimMs = AIM_MS;
       phase = 'aim'; t = 0;
       recoilAmt = RECOIL[Math.floor(Math.random() * RECOIL.length)];
-
-      const pivot = isHole3 ? steepWheelPivot() : { x: MZX, y: MZY };
-      rig.style.transformOrigin = (pivot.x * 100).toFixed(2) + '% ' + (pivot.y * 100).toFixed(2) + '%';
 
       after(curAimMs, () => {
         phase = 'kick'; t = 0;
         playFx();
 
-        // 포탄은 회전된 실제 포구 위치(바퀴축 기준으로 resTo만큼 돈 자리)에서 나간다.
-        const muzzle = isHole3
-          ? rotateAround(ax(best), ay(best), pivot.x, pivot.y, resTo)
-          : { x: ax(best), y: ay(best) };
+        // 포탄 발사시작점. blx/bly = 이 포즈만 추가 미세이동 (스프라이트는 그대로).
+        const muzzle = { x: ax(best) + (best.blx || 0), y: ay(best) + (best.bly || 0) };
         ball.style.transition = 'none';
         ball.style.left = (muzzle.x * 100).toFixed(2) + '%';
         ball.style.top = (muzzle.y * 100).toFixed(2) + '%';
