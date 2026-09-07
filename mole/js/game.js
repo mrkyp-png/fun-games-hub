@@ -950,92 +950,96 @@
     });
   }
 
-  // 라운드 1: 챕터 인트로 커튼이 방금 열렸다 → 커튼/타이틀 없이 보드 위에서 바로 3·2·1·GO!
-  //           (영어 고정, 색상/플래시 없음, 두더지 그림 없음 — 사용자 지정.)
-  // 라운드 2~10: 커튼 패턴(2.3s) 뒤 "라운드 N" 이 오른쪽에서·두더지 이미지가 왼쪽에서 날아와
-  //           중앙에서 만나고, 멈추면 한 글자씩 타이핑(+타자기 소리), 잠깐 뒤 좌/우로 퇴장 + 커튼 오픈.
+  // 모든 라운드: "라운드 N" 이 오른쪽에서(라운드2~ 는 두더지 이미지가 왼쪽에서) 날아와 중앙에
+  // 멈추면 한 글자씩 타이핑(+타자기 소리).
+  //  · 라운드 2~10: 분홍 커튼 패턴(2.3s) 뒤 시작 → 타이핑 후 타이틀 왼쪽·두더지 오른쪽 퇴장 + 커튼 오픈.
+  //  · 라운드 1: 챕터 인트로가 방금 커튼을 보여줬으니 커튼 없이(투명 오버레이, 보드 비침) 바로
+  //    "라운드 1" fly-in → 타이핑 → 3·2·1·GO! 카운트다운(줌인 + 색상 3빨/2주/1노/GO초, GO 는 흰
+  //    플래시). GO 에서 "라운드 1" 은 왼쪽·"GO!" 는 오른쪽으로 빛처럼 사라진다. (두더지 그림 없음.)
   function playRoundIntro(roundNum, onDone) {
     const myGen = sessionGen;
     const overlay = document.getElementById('round-intro-overlay');
     const title = document.getElementById('round-intro-title');
     const count = document.getElementById('round-intro-count');
     const moleImg = document.getElementById('round-intro-mole');
-
-    if (roundNum === 1) {
-      overlay.hidden = false;
-      overlay.classList.remove('has-mole', 'mole-in', 'is-opening', 'go-flash'); // 투명 오버레이 — 보드가 비침
-      title.textContent = '';
-      moleImg.hidden = true;
-      count.hidden = true;
-      count.className = 'round-intro-count';
-      const STEPS = ['3', '2', '1', 'GO!']; // 무조건 영어 (사용자 지정)
-      setTimeout(() => {                     // 챕터 커튼이 다 열린 뒤 바로 시작
-        if (myGen !== sessionGen) return;
-        count.hidden = false;
-        let i = 0;
-        (function tick() {
-          if (myGen !== sessionGen) return;
-          count.textContent = STEPS[i];
-          count.classList.remove('pop');
-          void count.offsetWidth;
-          count.classList.add('pop');
-          i++;
-          if (i < STEPS.length) setTimeout(tick, 650);
-          else setTimeout(() => {
-            if (myGen !== sessionGen) return;
-            overlay.hidden = true;
-            count.hidden = true;
-            count.classList.remove('pop');
-            setHammerLayerVisible(true);
-            onDone();
-          }, 460);
-        })();
-      }, 300);
-      return;
-    }
+    const isR1 = roundNum === 1;
 
     overlay.hidden = false;
-    restartCurtainPattern(overlay);
     count.hidden = true;
     count.className = 'round-intro-count';
     title.textContent = '';
     moleImg.hidden = true;
-    overlay.classList.add('has-mole');
-    const idx = ((roundNum - 2) % 6) + 1; // 라운드2→mole1 …
+    if (isR1) {
+      overlay.classList.remove('has-mole', 'mole-in', 'is-opening', 'go-flash'); // 커튼 효과 없음(투명)
+    } else {
+      restartCurtainPattern(overlay);
+      overlay.classList.add('has-mole'); // 분홍 커튼 패턴
+    }
+    const showMole = !isR1; // 라운드1 은 글자만
+    const idx = ((roundNum - 2) % 6 + 6) % 6 + 1;
     moleImg.src = 'assets/round-moles/mole' + idx + '.png';
 
-    const FLY_IN_MS = 400;
+    const FLY_IN_MS = 400;         // = ri-title-fly-in 0.4s
     const HOLD_AFTER_TYPE_MS = 480;
     const full = I18N.t('mole.round', { n: roundNum });
-    const typeMs = full.replace(/ /g, '').length * 45;
+    const typeMs = full.replace(/ /g, '').length * 45; // typeText 는 45ms/글자
+
+    // 라운드1 전용: 타이핑 뒤 3·2·1·GO!. 끝나면 finish() 호출.
+    function runCountdown(finish) {
+      count.hidden = false;
+      const STEPS = ['3', '2', '1', 'GO!']; // 무조건 영어 (사용자 지정)
+      let i = 0;
+      (function tick() {
+        if (myGen !== sessionGen) return;
+        const go = i >= 3;
+        count.textContent = STEPS[i];
+        count.className = 'round-intro-count ' + (go ? 'cgo' : 'c' + (3 - i)); // 카운트별 색상
+        void count.offsetWidth;
+        count.classList.add('pop'); // 줌인 애니
+        if (go) overlay.classList.add('go-flash'); // 흰 플래시
+        i++;
+        if (i < STEPS.length) setTimeout(tick, 650);
+        else setTimeout(finish, 360);
+      })();
+    }
+
+    // 퇴장(타이틀 왼쪽 / GO!·두더지 오른쪽 / 라운드2~ 커튼 오픈) + 정리 + onDone.
+    function exitAndStart() {
+      if (myGen !== sessionGen) return;
+      // 입장 애니메이션(forwards)이 남아 transition 이 안 먹는 문제 — animation 먼저 끄고 리플로우 후 is-opening.
+      title.style.animation = 'none';
+      moleImg.style.animation = 'none';
+      void title.offsetWidth;
+      overlay.classList.add('is-opening');
+      setHammerLayerVisible(true);
+      setTimeout(() => {
+        if (myGen !== sessionGen) return;
+        overlay.hidden = true;
+        overlay.classList.remove('is-opening', 'has-mole', 'mole-in', 'go-flash');
+        count.hidden = true;
+        count.className = 'round-intro-count';
+        moleImg.hidden = true;
+        title.style.animation = '';
+        moleImg.style.animation = '';
+      }, 260);
+      setTimeout(() => { if (myGen === sessionGen) onDone(); }, 260 + 200);
+    }
 
     setTimeout(() => {
       if (myGen !== sessionGen) return;
-      // 1) "라운드 N" 오른쪽에서, 두더지 왼쪽에서 날아와 중앙에서 만남 (0.4s)
+      // 1) "라운드 N" 오른쪽에서, (라운드2~) 두더지 왼쪽에서 날아와 중앙에서 만남 (0.4s)
       title.textContent = full;
       overlay.classList.add('mole-in');
-      moleImg.hidden = false;
+      if (showMole) moleImg.hidden = false;
       // 2) 중앙에 멈추면 "라운드 N" 을 한 글자씩 다시 타이핑(+ 타자기 소리)
       setTimeout(() => { if (myGen === sessionGen) typeText(title, full, () => {}); }, FLY_IN_MS + 40);
-      // 3) 타이핑 끝나고 잠깐 머문 뒤 타이틀 왼쪽·두더지 오른쪽으로 퇴장 + 커튼 오픈
+      // 3) 타이핑 끝난 뒤 — 라운드1: 3·2·1·GO! 후 퇴장 / 라운드2~: 바로 퇴장
       setTimeout(() => {
         if (myGen !== sessionGen) return;
-        title.style.animation = 'none';
-        moleImg.style.animation = 'none';
-        void title.offsetWidth;
-        overlay.classList.add('is-opening');
-        setHammerLayerVisible(true);
-        setTimeout(() => {
-          if (myGen !== sessionGen) return;
-          overlay.hidden = true;
-          overlay.classList.remove('is-opening', 'has-mole', 'mole-in');
-          moleImg.hidden = true;
-          title.style.animation = '';
-          moleImg.style.animation = '';
-        }, 260);
-        setTimeout(() => { if (myGen === sessionGen) onDone(); }, 260 + 200);
+        if (isR1) runCountdown(exitAndStart);
+        else exitAndStart();
       }, FLY_IN_MS + 40 + typeMs + HOLD_AFTER_TYPE_MS);
-    }, 2300);
+    }, isR1 ? 250 : 2300); // 라운드1: 챕터 커튼 열린 직후 바로 / 라운드2~: 분홍 커튼 패턴 뒤
   }
 
   // ---------- 메인 루프 ----------

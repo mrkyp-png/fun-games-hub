@@ -4,7 +4,7 @@
   // 설정 단일 소스. 색칠앱과 저장키를 통일한다(appLang/soundOn/musicOn/vibrationOn).
   // 같은 origin(mrkyp-png.github.io)이라 배포된 색칠앱과도 설정이 공유된다 — 의도된 동작.
   var KEYS = { lang: 'appLang', sound: 'soundOn', music: 'musicOn', vibration: 'vibrationOn' };
-  var BOOL_DEFAULT = { sound: true, music: false, vibration: true };
+  var BOOL_DEFAULT = { sound: true, music: true, vibration: true };
 
   function ls() { return root && root.localStorage ? root.localStorage : null; }
   function nav() { return root && root.navigator ? root.navigator : null; }
