@@ -250,10 +250,32 @@
     }
   }
 
+  // 타격 지점에서 노란 별들이 사방으로 튀어나간다 (스타버스트).
+  function starBurst(boardEl, xFrac, yFrac) {
+    const N = 6;
+    for (let i = 0; i < N; i++) {
+      const st = spawnAt(boardEl, 'hit-fx-star', xFrac, yFrac, '★');
+      const ang = (i / N) * 360 + (Math.random() * 30 - 15);
+      const dist = 40 + Math.random() * 26;
+      st.style.setProperty('--sx', (Math.cos(ang * Math.PI / 180) * dist).toFixed(1) + 'px');
+      st.style.setProperty('--sy', (Math.sin(ang * Math.PI / 180) * dist).toFixed(1) + 'px');
+      st.style.setProperty('--sr', Math.round(Math.random() * 360 - 180) + 'deg');
+      st.style.setProperty('--ss', (0.7 + Math.random() * 0.6).toFixed(2));
+    }
+  }
+
+  // 타격으로 얻은 점수 — 히트 지점에서 "+N" 이 위로 떠오른다.
+  // game.js 가 콤보·라이트·피버 배율이 이미 반영된 실제 증가분을 넘긴다.
+  function scorePop(boardEl, xFrac, yFrac, points) {
+    if (!points || points <= 0) return;
+    return spawnAt(boardEl, 'hit-fx-score', xFrac, yFrac, '+' + points);
+  }
+
   function moleHit(boardEl, xFrac, yFrac) {
     shake(boardEl);
     spawnAt(boardEl, 'hit-fx-burst', xFrac, yFrac, '<span>' + window.FGH.I18N.t('mole.fx.bam') + '</span>');
     spawnAt(boardEl, 'hit-fx-helmet', xFrac, yFrac);
+    starBurst(boardEl, xFrac, yFrac);
     for (let i = 0; i < 5; i++) {
       const p = spawnAt(boardEl, 'hit-fx-dust', xFrac, yFrac);
       p.style.setProperty('--dx', (Math.round((Math.random() - 0.5) * 60)) + 'px');
@@ -294,19 +316,30 @@
     tone(90, 'sine');
   }
 
-  // 두더지가 구멍에서 올라오는 순간: 흙먼지 + 충격파 링 + 구멍 글로우 (동물엔 안 붙임).
+  // 두더지가 구멍에서 올라오는 순간 = 흙 폭발: 큰 흙덩어리 파편이 포물선으로 튀어오르고
+  // 작은 흙먼지 + 퍼지는 링이 뒤따른다 (동물엔 안 붙임).
   function emerge(boardEl, xFrac, yFrac) {
-    for (let i = 0; i < 5; i++) {
+    const N = 8;
+    for (let i = 0; i < N; i++) {
+      const c = spawnAt(boardEl, 'hit-fx-clod', xFrac, yFrac + 0.02);
+      const ang = -155 + (i / (N - 1)) * 130 + (Math.random() * 20 - 10); // 위쪽 부채꼴
+      const dist = 40 + Math.random() * 40;
+      c.style.setProperty('--cx', (Math.cos(ang * Math.PI / 180) * dist).toFixed(1) + 'px');
+      c.style.setProperty('--cy', (Math.sin(ang * Math.PI / 180) * dist).toFixed(1) + 'px');
+      c.style.setProperty('--cr', Math.round(Math.random() * 540 - 270) + 'deg');
+      c.style.setProperty('--cs', (0.6 + Math.random() * 0.85).toFixed(2));
+      c.style.animationDelay = Math.round(Math.random() * 45) + 'ms';
+    }
+    for (let i = 0; i < 4; i++) {
       const p = spawnAt(boardEl, 'hit-fx-dust', xFrac, yFrac + 0.02);
       p.style.setProperty('--dx', (Math.round((Math.random() - 0.5) * 46)) + 'px');
     }
-    spawnAt(boardEl, 'hit-fx-ring', xFrac, yFrac).style.setProperty('--ring', '#ffe9a8');
-    spawnAt(boardEl, 'hit-fx-glow', xFrac, yFrac).style.setProperty('--glow', 'rgba(255,225,150,0.6)');
+    spawnAt(boardEl, 'hit-fx-ring', xFrac, yFrac).style.setProperty('--ring', '#d9b382');
   }
 
   // 게임 시작(사용자 제스처) 직후 호출 — 카운트다운 동안 오디오 컨텍스트 + 타격음 파일을 미리 준비.
   function warmup() { try { getCtx(); } catch (e) { /* noop */ } }
 
-  const api = { moleHit, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick };
+  const api = { moleHit, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);

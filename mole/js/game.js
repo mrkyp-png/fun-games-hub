@@ -1159,12 +1159,16 @@
     results.forEach((r) => {
       if (r.type === 'mole') {
         if (r.juggle) {
+          const before = run.combo.score;
           run.combo.onJuggle(JUGGLE_BONUS); // 콤보 +1 + 작은 고정 보너스 (점수표 안 씀)
+          MG.HitFx.scorePop(board, r.xFrac, r.yFrac, run.combo.score - before);
           checkComboLifeBonus();
           MG.HitFx.juggle(board, r.xFrac, r.yFrac);
           moleHits += 1;
         } else if (r.done) {
-          run.combo.onMoleHit();   // 스펙 §12 — 마리당 1콤보
+          const before = run.combo.score;
+          run.combo.onMoleHit();   // 스펙 §12 — 마리당 1콤보 (콤보·라이트·피버 배율은 setMult 로 이미 반영)
+          MG.HitFx.scorePop(board, r.xFrac, r.yFrac, run.combo.score - before);
           checkComboLifeBonus();   // 콤보 100단위 넘기면 목숨 +1
           MG.HitFx.moleHit(board, r.xFrac, r.yFrac);
           moleHits += 1;

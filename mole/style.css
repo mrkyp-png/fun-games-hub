@@ -1764,20 +1764,59 @@ body { background: var(--lm-page); }
   0% { transform: translate(-50%, -50%) scale(0.25); opacity: 0.95; }
   100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
 }
-.hit-fx-glow {
+/* 흙덩어리 파편 — 구멍에서 튀어올라 포물선으로 떨어진다 (등장 = 흙 폭발). */
+.hit-fx-clod {
   position: absolute;
-  width: 30%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--glow, rgba(255, 225, 150, 0.6)), transparent 70%);
-  transform: translate(-50%, -50%) scale(0.6);
+  width: 18px;
+  height: 15px;
+  background: #8a5a34;
+  border: 2px solid #4a2f1a;
+  border-radius: 42% 55% 48% 50%;
+  box-shadow: inset -3px -3px 0 rgba(0, 0, 0, 0.3);
   pointer-events: none;
-  animation: hit-glow 0.38s ease-out forwards;
+  animation: hit-clod 0.66s cubic-bezier(.2, .7, .45, 1) forwards;
 }
-@keyframes hit-glow {
-  0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
-  30% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-  100% { transform: translate(-50%, -50%) scale(1.15); opacity: 0; }
+@keyframes hit-clod {
+  0%   { transform: translate(-50%, -50%) scale(0.4) rotate(0); opacity: 1; }
+  15%  { transform: translate(calc(-50% + var(--cx, 0px) * 0.35), calc(-50% + var(--cy, 0px) * 0.6)) scale(var(--cs, 1)) rotate(calc(var(--cr, 180deg) * 0.3)); opacity: 1; }
+  65%  { opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--cx, 0px)), calc(-50% + var(--cy, 0px) + 40px)) scale(calc(var(--cs, 1) * 0.5)) rotate(var(--cr, 180deg)); opacity: 0; }
+}
+
+/* 스타버스트 — 타격 지점에서 노란 별들이 사방으로 튄다. */
+.hit-fx-star {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 1.15rem;
+  line-height: 1;
+  color: #ffd23c;
+  text-shadow: 0 1px 0 #b26a00, 0 0 6px rgba(255, 210, 60, 0.8);
+  pointer-events: none;
+  animation: hit-star 0.44s ease-out forwards;
+}
+@keyframes hit-star {
+  0%   { transform: translate(-50%, -50%) scale(0.2) rotate(0); opacity: 0; }
+  25%  { transform: translate(calc(-50% + var(--sx, 0px) * 0.6), calc(-50% + var(--sy, 0px) * 0.6)) scale(var(--ss, 1)) rotate(calc(var(--sr, 0deg) * 0.5)); opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--sx, 0px)), calc(-50% + var(--sy, 0px))) scale(calc(var(--ss, 1) * 0.7)) rotate(var(--sr, 0deg)); opacity: 0; }
+}
+
+/* 타격 획득 점수 — "+N" 이 히트 지점에서 위로 떠오른다. */
+.hit-fx-score {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-family: 'Dongle', 'Segoe UI', 'Malgun Gothic', sans-serif;
+  font-weight: 800;
+  font-size: 1.7rem;
+  color: #8affa0;
+  -webkit-text-stroke: 3px #000;
+  paint-order: stroke fill;
+  pointer-events: none;
+  animation: hit-score 0.7s ease-out forwards;
+}
+@keyframes hit-score {
+  0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+  25%  { transform: translate(-50%, -95%) scale(1.1); opacity: 1; }
+  100% { transform: translate(-50%, -150%) scale(1); opacity: 0; }
 }
 .hud-flash { animation: hud-flash 0.3s ease-out; }
 @keyframes hud-flash {
