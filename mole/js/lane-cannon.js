@@ -22,12 +22,14 @@
   //  aim  : 이 포즈 포신이 겨누는 방향 (deg, 화면좌표)  ·  tweak : 미세 회전 허용치 (0 = 고정)
   // 새 대포 아트 5포즈 (Desktop 대포1~5 → cannon-a1~a5, 굵은 검은 외곽선). 얕은각→수직 순.
   // 값은 grid 스크린샷 실측 기반 1차치 — 스크린샷 보며 mu/mv/dx/dy/aim/w 조정.
+  // w 는 "최대 변(가로 or 세로*ar)이 대략 0.28" 이 되도록 ar 로 나눠 정규화 — 어떤 포즈든
+  // 화면상 크기가 대기(a1) 자세와 비슷하게 보인다 (급각 a3~a5 가 너무 컸던 것 보정, 사용자 요청).
   const POSES = [
-    { key: 'a2', src: 'assets/weapons/cannon-a2.png', w: 0.32, ar: 0.909, mu: 0.07, mv: 0.16, aim: -162, tweak: 0, dx: -0.06, dy: 0.03 },
-    { key: 'a1', src: 'assets/weapons/cannon-a1.png', w: 0.31, ar: 0.833, mu: 0.07, mv: 0.14, aim: -156, tweak: 0, dx: -0.05, dy: 0.03 },
-    { key: 'a3', src: 'assets/weapons/cannon-a3.png', w: 0.28, ar: 1.159, mu: 0.32, mv: 0.09, aim: -128, tweak: 0, dx: -0.01, dy: -0.02 },
-    { key: 'a5', src: 'assets/weapons/cannon-a5.png', w: 0.25, ar: 1.392, mu: 0.17, mv: 0.09, aim: -113, tweak: 0, dx: 0.02, dy: -0.035 },
-    { key: 'a4', src: 'assets/weapons/cannon-a4.png', w: 0.26, ar: 1.220, mu: 0.48, mv: 0.06, aim: -92,  tweak: 0, dx: 0.03, dy: -0.05 }
+    { key: 'a2', src: 'assets/weapons/cannon-a2.png', w: 0.280, ar: 0.909, mu: 0.07, mv: 0.16, aim: -162, tweak: 0, dx: -0.06, dy: 0.03 },
+    { key: 'a1', src: 'assets/weapons/cannon-a1.png', w: 0.280, ar: 0.833, mu: 0.07, mv: 0.14, aim: -156, tweak: 0, dx: -0.05, dy: 0.03 },
+    { key: 'a3', src: 'assets/weapons/cannon-a3.png', w: 0.242, ar: 1.159, mu: 0.32, mv: 0.09, aim: -128, tweak: 0, dx: -0.01, dy: -0.02 },
+    { key: 'a5', src: 'assets/weapons/cannon-a5.png', w: 0.201, ar: 1.392, mu: 0.17, mv: 0.09, aim: -113, tweak: 0, dx: 0.02, dy: -0.03 },
+    { key: 'a4', src: 'assets/weapons/cannon-a4.png', w: 0.230, ar: 1.220, mu: 0.48, mv: 0.06, aim: -92,  tweak: 0, dx: 0.03, dy: -0.04 }
   ];
   const STEEP_KEY = 'a4';  // 3번 구멍(거의 수직) 회전용 포즈
 
