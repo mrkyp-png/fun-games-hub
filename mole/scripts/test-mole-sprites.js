@@ -19,6 +19,7 @@ const S = require('../js/mole-sprites.js');
   assert.strictEqual(S.restingDepth(3, 0), 0);
   assert.strictEqual(S.restingDepth(3, 1), 1);
   assert.strictEqual(S.restingDepth(3, 2), 2);
+  assert.strictEqual(S.restingDepth(3, 3), 2, '3타(처치)째 = 깊이 3(모자만) 아님, 2로 클램프');
 }
 
 // 4) 깊이 → 스프라이트 파일

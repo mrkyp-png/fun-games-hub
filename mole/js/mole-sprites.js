@@ -39,7 +39,10 @@
 
   function restingDepth(hitsRequired, hitsTaken) {
     if (hitsRequired === 2) return hitsTaken === 0 ? 0 : 2;
-    if (hitsRequired === 3) return hitsTaken; // 0,1,2
+    // 3타: 0/1/2타는 깊이 0/1/2 에서 쉰다. 3타(처치)째엔 pop.killed 로 넘어가 SINK_DELAY 동안
+    // targetFor 가 여전히 이 함수를 부르는데, 그때 hitsTaken=3 이라 예전엔 깊이 3(모자만)로
+    // 잠깐 가라앉는 버그가 있었음 — 2 로 클램프해 다른 다타 두더지와 똑같이 빠끔에서 침몰 시작.
+    if (hitsRequired === 3) return Math.min(hitsTaken, 2);
     return 0;
   }
 
