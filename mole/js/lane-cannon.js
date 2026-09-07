@@ -12,7 +12,8 @@
   // 순서: 포즈 선택 + 미세 조준 → 발사(화염·연기·포탄) → 반동 → 원위치.
   // 명중감은 game.js HitFx (impactCb = 포탄 도착 시).
 
-  const MZX = 0.827, MZY = 0.83;           // 포구 고정점 (보드 분수) — 여기서 포탄이 나간다.
+  const MZX = 0.827, MZY = 0.801;          // 포구 고정점 (보드 분수) — 여기서 포탄이 나간다.
+                                          //  v289: 기본 대포 위치 위로 0.2cm(≈0.029 보드분수) 이동 (사용자 요청).
                                           //  대포 본체는 여기서 우하단으로 뻗어 대부분 화면 밖(입체감).
 
   // 포즈 표 (튜닝 노브). 화면좌표 각도: 0=오른쪽, -90=위, 좌상향은 -180~-90.
@@ -25,7 +26,7 @@
   // w 는 "최대 변(가로 or 세로*ar)이 대략 0.28" 이 되도록 ar 로 나눠 정규화 — 어떤 포즈든
   // 화면상 크기가 대기(a1) 자세와 비슷하게 보인다 (급각 a3~a5 가 너무 컸던 것 보정, 사용자 요청).
   const POSES = [
-    { key: 'a2', src: 'assets/weapons/cannon-a2.png', w: 0.280, ar: 0.909, mu: 0.07, mv: 0.16, aim: -162, tweak: 0, dx: -0.06, dy: 0.03 },
+    { key: 'a2', src: 'assets/weapons/cannon-a2.png', w: 0.315, ar: 0.74, mu: 0.07, mv: 0.18, aim: -162, tweak: 0, dx: -0.06, dy: 0.03 },
     { key: 'a1', src: 'assets/weapons/cannon-a1.png', w: 0.280, ar: 0.833, mu: 0.07, mv: 0.14, aim: -156, tweak: 0, dx: -0.05, dy: 0.03 },
     { key: 'a3', src: 'assets/weapons/cannon-a3.png', w: 0.242, ar: 1.159, mu: 0.32, mv: 0.09, aim: -128, tweak: 0, dx: -0.01, dy: -0.02 },
     { key: 'a5', src: 'assets/weapons/cannon-a5.png', w: 0.201, ar: 1.392, mu: 0.17, mv: 0.09, aim: -113, tweak: 0, dx: 0.02, dy: -0.03 },
