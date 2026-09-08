@@ -119,7 +119,9 @@
         const m = pops.get(pop.id) || makePop(pop);
         if (pop.dying && !m.dying) {          // 침몰 시작 순간 — 대포 여부·시작 깊이 고정
           m.dyingFrom = m.shownDepth;
-          m.blast = pop.type === 'mole' && isCannonEquipped();
+          // 실제 타격당해 처치된 두더지만 대포 폭발 연출. 시간초과로 안 맞고 물러나는 건
+          // 대포모드에서도 기존처럼 그냥 아래로 내려간다(pop.killed=false).
+          m.blast = pop.type === 'mole' && pop.killed && isCannonEquipped();
         }
         m.dying = !!pop.dying;
         m.targetDepth = targetFor(pop);
