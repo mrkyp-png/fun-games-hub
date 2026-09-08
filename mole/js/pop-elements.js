@@ -11,6 +11,11 @@
 
   const MS = root.MoleGame.MoleSprites;
   const GONE_DEPTH = 4;
+
+  // 대포 장착 시 처치 두더지는 구멍으로 안 내려가고 그 자리에서 그을려 흩뿌리며 사라진다.
+  function isCannonEquipped() {
+    try { return localStorage.getItem('mole.weapon') === 'cannon'; } catch (e) { return false; }
+  }
   const STEP_SEC = 0.055;       // 등장/빠끔 이동: 깊이 한 칸이 화면에 머무는 시간 — 빠르게
   const DYING_STEP_SEC = 0.144; // 타격 후: 전신 그대로 구멍 아래로 "천천히" 미끄러진다 (0→4 ≈ 0.58s)
 
@@ -39,7 +44,8 @@
       if (onEmerge) onEmerge(pop.x, pop.y, pop.type); // 구멍에서 올라오는 순간 연출 (흙먼지·링·글로우)
       const m = {
         el, img, kind: pop.type, poseIndex: pop.poseIndex || 0,
-        shownDepth: GONE_DEPTH, targetDepth: 0, shownFile: null, dying: false
+        shownDepth: GONE_DEPTH, targetDepth: 0, shownFile: null, dying: false,
+        blast: false, dyingFrom: 0
       };
       render(m);
       pops.set(pop.id, m);
@@ -69,6 +75,20 @@
         m.shownFile = file;
       }
       m.img.style.visibility = file ? '' : 'hidden';
+
+      if (m.dying && m.blast) {
+        // 대포 처치: 구멍으로 안 내려가고 — 그을려(검게) 흔들리다 흐릿하게 흩뿌리며 소멸.
+        const span = GONE_DEPTH - m.dyingFrom;
+        const k = span > 0 ? Math.min(1, Math.max(0, (m.shownDepth - m.dyingFrom) / span)) : 1;
+        const wob = Math.sin(k * Math.PI * 6) * (1 - k) * 9;       // 감쇠하는 좌우 흔들림
+        const grow = 1 + k * 0.12;
+        const blur = k > 0.55 ? (k - 0.55) * 9 : 0;
+        m.img.style.opacity = k < 0.5 ? '1' : String(Math.max(0, 1 - (k - 0.5) / 0.5));
+        m.img.style.filter = 'brightness(0.14) sepia(1) contrast(1.4)' + (blur ? ' blur(' + blur.toFixed(1) + 'px)' : '');
+        m.img.style.transform = 'translate(-50%, -2%) rotate(' + wob.toFixed(1) + 'deg) scale(' + grow.toFixed(3) + ')';
+        return;
+      }
+
       // dying 은 프레임 교체 없이 미끄러지므로 sink 를 선형(0→130%)으로.
       const sink = m.dying ? (m.shownDepth / GONE_DEPTH) * 130 : MS.sinkForDepth(m.shownDepth);
       m.img.style.transform = 'translate(-50%, ' + sink + '%)';
@@ -97,6 +117,10 @@
 
       activePops.forEach((pop) => {
         const m = pops.get(pop.id) || makePop(pop);
+        if (pop.dying && !m.dying) {          // 침몰 시작 순간 — 대포 여부·시작 깊이 고정
+          m.dyingFrom = m.shownDepth;
+          m.blast = pop.type === 'mole' && isCannonEquipped();
+        }
         m.dying = !!pop.dying;
         m.targetDepth = targetFor(pop);
       });

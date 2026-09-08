@@ -551,7 +551,6 @@
     resetHot();
     state = null;
     run = null;
-    setPauseUI(false);
     playScreenBgm('home'); // 홈 진입 — 홈 BGM(3곡 순환)을 처음부터
     const go = document.getElementById('gameover-overlay');
     go.hidden = true; go.classList.remove('is-win', 'is-lose', 'is-sliding');
@@ -927,14 +926,13 @@
     });
 
     state = {
-      round: roundNum, levelData, regions, spawnPoints, scheduler, holeLayer, laneHammer,
+      round: roundNum, levelData, regions, spawnPoints, scheduler, holeLayer, laneHammer, weapon,
       timeRemaining: roundSeconds(),
       hitstopUntil: 0,
       ended: false,
       paused: false,
       introActive: true // 카운트다운 동안은 시간도 안 흐르고 구멍 입력도 무시 (handleCell 참고)
     };
-    setPauseUI(false);
 
     updateHUD();
     playRoundIntro(roundNum, () => {
@@ -1158,7 +1156,9 @@
           run.combo.onMoleHit();   // 스펙 §12 — 마리당 1콤보 (콤보·라이트·피버 배율은 setMult 로 이미 반영)
           MG.HitFx.scorePop(board, r.xFrac, r.yFrac, run.combo.score - before);
           checkComboLifeBonus();   // 콤보 100단위 넘기면 목숨 +1
-          MG.HitFx.moleHit(board, r.xFrac, r.yFrac);
+          // 처치(마지막) 타격에만: 대포면 폭발 흩뿌림, 아니면 기존 타격. 중간타(빼꼼/모자)는 손 안 댐.
+          if (state.weapon === 'cannon') MG.HitFx.moleBlast(board, r.xFrac, r.yFrac);
+          else MG.HitFx.moleHit(board, r.xFrac, r.yFrac);
           moleHits += 1;
         } else {
           MG.HitFx.moleTap(board, r.xFrac, r.yFrac);
@@ -1230,19 +1230,8 @@
     if (b) b.classList.toggle('mole-board--shielded', !!(run && run.shield));
   }
 
-  // ---------- 일시정지 ----------
-  // 아이콘: 플레이 중 = ▶ / 일시정지 = ⏸ (사용자 요청 — 현재 상태 표시).
-  function setPauseUI(paused) {
-    const btn = document.getElementById('btn-pause');
-    if (btn) btn.classList.toggle('is-paused', paused);
-    document.getElementById('game-screen').classList.toggle('is-paused', paused);
-  }
-  function togglePause() {
-    if (!state || state.ended || state.introActive) return;
-    state.paused = !state.paused;
-    setPauseUI(state.paused);
-    if (!state.paused) lastTime = performance.now(); // 재개 시 시간 점프 방지
-  }
+  // 게임은 더보기 메뉴를 열면 멈춘다(state.paused / pausedByMenu — openMore·closeMore 참고).
+  // 별도 일시정지 버튼은 없앰(사용자 요청).
 
   // ---------- 라운드 종료 → 다음 라운드 or 최종 결과 ----------
   function roundComplete() {
@@ -1557,7 +1546,6 @@
       if (!btn || btn.closest('#lane-button-bar')) return;
       MG.HitFx.uiTap(1);
     });
-    document.getElementById('btn-pause').addEventListener('click', togglePause);
     document.getElementById('nc-back-btn').addEventListener('click', () => {
       const panel = document.getElementById('next-chapter-panel');
       panel.classList.remove('is-in');

@@ -284,6 +284,23 @@
     punch();
   }
 
+  // 대포 처치 — 두더지가 안 내려가고 그 자리에서 그을려 흔들리다 흩뿌리며 사라진다
+  // (두더지 스프라이트 연출은 pop-elements.js, 여기선 명중 순간 번쩍 + 회재/불티 파편).
+  function moleBlast(boardEl, xFrac, yFrac) {
+    shake(boardEl);
+    spawnAt(boardEl, 'hit-fx-blast-flash', xFrac, yFrac);
+    const N = 14;
+    for (let i = 0; i < N; i++) {
+      const p = spawnAt(boardEl, 'hit-fx-ash' + (i % 3 === 0 ? ' hit-fx-ash--ember' : ''), xFrac, yFrac);
+      const ang = (i / N) * 360 + (Math.random() * 40 - 20);
+      const dist = 34 + Math.random() * 46;
+      p.style.setProperty('--ax', (Math.cos(ang * Math.PI / 180) * dist).toFixed(1) + 'px');
+      p.style.setProperty('--ay', (Math.sin(ang * Math.PI / 180) * dist).toFixed(1) + 'px');
+    }
+    vibrate([0, 20, 40, 18]);
+    punch();
+  }
+
   // 저글 보너스 — 잡은 두더지가 내려갈 때 한 번 더 맞힘. 가볍고 경쾌하게 + "더블!" 텍스트.
   function juggle(boardEl, xFrac, yFrac) {
     spawnAt(boardEl, 'hit-fx-burst hit-fx-burst--juggle', xFrac, yFrac,
@@ -341,6 +358,6 @@
   // 게임 시작(사용자 제스처) 직후 호출 — 카운트다운 동안 오디오 컨텍스트 + 타격음 파일을 미리 준비.
   function warmup() { try { getCtx(); } catch (e) { /* noop */ } }
 
-  const api = { moleHit, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, starBurst };
+  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, starBurst };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);
