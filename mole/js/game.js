@@ -1230,10 +1230,15 @@
   const QUAKE_CLONE_GAP = 55; // ms — 분신들 시차 연타
   let forceQuakeNext = false; // __debugForceQuake
 
+  // 분신 포즈 = 목표 구멍의 다이얼패드 위치 기준 (사용자 지정).
+  //  ✱·0·#(12·13·14) = 0°(옆면, 아래로 내리침) / 연락처·키패드·최근기록(3·7·11) = 90°(정면, 직선 찌르기) / 나머지 = 45°(대각선, 내리침)
+  function quakeCloneKind(regionId) {
+    if (regionId === 12 || regionId === 13 || regionId === 14) return '0';
+    if (regionId === 3 || regionId === 7 || regionId === 11) return '90';
+    return '45';
+  }
   function quakeClonePose(regionId) {
-    if (regionId === 12 || regionId === 13 || regionId === 14) return 'assets/weapons/goldhammer-0.png';
-    if (regionId === 3 || regionId === 7 || regionId === 11) return 'assets/weapons/goldhammer-90.png';
-    return 'assets/weapons/goldhammer-45.png';
+    return 'assets/weapons/goldhammer-' + quakeCloneKind(regionId) + '.png';
   }
 
   function quakeNeighbors(regionId) {
@@ -1285,8 +1290,7 @@
         if (!p) return;
         const res = state.scheduler.resolveRegion(id, { quake: true });
         if (!res.length || res.every((r) => r.ignored)) return;
-        const fk = sharedPopElements.frameKeyAt ? sharedPopElements.frameKeyAt(id) : null;
-        MG.HitFx.quakeClone(fxLayer, quakeClonePose(id), p.x, p.y, fk, () => {
+        MG.HitFx.quakeClone(fxLayer, quakeClonePose(id), p.x, p.y, quakeCloneKind(id), () => {
           if (!state || state.ended) return;
           onHammerImpact(p.x, p.y, res, { noHitstop: true });
           MG.HitFx.quakeDust(board, p.x, p.y);

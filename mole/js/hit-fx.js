@@ -372,36 +372,56 @@
 
   // 지진 분신 골드해머 하나 — 목표 구멍 근처(가장 가까운 가장자리 방향 위쪽)에서 날아와 내리치고 골드로 소멸.
   // onHit = 내리치는 순간 콜백(실제 타격 판정/연출은 game.js 가).
-  function quakeClone(boardEl, spriteUrl, xFrac, yFrac, _frameKey, onHit) {
+  // kind '0'/'45' = 머리 든 채 등장 → 아래로 내리침 → 그 자세 그대로 페이드 (위로 안 튕김).
+  // kind '90'  = 정면 포즈. 직선으로 그 자리에 나타나 약간 커졌다 → 약간 작아짐(앞으로 쿡 찌르기). 회전 없음.
+  function quakeClone(boardEl, spriteUrl, xFrac, yFrac, kind, onHit) {
     const el = document.createElement('img');
     el.className = 'quake-clone';
     el.src = spriteUrl;
     el.alt = '';
-    // 제자리 — 그 구멍 위에 팟 등장 → 내리침 → 소멸. 좌우 이동 없음 (사용자 지정).
-    // 타격점 = 두더지 헬멧 부근. transform-origin 아래(64%)라 rotate 로 머리가 내려온다.
     const hitY = Math.max(0.05, yFrac - 0.05);
-    const swing = xFrac < 0.5 ? 1 : -1; // 화면 왼쪽 구멍은 머리를 오른쪽에서 내려침(반대편은 반대)
-    const T = (deg) => 'translate(-50%, -22%) rotate(' + deg + 'deg)';
     el.style.left = (xFrac * 100) + '%';
-    el.style.top = (hitY * 100) + '%';
-    el.style.transform = T(swing * -34);      // 든 상태 (머리 위로)
+
+    if (kind === '90') {
+      el.style.top = (hitY * 100) + '%';
+      el.style.transform = 'translate(-50%, -34%) scale(0.86)';
+      el.style.opacity = '0';
+      boardEl.appendChild(el);
+      void el.offsetWidth;
+      el.style.transition = 'opacity 0.07s ease-out, transform 0.11s cubic-bezier(.2,.7,.4,1)';
+      el.style.opacity = '1';
+      el.style.transform = 'translate(-50%, -34%) scale(1.12)';   // 약간 커짐 (앞으로 옴)
+      setTimeout(() => {
+        el.style.transition = 'transform 0.08s ease-in';
+        el.style.transform = 'translate(-50%, -34%) scale(0.94)'; // 약간 작아짐 (때리고 물러남)
+        try { if (onHit) onHit(); } catch (e) { /* 무시 */ }
+      }, 120);
+      setTimeout(() => { el.style.transition = 'opacity 0.24s ease-out'; el.style.opacity = '0'; }, 280);
+      setTimeout(() => el.remove(), 560);
+      return;
+    }
+
+    // '0' / '45' — 머리 든 채 위에서 등장 → 아래로 내리침 → 자세 유지 페이드
+    const upY = Math.max(0.02, hitY - 0.13);
+    const swing = xFrac < 0.5 ? 1 : -1;   // 왼쪽 구멍은 오른쪽에서, 반대편은 왼쪽에서
+    const RAISED = swing * -60, CHOP = swing * 40;
+    const T = (deg) => 'translate(-50%, -30%) rotate(' + deg + 'deg)';
+    el.style.top = (upY * 100) + '%';
+    el.style.transform = T(RAISED);
     el.style.opacity = '0';
     boardEl.appendChild(el);
     void el.offsetWidth;
-    el.style.transition = 'opacity 0.08s ease-out, transform 0.12s cubic-bezier(.3,.7,.4,1)';
+    el.style.transition = 'opacity 0.08s ease-out, top 0.12s cubic-bezier(.3,.6,.4,1), transform 0.12s cubic-bezier(.3,.6,.4,1)';
     el.style.opacity = '1';
-    el.style.transform = T(swing * -20);      // 살짝 자리잡기
+    el.style.transform = T(RAISED * 0.7);
     setTimeout(() => {
-      el.style.transition = 'transform 0.07s ease-in';
-      el.style.transform = T(swing * 26);     // 내리침
+      el.style.transition = 'top 0.08s ease-in, transform 0.08s ease-in';
+      el.style.top = (hitY * 100) + '%';
+      el.style.transform = T(CHOP);
       try { if (onHit) onHit(); } catch (e) { /* 무시 */ }
-    }, 140);
-    setTimeout(() => {
-      el.style.transition = 'opacity 0.24s ease-out, transform 0.24s ease-out';
-      el.style.opacity = '0';
-      el.style.transform = 'translate(-50%, -60%) scale(0.92) rotate(' + (swing * 26) + 'deg)';
-    }, 300);
-    setTimeout(() => el.remove(), 580);
+    }, 130);
+    setTimeout(() => { el.style.transition = 'opacity 0.26s ease-out'; el.style.opacity = '0'; }, 300);
+    setTimeout(() => el.remove(), 600);
   }
 
   // 게임 시작(사용자 제스처) 직후 호출 — 카운트다운 동안 오디오 컨텍스트 + 타격음 파일을 미리 준비.
