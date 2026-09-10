@@ -1,10 +1,8 @@
 # 골드해머(지진 무기) 스프라이트 — 소스 회전 시트(~/Desktop/특수망치.png, 16각도 5+5+6)에서.
-#   출력  assets/weapons/goldhammer.png       (메인 스윙 = 67.5° raw. lane-hammer degOffset 로 각도 맞춤)
+#   출력  assets/weapons/goldhammer.png       (메인 스윙 = 67.5° 를 +9° 회전해 뿅망치 축각도(~21°)에 맞춤)
 #         assets/weapons/goldhammer-0.png     (0°  = 지진 분신 — ✱·0·# 칸)
 #         assets/weapons/goldhammer-45.png    (45° = 지진 분신 — 숫자칸)
 #         assets/weapons/goldhammer-90.png    (90° = 지진 분신 — 연락처·키패드·최근기록)
-#         assets/weapons/goldhammer-spin.png  (보관창 회전용 = 7프레임 가로 스트립.
-#            [67.5거울, 45거울, 22.5거울, 0, 22.5, 45, 67.5] — 손잡이 축 정렬. CSS steps+alternate 로 좌우 로킹)
 #
 # 처리 = 최소한. 알파 임계로 청록 글로우만 컷 → keep_largest(라벨 탈락) → 알파 스무딩 →
 #   얇은 검은 외곽선(OUTLINE px, 바깥에만 — 아트 내부 안 건드림).
@@ -69,8 +67,8 @@ def outline(cell, px_w=OUTLINE):
     return out.crop(bb) if bb else out
 
 
-def pose(col, do_outline=True):
-    """소스 col(0~4, row0)의 포즈 하나 → 정리된 RGBA (트림됨)."""
+def pose(col, do_outline=True, rot=0):
+    """소스 col(0~4, row0)의 포즈 하나 → 정리된 RGBA (트림됨). rot = 추가 회전(CCW+)."""
     x0 = int(col * CELL_W)
     cell = im.crop((max(0, x0 - 4), 0, min(W, x0 + int(CELL_W) + 6), min(H, int(ROW_H * 1.22)))).convert('RGBA')
     r, g, b, a = cell.split()
@@ -83,61 +81,27 @@ def pose(col, do_outline=True):
     bb = cell.split()[3].getbbox()
     if bb:
         cell = cell.crop(bb)
+    if rot:
+        cell = cell.rotate(rot, resample=Image.BICUBIC, expand=True)
+        bb = cell.split()[3].getbbox()
+        if bb:
+            cell = cell.crop(bb)
     if do_outline:
         cell = outline(cell)
     return cell
 
 
-def grip_point(cell):
-    """손잡이 하단 중심 (x, y) — 회전 축 정렬용."""
-    w, h = cell.size
-    px = cell.load()
-    pts = [(x, y) for y in range(h) for x in range(0, w, 2) if px[x, y][3] > 140]
-    pts.sort(key=lambda p: -p[1])
-    lo = pts[:max(1, len(pts) // 10)]
-    return sum(p[0] for p in lo) / len(lo), max(p[1] for p in lo)
-
-
 os.makedirs(OUT_DIR, exist_ok=True)
 
 # --- 개별 포즈 (메인 + 분신) ---
+# 메인(goldhammer.png)만 +9° CCW 로 회전 → grip→head 축을 뿅망치(hammer.png, ~21°)에 맞춤.
+# 그래야 lane-hammer 를 degOffset 없이(스윙 궤적·타격점 동일) 그대로 쓸 수 있다.
+MAIN_ROT = {'goldhammer.png': 9}
 for col, name in POSES:
-    cell = pose(col)
+    cell = pose(col, rot=MAIN_ROT.get(name, 0))
     s = TARGET_MAX / max(cell.size)
     if s < 1:
         cell = cell.resize((round(cell.width * s), round(cell.height * s)), Image.LANCZOS)
     p = os.path.join(OUT_DIR, name)
     cell.save(p, optimize=True)
     print('saved', p, cell.size)
-
-# --- 보관창 회전 스트립 (7프레임, 좌우 로킹) ---
-base = {a: pose(c) for a, c in [(0, 0), (22.5, 1), (45, 2), (67.5, 3)]}
-frames = [
-    base[67.5].transpose(Image.FLIP_LEFT_RIGHT),
-    base[45].transpose(Image.FLIP_LEFT_RIGHT),
-    base[22.5].transpose(Image.FLIP_LEFT_RIGHT),
-    base[0],
-    base[22.5],
-    base[45],
-    base[67.5],
-]
-grips = [grip_point(f) for f in frames]
-maxw = max(f.width for f in frames)
-maxh = max(f.height for f in frames)
-# 셀 = 손잡이 하단이 (cellW/2, cellH - margin) 에 오도록 넉넉히
-margin = 10
-cellw = maxw + 40
-cellh = maxh + margin + 10
-strip = Image.new('RGBA', (cellw * len(frames), cellh), (0, 0, 0, 0))
-for i, (f, (gx, gy)) in enumerate(zip(frames, grips)):
-    ox = i * cellw + round(cellw / 2 - gx)
-    oy = round(cellh - margin - gy)
-    strip.alpha_composite(f, (ox, oy))
-# 다운스케일 (셀 높이 ~200)
-th = 200
-if cellh > th:
-    sc = th / cellh
-    strip = strip.resize((round(strip.width * sc), round(strip.height * sc)), Image.LANCZOS)
-p = os.path.join(OUT_DIR, 'goldhammer-spin.png')
-strip.save(p, optimize=True)
-print('saved', p, strip.size, '(%d frames, cell %dx%d)' % (len(frames), strip.width // len(frames), strip.height))

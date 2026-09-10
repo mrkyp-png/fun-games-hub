@@ -1650,11 +1650,11 @@ body { background: var(--lm-page); }
 /* 지진 분신 골드해머 — 가장자리에서 날아와 내리치고 골드로 소멸 (hit-fx.js quakeClone). */
 .quake-clone {
   position: absolute;
-  width: 13%;
+  width: 17.5%;   /* 메인 골드해머(.lane-hammer--gold)와 같은 크기 (사용자 지정) */
   transform-origin: 50% 64%;
   pointer-events: none;
-  z-index: 22;
-  filter: drop-shadow(0 0 5px rgba(120, 200, 255, 0.9)) drop-shadow(0 3px 4px rgba(0, 0, 0, 0.4));
+  z-index: 25;
+  filter: drop-shadow(0 0 6px rgba(120, 200, 255, 0.95)) drop-shadow(0 0 14px rgba(120, 200, 255, 0.55)) drop-shadow(0 3px 4px rgba(0, 0, 0, 0.45));
 }
 /* 지진 먼지 파동 — 기존 링/흙먼지 재사용, 갈색·조금 크게. */
 .hit-fx-ring--quake { width: 30%; border-width: 4px; animation-duration: 0.5s; }
@@ -2359,16 +2359,24 @@ body { background: var(--lm-page); }
 .inv-name { font-size: 0.86rem; font-weight: 800; color: var(--lm-ink); }
 .inv-thumb { height: 88px; display: flex; align-items: center; justify-content: center; }
 .inv-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
-/* 골드해머 = 7프레임 스트립을 steps+alternate 로 좌우 로킹 (머리 트월, 보석 항상 정면). */
-.inv-thumb--spin {
-  width: 78px;
-  background-repeat: no-repeat;
-  background-size: 700% 100%;      /* 7프레임 */
-  background-position: 0% 0;
-  animation: inv-gh-spin 1.6s steps(6, jump-none) infinite alternate;
+/* 골드해머 = 게임화면 이미지 그대로, 보석(파란불빛) 부분에만 맥동 글로우. */
+.inv-thumb--gem { position: relative; }
+.inv-gem-glow {
+  position: absolute;
+  left: 41%; top: 30%;                 /* goldhammer.png 보석 위치 근사 (contain 배치 기준) */
+  width: 30%; aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(120, 220, 255, 0.95) 0%, rgba(70, 170, 255, 0.55) 35%, rgba(70, 170, 255, 0) 70%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: inv-gem-pulse 1.6s ease-in-out infinite;
 }
-@keyframes inv-gh-spin { from { background-position: 0% 0; } to { background-position: 100% 0; } }
-@media (prefers-reduced-motion: reduce) { .inv-thumb--spin { animation: none; background-position: 50% 0; } }
+@keyframes inv-gem-pulse {
+  0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.82); }
+  50%      { opacity: 1;   transform: translate(-50%, -50%) scale(1.18); }
+}
+@media (prefers-reduced-motion: reduce) { .inv-gem-glow { animation: none; opacity: 0.7; } }
 /* 이미지 아래 능력치 칸 — 무기마다 동일 구성(3줄 표). 값 없으면 "-" (방어력은 미래 무기용). */
 .inv-stat { margin: 6px 0 9px; }
 /* "능력치" 헤더 — 검은 외곽선 + 번개색 글로우 */

@@ -370,42 +370,41 @@
     }
   }
 
-  // 지진 분신 골드해머 하나 — 가장 가까운 보드 가장자리에서 목표 구멍으로 날아와 내리치고 골드로 소멸.
+  // 지진 분신 골드해머 하나 — 목표 구멍 근처(가장 가까운 가장자리 방향 위쪽)에서 날아와 내리치고 골드로 소멸.
   // onHit = 내리치는 순간 콜백(실제 타격 판정/연출은 game.js 가).
   function quakeClone(boardEl, spriteUrl, xFrac, yFrac, _frameKey, onHit) {
     const el = document.createElement('img');
     el.className = 'quake-clone';
     el.src = spriteUrl;
     el.alt = '';
-    const dl = xFrac, dr = 1 - xFrac, dt = yFrac, db = 1 - yFrac;
-    const m = Math.min(dl, dr, dt, db);
-    let sx = xFrac, sy = yFrac;
-    if (m === dl) sx = -0.12; else if (m === dr) sx = 1.12;
-    else if (m === dt) sy = -0.16; else sy = 1.14;
-    const impactY = Math.max(0, yFrac - 0.11); // 메인 골드해머 대기위치 위로 0.5cm 이동에 맞춰 분신도 같이 위로
+    // 타격점 = 두더지 상단(헬멧 부근). translate(-50%,-24%) 로 하머 머리쪽이 이 점에 오게.
+    const hitY = Math.max(0.06, yFrac - 0.06);
+    const side = xFrac < 0.5 ? 1 : -1;               // 가까운 쪽에서 날아오되 보드 안에서 출발
+    const sx = Math.min(0.94, Math.max(0.06, xFrac + side * 0.12));
+    const sy = Math.max(0.04, hitY - 0.16);
+    const T = (tx, ty, deg) => 'translate(-50%, -24%) rotate(' + deg + 'deg)';
     el.style.left = (sx * 100) + '%';
     el.style.top = (sy * 100) + '%';
-    el.style.transform = 'translate(-50%, -64%) scale(0.62) rotate(-46deg)';
+    el.style.transform = T(0, 0, side > 0 ? -52 : 52);
     el.style.opacity = '0';
     boardEl.appendChild(el);
-    requestAnimationFrame(() => {
-      el.style.transition = 'left 0.16s cubic-bezier(.3,.5,.4,1), top 0.16s cubic-bezier(.3,.5,.4,1), opacity 0.09s, transform 0.16s';
-      el.style.opacity = '0.95';
-      el.style.left = (xFrac * 100) + '%';
-      el.style.top = (impactY * 100) + '%';
-      el.style.transform = 'translate(-50%, -64%) scale(0.62) rotate(-14deg)';
-    });
+    void el.offsetWidth;                              // 초기 상태 확정 → 트랜지션 확실히 발동
+    el.style.transition = 'left 0.17s cubic-bezier(.25,.6,.35,1), top 0.17s cubic-bezier(.25,.6,.35,1), opacity 0.07s, transform 0.17s';
+    el.style.opacity = '1';
+    el.style.left = (xFrac * 100) + '%';
+    el.style.top = (hitY * 100) + '%';
+    el.style.transform = T(0, 0, side > 0 ? -14 : 14);
     setTimeout(() => {
       el.style.transition = 'transform 0.07s ease-in';
-      el.style.transform = 'translate(-50%, -64%) scale(0.62) rotate(26deg)';
+      el.style.transform = T(0, 0, side > 0 ? 22 : -22);
       try { if (onHit) onHit(); } catch (e) { /* 무시 */ }
-    }, 175);
+    }, 185);
     setTimeout(() => {
-      el.style.transition = 'opacity 0.2s, transform 0.2s';
+      el.style.transition = 'opacity 0.22s ease-out, transform 0.22s ease-out';
       el.style.opacity = '0';
-      el.style.transform = 'translate(-50%, -100%) scale(0.85) rotate(26deg)';
-    }, 300);
-    setTimeout(() => el.remove(), 560);
+      el.style.transform = 'translate(-50%, -70%) scale(0.9) rotate(' + (side > 0 ? 22 : -22) + 'deg)';
+    }, 320);
+    setTimeout(() => el.remove(), 600);
   }
 
   // 게임 시작(사용자 제스처) 직후 호출 — 카운트다운 동안 오디오 컨텍스트 + 타격음 파일을 미리 준비.
