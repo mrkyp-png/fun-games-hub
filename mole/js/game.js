@@ -4,7 +4,7 @@
   const MG = window.MoleGame;
   const I18N = window.FGH.I18N;
   const GRID_SIZE = 4;        // 4x4 = 16칸 고정 격자
-  const CANNON_HOLE = 15;     // 대포 장착 시 없애는 구멍 (우하단 = row3·col3). 15구멍으로 플레이.
+  const CANNON_HOLE = 15;     // 캐논·특수망치 장착 시 없애는 구멍 (우하단 = row3·col3). 15구멍 + 스킬존. 뿅망치는 16구멍.
   const ROUND_SECONDS = 15;       // 챕터 1~2
   const ROUND_SECONDS_LONG = 30;  // 챕터 3부터 (난이도 상승분 보정 — 사용자 요청)
   function roundSeconds() { return currentChapter() >= 3 ? ROUND_SECONDS_LONG : ROUND_SECONDS; }
@@ -361,17 +361,22 @@
       else beginGame();
     });
 
-    // 게임 중엔 이 코너(구멍 15 자리)가 "아이템 슬롯 4개"로 바뀐다 (뿅망치). 홈에선 "시작" 버튼.
-    // 껍데기만 — 슬롯에 넣을 아이템은 LANE_ITEMS 에 지정 (자리: 0 좌상 · 1 우상 · 2 좌하 · 3 우하).
+    // 게임 중엔 이 코너(구멍 15 자리)가 "스킬 슬롯 2개"로 바뀐다 (캐논·특수망치, gs-laneskill). 홈에선 "시작" 버튼.
+    // 껍데기 — 슬롯 스킬은 LANE_SKILLS 에 지정 (0 위 반원 · 1 아래 반원). 빈 슬롯 탭은 무동작(화면이동 X).
     if (!btn.querySelector('.lane-items')) {
       const box = document.createElement('div');
       box.className = 'lane-items';
       box.setAttribute('aria-hidden', 'true');
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 2; i++) {
         const it = document.createElement('div');
         it.className = 'lane-item lane-item--empty';
         it.dataset.slot = String(i);
-        it.addEventListener('pointerdown', (e) => { e.stopPropagation(); it.classList.add('is-press'); });
+        it.addEventListener('pointerdown', (e) => {
+          e.stopPropagation();
+          it.classList.add('is-press');
+          it.classList.remove('is-rip'); void it.offsetWidth; it.classList.add('is-rip'); // 물결 재발동
+          try { if (window.FGH.Settings.vibrate) window.FGH.Settings.vibrate(16); } catch (err) { /* 무시 */ }
+        });
         const rel = () => it.classList.remove('is-press');
         it.addEventListener('pointerup', rel);
         it.addEventListener('pointercancel', rel);
@@ -383,13 +388,13 @@
     }
   }
 
-  // 아이템 슬롯 4칸 (게임 중 우하단 코너). null = 빈 칸. 예: { icon: '🛡️', id: 'shield' }
-  const LANE_ITEMS = [null, null, null, null];
+  // 스킬 슬롯 2칸 (게임 중 우하단 코너). null = 빈 칸. 예: { icon: '⚡', id: 'xxx' }
+  const LANE_SKILLS = [null, null];
   function renderLaneItems() {
     const box = document.querySelector('#lane-button-bar .lane-button--call .lane-items');
     if (!box) return;
     box.querySelectorAll('.lane-item').forEach((el, i) => {
-      const it = LANE_ITEMS[i];
+      const it = LANE_SKILLS[i];
       el.classList.toggle('lane-item--empty', !it);
       el.textContent = it && it.icon ? it.icon : '';
     });
@@ -923,10 +928,14 @@
 
     const rng = { next: MG.RNG.mulberry32(MG.RNG.hashSeed('mole-r' + roundNum + '-' + Date.now())) };
     const weapon = localStorage.getItem('mole.weapon') === 'cannon' ? 'cannon' : 'hammer';
+    // 캐논·특수망치 = 우하단 코너가 무기존(캐논 본체 or 스킬 슬롯 2개) → 구멍 15 빼고 15구멍. 뿅망치 = 16구멍.
+    const laneSkillZone = weapon !== 'hammer';
+    document.getElementById('game-screen').classList.toggle('gs-laneskill', laneSkillZone);
     let { regions, spawnPoints } = MG.GridPartition.partition({ gridSize: GRID_SIZE });
-    // 우하단 코너(구멍 15) = 무기존 — 대포면 대포, 뿅망치면 아이템 슬롯 4개. 항상 15구멍 플레이.
-    regions = regions.filter((r) => r.id !== CANNON_HOLE);
-    spawnPoints = spawnPoints.filter((sp) => sp.regionId !== CANNON_HOLE);
+    if (laneSkillZone) {
+      regions = regions.filter((r) => r.id !== CANNON_HOLE);
+      spawnPoints = spawnPoints.filter((sp) => sp.regionId !== CANNON_HOLE);
+    }
 
     // 챕터 = 모드: 1 두더지만 / 2 +동물 / 3 +폭탄 / 4 +실드아이템 / 5 두더지 적게 + 방해물 최대.
     const ch = currentChapter();

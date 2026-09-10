@@ -9,7 +9,7 @@
   var SPEED = 42;      // 화면 크롤 속도 px/sec (천천히, 계속 올라감)
   var TRIGGER = 0.82;  // 블록 top 이 뷰포트 이 비율 위로 오면 그 블록 타이핑 시작
 
-  var BLOCKS = [
+  var BLOCKS_KO = [
     { title: '두더지 게임의 역사' },
     { img: 'assets/intro/1.jpg', cap: '1975 · 일본 「もぐら退治」' },
     { p: '두더지 잡기 게임은 1970년대 일본에서 시작되었습니다.' },
@@ -27,6 +27,33 @@
     { p: '방문해주셔서 대단히 감사합니다!' }
   ];
 
+  var BLOCKS_EN = [
+    { title: 'The History of Whac-A-Mole' },
+    { img: 'assets/intro/1.jpg', cap: '1975 · Japan “Mogura Taiji”' },
+    { p: 'Mole-whacking games began in Japan in the 1970s.' },
+    { p: 'In 1975, the Japanese amusement-machine maker TOGO unveiled an electro-mechanical mole game called “Mogura Taiji” (もぐら退治).' },
+    { p: 'A mole would pop out of a hole without warning, and the player whacked it with a mallet — that was the whole idea.' },
+    { p: 'But the thrill of “see it → judge it → react at once” made it a hit in Japanese arcades, and it soon spread overseas.' },
+    { img: 'assets/intro/2.jpg', cap: '1976 · USA “Whac-A-Mole”' },
+    { p: 'In the United States it became known as Whac-A-Mole and grew into a signature reaction game at amusement parks and arcades.' },
+    { img: 'assets/intro/3.jpg', cap: '2000s · Arcades in Korea' },
+    { p: 'And now, fifty years later.' },
+    { p: 'We have rebuilt this long-loved mole game in a brand-new way.' },
+    { p: 'Sixteen holes full of ever-changing situations — not only moles, but animals, obstacles, and fresh rules.' },
+    { p: 'More than tapping fast: a new mole game about watching, judging, and choosing.' },
+    { p: 'The mole game you knew begins again, in a whole new form.' },
+    { p: 'Thank you so much for stopping by!' }
+  ];
+
+  function pickBlocks() {
+    var I = root.FGH && root.FGH.I18N;
+    return (I && I.lang === 'en') ? BLOCKS_EN : BLOCKS_KO;
+  }
+  function skipLabel() {
+    var I = root.FGH && root.FGH.I18N;
+    return (I && I.lang === 'en') ? 'Skip ›' : '건너뛰기 ›';
+  }
+
   function shouldShow() {
     return true; // ⚠️ 개발용 — 매번 표시(사용자 확인). 출시 전 아래로 원복:
     // try { return !localStorage.getItem(SEEN_KEY); } catch (e) { return true; }
@@ -38,6 +65,7 @@
 
   function play(onDone) {
     var done = false, killed = false;
+    var BLOCKS = pickBlocks();   // 앱 언어에 맞춰 ko / en
     var timers = [];
     function after(ms, fn) { var t = setTimeout(fn, ms); timers.push(t); return t; }
 
@@ -72,7 +100,7 @@
     var scr = document.createElement('div');
     scr.id = 'intro-screen';
     scr.innerHTML =
-      '<button type="button" class="intro-skip">건너뛰기 ›</button>' +
+      '<button type="button" class="intro-skip">' + skipLabel() + '</button>' +
       '<div class="intro-view"><div class="intro-col"></div></div>';
     document.body.appendChild(scr); // 바로 불투명하게 뜬다 (홈 안 비치게) — 페이드는 나갈 때만
 

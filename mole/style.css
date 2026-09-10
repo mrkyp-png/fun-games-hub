@@ -1436,33 +1436,70 @@ body { background: var(--lm-page); }
 }
 .lane-button--call:active { background: #29b84e; }
 
-/* 게임 중: 우하단 코너 = 아이템 슬롯 4개 (뿅망치). 홈에선 "시작" 버튼 그대로. */
+/* 게임 중: 우하단 통화 버튼(원형 유지) = 스킬 슬롯 2개 (캐논·특수망치, #game-screen.gs-laneskill).
+   원을 수평으로 잘라 위/아래 반원 — 옆 숫자키와 같은 흰색 계열, 상하 대칭 3D 돔.
+   뿅망치(gs-laneskill 없음)면 그냥 구멍. 홈에선 "시작" 버튼 그대로. */
 .lane-items { display: none; }
-#game-screen:not(.is-start) .lane-button--call { background: #3a3f4a; }
-#game-screen:not(.is-start) .lane-button--call > .lane-ico,
-#game-screen:not(.is-start) .lane-button--call > .lane-lbl { display: none; }  /* "통화" 라벨/아이콘 숨김 */
-#game-screen:not(.is-start) .lane-button--call .lane-items {
-  display: grid; position: absolute; inset: 8%;
-  grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 5px;
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call {
+  background: radial-gradient(circle at 50% 38%, #d3d4d8, #bcbdc3);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.28), inset 0 -2px 4px rgba(255, 255, 255, 0.55);
+}
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call:active { transform: none; }
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call > .lane-ico,
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call > .lane-lbl,
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-call-idle { display: none; }
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-items {
+  display: block; position: absolute; inset: 5%; border-radius: 50%; overflow: hidden;
+}
+/* 위/아래 분리 홈 */
+.lane-items::after {
+  content: ''; position: absolute; left: 0; right: 0; top: calc(50% - 2px); height: 4px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0) 45%, rgba(255, 255, 255, 0.9) 55%, rgba(0, 0, 0, 0));
+  pointer-events: none;
 }
 .lane-item {
-  border-radius: 7px;
-  background: linear-gradient(180deg, #5b6270, #474d59);
-  box-shadow: 0 2.5px 0 #2b2f38, 0 3px 5px rgba(0, 0, 0, 0.32), inset 0 1px 1px rgba(255, 255, 255, 0.18);
+  position: absolute; left: 0; width: 100%; height: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: clamp(11px, 4.2vw, 18px); line-height: 1; color: #e7eaf0;
-  transition: transform 0.07s ease, box-shadow 0.07s ease;
+  font-size: clamp(11px, 4.4vw, 18px); line-height: 1; color: #3a3d44;
+  transition: transform 0.09s ease, box-shadow 0.09s ease;
   -webkit-tap-highlight-color: transparent; cursor: pointer; user-select: none;
 }
-.lane-item.is-press {
-  transform: translateY(2.5px);
-  box-shadow: 0 0 0 #2b2f38, 0 1px 2px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+/* 아래 반원(slot 1) = 기준, 위 반원(slot 0) = 거울상. 둘 다 중앙(홈)쪽 밝고 바깥쪽 어두운 볼록 돔. */
+.lane-item[data-slot="1"] {
+  bottom: 0;
+  background: radial-gradient(120% 130% at 50% -25%, #ffffff 0%, #f4f4f6 45%, #dcdce0 100%);
+  box-shadow: inset 0 2px 0 #fff, inset 0 -14px 16px -8px rgba(0, 0, 0, 0.28);
 }
-.lane-item--empty {
-  background: linear-gradient(180deg, #464c58, #3a3f49);
-  box-shadow: 0 2.5px 0 #24272e, 0 2px 4px rgba(0, 0, 0, 0.28), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+.lane-item[data-slot="0"] {
+  top: 0;
+  background: radial-gradient(120% 130% at 50% 125%, #ffffff 0%, #f4f4f6 45%, #dcdce0 100%);
+  box-shadow: inset 0 -2px 0 #fff, inset 0 14px 16px -8px rgba(0, 0, 0, 0.28);
 }
-.lane-item--empty::before { content: '+'; color: rgba(255, 255, 255, 0.22); font-weight: 700; }
+/* 눌림 — 그 반원만 안쪽으로 들어가고 그림자 깊어짐 (다른 반원은 그대로) */
+.lane-item.is-press { z-index: 3; }
+.lane-item[data-slot="0"].is-press {
+  transform: translateY(2px);
+  background: radial-gradient(120% 130% at 50% 125%, #e7e7ea 0%, #dcdce0 55%, #cccdd2 100%);
+  box-shadow: inset 0 -4px 8px rgba(0, 0, 0, 0.3);
+}
+.lane-item[data-slot="1"].is-press {
+  transform: translateY(-2px);
+  background: radial-gradient(120% 130% at 50% -25%, #e7e7ea 0%, #dcdce0 55%, #cccdd2 100%);
+  box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+/* 물결(ripple) — 눌린 순간 옅은 원이 퍼졌다 사라짐 */
+.lane-item::before {
+  content: ''; position: absolute; inset: -12%;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.4) 38%, rgba(255, 255, 255, 0) 66%);
+  opacity: 0; transform: scale(0.2); pointer-events: none;
+}
+.lane-item.is-rip::before { animation: lane-item-ripple 0.5s ease-out; }
+@keyframes lane-item-ripple {
+  0%   { opacity: 0.85; transform: scale(0.2); }
+  100% { opacity: 0;    transform: scale(1.7); }
+}
+/* 빈 슬롯 — 게임 중엔 마크 없음(오조작 방지). ＋(장착)는 보관창에서만.
+   스킬 아이콘/개수 배지/소진(회색)은 첫 스킬 확정 시 renderLaneItems 와 함께 추가. */
 /* 대기 중(홈화면에서만, 종료대기 아닐 때) 왕관 이펙트 — 색 아웃라인 + 안에서 대각선으로
    움직이는 빛(쉬머). 게임 플레이 중(is-start 아님)엔 적용 안 됨. */
 .lane-button--call { overflow: hidden; }
