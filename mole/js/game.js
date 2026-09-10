@@ -360,6 +360,39 @@
       if (armState.armed) { setArmed(false); showQuitDialog(); }
       else beginGame();
     });
+
+    // 게임 중엔 이 코너(구멍 15 자리)가 "아이템 슬롯 4개"로 바뀐다 (뿅망치). 홈에선 "시작" 버튼.
+    // 껍데기만 — 슬롯에 넣을 아이템은 LANE_ITEMS 에 지정 (자리: 0 좌상 · 1 우상 · 2 좌하 · 3 우하).
+    if (!btn.querySelector('.lane-items')) {
+      const box = document.createElement('div');
+      box.className = 'lane-items';
+      box.setAttribute('aria-hidden', 'true');
+      for (let i = 0; i < 4; i++) {
+        const it = document.createElement('div');
+        it.className = 'lane-item lane-item--empty';
+        it.dataset.slot = String(i);
+        it.addEventListener('pointerdown', (e) => { e.stopPropagation(); it.classList.add('is-press'); });
+        const rel = () => it.classList.remove('is-press');
+        it.addEventListener('pointerup', rel);
+        it.addEventListener('pointercancel', rel);
+        it.addEventListener('pointerleave', rel);
+        box.appendChild(it);
+      }
+      btn.appendChild(box);
+      renderLaneItems();
+    }
+  }
+
+  // 아이템 슬롯 4칸 (게임 중 우하단 코너). null = 빈 칸. 예: { icon: '🛡️', id: 'shield' }
+  const LANE_ITEMS = [null, null, null, null];
+  function renderLaneItems() {
+    const box = document.querySelector('#lane-button-bar .lane-button--call .lane-items');
+    if (!box) return;
+    box.querySelectorAll('.lane-item').forEach((el, i) => {
+      const it = LANE_ITEMS[i];
+      el.classList.toggle('lane-item--empty', !it);
+      el.textContent = it && it.icon ? it.icon : '';
+    });
   }
 
   function showQuitDialog() {
@@ -891,10 +924,9 @@
     const rng = { next: MG.RNG.mulberry32(MG.RNG.hashSeed('mole-r' + roundNum + '-' + Date.now())) };
     const weapon = localStorage.getItem('mole.weapon') === 'cannon' ? 'cannon' : 'hammer';
     let { regions, spawnPoints } = MG.GridPartition.partition({ gridSize: GRID_SIZE });
-    if (weapon === 'cannon') {  // 대포 자리 = 우하단 구멍 하나 빼고 15구멍 (모든 라운드)
-      regions = regions.filter((r) => r.id !== CANNON_HOLE);
-      spawnPoints = spawnPoints.filter((sp) => sp.regionId !== CANNON_HOLE);
-    }
+    // 우하단 코너(구멍 15) = 무기존 — 대포면 대포, 뿅망치면 아이템 슬롯 4개. 항상 15구멍 플레이.
+    regions = regions.filter((r) => r.id !== CANNON_HOLE);
+    spawnPoints = spawnPoints.filter((sp) => sp.regionId !== CANNON_HOLE);
 
     // 챕터 = 모드: 1 두더지만 / 2 +동물 / 3 +폭탄 / 4 +실드아이템 / 5 두더지 적게 + 방해물 최대.
     const ch = currentChapter();

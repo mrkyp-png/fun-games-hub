@@ -1435,6 +1435,34 @@ body { background: var(--lm-page); }
   letter-spacing: 0.04em;
 }
 .lane-button--call:active { background: #29b84e; }
+
+/* 게임 중: 우하단 코너 = 아이템 슬롯 4개 (뿅망치). 홈에선 "시작" 버튼 그대로. */
+.lane-items { display: none; }
+#game-screen:not(.is-start) .lane-button--call { background: #3a3f4a; }
+#game-screen:not(.is-start) .lane-button--call > .lane-ico,
+#game-screen:not(.is-start) .lane-button--call > .lane-lbl { display: none; }  /* "통화" 라벨/아이콘 숨김 */
+#game-screen:not(.is-start) .lane-button--call .lane-items {
+  display: grid; position: absolute; inset: 8%;
+  grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 5px;
+}
+.lane-item {
+  border-radius: 7px;
+  background: linear-gradient(180deg, #5b6270, #474d59);
+  box-shadow: 0 2.5px 0 #2b2f38, 0 3px 5px rgba(0, 0, 0, 0.32), inset 0 1px 1px rgba(255, 255, 255, 0.18);
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(11px, 4.2vw, 18px); line-height: 1; color: #e7eaf0;
+  transition: transform 0.07s ease, box-shadow 0.07s ease;
+  -webkit-tap-highlight-color: transparent; cursor: pointer; user-select: none;
+}
+.lane-item.is-press {
+  transform: translateY(2.5px);
+  box-shadow: 0 0 0 #2b2f38, 0 1px 2px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+}
+.lane-item--empty {
+  background: linear-gradient(180deg, #464c58, #3a3f49);
+  box-shadow: 0 2.5px 0 #24272e, 0 2px 4px rgba(0, 0, 0, 0.28), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+}
+.lane-item--empty::before { content: '+'; color: rgba(255, 255, 255, 0.22); font-weight: 700; }
 /* 대기 중(홈화면에서만, 종료대기 아닐 때) 왕관 이펙트 — 색 아웃라인 + 안에서 대각선으로
    움직이는 빛(쉬머). 게임 플레이 중(is-start 아님)엔 적용 안 됨. */
 .lane-button--call { overflow: hidden; }
