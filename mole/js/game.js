@@ -583,16 +583,13 @@
 
     refreshChapterNav();
 
-    // 위에서 내려오는 문자 알림 = 이번 판 목표 점수 / 마지막 플레이 득점.
-    const goal = MG.Progress.target(currentChapter());
+    // 위에서 내려오는 문자 배너 = 광고 버튼 2개(하트+1 / 코인+50). 툭↓ 3초 보임 → 그동안 누를 수 있음.
     const sms = document.getElementById('start-best');
-    const smsTxt = I18N.t('mole.start.goal', { n: goal.toLocaleString() }) +
-      '  /  ' + I18N.t('mole.start.best', { n: lastScore().toLocaleString() });
-    sms.querySelector('.chat-sms-txt').textContent = smsTxt;
+    if (!sms.querySelector('.chat-ad-btns')) sms.appendChild(adButtons());
+    syncStartAds();
     refreshBoardStats();
     tuneAddrTicker();
-    sms.classList.toggle('is-empty', false);
-    sms.classList.remove('sms-anim');   // 시작화면 열 때마다 문자 툭↓ + 폭죽 리트리거
+    sms.classList.remove('sms-anim');   // 시작화면 열 때마다 배너 툭↓ 리트리거
     void sms.offsetWidth;
     sms.classList.add('sms-anim');
 
@@ -644,11 +641,6 @@
           setTimeout(() => lbl.classList.remove('ch-flare'), 900); // 끝나면 떼서 평소 아우라 펄스로 복귀
         }
       }
-      // 목표 점수 문자알림 갱신
-      const sms = document.getElementById('start-best');
-      sms.querySelector('.chat-sms-txt').textContent =
-        I18N.t('mole.start.goal', { n: MG.Progress.target(ch).toLocaleString() }) +
-        '  /  ' + I18N.t('mole.start.best', { n: lastScore().toLocaleString() });
     };
     nav.querySelector('[data-ch-prev]').addEventListener('click', () => step(-1));
     nav.querySelector('[data-ch-next]').addEventListener('click', () => step(1));
@@ -743,7 +735,6 @@
       el.appendChild(bubbleRow('them', pick(CP.returnPhrases())));
       el.appendChild(bubbleRow('me', pick(CP.hippoReplies())));
     }
-    el.appendChild(adRow());   // 두더지 마지막 말풍선 = "하트나 코인 필요하면 눌러" (일반 대화 줄)
   }
 
   // 홈 광고 = 생명/코인 각각 하루 최대 3회. localStorage 에 날짜별 카운트.
@@ -772,28 +763,28 @@
     btn.disabled = n >= AD_DAILY_MAX;
   }
 
-  // 광고 보기 = 두더지 말풍선 (재방문 대화 마지막 줄). 일반 대화처럼 한 줄씩 공개·스크롤.
-  function adRow() {
-    const row = document.createElement('div');
-    row.className = 'chat-row chat-row--them';
-    row.appendChild(avatarEl('mole'));
-    const bubble = document.createElement('div');
-    bubble.className = 'chat-bubble chat-bubble--them chat-ad-bubble';
-    bubble.innerHTML =
-      '<span class="chat-ad-say">' + I18N.t('mole.start.adIntro') + '</span>' +
-      '<span class="chat-ad-btns">' +
-        '<button type="button" class="chat-ad-btn" data-ad="life" aria-label="' + I18N.t('mole.start.adLife') + '">' +
-          '<span class="chat-ad-play" aria-hidden="true">▶</span>' +
-          '<svg class="chat-ad-ic chat-ad-ic--heart" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg>' +
-          '<span class="chat-ad-n">+1</span><span class="chat-ad-cap"></span></button>' +
-        '<button type="button" class="chat-ad-btn" data-ad="coin" aria-label="' + I18N.t('mole.shop.watchCoin') + '">' +
-          '<span class="chat-ad-play" aria-hidden="true">▶</span>' +
-          '<svg class="chat-ad-ic chat-ad-ic--coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="currentColor"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="1.6"/></svg>' +
-          '<span class="chat-ad-n">+50</span><span class="chat-ad-cap"></span></button>' +
-      '</span>';
-    row.appendChild(bubble);
-    wireChatAds(row);
-    return row;
+  // 광고 버튼 2개 (하트+1 / 코인+50) — 시작화면 문자 배너(#start-best) 안에 삽입.
+  function adButtons() {
+    const wrap = document.createElement('span');
+    wrap.className = 'chat-ad-btns';
+    wrap.innerHTML =
+      '<button type="button" class="chat-ad-btn" data-ad="life" aria-label="' + I18N.t('mole.start.adLife') + '">' +
+        '<span class="chat-ad-play" aria-hidden="true">▶</span>' +
+        '<svg class="chat-ad-ic chat-ad-ic--heart" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg>' +
+        '<span class="chat-ad-n">+1</span><span class="chat-ad-cap"></span></button>' +
+      '<button type="button" class="chat-ad-btn" data-ad="coin" aria-label="' + I18N.t('mole.shop.watchCoin') + '">' +
+        '<span class="chat-ad-play" aria-hidden="true">▶</span>' +
+        '<svg class="chat-ad-ic chat-ad-ic--coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="currentColor"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="1.6"/></svg>' +
+        '<span class="chat-ad-n">+50</span><span class="chat-ad-cap"></span></button>';
+    wireChatAds(wrap);
+    return wrap;
+  }
+  // 시작화면 열 때마다 "N/3" 카운터·비활성 상태를 다시 반영 (날짜 바뀜 / 다른 화면에서 광고 봄).
+  function syncStartAds() {
+    const sms = document.getElementById('start-best');
+    if (!sms) return;
+    syncAdBtn(sms.querySelector('[data-ad="life"]'), 'life');
+    syncAdBtn(sms.querySelector('[data-ad="coin"]'), 'coin');
   }
 
   // "광고 보고 하트/코인" 버튼 연결 — 하루 3회 제한 + "N/3" 카운터.

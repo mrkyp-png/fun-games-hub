@@ -160,13 +160,11 @@
            (부모 #board-start 의 z-index 에 갇히면 자식 z-index 는 소용없음). -->
       <div id="start-best" class="chat-sms" aria-hidden="true">
         <svg class="chat-sms-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 6.5 8.5 6 8.5-6"/></svg>
-        <span class="chat-sms-txt"></span>
-        <svg class="chat-sms-party" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 21 8.5 8l7.5 7.5zm7.8-11.3 1.2-2.4 2.4-1.2-2.4-1.2L10.8 2 9.6 4.4 7.2 5.6l2.4 1.2zM19 11l.8-1.7 1.7-.8-1.7-.8L19 6l-.8 1.7-1.7.8 1.7.8zm2.5 3.5-1.2-.6-.6-1.2-.6 1.2-1.2.6 1.2.6.6 1.2.6-1.2z"/></svg>
-        <span class="chat-sms-fx" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        <!-- 광고 버튼 2개(하트+1 / 코인+50) — game.js 가 시작화면 열 때 adButtons() 로 삽입 -->
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v325</div>
+      <div id="build-tag" aria-hidden="true">v326</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -197,8 +195,7 @@
           </div>
         </div>
 
-        <!-- 재방문(재접·다시하기): game.js 가 상황에 맞춰 말풍선/이모티콘 줄을 채운다.
-             마지막 줄 = 두더지 "하트나 코인 필요하면 눌러" 광고 말풍선 (adRow, 일반 대화처럼). -->
+        <!-- 재방문(재접·다시하기): game.js 가 상황에 맞춰 말풍선/이모티콘 줄을 채운다. -->
         <div class="chat-thread" id="chat-return" hidden></div>
       </div>
 
@@ -561,7 +558,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=325').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=326').catch(function () {});
       }
     });
   }
