@@ -2226,6 +2226,7 @@ body { background: var(--lm-page); }
   white-space: nowrap; padding: 1px 5px 1px 0; vertical-align: top;
 }
 .inv-stat-tbl td { text-align: left; color: var(--lm-ink); font-weight: 700; padding: 1px 0; }
+.inv-stat-tbl td.inv-stat-dash { text-align: center; }
 .inv-equip { margin-top: auto; }
 
 /* 게임화면 둥근 글자체(Dongle, 사용자 선택) — 홈화면·다이얼패드 숫자·더보기메뉴는 그대로,

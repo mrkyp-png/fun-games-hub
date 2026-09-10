@@ -56,7 +56,10 @@
         var trs = card.querySelectorAll('.inv-stat-tbl tr');
         w.stats.forEach(function (s, i) {
           trs[i].querySelector('th').textContent = T(STAT_ROWS[i]);
-          trs[i].querySelector('td').textContent = (I18N.lang === 'en' ? s[1] : s[0]);
+          var td = trs[i].querySelector('td');
+          var v = (I18N.lang === 'en' ? s[1] : s[0]);
+          td.textContent = v;
+          if (v === '-') td.classList.add('inv-stat-dash'); // 값 없음 = 중앙정렬
         });
         var btn = card.querySelector('.inv-equip');
         btn.textContent = w.id === cur ? T('mole.inv.equipped') : T('mole.inv.equip');
