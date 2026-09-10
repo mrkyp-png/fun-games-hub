@@ -1691,7 +1691,9 @@
     });
     inventoryScreen = MG.InventoryScreen.create({
       root: document.getElementById('inventory-screen'),
-      onClose: () => screenNav.back()
+      onClose: () => screenNav.back(),
+      // 게임 진행 중(라운드1~클리어)엔 무기 변경 잠금. 홈·게임오버 후엔 허용.
+      gameInProgress: () => !!(state && !state.ended)
     });
     ['help', 'privacy', 'quest', 'friends'].forEach((k) => {
       const b = document.querySelector('[data-back="' + k + '"]');

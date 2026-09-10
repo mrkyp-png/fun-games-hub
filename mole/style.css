@@ -2154,6 +2154,19 @@ body { background: var(--lm-page); }
 .inv-tab--on { background: #2fb457; color: #fff; }
 .inv-body { padding: 8px 14px; }
 .inv-soon { padding: 40px 0; text-align: center; color: var(--lm-muted); font-weight: 700; }
+.inv-locked {
+  margin: 4px 0 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fff4d6;
+  border: 1px solid #f0d38a;
+  color: #8a6d1e;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+  white-space: pre-line;
+}
 .inv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 6px 0; }
 .inv-card {
   background: var(--lm-fill); border-radius: 12px; padding: 12px 10px;

@@ -26,7 +26,11 @@
 
     function renderWeapons() {
       var cur = equipped();
-      body.innerHTML = '<div class="inv-grid"></div>';
+      // 게임 진행 중(라운드1~클리어)엔 무기 변경 잠금 — 라운드 도중 무기가 바뀌면 구멍 수·
+      // 스케줄러가 꼬여서(원래 버그: 이어가기 시 옛 무기로 나옴), 아예 못 바꾸게 한다.
+      var locked = !!(opts.gameInProgress && opts.gameInProgress());
+      body.innerHTML = (locked ? '<p class="inv-locked"></p>' : '') + '<div class="inv-grid"></div>';
+      if (locked) body.querySelector('.inv-locked').textContent = T('mole.inv.locked');
       var grid = body.querySelector('.inv-grid');
       WEAPONS.forEach(function (w) {
         var card = document.createElement('div');
@@ -38,11 +42,13 @@
         card.querySelector('.inv-name').textContent = nameOf(w);
         var btn = card.querySelector('.inv-equip');
         btn.textContent = w.id === cur ? T('mole.inv.equipped') : T('mole.inv.equip');
-        btn.disabled = w.id === cur;
-        btn.addEventListener('click', function () {
-          localStorage.setItem('mole.weapon', w.id);
-          renderWeapons();
-        });
+        btn.disabled = w.id === cur || locked;
+        if (!locked) {
+          btn.addEventListener('click', function () {
+            localStorage.setItem('mole.weapon', w.id);
+            renderWeapons();
+          });
+        }
         grid.appendChild(card);
       });
     }
