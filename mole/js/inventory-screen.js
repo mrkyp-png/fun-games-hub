@@ -13,6 +13,10 @@
     { id: 'cannon', name: '캐논', nameEn: 'Cannon', thumb: 'assets/weapons/cannon-a1.png',
       stats: [['Hole 16 → 15', 'Holes 16 → 15'],
               ['2·3타 두더지 연타 확률 10%', '10% burst on 2·3-hit moles'],
+              ['-', '-']] },
+    { id: 'goldhammer', name: '골드해머', nameEn: 'Gold Hammer', thumb: 'assets/weapons/goldhammer.png',
+      stats: [['Hole 16 → 15', 'Holes 16 → 15'],
+              ['주변 두더지 지진 연타 15%', '15% quake — chain-hits nearby moles'],
               ['-', '-']] }
   ];
 
@@ -24,7 +28,8 @@
     var active = 'weapon';
 
     function equipped() {
-      return localStorage.getItem('mole.weapon') === 'cannon' ? 'cannon' : 'hammer';
+      var w = localStorage.getItem('mole.weapon');
+      return w === 'cannon' ? 'cannon' : (w === 'goldhammer' ? 'goldhammer' : 'hammer');
     }
     function nameOf(w) {
       return I18N.lang === 'en' ? w.nameEn : w.name;

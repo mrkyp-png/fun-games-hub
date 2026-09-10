@@ -1375,6 +1375,33 @@ body { background: var(--lm-page); }
 }
 .lane-button:active { transform: scale(0.9); background: rgba(0, 0, 0, 0.07); }
 
+/* 골드해머 지진: 발동칸+주변 8칸에 갈색빛 회색 사각 음영(원형 X — 셀 전체). 두더지 처치된 칸은 흰색. */
+.lane-quake-shade {
+  position: absolute;
+  inset: -1px;
+  border-radius: 6px;
+  background: rgba(122, 94, 68, 0.62);   /* 갈색빛 회색 = 지진 */
+  opacity: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+.lane-quake-shade.is-kill { background: rgba(255, 255, 255, 0.92); }
+.lane-quake-shade.is-on { animation: lane-quake-shade 0.6s ease-out forwards; }
+@keyframes lane-quake-shade {
+  0%   { opacity: 0; }
+  16%  { opacity: 1; }
+  72%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+/* 지진 발동 = 다이얼패드 전체가 잠깐 흔들림 (보드 흔들림과 동시). */
+.lane-bar--quake-shake { animation: lane-bar-quake 0.32s ease-out; }
+@keyframes lane-bar-quake {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-2px, 1px); }
+  45% { transform: translate(2px, -1px); }
+  70% { transform: translate(-1px, -1px); }
+}
+
 .lane-num { font-size: clamp(1rem, 6vw, 1.9rem); font-weight: 400; line-height: 1; }
 .lane-sub {
   display: flex;
@@ -1618,6 +1645,20 @@ body { background: var(--lm-page); }
   will-change: transform;
 }
 .lane-hammer img { display: block; width: 100%; filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.5)); }
+/* 골드해머(지진 무기) = 뿅망치보다 ~1.2배 크게. 스프라이트 비율이 달라 폭으로 맞춘다. */
+.lane-hammer--gold { width: 17.5%; }
+/* 지진 분신 골드해머 — 가장자리에서 날아와 내리치고 골드로 소멸 (hit-fx.js quakeClone). */
+.quake-clone {
+  position: absolute;
+  width: 13%;
+  transform-origin: 50% 64%;
+  pointer-events: none;
+  z-index: 22;
+  filter: drop-shadow(0 0 5px rgba(120, 200, 255, 0.9)) drop-shadow(0 3px 4px rgba(0, 0, 0, 0.4));
+}
+/* 지진 먼지 파동 — 기존 링/흙먼지 재사용, 갈색·조금 크게. */
+.hit-fx-ring--quake { width: 30%; border-width: 4px; animation-duration: 0.5s; }
+.hit-fx-dust--quake { width: 10px; height: 10px; }
 .lane-hammer-img--hit { animation: lane-hammer-squash 0.16s ease-out; }
 @keyframes lane-hammer-squash {
   0% { transform: scale(1, 1); }

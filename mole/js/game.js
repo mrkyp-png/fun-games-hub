@@ -916,7 +916,8 @@
     setCallLabel('game'); // 게임 중: 초록 버튼은 "통화"(위장) — 15번 구멍 타격 담당
     // 캐논·특수망치 = 우하단 코너가 무기존(캐논 본체 or 스킬 슬롯 2개) → 구멍 15 빼고 15구멍. 뿅망치 = 16구멍.
     // (spinChannelsIn 이 gs-laneskill 을 보고 통화 버튼도 같이 돌리므로 그 호출 전에 세팅해야 한다.)
-    const weapon = localStorage.getItem('mole.weapon') === 'cannon' ? 'cannon' : 'hammer';
+    const wRaw = localStorage.getItem('mole.weapon');
+    const weapon = wRaw === 'cannon' ? 'cannon' : (wRaw === 'goldhammer' ? 'goldhammer' : 'hammer');
     const laneSkillZone = weapon !== 'hammer';
     document.getElementById('game-screen').classList.toggle('gs-laneskill', laneSkillZone);
     // 홈→게임 첫 진입(fresh)에만 — 채널(유튜브 아이콘) 버튼을 10바퀴 돌려 숫자 버튼으로 전환.
@@ -976,14 +977,19 @@
       spawnPoints
     });
 
-    // 장착 무기 = 망치(기본) 또는 대포 스킨. 인터페이스 동일 (strike/update/home/clear/isBusy).
+    // 장착 무기 = 망치(기본) / 대포 스킨 / 골드해머(지진). 인터페이스 동일 (strike/update/home/clear/isBusy).
     const WeaponMod = (weapon === 'cannon' && MG.LaneCannon) ? MG.LaneCannon : MG.LaneHammer;
-    const laneHammer = WeaponMod.create({
-      layer: document.getElementById('mole-hammer-layer')
-    });
+    const hammerOpts = { layer: document.getElementById('mole-hammer-layer') };
+    if (weapon === 'goldhammer') {
+      hammerOpts.sprite = 'assets/weapons/goldhammer.png';
+      hammerOpts.grip = { x: 42, y: 58 };        // 골드해머 스프라이트 손잡이 잡는 점 (67.5° raw 포즈)
+      hammerOpts.degOffset = 20;                 // raw 포즈 → 뿅망치 손잡이 각도 맞춤
+      hammerOpts.cssClass = 'lane-hammer--gold'; // 뿅망치보다 1.2배 크게
+    }
+    const laneHammer = WeaponMod.create(hammerOpts);
 
     state = {
-      round: roundNum, levelData, regions, spawnPoints, scheduler, holeLayer, laneHammer, weapon,
+      round: roundNum, levelData, regions, spawnPoints, scheduler, holeLayer, laneHammer, weapon, rng,
       timeRemaining: roundSeconds(),
       hitstopUntil: 0,
       ended: false,
@@ -1200,8 +1206,92 @@
       burstAutoFire(regionId, primary.hitsRequired - 1);
     }
 
+    // 골드해머 지진: 두더지 타격 성공 시(중간타 포함, 저글/무시 제외) 15% 발동.
+    if (state.weapon === 'goldhammer' && primary && primary.type === 'mole' && typeof primary.done === 'boolean') {
+      if (forceQuakeNext || state.rng.next() < QUAKE_CHANCE) {
+        forceQuakeNext = false;
+        setTimeout(() => quakeRipple(regionId, 0), 40);
+      }
+    }
+
     // 버튼 이펙트 색: 헛방(구멍에 아무것도 없음) 또는 폭탄이면 빨간색.
     return results.length === 0 || results.some((r) => r.type === 'bomb');
+  }
+
+  // ---------- 골드해머: 지진 ----------
+  // 발동 구멍 + 주변 8칸의 두더지에게 "지진 분신 골드해머"가 날아가 각 1대씩 (1타=처치, 다타=한 단계).
+  // 폭탄·장애물·동물은 스킵. 자동타격당한 두더지도 각자 15% 재발동 → 연쇄. 콤보·점수는 반영,
+  // hitstop 은 안 건다(플레이어 직접타격만). 분신 포즈는 목표 구멍의 다이얼패드 위치 기준(사용자 지정).
+  const QUAKE_CHANCE = 0.15;
+  const QUAKE_MAX_DEPTH = 4;
+  const QUAKE_CLONE_GAP = 55; // ms — 분신들 시차 연타
+  let forceQuakeNext = false; // __debugForceQuake
+
+  function quakeClonePose(regionId) {
+    if (regionId === 12 || regionId === 13 || regionId === 14) return 'assets/weapons/goldhammer-0.png';
+    if (regionId === 3 || regionId === 7 || regionId === 11) return 'assets/weapons/goldhammer-90.png';
+    return 'assets/weapons/goldhammer-45.png';
+  }
+
+  function quakeNeighbors(regionId) {
+    const row = Math.floor(regionId / GRID_SIZE), col = regionId % GRID_SIZE;
+    const out = [];
+    for (let dr = -1; dr <= 1; dr++) {
+      for (let dc = -1; dc <= 1; dc++) {
+        if (!dr && !dc) continue;
+        const nr = row + dr, nc = col + dc;
+        if (nr < 0 || nr >= GRID_SIZE || nc < 0 || nc >= GRID_SIZE) continue;
+        out.push(nr * GRID_SIZE + nc);
+      }
+    }
+    return out;
+  }
+
+  function liveMoleAt(id) {
+    return state.scheduler.getActivePops().find((q) =>
+      q.regionId === id && q.type === 'mole' && !q.dying && !q.killed && !(q.sinkIn > 0));
+  }
+
+  function quakeRipple(originId, depth) {
+    depth = depth || 0;
+    if (!state || state.ended || depth > QUAKE_MAX_DEPTH) return;
+    const board = document.getElementById('mole-board');
+    const fxLayer = document.getElementById('mole-hammer-layer'); // overflow:visible — 분신이 보드 밖에서 날아듦
+    const sp0 = state.spawnPoints.find((s) => s.regionId === originId);
+    const area = [originId].concat(quakeNeighbors(originId))
+      .filter((id) => state.spawnPoints.some((s) => s.regionId === id));
+
+    MG.HitFx.shake(board);
+    if (sp0) MG.HitFx.quakeDust(board, sp0.x, sp0.y);
+
+    const killed = [];
+    const paintPad = () => {
+      if (sharedLaneControls && sharedLaneControls.flashQuakeArea) {
+        sharedLaneControls.flashQuakeArea(area, killed.slice());
+      }
+    };
+    paintPad();
+
+    const targets = quakeNeighbors(originId).filter((id) =>
+      state.spawnPoints.some((s) => s.regionId === id) && liveMoleAt(id));
+
+    targets.forEach((id, k) => {
+      setTimeout(() => {
+        if (!state || state.ended) return;
+        const p = liveMoleAt(id);
+        if (!p) return;
+        const res = state.scheduler.resolveRegion(id, { quake: true });
+        if (!res.length || res.every((r) => r.ignored)) return;
+        const fk = sharedPopElements.frameKeyAt ? sharedPopElements.frameKeyAt(id) : null;
+        MG.HitFx.quakeClone(fxLayer, quakeClonePose(id), p.x, p.y, fk, () => {
+          if (!state || state.ended) return;
+          onHammerImpact(p.x, p.y, res, { noHitstop: true });
+          MG.HitFx.quakeDust(board, p.x, p.y);
+          if (res.some((r) => r.type === 'mole' && r.done)) { killed.push(id); paintPad(); }
+          if (!forceQuakeNext && state.rng.next() < QUAKE_CHANCE) quakeRipple(id, depth + 1);
+        });
+      }, k * QUAKE_CLONE_GAP);
+    });
   }
 
   // 연사 자동샷 — n 발(3타=2발, 2타=1발)을 BURST_SHOT_GAP 간격으로 대포 재발사.
@@ -1223,7 +1313,7 @@
     }, BURST_SHOT_GAP);
   }
 
-  function onHammerImpact(hitXFrac, hitYFrac, results) {
+  function onHammerImpact(hitXFrac, hitYFrac, results, opts) {
     if (!state || state.ended) return;
     const board = document.getElementById('mole-board');
     let moleHits = 0;
@@ -1279,7 +1369,7 @@
       run.combo.onObstacleHit(); // 헛방 = 콤보 처음으로 회귀 (막 두드리기 방지)
       MG.HitFx.whiff(board, hitXFrac, hitYFrac); // 빈 구멍 헛스윙
     }
-    if (moleHits > 0) {
+    if (moleHits > 0 && !(opts && opts.noHitstop)) { // 지진 자동타격·연쇄엔 hitstop 안 검 (시간 안 끊기게)
       state.hitstopUntil = performance.now() +
         Math.min(HITSTOP_MAX_MS, HITSTOP_BASE_MS + run.combo.combo * 10);
     }
@@ -1681,7 +1771,11 @@
       setRunLives(0);
       finish('lives');
     };
-    window.__debugSetWeapon = (w) => { localStorage.setItem('mole.weapon', w === 'cannon' ? 'cannon' : 'hammer'); };
+    window.__debugSetWeapon = (w) => {
+      localStorage.setItem('mole.weapon', w === 'cannon' ? 'cannon' : (w === 'goldhammer' ? 'goldhammer' : 'hammer'));
+    };
+    window.__debugForceQuake = () => { forceQuakeNext = true; }; // 다음 두더지 타격에서 지진 강제 발동
+    window.__debugQuakeAt = (regionId) => { if (state) quakeRipple(regionId | 0, 0); }; // 그 구멍에서 지진 파동 즉시
     window.__debugFireWeapon = (xf, yf) => {
       if (state && state.laneHammer) state.laneHammer.strike(xf == null ? 0.5 : xf, yf == null ? 0.35 : yf, () => {});
     };

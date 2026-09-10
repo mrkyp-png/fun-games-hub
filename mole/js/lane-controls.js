@@ -337,6 +337,33 @@
       setTimeout(() => b.classList.remove('lane-button--burst'), 800); // 링 애니(0.8s) 끝나면 뗀다
     }
 
+    // 골드해머 지진: 발동칸+주변 8칸(areaIds) 전체에 갈색빛 회색 사각 음영, 그 중 두더지가
+    // 처치된 칸(killedIds)은 흰색. 버튼바 전체가 잠깐 흔들린다. 잠시 뒤 전부 사라짐.
+    function flashQuakeArea(areaIds, killedIds) {
+      const kill = new Set(killedIds || []);
+      (areaIds || []).forEach((id) => {
+        const b = buttons[id];
+        if (!b) return;
+        let sh = b.querySelector('.lane-quake-shade');
+        if (!sh) { sh = document.createElement('span'); sh.className = 'lane-quake-shade'; b.appendChild(sh); }
+        sh.classList.toggle('is-kill', kill.has(id));
+        sh.classList.remove('is-on'); void sh.offsetWidth; sh.classList.add('is-on');
+      });
+      if (buttonBar) {
+        buttonBar.classList.remove('lane-bar--quake-shake');
+        void buttonBar.offsetWidth;
+        buttonBar.classList.add('lane-bar--quake-shake');
+      }
+      clearTimeout(flashQuakeArea._t);
+      flashQuakeArea._t = setTimeout(() => {
+        (areaIds || []).forEach((id) => {
+          const sh = buttons[id] && buttons[id].querySelector('.lane-quake-shade');
+          if (sh) sh.remove();
+        });
+        if (buttonBar) buttonBar.classList.remove('lane-bar--quake-shake');
+      }, 640);
+    }
+
     function clear() {
       window.removeEventListener('keydown', onKey);
       buttons.forEach((b) => b.remove());
@@ -385,7 +412,7 @@
       }
     }
 
-    return { setCellHot, flashBurst, clear, spinChannelsIn };
+    return { setCellHot, flashBurst, flashQuakeArea, clear, spinChannelsIn };
   }
 
   const api = { create };

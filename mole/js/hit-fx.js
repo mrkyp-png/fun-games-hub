@@ -360,9 +360,57 @@
     if (!weak) spawnAt(boardEl, 'hit-fx-ring', xFrac, yFrac).style.setProperty('--ring', '#d9b382');
   }
 
+  // 골드해머 지진: 발동/피격 구멍의 갈색 먼지 파동 링 + 흙먼지.
+  function quakeDust(boardEl, xFrac, yFrac) {
+    const r = spawnAt(boardEl, 'hit-fx-ring hit-fx-ring--quake', xFrac, yFrac);
+    r.style.setProperty('--ring', '#7a4b2b');
+    for (let i = 0; i < 5; i++) {
+      const p = spawnAt(boardEl, 'hit-fx-dust hit-fx-dust--quake', xFrac, yFrac + 0.01);
+      p.style.setProperty('--dx', Math.round((Math.random() - 0.5) * 60) + 'px');
+    }
+  }
+
+  // 지진 분신 골드해머 하나 — 가장 가까운 보드 가장자리에서 목표 구멍으로 날아와 내리치고 골드로 소멸.
+  // onHit = 내리치는 순간 콜백(실제 타격 판정/연출은 game.js 가).
+  function quakeClone(boardEl, spriteUrl, xFrac, yFrac, _frameKey, onHit) {
+    const el = document.createElement('img');
+    el.className = 'quake-clone';
+    el.src = spriteUrl;
+    el.alt = '';
+    const dl = xFrac, dr = 1 - xFrac, dt = yFrac, db = 1 - yFrac;
+    const m = Math.min(dl, dr, dt, db);
+    let sx = xFrac, sy = yFrac;
+    if (m === dl) sx = -0.12; else if (m === dr) sx = 1.12;
+    else if (m === dt) sy = -0.16; else sy = 1.14;
+    const impactY = Math.max(0, yFrac - 0.05);
+    el.style.left = (sx * 100) + '%';
+    el.style.top = (sy * 100) + '%';
+    el.style.transform = 'translate(-50%, -64%) scale(0.62) rotate(-46deg)';
+    el.style.opacity = '0';
+    boardEl.appendChild(el);
+    requestAnimationFrame(() => {
+      el.style.transition = 'left 0.16s cubic-bezier(.3,.5,.4,1), top 0.16s cubic-bezier(.3,.5,.4,1), opacity 0.09s, transform 0.16s';
+      el.style.opacity = '0.95';
+      el.style.left = (xFrac * 100) + '%';
+      el.style.top = (impactY * 100) + '%';
+      el.style.transform = 'translate(-50%, -64%) scale(0.62) rotate(-14deg)';
+    });
+    setTimeout(() => {
+      el.style.transition = 'transform 0.07s ease-in';
+      el.style.transform = 'translate(-50%, -64%) scale(0.62) rotate(26deg)';
+      try { if (onHit) onHit(); } catch (e) { /* 무시 */ }
+    }, 175);
+    setTimeout(() => {
+      el.style.transition = 'opacity 0.2s, transform 0.2s';
+      el.style.opacity = '0';
+      el.style.transform = 'translate(-50%, -100%) scale(0.85) rotate(26deg)';
+    }, 300);
+    setTimeout(() => el.remove(), 560);
+  }
+
   // 게임 시작(사용자 제스처) 직후 호출 — 카운트다운 동안 오디오 컨텍스트 + 타격음 파일을 미리 준비.
   function warmup() { try { getCtx(); } catch (e) { /* noop */ } }
 
-  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst };
+  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);

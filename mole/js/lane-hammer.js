@@ -32,14 +32,19 @@
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
   function ease(k) { return k * k; }
 
-  function create({ layer, sprite }) {
+  function create({ layer, sprite, grip, cssClass, degOffset }) {
+    // grip = 스프라이트 안 손잡이 잡는 점(%) — 스킨마다 다르면 넘긴다. 없으면 뿅망치 기본값.
+    // degOffset = 스킨 스프라이트가 기준 포즈에서 이미 돌아가 있으면 그만큼 상쇄(모든 회전상태에 더함).
+    const gripX = grip && grip.x != null ? grip.x : GRIP_X;
+    const gripY = grip && grip.y != null ? grip.y : GRIP_Y;
+    const dOff = degOffset || 0;
     const el = document.createElement('div');
-    el.className = 'lane-hammer';
+    el.className = 'lane-hammer' + (cssClass ? ' ' + cssClass : '');
     const img = document.createElement('img');
     img.src = sprite || 'assets/hammer.png';
     img.alt = '';
     el.appendChild(img);
-    el.style.transformOrigin = GRIP_X + '% ' + GRIP_Y + '%';
+    el.style.transformOrigin = gripX + '% ' + gripY + '%';
     layer.appendChild(el);
 
     let phase = 'home';   // 'home' | 'fly' | 'chop' | 'rise' | 'return'
@@ -100,7 +105,7 @@
     function paint() {
       el.style.left = (gx * 100).toFixed(2) + '%';
       el.style.top = (gy * 100).toFixed(2) + '%';
-      el.style.transform = 'translate(-' + GRIP_X + '%, -' + GRIP_Y + '%) rotate(' + deg.toFixed(1) + 'deg)';
+      el.style.transform = 'translate(-' + gripX + '%, -' + gripY + '%) rotate(' + (deg + dOff).toFixed(1) + 'deg)';
       el.style.marginTop = phase === 'home' ? '0.2cm' : '0'; // 대기 위치만 실제 0.2cm 아래로 (사용자 지정)
       el.style.opacity = '1'; // 항상 불투명 — "현실 손이 게임화면을 때리는" 3D 느낌 (사용자 요청)
     }

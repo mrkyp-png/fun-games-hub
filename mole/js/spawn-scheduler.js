@@ -157,11 +157,12 @@
     }
 
     function resolveOne(pop, opts) {
-      var isBurstShot = !!(opts && opts.burst); // 연사 자동샷 — 쿨다운·무패널티게이트 통과
+      var isBurstShot = !!(opts && opts.burst);            // 대포 연사 자동샷
+      var isAuto = isBurstShot || !!(opts && opts.quake);  // 자동타격(연사/지진) — 쿨다운·무패널티게이트 통과
 
       // 연사(burst) 진행 중: 자동샷만 실제 처리하고, 유저가 그 구멍을 더 때리는 건
       // 두더지가 사라질 때까지 무패널티로 무시 (헛방 아님, 콤보 리셋 X). (사용자 지정)
-      if (pop.burstActive && !isBurstShot) {
+      if (pop.burstActive && !isAuto) {
         return { type: 'mole', regionId: pop.regionId, ignored: true, xFrac: pop.x, yFrac: pop.y };
       }
 
@@ -177,7 +178,7 @@
 
       if (pop.type === 'mole' && pop.hitsRequired > 1) {
         // 연타 쿨다운 중 = 유효한 두더지가 떠 있는데 무시하는 것 → 헛방 아님(콤보 리셋 X).
-        if (pop.hitCooldown > 0 && !isBurstShot) return { type: 'mole', regionId: pop.regionId, ignored: true, xFrac: pop.x, yFrac: pop.y };
+        if (pop.hitCooldown > 0 && !isAuto) return { type: 'mole', regionId: pop.regionId, ignored: true, xFrac: pop.x, yFrac: pop.y };
         pop.hitsTaken += 1;
         // 전신(첫 타) + 대포 → 10% 로 연사 발동. 판정은 이 타격 순간.
         if (pop.hitsTaken === 1 && (pop._forceBurst || (config.cannonBurst && rng.next() < BURST_CHANCE))) pop.burstActive = true;
