@@ -52,8 +52,8 @@
       timers.forEach(clearTimeout);
       if (raf) cancelAnimationFrame(raf);
       try { localStorage.setItem(SEEN_KEY, '1'); } catch (e) { /* 무시 */ }
-      scr.classList.add('intro--out');
-      setTimeout(function () { scr.remove(); if (onDone) onDone(); }, 420);
+      scr.classList.add('intro--out'); // 흰색으로 밝아지며 글자 사라짐 → 홈(흰 몸체)과 자연 연결
+      setTimeout(function () { scr.remove(); if (onDone) onDone(); }, 760);
     }
 
     var scr = document.createElement('div');
@@ -83,12 +83,12 @@
     function vh() { return view.clientHeight; }
 
     // 한 블록 타이핑 (스크롤과 독립 — 스크롤은 아래 loop 가 계속 돌린다).
-    function startTyping(el, text) {
+    function startTyping(el, text, cb) {
       el.textContent = '';
       var i = 0;
       (function step() {
         if (killed) return;
-        if (i >= text.length) return;
+        if (i >= text.length) { if (cb) cb(); return; }
         el.textContent += text.charAt(i);
         if (text.charAt(i) !== ' ' && (i & 1)) tick();
         i += 1;
@@ -98,7 +98,7 @@
 
     // 화면(=.intro-col)은 SPEED 로 계속 천천히 위로 올라간다. 블록 top 이 TRIGGER 선을
     // 넘어오는 순간 그 블록 타이핑을 시작 → "올라가는 도중에 타이핑".
-    var y = vh();          // translateY (아래에서 시작)
+    var y = 0;             // 아래 after() 에서 세팅
     var startedUpTo = -1;
     var lastTs = 0, raf = 0;
     function loop(ts) {
@@ -114,16 +114,20 @@
         startedUpTo = i;
         el.style.opacity = '1';
         var txt = BLOCKS[i].title || BLOCKS[i].p;
-        if (txt) startTyping(el, txt);
+        var isLast = i === BLOCKS.length - 1;
+        // 마지막 문구("...감사합니다!") 타이핑이 끝나면 잠깐 뒤 → 밝아지며 홈으로.
+        if (txt) startTyping(el, txt, isLast ? function () { after(1400, finish); } : null);
+        else if (isLast) after(1400, finish);
       }
-
-      var lastEl = els[els.length - 1];
-      if (startedUpTo >= BLOCKS.length - 1 &&
-          y + lastEl.offsetTop + lastEl.offsetHeight < vh() * 0.20) { finish(); return; }
 
       raf = requestAnimationFrame(loop);
     }
-    after(300, function () { y = vh(); lastTs = 0; raf = requestAnimationFrame(loop); });
+    // 첫 줄(제목)이 트리거 선 바로 위에서 출발 → 어두운 대기 없이 첫 프레임부터 글자가 쳐진다.
+    after(90, function () {
+      y = vh() * 0.80 - els[0].offsetTop;
+      col.style.transform = 'translate(-50%, ' + y.toFixed(1) + 'px)';
+      lastTs = 0; raf = requestAnimationFrame(loop);
+    });
   }
 
   var api = { shouldShow: shouldShow, play: play };

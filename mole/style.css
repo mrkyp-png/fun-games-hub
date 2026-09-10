@@ -1822,10 +1822,16 @@ body { background: var(--lm-page); }
   position: fixed; inset: 0; z-index: 9998;   /* 스플래시(9999) 바로 아래 — GET NOW 뒤 홈이 안 비치게 */
   background: radial-gradient(120% 80% at 50% 0%, #1a2550 0%, #0b1024 55%, #070a18 100%);
   color: #e9edff;
-  transition: opacity 0.42s ease;
   overflow: hidden;
 }
-#intro-screen.intro--out { opacity: 0; }
+/* 마무리: 흰색 레이어가 위로 덮이며 "밝아짐" → 홈 화면(흰 몸체) 색으로 자연 전환. */
+#intro-screen::after {
+  content: ''; position: absolute; inset: 0; background: #fff;
+  opacity: 0; transition: opacity 0.7s ease; pointer-events: none;
+}
+#intro-screen.intro--out::after { opacity: 1; }
+#intro-screen.intro--out .intro-view,
+#intro-screen.intro--out .intro-skip { opacity: 0; transition: opacity 0.4s ease; }
 .intro-skip {
   position: absolute; top: 10px; right: 10px; z-index: 2;
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -1838,7 +1844,7 @@ body { background: var(--lm-page); }
 .intro-view { position: absolute; inset: 0; overflow: hidden; }
 .intro-col {
   position: absolute; left: 50%; top: 0; width: 100%; max-width: 440px;
-  transform: translate(-50%, 100vh);
+  transform: translate(-50%, 80vh);
   padding: 0 22px; box-sizing: border-box;
   display: flex; flex-direction: column; gap: 16px;
   will-change: transform;
