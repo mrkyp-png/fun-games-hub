@@ -36,6 +36,8 @@
       el.className = 'mole-pop mole-pop--' + pop.type;
       el.style.left = (pop.x * 100) + '%';
       el.style.top = (pop.y * 100) + '%';
+      // 밑동 클립 곡선을 격자 행(0~3)별로 다르게 — 구멍 위치에 맞춘 "울퉁불퉁 곡선" 튜닝용.
+      el.dataset.row = pop.y < 0.29 ? '0' : pop.y < 0.51 ? '1' : pop.y < 0.73 ? '2' : '3';
       const img = document.createElement('img');
       img.className = 'mole-pop-img';
       img.alt = '';
@@ -91,7 +93,11 @@
 
       // dying 은 프레임 교체 없이 미끄러지므로 sink 를 선형(0→130%)으로.
       const sink = m.dying ? (m.shownDepth / GONE_DEPTH) * 130 : MS.sinkForDepth(m.shownDepth);
-      m.img.style.transform = 'translate(-50%, ' + sink + '%)';
+      // 빠끔 프레임 실제 위치조정 (사용자 지정): 빠끔1 = 0.15cm 위, 빠끔2 = 0.2cm 위.
+      let peekLift = '';
+      if (m.kind === 'mole' && file === 'peek1') peekLift = ' - 0.15cm';
+      else if (m.kind === 'mole' && file === 'peek2') peekLift = ' - 0.2cm';
+      m.img.style.transform = 'translate(-50%, calc(' + sink + '%' + peekLift + '))';
     }
 
     function targetFor(pop) {

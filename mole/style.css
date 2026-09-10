@@ -50,9 +50,7 @@ img, .chat-emoji, .lane-hammer, .mole-pop, .mole-hole, .mole-hole-front { forced
 @media (prefers-color-scheme: dark) {
   .chat-sms { background: #fff; color: #22242a; }
   .chat-bubble--them { background: linear-gradient(180deg, #35c866, #23b153); color: #fff; }
-  .chat-bubble--them::after { background: #23b153; }
   .chat-bubble--me { background: #fee500; color: #1c1c14; }
-  .chat-bubble--me::after { background: #fee500; }
   .chat-ad-btn { background: linear-gradient(180deg, #35c866, #23b153); color: #fff; }
 }
 
@@ -116,7 +114,7 @@ body { background: var(--lm-page); }
 #game-screen.is-start .chapter-nav-top {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 1px;
   position: absolute; left: 4px; top: 8px; z-index: 9;  /* 좌측 상단 고정, 아바타처럼 가장자리 4px */
   padding: 3px 5px;
 }
@@ -183,10 +181,24 @@ body { background: var(--lm-page); }
   font-size: 0.82rem; font-weight: 800; line-height: 1;
   color: #1c1c22;
   background: transparent;
-  padding: 3px 8px;
+  padding: 3px 2px;               /* 글자↔손 이모지 간격 축소 (사용자 요청) */
   white-space: nowrap;
 }
 .ch-txt { display: inline-block; }
+/* 티켓 이모지 + 개수 — 다음(👉) 손 이모지 옆. 동작은 추후 지정. */
+.ch-ticket {
+  flex: 0 0 auto;
+  font-size: 16px;
+  line-height: 1;
+  margin-left: 2px;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+}
+.ch-ticket-n {
+  flex: 0 0 auto;
+  font-size: 0.78rem; font-weight: 800; line-height: 1;
+  color: #1c1c22;
+  margin-left: 1px;
+}
 /* 챕터 바꿀 때 — 글자 아우라가 확 터졌다 가라앉음 (game.js 가 .ch-label 에 .ch-flare, 900ms 뒤 제거) */
 .ch-label.ch-flare { animation: ch-flare 0.85s ease-out; }
 .ch-label.ch-flare .ch-txt { animation: ch-flare-aura 0.85s ease-out; }
@@ -260,7 +272,6 @@ body { background: var(--lm-page); }
 /* 말풍선 */
 .chat-bubble {
   position: relative;
-  isolation: isolate;          /* 꼬리(::after z-index:-1)를 이 말풍선 뒤로만 보내기 */
   max-width: 72%;
   padding: 9px 12px;
   border-radius: 16px;
@@ -271,38 +282,14 @@ body { background: var(--lm-page); }
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 .chat-bubble b { font-weight: 800; }
-/* 꼬리 — 말풍선 모서리에 겹쳐 둔 둥근 사각형(45° 회전)을 말풍선 뒤(z-index:-1)로 보내,
-   말풍선 밖으로 삐져나온 부분만 보이게 = 튀어나온 삼각형이 아니라 모서리가 자연스럽게
-   늘어난 카톡 꼬리. 색은 말풍선과 동일. */
+/* 꼬리 없음 — 둥근 말풍선만 (사용자 지정: 다크모드에서 계속 깨져서 꼬리 자체를 제거). */
 .chat-bubble--them {                /* 두더지 오빠 — 녹색 */
   background: linear-gradient(180deg, #35c866, #23b153);
   color: #fff;
-  border-bottom-left-radius: 4px;
-}
-.chat-bubble--them::after {
-  content: '';
-  position: absolute;
-  left: 4px; bottom: -3px;
-  width: 15px; height: 15px;
-  background: #23b153;              /* 그라데이션 아래쪽 색 */
-  border-radius: 4px;
-  transform: rotate(45deg);
-  z-index: -1;
 }
 .chat-bubble--me {                  /* 나(하마) — 노랑 */
   background: #fee500;
   color: #1c1c14;
-  border-bottom-right-radius: 4px;
-}
-.chat-bubble--me::after {
-  content: '';
-  position: absolute;
-  right: 4px; bottom: -3px;
-  width: 15px; height: 15px;
-  background: #fee500;
-  border-radius: 4px;
-  transform: rotate(45deg);
-  z-index: -1;
 }
 
 /* "광고 보고 하트/코인" 버튼 2개 — 시작화면 문자 배너(#start-best) 안에 나란히. */
@@ -826,9 +813,16 @@ body { background: var(--lm-page); }
   width: 27%;
   aspect-ratio: 6 / 7; /* = slice-mole-sprites.py 의 OUT_W:OUT_H */
   transform: translate(-50%, calc(-100% + 8%));
-  /* 아래쪽(구멍 입구)만 자르고 머리 쪽은 자유롭게 위로 나오게 한다 — 윗줄 두더지 머리 잘림 방지 */
-  clip-path: inset(-300% -300% 0 -300%);
+  /* 아래쪽(구멍 입구)만 자른다. 직선(inset)이면 두더지가 "수평으로 딱 잘린" 느낌 →
+     구멍 앞턱 곡선을 따라 아래로 볼록한 타원 호로 자른다 (가운데가 더 보이고 양옆이 먼저 잠김).
+     타원 중심을 박스 위로 크게 띄워 머리·옆구리는 안 건드리고 아랫호만 클립에 걸리게 함.
+     행(data-row 0~3)별로 곡률을 달리해 각 구멍 위치에 맞춘다 (pop-elements.js 가 행을 세팅). */
+  clip-path: ellipse(150% 210% at 50% -106%);
 }
+.mole-pop[data-row="0"] { clip-path: ellipse(160% 220% at 50% -114%); }
+.mole-pop[data-row="1"] { clip-path: ellipse(155% 215% at 50% -110%); }
+.mole-pop[data-row="2"] { clip-path: ellipse(150% 210% at 50% -106%); }
+.mole-pop[data-row="3"] { clip-path: ellipse(145% 205% at 50% -103%); }
 .mole-pop-img {
   position: absolute;
   left: 50%;
@@ -836,6 +830,7 @@ body { background: var(--lm-page); }
   width: 100%;
   /* transform(translateY sink %) 은 pop-elements.js 가 깊이에 따라 설정 */
   transform: translate(-50%, 0);
+  transform-origin: 50% 100%; /* 타격 squash(scale) 가 발치를 축으로 찌부러지게 */
   pointer-events: none;
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
 }
@@ -922,6 +917,12 @@ body { background: var(--lm-page); }
   overflow: hidden; flex-direction: column;
   justify-content: space-between; padding: 7% 0 10%;
   transition: transform 0.34s cubic-bezier(.4, 0, .3, 1); touch-action: pan-y;
+  /* 노트북에서 하마 이미지를 마우스로 끌면 브라우저 기본 드래그가 발동해 캐릭터만
+     따라 움직였음 — 결과화면은 통째로 하나. 자식 드래그·선택 전면 차단. */
+  user-select: none; -webkit-user-select: none;
+}
+#gameover-overlay img, #gameover-overlay .go-hippo-wrap {
+  -webkit-user-drag: none; user-drag: none; pointer-events: none;
 }
 #gameover-overlay.is-sliding { transform: translateX(-100%); }
 /* 커튼(라운드 종료 전환)이 끝나는 색(노랑 #ffd166, 단색)과 이어지게 배경을 맞춤 —
@@ -1132,10 +1133,10 @@ body { background: var(--lm-page); }
 }
 /* GO! = 연두 배경에 안 묻히게 검은 외곽선 + 강한 글로우 (사용자 지정) */
 .round-intro-count.cgo {
-  color: #8dff5c;
+  color: #fff;
   -webkit-text-stroke: 4px #000;
   paint-order: stroke fill;
-  text-shadow: 0 0 8px rgba(255,255,255,.95), 0 0 24px rgba(141,255,92,.95), 0 0 50px rgba(80,220,70,.75);
+  text-shadow: 0 0 8px rgba(255,255,255,.98), 0 0 24px rgba(255,255,255,.9), 0 0 50px rgba(255,255,255,.6);
 }
 /* 2라운드부터 카운트다운 대신 — 두더지 이미지(8종 순환, 배경 제거된 PNG) 잠깐 보여주고 바로 커튼 오픈. */
 .round-intro-mole {
@@ -1664,10 +1665,14 @@ body { background: var(--lm-page); }
   0% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
   100% { transform: translate(calc(-50% + var(--dx, 20px)), calc(-50% - 30px)) scale(0.2); opacity: 0; }
 }
-.mole-pop-img--hit { animation: mole-pop-hit 0.15s ease-out; }
+/* 타격 = 밝기 플래시 + 살짝 찌부러졌다 돌아오는 스프링(squash).
+   scale 는 transform 과 별개 속성이라 pop-elements.js 의 매프레임 transform 루프와 안 부딪힌다. */
+.mole-pop-img--hit { animation: mole-pop-hit 0.18s ease-out; }
 @keyframes mole-pop-hit {
-  0%, 100% { filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); }
-  40% { filter: brightness(2.6) drop-shadow(0 0 10px #fff); }
+  0%   { filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); scale: 1 1; }
+  30%  { filter: brightness(2.6) drop-shadow(0 0 10px #fff); scale: 1.16 0.82; }
+  60%  { scale: 0.95 1.05; }
+  100% { filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); scale: 1 1; }
 }
 
 /* ---- 두더지 등장 연출 (hit-fx.js emerge) ---- */

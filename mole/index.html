@@ -150,6 +150,7 @@
         <button type="button" class="ch-arrow ch-arrow--prev" data-ch-prev aria-label="이전 챕터">👈</button>
         <b class="ch-label"><span class="ch-txt" data-ch-label>챕터 1</span></b>
         <button type="button" class="ch-arrow ch-arrow--next" data-ch-next aria-label="다음 챕터">👉</button>
+        <span class="ch-ticket" aria-hidden="true">🎫</span><b class="ch-ticket-n" data-ch-tickets aria-hidden="true">0</b>
       </span>
       <div id="board-stats" class="board-stats" aria-hidden="true">
         <span class="mm-stat mm-hearts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg><b data-bs-hearts>3</b></span>
@@ -164,7 +165,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v327</div>
+      <div id="build-tag" aria-hidden="true">v329</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -205,7 +206,7 @@
         <div class="go-rays" aria-hidden="true"></div>
         <div class="go-confetti" aria-hidden="true"></div>
         <p id="gameover-reason" class="go-word">성공</p>
-        <div class="go-hippo-wrap"><img id="gameover-hippo" class="go-hippo" alt=""></div>
+        <div class="go-hippo-wrap"><img id="gameover-hippo" class="go-hippo" alt="" draggable="false"></div>
         <p id="gameover-score" class="gameover-score">0점</p>
       </div>
 
@@ -558,7 +559,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=327').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=329').catch(function () {});
       }
     });
   }

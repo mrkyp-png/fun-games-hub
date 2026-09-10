@@ -16,6 +16,7 @@
   const DURATION_MULT = { 1: 1, 2: 1.7, 3: 2.4 };
   const HIT_COOLDOWN = 0.12;  // 같은 두더지 연타 방지 간격 (초)
   const RETREAT_SEC = 0.6;    // 최종 타격/시간초과 후 "땅속으로 천천히 내려가는" 연출이 도는 시간
+  const JUGGLE_VISIBLE_FRAC = 0.5; // 저글 보너스는 침몰 초반(두더지가 아직 눈에 보일 때)만 — 이후엔 명백한 헛방
   // 최종 타격을 등록한 뒤 두더지가 실제로 "내려가기(dying)" 시작할 때까지의 지연 (초).
   // 버튼 누른 즉시가 아니라 망치가 두더지에 닿고 나서 내려가게 한다.
   // 망치 도달 시간 = lane-hammer.js FLY_SEC(0.09) + CHOP_SEC(0.045) ≈ 0.135s.
@@ -146,14 +147,17 @@
     function resolveOne(pop) {
       // 저글 보너스(스펙 2026-09-04 §4): 1방 두더지를 잡은 뒤 내려가는 창에 한 번 더 맞히면
       // 콤보 +1 보너스. 두더지당 1회. 못 맞혀도 페널티 없음. 2·3방 다타는 제외.
-      if (pop.killed && (pop.dying || pop.sinkIn > 0) && pop.type === 'mole' && pop.hitsRequired === 1 && !pop.juggled) {
+      // 단 두더지가 "시각적으로 보일 때"만 — 다 사라진 뒤 때리면 명백한 헛방(콤보 리셋). (사용자 지정)
+      var moleVisible = pop.sinkIn > 0 || (pop.dying && pop.remaining > RETREAT_SEC * JUGGLE_VISIBLE_FRAC);
+      if (pop.killed && moleVisible && pop.type === 'mole' && pop.hitsRequired === 1 && !pop.juggled) {
         pop.juggled = true;
         return { type: 'mole', regionId: pop.regionId, juggle: true, xFrac: pop.x, yFrac: pop.y };
       }
       if (pop.dying || pop.sinkIn > 0) return null; // 이미 처치됐거나(침몰) 시간초과로 내려가는 중 — 헛방
 
       if (pop.type === 'mole' && pop.hitsRequired > 1) {
-        if (pop.hitCooldown > 0) return null; // 연타 무시
+        // 연타 쿨다운 중 = 유효한 두더지가 떠 있는데 무시하는 것 → 헛방 아님(콤보 리셋 X).
+        if (pop.hitCooldown > 0) return { type: 'mole', regionId: pop.regionId, ignored: true, xFrac: pop.x, yFrac: pop.y };
         pop.hitsTaken += 1;
         if (pop.hitsTaken < pop.hitsRequired) {
           pop.hitCooldown = HIT_COOLDOWN;

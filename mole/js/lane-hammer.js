@@ -98,6 +98,7 @@
       el.style.left = (gx * 100).toFixed(2) + '%';
       el.style.top = (gy * 100).toFixed(2) + '%';
       el.style.transform = 'translate(-' + GRIP_X + '%, -' + GRIP_Y + '%) rotate(' + deg.toFixed(1) + 'deg)';
+      el.style.marginTop = phase === 'home' ? '0.2cm' : '0'; // 대기 위치만 실제 0.2cm 아래로 (사용자 지정)
       el.style.opacity = '1'; // 항상 불투명 — "현실 손이 게임화면을 때리는" 3D 느낌 (사용자 요청)
     }
 

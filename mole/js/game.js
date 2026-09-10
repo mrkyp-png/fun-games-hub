@@ -336,10 +336,13 @@
       if (lbl) lbl.textContent = I18N.t(mode === 'game' ? 'mole.start.callBtn' : 'mole.start.btn');
     };
 
+    // navLocked = 시작 인트로~카운트다운 구간. 이때는 아직 is-start 가 안 벗겨져서
+    // isHome() 이 true 라, 초록버튼 길게누름이 "종료 대기"로 무장되는 버그가 있었다 → navLocked 도 배제.
     btn.addEventListener('pointerdown', () => {
-      if (!isHome()) return;
+      if (!isHome() || navLocked) return;
       longFired = false;
       holdT = setTimeout(() => {
+        if (!isHome() || navLocked) return;
         longFired = true;
         setArmed(true);
         if (window.FGH.Settings.vibrate) window.FGH.Settings.vibrate();
@@ -349,7 +352,7 @@
     btn.addEventListener('pointercancel', cancelHold);
     btn.addEventListener('pointerleave', cancelHold);
     btn.addEventListener('pointerup', () => {
-      if (!isHome()) return;
+      if (!isHome() || navLocked) return;
       clearTimeout(holdT);
       if (longFired) { longFired = false; return; } // 방금 꾹 눌러 무장 → 이 up 은 무시
       if (armState.armed) { setArmed(false); showQuitDialog(); }
@@ -623,6 +626,8 @@
     nav.querySelector('[data-ch-label]').textContent = I18N.t('mole.chapter.n', { n: ch });
     nav.querySelector('[data-ch-prev]').disabled = ch <= 1;
     nav.querySelector('[data-ch-next]').disabled = ch >= maxCh;
+    const tn = nav.querySelector('[data-ch-tickets]'); // 티켓 개수 (동작은 추후 지정 — 지금은 0)
+    if (tn) tn.textContent = String(parseInt(localStorage.getItem('mole.tickets'), 10) || 0);
   }
   function wireChapterNav() {
     const nav = document.getElementById('chapter-nav');
@@ -1134,6 +1139,7 @@
     run.combo.setMult(currentScoreMult()); // 라이트·피버 배율 (이번 타격에 적용)
 
     results.forEach((r) => {
+      if (r.ignored) return; // 연타 쿨다운 중 타격 — 점수·연출·콤보 변화 없음 (헛방도 아님)
       if (r.type === 'mole') {
         if (r.juggle) {
           const before = run.combo.score;
@@ -1324,9 +1330,10 @@
     // 힌트(#result-swipe-hint)가 키패드 위 여백으로 내려갔으므로 스와이프도 키패드에서 먹혀야
     // 한다 — 안 그러면 "힌트는 키패드에 있는데 여기선 안 밀리네" 로 헷갈림. start() 가
     // ov.dataset.nextChapter 로 게이팅하니 플레이 중 키패드 탭엔 영향 없음.
+    ov.addEventListener('dragstart', (e) => e.preventDefault()); // 하마 이미지 기본 드래그 차단
     [ov, document.querySelector('.dialpad')].forEach((el) => {
       if (!el) return;
-      el.addEventListener('pointerdown', (e) => start(e.clientX, e.clientY));
+      el.addEventListener('pointerdown', (e) => { if (el === ov) e.preventDefault(); start(e.clientX, e.clientY); });
       el.addEventListener('pointermove', (e) => move(e.clientX, e.clientY));
       el.addEventListener('pointerup', (e) => end(e.clientX, e.clientY));
       el.addEventListener('pointercancel', () => end());
