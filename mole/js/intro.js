@@ -1,65 +1,133 @@
 (function (root) {
   'use strict';
-  // 앱 최초 1회 인트로 — "두더지 게임의 역사" 한 페이지 (히스토리 글 + 사진 3장).
-  // 로딩 GET NOW 탭 뒤에 뜨고, [시작하기] 또는 [건너뛰기] → mole.introSeen 저장 → 홈.
+  // 앱 최초 1회 인트로 — "두더지 게임의 역사".
+  // 글이 화면 아래에서 한 줄씩 타이핑되며 위로 올라온다 (천천히). 사진 3장 사이사이.
+  // 로딩 GET NOW 탭 뒤에 뜨고, 끝나거나 [건너뛰기] → mole.introSeen 저장 → 바로 홈.
 
   var SEEN_KEY = 'mole.introSeen';
+  var CHAR_MS = 62;        // 타이핑 속도 (천천히)
+  var LINE_HOLD_MS = 650;  // 한 줄 다 친 뒤 다음 줄까지
+  var IMG_HOLD_MS = 1500;  // 사진 머무는 시간
+  var END_HOLD_MS = 1500;  // 마지막 줄 뒤 → 홈
+  var ACTIVE = 0.80;       // 현재 블록 하단이 뷰포트 이 비율 위치에 오도록
+  var INTRO_BGM = 'audio/intro.mp3'; // 잔잔한 인트로 브금 (없으면 조용히 진행)
 
   var BLOCKS = [
+    { title: '두더지 게임의 역사' },
     { img: 'assets/intro/1.jpg', cap: '1975 · 일본 「もぐら退治」' },
     { p: '두더지 잡기 게임은 1970년대 일본에서 시작되었습니다.' },
     { p: '1975년, 일본의 오락기 제조업체 TOGO가 「もぐら退治(Mogura Taiji)」라는 전기기계식 두더지 잡기 게임을 선보였습니다.' },
     { p: '구멍에서 두더지가 갑자기 나타나면 플레이어가 망치로 두더지를 잡는 단순한 방식이었습니다.' },
     { p: '하지만 “보고 → 판단하고 → 즉시 반응한다”는 재미 덕분에 일본 오락실에서 인기를 얻었고, 이후 해외로도 퍼져 나갔습니다.' },
-    { img: 'assets/intro/2.jpg', cap: '미국 · Whac-A-Mole' },
+    { img: 'assets/intro/2.jpg', cap: '1976 · 미국 「Whac-A-Mole」' },
     { p: '미국에서는 Whac-A-Mole 이라는 이름으로 알려지면서 놀이공원과 오락시설의 대표적인 반응형 게임으로 자리 잡았습니다.' },
-    { img: 'assets/intro/3.jpg', cap: '한국 · 오락실 두더지 게임' },
+    { img: 'assets/intro/3.jpg', cap: '2000년대 · 대한민국 오락실' },
     { p: '그리고 50년이 지난 지금.' },
     { p: '오랜 시간 사랑받아 온 두더지 잡기 게임을 새로운 방식으로 다시 구성했습니다.' },
     { p: '16개의 구멍에서 펼쳐지는 다양한 상황과 두더지뿐만 아니라 여러 동물과 방해 요소, 그리고 새로운 게임 규칙.' },
     { p: '단순히 빠르게 두드리는 게임을 넘어 보고, 판단하고, 선택하는 새로운 두더지 게임.' },
-    { big: '1975 → 2026' },
-    { p: '익숙한 두더지 게임이 새로운 모습으로 다시 시작됩니다.' }
+    { p: '익숙했던 두더지 게임이 새로운 모습으로 다시 시작됩니다.' }
   ];
 
   function shouldShow() {
     try { return !localStorage.getItem(SEEN_KEY); } catch (e) { return true; }
   }
 
+  function tick() {
+    try { var H = root.MoleGame && root.MoleGame.HitFx; if (H && H.typeTick) H.typeTick(); } catch (e) { /* 무시 */ }
+  }
+
   function play(onDone) {
-    var done = false;
+    var done = false, killed = false;
+    var timers = [];
+    function after(ms, fn) { var t = setTimeout(fn, ms); timers.push(t); return t; }
+
+    // 홈 브금은 잠깐 멈추고, 잔잔한 인트로 브금을 깐다.
+    var homeBgm = document.getElementById('bgm');
+    var homeWasPlaying = homeBgm && !homeBgm.paused;
+    if (homeBgm) { try { homeBgm.pause(); } catch (e) { /* 무시 */ } }
+    var ib = new Audio(INTRO_BGM);
+    ib.loop = true; ib.volume = 0.55;
+    var ibp = ib.play(); if (ibp && ibp.catch) ibp.catch(function () { /* 파일 없음/차단 — 조용히 */ });
+
     function finish() {
       if (done) return;
-      done = true;
+      done = true; killed = true;
+      timers.forEach(clearTimeout);
       try { localStorage.setItem(SEEN_KEY, '1'); } catch (e) { /* 무시 */ }
+      try { ib.pause(); } catch (e) { /* 무시 */ }
+      if (homeBgm && homeWasPlaying) { var hp = homeBgm.play(); if (hp && hp.catch) hp.catch(function () {}); }
       scr.classList.add('intro--out');
       setTimeout(function () { scr.remove(); if (onDone) onDone(); }, 320);
     }
 
     var scr = document.createElement('div');
     scr.id = 'intro-screen';
+    scr.innerHTML =
+      '<button type="button" class="intro-skip">건너뛰기 ›</button>' +
+      '<div class="intro-view"><div class="intro-col"></div></div>';
+    document.body.appendChild(scr); // 바로 불투명하게 뜬다 (홈 안 비치게) — 페이드는 나갈 때만
 
-    var html = '<button type="button" class="intro-skip">건너뛰기 ›</button>' +
-      '<div class="intro-scroll"><div class="intro-col">' +
-      '<h1 class="intro-title">🕳️ 두더지 게임의 역사</h1>';
-    BLOCKS.forEach(function (b) {
-      if (b.img) {
-        html += '<figure class="intro-fig"><img alt="" loading="eager" src="' + b.img + '">' +
-          (b.cap ? '<figcaption>' + b.cap + '</figcaption>' : '') + '</figure>';
-      } else if (b.big) {
-        html += '<p class="intro-big">' + b.big + '</p>';
-      } else {
-        html += '<p class="intro-p">' + b.p + '</p>';
-      }
-    });
-    html += '<button type="button" class="intro-start">시작하기</button>' +
-      '</div></div>';
-    scr.innerHTML = html;
-    document.body.appendChild(scr);
-    requestAnimationFrame(function () { scr.classList.add('intro--in'); });
-
+    var view = scr.querySelector('.intro-view');
+    var col = scr.querySelector('.intro-col');
     scr.querySelector('.intro-skip').addEventListener('click', finish);
-    scr.querySelector('.intro-start').addEventListener('click', finish);
+
+    // 블록 DOM 을 미리 다 만들어 둔다 (텍스트는 빈 채). 이미지는 바로 src.
+    var els = BLOCKS.map(function (b) {
+      var e = document.createElement('div');
+      if (b.title) { e.className = 'intro-title'; }
+      else if (b.img) {
+        e.className = 'intro-fig';
+        e.innerHTML = '<img alt="" src="' + b.img + '">' + (b.cap ? '<figcaption>' + b.cap + '</figcaption>' : '');
+      } else { e.className = 'intro-p'; }
+      e.style.opacity = '0';
+      col.appendChild(e);
+      return e;
+    });
+
+    function vh() { return view.clientHeight; }
+    function setY(y, smooth) {
+      col.style.transition = smooth ? 'transform 0.55s cubic-bezier(.25,.1,.25,1)' : 'transform 0.18s linear';
+      col.style.transform = 'translate(-50%, ' + Math.round(y) + 'px)';
+    }
+    function place(el, smooth) {
+      setY(vh() * ACTIVE - (el.offsetTop + el.offsetHeight), smooth);
+    }
+
+    function typeInto(el, text, cb) {
+      el.textContent = '';
+      var i = 0;
+      (function step() {
+        if (killed) return;
+        if (i >= text.length) { cb(); return; }
+        el.textContent += text.charAt(i);
+        if (text.charAt(i) !== ' ' && (i & 1)) tick();
+        place(el, false); // 줄바꿈으로 커진 만큼 살짝살짝 위로 = 타이핑되며 올라옴
+        i += 1;
+        after(CHAR_MS, step);
+      })();
+    }
+
+    var bi = 0;
+    function next() {
+      if (killed) return;
+      if (bi >= BLOCKS.length) { after(END_HOLD_MS, finish); return; } // 끝 → 바로 홈
+      var b = BLOCKS[bi], el = els[bi];
+      el.style.opacity = '1';
+      place(el, true); // 아래에서 슬라이드업
+      if (b.img) {
+        after(560 + IMG_HOLD_MS, function () { bi += 1; next(); });
+      } else {
+        after(560, function () {
+          typeInto(el, b.title || b.p, function () { after(LINE_HOLD_MS, function () { bi += 1; next(); }); });
+        });
+      }
+    }
+    // 첫 배치: 첫 블록을 화면 아래로 밀어둔 상태에서 시작
+    after(250, function () {
+      setY(vh(), false);
+      after(60, next);
+    });
   }
 
   var api = { shouldShow: shouldShow, play: play };
