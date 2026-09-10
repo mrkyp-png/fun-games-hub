@@ -46,14 +46,35 @@
     var homeBgm = document.getElementById('bgm');
     if (homeBgm && homeBgm.paused) { var bp = homeBgm.play(); if (bp && bp.catch) bp.catch(function () {}); }
 
-    function finish() {
+    // 부드럽게 마무리: (1) 인트로가 천천히 하얗게 밝아짐 → (2) 흰 레이어만 남기고 인트로 제거
+    //  → (3) 그 흰 레이어가 서서히 사라지며 홈이 배어나옴. 확 바뀌지 않게 총 ~2.4s.
+    function outro() {
       if (done) return;
       done = true; killed = true;
       timers.forEach(clearTimeout);
       if (raf) cancelAnimationFrame(raf);
       try { localStorage.setItem(SEEN_KEY, '1'); } catch (e) { /* 무시 */ }
-      scr.classList.add('intro--out'); // 흰색으로 밝아지며 글자 사라짐 → 홈(흰 몸체)과 자연 연결
-      setTimeout(function () { scr.remove(); if (onDone) onDone(); }, 760);
+
+      scr.classList.add('intro--out'); // ::after 흰색 opacity 0→1 (1.1s), 글자 페이드아웃
+      setTimeout(function () {
+        var flash = document.createElement('div');
+        flash.id = 'intro-flash';     // 홈 위를 덮는 흰 레이어 (인트로 제거돼도 유지)
+        document.body.appendChild(flash);
+        scr.remove();
+        if (onDone) onDone();
+        requestAnimationFrame(function () { flash.classList.add('intro-flash--out'); }); // 서서히 사라짐 (1s)
+        setTimeout(function () { flash.remove(); }, 1100);
+      }, 1150);
+    }
+    // 건너뛰기는 즉시 (밝아짐 연출 생략) — 개발용으로 계속 확인해야 하므로.
+    function skip() {
+      if (done) return;
+      done = true; killed = true;
+      timers.forEach(clearTimeout);
+      if (raf) cancelAnimationFrame(raf);
+      try { localStorage.setItem(SEEN_KEY, '1'); } catch (e) { /* 무시 */ }
+      scr.classList.add('intro--out');
+      setTimeout(function () { scr.remove(); if (onDone) onDone(); }, 300);
     }
 
     var scr = document.createElement('div');
@@ -65,7 +86,7 @@
 
     var view = scr.querySelector('.intro-view');
     var col = scr.querySelector('.intro-col');
-    scr.querySelector('.intro-skip').addEventListener('click', finish);
+    scr.querySelector('.intro-skip').addEventListener('click', skip);
 
     // 블록 DOM 을 미리 다 만들어 둔다 (텍스트는 빈 채). 이미지는 바로 src.
     var els = BLOCKS.map(function (b) {
@@ -116,8 +137,8 @@
         var txt = BLOCKS[i].title || BLOCKS[i].p;
         var isLast = i === BLOCKS.length - 1;
         // 마지막 문구("...감사합니다!") 타이핑이 끝나면 잠깐 뒤 → 밝아지며 홈으로.
-        if (txt) startTyping(el, txt, isLast ? function () { after(1400, finish); } : null);
-        else if (isLast) after(1400, finish);
+        if (txt) startTyping(el, txt, isLast ? function () { after(2400, outro); } : null);
+        else if (isLast) after(2400, outro);
       }
 
       raf = requestAnimationFrame(loop);
