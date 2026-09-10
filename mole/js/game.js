@@ -985,6 +985,7 @@
       hammerOpts.grip = { x: 42, y: 58 };        // 골드해머 스프라이트 손잡이 잡는 점 (67.5° raw 포즈)
       hammerOpts.degOffset = 20;                 // raw 포즈 → 뿅망치 손잡이 각도 맞춤
       hammerOpts.cssClass = 'lane-hammer--gold'; // 뿅망치보다 1.2배 크게
+      hammerOpts.homeMarginTop = '-0.3cm';       // 대기 위치를 기본(0.2cm 아래)에서 위로 0.5cm
     }
     const laneHammer = WeaponMod.create(hammerOpts);
 

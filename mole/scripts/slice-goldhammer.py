@@ -1,13 +1,13 @@
-# 골드해머(지진 무기) 스프라이트 — 소스 회전 시트에서 필요한 포즈만.
-#   입력  ~/Desktop/특수망치.png  (16각도 회전 시트, 5+5+6. 이미 투명 배경 + 하머 자체 검은 외곽선.
-#                                  배경엔 옅은 청록 글로우 + 하단 "N°" 라벨 알약만 붙어있음)
-#   출력  assets/weapons/goldhammer.png     (메인 = 67.5° 를 뿅망치 손잡이각도에 맞춰 시계 32° 회전)
-#         assets/weapons/goldhammer-0.png   (0°  = 지진 분신 — ✱·0·# 칸 방향용)
-#         assets/weapons/goldhammer-45.png  (45° = 지진 분신 — 숫자칸 방향용)
-#         assets/weapons/goldhammer-90.png  (90° = 지진 분신 — 연락처·키패드·최근기록 칸 방향용)
+# 골드해머(지진 무기) 스프라이트 — 소스 회전 시트(~/Desktop/특수망치.png, 16각도 5+5+6)에서.
+#   출력  assets/weapons/goldhammer.png       (메인 스윙 = 67.5° raw. lane-hammer degOffset 로 각도 맞춤)
+#         assets/weapons/goldhammer-0.png     (0°  = 지진 분신 — ✱·0·# 칸)
+#         assets/weapons/goldhammer-45.png    (45° = 지진 분신 — 숫자칸)
+#         assets/weapons/goldhammer-90.png    (90° = 지진 분신 — 연락처·키패드·최근기록)
+#         assets/weapons/goldhammer-spin.png  (보관창 회전용 = 7프레임 가로 스트립.
+#            [67.5거울, 45거울, 22.5거울, 0, 22.5, 45, 67.5] — 손잡이 축 정렬. CSS steps+alternate 로 좌우 로킹)
 #
-# 처리 = 최소한만. 알파 임계로 청록 글로우만 제거 → keep_largest 로 라벨 알약 탈락 →
-#   알파 살짝 스무딩 → (메인만 회전) → 얇은 검은 외곽선(2px, 바깥에만 — 아트 본체는 절대 안 건드림).
+# 처리 = 최소한. 알파 임계로 청록 글로우만 컷 → keep_largest(라벨 탈락) → 알파 스무딩 →
+#   얇은 검은 외곽선(OUTLINE px, 바깥에만 — 아트 내부 안 건드림).
 import os
 from collections import deque
 from PIL import Image, ImageFilter
@@ -17,16 +17,19 @@ OUT_DIR = os.path.join(os.path.dirname(HERE), 'assets', 'weapons')
 SRC = os.path.expanduser('~/Desktop/특수망치.png')
 
 TARGET_MAX = 440
-ALPHA_CUT = 120     # 이 미만 알파 = 배경(청록 글로우) — 버림. 너무 높이면 하머 AA 가장자리가 깎임.
-OUTLINE = 4         # 검은 외곽선 px (실루엣 바깥에만, 아트 내부는 안 건드림)
-# (열 인덱스, 출력명, 추가 회전도[시계+=음수 아님, PIL rotate 는 CCW+ 라 시계는 음수])
-POSES = [(3, 'goldhammer.png', 0), (0, 'goldhammer-0.png', 0),
-         (2, 'goldhammer-45.png', 0), (4, 'goldhammer-90.png', 0)]
+ALPHA_CUT = 120
+OUTLINE = 4
+POSES = [(3, 'goldhammer.png'), (0, 'goldhammer-0.png'), (2, 'goldhammer-45.png'), (4, 'goldhammer-90.png')]
+
+im = Image.open(SRC).convert('RGBA')
+W, H = im.size
+CELL_W = W / 5
+ROW_H = H / 3
 
 
-def keep_largest(im):
-    w, h = im.size
-    px = im.load()
+def keep_largest(cell):
+    w, h = cell.size
+    px = cell.load()
     seen = bytearray(w * h)
     best = []
     for sy in range(h):
@@ -48,49 +51,93 @@ def keep_largest(im):
             if (x, y) not in keep:
                 r, g, b, _ = px[x, y]
                 px[x, y] = (r, g, b, 0)
-    return im
+    return cell
 
 
-im = Image.open(SRC).convert('RGBA')
-W, H = im.size
-CELL_W = W / 5
-ROW_H = H / 3
+def outline(cell, px_w=OUTLINE):
+    if px_w <= 0:
+        return cell
+    pad = px_w + 2
+    canv = Image.new('RGBA', (cell.width + pad*2, cell.height + pad*2), (0, 0, 0, 0))
+    canv.alpha_composite(cell, (pad, pad))
+    sil = canv.split()[3].point(lambda v: 255 if v >= 40 else 0)
+    dil = sil.filter(ImageFilter.MaxFilter(2 * px_w + 1)).filter(ImageFilter.GaussianBlur(0.6))
+    out = Image.new('RGBA', canv.size, (0, 0, 0, 0))
+    out.paste(Image.new('RGBA', canv.size, (18, 16, 18, 255)), (0, 0), dil)
+    out.alpha_composite(canv)
+    bb = out.split()[3].getbbox()
+    return out.crop(bb) if bb else out
 
-os.makedirs(OUT_DIR, exist_ok=True)
-for col, name, rot in POSES:
+
+def pose(col, do_outline=True):
+    """소스 col(0~4, row0)의 포즈 하나 → 정리된 RGBA (트림됨)."""
     x0 = int(col * CELL_W)
     cell = im.crop((max(0, x0 - 4), 0, min(W, x0 + int(CELL_W) + 6), min(H, int(ROW_H * 1.22)))).convert('RGBA')
     r, g, b, a = cell.split()
-    a = a.point(lambda v: 0 if v < ALPHA_CUT else v)      # 청록 글로우만 컷 (하머 본체는 알파 255)
+    a = a.point(lambda v: 0 if v < ALPHA_CUT else v)
     cell = Image.merge('RGBA', (r, g, b, a))
-    cell = keep_largest(cell)                              # 라벨 알약 탈락
-    # 알파 계단현상만 아주 살짝 정리 (본체/외곽선은 안 건드림)
+    cell = keep_largest(cell)
     r, g, b, a = cell.split()
     a = a.filter(ImageFilter.GaussianBlur(0.6)).point(lambda v: 0 if v < 90 else (255 if v > 200 else v))
     cell = Image.merge('RGBA', (r, g, b, a))
     bb = cell.split()[3].getbbox()
     if bb:
         cell = cell.crop(bb)
-    if rot:
-        cell = cell.rotate(rot, resample=Image.BICUBIC, expand=True)
-        bb = cell.split()[3].getbbox()
-        if bb:
-            cell = cell.crop(bb)
-    if OUTLINE > 0:
-        # 얇은 검은 링을 실루엣 바깥에만. 원본 아트는 그 위에 그대로 얹음 (내부 안 건드림).
-        pad = OUTLINE + 2
-        canv = Image.new('RGBA', (cell.width + pad*2, cell.height + pad*2), (0, 0, 0, 0))
-        canv.alpha_composite(cell, (pad, pad))
-        sil = canv.split()[3].point(lambda v: 255 if v >= 40 else 0)
-        dil = sil.filter(ImageFilter.MaxFilter(2 * OUTLINE + 1)).filter(ImageFilter.GaussianBlur(0.6))
-        out = Image.new('RGBA', canv.size, (0, 0, 0, 0))
-        out.paste(Image.new('RGBA', canv.size, (18, 16, 18, 255)), (0, 0), dil)
-        out.alpha_composite(canv)
-        bb = out.split()[3].getbbox()
-        cell = out.crop(bb) if bb else out
+    if do_outline:
+        cell = outline(cell)
+    return cell
+
+
+def grip_point(cell):
+    """손잡이 하단 중심 (x, y) — 회전 축 정렬용."""
+    w, h = cell.size
+    px = cell.load()
+    pts = [(x, y) for y in range(h) for x in range(0, w, 2) if px[x, y][3] > 140]
+    pts.sort(key=lambda p: -p[1])
+    lo = pts[:max(1, len(pts) // 10)]
+    return sum(p[0] for p in lo) / len(lo), max(p[1] for p in lo)
+
+
+os.makedirs(OUT_DIR, exist_ok=True)
+
+# --- 개별 포즈 (메인 + 분신) ---
+for col, name in POSES:
+    cell = pose(col)
     s = TARGET_MAX / max(cell.size)
     if s < 1:
         cell = cell.resize((round(cell.width * s), round(cell.height * s)), Image.LANCZOS)
-    out = os.path.join(OUT_DIR, name)
-    cell.save(out, optimize=True)
-    print('saved', out, cell.size)
+    p = os.path.join(OUT_DIR, name)
+    cell.save(p, optimize=True)
+    print('saved', p, cell.size)
+
+# --- 보관창 회전 스트립 (7프레임, 좌우 로킹) ---
+base = {a: pose(c) for a, c in [(0, 0), (22.5, 1), (45, 2), (67.5, 3)]}
+frames = [
+    base[67.5].transpose(Image.FLIP_LEFT_RIGHT),
+    base[45].transpose(Image.FLIP_LEFT_RIGHT),
+    base[22.5].transpose(Image.FLIP_LEFT_RIGHT),
+    base[0],
+    base[22.5],
+    base[45],
+    base[67.5],
+]
+grips = [grip_point(f) for f in frames]
+maxw = max(f.width for f in frames)
+maxh = max(f.height for f in frames)
+# 셀 = 손잡이 하단이 (cellW/2, cellH - margin) 에 오도록 넉넉히
+margin = 10
+cellw = maxw + 40
+cellh = maxh + margin + 10
+strip = Image.new('RGBA', (cellw * len(frames), cellh), (0, 0, 0, 0))
+for i, (f, (gx, gy)) in enumerate(zip(frames, grips)):
+    ox = i * cellw + round(cellw / 2 - gx)
+    oy = round(cellh - margin - gy)
+    strip.alpha_composite(f, (ox, oy))
+# 다운스케일 (셀 높이 ~200)
+th = 200
+if cellh > th:
+    sc = th / cellh
+    strip = strip.resize((round(strip.width * sc), round(strip.height * sc)), Image.LANCZOS)
+p = os.path.join(OUT_DIR, 'goldhammer-spin.png')
+strip.save(p, optimize=True)
+print('saved', p, strip.size, '(%d frames, cell %dx%d)' % (len(frames), strip.width // len(frames), strip.height))

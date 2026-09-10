@@ -2359,6 +2359,16 @@ body { background: var(--lm-page); }
 .inv-name { font-size: 0.86rem; font-weight: 800; color: var(--lm-ink); }
 .inv-thumb { height: 88px; display: flex; align-items: center; justify-content: center; }
 .inv-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+/* 골드해머 = 7프레임 스트립을 steps+alternate 로 좌우 로킹 (머리 트월, 보석 항상 정면). */
+.inv-thumb--spin {
+  width: 78px;
+  background-repeat: no-repeat;
+  background-size: 700% 100%;      /* 7프레임 */
+  background-position: 0% 0;
+  animation: inv-gh-spin 1.6s steps(6, jump-none) infinite alternate;
+}
+@keyframes inv-gh-spin { from { background-position: 0% 0; } to { background-position: 100% 0; } }
+@media (prefers-reduced-motion: reduce) { .inv-thumb--spin { animation: none; background-position: 50% 0; } }
 /* 이미지 아래 능력치 칸 — 무기마다 동일 구성(3줄 표). 값 없으면 "-" (방어력은 미래 무기용). */
 .inv-stat { margin: 6px 0 9px; }
 /* "능력치" 헤더 — 검은 외곽선 + 번개색 글로우 */

@@ -15,6 +15,7 @@
               ['2·3타 두더지 연타 확률 10%', '10% burst on 2·3-hit moles'],
               ['-', '-']] },
     { id: 'goldhammer', name: '골드해머', nameEn: 'Gold Hammer', thumb: 'assets/weapons/goldhammer.png',
+      spin: 'assets/weapons/goldhammer-spin.png', spinFrames: 7,
       stats: [['Hole 16 → 15', 'Holes 16 → 15'],
               ['주변 두더지 지진 연타 15%', '15% quake — chain-hits nearby moles'],
               ['-', '-']] }
@@ -46,9 +47,12 @@
       WEAPONS.forEach(function (w) {
         var card = document.createElement('div');
         card.className = 'inv-card' + (w.id === cur ? ' inv-card--on' : '');
+        var thumbHtml = w.spin
+          ? '<div class="inv-thumb inv-thumb--spin" style="background-image:url(' + w.spin + ')"></div>'
+          : '<div class="inv-thumb"><img alt="" src="' + w.thumb + '"></div>';
         card.innerHTML =
           '<div class="inv-head"><span class="inv-name"></span></div>' +
-          '<div class="inv-thumb"><img alt="" src="' + w.thumb + '"></div>' +
+          thumbHtml +
           '<div class="inv-stat">' +
             '<div class="inv-stat-h"></div>' +
             '<table class="inv-stat-tbl"><tbody>' +

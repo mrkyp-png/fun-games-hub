@@ -382,7 +382,7 @@
     let sx = xFrac, sy = yFrac;
     if (m === dl) sx = -0.12; else if (m === dr) sx = 1.12;
     else if (m === dt) sy = -0.16; else sy = 1.14;
-    const impactY = Math.max(0, yFrac - 0.05);
+    const impactY = Math.max(0, yFrac - 0.11); // 메인 골드해머 대기위치 위로 0.5cm 이동에 맞춰 분신도 같이 위로
     el.style.left = (sx * 100) + '%';
     el.style.top = (sy * 100) + '%';
     el.style.transform = 'translate(-50%, -64%) scale(0.62) rotate(-46deg)';
