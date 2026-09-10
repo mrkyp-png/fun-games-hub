@@ -1779,6 +1779,10 @@
     };
     window.__debugForceQuake = () => { forceQuakeNext = true; }; // 다음 두더지 타격에서 지진 강제 발동
     window.__debugQuakeAt = (regionId) => { if (state) quakeRipple(regionId | 0, 0); }; // 그 구멍에서 지진 파동 즉시
+    window.__debugSpawnPoint = (regionId) => {
+      const s = state && state.spawnPoints.find((p) => p.regionId === (regionId | 0));
+      return s ? { x: s.x, y: s.y } : null;
+    };
     window.__debugFireWeapon = (xf, yf) => {
       if (state && state.laneHammer) state.laneHammer.strike(xf == null ? 0.5 : xf, yf == null ? 0.35 : yf, () => {});
     };

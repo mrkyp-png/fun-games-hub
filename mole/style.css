@@ -1650,7 +1650,10 @@ body { background: var(--lm-page); }
 /* 지진 분신 골드해머 — 가장자리에서 날아와 내리치고 골드로 소멸 (hit-fx.js quakeClone). */
 .quake-clone {
   position: absolute;
-  width: 17.5%;   /* 메인 골드해머(.lane-hammer--gold)와 같은 크기 (사용자 지정) */
+  /* 메인 골드해머(.lane-hammer--gold width 17.5%, 스프라이트 217x307 → 렌더 높이 ≈ 24.8%)와
+     같은 "높이"로 맞춘다. 폭으로 맞추면 90° 포즈(159x313 세로긴)가 엄청 커졌음. */
+  height: 24.8%;
+  width: auto;
   transform-origin: 50% 64%;
   pointer-events: none;
   z-index: 25;
