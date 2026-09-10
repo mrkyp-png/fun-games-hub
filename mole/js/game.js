@@ -908,7 +908,8 @@
       molePoseCount: MG.MoleSprites.POSE_COUNT,
       obstacleCount: MG.MoleSprites.OBSTACLE_COUNT,
       obstacles: ch >= 2,
-      fourHit: ch >= 5   // 4타 두더지 (전신→빠끔1→빠끔2→모자) — 챕터 5 전용
+      fourHit: ch >= 5,   // 4타 두더지 (전신→빠끔1→빠끔2→모자) — 챕터 5 전용
+      cannonBurst: weapon === 'cannon'   // 대포 연사 스킬 (2·3타 두더지 첫 타 10%)
     };
 
     const scheduler = MG.SpawnScheduler.create({ regions, spawnPoints, config, rng });
@@ -1148,8 +1149,37 @@
     // 두더지 현재 프레임(전신/빠끔1/빠끔2/모자)에 따라 망치 타격점 높이가 달라진다 — 헬멧을 때린다.
     const frameKey = sharedPopElements.frameKeyAt ? sharedPopElements.frameKeyAt(regionId) : null;
     state.laneHammer.strike(targetX, targetY, () => onHammerImpact(targetX, targetY, results), frameKey);
+
+    // 대포 연사: 이번 첫 타에 burst 가 떴으면 — 아래 터치화면에 "BURST!" 띄우고(발동 즉시 인지),
+    // 남은 타격을 자동 연속 발사 → 1마리 클리어.
+    if (primary && primary.type === 'mole' && primary.burst && primary.done === false && primary.hitsTaken === 1) {
+      MG.HitFx.burstBanner(document.querySelector('.dialpad'));
+      burstAutoFire(regionId, primary.hitsRequired - 1);
+    }
+
     // 버튼 이펙트 색: 헛방(구멍에 아무것도 없음) 또는 폭탄이면 빨간색.
     return results.length === 0 || results.some((r) => r.type === 'bomb');
+  }
+
+  // 연사 자동샷 — n 발(3타=2발, 2타=1발)을 BURST_SHOT_GAP 간격으로 대포 재발사.
+  const BURST_SHOT_GAP = 190; // ms
+  function burstAutoFire(regionId, n, i) {
+    i = i || 0;
+    if (i >= n || !state || state.ended) return;
+    setTimeout(() => {
+      if (!state || state.ended) return;
+      const sp = state.spawnPoints.find((s) => s.regionId === regionId);
+      const res = state.scheduler.resolveRegion(regionId, { burst: true });
+      const pr = res[0] || null;
+      const tx = pr ? pr.xFrac : (sp ? sp.x : 0.5);
+      const ty = pr ? pr.yFrac : (sp ? sp.y : 0.5);
+      const fk = sharedPopElements.frameKeyAt ? sharedPopElements.frameKeyAt(regionId) : null;
+      state.laneHammer.strike(tx, ty, () => {
+        onHammerImpact(tx, ty, res);
+        if (pr && pr.done && sp) MG.HitFx.burstWord(document.getElementById('mole-board'), sp.x, sp.y);
+      }, fk);
+      burstAutoFire(regionId, n, i + 1);
+    }, BURST_SHOT_GAP);
   }
 
   function onHammerImpact(hitXFrac, hitYFrac, results) {
@@ -1626,6 +1656,16 @@
     };
     window.__debugIntroActive = function () {
       return !!(state && state.introActive);
+    };
+    // 대포 연사 연출 확인용 — 안 맞은 다타 두더지 하나를 연사 대상으로 강제. 인자 없으면 아무 구멍.
+    window.__debugForceBurst = function (regionId) {
+      if (!state || !state.scheduler.debugForceBurst) return null;
+      if (regionId == null) {
+        const p = state.scheduler.getActivePops().find((m) => m.type === 'mole' && m.hitsRequired > 1 && m.hitsTaken === 0 && !m.dying);
+        regionId = p ? p.regionId : null;
+      }
+      if (regionId == null) return null;
+      return state.scheduler.debugForceBurst(regionId) ? regionId : null;
     };
     // 지금 실제로 때릴 수 있는(살아있고 아직 안 맞은) 두더지의 regionId — 없으면 null.
     // sinkIn(타격 후 침몰 대기) 창에는 두더지가 아직 서 있어 보이지만 이미 처치된 상태라 제외한다.

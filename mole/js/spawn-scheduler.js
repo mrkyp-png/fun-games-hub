@@ -14,6 +14,9 @@
   const TWO_HIT_CHANCE = 0.20; // 누적: 0.05~0.20 구간이 2히트
   // 4타 두더지 (전신→빠끔1→빠끔2→모자): config.fourHit(챕터 5) 일 때만, 상위 3% 를 4타로.
   const FOUR_HIT_CHANCE = 0.03;
+  // 대포 연사 스킬: 2·3타 두더지를 "전신 상태에서" 대포로 처음 맞히는 순간 10% 확률로 발동
+  //   → 남은 타격이 자동 연사돼 1마리 즉시 클리어. 판정은 스폰이 아니라 "타격 시".
+  const BURST_CHANCE = 0.10;
   // 여러 번 때리려면 화면에 더 오래 떠 있어야 후반 레벨에서도 잡을 수 있다.
   const DURATION_MULT = { 1: 1, 2: 1.7, 3: 2.4, 4: 3.1 };
   const HIT_COOLDOWN = 0.12;  // 같은 두더지 연타 방지 간격 (초)
@@ -153,7 +156,15 @@
       return { spawned, expired };
     }
 
-    function resolveOne(pop) {
+    function resolveOne(pop, opts) {
+      var isBurstShot = !!(opts && opts.burst); // 연사 자동샷 — 쿨다운·무패널티게이트 통과
+
+      // 연사(burst) 진행 중: 자동샷만 실제 처리하고, 유저가 그 구멍을 더 때리는 건
+      // 두더지가 사라질 때까지 무패널티로 무시 (헛방 아님, 콤보 리셋 X). (사용자 지정)
+      if (pop.burstActive && !isBurstShot) {
+        return { type: 'mole', regionId: pop.regionId, ignored: true, xFrac: pop.x, yFrac: pop.y };
+      }
+
       // 저글 보너스(스펙 2026-09-04 §4): 1방 두더지를 잡은 뒤 내려가는 창에 한 번 더 맞히면
       // 콤보 +1 보너스. 두더지당 1회. 못 맞혀도 페널티 없음. 2·3방 다타는 제외.
       // 단 두더지가 "시각적으로 보일 때"만 — 다 사라진 뒤 때리면 명백한 헛방(콤보 리셋). (사용자 지정)
@@ -166,11 +177,13 @@
 
       if (pop.type === 'mole' && pop.hitsRequired > 1) {
         // 연타 쿨다운 중 = 유효한 두더지가 떠 있는데 무시하는 것 → 헛방 아님(콤보 리셋 X).
-        if (pop.hitCooldown > 0) return { type: 'mole', regionId: pop.regionId, ignored: true, xFrac: pop.x, yFrac: pop.y };
+        if (pop.hitCooldown > 0 && !isBurstShot) return { type: 'mole', regionId: pop.regionId, ignored: true, xFrac: pop.x, yFrac: pop.y };
         pop.hitsTaken += 1;
+        // 전신(첫 타) + 대포 → 10% 로 연사 발동. 판정은 이 타격 순간.
+        if (pop.hitsTaken === 1 && (pop._forceBurst || (config.cannonBurst && rng.next() < BURST_CHANCE))) pop.burstActive = true;
         if (pop.hitsTaken < pop.hitsRequired) {
           pop.hitCooldown = HIT_COOLDOWN;
-          return { type: 'mole', regionId: pop.regionId, done: false, xFrac: pop.x, yFrac: pop.y, hitsTaken: pop.hitsTaken, hitsRequired: pop.hitsRequired };
+          return { type: 'mole', regionId: pop.regionId, done: false, xFrac: pop.x, yFrac: pop.y, hitsTaken: pop.hitsTaken, hitsRequired: pop.hitsRequired, burst: !!pop.burstActive };
         }
       }
 
@@ -181,18 +194,18 @@
       return { type: pop.type, regionId: pop.regionId, done: true, xFrac: pop.x, yFrac: pop.y };
     }
 
-    function resolveHit(popId) {
+    function resolveHit(popId, opts) {
       const pop = active.get(popId);
-      return pop ? resolveOne(pop) : null;
+      return pop ? resolveOne(pop, opts) : null;
     }
 
     // 구멍(영역) 타격: 그 영역의 활성 pop 을 판정한다 (기획서 v1.5 — 구멍별 버튼).
     // 영역당 스폰 지점 1개라 결과는 0개 또는 1개지만, 호출부 편의를 위해 배열로 돌려준다.
-    function resolveRegion(regionId) {
+    function resolveRegion(regionId, opts) {
       const out = [];
       active.forEach((pop) => {
         if (pop.regionId !== regionId) return;
-        const r = resolveOne(pop);
+        const r = resolveOne(pop, opts);
         if (r) out.push(r);
       });
       return out;
@@ -214,7 +227,18 @@
       regions.forEach((r) => completedRegions.add(r.id));
     }
 
-    return { tick, resolveHit, resolveRegion, isComplete, completedRegionCount, getActivePops, forceCompleteAll };
+    // 디버그: 그 구멍의 안 맞은 다타 두더지를 연사 대상으로 강제 (연출 확인용).
+    function debugForceBurst(regionId) {
+      var hit = null;
+      active.forEach((pop) => {
+        if (pop.regionId === regionId && pop.type === 'mole' && pop.hitsRequired > 1 &&
+            pop.hitsTaken === 0 && !pop.dying) { pop.burst = 1; hit = pop; }
+      });
+      if (hit) hit._forceBurst = true;
+      return !!hit;
+    }
+
+    return { tick, resolveHit, resolveRegion, isComplete, completedRegionCount, getActivePops, forceCompleteAll, debugForceBurst };
   }
 
   const api = { create };

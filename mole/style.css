@@ -819,6 +819,14 @@ body { background: var(--lm-page); }
      구멍 스프라이트·클립박스는 16칸 전부 동일하므로 클립도 한 값으로 통일 (예전 data-row 별 튜닝 삭제). */
   clip-path: ellipse(160% 220% at 50% -114%);
 }
+/* 대포 연사 발동 두더지 — 유저가 바로 인지하게 밝게 맥동하는 오라 (발동 순간부터 침몰까지 잠깐). */
+.mole-pop--burst .mole-pop-img {
+  animation: mole-burst-aura 0.42s ease-in-out infinite alternate;
+}
+@keyframes mole-burst-aura {
+  from { filter: drop-shadow(1.5px 0 0 #e0a400) drop-shadow(-1.5px 0 0 #e0a400) drop-shadow(0 1.5px 0 #e0a400) drop-shadow(0 -1.5px 0 #e0a400) drop-shadow(0 0 6px #ffd34d) drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); }
+  to   { filter: drop-shadow(1.5px 0 0 #fff2a8) drop-shadow(-1.5px 0 0 #fff2a8) drop-shadow(0 1.5px 0 #fff2a8) drop-shadow(0 -1.5px 0 #fff2a8) drop-shadow(0 0 16px #ffb300) drop-shadow(0 0 26px rgba(255, 150, 0, 0.6)) drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); }
+}
 .mole-pop-img {
   position: absolute;
   left: 50%;
@@ -1784,6 +1792,44 @@ body { background: var(--lm-page); }
 @keyframes hud-flash {
   0%, 100% { color: inherit; }
   40% { color: #ff5a5a; text-shadow: 0 0 8px rgba(255, 90, 90, 0.9); }
+}
+
+/* 대포 연사 발동 — 두더지 흙더미 부근에서 튀어나와 제자리서 사라짐(위로 안 뜸). 빨강+글로우, 검은 외곽선. */
+.hit-fx-burstword {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-family: 'Dongle', 'Segoe UI', 'Malgun Gothic', sans-serif;
+  font-weight: 800;
+  font-size: 1.85rem;
+  color: #ff2f2f;
+  -webkit-text-stroke: 3px #000;
+  paint-order: stroke fill;
+  text-shadow: 0 0 6px rgba(255, 60, 60, 0.95), 0 0 15px rgba(255, 40, 40, 0.7);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: hit-burstword 0.7s ease-out forwards;
+}
+@keyframes hit-burstword {
+  0%   { transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
+  22%  { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+  55%  { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
+/* 아래 터치화면(.dialpad) 위 BURST! — 색·외곽선·사라지는 속도는 .hit-fx-burstword 와 동일, 크게. */
+.hit-fx-burstbanner {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 30;
+  font-family: 'Dongle', 'Segoe UI', 'Malgun Gothic', sans-serif;
+  font-weight: 800;
+  font-size: 3rem;
+  color: #ff2f2f;
+  -webkit-text-stroke: 4px #000;
+  paint-order: stroke fill;
+  text-shadow: 0 0 8px rgba(255, 60, 60, 0.95), 0 0 20px rgba(255, 40, 40, 0.7);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: hit-burstword 0.7s ease-out forwards;
 }
 
 /* ---------- 광고 (Phase 1 스텁) ---------- */

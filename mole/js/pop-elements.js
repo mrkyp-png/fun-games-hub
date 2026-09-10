@@ -126,6 +126,7 @@
 
       activePops.forEach((pop) => {
         const m = pops.get(pop.id) || makePop(pop);
+        if (pop.burstActive && !m.burst) { m.burst = true; m.el.classList.add('mole-pop--burst'); } // 연사 발동 — 맥동 오라
         if (pop.dying && !m.dying) {          // 침몰 시작 순간 — 대포 여부·시작 깊이 고정
           m.dyingFrom = m.shownDepth;
           // 실제 타격당해 처치된 두더지만 대포 폭발 연출. 시간초과로 안 맞고 물러나는 건

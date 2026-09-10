@@ -271,6 +271,16 @@
     return spawnAt(boardEl, 'hit-fx-score', xFrac, yFrac, '+' + points);
   }
 
+  // 대포 연사 발동 — 두더지 흙더미 부근(중앙 아래)에서 "BURST!" 가 튀어나와 제자리서 사라진다.
+  function burstWord(boardEl, xFrac, yFrac) {
+    return spawnAt(boardEl, 'hit-fx-burstword', xFrac, yFrac + 0.06, 'BURST!');
+  }
+  // 아래 터치화면(.dialpad)에도 "BURST!" — 발동 즉시 크게. 색·외곽선·사라지는 속도는 게임화면과 동일.
+  function burstBanner(dialpadEl) {
+    if (!dialpadEl) return;
+    return spawnAt(dialpadEl, 'hit-fx-burstbanner', 0.5, 0.4, 'BURST!'); // 다이얼패드 중앙 — 최대 가시성
+  }
+
   function moleHit(boardEl, xFrac, yFrac) {
     shake(boardEl);
     spawnAt(boardEl, 'hit-fx-burst', xFrac, yFrac, '<span>' + window.FGH.I18N.t('mole.fx.bam') + '</span>');
@@ -358,6 +368,6 @@
   // 게임 시작(사용자 제스처) 직후 호출 — 카운트다운 동안 오디오 컨텍스트 + 타격음 파일을 미리 준비.
   function warmup() { try { getCtx(); } catch (e) { /* noop */ } }
 
-  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, starBurst };
+  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, burstBanner, starBurst };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);
