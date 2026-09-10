@@ -165,7 +165,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v338</div>
+      <div id="build-tag" aria-hidden="true">v339</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -514,6 +514,7 @@
 <script src="js/region-reveal.js"></script>
 <script src="js/hud.js"></script>
 <script src="js/sky.js"></script>
+<script src="js/intro.js"></script>
 <script src="js/game.js"></script>
 <script>window.FGH.I18N.applyStatic(document);</script>
 <script>
@@ -540,7 +541,12 @@
       cta.classList.add('is-pressed'); // 눌리는 연출 잠깐 보여주고 사라짐
       setTimeout(function () {
         s.classList.add('is-hiding');
-        setTimeout(function () { s.remove(); }, 500);
+        setTimeout(function () {
+          s.remove();
+          // 앱 최초 1회 — "두더지 게임의 역사" 인트로 한 페이지
+          var IN = window.MoleGame && window.MoleGame.Intro;
+          if (IN && IN.shouldShow()) IN.play(function () {});
+        }, 500);
       }, 150);
     }
     s.addEventListener('pointerdown', go);
@@ -559,7 +565,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=329').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=339').catch(function () {});
       }
     });
   }
