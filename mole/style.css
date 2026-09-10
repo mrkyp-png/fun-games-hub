@@ -1816,22 +1816,6 @@ body { background: var(--lm-page); }
   55%  { transform: translate(-50%, -50%) scale(1); opacity: 1; }
   100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
 }
-/* 아래 터치화면(.dialpad) 위 BURST! — 색·외곽선·사라지는 속도는 .hit-fx-burstword 와 동일, 크게. */
-.hit-fx-burstbanner {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  z-index: 30;
-  font-family: 'Dongle', 'Segoe UI', 'Malgun Gothic', sans-serif;
-  font-weight: 800;
-  font-size: 3rem;
-  color: #ffce33;
-  -webkit-text-stroke: 4px #000;
-  paint-order: stroke fill;
-  text-shadow: 0 0 8px rgba(255, 206, 51, 0.95), 0 0 20px rgba(255, 180, 0, 0.7);
-  white-space: nowrap;
-  pointer-events: none;
-  animation: hit-burstword 0.7s ease-out forwards;
-}
 
 /* ---------- 광고 (Phase 1 스텁) ---------- */
 .ad-banner { display: flex; align-items: center; justify-content: center;

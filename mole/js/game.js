@@ -1150,10 +1150,10 @@
     const frameKey = sharedPopElements.frameKeyAt ? sharedPopElements.frameKeyAt(regionId) : null;
     state.laneHammer.strike(targetX, targetY, () => onHammerImpact(targetX, targetY, results), frameKey);
 
-    // 대포 연사: 이번 첫 타에 burst 가 떴으면 — 아래 터치화면에 "BURST!" 띄우고(발동 즉시 인지),
+    // 대포 연사: 이번 첫 타에 burst 가 떴으면 — 그 두더지 흙더미에 "BURST!" 띄우고(발동 즉시 인지),
     // 남은 타격을 자동 연속 발사 → 1마리 클리어.
     if (primary && primary.type === 'mole' && primary.burst && primary.done === false && primary.hitsTaken === 1) {
-      MG.HitFx.burstBanner(document.querySelector('.dialpad'));
+      MG.HitFx.burstWord(document.getElementById('mole-board'), primary.xFrac, primary.yFrac);
       if (sharedLaneControls) sharedLaneControls.flashBurst(regionId); // 이번(유저) 샷 = 골드 링
       burstAutoFire(regionId, primary.hitsRequired - 1);
     }
@@ -1176,10 +1176,7 @@
       const ty = pr ? pr.yFrac : (sp ? sp.y : 0.5);
       const fk = sharedPopElements.frameKeyAt ? sharedPopElements.frameKeyAt(regionId) : null;
       if (sharedLaneControls) sharedLaneControls.flashBurst(regionId); // 자동샷 = 골드 링 (대포 3발과 동기)
-      state.laneHammer.strike(tx, ty, () => {
-        onHammerImpact(tx, ty, res);
-        if (pr && pr.done && sp) MG.HitFx.burstWord(document.getElementById('mole-board'), sp.x, sp.y);
-      }, fk);
+      state.laneHammer.strike(tx, ty, () => { onHammerImpact(tx, ty, res); }, fk);
       burstAutoFire(regionId, n, i + 1);
     }, BURST_SHOT_GAP);
   }
