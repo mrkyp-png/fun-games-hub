@@ -1822,7 +1822,7 @@ body { background: var(--lm-page); }
   position: fixed; inset: 0; z-index: 9998;   /* 스플래시(9999) 바로 아래 — GET NOW 뒤 홈이 안 비치게 */
   background: radial-gradient(120% 80% at 50% 0%, #1a2550 0%, #0b1024 55%, #070a18 100%);
   color: #e9edff;
-  transition: opacity 0.32s ease;
+  transition: opacity 0.42s ease;
   overflow: hidden;
 }
 #intro-screen.intro--out { opacity: 0; }

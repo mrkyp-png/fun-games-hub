@@ -36,66 +36,15 @@
     try { var H = root.MoleGame && root.MoleGame.HitFx; if (H && H.typeTick) H.typeTick(); } catch (e) { /* 무시 */ }
   }
 
-  // 잔잔한 인트로 브금 — Web Audio 로 부드러운 패드(사인 화음) + 아주 느린 필터 스윕. (파일 없음)
-  //   Am → F → C → G 를 9초마다 천천히 옮겨간다.
-  function makeAmbient() {
-    var AC = root.AudioContext || root.webkitAudioContext;
-    if (!AC) return { stop: function () {} };
-    var ctx;
-    try { ctx = new AC(); } catch (e) { return { stop: function () {} }; }
-    if (ctx.state === 'suspended' && ctx.resume) { try { ctx.resume(); } catch (e) {} }
-    var t0 = ctx.currentTime;
-
-    var master = ctx.createGain(); master.gain.value = 0.0001; master.connect(ctx.destination);
-    var lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 800; lp.Q.value = 0.4; lp.connect(master);
-    var lfo = ctx.createOscillator(), lfoG = ctx.createGain();
-    lfo.frequency.value = 0.045; lfoG.gain.value = 280;
-    lfo.connect(lfoG); lfoG.connect(lp.frequency); lfo.start();
-
-    function voice(freq) {
-      var o = ctx.createOscillator(), d = ctx.createOscillator(), g = ctx.createGain();
-      o.type = 'sine'; d.type = 'sine';
-      o.frequency.value = freq; d.frequency.value = freq * 1.004; // 살짝 디튠 = 따뜻함
-      g.gain.value = 0.17; o.connect(g); d.connect(g); g.connect(lp);
-      o.start(); d.start();
-      return function set(f) {
-        o.frequency.setTargetAtTime(f, ctx.currentTime, 1.4);
-        d.frequency.setTargetAtTime(f * 1.004, ctx.currentTime, 1.4);
-      };
-    }
-    var CH = [
-      [220.00, 261.63, 329.63], // Am
-      [174.61, 220.00, 261.63], // F
-      [130.81, 196.00, 246.94], // C
-      [196.00, 246.94, 293.66]  // G
-    ];
-    var setters = CH[0].map(voice);
-    master.gain.setTargetAtTime(0.12, t0, 3.5); // 아주 천천히 페이드인
-    var ci = 0;
-    var iv = setInterval(function () {
-      ci = (ci + 1) % CH.length;
-      CH[ci].forEach(function (f, k) { setters[k] && setters[k](f); });
-    }, 9000);
-
-    return {
-      stop: function () {
-        clearInterval(iv);
-        try { master.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.5); } catch (e) {}
-        setTimeout(function () { try { ctx.close(); } catch (e) {} }, 900);
-      }
-    };
-  }
-
   function play(onDone) {
     var done = false, killed = false;
     var timers = [];
     function after(ms, fn) { var t = setTimeout(fn, ms); timers.push(t); return t; }
 
-    // 홈 브금은 잠깐 멈추고, 잔잔한 인트로 앰비언트를 깐다.
+    // 브금은 홈 브금(밝은 곡)을 그대로 깔고 간다 — 인트로→홈 전환 때 음악이 안 끊긴다.
+    // (GET NOW 탭에서 game.js 가 #bgm 을 시작함. 혹시 멈춰 있으면 켠다.)
     var homeBgm = document.getElementById('bgm');
-    var homeWasPlaying = homeBgm && !homeBgm.paused;
-    if (homeBgm) { try { homeBgm.pause(); } catch (e) { /* 무시 */ } }
-    var amb = makeAmbient();
+    if (homeBgm && homeBgm.paused) { var bp = homeBgm.play(); if (bp && bp.catch) bp.catch(function () {}); }
 
     function finish() {
       if (done) return;
@@ -103,10 +52,8 @@
       timers.forEach(clearTimeout);
       if (raf) cancelAnimationFrame(raf);
       try { localStorage.setItem(SEEN_KEY, '1'); } catch (e) { /* 무시 */ }
-      try { amb.stop(); } catch (e) { /* 무시 */ }
-      if (homeBgm && homeWasPlaying) { var hp = homeBgm.play(); if (hp && hp.catch) hp.catch(function () {}); }
       scr.classList.add('intro--out');
-      setTimeout(function () { scr.remove(); if (onDone) onDone(); }, 320);
+      setTimeout(function () { scr.remove(); if (onDone) onDone(); }, 420);
     }
 
     var scr = document.createElement('div');
