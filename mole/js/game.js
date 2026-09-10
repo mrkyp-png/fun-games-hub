@@ -166,6 +166,8 @@
   function beginGame() {
     if (gameStarting || state) return;   // 이미 시작 진행 중이거나 게임 중 — 짧게 연타해도 무시 (길게=arm은 별개)
     if (MG.Economy.getHearts() <= 0) { showNoHeartModal(); return; }
+    if (!MG.Economy.spendTicket()) { showNoTicketModal(); return; } // 챕터 입장권 1장 차감
+    refreshChapterNav();
     gameStarting = true;
     setNavLock(true); // 인트로~카운트다운 동안 ⊞ 잠금
     // 게임 BGM 은 여기서(시작 버튼 탭 = 사용자 제스처 콜스택 안) 튼다. startRound 는 인트로
@@ -421,6 +423,21 @@
     v.querySelector('[data-nh="close"]').addEventListener('click', () => v.remove());
   }
 
+  // 챕터 입장권 소진 — 다음 충전까지 남은 시간 안내. (개발용 상한 10000이라 실제로는 안 뜸.
+  // 출시 전: i18n 키 + 광고/코인 충전 옵션 추가 예정.)
+  function showNoTicketModal() {
+    const ms = MG.Economy.nextTicketMs();
+    const mm = Math.floor(ms / 60000), ss = Math.floor((ms % 60000) / 1000);
+    const v = document.createElement('div');
+    v.className = 'ad-overlay';
+    v.innerHTML = '<div class="ad-overlay-card"><div class="nh-title">챕터 입장권이 없어요</div>' +
+      '<div style="margin:6px 0 12px;font-size:14px;opacity:.8">다음 충전까지 ' +
+      mm + '분 ' + (ss < 10 ? '0' : '') + ss + '초</div>' +
+      '<div class="nh-btns"><button type="button" data-nt="close">' + I18N.t('mole.common.close') + '</button></div></div>';
+    document.body.appendChild(v);
+    v.querySelector('[data-nt="close"]').addEventListener('click', () => v.remove());
+  }
+
   // 화면 전환 플래시(더보기↔홈, 게임종료→홈) — 보라/진한노랑 랜덤. 누른 버튼 위치에서
   // 터져나가는 것처럼 origin 을 그 버튼 중심으로 잡는다(originEl 없으면 화면 중앙).
   const FLASH_DELAY_MS = 100; // 광선이 화면을 덮는 시점(22% 키프레임)에 맞춰 실제 화면 전환
@@ -586,7 +603,7 @@
 
     refreshChapterNav();
 
-    // 위에서 내려오는 문자 배너 = 광고 버튼 2개(하트+1 / 코인+50). 툭↓ 3초 보임 → 그동안 누를 수 있음.
+    // 위에서 내려오는 문자 배너 = 광고 버튼 2개(하트+1 / 코인+50). 툭↓ 4초 보임 → 그동안 누를 수 있음.
     const sms = document.getElementById('start-best');
     if (!sms.querySelector('.chat-ad-btns')) sms.appendChild(adButtons());
     syncStartAds();
@@ -626,8 +643,8 @@
     nav.querySelector('[data-ch-label]').textContent = I18N.t('mole.chapter.n', { n: ch });
     nav.querySelector('[data-ch-prev]').disabled = ch <= 1;
     nav.querySelector('[data-ch-next]').disabled = ch >= maxCh;
-    const tn = nav.querySelector('[data-ch-tickets]'); // 티켓 개수 (동작은 추후 지정 — 지금은 0)
-    if (tn) tn.textContent = String(parseInt(localStorage.getItem('mole.tickets'), 10) || 0);
+    const tn = nav.querySelector('[data-ch-tickets]'); // 챕터 입장권 (2시간마다 +1, 입장 시 -1)
+    if (tn) tn.textContent = String(MG.Economy.getTickets());
   }
   function wireChapterNav() {
     const nav = document.getElementById('chapter-nav');
