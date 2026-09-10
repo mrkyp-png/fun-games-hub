@@ -377,34 +377,31 @@
     el.className = 'quake-clone';
     el.src = spriteUrl;
     el.alt = '';
-    // 타격점 = 두더지 상단(헬멧 부근). translate(-50%,-24%) 로 하머 머리쪽이 이 점에 오게.
-    const hitY = Math.max(0.06, yFrac - 0.06);
-    const side = xFrac < 0.5 ? 1 : -1;               // 가까운 쪽에서 날아오되 보드 안에서 출발
-    const sx = Math.min(0.94, Math.max(0.06, xFrac + side * 0.12));
-    const sy = Math.max(0.04, hitY - 0.16);
-    const T = (tx, ty, deg) => 'translate(-50%, -24%) rotate(' + deg + 'deg)';
-    el.style.left = (sx * 100) + '%';
-    el.style.top = (sy * 100) + '%';
-    el.style.transform = T(0, 0, side > 0 ? -52 : 52);
-    el.style.opacity = '0';
-    boardEl.appendChild(el);
-    void el.offsetWidth;                              // 초기 상태 확정 → 트랜지션 확실히 발동
-    el.style.transition = 'left 0.17s cubic-bezier(.25,.6,.35,1), top 0.17s cubic-bezier(.25,.6,.35,1), opacity 0.07s, transform 0.17s';
-    el.style.opacity = '1';
+    // 제자리 — 그 구멍 위에 팟 등장 → 내리침 → 소멸. 좌우 이동 없음 (사용자 지정).
+    // 타격점 = 두더지 헬멧 부근. transform-origin 아래(64%)라 rotate 로 머리가 내려온다.
+    const hitY = Math.max(0.05, yFrac - 0.05);
+    const swing = xFrac < 0.5 ? 1 : -1; // 화면 왼쪽 구멍은 머리를 오른쪽에서 내려침(반대편은 반대)
+    const T = (deg) => 'translate(-50%, -22%) rotate(' + deg + 'deg)';
     el.style.left = (xFrac * 100) + '%';
     el.style.top = (hitY * 100) + '%';
-    el.style.transform = T(0, 0, side > 0 ? -14 : 14);
+    el.style.transform = T(swing * -34);      // 든 상태 (머리 위로)
+    el.style.opacity = '0';
+    boardEl.appendChild(el);
+    void el.offsetWidth;
+    el.style.transition = 'opacity 0.08s ease-out, transform 0.12s cubic-bezier(.3,.7,.4,1)';
+    el.style.opacity = '1';
+    el.style.transform = T(swing * -20);      // 살짝 자리잡기
     setTimeout(() => {
       el.style.transition = 'transform 0.07s ease-in';
-      el.style.transform = T(0, 0, side > 0 ? 22 : -22);
+      el.style.transform = T(swing * 26);     // 내리침
       try { if (onHit) onHit(); } catch (e) { /* 무시 */ }
-    }, 185);
+    }, 140);
     setTimeout(() => {
-      el.style.transition = 'opacity 0.22s ease-out, transform 0.22s ease-out';
+      el.style.transition = 'opacity 0.24s ease-out, transform 0.24s ease-out';
       el.style.opacity = '0';
-      el.style.transform = 'translate(-50%, -70%) scale(0.9) rotate(' + (side > 0 ? 22 : -22) + 'deg)';
-    }, 320);
-    setTimeout(() => el.remove(), 600);
+      el.style.transform = 'translate(-50%, -60%) scale(0.92) rotate(' + (swing * 26) + 'deg)';
+    }, 300);
+    setTimeout(() => el.remove(), 580);
   }
 
   // 게임 시작(사용자 제스처) 직후 호출 — 카운트다운 동안 오디오 컨텍스트 + 타격음 파일을 미리 준비.
