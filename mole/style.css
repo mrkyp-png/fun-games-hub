@@ -1823,20 +1823,13 @@ body { background: var(--lm-page); }
   background: radial-gradient(120% 80% at 50% 0%, #1a2550 0%, #0b1024 55%, #070a18 100%);
   color: #e9edff;
   overflow: hidden;
+  transition: opacity 1.7s ease;
 }
-/* 마무리: 흰색 레이어가 천천히 덮이며 "밝아짐" → 흰 레이어만 남기고(#intro-flash) 서서히 사라져 홈이 배어나옴. */
-#intro-screen::after {
-  content: ''; position: absolute; inset: 0; background: #fff;
-  opacity: 0; transition: opacity 1.1s ease; pointer-events: none;
-}
-#intro-screen.intro--out::after { opacity: 1; }
+/* 마무리: 인트로(어두움)가 천천히 투명해지며 홈(밝은 흰 몸체)이 서서히 배어나온다.
+   = 밝아지며 홈이 서서히 나옴. 흰색으로 확 덮었다 지우는 방식 아님. */
+#intro-screen.intro--out { opacity: 0; }
 #intro-screen.intro--out .intro-view,
-#intro-screen.intro--out .intro-skip { opacity: 0; transition: opacity 0.6s ease; }
-#intro-flash {
-  position: fixed; inset: 0; z-index: 9997; background: #fff;
-  opacity: 1; transition: opacity 1s ease; pointer-events: none;
-}
-#intro-flash.intro-flash--out { opacity: 0; }
+#intro-screen.intro--out .intro-skip { opacity: 0; transition: opacity 0.7s ease; }
 .intro-skip {
   position: absolute; top: 10px; right: 10px; z-index: 2;
   border: 1px solid rgba(255, 255, 255, 0.14);

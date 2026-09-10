@@ -55,16 +55,8 @@
       if (raf) cancelAnimationFrame(raf);
       try { localStorage.setItem(SEEN_KEY, '1'); } catch (e) { /* 무시 */ }
 
-      scr.classList.add('intro--out'); // ::after 흰색 opacity 0→1 (1.1s), 글자 페이드아웃
-      setTimeout(function () {
-        var flash = document.createElement('div');
-        flash.id = 'intro-flash';     // 홈 위를 덮는 흰 레이어 (인트로 제거돼도 유지)
-        document.body.appendChild(flash);
-        scr.remove();
-        if (onDone) onDone();
-        requestAnimationFrame(function () { flash.classList.add('intro-flash--out'); }); // 서서히 사라짐 (1s)
-        setTimeout(function () { flash.remove(); }, 1100);
-      }, 1150);
+      scr.classList.add('intro--out'); // opacity 1→0 (1.7s) — 인트로 dissolve, 홈이 서서히 배어나옴
+      setTimeout(function () { scr.remove(); if (onDone) onDone(); }, 1800);
     }
     // 건너뛰기는 즉시 (밝아짐 연출 생략) — 개발용으로 계속 확인해야 하므로.
     function skip() {
