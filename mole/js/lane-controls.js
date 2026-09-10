@@ -348,10 +348,12 @@
     // 원래 전환이 즉시 스냅이라 "아이콘이 그냥 사라짐". .lane-flip--spinning 이 붙은 동안만 그
     // 고정 규칙을 비켜주고(style.css), 여기서 인라인으로 회전을 굴린다. 시크릿 복구 연출과 같은 느낌.
     function spinChannelsIn() {
+      let didSpin = false;
       buttons.forEach((b) => {
         if (!b || !b.classList.contains('lane-button--flippable')) return;
         const flip = b.querySelector('.lane-flip');
         if (!flip) return;
+        didSpin = true;
         flip.style.transition = 'none';
         flip.style.transform = 'rotateY(0deg)';        // 아이콘 면에서 출발
         flip.classList.add('lane-flip--spinning');
@@ -364,6 +366,24 @@
           flip.style.transform = '';
         }, 950);
       });
+
+      // 채널이 돌 때만 — 통화 버튼(스킬 슬롯으로 바뀌는 경우)도 같은 타이밍·같은 곡선으로 회전.
+      // 단면이라 정확히 10바퀴(3600°)로 끝내 앞면 유지 (채널의 3780°는 뒷면이라 부적합).
+      var gs = root.document && root.document.getElementById('game-screen');
+      var call = didSpin && gs && gs.classList.contains('gs-laneskill')
+        ? buttons.find(function (b) { return b && b.classList.contains('lane-button--call'); })
+        : null;
+      if (call) {
+        call.style.transition = 'none';
+        call.style.transform = 'perspective(600px) rotateY(0deg)';
+        void call.offsetWidth;
+        call.style.transition = 'transform 0.9s cubic-bezier(.2, .7, .3, 1)';
+        call.style.transform = 'perspective(600px) rotateY(3600deg)';
+        setTimeout(function () {
+          call.style.transition = '';
+          call.style.transform = '';
+        }, 950);
+      }
     }
 
     return { setCellHot, flashBurst, clear, spinChannelsIn };
