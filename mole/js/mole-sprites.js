@@ -43,6 +43,8 @@
     // targetFor 가 여전히 이 함수를 부르는데, 그때 hitsTaken=3 이라 예전엔 깊이 3(모자만)로
     // 잠깐 가라앉는 버그가 있었음 — 2 로 클램프해 다른 다타 두더지와 똑같이 빠끔에서 침몰 시작.
     if (hitsRequired === 3) return Math.min(hitsTaken, 2);
+    // 4타(챕터 5 전용): 전신 → 빠끔1 → 빠끔2 → 모자만. 처치째엔 3 으로 클램프(3타와 같은 패턴).
+    if (hitsRequired === 4) return Math.min(hitsTaken, 3);
     return 0;
   }
 

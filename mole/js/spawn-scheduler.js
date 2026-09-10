@@ -12,8 +12,10 @@
   // 등장 시 굴림 한 번으로 종류를 정한다: 5% 3히트 / 다음 15% 2히트 / 나머지 80% 1히트.
   const THREE_HIT_CHANCE = 0.05;
   const TWO_HIT_CHANCE = 0.20; // 누적: 0.05~0.20 구간이 2히트
+  // 4타 두더지 (전신→빠끔1→빠끔2→모자): config.fourHit(챕터 5) 일 때만, 상위 3% 를 4타로.
+  const FOUR_HIT_CHANCE = 0.03;
   // 여러 번 때리려면 화면에 더 오래 떠 있어야 후반 레벨에서도 잡을 수 있다.
-  const DURATION_MULT = { 1: 1, 2: 1.7, 3: 2.4 };
+  const DURATION_MULT = { 1: 1, 2: 1.7, 3: 2.4, 4: 3.1 };
   const HIT_COOLDOWN = 0.12;  // 같은 두더지 연타 방지 간격 (초)
   const RETREAT_SEC = 0.6;    // 최종 타격/시간초과 후 "땅속으로 천천히 내려가는" 연출이 도는 시간
   const JUGGLE_VISIBLE_FRAC = 0.5; // 저글 보너스는 침몰 초반(두더지가 아직 눈에 보일 때)만 — 이후엔 명백한 헛방
@@ -72,6 +74,13 @@
 
     function rollMoleKind() {
       const r = rng.next();
+      if (config.fourHit) {
+        // 챕터 5: 4타를 상위에 "추가"(3타 대역은 그만큼 아래로) → 다타 두더지 총량이 늘어 더 어렵다.
+        if (r < FOUR_HIT_CHANCE) return 4;
+        if (r < FOUR_HIT_CHANCE + THREE_HIT_CHANCE) return 3;
+        if (r < FOUR_HIT_CHANCE + TWO_HIT_CHANCE) return 2;
+        return 1;
+      }
       return r < THREE_HIT_CHANCE ? 3 : r < TWO_HIT_CHANCE ? 2 : 1;
     }
 

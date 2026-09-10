@@ -890,7 +890,8 @@
       popDuration: levelData.moleDuration,
       molePoseCount: MG.MoleSprites.POSE_COUNT,
       obstacleCount: MG.MoleSprites.OBSTACLE_COUNT,
-      obstacles: ch >= 2
+      obstacles: ch >= 2,
+      fourHit: ch >= 5   // 4타 두더지 (전신→빠끔1→빠끔2→모자) — 챕터 5 전용
     };
 
     const scheduler = MG.SpawnScheduler.create({ regions, spawnPoints, config, rng });
@@ -1127,7 +1128,9 @@
     const targetX = primary ? primary.xFrac : sp.x;
     const targetY = primary ? primary.yFrac : sp.y;
 
-    state.laneHammer.strike(targetX, targetY, () => onHammerImpact(targetX, targetY, results));
+    // 두더지 현재 프레임(전신/빠끔1/빠끔2/모자)에 따라 망치 타격점 높이가 달라진다 — 헬멧을 때린다.
+    const frameKey = sharedPopElements.frameKeyAt ? sharedPopElements.frameKeyAt(regionId) : null;
+    state.laneHammer.strike(targetX, targetY, () => onHammerImpact(targetX, targetY, results), frameKey);
     // 버튼 이펙트 색: 헛방(구멍에 아무것도 없음) 또는 폭탄이면 빨간색.
     return results.length === 0 || results.some((r) => r.type === 'bomb');
   }

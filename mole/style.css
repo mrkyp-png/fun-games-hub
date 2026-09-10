@@ -816,13 +816,9 @@ body { background: var(--lm-page); }
   /* 아래쪽(구멍 입구)만 자른다. 직선(inset)이면 두더지가 "수평으로 딱 잘린" 느낌 →
      구멍 앞턱 곡선을 따라 아래로 볼록한 타원 호로 자른다 (가운데가 더 보이고 양옆이 먼저 잠김).
      타원 중심을 박스 위로 크게 띄워 머리·옆구리는 안 건드리고 아랫호만 클립에 걸리게 함.
-     행(data-row 0~3)별로 곡률을 달리해 각 구멍 위치에 맞춘다 (pop-elements.js 가 행을 세팅). */
-  clip-path: ellipse(150% 210% at 50% -106%);
+     구멍 스프라이트·클립박스는 16칸 전부 동일하므로 클립도 한 값으로 통일 (예전 data-row 별 튜닝 삭제). */
+  clip-path: ellipse(160% 220% at 50% -114%);
 }
-.mole-pop[data-row="0"] { clip-path: ellipse(160% 220% at 50% -114%); }
-.mole-pop[data-row="1"] { clip-path: ellipse(155% 215% at 50% -110%); }
-.mole-pop[data-row="2"] { clip-path: ellipse(150% 210% at 50% -106%); }
-.mole-pop[data-row="3"] { clip-path: ellipse(145% 205% at 50% -103%); }
 .mole-pop-img {
   position: absolute;
   left: 50%;

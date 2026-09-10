@@ -24,7 +24,9 @@
   const CLAMP = -0.45;                 // grip 이 보드 가장자리에서 이만큼까지 나가도 됨 (- = 밖 허용)
                                        // 레이어가 보드 밖(클리핑 없음)이라 우측 끝 스윙이 다 보인다
   const AIM_DX = 0.022;                // 타격점 미세보정: + = 오른쪽 (보드 폭 분수, 0.5mm ≈ 0.005 / 1cm ≈ 0.1)
-  const AIM_DY = -0.055;               // 타격점 미세보정: - = 위
+  const AIM_DY = -0.055;               // 프레임 미상(빈 구멍 헛스윙 등) 시 폴백
+  // 두더지 프레임별 타격점 세로보정 (사용자 지정, 스폰점 대비 보드 높이 분수) — 망치가 그 프레임의 헬멧을 때린다.
+  const AIM_DY_BY_FRAME = { full: -0.124, peek1: -0.0485, peek2: -0.0345, helmet: -0.018 };
 
   function lerp(a, b, k) { return a + (b - a) * k; }
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
@@ -47,12 +49,13 @@
     let impactCb = null;
     let fired = false;
 
-    function strike(targetXFrac, targetYFrac, onImpact) {
+    function strike(targetXFrac, targetYFrac, onImpact, frameKey) {
       const tx = (typeof targetXFrac === 'number') ? targetXFrac : 0.5;
       const ty = (typeof targetYFrac === 'number') ? targetYFrac : 0.5;
+      const aimDy = (frameKey && AIM_DY_BY_FRAME[frameKey] != null) ? AIM_DY_BY_FRAME[frameKey] : AIM_DY;
       fromX = gx; fromY = gy; fromDeg = deg;
       aimX = Math.max(CLAMP, Math.min(1 - CLAMP, tx + GRIP_OFF_X + AIM_DX));
-      aimY = Math.max(CLAMP, Math.min(1 - CLAMP, ty + GRIP_OFF_Y + AIM_DY));
+      aimY = Math.max(CLAMP, Math.min(1 - CLAMP, ty + GRIP_OFF_Y + aimDy));
       impactCb = onImpact || null;
       fired = false;
       phase = 'fly';

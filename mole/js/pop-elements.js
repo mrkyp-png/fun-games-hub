@@ -36,8 +36,6 @@
       el.className = 'mole-pop mole-pop--' + pop.type;
       el.style.left = (pop.x * 100) + '%';
       el.style.top = (pop.y * 100) + '%';
-      // 밑동 클립 곡선을 격자 행(0~3)별로 다르게 — 구멍 위치에 맞춘 "울퉁불퉁 곡선" 튜닝용.
-      el.dataset.row = pop.y < 0.29 ? '0' : pop.y < 0.51 ? '1' : pop.y < 0.73 ? '2' : '3';
       const img = document.createElement('img');
       img.className = 'mole-pop-img';
       img.alt = '';
@@ -45,7 +43,7 @@
       container.appendChild(el);
       if (onEmerge) onEmerge(pop.x, pop.y, pop.type); // 구멍에서 올라오는 순간 연출 (흙먼지·링·글로우)
       const m = {
-        el, img, kind: pop.type, poseIndex: pop.poseIndex || 0,
+        el, img, kind: pop.type, poseIndex: pop.poseIndex || 0, regionId: pop.regionId,
         shownDepth: GONE_DEPTH, targetDepth: 0, shownFile: null, dying: false,
         blast: false, dyingFrom: 0
       };
@@ -93,11 +91,16 @@
 
       // dying 은 프레임 교체 없이 미끄러지므로 sink 를 선형(0→130%)으로.
       const sink = m.dying ? (m.shownDepth / GONE_DEPTH) * 130 : MS.sinkForDepth(m.shownDepth);
-      // 빠끔 프레임 실제 위치조정 (사용자 지정): 빠끔1 = 0.15cm 위, 빠끔2 = 0.2cm 위.
+      // 프레임 실제 위치조정 (사용자 지정): 빠끔1 = 0.15cm 위, 빠끔2 = 0.2cm 위,
+      // 모자 = 우 0.1cm · 위 0.4cm. 전신 포즈 좌우보정: mole2·mole3 = 좌 0.1cm, mole5 = 좌 0.03cm.
       let peekLift = '';
+      let peekX = '-50%';
       if (m.kind === 'mole' && file === 'peek1') peekLift = ' - 0.15cm';
       else if (m.kind === 'mole' && file === 'peek2') peekLift = ' - 0.2cm';
-      m.img.style.transform = 'translate(-50%, calc(' + sink + '%' + peekLift + '))';
+      else if (m.kind === 'mole' && file === 'helmet') { peekLift = ' - 0.4cm'; peekX = 'calc(-50% + 0.1cm)'; }
+      else if (m.kind === 'mole' && (file === 'mole2' || file === 'mole3')) peekX = 'calc(-50% - 0.1cm)';
+      else if (m.kind === 'mole' && file === 'mole5') peekX = 'calc(-50% - 0.03cm)';
+      m.img.style.transform = 'translate(' + peekX + ', calc(' + sink + '%' + peekLift + '))';
     }
 
     function targetFor(pop) {
@@ -152,7 +155,18 @@
       }
     }
 
-    return { sync, clear, flash, setFace };
+    // 그 구멍에 떠 있는(침몰 안 한) 두더지의 현재 시각 프레임 키 — 망치가 프레임별로 조준한다.
+    function frameKeyAt(regionId) {
+      let key = null;
+      pops.forEach((m) => {
+        if (key || m.regionId !== regionId || m.kind !== 'mole' || m.dying) return;
+        const d = Math.round(m.shownDepth);
+        key = d <= 0 ? 'full' : d === 1 ? 'peek1' : d === 2 ? 'peek2' : 'helmet';
+      });
+      return key;
+    }
+
+    return { sync, clear, flash, setFace, frameKeyAt };
   }
 
   const api = { create };
