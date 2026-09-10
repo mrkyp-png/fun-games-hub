@@ -2225,7 +2225,7 @@ body { background: var(--lm-page); }
   text-align: left; font-weight: 700; color: var(--lm-muted);
   white-space: nowrap; padding: 1px 5px 1px 0; vertical-align: top;
 }
-.inv-stat-tbl td { text-align: left; color: var(--lm-ink); font-weight: 700; padding: 1px 0; }
+.inv-stat-tbl td { width: 99%; text-align: left; color: var(--lm-ink); font-weight: 700; padding: 1px 0; }  /* 99% = 남는 폭 다 차지 (th는 내용폭) */
 .inv-stat-tbl td.inv-stat-dash { text-align: center; }
 .inv-equip { margin-top: auto; }
 
