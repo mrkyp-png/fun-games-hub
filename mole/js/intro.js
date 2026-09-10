@@ -5,11 +5,9 @@
   // 로딩 GET NOW 탭 뒤에 뜨고, 끝나거나 [건너뛰기] → mole.introSeen 저장 → 바로 홈.
 
   var SEEN_KEY = 'mole.introSeen';
-  var CHAR_MS = 62;        // 타이핑 속도 (천천히)
-  var LINE_HOLD_MS = 650;  // 한 줄 다 친 뒤 다음 줄까지
-  var IMG_HOLD_MS = 1500;  // 사진 머무는 시간
-  var END_HOLD_MS = 1500;  // 마지막 줄 뒤 → 홈
-  var ACTIVE = 0.80;       // 현재 블록 하단이 뷰포트 이 비율 위치에 오도록
+  var CHAR_MS = 42;    // 타이핑 속도
+  var SPEED = 42;      // 화면 크롤 속도 px/sec (천천히, 계속 올라감)
+  var TRIGGER = 0.82;  // 블록 top 이 뷰포트 이 비율 위로 오면 그 블록 타이핑 시작
 
   var BLOCKS = [
     { title: '두더지 게임의 역사' },
@@ -29,7 +27,8 @@
   ];
 
   function shouldShow() {
-    try { return !localStorage.getItem(SEEN_KEY); } catch (e) { return true; }
+    return true; // ⚠️ 개발용 — 매번 표시(사용자 확인). 출시 전 아래로 원복:
+    // try { return !localStorage.getItem(SEEN_KEY); } catch (e) { return true; }
   }
 
   function tick() {
@@ -101,6 +100,7 @@
       if (done) return;
       done = true; killed = true;
       timers.forEach(clearTimeout);
+      if (raf) cancelAnimationFrame(raf);
       try { localStorage.setItem(SEEN_KEY, '1'); } catch (e) { /* 무시 */ }
       try { amb.stop(); } catch (e) { /* 무시 */ }
       if (homeBgm && homeWasPlaying) { var hp = homeBgm.play(); if (hp && hp.catch) hp.catch(function () {}); }
@@ -133,48 +133,49 @@
     });
 
     function vh() { return view.clientHeight; }
-    function setY(y, smooth) {
-      col.style.transition = smooth ? 'transform 0.55s cubic-bezier(.25,.1,.25,1)' : 'transform 0.18s linear';
-      col.style.transform = 'translate(-50%, ' + Math.round(y) + 'px)';
-    }
-    function place(el, smooth) {
-      setY(vh() * ACTIVE - (el.offsetTop + el.offsetHeight), smooth);
-    }
 
-    function typeInto(el, text, cb) {
+    // 한 블록 타이핑 (스크롤과 독립 — 스크롤은 아래 loop 가 계속 돌린다).
+    function startTyping(el, text) {
       el.textContent = '';
       var i = 0;
       (function step() {
         if (killed) return;
-        if (i >= text.length) { cb(); return; }
+        if (i >= text.length) return;
         el.textContent += text.charAt(i);
         if (text.charAt(i) !== ' ' && (i & 1)) tick();
-        place(el, false); // 줄바꿈으로 커진 만큼 살짝살짝 위로 = 타이핑되며 올라옴
         i += 1;
         after(CHAR_MS, step);
       })();
     }
 
-    var bi = 0;
-    function next() {
+    // 화면(=.intro-col)은 SPEED 로 계속 천천히 위로 올라간다. 블록 top 이 TRIGGER 선을
+    // 넘어오는 순간 그 블록 타이핑을 시작 → "올라가는 도중에 타이핑".
+    var y = vh();          // translateY (아래에서 시작)
+    var startedUpTo = -1;
+    var lastTs = 0, raf = 0;
+    function loop(ts) {
       if (killed) return;
-      if (bi >= BLOCKS.length) { after(END_HOLD_MS, finish); return; } // 끝 → 바로 홈
-      var b = BLOCKS[bi], el = els[bi];
-      el.style.opacity = '1';
-      place(el, true); // 아래에서 슬라이드업
-      if (b.img) {
-        after(560 + IMG_HOLD_MS, function () { bi += 1; next(); });
-      } else {
-        after(560, function () {
-          typeInto(el, b.title || b.p, function () { after(LINE_HOLD_MS, function () { bi += 1; next(); }); });
-        });
+      if (!lastTs) lastTs = ts;
+      var dt = Math.min(0.05, (ts - lastTs) / 1000); lastTs = ts;
+      y -= SPEED * dt;
+      col.style.transform = 'translate(-50%, ' + y.toFixed(1) + 'px)';
+
+      for (var i = startedUpTo + 1; i < BLOCKS.length; i++) {
+        var el = els[i];
+        if (y + el.offsetTop > vh() * TRIGGER) break; // 아직 트리거 선 아래
+        startedUpTo = i;
+        el.style.opacity = '1';
+        var txt = BLOCKS[i].title || BLOCKS[i].p;
+        if (txt) startTyping(el, txt);
       }
+
+      var lastEl = els[els.length - 1];
+      if (startedUpTo >= BLOCKS.length - 1 &&
+          y + lastEl.offsetTop + lastEl.offsetHeight < vh() * 0.20) { finish(); return; }
+
+      raf = requestAnimationFrame(loop);
     }
-    // 첫 배치: 첫 블록을 화면 아래로 밀어둔 상태에서 시작
-    after(250, function () {
-      setY(vh(), false);
-      after(60, next);
-    });
+    after(300, function () { y = vh(); lastTs = 0; raf = requestAnimationFrame(loop); });
   }
 
   var api = { shouldShow: shouldShow, play: play };
