@@ -1154,6 +1154,7 @@
     // 남은 타격을 자동 연속 발사 → 1마리 클리어.
     if (primary && primary.type === 'mole' && primary.burst && primary.done === false && primary.hitsTaken === 1) {
       MG.HitFx.burstBanner(document.querySelector('.dialpad'));
+      if (sharedLaneControls) sharedLaneControls.flashBurst(regionId); // 이번(유저) 샷 = 골드 링
       burstAutoFire(regionId, primary.hitsRequired - 1);
     }
 
@@ -1174,6 +1175,7 @@
       const tx = pr ? pr.xFrac : (sp ? sp.x : 0.5);
       const ty = pr ? pr.yFrac : (sp ? sp.y : 0.5);
       const fk = sharedPopElements.frameKeyAt ? sharedPopElements.frameKeyAt(regionId) : null;
+      if (sharedLaneControls) sharedLaneControls.flashBurst(regionId); // 자동샷 = 골드 링 (대포 3발과 동기)
       state.laneHammer.strike(tx, ty, () => {
         onHammerImpact(tx, ty, res);
         if (pr && pr.done && sp) MG.HitFx.burstWord(document.getElementById('mole-board'), sp.x, sp.y);

@@ -1340,6 +1340,7 @@ body { background: var(--lm-page); }
   --flash-fill: rgba(18, 209, 106, 0.5);       /* 클릭 순간 배경에 도는 초록 글로우 */
 }
 .lane-button--miss { --flash-ring: #ff5344; --flash-fill: rgba(255, 90, 70, 0.5); }  /* 헛방/폭탄 = 빨강 */
+.lane-button--burst { --flash-ring: #ffce33; --flash-fill: rgba(255, 206, 51, 0.5); }  /* 대포 연사 = 골드 (실패 빨강과 구분) */
 /* 누를 때 굵은 네온 링이 확 밝아졌다 사그라드는 이펙트 (아웃라인 셰이더 느낌, 참고 영상 그대로).
    버튼 원 밖으로 삐져나가 옆 버튼을 침범하면 안 됨 — inset:0 으로 버튼 원 안에서만. */
 .lane-button::after {
@@ -1794,17 +1795,17 @@ body { background: var(--lm-page); }
   40% { color: #ff5a5a; text-shadow: 0 0 8px rgba(255, 90, 90, 0.9); }
 }
 
-/* 대포 연사 발동 — 두더지 흙더미 부근에서 튀어나와 제자리서 사라짐(위로 안 뜸). 빨강+글로우, 검은 외곽선. */
+/* 대포 연사 발동 — 두더지 흙더미 부근에서 튀어나와 제자리서 사라짐(위로 안 뜸). 골드+글로우, 검은 외곽선. */
 .hit-fx-burstword {
   position: absolute;
   transform: translate(-50%, -50%);
   font-family: 'Dongle', 'Segoe UI', 'Malgun Gothic', sans-serif;
   font-weight: 800;
   font-size: 1.85rem;
-  color: #ff2f2f;
+  color: #ffce33;
   -webkit-text-stroke: 3px #000;
   paint-order: stroke fill;
-  text-shadow: 0 0 6px rgba(255, 60, 60, 0.95), 0 0 15px rgba(255, 40, 40, 0.7);
+  text-shadow: 0 0 6px rgba(255, 206, 51, 0.95), 0 0 15px rgba(255, 180, 0, 0.7);
   white-space: nowrap;
   pointer-events: none;
   animation: hit-burstword 0.7s ease-out forwards;
@@ -1823,10 +1824,10 @@ body { background: var(--lm-page); }
   font-family: 'Dongle', 'Segoe UI', 'Malgun Gothic', sans-serif;
   font-weight: 800;
   font-size: 3rem;
-  color: #ff2f2f;
+  color: #ffce33;
   -webkit-text-stroke: 4px #000;
   paint-order: stroke fill;
-  text-shadow: 0 0 8px rgba(255, 60, 60, 0.95), 0 0 20px rgba(255, 40, 40, 0.7);
+  text-shadow: 0 0 8px rgba(255, 206, 51, 0.95), 0 0 20px rgba(255, 180, 0, 0.7);
   white-space: nowrap;
   pointer-events: none;
   animation: hit-burstword 0.7s ease-out forwards;

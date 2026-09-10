@@ -327,6 +327,16 @@
       if (buttons[id]) buttons[id].classList.toggle('lane-button--hot', !!hot);
     }
 
+    // 대포 연사: 그 버튼 링 플래시를 골드로 재발동 (자동샷마다 호출 → 3연속 펄스).
+    function flashBurst(id) {
+      const b = buttons[id];
+      if (!b) return;
+      b.classList.remove('lane-button--flash', 'lane-button--miss');
+      void b.offsetWidth;
+      b.classList.add('lane-button--flash', 'lane-button--burst');
+      setTimeout(() => b.classList.remove('lane-button--burst'), 800); // 링 애니(0.8s) 끝나면 뗀다
+    }
+
     function clear() {
       window.removeEventListener('keydown', onKey);
       buttons.forEach((b) => b.remove());
@@ -356,7 +366,7 @@
       });
     }
 
-    return { setCellHot, clear, spinChannelsIn };
+    return { setCellHot, flashBurst, clear, spinChannelsIn };
   }
 
   const api = { create };
