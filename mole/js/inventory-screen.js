@@ -5,9 +5,15 @@
   var I18N = root.FGH.I18N;
   var T = function (k) { return I18N.t(k); };
 
+  // 능력치 표 3줄 (라벨 = i18n 키, 값 = [ko, en]).
+  var STAT_ROWS = ['mole.inv.stat.visibility', 'mole.inv.stat.attack', 'mole.inv.stat.defense'];
   var WEAPONS = [
-    { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/hammer.png', stat: 'mole.inv.stat.hammer' },
-    { id: 'cannon', name: '캐논', nameEn: 'Cannon', thumb: 'assets/weapons/cannon-a1.png', stat: 'mole.inv.stat.cannon' }
+    { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/hammer.png',
+      stats: [['-', '-'], ['-', '-'], ['-', '-']] },
+    { id: 'cannon', name: '캐논', nameEn: 'Cannon', thumb: 'assets/weapons/cannon-a1.png',
+      stats: [['Hole 16 → 15', 'Holes 16 → 15'],
+              ['2·3타 두더지 연타 확률 10%', '10% burst on 2·3-hit moles'],
+              ['-', '-']] }
   ];
 
   function create(opts) {
@@ -38,11 +44,20 @@
         card.innerHTML =
           '<div class="inv-head"><span class="inv-name"></span></div>' +
           '<div class="inv-thumb"><img alt="" src="' + w.thumb + '"></div>' +
-          '<div class="inv-stat"><span class="inv-stat-k"></span><b class="inv-stat-v"></b></div>' +
+          '<div class="inv-stat">' +
+            '<div class="inv-stat-h"></div>' +
+            '<table class="inv-stat-tbl"><tbody>' +
+              w.stats.map(function () { return '<tr><th></th><td></td></tr>'; }).join('') +
+            '</tbody></table>' +
+          '</div>' +
           '<button type="button" class="inv-equip"></button>';
         card.querySelector('.inv-name').textContent = nameOf(w);
-        card.querySelector('.inv-stat-k').textContent = T('mole.inv.statLabel');
-        card.querySelector('.inv-stat-v').textContent = T(w.stat);
+        card.querySelector('.inv-stat-h').textContent = T('mole.inv.statHead');
+        var trs = card.querySelectorAll('.inv-stat-tbl tr');
+        w.stats.forEach(function (s, i) {
+          trs[i].querySelector('th').textContent = T(STAT_ROWS[i]);
+          trs[i].querySelector('td').textContent = (I18N.lang === 'en' ? s[1] : s[0]);
+        });
         var btn = card.querySelector('.inv-equip');
         btn.textContent = w.id === cur ? T('mole.inv.equipped') : T('mole.inv.equip');
         btn.disabled = w.id === cur || locked;
