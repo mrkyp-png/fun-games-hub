@@ -6,8 +6,8 @@
   var T = function (k) { return I18N.t(k); };
 
   var WEAPONS = [
-    { id: 'hammer', name: '뽕망치', nameEn: 'Mallet', thumb: 'assets/hammer.png' },
-    { id: 'cannon', name: '대포', nameEn: 'Cannon', thumb: 'assets/weapons/cannon-a1.png' }
+    { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/hammer.png', stat: 'mole.inv.stat.hammer' },
+    { id: 'cannon', name: '캐논', nameEn: 'Cannon', thumb: 'assets/weapons/cannon-a1.png', stat: 'mole.inv.stat.cannon' }
   ];
 
   function create(opts) {
@@ -36,10 +36,13 @@
         var card = document.createElement('div');
         card.className = 'inv-card' + (w.id === cur ? ' inv-card--on' : '');
         card.innerHTML =
+          '<div class="inv-head"><span class="inv-name"></span></div>' +
           '<div class="inv-thumb"><img alt="" src="' + w.thumb + '"></div>' +
-          '<div class="inv-name"></div>' +
+          '<div class="inv-stat"><span class="inv-stat-k"></span><b class="inv-stat-v"></b></div>' +
           '<button type="button" class="inv-equip"></button>';
         card.querySelector('.inv-name').textContent = nameOf(w);
+        card.querySelector('.inv-stat-k').textContent = T('mole.inv.statLabel');
+        card.querySelector('.inv-stat-v').textContent = T(w.stat);
         var btn = card.querySelector('.inv-equip');
         btn.textContent = w.id === cur ? T('mole.inv.equipped') : T('mole.inv.equip');
         btn.disabled = w.id === cur || locked;

@@ -2216,13 +2216,23 @@ body { background: var(--lm-page); }
 }
 .inv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 6px 0; }
 .inv-card {
-  background: var(--lm-fill); border-radius: 12px; padding: 12px 10px;
+  background: var(--lm-fill); border-radius: 12px; padding: 10px 10px 12px;
   text-align: center; border: 2px solid transparent;
+  display: flex; flex-direction: column;
 }
 .inv-card--on { border-color: #2fb457; }
-.inv-thumb { height: 92px; display: flex; align-items: center; justify-content: center; }
+.inv-head { display: flex; justify-content: flex-end; min-height: 1.2em; }  /* 이름 = 카드 우측 상단 */
+.inv-name { font-size: 0.86rem; font-weight: 800; color: var(--lm-ink); }
+.inv-thumb { height: 88px; display: flex; align-items: center; justify-content: center; }
 .inv-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
-.inv-name { margin: 6px 0 8px; font-size: 0.86rem; font-weight: 800; color: var(--lm-ink); }
+/* 이미지 아래 능력치 칸 — 무기마다 동일 위치. 능력 없으면 값이 "-". */
+.inv-stat {
+  margin: 7px 0 9px; text-align: left; font-size: 0.72rem; line-height: 1.35;
+  color: var(--lm-muted); min-height: 3.4em;
+}
+.inv-stat-k { display: block; font-weight: 700; opacity: 0.7; margin-bottom: 1px; }
+.inv-stat-v { color: var(--lm-ink); font-weight: 700; font-size: 0.74rem; }
+.inv-equip { margin-top: auto; }
 
 /* 게임화면 둥근 글자체(Dongle, 사용자 선택) — 홈화면·다이얼패드 숫자·더보기메뉴는 그대로,
    라운드전환/카운트다운/점수·하트·콤보/결과화면/타격 이펙트 텍스트만 적용. */
