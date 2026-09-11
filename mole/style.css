@@ -463,10 +463,14 @@ body { background: var(--lm-page); }
 /* 코인 아래 AD프리 배지 — board-stats 바로 아래, 같은 우측 정렬. */
 .board-adfree { display: none; }
 #game-screen.is-start .board-adfree {
-  display: block; position: absolute; top: 40px; right: 4px; z-index: 9;
+  display: block; position: absolute; top: 40px; right: 4px; z-index: 11;
   width: 34px; height: 34px;
+  border: none; background: transparent; padding: 0; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.08s ease;
 }
 .board-adfree img { width: 100%; height: 100%; display: block; filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5)); }
+.board-adfree:active { transform: scale(0.88); }
 
 /* 게임 화면 = 폴더폰 모양: 컴팩트 HUD + [게임 정사각] + 힌지 + [다이얼러 정사각].
    HUD + 2*정사각 + 힌지 = 100dvh. 정사각 한 변(--sq)은 세로에 맞추되 가로를 넘지 않는다. */
