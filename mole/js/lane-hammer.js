@@ -32,18 +32,20 @@
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
   function ease(k) { return k * k; }
 
-  function create({ layer, sprite, grip, cssClass, degOffset, homeMarginTop, gripOff }) {
+  function create({ layer, sprite, grip, cssClass, degOffset, homeMarginTop, gripOff, homeDegOffset }) {
     // grip = 스프라이트 안 손잡이 잡는 점(%) — 스킨마다 다르면 넘긴다. 없으면 뿅망치 기본값.
     // degOffset = 스킨 스프라이트가 기준 포즈에서 이미 돌아가 있으면 그만큼 상쇄(모든 회전상태에 더함).
     // homeMarginTop = 대기 위치 세로 미세보정 (기본 '0.2cm' 아래로).
     // gripOff = HIT_DEG 에서 머리가 grip 로부터 떨어진 정도(보드 분수). 스킨 스프라이트마다 다름 —
     //           grip 을 목표에서 이만큼 비켜 놔야 머리가 목표(두더지 헬멧)에 착지. 없으면 뿅망치 기본값.
+    // homeDegOffset = 대기 위치 각도만 이만큼 추가 회전(+ = 시계방향). 조준/타격 각도는 영향 없음.
     const gripX = grip && grip.x != null ? grip.x : GRIP_X;
     const gripY = grip && grip.y != null ? grip.y : GRIP_Y;
     const goX = gripOff && gripOff.x != null ? gripOff.x : GRIP_OFF_X;
     const goY = gripOff && gripOff.y != null ? gripOff.y : GRIP_OFF_Y;
     const dOff = degOffset || 0;
     const homeMT = homeMarginTop != null ? homeMarginTop : '0.2cm';
+    const hDeg = HOME_DEG + (homeDegOffset || 0);
     const el = document.createElement('div');
     el.className = 'lane-hammer' + (cssClass ? ' ' + cssClass : '');
     const img = document.createElement('img');
@@ -55,8 +57,8 @@
 
     let phase = 'home';   // 'home' | 'fly' | 'chop' | 'rise' | 'return'
     let t = 0;
-    let fromX = HOME_X, fromY = HOME_Y, fromDeg = HOME_DEG;
-    let aimX = HOME_X, aimY = HOME_Y, gx = HOME_X, gy = HOME_Y, deg = HOME_DEG;
+    let fromX = HOME_X, fromY = HOME_Y, fromDeg = hDeg;
+    let aimX = HOME_X, aimY = HOME_Y, gx = HOME_X, gy = HOME_Y, deg = hDeg;
     let impactCb = null;
     let fired = false;
 
@@ -102,7 +104,7 @@
         const k = clamp01(t / HOME_SEC);
         gx = lerp(fromX, HOME_X, k);
         gy = lerp(fromY, HOME_Y, k);
-        deg = lerp(fromDeg, HOME_DEG, k);
+        deg = lerp(fromDeg, hDeg, k);
         if (t >= HOME_SEC) { phase = 'home'; t = 0; }
       }
       paint();

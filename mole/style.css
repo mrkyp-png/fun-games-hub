@@ -1500,9 +1500,9 @@ body { background: var(--lm-page); }
   background: rgba(255, 255, 255, 0.95);
   pointer-events: none;
 }
-/* 홈 화면 "시작" 버튼과 같은 대각선 빛 스윕 */
-.lane-item::before {
-  content: ''; position: absolute; inset: -60%;
+/* 홈 화면 "시작" 버튼과 같은 대각선 빛 스윕 — 실제 자식 엘리먼트라 각 사각형(overflow:hidden)에 각자 갇혀서 돈다. */
+.lane-item-sweep {
+  position: absolute; inset: -60%;
   background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.85) 50%, transparent 58%);
   animation: idle-crown-sweep 2.8s ease-in-out infinite;
   pointer-events: none;
