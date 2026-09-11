@@ -1,6 +1,11 @@
 두더지 게임 오디오 출처 / 라이선스
 =====================================
 
+※ Pixabay Content License, 効果音ラボ 이용약관 원문 요약 스냅샷(2026-09-11 저장, 추후 원문
+  변경/삭제 대비 증빙용)은 licenses/pixabay-content-license-20260911.txt,
+  licenses/soundeffect-lab-agreement-20260911.txt 참고. 나빅(NAVIG) 확인서 원본은
+  바탕화면 "[나빅] 콘텐츠사용확인서_박규용 님_달빛축제(Moonlight Festival)_20260911.txt".
+
 ■ hit1.mp3 ~ hit4.mp3  (두더지 처치 타격음)
   출처: 効果音ラボ (Sound Effect Lab)  https://soundeffect-lab.info/
   라이선스: 商用利用無料 (상업적 이용 무료), 크레딧 표기 불필요 (임의)
@@ -10,7 +15,18 @@
   - 금지 사항 준수: 소재 파일 재배포/판매 금지, "효과음을 자유롭게 재생하는 앱" 형태 금지,
     음상표 등록 금지, YouTube Content ID 등록 금지, AI 학습 데이터 이용 금지.
 
-■ 화면별 배경음악 (BGM) — 전부 Pixabay, Pixabay Content License
+■ bgm-game-1.mp3  게임 플레이 화면 BGM 1순위 (재진입마다 game-1→2→3 순환)
+  곡명: 달빛축제 (Moonlight Festival)
+  제작: 나빅(NAVIG) / NAVIG Entertainment 산하 NAVIG Sound Team (채널: 낭만뮤직)
+  라이선스: [나빅] 콘텐츠 사용 확인서 (2026-09-11, mrkyp@hanmail.net 앞) 로 상업 사용 허가.
+    · 크레딧 표기 필수 — "Music by NAVIG Sound Team" (게임 내 설정 > 개인정보·라이센스 화면에 표기함)
+    · 게임 출시 후 스토어 페이지 또는 소개 URL 을 나빅 측에 공유
+    · 월 매출 50만원 미만: 현재처럼 자율 후원 방식으로 계속 사용 가능 (추가 절차 없음)
+    · 월 매출 50만원 이상: 연 10~20만원 정액 또는 순매출 3% 중 택1로 별도 협의 필요
+    · 후원금 20,000원 입금 완료 (2026-09-11). 확인서 원본: 바탕화면 "[나빅] 콘텐츠사용확인서_박규용 님_달빛축제(Moonlight Festival)_20260911.txt"
+  - 원본 wav 를 loudnorm(I=-16) + 128kbps 44.1kHz 스테레오 mp3 로 재인코딩해 사용 (다른 BGM과 동일 처리).
+
+■ 화면별 배경음악 (BGM, 그 외) — 전부 Pixabay, Pixabay Content License
   라이선스: https://pixabay.com/service/license-summary/
   - 상업적/개인 이용 무료, 크레딧(저작자 표기) 불필요.
   - 금지: 오디오 파일을 단독 상품으로 재배포/판매, 다른 스톡·음원 플랫폼에 재업로드,
@@ -32,14 +48,15 @@
   bgm-more.mp3  더보기 메뉴 화면
     "Funny BGM Vol. 2" — Sekuora  (AI generated, Pixabay 등록곡)
     https://pixabay.com/music/upbeat-funny-bgm-vol-2-242432/
-  bgm-game-1.mp3  게임 플레이 화면 (2곡 순환, 재진입마다 다음 곡)
+  bgm-game-2.mp3  게임 플레이 화면 (2순위)
     "Energetic Party Game BGM" — Sekuora  (AI generated, Pixabay 등록곡)
     https://pixabay.com/music/video-games-energetic-party-game-bgm-242434/
-  bgm-game-2.mp3
+  bgm-game-3.mp3  게임 플레이 화면 (3순위)
     "BGM Videogame Song" — Sekuora  (AI generated, Pixabay 등록곡)
     https://pixabay.com/music/pop-bgm-videogame-song-242440/
 
-  (구 bgm-boss-battle.mp3 는 v261 에서 삭제 — 화면별 BGM 으로 교체.)
+  (구 bgm-boss-battle.mp3 는 v261 에서 삭제 — 화면별 BGM 으로 교체. bgm-game-1.mp3 는 v360 에서
+   기존 Pixabay 곡 자리를 비켜주고 "달빛축제" 로 교체, 기존 두 곡은 game-2/3 로 밀림.)
 
 ■ cannon-boom1.mp3 ~ cannon-boom8.mp3  (대포 무기 스킨 타격음, 폭발)
   출처: Pixabay (사용자 제공)

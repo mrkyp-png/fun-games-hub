@@ -1,0 +1,33 @@
+Pixabay Content License — 요약 스냅샷
+저장일: 2026-09-11
+원문 URL: https://pixabay.com/service/license-summary/
+(주의: 이 페이지는 요약본이며, 법적 구속력은 Pixabay 전체 라이선스 문서에 있음)
+
+적용 대상 (이 프로젝트, 두더지팡 / fun-games-hub/mole):
+  audio/bgm-home-1.mp3 ~ bgm-home-4.mp3
+  audio/bgm-more.mp3
+  audio/bgm-game-2.mp3, bgm-game-3.mp3
+  audio/cannon-boom1.mp3 ~ cannon-boom8.mp3
+(각 곡별 원본 출처/작곡가/URL 은 ../CREDITS.txt 참고)
+
+■ 허용 사항
+- Use Content for free (무료 사용)
+- Use Content without having to attribute the author (크레딧 표기 불필요, 선택 사항)
+- Modify or adapt Content into new works (수정 및 2차 저작물 제작 가능)
+
+■ 금지 사항
+- 재배포/판매: "You cannot sell or distribute Content (either in digital or physical form)
+  on a Standalone basis" — 콘텐츠 파일 자체를 단독 상품으로 재배포·재판매 금지
+  (게임에 내장해서 사용하는 것은 Standalone 배포가 아니므로 허용)
+- 상업적 이용 관련 제한: "you cannot use that Content for commercial purposes in relation
+  to goods and services" — 상표/로고/브랜드 자체로 사용하거나 그 콘텐츠를 상품화하는 것은 금지
+  (BGM/효과음으로 게임 안에서 재생하는 일반적 사용은 해당 없음)
+- 불법/부도덕한 이용, 오인 유도 목적 사용, 상표·디자인·사업명으로 사용 금지
+
+■ 주의
+- "It is your responsibility to check whether you require the consent of a third party
+  or a license" — 제3자 지적재산권(초상권 등) 확인은 사용자 책임
+- 음원/오디오에 대한 별도 세부 조건은 이 요약 페이지에 명시되어 있지 않음(일반 조건과 동일 적용)
+
+이 스냅샷은 Claude(AI 어시스턴트)가 2026-09-11 WebFetch 로 조회한 내용을 사람이 읽기 쉽게
+정리한 것이며, 원문 대조가 필요하면 위 URL 을 직접 확인할 것.

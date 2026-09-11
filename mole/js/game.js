@@ -61,11 +61,11 @@
     }
   }
 
-  // 화면별 BGM. 홈 bgm-home-1~4, 게임 bgm-game-1~2 (재진입마다 순환), 더보기 bgm-more.
+  // 화면별 BGM. 홈 bgm-home-1~4, 게임 bgm-game-1~3 (재진입마다 순환, game-1=달빛축제 1순위), 더보기 bgm-more.
   let bgm = null;          // <audio id="bgm">
   let currentBgm = 'audio/bgm-home-1.mp3'; // index.html 의 초기 src 와 일치
   const HOME_BGM_COUNT = 4;
-  const GAME_BGM_COUNT = 2;
+  const GAME_BGM_COUNT = 3;
   let homeBgmIdx = 0;
   let gameBgmIdx = 0;
   let bgmWantPlay = false; // 지금 화면이 BGM 을 원하는가 (홈/더보기/게임 진입 시 true)
@@ -82,7 +82,7 @@
   }
 
   // screen: 'home' | 'more' | 'game'. 매 진입마다 해당 트랙을 처음부터.
-  // 홈(4곡)·게임(2곡)은 loop 안 함 — 한 곡이 끝나면 ended 이벤트가 다음 곡을 틀어
+  // 홈(4곡)·게임(3곡)은 loop 안 함 — 한 곡이 끝나면 ended 이벤트가 다음 곡을 틀어
   // 플레이리스트처럼 순차 재생·순환한다. 더보기(1곡)만 loop.
   function playScreenBgm(screen) {
     if (!bgm) return;
@@ -1655,7 +1655,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     bgm = document.getElementById('bgm');
     bgm.volume = 0.35;
-    // 곡이 끝나면 다음 곡으로 — 홈은 4곡, 게임은 2곡을 순차 재생·순환 (플레이리스트).
+    // 곡이 끝나면 다음 곡으로 — 홈은 4곡, 게임은 3곡을 순차 재생·순환 (플레이리스트).
     bgm.addEventListener('ended', () => {
       if (/\/bgm-game-\d/.test(currentBgm)) playScreenBgm('game');
       else if (/\/bgm-home-\d/.test(currentBgm)) playScreenBgm('home');

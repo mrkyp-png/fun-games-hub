@@ -165,7 +165,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v358</div>
+      <div id="build-tag" aria-hidden="true">v360</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -422,7 +422,7 @@
           <h3 data-i18n="mole.priv.h1">사진</h3>
           <p data-i18n="mole.priv.p1">사진은 이 기기 안에서만 처리돼요. 서버에 올리지 않아요. 저장되는 것은 얼굴을 원형으로 자른 이미지 한 장뿐이고, 기기에만 저장돼요(설정 → 데이터 초기화로 삭제).</p>
           <h3 data-i18n="mole.priv.h2">라이센스·크레딧</h3>
-          <p data-i18n="mole.priv.p2">타격 효과음: 효과음ラボ(soundeffect-lab.info) — 상용 무료, 크레딧 불필요. BGM: CC0.</p>
+          <p data-i18n="mole.priv.p2">타격 효과음: 효과음ラボ(soundeffect-lab.info) — 상용 무료, 크레딧 불필요. BGM: CC0. 게임화면 BGM "달빛축제(Moonlight Festival)" — Music by NAVIG Sound Team.</p>
         </div>
       </div>
 
@@ -563,7 +563,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=349').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=360').catch(function () {});
       }
     });
   }

@@ -185,7 +185,7 @@
       'mole.priv.h1': '사진',
       'mole.priv.p1': '사진은 이 기기 안에서만 처리돼요. 서버에 올리지 않아요. 저장되는 것은 얼굴을 원형으로 자른 이미지 한 장뿐이고, 기기에만 저장돼요(설정 → 데이터 초기화로 삭제).',
       'mole.priv.h2': '라이센스·크레딧',
-      'mole.priv.p2': '타격 효과음: 효과음ラボ(soundeffect-lab.info) — 상용 무료, 크레딧 불필요. BGM: CC0.'
+      'mole.priv.p2': '타격 효과음: 효과음ラボ(soundeffect-lab.info) — 상용 무료, 크레딧 불필요. BGM: CC0. 게임화면 BGM "달빛축제(Moonlight Festival)" — Music by NAVIG Sound Team.'
     },
     en: {
       'mole.title': 'Mole Pang!',
@@ -369,7 +369,7 @@
       'mole.priv.h1': 'Photos',
       'mole.priv.p1': 'Photos are processed on this device only, never uploaded. Only a circular face crop is stored, on the device (Settings → Reset data to delete).',
       'mole.priv.h2': 'Licenses & credits',
-      'mole.priv.p2': 'Hit SFX: Soundeffect-Lab (soundeffect-lab.info) — free for commercial use, no credit required. BGM: CC0.'
+      'mole.priv.p2': 'Hit SFX: Soundeffect-Lab (soundeffect-lab.info) — free for commercial use, no credit required. BGM: CC0. In-game BGM "Moonlight Festival" — Music by NAVIG Sound Team.'
     }
   });
 })(typeof window !== 'undefined' ? window : null);
