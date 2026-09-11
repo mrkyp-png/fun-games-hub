@@ -999,7 +999,7 @@
       hammerOpts.homeMarginTop = '-0.3cm';       // 대기 위치를 기본(0.2cm 아래)에서 위로 0.5cm
       hammerOpts.homeDegOffset = 20;             // 대기 각도만 시계방향으로 20도 추가 회전
       // 지진 분신 포즈 미리 로드 (첫 지진 때 이미지가 늦게 떠서 안 보이는 것 방지)
-      ['goldhammer-0', 'goldhammer-45', 'goldhammer-90'].forEach((n) => { const i = new Image(); i.src = 'assets/weapons/' + n + '.png'; });
+      ['goldhammer-0', 'goldhammer-90'].forEach((n) => { const i = new Image(); i.src = 'assets/weapons/' + n + '.png'; });
     }
     const laneHammer = WeaponMod.create(hammerOpts);
 
@@ -1250,7 +1250,10 @@
     return '45';
   }
   function quakeClonePose(regionId) {
-    return 'assets/weapons/goldhammer-' + quakeCloneKind(regionId) + '.png';
+    const kind = quakeCloneKind(regionId);
+    // 45(대각선)는 전용 스프라이트 없이 기본 대기 포즈(goldhammer.png, 이미 로드돼있음)를 그대로 쓴다.
+    if (kind === '45') return 'assets/weapons/goldhammer.png';
+    return 'assets/weapons/goldhammer-' + kind + '.png';
   }
 
   function quakeNeighbors(regionId) {
