@@ -90,8 +90,10 @@
       var attr = f.i18n ? ' data-i18n="' + f.i18n + '"' : '';
       faceHtml = '<span class="lane-ico">' + f.svg + '</span><span class="lane-lbl"' + attr + '>' + label + '</span>';
     } else {
+      var I18Nlang = root.FGH && root.FGH.I18N && root.FGH.I18N.lang;
+      var showKr = f.kr && I18Nlang !== 'en'; // 영어권 키패드 = 한글 자음 없이 영문(ABC/DEF...)만
       faceHtml = '<span class="lane-num">' + f.num + '</span>' +
-        '<span class="lane-sub">' + (f.kr ? '<span class="lane-kr">' + f.kr + '</span>' : '') +
+        '<span class="lane-sub">' + (showKr ? '<span class="lane-kr">' + f.kr + '</span>' : '') +
         (f.en ? '<span class="lane-en">' + f.en + '</span>' : '') + '</span>';
     }
     // 채널이 등록돼 있으면 평소 얼굴 ↔ 채널 아이콘을 동전처럼 3D 로 뒤집는 .lane-flip 카드로 감싼다.
@@ -410,6 +412,17 @@
           call.style.transform = '';
         }, 950);
       }
+    }
+
+    // 언어 바뀌면(설정에서 즉시, ko↔en) 숫자키 자음 라벨도 다시 그린다 — 안 그러면 fillFace 는
+    // 버튼 생성 시점 한 번뿐이라 en 으로 바꿔도 이미 그려진 ㄱㅋ/ㄴ 같은 한글 라벨이 안 지워짐.
+    var I = root.FGH && root.FGH.I18N;
+    if (I && I.onChange) {
+      I.onChange(function () {
+        FACES.forEach(function (f, id) {
+          if (f.num && buttons[id]) fillFace(buttons[id], f, id);
+        });
+      });
     }
 
     return { setCellHot, flashBurst, flashQuakeArea, clear, spinChannelsIn };
