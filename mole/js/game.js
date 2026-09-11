@@ -993,7 +993,7 @@
       hammerOpts.grip = { x: 56, y: 72 };        // 골드해머 스프라이트 손잡이 잡는 점
       hammerOpts.cssClass = 'lane-hammer--gold'; // 뿅망치보다 1.2배 크게
       hammerOpts.homeMarginTop = '-0.3cm';       // 대기 위치를 기본(0.2cm 아래)에서 위로 0.5cm
-      hammerOpts.homeDegOffset = 15;             // 대기 각도만 시계방향으로 15도 추가 회전
+      hammerOpts.homeDegOffset = 20;             // 대기 각도만 시계방향으로 20도 추가 회전
       // 지진 분신 포즈 미리 로드 (첫 지진 때 이미지가 늦게 떠서 안 보이는 것 방지)
       ['goldhammer-0', 'goldhammer-45', 'goldhammer-90'].forEach((n) => { const i = new Image(); i.src = 'assets/weapons/' + n + '.png'; });
     }
