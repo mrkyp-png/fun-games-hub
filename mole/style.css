@@ -1392,7 +1392,7 @@ body { background: var(--lm-page); }
   position: absolute;
   inset: -1px;
   border-radius: 6px;
-  background: rgba(122, 94, 68, 0.62);   /* 갈색빛 회색 = 지진 */
+  background: rgba(168, 142, 112, 0.45);   /* 연한 갈색빛 회색 = 지진 (버튼 인지력 위해 톤다운) */
   opacity: 0;
   pointer-events: none;
   z-index: 4;
