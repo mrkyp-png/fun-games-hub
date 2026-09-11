@@ -1468,51 +1468,51 @@ body { background: var(--lm-page); }
    뿅망치(gs-laneskill 없음)면 그냥 구멍. 홈에선 "시작" 버튼 그대로. */
 .lane-items { display: none; }
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call {
-  background: radial-gradient(circle at 50% 38%, #d3d4d8, #bcbdc3);
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.28), inset 0 -2px 4px rgba(255, 255, 255, 0.55);
+  background: transparent;
+  border-radius: 10%;
+  box-shadow: none;
+  overflow: visible;
 }
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call:active { transform: none; }
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call > .lane-ico,
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call > .lane-lbl,
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-call-idle { display: none; }
+/* 위/아래 각각 독립된 흰색 키캡 카드 2장 (바탕화면 버튼 참고: 둥근 사각, 흰색, 얇은 하이라이트 줄 + 바닥 회색 그림자) */
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-items {
-  display: block; position: absolute; inset: 5%; border-radius: 50%; overflow: hidden;
-}
-/* 위/아래 분리 홈 */
-.lane-items::after {
-  content: ''; position: absolute; left: 0; right: 0; top: calc(50% - 2px); height: 4px;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0) 45%, rgba(255, 255, 255, 0.9) 55%, rgba(0, 0, 0, 0));
-  pointer-events: none;
+  display: flex; flex-direction: column; gap: 8%; position: absolute; inset: 3%;
+  border-radius: 0; overflow: visible;
 }
 .lane-item {
-  position: absolute; left: 0; width: 100%; height: 50%;
+  position: relative; flex: 1 1 0; width: 100%;
   display: flex; align-items: center; justify-content: center;
   font-size: clamp(11px, 4.4vw, 18px); line-height: 1; color: #3a3d44;
+  border-radius: 22%;
+  background: linear-gradient(180deg, #ffffff 0%, #f2f3f5 78%, #e3e5e9 100%);
+  box-shadow: 0 3px 0 #c9cace, 0 5px 6px rgba(0, 0, 0, 0.28), inset 0 1px 0 #fff;
   transition: transform 0.09s ease, box-shadow 0.09s ease;
   -webkit-tap-highlight-color: transparent; cursor: pointer; user-select: none;
+  overflow: hidden;
 }
-/* 아래 반원(slot 1) = 기준, 위 반원(slot 0) = 거울상. 둘 다 중앙(홈)쪽 밝고 바깥쪽 어두운 볼록 돔. */
-.lane-item[data-slot="1"] {
-  bottom: 0;
-  background: radial-gradient(120% 130% at 50% -25%, #ffffff 0%, #f4f4f6 45%, #dcdce0 100%);
-  box-shadow: inset 0 2px 0 #fff, inset 0 -14px 16px -8px rgba(0, 0, 0, 0.28);
+/* 상단 얇은 하이라이트 줄 (참고 이미지) */
+.lane-item::after {
+  content: ''; position: absolute; left: 10%; right: 10%; top: 10%; height: 6%;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.95);
+  pointer-events: none;
 }
-.lane-item[data-slot="0"] {
-  top: 0;
-  background: radial-gradient(120% 130% at 50% 125%, #ffffff 0%, #f4f4f6 45%, #dcdce0 100%);
-  box-shadow: inset 0 -2px 0 #fff, inset 0 14px 16px -8px rgba(0, 0, 0, 0.28);
+/* 홈 화면 "시작" 버튼과 같은 대각선 빛 스윕 */
+.lane-item::before {
+  content: ''; position: absolute; inset: -60%;
+  background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.85) 50%, transparent 58%);
+  animation: idle-crown-sweep 2.8s ease-in-out infinite;
+  pointer-events: none;
 }
-/* 눌림 — 그 반원만 안쪽으로 들어가고 그림자 깊어짐 (다른 반원은 그대로) */
-.lane-item.is-press { z-index: 3; }
-.lane-item[data-slot="0"].is-press {
-  transform: translateY(2px);
-  background: radial-gradient(120% 130% at 50% 125%, #e7e7ea 0%, #dcdce0 55%, #cccdd2 100%);
-  box-shadow: inset 0 -4px 8px rgba(0, 0, 0, 0.3);
-}
-.lane-item[data-slot="1"].is-press {
-  transform: translateY(-2px);
-  background: radial-gradient(120% 130% at 50% -25%, #e7e7ea 0%, #dcdce0 55%, #cccdd2 100%);
-  box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.3);
+/* 눌림 — 아주 깊게 눌리는 느낌 */
+.lane-item.is-press {
+  z-index: 3;
+  transform: translateY(5px) scale(0.97);
+  background: linear-gradient(180deg, #e9eaed 0%, #d9dade 100%);
+  box-shadow: 0 0 0 #c9cace, inset 0 3px 6px rgba(0, 0, 0, 0.25);
 }
 /* 물결(ripple) — 눌린 순간 옅은 원이 퍼졌다 사라짐 */
 .lane-item::before {
