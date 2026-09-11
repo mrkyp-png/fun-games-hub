@@ -463,8 +463,8 @@ body { background: var(--lm-page); }
 /* 코인 아래 AD프리 배지 — board-stats 바로 아래, 같은 우측 정렬. */
 .board-adfree { display: none; }
 #game-screen.is-start .board-adfree {
-  display: block; position: absolute; top: 32px; right: 4px; z-index: 9;
-  width: 26px; height: 26px;
+  display: block; position: absolute; top: 40px; right: 4px; z-index: 9;
+  width: 34px; height: 34px;
 }
 .board-adfree img { width: 100%; height: 100%; display: block; filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5)); }
 
