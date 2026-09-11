@@ -168,7 +168,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v371</div>
+      <div id="build-tag" aria-hidden="true">v372</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -538,9 +538,14 @@
     if (document.readyState === 'complete') ready();
     else window.addEventListener('load', ready);
 
+    // GET NOW 탭음(더보기 화면과 같은 UI 탭음, ui-tap2) — 버튼이 뜨자마자(is-ready 전) 미리 로드해둬야
+    // 이 첫 탭(세션 첫 제스처라 오디오 버퍼가 아직 없음)에서도 바로 소리가 난다.
+    try { window.MoleGame && window.MoleGame.HitFx && window.MoleGame.HitFx.warmup(); } catch (e) { /* 무시 */ }
+
     function go() {
       if (!armed) return;
       s.removeEventListener('pointerdown', go);
+      try { window.MoleGame && window.MoleGame.HitFx && window.MoleGame.HitFx.uiTap(1); } catch (e) { /* 무시 */ }
       cta.classList.add('is-pressed'); // 눌리는 연출 잠깐 보여주고 사라짐
       setTimeout(function () {
         // 앱 최초 1회 인트로 — 스플래시 사라지기 전에 먼저 띄워 홈이 안 비치게 한다.
@@ -566,7 +571,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=371').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=372').catch(function () {});
       }
     });
   }
