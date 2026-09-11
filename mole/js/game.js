@@ -995,7 +995,7 @@
       // 골드해머는 그립(56%,72%)·타격면 위치·크기(17.5% vs 14.04%)가 뿅망치와 달라 기본 gripOff 그대로 쓰면
       // 타격면이 목표보다 위/옆으로 빗나간다. 스프라이트 픽셀(빨간 타격면 중심 vs 그립)을 실측 + 회전변환으로
       // 역산한 값(대략치 — 실기기에서 미세조정 필요할 수 있음).
-      hammerOpts.gripOff = { x: 0.117, y: -0.065 }; // 사용자 확인: v385 값이 맞음 (왼쪽 0.2cm·위 0.5cm 추가 보정)
+      hammerOpts.gripOff = { x: 0.041, y: 0.030 }; // 픽셀 실측(망치 빨간헤드 vs 두더지 모자 중심 비교): 왼쪽 0.8cm·아래 1.0cm 보정
       hammerOpts.homeMarginTop = '-0.3cm';       // 대기 위치를 기본(0.2cm 아래)에서 위로 0.5cm
       hammerOpts.homeDegOffset = 20;             // 대기 각도만 시계방향으로 20도 추가 회전
       // 지진 분신 포즈 미리 로드 (첫 지진 때 이미지가 늦게 떠서 안 보이는 것 방지)
@@ -1798,6 +1798,10 @@
     };
     window.__debugForceQuake = () => { forceQuakeNext = true; }; // 다음 두더지 타격에서 지진 강제 발동
     window.__debugQuakeAt = (regionId) => { if (state) quakeRipple(regionId | 0, 0); }; // 그 구멍에서 지진 파동 즉시
+    // 디버그 전용: 지정 구멍에 즉시 두더지(1타, poseIndex 지정 가능 — 0=전신) 강제 스폰 (타격점 확인용).
+    window.__debugForceMole = (regionId, poseIndex) => {
+      if (state && state.scheduler) state.scheduler.debugForceMole(regionId | 0, poseIndex);
+    };
     window.__debugSpawnPoint = (regionId) => {
       const s = state && state.spawnPoints.find((p) => p.regionId === (regionId | 0));
       return s ? { x: s.x, y: s.y } : null;

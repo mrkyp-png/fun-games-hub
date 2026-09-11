@@ -239,7 +239,20 @@
       return !!hit;
     }
 
-    return { tick, resolveHit, resolveRegion, isComplete, completedRegionCount, getActivePops, forceCompleteAll, debugForceBurst };
+    // 디버그 전용: RNG 무시하고 지정한 구멍에 즉시 두더지를 띄운다 (타격점 확인용, 영구 보존).
+    function debugForceMole(regionId, poseIndex) {
+      const sp = spawnPoints.find((p) => p.regionId === regionId);
+      if (!sp || occupiedSpawnPointIds.has(sp.id)) return null;
+      const pop = { id: nextPopId++, type: 'mole', spawnPointId: sp.id, regionId: sp.regionId, col: sp.col, x: sp.x, y: sp.y, remaining: config.popDuration * DURATION_MULT[1] };
+      pop.dying = false; pop.hitCooldown = 0; pop.hitsRequired = 2; pop.hitsTaken = 0;
+      pop.poseIndex = poseIndex != null ? poseIndex : 0;
+      pop.sinkIn = 0; pop.killed = false; pop.juggled = false;
+      active.set(pop.id, pop);
+      occupiedSpawnPointIds.add(sp.id);
+      return pop;
+    }
+
+    return { tick, resolveHit, resolveRegion, isComplete, completedRegionCount, getActivePops, forceCompleteAll, debugForceBurst, debugForceMole };
   }
 
   const api = { create };
