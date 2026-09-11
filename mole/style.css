@@ -1473,10 +1473,14 @@ body { background: var(--lm-page); }
   box-shadow: none;
   overflow: visible;
 }
-#game-screen.gs-laneskill:not(.is-start) .lane-button--call:active { transform: none; }
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call:active { transform: none; background: transparent; }
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call > .lane-ico,
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call > .lane-lbl,
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-call-idle { display: none; }
+/* 예전 원형 버튼 물결/링 이펙트(.lane-button::before/::after, 부모에 붙어있음) — 카드 2장 사이 틈을
+   눌렀을 때 그 원형 흔적이 그대로 남아있던 것. 이 상태에서는 완전히 꺼서 카드 자체 물결만 남긴다. */
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call::before,
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call::after { display: none; }
 /* 위/아래 각각 독립된 흰색 키캡 카드 2장 (바탕화면 버튼 참고: 둥근 사각, 흰색, 얇은 하이라이트 줄 + 바닥 회색 그림자) */
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-items {
   display: flex; flex-direction: column; gap: 8%; position: absolute; inset: 3%;
