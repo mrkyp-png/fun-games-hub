@@ -1514,10 +1514,10 @@ body { background: var(--lm-page); }
   background: linear-gradient(180deg, #e9eaed 0%, #d9dade 100%);
   box-shadow: 0 0 0 #c9cace, inset 0 3px 6px rgba(0, 0, 0, 0.25);
 }
-/* 물결(ripple) — 눌린 순간 옅은 원이 퍼졌다 사라짐 */
+/* 물결(ripple) — 눌린 순간 초록 원이 중앙에서 밖으로 퍼졌다 사라짐 */
 .lane-item::before {
   content: ''; position: absolute; inset: -12%;
-  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.4) 38%, rgba(255, 255, 255, 0) 66%);
+  background: radial-gradient(circle at 50% 50%, rgba(46, 204, 87, 0.9) 0%, rgba(46, 204, 87, 0.45) 38%, rgba(46, 204, 87, 0) 66%);
   opacity: 0; transform: scale(0.2); pointer-events: none;
 }
 .lane-item.is-rip::before { animation: lane-item-ripple 0.5s ease-out; }
