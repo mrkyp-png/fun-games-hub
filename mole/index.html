@@ -60,8 +60,11 @@
   }
   #splash.is-ready .splash-hint { animation: splash-cta-pulse 1.2s ease-in-out infinite; }
   @keyframes splash-cta-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-  /* 누르면 쑥 들어간다 — 아래 단차(0 9px 0)가 줄고 버튼이 내려앉음 */
-  .splash-cta.is-pressed .splash-hint {
+  /* 누르면 쑥 들어간다 — 아래 단차(0 9px 0)가 줄고 버튼이 내려앉음.
+     #splash 를 붙여 위 펄스 규칙(#splash.is-ready, ID 셀렉터)보다 우선순위를 높인다 —
+     안 그러면 펄스의 animation(transform: scale) 이 계속 이겨서 translateY 가 무시되고,
+     그림자만 줄어들어 "아래 진한 초록이 올라오는" 것처럼 보이는 버그가 있었다. */
+  #splash .splash-cta.is-pressed .splash-hint {
     animation: none;
     transform: translateY(7px);
     box-shadow:
@@ -165,7 +168,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v370</div>
+      <div id="build-tag" aria-hidden="true">v371</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -563,7 +566,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=370').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=371').catch(function () {});
       }
     });
   }
