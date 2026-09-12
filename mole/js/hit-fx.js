@@ -320,6 +320,7 @@
   // 알리 펀치 처치 연출 — 별 2개가 두더지 머리 위를 잠깐 회전한다(기획서 §6). 실제 넉백·축소·
   // 페이드는 pop-elements.js(m.punch)가 담당, 이건 그 위에 얹는 별 오버레이만.
   function punchStar(boardEl, xFrac, yFrac) {
+    vibrate([0, 15, 35, 12]); // moleHit과 동일한 처치 진동 — 알리 펀치 처치 경로엔 빠져있던 것
     return spawnAt(boardEl, 'hit-fx-punch-star', xFrac, yFrac - 0.09, '<span>⭐</span><span>⭐</span>');
   }
 

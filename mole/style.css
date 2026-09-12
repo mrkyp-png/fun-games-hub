@@ -1659,10 +1659,10 @@ body { background: var(--lm-page); }
 .lane-hammer--gold .lane-hammer-gem-glow {
   display: block;
   position: absolute;
-  /* 사용자 오더 누적(위 0.1cm+0.2cm/왼쪽 0.05cm+0.2cm)을 %로 환산 — 이 망치는 보드 크기에
-     맞춰 커지고 작아지므로 cm를 그대로 섞으면 기기 화면 크기마다 어긋남.
-     기준 105×109px(390 뷰포트 실측)로 환산: 위 3.47%p+6.93%p, 왼쪽 1.81%p+7.2%p. */
-  left: 32.0%; top: 19.6%;
+  /* 사용자 오더 누적(위 0.1cm+0.2cm-아래0.1cm / 왼쪽 0.05cm+0.2cm+0.2cm)을 %로 환산 — 이 망치는
+     보드 크기에 맞춰 커지고 작아지므로 cm를 그대로 섞으면 기기 화면 크기마다 어긋남.
+     기준 105×109px(390 뷰포트 실측). */
+  left: 24.8%; top: 23.1%;
   width: 30%; aspect-ratio: 1;
   transform: translate(-50%, -50%);
   border-radius: 50%;
@@ -2500,7 +2500,7 @@ body { background: var(--lm-page); }
   70%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
 }
 /* 캐논 강조 애니메이션(사용자 지시): 포신 살짝 반동 + 포구 스파크 루프. */
-.inv-thumb--cannon { position: relative; overflow: hidden; } /* 화염/연기가 박스 밖으로 나가면 잘려 안 보이게 */
+.inv-thumb--cannon { position: relative; }
 /* :not() 로 화염/연기 오버레이 제외 — 안 그러면 이 규칙이 더 구체적이라 그쪽 애니메이션을 덮어씀. */
 .inv-thumb--cannon img:not(.inv-cannon-burn):not(.inv-cannon-smoke) { animation: inv-cannon-recoil 2.5s ease-in-out infinite; }
 @keyframes inv-cannon-recoil {
@@ -2612,23 +2612,12 @@ body { background: var(--lm-page); }
   60%      { opacity: 1; transform: translate(-50%, -50%) scale(1); }
   72%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
 }
-.inv-gem-glow {
-  /* z-index:3 — 망치 이미지(z-index:2, 균열선 가리려고 추가)보다 위에 있어야 글로우가 안 가려짐. */
-  position: absolute; z-index: 3;
-  left: calc(50% - 13.6px); top: 26.4px; /* goldhammer.png 보석 위치 근사 (contain 배치 기준, 고정 px) */
-  width: 45.3px; aspect-ratio: 1;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(120, 220, 255, 0.95) 0%, rgba(70, 170, 255, 0.55) 35%, rgba(70, 170, 255, 0) 70%);
-  mix-blend-mode: screen;
-  pointer-events: none;
-  animation: inv-gem-pulse 1.6s ease-in-out infinite;
-}
+/* .inv-gem-glow(상점 카드 보석 글로우) — 사용자 지시로 삭제. inv-gem-pulse 는 게임화면
+   .lane-hammer-gem-glow 가 계속 쓰므로 유지. */
 @keyframes inv-gem-pulse {
   0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.82); }
   50%      { opacity: 1;   transform: translate(-50%, -50%) scale(1.18); }
 }
-@media (prefers-reduced-motion: reduce) { .inv-gem-glow { animation: none; opacity: 0.7; } }
 /* 이미지 아래 능력치 칸 — 무기마다 동일 구성(3줄 표). 값 없으면 "-" (방어력은 미래 무기용). */
 .inv-stat { margin: 6px 0 9px; }
 /* "능력치" 헤더 — 검은 외곽선 + 번개색 글로우 */

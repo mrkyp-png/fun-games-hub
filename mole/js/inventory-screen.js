@@ -67,7 +67,7 @@
           // 망치 끝(머리, 회전 후 위치 약 30%/59%)에서 여러 갈래로 갈라지는 균열 선 + "QUAKE!".
           : '<div class="inv-thumb' + (w.gemGlow ? ' inv-thumb--gem' : '') + '">' +
           '<img alt="" src="' + w.thumb + '">' + (w.gemGlow
-            ? '<span class="inv-gem-glow"></span>' +
+            ? // 사용자 지시: 상점 카드 보석 글로우 삭제.
               // 사용자 지정: 균열이 9시(왼쪽)·11시(왼쪽위)·12시(위)·3시(오른쪽) 방향으로 뻗음.
               '<svg class="inv-hammer-crack" viewBox="0 0 100 100" aria-hidden="true">' +
               '<path class="c1" d="M50 50 L40 46 L32 52 L15 47" />' +
