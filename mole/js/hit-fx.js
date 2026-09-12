@@ -389,7 +389,7 @@
       boardEl.appendChild(el);
       void el.offsetWidth;
       el.style.transition = 'opacity 0.07s ease-out, transform 0.11s cubic-bezier(.2,.7,.4,1)';
-      el.style.opacity = '1';
+      el.style.opacity = '0.8'; // 분신 투명도 20%
       el.style.transform = 'translate(-50%, -34%) scale(1.12)';   // 약간 커짐 (앞으로 옴)
       setTimeout(() => {
         el.style.transition = 'transform 0.08s ease-in';
@@ -402,9 +402,9 @@
     }
 
     // '0' / '45' — 머리 든 채 위에서 등장 → 아래로 내리침 → 자세 유지 페이드
+    // 타격 순간(CHOP) 각도는 위치와 무관하게 고정 — 항상 "머리 좌측·손잡이 우측"으로 찍혀야 함(사용자 지시).
     const upY = Math.max(0.02, hitY - 0.13);
-    const swing = xFrac < 0.5 ? 1 : -1;   // 왼쪽 구멍은 오른쪽에서, 반대편은 왼쪽에서
-    const RAISED = swing * -60, CHOP = swing * 40;
+    const RAISED = 135, CHOP = -90;
     const T = (deg) => 'translate(-50%, -30%) rotate(' + deg + 'deg)';
     el.style.top = (upY * 100) + '%';
     el.style.transform = T(RAISED);
@@ -412,7 +412,7 @@
     boardEl.appendChild(el);
     void el.offsetWidth;
     el.style.transition = 'opacity 0.08s ease-out, top 0.12s cubic-bezier(.3,.6,.4,1), transform 0.12s cubic-bezier(.3,.6,.4,1)';
-    el.style.opacity = '1';
+    el.style.opacity = '0.8'; // 분신 투명도 20%
     el.style.transform = T(RAISED * 0.7);
     setTimeout(() => {
       el.style.transition = 'top 0.08s ease-in, transform 0.08s ease-in';
