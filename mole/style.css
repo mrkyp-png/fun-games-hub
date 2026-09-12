@@ -1659,10 +1659,10 @@ body { background: var(--lm-page); }
 .lane-hammer--gold .lane-hammer-gem-glow {
   display: block;
   position: absolute;
-  /* 사용자 오더(위 0.1cm/왼쪽 0.05cm)를 %로 환산 — 이 망치는 보드 크기에 맞춰 커지고 작아지므로
-     (캐논 상점카드와 달리 letterbox 불일치 없음) cm를 그대로 섞으면 기기 화면 크기마다 어긋남.
-     기준 105×109px(390 뷰포트 실측)로 환산: 위 3.47%p, 왼쪽 1.81%p. */
-  left: 39.2%; top: 26.5%;
+  /* 사용자 오더 누적(위 0.1cm+0.2cm/왼쪽 0.05cm+0.2cm)을 %로 환산 — 이 망치는 보드 크기에
+     맞춰 커지고 작아지므로 cm를 그대로 섞으면 기기 화면 크기마다 어긋남.
+     기준 105×109px(390 뷰포트 실측)로 환산: 위 3.47%p+6.93%p, 왼쪽 1.81%p+7.2%p. */
+  left: 32.0%; top: 19.6%;
   width: 30%; aspect-ratio: 1;
   transform: translate(-50%, -50%);
   border-radius: 50%;
