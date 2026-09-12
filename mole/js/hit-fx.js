@@ -403,10 +403,12 @@
 
     // '0' / '45' — 머리 든 채 위에서 등장 → 아래로 내리침 → 자세 유지 페이드
     // 타격 순간(CHOP) 각도는 위치와 무관하게 고정 — 항상 "머리 좌측·손잡이 우측"으로 찍혀야 함(사용자 지시).
-    // 타격 위치 보정(사용자 지시): 우측 0.3cm(0.03) · 위로 0.7cm(0.07).
-    const hitYAdj = hitY - 0.07;
-    el.style.left = ((xFrac + 0.03) * 100) + '%';
-    const upY = Math.max(0.02, hitYAdj - 0.13);
+    // top/left(보드 분수) 대신 회전시작점(transform-origin, 이미지 자체 % 기준)을 옮겨서 머리 위치를 직접
+    // 제어한다(사용자 지시) — 기본 50%/64%에서 우측 0.3cm·위로 0.7cm.
+    // 이미지 렌더 크기(.quake-clone height 24.8%) 추정: 보드 폭 ~390px(~10.3cm) 기준 세로 ~2.55cm,
+    // 가로세로비 217:307 → 가로 ~1.8cm. 실기기 화면 크기에 따라 달라질 수 있는 근사치.
+    el.style.transformOrigin = '66.7% 36.5%';
+    const upY = Math.max(0.02, hitY - 0.13);
     const RAISED = 135, CHOP = -90;
     const T = (deg) => 'translate(-50%, -30%) rotate(' + deg + 'deg)';
     el.style.top = (upY * 100) + '%';
@@ -419,7 +421,7 @@
     el.style.transform = T(RAISED * 0.7);
     setTimeout(() => {
       el.style.transition = 'top 0.08s ease-in, transform 0.08s ease-in';
-      el.style.top = (hitYAdj * 100) + '%';
+      el.style.top = (hitY * 100) + '%';
       el.style.transform = T(CHOP);
       try { if (onHit) onHit(); } catch (e) { /* 무시 */ }
     }, 130);
