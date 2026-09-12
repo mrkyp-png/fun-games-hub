@@ -32,17 +32,19 @@
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
   function ease(k) { return k * k; }
 
-  function create({ layer, sprite, grip, cssClass, degOffset, homeMarginTop, gripOff, homeDegOffset }) {
+  function create({ layer, sprite, grip, cssClass, degOffset, homeMarginTop, gripOff, homeDegOffset, emptyDy }) {
     // grip = 스프라이트 안 손잡이 잡는 점(%) — 스킨마다 다르면 넘긴다. 없으면 뿅망치 기본값.
     // degOffset = 스킨 스프라이트가 기준 포즈에서 이미 돌아가 있으면 그만큼 상쇄(모든 회전상태에 더함).
     // homeMarginTop = 대기 위치 세로 미세보정 (기본 '0.2cm' 아래로).
     // gripOff = HIT_DEG 에서 머리가 grip 로부터 떨어진 정도(보드 분수). 스킨 스프라이트마다 다름 —
     //           grip 을 목표에서 이만큼 비켜 놔야 머리가 목표(두더지 헬멧)에 착지. 없으면 뿅망치 기본값.
     // homeDegOffset = 대기 위치 각도만 이만큼 추가 회전(+ = 시계방향). 조준/타격 각도는 영향 없음.
+    // emptyDy = 빈 구멍 헛스윙(frameKey 없음) 전용 세로보정. 없으면 공용 AIM_DY(뿅망치 기준).
     const gripX = grip && grip.x != null ? grip.x : GRIP_X;
     const gripY = grip && grip.y != null ? grip.y : GRIP_Y;
     const goX = gripOff && gripOff.x != null ? gripOff.x : GRIP_OFF_X;
     const goY = gripOff && gripOff.y != null ? gripOff.y : GRIP_OFF_Y;
+    const eDy = emptyDy != null ? emptyDy : AIM_DY;
     const dOff = degOffset || 0;
     const homeMT = homeMarginTop != null ? homeMarginTop : '0.2cm';
     const hDeg = HOME_DEG + (homeDegOffset || 0);
@@ -65,7 +67,7 @@
     function strike(targetXFrac, targetYFrac, onImpact, frameKey) {
       const tx = (typeof targetXFrac === 'number') ? targetXFrac : 0.5;
       const ty = (typeof targetYFrac === 'number') ? targetYFrac : 0.5;
-      const aimDy = (frameKey && AIM_DY_BY_FRAME[frameKey] != null) ? AIM_DY_BY_FRAME[frameKey] : AIM_DY;
+      const aimDy = (frameKey && AIM_DY_BY_FRAME[frameKey] != null) ? AIM_DY_BY_FRAME[frameKey] : eDy;
       fromX = gx; fromY = gy; fromDeg = deg;
       aimX = Math.max(CLAMP, Math.min(1 - CLAMP, tx + goX + AIM_DX));
       aimY = Math.max(CLAMP, Math.min(1 - CLAMP, ty + goY + aimDy));
