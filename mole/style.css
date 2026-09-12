@@ -2540,8 +2540,8 @@ body { background: var(--lm-page); }
 }
 /* 사용자 지시: 알리 판취 POWER UP, 골드해머 QUAKE!와 맞춰 캐논도 화염 옆에 "BOOM!" 표시. */
 .inv-cannon-word {
-  /* 박스에 overflow:hidden 걸려서 위로 너무 빼면 잘림 — 박스 안쪽으로. */
-  position: absolute; left: calc(50% - 38.2px - 0.7cm + 8px); top: 10px;
+  /* 사용자 오더: 아래 0.2cm, 좌측 0.3cm. */
+  position: absolute; left: calc(50% - 38.2px - 0.7cm + 8px - 0.3cm); top: calc(10px + 0.2cm);
   transform: translate(-50%, -50%) scale(0.3);
   opacity: 0;
   pointer-events: none;
