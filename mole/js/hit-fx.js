@@ -402,12 +402,12 @@
     }
 
     // '0' / '45' — 머리 든 채 위에서 등장 → 아래로 내리침 → 자세 유지 페이드
-    // 준비·타격 각도 모두 메인 해머 대기위치 각도(38도 = HOME_DEG18+homeDegOffset20)로 통일(사용자 지시).
+    // 타격 순간(CHOP) 각도는 위치와 무관하게 고정 — 항상 "머리 좌측·손잡이 우측"으로 찍혀야 함(사용자 지시).
     // 타격 위치 보정(사용자 지시): 우측 0.3cm(0.03) · 위로 0.8cm(0.08).
     const hitYAdj = hitY - 0.08;
     el.style.left = ((xFrac + 0.03) * 100) + '%';
     const upY = Math.max(0.02, hitYAdj - 0.13);
-    const RAISED = 38, CHOP = 38;
+    const RAISED = 135, CHOP = -90;
     const T = (deg) => 'translate(-50%, -30%) rotate(' + deg + 'deg)';
     el.style.top = (upY * 100) + '%';
     el.style.transform = T(RAISED);
