@@ -403,11 +403,12 @@
 
     // '0' / '45' — 머리 든 채 위에서 등장 → 아래로 내리침 → 자세 유지 페이드
     // 타격 순간(CHOP) 각도는 위치와 무관하게 고정 — 항상 "머리 좌측·손잡이 우측"으로 찍혀야 함(사용자 지시).
-    // top/left(보드 분수) 대신 회전시작점(transform-origin, 이미지 자체 % 기준)을 옮겨서 머리 위치를 직접
-    // 제어한다(사용자 지시) — 기본 50%/64%에서 우측 0.3cm 상당(실기기 확인 완료). 세로는 보류(v398
-    // 시도가 오히려 아래로 내려가는 등 더 이상해져서 원복 — 다음 지시 대기).
+    // 가로는 회전시작점(66.7%)으로 우측 0.3cm 상당 유지(실기기 확인 완료).
+    // 세로는 top 기반 — 애니메이션 전체(등장+타격) 위치를 위로 0.3cm(0.03) 이동(사용자 지시, 회전 영향
+    // 없는 단순 이동이라 안전함).
     el.style.transformOrigin = '66.7% 36.5%';
-    const upY = Math.max(0.02, hitY - 0.13);
+    const hitYUp = hitY - 0.03;
+    const upY = Math.max(0.02, hitYUp - 0.13);
     const RAISED = 135, CHOP = -90;
     const T = (deg) => 'translate(-50%, -30%) rotate(' + deg + 'deg)';
     el.style.top = (upY * 100) + '%';
@@ -416,11 +417,11 @@
     boardEl.appendChild(el);
     void el.offsetWidth;
     el.style.transition = 'opacity 0.08s ease-out, top 0.12s cubic-bezier(.3,.6,.4,1), transform 0.12s cubic-bezier(.3,.6,.4,1)';
-    el.style.opacity = '0.8'; // 분신 투명도 20%
+    el.style.opacity = '0.65'; // 분신 투명도 20%→35% (15%p 추가)
     el.style.transform = T(RAISED * 0.7);
     setTimeout(() => {
       el.style.transition = 'top 0.08s ease-in, transform 0.08s ease-in';
-      el.style.top = (hitY * 100) + '%';
+      el.style.top = (hitYUp * 100) + '%';
       el.style.transform = T(CHOP);
       try { if (onHit) onHit(); } catch (e) { /* 무시 */ }
     }, 130);
