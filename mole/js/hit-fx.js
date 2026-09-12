@@ -48,6 +48,46 @@
     try { return localStorage.getItem('mole.weapon') === 'cannon'; } catch (e) { return false; }
   }
 
+  // 알리 펀치 전용 — 펀치가 날아갈 때(글러브 스타일별) 아나운서 보이스 1개씩(사용자 제공).
+  const PUNCH_VOICE_URLS = {
+    jab: 'audio/punch-jab.mp3',
+    straight: 'audio/punch-straight.mp3',
+    upper: 'audio/punch-upper.mp3',
+    hookL: 'audio/punch-hookL.mp3',
+    hookR: 'audio/punch-hookR.mp3'
+  };
+  let punchVoiceBuffers = null; // { style: AudioBuffer }
+  let punchVoiceLoading = false;
+  function isAlipunchEquipped() {
+    try { return localStorage.getItem('mole.weapon') === 'alipunch'; } catch (e) { return false; }
+  }
+  function loadPunchVoiceBuffers(ctx) {
+    if (punchVoiceBuffers || punchVoiceLoading || typeof fetch !== 'function') return;
+    punchVoiceLoading = true;
+    const keys = Object.keys(PUNCH_VOICE_URLS);
+    Promise.all(keys.map((k) =>
+      fetch(PUNCH_VOICE_URLS[k]).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b))
+    )).then((bufs) => {
+      punchVoiceBuffers = {};
+      keys.forEach((k, i) => { punchVoiceBuffers[k] = bufs[i]; });
+    }).catch(() => { punchVoiceLoading = false; });
+  }
+  // 펀치 스타일별 보이스 재생 — game.js/lane-boxing.js 가 펀치 시작(글러브가 뻗는 순간) 호출.
+  function punchVoice(style) {
+    if (sfxOff()) return;
+    try {
+      const ctx = getCtx();
+      const buf = ctx && punchVoiceBuffers && punchVoiceBuffers[style];
+      if (!buf) return;
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const g = ctx.createGain();
+      g.gain.value = 0.85;
+      src.connect(g).connect(ctx.destination);
+      src.start();
+    } catch (e) { /* 오디오 불가 환경 무시 */ }
+  }
+
   // UI 탭음(다이얼패드 숫자/더보기 메뉴 아이콘) — 사용자 제공, 랜덤 1/2 + 지터. 게임 키패드
   // 타격(punch)과는 별개 — 연타 잦은 자리라 여기 안 씀, 가끔 누르는 UI 버튼 전용.
   const UI_TAP_URLS = ['audio/ui-tap1.mp3', 'audio/ui-tap2.mp3'];
@@ -128,6 +168,7 @@
     if (audioCtx.state === 'suspended' && audioCtx.resume) audioCtx.resume();
     loadHitBuffers(audioCtx); // ctx 생기는 즉시 타격음 파일 프리로드
     if (isCannonEquipped()) loadCannonBuffers(audioCtx); // 대포 장착 중일 때만 폭발음 로드(망치 유저는 불필요한 다운로드 안 함)
+    if (isAlipunchEquipped()) loadPunchVoiceBuffers(audioCtx); // 알리 펀치 장착 중일 때만 보이스 로드
     loadTapBuffers(audioCtx); // UI 탭음도 같이 프리로드
     return audioCtx;
   }
@@ -274,6 +315,17 @@
   // 대포 연사 발동 — 그 두더지 흙더미 부근(중앙 아래)에서 "BURST!" 가 튀어나와 제자리서 사라진다.
   function burstWord(boardEl, xFrac, yFrac) {
     return spawnAt(boardEl, 'hit-fx-burstword', xFrac, yFrac + 0.06, 'BURST!');
+  }
+
+  // 알리 펀치 처치 연출 — 별 2개가 두더지 머리 위를 잠깐 회전한다(기획서 §6). 실제 넉백·축소·
+  // 페이드는 pop-elements.js(m.punch)가 담당, 이건 그 위에 얹는 별 오버레이만.
+  function punchStar(boardEl, xFrac, yFrac) {
+    return spawnAt(boardEl, 'hit-fx-punch-star', xFrac, yFrac - 0.09, '<span>⭐</span><span>⭐</span>');
+  }
+
+  // 알리 펀치 무적 발동 — burstWord 와 같은 연출, 텍스트만 "POWER UP"(사용자 지시, 영어).
+  function powerUpWord(boardEl, xFrac, yFrac) {
+    return spawnAt(boardEl, 'hit-fx-burstword', xFrac, yFrac + 0.06, 'POWER UP');
   }
 
   function moleHit(boardEl, xFrac, yFrac) {
@@ -432,6 +484,6 @@
   // 게임 시작(사용자 제스처) 직후 호출 — 카운트다운 동안 오디오 컨텍스트 + 타격음 파일을 미리 준비.
   function warmup() { try { getCtx(); } catch (e) { /* noop */ } }
 
-  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone };
+  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, punchStar, powerUpWord, punch, punchVoice };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);

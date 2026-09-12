@@ -460,17 +460,6 @@ body { background: var(--lm-page); }
 .board-stats .mm-stat { color: #fff; }
 .board-stats .mm-stat svg { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55)); }
 
-/* 코인 아래 AD프리 배지 — board-stats 바로 아래, 같은 우측 정렬. */
-.board-adfree { display: none; }
-#game-screen.is-start .board-adfree {
-  display: block; position: absolute; top: 62px; right: 4px; z-index: 9;
-  width: 34px; height: 34px;
-  border: none; background: transparent; padding: 0; cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform 0.08s ease;
-}
-.board-adfree img { width: 100%; height: 100%; display: block; filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5)); }
-.board-adfree:active { transform: scale(0.88); }
 
 /* 게임 화면 = 폴더폰 모양: 컴팩트 HUD + [게임 정사각] + 힌지 + [다이얼러 정사각].
    HUD + 2*정사각 + 힌지 = 100dvh. 정사각 한 변(--sq)은 세로에 맞추되 가로를 넘지 않는다. */
@@ -1664,6 +1653,21 @@ body { background: var(--lm-page); }
 .lane-hammer img { display: block; width: 100%; filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.5)); }
 /* 골드해머(지진 무기) = 뿅망치보다 ~1.2배 크게. 스프라이트 비율이 달라 폭으로 맞춘다. */
 .lane-hammer--gold { width: 17.5%; }
+/* 보석(파란빛) 맥동 글로우 — 아이템보관창(.inv-gem-glow)엔 있었는데 게임화면엔 빠져있던 것 추가.
+   같은 원본(goldhammer.png) contain 배치라 좌표(%)는 .inv-gem-glow 와 동일. */
+.lane-hammer-gem-glow { display: none; }
+.lane-hammer--gold .lane-hammer-gem-glow {
+  display: block;
+  position: absolute;
+  left: 41%; top: 30%;
+  width: 30%; aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(120, 220, 255, 0.95) 0%, rgba(70, 170, 255, 0.55) 35%, rgba(70, 170, 255, 0) 70%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: inv-gem-pulse 1.6s ease-in-out infinite;
+}
 /* 지진 분신 골드해머 — 가장자리에서 날아와 내리치고 골드로 소멸 (hit-fx.js quakeClone). */
 .quake-clone {
   position: absolute;
@@ -1684,6 +1688,39 @@ body { background: var(--lm-page); }
   0% { transform: scale(1, 1); }
   35% { transform: scale(1.12, 0.9); }
   100% { transform: scale(1, 1); }
+}
+
+/* ---- 무기 스킨: 알리 펀치 ---- 위치·transform 은 lane-boxing.js 가 넣는다. 좌/우 글러브가
+   삭제된 구멍(12·15) 자리에 고정, 담당 구역만 손을 뻗어 때린다(기획서 §1·§2). ---- */
+.lane-boxing-glove {
+  position: absolute;
+  width: 14.63%; /* 19%→30%축소(13.3%)→10%확대(사용자 지시) */
+  pointer-events: none;
+  will-change: transform;
+}
+.lane-boxing-glove img { display: block; width: 100%; filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.4)); }
+/* 회전(대기 각도·펀치별 각도)은 lane-boxing.js 가 펀치 스타일에 따라 img.style.transform 으로
+   직접 넣는다(ROT_BY_SIDE) — 오른쪽은 항상 scaleX(-1) 거울상 포함. */
+
+/* 알리 펀치 전용 "별표" — 실제 다이얼패드 '✱' 키(구멍12, 알리펀치가 삭제하는 좌하단 자리)를
+   재사용해 통화버튼과 똑같이 스킬 슬롯 2개로 바꾼다(기획서 §8). 다른 무기·홈 화면에선 원래 숫자키.
+   .lane-items/.lane-item 스타일은 통화버튼과 완전히 공유(style.css 위쪽 참고). */
+#game-screen.gs-alipunch:not(.is-start) [data-region="12"] {
+  background: transparent;
+  border-radius: 10%;
+  box-shadow: none;
+  overflow: visible;
+}
+#game-screen.gs-alipunch:not(.is-start) [data-region="12"]:active { transform: none; background: transparent; }
+#game-screen.gs-alipunch:not(.is-start) [data-region="12"] > .lane-num,
+#game-screen.gs-alipunch:not(.is-start) [data-region="12"] > .lane-sub {
+  display: none;
+}
+#game-screen.gs-alipunch:not(.is-start) [data-region="12"]::before,
+#game-screen.gs-alipunch:not(.is-start) [data-region="12"]::after { display: none; }
+#game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-items {
+  display: flex; flex-direction: column; gap: 8%; position: absolute; inset: 3%;
+  border-radius: 0; overflow: visible;
 }
 
 /* ---- 무기 스킨: 대포 ---- 위치·transform 은 lane-cannon.js 가 넣는다 ---- */
@@ -1941,6 +1978,30 @@ body { background: var(--lm-page); }
   22%  { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
   55%  { transform: translate(-50%, -50%) scale(1); opacity: 1; }
   100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
+
+/* ---- 알리 펀치 처치 연출 (hit-fx.js punchStar) ---- */
+/* 별 2개가 머리 위 지점을 중심으로 회전 — 컨테이너를 돌리고 별은 좌우로 벌려 배치. */
+.hit-fx-punch-star {
+  position: absolute;
+  width: 0; height: 0;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: punch-star-spin 0.6s ease-out forwards;
+}
+.hit-fx-punch-star span {
+  position: absolute;
+  top: -10px;
+  font-size: 1.3rem;
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4));
+}
+.hit-fx-punch-star span:nth-child(1) { left: -24px; }
+.hit-fx-punch-star span:nth-child(2) { left: 6px; }
+@keyframes punch-star-spin {
+  0%   { transform: translate(-50%, -50%) rotate(0deg) scale(0.5); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translate(-50%, -50%) rotate(650deg) scale(1) translateY(-10px); opacity: 0; }
 }
 
 /* ---------- 앱 최초 1회 인트로 (두더지 게임의 역사) ---------- */
@@ -2344,6 +2405,7 @@ body { background: var(--lm-page); }
   color: #cf4a4a; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
 .set-row--link { cursor: pointer; }
 .set-chev { color: var(--lm-muted); font-size: 1.2rem; line-height: 1; }
+.set-adfree-badge { width: 26px; height: 26px; flex: 0 0 auto; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3)); }
 
 /* 아이템 보관 — 탭 + placeholder */
 .inv-tabs { display: flex; gap: 6px; padding: 12px 12px 6px; }
@@ -2379,12 +2441,177 @@ body { background: var(--lm-page); }
 .inv-name { font-size: 0.86rem; font-weight: 800; color: var(--lm-ink); }
 .inv-thumb { height: 88px; display: flex; align-items: center; justify-content: center; }
 .inv-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
-/* 골드해머 = 게임화면 이미지 그대로, 보석(파란불빛) 부분에만 맥동 글로우. */
+/* 알리 펀치 = 좌/우 글러브 한 쌍(오른쪽은 왼쪽 이미지 거울상, 실제 게임 배치와 동일). */
+/* 사용자 지시: 좌우 글러브 사이 0.2cm 간격, 왼쪽 시계 15도·오른쪽 반시계 15도(거울상 유지). */
+.inv-thumb--pair { position: relative; gap: 0.5cm; }
+.inv-thumb--pair img { max-width: 46%; }
+/* 강조 애니메이션(사용자 지시): 두 글러브가 2번 맞부딪히고, 2번째에 스파크+"POWER UP". */
+.inv-thumb--pair img:not(.inv-thumb-mirror) { animation: inv-bump-l 3s ease-in-out infinite; }
+.inv-thumb-mirror { animation: inv-bump-r 3s ease-in-out infinite; }
+/* 곡선(아치) 궤적(사용자 지시) — 직선(translateX만)이 아니라 중간에 위로 살짝 뜨며 휘어진다. */
+@keyframes inv-bump-l {
+  0%        { transform: rotate(15deg) translate(0, 0); }
+  5%        { transform: rotate(15deg) translate(5px, -6px); }
+  10%       { transform: rotate(15deg) translate(10px, 0); }
+  15%       { transform: rotate(15deg) translate(5px, -6px); }
+  20%       { transform: rotate(15deg) translate(0, 0); }
+  25%       { transform: rotate(15deg) translate(5px, -6px); }
+  30%, 38%  { transform: rotate(15deg) translate(10px, 0); }
+  43%       { transform: rotate(15deg) translate(5px, -6px); }
+  48%, 100% { transform: rotate(15deg) translate(0, 0); }
+}
+@keyframes inv-bump-r {
+  0%        { transform: rotate(-15deg) scaleX(-1) translate(0, 0); }
+  5%        { transform: rotate(-15deg) scaleX(-1) translate(5px, -6px); }
+  10%       { transform: rotate(-15deg) scaleX(-1) translate(10px, 0); }
+  15%       { transform: rotate(-15deg) scaleX(-1) translate(5px, -6px); }
+  20%       { transform: rotate(-15deg) scaleX(-1) translate(0, 0); }
+  25%       { transform: rotate(-15deg) scaleX(-1) translate(5px, -6px); }
+  30%, 38%  { transform: rotate(-15deg) scaleX(-1) translate(10px, 0); }
+  43%       { transform: rotate(-15deg) scaleX(-1) translate(5px, -6px); }
+  48%, 100% { transform: rotate(-15deg) scaleX(-1) translate(0, 0); }
+}
+.inv-bump-spark, .inv-bump-word {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%) scale(0.3);
+  opacity: 0;
+  pointer-events: none;
+}
+.inv-bump-spark { font-size: 1.7rem; animation: inv-bump-spark 3s ease-in-out infinite; }
+.inv-bump-word {
+  top: 58%;
+  font-weight: 800; font-size: 0.6rem; color: #ffce33;
+  -webkit-text-stroke: 2px #000; paint-order: stroke fill;
+  white-space: nowrap;
+  animation: inv-bump-word 3s ease-in-out infinite;
+}
+@keyframes inv-bump-spark {
+  0%, 33%  { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+  36%      { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
+  46%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.6); }
+}
+@keyframes inv-bump-word {
+  0%, 34%  { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  40%      { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+  58%      { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  70%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+}
+/* 캐논 강조 애니메이션(사용자 지시): 포신 살짝 반동 + 포구 스파크 루프. */
+.inv-thumb--cannon { position: relative; }
+/* :not() 로 화염/연기 오버레이 제외 — 안 그러면 이 규칙이 더 구체적이라 그쪽 애니메이션을 덮어씀. */
+.inv-thumb--cannon img:not(.inv-cannon-burn):not(.inv-cannon-smoke) { animation: inv-cannon-recoil 2.5s ease-in-out infinite; }
+@keyframes inv-cannon-recoil {
+  /* 포구가 이미지 왼쪽에 있으니, 발사 반동은 반대쪽(오른쪽, +)으로 밀려야 맞음 — 방향 반전. */
+  0%, 70%, 100% { transform: translateX(0); }
+  74%           { transform: translateX(6%); }
+  80%           { transform: translateX(-1%); }
+  86%           { transform: translateX(0); }
+}
+/* 포구 위치 = cannon-a1.png 픽셀 실측(이미지 자체 기준 13.8%/22.6%).
+   .inv-thumb--cannon 박스는 창 너비에 맞춰 늘어나지만(board-screen이 inset:0), 캐논 이미지 자체는
+   높이 고정(88px)이라 항상 박스 정중앙에 같은 크기로 렌더링됨 — 그래서 박스의 %가 아니라
+   "박스 중앙 기준 고정 px 오프셋"으로 잡아야 창 크기와 무관하게 포구에 붙어 있음. */
+.inv-cannon-burn, .inv-cannon-smoke {
+  /* 사용자 오더: 좌 0.5cm+0.2cm=0.7cm, 위 0.2cm+0.1cm=0.3cm. */
+  position: absolute; left: calc(50% - 38.2px - 0.7cm); top: calc(19.9px - 0.3cm);
+  /* width도 박스(창 너비에 늘어남) 기준 %면 커져서 아래 translate(-60%…)도 같이 커져 어긋남 —
+     캐논 이미지(105.5px)의 34%로 고정 px. */
+  width: 35.9px; height: auto;
+  transform: translate(-60%, -50%) scale(0.4) rotate(5deg);
+  opacity: 0;
+  pointer-events: none;
+}
+.inv-cannon-burn { animation: inv-cannon-burn 2.5s ease-in-out infinite; }
+.inv-cannon-smoke { animation: inv-cannon-smoke 2.5s ease-in-out infinite; }
+/* 반동(포신이 +6% 움직임)과 같은 타이밍에 같은 만큼 같이 움직여야 포구에서 안 떨어져 보임(방향 반전). */
+@keyframes inv-cannon-burn {
+  0%, 72%   { opacity: 0; transform: translate(calc(-60% + 0px), -50%) scale(0.3) rotate(5deg); }
+  74%       { opacity: 0; transform: translate(calc(-60% + 6.3px), -50%) scale(0.3) rotate(5deg); }
+  76%       { opacity: 1; transform: translate(calc(-60% + 6.3px), -50%) scale(1) rotate(5deg); }
+  84%, 100% { opacity: 0; transform: translate(calc(-70% - 1.1px), -50%) scale(1.2) rotate(5deg); }
+}
+@keyframes inv-cannon-smoke {
+  0%, 74%   { opacity: 0; transform: translate(calc(-60% + 6.3px), -50%) scale(0.4) rotate(5deg); }
+  82%       { opacity: 0.9; transform: translate(calc(-75% + 6.3px), -60%) scale(1.1) rotate(5deg); }
+  100%      { opacity: 0; transform: translate(calc(-90% + 6.3px), -75%) scale(1.5) rotate(5deg); }
+}
+/* 사용자 지시: 알리 판취 POWER UP, 골드해머 QUAKE!와 맞춰 캐논도 화염 옆에 "BOOM!" 표시. */
+.inv-cannon-word {
+  position: absolute; left: calc(50% - 38.2px - 0.7cm + 8px); top: calc(19.9px - 0.3cm - 16px);
+  transform: translate(-50%, -50%) scale(0.3);
+  opacity: 0;
+  pointer-events: none;
+  font-weight: 800; font-size: 0.6rem; color: #ff6a3d;
+  -webkit-text-stroke: 2px #000; paint-order: stroke fill;
+  white-space: nowrap;
+  animation: inv-cannon-word 2.5s ease-in-out infinite;
+}
+@keyframes inv-cannon-word {
+  0%, 72%   { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  76%       { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+  82%       { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  92%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+}
+/* 골드해머 = 게임화면 이미지 그대로, 보석(파란불빛) 부분에만 맥동 글로우 +
+   강조 애니메이션(사용자 지시): 두 번 쿵쿵 내리찍고 2번째에 번개+"QUAKE!". */
 .inv-thumb--gem { position: relative; }
+/* 사용자 지시: 균열선이 망치를 가리면 안 됨 — 망치가 위, 균열선이 아래. */
+.inv-thumb--gem img { position: relative; z-index: 2; animation: inv-hammer-thump 3s ease-in-out infinite; }
+@keyframes inv-hammer-thump {
+  0%, 24%, 100% { transform: rotate(0deg); }
+  38%           { transform: rotate(-90deg); }  /* 타격하듯 반시계 90도(사용자 지시) */
+  50%           { transform: rotate(-90deg); }  /* 번개 타이밍까지 유지 */
+  60%           { transform: rotate(0deg); }
+}
+.inv-hammer-word {
+  /* 캐논과 동일한 이유(board-screen이 창 너비에 늘어남, 골드해머 이미지는 고정 62.2×88px)로
+     박스 % 대신 고정 px 오프셋 사용. */
+  /* 사용자 오더: 9시 방향 균열선 위로 배치(카드 밖으로 잘리지 않게 안쪽으로). */
+  position: absolute; left: calc(50% - 25px); top: 18px;
+  transform: translate(-50%, -50%) scale(0.3);
+  opacity: 0;
+  pointer-events: none;
+  font-weight: 800; font-size: 0.6rem; color: #d9a24b;
+  -webkit-text-stroke: 2px #000; paint-order: stroke fill;
+  white-space: nowrap;
+  animation: inv-hammer-word 3s ease-in-out infinite;
+}
+/* 망치 끝(머리, 반시계90도 회전 후 위치 약 30%/59%)에서 여러 갈래로 갈라지는 균열(참고 이미지). */
+.inv-hammer-crack {
+  /* 사용자 오더: 아래로 0.5cm+0.2cm=0.7cm. */
+  position: absolute; left: calc(50% - 30.2px); top: calc(51.9px + 0.7cm);
+  width: 93.6px; aspect-ratio: 1;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  fill: none;
+  stroke: #1a1005;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  opacity: 0;
+  pointer-events: none;
+}
+.inv-hammer-crack path {
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+}
+.inv-hammer-crack, .inv-hammer-crack path { animation: inv-hammer-crack 3s ease-in-out infinite; }
+@keyframes inv-hammer-crack {
+  0%, 38%   { opacity: 0; stroke-dashoffset: 40; }
+  40%       { opacity: 1; }
+  50%       { opacity: 1; stroke-dashoffset: 0; }
+  62%, 100% { opacity: 0; stroke-dashoffset: 0; }
+}
+@keyframes inv-hammer-word {
+  0%, 39%  { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  44%      { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+  60%      { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  72%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+}
 .inv-gem-glow {
   position: absolute;
-  left: 41%; top: 30%;                 /* goldhammer.png 보석 위치 근사 (contain 배치 기준) */
-  width: 30%; aspect-ratio: 1;
+  left: calc(50% - 13.6px); top: 26.4px; /* goldhammer.png 보석 위치 근사 (contain 배치 기준, 고정 px) */
+  width: 45.3px; aspect-ratio: 1;
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: radial-gradient(circle, rgba(120, 220, 255, 0.95) 0%, rgba(70, 170, 255, 0.55) 35%, rgba(70, 170, 255, 0) 70%);

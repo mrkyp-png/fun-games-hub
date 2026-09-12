@@ -5,6 +5,9 @@
   const I18N = window.FGH.I18N;
   const GRID_SIZE = 4;        // 4x4 = 16칸 고정 격자
   const CANNON_HOLE = 15;     // 캐논·특수망치 장착 시 없애는 구멍 (우하단 = row3·col3). 15구멍 + 스킬존. 뿅망치는 16구멍.
+  const ALIPUNCH_HOLES = [12, 15]; // 알리 펀치 = 좌하단(12)·우하단(15) 삭제, 그 자리에 글러브. 14구멍.
+  const ALIPUNCH_INVINCIBLE_CHANCE = 0.2;   // 무적 발동 확률 (기획서 §7)
+  const ALIPUNCH_INVINCIBLE_MS = 5000;      // 무적 지속시간
   const ROUND_SECONDS = 15;       // 챕터 1~2
   const ROUND_SECONDS_LONG = 30;  // 챕터 3부터 (난이도 상승분 보정 — 사용자 요청)
   function roundSeconds() { return currentChapter() >= 3 ? ROUND_SECONDS_LONG : ROUND_SECONDS; }
@@ -364,43 +367,68 @@
     // 게임 중엔 이 코너(구멍 15 자리)가 "스킬 슬롯 2개"로 바뀐다 (캐논·특수망치, gs-laneskill). 홈에선 "시작" 버튼.
     // 껍데기 — 슬롯 스킬은 LANE_SKILLS 에 지정 (0 위 반원 · 1 아래 반원). 빈 슬롯 탭은 무동작(화면이동 X).
     if (!btn.querySelector('.lane-items')) {
-      const box = document.createElement('div');
-      box.className = 'lane-items';
-      box.setAttribute('aria-hidden', 'true');
-      for (let i = 0; i < 2; i++) {
-        const it = document.createElement('div');
-        it.className = 'lane-item lane-item--empty';
-        it.dataset.slot = String(i);
-        const sweep = document.createElement('i');
-        sweep.className = 'lane-item-sweep';
-        it.appendChild(sweep);
-        const icon = document.createElement('span');
-        icon.className = 'lane-item-icon';
-        it.appendChild(icon);
-        it.addEventListener('pointerdown', (e) => {
-          e.stopPropagation();
-          it.classList.add('is-press');
-          it.classList.remove('is-rip'); void it.offsetWidth; it.classList.add('is-rip'); // 물결 재발동
-          try { if (window.FGH.Settings.vibrate) window.FGH.Settings.vibrate(16); } catch (err) { /* 무시 */ }
-        });
-        const rel = () => it.classList.remove('is-press');
-        it.addEventListener('pointerup', rel);
-        it.addEventListener('pointercancel', rel);
-        it.addEventListener('pointerleave', rel);
-        box.appendChild(it);
-      }
-      btn.appendChild(box);
+      btn.appendChild(createLaneItemsBox());
       renderLaneItems();
     }
   }
 
-  // 스킬 슬롯 2칸 (게임 중 우하단 코너). null = 빈 칸. 예: { icon: '⚡', id: 'xxx' }
+  // 스킬 슬롯 카드 2장 DOM(빈 슬롯 껍데기, 탭 눌림/물결만) — 통화버튼·알리펀치 별표버튼 공용.
+  function createLaneItemsBox() {
+    const box = document.createElement('div');
+    box.className = 'lane-items';
+    box.setAttribute('aria-hidden', 'true');
+    for (let i = 0; i < 2; i++) {
+      const it = document.createElement('div');
+      it.className = 'lane-item lane-item--empty';
+      it.dataset.slot = String(i);
+      const sweep = document.createElement('i');
+      sweep.className = 'lane-item-sweep';
+      it.appendChild(sweep);
+      const icon = document.createElement('span');
+      icon.className = 'lane-item-icon';
+      it.appendChild(icon);
+      it.addEventListener('pointerdown', (e) => {
+        e.stopPropagation();
+        it.classList.add('is-press');
+        it.classList.remove('is-rip'); void it.offsetWidth; it.classList.add('is-rip'); // 물결 재발동
+        try { if (window.FGH.Settings.vibrate) window.FGH.Settings.vibrate(16); } catch (err) { /* 무시 */ }
+      });
+      const rel = () => it.classList.remove('is-press');
+      it.addEventListener('pointerup', rel);
+      it.addEventListener('pointercancel', rel);
+      it.addEventListener('pointerleave', rel);
+      box.appendChild(it);
+    }
+    return box;
+  }
+
+  // 스킬 슬롯 2칸 (게임 중 우하단 코너, 통화버튼). null = 빈 칸. 예: { icon: '⚡', id: 'xxx' }
   const LANE_SKILLS = [null, null];
   function renderLaneItems() {
     const box = document.querySelector('#lane-button-bar .lane-button--call .lane-items');
     if (!box) return;
     box.querySelectorAll('.lane-item').forEach((el, i) => {
       const it = LANE_SKILLS[i];
+      el.classList.toggle('lane-item--empty', !it);
+      const iconEl = el.querySelector('.lane-item-icon');
+      if (iconEl) iconEl.textContent = it && it.icon ? it.icon : '';
+    });
+  }
+
+  // 알리 펀치 전용 "별표"(다이얼패드 실제 '✱' 키, 구멍12) — 스킬 슬롯 2칸 더(기획서 §8, 총 4개).
+  // 통화버튼(구멍15)과 완전히 동일한 방식 — 다른 무기에선 CSS(.gs-alipunch 없음)로 원래 숫자키 그대로.
+  const STAR_SKILLS = [null, null];
+  function wireAlipunchStarButton() {
+    const btn = document.querySelector('#lane-button-bar [data-region="12"]');
+    if (!btn || btn.querySelector('.lane-items')) return;
+    btn.appendChild(createLaneItemsBox());
+    renderStarItems();
+  }
+  function renderStarItems() {
+    const box = document.querySelector('#lane-button-bar [data-region="12"] .lane-items');
+    if (!box) return;
+    box.querySelectorAll('.lane-item').forEach((el, i) => {
+      const it = STAR_SKILLS[i];
       el.classList.toggle('lane-item--empty', !it);
       const iconEl = el.querySelector('.lane-item-icon');
       if (iconEl) iconEl.textContent = it && it.icon ? it.icon : '';
@@ -924,9 +952,11 @@
     // 캐논·특수망치 = 우하단 코너가 무기존(캐논 본체 or 스킬 슬롯 2개) → 구멍 15 빼고 15구멍. 뿅망치 = 16구멍.
     // (spinChannelsIn 이 gs-laneskill 을 보고 통화 버튼도 같이 돌리므로 그 호출 전에 세팅해야 한다.)
     const wRaw = localStorage.getItem('mole.weapon');
-    const weapon = wRaw === 'cannon' ? 'cannon' : (wRaw === 'goldhammer' ? 'goldhammer' : 'hammer');
-    const laneSkillZone = weapon !== 'hammer';
+    const weapon = wRaw === 'cannon' ? 'cannon' : (wRaw === 'goldhammer' ? 'goldhammer'
+      : (wRaw === 'alipunch' ? 'alipunch' : 'hammer'));
+    const laneSkillZone = weapon !== 'hammer'; // 캐논·골드해머·알리펀치 = 통화버튼 스킬존(§8 포함)
     document.getElementById('game-screen').classList.toggle('gs-laneskill', laneSkillZone);
+    document.getElementById('game-screen').classList.toggle('gs-alipunch', weapon === 'alipunch');
     // 홈→게임 첫 진입(fresh)에만 — 채널(유튜브 아이콘) 버튼을 10바퀴 돌려 숫자 버튼으로 전환.
     if (opts && opts.fresh && sharedLaneControls) sharedLaneControls.spinChannelsIn();
     // 새 게임 시작(fresh)일 때만 더보기 메뉴를 닫는다. 자동 다음 라운드는 메뉴를 건드리지 않음
@@ -941,9 +971,12 @@
 
     const rng = { next: MG.RNG.mulberry32(MG.RNG.hashSeed('mole-r' + roundNum + '-' + Date.now())) };
     let { regions, spawnPoints } = MG.GridPartition.partition({ gridSize: GRID_SIZE });
-    if (laneSkillZone) {
-      regions = regions.filter((r) => r.id !== CANNON_HOLE);
-      spawnPoints = spawnPoints.filter((sp) => sp.regionId !== CANNON_HOLE);
+    // 캐논·골드해머 = 우하단 구멍 1개(15) 제외 → 15구멍. 알리 펀치 = 좌·우하단 2개(12·15) 제외 →
+    // 14구멍 + 그 자리에 글러브(§1). 뿅망치는 그대로 16구멍.
+    const excludedHoles = weapon === 'alipunch' ? ALIPUNCH_HOLES : (laneSkillZone ? [CANNON_HOLE] : []);
+    if (excludedHoles.length) {
+      regions = regions.filter((r) => excludedHoles.indexOf(r.id) === -1);
+      spawnPoints = spawnPoints.filter((sp) => excludedHoles.indexOf(sp.regionId) === -1);
     }
 
     // 챕터 = 모드: 1 두더지만 / 2 +동물 / 3 +폭탄 / 4 +실드아이템 / 5 두더지 적게 + 방해물 최대.
@@ -959,7 +992,8 @@
       obstacleCount: MG.MoleSprites.OBSTACLE_COUNT,
       obstacles: ch >= 2,
       fourHit: ch >= 5,   // 4타 두더지 (전신→빠끔1→빠끔2→모자) — 챕터 5 전용
-      cannonBurst: weapon === 'cannon'   // 대포 연사 스킬 (2·3타 두더지 첫 타 10%)
+      cannonBurst: weapon === 'cannon',   // 대포 연사 스킬 (2·3타 두더지 첫 타 10%)
+      moleUpBonus: weapon === 'alipunch' ? 0.1 : 0   // 알리 펀치 [방어]: 내려가기 전 0.1초 더 여유(§7)
     };
 
     const scheduler = MG.SpawnScheduler.create({ regions, spawnPoints, config, rng });
@@ -984,8 +1018,10 @@
       spawnPoints
     });
 
-    // 장착 무기 = 망치(기본) / 대포 스킨 / 골드해머(지진). 인터페이스 동일 (strike/update/home/clear/isBusy).
-    const WeaponMod = (weapon === 'cannon' && MG.LaneCannon) ? MG.LaneCannon : MG.LaneHammer;
+    // 장착 무기 = 망치(기본) / 대포 스킨 / 골드해머(지진) / 알리 펀치(글러브 2개). 인터페이스 동일
+    // (strike/update/home/clear/isBusy).
+    const WeaponMod = (weapon === 'cannon' && MG.LaneCannon) ? MG.LaneCannon
+      : (weapon === 'alipunch' && MG.LaneBoxing) ? MG.LaneBoxing : MG.LaneHammer;
     const hammerOpts = { layer: document.getElementById('mole-hammer-layer') };
     if (weapon === 'goldhammer') {
       hammerOpts.sprite = 'assets/weapons/goldhammer.png';
@@ -1008,6 +1044,7 @@
       round: roundNum, levelData, regions, spawnPoints, scheduler, holeLayer, laneHammer, weapon, rng,
       timeRemaining: roundSeconds(),
       hitstopUntil: 0,
+      alipunchInvincibleUntil: 0, // 알리 펀치 [공격력]: 무적 활성 종료 시각(performance.now() 기준, §7)
       ended: false,
       paused: false,
       introActive: true // 카운트다운 동안은 시간도 안 흐르고 구멍 입력도 무시 (handleCell 참고)
@@ -1212,7 +1249,8 @@
 
     // 두더지 현재 프레임(전신/빠끔1/빠끔2/모자)에 따라 망치 타격점 높이가 달라진다 — 헬멧을 때린다.
     const frameKey = sharedPopElements.frameKeyAt ? sharedPopElements.frameKeyAt(regionId) : null;
-    state.laneHammer.strike(targetX, targetY, () => onHammerImpact(targetX, targetY, results), frameKey);
+    // regionId 는 알리 펀치가 어느 글러브·펀치스타일로 때릴지 구역 판정에 쓴다(다른 무기는 무시).
+    state.laneHammer.strike(targetX, targetY, () => onHammerImpact(targetX, targetY, results, { regionId }), frameKey, regionId);
 
     // 대포 연사: 이번 첫 타에 burst 가 떴으면 — 그 두더지 흙더미에 "BURST!" 띄우고(발동 즉시 인지),
     // 남은 타격을 자동 연속 발사 → 1마리 클리어.
@@ -1336,11 +1374,23 @@
     }, BURST_SHOT_GAP);
   }
 
+  // 알리 펀치 [공격력]: 무적 중이면 동물/폭탄도 안전하게 처리(§7 "어떤 대상이든 공격 가능").
+  function alipunchInvincible() {
+    return state.weapon === 'alipunch' && performance.now() < state.alipunchInvincibleUntil;
+  }
+
   function onHammerImpact(hitXFrac, hitYFrac, results, opts) {
     if (!state || state.ended) return;
     const board = document.getElementById('mole-board');
     let moleHits = 0;
     run.combo.setMult(currentScoreMult()); // 라이트·피버 배율 (이번 타격에 적용)
+
+    // 알리 펀치 아나운서 보이스 — 정타(두더지 실제 명중, 중간타 포함)일 때만. 빈 구멍·동물·폭탄은 무음.
+    if (state.weapon === 'alipunch' && opts && opts.regionId != null &&
+        results.some((r) => r.type === 'mole' && !r.ignored)) {
+      const style = MG.LaneBoxing.ZONES[opts.regionId];
+      if (style) MG.HitFx.punchVoice(style);
+    }
 
     results.forEach((r) => {
       if (r.ignored) return; // 연타 쿨다운 중 타격 — 점수·연출·콤보 변화 없음 (헛방도 아님)
@@ -1357,9 +1407,19 @@
           run.combo.onMoleHit();   // 스펙 §12 — 마리당 1콤보 (콤보·라이트·피버 배율은 setMult 로 이미 반영)
           MG.HitFx.scorePop(board, r.xFrac, r.yFrac, run.combo.score - before);
           checkComboLifeBonus();   // 콤보 100단위 넘기면 목숨 +1
-          // 처치(마지막) 타격에만: 대포면 폭발 흩뿌림, 아니면 기존 타격. 중간타(빼꼼/모자)는 손 안 댐.
+          // 처치(마지막) 타격에만: 대포면 폭발 흩뿌림, 알리 펀치면 별 이펙트(피격연출은 pop-elements.js
+          // m.punch 가 담당), 아니면 기존 타격. 중간타(빼꼼/모자)는 손 안 댐.
           if (state.weapon === 'cannon') MG.HitFx.moleBlast(board, r.xFrac, r.yFrac);
-          else MG.HitFx.moleHit(board, r.xFrac, r.yFrac);
+          else if (state.weapon === 'alipunch') {
+            MG.HitFx.shake(board);
+            MG.HitFx.punch(); // 랜덤 타격음 (별 이펙트만으로는 소리가 안 남 — 버그 수정)
+            MG.HitFx.punchStar(board, r.xFrac, r.yFrac);
+            // [공격력] 무적 발동 확률 20%, 5초(§7).
+            if (state.rng.next() < ALIPUNCH_INVINCIBLE_CHANCE) {
+              state.alipunchInvincibleUntil = performance.now() + ALIPUNCH_INVINCIBLE_MS;
+              MG.HitFx.powerUpWord(board, r.xFrac, r.yFrac); // "POWER UP" — 무적 발동 알림
+            }
+          } else MG.HitFx.moleHit(board, r.xFrac, r.yFrac);
           moleHits += 1;
         } else {
           MG.HitFx.moleTap(board, r.xFrac, r.yFrac);
@@ -1370,12 +1430,18 @@
         flashHud('hud-hearts');
         updateShieldHud();
       } else if (r.type === 'animal') {
-        setRunLives(run.lives - 1);     // 동물 = 공유 생명 -1 (즉시 풀에 반영)
-        run.combo.onObstacleHit();
-        MG.HitFx.obstacleHit(board, r.xFrac, r.yFrac, 'animal');
-        flashHud('hud-hearts');
+        if (alipunchInvincible()) {      // 무적 중 — 페널티 무효, 안전 타격 취급
+          MG.HitFx.juggle(board, r.xFrac, r.yFrac);
+        } else {
+          setRunLives(run.lives - 1);     // 동물 = 공유 생명 -1 (즉시 풀에 반영)
+          run.combo.onObstacleHit();
+          MG.HitFx.obstacleHit(board, r.xFrac, r.yFrac, 'animal');
+          flashHud('hud-hearts');
+        }
       } else if (r.type === 'bomb') {
-        if (run.shield) {               // 실드가 폭탄을 막는다 (페널티 무효)
+        if (alipunchInvincible()) {      // 무적 중 — 페널티 무효, 안전 타격 취급
+          MG.HitFx.juggle(board, r.xFrac, r.yFrac);
+        } else if (run.shield) {               // 실드가 폭탄을 막는다 (페널티 무효)
           run.shield = false;
           MG.HitFx.juggle(board, r.xFrac, r.yFrac); // "방어!" 느낌의 가벼운 연출
           updateShieldHud();
@@ -1726,6 +1792,7 @@
       }
     });
     wireStartButton(); // 다이얼러 초록 버튼: 홈에서 탭=시작 / 꾹=종료 대기
+    wireAlipunchStarButton(); // 알리 펀치 전용 별표 버튼(스킬 슬롯 2개 더)
     wireChapterNav();  // ◀ 챕터 N ▶ (열린 챕터 2개 이상일 때만 노출)
 
     migrateBest();

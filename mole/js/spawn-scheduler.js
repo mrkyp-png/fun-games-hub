@@ -99,7 +99,8 @@
         pop.hitsRequired = rollMoleKind();
         pop.hitsTaken = 0;
         pop.poseIndex = Math.floor(rng.next() * (config.molePoseCount || 8));
-        pop.remaining = config.popDuration * DURATION_MULT[pop.hitsRequired];
+        // 알리 펀치 [방어]: 내려가기(자연 만료) 전 0.1초 더 여유(기획서 §7, config.moleUpBonus).
+        pop.remaining = config.popDuration * DURATION_MULT[pop.hitsRequired] + (config.moleUpBonus || 0);
       } else {
         pop.poseIndex = Math.floor(rng.next() * (config.obstacleCount || 5)); // 어느 동물인지
       }

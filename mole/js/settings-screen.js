@@ -71,6 +71,17 @@
       list.appendChild(row);
     }
 
+    // 광고 제거 배지 — 원래 홈 화면(board-start)에 떠있던 걸 설정 안으로 이동(사용자 지시).
+    // 원래도 클릭 동작이 없었던 순수 배지라, 여기서도 그대로(추후 구매 플로우 연결 대기).
+    function adfreeRow() {
+      var row = document.createElement('div');
+      row.className = 'set-row set-row--adfree';
+      row.innerHTML = '<img class="set-adfree-badge" src="assets/adfree-badge.png" alt="">' +
+        '<span class="set-lbl"></span>';
+      row.querySelector('.set-lbl').textContent = T('mole.set.adfree');
+      list.appendChild(row);
+    }
+
     function resetRow() {
       var row = document.createElement('div');
       row.className = 'set-row set-row--reset';
@@ -92,6 +103,7 @@
       toggleRow('sfx', 'mole.set.sfx', 'sound');
       toggleRow('vib', 'mole.set.vib', 'vibration');
       langRow();
+      adfreeRow();
       if (opts.onHelp) {
         linkRow('<path d="M5 4.5A1.5 1.5 0 016.5 3H19v18H6.5A1.5 1.5 0 015 19.5zM9 3v18"/>',
           'mole.more.help', opts.onHelp);

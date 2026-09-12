@@ -54,6 +54,11 @@
     img.src = sprite || 'assets/hammer.png';
     img.alt = '';
     el.appendChild(img);
+    // 골드해머 보석 글로우 — 아이템보관창(.inv-gem-glow)엔 있었는데 게임화면엔 빠져있던 것 추가.
+    // el(회전 대상) 안에 넣어서 스윙 각도에 따라 같이 회전.
+    const gemGlow = document.createElement('span');
+    gemGlow.className = 'lane-hammer-gem-glow';
+    el.appendChild(gemGlow);
     el.style.transformOrigin = gripX + '% ' + gripY + '%';
     layer.appendChild(el);
 

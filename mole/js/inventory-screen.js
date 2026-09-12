@@ -14,11 +14,15 @@
       stats: [['Hole 16 → 15', 'Holes 16 → 15'],
               ['2·3타 두더지 연타 확률 10%', '10% burst on 2·3-hit moles'],
               ['-', '-']] },
-    { id: 'goldhammer', name: '골드해머', nameEn: 'Gold Hammer', thumb: 'assets/weapons/goldhammer.png',
+    { id: 'goldhammer', name: '골드해머', nameEn: 'Gold Hammer', thumb: 'assets/weapons/goldhammer-0.png',
       gemGlow: true,   // 보석(파란불빛) 부분에 맥동 글로우
       stats: [['Hole 16 → 15', 'Holes 16 → 15'],
               ['주변 두더지 지진 연타 15%', '15% quake — chain-hits nearby moles'],
-              ['-', '-']] }
+              ['-', '-']] },
+    { id: 'alipunch', name: '알리 판취', nameEn: 'Ali Punch', thumb: 'assets/weapons/alipunch-jab.png',
+      stats: [['Hole 16 → 14', 'Holes 16 → 14'],
+              ['무적 5초 확률 20%', '20% chance — 5s invincibility'],
+              ['하강 딜레이 +0.1초', '+0.1s before mole retreats']] }
   ];
 
   function create(opts) {
@@ -30,7 +34,7 @@
 
     function equipped() {
       var w = localStorage.getItem('mole.weapon');
-      return w === 'cannon' ? 'cannon' : (w === 'goldhammer' ? 'goldhammer' : 'hammer');
+      return w === 'cannon' ? 'cannon' : (w === 'goldhammer' ? 'goldhammer' : (w === 'alipunch' ? 'alipunch' : 'hammer'));
     }
     function nameOf(w) {
       return I18N.lang === 'en' ? w.nameEn : w.name;
@@ -47,8 +51,32 @@
       WEAPONS.forEach(function (w) {
         var card = document.createElement('div');
         card.className = 'inv-card' + (w.id === cur ? ' inv-card--on' : '');
-        var thumbHtml = '<div class="inv-thumb' + (w.gemGlow ? ' inv-thumb--gem' : '') + '">' +
-          '<img alt="" src="' + w.thumb + '">' + (w.gemGlow ? '<span class="inv-gem-glow"></span>' : '') + '</div>';
+        // 알리 펀치 = 좌/우 글러브 한 쌍(오른쪽은 왼쪽 이미지 거울상 — 실제 게임과 동일, §1).
+        // 강조 애니메이션(사용자 지시): 두 글러브가 2번 맞부딪히고, 2번째에 스파크+"POWER UP" 표시.
+        var thumbHtml = w.id === 'alipunch'
+          ? '<div class="inv-thumb inv-thumb--pair"><img alt="" src="' + w.thumb + '">' +
+            '<img alt="" class="inv-thumb-mirror" src="' + w.thumb + '">' +
+            '<span class="inv-bump-spark">✨</span><span class="inv-bump-word">POWER UP</span></div>'
+          // 캐논 강조 애니메이션(사용자 지시): 포신 반동 + 실제 게임 화염·연기 스프라이트 재사용.
+          : w.id === 'cannon'
+          ? '<div class="inv-thumb inv-thumb--cannon"><img alt="" src="' + w.thumb + '">' +
+            '<img alt="" class="inv-cannon-burn" src="assets/weapons/cannon-fx4.png">' +
+            '<img alt="" class="inv-cannon-smoke" src="assets/weapons/cannon-fx5.png">' +
+            '<span class="inv-cannon-word">BOOM!</span></div>'
+          // 골드해머 강조 애니메이션(사용자 지시, 참고 이미지 확인): 반시계 90도 회전(타격하듯) 후,
+          // 망치 끝(머리, 회전 후 위치 약 30%/59%)에서 여러 갈래로 갈라지는 균열 선 + "QUAKE!".
+          : '<div class="inv-thumb' + (w.gemGlow ? ' inv-thumb--gem' : '') + '">' +
+          '<img alt="" src="' + w.thumb + '">' + (w.gemGlow
+            ? '<span class="inv-gem-glow"></span>' +
+              // 사용자 지정: 균열이 9시(왼쪽)·11시(왼쪽위)·12시(위)·3시(오른쪽) 방향으로 뻗음.
+              '<svg class="inv-hammer-crack" viewBox="0 0 100 100" aria-hidden="true">' +
+              '<path class="c1" d="M50 50 L40 46 L32 52 L15 47" />' +
+              '<path class="c2" d="M50 50 L42 45 L37 36 L30 20" />' +
+              '<path class="c3" d="M50 50 L46 40 L52 32 L47 15" />' +
+              '<path class="c4" d="M50 50 L60 46 L68 52 L85 47" />' +
+              '</svg>' +
+              '<span class="inv-hammer-word">QUAKE!</span>'
+            : '') + '</div>';
         card.innerHTML =
           '<div class="inv-head"><span class="inv-name"></span></div>' +
           thumbHtml +

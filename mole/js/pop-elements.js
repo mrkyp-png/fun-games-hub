@@ -16,6 +16,10 @@
   function isCannonEquipped() {
     try { return localStorage.getItem('mole.weapon') === 'cannon'; } catch (e) { return false; }
   }
+  // 알리 펀치 장착 시 처치 두더지는 구멍으로 안 내려가고 움찔→뒤로 튕겨나가며 축소·소멸(기획서 §6).
+  function isAlipunchEquipped() {
+    try { return localStorage.getItem('mole.weapon') === 'alipunch'; } catch (e) { return false; }
+  }
   const STEP_SEC = 0.055;       // 등장/빠끔 이동: 깊이 한 칸이 화면에 머무는 시간 — 빠르게
   const DYING_STEP_SEC = 0.144; // 타격 후: 전신 그대로 구멍 아래로 "천천히" 미끄러진다 (0→4 ≈ 0.58s)
 
@@ -45,7 +49,7 @@
       const m = {
         el, img, kind: pop.type, poseIndex: pop.poseIndex || 0, regionId: pop.regionId,
         shownDepth: GONE_DEPTH, targetDepth: 0, shownFile: null, dying: false,
-        blast: false, dyingFrom: 0
+        blast: false, punch: false, dyingFrom: 0
       };
       render(m);
       pops.set(pop.id, m);
@@ -86,6 +90,21 @@
         m.img.style.opacity = k < 0.5 ? '1' : String(Math.max(0, 1 - (k - 0.5) / 0.5));
         m.img.style.filter = 'brightness(0.14) sepia(1) contrast(1.4)' + (blur ? ' blur(' + blur.toFixed(1) + 'px)' : '');
         m.img.style.transform = 'translate(-50%, -2%) rotate(' + wob.toFixed(1) + 'deg) scale(' + grow.toFixed(3) + ')';
+        return;
+      }
+
+      if (m.dying && m.punch) {
+        // 알리 펀치 처치: 구멍으로 안 내려가고 — 움찔(초반 짧은 흔들림) → 뒤로 튕겨나가며(위로 이동)
+        // 점점 작아지다 → 서서히 사라짐(기획서 §6. 별 회전은 hit-fx.js punchStar 가 오버레이로 담당).
+        const span = GONE_DEPTH - m.dyingFrom;
+        const k = span > 0 ? Math.min(1, Math.max(0, (m.shownDepth - m.dyingFrom) / span)) : 1;
+        const flinch = k < 0.18 ? Math.sin(k / 0.18 * Math.PI) * 6 : 0;   // 초반 움찔(좌우 짧게)
+        const knockUp = k < 0.18 ? 0 : Math.min(1, (k - 0.18) / 0.82) * 55;  // 뒤로(위로) 튕겨나감
+        const shrink = k < 0.18 ? 1 : 1 - Math.min(1, (k - 0.18) / 0.82) * 0.75; // 축소
+        m.img.style.opacity = k < 0.4 ? '1' : String(Math.max(0, 1 - (k - 0.4) / 0.6));
+        m.img.style.filter = '';
+        m.img.style.transform = 'translate(-50%, calc(-2% - ' + knockUp.toFixed(1) + '%)) ' +
+          'rotate(' + flinch.toFixed(1) + 'deg) scale(' + shrink.toFixed(3) + ')';
         return;
       }
 
@@ -132,6 +151,7 @@
           // 실제 타격당해 처치된 두더지만 대포 폭발 연출. 시간초과로 안 맞고 물러나는 건
           // 대포모드에서도 기존처럼 그냥 아래로 내려간다(pop.killed=false).
           m.blast = pop.type === 'mole' && pop.killed && isCannonEquipped();
+          m.punch = pop.type === 'mole' && pop.killed && isAlipunchEquipped();
         }
         m.dying = !!pop.dying;
         m.targetDepth = targetFor(pop);

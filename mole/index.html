@@ -159,7 +159,6 @@
         <span class="mm-stat mm-hearts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg><b data-bs-hearts>3</b></span>
         <span class="mm-stat mm-coins"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg><b data-bs-coins>0</b></span>
       </div>
-      <button type="button" id="board-adfree" class="board-adfree" aria-hidden="true"><img src="assets/adfree-badge.png" alt=""></button>
       <!-- 최고 스코어: 위에서 툭 내려오는 문자 알림. #board-start(z7) 안이 아니라 #mole-board
            직속으로 둬서 board-stats(z9)와 진짜 형제 — 그래야 z-index:10 이 실제로 먹힌다
            (부모 #board-start 의 z-index 에 갇히면 자식 z-index 는 소용없음). -->
@@ -169,7 +168,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v400</div>
+      <div id="build-tag" aria-hidden="true">v402</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -513,6 +512,7 @@
 <script src="js/hit-fx.js"></script>
 <script src="js/lane-hammer.js"></script>
 <script src="js/lane-cannon.js"></script>
+<script src="js/lane-boxing.js"></script>
 <script src="js/lane-controls.js"></script>
 <script src="js/channel-links.js"></script>
 <script src="js/region-reveal.js"></script>
@@ -572,7 +572,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=400').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=402').catch(function () {});
       }
     });
   }

@@ -412,6 +412,22 @@
           call.style.transform = '';
         }, 950);
       }
+
+      // 알리 펀치 전용 '✱' 키(구멍12, 별표 스킬 슬롯)도 통화 버튼과 같은 회전(사용자 지시).
+      var star = gs && gs.classList.contains('gs-alipunch')
+        ? buttons.find(function (b) { return b && b.dataset && b.dataset.region === '12'; })
+        : null;
+      if (star) {
+        star.style.transition = 'none';
+        star.style.transform = 'perspective(600px) rotateY(0deg)';
+        void star.offsetWidth;
+        star.style.transition = 'transform 0.9s cubic-bezier(.2, .7, .3, 1)';
+        star.style.transform = 'perspective(600px) rotateY(3600deg)';
+        setTimeout(function () {
+          star.style.transition = '';
+          star.style.transform = '';
+        }, 950);
+      }
     }
 
     // 언어 바뀌면(설정에서 즉시, ko↔en) 숫자키 자음 라벨도 다시 그린다 — 안 그러면 fillFace 는
