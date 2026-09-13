@@ -1791,6 +1791,38 @@ body { background: var(--lm-page); }
 .ci-smoke.is-on { animation: ci-fire-smoke 0.6s ease-out 0.3s forwards; }
 @keyframes ci-fire-flash { 0% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes ci-fire-smoke { 0% { opacity: 0; } 25% { opacity: 0.8; } 100% { opacity: 0; } }
+
+/* 골드해머 인트로 "쾅" 착지(사용자 지정) — 다이얼패드 흔들림 + 화염/연기(캐논 fx 재사용) +
+   버튼 튐(지면 갈라지는 느낌). .dialpad(position:relative) 기준 자식으로 얹는다. */
+.gh-shake { animation: gh-dialpad-shake 0.32s ease-out; }
+@keyframes gh-dialpad-shake {
+  0%   { transform: translate(0, 0); }
+  15%  { transform: translate(-6px, 4px); }
+  35%  { transform: translate(5px, -5px); }
+  55%  { transform: translate(-4px, 3px); }
+  75%  { transform: translate(3px, -2px); }
+  100% { transform: translate(0, 0); }
+}
+.gh-impact-flash, .gh-impact-smoke {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 30;
+}
+.gh-impact-flash { width: 70%; }
+.gh-impact-flash.is-on { animation: ci-fire-flash 0.28s ease-out forwards; }
+.gh-impact-smoke.is-on { animation: ci-fire-smoke 0.85s ease-out forwards; }
+.lane-button.gh-jolt {
+  animation: gh-btn-jolt 0.36s cubic-bezier(.2, 1.6, .4, 1) both;
+  animation-delay: calc(var(--jd, 0) * 1ms);
+}
+@keyframes gh-btn-jolt {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(0.88) translateY(2px); }
+  60%  { transform: scale(1.1) translateY(-3px); }
+  100% { transform: scale(1); }
+}
 .lane-hammer {
   position: absolute;
   width: 14.04%;   /* 검은 외곽선(약 9px) 추가로 스프라이트가 커진 만큼(301→325px) 보정해 망치 아트 자체 크기 유지 */

@@ -127,21 +127,24 @@
 
     function isBusy() { return phase === 'fly' || phase === 'chop' || phase === 'rise'; }
 
-    // 골드해머 라운드 인트로 전용(사용자 지정 "쾅! 내리찍기") — 대기 위치(HOME) 각도 그대로
-    // 화면 위에서 수직으로 낙하해 대기 위치에 착지. 자체 rAF 로 구동(인트로 중엔 메인 루프 정지 상태).
-    function dropIn(ms, onLand) {
+    // 골드해머 라운드 인트로 전용(사용자 지정) — 대기 위치(HOME) 각도 그대로 지정 좌표로
+    // 부드럽게 이동. 자체 rAF 로 구동(인트로 중엔 메인 루프 정지 상태). 낙하(가속)·착지 후
+    // 대기위치로 튐(감속) 양쪽에 재사용 — easeFn 없으면 기본 ease(k)=k*k(가속).
+    function flyTo(fromX2, fromY2, toX, toY, ms, easeFn, onDone) {
       phase = 'home'; t = 0;
-      gx = HOME_X; deg = HOME_DEG;
-      fromX = HOME_X; fromDeg = HOME_DEG; aimX = HOME_X;
+      gx = fromX2; gy = fromY2; deg = HOME_DEG;
+      fromX = fromX2; fromDeg = HOME_DEG; aimX = fromX2;
       fired = false;
-      const startY = -0.4; // 화면 위 밖
+      const ek = easeFn || ease;
       const start = performance.now();
       (function step(now) {
         const k = Math.min(1, ((now || performance.now()) - start) / ms);
-        gy = lerp(startY, HOME_Y, ease(k)); // ease(k)=k*k — 중력 가속 느낌
+        const e = ek(k);
+        gx = lerp(fromX2, toX, e);
+        gy = lerp(fromY2, toY, e);
         paint();
         if (k < 1) requestAnimationFrame(step);
-        else if (onLand) onLand();
+        else if (onDone) onDone();
       })(start);
     }
 
@@ -164,7 +167,7 @@
     }
 
     paint();
-    return { strike, update, isBusy, home, clear, dropIn };
+    return { strike, update, isBusy, home, clear, flyTo };
   }
 
   const api = { create };
