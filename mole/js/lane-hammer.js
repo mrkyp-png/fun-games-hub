@@ -59,8 +59,7 @@
     const gemGlow = document.createElement('span');
     gemGlow.className = 'lane-hammer-gem-glow';
     el.appendChild(gemGlow);
-    el.style.transformOrigin = gripX + '% ' + gripY + '%';
-    layer.appendChild(el);
+    layer.appendChild(el); // transform-origin 은 paint() 가 anchorX/Y 기준으로 매번 설정
 
     let phase = 'home';   // 'home' | 'fly' | 'chop' | 'rise' | 'return'
     let t = 0;
@@ -69,6 +68,7 @@
     let impactCb = null;
     let fired = false;
     let scaleVal = 1; // 골드해머 인트로 회전 등장 전용(평소엔 항상 1)
+    let anchorX = gripX, anchorY = gripY; // translate·transform-origin 공통 기준점(평소엔 그립)
 
     function strike(targetXFrac, targetYFrac, onImpact, frameKey) {
       const tx = (typeof targetXFrac === 'number') ? targetXFrac : 0.5;
@@ -121,7 +121,10 @@
     function paint() {
       el.style.left = (gx * 100).toFixed(2) + '%';
       el.style.top = (gy * 100).toFixed(2) + '%';
-      el.style.transform = 'translate(-' + gripX + '%, -' + gripY + '%) rotate(' + (deg + dOff).toFixed(1) + 'deg) scale(' + scaleVal.toFixed(3) + ')';
+      // translate 기준점과 transform-origin(회전·확대 축)을 항상 같은 점으로 맞춘다 — 서로
+      // 다르면(그립점 translate + 중앙 회전축 등) 확대·축소 시 그 어긋난 만큼 위치가 밀려 보인다.
+      el.style.transformOrigin = anchorX + '% ' + anchorY + '%';
+      el.style.transform = 'translate(-' + anchorX + '%, -' + anchorY + '%) rotate(' + (deg + dOff).toFixed(1) + 'deg) scale(' + scaleVal.toFixed(3) + ')';
       el.style.marginTop = phase === 'home' ? homeMT : '0'; // 대기 위치 세로 보정 (기본 0.2cm 아래)
       el.style.opacity = '1'; // 항상 불투명 — "현실 손이 게임화면을 때리는" 3D 느낌 (사용자 요청)
     }
@@ -134,10 +137,19 @@
     // 맞춰 끝나 도착 순간 기본 스프라이트(대기 포즈)로 교체해 매끄럽게 안착. 자체 rAF 로 구동
     // (인트로 중엔 메인 루프 정지 상태).
     function spinIn(fromX2, fromY2, ms, spins, fromScale, onDone) {
-      phase = 'home'; t = 0;
+      // phase='spin'(≠'home')으로 둬서 paint() 의 homeMarginTop 세로보정이 비행 내내 끼어들지
+      // 않게 한다(고정 cm값이라 전엔 작게 줄여도 항상 위로 밀려 보였음 — 사용자 지적).
+      phase = 'spin'; t = 0;
       fired = false;
       const baseSrc = sprite || 'assets/hammer.png';
       img.src = 'assets/weapons/goldhammer-0.png';
+      // 그립점(56,72) 기준 확대·축소는 그립이 아닌 부분(머리 등)이 그만큼 옆으로 남아 별표
+      // 중심에서 벗어나 보인다(사용자 지적) — 비행 중엔 스프라이트 정중앙(50,50)을 기준점으로
+      // 시작해 대기 위치에 도착할 때 정확히 그립(gripX,gripY)이 되도록 같은 진행률로 블렌딩
+      // (착지 각도·크기 계산과 동일 기준이라 마지막 순간 튀지 않는다). 그림자 필터도 고정 px라
+      // 이 작은 크기에선 어긋나 보여 잠시 끈다.
+      const prevFilter = img.style.filter;
+      img.style.filter = 'none';
       const startScale = fromScale != null ? fromScale : 0.35;
       const endDeg = hDeg + 360 * (spins || 3);
       const start = performance.now();
@@ -148,10 +160,15 @@
         gy = lerp(fromY2, HOME_Y, e);
         deg = lerp(0, endDeg, e);
         scaleVal = lerp(startScale, 1, e);
+        anchorX = lerp(50, gripX, e);
+        anchorY = lerp(50, gripY, e);
         paint();
         if (k < 1) requestAnimationFrame(step);
         else {
           img.src = baseSrc;
+          img.style.filter = prevFilter;
+          anchorX = gripX; anchorY = gripY;
+          phase = 'home';
           gx = HOME_X; gy = HOME_Y; deg = hDeg; scaleVal = 1;
           fromX = HOME_X; fromY = HOME_Y; fromDeg = hDeg; aimX = HOME_X; aimY = HOME_Y;
           paint();

@@ -1184,11 +1184,26 @@
     // 골드해머 라운드 인트로 등장 연출(사용자 지정 "회전 등장") — 키패드 '✱' 키 위치에서 작게·
     // 0도 포즈로 시작해, 대기 위치로 날아가며 회전(느리게→빠르게)·확대(작게→크게) 동시 진행,
     // 회전이 정확히 대기 각도에 맞춰 끝나는 순간 기본 스프라이트로 교체해 안착.
+    // 시작 좌표는 실행 시점에 '✱' 키를 직접 찾아 실측한다 — 다이얼패드(.dialpad)는 보드
+    // (#mole-hammer-layer, --sq 기준 정사각형)와 별개 레이아웃이라, 화면 비율이 다르면 고정
+    // 분수값 하나로는 두 좌표계 비율이 안 맞아 화면 크기별로 위치가 어긋난다(사용자 지적).
     function playGoldHammerIntro(fast) {
       if (!state.laneHammer || !state.laneHammer.spinIn) return;
       setHammerLayerVisible(true);
+      const layer = document.getElementById('mole-hammer-layer');
+      const starNum = Array.from(document.querySelectorAll('#lane-button-bar .lane-button .lane-num'))
+        .find((n) => n.textContent.trim() === '✱');
+      let sx = GH_SPIN_START.x, sy = GH_SPIN_START.y; // 폴백(요소를 못 찾을 때만)
+      if (layer && starNum) {
+        const lr = layer.getBoundingClientRect();
+        const range = document.createRange();
+        range.selectNodeContents(starNum);
+        const r = range.getBoundingClientRect();
+        sx = (r.x + r.width / 2 - lr.x) / lr.width;
+        sy = (r.y + r.height / 2 - lr.y) / lr.height;
+      }
       const ms = fast ? 3380 : 3680; // 실측 is-opening 시각(라운드1 ~3714ms·라운드2~10 ~3422ms)에 맞춤
-      state.laneHammer.spinIn(GH_SPIN_START.x, GH_SPIN_START.y, ms, 4, 0.04, () => {});
+      state.laneHammer.spinIn(sx, sy, ms, 4, 0.04, () => {});
     }
 
     // 라운드1 전용: 타이핑 뒤 3·2·1·GO!. 끝나면 finish() 호출.
