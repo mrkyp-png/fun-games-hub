@@ -18,6 +18,35 @@
   let hitBuffers = null;   // AudioBuffer[] (디코드 완료 후)
   let hitLoading = false;
 
+  // 두더지 피격 시 귀여운 비명(사용자 제공, 바탕화면 "두더지 음성.mp4" → 무음구간 기준 트림 +
+  // 1.5배속(asetrate, 피치도 같이 올라감 — 사용자 지정) "아이고/아야/엄마야/왜때려/아삭" 등
+  // 9개 중 랜덤 1개, 타격마다.
+  const MOLE_HURT_URLS = [];
+  for (let i = 1; i <= 9; i++) MOLE_HURT_URLS.push('audio/mole-hurt-' + i + '.mp3');
+  let moleHurtBuffers = null;
+  let moleHurtLoading = false;
+  function loadMoleHurtBuffers(ctx) {
+    if (moleHurtBuffers || moleHurtLoading || typeof fetch !== 'function') return;
+    moleHurtLoading = true;
+    Promise.all(MOLE_HURT_URLS.map((u) =>
+      fetch(u).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b))
+    )).then((bufs) => { moleHurtBuffers = bufs; })
+      .catch(() => { moleHurtLoading = false; });
+  }
+  function moleVoice() {
+    if (sfxOff()) return;
+    try {
+      const ctx = getCtx();
+      if (!ctx || !moleHurtBuffers || !moleHurtBuffers.length) return;
+      const src = ctx.createBufferSource();
+      src.buffer = moleHurtBuffers[(Math.random() * moleHurtBuffers.length) | 0];
+      const g = ctx.createGain();
+      g.gain.value = 0.8;
+      src.connect(g).connect(ctx.destination);
+      src.start();
+    } catch (e) { /* 오디오 불가 환경 무시 */ }
+  }
+
   // 라운드 인트로 음성(사용자 제공, 바탕화면 "라운드.wav" → 무음 구간 기준 10등분해 트림).
   // "Round One" ~ "Round Ten" 순서(Freesound "Round One to Ten Deep Voice" — audio/CREDITS.txt 참고, 무기 무관 항상 재생).
   const ROUND_ANNOUNCE_URLS = [];
@@ -312,6 +341,7 @@
     audioCtx = audioCtx || new Ctx();
     if (audioCtx.state === 'suspended' && audioCtx.resume) audioCtx.resume();
     loadHitBuffers(audioCtx); // ctx 생기는 즉시 타격음 파일 프리로드
+    loadMoleHurtBuffers(audioCtx); // 두더지 비명도 무기 무관 항상 프리로드
     loadRoundAnnounceBuffers(audioCtx); // 라운드 음성도 무기 무관 항상 프리로드
     if (isCannonEquipped()) { loadCannonBuffers(audioCtx); loadCannonRotateBuffer(audioCtx); loadCannonWheelBuffer(audioCtx); } // 대포 장착 중일 때만 폭발음·회전음·바퀴음 로드(망치 유저는 불필요한 다운로드 안 함)
     if (isAlipunchEquipped()) { loadPunchVoiceBuffers(audioCtx); loadFightBuffer(audioCtx); } // 알리 펀치 장착 중일 때만 보이스·fight음 로드
@@ -488,6 +518,7 @@
     }
     vibrate([0, 15, 35, 12]); // 짧은 더블 — 뭉툭한 "쿵" 대신 또렷한 "탁"
     punch();
+    setTimeout(moleVoice, 320); // 두더지 비명(사용자 지정) — 타격음과 안 겹치게 끝난 뒤에
   }
 
   // 대포 처치 — 두더지가 안 내려가고 그 자리에서 그을려 흔들리다 흩뿌리며 사라진다
@@ -671,6 +702,6 @@
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
-  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, punchStar, powerUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, fight };
+  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, punchStar, powerUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, fight, moleVoice };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);

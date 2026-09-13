@@ -1637,6 +1637,7 @@
           checkComboLifeBonus();
           MG.HitFx.shake(board);
           MG.HitFx.punch(); // 랜덤 타격음 — 두더지 처치와 동일한 연출
+          setTimeout(() => MG.HitFx.moleVoice(), 320); // 두더지 비명도 동일하게(무적 중 동물, 사용자 지정)
           MG.HitFx.punchStar(board, r.xFrac, r.yFrac);
           moleHits += 1;
         } else {

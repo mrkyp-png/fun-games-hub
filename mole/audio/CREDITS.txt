@@ -89,6 +89,11 @@
   ⚠️ 라이선스 미확인 — 원 영상 저작권자 크레딧/허락 확인 안 됨. 배포 범위 넓힐
   계획이면 재검토 필요.
 
+■ mole-hurt-1.mp3 ~ mole-hurt-9.mp3  (두더지 피격 시 비명, 타격음 뒤 320ms 후 재생)
+  출처: 사용자 본인 녹음(바탕화면 "두더지 음성.mp4", 18s) — "아이고/아야/엄마야/왜때려/
+  아삭" 등을 무음구간 기준 9~10개로 트림 후 asetrate 2.25배속(피치도 같이 올라감,
+  사용자 지정)으로 가공. 알리펀치 무적 중 동물 안전 타격에도 동일 적용.
+
 ■ cannon-wheel-roll.mp3  (캐논 라운드 인트로 — 옆면 이동 중 바퀴 굴러가는 소리)
   출처: Pixabay Sound Effects — David Dumais
   https://pixabay.com/sound-effects/  (David Dumais: https://pixabay.com/ko/users/daviddumaisaudio-41768500/)
