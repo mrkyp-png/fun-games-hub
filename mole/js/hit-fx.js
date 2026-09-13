@@ -486,6 +486,44 @@
   // 게임 시작(사용자 제스처) 직후 호출 — 카운트다운 동안 오디오 컨텍스트 + 타격음 파일을 미리 준비.
   function warmup() { try { getCtx(); } catch (e) { /* noop */ } }
 
-  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, punchStar, powerUpWord, punch, punchVoice };
+  // 뿅망치 라운드 인트로 "쭉 늘어났다 팡" 등장음 — 합성음(라이선스 불필요).
+  // 늘어나며 음이 올라갔다가(스트레치) 통통 튀는 떨림과 함께 팡 정착(감쇠 비브라토).
+  function hammerPop() {
+    if (sfxOff()) return;
+    try {
+      const ctx = getCtx();
+      if (!ctx) return;
+      const t = ctx.currentTime;
+      const master = ctx.createGain();
+      master.gain.value = 0.16;
+      master.connect(ctx.destination);
+
+      const o = ctx.createOscillator();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(220, t);
+      o.frequency.exponentialRampToValueAtTime(680, t + 0.18); // 쭉 늘어나며 음이 올라감
+      o.frequency.exponentialRampToValueAtTime(420, t + 0.5);  // 팡 튕기며 안착(음 내려와 정착)
+
+      const lfo = ctx.createOscillator(); // 통통 튀는 떨림(vibrato), 진폭이 감쇠
+      lfo.type = 'sine';
+      lfo.frequency.value = 22;
+      const lfoGain = ctx.createGain();
+      lfoGain.gain.setValueAtTime(140, t + 0.18);
+      lfoGain.gain.exponentialRampToValueAtTime(1, t + 0.55);
+      lfo.connect(lfoGain).connect(o.frequency);
+      lfo.start(t);
+      lfo.stop(t + 0.6);
+
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(1, t + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
+      o.connect(g).connect(master);
+      o.start(t);
+      o.stop(t + 0.62);
+    } catch (e) { /* 오디오 불가 환경 무시 */ }
+  }
+
+  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, punchStar, powerUpWord, punch, punchVoice, hammerPop };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);

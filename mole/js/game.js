@@ -1223,7 +1223,9 @@
       setHammerLayerVisible(true);
       const total = fast ? 3380 : 3680; // 실측 is-opening 시각(라운드1 ~3714ms·라운드2~10 ~3422ms)에 맞춤
       const popMs = 650;
-      state.laneHammer.popIn(Math.max(0, total - popMs), popMs, () => {});
+      const delay = Math.max(0, total - popMs);
+      state.laneHammer.popIn(delay, popMs, () => {});
+      setTimeout(() => { if (myGen === sessionGen) MG.HitFx.hammerPop(); }, delay); // 뿅 소리 — 등장과 동시에
     }
 
     // 라운드1 전용: 타이핑 뒤 3·2·1·GO!. 끝나면 finish() 호출.
