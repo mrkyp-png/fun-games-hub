@@ -29,7 +29,8 @@
   // 목숨(run.lives)은 허브 공유 생명(MG.Economy) 그 자체다 — 동물 -1 / 콤보 100마다 +1 이
   // 즉시 공유 풀에 반영되고, 홈·더보기·게임 화면이 항상 같은 수를 보여준다. setRunLives() 로만 바꾼다.
   let run = null;     // { combo: ComboScore, lives, comboMilestone }
-  const COMBO_LIFE_STEP = 100; // 콤보가 이 배수를 넘길 때마다 목숨 +1
+  const COMBO_LIFE_STEP = 100; // 콤보가 이 배수를 넘길 때마다 목숨 보상 판정
+  const COMBO_LIFE_BONUS = { easy: 0, mid: 1, legend: 2 }; // 라이트 ON/DIM/OFF 별 목숨 보상 개수
   const JUGGLE_BONUS = 30;     // 저글(더블) 점수 — 작은 덤 (콤보 점수표 안 씀)
   let rafId = null;
   let lastTime = 0;
@@ -1487,12 +1488,17 @@
     }
   }
 
-  // 콤보가 100·200·300… 을 새로 넘겼으면 공유 생명 +1 (풀에 영구 반영).
+  // 콤보가 100·200·300… 을 새로 넘겼으면 공유 생명 보상 (풀에 영구 반영).
+  // 보상 개수는 라이트 모드별로 다름: ON(easy) 없음 / DIM(mid) +1 / OFF(legend) +2.
   function checkComboLifeBonus() {
     const step = Math.floor(run.combo.combo / COMBO_LIFE_STEP);
     if (step > run.comboMilestone) {
-      setRunLives(run.lives + (step - run.comboMilestone));
+      const blocks = step - run.comboMilestone;
       run.comboMilestone = step;
+      const per = COMBO_LIFE_BONUS[currentDifficulty()] || 0;
+      const amount = blocks * per;
+      if (amount <= 0) return;
+      setRunLives(run.lives + amount);
       flashHud('hud-hearts');
       const h = document.getElementById('hud-hearts');
       if (h) { h.classList.remove('life-bonus'); void h.offsetWidth; h.classList.add('life-bonus'); }
