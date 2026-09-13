@@ -1176,11 +1176,13 @@
         wheels.forEach((w) => w.classList.add('ci-hide'));
         rig.style.width = '25%'; // a3 실측 24.2% + 15%, 다시 -10%(사용자 지정)
         body.src = 'assets/weapons/cannon-a3-mirror.png';
+        MG.HitFx.cannonRotateClick(); // 각도 전환 "철컥" 소리(사용자 제공)
       }, travelMs); // GO!(라운드1)/타이핑 끝(라운드2~10) 타이밍에 정착이 맞춰지도록(사용자 지정)
       setTimeout(() => { // 12시 방향 포즈로 전환
         if (myGen !== sessionGen) return;
         rig.style.width = '23.6%'; // a4 실측 21.6% + 15%, 다시 -5%(사용자 지정)
         body.src = 'assets/weapons/cannon-a4-mirror.png';
+        MG.HitFx.cannonRotateClick(); // 각도 전환 "철컥" 소리(사용자 제공)
       }, travelMs + holdMs);
       setTimeout(() => { // 완료 — 인트로 숨기고 실제 대포(평소 대기 포즈)로 교체
         if (myGen !== sessionGen) return;
