@@ -643,13 +643,7 @@
     if (state && state.holeLayer) state.holeLayer.clear();
     if (state && state.laneHammer) state.laneHammer.clear();
     resetHot();
-    // 알리 펀치 무적 연출 잔류 버그 수정 — 더보기→홈 등으로 라운드를 벗어나면 루프가
-    // 멈춰 updateInvincibleHud() 가 더 이상 안 불려서 보드 테두리·카운트다운이 남아있었다.
-    const mb = document.getElementById('mole-board');
-    if (mb) mb.classList.remove('mole-board--invincible');
-    document.getElementById('game-screen').classList.remove('gs-invincible');
-    const cd = document.getElementById('invincible-countdown');
-    if (cd) cd.hidden = true;
+    clearInvincibleFx();
     state = null;
     run = null;
     playScreenBgm('home'); // 홈 진입 — 홈 BGM(3곡 순환)을 처음부터
@@ -1353,6 +1347,19 @@
     for (let id = 0; id < GRID_SIZE * GRID_SIZE; id++) sharedLaneControls.setCellHot(id, false);
   }
 
+  // 알리 펀치 무적 연출 잔류 버그 수정 — 루프가 멈추면(라운드 종료/홈 복귀 등)
+  // updateInvincibleHud() 가 더 이상 안 불려서 보드 테두리·카운트다운·연기 아우라·황금
+  // 글러브가 남아있었다. 성공/실패 결과화면 포함, 라운드가 끝나는 모든 경로에서 호출
+  // (사용자 지정: "성공/실패 화면은 항상 스킬 효과가 안 나타나게 해야함").
+  function clearInvincibleFx() {
+    const mb = document.getElementById('mole-board');
+    if (mb) mb.classList.remove('mole-board--invincible');
+    const gs = document.getElementById('game-screen');
+    if (gs) gs.classList.remove('gs-invincible');
+    const cd = document.getElementById('invincible-countdown');
+    if (cd) cd.hidden = true;
+  }
+
   // ---------- 구멍 버튼 입력 → 그 구멍 타격 ----------
   function handleCell(regionId) {
     if (!state || state.ended || state.introActive || state.paused) return false;
@@ -1665,6 +1672,7 @@
     if (state.laneHammer) state.laneHammer.home(); // 루프 멈추기 전 망치 대기위치로 스냅
     sharedPopElements.clear();
     resetHot();
+    clearInvincibleFx(); // 라운드 종료(성공/실패 포함) 시 무적 잔류 연출 정리(사용자 지정)
 
     if (finishedRound >= FINAL_ROUND) {
       closeCurtain(() => { finishFromRound('done'); }); // 10라운드 완주 → 커튼 닫고 결과
@@ -1725,6 +1733,7 @@
     if (state.laneHammer) state.laneHammer.home(); // 망치 대기위치로 스냅
     sharedPopElements.clear();
     resetHot();
+    clearInvincibleFx(); // 실패 화면도 무적 잔류 연출 정리(사용자 지정)
     // 실패 순간 커튼이 확 닫히고 나서 결과 멘트 (사용자 요청).
     closeCurtain(() => { finishFromRound(reason); });
   }
