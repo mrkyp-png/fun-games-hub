@@ -127,6 +127,24 @@
 
     function isBusy() { return phase === 'fly' || phase === 'chop' || phase === 'rise'; }
 
+    // 골드해머 라운드 인트로 전용(사용자 지정 "쾅! 내리찍기") — 대기 위치(HOME) 각도 그대로
+    // 화면 위에서 수직으로 낙하해 대기 위치에 착지. 자체 rAF 로 구동(인트로 중엔 메인 루프 정지 상태).
+    function dropIn(ms, onLand) {
+      phase = 'home'; t = 0;
+      gx = HOME_X; deg = HOME_DEG;
+      fromX = HOME_X; fromDeg = HOME_DEG; aimX = HOME_X;
+      fired = false;
+      const startY = -0.4; // 화면 위 밖
+      const start = performance.now();
+      (function step(now) {
+        const k = Math.min(1, ((now || performance.now()) - start) / ms);
+        gy = lerp(startY, HOME_Y, ease(k)); // ease(k)=k*k — 중력 가속 느낌
+        paint();
+        if (k < 1) requestAnimationFrame(step);
+        else if (onLand) onLand();
+      })(start);
+    }
+
     // 라운드 종료/게임오버 순간 — 메인 루프가 멈춰 update 가 안 돌면 망치가 스윙 도중에 얼어붙는다.
     // 즉시 대기 위치로 스냅 (사용자 리포트: 라운드 종료 박스에 망치가 정지).
     function home() {
@@ -146,7 +164,7 @@
     }
 
     paint();
-    return { strike, update, isBusy, home, clear };
+    return { strike, update, isBusy, home, clear, dropIn };
   }
 
   const api = { create };

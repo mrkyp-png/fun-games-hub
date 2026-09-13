@@ -1085,6 +1085,7 @@
     // 라운드1은 챕터 설명 직후라 여유 있게 느긋이, 라운드2~10은 인트로가 훨씬 짧아
     // fast=true로 빠르게. 실제 대포는 처음부터 안 보여야 하므로 playCannonIntro() 안에서 숨김.
     if (state.weapon === 'cannon') playCannonIntro(!isR1);
+    if (state.weapon === 'goldhammer') playGoldHammerIntro(!isR1);
     if (isR1) {
       overlay.classList.remove('has-mole', 'mole-in', 'is-opening'); // 커튼 효과 없음(투명)
     } else {
@@ -1174,6 +1175,22 @@
         rig.className = 'ci-rig';
         setHammerLayerVisible(true);
       }, travelMs + holdMs * 2);
+    }
+
+    // 골드해머 라운드 인트로 등장 연출(사용자 지정 "쾅! 내리찍기") — 대기 위치 각도 그대로
+    // 화면 위에서 수직 낙하해 실제 대기 위치에 착지, 착지 순간 기존 지진 이펙트(보드 흔들림+
+    // 갈색 먼지 링) 재사용. 착지 시점 = "라운드 N" 글자·두더지 이미지가 퇴장(is-opening)을
+    // 시작하는 정확한 순간에 맞춤(사용자 지정 "딱 맞춰야함") — 실측: 라운드1 ~3714ms, 라운드2~10 ~3422ms.
+    function playGoldHammerIntro(fast) {
+      if (!state.laneHammer || !state.laneHammer.dropIn) return;
+      setHammerLayerVisible(true); // 화면 위(레이어 밖, overflow:visible)부터 낙하하는 게 보이도록
+      const travelMs = fast ? 3422 : 3714;
+      state.laneHammer.dropIn(travelMs, () => {
+        if (myGen !== sessionGen) return;
+        const board = document.getElementById('mole-board');
+        MG.HitFx.shake(board);
+        MG.HitFx.quakeDust(board, 0.90, 0.90); // HOME_X/Y(lane-hammer.js) 그대로
+      });
     }
 
     // 라운드1 전용: 타이핑 뒤 3·2·1·GO!. 끝나면 finish() 호출.
