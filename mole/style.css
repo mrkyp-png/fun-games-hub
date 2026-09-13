@@ -687,7 +687,7 @@ body { background: var(--lm-page); }
 /* 실드(챕터 4~5) 활성 = 보드에 파란 테두리 글로우 (별도 HUD 없이 상태 표시) */
 .mole-board--shielded { box-shadow: inset 0 0 0 4px rgba(90, 170, 255, 0.9), inset 0 0 22px rgba(90, 170, 255, 0.55); }
 
-/* 알리 펀치 무적 발동(§7) = 보드 테두리를 따라 흐르는 파란 그라데이션 링.
+/* 알리 펀치 무적 발동(§7) = 보드 테두리를 따라 흐르는 황금색 그라데이션 링(글러브 황금색과 통일).
    (사각형이라 ::after 자체를 rotate()하면 모양이 삐뚤어짐 — 링 모양은 고정하고
    conic-gradient 의 각도(--ap-angle)만 돌려서 빛이 외곽선을 따라 흐르게 함.) */
 @property --ap-angle {
@@ -702,7 +702,7 @@ body { background: var(--lm-page); }
   z-index: 30;
   border-radius: inherit;
   padding: 6px;
-  background: conic-gradient(from var(--ap-angle), #1a3fae, #2f6bff, #8fe0ff, #2f6bff, #1a3fae);
+  background: conic-gradient(from var(--ap-angle), #996a04, #ffce33, #fff3b0, #ffce33, #996a04);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -1527,22 +1527,28 @@ body { background: var(--lm-page); }
   display: flex; flex-direction: column; gap: 8%; position: absolute; inset: 3%;
   border-radius: 0; overflow: visible;
 }
+/* 형태 = 로딩화면 GET NOW 버튼(#splash .splash-hint)과 동일: 알약 모양 + 두꺼운 3D 아래 그림자 + 광택. */
 .lane-item {
   position: relative; flex: 1 1 0; width: 100%;
   display: flex; align-items: center; justify-content: center;
-  font-size: clamp(11px, 4.4vw, 18px); line-height: 1; color: #3a3d44;
-  border-radius: 22%;
-  background: linear-gradient(180deg, #ffffff 0%, #f2f3f5 78%, #e3e5e9 100%);
-  box-shadow: 0 3px 0 #c9cace, 0 5px 6px rgba(0, 0, 0, 0.28), inset 0 1px 0 #fff;
+  font-size: clamp(11px, 4.4vw, 18px); line-height: 1; color: #fff;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #74e389 0%, #47cc6a 46%, #2ea951 100%);
+  box-shadow:
+    0 5px 0 #1c8340,
+    0 5px 2px rgba(0, 0, 0, 0.18),
+    0 9px 12px rgba(0, 0, 0, 0.32),
+    inset 0 2px 2px rgba(255, 255, 255, 0.8),
+    inset 0 -4px 6px rgba(0, 80, 35, 0.4);
   transition: transform 0.09s ease, box-shadow 0.09s ease;
   -webkit-tap-highlight-color: transparent; cursor: pointer; user-select: none;
   overflow: hidden;
 }
-/* 상단 얇은 하이라이트 줄 (참고 이미지) */
+/* 상단 광택 (로딩화면 버튼과 동일한 사탕 버튼 느낌) */
 .lane-item::after {
-  content: ''; position: absolute; left: 10%; right: 10%; top: 10%; height: 6%;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.95);
+  content: ''; position: absolute; left: 10%; right: 10%; top: 4px; height: 38%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0));
   pointer-events: none;
 }
 /* 홈 화면 "시작" 버튼과 같은 대각선 빛 스윕 — 실제 자식 엘리먼트라 각 사각형(overflow:hidden)에 각자 갇혀서 돈다. */
@@ -1556,13 +1562,17 @@ body { background: var(--lm-page); }
 .lane-item.is-press {
   z-index: 3;
   transform: translateY(5px) scale(0.97);
-  background: linear-gradient(180deg, #e9eaed 0%, #d9dade 100%);
-  box-shadow: 0 0 0 #c9cace, inset 0 3px 6px rgba(0, 0, 0, 0.25);
+  box-shadow:
+    0 1px 0 #1c8340,
+    0 2px 2px rgba(0, 0, 0, 0.2),
+    0 3px 5px rgba(0, 0, 0, 0.26),
+    inset 0 2px 2px rgba(255, 255, 255, 0.7),
+    inset 0 -3px 5px rgba(0, 80, 35, 0.45);
 }
 /* 물결(ripple) — 사각형 중심에서 얇은 초록 테두리 선이 점점 커지고 굵어지며 바깥 테두리까지
    퍼진 뒤 사라짐 (채워진 원 X, 링 O — scale 이 커질수록 border 도 같이 굵어 보인다). */
 .lane-item::before {
-  content: ''; position: absolute; inset: 0; border-radius: 22%;
+  content: ''; position: absolute; inset: 0; border-radius: 999px;
   border: 6px solid rgba(46, 204, 87, 0.95);
   opacity: 0; transform: scale(0.12); pointer-events: none;
 }
@@ -1742,6 +1752,12 @@ body { background: var(--lm-page); }
   will-change: transform;
 }
 .lane-boxing-glove img { display: block; width: 100%; filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.4)); }
+/* 알리 펀치 무적(§7) 중 — 빨간 글러브를 황금색으로(사용자 지시). 새 아트 없이 CSS 필터로 재색상.
+   hue-rotate만으로는 주황/구리색에 그쳐서("살짝 덧칠") sepia 기반으로 변경 — 실제 브라우저
+   렌더링으로 여러 조합 스크린샷 비교 후 확정. */
+#game-screen.gs-invincible .lane-boxing-glove img {
+  filter: sepia(1) saturate(3) brightness(0.95) drop-shadow(0 4px 4px rgba(0, 0, 0, 0.4));
+}
 /* 회전(대기 각도·펀치별 각도)은 lane-boxing.js 가 펀치 스타일에 따라 img.style.transform 으로
    직접 넣는다(ROT_BY_SIDE) — 오른쪽은 항상 scaleX(-1) 거울상 포함. */
 

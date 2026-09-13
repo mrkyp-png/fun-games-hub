@@ -20,6 +20,13 @@
   function isAlipunchEquipped() {
     try { return localStorage.getItem('mole.weapon') === 'alipunch'; } catch (e) { return false; }
   }
+  // 무적(§7) 중인지 — game.js 가 매 프레임 #mole-board 에 토글하는 클래스를 그대로 읽는다.
+  function isAlipunchInvincible() {
+    try {
+      const b = document.getElementById('mole-board');
+      return !!(b && b.classList.contains('mole-board--invincible'));
+    } catch (e) { return false; }
+  }
   const STEP_SEC = 0.055;       // 등장/빠끔 이동: 깊이 한 칸이 화면에 머무는 시간 — 빠르게
   const DYING_STEP_SEC = 0.144; // 타격 후: 전신 그대로 구멍 아래로 "천천히" 미끄러진다 (0→4 ≈ 0.58s)
 
@@ -151,7 +158,9 @@
           // 실제 타격당해 처치된 두더지만 대포 폭발 연출. 시간초과로 안 맞고 물러나는 건
           // 대포모드에서도 기존처럼 그냥 아래로 내려간다(pop.killed=false).
           m.blast = pop.type === 'mole' && pop.killed && isCannonEquipped();
-          m.punch = pop.type === 'mole' && pop.killed && isAlipunchEquipped();
+          // 무적 중엔 동물도 두더지와 동일한 펀치 연출(넉백·축소) — 무적 아닐 때 동물은 페널티라 제외.
+          m.punch = pop.killed && isAlipunchEquipped() &&
+            (pop.type === 'mole' || (pop.type === 'animal' && isAlipunchInvincible()));
         }
         m.dying = !!pop.dying;
         m.targetDepth = targetFor(pop);

@@ -1443,7 +1443,9 @@
           run.combo.onJuggle(JUGGLE_BONUS);
           MG.HitFx.scorePop(board, r.xFrac, r.yFrac, run.combo.score - before);
           checkComboLifeBonus();
-          MG.HitFx.juggle(board, r.xFrac, r.yFrac);
+          MG.HitFx.shake(board);
+          MG.HitFx.punch(); // 랜덤 타격음 — 두더지 처치와 동일한 연출
+          MG.HitFx.punchStar(board, r.xFrac, r.yFrac);
           moleHits += 1;
         } else {
           setRunLives(run.lives - 1);     // 동물 = 공유 생명 -1 (즉시 풀에 반영)
@@ -1533,6 +1535,9 @@
       if (on) cd.textContent = String(Math.max(1, Math.ceil((state.alipunchInvincibleUntil - performance.now()) / 1000)));
     }
     if (state.weapon === 'alipunch') state.config.moleUpBonus = on ? 0.4 : 0.1;
+    // 무적 중 권투 글러브 빨간색 → 황금색(글러브는 #mole-hammer-layer, 보드 밖이라 game-screen에 표시).
+    const gs = document.getElementById('game-screen');
+    if (gs) gs.classList.toggle('gs-invincible', on);
   }
 
   // 게임은 더보기 메뉴를 열면 멈춘다(state.paused / pausedByMenu — openMore·closeMore 참고).

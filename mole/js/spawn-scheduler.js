@@ -192,7 +192,10 @@
 
       // 최종 타격 — 영역 완성/점수는 지금 확정하되, 실제 "내려가는" 연출은 SINK_DELAY 뒤
       // (망치가 화면에서 두더지에 닿는 순간). tick() 이 sinkIn 을 세다가 dying 으로 넘긴다.
-      if (pop.type === 'mole') { completedRegions.add(pop.regionId); pop.killed = true; }
+      if (pop.type === 'mole') completedRegions.add(pop.regionId);
+      // killed = 시간초과가 아니라 실제 타격으로 처리됨. 알리 펀치 무적 중엔 동물도 "처치"로 쳐서
+      // pop-elements.js 가 두더지와 같은 펀치 연출(넉백·축소)을 태울 수 있게(game.js 쪽에서 게이팅).
+      if (pop.type === 'mole' || pop.type === 'animal') pop.killed = true;
       pop.sinkIn = SINK_DELAY;
       return { type: pop.type, regionId: pop.regionId, done: true, xFrac: pop.x, yFrac: pop.y };
     }
