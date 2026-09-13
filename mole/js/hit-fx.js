@@ -101,6 +101,42 @@
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
+  // 골드해머 라운드 인트로 "회전 등장" 소리(사용자 제공) — 별표 위 점처럼 작게 시작해 대기
+  // 위치까지 회전·확대(느리게→빠르게)하는 것과 맞춰, 소리도 작게 시작해 재생 끝(=착지)에
+  // 원본 음량이 되도록(볼륨 램프) + 재생속도도 느리게→빠르게(회전 가속과 맞춤, 피치도 같이 오름).
+  function isGoldhammerEquipped() {
+    try { return localStorage.getItem('mole.weapon') === 'goldhammer'; } catch (e) { return false; }
+  }
+  const GOLDHAMMER_SPIN_URL = 'audio/goldhammer-spin.mp3';
+  let goldhammerSpinBuffer = null;
+  let goldhammerSpinLoading = false;
+  function loadGoldhammerSpinBuffer(ctx) {
+    if (goldhammerSpinBuffer || goldhammerSpinLoading || typeof fetch !== 'function') return;
+    goldhammerSpinLoading = true;
+    fetch(GOLDHAMMER_SPIN_URL).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b))
+      .then((buf) => { goldhammerSpinBuffer = buf; })
+      .catch(() => { goldhammerSpinLoading = false; });
+  }
+  // game.js playGoldHammerIntro 가 착지 시점에 맞춰(재생 끝=착지) 미리 호출.
+  function goldHammerSpin() {
+    if (sfxOff()) return;
+    try {
+      const ctx = getCtx();
+      if (!ctx || !goldhammerSpinBuffer) return;
+      const t = ctx.currentTime;
+      const dur = goldhammerSpinBuffer.duration;
+      const src = ctx.createBufferSource();
+      src.buffer = goldhammerSpinBuffer;
+      src.playbackRate.setValueAtTime(0.7, t);
+      src.playbackRate.linearRampToValueAtTime(1.3, t + dur); // 회전 가속과 맞춰 재생속도도 느리게→빠르게
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.05, t); // 점처럼 작게 시작
+      g.gain.linearRampToValueAtTime(0.6, t + dur); // 착지 시점에 원본 음량으로
+      src.connect(g).connect(ctx.destination);
+      src.start();
+    } catch (e) { /* 오디오 불가 환경 무시 */ }
+  }
+
   // 알리 펀치 전용 — 펀치가 날아갈 때(글러브 스타일별) 아나운서 보이스 1개씩(사용자 제공).
   const PUNCH_VOICE_URLS = {
     jab: 'audio/punch-jab.mp3',
@@ -222,6 +258,7 @@
     loadHitBuffers(audioCtx); // ctx 생기는 즉시 타격음 파일 프리로드
     if (isCannonEquipped()) { loadCannonBuffers(audioCtx); loadCannonRotateBuffer(audioCtx); loadCannonWheelBuffer(audioCtx); } // 대포 장착 중일 때만 폭발음·회전음·바퀴음 로드(망치 유저는 불필요한 다운로드 안 함)
     if (isAlipunchEquipped()) loadPunchVoiceBuffers(audioCtx); // 알리 펀치 장착 중일 때만 보이스 로드
+    if (isGoldhammerEquipped()) loadGoldhammerSpinBuffer(audioCtx); // 골드해머 장착 중일 때만 회전 등장음 로드
     loadTapBuffers(audioCtx); // UI 탭음도 같이 프리로드
     return audioCtx;
   }
@@ -577,6 +614,6 @@
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
-  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, punchStar, powerUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll };
+  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, punchStar, powerUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);

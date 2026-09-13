@@ -1216,6 +1216,8 @@
       }
       const ms = fast ? 3380 : 3680; // 실측 is-opening 시각(라운드1 ~3714ms·라운드2~10 ~3422ms)에 맞춤
       state.laneHammer.spinIn(sx, sy, ms, 4, 0.04, () => {});
+      const SOUND_MS = 1837; // audio/goldhammer-spin.mp3 실측 길이(ffprobe) — 재생이 착지 시점에 끝나도록
+      setTimeout(() => { if (myGen === sessionGen) MG.HitFx.goldHammerSpin(); }, Math.max(0, ms - SOUND_MS));
     }
 
     // 뿅망치 라운드 인트로 등장 연출(사용자 지정 "쭉 늘어났다 팡 등장") — 캐논·골드해머와
