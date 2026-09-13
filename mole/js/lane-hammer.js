@@ -67,7 +67,7 @@
     let aimX = HOME_X, aimY = HOME_Y, gx = HOME_X, gy = HOME_Y, deg = hDeg;
     let impactCb = null;
     let fired = false;
-    let scaleVal = 1; // 골드해머 인트로 회전 등장 전용(평소엔 항상 1)
+    let scaleXVal = 1, scaleYVal = 1; // 라운드 인트로 등장 연출 전용(평소엔 항상 1,1)
     let anchorX = gripX, anchorY = gripY; // translate·transform-origin 공통 기준점(평소엔 그립)
 
     function strike(targetXFrac, targetYFrac, onImpact, frameKey) {
@@ -124,7 +124,7 @@
       // translate 기준점과 transform-origin(회전·확대 축)을 항상 같은 점으로 맞춘다 — 서로
       // 다르면(그립점 translate + 중앙 회전축 등) 확대·축소 시 그 어긋난 만큼 위치가 밀려 보인다.
       el.style.transformOrigin = anchorX + '% ' + anchorY + '%';
-      el.style.transform = 'translate(-' + anchorX + '%, -' + anchorY + '%) rotate(' + (deg + dOff).toFixed(1) + 'deg) scale(' + scaleVal.toFixed(3) + ')';
+      el.style.transform = 'translate(-' + anchorX + '%, -' + anchorY + '%) rotate(' + (deg + dOff).toFixed(1) + 'deg) scale(' + scaleXVal.toFixed(3) + ', ' + scaleYVal.toFixed(3) + ')';
       el.style.marginTop = phase === 'home' ? homeMT : '0'; // 대기 위치 세로 보정 (기본 0.2cm 아래)
       el.style.opacity = '1'; // 항상 불투명 — "현실 손이 게임화면을 때리는" 3D 느낌 (사용자 요청)
     }
@@ -159,7 +159,7 @@
         gx = lerp(fromX2, HOME_X, e);
         gy = lerp(fromY2, HOME_Y, e);
         deg = lerp(0, endDeg, e);
-        scaleVal = lerp(startScale, 1, e);
+        scaleXVal = scaleYVal = lerp(startScale, 1, e);
         anchorX = lerp(50, gripX, e);
         anchorY = lerp(50, gripY, e);
         paint();
@@ -169,12 +169,51 @@
           img.style.filter = prevFilter;
           anchorX = gripX; anchorY = gripY;
           phase = 'home';
-          gx = HOME_X; gy = HOME_Y; deg = hDeg; scaleVal = 1;
+          gx = HOME_X; gy = HOME_Y; deg = hDeg; scaleXVal = 1; scaleYVal = 1;
           fromX = HOME_X; fromY = HOME_Y; fromDeg = hDeg; aimX = HOME_X; aimY = HOME_Y;
           paint();
           if (onDone) onDone();
         }
       })(start);
+    }
+
+    // 뿅망치 라운드 인트로 전용(사용자 지정 "쭉 늘어났다 팡 등장") — 대기 위치 제자리에서
+    // (delayMs 동안은 안 보이게 숨어있다가) 탄성 있게 늘어났다(세로로 길게·가로로 얇게,
+    // 고무줄처럼) → 통통 튀며 팡 하고 원래 비율로 안착(back-ease 로 살짝 오버슈트 후 정착).
+    // 이동·회전 없음(제자리) — 캐논·골드해머처럼 화면을 가로지르는 무기가 아니라서 인트로
+    // 내내 끌지 않고, 라운드 시작(=is-opening) 직전 짧게 "뿅"하고 나타나게(사용자 지정).
+    function popIn(delayMs, ms, onDone) {
+      scaleXVal = 0.001; scaleYVal = 0.001;
+      paint();
+      function easeOutBack(x) {
+        const c1 = 1.70158, c3 = c1 + 1;
+        return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+      }
+      const stretchMs = ms * 0.55;
+      const popMs = ms - stretchMs;
+      const start = performance.now() + (delayMs || 0);
+      (function step(now) {
+        if ((now || performance.now()) < start) { requestAnimationFrame(step); return; }
+        const el2 = (now || performance.now()) - start;
+        if (el2 < stretchMs) {
+          const k = ease(clamp01(el2 / stretchMs)); // 느리게 시작해 빨라짐
+          scaleYVal = lerp(0.05, 1.35, k);
+          scaleXVal = lerp(0.05, 0.65, k);
+          paint();
+          requestAnimationFrame(step);
+        } else if (el2 < ms) {
+          const k = clamp01((el2 - stretchMs) / popMs);
+          const eb = easeOutBack(k); // 살짝 오버슈트(1 넘었다 되돌아옴) — "팡" 튕기는 느낌
+          scaleYVal = lerp(1.35, 1, eb);
+          scaleXVal = lerp(0.65, 1, eb);
+          paint();
+          requestAnimationFrame(step);
+        } else {
+          scaleXVal = 1; scaleYVal = 1;
+          paint();
+          if (onDone) onDone();
+        }
+      })(); // 인자 없이 호출 — now 가 undefined 로 들어와 performance.now() 폴백(딜레이 체크가 제대로 동작하려면 start 와 같은 값이면 안 됨)
     }
 
     // 라운드 종료/게임오버 순간 — 메인 루프가 멈춰 update 가 안 돌면 망치가 스윙 도중에 얼어붙는다.
@@ -186,7 +225,8 @@
       fromX = HOME_X; fromY = HOME_Y; fromDeg = HOME_DEG;
       aimX = HOME_X; aimY = HOME_Y;
       fired = false;
-      scaleVal = 1;
+      scaleXVal = 1; scaleYVal = 1;
+      anchorX = gripX; anchorY = gripY;
       paint();
     }
 
@@ -197,7 +237,7 @@
     }
 
     paint();
-    return { strike, update, isBusy, home, clear, spinIn };
+    return { strike, update, isBusy, home, clear, spinIn, popIn };
   }
 
   const api = { create };

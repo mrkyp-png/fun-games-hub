@@ -1098,6 +1098,7 @@
     // fast=true로 빠르게. 실제 대포는 처음부터 안 보여야 하므로 playCannonIntro() 안에서 숨김.
     if (state.weapon === 'cannon') playCannonIntro(!isR1);
     if (state.weapon === 'goldhammer') playGoldHammerIntro(!isR1);
+    if (state.weapon === 'hammer') playHammerIntro(!isR1);
     if (isR1) {
       overlay.classList.remove('has-mole', 'mole-in', 'is-opening'); // 커튼 효과 없음(투명)
     } else {
@@ -1212,6 +1213,17 @@
       }
       const ms = fast ? 3380 : 3680; // 실측 is-opening 시각(라운드1 ~3714ms·라운드2~10 ~3422ms)에 맞춤
       state.laneHammer.spinIn(sx, sy, ms, 4, 0.04, () => {});
+    }
+
+    // 뿅망치 라운드 인트로 등장 연출(사용자 지정 "쭉 늘어났다 팡 등장") — 캐논·골드해머와
+    // 달리 화면을 가로지르지 않는 제자리 무기라 인트로 내내 끌지 않고, 라운드 시작 직전
+    // 짧게(0.65s) 뿅 하고 나타나도록 — 실측 is-opening 시각에서 그만큼 뺀 시점에 시작.
+    function playHammerIntro(fast) {
+      if (!state.laneHammer || !state.laneHammer.popIn) return;
+      setHammerLayerVisible(true);
+      const total = fast ? 3380 : 3680; // 실측 is-opening 시각(라운드1 ~3714ms·라운드2~10 ~3422ms)에 맞춤
+      const popMs = 650;
+      state.laneHammer.popIn(Math.max(0, total - popMs), popMs, () => {});
     }
 
     // 라운드1 전용: 타이핑 뒤 3·2·1·GO!. 끝나면 finish() 호출.
