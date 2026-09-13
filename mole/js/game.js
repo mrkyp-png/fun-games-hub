@@ -1041,7 +1041,7 @@
     const laneHammer = WeaponMod.create(hammerOpts);
 
     state = {
-      round: roundNum, levelData, regions, spawnPoints, scheduler, holeLayer, laneHammer, weapon, rng,
+      round: roundNum, levelData, regions, spawnPoints, scheduler, holeLayer, laneHammer, weapon, rng, config,
       timeRemaining: roundSeconds(),
       hitstopUntil: 0,
       alipunchInvincibleUntil: 0, // 알리 펀치 [공격력]: 무적 활성 종료 시각(performance.now() 기준, §7)
@@ -1168,14 +1168,19 @@
       return;
     }
 
-    state.scheduler.tick(dt);
+    const tickResult = state.scheduler.tick(dt);
+    // 두더지를 처치 못 하고 시간초과로 놓치면 헛방·동물·폭탄과 동일하게 콤보 초기화.
+    if (tickResult.expired.some((e) => e.type === 'mole' && e.timedOut)) run.combo.onObstacleHit();
     state.laneHammer.update(rawDt); // 망치는 히트스톱과 무관하게 부드럽게
     syncPops();
 
     // 구멍별 버튼 hot: 그 구멍에 두더지(방해물 아님)가 떠 있으면 빛낸다 (스펙 §2.3).
+    // 알리 펀치 무적 중엔 동물도 안전한 타격 대상이 되므로 두더지와 동일하게 hot 표시.
+    const invincibleNow = alipunchInvincible();
     const moleRegions = new Set();
     state.scheduler.getActivePops().forEach((p) => {
-      if (p.type === 'mole' && !p.dying) moleRegions.add(p.regionId);
+      if (p.dying) return;
+      if (p.type === 'mole' || (invincibleNow && p.type === 'animal')) moleRegions.add(p.regionId);
     });
     for (let id = 0; id < GRID_SIZE * GRID_SIZE; id++) {
       sharedLaneControls.setCellHot(id, moleRegions.has(id));
@@ -1270,7 +1275,8 @@
     }
 
     // 버튼 이펙트 색: 헛방(구멍에 아무것도 없음) 또는 폭탄이면 빨간색.
-    return results.length === 0 || results.some((r) => r.type === 'bomb');
+    // 알리 펀치 무적 중엔 폭탄도 안전한 타격이므로 빨간색 아님(초록).
+    return results.length === 0 || (results.some((r) => r.type === 'bomb') && !alipunchInvincible());
   }
 
   // ---------- 골드해머: 지진 ----------
@@ -1431,8 +1437,13 @@
         flashHud('hud-hearts');
         updateShieldHud();
       } else if (r.type === 'animal') {
-        if (alipunchInvincible()) {      // 무적 중 — 페널티 무효, 안전 타격 취급
+        if (alipunchInvincible()) {      // 무적 중 — 페널티 무효, 안전 타격 취급(점수·콤보도 반영)
+          const before = run.combo.score;
+          run.combo.onJuggle(JUGGLE_BONUS);
+          MG.HitFx.scorePop(board, r.xFrac, r.yFrac, run.combo.score - before);
+          checkComboLifeBonus();
           MG.HitFx.juggle(board, r.xFrac, r.yFrac);
+          moleHits += 1;
         } else {
           setRunLives(run.lives - 1);     // 동물 = 공유 생명 -1 (즉시 풀에 반영)
           run.combo.onObstacleHit();
@@ -1440,8 +1451,13 @@
           flashHud('hud-hearts');
         }
       } else if (r.type === 'bomb') {
-        if (alipunchInvincible()) {      // 무적 중 — 페널티 무효, 안전 타격 취급
+        if (alipunchInvincible()) {      // 무적 중 — 페널티 무효, 안전 타격 취급(점수·콤보도 반영)
+          const before = run.combo.score;
+          run.combo.onJuggle(JUGGLE_BONUS);
+          MG.HitFx.scorePop(board, r.xFrac, r.yFrac, run.combo.score - before);
+          checkComboLifeBonus();
           MG.HitFx.juggle(board, r.xFrac, r.yFrac);
+          moleHits += 1;
         } else if (run.shield) {               // 실드가 폭탄을 막는다 (페널티 무효)
           run.shield = false;
           MG.HitFx.juggle(board, r.xFrac, r.yFrac); // "방어!" 느낌의 가벼운 연출
@@ -1498,7 +1514,8 @@
     if (b) b.classList.toggle('mole-board--shielded', !!(run && run.shield));
   }
 
-  // 알리 펀치 무적(§7) 표시 = 보드에 회전하는 파란 테두리 + 다이얼패드 중앙 카운트다운(5→1).
+  // 알리 펀치 무적(§7) 표시 = 보드에 회전하는 파란 테두리 + 다이얼패드 중앙 카운트다운(5→1)
+  // + 무적 중 두더지 하강 딜레이 보너스 0.1초 → 0.4초(기본 0.1 + 무적 중 0.3 추가).
   // 매 프레임 갱신, 시간 만료로 자동 해제.
   function updateInvincibleHud() {
     const on = alipunchInvincible();
@@ -1509,6 +1526,7 @@
       cd.hidden = !on;
       if (on) cd.textContent = String(Math.max(1, Math.ceil((state.alipunchInvincibleUntil - performance.now()) / 1000)));
     }
+    if (state.weapon === 'alipunch') state.config.moleUpBonus = on ? 0.4 : 0.1;
   }
 
   // 게임은 더보기 메뉴를 열면 멈춘다(state.paused / pausedByMenu — openMore·closeMore 참고).

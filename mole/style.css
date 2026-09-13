@@ -701,7 +701,7 @@ body { background: var(--lm-page); }
   inset: 0;
   z-index: 30;
   border-radius: inherit;
-  padding: 4px;
+  padding: 6px;
   background: conic-gradient(from var(--ap-angle), #1a3fae, #2f6bff, #8fe0ff, #2f6bff, #1a3fae);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
@@ -945,7 +945,7 @@ body { background: var(--lm-page); }
   line-height: 1;
   color: transparent;
   -webkit-text-stroke: 5px #888;
-  opacity: 0.6;
+  opacity: 0.15;
   pointer-events: none;
 }
 .invincible-countdown[hidden] { display: none !important; }

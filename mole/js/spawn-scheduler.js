@@ -130,15 +130,16 @@
         if (!pop.dying) {
           // 시간 초과: (두더지면 영역 완성 안 됨) 땅속으로 물러나는 연출 시간만큼만 더 살려둔다.
           pop.dying = true;
+          pop.timedOut = true; // 처치 못 하고 시간초과로 내려감 (콤보 리셋 판정용 — game.js)
           pop.remaining = RETREAT_SEC;
         } else {
-          expired.push(id);
+          expired.push({ id, type: pop.type, timedOut: !!pop.timedOut });
         }
       });
-      expired.forEach((id) => {
-        const pop = active.get(id);
+      expired.forEach((e) => {
+        const pop = active.get(e.id);
         occupiedSpawnPointIds.delete(pop.spawnPointId);
-        active.delete(id);
+        active.delete(e.id);
       });
 
       // 난이도별 방해물 토글: config.obstacles === false 면 두더지만 (하수·고수).

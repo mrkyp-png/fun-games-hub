@@ -21,8 +21,8 @@
               ['-', '-']] },
     { id: 'alipunch', name: '알리 판취', nameEn: 'Ali Punch', thumb: 'assets/weapons/alipunch-jab.png',
       stats: [['Hole 16 → 14', 'Holes 16 → 14'],
-              ['무적 5초 확률 20%', '20% chance — 5s invincibility'],
-              ['하강 딜레이 +0.1초', '+0.1s before mole retreats']] }
+              ['무적 5초 확률 20% (모든 동물 타격 가능)', '20% chance — 5s invincibility (any animal is safe to hit)'],
+              ['하강 딜레이 +0.1초(무적 중 +0.3초 추가)', '+0.1s before mole retreats (+0.3s more while invincible)']] }
   ];
 
   function create(opts) {
