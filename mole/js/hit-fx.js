@@ -130,8 +130,8 @@
       src.playbackRate.setValueAtTime(0.7, t);
       src.playbackRate.linearRampToValueAtTime(1.3, t + dur); // 회전 가속과 맞춰 재생속도도 느리게→빠르게
       const g = ctx.createGain();
-      g.gain.setValueAtTime(0.07, t); // 점처럼 작게 시작
-      g.gain.linearRampToValueAtTime(0.85, t + dur); // 착지 시점에 원본 음량으로(사용자 지적 — 볼륨 상향)
+      g.gain.setValueAtTime(0.1, t); // 점처럼 작게 시작
+      g.gain.linearRampToValueAtTime(1, t + dur); // 착지 시점에 원본 음량으로(사용자 지적 — 볼륨 추가 상향)
       src.connect(g).connect(ctx.destination);
       src.start();
     } catch (e) { /* 오디오 불가 환경 무시 */ }
