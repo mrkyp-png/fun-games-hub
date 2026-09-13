@@ -70,9 +70,8 @@
     function after(ms, fn) { var t = setTimeout(fn, ms); timers.push(t); return t; }
 
     // 브금은 홈 브금(밝은 곡)을 그대로 깔고 간다 — 인트로→홈 전환 때 음악이 안 끊긴다.
-    // (GET NOW 탭에서 game.js 가 #bgm 을 시작함. 혹시 멈춰 있으면 켠다.)
-    var homeBgm = document.getElementById('bgm');
-    if (homeBgm && homeBgm.paused) { var bp = homeBgm.play(); if (bp && bp.catch) bp.catch(function () {}); }
+    // (GET NOW 탭에서 game.js 가 BGM 을 시작함. 혹시 멈춰 있으면 켠다.)
+    if (window.FGH && window.FGH.retryBgm) window.FGH.retryBgm();
 
     // 부드럽게 마무리: (1) 인트로가 천천히 하얗게 밝아짐 → (2) 흰 레이어만 남기고 인트로 제거
     //  → (3) 그 흰 레이어가 서서히 사라지며 홈이 배어나옴. 확 바뀌지 않게 총 ~2.4s.

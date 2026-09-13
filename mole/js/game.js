@@ -66,43 +66,94 @@
   }
 
   // 화면별 BGM. 홈 bgm-home-1~4, 게임 bgm-game-1~3 (재진입마다 순환, game-1=달빛축제 1순위), 더보기 bgm-more.
-  let bgm = null;          // <audio id="bgm">
-  let currentBgm = 'audio/bgm-home-1.mp3'; // index.html 의 초기 src 와 일치
+  // 곡 전환마다 부자연스럽게 뚝 끊기던 것(+ 로딩 중 몇 초 무음) 을 없애려고(사용자 지적)
+  // <audio> 2개를 핑퐁으로 써서 크로스페이드한다.
+  let bgmEls = null;       // [<audio id="bgm-a">, <audio id="bgm-b">]
+  let bgmActiveIdx = 0;    // 0|1 — 지금 "메인"인 쪽(재생 중이거나 재생하려는 쪽)
+  let currentBgm = 'audio/bgm-home-1.mp3'; // index.html 의 bgm-a 초기 src 와 일치
   const HOME_BGM_COUNT = 4;
   const GAME_BGM_COUNT = 3;
   let homeBgmIdx = 0;
   let gameBgmIdx = 0;
   let bgmWantPlay = false; // 지금 화면이 BGM 을 원하는가 (홈/더보기/게임 진입 시 true)
+  const BGM_VOL = 0.35;
+  const BGM_FADE_MS = 900;
+  let bgmFadeRaf = null;
+
+  function bgmActiveEl() { return bgmEls ? bgmEls[bgmActiveIdx] : null; }
+  function bgmInactiveEl() { return bgmEls ? bgmEls[1 - bgmActiveIdx] : null; }
 
   // BGM 재생/정지의 유일한 결정 지점 — 화면 의도 · 앱 가시성 · 설정을 모두 본다.
   function applyBgm() {
-    if (!bgm) return;
+    const el = bgmActiveEl();
+    if (!el) return;
     const want = bgmWantPlay && !document.hidden && window.FGH.Settings.get('music');
     if (want) {
-      if (bgm.paused) bgm.play().catch(() => { /* 자동재생 차단 — 다음 제스처(스플래시 탭 등)에 재시도 */ });
-    } else if (!bgm.paused) {
-      bgm.pause();
+      if (el.paused) el.play().catch(() => { /* 자동재생 차단 — 다음 제스처(스플래시 탭 등)에 재시도 */ });
+    } else if (!el.paused) {
+      el.pause();
     }
   }
 
+  // 다른 곡으로 크로스페이드 — 비활성 쪽에 새 곡을 미리 재생 시작해 페이드인, 활성 쪽은
+  // 페이드아웃 후 정지. 로딩 지연이 있어도 무음 구간 없이 겹쳐서 자연스럽게 넘어간다.
+  function crossfadeBgm(file, loop) {
+    if (!bgmEls) return;
+    const from = bgmActiveEl();
+    const to = bgmInactiveEl();
+    if (bgmFadeRaf) { cancelAnimationFrame(bgmFadeRaf); bgmFadeRaf = null; }
+    currentBgm = file;
+    to.loop = loop;
+    if (to.src.indexOf(file) === -1) to.src = file;
+    to.currentTime = 0;
+    to.volume = 0;
+    const p = to.play();
+    if (p && p.catch) p.catch(() => { /* 자동재생 차단 — 다음 제스처 때 applyBgm 이 재시도 */ });
+    const start = performance.now();
+    const fromStartVol = from.volume;
+    (function step(now) {
+      const k = Math.min(1, ((now || performance.now()) - start) / BGM_FADE_MS);
+      to.volume = BGM_VOL * k;
+      from.volume = fromStartVol * (1 - k);
+      if (k < 1) { bgmFadeRaf = requestAnimationFrame(step); return; }
+      from.pause();
+      from.currentTime = 0;
+      from.volume = BGM_VOL;
+      bgmActiveIdx = 1 - bgmActiveIdx;
+      bgmFadeRaf = null;
+    })();
+  }
+
   // screen: 'home' | 'more' | 'game'. 매 진입마다 해당 트랙을 처음부터.
-  // 홈(4곡)·게임(3곡)은 loop 안 함 — 한 곡이 끝나면 ended 이벤트가 다음 곡을 틀어
-  // 플레이리스트처럼 순차 재생·순환한다. 더보기(1곡)만 loop.
+  // 홈(4곡)·게임(3곡)은 loop 안 함 — 곡이 끝나갈 때(아래 timeupdate) 다음 곡으로 미리
+  // 크로스페이드해 플레이리스트처럼 순차 재생·순환한다. 더보기(1곡)만 loop.
   function playScreenBgm(screen) {
-    if (!bgm) return;
+    if (!bgmEls) return;
     let file;
     if (screen === 'home') { file = 'audio/bgm-home-' + (homeBgmIdx % HOME_BGM_COUNT + 1) + '.mp3'; homeBgmIdx++; }
     else if (screen === 'game') { file = 'audio/bgm-game-' + (gameBgmIdx % GAME_BGM_COUNT + 1) + '.mp3'; gameBgmIdx++; }
     else { file = 'audio/bgm-' + screen + '.mp3'; }
-    bgm.loop = (screen === 'more');
+    const loop = (screen === 'more');
     bgmWantPlay = true;
     if (currentBgm !== file) {
-      currentBgm = file;
-      bgm.src = file; // src 를 바꾸면 자동으로 처음부터 (bgm.load() 는 로딩 직후 blip 원인이라 안 씀)
-    } else if (bgm.currentTime > 0.5) {
-      bgm.currentTime = 0; // 같은 곡 재진입 — 이미 재생 중일 때만 되감기(로딩 blip 방지)
+      crossfadeBgm(file, loop);
+    } else {
+      const el = bgmActiveEl();
+      el.loop = loop;
+      if (el.currentTime > 0.5) el.currentTime = 0; // 같은 곡 재진입 — 이미 재생 중일 때만 되감기(로딩 blip 방지)
+      applyBgm();
     }
-    applyBgm();
+  }
+
+  // 곡이 끝나가면(마지막 BGM_FADE_MS + 여유) 다음 곡으로 미리 크로스페이드 시작 —
+  // ended 를 기다렸다 전환하면 그 순간 로딩 때문에 몇 초 무음(사용자 지적)이 생길 수 있어,
+  // 끝나기 전에 겹쳐서 시작한다.
+  function bgmNearEndTick(el) {
+    if (el !== bgmActiveEl() || el.loop || !el.duration || bgmFadeRaf) return;
+    if (el.duration - el.currentTime <= BGM_FADE_MS / 1000 + 0.15) {
+      if (/\/bgm-game-\d/.test(currentBgm)) playScreenBgm('game');
+      else if (/\/bgm-home-\d/.test(currentBgm)) playScreenBgm('home');
+    }
   }
 
   // ---------- 더보기 메뉴 / 난이도 / 사람두더지 (독립앱 Phase 1) ----------
@@ -1973,29 +2024,30 @@
 
   // ---------- 초기화 ----------
   document.addEventListener('DOMContentLoaded', () => {
-    bgm = document.getElementById('bgm');
-    bgm.volume = 0.35;
-    // 곡이 끝나면 다음 곡으로 — 홈은 4곡, 게임은 3곡을 순차 재생·순환 (플레이리스트).
-    bgm.addEventListener('ended', () => {
-      if (/\/bgm-game-\d/.test(currentBgm)) playScreenBgm('game');
-      else if (/\/bgm-home-\d/.test(currentBgm)) playScreenBgm('home');
+    bgmEls = [document.getElementById('bgm-a'), document.getElementById('bgm-b')];
+    bgmEls.forEach((el) => {
+      el.volume = BGM_VOL;
+      // 곡이 끝나갈 때(끝나고 나서가 아니라) 다음 곡으로 미리 크로스페이드 — 홈은 4곡,
+      // 게임은 3곡을 순차 재생·순환(플레이리스트). 비활성 쪽 이벤트는 bgmNearEndTick 안에서 무시.
+      el.addEventListener('timeupdate', () => bgmNearEndTick(el));
+      el.addEventListener('canplay', applyBgm);
     });
     window.FGH.Settings.onChange((name) => {
       if (name === 'music') applyBgm();
     });
+    window.FGH.retryBgm = applyBgm; // intro.js 등 외부에서 "혹시 멈춰있으면 재시도"용
     // 자동재생 정책에 막혔을 때 대비 — 모든 입력·버퍼완료·복귀 신호에서 applyBgm() 재시도.
     // 설치형 PWA 는 로딩 직후 재생이 허용되기도 해서 그 경우 첫 신호에 바로 시작된다.
     ['pointerdown', 'touchstart', 'click', 'keydown'].forEach((ev) =>
       window.addEventListener(ev, applyBgm, { capture: true, passive: true }));
     window.addEventListener('pageshow', applyBgm);
-    bgm.addEventListener('canplay', applyBgm);
     setTimeout(applyBgm, 400);
     // 앱이 "오래" 가려지면(유튜브 채널 이동·다른 앱 전환·화면 잠금) BGM 정지, 돌아오면 재개.
     // 500ms 디바운스 — PWA 실행 순간 잠깐 hidden 이 깜빡여서 로딩 때 "띡" 하고 끊기던 문제(사용자 보고).
     let bgmHideTimer = null;
     document.addEventListener('visibilitychange', () => {
       clearTimeout(bgmHideTimer);
-      if (document.hidden) bgmHideTimer = setTimeout(() => { if (document.hidden && bgm) bgm.pause(); }, 500);
+      if (document.hidden) bgmHideTimer = setTimeout(() => { if (document.hidden) { const el = bgmActiveEl(); if (el) el.pause(); } }, 500);
       else applyBgm();
     });
     // 언어 전환 시 JS 로 채운 동적 문구도 다시 그린다 (applyStatic 이 못 건드리는 것들).
@@ -2025,7 +2077,7 @@
       onChannelEnter: (url) => {
         if (!url || !document.getElementById('game-screen').classList.contains('is-start')) return;
         MG.Ads.interstitial(I18N.t('mole.channel.hint')).then((ok) => {
-          if (ok) { if (bgm) bgm.pause(); window.location.href = url; } // 채널 이동 전 BGM 정지
+          if (ok) { if (bgmEls) bgmEls.forEach((el) => el.pause()); window.location.href = url; } // 채널 이동 전 BGM 정지
         });
       }
     });
