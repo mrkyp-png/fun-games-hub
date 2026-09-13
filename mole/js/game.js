@@ -1131,8 +1131,12 @@
     }
 
     // 라운드1 전용: 타이핑 뒤 3·2·1·GO!. 끝나면 finish() 호출.
+    // 알리 펀치 장착 시 — 인트로가 길어서(라운드2~10 인사 제스처는 1회) 3·2·1·GO! 마다
+    // 한 번씩(총 4회) 좌우 글러브 만남 제스처를 반복(사용자 지정 "3~4회").
     function runCountdown(finish) {
       count.hidden = false;
+      const alipunchReady = state.weapon === 'alipunch' && state.laneHammer && state.laneHammer.meet;
+      if (alipunchReady) { setHammerLayerVisible(true); tickHammerDuring(650 * 3 + 360 + 300); }
       const STEPS = ['3', '2', '1', 'GO!']; // 무조건 영어 (사용자 지정)
       let i = 0;
       (function tick() {
@@ -1142,6 +1146,7 @@
         count.className = 'round-intro-count ' + (go ? 'cgo' : 'c' + (3 - i)); // 카운트별 색상
         void count.offsetWidth;
         count.classList.add('pop'); // 줌인 애니
+        if (alipunchReady) state.laneHammer.meet();
         i++;
         if (i < STEPS.length) setTimeout(tick, 650);
         else setTimeout(finish, 360);
