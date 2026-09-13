@@ -192,12 +192,12 @@
     function home() { left.home(); right.home(); }
     function clear() { left.clear(); right.clear(); }
 
-    // 시연용 — 다이얼패드 구멍을 겨냥하지 않고 대기위치 바로 앞에서 제자리로 뻗었다 돌아온다
-    // (라운드1 카운트다운 중 5동작 시연용, game.js 가 호출). regionId 없음 = 오버라이드 无.
-    function demo(style, side, onImpact) {
+    // 시연용 — 실제 타격위치(x,y)까지 뻗었다 대기위치로 돌아온다(라운드1 카운트다운 중
+    // 5동작 시연용, game.js 가 실제 다이얼패드 구멍 좌표를 조회해서 넘겨줌).
+    // regionId 없음 = REGION_OVERRIDE 오버라이드 无(스타일 기본 각도 그대로).
+    function demo(style, side, x, y, onImpact) {
       const g = side === 'L' ? left : right;
-      const home = side === 'L' ? HOME_L : HOME_R;
-      g.strike(home.x, home.y - 0.05, style, onImpact, null);
+      g.strike(x, y, style, onImpact, null);
     }
 
     // 좌우 글러브가 동시에 대기위치와 같은 맨 아래줄 정중앙으로 잽을 뻗어 "만난" 뒤 각자

@@ -1152,10 +1152,15 @@
           if (i === 0 || i === 3) {
             state.laneHammer.meet(); // 1번째("3")·마지막("GO!") = 만남 제스처
           } else if (i === 1) {
-            // "2" 박자부터 다음 박자("GO!")까지 1300ms 동안 5동작 시연.
-            [['jab', 'R'], ['straight', 'L'], ['hookR', 'R'], ['hookL', 'L'], ['upper', 'L']]
-              .forEach(([style, side], k) => {
-                setTimeout(() => { if (myGen === sessionGen) state.laneHammer.demo(style, side); }, k * 220);
+            // "2" 박자부터 다음 박자("GO!")까지 1300ms 동안 5동작 시연 — 제자리가 아니라
+            // 실제 타격위치(대표 구멍 좌표)까지 뻗었다 옴(사용자 지정).
+            [['jab', 'R', 14], ['straight', 'L', 4], ['hookR', 'R', 2], ['hookL', 'L', 1], ['upper', 'L', 0]]
+              .forEach(([style, side, regionId], k) => {
+                setTimeout(() => {
+                  if (myGen !== sessionGen) return;
+                  const sp = state.spawnPoints.find((p) => p.regionId === regionId);
+                  if (sp) state.laneHammer.demo(style, side, sp.x, sp.y);
+                }, k * 220);
               });
           }
         }
