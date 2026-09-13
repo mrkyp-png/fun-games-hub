@@ -192,6 +192,14 @@
     function home() { left.home(); right.home(); }
     function clear() { left.clear(); right.clear(); }
 
+    // 시연용 — 다이얼패드 구멍을 겨냥하지 않고 대기위치 바로 앞에서 제자리로 뻗었다 돌아온다
+    // (라운드1 카운트다운 중 5동작 시연용, game.js 가 호출). regionId 없음 = 오버라이드 无.
+    function demo(style, side, onImpact) {
+      const g = side === 'L' ? left : right;
+      const home = side === 'L' ? HOME_L : HOME_R;
+      g.strike(home.x, home.y - 0.05, style, onImpact, null);
+    }
+
     // 좌우 글러브가 동시에 대기위치와 같은 맨 아래줄 정중앙으로 잽을 뻗어 "만난" 뒤 각자
     // 대기위치로 복귀(라운드 인트로 준비동작 인사 제스처, 사용자 지정 — 화면 중앙이
     // 아니라 대기위치 줄의 중앙. 0번=왼쪽 잽/#번=오른쪽 잽 스타일).
@@ -204,7 +212,7 @@
       right.strike(0.5 + GLOVE_HALF_W, HOME_R.y, 'jab', onImpact, null);
     }
 
-    return { strike, update, isBusy, home, clear, meet };
+    return { strike, update, isBusy, home, clear, meet, demo };
   }
 
   const api = { create, ZONES: ZONES, EXCLUDED_HOLES: [12, 15] };

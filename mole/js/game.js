@@ -1131,11 +1131,13 @@
     }
 
     // 라운드1 전용: 타이핑 뒤 3·2·1·GO!. 끝나면 finish() 호출.
-    // 알리 펀치 장착 시 — 인트로가 길어서(라운드2~10 인사 제스처는 1회) 3·2·1·GO! 마다
-    // 한 번씩(총 4회) 좌우 글러브 만남 제스처를 반복(사용자 지정 "3~4회").
+    // 알리 펀치 장착 시 — 만남 제스처만 4번 반복하니 휑해서(사용자 지적) 사이에 5동작을 채움:
+    // "3"=1번째 만남 → "2"·"1" 구간에 잽·스트레이트·라이트훅·레프트훅·어퍼컷 5동작
+    // (잽·스트레이트·어퍼컷은 왼손잡이 기준 — 리드는 오른손 잽, 파워는 왼손 스트레이트·어퍼컷.
+    // 라이트훅·레프트훅은 이름 그대로 오른쪽·왼쪽 글러브, 사용자 지정) → "GO!"=마지막 만남 후 대기위치.
     function runCountdown(finish) {
       count.hidden = false;
-      const alipunchReady = state.weapon === 'alipunch' && state.laneHammer && state.laneHammer.meet;
+      const alipunchReady = state.weapon === 'alipunch' && state.laneHammer && state.laneHammer.meet && state.laneHammer.demo;
       if (alipunchReady) { setHammerLayerVisible(true); tickHammerDuring(650 * 3 + 360 + 300); }
       const STEPS = ['3', '2', '1', 'GO!']; // 무조건 영어 (사용자 지정)
       let i = 0;
@@ -1146,7 +1148,17 @@
         count.className = 'round-intro-count ' + (go ? 'cgo' : 'c' + (3 - i)); // 카운트별 색상
         void count.offsetWidth;
         count.classList.add('pop'); // 줌인 애니
-        if (alipunchReady) state.laneHammer.meet();
+        if (alipunchReady) {
+          if (i === 0 || i === 3) {
+            state.laneHammer.meet(); // 1번째("3")·마지막("GO!") = 만남 제스처
+          } else if (i === 1) {
+            // "2" 박자부터 다음 박자("GO!")까지 1300ms 동안 5동작 시연.
+            [['jab', 'R'], ['straight', 'L'], ['hookR', 'R'], ['hookL', 'L'], ['upper', 'L']]
+              .forEach(([style, side], k) => {
+                setTimeout(() => { if (myGen === sessionGen) state.laneHammer.demo(style, side); }, k * 220);
+              });
+          }
+        }
         i++;
         if (i < STEPS.length) setTimeout(tick, 650);
         else setTimeout(finish, 360);
