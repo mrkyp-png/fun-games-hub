@@ -1302,8 +1302,12 @@
       overlay.classList.add('mole-in');
       if (showMole) moleImg.hidden = false;
       playAlipunchDemo(); // 매 라운드 인트로마다 준비 시연(알리 펀치 장착 시만)
-      // 2) 중앙에 멈추면 "라운드 N" 을 한 글자씩 다시 타이핑(+ 타자기 소리)
-      setTimeout(() => { if (myGen === sessionGen) typeText(title, full, () => {}); }, FLY_IN_MS + 40);
+      // 2) 중앙에 멈추면 "라운드 N" 을 한 글자씩 다시 타이핑(+ 타자기 소리) + 라운드 음성(사용자 제공)
+      setTimeout(() => {
+        if (myGen !== sessionGen) return;
+        typeText(title, full, () => {});
+        MG.HitFx.roundAnnounce(roundNum);
+      }, FLY_IN_MS + 40);
       // 3) 타이핑 끝난 뒤 — 라운드1: 3·2·1·GO! 후 퇴장 / 라운드2~: 바로 퇴장
       setTimeout(() => {
         if (myGen !== sessionGen) return;

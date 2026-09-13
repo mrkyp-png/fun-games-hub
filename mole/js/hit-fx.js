@@ -18,6 +18,36 @@
   let hitBuffers = null;   // AudioBuffer[] (디코드 완료 후)
   let hitLoading = false;
 
+  // 라운드 인트로 음성(사용자 제공, 바탕화면 "라운드.wav" → 무음 구간 기준 10등분해 트림).
+  // "라운드 1" ~ "라운드 9" + "파이널 라운드"(10번째) 순서로 녹음됐다고 가정(무기 무관, 항상 재생).
+  const ROUND_ANNOUNCE_URLS = [];
+  for (let i = 1; i <= 10; i++) ROUND_ANNOUNCE_URLS.push('audio/round-announce-' + i + '.mp3');
+  let roundAnnounceBuffers = null;
+  let roundAnnounceLoading = false;
+  function loadRoundAnnounceBuffers(ctx) {
+    if (roundAnnounceBuffers || roundAnnounceLoading || typeof fetch !== 'function') return;
+    roundAnnounceLoading = true;
+    Promise.all(ROUND_ANNOUNCE_URLS.map((u) =>
+      fetch(u).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b))
+    )).then((bufs) => { roundAnnounceBuffers = bufs; })
+      .catch(() => { roundAnnounceLoading = false; });
+  }
+  // game.js playRoundIntro 가 "라운드 N" 타이핑 시작 순간 호출.
+  function roundAnnounce(n) {
+    if (sfxOff()) return;
+    try {
+      const ctx = getCtx();
+      const buf = ctx && roundAnnounceBuffers && roundAnnounceBuffers[n - 1];
+      if (!buf) return;
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const g = ctx.createGain();
+      g.gain.value = 0.9;
+      src.connect(g).connect(ctx.destination);
+      src.start();
+    } catch (e) { /* 오디오 불가 환경 무시 */ }
+  }
+
   // 대포 무기 스킨 전용 타격음 = 폭발음 (사용자 제공, Pixabay 로열티 프리). 대포 장착 시
   // 위 HIT_URLS 대신 이 풀에서 랜덤 1개.
   const CANNON_URLS = ['audio/cannon-boom1.mp3', 'audio/cannon-boom2.mp3', 'audio/cannon-boom3.mp3',
@@ -256,6 +286,7 @@
     audioCtx = audioCtx || new Ctx();
     if (audioCtx.state === 'suspended' && audioCtx.resume) audioCtx.resume();
     loadHitBuffers(audioCtx); // ctx 생기는 즉시 타격음 파일 프리로드
+    loadRoundAnnounceBuffers(audioCtx); // 라운드 음성도 무기 무관 항상 프리로드
     if (isCannonEquipped()) { loadCannonBuffers(audioCtx); loadCannonRotateBuffer(audioCtx); loadCannonWheelBuffer(audioCtx); } // 대포 장착 중일 때만 폭발음·회전음·바퀴음 로드(망치 유저는 불필요한 다운로드 안 함)
     if (isAlipunchEquipped()) loadPunchVoiceBuffers(audioCtx); // 알리 펀치 장착 중일 때만 보이스 로드
     if (isGoldhammerEquipped()) loadGoldhammerSpinBuffer(audioCtx); // 골드해머 장착 중일 때만 회전 등장음 로드
@@ -614,6 +645,6 @@
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
-  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, punchStar, powerUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin };
+  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, punchStar, powerUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);
