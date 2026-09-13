@@ -257,7 +257,18 @@
       return pop;
     }
 
-    return { tick, resolveHit, resolveRegion, isComplete, completedRegionCount, getActivePops, forceCompleteAll, debugForceBurst, debugForceMole };
+    // 디버그 전용: 지정 구멍에 즉시 동물을 띄운다(무적 중 hot 하이라이트 확인용, 임시).
+    function debugForceAnimal(regionId) {
+      const sp = spawnPoints.find((p) => p.regionId === regionId);
+      if (!sp || occupiedSpawnPointIds.has(sp.id)) return null;
+      const pop = { id: nextPopId++, type: 'animal', spawnPointId: sp.id, regionId: sp.regionId, col: sp.col, x: sp.x, y: sp.y, remaining: config.popDuration };
+      pop.dying = false; pop.hitCooldown = 0; pop.sinkIn = 0; pop.killed = false;
+      active.set(pop.id, pop);
+      occupiedSpawnPointIds.add(sp.id);
+      return pop;
+    }
+
+    return { tick, resolveHit, resolveRegion, isComplete, completedRegionCount, getActivePops, forceCompleteAll, debugForceBurst, debugForceMole, debugForceAnimal };
   }
 
   const api = { create };

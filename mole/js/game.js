@@ -1087,6 +1087,10 @@
     count.className = 'round-intro-count';
     title.textContent = '';
     moleImg.hidden = true;
+    // 캐논 인트로 연출 — 모든 라운드(1~10)에서 이 함수 시작 시점에 바로 시작(사용자 지정).
+    // 라운드1은 챕터 설명 직후라 여유 있게 느긋이, 라운드2~10은 인트로가 훨씬 짧아
+    // fast=true로 빠르게. 실제 대포는 처음부터 안 보여야 하므로 playCannonIntro() 안에서 숨김.
+    if (state.weapon === 'cannon') playCannonIntro(!isR1);
     if (isR1) {
       overlay.classList.remove('has-mole', 'mole-in', 'is-opening'); // 커튼 효과 없음(투명)
     } else {
@@ -1128,6 +1132,54 @@
       setHammerLayerVisible(true);
       state.laneHammer.meet(); // 좌우 글러브가 만난 뒤 대기위치로 복귀
       tickHammerDuring(400); // meet() 왕복(~240ms) + 여유
+    }
+
+    // 캐논 인트로 등장 연출(사용자 지정) — 챕터 설명 끝나자마자(라운드1) / 라운드 전환
+    // 시작하자마자(라운드2~10) 좌측에서 등장해 대기위치까지 이동(옆면-외곽선, 바퀴 회전) →
+    // 도착하면 3시 방향(a3 거울상) → 12시 방향(a4 거울상) 포즈를 짧게 거쳐 → 실제
+    // 대포(평소 대기 포즈)로 교체. 라운드2~10은 인트로가 훨씬 짧아 fast=true로 빠르게(사용자 지정).
+    // 평소엔 #mole-hammer-layer(진짜 대포)를 숨겨뒀다가 끝나면 교체.
+    function playCannonIntro(fast) {
+      const ci = document.getElementById('cannon-intro');
+      if (!ci) return;
+      setHammerLayerVisible(false); // 실제 대포는 인트로 끝날 때까지 숨김(사용자 지적)
+      const rig = ci.querySelector('.ci-rig');
+      const body = ci.querySelector('.ci-body');
+      const wheels = ci.querySelectorAll('.ci-wheel');
+      ci.hidden = false;
+      // 이미지마다 실제 크기가 달라(옆면 이미지는 여백이 많고, a3·a4 는 lane-cannon.js 의
+      // 자체 보정 폭 사용) 폭을 하나로 통일하면 전환 때 크기가 튀어 이질감 생김(사용자 지적).
+      // 이미지 바뀔 때마다 그 이미지에 맞는 폭을 직접 지정.
+      // .ci-rig 에 폭을 직접 준다(% width는 부모=#cannon-intro 기준으로 고정폭이라 안전).
+      // .ci-body 에 width:%를 주면 부모(.ci-rig, 폭 미지정)를 기준으로 순환 참조가 생겨
+      // 프레임마다 계속 줄어드는 버그가 났었음(사용자 보고 "애니메이션 다 깨짐") — 그래서
+      // 크기는 항상 rig 에 준다.
+      // 완료 시점 = "라운드 N" 글자·두더지 이미지가 퇴장(is-opening)을 시작하는 정확한 순간
+      // (사용자 지정 "딱 맞춰야함") — 실측: 라운드1 GO! 직전 ~3300ms, 라운드2~10 ~3410ms.
+      const travelMs = fast ? 3000 : 2800;
+      const holdMs = fast ? 205 : 200;
+      rig.style.width = '27.8%'; // 실측 24.2%(a3)에서 +15% — 옆면 이미지는 여백이 많아서 보정
+      rig.style.animationDuration = travelMs + 'ms';
+      body.src = 'assets/weapons/cannon-intro-body-flip.png'; // 이동 중엔 항상 이 이미지(사용자 지정)
+      wheels.forEach((w) => w.classList.remove('ci-hide'));
+      rig.className = 'ci-rig ci-play'; // 좌측 등장 → 대기위치까지 이동(바퀴는 계속 회전)
+      setTimeout(() => { // 도착 — 3시 방향 포즈로 전환(바퀴는 이 포즈 그림에 이미 있어 오버레이 숨김)
+        if (myGen !== sessionGen) return;
+        wheels.forEach((w) => w.classList.add('ci-hide'));
+        rig.style.width = '25%'; // a3 실측 24.2% + 15%, 다시 -10%(사용자 지정)
+        body.src = 'assets/weapons/cannon-a3-mirror.png';
+      }, travelMs); // GO!(라운드1)/타이핑 끝(라운드2~10) 타이밍에 정착이 맞춰지도록(사용자 지정)
+      setTimeout(() => { // 12시 방향 포즈로 전환
+        if (myGen !== sessionGen) return;
+        rig.style.width = '23.6%'; // a4 실측 21.6% + 15%, 다시 -5%(사용자 지정)
+        body.src = 'assets/weapons/cannon-a4-mirror.png';
+      }, travelMs + holdMs);
+      setTimeout(() => { // 완료 — 인트로 숨기고 실제 대포(평소 대기 포즈)로 교체
+        if (myGen !== sessionGen) return;
+        ci.hidden = true;
+        rig.className = 'ci-rig';
+        setHammerLayerVisible(true);
+      }, travelMs + holdMs * 2);
     }
 
     // 라운드1 전용: 타이핑 뒤 3·2·1·GO!. 끝나면 finish() 호출.
@@ -1970,6 +2022,9 @@
     // 디버그 전용: 지정 구멍에 즉시 두더지(1타, poseIndex 지정 가능 — 0=전신) 강제 스폰 (타격점 확인용).
     window.__debugForceMole = (regionId, poseIndex) => {
       if (state && state.scheduler) state.scheduler.debugForceMole(regionId | 0, poseIndex);
+    };
+    window.__debugForceAnimal = (regionId) => {
+      if (state && state.scheduler) state.scheduler.debugForceAnimal(regionId | 0);
     };
     window.__debugSpawnPoint = (regionId) => {
       const s = state && state.spawnPoints.find((p) => p.regionId === (regionId | 0));

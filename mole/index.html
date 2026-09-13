@@ -169,7 +169,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v416</div>
+      <div id="build-tag" aria-hidden="true">v417</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -461,6 +461,19 @@
       </div>
     <!-- 뽕망치 = 보드 밖(클리핑 없음) — 우측 끝 스윙이 베젤까지 다 보이게 -->
     <div id="mole-hammer-layer"></div>
+    <!-- 캐논 라운드1 인트로 전용 등장 연출(사용자 지정) — 옆면이 좌측에서 우측 대기위치로
+         이동(바퀴 회전) → 중간에 12시 방향 발사 → 기존 5포즈(a1~a5) 순환하며 정착.
+         평소 게임 중엔 hidden, game.js 가 라운드1 카운트다운에서만 잠깐 사용. -->
+    <div id="cannon-intro" aria-hidden="true" hidden>
+      <div class="ci-rig">
+        <img class="ci-body" src="assets/weapons/cannon-intro-body.png" alt="">
+        <img class="ci-wheel ci-wheel--1" src="assets/weapons/cannon-intro-wheel.png" alt="">
+        <img class="ci-wheel ci-wheel--2" src="assets/weapons/cannon-intro-wheel.png" alt="">
+        <img class="ci-spark" src="assets/weapons/cannon-fx1.png" alt="">
+        <img class="ci-burn" src="assets/weapons/cannon-fx4.png" alt="">
+        <img class="ci-smoke" src="assets/weapons/cannon-fx5.png" alt="">
+      </div>
+    </div>
     <div id="fold-hinge" aria-hidden="true"></div>
     <div class="dialpad">
       <div class="start-coach" data-start-coach>
@@ -574,7 +587,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=416').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=417').catch(function () {});
       }
     });
   }
