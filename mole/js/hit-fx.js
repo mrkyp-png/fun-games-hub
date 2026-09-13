@@ -74,6 +74,33 @@
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
+  // 캐논 인트로 — 옆면 이동(캐논 travelMs 동안) 바퀴 굴러가는 소리(Pixabay, David Dumais —
+  // audio/CREDITS.txt 참고). 원본 11.35s 중 앞부분 3s만 트림 + 페이드아웃(이동 시간에 맞춤).
+  const CANNON_WHEEL_URL = 'audio/cannon-wheel-roll.mp3';
+  let cannonWheelBuffer = null;
+  let cannonWheelLoading = false;
+  function loadCannonWheelBuffer(ctx) {
+    if (cannonWheelBuffer || cannonWheelLoading || typeof fetch !== 'function') return;
+    cannonWheelLoading = true;
+    fetch(CANNON_WHEEL_URL).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b))
+      .then((buf) => { cannonWheelBuffer = buf; })
+      .catch(() => { cannonWheelLoading = false; });
+  }
+  // game.js playCannonIntro 가 이동 시작 순간 호출. 파일 자체가 이동 길이에 맞춰 트림돼있어 별도 정지 불필요.
+  function cannonWheelRoll() {
+    if (sfxOff()) return;
+    try {
+      const ctx = getCtx();
+      if (!ctx || !cannonWheelBuffer) return;
+      const src = ctx.createBufferSource();
+      src.buffer = cannonWheelBuffer;
+      const g = ctx.createGain();
+      g.gain.value = 0.45;
+      src.connect(g).connect(ctx.destination);
+      src.start();
+    } catch (e) { /* 오디오 불가 환경 무시 */ }
+  }
+
   // 알리 펀치 전용 — 펀치가 날아갈 때(글러브 스타일별) 아나운서 보이스 1개씩(사용자 제공).
   const PUNCH_VOICE_URLS = {
     jab: 'audio/punch-jab.mp3',
@@ -193,7 +220,7 @@
     audioCtx = audioCtx || new Ctx();
     if (audioCtx.state === 'suspended' && audioCtx.resume) audioCtx.resume();
     loadHitBuffers(audioCtx); // ctx 생기는 즉시 타격음 파일 프리로드
-    if (isCannonEquipped()) { loadCannonBuffers(audioCtx); loadCannonRotateBuffer(audioCtx); } // 대포 장착 중일 때만 폭발음·회전음 로드(망치 유저는 불필요한 다운로드 안 함)
+    if (isCannonEquipped()) { loadCannonBuffers(audioCtx); loadCannonRotateBuffer(audioCtx); loadCannonWheelBuffer(audioCtx); } // 대포 장착 중일 때만 폭발음·회전음·바퀴음 로드(망치 유저는 불필요한 다운로드 안 함)
     if (isAlipunchEquipped()) loadPunchVoiceBuffers(audioCtx); // 알리 펀치 장착 중일 때만 보이스 로드
     loadTapBuffers(audioCtx); // UI 탭음도 같이 프리로드
     return audioCtx;
@@ -550,6 +577,6 @@
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
-  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, punchStar, powerUpWord, punch, punchVoice, hammerPop, cannonRotateClick };
+  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, punchStar, powerUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);

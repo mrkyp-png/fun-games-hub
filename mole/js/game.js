@@ -1171,6 +1171,7 @@
       body.src = 'assets/weapons/cannon-intro-body-flip.png'; // 이동 중엔 항상 이 이미지(사용자 지정)
       wheels.forEach((w) => w.classList.remove('ci-hide'));
       rig.className = 'ci-rig ci-play'; // 좌측 등장 → 대기위치까지 이동(바퀴는 계속 회전)
+      MG.HitFx.cannonWheelRoll(); // 바퀴 굴러가는 소리(사용자 제공, Pixabay) — 이동 시작과 동시에
       setTimeout(() => { // 도착 — 3시 방향 포즈로 전환(바퀴는 이 포즈 그림에 이미 있어 오버레이 숨김)
         if (myGen !== sessionGen) return;
         wheels.forEach((w) => w.classList.add('ci-hide'));

@@ -65,3 +65,12 @@
 ■ ui-tap1.mp3, ui-tap2.mp3  (다이얼패드/더보기 메뉴 아이콘 탭 사운드)
   출처: 効果音ラボ (Sound Effect Lab) — hit1~4.mp3 와 동일 사이트 (사용자 확인)
   라이선스: 商用利用無料 (상업적 이용 무료), 크레딧 표기 불필요 (위 hit1~4 항목과 동일 조건)
+
+■ cannon-rotate-click.mp3  (캐논 라운드 인트로 — 옆면 이동 후 포즈 전환 "철컥" 소리)
+  출처: 사용자 제공 (바탕화면 "캐논 각도 별 이동 소리.mp3")
+
+■ cannon-wheel-roll.mp3  (캐논 라운드 인트로 — 옆면 이동 중 바퀴 굴러가는 소리)
+  출처: Pixabay Sound Effects — David Dumais
+  https://pixabay.com/sound-effects/  (David Dumais: https://pixabay.com/ko/users/daviddumaisaudio-41768500/)
+  라이선스: Pixabay Content License — 크레딧 표기 불필요이나 사용자 지정으로 기록.
+  Sound Effect by David Dumais from Pixabay
