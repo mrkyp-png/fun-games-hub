@@ -72,8 +72,12 @@
 ■ goldhammer-spin.mp3  (골드해머 라운드 인트로 — 회전 등장 소리)
   출처: 사용자 제공 (바탕화면 "황금해머 음향.mp3")
 
-■ round-announce-1.mp3 ~ round-announce-10.mp3  (라운드 인트로 — "라운드 N" 음성, 10번째=파이널 라운드)
-  출처: 사용자 제공 (바탕화면 "라운드.wav", 19.48s 단일 파일을 무음 구간 기준 10등분해 트림)
+■ round-announce-1.mp3 ~ round-announce-10.mp3  (라운드 인트로 — "Round One" ~ "Round Ten" 영어 음성)
+  출처: Freesound.org — "Round One to Ten Deep Voice" by dersuperanton (2018-06-24)
+  https://freesound.org/people/dersuperanton/packs/24603/ (Video Game Soundpack)
+  라이선스: 크레딧 표기 필수(제작자 요청) — "Round One to Ten Deep Voice by dersuperanton freesound.org"
+  원본(바탕화면 "라운드.wav", 19.48s 단일 파일, 스크린샷 "라운드 음원.PNG"로 출처 확인)을
+  무음 구간 기준 10등분해 트림(round-announce-N.mp3 = "Round N").
 
 ■ cannon-wheel-roll.mp3  (캐논 라운드 인트로 — 옆면 이동 중 바퀴 굴러가는 소리)
   출처: Pixabay Sound Effects — David Dumais

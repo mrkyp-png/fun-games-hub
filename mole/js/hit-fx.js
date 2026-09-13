@@ -19,7 +19,7 @@
   let hitLoading = false;
 
   // 라운드 인트로 음성(사용자 제공, 바탕화면 "라운드.wav" → 무음 구간 기준 10등분해 트림).
-  // "라운드 1" ~ "라운드 9" + "파이널 라운드"(10번째) 순서로 녹음됐다고 가정(무기 무관, 항상 재생).
+  // "Round One" ~ "Round Ten" 순서(Freesound "Round One to Ten Deep Voice" — audio/CREDITS.txt 참고, 무기 무관 항상 재생).
   const ROUND_ANNOUNCE_URLS = [];
   for (let i = 1; i <= 10; i++) ROUND_ANNOUNCE_URLS.push('audio/round-announce-' + i + '.mp3');
   let roundAnnounceBuffers = null;
