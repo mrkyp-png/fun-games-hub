@@ -197,7 +197,10 @@
       // pop-elements.js 가 두더지와 같은 펀치 연출(넉백·축소)을 태울 수 있게(game.js 쪽에서 게이팅).
       if (pop.type === 'mole' || pop.type === 'animal') pop.killed = true;
       pop.sinkIn = SINK_DELAY;
-      return { type: pop.type, regionId: pop.regionId, done: true, xFrac: pop.x, yFrac: pop.y };
+      // safeAlways = 이 동물/폭탄이 "무적 중에 올라온" 것이면, 무적이 그 사이 끝나서
+      // 타격 시점엔 무적이 아니어도 계속 안전(사용자 지정 — "의문사 방지". game.js 가
+      // 스폰 순간에 낙인찍음, spawn-scheduler 는 무적 여부를 모르니 그대로 전달만).
+      return { type: pop.type, regionId: pop.regionId, done: true, xFrac: pop.x, yFrac: pop.y, safe: !!pop.safeAlways };
     }
 
     function resolveHit(popId, opts) {

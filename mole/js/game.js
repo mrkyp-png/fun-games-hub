@@ -1276,6 +1276,13 @@
     const tickResult = state.scheduler.tick(dt);
     // 두더지를 처치 못 하고 시간초과로 놓치면 헛방·동물·폭탄과 동일하게 콤보 초기화.
     if (tickResult.expired.some((e) => e.type === 'mole' && e.timedOut)) run.combo.onObstacleHit();
+    // "의문사" 방지(사용자 지정) — 무적 중에 올라온 동물/폭탄은, 그 사이 무적이 끝나도
+    // 계속 안전 취급되도록 스폰 순간에 낙인찍는다(spawn-scheduler.js 가 그대로 전달).
+    if (alipunchInvincible()) {
+      tickResult.spawned.forEach((p) => {
+        if (p.type === 'animal' || p.type === 'bomb') p.safeAlways = true;
+      });
+    }
     state.laneHammer.update(rawDt); // 망치는 히트스톱과 무관하게 부드럽게
     syncPops();
 
@@ -1285,7 +1292,7 @@
     const moleRegions = new Set();
     state.scheduler.getActivePops().forEach((p) => {
       if (p.dying) return;
-      if (p.type === 'mole' || (invincibleNow && p.type === 'animal')) moleRegions.add(p.regionId);
+      if (p.type === 'mole' || ((invincibleNow || p.safeAlways) && p.type === 'animal')) moleRegions.add(p.regionId);
     });
     for (let id = 0; id < GRID_SIZE * GRID_SIZE; id++) {
       sharedLaneControls.setCellHot(id, moleRegions.has(id));
@@ -1394,7 +1401,7 @@
 
     // 버튼 이펙트 색: 헛방(구멍에 아무것도 없음) 또는 폭탄이면 빨간색.
     // 알리 펀치 무적 중엔 폭탄도 안전한 타격이므로 빨간색 아님(초록).
-    return results.length === 0 || (results.some((r) => r.type === 'bomb') && !alipunchInvincible());
+    return results.length === 0 || (results.some((r) => r.type === 'bomb' && !r.safe) && !alipunchInvincible());
   }
 
   // ---------- 골드해머: 지진 ----------
@@ -1555,7 +1562,7 @@
         flashHud('hud-hearts');
         updateShieldHud();
       } else if (r.type === 'animal') {
-        if (alipunchInvincible()) {      // 무적 중 — 페널티 무효, 안전 타격 취급(점수·콤보도 반영)
+        if (alipunchInvincible() || r.safe) {      // 무적 중(또는 무적 중 스폰돼 낙인찍힌 개체) — 페널티 무효, 안전 타격 취급(점수·콤보도 반영)
           const before = run.combo.score;
           run.combo.onJuggle(JUGGLE_BONUS);
           MG.HitFx.scorePop(board, r.xFrac, r.yFrac, run.combo.score - before);
@@ -1571,7 +1578,7 @@
           flashHud('hud-hearts');
         }
       } else if (r.type === 'bomb') {
-        if (alipunchInvincible()) {      // 무적 중 — 페널티 무효, 안전 타격 취급(점수·콤보도 반영)
+        if (alipunchInvincible() || r.safe) {      // 무적 중(또는 무적 중 스폰돼 낙인찍힌 개체) — 페널티 무효, 안전 타격 취급(점수·콤보도 반영)
           const before = run.combo.score;
           run.combo.onJuggle(JUGGLE_BONUS);
           MG.HitFx.scorePop(board, r.xFrac, r.yFrac, run.combo.score - before);

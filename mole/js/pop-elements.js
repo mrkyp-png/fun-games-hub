@@ -160,7 +160,7 @@
           m.blast = pop.type === 'mole' && pop.killed && isCannonEquipped();
           // 무적 중엔 동물도 두더지와 동일한 펀치 연출(넉백·축소) — 무적 아닐 때 동물은 페널티라 제외.
           m.punch = pop.killed && isAlipunchEquipped() &&
-            (pop.type === 'mole' || (pop.type === 'animal' && isAlipunchInvincible()));
+            (pop.type === 'mole' || (pop.type === 'animal' && (isAlipunchInvincible() || pop.safeAlways)));
         }
         m.dying = !!pop.dying;
         m.targetDepth = targetFor(pop);
