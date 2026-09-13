@@ -68,6 +68,7 @@
     let aimX = HOME_X, aimY = HOME_Y, gx = HOME_X, gy = HOME_Y, deg = hDeg;
     let impactCb = null;
     let fired = false;
+    let scaleVal = 1; // 골드해머 인트로 회전 등장 전용(평소엔 항상 1)
 
     function strike(targetXFrac, targetYFrac, onImpact, frameKey) {
       const tx = (typeof targetXFrac === 'number') ? targetXFrac : 0.5;
@@ -120,31 +121,42 @@
     function paint() {
       el.style.left = (gx * 100).toFixed(2) + '%';
       el.style.top = (gy * 100).toFixed(2) + '%';
-      el.style.transform = 'translate(-' + gripX + '%, -' + gripY + '%) rotate(' + (deg + dOff).toFixed(1) + 'deg)';
+      el.style.transform = 'translate(-' + gripX + '%, -' + gripY + '%) rotate(' + (deg + dOff).toFixed(1) + 'deg) scale(' + scaleVal.toFixed(3) + ')';
       el.style.marginTop = phase === 'home' ? homeMT : '0'; // 대기 위치 세로 보정 (기본 0.2cm 아래)
       el.style.opacity = '1'; // 항상 불투명 — "현실 손이 게임화면을 때리는" 3D 느낌 (사용자 요청)
     }
 
     function isBusy() { return phase === 'fly' || phase === 'chop' || phase === 'rise'; }
 
-    // 골드해머 라운드 인트로 전용(사용자 지정) — 대기 위치(HOME) 각도 그대로 지정 좌표로
-    // 부드럽게 이동. 자체 rAF 로 구동(인트로 중엔 메인 루프 정지 상태). 낙하(가속)·착지 후
-    // 대기위치로 튐(감속) 양쪽에 재사용 — easeFn 없으면 기본 ease(k)=k*k(가속).
-    function flyTo(fromX2, fromY2, toX, toY, ms, easeFn, onDone) {
+    // 골드해머 라운드 인트로 전용(사용자 지정 "회전 등장") — 지정 좌표(키패드 '✱' 키)에서
+    // 작게·0도 포즈(goldhammer-0.png)로 시작해 계속 회전하며(처음엔 천천히 → 대기위치에
+    // 가까워질수록 빨라짐) 커지면서 대기 위치까지 날아간다. 회전은 정확히 대기 각도(hDeg)에
+    // 맞춰 끝나 도착 순간 기본 스프라이트(대기 포즈)로 교체해 매끄럽게 안착. 자체 rAF 로 구동
+    // (인트로 중엔 메인 루프 정지 상태).
+    function spinIn(fromX2, fromY2, ms, spins, fromScale, onDone) {
       phase = 'home'; t = 0;
-      gx = fromX2; gy = fromY2; deg = HOME_DEG;
-      fromX = fromX2; fromDeg = HOME_DEG; aimX = fromX2;
       fired = false;
-      const ek = easeFn || ease;
+      const baseSrc = sprite || 'assets/hammer.png';
+      img.src = 'assets/weapons/goldhammer-0.png';
+      const startScale = fromScale != null ? fromScale : 0.35;
+      const endDeg = hDeg + 360 * (spins || 3);
       const start = performance.now();
       (function step(now) {
         const k = Math.min(1, ((now || performance.now()) - start) / ms);
-        const e = ek(k);
-        gx = lerp(fromX2, toX, e);
-        gy = lerp(fromY2, toY, e);
+        const e = ease(k); // k*k — 느리게 시작해 빨라짐(이동·회전·확대 공통)
+        gx = lerp(fromX2, HOME_X, e);
+        gy = lerp(fromY2, HOME_Y, e);
+        deg = lerp(0, endDeg, e);
+        scaleVal = lerp(startScale, 1, e);
         paint();
         if (k < 1) requestAnimationFrame(step);
-        else if (onDone) onDone();
+        else {
+          img.src = baseSrc;
+          gx = HOME_X; gy = HOME_Y; deg = hDeg; scaleVal = 1;
+          fromX = HOME_X; fromY = HOME_Y; fromDeg = hDeg; aimX = HOME_X; aimY = HOME_Y;
+          paint();
+          if (onDone) onDone();
+        }
       })(start);
     }
 
@@ -157,6 +169,7 @@
       fromX = HOME_X; fromY = HOME_Y; fromDeg = HOME_DEG;
       aimX = HOME_X; aimY = HOME_Y;
       fired = false;
+      scaleVal = 1;
       paint();
     }
 
@@ -167,7 +180,7 @@
     }
 
     paint();
-    return { strike, update, isBusy, home, clear, flyTo };
+    return { strike, update, isBusy, home, clear, spinIn };
   }
 
   const api = { create };

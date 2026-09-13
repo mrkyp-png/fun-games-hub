@@ -1068,10 +1068,9 @@
   //  · 라운드 1: 챕터 인트로가 방금 커튼을 보여줬으니 커튼 없이(투명 오버레이, 보드 비침) 바로
   //    "라운드 1" fly-in → 타이핑 → 3·2·1·GO! 카운트다운(줌인 + 색상 3빨/2주/1노/GO초, GO 는 흰
   //    플래시). GO 에서 "라운드 1" 은 왼쪽·"GO!" 는 오른쪽으로 빛처럼 사라진다. (두더지 그림 없음.)
-  // 골드해머 인트로 "쾅" 착지 — 다이얼패드 중앙의 lane-hammer 좌표계(#mole-hammer-layer 기준)
-  // Y분수(실측) + 착지 후 튐 이동용 감속 이징.
-  const GH_DIALPAD_Y = 1.511;
-  const easeOutQuad = (k) => 1 - (1 - k) * (1 - k);
+  // 골드해머 인트로 "회전 등장" 시작 위치 — 키패드 '✱' 키 중심의 lane-hammer 좌표계
+  // (#mole-hammer-layer 기준) 분수(실측).
+  const GH_SPIN_START = { x: 0.134, y: 1.873 };
 
   function playRoundIntro(roundNum, onDone) {
     const myGen = sessionGen;
@@ -1182,74 +1181,14 @@
       }, travelMs + holdMs * 2);
     }
 
-    // 골드해머 라운드 인트로 등장 연출(사용자 지정) — 화면 위에서 수직 낙하해 실제 키패드
-    // (다이얼패드) 중앙에 "쾅" 착지 → 버튼들이 튀며 갈라지는 느낌 + 캐논 화염/연기 이펙트
-    // 재사용으로 자욱하게 → 짧게 튐 이동으로 실제 대기 위치(보드 모서리)까지 이동.
+    // 골드해머 라운드 인트로 등장 연출(사용자 지정 "회전 등장") — 키패드 '✱' 키 위치에서 작게·
+    // 0도 포즈로 시작해, 대기 위치로 날아가며 회전(느리게→빠르게)·확대(작게→크게) 동시 진행,
+    // 회전이 정확히 대기 각도에 맞춰 끝나는 순간 기본 스프라이트로 교체해 안착.
     function playGoldHammerIntro(fast) {
-      if (!state.laneHammer || !state.laneHammer.flyTo) return;
-      setHammerLayerVisible(true); // 화면 위(레이어 밖, overflow:visible)부터 낙하하는 게 보이도록
-      const fallMs = fast ? 2650 : 2900;
-      const holdMs = 260;
-      const hopMs = fast ? 470 : 520; // 착지 후 실제 대기 위치까지 튐 (fallMs+holdMs+hopMs ≈ 실측 is-opening 시각)
-      state.laneHammer.flyTo(0.5, -0.4, 0.5, GH_DIALPAD_Y, fallMs, null, () => {
-        if (myGen !== sessionGen) return;
-        goldHammerImpactFx();
-        setTimeout(() => {
-          if (myGen !== sessionGen) return;
-          state.laneHammer.flyTo(0.5, GH_DIALPAD_Y, 0.90, 0.965, hopMs, easeOutQuad, () => {});
-        }, holdMs);
-      });
-    }
-
-    // 착지 순간 — 다이얼패드 흔들림 + 버튼 튐(지면 갈라지는 느낌, 임팩트 지점서 거리비례 지연) +
-    // 캐논 화염/연기 이펙트(cannon-fx1/4/5) 재사용으로 자욱하게.
-    function goldHammerImpactFx() {
-      const board = document.getElementById('mole-board');
-      const dialpad = document.querySelector('.dialpad');
-      if (!dialpad) return;
-      MG.HitFx.shake(board);
-      dialpad.classList.remove('gh-shake');
-      void dialpad.offsetWidth;
-      dialpad.classList.add('gh-shake');
-
-      const flash = document.createElement('img');
-      flash.className = 'gh-impact-flash';
-      flash.src = 'assets/weapons/cannon-fx1.png';
-      dialpad.appendChild(flash);
-      requestAnimationFrame(() => flash.classList.add('is-on'));
-      setTimeout(() => flash.remove(), 400);
-
-      const puffs = [
-        { src: 'cannon-fx4.png', dx: -8, dy: -2, w: 62, delay: 0 },
-        { src: 'cannon-fx5.png', dx: 6, dy: -6, w: 68, delay: 60 },
-        { src: 'cannon-fx5.png', dx: -14, dy: 4, w: 55, delay: 140 },
-        { src: 'cannon-fx5.png', dx: 12, dy: 6, w: 58, delay: 220 }
-      ];
-      puffs.forEach((p) => {
-        const img = document.createElement('img');
-        img.className = 'gh-impact-smoke';
-        img.src = 'assets/weapons/' + p.src;
-        img.style.left = 'calc(50% + ' + p.dx + '%)';
-        img.style.top = 'calc(50% + ' + p.dy + '%)';
-        img.style.width = p.w + '%';
-        dialpad.appendChild(img);
-        setTimeout(() => { img.classList.add('is-on'); }, p.delay);
-        setTimeout(() => { img.remove(); }, p.delay + 900);
-      });
-
-      const rect = dialpad.getBoundingClientRect();
-      const cx = rect.x + rect.width * 0.5, cy = rect.y + rect.height * 0.5;
-      document.querySelectorAll('#lane-button-bar .lane-button').forEach((b) => {
-        const r = b.getBoundingClientRect();
-        const d = Math.hypot(r.x + r.width / 2 - cx, r.y + r.height / 2 - cy);
-        b.style.setProperty('--jd', String(Math.min(160, Math.round(d * 0.5))));
-        b.classList.remove('gh-jolt');
-        void b.offsetWidth;
-        b.classList.add('gh-jolt');
-      });
-      setTimeout(() => {
-        document.querySelectorAll('#lane-button-bar .lane-button.gh-jolt').forEach((b) => b.classList.remove('gh-jolt'));
-      }, 700);
+      if (!state.laneHammer || !state.laneHammer.spinIn) return;
+      setHammerLayerVisible(true);
+      const ms = fast ? 3380 : 3680; // 실측 is-opening 시각(라운드1 ~3714ms·라운드2~10 ~3422ms)에 맞춤
+      state.laneHammer.spinIn(GH_SPIN_START.x, GH_SPIN_START.y, ms, 4, 0.35, () => {});
     }
 
     // 라운드1 전용: 타이핑 뒤 3·2·1·GO!. 끝나면 finish() 호출.
