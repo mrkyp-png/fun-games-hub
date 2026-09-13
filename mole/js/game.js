@@ -1660,10 +1660,13 @@
           checkComboLifeBonus();   // 콤보 100단위 넘기면 목숨 +1
           // 처치(마지막) 타격에만: 대포면 폭발 흩뿌림, 알리 펀치면 별 이펙트(피격연출은 pop-elements.js
           // m.punch 가 담당), 아니면 기존 타격. 중간타(빼꼼/모자)는 손 안 댐.
-          if (state.weapon === 'cannon') MG.HitFx.moleBlast(board, r.xFrac, r.yFrac);
-          else if (state.weapon === 'alipunch') {
+          if (state.weapon === 'cannon') {
+            MG.HitFx.moleBlast(board, r.xFrac, r.yFrac);
+            setTimeout(() => MG.HitFx.moleVoice(), 320); // 두더지 비명도(캐논은 moleHit() 을 안 타서 누락됐던 것, 사용자 지적)
+          } else if (state.weapon === 'alipunch') {
             MG.HitFx.shake(board);
             MG.HitFx.punch(); // 랜덤 타격음 (별 이펙트만으로는 소리가 안 남 — 버그 수정)
+            setTimeout(() => MG.HitFx.moleVoice(), 320); // 두더지 비명도(알리펀치도 moleHit() 을 안 타서 누락됐던 것, 사용자 지적)
             MG.HitFx.punchStar(board, r.xFrac, r.yFrac);
             // [공격력] 무적 발동 확률 20%, 5초(§7).
             if (state.rng.next() < ALIPUNCH_INVINCIBLE_CHANCE) {
