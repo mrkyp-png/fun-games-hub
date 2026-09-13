@@ -69,6 +69,9 @@
 ■ cannon-rotate-click.mp3  (캐논 라운드 인트로 — 옆면 이동 후 포즈 전환 "철컥" 소리)
   출처: 사용자 제공 (바탕화면 "캐논 각도 별 이동 소리.mp3")
 
+■ goldhammer-spin.mp3  (골드해머 라운드 인트로 — 회전 등장 소리)
+  출처: 사용자 제공 (바탕화면 "황금해머 음향.mp3")
+
 ■ cannon-wheel-roll.mp3  (캐논 라운드 인트로 — 옆면 이동 중 바퀴 굴러가는 소리)
   출처: Pixabay Sound Effects — David Dumais
   https://pixabay.com/sound-effects/  (David Dumais: https://pixabay.com/ko/users/daviddumaisaudio-41768500/)
