@@ -207,6 +207,32 @@
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
+  // 알리 펀치 라운드 인트로 — 좌우 글러브가 만나는 순간 "Fight!" 음향(사용자 제공).
+  // 라운드2~10: 만남 제스처 1회. 라운드1: 마지막(GO!) 만남에만(첫 만남엔 안 넣음, 사용자 지정).
+  const FIGHT_URL = 'audio/alipunch-fight.mp3';
+  let fightBuffer = null;
+  let fightLoading = false;
+  function loadFightBuffer(ctx) {
+    if (fightBuffer || fightLoading || typeof fetch !== 'function') return;
+    fightLoading = true;
+    fetch(FIGHT_URL).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b))
+      .then((buf) => { fightBuffer = buf; })
+      .catch(() => { fightLoading = false; });
+  }
+  function fight() {
+    if (sfxOff()) return;
+    try {
+      const ctx = getCtx();
+      if (!ctx || !fightBuffer) return;
+      const src = ctx.createBufferSource();
+      src.buffer = fightBuffer;
+      const g = ctx.createGain();
+      g.gain.value = 0.85;
+      src.connect(g).connect(ctx.destination);
+      src.start();
+    } catch (e) { /* 오디오 불가 환경 무시 */ }
+  }
+
   // UI 탭음(다이얼패드 숫자/더보기 메뉴 아이콘) — 사용자 제공, 랜덤 1/2 + 지터. 게임 키패드
   // 타격(punch)과는 별개 — 연타 잦은 자리라 여기 안 씀, 가끔 누르는 UI 버튼 전용.
   const UI_TAP_URLS = ['audio/ui-tap1.mp3', 'audio/ui-tap2.mp3'];
@@ -288,7 +314,7 @@
     loadHitBuffers(audioCtx); // ctx 생기는 즉시 타격음 파일 프리로드
     loadRoundAnnounceBuffers(audioCtx); // 라운드 음성도 무기 무관 항상 프리로드
     if (isCannonEquipped()) { loadCannonBuffers(audioCtx); loadCannonRotateBuffer(audioCtx); loadCannonWheelBuffer(audioCtx); } // 대포 장착 중일 때만 폭발음·회전음·바퀴음 로드(망치 유저는 불필요한 다운로드 안 함)
-    if (isAlipunchEquipped()) loadPunchVoiceBuffers(audioCtx); // 알리 펀치 장착 중일 때만 보이스 로드
+    if (isAlipunchEquipped()) { loadPunchVoiceBuffers(audioCtx); loadFightBuffer(audioCtx); } // 알리 펀치 장착 중일 때만 보이스·fight음 로드
     if (isGoldhammerEquipped()) loadGoldhammerSpinBuffer(audioCtx); // 골드해머 장착 중일 때만 회전 등장음 로드
     loadTapBuffers(audioCtx); // UI 탭음도 같이 프리로드
     return audioCtx;
@@ -645,6 +671,6 @@
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
-  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, punchStar, powerUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce };
+  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, punchStar, powerUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, fight };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);

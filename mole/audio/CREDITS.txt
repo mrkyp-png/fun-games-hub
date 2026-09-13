@@ -79,6 +79,16 @@
   원본(바탕화면 "라운드.wav", 19.48s 단일 파일, 스크린샷 "라운드 음원.PNG"로 출처 확인)을
   무음 구간 기준 10등분해 트림(round-announce-N.mp3 = "Round N").
 
+■ punch-jab.mp3, punch-straight.mp3, punch-upper.mp3, punch-hookL.mp3, punch-hookR.mp3
+  (알리펀치 — 펀치 스타일별 아나운서 보이스, 2026-09-13 교체)
+  출처: 사용자 제공 화면녹화(바탕화면 "복싱.mp4", 11s) — YouTube Shorts,
+  @beatboxing486 "잽크로스바디롤어퍼컷훅 콤보 마스터!" 영상에서 캡션 타이밍 +
+  무음구간 분석으로 JAB/CROSS/UPPERCUT/HOOK 4단어를 잘라냄(BODY·ROLL 미사용).
+  straight = CROSS(리어핸드 스트레이트와 동일 펀치라 대응), hookL·hookR 모두
+  HOOK 하나로 동일 사용(사용자 지정).
+  ⚠️ 라이선스 미확인 — 원 영상 저작권자 크레딧/허락 확인 안 됨. 배포 범위 넓힐
+  계획이면 재검토 필요.
+
 ■ cannon-wheel-roll.mp3  (캐논 라운드 인트로 — 옆면 이동 중 바퀴 굴러가는 소리)
   출처: Pixabay Sound Effects — David Dumais
   https://pixabay.com/sound-effects/  (David Dumais: https://pixabay.com/ko/users/daviddumaisaudio-41768500/)

@@ -1138,7 +1138,8 @@
     function playAlipunchDemo() {
       if (isR1 || state.weapon !== 'alipunch' || !state.laneHammer || !state.laneHammer.meet) return;
       setHammerLayerVisible(true);
-      state.laneHammer.meet(); // 좌우 글러브가 만난 뒤 대기위치로 복귀
+      state.laneHammer.meet(); // 좌우 글러브가 만난 뒤 대기위치로 복귀 + fight 음향(사용자 지정)
+      MG.HitFx.fight();
       tickHammerDuring(400); // meet() 왕복(~240ms) + 여유
     }
 
@@ -1252,17 +1253,22 @@
         void count.offsetWidth;
         count.classList.add('pop'); // 줌인 애니
         if (alipunchReady) {
-          if (i === 0 || i === 3) {
-            state.laneHammer.meet(); // 1번째("3")·마지막("GO!") = 만남 제스처
+          if (i === 0) {
+            state.laneHammer.meet(); // 1번째("3") = 만남 제스처
+          } else if (i === 3) {
+            state.laneHammer.meet(); // 마지막("GO!") = 만남 제스처 + fight 음향(사용자 지정)
+            MG.HitFx.fight();
           } else if (i === 1) {
             // "2" 박자부터 다음 박자("GO!")까지 1300ms 동안 5동작 시연 — 제자리가 아니라
-            // 실제 타격위치(대표 구멍 좌표)까지 뻗었다 옴(사용자 지정).
+            // 실제 타격위치(대표 구멍 좌표)까지 뻗었다 옴(사용자 지정). 각 동작에 맞는
+            // 펀치 보이스도 같이(사용자 지정).
             [['jab', 'R', 14], ['straight', 'L', 4], ['hookR', 'R', 2], ['hookL', 'L', 1], ['upper', 'L', 0]]
               .forEach(([style, side, regionId], k) => {
                 setTimeout(() => {
                   if (myGen !== sessionGen) return;
                   const sp = state.spawnPoints.find((p) => p.regionId === regionId);
                   if (sp) state.laneHammer.demo(style, side, sp.x, sp.y);
+                  MG.HitFx.punchVoice(style);
                 }, k * 220);
               });
           }
