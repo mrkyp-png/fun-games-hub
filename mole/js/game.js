@@ -1188,7 +1188,7 @@
       if (!state.laneHammer || !state.laneHammer.spinIn) return;
       setHammerLayerVisible(true);
       const ms = fast ? 3380 : 3680; // 실측 is-opening 시각(라운드1 ~3714ms·라운드2~10 ~3422ms)에 맞춤
-      state.laneHammer.spinIn(GH_SPIN_START.x, GH_SPIN_START.y, ms, 4, 0.35, () => {});
+      state.laneHammer.spinIn(GH_SPIN_START.x, GH_SPIN_START.y, ms, 4, 0.04, () => {});
     }
 
     // 라운드1 전용: 타이핑 뒤 3·2·1·GO!. 끝나면 finish() 호출.
