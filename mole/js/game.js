@@ -643,6 +643,13 @@
     if (state && state.holeLayer) state.holeLayer.clear();
     if (state && state.laneHammer) state.laneHammer.clear();
     resetHot();
+    // 알리 펀치 무적 연출 잔류 버그 수정 — 더보기→홈 등으로 라운드를 벗어나면 루프가
+    // 멈춰 updateInvincibleHud() 가 더 이상 안 불려서 보드 테두리·카운트다운이 남아있었다.
+    const mb = document.getElementById('mole-board');
+    if (mb) mb.classList.remove('mole-board--invincible');
+    document.getElementById('game-screen').classList.remove('gs-invincible');
+    const cd = document.getElementById('invincible-countdown');
+    if (cd) cd.hidden = true;
     state = null;
     run = null;
     playScreenBgm('home'); // 홈 진입 — 홈 BGM(3곡 순환)을 처음부터
@@ -1085,6 +1092,9 @@
     } else {
       restartCurtainPattern(overlay);
       overlay.classList.add('has-mole'); // 분홍 커튼 패턴
+      // 알리 펀치: 인트로 내내(만남 제스처 전 대기 구간 포함) 글러브가 화면에서 사라지지
+      // 않도록 인트로 시작부터 바로 보이게(사용자 지적 — 전엔 만남 제스처 시점에야 보였음).
+      if (state.weapon === 'alipunch') setHammerLayerVisible(true);
     }
     const showMole = !isR1; // 라운드1 은 글자만
     const idx = ((roundNum - 2) % 6 + 6) % 6 + 1;
@@ -1094,6 +1104,31 @@
     const HOLD_AFTER_TYPE_MS = 480;
     const full = I18N.t('mole.round', { n: roundNum });
     const typeMs = full.replace(/ /g, '').length * 45; // typeText 는 45ms/글자
+
+    // 알리 펀치 준비 시연 — 라운드2~10 전용(라운드1은 3·2·1·GO! 카운트다운이 따로 있어 제외,
+    // 사용자 지정). "라운드 N" 글자가 날아오는 시점에 좌우 글러브가 동시에 대기위치 줄
+    // 정중앙에서 잽으로 만난 뒤 각자 대기위치로 복귀(인사 제스처). 4동작 시연+음성은
+    // 짧은 인트로에 넣으니 어색해서 제외(사용자 확인).
+    // 인트로 동안은 메인 루프(loop, requestAnimationFrame)가 아직 시작 전이라 laneHammer.update()가
+    // 한 번도 안 불려서 시연 애니메이션이 화면에 안 그려짐 — 인트로 전용 가벼운 틱을 별도로 돌린다.
+    function tickHammerDuring(ms) {
+      const end = performance.now() + ms;
+      let last = performance.now();
+      (function step(now) {
+        if (myGen !== sessionGen || !state || !state.laneHammer) return;
+        const dt = Math.min(0.1, ((now || performance.now()) - last) / 1000);
+        last = now || performance.now();
+        state.laneHammer.update(dt);
+        if (last < end) requestAnimationFrame(step);
+      })();
+    }
+
+    function playAlipunchDemo() {
+      if (isR1 || state.weapon !== 'alipunch' || !state.laneHammer || !state.laneHammer.meet) return;
+      setHammerLayerVisible(true);
+      state.laneHammer.meet(); // 좌우 글러브가 만난 뒤 대기위치로 복귀
+      tickHammerDuring(400); // meet() 왕복(~240ms) + 여유
+    }
 
     // 라운드1 전용: 타이핑 뒤 3·2·1·GO!. 끝나면 finish() 호출.
     function runCountdown(finish) {
@@ -1141,6 +1176,7 @@
       title.textContent = full;
       overlay.classList.add('mole-in');
       if (showMole) moleImg.hidden = false;
+      playAlipunchDemo(); // 매 라운드 인트로마다 준비 시연(알리 펀치 장착 시만)
       // 2) 중앙에 멈추면 "라운드 N" 을 한 글자씩 다시 타이핑(+ 타자기 소리)
       setTimeout(() => { if (myGen === sessionGen) typeText(title, full, () => {}); }, FLY_IN_MS + 40);
       // 3) 타이핑 끝난 뒤 — 라운드1: 3·2·1·GO! 후 퇴장 / 라운드2~: 바로 퇴장

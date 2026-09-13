@@ -192,7 +192,19 @@
     function home() { left.home(); right.home(); }
     function clear() { left.clear(); right.clear(); }
 
-    return { strike, update, isBusy, home, clear };
+    // 좌우 글러브가 동시에 대기위치와 같은 맨 아래줄 정중앙으로 잽을 뻗어 "만난" 뒤 각자
+    // 대기위치로 복귀(라운드 인트로 준비동작 인사 제스처, 사용자 지정 — 화면 중앙이
+    // 아니라 대기위치 줄의 중앙. 0번=왼쪽 잽/#번=오른쪽 잽 스타일).
+    // 겹치면 안 되고 외곽선끼리만 닿아야 하므로(사용자 지정) 각자 중앙에서 글러브
+    // 반너비만큼 떨어진 지점까지만 접근한다 (.lane-boxing-glove 폭 14.63%,
+    // 뻗을 때 1.08배 확대되므로 반너비도 그만큼 커짐 — style.css 참고).
+    const GLOVE_HALF_W = 0.1463 / 2 * 1.08;
+    function meet(onImpact) {
+      left.strike(0.5 - GLOVE_HALF_W, HOME_L.y, 'jab', null, null);
+      right.strike(0.5 + GLOVE_HALF_W, HOME_R.y, 'jab', onImpact, null);
+    }
+
+    return { strike, update, isBusy, home, clear, meet };
   }
 
   const api = { create, ZONES: ZONES, EXCLUDED_HOLES: [12, 15] };
