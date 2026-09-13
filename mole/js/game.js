@@ -1025,6 +1025,14 @@
     const WeaponMod = (weapon === 'cannon' && MG.LaneCannon) ? MG.LaneCannon
       : (weapon === 'alipunch' && MG.LaneBoxing) ? MG.LaneBoxing : MG.LaneHammer;
     const hammerOpts = { layer: document.getElementById('mole-hammer-layer') };
+    if (weapon === 'cannon') {
+      // 캐논 인트로 전용 이미지들(body-flip/a3-mirror/a4-mirror) — HTML에 없고 JS가 실행
+      // 시점에 처음 .src 를 주기 때문에, 캐시 없는 첫 플레이에서 네트워크 로딩 중 작은
+      // 깨진 이미지 아이콘이 잠깐 보였다(사용자 리포트, 두 번째부턴 캐시로 정상). 미리 로드.
+      ['cannon-intro-body-flip', 'cannon-a3-mirror', 'cannon-a4-mirror'].forEach((n) => {
+        const i = new Image(); i.src = 'assets/weapons/' + n + '.png';
+      });
+    }
     if (weapon === 'goldhammer') {
       hammerOpts.sprite = 'assets/weapons/goldhammer.png';
       // 스프라이트가 이미 뿅망치 축각도(~21°)로 잘려있어 degOffset 불필요 → 스윙 궤적·타격점이 뿅망치와 동일.
