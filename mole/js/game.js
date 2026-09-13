@@ -1138,8 +1138,9 @@
     function playAlipunchDemo() {
       if (isR1 || state.weapon !== 'alipunch' || !state.laneHammer || !state.laneHammer.meet) return;
       setHammerLayerVisible(true);
-      state.laneHammer.meet(); // 좌우 글러브가 만난 뒤 대기위치로 복귀 + fight 음향(사용자 지정)
-      MG.HitFx.fight();
+      state.laneHammer.meet(); // 좌우 글러브가 만난 뒤 대기위치로 복귀
+      // fight 음향은 "라운드 N" 음성과 겹쳐서(사용자 리포트) 라운드2~10에서는 뺌 — 라운드1
+      // 마지막(GO!) 만남에만 남김(runCountdown, 사용자 지정).
       tickHammerDuring(400); // meet() 왕복(~240ms) + 여유
     }
 
