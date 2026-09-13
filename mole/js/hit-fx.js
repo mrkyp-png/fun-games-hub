@@ -324,9 +324,10 @@
     return spawnAt(boardEl, 'hit-fx-punch-star', xFrac, yFrac - 0.09, '<span>⭐</span><span>⭐</span>');
   }
 
-  // 알리 펀치 무적 발동 — burstWord 와 같은 연출, 텍스트만 "POWER UP"(사용자 지시, 영어).
-  function powerUpWord(boardEl, xFrac, yFrac) {
-    return spawnAt(boardEl, 'hit-fx-burstword', xFrac, yFrac + 0.06, 'POWER UP');
+  // 알리 펀치 무적 발동 — 두더지 위치가 아니라 보드 중앙에서, 점처럼 작게 시작해
+  // 보드를 채우도록 커지다가 흐려지며 사라진다(사용자 지시).
+  function powerUpWord(boardEl) {
+    return spawnAt(boardEl, 'hit-fx-powerup', 0.5, 0.5, 'POWER UP');
   }
 
   function moleHit(boardEl, xFrac, yFrac) {

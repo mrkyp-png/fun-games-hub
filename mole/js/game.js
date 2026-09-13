@@ -1224,6 +1224,7 @@
       modeLabel: chapterLabel(currentChapter()) // 게임화면 티커 맨 앞 = 현재 챕터 이름 ("두더지팡" 대체)
     });
     updateFeverHud();
+    updateInvincibleHud();
   }
 
   function syncPops() {
@@ -1417,7 +1418,7 @@
             // [공격력] 무적 발동 확률 20%, 5초(§7).
             if (state.rng.next() < ALIPUNCH_INVINCIBLE_CHANCE) {
               state.alipunchInvincibleUntil = performance.now() + ALIPUNCH_INVINCIBLE_MS;
-              MG.HitFx.powerUpWord(board, r.xFrac, r.yFrac); // "POWER UP" — 무적 발동 알림
+              MG.HitFx.powerUpWord(board); // "POWER UP" — 무적 발동 알림(보드 중앙)
             }
           } else MG.HitFx.moleHit(board, r.xFrac, r.yFrac);
           moleHits += 1;
@@ -1495,6 +1496,19 @@
   function updateShieldHud() {
     const b = document.getElementById('mole-board');
     if (b) b.classList.toggle('mole-board--shielded', !!(run && run.shield));
+  }
+
+  // 알리 펀치 무적(§7) 표시 = 보드에 회전하는 파란 테두리 + 다이얼패드 중앙 카운트다운(5→1).
+  // 매 프레임 갱신, 시간 만료로 자동 해제.
+  function updateInvincibleHud() {
+    const on = alipunchInvincible();
+    const b = document.getElementById('mole-board');
+    if (b) b.classList.toggle('mole-board--invincible', on);
+    const cd = document.getElementById('invincible-countdown');
+    if (cd) {
+      cd.hidden = !on;
+      if (on) cd.textContent = String(Math.max(1, Math.ceil((state.alipunchInvincibleUntil - performance.now()) / 1000)));
+    }
   }
 
   // 게임은 더보기 메뉴를 열면 멈춘다(state.paused / pausedByMenu — openMore·closeMore 참고).
