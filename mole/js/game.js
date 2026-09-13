@@ -1070,7 +1070,7 @@
   //    플래시). GO 에서 "라운드 1" 은 왼쪽·"GO!" 는 오른쪽으로 빛처럼 사라진다. (두더지 그림 없음.)
   // 골드해머 인트로 "회전 등장" 시작 위치 — 키패드 '✱' 키 중심의 lane-hammer 좌표계
   // (#mole-hammer-layer 기준) 분수(실측).
-  const GH_SPIN_START = { x: 0.134, y: 1.873 };
+  const GH_SPIN_START = { x: 0.128, y: 1.871 };
 
   function playRoundIntro(roundNum, onDone) {
     const myGen = sessionGen;
