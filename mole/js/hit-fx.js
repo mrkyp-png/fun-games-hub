@@ -38,12 +38,14 @@
     try {
       const ctx = getCtx();
       if (!ctx || !moleHurtBuffers || !moleHurtBuffers.length) return;
-      const src = ctx.createBufferSource();
-      src.buffer = moleHurtBuffers[(Math.random() * moleHurtBuffers.length) | 0];
-      const g = ctx.createGain();
-      g.gain.value = 0.8;
-      src.connect(g).connect(ctx.destination);
-      src.start();
+      whenReady(ctx, () => {
+        const src = ctx.createBufferSource();
+        src.buffer = moleHurtBuffers[(Math.random() * moleHurtBuffers.length) | 0];
+        const g = ctx.createGain();
+        g.gain.value = 1; // 안 들린다는 사용자 지적 — 최대치로
+        src.connect(g).connect(ctx.destination);
+        src.start();
+      });
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
@@ -68,12 +70,14 @@
       const ctx = getCtx();
       const buf = ctx && roundAnnounceBuffers && roundAnnounceBuffers[n - 1];
       if (!buf) return;
-      const src = ctx.createBufferSource();
-      src.buffer = buf;
-      const g = ctx.createGain();
-      g.gain.value = 0.9;
-      src.connect(g).connect(ctx.destination);
-      src.start();
+      whenReady(ctx, () => {
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        const g = ctx.createGain();
+        g.gain.value = 0.9;
+        src.connect(g).connect(ctx.destination);
+        src.start();
+      });
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
@@ -124,12 +128,14 @@
     try {
       const ctx = getCtx();
       if (!ctx || !cannonRotateBuffer) return;
-      const src = ctx.createBufferSource();
-      src.buffer = cannonRotateBuffer;
-      const g = ctx.createGain();
-      g.gain.value = 0.7;
-      src.connect(g).connect(ctx.destination);
-      src.start();
+      whenReady(ctx, () => {
+        const src = ctx.createBufferSource();
+        src.buffer = cannonRotateBuffer;
+        const g = ctx.createGain();
+        g.gain.value = 0.7;
+        src.connect(g).connect(ctx.destination);
+        src.start();
+      });
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
@@ -151,12 +157,14 @@
     try {
       const ctx = getCtx();
       if (!ctx || !cannonWheelBuffer) return;
-      const src = ctx.createBufferSource();
-      src.buffer = cannonWheelBuffer;
-      const g = ctx.createGain();
-      g.gain.value = 0.45;
-      src.connect(g).connect(ctx.destination);
-      src.start();
+      whenReady(ctx, () => {
+        const src = ctx.createBufferSource();
+        src.buffer = cannonWheelBuffer;
+        const g = ctx.createGain();
+        g.gain.value = 0.45;
+        src.connect(g).connect(ctx.destination);
+        src.start();
+      });
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
@@ -182,17 +190,19 @@
     try {
       const ctx = getCtx();
       if (!ctx || !goldhammerSpinBuffer) return;
-      const t = ctx.currentTime;
-      const dur = goldhammerSpinBuffer.duration;
-      const src = ctx.createBufferSource();
-      src.buffer = goldhammerSpinBuffer;
-      src.playbackRate.setValueAtTime(0.7, t);
-      src.playbackRate.linearRampToValueAtTime(1.3, t + dur); // 회전 가속과 맞춰 재생속도도 느리게→빠르게
-      const g = ctx.createGain();
-      g.gain.setValueAtTime(0.1, t); // 점처럼 작게 시작
-      g.gain.linearRampToValueAtTime(1, t + dur); // 착지 시점에 원본 음량으로(사용자 지적 — 볼륨 추가 상향)
-      src.connect(g).connect(ctx.destination);
-      src.start();
+      whenReady(ctx, () => {
+        const t = ctx.currentTime;
+        const dur = goldhammerSpinBuffer.duration;
+        const src = ctx.createBufferSource();
+        src.buffer = goldhammerSpinBuffer;
+        src.playbackRate.setValueAtTime(0.7, t);
+        src.playbackRate.linearRampToValueAtTime(1.3, t + dur); // 회전 가속과 맞춰 재생속도도 느리게→빠르게
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.1, t); // 점처럼 작게 시작
+        g.gain.linearRampToValueAtTime(1, t + dur); // 착지 시점에 원본 음량으로(사용자 지적 — 볼륨 추가 상향)
+        src.connect(g).connect(ctx.destination);
+        src.start();
+      });
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
@@ -227,12 +237,14 @@
       const ctx = getCtx();
       const buf = ctx && punchVoiceBuffers && punchVoiceBuffers[style];
       if (!buf) return;
-      const src = ctx.createBufferSource();
-      src.buffer = buf;
-      const g = ctx.createGain();
-      g.gain.value = 0.85;
-      src.connect(g).connect(ctx.destination);
-      src.start();
+      whenReady(ctx, () => {
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        const g = ctx.createGain();
+        g.gain.value = 0.5; // 두더지 비명에 묻힌다는 사용자 지적 — 낮춤
+        src.connect(g).connect(ctx.destination);
+        src.start();
+      });
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
@@ -253,12 +265,14 @@
     try {
       const ctx = getCtx();
       if (!ctx || !fightBuffer) return;
-      const src = ctx.createBufferSource();
-      src.buffer = fightBuffer;
-      const g = ctx.createGain();
-      g.gain.value = 0.85;
-      src.connect(g).connect(ctx.destination);
-      src.start();
+      whenReady(ctx, () => {
+        const src = ctx.createBufferSource();
+        src.buffer = fightBuffer;
+        const g = ctx.createGain();
+        g.gain.value = 0.85;
+        src.connect(g).connect(ctx.destination);
+        src.start();
+      });
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
@@ -285,13 +299,15 @@
     try {
       const ctx = getCtx();
       if (!ctx || !tapBuffers || !tapBuffers[idx]) return;
-      const src = ctx.createBufferSource();
-      src.buffer = tapBuffers[idx];
-      src.playbackRate.value = 1 + (Math.random() * 2 - 1) * HIT_PITCH_JITTER;
-      const g = ctx.createGain();
-      g.gain.value = UI_TAP_GAIN * (1 + (Math.random() * 2 - 1) * HIT_GAIN_JITTER);
-      src.connect(g).connect(ctx.destination);
-      src.start();
+      whenReady(ctx, () => {
+        const src = ctx.createBufferSource();
+        src.buffer = tapBuffers[idx];
+        src.playbackRate.value = 1 + (Math.random() * 2 - 1) * HIT_PITCH_JITTER;
+        const g = ctx.createGain();
+        g.gain.value = UI_TAP_GAIN * (1 + (Math.random() * 2 - 1) * HIT_GAIN_JITTER);
+        src.connect(g).connect(ctx.destination);
+        src.start();
+      });
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
@@ -301,17 +317,19 @@
     try {
       const ctx = getCtx();
       if (!ctx) return;
-      const t = ctx.currentTime;
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = 'square';
-      o.frequency.value = 1500 + Math.random() * 500;
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(0.05, t + 0.004);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.03);
-      o.connect(g).connect(ctx.destination);
-      o.start(t);
-      o.stop(t + 0.045);
+      whenReady(ctx, () => {
+        const t = ctx.currentTime;
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'square';
+        o.frequency.value = 1500 + Math.random() * 500;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.05, t + 0.004);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.03);
+        o.connect(g).connect(ctx.destination);
+        o.start(t);
+        o.stop(t + 0.045);
+      });
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
@@ -335,11 +353,19 @@
     return noiseBuf;
   }
 
+  // 모바일에서 AudioContext 가 간간이 suspended 상태가 됐다가, resume() 완료 전에
+  // start() 부터 걸어버리면 그 한 번은 소리 없이 씹힌다(사용자 리포트 "소리가 안나오는거도
+  // 많다", 간헐적) — 재생부는 전부 이 헬퍼를 거쳐, 이미 running 이면 즉시·아니면 resume()
+  // 완료 후에 실제로 소리를 낸다.
+  function whenReady(ctx, fn) {
+    if (ctx.state === 'running') { fn(); return; }
+    ctx.resume().then(fn).catch(() => {});
+  }
+
   function getCtx() {
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return null;
     audioCtx = audioCtx || new Ctx();
-    if (audioCtx.state === 'suspended' && audioCtx.resume) audioCtx.resume();
     loadHitBuffers(audioCtx); // ctx 생기는 즉시 타격음 파일 프리로드
     loadMoleHurtBuffers(audioCtx); // 두더지 비명도 무기 무관 항상 프리로드
     loadRoundAnnounceBuffers(audioCtx); // 라운드 음성도 무기 무관 항상 프리로드
@@ -405,16 +431,18 @@
       // 대포 장착 중이면 폭발음 풀에서, 아니면 기존 타격음 풀에서.
       const pool = (isCannonEquipped() && cannonBuffers && cannonBuffers.length) ? cannonBuffers : hitBuffers;
       if (pool && pool.length) {
-        const src = ctx.createBufferSource();
-        src.buffer = pool[(Math.random() * pool.length) | 0];
-        src.playbackRate.value = rate;
-        const g = ctx.createGain();
-        g.gain.value = gain;
-        src.connect(g).connect(ctx.destination);
-        src.start();
+        whenReady(ctx, () => {
+          const src = ctx.createBufferSource();
+          src.buffer = pool[(Math.random() * pool.length) | 0];
+          src.playbackRate.value = rate;
+          const g = ctx.createGain();
+          g.gain.value = gain;
+          src.connect(g).connect(ctx.destination);
+          src.start();
+        });
         return;
       }
-      punchSynth(ctx, light);
+      whenReady(ctx, () => punchSynth(ctx, light));
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
@@ -671,34 +699,36 @@
     try {
       const ctx = getCtx();
       if (!ctx) return;
-      const t = ctx.currentTime;
-      const master = ctx.createGain();
-      master.gain.value = 0.16;
-      master.connect(ctx.destination);
+      whenReady(ctx, () => {
+        const t = ctx.currentTime;
+        const master = ctx.createGain();
+        master.gain.value = 0.16;
+        master.connect(ctx.destination);
 
-      const o = ctx.createOscillator();
-      o.type = 'sine';
-      o.frequency.setValueAtTime(220, t);
-      o.frequency.exponentialRampToValueAtTime(680, t + 0.18); // 쭉 늘어나며 음이 올라감
-      o.frequency.exponentialRampToValueAtTime(420, t + 0.5);  // 팡 튕기며 안착(음 내려와 정착)
+        const o = ctx.createOscillator();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(220, t);
+        o.frequency.exponentialRampToValueAtTime(680, t + 0.18); // 쭉 늘어나며 음이 올라감
+        o.frequency.exponentialRampToValueAtTime(420, t + 0.5);  // 팡 튕기며 안착(음 내려와 정착)
 
-      const lfo = ctx.createOscillator(); // 통통 튀는 떨림(vibrato), 진폭이 감쇠
-      lfo.type = 'sine';
-      lfo.frequency.value = 22;
-      const lfoGain = ctx.createGain();
-      lfoGain.gain.setValueAtTime(140, t + 0.18);
-      lfoGain.gain.exponentialRampToValueAtTime(1, t + 0.55);
-      lfo.connect(lfoGain).connect(o.frequency);
-      lfo.start(t);
-      lfo.stop(t + 0.6);
+        const lfo = ctx.createOscillator(); // 통통 튀는 떨림(vibrato), 진폭이 감쇠
+        lfo.type = 'sine';
+        lfo.frequency.value = 22;
+        const lfoGain = ctx.createGain();
+        lfoGain.gain.setValueAtTime(140, t + 0.18);
+        lfoGain.gain.exponentialRampToValueAtTime(1, t + 0.55);
+        lfo.connect(lfoGain).connect(o.frequency);
+        lfo.start(t);
+        lfo.stop(t + 0.6);
 
-      const g = ctx.createGain();
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(1, t + 0.03);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
-      o.connect(g).connect(master);
-      o.start(t);
-      o.stop(t + 0.62);
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(1, t + 0.03);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
+        o.connect(g).connect(master);
+        o.start(t);
+        o.stop(t + 0.62);
+      });
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
