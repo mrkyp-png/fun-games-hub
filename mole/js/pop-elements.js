@@ -191,8 +191,10 @@
       if (m.bombEl) {
         m.bombEl.style.display = '';
         if (m.dying) {
-          const drift = Math.min(sink, 100) * 0.16; // 침몰 진행률에 비례해 우측(5시 방향)으로 수렴
-          m.bombEl.style.transform = 'translate(calc(' + peekX + ' + ' + drift.toFixed(1) + '%), calc(' + sink + '%' + peekLift + '))';
+          const prog = Math.min(sink, 100) / 100; // 침몰 진행률 0→1
+          const drift = prog * 16; // 5시 방향으로 수렴 (기존과 동일 폭)
+          const scale = 1 - prog * 0.55; // 내려가면서 점점 작아짐(사용자 지정) — 흙더미에 걸려 보이는 것 완화
+          m.bombEl.style.transform = 'translate(calc(' + peekX + ' + ' + drift.toFixed(1) + '%), calc(' + sink + '%' + peekLift + ')) scale(' + scale.toFixed(2) + ')';
         } else {
           m.bombEl.style.transform = 'translate(' + peekX + ', calc(' + sink + '%' + peekLift + '))';
         }
