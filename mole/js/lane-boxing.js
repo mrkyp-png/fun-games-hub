@@ -72,6 +72,25 @@
   const GLOVE_OF = { 8: 'L', 9: 'L', 13: 'L', 4: 'L', 5: 'L', 0: 'L', 1: 'L',
     10: 'R', 11: 'R', 14: 'R', 6: 'R', 7: 'R', 3: 'R', 2: 'R' };
 
+  // 대기 애니메이션용 실제 구멍 좌표(grid-partition.js 와 동일 공식) — 다이얼 숫자가 아니라
+  // 내부 regionId 기준(다이얼 "8"=regionId9, "9"=regionId10, 사용자가 다이얼 숫자로 지정한 걸 역산).
+  const HOLE_GRID = 4, HOLE_V_TOP = 0.27, HOLE_V_BOTTOM = 0.88;
+  function holeXY(id) {
+    const row = Math.floor(id / HOLE_GRID), col = id % HOLE_GRID;
+    return { x: (col + 0.5) / HOLE_GRID, y: HOLE_V_TOP + row * ((HOLE_V_BOTTOM - HOLE_V_TOP) / (HOLE_GRID - 1)) };
+  }
+  // 대기 중 랜덤 4동작(사용자 지정) — 각 글러브가 가진 4가지 펀치 스타일(잽·스트레이트·어퍼·훅)을
+  // 각자 담당 구역 중 하나로 절반 거리만 뻗는다(다이얼 "8"/"9" 쪽 잽은 사용자가 직접 지정, 사용자
+  // 발언: "45도 직선으로 가는거도 해 왼쪽은 8번 구멍 절반만, 오른쪽은 9번").
+  const IDLE_MOVES_L = [
+    { style: 'jab', region: 9 }, { style: 'straight', region: 4 },
+    { style: 'upper', region: 0 }, { style: 'hookL', region: 1 }
+  ];
+  const IDLE_MOVES_R = [
+    { style: 'jab', region: 10 }, { style: 'straight', region: 6 },
+    { style: 'upper', region: 3 }, { style: 'hookR', region: 2 }
+  ];
+
   function lerp(a, b, k) { return a + (b - a) * k; }
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
   function ease(k) { return k * (2 - k); } // ease-out
@@ -187,9 +206,10 @@
       g.strike(targetX, targetY, style, onImpact, regionId);
     }
 
-    // 대기 애니메이션(사용자 지정) — 잠깐 조용하면(화장실 등) 좌우 글러브가 번갈아 제자리에서
-    // 쨉을 한 번씩 날림. 소리 없음(글러브 strike() 자체가 사운드를 안 냄 — 실제 명중 보이스는
-    // game.js onHammerImpact 가 별도로 트는 것뿐이라 여기선 자연히 무음).
+    // 대기 애니메이션(사용자 지정) — 잠깐 조용하면(화장실 등) 좌우 글러브가 번갈아 자기 담당
+    // 4동작(잽·스트레이트·어퍼·훅) 중 하나를 랜덤으로, 실제 구멍 방향으로 절반 거리만 뻗음.
+    // 소리 없음(글러브 strike() 자체가 사운드를 안 냄 — 실제 명중 보이스는 game.js
+    // onHammerImpact 가 별도로 트는 것뿐이라 여기선 자연히 무음).
     const IDLE_DELAY = 2.5, IDLE_JAB_GAP = 3.4;
     let idleT = 0;
     function update(dt) {
@@ -197,10 +217,13 @@
       if (left.isBusy() || right.isBusy()) { idleT = 0; return; }
       idleT += dt;
       if (idleT > IDLE_DELAY) {
-        idleT = IDLE_DELAY - IDLE_JAB_GAP; // 다음 쨉까지 간격만 남기고 되감기(반복 사이클)
+        idleT = IDLE_DELAY - IDLE_JAB_GAP; // 다음 동작까지 간격만 남기고 되감기(반복 사이클)
         const side = Math.random() < 0.5 ? left : right;
         const home = side === left ? HOME_L : HOME_R;
-        side.strike(home.x, home.y - 0.05, 'jab', null, null); // 제자리에서 살짝 앞으로 쨉
+        const moves = side === left ? IDLE_MOVES_L : IDLE_MOVES_R;
+        const mv = moves[Math.floor(Math.random() * moves.length)];
+        const hole = holeXY(mv.region);
+        side.strike(home.x + (hole.x - home.x) * 0.5, home.y + (hole.y - home.y) * 0.5, mv.style, null, null);
       }
     }
     function isBusy() { return left.isBusy() || right.isBusy(); }
