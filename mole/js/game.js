@@ -75,13 +75,11 @@
   let bgmActiveIdx = 0;    // 0|1 — 지금 "메인"인 쪽(재생 중이거나 재생하려는 쪽)
   let currentBgm = 'audio/bgm-home-1.mp3'; // index.html 의 bgm-a 초기 src 와 일치
   const HOME_BGM_COUNT = 4;
-  const GAME_BGM_COUNT = 3;
   let homeBgmIdx = 0;
-  let gameBgmIdx = 0;
   let bgmWantPlay = false; // 지금 화면이 BGM 을 원하는가 (홈/더보기/게임 진입 시 true)
   const BGM_VOL = 0.35;
   const BGM_FADE_MS = 900;
-  let bgmFadeRaf = null;
+  let bgmFadeTimer = null;
 
   function bgmActiveEl() { return bgmEls ? bgmEls[bgmActiveIdx] : null; }
   function bgmInactiveEl() { return bgmEls ? bgmEls[1 - bgmActiveIdx] : null; }
@@ -104,7 +102,7 @@
     if (!bgmEls) return;
     const from = bgmActiveEl();
     const to = bgmInactiveEl();
-    if (bgmFadeRaf) { cancelAnimationFrame(bgmFadeRaf); bgmFadeRaf = null; }
+    if (bgmFadeTimer) { clearTimeout(bgmFadeTimer); bgmFadeTimer = null; }
     currentBgm = file;
     to.loop = loop;
     if (to.src.indexOf(file) === -1) to.src = file;
@@ -124,29 +122,34 @@
     if (p && p.catch) p.catch(() => { /* 자동재생 차단 — 다음 제스처 때 applyBgm 이 재시도 */ });
     const start = performance.now();
     const fromStartVol = from.volume;
-    (function step(now) {
-      const k = Math.min(1, ((now || performance.now()) - start) / BGM_FADE_MS);
+    // setTimeout 기반(요청프레임 아님) — requestAnimationFrame 은 화면 전환(flipSwap 3D
+    // 트랜지션 등) 도중 콜백이 안 불려서 페이드가 중간에 영구히 멈추는 문제가 있었음(사용자
+    // 리포트: "더보기 들어가면/나오면 브금이 안 바뀜" — 새 트랙이 볼륨0에 갇히고 옛 트랙만
+    // 계속 들림). k 는 경과시간 기준이라 콜백이 늦게 와도 뜀 없이 정확히 따라잡는다.
+    (function step() {
+      const k = Math.min(1, (performance.now() - start) / BGM_FADE_MS);
       to.volume = BGM_VOL * k;
       from.volume = fromStartVol * (1 - k);
-      if (k < 1) { bgmFadeRaf = requestAnimationFrame(step); return; }
+      if (k < 1) { bgmFadeTimer = setTimeout(step, 50); return; }
       from.pause();
       from.currentTime = 0;
       from.volume = BGM_VOL;
       bgmActiveIdx = 1 - bgmActiveIdx;
-      bgmFadeRaf = null;
+      bgmFadeTimer = null;
     })();
   }
 
   // screen: 'home' | 'more' | 'game'. 매 진입마다 해당 트랙을 처음부터.
-  // 홈(4곡)·게임(3곡)은 loop 안 함 — 곡이 끝나갈 때(아래 timeupdate) 다음 곡으로 미리
-  // 크로스페이드해 플레이리스트처럼 순차 재생·순환한다. 더보기(1곡)만 loop.
+  // 홈(4곡)은 loop 안 함 — 곡이 끝나갈 때(아래 timeupdate) 다음 곡으로 미리 크로스페이드해
+  // 플레이리스트처럼 순차 재생·순환한다. 더보기·게임(각 1곡, 게임=달빛축제 고정 — 사용자
+  // 지정으로 나머지 게임 BGM 삭제)은 loop.
   function playScreenBgm(screen) {
     if (!bgmEls) return;
     let file;
     if (screen === 'home') { file = 'audio/bgm-home-' + (homeBgmIdx % HOME_BGM_COUNT + 1) + '.mp3'; homeBgmIdx++; }
-    else if (screen === 'game') { file = 'audio/bgm-game-' + (gameBgmIdx % GAME_BGM_COUNT + 1) + '.mp3'; gameBgmIdx++; }
+    else if (screen === 'game') { file = 'audio/bgm-game-1.mp3'; }
     else { file = 'audio/bgm-' + screen + '.mp3'; }
-    const loop = (screen === 'more');
+    const loop = (screen === 'more' || screen === 'game');
     bgmWantPlay = true;
     if (currentBgm !== file) {
       crossfadeBgm(file, loop);
@@ -160,12 +163,11 @@
 
   // 곡이 끝나가면(마지막 BGM_FADE_MS + 여유) 다음 곡으로 미리 크로스페이드 시작 —
   // ended 를 기다렸다 전환하면 그 순간 로딩 때문에 몇 초 무음(사용자 지적)이 생길 수 있어,
-  // 끝나기 전에 겹쳐서 시작한다.
+  // 끝나기 전에 겹쳐서 시작한다. 홈(4곡 순환)만 해당 — 더보기·게임은 loop 라 여기 안 옴.
   function bgmNearEndTick(el) {
-    if (el !== bgmActiveEl() || el.loop || !el.duration || bgmFadeRaf) return;
+    if (el !== bgmActiveEl() || el.loop || !el.duration || bgmFadeTimer) return;
     if (el.duration - el.currentTime <= BGM_FADE_MS / 1000 + 0.15) {
-      if (/\/bgm-game-\d/.test(currentBgm)) playScreenBgm('game');
-      else if (/\/bgm-home-\d/.test(currentBgm)) playScreenBgm('home');
+      if (/\/bgm-home-\d/.test(currentBgm)) playScreenBgm('home');
     }
   }
 

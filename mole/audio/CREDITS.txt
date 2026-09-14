@@ -15,7 +15,7 @@
   - 금지 사항 준수: 소재 파일 재배포/판매 금지, "효과음을 자유롭게 재생하는 앱" 형태 금지,
     음상표 등록 금지, YouTube Content ID 등록 금지, AI 학습 데이터 이용 금지.
 
-■ bgm-game-1.mp3  게임 플레이 화면 BGM 1순위 (재진입마다 game-1→2→3 순환)
+■ bgm-game-1.mp3  게임 플레이 화면 BGM (고정, loop — 사용자 지정으로 game-2/3 삭제)
   곡명: 달빛축제 (Moonlight Festival)
   제작: 나빅(NAVIG) / NAVIG Entertainment 산하 NAVIG Sound Team (채널: 낭만뮤직)
   라이선스: [나빅] 콘텐츠 사용 확인서 (2026-09-11, mrkyp@hanmail.net 앞) 로 상업 사용 허가.
@@ -48,15 +48,9 @@
   bgm-more.mp3  더보기 메뉴 화면
     "Funny BGM Vol. 2" — Sekuora  (AI generated, Pixabay 등록곡)
     https://pixabay.com/music/upbeat-funny-bgm-vol-2-242432/
-  bgm-game-2.mp3  게임 플레이 화면 (2순위)
-    "Energetic Party Game BGM" — Sekuora  (AI generated, Pixabay 등록곡)
-    https://pixabay.com/music/video-games-energetic-party-game-bgm-242434/
-  bgm-game-3.mp3  게임 플레이 화면 (3순위)
-    "BGM Videogame Song" — Sekuora  (AI generated, Pixabay 등록곡)
-    https://pixabay.com/music/pop-bgm-videogame-song-242440/
-
   (구 bgm-boss-battle.mp3 는 v261 에서 삭제 — 화면별 BGM 으로 교체. bgm-game-1.mp3 는 v360 에서
-   기존 Pixabay 곡 자리를 비켜주고 "달빛축제" 로 교체, 기존 두 곡은 game-2/3 로 밀림.)
+   기존 Pixabay 곡 자리를 비켜주고 "달빛축제" 로 교체. bgm-game-2.mp3("Energetic Party Game BGM")·
+   bgm-game-3.mp3("BGM Videogame Song") 는 v445 에서 삭제 — 게임 화면은 달빛축제만 사용(사용자 지정).)
 
 ■ cannon-boom1.mp3 ~ cannon-boom8.mp3  (대포 무기 스킨 타격음, 폭발)
   출처: Pixabay (사용자 제공)
