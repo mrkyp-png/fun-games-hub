@@ -955,8 +955,20 @@ body { background: var(--lm-page); }
 }
 .mole-bomb-emoji--strong {
   filter:
-    drop-shadow(0 0 0.7cqw #2adf3a) drop-shadow(0 0 1.4cqw #2adf3a)
-    drop-shadow(0 0 2.3cqw #2adf3a) drop-shadow(0 0 3.7cqw #30e030);
+    drop-shadow(0 0 1cqw #baffb0) drop-shadow(0 0 2cqw #2adf3a)
+    drop-shadow(0 0 3.4cqw #2adf3a) drop-shadow(0 0 5.2cqw #30e030)
+    drop-shadow(0 0 7.5cqw #30e030);
+  animation: bomb-strong-glow-pulse 0.9s ease-in-out infinite;
+}
+@keyframes bomb-strong-glow-pulse {
+  0%, 100% { filter:
+    drop-shadow(0 0 1cqw #baffb0) drop-shadow(0 0 2cqw #2adf3a)
+    drop-shadow(0 0 3.4cqw #2adf3a) drop-shadow(0 0 5.2cqw #30e030)
+    drop-shadow(0 0 7.5cqw #30e030); }
+  50% { filter:
+    drop-shadow(0 0 1.4cqw #d8ffd0) drop-shadow(0 0 2.8cqw #45ff55)
+    drop-shadow(0 0 4.6cqw #45ff55) drop-shadow(0 0 7cqw #45ff40)
+    drop-shadow(0 0 10cqw #45ff40); }
 }
 .mole-bomb-sparks {
   position: absolute;
@@ -1725,6 +1737,26 @@ body { background: var(--lm-page); }
 }
 @keyframes call-arm-pulse { 50% { background: #ff5a52; } }
 
+/* 폭탄 든 두더지가 뜬 구멍의 버튼 위에 반투명 폭탄 이모지 + 글로우(사용자 지정). */
+.lane-bomb-indicator {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1.05rem, 6.3vw, 2rem);
+  line-height: 1;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 2;
+}
+.lane-bomb-indicator--normal {
+  filter: drop-shadow(0 0 3px #ff2a1a) drop-shadow(0 0 6px #ff2a1a) drop-shadow(0 0 10px #ff3020);
+}
+.lane-bomb-indicator--strong {
+  filter: drop-shadow(0 0 3px #2adf3a) drop-shadow(0 0 6px #2adf3a) drop-shadow(0 0 10px #30e030);
+}
+
 /* 두더지가 그 구멍에 있음 — 눌러야 할 키. 다이얼러처럼 보이게 은은한 하이라이트. */
 .lane-button--hot { background: rgba(120, 170, 255, 0.28); box-shadow: 0 0 10px 1px rgba(120, 170, 255, 0.4); }
 /* 통화 버튼도 두더지 있으면 다른 버튼과 똑같은 파란 하이라이트 (라이트 ON 에서만).
@@ -2131,6 +2163,21 @@ body { background: var(--lm-page); }
   0%   { transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
   30%  { opacity: 1; }
   100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
+}
+/* 폭탄 든 두더지 처치 전용 — 캐논 화염 이미지(cannon-fx2.png) 한 장, 시계방향 45도(사용자 지정). */
+.hit-fx-bomb-flame {
+  position: absolute;
+  width: 55%;
+  aspect-ratio: 1;
+  background: url('assets/weapons/cannon-fx2.png') no-repeat center / contain;
+  transform: translate(-50%, -50%) rotate(45deg) scale(0.5);
+  pointer-events: none;
+  animation: hit-bomb-flame 0.32s ease-out forwards;
+}
+@keyframes hit-bomb-flame {
+  0%   { transform: translate(-50%, -50%) rotate(45deg) scale(0.5); opacity: 0; }
+  25%  { opacity: 0.5; }
+  100% { transform: translate(-50%, -50%) rotate(45deg) scale(1.15); opacity: 0; }
 }
 /* 회재 + 불티 파편이 사방으로 흩뿌려진다. */
 .hit-fx-ash {

@@ -345,6 +345,24 @@
       if (buttons[id]) buttons[id].classList.toggle('lane-button--hot', !!hot);
     }
 
+    // 폭탄 든 두더지가 올라온 구멍의 버튼에 반투명 폭탄 이모지(글로우 포함) 표시 — 사용자 지정.
+    // kind: 'normal'|'strong'|null(없으면 표시 안 함/제거).
+    function setBombIndicator(id, kind) {
+      const b = buttons[id];
+      if (!b) return;
+      let ind = b.querySelector('.lane-bomb-indicator');
+      if (!kind) { if (ind) ind.remove(); return; }
+      if (!ind) {
+        ind = document.createElement('span');
+        ind.className = 'lane-bomb-indicator';
+        ind.textContent = '💣';
+        ind.setAttribute('aria-hidden', 'true');
+        b.appendChild(ind);
+      }
+      ind.classList.toggle('lane-bomb-indicator--strong', kind === 'strong');
+      ind.classList.toggle('lane-bomb-indicator--normal', kind !== 'strong');
+    }
+
     // 대포 연사: 그 버튼 링 플래시를 골드로 재발동 (자동샷마다 호출 → 3연속 펄스).
     function flashBurst(id) {
       const b = buttons[id];
@@ -472,7 +490,7 @@
       });
     }
 
-    return { setCellHot, flashBurst, flashQuakeArea, clear, spinChannelsIn, spinBoardIn };
+    return { setCellHot, setBombIndicator, flashBurst, flashQuakeArea, clear, spinChannelsIn, spinBoardIn };
   }
 
   const api = { create };

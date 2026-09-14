@@ -140,11 +140,11 @@
         m.shownFile = file;
       }
       m.img.style.visibility = file ? '' : 'hidden';
-      // 폭탄 든 두더지 — 침몰 시작(맞았든 시간초과든)하면 바로 감춘다(어떤 무기 처치연출이든 공통).
-      if (m.bombEl) m.bombEl.style.display = m.dying ? 'none' : '';
 
       if (m.dying && m.blast) {
         // 대포 처치: 구멍으로 안 내려가고 — 그을려(검게) 흔들리다 흐릿하게 흩뿌리며 소멸.
+        // 폭탄 든 두더지가 대포에 맞으면 이 특수 연출이라 같이 못 움직임 — 감춘다.
+        if (m.bombEl) m.bombEl.style.display = 'none';
         const span = GONE_DEPTH - m.dyingFrom;
         const k = span > 0 ? Math.min(1, Math.max(0, (m.shownDepth - m.dyingFrom) / span)) : 1;
         const wob = Math.sin(k * Math.PI * 6) * (1 - k) * 9;       // 감쇠하는 좌우 흔들림
@@ -159,6 +159,8 @@
       if (m.dying && m.punch) {
         // 알리 펀치 처치: 구멍으로 안 내려가고 — 움찔(초반 짧은 흔들림) → 뒤로 튕겨나가며(위로 이동)
         // 점점 작아지다 → 서서히 사라짐(기획서 §6. 별 회전은 hit-fx.js punchStar 가 오버레이로 담당).
+        // 폭탄 든 두더지가 알리펀치에 맞으면 이 특수 연출이라 같이 못 움직임 — 감춘다.
+        if (m.bombEl) m.bombEl.style.display = 'none';
         const span = GONE_DEPTH - m.dyingFrom;
         const k = span > 0 ? Math.min(1, Math.max(0, (m.shownDepth - m.dyingFrom) / span)) : 1;
         const flinch = k < 0.18 ? Math.sin(k / 0.18 * Math.PI) * 6 : 0;   // 초반 움찔(좌우 짧게)
@@ -183,9 +185,17 @@
       else if (m.kind === 'mole' && (file === 'mole2' || file === 'mole3')) peekX = 'calc(-50% - 0.1cm)';
       else if (m.kind === 'mole' && file === 'mole5') peekX = 'calc(-50% - 0.03cm)';
       m.img.style.transform = 'translate(' + peekX + ', calc(' + sink + '%' + peekLift + '))';
-      // 폭탄 오버레이도 두더지와 같은 sink 로 같이 움직인다(등장/유지 중엔 몸에 붙어 있어야 함).
-      if (m.bombEl && !m.dying) {
-        m.bombEl.style.transform = 'translate(' + peekX + ', calc(' + sink + '%' + peekLift + '))';
+      // 폭탄 오버레이도 두더지 sink 를 따라 같이 내려가되, 침몰(dying) 중엔 옆으로도 살짝
+      // 끌어당겨 5시 방향(대각선 아래)으로 빠지게 한다 — 그냥 수직으로만 내리면 구멍 흙턱에
+      // 걸리는 것처럼 보였음(사용자 지적). 등장·대기 중(안 dying)엔 원래 위치 그대로.
+      if (m.bombEl) {
+        m.bombEl.style.display = '';
+        if (m.dying) {
+          const drift = Math.min(sink, 100) * 0.16; // 침몰 진행률에 비례해 우측(5시 방향)으로 수렴
+          m.bombEl.style.transform = 'translate(calc(' + peekX + ' + ' + drift.toFixed(1) + '%), calc(' + sink + '%' + peekLift + '))';
+        } else {
+          m.bombEl.style.transform = 'translate(' + peekX + ', calc(' + sink + '%' + peekLift + '))';
+        }
       }
     }
 
@@ -217,7 +227,8 @@
           m.dyingFrom = m.shownDepth;
           // 실제 타격당해 처치된 두더지만 대포 폭발 연출. 시간초과로 안 맞고 물러나는 건
           // 대포모드에서도 기존처럼 그냥 아래로 내려간다(pop.killed=false).
-          m.blast = pop.type === 'mole' && pop.killed && isCannonEquipped();
+          // 폭탄 든 두더지는 무기 무관 항상 이 폭발 연출(사용자 지정 — 대포 처치 연출 재사용).
+          m.blast = pop.type === 'mole' && pop.killed && (isCannonEquipped() || !!pop.bombKind);
           // 무적 중엔 동물도 두더지와 동일한 펀치 연출(넉백·축소) — 무적 아닐 때 동물은 페널티라 제외.
           m.punch = pop.killed && isAlipunchEquipped() &&
             (pop.type === 'mole' || (pop.type === 'animal' && (isAlipunchInvincible() || pop.safeAlways)));

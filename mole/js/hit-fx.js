@@ -572,6 +572,25 @@
     punch();
   }
 
+  // 폭탄 든 두더지 처치 전용(2026-09-14, moleBlast 와 별개 — 캐논 무기 자체 연출은 안 건드림).
+  // moleBlast 와 완전히 같되, 캐논 화염 이미지(cannon-fx2.png, 방사형이라 방향성 덜함) 한 장을
+  // 얹는다. 두더지 그을림·흔들림·소멸은 pop-elements.js m.blast 가 그대로 담당.
+  function bombBlast(boardEl, xFrac, yFrac) {
+    shake(boardEl);
+    spawnAt(boardEl, 'hit-fx-blast-flash', xFrac, yFrac);
+    spawnAt(boardEl, 'hit-fx-bomb-flame', xFrac, yFrac);
+    const N = 14;
+    for (let i = 0; i < N; i++) {
+      const p = spawnAt(boardEl, 'hit-fx-ash' + (i % 3 === 0 ? ' hit-fx-ash--ember' : ''), xFrac, yFrac);
+      const ang = (i / N) * 360 + (Math.random() * 40 - 20);
+      const dist = 34 + Math.random() * 46;
+      p.style.setProperty('--ax', (Math.cos(ang * Math.PI / 180) * dist).toFixed(1) + 'px');
+      p.style.setProperty('--ay', (Math.sin(ang * Math.PI / 180) * dist).toFixed(1) + 'px');
+    }
+    vibrate([0, 20, 40, 18]);
+    punch();
+  }
+
   // 저글 보너스 — 잡은 두더지가 내려갈 때 한 번 더 맞힘. 가볍고 경쾌하게 + "더블!" 텍스트.
   function juggle(boardEl, xFrac, yFrac) {
     spawnAt(boardEl, 'hit-fx-burst hit-fx-burst--juggle', xFrac, yFrac,
@@ -738,6 +757,6 @@
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
-  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, punchStar, powerUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, roundAnnounceFinal, fight, moleVoice };
+  const api = { moleHit, moleBlast, bombBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, punchStar, powerUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, roundAnnounceFinal, fight, moleVoice };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);

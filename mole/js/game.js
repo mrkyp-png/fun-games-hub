@@ -1118,8 +1118,8 @@
       maxConcurrentBombs: ch >= 5 ? levelData.maxConcurrentBombs : 0,
       bombChance: ch >= 5 ? BOMB_CHANCE_BY_ROUND[roundNum - 1] : 0,
       strongBombChance: ch >= 6 ? STRONG_BOMB_CHANCE_BY_ROUND[roundNum - 1] : 0,
-      maxConcurrentItems: ch >= 5 ? 1 : 0,   // 실드 아이템
-      shieldItems: ch >= 5,
+      maxConcurrentItems: 0,   // 실드 아이템 스폰 삭제(사용자 지정, 2026-09-14)
+      shieldItems: false,
       popDuration: levelData.moleDuration,
       molePoseCount: MG.MoleSprites.POSE_COUNT,
       obstacleCount: MG.MoleSprites.OBSTACLE_COUNT,
@@ -1496,13 +1496,16 @@
     // 알리 펀치 무적 중엔 방해물도 안전한 타격 대상이 되므로 타겟과 동일하게 hot 표시.
     const invincibleNow = alipunchInvincible();
     const moleRegions = new Set();
+    const bombRegions = new Map(); // 폭탄 든 두더지가 뜬 구멍 → 'normal'|'strong' (다이얼패드 표시용, 사용자 지정)
     state.scheduler.getActivePops().forEach((p) => {
       if (p.dying) return;
       const et = effectiveHitType(state.config, p.type);
       if (et === 'mole' || ((invincibleNow || p.safeAlways) && et === 'animal')) moleRegions.add(p.regionId);
+      if (p.bombKind) bombRegions.set(p.regionId, p.bombKind);
     });
     for (let id = 0; id < GRID_SIZE * GRID_SIZE; id++) {
       sharedLaneControls.setCellHot(id, moleRegions.has(id));
+      sharedLaneControls.setBombIndicator(id, bombRegions.get(id) || null);
     }
 
     updateHUD();
@@ -1558,7 +1561,10 @@
   // 모든 구멍 버튼의 hot 하이라이트를 끈다 (라운드 시작/시작 화면 복귀 시).
   function resetHot() {
     if (!sharedLaneControls) return;
-    for (let id = 0; id < GRID_SIZE * GRID_SIZE; id++) sharedLaneControls.setCellHot(id, false);
+    for (let id = 0; id < GRID_SIZE * GRID_SIZE; id++) {
+      sharedLaneControls.setCellHot(id, false);
+      sharedLaneControls.setBombIndicator(id, null);
+    }
   }
 
   // 알리 펀치 무적 연출 잔류 버그 수정 — 루프가 멈추면(라운드 종료/홈 복귀 등)
@@ -1756,10 +1762,12 @@
           moleHits += 1;
         } else if (r.done && r.bombKind) {
           // 폭탄 든 두더지(2026-09-14 확정) — 점수 없이 페널티만. 일반 하트-1, 강력 하트-2.
-          // 동물/폭탄 방해물과 동일하게 콤보 리셋.
+          // 동물/폭탄 방해물과 동일하게 콤보 리셋. 연출은 대포 처치 폭발 기반 전용 함수
+          // bombBlast(사용자 지정 — moleBlast 는 안 건드림, 캐논 무기 자체 연출과 분리).
+          // pop-elements.js 의 m.blast 도 bombKind 면 무기 무관 항상 켜짐, 여기와 세트.
           setRunLives(run.lives - (r.bombKind === 'strong' ? 2 : 1));
           run.combo.onObstacleHit();
-          MG.HitFx.obstacleHit(board, r.xFrac, r.yFrac, 'bomb');
+          MG.HitFx.bombBlast(board, r.xFrac, r.yFrac);
           flashHud('hud-hearts');
         } else if (r.done) {
           const before = run.combo.score;
