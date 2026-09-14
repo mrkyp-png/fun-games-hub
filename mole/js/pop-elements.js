@@ -42,6 +42,55 @@
       pops.forEach((m) => { m.shownFile = null; render(m); }); // src 강제 갱신
     }
 
+    // 폭탄 든 두더지(2026-09-14 확정, [[mole-bomb-holding-mechanic]]) — mole8.png(보석 든 포즈)
+    // 위에 💣 + 반짝이 60개 + 글로우(일반=빨강/강력=초록) 오버레이. 좌표는 목업(mole8-bomb.html)에서
+    // 실측한 값 — mole-pop-img 를 cqw 컨테이너로 삼아 %로 따라간다.
+    const BOMB_CENTER = { x: 26.8, y: 70.9 }; // mole-pop-img 기준 %
+    const BOMB_SIZE_CQW = 28.3;               // font-size = 이미지 폭의 %
+    const SPARK_OFFSET = { x: -8.3, y: -8.1 }; // 폭탄 중심 대비 반짝이 클립 중심(%, 폭 기준)
+    const SPARK_SIZE_CQW = 8.1;
+    function mulberry32(seed) {
+      return function () {
+        seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+        let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+    function buildSparkCluster(container, seedBase, offX, offY, count, radiusCqw) {
+      const rnd = mulberry32(seedBase);
+      for (let i = 0; i < count; i++) {
+        const el = document.createElement('div');
+        el.className = 'bomb-spark';
+        const ang = rnd() * Math.PI * 2;
+        const r = rnd() * radiusCqw;
+        const size = (0.3 + rnd() * 0.7).toFixed(2);
+        el.style.left = 'calc(50% + ' + (offX + Math.cos(ang) * r).toFixed(2) + 'cqw)';
+        el.style.top = 'calc(50% + ' + (offY + Math.sin(ang) * r).toFixed(2) + 'cqw)';
+        el.style.width = size + 'cqw';
+        el.style.height = size + 'cqw';
+        el.style.animationDuration = (0.8 + rnd() * 0.8).toFixed(2) + 's';
+        el.style.animationDelay = (-rnd() * 1.6).toFixed(2) + 's';
+        container.appendChild(el);
+      }
+    }
+    function buildBombOverlay(kind) {
+      const box = document.createElement('div');
+      box.className = 'mole-bomb-box';
+      box.innerHTML =
+        '<div class="mole-bomb-group">' +
+        '  <div class="mole-bomb-emoji mole-bomb-emoji--' + kind + '">\u{1F4A3}</div>' +
+        '  <div class="mole-bomb-sparks"></div>' +
+        '</div>';
+      const sparkWrap = box.querySelector('.mole-bomb-sparks');
+      const seed = Math.floor(Math.random() * 1e6);
+      buildSparkCluster(sparkWrap, seed, 0, 0, 22, 2.4);
+      buildSparkCluster(sparkWrap, seed + 1, -0.9, 0.9, 15, 2.4);
+      buildSparkCluster(sparkWrap, seed + 2, -0.9, -0.9, 15, 2.4);
+      buildSparkCluster(sparkWrap, seed + 3, 0.9, 0, 8, 2.4);
+      return box;
+    }
+
     function makePop(pop) {
       const el = document.createElement('div');
       el.className = 'mole-pop mole-pop--' + pop.type;
@@ -51,10 +100,15 @@
       img.className = 'mole-pop-img';
       img.alt = '';
       el.appendChild(img);
+      let bombEl = null;
+      if (pop.bombKind) {
+        bombEl = buildBombOverlay(pop.bombKind);
+        el.appendChild(bombEl);
+      }
       container.appendChild(el);
       if (onEmerge) onEmerge(pop.x, pop.y, pop.type); // 구멍에서 올라오는 순간 연출 (흙먼지·링·글로우)
       const m = {
-        el, img, kind: pop.type, poseIndex: pop.poseIndex || 0, regionId: pop.regionId,
+        el, img, bombEl, kind: pop.type, poseIndex: pop.poseIndex || 0, regionId: pop.regionId,
         shownDepth: GONE_DEPTH, targetDepth: 0, shownFile: null, dying: false,
         blast: false, punch: false, dyingFrom: 0
       };
@@ -86,6 +140,8 @@
         m.shownFile = file;
       }
       m.img.style.visibility = file ? '' : 'hidden';
+      // 폭탄 든 두더지 — 침몰 시작(맞았든 시간초과든)하면 바로 감춘다(어떤 무기 처치연출이든 공통).
+      if (m.bombEl) m.bombEl.style.display = m.dying ? 'none' : '';
 
       if (m.dying && m.blast) {
         // 대포 처치: 구멍으로 안 내려가고 — 그을려(검게) 흔들리다 흐릿하게 흩뿌리며 소멸.
@@ -127,6 +183,10 @@
       else if (m.kind === 'mole' && (file === 'mole2' || file === 'mole3')) peekX = 'calc(-50% - 0.1cm)';
       else if (m.kind === 'mole' && file === 'mole5') peekX = 'calc(-50% - 0.03cm)';
       m.img.style.transform = 'translate(' + peekX + ', calc(' + sink + '%' + peekLift + '))';
+      // 폭탄 오버레이도 두더지와 같은 sink 로 같이 움직인다(등장/유지 중엔 몸에 붙어 있어야 함).
+      if (m.bombEl && !m.dying) {
+        m.bombEl.style.transform = 'translate(' + peekX + ', calc(' + sink + '%' + peekLift + '))';
+      }
     }
 
     function targetFor(pop) {

@@ -921,6 +921,63 @@ body { background: var(--lm-page); }
     drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
 }
 
+/* ---- 폭탄 든 두더지(2026-09-14 확정, mole-bomb-holding-mechanic 메모) ----
+   mole8.png(보석 든 포즈) 위에 💣 오버레이. .mole-pop-img 와 같은 박스(100%, bottom:-4%)에
+   얹고 pop-elements.js 가 sink 를 그대로 따라 움직이게 한다. container-type 로 cqw 를
+   "이 두더지 이미지 폭" 기준으로 쓴다(목업 mole8-bomb.html 실측 좌표를 %로 옮김). */
+.mole-bomb-box {
+  position: absolute;
+  left: 50%;
+  bottom: -4%;
+  width: 100%;
+  aspect-ratio: 6 / 7;
+  transform-origin: 50% 100%;
+  pointer-events: none;
+  container-type: inline-size;
+}
+.mole-bomb-group {
+  position: absolute;
+  left: 26.8%; top: 70.9%;
+  width: 0; height: 0;
+  transform: rotate(30deg);
+}
+.mole-bomb-emoji {
+  position: absolute;
+  left: 0; top: 0;
+  font-size: 28.3cqw;
+  line-height: 1;
+  transform: translate(-50%, -50%) scaleX(-1);
+}
+.mole-bomb-emoji--normal {
+  filter:
+    drop-shadow(0 0 0.7cqw #ff2a1a) drop-shadow(0 0 1.4cqw #ff2a1a)
+    drop-shadow(0 0 2.3cqw #ff2a1a) drop-shadow(0 0 3.7cqw #ff3020);
+}
+.mole-bomb-emoji--strong {
+  filter:
+    drop-shadow(0 0 0.7cqw #2adf3a) drop-shadow(0 0 1.4cqw #2adf3a)
+    drop-shadow(0 0 2.3cqw #2adf3a) drop-shadow(0 0 3.7cqw #30e030);
+}
+.mole-bomb-sparks {
+  position: absolute;
+  left: -8.3cqw; top: -8.1cqw;
+  width: 8.1cqw; height: 8.1cqw;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+  border-radius: 50%;
+}
+.bomb-spark {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff8dc 0%, #ffce33 55%, transparent 75%);
+  filter: drop-shadow(0 0 0.5cqw rgba(255, 206, 51, 0.9));
+  animation: bomb-spark-twinkle 1s infinite ease-in-out;
+}
+@keyframes bomb-spark-twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.3); }
+  50%      { opacity: 1; transform: scale(1); }
+}
+
 /* 기획서 §14: 마지막 영역 완성 시 일반 영역 완성보다 강한 연출 (반짝임 플래시). */
 .mole-board.sparkle::after {
   content: '';

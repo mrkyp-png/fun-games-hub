@@ -1104,10 +1104,20 @@
     const ch = currentChapter();
     const reverseTarget = ch === 8;              // 챕터8: 동물이 타겟, 두더지가 방해물
     const dualTarget = ch === 10;                // 챕터10: 두더지+동물 둘 다 타겟
+    // 챕터1~3(9홀)은 §5~6 공용 표([3,3,4,4,5])로는 너무 쉬움(사용자 지적) — 9홀 전용으로
+    // 더 빡빡하게 별도 지정.
+    const SMALL_CHAPTER_MOLES = [3, 4, 5, 6, 7];
+    // "폭탄 든 두더지"(2026-09-14 확정, [[mole-bomb-holding-mechanic]]) — 스폰된 두더지 중 일부가
+    // 독립 굴림으로 폭탄 든 버전이 됨. 챕터5부터 일반, 챕터6부터 강력(겹치면 강력 우선).
+    // 라운드1~4는 항상 0%(해당 챕터 초반 튜토리얼 여유).
+    const BOMB_CHANCE_BY_ROUND = [0, 0, 0, 0, 0.08, 0.08, 0.09, 0.11, 0.12, 0.14];
+    const STRONG_BOMB_CHANCE_BY_ROUND = [0, 0, 0, 0, 0, 0.02, 0.03, 0.04, 0.05, 0.06];
     const config = {
-      maxConcurrentMoles: levelData.maxConcurrentMoles,
+      maxConcurrentMoles: isSmallBoardChapter() ? SMALL_CHAPTER_MOLES[roundNum - 1] : levelData.maxConcurrentMoles,
       maxConcurrentAnimals: ch >= 3 ? levelData.maxConcurrentAnimals : 0,
       maxConcurrentBombs: ch >= 5 ? levelData.maxConcurrentBombs : 0,
+      bombChance: ch >= 5 ? BOMB_CHANCE_BY_ROUND[roundNum - 1] : 0,
+      strongBombChance: ch >= 6 ? STRONG_BOMB_CHANCE_BY_ROUND[roundNum - 1] : 0,
       maxConcurrentItems: ch >= 5 ? 1 : 0,   // 실드 아이템
       shieldItems: ch >= 5,
       popDuration: levelData.moleDuration,
@@ -1744,6 +1754,13 @@
           checkComboLifeBonus();
           MG.HitFx.juggle(board, r.xFrac, r.yFrac);
           moleHits += 1;
+        } else if (r.done && r.bombKind) {
+          // 폭탄 든 두더지(2026-09-14 확정) — 점수 없이 페널티만. 일반 하트-1, 강력 하트-2.
+          // 동물/폭탄 방해물과 동일하게 콤보 리셋.
+          setRunLives(run.lives - (r.bombKind === 'strong' ? 2 : 1));
+          run.combo.onObstacleHit();
+          MG.HitFx.obstacleHit(board, r.xFrac, r.yFrac, 'bomb');
+          flashHud('hud-hearts');
         } else if (r.done) {
           const before = run.combo.score;
           run.combo.onMoleHit();   // 스펙 §12 — 마리당 1콤보 (콤보·라이트·피버 배율은 setMult 로 이미 반영)
@@ -2236,6 +2253,9 @@
     // 디버그 전용: 지정 구멍에 즉시 두더지(1타, poseIndex 지정 가능 — 0=전신) 강제 스폰 (타격점 확인용).
     window.__debugForceMole = (regionId, poseIndex) => {
       if (state && state.scheduler) state.scheduler.debugForceMole(regionId | 0, poseIndex);
+    };
+    window.__debugForceBombMole = (regionId, kind) => {
+      if (state && state.scheduler) state.scheduler.debugForceBombMole(regionId | 0, kind);
     };
     window.__debugForceAnimal = (regionId) => {
       if (state && state.scheduler) state.scheduler.debugForceAnimal(regionId | 0);

@@ -103,9 +103,22 @@
       pop.dying = false;
       pop.hitCooldown = 0;
       if (type === 'mole') {
-        pop.hitsRequired = rollMoleKind();
+        // 폭탄 든 두더지(전체 챕터 기획서 후속, 2026-09-14 확정) — 다타 굴림과 별개의 독립 굴림.
+        // 강력폭탄이 먼저 당첨 판정(겹치면 강력 우선). 둘 다 config.bombChance/strongBombChance
+        // 가 0(미설정 챕터)이면 절대 안 뜬다. 폭탄 든 두더지는 1방·전신(모자 8=보석/폭탄 든 포즈)
+        // 고정 — 다타로 빠끔/모자로 안 바뀌어야 폭탄이 계속 보이므로.
+        const bombRoll = rng.next();
+        const strongChance = config.strongBombChance || 0;
+        const bombChance = config.bombChance || 0;
+        pop.bombKind = bombRoll < strongChance ? 'strong' : bombRoll < strongChance + bombChance ? 'normal' : null;
+        if (pop.bombKind) {
+          pop.hitsRequired = 1;
+          pop.poseIndex = 7; // mole8.png — 폭탄(원래 보석) 든 포즈
+        } else {
+          pop.hitsRequired = rollMoleKind();
+          pop.poseIndex = Math.floor(rng.next() * (config.molePoseCount || 8));
+        }
         pop.hitsTaken = 0;
-        pop.poseIndex = Math.floor(rng.next() * (config.molePoseCount || 8));
         // 알리 펀치 [방어]: 내려가기(자연 만료) 전 0.1초 더 여유(기획서 §7, config.moleUpBonus).
         pop.remaining = config.popDuration * DURATION_MULT[pop.hitsRequired] + (config.moleUpBonus || 0);
       } else {
@@ -207,7 +220,7 @@
       // safeAlways = 이 동물/폭탄이 "무적 중에 올라온" 것이면, 무적이 그 사이 끝나서
       // 타격 시점엔 무적이 아니어도 계속 안전(사용자 지정 — "의문사 방지". game.js 가
       // 스폰 순간에 낙인찍음, spawn-scheduler 는 무적 여부를 모르니 그대로 전달만).
-      return { type: pop.type, regionId: pop.regionId, done: true, xFrac: pop.x, yFrac: pop.y, safe: !!pop.safeAlways };
+      return { type: pop.type, regionId: pop.regionId, done: true, xFrac: pop.x, yFrac: pop.y, safe: !!pop.safeAlways, bombKind: pop.bombKind || null };
     }
 
     function resolveHit(popId, opts) {
@@ -267,6 +280,19 @@
       return pop;
     }
 
+    // 디버그 전용: 지정 구멍에 폭탄 든 두더지를 강제 스폰(kind: 'normal'|'strong', 연출 확인용).
+    function debugForceBombMole(regionId, kind) {
+      const sp = spawnPoints.find((p) => p.regionId === regionId);
+      if (!sp || occupiedSpawnPointIds.has(sp.id)) return null;
+      const pop = { id: nextPopId++, type: 'mole', spawnPointId: sp.id, regionId: sp.regionId, col: sp.col, x: sp.x, y: sp.y, remaining: config.popDuration };
+      pop.dying = false; pop.hitCooldown = 0; pop.hitsRequired = 1; pop.hitsTaken = 0;
+      pop.poseIndex = 7; pop.bombKind = kind === 'strong' ? 'strong' : 'normal';
+      pop.sinkIn = 0; pop.killed = false; pop.juggled = false;
+      active.set(pop.id, pop);
+      occupiedSpawnPointIds.add(sp.id);
+      return pop;
+    }
+
     // 디버그 전용: 지정 구멍에 즉시 동물을 띄운다(무적 중 hot 하이라이트 확인용, 임시).
     function debugForceAnimal(regionId) {
       const sp = spawnPoints.find((p) => p.regionId === regionId);
@@ -278,7 +304,7 @@
       return pop;
     }
 
-    return { tick, resolveHit, resolveRegion, isComplete, completedRegionCount, getActivePops, forceCompleteAll, debugForceBurst, debugForceMole, debugForceAnimal };
+    return { tick, resolveHit, resolveRegion, isComplete, completedRegionCount, getActivePops, forceCompleteAll, debugForceBurst, debugForceMole, debugForceAnimal, debugForceBombMole };
   }
 
   const api = { create };
