@@ -20,7 +20,7 @@
               ['주변 두더지 지진 연타 15%', '15% quake — chain-hits nearby moles'],
               ['-', '-']] },
     { id: 'alipunch', name: '알리 판취', nameEn: 'Ali Punch', thumb: 'assets/weapons/alipunch-jab.png',
-      stats: [['Hole 16 → 14 · 경계선 추가 · 라이트 OFF → DIM', 'Holes 16 → 14 · Cell borders · Light OFF → DIM'],
+      stats: [['Hole 16 → 14 · 경계선 추가', 'Holes 16 → 14 · Cell borders'],
               ['무적 5초 확률 20% (모든 동물 타격 가능)', '20% chance — 5s invincibility (any animal is safe to hit)'],
               ['하강 딜레이 +0.1초(무적 중 +0.3초 추가)', '+0.1s before mole retreats (+0.3s more while invincible)']] }
   ];

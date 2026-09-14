@@ -226,12 +226,7 @@
   function applyDiffClass(diff) {
     const gs = document.getElementById('game-screen');
     DIFFS.forEach((d) => gs.classList.remove('diff-' + d));
-    // 알리펀치 전용 혜택(사용자 지정, 아이템보관창 시인성란과 세트): 라이트 OFF 여도 다이얼패드
-    // 힌트는 DIM 수준으로 보인다. 점수 배율(SCORE_MULT)은 currentDifficulty() 기준 그대로 legend —
-    // 이 CSS 클래스만 살짝 낮춰서 표시(하이라이트 담당 규칙 외엔 diff-mid/legend 를 안 씀).
-    const isAlipunch = localStorage.getItem('mole.weapon') === 'alipunch';
-    const effDiff = (isAlipunch && diff === 'legend') ? 'mid' : diff;
-    gs.classList.add('diff-' + effDiff);
+    gs.classList.add('diff-' + diff);
   }
   // 활성 사람두더지 얼굴 → 포즈별 합성 이미지 맵을 만든다. 원본 사진/얼굴 원은 게임에 안 넘긴다.
   function loadActiveFace() {
