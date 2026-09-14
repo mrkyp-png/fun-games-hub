@@ -148,8 +148,8 @@ body { background: var(--lm-page); }
    (b) 글자가 조금 커졌다 정상으로. → 박스가 조여지는 동안 글자가 부풀어 채웠다 같이 풀림. */
 #game-screen.is-start #chapter-nav { animation: ch-breathe 3.6s ease-in-out infinite; }
 #game-screen.is-start #chapter-nav .ch-txt { animation: ch-txt-pulse 3.6s ease-in-out infinite; }
-@keyframes ch-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.95); } }
-@keyframes ch-txt-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+@keyframes ch-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.92); } }
+@keyframes ch-txt-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.24); } }
 
 /* (c) 시작(통화) 버튼과 똑같은 대각선 빛 쓸기(idle-crown-sweep, 2.8s) — 모든 챕터. */
 .ch-shine { position: absolute; inset: 0; z-index: 2; border-radius: inherit; overflow: hidden; pointer-events: none; display: none; }
