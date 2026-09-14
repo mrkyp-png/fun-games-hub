@@ -15,6 +15,15 @@
   function isSmallBoardChapter() { return currentChapter() <= 3; }
   function roundGridSize() { return isSmallBoardChapter() ? 3 : GRID_SIZE; }
   function finalRound() { return isSmallBoardChapter() ? 5 : 10; }
+  // 챕터별 보드 배경 — 4~6=가을, 7~9=겨울(사용자 지정). 나머지는 기본(board-scene.jpg).
+  function applyBoardTheme() {
+    const el = document.getElementById('mole-board');
+    if (!el) return;
+    el.classList.remove('mole-board--autumn', 'mole-board--winter');
+    const ch = currentChapter();
+    if (ch >= 4 && ch <= 6) el.classList.add('mole-board--autumn');
+    else if (ch >= 7 && ch <= 9) el.classList.add('mole-board--winter');
+  }
   // 처치 순간 게임 시간을 잠깐 멈춘다 (히트스톱) — 타격감. 콤보가 쌓일수록 조금 더 길게.
   const HITSTOP_BASE_MS = 90;
   const HITSTOP_MAX_MS = 150;
@@ -1045,6 +1054,7 @@
     gameStarting = false; // 라운드 진입 성공 — 이후 재진입은 state 존재로 차단됨
     setNavLock(true); // 카운트다운 동안 ⊞ 잠금 (playRoundIntro onDone 에서 해제)
     ensureLaneControlsForChapter(isSmallBoardChapter()); // 실제 라운드 진행 중에만 9홀/숫자패드로 전환
+    applyBoardTheme();
     const myGen = sessionGen;
     // fresh(시작/다시하기)면 콤보·점수 리셋. 목숨은 공유 생명 풀에서 이어받는다(리셋 아님).
     // 자동 다음 라운드면 그대로 이어간다.
