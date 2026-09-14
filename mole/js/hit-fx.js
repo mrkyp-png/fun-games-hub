@@ -88,10 +88,10 @@
   }
 
   // 대포 무기 스킨 전용 타격음 = 폭발음 (사용자 제공, Pixabay 로열티 프리). 대포 장착 시
-  // 위 HIT_URLS 대신 이 풀에서 랜덤 1개.
-  const CANNON_URLS = ['audio/cannon-boom1.mp3', 'audio/cannon-boom2.mp3', 'audio/cannon-boom3.mp3',
-    'audio/cannon-boom4.mp3', 'audio/cannon-boom5.mp3', 'audio/cannon-boom6.mp3',
-    'audio/cannon-boom7.mp3', 'audio/cannon-boom8.mp3'];
+  // 위 HIT_URLS 대신 이 풀에서 랜덤 1개. boom1·5·8은 제외(사용자 지정) — boom8은 폭탄 든
+  // 두더지 처치음(BOMB_BLAST_URL)으로 전용, boom1·5는 그냥 제외.
+  const CANNON_URLS = ['audio/cannon-boom2.mp3', 'audio/cannon-boom3.mp3',
+    'audio/cannon-boom4.mp3', 'audio/cannon-boom6.mp3', 'audio/cannon-boom7.mp3'];
   let cannonBuffers = null;
   let cannonLoading = false;
 
@@ -102,6 +102,33 @@
       fetch(u).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b))
     )).then((bufs) => { hitBuffers = bufs; })
       .catch(() => { hitLoading = false; }); // 실패 시 punchSynth 폴백
+  }
+
+  // 폭탄 든 두더지 처치 전용 음향(사용자 지정) — cannon-boom8.mp3, 무기 무관 항상 이 소리.
+  const BOMB_BLAST_URL = 'audio/cannon-boom8.mp3';
+  let bombBlastBuffer = null;
+  let bombBlastLoading = false;
+  function loadBombBlastBuffer(ctx) {
+    if (bombBlastBuffer || bombBlastLoading || typeof fetch !== 'function') return;
+    bombBlastLoading = true;
+    fetch(BOMB_BLAST_URL).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b))
+      .then((buf) => { bombBlastBuffer = buf; })
+      .catch(() => { bombBlastLoading = false; });
+  }
+  function bombBlastSound() {
+    if (sfxOff()) return;
+    try {
+      const ctx = getCtx();
+      if (!ctx || !bombBlastBuffer) return;
+      whenReady(ctx, () => {
+        const src = ctx.createBufferSource();
+        src.buffer = bombBlastBuffer;
+        const g = ctx.createGain();
+        g.gain.value = HIT_GAIN;
+        src.connect(g).connect(ctx.destination);
+        src.start();
+      });
+    } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
   function loadCannonBuffers(ctx) {
@@ -375,6 +402,7 @@
     loadHitBuffers(audioCtx); // ctx 생기는 즉시 타격음 파일 프리로드
     loadMoleHurtBuffers(audioCtx); // 두더지 비명도 무기 무관 항상 프리로드
     loadRoundAnnounceBuffers(audioCtx); // 라운드 음성도 무기 무관 항상 프리로드
+    loadBombBlastBuffer(audioCtx); // 폭탄 든 두더지 처치음도 무기 무관 항상 프리로드
     if (isCannonEquipped()) { loadCannonBuffers(audioCtx); loadCannonRotateBuffer(audioCtx); loadCannonWheelBuffer(audioCtx); } // 대포 장착 중일 때만 폭발음·회전음·바퀴음 로드(망치 유저는 불필요한 다운로드 안 함)
     if (isAlipunchEquipped()) { loadPunchVoiceBuffers(audioCtx); loadFightBuffer(audioCtx); } // 알리 펀치 장착 중일 때만 보이스·fight음 로드
     if (isGoldhammerEquipped()) loadGoldhammerSpinBuffer(audioCtx); // 골드해머 장착 중일 때만 회전 등장음 로드
@@ -588,7 +616,7 @@
       p.style.setProperty('--ay', (Math.sin(ang * Math.PI / 180) * dist).toFixed(1) + 'px');
     }
     vibrate([0, 20, 40, 18]);
-    punch();
+    bombBlastSound(); // 무기 무관 항상 cannon-boom8.mp3 전용(사용자 지정) — punch() 대신
   }
 
   // 저글 보너스 — 잡은 두더지가 내려갈 때 한 번 더 맞힘. 가볍고 경쾌하게 + "더블!" 텍스트.
