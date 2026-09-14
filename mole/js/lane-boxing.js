@@ -187,7 +187,22 @@
       g.strike(targetX, targetY, style, onImpact, regionId);
     }
 
-    function update(dt) { left.update(dt); right.update(dt); }
+    // 대기 애니메이션(사용자 지정) — 잠깐 조용하면(화장실 등) 좌우 글러브가 번갈아 제자리에서
+    // 쨉을 한 번씩 날림. 소리 없음(글러브 strike() 자체가 사운드를 안 냄 — 실제 명중 보이스는
+    // game.js onHammerImpact 가 별도로 트는 것뿐이라 여기선 자연히 무음).
+    const IDLE_DELAY = 2.5, IDLE_JAB_GAP = 3.4;
+    let idleT = 0;
+    function update(dt) {
+      left.update(dt); right.update(dt);
+      if (left.isBusy() || right.isBusy()) { idleT = 0; return; }
+      idleT += dt;
+      if (idleT > IDLE_DELAY) {
+        idleT = IDLE_DELAY - IDLE_JAB_GAP; // 다음 쨉까지 간격만 남기고 되감기(반복 사이클)
+        const side = Math.random() < 0.5 ? left : right;
+        const home = side === left ? HOME_L : HOME_R;
+        side.strike(home.x, home.y - 0.05, 'jab', null, null); // 제자리에서 살짝 앞으로 쨉
+      }
+    }
     function isBusy() { return left.isBusy() || right.isBusy(); }
     function home() { left.home(); right.home(); }
     function clear() { left.clear(); right.clear(); }

@@ -1392,9 +1392,13 @@ body { background: var(--lm-page); }
    그래도 버튼 칸을 눈으로 짚을 수 있게 하는 작은 유료 혜택. 글자색(--lm-ink) 30% 투명도.
    버튼 자신의 박스(= 그리드 셀과 정확히 같은 크기)에 꽉 채운 사각 테두리라 gap·패딩 계산 없이
    항상 정확히 맞음(이전엔 컨테이너에 %로 어림잡은 배경 그라데이션이라 어긋났었음). */
-.lane-cell-line { position: absolute; inset: 0; pointer-events: none; }
+.lane-cell-line {
+  position: absolute; inset: 0; pointer-events: none;
+  border: 1px solid transparent; /* 항상 1px 폭 유지 — border-color 만 바뀌어야 부드럽게 트랜지션됨 */
+  transition: border-color 0.5s ease; /* 게임화면 진입 시 서서히 나타나게(사용자 지정, "확 바뀌네") */
+}
 #game-screen.gs-laneskill:not(.is-start) .lane-cell-line {
-  border: 1px solid rgba(23, 23, 26, 0.3);
+  border-color: rgba(23, 23, 26, 0.3);
 }
 
 /* 챕터1~3 전용 숫자패드(3x3 정사각형) — 다이얼 위장(연락처/키패드/최근기록)·통화버튼 없음

@@ -28,11 +28,17 @@
   // 두더지 프레임별 타격점 세로보정 (사용자 지정, 스폰점 대비 보드 높이 분수) — 망치가 그 프레임의 헬멧을 때린다.
   const AIM_DY_BY_FRAME = { full: -0.124, peek1: -0.0485, peek2: -0.0345, helmet: -0.018 };
 
+  // 대기 애니메이션(사용자 지정) — 유저가 잠깐 자리 비웠을 때(화장실 등) 심심하지 않게.
+  // 실제 타격이 계속 이어지는 동안엔 안 뜨도록 "조용한 시간"이 IDLE_DELAY 를 넘어야 시작.
+  const IDLE_DELAY = 2.5;     // 이만큼 조용해야 대기 애니메이션 시작
+  const BOUNCE_CYCLE = 3.2, BOUNCE_DUR = 0.5;  // 뿅망치: 통통 튀는 주기·지속(Claude 제안)
+  const SPIN_CYCLE = 3.6, SPIN_DUR = 0.6;      // 골드해머: 제자리 360도 회전 주기·지속(사용자 지정)
+
   function lerp(a, b, k) { return a + (b - a) * k; }
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
   function ease(k) { return k * k; }
 
-  function create({ layer, sprite, grip, cssClass, degOffset, homeMarginTop, gripOff, homeDegOffset, emptyDy }) {
+  function create({ layer, sprite, grip, cssClass, degOffset, homeMarginTop, gripOff, homeDegOffset, emptyDy, idle }) {
     // grip = 스프라이트 안 손잡이 잡는 점(%) — 스킨마다 다르면 넘긴다. 없으면 뿅망치 기본값.
     // degOffset = 스킨 스프라이트가 기준 포즈에서 이미 돌아가 있으면 그만큼 상쇄(모든 회전상태에 더함).
     // homeMarginTop = 대기 위치 세로 미세보정 (기본 '0.2cm' 아래로).
@@ -69,8 +75,13 @@
     let fired = false;
     let scaleXVal = 1, scaleYVal = 1; // 라운드 인트로 등장 연출 전용(평소엔 항상 1,1)
     let anchorX = gripX, anchorY = gripY; // translate·transform-origin 공통 기준점(평소엔 그립)
+    let idleT = 0; // 대기 애니메이션용 — phase==='home' 인 채로 흐른 시간(타격하면 리셋)
 
     function strike(targetXFrac, targetYFrac, onImpact, frameKey) {
+      // 대기 애니메이션 중이었으면 깨끗한 대기 포즈로 스냅 후 스윙 시작(어중간한 각도/높이에서
+      // 시작하지 않게). rise·return 도중 끼어든 연타는 원래대로 현재 위치에서 부드럽게 redirect.
+      if (phase === 'home') { deg = hDeg; gx = HOME_X; gy = HOME_Y; scaleXVal = 1; scaleYVal = 1; }
+      idleT = 0;
       const tx = (typeof targetXFrac === 'number') ? targetXFrac : 0.5;
       const ty = (typeof targetYFrac === 'number') ? targetYFrac : 0.5;
       const aimDy = (frameKey && AIM_DY_BY_FRAME[frameKey] != null) ? AIM_DY_BY_FRAME[frameKey] : eDy;
@@ -114,6 +125,28 @@
         gy = lerp(fromY, HOME_Y, k);
         deg = lerp(fromDeg, hDeg, k);
         if (t >= HOME_SEC) { phase = 'home'; t = 0; }
+      } else if (phase === 'home' && idle) {
+        idleT += dt;
+        if (idleT > IDLE_DELAY) {
+          if (idle === 'spin') {
+            const cyclePos = (idleT - IDLE_DELAY) % SPIN_CYCLE;
+            if (cyclePos < SPIN_DUR) { deg = hDeg + 360 * ease(cyclePos / SPIN_DUR); }
+            else { deg = hDeg; }
+            gx = HOME_X; gy = HOME_Y;
+          } else if (idle === 'bounce') {
+            const cyclePos = (idleT - IDLE_DELAY) % BOUNCE_CYCLE;
+            if (cyclePos < BOUNCE_DUR) {
+              const k = cyclePos / BOUNCE_DUR;
+              const hop = Math.abs(Math.sin(k * Math.PI * 2)) * 0.018; // 위로 튀는 높이(보드분수)
+              gy = HOME_Y - hop;
+              deg = hDeg + Math.sin(k * Math.PI * 2) * 4; // 착지·도약에 맞춰 살짝 까닥
+              scaleYVal = 1 - hop * 3; scaleXVal = 1 + hop * 1.5; // 튈 때 살짝 스쿼시
+            } else {
+              gy = HOME_Y; deg = hDeg; scaleXVal = 1; scaleYVal = 1;
+            }
+            gx = HOME_X;
+          }
+        }
       }
       paint();
     }

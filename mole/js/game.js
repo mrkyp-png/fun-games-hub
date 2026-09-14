@@ -1170,6 +1170,7 @@
     const WeaponMod = (weapon === 'cannon' && MG.LaneCannon) ? MG.LaneCannon
       : (weapon === 'alipunch' && MG.LaneBoxing) ? MG.LaneBoxing : MG.LaneHammer;
     const hammerOpts = { layer: document.getElementById('mole-hammer-layer') };
+    if (weapon === 'hammer') hammerOpts.idle = 'bounce'; // 대기 애니메이션(사용자 지정, 잠깐 자리 비웠을 때)
     if (weapon === 'cannon') {
       // 캐논 인트로 전용 이미지들(body-flip/a3-mirror/a4-mirror) — HTML에 없고 JS가 실행
       // 시점에 처음 .src 를 주기 때문에, 캐시 없는 첫 플레이에서 네트워크 로딩 중 작은
@@ -1190,6 +1191,7 @@
       hammerOpts.emptyDy = -0.025; // 빈 구멍 헛스윙 전용: 공용 AIM_DY(-0.055)보다 아래로 0.3cm (뿅망치는 그대로)
       hammerOpts.homeMarginTop = '-0.3cm';       // 대기 위치를 기본(0.2cm 아래)에서 위로 0.5cm
       hammerOpts.homeDegOffset = 20;             // 대기 각도만 시계방향으로 20도 추가 회전
+      hammerOpts.idle = 'spin';                  // 대기 애니메이션 — 제자리 360도 회전(사용자 지정)
       // 지진 분신 포즈 미리 로드 (첫 지진 때 이미지가 늦게 떠서 안 보이는 것 방지)
       ['goldhammer-0', 'goldhammer-90'].forEach((n) => { const i = new Image(); i.src = 'assets/weapons/' + n + '.png'; });
     }
@@ -2130,8 +2132,8 @@
     hippo.style.maxHeight = Math.round(ov.clientHeight * 0.4) + 'px';
 
     setTimeout(() => {
-      // 성공 = 색종이만(반짝이별/광선 제거, 사용자 요청). 색종이 2배, 실패 빗줄기 5배.
-      const n = win ? 92 : 200;
+      // 성공 = 색종이만(반짝이별/광선 제거, 사용자 요청). 색종이·실패 빗줄기 각각 3배 증량(사용자 지정).
+      const n = win ? 276 : 600;
       for (let k = 0; k < n; k++) {
         const p = document.createElement('i');
         p.style.left = (Math.random() * 100) + '%';

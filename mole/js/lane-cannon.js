@@ -79,6 +79,8 @@
   const RECOIL = [0.012, 0.024, 0.040];    // 살짝/보통/강 (보드 분수)
   const KICK_SEC = 0.06, SETTLE_SEC = 0.34;
   const BALL_MS = 105;
+  const IDLE_DELAY = 2.5;                  // 대기 애니메이션(사용자 요청) — 이만큼 조용해야 시작
+  const SWAY_AMP = 3, SWAY_FREQ = 1.4;     // 포신 좌우 스캔 흔들림 진폭(도)·속도
 
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
@@ -145,6 +147,7 @@
     let phase = 'home', t = 0;
     let residual = 0, resFrom = 0, resTo = 0, resT = 0, curAimMs = AIM_MS;
     let recoilAmt = 0;
+    let idleT = 0; // 대기 애니메이션(사용자 요청) — 잠깐 조용하면 포신이 좌우로 스캔하듯 흔들림(Claude 제안)
     let timers = [];
     function clearTimers() { timers.forEach(clearTimeout); timers = []; }
     function after(ms, fn) { timers.push(setTimeout(fn, ms)); }
@@ -170,6 +173,7 @@
       const tx = (typeof targetXFrac === 'number') ? targetXFrac : 0.5;
       const ty = (typeof targetYFrac === 'number') ? targetYFrac : 0.3;
 
+      idleT = 0; // 대기 스캔 중이었으면 리셋 — residual 은 곧바로 아래서 aim 값으로 덮어씀
       clearTimers();
 
       // 포구 → 목표 방향
@@ -219,6 +223,9 @@
         const k = easeOut(clamp01(t / SETTLE_SEC));
         residual = resTo * (1 - k);
         if (t >= SETTLE_SEC) { phase = 'home'; t = 0; residual = 0; showPose(restPose); }
+      } else if (phase === 'home') {
+        idleT += dt;
+        residual = idleT > IDLE_DELAY ? Math.sin((idleT - IDLE_DELAY) * SWAY_FREQ) * SWAY_AMP : 0;
       }
       paint();
     }
@@ -241,7 +248,7 @@
 
     function home() {
       clearTimers();
-      phase = 'home'; t = 0; resT = 0;
+      phase = 'home'; t = 0; resT = 0; idleT = 0;
       residual = resFrom = resTo = 0;
       resetFx();
       ball.style.opacity = '0';
