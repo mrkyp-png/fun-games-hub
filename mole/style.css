@@ -1370,6 +1370,15 @@ body { background: var(--lm-page); }
 /* 다이얼패드 래퍼 — 안내문구/첫방문 말풍선을 절대배치로 얹기 위함. */
 .dialpad { position: relative; flex: 0 0 auto; }
 
+/* 유료무기(캐논·황금해머·알리펀치) 전용 버튼 구획선(사용자 지정) — 뿅망치는 제외.
+   라이트 DIM/OFF 에서는 두더지 위치 하이라이트(--hot)가 안 뜨는데(§diff-mid/legend),
+   그래도 버튼 칸을 눈으로 짚을 수 있게 하는 작은 유료 혜택. 글자색(--lm-ink) 30% 투명도. */
+#game-screen.gs-laneskill:not(.is-start) #lane-button-bar {
+  background-image:
+    repeating-linear-gradient(to right, rgba(23, 23, 26, 0.3) 0, rgba(23, 23, 26, 0.3) 1px, transparent 1px, transparent 25%),
+    repeating-linear-gradient(to bottom, rgba(23, 23, 26, 0.3) 0, rgba(23, 23, 26, 0.3) 1px, transparent 1px, transparent 25%);
+}
+
 /* 챕터1~3 전용 숫자패드(3x3 정사각형) — 다이얼 위장(연락처/키패드/최근기록)·통화버튼 없음
    (사용자 지정: "통화버튼 불필요, 버튼보드 정사각형으로"). lane-controls.js 가 simple:true
    일 때 이 클래스를 단다. */

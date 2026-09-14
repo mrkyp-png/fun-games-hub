@@ -2264,7 +2264,7 @@
       finish('lives');
     };
     window.__debugSetWeapon = (w) => {
-      localStorage.setItem('mole.weapon', w === 'cannon' ? 'cannon' : (w === 'goldhammer' ? 'goldhammer' : 'hammer'));
+      localStorage.setItem('mole.weapon', w === 'cannon' ? 'cannon' : (w === 'goldhammer' ? 'goldhammer' : (w === 'alipunch' ? 'alipunch' : 'hammer')));
     };
     window.__debugForceQuake = () => { forceQuakeNext = true; }; // 다음 두더지 타격에서 지진 강제 발동
     window.__debugQuakeAt = (regionId) => { if (state) quakeRipple(regionId | 0, 0); }; // 그 구멍에서 지진 파동 즉시
