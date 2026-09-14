@@ -43,8 +43,13 @@
     function randomMoleGap() {
       return rng.next() * (MOLE_MAX_SPAWN_GAP - MOLE_MIN_SPAWN_GAP) + MOLE_MIN_SPAWN_GAP;
     }
+    // 방해물(동물·폭탄) 등장 간격 — config.obstacleRatioBoost(기본 1, 챕터10 = 1.1)만큼
+    // 간격을 좁혀 그만큼 자주 등장하게 한다(§10 "방해비율 10% 상향").
+    function randomObstacleGap() {
+      return randomGap() / (config.obstacleRatioBoost || 1);
+    }
 
-    const cooldown = { mole: randomMoleGap(), animal: randomGap(), bomb: randomGap(), item: 3 };
+    const cooldown = { mole: randomMoleGap(), animal: randomObstacleGap(), bomb: randomObstacleGap(), item: 3 };
 
     function maxOf(type) {
       if (type === 'mole') return config.maxConcurrentMoles;
@@ -76,6 +81,8 @@
     }
 
     function rollMoleKind() {
+      // 챕터1(§5 "등장 추가 요소: 없음"): 다타(빼꼼) 두더지 없음 — 전부 1방.
+      if (config.multiHit === false) return 1;
       const r = rng.next();
       if (config.fourHit) {
         // 챕터 5: 4타를 상위에 "추가"(3타 대역은 그만큼 아래로) → 다타 두더지 총량이 늘어 더 어렵다.
@@ -150,8 +157,8 @@
         if (cooldown[type] <= 0) {
           const pop = trySpawn(type);
           if (pop) spawned.push(pop);
-          // 실드 아이템은 드물게 (2.5~6초 간격), 두더지는 전용(더 촘촘한) 간격, 나머지는 기본 간격.
-          cooldown[type] = (type === 'item') ? (2.5 + rng.next() * 3.5) : (type === 'mole') ? randomMoleGap() : randomGap();
+          // 실드 아이템은 드물게 (2.5~6초 간격), 두더지는 전용(더 촘촘한) 간격, 방해물은 obstacleRatioBoost 반영.
+          cooldown[type] = (type === 'item') ? (2.5 + rng.next() * 3.5) : (type === 'mole') ? randomMoleGap() : randomObstacleGap();
         }
       });
 

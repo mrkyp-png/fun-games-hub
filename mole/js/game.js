@@ -8,10 +8,13 @@
   const ALIPUNCH_HOLES = [12, 15]; // 알리 펀치 = 좌하단(12)·우하단(15) 삭제, 그 자리에 글러브. 14구멍.
   const ALIPUNCH_INVINCIBLE_CHANCE = 0.2;   // 무적 발동 확률 (기획서 §7)
   const ALIPUNCH_INVINCIBLE_MS = 5000;      // 무적 지속시간
-  const ROUND_SECONDS = 15;       // 챕터 1~2
-  const ROUND_SECONDS_LONG = 30;  // 챕터 3부터 (난이도 상승분 보정 — 사용자 요청)
-  function roundSeconds() { return currentChapter() >= 3 ? ROUND_SECONDS_LONG : ROUND_SECONDS; }
-  const FINAL_ROUND = 10;     // 라운드 1~10
+  const ROUND_SECONDS = 15;       // 챕터 1~3
+  const ROUND_SECONDS_LONG = 30;  // 챕터 4부터(전체 챕터 기획서 §5~6, 사용자 지적으로 3→4 정정)
+  function roundSeconds() { return currentChapter() >= 4 ? ROUND_SECONDS_LONG : ROUND_SECONDS; }
+  // 전체 챕터 기획서(2026-09-14): 챕터1~3 = 9홀(3x3)·5라운드, 챕터4~10 = 16홀(4x4)·10라운드.
+  function isSmallBoardChapter() { return currentChapter() <= 3; }
+  function roundGridSize() { return isSmallBoardChapter() ? 3 : GRID_SIZE; }
+  function finalRound() { return isSmallBoardChapter() ? 5 : 10; }
   // 처치 순간 게임 시간을 잠깐 멈춘다 (히트스톱) — 타격감. 콤보가 쌓일수록 조금 더 길게.
   const HITSTOP_BASE_MS = 90;
   const HITSTOP_MAX_MS = 150;
@@ -184,6 +187,12 @@
   function currentChapter() {
     const c = parseInt(localStorage.getItem('mole.chapter'), 10);
     return (c >= 1 && c <= MG.Progress.MAX_CHAPTER) ? c : 1;
+  }
+  // mole.chapter 를 쓰는 모든 곳에서 이걸로 — 챕터1~3(뿅망치 전용)으로 들어가면 장착 무기도
+  // 뿅망치로 같이 저장해, 보관창 "장착됨" 표시가 실제 플레이 무기와 어긋나지 않게 한다(사용자 지정).
+  function setChapter(n) {
+    localStorage.setItem('mole.chapter', String(n));
+    if (n <= 3) localStorage.setItem('mole.weapon', 'hammer');
   }
   // 챕터 이름표 ("챕터 N : 부제"). 이름 없으면 "챕터 N".
   function chapterLabel(n) {
@@ -382,6 +391,42 @@
       btn.classList.toggle('nav-locked', navLocked);
       btn.setAttribute('aria-disabled', navLocked ? 'true' : 'false');
     }
+  }
+
+  // 챕터1~3(9홀 숫자패드) ↔ 챕터4~10(16홀 다이얼러) 카테고리가 바뀔 때 버튼바를 다시 짓는다.
+  // 세션 내내 하나만 쓰던 sharedLaneControls 를 clear+재생성 — wireStartButton/
+  // wireAlipunchStarButton 이 버튼을 querySelector 로 새로 찾아 리스너를 다시 붙여야 하므로
+  // 재생성 직후 반드시 같이 호출한다(안 그러면 "시작" 버튼이 죽은 옛 DOM 을 계속 가리킴).
+  // ⚠️ 홈 화면은 항상 기존 16버튼 다이얼러로 불변(사용자 지정) — 9홀/숫자패드는 실제
+  // 라운드 진행(startRound) 중에만 적용. wantSmall 을 호출부가 명시적으로 넘긴다.
+  let laneControlsIsSmall = null;
+  function ensureLaneControlsForChapter(wantSmall, force) {
+    const small = !!wantSmall;
+    if (!force && laneControlsIsSmall === small) return false; // 이미 그 상태 — 다시 안 지음
+    if (sharedLaneControls) sharedLaneControls.clear();
+    sharedLaneControls = MG.LaneControls.create({
+      buttonBar: document.getElementById('lane-button-bar'),
+      gridSize: small ? 3 : GRID_SIZE, // roundGridSize() 는 안 씀 — 이건 현재 챕터가 아니라 인자로 받은 small 을 따라야 함
+      simple: small, // 챕터1~3 라운드 중: 채널/다이얼 위장 없는 순수 숫자 1~9(홈 화면은 항상 false)
+      onCell: handleCell,
+      isHome: () => document.getElementById('game-screen').classList.contains('is-start'),
+      // 홈 화면(전화 다이얼러로 위장 중)일 때만 탭음(버튼소리1 고정) — 플레이 중엔 연타가 잦아
+      // 타격음과 겹치므로 안 씀.
+      onTap: () => { if (document.getElementById('game-screen').classList.contains('is-start')) MG.HitFx.uiTap(0); },
+      // 채널 링크 — 홈 화면에서 채널 버튼을 "두 번 톡톡"(더블탭)하면 광고 후 유튜브 채널로 이동.
+      // lane-controls 가 URL 을 직접 넘겨준다 (LINKS 하드코딩 + 유저가 이 기기에 등록한 것 둘 다 포함).
+      // window.open(_blank) 은 광고(비동기) 뒤엔 팝업 차단됨 → 같은 탭 이동(location.href).
+      onChannelEnter: (url) => {
+        if (!url || !document.getElementById('game-screen').classList.contains('is-start')) return;
+        MG.Ads.interstitial(I18N.t('mole.channel.hint')).then((ok) => {
+          if (ok) { if (bgmEls) bgmEls.forEach((el) => el.pause()); window.location.href = url; } // 채널 이동 전 BGM 정지
+        });
+      }
+    });
+    laneControlsIsSmall = small;
+    wireStartButton(); // 다이얼러 초록 버튼: 홈에서 탭=시작 / 꾹=종료 대기 (재생성된 새 버튼에 다시 배선)
+    wireAlipunchStarButton(); // 알리 펀치 전용 별표 버튼(스킬 슬롯 2개 더) — small 이면 무해하게 no-op
+    return true; // 실제로 다시 지었음
   }
 
   function wireStartButton() {
@@ -707,6 +752,10 @@
     clearInvincibleFx();
     state = null;
     run = null;
+    // 홈 화면 = 항상 기존 16버튼 다이얼러(불변, 사용자 지정). 직전 라운드가 챕터1~3(9버튼)
+    // 이었다면 여기서 다시 지어지는데, 그때는 성공/실패 화면 → 홈 진입에도 10회전(사용자
+    // 지정 — 성공/실패 둘 다 동일하게) 연출을 준다.
+    if (ensureLaneControlsForChapter(false) && sharedLaneControls) sharedLaneControls.spinBoardIn();
     playScreenBgm('home'); // 홈 진입 — 홈 BGM(3곡 순환)을 처음부터
     const go = document.getElementById('gameover-overlay');
     go.hidden = true; go.classList.remove('is-win', 'is-lose', 'is-sliding');
@@ -773,7 +822,7 @@
     const maxCh = MG.Progress.maxChapterFor(currentLight());
     // 항상 표시 — 챕터가 하나만 열렸어도 "챕터 1" 배지는 보이고, 양쪽 화살표만 비활성.
     let ch = currentChapter();
-    if (ch > maxCh) { ch = maxCh; localStorage.setItem('mole.chapter', String(ch)); }
+    if (ch > maxCh) { ch = maxCh; setChapter(ch); }
     nav.hidden = false;
     nav.setAttribute('data-ch', String(ch)); // 챕터별 불빛 색 (style.css #chapter-nav[data-ch="N"])
     nav.querySelector('[data-ch-label]').textContent = I18N.t('mole.chapter.n', { n: ch });
@@ -789,7 +838,8 @@
       const maxCh = MG.Progress.maxChapterFor(currentLight());
       const before = currentChapter();
       const ch = Math.max(1, Math.min(maxCh, before + d));
-      localStorage.setItem('mole.chapter', String(ch));
+      setChapter(ch);
+      // 홈 화면 버튼바는 기존 16버튼 다이얼러로 불변(사용자 지정) — 챕터 넘겨봐도 안 바뀜.
       refreshChapterNav();
       // 챕터가 실제로 바뀌었으면 글자에서 아우라가 확 터졌다 가라앉는 연출
       if (ch !== before) {
@@ -992,6 +1042,7 @@
     sessionGen++;
     gameStarting = false; // 라운드 진입 성공 — 이후 재진입은 state 존재로 차단됨
     setNavLock(true); // 카운트다운 동안 ⊞ 잠금 (playRoundIntro onDone 에서 해제)
+    ensureLaneControlsForChapter(isSmallBoardChapter()); // 실제 라운드 진행 중에만 9홀/숫자패드로 전환
     const myGen = sessionGen;
     // fresh(시작/다시하기)면 콤보·점수 리셋. 목숨은 공유 생명 풀에서 이어받는다(리셋 아님).
     // 자동 다음 라운드면 그대로 이어간다.
@@ -1015,8 +1066,10 @@
     // 캐논·특수망치 = 우하단 코너가 무기존(캐논 본체 or 스킬 슬롯 2개) → 구멍 15 빼고 15구멍. 뿅망치 = 16구멍.
     // (spinChannelsIn 이 gs-laneskill 을 보고 통화 버튼도 같이 돌리므로 그 호출 전에 세팅해야 한다.)
     const wRaw = localStorage.getItem('mole.weapon');
-    const weapon = wRaw === 'cannon' ? 'cannon' : (wRaw === 'goldhammer' ? 'goldhammer'
-      : (wRaw === 'alipunch' ? 'alipunch' : 'hammer'));
+    // 챕터1~3(9홀 튜토리얼)은 뿅망치만 사용(사용자 지정) — 보관창 장착값과 무관하게 강제.
+    const weapon = isSmallBoardChapter() ? 'hammer'
+      : (wRaw === 'cannon' ? 'cannon' : (wRaw === 'goldhammer' ? 'goldhammer'
+        : (wRaw === 'alipunch' ? 'alipunch' : 'hammer')));
     const laneSkillZone = weapon !== 'hammer'; // 캐논·골드해머·알리펀치 = 통화버튼 스킬존(§8 포함)
     document.getElementById('game-screen').classList.toggle('gs-laneskill', laneSkillZone);
     document.getElementById('game-screen').classList.toggle('gs-alipunch', weapon === 'alipunch');
@@ -1033,7 +1086,7 @@
     MG.HitFx.warmup(); // 오디오 컨텍스트 + 타격음 파일 프리로드 (카운트다운 동안)
 
     const rng = { next: MG.RNG.mulberry32(MG.RNG.hashSeed('mole-r' + roundNum + '-' + Date.now())) };
-    let { regions, spawnPoints } = MG.GridPartition.partition({ gridSize: GRID_SIZE });
+    let { regions, spawnPoints } = MG.GridPartition.partition({ gridSize: roundGridSize() });
     // 캐논·골드해머 = 우하단 구멍 1개(15) 제외 → 15구멍. 알리 펀치 = 좌·우하단 2개(12·15) 제외 →
     // 14구멍 + 그 자리에 글러브(§1). 뿅망치는 그대로 16구멍.
     const excludedHoles = weapon === 'alipunch' ? ALIPUNCH_HOLES : (laneSkillZone ? [CANNON_HOLE] : []);
@@ -1042,19 +1095,28 @@
       spawnPoints = spawnPoints.filter((sp) => excludedHoles.indexOf(sp.regionId) === -1);
     }
 
-    // 챕터 = 모드: 1 두더지만 / 2 +동물 / 3 +폭탄 / 4 +실드아이템 / 5 두더지 적게 + 방해물 최대.
+    // 전체 챕터 기획서(2026-09-14) §7 난이도 순서: 빼꼼(다타) 챕터2 → 동물 챕터3 → 폭탄 챕터5 →
+    // 모자(4타) 챕터7 → 목표물 전환 챕터8(타겟=동물/방해물=두더지) → 목표물 혼합 챕터10(+방해비율10%↑).
+    // 강력폭탄(챕터6)·반격(챕터9)은 보류(사용자 지정 — UI 완료 후 별도 작업). 실드 아이템(기존 기능,
+    // 문서에 없지만 §13 "기존 기능 임의 삭제 금지"에 따라 유지)은 폭탄이 시작되는 챕터5부터 계속.
     const ch = currentChapter();
+    const reverseTarget = ch === 8;              // 챕터8: 동물이 타겟, 두더지가 방해물
+    const dualTarget = ch === 10;                // 챕터10: 두더지+동물 둘 다 타겟
     const config = {
-      maxConcurrentMoles: ch >= 5 ? Math.max(1, levelData.maxConcurrentMoles - 2) : levelData.maxConcurrentMoles,
-      maxConcurrentAnimals: ch >= 2 ? levelData.maxConcurrentAnimals + (ch >= 5 ? 1 : 0) : 0,
-      maxConcurrentBombs: ch >= 3 ? levelData.maxConcurrentBombs + (ch >= 5 ? 1 : 0) : 0,
-      maxConcurrentItems: ch >= 4 ? 1 : 0,   // 실드 아이템 (챕터 4~5)
-      shieldItems: ch >= 4,
+      maxConcurrentMoles: levelData.maxConcurrentMoles,
+      maxConcurrentAnimals: ch >= 3 ? levelData.maxConcurrentAnimals : 0,
+      maxConcurrentBombs: ch >= 5 ? levelData.maxConcurrentBombs : 0,
+      maxConcurrentItems: ch >= 5 ? 1 : 0,   // 실드 아이템
+      shieldItems: ch >= 5,
       popDuration: levelData.moleDuration,
       molePoseCount: MG.MoleSprites.POSE_COUNT,
       obstacleCount: MG.MoleSprites.OBSTACLE_COUNT,
-      obstacles: ch >= 2,
-      fourHit: ch >= 5,   // 4타 두더지 (전신→빠끔1→빠끔2→모자) — 챕터 5 전용
+      obstacles: ch >= 3,
+      multiHit: ch >= 2,  // 챕터1: 다타(빼꼼) 없음 — 전부 1방(튜토리얼)
+      fourHit: ch >= 7,   // 4타 두더지 (전신→빠끔1→빠끔2→모자)
+      reverseTarget: reverseTarget,
+      dualTarget: dualTarget,
+      obstacleRatioBoost: ch === 10 ? 1.1 : 1,   // 챕터10: 방해물(동물·폭탄) 스폰 빈도 10% 상향
       cannonBurst: weapon === 'cannon',   // 대포 연사 스킬 (2·3타 두더지 첫 타 10%)
       moleUpBonus: weapon === 'alipunch' ? 0.1 : 0   // 알리 펀치 [방어]: 내려가기 전 0.1초 더 여유(§7)
     };
@@ -1175,7 +1237,9 @@
 
     const FLY_IN_MS = 400;         // = ri-title-fly-in 0.4s
     const HOLD_AFTER_TYPE_MS = 480;
-    const full = I18N.t('mole.round', { n: roundNum });
+    // 챕터1~3(9홀·5라운드)의 마지막 라운드는 "라운드 5" 대신 "파이널라운드"(사용자 지정).
+    const isSmallFinalRound = isSmallBoardChapter() && roundNum === finalRound();
+    const full = isSmallFinalRound ? I18N.t('mole.round.final') : I18N.t('mole.round', { n: roundNum });
     const typeMs = full.replace(/ /g, '').length * 45; // typeText 는 45ms/글자
 
     // 알리 펀치 준비 시연 — 라운드2~10 전용(라운드1은 3·2·1·GO! 카운트다운이 따로 있어 제외,
@@ -1374,7 +1438,7 @@
       setTimeout(() => {
         if (myGen !== sessionGen) return;
         typeText(title, full, () => {});
-        MG.HitFx.roundAnnounce(roundNum);
+        if (isSmallFinalRound) MG.HitFx.roundAnnounceFinal(); else MG.HitFx.roundAnnounce(roundNum);
       }, FLY_IN_MS + 40);
       // 3) 타이핑 끝난 뒤 — 라운드1: 3·2·1·GO! 후 퇴장 / 라운드2~: 바로 퇴장
       setTimeout(() => {
@@ -1403,25 +1467,27 @@
     }
 
     const tickResult = state.scheduler.tick(dt);
-    // 두더지를 처치 못 하고 시간초과로 놓치면 헛방·동물·폭탄과 동일하게 콤보 초기화.
-    if (tickResult.expired.some((e) => e.type === 'mole' && e.timedOut)) run.combo.onObstacleHit();
-    // "의문사" 방지(사용자 지정) — 무적 중에 올라온 동물/폭탄은, 그 사이 무적이 끝나도
+    // 타겟(§8·§10 에 따라 두더지 또는 동물일 수 있음)을 처치 못 하고 시간초과로 놓치면
+    // 헛방·방해물과 동일하게 콤보 초기화.
+    if (tickResult.expired.some((e) => effectiveHitType(state.config, e.type) === 'mole' && e.timedOut)) run.combo.onObstacleHit();
+    // "의문사" 방지(사용자 지정) — 무적 중에 올라온 방해물은, 그 사이 무적이 끝나도
     // 계속 안전 취급되도록 스폰 순간에 낙인찍는다(spawn-scheduler.js 가 그대로 전달).
     if (alipunchInvincible()) {
       tickResult.spawned.forEach((p) => {
-        if (p.type === 'animal' || p.type === 'bomb') p.safeAlways = true;
+        if ((effectiveHitType(state.config, p.type) === 'animal') || p.type === 'bomb') p.safeAlways = true;
       });
     }
     state.laneHammer.update(rawDt); // 망치는 히트스톱과 무관하게 부드럽게
     syncPops();
 
-    // 구멍별 버튼 hot: 그 구멍에 두더지(방해물 아님)가 떠 있으면 빛낸다 (스펙 §2.3).
-    // 알리 펀치 무적 중엔 동물도 안전한 타격 대상이 되므로 두더지와 동일하게 hot 표시.
+    // 구멍별 버튼 hot: 그 구멍에 타겟(방해물 아님)이 떠 있으면 빛낸다 (스펙 §2.3).
+    // 알리 펀치 무적 중엔 방해물도 안전한 타격 대상이 되므로 타겟과 동일하게 hot 표시.
     const invincibleNow = alipunchInvincible();
     const moleRegions = new Set();
     state.scheduler.getActivePops().forEach((p) => {
       if (p.dying) return;
-      if (p.type === 'mole' || ((invincibleNow || p.safeAlways) && p.type === 'animal')) moleRegions.add(p.regionId);
+      const et = effectiveHitType(state.config, p.type);
+      if (et === 'mole' || ((invincibleNow || p.safeAlways) && et === 'animal')) moleRegions.add(p.regionId);
     });
     for (let id = 0; id < GRID_SIZE * GRID_SIZE; id++) {
       sharedLaneControls.setCellHot(id, moleRegions.has(id));
@@ -1640,22 +1706,35 @@
     return state.weapon === 'alipunch' && performance.now() < state.alipunchInvincibleUntil;
   }
 
+  // 챕터8(reverseTarget): 동물이 타겟·두더지가 방해물 → 서로 바꿔서 취급.
+  // 챕터10(dualTarget): 두더지·동물 둘 다 타겟 → 동물도 "mole"로 취급.
+  // 그 외(item·bomb, 일반 챕터)는 그대로. 스프라이트(무엇으로 보이는지)는 건드리지 않고
+  // 이 타격의 점수/연출/페널티 분기만 바꾼다.
+  function effectiveHitType(cfg, type) {
+    if (type !== 'mole' && type !== 'animal') return type;
+    if (cfg && cfg.dualTarget) return 'mole';
+    if (cfg && cfg.reverseTarget) return type === 'mole' ? 'animal' : 'mole';
+    return type;
+  }
+
   function onHammerImpact(hitXFrac, hitYFrac, results, opts) {
     if (!state || state.ended) return;
     const board = document.getElementById('mole-board');
+    const cfg = state.config || {};
     let moleHits = 0;
     run.combo.setMult(currentScoreMult()); // 라이트·피버 배율 (이번 타격에 적용)
 
-    // 알리 펀치 아나운서 보이스 — 정타(두더지 실제 명중, 중간타 포함)일 때만. 빈 구멍·동물·폭탄은 무음.
+    // 알리 펀치 아나운서 보이스 — 정타(실제 타겟 명중, 중간타 포함)일 때만. 빈 구멍·방해물은 무음.
     if (state.weapon === 'alipunch' && opts && opts.regionId != null &&
-        results.some((r) => r.type === 'mole' && !r.ignored)) {
+        results.some((r) => effectiveHitType(cfg, r.type) === 'mole' && !r.ignored)) {
       const style = MG.LaneBoxing.ZONES[opts.regionId];
       if (style) MG.HitFx.punchVoice(style);
     }
 
     results.forEach((r) => {
       if (r.ignored) return; // 연타 쿨다운 중 타격 — 점수·연출·콤보 변화 없음 (헛방도 아님)
-      if (r.type === 'mole') {
+      const effType = effectiveHitType(cfg, r.type);
+      if (effType === 'mole') {
         if (r.juggle) {
           const before = run.combo.score;
           run.combo.onJuggle(JUGGLE_BONUS); // 콤보 +1 + 작은 고정 보너스 (점수표 안 씀)
@@ -1688,12 +1767,12 @@
         } else {
           MG.HitFx.moleTap(board, r.xFrac, r.yFrac);
         }
-      } else if (r.type === 'item') {
-        run.shield = true;              // 실드 아이템 획득 (챕터 4~5) — 폭탄 1회 방어
+      } else if (effType === 'item') {
+        run.shield = true;              // 실드 아이템 획득 — 폭탄 1회 방어
         MG.HitFx.moleHit(board, r.xFrac, r.yFrac);
         flashHud('hud-hearts');
         updateShieldHud();
-      } else if (r.type === 'animal') {
+      } else if (effType === 'animal') {
         if (alipunchInvincible() || r.safe) {      // 무적 중(또는 무적 중 스폰돼 낙인찍힌 개체) — 페널티 무효, 안전 타격 취급(점수·콤보도 반영)
           const before = run.combo.score;
           run.combo.onJuggle(JUGGLE_BONUS);
@@ -1710,7 +1789,7 @@
           MG.HitFx.obstacleHit(board, r.xFrac, r.yFrac, 'animal');
           flashHud('hud-hearts');
         }
-      } else if (r.type === 'bomb') {
+      } else if (effType === 'bomb') {
         if (alipunchInvincible() || r.safe) {      // 무적 중(또는 무적 중 스폰돼 낙인찍힌 개체) — 페널티 무효, 안전 타격 취급(점수·콤보도 반영)
           const before = run.combo.score;
           run.combo.onJuggle(JUGGLE_BONUS);
@@ -1814,7 +1893,7 @@
     resetHot();
     clearInvincibleFx(); // 라운드 종료(성공/실패 포함) 시 무적 잔류 연출 정리(사용자 지정)
 
-    if (finishedRound >= FINAL_ROUND) {
+    if (finishedRound >= finalRound()) {
       closeCurtain(() => { finishFromRound('done'); }); // 10라운드 완주 → 커튼 닫고 결과
       return;
     }
@@ -1916,7 +1995,7 @@
     });
   }
   function goToNextChapter(ch) {
-    localStorage.setItem('mole.chapter', String(ch));
+    setChapter(ch);
     const sh = document.getElementById('result-swipe-hint');
     if (sh) { sh.hidden = true; sh.classList.remove('is-on'); }
 
@@ -1998,7 +2077,7 @@
     // 챕터 해금 = 그 즉시 다음 챕터로 전환. (예전엔 승리화면에서 왼쪽 스와이프를 해야만
     // mole.chapter 가 넘어가서, 스와이프 안 하면 다음에 시작 눌러도 이전 챕터 그대로 돌던 문제.)
     // 스와이프는 축하 연출(next-chapter-panel)만 보여줄 뿐 — 값 자체는 여기서 바로 확정.
-    if (ov.dataset.nextChapter) localStorage.setItem('mole.chapter', ov.dataset.nextChapter);
+    if (ov.dataset.nextChapter) setChapter(parseInt(ov.dataset.nextChapter, 10));
 
     // 커튼 오버레이는 결과 카드로 교체 (둘 다 z-index 10, ri 가 DOM 상 뒤라 안 치우면 위를 덮음).
     document.getElementById('round-intro-overlay').hidden = true;
@@ -2074,28 +2153,11 @@
     // 안 하면 첫 라운드에서 두더지가 올라오며 프레임 바꿀 때 디코드 hitch 로 끊긴다.
     MG.MoleSprites.preloadAll();
 
-    // 다이얼러 버튼은 시작 화면에도 계속 보인다 (폰 컨셉) — 세션당 한 번만 생성.
-    // 시작 화면/카운트다운 동안엔 handleCell 이 앞에서 막으므로 눌러도 아무 일 없다.
-    sharedLaneControls = MG.LaneControls.create({
-      buttonBar: document.getElementById('lane-button-bar'),
-      gridSize: GRID_SIZE,
-      onCell: handleCell,
-      isHome: () => document.getElementById('game-screen').classList.contains('is-start'),
-      // 홈 화면(전화 다이얼러로 위장 중)일 때만 탭음(버튼소리1 고정) — 플레이 중엔 연타가 잦아
-      // 타격음과 겹치므로 안 씀.
-      onTap: () => { if (document.getElementById('game-screen').classList.contains('is-start')) MG.HitFx.uiTap(0); },
-      // 채널 링크 — 홈 화면에서 채널 버튼을 "두 번 톡톡"(더블탭)하면 광고 후 유튜브 채널로 이동.
-      // lane-controls 가 URL 을 직접 넘겨준다 (LINKS 하드코딩 + 유저가 이 기기에 등록한 것 둘 다 포함).
-      // window.open(_blank) 은 광고(비동기) 뒤엔 팝업 차단됨 → 같은 탭 이동(location.href).
-      onChannelEnter: (url) => {
-        if (!url || !document.getElementById('game-screen').classList.contains('is-start')) return;
-        MG.Ads.interstitial(I18N.t('mole.channel.hint')).then((ok) => {
-          if (ok) { if (bgmEls) bgmEls.forEach((el) => el.pause()); window.location.href = url; } // 채널 이동 전 BGM 정지
-        });
-      }
-    });
-    wireStartButton(); // 다이얼러 초록 버튼: 홈에서 탭=시작 / 꾹=종료 대기
-    wireAlipunchStarButton(); // 알리 펀치 전용 별표 버튼(스킬 슬롯 2개 더)
+    // 다이얼러 버튼은 시작 화면에도 계속 보인다 (폰 컨셉) — 홈 화면은 항상 기존 16버튼
+    // 다이얼러로 불변(사용자 지정). 챕터1~3 라운드 진행 중에만 startRound() 가
+    // ensureLaneControlsForChapter(true) 로 9홀 숫자패드로 바꿨다가, 홈으로 돌아오면
+    // showStartScreenNow() 가 다시 false 로 되돌린다.
+    ensureLaneControlsForChapter(false, true); // false = 홈 기본값(16버튼), true = 최초 생성이라 무조건 실행
     wireChapterNav();  // ◀ 챕터 N ▶ (열린 챕터 2개 이상일 때만 노출)
 
     migrateBest();
@@ -2143,12 +2205,12 @@
       loadActiveFace().then(() => {
         currentDiff = DIFFS.indexOf(diff) > -1 ? diff : 'easy';
         localStorage.setItem('mole.difficulty', currentDiff);
-        if (chapter >= 1 && chapter <= MG.Progress.MAX_CHAPTER) localStorage.setItem('mole.chapter', String(chapter));
+        if (chapter >= 1 && chapter <= MG.Progress.MAX_CHAPTER) setChapter(chapter);
         applyDiffClass(currentDiff);
         startRound(1, { fresh: true });
       });
     };
-    window.__debugSetChapter = (n) => { localStorage.setItem('mole.chapter', String(n)); };
+    window.__debugSetChapter = (n) => { setChapter(n); };
     window.__debugUnlockAll = () => { localStorage.setItem('mole.unlockAll', '1'); };
     window.__debugProgress = () => ({
       chapter: currentChapter(), light: currentLight(),
@@ -2299,7 +2361,9 @@
       root: document.getElementById('inventory-screen'),
       onClose: () => screenNav.back(),
       // 게임 진행 중(라운드1~클리어)엔 무기 변경 잠금. 홈·게임오버 후엔 허용.
-      gameInProgress: () => !!(state && !state.ended)
+      gameInProgress: () => !!(state && !state.ended),
+      // 챕터1~3은 뿅망치만 사용(사용자 지정) — 선택된 챕터 기준으로 다른 무기 장착 자체를 막는다.
+      hammerOnly: () => isSmallBoardChapter()
     });
     ['help', 'privacy', 'quest', 'friends'].forEach((k) => {
       const b = document.querySelector('[data-back="' + k + '"]');

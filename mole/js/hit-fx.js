@@ -63,13 +63,11 @@
     )).then((bufs) => { roundAnnounceBuffers = bufs; })
       .catch(() => { roundAnnounceLoading = false; });
   }
-  // game.js playRoundIntro 가 "라운드 N" 타이핑 시작 순간 호출.
-  function roundAnnounce(n) {
-    if (sfxOff()) return;
+  function playRoundAnnounceBuffer(buf) {
+    if (sfxOff() || !buf) return;
     try {
       const ctx = getCtx();
-      const buf = ctx && roundAnnounceBuffers && roundAnnounceBuffers[n - 1];
-      if (!buf) return;
+      if (!ctx) return;
       whenReady(ctx, () => {
         const src = ctx.createBufferSource();
         src.buffer = buf;
@@ -79,6 +77,14 @@
         src.start();
       });
     } catch (e) { /* 오디오 불가 환경 무시 */ }
+  }
+  // game.js playRoundIntro 가 "라운드 N" 타이핑 시작 순간 호출.
+  function roundAnnounce(n) {
+    playRoundAnnounceBuffer(roundAnnounceBuffers && roundAnnounceBuffers[n - 1]);
+  }
+  // 챕터1~3 마지막 라운드("파이널라운드") 전용 — 별도 파일 없이 기존 "라운드 10" 음성 재사용(사용자 지정).
+  function roundAnnounceFinal() {
+    roundAnnounce(10);
   }
 
   // 대포 무기 스킨 전용 타격음 = 폭발음 (사용자 제공, Pixabay 로열티 프리). 대포 장착 시
@@ -732,6 +738,6 @@
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
-  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, punchStar, powerUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, fight, moleVoice };
+  const api = { moleHit, moleBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, punchStar, powerUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, roundAnnounceFinal, fight, moleVoice };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);

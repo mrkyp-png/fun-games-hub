@@ -79,7 +79,7 @@
     { nav: '시작', svg: SVG.phone, call: true, i18n: 'mole.start.btn' }
   ];
 
-  function fillFace(btn, f, id) {
+  function fillFace(btn, f, id, simple) {
     btn.classList.remove('lane-button--flippable', 'is-flipped');
     var faceHtml;
     if (f.nav) {
@@ -98,7 +98,8 @@
     }
     // 채널이 등록돼 있으면 평소 얼굴 ↔ 채널 아이콘을 동전처럼 3D 로 뒤집는 .lane-flip 카드로 감싼다.
     // 아이콘 URL 이 없거나 로드 실패하면 유튜브 로고로 대체(채널 버튼임은 유지).
-    var ch = !f.call && channelFor(id);
+    // simple(챕터1~3 숫자패드)는 채널 개념 자체가 없음 — 평소 얼굴 그대로.
+    var ch = !simple && !f.call && channelFor(id);
     if (ch) {
       btn.classList.add('lane-button--flippable');
       btn.innerHTML =
@@ -249,70 +250,85 @@
     showChannelMenu(id, btn);       // 일반 → [시크릿|삭제]
   }
 
-  function create({ buttonBar, gridSize, onCell, onTap, onChannelEnter, isHome }) {
+  // 챕터1~3 전용 숫자패드 얼굴(9칸: 1~9) — 채널/다이얼 위장·통화버튼 없음(사용자 지정:
+  // "통화버튼 불필요, 버튼보드 정사각형으로"). 홈 화면은 항상 기존 16버튼 다이얼러라
+  // 시작은 거기서 이미 눌린 뒤이고, 챕터1~3은 뿅망치만이라 통화버튼(스킬슬롯) 자체가 무의미.
+  // 기존 다이얼 1~9 버튼의 자음/영문 서브텍스트 그대로 재사용(사용자 지정 — FACES 의
+  // 숫자 얼굴 인덱스 0,1,2,4,5,6,8,9,10 이 순서대로 1~9).
+  const DIGIT_FACE_IDX = [0, 1, 2, 4, 5, 6, 8, 9, 10];
+  function simpleFaces(gridSize) {
+    const faces = [];
+    for (let i = 0; i < gridSize * gridSize; i++) faces.push(Object.assign({}, FACES[DIGIT_FACE_IDX[i]]));
+    return faces;
+  }
+
+  function create({ buttonBar, gridSize, onCell, onTap, onChannelEnter, isHome, simple }) {
     const buttons = [];
     const keyMap = {};
+    const faces = simple ? simpleFaces(gridSize) : FACES;
+    const cellCount = gridSize * gridSize; // simple: 숫자칸 9개뿐(정사각형), 통화버튼 없음
+    buttonBar.classList.toggle('lane-bar--simple', !!simple); // style.css: gridSize x gridSize 정사각형
 
-    for (let row = 0; row < gridSize; row++) {
-      for (let col = 0; col < gridSize; col++) {
-        const id = row * gridSize + col;
-        const b = document.createElement('button');
-        b.className = 'lane-button';
-        b.type = 'button';
-        b.dataset.region = String(id);
-        fillFace(b, FACES[id], id);
-        if (FACES[id].call) b.insertAdjacentHTML('beforeend', '<span class="lane-call-idle" aria-hidden="true"></span>');
-        b.addEventListener('contextmenu', (e) => e.preventDefault()); // 길게 눌러도 브라우저 메뉴 안 뜨게
-        let lastTapAt = 0; // 이 버튼의 직전 짧은탭 시각 — 더블탭 판정용 (실수 진입 방지)
-        b.addEventListener('pointerdown', (e) => {
-          e.preventDefault();
-          if (onTap) onTap(); // 다이얼패드(홈 화면) 전용 탭음 — game.js 가 상황(is-start) 판단
-          const bad = onCell(id); // 헛방/폭탄이면 true — 링 색을 빨갛게
-          b.classList.remove('lane-button--flash', 'lane-button--miss');
-          void b.offsetWidth;
-          b.classList.toggle('lane-button--miss', !!bad);
-          b.classList.add('lane-button--flash');
+    for (let id = 0; id < cellCount; id++) {
+      const row = Math.floor(id / gridSize), col = id % gridSize;
+      const b = document.createElement('button');
+      b.className = 'lane-button' + (simple ? ' lane-button--simple' : '');
+      b.type = 'button';
+      b.dataset.region = String(id);
+      fillFace(b, faces[id], id, simple);
+      if (faces[id].call) b.insertAdjacentHTML('beforeend', '<span class="lane-call-idle" aria-hidden="true"></span>');
+      b.addEventListener('contextmenu', (e) => e.preventDefault()); // 길게 눌러도 브라우저 메뉴 안 뜨게
+      let lastTapAt = 0; // 이 버튼의 직전 짧은탭 시각 — 더블탭 판정용 (실수 진입 방지)
+      b.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        if (onTap) onTap(); // 다이얼패드(홈 화면) 전용 탭음 — game.js 가 상황(is-start) 판단
+        const bad = onCell(id); // 헛방/폭탄이면 true — 링 색을 빨갛게
+        b.classList.remove('lane-button--flash', 'lane-button--miss');
+        void b.offsetWidth;
+        b.classList.toggle('lane-button--miss', !!bad);
+        b.classList.add('lane-button--flash');
 
-          // 채널 조작 (시작버튼 제외):
-          //   짧게 두 번(더블탭) = 채널 있음→유튜브 진입 / 빈 버튼(삭제·미등록)→채널 등록창. 한 번만은 무시(실수 방지).
-          //   0.6초 길게        = onChannelHold — 일반: [시크릿|삭제] 메뉴 / 시크릿: 10회전 복구 / 삭제: 무반응
-          // 포인터 캡처로 손가락이 버튼 밖으로 나가도 pointerup 을 여기서 받는다
-          // (예전 pointerleave 로 판정하던 게 삭제 제스처가 안 먹던 원인).
-          if (!FACES[id].call) {
-            let held = false;
-            try { b.setPointerCapture(e.pointerId); } catch (_) { /* 무시 */ }
-            const holdTimer = setTimeout(() => { held = true; lastTapAt = 0; onChannelHold(id, b, isHome); }, HOLD_MS);
-            const cleanup = () => {
-              clearTimeout(holdTimer);
-              b.removeEventListener('pointerup', up);
-              b.removeEventListener('pointercancel', cleanup);
-            };
-            const up = () => {
-              const wasHeld = held;
-              cleanup();
-              if (wasHeld) return; // 길게 = onChannelHold 가 이미 처리
-              if (!isHome || isHome()) {
-                // 홈: 시크릿 버튼(숨긴 채널)은 더블탭도 무시 — 나머지는 판정.
-                if (isSecret(id)) { lastTapAt = 0; return; }
-                const now = Date.now();
-                if (now - lastTapAt < DOUBLE_TAP_MS) { // 두 번째 탭
-                  lastTapAt = 0;
-                  var ch = channelFor(id);
-                  if (ch) { if (onChannelEnter) onChannelEnter(ch.url); } // 채널 있음 → 진입 (URL 직접 전달 — 유저 등록분 포함)
-                  else showRegisterModal(id, b);                          // 빈 버튼 → 등록창
-                } else {
-                  lastTapAt = now; // 첫 탭 — 대기
-                }
-              } else {
+        // 채널 조작 (시작버튼·simple 모드 제외):
+        //   짧게 두 번(더블탭) = 채널 있음→유튜브 진입 / 빈 버튼(삭제·미등록)→채널 등록창. 한 번만은 무시(실수 방지).
+        //   0.6초 길게        = onChannelHold — 일반: [시크릿|삭제] 메뉴 / 시크릿: 10회전 복구 / 삭제: 무반응
+        // 포인터 캡처로 손가락이 버튼 밖으로 나가도 pointerup 을 여기서 받는다
+        // (예전 pointerleave 로 판정하던 게 삭제 제스처가 안 먹던 원인).
+        if (!simple && !faces[id].call) {
+          let held = false;
+          try { b.setPointerCapture(e.pointerId); } catch (_) { /* 무시 */ }
+          const holdTimer = setTimeout(() => { held = true; lastTapAt = 0; onChannelHold(id, b, isHome); }, HOLD_MS);
+          const cleanup = () => {
+            clearTimeout(holdTimer);
+            b.removeEventListener('pointerup', up);
+            b.removeEventListener('pointercancel', cleanup);
+          };
+          const up = () => {
+            const wasHeld = held;
+            cleanup();
+            if (wasHeld) return; // 길게 = onChannelHold 가 이미 처리
+            if (!isHome || isHome()) {
+              // 홈: 시크릿 버튼(숨긴 채널)은 더블탭도 무시 — 나머지는 판정.
+              if (isSecret(id)) { lastTapAt = 0; return; }
+              const now = Date.now();
+              if (now - lastTapAt < DOUBLE_TAP_MS) { // 두 번째 탭
                 lastTapAt = 0;
+                var ch = channelFor(id);
+                if (ch) { if (onChannelEnter) onChannelEnter(ch.url); } // 채널 있음 → 진입 (URL 직접 전달 — 유저 등록분 포함)
+                else showRegisterModal(id, b);                          // 빈 버튼 → 등록창
+              } else {
+                lastTapAt = now; // 첫 탭 — 대기
               }
-            };
-            b.addEventListener('pointerup', up);
-            b.addEventListener('pointercancel', cleanup);
-          }
-        });
-        buttonBar.appendChild(b);
-        buttons[id] = b;
+            } else {
+              lastTapAt = 0;
+            }
+          };
+          b.addEventListener('pointerup', up);
+          b.addEventListener('pointercancel', cleanup);
+        }
+      });
+      buttonBar.appendChild(b);
+      buttons[id] = b;
+      if (!simple) {
         const krow = KEY_GRID[row];
         if (krow && krow[col]) keyMap[krow[col]] = id;
       }
@@ -372,11 +388,26 @@
       buttons.length = 0;
     }
 
+    // 버튼보드(buttonBar) 전체를 하나로 10바퀴 회전시킨다(사용자 지정 — 키패드 안 숫자
+    // 각각이 아니라 보드 자체). 챕터1~3(simple) 진입뿐 아니라, 홈으로 복귀하며 보드가
+    // 9버튼↔16버튼으로 다시 지어질 때(다음 챕터 성공화면→홈 등)도 이걸로 재사용한다.
+    function spinBoardIn() {
+      if (!buttonBar) return;
+      buttonBar.style.transition = 'none';
+      buttonBar.style.transform = 'perspective(1200px) rotateY(0deg)';
+      void buttonBar.offsetWidth;
+      buttonBar.style.transition = 'transform 0.9s cubic-bezier(.2, .7, .3, 1)';
+      buttonBar.style.transform = 'perspective(1200px) rotateY(3600deg)';
+      setTimeout(() => { buttonBar.style.transition = ''; buttonBar.style.transform = ''; }, 950);
+    }
+
     // 홈→게임 진입 연출: 채널(유튜브 아이콘)로 설정된 버튼을 10바퀴 휙 돌려 숫자 버튼 얼굴로 바꾼다.
     // 게임 화면엔 키 버튼만 있어야 해서 채널 얼굴은 늘 숫자 쪽으로 고정되는데(style.css 고정 규칙),
     // 원래 전환이 즉시 스냅이라 "아이콘이 그냥 사라짐". .lane-flip--spinning 이 붙은 동안만 그
     // 고정 규칙을 비켜주고(style.css), 여기서 인라인으로 회전을 굴린다. 시크릿 복구 연출과 같은 느낌.
     function spinChannelsIn() {
+      // 챕터1~3(simple, 9홀 숫자패드): 채널 뒤집기 카드 자체가 없어 spinBoardIn() 재사용.
+      if (simple) { spinBoardIn(); return; }
       buttons.forEach((b) => {
         if (!b || !b.classList.contains('lane-button--flippable')) return;
         const flip = b.querySelector('.lane-flip');
@@ -433,15 +464,15 @@
     // 언어 바뀌면(설정에서 즉시, ko↔en) 숫자키 자음 라벨도 다시 그린다 — 안 그러면 fillFace 는
     // 버튼 생성 시점 한 번뿐이라 en 으로 바꿔도 이미 그려진 ㄱㅋ/ㄴ 같은 한글 라벨이 안 지워짐.
     var I = root.FGH && root.FGH.I18N;
-    if (I && I.onChange) {
+    if (I && I.onChange && !simple) { // simple(숫자만) 모드는 언어별 서브텍스트가 없어 다시 그릴 게 없음
       I.onChange(function () {
-        FACES.forEach(function (f, id) {
-          if (f.num && buttons[id]) fillFace(buttons[id], f, id);
+        faces.forEach(function (f, id) {
+          if (f.num && buttons[id]) fillFace(buttons[id], f, id, simple);
         });
       });
     }
 
-    return { setCellHot, flashBurst, flashQuakeArea, clear, spinChannelsIn };
+    return { setCellHot, flashBurst, flashQuakeArea, clear, spinChannelsIn, spinBoardIn };
   }
 
   const api = { create };

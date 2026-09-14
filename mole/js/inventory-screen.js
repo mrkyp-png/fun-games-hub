@@ -45,8 +45,12 @@
       // 게임 진행 중(라운드1~클리어)엔 무기 변경 잠금 — 라운드 도중 무기가 바뀌면 구멍 수·
       // 스케줄러가 꼬여서(원래 버그: 이어가기 시 옛 무기로 나옴), 아예 못 바꾸게 한다.
       var locked = !!(opts.gameInProgress && opts.gameInProgress());
-      body.innerHTML = (locked ? '<p class="inv-locked"></p>' : '') + '<div class="inv-grid"></div>';
-      if (locked) body.querySelector('.inv-locked').textContent = T('mole.inv.locked');
+      // 챕터1~3은 뿅망치만 사용(사용자 지정) — 게임 중 잠금과 별개로, 뿅망치 이외 카드는
+      // 항상 장착 불가로 표시(현재 선택된 챕터 기준).
+      var hammerOnly = !!(opts.hammerOnly && opts.hammerOnly());
+      var notice = locked ? T('mole.inv.locked') : (hammerOnly ? T('mole.inv.hammerOnly') : '');
+      body.innerHTML = (notice ? '<p class="inv-locked"></p>' : '') + '<div class="inv-grid"></div>';
+      if (notice) body.querySelector('.inv-locked').textContent = notice;
       var grid = body.querySelector('.inv-grid');
       WEAPONS.forEach(function (w) {
         var card = document.createElement('div');
@@ -97,10 +101,11 @@
           td.textContent = v;
           if (v === '-') td.classList.add('inv-stat-dash'); // 값 없음 = 중앙정렬
         });
+        var cardDisabled = locked || (hammerOnly && w.id !== 'hammer');
         var btn = card.querySelector('.inv-equip');
         btn.textContent = w.id === cur ? T('mole.inv.equipped') : T('mole.inv.equip');
-        btn.disabled = w.id === cur || locked;
-        if (!locked) {
+        btn.disabled = w.id === cur || cardDisabled;
+        if (!cardDisabled) {
           btn.addEventListener('click', function () {
             localStorage.setItem('mole.weapon', w.id);
             renderWeapons();
