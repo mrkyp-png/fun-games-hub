@@ -142,14 +142,6 @@ body { background: var(--lm-page); }
 #chapter-nav[data-ch="4"] { --ch-glow: #a855f7; --ch-glow-lt: #d8b4fe; --ch-glow-dk: #7c2fd4; --ch-glow-soft: rgba(168, 85, 247, 0.5); }
 #chapter-nav[data-ch="5"] { --ch-glow: #ef3b3b; --ch-glow-lt: #ff9a9a; --ch-glow-dk: #c81e1e; --ch-glow-soft: rgba(239, 59, 59, 0.5); }
 
-/* 모든 챕터 공통 — 시선 끌기용 2중 펄스(둘 다 3.6s ease-in-out, 홈버튼 애니와 같은 리듬, 사용자
-   지정: 챕터1에만 있던 걸 전 챕터로 확장):
-   (a) 챕터 유닛 전체가 살짝 오므렸다 펴짐(홈버튼 네모 모이는 느낌을 scale 로),
-   (b) 글자가 조금 커졌다 정상으로. → 박스가 조여지는 동안 글자가 부풀어 채웠다 같이 풀림. */
-#game-screen.is-start #chapter-nav { animation: ch-breathe 3.6s ease-in-out infinite; }
-#game-screen.is-start #chapter-nav .ch-txt { animation: ch-txt-pulse 3.6s ease-in-out infinite; }
-@keyframes ch-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.92); } }
-@keyframes ch-txt-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.24); } }
 
 /* (c) 시작(통화) 버튼과 똑같은 대각선 빛 쓸기(idle-crown-sweep, 2.8s) — 모든 챕터. */
 .ch-shine { position: absolute; inset: 0; z-index: 2; border-radius: inherit; overflow: hidden; pointer-events: none; display: none; }
