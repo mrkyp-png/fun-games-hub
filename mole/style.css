@@ -923,6 +923,23 @@ body { background: var(--lm-page); }
     drop-shadow(0 0 5px rgba(21, 194, 214, 0.4))
     drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
 }
+/* 챕터4~6(가을 배경, 갈색 계열) 전용 — 기존 글로우 색이 배경과 비슷해 두더지 구분이 잘 안 됨(사용자 지정).
+   두더지=하늘색, 동물=마젠타로 갈색 배경과 뚜렷하게 대비. */
+#mole-board.mole-board--autumn .mole-pop--mole .mole-pop-img {
+  filter:
+    drop-shadow(1.5px 0 0 #29b6ff) drop-shadow(-1.5px 0 0 #29b6ff)
+    drop-shadow(0 1.5px 0 #29b6ff) drop-shadow(0 -1.5px 0 #29b6ff)
+    drop-shadow(0 0 5px rgba(41, 182, 255, 0.5))
+    drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+}
+#mole-board.mole-board--autumn .mole-pop--animal .mole-pop-img,
+#mole-board.mole-board--autumn .mole-pop--bomb .mole-pop-img {
+  filter:
+    drop-shadow(1.5px 0 0 #ff4fd8) drop-shadow(-1.5px 0 0 #ff4fd8)
+    drop-shadow(0 1.5px 0 #ff4fd8) drop-shadow(0 -1.5px 0 #ff4fd8)
+    drop-shadow(0 0 5px rgba(255, 79, 216, 0.5))
+    drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+}
 
 /* ---- 폭탄 든 두더지(2026-09-14 확정, mole-bomb-holding-mechanic 메모) ----
    mole8.png(보석 든 포즈) 위에 💣 오버레이. .mole-pop-img 와 같은 박스(100%, bottom:-4%)에
@@ -1372,11 +1389,12 @@ body { background: var(--lm-page); }
 
 /* 유료무기(캐논·황금해머·알리펀치) 전용 버튼 구획선(사용자 지정) — 뿅망치는 제외.
    라이트 DIM/OFF 에서는 두더지 위치 하이라이트(--hot)가 안 뜨는데(§diff-mid/legend),
-   그래도 버튼 칸을 눈으로 짚을 수 있게 하는 작은 유료 혜택. 글자색(--lm-ink) 30% 투명도. */
-#game-screen.gs-laneskill:not(.is-start) #lane-button-bar {
-  background-image:
-    repeating-linear-gradient(to right, rgba(23, 23, 26, 0.3) 0, rgba(23, 23, 26, 0.3) 1px, transparent 1px, transparent 25%),
-    repeating-linear-gradient(to bottom, rgba(23, 23, 26, 0.3) 0, rgba(23, 23, 26, 0.3) 1px, transparent 1px, transparent 25%);
+   그래도 버튼 칸을 눈으로 짚을 수 있게 하는 작은 유료 혜택. 글자색(--lm-ink) 30% 투명도.
+   버튼 자신의 박스(= 그리드 셀과 정확히 같은 크기)에 꽉 채운 사각 테두리라 gap·패딩 계산 없이
+   항상 정확히 맞음(이전엔 컨테이너에 %로 어림잡은 배경 그라데이션이라 어긋났었음). */
+.lane-cell-line { position: absolute; inset: 0; pointer-events: none; }
+#game-screen.gs-laneskill:not(.is-start) .lane-cell-line {
+  border: 1px solid rgba(23, 23, 26, 0.3);
 }
 
 /* 챕터1~3 전용 숫자패드(3x3 정사각형) — 다이얼 위장(연락처/키패드/최근기록)·통화버튼 없음

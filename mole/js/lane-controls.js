@@ -120,6 +120,11 @@
     } else {
       btn.innerHTML = faceHtml;
     }
+    // 유료무기(캐논·황금해머·알리펀치) 다이얼패드 구획선(사용자 지정) — 버튼 자신의 실제 박스(그리드 셀과
+    // 정확히 같은 크기)에 꽉 차는 사각 테두리. innerHTML 로 매번 새로 그려지므로 fillFace 안에서 같이 추가
+    // (버튼 생성 시·채널 등록/시크릿/삭제·언어 전환 시 다 여기를 거침 — 한 곳에서만 관리).
+    // 보더 색은 style.css 가 #game-screen.gs-laneskill 스코프에서만 입힌다(뿅망치·홈 화면은 투명).
+    btn.insertAdjacentHTML('beforeend', '<span class="lane-cell-line" aria-hidden="true"></span>');
   }
 
   // 빈(채널 없는) 버튼을 더블탭하면 뜨는 "유튜브 채널 등록" 창.
