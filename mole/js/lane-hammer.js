@@ -76,12 +76,13 @@
     let scaleXVal = 1, scaleYVal = 1; // 라운드 인트로 등장 연출 전용(평소엔 항상 1,1)
     let anchorX = gripX, anchorY = gripY; // translate·transform-origin 공통 기준점(평소엔 그립)
     let idleT = 0; // 대기 애니메이션용 — phase==='home' 인 채로 흐른 시간(타격하면 리셋)
+    let spinDir = 1, lastSpinCycleIdx = -1; // 골드해머 회전 방향 — 매 회전 시작마다 랜덤(사용자 지정)
 
     function strike(targetXFrac, targetYFrac, onImpact, frameKey) {
       // 대기 애니메이션 중이었으면 깨끗한 대기 포즈로 스냅 후 스윙 시작(어중간한 각도/높이에서
       // 시작하지 않게). rise·return 도중 끼어든 연타는 원래대로 현재 위치에서 부드럽게 redirect.
       if (phase === 'home') { deg = hDeg; gx = HOME_X; gy = HOME_Y; scaleXVal = 1; scaleYVal = 1; }
-      idleT = 0;
+      idleT = 0; lastSpinCycleIdx = -1;
       const tx = (typeof targetXFrac === 'number') ? targetXFrac : 0.5;
       const ty = (typeof targetYFrac === 'number') ? targetYFrac : 0.5;
       const aimDy = (frameKey && AIM_DY_BY_FRAME[frameKey] != null) ? AIM_DY_BY_FRAME[frameKey] : eDy;
@@ -129,8 +130,10 @@
         idleT += dt;
         if (idleT > IDLE_DELAY) {
           if (idle === 'spin') {
+            const cycleIdx = Math.floor((idleT - IDLE_DELAY) / SPIN_CYCLE);
             const cyclePos = (idleT - IDLE_DELAY) % SPIN_CYCLE;
-            if (cyclePos < SPIN_DUR) { deg = hDeg + 360 * ease(cyclePos / SPIN_DUR); }
+            if (cycleIdx !== lastSpinCycleIdx) { lastSpinCycleIdx = cycleIdx; spinDir = Math.random() < 0.5 ? 1 : -1; }
+            if (cyclePos < SPIN_DUR) { deg = hDeg + spinDir * 360 * ease(cyclePos / SPIN_DUR); }
             else { deg = hDeg; }
             gx = HOME_X; gy = HOME_Y;
           } else if (idle === 'bounce') {
