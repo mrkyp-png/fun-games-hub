@@ -107,6 +107,16 @@
     if (to.src.indexOf(file) === -1) to.src = file;
     to.currentTime = 0;
     to.volume = 0;
+    // applyBgm 과 같은 조건 — 음소거/화면숨김 등으로 재생을 원하지 않으면 소리 내지 않고
+    // 북키핑만 하고 끝낸다(사용자 리포트: 곡 전환마다 설정 무시하고 잠깐 소리 났었음).
+    const want = bgmWantPlay && !document.hidden && window.FGH.Settings.get('music');
+    if (!want) {
+      from.pause();
+      from.currentTime = 0;
+      from.volume = BGM_VOL;
+      bgmActiveIdx = 1 - bgmActiveIdx;
+      return;
+    }
     const p = to.play();
     if (p && p.catch) p.catch(() => { /* 자동재생 차단 — 다음 제스처 때 applyBgm 이 재시도 */ });
     const start = performance.now();
