@@ -1500,6 +1500,11 @@
       });
     }
     state.laneHammer.update(rawDt); // 망치는 히트스톱과 무관하게 부드럽게
+    // 방금 그 타격(예: 폭탄으로 하트 0)이 laneHammer 의 impact 콜백을 통해 동기적으로
+    // finish()/roundComplete() 를 이미 불렀을 수 있다 — 그러면 이 프레임의 나머지(재렌더·
+    // hot 재계산·다음 rAF 예약)를 마저 돌리면 방금 finish() 가 지운 상태(resetHot·팝 clear)를
+    // 도로 덮어써버린다(사용자 보고 — 폭탄 실패 후 다이얼패드에 원형 하이라이트가 남는 버그).
+    if (state.ended) return;
     syncPops();
 
     // 구멍별 버튼 hot: 그 구멍에 타겟(방해물 아님)이 떠 있으면 빛낸다 (스펙 §2.3).
