@@ -2536,6 +2536,10 @@ body { background: var(--lm-page); }
   white-space: nowrap;
   letter-spacing: -0.02em;
 }
+/* 콤보100 목숨보상 안내 — 배율 줄과 "라이트 DIM/OFF" 라벨 사이에 한 줄 추가(사용자 지정,
+   기존 라벨 자체의 위치·크기는 안 건드림 — flex column 이라 그 위에 줄이 하나 늘 뿐). */
+.mm-pill-combo { font-size: clamp(0.54rem, 2.7vw, 0.64rem); font-weight: 600; opacity: 0.75; white-space: nowrap; }
+
 /* 전구 밝기 = 난이도 표현: ON 노랑/글로우, DIM 은은, OFF 어둑 */
 .mm-pill[data-mm-diff="easy"] .mm-pill-ic { stroke: #ffcf4a; filter: drop-shadow(0 0 4px rgba(255, 200, 70, 0.9)); }
 .mm-pill[data-mm-diff="mid"] .mm-pill-ic { stroke: #9a9aa0; }

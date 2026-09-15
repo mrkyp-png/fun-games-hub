@@ -207,7 +207,12 @@
   // 뿅망치로 같이 저장해, 보관창 "장착됨" 표시가 실제 플레이 무기와 어긋나지 않게 한다(사용자 지정).
   function setChapter(n) {
     localStorage.setItem('mole.chapter', String(n));
-    if (n <= 3) localStorage.setItem('mole.weapon', 'hammer');
+    if (n <= 3) {
+      localStorage.setItem('mole.weapon', 'hammer');
+      // 뿅망치는 라이트 ON 만 사용 가능(사용자 지정) — 챕터1~3 진입 시 강제 장착과 세트로 같이 내림.
+      const diff = localStorage.getItem('mole.difficulty');
+      if (diff === 'mid' || diff === 'legend') localStorage.setItem('mole.difficulty', 'easy');
+    }
   }
   // 챕터 이름표 ("챕터 N : 부제"). 이름 없으면 "챕터 N".
   function chapterLabel(n) {
@@ -2438,6 +2443,10 @@
         make: () => { screenNav.show('face-maker'); faceMaker.open({}); },
         locker: () => { screenNav.show('face-locker'); faceLocker.show(); },
         diff: (d) => {
+          // 뿅망치는 라이트 ON 만 사용 가능(사용자 지정) — more-menu 알약도 잠겨있지만 한 번 더 방어.
+          const w = localStorage.getItem('mole.weapon');
+          const paidWeapon = w === 'cannon' || w === 'goldhammer' || w === 'alipunch';
+          if (!paidWeapon && d !== 'easy') return;
           // 라이트 모드는 "설정만" — 선택 표시만 바꾸고 화면 이동 없음.
           localStorage.setItem('mole.difficulty', d);
           moreMenu.refresh();

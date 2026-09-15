@@ -16,7 +16,10 @@
     el.querySelector('[data-mm-avatar]').addEventListener('click', on.editAvatar);
     el.querySelector('[data-mm-start]').addEventListener('click', on.start);
     el.querySelectorAll('[data-mm-diff]').forEach(function (b) {
-      b.addEventListener('click', function () { on.diff(b.getAttribute('data-mm-diff')); });
+      b.addEventListener('click', function () {
+        if (b.classList.contains('mm-pill--locked')) return; // 뿅망치 + DIM/OFF 잠금(사용자 지정)
+        on.diff(b.getAttribute('data-mm-diff'));
+      });
     });
     var NAV = { score: on.score, daily: on.daily, shop: on.shop, quest: on.quest, locker: on.locker,
                friends: on.friends, inventory: on.inventory, settings: on.settings };
@@ -67,6 +70,13 @@
         : T('mole.more.profileSubNone');
       el.querySelectorAll('[data-mm-diff]').forEach(function (b) {
         b.classList.toggle('mm-pill--on', b.getAttribute('data-mm-diff') === diff);
+      });
+      // 뿅망치는 라이트 ON 만 사용 가능(사용자 지정) — DIM/OFF 알약 잠금.
+      var hammerOnly = localStorage.getItem('mole.weapon') !== 'cannon' &&
+        localStorage.getItem('mole.weapon') !== 'goldhammer' && localStorage.getItem('mole.weapon') !== 'alipunch';
+      ['mid', 'legend'].forEach(function (k) {
+        var b = el.querySelector('[data-mm-diff="' + k + '"]');
+        if (b) b.classList.toggle('mm-pill--locked', hammerOnly);
       });
 
       MG.Ads.banner(el.querySelector('[data-mm-ad]'));

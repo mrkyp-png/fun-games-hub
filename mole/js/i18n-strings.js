@@ -109,6 +109,7 @@
       'mole.diff.easy.mult': '×1.0',
       'mole.diff.mid.mult': '기본 ×1.2', 'mole.diff.mid.fever': '피버 ×1.5',
       'mole.diff.legend.mult': '기본 ×2.0', 'mole.diff.legend.fever': '피버 ×3.0',
+      'mole.diff.mid.combo': '콤보100 하트', 'mole.diff.legend.combo': '콤보100 하트X2',
 
       'mole.cos.title': '사람두더지 꾸미기',
       'mole.cos.hat': '모자',
@@ -296,6 +297,7 @@
       'mole.diff.easy.mult': '×1.0',
       'mole.diff.mid.mult': 'Base ×1.2', 'mole.diff.mid.fever': 'Fever ×1.5',
       'mole.diff.legend.mult': 'Base ×2.0', 'mole.diff.legend.fever': 'Fever ×3.0',
+      'mole.diff.mid.combo': 'Combo100 ❤️', 'mole.diff.legend.combo': 'Combo100 ❤️×2',
 
       'mole.cos.title': 'Customize Face Mole',
       'mole.cos.hat': 'Hat',
