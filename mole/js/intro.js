@@ -108,11 +108,16 @@
     scr.querySelector('.intro-skip').addEventListener('click', skip);
 
     // 블록 DOM 을 미리 다 만들어 둔다 (텍스트는 빈 채). 이미지는 바로 src.
+    // 사진 3장은 등장 순서대로 서로 다른 연출(사용자 지정, intro-photo-anim.html 후보 4/5/9번):
+    // 1번 사진=블러→포커스, 2번 사진=흑백→컬러, 3번 사진=모서리 펼쳐짐(3D).
+    var PHOTO_EFFECTS = ['intro-fig--blur', 'intro-fig--bw', 'intro-fig--unroll'];
+    var photoIdx = 0;
     var els = BLOCKS.map(function (b) {
       var e = document.createElement('div');
       if (b.title) { e.className = 'intro-title'; }
       else if (b.img) {
-        e.className = 'intro-fig';
+        e.className = 'intro-fig ' + (PHOTO_EFFECTS[photoIdx] || '');
+        photoIdx += 1;
         e.innerHTML = '<img alt="" src="' + b.img + '">' + (b.cap ? '<figcaption>' + b.cap + '</figcaption>' : '');
       } else { e.className = 'intro-p'; }
       e.style.opacity = '0';
@@ -153,6 +158,7 @@
         if (y + el.offsetTop > vh() * TRIGGER) break; // 아직 트리거 선 아래
         startedUpTo = i;
         el.style.opacity = '1';
+        el.classList.add('is-visible'); // 사진 전용 연출(blur/bw/unroll) 트리거 — 아래 style.css 참고
         var txt = BLOCKS[i].title || BLOCKS[i].p;
         var isLast = i === BLOCKS.length - 1;
         // 마지막 문구("...감사합니다!") 타이핑이 끝나면 잠깐 뒤 → 밝아지며 홈으로.
