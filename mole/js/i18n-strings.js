@@ -35,7 +35,7 @@
       'mole.chapter.desc.2': '2, 3연타에 적응하세요!',
       'mole.chapter.desc.3': '동물친구들은 사랑으로...',
       'mole.chapter.desc.4': '진정한 두더지 사냥꾼 등록! (9홀 → 16홀)',
-      'mole.chapter.desc.5': '폭탄을 든 두더지를 잡으면, 히트(이미지) 하나가 사라져요!',
+      'mole.chapter.desc.5': '폭탄을 든 두더지를 잡으면, 하트(이미지) 하나가 사라져요!',
       'mole.chapter.desc.6': '강력폭탄은 히트(이미지) 두 개가 사라져요!',
       'mole.chapter.desc.7': '4연타 두더지가 등장합니다!',
       'mole.chapter.desc.8': '이제는 동물친구들을 잡으세요!',
