@@ -110,7 +110,11 @@
       const m = {
         el, img, bombEl, kind: pop.type, poseIndex: pop.poseIndex || 0, regionId: pop.regionId,
         shownDepth: GONE_DEPTH, targetDepth: 0, shownFile: null, dying: false,
-        blast: false, punch: false, dyingFrom: 0
+        blast: false, punch: false, dyingFrom: 0,
+        // 다타 동물(챕터8)만 빠끔 프레임 사용 — 아니면 등장(emerge) 애니메이션이 깊이값
+        // 3→2→1→0 을 그냥 지나치기만 해도 빠끔 프레임을 스치며 "커졌다 작아지는" 것처럼
+        // 보이는 버그가 있었음(사용자 보고, 챕터4).
+        multiHitAnimal: pop.type === 'animal' && pop.hitsRequired > 1
       };
       render(m);
       pops.set(pop.id, m);
@@ -125,8 +129,9 @@
         return m.dying ? 'mole' + (m.poseIndex + 1) : MS.fileForDepth(Math.round(depth), m.poseIndex);
       }
       const base = MS.obstacleFile(m.kind, m.poseIndex);
-      // 동물 다타(챕터8) — 침몰 중엔 두더지처럼 전신 그대로, 아니면 깊이별 빠끔 프레임(있으면).
-      if (m.kind === 'animal' && !m.dying) {
+      // 동물 다타(챕터8, multiHitAnimal 인 것만) — 침몰 중엔 두더지처럼 전신 그대로, 아니면
+      // 깊이별 빠끔 프레임(있으면). 1타 동물은 등장 애니(깊이 3→2→1→0) 동안에도 계속 전신.
+      if (m.kind === 'animal' && m.multiHitAnimal && !m.dying) {
         return MS.animalFileForDepth(base, Math.round(depth)) || base;
       }
       return base;

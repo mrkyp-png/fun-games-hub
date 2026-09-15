@@ -1794,6 +1794,13 @@
     const area = [originId].concat(quakeNeighbors(originId))
       .filter((id) => state.spawnPoints.some((s) => s.regionId === id));
 
+    // 지진 처리 중엔 이 구역에 새 두더지가 안 뜨게 잠갔다가, 연출(lane-controls.js
+    // flashQuakeArea 와 같은 640ms) 끝나면 푼다(사용자 지정). scheduler 참조를 미리 붙잡아
+    // 둬야 그 사이 라운드가 넘어가 새 scheduler 가 생겨도 엉뚱한 걸 풀지 않는다.
+    const lockedScheduler = state.scheduler;
+    lockedScheduler.lockMoleRegions(area);
+    setTimeout(() => { lockedScheduler.unlockMoleRegions(area); }, 640);
+
     MG.HitFx.shake(board);
     if (sp0) MG.HitFx.quakeDust(board, sp0.x, sp0.y);
 

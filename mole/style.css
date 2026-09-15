@@ -1261,14 +1261,16 @@ body { background: var(--lm-page); }
 #gameover-overlay.fail-fx-1 .fail-ribbon--r { animation: fail1-ribbon-in-r 0.4s 0.55s cubic-bezier(.3, 1.6, .5, 1) both; }
 @keyframes fail1-ribbon-in { 0% { opacity: 0; transform: scale(0.3) rotate(-30deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
 @keyframes fail1-ribbon-in-r { 0% { opacity: 0; transform: scaleX(-1) scale(0.3) rotate(-30deg); } 100% { opacity: 1; transform: scaleX(-1) scale(1) rotate(0); } }
-/* bottom:10% 이 점수(0점/1,000점)와 겹쳐서(사용자 지적) 점수 아래 여백으로 내림. */
+/* 가로 하단 배치가 점수(0점/1,000점)와 계속 겹쳐서(사용자 지적, 재차 지적) — 아예 화면
+   가로축에서 벗어나게 우측 가장자리에 세로쓰기로 배치. */
 .fail-plaque {
-  position: absolute; left: 50%; bottom: 2%; transform: translateX(-50%) translateY(10px); margin: 0;
-  background: #1c1c22; color: #d8b06a; padding: 5px 16px; border-radius: 3px;
-  font-size: 0.82rem; font-weight: 700; letter-spacing: 0.04em; border: 1px solid #d8b06a; white-space: nowrap;
+  position: absolute; right: 3%; top: 50%; transform: translateY(-50%) translateX(14px); margin: 0;
+  writing-mode: vertical-rl; text-orientation: mixed;
+  background: #1c1c22; color: #d8b06a; padding: 10px 5px; border-radius: 3px;
+  font-size: 0.76rem; font-weight: 700; letter-spacing: 0.04em; border: 1px solid #d8b06a; white-space: nowrap;
 }
 #gameover-overlay.fail-fx-1 .fail-plaque { animation: fail1-plaque-in 0.4s 0.9s ease-out both; }
-@keyframes fail1-plaque-in { to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@keyframes fail1-plaque-in { to { opacity: 1; transform: translateY(-50%) translateX(0); } }
 
 /* 3) 빨간 도장 쾅 */
 /* 글자색 = 검정(사용자 지적: 빨간 글자가 하마 빨간 모자와 겹쳐 안 보임). 테두리는 빨강 유지. */

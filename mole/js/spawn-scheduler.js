@@ -68,6 +68,19 @@
       return n;
     }
 
+    // 골드 묠니르 지진이 처리 중인 구역은 그동안 새 두더지가 안 뜨게(사용자 지정) — 지역별
+    // 잠금 개수(겹치는 지진이 있을 수 있어 카운트로, 0 이 되면 완전히 풀림).
+    const lockedMoleRegionCounts = new Map(); // regionId -> count
+    function lockMoleRegions(ids) {
+      (ids || []).forEach((id) => lockedMoleRegionCounts.set(id, (lockedMoleRegionCounts.get(id) || 0) + 1));
+    }
+    function unlockMoleRegions(ids) {
+      (ids || []).forEach((id) => {
+        const c = (lockedMoleRegionCounts.get(id) || 0) - 1;
+        if (c <= 0) lockedMoleRegionCounts.delete(id); else lockedMoleRegionCounts.set(id, c);
+      });
+    }
+
     function candidateSpawnPointsFor(type) {
       // 점수 어택 모드: 두더지는 16칸 아무 데나 랜덤 반복 등장 (잡은 칸도 다시 나온다).
       // 한 칸에 두더지 1마리 제약만 유지 — 방해물은 완성 개념 없이 빈 지점 아무 데나.
@@ -78,7 +91,8 @@
         });
         return spawnPoints.filter((sp) =>
           !occupiedSpawnPointIds.has(sp.id) &&
-          !regionsWithActiveMoles.has(sp.regionId)
+          !regionsWithActiveMoles.has(sp.regionId) &&
+          !lockedMoleRegionCounts.has(sp.regionId)
         );
       }
       return spawnPoints.filter((sp) => !occupiedSpawnPointIds.has(sp.id));
@@ -325,7 +339,7 @@
       return pop;
     }
 
-    return { tick, resolveHit, resolveRegion, isComplete, completedRegionCount, getActivePops, forceCompleteAll, debugForceBurst, debugForceMole, debugForceAnimal, debugForceBombMole };
+    return { tick, resolveHit, resolveRegion, isComplete, completedRegionCount, getActivePops, forceCompleteAll, debugForceBurst, debugForceMole, debugForceAnimal, debugForceBombMole, lockMoleRegions, unlockMoleRegions };
   }
 
   const api = { create };
