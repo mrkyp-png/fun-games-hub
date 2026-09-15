@@ -858,6 +858,8 @@
     go.hidden = true; go.classList.remove('is-win', 'is-lose', 'is-sliding');
     const cf = go.querySelector('.go-confetti'); if (cf) cf.innerHTML = '';
     const fwc = go.querySelector('.go-fireworks'); if (fwc) fwc.innerHTML = '';
+    const spc = go.querySelector('.go-starpop'); if (spc) spc.innerHTML = '';
+    go.classList.remove('win-fx-rays', 'win-fx-starpop');
     go.classList.remove('fail-fx-1', 'fail-fx-3', 'fail-fx-4', 'fail-fx-8');
     ['fail-dust-layer', 'fail-heart-layer', 'fail-ash-layer'].forEach((cls) => {
       const el = go.querySelector('.' + cls);
@@ -2166,6 +2168,8 @@
       ov.classList.remove('is-sliding', 'is-win', 'is-lose');
       ov.querySelector('.go-confetti').innerHTML = '';
       ov.querySelector('.go-fireworks').innerHTML = '';
+      ov.querySelector('.go-starpop').innerHTML = '';
+      ov.classList.remove('win-fx-rays', 'win-fx-starpop');
       ov.classList.remove('fail-fx-1', 'fail-fx-3', 'fail-fx-4', 'fail-fx-8');
       ['fail-dust-layer', 'fail-heart-layer', 'fail-ash-layer'].forEach((cls) => {
         const el = ov.querySelector('.' + cls);
@@ -2253,6 +2257,27 @@
 
     setTimeout(() => {
       if (win) {
+        // 방사광선 / 별팝 중 매번 랜덤 1개(사용자 지정) — 색종이+불꽃놀이는 항상 같이 나온다.
+        ov.classList.remove('win-fx-rays', 'win-fx-starpop');
+        const starpop = ov.querySelector('.go-starpop');
+        starpop.innerHTML = '';
+        if (Math.random() < 0.5) {
+          ov.classList.add('win-fx-rays');
+        } else {
+          ov.classList.add('win-fx-starpop');
+          const N = 40;
+          for (let i = 0; i < N; i++) {
+            const ang = (i / N) * Math.PI * 2 + (Math.random() * 0.2 - 0.1);
+            const spd = 55 + Math.random() * 100;
+            const s = document.createElement('i'); // clip-path 별 도형(CSS) — 텍스트 필요 없음
+            s.style.setProperty('--dx', (Math.cos(ang) * spd).toFixed(0) + 'px');
+            // 아래로 중력 편향(사용자 지정 후보: "중심에서 별 파편 방사" + 낙하).
+            s.style.setProperty('--dy', (Math.sin(ang) * spd + 40 + Math.random() * 40).toFixed(0) + 'px');
+            s.style.setProperty('--rot', (Math.random() * 360 - 180) + 'deg');
+            s.style.animationDelay = (Math.random() * 0.15) + 's';
+            starpop.appendChild(s);
+          }
+        }
         // 성공 = 기존 색종이 낙하 + 불꽃놀이(사용자 지정, result-fx-compare.html 후보 3번) 동시 표시 —
         // 색종이를 빼는 게 아니라 불꽃놀이를 추가하는 것(사용자 정정).
         const nConf = 150;
