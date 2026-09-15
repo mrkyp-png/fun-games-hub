@@ -1150,7 +1150,8 @@ body { background: var(--lm-page); }
 @keyframes go-rays-spin { to { transform: rotate(360deg); } }
 
 /* 축하 색종이 / 실패 빗줄기 — 계속 반복 */
-.go-confetti { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+/* z-index 3 = 글자/하마(z-index 2)보다 위 — 불꽃놀이가 하마를 가려도 된다(사용자 지정). */
+.go-confetti { position: absolute; inset: 0; z-index: 3; pointer-events: none; overflow: hidden; }
 .go-confetti i {
   position: absolute; top: -12%;
   width: 9px; height: 14px; border-radius: 2px;
@@ -1158,6 +1159,19 @@ body { background: var(--lm-page); }
 }
 #gameover-overlay.is-win .go-confetti i {
   background: hsl(var(--h, 40) 90% 60%);
+}
+/* 불꽃놀이(사용자 지정, 성공화면 색종이 대체) — 파편이 방사형으로 튀어나갔다 사그라든다.
+   기존 낙하형(go-fall) 대신 --dx/--dy 로 각자 다른 방향·거리를 받는다. */
+.go-confetti i.go-spark {
+  position: absolute; top: 0; width: 5px; height: 5px; border-radius: 50%;
+  background: hsl(var(--h, 40) 95% 62%);
+  box-shadow: 0 0 4px hsl(var(--h, 40) 95% 62%);
+  animation: go-spark 0.9s ease-out forwards;
+  opacity: 0;
+}
+@keyframes go-spark {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(0.3); opacity: 0; }
 }
 #gameover-overlay.is-lose .go-confetti i {
   width: 2px; height: 18px; border-radius: 0;
@@ -1369,6 +1383,12 @@ body { background: var(--lm-page); }
 .si-caret { display: inline-block; width: 2px; height: 1em; background: currentColor; animation: si-blink 0.8s step-end infinite; }
 .si-caret[hidden] { display: none; }
 @keyframes si-blink { 50% { opacity: 0; } }
+
+/* 챕터8 안내: "소제목" 줄이 텍스트 타이핑 대신 [두더지] FACE OFF [토끼] 로 등장(사용자 지정). */
+.si-line2.si-faceoff-in { display: flex; align-items: center; gap: 8px; animation: si-faceoff-pop 0.4s cubic-bezier(.2, 1.4, .5, 1); }
+.si-faceoff-img { height: 1.7rem; width: auto; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25)); }
+.si-faceoff-txt { font-style: normal; }
+@keyframes si-faceoff-pop { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
 
 /* ---- 버튼 패드 = 전화 다이얼러로 위장 (사용자 요청) ----
    4x4 격자 = 16 구멍과 1:1 그대로. 왼쪽 3열 = 숫자패드, 오른쪽 열 = 연락처/키패드/최근기록/통화.
@@ -2537,9 +2557,11 @@ body { background: var(--lm-page); }
   stroke-linecap: round; stroke-linejoin: round; }
 /* DIM/OFF: 전구 좌측 + 오른쪽에 배율 2줄 (윗줄 기본 ×1.2, 아랫줄 피버 ×1.5). 라벨은 그대로 하단.
    두 줄 = 같은 크기·굵기, 박스 안에서 최대한 크게 (사용자 요청). */
-.mm-pill--mult .mm-pill-row { display: flex; align-items: flex-start; gap: 3px; }
+.mm-pill--mult .mm-pill-row { display: flex; align-items: flex-start; gap: 3px; align-self: flex-end; }
 .mm-pill--mult .mm-pill-ic { width: 15px; height: 15px; margin-top: 1px; }
-.mm-pill-mx { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; line-height: 1.15; }
+/* 우측 정렬(flex-end) — 아래 콤보 문구도 같은 기준(우측)으로 맞춰, 피버 줄 끝자리 숫자 밑에
+   콤보 문구가 오도록(사용자 지정: "피버X1.5"의 "5" 줄에 맞춤). */
+.mm-pill-mx { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; line-height: 1.15; }
 .mm-pill-mx b, .mm-pill-mx i {
   font-size: clamp(0.6rem, 3.1vw, 0.72rem);
   font-weight: 400; /* 굵게 X — 아래 그리드 글자/아이콘 정도 */
@@ -2550,7 +2572,7 @@ body { background: var(--lm-page); }
 }
 /* 콤보100 목숨보상 안내 — 배율 줄과 "라이트 DIM/OFF" 라벨 사이에 한 줄 추가(사용자 지정,
    기존 라벨 자체의 위치·크기는 안 건드림 — flex column 이라 그 위에 줄이 하나 늘 뿐). */
-.mm-pill-combo { font-size: clamp(0.54rem, 2.7vw, 0.64rem); font-weight: 600; opacity: 0.75; white-space: nowrap; }
+.mm-pill-combo { font-size: clamp(0.54rem, 2.7vw, 0.64rem); font-weight: 600; opacity: 0.75; white-space: nowrap; align-self: flex-end; }
 
 /* 전구 밝기 = 난이도 표현: ON 노랑/글로우, DIM 은은, OFF 어둑 */
 .mm-pill[data-mm-diff="easy"] .mm-pill-ic { stroke: #ffcf4a; filter: drop-shadow(0 0 4px rgba(255, 200, 70, 0.9)); }

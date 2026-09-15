@@ -120,6 +120,17 @@
         photoIdx += 1;
         e.innerHTML = '<img alt="" src="' + b.img + '">' + (b.cap ? '<figcaption>' + b.cap + '</figcaption>' : '');
       } else { e.className = 'intro-p'; }
+      // 글자 블록(title/p)은 타이핑되며 줄바꿈이 늘어날 때마다 키가 커져 아래 블록(특히 사진)이
+      // 그때마다 한 칸씩 밀려 "툭툭 치는" 느낌이 났다(사용자 지적) — 타이핑 시작 전에 완성된
+      // 텍스트로 먼저 실측해 높이를 고정해두면, 타이핑 중엔 레이아웃이 안 흔들려 스크롤이 매끄럽다.
+      var full = b.title || b.p;
+      if (full) {
+        e.textContent = full;
+        col.appendChild(e);
+        e.style.minHeight = e.offsetHeight + 'px';
+        e.textContent = '';
+        col.removeChild(e);
+      }
       e.style.opacity = '0';
       col.appendChild(e);
       return e;

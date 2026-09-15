@@ -16,11 +16,11 @@
     c.style.backgroundImage = "url('assets/cloud" + img + ".png')";
     c.style.aspectRatio = ASPECT[img];
     c.style.width = (6 + Math.random() * 13).toFixed(1) + '%';   // 6% ~ 19% — 작게, 제각각
-    c.style.top = (1 + Math.random() * 66).toFixed(0) + '%';      // 하늘 영역 안 랜덤 높이
+    c.style.top = (1 + Math.random() * 45).toFixed(0) + '%';      // 하늘 영역 안 랜덤 높이(너무 낮으면 언덕과 겹쳐 보여 상향, 사용자 지적)
     c.style.opacity = (0.38 + Math.random() * 0.42).toFixed(2);
     if (Math.random() < 0.5) c.style.transform = 'scaleX(-1)';
 
-    var dur = 110 + Math.random() * 120;                          // 110 ~ 230초 — 아주 느리게
+    var dur = 80 + Math.random() * 220;                           // 80 ~ 300초 — 속도가 다 비슷해 보인다는 지적, 편차 확대
     var delay = -(Math.random() * dur);                           // 위상 랜덤 (이미 지나가는 중)
     c.style.animation = 'mole-cloud-drift ' + dur.toFixed(0) + 's linear ' + delay.toFixed(0) + 's infinite';
 

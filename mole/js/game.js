@@ -219,6 +219,11 @@
     const named = I18N.t('mole.chapter.name.' + n);
     return (named && named !== 'mole.chapter.name.' + n) ? named : I18N.t('mole.chapter.n', { n: n });
   }
+  // 챕터별 안내문구 "내용 설명" (사용자 지정, 챕터2~10만 존재). 없으면 빈 문자열.
+  function chapterDesc(n) {
+    const v = I18N.t('mole.chapter.desc.' + n);
+    return (v && v !== 'mole.chapter.desc.' + n) ? v : '';
+  }
   function lastScore() { return parseInt(localStorage.getItem('mole.lastScore'), 10) || 0; }
   function bestFor(diff) {
     const v = parseInt(localStorage.getItem('mole.best.' + diff), 10);
@@ -294,6 +299,7 @@
   // 새로 계산해 넣는 방식으로 변경(안전, 검증된 렌더 경로).
   // reversed=true(10라운드 완주 결과화면 전환용) — 색 역할이 뒤바뀜: 분홍이 천천히 먼저
   // 보이고, 노랑이 빠르게 따라잡아 앞질러서 최종 단색이 노랑이 된다.
+  let winFxTimer = null; // 승리 화면 불꽃놀이 반복 스폰 — 화면 전환(닫힘) 시 clearInterval
   let curtainPatternGen = 0;
   function restartCurtainPattern(overlay, reversed) {
     const curtains = overlay.querySelectorAll('.ri-curtain');
@@ -357,6 +363,7 @@
     const caretEl = document.getElementById('si-caret');
     chapterNumEl.textContent = '';
     chapterSubEl.textContent = '';
+    chapterSubEl.classList.remove('si-faceoff-in'); // 챕터8 전용 레이아웃 잔여 클래스 정리
     tipEl.textContent = '';
     caretEl.hidden = true; // 타이핑 시작 전엔 깜빡이는 커서도 같이 숨김(사용자 보고)
     overlay.classList.remove('is-opening');
@@ -369,13 +376,27 @@
     const sepIdx = fullChapter.indexOf(' : ');
     const chapterNum = sepIdx >= 0 ? fullChapter.slice(0, sepIdx) : fullChapter;
     const chapterSub = sepIdx >= 0 ? fullChapter.slice(sepIdx + 3) : '';
-    const fullTip = I18N.t('mole.startintro.tip');
+    // 챕터별 "내용 설명"(사용자 지정, 챕터2~10) — 없으면(챕터1) 기존 공용 팁 문구로 대체.
+    const chDesc = chapterDesc(currentChapter());
+    const fullTip = chDesc || I18N.t('mole.startintro.tip');
     const aborted = () => myGen !== sessionGen;
     setTimeout(() => {
       if (aborted()) { overlay.hidden = true; overlay.classList.remove('is-opening'); return; }
       typeText(chapterNumEl, chapterNum, () => {
         if (aborted()) return;
-        typeText(chapterSubEl, chapterSub, () => {
+        // 챕터8 "소제목" = 텍스트가 아니라 [두더지 이미지] + FACE OFF + [토끼 이미지] 구성(사용자 지정).
+        const showSub = currentChapter() === 8
+          ? (cb) => {
+              chapterSubEl.innerHTML =
+                '<img class="si-faceoff-img" src="assets/moles/mole1.png" alt="">' +
+                '<b class="si-faceoff-txt">FACE OFF</b>' +
+                '<img class="si-faceoff-img" src="assets/moles/rabbit.png" alt="">';
+              chapterSubEl.classList.add('si-faceoff-in');
+              MG.HitFx.typeTick();
+              setTimeout(cb, 500); // 타이핑 대신 이미지 등장 — 다음 줄까지 비슷한 정도 대기
+            }
+          : (cb) => typeText(chapterSubEl, chapterSub, cb);
+        showSub(() => {
           if (aborted()) return;
           caretEl.hidden = false; // 이 줄 타이핑 시작하는 순간부터 커서 등장
           typeText(tipEl, fullTip, () => {
@@ -780,6 +801,7 @@
     const go = document.getElementById('gameover-overlay');
     go.hidden = true; go.classList.remove('is-win', 'is-lose', 'is-sliding');
     const cf = go.querySelector('.go-confetti'); if (cf) cf.innerHTML = '';
+    if (winFxTimer) { clearInterval(winFxTimer); winFxTimer = null; }
     const rsh = document.getElementById('result-swipe-hint');
     if (rsh) { rsh.hidden = true; rsh.classList.remove('is-on'); }
     const ncp = document.getElementById('next-chapter-panel');
@@ -1196,7 +1218,7 @@
       // 골드해머는 그립(56%,72%)·타격면 위치·크기(17.5% vs 14.04%)가 뿅망치와 달라 기본 gripOff 그대로 쓰면
       // 타격면이 목표보다 위/옆으로 빗나간다. 스프라이트 픽셀(빨간 타격면 중심 vs 그립)을 실측 + 회전변환으로
       // 역산한 값(대략치 — 실기기에서 미세조정 필요할 수 있음).
-      hammerOpts.gripOff = { x: 0.107, y: -0.065 }; // 타격점 좌측으로 0.05cm 추가이동 (누적 0.1cm)
+      hammerOpts.gripOff = { x: 0.097, y: -0.065 }; // 타격점 좌측으로 0.1cm 추가이동 (누적 0.2cm, 좌표계=보드분수 1cm≈0.1)
       hammerOpts.emptyDy = -0.025; // 빈 구멍 헛스윙 전용: 공용 AIM_DY(-0.055)보다 아래로 0.3cm (뿅망치는 그대로)
       hammerOpts.homeMarginTop = '-0.3cm';       // 대기 위치를 기본(0.2cm 아래)에서 위로 0.5cm
       hammerOpts.homeDegOffset = 20;             // 대기 각도만 시계방향으로 20도 추가 회전
@@ -1581,7 +1603,8 @@
       combo: run.combo.combo,
       isMaxCombo: run.combo.isMaxCombo(),
       score: run.combo.score, // 1라운드부터 누적 (콤보·점수 한 통)
-      modeLabel: chapterLabel(currentChapter()) // 게임화면 티커 맨 앞 = 현재 챕터 이름 ("두더지팡" 대체)
+      modeLabel: chapterLabel(currentChapter()), // 게임화면 티커 맨 앞 = 현재 챕터 이름 ("두더지팡" 대체)
+      chapterDesc: chapterDesc(currentChapter()) // 챕터2~10 안내문구 — 있으면 티커의 기존 팁 문구 대체(사용자 지정)
     });
     updateFeverHud();
     updateInvincibleHud();
@@ -2079,6 +2102,7 @@
       ov.hidden = true;
       ov.classList.remove('is-sliding', 'is-win', 'is-lose');
       ov.querySelector('.go-confetti').innerHTML = '';
+      if (winFxTimer) { clearInterval(winFxTimer); winFxTimer = null; }
       bs.classList.remove('nc-enter', 'nc-enter--on');
     }, 360);
   }
@@ -2151,15 +2175,53 @@
     hippo.style.maxHeight = Math.round(ov.clientHeight * 0.4) + 'px';
 
     setTimeout(() => {
-      // 성공 = 색종이만(반짝이별/광선 제거, 사용자 요청). 색종이·실패 빗줄기 각각 3배 증량(사용자 지정).
-      const n = win ? 276 : 600;
-      for (let k = 0; k < n; k++) {
-        const p = document.createElement('i');
-        p.style.left = (Math.random() * 100) + '%';
-        p.style.animationDelay = (Math.random() * 2.8) + 's';
-        p.style.animationDuration = (win ? 1.5 + Math.random() * 1.6 : 2.4 + Math.random() * 1.8) + 's';
-        if (win) p.style.setProperty('--h', String(Math.floor(Math.random() * 360))); // 알록달록
-        conf.appendChild(p);
+      if (win) {
+        // 성공 = 기존 색종이 낙하 + 불꽃놀이(사용자 지정, result-fx-compare.html 후보 3번) 동시 표시 —
+        // 색종이를 빼는 게 아니라 불꽃놀이를 추가하는 것(사용자 정정).
+        const nConf = 150;
+        for (let k = 0; k < nConf; k++) {
+          const p = document.createElement('i');
+          p.style.left = (Math.random() * 100) + '%';
+          p.style.setProperty('--h', String(Math.round(Math.random() * 360)));
+          p.style.animationDelay = (Math.random() * 2.8) + 's';
+          p.style.animationDuration = (2.4 + Math.random() * 1.8) + 's';
+          conf.appendChild(p);
+        }
+        // 방사형으로 터지는 파편(각 파편은 --dx/--dy 로 방향·거리를 받음), 보드 전체 영역에서
+        // 랜덤 지점에 계속 터짐 — 화면이 닫힐 때까지 반복(사용자 지정), 파편 수는 5배 증량.
+        if (winFxTimer) clearInterval(winFxTimer);
+        const N = 130; // 기존 26 의 5배
+        const spawnBurst = () => {
+          const ox = Math.random() * 100, oy = Math.random() * 100; // 보드 전체(사용자 지정: "게임보드에 전체적으로")
+          const hue = Math.random() * 360;
+          const pieces = [];
+          for (let i = 0; i < N; i++) {
+            const ang = (i / N) * Math.PI * 2 + Math.random() * 0.3;
+            const dist = 70 + Math.random() * 90;
+            const p = document.createElement('i');
+            p.className = 'go-spark';
+            p.style.left = ox + '%'; p.style.top = oy + '%';
+            p.style.setProperty('--h', String(Math.round(hue + (Math.random() * 40 - 20))));
+            p.style.setProperty('--dx', (Math.cos(ang) * dist).toFixed(0) + 'px');
+            p.style.setProperty('--dy', (Math.sin(ang) * dist).toFixed(0) + 'px');
+            conf.appendChild(p);
+            pieces.push(p);
+          }
+          // 애니메이션(0.9s) 다 끝난 파편은 정리 — 계속 반복이라 안 지우면 DOM 이 무한히 쌓임.
+          setTimeout(() => pieces.forEach((p) => p.remove()), 950);
+        };
+        spawnBurst();
+        winFxTimer = setInterval(spawnBurst, 260);
+      } else {
+        // 실패 빗줄기 3배 증량(사용자 지정).
+        const n = 600;
+        for (let k = 0; k < n; k++) {
+          const p = document.createElement('i');
+          p.style.left = (Math.random() * 100) + '%';
+          p.style.animationDelay = (Math.random() * 2.8) + 's';
+          p.style.animationDuration = (2.4 + Math.random() * 1.8) + 's';
+          conf.appendChild(p);
+        }
       }
     }, 400); // 글자·하마 fly-in(0.4s) 끝난 뒤
 
@@ -2274,6 +2336,7 @@
       });
     };
     window.__debugSetChapter = (n) => { setChapter(n); };
+    window.__debugPlayStartIntro = () => { playStartIntro(() => {}); }; // beginGame() 이 거치는 타이핑 인트로만 단독 재생(테스트용)
     window.__debugUnlockAll = () => { localStorage.setItem('mole.unlockAll', '1'); };
     window.__debugProgress = () => ({
       chapter: currentChapter(), light: currentLight(),

@@ -9,9 +9,15 @@
   function update(state) {
     var I = window.FGH.I18N;
     setAll('tk-mode', state.modeLabel || I.t('mole.mode')); // 현재 챕터 이름 (game.js), 없으면 "두더지팡"
-    // 티커의 챕터 이름 뒤에 이어지는 게임 팁 — 계속 추가될 예정, tk-tip{n} 패턴으로 늘려간다.
-    setAll('tk-tip1', I.t('mole.tip.juggle'));
-    setAll('tk-tip2', I.t('mole.tip.maxCombo'));
+    // 티커의 챕터 이름 뒤에 이어지는 게임 팁. 챕터별 안내문구(chapterDesc, 챕터2~10)가 있으면
+    // 기존 고정 팁(저글/콤보) 대신 그 설명 하나만 표시(사용자 지정: "기존 티커 내용은 삭제후 적용").
+    if (state.chapterDesc) {
+      setAll('tk-tip1', state.chapterDesc);
+      setAll('tk-tip2', '');
+    } else {
+      setAll('tk-tip1', I.t('mole.tip.juggle'));
+      setAll('tk-tip2', I.t('mole.tip.maxCombo'));
+    }
 
     var score = document.getElementById('hud-score');
     if (score) score.textContent = (state.score || 0).toLocaleString();
