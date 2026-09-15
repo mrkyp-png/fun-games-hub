@@ -1897,10 +1897,14 @@
           moleHits += 1;
         } else if (r.done && r.bombKind) {
           // 폭탄 든 두더지(2026-09-14 확정) — 점수 없이 페널티만. 일반 하트-1, 강력 하트-2.
+          // 챕터8(reverseTarget)은 두더지 자체가 장애물이라 기본 장애물 페널티(-1)가 폭탄
+          // 페널티에 합산됨(사용자 지정: "두더지 -1 + 폭탄 -1/강력-2, 합산") — 일반 -1→-2,
+          // 강력 -2→-3. 다른 챕터(두더지=타겟)는 기존 그대로 -1/-2.
           // 동물/폭탄 방해물과 동일하게 콤보 리셋. 연출은 대포 처치 폭발 기반 전용 함수
           // bombBlast(사용자 지정 — moleBlast 는 안 건드림, 캐논 무기 자체 연출과 분리).
           // pop-elements.js 의 m.blast 도 bombKind 면 무기 무관 항상 켜짐, 여기와 세트.
-          setRunLives(run.lives - (r.bombKind === 'strong' ? 2 : 1));
+          const bombPenalty = (cfg.reverseTarget ? 1 : 0) + (r.bombKind === 'strong' ? 2 : 1);
+          setRunLives(run.lives - bombPenalty);
           run.combo.onObstacleHit();
           MG.HitFx.bombBlast(board, r.xFrac, r.yFrac);
           flashHud('hud-hearts');
