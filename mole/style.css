@@ -834,6 +834,10 @@ body { background: var(--lm-page); }
   left: -25%;
   background: no-repeat center / contain;
   will-change: left;
+  /* 구름이 (기술적으로는 항상 앞에서 그려지지만) 흰 구름이 밝은 달과 겹치면 흰색끼리 묻혀
+     "달 뒤로 지나가는" 것처럼 보였다(사용자 지적) — 옅은 남색 테두리로 대비를 줘서
+     달 위를 지나갈 때도 윤곽이 또렷이 보이게. */
+  filter: drop-shadow(0 0 2px rgba(15, 25, 55, 0.8)) drop-shadow(0 0 5px rgba(15, 25, 55, 0.6));
 }
 @keyframes mole-cloud-drift {
   from { left: -25%; }
@@ -1398,6 +1402,12 @@ body { background: var(--lm-page); }
 #game-screen.gs-laneskill:not(.is-start) .lane-cell-line {
   border-color: rgba(23, 23, 26, 0.3);
 }
+/* 스킬버튼(통화 자리)은 진입 시 spinChannelsIn() 이 버튼 자체를 3D 로 돌리는데(lane-controls.js,
+   0.9s), 그 안의 구획선도 같이 돌아 보여 다른 칸과 다르게 "이상해" 보였다(사용자 지적).
+   회전이 끝난 뒤에야 다른 칸과 똑같이 서서히 나타나도록 트랜지션을 그만큼 지연. */
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-cell-line {
+  transition-delay: 0.95s;
+}
 
 /* 챕터1~3 전용 숫자패드(3x3 정사각형) — 다이얼 위장(연락처/키패드/최근기록)·통화버튼 없음
    (사용자 지정: "통화버튼 불필요, 버튼보드 정사각형으로"). lane-controls.js 가 simple:true
@@ -1671,6 +1681,9 @@ body { background: var(--lm-page); }
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-items {
   display: flex; flex-direction: column; gap: 8%; position: absolute; inset: 3%;
   border-radius: 0; overflow: visible;
+  /* 카드 하단 3D 그림자(.lane-item box-shadow, 최대 9px)가 다이얼패드 구획선 밑으로 삐져나와
+     보이던 것(사용자 지적) — 통째로 살짝 위로 이동해 셀 안에 들어오게. */
+  transform: translateY(-6%);
 }
 /* 형태 = 로딩화면 GET NOW 버튼(#splash .splash-hint)과 동일: 알약 모양 + 두꺼운 3D 아래 그림자 + 광택. */
 .lane-item {

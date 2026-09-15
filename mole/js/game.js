@@ -1683,8 +1683,11 @@
   }
 
   function liveMoleAt(id) {
+    // 지진은 폭탄 든 두더지는 스킵해야 함(원래 기획 — 폭탄은 구식 type==='bomb' 시절 걸러졌는데,
+    // 지금은 폭탄도 type==='mole'(bombKind 만 다름)라 여기서 새로 막아야 함(사용자 보고 — 지진이
+    // 폭탄 두더지를 때려 하트가 깎임).
     return state.scheduler.getActivePops().find((q) =>
-      q.regionId === id && q.type === 'mole' && !q.dying && !q.killed && !(q.sinkIn > 0));
+      q.regionId === id && q.type === 'mole' && !q.bombKind && !q.dying && !q.killed && !(q.sinkIn > 0));
   }
 
   function quakeRipple(originId, depth) {
