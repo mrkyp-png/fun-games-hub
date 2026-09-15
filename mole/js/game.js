@@ -28,6 +28,62 @@
     if (ch >= 4 && ch <= 6) el.classList.add('mole-board--autumn');
     else if (ch >= 7 && ch <= 9) el.classList.add('mole-board--winter');
   }
+  // 챕터별 날씨(사용자 지정: 챕터6 라운드1~10=비, 챕터9 라운드1~10=눈) + 챕터6은 흐린 날씨라
+  // 하늘 쪽 구름도 추가(사용자: "흐린날씨에는 구름이 많고"). 매 라운드 시작마다 호출(멱등).
+  let weatherKind = null; // 마지막으로 채운 상태 — 같으면 재생성 안 함(깜빡임 방지)
+  function applyWeather() {
+    const layer = document.getElementById('mole-weather');
+    const sky = document.getElementById('mole-sky');
+    const ch = currentChapter();
+    const kind = ch === 6 ? 'rain' : (ch === 9 ? 'snow' : null);
+    if (kind !== weatherKind) {
+      weatherKind = kind;
+      if (layer) {
+        layer.className = kind ? 'mole-board-layer is-' + kind : 'mole-board-layer';
+        layer.innerHTML = '';
+        if (kind) {
+          const n = kind === 'rain' ? 70 : 40; // 실기기 확인 후 조정 예정(사용자 지정)
+          for (let i = 0; i < n; i++) {
+            const p = document.createElement('i');
+            p.style.left = (Math.random() * 100) + '%';
+            if (kind === 'rain') {
+              p.style.animationDelay = (Math.random() * 1.6) + 's';
+              p.style.animationDuration = (0.55 + Math.random() * 0.3) + 's';
+            } else {
+              p.style.animationDelay = (Math.random() * 4) + 's';
+              p.style.animationDuration = (3 + Math.random() * 2.5) + 's';
+              p.style.setProperty('--sway', (Math.random() * 30 - 15).toFixed(0) + 'px');
+              const sz = (2 + Math.random() * 3).toFixed(1) + 'px';
+              p.style.width = sz; p.style.height = sz;
+              p.style.opacity = (0.5 + Math.random() * 0.5).toFixed(2);
+            }
+            layer.appendChild(p);
+          }
+        }
+      }
+      if (sky) {
+        sky.querySelectorAll('.mole-cloud--extra').forEach((c) => c.remove());
+        if (ch === 6) {
+          const EXTRA = 8;
+          for (let i = 0; i < EXTRA; i++) {
+            const img = 1 + Math.floor(Math.random() * 2);
+            const c = document.createElement('span');
+            c.className = 'mole-cloud mole-cloud--extra';
+            c.style.backgroundImage = "url('assets/cloud" + img + ".png')";
+            c.style.aspectRatio = img === 1 ? '122 / 64' : '138 / 62';
+            c.style.width = (6 + Math.random() * 13).toFixed(1) + '%';
+            c.style.top = (1 + Math.random() * 18).toFixed(0) + '%'; // 하늘 부분에 집중(사용자 지정)
+            c.style.opacity = (0.38 + Math.random() * 0.42).toFixed(2);
+            if (Math.random() < 0.5) c.style.transform = 'scaleX(-1)';
+            const dur = 80 + Math.random() * 220;
+            const delay = -(Math.random() * dur);
+            c.style.animation = 'mole-cloud-drift ' + dur.toFixed(0) + 's linear ' + delay.toFixed(0) + 's infinite';
+            sky.appendChild(c);
+          }
+        }
+      }
+    }
+  }
   // 처치 순간 게임 시간을 잠깐 멈춘다 (히트스톱) — 타격감. 콤보가 쌓일수록 조금 더 길게.
   const HITSTOP_BASE_MS = 90;
   const HITSTOP_MAX_MS = 150;
@@ -1092,6 +1148,7 @@
     setNavLock(true); // 카운트다운 동안 ⊞ 잠금 (playRoundIntro onDone 에서 해제)
     ensureLaneControlsForChapter(isSmallBoardChapter()); // 실제 라운드 진행 중에만 9홀/숫자패드로 전환
     applyBoardTheme();
+    applyWeather();
     const myGen = sessionGen;
     // fresh(시작/다시하기)면 콤보·점수 리셋. 목숨은 공유 생명 풀에서 이어받는다(리셋 아님).
     // 자동 다음 라운드면 그대로 이어간다.

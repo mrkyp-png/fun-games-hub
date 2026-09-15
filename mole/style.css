@@ -843,6 +843,24 @@ body { background: var(--lm-page); }
   from { left: -25%; }
   to { left: 125%; }
 }
+
+/* 챕터별 날씨(사용자 지정: 챕터6=비, 챕터9=눈) — game.js applyWeather() 가 매 라운드 채운다.
+   결과화면 실패연출에서 배운 것: 보드가 전체화면이 아니므로 top(%)을 직접 애니메이션 —
+   transform translateY(%)/vh 는 보드 크기와 안 맞아 안 쓴다. */
+#mole-weather { overflow: hidden; pointer-events: none; }
+#mole-weather.is-rain i {
+  position: absolute; top: -10%; width: 2px; height: 16px;
+  background: linear-gradient(rgba(150, 175, 215, 0), rgba(150, 175, 215, 0.8));
+  animation: weather-rain linear infinite;
+}
+@keyframes weather-rain { 0% { top: -10%; } 100% { top: 110%; } }
+#mole-weather.is-snow i {
+  position: absolute; top: -6%; border-radius: 50%; background: #fff;
+  box-shadow: 0 0 3px rgba(255, 255, 255, 0.8);
+  animation: weather-snow linear infinite;
+}
+@keyframes weather-snow { 0% { top: -6%; transform: translateX(0); } 100% { top: 106%; transform: translateX(var(--sway)); } }
+
 .mole-board-layer {
   position: absolute;
   inset: 0;
@@ -1236,11 +1254,12 @@ body { background: var(--lm-page); }
 @keyframes fail1-plaque-in { to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 
 /* 3) 빨간 도장 쾅 */
+/* 글자색 = 검정(사용자 지적: 빨간 글자가 하마 빨간 모자와 겹쳐 안 보임). 테두리는 빨강 유지. */
 .fail-stamp {
   position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%) rotate(-18deg) scale(3.5);
   width: 46%; aspect-ratio: 1; border-radius: 50%; border: 5px solid #d43b3b;
   display: flex; align-items: center; justify-content: center;
-  color: #d43b3b; font-weight: 900; font-size: 1.4rem; letter-spacing: 0.05em; mix-blend-mode: multiply;
+  color: #1c1c22; font-weight: 900; font-size: 1.3rem; letter-spacing: 0.02em; mix-blend-mode: multiply;
 }
 #gameover-overlay.fail-fx-3 .fail-stamp { animation: fail3-stamp-in 0.32s cubic-bezier(.5, 0, .9, .4) both; }
 @keyframes fail3-stamp-in {

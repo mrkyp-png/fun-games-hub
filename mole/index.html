@@ -139,6 +139,8 @@
       <img id="mole-emoji-img" class="mole-board-layer" alt="">
       <canvas id="mole-reveal-canvas" class="mole-board-layer"></canvas>
       <div id="mole-sky" aria-hidden="true"></div>
+      <!-- 챕터별 날씨(사용자 지정: 챕터6=비, 챕터9=눈) — game.js applyWeather() 가 챕터에 맞춰 채운다. -->
+      <div id="mole-weather" class="mole-board-layer" aria-hidden="true"></div>
       <div id="mole-hole-layer" class="mole-board-layer"></div>
       <div id="mole-pop-layer" class="mole-board-layer"></div>
       <div id="mole-hole-front-layer" class="mole-board-layer"></div>
@@ -171,7 +173,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v470</div>
+      <div id="build-tag" aria-hidden="true">v471</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -224,7 +226,7 @@
           <div class="fail-ribbon fail-ribbon--l"></div>
           <div class="fail-ribbon fail-ribbon--r"></div>
           <p class="fail-plaque" data-i18n="mole.fail.plaque">삼가 다시 도전...</p>
-          <div class="fail-stamp">FAIL</div>
+          <div class="fail-stamp" data-i18n="mole.fail.stamp">재도전</div>
           <div class="fail-dust-layer"></div>
           <div class="fail-heart-crack">💔</div>
           <div class="fail-heart-layer"></div>
@@ -608,7 +610,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=470').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=471').catch(function () {});
       }
     });
   }
