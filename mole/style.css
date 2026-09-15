@@ -1006,6 +1006,18 @@ body { background: var(--lm-page); }
     drop-shadow(0 0 7.5cqw #30e030);
   animation: bomb-strong-glow-pulse 0.9s ease-in-out infinite;
 }
+
+/* 강아지(-x, 시간 페널티 방해물) 오른쪽 앞발 위에 폭탄 오버레이(사용자 지정 — 기존 폭탄
+   이모지 재사용 + 좌우 거울상). 나머지 동물은 손 위치 미확정이라 강아지만 우선 적용. */
+.animal-bomb-box {
+  position: absolute; left: 50%; bottom: -4%; width: 100%; aspect-ratio: 6 / 7;
+  pointer-events: none; container-type: inline-size;
+}
+.animal-bomb-emoji {
+  position: absolute; left: 32%; top: 74%; font-size: 22cqw; line-height: 1;
+  transform: translate(-50%, -50%) scaleX(-1);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+}
 @keyframes bomb-strong-glow-pulse {
   0%, 100% { filter:
     drop-shadow(0 0 1cqw #baffb0) drop-shadow(0 0 2cqw #2adf3a)

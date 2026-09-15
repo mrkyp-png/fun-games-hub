@@ -91,6 +91,15 @@
       return box;
     }
 
+    // 강아지(-x) 오른쪽 앞발 위 폭탄 오버레이(사용자 지정) — mole-bomb-box 의 간단 버전,
+    // 시간 페널티 방해물이라 스파크 클러스터·색 글로우는 없이 이모지만.
+    function buildAnimalBombOverlay() {
+      const box = document.createElement('div');
+      box.className = 'animal-bomb-box';
+      box.innerHTML = '<div class="animal-bomb-emoji">\u{1F4A3}</div>';
+      return box;
+    }
+
     function makePop(pop) {
       const el = document.createElement('div');
       el.className = 'mole-pop mole-pop--' + pop.type;
@@ -103,6 +112,9 @@
       let bombEl = null;
       if (pop.bombKind) {
         bombEl = buildBombOverlay(pop.bombKind);
+        el.appendChild(bombEl);
+      } else if (pop.type === 'bomb' && MS.obstacleFile('animal', pop.poseIndex) === 'dog') {
+        bombEl = buildAnimalBombOverlay();
         el.appendChild(bombEl);
       }
       container.appendChild(el);
