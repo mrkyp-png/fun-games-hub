@@ -1885,7 +1885,9 @@
     results.forEach((r) => {
       if (r.ignored) return; // 연타 쿨다운 중 타격 — 점수·연출·콤보 변화 없음 (헛방도 아님)
       const effType = effectiveHitType(cfg, r.type);
-      if (effType === 'mole') {
+      // 폭탄 든 두더지(bombKind)는 챕터8 역할반전(reverseTarget)과 무관하게 항상 두더지
+      // 쪽 분기로 — 폭탄은 언제나 "두더지가 든 것"이지 동물로 옮겨간 게 아님(사용자 지정).
+      if (effType === 'mole' || r.bombKind) {
         if (r.juggle) {
           const before = run.combo.score;
           run.combo.onJuggle(JUGGLE_BONUS); // 콤보 +1 + 작은 고정 보너스 (점수표 안 씀)
