@@ -284,19 +284,12 @@
     }
 
     // 그 구멍에 떠 있는(침몰 안 한) 두더지의 현재 시각 프레임 키 — 망치가 프레임별로 조준한다.
-    // 챕터8 다타 동물(multiHitAnimal)도 두더지처럼 빠끔1/2 프레임이 있으므로 같은 방식으로
-    // 조준(사용자 지정: "두더지와 타격점 위치 같게"). 1타 동물은 항상 전신 이미지라 null(기존 eDy) 유지.
     function frameKeyAt(regionId) {
       let key = null;
       pops.forEach((m) => {
-        if (key || m.regionId !== regionId || m.dying) return;
-        if (m.kind === 'mole') {
-          const d = Math.round(m.shownDepth);
-          key = d <= 0 ? 'full' : d === 1 ? 'peek1' : d === 2 ? 'peek2' : 'helmet';
-        } else if (m.kind === 'animal' && m.multiHitAnimal) {
-          const d = Math.round(m.shownDepth);
-          key = d <= 0 ? 'full' : d === 1 ? 'peek1' : 'peek2';
-        }
+        if (key || m.regionId !== regionId || m.kind !== 'mole' || m.dying) return;
+        const d = Math.round(m.shownDepth);
+        key = d <= 0 ? 'full' : d === 1 ? 'peek1' : d === 2 ? 'peek2' : 'helmet';
       });
       return key;
     }
