@@ -140,6 +140,24 @@
       .catch(() => { cannonLoading = false; }); // 실패 시 hitBuffers/punchSynth 폴백
   }
 
+  // 골드 묠니르 전용 타격음(사용자 지정, 사용자가 고른 7종 — 회전 등장음은 그대로 유지,
+  // 이건 실제 두더지를 때릴 때 나는 소리). 대포와 같은 패턴 — 장착 중이면 이 풀에서 랜덤.
+  const GOLDHAMMER_HIT_URLS = [
+    'audio/goldhammer-sfx-01.mp3', 'audio/goldhammer-sfx-02.mp3', 'audio/goldhammer-sfx-04.mp3',
+    'audio/goldhammer-sfx-06.mp3', 'audio/goldhammer-sfx-10.mp3', 'audio/goldhammer-sfx-12.mp3',
+    'audio/goldhammer-sfx-15.mp3'
+  ];
+  let goldhammerHitBuffers = null;
+  let goldhammerHitLoading = false;
+  function loadGoldhammerHitBuffers(ctx) {
+    if (goldhammerHitBuffers || goldhammerHitLoading || typeof fetch !== 'function') return;
+    goldhammerHitLoading = true;
+    Promise.all(GOLDHAMMER_HIT_URLS.map((u) =>
+      fetch(u).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b))
+    )).then((bufs) => { goldhammerHitBuffers = bufs; })
+      .catch(() => { goldhammerHitLoading = false; }); // 실패 시 hitBuffers/punchSynth 폴백
+  }
+
   function isCannonEquipped() {
     try { return localStorage.getItem('mole.weapon') === 'cannon'; } catch (e) { return false; }
   }
@@ -405,7 +423,7 @@
     loadBombBlastBuffer(audioCtx); // 폭탄 든 두더지 처치음도 무기 무관 항상 프리로드
     if (isCannonEquipped()) { loadCannonBuffers(audioCtx); loadCannonRotateBuffer(audioCtx); loadCannonWheelBuffer(audioCtx); } // 대포 장착 중일 때만 폭발음·회전음·바퀴음 로드(망치 유저는 불필요한 다운로드 안 함)
     if (isAlipunchEquipped()) { loadPunchVoiceBuffers(audioCtx); loadFightBuffer(audioCtx); } // 알리 펀치 장착 중일 때만 보이스·fight음 로드
-    if (isGoldhammerEquipped()) loadGoldhammerSpinBuffer(audioCtx); // 골드해머 장착 중일 때만 회전 등장음 로드
+    if (isGoldhammerEquipped()) { loadGoldhammerSpinBuffer(audioCtx); loadGoldhammerHitBuffers(audioCtx); } // 골드해머 장착 중일 때만 회전 등장음+타격음 로드
     loadTapBuffers(audioCtx); // UI 탭음도 같이 프리로드
     return audioCtx;
   }
@@ -462,8 +480,10 @@
         (1 + (Math.random() * 2 - 1) * HIT_GAIN_JITTER));
       const rate = (light ? TAP_RATE : 1) * (1 + (Math.random() * 2 - 1) * HIT_PITCH_JITTER);
 
-      // 대포 장착 중이면 폭발음 풀에서, 아니면 기존 타격음 풀에서.
-      const pool = (isCannonEquipped() && cannonBuffers && cannonBuffers.length) ? cannonBuffers : hitBuffers;
+      // 대포 장착 중이면 폭발음 풀, 골드 묠니르면 전용 타격음 풀, 아니면 기존 타격음 풀.
+      const pool = (isCannonEquipped() && cannonBuffers && cannonBuffers.length) ? cannonBuffers
+        : (isGoldhammerEquipped() && goldhammerHitBuffers && goldhammerHitBuffers.length) ? goldhammerHitBuffers
+        : hitBuffers;
       if (pool && pool.length) {
         whenReady(ctx, () => {
           const src = ctx.createBufferSource();
