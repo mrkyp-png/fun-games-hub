@@ -1215,8 +1215,12 @@
     const BOMB_CHANCE_BY_ROUND = [0, 0, 0, 0, 0.08, 0.08, 0.09, 0.11, 0.12, 0.14];
     const STRONG_BOMB_CHANCE_BY_ROUND = [0, 0, 0, 0, 0, 0.02, 0.03, 0.04, 0.05, 0.06];
     const config = {
-      maxConcurrentMoles: isSmallBoardChapter() ? SMALL_CHAPTER_MOLES[roundNum - 1] : levelData.maxConcurrentMoles,
-      maxConcurrentAnimals: ch >= 3 ? levelData.maxConcurrentAnimals : 0,
+      // 챕터8은 동물이 타겟·두더지가 방해물로 뒤집히는데(reverseTarget), 표는 그대로 두면
+      // "타겟(동물)"이 더 적고 "방해물(두더지)"이 더 많아 거꾸로다(사용자 지적: "출몰 횟수는
+      // 바뀌어야함") — 두 표를 맞바꿔서 챕터8만 동물이 많고 두더지가 적게.
+      maxConcurrentMoles: isSmallBoardChapter() ? SMALL_CHAPTER_MOLES[roundNum - 1]
+        : (reverseTarget ? levelData.maxConcurrentAnimals : levelData.maxConcurrentMoles),
+      maxConcurrentAnimals: ch >= 3 ? (reverseTarget ? levelData.maxConcurrentMoles : levelData.maxConcurrentAnimals) : 0,
       maxConcurrentBombs: ch >= 5 ? levelData.maxConcurrentBombs : 0,
       bombChance: ch >= 5 ? BOMB_CHANCE_BY_ROUND[roundNum - 1] : 0,
       strongBombChance: ch >= 6 ? STRONG_BOMB_CHANCE_BY_ROUND[roundNum - 1] : 0,
@@ -1228,6 +1232,7 @@
       obstacles: ch >= 3,
       multiHit: ch >= 2,  // 챕터1: 다타(빼꼼) 없음 — 전부 1방(튜토리얼)
       fourHit: ch >= 7,   // 4타 두더지 (전신→빠끔1→빠끔2→모자)
+      animalMultiHit: ch === 8,  // 챕터8: 동물이 타겟이라 두더지처럼 다타 동물 도입(사용자 지정)
       reverseTarget: reverseTarget,
       dualTarget: dualTarget,
       obstacleRatioBoost: ch === 10 ? 1.1 : 1,   // 챕터10: 방해물(동물·폭탄) 스폰 빈도 10% 상향

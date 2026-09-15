@@ -124,7 +124,12 @@
       if (m.kind === 'mole') {
         return m.dying ? 'mole' + (m.poseIndex + 1) : MS.fileForDepth(Math.round(depth), m.poseIndex);
       }
-      return MS.obstacleFile(m.kind, m.poseIndex);
+      const base = MS.obstacleFile(m.kind, m.poseIndex);
+      // 동물 다타(챕터8) — 침몰 중엔 두더지처럼 전신 그대로, 아니면 깊이별 빠끔 프레임(있으면).
+      if (m.kind === 'animal' && !m.dying) {
+        return MS.animalFileForDepth(base, Math.round(depth)) || base;
+      }
+      return base;
     }
 
     // 포즈 파일명 → 실제 그릴 URL. 두더지 + 활성 얼굴이면 합성본, 아니면 기본 스프라이트.
@@ -203,7 +208,10 @@
 
     function targetFor(pop) {
       if (pop.dying) return GONE_DEPTH;
-      return pop.type === 'mole' ? MS.restingDepth(pop.hitsRequired, pop.hitsTaken) : 0;
+      if (pop.type === 'mole') return MS.restingDepth(pop.hitsRequired, pop.hitsTaken);
+      // 동물 다타(챕터8 전용, 사용자 지정) — hitsRequired>1 일 때만 두더지처럼 빠끔 단계를 밟는다.
+      if (pop.type === 'animal' && pop.hitsRequired > 1) return MS.animalRestingDepth(pop.hitsRequired, pop.hitsTaken);
+      return 0;
     }
 
     function advance(m, dt) {

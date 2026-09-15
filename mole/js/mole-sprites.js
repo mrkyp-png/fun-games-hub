@@ -70,6 +70,20 @@
     return OBSTACLES[index % OBSTACLE_COUNT] + (type === 'bomb' ? '-x' : '');
   }
 
+  // 동물 다타(챕터8 전용, 동물이 타겟으로 뒤집히는 챕터라 두더지처럼 다타 도입 — 사용자 지정).
+  // 두더지와 같은 깊이 사다리를 쓰되 애셋이 2장(peek1/peek2)뿐이라 2단계까지만: 전신→빠끔1→빠끔2.
+  const ANIMAL_DEPTH_FILE = { 1: 'peek1', 2: 'peek2' };
+  function animalRestingDepth(hitsRequired, hitsTaken) {
+    if (hitsRequired === 2) return hitsTaken === 0 ? 0 : 2; // 두더지 2타와 동일 패턴(중간 생략)
+    if (hitsRequired === 3) return Math.min(hitsTaken, 2);  // 두더지 3타와 동일 패턴(클램프)
+    return 0;
+  }
+  function animalFileForDepth(animalName, depth) {
+    if (depth <= 0) return animalName;
+    const suf = ANIMAL_DEPTH_FILE[depth];
+    return suf ? (animalName + '-' + suf) : null;
+  }
+
   function spriteUrl(file) {
     return 'assets/moles/' + file + '.png';
   }
@@ -83,7 +97,7 @@
     const files = [];
     for (let i = 1; i <= POSE_COUNT; i++) files.push('mole' + i);
     files.push('peek1', 'peek2', 'helmet', 'hole', 'hole-front', 'shield');
-    OBSTACLES.forEach(function (o) { files.push(o, o + '-x'); });
+    OBSTACLES.forEach(function (o) { files.push(o, o + '-x', o + '-peek1', o + '-peek2'); });
     preloadRefs = files.map(function (f) {
       const img = new Image();
       img.src = spriteUrl(f);
@@ -99,7 +113,8 @@
 
   const api = {
     POSE_COUNT, OBSTACLE_COUNT, HEAD_ANCHOR,
-    restingDepth, fileForDepth, sinkForDepth, obstacleFile, spriteUrl, preloadAll, headAnchor
+    restingDepth, fileForDepth, sinkForDepth, obstacleFile, spriteUrl, preloadAll, headAnchor,
+    animalRestingDepth, animalFileForDepth
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.MoleSprites = api; }

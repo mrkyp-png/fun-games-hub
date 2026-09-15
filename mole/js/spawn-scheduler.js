@@ -17,6 +17,10 @@
   // 대포 연사 스킬: 2·3타 두더지를 "전신 상태에서" 대포로 처음 맞히는 순간 10% 확률로 발동
   //   → 남은 타격이 자동 연사돼 1마리 즉시 클리어. 판정은 스폰이 아니라 "타격 시".
   const BURST_CHANCE = 0.10;
+  // 동물 다타(챕터8 전용, config.animalMultiHit — 사용자 지정): 두더지와 같은 굴림 구조,
+  // 다만 애셋이 2단계뿐이라 4타는 없음. 10% 3히트 / 다음 25% 2히트 / 나머지 1히트.
+  const ANIMAL_THREE_HIT_CHANCE = 0.10;
+  const ANIMAL_TWO_HIT_CHANCE = 0.35;
   // 여러 번 때리려면 화면에 더 오래 떠 있어야 후반 레벨에서도 잡을 수 있다.
   const DURATION_MULT = { 1: 1, 2: 1.7, 3: 2.4, 4: 3.1 };
   const HIT_COOLDOWN = 0.12;  // 같은 두더지 연타 방지 간격 (초)
@@ -94,6 +98,13 @@
       return r < THREE_HIT_CHANCE ? 3 : r < TWO_HIT_CHANCE ? 2 : 1;
     }
 
+    // 동물 다타(챕터8 — 동물이 타겟으로 뒤집히는 챕터라 두더지처럼 다타 도입, 사용자 지정).
+    function rollAnimalKind() {
+      if (!config.animalMultiHit) return 1;
+      const r = rng.next();
+      return r < ANIMAL_THREE_HIT_CHANCE ? 3 : r < ANIMAL_TWO_HIT_CHANCE ? 2 : 1;
+    }
+
     function trySpawn(type) {
       if (maxOf(type) <= 0 || activeCountOf(type) >= maxOf(type)) return null;
       const candidates = candidateSpawnPointsFor(type);
@@ -123,6 +134,12 @@
         pop.remaining = config.popDuration * DURATION_MULT[pop.hitsRequired] + (config.moleUpBonus || 0);
       } else {
         pop.poseIndex = Math.floor(rng.next() * (config.obstacleCount || 5)); // 어느 동물인지
+        if (type === 'animal') {
+          pop.hitsRequired = rollAnimalKind();
+          pop.hitsTaken = 0;
+          // 다타 동물도 두더지처럼 더 오래 떠 있어야 여러 번 때릴 시간이 생긴다.
+          pop.remaining = config.popDuration * (DURATION_MULT[pop.hitsRequired] || 1);
+        }
       }
       pop.sinkIn = 0; // > 0 이면: 최종 타격을 맞았고 이 시간 뒤에 침몰(dying) 시작
       pop.killed = false; // 실제로 타격당해 처치됐는가 (시간초과로 내려간 것과 구분 — 저글 오발 방지)
@@ -198,18 +215,19 @@
       }
       if (pop.dying || pop.sinkIn > 0) return null; // 이미 처치됐거나(침몰) 시간초과로 내려가는 중 — 헛방
 
-      if (pop.type === 'mole' && pop.hitsRequired > 1) {
-        // 연타 쿨다운 중 = 유효한 두더지가 떠 있는데 무시하는 것 → 헛방 아님(콤보 리셋 X).
-        if (pop.hitCooldown > 0 && !isAuto) return { type: 'mole', regionId: pop.regionId, ignored: true, xFrac: pop.x, yFrac: pop.y };
-        // 골드 묠니르 지진 / 알리 판취 = 2·3타 두더지도 한 번에 소탕(사용자 지정) — 남은 타수를
-        // 한꺼번에 채워 바로 아래 최종 타격 처리로 넘어간다.
+      // 동물 다타(챕터8, config.animalMultiHit) 도 두더지와 같은 다타 처리 경로를 탄다(사용자 지정).
+      if ((pop.type === 'mole' || pop.type === 'animal') && pop.hitsRequired > 1) {
+        // 연타 쿨다운 중 = 유효한 타겟이 떠 있는데 무시하는 것 → 헛방 아님(콤보 리셋 X).
+        if (pop.hitCooldown > 0 && !isAuto) return { type: pop.type, regionId: pop.regionId, ignored: true, xFrac: pop.x, yFrac: pop.y };
+        // 골드 묠니르 지진 / 알리 판취 = 2·3타 두더지·동물도 한 번에 소탕(사용자 지정) — 남은
+        // 타수를 한꺼번에 채워 바로 아래 최종 타격 처리로 넘어간다.
         var fullClear = !!(opts && (opts.quake || opts.alipunch));
         pop.hitsTaken = fullClear ? pop.hitsRequired : pop.hitsTaken + 1;
         // 전신(첫 타) + 대포 → 10% 로 연사 발동. 판정은 이 타격 순간.
         if (!fullClear && pop.hitsTaken === 1 && (pop._forceBurst || (config.cannonBurst && rng.next() < BURST_CHANCE))) pop.burstActive = true;
         if (pop.hitsTaken < pop.hitsRequired) {
           pop.hitCooldown = HIT_COOLDOWN;
-          return { type: 'mole', regionId: pop.regionId, done: false, xFrac: pop.x, yFrac: pop.y, hitsTaken: pop.hitsTaken, hitsRequired: pop.hitsRequired, burst: !!pop.burstActive };
+          return { type: pop.type, regionId: pop.regionId, done: false, xFrac: pop.x, yFrac: pop.y, hitsTaken: pop.hitsTaken, hitsRequired: pop.hitsRequired, burst: !!pop.burstActive };
         }
       }
 
