@@ -171,7 +171,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v467</div>
+      <div id="build-tag" aria-hidden="true">v468</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -214,6 +214,8 @@
         <p id="gameover-reason" class="go-word">성공</p>
         <div class="go-hippo-wrap"><img id="gameover-hippo" class="go-hippo" alt="" draggable="false"></div>
         <p id="gameover-score" class="gameover-score">0점</p>
+        <!-- 불꽃놀이 전용 레이어 — 색종이(.go-confetti)와 달리 하마 위로 겹쳐도 됨(사용자 지정). -->
+        <div class="go-fireworks" aria-hidden="true"></div>
       </div>
 
       <!-- 라운드 시작 카운트다운 (매 라운드: "라운드 N" → 3·2·1·시작!) -->
@@ -591,7 +593,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=467').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=468').catch(function () {});
       }
     });
   }

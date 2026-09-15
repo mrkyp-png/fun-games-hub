@@ -801,6 +801,7 @@
     const go = document.getElementById('gameover-overlay');
     go.hidden = true; go.classList.remove('is-win', 'is-lose', 'is-sliding');
     const cf = go.querySelector('.go-confetti'); if (cf) cf.innerHTML = '';
+    const fwc = go.querySelector('.go-fireworks'); if (fwc) fwc.innerHTML = '';
     if (winFxTimer) { clearInterval(winFxTimer); winFxTimer = null; }
     const rsh = document.getElementById('result-swipe-hint');
     if (rsh) { rsh.hidden = true; rsh.classList.remove('is-on'); }
@@ -2102,6 +2103,7 @@
       ov.hidden = true;
       ov.classList.remove('is-sliding', 'is-win', 'is-lose');
       ov.querySelector('.go-confetti').innerHTML = '';
+      ov.querySelector('.go-fireworks').innerHTML = '';
       if (winFxTimer) { clearInterval(winFxTimer); winFxTimer = null; }
       bs.classList.remove('nc-enter', 'nc-enter--on');
     }, 360);
@@ -2146,6 +2148,8 @@
     // 축하 색종이+반짝이 / 실패 빗줄기 — 글자·하마가 중앙에 다 날아온(fly-in 0.4s) 뒤에 채운다.
     const conf = ov.querySelector('.go-confetti');
     conf.innerHTML = '';
+    const fw = ov.querySelector('.go-fireworks'); // 색종이와 별개 레이어(하마 위로 겹쳐도 됨)
+    fw.innerHTML = '';
 
     // 하마 = 기쁨/슬픔 3포즈 중 랜덤 1개
     const poseN = 1 + Math.floor(Math.random() * 3);
@@ -2204,7 +2208,7 @@
             p.style.setProperty('--h', String(Math.round(hue + (Math.random() * 40 - 20))));
             p.style.setProperty('--dx', (Math.cos(ang) * dist).toFixed(0) + 'px');
             p.style.setProperty('--dy', (Math.sin(ang) * dist).toFixed(0) + 'px');
-            conf.appendChild(p);
+            fw.appendChild(p);
             pieces.push(p);
           }
           // 애니메이션(0.9s) 다 끝난 파편은 정리 — 계속 반복이라 안 지우면 DOM 이 무한히 쌓임.

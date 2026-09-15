@@ -1149,9 +1149,9 @@ body { background: var(--lm-page); }
 #gameover-overlay.is-win .go-rays { display: none; }
 @keyframes go-rays-spin { to { transform: rotate(360deg); } }
 
-/* 축하 색종이 / 실패 빗줄기 — 계속 반복 */
-/* z-index 3 = 글자/하마(z-index 2)보다 위 — 불꽃놀이가 하마를 가려도 된다(사용자 지정). */
-.go-confetti { position: absolute; inset: 0; z-index: 3; pointer-events: none; overflow: hidden; }
+/* 축하 색종이 / 실패 빗줄기 — 계속 반복. z-index 1 = 글자/하마(z-index 2)보다 아래,
+   색종이가 하마를 가리면 안 된다(사용자 지정). */
+.go-confetti { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
 .go-confetti i {
   position: absolute; top: -12%;
   width: 9px; height: 14px; border-radius: 2px;
@@ -1160,9 +1160,11 @@ body { background: var(--lm-page); }
 #gameover-overlay.is-win .go-confetti i {
   background: hsl(var(--h, 40) 90% 60%);
 }
-/* 불꽃놀이(사용자 지정, 성공화면 색종이 대체) — 파편이 방사형으로 튀어나갔다 사그라든다.
-   기존 낙하형(go-fall) 대신 --dx/--dy 로 각자 다른 방향·거리를 받는다. */
-.go-confetti i.go-spark {
+/* 불꽃놀이(사용자 지정, 성공화면 색종이에 추가) — 색종이와 별개 레이어(.go-fireworks),
+   z-index 3 = 글자/하마(z-index 2)보다 위라 하마를 가려도 된다(사용자 지정). 파편이 방사형으로
+   튀어나갔다 사그라든다. 낙하형(go-fall) 대신 --dx/--dy 로 각자 다른 방향·거리를 받는다. */
+.go-fireworks { position: absolute; inset: 0; z-index: 3; pointer-events: none; overflow: hidden; }
+.go-fireworks i {
   position: absolute; top: 0; width: 5px; height: 5px; border-radius: 50%;
   background: hsl(var(--h, 40) 95% 62%);
   box-shadow: 0 0 4px hsl(var(--h, 40) 95% 62%);
