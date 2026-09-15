@@ -1151,8 +1151,8 @@ body { background: var(--lm-page); }
       #ff6b6b, #ffb03a, #ffe14d, #63d98a, #4ccfff, #a879ff, #ff6fb0, #ff6b6b);
   animation: go-rays-spin 18s linear infinite;
 }
-/* 승리 화면은 색종이만(사용자 요청) — 광선 효과는 끔. */
-#gameover-overlay.is-win .go-rays { display: none; }
+/* 승리 화면 — 색종이+불꽃놀이에 광선도 다시 적용(사용자 지정, 이전엔 색종이만 하려고 껐었음). */
+#gameover-overlay.is-win .go-rays { opacity: 1; }
 @keyframes go-rays-spin { to { transform: rotate(360deg); } }
 
 /* 축하 색종이 / 실패 빗줄기 — 계속 반복. z-index 1 = 글자/하마(z-index 2)보다 아래,
@@ -1194,6 +1194,106 @@ body { background: var(--lm-page); }
   0% { transform: translateY(-10vh); }
   100% { transform: translateY(150vh); }
 }
+
+/* 실패 추가 연출 4종(사용자 지정, fail-fx-more.html 후보 1/3/4/8) — 매 실패마다 랜덤 1개만
+   game.js 가 #gameover-overlay 에 fail-fx-1/3/4/8 클래스를 붙여 재생. 기존 빗줄기(go-rain)는
+   안 건드리고 그 위에 얹힌다. 하마(z-index 2)보다 위(z-index 3, 불꽃놀이와 같은 급)라 가려도 됨. */
+.fail-fx-layer { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.fail-fx-layer > * { opacity: 0; }
+/* 파편이 JS 로 나중에 채워지는 빈 래퍼(dust/heart/ash-layer)는 자신은 항상 보이게(opacity 1) —
+   위 기본값 때문에 래퍼 자체가 0으로 남아 안에 넣은 파편이 다 안 보이던 버그. 빈 상태일 땐 어차피
+   내용이 없어 그냥 안 보이니 무해함. */
+.fail-dust-layer, .fail-heart-layer, .fail-ash-layer { opacity: 1; }
+
+/* 1) 장례식 액자 */
+.fail-frame {
+  position: absolute; inset: 8%; border: 0 solid #222; border-radius: 6px;
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+}
+#gameover-overlay.fail-fx-1 .fail-frame { animation: fail1-frame-in 0.5s 0.1s cubic-bezier(.2, 1, .4, 1) both; }
+@keyframes fail1-frame-in {
+  0% { border-width: 0; box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+  100% { border-width: 10px; box-shadow: 0 0 0 4px #fff, 0 8px 18px rgba(0, 0, 0, .35); }
+}
+.fail-ribbon {
+  position: absolute; top: 6%; width: 46px; height: 46px;
+  background: linear-gradient(135deg, #111 45%, #444 50%, #111 55%);
+  clip-path: polygon(0 0, 100% 0, 0 100%); transform: scale(0.4);
+}
+.fail-ribbon--l { left: 6%; }
+.fail-ribbon--r { right: 6%; transform: scaleX(-1) scale(0.4); }
+#gameover-overlay.fail-fx-1 .fail-ribbon--l { animation: fail1-ribbon-in 0.4s 0.55s cubic-bezier(.3, 1.6, .5, 1) both; }
+#gameover-overlay.fail-fx-1 .fail-ribbon--r { animation: fail1-ribbon-in-r 0.4s 0.55s cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes fail1-ribbon-in { 0% { opacity: 0; transform: scale(0.3) rotate(-30deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
+@keyframes fail1-ribbon-in-r { 0% { opacity: 0; transform: scaleX(-1) scale(0.3) rotate(-30deg); } 100% { opacity: 1; transform: scaleX(-1) scale(1) rotate(0); } }
+/* bottom:10% 이 점수(0점/1,000점)와 겹쳐서(사용자 지적) 점수 아래 여백으로 내림. */
+.fail-plaque {
+  position: absolute; left: 50%; bottom: 2%; transform: translateX(-50%) translateY(10px); margin: 0;
+  background: #1c1c22; color: #d8b06a; padding: 5px 16px; border-radius: 3px;
+  font-size: 0.82rem; font-weight: 700; letter-spacing: 0.04em; border: 1px solid #d8b06a; white-space: nowrap;
+}
+#gameover-overlay.fail-fx-1 .fail-plaque { animation: fail1-plaque-in 0.4s 0.9s ease-out both; }
+@keyframes fail1-plaque-in { to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+/* 3) 빨간 도장 쾅 */
+.fail-stamp {
+  position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%) rotate(-18deg) scale(3.5);
+  width: 46%; aspect-ratio: 1; border-radius: 50%; border: 5px solid #d43b3b;
+  display: flex; align-items: center; justify-content: center;
+  color: #d43b3b; font-weight: 900; font-size: 1.4rem; letter-spacing: 0.05em; mix-blend-mode: multiply;
+}
+#gameover-overlay.fail-fx-3 .fail-stamp { animation: fail3-stamp-in 0.32s cubic-bezier(.5, 0, .9, .4) both; }
+@keyframes fail3-stamp-in {
+  0% { opacity: 0; transform: translate(-50%, -50%) rotate(-18deg) scale(3.5); }
+  70% { opacity: 1; }
+  100% { opacity: 1; transform: translate(-50%, -50%) rotate(-18deg) scale(1); }
+}
+#gameover-overlay.fail-fx-3 { animation: fail3-thud 0.22s 0.3s; }
+@keyframes fail3-thud { 0%, 100% { transform: translate(0, 0); } 40% { transform: translate(0, 4px); } }
+.fail-dust-layer i {
+  position: absolute; left: 50%; top: 42%; width: 6px; height: 6px; border-radius: 50%; background: #caa;
+}
+#gameover-overlay.fail-fx-3 .fail-dust-layer i { animation: fail3-dust-go 0.5s 0.3s ease-out both; }
+@keyframes fail3-dust-go {
+  0% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.4); }
+}
+
+/* 4) 하트 산산조각 */
+.fail-heart-crack {
+  position: absolute; left: 50%; top: 30%; transform: translate(-50%, -50%) scale(0.3); font-size: 3.2rem;
+}
+#gameover-overlay.fail-fx-4 .fail-heart-crack { animation: fail4-crack-pop 0.4s cubic-bezier(.4, 1.6, .5, 1) both; }
+@keyframes fail4-crack-pop { 0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; } 60% { opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1.3); opacity: 0; } }
+.fail-heart-layer i { position: absolute; top: -8%; font-size: 2.2rem; font-style: normal; }
+#gameover-overlay.fail-fx-4 .fail-heart-layer i { animation: fail4-fall linear forwards; opacity: 1; }
+/* vh 로 고쳤던 것도 틀렸음 — #gameover-overlay 자체가 360px 안팎(전체 화면이 아니라 보드
+   크기)이라 vh 기준 낙하거리가 보드보다 훨씬 커서 순식간에 overflow:hidden 밖으로 빠져나가
+   안 보였다. top(컨테이너 기준 %)을 직접 애니메이션해야 보드 안에서 정확히 떨어진다 —
+   transform 은 회전만 담당. */
+@keyframes fail4-fall {
+  0% { top: -8%; transform: rotate(0deg); opacity: 1; }
+  100% { top: 112%; transform: rotate(var(--rot)); opacity: 0.9; }
+}
+
+/* 8) 재 낙하 + 흑백 톤 */
+.fail-ash-layer i { position: absolute; top: -5%; width: 5px; height: 5px; border-radius: 50%; background: #9a9aa0; }
+#gameover-overlay.fail-fx-8 .fail-ash-layer i { animation: fail8-drift linear forwards; }
+/* 위와 같은 이유로 top(%)을 직접 애니메이션 — transform 은 좌우 흔들림(px)만 담당. */
+@keyframes fail8-drift {
+  0% { opacity: 0; top: -5%; transform: translateX(0); }
+  10% { opacity: 0.8; }
+  100% { opacity: 0; top: 110%; transform: translateX(var(--sway)); }
+}
+#gameover-overlay.fail-fx-8 .go-hippo-wrap,
+#gameover-overlay.fail-fx-8 .go-word { animation: fail8-gray 1s ease-out both; }
+@keyframes fail8-gray { to { filter: grayscale(0.75) brightness(0.85); } }
+.fail-vignette {
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 45%, transparent 30%, rgba(20, 20, 25, .35) 100%);
+}
+#gameover-overlay.fail-fx-8 .fail-vignette { animation: fail8-vig-in 0.8s ease-out both; }
+@keyframes fail8-vig-in { to { opacity: 1; } }
 
 /* 다음 챕터 placeholder — 오른쪽에서 슬라이드 인 */
 #next-chapter-panel {
@@ -1393,8 +1493,9 @@ body { background: var(--lm-page); }
 @keyframes si-blink { 50% { opacity: 0; } }
 
 /* 챕터8 안내: "소제목" 줄이 텍스트 타이핑 대신 [두더지] FACE OFF [토끼] 로 등장(사용자 지정). */
-.si-line2.si-faceoff-in { display: flex; align-items: center; gap: 8px; animation: si-faceoff-pop 0.4s cubic-bezier(.2, 1.4, .5, 1); }
-.si-faceoff-img { height: 1.7rem; width: auto; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25)); }
+/* 이미지를 1.5배 키우고(1.7rem→2.55rem) 텍스트 줄(baseline)에 맞춤(사용자 지정). */
+.si-line2.si-faceoff-in { display: flex; align-items: baseline; gap: 8px; animation: si-faceoff-pop 0.4s cubic-bezier(.2, 1.4, .5, 1); }
+.si-faceoff-img { height: 2.55rem; width: auto; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25)); }
 .si-faceoff-txt { font-style: normal; }
 @keyframes si-faceoff-pop { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
 

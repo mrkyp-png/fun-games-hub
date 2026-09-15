@@ -171,7 +171,7 @@
       </div>
 
       <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v469</div>
+      <div id="build-tag" aria-hidden="true">v470</div>
       <div id="board-start" class="board-panel board-start">
 
         <!-- 첫 방문: 전체 인트로 대화 -->
@@ -216,6 +216,21 @@
         <p id="gameover-score" class="gameover-score">0점</p>
         <!-- 불꽃놀이 전용 레이어 — 색종이(.go-confetti)와 달리 하마 위로 겹쳐도 됨(사용자 지정). -->
         <div class="go-fireworks" aria-hidden="true"></div>
+        <!-- 실패 추가 연출(사용자 지정 4종 중 매번 랜덤 1개, fail-fx-more.html 후보) — 기존
+             빗줄기(go-confetti)는 그대로 유지, 이 위에 얹힌다. game.js 가 fail-fx-1/3/4/8
+             중 하나를 #gameover-overlay 에 붙여 그 하나만 재생시킨다. -->
+        <div class="fail-fx-layer" aria-hidden="true">
+          <div class="fail-frame"></div>
+          <div class="fail-ribbon fail-ribbon--l"></div>
+          <div class="fail-ribbon fail-ribbon--r"></div>
+          <p class="fail-plaque" data-i18n="mole.fail.plaque">삼가 다시 도전...</p>
+          <div class="fail-stamp">FAIL</div>
+          <div class="fail-dust-layer"></div>
+          <div class="fail-heart-crack">💔</div>
+          <div class="fail-heart-layer"></div>
+          <div class="fail-ash-layer"></div>
+          <div class="fail-vignette"></div>
+        </div>
       </div>
 
       <!-- 라운드 시작 카운트다운 (매 라운드: "라운드 N" → 3·2·1·시작!) -->
@@ -593,7 +608,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=469').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=470').catch(function () {});
       }
     });
   }

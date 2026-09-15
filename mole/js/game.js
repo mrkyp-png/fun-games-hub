@@ -802,6 +802,11 @@
     go.hidden = true; go.classList.remove('is-win', 'is-lose', 'is-sliding');
     const cf = go.querySelector('.go-confetti'); if (cf) cf.innerHTML = '';
     const fwc = go.querySelector('.go-fireworks'); if (fwc) fwc.innerHTML = '';
+    go.classList.remove('fail-fx-1', 'fail-fx-3', 'fail-fx-4', 'fail-fx-8');
+    ['fail-dust-layer', 'fail-heart-layer', 'fail-ash-layer'].forEach((cls) => {
+      const el = go.querySelector('.' + cls);
+      if (el) el.innerHTML = '';
+    });
     if (winFxTimer) { clearInterval(winFxTimer); winFxTimer = null; }
     const rsh = document.getElementById('result-swipe-hint');
     if (rsh) { rsh.hidden = true; rsh.classList.remove('is-on'); }
@@ -2104,6 +2109,11 @@
       ov.classList.remove('is-sliding', 'is-win', 'is-lose');
       ov.querySelector('.go-confetti').innerHTML = '';
       ov.querySelector('.go-fireworks').innerHTML = '';
+      ov.classList.remove('fail-fx-1', 'fail-fx-3', 'fail-fx-4', 'fail-fx-8');
+      ['fail-dust-layer', 'fail-heart-layer', 'fail-ash-layer'].forEach((cls) => {
+        const el = ov.querySelector('.' + cls);
+        if (el) el.innerHTML = '';
+      });
       if (winFxTimer) { clearInterval(winFxTimer); winFxTimer = null; }
       bs.classList.remove('nc-enter', 'nc-enter--on');
     }, 360);
@@ -2150,6 +2160,12 @@
     conf.innerHTML = '';
     const fw = ov.querySelector('.go-fireworks'); // 색종이와 별개 레이어(하마 위로 겹쳐도 됨)
     fw.innerHTML = '';
+    // 실패 추가 연출 4종(사용자 지정) — 이전 라운드에서 붙은 클래스·파편 정리.
+    ov.classList.remove('fail-fx-1', 'fail-fx-3', 'fail-fx-4', 'fail-fx-8');
+    ['fail-dust-layer', 'fail-heart-layer', 'fail-ash-layer'].forEach((cls) => {
+      const el = ov.querySelector('.' + cls);
+      if (el) el.innerHTML = '';
+    });
 
     // 하마 = 기쁨/슬픔 3포즈 중 랜덤 1개
     const poseN = 1 + Math.floor(Math.random() * 3);
@@ -2217,7 +2233,7 @@
         spawnBurst();
         winFxTimer = setInterval(spawnBurst, 260);
       } else {
-        // 실패 빗줄기 3배 증량(사용자 지정).
+        // 실패 빗줄기 3배 증량(사용자 지정) — 그대로 유지.
         const n = 600;
         for (let k = 0; k < n; k++) {
           const p = document.createElement('i');
@@ -2225,6 +2241,43 @@
           p.style.animationDelay = (Math.random() * 2.8) + 's';
           p.style.animationDuration = (2.4 + Math.random() * 1.8) + 's';
           conf.appendChild(p);
+        }
+        // 실패 추가 연출 4종(사용자 지정, fail-fx-more.html 후보 1/3/4/8) 중 매번 랜덤 1개 —
+        // 빗줄기는 그대로 두고 이 위에 얹힌다.
+        const FAIL_FX = ['fail-fx-1', 'fail-fx-3', 'fail-fx-4', 'fail-fx-8'];
+        const pick = FAIL_FX[Math.floor(Math.random() * FAIL_FX.length)];
+        ov.classList.add(pick);
+        if (pick === 'fail-fx-3') {
+          const dustLayer = ov.querySelector('.fail-dust-layer');
+          for (let i = 0; i < 16; i++) {
+            const d = document.createElement('i');
+            const ang = Math.random() * Math.PI * 2, dist = 30 + Math.random() * 50;
+            d.style.setProperty('--dx', (Math.cos(ang) * dist).toFixed(0) + 'px');
+            d.style.setProperty('--dy', (Math.sin(ang) * dist).toFixed(0) + 'px');
+            dustLayer.appendChild(d);
+          }
+        } else if (pick === 'fail-fx-4') {
+          const heartLayer = ov.querySelector('.fail-heart-layer');
+          for (let i = 0; i < 14; i++) {
+            const h = document.createElement('i');
+            h.textContent = '💔';
+            h.style.left = (Math.random() * 90) + '%';
+            h.style.top = '-8%';
+            h.style.animationDuration = (0.9 + Math.random() * 0.6) + 's';
+            h.style.animationDelay = (0.3 + Math.random() * 0.5) + 's';
+            h.style.setProperty('--rot', (Math.random() * 360 - 180) + 'deg');
+            heartLayer.appendChild(h);
+          }
+        } else if (pick === 'fail-fx-8') {
+          const ashLayer = ov.querySelector('.fail-ash-layer');
+          for (let i = 0; i < 30; i++) {
+            const a = document.createElement('i');
+            a.style.left = (Math.random() * 100) + '%';
+            a.style.setProperty('--sway', (Math.random() * 40 - 20).toFixed(0) + 'px');
+            a.style.animationDuration = (1.6 + Math.random() * 1.2) + 's';
+            a.style.animationDelay = (Math.random() * 0.6) + 's';
+            ashLayer.appendChild(a);
+          }
         }
       }
     }, 400); // 글자·하마 fly-in(0.4s) 끝난 뒤
@@ -2492,7 +2545,10 @@
     });
     inventoryScreen = MG.InventoryScreen.create({
       root: document.getElementById('inventory-screen'),
-      onClose: () => screenNav.back(),
+      // 보관창에서 무기 변경 후 더보기로 돌아왔을 때 라이트 DIM/OFF 잠금 표시가 그대로 남아있던
+      // 버그(사용자 지정: "늦다/버퍼링 심함") — 실제로는 지연이 아니라 more-menu.refresh() 를
+      // 안 불러서 다음 번 완전 재오픈 전까지 안 바뀌던 것. 돌아갈 때 바로 갱신.
+      onClose: () => { screenNav.back(); if (moreMenu) moreMenu.refresh(); },
       // 게임 진행 중(라운드1~클리어)엔 무기 변경 잠금. 홈·게임오버 후엔 허용.
       gameInProgress: () => !!(state && !state.ended),
       // 챕터1~3은 뿅망치만 사용(사용자 지정) — 선택된 챕터 기준으로 다른 무기 장착 자체를 막는다.
