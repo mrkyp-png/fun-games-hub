@@ -14,7 +14,12 @@
   const TAP_RATE = 1.35;          // 다타 중간타는 재생속도를 올려 더 가볍고 높게
 
   // 두더지 처치 타격음 파일 (사용자 제공, 바탕화면 타격소리1~4 → 정규화/트리밍). 타격마다 랜덤 1개 + 지터.
-  const HIT_URLS = ['audio/hit1.mp3', 'audio/hit2.mp3', 'audio/hit3.mp3', 'audio/hit4.mp3'];
+  const HIT_URLS = [
+    'audio/hammer-sfx-01.mp3', 'audio/hammer-sfx-02.mp3', 'audio/hammer-sfx-03.mp3',
+    'audio/hammer-sfx-04.mp3', 'audio/hammer-sfx-05.mp3', 'audio/hammer-sfx-06.mp3',
+    'audio/hammer-sfx-07.mp3', 'audio/hammer-sfx-08.mp3', 'audio/hammer-sfx-09.mp3',
+    'audio/hammer-sfx-10.mp3'
+  ];
   let hitBuffers = null;   // AudioBuffer[] (디코드 완료 후)
   let hitLoading = false;
 
