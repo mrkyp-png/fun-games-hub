@@ -1519,6 +1519,7 @@ body { background: var(--lm-page); }
   font-size: 2.4rem;
   font-weight: 900;
   letter-spacing: 0.02em;
+  word-break: keep-all;
 }
 .si-line2 {
   position: relative; z-index: 1;
@@ -1528,6 +1529,7 @@ body { background: var(--lm-page); }
   font-size: 1.9rem;
   font-weight: 800;
   letter-spacing: 0.02em;
+  word-break: keep-all;
 }
 .si-line3 {
   position: relative; z-index: 1;
@@ -1537,6 +1539,7 @@ body { background: var(--lm-page); }
   font-weight: 700;
   text-align: center;
   padding: 0 10%;
+  word-break: keep-all;
 }
 .si-caret { display: inline-block; width: 2px; height: 1em; background: currentColor; animation: si-blink 0.8s step-end infinite; }
 .si-caret[hidden] { display: none; }
