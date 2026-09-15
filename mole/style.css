@@ -865,9 +865,15 @@ body { background: var(--lm-page); }
   transform: translate(-50%, -38%);
   margin-top: 0.7%;
   object-fit: contain;
-  /* 구멍을 회색 돌턱 톤으로 — 흙색 두더지와 색이 겹쳐 구분이 안 되던 문제 해결 (사용자 요청).
-     PNG 원본은 그대로(재슬라이스해도 유지) 두고 여기서만 탈색. 밝기 값만 조절하면 됨. */
-  filter: grayscale(1) brightness(1.4) contrast(0.98);
+}
+/* 구멍을 회색 돌턱 톤으로 — 흙색 두더지와 색이 겹쳐 구분이 안 되던 문제 해결 (사용자 요청).
+   PNG 원본은 그대로(재슬라이스해도 유지) 두고 여기서만 탈색. 입체감 추가(사용자 지정 3가지):
+   1) contrast 상향(0.98→1.25 안팎)으로 흙더미 요철 음영을 다시 살림.
+   2) 뒤 구멍(.mole-hole)은 더 어둡게 — "안으로 파인" 느낌 강조.
+   3) 앞턱(.mole-hole-front)은 더 밝게 + drop-shadow로 그림자를 드리워 "튀어나온" 느낌 강조. */
+.mole-hole { filter: grayscale(1) brightness(1.2) contrast(1.3); }
+.mole-hole-front {
+  filter: grayscale(1) brightness(1.5) contrast(1.3) drop-shadow(0 3px 4px rgba(0, 0, 0, 0.45));
 }
 
 /* .mole-pop = 구멍 위 클립박스. 스프라이트는 "발치가 캔버스 바닥"에 정렬돼 있고,
