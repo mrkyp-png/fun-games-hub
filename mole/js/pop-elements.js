@@ -284,12 +284,19 @@
     }
 
     // 그 구멍에 떠 있는(침몰 안 한) 두더지의 현재 시각 프레임 키 — 망치가 프레임별로 조준한다.
+    // 동물 전신도 두더지 전신만큼 높이 나와 있으므로 'full' 값을 그대로 공유(사용자 지정:
+    // "전신 두더지와 동물 전신 타격점 동일" — 무기별 gripOff 는 이미 따로라 뿅망치/골드묠니르
+    // 각자 자기 조합으로 적용됨). 동물 빠끔(다타 후퇴 포즈)은 범위 밖 — 기존 기본값 유지.
     function frameKeyAt(regionId) {
       let key = null;
       pops.forEach((m) => {
-        if (key || m.regionId !== regionId || m.kind !== 'mole' || m.dying) return;
-        const d = Math.round(m.shownDepth);
-        key = d <= 0 ? 'full' : d === 1 ? 'peek1' : d === 2 ? 'peek2' : 'helmet';
+        if (key || m.regionId !== regionId || m.dying) return;
+        if (m.kind === 'mole') {
+          const d = Math.round(m.shownDepth);
+          key = d <= 0 ? 'full' : d === 1 ? 'peek1' : d === 2 ? 'peek2' : 'helmet';
+        } else if (m.kind === 'animal' && Math.round(m.shownDepth) <= 0) {
+          key = 'full';
+        }
       });
       return key;
     }
