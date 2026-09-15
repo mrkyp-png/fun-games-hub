@@ -10,18 +10,18 @@
   var WEAPONS = [
     { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/hammer.png',
       stats: [['-', '-'], ['-', '-'], ['-', '-']] },
-    { id: 'cannon', name: '캐논', nameEn: 'Cannon', thumb: 'assets/weapons/cannon-a1.png',
+    { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1.png',
       stats: [['Hole 16 → 15 · 경계선 추가', 'Holes 16 → 15 · Cell borders'],
               ['2·3타 두더지 연타 확률 10%', '10% burst on 2·3-hit moles'],
               ['-', '-']] },
-    { id: 'goldhammer', name: '골드해머', nameEn: 'Gold Hammer', thumb: 'assets/weapons/goldhammer-0.png',
+    { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldhammer-0.png',
       gemGlow: true,   // 보석(파란불빛) 부분에 맥동 글로우
       stats: [['Hole 16 → 15 · 경계선 추가', 'Holes 16 → 15 · Cell borders'],
-              ['주변 두더지 지진 연타 15%', '15% quake — chain-hits nearby moles'],
+              ['주변 두더지 지진 연타 15% (2·3타 두더지 소탕 포함)', '15% quake — chain-hits nearby moles (clears 2·3-hit moles too)'],
               ['-', '-']] },
     { id: 'alipunch', name: '알리 판취', nameEn: 'Ali Punch', thumb: 'assets/weapons/alipunch-jab.png',
       stats: [['Hole 16 → 14 · 경계선 추가', 'Holes 16 → 14 · Cell borders'],
-              ['무적 5초 확률 20% (모든 동물 타격 가능)', '20% chance — 5s invincibility (any animal is safe to hit)'],
+              ['무적 5초 확률 20% (모든 동물 타격 가능) · 2·3타 두더지 소탕 포함', '20% chance — 5s invincibility (any animal is safe to hit) · clears 2·3-hit moles'],
               ['하강 딜레이 +0.1초(무적 중 +0.3초 추가)', '+0.1s before mole retreats (+0.3s more while invincible)']] }
   ];
 

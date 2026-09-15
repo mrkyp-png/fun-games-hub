@@ -201,9 +201,12 @@
       if (pop.type === 'mole' && pop.hitsRequired > 1) {
         // 연타 쿨다운 중 = 유효한 두더지가 떠 있는데 무시하는 것 → 헛방 아님(콤보 리셋 X).
         if (pop.hitCooldown > 0 && !isAuto) return { type: 'mole', regionId: pop.regionId, ignored: true, xFrac: pop.x, yFrac: pop.y };
-        pop.hitsTaken += 1;
+        // 골드 묠니르 지진 / 알리 판취 = 2·3타 두더지도 한 번에 소탕(사용자 지정) — 남은 타수를
+        // 한꺼번에 채워 바로 아래 최종 타격 처리로 넘어간다.
+        var fullClear = !!(opts && (opts.quake || opts.alipunch));
+        pop.hitsTaken = fullClear ? pop.hitsRequired : pop.hitsTaken + 1;
         // 전신(첫 타) + 대포 → 10% 로 연사 발동. 판정은 이 타격 순간.
-        if (pop.hitsTaken === 1 && (pop._forceBurst || (config.cannonBurst && rng.next() < BURST_CHANCE))) pop.burstActive = true;
+        if (!fullClear && pop.hitsTaken === 1 && (pop._forceBurst || (config.cannonBurst && rng.next() < BURST_CHANCE))) pop.burstActive = true;
         if (pop.hitsTaken < pop.hitsRequired) {
           pop.hitCooldown = HIT_COOLDOWN;
           return { type: 'mole', regionId: pop.regionId, done: false, xFrac: pop.x, yFrac: pop.y, hitsTaken: pop.hitsTaken, hitsRequired: pop.hitsRequired, burst: !!pop.burstActive };

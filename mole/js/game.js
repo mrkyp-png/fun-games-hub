@@ -1706,7 +1706,8 @@
     if (!state || state.ended || state.introActive || state.paused) return false;
     const sp = state.spawnPoints.find((s) => s.regionId === regionId);
     if (!sp) return false; // 대포 모드에서 없앤 구멍(15) 탭 = 무시 (헛방 처리 안 함)
-    const results = state.scheduler.resolveRegion(regionId);
+    // 알리 판취 = 2·3타 두더지도 한 번에 소탕(사용자 지정).
+    const results = state.scheduler.resolveRegion(regionId, state.weapon === 'alipunch' ? { alipunch: true } : undefined);
 
     const primary = results[0] || null;
     const targetX = primary ? primary.xFrac : sp.x;
