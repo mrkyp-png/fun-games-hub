@@ -10,10 +10,6 @@
   const ALIPUNCH_INVINCIBLE_MS = 5000;      // 무적 지속시간
   const ROUND_SECONDS = 15;       // 챕터 1~3
   const ROUND_SECONDS_LONG = 30;  // 챕터 4부터(전체 챕터 기획서 §5~6, 사용자 지적으로 3→4 정정)
-  // 저글 보너스 창 판정용(다이얼패드 hot 하이라이트가 spawn-scheduler.js resolveOne() 의 실제
-  // 판정과 어긋나지 않게 — 반드시 그 파일의 RETREAT_SEC/JUGGLE_VISIBLE_FRAC 와 같은 값 유지).
-  const JUGGLE_RETREAT_SEC = 0.6;
-  const JUGGLE_VISIBLE_FRAC = 0.5;
   function roundSeconds() { return currentChapter() >= 4 ? ROUND_SECONDS_LONG : ROUND_SECONDS; }
   // 전체 챕터 기획서(2026-09-14): 챕터1~3 = 9홀(3x3)·5라운드, 챕터4~10 = 16홀(4x4)·10라운드.
   function isSmallBoardChapter() { return currentChapter() <= 3; }
@@ -1609,22 +1605,21 @@
     // 알리 펀치 무적 중엔 방해물도 안전한 타격 대상이 되므로 타겟과 동일하게 hot 표시.
     const invincibleNow = alipunchInvincible();
     const moleRegions = new Set();
+    const safeAnimalRegions = new Set(); // 무적 중 안전해진 동물 — hot 색을 노랑으로(사용자 지정)
     const bombRegions = new Map(); // 폭탄 든 두더지가 뜬 구멍 → 'normal'|'strong' (다이얼패드 표시용, 사용자 지정)
     state.scheduler.getActivePops().forEach((p) => {
-      if (p.dying) {
-        // 저글 보너스 창(스폰-스케줄러 resolveOne() 의 moleVisible 판정과 반드시 동일해야 함 —
-        // 안 그러면 "파란 원은 꺼졌는데 때리면 저글 성공"처럼 하이라이트-타격판정 타이밍이
-        // 어긋나 보인다(사용자 보고, 챕터1~3 확인). RETREAT_SEC/JUGGLE_VISIBLE_FRAC 값도 동일.
-        if (p.killed && p.type === 'mole' && p.hitsRequired === 1 && !p.juggled &&
-            p.remaining > JUGGLE_RETREAT_SEC * JUGGLE_VISIBLE_FRAC) moleRegions.add(p.regionId);
-        return;
-      }
+      // 저글 보너스 유도용으로 죽은 뒤에도 잠깐 hot 을 켜뒀었는데, 2·3타 두더지가 살아서
+      // 켜진 것과 구분이 안 돼 헷갈린다는 지적(사용자 지정) — 죽으면(dying) 바로 꺼짐.
+      // 저글 보너스 자체(점수)는 spawn-scheduler.js resolveOne() 쪽 판정이라 안 건드림, 화면
+      // 힌트만 없어짐(터치 물결 애니메이션이 끝나면 바로 사라짐).
+      if (p.dying) return;
       const et = effectiveHitType(state.config, p.type);
-      if (et === 'mole' || ((invincibleNow || p.safeAlways) && et === 'animal')) moleRegions.add(p.regionId);
+      if (et === 'mole') moleRegions.add(p.regionId);
+      else if ((invincibleNow || p.safeAlways) && et === 'animal') { moleRegions.add(p.regionId); safeAnimalRegions.add(p.regionId); }
       if (p.bombKind) bombRegions.set(p.regionId, p.bombKind);
     });
     for (let id = 0; id < GRID_SIZE * GRID_SIZE; id++) {
-      sharedLaneControls.setCellHot(id, moleRegions.has(id));
+      sharedLaneControls.setCellHot(id, moleRegions.has(id), safeAnimalRegions.has(id));
       sharedLaneControls.setBombIndicator(id, bombRegions.get(id) || null);
     }
 
@@ -1730,6 +1725,7 @@
     if (state.weapon === 'goldhammer' && primary && primary.type === 'mole' && typeof primary.done === 'boolean') {
       if (forceQuakeNext || state.rng.next() < QUAKE_CHANCE) {
         forceQuakeNext = false;
+        if (sharedLaneControls) sharedLaneControls.flashBurst(regionId); // 캐논과 동일한 골드 링(사용자 지정)
         setTimeout(() => quakeRipple(regionId, 0), 40);
       }
     }
@@ -1913,6 +1909,8 @@
             if (state.rng.next() < ALIPUNCH_INVINCIBLE_CHANCE) {
               state.alipunchInvincibleUntil = performance.now() + ALIPUNCH_INVINCIBLE_MS;
               MG.HitFx.powerUpWord(board); // "POWER UP" — 무적 발동 알림(보드 중앙)
+              // 캐논과 동일한 골드 링(사용자 지정).
+              if (sharedLaneControls && opts && opts.regionId != null) sharedLaneControls.flashBurst(opts.regionId);
             }
           } else MG.HitFx.moleHit(board, r.xFrac, r.yFrac);
           moleHits += 1;

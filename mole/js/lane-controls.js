@@ -346,8 +346,12 @@
     }
     window.addEventListener('keydown', onKey);
 
-    function setCellHot(id, hot) {
-      if (buttons[id]) buttons[id].classList.toggle('lane-button--hot', !!hot);
+    // safe = 알리 판취 무적 중 안전해진 동물(사용자 지정: 파랑 대신 노랑 하이라이트).
+    function setCellHot(id, hot, safe) {
+      const b = buttons[id];
+      if (!b) return;
+      b.classList.toggle('lane-button--hot', !!hot && !safe);
+      b.classList.toggle('lane-button--hot-safe', !!hot && !!safe);
     }
 
     // 폭탄 든 두더지가 올라온 구멍의 버튼에 반투명 폭탄 이모지(글로우 포함) 표시 — 사용자 지정.
