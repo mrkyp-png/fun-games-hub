@@ -1203,6 +1203,10 @@
     sessionGen++;
     gameStarting = false; // 라운드 진입 성공 — 이후 재진입은 state 존재로 차단됨
     setNavLock(true); // 카운트다운 동안 ⊞ 잠금 (playRoundIntro onDone 에서 해제)
+    // 홈에서 확대돼있던 네비 버튼(홈 아이콘)이 그 자리 그대로 게임화면 숫자키로 재사용되는
+    // 챕터(그리드 안 바뀜=재생성 안 됨)에서, 확대 클래스가 안 지워진 채 남아 숫자키가 커 보이던
+    // 버그 수정 — 라운드 진입 시 항상 원위치.
+    if (sharedLaneControls) sharedLaneControls.setActiveNav(null);
     ensureLaneControlsForChapter(isSmallBoardChapter()); // 실제 라운드 진행 중에만 9홀/숫자패드로 전환
     applyBoardTheme();
     applyWeather();
