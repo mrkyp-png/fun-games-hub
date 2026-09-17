@@ -315,41 +315,11 @@
           flip.style.transform = '';
         }, 950);
       });
-
-      // 통화 버튼(스킬 슬롯으로 바뀌는 경우 = 캐논·특수망치)도 같은 타이밍·같은 곡선으로 회전.
-      // 채널 유무와 무관하게 항상 (사용자 요청). 단면이라 정확히 10바퀴(3600°)로 끝내 앞면 유지
-      // (채널의 3780°는 뒷면이 숫자라 그대로, 통화는 뒷면이 없어 3600°).
-      var gs = root.document && root.document.getElementById('game-screen');
-      var call = gs && gs.classList.contains('gs-laneskill')
-        ? buttons.find(function (b) { return b && b.classList.contains('lane-button--call'); })
-        : null;
-      if (call) {
-        call.style.transition = 'none';
-        call.style.transform = 'perspective(600px) rotateY(0deg)';
-        void call.offsetWidth;
-        call.style.transition = 'transform 0.9s cubic-bezier(.2, .7, .3, 1)';
-        call.style.transform = 'perspective(600px) rotateY(3600deg)';
-        setTimeout(function () {
-          call.style.transition = '';
-          call.style.transform = '';
-        }, 950);
-      }
-
-      // 알리 펀치 전용 '✱' 키(구멍12, 별표 스킬 슬롯)도 통화 버튼과 같은 회전(사용자 지시).
-      var star = gs && gs.classList.contains('gs-alipunch')
-        ? buttons.find(function (b) { return b && b.dataset && b.dataset.region === '12'; })
-        : null;
-      if (star) {
-        star.style.transition = 'none';
-        star.style.transform = 'perspective(600px) rotateY(0deg)';
-        void star.offsetWidth;
-        star.style.transition = 'transform 0.9s cubic-bezier(.2, .7, .3, 1)';
-        star.style.transform = 'perspective(600px) rotateY(3600deg)';
-        setTimeout(function () {
-          star.style.transition = '';
-          star.style.transform = '';
-        }, 950);
-      }
+      // ⚠️통화 버튼·알리펀치 별표 버튼 자체를 통째로 돌리던 연출은 삭제됨(사용자 지정 —
+      // 버튼 element 전체를 돌리면 그 버튼 고유 배경색(초록/빨강)이 회전 중 그대로 드러나
+      // "녹색·빨간색이 보인다"/"안 나오는 버튼도 있다"처럼 무기별로 들쭉날쭉해 보였음).
+      // 다른 버튼들과 마찬가지로 내용물만 도는 .lane-flip 카드가 없어 배경색이 함께 돌았던 것 —
+      // 새 래퍼 없이는 깔끔히 못 고쳐 그냥 무연출로 전환(위 buttons.forEach 의 일반 버튼들과 통일).
     }
 
     // 언어 바뀌면(설정에서 즉시, ko↔en) 숫자키 자음 라벨도 다시 그린다 — 안 그러면 fillFace 는
