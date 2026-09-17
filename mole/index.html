@@ -163,9 +163,17 @@
         <button type="button" class="ch-arrow ch-arrow--next" data-ch-next aria-label="다음 챕터">👉</button>
       </span>
 
-      <div id="build-tag" aria-hidden="true">v496</div>
-      <!-- 홈(시작) 상태의 배경 패널 — 카톡 대화 UI 는 삭제(사용자 지정), 다이얼패드(키패드는 아래 그대로)만 보임. -->
-      <div id="board-start" class="board-panel board-start"></div>
+      <div id="build-tag" aria-hidden="true">v497</div>
+      <!-- 홈(시작) 상태의 배경 패널 — 카톡 대화 UI 는 삭제(사용자 지정), 다이얼패드(키패드는 아래 그대로)만 보임.
+           안에는 홍보 이미지 4장이 3초 간격 랜덤 애니메이션으로 순환(사용자 지정). -->
+      <div id="board-start" class="board-panel board-start">
+        <div id="home-showcase" aria-hidden="true">
+          <img class="home-showcase-img" src="assets/home-showcase/1.jpg" alt="">
+          <img class="home-showcase-img" src="assets/home-showcase/2.jpg" alt="">
+          <img class="home-showcase-img" src="assets/home-showcase/3.jpg" alt="">
+          <img class="home-showcase-img" src="assets/home-showcase/4.jpg" alt="">
+        </div>
+      </div>
 
       <!-- 최종 결과 (10라운드 완주 또는 목숨 소진). 박스 없이 전체화면 연출 위에 직접.
            is-win = 광선+색종이+하마 축하 / is-lose = 빗줄기+하마 시무룩. -->
@@ -538,7 +546,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=496').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=497').catch(function () {});
       }
     });
   }

@@ -129,6 +129,25 @@
     }
   }
 
+  // 홈 화면 게임판 자리(#board-start 뒤) — 홍보 이미지 4장을 3초 간격으로 순환, 전환마다
+  // 애니메이션(페이드/슬라이드/줌) 랜덤 선택(사용자 지정). is-start 아닐 땐 board-start 자체가
+  // 가려지므로 안 보임 — 타이머는 그냥 항상 돌아도 무해.
+  function initHomeShowcase() {
+    const imgs = Array.prototype.slice.call(document.querySelectorAll('.home-showcase-img'));
+    if (!imgs.length) return;
+    const ANIMS = ['hs-fade', 'hs-slide-l', 'hs-slide-r', 'hs-zoom-in', 'hs-zoom-out'];
+    let idx = 0;
+    imgs[0].classList.add('is-active', 'hs-fade');
+    setInterval(() => {
+      imgs[idx].classList.remove('is-active');
+      ANIMS.forEach((a) => imgs[idx].classList.remove(a));
+      idx = (idx + 1) % imgs.length;
+      const anim = ANIMS[(Math.random() * ANIMS.length) | 0];
+      ANIMS.forEach((a) => imgs[idx].classList.remove(a));
+      imgs[idx].classList.add('is-active', anim);
+    }, 3000);
+  }
+
   // 홈 화면 좌상단 ⊞ 자리 — 프로필 사진(사용자 지정, 더보기의 mm-avatar와 같은 소스).
   function refreshHubAvatar() {
     const av = document.getElementById('hub-avatar');
@@ -201,7 +220,7 @@
   let bgmEls = null;       // [<audio id="bgm-a">, <audio id="bgm-b">]
   let bgmActiveIdx = 0;    // 0|1 — 지금 "메인"인 쪽(재생 중이거나 재생하려는 쪽)
   let currentBgm = 'audio/bgm-home-1.mp3'; // index.html 의 bgm-a 초기 src 와 일치
-  const HOME_BGM_COUNT = 4;
+  const HOME_BGM_COUNT = 6;
   let homeBgmIdx = 0;
   let bgmWantPlay = false; // 지금 화면이 BGM 을 원하는가 (홈/더보기/게임 진입 시 true)
   const BGM_VOL = 0.35;
@@ -917,7 +936,7 @@
     // 이었다면 여기서 다시 지어지는데, 그때는 성공/실패 화면 → 홈 진입에도 10회전(사용자
     // 지정 — 성공/실패 둘 다 동일하게) 연출을 준다.
     if (ensureLaneControlsForChapter(false) && sharedLaneControls) sharedLaneControls.spinBoardIn();
-    stopBgm(); // 홈 BGM 삭제(신규 예정) — 정지
+    playScreenBgm('home'); // 홈 BGM(6곡, 사용자 지정 신규) — 접속 시 1번 고정, 이후 순서대로 진행 후 반복
     const go = document.getElementById('gameover-overlay');
     go.hidden = true; go.classList.remove('is-win', 'is-lose', 'is-sliding');
     const cf = go.querySelector('.go-confetti'); if (cf) cf.innerHTML = '';
@@ -2323,6 +2342,7 @@
     // showStartScreenNow() 가 다시 false 로 되돌린다.
     ensureLaneControlsForChapter(false, true); // false = 홈 기본값(16버튼), true = 최초 생성이라 무조건 실행
     wireChapterNav();  // ◀ 챕터 N ▶ (열린 챕터 2개 이상일 때만 노출)
+    initHomeShowcase(); // 홈 화면 홍보 이미지 캐러셀(사용자 지정) — board-start 뒤에서 항상 순환
 
     migrateBest();
     wireMoreMenu();

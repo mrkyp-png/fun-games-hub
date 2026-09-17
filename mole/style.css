@@ -97,9 +97,26 @@ body { background: var(--lm-page); }
   flex-direction: column;
   padding: 12px 4px 16px;   /* 좌우 12→4: 두더지·하마 아바타를 게임박스 가장자리에 더 붙임 (사용자 요청) */
   z-index: 7;
-  background: var(--lm-chat);   /* 대화 홈 = 연한 웜그레이 (잔디는 플레이 중에만) */
+  background: var(--lm-chat);   /* 대화 홈 = 연한 웜그레이 (잔디는 플레이 중에만) — 이미지 로드 전 폴백 */
   overflow: hidden;
 }
+/* 홈 화면 홍보 이미지 캐러셀 — 4장, 3초 간격, 전환마다 애니메이션 랜덤(사용자 지정). */
+#home-showcase { position: absolute; inset: 0; overflow: hidden; }
+.home-showcase-img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; opacity: 0; z-index: 0; pointer-events: none;
+}
+.home-showcase-img.is-active { opacity: 1; z-index: 1; }
+.home-showcase-img.hs-fade.is-active { animation: hs-fade 0.8s ease both; }
+.home-showcase-img.hs-slide-l.is-active { animation: hs-slide-l 0.8s ease both; }
+.home-showcase-img.hs-slide-r.is-active { animation: hs-slide-r 0.8s ease both; }
+.home-showcase-img.hs-zoom-in.is-active { animation: hs-zoom-in 0.8s ease both; }
+.home-showcase-img.hs-zoom-out.is-active { animation: hs-zoom-out 0.8s ease both; }
+@keyframes hs-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes hs-slide-l { from { opacity: 0; transform: translateX(6%); } to { opacity: 1; transform: translateX(0); } }
+@keyframes hs-slide-r { from { opacity: 0; transform: translateX(-6%); } to { opacity: 1; transform: translateX(0); } }
+@keyframes hs-zoom-in { from { opacity: 0; transform: scale(1.14); } to { opacity: 1; transform: scale(1); } }
+@keyframes hs-zoom-out { from { opacity: 0; transform: scale(0.88); } to { opacity: 1; transform: scale(1); } }
 /* ◀ ROUND N ▶ — "ROUND N" 은 알약 박스(테두리를 타고 도는 불빛, 챕터별 색), 양옆은 꼬리 달린
    3D 화살표 버튼(누르면 쑥 들어감). 항상 표시. 우측 하단, #build-tag(버전 표시)와 같은 줄에
    맞춘 자리(사용자 지정). */
