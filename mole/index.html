@@ -111,7 +111,6 @@
         <svg class="hub-menu-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5M6 10v9h5v-5h2v5h5v-9"/></svg>
         <!-- 홈 화면에서만 이 아이콘 대신 프로필 사진(탭하면 사진 변경, 사용자 지정) — game.js refreshHubAvatar() 가 배경으로 채운다. -->
         <span id="hub-avatar" class="hub-avatar" aria-hidden="true"></span>
-        <span id="hud-timer" class="hub-timer" aria-hidden="true"></span>
       </button>
       <!-- 시작 상태: 브라우저 주소창 (게임 URL) + 최고점수. 플레이 상태: 증권 전광판 스타일 티커. -->
       <div id="hud-addr" class="hud-addr" aria-hidden="true">
@@ -127,6 +126,8 @@
         </div>
       </div>
       <div id="hud-ticker" aria-hidden="true">
+        <div class="hud-timer-fill" aria-hidden="true"></div>
+        <b id="hud-timer" class="tk-timer" aria-hidden="true"></b>
         <div class="ticker-viewport">
           <div class="ticker-track">
             <span class="ticker-seg">
@@ -163,7 +164,7 @@
         <button type="button" class="ch-arrow ch-arrow--next" data-ch-next aria-label="다음 챕터">👉</button>
       </span>
 
-      <div id="build-tag" aria-hidden="true">v500</div>
+      <div id="build-tag" aria-hidden="true">v501</div>
       <!-- 홈(시작) 상태의 배경 패널 — 카톡 대화 UI 는 삭제(사용자 지정), 다이얼패드(키패드는 아래 그대로)만 보임.
            안에는 원본 3x3 콜라주 구성 그대로 9칸 그리드 3페이지(사용자 지정 — 낱장으로 흩어놓지 않고
            원래 구도 유지) 가 20~30초마다 다음 페이지로 넘어가고, 그 동안 각 칸이 홈 BGM 비트에 맞춰
@@ -577,7 +578,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=500').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=501').catch(function () {});
       }
     });
   }

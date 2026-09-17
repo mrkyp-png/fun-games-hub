@@ -186,9 +186,14 @@
         for (let i = 0; i < 8 && i < a.buf.length; i++) sum += a.buf[i];
         energy += sum / 8;
       });
-      showcaseAvgEnergy = showcaseAvgEnergy * 0.92 + energy * 0.08; // 이동 평균(대략적인 "평소 음량")
+      showcaseAvgEnergy = showcaseAvgEnergy * 0.85 + energy * 0.15; // 이동 평균(더 빠르게 반응 —
+      // 기존 0.92/1.35배 기준은 신규 Suno 홈 BGM 6곡처럼 저음이 완만하고 타격감 있는 스파이크가
+      // 거의 없는 곡에서는 비트가 사실상 전혀 안 잡혀 애니메이션이 멈춰있던 버그(사용자 보고).
       const now = performance.now();
-      if (energy > showcaseAvgEnergy * 1.35 && energy > 40 && now - showcaseLastBeat > 260) {
+      const beatByAudio = energy > showcaseAvgEnergy * 1.12 && energy > 25 && now - showcaseLastBeat > 260;
+      // 오디오 스파이크가 약한 곡이어도 화면이 완전히 정지해 보이지 않도록 최소 주기 보장(폴백).
+      const beatByFallback = now - showcaseLastBeat > 1100;
+      if (beatByAudio || beatByFallback) {
         showcaseLastBeat = now;
         pulseGridCells();
         pulseDialPad(); // 다이얼패드 버튼들도 비트에 맞춰 커졌다 움직임(사용자 지정 — "축제 분위기")
@@ -1664,6 +1669,7 @@
       round: state.round,
       lives: run.lives,
       timeRemaining: state.timeRemaining,
+      timeTotal: roundSeconds(),
       combo: run.combo.combo,
       isMaxCombo: run.combo.isMaxCombo(),
       score: run.combo.score, // 1라운드부터 누적 (콤보·점수 한 통)

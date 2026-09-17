@@ -30,9 +30,15 @@
         : '❤️'.repeat(state.lives) + '🖤'.repeat(Math.max(0, 3 - state.lives));
     }
 
-    // 시간 = 홈버튼(⊞) 중앙 숫자로 표기 ("초" 단위 생략).
+    // 시간 = 티커 박스 왼쪽 끝 숫자로 표기 ("초" 단위 생략) + 박스 안 반투명 빨강이 남은
+    // 비율만큼 우측에서 좌측으로 줄어듦(사용자 지정).
     var timer = document.getElementById('hud-timer');
     if (timer) timer.textContent = String(Math.max(0, Math.ceil(state.timeRemaining)));
+    var ticker = document.getElementById('hud-ticker');
+    if (ticker && state.timeTotal > 0) {
+      var pct = Math.max(0, Math.min(1, state.timeRemaining / state.timeTotal)) * 100;
+      ticker.style.setProperty('--tk-time-pct', pct + '%');
+    }
 
     // 콤보 = 게임화면 하단 중앙(하트가 있는 줄)에 표기. 0이면 표시 안 함.
     var combo = document.getElementById('hud-combo');
