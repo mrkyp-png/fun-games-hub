@@ -1382,7 +1382,7 @@
     const laneHammer = MG.WeaponPool.create(WeaponMod, hammerOpts, { onOverflow: weaponCloneOverflow });
 
     state = {
-      round: currentChapter(), regions, spawnPoints, scheduler, holeLayer, laneHammer, weapon, rng, config,
+      regions, spawnPoints, scheduler, holeLayer, laneHammer, weapon, rng, config,
       timeRemaining: roundSeconds(),
       aliClones: [], // 알리펀치 동시타격 분신 글러브들 — 메인 루프가 매 프레임 update() 돌려줘야 실제로 스윙한다.
       hitstopUntil: 0,
@@ -1728,7 +1728,7 @@
 
   function updateHUD() {
     MG.HUD.update({
-      round: state.round,
+      round: currentChapter(),
       lives: run.lives,
       timeRemaining: state.timeRemaining,
       timeTotal: roundSeconds(),
@@ -2124,43 +2124,18 @@
   // 별도 일시정지 버튼은 없앰(사용자 요청).
 
   // ---------- 라운드 종료 → 다음 라운드 or 최종 결과 ----------
+  // 챕터→라운드 재구조화(2026-09-17): 라운드(1~8) 하나 = 이제 그 자체로 완결된 세션(60초/140초).
+  // 더 이상 "다음 내부 라운드로 자동 이어가기"가 없다 — 시간이 다 되면 항상 결과 화면으로.
   function roundComplete() {
     if (!state || state.ended) return;
     state.ended = true;
-    setNavLock(true); // 라운드 전환(커튼~다음 카운트다운) 동안 ⊞ 잠금
-    sessionGen++; // 이 전환 = 새 세션 토큰 (직전 카운트다운의 정리 타이머를 무효화)
-    const myGen = sessionGen;
-    const finishedRound = state.round;
+    sessionGen++; // 직전 카운트다운 정리 타이머 무효화
     if (rafId) cancelAnimationFrame(rafId);
     if (state.laneHammer) state.laneHammer.home(); // 루프 멈추기 전 망치 대기위치로 스냅
     sharedPopElements.clear();
     resetHot();
-    clearInvincibleFx(); // 라운드 종료(성공/실패 포함) 시 무적 잔류 연출 정리(사용자 지정)
-
-    if (finishedRound >= finalRound()) {
-      closeCurtain(() => { finishFromRound('done'); }); // 10라운드 완주 → 커튼 닫고 결과
-      return;
-    }
-
-    // "라운드 완료!" 카드 없앰 — 커튼을 바로 닫아 직전 라운드 화면을 완전히 가리고,
-    // 짧게 뒤 다음 라운드 카운트다운(같은 커튼)으로 이어진다.
-    const ri = document.getElementById('round-intro-overlay');
-    ri.classList.remove('is-opening');
-    ri.querySelector('.round-intro-title').textContent = '';
-    ri.querySelector('.round-intro-count').textContent = '';
-    ri.hidden = false;
-    setHammerLayerVisible(false);
-
-    const advance = () => {
-      if (myGen !== sessionGen) return; // 그 사이 나가버림
-      // 더보기 메뉴가 열려 있으면 닫힐 때까지 대기 (메뉴 뒤에서 라운드가 넘어가지 않게).
-      if (!document.getElementById('more-menu').hidden) { setTimeout(advance, 300); return; }
-      startRound(finishedRound + 1); // fresh 아님 → 누적 유지 (커튼은 계속 닫힌 채)
-    };
-    // 이제 다음 라운드 카운트다운(playRoundIntro) 자체가 커튼 패턴 애니메이션(2.3s+)을
-    // 갖고 있어 여기서 따로 더 기다릴 필요 없음 — 예전엔 패턴 없는 커튼이라 550ms 버퍼를
-    // 뒀었는데, 지금은 그만큼 대기가 늘어지기만 해서(사용자 보고) 없앰.
-    advance();
+    clearInvincibleFx(); // 라운드 종료 시 무적 잔류 연출 정리(사용자 지정)
+    closeCurtain(() => { finishFromRound('done'); });
   }
 
   // 뽕망치 레이어(보드 밖, z 높음)는 커튼 위에 뜨므로 전환/결과 동안 같이 숨긴다.
@@ -2201,79 +2176,7 @@
     closeCurtain(() => { finishFromRound(reason); });
   }
 
-  // 승리 결과 화면에서 왼쪽으로 스와이프 → 화면이 왼쪽으로 사라지고 "챕터 N" 화면.
-  // (다음 챕터가 열려 있을 때만. 실제 챕터 콘텐츠는 Phase B — 지금은 글자 placeholder.)
-  function wireResultSwipe() {
-    const ov = document.getElementById('gameover-overlay');
-    let x0 = null, y0 = 0, fired = false;
-    // ov.hidden 체크 필수: 승리 후 홈으로 나가도 dataset.nextChapter 가 남아있어서,
-    // 이게 없으면 홈화면 다이얼러(같은 .dialpad)에서 왼쪽 스와이프 시 오작동한다.
-    const start = (x, y) => { if (ov.hidden || !ov.dataset.nextChapter) return; x0 = x; y0 = y; fired = false; };
-    const move = (x, y) => {
-      if (x0 == null || fired) return;
-      const dx = x - x0, dy = y - y0;
-      // 왼쪽으로 충분히, 그리고 세로보다 가로가 우세할 때
-      if (dx < -55 && Math.abs(dx) > Math.abs(dy) * 1.4) {
-        fired = true; x0 = null;
-        goToNextChapter(parseInt(ov.dataset.nextChapter, 10));
-      }
-    };
-    const end = (x, y) => {
-      if (x0 != null && typeof x === 'number') move(x, y); // move 이벤트가 없던 경우 대비 (총 이동량으로 판정)
-      x0 = null;
-    };
-    // 힌트(#result-swipe-hint)가 키패드 위 여백으로 내려갔으므로 스와이프도 키패드에서 먹혀야
-    // 한다 — 안 그러면 "힌트는 키패드에 있는데 여기선 안 밀리네" 로 헷갈림. start() 가
-    // ov.dataset.nextChapter 로 게이팅하니 플레이 중 키패드 탭엔 영향 없음.
-    ov.addEventListener('dragstart', (e) => e.preventDefault()); // 하마 이미지 기본 드래그 차단
-    [ov, document.querySelector('.dialpad')].forEach((el) => {
-      if (!el) return;
-      el.addEventListener('pointerdown', (e) => { if (el === ov) e.preventDefault(); start(e.clientX, e.clientY); });
-      el.addEventListener('pointermove', (e) => move(e.clientX, e.clientY));
-      el.addEventListener('pointerup', (e) => end(e.clientX, e.clientY));
-      el.addEventListener('pointercancel', () => end());
-      // 터치 폴백 (일부 안드로이드 웹뷰에서 스와이프 중 pointer 이벤트가 끊김)
-      el.addEventListener('touchstart', (e) => { const t = e.touches[0]; start(t.clientX, t.clientY); }, { passive: true });
-      el.addEventListener('touchmove', (e) => { const t = e.touches[0]; move(t.clientX, t.clientY); }, { passive: true });
-      el.addEventListener('touchend', (e) => { const t = e.changedTouches[0]; end(t.clientX, t.clientY); });
-    });
-  }
-  function goToNextChapter(ch) {
-    setChapter(ch);
-    const sh = document.getElementById('result-swipe-hint');
-    if (sh) { sh.hidden = true; sh.classList.remove('is-on'); }
-
-    const ov = document.getElementById('gameover-overlay');
-    const bs = document.getElementById('board-start');
-
-    // "다음 챕터로" = 그 챕터의 홈 화면으로 간다 (아래 키패드는 그대로, 위 보드만 교체).
-    // showStartScreenNow 가 board-start 를 챕터 N 내용으로 빌드/표시하고 ov 를 숨기므로,
-    // 슬라이드 연출용으로 ov 를 되살린다: 성공 카드는 왼쪽으로, 홈 화면은 오른쪽에서 들어옴.
-    showStartScreenNow({ chapterClear: true });
-    bs.classList.add('nc-enter');
-    ov.hidden = false;
-    ov.classList.add('is-win', 'is-sliding');
-    void bs.offsetWidth;
-    bs.classList.add('nc-enter--on');
-
-    setTimeout(() => {
-      ov.hidden = true;
-      ov.classList.remove('is-sliding', 'is-win', 'is-lose');
-      ov.querySelector('.go-confetti').innerHTML = '';
-      ov.querySelector('.go-fireworks').innerHTML = '';
-      ov.querySelector('.go-starpop').innerHTML = '';
-      ov.classList.remove('win-fx-rays', 'win-fx-starpop');
-      ov.classList.remove('fail-fx-1', 'fail-fx-3', 'fail-fx-4', 'fail-fx-8');
-      ['fail-dust-layer', 'fail-heart-layer', 'fail-ash-layer'].forEach((cls) => {
-        const el = ov.querySelector('.' + cls);
-        if (el) el.innerHTML = '';
-      });
-      if (winFxTimer) { clearInterval(winFxTimer); winFxTimer = null; }
-      bs.classList.remove('nc-enter', 'nc-enter--on');
-    }, 360);
-  }
-
-  // 최종 결과 화면 (10라운드 완주 or 목숨 소진).
+  // 최종 결과 화면 (라운드 완주 or 목숨 소진).
   function finishFromRound(reason) {
     setNavLock(false); // 결과 화면에선 ⊞ = 홈으로 (활성)
     const total = run.combo.score;
@@ -2330,13 +2233,10 @@
       I18N.t('mole.result.scoreVs', { n: total.toLocaleString(), t: prog.target.toLocaleString() });
     // 버튼 없음 — 성공/실패 둘 다 좌상단 ⊞ 로 홈. (광고는 유저 피로도 때문에 뺌.)
 
-    // 승리 시 다음 챕터가 열렸으면: 왼쪽 스와이프로 "챕터 N" 화면으로 넘어갈 수 있다는 힌트.
+    // 승리 + 다음 라운드가 열렸으면: 홈 화면 다이얼패드 선택값을 그 다음 라운드로 미리 넘겨둔다
+    // (사용자가 홈에서 직접 골라 시작하는 흐름 — 화면 전환은 없음, §7).
     const nextCh = win ? chapter + 1 : 0;
-    ov.dataset.nextChapter = (nextCh && MG.Progress.isUnlocked(nextCh, light)) ? String(nextCh) : '';
-    // 챕터 해금 = 그 즉시 다음 챕터로 전환. (예전엔 승리화면에서 왼쪽 스와이프를 해야만
-    // mole.chapter 가 넘어가서, 스와이프 안 하면 다음에 시작 눌러도 이전 챕터 그대로 돌던 문제.)
-    // 스와이프는 축하 연출(next-chapter-panel)만 보여줄 뿐 — 값 자체는 여기서 바로 확정.
-    if (ov.dataset.nextChapter) setChapter(parseInt(ov.dataset.nextChapter, 10));
+    if (nextCh && MG.Progress.isUnlocked(nextCh, light)) setChapter(nextCh);
 
     // 커튼 오버레이는 결과 카드로 교체 (둘 다 z-index 10, ri 가 DOM 상 뒤라 안 치우면 위를 덮음).
     document.getElementById('round-intro-overlay').hidden = true;
@@ -2455,18 +2355,6 @@
       }
     }, 400); // 글자·하마 fly-in(0.4s) 끝난 뒤
 
-    // 승리 + 다음 챕터가 열려 있으면: 축하 연출 5초 뒤 "왼쪽으로 밀어" 힌트 (손 이모지 + 화살표).
-    const sh = document.getElementById('result-swipe-hint');
-    if (sh) { sh.hidden = true; sh.classList.remove('is-on'); }
-    if (win && ov.dataset.nextChapter && sh) {
-      const myGen = sessionGen;
-      setTimeout(() => {
-        if (myGen !== sessionGen || ov.hidden || !ov.dataset.nextChapter) return;
-        sh.hidden = false;
-        void sh.offsetWidth;
-        sh.classList.add('is-on');
-      }, 5000);
-    }
   }
 
   // ---------- 초기화 ----------
@@ -2549,7 +2437,6 @@
       panel.hidden = true;
       showStartScreen();
     });
-    wireResultSwipe(); // 승리 화면 왼쪽 스와이프 → 다음 챕터 화면
 
     // 첫 화면 = 두더지 오빠 대화. (예외가 나도 위 배선은 이미 끝났음. 최초 진입은 플래시 없음.)
     // deferBgm: 스플래시/인트로가 화면을 덮고 있는 동안엔 홈 BGM 재생을 미룬다(사용자 지정).
