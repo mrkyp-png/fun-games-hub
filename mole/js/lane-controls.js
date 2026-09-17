@@ -295,10 +295,21 @@
     // 게임 화면엔 키 버튼만 있어야 해서 채널 얼굴은 늘 숫자 쪽으로 고정되는데(style.css 고정 규칙),
     // 원래 전환이 즉시 스냅이라 "아이콘이 그냥 사라짐". .lane-flip--spinning 이 붙은 동안만 그
     // 고정 규칙을 비켜주고(style.css), 여기서 인라인으로 회전을 굴린다. 시크릿 복구 연출과 같은 느낌.
-    // ⚠️버튼보드(buttonBar) 자체를 통째로 돌리는 연출은 삭제됨(사용자 지정 — 아래 버튼보드는
-    // 책장 넘기듯 보이면 안 되고 항시 고정). 챕터1~3(simple) 진입은 그냥 무연출로 전환.
+    // ⚠️버튼보드(buttonBar) 자체를 통째로 돌리는 연출은 홈 복귀·화면 전환 경로에서는 삭제됨
+    // (사용자 지정 — 아래 버튼보드는 책장 넘기듯 보이면 안 되고 항시 고정). 단, 라운드1(simple,
+    // 채널 뒤집기 카드 자체가 없어 개별 버튼 회전이 불가능한 유일한 경우)의 "게임 진입" 연출로는
+    // 다시 요청됨(사용자 지정: "1라운드는 버튼 보드 10회전 시켜야하는데") — 여기 진입 시점에만.
     function spinChannelsIn() {
-      if (simple) return;
+      if (simple) {
+        if (!buttonBar) return;
+        buttonBar.style.transition = 'none';
+        buttonBar.style.transform = 'perspective(1200px) rotateY(0deg)';
+        void buttonBar.offsetWidth;
+        buttonBar.style.transition = 'transform 0.9s cubic-bezier(.2, .7, .3, 1)';
+        buttonBar.style.transform = 'perspective(1200px) rotateY(3600deg)';
+        setTimeout(() => { buttonBar.style.transition = ''; buttonBar.style.transform = ''; }, 950);
+        return;
+      }
       buttons.forEach((b) => {
         if (!b || !b.classList.contains('lane-button--flippable')) return;
         const flip = b.querySelector('.lane-flip');
