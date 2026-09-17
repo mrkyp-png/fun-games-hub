@@ -1353,7 +1353,7 @@
       } else if (weapon === 'alipunch') {
         // 분신도 실제 위치와 "같은 글러브·같은 애니메이션"이어야 한다(사용자 지정) — 일반
         // quakeClone 대신 lane-boxing.js 가 export 하는 makeGlove 로 그 구역의 진짜 글러브를
-        // 하나 더 만들어(70% 투명) 똑같이 strike() 시킨다. 무적 중 황금색 필터(.lane-boxing-glove
+        // 하나 더 만들어(50% 투명) 똑같이 strike() 시킨다. 무적 중 황금색 필터(.lane-boxing-glove
         // img 셀렉터 기반)도 클래스가 같아서 자동으로 같이 적용된다.
         const LB = MG.LaneBoxing;
         const style = LB && LB.ZONES && LB.ZONES[regionId];
