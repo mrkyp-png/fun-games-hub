@@ -760,26 +760,28 @@ body { background: var(--lm-page); }
    item(실드)은 대상 아님 — 손대지 않음. */
 .mole-pop--mole .mole-pop-img {
   filter:
-    drop-shadow(0 0 3px #e0a400)
+    drop-shadow(0 0 6px #e0a400)
     drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
 }
 .mole-pop--animal .mole-pop-img,
 .mole-pop--bomb .mole-pop-img {
   filter:
-    drop-shadow(0 0 3px #15c2d6)
+    drop-shadow(0 0 6px #15c2d6)
     drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
 }
 /* 챕터4~6(가을 배경, 갈색 계열) 전용 — 기존 글로우 색이 배경과 비슷해 두더지 구분이 잘 안 됨(사용자 지정).
-   두더지=하늘색, 동물=마젠타로 갈색 배경과 뚜렷하게 대비. */
+   두더지=하늘색, 동물=마젠타로 갈색 배경과 뚜렷하게 대비. 2026-09-18: 라운드2~4에서 배경과 섞여
+   안 보인다는 지적 — 레이어 수(2장)는 그대로 두고 번짐 반경만 3px→6px 로 키워 더 진하게(사용자 지정,
+   동물만 원복은 두더지와 통일성이 없어서 기각).*/
 #mole-board.mole-board--autumn .mole-pop--mole .mole-pop-img {
   filter:
-    drop-shadow(0 0 3px #29b6ff)
+    drop-shadow(0 0 6px #29b6ff)
     drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
 }
 #mole-board.mole-board--autumn .mole-pop--animal .mole-pop-img,
 #mole-board.mole-board--autumn .mole-pop--bomb .mole-pop-img {
   filter:
-    drop-shadow(0 0 3px #ff4fd8)
+    drop-shadow(0 0 6px #ff4fd8)
     drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
 }
 
