@@ -7,6 +7,7 @@ const tests = [
   'test-rng.js',
   'test-combo-score.js',
   'test-grid-partition.js',
+  'test-weapon-pool.js',
   'test-spawn-scheduler.js',
   'test-mole-sprites.js',
   'test-economy.js',
