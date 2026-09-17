@@ -1,93 +1,126 @@
 const assert = require('assert');
 const WeaponPool = require('../js/weapon-pool.js');
 
-// 게임 상태·DOM 없이 WeaponPool 만 검증하는 목(mock) 무기 모듈.
-function makeMockWeaponMod() {
-  const instances = [];
-  function create() {
-    const inst = {
-      busy: false,
-      cleared: false,
-      strikes: 0,
-      updates: 0,
-      lastTarget: null,
-      strike(tx, ty, onImpact, frameKey, regionId) {
-        inst.busy = true;
-        inst.strikes++;
-        inst.lastTarget = { tx, ty, regionId };
-      },
-      update() { inst.updates++; },
-      isBusy() { return inst.busy; },
-      home() { inst.busy = false; },
-      clear() { inst.cleared = true; }
-    };
-    instances.push(inst);
-    return inst;
-  }
-  return { create, instances };
+// 게임 상태·DOM 없이 WeaponPool 만 검증하는 목(mock) 무기 인스턴스.
+function makeMockInst() {
+  const inst = {
+    busy: false,
+    strikes: [],
+    updates: 0,
+    homed: 0,
+    cleared: 0,
+    strike(tx, ty, onImpact, frameKey, regionId) {
+      inst.busy = true;
+      inst.strikes.push({ tx, ty, regionId, onImpact });
+    },
+    update() { inst.updates++; },
+    isBusy() { return inst.busy; },
+    home() { inst.busy = false; inst.homed++; },
+    clear() { inst.cleared++; }
+  };
+  return inst;
 }
 
-// 1) 여유 인스턴스가 없으면 strike() 마다 새 인스턴스를 만든다.
-{
-  const mock = makeMockWeaponMod();
-  const pool = WeaponPool.create(mock, {}, { now: () => 0 });
-  pool.strike(0.2, 0.3, () => {}, null, 1);          // 기존 instances[0] 사용
-  assert.strictEqual(mock.instances.length, 1);
-  pool.strike(0.6, 0.7, () => {}, null, 2);          // instances[0] 이 busy → 새로 생성
-  assert.strictEqual(mock.instances.length, 2);
-  assert.strictEqual(mock.instances[1].lastTarget.regionId, 2);
+// 실제 Promise 마이크로태스크 대신, 테스트가 직접 언제 배치를 흘려보낼지 제어하는 가짜 스케줄러.
+function fakeScheduler() {
+  let queued = null;
+  return {
+    schedule(fn) { queued = fn; },
+    flush() { const fn = queued; queued = null; if (fn) fn(); }
+  };
 }
 
-// 2) update(dt) 가 모든 인스턴스에 전파된다.
+// 1) 혼자 눌리면 바로 실제 무기가 타격 — 오버플로(분신) 콜백 없음.
 {
-  const mock = makeMockWeaponMod();
-  const pool = WeaponPool.create(mock, {}, { now: () => 0 });
-  pool.strike(0, 0, () => {});
-  pool.strike(0.5, 0.5, () => {});
+  const inst = makeMockInst();
+  const mock = { create: () => inst };
+  const sched = fakeScheduler();
+  const overflowCalls = [];
+  const pool = WeaponPool.create(mock, {}, {
+    schedule: sched.schedule, rng: () => 0, onOverflow: (...a) => overflowCalls.push(a)
+  });
+  pool.strike(0.2, 0.3, () => {}, null, 1);
+  sched.flush();
+  assert.strictEqual(inst.strikes.length, 1);
+  assert.strictEqual(overflowCalls.length, 0);
+}
+
+// 2) 같은 배치(같은 스케줄 틱) 안에 두 개가 들어오면 하나만 실제, 나머지는 오버플로.
+{
+  const inst = makeMockInst();
+  const mock = { create: () => inst };
+  const sched = fakeScheduler();
+  const overflowCalls = [];
+  const pool = WeaponPool.create(mock, {}, {
+    schedule: sched.schedule, rng: () => 0, onOverflow: (...a) => overflowCalls.push(a)
+  });
+  pool.strike(0.1, 0.1, () => {}, null, 1);
+  pool.strike(0.9, 0.9, () => {}, null, 2);
+  sched.flush();
+  assert.strictEqual(inst.strikes.length, 1);
+  assert.strictEqual(overflowCalls.length, 1);
+}
+
+// 3) 배치 안 순서는 rng 로 섞인다 — rng 값이 다르면 실제 타격을 가져가는 항목도 달라져야 한다
+//    (동시타격 시 "누가 진짜인지" 랜덤 배정된다는 요구사항 검증).
+{
+  const inst1 = makeMockInst();
+  const sched1 = fakeScheduler();
+  const pool1 = WeaponPool.create({ create: () => inst1 }, {}, { schedule: sched1.schedule, rng: () => 0 });
+  pool1.strike(0.1, 0.1, () => {}, null, 'A');
+  pool1.strike(0.9, 0.9, () => {}, null, 'B');
+  sched1.flush();
+  const winnerLowRng = inst1.strikes[0].regionId;
+
+  const inst2 = makeMockInst();
+  const sched2 = fakeScheduler();
+  const pool2 = WeaponPool.create({ create: () => inst2 }, {}, { schedule: sched2.schedule, rng: () => 0.99 });
+  pool2.strike(0.1, 0.1, () => {}, null, 'A');
+  pool2.strike(0.9, 0.9, () => {}, null, 'B');
+  sched2.flush();
+  const winnerHighRng = inst2.strikes[0].regionId;
+
+  assert.notStrictEqual(winnerLowRng, winnerHighRng, 'rng 값에 따라 실제 타격을 가져가는 항목이 달라져야 함');
+}
+
+// 4) 이전 스윙이 아직 진행 중(busy)이면, 새 배치는 전부 오버플로(분신)로만 간다.
+{
+  const inst = makeMockInst();
+  inst.busy = true;
+  const mock = { create: () => inst };
+  const sched = fakeScheduler();
+  const overflowCalls = [];
+  const pool = WeaponPool.create(mock, {}, {
+    schedule: sched.schedule, rng: () => 0, onOverflow: (...a) => overflowCalls.push(a)
+  });
+  pool.strike(0.5, 0.5, () => {}, null, 9);
+  sched.flush();
+  assert.strictEqual(inst.strikes.length, 0);
+  assert.strictEqual(overflowCalls.length, 1);
+  assert.strictEqual(overflowCalls[0][4], 9, 'onOverflow 에 regionId 가 그대로 전달돼야 함');
+}
+
+// 5) update/home/clear/isBusy 는 내부 인스턴스에 그대로 위임된다.
+{
+  const inst = makeMockInst();
+  const pool = WeaponPool.create({ create: () => inst }, {}, {});
   pool.update(16);
-  assert.strictEqual(mock.instances[0].updates, 1);
-  assert.strictEqual(mock.instances[1].updates, 1);
-}
-
-// 3) 안 바쁜 여분 인스턴스는 pruneAfterMs 가 지나야 정리된다(그 전엔 유지).
-{
-  const mock = makeMockWeaponMod();
-  let clock = 0;
-  const pool = WeaponPool.create(mock, {}, { pruneAfterMs: 100, now: () => clock });
-  pool.strike(0, 0, () => {});           // instances[0], lastStrikeAt=0
-  clock = 10;
-  pool.strike(0.5, 0.5, () => {});       // instances[1] 생성, lastStrikeAt=10
-  mock.instances[1].busy = false;        // 스윙 끝나고 대기 위치 복귀했다고 가정
-  clock = 50;                            // 경과 40ms < 100ms
-  pool.update(16);
-  assert.strictEqual(mock.instances[1].cleared, false, '아직 정리되면 안 됨');
-  clock = 200;                           // 경과 190ms > 100ms
-  pool.update(16);
-  assert.strictEqual(mock.instances[1].cleared, true, '정리돼야 함');
-}
-
-// 4) maxConcurrent 를 넘으면 새 인스턴스 대신 가장 오래된 걸 리다이렉트한다.
-{
-  const mock = makeMockWeaponMod();
-  const pool = WeaponPool.create(mock, {}, { maxConcurrent: 2, now: () => 0 });
-  pool.strike(0, 0, () => {});
-  pool.strike(0.5, 0.5, () => {});
-  pool.strike(0.9, 0.9, () => {});       // 캡(2) 초과 → 새로 안 만들고 instances[0] 재사용
-  assert.strictEqual(mock.instances.length, 2);
-  assert.strictEqual(mock.instances[0].strikes, 2);
-}
-
-// 5) home()/clear() 후 인스턴스가 1개/0개로 수렴한다.
-{
-  const mock = makeMockWeaponMod();
-  const pool = WeaponPool.create(mock, {}, { now: () => 0 });
-  pool.strike(0, 0, () => {});
-  pool.strike(0.5, 0.5, () => {});
+  assert.strictEqual(inst.updates, 1);
+  assert.strictEqual(pool.isBusy(), false);
   pool.home();
-  assert.strictEqual(mock.instances[1].cleared, true, '여분 인스턴스는 home() 에서 정리');
-  assert.strictEqual(mock.instances[0].cleared, false, '기본 인스턴스는 유지');
+  assert.strictEqual(inst.homed, 1);
   pool.clear();
-  assert.strictEqual(mock.instances[0].cleared, true, 'clear() 는 기본 인스턴스도 정리');
+  assert.strictEqual(inst.cleared, 1);
+}
+
+// 6) meet/demo/spinIn/popIn 은 내부 인스턴스가 실제로 가진 것만 조건부로 붙는다.
+{
+  const instWithExtras = makeMockInst();
+  instWithExtras.spinIn = () => 'spun';
+  const pool = WeaponPool.create({ create: () => instWithExtras }, {}, {});
+  assert.strictEqual(typeof pool.spinIn, 'function');
+  assert.strictEqual(typeof pool.meet, 'undefined');
+  assert.strictEqual(pool.spinIn(), 'spun');
 }
 
 console.log('test-weapon-pool.js: all assertions passed');

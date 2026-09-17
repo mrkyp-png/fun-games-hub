@@ -2030,6 +2030,11 @@ body { background: var(--lm-page); }
   z-index: 25;
   filter: drop-shadow(0 0 6px rgba(120, 200, 255, 0.95)) drop-shadow(0 0 14px rgba(120, 200, 255, 0.55)) drop-shadow(0 3px 4px rgba(0, 0, 0, 0.45));
 }
+/* 무기별 동시타격 분신 — 골드해머 원래 전기빛 글로우 대신, 그 무기 실물과 같은 그림자만
+   (사용자 지정 동시타격 기능 확장, 파란 전기 글로우는 지진 전용 유지). */
+.quake-clone--hammer { height: 19.9%; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.5)); } /* 뿅망치(14.04%)와 같은 비율 */
+.quake-clone--alipunch { height: auto; width: 14.63%; filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.4)); } /* 글러브(14.63%)와 동일 폭 */
+.quake-clone--cannon { height: auto; width: 20%; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.45)); }
 /* 지진 먼지 파동 — 기존 링/흙먼지 재사용, 갈색·조금 크게. */
 .hit-fx-ring--quake { width: 30%; border-width: 4px; animation-duration: 0.5s; }
 .hit-fx-dust--quake { width: 10px; height: 10px; }

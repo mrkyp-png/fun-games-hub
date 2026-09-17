@@ -1339,7 +1339,23 @@
       // 지진 분신 포즈 미리 로드 (첫 지진 때 이미지가 늦게 떠서 안 보이는 것 방지)
       ['goldhammer-0', 'goldhammer-90'].forEach((n) => { const i = new Image(); i.src = 'assets/weapons/' + n + '.png'; });
     }
-    const laneHammer = MG.WeaponPool.create(WeaponMod, hammerOpts);
+    // 동시타격 오버플로(분신) — 랜덤 배정에서 "진짜"를 못 받은 나머지 타격들이 여기로 온다.
+    // 무기별로 다른 분신 연출(quakeClone/cannonClone 재사용, 사용자 지정 — "황금묠니르처럼
+    // 분신 개념"). 실제 타격 판정(onImpact)은 그대로 호출하므로 콤보/점수는 정상 반영된다.
+    function weaponCloneOverflow(targetXFrac, targetYFrac, onImpact, frameKey, regionId) {
+      const fxLayer = document.getElementById('mole-hammer-layer'); // overflow:visible
+      if (weapon === 'cannon') {
+        MG.HitFx.cannonClone(fxLayer, targetXFrac, targetYFrac, 'assets/weapons/cannon-a3.png', onImpact);
+      } else if (weapon === 'alipunch') {
+        const style = (MG.LaneBoxing && MG.LaneBoxing.ZONES && MG.LaneBoxing.ZONES[regionId]) || 'jab';
+        MG.HitFx.quakeClone(fxLayer, ALIPUNCH_CLONE_SPRITE[style] || ALIPUNCH_CLONE_SPRITE.jab, targetXFrac, targetYFrac, '90', onImpact, 'quake-clone--alipunch');
+      } else if (weapon === 'goldhammer') {
+        MG.HitFx.quakeClone(fxLayer, quakeClonePose(regionId), targetXFrac, targetYFrac, quakeCloneKind(regionId), onImpact);
+      } else {
+        MG.HitFx.quakeClone(fxLayer, 'assets/hammer.png', targetXFrac, targetYFrac, quakeCloneKind(regionId), onImpact, 'quake-clone--hammer');
+      }
+    }
+    const laneHammer = MG.WeaponPool.create(WeaponMod, hammerOpts, { onOverflow: weaponCloneOverflow });
 
     state = {
       round: roundNum, levelData, regions, spawnPoints, scheduler, holeLayer, laneHammer, weapon, rng, config,
@@ -1787,6 +1803,15 @@
     // 알리 펀치 무적 중엔 폭탄도 안전한 타격이므로 빨간색 아님(초록).
     return results.length === 0 || (results.some((r) => r.type === 'bomb' && !r.safe) && !alipunchInvincible());
   }
+
+  // 알리펀치 동시타격 분신용 — lane-boxing.js 가 이미 내보내는 ZONES(구역→스타일)를 그대로
+  // 쓰고, 여기선 스타일→스프라이트만 매핑(lane-boxing.js SPRITE 표와 동일, 중복 최소화를 위해
+  // 서로 같은 이미지를 쓰는 jab/hookL/hookR 는 한 줄로 묶음).
+  const ALIPUNCH_CLONE_SPRITE = {
+    jab: 'assets/weapons/alipunch-jab.png', hookL: 'assets/weapons/alipunch-jab.png', hookR: 'assets/weapons/alipunch-jab.png',
+    straight: 'assets/weapons/alipunch-straight.png',
+    upper: 'assets/weapons/alipunch-upper.png'
+  };
 
   // ---------- 골드해머: 지진 ----------
   // 발동 구멍 + 주변 8칸의 두더지에게 "지진 분신 골드해머"가 날아가 각 1대씩 (1타=처치, 다타=한 단계).

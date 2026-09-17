@@ -726,13 +726,15 @@
     }
   }
 
-  // 지진 분신 골드해머 하나 — 목표 구멍 근처(가장 가까운 가장자리 방향 위쪽)에서 날아와 내리치고 골드로 소멸.
+  // 무기 분신 하나(원래 골드해머 지진 전용이었으나, 동시타격 시 뿅망치/골드해머/알리펀치
+  // 분신에도 재사용 — 사용자 지정: "동시타격시엔 황금묠니르처럼 분신 개념"). 목표 구멍 근처
+  // (가장 가까운 가장자리 방향 위쪽)에서 날아와 내리치고 반투명하게 소멸.
   // onHit = 내리치는 순간 콜백(실제 타격 판정/연출은 game.js 가).
   // kind '0'/'45' = 머리 든 채 등장 → 아래로 내리침 → 그 자세 그대로 페이드 (위로 안 튕김).
   // kind '90'  = 정면 포즈. 직선으로 그 자리에 나타나 약간 커졌다 → 약간 작아짐(앞으로 쿡 찌르기). 회전 없음.
-  function quakeClone(boardEl, spriteUrl, xFrac, yFrac, kind, onHit) {
+  function quakeClone(boardEl, spriteUrl, xFrac, yFrac, kind, onHit, extraClass) {
     const el = document.createElement('img');
-    el.className = 'quake-clone';
+    el.className = 'quake-clone' + (extraClass ? ' ' + extraClass : '');
     el.src = spriteUrl;
     el.alt = '';
     const hitY = Math.max(0.05, yFrac - 0.05);
@@ -745,7 +747,7 @@
       boardEl.appendChild(el);
       void el.offsetWidth;
       el.style.transition = 'opacity 0.07s ease-out, transform 0.11s cubic-bezier(.2,.7,.4,1)';
-      el.style.opacity = '0.8'; // 분신 투명도 20%
+      el.style.opacity = '0.7'; // 분신 투명도 70%(사용자 지정, 무기 공통)
       el.style.transform = 'translate(-50%, -34%) scale(1.12)';   // 약간 커짐 (앞으로 옴)
       setTimeout(() => {
         el.style.transition = 'transform 0.08s ease-in';
@@ -773,7 +775,7 @@
     boardEl.appendChild(el);
     void el.offsetWidth;
     el.style.transition = 'opacity 0.08s ease-out, top 0.12s cubic-bezier(.3,.6,.4,1), transform 0.12s cubic-bezier(.3,.6,.4,1)';
-    el.style.opacity = '0.65'; // 분신 투명도 20%→35% (15%p 추가)
+    el.style.opacity = '0.7'; // 분신 투명도 70%(사용자 지정, 무기 공통)
     el.style.transform = T(RAISED * 0.7);
     setTimeout(() => {
       el.style.transition = 'top 0.08s ease-in, transform 0.08s ease-in';
@@ -783,6 +785,53 @@
     }, 130);
     setTimeout(() => { el.style.transition = 'opacity 0.26s ease-out'; el.style.opacity = '0'; }, 300);
     setTimeout(() => el.remove(), 600);
+  }
+
+  // 캐논(대포) 분신 — 다른 무기와 달리 대포는 원래 고정 포구 하나에서 쏘는 무기라, 목표 구멍
+  // 근처에 반투명(70%) 대포 몸체가 잠깐 나타나 쏘는 포즈를 취하고, 그 순간 목표 지점에
+  // "포탄이 떨어진 흔적"으로 기존 포탄 이미지(투명도 그대로 — 사용자 지정: "포탄은 투명도
+  // 주지말고 기존유지")가 잠깐 반짝였다 사라진다. onHit = 명중 순간 콜백.
+  function cannonClone(boardEl, xFrac, yFrac, poseSpriteUrl, onHit) {
+    const bodyY = Math.max(0.05, yFrac - 0.05);
+    const body = document.createElement('img');
+    body.className = 'quake-clone quake-clone--cannon';
+    body.src = poseSpriteUrl;
+    body.alt = '';
+    body.style.left = (xFrac * 100) + '%';
+    body.style.top = (bodyY * 100) + '%';
+    body.style.transform = 'translate(-50%, -34%) scale(0.86)';
+    body.style.opacity = '0';
+    boardEl.appendChild(body);
+    void body.offsetWidth;
+    body.style.transition = 'opacity 0.07s ease-out, transform 0.11s cubic-bezier(.2,.7,.4,1)';
+    body.style.opacity = '0.7'; // 분신 투명도 70%(사용자 지정)
+    body.style.transform = 'translate(-50%, -34%) scale(1.12)';
+
+    setTimeout(() => {
+      body.style.transition = 'transform 0.08s ease-in';
+      body.style.transform = 'translate(-50%, -34%) scale(0.94)'; // 반동(쏘는 순간)
+
+      const ball = document.createElement('img');
+      ball.className = 'lc-ball'; // 실제 대포 포탄과 같은 크기/그림자(투명도만 이 함수가 직접 제어)
+      ball.src = 'assets/weapons/cannon-ball.png';
+      ball.alt = '';
+      ball.style.left = (xFrac * 100) + '%';
+      ball.style.top = (yFrac * 100) + '%';
+      ball.style.opacity = '0'; // 포탄 자체는 투명도 없이(사용자 지정) — 등장 페이드만 살짝
+      ball.style.transform = 'translate(-50%, -50%) scale(0.6)';
+      ball.style.zIndex = '26'; // 분신 대포 몸체(.quake-clone z-index:25)보다 위
+      boardEl.appendChild(ball);
+      void ball.offsetWidth;
+      ball.style.transition = 'opacity 0.05s ease-out, transform 0.09s cubic-bezier(.2,.7,.4,1)';
+      ball.style.opacity = '1';
+      ball.style.transform = 'translate(-50%, -50%) scale(1.2)';
+      setTimeout(() => { ball.style.transition = 'opacity 0.18s ease-out'; ball.style.opacity = '0'; }, 90);
+      setTimeout(() => ball.remove(), 320);
+
+      try { if (onHit) onHit(); } catch (e) { /* 무시 */ }
+    }, 120);
+    setTimeout(() => { body.style.transition = 'opacity 0.24s ease-out'; body.style.opacity = '0'; }, 280);
+    setTimeout(() => body.remove(), 560);
   }
 
   // 게임 시작(사용자 제스처) 직후 호출 — 카운트다운 동안 오디오 컨텍스트 + 타격음 파일을 미리 준비.
@@ -828,6 +877,6 @@
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
-  const api = { moleHit, moleBlast, bombBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, punchStar, powerUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, roundAnnounceFinal, fight, moleVoice };
+  const api = { moleHit, moleBlast, bombBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, cannonClone, punchStar, powerUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, roundAnnounceFinal, fight, moleVoice };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);
