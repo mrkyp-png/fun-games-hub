@@ -1620,14 +1620,18 @@
       cfg.maxConcurrentAnimals = elapsed >= 40 ? Math.round(MG.interpolate([0, 2], elapsed - 40, 20)) : 0;
     } else {
       const total = ROUND_SECONDS_LONG;
+      const ch = currentChapter();
       cfg.popDuration = MG.interpolate(MG.MOLE_DURATION, elapsed, total);
       cfg.maxConcurrentMoles = Math.round(MG.interpolate(cfg.reverseTarget ? MG.MAX_CONCURRENT_ANIMALS : MG.MAX_CONCURRENT_MOLES, elapsed, total));
       cfg.maxConcurrentAnimals = Math.round(MG.interpolate(cfg.reverseTarget ? MG.MAX_CONCURRENT_MOLES : MG.MAX_CONCURRENT_ANIMALS, elapsed, total));
-      if (cfg.maxConcurrentBombs || cfg.bombChance) { // 라운드3부터만 켜져 있음(§4 게이팅) — 꺼진 라운드는 0 유지
+      // 게이팅은 currentChapter() 로 직접 판정(§4) — cfg 의 현재값(예: bombChance)으로 게이팅을
+      // 판단하면 커브 자체가 0에서 시작하는 라운드(막 켜진 라운드3의 t=0)와 아예 꺼진 라운드를
+      // 구분할 수 없어, 켜진 라운드가 라운드 내내 0에 고정되는 버그가 있었다(Puppeteer 로 실측 확인).
+      if (ch >= 3) {
         cfg.maxConcurrentBombs = Math.round(MG.interpolate(MG.MAX_CONCURRENT_BOMBS, elapsed, total));
         cfg.bombChance = MG.interpolate(MG.BOMB_CHANCE_BY_ROUND, elapsed, total);
       }
-      if (cfg.strongBombChance) { // 라운드4부터만 켜져 있음
+      if (ch >= 4) {
         cfg.strongBombChance = MG.interpolate(MG.STRONG_BOMB_CHANCE_BY_ROUND, elapsed, total);
       }
     }
