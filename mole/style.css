@@ -91,13 +91,22 @@ body { background: var(--lm-page); }
   position: absolute;
   inset: 0;
 }
-/* GET NOW/인트로가 끝나고 게임화면 전체가 드러날 때 슬라이드 업(사용자 지정, 3초 — "홈화면
-   전체가 등장 애니메이션 적용", #game-screen 자체에 붙임). index.html 의 splash 스크립트가
-   인트로 종료(또는 인트로 생략 시 스플래시 제거) 시점에 이 클래스를 붙인다. */
-.mole-home-slide-up { animation: mole-home-slide-up 3s ease-out; }
-@keyframes mole-home-slide-up {
-  from { transform: translateY(100%); } /* 폰 화면 맨 아래에서 완전히 올라오는 느낌(사용자 지정) */
-  to { transform: translateY(0); }
+/* GET NOW/인트로가 끝나고 홈화면이 흩뿌려진 조각들이 모여들 듯 등장(사용자 지정 — "흩뿌려짐으로
+   등장", 슬라이드업 대체). index.html 의 revealHomeScatter() 가 그리드 9칸·다이얼패드 버튼마다
+   랜덤 방향(--sc-x/--sc-y)·회전(--sc-r)·지연(--sc-delay)을 인라인으로 지정하고 이 클래스를 붙인다. */
+.mole-scatter-in {
+  animation: mole-scatter-in 0.75s cubic-bezier(.2, .8, .3, 1) both;
+  animation-delay: var(--sc-delay, 0s);
+}
+@keyframes mole-scatter-in {
+  from {
+    opacity: 0;
+    transform: translate(var(--sc-x, 0), var(--sc-y, 0)) rotate(var(--sc-r, 0deg)) scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
 }
 /* 시작 화면 = 카톡풍 대화. 게임박스 안, 메신저 화면처럼 (키패드는 아래 그대로 보임). */
 .board-start {
@@ -122,34 +131,29 @@ body { background: var(--lm-page); }
   pointer-events: none;
 }
 .hg-page.is-active { opacity: 1; z-index: 1; }
-.hg-cell {
-  position: relative; overflow: hidden;
-  outline: 3px solid transparent; outline-offset: -3px; /* 그라디언트 테두리 베이스 */
-}
-.hg-cell.is-gradborder { animation: hg-cell-gradborder-outline 0.5s linear; }
-@keyframes hg-cell-gradborder-outline {
-  0%   { outline-color: rgba(255, 122, 77, 0.95); }
-  33%  { outline-color: rgba(255, 206, 51, 0.95); }
-  66%  { outline-color: rgba(74, 222, 128, 0.95); }
-  100% { outline-color: rgba(255, 122, 77, 0); }
-}
+.hg-cell { position: relative; overflow: hidden; }
 .hg-cell img {
-  position: absolute; inset: 0; width: 100%; height: 100%;
+  /* 펄스로 scale(0.98)까지 줄어들어도 칸보다 항상 커서 배경이 비치지 않게 여유분(4%) 확보 */
+  position: absolute; inset: -2%; width: 104%; height: 104%;
   object-fit: cover; display: block;
 }
-/* 비트마다 몇 칸이 히트 플래시(흰 오버레이) + 눌림 스케일 — 너무 산만하다는 사용자 피드백으로
-   화려한 변형 13종 + 글로우/탭플래시 레이어는 빼고 이 둘만 유지. 서로 다른 요소(::before 오버레이
-   vs img 자체)라 animation 단축 속성이 안 부딪힘. */
-.hg-cell::before {
-  content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none;
-  background: var(--hf-color, #fff); opacity: 0; /* game.js 가 매번 무지개색 중 랜덤 지정(사용자 지정) */
-}
-.hg-cell.is-hitflash::before { animation: hg-cell-hitflash 0.28s ease; }
-@keyframes hg-cell-hitflash { 0% { opacity: 0; } 25% { opacity: 0.55; } 100% { opacity: 0; } }
-.hg-cell.is-press img { animation: hg-cell-press-scale 0.35s ease; }
+/* 비트마다 몇 칸이 눌림 스케일(사용자 지정 — 히트 플래시는 "눈이 너무 아픔" 피드백으로 뺌).
+   작아지는 순간에 맞춰 무지개 그라데이션 테두리도 같이 떴다 사라짐(사용자 재요청). */
+.hg-cell img.is-press { animation: hg-cell-press-scale 0.35s ease; }
 @keyframes hg-cell-press-scale {
-  0% { scale: 1 1; } 35% { scale: 0.88 0.88; } 65% { scale: 1.06 1.06; } 100% { scale: 1 1; }
+  0% { scale: 1 1; } 35% { scale: 0.98 0.98; } 65% { scale: 1.015 1.015; } 100% { scale: 1 1; }
 }
+.hg-cell::after {
+  content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  padding: 3px;
+  background: conic-gradient(from 0deg, #ff7a4d, #ffce33, #4ade80, #3b82f6, #a855f7, #ff7a4d);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+}
+.hg-cell.is-press::after { animation: hg-cell-gradborder-fade 0.35s ease; }
+@keyframes hg-cell-gradborder-fade { 0% { opacity: 0; } 35% { opacity: 0.9; } 100% { opacity: 0; } }
 /* ◀ ROUND N ▶ — "ROUND N" 은 알약 박스(테두리를 타고 도는 불빛, 챕터별 색), 양옆은 꼬리 달린
    3D 화살표 버튼(누르면 쑥 들어감). 항상 표시. 우측 하단, #build-tag(버전 표시)와 같은 줄에
    맞춘 자리(사용자 지정). */
@@ -220,7 +224,7 @@ body { background: var(--lm-page); }
 .ch-label {
   position: relative;
   font-size: 0.82rem; font-weight: 800; line-height: 1;
-  color: #1c1c22;
+  color: #fff; /* 검은색이라 잘 안 보인다는 사용자 피드백으로 흰색 변경 */
   background: transparent;
   padding: 3px 2px;               /* 글자↔손 이모지 간격 축소 (사용자 요청) */
   white-space: nowrap;
@@ -2200,9 +2204,9 @@ body { background: var(--lm-page); }
 .mole-pop-img--emerge { animation: mole-pop-emerge 0.4s ease-out; }
 @keyframes mole-pop-emerge {
   0%   { scale: 1 1; }
-  30%  { scale: 1.2 0.75; }
-  55%  { scale: 0.85 1.2; }
-  80%  { scale: 1.06 0.95; }
+  30%  { scale: 1 0.7; }
+  55%  { scale: 1 1.15; }
+  80%  { scale: 1 0.95; }
   100% { scale: 1 1; }
 }
 

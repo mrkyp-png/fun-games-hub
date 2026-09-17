@@ -549,19 +549,27 @@
     // 이 첫 탭(세션 첫 제스처라 오디오 버퍼가 아직 없음)에서도 바로 소리가 난다.
     try { window.MoleGame && window.MoleGame.HitFx && window.MoleGame.HitFx.warmup(); } catch (e) { /* 무시 */ }
 
-    // GET NOW 탭 이후(인트로 있으면 인트로까지 끝난 뒤) 홈화면 전체가 슬라이드 업으로 드러남
-    // (사용자 지정, 3초 — "홈화면 전체가 등장 애니메이션 적용"). 인트로를 스킵/재생 여부와
-    // 무관하게 딱 한 번만 트리거.
+    // GET NOW 탭 이후(인트로 있으면 인트로까지 끝난 뒤) 홈화면 조각(그리드 9칸+다이얼패드
+    // 버튼+상단바)들이 사방에서 흩뿌려졌다 모여들며 등장(사용자 지정 — 슬라이드업 대체). 인트로를
+    // 스킵/재생 여부와 무관하게 딱 한 번만 트리거.
     var homeRevealed = false;
-    function revealHomeSlideUp() {
+    function revealHomeScatter() {
       if (homeRevealed) return;
       homeRevealed = true;
-      var gs = document.getElementById('game-screen');
-      if (gs) {
-        gs.classList.remove('mole-home-slide-up');
-        void gs.offsetWidth;
-        gs.classList.add('mole-home-slide-up');
-      }
+      var pieces = Array.prototype.slice.call(document.querySelectorAll('.hg-cell, .lane-button'));
+      var hud = document.querySelector('.game-hud');
+      if (hud) pieces.push(hud);
+      pieces.forEach(function (el) {
+        var ang = Math.random() * Math.PI * 2;
+        var dist = 70 + Math.random() * 160;
+        el.style.setProperty('--sc-x', Math.round(Math.cos(ang) * dist) + 'px');
+        el.style.setProperty('--sc-y', Math.round(Math.sin(ang) * dist) + 'px');
+        el.style.setProperty('--sc-r', Math.round((Math.random() * 2 - 1) * 180) + 'deg');
+        el.style.setProperty('--sc-delay', (Math.random() * 0.3).toFixed(2) + 's');
+        el.classList.remove('mole-scatter-in');
+        void el.offsetWidth;
+        el.classList.add('mole-scatter-in');
+      });
       // 홈 BGM은 여기(스플래시/인트로가 실제로 사라지는 시점)서 시작(사용자 지정 — "브금은
       // 인트로에 안 나오고 홈화면 진입하면 나오게").
       try { window.FGH && window.FGH.startHomeBgm && window.FGH.startHomeBgm(); } catch (e) { /* 무시 */ }
@@ -575,9 +583,9 @@
         // 앱 최초 1회 인트로 — 스플래시 사라지기 전에 먼저 띄워 홈이 안 비치게 한다.
         var IN = window.MoleGame && window.MoleGame.Intro;
         if (IN && IN.shouldShow()) {
-          IN.play(revealHomeSlideUp);
+          IN.play(revealHomeScatter);
         } else {
-          setTimeout(revealHomeSlideUp, 500); // 스플래시만 사라지는 경우, 그 제거 시점에 맞춤
+          setTimeout(revealHomeScatter, 500); // 스플래시만 사라지는 경우, 그 제거 시점에 맞춤
         }
         s.classList.add('is-hiding');
         setTimeout(function () { s.remove(); }, 500);

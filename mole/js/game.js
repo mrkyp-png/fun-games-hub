@@ -222,30 +222,24 @@
   }
   let showcaseAvgEnergy = 0;
   let showcaseLastBeat = 0;
-  // 히트 플래시 색(사용자 지정 — 무지개색 랜덤): 빨강/주황/노랑/파랑/초록/남색/보라.
-  const HG_HITFLASH_COLORS = ['#ff3b3b', '#ff8c1a', '#ffd93b', '#3b82f6', '#22c55e', '#1e3a8a', '#a855f7'];
-  // 현재 활성 페이지의 9칸 중 여러 개를 골라 비트마다 눌리는 느낌으로 펄스(사용자 지정 —
-  // 화려한 변형 13종은 "너무 산만함" 피드백으로 빼고 히트 플래시 + 눌림 스케일 + 그라디언트
-  // 테두리 3개만 유지). 각각 다른 요소(cell 자신의 outline / cell::before / img)라
-  // animation 단축 속성이 안 부딪혀서 클래스 3개를 그냥 같이 토글해도 된다.
+  // 현재 활성 페이지의 9칸 중 여러 개를 골라 비트마다 펄스(사용자 지정 — 화려한 변형 13종은
+  // "너무 산만함", 히트 플래시는 "눈이 너무 아픔" 피드백으로 빼고, 그라디언트 테두리도 "펄스
+  // 효과만" 요청으로 마저 빼서 눌림 스케일 하나만 유지).
   function pulseGridCells() {
     const page = document.querySelector('.hg-page.is-active');
     if (!page) return;
     const cells = page.querySelectorAll('.hg-cell');
     if (!cells.length) return;
     const n = 2 + ((Math.random() * 3) | 0); // 2~4개, 동시에 움직여도 됨(사용자 지정)
-    // 같은 비트에 같이 펄스되는 칸들은 색을 통일(사용자 지정) — 칸마다 따로 뽑으면 한 박자에
-    // 색이 제각각이라 산만해 보임.
-    const beatColor = HG_HITFLASH_COLORS[(Math.random() * HG_HITFLASH_COLORS.length) | 0];
     for (let i = 0; i < n; i++) {
       const cell = cells[(Math.random() * cells.length) | 0];
       const img = cell.querySelector('img');
-      cell.style.setProperty('--hf-color', beatColor);
-      cell.classList.remove('is-hitflash', 'is-gradborder');
-      if (img) img.classList.remove('is-press');
-      void cell.offsetWidth;
-      cell.classList.add('is-hitflash', 'is-gradborder');
-      if (img) img.classList.add('is-press');
+      if (!img) continue;
+      cell.classList.remove('is-press');
+      img.classList.remove('is-press');
+      void img.offsetWidth;
+      cell.classList.add('is-press');
+      img.classList.add('is-press');
     }
   }
 
