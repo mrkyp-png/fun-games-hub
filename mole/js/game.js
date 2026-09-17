@@ -1345,16 +1345,13 @@
     function weaponCloneOverflow(targetXFrac, targetYFrac, onImpact, frameKey, regionId) {
       const fxLayer = document.getElementById('mole-hammer-layer'); // overflow:visible
       if (weapon === 'cannon') {
-        // "대기위치"= 목표 근처가 아니라 실제 대포의 고정 포구점(MZX,MZY) — 거기서 포탄이
-        // 진짜 거리를 날아가야 한다(사용자 지정, "타격점에 있으면 안 됨"). 포즈(a3, 기본
-        // 대기포)는 포신이 그림 정중앙이 아니라 mu/mv 지점에 있어서, lane-cannon.js 와 같은
-        // 앵커 계산으로 배치해야 몸체가 삐져나오지 않는다(사용자 리포트: "45도 각도에
-        // 있는놈이 앞으로 튀어나가있음" — a3 가 바로 그 45도 포즈).
-        const mz = MG.LaneCannon;
-        const bx = mz && mz.MZX != null ? mz.MZX : 0.870, by = mz && mz.MZY != null ? mz.MZY : 0.801;
-        const pose = (mz && mz.POSES && mz.POSES.find((p) => p.key === 'a3')) ||
-          { src: 'assets/weapons/cannon-a3.png', w: 0.242, ar: 1.159, mu: 0.32, mv: 0.09, dx: 0.004, dy: -0.006 };
-        MG.HitFx.cannonClone(fxLayer, bx, by, targetXFrac, targetYFrac, pose, onImpact);
+        // 분신 몸체·포즈 맞추기는 포기(사용자 지정 — "쉬운 방법"): 보드 아래쪽(3~4행)·
+        // 좌측~중앙 부근의 랜덤 지점에서 포탄만 목표까지 날아간다. 모서리는 "하늘에서
+        // 날아오는 느낌"이라 제외됨. 랜덤이라 동시에 여러 개(8개까지 실기기 확인) 떠도
+        // 자연스럽게 안 겹친다.
+        const sx = 0.05 + Math.random() * 0.5;
+        const sy = 0.55 + Math.random() * 0.35;
+        MG.HitFx.cannonClone(fxLayer, sx, sy, targetXFrac, targetYFrac, onImpact);
       } else if (weapon === 'alipunch') {
         // 분신도 실제 위치와 "같은 글러브·같은 애니메이션"이어야 한다(사용자 지정) — 일반
         // quakeClone 대신 lane-boxing.js 가 export 하는 makeGlove 로 그 구역의 진짜 글러브를
