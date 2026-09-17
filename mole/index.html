@@ -164,7 +164,6 @@
         <button type="button" class="ch-arrow ch-arrow--next" data-ch-next aria-label="다음 챕터">👉</button>
       </span>
 
-      <div id="build-tag" aria-hidden="true">v507</div>
       <!-- 홈(시작) 상태의 배경 패널 — 카톡 대화 UI 는 삭제(사용자 지정), 다이얼패드(키패드는 아래 그대로)만 보임.
            안에는 원본 3x3 콜라주 구성 그대로 9칸 그리드 3페이지(사용자 지정 — 낱장으로 흩어놓지 않고
            원래 구도 유지) 가 20~30초마다 다음 페이지로 넘어가고, 그 동안 각 칸이 홈 BGM 비트에 맞춰
@@ -480,7 +479,11 @@
         <span class="rsh-hand" aria-hidden="true">👈</span>
         <span class="rsh-txt" data-i18n="mole.result.swipeHint">왼쪽으로 밀어 다음 챕터로</span>
       </div>
-      <div id="lane-button-bar"></div>
+      <div id="lane-button-bar">
+        <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
+             가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
+        <div id="build-tag" aria-hidden="true">v508</div>
+      </div>
       <div id="invincible-countdown" class="invincible-countdown" aria-hidden="true" hidden></div>
     </div>
     <div id="screen-flash-fx" aria-hidden="true"></div>
@@ -608,7 +611,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=507').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=508').catch(function () {});
       }
     });
   }

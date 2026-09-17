@@ -33,11 +33,13 @@ html, body { overscroll-behavior: none; }
   --lm-fill:    #f1f1f3;   /* 검색바 등 옅은 채움 */
   --lm-chat:    #f4f1ea;   /* 대화 홈 배경 — 순백 대신 연한 웜그레이 (메신저 느낌) */
 }
-/* 배포 버전 표식 (스크린샷으로 어느 버전인지 확인용) — 시작 화면 좌하단 아주 작게 */
+/* 배포 버전 표식 (스크린샷으로 어느 버전인지 확인용) — 다이얼패드 1번 칸(하트 아이콘) 바로
+   위, 아주 작게(사용자 지정 — 예전 화면 좌하단 위치는 다른 UI에 가려 잘 안 보였음). */
 #build-tag {
   position: absolute;
-  left: 6px;
-  bottom: 4px;
+  left: 12.5%;
+  top: 2px;
+  transform: translateX(-50%);
   z-index: 9;
   font-size: 12px;
   font-weight: 700;
@@ -155,8 +157,8 @@ body { background: var(--lm-page); }
 .hg-cell.is-press::after { animation: hg-cell-gradborder-fade 0.35s ease; }
 @keyframes hg-cell-gradborder-fade { 0% { opacity: 0; } 35% { opacity: 0.9; } 100% { opacity: 0; } }
 /* ◀ ROUND N ▶ — "ROUND N" 은 알약 박스(테두리를 타고 도는 불빛, 챕터별 색), 양옆은 꼬리 달린
-   3D 화살표 버튼(누르면 쑥 들어감). 항상 표시. 우측 하단, #build-tag(버전 표시)와 같은 줄에
-   맞춘 자리(사용자 지정). */
+   3D 화살표 버튼(누르면 쑥 들어감). 항상 표시. 우측 하단(사용자 지정 — #build-tag는 이후
+   다이얼패드 하트 아이콘 위로 이동해 더 이상 같은 줄이 아님). */
 .chapter-nav-top { display: none; }
 #game-screen.is-start .chapter-nav-top {
   display: inline-flex;
@@ -1404,6 +1406,7 @@ body { background: var(--lm-page); }
    4x4 격자 = 16 구멍과 1:1 그대로. 왼쪽 3열 = 숫자패드, 오른쪽 열 = 연락처/키패드/최근기록/통화.
    동작(누르면 그 구멍 타격, 키보드, 두더지 있으면 --hot)은 변함 없음. */
 #lane-button-bar {
+  position: relative; /* #build-tag(버전 표식)의 기준점 */
   width: var(--sq);
   aspect-ratio: 1;
   flex: 0 0 auto;
