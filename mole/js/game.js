@@ -325,15 +325,8 @@
       if (d === 'mid' || d === 'legend') b.classList.toggle('mm-pill--locked', hammerOnly);
     });
   }
-  function openLightPopup() {
-    refreshLightPopup();
-    const el = document.getElementById('light-popup');
-    if (el) el.hidden = false;
-  }
-  function closeLightPopup() {
-    const el = document.getElementById('light-popup');
-    if (el) el.hidden = true;
-  }
+  // 2026-09-18(사용자 지정): 예전엔 독립 팝업(openLightPopup/closeLightPopup, 화면 전체 덮는
+  // 카드)이었으나, 다른 12개 화면과 통일해 openMore('light-popup') 경로로 보드 영역에 표시.
   function wireLightPopup() {
     const el = document.getElementById('light-popup');
     if (!el) return;
@@ -343,9 +336,6 @@
         setDifficulty(b.getAttribute('data-lp-diff'));
       });
     });
-    const closeBtn = el.querySelector('[data-lp-close]');
-    if (closeBtn) closeBtn.addEventListener('click', closeLightPopup);
-    el.addEventListener('click', (e) => { if (e.target === el) closeLightPopup(); });
   }
 
   // 화면별 BGM. 홈 bgm-home-1~4, 게임 bgm-game-1~3 (재진입마다 순환, game-1=달빛축제 1순위), 더보기 bgm-more.
@@ -732,10 +722,9 @@
       onHomeAction: (action) => {
         if (navLocked) return;
         if (action === 'home') { showStartScreen(); return; }
-        if (action === 'lightMode') { openLightPopup(); return; }
         const sub = { shop: 'shop-screen', score: 'score-screen', daily: 'daily-screen',
           quest: 'quest-screen', friends: 'friends-screen', locker: 'face-locker',
-          inventory: 'inventory-screen', settings: 'settings-screen' }[action];
+          inventory: 'inventory-screen', settings: 'settings-screen', lightMode: 'light-popup' }[action];
         if (sub) { openMore(sub); if (sharedLaneControls) sharedLaneControls.setActiveNav(action); }
       }
     });
@@ -1031,6 +1020,7 @@
       if (sub === 'score-screen' && scoreScreen) scoreScreen.show();
       if (sub === 'settings-screen' && settingsScreen) settingsScreen.show();
       if (sub === 'inventory-screen' && inventoryScreen) inventoryScreen.show();
+      if (sub === 'light-popup') refreshLightPopup();
     }
   }
   function closeMore(e) {
@@ -2604,7 +2594,7 @@
   // 더보기 메뉴 + 하위 화면 모듈 인스턴스 생성·배선.
   function wireMoreMenu() {
     screenNav = MG.ScreenNav.create({
-      screens: ['face-maker', 'costume-screen', 'face-locker', 'shop-screen', 'daily-screen', 'score-screen', 'settings-screen', 'inventory-screen', 'help-screen', 'privacy-screen', 'quest-screen', 'friends-screen']
+      screens: ['face-maker', 'costume-screen', 'face-locker', 'shop-screen', 'daily-screen', 'score-screen', 'settings-screen', 'inventory-screen', 'help-screen', 'privacy-screen', 'quest-screen', 'friends-screen', 'light-popup']
     });
 
     faceMaker = MG.FaceMaker.create({
@@ -2665,8 +2655,8 @@
       const b = document.querySelector('[data-back="' + k + '"]');
       if (b) b.addEventListener('click', () => screenNav.back());
     });
-    // quest/friends = 다이얼패드에서 바로 들어오는 진입점(사용자 지정) — 나갈 땐 홈/게임으로.
-    ['quest', 'friends'].forEach((k) => {
+    // quest/friends/lightMode = 다이얼패드에서 바로 들어오는 진입점(사용자 지정) — 나갈 땐 홈/게임으로.
+    ['quest', 'friends', 'lightMode'].forEach((k) => {
       const b = document.querySelector('[data-back="' + k + '"]');
       if (b) b.addEventListener('click', () => closeMore());
     });
