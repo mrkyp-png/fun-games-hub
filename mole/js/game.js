@@ -541,7 +541,7 @@
     applyDiffClass(currentDiff);
     preloadRoundMoles(); // 라운드1 플레이하는 동안 미리 받아둬야 라운드2 전환 때 안 늦음
     playStartIntro(() => {
-      loadActiveFace().catch(() => null).then(() => startRound(1, { fresh: true }));
+      loadActiveFace().catch(() => null).then(() => startRound({ fresh: true }));
     });
   }
 
@@ -1187,7 +1187,7 @@
   // ---------- 라운드 시작 ----------
   // opts.fresh: true면 콤보·점수·목숨을 리셋 (시작 버튼/다시하기).
   //             없으면 자동 다음 라운드로 보고 그대로 이어간다.
-  function startRound(roundNum, opts) {
+  function startRound(opts) {
     sessionGen++;
     gameStarting = false; // 라운드 진입 성공 — 이후 재진입은 state 존재로 차단됨
     setNavLock(true); // 카운트다운 동안 ⊞ 잠금 (playRoundIntro onDone 에서 해제)
@@ -1234,7 +1234,7 @@
     applyBgm();
     MG.HitFx.warmup(); // 오디오 컨텍스트 + 타격음 파일 프리로드 (카운트다운 동안)
 
-    const rng = { next: MG.RNG.mulberry32(MG.RNG.hashSeed('mole-r' + roundNum + '-' + Date.now())) };
+    const rng = { next: MG.RNG.mulberry32(MG.RNG.hashSeed('mole-r' + currentChapter() + '-' + Date.now())) };
     let { regions, spawnPoints } = MG.GridPartition.partition({ gridSize: roundGridSize() });
     // 캐논·골드해머 = 우하단 구멍 1개(15) 제외 → 15구멍. 알리 펀치 = 좌·우하단 2개(12·15) 제외 →
     // 14구멍 + 그 자리에 글러브(§1). 뿅망치는 그대로 16구멍.
@@ -1393,7 +1393,7 @@
     };
 
     updateHUD();
-    playRoundIntro(roundNum, () => {
+    playRoundIntro(() => {
       if (myGen !== sessionGen || !state) return; // 그 사이 나가버림 — 이 콜백 무효
       state.introActive = false;
       setNavLock(false); // 라운드 실제 진행 → ⊞ 다시 활성
@@ -1402,59 +1402,40 @@
     });
   }
 
-  // 모든 라운드: "라운드 N" 이 오른쪽에서(라운드2~ 는 두더지 이미지가 왼쪽에서) 날아와 중앙에
-  // 멈추면 한 글자씩 타이핑(+타자기 소리).
-  //  · 라운드 2~10: 분홍 커튼 패턴(2.3s) 뒤 시작 → 타이핑 후 타이틀 왼쪽·두더지 오른쪽 퇴장 + 커튼 오픈.
-  //  · 라운드 1: 챕터 인트로가 방금 커튼을 보여줬으니 커튼 없이(투명 오버레이, 보드 비침) 바로
-  //    "라운드 1" fly-in → 타이핑 → 3·2·1·GO! 카운트다운(줌인 + 색상 3빨/2주/1노/GO초, GO 는 흰
-  //    플래시). GO 에서 "라운드 1" 은 왼쪽·"GO!" 는 오른쪽으로 빛처럼 사라진다. (두더지 그림 없음.)
+  // 모든 라운드(1~8): "라운드 N" 이 오른쪽에서 날아와 중앙에 멈추면 한 글자씩 타이핑
+  // (+타자기 소리) → Ready → GO! 카운트다운(줌인 + 색상, GO! 는 흰 플래시) → 퇴장.
+  // 커튼 없음(투명 오버레이, 보드가 비침), 장식용 두더지 이미지도 없음(글자만).
   // 골드해머 인트로 "회전 등장" 시작 위치 — 키패드 '✱' 키 중심의 lane-hammer 좌표계
   // (#mole-hammer-layer 기준) 분수(실측).
   const GH_SPIN_START = { x: 0.128, y: 1.871 };
 
-  function playRoundIntro(roundNum, onDone) {
+  function playRoundIntro(onDone) {
     const myGen = sessionGen;
     const overlay = document.getElementById('round-intro-overlay');
     const title = document.getElementById('round-intro-title');
     const count = document.getElementById('round-intro-count');
     const moleImg = document.getElementById('round-intro-mole');
-    const isR1 = roundNum === 1;
 
     overlay.hidden = false;
     count.hidden = true;
     count.className = 'round-intro-count';
     title.textContent = '';
     moleImg.hidden = true;
-    // 캐논 인트로 연출 — 모든 라운드(1~10)에서 이 함수 시작 시점에 바로 시작(사용자 지정).
-    // 라운드1은 챕터 설명 직후라 여유 있게 느긋이, 라운드2~10은 인트로가 훨씬 짧아
-    // fast=true로 빠르게. 실제 대포는 처음부터 안 보여야 하므로 playCannonIntro() 안에서 숨김.
-    if (state.weapon === 'cannon') playCannonIntro(!isR1);
-    if (state.weapon === 'goldhammer') playGoldHammerIntro(!isR1);
-    if (state.weapon === 'hammer') playHammerIntro(!isR1);
-    if (isR1) {
-      overlay.classList.remove('has-mole', 'mole-in', 'is-opening'); // 커튼 효과 없음(투명)
-    } else {
-      restartCurtainPattern(overlay);
-      overlay.classList.add('has-mole'); // 분홍 커튼 패턴
-      // 알리 펀치: 인트로 내내(만남 제스처 전 대기 구간 포함) 글러브가 화면에서 사라지지
-      // 않도록 인트로 시작부터 바로 보이게(사용자 지적 — 전엔 만남 제스처 시점에야 보였음).
-      if (state.weapon === 'alipunch') setHammerLayerVisible(true);
-    }
-    const showMole = !isR1; // 라운드1 은 글자만
-    const idx = ((roundNum - 2) % 6 + 6) % 6 + 1;
-    moleImg.src = 'assets/round-moles/mole' + idx + '.png';
+    // 캐논/골드해머/뿅망치 인트로 연출 — 모든 라운드(1~8)에서 이 함수 시작 시점에 바로 시작
+    // (사용자 지정). 커튼 없이 느긋한 타이밍(구 라운드1 전용이었던 쪽) 하나로 통일.
+    if (state.weapon === 'cannon') playCannonIntro(false);
+    if (state.weapon === 'goldhammer') playGoldHammerIntro(false);
+    if (state.weapon === 'hammer') playHammerIntro(false);
+    overlay.classList.remove('has-mole', 'mole-in', 'is-opening'); // 커튼 효과 없음(투명, 모든 라운드 공통)
+    // 알리 펀치: 인트로 시작부터 바로 글러브가 보여야 한다(사용자 지적).
+    if (state.weapon === 'alipunch') setHammerLayerVisible(true);
 
     const FLY_IN_MS = 400;         // = ri-title-fly-in 0.4s
     const HOLD_AFTER_TYPE_MS = 480;
-    // 챕터1~3(9홀·5라운드)의 마지막 라운드는 "라운드 5" 대신 "파이널라운드"(사용자 지정).
-    const isSmallFinalRound = isSmallBoardChapter() && roundNum === finalRound();
-    const full = isSmallFinalRound ? I18N.t('mole.round.final') : I18N.t('mole.round', { n: roundNum });
+    const roundNum = currentChapter();
+    const full = I18N.t('mole.round', { n: roundNum });
     const typeMs = full.replace(/ /g, '').length * 45; // typeText 는 45ms/글자
 
-    // 알리 펀치 준비 시연 — 라운드2~10 전용(라운드1은 3·2·1·GO! 카운트다운이 따로 있어 제외,
-    // 사용자 지정). "라운드 N" 글자가 날아오는 시점에 좌우 글러브가 동시에 대기위치 줄
-    // 정중앙에서 잽으로 만난 뒤 각자 대기위치로 복귀(인사 제스처). 4동작 시연+음성은
-    // 짧은 인트로에 넣으니 어색해서 제외(사용자 확인).
     // 인트로 동안은 메인 루프(loop, requestAnimationFrame)가 아직 시작 전이라 laneHammer.update()가
     // 한 번도 안 불려서 시연 애니메이션이 화면에 안 그려짐 — 인트로 전용 가벼운 틱을 별도로 돌린다.
     function tickHammerDuring(ms) {
@@ -1469,20 +1450,10 @@
       })();
     }
 
-    function playAlipunchDemo() {
-      if (isR1 || state.weapon !== 'alipunch' || !state.laneHammer || !state.laneHammer.meet) return;
-      setHammerLayerVisible(true);
-      state.laneHammer.meet(); // 좌우 글러브가 만난 뒤 대기위치로 복귀
-      // fight 음향은 "라운드 N" 음성과 겹쳐서(사용자 리포트) 라운드2~10에서는 뺌 — 라운드1
-      // 마지막(GO!) 만남에만 남김(runCountdown, 사용자 지정).
-      tickHammerDuring(400); // meet() 왕복(~240ms) + 여유
-    }
-
-    // 캐논 인트로 등장 연출(사용자 지정) — 챕터 설명 끝나자마자(라운드1) / 라운드 전환
-    // 시작하자마자(라운드2~10) 좌측에서 등장해 대기위치까지 이동(옆면-외곽선, 바퀴 회전) →
-    // 도착하면 3시 방향(a3 거울상) → 12시 방향(a4 거울상) 포즈를 짧게 거쳐 → 실제
-    // 대포(평소 대기 포즈)로 교체. 라운드2~10은 인트로가 훨씬 짧아 fast=true로 빠르게(사용자 지정).
-    // 평소엔 #mole-hammer-layer(진짜 대포)를 숨겨뒀다가 끝나면 교체.
+    // 캐논 인트로 등장 연출(사용자 지정) — 라운드 시작하자마자 좌측에서 등장해 대기위치까지
+    // 이동(옆면-외곽선, 바퀴 회전) → 도착하면 3시 방향(a3 거울상) → 12시 방향(a4 거울상) 포즈를
+    // 짧게 거쳐 → 실제 대포(평소 대기 포즈)로 교체. 평소엔 #mole-hammer-layer(진짜 대포)를
+    // 숨겨뒀다가 끝나면 교체. fast 인자는 항상 false(모든 라운드 동일 타이밍으로 통일).
     function playCannonIntro(fast) {
       const ci = document.getElementById('cannon-intro');
       if (!ci) return;
@@ -1550,63 +1521,41 @@
         sx = (r.x + r.width / 2 - lr.x) / lr.width;
         sy = (r.y + r.height / 2 - lr.y) / lr.height;
       }
-      const ms = fast ? 3380 : 3680; // 실측 is-opening 시각(라운드1 ~3714ms·라운드2~10 ~3422ms)에 맞춤
+      const ms = fast ? 3380 : 2380; // is-opening 트리거 재계산(2단계 카운트다운, Task4 §설계 추정치) — Puppeteer로 재검증
       state.laneHammer.spinIn(sx, sy, ms, 4, 0.04, () => {});
       const SOUND_MS = 1837; // audio/goldhammer-spin.mp3 실측 길이(ffprobe) — 재생이 착지 시점에 끝나도록
       setTimeout(() => { if (myGen === sessionGen) MG.HitFx.goldHammerSpin(); }, Math.max(0, ms - SOUND_MS));
     }
 
-    // 뿅망치 라운드 인트로 등장 연출(사용자 지정 "쭉 늘어났다 팡 등장") — 캐논·골드해머와
-    // 달리 화면을 가로지르지 않는 제자리 무기라 인트로 내내 끌지 않고, 라운드 시작 직전
-    // 짧게(0.65s) 뿅 하고 나타나도록 — 실측 is-opening 시각에서 그만큼 뺀 시점에 시작.
+    // 뿅망치 라운드 인트로 등장 연출(사용자 지정 "쭉 늘어났다 팡 등장").
     function playHammerIntro(fast) {
       if (!state.laneHammer || !state.laneHammer.popIn) return;
       setHammerLayerVisible(true);
-      const total = fast ? 3380 : 3680; // 실측 is-opening 시각(라운드1 ~3714ms·라운드2~10 ~3422ms)에 맞춤
+      const total = fast ? 3380 : 2380; // is-opening 트리거 재계산(2단계 카운트다운) — Puppeteer로 재검증
       const popMs = 650;
       const delay = Math.max(0, total - popMs);
       state.laneHammer.popIn(delay, popMs, () => {});
       setTimeout(() => { if (myGen === sessionGen) MG.HitFx.hammerPop(); }, delay); // 뿅 소리 — 등장과 동시에
     }
 
-    // 라운드1 전용: 타이핑 뒤 3·2·1·GO!. 끝나면 finish() 호출.
-    // 알리 펀치 장착 시 — 만남 제스처만 4번 반복하니 휑해서(사용자 지적) 사이에 5동작을 채움:
-    // "3"=1번째 만남 → "2"·"1" 구간에 잽·스트레이트·라이트훅·레프트훅·어퍼컷 5동작
-    // (잽·스트레이트·어퍼컷은 왼손잡이 기준 — 리드는 오른손 잽, 파워는 왼손 스트레이트·어퍼컷.
-    // 라이트훅·레프트훅은 이름 그대로 오른쪽·왼쪽 글러브, 사용자 지정) → "GO!"=마지막 만남 후 대기위치.
+    // 매 라운드 시작: 타이핑 뒤 Ready → GO!. 끝나면 finish() 호출.
+    // 알리 펀치 장착 시 — "Ready"=만남 제스처 → "GO!"=만남 제스처 + fight 음향.
     function runCountdown(finish) {
       count.hidden = false;
-      const alipunchReady = state.weapon === 'alipunch' && state.laneHammer && state.laneHammer.meet && state.laneHammer.demo;
-      if (alipunchReady) { setHammerLayerVisible(true); tickHammerDuring(650 * 3 + 360 + 300); }
-      const STEPS = ['3', '2', '1', 'GO!']; // 무조건 영어 (사용자 지정)
+      const alipunchReady = state.weapon === 'alipunch' && state.laneHammer && state.laneHammer.meet;
+      if (alipunchReady) { setHammerLayerVisible(true); tickHammerDuring(650 + 360); }
+      const STEPS = ['Ready', 'GO!']; // 무조건 영어 (사용자 지정, 스펠링 확인됨)
       let i = 0;
       (function tick() {
         if (myGen !== sessionGen) return;
-        const go = i >= 3;
+        const go = i >= STEPS.length - 1;
         count.textContent = STEPS[i];
-        count.className = 'round-intro-count ' + (go ? 'cgo' : 'c' + (3 - i)); // 카운트별 색상
+        count.className = 'round-intro-count ' + (go ? 'cgo' : 'c' + (STEPS.length - i));
         void count.offsetWidth;
         count.classList.add('pop'); // 줌인 애니
         if (alipunchReady) {
-          if (i === 0) {
-            state.laneHammer.meet(); // 1번째("3") = 만남 제스처
-          } else if (i === 3) {
-            state.laneHammer.meet(); // 마지막("GO!") = 만남 제스처 + fight 음향(사용자 지정)
-            MG.HitFx.fight();
-          } else if (i === 1) {
-            // "2" 박자부터 다음 박자("GO!")까지 1300ms 동안 5동작 시연 — 제자리가 아니라
-            // 실제 타격위치(대표 구멍 좌표)까지 뻗었다 옴(사용자 지정). 각 동작에 맞는
-            // 펀치 보이스도 같이(사용자 지정).
-            [['jab', 'R', 14], ['straight', 'L', 4], ['hookR', 'R', 2], ['hookL', 'L', 1], ['upper', 'L', 0]]
-              .forEach(([style, side, regionId], k) => {
-                setTimeout(() => {
-                  if (myGen !== sessionGen) return;
-                  const sp = state.spawnPoints.find((p) => p.regionId === regionId);
-                  if (sp) state.laneHammer.demo(style, side, sp.x, sp.y);
-                  MG.HitFx.punchVoice(style);
-                }, k * 220);
-              });
-          }
+          state.laneHammer.meet(); // "Ready"·"GO!" 둘 다 만남 제스처
+          if (go) MG.HitFx.fight(); // 마지막("GO!")에만 fight 음향(사용자 지정)
         }
         i++;
         if (i < STEPS.length) setTimeout(tick, 650);
@@ -1614,7 +1563,7 @@
       })();
     }
 
-    // 퇴장(타이틀 왼쪽 / GO!·두더지 오른쪽 / 라운드2~ 커튼 오픈) + 정리 + onDone.
+    // 퇴장(타이틀 왼쪽 / GO! 오른쪽 / 커튼 오픈) + 정리 + onDone.
     function exitAndStart() {
       if (myGen !== sessionGen) return;
       // 입장 애니메이션(forwards)이 남아 transition 이 안 먹는 문제 — animation 먼저 끄고 리플로우 후 is-opening.
@@ -1638,24 +1587,21 @@
 
     setTimeout(() => {
       if (myGen !== sessionGen) return;
-      // 1) "라운드 N" 오른쪽에서, (라운드2~) 두더지 왼쪽에서 날아와 중앙에서 만남 (0.4s)
+      // 1) "라운드 N" 오른쪽에서 날아와 중앙에서 멈춤 (0.4s)
       title.textContent = full;
       overlay.classList.add('mole-in');
-      if (showMole) moleImg.hidden = false;
-      playAlipunchDemo(); // 매 라운드 인트로마다 준비 시연(알리 펀치 장착 시만)
-      // 2) 중앙에 멈추면 "라운드 N" 을 한 글자씩 다시 타이핑(+ 타자기 소리) + 라운드 음성(사용자 제공)
+      // 2) 중앙에 멈추면 "라운드 N" 을 한 글자씩 다시 타이핑(+ 타자기 소리) + 라운드 음성
       setTimeout(() => {
         if (myGen !== sessionGen) return;
         typeText(title, full, () => {});
-        if (isSmallFinalRound) MG.HitFx.roundAnnounceFinal(); else MG.HitFx.roundAnnounce(roundNum);
+        MG.HitFx.roundAnnounce(roundNum);
       }, FLY_IN_MS + 40);
-      // 3) 타이핑 끝난 뒤 — 라운드1: 3·2·1·GO! 후 퇴장 / 라운드2~: 바로 퇴장
+      // 3) 타이핑 끝난 뒤 Ready → GO! 후 퇴장
       setTimeout(() => {
         if (myGen !== sessionGen) return;
-        if (isR1) runCountdown(exitAndStart);
-        else exitAndStart();
+        runCountdown(exitAndStart);
       }, FLY_IN_MS + 40 + typeMs + HOLD_AFTER_TYPE_MS);
-    }, isR1 ? 250 : 2300); // 라운드1: 챕터 커튼 열린 직후 바로 / 라운드2~: 분홍 커튼 패턴 뒤
+    }, 250); // 챕터/라운드 커튼 열린 직후 바로 (모든 라운드 공통)
   }
 
   // 라운드 경과시간에 따라 state.config 의 시간형 필드를 매 프레임 갱신한다. spawn-scheduler.js
@@ -2616,7 +2562,7 @@
         localStorage.setItem('mole.difficulty', currentDiff);
         if (chapter >= 1 && chapter <= MG.Progress.MAX_CHAPTER) setChapter(chapter);
         applyDiffClass(currentDiff);
-        startRound(1, { fresh: true });
+        startRound({ fresh: true });
       });
     };
     window.__debugSetChapter = (n) => { setChapter(n); };
@@ -2627,7 +2573,7 @@
       target: MG.Progress.target(currentChapter()),
       rec: MG.Progress.get(currentChapter(), currentLight())
     });
-    window.__debugStartRound = (n) => startRound(n, { fresh: true });
+    window.__debugStartRound = () => startRound({ fresh: true });
     window.__debugGetConfig = () => (state ? state.config : null);
     window.__debugSetTimeRemaining = (t) => { if (state) state.timeRemaining = t; };
     window.__debugForceDifficultyUpdate = () => { updateLiveDifficulty(); return state ? state.config : null; };

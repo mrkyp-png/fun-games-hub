@@ -87,11 +87,6 @@
   function roundAnnounce(n) {
     playRoundAnnounceBuffer(roundAnnounceBuffers && roundAnnounceBuffers[n - 1]);
   }
-  // 챕터1~3 마지막 라운드("파이널라운드") 전용 — 별도 파일 없이 기존 "라운드 10" 음성 재사용(사용자 지정).
-  function roundAnnounceFinal() {
-    roundAnnounce(10);
-  }
-
   // 대포 무기 스킨 전용 타격음 = 폭발음 (사용자 제공, Pixabay 로열티 프리). 대포 장착 시
   // 위 HIT_URLS 대신 이 풀에서 랜덤 1개. boom1·5·8은 제외(사용자 지정) — boom8은 폭탄 든
   // 두더지 처치음(BOMB_BLAST_URL)으로 전용, boom1·5는 그냥 제외.
@@ -873,6 +868,6 @@
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
-  const api = { moleHit, moleBlast, bombBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, cannonClone, punchStar, powerUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, roundAnnounceFinal, fight, moleVoice };
+  const api = { moleHit, moleBlast, bombBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, cannonClone, punchStar, powerUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, fight, moleVoice };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);
