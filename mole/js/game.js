@@ -1207,6 +1207,11 @@
     if (opts && opts.fresh) {
       if (screenNav) screenNav.reset();
       document.getElementById('more-menu').hidden = true;
+      // 다이얼패드가 항상 노출돼있어 상점/아이템 등 화면을 연 채로도 "시작" 버튼이 눌리는데,
+      // openMore() 가 그때 #mole-board 를 hidden 처리해둔 상태라 이걸 복구 안 하면 라운드가
+      // 화면 없는 채로 시작해 완전히 깨져 보이는 버그였음(사용자: "화면 다 깨져서 나오네").
+      document.getElementById('mole-board').hidden = false;
+      document.getElementById('board-start').hidden = false;
     }
     // fresh 는 beginGame 이 이미 게임 BGM 을 시작했음. 여기선 (혹시 막혔으면) 이어재생만.
     applyBgm();
