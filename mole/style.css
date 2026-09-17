@@ -18,6 +18,10 @@
 html { color-scheme: light; }
 /* 당겨서 새로고침 / 오버스크롤 바운스 차단 (전 페이지) */
 html, body { overscroll-behavior: none; }
+/* 동시에 여러 버튼(멀티터치)을 누르면 화면이 확대/이동되는 문제(사용자 지정) — 뷰포트
+   user-scalable=no 만으로는 일부 브라우저(특히 최신 iOS Safari)가 핀치줌을 막아주지 않아서,
+   전역으로 touch-action 을 명시해 팬(스크롤)은 허용하되 핀치줌·더블탭줌만 차단. */
+html, body { touch-action: manipulation; }
 
 /* ── 밝은 모드 팔레트 — 삼성 기본 다이얼러(밝은) 레퍼런스: 깔끔한 흰색.
    Desktop/밝은모드.jpg 참고. 게임 플레이 보드(잔디밭)와 강조색은 그대로. ── */
