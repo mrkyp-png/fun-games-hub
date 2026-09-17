@@ -16,6 +16,11 @@
   // 선 아이콘 패스를 재사용해 다이얼패드로 옮긴 기능들의 아이콘이 서로 통일되게 한다.
   const SVG = {
     phone: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.4.6 3.6.6.6 0 1 .5 1 1V20c0 .6-.4 1-1 1C10.2 21 3 13.8 3 5c0-.6.5-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.2 1l-2.3 2.2z"/></svg>',
+    // 4열 내비 원래 모습(연락처/키패드/최근기록) — 실제 플레이 중엔 이쪽으로 복귀(사용자 지정,
+    // "게임화면은 기존 유지"). 홈 화면에서만 상점/홈/아이템 아이콘으로 뒤집힌다.
+    person: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7.5 8-7.5s8 3.1 8 7.5z"/></svg>',
+    pad: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="6" r="1.9"/><circle cx="12" cy="6" r="1.9"/><circle cx="18" cy="6" r="1.9"/><circle cx="6" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="18" cy="12" r="1.9"/><circle cx="6" cy="18" r="1.9"/><circle cx="12" cy="18" r="1.9"/><circle cx="18" cy="18" r="1.9"/></svg>',
+    clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3.5 2"/></svg>',
     // 홈 화면 1·2·3·4번 버튼 앞면 — 하트/코인/티켓/스코어(사용자 지정: 검은색 외곽선만, 채우기 없음).
     hearts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg>',
     // 옆으로 뉘어진 동전(두께+테두리선, 사용자 지정 — 후보 D).
@@ -42,9 +47,12 @@
   // action: 홈 화면에서 탭하면 그 화면으로 이동(onHomeAction 콜백, game.js 가 실제 내비게이션을
   // 담당 — lane-controls 는 게임 상태를 모른다).
   const FACES = [
-    { num: '1', kr: 'ㄱㅋ', en: '', hud: 'hearts' }, { num: '2', kr: 'ㄴ', en: 'ABC', hud: 'coins' }, { num: '3', kr: 'ㄷㅌ', en: 'DEF', hud: 'tickets' }, { nav: '상점', svg: SVG.shop, i18n: 'mole.more.shop', action: 'shop' },
-    { num: '4', kr: 'ㄹ', en: 'GHI', hud: 'score', action: 'score' }, { num: '5', kr: 'ㅁ', en: 'JKL', hud: 'daily', action: 'daily' }, { num: '6', kr: 'ㅂㅍ', en: 'MNO', hud: 'quest', action: 'quest' }, { nav: '홈', svg: SVG.home, i18n: 'mole.pad.home', action: 'home' },
-    { num: '7', kr: 'ㅅ', en: 'PQRS', hud: 'friends', action: 'friends' }, { num: '8', kr: 'ㅇ', en: 'TUV', hud: 'locker', action: 'locker' }, { num: '9', kr: 'ㅈㅊ', en: 'WXYZ', hud: 'settings', action: 'settings' }, { nav: '아이템', svg: SVG.inventory, i18n: 'mole.pad.lblInventory', action: 'inventory' },
+    { num: '1', kr: 'ㄱㅋ', en: '', hud: 'hearts' }, { num: '2', kr: 'ㄴ', en: 'ABC', hud: 'coins' }, { num: '3', kr: 'ㄷㅌ', en: 'DEF', hud: 'tickets' },
+      { nav: '상점', svg: SVG.shop, i18n: 'mole.more.shop', action: 'shop', navBack: { nav: '연락처', svg: SVG.person, i18n: 'mole.pad.contacts' } },
+    { num: '4', kr: 'ㄹ', en: 'GHI', hud: 'score', action: 'score' }, { num: '5', kr: 'ㅁ', en: 'JKL', hud: 'daily', action: 'daily' }, { num: '6', kr: 'ㅂㅍ', en: 'MNO', hud: 'quest', action: 'quest' },
+      { nav: '홈', svg: SVG.home, i18n: 'mole.pad.home', action: 'home', navBack: { nav: '키패드', svg: SVG.pad, i18n: 'mole.pad.keypad' } },
+    { num: '7', kr: 'ㅅ', en: 'PQRS', hud: 'friends', action: 'friends' }, { num: '8', kr: 'ㅇ', en: 'TUV', hud: 'locker', action: 'locker' }, { num: '9', kr: 'ㅈㅊ', en: 'WXYZ', hud: 'settings', action: 'settings' },
+      { nav: '아이템', svg: SVG.inventory, i18n: 'mole.pad.lblInventory', action: 'inventory', navBack: { nav: '최근기록', svg: SVG.clock, i18n: 'mole.pad.recent' } },
     { num: '✱', kr: '', en: '', hud: 'label', label: '두더지팡', labelI18n: 'mole.pad.gameMole', action: 'lightMode' },
     { num: '0', kr: '', en: '+', hud: 'label', label: '리듬팡', labelI18n: 'mole.pad.gameRhythm' },
     { num: '#', kr: '', en: '', hud: 'label', label: '시크릿', labelI18n: 'mole.pad.secret', lockSub: true },
@@ -116,6 +124,18 @@
         '<span class="lane-face lane-face--front lane-face--hud">' +
           SVG[hud] + subHtml +
         '</span>' +
+        '</span>';
+    } else if (f.navBack && !simple) {
+      // 4열 내비(상점/홈/아이템) — 실제 플레이 중엔 원래 모습(연락처/키패드/최근기록)으로
+      // 복귀(사용자 지정: "게임화면은 기존 유지"). 홈 화면에서만 새 기능 아이콘(front).
+      btn.classList.add('lane-button--flippable');
+      var backLabel = f.navBack.i18n && I ? I.t(f.navBack.i18n) : f.navBack.nav;
+      var backAttr = f.navBack.i18n ? ' data-i18n="' + f.navBack.i18n + '"' : '';
+      var backFaceHtml = '<span class="lane-ico">' + f.navBack.svg + '</span><span class="lane-lbl"' + backAttr + '>' + backLabel + '</span>';
+      btn.innerHTML =
+        '<span class="lane-flip">' +
+        '<span class="lane-face lane-face--back">' + backFaceHtml + '</span>' +
+        '<span class="lane-face lane-face--front">' + faceHtml + '</span>' +
         '</span>';
     } else {
       btn.innerHTML = faceHtml;

@@ -129,23 +129,101 @@
     }
   }
 
-  // 홈 화면 게임판 자리(#board-start 뒤) — 홍보 이미지 4장을 3초 간격으로 순환, 전환마다
-  // 애니메이션(페이드/슬라이드/줌) 랜덤 선택(사용자 지정). is-start 아닐 땐 board-start 자체가
-  // 가려지므로 안 보임 — 타이머는 그냥 항상 돌아도 무해.
+  // 홈 화면 게임판 자리(#board-start 뒤) — 큰 배경 이미지는 20~30초 간격으로 느긋하게 순환
+  // (전환마다 페이드/슬라이드/줌 랜덤), 작은 타일 5개는 재생 중인 홈 BGM 비트에 맞춰 팝 전환
+  // (사용자 지정 — "음악과 같이 움직이는 느낌"). is-start 아닐 땐 board-start 자체가 가려지므로
+  // 안 보임 — 타이머·루프는 그냥 항상 돌아도 무해.
+  const HOME_SHOWCASE_COUNT = 28; // assets/home-showcase/1.jpg ~ 28.jpg
   function initHomeShowcase() {
     const imgs = Array.prototype.slice.call(document.querySelectorAll('.home-showcase-img'));
     if (!imgs.length) return;
     const ANIMS = ['hs-fade', 'hs-slide-l', 'hs-slide-r', 'hs-zoom-in', 'hs-zoom-out'];
     let idx = 0;
     imgs[0].classList.add('is-active', 'hs-fade');
-    setInterval(() => {
-      imgs[idx].classList.remove('is-active');
-      ANIMS.forEach((a) => imgs[idx].classList.remove(a));
-      idx = (idx + 1) % imgs.length;
-      const anim = ANIMS[(Math.random() * ANIMS.length) | 0];
-      ANIMS.forEach((a) => imgs[idx].classList.remove(a));
-      imgs[idx].classList.add('is-active', anim);
-    }, 3000);
+    (function nextBig() {
+      setTimeout(() => {
+        imgs[idx].classList.remove('is-active');
+        ANIMS.forEach((a) => imgs[idx].classList.remove(a));
+        idx = (idx + 1) % imgs.length;
+        const anim = ANIMS[(Math.random() * ANIMS.length) | 0];
+        ANIMS.forEach((a) => imgs[idx].classList.remove(a));
+        imgs[idx].classList.add('is-active', anim);
+        nextBig();
+      }, 20000 + Math.random() * 10000); // 20~30초
+    })();
+    initHomeShowcaseTiles();
+  }
+
+  // 재생 중인 홈 BGM(bgm-a/bgm-b 핑퐁) 을 Web Audio AnalyserNode 로 실시간 분석해 저음 에너지가
+  // 평균 대비 튈 때("비트")마다 작은 타일 하나를 랜덤 이미지로 팝 전환. 오디오 재생 자체(스피커
+  // 출력)는 analyser 를 거쳐 그대로 destination 에 연결해 끊기지 않는다.
+  let bgmAnalysers = null;
+  function ensureBgmAnalysers() {
+    if (bgmAnalysers || !bgmEls || !bgmEls[0] || !bgmEls[1]) return;
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      const actx = new Ctx();
+      bgmAnalysers = bgmEls.map((el) => {
+        const src = actx.createMediaElementSource(el);
+        const an = actx.createAnalyser();
+        an.fftSize = 256;
+        src.connect(an);
+        an.connect(actx.destination);
+        return { analyser: an, buf: new Uint8Array(an.frequencyBinCount) };
+      });
+    } catch (e) { bgmAnalysers = null; } // 실패해도 큰 이미지 캐러셀은 그대로 동작
+  }
+  function initHomeShowcaseTiles() {
+    const tiles = Array.prototype.slice.call(document.querySelectorAll('.hs-tile'));
+    if (!tiles.length) return;
+    let avgEnergy = 0;
+    let lastBeat = 0;
+    function popTile() {
+      const tile = tiles[(Math.random() * tiles.length) | 0];
+      const img = tile.querySelector('.hs-tile-img');
+      img.src = 'assets/home-showcase/' + (1 + ((Math.random() * HOME_SHOWCASE_COUNT) | 0)) + '.jpg';
+      tile.classList.remove('is-pop');
+      void tile.offsetWidth;
+      tile.classList.add('is-pop');
+    }
+    function tick() {
+      requestAnimationFrame(tick);
+      if (!bgmAnalysers) { ensureBgmAnalysers(); return; }
+      let energy = 0;
+      bgmAnalysers.forEach((a) => {
+        a.analyser.getByteFrequencyData(a.buf);
+        let sum = 0;
+        for (let i = 0; i < 8 && i < a.buf.length; i++) sum += a.buf[i];
+        energy += sum / 8;
+      });
+      avgEnergy = avgEnergy * 0.92 + energy * 0.08; // 이동 평균(대략적인 "평소 음량")
+      const now = performance.now();
+      if (energy > avgEnergy * 1.35 && energy > 40 && now - lastBeat > 260) {
+        lastBeat = now;
+        popTile();
+        pulseDialPad(); // 다이얼패드 버튼들도 비트에 맞춰 커졌다 움직임(사용자 지정 — "축제 분위기")
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // 다이얼패드 버튼 전체가 비트마다 살짝 커지고 흔들리는 펄스(사용자 지정) — 홈 화면에서만
+  // (실제 라운드 플레이 중엔 타격 판정용 버튼이라 안 건드림).
+  function pulseDialPad() {
+    if (!document.getElementById('game-screen').classList.contains('is-start')) return;
+    const bar = document.getElementById('lane-button-bar');
+    if (!bar) return;
+    // 전체가 한 번에 말고 버튼 몇 개만 각자 독립적으로 팝(사용자 지정).
+    const btns = bar.querySelectorAll('.lane-button');
+    if (!btns.length) return;
+    const n = 2 + ((Math.random() * 2) | 0); // 2~3개
+    for (let i = 0; i < n; i++) {
+      const b = btns[(Math.random() * btns.length) | 0];
+      b.classList.remove('beat-pop');
+      void b.offsetWidth;
+      b.classList.add('beat-pop');
+    }
   }
 
   // 홈 화면 좌상단 ⊞ 자리 — 프로필 사진(사용자 지정, 더보기의 mm-avatar와 같은 소스).
