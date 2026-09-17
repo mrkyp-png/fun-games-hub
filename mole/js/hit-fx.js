@@ -787,80 +787,42 @@
     setTimeout(() => el.remove(), 600);
   }
 
-  // 게임판 경계(0~1 정사각형) 안으로 선분(start→target)이 처음 들어오는 지점을 계산
-  // (Liang-Barsky 슬랩 클리핑). #mole-board 가 overflow:hidden 이라, 판 밖에서부터 같은
-  // 애니메이션을 통째로 돌리면 "판에 들어오는 순간"이 이동의 상당 부분을 이미 써버린
-  // 뒤라 거의 다 온 채로 갑자기 나타나 보였다(사용자 리포트: "시작지점이 화면 중앙에서
-  // 보임"). 진입 지점부터 목표까지 별도로 애니메이션을 새로 시작해야 "날아오는" 느낌이 난다.
-  const CANNON_BALL_HALF_W = 0.0275; // .lc-ball width = var(--sq)*0.055 의 절반(보드분수) — 경계에서 안쪽으로 물러날 여유
-  function boardEntryPoint(sx, sy, tx, ty) {
-    const dx = tx - sx, dy = ty - sy;
-    const candidates = [];
-    if (dx !== 0) {
-      candidates.push({ t: (0 - sx) / dx, axis: 'x', side: 0 });
-      candidates.push({ t: (1 - sx) / dx, axis: 'x', side: 1 });
-    } else if (sx < 0 || sx > 1) return null;
-    if (dy !== 0) {
-      candidates.push({ t: (0 - sy) / dy, axis: 'y', side: 0 });
-      candidates.push({ t: (1 - sy) / dy, axis: 'y', side: 1 });
-    } else if (sy < 0 || sy > 1) return null;
-    let tMin = 0, tMax = 1, entry = null;
-    ['x', 'y'].forEach((axis) => {
-      const pair = candidates.filter((c) => c.axis === axis);
-      if (!pair.length) return;
-      let lo = pair[0], hi = pair[1];
-      if (lo.t > hi.t) { const tmp = lo; lo = hi; hi = tmp; }
-      if (lo.t > tMin) { tMin = lo.t; entry = lo; } // 이 축의 경계가 실제로 진입을 결정
-      tMax = Math.min(tMax, hi.t);
-    });
-    if (tMin > tMax) return null;
-    let x = sx + dx * tMin, y = sy + dy * tMin;
-    // 딱 경계선에 놓으면 translate(-50%,-50%)로 중심정렬된 포탄의 절반이 overflow:hidden
-    // 에 잘려서 아주 살짝만 보인다(사용자 리포트: "시작점 안보임", "위쪽 줄이 제일 심함").
-    // 이동 방향으로 밀면 경계를 얕은 각도로 스치듯 지날 때(예: 왼쪽 경계를 지나 멀리 위쪽
-    // 목표로 가는 경우) 안쪽으로 거의 안 들어가 여전히 잘린다 — 실제로 넘은 경계축(entry.axis)
-    // 의 법선 방향으로 정확히 반지름만큼 밀어야 항상 전체가 보인다.
-    if (entry) {
-      const push = entry.side === 0 ? CANNON_BALL_HALF_W : -CANNON_BALL_HALF_W;
-      if (entry.axis === 'x') x += push; else y += push;
-    }
-    return { x, y };
-  }
-
   // 캐논(대포) 분신 — 다른 무기와 달리 대포는 원래 제자리에서 쏘는 무기라 포즈/앵커를
   // 맞추기가 까다롭고("45도 각도에 있는놈이 앞으로 튀어나가있음" 등 계속 어긋났음) —
   // 사용자 지정으로 훨씬 단순한 방식으로 확정: 분신 "몸체"는 아예 안 그리고, 보드 아래쪽
   // (3~4행)·좌측~중앙 부근의 랜덤한 지점(startXFrac,startYFrac — game.js 가 매번 새로
-  // 뽑아서 넘김, 판 밖)에서 포탄만 목표까지 실제로 날아간다. 판 밖 구간은 안 보이고
-  // (사용자 지정, #mole-board 클리핑), 판 경계에 들어온 지점부터 목표까지 별도의
-  // 고정 시간(0.16초)으로 다시 날아가서 "날아오는" 느낌을 유지한다. 포탄 자체는 투명도
-  // 없이 기존 유지(사용자 지정). onHit = 명중 순간 콜백.
+  // 뽑아서 넘김, 판 밖)에서 포탄만 목표까지 실제로 날아간다.
+  // ⚠️ 판 밖 구간을 안 보이게 자르는 시도(#mole-board 클리핑 + 경계 진입점 계산)를 여러
+  // 라운드 했으나(v516~v519), 무작위 시작점이 목표와 우연히 가까우면(특히 아래쪽 경로
+  // 구간) 보이는 구간이 아주 짧아서 "중앙부근에서 톡 나타남"으로 보이고, 시작점이 목표에서
+  // 멀면(왼쪽 위 7번/별표 근처 등) 잘 보이는 등 편차가 심했다(사용자: "어떤거는 잘나오고
+  // 어떤거는 중앙부근만 보이고"). 사용자 지정으로 클리핑 자체를 포기하고 판 밖부터 전체
+  // 구간을 항상 다 보여주는 쪽으로 확정 — fxLayer(overflow:visible)에 그리고, 실제
+  // 시작점→목표까지 하나의 애니메이션으로 일관되게 날아간다(거리와 무관하게 항상 "외부에서
+  // 날아오는" 느낌 유지). 포탄 자체는 투명도 없이 기존 유지(사용자 지정). onHit = 명중 순간 콜백.
   function cannonClone(boardEl, startXFrac, startYFrac, targetXFrac, targetYFrac, onHit) {
-    const entry = boardEntryPoint(startXFrac, startYFrac, targetXFrac, targetYFrac) ||
-      { x: startXFrac, y: startYFrac }; // 방어적 폴백(이론상 항상 찾아짐 — 시작은 판 밖, 목표는 판 안)
-
     const ball = document.createElement('img');
     ball.className = 'lc-ball'; // 실제 대포 포탄과 같은 크기/그림자
     ball.src = 'assets/weapons/cannon-ball.png';
     ball.alt = '';
-    ball.style.left = (entry.x * 100) + '%';
-    ball.style.top = (entry.y * 100) + '%';
+    ball.style.left = (startXFrac * 100) + '%';
+    ball.style.top = (startYFrac * 100) + '%';
     ball.style.opacity = '1'; // 포탄 자체는 투명도 없이(사용자 지정)
     ball.style.transform = 'translate(-50%, -50%) scale(1)';
     ball.style.zIndex = '26';
     boardEl.appendChild(ball);
     void ball.offsetWidth;
-    ball.style.transition = 'left 0.16s cubic-bezier(.2,.5,.6,1), top 0.16s cubic-bezier(.2,.5,.6,1)';
+    ball.style.transition = 'left 0.2s cubic-bezier(.2,.5,.6,1), top 0.2s cubic-bezier(.2,.5,.6,1)';
     ball.style.left = (targetXFrac * 100) + '%';
-    ball.style.top = (targetYFrac * 100) + '%'; // 진입 지점에서 목표까지 새로 이동
+    ball.style.top = (targetYFrac * 100) + '%'; // 실제 시작점에서 목표까지 이동(진짜 거리)
 
     setTimeout(() => {
       // 포탄이 실제로 목표에 도착한 순간 명중 판정(실제 대포와 동일 — 발사 즉시가 아니라
       // 도착 시점에 onHit, 실물 cannonBall 타이밍과 맞춤).
       ball.style.transition = 'opacity 0.14s ease-out'; ball.style.opacity = '0';
       try { if (onHit) onHit(); } catch (e) { /* 무시 */ }
-    }, 160);
-    setTimeout(() => ball.remove(), 330);
+    }, 200);
+    setTimeout(() => ball.remove(), 370);
   }
 
   // 게임 시작(사용자 제스처) 직후 호출 — 카운트다운 동안 오디오 컨텍스트 + 타격음 파일을 미리 준비.
