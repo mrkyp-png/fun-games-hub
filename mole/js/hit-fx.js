@@ -795,24 +795,36 @@
   const CANNON_BALL_HALF_W = 0.0275; // .lc-ball width = var(--sq)*0.055 의 절반(보드분수) — 경계에서 안쪽으로 물러날 여유
   function boardEntryPoint(sx, sy, tx, ty) {
     const dx = tx - sx, dy = ty - sy;
-    let tMin = 0, tMax = 1;
+    const candidates = [];
     if (dx !== 0) {
-      let t1 = (0 - sx) / dx, t2 = (1 - sx) / dx;
-      if (t1 > t2) { const tmp = t1; t1 = t2; t2 = tmp; }
-      tMin = Math.max(tMin, t1); tMax = Math.min(tMax, t2);
+      candidates.push({ t: (0 - sx) / dx, axis: 'x', side: 0 });
+      candidates.push({ t: (1 - sx) / dx, axis: 'x', side: 1 });
     } else if (sx < 0 || sx > 1) return null;
     if (dy !== 0) {
-      let t1 = (0 - sy) / dy, t2 = (1 - sy) / dy;
-      if (t1 > t2) { const tmp = t1; t1 = t2; t2 = tmp; }
-      tMin = Math.max(tMin, t1); tMax = Math.min(tMax, t2);
+      candidates.push({ t: (0 - sy) / dy, axis: 'y', side: 0 });
+      candidates.push({ t: (1 - sy) / dy, axis: 'y', side: 1 });
     } else if (sy < 0 || sy > 1) return null;
+    let tMin = 0, tMax = 1, entry = null;
+    ['x', 'y'].forEach((axis) => {
+      const pair = candidates.filter((c) => c.axis === axis);
+      if (!pair.length) return;
+      let lo = pair[0], hi = pair[1];
+      if (lo.t > hi.t) { const tmp = lo; lo = hi; hi = tmp; }
+      if (lo.t > tMin) { tMin = lo.t; entry = lo; } // 이 축의 경계가 실제로 진입을 결정
+      tMax = Math.min(tMax, hi.t);
+    });
     if (tMin > tMax) return null;
-    // 딱 경계선(예: x=0%)에 놓으면 translate(-50%,-50%)로 중심정렬된 포탄의 절반이
-    // overflow:hidden 에 잘려서 아주 살짝만 보인다(사용자 리포트: "시작점 안보임") —
-    // 목표 방향으로 포탄 반지름만큼 안쪽으로 밀어서 처음부터 전체가 보이게 한다.
-    const len = Math.hypot(dx, dy) || 1;
-    const t = Math.min(1, tMin + CANNON_BALL_HALF_W / len);
-    return { x: sx + dx * t, y: sy + dy * t };
+    let x = sx + dx * tMin, y = sy + dy * tMin;
+    // 딱 경계선에 놓으면 translate(-50%,-50%)로 중심정렬된 포탄의 절반이 overflow:hidden
+    // 에 잘려서 아주 살짝만 보인다(사용자 리포트: "시작점 안보임", "위쪽 줄이 제일 심함").
+    // 이동 방향으로 밀면 경계를 얕은 각도로 스치듯 지날 때(예: 왼쪽 경계를 지나 멀리 위쪽
+    // 목표로 가는 경우) 안쪽으로 거의 안 들어가 여전히 잘린다 — 실제로 넘은 경계축(entry.axis)
+    // 의 법선 방향으로 정확히 반지름만큼 밀어야 항상 전체가 보인다.
+    if (entry) {
+      const push = entry.side === 0 ? CANNON_BALL_HALF_W : -CANNON_BALL_HALF_W;
+      if (entry.axis === 'x') x += push; else y += push;
+    }
+    return { x, y };
   }
 
   // 캐논(대포) 분신 — 다른 무기와 달리 대포는 원래 제자리에서 쏘는 무기라 포즈/앵커를
