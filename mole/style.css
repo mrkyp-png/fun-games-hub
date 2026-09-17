@@ -562,41 +562,10 @@ body { background: var(--lm-page); }
 }
 @keyframes alipunch-invincible-spin { to { --ap-angle: 360deg; } }
 
-/* 무적 중 보드 바깥으로 번지는 황금색 연기 아우라(사용자 참고영상: 카드 테두리 밖으로 퍼지는
-   구름형 글로우). 보드와 똑같은 위치·크기에 얹되 overflow 제한 없이 바깥으로 번지게(사용자 지시:
-   "보드 밖으로 나가도 된다"). box-shadow 여러 겹 + 펄스로 근사(CSS만, 실제 연기 텍스처 없음 —
-   사용자: "일단 이걸로, 이상하면 복귀"). */
-#invincible-smoke {
-  position: absolute;
-  top: var(--hud-h);
-  left: 50%;
-  transform: translateX(-50%);
-  width: var(--sq);
-  height: var(--sq);
-  border-radius: 0 0 8px 8px; /* .mole-board 와 동일 */
-  pointer-events: none;
-  z-index: 4;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-#game-screen.gs-invincible #invincible-smoke { opacity: 1; }
-#invincible-smoke::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  animation: invincible-smoke-pulse 3s ease-in-out infinite;
-}
-@keyframes invincible-smoke-pulse {
-  0%, 100% { box-shadow:
-    0 0 18px 8px rgba(255, 206, 51, 0.5),
-    0 0 33px 16px rgba(255, 206, 51, 0.3),
-    0 0 53px 26px rgba(255, 243, 176, 0.16); }
-  50% { box-shadow:
-    0 0 23px 11px rgba(255, 206, 51, 0.62),
-    0 0 41px 20px rgba(255, 206, 51, 0.38),
-    0 0 63px 31px rgba(255, 243, 176, 0.22); }
-}
+/* 무적 중 보드 바깥으로 번지는 황금색 연기 아우라 — 성능 경량화(2026-09-18, 사용자 지정)로
+   완전 삭제. box-shadow 3겹(블러 최대 53px) 이 3초 무한 펄스 애니메이션으로 계속 다시 계산돼
+   화면 끊김의 주요 원인 중 하나였음. #invincible-smoke 엘리먼트는 index.html 에서도 제거.
+   보드 테두리 회전 글로우(.mole-board--invincible::after)는 보드 안쪽이라 그대로 유지. */
 
 /* 폴더폰 힌지 — 게임 박스와 다이얼러가 접히는 경계 (사용자 요청 ㅎㅎ) */
 #fold-hinge {
@@ -763,9 +732,10 @@ body { background: var(--lm-page); }
 .mole-pop--burst .mole-pop-img {
   animation: mole-burst-aura 0.42s ease-in-out infinite alternate;
 }
+/* 성능 경량화(2026-09-18) — 상하좌우 4장+번짐 제거, 번짐 링 1장(반경만 크게 키워 맥동 느낌 유지)+그림자로 축소. */
 @keyframes mole-burst-aura {
-  from { filter: drop-shadow(1.5px 0 0 #e0a400) drop-shadow(-1.5px 0 0 #e0a400) drop-shadow(0 1.5px 0 #e0a400) drop-shadow(0 -1.5px 0 #e0a400) drop-shadow(0 0 6px #ffd34d) drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); }
-  to   { filter: drop-shadow(1.5px 0 0 #fff2a8) drop-shadow(-1.5px 0 0 #fff2a8) drop-shadow(0 1.5px 0 #fff2a8) drop-shadow(0 -1.5px 0 #fff2a8) drop-shadow(0 0 16px #ffb300) drop-shadow(0 0 26px rgba(255, 150, 0, 0.6)) drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); }
+  from { filter: drop-shadow(0 0 6px #ffd34d) drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); }
+  to   { filter: drop-shadow(0 0 16px #ffb300) drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); }
 }
 .mole-pop-img {
   position: absolute;
@@ -779,41 +749,37 @@ body { background: var(--lm-page); }
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
 }
 
-/* 타겟 식별 글로우 — 굵은 외곽선 + 약한 번짐 (빛 세기는 이후 조정).
+/* 타겟 식별 글로우 — 성능 경량화(2026-09-18, 사용자 지정 — 동시 출현 많은 후반 라운드에서
+   화면 끊김 리포트). 원래 상하좌우 개별 drop-shadow 4장 + 번짐 1장 + 그림자 1장 = 6패스였던
+   것을 번짐(전방위 링) 1장 + 그림자 1장 = 2패스로 축소 — filter 는 레이어마다 별도 렌더 패스라
+   동시 출현 수(최대 7~10마리)에 비례해 가장 비용이 컸음. 크리스프한 4방향 외곽선 대신 부드러운
+   링 글로우로, "때려라/피해라" 색 구분 신호는 그대로 유지.
    두더지/빠끔/모자 = 진한 황금색(때려라), 동물·폭탄 = 시안(피해라).
    .mole-pop--mole 은 깊이에 따라 전신·빠끔(peek)·모자(helmet) 프레임을 갈아끼우므로
    이 한 규칙이 셋 다 덮는다. 폭탄은 고글 낀 동물 스프라이트라 동물과 같은 시안.
    item(실드)은 대상 아님 — 손대지 않음. */
 .mole-pop--mole .mole-pop-img {
   filter:
-    drop-shadow(1.5px 0 0 #e0a400) drop-shadow(-1.5px 0 0 #e0a400)
-    drop-shadow(0 1.5px 0 #e0a400) drop-shadow(0 -1.5px 0 #e0a400)
-    drop-shadow(0 0 5px rgba(224, 164, 0, 0.4))
+    drop-shadow(0 0 3px #e0a400)
     drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
 }
 .mole-pop--animal .mole-pop-img,
 .mole-pop--bomb .mole-pop-img {
   filter:
-    drop-shadow(1.5px 0 0 #15c2d6) drop-shadow(-1.5px 0 0 #15c2d6)
-    drop-shadow(0 1.5px 0 #15c2d6) drop-shadow(0 -1.5px 0 #15c2d6)
-    drop-shadow(0 0 5px rgba(21, 194, 214, 0.4))
+    drop-shadow(0 0 3px #15c2d6)
     drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
 }
 /* 챕터4~6(가을 배경, 갈색 계열) 전용 — 기존 글로우 색이 배경과 비슷해 두더지 구분이 잘 안 됨(사용자 지정).
    두더지=하늘색, 동물=마젠타로 갈색 배경과 뚜렷하게 대비. */
 #mole-board.mole-board--autumn .mole-pop--mole .mole-pop-img {
   filter:
-    drop-shadow(1.5px 0 0 #29b6ff) drop-shadow(-1.5px 0 0 #29b6ff)
-    drop-shadow(0 1.5px 0 #29b6ff) drop-shadow(0 -1.5px 0 #29b6ff)
-    drop-shadow(0 0 5px rgba(41, 182, 255, 0.5))
+    drop-shadow(0 0 3px #29b6ff)
     drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
 }
 #mole-board.mole-board--autumn .mole-pop--animal .mole-pop-img,
 #mole-board.mole-board--autumn .mole-pop--bomb .mole-pop-img {
   filter:
-    drop-shadow(1.5px 0 0 #ff4fd8) drop-shadow(-1.5px 0 0 #ff4fd8)
-    drop-shadow(0 1.5px 0 #ff4fd8) drop-shadow(0 -1.5px 0 #ff4fd8)
-    drop-shadow(0 0 5px rgba(255, 79, 216, 0.5))
+    drop-shadow(0 0 3px #ff4fd8)
     drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
 }
 
