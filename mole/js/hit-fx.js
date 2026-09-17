@@ -792,6 +792,7 @@
   // 애니메이션을 통째로 돌리면 "판에 들어오는 순간"이 이동의 상당 부분을 이미 써버린
   // 뒤라 거의 다 온 채로 갑자기 나타나 보였다(사용자 리포트: "시작지점이 화면 중앙에서
   // 보임"). 진입 지점부터 목표까지 별도로 애니메이션을 새로 시작해야 "날아오는" 느낌이 난다.
+  const CANNON_BALL_HALF_W = 0.0275; // .lc-ball width = var(--sq)*0.055 의 절반(보드분수) — 경계에서 안쪽으로 물러날 여유
   function boardEntryPoint(sx, sy, tx, ty) {
     const dx = tx - sx, dy = ty - sy;
     let tMin = 0, tMax = 1;
@@ -806,7 +807,12 @@
       tMin = Math.max(tMin, t1); tMax = Math.min(tMax, t2);
     } else if (sy < 0 || sy > 1) return null;
     if (tMin > tMax) return null;
-    return { x: sx + dx * tMin, y: sy + dy * tMin };
+    // 딱 경계선(예: x=0%)에 놓으면 translate(-50%,-50%)로 중심정렬된 포탄의 절반이
+    // overflow:hidden 에 잘려서 아주 살짝만 보인다(사용자 리포트: "시작점 안보임") —
+    // 목표 방향으로 포탄 반지름만큼 안쪽으로 밀어서 처음부터 전체가 보이게 한다.
+    const len = Math.hypot(dx, dy) || 1;
+    const t = Math.min(1, tMin + CANNON_BALL_HALF_W / len);
+    return { x: sx + dx * t, y: sy + dy * t };
   }
 
   // 캐논(대포) 분신 — 다른 무기와 달리 대포는 원래 제자리에서 쏘는 무기라 포즈/앵커를
