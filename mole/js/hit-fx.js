@@ -129,6 +129,36 @@
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
+  // 두더지/동물 등장(구멍에서 올라올 때) 소리(사용자 제공, "귀여운 삑" 합성음). 라운드6(구챕터8,
+  // reverseTarget)은 동물이 타겟이라 동물 등장에, 그 외 라운드는 두더지 등장에만 적용(사용자 지정,
+  // game.js onEmerge 콜백에서 타입 분기).
+  const EMERGE_URL = 'audio/mole-emerge.mp3';
+  let emergeBuffer = null;
+  let emergeLoading = false;
+  function loadEmergeBuffer(ctx) {
+    if (emergeBuffer || emergeLoading || typeof fetch !== 'function') return;
+    emergeLoading = true;
+    fetch(EMERGE_URL).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b))
+      .then((buf) => { emergeBuffer = buf; })
+      .catch(() => { emergeLoading = false; });
+  }
+  function emergeSound() {
+    if (sfxOff()) return;
+    try {
+      const ctx = getCtx();
+      if (!ctx || !emergeBuffer) return;
+      whenReady(ctx, () => {
+        const src = ctx.createBufferSource();
+        src.buffer = emergeBuffer;
+        src.playbackRate.value = 1 + (Math.random() * 2 - 1) * HIT_PITCH_JITTER; // 반복 재생이라 살짝 지터
+        const g = ctx.createGain();
+        g.gain.value = 0.4;
+        src.connect(g).connect(ctx.destination);
+        src.start();
+      });
+    } catch (e) { /* 오디오 불가 환경 무시 */ }
+  }
+
   function loadCannonBuffers(ctx) {
     if (cannonBuffers || cannonLoading || typeof fetch !== 'function') return;
     cannonLoading = true;
@@ -433,6 +463,7 @@
     loadMoleHurtBuffers(audioCtx); // 두더지 비명도 무기 무관 항상 프리로드
     loadRoundAnnounceBuffers(audioCtx); // 라운드 음성도 무기 무관 항상 프리로드
     loadBombBlastBuffer(audioCtx); // 폭탄 든 두더지 처치음도 무기 무관 항상 프리로드
+    loadEmergeBuffer(audioCtx); // 등장(구멍에서 올라올 때) 소리도 무기 무관 항상 프리로드
     if (isCannonEquipped()) { loadCannonBuffers(audioCtx); loadCannonRotateBuffer(audioCtx); loadCannonWheelBuffer(audioCtx); } // 대포 장착 중일 때만 폭발음·회전음·바퀴음 로드(망치 유저는 불필요한 다운로드 안 함)
     if (isAlipunchEquipped()) { loadPunchVoiceBuffers(audioCtx); loadFightBuffer(audioCtx); loadAlipunchHitBuffers(audioCtx); } // 알리 펀치 장착 중일 때만 보이스·fight음·타격 충격음 로드
     if (isGoldhammerEquipped()) { loadGoldhammerSpinBuffer(audioCtx); loadGoldhammerHitBuffers(audioCtx); } // 골드해머 장착 중일 때만 회전 등장음+타격음 로드
@@ -486,7 +517,6 @@
     if (sfxOff()) return;
     const light = !!(opts && opts.light);
     const isCannon = isCannonEquipped(), isGold = isGoldhammerEquipped(), isAli = isAlipunchEquipped();
-    if (!isCannon && !isGold && !isAli) return; // 뿅망치(기본 무기) 타격음 삭제(사용자 지정) — 무음
     try {
       const ctx = getCtx();
       if (!ctx) return;
@@ -495,11 +525,14 @@
       const rate = (light ? TAP_RATE : 1) * (1 + (Math.random() * 2 - 1) * HIT_PITCH_JITTER);
 
       // 대포는 폭발음 풀, 골드 묠니르는 전용 타격음 풀, 알리 펀치는 전용 타격음 풀(hit1~4.mp3,
-      // 사용자 지정 — 뿅망치 타격음 풀 안 씀. 버그 수정: 예전엔 여기서 hitBuffers 로 떨어져
-      // 알리 펀치 타격에도 뿅망치 소리가 났었음).
+      // 뿅망치 타격음 풀 안 씀 — 버그 수정: 예전엔 여기서 hitBuffers 로 떨어져 알리 펀치
+      // 타격에도 뿅망치 소리가 났었음). 위 세 무기가 아니면(기본 뿅망치) hitBuffers 사용
+      // (2026-09-17: 뿅망치 신규 타격음 2종 적용하며 "소리 안 남" 버그 확인 — 예전엔 여기서
+      // 뿅망치를 의도적으로 무음 처리했었는데, 이번 재적용으로 다시 소리 나게 원복).
       const pool = (isCannon && cannonBuffers && cannonBuffers.length) ? cannonBuffers
         : (isGold && goldhammerHitBuffers && goldhammerHitBuffers.length) ? goldhammerHitBuffers
         : (isAli && alipunchHitBuffers && alipunchHitBuffers.length) ? alipunchHitBuffers
+        : (!isCannon && !isGold && !isAli && hitBuffers && hitBuffers.length) ? hitBuffers
         : null;
       if (pool && pool.length) {
         whenReady(ctx, () => {
@@ -866,6 +899,6 @@
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
-  const api = { moleHit, moleBlast, bombBlast, juggle, moleTap, obstacleHit, whiff, emerge, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, cannonClone, punchStar, powerUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, fight, moleVoice };
+  const api = { moleHit, moleBlast, bombBlast, juggle, moleTap, obstacleHit, whiff, emerge, emergeSound, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, cannonClone, punchStar, powerUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, fight, moleVoice };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);
