@@ -13,12 +13,10 @@
   const TAP_GAIN = 0.32;          // 다타 중간타(빼꼼/모자, 안 죽음) 볼륨
   const TAP_RATE = 1.35;          // 다타 중간타는 재생속도를 올려 더 가볍고 높게
 
-  // 두더지 처치 타격음 파일 (사용자 제공, 바탕화면 타격소리1~4 → 정규화/트리밍). 타격마다 랜덤 1개 + 지터.
+  // 두더지 처치 타격음 파일 (사용자 제공, 바탕화면 "뿅망치-음향-단일" 2종 — 2026-09-17 재교체,
+  // 01은 사용자 지정으로 볼륨 부스트). 타격마다 랜덤 1개 + 지터.
   const HIT_URLS = [
-    'audio/hammer-sfx-01.mp3', 'audio/hammer-sfx-02.mp3',
-    'audio/hammer-sfx-04.mp3', 'audio/hammer-sfx-05.mp3', 'audio/hammer-sfx-06.mp3',
-    'audio/hammer-sfx-07.mp3', 'audio/hammer-sfx-08.mp3', 'audio/hammer-sfx-09.mp3',
-    'audio/hammer-sfx-10.mp3'
+    'audio/hammer-sfx-01.mp3', 'audio/hammer-sfx-02.mp3'
   ];
   let hitBuffers = null;   // AudioBuffer[] (디코드 완료 후)
   let hitLoading = false;
