@@ -237,8 +237,9 @@
       const dir = Math.sign(m.targetDepth - m.shownDepth);
       const next = m.shownDepth + dir * (dt / (m.dying ? DYING_STEP_SEC : STEP_SEC));
       m.shownDepth = dir > 0 ? Math.min(next, m.targetDepth) : Math.max(next, m.targetDepth);
-      // 두더지가 구멍에서 다 올라와 전신(depth 0)이 되는 순간 — 스쿼시&스트레치 1회(사용자 지정).
-      if (!m.dying && !m.emergePlayed && m.kind === 'mole' && m.shownDepth <= 0) {
+      // 두더지/동물이 구멍에서 다 올라와 전신(depth 0)이 되는 순간 — 스쿼시&스트레치 1회
+      // (사용자 지정 — 동물도 두더지와 동일하게 적용).
+      if (!m.dying && !m.emergePlayed && (m.kind === 'mole' || m.kind === 'animal') && m.shownDepth <= 0) {
         m.emergePlayed = true;
         m.img.classList.remove('mole-pop-img--emerge');
         void m.img.offsetWidth;
