@@ -175,24 +175,43 @@
   function resumeBgmAudioCtx() {
     if (bgmAudioCtx && bgmAudioCtx.state === 'suspended') bgmAudioCtx.resume().catch(() => {});
   }
+  // 스펙트럴 플럭스 온셋 감지 — "리듬에 안 맞고 딱딱 끊긴다"는 사용자 피드백으로 교체.
+  // 이전 방식(광대역 에너지가 자기 평균보다 큰가)은 곡의 전체 음량 굴곡만 따라가서 실제
+  // 음표 타격(어택) 시점과 안 맞았고, 1.1초 고정 폴백이 음악과 무관하게 계속 끼어들어
+  // 메트로놈처럼 딱딱해 보였음. 스펙트럴 플럭스는 "직전 프레임 대비 늘어난 주파수 성분의 합"
+  // 이라 타악기·신스 어택처럼 순간적으로 튀는 지점(=실제 박자)에서만 뾰족하게 반응한다.
+  let showcasePrevSpectrum = null;
   function initHomeShowcaseBeat() {
     function tick() {
       requestAnimationFrame(tick);
       if (!bgmAnalysers) { ensureBgmAnalysers(); return; }
-      let energy = 0;
+      // bgm-a/b 핑퐁 중 실제 소리가 나는 채널만 채택 — 무음 채널을 같이 더하면 그 채널의
+      // 0값이 매 프레임 "감소"로 잡혀 플럭스 계산에 노이즈가 낌.
+      let buf = null;
       bgmAnalysers.forEach((a) => {
         a.analyser.getByteFrequencyData(a.buf);
         let sum = 0;
-        for (let i = 0; i < 8 && i < a.buf.length; i++) sum += a.buf[i];
-        energy += sum / 8;
+        for (let i = 0; i < a.buf.length; i++) sum += a.buf[i];
+        if (sum > 0) buf = a.buf;
       });
-      showcaseAvgEnergy = showcaseAvgEnergy * 0.85 + energy * 0.15; // 이동 평균(더 빠르게 반응 —
-      // 기존 0.92/1.35배 기준은 신규 Suno 홈 BGM 6곡처럼 저음이 완만하고 타격감 있는 스파이크가
-      // 거의 없는 곡에서는 비트가 사실상 전혀 안 잡혀 애니메이션이 멈춰있던 버그(사용자 보고).
+      if (!buf) return;
+      if (!showcasePrevSpectrum) { showcasePrevSpectrum = new Uint8Array(buf); return; }
+      let flux = 0;
+      const n = Math.min(48, buf.length); // 저음~중음 구간(타악기·베이스 어택 대부분 여기)
+      for (let i = 0; i < n; i++) {
+        const d = buf[i] - showcasePrevSpectrum[i];
+        if (d > 0) flux += d;
+        showcasePrevSpectrum[i] = buf[i];
+      }
+      // 평균을 천천히 반응하게 해야 "평소 수준"을 대표함 — 너무 빨리 쫓아가면(예: 0.9/0.1)
+      // 평균이 순간값을 계속 따라잡아 거의 매 프레임이 "평균보다 큼"을 통과해버려 최소
+      // 간격(220ms)마다 계속 터지는, 사실상 메트로놈과 다를 바 없는 결과가 났었음(실측 확인 —
+      // 간격이 260~280ms로 지나치게 균일).
+      showcaseAvgEnergy = showcaseAvgEnergy * 0.96 + flux * 0.04;
       const now = performance.now();
-      const beatByAudio = energy > showcaseAvgEnergy * 1.12 && energy > 25 && now - showcaseLastBeat > 260;
-      // 오디오 스파이크가 약한 곡이어도 화면이 완전히 정지해 보이지 않도록 최소 주기 보장(폴백).
-      const beatByFallback = now - showcaseLastBeat > 1100;
+      const beatByAudio = flux > showcaseAvgEnergy * 2.2 && flux > 25 && now - showcaseLastBeat > 320;
+      // 곡이 한동안 너무 잠잠해도 완전히 멈춰 보이진 않게 드문 안전망만.
+      const beatByFallback = now - showcaseLastBeat > 1800;
       if (beatByAudio || beatByFallback) {
         showcaseLastBeat = now;
         pulseGridCells();
@@ -203,38 +222,64 @@
   }
   let showcaseAvgEnergy = 0;
   let showcaseLastBeat = 0;
-  // 현재 활성 페이지의 9칸 중 1~2개를 골라 비트마다 개별 펄스(제자리에서 사라졌다/나타났다·
-  // 회전·확대축소, 사용자 지정 — 이미지 스왑이나 이탈 없이 원래 자리를 지킴).
+  // 히트 플래시 색(사용자 지정 — 무지개색 랜덤): 빨강/주황/노랑/파랑/초록/남색/보라.
+  const HG_HITFLASH_COLORS = ['#ff3b3b', '#ff8c1a', '#ffd93b', '#3b82f6', '#22c55e', '#1e3a8a', '#a855f7'];
+  // 현재 활성 페이지의 9칸 중 여러 개를 골라 비트마다 눌리는 느낌으로 펄스(사용자 지정 —
+  // 화려한 변형 13종은 "너무 산만함" 피드백으로 빼고 히트 플래시 + 눌림 스케일 + 그라디언트
+  // 테두리 3개만 유지). 각각 다른 요소(cell 자신의 outline / cell::before / img)라
+  // animation 단축 속성이 안 부딪혀서 클래스 3개를 그냥 같이 토글해도 된다.
   function pulseGridCells() {
     const page = document.querySelector('.hg-page.is-active');
     if (!page) return;
     const cells = page.querySelectorAll('.hg-cell');
     if (!cells.length) return;
-    const n = 1 + ((Math.random() * 2) | 0); // 1~2개
+    const n = 2 + ((Math.random() * 3) | 0); // 2~4개, 동시에 움직여도 됨(사용자 지정)
+    // 같은 비트에 같이 펄스되는 칸들은 색을 통일(사용자 지정) — 칸마다 따로 뽑으면 한 박자에
+    // 색이 제각각이라 산만해 보임.
+    const beatColor = HG_HITFLASH_COLORS[(Math.random() * HG_HITFLASH_COLORS.length) | 0];
     for (let i = 0; i < n; i++) {
       const cell = cells[(Math.random() * cells.length) | 0];
-      cell.style.setProperty('--hg-r', (Math.random() < 0.5 ? -1 : 1) * (6 + Math.random() * 10) + 'deg');
-      cell.classList.remove('is-pulse');
+      const img = cell.querySelector('img');
+      cell.style.setProperty('--hf-color', beatColor);
+      cell.classList.remove('is-hitflash', 'is-gradborder');
+      if (img) img.classList.remove('is-press');
       void cell.offsetWidth;
-      cell.classList.add('is-pulse');
+      cell.classList.add('is-hitflash', 'is-gradborder');
+      if (img) img.classList.add('is-press');
     }
   }
 
   // 다이얼패드 버튼 전체가 비트마다 살짝 커지고 흔들리는 펄스(사용자 지정) — 홈 화면에서만
   // (실제 라운드 플레이 중엔 타격 판정용 버튼이라 안 건드림).
+  // 항상 같이 트는 2종(사용자 지정 — 눌림 스케일 + 히트 플래시. 그라디언트 테두리는 버튼보드에는
+  // 적용 안 함, 사용자 지정) + 랜덤으로 하나 더 섞는 강조 변형(기존 팝/플래시/셰이크). 클래스
+  // 여러 개로는 animation 단축 속성이 충돌해서(위 style.css 주석 참고) JS 에서 직접 콤마로 이어
+  // 인라인 지정.
+  const LANE_ALWAYS = ['lane-press-scale 0.3s ease', 'lane-hitflash-btn 0.28s ease'];
+  // 'textgrow' 는 인라인 애니메이션이 아니라 버튼 안의 숫자/자막 span 에 붙는 클래스라 따로 처리
+  // (좌우 흔들림 대체, 사용자 지정).
+  const LANE_VARIANTS = ['lane-beat-pulse 0.4s ease-out', 'lane-attnflash 0.5s ease', 'textgrow'];
   function pulseDialPad() {
     if (!document.getElementById('game-screen').classList.contains('is-start')) return;
     const bar = document.getElementById('lane-button-bar');
     if (!bar) return;
-    // 전체가 한 번에 말고 버튼 몇 개만 각자 독립적으로 팝(사용자 지정).
-    const btns = bar.querySelectorAll('.lane-button');
+    // 전체가 한 번에 말고 버튼 몇 개만 각자 독립적으로 팝(사용자 지정). 시작(통화) 버튼은 제외
+    // (사용자 지정 — "시작 버튼은 기존 효과만", 골든 링 쉬머는 그대로 유지).
+    const btns = Array.prototype.filter.call(
+      bar.querySelectorAll('.lane-button'),
+      (b) => !b.classList.contains('lane-button--call')
+    );
     if (!btns.length) return;
     const n = 2 + ((Math.random() * 2) | 0); // 2~3개
     for (let i = 0; i < n; i++) {
       const b = btns[(Math.random() * btns.length) | 0];
-      b.classList.remove('beat-pop');
+      const variant = LANE_VARIANTS[(Math.random() * LANE_VARIANTS.length) | 0];
+      const isTextgrow = variant === 'textgrow';
+      b.classList.remove('beat-textgrow');
+      b.style.animation = 'none';
       void b.offsetWidth;
-      b.classList.add('beat-pop');
+      if (isTextgrow) b.classList.add('beat-textgrow');
+      b.style.animation = isTextgrow ? LANE_ALWAYS.join(', ') : LANE_ALWAYS.concat(variant).join(', ');
     }
   }
 

@@ -126,7 +126,8 @@
         // 다타 동물(챕터8)만 빠끔 프레임 사용 — 아니면 등장(emerge) 애니메이션이 깊이값
         // 3→2→1→0 을 그냥 지나치기만 해도 빠끔 프레임을 스치며 "커졌다 작아지는" 것처럼
         // 보이는 버그가 있었음(사용자 보고, 챕터4).
-        multiHitAnimal: pop.type === 'animal' && pop.hitsRequired > 1
+        multiHitAnimal: pop.type === 'animal' && pop.hitsRequired > 1,
+        emergePlayed: false // 전신으로 다 올라온 순간(사용자 지정) 스쿼시&스트레치 1회용 플래그
       };
       render(m);
       pops.set(pop.id, m);
@@ -236,6 +237,13 @@
       const dir = Math.sign(m.targetDepth - m.shownDepth);
       const next = m.shownDepth + dir * (dt / (m.dying ? DYING_STEP_SEC : STEP_SEC));
       m.shownDepth = dir > 0 ? Math.min(next, m.targetDepth) : Math.max(next, m.targetDepth);
+      // 두더지가 구멍에서 다 올라와 전신(depth 0)이 되는 순간 — 스쿼시&스트레치 1회(사용자 지정).
+      if (!m.dying && !m.emergePlayed && m.kind === 'mole' && m.shownDepth <= 0) {
+        m.emergePlayed = true;
+        m.img.classList.remove('mole-pop-img--emerge');
+        void m.img.offsetWidth;
+        m.img.classList.add('mole-pop-img--emerge');
+      }
       render(m);
     }
 

@@ -91,6 +91,13 @@ body { background: var(--lm-page); }
   position: absolute;
   inset: 0;
 }
+/* GET NOW/인트로가 끝나고 홈화면이 드러날 때 슬라이드 업(사용자 지정, 3초) — index.html 의
+   splash 스크립트가 인트로 종료(또는 인트로 생략 시 스플래시 제거) 시점에 이 클래스를 붙인다. */
+.mole-home-slide-up { animation: mole-home-slide-up 3s ease-out; }
+@keyframes mole-home-slide-up {
+  from { transform: translateY(60px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
 /* 시작 화면 = 카톡풍 대화. 게임박스 안, 메신저 화면처럼 (키패드는 아래 그대로 보임). */
 .board-start {
   display: flex;
@@ -114,17 +121,33 @@ body { background: var(--lm-page); }
   pointer-events: none;
 }
 .hg-page.is-active { opacity: 1; z-index: 1; }
-.hg-cell { position: relative; overflow: hidden; }
+.hg-cell {
+  position: relative; overflow: hidden;
+  outline: 3px solid transparent; outline-offset: -3px; /* 그라디언트 테두리 베이스 */
+}
+.hg-cell.is-gradborder { animation: hg-cell-gradborder-outline 0.5s linear; }
+@keyframes hg-cell-gradborder-outline {
+  0%   { outline-color: rgba(255, 122, 77, 0.95); }
+  33%  { outline-color: rgba(255, 206, 51, 0.95); }
+  66%  { outline-color: rgba(74, 222, 128, 0.95); }
+  100% { outline-color: rgba(255, 122, 77, 0); }
+}
 .hg-cell img {
   position: absolute; inset: 0; width: 100%; height: 100%;
-  object-fit: cover; display: block; transform-origin: center;
+  object-fit: cover; display: block;
 }
-.hg-cell.is-pulse img { animation: hg-cell-pulse 0.6s ease; }
-@keyframes hg-cell-pulse {
-  0%   { opacity: 1;   transform: scale(1)     rotate(0deg); }
-  40%  { opacity: 0.15; transform: scale(0.82) rotate(var(--hg-r, 8deg)); }
-  70%  { opacity: 1;   transform: scale(1.14)  rotate(calc(var(--hg-r, 8deg) * -0.4)); }
-  100% { opacity: 1;   transform: scale(1)     rotate(0deg); }
+/* 비트마다 몇 칸이 히트 플래시(흰 오버레이) + 눌림 스케일 — 너무 산만하다는 사용자 피드백으로
+   화려한 변형 13종 + 글로우/탭플래시 레이어는 빼고 이 둘만 유지. 서로 다른 요소(::before 오버레이
+   vs img 자체)라 animation 단축 속성이 안 부딪힘. */
+.hg-cell::before {
+  content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background: var(--hf-color, #fff); opacity: 0; /* game.js 가 매번 무지개색 중 랜덤 지정(사용자 지정) */
+}
+.hg-cell.is-hitflash::before { animation: hg-cell-hitflash 0.28s ease; }
+@keyframes hg-cell-hitflash { 0% { opacity: 0; } 25% { opacity: 0.55; } 100% { opacity: 0; } }
+.hg-cell.is-press img { animation: hg-cell-press-scale 0.35s ease; }
+@keyframes hg-cell-press-scale {
+  0% { scale: 1 1; } 35% { scale: 0.88 0.88; } 65% { scale: 1.06 1.06; } 100% { scale: 1 1; }
 }
 /* ◀ ROUND N ▶ — "ROUND N" 은 알약 박스(테두리를 타고 도는 불빛, 챕터별 색), 양옆은 꼬리 달린
    3D 화살표 버튼(누르면 쑥 들어감). 항상 표시. 우측 하단, #build-tag(버전 표시)와 같은 줄에
@@ -1393,8 +1416,12 @@ body { background: var(--lm-page); }
 
 /* 홈 화면 축제 분위기(사용자 지정) — BGM 비트마다 버튼 몇 개가 각자 독립적으로(전체가 같이
    말고, 사용자 지정) 커졌다 흔들림. game.js pulseDialPad() 가 매 비트마다 버튼 하나씩 이 클래스를
-   토글(리플로우로 재시작). */
-.lane-button.beat-pop { animation: lane-beat-pulse 0.4s ease-out; }
+   토글(리플로우로 재시작). 여러 효과를 동시에 겹치려면(사용자 지정 — "항시 사용은 눌림스케일,
+   그라디언트 테두리, 히트 플래시") 클래스 여러 개로는 안 됨 — 같은 요소에 `animation` 단축
+   속성을 건드리는 클래스 규칙이 둘 이상이면 캐스케이드가 하나만 선택하고 나머지를 통째로
+   버림(속성이 달라도 무관, 단축 속성 자체가 충돌). 그래서 game.js pulseDialPad() 가 매번
+   조합해 `style.animation` 에 콤마로 이어 붙여 인라인으로 직접 지정한다(인라인이 클래스보다
+   우선). 각 키프레임 이름만 여기 정의. */
 @keyframes lane-beat-pulse {
   0%   { transform: scale(1) rotate(0deg); }
   45%  { transform: scale(1.22) rotate(var(--beat-rot, -3deg)); }
@@ -1403,6 +1430,20 @@ body { background: var(--lm-page); }
 /* 칸마다 회전 방향을 살짝씩 다르게(체커보드 패턴) — 다 같은 방향으로만 기울면 딱딱해 보임. */
 #lane-button-bar .lane-button:nth-child(odd) { --beat-rot: 3deg; }
 #lane-button-bar .lane-button:nth-child(even) { --beat-rot: -3deg; }
+/* 눌림 스케일(항상) — scale 은 위 lane-beat-pulse 의 transform 과 별개 속성이라 같이 재생돼도
+   서로 안 지움. 히트 플래시(항상)는 filter, 그라디언트 테두리(항상)는 outline-color — 전부
+   서로 다른 속성이라 한 번에 같이 틀어도 값이 전부 살아있음(인라인 콤마 결합이라 가능). */
+@keyframes lane-press-scale { 0% { scale: 1; } 35% { scale: 0.86; } 65% { scale: 1.08; } 100% { scale: 1; } }
+@keyframes lane-hitflash-btn { 0% { filter: brightness(1); } 30% { filter: brightness(2.2); } 100% { filter: brightness(1); } }
+/* 랜덤으로 하나 더 섞이는 강조 변형(사용자 지정) — 플래시(불투명도 깜빡임), 글자 커짐. 글자
+   커짐은 버튼 자신이 아니라 안의 숫자/자막 span 에 적용(사용자 지정 — 좌우 흔들림 대체). */
+@keyframes lane-attnflash { 0%, 50%, 100% { opacity: 1; } 25%, 75% { opacity: 0.25; } }
+.lane-button.beat-textgrow .lane-num,
+.lane-button.beat-textgrow .lane-sub {
+  display: inline-block;
+  animation: lane-text-grow 0.5s ease;
+}
+@keyframes lane-text-grow { 0% { transform: scale(1); } 45% { transform: scale(1.35); } 100% { transform: scale(1); } }
 
 /* 유료무기(캐논·황금해머·알리펀치) 전용 버튼 구획선(사용자 지정) — 뿅망치는 제외.
    라이트 DIM/OFF 에서는 두더지 위치 하이라이트(--hot)가 안 뜨는데(§diff-mid/legend),
@@ -2151,6 +2192,17 @@ body { background: var(--lm-page); }
   30%  { filter: brightness(2.6) drop-shadow(0 0 10px #fff); scale: 1.16 0.82; }
   60%  { scale: 0.95 1.05; }
   100% { filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); scale: 1 1; }
+}
+/* 두더지가 구멍에서 다 올라와 전신이 되는 순간(사용자 지정) — 스쿼시&스트레치 게임 임팩트.
+   .mole-pop-img--hit 와 마찬가지로 scale(transform 과 별개 속성) 이라 pop-elements.js 의
+   매프레임 transform(sink 위치) 루프와 안 부딪힌다. */
+.mole-pop-img--emerge { animation: mole-pop-emerge 0.4s ease-out; }
+@keyframes mole-pop-emerge {
+  0%   { scale: 1 1; }
+  30%  { scale: 1.2 0.75; }
+  55%  { scale: 0.85 1.2; }
+  80%  { scale: 1.06 0.95; }
+  100% { scale: 1 1; }
 }
 
 /* ---- 두더지 등장 연출 (hit-fx.js emerge) ---- */
