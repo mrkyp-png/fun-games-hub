@@ -1339,7 +1339,7 @@
       // 지진 분신 포즈 미리 로드 (첫 지진 때 이미지가 늦게 떠서 안 보이는 것 방지)
       ['goldhammer-0', 'goldhammer-90'].forEach((n) => { const i = new Image(); i.src = 'assets/weapons/' + n + '.png'; });
     }
-    const laneHammer = WeaponMod.create(hammerOpts);
+    const laneHammer = MG.WeaponPool.create(WeaponMod, hammerOpts);
 
     state = {
       round: roundNum, levelData, regions, spawnPoints, scheduler, holeLayer, laneHammer, weapon, rng, config,
