@@ -6,7 +6,7 @@
   // 동시에 여러 구멍이 눌리면(멀티터치) 그 모듈을 여러 개 생성해 각자 독립적으로 스윙시킨다.
   // 무기 모듈 내부(스윙 좌표·타이밍)는 건드리지 않고, 이 파일이 인스턴스 배열만 관리한다.
 
-  const DEFAULT_MAX_CONCURRENT = 5;
+  const DEFAULT_MAX_CONCURRENT = 8; // 실기기 확인 — 화면에서 8개까지 동시터치 인식됨(사용자 지정)
   const DEFAULT_PRUNE_AFTER_MS = 1500;
 
   function create(WeaponMod, opts, poolOpts) {
