@@ -1345,13 +1345,12 @@
     function weaponCloneOverflow(targetXFrac, targetYFrac, onImpact, frameKey, regionId) {
       const fxLayer = document.getElementById('mole-hammer-layer'); // overflow:visible
       if (weapon === 'cannon') {
-        // 분신 몸체·포즈 맞추기는 포기(사용자 지정 — "쉬운 방법"): 보드 아래쪽(3~4행)·
-        // 좌측~중앙 부근의 랜덤 지점에서 포탄만 목표까지 날아간다. 모서리는 "하늘에서
-        // 날아오는 느낌"이라 제외됨. 랜덤이라 동시에 여러 개(8개까지 실기기 확인) 떠도
-        // 자연스럽게 안 겹친다.
-        const sx = 0.05 + Math.random() * 0.5;
-        const sy = 0.55 + Math.random() * 0.35;
-        MG.HitFx.cannonClone(fxLayer, sx, sy, targetXFrac, targetYFrac, onImpact);
+        // 분신 몸체·포즈 맞추기는 포기(사용자 지정 — "쉬운 방법"): 게임판 밖에 분신 대포가
+        // 있다고 치고, 왼쪽 외곽~좌하단 모서리~아래쪽 외곽 경로 위 랜덤한 지점에서 포탄만
+        // 목표까지 날아간다(randomCannonCloneStart, 정확한 경로는 사용자 지정). 랜덤이라
+        // 동시에 여러 개(8개까지 실기기 확인) 떠도 자연스럽게 안 겹친다.
+        const start = randomCannonCloneStart();
+        MG.HitFx.cannonClone(fxLayer, start.x, start.y, targetXFrac, targetYFrac, onImpact);
       } else if (weapon === 'alipunch') {
         // 분신도 실제 위치와 "같은 글러브·같은 애니메이션"이어야 한다(사용자 지정) — 일반
         // quakeClone 대신 lane-boxing.js 가 export 하는 makeGlove 로 그 구역의 진짜 글러브를
@@ -1843,6 +1842,22 @@
   const QUAKE_MAX_DEPTH = 4;
   const QUAKE_CLONE_GAP = 55; // ms — 분신들 시차 연타
   let forceQuakeNext = false; // __debugForceQuake
+
+  // 캐논 분신 발사 시작점 — 게임판 "밖"(화면 밖에 분신 대포가 있다고 치고, 사용자 지정)에서
+  // 왼쪽 외곽을 타고 내려오다 좌하단 모서리를 돌아 아래쪽 외곽을 타고 이동하는 경로 위의
+  // 랜덤한 한 점. 경로 양끝(사용자 지정): (1) 3번째 줄(row index2) 왼쪽열 높이의 왼쪽 바깥쪽,
+  // (2) 4번째 줄(row index3) 3번째 구멍(#, regionId14) 아래쪽 바깥. grid-partition.js 의
+  // V_TOP=0.27/V_BOTTOM=0.88/gridSize=4 기준 좌표(vStep=(0.88-0.27)/3).
+  const CANNON_CLONE_PATH_A = { x: -0.06, y: 0.27 + ((0.88 - 0.27) / 3) * 2 };  // 3행 왼쪽열 높이
+  const CANNON_CLONE_PATH_CORNER = { x: -0.06, y: 1.06 };                       // 좌하단 바깥 모서리
+  const CANNON_CLONE_PATH_B = { x: (2 + 0.5) / 4, y: 1.06 };                     // 4행 3번째구멍(#) 아래
+  function randomCannonCloneStart() {
+    const seg1 = CANNON_CLONE_PATH_CORNER.y - CANNON_CLONE_PATH_A.y; // 왼쪽 외곽 구간(세로)
+    const seg2 = CANNON_CLONE_PATH_B.x - CANNON_CLONE_PATH_CORNER.x; // 아래쪽 외곽 구간(가로)
+    const t = Math.random() * (seg1 + seg2);
+    if (t < seg1) return { x: CANNON_CLONE_PATH_A.x, y: CANNON_CLONE_PATH_A.y + t };
+    return { x: CANNON_CLONE_PATH_CORNER.x + (t - seg1), y: CANNON_CLONE_PATH_CORNER.y };
+  }
 
   // 분신 포즈 = 목표 구멍의 다이얼패드 위치 기준 (사용자 지정).
   //  ✱·0·#(12·13·14) = 0°(옆면, 아래로 내리침) / 연락처·키패드·최근기록(3·7·11) = 90°(정면, 직선 찌르기) / 나머지 = 45°(대각선, 내리침)
