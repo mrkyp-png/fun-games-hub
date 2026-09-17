@@ -1888,25 +1888,10 @@ body { background: var(--lm-page); }
   100% { opacity: 0; }
 }
 
-/* 책장 넘기듯 화면전환 (처음 3D 적용했던 버전으로 확정 — 더 이상 변경하지 않음).
-   more-menu 가 position:fixed 라 조상의 perspective 가 안 먹어서, transform 자체에
-   perspective() 를 넣어 위치 무관하게 동작시킴. */
-/* ease-in/out + 100도 회전이면 회전이 눈에 보이기도 전에 훅 사라져 버그처럼 보였음
-   (사용자 확인) — linear로 일정 속도 유지하고, 회전의 80%까지는 안 사라지게 해서
-   실제로 페이지가 좁아지며 넘어가는 게 보이게 함(마지막 20%만 edge-on 으로 사라짐). */
-.flip-out, .flip-in { backface-visibility: hidden; will-change: transform, opacity; }
-.flip-out { animation: flip-out-anim 0.7s linear forwards; transform-origin: 100% 50%; }
-.flip-in  { animation: flip-in-anim 0.7s linear forwards; transform-origin: 0% 50%; }
-@keyframes flip-out-anim {
-  0%   { transform: perspective(1400px) rotateY(0deg); opacity: 1; }
-  80%  { transform: perspective(1400px) rotateY(-80deg); opacity: 1; }
-  100% { transform: perspective(1400px) rotateY(-100deg); opacity: 0; }
-}
-@keyframes flip-in-anim {
-  0%   { transform: perspective(1400px) rotateY(100deg); opacity: 0; }
-  20%  { transform: perspective(1400px) rotateY(80deg); opacity: 1; }
-  100% { transform: perspective(1400px) rotateY(0deg); opacity: 1; }
-}
+/* ⚠️책장 넘기는 3D 플립 화면전환은 완전히 삭제됨(사용자 지정 — 위/아래 전부 없애라).
+   실기기(노트북 포함)에서 다이얼패드가 같이 비어버리는 버그가 반복돼 격리 시도도 실패 —
+   .flip-out/.flip-in 클래스와 키프레임 자체를 제거, game.js flipSwap() 은 이제 무연출
+   즉시 전환. */
 
 /* ---- 망치 ---- transform-origin 과 translate/rotate 는 lane-hammer.js 가 넣는다 ---- */
 /* 뽕망치 레이어 = 보드 밖(#game-screen 직속). 보드 박스와 똑같은 위치·크기로 얹되
@@ -2507,8 +2492,7 @@ body { background: var(--lm-page); }
 
 /* 더보기 메뉴 본체 — 2026-09-18 개편(사용자 지정, 애니팡 참고): 예전엔 다이얼패드까지 덮는
    전체 화면이었으나, 이제 보드 영역(.mole-board 와 같은 자리·크기)에만 들어가고 다이얼패드는
-   항상 그대로 보이게(하단 네비처럼). 책장 넘기는 flip 전환(.flip-out/.flip-in, 위 §참고)은
-   position 과 무관하게 self-contained perspective() 라 그대로 동작 — 건드리지 않음. */
+   항상 그대로 보이게(하단 네비처럼). 책장 넘기는 flip 전환은 이후 완전히 삭제됨(위 §참고). */
 .more-menu { position: relative; flex: 0 0 auto; width: var(--sq); aspect-ratio: 1; margin: 0 auto;
   z-index: 40; display: flex; flex-direction: column; border-radius: 0 0 8px 8px;
   background: #ffffff; color: #1f1f24; overflow-y: auto; scrollbar-width: none; }

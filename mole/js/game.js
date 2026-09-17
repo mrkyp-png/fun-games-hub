@@ -945,32 +945,13 @@
   // mole-board 처럼 여러 방향(게임↔더보기)에서 재사용되는 요소는, 열자마자 바로
   // 닫는 식으로 빠르게 연타하면 이전 호출의 "숨기기" 타이머가 나중에 잘못 발동해
   // 방금 보여준 걸 다시 숨겨버릴 수 있다 — 요소별로 대기 중인 타이머를 취소한다.
-  const FLIP_MS = 700; // style.css 의 flip-out/flip-in 애니메이션 길이(0.7s)와 맞춤
-  const pendingFlipTimers = new WeakMap();
-  function clearPendingFlip(el) {
-    var t = pendingFlipTimers.get(el);
-    if (t) {
-      clearTimeout(t);
-      pendingFlipTimers.delete(el);
-      el.classList.remove('flip-out', 'flip-in'); // 취소된 이전 애니메이션의 클래스 잔여물 제거
-    }
-  }
+  // ⚠️책장 넘기는 3D 플립 연출은 완전히 삭제됨(사용자 지정 — 위/아래 전부 없애라).
+  // 실기기에서 다이얼패드가 같이 비어버리는 버그가 반복돼 원인 격리 시도도 실패 — 전환은
+  // 그냥 즉시 스위치(무연출)로 통일.
   function flipSwap(outEl, inEl) {
     if (!outEl || !inEl || outEl === inEl) return;
-    clearPendingFlip(outEl);
-    clearPendingFlip(inEl);
+    outEl.hidden = true;
     inEl.hidden = false;
-    outEl.classList.remove('flip-out'); void outEl.offsetWidth; outEl.classList.add('flip-out');
-    inEl.classList.remove('flip-in'); void inEl.offsetWidth; inEl.classList.add('flip-in');
-    var timer = setTimeout(function () {
-      outEl.hidden = true;
-      outEl.classList.remove('flip-out');
-      inEl.classList.remove('flip-in');
-      pendingFlipTimers.delete(outEl);
-      pendingFlipTimers.delete(inEl);
-    }, FLIP_MS);
-    pendingFlipTimers.set(outEl, timer);
-    pendingFlipTimers.set(inEl, timer);
   }
 
   // 더보기 메뉴 열기/닫기.
@@ -979,18 +960,11 @@
     var outEl = document.getElementById(isStart ? 'board-start' : 'mole-board');
     openMoreNow(sub); // more-menu 내용 준비(hidden=false 는 flipSwap 이 처리)
     flipSwap(outEl, document.getElementById('more-menu'));
-    // 2026-09-18: more-menu 가 더 이상 전체화면(position:fixed)이 아니라 보드 자리에 들어가는
-    // 구조로 바뀌면서(사용자 지정, 다이얼패드 항상 노출) — #board-start 만 숨겨서는 그 부모인
+    // more-menu 가 보드 자리에 들어가는 구조라 — #board-start 만 숨겨서는 그 부모인
     // #mole-board(aspect-ratio 로 고정폭 유지) 가 빈 채로 자기 자리를 계속 차지해 more-menu 가
-    // 그 아래로 밀려나고 다이얼패드가 화면 밖으로 밀려나는 버그가 생김. flip 애니메이션과 같은
-    // 타이밍(FLIP_MS)에 #mole-board 자체도 같이 숨겨 그 자리를 비운다(홈 화면 진입 때만 —
-    // 실제 플레이 중 더보기는 게임판을 유지해야 하므로 그대로 둠).
-    if (isStart) {
-      const board = document.getElementById('mole-board');
-      clearPendingFlip(board); // 겹쳐 눌러 이미 대기 중이던 타이머가 있으면 새로 교체
-      const t = setTimeout(() => { board.hidden = true; pendingFlipTimers.delete(board); }, FLIP_MS);
-      pendingFlipTimers.set(board, t); // showStartScreenNow 의 clearPendingFlip(board) 가 같이 취소해줌
-    }
+    // 그 아래로 밀려나고 다이얼패드가 화면 밖으로 밀려나는 버그가 생김. #mole-board 자체도
+    // 같이 숨겨 그 자리를 비운다(홈 화면 진입 때만 — 실제 플레이 중 더보기는 게임판을 유지).
+    if (isStart) document.getElementById('mole-board').hidden = true;
   }
   function openMoreNow(sub) {
     // 백스톱: 시작 인트로(챕터 타이핑) 도중 어떻게든 메뉴가 열리면 대기 중이던 라운드 시작을
@@ -1010,7 +984,9 @@
     var mm = document.getElementById('more-menu');
     mm.classList.toggle('mm-paused', resumable);
     mm.hidden = false;
-    stopBgm(); // 더보기 BGM 삭제(신규 예정) — 정지
+    // 실제 진행 중이던 라운드를 멈추고 여는 경우만 브금 정지 — 홈에서 상점/아이템 등
+    // 화면을 왔다갔다할 땐 브금이 끊기지 않고 계속 유지되어야 함(사용자 지정).
+    if (resumable) stopBgm();
     if (moreMenu) moreMenu.refresh();
     if (sub) {
       screenNav.show(sub);
@@ -1030,7 +1006,7 @@
     if (!state) { showStartScreen({ originEl: e && e.currentTarget }); return; }
     screenNav.reset();
     if (sharedLaneControls) sharedLaneControls.setActiveNav(null); // 더보기 닫음 — 확대된 네비 버튼 원위치
-    flipSwap(mm, document.getElementById('mole-board')); // 이어가기 → 게임화면 (3D 플립)
+    flipSwap(mm, document.getElementById('mole-board')); // 이어가기 → 게임화면
     mm.classList.remove('mm-paused');
     playScreenBgm('game'); // 게임 화면으로 복귀 — 게임 BGM 을 처음부터
 
@@ -1044,19 +1020,6 @@
 
   // ---------- 시작 화면 ----------
   function showStartScreen(opts) {
-    if (!(opts && opts.skipFlash)) {
-      // 지금 보이는 패널(더보기/결과화면/다음챕터)에서 홈으로 — showStartScreenNow 가
-      // 이 패널들을 hidden=true 로 만들기 전에 먼저 찾아둬야 함.
-      var mm = document.getElementById('more-menu');
-      var go = document.getElementById('gameover-overlay');
-      var ncp = document.getElementById('next-chapter-panel');
-      var outEl = !mm.hidden ? mm : !go.hidden ? go : !ncp.hidden ? ncp : null;
-      showStartScreenNow(opts);
-      // showStartScreenNow 가 이미 outEl 을 hidden=true 처리했을 수 있음 — flip-out 애니메이션이
-      // 보이려면 다시 잠깐 보여야 한다(끝나면 flipSwap 이 다시 hidden=true 로 되돌림).
-      if (outEl) { outEl.hidden = false; flipSwap(outEl, document.getElementById('board-start')); }
-      return;
-    }
     showStartScreenNow(opts);
   }
   function showStartScreenNow(opts) {
@@ -1081,7 +1044,10 @@
     // 단, 최초 부팅 직후(스플래시/인트로가 아직 화면을 덮고 있는 동안)엔 재생을 미룬다(사용자
     // 지정 — "브금은 인트로에 안 나오고 홈화면 진입하면 나오게"). index.html 이 인트로/스플래시가
     // 실제로 사라지는 시점에 window.FGH.startHomeBgm() 을 불러 시작한다.
-    if (!(opts && opts.deferBgm)) playScreenBgm('home');
+    // 상점/아이템 등에서 홈으로 돌아올 때 홈 브금이 이미 재생 중이면 재호출하지 않는다 —
+    // playScreenBgm('home') 은 매번 호출 시 다음 곡으로 넘어가버려서, 안 건드리면 원래
+    // 이어질 곡이 화면 전환마다 계속 스킵되는 문제였음(사용자 지정 — 브금은 화면 전환과 무관하게 유지).
+    if (!(opts && opts.deferBgm) && !/\/bgm-home-\d/.test(currentBgm)) playScreenBgm('home');
     const go = document.getElementById('gameover-overlay');
     go.hidden = true; go.classList.remove('is-win', 'is-lose', 'is-sliding');
     const cf = go.querySelector('.go-confetti'); if (cf) cf.innerHTML = '';
@@ -1106,14 +1072,10 @@
     if (si) { si.hidden = true; si.classList.remove('is-opening'); }
     setHammerLayerVisible(true);
     document.getElementById('board-start').hidden = false;
-    // board-start는 #mole-board 의 자식 — 플레이 중 더보기(openMore)가 mole-board 자체를
-    // flip-out 으로 hidden 처리해둔 상태일 수 있어(v166), 여기서도 같이 복구해야
-    // board-start 가 0x0으로 렌더링되지 않는다(키패드만 보이는 버그의 원인이었음).
-    // 더보기 여는 애니메이션(700ms) 중 바로 PLAY를 누른 경우 대기 중인 hide 타이머가
-    // 나중에 발동해 다시 숨기는 걸 막기 위해 취소도 같이 한다.
-    const board = document.getElementById('mole-board');
-    clearPendingFlip(board);
-    board.hidden = false;
+    // board-start는 #mole-board 의 자식 — 더보기(openMore)가 mole-board 자체를 hidden
+    // 처리해둔 상태일 수 있어(v166), 여기서도 같이 복구해야 board-start 가 0x0으로
+    // 렌더링되지 않는다(키패드만 보이는 버그의 원인이었음).
+    document.getElementById('mole-board').hidden = false;
     document.getElementById('game-screen').classList.add('is-start');
     setCallLabel('home'); // 홈: 초록 버튼 "시작" (빨간 대기 상태였으면 해제)
     if (screenNav) screenNav.reset();
