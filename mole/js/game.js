@@ -1687,7 +1687,10 @@
       // 켜진 것과 구분이 안 돼 헷갈린다는 지적(사용자 지정) — 죽으면(dying) 바로 꺼짐.
       // 저글 보너스 자체(점수)는 spawn-scheduler.js resolveOne() 쪽 판정이라 안 건드림, 화면
       // 힌트만 없어짐(터치 물결 애니메이션이 끝나면 바로 사라짐).
-      if (p.dying) return;
+      // p.dying 은 최종 타격 후 SINK_DELAY(0.17s, 망치 스윙 도달 싱크용)가 지나야 켜져서, 그동안
+      // hot 표시가 안 꺼져 "성공했는데 늦게 없어진다"는 지적(사용자 지정) — sinkIn>0(최종 타격은
+      // 이미 등록됨, 침몰 대기 중)도 같이 걸러 타격 성공 즉시(다음 프레임) 꺼지게 한다.
+      if (p.dying || p.sinkIn > 0) return;
       const et = effectiveHitType(state.config, p.type);
       if (et === 'mole') moleRegions.add(p.regionId);
       else if ((invincibleNow || p.safeAlways) && et === 'animal') { moleRegions.add(p.regionId); safeAnimalRegions.add(p.regionId); }
@@ -1798,8 +1801,11 @@
       burstAutoFire(regionId, primary.hitsRequired - 1);
     }
 
-    // 골드해머 지진: 두더지 타격 성공 시(중간타 포함, 저글/무시 제외) 15% 발동.
-    if (state.weapon === 'goldhammer' && primary && primary.type === 'mole' && typeof primary.done === 'boolean') {
+    // 골드해머 지진: "실제 타겟" 타격 성공 시(중간타 포함, 저글/무시 제외) 15% 발동. 예전엔
+    // primary.type==='mole' 원본 타입만 봐서, 라운드6(reverseTarget=동물이 타겟)에서 두더지
+    // (=방해물)를 잘못 쳐도 지진이 발동 → 연쇄로 주변 두더지(=방해물)를 더 때려 페널티만 쌓이는
+    // 버그가 있었음(사용자 리포트) — effectiveHitType 으로 "진짜 타겟"인지 판정하도록 수정.
+    if (state.weapon === 'goldhammer' && primary && effectiveHitType(state.config, primary.type) === 'mole' && typeof primary.done === 'boolean') {
       if (forceQuakeNext || state.rng.next() < QUAKE_CHANCE) {
         forceQuakeNext = false;
         if (sharedLaneControls) sharedLaneControls.flashBurst(regionId); // 캐논과 동일한 골드 링(사용자 지정)

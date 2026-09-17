@@ -1529,7 +1529,8 @@ body { background: var(--lm-page); }
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
-  transition: transform 0.06s, background 0.12s, box-shadow 0.15s;
+  transition: transform 0.06s; /* 타격 성공 시 hot 표시가 늦게 사라져 분간이 안 된다는 지적(사용자 지정) —
+    background/box-shadow 트랜지션 제거해 hot 켜짐/꺼짐이 즉시 반영되게(라이트 ON/DIM 공통). */
   --flash-ring: #12d16a;                       /* 흰 배경에서도 또렷하게 — 앱 초록(통화버튼 #2ecc57)과 같은 계열, 더 진하게 */
   --flash-fill: rgba(18, 209, 106, 0.5);       /* 클릭 순간 배경에 도는 초록 글로우 */
 }
