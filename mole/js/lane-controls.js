@@ -44,7 +44,7 @@
   const FACES = [
     { num: '1', kr: 'ㄱㅋ', en: '', hud: 'hearts' }, { num: '2', kr: 'ㄴ', en: 'ABC', hud: 'coins' }, { num: '3', kr: 'ㄷㅌ', en: 'DEF', hud: 'tickets' }, { nav: '상점', svg: SVG.shop, i18n: 'mole.more.shop', action: 'shop' },
     { num: '4', kr: 'ㄹ', en: 'GHI', hud: 'score', action: 'score' }, { num: '5', kr: 'ㅁ', en: 'JKL', hud: 'daily', action: 'daily' }, { num: '6', kr: 'ㅂㅍ', en: 'MNO', hud: 'quest', action: 'quest' }, { nav: '홈', svg: SVG.home, i18n: 'mole.pad.home', action: 'home' },
-    { num: '7', kr: 'ㅅ', en: 'PQRS', hud: 'friends', action: 'friends' }, { num: '8', kr: 'ㅇ', en: 'TUV', hud: 'locker', action: 'locker' }, { num: '9', kr: 'ㅈㅊ', en: 'WXYZ', hud: 'settings', action: 'settings' }, { nav: '아이템 보관', svg: SVG.inventory, i18n: 'mole.more.inventory', action: 'inventory' },
+    { num: '7', kr: 'ㅅ', en: 'PQRS', hud: 'friends', action: 'friends' }, { num: '8', kr: 'ㅇ', en: 'TUV', hud: 'locker', action: 'locker' }, { num: '9', kr: 'ㅈㅊ', en: 'WXYZ', hud: 'settings', action: 'settings' }, { nav: '아이템', svg: SVG.inventory, i18n: 'mole.pad.lblInventory', action: 'inventory' },
     { num: '✱', kr: '', en: '', hud: 'label', label: '두더지팡', labelI18n: 'mole.pad.gameMole', action: 'lightMode' },
     { num: '0', kr: '', en: '+', hud: 'label', label: '리듬팡', labelI18n: 'mole.pad.gameRhythm' },
     { num: '#', kr: '', en: '', hud: 'label', label: '시크릿', labelI18n: 'mole.pad.secret', lockSub: true },
@@ -52,10 +52,12 @@
   ];
 
   // 아이콘 아래 자음/영문 자리에 넣을 설명 글자(사용자 지정) — 더보기와 같은 i18n 키 재사용.
+  // locker/inventory 는 더보기의 긴 이름("사진보관"/"아이템 보관") 대신 다이얼패드 전용 짧은
+  // 글자("사진"/"아이템", 사용자 지정 — 아이콘 확대에 맞춰 공간 확보).
   const HUD_LABEL = {
     hearts: 'mole.pad.lblHearts', coins: 'mole.pad.lblCoins', tickets: 'mole.pad.lblTickets',
     score: 'mole.pad.lblScore', daily: 'mole.more.daily', quest: 'mole.more.quest',
-    friends: 'mole.more.friends', locker: 'mole.more.photos', settings: 'mole.more.settings'
+    friends: 'mole.more.friends', locker: 'mole.pad.lblLocker', settings: 'mole.more.settings'
   };
 
   function fillFace(btn, f, id, simple) {

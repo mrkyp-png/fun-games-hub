@@ -1434,6 +1434,10 @@ body { background: var(--lm-page); }
 }
 .lane-button--miss { --flash-ring: #ff5344; --flash-fill: rgba(255, 90, 70, 0.5); }  /* 헛방/폭탄 = 빨강 */
 .lane-button--burst { --flash-ring: #ffce33; --flash-fill: rgba(255, 206, 51, 0.5); }  /* 대포 연사 = 골드 (실패 빨강과 구분) */
+/* 버튼 칸은 원래 정사각형인데(그리드 셀과 동일, .lane-cell-line 참고) 눌림 배경·hot 하이라이트·
+   물결이 다 원형(50%)이라 모서리까지 안 닿았음(사용자 지적) — 시작(통화) 버튼만 원형 유지,
+   나머지는 칸 모서리까지 꽉 차는 사각형으로. */
+.lane-button:not(.lane-button--call) { border-radius: 0; }
 /* 누를 때 굵은 네온 링이 확 밝아졌다 사그라드는 이펙트 (아웃라인 셰이더 느낌, 참고 영상 그대로).
    버튼 원 밖으로 삐져나가 옆 버튼을 침범하면 안 됨 — inset:0 으로 버튼 원 안에서만. */
 .lane-button::after {
@@ -1446,6 +1450,7 @@ body { background: var(--lm-page); }
   pointer-events: none;
 }
 .lane-button.lane-button--flash::after { animation: lane-btn-ring 0.8s ease-out; }
+.lane-button:not(.lane-button--call)::after { border-radius: 0; }
 /* + 물결처럼 안에서 번지는 링 (쉬머 셰이더 느낌) — 버튼 원 경계(1.0)를 절대 안 넘게, 작게 시작해 원 끝까지만 커짐. */
 .lane-button::before {
   content: '';
@@ -1457,6 +1462,7 @@ body { background: var(--lm-page); }
   pointer-events: none;
 }
 .lane-button.lane-button--flash::before { animation: lane-btn-ripple 0.8s ease-out; }
+.lane-button:not(.lane-button--call)::before { border-radius: 0; }
 @keyframes lane-btn-ripple {
   0%   { opacity: 0.85; transform: scale(0.5); }
   100% { opacity: 0; transform: scale(1); }
@@ -1534,8 +1540,10 @@ body { background: var(--lm-page); }
    고정 padding-left 로 서브텍스트 글자 길이와 무관하게 아이콘이 항상 같은 자리(같은 줄)에
    오도록 고정(사용자 지정: "아이콘들의 줄 기준은 동일해야"). */
 .lane-face--hud { justify-content: flex-start; padding-left: 20%; }
-.lane-face--hud svg { flex: 0 0 auto; width: clamp(14px, 5vw, 19px); height: clamp(14px, 5vw, 19px); display: block; }
-.lane-hud-n { font-size: clamp(0.5rem, 2.2vw, 0.72rem); font-weight: 800; line-height: 1; }
+/* 아이콘·글자 1.2배 확대(사용자 지정 — 너무 작다는 지적). */
+.lane-face--hud svg { flex: 0 0 auto; width: clamp(17px, 6vw, 23px); height: clamp(17px, 6vw, 23px); display: block; }
+.lane-hud-n { font-size: clamp(0.6rem, 2.6vw, 0.86rem); font-weight: 800; line-height: 1; }
+.lane-face--hud .lane-en { font-size: clamp(0.43rem, 2vw, 0.62rem); }
 /* 시크릿(더보기의 잠긴 "시크릿 모드"와 동일 개념, 아직 미구현) — 숫자 자리에 짧은 글자, 서브텍스트
    자리(오른쪽)에 자물쇠 아이콘만(자음/영문 두 줄 없이 하나). */
 .lane-num--secret { font-size: clamp(0.5rem, 2.4vw, 0.72rem); font-weight: 700; }

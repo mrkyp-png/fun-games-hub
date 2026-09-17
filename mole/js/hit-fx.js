@@ -275,6 +275,20 @@
   function isAlipunchEquipped() {
     try { return localStorage.getItem('mole.weapon') === 'alipunch'; } catch (e) { return false; }
   }
+
+  // 알리 펀치 전용 타격 충격음 — 뿅망치가 hammer-sfx-*로 교체(v490)되기 전 쓰던 원래 타격음
+  // (hit1~4.mp3, 사용자 지정: "최초 뿅망치 타격음에 사용했던거야" — 펀치 느낌이라 알리 펀치로 이전).
+  const ALIPUNCH_HIT_URLS = ['audio/hit1.mp3', 'audio/hit2.mp3', 'audio/hit3.mp3', 'audio/hit4.mp3'];
+  let alipunchHitBuffers = null;
+  let alipunchHitLoading = false;
+  function loadAlipunchHitBuffers(ctx) {
+    if (alipunchHitBuffers || alipunchHitLoading || typeof fetch !== 'function') return;
+    alipunchHitLoading = true;
+    Promise.all(ALIPUNCH_HIT_URLS.map((u) =>
+      fetch(u).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b))
+    )).then((bufs) => { alipunchHitBuffers = bufs; })
+      .catch(() => { alipunchHitLoading = false; });
+  }
   function loadPunchVoiceBuffers(ctx) {
     if (punchVoiceBuffers || punchVoiceLoading || typeof fetch !== 'function') return;
     punchVoiceLoading = true;
@@ -427,7 +441,7 @@
     loadRoundAnnounceBuffers(audioCtx); // 라운드 음성도 무기 무관 항상 프리로드
     loadBombBlastBuffer(audioCtx); // 폭탄 든 두더지 처치음도 무기 무관 항상 프리로드
     if (isCannonEquipped()) { loadCannonBuffers(audioCtx); loadCannonRotateBuffer(audioCtx); loadCannonWheelBuffer(audioCtx); } // 대포 장착 중일 때만 폭발음·회전음·바퀴음 로드(망치 유저는 불필요한 다운로드 안 함)
-    if (isAlipunchEquipped()) { loadPunchVoiceBuffers(audioCtx); loadFightBuffer(audioCtx); } // 알리 펀치 장착 중일 때만 보이스·fight음 로드
+    if (isAlipunchEquipped()) { loadPunchVoiceBuffers(audioCtx); loadFightBuffer(audioCtx); loadAlipunchHitBuffers(audioCtx); } // 알리 펀치 장착 중일 때만 보이스·fight음·타격 충격음 로드
     if (isGoldhammerEquipped()) { loadGoldhammerSpinBuffer(audioCtx); loadGoldhammerHitBuffers(audioCtx); } // 골드해머 장착 중일 때만 회전 등장음+타격음 로드
     loadTapBuffers(audioCtx); // UI 탭음도 같이 프리로드
     return audioCtx;
@@ -478,6 +492,8 @@
   function punch(opts) {
     if (sfxOff()) return;
     const light = !!(opts && opts.light);
+    const isCannon = isCannonEquipped(), isGold = isGoldhammerEquipped(), isAli = isAlipunchEquipped();
+    if (!isCannon && !isGold && !isAli) return; // 뿅망치(기본 무기) 타격음 삭제(사용자 지정) — 무음
     try {
       const ctx = getCtx();
       if (!ctx) return;
@@ -485,13 +501,13 @@
         (1 + (Math.random() * 2 - 1) * HIT_GAIN_JITTER));
       const rate = (light ? TAP_RATE : 1) * (1 + (Math.random() * 2 - 1) * HIT_PITCH_JITTER);
 
-      // 대포 장착 중이면 폭발음 풀, 골드 묠니르면 전용 타격음 풀, 알리 펀치는 전용 버퍼가
-      // 없으니 뿅망치 타격음 풀을 쓰지 않고 punchSynth 합성음으로(버그 수정 — 예전엔 여기서
-      // hitBuffers 로 떨어져 알리 펀치 타격에도 뿅망치 소리가 났었음), 그 외(뿅망치)는 기존 풀.
-      const pool = (isCannonEquipped() && cannonBuffers && cannonBuffers.length) ? cannonBuffers
-        : (isGoldhammerEquipped() && goldhammerHitBuffers && goldhammerHitBuffers.length) ? goldhammerHitBuffers
-        : isAlipunchEquipped() ? null
-        : hitBuffers;
+      // 대포는 폭발음 풀, 골드 묠니르는 전용 타격음 풀, 알리 펀치는 전용 타격음 풀(hit1~4.mp3,
+      // 사용자 지정 — 뿅망치 타격음 풀 안 씀. 버그 수정: 예전엔 여기서 hitBuffers 로 떨어져
+      // 알리 펀치 타격에도 뿅망치 소리가 났었음).
+      const pool = (isCannon && cannonBuffers && cannonBuffers.length) ? cannonBuffers
+        : (isGold && goldhammerHitBuffers && goldhammerHitBuffers.length) ? goldhammerHitBuffers
+        : (isAli && alipunchHitBuffers && alipunchHitBuffers.length) ? alipunchHitBuffers
+        : null;
       if (pool && pool.length) {
         whenReady(ctx, () => {
           const src = ctx.createBufferSource();
@@ -608,7 +624,6 @@
     }
     vibrate([0, 15, 35, 12]); // 짧은 더블 — 뭉툭한 "쿵" 대신 또렷한 "탁"
     punch();
-    setTimeout(moleVoice, 320); // 두더지 비명(사용자 지정) — 타격음과 안 겹치게 끝난 뒤에
   }
 
   // 대포 처치 — 두더지가 안 내려가고 그 자리에서 그을려 흔들리다 흩뿌리며 사라진다
