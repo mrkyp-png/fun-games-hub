@@ -1073,7 +1073,9 @@
     sessionGen++; // 진행 중이던 카운트다운/자동진행 타이머 무효화
     gameStarting = false;
     setNavLock(false);
-    if (sharedLaneControls) sharedLaneControls.setActiveNav(null); // 홈 복귀 — 확대된 네비 버튼 원위치
+    // 홈 화면 자체가 "홈" 탭이 선택된 상태 — 홈 아이콘은 항시 확대 유지(사용자 지정), 다른
+    // 네비를 열면 그쪽이 확대되며 홈은 자동으로 원래 크기로 돌아감(같은 setActiveNav 토글).
+    if (sharedLaneControls) sharedLaneControls.setActiveNav('home');
     if (rafId) cancelAnimationFrame(rafId);
     if (sharedPopElements) sharedPopElements.clear();
     if (state && state.holeLayer) state.holeLayer.clear();

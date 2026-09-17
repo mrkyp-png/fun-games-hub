@@ -1537,6 +1537,8 @@ body { background: var(--lm-page); }
 }
 .lane-button.lane-button--flash::before { animation: lane-btn-ripple 0.8s ease-out; }
 .lane-button:not(.lane-button--call)::before { border-radius: 0; }
+/* 홈 화면 아이콘 탭 시 초록 물결 삭제(사용자 지정) — 실제 플레이 중(타격) 물결은 그대로 유지. */
+#game-screen.is-start .lane-button.lane-button--flash::before { animation: none; }
 @keyframes lane-btn-ripple {
   0%   { opacity: 0.85; transform: scale(0.5); }
   100% { opacity: 0; transform: scale(1); }

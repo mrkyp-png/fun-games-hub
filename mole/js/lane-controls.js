@@ -50,7 +50,7 @@
     { num: '1', kr: 'ㄱㅋ', en: '', hud: 'hearts' }, { num: '2', kr: 'ㄴ', en: 'ABC', hud: 'coins' }, { num: '3', kr: 'ㄷㅌ', en: 'DEF', hud: 'tickets' },
       { nav: '상점', svg: SVG.shop, i18n: 'mole.more.shop', action: 'shop', navBack: { nav: '연락처', svg: SVG.person, i18n: 'mole.pad.contacts' } },
     { num: '4', kr: 'ㄹ', en: 'GHI', hud: 'score', action: 'score' }, { num: '5', kr: 'ㅁ', en: 'JKL', hud: 'daily', action: 'daily' }, { num: '6', kr: 'ㅂㅍ', en: 'MNO', hud: 'quest', action: 'quest' },
-      { nav: '홈', svg: SVG.home, i18n: 'mole.pad.home', action: 'home', navBack: { nav: '키패드', svg: SVG.pad, i18n: 'mole.pad.keypad' } },
+      { nav: '홈', svg: SVG.home, action: 'home', noLabel: true, navBack: { nav: '키패드', svg: SVG.pad, i18n: 'mole.pad.keypad' } },
     { num: '7', kr: 'ㅅ', en: 'PQRS', hud: 'friends', action: 'friends' }, { num: '8', kr: 'ㅇ', en: 'TUV', hud: 'locker', action: 'locker' }, { num: '9', kr: 'ㅈㅊ', en: 'WXYZ', hud: 'settings', action: 'settings' },
       { nav: '아이템', svg: SVG.inventory, i18n: 'mole.pad.lblInventory', action: 'inventory', navBack: { nav: '최근기록', svg: SVG.clock, i18n: 'mole.pad.recent' } },
     { num: '✱', kr: '', en: '', hud: 'label', label: '두더지팡', labelI18n: 'mole.pad.gameMole', action: 'lightMode' },
@@ -75,7 +75,7 @@
       btn.classList.add('lane-button--nav');
       if (f.call) btn.classList.add('lane-button--call');
       var I = root.FGH && root.FGH.I18N;
-      var label = f.i18n && I ? I.t(f.i18n) : f.nav;
+      var label = f.noLabel ? '' : (f.i18n && I ? I.t(f.i18n) : f.nav); // 홈 버튼 — 글자 없이 아이콘만(사용자 지정)
       var attr = f.i18n ? ' data-i18n="' + f.i18n + '"' : '';
       faceHtml = '<span class="lane-ico">' + f.svg + '</span><span class="lane-lbl"' + attr + '>' + label + '</span>';
     } else {
