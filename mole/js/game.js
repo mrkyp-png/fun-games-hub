@@ -9,7 +9,12 @@
   const ALIPUNCH_INVINCIBLE_CHANCE = 0.2;   // 무적 발동 확률 (기획서 §7)
   const ALIPUNCH_INVINCIBLE_MS = 5000;      // 무적 지속시간
   const ROUND1_SECONDS = 60;      // 라운드1 (구 챕터1+2+3 병합, 3구간 연속)
-  const ROUND_SECONDS_LONG = 140; // 라운드2~8 (구 챕터4~10, 각 라운드 통째로 연속)
+  const ROUND_SECONDS_LONG = 100; // 라운드2~8 실제 플레이 시간(사용자 지정, 원래 100초를 140초로 잘못 구현했던 것 수정)
+  // 난이도 10단계 키프레임은 원래 140초짜리 커브(§4) — 실플레이 100초를 앞 40초는 건너뛰고
+  // 그 뒤 100초(40~140초 구간)만 쓴다(사용자: "너무 쉬워서 앞부분 40초는 빼도 될듯" → "총 100초
+  // 유지, 난이도 커브만 앞당김"). 라운드 t=0 이 커브의 40초 지점에 대응.
+  const DIFFICULTY_CURVE_SECONDS = 140;
+  const DIFFICULTY_CURVE_OFFSET = 40;
   function roundSeconds() { return currentChapter() === 1 ? ROUND1_SECONDS : ROUND_SECONDS_LONG; }
   // 챕터→라운드 재구조화(2026-09-17): 라운드1(구 챕터1~3 병합) = 9홀(3x3), 라운드2~8(구 챕터4~10) = 16홀(4x4).
   function isSmallBoardChapter() { return currentChapter() === 1; }
@@ -468,13 +473,15 @@
     const c = parseInt(localStorage.getItem('mole.chapter'), 10);
     return (c >= 1 && c <= MG.Progress.MAX_CHAPTER) ? c : 1;
   }
-  // mole.chapter 를 쓰는 모든 곳에서 이걸로 — 챕터1~3(뿅망치 전용)으로 들어가면 장착 무기도
+  // mole.chapter 를 쓰는 모든 곳에서 이걸로 — 라운드1(뿅망치 전용)으로 들어가면 장착 무기도
   // 뿅망치로 같이 저장해, 보관창 "장착됨" 표시가 실제 플레이 무기와 어긋나지 않게 한다(사용자 지정).
+  // 챕터→라운드 재구조화(2026-09-17): 구 챕터1~3(n<=3) 강제 뿅망치 임계값 → 신규 라운드1(n===1)로
+  // 이동 — 놓쳤던 것을 Puppeteer 검증(라운드2 캐논 인트로가 안 보이는 문제) 중 발견해 수정.
   function setChapter(n) {
     localStorage.setItem('mole.chapter', String(n));
-    if (n <= 3) {
+    if (n === 1) {
       localStorage.setItem('mole.weapon', 'hammer');
-      // 뿅망치는 라이트 ON 만 사용 가능(사용자 지정) — 챕터1~3 진입 시 강제 장착과 세트로 같이 내림.
+      // 뿅망치는 라이트 ON 만 사용 가능(사용자 지정) — 라운드1 진입 시 강제 장착과 세트로 같이 내림.
       const diff = localStorage.getItem('mole.difficulty');
       if (diff === 'mid' || diff === 'legend') localStorage.setItem('mole.difficulty', 'easy');
     }
@@ -1257,15 +1264,15 @@
     const dualTarget = ch === 8;                 // 라운드8(구챕터10): 두더지+동물 둘 다 타겟
     const config = {
       maxConcurrentMoles: isSmallBoardChapter() ? MG.SMALL_CHAPTER_MOLES[0]
-        : Math.round(MG.interpolate(reverseTarget ? MG.MAX_CONCURRENT_ANIMALS : MG.MAX_CONCURRENT_MOLES, 0, ROUND_SECONDS_LONG)),
+        : Math.round(MG.interpolate(reverseTarget ? MG.MAX_CONCURRENT_ANIMALS : MG.MAX_CONCURRENT_MOLES, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS)),
       maxConcurrentAnimals: isSmallBoardChapter() ? 0
-        : Math.round(MG.interpolate(reverseTarget ? MG.MAX_CONCURRENT_MOLES : MG.MAX_CONCURRENT_ANIMALS, 0, ROUND_SECONDS_LONG)),
-      maxConcurrentBombs: (!isSmallBoardChapter() && ch >= 3) ? Math.round(MG.interpolate(MG.MAX_CONCURRENT_BOMBS, 0, ROUND_SECONDS_LONG)) : 0,
-      bombChance: (!isSmallBoardChapter() && ch >= 3) ? MG.interpolate(MG.BOMB_CHANCE_BY_ROUND, 0, ROUND_SECONDS_LONG) : 0,
-      strongBombChance: (!isSmallBoardChapter() && ch >= 4) ? MG.interpolate(MG.STRONG_BOMB_CHANCE_BY_ROUND, 0, ROUND_SECONDS_LONG) : 0,
+        : Math.round(MG.interpolate(reverseTarget ? MG.MAX_CONCURRENT_MOLES : MG.MAX_CONCURRENT_ANIMALS, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS)),
+      maxConcurrentBombs: (!isSmallBoardChapter() && ch >= 3) ? Math.round(MG.interpolate(MG.MAX_CONCURRENT_BOMBS, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS)) : 0,
+      bombChance: (!isSmallBoardChapter() && ch >= 3) ? MG.interpolate(MG.BOMB_CHANCE_BY_ROUND, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS) : 0,
+      strongBombChance: (!isSmallBoardChapter() && ch >= 4) ? MG.interpolate(MG.STRONG_BOMB_CHANCE_BY_ROUND, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS) : 0,
       maxConcurrentItems: 0,   // 실드 아이템 스폰 삭제(사용자 지정, 2026-09-14)
       shieldItems: false,
-      popDuration: isSmallBoardChapter() ? 2.5 : MG.interpolate(MG.MOLE_DURATION, 0, ROUND_SECONDS_LONG),
+      popDuration: isSmallBoardChapter() ? 2.5 : MG.interpolate(MG.MOLE_DURATION, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS),
       molePoseCount: MG.MoleSprites.POSE_COUNT,
       obstacleCount: MG.MoleSprites.OBSTACLE_COUNT,
       obstacles: !isSmallBoardChapter(),  // 라운드1은 40초부터(updateLiveDifficulty), 라운드2~8은 항상
@@ -1402,9 +1409,9 @@
     });
   }
 
-  // 모든 라운드(1~8): "라운드 N" 이 오른쪽에서 날아와 중앙에 멈추면 한 글자씩 타이핑
-  // (+타자기 소리) → Ready → GO! 카운트다운(줌인 + 색상, GO! 는 흰 플래시) → 퇴장.
-  // 커튼 없음(투명 오버레이, 보드가 비침), 장식용 두더지 이미지도 없음(글자만).
+  // 모든 라운드(1~8): "라운드 N" 타이틀·음성 없이 바로 Ready → GO! 카운트다운(줌인 + 색상,
+  // GO! 는 흰 플래시) → 퇴장(사용자 지정, 2026-09-17 — 타이틀 단계가 불필요하다고 판단).
+  // 커튼 없음(투명 오버레이, 보드가 비침), 장식용 두더지 이미지도 없음.
   // 골드해머 인트로 "회전 등장" 시작 위치 — 키패드 '✱' 키 중심의 lane-hammer 좌표계
   // (#mole-hammer-layer 기준) 분수(실측).
   const GH_SPIN_START = { x: 0.128, y: 1.871 };
@@ -1429,12 +1436,6 @@
     overlay.classList.remove('has-mole', 'mole-in', 'is-opening'); // 커튼 효과 없음(투명, 모든 라운드 공통)
     // 알리 펀치: 인트로 시작부터 바로 글러브가 보여야 한다(사용자 지적).
     if (state.weapon === 'alipunch') setHammerLayerVisible(true);
-
-    const FLY_IN_MS = 400;         // = ri-title-fly-in 0.4s
-    const HOLD_AFTER_TYPE_MS = 480;
-    const roundNum = currentChapter();
-    const full = I18N.t('mole.round', { n: roundNum });
-    const typeMs = full.replace(/ /g, '').length * 45; // typeText 는 45ms/글자
 
     // 인트로 동안은 메인 루프(loop, requestAnimationFrame)가 아직 시작 전이라 laneHammer.update()가
     // 한 번도 안 불려서 시연 애니메이션이 화면에 안 그려짐 — 인트로 전용 가벼운 틱을 별도로 돌린다.
@@ -1469,10 +1470,11 @@
       // .ci-body 에 width:%를 주면 부모(.ci-rig, 폭 미지정)를 기준으로 순환 참조가 생겨
       // 프레임마다 계속 줄어드는 버그가 났었음(사용자 보고 "애니메이션 다 깨짐") — 그래서
       // 크기는 항상 rig 에 준다.
-      // 완료 시점 = "라운드 N" 글자·두더지 이미지가 퇴장(is-opening)을 시작하는 정확한 순간
-      // (사용자 지정 "딱 맞춰야함") — 실측: 라운드1 GO! 직전 ~3300ms, 라운드2~10 ~3410ms.
-      const travelMs = fast ? 3000 : 2800;
-      const holdMs = fast ? 205 : 200;
+      // 완료 시점 = 카운트다운 종료·퇴장(is-opening) 시작 순간에 맞춘다(사용자 지정 "딱 맞춰야함").
+      // 타이틀 단계 삭제(2026-09-17, "라운드 N" 글자+음성 제거) 후 전체 흐름이 250(초기 지연)+
+      // 1010(Ready 650+GO! 후 360) = 1260ms 로 짧아져 travelMs/holdMs 도 그에 맞춰 축소 — Puppeteer 재검증.
+      const travelMs = fast ? 3000 : 900;
+      const holdMs = fast ? 205 : 180;
       rig.style.width = '27.8%'; // 실측 24.2%(a3)에서 +15% — 옆면 이미지는 여백이 많아서 보정
       rig.style.animationDuration = travelMs + 'ms';
       body.src = 'assets/weapons/cannon-intro-body-flip.png'; // 이동 중엔 항상 이 이미지(사용자 지정)
@@ -1521,7 +1523,7 @@
         sx = (r.x + r.width / 2 - lr.x) / lr.width;
         sy = (r.y + r.height / 2 - lr.y) / lr.height;
       }
-      const ms = fast ? 3380 : 2380; // is-opening 트리거 재계산(2단계 카운트다운, Task4 §설계 추정치) — Puppeteer로 재검증
+      const ms = fast ? 3380 : 1260; // 타이틀 단계 삭제 후 전체 흐름 250+1010=1260ms — Puppeteer 재검증
       state.laneHammer.spinIn(sx, sy, ms, 4, 0.04, () => {});
       const SOUND_MS = 1837; // audio/goldhammer-spin.mp3 실측 길이(ffprobe) — 재생이 착지 시점에 끝나도록
       setTimeout(() => { if (myGen === sessionGen) MG.HitFx.goldHammerSpin(); }, Math.max(0, ms - SOUND_MS));
@@ -1531,7 +1533,7 @@
     function playHammerIntro(fast) {
       if (!state.laneHammer || !state.laneHammer.popIn) return;
       setHammerLayerVisible(true);
-      const total = fast ? 3380 : 2380; // is-opening 트리거 재계산(2단계 카운트다운) — Puppeteer로 재검증
+      const total = fast ? 3380 : 1260; // 타이틀 단계 삭제 후 전체 흐름 250+1010=1260ms — Puppeteer 재검증
       const popMs = 650;
       const delay = Math.max(0, total - popMs);
       state.laneHammer.popIn(delay, popMs, () => {});
@@ -1587,20 +1589,7 @@
 
     setTimeout(() => {
       if (myGen !== sessionGen) return;
-      // 1) "라운드 N" 오른쪽에서 날아와 중앙에서 멈춤 (0.4s)
-      title.textContent = full;
-      overlay.classList.add('mole-in');
-      // 2) 중앙에 멈추면 "라운드 N" 을 한 글자씩 다시 타이핑(+ 타자기 소리) + 라운드 음성
-      setTimeout(() => {
-        if (myGen !== sessionGen) return;
-        typeText(title, full, () => {});
-        MG.HitFx.roundAnnounce(roundNum);
-      }, FLY_IN_MS + 40);
-      // 3) 타이핑 끝난 뒤 Ready → GO! 후 퇴장
-      setTimeout(() => {
-        if (myGen !== sessionGen) return;
-        runCountdown(exitAndStart);
-      }, FLY_IN_MS + 40 + typeMs + HOLD_AFTER_TYPE_MS);
+      runCountdown(exitAndStart);
     }, 250); // 챕터/라운드 커튼 열린 직후 바로 (모든 라운드 공통)
   }
 
@@ -1619,20 +1608,23 @@
       cfg.obstacles = elapsed >= 40;
       cfg.maxConcurrentAnimals = elapsed >= 40 ? Math.round(MG.interpolate([0, 2], elapsed - 40, 20)) : 0;
     } else {
-      const total = ROUND_SECONDS_LONG;
+      // 실플레이 100초를 원래 140초짜리 난이도 커브의 40~140초 구간에 매핑(위 상수 설명 참고) —
+      // 앞 40초(너무 쉬운 구간)를 건너뛰고 그만큼 압축된 난이도로 시작한다.
+      const curveElapsed = elapsed + DIFFICULTY_CURVE_OFFSET;
+      const total = DIFFICULTY_CURVE_SECONDS;
       const ch = currentChapter();
-      cfg.popDuration = MG.interpolate(MG.MOLE_DURATION, elapsed, total);
-      cfg.maxConcurrentMoles = Math.round(MG.interpolate(cfg.reverseTarget ? MG.MAX_CONCURRENT_ANIMALS : MG.MAX_CONCURRENT_MOLES, elapsed, total));
-      cfg.maxConcurrentAnimals = Math.round(MG.interpolate(cfg.reverseTarget ? MG.MAX_CONCURRENT_MOLES : MG.MAX_CONCURRENT_ANIMALS, elapsed, total));
+      cfg.popDuration = MG.interpolate(MG.MOLE_DURATION, curveElapsed, total);
+      cfg.maxConcurrentMoles = Math.round(MG.interpolate(cfg.reverseTarget ? MG.MAX_CONCURRENT_ANIMALS : MG.MAX_CONCURRENT_MOLES, curveElapsed, total));
+      cfg.maxConcurrentAnimals = Math.round(MG.interpolate(cfg.reverseTarget ? MG.MAX_CONCURRENT_MOLES : MG.MAX_CONCURRENT_ANIMALS, curveElapsed, total));
       // 게이팅은 currentChapter() 로 직접 판정(§4) — cfg 의 현재값(예: bombChance)으로 게이팅을
       // 판단하면 커브 자체가 0에서 시작하는 라운드(막 켜진 라운드3의 t=0)와 아예 꺼진 라운드를
       // 구분할 수 없어, 켜진 라운드가 라운드 내내 0에 고정되는 버그가 있었다(Puppeteer 로 실측 확인).
       if (ch >= 3) {
-        cfg.maxConcurrentBombs = Math.round(MG.interpolate(MG.MAX_CONCURRENT_BOMBS, elapsed, total));
-        cfg.bombChance = MG.interpolate(MG.BOMB_CHANCE_BY_ROUND, elapsed, total);
+        cfg.maxConcurrentBombs = Math.round(MG.interpolate(MG.MAX_CONCURRENT_BOMBS, curveElapsed, total));
+        cfg.bombChance = MG.interpolate(MG.BOMB_CHANCE_BY_ROUND, curveElapsed, total);
       }
       if (ch >= 4) {
-        cfg.strongBombChance = MG.interpolate(MG.STRONG_BOMB_CHANCE_BY_ROUND, elapsed, total);
+        cfg.strongBombChance = MG.interpolate(MG.STRONG_BOMB_CHANCE_BY_ROUND, curveElapsed, total);
       }
     }
   }
@@ -2128,7 +2120,7 @@
   // 별도 일시정지 버튼은 없앰(사용자 요청).
 
   // ---------- 라운드 종료 → 다음 라운드 or 최종 결과 ----------
-  // 챕터→라운드 재구조화(2026-09-17): 라운드(1~8) 하나 = 이제 그 자체로 완결된 세션(60초/140초).
+  // 챕터→라운드 재구조화(2026-09-17): 라운드(1~8) 하나 = 이제 그 자체로 완결된 세션(60초/100초).
   // 더 이상 "다음 내부 라운드로 자동 이어가기"가 없다 — 시간이 다 되면 항상 결과 화면으로.
   function roundComplete() {
     if (!state || state.ended) return;
