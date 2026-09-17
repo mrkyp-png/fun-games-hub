@@ -2368,6 +2368,13 @@
 
   }
 
+  // 동시에 여러 버튼(멀티터치)을 누르면 화면이 핀치줌처럼 커지는 문제(사용자 리포트) — CSS
+  // touch-action:manipulation 만으로는 일부 브라우저(iOS Safari 등)가 여전히 두 손가락 제스처를
+  // 확대/축소로 해석해 막지 못했음. gesturestart(사파리 핀치 전용 이벤트)와 손가락 2개 이상
+  // touchmove 를 앱 전역에서 직접 preventDefault 해 이중으로 차단.
+  document.addEventListener('gesturestart', (e) => e.preventDefault());
+  document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+
   // ---------- 초기화 ----------
   document.addEventListener('DOMContentLoaded', () => {
     bgmEls = [document.getElementById('bgm-a'), document.getElementById('bgm-b')];
