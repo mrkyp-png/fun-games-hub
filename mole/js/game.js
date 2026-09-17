@@ -526,6 +526,10 @@
   let gameStarting = false; // 시작 버튼 연타 방지 — 한 번 누르면 홈으로 돌아올 때까지 재진입 차단
   function beginGame() {
     if (gameStarting || state) return;   // 이미 시작 진행 중이거나 게임 중 — 짧게 연타해도 무시 (길게=arm은 별개)
+    // 다이얼패드가 항상 노출돼있어 상점/아이템 등 화면이 열린 채로도 시작 버튼이 눌리는데,
+    // 홈 화면일 때만 게임 진입을 허용한다(사용자 지정) — 다른 화면이 열려있으면 무시.
+    var mm = document.getElementById('more-menu');
+    if (mm && !mm.hidden) return;
     if (MG.Economy.getHearts() <= 0) { showNoHeartModal(); return; }
     if (!MG.Economy.spendTicket()) { showNoTicketModal(); return; } // 챕터 입장권 1장 차감
     refreshChapterNav();
