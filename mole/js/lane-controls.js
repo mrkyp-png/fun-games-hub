@@ -291,26 +291,14 @@
       buttons.length = 0;
     }
 
-    // 버튼보드(buttonBar) 전체를 하나로 10바퀴 회전시킨다(사용자 지정 — 키패드 안 숫자
-    // 각각이 아니라 보드 자체). 챕터1~3(simple) 진입뿐 아니라, 홈으로 복귀하며 보드가
-    // 9버튼↔16버튼으로 다시 지어질 때(다음 챕터 성공화면→홈 등)도 이걸로 재사용한다.
-    function spinBoardIn() {
-      if (!buttonBar) return;
-      buttonBar.style.transition = 'none';
-      buttonBar.style.transform = 'perspective(1200px) rotateY(0deg)';
-      void buttonBar.offsetWidth;
-      buttonBar.style.transition = 'transform 0.9s cubic-bezier(.2, .7, .3, 1)';
-      buttonBar.style.transform = 'perspective(1200px) rotateY(3600deg)';
-      setTimeout(() => { buttonBar.style.transition = ''; buttonBar.style.transform = ''; }, 950);
-    }
-
     // 홈→게임 진입 연출: 채널(유튜브 아이콘)로 설정된 버튼을 10바퀴 휙 돌려 숫자 버튼 얼굴로 바꾼다.
     // 게임 화면엔 키 버튼만 있어야 해서 채널 얼굴은 늘 숫자 쪽으로 고정되는데(style.css 고정 규칙),
     // 원래 전환이 즉시 스냅이라 "아이콘이 그냥 사라짐". .lane-flip--spinning 이 붙은 동안만 그
     // 고정 규칙을 비켜주고(style.css), 여기서 인라인으로 회전을 굴린다. 시크릿 복구 연출과 같은 느낌.
+    // ⚠️버튼보드(buttonBar) 자체를 통째로 돌리는 연출은 삭제됨(사용자 지정 — 아래 버튼보드는
+    // 책장 넘기듯 보이면 안 되고 항시 고정). 챕터1~3(simple) 진입은 그냥 무연출로 전환.
     function spinChannelsIn() {
-      // 챕터1~3(simple, 9홀 숫자패드): 채널 뒤집기 카드 자체가 없어 spinBoardIn() 재사용.
-      if (simple) { spinBoardIn(); return; }
+      if (simple) return;
       buttons.forEach((b) => {
         if (!b || !b.classList.contains('lane-button--flippable')) return;
         const flip = b.querySelector('.lane-flip');
@@ -375,7 +363,7 @@
       });
     }
 
-    return { setCellHot, setBombIndicator, setHudStat, flashBurst, flashQuakeArea, setActiveNav, clear, spinChannelsIn, spinBoardIn };
+    return { setCellHot, setBombIndicator, setHudStat, flashBurst, flashQuakeArea, setActiveNav, clear, spinChannelsIn };
   }
 
   const api = { create };

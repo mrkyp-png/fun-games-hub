@@ -1075,9 +1075,8 @@
     state = null;
     run = null;
     // 홈 화면 = 항상 기존 16버튼 다이얼러(불변, 사용자 지정). 직전 라운드가 챕터1~3(9버튼)
-    // 이었다면 여기서 다시 지어지는데, 그때는 성공/실패 화면 → 홈 진입에도 10회전(사용자
-    // 지정 — 성공/실패 둘 다 동일하게) 연출을 준다.
-    if (ensureLaneControlsForChapter(false) && sharedLaneControls) sharedLaneControls.spinBoardIn();
+    // 이었다면 여기서 다시 지어짐 — 버튼보드 자체는 항시 고정이라 무연출로 조용히 전환(사용자 지정).
+    ensureLaneControlsForChapter(false);
     // 홈 BGM(6곡, 사용자 지정 신규) — 접속 시 1번 고정, 이후 순서대로 진행 후 반복.
     // 단, 최초 부팅 직후(스플래시/인트로가 아직 화면을 덮고 있는 동안)엔 재생을 미룬다(사용자
     // 지정 — "브금은 인트로에 안 나오고 홈화면 진입하면 나오게"). index.html 이 인트로/스플래시가
