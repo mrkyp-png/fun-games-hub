@@ -1417,7 +1417,7 @@ body { background: var(--lm-page); }
   background: var(--lm-pad);
 }
 /* 다이얼패드 래퍼 — 안내문구/첫방문 말풍선을 절대배치로 얹기 위함. */
-.dialpad { position: relative; flex: 0 0 auto; }
+.dialpad { position: relative; flex: 0 0 auto; touch-action: manipulation; }
 
 /* 홈 화면 축제 분위기(사용자 지정) — BGM 비트마다 버튼 몇 개가 각자 독립적으로(전체가 같이
    말고, 사용자 지정) 커졌다 흔들림. game.js pulseDialPad() 가 매 비트마다 버튼 하나씩 이 클래스를
