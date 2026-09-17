@@ -2385,61 +2385,6 @@ body { background: var(--lm-page); }
 .more-menu { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column;
   background: #ffffff; color: #1f1f24; overflow-y: auto; scrollbar-width: none; }
 .more-menu::-webkit-scrollbar { display: none; }
-.mm-topbar { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid rgba(0,0,0,0.09); }
-.mm-close { background: none; border: none; color: #1f1f24; font-size: 1.4rem; line-height: 1; cursor: pointer; padding: 0 2px; }
-.mm-title { font-weight: 800; font-size: 0.95rem; }
-.mm-stat { display: inline-flex; align-items: center; gap: 3px; font-size: 0.82rem; color: #3a3a41; }
-.mm-stat svg { width: 15px; height: 15px; }
-.mm-regen { margin-left: 3px; font-size: 0.64rem; font-weight: 700; color: #8a8a92; font-variant-numeric: tabular-nums; }
-/* 상단: 게임 안 함 = "‹ 더보기" / 게임 일시정지 중 = "‹ 이어하기" 3D 박스 */
-#more-menu:not(.mm-paused) .mm-resume { display: none; }
-#more-menu.mm-paused .mm-close,
-#more-menu.mm-paused .mm-title { display: none; }
-/* 일시정지(이어하기) 중엔 라이트 변경 잠금 — 이어하기 = 그 게임의 라이트 그대로 복귀. */
-#more-menu.mm-paused .mm-pills { pointer-events: none; opacity: 0.4; }
-.mm-resume {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0;
-  border: none;
-  background: none;
-  color: #ffcf4a;
-  font-size: 0.9rem;
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  text-shadow: 0 0 6px rgba(255, 207, 74, 0.7);
-  transition: transform 0.06s;
-}
-/* PLAY(.mm-go)의 idle-crown-fx 와 같은 대각선 쉬머 이펙트 */
-.mm-resume::before {
-  content: '';
-  position: absolute;
-  inset: -60%;
-  background: linear-gradient(115deg, transparent 42%, rgba(255, 240, 190, 0.9) 50%, transparent 58%);
-  animation: idle-crown-sweep 2.8s ease-in-out infinite;
-  pointer-events: none;
-}
-.mm-resume:active {
-  transform: scale(0.92);
-}
-.mm-resume span:first-child { font-size: 1.15rem; line-height: 1; margin-top: -2px; }
-.mm-hearts svg { fill: #e05a6e; }
-.mm-coins svg { fill: #f2c14e; }
-.mm-profile { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; padding: 14px;
-  border-bottom: 1px solid rgba(0,0,0,0.09); }
-.mm-profile-stats { position: absolute; top: 8px; right: 12px; display: inline-flex; gap: 10px; }
-.mm-avatar { width: 46px; height: 46px; border-radius: 16px; flex: 0 0 auto; border: none; cursor: pointer;
-  background: #ececef url("assets/moles/mole1.png") center/150% no-repeat; background-size: cover;
-  position: relative; }
-.mm-avatar::after { content: '✎'; position: absolute; right: -3px; bottom: -3px; width: 16px; height: 16px;
-  border-radius: 50%; background: #2fb457; color: #fff; font-size: 9px; line-height: 16px; text-align: center; }
-.mm-profile-txt { flex: 1; background: none; border: none; color: inherit; text-align: left; cursor: pointer; }
-.mm-profile-txt b { display: block; font-size: 0.95rem; }
-.mm-profile-txt i { font-style: normal; font-size: 0.78rem; color: #8a8a90; }
 .mm-pills { display: flex; gap: 7px; padding: 14px 12px; }
 .mm-pill { flex: 1; min-width: 0; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 4px;
@@ -2469,71 +2414,14 @@ body { background: var(--lm-page); }
    기존 라벨 자체의 위치·크기는 안 건드림 — flex column 이라 그 위에 줄이 하나 늘 뿐). */
 .mm-pill-combo { font-size: clamp(0.54rem, 2.7vw, 0.64rem); font-weight: 600; opacity: 0.75; white-space: nowrap; align-self: flex-end; }
 
-/* 전구 밝기 = 난이도 표현: ON 노랑/글로우, DIM 은은, OFF 어둑 */
-.mm-pill[data-mm-diff="easy"] .mm-pill-ic { stroke: #ffcf4a; filter: drop-shadow(0 0 4px rgba(255, 200, 70, 0.9)); }
-.mm-pill[data-mm-diff="mid"] .mm-pill-ic { stroke: #9a9aa0; }
-.mm-pill[data-mm-diff="legend"] .mm-pill-ic { stroke: #c2c2c8; }
+/* 전구 밝기 = 난이도 표현: ON 노랑/글로우, DIM 은은, OFF 어둑 — 더보기(data-mm-diff, 삭제됨)와
+   라이트 팝업(data-lp-diff) 둘 다에서 재사용하던 규칙이라 두 속성 다 매칭해둔다. */
+.mm-pill[data-mm-diff="easy"] .mm-pill-ic, .mm-pill[data-lp-diff="easy"] .mm-pill-ic { stroke: #ffcf4a; filter: drop-shadow(0 0 4px rgba(255, 200, 70, 0.9)); }
+.mm-pill[data-mm-diff="mid"] .mm-pill-ic, .mm-pill[data-lp-diff="mid"] .mm-pill-ic { stroke: #9a9aa0; }
+.mm-pill[data-mm-diff="legend"] .mm-pill-ic, .mm-pill[data-lp-diff="legend"] .mm-pill-ic { stroke: #c2c2c8; }
 .mm-pill--on { background: linear-gradient(180deg, #3ac06a, #2a9c54); color: #fff; }
 .mm-pill--on .mm-pill-ic { stroke: #fff; filter: none; }
 .bs-soon { text-align: center; color: #8a8a92; font-weight: 700; padding: 40px 20px; }
-.mm-grid { display: grid; grid-template-columns: repeat(4, 1fr); padding: 8px 6px 12px; }
-.mm-grid button { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 14px 2px;
-  background: none; border: none; color: #3a3a41; font-size: 0.7rem; cursor: pointer; }
-/* 카톡 더보기처럼 외곽선(흰색 stroke)만 있는 아이콘 */
-.mm-grid .mm-ic { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.6;
-  stroke-linecap: round; stroke-linejoin: round; }
-.mm-grid i { font-style: normal; text-align: center; }
-
-/* 더보기 그리드의 "GO" — 설정 아래 칸. 통화 아이콘 + GO, 색으로 구분 (앰버). */
-/* 이어가기(mm-paused) 상태에서만: PLAY 왼쪽에 "이거 누르면 새로 시작" 안내 */
-.mm-go-note {
-  grid-column: 1 / 4;
-  display: none;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 0 8px 0 4px;
-  font-size: 0.68rem;
-  font-weight: 700;
-  line-height: 1.35;
-  color: #9a9aa2;
-  text-align: right;
-  white-space: pre-line;
-}
-#more-menu.mm-paused .mm-go-note { display: flex; animation: mm-go-note-blink 1.8s ease-in-out infinite; }
-@keyframes mm-go-note-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-
-.mm-go {
-  grid-column: 4;          /* 설정 바로 아래 (4번째 열) */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  padding: 14px 2px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-style: normal;
-}
-.mm-go-badge { position: relative; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; }
-.mm-go .mm-ic { width: 26px; height: 26px; fill: #ffcf4a; stroke: none; position: relative; z-index: 1; }
-/* 대기 중 왕관 이펙트 — 금색 아웃라인 + 안에서 대각선으로 움직이는 빛(쉬머). */
-.mm-go .idle-crown-fx {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  overflow: hidden;
-  pointer-events: none;
-  box-shadow: inset 0 0 0 2px #ffe08a, 0 0 6px 1px rgba(255, 207, 74, 0.7);
-}
-.mm-go .idle-crown-fx::before {
-  content: '';
-  position: absolute;
-  inset: -60%;
-  background: linear-gradient(115deg, transparent 42%, rgba(255, 240, 190, 0.9) 50%, transparent 58%);
-  animation: idle-crown-sweep 2.8s ease-in-out infinite;
-}
-.mm-go i { font-style: normal; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.06em; color: #ffcf4a; }
-.mm-go:active { transform: scale(0.92); }
 
 /* 하트 없음 모달 */
 .nh-title { font-weight: 800; margin-bottom: 14px; }

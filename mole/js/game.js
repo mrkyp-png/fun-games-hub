@@ -2475,14 +2475,11 @@
     });
     costumeScreen = MG.CostumeScreen.create({
       root: document.getElementById('costume-screen'),
-      onClose: () => { screenNav.reset(); document.getElementById('more-menu').hidden = true; if (!state) showStartScreen(); },
+      onClose: () => closeMore(),
       onSave: (faceId, costume) => {
         MG.FaceStore.setCostume(faceId, costume).then(() => {
           MG.FaceStore.setActive(faceId);
-          screenNav.reset();
-          document.getElementById('more-menu').hidden = true;
-          if (moreMenu) moreMenu.refresh();
-          if (!state) showStartScreen();
+          closeMore();
         });
       }
     });
@@ -2490,72 +2487,49 @@
       root: document.getElementById('face-locker'),
       onMake: () => { screenNav.show('face-maker'); faceMaker.open({}); },
       onEdit: (rec) => { screenNav.show('costume-screen'); costumeScreen.open(rec); },
-      onPick: () => screenNav.back(),
-      onClose: () => screenNav.back()
+      // 다이얼패드에서 바로 들어오는 진입점(사용자 지정) — 나갈 땐 더보기가 아니라 홈/게임으로.
+      onPick: () => closeMore(),
+      onClose: () => closeMore()
     });
     shop = MG.Shop.create({
       root: document.getElementById('shop-screen'),
-      onClose: () => screenNav.back(),
+      onClose: () => closeMore(),
       onChange: () => { if (moreMenu) moreMenu.refresh(); }
     });
     daily = MG.Daily.create({
       root: document.getElementById('daily-screen'),
-      onClose: () => screenNav.back(),
+      onClose: () => closeMore(),
       onChange: () => { if (moreMenu) moreMenu.refresh(); }
     });
     scoreScreen = MG.ScoreScreen.create({
       root: document.getElementById('score-screen'),
-      onClose: () => screenNav.back()
+      onClose: () => closeMore()
     });
     settingsScreen = MG.SettingsScreen.create({
       root: document.getElementById('settings-screen'),
-      onClose: () => screenNav.back(),
+      onClose: () => closeMore(),
       onPrivacy: () => screenNav.show('privacy-screen'),
       onHelp: () => screenNav.show('help-screen'),
       onContact: () => { window.location.href = 'mailto:mrkyp@hanmail.net'; }
     });
     inventoryScreen = MG.InventoryScreen.create({
       root: document.getElementById('inventory-screen'),
-      // 보관창에서 무기 변경 후 더보기로 돌아왔을 때 라이트 DIM/OFF 잠금 표시가 그대로 남아있던
-      // 버그(사용자 지정: "늦다/버퍼링 심함") — 실제로는 지연이 아니라 more-menu.refresh() 를
-      // 안 불러서 다음 번 완전 재오픈 전까지 안 바뀌던 것. 돌아갈 때 바로 갱신.
-      onClose: () => { screenNav.back(); if (moreMenu) moreMenu.refresh(); },
+      // 다이얼패드에서 바로 들어오는 진입점(사용자 지정) — 나갈 땐 더보기가 아니라 홈/게임으로.
+      onClose: () => closeMore(),
       // 게임 진행 중(라운드1~클리어)엔 무기 변경 잠금. 홈·게임오버 후엔 허용.
       gameInProgress: () => !!(state && !state.ended),
       // 챕터1~3은 뿅망치만 사용(사용자 지정) — 선택된 챕터 기준으로 다른 무기 장착 자체를 막는다.
       hammerOnly: () => isSmallBoardChapter()
     });
-    ['help', 'privacy', 'quest', 'friends'].forEach((k) => {
+    // help/privacy = settings 안에서 push 된 하위 화면(뒤로만, 홈으로 안 나감).
+    ['help', 'privacy'].forEach((k) => {
       const b = document.querySelector('[data-back="' + k + '"]');
       if (b) b.addEventListener('click', () => screenNav.back());
     });
-
-    moreMenu = MG.MoreMenu.create({
-      root: document.getElementById('more-menu'),
-      on: {
-        close: closeMore,
-        locker: () => { screenNav.show('face-locker'); faceLocker.show(); },
-        diff: setDifficulty,
-        start: (e) => {
-          // 더보기 메뉴의 "시작" (통화 버튼 자리) → 더보기 닫고 대화 화면으로.
-          // (대화 화면 시작 버튼을 눌러야 그 난이도로 게임이 시작된다. more-menu 숨김/screenNav
-          // 리셋은 showStartScreenNow 가 이미 처리하므로 여기서 먼저 하지 않는다 —
-          // 플래시가 화면을 덮은 순간에 맞춰 전환돼야 "그 버튼에서 펼쳐지는" 느낌이 남.)
-          showStartScreen({ originEl: e && e.currentTarget });
-        },
-        shop: () => { screenNav.show('shop-screen'); shop.show(); },
-        daily: () => { screenNav.show('daily-screen'); daily.show(); },
-        score: () => { screenNav.show('score-screen'); scoreScreen.show(); },
-        quest: () => screenNav.show('quest-screen'),
-        friends: () => screenNav.show('friends-screen'),
-        inventory: () => { screenNav.show('inventory-screen'); inventoryScreen.show(); },
-        settings: () => { screenNav.show('settings-screen'); settingsScreen.show(); },
-        editName: () => {
-          const n = prompt(I18N.t('mole.more.nickPrompt'), localStorage.getItem('mole.nick') || '');
-          if (n != null) { localStorage.setItem('mole.nick', n.trim().slice(0, 12)); moreMenu.refresh(); }
-        },
-        editAvatar: editProfileAvatar
-      }
+    // quest/friends = 다이얼패드에서 바로 들어오는 진입점(사용자 지정) — 나갈 땐 홈/게임으로.
+    ['quest', 'friends'].forEach((k) => {
+      const b = document.querySelector('[data-back="' + k + '"]');
+      if (b) b.addEventListener('click', () => closeMore());
     });
   }
 
