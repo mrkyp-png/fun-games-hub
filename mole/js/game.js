@@ -8,13 +8,12 @@
   const ALIPUNCH_HOLES = [12, 15]; // 알리 펀치 = 좌하단(12)·우하단(15) 삭제, 그 자리에 글러브. 14구멍.
   const ALIPUNCH_INVINCIBLE_CHANCE = 0.2;   // 무적 발동 확률 (기획서 §7)
   const ALIPUNCH_INVINCIBLE_MS = 5000;      // 무적 지속시간
-  const ROUND_SECONDS = 15;       // 챕터 1~3
-  const ROUND_SECONDS_LONG = 30;  // 챕터 4부터(전체 챕터 기획서 §5~6, 사용자 지적으로 3→4 정정)
-  function roundSeconds() { return currentChapter() >= 4 ? ROUND_SECONDS_LONG : ROUND_SECONDS; }
-  // 전체 챕터 기획서(2026-09-14): 챕터1~3 = 9홀(3x3)·5라운드, 챕터4~10 = 16홀(4x4)·10라운드.
-  function isSmallBoardChapter() { return currentChapter() <= 3; }
+  const ROUND1_SECONDS = 60;      // 라운드1 (구 챕터1+2+3 병합, 3구간 연속)
+  const ROUND_SECONDS_LONG = 140; // 라운드2~8 (구 챕터4~10, 각 라운드 통째로 연속)
+  function roundSeconds() { return currentChapter() === 1 ? ROUND1_SECONDS : ROUND_SECONDS_LONG; }
+  // 챕터→라운드 재구조화(2026-09-17): 라운드1(구 챕터1~3 병합) = 9홀(3x3), 라운드2~8(구 챕터4~10) = 16홀(4x4).
+  function isSmallBoardChapter() { return currentChapter() === 1; }
   function roundGridSize() { return isSmallBoardChapter() ? 3 : GRID_SIZE; }
-  function finalRound() { return isSmallBoardChapter() ? 5 : 10; }
   // 챕터별 보드 배경 — 4~6=가을, 7~9=겨울(사용자 지정). 나머지는 기본(board-scene.jpg).
   function applyBoardTheme() {
     const el = document.getElementById('mole-board');
@@ -84,8 +83,9 @@
   const HITSTOP_BASE_MS = 90;
   const HITSTOP_MAX_MS = 150;
 
-  // 라운드별 난이도는 MG.LEVELS 표(동시 두더지 1→5, 유지시간 2.5→1.0s, 방해물 증가)를 쓴다.
-  // 16칸 클리어 개념은 없다 — 두더지는 16칸 아무 데나 랜덤 반복 등장, 60초가 끝나면 다음 라운드.
+  // 라운드별 난이도는 levels.js 의 키프레임 표를 MG.interpolate() 로 라운드 전체 시간에 걸쳐
+  // 연속 보간해서 쓴다(챕터→라운드 재구조화, 2026-09-17). 16칸 클리어 개념은 없다 — 두더지는
+  // 16칸 아무 데나 랜덤 반복 등장, 라운드 시간(60s/140s)이 끝나면 결과 화면으로.
 
   let state = null;   // 현재 라운드 상태 (시작 화면일 땐 null)
   // 10라운드를 통틀어 유지되는 것: 콤보·점수(1라운드부터 누적).
@@ -1206,8 +1206,6 @@
     if (state && state.laneHammer) state.laneHammer.clear();
     resetHot();
 
-    const levelData = MG.LEVELS[roundNum - 1];
-
     // 홈→게임 진입 전환은 이제 타이핑 인트로+커튼(playStartIntro)이 담당 — 플래시 제거(사용자 요청).
     const boardStartEl = document.getElementById('board-start');
     boardStartEl.hidden = true;
@@ -1250,39 +1248,33 @@
     // 모자(4타) 챕터7 → 목표물 전환 챕터8(타겟=동물/방해물=두더지) → 목표물 혼합 챕터10(+방해비율10%↑).
     // 강력폭탄(챕터6)·반격(챕터9)은 보류(사용자 지정 — UI 완료 후 별도 작업). 실드 아이템(기존 기능,
     // 문서에 없지만 §13 "기존 기능 임의 삭제 금지"에 따라 유지)은 폭탄이 시작되는 챕터5부터 계속.
+    // 챕터→라운드 재구조화(2026-09-17): ch 는 이제 "새 라운드 번호"(1~8) — 구 챕터 임계값(N)은
+    // 전부 N-2 로 이동(라운드2=구챕터4 ... 라운드8=구챕터10). 라운드1(구챕터1~2~3 병합)은
+    // 아래 별도 분기 + updateLiveDifficulty() 의 시간 기반 로직이 전담하므로 여기선 라운드2~8
+    // 기준값(라운드 시작 순간, t=0)만 채운다 — 매 프레임 updateLiveDifficulty() 가 갱신한다.
     const ch = currentChapter();
-    const reverseTarget = ch === 8;              // 챕터8: 동물이 타겟, 두더지가 방해물
-    const dualTarget = ch === 10;                // 챕터10: 두더지+동물 둘 다 타겟
-    // 챕터1~3(9홀)은 §5~6 공용 표([3,3,4,4,5])로는 너무 쉬움(사용자 지적) — 9홀 전용으로
-    // 더 빡빡하게 별도 지정.
-    const SMALL_CHAPTER_MOLES = [3, 4, 5, 6, 7];
-    // "폭탄 든 두더지"(2026-09-14 확정, [[mole-bomb-holding-mechanic]]) — 스폰된 두더지 중 일부가
-    // 독립 굴림으로 폭탄 든 버전이 됨. 챕터5부터 일반, 챕터6부터 강력(겹치면 강력 우선).
-    // 라운드1~4는 항상 0%(해당 챕터 초반 튜토리얼 여유).
-    const BOMB_CHANCE_BY_ROUND = [0, 0, 0, 0, 0.08, 0.08, 0.09, 0.11, 0.12, 0.14];
-    const STRONG_BOMB_CHANCE_BY_ROUND = [0, 0, 0, 0, 0, 0.02, 0.03, 0.04, 0.05, 0.06];
+    const reverseTarget = ch === 6;              // 라운드6(구챕터8): 동물이 타겟, 두더지가 방해물
+    const dualTarget = ch === 8;                 // 라운드8(구챕터10): 두더지+동물 둘 다 타겟
     const config = {
-      // 챕터8은 동물이 타겟·두더지가 방해물로 뒤집히는데(reverseTarget), 표는 그대로 두면
-      // "타겟(동물)"이 더 적고 "방해물(두더지)"이 더 많아 거꾸로다(사용자 지적: "출몰 횟수는
-      // 바뀌어야함") — 두 표를 맞바꿔서 챕터8만 동물이 많고 두더지가 적게.
-      maxConcurrentMoles: isSmallBoardChapter() ? SMALL_CHAPTER_MOLES[roundNum - 1]
-        : (reverseTarget ? levelData.maxConcurrentAnimals : levelData.maxConcurrentMoles),
-      maxConcurrentAnimals: ch >= 3 ? (reverseTarget ? levelData.maxConcurrentMoles : levelData.maxConcurrentAnimals) : 0,
-      maxConcurrentBombs: ch >= 5 ? levelData.maxConcurrentBombs : 0,
-      bombChance: ch >= 5 ? BOMB_CHANCE_BY_ROUND[roundNum - 1] : 0,
-      strongBombChance: ch >= 6 ? STRONG_BOMB_CHANCE_BY_ROUND[roundNum - 1] : 0,
+      maxConcurrentMoles: isSmallBoardChapter() ? MG.SMALL_CHAPTER_MOLES[0]
+        : Math.round(MG.interpolate(reverseTarget ? MG.MAX_CONCURRENT_ANIMALS : MG.MAX_CONCURRENT_MOLES, 0, ROUND_SECONDS_LONG)),
+      maxConcurrentAnimals: isSmallBoardChapter() ? 0
+        : Math.round(MG.interpolate(reverseTarget ? MG.MAX_CONCURRENT_MOLES : MG.MAX_CONCURRENT_ANIMALS, 0, ROUND_SECONDS_LONG)),
+      maxConcurrentBombs: (!isSmallBoardChapter() && ch >= 3) ? Math.round(MG.interpolate(MG.MAX_CONCURRENT_BOMBS, 0, ROUND_SECONDS_LONG)) : 0,
+      bombChance: (!isSmallBoardChapter() && ch >= 3) ? MG.interpolate(MG.BOMB_CHANCE_BY_ROUND, 0, ROUND_SECONDS_LONG) : 0,
+      strongBombChance: (!isSmallBoardChapter() && ch >= 4) ? MG.interpolate(MG.STRONG_BOMB_CHANCE_BY_ROUND, 0, ROUND_SECONDS_LONG) : 0,
       maxConcurrentItems: 0,   // 실드 아이템 스폰 삭제(사용자 지정, 2026-09-14)
       shieldItems: false,
-      popDuration: levelData.moleDuration,
+      popDuration: isSmallBoardChapter() ? 2.5 : MG.interpolate(MG.MOLE_DURATION, 0, ROUND_SECONDS_LONG),
       molePoseCount: MG.MoleSprites.POSE_COUNT,
       obstacleCount: MG.MoleSprites.OBSTACLE_COUNT,
-      obstacles: ch >= 3,
-      multiHit: ch >= 2,  // 챕터1: 다타(빼꼼) 없음 — 전부 1방(튜토리얼)
-      fourHit: ch >= 7,   // 4타 두더지 (전신→빠끔1→빠끔2→모자)
-      animalMultiHit: ch === 8,  // 챕터8: 동물이 타겟이라 두더지처럼 다타 동물 도입(사용자 지정)
+      obstacles: !isSmallBoardChapter(),  // 라운드1은 40초부터(updateLiveDifficulty), 라운드2~8은 항상
+      multiHit: !isSmallBoardChapter(),   // 라운드1은 20초부터(updateLiveDifficulty), 라운드2~8은 항상
+      fourHit: !isSmallBoardChapter() && ch >= 5,      // 4타 두더지 — 라운드5~8(구챕터7~10)
+      animalMultiHit: !isSmallBoardChapter() && ch === 6,  // 라운드6(구챕터8): 동물이 타겟이라 다타 동물 도입
       reverseTarget: reverseTarget,
       dualTarget: dualTarget,
-      obstacleRatioBoost: ch === 10 ? 1.1 : 1,   // 챕터10: 방해물(동물·폭탄) 스폰 빈도 10% 상향
+      obstacleRatioBoost: (!isSmallBoardChapter() && ch === 8) ? 1.1 : 1,  // 라운드8(구챕터10): 방해물 스폰 빈도 10% 상향
       cannonBurst: weapon === 'cannon',   // 대포 연사 스킬 (2·3타 두더지 첫 타 10%)
       moleUpBonus: weapon === 'alipunch' ? 0.1 : 0   // 알리 펀치 [방어]: 내려가기 전 0.1초 더 여유(§7)
     };
@@ -1390,7 +1382,7 @@
     const laneHammer = MG.WeaponPool.create(WeaponMod, hammerOpts, { onOverflow: weaponCloneOverflow });
 
     state = {
-      round: roundNum, levelData, regions, spawnPoints, scheduler, holeLayer, laneHammer, weapon, rng, config,
+      round: currentChapter(), regions, spawnPoints, scheduler, holeLayer, laneHammer, weapon, rng, config,
       timeRemaining: roundSeconds(),
       aliClones: [], // 알리펀치 동시타격 분신 글러브들 — 메인 루프가 매 프레임 update() 돌려줘야 실제로 스윙한다.
       hitstopUntil: 0,
@@ -1666,6 +1658,35 @@
     }, isR1 ? 250 : 2300); // 라운드1: 챕터 커튼 열린 직후 바로 / 라운드2~: 분홍 커튼 패턴 뒤
   }
 
+  // 라운드 경과시간에 따라 state.config 의 시간형 필드를 매 프레임 갱신한다. spawn-scheduler.js
+  // 는 config 를 참조로 받아 매번 새로 읽으므로(create() 시점에 캐싱하지 않음), 여기서 같은
+  // 객체를 직접 mutate 하면 별도 훅 없이 그대로 반영된다.
+  function updateLiveDifficulty() {
+    if (!state) return;
+    const cfg = state.config;
+    const elapsed = roundSeconds() - state.timeRemaining;
+    if (isSmallBoardChapter()) {
+      // 라운드1(구 챕터1~2~3 병합) — 60초, 3구간(각 20초) 연속. 두더지 수만 전 구간에서
+      // 연속 보간, 다타·동물은 시간 임계값에서 켜진다(자막 없이).
+      cfg.maxConcurrentMoles = Math.round(MG.interpolate(MG.SMALL_CHAPTER_MOLES, elapsed, ROUND1_SECONDS));
+      cfg.multiHit = elapsed >= 20;
+      cfg.obstacles = elapsed >= 40;
+      cfg.maxConcurrentAnimals = elapsed >= 40 ? Math.round(MG.interpolate([0, 2], elapsed - 40, 20)) : 0;
+    } else {
+      const total = ROUND_SECONDS_LONG;
+      cfg.popDuration = MG.interpolate(MG.MOLE_DURATION, elapsed, total);
+      cfg.maxConcurrentMoles = Math.round(MG.interpolate(cfg.reverseTarget ? MG.MAX_CONCURRENT_ANIMALS : MG.MAX_CONCURRENT_MOLES, elapsed, total));
+      cfg.maxConcurrentAnimals = Math.round(MG.interpolate(cfg.reverseTarget ? MG.MAX_CONCURRENT_MOLES : MG.MAX_CONCURRENT_ANIMALS, elapsed, total));
+      if (cfg.maxConcurrentBombs || cfg.bombChance) { // 라운드3부터만 켜져 있음(§4 게이팅) — 꺼진 라운드는 0 유지
+        cfg.maxConcurrentBombs = Math.round(MG.interpolate(MG.MAX_CONCURRENT_BOMBS, elapsed, total));
+        cfg.bombChance = MG.interpolate(MG.BOMB_CHANCE_BY_ROUND, elapsed, total);
+      }
+      if (cfg.strongBombChance) { // 라운드4부터만 켜져 있음
+        cfg.strongBombChance = MG.interpolate(MG.STRONG_BOMB_CHANCE_BY_ROUND, elapsed, total);
+      }
+    }
+  }
+
   // ---------- 메인 루프 ----------
   function loop(now) {
     if (!state || state.ended) return;
@@ -1683,6 +1704,7 @@
       return;
     }
 
+    updateLiveDifficulty();
     const tickResult = state.scheduler.tick(dt);
     // 타겟(§8·§10 에 따라 두더지 또는 동물일 수 있음)을 처치 못 하고 시간초과로 놓치면
     // 헛방·방해물과 동일하게 콤보 초기화.
@@ -2605,6 +2627,9 @@
       rec: MG.Progress.get(currentChapter(), currentLight())
     });
     window.__debugStartRound = (n) => startRound(n, { fresh: true });
+    window.__debugGetConfig = () => (state ? state.config : null);
+    window.__debugSetTimeRemaining = (t) => { if (state) state.timeRemaining = t; };
+    window.__debugForceDifficultyUpdate = () => { updateLiveDifficulty(); return state ? state.config : null; };
     window.__debugEndRound = function () {
       if (state && !state.ended) { state.timeRemaining = 0; roundComplete(); }
     };
