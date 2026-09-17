@@ -535,24 +535,10 @@
     refreshChapterNav();
     gameStarting = true;
     setNavLock(true); // 인트로~카운트다운 동안 ⊞ 잠금
-    // 라운드 인트로가 도는 몇 초 동안 다이얼패드가 계속 홈 화면(아이콘+글자) 그대로 보여서
-    // "게임화면에 홈화면이 나온다"처럼 보였음(사용자 지적) — startRound() 를 기다리지 않고
-    // 여기서 바로 게임용(숫자+무기 구획선)으로 전환한다. ⚠️ 회전 애니메이션(spinChannelsIn)은
-    // 여기서 돌리지 않는다 — 시작 버튼 누르자마자 도는 게 아니라 인트로 끝나고 실제 게임판이
-    // 드러날 때(startRound) 돌아야 함(사용자 지적: "시작버튼 누르자마자 돌아가는게 아니잖아").
-    // .gs-starting 클래스(style.css)가 숫자 얼굴을 무연출로 즉시 고정시켜 보여준다.
-    // board-start/gameover-overlay/is-start 는 여기서 안 건드린다 — 인트로 동안은 화면 배경이
-    // 계속 "홈 화면"이어야 하고(사용자 지정: "라운드 설명하기전 홈화면에서 라운드 설명하는
-    // 장면이 되어야지"), 녹색 게임판은 startRound()(인트로 끝) 시점에만 드러나야 한다.
-    document.getElementById('game-screen').classList.add('gs-starting');
-    if (sharedLaneControls) sharedLaneControls.setActiveNav(null);
-    ensureLaneControlsForChapter(isSmallBoardChapter());
-    const wRaw0 = localStorage.getItem('mole.weapon');
-    const weapon0 = isSmallBoardChapter() ? 'hammer'
-      : (wRaw0 === 'cannon' ? 'cannon' : (wRaw0 === 'goldhammer' ? 'goldhammer'
-        : (wRaw0 === 'alipunch' ? 'alipunch' : 'hammer')));
-    document.getElementById('game-screen').classList.toggle('gs-laneskill', weapon0 !== 'hammer');
-    document.getElementById('game-screen').classList.toggle('gs-alipunch', weapon0 === 'alipunch');
+    // ⚠️ 다이얼패드·게임판 전환은 전부 startRound() 에서 한 번에(원래대로) — beginGame() 에서
+    // 미리 건드리는 시도를 여러 번 했다가("숫자만 먼저", "무기 구획선만 먼저" 등) 회전 애니메이션이
+    // 시작 전에 이미 숫자로 바뀌어있는 등 계속 어긋나서(사용자 지적 다수) 전부 되돌림 — 홈 배경도
+    // 다이얼패드도 인트로가 끝나는 시점에 다 같이 게임 모드로 바뀐다.
     // 게임 BGM 은 여기서(시작 버튼 탭 = 사용자 제스처 콜스택 안) 튼다. startRound 는 인트로
     // 2~4초 뒤라 그때 play() 하면 모바일/PWA 자동재생 정책에 막혀 소리가 안 났음(사용자 보고).
     playScreenBgm('game');
@@ -1211,7 +1197,6 @@
     boardStartEl.hidden = true;
     document.getElementById('gameover-overlay').hidden = true;
     document.getElementById('game-screen').classList.remove('is-start');
-    document.getElementById('game-screen').classList.remove('gs-starting'); // beginGame() 이 붙였던 임시 마커, 이제 is-start 로 대체됨
     setCallLabel('game'); // 게임 중: 초록 버튼은 "통화"(위장) — 15번 구멍 타격 담당
     // 캐논·특수망치 = 우하단 코너가 무기존(캐논 본체 or 스킬 슬롯 2개) → 구멍 15 빼고 15구멍. 뿅망치 = 16구멍.
     // (spinChannelsIn 이 gs-laneskill 을 보고 통화 버튼도 같이 돌리므로 그 호출 전에 세팅해야 한다.)
@@ -1224,10 +1209,8 @@
     document.getElementById('game-screen').classList.toggle('gs-laneskill', laneSkillZone);
     document.getElementById('game-screen').classList.toggle('gs-alipunch', weapon === 'alipunch');
     // 홈→게임 첫 진입(fresh)에만 — 채널(유튜브 아이콘) 버튼을 10바퀴 돌려 숫자 버튼으로 전환.
-    // ⚠️ 시작 버튼 누르자마자(=아직 홈 배경/라운드 인트로 재생 중)가 아니라, 인트로가 끝나고
-    // 실제로 녹색 게임판이 드러나는 지금 이 시점에만 돈다(사용자 지적: "시작버튼 누르자마자
-    // 돌아가는게 아니잖아"). 다이얼패드가 미리 숫자로 보이는 건 beginGame() 의 .gs-starting
-    // CSS 강제(무연출 스냅)가 담당 — 회전 애니메이션 자체는 여기서만.
+    // 회전 전까지는 기존 홈 다이얼패드 그대로 있다가, 인트로가 끝나 실제 게임판이 드러나는
+    // 지금 이 순간에만 돈다(사용자 지정).
     if (opts && opts.fresh && sharedLaneControls) sharedLaneControls.spinChannelsIn();
     // 새 게임 시작(fresh)일 때만 더보기 메뉴를 닫는다. 자동 다음 라운드는 메뉴를 건드리지 않음
     // (플레이 중 메뉴 열어둔 채 라운드가 넘어가도 화면이 안 튀게).

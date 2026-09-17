@@ -1632,10 +1632,7 @@ body { background: var(--lm-page); }
 .lane-face--secret .lane-sub { flex-direction: row; align-items: center; }
 .lane-face--secret .lane-sub svg { width: 13px; height: 13px; display: block; }
 /* 게임 화면에선 아이콘 얼굴 대신 숫자 얼굴로 고정 — 단 진입 회전 연출(.lane-flip--spinning) 중엔 비켜준다. */
-#game-screen:not(.is-start) .lane-button--flippable .lane-flip:not(.lane-flip--spinning),
-/* .gs-starting: "시작" 누른 직후~라운드 인트로 재생 중(아직 is-start 는 안 뗌 — 화면
-   배경은 계속 홈이어야 함) 다이얼패드만 먼저 숫자 얼굴로 고정. game.js beginGame() 참고. */
-#game-screen.gs-starting .lane-button--flippable .lane-flip:not(.lane-flip--spinning) { transform: rotateY(180deg) !important; transition: none; }
+#game-screen:not(.is-start) .lane-button--flippable .lane-flip:not(.lane-flip--spinning) { transform: rotateY(180deg) !important; transition: none; }
 
 /* 오른쪽 열 — 내비 4칸 */
 .lane-button--nav { flex-direction: column; gap: 3px; color: #4b4b52; transition: transform 0.25s cubic-bezier(.34, 1.4, .64, 1); z-index: 1; }
