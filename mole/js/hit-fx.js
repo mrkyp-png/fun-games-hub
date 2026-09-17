@@ -812,7 +812,12 @@
     ball.style.zIndex = '26';
     boardEl.appendChild(ball);
     void ball.offsetWidth;
-    ball.style.transition = 'left 0.2s cubic-bezier(.2,.5,.6,1), top 0.2s cubic-bezier(.2,.5,.6,1)';
+    // 고정 시간(0.2s)이면 아래쪽 시작점에서 먼 목표까지는 너무 빨리 지나가서 출발 순간이
+    // 잘 안 보였다(사용자 리포트: "아래쪽에서 먼곳을 쏠때 안보이는 게 몇개 있어") — 거리에
+    // 비례해 시간을 늘려 속도를 얼추 일정하게 맞춘다.
+    const dist = Math.hypot(targetXFrac - startXFrac, targetYFrac - startYFrac);
+    const durMs = Math.max(150, Math.min(380, 140 + dist * 220));
+    ball.style.transition = 'left ' + durMs + 'ms cubic-bezier(.2,.5,.6,1), top ' + durMs + 'ms cubic-bezier(.2,.5,.6,1)';
     ball.style.left = (targetXFrac * 100) + '%';
     ball.style.top = (targetYFrac * 100) + '%'; // 실제 시작점에서 목표까지 이동(진짜 거리)
 
@@ -821,8 +826,8 @@
       // 도착 시점에 onHit, 실물 cannonBall 타이밍과 맞춤).
       ball.style.transition = 'opacity 0.14s ease-out'; ball.style.opacity = '0';
       try { if (onHit) onHit(); } catch (e) { /* 무시 */ }
-    }, 200);
-    setTimeout(() => ball.remove(), 370);
+    }, durMs);
+    setTimeout(() => ball.remove(), durMs + 170);
   }
 
   // 게임 시작(사용자 제스처) 직후 호출 — 카운트다운 동안 오디오 컨텍스트 + 타격음 파일을 미리 준비.
