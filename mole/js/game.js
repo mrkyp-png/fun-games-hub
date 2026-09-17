@@ -539,6 +539,11 @@
     // "게임화면에 홈화면이 나온다"처럼 보였음(사용자 지적) — startRound() 를 기다리지 않고
     // 여기서 바로 게임용(숫자+무기 구획선)으로 전환. spinChannelsIn 도 여기서 한 번만 돈다
     // (startRound 의 같은 호출은 아래에서 제거).
+    // ⚠️ board-start/gameover-overlay/is-start 는 여기서 안 건드린다 — 인트로 동안은 화면
+    // 배경이 계속 "홈 화면"이어야 하고(사용자 지정: "라운드 설명하기전 홈화면에서 라운드
+    // 설명하는 장면이 되어야지"), 녹색 게임판은 startRound()(인트로 끝) 시점에만 드러나야
+    // 한다. 다이얼패드만 먼저 숫자로 바꾸기 위해 .gs-starting 마커만 추가(style.css 참고).
+    document.getElementById('game-screen').classList.add('gs-starting');
     if (sharedLaneControls) sharedLaneControls.setActiveNav(null);
     ensureLaneControlsForChapter(isSmallBoardChapter());
     const wRaw0 = localStorage.getItem('mole.weapon');
@@ -548,13 +553,6 @@
     document.getElementById('game-screen').classList.toggle('gs-laneskill', weapon0 !== 'hammer');
     document.getElementById('game-screen').classList.toggle('gs-alipunch', weapon0 === 'alipunch');
     if (sharedLaneControls) sharedLaneControls.spinChannelsIn();
-    // is-start 를 여기서 바로 떼야 위 스핀이 "숫자 면"으로 고정되는 CSS 강제 규칙
-    // (#game-screen:not(.is-start) ...)이 즉시 걸린다 — 안 그러면 인트로가 도는 몇 초 동안
-    // 스핀이 끝난 뒤 다시 홈 아이콘 얼굴로 보였음(사용자 지적: "게임화면에 홈화면 나온다").
-    document.getElementById('board-start').hidden = true;
-    document.getElementById('gameover-overlay').hidden = true;
-    document.getElementById('game-screen').classList.remove('is-start');
-    setCallLabel('game');
     // 게임 BGM 은 여기서(시작 버튼 탭 = 사용자 제스처 콜스택 안) 튼다. startRound 는 인트로
     // 2~4초 뒤라 그때 play() 하면 모바일/PWA 자동재생 정책에 막혀 소리가 안 났음(사용자 보고).
     playScreenBgm('game');
@@ -1213,6 +1211,7 @@
     boardStartEl.hidden = true;
     document.getElementById('gameover-overlay').hidden = true;
     document.getElementById('game-screen').classList.remove('is-start');
+    document.getElementById('game-screen').classList.remove('gs-starting'); // beginGame() 이 붙였던 임시 마커, 이제 is-start 로 대체됨
     setCallLabel('game'); // 게임 중: 초록 버튼은 "통화"(위장) — 15번 구멍 타격 담당
     // 캐논·특수망치 = 우하단 코너가 무기존(캐논 본체 or 스킬 슬롯 2개) → 구멍 15 빼고 15구멍. 뿅망치 = 16구멍.
     // (spinChannelsIn 이 gs-laneskill 을 보고 통화 버튼도 같이 돌리므로 그 호출 전에 세팅해야 한다.)
