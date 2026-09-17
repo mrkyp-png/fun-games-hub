@@ -535,6 +535,26 @@
     refreshChapterNav();
     gameStarting = true;
     setNavLock(true); // 인트로~카운트다운 동안 ⊞ 잠금
+    // 라운드 인트로가 도는 몇 초 동안 다이얼패드가 계속 홈 화면(아이콘+글자) 그대로 보여서
+    // "게임화면에 홈화면이 나온다"처럼 보였음(사용자 지적) — startRound() 를 기다리지 않고
+    // 여기서 바로 게임용(숫자+무기 구획선)으로 전환. spinChannelsIn 도 여기서 한 번만 돈다
+    // (startRound 의 같은 호출은 아래에서 제거).
+    if (sharedLaneControls) sharedLaneControls.setActiveNav(null);
+    ensureLaneControlsForChapter(isSmallBoardChapter());
+    const wRaw0 = localStorage.getItem('mole.weapon');
+    const weapon0 = isSmallBoardChapter() ? 'hammer'
+      : (wRaw0 === 'cannon' ? 'cannon' : (wRaw0 === 'goldhammer' ? 'goldhammer'
+        : (wRaw0 === 'alipunch' ? 'alipunch' : 'hammer')));
+    document.getElementById('game-screen').classList.toggle('gs-laneskill', weapon0 !== 'hammer');
+    document.getElementById('game-screen').classList.toggle('gs-alipunch', weapon0 === 'alipunch');
+    if (sharedLaneControls) sharedLaneControls.spinChannelsIn();
+    // is-start 를 여기서 바로 떼야 위 스핀이 "숫자 면"으로 고정되는 CSS 강제 규칙
+    // (#game-screen:not(.is-start) ...)이 즉시 걸린다 — 안 그러면 인트로가 도는 몇 초 동안
+    // 스핀이 끝난 뒤 다시 홈 아이콘 얼굴로 보였음(사용자 지적: "게임화면에 홈화면 나온다").
+    document.getElementById('board-start').hidden = true;
+    document.getElementById('gameover-overlay').hidden = true;
+    document.getElementById('game-screen').classList.remove('is-start');
+    setCallLabel('game');
     // 게임 BGM 은 여기서(시작 버튼 탭 = 사용자 제스처 콜스택 안) 튼다. startRound 는 인트로
     // 2~4초 뒤라 그때 play() 하면 모바일/PWA 자동재생 정책에 막혀 소리가 안 났음(사용자 보고).
     playScreenBgm('game');
@@ -1204,8 +1224,8 @@
     const laneSkillZone = weapon !== 'hammer'; // 캐논·골드해머·알리펀치 = 통화버튼 스킬존(§8 포함)
     document.getElementById('game-screen').classList.toggle('gs-laneskill', laneSkillZone);
     document.getElementById('game-screen').classList.toggle('gs-alipunch', weapon === 'alipunch');
-    // 홈→게임 첫 진입(fresh)에만 — 채널(유튜브 아이콘) 버튼을 10바퀴 돌려 숫자 버튼으로 전환.
-    if (opts && opts.fresh && sharedLaneControls) sharedLaneControls.spinChannelsIn();
+    // 채널→숫자 회전(spinChannelsIn)은 이제 beginGame() 이 인트로 시작 전에 미리 돈다 —
+    // 여기서 또 돌리면 라운드 진입마다 두 번 돌아버림.
     // 새 게임 시작(fresh)일 때만 더보기 메뉴를 닫는다. 자동 다음 라운드는 메뉴를 건드리지 않음
     // (플레이 중 메뉴 열어둔 채 라운드가 넘어가도 화면이 안 튀게).
     if (opts && opts.fresh) {
