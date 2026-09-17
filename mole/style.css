@@ -91,12 +91,13 @@ body { background: var(--lm-page); }
   position: absolute;
   inset: 0;
 }
-/* GET NOW/인트로가 끝나고 홈화면이 드러날 때 슬라이드 업(사용자 지정, 3초) — index.html 의
-   splash 스크립트가 인트로 종료(또는 인트로 생략 시 스플래시 제거) 시점에 이 클래스를 붙인다. */
+/* GET NOW/인트로가 끝나고 게임화면 전체가 드러날 때 슬라이드 업(사용자 지정, 3초 — "홈화면
+   전체가 등장 애니메이션 적용", #game-screen 자체에 붙임). index.html 의 splash 스크립트가
+   인트로 종료(또는 인트로 생략 시 스플래시 제거) 시점에 이 클래스를 붙인다. */
 .mole-home-slide-up { animation: mole-home-slide-up 3s ease-out; }
 @keyframes mole-home-slide-up {
-  from { transform: translateY(60px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from { transform: translateY(100%); } /* 폰 화면 맨 아래에서 완전히 올라오는 느낌(사용자 지정) */
+  to { transform: translateY(0); }
 }
 /* 시작 화면 = 카톡풍 대화. 게임박스 안, 메신저 화면처럼 (키패드는 아래 그대로 보임). */
 .board-start {

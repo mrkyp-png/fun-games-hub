@@ -164,7 +164,7 @@
         <button type="button" class="ch-arrow ch-arrow--next" data-ch-next aria-label="다음 챕터">👉</button>
       </span>
 
-      <div id="build-tag" aria-hidden="true">v502</div>
+      <div id="build-tag" aria-hidden="true">v503</div>
       <!-- 홈(시작) 상태의 배경 패널 — 카톡 대화 UI 는 삭제(사용자 지정), 다이얼패드(키패드는 아래 그대로)만 보임.
            안에는 원본 3x3 콜라주 구성 그대로 9칸 그리드 3페이지(사용자 지정 — 낱장으로 흩어놓지 않고
            원래 구도 유지) 가 20~30초마다 다음 페이지로 넘어가고, 그 동안 각 칸이 홈 BGM 비트에 맞춰
@@ -549,21 +549,22 @@
     // 이 첫 탭(세션 첫 제스처라 오디오 버퍼가 아직 없음)에서도 바로 소리가 난다.
     try { window.MoleGame && window.MoleGame.HitFx && window.MoleGame.HitFx.warmup(); } catch (e) { /* 무시 */ }
 
-    // GET NOW 탭 이후(인트로 있으면 인트로까지 끝난 뒤) 홈화면이 슬라이드 업으로 드러남(사용자
-    // 지정, 3초). 인트로를 스킵/재생 여부와 무관하게 딱 한 번만 트리거.
+    // GET NOW 탭 이후(인트로 있으면 인트로까지 끝난 뒤) 홈화면 전체가 슬라이드 업으로 드러남
+    // (사용자 지정, 3초 — "홈화면 전체가 등장 애니메이션 적용"). 인트로를 스킵/재생 여부와
+    // 무관하게 딱 한 번만 트리거.
     var homeRevealed = false;
     function revealHomeSlideUp() {
       if (homeRevealed) return;
       homeRevealed = true;
-      ['board-start', 'dialpad'].forEach(function (cls) {
-        var els = cls === 'board-start' ? [document.getElementById('board-start')] : document.getElementsByClassName('dialpad');
-        Array.prototype.forEach.call(els, function (el) {
-          if (!el) return;
-          el.classList.remove('mole-home-slide-up');
-          void el.offsetWidth;
-          el.classList.add('mole-home-slide-up');
-        });
-      });
+      var gs = document.getElementById('game-screen');
+      if (gs) {
+        gs.classList.remove('mole-home-slide-up');
+        void gs.offsetWidth;
+        gs.classList.add('mole-home-slide-up');
+      }
+      // 홈 BGM은 여기(스플래시/인트로가 실제로 사라지는 시점)서 시작(사용자 지정 — "브금은
+      // 인트로에 안 나오고 홈화면 진입하면 나오게").
+      try { window.FGH && window.FGH.startHomeBgm && window.FGH.startHomeBgm(); } catch (e) { /* 무시 */ }
     }
     function go() {
       if (!armed) return;
@@ -598,7 +599,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=502').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=503').catch(function () {});
       }
     });
   }

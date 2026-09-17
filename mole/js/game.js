@@ -1071,7 +1071,11 @@
     // 이었다면 여기서 다시 지어지는데, 그때는 성공/실패 화면 → 홈 진입에도 10회전(사용자
     // 지정 — 성공/실패 둘 다 동일하게) 연출을 준다.
     if (ensureLaneControlsForChapter(false) && sharedLaneControls) sharedLaneControls.spinBoardIn();
-    playScreenBgm('home'); // 홈 BGM(6곡, 사용자 지정 신규) — 접속 시 1번 고정, 이후 순서대로 진행 후 반복
+    // 홈 BGM(6곡, 사용자 지정 신규) — 접속 시 1번 고정, 이후 순서대로 진행 후 반복.
+    // 단, 최초 부팅 직후(스플래시/인트로가 아직 화면을 덮고 있는 동안)엔 재생을 미룬다(사용자
+    // 지정 — "브금은 인트로에 안 나오고 홈화면 진입하면 나오게"). index.html 이 인트로/스플래시가
+    // 실제로 사라지는 시점에 window.FGH.startHomeBgm() 을 불러 시작한다.
+    if (!(opts && opts.deferBgm)) playScreenBgm('home');
     const go = document.getElementById('gameover-overlay');
     go.hidden = true; go.classList.remove('is-win', 'is-lose', 'is-sliding');
     const cf = go.querySelector('.go-confetti'); if (cf) cf.innerHTML = '';
@@ -2447,6 +2451,9 @@
       if (name === 'music') applyBgm();
     });
     window.FGH.retryBgm = applyBgm; // intro.js 등 외부에서 "혹시 멈춰있으면 재시도"용
+    // 스플래시/인트로가 실제로 사라지는 시점에 index.html 이 호출 — 그 전까진 홈 BGM 재생을
+    // 미룬다(사용자 지정, deferBgm). 이미 시작돼 있으면 아무 일도 안 함(currentBgm 그대로).
+    window.FGH.startHomeBgm = () => playScreenBgm('home');
     // 자동재생 정책에 막혔을 때 대비 — 모든 입력·버퍼완료·복귀 신호에서 applyBgm() 재시도.
     // 설치형 PWA 는 로딩 직후 재생이 허용되기도 해서 그 경우 첫 신호에 바로 시작된다.
     ['pointerdown', 'touchstart', 'click', 'keydown'].forEach((ev) =>
@@ -2513,7 +2520,8 @@
     wireResultSwipe(); // 승리 화면 왼쪽 스와이프 → 다음 챕터 화면
 
     // 첫 화면 = 두더지 오빠 대화. (예외가 나도 위 배선은 이미 끝났음. 최초 진입은 플래시 없음.)
-    try { showStartScreen({ skipFlash: true }); } catch (e) { console.error('showStartScreen failed', e); }
+    // deferBgm: 스플래시/인트로가 화면을 덮고 있는 동안엔 홈 BGM 재생을 미룬다(사용자 지정).
+    try { showStartScreen({ skipFlash: true, deferBgm: true }); } catch (e) { console.error('showStartScreen failed', e); }
 
     // 디버그 훅 — 지렁이 게임과 동일 컨벤션, 영구 보존.
     window.__debugStartGame = (diff, chapter) => {
