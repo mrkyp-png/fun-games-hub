@@ -186,6 +186,12 @@
         void b.offsetWidth;
         b.classList.toggle('lane-button--miss', !!bad);
         b.classList.add('lane-button--flash');
+        // ⚠️ 이 클래스를 계속 안 지우고 CSS 애니메이션(0.8s)이 끝나는 것만 믿고 있었더니,
+        // 홈에서 아이템/홈 버튼 누른 직후 라운드를 시작하면(라운드 전환 때 버튼보드가 다시
+        // 지어지는 타이밍과 겹쳐) 그 버튼에 녹색/빨간 링이 남아있는 것처럼 보였다(사용자 지적:
+        // "캐논, 황금, 알리펀치 키패드, 최근기록에 녹색" 등, 재현 무기 상관없이 전부 동일 원인).
+        // 애니메이션 길이만큼 지나면 클래스 자체를 확실히 떼서 재사용(재생성)돼도 안 남게 한다.
+        setTimeout(() => b.classList.remove('lane-button--flash', 'lane-button--miss'), 800);
         // 홈 화면 전용 내비(하트·코인·티켓·스코어·상점·홈·… — FACES 의 action 필드) — 탭하면 그
         // 화면으로 이동. 실제 플레이 중(isHome() false)엔 평범한 숫자 타격 버튼일 뿐이라 무시.
         if (faces[id].action && onHomeAction && (!isHome || isHome())) onHomeAction(faces[id].action);
@@ -255,7 +261,7 @@
       b.classList.remove('lane-button--flash', 'lane-button--miss');
       void b.offsetWidth;
       b.classList.add('lane-button--flash', 'lane-button--burst');
-      setTimeout(() => b.classList.remove('lane-button--burst'), 800); // 링 애니(0.8s) 끝나면 뗀다
+      setTimeout(() => b.classList.remove('lane-button--burst', 'lane-button--flash'), 800); // 링 애니(0.8s) 끝나면 뗀다
     }
 
     // 골드해머 지진: 발동칸+주변 8칸(areaIds) 전체에 갈색빛 회색 사각 음영, 그 중 두더지가
