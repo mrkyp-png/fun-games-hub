@@ -272,6 +272,8 @@
     return { strike, update, isBusy, home, clear };
   }
 
-  const api = { create };
+  // MZX/MZY(포구 고정점) 는 동시타격 분신(game.js weaponCloneOverflow → hit-fx.js
+  // cannonClone)이 실제 대포와 같은 "대기위치"에서 쏘게 하려고 export.
+  const api = { create, MZX: MZX, MZY: MZY };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.LaneCannon = api; }
 })(typeof window !== 'undefined' ? window : null);

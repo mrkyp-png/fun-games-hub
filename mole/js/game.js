@@ -1345,7 +1345,11 @@
     function weaponCloneOverflow(targetXFrac, targetYFrac, onImpact, frameKey, regionId) {
       const fxLayer = document.getElementById('mole-hammer-layer'); // overflow:visible
       if (weapon === 'cannon') {
-        MG.HitFx.cannonClone(fxLayer, targetXFrac, targetYFrac, 'assets/weapons/cannon-a3.png', onImpact);
+        // "대기위치"= 목표 근처가 아니라 실제 대포의 고정 포구점(MZX,MZY) — 거기서 포탄이
+        // 진짜 거리를 날아가야 한다(사용자 지정, "타격점에 있으면 안 됨").
+        const mz = MG.LaneCannon;
+        const bx = mz && mz.MZX != null ? mz.MZX : 0.870, by = mz && mz.MZY != null ? mz.MZY : 0.801;
+        MG.HitFx.cannonClone(fxLayer, bx, by, targetXFrac, targetYFrac, 'assets/weapons/cannon-a3.png', onImpact);
       } else if (weapon === 'alipunch') {
         // 분신도 실제 위치와 "같은 글러브·같은 애니메이션"이어야 한다(사용자 지정) — 일반
         // quakeClone 대신 lane-boxing.js 가 export 하는 makeGlove 로 그 구역의 진짜 글러브를
@@ -1359,7 +1363,16 @@
           const cloneCss = 'lane-boxing-glove--' + side.toLowerCase() + ' lane-boxing-glove--clone';
           const glove = LB.makeGlove(fxLayer, home, cloneCss, side);
           glove.strike(targetXFrac, targetYFrac, style, onImpact, regionId);
-          setTimeout(() => glove.clear(), 400); // 스윙 전체 주기(reach+return ≈240ms)보다 넉넉히
+          // update() 를 직접 돌려줘야 실제로 스윙·페인트되고 onImpact 도 불린다(makeGlove 는
+          // 자기 스스로 애니메이션을 굴리지 않음) — 메인 루프가 매 프레임 이 배열을 순회한다.
+          if (state) state.aliClones.push(glove);
+          setTimeout(() => {
+            glove.clear();
+            if (state) {
+              const i = state.aliClones.indexOf(glove);
+              if (i > -1) state.aliClones.splice(i, 1);
+            }
+          }, 400); // 스윙 전체 주기(reach+return ≈240ms)보다 넉넉히
         } else if (onImpact) {
           onImpact(); // 방어적 폴백 — 연출 없이도 판정(콤보/점수)은 반영
         }
@@ -1374,6 +1387,7 @@
     state = {
       round: roundNum, levelData, regions, spawnPoints, scheduler, holeLayer, laneHammer, weapon, rng, config,
       timeRemaining: roundSeconds(),
+      aliClones: [], // 알리펀치 동시타격 분신 글러브들 — 메인 루프가 매 프레임 update() 돌려줘야 실제로 스윙한다.
       hitstopUntil: 0,
       alipunchInvincibleUntil: 0, // 알리 펀치 [공격력]: 무적 활성 종료 시각(performance.now() 기준, §7)
       ended: false,
@@ -1676,6 +1690,7 @@
       });
     }
     state.laneHammer.update(rawDt); // 망치는 히트스톱과 무관하게 부드럽게
+    if (state.aliClones.length) state.aliClones.forEach((g) => g.update(rawDt)); // 알리펀치 분신 글러브
     // 방금 그 타격(예: 폭탄으로 하트 0)이 laneHammer 의 impact 콜백을 통해 동기적으로
     // finish()/roundComplete() 를 이미 불렀을 수 있다 — 그러면 이 프레임의 나머지(재렌더·
     // hot 재계산·다음 rAF 예약)를 마저 돌리면 방금 finish() 가 지운 상태(resetHot·팝 clear)를

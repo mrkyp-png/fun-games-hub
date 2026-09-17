@@ -123,4 +123,46 @@ function fakeScheduler() {
   assert.strictEqual(pool.spinIn(), 'spun');
 }
 
+// 7) isBusyForRegion 이 있으면(알리펀치처럼 좌/우 독립 부위가 있는 무기) 그걸로 부위별
+//    판단한다 — 같은 배치에서 서로 다른 부위(L/R)면 "둘 다 실제로" 처리되고, 같은
+//    부위끼리면 나중 것만 오버플로로 간다.
+function makeMockInstWithSides() {
+  const inst = makeMockInst();
+  const busySide = { L: false, R: false };
+  const SIDE_OF = { 1: 'L', 2: 'R' }; // regionId 1=L구역, 2=R구역(테스트용 임의 매핑)
+  const realStrike = inst.strike;
+  inst.strike = (tx, ty, onImpact, frameKey, regionId) => {
+    busySide[SIDE_OF[regionId]] = true;
+    realStrike(tx, ty, onImpact, frameKey, regionId);
+  };
+  inst.isBusyForRegion = (regionId) => !!busySide[SIDE_OF[regionId]];
+  return inst;
+}
+{
+  const inst = makeMockInstWithSides();
+  const sched = fakeScheduler();
+  const overflowCalls = [];
+  const pool = WeaponPool.create({ create: () => inst }, {}, {
+    schedule: sched.schedule, rng: () => 0, onOverflow: (...a) => overflowCalls.push(a)
+  });
+  pool.strike(0.1, 0.1, () => {}, null, 1); // L구역
+  pool.strike(0.9, 0.9, () => {}, null, 2); // R구역 — 서로 다른 부위라 둘 다 실제로 처리돼야 함
+  sched.flush();
+  assert.strictEqual(inst.strikes.length, 2, '좌우가 다르면 둘 다 실제 타격으로 처리돼야 함');
+  assert.strictEqual(overflowCalls.length, 0);
+}
+{
+  const inst = makeMockInstWithSides();
+  const sched = fakeScheduler();
+  const overflowCalls = [];
+  const pool = WeaponPool.create({ create: () => inst }, {}, {
+    schedule: sched.schedule, rng: () => 0, onOverflow: (...a) => overflowCalls.push(a)
+  });
+  pool.strike(0.1, 0.1, () => {}, null, 1); // L구역
+  pool.strike(0.2, 0.2, () => {}, null, 1); // 같은 L구역 — 두 번째는 오버플로로 가야 함
+  sched.flush();
+  assert.strictEqual(inst.strikes.length, 1, '같은 부위 두 번째는 실제 타격이 아니어야 함');
+  assert.strictEqual(overflowCalls.length, 1);
+}
+
 console.log('test-weapon-pool.js: all assertions passed');

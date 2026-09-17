@@ -787,20 +787,20 @@
     setTimeout(() => el.remove(), 600);
   }
 
-  // 캐논(대포) 분신 — 다른 무기와 달리 대포는 원래 제자리에서 쏘는 무기라, 골드묠니르처럼
-  // 목표를 향해 달려들지 않는다(사용자 지정: "대기위치에서 포탄을 쏴야함, 앞에 가는게
-  // 아니라"). 분신 대포 몸체는 목표 구멍 근처 제자리에 반투명(70%)으로 서서 실제 대포와
-  // 동일한 크기를 유지하고, 포탄만 그 자리에서 목표 지점까지 실제로 날아간다(포탄 자체는
-  // 투명도 없이 기존 유지 — 사용자 지정). onHit = 명중 순간 콜백.
-  function cannonClone(boardEl, xFrac, yFrac, poseSpriteUrl, onHit) {
-    const bodyY = Math.max(0.05, yFrac - 0.08); // 대기 위치 — 구멍 바로 위, 제자리 고정
+  // 캐논(대포) 분신 — 다른 무기와 달리 대포는 원래 제자리(포구 고정점)에서 쏘는 무기라,
+  // 골드묠니르처럼 목표를 향해 달려들지 않는다(사용자 지정: "대기위치에서 포탄을 쏴야함,
+  // 앞에 가는게 아니라"). "대기위치"는 목표 근처가 아니라 실제 대포와 똑같은 고정 포구점
+  // (bodyXFrac,bodyYFrac = 대포의 MZX,MZY — game.js 가 넘겨줌) — 분신 대포 몸체가 거기 반투명
+  // (70%)으로 서서 실제 대포와 동일한 크기를 유지하고, 포탄만 거기서 목표 지점까지 실제로
+  // 날아간다(포탄 자체는 투명도 없이 기존 유지 — 사용자 지정). onHit = 명중 순간 콜백.
+  function cannonClone(boardEl, bodyXFrac, bodyYFrac, targetXFrac, targetYFrac, poseSpriteUrl, onHit) {
     const body = document.createElement('img');
     body.className = 'quake-clone quake-clone--cannon';
     body.src = poseSpriteUrl;
     body.alt = '';
-    body.style.left = (xFrac * 100) + '%';
-    body.style.top = (bodyY * 100) + '%';
-    body.style.transform = 'translate(-50%, -50%)'; // 이동/확대 없음 — 제자리 유지
+    body.style.left = (bodyXFrac * 100) + '%';
+    body.style.top = (bodyYFrac * 100) + '%';
+    body.style.transform = 'translate(-50%, -50%)'; // 이동/확대 없음 — 제자리(포구) 유지
     body.style.opacity = '0';
     boardEl.appendChild(body);
     void body.offsetWidth;
@@ -820,20 +820,24 @@
       ball.className = 'lc-ball'; // 실제 대포 포탄과 같은 크기/그림자
       ball.src = 'assets/weapons/cannon-ball.png';
       ball.alt = '';
-      ball.style.left = (xFrac * 100) + '%';
-      ball.style.top = (bodyY * 100) + '%'; // 대포 몸체 위치에서 출발
+      ball.style.left = (bodyXFrac * 100) + '%';
+      ball.style.top = (bodyYFrac * 100) + '%'; // 대포 몸체(포구) 위치에서 출발
       ball.style.opacity = '1'; // 포탄 자체는 투명도 없이(사용자 지정)
       ball.style.transform = 'translate(-50%, -50%) scale(1)';
       ball.style.zIndex = '26'; // 분신 대포 몸체(.quake-clone z-index:25)보다 위
       boardEl.appendChild(ball);
       void ball.offsetWidth;
-      ball.style.transition = 'left 0.09s cubic-bezier(.2,.5,.6,1), top 0.09s cubic-bezier(.2,.5,.6,1)';
-      ball.style.left = (xFrac * 100) + '%';
-      ball.style.top = (yFrac * 100) + '%'; // 실제 목표 지점까지 이동
-      setTimeout(() => { ball.style.transition = 'opacity 0.14s ease-out'; ball.style.opacity = '0'; }, 90);
-      setTimeout(() => ball.remove(), 260);
+      ball.style.transition = 'left 0.11s cubic-bezier(.2,.5,.6,1), top 0.11s cubic-bezier(.2,.5,.6,1)';
+      ball.style.left = (targetXFrac * 100) + '%';
+      ball.style.top = (targetYFrac * 100) + '%'; // 실제 목표 지점까지 이동(진짜 거리)
 
-      try { if (onHit) onHit(); } catch (e) { /* 무시 */ }
+      setTimeout(() => {
+        // 포탄이 실제로 목표에 도착한 순간 명중 판정(실제 대포와 동일 — 발사 즉시가 아니라
+        // 도착 시점에 onHit, 사용자 지정 없었지만 실물 cannonBall 타이밍과 맞춤).
+        ball.style.transition = 'opacity 0.14s ease-out'; ball.style.opacity = '0';
+        try { if (onHit) onHit(); } catch (e) { /* 무시 */ }
+      }, 110);
+      setTimeout(() => ball.remove(), 280);
     }, 130);
     setTimeout(() => { body.style.transition = 'opacity 0.2s ease-out'; body.style.opacity = '0'; }, 320);
     setTimeout(() => body.remove(), 560);

@@ -28,7 +28,12 @@
       const items = shuffle(pending);
       pending = null;
       items.forEach((item) => {
-        if (!inst.isBusy()) {
+        // isBusyForRegion(선택적) — 알리펀치처럼 무기 하나가 독립된 "부위"를 여러 개
+        // 가지고 있으면(좌/우 글러브), 전체가 아니라 이 구역이 실제로 비었는지 따로
+        // 물어본다(사용자 지정 — 왼쪽이 나가있어도 오른쪽 구역은 동시에 실제 타격돼야
+        // 함). 없는 무기(뿅망치/골드해머/캐논)는 기존처럼 전체 isBusy() 로 판단.
+        const busy = inst.isBusyForRegion ? inst.isBusyForRegion(item.regionId) : inst.isBusy();
+        if (!busy) {
           inst.strike(item.targetXFrac, item.targetYFrac, item.onImpact, item.frameKey, item.regionId);
         } else {
           onOverflow(item.targetXFrac, item.targetYFrac, item.onImpact, item.frameKey, item.regionId);

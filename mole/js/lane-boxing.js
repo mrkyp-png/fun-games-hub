@@ -201,6 +201,15 @@
       }
     }
     function isBusy() { return left.isBusy() || right.isBusy(); }
+    // 동시타격 풀(weapon-pool.js)이 "이 구멍은 실제 글러브로 받을 수 있는지"를 좌/우 따로
+    // 판단하기 위한 것(사용자 지정 — 왼쪽 글러브가 나가있어도 오른쪽 구역은 실제 글러브로
+    // 동시에 타격돼야 한다). 없으면 pool 은 전체 isBusy() 로 폴백(다른 무기들 그대로).
+    function isBusyForRegion(regionId) {
+      const side = GLOVE_OF[regionId];
+      if (side === 'L') return left.isBusy();
+      if (side === 'R') return right.isBusy();
+      return isBusy(); // 알 수 없는 구역(방어적) — 전체 기준
+    }
     function home() { left.home(); right.home(); }
     function clear() { left.clear(); right.clear(); }
 
@@ -224,7 +233,7 @@
       right.strike(0.5 + GLOVE_HALF_W, HOME_R.y, 'jab', onImpact, null);
     }
 
-    return { strike, update, isBusy, home, clear, meet, demo };
+    return { strike, update, isBusy, isBusyForRegion, home, clear, meet, demo };
   }
 
   // makeGlove/HOME_L/HOME_R/GLOVE_OF 는 동시타격 분신(game.js weaponCloneOverflow)이 "같은
