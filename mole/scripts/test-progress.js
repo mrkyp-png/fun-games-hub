@@ -40,4 +40,10 @@ localStorage.setItem('mole.unlockAll', '1');
 assert.ok(Progress.isUnlocked(3, 'legend'));
 localStorage.removeItem('mole.unlockAll');
 
+// 라운드 8 초과는 unlockAll 이어도 절대 안 열림 (MAX_CHAPTER=8 상한).
+localStorage.setItem('mole.unlockAll', '1');
+assert.ok(!Progress.isUnlocked(9, 'easy'), '라운드9는 존재하지 않음 — MAX_CHAPTER=8 상한');
+assert.strictEqual(Progress.CLEAR_TARGET[9], undefined, 'CLEAR_TARGET 은 1~8만 존재');
+localStorage.removeItem('mole.unlockAll');
+
 console.log('test-progress.js: all assertions passed');

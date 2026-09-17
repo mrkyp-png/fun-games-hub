@@ -10,7 +10,7 @@
 
   var K = 'mole.progress';
   var LIGHTS = ['easy', 'mid', 'legend']; // = ON / DIM / OFF
-  var MAX_CHAPTER = 10;
+  var MAX_CHAPTER = 8;
   // 챕터 진행(전체 챕터 기획서 2026-09-14): 1~3 = 9홀/5라운드(뿅망치 전용) 튜토리얼,
   // 4~10 = 16홀/10라운드 본편(빼꼼→동물→폭탄→모자(4타)→타겟전환→반격 순 난이도 추가).
 
@@ -19,7 +19,7 @@
   //      (봇 천장 ≈ 170,000. 저글 축소 v60 · 헛방 콤보리셋 v61 이후 기준. 폰 테스트 후 확정)
   var CLEAR_TARGET = {
     1: 1000, 2: 1000, 3: 1000, 4: 1000, 5: 1000,
-    6: 1000, 7: 1000, 8: 1000, 9: 1000, 10: 1000
+    6: 1000, 7: 1000, 8: 1000
   };
 
   function ls() { return (typeof localStorage !== 'undefined') ? localStorage : null; }
