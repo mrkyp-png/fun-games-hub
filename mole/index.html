@@ -92,10 +92,33 @@
   @media (prefers-reduced-motion: reduce) {
     #splash img, #splash.is-ready .splash-hint, #splash.is-ready .splash-hand { animation: none; }
   }
+  /* 홈 진입 연출(사용자 지정, 2026-09-18): 완전 검은화면 → 정중앙 점에서 시작해 전체화면으로
+     확장(휴대폰 켜지는 느낌). #power-on-dot 자체는 투명 원(0x0에서 시작)이고, 그 주위를
+     9999px 짜리 검은 box-shadow 가 감싸 "나머지 전부 검게" 표현 — 원이 커질수록 뚫리는
+     구멍처럼 아래 화면이 드러남(고전적 스포트라이트 리빌 기법, clip-path 역방향보다 안정적). */
+  /* background 를 여기 두면 #power-on-dot 의 "구멍"(box-shadow 반대편 투명 영역)이 뚫려도
+     바로 뒤의 이 검은 배경만 보여 리빌이 전혀 안 되는 버그였음(실측으로 발견) — 검은색은
+     전부 #power-on-dot 의 box-shadow 하나로만 담당, 오버레이 자체는 투명. */
+  #power-on-overlay { position: fixed; inset: 0; z-index: 9999; pointer-events: none; overflow: hidden; }
+  #power-on-dot {
+    position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 0 9999px #000;
+  }
+  /* 인트로 종료 순간 "화면이 정중앙 점으로 흡수" (사용자 지정) — 다 보이는 상태(거대한 원=투명
+     구멍)에서 시작해 0.6초 만에 점으로 수축, 화면이 빨려들듯 검게 닫힘. */
+  #power-on-dot.is-huge { width: 3000px; height: 3000px; transition: none; }
+  #power-on-dot.is-shrink { width: 0; height: 0; transition: width 0.6s cubic-bezier(.6, 0, .9, .4), height 0.6s cubic-bezier(.6, 0, .9, .4); }
+  /* 홈 화면 등장 — 점에서 5초에 걸쳐 전체화면으로 확장(휴대폰 켜지는 느낌). */
+  #power-on-dot.is-expand { width: 3000px; height: 3000px; transition: width 5s linear, height 5s linear; }
 </style>
 </head>
 <body>
 <div id="splash" role="img" aria-label="두더지팡!"><img src="assets/loading.png" alt=""></div>
+<!-- 로딩+인트로 끝→홈 진입 연출(사용자 지정): 2초간 완전 검은화면 → 화면 정중앙 점에서 시작해
+     5초에 걸쳐 전체화면으로 확장(휴대폰 켜지는 느낌). 브금도 같은 5초 동안 서서히 볼륨 상승
+     (game.js window.FGH.fadeInHomeBgm). index.html 의 revealHomeScatter() 가 트리거. -->
+<div id="power-on-overlay" hidden aria-hidden="true"><div id="power-on-dot"></div></div>
 <div class="cosmic-bg">
 
   <!-- BGM 2개(핑퐁) — 곡 전환마다 페이드아웃/인 크로스페이드(사용자 지정, 끊김 없이). -->
@@ -481,7 +504,7 @@
       <div id="lane-button-bar">
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
-        <div id="build-tag" aria-hidden="true">v533</div>
+        <div id="build-tag" aria-hidden="true">v534</div>
       </div>
       <div id="invincible-countdown" class="invincible-countdown" aria-hidden="true" hidden></div>
     </div>
@@ -562,20 +585,48 @@
       var pieces = Array.prototype.slice.call(document.querySelectorAll('.hg-cell, .lane-button'));
       var hud = document.querySelector('.game-hud');
       if (hud) pieces.push(hud);
-      pieces.forEach(function (el) {
-        var ang = Math.random() * Math.PI * 2;
-        var dist = 70 + Math.random() * 160;
-        el.style.setProperty('--sc-x', Math.round(Math.cos(ang) * dist) + 'px');
-        el.style.setProperty('--sc-y', Math.round(Math.sin(ang) * dist) + 'px');
-        el.style.setProperty('--sc-r', Math.round((Math.random() * 2 - 1) * 180) + 'deg');
-        el.style.setProperty('--sc-delay', (Math.random() * 0.3).toFixed(2) + 's');
-        el.classList.remove('mole-scatter-in');
-        void el.offsetWidth;
-        el.classList.add('mole-scatter-in');
-      });
-      // 홈 BGM은 여기(스플래시/인트로가 실제로 사라지는 시점)서 시작(사용자 지정 — "브금은
-      // 인트로에 안 나오고 홈화면 진입하면 나오게").
-      try { window.FGH && window.FGH.startHomeBgm && window.FGH.startHomeBgm(); } catch (e) { /* 무시 */ }
+      function doScatter() {
+        pieces.forEach(function (el) {
+          var ang = Math.random() * Math.PI * 2;
+          var dist = 70 + Math.random() * 160;
+          el.style.setProperty('--sc-x', Math.round(Math.cos(ang) * dist) + 'px');
+          el.style.setProperty('--sc-y', Math.round(Math.sin(ang) * dist) + 'px');
+          el.style.setProperty('--sc-r', Math.round((Math.random() * 2 - 1) * 180) + 'deg');
+          el.style.setProperty('--sc-delay', (Math.random() * 0.3).toFixed(2) + 's');
+          el.classList.remove('mole-scatter-in');
+          void el.offsetWidth;
+          el.classList.add('mole-scatter-in');
+        });
+      }
+      // 홈 진입 연출(사용자 지정): 2초간 완전 검은화면 → 화면 정중앙 점에서 시작해 5초에 걸쳐
+      // 전체화면으로 확장(휴대폰 켜지는 느낌), 그와 동시에 홈 화면 조각 흩뿌려 등장 + 브금도
+      // 같은 5초 동안 서서히 볼륨 상승. 확장 끝나면 오버레이 정리.
+      var overlay = document.getElementById('power-on-overlay');
+      var dot = document.getElementById('power-on-dot');
+      if (overlay && dot) {
+        overlay.hidden = false;
+        dot.className = ''; // 클래스 초기화
+        dot.classList.add('is-huge'); // 지금 보이는 화면 그대로(원이 화면보다 커서 다 뚫려 보임)
+        void dot.offsetWidth; // is-huge(transition:none) 를 실제로 적용시킨 뒤에
+        requestAnimationFrame(function () {
+          dot.classList.remove('is-huge');
+          dot.classList.add('is-shrink'); // 0.6초 만에 점으로 수축 — 화면이 빨려들듯 닫힘
+        });
+        setTimeout(function () {
+          // 이 시점엔 점이 이미 0×0(검은화면) — 여기서부터 2초간 검게 유지 후 확장 시작.
+          setTimeout(function () {
+            dot.classList.remove('is-shrink');
+            dot.classList.add('is-expand');
+            doScatter();
+            try { window.FGH && window.FGH.fadeInHomeBgm && window.FGH.fadeInHomeBgm(5000); } catch (e) { /* 무시 */ }
+            setTimeout(function () { overlay.hidden = true; }, 5000);
+          }, 2000);
+        }, 600);
+      } else {
+        // 오버레이 엘리먼트가 없으면(방어적) 기존 방식 그대로.
+        doScatter();
+        try { window.FGH && window.FGH.startHomeBgm && window.FGH.startHomeBgm(); } catch (e) { /* 무시 */ }
+      }
     }
     function go() {
       if (!armed) return;
@@ -610,7 +661,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=533').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=534').catch(function () {});
       }
     });
   }

@@ -2406,6 +2406,24 @@
     // 스플래시/인트로가 실제로 사라지는 시점에 index.html 이 호출 — 그 전까진 홈 BGM 재생을
     // 미룬다(사용자 지정, deferBgm). 이미 시작돼 있으면 아무 일도 안 함(currentBgm 그대로).
     window.FGH.startHomeBgm = () => playScreenBgm('home');
+    // 홈 진입 연출(검은화면→점 확장, 사용자 지정) 동안 브금도 같이 서서히 커지게 — 0에서
+    // 시작해 ms 에 걸쳐 BGM_VOL 까지 선형 램프. applyBgm/crossfadeBgm 의 볼륨 로직과는 별개로
+    // 여기서만 짧게 override 했다가, 램프가 끝나면 그 뒤로는 평소 로직(applyBgm)이 관리.
+    window.FGH.fadeInHomeBgm = (ms) => {
+      playScreenBgm('home');
+      const el = bgmActiveEl();
+      if (!el) return;
+      const dur = ms || 5000;
+      const t0 = performance.now();
+      el.volume = 0;
+      (function step() {
+        const el2 = bgmActiveEl(); // 크로스페이드로 활성 엘리먼트가 바뀌었을 수 있음
+        if (!el2) return;
+        const k = Math.min(1, (performance.now() - t0) / dur);
+        el2.volume = BGM_VOL * k;
+        if (k < 1) requestAnimationFrame(step);
+      })();
+    };
     // 자동재생 정책에 막혔을 때 대비 — 모든 입력·버퍼완료·복귀 신호에서 applyBgm() 재시도.
     // 설치형 PWA 는 로딩 직후 재생이 허용되기도 해서 그 경우 첫 신호에 바로 시작된다.
     ['pointerdown', 'touchstart', 'click', 'keydown'].forEach((ev) =>
