@@ -10,8 +10,9 @@
   const MAX_CONCURRENT_MOLES = [3, 4, 4, 5, 5, 5, 6, 6, 7, 7];
   const MAX_CONCURRENT_ANIMALS = [0, 1, 2, 2, 2, 2, 3, 3, 3, 3];
   const MAX_CONCURRENT_BOMBS = [0, 0, 0, 0, 1, 1, 2, 2, 3, 3];
-  const BOMB_CHANCE_BY_ROUND = [0, 0, 0, 0, 0.08, 0.08, 0.09, 0.11, 0.12, 0.14];
-  const STRONG_BOMB_CHANCE_BY_ROUND = [0, 0, 0, 0, 0, 0.02, 0.03, 0.04, 0.05, 0.06];
+  // 2026-09-18: 라운드3부터(폭탄)·라운드4부터(강력폭탄) 나오는 비율을 사용자 지정으로 각각 +5%p.
+  const BOMB_CHANCE_BY_ROUND = [0.05, 0.05, 0.05, 0.05, 0.13, 0.13, 0.14, 0.16, 0.17, 0.19];
+  const STRONG_BOMB_CHANCE_BY_ROUND = [0.05, 0.05, 0.05, 0.05, 0.05, 0.07, 0.08, 0.09, 0.10, 0.11];
   // 라운드1(구 챕터1~2~3 병합) 전용 — 9홀 보드는 위 10단계 표로는 너무 쉬워서(사용자 지적)
   // 별도로 더 빡빡하게 지정한 5단계 표.
   const SMALL_CHAPTER_MOLES = [3, 4, 5, 6, 7];

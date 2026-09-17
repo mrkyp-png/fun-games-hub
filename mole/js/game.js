@@ -2473,6 +2473,10 @@
     });
     window.__debugStartRound = () => startRound({ fresh: true });
     window.__debugGetConfig = () => (state ? state.config : null);
+    window.__debugGetActivePops = () => (state ? state.scheduler.getActivePops().map((p) => ({
+      regionId: p.regionId, type: p.type, dying: p.dying, sinkIn: p.sinkIn, bombKind: p.bombKind,
+      hitsTaken: p.hitsTaken, hitsRequired: p.hitsRequired, safeAlways: p.safeAlways
+    })) : null);
     window.__debugSetTimeRemaining = (t) => { if (state) state.timeRemaining = t; };
     window.__debugForceDifficultyUpdate = () => { updateLiveDifficulty(); return state ? state.config : null; };
     window.__debugEndRound = function () {
