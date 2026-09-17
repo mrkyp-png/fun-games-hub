@@ -8,10 +8,8 @@
   function create(opts) {
     var el = opts.root;
     var on = opts.on;
-    var faceUrls = [];
 
     el.querySelectorAll('[data-mm-close]').forEach(function (b) { b.addEventListener('click', on.close); });
-    el.querySelector('[data-mm-make]').addEventListener('click', on.make);
     el.querySelector('[data-mm-name]').addEventListener('click', on.editName);
     el.querySelector('[data-mm-avatar]').addEventListener('click', on.editAvatar);
     el.querySelector('[data-mm-start]').addEventListener('click', on.start);
@@ -29,8 +27,6 @@
         if (fn) fn();
       });
     });
-
-    function revokeFaces() { faceUrls.forEach(URL.revokeObjectURL); faceUrls = []; }
 
     // 생명 충전 타이머 — 더보기 화면에만 표시. 2개 이하일 때 4시간마다 +1, 3개면 숨김.
     var regenTimer = null;
@@ -78,31 +74,6 @@
         var b = el.querySelector('[data-mm-diff="' + k + '"]');
         if (b) b.classList.toggle('mm-pill--locked', hammerOnly);
       });
-
-      MG.Ads.banner(el.querySelector('[data-mm-ad]'));
-
-      revokeFaces();
-      MG.FaceStore.listFaces().then(function (faces) {
-        var box = el.querySelector('[data-mm-faces]');
-        box.innerHTML = '';
-        faces.slice(0, 4).forEach(function (f) {
-          var src = URL.createObjectURL(f.blob);
-          faceUrls.push(src);
-          var a = mini();
-          box.appendChild(a);
-          // 원본 사진 안 보이게 — 몸+얼굴+모자+안경 합성 완료 썸네일
-          MG.MoleComposite.buildOne(src, f.costume, 'mole1', f.shape).then(function (url) {
-            faceUrls.push(url);
-            a.querySelector('img').src = url;
-          });
-        });
-      });
-    }
-    function mini() {
-      var d = document.createElement('span');
-      d.className = 'mm-mini-mole';
-      d.innerHTML = '<img alt="">';
-      return d;
     }
     return { refresh: refresh };
   }

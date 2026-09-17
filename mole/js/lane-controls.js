@@ -5,79 +5,58 @@
   // regionId (0..15, row*4 + col) 만 콜백으로 내보낸다. 게임 상태를 모른다.
   // 키보드: 격자 모양 그대로 1234 / qwer / asdf / zxcv.
   //
-  // 겉모습은 전화 다이얼러로 위장한다 (사용자 요청). 1~3열 = 숫자패드, 4열 = 내비(연락처/키패드/최근기록/설정).
+  // 겉모습은 전화 다이얼러로 위장한다 (사용자 요청). 1~3열 = 숫자패드, 4열 = 내비(상점/홈/아이템보관).
+  // 홈 화면에서는 FACES 의 hud/action 필드로 일부 숫자·내비 자리에 더보기 기능 아이콘을 보여준다
+  // (하트/코인/티켓/스코어/일일/퀘스트/친구/사진보관/시크릿). 실제 라운드 플레이 중엔 항상 숫자로 복귀.
   // 위장은 순전히 표시만 — 클릭/키보드/두더지-빛남 동작은 그대로.
 
   const KEY_GRID = ['1234', 'qwer', 'asdf', 'zxcv'];
-  const HOLD_MS = 600;       // 길게 누름 = 채널 관리 메뉴 / 시크릿 복구
-  const DOUBLE_TAP_MS = 320; // 이 안에 두 번 짧게 = 유튜브 진입 (한 번은 무시 — 실수 방지)
 
-  // 채널 버튼 상태 (로컬):
-  //  - deleted (mole.channelHidden.<id>) : 채널 링크 완전 제거 → 그냥 숫자 버튼. 길게 눌러도 무반응.
-  //  - secret  (mole.channelSecret.<id>) : 숫자로 위장(숨김). 길게 누르면 10회전하며 유튜브 아이콘 복구.
-  //  - user    (mole.channelUser.<id>)   : 유저가 이 기기에서 등록한 채널 {url, icon}. LINKS 보다 우선.
-  const HIDDEN_P = 'mole.channelHidden.';
-  const SECRET_P = 'mole.channelSecret.';
-  const USER_P = 'mole.channelUser.';
-  function lsGet(k) { try { return localStorage.getItem(k) === '1'; } catch (e) { return false; } }
-  function lsSet(k, on) { try { on ? localStorage.setItem(k, '1') : localStorage.removeItem(k); } catch (e) { /* noop */ } }
-  function isDeleted(id) { return lsGet(HIDDEN_P + id); }
-  function isSecret(id) { return lsGet(SECRET_P + id); }
-  function chUser(id) {
-    try { return JSON.parse(localStorage.getItem(USER_P + id) || 'null'); } catch (e) { return null; }
-  }
-  function chLink(id) {
-    var u = chUser(id);
-    if (u && u.url) return u;
-    var CL = root.MoleGame && root.MoleGame.ChannelLinks;
-    return (CL && CL.LINKS[id]) || null;
-  }
-  // 짧게 두 번(더블탭)으로 유튜브 진입 가능한 "일반" 상태의 채널만 반환 (삭제/시크릿이면 null).
-  function channelFor(id) {
-    return (!isDeleted(id) && !isSecret(id)) ? chLink(id) : null;
-  }
-
-  // 유튜브 URL 정규화 + 채널 핸들 추출. 핸들에 한글 등 유니코드 허용 (@슈뻘맨 OK).
-  function normalizeYtUrl(s) {
-    s = (s || '').trim();
-    if (!s) return '';
-    if (/^@\S+$/.test(s)) {
-      s = 'https://www.youtube.com/' + s;               // "@슈뻘맨" → 채널 핸들
-    } else if (!/^https?:\/\//i.test(s) && !/[\s/.]/.test(s)) {
-      s = 'https://www.youtube.com/@' + s;              // "슈뻘맨"(맨단어, @없음) → 핸들로 간주
-    } else if (!/^https?:\/\//i.test(s)) {
-      s = 'https://' + s;                               // "youtube.com/@..." → 스킴만 보충
-    }
-    try {
-      var host = new URL(s).hostname.toLowerCase();
-      if (host !== 'youtube.com' && host !== 'youtu.be' && !/\.youtube\.com$/.test(host)) return '';
-      return new URL(s).href;
-    } catch (e) { return ''; }
-  }
-  function ytHandle(url) {
-    var m = url.match(/@([^/?#\s]+)/) || url.match(/\/(?:c|channel|user)\/([^/?#\s]+)/);
-    if (!m) return '';
-    try { return decodeURIComponent(m[1]); } catch (e) { return m[1]; }
-  }
-
-  // 내비 아이콘 (이모지 렌더 편차 회피 — 인라인 SVG, currentColor).
+  // 내비 아이콘 (이모지 렌더 편차 회피 — 인라인 SVG, currentColor). 더보기 화면(mm-ic)과 같은
+  // 선 아이콘 패스를 재사용해 다이얼패드로 옮긴 기능들의 아이콘이 서로 통일되게 한다.
   const SVG = {
-    person: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7.5 8-7.5s8 3.1 8 7.5z"/></svg>',
-    pad: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="6" r="1.9"/><circle cx="12" cy="6" r="1.9"/><circle cx="18" cy="6" r="1.9"/><circle cx="6" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="18" cy="12" r="1.9"/><circle cx="6" cy="18" r="1.9"/><circle cx="12" cy="18" r="1.9"/><circle cx="18" cy="18" r="1.9"/></svg>',
-    clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3.5 2"/></svg>',
     phone: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.4.6 3.6.6.6 0 1 .5 1 1V20c0 .6-.4 1-1 1C10.2 21 3 13.8 3 5c0-.6.5-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.2 1l-2.3 2.2z"/></svg>',
-    // 채널 아이콘 로드 실패 시 대체용 유튜브 로고
-    youtube: '<svg class="lane-yt-glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="4" fill="#ff0000"/><path d="M10 8.5l6 3.5-6 3.5z" fill="#fff"/></svg>'
+    // 홈 화면 1·2·3·4번 버튼 앞면 — 하트/코인/티켓/스코어(사용자 지정: 검은색 외곽선만, 채우기 없음).
+    hearts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg>',
+    // 옆으로 뉘어진 동전(두께+테두리선, 사용자 지정 — 후보 D).
+    coins: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="9" rx="8.5" ry="4.3"/><path d="M3.5 9v3.5c0 2.4 3.8 4.3 8.5 4.3s8.5-1.9 8.5-4.3V9"/><path d="M6.5 9c1.3 1.2 3.4 2 5.5 2s4.2-.8 5.5-2"/></svg>',
+    // 양쪽 노치 티켓 + 구멍/점선(사용자 지정).
+    tickets: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M3 7h18v3.2a1.6 1.6 0 000 3.6V17H3v-3.2a1.6 1.6 0 000-3.6z"/><path d="M14 7.3v9.4" stroke-dasharray="1.4 1.6"/><circle cx="8" cy="12" r="1.3"/></svg>',
+    score: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M7 4h10v4a5 5 0 01-10 0zM7 5.5H4V8a3 3 0 003 3M17 5.5h3V8a3 3 0 01-3 3M12 13v4M8.5 20.5h7l-1-3h-5z"/></svg>',
+    daily: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M8.5 3v4M15.5 3v4"/></svg>',
+    quest: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 4h9l4 4v12H6zM15 4v4h4M9 12h6M9 16h6"/></svg>',
+    // 4열 내비 자리 — 상점/홈/아이템보관(사용자 지정, 기존 연락처·키패드·최근기록 대체).
+    shop: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6.5 8h11l1 11.5h-13zM9 8V6.5a3 3 0 016 0V8"/></svg>',
+    home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M4 11.5 12 4l8 7.5M6 10v9h5v-5h2v5h5v-9"/></svg>',
+    inventory: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M3 8l1.6-3.4A1 1 0 015.5 4h13a1 1 0 01.9.6L21 8M4 8h16v11a1 1 0 01-1 1H5a1 1 0 01-1-1zM9.5 12h5"/></svg>',
+    friends: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c0-3.3 2.5-5.5 5.5-5.5s5.5 2.2 5.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.6c2.6.3 5 2.3 5 5.4"/></svg>',
+    locker: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.4"/><path d="M8.5 7 10 4.5h4L15.5 7"/></svg>',
+    settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M19.4 13a7.8 7.8 0 000-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 00-1.7-1L14 3h-4l-.6 2.6a7.6 7.6 0 00-1.7 1l-2.4-1-2 3.4L4.6 11a7.8 7.8 0 000 2l-2 1.6 2 3.4 2.4-1c.5.4 1.1.7 1.7 1L10 21h4l.6-2.6c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.4-2-1.6z"/><circle cx="12" cy="12" r="2.6"/></svg>',
+    lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>'
   };
 
-  // regionId(0..15) → 버튼 표시. 왼쪽 3열 = 표준 다이얼(큰 숫자 + 자음 + 영문/기호), 오른쪽 열 = 내비.
+  // regionId(0..15) → 버튼 표시. 왼쪽 3열 = 표준 다이얼(큰 숫자 + 자음 + 영문/기호), 4열 = 내비.
+  // hud: 홈 화면에서만(플레이 중엔 숫자로 복귀) 이 자리에 아이콘을 보여준다(사용자 지정) — 원래
+  // 숫자는 fillFace() 가 자음/영문 서브텍스트 자리로 옮겨 그린다. hearts/coins/tickets 는 실시간
+  // 카운터(setHudStat), score 는 현재 난이도 최고점수 카운터, daily/quest 는 카운터 없이 아이콘만.
+  // action: 홈 화면에서 탭하면 그 화면으로 이동(onHomeAction 콜백, game.js 가 실제 내비게이션을
+  // 담당 — lane-controls 는 게임 상태를 모른다).
   const FACES = [
-    { num: '1', kr: 'ㄱㅋ', en: '' }, { num: '2', kr: 'ㄴ', en: 'ABC' }, { num: '3', kr: 'ㄷㅌ', en: 'DEF' }, { nav: '연락처', svg: SVG.person, i18n: 'mole.pad.contacts' },
-    { num: '4', kr: 'ㄹ', en: 'GHI' }, { num: '5', kr: 'ㅁ', en: 'JKL' }, { num: '6', kr: 'ㅂㅍ', en: 'MNO' }, { nav: '키패드', svg: SVG.pad, i18n: 'mole.pad.keypad' },
-    { num: '7', kr: 'ㅅ', en: 'PQRS' }, { num: '8', kr: 'ㅇ', en: 'TUV' }, { num: '9', kr: 'ㅈㅊ', en: 'WXYZ' }, { nav: '최근기록', svg: SVG.clock, i18n: 'mole.pad.recent' },
-    { num: '✱', kr: '', en: '' }, { num: '0', kr: '', en: '+' }, { num: '#', kr: '', en: '' },
+    { num: '1', kr: 'ㄱㅋ', en: '', hud: 'hearts' }, { num: '2', kr: 'ㄴ', en: 'ABC', hud: 'coins' }, { num: '3', kr: 'ㄷㅌ', en: 'DEF', hud: 'tickets' }, { nav: '상점', svg: SVG.shop, i18n: 'mole.more.shop', action: 'shop' },
+    { num: '4', kr: 'ㄹ', en: 'GHI', hud: 'score', action: 'score' }, { num: '5', kr: 'ㅁ', en: 'JKL', hud: 'daily', action: 'daily' }, { num: '6', kr: 'ㅂㅍ', en: 'MNO', hud: 'quest', action: 'quest' }, { nav: '홈', svg: SVG.home, i18n: 'mole.pad.home', action: 'home' },
+    { num: '7', kr: 'ㅅ', en: 'PQRS', hud: 'friends', action: 'friends' }, { num: '8', kr: 'ㅇ', en: 'TUV', hud: 'locker', action: 'locker' }, { num: '9', kr: 'ㅈㅊ', en: 'WXYZ', hud: 'settings', action: 'settings' }, { nav: '아이템 보관', svg: SVG.inventory, i18n: 'mole.more.inventory', action: 'inventory' },
+    { num: '✱', kr: '', en: '', hud: 'label', label: '두더지팡', labelI18n: 'mole.pad.gameMole', action: 'lightMode' },
+    { num: '0', kr: '', en: '+', hud: 'label', label: '리듬팡', labelI18n: 'mole.pad.gameRhythm' },
+    { num: '#', kr: '', en: '', hud: 'label', label: '시크릿', labelI18n: 'mole.pad.secret', lockSub: true },
     { nav: '시작', svg: SVG.phone, call: true, i18n: 'mole.start.btn' }
   ];
+
+  // 아이콘 아래 자음/영문 자리에 넣을 설명 글자(사용자 지정) — 더보기와 같은 i18n 키 재사용.
+  const HUD_LABEL = {
+    hearts: 'mole.pad.lblHearts', coins: 'mole.pad.lblCoins', tickets: 'mole.pad.lblTickets',
+    score: 'mole.pad.lblScore', daily: 'mole.more.daily', quest: 'mole.more.quest',
+    friends: 'mole.more.friends', locker: 'mole.more.photos', settings: 'mole.more.settings'
+  };
 
   function fillFace(btn, f, id, simple) {
     btn.classList.remove('lane-button--flippable', 'is-flipped');
@@ -96,164 +75,58 @@
         '<span class="lane-sub">' + (showKr ? '<span class="lane-kr">' + f.kr + '</span>' : '') +
         (f.en ? '<span class="lane-en">' + f.en + '</span>' : '') + '</span>';
     }
-    // 채널이 등록돼 있으면 평소 얼굴 ↔ 채널 아이콘을 동전처럼 3D 로 뒤집는 .lane-flip 카드로 감싼다.
-    // 아이콘 URL 이 없거나 로드 실패하면 유튜브 로고로 대체(채널 버튼임은 유지).
-    // simple(챕터1~3 숫자패드)는 채널 개념 자체가 없음 — 평소 얼굴 그대로.
-    var ch = !simple && !f.call && channelFor(id);
-    if (ch) {
+    // 홈 화면 숫자칸(FACES 의 hud 필드) — 평소 숫자 얼굴 ↔ 아이콘을 동전처럼 3D 로 뒤집는
+    // .lane-flip 카드로 감싼다. 실제 플레이 중엔 CSS(#game-screen:not(.is-start)
+    // .lane-button--flippable .lane-flip)가 항상 숫자 면(back)을 강제해 게임 화면은 그대로다.
+    // simple(챕터1~3 숫자패드)는 이 개념 자체가 없음 — 평소 얼굴 그대로.
+    var hud = !simple && !f.call && f.hud;
+    var HUD_COUNTS = { hearts: 1, coins: 1, tickets: 1 }; // 실시간 카운터 배지가 있는 것만(사용자 지정: 스코어는 배지 없이 글자만)
+    if (hud === 'label') {
+      // 글자 라벨 버튼(✱="두더지팡", 0="리듬팡", #="시크릿"+잠금 등, 사용자 지정) — 숫자 대신
+      // 짧은 글자 + (있으면) 자음/영문 자리에 잠금 아이콘. action 이 있으면(✱) 탭 시 그 동작,
+      // 없으면(0/#, 아직 미구현) 그냥 표시만.
       btn.classList.add('lane-button--flippable');
+      var lbl = f.labelI18n;
       btn.innerHTML =
         '<span class="lane-flip">' +
         '<span class="lane-face lane-face--back">' + faceHtml + '</span>' +
-        '<span class="lane-face lane-face--front">' +
-          (ch.icon ? '<img class="lane-channel-icon" alt="">' : SVG.youtube) +
+        '<span class="lane-face lane-face--front lane-face--secret">' +
+          '<span class="lane-num lane-num--secret"' + (lbl ? ' data-i18n="' + lbl + '"' : '') + '>' + f.label + '</span>' +
+          (f.lockSub ? '<span class="lane-sub">' + SVG.lock + '</span>' : '') +
         '</span>' +
         '</span>';
-      var img = btn.querySelector('.lane-channel-icon');
-      if (img) {
-        img.src = ch.icon;
-        img.addEventListener('error', function () {
-          var front = img.parentElement;
-          if (front) front.innerHTML = SVG.youtube;
-        });
-      }
+    } else if (hud) {
+      // 아이콘은 숫자 자리(왼쪽), 자음/영문 자리(오른쪽, .lane-sub)엔 이 둘 중 하나(사용자 지정):
+      //  - 실시간 수량이 있는 것(하트/코인/티켓): 그 수량 숫자만(setHudStat 이 갱신).
+      //  - 나머지(스코어/일일/퀘스트/친구/사진보관/설정): 아이콘 설명 글자만 — 원래 숫자는 없음.
+      btn.classList.add('lane-button--flippable');
+      var I2 = root.FGH && root.FGH.I18N;
+      var lblKey2 = HUD_LABEL[hud];
+      var lblTxt2 = lblKey2 && I2 ? I2.t(lblKey2) : '';
+      var subHtml = HUD_COUNTS[hud]
+        ? '<span class="lane-sub"><b class="lane-hud-n" data-hud="' + hud + '">0</b></span>'
+        : '<span class="lane-sub">' +
+            (lblTxt2 ? '<span class="lane-en"' + (lblKey2 ? ' data-i18n="' + lblKey2 + '"' : '') + '>' + lblTxt2 + '</span>' : '') +
+          '</span>';
+      btn.innerHTML =
+        '<span class="lane-flip">' +
+        '<span class="lane-face lane-face--back">' + faceHtml + '</span>' +
+        '<span class="lane-face lane-face--front lane-face--hud">' +
+          SVG[hud] + subHtml +
+        '</span>' +
+        '</span>';
     } else {
       btn.innerHTML = faceHtml;
     }
     // 유료무기(캐논·황금해머·알리펀치) 다이얼패드 구획선(사용자 지정) — 버튼 자신의 실제 박스(그리드 셀과
     // 정확히 같은 크기)에 꽉 차는 사각 테두리. innerHTML 로 매번 새로 그려지므로 fillFace 안에서 같이 추가
-    // (버튼 생성 시·채널 등록/시크릿/삭제·언어 전환 시 다 여기를 거침 — 한 곳에서만 관리).
+    // (버튼 생성 시·언어 전환 시 다 여기를 거침 — 한 곳에서만 관리).
     // 보더 색은 style.css 가 #game-screen.gs-laneskill 스코프에서만 입힌다(뿅망치·홈 화면은 투명).
     btn.insertAdjacentHTML('beforeend', '<span class="lane-cell-line" aria-hidden="true"></span>');
   }
 
-  // 빈(채널 없는) 버튼을 더블탭하면 뜨는 "유튜브 채널 등록" 창.
-  let regModalEl = null;
-  function showRegisterModal(id, btn) {
-    if (regModalEl) { regModalEl.remove(); regModalEl = null; } // 혹시 이전 게 안 닫혔으면 치우고 새로 연다
-    var I = root.FGH && root.FGH.I18N;
-    var T = function (k) { return I ? I.t(k) : k; };
-    var v = document.createElement('div');
-    v.className = 'ad-overlay ch-reg-overlay';
-    v.innerHTML =
-      '<div class="ad-overlay-card ch-reg-card">' +
-      '<div class="ch-reg-title">' + T('mole.channel.regTitle') + '</div>' +
-      '<div class="ch-reg-desc">' + T('mole.channel.regDesc') + '</div>' +
-      '<input type="url" class="ch-reg-input" placeholder="youtube.com/@..." autocomplete="off" spellcheck="false" />' +
-      '<div class="ch-reg-btns">' +
-        '<button type="button" data-r="ok">' + T('mole.channel.regOk') + '</button>' +
-        '<button type="button" data-r="cancel">' + T('mole.common.close') + '</button>' +
-      '</div></div>';
-    document.body.appendChild(v);
-    regModalEl = v;
-    var input = v.querySelector('.ch-reg-input');
-    setTimeout(function () { input.focus(); }, 50);
-    var close = function () { v.remove(); regModalEl = null; };
-    v.querySelector('[data-r="cancel"]').addEventListener('click', close);
-    // 스크림 탭으로 닫기 — 단, 이 창을 연 더블탭의 합성 click 이 곧바로 닫아버리지 않게 잠깐 뒤 배선.
-    setTimeout(function () {
-      v.addEventListener('click', function (e) { if (e.target === v) close(); });
-    }, 120);
-    input.addEventListener('keydown', function (e) { if (e.key === 'Enter') v.querySelector('[data-r="ok"]').click(); });
-    v.querySelector('[data-r="ok"]').addEventListener('click', function () {
-      var url = normalizeYtUrl(input.value);
-      if (!url) { input.classList.add('ch-reg-input--bad'); return; }
-      var h = ytHandle(url);
-      var rec = { url: url, icon: h ? ('https://unavatar.io/youtube/' + encodeURIComponent(h)) : '' };
-      lsSet(SECRET_P + id, false);
-      lsSet(HIDDEN_P + id, false);
-      try { localStorage.setItem(USER_P + id, JSON.stringify(rec)); } catch (e) { /* noop */ }
-      fillFace(btn, FACES[id], id);
-      close();
-    });
-  }
-
-  // 동전 뒤집기 — 10바퀴 휙 돌고 반 바퀴 더 돌아 반대 면에 착지 (누적 각도).
+  // 동전 뒤집기 — 10바퀴 휙 돌고 반 바퀴 더 돌아 반대 면에 착지 (누적 각도). spinChannelsIn() 이 씀.
   const FLIP_SPINS_DEG = 10 * 360 + 180;
-  function flipChannelCard(btn) {
-    const flip = btn.querySelector('.lane-flip');
-    if (!flip) return;
-    const cur = parseFloat(flip.dataset.deg || '0');
-    const next = cur + FLIP_SPINS_DEG;
-    flip.dataset.deg = String(next);
-    flip.style.transform = 'rotateY(' + next + 'deg)';
-  }
-  // 시크릿: 유튜브 아이콘 → (10회전) → 숫자. 회전 끝나면 평범한 숫자 버튼으로 확정.
-  function secretWithSpin(btn, id) {
-    if (btn.querySelector('.lane-flip')) {
-      flipChannelCard(btn); // 아이콘(front) → 숫자(back)
-      setTimeout(() => fillFace(btn, FACES[id], id), 950);
-    } else {
-      fillFace(btn, FACES[id], id);
-    }
-  }
-  // 시크릿 해제: 숫자 → (10회전) → 유튜브 아이콘.
-  function restoreWithSpin(btn, id) {
-    fillFace(btn, FACES[id], id); // 채널 복구 → flip 카드 다시 렌더 (기본 아이콘 face)
-    const flip = btn.querySelector('.lane-flip');
-    if (!flip) return;
-    flip.style.transition = 'none';
-    flip.dataset.deg = '180';
-    flip.style.transform = 'rotateY(180deg)'; // 숫자 면에서 출발
-    void flip.offsetWidth;
-    flip.style.transition = '';
-    flipChannelCard(btn); // 180 → 아이콘 면으로 회전
-  }
-
-  // 길게 누르면 뜨는 채널 관리 말풍선 [🕶 시크릿] [🗑 삭제]
-  let chMenuEl = null;
-  function closeChannelMenu() {
-    document.removeEventListener('pointerdown', chMenuOutside, true);
-    if (chMenuEl) { chMenuEl.remove(); chMenuEl = null; }
-  }
-  function chMenuOutside(e) {
-    if (chMenuEl && !chMenuEl.contains(e.target)) closeChannelMenu();
-  }
-  function showChannelMenu(id, btn) {
-    closeChannelMenu();
-    const I = root.FGH && root.FGH.I18N;
-    const T = (k) => (I ? I.t(k) : k);
-    const m = document.createElement('div');
-    m.className = 'lane-ch-menu';
-    m.innerHTML =
-      '<button type="button" data-a="secret"><span class="lch-ic">🕶️</span>' + T('mole.channel.secret') + '</button>' +
-      '<button type="button" data-a="delete"><span class="lch-ic">🗑️</span>' + T('mole.channel.delete') + '</button>';
-    document.body.appendChild(m);
-    const r = btn.getBoundingClientRect();
-    // 폰 밖으로 안 나가게 가로 클램프 + 꼬리는 버튼을 계속 가리키게 (--tail-x).
-    const mw = m.offsetWidth, mh = m.offsetHeight, mg = 8;
-    const btnCx = r.left + r.width / 2;
-    const cx = Math.max(mw / 2 + mg, Math.min(window.innerWidth - mw / 2 - mg, btnCx));
-    m.style.left = cx + 'px';
-    m.style.top = Math.max(mh + mg, r.top - 6) + 'px'; // 위로 못 나가면 아래로 안 넘어가게만 (translateY -100%)
-    m.style.setProperty('--tail-x', Math.max(12, Math.min(mw - 12, btnCx - (cx - mw / 2))) + 'px');
-    m.querySelector('[data-a="secret"]').addEventListener('click', () => {
-      lsSet(SECRET_P + id, true);
-      secretWithSpin(btn, id);
-      closeChannelMenu();
-    });
-    m.querySelector('[data-a="delete"]').addEventListener('click', () => {
-      lsSet(HIDDEN_P + id, true);
-      try { localStorage.removeItem(USER_P + id); } catch (e) { /* noop */ }
-      fillFace(btn, FACES[id], id); // 즉시 평범한 숫자로 (더블탭하면 등록창)
-      closeChannelMenu();
-    });
-    chMenuEl = m;
-    setTimeout(() => document.addEventListener('pointerdown', chMenuOutside, true), 0);
-  }
-
-  // 0.6초 길게 누름 처리 — 홈 화면에서만.
-  function onChannelHold(id, btn, isHome) {
-    if (isHome && !isHome()) return;
-    if (isDeleted(id)) return;      // 삭제됨 = 완전 숫자패드, 무반응
-    if (isSecret(id)) {             // 시크릿 → 유튜브로 복구 (10회전)
-      lsSet(SECRET_P + id, false);
-      restoreWithSpin(btn, id);
-      return;
-    }
-    if (!chLink(id)) return;        // 애초에 채널 없는 자리
-    showChannelMenu(id, btn);       // 일반 → [시크릿|삭제]
-  }
 
   // 챕터1~3 전용 숫자패드 얼굴(9칸: 1~9) — 채널/다이얼 위장·통화버튼 없음(사용자 지정:
   // "통화버튼 불필요, 버튼보드 정사각형으로"). 홈 화면은 항상 기존 16버튼 다이얼러라
@@ -267,7 +140,7 @@
     return faces;
   }
 
-  function create({ buttonBar, gridSize, onCell, onTap, onChannelEnter, isHome, simple }) {
+  function create({ buttonBar, gridSize, onCell, onTap, onHomeAction, isHome, simple }) {
     const buttons = [];
     const keyMap = {};
     const faces = simple ? simpleFaces(gridSize) : FACES;
@@ -283,7 +156,6 @@
       fillFace(b, faces[id], id, simple);
       if (faces[id].call) b.insertAdjacentHTML('beforeend', '<span class="lane-call-idle" aria-hidden="true"></span>');
       b.addEventListener('contextmenu', (e) => e.preventDefault()); // 길게 눌러도 브라우저 메뉴 안 뜨게
-      let lastTapAt = 0; // 이 버튼의 직전 짧은탭 시각 — 더블탭 판정용 (실수 진입 방지)
       b.addEventListener('pointerdown', (e) => {
         e.preventDefault();
         if (onTap) onTap(); // 다이얼패드(홈 화면) 전용 탭음 — game.js 가 상황(is-start) 판단
@@ -292,44 +164,9 @@
         void b.offsetWidth;
         b.classList.toggle('lane-button--miss', !!bad);
         b.classList.add('lane-button--flash');
-
-        // 채널 조작 (시작버튼·simple 모드 제외):
-        //   짧게 두 번(더블탭) = 채널 있음→유튜브 진입 / 빈 버튼(삭제·미등록)→채널 등록창. 한 번만은 무시(실수 방지).
-        //   0.6초 길게        = onChannelHold — 일반: [시크릿|삭제] 메뉴 / 시크릿: 10회전 복구 / 삭제: 무반응
-        // 포인터 캡처로 손가락이 버튼 밖으로 나가도 pointerup 을 여기서 받는다
-        // (예전 pointerleave 로 판정하던 게 삭제 제스처가 안 먹던 원인).
-        if (!simple && !faces[id].call) {
-          let held = false;
-          try { b.setPointerCapture(e.pointerId); } catch (_) { /* 무시 */ }
-          const holdTimer = setTimeout(() => { held = true; lastTapAt = 0; onChannelHold(id, b, isHome); }, HOLD_MS);
-          const cleanup = () => {
-            clearTimeout(holdTimer);
-            b.removeEventListener('pointerup', up);
-            b.removeEventListener('pointercancel', cleanup);
-          };
-          const up = () => {
-            const wasHeld = held;
-            cleanup();
-            if (wasHeld) return; // 길게 = onChannelHold 가 이미 처리
-            if (!isHome || isHome()) {
-              // 홈: 시크릿 버튼(숨긴 채널)은 더블탭도 무시 — 나머지는 판정.
-              if (isSecret(id)) { lastTapAt = 0; return; }
-              const now = Date.now();
-              if (now - lastTapAt < DOUBLE_TAP_MS) { // 두 번째 탭
-                lastTapAt = 0;
-                var ch = channelFor(id);
-                if (ch) { if (onChannelEnter) onChannelEnter(ch.url); } // 채널 있음 → 진입 (URL 직접 전달 — 유저 등록분 포함)
-                else showRegisterModal(id, b);                          // 빈 버튼 → 등록창
-              } else {
-                lastTapAt = now; // 첫 탭 — 대기
-              }
-            } else {
-              lastTapAt = 0;
-            }
-          };
-          b.addEventListener('pointerup', up);
-          b.addEventListener('pointercancel', cleanup);
-        }
+        // 홈 화면 전용 내비(하트·코인·티켓·스코어·상점·홈·… — FACES 의 action 필드) — 탭하면 그
+        // 화면으로 이동. 실제 플레이 중(isHome() false)엔 평범한 숫자 타격 버튼일 뿐이라 무시.
+        if (faces[id].action && onHomeAction && (!isHome || isHome())) onHomeAction(faces[id].action);
       });
       buttonBar.appendChild(b);
       buttons[id] = b;
@@ -370,6 +207,14 @@
       }
       ind.classList.toggle('lane-bomb-indicator--strong', kind === 'strong');
       ind.classList.toggle('lane-bomb-indicator--normal', kind !== 'strong');
+    }
+
+    // 홈 화면 하트·코인·티켓·스코어 카운터 갱신 (FACES 의 hud 필드로 그 버튼을 찾는다).
+    // 카운터 없는 hud(daily/quest/friends/locker)는 그 버튼에 .lane-hud-n 이 없어 조용히 무시.
+    function setHudStat(kind, value) {
+      const b = faces.findIndex((f) => f && f.hud === kind);
+      const el = b > -1 && buttons[b] && buttons[b].querySelector('.lane-hud-n');
+      if (el) el.textContent = String(value);
     }
 
     // 대포 연사: 그 버튼 링 플래시를 골드로 재발동 (자동샷마다 호출 → 3연속 펄스).
@@ -499,7 +344,7 @@
       });
     }
 
-    return { setCellHot, setBombIndicator, flashBurst, flashQuakeArea, clear, spinChannelsIn, spinBoardIn };
+    return { setCellHot, setBombIndicator, setHudStat, flashBurst, flashQuakeArea, clear, spinChannelsIn, spinBoardIn };
   }
 
   const api = { create };

@@ -87,11 +87,6 @@
   // 라운드별 난이도는 MG.LEVELS 표(동시 두더지 1→5, 유지시간 2.5→1.0s, 방해물 증가)를 쓴다.
   // 16칸 클리어 개념은 없다 — 두더지는 16칸 아무 데나 랜덤 반복 등장, 60초가 끝나면 다음 라운드.
 
-  // 재접/홈복귀 대화 문구 풀은 언어별이라 chat-phrases.js 로 뺐다 (MG.ChatPhrases).
-  // 다시하기 축하 이모티콘 + 하마 기분 이모티콘 (언어 무관).
-  const CELEBRATE_EMOJI = '🎉';
-  const HIPPO_MOODS = ['❓', '❤️', '😡', '😂', '😐', '🙄', '✋', '🔥', '😅', '👍'];
-
   let state = null;   // 현재 라운드 상태 (시작 화면일 땐 null)
   // 10라운드를 통틀어 유지되는 것: 콤보·점수(1라운드부터 누적).
   // 목숨(run.lives)은 허브 공유 생명(MG.Economy) 그 자체다 — 동물 -1 / 콤보 100마다 +1 이
@@ -114,23 +109,90 @@
     refreshBoardStats();
   }
 
-  // 홈(시작) 화면 우측 상단 하트·코인 숫자 — 공유 풀에서 다시 읽어 그린다.
-  // 광고/콤보/동물 등으로 값이 바뀔 때마다 호출해 홈·더보기·게임이 같은 수를 보이게 한다.
+  // 홈 화면 다이얼패드 1·2·4번(하트·코인·스코어) 카운터 + 상단 티커 최고점수 — 공유 풀에서
+  // 다시 읽어 그린다. 광고/콤보/동물 등으로 값이 바뀔 때마다 호출해 홈·더보기·게임이 같은 수를 보이게 한다.
   function refreshBoardStats() {
-    const bs = document.getElementById('board-stats');
-    if (!bs) return;
-    const fit = (el) => {
-      const digits = el.textContent.replace(/[^0-9]/g, '').length;
-      el.style.fontSize = digits <= 4 ? '' : digits <= 6 ? '0.82em' : digits <= 8 ? '0.68em' : '0.56em';
-    };
-    const h = bs.querySelector('[data-bs-hearts]');
-    const c = bs.querySelector('[data-bs-coins]');
-    if (h) { h.textContent = String(MG.Economy.getHearts()); fit(h); }
-    if (c) { c.textContent = MG.Economy.getCoins().toLocaleString(); fit(c); }
+    const best = bestFor(currentLight());
+    if (sharedLaneControls) {
+      sharedLaneControls.setHudStat('hearts', MG.Economy.getHearts());
+      sharedLaneControls.setHudStat('coins', MG.Economy.getCoins().toLocaleString());
+    }
+    document.querySelectorAll('[data-hud-score]').forEach((el) => {
+      el.textContent = I18N.t('mole.addr.best', { n: best.toLocaleString() });
+    });
+    const nick = localStorage.getItem('mole.nick') || '두더지';
+    document.querySelectorAll('[data-hud-nick]').forEach((el) => { el.textContent = nick; });
+    refreshHubAvatar();
     if (moreMenu) {
       const mm = document.getElementById('more-menu');
       if (mm && !mm.hidden) moreMenu.refresh();
     }
+  }
+
+  // 홈 화면 좌상단 ⊞ 자리 — 프로필 사진(사용자 지정, 더보기의 mm-avatar와 같은 소스).
+  function refreshHubAvatar() {
+    const av = document.getElementById('hub-avatar');
+    if (!av) return;
+    const pic = localStorage.getItem('mole.profilePic');
+    av.style.backgroundImage = pic ? 'url("' + pic + '")' : 'url("assets/moles/mole1.png")';
+  }
+  // 프로필 사진 변경 — 홈 화면 좌상단 아바타 탭(사용자 지정, 더보기의 editAvatar와 동일 로직).
+  function editProfileAvatar() {
+    screenNav.show('face-maker');
+    faceMaker.open({
+      profile: true,
+      onDone: (dataUrl) => {
+        try { localStorage.setItem('mole.profilePic', dataUrl); } catch (e) { alert(I18N.t('mole.fm.priv')); }
+        screenNav.back();
+        refreshHubAvatar();
+        if (moreMenu) moreMenu.refresh();
+      }
+    });
+  }
+
+  // 라이트 ON/DIM/OFF — 더보기 알약(mm-pill)과 다이얼패드 ✱("두더지팡") 팝업(light-popup)이
+  // 공유하는 단일 로직. 뿅망치는 라이트 ON 만 사용 가능(사용자 지정) — 양쪽 다 한 번 더 방어.
+  function setDifficulty(d) {
+    const w = localStorage.getItem('mole.weapon');
+    const paidWeapon = w === 'cannon' || w === 'goldhammer' || w === 'alipunch';
+    if (!paidWeapon && d !== 'easy') return;
+    localStorage.setItem('mole.difficulty', d); // "설정만" — 선택 표시만 바꾸고 화면 이동 없음
+    if (moreMenu) moreMenu.refresh();
+    refreshLightPopup();
+  }
+  function refreshLightPopup() {
+    const el = document.getElementById('light-popup');
+    if (!el) return;
+    const diff = localStorage.getItem('mole.difficulty') || 'easy';
+    const w = localStorage.getItem('mole.weapon');
+    const hammerOnly = w !== 'cannon' && w !== 'goldhammer' && w !== 'alipunch';
+    el.querySelectorAll('[data-lp-diff]').forEach((b) => {
+      const d = b.getAttribute('data-lp-diff');
+      b.classList.toggle('mm-pill--on', d === diff);
+      if (d === 'mid' || d === 'legend') b.classList.toggle('mm-pill--locked', hammerOnly);
+    });
+  }
+  function openLightPopup() {
+    refreshLightPopup();
+    const el = document.getElementById('light-popup');
+    if (el) el.hidden = false;
+  }
+  function closeLightPopup() {
+    const el = document.getElementById('light-popup');
+    if (el) el.hidden = true;
+  }
+  function wireLightPopup() {
+    const el = document.getElementById('light-popup');
+    if (!el) return;
+    el.querySelectorAll('[data-lp-diff]').forEach((b) => {
+      b.addEventListener('click', () => {
+        if (b.classList.contains('mm-pill--locked')) return;
+        setDifficulty(b.getAttribute('data-lp-diff'));
+      });
+    });
+    const closeBtn = el.querySelector('[data-lp-close]');
+    if (closeBtn) closeBtn.addEventListener('click', closeLightPopup);
+    el.addEventListener('click', (e) => { if (e.target === el) closeLightPopup(); });
   }
 
   // 화면별 BGM. 홈 bgm-home-1~4, 게임 bgm-game-1~3 (재진입마다 순환, game-1=달빛축제 1순위), 더보기 bgm-more.
@@ -148,6 +210,9 @@
 
   function bgmActiveEl() { return bgmEls ? bgmEls[bgmActiveIdx] : null; }
   function bgmInactiveEl() { return bgmEls ? bgmEls[1 - bgmActiveIdx] : null; }
+
+  // 홈/더보기 BGM 삭제(사용자 지정, 신규 트랙 삽입 예정) — 그 화면 진입 시 그냥 정지.
+  function stopBgm() { bgmWantPlay = false; applyBgm(); }
 
   // BGM 재생/정지의 유일한 결정 지점 — 화면 의도 · 앱 가시성 · 설정을 모두 본다.
   function applyBgm() {
@@ -506,14 +571,17 @@
       // 홈 화면(전화 다이얼러로 위장 중)일 때만 탭음(버튼소리1 고정) — 플레이 중엔 연타가 잦아
       // 타격음과 겹치므로 안 씀.
       onTap: () => { if (document.getElementById('game-screen').classList.contains('is-start')) MG.HitFx.uiTap(0); },
-      // 채널 링크 — 홈 화면에서 채널 버튼을 "두 번 톡톡"(더블탭)하면 광고 후 유튜브 채널로 이동.
-      // lane-controls 가 URL 을 직접 넘겨준다 (LINKS 하드코딩 + 유저가 이 기기에 등록한 것 둘 다 포함).
-      // window.open(_blank) 은 광고(비동기) 뒤엔 팝업 차단됨 → 같은 탭 이동(location.href).
-      onChannelEnter: (url) => {
-        if (!url || !document.getElementById('game-screen').classList.contains('is-start')) return;
-        MG.Ads.interstitial(I18N.t('mole.channel.hint')).then((ok) => {
-          if (ok) { if (bgmEls) bgmEls.forEach((el) => el.pause()); window.location.href = url; } // 채널 이동 전 BGM 정지
-        });
+      // 홈 화면 다이얼패드에 흡수된 더보기 기능(하트·코인·티켓·스코어·상점·홈·일일·퀘스트·친구·
+      // 사진보관·아이템보관·설정·라이트모드) — 탭하면 그 화면/팝업으로. 인트로/카운트다운
+      // 중(navLocked)엔 무시.
+      onHomeAction: (action) => {
+        if (navLocked) return;
+        if (action === 'home') { showStartScreen(); return; }
+        if (action === 'lightMode') { openLightPopup(); return; }
+        const sub = { shop: 'shop-screen', score: 'score-screen', daily: 'daily-screen',
+          quest: 'quest-screen', friends: 'friends-screen', locker: 'face-locker',
+          inventory: 'inventory-screen', settings: 'settings-screen' }[action];
+        if (sub) openMore(sub);
       }
     });
     laneControlsIsSmall = small;
@@ -786,7 +854,7 @@
     var mm = document.getElementById('more-menu');
     mm.classList.toggle('mm-paused', resumable);
     mm.hidden = false;
-    playScreenBgm('more'); // 더보기 화면 진입 — 더보기 BGM 을 처음부터
+    stopBgm(); // 더보기 BGM 삭제(신규 예정) — 정지
     if (moreMenu) moreMenu.refresh();
     if (sub) {
       screenNav.show(sub);
@@ -849,7 +917,7 @@
     // 이었다면 여기서 다시 지어지는데, 그때는 성공/실패 화면 → 홈 진입에도 10회전(사용자
     // 지정 — 성공/실패 둘 다 동일하게) 연출을 준다.
     if (ensureLaneControlsForChapter(false) && sharedLaneControls) sharedLaneControls.spinBoardIn();
-    playScreenBgm('home'); // 홈 진입 — 홈 BGM(3곡 순환)을 처음부터
+    stopBgm(); // 홈 BGM 삭제(신규 예정) — 정지
     const go = document.getElementById('gameover-overlay');
     go.hidden = true; go.classList.remove('is-win', 'is-lose', 'is-sliding');
     const cf = go.querySelector('.go-confetti'); if (cf) cf.innerHTML = '';
@@ -889,30 +957,8 @@
     if (mm) mm.hidden = true;
 
     refreshChapterNav();
-
-    // 위에서 내려오는 문자 배너 = 광고 버튼 2개(하트+1 / 코인+50). 툭↓ 4초 보임 → 그동안 누를 수 있음.
-    const sms = document.getElementById('start-best');
-    if (!sms.querySelector('.chat-ad-btns')) sms.appendChild(adButtons());
-    syncStartAds();
     refreshBoardStats();
     tuneAddrTicker();
-    sms.classList.remove('sms-anim');   // 시작화면 열 때마다 배너 툭↓ 리트리거
-    void sms.offsetWidth;
-    sms.classList.add('sms-anim');
-
-    // 첫 방문 = 전체 인트로. 아니면 재방문 대화(재접=랜덤 문구 / 다시하기·챕터클리어=축하 이모티콘 리액션).
-    const isRetry = !!(opts && opts.retry);
-    const isClear = !!(opts && opts.chapterClear);  // 승리 스와이프로 다음 챕터 홈에 도착
-    const visits = parseInt(localStorage.getItem('mole.visits'), 10) || 0;
-    if (!isRetry && !isClear) localStorage.setItem('mole.visits', String(visits + 1));
-    const firstVisit = !isRetry && !isClear && visits === 0;
-    const firstEl = document.getElementById('chat-first');
-    const returnEl = document.getElementById('chat-return');
-    firstEl.hidden = !firstVisit;
-    returnEl.hidden = firstVisit;
-
-    if (!firstVisit) buildReturnChat(isClear ? 'clear' : isRetry ? 'retry' : 'phrase');
-    revealThread(firstVisit ? firstEl : returnEl);
     maybeShowStartCoach();
   }
 
@@ -922,16 +968,17 @@
     const nav = document.getElementById('chapter-nav');
     if (!nav) return;
     const maxCh = MG.Progress.maxChapterFor(currentLight());
-    // 항상 표시 — 챕터가 하나만 열렸어도 "챕터 1" 배지는 보이고, 양쪽 화살표만 비활성.
+    // 항상 표시 — 챕터가 하나만 열렸어도 "ROUND 1" 배지는 보이고, 양쪽 화살표만 비활성.
     let ch = currentChapter();
     if (ch > maxCh) { ch = maxCh; setChapter(ch); }
     nav.hidden = false;
     nav.setAttribute('data-ch', String(ch)); // 챕터별 불빛 색 (style.css #chapter-nav[data-ch="N"])
-    nav.querySelector('[data-ch-label]').textContent = I18N.t('mole.chapter.n', { n: ch });
+    // "ROUND N" 표기(사용자 지정, 언어 무관 고정 — 챕터 이름/부제(chapterLabel) 등 다른 표시는 그대로).
+    nav.querySelector('[data-ch-label]').textContent = 'ROUND ' + ch;
     nav.querySelector('[data-ch-prev]').disabled = ch <= 1;
     nav.querySelector('[data-ch-next]').disabled = ch >= maxCh;
-    const tn = nav.querySelector('[data-ch-tickets]'); // 챕터 입장권 (2시간마다 +1, 입장 시 -1)
-    if (tn) tn.textContent = String(MG.Economy.getTickets());
+    // 챕터 입장권 (2시간마다 +1, 입장 시 -1) — 다이얼패드 3번 버튼 카운터로 표시(사용자 지정).
+    if (sharedLaneControls) sharedLaneControls.setHudStat('tickets', MG.Economy.getTickets());
   }
   function wireChapterNav() {
     const nav = document.getElementById('chapter-nav');
@@ -983,158 +1030,6 @@
       setTimeout(hide, 6000);
       document.addEventListener('pointerdown', hide, { once: true });
     }, 1400);
-  }
-
-  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-
-  // --- 재방문 대화 조립 (말풍선 줄 / 이모티콘 줄) ---
-  function avatarEl(kind) {
-    const d = document.createElement('div');
-    d.className = 'chat-avatar chat-avatar--' + kind;
-    d.setAttribute('aria-hidden', 'true');
-    return d;
-  }
-  function bubbleRow(side, text) {
-    const row = document.createElement('div');
-    row.className = 'chat-row chat-row--' + side;
-    const bubble = document.createElement('div');
-    bubble.className = 'chat-bubble chat-bubble--' + side;
-    bubble.appendChild(document.createTextNode(text));
-    if (side === 'them') { row.appendChild(avatarEl('mole')); row.appendChild(bubble); }
-    else { row.appendChild(bubble); row.appendChild(avatarEl('hippo')); }
-    return row;
-  }
-  // 이모티콘만 = 말풍선 없이 큼 (카톡).
-  function emojiRow(side, emoji, withBurst) {
-    const row = document.createElement('div');
-    row.className = 'chat-row chat-row--' + side + ' chat-row--emoji';
-    const em = document.createElement('div');
-    em.className = 'chat-emoji';
-    em.textContent = emoji;
-    if (withBurst) {
-      const b = document.createElement('span');
-      b.className = 'chat-burst';
-      b.setAttribute('aria-hidden', 'true');
-      for (let i = 0; i < 10; i++) b.appendChild(document.createElement('i'));
-      em.appendChild(b);
-    }
-    if (side === 'them') { row.appendChild(avatarEl('mole')); row.appendChild(em); }
-    else { row.appendChild(em); row.appendChild(avatarEl('hippo')); }
-    return row;
-  }
-  // chat-phrases.js 가 (스테일 캐시 등으로) 없어도 대화가 죽지 않게 최소 폴백.
-  const CP = MG.ChatPhrases || {
-    returnPhrases: () => ['왔어?'], hippoReplies: () => ['ㅇㅇ'],
-    retryText: (k) => (k === 'best' ? '신기록!' : k === 'bad' ? 'ㅋㅋ' : '잘했어!'),
-    clearPhrases: () => ['챕터 클리어!']
-  };
-  function buildReturnChat(mode) {
-    const el = document.getElementById('chat-return');
-    el.innerHTML = '';
-    if (mode === 'clear') {
-      el.appendChild(emojiRow('them', CELEBRATE_EMOJI, true));        // 축하 이모티콘(큼) + 폭죽
-      el.appendChild(bubbleRow('them', pick(CP.clearPhrases())));     // "챕터 클리어! 다음도 가보자" 류
-      el.appendChild(emojiRow('me', pick(HIPPO_MOODS), false));       // 하마 이모티콘(큼)
-    } else if (mode === 'retry') {
-      const kind = localStorage.getItem('mole.lastWasBest') === '1' ? 'best'
-        : localStorage.getItem('mole.lastWasBad') === '1' ? 'bad' : 'clear';
-      el.appendChild(emojiRow('them', CELEBRATE_EMOJI, true));        // 축하 이모티콘(큼) + 폭죽
-      el.appendChild(bubbleRow('them', CP.retryText(kind)));         // 글자는 따로
-      el.appendChild(emojiRow('me', pick(HIPPO_MOODS), false));       // 하마 이모티콘(큼)
-    } else {
-      el.appendChild(bubbleRow('them', pick(CP.returnPhrases())));
-      el.appendChild(bubbleRow('me', pick(CP.hippoReplies())));
-    }
-  }
-
-  // 홈 광고 = 생명/코인 각각 하루 최대 3회. localStorage 에 날짜별 카운트.
-  const AD_DAILY_MAX = 3;
-  function adDailyDate() {
-    const d = new Date();
-    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
-  }
-  function adDaily() {
-    let o;
-    try { o = JSON.parse(localStorage.getItem('mole.adDaily') || '{}'); } catch (e) { o = {}; }
-    if (!o || o.date !== adDailyDate()) o = { date: adDailyDate(), life: 0, coin: 0 };
-    return o;
-  }
-  function bumpAdDaily(kind) {
-    const o = adDaily();
-    o[kind] = (o[kind] || 0) + 1;
-    try { localStorage.setItem('mole.adDaily', JSON.stringify(o)); } catch (e) { /* noop */ }
-    return o[kind];
-  }
-  function syncAdBtn(btn, kind) {
-    if (!btn) return;
-    const n = adDaily()[kind] || 0;
-    const cap = btn.querySelector('.chat-ad-cap');
-    if (cap) cap.textContent = n + '/' + AD_DAILY_MAX;
-    btn.disabled = n >= AD_DAILY_MAX;
-  }
-
-  // 광고 버튼 2개 (하트+1 / 코인+50) — 시작화면 문자 배너(#start-best) 안에 삽입.
-  function adButtons() {
-    const wrap = document.createElement('span');
-    wrap.className = 'chat-ad-btns';
-    wrap.innerHTML =
-      '<button type="button" class="chat-ad-btn" data-ad="life" aria-label="' + I18N.t('mole.start.adLife') + '">' +
-        '<span class="chat-ad-play" aria-hidden="true">▶</span>' +
-        '<svg class="chat-ad-ic chat-ad-ic--heart" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg>' +
-        '<span class="chat-ad-n">+1</span><span class="chat-ad-cap"></span></button>' +
-      '<button type="button" class="chat-ad-btn" data-ad="coin" aria-label="' + I18N.t('mole.shop.watchCoin') + '">' +
-        '<span class="chat-ad-play" aria-hidden="true">▶</span>' +
-        '<svg class="chat-ad-ic chat-ad-ic--coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="currentColor"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="1.6"/></svg>' +
-        '<span class="chat-ad-n">+50</span><span class="chat-ad-cap"></span></button>';
-    wireChatAds(wrap);
-    return wrap;
-  }
-  // 시작화면 열 때마다 "N/3" 카운터·비활성 상태를 다시 반영 (날짜 바뀜 / 다른 화면에서 광고 봄).
-  function syncStartAds() {
-    const sms = document.getElementById('start-best');
-    if (!sms) return;
-    syncAdBtn(sms.querySelector('[data-ad="life"]'), 'life');
-    syncAdBtn(sms.querySelector('[data-ad="coin"]'), 'coin');
-  }
-
-  // "광고 보고 하트/코인" 버튼 연결 — 하루 3회 제한 + "N/3" 카운터.
-  function wireChatAds(scope) {
-    [['life', scope.querySelector('[data-ad="life"]')],
-     ['coin', scope.querySelector('[data-ad="coin"]')]].forEach(function (pair) {
-      const kind = pair[0], btn = pair[1];
-      if (!btn || btn.dataset.wired) return;
-      btn.dataset.wired = '1';
-      syncAdBtn(btn, kind);
-      btn.addEventListener('click', () => {
-        if ((adDaily()[kind] || 0) >= AD_DAILY_MAX) return;
-        MG.Ads.rewarded().then((ok) => {
-          if (!ok) return;
-          bumpAdDaily(kind);
-          if (kind === 'life') MG.Economy.addHearts(1);
-          else MG.Economy.addCoins(50);
-          refreshBoardStats();
-          syncAdBtn(btn, kind);
-        });
-      });
-    });
-  }
-
-  // 카톡처럼 메시지를 한 줄씩 공개하며 아래로 따라 스크롤
-  function revealThread(thread) {
-    if (!thread) return;
-    const rows = Array.prototype.slice.call(thread.querySelectorAll('.chat-row'));
-    const myGen = sessionGen;
-    rows.forEach((r) => { r.classList.add('chat-pending'); r.classList.remove('chat-appear'); });
-    let i = 0;
-    const step = () => {
-      if (myGen !== sessionGen || i >= rows.length) return;
-      rows[i].classList.remove('chat-pending');
-      rows[i].classList.add('chat-appear');
-      thread.scrollTop = thread.scrollHeight;
-      i += 1;
-      setTimeout(step, 560);
-    };
-    setTimeout(step, 450);
   }
 
   // ---------- 라운드 시작 ----------
@@ -1875,13 +1770,6 @@
     let moleHits = 0;
     run.combo.setMult(currentScoreMult()); // 라이트·피버 배율 (이번 타격에 적용)
 
-    // 알리 펀치 아나운서 보이스 — 정타(실제 타겟 명중, 중간타 포함)일 때만. 빈 구멍·방해물은 무음.
-    if (state.weapon === 'alipunch' && opts && opts.regionId != null &&
-        results.some((r) => effectiveHitType(cfg, r.type) === 'mole' && !r.ignored)) {
-      const style = MG.LaneBoxing.ZONES[opts.regionId];
-      if (style) MG.HitFx.punchVoice(style);
-    }
-
     results.forEach((r) => {
       if (r.ignored) return; // 연타 쿨다운 중 타격 — 점수·연출·콤보 변화 없음 (헛방도 아님)
       const effType = effectiveHitType(cfg, r.type);
@@ -2218,8 +2106,6 @@
     try {
       localStorage.setItem('mole.lastPlayed', String(Date.now()));
       localStorage.setItem('mole.lastScore', String(total)); // 홈 문자칸 "득점" = 마지막 플레이 점수
-      localStorage.setItem('mole.lastWasBest', prog.passed ? '1' : '0');
-      localStorage.setItem('mole.lastWasBad', prog.passed ? '0' : '1');
       const hist = JSON.parse(localStorage.getItem('mole.history') || '[]');
       hist.push({ t: Date.now(), score: total, passed: prog.passed, reason: reason, ch: chapter, light: light });
       if (hist.length > 500) hist.splice(0, hist.length - 500); // 안전 상한
@@ -2443,15 +2329,19 @@
 
     migrateBest();
     wireMoreMenu();
+    wireLightPopup();
 
     // ⚠️ 핵심 리스너 배선을 showStartScreen() 보다 먼저 — showStartScreen 안에서 예외가 나도
     // (예: 스테일 캐시로 모듈 하나 누락) ⊞ 홈버튼·일시정지 등이 죽지 않도록.
-    // 좌상단 ⊞ = 더보기 메뉴 열기.
+    // 좌상단 아이콘 — 홈: 프로필 사진(탭하면 사진 변경). 실제 플레이 중: 홈 아이콘(탭하면
+    // 라운드 나가고 홈으로, 사용자 지정 — 더보기 화면이 다이얼패드로 흡수돼 필요 없어짐).
     document.getElementById('btn-back-to-hub').addEventListener('click', (e) => {
       if (navLocked) return; // 인트로/카운트다운/라운드 전환 중엔 안 먹힘 (회색 음영)
-      // 결과 화면에선 ⊞ = 곧장 홈(대화)으로 (다시하기 버튼 없앰 — 중복). 그 외엔 더보기 메뉴.
+      // 결과 화면에선 = 곧장 홈으로 (다시하기 버튼 없앰 — 중복).
       if (!document.getElementById('gameover-overlay').hidden) { showStartScreen({ retry: true, originEl: e.currentTarget }); return; }
-      openMore(undefined, e.currentTarget);
+      const isStart = document.getElementById('game-screen').classList.contains('is-start');
+      if (isStart) { editProfileAvatar(); return; }
+      showStartScreen();
     });
     // 앱 전체 버튼 탭음(버튼소리2 고정) — 게임 키패드(#lane-button-bar, 다이얼패드일 땐 버튼소리1을
     // 자체 처리, 플레이 중엔 무음)만 제외하고 전부. 더보기/설정/상점/일일/인벤토리 등을 화면마다
@@ -2468,15 +2358,6 @@
       showStartScreen();
     });
     wireResultSwipe(); // 승리 화면 왼쪽 스와이프 → 다음 챕터 화면
-    // 대화 공개 중 아무 데나 탭하면 나머지 메시지 즉시 표시 (건너뛰기)
-    document.getElementById('board-start').addEventListener('click', (e) => {
-      if (e.target.closest('.chat-ad-btn')) return;
-      const thread = document.querySelector('#board-start .chat-thread:not([hidden])');
-      const pending = thread && thread.querySelectorAll('.chat-row.chat-pending');
-      if (!pending || !pending.length) return;
-      pending.forEach((r) => { r.classList.remove('chat-pending'); r.classList.add('chat-appear'); });
-      thread.scrollTop = thread.scrollHeight;
-    });
 
     // 첫 화면 = 두더지 오빠 대화. (예외가 나도 위 배선은 이미 끝났음. 최초 진입은 플래시 없음.)
     try { showStartScreen({ skipFlash: true }); } catch (e) { console.error('showStartScreen failed', e); }
@@ -2562,15 +2443,6 @@
       return p ? p.regionId : null;
     };
     // 첫 방문/재방문 대화 테스트용.
-    window.__debugSetVisits = function (n) {
-      localStorage.setItem('mole.visits', String(Math.max(0, n - 1)));
-      showStartScreen();  // 안에서 +1 → n번째 방문으로 표시
-    };
-    window.__debugResetIntro = function () {
-      ['mole.visits', 'mole.lastPlayed', 'mole.lastWasBest', 'mole.lastWasBad', 'mole.history']
-        .forEach((k) => localStorage.removeItem(k));
-      showStartScreen();
-    };
     window.__debugOpenMore = (sub) => openMore(sub);
     window.__debugSetHearts = function (n) {
       MG.Economy.setHearts(n);
@@ -2662,17 +2534,8 @@
       root: document.getElementById('more-menu'),
       on: {
         close: closeMore,
-        make: () => { screenNav.show('face-maker'); faceMaker.open({}); },
         locker: () => { screenNav.show('face-locker'); faceLocker.show(); },
-        diff: (d) => {
-          // 뿅망치는 라이트 ON 만 사용 가능(사용자 지정) — more-menu 알약도 잠겨있지만 한 번 더 방어.
-          const w = localStorage.getItem('mole.weapon');
-          const paidWeapon = w === 'cannon' || w === 'goldhammer' || w === 'alipunch';
-          if (!paidWeapon && d !== 'easy') return;
-          // 라이트 모드는 "설정만" — 선택 표시만 바꾸고 화면 이동 없음.
-          localStorage.setItem('mole.difficulty', d);
-          moreMenu.refresh();
-        },
+        diff: setDifficulty,
         start: (e) => {
           // 더보기 메뉴의 "시작" (통화 버튼 자리) → 더보기 닫고 대화 화면으로.
           // (대화 화면 시작 버튼을 눌러야 그 난이도로 게임이 시작된다. more-menu 숨김/screenNav
@@ -2691,17 +2554,7 @@
           const n = prompt(I18N.t('mole.more.nickPrompt'), localStorage.getItem('mole.nick') || '');
           if (n != null) { localStorage.setItem('mole.nick', n.trim().slice(0, 12)); moreMenu.refresh(); }
         },
-        editAvatar: () => {
-          screenNav.show('face-maker');
-          faceMaker.open({
-            profile: true,
-            onDone: (dataUrl) => {
-              try { localStorage.setItem('mole.profilePic', dataUrl); } catch (e) { alert(I18N.t('mole.fm.priv')); }
-              screenNav.back();
-              moreMenu.refresh();
-            }
-          });
-        }
+        editAvatar: editProfileAvatar
       }
     });
   }

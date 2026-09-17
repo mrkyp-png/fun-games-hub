@@ -106,17 +106,22 @@
        (게임 화면이 휴대폰 컨셉이라 — 사용자 요청). is-start 클래스가 붙어있으면 시작 상태. -->
   <section id="game-screen" class="screen cosmic-content is-start">
     <div class="game-hud">
-      <button id="btn-back-to-hub" class="icon-btn" aria-label="나가기" data-i18n-aria-label="common.back"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="1.5" y="1.5" width="6" height="6" rx="1.8"/><rect x="16.5" y="1.5" width="6" height="6" rx="1.8"/><rect x="1.5" y="16.5" width="6" height="6" rx="1.8"/><rect x="16.5" y="16.5" width="6" height="6" rx="1.8"/></svg><span id="hud-timer" class="hub-timer" aria-hidden="true"></span></button>
-      <!-- 시작 상태: 브라우저 주소창 (게임 URL). 플레이 상태: 증권 전광판 스타일 티커. -->
+      <button id="btn-back-to-hub" class="icon-btn" aria-label="나가기" data-i18n-aria-label="common.back">
+        <!-- 실제 플레이 중: 홈 아이콘(탭하면 라운드 나가고 홈으로, 사용자 지정 — 예전 ⊞ 더보기 아이콘 대체). -->
+        <svg class="hub-menu-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5M6 10v9h5v-5h2v5h5v-9"/></svg>
+        <!-- 홈 화면에서만 이 아이콘 대신 프로필 사진(탭하면 사진 변경, 사용자 지정) — game.js refreshHubAvatar() 가 배경으로 채운다. -->
+        <span id="hub-avatar" class="hub-avatar" aria-hidden="true"></span>
+        <span id="hud-timer" class="hub-timer" aria-hidden="true"></span>
+      </button>
+      <!-- 시작 상태: 브라우저 주소창 (게임 URL) + 최고점수. 플레이 상태: 증권 전광판 스타일 티커. -->
       <div id="hud-addr" class="hud-addr" aria-hidden="true">
-        <!-- 게임화면 티커(#hud-ticker)와 같은 방식 — "두더지팡.app" + 채널 힌트가 번갈아 스크롤. -->
         <div class="ticker-viewport">
           <div class="ticker-track">
             <span class="ticker-seg">
-              <b class="hud-addr-url" data-i18n="mole.addr.url">두더지팡.app</b><i class="hud-addr-hint" data-i18n="mole.channel.discoverHint"></i><i class="hud-addr-hint" data-i18n="mole.channel.discoverHint2"></i><i class="hud-addr-hint" data-i18n="mole.channel.discoverHint3"></i><i class="hud-addr-hint" data-i18n="mole.start.quitHint"></i>
+              <b class="hud-addr-url" data-i18n="mole.addr.url">두더지팡</b><i class="hud-addr-nick" data-hud-nick></i><i class="hud-addr-score" data-hud-score></i>
             </span>
             <span class="ticker-seg">
-              <b class="hud-addr-url" data-i18n="mole.addr.url">두더지팡.app</b><i class="hud-addr-hint" data-i18n="mole.channel.discoverHint"></i><i class="hud-addr-hint" data-i18n="mole.channel.discoverHint2"></i><i class="hud-addr-hint" data-i18n="mole.channel.discoverHint3"></i><i class="hud-addr-hint" data-i18n="mole.start.quitHint"></i>
+              <b class="hud-addr-url" data-i18n="mole.addr.url">두더지팡</b><i class="hud-addr-nick" data-hud-nick></i><i class="hud-addr-score" data-hud-score></i>
             </span>
           </div>
         </div>
@@ -149,64 +154,18 @@
       <div id="hud-combo" class="board-combo" aria-hidden="true"></div>
       <div id="fever-badge" class="fever-badge" aria-hidden="true" data-i18n="mole.hud.fever" hidden>피버타임!</div>
       <div id="combo-heart-pop" class="combo-heart-pop" aria-hidden="true"></div>
-      <!-- 홈(시작) 화면: 게임박스 우측 상단에 [챕터 ◀N▶] + 하트 + 코인.
-           챕터는 "챕터 N" 만 짧게 박스로, 양옆에 굵은 화살표(홈버튼처럼 안팎으로 모였다 벌어짐).
-           예전엔 좌상단에 긴 이름표로 따로 떠서 코인 자릿수 늘면 겹쳤음 — 한 줄로 합침. -->
-      <!-- 챕터 선택 — 좌측 상단 고정(두더지 아바타처럼 가장자리 4px). 하트/코인(#board-stats)과 분리. -->
+      <!-- 챕터 선택 — 좌측 상단 고정(두더지 아바타처럼 가장자리 4px).
+           하트/코인/티켓(예전 #board-stats·티켓뱃지)은 다이얼패드 1·2·3번 버튼 안으로 흡수(사용자 지정). -->
       <span id="chapter-nav" class="chapter-nav-top" aria-hidden="true">
         <i class="ch-shine" aria-hidden="true"></i>
         <button type="button" class="ch-arrow ch-arrow--prev" data-ch-prev aria-label="이전 챕터">👈</button>
         <b class="ch-label"><span class="ch-txt" data-ch-label>챕터 1</span></b>
         <button type="button" class="ch-arrow ch-arrow--next" data-ch-next aria-label="다음 챕터">👉</button>
-        <span class="ch-ticket" aria-hidden="true">🎫</span><b class="ch-ticket-n" data-ch-tickets aria-hidden="true">0</b>
       </span>
-      <div id="board-stats" class="board-stats" aria-hidden="true">
-        <span class="mm-stat mm-hearts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg><b data-bs-hearts>3</b></span>
-        <span class="mm-stat mm-coins"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg><b data-bs-coins>0</b></span>
-      </div>
-      <!-- 최고 스코어: 위에서 툭 내려오는 문자 알림. #board-start(z7) 안이 아니라 #mole-board
-           직속으로 둬서 board-stats(z9)와 진짜 형제 — 그래야 z-index:10 이 실제로 먹힌다
-           (부모 #board-start 의 z-index 에 갇히면 자식 z-index 는 소용없음). -->
-      <div id="start-best" class="chat-sms" aria-hidden="true">
-        <svg class="chat-sms-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 6.5 8.5 6 8.5-6"/></svg>
-        <!-- 광고 버튼 2개(하트+1 / 코인+50) — game.js 가 시작화면 열 때 adButtons() 로 삽입 -->
-      </div>
 
-      <!-- 시작 UI = 카톡풍 대화 (폰 화면 = 보드 안) -->
-      <div id="build-tag" aria-hidden="true">v493</div>
-      <div id="board-start" class="board-panel board-start">
-
-        <!-- 첫 방문: 전체 인트로 대화 -->
-        <div class="chat-thread" id="chat-first">
-          <div class="chat-row chat-row--them">
-            <div class="chat-avatar chat-avatar--mole" aria-hidden="true"></div>
-            <div class="chat-bubble chat-bubble--them" data-i18n="mole.intro.l1">나 두더지 오빠야, 잘 지내지? ㅎㅎ</div>
-          </div>
-          <div class="chat-row chat-row--me">
-            <div class="chat-bubble chat-bubble--me" data-i18n="mole.intro.l2">누구세요?</div>
-            <div class="chat-avatar chat-avatar--hippo" aria-hidden="true"></div>
-          </div>
-          <div class="chat-row chat-row--them">
-            <div class="chat-avatar chat-avatar--mole" aria-hidden="true"></div>
-            <div class="chat-bubble chat-bubble--them" data-i18n="mole.intro.l3">게임 간단히 설명해줄게!</div>
-          </div>
-          <div class="chat-row chat-row--them">
-            <div class="chat-avatar chat-avatar--spacer" aria-hidden="true"></div>
-            <div class="chat-bubble chat-bubble--them" data-i18n="mole.intro.l4">챕터1은 5개 라운드, 각 15초! 두더지를 최대한 많이 때려서 점수를 획득해야 돼. 쉽지?</div>
-          </div>
-          <div class="chat-row chat-row--them">
-            <div class="chat-avatar chat-avatar--spacer" aria-hidden="true"></div>
-            <div class="chat-bubble chat-bubble--them" data-i18n="mole.intro.l5">자기야 사랑해~~</div>
-          </div>
-          <div class="chat-row chat-row--me">
-            <div class="chat-bubble chat-bubble--me" data-i18n="mole.intro.l6">하아.....뭐지? ... ...</div>
-            <div class="chat-avatar chat-avatar--hippo" aria-hidden="true"></div>
-          </div>
-        </div>
-
-        <!-- 재방문(재접·다시하기): game.js 가 상황에 맞춰 말풍선/이모티콘 줄을 채운다. -->
-        <div class="chat-thread" id="chat-return" hidden></div>
-      </div>
+      <div id="build-tag" aria-hidden="true">v494</div>
+      <!-- 홈(시작) 상태의 배경 패널 — 카톡 대화 UI 는 삭제(사용자 지정), 다이얼패드(키패드는 아래 그대로)만 보임. -->
+      <div id="board-start" class="board-panel board-start"></div>
 
       <!-- 최종 결과 (10라운드 완주 또는 목숨 소진). 박스 없이 전체화면 연출 위에 직접.
            is-win = 광선+색종이+하마 축하 / is-lose = 빗줄기+하마 시무룩. -->
@@ -287,11 +246,6 @@
           <b data-mm-nick>두더지</b><i data-mm-sub></i>
         </button>
       </div>
-      <div class="mm-maker" data-mm-make>
-        <span class="mm-maker-faces" data-mm-faces></span>
-        <span class="mm-maker-txt" data-i18n="mole.more.make">사진으로 멋진 캐릭터 만들기</span>
-        <span class="mm-maker-btn" data-i18n="mole.more.makeBtn">만들기</span>
-      </div>
       <div class="mm-pills">
         <button type="button" class="mm-pill" data-mm-diff="easy">
           <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"/></svg>
@@ -313,10 +267,6 @@
           <span class="mm-pill-combo" data-i18n="mole.diff.legend.combo">콤보100 ❤️X2</span>
           <span data-i18n="mole.diff.legend">라이트 OFF</span>
         </button>
-        <button type="button" class="mm-pill mm-pill--locked" data-mm-secret disabled aria-disabled="true">
-          <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>
-          <span data-i18n="mole.diff.secret">시크릿 모드</span>
-        </button>
       </div>
       <div class="mm-grid">
         <button type="button" data-mm-nav="score"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v4a5 5 0 01-10 0zM7 5.5H4V8a3 3 0 003 3M17 5.5h3V8a3 3 0 01-3 3M12 13v4M8.5 20.5h7l-1-3h-5z"/></svg><i data-i18n="mole.more.score">스코어</i></button>
@@ -330,7 +280,35 @@
         <span class="mm-go-note" aria-hidden="true" data-i18n="mole.more.playNote">처음부터 새로 시작 — 진행 중인 판은 사라져요</span>
         <button type="button" class="mm-go" data-mm-start><span class="mm-go-badge"><svg class="mm-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.4.6 3.6.6.6 0 1 .5 1 1V20c0 .6-.4 1-1 1C10.2 21 3 13.8 3 5c0-.6.5-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.2 1l-2.3 2.2z"/></svg><span class="idle-crown-fx" aria-hidden="true"></span></span><i>PLAY</i></button>
       </div>
-      <div class="mm-ad" data-mm-ad></div>
+    </div>
+    <!-- 라이트 ON/DIM/OFF 선택 작은 창 — 다이얼패드 ✱("두더지팡") 버튼으로 진입(사용자 지정).
+         mole-board 형제로(더보기와 같은 이유 — position:fixed가 flipSwap 컨테이닝 블록에 갇히는 버그 방지). -->
+    <div id="light-popup" class="ad-overlay" hidden>
+      <div class="ad-overlay-card light-popup-card">
+        <button type="button" class="ad-overlay-x" data-lp-close aria-label="닫기">✕</button>
+        <div class="mm-pills">
+          <button type="button" class="mm-pill" data-lp-diff="easy">
+            <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"/></svg>
+            <span data-i18n="mole.diff.easy">라이트 ON</span>
+          </button>
+          <button type="button" class="mm-pill mm-pill--mult" data-lp-diff="mid">
+            <span class="mm-pill-row">
+              <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"/></svg>
+              <span class="mm-pill-mx"><b data-i18n="mole.diff.mid.mult">×1.2</b><i data-i18n="mole.diff.mid.fever">피버 ×1.5</i></span>
+            </span>
+            <span class="mm-pill-combo" data-i18n="mole.diff.mid.combo">콤보100 하트</span>
+            <span data-i18n="mole.diff.mid">라이트 DIM</span>
+          </button>
+          <button type="button" class="mm-pill mm-pill--mult" data-lp-diff="legend">
+            <span class="mm-pill-row">
+              <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"/></svg>
+              <span class="mm-pill-mx"><b data-i18n="mole.diff.legend.mult">×2.0</b><i data-i18n="mole.diff.legend.fever">피버 ×3.0</i></span>
+            </span>
+            <span class="mm-pill-combo" data-i18n="mole.diff.legend.combo">콤보100 ❤️X2</span>
+            <span data-i18n="mole.diff.legend">라이트 OFF</span>
+          </button>
+        </div>
+      </div>
     </div>
     <!-- 더보기 메뉴 하위 화면들 (screen-nav.js 가 배타 토글) — mole-board 형제로 이동.
          이 화면들도 more-menu(v168)와 똑같이 position:fixed 인데 mole-board 자식이었음 —
@@ -529,7 +507,6 @@
 <script src="js/ads.js"></script>
 <script src="js/levels.js"></script>
 <script src="js/progress.js"></script>
-<script src="js/chat-phrases.js"></script>
 <script src="js/rng.js"></script>
 <script src="js/combo-score.js"></script>
 <script src="js/grid-partition.js"></script>
@@ -555,7 +532,6 @@
 <script src="js/lane-cannon.js"></script>
 <script src="js/lane-boxing.js"></script>
 <script src="js/lane-controls.js"></script>
-<script src="js/channel-links.js"></script>
 <script src="js/region-reveal.js"></script>
 <script src="js/hud.js"></script>
 <script src="js/sky.js"></script>
@@ -613,7 +589,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=493').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=494').catch(function () {});
       }
     });
   }

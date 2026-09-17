@@ -485,9 +485,12 @@
         (1 + (Math.random() * 2 - 1) * HIT_GAIN_JITTER));
       const rate = (light ? TAP_RATE : 1) * (1 + (Math.random() * 2 - 1) * HIT_PITCH_JITTER);
 
-      // 대포 장착 중이면 폭발음 풀, 골드 묠니르면 전용 타격음 풀, 아니면 기존 타격음 풀.
+      // 대포 장착 중이면 폭발음 풀, 골드 묠니르면 전용 타격음 풀, 알리 펀치는 전용 버퍼가
+      // 없으니 뿅망치 타격음 풀을 쓰지 않고 punchSynth 합성음으로(버그 수정 — 예전엔 여기서
+      // hitBuffers 로 떨어져 알리 펀치 타격에도 뿅망치 소리가 났었음), 그 외(뿅망치)는 기존 풀.
       const pool = (isCannonEquipped() && cannonBuffers && cannonBuffers.length) ? cannonBuffers
         : (isGoldhammerEquipped() && goldhammerHitBuffers && goldhammerHitBuffers.length) ? goldhammerHitBuffers
+        : isAlipunchEquipped() ? null
         : hitBuffers;
       if (pool && pool.length) {
         whenReady(ctx, () => {
