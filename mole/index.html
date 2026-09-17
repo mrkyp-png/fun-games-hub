@@ -107,10 +107,10 @@
   }
   /* 인트로 종료 순간 "화면이 정중앙 점으로 흡수" (사용자 지정) — 다 보이는 상태(거대한 원=투명
      구멍)에서 시작해 0.6초 만에 점으로 수축, 화면이 빨려들듯 검게 닫힘. */
-  #power-on-dot.is-huge { width: 3000px; height: 3000px; transition: none; }
+  #power-on-dot.is-huge { width: var(--dot-max, 250vmax); height: var(--dot-max, 250vmax); transition: none; }
   #power-on-dot.is-shrink { width: 0; height: 0; transition: width 0.6s cubic-bezier(.6, 0, .9, .4), height 0.6s cubic-bezier(.6, 0, .9, .4); }
   /* 홈 화면 등장 — 점에서 5초에 걸쳐 전체화면으로 확장(휴대폰 켜지는 느낌). */
-  #power-on-dot.is-expand { width: 3000px; height: 3000px; transition: width 5s linear, height 5s linear; }
+  #power-on-dot.is-expand { width: var(--dot-max, 250vmax); height: var(--dot-max, 250vmax); transition: width 10s linear, height 10s linear; }
 </style>
 </head>
 <body>
@@ -504,7 +504,7 @@
       <div id="lane-button-bar">
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
-        <div id="build-tag" aria-hidden="true">v534</div>
+        <div id="build-tag" aria-hidden="true">v535</div>
       </div>
       <div id="invincible-countdown" class="invincible-countdown" aria-hidden="true" hidden></div>
     </div>
@@ -604,6 +604,11 @@
       var overlay = document.getElementById('power-on-overlay');
       var dot = document.getElementById('power-on-dot');
       if (overlay && dot) {
+        // 화면 대각선 실측 + 여유(사용자 지적 — 10초라 했는데 vmax 고정값이 실제 필요한 크기보다
+        // 훨씬 커서 3~5초만에 이미 다 드러나버림) → 정확히 대각선만큼만 커지게 해 10초 내내
+        // 실제로 커지는 게 보이게 한다.
+        var diag = Math.ceil(Math.sqrt(window.innerWidth * window.innerWidth + window.innerHeight * window.innerHeight)) + 20;
+        dot.style.setProperty('--dot-max', diag + 'px');
         overlay.hidden = false;
         dot.className = ''; // 클래스 초기화
         dot.classList.add('is-huge'); // 지금 보이는 화면 그대로(원이 화면보다 커서 다 뚫려 보임)
@@ -618,8 +623,8 @@
             dot.classList.remove('is-shrink');
             dot.classList.add('is-expand');
             doScatter();
-            try { window.FGH && window.FGH.fadeInHomeBgm && window.FGH.fadeInHomeBgm(5000); } catch (e) { /* 무시 */ }
-            setTimeout(function () { overlay.hidden = true; }, 5000);
+            try { window.FGH && window.FGH.fadeInHomeBgm && window.FGH.fadeInHomeBgm(10000); } catch (e) { /* 무시 */ }
+            setTimeout(function () { overlay.hidden = true; }, 10000);
           }, 2000);
         }, 600);
       } else {
@@ -661,7 +666,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=534').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=535').catch(function () {});
       }
     });
   }

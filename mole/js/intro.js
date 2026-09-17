@@ -72,27 +72,29 @@
     // 브금은 인트로 중엔 재생 안 함(사용자 지정) — 인트로가 끝나 홈화면이 실제로 드러나는
     // 시점에 index.html 이 window.FGH.startHomeBgm() 을 불러 시작한다.
 
-    // 부드럽게 마무리: (1) 인트로가 천천히 하얗게 밝아짐 → (2) 흰 레이어만 남기고 인트로 제거
-    //  → (3) 그 흰 레이어가 서서히 사라지며 홈이 배어나옴. 확 바뀌지 않게 총 ~2.4s.
+    // 2026-09-18(사용자 지정): 예전엔 인트로가 서서히 밝아지며 홈이 "배어나오는" 디졸브
+    // 였는데, 이제 index.html 의 새 전환 효과(검은 점으로 흡수→2초 암전→점에서 홈 확장,
+    // z-index 9999 > 인트로 9998)가 전체 리빌을 전담한다. onDone 을 그 디졸브(1.7s/0.3s)가
+    // 끝날 때까지 기다리면 디졸브 도중 홈이 먼저 비쳐버려(사용자 리포트: "홈화면 보여주지
+    // 말고 바로 검은색으로 흡수") 두 효과가 겹쳐 보였다 — onDone 을 즉시 불러 새 효과가 곧장
+    // 인트로 마지막 프레임 위를 덮게 한다. scr 자체는 어차피 그 아래 가려지니 정리만 뒤에 한다.
     function outro() {
       if (done) return;
       done = true; killed = true;
       timers.forEach(clearTimeout);
       if (raf) cancelAnimationFrame(raf);
       try { localStorage.setItem(SEEN_KEY, '1'); } catch (e) { /* 무시 */ }
-
-      scr.classList.add('intro--out'); // opacity 1→0 (1.7s) — 인트로 dissolve, 홈이 서서히 배어나옴
-      setTimeout(function () { scr.remove(); if (onDone) onDone(); }, 1800);
+      if (onDone) onDone();
+      setTimeout(function () { scr.remove(); }, 1800);
     }
-    // 건너뛰기는 즉시 (밝아짐 연출 생략) — 개발용으로 계속 확인해야 하므로.
     function skip() {
       if (done) return;
       done = true; killed = true;
       timers.forEach(clearTimeout);
       if (raf) cancelAnimationFrame(raf);
       try { localStorage.setItem(SEEN_KEY, '1'); } catch (e) { /* 무시 */ }
-      scr.classList.add('intro--out');
-      setTimeout(function () { scr.remove(); if (onDone) onDone(); }, 300);
+      if (onDone) onDone();
+      setTimeout(function () { scr.remove(); }, 300);
     }
 
     var scr = document.createElement('div');
