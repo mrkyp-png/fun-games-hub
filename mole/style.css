@@ -1391,8 +1391,12 @@ body { background: var(--lm-page); }
   border-radius: 8px 8px 0 0;
   background: var(--lm-pad);
 }
-/* 다이얼패드 래퍼 — 안내문구/첫방문 말풍선을 절대배치로 얹기 위함. */
-.dialpad { position: relative; flex: 0 0 auto; touch-action: manipulation; }
+/* 다이얼패드 래퍼 — 안내문구/첫방문 말풍선을 절대배치로 얹기 위함.
+   ⚠️ contain:paint 로 자기만의 페인트 레이어를 강제 — 위 보드(.more-menu/.board-screen)의
+   perspective 3D 회전(책장 효과) 중 실기기에서 GPU 컴포지팅이 형제 요소까지 같이 다시 그리며
+   다이얼패드가 0.7~1초 하얗게 비는 버그가 있었음(데스크톱 시뮬레이션엔 안 잡힘, 사용자 영상으로
+   확인). 다이얼패드를 독립된 레이어로 격리해 위쪽 회전 애니메이션의 영향을 안 받게 한다. */
+.dialpad { position: relative; flex: 0 0 auto; touch-action: manipulation; contain: paint; }
 
 /* 홈 화면 축제 분위기(사용자 지정) — BGM 비트마다 버튼 몇 개가 각자 독립적으로(전체가 같이
    말고, 사용자 지정) 커졌다 흔들림. game.js pulseDialPad() 가 매 비트마다 버튼 하나씩 이 클래스를
@@ -1890,7 +1894,7 @@ body { background: var(--lm-page); }
 /* ease-in/out + 100도 회전이면 회전이 눈에 보이기도 전에 훅 사라져 버그처럼 보였음
    (사용자 확인) — linear로 일정 속도 유지하고, 회전의 80%까지는 안 사라지게 해서
    실제로 페이지가 좁아지며 넘어가는 게 보이게 함(마지막 20%만 edge-on 으로 사라짐). */
-.flip-out, .flip-in { backface-visibility: hidden; }
+.flip-out, .flip-in { backface-visibility: hidden; will-change: transform, opacity; }
 .flip-out { animation: flip-out-anim 0.7s linear forwards; transform-origin: 100% 50%; }
 .flip-in  { animation: flip-in-anim 0.7s linear forwards; transform-origin: 0% 50%; }
 @keyframes flip-out-anim {
