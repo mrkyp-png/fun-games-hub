@@ -158,21 +158,27 @@
   // 평균 대비 튈 때("비트")마다 작은 타일 하나를 랜덤 이미지로 팝 전환. 오디오 재생 자체(스피커
   // 출력)는 analyser 를 거쳐 그대로 destination 에 연결해 끊기지 않는다.
   let bgmAnalysers = null;
+  let bgmAudioCtx = null; // 자동재생 정책으로 suspended 상태일 수 있어 제스처마다 resume 재시도
   function ensureBgmAnalysers() {
     if (bgmAnalysers || !bgmEls || !bgmEls[0] || !bgmEls[1]) return;
     try {
       const Ctx = window.AudioContext || window.webkitAudioContext;
       if (!Ctx) return;
       const actx = new Ctx();
+      bgmAudioCtx = actx;
       bgmAnalysers = bgmEls.map((el) => {
         const src = actx.createMediaElementSource(el);
         const an = actx.createAnalyser();
         an.fftSize = 256;
         src.connect(an);
-        an.connect(actx.destination);
+        an.connect(actx.destination); // 필수 — 안 붙이면 이 엘리먼트 소리가 스피커로 안 나감(버그 수정)
         return { analyser: an, buf: new Uint8Array(an.frequencyBinCount) };
       });
-    } catch (e) { bgmAnalysers = null; } // 실패해도 큰 이미지 캐러셀은 그대로 동작
+      if (actx.state === 'suspended') actx.resume().catch(() => {});
+    } catch (e) { bgmAnalysers = null; bgmAudioCtx = null; } // 실패해도 큰 이미지 캐러셀은 그대로 동작
+  }
+  function resumeBgmAudioCtx() {
+    if (bgmAudioCtx && bgmAudioCtx.state === 'suspended') bgmAudioCtx.resume().catch(() => {});
   }
   function initHomeShowcaseTiles() {
     const tiles = Array.prototype.slice.call(document.querySelectorAll('.hs-tile'));
@@ -2392,7 +2398,7 @@
     // 자동재생 정책에 막혔을 때 대비 — 모든 입력·버퍼완료·복귀 신호에서 applyBgm() 재시도.
     // 설치형 PWA 는 로딩 직후 재생이 허용되기도 해서 그 경우 첫 신호에 바로 시작된다.
     ['pointerdown', 'touchstart', 'click', 'keydown'].forEach((ev) =>
-      window.addEventListener(ev, applyBgm, { capture: true, passive: true }));
+      window.addEventListener(ev, () => { applyBgm(); resumeBgmAudioCtx(); }, { capture: true, passive: true }));
     window.addEventListener('pageshow', applyBgm);
     setTimeout(applyBgm, 400);
     // 앱이 "오래" 가려지면(유튜브 채널 이동·다른 앱 전환·화면 잠금) BGM 정지, 돌아오면 재개.

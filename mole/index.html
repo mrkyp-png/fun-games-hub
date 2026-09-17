@@ -163,7 +163,7 @@
         <button type="button" class="ch-arrow ch-arrow--next" data-ch-next aria-label="다음 챕터">👉</button>
       </span>
 
-      <div id="build-tag" aria-hidden="true">v498</div>
+      <div id="build-tag" aria-hidden="true">v499</div>
       <!-- 홈(시작) 상태의 배경 패널 — 카톡 대화 UI 는 삭제(사용자 지정), 다이얼패드(키패드는 아래 그대로)만 보임.
            안에는 홍보 이미지 28장(3x3 콜라주 3장을 낱장 9장씩으로 분할 + 배너 1장, 사용자 지정)이
            3초 간격 랜덤 애니메이션으로 순환. -->
@@ -579,7 +579,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=497').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=499').catch(function () {});
       }
     });
   }
