@@ -272,8 +272,9 @@
     return { strike, update, isBusy, home, clear };
   }
 
-  // MZX/MZY(포구 고정점) 는 동시타격 분신(game.js weaponCloneOverflow → hit-fx.js
-  // cannonClone)이 실제 대포와 같은 "대기위치"에서 쏘게 하려고 export.
-  const api = { create, MZX: MZX, MZY: MZY };
+  // MZX/MZY(포구 고정점)·POSES 는 동시타격 분신(game.js weaponCloneOverflow → hit-fx.js
+  // cannonClone)이 실제 대포와 같은 "대기위치"에서, 같은 앵커 계산(포신이 그림 정중앙이
+  // 아니라 mu/mv 지점에 있음)으로 배치되게 하려고 export.
+  const api = { create, MZX: MZX, MZY: MZY, POSES: POSES };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.LaneCannon = api; }
 })(typeof window !== 'undefined' ? window : null);

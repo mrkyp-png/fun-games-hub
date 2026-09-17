@@ -2036,8 +2036,7 @@ body { background: var(--lm-page); }
 /* 무기별 동시타격 분신 — 골드해머 원래 전기빛 글로우 대신, 그 무기 실물과 같은 그림자만
    (사용자 지정 동시타격 기능 확장, 파란 전기 글로우는 지진 전용 유지). */
 .quake-clone--hammer { height: 19.9%; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.5)); } /* 뿅망치(14.04%)와 같은 비율 */
-/* 캐논 분신 — 실제 대포(cannon-a3, w:0.242)와 동일 크기 유지(사용자 지정). */
-.quake-clone--cannon { height: auto; width: 24.2%; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.45)); }
+/* 캐논 분신은 몸체를 안 그리고 포탄(.lc-ball)만 날아가므로(사용자 지정) 별도 클래스 없음. */
 /* 알리펀치 분신 글러브 — quakeClone이 아니라 실제 lane-boxing-glove 를 재사용(사용자 지정 —
    "동일한 글러브로 동일 애니메이션"). 투명도 50%(사용자 지정). opacity 는 filter 로 얹어서,
    JS paint() 가 매 프레임 덮어쓰는 inline style.opacity 와 안 부딪힌다. 무적 중 황금 필터

@@ -790,57 +790,38 @@
   // 캐논(대포) 분신 — 다른 무기와 달리 대포는 원래 제자리(포구 고정점)에서 쏘는 무기라,
   // 골드묠니르처럼 목표를 향해 달려들지 않는다(사용자 지정: "대기위치에서 포탄을 쏴야함,
   // 앞에 가는게 아니라"). "대기위치"는 목표 근처가 아니라 실제 대포와 똑같은 고정 포구점
-  // (bodyXFrac,bodyYFrac = 대포의 MZX,MZY — game.js 가 넘겨줌) — 분신 대포 몸체가 거기 반투명
-  // (70%)으로 서서 실제 대포와 동일한 크기를 유지하고, 포탄만 거기서 목표 지점까지 실제로
-  // 날아간다(포탄 자체는 투명도 없이 기존 유지 — 사용자 지정). onHit = 명중 순간 콜백.
-  function cannonClone(boardEl, bodyXFrac, bodyYFrac, targetXFrac, targetYFrac, poseSpriteUrl, onHit) {
-    const body = document.createElement('img');
-    body.className = 'quake-clone quake-clone--cannon';
-    body.src = poseSpriteUrl;
-    body.alt = '';
-    body.style.left = (bodyXFrac * 100) + '%';
-    body.style.top = (bodyYFrac * 100) + '%';
-    body.style.transform = 'translate(-50%, -50%)'; // 이동/확대 없음 — 제자리(포구) 유지
-    body.style.opacity = '0';
-    boardEl.appendChild(body);
-    void body.offsetWidth;
-    body.style.transition = 'opacity 0.1s ease-out';
-    body.style.opacity = '0.7'; // 분신 투명도 70%(사용자 지정)
+  // (bodyXFrac,bodyYFrac = 대포의 MZX,MZY — game.js 가 넘겨줌). 분신 대포 "몸체"는 안 그린다
+  // (사용자 지정: "45도 대기 캐논과 분신 캐논이 동시에 쏠때는 분신이 안보이고, 포탄만
+  // 보이면됨" — 대기 포즈=a3 라 늘 실제 대포와 같은 자리에 겹쳐 그릴 게 없음). pose(lane-cannon.js
+  // POSES 항목 그대로)는 포신이 그림 정중앙이 아니라 mu/mv 지점에 있으므로, 그 포구
+  // 앵커(ax,ay)만 계산해 포탄을 거기서 목표 지점까지 실제로 날린다(포탄 자체는 투명도
+  // 없이 기존 유지 — 사용자 지정). onHit = 명중 순간 콜백.
+  function cannonClone(boardEl, bodyXFrac, bodyYFrac, targetXFrac, targetYFrac, pose, onHit) {
+    const ax = bodyXFrac + (pose.dx || 0); // 실제 포구점(barrel opening) — lane-cannon.js ax(p)/ay(p) 와 동일
+    const ay = bodyYFrac + (pose.dy || 0);
+
+    const ball = document.createElement('img');
+    ball.className = 'lc-ball'; // 실제 대포 포탄과 같은 크기/그림자
+    ball.src = 'assets/weapons/cannon-ball.png';
+    ball.alt = '';
+    ball.style.left = (ax * 100) + '%';
+    ball.style.top = (ay * 100) + '%'; // 실제 포구점(barrel opening)에서 출발
+    ball.style.opacity = '1'; // 포탄 자체는 투명도 없이(사용자 지정)
+    ball.style.transform = 'translate(-50%, -50%) scale(1)';
+    ball.style.zIndex = '26';
+    boardEl.appendChild(ball);
+    void ball.offsetWidth;
+    ball.style.transition = 'left 0.11s cubic-bezier(.2,.5,.6,1), top 0.11s cubic-bezier(.2,.5,.6,1)';
+    ball.style.left = (targetXFrac * 100) + '%';
+    ball.style.top = (targetYFrac * 100) + '%'; // 실제 목표 지점까지 이동(진짜 거리)
 
     setTimeout(() => {
-      // 작은 반동만(실제 대포 발사 반동처럼) — 앞으로 나가지 않는다.
-      body.style.transition = 'transform 0.06s ease-out';
-      body.style.transform = 'translate(-50%, -50%) scale(0.94)';
-      setTimeout(() => {
-        body.style.transition = 'transform 0.08s ease-in';
-        body.style.transform = 'translate(-50%, -50%) scale(1)';
-      }, 60);
-
-      const ball = document.createElement('img');
-      ball.className = 'lc-ball'; // 실제 대포 포탄과 같은 크기/그림자
-      ball.src = 'assets/weapons/cannon-ball.png';
-      ball.alt = '';
-      ball.style.left = (bodyXFrac * 100) + '%';
-      ball.style.top = (bodyYFrac * 100) + '%'; // 대포 몸체(포구) 위치에서 출발
-      ball.style.opacity = '1'; // 포탄 자체는 투명도 없이(사용자 지정)
-      ball.style.transform = 'translate(-50%, -50%) scale(1)';
-      ball.style.zIndex = '26'; // 분신 대포 몸체(.quake-clone z-index:25)보다 위
-      boardEl.appendChild(ball);
-      void ball.offsetWidth;
-      ball.style.transition = 'left 0.11s cubic-bezier(.2,.5,.6,1), top 0.11s cubic-bezier(.2,.5,.6,1)';
-      ball.style.left = (targetXFrac * 100) + '%';
-      ball.style.top = (targetYFrac * 100) + '%'; // 실제 목표 지점까지 이동(진짜 거리)
-
-      setTimeout(() => {
-        // 포탄이 실제로 목표에 도착한 순간 명중 판정(실제 대포와 동일 — 발사 즉시가 아니라
-        // 도착 시점에 onHit, 사용자 지정 없었지만 실물 cannonBall 타이밍과 맞춤).
-        ball.style.transition = 'opacity 0.14s ease-out'; ball.style.opacity = '0';
-        try { if (onHit) onHit(); } catch (e) { /* 무시 */ }
-      }, 110);
-      setTimeout(() => ball.remove(), 280);
-    }, 130);
-    setTimeout(() => { body.style.transition = 'opacity 0.2s ease-out'; body.style.opacity = '0'; }, 320);
-    setTimeout(() => body.remove(), 560);
+      // 포탄이 실제로 목표에 도착한 순간 명중 판정(실제 대포와 동일 — 발사 즉시가 아니라
+      // 도착 시점에 onHit, 사용자 지정 없었지만 실물 cannonBall 타이밍과 맞춤).
+      ball.style.transition = 'opacity 0.14s ease-out'; ball.style.opacity = '0';
+      try { if (onHit) onHit(); } catch (e) { /* 무시 */ }
+    }, 110);
+    setTimeout(() => ball.remove(), 280);
   }
 
   // 게임 시작(사용자 제스처) 직후 호출 — 카운트다운 동안 오디오 컨텍스트 + 타격음 파일을 미리 준비.
