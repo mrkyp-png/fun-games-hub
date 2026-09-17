@@ -1349,8 +1349,12 @@
         // 있다고 치고, 왼쪽 외곽~좌하단 모서리~아래쪽 외곽 경로 위 랜덤한 지점에서 포탄만
         // 목표까지 날아간다(randomCannonCloneStart, 정확한 경로는 사용자 지정). 랜덤이라
         // 동시에 여러 개(8개까지 실기기 확인) 떠도 자연스럽게 안 겹친다.
+        // fxLayer(mole-hammer-layer)는 일부러 클리핑이 없어서(다른 무기가 보드 밖으로
+        // 스윙해도 보이게) 여기 그리면 판 밖 구간도 보인다 — 캐논 분신은 "판 밖에서는 안
+        // 보여야"(사용자 지정) 하므로, overflow:hidden 인 #mole-board 에 직접 그린다.
         const start = randomCannonCloneStart();
-        MG.HitFx.cannonClone(fxLayer, start.x, start.y, targetXFrac, targetYFrac, onImpact);
+        const cannonLayer = document.getElementById('mole-board');
+        MG.HitFx.cannonClone(cannonLayer, start.x, start.y, targetXFrac, targetYFrac, onImpact);
       } else if (weapon === 'alipunch') {
         // 분신도 실제 위치와 "같은 글러브·같은 애니메이션"이어야 한다(사용자 지정) — 일반
         // quakeClone 대신 lane-boxing.js 가 export 하는 makeGlove 로 그 구역의 진짜 글러브를
