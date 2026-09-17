@@ -787,36 +787,62 @@
     setTimeout(() => el.remove(), 600);
   }
 
+  // 게임판 경계(0~1 정사각형) 안으로 선분(start→target)이 처음 들어오는 지점을 계산
+  // (Liang-Barsky 슬랩 클리핑). #mole-board 가 overflow:hidden 이라, 판 밖에서부터 같은
+  // 애니메이션을 통째로 돌리면 "판에 들어오는 순간"이 이동의 상당 부분을 이미 써버린
+  // 뒤라 거의 다 온 채로 갑자기 나타나 보였다(사용자 리포트: "시작지점이 화면 중앙에서
+  // 보임"). 진입 지점부터 목표까지 별도로 애니메이션을 새로 시작해야 "날아오는" 느낌이 난다.
+  function boardEntryPoint(sx, sy, tx, ty) {
+    const dx = tx - sx, dy = ty - sy;
+    let tMin = 0, tMax = 1;
+    if (dx !== 0) {
+      let t1 = (0 - sx) / dx, t2 = (1 - sx) / dx;
+      if (t1 > t2) { const tmp = t1; t1 = t2; t2 = tmp; }
+      tMin = Math.max(tMin, t1); tMax = Math.min(tMax, t2);
+    } else if (sx < 0 || sx > 1) return null;
+    if (dy !== 0) {
+      let t1 = (0 - sy) / dy, t2 = (1 - sy) / dy;
+      if (t1 > t2) { const tmp = t1; t1 = t2; t2 = tmp; }
+      tMin = Math.max(tMin, t1); tMax = Math.min(tMax, t2);
+    } else if (sy < 0 || sy > 1) return null;
+    if (tMin > tMax) return null;
+    return { x: sx + dx * tMin, y: sy + dy * tMin };
+  }
+
   // 캐논(대포) 분신 — 다른 무기와 달리 대포는 원래 제자리에서 쏘는 무기라 포즈/앵커를
   // 맞추기가 까다롭고("45도 각도에 있는놈이 앞으로 튀어나가있음" 등 계속 어긋났음) —
   // 사용자 지정으로 훨씬 단순한 방식으로 확정: 분신 "몸체"는 아예 안 그리고, 보드 아래쪽
   // (3~4행)·좌측~중앙 부근의 랜덤한 지점(startXFrac,startYFrac — game.js 가 매번 새로
-  // 뽑아서 넘김)에서 포탄만 목표까지 실제로 날아간다. "하늘에서 날아오면 이상하다"는
-  // 피드백으로 모서리 고정 대신 이 방식으로 정착 — 랜덤이라 여러 개 동시에도 자연스럽게
-  // 안 겹친다. 포탄 자체는 투명도 없이 기존 유지(사용자 지정). onHit = 명중 순간 콜백.
+  // 뽑아서 넘김, 판 밖)에서 포탄만 목표까지 실제로 날아간다. 판 밖 구간은 안 보이고
+  // (사용자 지정, #mole-board 클리핑), 판 경계에 들어온 지점부터 목표까지 별도의
+  // 고정 시간(0.16초)으로 다시 날아가서 "날아오는" 느낌을 유지한다. 포탄 자체는 투명도
+  // 없이 기존 유지(사용자 지정). onHit = 명중 순간 콜백.
   function cannonClone(boardEl, startXFrac, startYFrac, targetXFrac, targetYFrac, onHit) {
+    const entry = boardEntryPoint(startXFrac, startYFrac, targetXFrac, targetYFrac) ||
+      { x: startXFrac, y: startYFrac }; // 방어적 폴백(이론상 항상 찾아짐 — 시작은 판 밖, 목표는 판 안)
+
     const ball = document.createElement('img');
     ball.className = 'lc-ball'; // 실제 대포 포탄과 같은 크기/그림자
     ball.src = 'assets/weapons/cannon-ball.png';
     ball.alt = '';
-    ball.style.left = (startXFrac * 100) + '%';
-    ball.style.top = (startYFrac * 100) + '%';
+    ball.style.left = (entry.x * 100) + '%';
+    ball.style.top = (entry.y * 100) + '%';
     ball.style.opacity = '1'; // 포탄 자체는 투명도 없이(사용자 지정)
     ball.style.transform = 'translate(-50%, -50%) scale(1)';
     ball.style.zIndex = '26';
     boardEl.appendChild(ball);
     void ball.offsetWidth;
-    ball.style.transition = 'left 0.14s cubic-bezier(.2,.5,.6,1), top 0.14s cubic-bezier(.2,.5,.6,1)';
+    ball.style.transition = 'left 0.16s cubic-bezier(.2,.5,.6,1), top 0.16s cubic-bezier(.2,.5,.6,1)';
     ball.style.left = (targetXFrac * 100) + '%';
-    ball.style.top = (targetYFrac * 100) + '%'; // 실제 목표 지점까지 이동(진짜 거리)
+    ball.style.top = (targetYFrac * 100) + '%'; // 진입 지점에서 목표까지 새로 이동
 
     setTimeout(() => {
       // 포탄이 실제로 목표에 도착한 순간 명중 판정(실제 대포와 동일 — 발사 즉시가 아니라
       // 도착 시점에 onHit, 실물 cannonBall 타이밍과 맞춤).
       ball.style.transition = 'opacity 0.14s ease-out'; ball.style.opacity = '0';
       try { if (onHit) onHit(); } catch (e) { /* 무시 */ }
-    }, 140);
-    setTimeout(() => ball.remove(), 310);
+    }, 160);
+    setTimeout(() => ball.remove(), 330);
   }
 
   // 게임 시작(사용자 제스처) 직후 호출 — 카운트다운 동안 오디오 컨텍스트 + 타격음 파일을 미리 준비.
