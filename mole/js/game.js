@@ -20,8 +20,8 @@
     if (!el) return;
     el.classList.remove('mole-board--autumn', 'mole-board--winter');
     const ch = currentChapter();
-    if (ch >= 4 && ch <= 6) el.classList.add('mole-board--autumn');
-    else if (ch >= 7 && ch <= 9) el.classList.add('mole-board--winter');
+    if (ch >= 2 && ch <= 4) el.classList.add('mole-board--autumn');
+    else if (ch >= 5 && ch <= 7) el.classList.add('mole-board--winter');
   }
   // 챕터별 날씨(사용자 지정: 챕터6 라운드1~10=비, 챕터9 라운드1~10=눈) + 챕터6은 흐린 날씨라
   // 하늘 쪽 구름도 추가(사용자: "흐린날씨에는 구름이 많고"). 매 라운드 시작마다 호출(멱등).
@@ -30,7 +30,7 @@
     const layer = document.getElementById('mole-weather');
     const sky = document.getElementById('mole-sky');
     const ch = currentChapter();
-    const kind = ch === 6 ? 'rain' : (ch === 9 ? 'snow' : null);
+    const kind = ch === 4 ? 'rain' : (ch === 7 ? 'snow' : null);
     if (kind !== weatherKind) {
       weatherKind = kind;
       if (layer) {
@@ -58,7 +58,7 @@
       }
       if (sky) {
         sky.querySelectorAll('.mole-cloud--extra').forEach((c) => c.remove());
-        if (ch === 6) {
+        if (ch === 4) {
           const EXTRA = 8;
           for (let i = 0; i < EXTRA; i++) {
             const img = 1 + Math.floor(Math.random() * 2);
@@ -649,8 +649,8 @@
       if (aborted()) { overlay.hidden = true; overlay.classList.remove('is-opening'); return; }
       typeText(chapterNumEl, chapterNum, () => {
         if (aborted()) return;
-        // 챕터8 "소제목" = 텍스트가 아니라 [두더지 이미지] + FACE OFF + [토끼 이미지] 구성(사용자 지정).
-        const showSub = currentChapter() === 8
+        // 라운드6(구챕터8) "소제목" = 텍스트가 아니라 [두더지 이미지] + FACE OFF + [토끼 이미지] 구성(사용자 지정).
+        const showSub = currentChapter() === 6
           ? (cb) => {
               chapterSubEl.innerHTML =
                 '<img class="si-faceoff-img" src="assets/moles/mole1.png" alt="">' +
@@ -1757,9 +1757,10 @@
     mid:    { base: 1.2, fever: 1.5 }, // 라이트 DIM
     legend: { base: 2,   fever: 3 }    // 라이트 OFF
   };
-  // 피버타임 = 콤보 50 이상 (챕터 3부터).
+  // 피버타임 = 콤보 50 이상. 라운드1(구챕터1~3 병합)은 obstacles 게이트(40초부터, 구챕터3부터
+  // 켜지던 것과 동일 시점) 이후부터만, 라운드2~8은 항상 가능.
   function isFever() {
-    return !!(run && run.combo.combo >= 50 && currentChapter() >= 3);
+    return !!(run && run.combo.combo >= 50 && (currentChapter() !== 1 || (state && state.config && state.config.obstacles)));
   }
   function currentScoreMult() {
     const m = SCORE_MULT[currentDifficulty()] || SCORE_MULT.easy;
