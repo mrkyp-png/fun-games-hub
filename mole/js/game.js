@@ -1347,8 +1347,22 @@
       if (weapon === 'cannon') {
         MG.HitFx.cannonClone(fxLayer, targetXFrac, targetYFrac, 'assets/weapons/cannon-a3.png', onImpact);
       } else if (weapon === 'alipunch') {
-        const style = (MG.LaneBoxing && MG.LaneBoxing.ZONES && MG.LaneBoxing.ZONES[regionId]) || 'jab';
-        MG.HitFx.quakeClone(fxLayer, ALIPUNCH_CLONE_SPRITE[style] || ALIPUNCH_CLONE_SPRITE.jab, targetXFrac, targetYFrac, '90', onImpact, 'quake-clone--alipunch');
+        // 분신도 실제 위치와 "같은 글러브·같은 애니메이션"이어야 한다(사용자 지정) — 일반
+        // quakeClone 대신 lane-boxing.js 가 export 하는 makeGlove 로 그 구역의 진짜 글러브를
+        // 하나 더 만들어(70% 투명) 똑같이 strike() 시킨다. 무적 중 황금색 필터(.lane-boxing-glove
+        // img 셀렉터 기반)도 클래스가 같아서 자동으로 같이 적용된다.
+        const LB = MG.LaneBoxing;
+        const style = LB && LB.ZONES && LB.ZONES[regionId];
+        const side = LB && LB.GLOVE_OF && LB.GLOVE_OF[regionId];
+        if (LB && LB.makeGlove && style && side) {
+          const home = side === 'L' ? LB.HOME_L : LB.HOME_R;
+          const cloneCss = 'lane-boxing-glove--' + side.toLowerCase() + ' lane-boxing-glove--clone';
+          const glove = LB.makeGlove(fxLayer, home, cloneCss, side);
+          glove.strike(targetXFrac, targetYFrac, style, onImpact, regionId);
+          setTimeout(() => glove.clear(), 400); // 스윙 전체 주기(reach+return ≈240ms)보다 넉넉히
+        } else if (onImpact) {
+          onImpact(); // 방어적 폴백 — 연출 없이도 판정(콤보/점수)은 반영
+        }
       } else if (weapon === 'goldhammer') {
         MG.HitFx.quakeClone(fxLayer, quakeClonePose(regionId), targetXFrac, targetYFrac, quakeCloneKind(regionId), onImpact);
       } else {
@@ -1803,15 +1817,6 @@
     // 알리 펀치 무적 중엔 폭탄도 안전한 타격이므로 빨간색 아님(초록).
     return results.length === 0 || (results.some((r) => r.type === 'bomb' && !r.safe) && !alipunchInvincible());
   }
-
-  // 알리펀치 동시타격 분신용 — lane-boxing.js 가 이미 내보내는 ZONES(구역→스타일)를 그대로
-  // 쓰고, 여기선 스타일→스프라이트만 매핑(lane-boxing.js SPRITE 표와 동일, 중복 최소화를 위해
-  // 서로 같은 이미지를 쓰는 jab/hookL/hookR 는 한 줄로 묶음).
-  const ALIPUNCH_CLONE_SPRITE = {
-    jab: 'assets/weapons/alipunch-jab.png', hookL: 'assets/weapons/alipunch-jab.png', hookR: 'assets/weapons/alipunch-jab.png',
-    straight: 'assets/weapons/alipunch-straight.png',
-    upper: 'assets/weapons/alipunch-upper.png'
-  };
 
   // ---------- 골드해머: 지진 ----------
   // 발동 구멍 + 주변 8칸의 두더지에게 "지진 분신 골드해머"가 날아가 각 1대씩 (1타=처치, 다타=한 단계).

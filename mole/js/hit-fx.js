@@ -787,50 +787,55 @@
     setTimeout(() => el.remove(), 600);
   }
 
-  // 캐논(대포) 분신 — 다른 무기와 달리 대포는 원래 고정 포구 하나에서 쏘는 무기라, 목표 구멍
-  // 근처에 반투명(70%) 대포 몸체가 잠깐 나타나 쏘는 포즈를 취하고, 그 순간 목표 지점에
-  // "포탄이 떨어진 흔적"으로 기존 포탄 이미지(투명도 그대로 — 사용자 지정: "포탄은 투명도
-  // 주지말고 기존유지")가 잠깐 반짝였다 사라진다. onHit = 명중 순간 콜백.
+  // 캐논(대포) 분신 — 다른 무기와 달리 대포는 원래 제자리에서 쏘는 무기라, 골드묠니르처럼
+  // 목표를 향해 달려들지 않는다(사용자 지정: "대기위치에서 포탄을 쏴야함, 앞에 가는게
+  // 아니라"). 분신 대포 몸체는 목표 구멍 근처 제자리에 반투명(70%)으로 서서 실제 대포와
+  // 동일한 크기를 유지하고, 포탄만 그 자리에서 목표 지점까지 실제로 날아간다(포탄 자체는
+  // 투명도 없이 기존 유지 — 사용자 지정). onHit = 명중 순간 콜백.
   function cannonClone(boardEl, xFrac, yFrac, poseSpriteUrl, onHit) {
-    const bodyY = Math.max(0.05, yFrac - 0.05);
+    const bodyY = Math.max(0.05, yFrac - 0.08); // 대기 위치 — 구멍 바로 위, 제자리 고정
     const body = document.createElement('img');
     body.className = 'quake-clone quake-clone--cannon';
     body.src = poseSpriteUrl;
     body.alt = '';
     body.style.left = (xFrac * 100) + '%';
     body.style.top = (bodyY * 100) + '%';
-    body.style.transform = 'translate(-50%, -34%) scale(0.86)';
+    body.style.transform = 'translate(-50%, -50%)'; // 이동/확대 없음 — 제자리 유지
     body.style.opacity = '0';
     boardEl.appendChild(body);
     void body.offsetWidth;
-    body.style.transition = 'opacity 0.07s ease-out, transform 0.11s cubic-bezier(.2,.7,.4,1)';
+    body.style.transition = 'opacity 0.1s ease-out';
     body.style.opacity = '0.7'; // 분신 투명도 70%(사용자 지정)
-    body.style.transform = 'translate(-50%, -34%) scale(1.12)';
 
     setTimeout(() => {
-      body.style.transition = 'transform 0.08s ease-in';
-      body.style.transform = 'translate(-50%, -34%) scale(0.94)'; // 반동(쏘는 순간)
+      // 작은 반동만(실제 대포 발사 반동처럼) — 앞으로 나가지 않는다.
+      body.style.transition = 'transform 0.06s ease-out';
+      body.style.transform = 'translate(-50%, -50%) scale(0.94)';
+      setTimeout(() => {
+        body.style.transition = 'transform 0.08s ease-in';
+        body.style.transform = 'translate(-50%, -50%) scale(1)';
+      }, 60);
 
       const ball = document.createElement('img');
-      ball.className = 'lc-ball'; // 실제 대포 포탄과 같은 크기/그림자(투명도만 이 함수가 직접 제어)
+      ball.className = 'lc-ball'; // 실제 대포 포탄과 같은 크기/그림자
       ball.src = 'assets/weapons/cannon-ball.png';
       ball.alt = '';
       ball.style.left = (xFrac * 100) + '%';
-      ball.style.top = (yFrac * 100) + '%';
-      ball.style.opacity = '0'; // 포탄 자체는 투명도 없이(사용자 지정) — 등장 페이드만 살짝
-      ball.style.transform = 'translate(-50%, -50%) scale(0.6)';
+      ball.style.top = (bodyY * 100) + '%'; // 대포 몸체 위치에서 출발
+      ball.style.opacity = '1'; // 포탄 자체는 투명도 없이(사용자 지정)
+      ball.style.transform = 'translate(-50%, -50%) scale(1)';
       ball.style.zIndex = '26'; // 분신 대포 몸체(.quake-clone z-index:25)보다 위
       boardEl.appendChild(ball);
       void ball.offsetWidth;
-      ball.style.transition = 'opacity 0.05s ease-out, transform 0.09s cubic-bezier(.2,.7,.4,1)';
-      ball.style.opacity = '1';
-      ball.style.transform = 'translate(-50%, -50%) scale(1.2)';
-      setTimeout(() => { ball.style.transition = 'opacity 0.18s ease-out'; ball.style.opacity = '0'; }, 90);
-      setTimeout(() => ball.remove(), 320);
+      ball.style.transition = 'left 0.09s cubic-bezier(.2,.5,.6,1), top 0.09s cubic-bezier(.2,.5,.6,1)';
+      ball.style.left = (xFrac * 100) + '%';
+      ball.style.top = (yFrac * 100) + '%'; // 실제 목표 지점까지 이동
+      setTimeout(() => { ball.style.transition = 'opacity 0.14s ease-out'; ball.style.opacity = '0'; }, 90);
+      setTimeout(() => ball.remove(), 260);
 
       try { if (onHit) onHit(); } catch (e) { /* 무시 */ }
-    }, 120);
-    setTimeout(() => { body.style.transition = 'opacity 0.24s ease-out'; body.style.opacity = '0'; }, 280);
+    }, 130);
+    setTimeout(() => { body.style.transition = 'opacity 0.2s ease-out'; body.style.opacity = '0'; }, 320);
     setTimeout(() => body.remove(), 560);
   }
 

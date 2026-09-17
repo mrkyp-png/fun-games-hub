@@ -227,6 +227,9 @@
     return { strike, update, isBusy, home, clear, meet, demo };
   }
 
-  const api = { create, ZONES: ZONES, EXCLUDED_HOLES: [12, 15] };
+  // makeGlove/HOME_L/HOME_R/GLOVE_OF 는 동시타격 분신(game.js weaponCloneOverflow)이 "같은
+  // 글러브·같은 애니메이션"으로 분신 펀치를 만들기 위해 export (사용자 지정 — 분신도 좌우
+  // 구역·타격 애니메이션이 실제 위치와 동일해야 함).
+  const api = { create, makeGlove, ZONES: ZONES, GLOVE_OF: GLOVE_OF, HOME_L: HOME_L, HOME_R: HOME_R, EXCLUDED_HOLES: [12, 15] };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.LaneBoxing = api; }
 })(typeof window !== 'undefined' ? window : null);
