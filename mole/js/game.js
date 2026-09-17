@@ -1852,9 +1852,12 @@
   // 랜덤한 한 점. 경로 양끝(사용자 지정): (1) 3번째 줄(row index2) 왼쪽열 높이의 왼쪽 바깥쪽,
   // (2) 4번째 줄(row index3) 3번째 구멍(#, regionId14) 아래쪽 바깥. grid-partition.js 의
   // V_TOP=0.27/V_BOTTOM=0.88/gridSize=4 기준 좌표(vStep=(0.88-0.27)/3).
+  // 아래쪽 경로는 게임판 경계(y=1.0) 밑으로 내려가면 다이얼패드(버튼보드) 외곽선에 닿아
+  // 보인다(사용자 지정 — "시작점은 버튼 위어야함", "다이얼패드 외각선은 포탄이 건들면
+  // 안됨") — y=0.97 로 판 바닥 경계 안쪽에 머물게 클램프.
   const CANNON_CLONE_PATH_A = { x: -0.06, y: 0.27 + ((0.88 - 0.27) / 3) * 2 };  // 3행 왼쪽열 높이
-  const CANNON_CLONE_PATH_CORNER = { x: -0.06, y: 1.06 };                       // 좌하단 바깥 모서리
-  const CANNON_CLONE_PATH_B = { x: (2 + 0.5) / 4, y: 1.06 };                     // 4행 3번째구멍(#) 아래
+  const CANNON_CLONE_PATH_CORNER = { x: -0.06, y: 0.97 };                      // 좌하단 바깥 모서리(판 안쪽 경계)
+  const CANNON_CLONE_PATH_B = { x: (2 + 0.5) / 4, y: 0.97 };                    // 4행 3번째구멍(#) 아래(판 안쪽 경계)
   function randomCannonCloneStart() {
     const seg1 = CANNON_CLONE_PATH_CORNER.y - CANNON_CLONE_PATH_A.y; // 왼쪽 외곽 구간(세로)
     const seg2 = CANNON_CLONE_PATH_B.x - CANNON_CLONE_PATH_CORNER.x; // 아래쪽 외곽 구간(가로)
