@@ -129,29 +129,24 @@
     }
   }
 
-  // 홈 화면 게임판 자리(#board-start 뒤) — 큰 배경 이미지는 20~30초 간격으로 느긋하게 순환
-  // (전환마다 페이드/슬라이드/줌 랜덤), 작은 타일 5개는 재생 중인 홈 BGM 비트에 맞춰 팝 전환
-  // (사용자 지정 — "음악과 같이 움직이는 느낌"). is-start 아닐 땐 board-start 자체가 가려지므로
-  // 안 보임 — 타이머·루프는 그냥 항상 돌아도 무해.
-  const HOME_SHOWCASE_COUNT = 28; // assets/home-showcase/1.jpg ~ 28.jpg
+  // 홈 화면 게임판 자리(#board-start 뒤) — 원본 3x3 콜라주 구도를 유지한 9칸 그리드 페이지가
+  // 3장(1~9/10~18/19~27) 있고, 20~30초 간격으로 다음 페이지로 전환(사용자 지정: "한장에 9개가
+  // 다들어가있는 이미지 그대로 사용"). 페이지 전환 중엔 각 칸이 재생 중인 홈 BGM 비트에 맞춰
+  // 개별적으로 사라졌다/나타났다·회전·확대축소(popTile → pulseGridCells 로 교체).
+  // is-start 아닐 땐 board-start 자체가 가려지므로 안 보임 — 타이머·루프는 그냥 항상 돌아도 무해.
   function initHomeShowcase() {
-    const imgs = Array.prototype.slice.call(document.querySelectorAll('.home-showcase-img'));
-    if (!imgs.length) return;
-    const ANIMS = ['hs-fade', 'hs-slide-l', 'hs-slide-r', 'hs-zoom-in', 'hs-zoom-out'];
+    const pages = Array.prototype.slice.call(document.querySelectorAll('.hg-page'));
+    if (!pages.length) return;
     let idx = 0;
-    imgs[0].classList.add('is-active', 'hs-fade');
-    (function nextBig() {
+    (function nextPage() {
       setTimeout(() => {
-        imgs[idx].classList.remove('is-active');
-        ANIMS.forEach((a) => imgs[idx].classList.remove(a));
-        idx = (idx + 1) % imgs.length;
-        const anim = ANIMS[(Math.random() * ANIMS.length) | 0];
-        ANIMS.forEach((a) => imgs[idx].classList.remove(a));
-        imgs[idx].classList.add('is-active', anim);
-        nextBig();
+        pages[idx].classList.remove('is-active');
+        idx = (idx + 1) % pages.length;
+        pages[idx].classList.add('is-active');
+        nextPage();
       }, 20000 + Math.random() * 10000); // 20~30초
     })();
-    initHomeShowcaseTiles();
+    initHomeShowcaseBeat();
   }
 
   // 재생 중인 홈 BGM(bgm-a/bgm-b 핑퐁) 을 Web Audio AnalyserNode 로 실시간 분석해 저음 에너지가
@@ -180,19 +175,7 @@
   function resumeBgmAudioCtx() {
     if (bgmAudioCtx && bgmAudioCtx.state === 'suspended') bgmAudioCtx.resume().catch(() => {});
   }
-  function initHomeShowcaseTiles() {
-    const tiles = Array.prototype.slice.call(document.querySelectorAll('.hs-tile'));
-    if (!tiles.length) return;
-    let avgEnergy = 0;
-    let lastBeat = 0;
-    function popTile() {
-      const tile = tiles[(Math.random() * tiles.length) | 0];
-      const img = tile.querySelector('.hs-tile-img');
-      img.src = 'assets/home-showcase/' + (1 + ((Math.random() * HOME_SHOWCASE_COUNT) | 0)) + '.jpg';
-      tile.classList.remove('is-pop');
-      void tile.offsetWidth;
-      tile.classList.add('is-pop');
-    }
+  function initHomeShowcaseBeat() {
     function tick() {
       requestAnimationFrame(tick);
       if (!bgmAnalysers) { ensureBgmAnalysers(); return; }
@@ -203,15 +186,33 @@
         for (let i = 0; i < 8 && i < a.buf.length; i++) sum += a.buf[i];
         energy += sum / 8;
       });
-      avgEnergy = avgEnergy * 0.92 + energy * 0.08; // 이동 평균(대략적인 "평소 음량")
+      showcaseAvgEnergy = showcaseAvgEnergy * 0.92 + energy * 0.08; // 이동 평균(대략적인 "평소 음량")
       const now = performance.now();
-      if (energy > avgEnergy * 1.35 && energy > 40 && now - lastBeat > 260) {
-        lastBeat = now;
-        popTile();
+      if (energy > showcaseAvgEnergy * 1.35 && energy > 40 && now - showcaseLastBeat > 260) {
+        showcaseLastBeat = now;
+        pulseGridCells();
         pulseDialPad(); // 다이얼패드 버튼들도 비트에 맞춰 커졌다 움직임(사용자 지정 — "축제 분위기")
       }
     }
     requestAnimationFrame(tick);
+  }
+  let showcaseAvgEnergy = 0;
+  let showcaseLastBeat = 0;
+  // 현재 활성 페이지의 9칸 중 1~2개를 골라 비트마다 개별 펄스(제자리에서 사라졌다/나타났다·
+  // 회전·확대축소, 사용자 지정 — 이미지 스왑이나 이탈 없이 원래 자리를 지킴).
+  function pulseGridCells() {
+    const page = document.querySelector('.hg-page.is-active');
+    if (!page) return;
+    const cells = page.querySelectorAll('.hg-cell');
+    if (!cells.length) return;
+    const n = 1 + ((Math.random() * 2) | 0); // 1~2개
+    for (let i = 0; i < n; i++) {
+      const cell = cells[(Math.random() * cells.length) | 0];
+      cell.style.setProperty('--hg-r', (Math.random() < 0.5 ? -1 : 1) * (6 + Math.random() * 10) + 'deg');
+      cell.classList.remove('is-pulse');
+      void cell.offsetWidth;
+      cell.classList.add('is-pulse');
+    }
   }
 
   // 다이얼패드 버튼 전체가 비트마다 살짝 커지고 흔들리는 펄스(사용자 지정) — 홈 화면에서만

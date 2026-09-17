@@ -100,47 +100,31 @@ body { background: var(--lm-page); }
   background: var(--lm-chat);   /* 대화 홈 = 연한 웜그레이 (잔디는 플레이 중에만) — 이미지 로드 전 폴백 */
   overflow: hidden;
 }
-/* 홈 화면 홍보 이미지 캐러셀 — 4장, 3초 간격, 전환마다 애니메이션 랜덤(사용자 지정). */
-#home-showcase { position: absolute; inset: 0; overflow: hidden; }
-.home-showcase-img {
+/* 홈 화면 홍보 이미지 — 원본 3x3 콜라주 구도 그대로 9칸 그리드 페이지 3장이 20~30초마다
+   전환(사용자 지정: "한장에 9개가 다들어가있는 이미지 그대로 사용"). 페이지 안에서는 각 칸이
+   홈 BGM 비트에 맞춰 개별적으로 사라졌다/나타났다·회전·확대축소. */
+#home-grid { position: absolute; inset: 0; overflow: hidden; }
+.hg-page {
+  position: absolute; inset: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  opacity: 0; z-index: 0;
+  transition: opacity 0.9s ease;
+  pointer-events: none;
+}
+.hg-page.is-active { opacity: 1; z-index: 1; }
+.hg-cell { position: relative; overflow: hidden; }
+.hg-cell img {
   position: absolute; inset: 0; width: 100%; height: 100%;
-  object-fit: cover; opacity: 0; z-index: 0; pointer-events: none;
+  object-fit: cover; display: block; transform-origin: center;
 }
-.home-showcase-img.is-active { opacity: 1; z-index: 1; }
-.home-showcase-img.hs-fade.is-active { animation: hs-fade 0.8s ease both; }
-.home-showcase-img.hs-slide-l.is-active { animation: hs-slide-l 0.8s ease both; }
-.home-showcase-img.hs-slide-r.is-active { animation: hs-slide-r 0.8s ease both; }
-.home-showcase-img.hs-zoom-in.is-active { animation: hs-zoom-in 0.8s ease both; }
-.home-showcase-img.hs-zoom-out.is-active { animation: hs-zoom-out 0.8s ease both; }
-@keyframes hs-fade { from { opacity: 0; } to { opacity: 1; } }
-@keyframes hs-slide-l { from { opacity: 0; transform: translateX(6%); } to { opacity: 1; transform: translateX(0); } }
-@keyframes hs-slide-r { from { opacity: 0; transform: translateX(-6%); } to { opacity: 1; transform: translateX(0); } }
-@keyframes hs-zoom-in { from { opacity: 0; transform: scale(1.14); } to { opacity: 1; transform: scale(1); } }
-@keyframes hs-zoom-out { from { opacity: 0; transform: scale(0.88); } to { opacity: 1; transform: scale(1); } }
-
-/* 작은 타일 5개 — 홈 BGM 비트에 맞춰 랜덤 이미지로 팝 전환(사용자 지정, "음악과 같이 움직이는 느낌"). */
-#home-showcase-tiles { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
-.hs-tile {
-  position: absolute;
-  width: 22%;
-  aspect-ratio: 1;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
-  border: 2px solid rgba(255, 255, 255, 0.85);
-  transform: rotate(var(--r, 0deg));
-}
-.hs-tile--1 { top: 6%;  left: 6%;   --r: -6deg; }
-.hs-tile--2 { top: 8%;  right: 8%;  --r: 5deg; }
-.hs-tile--3 { bottom: 10%; left: 9%;  --r: 4deg; }
-.hs-tile--4 { bottom: 8%;  right: 10%; --r: -5deg; }
-.hs-tile--5 { top: 39%; left: 39%; --r: -3deg; }
-.hs-tile-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.hs-tile.is-pop .hs-tile-img { animation: hs-tile-pop 0.4s cubic-bezier(.2, 1.6, .4, 1); }
-@keyframes hs-tile-pop {
-  0%   { transform: scale(0.5); opacity: 0.4; }
-  60%  { transform: scale(1.18); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
+.hg-cell.is-pulse img { animation: hg-cell-pulse 0.6s ease; }
+@keyframes hg-cell-pulse {
+  0%   { opacity: 1;   transform: scale(1)     rotate(0deg); }
+  40%  { opacity: 0.15; transform: scale(0.82) rotate(var(--hg-r, 8deg)); }
+  70%  { opacity: 1;   transform: scale(1.14)  rotate(calc(var(--hg-r, 8deg) * -0.4)); }
+  100% { opacity: 1;   transform: scale(1)     rotate(0deg); }
 }
 /* ◀ ROUND N ▶ — "ROUND N" 은 알약 박스(테두리를 타고 도는 불빛, 챕터별 색), 양옆은 꼬리 달린
    3D 화살표 버튼(누르면 쑥 들어감). 항상 표시. 우측 하단, #build-tag(버전 표시)와 같은 줄에
