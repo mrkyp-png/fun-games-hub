@@ -213,6 +213,15 @@
       b.classList.toggle('lane-button--hot-safe', !!hot && !!safe);
     }
 
+    // 홈 화면 네비(더보기 기능) — 눌러서 진입한 화면에 대응하는 버튼만 확대·유지(사용자 지정,
+    // 애니팡 하단 네비 참고), 홈으로 돌아오면 원위치. action 없으면(null) 전부 해제.
+    function setActiveNav(action) {
+      buttons.forEach((b, id) => {
+        if (!b) return;
+        b.classList.toggle('lane-button--nav-active', !!action && FACES[id] && FACES[id].action === action);
+      });
+    }
+
     // 폭탄 든 두더지가 올라온 구멍의 버튼에 반투명 폭탄 이모지(글로우 포함) 표시 — 사용자 지정.
     // kind: 'normal'|'strong'|null(없으면 표시 안 함/제거).
     function setBombIndicator(id, kind) {
@@ -366,7 +375,7 @@
       });
     }
 
-    return { setCellHot, setBombIndicator, setHudStat, flashBurst, flashQuakeArea, clear, spinChannelsIn, spinBoardIn };
+    return { setCellHot, setBombIndicator, setHudStat, flashBurst, flashQuakeArea, setActiveNav, clear, spinChannelsIn, spinBoardIn };
   }
 
   const api = { create };

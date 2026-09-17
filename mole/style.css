@@ -1627,8 +1627,12 @@ body { background: var(--lm-page); }
 #game-screen:not(.is-start) .lane-button--flippable .lane-flip:not(.lane-flip--spinning) { transform: rotateY(180deg) !important; transition: none; }
 
 /* 오른쪽 열 — 내비 4칸 */
-.lane-button--nav { flex-direction: column; gap: 3px; color: #4b4b52; }
+.lane-button--nav { flex-direction: column; gap: 3px; color: #4b4b52; transition: transform 0.25s cubic-bezier(.34, 1.4, .64, 1); z-index: 1; }
 .lane-button--nav .lane-face { flex-direction: column; gap: 3px; }
+/* 해당 화면에 진입해 있는 동안 그 버튼만 확대·위로 살짝 튀어나옴(애니팡 하단 네비 참고,
+   사용자 지정) — 홈으로 돌아오면(setActiveNav(null)) transition 으로 자연스럽게 원위치. */
+.lane-button--nav-active { transform: scale(1.5) translateY(-10%); z-index: 2; }
+.lane-button--nav-active .lane-lbl { color: #1f1f24; font-weight: 800; }
 .lane-ico { width: clamp(16px, 6vw, 24px); height: clamp(16px, 6vw, 24px); display: block; }
 .lane-ico svg { width: 100%; height: 100%; display: block; }
 .lane-lbl { font-size: clamp(0.4rem, 1.9vw, 0.56rem); font-weight: 600; color: var(--lm-muted); }
@@ -2478,7 +2482,14 @@ body { background: var(--lm-page); }
 /* 사람두더지 얼굴 레이어 (pop-elements.js 가 위치·크기 설정) */
 
 /* 하위 화면 공통 (screen-nav.js 배타 토글) — 전체 화면 (키패드 위까지 덮는다) */
-.board-screen { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column;
+/* 2026-09-18: 예전엔 이 12개 화면(상점/인벤토리/설정 등) 각자가 fixed;inset:0 으로 전체화면을
+   덮었음(사용자 지정으로 다이얼패드 항상 노출 + 보드 자리에만 표시로 변경). 이 화면들은
+   .more-menu 의 자식이 아니라 #game-screen 의 형제 엘리먼트라(HTML 상 more-menu 는 flip 전환용
+   빈 껍데기) inset:0 을 absolute 로만 바꿔도 #game-screen 기준 전체를 덮어 그대로였음 —
+   #mole-hammer-layer 와 같은 방식(보드와 동일한 위치·크기를 좌표로 직접 지정)으로 수정. */
+.board-screen { position: absolute; top: var(--hud-h); left: 50%; transform: translateX(-50%);
+  width: var(--sq); height: var(--sq); border-radius: 0 0 8px 8px;
+  z-index: 40; display: flex; flex-direction: column;
   background: #ffffff; color: #1f1f24; overflow-y: auto; scrollbar-width: none; }
 .board-screen::-webkit-scrollbar { display: none; }
 .board-screen-bar { display: flex; align-items: center; gap: 6px; padding: 10px 12px;
@@ -2486,8 +2497,12 @@ body { background: var(--lm-page); }
 .bs-back { background: none; border: none; color: #1f1f24; font-size: 1.4rem; line-height: 1; cursor: pointer; padding: 0 4px; }
 .bs-title { font-size: 0.95rem; }
 
-/* 더보기 메뉴 본체 — 전체 화면 (키패드 위까지 덮는다) */
-.more-menu { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column;
+/* 더보기 메뉴 본체 — 2026-09-18 개편(사용자 지정, 애니팡 참고): 예전엔 다이얼패드까지 덮는
+   전체 화면이었으나, 이제 보드 영역(.mole-board 와 같은 자리·크기)에만 들어가고 다이얼패드는
+   항상 그대로 보이게(하단 네비처럼). 책장 넘기는 flip 전환(.flip-out/.flip-in, 위 §참고)은
+   position 과 무관하게 self-contained perspective() 라 그대로 동작 — 건드리지 않음. */
+.more-menu { position: relative; flex: 0 0 auto; width: var(--sq); aspect-ratio: 1; margin: 0 auto;
+  z-index: 40; display: flex; flex-direction: column; border-radius: 0 0 8px 8px;
   background: #ffffff; color: #1f1f24; overflow-y: auto; scrollbar-width: none; }
 .more-menu::-webkit-scrollbar { display: none; }
 .mm-pills { display: flex; gap: 7px; padding: 14px 12px; }

@@ -736,7 +736,7 @@
         const sub = { shop: 'shop-screen', score: 'score-screen', daily: 'daily-screen',
           quest: 'quest-screen', friends: 'friends-screen', locker: 'face-locker',
           inventory: 'inventory-screen', settings: 'settings-screen' }[action];
-        if (sub) openMore(sub);
+        if (sub) { openMore(sub); if (sharedLaneControls) sharedLaneControls.setActiveNav(action); }
       }
     });
     laneControlsIsSmall = small;
@@ -990,6 +990,18 @@
     var outEl = document.getElementById(isStart ? 'board-start' : 'mole-board');
     openMoreNow(sub); // more-menu 내용 준비(hidden=false 는 flipSwap 이 처리)
     flipSwap(outEl, document.getElementById('more-menu'));
+    // 2026-09-18: more-menu 가 더 이상 전체화면(position:fixed)이 아니라 보드 자리에 들어가는
+    // 구조로 바뀌면서(사용자 지정, 다이얼패드 항상 노출) — #board-start 만 숨겨서는 그 부모인
+    // #mole-board(aspect-ratio 로 고정폭 유지) 가 빈 채로 자기 자리를 계속 차지해 more-menu 가
+    // 그 아래로 밀려나고 다이얼패드가 화면 밖으로 밀려나는 버그가 생김. flip 애니메이션과 같은
+    // 타이밍(FLIP_MS)에 #mole-board 자체도 같이 숨겨 그 자리를 비운다(홈 화면 진입 때만 —
+    // 실제 플레이 중 더보기는 게임판을 유지해야 하므로 그대로 둠).
+    if (isStart) {
+      const board = document.getElementById('mole-board');
+      clearPendingFlip(board); // 겹쳐 눌러 이미 대기 중이던 타이머가 있으면 새로 교체
+      const t = setTimeout(() => { board.hidden = true; pendingFlipTimers.delete(board); }, FLIP_MS);
+      pendingFlipTimers.set(board, t); // showStartScreenNow 의 clearPendingFlip(board) 가 같이 취소해줌
+    }
   }
   function openMoreNow(sub) {
     // 백스톱: 시작 인트로(챕터 타이핑) 도중 어떻게든 메뉴가 열리면 대기 중이던 라운드 시작을
@@ -1027,6 +1039,7 @@
     // more-menu 를 여기서 먼저 숨기지 않는다(showStartScreenNow 가 플래시 시점에 맞춰 처리).
     if (!state) { showStartScreen({ originEl: e && e.currentTarget }); return; }
     screenNav.reset();
+    if (sharedLaneControls) sharedLaneControls.setActiveNav(null); // 더보기 닫음 — 확대된 네비 버튼 원위치
     flipSwap(mm, document.getElementById('mole-board')); // 이어가기 → 게임화면 (3D 플립)
     mm.classList.remove('mm-paused');
     playScreenBgm('game'); // 게임 화면으로 복귀 — 게임 BGM 을 처음부터
@@ -1060,6 +1073,7 @@
     sessionGen++; // 진행 중이던 카운트다운/자동진행 타이머 무효화
     gameStarting = false;
     setNavLock(false);
+    if (sharedLaneControls) sharedLaneControls.setActiveNav(null); // 홈 복귀 — 확대된 네비 버튼 원위치
     if (rafId) cancelAnimationFrame(rafId);
     if (sharedPopElements) sharedPopElements.clear();
     if (state && state.holeLayer) state.holeLayer.clear();
