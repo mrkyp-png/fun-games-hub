@@ -75,13 +75,13 @@
       };
     }
 
-    return {
-      strike, update, isBusy, home, clear,
-      meet: delegateToPrimary('meet'),
-      demo: delegateToPrimary('demo'),
-      spinIn: delegateToPrimary('spinIn'),
-      popIn: delegateToPrimary('popIn')
-    };
+    const result = { strike, update, isBusy, home, clear };
+    ['meet', 'demo', 'spinIn', 'popIn'].forEach((name) => {
+      if (typeof entries[0].inst[name] === 'function') {
+        result[name] = delegateToPrimary(name);
+      }
+    });
+    return result;
   }
 
   const api = { create };
