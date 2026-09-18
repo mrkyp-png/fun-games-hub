@@ -2734,8 +2734,8 @@ body { background: var(--lm-page); }
 #inventory-screen { overflow-y: hidden; overflow-x: hidden; touch-action: pan-y; background: #cfe4ff; isolation: isolate; }
 #inventory-screen::before { content: ''; position: absolute; inset: -10px; z-index: 0;
   background: url('assets/board-scene-autumn.jpeg') center 78%/cover no-repeat;
-  filter: blur(5px) brightness(1.1) saturate(0.9); }
-#inventory-screen::after { content: ''; position: absolute; inset: 0; z-index: 0; background: rgba(210, 232, 255, 0.32); }
+  filter: blur(2px) brightness(1.1) saturate(0.9); }
+#inventory-screen::after { content: ''; position: absolute; inset: 0; z-index: 0; background: rgba(210, 232, 255, 0.2); }
 #inventory-screen > *:not(.inv-frame) { position: relative; z-index: 1; }
 .inv-frame { position: absolute; inset: 0; z-index: 2; pointer-events: none; padding: 3px;
   border-radius: inherit;
