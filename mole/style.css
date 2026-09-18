@@ -3240,10 +3240,6 @@ body { background: var(--lm-page); }
 }
 .inv-stat-tbl td { width: 99%; text-align: left; color: var(--lm-ink); font-weight: 700; padding: 1px 0; }  /* 99% = 남는 폭 다 차지 (th는 내용폭) */
 .inv-stat-tbl td.inv-stat-dash { text-align: center; }
-/* 장착 버튼을 카드 밖(위쪽)으로 이동(사용자 지정: "장착 선택박스를 아예 밖으로 빼도 됨(위로)")
-   — 카드 안에서 세로공간 부족으로 잘려 안 보이던 문제 자체를 없앰. 현재 페이지(pageIdx)의
-   무기를 가리키며, 스와이프/화살표로 페이지가 바뀔 때마다 갱신됨(updateEquipBtn 참고). */
-.inv-equip-bar { flex: 0 0 auto; display: flex; justify-content: center; padding: 2px 12px 8px; }
 
 /* 게임화면 둥근 글자체(Dongle, 사용자 선택) — 홈화면·다이얼패드 숫자·더보기메뉴는 그대로,
    라운드전환/카운트다운/점수·하트·콤보/결과화면/타격 이펙트 텍스트만 적용. */
@@ -3254,9 +3250,11 @@ body { background: var(--lm-page); }
   font-family: 'Dongle', 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
 }
 /* 상점 구매 버튼과 동일 스타일(사용자 지정) — 광택 띠 + 눌림 스케일. */
+/* 좌측상단 점(.shop-dots) 줄에 맞춰 이동(사용자 지정: "장착 박스는 좌측상단... 줄에 맞춘다")
+   — 화살표·점과 같은 줄에 들어가므로 폭도 2/3로 축소(사용자 지정: "폭은 3분의 2로"). */
 .inv-equip {
-  position: relative; width: 58%; padding: 9px 0; border: none; border-radius: 999px; overflow: hidden;
-  background: linear-gradient(180deg, #63d97c, #2fb457); color: #fff; font-weight: 800; font-size: 0.86rem; cursor: pointer;
+  position: relative; flex: 0 0 auto; width: 39%; padding: 6px 0; border: none; border-radius: 999px; overflow: hidden;
+  background: linear-gradient(180deg, #63d97c, #2fb457); color: #fff; font-weight: 800; font-size: 0.68rem; cursor: pointer;
   box-shadow: 0 2px 0 #1c8340, inset 0 2px 2px rgba(255,255,255,0.6); transition: transform 0.1s ease;
 }
 .inv-equip::before { content: ''; position: absolute; left: 7%; right: 7%; top: 2px; height: 44%; z-index: -1;

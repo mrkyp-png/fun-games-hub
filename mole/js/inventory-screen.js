@@ -254,7 +254,6 @@
       var tab = TABS.filter(function (t) { return t.id === active; })[0];
       if (tab) bannerTxtEl.textContent = T(tab.banner);
       headEl.style.display = active === 'weapon' ? '' : 'none';
-      if (equipBtn) equipBtn.closest('.inv-equip-bar').style.display = active === 'weapon' ? '' : 'none';
       if (active === 'weapon') {
         renderWeapons();
       } else {
