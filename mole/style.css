@@ -2864,7 +2864,9 @@ body { background: var(--lm-page); }
    눌렀을때 3개의 상품 보이게" + "오른쪽이 화살표 끝에 맞춰서 정렬" — 고정px 이었을 때 3장 뒤에
    잔여폭만큼 4번째 카드가 삐져나와 화살표 끝과 안 맞았음). box-sizing:border-box, gap 10px 고정
    기준 — shop.js 도 런타임에 실제 카드 폭을 읽어 쓰므로 숫자 동기화 불필요. */
-.shop-card { box-sizing: border-box; position: relative; overflow: hidden; flex: 0 0 calc((100% - 20px) / 3); display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px 5px;
+/* 사용자 지정: "광고보기, 무기 구매 박스가... 아래 외각선에 아주 조금 걸린다, 살짝만
+   올려주면" — 아래 여백을 살짝 더. */
+.shop-card { box-sizing: border-box; position: relative; overflow: hidden; flex: 0 0 calc((100% - 20px) / 3); display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px 5px 11px;
   background: linear-gradient(180deg, #ffffff, #eef4ff); border-radius: 14px; border: 2px solid #cfe0fb;
   box-shadow: 0 3px 0 #b9cdf0, 0 4px 10px rgba(20,60,140,0.15); text-align: center; }
 /* 쉬머 스윕(사용자 지정: "상품안 상품, 상품선택 박스" — 기존 idle-crown-sweep 재사용, 시작버튼과
@@ -2887,8 +2889,11 @@ body { background: var(--lm-page); }
 /* GET NOW 버튼과 완전히 동일한 형태(사용자 지정: "구매 버튼은 전부 get now 버튼과 동일한
    형태로" — 하트/무기 구매버튼 전부). #splash .splash-hint 의 그라디언트·다층 3D 그림자
    그대로, 버튼 크기에 맞춰 두께만 축소. */
-.shop-card-btn { position: relative; width: 100%; min-height: 30px; flex: 0 0 auto; box-sizing: border-box;
-  padding: 7px 4px; border: none; border-radius: 999px; overflow: hidden;
+/* height 고정(min-height 아님) — 사용자 지정: "3번 광고보기 박스와 코인구매 박스 아래위
+   크기 다름. 맞춰야함(무기 구매 높이, 카드 1,2,3번 높이 크기는 다 같아야함)" — 아이콘
+   크기가 버튼마다 달라도(코인 22.5px vs 재생박스 18px) 항상 동일 높이로 고정. */
+.shop-card-btn { position: relative; width: 100%; height: 36px; flex: 0 0 auto; box-sizing: border-box;
+  padding: 5px 4px; border: none; border-radius: 999px; overflow: hidden;
   background: linear-gradient(180deg, #74e389 0%, #47cc6a 46%, #2ea951 100%); color: #fff; font-weight: 900; font-size: 0.76rem; cursor: pointer;
   box-shadow: 0 4px 0 #1c8340, 0 4px 1px rgba(0,0,0,0.18), 0 8px 10px rgba(0,0,0,0.32),
     inset 0 2px 2px rgba(255,255,255,0.8), inset 0 -3px 4px rgba(0,80,35,0.4);
@@ -2918,7 +2923,11 @@ body { background: var(--lm-page); }
 /* gap 축소 — 사용자 지정: "무기 구매 버튼 위치와 통일화" (실측: 무기탭 버튼 오프셋
    51.1px vs 재화탭 69px, 약 18px 압축 필요). */
 /* 사용자 지정: "카드1,2,3은 전체적으로 아래로 0.2cm 내림". */
-.shop-card--rich { padding: 6px 6px 8px; gap: 2px; margin-top: 0.2cm; }
+/* 사용자 지정: "위 중앙에서 들어올렸을때 양끝이 조금 내려간 박스형태" — 상단 가운데가
+   봉긋하고 양쪽 끝이 살짝 처지는 곡선(직선 다각형으로 근사, 아주 살짝만). 아래쪽 두 점은
+   원래 모서리(0%/100%)에 그대로 둬서 기존 border-radius 가 살아있게. */
+.shop-card--rich { padding: 6px 6px 11px; gap: 2px; margin-top: 0.2cm;
+  clip-path: polygon(0% 5px, 15% 2px, 50% 0, 85% 2px, 100% 5px, 100% 100%, 0% 100%); }
 /* 제목 박스 — 사용자 지정: "하트+1... 박스안 글자로 처리, 박스를 중간에 오목하게",
    "하트+1 박스는 아래 코인 100 길이와 같아야함" — 버튼과 동일하게 width:100%, 바닥 중앙에
    아주 살짝 오목한 노치(clip-path). */
