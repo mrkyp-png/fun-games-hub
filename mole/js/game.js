@@ -119,8 +119,8 @@
   function refreshBoardStats() {
     const best = bestFor(currentLight());
     if (sharedLaneControls) {
-      sharedLaneControls.setHudStat('hearts', MG.Economy.getHearts());
-      sharedLaneControls.setHudStat('coins', MG.Economy.getCoins().toLocaleString());
+      sharedLaneControls.setHudStat('hearts', MG.Economy.formatK(MG.Economy.getHearts()));
+      sharedLaneControls.setHudStat('coins', MG.Economy.formatK(MG.Economy.getCoins()));
     }
     document.querySelectorAll('[data-hud-score]').forEach((el) => {
       el.textContent = I18N.t('mole.addr.best', { n: best.toLocaleString() });
@@ -1130,7 +1130,7 @@
     nav.querySelector('[data-ch-prev]').disabled = ch <= 1;
     nav.querySelector('[data-ch-next]').disabled = ch >= maxCh;
     // 챕터 입장권 (2시간마다 +1, 입장 시 -1) — 다이얼패드 3번 버튼 카운터로 표시(사용자 지정).
-    if (sharedLaneControls) sharedLaneControls.setHudStat('tickets', MG.Economy.getTickets());
+    if (sharedLaneControls) sharedLaneControls.setHudStat('tickets', MG.Economy.formatK(MG.Economy.getTickets()));
   }
   function wireChapterNav() {
     const nav = document.getElementById('chapter-nav');

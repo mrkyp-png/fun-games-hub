@@ -114,12 +114,20 @@
     return true;
   }
 
+  // 하트/코인/티켓 표시용 — 1000 넘으면 "1.0K" 식으로(사용자 지정: "1000단위 넘어가면
+  // K로 표시해. 1.0K"). 화면 여러 곳(다이얼패드 HUD, 상점 캡슐)에서 공용으로 씀.
+  function formatK(n) {
+    n = Number(n) || 0;
+    if (n < 1000) return String(n);
+    return (n / 1000).toFixed(1) + 'K';
+  }
+
   var api = {
     HEART_MAX: HEART_MAX, REGEN_MS: REGEN_MS, TICKET_MAX: TICKET_MAX, TICKET_REGEN_MS: TICKET_REGEN_MS,
     regen: regen, getHearts: getHearts, canPlay: canPlay, spendHeart: spendHeart,
     setHearts: setHearts, addHearts: addHearts, nextHeartMs: nextHeartMs,
     getTickets: getTickets, spendTicket: spendTicket, addTickets: addTickets, nextTicketMs: nextTicketMs,
-    getCoins: getCoins, addCoins: addCoins, spendCoins: spendCoins
+    getCoins: getCoins, addCoins: addCoins, spendCoins: spendCoins, formatK: formatK
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = { Economy: api };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.Economy = api; }

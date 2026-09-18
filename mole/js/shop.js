@@ -352,8 +352,8 @@
           var r = btn.getBoundingClientRect();
           var w = btn.offsetWidth, h = btn.offsetHeight;
           var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-          var n = kind === 'heart' ? MG.Economy.getHearts()
-            : kind === 'coin' ? MG.Economy.getCoins().toLocaleString() : MG.Economy.getTickets();
+          var n = MG.Economy.formatK(kind === 'heart' ? MG.Economy.getHearts()
+            : kind === 'coin' ? MG.Economy.getCoins() : MG.Economy.getTickets());
           var cap = document.createElement('div');
           cap.className = 'shop-hud-fly shop-hud-fly--' + kind;
           cap.innerHTML = '<span class="shop-hud-ico">' + icons[kind] + '</span><b class="shop-hud-n">' + n + '</b>';
