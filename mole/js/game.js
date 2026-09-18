@@ -2511,6 +2511,15 @@
       setRunLives(0);
       finish('lives');
     };
+    // 폰에서 콘솔 없이 테스트용 코인 충전 — 주소창에 ?addcoins=100000 붙여서 한 번 열면
+    // 그만큼 코인을 더해주고 즉시 소진(사용자 지정: "코인이 없어서... 테스트를 못하네").
+    try {
+      var addCoinsParam = new URLSearchParams(location.search).get('addcoins');
+      if (addCoinsParam) {
+        var n = parseInt(addCoinsParam, 10);
+        if (n > 0) MG.Economy.addCoins(n);
+      }
+    } catch (e) { /* URLSearchParams 미지원 구형 브라우저는 조용히 무시 */ }
     window.__debugSetWeapon = (w) => {
       localStorage.setItem('mole.weapon', w === 'cannon' ? 'cannon' : (w === 'goldhammer' ? 'goldhammer' : (w === 'alipunch' ? 'alipunch' : 'hammer')));
     };
