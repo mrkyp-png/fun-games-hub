@@ -37,7 +37,9 @@
     friends: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c0-3.3 2.5-5.5 5.5-5.5s5.5 2.2 5.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.6c2.6.3 5 2.3 5 5.4"/></svg>',
     locker: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.4"/><path d="M8.5 7 10 4.5h4L15.5 7"/></svg>',
     settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M19.4 13a7.8 7.8 0 000-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 00-1.7-1L14 3h-4l-.6 2.6a7.6 7.6 0 00-1.7 1l-2.4-1-2 3.4L4.6 11a7.8 7.8 0 000 2l-2 1.6 2 3.4 2.4-1c.5.4 1.1.7 1.7 1L10 21h4l.6-2.6c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.4-2-1.6z"/><circle cx="12" cy="12" r="2.6"/></svg>',
-    lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>'
+    // "#" 자리 — 시크릿(예정) 폐기, 메일함으로 대체(사용자 지정: "메일 아이콘은 버튼보드 시크릿
+    // 쪽으로 이동", "시크릿은 없어진다"). 상점 배너 메일 아이콘과 동일 아이콘(shop.js MAIL_ICON).
+    mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5 12 13l8.5-6.5"/></svg>'
   };
 
   // regionId(0..15) → 버튼 표시. 왼쪽 3열 = 표준 다이얼(큰 숫자 + 자음 + 영문/기호), 4열 = 내비.
@@ -55,7 +57,7 @@
       { nav: '아이템', svg: SVG.inventory, i18n: 'mole.pad.lblInventory', action: 'inventory', navBack: { nav: '최근기록', svg: SVG.clock, i18n: 'mole.pad.recent' } },
     { num: '✱', kr: '', en: '', hud: 'label', label: '두더지팡', labelI18n: 'mole.pad.gameMole', action: 'lightMode' },
     { num: '0', kr: '', en: '+', hud: 'label', label: '리듬팡', labelI18n: 'mole.pad.gameRhythm' },
-    { num: '#', kr: '', en: '', hud: 'label', label: '시크릿', labelI18n: 'mole.pad.secret', lockSub: true },
+    { num: '#', kr: '', en: '', hud: 'label', svg: SVG.mail, i18n: 'mole.shop.mailbox', action: 'mail' },
     { nav: '시작', svg: SVG.phone, call: true, i18n: 'mole.start.btn' }
   ];
 
@@ -93,18 +95,27 @@
     var hud = !simple && !f.call && f.hud;
     var HUD_COUNTS = { hearts: 1, coins: 1, tickets: 1 }; // 실시간 카운터 배지가 있는 것만(사용자 지정: 스코어는 배지 없이 글자만)
     if (hud === 'label') {
-      // 글자 라벨 버튼(✱="두더지팡", 0="리듬팡", #="시크릿"+잠금 등, 사용자 지정) — 숫자 대신
-      // 짧은 글자 + (있으면) 자음/영문 자리에 잠금 아이콘. action 이 있으면(✱) 탭 시 그 동작,
-      // 없으면(0/#, 아직 미구현) 그냥 표시만.
+      // 글자 라벨 버튼(✱="두더지팡", 0="리듬팡") — 숫자 대신 짧은 글자만. action 이 있으면(✱)
+      // 탭 시 그 동작, 없으면(0, 아직 미구현) 그냥 표시만.
+      // #(시크릿 폐기 → 메일함, 사용자 지정)처럼 f.svg 가 있으면 대신 아이콘+라벨(다른 내비
+      // 버튼과 동일한 모양)로 표시.
       btn.classList.add('lane-button--flippable');
-      var lbl = f.labelI18n;
+      var frontHtml;
+      if (f.svg) {
+        // 다른 내비 아이콘(상점/아이템 등)과 같은 세로 아이콘+라벨 배치 + 활성 시 1.5배 확대.
+        btn.classList.add('lane-button--nav');
+        var I4 = root.FGH && root.FGH.I18N;
+        var mailLbl = f.i18n && I4 ? I4.t(f.i18n) : '';
+        frontHtml = '<span class="lane-ico">' + f.svg + '</span><span class="lane-lbl"' +
+          (f.i18n ? ' data-i18n="' + f.i18n + '"' : '') + '>' + mailLbl + '</span>';
+      } else {
+        var lbl = f.labelI18n;
+        frontHtml = '<span class="lane-num lane-num--secret"' + (lbl ? ' data-i18n="' + lbl + '"' : '') + '>' + f.label + '</span>';
+      }
       btn.innerHTML =
         '<span class="lane-flip">' +
         '<span class="lane-face lane-face--back">' + faceHtml + '</span>' +
-        '<span class="lane-face lane-face--front lane-face--secret">' +
-          '<span class="lane-num lane-num--secret"' + (lbl ? ' data-i18n="' + lbl + '"' : '') + '>' + f.label + '</span>' +
-          (f.lockSub ? '<span class="lane-sub">' + SVG.lock + '</span>' : '') +
-        '</span>' +
+        '<span class="lane-face lane-face--front lane-face--secret">' + frontHtml + '</span>' +
         '</span>';
     } else if (hud) {
       // 아이콘은 숫자 자리(왼쪽), 자음/영문 자리(오른쪽, .lane-sub)엔 이 둘 중 하나(사용자 지정):

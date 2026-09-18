@@ -749,7 +749,8 @@
         if (action === 'home') { showStartScreen(); return; }
         const sub = { shop: 'shop-screen', score: 'score-screen', daily: 'daily-screen',
           quest: 'quest-screen', friends: 'friends-screen', locker: 'face-locker',
-          inventory: 'inventory-screen', settings: 'settings-screen', lightMode: 'light-popup' }[action];
+          inventory: 'inventory-screen', settings: 'settings-screen', lightMode: 'light-popup',
+          mail: 'mailbox-screen' }[action];
         if (sub) { openMore(sub); if (sharedLaneControls) sharedLaneControls.setActiveNav(action); }
       }
     });
@@ -2620,8 +2621,7 @@
       onClose: () => closeMore(),
       onChange: () => { if (moreMenu) moreMenu.refresh(); },
       // 무기 탭 구매 잠금 — 게임 진행 중(라운드1~클리어)에만 비활성화.
-      gameInProgress: () => !!(state && !state.ended),
-      onMail: () => screenNav.show('mailbox-screen') // 배너 메일 아이콘(사용자 지정, 스캐폴드).
+      gameInProgress: () => !!(state && !state.ended)
     });
     daily = MG.Daily.create({
       root: document.getElementById('daily-screen'),

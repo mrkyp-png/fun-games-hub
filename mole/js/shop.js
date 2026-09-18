@@ -32,8 +32,6 @@
     var tabsEl = el.querySelector('[data-shop-tabs]');
     var bannerEl = el.querySelector('[data-shop-banner]');
     var dotsEl = el.querySelector('[data-shop-dots]');
-    var prevBtn = el.querySelector('[data-shop-prev]');
-    var nextBtn = el.querySelector('[data-shop-next]');
     // 상단 뒤로가기/제목 바 삭제(사용자 지정) — 종료는 다이얼패드 홈 아이콘(onHomeAction 'home')으로.
 
     // 카드 줄 좌우 화살표+점 페이지 표시(사용자 지정: "상점UI 파일처럼 화살표, 페이지 점들도").
@@ -43,8 +41,7 @@
       var first = cardsEl.children[0];
       return first ? first.getBoundingClientRect().width + 10 : 118; // +10 = gap
     }
-    prevBtn.addEventListener('click', function () { cardsEl.scrollBy({ left: -cardUnit() * 3, behavior: 'smooth' }); });
-    nextBtn.addEventListener('click', function () { cardsEl.scrollBy({ left: cardUnit() * 3, behavior: 'smooth' }); });
+    // 화살표는 배너 안(우측)에 있어 renderBanner() 가 매번 새로 그림 — 거기서 바로 배선.
     function updateDots() {
       var n = cardsEl.children.length;
       dotsEl.innerHTML = '';
@@ -229,18 +226,17 @@
 
     var RENDERERS = { currency: renderCurrencyCards, weapon: renderWeaponCards, skill: renderSkillCards, costume: renderCostumeCards };
 
-    // 배너 우측 메일 아이콘(사용자 지정: "구매→메일함" 흐름 진입점) — 모든 탭에서 배너가
-    // 공통이라 무기 탭 등에서도 그대로 보임("여기도 메일 아이콘 있어야함").
-    var MAIL_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5 12 13l8.5-6.5"/></svg>';
+    // 배너 우측 메일 아이콘은 다이얼패드 "#"(시크릿 폐기) 자리로 이동함(사용자 지정) — 배너에는
+    // 그 자리에 화살표(‹›)를 대신 넣는다(아이템 화면과 동일 패턴).
     function renderBanner() {
       bannerEl.innerHTML =
         '<img alt="" class="shop-banner-pic" src="assets/avatar-mole.png">' +
         '<span class="shop-banner-txt"></span>' +
-        '<button type="button" class="shop-banner-mail" data-shop-mail aria-label="메일함">' + MAIL_ICON + '</button>';
+        '<button type="button" class="shop-arrow shop-arrow--prev" data-shop-prev aria-label="이전">‹</button>' +
+        '<button type="button" class="shop-arrow shop-arrow--next" data-shop-next aria-label="다음">›</button>';
       bannerEl.querySelector('.shop-banner-txt').textContent = T('mole.shop.welcome');
-      bannerEl.querySelector('[data-shop-mail]').addEventListener('click', function () {
-        if (opts.onMail) opts.onMail();
-      });
+      bannerEl.querySelector('[data-shop-prev]').addEventListener('click', function () { cardsEl.scrollBy({ left: -cardUnit() * 3, behavior: 'smooth' }); });
+      bannerEl.querySelector('[data-shop-next]').addEventListener('click', function () { cardsEl.scrollBy({ left: cardUnit() * 3, behavior: 'smooth' }); });
     }
 
     // 하트/코인/티켓 캡슐 = 상점 안이 아니라 다이얼패드(1/2/3 키) 위로 애니메이션 착지(사용자
