@@ -2844,9 +2844,11 @@ body { background: var(--lm-page); }
   border-radius: 6px; background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0)); pointer-events: none; }
 .shop-arrow--prev { right: 38px; }
 .shop-arrow--next { right: 0; }
-/* 아이템 화면 전용: 화살표를 파란 박스 테두리 위로(사용자 지정) — 화살표 높이(32px)의
-   절반만큼 올려 테두리 선에 걸치게. */
-#inventory-screen .shop-arrow { top: -16px; }
+/* 아이템 화면 전용: 화살표를 파란 박스 밖으로 완전히(사용자 지정: "박스 밖으로 빼라고...
+   외곽선에서 올려놓은것처럼") — 테두리에 걸치는 게 아니라 통째로 박스 위에 얹힘.
+   .inv-cards-box padding-top(6px) + .shop-cards-head padding-top(2px) = 8px 만큼
+   화살표(32px)를 완전히 밀어올려야 바닥이 테두리선에 닿음. */
+#inventory-screen .shop-arrow { top: -40px; }
 .shop-arrow:active { transform: scale(0.88); }
 /* align-items:stretch 명시 — 기본값(normal)에 암묵적으로 기대고 있었는데, 골드묠니르/
    알리판취 카드 구매버튼이 얇은 띠로 찌그러져 보이는 현상(사용자 영상 확인)이 있어 안전하게
@@ -3250,16 +3252,18 @@ body { background: var(--lm-page); }
   font-family: 'Dongle', 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
 }
 /* 상점 구매 버튼과 동일 스타일(사용자 지정) — 광택 띠 + 눌림 스케일. */
-/* 좌측상단 점(.shop-dots) 줄에 맞춰 이동(사용자 지정: "장착 박스는 좌측상단... 줄에 맞춘다")
-   — 화살표·점과 같은 줄에 들어가므로 폭도 2/3로 축소(사용자 지정: "폭은 3분의 2로"). */
+/* 점(.shop-dots) 줄에 맞춰 절대배치(사용자 지정: "점4개는 그대로 원위치" — flex 흐름에
+   넣으면 점이 밀려서 absolute 로 분리, 화살표와 같은 방식). 중앙 기준으로 폭이 줄어들게
+   left:50%+translateX(사용자 지정: "중앙에서 길이를 줄여야지"). */
 .inv-equip {
-  position: relative; flex: 0 0 auto; width: 39%; padding: 6px 0; border: none; border-radius: 999px; overflow: hidden;
+  position: absolute; left: 50%; top: 2px; transform: translateX(-50%);
+  width: 39%; padding: 6px 0; border: none; border-radius: 999px; overflow: hidden;
   background: linear-gradient(180deg, #63d97c, #2fb457); color: #fff; font-weight: 800; font-size: 0.68rem; cursor: pointer;
   box-shadow: 0 2px 0 #1c8340, inset 0 2px 2px rgba(255,255,255,0.6); transition: transform 0.1s ease;
 }
 .inv-equip::before { content: ''; position: absolute; left: 7%; right: 7%; top: 2px; height: 44%; z-index: -1;
   border-radius: 999px; background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0)); pointer-events: none; }
-.inv-equip:active { transform: scale(0.93); }
+.inv-equip:active { transform: translateX(-50%) scale(0.93); }
 .inv-equip:disabled { background: #d8dbe0; color: #8a8a90; cursor: default; box-shadow: none; }
 .inv-equip:disabled::before { display: none; }
 
