@@ -2845,7 +2845,11 @@ body { background: var(--lm-page); }
 .shop-arrow--prev { right: 38px; }
 .shop-arrow--next { right: 0; }
 .shop-arrow:active { transform: scale(0.88); }
+/* align-items:stretch 명시 — 기본값(normal)에 암묵적으로 기대고 있었는데, 골드묠니르/
+   알리판취 카드 구매버튼이 얇은 띠로 찌그러져 보이는 현상(사용자 영상 확인)이 있어 안전하게
+   명시. 버튼도 min-height 로 바닥을 걸어둠(아래 .shop-card-btn). */
 .shop-cards { flex: 1 1 auto; padding: 2px 2px 4px; display: flex; flex-direction: row; gap: 10px;
+  align-items: stretch;
   overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; touch-action: pan-x;
   scrollbar-width: none; }
 .shop-cards::-webkit-scrollbar { display: none; }
@@ -2876,7 +2880,7 @@ body { background: var(--lm-page); }
   animation: idle-crown-sweep 2.8s ease-in-out infinite; }
 .shop-card--equipped { border-color: #2f6fed; box-shadow: 0 0 0 2px #2f6fed, 0 3px 0 #b9cdf0, 0 4px 10px rgba(20,60,140,0.15); }
 /* 원형 배지 배경 삭제(사용자 지정: "달걀같은 원형은 뭐냐, 다 삭제해") — 아이콘/이미지만 남김. */
-.shop-card-badge { width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; }
+.shop-card-badge { flex: 0 0 auto; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; }
 .shop-card-badge svg { width: 62%; height: 62%; fill: none; stroke: #d3395a; }
 .shop-card-badge img { max-width: 72%; max-height: 72%; object-fit: contain; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.25)); }
 .shop-card-badge .cs-thumb { width: 20px; height: 20px; background: #fff; border-radius: 6px; }
@@ -2884,11 +2888,12 @@ body { background: var(--lm-page); }
 .shop-card-badge--pair { width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; gap: 2px; }
 .shop-card-badge--pair img { max-width: 46%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.25)); }
 .shop-thumb-mirror { transform: scaleX(-1); }
-.shop-card-name { font-size: 0.78rem; font-weight: 700; color: #1f1f24; min-height: 2.1em; }
-.shop-card-price { font-size: 0.7rem; font-weight: 700; color: #b8860b; }
+.shop-card-name { flex: 0 0 auto; font-size: 0.78rem; font-weight: 700; color: #1f1f24; min-height: 2.1em; }
+.shop-card-price { flex: 0 0 auto; font-size: 0.7rem; font-weight: 700; color: #b8860b; }
 /* GET NOW 버튼처럼 위쪽 광택 하이라이트 추가(사용자 지정: "빛에 비춰진 것처럼, get now 버튼처럼")
    — .splash-hint::before 와 동일한 방식(위쪽 44% 흰 그라디언트 띠). */
-.shop-card-btn { position: relative; width: 100%; padding: 7px 4px; border: none; border-radius: 999px; overflow: hidden;
+.shop-card-btn { position: relative; width: 100%; min-height: 30px; flex: 0 0 auto; box-sizing: border-box;
+  padding: 7px 4px; border: none; border-radius: 999px; overflow: hidden;
   background: linear-gradient(180deg, #63d97c, #2fb457); color: #fff; font-weight: 800; font-size: 0.76rem; cursor: pointer;
   box-shadow: 0 3px 0 #1c8340, inset 0 2px 2px rgba(255,255,255,0.6); transition: transform 0.1s ease; }
 /* z-index:-1 — 이게 없으면 이 광택 레이어(position:absolute)가 버튼 글자보다 나중에 그려져
@@ -3014,16 +3019,12 @@ body { background: var(--lm-page); }
    (사용자 보고: "애니메이션 효과들 크기, 위치가 다 틀어진거같은데" 원인). */
 .inv-left { flex: 0 0 auto; width: 120px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .inv-right { flex: 1 1 auto; min-width: 0; }
-.inv-name { font-size: 0.78rem; font-weight: 800; color: #1f1f24; }
+.inv-name { font-size: 0.9rem; font-weight: 800; color: #1f1f24; }
 /* 이미지는 작게, 능력치가 잘 보이도록 공간 확보(사용자 지정). */
 /* 88px 로 복원(사용자 지정: "능력치 잘 보이게" 하려고 52px로 줄였었는데, 캐논/골드해머/알리판취
    특수 애니메이션 좌표가 전부 "88px 고정 높이" 전제로 cm/px 단위까지 정밀 계산돼 있어서
    깨졌었음 — 이미지 축소는 포기, 대신 좌측 칸 폭(120px)으로 능력치 공간 확보). */
-/* transform:scale — 레이아웃(88px 높이 기준 캐논/골드해머 이펙트 px 좌표) 자체는 그대로 두고
-   렌더링만 축소(사용자 지정: "무기 이미지... 크기에 맞춰 작아져야"). transform 은 자식들의
-   px/%/keyframe 좌표를 통째로 같이 축소해줘서 이펙트 정렬이 안 깨짐. */
-.inv-thumb { height: 88px; display: flex; align-items: center; justify-content: center;
-  transform: scale(0.82); }
+.inv-thumb { height: 88px; display: flex; align-items: center; justify-content: center; }
 .inv-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
 /* 알리 펀치 = 좌/우 글러브 한 쌍(오른쪽은 왼쪽 이미지 거울상, 실제 게임 배치와 동일). */
 /* 사용자 지시: 좌우 글러브 사이 0.2cm 간격, 왼쪽 시계 15도·오른쪽 반시계 15도(거울상 유지). */
@@ -3223,20 +3224,22 @@ body { background: var(--lm-page); }
 .inv-stat-h {
   position: relative; overflow: hidden;
   display: block; width: fit-content; margin: 0 auto 5px; /* 샤인 스윕이 글자 폭에만 걸리게(사용자 지적: "한줄이 다 효과") */
-  text-align: center; font-weight: 800; font-size: 0.74rem;
+  text-align: center; font-weight: 800; font-size: 0.88rem;
   color: #eafcff;
   -webkit-text-stroke: 1.5px #000;
   paint-order: stroke fill;
 }
-.inv-stat-tbl { width: 100%; border-collapse: collapse; font-size: 0.66rem; line-height: 1.35; }
+.inv-stat-tbl { width: 100%; border-collapse: collapse; font-size: 0.8rem; line-height: 1.35; }
 .inv-stat-tbl th {
   text-align: left; font-weight: 700; color: var(--lm-muted);
   white-space: nowrap; padding: 1px 5px 1px 0; vertical-align: top;
 }
 .inv-stat-tbl td { width: 99%; text-align: left; color: var(--lm-ink); font-weight: 700; padding: 1px 0; }  /* 99% = 남는 폭 다 차지 (th는 내용폭) */
 .inv-stat-tbl td.inv-stat-dash { text-align: center; }
-/* 버튼 크기는 작게 유지하되, 위치는 칸 아래로(margin-top:auto) — 지진 이펙트와 안 겹치게. */
-.inv-equip { margin: auto auto 0; }
+/* 장착 버튼을 카드 밖(위쪽)으로 이동(사용자 지정: "장착 선택박스를 아예 밖으로 빼도 됨(위로)")
+   — 카드 안에서 세로공간 부족으로 잘려 안 보이던 문제 자체를 없앰. 현재 페이지(pageIdx)의
+   무기를 가리키며, 스와이프/화살표로 페이지가 바뀔 때마다 갱신됨(updateEquipBtn 참고). */
+.inv-equip-bar { flex: 0 0 auto; display: flex; justify-content: center; padding: 2px 12px 8px; }
 
 /* 게임화면 둥근 글자체(Dongle, 사용자 선택) — 홈화면·다이얼패드 숫자·더보기메뉴는 그대로,
    라운드전환/카운트다운/점수·하트·콤보/결과화면/타격 이펙트 텍스트만 적용. */
@@ -3248,8 +3251,8 @@ body { background: var(--lm-page); }
 }
 /* 상점 구매 버튼과 동일 스타일(사용자 지정) — 광택 띠 + 눌림 스케일. */
 .inv-equip {
-  position: relative; width: 74%; padding: 7px 0; border: none; border-radius: 999px; overflow: hidden;
-  background: linear-gradient(180deg, #63d97c, #2fb457); color: #fff; font-weight: 800; font-size: 0.68rem; cursor: pointer;
+  position: relative; width: 58%; padding: 9px 0; border: none; border-radius: 999px; overflow: hidden;
+  background: linear-gradient(180deg, #63d97c, #2fb457); color: #fff; font-weight: 800; font-size: 0.86rem; cursor: pointer;
   box-shadow: 0 2px 0 #1c8340, inset 0 2px 2px rgba(255,255,255,0.6); transition: transform 0.1s ease;
 }
 .inv-equip::before { content: ''; position: absolute; left: 7%; right: 7%; top: 2px; height: 44%; z-index: -1;
