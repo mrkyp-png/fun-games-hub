@@ -16,22 +16,11 @@
     play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'
   };
 
-  // 하트 재화 카드 전용 아트(사용자 제공 참고 이미지 스타일 — 광택나는 3D 하트) — 라인 아이콘
-  // (ICONS.hearts)과 별도로, 카드 메인 이미지 자리에만 쓰는 더 화려한 버전. viewBox 0 0 100 100.
-  var HEART_GLOSSY =
-    '<svg viewBox="0 0 100 100" class="heart-glossy" aria-hidden="true">' +
-    '<path d="M50 90C22 68 6 47 6 29 6 13 18 2 33 2c9 0 15 5 17 12 2-7 8-12 17-12 15 0 27 11 27 27 0 18-16 39-44 61Z"/>' +
-    '<ellipse class="heart-glossy-hi" cx="27" cy="24" rx="11" ry="6.5" transform="rotate(-28 27 24)"/>' +
-    '</svg>';
-  // 광고 시청 아이콘 — 클리퍼보드+재생버튼(참고 이미지 스타일), 하트 옆에 겹쳐서 사용.
-  var AD_CLAPPER =
-    '<svg viewBox="0 0 100 100" class="ad-clapper" aria-hidden="true">' +
-    '<rect x="6" y="34" width="88" height="56" rx="12"/>' +
-    '<rect class="ad-clapper-lid" x="6" y="12" width="88" height="26" rx="10"/>' +
-    '<rect class="ad-clapper-stripe" x="24" y="12" width="12" height="26"/>' +
-    '<rect class="ad-clapper-stripe" x="52" y="12" width="12" height="26"/>' +
-    '<path class="ad-clapper-play" d="M42 50 66 63 42 76Z"/>' +
-    '</svg>';
+  // 하트 재화 카드 전용 아트 — 사용자가 만든 참고 이미지를 그대로 크롭한 실제 PNG(사용자
+  // 지정: "SVG로 하면 질이 떨어지는데, 바탕화면의 것으로 만들지" — 코드로 그린 아이콘 대신
+  // 원본 이미지 사용). assets/shop/heart-*.png, 각 카드의 "아트 존"만 크롭(제목/설명/가격은
+  // 이미지에 없고 이 화면에서 동적으로 렌더).
+  var HEART_ART = { buy1: 'assets/shop/heart-buy1.png', full: 'assets/shop/heart-full.png', ad: 'assets/shop/heart-ad.png' };
 
   // 상점 "무기" 탭 = 아이템보관창(inventory-screen.js) 무기탭과 같은 4종(사용자 지정: "지금 있는
   // 뿅망치, 팡팡 캐논, 황금 묠니르, 알리 판취 넣어서 구성"). 가격은 참고 이미지 스타일을 맞추기
@@ -190,21 +179,17 @@
       cardsEl.innerHTML = '';
       var defs = [
         { kind: 'heart', rich: true, theme: 'pink', ribbonTheme: 'red', ribbonIcon: '⭐',
-          ribbon: T('mole.shop.ribbonRecommend'), art: HEART_GLOSSY,
+          ribbon: T('mole.shop.ribbonRecommend'), art: '<img alt="" src="' + HEART_ART.buy1 + '">',
           name: T('mole.shop.heart1'), desc: T('mole.shop.descHeart1'), pillText: '+1',
           btnHtml: ICONS.coins + '<b>100</b>', btnDisabled: MG.Economy.getCoins() < 100,
           onClick: function () { if (MG.Economy.spendCoins(100)) { MG.Economy.addHearts(1); done(); } else alert(T('mole.shop.noCoin')); } },
         { kind: 'heart', rich: true, theme: 'pink', ribbonTheme: 'gold', ribbonIcon: '👑',
-          ribbon: T('mole.shop.ribbonPopular'),
-          art: '<div class="heart-cluster">' + HEART_GLOSSY +
-            '<span class="heart-mini heart-mini--a">' + HEART_GLOSSY + '</span>' +
-            '<span class="heart-mini heart-mini--b">' + HEART_GLOSSY + '</span></div>',
+          ribbon: T('mole.shop.ribbonPopular'), art: '<img alt="" src="' + HEART_ART.full + '">',
           name: T('mole.shop.heartFull'), desc: T('mole.shop.descHeartFull'), pillText: T('mole.shop.fullPill'),
           btnHtml: ICONS.coins + '<b>400</b>', btnDisabled: MG.Economy.getCoins() < 400,
           onClick: function () { if (MG.Economy.spendCoins(400)) { MG.Economy.addHearts(MG.Economy.HEART_MAX); done(); } else alert(T('mole.shop.noCoin')); } },
         { kind: 'heart', rich: true, theme: 'blue', ribbonTheme: 'blue', ribbonIcon: '▶',
-          ribbon: T('mole.shop.free'),
-          art: '<div class="heart-ad-wrap">' + HEART_GLOSSY + '<span class="ad-clapper-badge">' + AD_CLAPPER + '</span></div>',
+          ribbon: T('mole.shop.free'), art: '<img alt="" src="' + HEART_ART.ad + '">',
           name: T('mole.shop.watchHeart'), desc: T('mole.shop.descWatchHeart'), pillText: '+1',
           btnHtml: ICONS.play + '<b>' + T('mole.shop.watchAdBtn') + '</b>', btnDisabled: false,
           onClick: function () { MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addHearts(1); done(); } }); } },
