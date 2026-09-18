@@ -74,6 +74,7 @@
     if (f.nav) {
       btn.classList.add('lane-button--nav');
       if (f.call) btn.classList.add('lane-button--call');
+      if (f.action === 'home') btn.classList.add('lane-button--home'); // 홈 버튼만 아이콘 90% 확대(사용자 지정)
       var I = root.FGH && root.FGH.I18N;
       var label = f.noLabel ? '' : (f.i18n && I ? I.t(f.i18n) : f.nav); // 홈 버튼 — 글자 없이 아이콘만(사용자 지정)
       var attr = f.i18n ? ' data-i18n="' + f.i18n + '"' : '';

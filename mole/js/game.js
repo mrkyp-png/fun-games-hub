@@ -530,6 +530,9 @@
     // 홈 화면일 때만 게임 진입을 허용한다(사용자 지정) — 다른 화면이 열려있으면 무시.
     var mm = document.getElementById('more-menu');
     if (mm && !mm.hidden) return;
+    // 프로필 사진 화면(editProfileAvatar)은 openMoreNow()를 거치지 않고 screenNav 로 직접 열려
+    // #more-menu 는 계속 hidden 인 채로 남는다 — screenNav 스택으로 별도 확인.
+    if (screenNav && screenNav.current()) return;
     if (MG.Economy.getHearts() <= 0) { showNoHeartModal(); return; }
     if (!MG.Economy.spendTicket()) { showNoTicketModal(); return; } // 챕터 입장권 1장 차감
     refreshChapterNav();
@@ -2598,7 +2601,10 @@
     shop = MG.Shop.create({
       root: document.getElementById('shop-screen'),
       onClose: () => closeMore(),
-      onChange: () => { if (moreMenu) moreMenu.refresh(); }
+      onChange: () => { if (moreMenu) moreMenu.refresh(); },
+      // 무기 탭 장착 잠금 — inventory-screen 과 동일 규칙(게임 진행 중·챕터1~3 뿅망치 전용).
+      gameInProgress: () => !!(state && !state.ended),
+      hammerOnly: () => isSmallBoardChapter()
     });
     daily = MG.Daily.create({
       root: document.getElementById('daily-screen'),

@@ -1642,6 +1642,16 @@ body { background: var(--lm-page); }
 .lane-button--nav-active { transform: scale(1.5); z-index: 2; }
 .lane-button--nav-active .lane-lbl { color: #1f1f24; font-weight: 800; }
 .lane-ico { width: clamp(16px, 6vw, 24px); height: clamp(16px, 6vw, 24px); display: block; }
+/* 홈 버튼 = 홈 화면일 때만(lane-button--nav-active) 아이콘을 박스 내부 90%까지 확대(사용자 지정,
+   스코어·일일·퀘스트 등은 그대로). 다른 화면(상점/아이템/사진 등)을 열면 active 가 그쪽으로 옮겨가
+   자동으로 작은 아이콘으로 복귀한다. 전체버튼 1.5x transform(다른 nav 버튼과 공통)은 박스 밖으로
+   튀어나가 보이던 문제 때문에 홈만 제외. */
+.lane-button--home.lane-button--nav-active { transform: none; }
+.lane-button--home.lane-button--nav-active .lane-ico { width: 72%; height: 72%; }
+/* 아이콘이 커진 만큼(74px≈24px 뷰박스의 3.09배) 선 굵기도 같이 굵어져 다른 내비 버튼이 1.5배
+   확대됐을 때(2.7px)보다 훨씬 두꺼워 보였음 — 상점 등 확대 상태와 같은 굵기로 역보정
+   (1.8 stroke-width 기준 0.87 ≈ 확대 후 2.7px, 사용자 지정: "상점 커졌을때와 굵기 같게"). */
+.lane-button--home.lane-button--nav-active .lane-ico svg path { stroke-width: 0.87; }
 .lane-ico svg { width: 100%; height: 100%; display: block; }
 .lane-lbl { font-size: clamp(0.4rem, 1.9vw, 0.56rem); font-weight: 600; color: var(--lm-muted); }
 .lane-button--call { background: #2ecc57; color: #fff; }
@@ -2642,20 +2652,144 @@ body { background: var(--lm-page); }
 .fl-actions button { padding: 5px 0; border: none; border-radius: 6px; background: #ececef; color: #3a3a41; font-size: 0.72rem; cursor: pointer; }
 .fl-empty { padding: 24px; text-align: center; color: #9a9aa0; }
 
-/* 상점 */
-.shop-bal { margin-left: auto; font-size: 0.85rem; color: #f2c14e; }
-.shop-list { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
-.shop-row { display: flex; align-items: center; gap: 8px; padding: 12px; background: #f4f4f6; border-radius: 10px; font-size: 0.85rem; }
-.shop-row span { flex: 1; }
-.shop-row button { padding: 6px 14px; border: none; border-radius: 8px; background: #2fb457; color: #fff; font-weight: 800; cursor: pointer; }
-.shop-row button:disabled { background: #e6e6ea; color: #a0a0a6; cursor: default; }
-.shop-head { padding: 14px 4px 4px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.1em; color: #8a8a90; }
-.shop-set { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #f4f4f6; border-radius: 10px; }
-.shop-set-thumbs { display: flex; gap: 3px; flex: 0 0 auto; }
-.shop-set-thumbs .cs-thumb { width: 26px; height: 26px; background: #e9e9ec; border-radius: 6px; }
-.shop-set-name { flex: 1; font-size: 0.86rem; font-weight: 700; }
-.shop-set button { padding: 6px 14px; border: none; border-radius: 8px; background: #f0a800; color: #3a2600; font-weight: 800; font-size: 0.78rem; cursor: pointer; }
-.shop-set button:disabled { background: #e6e6ea; color: #a0a0a6; }
+/* 상점 — 2026-09-18 카드/탭 구조 개편(사용자 제공 참고 이미지 스타일, 하늘색 톤 + 입체감).
+   상단 뒤로가기바 삭제 → #shop-screen 자체 세로 스크롤도 막고(사용자 지정: "상하로 스크롤 되면
+   안됨") flex 로 hud/배너/카드/탭을 화면 안에 꽉 채워 배치, 카드 줄만 가로 스크롤. */
+/* 배경 = 게임 기존 보드 배경 이미지(board-scene.jpg)를 흐리게(사용자 지정: "상점UI 처럼
+   뿌옇게") — ::before 로 블러만 따로 먹여 위 컨텐츠(hud/배너/카드/탭)는 선명하게 유지. */
+#shop-screen { overflow-y: hidden; background: #cfe4ff; isolation: isolate; }
+#shop-screen::before { content: ''; position: absolute; inset: -10px; z-index: 0;
+  background: url('assets/board-scene.jpg') center/cover no-repeat;
+  filter: blur(10px) brightness(1.15) saturate(0.85); }
+#shop-screen::after { content: ''; position: absolute; inset: 0; z-index: 0; background: rgba(210, 232, 255, 0.55); }
+#shop-screen > * { position: relative; z-index: 1; }
+/* 화면보드(다이얼패드 제외) 전체 테두리에 그라디언트 적용(사용자 지정: "전체 큰 화면", 홈그리드
+   .hg-cell::after 와 동일한 padding-box/content-box XOR 마스크 기법 재사용). */
+.shop-frame { position: absolute; inset: 0; z-index: 2; pointer-events: none; padding: 3px;
+  border-radius: inherit;
+  background: conic-gradient(from 0deg, #ff7a4d, #ffce33, #4ade80, #3b82f6, #a855f7, #ff7a4d);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude; }
+/* 최상단 하트/코인/티켓 — 참고 이미지와 동일하게 [원형배지][숫자][+] 캡슐, 화면 좌우 끝까지
+   분산(사용자 지정: "바탕화면과 동일한 디자인으로, 좌우 최대한 활용"). */
+.shop-hud { flex: 0 0 auto; display: flex; justify-content: space-between; padding: 8px 10px 3px; }
+/* 하트/코인/티켓 캡슐 3개 = 같은 모양·같은 길이(사용자 지정) — 자릿수 달라도 폭 고정.
+   + 버튼은 캡슐 끝(우측 끝)으로(사용자 지정: "+ 표시는 박스 끝으로 이동"). */
+/* 흰색 대신 노란색 입체 캡슐(사용자 지정: "박스 색깔도 흰색 하지말고 노란색으로 입체감있게"). */
+.shop-hud-stat { flex: 0 0 auto; width: 30%; display: inline-flex; align-items: center; justify-content: space-between;
+  padding: 3px 8px 3px 3px; background: linear-gradient(180deg, #ffe27a, #f0a800); border-radius: 999px;
+  box-shadow: 0 3px 0 #b87800, inset 0 2px 2px rgba(255,255,255,0.7), inset 0 -3px 4px rgba(120,70,0,0.3); }
+.shop-hud-main { display: inline-flex; align-items: center; gap: 4px; }
+/* 원형 배지는 전부 녹색으로 통일(사용자 지정: "원형은 다 녹색으로 통일"), 아이콘 자체 색만
+   종류별로 다르게(하트=빨강 채움, 코인=황금색, 티켓=기존 흰색 외곽선 유지). */
+.shop-hud-ico { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 35% 30%, #8ee8a0, #3fbf62 70%, #279247);
+  box-shadow: inset 0 -3px 4px rgba(0,0,0,0.2), inset 0 2px 2px rgba(255,255,255,0.6); }
+.shop-hud-ico svg { width: 62%; height: 62%; fill: none; stroke: #fff; stroke-width: 2.2; }
+.shop-hud-stat--heart .shop-hud-ico svg { fill: #e8433c; stroke: #a82c22; }
+.shop-hud-stat--coin .shop-hud-ico svg { fill: #ffce33; stroke: #c99a1e; }
+.shop-hud-n { font-weight: 800; font-size: 0.82rem; color: #1f1f24; }
+/* + 버튼은 광택 띠 없이 베벨(입체감)만(사용자 지정: "입체감만 주고"). */
+.shop-hud-plus { width: 18px; height: 18px; border-radius: 50%; border: none;
+  background: linear-gradient(180deg, #5c9bff, #2f6fed); color: #fff;
+  font-weight: 900; font-size: 0.75rem; line-height: 1; cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,30,90,0.4); }
+/* 배너 = 위아래 폭 최소화(사용자 지정: "배너박스 아래위 폭 줄이고") — 상품박스에 세로공간 양보. */
+.shop-banner { flex: 0 0 auto; margin: 6px 10px 0; padding: 6px 12px; border-radius: 14px;
+  background: linear-gradient(180deg, #4a90f5, #2f6fed 60%, #1f4fc4);
+  box-shadow: 0 4px 0 #163a94, inset 0 3px 3px rgba(255,255,255,0.55), inset 0 -6px 8px rgba(0,30,90,0.35);
+  display: flex; align-items: center; gap: 8px; }
+.shop-banner-pic { width: 32px; height: 32px; border-radius: 50%; background: #fff; object-fit: cover; flex: 0 0 auto;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.25); }
+.shop-banner-txt { color: #fff; font-weight: 800; font-size: 0.74rem; text-shadow: 0 2px 0 rgba(0,30,90,0.4); }
+/* 상품 박스(사용자 지정: "상품들도 박스안에 구성이 되어야지", "높이 최대한 늘리고 좌우도 최대한,
+   아래 4개 선택상자까지 늘려봐") — flex:1 1 auto 로 배너가 줄인 만큼 세로공간을 그대로 흡수,
+   위아래 여백도 최소화해 탭바 바로 위까지 닿게. 좌우 여백은 다른 박스들과 동일(10px, "열과
+   줄은 같아야함"). */
+.shop-cards-box { flex: 1 1 auto; margin: 6px 10px 0; padding: 6px 8px 8px; border-radius: 16px;
+  background: linear-gradient(180deg, #2a5cc9, #1c3f96); box-shadow: 0 4px 0 #12285e, inset 0 2px 3px rgba(255,255,255,0.25);
+  display: flex; flex-direction: column; min-height: 0; }
+/* 헤더 줄 — 점(왼쪽) + 화살표(오른쪽), 참고 이미지처럼 우측 상단에 "‹ ›" (사용자 지정:
+   "우측 상단에 < > 이런형태로"). */
+.shop-cards-head { flex: 0 0 auto; display: flex; align-items: center; justify-content: flex-end; gap: 6px; padding: 2px 2px 4px; }
+.shop-dots { flex: 1 1 auto; display: flex; gap: 5px; }
+.shop-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.35); }
+.shop-dot--on { background: #fff; }
+.shop-arrow { flex: 0 0 auto; width: 22px; height: 22px; border: none; border-radius: 50%;
+  background: rgba(255,255,255,0.9); color: #1c3f96; font-size: 0.9rem; font-weight: 900; line-height: 1;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.25); cursor: pointer; }
+.shop-cards { flex: 1 1 auto; padding: 2px 2px 4px; display: flex; flex-direction: row; gap: 10px;
+  overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity;
+  scrollbar-width: none; }
+.shop-cards::-webkit-scrollbar { display: none; }
+.shop-card { scroll-snap-align: start; }
+/* 가운데 카드 5초마다 스윙(사용자 지정: "중앙에 오면 스윙 효과, 5초간격 루프, 무기도 마찬가지"). */
+.shop-card--swing { animation: shop-card-swing 0.8s ease-in-out; transform-origin: top center; }
+@keyframes shop-card-swing {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(-8deg); }
+  40% { transform: rotate(7deg); }
+  60% { transform: rotate(-4deg); }
+  80% { transform: rotate(2deg); }
+}
+.shop-notice { flex: 0 0 auto; margin: 4px 14px 0; padding: 10px 12px; background: #fff4e0; color: #8a5a00;
+  border-radius: 10px; font-size: 0.78rem; white-space: pre-line; }
+.shop-soon { flex: 0 0 100%; text-align: center; color: #dfe8ff; padding: 20px; }
+/* 카드 폭 = 항상 정확히 3장 + 간격 2개가 줄 폭에 꽉 차도록 %기반 계산(사용자 지정: "화살표
+   눌렀을때 3개의 상품 보이게" + "오른쪽이 화살표 끝에 맞춰서 정렬" — 고정px 이었을 때 3장 뒤에
+   잔여폭만큼 4번째 카드가 삐져나와 화살표 끝과 안 맞았음). box-sizing:border-box, gap 10px 고정
+   기준 — shop.js 도 런타임에 실제 카드 폭을 읽어 쓰므로 숫자 동기화 불필요. */
+.shop-card { box-sizing: border-box; position: relative; overflow: hidden; flex: 0 0 calc((100% - 20px) / 3); display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px 5px;
+  background: linear-gradient(180deg, #ffffff, #eef4ff); border-radius: 14px; border: 2px solid #cfe0fb;
+  box-shadow: 0 3px 0 #b9cdf0, 0 4px 10px rgba(20,60,140,0.15); text-align: center; }
+/* 쉬머 스윕(사용자 지정: "상품안 상품, 상품선택 박스" — 기존 idle-crown-sweep 재사용, 시작버튼과
+   같은 대각선 빛 쓸기). */
+.shop-card::after { content: ''; position: absolute; inset: -60%; z-index: 2; pointer-events: none;
+  background: linear-gradient(115deg, transparent 44%, rgba(255,255,255,0.35) 50%, transparent 56%);
+  animation: idle-crown-sweep 2.8s ease-in-out infinite; }
+.shop-card--equipped { border-color: #2f6fed; box-shadow: 0 0 0 2px #2f6fed, 0 3px 0 #b9cdf0, 0 4px 10px rgba(20,60,140,0.15); }
+/* 원형 배지 배경 삭제(사용자 지정: "달걀같은 원형은 뭐냐, 다 삭제해") — 아이콘/이미지만 남김. */
+.shop-card-badge { width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; }
+.shop-card-badge svg { width: 62%; height: 62%; fill: none; stroke: #d3395a; }
+.shop-card-badge img { max-width: 72%; max-height: 72%; object-fit: contain; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.25)); }
+.shop-card-badge .cs-thumb { width: 20px; height: 20px; background: #fff; border-radius: 6px; }
+/* 알리 판취 좌/우 글러브 한 쌍 — 아이템보관창(.inv-thumb--pair)과 동일하게 오른쪽은 거울상. */
+.shop-card-badge--pair { width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; gap: 2px; }
+.shop-card-badge--pair img { max-width: 46%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.25)); }
+.shop-thumb-mirror { transform: scaleX(-1); }
+.shop-card-name { font-size: 0.78rem; font-weight: 700; color: #1f1f24; min-height: 2.1em; }
+.shop-card-price { font-size: 0.7rem; font-weight: 700; color: #b8860b; }
+/* GET NOW 버튼처럼 위쪽 광택 하이라이트 추가(사용자 지정: "빛에 비춰진 것처럼, get now 버튼처럼")
+   — .splash-hint::before 와 동일한 방식(위쪽 44% 흰 그라디언트 띠). */
+.shop-card-btn { position: relative; width: 100%; padding: 7px 4px; border: none; border-radius: 999px; overflow: hidden;
+  background: linear-gradient(180deg, #63d97c, #2fb457); color: #fff; font-weight: 800; font-size: 0.76rem; cursor: pointer;
+  box-shadow: 0 3px 0 #1c8340, inset 0 2px 2px rgba(255,255,255,0.6); }
+.shop-card-btn::before { content: ''; position: absolute; left: 7%; right: 7%; top: 2px; height: 44%;
+  border-radius: 999px; background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0)); pointer-events: none; }
+.shop-card-btn:disabled { background: #e6e6ea; color: #a0a0a6; cursor: default; box-shadow: none; }
+.shop-card-btn:disabled::before { display: none; }
+/* 하단 탭 4개 — 로딩화면 GET NOW 버튼과 동일한 입체 스타일(사용자 지정), 좌우 완전 원형(999px)은
+   아니고 사각(둥근 모서리)으로("get now 박스는 좌우가 원형인데 사각형태로 변경"). 펄스 애니메이션은
+   사용자 지정으로 삭제("커졌다 작아졌다하는 애니메이션은 삭제"). */
+.shop-tabbar { flex: 0 0 auto; display: flex; gap: 4px; padding: 6px 10px 10px; }
+.shop-tab { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 8px 4px 7px; border: none; border-radius: 14px; overflow: hidden;
+  background: linear-gradient(180deg, #74e389 0%, #47cc6a 46%, #2ea951 100%);
+  box-shadow: 0 5px 0 #1c8340, inset 0 2px 2px rgba(255,255,255,0.7), inset 0 -5px 7px rgba(0,80,35,0.35);
+  color: #fff; font-weight: 800; font-size: 0.68rem; cursor: pointer; }
+/* 버튼 모서리(14px, 살짝만 둥근 사각)와 안쪽 광택 띠의 모서리를 맞춤 — 전엔 999px(완전 원형)라
+   버튼 외곽 각과 안 맞아 부자연스러웠음(사용자 지정). */
+.shop-tab::before { content: ''; position: absolute; left: 3%; right: 3%; top: 3px; height: 40%;
+  border-radius: 8px; background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0)); pointer-events: none; }
+/* 쉬머 스윕(사용자 지정) — 카드와 동일하게 idle-crown-sweep 재사용. */
+.shop-tab::after { content: ''; position: absolute; inset: -60%; z-index: 2; pointer-events: none;
+  background: linear-gradient(115deg, transparent 44%, rgba(255,255,255,0.3) 50%, transparent 56%);
+  animation: idle-crown-sweep 2.8s ease-in-out infinite; }
+.shop-tab-ico { font-size: 1.2rem; line-height: 1; }
+.shop-tab-ico img { width: 22px; height: 22px; object-fit: contain; display: block; }
+.shop-tab-ico svg { width: 22px; height: 22px; display: block; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); }
+.shop-tab--on { background: linear-gradient(180deg, #4a90f5, #2f6fed 60%, #1f4fc4); box-shadow: 0 5px 0 #163a94, inset 0 2px 2px rgba(255,255,255,0.7), inset 0 -5px 7px rgba(0,30,90,0.35); }
 
 /* 일일 */
 .daily-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 14px; }
