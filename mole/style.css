@@ -3028,15 +3028,12 @@ body { background: var(--lm-page); }
    (사용자 보고: "애니메이션 효과들 크기, 위치가 다 틀어진거같은데" 원인). */
 .inv-left { flex: 0 0 auto; width: 120px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .inv-right { flex: 1 1 auto; min-width: 0; }
-.inv-name { font-size: 0.9rem; font-weight: 800; color: #1f1f24; }
+.inv-name { font-size: 0.78rem; font-weight: 800; color: #1f1f24; }
 /* 이미지는 작게, 능력치가 잘 보이도록 공간 확보(사용자 지정). */
 /* 88px 로 복원(사용자 지정: "능력치 잘 보이게" 하려고 52px로 줄였었는데, 캐논/골드해머/알리판취
    특수 애니메이션 좌표가 전부 "88px 고정 높이" 전제로 cm/px 단위까지 정밀 계산돼 있어서
    깨졌었음 — 이미지 축소는 포기, 대신 좌측 칸 폭(120px)으로 능력치 공간 확보). */
-/* 무기 이미지 1.2배 확대(사용자 지정) — 레이아웃 높이(88px)는 그대로 두고 transform:scale
-   만 적용(이 방식이 자식들의 px 좌표를 통째로 같이 키워줘 캐논/골드해머 이펙트 정렬이
-   안 깨짐, 위 주석과 같은 원리). */
-.inv-thumb { height: 88px; display: flex; align-items: center; justify-content: center; transform: scale(1.2); }
+.inv-thumb { height: 88px; display: flex; align-items: center; justify-content: center; }
 .inv-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
 /* 알리 펀치 = 좌/우 글러브 한 쌍(오른쪽은 왼쪽 이미지 거울상, 실제 게임 배치와 동일). */
 /* 사용자 지시: 좌우 글러브 사이 0.2cm 간격, 왼쪽 시계 15도·오른쪽 반시계 15도(거울상 유지). */
@@ -3236,12 +3233,12 @@ body { background: var(--lm-page); }
 .inv-stat-h {
   position: relative; overflow: hidden;
   display: block; width: fit-content; margin: 0 auto 5px; /* 샤인 스윕이 글자 폭에만 걸리게(사용자 지적: "한줄이 다 효과") */
-  text-align: center; font-weight: 800; font-size: 0.88rem;
+  text-align: center; font-weight: 800; font-size: 0.74rem;
   color: #eafcff;
   -webkit-text-stroke: 1.5px #000;
   paint-order: stroke fill;
 }
-.inv-stat-tbl { width: 100%; border-collapse: collapse; font-size: 0.8rem; line-height: 1.35; }
+.inv-stat-tbl { width: 100%; border-collapse: collapse; font-size: 0.66rem; line-height: 1.35; }
 .inv-stat-tbl th {
   text-align: left; font-weight: 700; color: var(--lm-muted);
   white-space: nowrap; padding: 1px 5px 1px 0; vertical-align: top;
