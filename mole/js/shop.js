@@ -16,31 +16,24 @@
     play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'
   };
 
-  // 하트 재화 카드 전용 아트 — 사용자가 만든 참고 이미지에서 배경 제거 후(ffmpeg colorkey)
-  // 하트/광고아이콘/반짝임을 각각 낱개 투명 PNG로 크롭(사용자 지정: "SVG로 하면 질이
-  // 떨어지는데, 바탕화면의 것으로... 발그림 넣고싶지 않아" + "각각의 이미지로 넣어서
-  // 만들어야지" — 통짜로 잘라붙이지 말고 조각을 코드로 배치). 카드마다 이 조각들을
-  // 조합해서 쓴다(heroArt() 참고).
-  var HEART_ART = { heart: 'assets/shop/heart-icon.png', ad: 'assets/shop/ad-icon.png', spark: 'assets/shop/sparkle.png' };
-  // 하트/반짝임 조각을 카드별로 배치한 아트 HTML(사용자 지정 조합 — 단일 하트+반짝임 2개,
-  // 하트더미(메인+미니 2개)+반짝임, 하트+광고아이콘+반짝임).
+  // 하트 재화 카드 전용 아트 — 사용자 지정: "하트 이미지, 유튜브 이미지 파일에 하트 하나
+  // 있잖아. 그걸로 써" + "작은하트 5~6개는 작은 하트 이미지 파일에 있는거 쓰고" — 두
+  // 원본 파일에서 하트 하나·작은 하트 6개를 각각 낱개로 잘라(배경 없음, 알파 그대로) 카드
+  // 별로 조합. 3번(광고) 카드만 원본 파일 통째로(하트+영상아이콘이 이미 한 구도로 되어있음).
+  var HEART_ART = {
+    heart: 'assets/shop/single-heart.png',     // 하트 이미지, 유튜브 이미지 파일 속 하트 하나
+    minis: ['assets/shop/mini-1.png', 'assets/shop/mini-2.png', 'assets/shop/mini-3.png',
+      'assets/shop/mini-4.png', 'assets/shop/mini-5.png', 'assets/shop/mini-6.png'], // 작은 하트 이미지 파일 속 6개
+    ad: 'assets/shop/heart-youtube.png'        // 하트 이미지, 유튜브 이미지(원본 통째로)
+  };
   function heroArt(kind) {
-    var heart = '<img alt="" class="hero-heart" src="' + HEART_ART.heart + '">';
-    var spark = function (cls) { return '<img alt="" class="hero-spark ' + cls + '" src="' + HEART_ART.spark + '">'; };
-    if (kind === 'solo') {
-      return '<div class="hero-art">' + '<img alt="" class="hero-heart hero-heart--solo" src="' + HEART_ART.heart + '">' +
-        spark('hero-spark--a') + spark('hero-spark--b') + '</div>';
-    }
-    if (kind === 'pile') {
-      return '<div class="hero-art">' +
-        '<img alt="" class="hero-heart hero-heart--main" src="' + HEART_ART.heart + '">' +
-        '<img alt="" class="hero-heart hero-mini hero-mini--a" src="' + HEART_ART.heart + '">' +
-        '<img alt="" class="hero-heart hero-mini hero-mini--b" src="' + HEART_ART.heart + '">' +
-        spark('hero-spark--c') + '</div>';
-    }
-    // ad
-    return '<div class="hero-art">' + '<img alt="" class="hero-heart hero-heart--ad" src="' + HEART_ART.heart + '">' +
-      '<img alt="" class="hero-ad-badge" src="' + HEART_ART.ad + '">' + spark('hero-spark--d') + '</div>';
+    if (kind === 'solo') return '<img alt="" class="hero-solo" src="' + HEART_ART.heart + '">';
+    if (kind === 'ad') return '<img alt="" src="' + HEART_ART.ad + '">';
+    // pile — 메인 하트 하나(가운데, 크게) + 작은 하트 6개(둘레에 흩뿌림).
+    var minis = HEART_ART.minis.map(function (src, i) {
+      return '<img alt="" class="hero-mini hero-mini--' + i + '" src="' + src + '">';
+    }).join('');
+    return '<div class="hero-pile"><img alt="" class="hero-pile-main" src="' + HEART_ART.heart + '">' + minis + '</div>';
   }
 
   // 상점 "무기" 탭 = 아이템보관창(inventory-screen.js) 무기탭과 같은 4종(사용자 지정: "지금 있는
