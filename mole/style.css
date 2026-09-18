@@ -2907,13 +2907,14 @@ body { background: var(--lm-page); }
 .shop-card--rich { padding: 6px 6px 8px; gap: 3px; }
 /* 사용자 지정: 제목도 한 줄로(줄바꿈 없이 폭에 맞춰 글자 축소) — 기본 .shop-card-name(다른
    카드 공용)보다 작게. */
-.shop-card--rich .shop-card-name { font-size: 0.6rem; min-height: 1.2em; white-space: nowrap; }
+/* margin-top — 리본(대각선, 카드 상단을 가로지름)과 안 겹치게 제목을 그 아래로. */
+.shop-card--rich .shop-card-name { font-size: 0.6rem; min-height: 1.2em; white-space: nowrap; margin-top: 24px; }
 .shop-card--pink { background: linear-gradient(180deg, #fff5f7, #ffe1e9); border-color: #ffb3c6; }
 .shop-card--blue { background: linear-gradient(180deg, #f0f9ff, #dcefff); border-color: #9dcdff; }
 /* 리본 — 카드 좌상단 모서리를 가로지르는 대각선 띠(사용자 지정: "반시계방향으로 45도
    회전시키고, 외각선까지 올려서" — 카드 테두리선 위에 걸치도록). 폭을 넉넉히 잡아 모서리
    양쪽으로 걸치게 하고 회전. */
-.shop-card-ribbon { position: absolute; left: -34px; top: 12px; z-index: 3; width: 130px;
+.shop-card-ribbon { position: absolute; left: -34px; top: 5px; z-index: 3; width: 130px;
   display: flex; align-items: center; justify-content: center; gap: 3px;
   padding: 3px 0; border-radius: 2px; font-size: 0.56rem; font-weight: 800; color: #fff;
   box-shadow: 0 2px 4px rgba(0,0,0,0.25); white-space: nowrap;

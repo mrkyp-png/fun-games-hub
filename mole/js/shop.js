@@ -172,8 +172,8 @@
       c.innerHTML =
         '<div class="shop-card-ribbon shop-card-ribbon--' + o.ribbonTheme + '">' +
           '<span class="shop-card-ribbon-ico"></span><span class="shop-card-ribbon-txt"></span></div>' +
-        '<div class="shop-card-badge shop-card-badge--hero"></div>' +
         '<div class="shop-card-name"></div>' +
+        '<div class="shop-card-badge shop-card-badge--hero"></div>' +
         '<div class="shop-card-desc"></div>' +
         '<div class="shop-card-pill">' + ICONS.hearts + '<span></span></div>' +
         '<button type="button" class="' + btnClass + '"' + (o.btnDisabled ? ' disabled' : '') + '></button>';
