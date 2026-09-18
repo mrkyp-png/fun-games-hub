@@ -2702,7 +2702,13 @@ body { background: var(--lm-page); }
   display: flex; align-items: center; gap: 8px; }
 .shop-banner-pic { width: 32px; height: 32px; border-radius: 50%; background: #fff; object-fit: cover; flex: 0 0 auto;
   box-shadow: 0 2px 4px rgba(0,0,0,0.25); }
-.shop-banner-txt { color: #fff; font-weight: 800; font-size: 0.74rem; text-shadow: 0 2px 0 rgba(0,30,90,0.4); }
+.shop-banner-txt { flex: 1 1 auto; min-width: 0; color: #fff; font-weight: 800; font-size: 0.74rem; text-shadow: 0 2px 0 rgba(0,30,90,0.4); }
+/* 배너 우측 메일 아이콘(사용자 지정) — 구매→메일함 진입점, 지금은 빈 화면으로만 연결. */
+.shop-banner-mail { flex: 0 0 auto; width: 28px; height: 28px; border: none; border-radius: 50%;
+  background: rgba(255,255,255,0.9); color: #1c3f96; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.25); cursor: pointer; }
+.shop-banner-mail svg { width: 60%; height: 60%; }
+.mailbox-empty { padding: 40px 20px; text-align: center; color: #8a8a92; font-size: 0.85rem; }
 /* 상품 박스(사용자 지정: "상품들도 박스안에 구성이 되어야지", "높이 최대한 늘리고 좌우도 최대한,
    아래 4개 선택상자까지 늘려봐") — flex:1 1 auto 로 배너가 줄인 만큼 세로공간을 그대로 흡수,
    위아래 여백도 최소화해 탭바 바로 위까지 닿게. 좌우 여백은 다른 박스들과 동일(10px, "열과
@@ -2718,7 +2724,8 @@ body { background: var(--lm-page); }
 .shop-dot--on { background: #fff; }
 .shop-arrow { flex: 0 0 auto; width: 22px; height: 22px; border: none; border-radius: 50%;
   background: rgba(255,255,255,0.9); color: #1c3f96; font-size: 0.9rem; font-weight: 900; line-height: 1;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.25); cursor: pointer; }
+  box-shadow: 0 2px 4px rgba(0,0,0,0.25); cursor: pointer; transition: transform 0.1s ease; }
+.shop-arrow:active { transform: scale(0.8); }
 .shop-cards { flex: 1 1 auto; padding: 2px 2px 4px; display: flex; flex-direction: row; gap: 10px;
   overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity;
   scrollbar-width: none; }

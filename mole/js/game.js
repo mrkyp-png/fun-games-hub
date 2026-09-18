@@ -2572,8 +2572,11 @@
   // 더보기 메뉴 + 하위 화면 모듈 인스턴스 생성·배선.
   function wireMoreMenu() {
     screenNav = MG.ScreenNav.create({
-      screens: ['face-maker', 'costume-screen', 'face-locker', 'shop-screen', 'daily-screen', 'score-screen', 'settings-screen', 'inventory-screen', 'help-screen', 'privacy-screen', 'quest-screen', 'friends-screen', 'light-popup']
+      screens: ['face-maker', 'costume-screen', 'face-locker', 'shop-screen', 'mailbox-screen', 'daily-screen', 'score-screen', 'settings-screen', 'inventory-screen', 'help-screen', 'privacy-screen', 'quest-screen', 'friends-screen', 'light-popup']
     });
+    // 메일함(사용자 지정: "구매→메일함 도착→수령" 흐름 예정) — 지금은 아이콘+빈 화면 스캐폴드만,
+    // 실제 수령 로직 없음. 상점 안에서 열리므로(더보기 경유 X) 뒤로가기는 screenNav.back()만.
+    document.querySelector('[data-back="mailbox"]').addEventListener('click', () => screenNav.back());
 
     faceMaker = MG.FaceMaker.create({
       root: document.getElementById('face-maker'),
@@ -2604,7 +2607,8 @@
       onChange: () => { if (moreMenu) moreMenu.refresh(); },
       // 무기 탭 장착 잠금 — inventory-screen 과 동일 규칙(게임 진행 중·챕터1~3 뿅망치 전용).
       gameInProgress: () => !!(state && !state.ended),
-      hammerOnly: () => isSmallBoardChapter()
+      hammerOnly: () => isSmallBoardChapter(),
+      onMail: () => screenNav.show('mailbox-screen') // 배너 메일 아이콘(사용자 지정, 스캐폴드).
     });
     daily = MG.Daily.create({
       root: document.getElementById('daily-screen'),

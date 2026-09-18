@@ -196,7 +196,9 @@
       }
       WEAPONS.forEach(function (w) {
         var isCur = w.id === cur;
-        var disabled = isCur || locked || (hammerOnly && w.id !== 'hammer');
+        // 이미 장착 중이어도 버튼은 계속 눌러 "구매" 가능(사용자 지정: "최대한 계속 구매할 수
+        // 있게, 누르면 복귀") — 잠금(라운드 진행 중·챕터1~3)만 비활성화 사유로 남김.
+        var disabled = locked || (hammerOnly && w.id !== 'hammer');
         // 알리 판취 = 아이템보관창(inventory-screen.js .inv-thumb--pair)과 동일하게 좌/우 글러브
         // 한 쌍(오른쪽은 왼쪽 이미지 거울상)으로 표시(사용자 지정: "아이템에 있는 이미지 그대로").
         var badgeHtml = w.id === 'alipunch'
@@ -207,7 +209,9 @@
           badge: badgeHtml,
           name: I18N().lang === 'en' ? w.nameEn : w.name,
           price: w.price ? (w.price.toLocaleString() + '🪙') : null,
-          btnText: isCur ? T('mole.inv.equipped') : T('mole.inv.equip'),
+          // "장착" 대신 "구매"(사용자 지정) — 메일함 구매 시스템 도입 예정, 라벨만 우선 반영.
+          // 뿅망치는 무료 기본무기라 "구매"가 아니라 "기본"(사용자 지정).
+          btnText: w.id === 'hammer' ? T('mole.shop.default') : T('mole.shop.buy'),
           btnDisabled: disabled,
           equipped: isCur,
           onClick: function () {
@@ -246,11 +250,18 @@
 
     var RENDERERS = { currency: renderCurrencyCards, weapon: renderWeaponCards, skill: renderSkillCards, costume: renderCostumeCards };
 
+    // 배너 우측 메일 아이콘(사용자 지정: "구매→메일함" 흐름 진입점) — 모든 탭에서 배너가
+    // 공통이라 무기 탭 등에서도 그대로 보임("여기도 메일 아이콘 있어야함").
+    var MAIL_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5 12 13l8.5-6.5"/></svg>';
     function renderBanner() {
       bannerEl.innerHTML =
         '<img alt="" class="shop-banner-pic" src="assets/avatar-mole.png">' +
-        '<span class="shop-banner-txt"></span>';
+        '<span class="shop-banner-txt"></span>' +
+        '<button type="button" class="shop-banner-mail" data-shop-mail aria-label="메일함">' + MAIL_ICON + '</button>';
       bannerEl.querySelector('.shop-banner-txt').textContent = T('mole.shop.welcome');
+      bannerEl.querySelector('[data-shop-mail]').addEventListener('click', function () {
+        if (opts.onMail) opts.onMail();
+      });
     }
 
     // 참고 이미지처럼 [원형 배지 아이콘][숫자][+ 버튼] 캡슐, 화면 좌우 끝까지 분산(사용자 지정:
