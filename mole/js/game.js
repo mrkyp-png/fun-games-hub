@@ -324,6 +324,20 @@
       b.classList.toggle('mm-pill--on', d === diff);
       if (d === 'mid' || d === 'legend') b.classList.toggle('mm-pill--locked', hammerOnly);
     });
+    // 라운드1~8 클리어 표시 — 라이트 박스 3개 각각 아래에 자기 몫의 라운드1~8 미니 그리드
+    // (사용자 지정: "라이트 3개 박스별 아래로 각 ROUND 1~8의 박스가 있어야해").
+    ['easy', 'mid', 'legend'].forEach((light) => {
+      const rp = el.querySelector('[data-round-progress="' + light + '"]');
+      if (!rp) return;
+      rp.innerHTML = '';
+      for (let r = 1; r <= MG.Progress.MAX_CHAPTER; r++) {
+        const box = document.createElement('div');
+        const cleared = MG.Progress.get(r, light).cleared;
+        box.className = 'round-box round-box--' + light + (cleared ? ' round-box--cleared' : '');
+        box.textContent = r;
+        rp.appendChild(box);
+      }
+    });
   }
   // 2026-09-18(사용자 지정): 예전엔 독립 팝업(openLightPopup/closeLightPopup, 화면 전체 덮는
   // 카드)이었으나, 다른 12개 화면과 통일해 openMore('light-popup') 경로로 보드 영역에 표시.
@@ -2605,9 +2619,8 @@
       root: document.getElementById('shop-screen'),
       onClose: () => closeMore(),
       onChange: () => { if (moreMenu) moreMenu.refresh(); },
-      // 무기 탭 장착 잠금 — inventory-screen 과 동일 규칙(게임 진행 중·챕터1~3 뿅망치 전용).
+      // 무기 탭 구매 잠금 — 게임 진행 중(라운드1~클리어)에만 비활성화.
       gameInProgress: () => !!(state && !state.ended),
-      hammerOnly: () => isSmallBoardChapter(),
       onMail: () => screenNav.show('mailbox-screen') // 배너 메일 아이콘(사용자 지정, 스캐폴드).
     });
     daily = MG.Daily.create({
@@ -2631,9 +2644,7 @@
       // 다이얼패드에서 바로 들어오는 진입점(사용자 지정) — 나갈 땐 더보기가 아니라 홈/게임으로.
       onClose: () => closeMore(),
       // 게임 진행 중(라운드1~클리어)엔 무기 변경 잠금. 홈·게임오버 후엔 허용.
-      gameInProgress: () => !!(state && !state.ended),
-      // 챕터1~3은 뿅망치만 사용(사용자 지정) — 선택된 챕터 기준으로 다른 무기 장착 자체를 막는다.
-      hammerOnly: () => isSmallBoardChapter()
+      gameInProgress: () => !!(state && !state.ended)
     });
     // help/privacy = settings 안에서 push 된 하위 화면(뒤로만, 홈으로 안 나감).
     ['help', 'privacy'].forEach((k) => {

@@ -31,9 +31,7 @@
     var cardsEl = el.querySelector('[data-shop-cards]');
     var tabsEl = el.querySelector('[data-shop-tabs]');
     var bannerEl = el.querySelector('[data-shop-banner]');
-    var hudEl = el.querySelector('[data-shop-hud]');
     var dotsEl = el.querySelector('[data-shop-dots]');
-    var noticeEl = el.querySelector('[data-shop-notice]');
     var prevBtn = el.querySelector('[data-shop-prev]');
     var nextBtn = el.querySelector('[data-shop-next]');
     // 상단 뒤로가기/제목 바 삭제(사용자 지정) — 종료는 다이얼패드 홈 아이콘(onHomeAction 'home')으로.
@@ -115,38 +113,28 @@
       '<circle cx="32" cy="44" r="4" fill="url(#skWhite)"/>' +
       '</svg>';
 
-    // 코스튬 탭 아이콘 — 후보 시트 #1(티셔츠) 사용자 선택, 그라디언트+하이라이트로 입체감.
-    var COSTUME_TAB_ICON =
-      '<svg viewBox="0 0 64 64">' +
-      '<defs>' +
-        '<linearGradient id="csShirt" x1="0" y1="0" x2="0" y2="1">' +
-          '<stop offset="0" stop-color="#8fa6e8"/><stop offset="1" stop-color="#3d5aa8"/>' +
-        '</linearGradient>' +
-      '</defs>' +
-      '<path d="M22 12 L14 18 L18 26 L22 23 V52 H42 V23 L46 26 L50 18 L42 12 Q37 17 32 17 Q27 17 22 12Z" fill="url(#csShirt)"/>' +
-      '<path d="M22 12 L14 18 L18 26 L22 23 V29 L15 20 Z" fill="#fff" opacity="0.3"/>' +
-      '</svg>';
-
     // 하단 탭 아이콘 — 이모지(사용자 지정: "이모지나 이미지 넣어야함", 참고 이미지의 하트/망치/별/옷 자리).
     var TABS = [
-      { id: 'currency', i18n: 'mole.shop.tabCurrency', icon: '❤️' },
+      { id: 'currency', i18n: 'mole.shop.tabCurrency', icon: '💰' },
       { id: 'weapon', i18n: 'mole.shop.tabWeapon', icon: WEAPON_TAB_ICON },
       { id: 'skill', i18n: 'mole.shop.tabSkill', icon: SKILL_TAB_ICON },
-      { id: 'costume', i18n: 'mole.shop.tabCostume', icon: COSTUME_TAB_ICON }
+      { id: 'costume', i18n: 'mole.shop.tabCostume', icon: '👕' }
     ];
     var activeTab = 'currency';
+    var currencyFilter = null; // null=전체, 'heart'/'coin'/'ticket'=다이얼패드 캡슐 클릭으로 필터
 
     function done() { render(); if (opts.onChange) opts.onChange(); }
 
     function card(opts2) {
-      // opts2: { badge(html), name, price(text|null), btnText, btnDisabled, onClick, equipped }
+      // opts2: { badge(html), name, price(text|null), btnText, btnDisabled, onClick, equipped, btnPlain }
       var c = document.createElement('div');
       c.className = 'shop-card' + (opts2.equipped ? ' shop-card--equipped' : '');
+      var btnClass = 'shop-card-btn' + (opts2.btnPlain ? ' shop-card-btn--plain' : '');
       c.innerHTML =
         '<div class="shop-card-badge"></div>' +
         '<div class="shop-card-name"></div>' +
         (opts2.price ? '<div class="shop-card-price"></div>' : '') +
-        '<button type="button" class="shop-card-btn"' + (opts2.btnDisabled ? ' disabled' : '') + '></button>';
+        '<button type="button" class="' + btnClass + '"' + (opts2.btnDisabled ? ' disabled' : '') + '></button>';
       c.querySelector('.shop-card-badge').innerHTML = opts2.badge;
       c.querySelector('.shop-card-name').textContent = opts2.name;
       if (opts2.price) c.querySelector('.shop-card-price').textContent = opts2.price;
@@ -158,47 +146,37 @@
 
     function renderCurrencyCards() {
       cardsEl.innerHTML = '';
-      cardsEl.appendChild(card({
-        badge: ICONS.hearts, name: T('mole.shop.heart1'), price: '100🪙',
-        btnText: T('mole.shop.buy'), btnDisabled: MG.Economy.getCoins() < 100,
-        onClick: function () { if (MG.Economy.spendCoins(100)) { MG.Economy.addHearts(1); done(); } else alert(T('mole.shop.noCoin')); }
-      }));
-      cardsEl.appendChild(card({
-        badge: ICONS.hearts, name: T('mole.shop.heartFull'), price: '400🪙',
-        btnText: T('mole.shop.buy'), btnDisabled: MG.Economy.getCoins() < 400,
-        onClick: function () { if (MG.Economy.spendCoins(400)) { MG.Economy.addHearts(MG.Economy.HEART_MAX); done(); } else alert(T('mole.shop.noCoin')); }
-      }));
-      cardsEl.appendChild(card({
-        badge: ICONS.play, name: T('mole.shop.watchHeart'), price: T('mole.shop.free'),
-        btnText: '▶', btnDisabled: false,
-        onClick: function () { MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addHearts(1); done(); } }); }
-      }));
-      cardsEl.appendChild(card({
-        badge: ICONS.play, name: T('mole.shop.watchCoin'), price: T('mole.shop.free'),
-        btnText: '▶', btnDisabled: false,
-        onClick: function () { MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addCoins(50); done(); } }); }
-      }));
-    }
-
-    function equippedWeapon() {
-      var w = localStorage.getItem('mole.weapon');
-      return w === 'cannon' ? 'cannon' : (w === 'goldhammer' ? 'goldhammer' : (w === 'alipunch' ? 'alipunch' : 'hammer'));
+      var defs = [
+        { kind: 'heart', badge: ICONS.hearts, name: T('mole.shop.heart1'), price: '100🪙',
+          btnText: T('mole.shop.buy'), btnDisabled: MG.Economy.getCoins() < 100,
+          onClick: function () { if (MG.Economy.spendCoins(100)) { MG.Economy.addHearts(1); done(); } else alert(T('mole.shop.noCoin')); } },
+        { kind: 'heart', badge: ICONS.hearts, name: T('mole.shop.heartFull'), price: '400🪙',
+          btnText: T('mole.shop.buy'), btnDisabled: MG.Economy.getCoins() < 400,
+          onClick: function () { if (MG.Economy.spendCoins(400)) { MG.Economy.addHearts(MG.Economy.HEART_MAX); done(); } else alert(T('mole.shop.noCoin')); } },
+        { kind: 'heart', badge: ICONS.play, name: T('mole.shop.watchHeart'), price: T('mole.shop.free'),
+          btnText: '▶', btnDisabled: false,
+          onClick: function () { MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addHearts(1); done(); } }); } },
+        { kind: 'coin', badge: ICONS.play, name: T('mole.shop.watchCoin'), price: T('mole.shop.free'),
+          btnText: '▶', btnDisabled: false,
+          onClick: function () { MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addCoins(50); done(); } }); } }
+      ];
+      // 다이얼패드 착지 캡슐 클릭 시 그 재화만(사용자 지정: "각 버튼을 누르면 상품이 각 재화별로").
+      var filtered = currencyFilter ? defs.filter(function (d) { return d.kind === currencyFilter; }) : defs;
+      if (!filtered.length) {
+        cardsEl.innerHTML = '<p class="shop-soon">' + T('mole.inv.soon') + '</p>';
+        return;
+      }
+      filtered.forEach(function (d) { cardsEl.appendChild(card(d)); });
     }
 
     function renderWeaponCards() {
       cardsEl.innerHTML = '';
-      var cur = equippedWeapon();
       var locked = !!(opts.gameInProgress && opts.gameInProgress());
-      var hammerOnly = !!(opts.hammerOnly && opts.hammerOnly());
-      if (locked || hammerOnly) {
-        noticeEl.hidden = false;
-        noticeEl.textContent = locked ? T('mole.inv.locked') : T('mole.inv.hammerOnly');
-      }
       WEAPONS.forEach(function (w) {
-        var isCur = w.id === cur;
         // 이미 장착 중이어도 버튼은 계속 눌러 "구매" 가능(사용자 지정: "최대한 계속 구매할 수
-        // 있게, 누르면 복귀") — 잠금(라운드 진행 중·챕터1~3)만 비활성화 사유로 남김.
-        var disabled = locked || (hammerOnly && w.id !== 'hammer');
+        // 있게, 누르면 복귀") — 잠금(라운드 진행 중)만 비활성화 사유로 남김. 장착 표시(테두리)는
+        // 아이템보관창 전용(사용자 지정: "상점하고 아이템은 유사하지만 엄연히 다른거다").
+        var disabled = locked;
         // 알리 판취 = 아이템보관창(inventory-screen.js .inv-thumb--pair)과 동일하게 좌/우 글러브
         // 한 쌍(오른쪽은 왼쪽 이미지 거울상)으로 표시(사용자 지정: "아이템에 있는 이미지 그대로").
         var badgeHtml = w.id === 'alipunch'
@@ -213,7 +191,7 @@
           // 뿅망치는 무료 기본무기라 "구매"가 아니라 "기본"(사용자 지정).
           btnText: w.id === 'hammer' ? T('mole.shop.default') : T('mole.shop.buy'),
           btnDisabled: disabled,
-          equipped: isCur,
+          btnPlain: w.id === 'hammer',
           onClick: function () {
             localStorage.setItem('mole.weapon', w.id);
             if (w.id === 'hammer') {
@@ -264,24 +242,77 @@
       });
     }
 
-    // 참고 이미지처럼 [원형 배지 아이콘][숫자][+ 버튼] 캡슐, 화면 좌우 끝까지 분산(사용자 지정:
-    // "좌우 최대한 활용"). + 버튼은 눌리면 하트/코인/티켓 탭으로 이동(자연스러운 동작 연결).
-    function hudStat(kind, iconHtml, n) {
-      return '<span class="shop-hud-stat shop-hud-stat--' + kind + '">' +
-        '<span class="shop-hud-main">' +
-          '<span class="shop-hud-ico">' + iconHtml + '</span>' +
-          '<b class="shop-hud-n">' + n + '</b>' +
-        '</span>' +
-        '<button type="button" class="shop-hud-plus" data-hud-plus>+</button></span>';
+    // 하트/코인/티켓 캡슐 = 상점 안이 아니라 다이얼패드(1/2/3 키) 위로 애니메이션 착지(사용자
+    // 지정: "두더지팡으로 이동... 진입될때 아래 버튼보드에서 티켓위치로 롤인, 코인위치로 롤인,
+    // 하트위치로는 슬라이드다운"). 순서: 티켓→코인→롤인, 하트→슬라이드다운, 순차 스태거.
+    // 착지 전엔 전부 파란 "재화" 박스로 통일, 착지 후 하트=빨강/코인=노랑/티켓=하늘색으로 전환
+    // (사용자 지정: "버튼보드에 오는 박스는 재화박스 파란색으로 통일... 안착이 된 후 색 변경").
+    var DIALPAD_REGION = { ticket: '2', coin: '1', heart: '0' };
+    function removeHudFlys() {
+      Array.prototype.forEach.call(document.querySelectorAll('.shop-hud-fly'), function (n) { n.remove(); });
     }
-    function renderHud() {
-      // 항상 하트-코인-티켓 순(사용자 지정).
-      hudEl.innerHTML =
-        hudStat('heart', ICONS.hearts, MG.Economy.getHearts()) +
-        hudStat('coin', ICONS.coins, MG.Economy.getCoins().toLocaleString()) +
-        hudStat('ticket', ICONS.tickets, MG.Economy.getTickets());
-      Array.prototype.forEach.call(hudEl.querySelectorAll('[data-hud-plus]'), function (b) {
-        b.addEventListener('click', function () { activeTab = 'currency'; render(); });
+    // 무기 등 다른 탭 누르면 왼쪽으로 빠르게 롤아웃 후 제거(사용자 지정: "왼쪽으로 빠르게
+    // 롤인으로 사라져야해").
+    function rollOutHudFlys() {
+      var flys = document.querySelectorAll('.shop-hud-fly');
+      if (!flys.length) return;
+      Array.prototype.forEach.call(flys, function (cap) {
+        cap.style.transition = 'transform 0.22s ease-in, opacity 0.22s ease-in';
+        cap.style.transform = 'translateX(-160px) rotate(-260deg)';
+        cap.style.opacity = '0';
+      });
+      setTimeout(removeHudFlys, 240);
+    }
+    function animateHudEntrance() {
+      removeHudFlys();
+      var order = ['ticket', 'coin', 'heart'];
+      var icons = { heart: ICONS.hearts, coin: ICONS.coins, ticket: ICONS.tickets };
+      order.forEach(function (kind, i) {
+        setTimeout(function () {
+          var btn = document.querySelector('#lane-button-bar [data-region="' + DIALPAD_REGION[kind] + '"]');
+          if (!btn) return;
+          // ⚠️ 버그(사용자 보고: "올때마다 크기가 조금씩 변함", "어떨땐 겹치고") — 이 버튼은 숫자↔
+          // 아이콘 3D 뒤집기 카드(.lane-flip)라, 뒤집는 도중(rotateY 트랜지션 중)에 딱 측정하면
+          // getBoundingClientRect() 가 압축된 폭/틀어진 위치를 반환함. 폭·높이는 트랜스폼 영향
+          // 안 받는 offsetWidth/offsetHeight(레이아웃 값)로, 위치는 rect 의 "중심점"만 써서
+          // 그 중심 기준으로 안정된 크기의 박스를 재구성 — 중심은 대칭 트랜스폼에서 안 흔들림.
+          var r = btn.getBoundingClientRect();
+          var w = btn.offsetWidth, h = btn.offsetHeight;
+          var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+          var n = kind === 'heart' ? MG.Economy.getHearts()
+            : kind === 'coin' ? MG.Economy.getCoins().toLocaleString() : MG.Economy.getTickets();
+          var cap = document.createElement('div');
+          cap.className = 'shop-hud-fly shop-hud-fly--' + kind;
+          cap.innerHTML = '<span class="shop-hud-ico">' + icons[kind] + '</span><b class="shop-hud-n">' + n + '</b>';
+          cap.style.width = w + 'px';
+          cap.style.height = h + 'px';
+          cap.style.left = (cx - w / 2) + 'px';
+          cap.style.top = (cy - h / 2) + 'px';
+          document.body.appendChild(cap);
+          // 시작 위치: 티켓/코인=옆에서 굴러들어옴(롤인), 하트=위에서 떨어짐(슬라이드다운).
+          cap.style.transform = kind === 'heart' ? 'translateY(-140px)' : 'translateX(150px) rotate(300deg)';
+          cap.style.opacity = '0';
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              cap.style.transition = 'transform 0.5s cubic-bezier(.25,.85,.3,1.1), opacity 0.25s, background 0.3s, box-shadow 0.3s';
+              cap.style.transform = 'translate(0,0) rotate(0deg)';
+              cap.style.opacity = '1';
+            });
+          });
+          cap.addEventListener('transitionend', function onEnd() {
+            cap.removeEventListener('transitionend', onEnd);
+            cap.classList.add('shop-hud-fly--landed');
+            // 인라인 transform/transition 정리 — 안 지우면 CSS :active 눌림 스케일이
+            // 인라인 스타일에 밀려 안 먹힘(사용자 지정: "눌림 스케일 효과줘야하고").
+            cap.style.transform = '';
+            cap.style.transition = '';
+          });
+          cap.addEventListener('click', function () {
+            activeTab = 'currency';
+            currencyFilter = kind;
+            render();
+          });
+        }, i * 350);
       });
     }
 
@@ -293,21 +324,37 @@
         b.className = 'shop-tab' + (t.id === activeTab ? ' shop-tab--on' : '');
         b.innerHTML = '<span class="shop-tab-ico">' + t.icon + '</span><span class="shop-tab-lbl"></span>';
         b.querySelector('.shop-tab-lbl').textContent = T(t.i18n);
-        b.addEventListener('click', function () { activeTab = t.id; render(); });
+        b.addEventListener('click', function () {
+          // 재화 밖으로 나가면 롤아웃, 재화로 다시 돌아오면 처음과 같은 착지 애니메이션 재생
+          // (사용자 지정: "재화박스로 다시가면 롤인,롤인,슬라이드다운으로 다시 나타나야함").
+          if (t.id !== 'currency' && activeTab === 'currency') rollOutHudFlys();
+          activeTab = t.id; currencyFilter = null; cardsEl.scrollLeft = 0; render();
+          if (t.id === 'currency') animateHudEntrance();
+        });
         tabsEl.appendChild(b);
       });
     }
 
     function render() {
-      renderHud();
       renderTabs();
-      noticeEl.hidden = true;
-      cardsEl.scrollLeft = 0;
       RENDERERS[activeTab]();
       updateDots();
     }
 
-    function show() { renderBanner(); activeTab = 'currency'; render(); }
+    function show() {
+      renderBanner();
+      activeTab = 'currency';
+      currencyFilter = null;
+      cardsEl.scrollLeft = 0;
+      render();
+      animateHudEntrance();
+    }
+    // 상점 화면이 닫히면(hidden 속성) 다이얼패드에 착지해있던 캡슐도 같이 정리 — 사용자가
+    // 어느 경로로 나가도(홈 아이콘, 메일함 등 — 뒤로가기 버튼이 없어 경로가 다양함) 탭 전환과
+    // 동일하게 롤아웃(사용자 지정: "재화버튼 외 다른 버튼을 누르면 전부 적용, 홈화면도 동일").
+    new MutationObserver(function () {
+      if (el.hidden) rollOutHudFlys();
+    }).observe(el, { attributes: true, attributeFilter: ['hidden'] });
     return { show: show };
   }
   var api = { create: create };
