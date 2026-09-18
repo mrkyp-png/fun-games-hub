@@ -46,9 +46,9 @@
   // 위한 표시용 placeholder — 실제 구매 로직에 연결하지 않음(사용자: "일단 넣고 이후 수정").
   var WEAPONS = [
     { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/hammer.png', price: null },
-    { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1.png', price: 3000 },
-    { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldhammer-0.png', price: 5000 },
-    { id: 'alipunch', name: '알리 판취', nameEn: 'Ali Punch', thumb: 'assets/weapons/alipunch-jab.png', price: 7000 }
+    { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1.png', price: 50000 },
+    { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldhammer-0.png', price: 500000 },
+    { id: 'alipunch', name: '알리 판취', nameEn: 'Ali Punch', thumb: 'assets/weapons/alipunch-jab.png', price: 1000000 }
   ];
 
   function create(opts) {
@@ -149,20 +149,27 @@
     function done() { render(); if (opts.onChange) opts.onChange(); }
 
     function card(opts2) {
-      // opts2: { badge(html), name, price(text|null), btnText, btnDisabled, onClick, equipped, btnPlain }
+      // opts2: { badge(html), name, price(text|null), priceAmount(숫자만, 버튼 안에 코인
+      // 아이콘+숫자로 넣을 때만), btnText, btnDisabled, onClick, equipped, btnPlain }
+      // priceAmount 가 있으면 하트 카드와 동일하게 버튼 안에 코인아이콘+숫자로(사용자 지정:
+      // "무기 코인도 하트 이미지와 동일하게 자리도 통일, 코인 다음 숫자") — 이때 .shop-card-price
+      // 줄은 생략(버튼 안으로 자리를 옮긴 것이므로).
       var c = document.createElement('div');
       c.className = 'shop-card' + (opts2.equipped ? ' shop-card--equipped' : '');
-      var btnClass = 'shop-card-btn' + (opts2.btnPlain ? ' shop-card-btn--plain' : '');
+      var showPriceLine = opts2.price && !opts2.priceAmount;
+      var btnClass = 'shop-card-btn' + (opts2.btnPlain ? ' shop-card-btn--plain' : '') +
+        (opts2.priceAmount ? ' shop-card-btn--rich' : '');
       c.innerHTML =
-        '<div class="shop-card-badge"></div>' +
+        '<div class="shop-card-badge' + (opts2.badgeClass ? ' ' + opts2.badgeClass : '') + '"></div>' +
         '<div class="shop-card-name"></div>' +
-        (opts2.price ? '<div class="shop-card-price"></div>' : '') +
+        (showPriceLine ? '<div class="shop-card-price"></div>' : '') +
         '<button type="button" class="' + btnClass + '"' + (opts2.btnDisabled ? ' disabled' : '') + '></button>';
       c.querySelector('.shop-card-badge').innerHTML = opts2.badge;
       c.querySelector('.shop-card-name').textContent = opts2.name;
-      if (opts2.price) c.querySelector('.shop-card-price').textContent = opts2.price;
+      if (showPriceLine) c.querySelector('.shop-card-price').textContent = opts2.price;
       var btn = c.querySelector('.shop-card-btn');
-      btn.textContent = opts2.btnText;
+      if (opts2.priceAmount) btn.innerHTML = ICONS.coins + '<b>' + opts2.priceAmount + '</b>';
+      else btn.textContent = opts2.btnText;
       if (!opts2.btnDisabled) btn.addEventListener('click', opts2.onClick);
       return c;
     }
@@ -199,7 +206,7 @@
           onClick: function () { if (MG.Economy.spendCoins(500)) { MG.Economy.addHearts(1); done(); } else alert(T('mole.shop.noCoin')); } },
         { kind: 'heart', rich: true, theme: 'pink', art: heroArt('pile'),
           name: T('mole.shop.heartFull'), desc: T('mole.shop.descHeartFull'), pillText: T('mole.shop.fullPill'),
-          btnHtml: ICONS.coins + '<b>1200</b>', btnDisabled: MG.Economy.getCoins() < 1200,
+          btnHtml: ICONS.coins + '<b>1,200</b>', btnDisabled: MG.Economy.getCoins() < 1200,
           onClick: function () { if (MG.Economy.spendCoins(1200)) { MG.Economy.addHearts(MG.Economy.HEART_MAX); done(); } else alert(T('mole.shop.noCoin')); } },
         { kind: 'heart', rich: true, theme: 'blue', art: heroArt('ad'),
           name: T('mole.shop.watchHeart'), desc: T('mole.shop.descWatchHeart'), pillText: '+1',
@@ -235,10 +242,14 @@
           : '<img alt="" src="' + w.thumb + '">';
         cardsEl.appendChild(card({
           badge: badgeHtml,
+          badgeClass: 'shop-card-badge--weapon', // 사용자 지정: "무기 이미지 크기 1.2배"
           name: I18N().lang === 'en' ? w.nameEn : w.name,
-          price: w.price ? (w.price.toLocaleString() + '🪙') : null,
+          // 가격을 버튼 안에 코인아이콘+숫자로(사용자 지정: "무기 코인도 하트 이미지와
+          // 동일하게 자리도 통일, 코인 다음 숫자") — 하트 카드와 동일한 위치·스타일.
+          priceAmount: w.price ? w.price.toLocaleString() : null,
           // "장착" 대신 "구매"(사용자 지정) — 메일함 구매 시스템 도입 예정, 라벨만 우선 반영.
-          // 뿅망치는 무료 기본무기라 "구매"가 아니라 "기본"(사용자 지정).
+          // 뿅망치는 무료 기본무기라 "구매"가 아니라 "기본"(사용자 지정, priceAmount 없어
+          // 이 텍스트가 그대로 버튼에 들어감).
           btnText: w.id === 'hammer' ? T('mole.shop.default') : T('mole.shop.buy'),
           btnDisabled: disabled,
           btnPlain: w.id === 'hammer',

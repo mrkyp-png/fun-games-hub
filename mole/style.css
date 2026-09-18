@@ -2884,6 +2884,10 @@ body { background: var(--lm-page); }
 .shop-card-badge--pair { width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; gap: 2px; }
 .shop-card-badge--pair img { max-width: 46%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.25)); }
 .shop-thumb-mirror { transform: scaleX(-1); }
+/* 무기 이미지만 1.2배(사용자 지정: "상점 무기 이미지 크기 1.2배 키우고") — 72%→86.4%,
+   알리판취 쌍(46%)→55.2%. */
+.shop-card-badge--weapon > img { max-width: 86.4%; max-height: 86.4%; }
+.shop-card-badge--weapon .shop-card-badge--pair img { max-width: 55.2%; }
 .shop-card-name { flex: 0 0 auto; font-size: 0.78rem; font-weight: 700; color: #1f1f24; min-height: 2.1em; }
 .shop-card-price { flex: 0 0 auto; font-size: 0.7rem; font-weight: 700; color: #b8860b; }
 /* GET NOW 버튼과 완전히 동일한 형태(사용자 지정: "구매 버튼은 전부 get now 버튼과 동일한
