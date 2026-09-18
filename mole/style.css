@@ -3011,8 +3011,15 @@ body { background: var(--lm-page); }
   flex: 0 0 100%;
   background: linear-gradient(180deg, #ffffff, #eef4ff); border-radius: 14px; padding: 6px 6px 8px;
   text-align: center; border: 2px solid #cfe0fb;
-  box-shadow: 0 3px 0 #b9cdf0, 0 4px 10px rgba(20,60,140,0.15);
+  /* 사용자 보고: 위쪽 모서리는 매끄러운데 아래쪽만 이상함 — 유일하게 아래로만 오프셋되는
+     0blur box-shadow(`0 3px 0`)가 둥근 모서리 아래쪽 커브에서 계단현상으로 보였을 가능성이
+     높아, 아래쪽 그림자에만 살짝 블러(1px)를 줘서 커브 전환을 부드럽게 함. */
+  box-shadow: 0 3px 1px #b9cdf0, 0 4px 10px rgba(20,60,140,0.15);
   display: flex; flex-direction: column;
+  /* 모서리 노이즈(사용자 실기기 보고, 안드로이드) — 안 움직이는 overflow:hidden+border-radius
+     부모 안에서 ::after 쉬머(transform 애니메이션)만 별도 GPU 레이어로 뜨면서 둥근 모서리
+     클리핑이 깨끗하게 안 되던 문제. 카드 자체를 레이어로 승격시켜 해결. */
+  transform: translateZ(0);
 }
 .inv-card::after { content: ''; position: absolute; inset: -60%; z-index: 2; pointer-events: none;
   background: linear-gradient(115deg, transparent 44%, rgba(255,255,255,0.35) 50%, transparent 56%);
@@ -3149,8 +3156,8 @@ body { background: var(--lm-page); }
 }
 /* 사용자 지시: 알리 판취 POWER UP, 골드해머 QUAKE!와 맞춰 캐논도 화염 옆에 "BOOM!" 표시. */
 .inv-cannon-word {
-  /* 사용자 오더: 아래 0.2cm, 좌측 0.3cm. */
-  position: absolute; left: calc(50% - 38.2px - 0.7cm + 8px - 0.3cm); top: calc(10px + 0.2cm);
+  /* 사용자 오더: 아래 0.2cm, 좌측 0.3cm, 그 후 글자 잘림으로 우측 0.3cm(좌측 0.3cm 상쇄). */
+  position: absolute; left: calc(50% - 38.2px - 0.7cm + 8px); top: calc(10px + 0.2cm);
   transform: translate(-50%, -50%) scale(0.3);
   opacity: 0;
   pointer-events: none;
