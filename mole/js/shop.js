@@ -149,16 +149,15 @@
     function done() { render(); if (opts.onChange) opts.onChange(); }
 
     function card(opts2) {
-      // opts2: { badge(html), name, price(text|null), priceAmount(숫자만, 버튼 안에 코인
-      // 아이콘+숫자로 넣을 때만), btnText, btnDisabled, onClick, equipped, btnPlain }
-      // priceAmount 가 있으면 하트 카드와 동일하게 버튼 안에 코인아이콘+숫자로(사용자 지정:
-      // "무기 코인도 하트 이미지와 동일하게 자리도 통일, 코인 다음 숫자") — 이때 .shop-card-price
-      // 줄은 생략(버튼 안으로 자리를 옮긴 것이므로).
+      // opts2: { badge(html), name, price(text)|priceHtml(html, 코인아이콘+숫자용), btnText,
+      // btnDisabled, onClick, equipped, btnPlain }
+      // 가격줄(.shop-card-price)은 항상 버튼과 분리된 별도 줄 — priceHtml 이 있으면 코인
+      // 아이콘+숫자 HTML 로(사용자 지정: "무기 코인 표기는 앞 재화의 코인에 뒤에 숫자형태로"),
+      // 없으면 price 를 그냥 텍스트로.
       var c = document.createElement('div');
       c.className = 'shop-card' + (opts2.equipped ? ' shop-card--equipped' : '');
-      var showPriceLine = opts2.price && !opts2.priceAmount;
-      var btnClass = 'shop-card-btn' + (opts2.btnPlain ? ' shop-card-btn--plain' : '') +
-        (opts2.priceAmount ? ' shop-card-btn--rich' : '');
+      var showPriceLine = !!(opts2.price || opts2.priceHtml);
+      var btnClass = 'shop-card-btn' + (opts2.btnPlain ? ' shop-card-btn--plain' : '');
       c.innerHTML =
         '<div class="shop-card-badge' + (opts2.badgeClass ? ' ' + opts2.badgeClass : '') + '"></div>' +
         '<div class="shop-card-name"></div>' +
@@ -166,7 +165,11 @@
         '<button type="button" class="' + btnClass + '"' + (opts2.btnDisabled ? ' disabled' : '') + '></button>';
       c.querySelector('.shop-card-badge').innerHTML = opts2.badge;
       c.querySelector('.shop-card-name').textContent = opts2.name;
-      if (showPriceLine) c.querySelector('.shop-card-price').textContent = opts2.price;
+      if (showPriceLine) {
+        var priceEl = c.querySelector('.shop-card-price');
+        if (opts2.priceHtml) { priceEl.innerHTML = opts2.priceHtml; priceEl.classList.add('shop-card-price--icon'); }
+        else priceEl.textContent = opts2.price;
+      }
       var btn = c.querySelector('.shop-card-btn');
       if (opts2.priceAmount) btn.innerHTML = ICONS.coins + '<b>' + opts2.priceAmount + '</b>';
       else btn.textContent = opts2.btnText;
@@ -244,8 +247,9 @@
           // 사용자 정정: "무기는 원래 코인옆에 숫자있었고, 아래 돈으로 사는 박스가
           // 있었잖아. 그 박스 위치는 우리가 통일화 시킬려고 했고" — 버튼에 합치는 게
           // 아니라 가격줄+구매버튼 2단 구조를 그대로 두고 "위치"만 맞추는 것이었음.
-          // 사용자 지정: "캐논 10,000원..." — 단위를 "원"으로(코인 이모지 대신).
-          price: w.price ? (w.price.toLocaleString() + '원') : null,
+          // 사용자 지정: "무기 코인 표기는 앞 재화의 코인에 뒤에 숫자형태로" — 하트 카드와
+          // 동일하게 코인 아이콘(SVG)+숫자로(텍스트 "원" 대신).
+          priceHtml: w.price ? (ICONS.coins + '<b>' + w.price.toLocaleString() + '</b>') : null,
           // "장착" 대신 "구매"(사용자 지정) — 메일함 구매 시스템 도입 예정, 라벨만 우선 반영.
           // 뿅망치는 무료 기본무기라 "구매"가 아니라 "기본"(사용자 지정).
           btnText: w.id === 'hammer' ? T('mole.shop.default') : T('mole.shop.buy'),

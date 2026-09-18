@@ -2890,14 +2890,19 @@ body { background: var(--lm-page); }
 .shop-card-badge--weapon .shop-card-badge--pair img { max-width: 55.2%; }
 .shop-card-name { flex: 0 0 auto; font-size: 0.78rem; font-weight: 700; color: #1f1f24; min-height: 2.1em; }
 .shop-card-price { flex: 0 0 auto; font-size: 0.7rem; font-weight: 700; color: #b8860b; }
+/* 코인 아이콘+숫자 형태(사용자 지정: "무기 코인 표기는 앞 재화의 코인에 뒤에 숫자형태로") —
+   하트 카드 버튼 안 코인 표기와 같은 조합(아이콘+숫자), 가격줄 자리는 그대로 유지. */
+.shop-card-price--icon { display: flex; align-items: center; justify-content: center; gap: 3px; }
+.shop-card-price--icon svg { width: 16px; height: 16px; fill: none; stroke: #b8860b; }
 /* GET NOW 버튼과 완전히 동일한 형태(사용자 지정: "구매 버튼은 전부 get now 버튼과 동일한
    형태로" — 하트/무기 구매버튼 전부). #splash .splash-hint 의 그라디언트·다층 3D 그림자
    그대로, 버튼 크기에 맞춰 두께만 축소. */
 /* height 고정(min-height 아님) — 사용자 지정: "3번 광고보기 박스와 코인구매 박스 아래위
    크기 다름. 맞춰야함(무기 구매 높이, 카드 1,2,3번 높이 크기는 다 같아야함)" — 아이콘
    크기가 버튼마다 달라도(코인 22.5px vs 재생박스 18px) 항상 동일 높이로 고정. */
+/* 사용자 지정: "아래 구매 박스들은 위로 0.1cm 이동시켜야 아래 카드에 안잘리겠다". */
 .shop-card-btn { position: relative; width: 100%; height: 36px; flex: 0 0 auto; box-sizing: border-box;
-  padding: 5px 4px; border: none; border-radius: 999px; overflow: hidden;
+  margin-bottom: 0.1cm; padding: 5px 4px; border: none; border-radius: 999px; overflow: hidden;
   background: linear-gradient(180deg, #74e389 0%, #47cc6a 46%, #2ea951 100%); color: #fff; font-weight: 900; font-size: 0.76rem; cursor: pointer;
   box-shadow: 0 4px 0 #1c8340, 0 4px 1px rgba(0,0,0,0.18), 0 8px 10px rgba(0,0,0,0.32),
     inset 0 2px 2px rgba(255,255,255,0.8), inset 0 -3px 4px rgba(0,80,35,0.4);
@@ -2926,11 +2931,14 @@ body { background: var(--lm-page); }
    요소만 여기서. 리본(추천/인기/무료)은 사용자 지정으로 일단 삭제(추후 별도 오더 예정). */
 /* gap 축소 — 사용자 지정: "무기 구매 버튼 위치와 통일화" (실측: 무기탭 버튼 오프셋
    51.1px vs 재화탭 69px, 약 18px 압축 필요). */
-/* 사용자 지정: "카드1,2,3은 전체적으로 아래로 0.2cm 내림". */
+/* 사용자 지정: "무기와 재화가 틀어지는 이유를 알았다... 카드 자체 크기가 틀리네 아래위" —
+   margin-top:0.2cm 가 재화 카드만 무기 카드보다 낮게 만들었음(카드 자체 높이도 달라짐).
+   "무기 상품 카드 크기가 딱 좋은데... 무기카드에 맞춰 재화카드를" — margin-top 제거하고
+   padding 도 .shop-card(무기, 8px 5px)와 동일하게 맞춰 높이·폭 완전히 통일. */
 /* 사용자 지정: "위 중앙에서 들어올렸을때 양끝이 조금 내려간 박스형태" — 상단 가운데가
    봉긋하고 양쪽 끝이 살짝 처지는 곡선(직선 다각형으로 근사, 아주 살짝만). 아래쪽 두 점은
    원래 모서리(0%/100%)에 그대로 둬서 기존 border-radius 가 살아있게. */
-.shop-card--rich { padding: 6px 6px 11px; gap: 2px; margin-top: 0.2cm;
+.shop-card--rich { padding: 8px 5px 11px; gap: 2px;
   clip-path: polygon(0% 5px, 15% 2px, 50% 0, 85% 2px, 100% 5px, 100% 100%, 0% 100%); }
 /* 제목 박스 — 사용자 지정: "하트+1... 박스안 글자로 처리, 박스를 중간에 오목하게",
    "하트+1 박스는 아래 코인 100 길이와 같아야함" — 버튼과 동일하게 width:100%, 바닥 중앙에
