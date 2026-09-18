@@ -195,12 +195,12 @@
       var defs = [
         { kind: 'heart', rich: true, theme: 'pink', art: heroArt('solo'),
           name: T('mole.shop.heart1'), desc: T('mole.shop.descHeart1'), pillText: '+1',
-          btnHtml: ICONS.coins + '<b>100</b>', btnDisabled: MG.Economy.getCoins() < 100,
-          onClick: function () { if (MG.Economy.spendCoins(100)) { MG.Economy.addHearts(1); done(); } else alert(T('mole.shop.noCoin')); } },
+          btnHtml: ICONS.coins + '<b>500</b>', btnDisabled: MG.Economy.getCoins() < 500,
+          onClick: function () { if (MG.Economy.spendCoins(500)) { MG.Economy.addHearts(1); done(); } else alert(T('mole.shop.noCoin')); } },
         { kind: 'heart', rich: true, theme: 'pink', art: heroArt('pile'),
           name: T('mole.shop.heartFull'), desc: T('mole.shop.descHeartFull'), pillText: T('mole.shop.fullPill'),
-          btnHtml: ICONS.coins + '<b>400</b>', btnDisabled: MG.Economy.getCoins() < 400,
-          onClick: function () { if (MG.Economy.spendCoins(400)) { MG.Economy.addHearts(MG.Economy.HEART_MAX); done(); } else alert(T('mole.shop.noCoin')); } },
+          btnHtml: ICONS.coins + '<b>1200</b>', btnDisabled: MG.Economy.getCoins() < 1200,
+          onClick: function () { if (MG.Economy.spendCoins(1200)) { MG.Economy.addHearts(MG.Economy.HEART_MAX); done(); } else alert(T('mole.shop.noCoin')); } },
         { kind: 'heart', rich: true, theme: 'blue', art: heroArt('ad'),
           name: T('mole.shop.watchHeart'), desc: T('mole.shop.descWatchHeart'), pillText: '+1',
           // 재생 아이콘을 반투명 흰 박스 안에(사용자 지정: "화살표는 투명 흰색 박스안에").
