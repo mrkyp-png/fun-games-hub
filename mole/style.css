@@ -2844,11 +2844,11 @@ body { background: var(--lm-page); }
   border-radius: 6px; background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0)); pointer-events: none; }
 .shop-arrow--prev { right: 38px; }
 .shop-arrow--next { right: 0; }
-/* 아이템 화면 전용: 화살표를 파란 박스 밖으로 완전히(사용자 지정: "박스 밖으로 빼라고...
-   외곽선에서 올려놓은것처럼") — 테두리에 걸치는 게 아니라 통째로 박스 위에 얹힘.
-   .inv-cards-box padding-top(6px) + .shop-cards-head padding-top(2px) = 8px 만큼
-   화살표(32px)를 완전히 밀어올려야 바닥이 테두리선에 닿음. */
-#inventory-screen .shop-arrow { top: -40px; }
+/* 아이템 화면 전용: 화살표를 파란 박스 외곽선에 붙임(사용자 지정: "외곽선에 붙히라고").
+   .shop-arrow 는 absolute 로 .shop-cards-head 가 아니라(포지션 없음) 그 조상인
+   .inv-cards-box(position:relative) 기준으로 배치됨 — top:0 이 박스 테두리선과 정확히
+   일치하는 지점. 화살표 높이(32px)만큼 올려야 바닥이 그 선에 딱 붙음(틈 없이). */
+#inventory-screen .shop-arrow { top: -32px; }
 .shop-arrow:active { transform: scale(0.88); }
 /* align-items:stretch 명시 — 기본값(normal)에 암묵적으로 기대고 있었는데, 골드묠니르/
    알리판취 카드 구매버튼이 얇은 띠로 찌그러져 보이는 현상(사용자 영상 확인)이 있어 안전하게
@@ -2988,16 +2988,21 @@ body { background: var(--lm-page); }
 /* 카드가 박스 위쪽에만 붙고 아래가 텅 비던 것 수정(사용자 지정: "센터가 안맞다", "아래여백이
    많음", "크게하고") — .inv-grid 를 .inv-body 전체 높이로 채워서(.inv-card 는 row 안에서
    기본 stretch) 카드가 박스를 꽉 채우게. */
-/* 무기 박스(카드)를 파란 박스 안에서 최대한 크게(사용자 지정) — 감싸는 여백 최소화. */
-.inv-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 4px 4px;
+/* 무기 박스(카드)를 파란 박스 안에서 최대한 크게(사용자 지정) — 감싸는 여백 최소화.
+   위쪽은 장착버튼(absolute, top:2px)과 안 겹치게 최소 여백만 남기고, 아래쪽과 간격을
+   맞춤(사용자 지정: "위로 최대한 높혀... 아래 간격과 동일하게") — 상하 padding 동일값. */
+.inv-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 14px 4px;
   display: flex; flex-direction: column; }
+/* 아이템 화면 전용: 화살표·장착버튼이 전부 absolute 로 분리돼 있어 점(dots) 외엔 흐름에
+   기여하는 내용이 없음 — min-height 를 줄여서 카드가 위로 최대한 올라오게. */
+#inventory-screen .shop-cards-head { min-height: 10px; }
 .inv-soon { padding: 40px 0; text-align: center; color: var(--lm-muted); font-weight: 700; }
 /* 상점 카드줄과 동일 구조(가로 스크롤+점+화살표), 다만 능력치 표가 길어서 한 페이지 카드
    1장(거의 전체폭)으로(사용자 지정: "한페이지 한장씩", "표 유지, 카드만 더 넓게"). */
 /* overflow-y: hidden 이었던 걸 visible 로 — 카드 내용(장착 버튼)이 세로 공간보다 커지면
    그냥 잘려서 안 보이던 버그(사용자 보고: "장착 버튼은 아예 안보인다") 수정. 넘치면
    .inv-body 의 overflow-y:auto 로 스크롤해서라도 보이게. */
-.inv-grid { flex: 1 1 auto; display: flex; flex-direction: row; gap: 10px; padding: 0 0 2px;
+.inv-grid { flex: 1 1 auto; display: flex; flex-direction: row; gap: 10px; padding: 0;
   overflow-x: auto; overflow-y: visible; scroll-snap-type: x mandatory; touch-action: pan-x; scrollbar-width: none; }
 .inv-grid::-webkit-scrollbar { display: none; }
 /* 상점 카드와 동일한 스타일(사용자 지정: "무기 박스는 상품박스와 동일하게") — 흰/파랑 그라디언트,
