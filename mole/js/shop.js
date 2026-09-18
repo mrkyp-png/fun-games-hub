@@ -245,7 +245,15 @@
     // 착지 전엔 전부 파란 "재화" 박스로 통일, 착지 후 하트=빨강/코인=노랑/티켓=하늘색으로 전환
     // (사용자 지정: "버튼보드에 오는 박스는 재화박스 파란색으로 통일... 안착이 된 후 색 변경").
     var DIALPAD_REGION = { ticket: '2', coin: '1', heart: '0' };
+    // animateHudEntrance() 는 캡슐마다 350ms 씩 지연시켜(setTimeout) 순차 착지시키는데, 상점을
+    // 빠르게 여러 번 열면(사용자 보고: "상품 버튼을 빠르게 누르면... 티켓 화면으로 간다",
+    // 간헐적) 이전 호출의 setTimeout 들이 취소 안 된 채 남아있다가 뒤늦게 실행되어 캡슐이
+    // 중복 생성되고, 그중 하나가 클릭되며 currencyFilter 를 몰래 바꿔버림 — 대기 중인
+    // 타이머를 추적해뒀다가 재호출 시(removeHudFlys) 확실히 취소한다.
+    var pendingTimers = [];
     function removeHudFlys() {
+      pendingTimers.forEach(clearTimeout);
+      pendingTimers = [];
       Array.prototype.forEach.call(document.querySelectorAll('.shop-hud-fly'), function (n) { n.remove(); });
     }
     // 무기 등 다른 탭 누르면 왼쪽으로 빠르게 롤아웃 후 제거(사용자 지정: "왼쪽으로 빠르게
@@ -263,14 +271,14 @@
           cap.style.opacity = '0';
         }, i * stagger);
       });
-      setTimeout(removeHudFlys, (flys.length - 1) * stagger + 240);
+      pendingTimers.push(setTimeout(removeHudFlys, (flys.length - 1) * stagger + 240));
     }
     function animateHudEntrance() {
       removeHudFlys();
       var order = ['ticket', 'coin', 'heart'];
       var icons = { heart: ICONS.hearts, coin: ICONS.coins, ticket: ICONS.tickets };
       order.forEach(function (kind, i) {
-        setTimeout(function () {
+        pendingTimers.push(setTimeout(function () {
           var btn = document.querySelector('#lane-button-bar [data-region="' + DIALPAD_REGION[kind] + '"]');
           if (!btn) return;
           // ⚠️ 버그(사용자 보고: "올때마다 크기가 조금씩 변함", "어떨땐 겹치고") — 이 버튼은 숫자↔
@@ -314,7 +322,7 @@
             currencyFilter = kind;
             render();
           });
-        }, i * 350);
+        }, i * 350));
       });
     }
 
@@ -327,11 +335,11 @@
         b.innerHTML = '<span class="shop-tab-ico">' + t.icon + '</span><span class="shop-tab-lbl"></span>';
         b.querySelector('.shop-tab-lbl').textContent = T(t.i18n);
         b.addEventListener('click', function () {
-          // 재화 밖으로 나가면 롤아웃, 재화로 다시 돌아오면 처음과 같은 착지 애니메이션 재생
-          // (사용자 지정: "재화박스로 다시가면 롤인,롤인,슬라이드다운으로 다시 나타나야함").
-          if (t.id !== 'currency' && activeTab === 'currency') rollOutHudFlys();
+          // 하트/코인/티켓 캡슐은 탭 전환과 무관하게 상점에 있는 동안 항상 유지(사용자 지정:
+          // "재화 버튼시에만 나타나라고 했는데 실수야 — 상점에 있을때는 항시 존재, 다른
+          // 버튼일때 왼쪽으로 사라지게") — 탭을 바꿔도 롤아웃/재진입 안 함. 상점을 완전히
+          // 벗어날 때만(el.hidden 감시, 파일 하단) 롤아웃.
           activeTab = t.id; currencyFilter = null; cardsEl.scrollLeft = 0; render();
-          if (t.id === 'currency') animateHudEntrance();
         });
         tabsEl.appendChild(b);
       });

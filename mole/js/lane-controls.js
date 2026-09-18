@@ -57,7 +57,7 @@
       { nav: '아이템', svg: SVG.inventory, i18n: 'mole.pad.lblInventory', action: 'inventory', navBack: { nav: '최근기록', svg: SVG.clock, i18n: 'mole.pad.recent' } },
     { num: '✱', kr: '', en: '', hud: 'label', label: '두더지팡', labelI18n: 'mole.pad.gameMole', action: 'lightMode' },
     { num: '0', kr: '', en: '+', hud: 'label', label: '리듬팡', labelI18n: 'mole.pad.gameRhythm' },
-    { num: '#', kr: '', en: '', hud: 'label', svg: SVG.mail, i18n: 'mole.shop.mailbox', action: 'mail' },
+    { num: '#', kr: '', en: '', hud: 'mail', action: 'mail' },
     { nav: '시작', svg: SVG.phone, call: true, i18n: 'mole.start.btn' }
   ];
 
@@ -67,7 +67,8 @@
   const HUD_LABEL = {
     hearts: 'mole.pad.lblHearts', coins: 'mole.pad.lblCoins', tickets: 'mole.pad.lblTickets',
     score: 'mole.pad.lblScore', daily: 'mole.more.daily', quest: 'mole.more.quest',
-    friends: 'mole.more.friends', locker: 'mole.pad.lblLocker', settings: 'mole.more.settings'
+    friends: 'mole.more.friends', locker: 'mole.pad.lblLocker', settings: 'mole.more.settings',
+    mail: 'mole.shop.mailbox'
   };
 
   function fillFace(btn, f, id, simple) {
@@ -97,25 +98,14 @@
     if (hud === 'label') {
       // 글자 라벨 버튼(✱="두더지팡", 0="리듬팡") — 숫자 대신 짧은 글자만. action 이 있으면(✱)
       // 탭 시 그 동작, 없으면(0, 아직 미구현) 그냥 표시만.
-      // #(시크릿 폐기 → 메일함, 사용자 지정)처럼 f.svg 가 있으면 대신 아이콘+라벨(다른 내비
-      // 버튼과 동일한 모양)로 표시.
       btn.classList.add('lane-button--flippable');
-      var frontHtml;
-      if (f.svg) {
-        // 다른 내비 아이콘(상점/아이템 등)과 같은 세로 아이콘+라벨 배치 + 활성 시 1.5배 확대.
-        btn.classList.add('lane-button--nav');
-        var I4 = root.FGH && root.FGH.I18N;
-        var mailLbl = f.i18n && I4 ? I4.t(f.i18n) : '';
-        frontHtml = '<span class="lane-ico">' + f.svg + '</span><span class="lane-lbl"' +
-          (f.i18n ? ' data-i18n="' + f.i18n + '"' : '') + '>' + mailLbl + '</span>';
-      } else {
-        var lbl = f.labelI18n;
-        frontHtml = '<span class="lane-num lane-num--secret"' + (lbl ? ' data-i18n="' + lbl + '"' : '') + '>' + f.label + '</span>';
-      }
+      var lbl = f.labelI18n;
       btn.innerHTML =
         '<span class="lane-flip">' +
         '<span class="lane-face lane-face--back">' + faceHtml + '</span>' +
-        '<span class="lane-face lane-face--front lane-face--secret">' + frontHtml + '</span>' +
+        '<span class="lane-face lane-face--front lane-face--secret">' +
+          '<span class="lane-num lane-num--secret"' + (lbl ? ' data-i18n="' + lbl + '"' : '') + '>' + f.label + '</span>' +
+        '</span>' +
         '</span>';
     } else if (hud) {
       // 아이콘은 숫자 자리(왼쪽), 자음/영문 자리(오른쪽, .lane-sub)엔 이 둘 중 하나(사용자 지정):
