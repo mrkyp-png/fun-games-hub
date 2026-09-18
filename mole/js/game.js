@@ -334,7 +334,7 @@
         const box = document.createElement('div');
         const cleared = MG.Progress.get(r, light).cleared;
         box.className = 'round-box round-box--' + light + (cleared ? ' round-box--cleared' : '');
-        box.textContent = r;
+        box.textContent = 'ROUND ' + r;
         rp.appendChild(box);
       }
     });

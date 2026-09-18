@@ -63,18 +63,19 @@
     }
     cardsEl.addEventListener('scroll', syncDots);
 
-    // 보이는 3장 중 가운데 카드에 5초마다 스윙 연출(사용자 지정: "중앙에 오면 스윙, 5초간격 루프,
-    // 무기도 마찬가지" — 탭 종류 안 가리고 공통 적용).
+    // 가운데 카드 1장만 스윙하던 것 → 왼쪽부터 순차적으로 전체 카드에 스윙(사용자 지정:
+    // "가운데만 주니 의미없다, 왼쪽부터 순차적으로"), 5초마다 한 바퀴씩.
     setInterval(function () {
       var cards = cardsEl.children;
       if (!cards.length) return;
       Array.prototype.forEach.call(cards, function (c) { c.classList.remove('shop-card--swing'); });
-      var centerIdx = Math.min(Math.round(cardsEl.scrollLeft / cardUnit()) + 1, cards.length - 1);
-      var target = cards[centerIdx];
-      if (target && target.classList.contains('shop-card')) {
-        void target.offsetWidth; // 리플로우 강제 — 같은 클래스 재부착해도 애니메이션 재실행되게
-        target.classList.add('shop-card--swing');
-      }
+      Array.prototype.forEach.call(cards, function (c, i) {
+        setTimeout(function () {
+          if (!c.classList.contains('shop-card')) return;
+          void c.offsetWidth; // 리플로우 강제 — 같은 클래스 재부착해도 애니메이션 재실행되게
+          c.classList.add('shop-card--swing');
+        }, i * 220);
+      });
     }, 5000);
 
     // 무기 탭 아이콘 — 후보 시트(뿅망치 만화 소프트해머, #7) 사용자 선택, 시계방향 45도 회전 +
@@ -253,15 +254,20 @@
     }
     // 무기 등 다른 탭 누르면 왼쪽으로 빠르게 롤아웃 후 제거(사용자 지정: "왼쪽으로 빠르게
     // 롤인으로 사라져야해").
+    // 들어올 때(우측에서 순차 롤인)와 마찬가지로 나갈 때도 순차적으로(사용자 지정: "순차적으로
+    // 사라지게"), 다만 진입(350ms 간격)보다 훨씬 빠르게(60ms 간격, 사용자 지정: "속도는 빠르게").
     function rollOutHudFlys() {
       var flys = document.querySelectorAll('.shop-hud-fly');
       if (!flys.length) return;
-      Array.prototype.forEach.call(flys, function (cap) {
-        cap.style.transition = 'transform 0.22s ease-in, opacity 0.22s ease-in';
-        cap.style.transform = 'translateX(-160px) rotate(-260deg)';
-        cap.style.opacity = '0';
+      var stagger = 60;
+      Array.prototype.forEach.call(flys, function (cap, i) {
+        setTimeout(function () {
+          cap.style.transition = 'transform 0.22s ease-in, opacity 0.22s ease-in';
+          cap.style.transform = 'translateX(-160px) rotate(-260deg)';
+          cap.style.opacity = '0';
+        }, i * stagger);
       });
-      setTimeout(removeHudFlys, 240);
+      setTimeout(removeHudFlys, (flys.length - 1) * stagger + 240);
     }
     function animateHudEntrance() {
       removeHudFlys();

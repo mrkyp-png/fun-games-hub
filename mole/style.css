@@ -2513,8 +2513,11 @@ body { background: var(--lm-page); }
    단일 클래스 선택자로는 그쪽이 이겨버림(같은 특정성, 소스 순서상 나중) — 전부 .shop-hud-stat
    과의 2클래스 조합으로 특정성을 올려 확실히 이기게 함. */
 .diff-alias-row { display: flex; gap: 8px; padding: 10px 12px 4px; }
-.shop-hud-stat.diff-alias-btn { flex: 1; width: auto; justify-content: center; cursor: pointer; }
-.diff-alias-btn b { font-size: 0.82rem; font-weight: 800; color: #1f1f24; }
+/* min-width:0 — "Amateur" 텍스트의 min-content 폭이 flex:1 균등분배보다 커서 세 박스
+   크기가 달라지던 버그(사용자 지정: "라이트 박스는 크기가 같아야한다") 수정. */
+.shop-hud-stat.diff-alias-btn { flex: 1; width: auto; min-width: 0; overflow: hidden;
+  justify-content: center; cursor: pointer; }
+.diff-alias-btn b { font-size: 0.7rem; font-weight: 800; color: #1f1f24; white-space: nowrap; }
 .shop-hud-stat.diff-alias-btn--normal { background: linear-gradient(180deg, #74e389, #2ea951);
   box-shadow: 0 3px 0 #1c8340, inset 0 2px 2px rgba(255,255,255,0.7), inset 0 -3px 4px rgba(0,80,35,0.3); }
 .shop-hud-stat.diff-alias-btn--pro { background: linear-gradient(180deg, #ff7a6e, #d93c2e);
@@ -2530,15 +2533,13 @@ body { background: var(--lm-page); }
 /* 라운드1~8 클리어 표시 — Amateur/Normal/Pro 3줄 × 8칸, grid 로 8열 고정해 세 줄이 항상
    같은 열에 정렬됨(사용자 지정: "라운드 박스 각 8개줄 X 3", "열은 맞춰"). 줄마다 난이도 색
    테두리(노랑/초록/빨강)로 구분, 클리어=눌린 듯 축소+진한 색(사용자 지정: "눌림 스케일로"). */
-/* 이제 박스 하나가 화면 1/3 폭이라 8칸이 한 줄에 안 들어감 — 4열×2줄로 접음. */
-.round-progress { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 0; width: 100%; }
-.round-box { aspect-ratio: 1; border-radius: 7px; display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(180deg, #ffffff, #eef4ff); border: 2px solid #cfe0fb; color: #1f1f24;
-  font-weight: 800; font-size: 0.68rem;
+/* "ROUND 1"~"ROUND 8" 세로 목록, 아래까지 쭉 이어짐(사용자 지정: "아래까지 쭉 내려와야한다").
+   테두리 선 삭제(사용자 지정: "선이 있으니 지저분하다") — 클리어 여부는 배경색만으로 구분. */
+.round-progress { display: grid; grid-template-columns: 1fr; gap: 4px; padding: 0; width: 100%; }
+.round-box { border-radius: 7px; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(180deg, #ffffff, #eef4ff); color: #1f1f24;
+  font-weight: 800; font-size: 0.62rem; padding: 5px 0;
   box-shadow: 0 2px 0 #b9cdf0, 0 3px 6px rgba(20,60,140,0.12); }
-.round-box--easy { border-color: #f0a800; }
-.round-box--mid { border-color: #2ea951; }
-.round-box--legend { border-color: #d93c2e; }
 .round-box--cleared { color: #fff; transform: scale(0.9); box-shadow: inset 0 2px 4px rgba(0,0,0,0.35); }
 .round-box--easy.round-box--cleared { background: linear-gradient(180deg, #ffe27a, #f0a800); box-shadow: 0 1px 0 #b87800, inset 0 2px 4px rgba(120,70,0,0.3); }
 .round-box--mid.round-box--cleared { background: linear-gradient(180deg, #63d97c, #2fb457); box-shadow: 0 1px 0 #1c8340, inset 0 2px 4px rgba(0,60,20,0.35); }
@@ -2703,18 +2704,20 @@ body { background: var(--lm-page); }
 #shop-screen { overflow-y: hidden; overflow-x: hidden; touch-action: pan-y; background: #cfe4ff; isolation: isolate; }
 #shop-screen::before { content: ''; position: absolute; inset: -10px; z-index: 0;
   background: url('assets/board-scene.jpg') center/cover no-repeat;
-  filter: blur(10px) brightness(1.15) saturate(0.85); }
-#shop-screen::after { content: ''; position: absolute; inset: 0; z-index: 0; background: rgba(210, 232, 255, 0.55); }
+  filter: blur(4px) brightness(1.15) saturate(0.85); }
+#shop-screen::after { content: ''; position: absolute; inset: 0; z-index: 0; background: rgba(210, 232, 255, 0.32); }
 /* :not(.shop-frame) — 이 규칙이 ID 선택자라 .shop-frame 자체 규칙(position:absolute)보다
    우선순위가 높아 position:relative 로 덮어써버려 테두리가 찌그러지던 버그(사용자 보고:
    "그라디언트 테두리 효과 없지?"). 프레임은 이 규칙에서 제외. */
 #shop-screen > *:not(.shop-frame) { position: relative; z-index: 1; }
 /* 라이트 팝업도 상점과 동일한 뿌연 배경(사용자 지정: "상점 뿌옇 배경과 동일하게"). */
-#light-popup { overflow-y: hidden; overflow-x: hidden; touch-action: pan-y; background: #cfe4ff; isolation: isolate; }
+/* ROUND 1~8 목록이 길어져 한 화면에 다 안 들어갈 수 있음(사용자 지정: "아래까지 쭉 내려와야한다")
+   — 세로 스크롤 허용(상점과 달리 여긴 고정 잠글 필요 없음). */
+#light-popup { overflow-y: auto; overflow-x: hidden; touch-action: pan-y; background: #cfe4ff; isolation: isolate; }
 #light-popup::before { content: ''; position: absolute; inset: -10px; z-index: 0;
   background: url('assets/board-scene.jpg') center/cover no-repeat;
-  filter: blur(10px) brightness(1.15) saturate(0.85); }
-#light-popup::after { content: ''; position: absolute; inset: 0; z-index: 0; background: rgba(210, 232, 255, 0.55); }
+  filter: blur(4px) brightness(1.15) saturate(0.85); }
+#light-popup::after { content: ''; position: absolute; inset: 0; z-index: 0; background: rgba(210, 232, 255, 0.32); }
 #light-popup > * { position: relative; z-index: 1; }
 /* 화면보드(다이얼패드 제외) 전체 테두리에 그라디언트 적용(사용자 지정: "전체 큰 화면", 홈그리드
    .hg-cell::after 와 동일한 padding-box/content-box XOR 마스크 기법 재사용). */
@@ -2731,8 +2734,8 @@ body { background: var(--lm-page); }
 #inventory-screen { overflow-y: hidden; overflow-x: hidden; touch-action: pan-y; background: #cfe4ff; isolation: isolate; }
 #inventory-screen::before { content: ''; position: absolute; inset: -10px; z-index: 0;
   background: url('assets/board-scene-autumn.jpeg') center 78%/cover no-repeat;
-  filter: blur(14px) brightness(1.1) saturate(0.9); }
-#inventory-screen::after { content: ''; position: absolute; inset: 0; z-index: 0; background: rgba(210, 232, 255, 0.55); }
+  filter: blur(5px) brightness(1.1) saturate(0.9); }
+#inventory-screen::after { content: ''; position: absolute; inset: 0; z-index: 0; background: rgba(210, 232, 255, 0.32); }
 #inventory-screen > *:not(.inv-frame) { position: relative; z-index: 1; }
 .inv-frame { position: absolute; inset: 0; z-index: 2; pointer-events: none; padding: 3px;
   border-radius: inherit;
@@ -2786,11 +2789,11 @@ body { background: var(--lm-page); }
 .shop-hud-fly .shop-hud-ico svg { fill: none; stroke: #fff; stroke-width: 2.2; }
 .shop-hud-fly .shop-hud-n { font-size: 0.62rem; font-weight: 800; color: #000; position: relative; z-index: 1; }
 .shop-hud-fly--landed.shop-hud-fly--heart { background: linear-gradient(180deg, #ff8f85, #d93c2e);
-  box-shadow: 0 4px 0 #a12a1e, inset 0 3px 3px rgba(255,255,255,0.7), inset 0 -4px 6px rgba(80,10,5,0.4); }
+  box-shadow: 0 4px 0 #a12a1e, inset 0 -4px 6px rgba(80,10,5,0.4); }
 .shop-hud-fly--landed.shop-hud-fly--coin { background: linear-gradient(180deg, #ffe27a, #f0a800);
-  box-shadow: 0 4px 0 #b87800, inset 0 3px 3px rgba(255,255,255,0.7), inset 0 -4px 6px rgba(90,55,0,0.4); }
+  box-shadow: 0 4px 0 #b87800, inset 0 -4px 6px rgba(90,55,0,0.4); }
 .shop-hud-fly--landed.shop-hud-fly--ticket { background: linear-gradient(180deg, #8fd8ff, #3ba8e0);
-  box-shadow: 0 4px 0 #2a7ba8, inset 0 3px 3px rgba(255,255,255,0.7), inset 0 -4px 6px rgba(10,50,80,0.4); }
+  box-shadow: 0 4px 0 #2a7ba8, inset 0 -4px 6px rgba(10,50,80,0.4); }
 /* 배너 = 위아래 폭 최소화(사용자 지정: "배너박스 아래위 폭 줄이고") — 상품박스에 세로공간 양보. */
 /* 배너 더 줄임(사용자 지정: "인사 박스를 줄여... 화살표 버튼 크게할수있어") — 화살표에
    세로공간 양보. */
@@ -2888,7 +2891,9 @@ body { background: var(--lm-page); }
 .shop-card-btn { position: relative; width: 100%; padding: 7px 4px; border: none; border-radius: 999px; overflow: hidden;
   background: linear-gradient(180deg, #63d97c, #2fb457); color: #fff; font-weight: 800; font-size: 0.76rem; cursor: pointer;
   box-shadow: 0 3px 0 #1c8340, inset 0 2px 2px rgba(255,255,255,0.6); transition: transform 0.1s ease; }
-.shop-card-btn::before { content: ''; position: absolute; left: 7%; right: 7%; top: 2px; height: 44%;
+/* z-index:-1 — 이게 없으면 이 광택 레이어(position:absolute)가 버튼 글자보다 나중에 그려져
+   위쪽 획을 덮어버림(사용자 보고: "구매"가 "그매"처럼 잘려 보임, 스샷 확인). */
+.shop-card-btn::before { content: ''; position: absolute; left: 7%; right: 7%; top: 2px; height: 44%; z-index: -1;
   border-radius: 999px; background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0)); pointer-events: none; }
 .shop-card-btn:disabled { background: #e6e6ea; color: #a0a0a6; cursor: default; box-shadow: none; }
 .shop-card-btn:disabled::before { display: none; }
@@ -3005,12 +3010,16 @@ body { background: var(--lm-page); }
    (사용자 보고: "애니메이션 효과들 크기, 위치가 다 틀어진거같은데" 원인). */
 .inv-left { flex: 0 0 auto; width: 120px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .inv-right { flex: 1 1 auto; min-width: 0; }
-.inv-name { font-size: 0.86rem; font-weight: 800; color: #1f1f24; }
+.inv-name { font-size: 0.78rem; font-weight: 800; color: #1f1f24; }
 /* 이미지는 작게, 능력치가 잘 보이도록 공간 확보(사용자 지정). */
 /* 88px 로 복원(사용자 지정: "능력치 잘 보이게" 하려고 52px로 줄였었는데, 캐논/골드해머/알리판취
    특수 애니메이션 좌표가 전부 "88px 고정 높이" 전제로 cm/px 단위까지 정밀 계산돼 있어서
    깨졌었음 — 이미지 축소는 포기, 대신 좌측 칸 폭(120px)으로 능력치 공간 확보). */
-.inv-thumb { height: 88px; display: flex; align-items: center; justify-content: center; }
+/* transform:scale — 레이아웃(88px 높이 기준 캐논/골드해머 이펙트 px 좌표) 자체는 그대로 두고
+   렌더링만 축소(사용자 지정: "무기 이미지... 크기에 맞춰 작아져야"). transform 은 자식들의
+   px/%/keyframe 좌표를 통째로 같이 축소해줘서 이펙트 정렬이 안 깨짐. */
+.inv-thumb { height: 88px; display: flex; align-items: center; justify-content: center;
+  transform: scale(0.82); }
 .inv-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
 /* 알리 펀치 = 좌/우 글러브 한 쌍(오른쪽은 왼쪽 이미지 거울상, 실제 게임 배치와 동일). */
 /* 사용자 지시: 좌우 글러브 사이 0.2cm 간격, 왼쪽 시계 15도·오른쪽 반시계 15도(거울상 유지). */
@@ -3210,12 +3219,12 @@ body { background: var(--lm-page); }
 .inv-stat-h {
   position: relative; overflow: hidden;
   display: block; width: fit-content; margin: 0 auto 5px; /* 샤인 스윕이 글자 폭에만 걸리게(사용자 지적: "한줄이 다 효과") */
-  text-align: center; font-weight: 800; font-size: 0.82rem;
+  text-align: center; font-weight: 800; font-size: 0.74rem;
   color: #eafcff;
   -webkit-text-stroke: 1.5px #000;
   paint-order: stroke fill;
 }
-.inv-stat-tbl { width: 100%; border-collapse: collapse; font-size: 0.72rem; line-height: 1.35; }
+.inv-stat-tbl { width: 100%; border-collapse: collapse; font-size: 0.66rem; line-height: 1.35; }
 .inv-stat-tbl th {
   text-align: left; font-weight: 700; color: var(--lm-muted);
   white-space: nowrap; padding: 1px 5px 1px 0; vertical-align: top;
@@ -3239,7 +3248,7 @@ body { background: var(--lm-page); }
   background: linear-gradient(180deg, #63d97c, #2fb457); color: #fff; font-weight: 800; font-size: 0.68rem; cursor: pointer;
   box-shadow: 0 2px 0 #1c8340, inset 0 2px 2px rgba(255,255,255,0.6); transition: transform 0.1s ease;
 }
-.inv-equip::before { content: ''; position: absolute; left: 7%; right: 7%; top: 2px; height: 44%;
+.inv-equip::before { content: ''; position: absolute; left: 7%; right: 7%; top: 2px; height: 44%; z-index: -1;
   border-radius: 999px; background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0)); pointer-events: none; }
 .inv-equip:active { transform: scale(0.93); }
 .inv-equip:disabled { background: #d8dbe0; color: #8a8a90; cursor: default; box-shadow: none; }
