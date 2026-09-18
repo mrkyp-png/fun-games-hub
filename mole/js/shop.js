@@ -212,10 +212,7 @@
           name: T('mole.shop.watchHeart'), desc: T('mole.shop.descWatchHeart'), pillText: '+1',
           // 재생 아이콘을 반투명 흰 박스 안에(사용자 지정: "화살표는 투명 흰색 박스안에").
           btnHtml: '<span class="scb-play-box">' + ICONS.play + '</span><b>' + T('mole.shop.watchAdBtn') + '</b>', btnDisabled: false,
-          onClick: function () { MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addHearts(1); done(); } }); } },
-        { kind: 'coin', badge: ICONS.play, name: T('mole.shop.watchCoin'), price: T('mole.shop.free'),
-          btnText: '▶', btnDisabled: false,
-          onClick: function () { MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addCoins(50); done(); } }); } }
+          onClick: function () { MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addHearts(1); done(); } }); } }
       ];
       // 다이얼패드 착지 캡슐 클릭 시 그 재화만(사용자 지정: "각 버튼을 누르면 상품이 각 재화별로").
       var filtered = currencyFilter ? defs.filter(function (d) { return d.kind === currencyFilter; }) : defs;
@@ -244,12 +241,12 @@
           badge: badgeHtml,
           badgeClass: 'shop-card-badge--weapon', // 사용자 지정: "무기 이미지 크기 1.2배"
           name: I18N().lang === 'en' ? w.nameEn : w.name,
-          // 가격을 버튼 안에 코인아이콘+숫자로(사용자 지정: "무기 코인도 하트 이미지와
-          // 동일하게 자리도 통일, 코인 다음 숫자") — 하트 카드와 동일한 위치·스타일.
-          priceAmount: w.price ? w.price.toLocaleString() : null,
+          // 사용자 정정: "무기는 원래 코인옆에 숫자있었고, 아래 돈으로 사는 박스가
+          // 있었잖아. 그 박스 위치는 우리가 통일화 시킬려고 했고" — 버튼에 합치는 게
+          // 아니라 가격줄+구매버튼 2단 구조를 그대로 두고 "위치"만 맞추는 것이었음.
+          price: w.price ? (w.price.toLocaleString() + '🪙') : null,
           // "장착" 대신 "구매"(사용자 지정) — 메일함 구매 시스템 도입 예정, 라벨만 우선 반영.
-          // 뿅망치는 무료 기본무기라 "구매"가 아니라 "기본"(사용자 지정, priceAmount 없어
-          // 이 텍스트가 그대로 버튼에 들어감).
+          // 뿅망치는 무료 기본무기라 "구매"가 아니라 "기본"(사용자 지정).
           btnText: w.id === 'hammer' ? T('mole.shop.default') : T('mole.shop.buy'),
           btnDisabled: disabled,
           btnPlain: w.id === 'hammer',
