@@ -46,9 +46,9 @@
   // 위한 표시용 placeholder — 실제 구매 로직에 연결하지 않음(사용자: "일단 넣고 이후 수정").
   var WEAPONS = [
     { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/hammer.png', price: null },
-    { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1.png', price: 50000 },
-    { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldhammer-0.png', price: 500000 },
-    { id: 'alipunch', name: '알리 판취', nameEn: 'Ali Punch', thumb: 'assets/weapons/alipunch-jab.png', price: 1000000 }
+    { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1.png', price: 10000 },
+    { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldhammer-0.png', price: 50000 },
+    { id: 'alipunch', name: '알리 판취', nameEn: 'Ali Punch', thumb: 'assets/weapons/alipunch-jab.png', price: 100000 }
   ];
 
   function create(opts) {
