@@ -16,6 +16,23 @@
     play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'
   };
 
+  // 하트 재화 카드 전용 아트(사용자 제공 참고 이미지 스타일 — 광택나는 3D 하트) — 라인 아이콘
+  // (ICONS.hearts)과 별도로, 카드 메인 이미지 자리에만 쓰는 더 화려한 버전. viewBox 0 0 100 100.
+  var HEART_GLOSSY =
+    '<svg viewBox="0 0 100 100" class="heart-glossy" aria-hidden="true">' +
+    '<path d="M50 90C22 68 6 47 6 29 6 13 18 2 33 2c9 0 15 5 17 12 2-7 8-12 17-12 15 0 27 11 27 27 0 18-16 39-44 61Z"/>' +
+    '<ellipse class="heart-glossy-hi" cx="27" cy="24" rx="11" ry="6.5" transform="rotate(-28 27 24)"/>' +
+    '</svg>';
+  // 광고 시청 아이콘 — 클리퍼보드+재생버튼(참고 이미지 스타일), 하트 옆에 겹쳐서 사용.
+  var AD_CLAPPER =
+    '<svg viewBox="0 0 100 100" class="ad-clapper" aria-hidden="true">' +
+    '<rect x="6" y="34" width="88" height="56" rx="12"/>' +
+    '<rect class="ad-clapper-lid" x="6" y="12" width="88" height="26" rx="10"/>' +
+    '<rect class="ad-clapper-stripe" x="24" y="12" width="12" height="26"/>' +
+    '<rect class="ad-clapper-stripe" x="52" y="12" width="12" height="26"/>' +
+    '<path class="ad-clapper-play" d="M42 50 66 63 42 76Z"/>' +
+    '</svg>';
+
   // 상점 "무기" 탭 = 아이템보관창(inventory-screen.js) 무기탭과 같은 4종(사용자 지정: "지금 있는
   // 뿅망치, 팡팡 캐논, 황금 묠니르, 알리 판취 넣어서 구성"). 가격은 참고 이미지 스타일을 맞추기
   // 위한 표시용 placeholder — 실제 구매 로직에 연결하지 않음(사용자: "일단 넣고 이후 수정").
@@ -142,17 +159,54 @@
       return c;
     }
 
+    // 하트 카드 3장 전용 템플릿(사용자 제공 참고 이미지 스타일) — 리본 배지+큰 아트+설명문+
+    // 보상 알약+가격/버튼. 무기·코스튬·코인 카드(card())와는 완전히 분리된 별도 마크업이라
+    // 서로 영향 없음.
+    function heartCard(o) {
+      var c = document.createElement('div');
+      c.className = 'shop-card shop-card--rich shop-card--' + o.theme;
+      var btnClass = 'shop-card-btn shop-card-btn--rich' + (o.theme === 'blue' ? ' shop-card-btn--ad' : '');
+      c.innerHTML =
+        '<div class="shop-card-ribbon shop-card-ribbon--' + o.ribbonTheme + '">' +
+          '<span class="shop-card-ribbon-ico"></span><span class="shop-card-ribbon-txt"></span></div>' +
+        '<div class="shop-card-badge shop-card-badge--hero"></div>' +
+        '<div class="shop-card-name"></div>' +
+        '<div class="shop-card-desc"></div>' +
+        '<div class="shop-card-pill">' + ICONS.hearts + '<span></span></div>' +
+        '<button type="button" class="' + btnClass + '"' + (o.btnDisabled ? ' disabled' : '') + '></button>';
+      c.querySelector('.shop-card-ribbon-ico').textContent = o.ribbonIcon;
+      c.querySelector('.shop-card-ribbon-txt').textContent = o.ribbon;
+      c.querySelector('.shop-card-badge--hero').innerHTML = o.art;
+      c.querySelector('.shop-card-name').textContent = o.name;
+      c.querySelector('.shop-card-desc').textContent = o.desc;
+      c.querySelector('.shop-card-pill span').textContent = o.pillText;
+      var btn = c.querySelector('.shop-card-btn');
+      btn.innerHTML = o.btnHtml;
+      if (!o.btnDisabled) btn.addEventListener('click', o.onClick);
+      return c;
+    }
+
     function renderCurrencyCards() {
       cardsEl.innerHTML = '';
       var defs = [
-        { kind: 'heart', badge: ICONS.hearts, name: T('mole.shop.heart1'), price: '100🪙',
-          btnText: T('mole.shop.buy'), btnDisabled: MG.Economy.getCoins() < 100,
+        { kind: 'heart', rich: true, theme: 'pink', ribbonTheme: 'red', ribbonIcon: '⭐',
+          ribbon: T('mole.shop.ribbonRecommend'), art: HEART_GLOSSY,
+          name: T('mole.shop.heart1'), desc: T('mole.shop.descHeart1'), pillText: '+1',
+          btnHtml: ICONS.coins + '<b>100</b>', btnDisabled: MG.Economy.getCoins() < 100,
           onClick: function () { if (MG.Economy.spendCoins(100)) { MG.Economy.addHearts(1); done(); } else alert(T('mole.shop.noCoin')); } },
-        { kind: 'heart', badge: ICONS.hearts, name: T('mole.shop.heartFull'), price: '400🪙',
-          btnText: T('mole.shop.buy'), btnDisabled: MG.Economy.getCoins() < 400,
+        { kind: 'heart', rich: true, theme: 'pink', ribbonTheme: 'gold', ribbonIcon: '👑',
+          ribbon: T('mole.shop.ribbonPopular'),
+          art: '<div class="heart-cluster">' + HEART_GLOSSY +
+            '<span class="heart-mini heart-mini--a">' + HEART_GLOSSY + '</span>' +
+            '<span class="heart-mini heart-mini--b">' + HEART_GLOSSY + '</span></div>',
+          name: T('mole.shop.heartFull'), desc: T('mole.shop.descHeartFull'), pillText: T('mole.shop.fullPill'),
+          btnHtml: ICONS.coins + '<b>400</b>', btnDisabled: MG.Economy.getCoins() < 400,
           onClick: function () { if (MG.Economy.spendCoins(400)) { MG.Economy.addHearts(MG.Economy.HEART_MAX); done(); } else alert(T('mole.shop.noCoin')); } },
-        { kind: 'heart', badge: ICONS.play, name: T('mole.shop.watchHeart'), price: T('mole.shop.free'),
-          btnText: '▶', btnDisabled: false,
+        { kind: 'heart', rich: true, theme: 'blue', ribbonTheme: 'blue', ribbonIcon: '▶',
+          ribbon: T('mole.shop.free'),
+          art: '<div class="heart-ad-wrap">' + HEART_GLOSSY + '<span class="ad-clapper-badge">' + AD_CLAPPER + '</span></div>',
+          name: T('mole.shop.watchHeart'), desc: T('mole.shop.descWatchHeart'), pillText: '+1',
+          btnHtml: ICONS.play + '<b>' + T('mole.shop.watchAdBtn') + '</b>', btnDisabled: false,
           onClick: function () { MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addHearts(1); done(); } }); } },
         { kind: 'coin', badge: ICONS.play, name: T('mole.shop.watchCoin'), price: T('mole.shop.free'),
           btnText: '▶', btnDisabled: false,
@@ -164,7 +218,7 @@
         cardsEl.innerHTML = '<p class="shop-soon">' + T('mole.inv.soon') + '</p>';
         return;
       }
-      filtered.forEach(function (d) { cardsEl.appendChild(card(d)); });
+      filtered.forEach(function (d) { cardsEl.appendChild(d.rich ? heartCard(d) : card(d)); });
     }
 
     function renderWeaponCards() {
