@@ -2844,11 +2844,10 @@ body { background: var(--lm-page); }
   border-radius: 6px; background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0)); pointer-events: none; }
 .shop-arrow--prev { right: 38px; }
 .shop-arrow--next { right: 0; }
-/* 아이템 화면 전용: 화살표를 파란 박스 외곽선에 붙임(사용자 지정: "외곽선에 붙히라고").
-   .shop-arrow 는 absolute 로 .shop-cards-head 가 아니라(포지션 없음) 그 조상인
-   .inv-cards-box(position:relative) 기준으로 배치됨 — top:0 이 박스 테두리선과 정확히
-   일치하는 지점. 화살표 높이(32px)만큼 올려야 바닥이 그 선에 딱 붙음(틈 없이). */
-#inventory-screen .shop-arrow { top: -32px; }
+/* 아이템 화면 전용: 화살표를 카드박스 밖 절대배치 대신 "어떤 무기를 고르시겠어요?" 배너
+   안 우측에 배치(사용자 지정: "화살표 박스는... 박스 안에 넣는다. 우측에."). 배너가 이미
+   flex 행이라(.shop-banner) position:static 으로 되돌리면 텍스트 뒤 우측에 자연스럽게 붙는다. */
+#inventory-screen .shop-banner .shop-arrow { position: static; flex: 0 0 auto; width: 26px; height: 26px; margin-left: 4px; }
 .shop-arrow:active { transform: scale(0.88); }
 /* align-items:stretch 명시 — 기본값(normal)에 암묵적으로 기대고 있었는데, 골드묠니르/
    알리판취 카드 구매버튼이 얇은 띠로 찌그러져 보이는 현상(사용자 영상 확인)이 있어 안전하게
@@ -2988,10 +2987,9 @@ body { background: var(--lm-page); }
 /* 카드가 박스 위쪽에만 붙고 아래가 텅 비던 것 수정(사용자 지정: "센터가 안맞다", "아래여백이
    많음", "크게하고") — .inv-grid 를 .inv-body 전체 높이로 채워서(.inv-card 는 row 안에서
    기본 stretch) 카드가 박스를 꽉 채우게. */
-/* 무기 박스(카드)를 파란 박스 안에서 최대한 크게(사용자 지정) — 감싸는 여백 최소화.
-   위쪽은 장착버튼(absolute, top:2px)과 안 겹치게 최소 여백만 남기고, 아래쪽과 간격을
-   맞춤(사용자 지정: "위로 최대한 높혀... 아래 간격과 동일하게") — 상하 padding 동일값. */
-.inv-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 14px 4px;
+/* 흰색 카드를 파란 박스 안에서 최대한 크게, 상하좌우 여백 전부 동일하게(사용자 지정: "안쪽
+   흰색 아이템 박스를 최대한 크게한다... 상하여백은 좌우 여백과 동일하게") — 4px 로 통일. */
+.inv-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 4px;
   display: flex; flex-direction: column; }
 /* 아이템 화면 전용: 화살표·장착버튼이 전부 absolute 로 분리돼 있어 점(dots) 외엔 흐름에
    기여하는 내용이 없음 — min-height 를 줄여서 카드가 위로 최대한 올라오게. */
@@ -3035,7 +3033,10 @@ body { background: var(--lm-page); }
 /* 88px 로 복원(사용자 지정: "능력치 잘 보이게" 하려고 52px로 줄였었는데, 캐논/골드해머/알리판취
    특수 애니메이션 좌표가 전부 "88px 고정 높이" 전제로 cm/px 단위까지 정밀 계산돼 있어서
    깨졌었음 — 이미지 축소는 포기, 대신 좌측 칸 폭(120px)으로 능력치 공간 확보). */
-.inv-thumb { height: 88px; display: flex; align-items: center; justify-content: center; }
+/* 무기 이미지 1.2배 확대(사용자 지정) — 레이아웃 높이(88px)는 그대로 두고 transform:scale
+   만 적용(이 방식이 자식들의 px 좌표를 통째로 같이 키워줘 캐논/골드해머 이펙트 정렬이
+   안 깨짐, 위 주석과 같은 원리). */
+.inv-thumb { height: 88px; display: flex; align-items: center; justify-content: center; transform: scale(1.2); }
 .inv-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
 /* 알리 펀치 = 좌/우 글러브 한 쌍(오른쪽은 왼쪽 이미지 거울상, 실제 게임 배치와 동일). */
 /* 사용자 지시: 좌우 글러브 사이 0.2cm 간격, 왼쪽 시계 15도·오른쪽 반시계 15도(거울상 유지). */
@@ -3256,19 +3257,17 @@ body { background: var(--lm-page); }
 .hit-fx-burst span {
   font-family: 'Dongle', 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
 }
-/* 상점 구매 버튼과 동일 스타일(사용자 지정) — 광택 띠 + 눌림 스케일. */
-/* 점(.shop-dots) 줄에 맞춰 절대배치(사용자 지정: "점4개는 그대로 원위치" — flex 흐름에
-   넣으면 점이 밀려서 absolute 로 분리, 화살표와 같은 방식). 중앙 기준으로 폭이 줄어들게
-   left:50%+translateX(사용자 지정: "중앙에서 길이를 줄여야지"). */
+/* 상점 구매 버튼과 동일 스타일(사용자 지정) — 광택 띠 + 눌림 스케일.
+   흰색 카드 안, 이미지(.inv-thumb) 바로 밑(사용자 지정: "장착 박스는 흰색박스 아이템
+   밑으로 옮긴다") — .inv-left 가 column flex 라 그 안 마지막 자식으로 두면 자연히 밑에 붙는다. */
 .inv-equip {
-  position: absolute; left: 50%; top: 2px; transform: translateX(-50%);
-  width: 39%; padding: 6px 0; border: none; border-radius: 999px; overflow: hidden;
+  position: relative; width: 100%; padding: 6px 0; border: none; border-radius: 999px; overflow: hidden;
   background: linear-gradient(180deg, #63d97c, #2fb457); color: #fff; font-weight: 800; font-size: 0.68rem; cursor: pointer;
   box-shadow: 0 2px 0 #1c8340, inset 0 2px 2px rgba(255,255,255,0.6); transition: transform 0.1s ease;
 }
 .inv-equip::before { content: ''; position: absolute; left: 7%; right: 7%; top: 2px; height: 44%; z-index: -1;
   border-radius: 999px; background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0)); pointer-events: none; }
-.inv-equip:active { transform: translateX(-50%) scale(0.93); }
+.inv-equip:active { transform: scale(0.93); }
 .inv-equip:disabled { background: #d8dbe0; color: #8a8a90; cursor: default; box-shadow: none; }
 .inv-equip:disabled::before { display: none; }
 

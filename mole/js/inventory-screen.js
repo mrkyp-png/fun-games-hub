@@ -88,7 +88,6 @@
     var dotsEl = el.querySelector('[data-inv-dots]');
     var prevBtn = el.querySelector('[data-inv-prev]');
     var nextBtn = el.querySelector('[data-inv-next]');
-    var equipBtn = el.querySelector('[data-inv-equip]');
     el.querySelector('[data-back="inventory"]')?.addEventListener('click', opts.onClose);
     var active = 'weapon';
 
@@ -129,7 +128,6 @@
       }
       syncDots();
       if (g && g.children[pageIdx]) g.scrollLeft = g.children[pageIdx].offsetLeft;
-      updateEquipBtn();
     }
     // 카드를 손으로 직접 스와이프했을 때도 pageIdx/점/장착버튼이 같이 따라가야 함(화살표
     // 클릭 외 유일한 페이지 이동 경로) — grid 는 렌더마다 새로 만들어지므로(body.innerHTML),
@@ -142,7 +140,6 @@
       if (idx !== pageIdx) {
         pageIdx = idx;
         syncDots();
-        updateEquipBtn();
       }
     }, true);
 
@@ -153,30 +150,9 @@
     function nameOf(w) {
       return I18N.lang === 'en' ? w.nameEn : w.name;
     }
-    // 장착 버튼 = 카드 밖(위쪽)의 단일 버튼(사용자 지정: "장착 선택박스를 아예 밖으로 빼도
-    // 됨(위로)") — 현재 페이지(pageIdx)가 가리키는 무기 기준으로 매번 갱신.
-    function updateEquipBtn() {
-      if (!equipBtn) return;
-      var w = WEAPONS[pageIdx];
-      if (!w) { equipBtn.hidden = true; return; }
-      equipBtn.hidden = false;
-      var cur = equipped();
-      var locked = !!(opts.gameInProgress && opts.gameInProgress());
-      equipBtn.textContent = w.id === cur ? T('mole.inv.equipped') : T('mole.inv.equip');
-      equipBtn.disabled = w.id === cur || locked;
-      equipBtn.onclick = function () {
-        localStorage.setItem('mole.weapon', w.id);
-        // 뿅망치는 라이트 ON 만 사용 가능(사용자 지정) — DIM/OFF 였으면 ON 으로.
-        if (w.id === 'hammer') {
-          var diff = localStorage.getItem('mole.difficulty');
-          if (diff === 'mid' || diff === 'legend') localStorage.setItem('mole.difficulty', 'easy');
-        }
-        renderWeapons();
-      };
-    }
-
     function renderWeapons() {
       var cur = equipped();
+      var locked = !!(opts.gameInProgress && opts.gameInProgress());
       body.innerHTML = '<div class="inv-grid"></div>';
       var grid = body.querySelector('.inv-grid');
       WEAPONS.forEach(function (w) {
@@ -209,11 +185,12 @@
               '<span class="inv-hammer-word">QUAKE!</span>'
             : '') + '</div>';
         // 카드가 거의 전체폭이라 좌(이름+이미지)/우(능력치) 2단 배치(사용자 지정: "이름과
-        // 이미지 좌측배치, 능력치 우측배치"). 장착 버튼은 카드 밖(위쪽)의 단일 버튼으로 이동
-        // (사용자 지정: "장착 선택박스를 아예 밖으로 빼도 됨(위로)") — updateEquipBtn() 참고.
+        // 이미지 좌측배치, 능력치 우측배치"). 장착 버튼은 흰색 카드 안, 이미지 바로 밑
+        // (사용자 지정: "파란 박스에 있는 장착 박스는 흰색박스 아이템 밑으로 옮긴다").
         card.innerHTML =
           '<div class="inv-top">' +
-            '<div class="inv-left"><span class="inv-name"></span>' + thumbHtml + '</div>' +
+            '<div class="inv-left"><span class="inv-name"></span>' + thumbHtml +
+              '<button type="button" class="inv-equip"></button></div>' +
             '<div class="inv-right"><div class="inv-stat">' +
               '<div class="inv-stat-h"></div>' +
               '<table class="inv-stat-tbl"><tbody>' +
@@ -231,6 +208,20 @@
           td.textContent = v;
           if (v === '-') td.classList.add('inv-stat-dash'); // 값 없음 = 중앙정렬
         });
+        var btn = card.querySelector('.inv-equip');
+        btn.textContent = w.id === cur ? T('mole.inv.equipped') : T('mole.inv.equip');
+        btn.disabled = w.id === cur || locked;
+        if (!locked) {
+          btn.addEventListener('click', function () {
+            localStorage.setItem('mole.weapon', w.id);
+            // 뿅망치는 라이트 ON 만 사용 가능(사용자 지정) — DIM/OFF 였으면 ON 으로.
+            if (w.id === 'hammer') {
+              var diff = localStorage.getItem('mole.difficulty');
+              if (diff === 'mid' || diff === 'legend') localStorage.setItem('mole.difficulty', 'easy');
+            }
+            renderWeapons();
+          });
+        }
         grid.appendChild(card);
       });
       updateDots();
