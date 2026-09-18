@@ -2915,12 +2915,28 @@ body { background: var(--lm-page); }
 .shop-card-ribbon--red { background: linear-gradient(180deg, #ff7a7a, #e0303f); }
 .shop-card-ribbon--gold { background: linear-gradient(180deg, #ffd166, #e8960c); }
 .shop-card-ribbon--blue { background: linear-gradient(180deg, #6db4ff, #2f7ce0); }
-/* 사용자 제공 참고 이미지를 직접 크롭한 PNG(assets/shop/heart-*.png, shop.js HEART_ART) —
-   코드로 그린 아이콘 대신 실제 이미지라 배경(연분홍/연파랑 방사형 그라디언트)까지 이미
-   포함돼 있음. object-fit:cover 로 카드 폭에 꽉 채움, 카드 자체 배경과 자연스럽게 이어짐. */
-.shop-card-badge--hero { width: calc(100% + 10px); height: 68px; margin: 10px -5px 0; position: relative;
-  overflow: hidden; border-radius: 10px; }
-.shop-card-badge--hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* 사용자 제공 참고 이미지에서 배경 제거(ffmpeg colorkey) 후 하트/광고아이콘/반짝임을 낱개
+   투명 PNG로 뽑아(assets/shop/heart-icon.png 등, shop.js heroArt()) 카드마다 다르게 조합
+   배치 — "통짜로 잘라붙이지 말고 각각의 이미지로" (사용자 지정). */
+.shop-card-badge--hero { width: 100%; height: 66px; margin-top: 12px; position: relative; }
+.shop-card-badge--hero .hero-art { position: relative; width: 100%; height: 100%; }
+/* .shop-card-badge img 의 max-width/height:72%+object-fit:contain(다른 배지용)이 안 덮어쓰도록
+   전부 .shop-card-badge--hero 로 특이성을 높인다. */
+.shop-card-badge--hero .hero-heart { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  max-width: none; max-height: none; height: 58%; width: auto; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.18)); }
+.shop-card-badge--hero .hero-heart--solo { height: 74%; }
+.shop-card-badge--hero .hero-heart--main { height: 52%; }
+.shop-card-badge--hero .hero-mini { height: 30%; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.18)); }
+.shop-card-badge--hero .hero-mini--a { left: 18%; top: 18%; transform: translate(-50%, -50%); }
+.shop-card-badge--hero .hero-mini--b { left: 82%; top: 76%; transform: translate(-50%, -50%); }
+.shop-card-badge--hero .hero-heart--ad { height: 60%; left: 38%; }
+.shop-card-badge--hero .hero-ad-badge { position: absolute; right: 6%; bottom: 0; max-width: none; max-height: none;
+  height: 46%; width: auto; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.18)); }
+.shop-card-badge--hero .hero-spark { position: absolute; max-width: none; max-height: none; height: 24%; width: auto; }
+.shop-card-badge--hero .hero-spark--a { left: 6%; top: 10%; }
+.shop-card-badge--hero .hero-spark--b { right: 6%; bottom: 6%; }
+.shop-card-badge--hero .hero-spark--c { right: 4%; top: 2%; }
+.shop-card-badge--hero .hero-spark--d { left: 2%; top: 6%; }
 .shop-card-desc { flex: 0 0 auto; font-size: 0.58rem; font-weight: 600; color: #6b6b74; line-height: 1.3; min-height: 2.3em; }
 .shop-card-pill { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; gap: 3px;
   padding: 3px 0; border-radius: 999px; background: rgba(255,255,255,0.6); font-size: 0.68rem; font-weight: 800; color: #1f1f24; }
