@@ -18,17 +18,22 @@
 
   // 하트 재화 카드 전용 아트 — 사용자 지정: "하트 이미지, 유튜브 이미지 파일에 하트 하나
   // 있잖아. 그걸로 써" + "작은하트 5~6개는 작은 하트 이미지 파일에 있는거 쓰고" — 두
-  // 원본 파일에서 하트 하나·작은 하트 6개를 각각 낱개로 잘라(배경 없음, 알파 그대로) 카드
-  // 별로 조합. 3번(광고) 카드만 원본 파일 통째로(하트+영상아이콘이 이미 한 구도로 되어있음).
+  // 원본 파일에서 하트 하나·작은 하트 6개·광고아이콘을 각각 낱개로 잘라(배경 없음, 알파
+  // 그대로) 카드별로 조합. 광고아이콘도 낱개(사용자 지정: "하트위에 일부 유튜브가 겹치게").
   var HEART_ART = {
     heart: 'assets/shop/single-heart.png',     // 하트 이미지, 유튜브 이미지 파일 속 하트 하나
     minis: ['assets/shop/mini-1.png', 'assets/shop/mini-2.png', 'assets/shop/mini-3.png',
       'assets/shop/mini-4.png', 'assets/shop/mini-5.png', 'assets/shop/mini-6.png'], // 작은 하트 이미지 파일 속 6개
-    ad: 'assets/shop/heart-youtube.png'        // 하트 이미지, 유튜브 이미지(원본 통째로)
+    ad: 'assets/shop/ad-icon.png'              // 하트 이미지, 유튜브 이미지 파일 속 광고 아이콘만
   };
   function heroArt(kind) {
     if (kind === 'solo') return '<img alt="" class="hero-solo" src="' + HEART_ART.heart + '">';
-    if (kind === 'ad') return '<img alt="" src="' + HEART_ART.ad + '">';
+    if (kind === 'ad') {
+      // 하트 위에 광고 아이콘이 겹쳐 올라타는 구도(사용자 지정: "하트위에 일부 유튜브가
+      // 겹치게 올라타기") — 통짜 이미지 대신 하트/아이콘을 낱개로 겹쳐 배치.
+      return '<div class="hero-ad"><img alt="" class="hero-ad-heart" src="' + HEART_ART.heart + '">' +
+        '<img alt="" class="hero-ad-icon" src="' + HEART_ART.ad + '"></div>';
+    }
     // pile — 메인 하트 하나(가운데, 크게) + 작은 하트 6개(둘레에 흩뿌림).
     var minis = HEART_ART.minis.map(function (src, i) {
       return '<img alt="" class="hero-mini hero-mini--' + i + '" src="' + src + '">';
@@ -170,15 +175,11 @@
       c.className = 'shop-card shop-card--rich shop-card--' + o.theme;
       var btnClass = 'shop-card-btn shop-card-btn--rich' + (o.theme === 'blue' ? ' shop-card-btn--ad' : '');
       c.innerHTML =
-        '<div class="shop-card-ribbon shop-card-ribbon--' + o.ribbonTheme + '">' +
-          '<span class="shop-card-ribbon-ico"></span><span class="shop-card-ribbon-txt"></span></div>' +
-        '<div class="shop-card-name"></div>' +
-        '<div class="shop-card-badge shop-card-badge--hero"></div>' +
+        '<div class="shop-card-name-box"><div class="shop-card-name"></div></div>' +
+        '<div class="shop-card-img-box"><div class="shop-card-badge shop-card-badge--hero"></div></div>' +
         '<div class="shop-card-desc"></div>' +
         '<div class="shop-card-pill">' + ICONS.hearts + '<span></span></div>' +
         '<button type="button" class="' + btnClass + '"' + (o.btnDisabled ? ' disabled' : '') + '></button>';
-      c.querySelector('.shop-card-ribbon-ico').textContent = o.ribbonIcon;
-      c.querySelector('.shop-card-ribbon-txt').textContent = o.ribbon;
       c.querySelector('.shop-card-badge--hero').innerHTML = o.art;
       c.querySelector('.shop-card-name').textContent = o.name;
       c.querySelector('.shop-card-desc').textContent = o.desc;
@@ -192,20 +193,18 @@
     function renderCurrencyCards() {
       cardsEl.innerHTML = '';
       var defs = [
-        { kind: 'heart', rich: true, theme: 'pink', ribbonTheme: 'red', ribbonIcon: '⭐',
-          ribbon: T('mole.shop.ribbonRecommend'), art: heroArt('solo'),
+        { kind: 'heart', rich: true, theme: 'pink', art: heroArt('solo'),
           name: T('mole.shop.heart1'), desc: T('mole.shop.descHeart1'), pillText: '+1',
           btnHtml: ICONS.coins + '<b>100</b>', btnDisabled: MG.Economy.getCoins() < 100,
           onClick: function () { if (MG.Economy.spendCoins(100)) { MG.Economy.addHearts(1); done(); } else alert(T('mole.shop.noCoin')); } },
-        { kind: 'heart', rich: true, theme: 'pink', ribbonTheme: 'gold', ribbonIcon: '👑',
-          ribbon: T('mole.shop.ribbonPopular'), art: heroArt('pile'),
+        { kind: 'heart', rich: true, theme: 'pink', art: heroArt('pile'),
           name: T('mole.shop.heartFull'), desc: T('mole.shop.descHeartFull'), pillText: T('mole.shop.fullPill'),
           btnHtml: ICONS.coins + '<b>400</b>', btnDisabled: MG.Economy.getCoins() < 400,
           onClick: function () { if (MG.Economy.spendCoins(400)) { MG.Economy.addHearts(MG.Economy.HEART_MAX); done(); } else alert(T('mole.shop.noCoin')); } },
-        { kind: 'heart', rich: true, theme: 'blue', ribbonTheme: 'blue', ribbonIcon: '▶',
-          ribbon: T('mole.shop.free'), art: heroArt('ad'),
+        { kind: 'heart', rich: true, theme: 'blue', art: heroArt('ad'),
           name: T('mole.shop.watchHeart'), desc: T('mole.shop.descWatchHeart'), pillText: '+1',
-          btnHtml: ICONS.play + '<b>' + T('mole.shop.watchAdBtn') + '</b>', btnDisabled: false,
+          // 재생 아이콘을 반투명 흰 박스 안에(사용자 지정: "화살표는 투명 흰색 박스안에").
+          btnHtml: '<span class="scb-play-box">' + ICONS.play + '</span><b>' + T('mole.shop.watchAdBtn') + '</b>', btnDisabled: false,
           onClick: function () { MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addHearts(1); done(); } }); } },
         { kind: 'coin', badge: ICONS.play, name: T('mole.shop.watchCoin'), price: T('mole.shop.free'),
           btnText: '▶', btnDisabled: false,

@@ -2902,33 +2902,27 @@ body { background: var(--lm-page); }
 .shop-card-btn--plain::before { display: none; }
 .shop-card-btn--plain:active { transform: none; }
 
-/* 하트 재화 카드 3장 전용(사용자 제공 참고 이미지 스타일) — 리본+큰 아트+설명문+알약+가격버튼.
-   .shop-card 공통(크기/그림자/테두리 두께/쉬머)은 그대로 물려받고, 배경색·내부 요소만 여기서. */
+/* 하트 재화 카드 3장 전용(사용자 제공 참고 이미지 스타일) — 제목박스+이미지박스+설명문+알약+
+   가격버튼. .shop-card 공통(크기/그림자/테두리 두께/쉬머)은 그대로 물려받고, 배경색·내부
+   요소만 여기서. 리본(추천/인기/무료)은 사용자 지정으로 일단 삭제(추후 별도 오더 예정). */
 .shop-card--rich { padding: 6px 6px 8px; gap: 3px; }
-/* 사용자 지정: 제목도 한 줄로(줄바꿈 없이 폭에 맞춰 글자 축소) — 기본 .shop-card-name(다른
-   카드 공용)보다 작게. */
-/* margin-top — 리본(대각선, 카드 상단을 가로지름)과 안 겹치게 제목을 그 아래로. */
-.shop-card--rich .shop-card-name { font-size: 0.6rem; line-height: 1.1; min-height: 1em; white-space: nowrap; margin-top: 18px; }
+/* 제목 박스 — 사용자 지정: "하트+1... 박스안 글자로 처리, 박스를 중간에 오목하게",
+   "하트+1 박스는 아래 코인 100 길이와 같아야함" — 버튼과 동일하게 width:100%, 바닥 중앙에
+   아주 살짝 오목한 노치(clip-path). */
+.shop-card-name-box { width: 100%; background: rgba(255,255,255,0.55); border-radius: 8px;
+  padding: 2px 0;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 52% 100%, 50% 90%, 48% 100%, 0 100%); }
+.shop-card--rich .shop-card-name { font-size: 0.6rem; line-height: 1.1; min-height: 1em; white-space: nowrap; }
 .shop-card--pink { background: linear-gradient(180deg, #fff5f7, #ffe1e9); border-color: #ffb3c6; }
 .shop-card--blue { background: linear-gradient(180deg, #f0f9ff, #dcefff); border-color: #9dcdff; }
-/* 리본 — 카드 좌상단 모서리를 가로지르는 대각선 띠(사용자 지정: "반시계방향으로 45도
-   회전시키고, 외각선까지 올려서" — 카드 테두리선 위에 걸치도록). 폭을 넉넉히 잡아 모서리
-   양쪽으로 걸치게 하고 회전. */
-.shop-card-ribbon { position: absolute; left: -34px; top: 5px; z-index: 3; width: 130px;
-  display: flex; align-items: center; justify-content: center; gap: 3px;
-  padding: 3px 0; border-radius: 2px; font-size: 0.56rem; font-weight: 800; color: #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.25); white-space: nowrap;
-  transform: rotate(-45deg); transform-origin: center; }
-.shop-card-ribbon-ico { font-size: 0.68rem; line-height: 1; }
-.shop-card-ribbon--red { background: linear-gradient(180deg, #ff7a7a, #e0303f); }
-.shop-card-ribbon--gold { background: linear-gradient(180deg, #ffd166, #e8960c); }
-.shop-card-ribbon--blue { background: linear-gradient(180deg, #6db4ff, #2f7ce0); }
-/* 사용자 제공 원본 이미지에서 하트 하나(single-heart.png)/작은 하트 6개(mini-1~6.png)를
-   낱개로 잘라(사용자 지정: "하트 하나 있잖아 그걸로 써", "작은하트 5~6개는 작은 하트
-   이미지 파일에 있는거 쓰고") 카드별로 배치, 광고 카드만 원본 통째로. */
+/* 이미지 박스 — 사용자 지정: "1번카드 큰하트도 박스안에 들어가있어야함. 박스는 신규생성,
+   2번, 3번도 마찬가지". */
+.shop-card-img-box { width: 100%; background: rgba(255,255,255,0.55); border-radius: 8px; padding: 3px 0; }
+/* 사용자 제공 원본 이미지에서 하트 하나(single-heart.png)/작은 하트 6개(mini-1~6.png)/
+   광고아이콘(ad-icon.png)을 낱개로 잘라 카드별로 배치. */
 /* 사용자 지정: "하트/유튜브 이미지는 최대한 위로 가게해야 아래 구매버튼이 나온다" — 위
    여백을 최소화해 이미지를 올리고, 그만큼 아래 버튼·알약에 공간을 돌려줌. */
-.shop-card-badge--hero { width: 100%; height: 60px; margin-top: 2px; position: relative; }
+.shop-card-badge--hero { width: 100%; height: 60px; position: relative; }
 /* .shop-card-badge img 의 max-width/height:72%(다른 배지용)이 안 덮어쓰도록 특이성을 높인다.
    solo(하트 하나)/ad(원본 통째로) 카드는 이미지 1장이 배지를 꽉 채움. */
 .shop-card-badge--hero > img { position: absolute; inset: 0; width: 100%; height: 100%;
@@ -2943,6 +2937,13 @@ body { background: var(--lm-page); }
 .shop-card-badge--hero .hero-mini--3 { right: 22%; top: 58%; }
 .shop-card-badge--hero .hero-mini--4 { right: 4%; top: 6%; }
 .shop-card-badge--hero .hero-mini--5 { right: 2%; bottom: 0; }
+/* 광고 카드 — 하트 위에 광고아이콘이 겹쳐 올라탐(사용자 지정: "하트위에 일부 유튜브가
+   겹치게 올라타기"). */
+.shop-card-badge--hero .hero-ad { position: relative; width: 100%; height: 100%; }
+.shop-card-badge--hero .hero-ad-heart { position: absolute; left: 38%; top: 50%; transform: translate(-50%, -50%);
+  max-width: none; max-height: none; height: 62%; width: auto; }
+.shop-card-badge--hero .hero-ad-icon { position: absolute; right: 8%; bottom: 4%;
+  max-width: none; max-height: none; height: 52%; width: auto; }
 /* 사용자 지정: 1번 카드 설명문만 한 줄로("하트를 1개 획득합니다") — 2·3번은 문장이 길어
    nowrap 이면 카드 밖으로 잘려서 줄바꿈은 유지, 폰트만 줄임. */
 /* min-height = 2줄 분량 고정(사용자 지정: "하트+1, 가득충전, 광고의 하트+1 줄도 맞춰야하고,
@@ -2961,6 +2962,9 @@ body { background: var(--lm-page); }
 .shop-card-btn--rich:disabled svg { stroke: #a0a0a6; }
 .shop-card-btn--ad { background: linear-gradient(180deg, #6db4ff, #2f7ce0); box-shadow: 0 3px 0 #1c4f96, inset 0 2px 2px rgba(255,255,255,0.6); }
 .shop-card-btn--ad svg { fill: #fff; }
+/* 재생 아이콘을 반투명 흰 박스 안에(사용자 지정: "화살표는 투명 흰색 박스안에"). */
+.scb-play-box { display: flex; align-items: center; justify-content: center; width: 18px; height: 18px;
+  border-radius: 50%; background: rgba(255,255,255,0.3); }
 /* 하단 탭 4개 — 로딩화면 GET NOW 버튼과 동일한 입체 스타일(사용자 지정), 좌우 완전 원형(999px)은
    아니고 사각(둥근 모서리)으로("get now 박스는 좌우가 원형인데 사각형태로 변경"). 펄스 애니메이션은
    사용자 지정으로 삭제("커졌다 작아졌다하는 애니메이션은 삭제"). */
