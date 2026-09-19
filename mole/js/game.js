@@ -981,7 +981,15 @@
   }
 
   // 더보기 메뉴 열기/닫기.
+  // 빠른 연타 방지(사용자 보고: "상점을 빠르게 여러번 누르면 재화 하트화면이 아니라 티켓
+  // 화면이 나옴") — 다이얼패드 키가 숫자↔아이콘 3D 뒤집기 트랜지션 중이라 연타 시 상점 하트/
+  // 코인/티켓 캡슐(shop-hud-fly)의 착지 위치 측정이 꼬여 엉뚱한 키 위에 겹치는 것으로 추정.
+  // 짧은 시간 내 재호출을 아예 무시해 그 경합 창 자체를 없앤다.
+  var lastOpenMoreAt = 0;
   function openMore(sub, originEl) {
+    var now = Date.now();
+    if (now - lastOpenMoreAt < 400) return;
+    lastOpenMoreAt = now;
     var isStart = document.getElementById('game-screen').classList.contains('is-start');
     var outEl = document.getElementById(isStart ? 'board-start' : 'mole-board');
     openMoreNow(sub); // more-menu 내용 준비(hidden=false 는 flipSwap 이 처리)

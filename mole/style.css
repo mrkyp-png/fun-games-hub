@@ -3109,7 +3109,8 @@ body { background: var(--lm-page); }
   animation: idle-crown-sweep 2.8s ease-in-out infinite; }
 /* 이모지 아이콘(재화/코스튬)과 SVG 아이콘(무기/스킬)이 서로 다른 박스모델이라 줄이 안 맞던 것
    수정(사용자 지정: "이미지 줄 안맞는거 같음") — 고정 22px 박스에 flex 중앙정렬로 통일. */
-.shop-tab-ico { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; line-height: 1; }
+/* 아래로 0.03cm(사용자 지정: "박스 상단 모서리에 거의 닿은 느낌"). */
+.shop-tab-ico { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; line-height: 1; margin-top: 1.13px; }
 .shop-tab-ico img { width: 22px; height: 22px; object-fit: contain; display: block; }
 .shop-tab-ico svg { width: 22px; height: 22px; display: block; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); }
 .shop-tab--on { background: linear-gradient(180deg, #4a90f5, #2f6fed 60%, #1f4fc4); box-shadow: 0 5px 0 #163a94, inset 0 2px 2px rgba(255,255,255,0.7), inset 0 -5px 7px rgba(0,30,90,0.35); }
