@@ -19,9 +19,12 @@ const PORT = process.env.SMOKE_PORT || 8844;
     await page.evaluate(() => window.__debugSwapBoardPositions(true));
     await new Promise((r) => setTimeout(r, 700));
     const afterBoard = await page.evaluate(() => getComputedStyle(document.getElementById('mole-board')).transform !== 'none');
-    const afterBar = await page.evaluate(() => getComputedStyle(document.getElementById('lane-button-bar')).transform !== 'none');
+    // .dialpad(컨테이너)를 옮긴다 — #lane-button-bar 를 직접 옮기면 .dialpad 의
+    // contain:paint 에 밖으로 나간 부분이 잘려서(실기기 화면녹화로 확인된 실제 버그) 안
+    // 보였다. 그래서 여기서는 .dialpad 쪽 transform 을 확인한다.
+    const afterDialpad = await page.evaluate(() => getComputedStyle(document.querySelector('.dialpad')).transform !== 'none');
     assert.strictEqual(afterBoard, true, 'board transformed after swap(true)');
-    assert.strictEqual(afterBar, true, 'button bar transformed after swap(true)');
+    assert.strictEqual(afterDialpad, true, '.dialpad container transformed after swap(true)');
 
     await page.evaluate(() => window.__debugSwapBoardPositions(false));
     await new Promise((r) => setTimeout(r, 700));

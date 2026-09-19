@@ -2157,21 +2157,27 @@
     if (toSwapped === boardSwapped) return;
     const board = document.getElementById('mole-board');
     const bar = document.getElementById('lane-button-bar');
+    // ⚠️ 실기기 화면녹화로 확인된 진짜 원인: #lane-button-bar 는 .dialpad 의 자식인데,
+    // .dialpad 에 `contain: paint` 가 걸려있다(다른 3D 회전 버그 격리용, style.css 참고).
+    // contain:paint 는 자식이 자기 박스 "밖"으로 이동하면 그 부분을 통째로 잘라버린다 —
+    // #lane-button-bar 를 직접 translateY 로 밖(보드 자리)까지 옮기면 투명하게 잘려서
+    // 안 보였던 것(전광판이 안 올라가는 것처럼 보임). 그래서 자식이 아니라 컨테이너인
+    // .dialpad 자체를 옮긴다 — contain:paint 는 자기 자신의 transform 은 안 자른다.
+    const dialpad = document.querySelector('.dialpad');
     const hammerLayer = document.getElementById('mole-hammer-layer');
-    if (!board || !bar) return;
+    if (!board || !bar || !dialpad) return;
     const boardRect = board.getBoundingClientRect();
     const barRect = bar.getBoundingClientRect();
     const delta = barRect.top - boardRect.top; // 보드가 버튼보드 자리로 가려면 +delta 만큼 아래로
-    [board, bar, hammerLayer].forEach((el) => { if (el) el.classList.add('fever-swap-animating'); });
+    [board, dialpad, hammerLayer].forEach((el) => { if (el) el.classList.add('fever-swap-animating'); });
     board.style.transform = toSwapped ? `translateY(${delta}px)` : '';
-    bar.style.transform = toSwapped ? `translateY(${-delta}px)` : '';
+    dialpad.style.transform = toSwapped ? `translateY(${-delta}px)` : '';
     if (hammerLayer) hammerLayer.style.transform = toSwapped ? `translateX(-50%) translateY(${delta}px)` : 'translateX(-50%)';
     // ⚠️ 이 값이 CSS(.fever-swap-animating) 트랜지션 시간보다 짧으면, 애니메이션이 끝나기도
-    // 전에 transition 규칙을 제공하던 클래스가 빠져서 그 자리에서 뚝 멈춰버린다(사용자 보고:
-    // "전광판이 위로 안가는데" — 실제로는 다 안 가고 중간에 멈춘 것). FEVER_TRANSITION_MS
+    // 전에 transition 규칙을 제공하던 클래스가 빠져서 그 자리에서 뚝 멈춰버린다. FEVER_TRANSITION_MS
     // (CSS 쪽 7s와 동기화된 값)를 그대로 참조해 절대 어긋나지 않게 한다.
     setTimeout(() => {
-      [board, bar, hammerLayer].forEach((el) => { if (el) el.classList.remove('fever-swap-animating'); });
+      [board, dialpad, hammerLayer].forEach((el) => { if (el) el.classList.remove('fever-swap-animating'); });
     }, FEVER_TRANSITION_MS + 50);
     boardSwapped = toSwapped;
   }
