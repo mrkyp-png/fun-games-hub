@@ -246,13 +246,13 @@
           badge: badgeHtml,
           badgeClass: 'shop-card-badge--weapon', // 사용자 지정: "무기 이미지 크기 1.2배"
           name: I18N().lang === 'en' ? w.nameEn : w.name,
-          // 사용자 정정: "왜 10,000원, 50,000원, 100,000원 뺐냐? 이거는 현금을 주고
-          // 샀을때 금액이야" — 게임 코인이 아니라 실제 결제(원화) 가격이라 코인아이콘이
-          // 아니라 "원" 텍스트여야 함. 가격줄+구매버튼 2단 구조는 유지.
-          price: w.price ? (w.price.toLocaleString() + '원') : null,
-          // "장착" 대신 "구매"(사용자 지정) — 메일함 구매 시스템 도입 예정, 라벨만 우선 반영.
+          // 사용자 정정(v593 롤백): 코인 구매를 별도 박스 버튼으로 추가했더니 카드 높이를
+          // 넘어 박스 밖으로 튀어나감 — "글자밑에 박스없이 원래 코인 + 금액 그대로 두고,
+          // 구매박스에 [현금가]원 넣으라고". 가격줄(박스 없음)=코인 가격 표기, 구매버튼
+          // 자체에 현금(원) 가격을 넣는 1버튼 구조로 되돌림.
+          priceHtml: w.coinPrice ? (ICONS.coins + '<b>' + w.coinPrice.toLocaleString() + '</b>') : null,
           // 뿅망치는 무료 기본무기라 "구매"가 아니라 "기본"(사용자 지정).
-          btnText: w.id === 'hammer' ? T('mole.shop.default') : T('mole.shop.buy'),
+          btnText: w.id === 'hammer' ? T('mole.shop.default') : (w.price.toLocaleString() + '원'),
           btnDisabled: disabled,
           btnPlain: w.id === 'hammer',
           onClick: function () {
@@ -264,24 +264,6 @@
             done();
           }
         }));
-        // 코인 결제 옵션 — 사용자 지정: "코인으로 살수도 있고, 현금으로도 살수 있다고"
-        // (두가지 선택). 현금 구매 버튼 바로 아래 작은 버튼으로 추가.
-        if (w.coinPrice) {
-          var coinBtn = document.createElement('button');
-          coinBtn.type = 'button';
-          coinBtn.className = 'shop-card-btn shop-card-btn--rich shop-card-btn--coinalt';
-          if (disabled) coinBtn.disabled = true;
-          coinBtn.innerHTML = ICONS.coins + '<b>' + w.coinPrice.toLocaleString() + '</b>';
-          if (!disabled) {
-            coinBtn.addEventListener('click', function () {
-              if (MG.Economy.spendCoins(w.coinPrice)) {
-                localStorage.setItem('mole.weapon', w.id);
-                done();
-              } else alert(T('mole.shop.noCoin'));
-            });
-          }
-          cardsEl.lastElementChild.appendChild(coinBtn);
-        }
       });
     }
 
