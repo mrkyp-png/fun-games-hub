@@ -2866,7 +2866,12 @@ body { background: var(--lm-page); }
    기준 — shop.js 도 런타임에 실제 카드 폭을 읽어 쓰므로 숫자 동기화 불필요. */
 /* 사용자 지정: "광고보기, 무기 구매 박스가... 아래 외각선에 아주 조금 걸린다, 살짝만
    올려주면" — 아래 여백을 살짝 더. */
-.shop-card { box-sizing: border-box; position: relative; overflow: hidden; flex: 0 0 calc((100% - 20px) / 3); display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px 5px 11px;
+/* height 고정(사용자 정정: 실기기 사진 대조 결과 가격줄 유무에 따라 카드 높이가 콘텐츠
+   기준으로 제각각 계산되어 구매버튼(margin-top:auto) 위치가 카드마다 달랐음 — 기존엔
+   같은 줄 수의 카드들끼리는 flex align-items:stretch 로 우연히 맞았지만 기기별 폰트
+   렌더링에 따라 어긋남. height 를 명시적 고정값으로 못박아 버튼 위치를 기기 무관하게
+   결정적으로 만든다). */
+.shop-card { box-sizing: border-box; position: relative; overflow: hidden; flex: 0 0 calc((100% - 20px) / 3); height: 199px; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px 5px 11px;
   background: linear-gradient(180deg, #ffffff, #eef4ff); border-radius: 14px; border: 2px solid #cfe0fb;
   box-shadow: 0 3px 0 #b9cdf0, 0 4px 10px rgba(20,60,140,0.15); text-align: center; }
 /* 쉬머 스윕(사용자 지정: "상품안 상품, 상품선택 박스" — 기존 idle-crown-sweep 재사용, 시작버튼과
