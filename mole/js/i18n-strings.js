@@ -168,7 +168,7 @@
       'mole.shop.ribbonRecommend': '추천',
       'mole.shop.ribbonPopular': '인기',
       'mole.shop.fullPill': '가득 충전',
-      'mole.shop.watchAdBtn': '광고 보기',
+      'mole.shop.watchAdBtn': '광고보기',
       'mole.shop.skin': '망치 스킨',
       'mole.shop.skinBasic': '기본',
       'mole.shop.skinGold': '금색',
