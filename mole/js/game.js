@@ -1412,7 +1412,12 @@
       alipunchInvincibleUntil: 0, // 알리 펀치 [공격력]: 무적 활성 종료 시각(performance.now() 기준, §7)
       ended: false,
       paused: false,
-      introActive: true // 카운트다운 동안은 시간도 안 흐르고 구멍 입력도 무시 (handleCell 참고)
+      introActive: true, // 카운트다운 동안은 시간도 안 흐르고 구멍 입력도 무시 (handleCell 참고)
+      // 피버타임(터치캐치 보너스타임, 콤보100) — 기존 콤보50 점수배율 피버(isFever())와는 별개.
+      feverEventDone: false,
+      feverEventActive: false,
+      pausedByFever: false,
+      feverEventUntil: 0
     };
 
     updateHUD();
@@ -1654,12 +1659,14 @@
     // 히트스톱: 성공타 직후 잠깐 게임 시간을 멈춘다 (루프는 계속 돈다).
     const dt = (now < state.hitstopUntil) ? 0 : rawDt;
 
-    state.timeRemaining -= dt;
-    if (state.timeRemaining <= 0) {
-      state.timeRemaining = 0;
-      updateHUD();
-      roundComplete();
-      return;
+    if (!state.pausedByFever) {
+      state.timeRemaining -= dt;
+      if (state.timeRemaining <= 0) {
+        state.timeRemaining = 0;
+        updateHUD();
+        roundComplete();
+        return;
+      }
     }
 
     updateLiveDifficulty();
@@ -2088,9 +2095,35 @@
     }
   }
 
+  // 피버타임(터치캐치 보너스타임) 트리거 — 콤보100, 라운드당 1회, 1차 테스트는 라운드2만
+  // (사용자 지정: "일단 테스트가 되어야하니, 라운드2에서만 적용해줘" — 검증 후 !== 1 로 확대).
+  // 기존 콤보50 점수배율 피버(isFever())와는 완전히 별개, 서로 건드리지 않는다.
+  function checkFeverEventTrigger() {
+    if (state.feverEventDone || state.feverEventActive) return;
+    if (currentChapter() !== 2) return;
+    if (run.combo.combo < 100) return;
+    state.feverEventDone = true;
+    startFeverEvent();
+  }
+
+  function startFeverEvent() {
+    state.feverEventActive = true;
+    state.pausedByFever = true;
+    state.feverEventUntil = performance.now() + 20000;
+    setTimeout(endFeverEvent, 20000);
+  }
+  function endFeverEvent() {
+    state.pausedByFever = false;
+    state.feverEventActive = false;
+  }
+
   // 콤보가 100·200·300… 을 새로 넘겼으면 공유 생명 보상 (풀에 영구 반영).
   // 보상 개수는 라이트 모드별로 다름: ON(easy) 없음 / DIM(mid) +1 / OFF(legend) +2.
   function checkComboLifeBonus() {
+    // ⚠️ 아래 life-bonus 로직은 amount<=0 이면 중간에 return 해버려 그 뒤 코드가 실행 안 됨
+    // (라이트 ON=easy 는 per=0 이라 매번 여기서 리턴) — 그래서 피버 트리거는 그 return 과
+    // 무관하게 함수 맨 앞에서 항상 체크한다.
+    checkFeverEventTrigger();
     const step = Math.floor(run.combo.combo / COMBO_LIFE_STEP);
     if (step > run.comboMilestone) {
       const blocks = step - run.comboMilestone;
@@ -2562,6 +2595,13 @@
     };
     window.__debugIntroActive = function () {
       return !!(state && state.introActive);
+    };
+    // 피버타임(터치캐치 보너스타임) 상태 확인용.
+    window.__debugGetFeverState = function () {
+      return state ? {
+        active: state.feverEventActive, paused: state.pausedByFever,
+        timeRemaining: state.timeRemaining, until: state.feverEventUntil
+      } : null;
     };
     // 대포 연사 연출 확인용 — 안 맞은 다타 두더지 하나를 연사 대상으로 강제. 인자 없으면 아무 구멍.
     window.__debugForceBurst = function (regionId) {
