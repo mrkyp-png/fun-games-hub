@@ -41,6 +41,16 @@
     return '<div class="hero-pile"><img alt="" class="hero-pile-main" src="' + HEART_ART.heart + '">' + minis + '</div>';
   }
 
+  // 무기 카드 이미지(하트 카드와 같은 리치 카드용) — 알리 판취만 좌/우 글러브 한 쌍(오른쪽은
+  // 왼쪽 이미지 거울상, 기존 무기 카드와 동일), 나머지는 이미지 1장.
+  function weaponArt(w) {
+    if (w.id === 'alipunch') {
+      return '<div class="hero-weapon-pair"><img alt="" src="' + w.thumb + '">' +
+        '<img alt="" class="shop-thumb-mirror" src="' + w.thumb + '"></div>';
+    }
+    return '<img alt="" class="hero-weapon" src="' + w.thumb + '">';
+  }
+
   // 상점 "무기" 탭 = 아이템보관창(inventory-screen.js) 무기탭과 같은 4종(사용자 지정: "지금 있는
   // 뿅망치, 팡팡 캐논, 황금 묠니르, 알리 판취 넣어서 구성"). 가격은 참고 이미지 스타일을 맞추기
   // 위한 표시용 placeholder — 실제 구매 로직에 연결하지 않음(사용자: "일단 넣고 이후 수정").
@@ -196,19 +206,22 @@
     // 하트 카드 3장 전용 템플릿(사용자 제공 참고 이미지 스타일) — 리본 배지+큰 아트+설명문+
     // 보상 알약+가격/버튼. 무기·코스튬·코인 카드(card())와는 완전히 분리된 별도 마크업이라
     // 서로 영향 없음.
+    // desc 는 선택(무기 카드는 설명문 없이 이름+이미지+코인가+가격버튼 4단만 사용 — 사용자
+    // 지정: "무기카드는 광고 보고 하트+1 카드 타입으로"), pillIcon 은 기본 하트, 무기는 코인.
     function heartCard(o) {
       var c = document.createElement('div');
       c.className = 'shop-card shop-card--rich shop-card--' + o.theme;
       var btnClass = 'shop-card-btn shop-card-btn--rich' + (o.theme === 'blue' ? ' shop-card-btn--ad' : '');
+      var hasDesc = o.desc != null;
       c.innerHTML =
         '<div class="shop-card-name-box"><div class="shop-card-name"></div></div>' +
         '<div class="shop-card-img-box"><div class="shop-card-badge shop-card-badge--hero"></div></div>' +
-        '<div class="shop-card-desc"></div>' +
-        '<div class="shop-card-pill">' + ICONS.hearts + '<span></span></div>' +
+        (hasDesc ? '<div class="shop-card-desc"></div>' : '') +
+        '<div class="shop-card-pill">' + (o.pillIcon || ICONS.hearts) + '<span></span></div>' +
         '<button type="button" class="' + btnClass + '"' + (o.btnDisabled ? ' disabled' : '') + '></button>';
       c.querySelector('.shop-card-badge--hero').innerHTML = o.art;
       c.querySelector('.shop-card-name').textContent = o.name;
-      c.querySelector('.shop-card-desc').textContent = o.desc;
+      if (hasDesc) c.querySelector('.shop-card-desc').textContent = o.desc;
       c.querySelector('.shop-card-pill span').textContent = o.pillText;
       var btn = c.querySelector('.shop-card-btn');
       btn.innerHTML = o.btnHtml;
@@ -242,41 +255,46 @@
       filtered.forEach(function (d) { cardsEl.appendChild(d.rich ? heartCard(d) : card(d)); });
     }
 
+    // 뿅망치(무료 기본무기)만 기존 카드 그대로, 나머지(캐논/골드묠니르/알리판취)는 하트 카드와
+    // 같은 리치 카드 타입으로(사용자 지정: "무기카드는 광고 보고 하트+1 카드 타입으로 변경... 단
+    // 뿅망치는 그대로 둬야함. 제일 위의 박스에는 무기 이름, 중간 박스엔 무기 이미지, 아래에는
+    // 코인+가격, 파란박스에는... 50,000원"). 위=이름, 중간=이미지, 알약=코인가(정보용),
+    // 버튼(파란, 광고카드와 동일 스타일)=현금가.
     function renderWeaponCards() {
       cardsEl.innerHTML = '';
       var locked = !!(opts.gameInProgress && opts.gameInProgress());
       WEAPONS.forEach(function (w) {
+        var name = I18N().lang === 'en' ? w.nameEn : w.name;
         // 이미 장착 중이어도 버튼은 계속 눌러 "구매" 가능(사용자 지정: "최대한 계속 구매할 수
         // 있게, 누르면 복귀") — 잠금(라운드 진행 중)만 비활성화 사유로 남김. 장착 표시(테두리)는
         // 아이템보관창 전용(사용자 지정: "상점하고 아이템은 유사하지만 엄연히 다른거다").
-        var disabled = locked;
-        // 알리 판취 = 아이템보관창(inventory-screen.js .inv-thumb--pair)과 동일하게 좌/우 글러브
-        // 한 쌍(오른쪽은 왼쪽 이미지 거울상)으로 표시(사용자 지정: "아이템에 있는 이미지 그대로").
-        var badgeHtml = w.id === 'alipunch'
-          ? '<div class="shop-card-badge--pair"><img alt="" src="' + w.thumb + '">' +
-            '<img alt="" class="shop-thumb-mirror" src="' + w.thumb + '"></div>'
-          : '<img alt="" src="' + w.thumb + '">';
-        cardsEl.appendChild(card({
-          badge: badgeHtml,
-          badgeClass: 'shop-card-badge--weapon', // 사용자 지정: "무기 이미지 크기 1.2배"
-          name: I18N().lang === 'en' ? w.nameEn : w.name,
-          // 사용자 정정(v593 롤백): 코인 구매를 별도 박스 버튼으로 추가했더니 카드 높이를
-          // 넘어 박스 밖으로 튀어나감 — "글자밑에 박스없이 원래 코인 + 금액 그대로 두고,
-          // 구매박스에 [현금가]원 넣으라고". 가격줄(박스 없음)=코인 가격 표기, 구매버튼
-          // 자체에 현금(원) 가격을 넣는 1버튼 구조로 되돌림.
-          priceHtml: w.coinPrice ? (ICONS.coins + '<b>' + w.coinPrice.toLocaleString() + '</b>') : null,
-          // 뿅망치는 무료 기본무기라 "구매"가 아니라 "기본"(사용자 지정).
-          btnText: w.id === 'hammer' ? T('mole.shop.default') : (w.price.toLocaleString() + '원'),
-          btnDisabled: disabled,
-          btnPlain: w.id === 'hammer',
-          onClick: function () {
-            localStorage.setItem('mole.weapon', w.id);
-            if (w.id === 'hammer') {
+        if (w.id === 'hammer') {
+          cardsEl.appendChild(card({
+            badge: '<img alt="" src="' + w.thumb + '">',
+            badgeClass: 'shop-card-badge--weapon',
+            name: name,
+            priceHtml: null,
+            btnText: T('mole.shop.default'),
+            btnDisabled: locked,
+            btnPlain: true,
+            onClick: function () {
+              localStorage.setItem('mole.weapon', w.id);
               var diff = localStorage.getItem('mole.difficulty');
               if (diff === 'mid' || diff === 'legend') localStorage.setItem('mole.difficulty', 'easy');
+              done();
             }
-            done();
-          }
+          }));
+          return;
+        }
+        cardsEl.appendChild(heartCard({
+          theme: 'blue',
+          art: weaponArt(w),
+          name: name,
+          pillIcon: ICONS.coins,
+          pillText: w.coinPrice.toLocaleString(),
+          btnHtml: w.price.toLocaleString() + '원',
+          btnDisabled: locked,
+          onClick: function () { localStorage.setItem('mole.weapon', w.id); done(); }
         }));
       });
     }
