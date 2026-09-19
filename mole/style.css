@@ -530,10 +530,15 @@ body { background: var(--lm-page); }
    하얗게 비는 버그가 있었음(껍데기·will-change 프리웜 둘 다 실패로 확인됨) — 그래서 피버
    보드 스왑은 board 만 transform 대신 top(레이아웃 속성)으로 옮긴다. top 애니메이션은 GPU
    컴포지팅 레이어 승격이 없어(메인 스레드 페인트) 이 버그 자체가 발생할 수 없는 계열.
-   다이얼패드/망치레이어는 배경이미지가 없어 그대로 transform 유지(문제 없음). */
+   다이얼패드/망치레이어는 배경이미지가 없어 그대로 transform 유지(문제 없음).
+   ⚠️ transform 을 없애면서 board 자신의 스태킹 컨텍스트도 같이 사라져, 자식인
+   #hud-score/#hud-hearts/#hud-combo(절대위치)가 피버 스왑 중 옆 전광판(.dialpad/
+   #fever-scoreboard) 위로 삐져나오는 버그가 생겼음 — isolation:isolate 로 GPU 레이어
+   승격 없이 스태킹 컨텍스트만 복원. */
 .mole-board {
   position: relative;
   top: 0;
+  isolation: isolate;
   flex: 0 0 auto;
   width: var(--sq);
   aspect-ratio: 1;
