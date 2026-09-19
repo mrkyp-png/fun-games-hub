@@ -903,6 +903,20 @@ body { background: var(--lm-page); }
   position: relative; z-index: 2; margin: 0;
   font-size: 2.6rem; font-weight: 800; color: var(--lm-ink);
 }
+/* 피버타임 종료 결과창(사용자 지정: "타임 끝나면, 창하나 띠워줘 게임복귀 문구 나오게"). */
+.fever-result-box { text-align: center; }
+.fever-result-title { margin: 0 0 8px; font-size: 1.4rem; font-weight: 900; color: var(--lm-ink); }
+.fever-result-score { margin: 0 0 20px; font-size: 1rem; font-weight: 700; color: var(--lm-muted); }
+.fever-result-score b { color: #ffce33; font-size: 1.8rem; -webkit-text-stroke: 1px #b8860b; }
+.fever-result-btn {
+  border: none; border-radius: 999px; padding: 12px 32px;
+  font-size: 1rem; font-weight: 900; color: #fff; cursor: pointer;
+  background: linear-gradient(180deg, #74e389 0%, #47cc6a 46%, #2ea951 100%);
+  box-shadow: 0 4px 0 #1c8340, 0 8px 10px rgba(0,0,0,0.32),
+    inset 0 2px 2px rgba(255,255,255,0.8), inset 0 -3px 4px rgba(0,80,35,0.4);
+}
+.fever-result-btn:active { transform: translateY(3px);
+  box-shadow: 0 1px 0 #1c8340, inset 0 2px 2px rgba(255,255,255,0.7), inset 0 -2px 4px rgba(0,80,35,0.45); }
 /* 승리 화면 "왼쪽으로 밀어" 힌트 — 축하 5초 뒤. 손 이모지 + 화살표가 왼쪽으로 까딱까딱. */
 /* .dialpad(position:relative) 안, 키패드 최상단 = 2·3번 키 위 여백에 얹는다. */
 .result-swipe-hint {

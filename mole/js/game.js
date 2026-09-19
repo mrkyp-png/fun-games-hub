@@ -2188,12 +2188,23 @@
         swapBoardPositions(true);
         setTimeout(() => {
           state.feverEventUntil = performance.now() + 20000;
-          setTimeout(endFeverEvent, 20000);
+          setTimeout(showFeverResult, 20000);
         }, FEVER_TRANSITION_MS);
       }, FEVER_TRANSITION_MS);
     }, FEVER_RETREAT_WAIT_MS);
   }
+  // 20초가 다 차면 바로 원위치로 안 돌아가고, 점수 확인 창을 띄운다(사용자 지정: "타임
+  // 끝나면, 창하나 띠워줘 게임복귀 문구 나오게 하고") — "게임복귀" 버튼을 눌러야 실제 복귀
+  // 연출(endFeverEvent)이 시작된다. 그동안도 계속 pausedByFever=true 라 타이머는 안 흐른다.
+  function showFeverResult() {
+    const overlay = document.getElementById('fever-result-overlay');
+    const scoreEl = document.getElementById('fever-result-score');
+    if (scoreEl) scoreEl.textContent = String(run.combo.score);
+    if (overlay) overlay.hidden = false;
+  }
   function endFeverEvent() {
+    const overlay = document.getElementById('fever-result-overlay');
+    if (overlay) overlay.hidden = true;
     swapBoardPositions(false);
     setTimeout(() => {
       if (sharedLaneControls) sharedLaneControls.spinBoardBlank(false);
@@ -2511,6 +2522,8 @@
     if (moleBoardEl) {
       moleBoardEl.addEventListener('pointerdown', (ev) => {
         if (!state || !state.feverEventActive) return;
+        const resultOverlay = document.getElementById('fever-result-overlay');
+        if (resultOverlay && !resultOverlay.hidden) return; // 결과창 떠 있는 동안은 보드 터치 무시
         const rect = moleBoardEl.getBoundingClientRect();
         const fx = (ev.clientX - rect.left) / rect.width;
         const fy = (ev.clientY - rect.top) / rect.height;
@@ -2519,6 +2532,8 @@
         if (regionId != null) handleCell(regionId);
       });
     }
+    const feverResultBtn = document.getElementById('fever-result-btn');
+    if (feverResultBtn) feverResultBtn.addEventListener('click', () => { endFeverEvent(); });
     bgmEls = [document.getElementById('bgm-a'), document.getElementById('bgm-b')];
     bgmEls.forEach((el) => {
       el.volume = BGM_VOL;
@@ -2714,6 +2729,8 @@
     window.__debugSwapBoardPositions = function (toSwapped) { swapBoardPositions(toSwapped); };
     window.__debugRegionFromPoint = function (fx, fy) { return regionIdFromBoardPoint(fx, fy); };
     window.__debugSetFeverActive = function (v) { if (state) state.feverEventActive = !!v; };
+    window.__debugShowFeverResult = function () { showFeverResult(); };
+    window.__debugEndFeverEvent = function () { endFeverEvent(); };
     // 대포 연사 연출 확인용 — 안 맞은 다타 두더지 하나를 연사 대상으로 강제. 인자 없으면 아무 구멍.
     window.__debugForceBurst = function (regionId) {
       if (!state || !state.scheduler.debugForceBurst) return null;

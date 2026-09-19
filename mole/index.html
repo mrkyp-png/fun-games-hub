@@ -258,6 +258,17 @@
         </div>
       </div>
 
+      <!-- 피버타임(터치캐치 보너스타임) 종료 결과창 — 사용자 지정: "타임 끝나면, 창하나
+           띠워줘 게임복귀 문구 나오게" — 바로 원위치 복귀하지 않고 점수 확인 후 버튼을
+           눌러야 복귀 연출이 시작된다. -->
+      <div id="fever-result-overlay" class="overlay" hidden>
+        <div class="fever-result-box">
+          <p class="fever-result-title">피버타임 종료!</p>
+          <p class="fever-result-score"><b id="fever-result-score">0</b>점 획득</p>
+          <button type="button" id="fever-result-btn" class="fever-result-btn">게임복귀</button>
+        </div>
+      </div>
+
       <!-- 라운드 시작 카운트다운 (매 라운드: "라운드 N" → 3·2·1·시작!) -->
       <!-- 시작 버튼 누르면 라운드1 카운트다운 전에 한 번 — 챕터 이름 + 준비 문구 타이핑, 끝나면 커튼 오픈. -->
       <div id="start-intro-overlay" class="overlay round-intro board-panel" hidden aria-hidden="true">
@@ -540,7 +551,7 @@
       <div id="lane-button-bar">
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
-        <div id="build-tag" aria-hidden="true">v618</div>
+        <div id="build-tag" aria-hidden="true">v619</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -709,7 +720,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=618').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=619').catch(function () {});
       }
     });
   }
