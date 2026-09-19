@@ -369,7 +369,13 @@
   function bgmInactiveEl() { return bgmEls ? bgmEls[1 - bgmActiveIdx] : null; }
 
   // 홈/더보기 BGM 삭제(사용자 지정, 신규 트랙 삽입 예정) — 그 화면 진입 시 그냥 정지.
-  function stopBgm() { bgmWantPlay = false; applyBgm(); }
+  // 어떤 경로로 나가든(홈/더보기 등) 피버 브금이 겹쳐 남지 않게 안전장치로 같이 정지.
+  function stopBgm() {
+    bgmWantPlay = false;
+    applyBgm();
+    const feverBgm = document.getElementById('bgm-fever');
+    if (feverBgm && !feverBgm.paused) feverBgm.pause();
+  }
 
   // BGM 재생/정지의 유일한 결정 지점 — 화면 의도 · 앱 가시성 · 설정을 모두 본다.
   function applyBgm() {
