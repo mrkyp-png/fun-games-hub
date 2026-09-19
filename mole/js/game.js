@@ -2120,7 +2120,9 @@
   function checkFeverEventTrigger() {
     if (state.feverEventDone || state.feverEventActive) return;
     if (currentChapter() !== 2) return;
-    if (run.combo.combo < 100) return;
+    // ⚠️테스트용 임시 하향(사용자 지정: "콤보 100달성 빡신데... 콤보 5만 달성해도") — 실기기
+    // 검증 끝나면 100으로 되돌릴 것.
+    if (run.combo.combo < 5) return;
     state.feverEventDone = true;
     startFeverEvent();
   }
