@@ -364,6 +364,10 @@
   const BGM_VOL = 0.35;
   const BGM_FADE_MS = 900;
   let bgmFadeTimer = null;
+  // 피버타임 브금이 재생 중인 동안, 다른 이벤트(자동재생 정책 재시도용 입력 리스너 등)가
+  // applyBgm() 을 다시 불러 라운드 브금을 되살리는 걸 막는다(사용자 보고: "피버타임 중간에
+  // 피버타임 브금외 본게임 브금 나오기 시작함" — 터치할 때마다 걸리는 입력 리스너가 원인).
+  let feverBgmOverride = false;
 
   function bgmActiveEl() { return bgmEls ? bgmEls[bgmActiveIdx] : null; }
   function bgmInactiveEl() { return bgmEls ? bgmEls[1 - bgmActiveIdx] : null; }
@@ -371,6 +375,7 @@
   // 홈/더보기 BGM 삭제(사용자 지정, 신규 트랙 삽입 예정) — 그 화면 진입 시 그냥 정지.
   // 어떤 경로로 나가든(홈/더보기 등) 피버 브금이 겹쳐 남지 않게 안전장치로 같이 정지.
   function stopBgm() {
+    feverBgmOverride = false;
     bgmWantPlay = false;
     applyBgm();
     const feverBgm = document.getElementById('bgm-fever');
@@ -379,6 +384,7 @@
 
   // BGM 재생/정지의 유일한 결정 지점 — 화면 의도 · 앱 가시성 · 설정을 모두 본다.
   function applyBgm() {
+    if (feverBgmOverride) return; // 피버 브금 재생 중엔 라운드 브금을 절대 되살리지 않는다.
     const el = bgmActiveEl();
     if (!el) return;
     const want = bgmWantPlay && !document.hidden && window.FGH.Settings.get('music');
@@ -2223,6 +2229,7 @@
         // bgmActiveEl() 하나만 멈추면, 크로스페이드 도중(둘 다 잠깐 같이 들리는 구간)이면
         // 나머지 하나가 계속 재생돼 피버 브금과 겹쳐 들렸다(사용자 보고: "피버타임 브금과
         // 게임브금 같이나온다") — bgm-a/bgm-b 둘 다 멈춘다.
+        feverBgmOverride = true;
         if (bgmEls) bgmEls.forEach((el) => { if (el && !el.paused) el.pause(); });
         const feverBgm = document.getElementById('bgm-fever');
         if (feverBgm) { feverBgm.currentTime = 0; feverBgm.volume = BGM_VOL; feverBgm.play().catch(() => {}); }
@@ -2264,8 +2271,9 @@
     if (feverBgm) { feverBgm.pause(); feverBgm.currentTime = 0; }
     // applyBgm() 이 브금 재생여부를 결정하는 유일한 지점 — bgmActiveEl() 를 직접 .play() 하면
     // bgmWantPlay/설정/화면가시성 체크를 건너뛰어 재생이 안 붙는 경우가 있었다(사용자 보고:
-    // "게임복귀 버튼을 누르면 게임브금이 나오게" — 지금은 안 나옴). bgmWantPlay 를 확실히
-    // true 로 되돌리고 applyBgm() 에 맡긴다.
+    // "게임복귀 버튼을 누르면 게임브금이 나오게" — 지금은 안 나옴). feverBgmOverride 를
+    // 풀고 bgmWantPlay 를 확실히 true 로 되돌린 뒤 applyBgm() 에 맡긴다.
+    feverBgmOverride = false;
     bgmWantPlay = true;
     applyBgm();
     // 버튼보드 회전이 완전히 끝나기 전에는 두더지/동물이 다시 올라오면 안 된다(사용자 지정:
