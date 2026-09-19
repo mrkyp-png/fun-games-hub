@@ -3072,9 +3072,10 @@ body { background: var(--lm-page); }
 /* 코인 아이콘 1.5배(사용자 지정: "코인 이미지가 약하니") — 직계 자식만(재생아이콘은
    .scb-play-box 안에 있어 영향 없음). */
 .shop-card-btn--rich > svg { width: 22.5px; height: 22.5px; }
-.shop-card-btn--rich:not(.shop-card-btn--ad) svg { fill: none; stroke: #fff2b8; }
-/* 코인 부족으로 비활성일 땐 연한 노랑이 회색 배경에 묻혀 안 보임 — 본문 글자와 같은 회색으로. */
-.shop-card-btn--rich:disabled svg { stroke: #a0a0a6; }
+/* 하트카드 1/2 구매버튼 코인 아이콘도 무기카드 코인(노란색)과 동일하게(사용자 지정). */
+.shop-card-btn--rich:not(.shop-card-btn--ad) svg { fill: #ffce33; stroke: #c99a1e; }
+/* 코인 부족으로 비활성일 땐 회색 배경에 묻혀 안 보임 — 본문 글자와 같은 회색으로. */
+.shop-card-btn--rich:disabled svg { fill: #a0a0a6; stroke: #a0a0a6; }
 .shop-card-btn--ad { font-size: 0.72rem; background: linear-gradient(180deg, #7dc3ff 0%, #4a92e8 46%, #2f7ce0 100%);
   box-shadow: 0 4px 0 #1c4f96, 0 4px 1px rgba(0,0,0,0.18), 0 8px 10px rgba(0,0,0,0.32),
     inset 0 2px 2px rgba(255,255,255,0.8), inset 0 -3px 4px rgba(0,40,90,0.4); }
