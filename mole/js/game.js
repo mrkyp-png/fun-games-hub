@@ -1696,8 +1696,13 @@
       state.config.maxConcurrentBombs = 0;
       state.config.maxConcurrentItems = 0;
     } else if (state.feverEventActive) {
+      // 전신(1타) 두더지만 — 동물/폭탄/아이템 섞이면 헛방(실패) 판정이 나서 순수 두더지잡기가
+      // 안 됨(사용자 보고: "피버타임에 실패가 뜨노? 전신두더지만 출현시켜야하는데").
       state.config.multiHit = false;
       state.config.maxConcurrentMoles = 8;
+      state.config.maxConcurrentAnimals = 0;
+      state.config.maxConcurrentBombs = 0;
+      state.config.maxConcurrentItems = 0;
     }
     const tickResult = state.scheduler.tick(dt);
     // 타겟(§8·§10 에 따라 두더지 또는 동물일 수 있음)을 처치 못 하고 시간초과로 놓치면
