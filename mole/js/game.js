@@ -2179,29 +2179,27 @@
   function swapBoardPositions(toSwapped, durationMs) {
     if (toSwapped === boardSwapped) return;
     const ms = durationMs || FEVER_TRANSITION_MS;
-    // ⚠️ #mole-board 자체(배경이미지 있음)에 transform 을 걸면 안드로이드에서 GPU 레이어
-    // 승격 시 배경 텍스처가 아직 안 구워진 채로 잠깐 하얗게 보이는 버그가 있다(실기기
-    // 영상으로 확인). 배경이미지 없는 #fever-board-wrap 껍데기만 옮기고 #mole-board 자신은
-    // 절대 안 옮긴다 — v627에서 이 방식이 다른 화면(아이템창)과 충돌해 되돌렸던 적 있어
-    // 재도입 시 반드시 실기기 재검증 필요.
-    const boardWrap = document.getElementById('fever-board-wrap');
+    // ⚠️v627 에서 #fever-board-wrap 껍데기를 새로 감싸 그걸 옮기는 방식으로 바꿨었는데,
+    // 정상 게임 진행 중에도 다이얼패드 버튼을 누르면 화면이 깨지는 훨씬 큰 회귀버그가
+    // 나서(사용자 보고) 원복 — #mole-board 를 직접 옮기는 이전 방식으로 되돌림. 흰화면
+    // 버그(안드로이드 배경이미지+transform)는 재발할 수 있으나, 그보다 이 회귀가 더 심각.
     const board = document.getElementById('mole-board');
     const bar = document.getElementById('lane-button-bar');
     // ⚠️ #lane-button-bar 는 .dialpad 의 자식인데 .dialpad 에 contain:paint 가 걸려있어(다른
     // 3D 회전 버그 격리용) 자식이 박스 밖으로 나가면 잘린다 — 컨테이너인 .dialpad 자체를 옮긴다.
     const dialpad = document.querySelector('.dialpad');
     const hammerLayer = document.getElementById('mole-hammer-layer');
-    if (!boardWrap || !board || !bar || !dialpad) return;
+    if (!board || !bar || !dialpad) return;
     const boardRect = board.getBoundingClientRect();
     const barRect = bar.getBoundingClientRect();
     const delta = barRect.top - boardRect.top; // 보드가 버튼보드 자리로 가려면 +delta 만큼 아래로
     const transitionCss = `transform ${ms / 1000}s cubic-bezier(.4, 0, .2, 1)`;
-    [boardWrap, dialpad, hammerLayer].forEach((el) => { if (el) el.style.transition = transitionCss; });
-    boardWrap.style.transform = toSwapped ? `translateY(${delta}px)` : '';
+    [board, dialpad, hammerLayer].forEach((el) => { if (el) el.style.transition = transitionCss; });
+    board.style.transform = toSwapped ? `translateY(${delta}px)` : '';
     dialpad.style.transform = toSwapped ? `translateY(${-delta}px)` : '';
     if (hammerLayer) hammerLayer.style.transform = toSwapped ? `translateX(-50%) translateY(${delta}px)` : 'translateX(-50%)';
     setTimeout(() => {
-      [boardWrap, dialpad, hammerLayer].forEach((el) => { if (el) el.style.transition = ''; });
+      [board, dialpad, hammerLayer].forEach((el) => { if (el) el.style.transition = ''; });
     }, ms + 50);
     boardSwapped = toSwapped;
   }
