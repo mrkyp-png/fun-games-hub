@@ -758,6 +758,7 @@
       // 중(navLocked)엔 무시.
       onHomeAction: (action) => {
         if (navLocked) return;
+        if (state && state.feverEventActive) return; // 피버타임 중엔 홈/상점 등 화면이동 전부 비활성화
         if (action === 'home') { showStartScreen(); return; }
         const sub = { shop: 'shop-screen', score: 'score-screen', daily: 'daily-screen',
           quest: 'quest-screen', friends: 'friends-screen', locker: 'face-locker',
@@ -2705,6 +2706,9 @@
     // 라운드 나가고 홈으로, 사용자 지정 — 더보기 화면이 다이얼패드로 흡수돼 필요 없어짐).
     document.getElementById('btn-back-to-hub').addEventListener('click', (e) => {
       if (navLocked) return; // 인트로/카운트다운/라운드 전환 중엔 안 먹힘 (회색 음영)
+      // 피버타임 중 홈으로 나가면 보드/버튼보드가 교차된 채로 남아 위=전광판/아래=홈화면처럼
+      // 화면이 깨졌다(사용자 보고) — 피버타임(진입~퇴장 연출 전부 끝날 때까지) 동안은 비활성화.
+      if (state && state.feverEventActive) return;
       // 결과 화면에선 = 곧장 홈으로 (다시하기 버튼 없앰 — 중복).
       if (!document.getElementById('gameover-overlay').hidden) { showStartScreen({ retry: true, originEl: e.currentTarget }); return; }
       const isStart = document.getElementById('game-screen').classList.contains('is-start');
