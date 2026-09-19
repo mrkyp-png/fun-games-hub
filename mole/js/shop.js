@@ -173,7 +173,7 @@
     var activeTab = 'currency';
     var currencyFilter = null; // null=전체, 'heart'/'coin'/'ticket'=다이얼패드 캡슐 클릭으로 필터
 
-    function done() { render(); if (opts.onChange) opts.onChange(); }
+    function done() { render(); refreshHudFlyNumbers(); if (opts.onChange) opts.onChange(); }
 
     function card(opts2) {
       // opts2: { badge(html), name, price(text)|priceHtml(html, 코인아이콘+숫자용), btnText,
@@ -350,6 +350,17 @@
     // 간헐적) 이전 호출의 setTimeout 들이 취소 안 된 채 남아있다가 뒤늦게 실행되어 캡슐이
     // 중복 생성되고, 그중 하나가 클릭되며 currencyFilter 를 몰래 바꿔버림 — 대기 중인
     // 타이머를 추적해뒀다가 재호출 시(removeHudFlys) 확실히 취소한다.
+    // 상점에서 구매/획득 직후 다이얼패드에 착지해있는 하트/코인/티켓 캡슐 숫자를 바로 갱신
+    // (사용자 지정: "상점에서 구매시, 바로 버튼보드에 있는 하트, 코인, 티켓 수량 바로
+    // 적용되도록") — 캡슐은 생성 시점 숫자로 고정돼있어 그 이후 변동은 반영이 안 됐었음.
+    function refreshHudFlyNumbers() {
+      ['heart', 'coin', 'ticket'].forEach(function (kind) {
+        var n = document.querySelector('.shop-hud-fly--' + kind + ' .shop-hud-n');
+        if (!n) return;
+        n.textContent = MG.Economy.formatK(kind === 'heart' ? MG.Economy.getHearts()
+          : kind === 'coin' ? MG.Economy.getCoins() : MG.Economy.getTickets());
+      });
+    }
     var pendingTimers = [];
     function removeHudFlys() {
       pendingTimers.forEach(clearTimeout);
