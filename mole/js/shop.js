@@ -217,7 +217,8 @@
         '<div class="shop-card-name-box"><div class="shop-card-name"></div></div>' +
         '<div class="shop-card-img-box"><div class="shop-card-badge shop-card-badge--hero"></div></div>' +
         (hasDesc ? '<div class="shop-card-desc"></div>' : '') +
-        '<div class="shop-card-pill">' + (o.pillIcon || ICONS.hearts) + '<span></span></div>' +
+        '<div class="shop-card-pill' + (o.pillClass ? ' ' + o.pillClass : '') + '">' +
+        (o.pillIcon || ICONS.hearts) + '<span></span></div>' +
         '<button type="button" class="' + btnClass + '"' + (o.btnDisabled ? ' disabled' : '') + '></button>';
       c.querySelector('.shop-card-badge--hero').innerHTML = o.art;
       c.querySelector('.shop-card-name').textContent = o.name;
@@ -291,6 +292,7 @@
           art: weaponArt(w),
           name: name,
           pillIcon: ICONS.coins,
+          pillClass: 'shop-card-pill--coin', // 사용자 지정: "코인 이미지는 1.5배 크게, 노란색으로"
           pillText: w.coinPrice.toLocaleString(),
           btnHtml: w.price.toLocaleString() + '원',
           btnDisabled: locked,
