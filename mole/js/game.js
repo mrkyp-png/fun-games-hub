@@ -2167,30 +2167,44 @@
   // 인라인 transform 을 건드리는데, 동시에 실행하면 나중에 끝나는 쪽의 cleanup(transform
   // 초기화)이 먼저 것을 지워버려 스왑이 도로 풀려버렸다(사용자 보고: "전광판이... 아래에
   // 나옴", "게임이 안됨") — 순차 실행으로 완전히 분리한다: 진입은 회전이 끝난 뒤 이동 시작,
-  // 퇴장은 이동이 끝난 뒤 회전 시작. 각 단계 5초씩, 총 10초(사용자 지정: "급하게 휙휙
-  // 바뀌는게 아니라... 천천히 약 10초 동안 화면교체 완성"). 20초 보너스타임 카운트다운은
-  // 이 진입 연출(10초)이 완전히 끝난 뒤에 시작한다.
-  const FEVER_TRANSITION_MS = 5000;
+  // 퇴장은 이동이 끝난 뒤 회전 시작. 각 단계 7초씩, 총 14초(사용자 지정: 피버 브금이
+  // 14초부터 본격적으로 빨라지는데 그 시점에 무기(터치) 사용이 가능해야 함 — 화면전환을
+  // 그 타이밍에 맞춤). 20초 보너스타임 카운트다운은 이 진입 연출(14초)이 완전히 끝난 뒤에
+  // 시작한다.
+  const FEVER_TRANSITION_MS = 7000;
   // 화면 정지 전 정리 단계(사용자 지정: "두더지, 동물들이 다 구멍으로 들어간후, 화면이
   // 정지되고, 아래로 내려가야함") — 떠 있는 두더지/동물을 전부 자연 퇴장(땅속으로 내려가는
   // 연출)시키고, 그 연출(spawn-scheduler.js RETREAT_SEC=0.6s)이 끝날 때까지 기다린 뒤에야
-  // 회전+스왑 연출을 시작한다.
+  // "도파민 업!" 문구를 띄우고, 그 문구 연출(hit-fx-powerup, 1.1s)이 끝난 뒤에야 회전+스왑
+  // 연출을 시작한다(사용자 지정: "두더지가 다 내려가고, 중앙에 도파민 업! 글자가 나오고
+  // 사라진뒤. 화면전환 진행").
   const FEVER_RETREAT_WAIT_MS = 650;
+  const FEVER_DOPAMINE_WORD_MS = 1100;
   function startFeverEvent() {
     state.feverEventActive = true;
     state.pausedByFever = true;
-    const feverBoardEl = document.getElementById('mole-board');
-    if (feverBoardEl && MG.HitFx.dopamineUpWord) MG.HitFx.dopamineUpWord(feverBoardEl);
     if (state.scheduler.forceRetreatAll) state.scheduler.forceRetreatAll();
     setTimeout(() => {
-      if (sharedLaneControls) sharedLaneControls.spinBoardBlank(true);
+      const feverBoardEl = document.getElementById('mole-board');
+      if (feverBoardEl && MG.HitFx.dopamineUpWord) MG.HitFx.dopamineUpWord(feverBoardEl);
       setTimeout(() => {
-        swapBoardPositions(true);
+        // 브금은 이 14초 전환 시작과 정확히 같은 순간부터 재생 — 브금이 14초째부터
+        // 본격적으로 빨라지는 지점(사용자 지정)과 전환 완료(무기 사용 가능) 시점이 맞아
+        // 떨어진다. 홈/평소 진행 브금은 건드리지 않고 여기서만 잠깐 멈췄다 되돌린다
+        // (사용자 지정: "홈이나, 기존 게임진행은 기존거").
+        const roundBgm = bgmActiveEl();
+        if (roundBgm) roundBgm.pause();
+        const feverBgm = document.getElementById('bgm-fever');
+        if (feverBgm) { feverBgm.currentTime = 0; feverBgm.volume = BGM_VOL; feverBgm.play().catch(() => {}); }
+        if (sharedLaneControls) sharedLaneControls.spinBoardBlank(true);
         setTimeout(() => {
-          state.feverEventUntil = performance.now() + 20000;
-          setTimeout(showFeverResult, 20000);
+          swapBoardPositions(true);
+          setTimeout(() => {
+            state.feverEventUntil = performance.now() + 20000;
+            setTimeout(showFeverResult, 20000);
+          }, FEVER_TRANSITION_MS);
         }, FEVER_TRANSITION_MS);
-      }, FEVER_TRANSITION_MS);
+      }, FEVER_DOPAMINE_WORD_MS);
     }, FEVER_RETREAT_WAIT_MS);
   }
   // 20초가 다 차면 바로 원위치로 안 돌아가고, 점수 확인 창을 띄운다(사용자 지정: "타임
@@ -2205,6 +2219,10 @@
   function endFeverEvent() {
     const overlay = document.getElementById('fever-result-overlay');
     if (overlay) overlay.hidden = true;
+    const feverBgm = document.getElementById('bgm-fever');
+    if (feverBgm) { feverBgm.pause(); feverBgm.currentTime = 0; }
+    const roundBgm = bgmActiveEl();
+    if (roundBgm && bgmWantPlay) roundBgm.play().catch(() => {});
     swapBoardPositions(false);
     setTimeout(() => {
       if (sharedLaneControls) sharedLaneControls.spinBoardBlank(false);

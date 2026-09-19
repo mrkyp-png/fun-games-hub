@@ -17,7 +17,7 @@ const PORT = process.env.SMOKE_PORT || 8844;
     assert.strictEqual(before, true, 'scoreboard hidden by default');
 
     await page.evaluate(() => window.__debugSpinBoardBlank(true));
-    await new Promise((r) => setTimeout(r, 2800)); // 회전 5s의 절반(2.5s) 시점에 얼굴 전환
+    await new Promise((r) => setTimeout(r, 3800)); // 회전 7s의 절반(3.5s) 시점에 얼굴 전환
     const after = await page.evaluate(() => document.getElementById('fever-scoreboard').hidden);
     assert.strictEqual(after, false, 'scoreboard shown after spinBoardBlank(true)');
 
@@ -34,7 +34,7 @@ const PORT = process.env.SMOKE_PORT || 8844;
     assert.strictEqual(time, '8', 'time rounds up');
 
     await page.evaluate(() => window.__debugSpinBoardBlank(false));
-    await new Promise((r) => setTimeout(r, 2800));
+    await new Promise((r) => setTimeout(r, 3800));
     const afterRestore = await page.evaluate(() => document.getElementById('fever-scoreboard').hidden);
     assert.strictEqual(afterRestore, true, 'scoreboard hidden again after spinBoardBlank(false)');
 

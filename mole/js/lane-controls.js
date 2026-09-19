@@ -355,9 +355,11 @@
     // 피버타임(터치캐치 보너스타임) 전용 — 버튼보드 전체를 10바퀴 회전시켜 숫자판↔전광판을
     // 전환한다. spinChannelsIn()의 simple 분기와 같은 "버튼보드 통째로 rotateY" 기법을 재사용
     // (일반 모드의 spinChannelsIn()은 버튼 개별 플립이라 이 용도엔 안 맞음).
-    // 5초에 걸쳐 천천히 10바퀴(사용자 지정: "급하게 휙휙 바뀌는게 아니라... 천천히 약 10초
-    // 동안 화면교체 완성" — 회전 5s + 이후 game.js 의 자리교차 스왑 5s = 총 10초).
-    var SPIN_BLANK_MS = 5000;
+    // 7초에 걸쳐 천천히 10바퀴(사용자 지정: 피버 브금이 14초부터 빨라지는 지점에 맞춰
+    // 회전 7s + 이후 game.js 의 자리교차 스왑 7s = 총 14초). game.js 의 FEVER_TRANSITION_MS
+    // 와 반드시 같은 값이어야 한다(둘이 따로 놀면 회전은 끝났는데 스왑 시작을 더 기다리는
+    // 식으로 어긋남).
+    var SPIN_BLANK_MS = 7000;
     function spinBoardBlank(toBlank) {
       if (!buttonBar) return;
       var scoreboard = document.getElementById('fever-scoreboard');
