@@ -2778,9 +2778,6 @@ body { background: var(--lm-page); }
   background: linear-gradient(180deg, #4a90f5, #2f6fed);
   box-shadow: 0 4px 0 #163a94, inset 0 3px 3px rgba(255,255,255,0.7), inset 0 -4px 6px rgba(0,20,70,0.4);
   transition: transform 0.1s ease; }
-/* 반사광(사용자 지정: "반사광도 넣고") — 위쪽 흰 하이라이트 띠, GET NOW 버튼과 같은 방식. */
-.shop-hud-fly::before { content: ''; position: absolute; left: 10%; right: 10%; top: 2px; height: 38%;
-  border-radius: 999px; background: linear-gradient(180deg, rgba(255,255,255,0.65), rgba(255,255,255,0)); pointer-events: none; }
 /* 눌림 스케일(사용자 지정: "각 버튼은 눌림 스케일 효과줘야하고") — 착지 후 인라인 transform 이
    비워져야 이 :active 가 먹힘(JS transitionend 참고). */
 .shop-hud-fly:active { transform: scale(0.88); }
