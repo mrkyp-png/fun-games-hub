@@ -1431,7 +1431,8 @@
       feverEventActive: false,
       pausedByFever: false,
       feverEventUntil: 0,
-      feverTransitioning: false // 진입 전환(14초) 동안만 true — 그동안 새 두더지 스폰 정지
+      feverTransitioning: false, // 진입/퇴장 전환 동안만 true — 그동안 새 두더지 스폰 정지
+      feverResultShown: false // 20초 종료 후 결과창 떠 있는 동안 true — 스폰(+ 등장효과음) 정지
     };
 
     updateHUD();
@@ -1688,10 +1689,12 @@
     // 연장이 아니라, 피버타임용 게임이라고 생각하면됨") — updateLiveDifficulty() 가 매프레임
     // 재계산해버리는 라운드 커브를 덮어써서, 항상 전신(1타)만 최대 8마리 동시 출현시킨다
     // (사용자 지정: "두더지 전신만... 2,3,4타 두저지 등장 NO... 구멍 8개에서 동시 출현").
-    if (state.feverTransitioning) {
-      // 전환(14초) 동안은 완전히 정지 — 새 두더지/동물/폭탄 스폰 자체를 막는다(사용자 지정:
-      // "전환타임에는 두더지가 안나오는거야"). 이미 떠 있던 건 forceRetreatAll() 로 이미
-      // 퇴장 처리됐으므로 tick() 은 그 퇴장 애니메이션만 마저 진행.
+    if (state.feverTransitioning || state.feverResultShown) {
+      // 전환(14초) 동안, 그리고 20초 종료 후 결과창이 떠 있는 동안은 완전히 정지 — 새
+      // 두더지/동물/폭탄 스폰 자체를 막는다(사용자 지정: "전환타임에는 두더지가 안나오는거야",
+      // "카운트가 끝나도 두더지가 올라오는 소리 계속 들린다. 게임복귀 화면있는곳에서").
+      // 이미 떠 있던 건 forceRetreatAll() 로 이미 퇴장 처리됐으므로 tick() 은 그 퇴장
+      // 애니메이션만 마저 진행.
       state.config.maxConcurrentMoles = 0;
       state.config.maxConcurrentAnimals = 0;
       state.config.maxConcurrentBombs = 0;
@@ -2268,6 +2271,8 @@
   // 끝나면, 창하나 띠워줘 게임복귀 문구 나오게 하고") — "게임복귀" 버튼을 눌러야 실제 복귀
   // 연출(endFeverEvent)이 시작된다. 그동안도 계속 pausedByFever=true 라 타이머는 안 흐른다.
   function showFeverResult() {
+    state.feverResultShown = true;
+    if (state.scheduler.forceRetreatAll) state.scheduler.forceRetreatAll(); // 떠 있던 두더지 정리
     const overlay = document.getElementById('fever-result-overlay');
     const scoreEl = document.getElementById('fever-result-score');
     if (scoreEl) scoreEl.textContent = String(run.combo.score);
@@ -2277,6 +2282,7 @@
   // 때까지는 게임이 재개되면 안 된다(사용자 지정: "버튼보드 회전이 종료되면, 진행되던
   // 게임이 진행되어야함") — pausedByFever/feverEventActive 해제를 연출 종료 콜백으로 미룬다.
   function endFeverEvent() {
+    state.feverResultShown = false;
     const overlay = document.getElementById('fever-result-overlay');
     if (overlay) overlay.hidden = true;
     const feverBgm = document.getElementById('bgm-fever');
