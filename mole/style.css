@@ -1391,6 +1391,19 @@ body { background: var(--lm-page); }
   border-radius: 8px 8px 0 0;
   background: var(--lm-pad);
 }
+/* 피버타임 전광판(사용자 지정: "전광판처럼 콤보 표기, 남은 타임 표기") — 버튼보드 자리를
+   그대로 덮는 절대배치 오버레이. 평소엔 hidden, 피버 중에만 표시. */
+.fever-scoreboard {
+  position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 4px;
+  background: linear-gradient(180deg, #1a1a2e, #0f0f1e);
+  border-radius: 8px 8px 0 0; color: #ffce33; text-align: center;
+}
+.fever-scoreboard-label { font-size: 1.3rem; font-weight: 900; letter-spacing: 0.05em;
+  text-shadow: 0 0 8px rgba(255, 206, 51, 0.8); }
+.fever-scoreboard-combo { font-size: 0.85rem; font-weight: 700; color: #fff; }
+.fever-scoreboard-combo b { color: #ffce33; font-size: 1.1em; }
+.fever-scoreboard-time { font-size: 2.2rem; font-weight: 900; color: #fff; line-height: 1; }
 /* 다이얼패드 래퍼 — 안내문구/첫방문 말풍선을 절대배치로 얹기 위함.
    ⚠️ contain:paint 로 자기만의 페인트 레이어를 강제 — 위 보드(.more-menu/.board-screen)의
    perspective 3D 회전(책장 효과) 중 실기기에서 GPU 컴포지팅이 형제 요소까지 같이 다시 그리며

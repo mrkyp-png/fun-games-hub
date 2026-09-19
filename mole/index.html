@@ -541,6 +541,13 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div id="build-tag" aria-hidden="true">v614</div>
+        <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
+             평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
+        <div id="fever-scoreboard" class="fever-scoreboard" hidden>
+          <div class="fever-scoreboard-label" data-i18n="mole.fever.label">FEVER!</div>
+          <div class="fever-scoreboard-combo"><b id="fever-sb-combo">0</b> COMBO</div>
+          <div class="fever-scoreboard-time" id="fever-sb-time">20</div>
+        </div>
       </div>
       <div id="invincible-countdown" class="invincible-countdown" aria-hidden="true" hidden></div>
     </div>

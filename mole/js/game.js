@@ -2603,6 +2603,12 @@
         timeRemaining: state.timeRemaining, until: state.feverEventUntil
       } : null;
     };
+    window.__debugSpinBoardBlank = function (toBlank) {
+      if (sharedLaneControls) sharedLaneControls.spinBoardBlank(toBlank);
+    };
+    window.__debugSetFeverScoreboard = function (combo, seconds) {
+      if (sharedLaneControls) sharedLaneControls.setFeverScoreboard(combo, seconds);
+    };
     // 대포 연사 연출 확인용 — 안 맞은 다타 두더지 하나를 연사 대상으로 강제. 인자 없으면 아무 구멍.
     window.__debugForceBurst = function (regionId) {
       if (!state || !state.scheduler.debugForceBurst) return null;
