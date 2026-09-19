@@ -2161,29 +2161,29 @@
   let boardSwapped = false;
   function swapBoardPositions(toSwapped) {
     if (toSwapped === boardSwapped) return;
+    // ⚠️ #mole-board 자체(배경이미지 있음)에 transform 을 걸면 안드로이드에서 "배경이미지+
+    // transform" 조합이 하얗게 비는 버그가 실기기 영상으로 확인됨(contain:paint/will-change
+    // 로도 해결 안 됨) — 배경이미지 없는 #fever-board-wrap 껍데기만 옮긴다.
+    const boardWrap = document.getElementById('fever-board-wrap');
     const board = document.getElementById('mole-board');
     const bar = document.getElementById('lane-button-bar');
-    // ⚠️ 실기기 화면녹화로 확인된 진짜 원인: #lane-button-bar 는 .dialpad 의 자식인데,
-    // .dialpad 에 `contain: paint` 가 걸려있다(다른 3D 회전 버그 격리용, style.css 참고).
-    // contain:paint 는 자식이 자기 박스 "밖"으로 이동하면 그 부분을 통째로 잘라버린다 —
-    // #lane-button-bar 를 직접 translateY 로 밖(보드 자리)까지 옮기면 투명하게 잘려서
-    // 안 보였던 것(전광판이 안 올라가는 것처럼 보임). 그래서 자식이 아니라 컨테이너인
-    // .dialpad 자체를 옮긴다 — contain:paint 는 자기 자신의 transform 은 안 자른다.
+    // ⚠️ #lane-button-bar 는 .dialpad 의 자식인데 .dialpad 에 contain:paint 가 걸려있어(다른
+    // 3D 회전 버그 격리용) 자식이 박스 밖으로 나가면 잘린다 — 컨테이너인 .dialpad 자체를 옮긴다.
     const dialpad = document.querySelector('.dialpad');
     const hammerLayer = document.getElementById('mole-hammer-layer');
-    if (!board || !bar || !dialpad) return;
+    if (!boardWrap || !board || !bar || !dialpad) return;
     const boardRect = board.getBoundingClientRect();
     const barRect = bar.getBoundingClientRect();
     const delta = barRect.top - boardRect.top; // 보드가 버튼보드 자리로 가려면 +delta 만큼 아래로
-    [board, dialpad, hammerLayer].forEach((el) => { if (el) el.classList.add('fever-swap-animating'); });
-    board.style.transform = toSwapped ? `translateY(${delta}px)` : '';
+    [boardWrap, dialpad, hammerLayer].forEach((el) => { if (el) el.classList.add('fever-swap-animating'); });
+    boardWrap.style.transform = toSwapped ? `translateY(${delta}px)` : '';
     dialpad.style.transform = toSwapped ? `translateY(${-delta}px)` : '';
     if (hammerLayer) hammerLayer.style.transform = toSwapped ? `translateX(-50%) translateY(${delta}px)` : 'translateX(-50%)';
     // ⚠️ 이 값이 CSS(.fever-swap-animating) 트랜지션 시간보다 짧으면, 애니메이션이 끝나기도
     // 전에 transition 규칙을 제공하던 클래스가 빠져서 그 자리에서 뚝 멈춰버린다. FEVER_TRANSITION_MS
     // (CSS 쪽 7s와 동기화된 값)를 그대로 참조해 절대 어긋나지 않게 한다.
     setTimeout(() => {
-      [board, dialpad, hammerLayer].forEach((el) => { if (el) el.classList.remove('fever-swap-animating'); });
+      [boardWrap, dialpad, hammerLayer].forEach((el) => { if (el) el.classList.remove('fever-swap-animating'); });
     }, FEVER_TRANSITION_MS + 50);
     boardSwapped = toSwapped;
   }
@@ -2220,8 +2220,10 @@
         // 본격적으로 빨라지는 지점(사용자 지정)과 전환 완료(무기 사용 가능) 시점이 맞아
         // 떨어진다. 홈/평소 진행 브금은 건드리지 않고 여기서만 잠깐 멈췄다 되돌린다
         // (사용자 지정: "홈이나, 기존 게임진행은 기존거").
-        const roundBgm = bgmActiveEl();
-        if (roundBgm) roundBgm.pause();
+        // bgmActiveEl() 하나만 멈추면, 크로스페이드 도중(둘 다 잠깐 같이 들리는 구간)이면
+        // 나머지 하나가 계속 재생돼 피버 브금과 겹쳐 들렸다(사용자 보고: "피버타임 브금과
+        // 게임브금 같이나온다") — bgm-a/bgm-b 둘 다 멈춘다.
+        if (bgmEls) bgmEls.forEach((el) => { if (el && !el.paused) el.pause(); });
         const feverBgm = document.getElementById('bgm-fever');
         if (feverBgm) { feverBgm.currentTime = 0; feverBgm.volume = BGM_VOL; feverBgm.play().catch(() => {}); }
         // ⚠️ 이전엔 spinBoardBlank(true) 를 부르고 "따로" setTimeout(FEVER_TRANSITION_MS) 로
@@ -2260,17 +2262,27 @@
     if (overlay) overlay.hidden = true;
     const feverBgm = document.getElementById('bgm-fever');
     if (feverBgm) { feverBgm.pause(); feverBgm.currentTime = 0; }
-    const roundBgm = bgmActiveEl();
-    if (roundBgm && bgmWantPlay) roundBgm.play().catch(() => {});
+    // applyBgm() 이 브금 재생여부를 결정하는 유일한 지점 — bgmActiveEl() 를 직접 .play() 하면
+    // bgmWantPlay/설정/화면가시성 체크를 건너뛰어 재생이 안 붙는 경우가 있었다(사용자 보고:
+    // "게임복귀 버튼을 누르면 게임브금이 나오게" — 지금은 안 나옴). bgmWantPlay 를 확실히
+    // true 로 되돌리고 applyBgm() 에 맡긴다.
+    bgmWantPlay = true;
+    applyBgm();
+    // 버튼보드 회전이 완전히 끝나기 전에는 두더지/동물이 다시 올라오면 안 된다(사용자 지정:
+    // "버튼보드가 회전이 끝나기전에는 두더지, 동물 올라오면 안됨. 회전이 완전히 끝난뒤,
+    // 게임 재시작") — 진입 때와 같은 feverTransitioning 스폰정지를 퇴장 연출 전체에도 건다.
+    state.feverTransitioning = true;
     swapBoardPositions(false);
     setTimeout(() => {
       if (sharedLaneControls) {
         sharedLaneControls.spinBoardBlank(false, () => {
+          state.feverTransitioning = false;
           state.pausedByFever = false;
           state.feverEventActive = false;
           state.feverEventUntil = 0;
         });
       } else {
+        state.feverTransitioning = false;
         state.pausedByFever = false;
         state.feverEventActive = false;
         state.feverEventUntil = 0;
