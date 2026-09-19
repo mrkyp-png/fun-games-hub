@@ -3086,7 +3086,8 @@ body { background: var(--lm-page); }
    아니고 사각(둥근 모서리)으로("get now 박스는 좌우가 원형인데 사각형태로 변경"). 펄스 애니메이션은
    사용자 지정으로 삭제("커졌다 작아졌다하는 애니메이션은 삭제"). */
 /* 0.05cm 추가 축소(사용자 지정) — 버튼 자체 여백(.shop-tab)이 이미 거의 없어 바깥 여백에서. */
-.shop-tabbar { flex: 0 0 auto; display: flex; gap: 4px; padding: 9px 10px 9px; }
+/* 위로 0.03cm(사용자 지정) — 박스 자체 크기는 유지, 위치만 위로. */
+.shop-tabbar { flex: 0 0 auto; display: flex; gap: 4px; padding: 9px 10px 9px; margin-top: -1.13px; }
 /* 위아래 크기 0.3cm + 0.1cm 추가 축소(사용자 지정) — 탭바가 화면보드 아래로 밀려 잘렸던 것,
    박스 자체 높이를 줄여 보드 안에 들어오게. */
 .shop-tab { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
