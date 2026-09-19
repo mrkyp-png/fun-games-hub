@@ -2179,10 +2179,10 @@
   function swapBoardPositions(toSwapped, durationMs) {
     if (toSwapped === boardSwapped) return;
     const ms = durationMs || FEVER_TRANSITION_MS;
-    // ⚠️v627 에서 #fever-board-wrap 껍데기를 새로 감싸 그걸 옮기는 방식으로 바꿨었는데,
-    // 정상 게임 진행 중에도 다이얼패드 버튼을 누르면 화면이 깨지는 훨씬 큰 회귀버그가
-    // 나서(사용자 보고) 원복 — #mole-board 를 직접 옮기는 이전 방식으로 되돌림. 흰화면
-    // 버그(안드로이드 배경이미지+transform)는 재발할 수 있으나, 그보다 이 회귀가 더 심각.
+    // ⚠️v627 에서 #fever-board-wrap 껍데기 방식은 정상 게임 버튼 조작을 깨는 훨씬 큰
+    // 회귀버그를 내서(v636→v637 원복) 폐기 — #mole-board 를 직접 옮기는 방식 유지.
+    // 안드로이드 흰화면 버그는 style.css 의 .mole-board will-change 프리웜으로 재도전 중
+    // (페이지 로드 시점부터 상시 걸어둠 — 실기기 재검증 필요).
     const board = document.getElementById('mole-board');
     const bar = document.getElementById('lane-button-bar');
     // ⚠️ #lane-button-bar 는 .dialpad 의 자식인데 .dialpad 에 contain:paint 가 걸려있어(다른
