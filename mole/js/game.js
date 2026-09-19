@@ -1790,6 +1790,21 @@
     if (cd) cd.hidden = true;
   }
 
+  // 피버타임 전용 — 보드 위 터치 좌표(0~1 분수)를 가장 가까운 구멍(regionId)으로 역산.
+  // grid-partition.js 의 partition()과 정확히 같은 격자 공식(V_TOP/V_BOTTOM, gridSize)을 뒤집는다.
+  const FEVER_GRID_V_TOP = 0.27;
+  const FEVER_GRID_V_BOTTOM = 0.88;
+  function regionIdFromBoardPoint(fx, fy) {
+    const gridSize = Math.round(Math.sqrt(state.spawnPoints.length));
+    const vStep = gridSize > 1 ? (FEVER_GRID_V_BOTTOM - FEVER_GRID_V_TOP) / (gridSize - 1) : 0;
+    let col = Math.round(fx * gridSize - 0.5);
+    col = Math.max(0, Math.min(gridSize - 1, col));
+    let row = vStep > 0 ? Math.round((fy - FEVER_GRID_V_TOP) / vStep) : 0;
+    row = Math.max(0, Math.min(gridSize - 1, row));
+    const sp = state.spawnPoints.find((s) => s.col === col && s.row === row);
+    return sp ? sp.regionId : null;
+  }
+
   // ---------- 구멍 버튼 입력 → 그 구멍 타격 ----------
   function handleCell(regionId) {
     if (!state || state.ended || state.introActive || state.paused) return false;
@@ -2442,6 +2457,22 @@
 
   // ---------- 초기화 ----------
   document.addEventListener('DOMContentLoaded', () => {
+    // 피버타임 전용 게임보드 직접 터치 — 평소엔 아무 리스너 없음(입력은 다이얼패드로만),
+    // state.feverEventActive 일 때만 동작. handleCell()을 그대로 호출해 기존 타격 파이프라인
+    // (콤보/점수/버스트/지진 전부 포함)을 그대로 재사용한다. #mole-board 는 세션 내내
+    // 재생성되지 않는 정적 요소라 리스너를 여기서 한 번만 붙이면 된다.
+    const moleBoardEl = document.getElementById('mole-board');
+    if (moleBoardEl) {
+      moleBoardEl.addEventListener('pointerdown', (ev) => {
+        if (!state || !state.feverEventActive) return;
+        const rect = moleBoardEl.getBoundingClientRect();
+        const fx = (ev.clientX - rect.left) / rect.width;
+        const fy = (ev.clientY - rect.top) / rect.height;
+        if (fx < 0 || fx > 1 || fy < 0 || fy > 1) return;
+        const regionId = regionIdFromBoardPoint(fx, fy);
+        if (regionId != null) handleCell(regionId);
+      });
+    }
     bgmEls = [document.getElementById('bgm-a'), document.getElementById('bgm-b')];
     bgmEls.forEach((el) => {
       el.volume = BGM_VOL;
@@ -2635,6 +2666,8 @@
       if (sharedLaneControls) sharedLaneControls.setFeverScoreboard(combo, seconds);
     };
     window.__debugSwapBoardPositions = function (toSwapped) { swapBoardPositions(toSwapped); };
+    window.__debugRegionFromPoint = function (fx, fy) { return regionIdFromBoardPoint(fx, fy); };
+    window.__debugSetFeverActive = function (v) { if (state) state.feverEventActive = !!v; };
     // 대포 연사 연출 확인용 — 안 맞은 다타 두더지 하나를 연사 대상으로 강제. 인자 없으면 아무 구멍.
     window.__debugForceBurst = function (regionId) {
       if (!state || !state.scheduler.debugForceBurst) return null;
