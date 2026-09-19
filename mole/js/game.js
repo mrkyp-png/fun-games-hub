@@ -2179,10 +2179,10 @@
   function swapBoardPositions(toSwapped, durationMs) {
     if (toSwapped === boardSwapped) return;
     const ms = durationMs || FEVER_TRANSITION_MS;
-    // ⚠️v627 에서 #fever-board-wrap 껍데기를 새로 감싸 그걸 옮기는 방식으로 바꿨었는데,
-    // 정상 게임 진행 중에도 다이얼패드 버튼을 누르면 화면이 깨지는 훨씬 큰 회귀버그가
-    // 나서(사용자 보고) 원복 — #mole-board 를 직접 옮기는 이전 방식으로 되돌림. 흰화면
-    // 버그(안드로이드 배경이미지+transform)는 재발할 수 있으나, 그보다 이 회귀가 더 심각.
+    // ⚠️ #mole-board(배경이미지 있음)는 transform 대신 top 으로 옮긴다 — 껍데기 방식(구조
+    // 변경발 회귀)과 will-change 프리웜(효과 없음) 둘 다 실패해서, transform 자체를 아예
+    // 안 쓰는 쪽으로 전환. top 은 컴포지팅 레이어 승격이 없어 안드로이드 흰화면 버그 계열이
+    // 발생할 수 없다. 다이얼패드/망치레이어는 배경이미지가 없어 기존 transform 그대로 유지.
     const board = document.getElementById('mole-board');
     const bar = document.getElementById('lane-button-bar');
     // ⚠️ #lane-button-bar 는 .dialpad 의 자식인데 .dialpad 에 contain:paint 가 걸려있어(다른
@@ -2193,13 +2193,15 @@
     const boardRect = board.getBoundingClientRect();
     const barRect = bar.getBoundingClientRect();
     const delta = barRect.top - boardRect.top; // 보드가 버튼보드 자리로 가려면 +delta 만큼 아래로
-    const transitionCss = `transform ${ms / 1000}s cubic-bezier(.4, 0, .2, 1)`;
-    [board, dialpad, hammerLayer].forEach((el) => { if (el) el.style.transition = transitionCss; });
-    board.style.transform = toSwapped ? `translateY(${delta}px)` : '';
+    const ease = 'cubic-bezier(.4, 0, .2, 1)';
+    board.style.transition = `top ${ms / 1000}s ${ease}`;
+    [dialpad, hammerLayer].forEach((el) => { if (el) el.style.transition = `transform ${ms / 1000}s ${ease}`; });
+    board.style.top = toSwapped ? `${delta}px` : '0';
     dialpad.style.transform = toSwapped ? `translateY(${-delta}px)` : '';
     if (hammerLayer) hammerLayer.style.transform = toSwapped ? `translateX(-50%) translateY(${delta}px)` : 'translateX(-50%)';
     setTimeout(() => {
-      [board, dialpad, hammerLayer].forEach((el) => { if (el) el.style.transition = ''; });
+      board.style.transition = '';
+      [dialpad, hammerLayer].forEach((el) => { if (el) el.style.transition = ''; });
     }, ms + 50);
     boardSwapped = toSwapped;
   }

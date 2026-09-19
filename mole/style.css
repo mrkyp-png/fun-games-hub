@@ -526,12 +526,14 @@ body { background: var(--lm-page); }
   100% { transform: scale(1); }
 }
 
-/* 피버타임 자리교차 스왑은 이 빈 껍데기(배경이미지 없음)만 옮긴다 — #mole-board 자신에게
-   transform 을 걸면 안드로이드에서 "배경이미지+transform" 조합이 하얗게 비는 버그가
-   있었음(사용자 영상으로 확인: "두더지 터치시 흰화면", "번쩍임" — contain:paint/
-   will-change 로도 해결 안 됨). 원래 .mole-board 가 갖던 크기 관련 속성을 그대로 옮김. */
+/* #mole-board 자신에게 transform 을 걸면 안드로이드에서 "배경이미지+transform" 조합이
+   하얗게 비는 버그가 있었음(껍데기·will-change 프리웜 둘 다 실패로 확인됨) — 그래서 피버
+   보드 스왑은 board 만 transform 대신 top(레이아웃 속성)으로 옮긴다. top 애니메이션은 GPU
+   컴포지팅 레이어 승격이 없어(메인 스레드 페인트) 이 버그 자체가 발생할 수 없는 계열.
+   다이얼패드/망치레이어는 배경이미지가 없어 그대로 transform 유지(문제 없음). */
 .mole-board {
   position: relative;
+  top: 0;
   flex: 0 0 auto;
   width: var(--sq);
   aspect-ratio: 1;
