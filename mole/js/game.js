@@ -2106,13 +2106,38 @@
     startFeverEvent();
   }
 
+  // 게임보드↔버튼보드 자리 교차 스왑(FLIP 기법) — toSwapped=true 면 보드가 아래로, 버튼보드가
+  // 위로. 두 요소는 같은 폭(--sq)의 정사각형이라 서로 상대 위치로 translateY 만 하면 된다.
+  let boardSwapped = false;
+  function swapBoardPositions(toSwapped) {
+    if (toSwapped === boardSwapped) return;
+    const board = document.getElementById('mole-board');
+    const bar = document.getElementById('lane-button-bar');
+    if (!board || !bar) return;
+    const boardRect = board.getBoundingClientRect();
+    const barRect = bar.getBoundingClientRect();
+    const delta = barRect.top - boardRect.top; // 보드가 버튼보드 자리로 가려면 +delta 만큼 아래로
+    [board, bar].forEach((el) => { el.classList.add('fever-swap-animating'); });
+    board.style.transform = toSwapped ? `translateY(${delta}px)` : '';
+    bar.style.transform = toSwapped ? `translateY(${-delta}px)` : '';
+    setTimeout(() => {
+      board.classList.remove('fever-swap-animating');
+      bar.classList.remove('fever-swap-animating');
+    }, 650);
+    boardSwapped = toSwapped;
+  }
+
   function startFeverEvent() {
     state.feverEventActive = true;
     state.pausedByFever = true;
+    if (sharedLaneControls) sharedLaneControls.spinBoardBlank(true);
+    swapBoardPositions(true);
     state.feverEventUntil = performance.now() + 20000;
     setTimeout(endFeverEvent, 20000);
   }
   function endFeverEvent() {
+    swapBoardPositions(false);
+    if (sharedLaneControls) sharedLaneControls.spinBoardBlank(false);
     state.pausedByFever = false;
     state.feverEventActive = false;
   }
@@ -2609,6 +2634,7 @@
     window.__debugSetFeverScoreboard = function (combo, seconds) {
       if (sharedLaneControls) sharedLaneControls.setFeverScoreboard(combo, seconds);
     };
+    window.__debugSwapBoardPositions = function (toSwapped) { swapBoardPositions(toSwapped); };
     // 대포 연사 연출 확인용 — 안 맞은 다타 두더지 하나를 연사 대상으로 강제. 인자 없으면 아무 구멍.
     window.__debugForceBurst = function (regionId) {
       if (!state || !state.scheduler.debugForceBurst) return null;
