@@ -2252,6 +2252,9 @@
     if (scoreEl) scoreEl.textContent = String(run.combo.score);
     if (overlay) overlay.hidden = false;
   }
+  // "게임복귀" 버튼을 눌러도, 복귀 연출(자리 재교차 스왑 + 버튼보드 역회전)이 완전히 끝날
+  // 때까지는 게임이 재개되면 안 된다(사용자 지정: "버튼보드 회전이 종료되면, 진행되던
+  // 게임이 진행되어야함") — pausedByFever/feverEventActive 해제를 연출 종료 콜백으로 미룬다.
   function endFeverEvent() {
     const overlay = document.getElementById('fever-result-overlay');
     if (overlay) overlay.hidden = true;
@@ -2261,11 +2264,18 @@
     if (roundBgm && bgmWantPlay) roundBgm.play().catch(() => {});
     swapBoardPositions(false);
     setTimeout(() => {
-      if (sharedLaneControls) sharedLaneControls.spinBoardBlank(false);
+      if (sharedLaneControls) {
+        sharedLaneControls.spinBoardBlank(false, () => {
+          state.pausedByFever = false;
+          state.feverEventActive = false;
+          state.feverEventUntil = 0;
+        });
+      } else {
+        state.pausedByFever = false;
+        state.feverEventActive = false;
+        state.feverEventUntil = 0;
+      }
     }, FEVER_TRANSITION_MS + 50);
-    state.pausedByFever = false;
-    state.feverEventActive = false;
-    state.feverEventUntil = 0;
   }
 
   // 콤보가 100·200·300… 을 새로 넘겼으면 공유 생명 보상 (풀에 영구 반영).
@@ -2782,7 +2792,7 @@
     };
     window.__debugSwapBoardPositions = function (toSwapped) { swapBoardPositions(toSwapped); };
     window.__debugRegionFromPoint = function (fx, fy) { return regionIdFromBoardPoint(fx, fy); };
-    window.__debugSetFeverActive = function (v) { if (state) state.feverEventActive = !!v; };
+    window.__debugSetFeverActive = function (v) { if (state) { state.feverEventActive = !!v; state.pausedByFever = !!v; } };
     window.__debugShowFeverResult = function () { showFeverResult(); };
     window.__debugEndFeverEvent = function () { endFeverEvent(); };
     // 대포 연사 연출 확인용 — 안 맞은 다타 두더지 하나를 연사 대상으로 강제. 인자 없으면 아무 구멍.

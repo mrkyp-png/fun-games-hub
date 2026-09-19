@@ -40,15 +40,21 @@ const PORT = process.env.SMOKE_PORT || 8844;
     const afterPop = popsAfter.find((p) => p.regionId === 0);
     assert.strictEqual(afterPop ? afterPop.hitsTaken : hitsBefore, hitsBefore, 'board touch ignored while result overlay shown');
 
-    // "게임복귀" 버튼 클릭 → endFeverEvent 경로로 결과창이 닫히고 상태가 초기화된다.
+    // "게임복귀" 버튼 클릭 → 결과창은 바로 닫히지만, 복귀 연출(스왑+역회전, 14초)이 완전히
+    // 끝나기 전까지는 게임이 재개되면 안 된다(사용자 지정: "버튼보드 회전이 종료되면,
+    // 진행되던 게임이 진행되어야함").
     await page.evaluate(() => document.getElementById('fever-result-btn').click());
-    const afterClick = await page.evaluate(() => ({
+    const rightAfterClick = await page.evaluate(() => ({
       overlayHidden: document.getElementById('fever-result-overlay').hidden,
       fever: window.__debugGetFeverState()
     }));
-    assert.strictEqual(afterClick.overlayHidden, true, 'result overlay hidden after clicking 게임복귀');
-    assert.strictEqual(afterClick.fever.active, false, 'feverEventActive false after 게임복귀');
-    assert.strictEqual(afterClick.fever.paused, false, 'pausedByFever false after 게임복귀 (timer resumes)');
+    assert.strictEqual(rightAfterClick.overlayHidden, true, 'result overlay hidden right after clicking 게임복귀');
+    assert.strictEqual(rightAfterClick.fever.paused, true, 'pausedByFever still true while exit animation plays');
+
+    await new Promise((r) => setTimeout(r, 14300)); // 스왑(7s) + 역회전(7s)
+    const afterAnim = await page.evaluate(() => window.__debugGetFeverState());
+    assert.strictEqual(afterAnim.active, false, 'feverEventActive false once exit animation fully ends');
+    assert.strictEqual(afterAnim.paused, false, 'pausedByFever false once exit animation fully ends (timer resumes)');
 
     console.log('verify-fever-result.js: all assertions passed');
   } finally { await browser.close(); }
