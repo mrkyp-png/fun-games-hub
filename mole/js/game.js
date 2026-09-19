@@ -1670,6 +1670,14 @@
     }
 
     updateLiveDifficulty();
+    // 피버타임은 라운드 진행의 연장이 아니라 독립된 미니게임(사용자 지정: "기존 게임진행의
+    // 연장이 아니라, 피버타임용 게임이라고 생각하면됨") — updateLiveDifficulty() 가 매프레임
+    // 재계산해버리는 라운드 커브를 덮어써서, 항상 전신(1타)만 최대 8마리 동시 출현시킨다
+    // (사용자 지정: "두더지 전신만... 2,3,4타 두저지 등장 NO... 구멍 8개에서 동시 출현").
+    if (state.feverEventActive) {
+      state.config.multiHit = false;
+      state.config.maxConcurrentMoles = 8;
+    }
     const tickResult = state.scheduler.tick(dt);
     // 타겟(§8·§10 에 따라 두더지 또는 동물일 수 있음)을 처치 못 하고 시간초과로 놓치면
     // 헛방·방해물과 동일하게 콤보 초기화. 단, 피버타임 진입 연출(10초) 동안엔 플레이어가
