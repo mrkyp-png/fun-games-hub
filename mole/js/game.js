@@ -2170,8 +2170,11 @@
   // 같은 delta 로 같이 옮기되, 기존 CSS 의 translateX(-50%) 가로중앙정렬을 인라인
   // transform 으로 덮어쓰면 안 되므로 항상 같이 합쳐서 넣는다.
   let boardSwapped = false;
-  function swapBoardPositions(toSwapped) {
+  // durationMs 를 호출부에서 오버라이드 가능(사용자 지정: "게임복귀 버튼 누르면... 화면이
+  // 위아래 전환속도를 지금보다 빠르게" — 진입은 기존 7초 그대로, 퇴장(게임복귀)만 빠르게).
+  function swapBoardPositions(toSwapped, durationMs) {
     if (toSwapped === boardSwapped) return;
+    const ms = durationMs || FEVER_TRANSITION_MS;
     // ⚠️ #mole-board 자체(배경이미지 있음)에 transform 을 걸면 안드로이드에서 "배경이미지+
     // transform" 조합이 하얗게 비는 버그가 실기기 영상으로 확인됨(contain:paint/will-change
     // 로도 해결 안 됨) — 배경이미지 없는 #fever-board-wrap 껍데기만 옮긴다.
@@ -2186,16 +2189,14 @@
     const boardRect = board.getBoundingClientRect();
     const barRect = bar.getBoundingClientRect();
     const delta = barRect.top - boardRect.top; // 보드가 버튼보드 자리로 가려면 +delta 만큼 아래로
-    [boardWrap, dialpad, hammerLayer].forEach((el) => { if (el) el.classList.add('fever-swap-animating'); });
+    const transitionCss = `transform ${ms / 1000}s cubic-bezier(.4, 0, .2, 1)`;
+    [boardWrap, dialpad, hammerLayer].forEach((el) => { if (el) el.style.transition = transitionCss; });
     boardWrap.style.transform = toSwapped ? `translateY(${delta}px)` : '';
     dialpad.style.transform = toSwapped ? `translateY(${-delta}px)` : '';
     if (hammerLayer) hammerLayer.style.transform = toSwapped ? `translateX(-50%) translateY(${delta}px)` : 'translateX(-50%)';
-    // ⚠️ 이 값이 CSS(.fever-swap-animating) 트랜지션 시간보다 짧으면, 애니메이션이 끝나기도
-    // 전에 transition 규칙을 제공하던 클래스가 빠져서 그 자리에서 뚝 멈춰버린다. FEVER_TRANSITION_MS
-    // (CSS 쪽 7s와 동기화된 값)를 그대로 참조해 절대 어긋나지 않게 한다.
     setTimeout(() => {
-      [boardWrap, dialpad, hammerLayer].forEach((el) => { if (el) el.classList.remove('fever-swap-animating'); });
-    }, FEVER_TRANSITION_MS + 50);
+      [boardWrap, dialpad, hammerLayer].forEach((el) => { if (el) el.style.transition = ''; });
+    }, ms + 50);
     boardSwapped = toSwapped;
   }
 
@@ -2208,6 +2209,11 @@
   // 그 타이밍에 맞춤). 20초 보너스타임 카운트다운은 이 진입 연출(14초)이 완전히 끝난 뒤에
   // 시작한다.
   const FEVER_TRANSITION_MS = 7000;
+  // "게임복귀" 눌렀을 때만 빠르게(사용자 지정: "화면이 위아래 전환속도를 지금보다 빠르게...
+  // 버튼보드 회전은 3회전만 시키고 재시작") — 진입은 위 7초/10바퀴 그대로.
+  const FEVER_EXIT_SWAP_MS = 1500;
+  const FEVER_EXIT_SPIN_MS = 900;
+  const FEVER_EXIT_SPIN_DEG = 1080; // 3바퀴
   // 화면 정지 전 정리 단계(사용자 지정: "두더지, 동물들이 다 구멍으로 들어간후, 화면이
   // 정지되고, 아래로 내려가야함") — 떠 있는 두더지/동물을 전부 자연 퇴장(땅속으로 내려가는
   // 연출)시키고, 그 연출(spawn-scheduler.js RETREAT_SEC=0.6s)이 끝날 때까지 기다린 뒤에야
@@ -2285,7 +2291,7 @@
     // "버튼보드가 회전이 끝나기전에는 두더지, 동물 올라오면 안됨. 회전이 완전히 끝난뒤,
     // 게임 재시작") — 진입 때와 같은 feverTransitioning 스폰정지를 퇴장 연출 전체에도 건다.
     state.feverTransitioning = true;
-    swapBoardPositions(false);
+    swapBoardPositions(false, FEVER_EXIT_SWAP_MS);
     setTimeout(() => {
       if (sharedLaneControls) {
         sharedLaneControls.spinBoardBlank(false, () => {
@@ -2293,14 +2299,14 @@
           state.pausedByFever = false;
           state.feverEventActive = false;
           state.feverEventUntil = 0;
-        });
+        }, { spinDeg: FEVER_EXIT_SPIN_DEG, durationMs: FEVER_EXIT_SPIN_MS });
       } else {
         state.feverTransitioning = false;
         state.pausedByFever = false;
         state.feverEventActive = false;
         state.feverEventUntil = 0;
       }
-    }, FEVER_TRANSITION_MS + 50);
+    }, FEVER_EXIT_SWAP_MS + 50);
   }
 
   // 콤보가 100·200·300… 을 새로 넘겼으면 공유 생명 보상 (풀에 영구 반영).

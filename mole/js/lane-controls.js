@@ -360,25 +360,30 @@
     // 와 반드시 같은 값이어야 한다(둘이 따로 놀면 회전은 끝났는데 스왑 시작을 더 기다리는
     // 식으로 어긋남).
     var SPIN_BLANK_MS = 7000;
-    function spinBoardBlank(toBlank, onComplete) {
+    // opts.spinDeg/opts.durationMs 로 회전 바퀴수·속도를 호출부에서 오버라이드 가능(사용자
+    // 지정: "게임복귀 버튼 누르면... 버튼보드 회전은 3회전만 시키고 재시작" — 진입은 기존
+    // 10바퀴 그대로, 퇴장(게임복귀)만 짧게).
+    function spinBoardBlank(toBlank, onComplete, opts) {
       if (!buttonBar) { if (onComplete) onComplete(); return; }
+      var spinDeg = (opts && opts.spinDeg) || 3600;
+      var durationMs = (opts && opts.durationMs) || SPIN_BLANK_MS;
       var scoreboard = document.getElementById('fever-scoreboard');
       buttonBar.style.transition = 'none';
       buttonBar.style.transform = 'perspective(1200px) rotateY(0deg)';
       void buttonBar.offsetWidth;
-      buttonBar.style.transition = 'transform ' + (SPIN_BLANK_MS / 1000) + 's cubic-bezier(.2, .7, .3, 1)';
-      buttonBar.style.transform = 'perspective(1200px) rotateY(3600deg)';
+      buttonBar.style.transition = 'transform ' + (durationMs / 1000) + 's cubic-bezier(.2, .7, .3, 1)';
+      buttonBar.style.transform = 'perspective(1200px) rotateY(' + spinDeg + 'deg)';
       setTimeout(function () {
         if (scoreboard) scoreboard.hidden = !toBlank;
         Array.prototype.forEach.call(buttonBar.querySelectorAll('.lane-button'), function (b) {
           b.style.visibility = toBlank ? 'hidden' : '';
         });
-      }, SPIN_BLANK_MS / 2); // 회전 절반(뒤집힌 순간) 시점에 얼굴 전환 — 정면에서 전환이 안 보이게
+      }, durationMs / 2); // 회전 절반(뒤집힌 순간) 시점에 얼굴 전환 — 정면에서 전환이 안 보이게
       setTimeout(function () {
         buttonBar.style.transition = '';
         buttonBar.style.transform = '';
         if (onComplete) onComplete();
-      }, SPIN_BLANK_MS + 50);
+      }, durationMs + 50);
     }
     function setFeverScoreboard(comboVal, secondsLeft) {
       var c = document.getElementById('fever-sb-combo');

@@ -539,11 +539,9 @@ body { background: var(--lm-page); }
   border-radius: 0 0 8px 8px;
   background: #1b2b4a url('assets/board-scene.jpg') center / cover no-repeat;
 }
-/* 피버타임 보드 교차 스왑(사용자 지정: "서로 교차되면서 내려오는 방식") — FLIP 기법으로
-   JS가 매긴 translateY 를 이 transition 이 부드럽게 만든다. */
-/* 7초(피버 브금 14초 지점에 맞춤 — 회전 7s + 이 이동 7s = 14초). game.js
-   FEVER_TRANSITION_MS, lane-controls.js SPIN_BLANK_MS 와 반드시 같은 값. */
-.fever-swap-animating { transition: transform 7s cubic-bezier(.4, 0, .2, 1) !important; }
+/* 피버타임 보드 교차 스왑(사용자 지정: "서로 교차되면서 내려오는 방식") — FLIP 기법.
+   진입/퇴장(게임복귀, 빠르게)마다 속도가 달라야 해서 transition 은 CSS 클래스가 아니라
+   game.js 의 swapBoardPositions() 가 인라인으로 직접 매긴다. */
 /* 챕터별 보드 배경(사용자 지정) — 4~6=가을, 7~9=겨울. */
 .mole-board--autumn { background: #1b2b4a url('assets/board-scene-autumn.jpeg') center / cover no-repeat; }
 .mole-board--winter { background: #1b2b4a url('assets/board-scene-winter.png') center / cover no-repeat; }
