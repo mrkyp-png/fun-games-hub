@@ -2842,7 +2842,11 @@ body { background: var(--lm-page); }
    padding 과 충돌해 최초 로드 시 브라우저가 scrollLeft 를 padding값만큼 당겨버려(측정:
    padding:2px 였을 때 실제 scrollLeft:2px) 좌우가 미묘하게 어긋났음. 여백은 .shop-cards-box
    의 padding(8px, 대칭)에만 맡긴다. */
-.shop-cards { flex: 1 1 auto; padding: 0; display: flex; flex-direction: row; gap: 10px;
+/* flex-shrink:0 — overflow-y:hidden 인 flex 아이템은 자동 최소높이가 0으로 취급돼(스펙),
+   실기기에서 위쪽 영역이 예상보다 커지면 이 줄이 199px 카드보다 낮게 찌그러들고 카드 자체의
+   overflow:hidden 이 구매버튼을 잘라먹었음(사용자 보고: "카드 아래를 다 잘라놨어"). shrink 금지로
+   카드 높이가 항상 그대로 나오게 고정. */
+.shop-cards { flex: 1 0 auto; padding: 0; display: flex; flex-direction: row; gap: 10px;
   align-items: stretch;
   overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; touch-action: pan-x;
   scrollbar-width: none; }
