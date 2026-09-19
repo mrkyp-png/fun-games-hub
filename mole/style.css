@@ -535,6 +535,11 @@ body { background: var(--lm-page); }
   overflow: hidden;
   border-radius: 0 0 8px 8px;
   background: #1b2b4a url('assets/board-scene.jpg') center / cover no-repeat;
+  /* contain:paint 로 자기만의 페인트 레이어 강제(.dialpad 에 이미 적용된 것과 동일 처방) —
+     안 그러면 피버타임 자리교차 스왑(translateY) 중이나 그 뒤 정지 상태에서도 실기기 GPU
+     컴포지팅이 배경 이미지를 하얗게 날려버리는 버그가 있었음(사용자 영상으로 확인: "두더지
+     터치시 흰화면", "번쩍임"). 다이얼패드가 3D 회전 중 하얗게 비던 것과 같은 종류의 버그. */
+  contain: paint;
 }
 /* 피버타임 보드 교차 스왑(사용자 지정: "서로 교차되면서 내려오는 방식") — FLIP 기법으로
    JS가 매긴 translateY 를 이 transition 이 부드럽게 만든다. */
