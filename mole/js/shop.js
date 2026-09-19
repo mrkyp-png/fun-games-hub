@@ -66,6 +66,7 @@
   function create(opts) {
     var el = opts.root;
     var cardsEl = el.querySelector('[data-shop-cards]');
+    var cardsBoxEl = el.querySelector('.shop-cards-box');
     var tabsEl = el.querySelector('[data-shop-tabs]');
     var bannerEl = el.querySelector('[data-shop-banner]');
     var dotsEl = el.querySelector('[data-shop-dots]');
@@ -448,6 +449,9 @@
       renderTabs();
       RENDERERS[activeTab]();
       updateDots();
+      // 재화탭일 때만 카드박스를 하트색(빨강)으로(사용자 지정: "재화모드일때 파란색 박스는
+      // 아래 하트 색깔로... 통일성을 주고싶어") — 무기/스킬/코스튬은 기존 파란색 유지.
+      cardsBoxEl.classList.toggle('shop-cards-box--heart', activeTab === 'currency');
     }
 
     function show() {

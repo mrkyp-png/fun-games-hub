@@ -2818,6 +2818,10 @@ body { background: var(--lm-page); }
 .shop-cards-box { position: relative; flex: 1 0 auto; margin: 10px 10px 0; padding: 6px 8px 8px; border-radius: 16px;
   background: linear-gradient(180deg, #2a5cc9, #1c3f96); box-shadow: 0 4px 0 #12285e, inset 0 2px 3px rgba(255,255,255,0.25);
   display: flex; flex-direction: column; min-height: 0; }
+/* 재화탭 전용 하트색(빨강) 카드박스(사용자 지정: "재화모드일때 파란색 박스는 아래 하트,
+   코인, 티켓색깔로... 통일성을 주고싶어" → 카드 3장이 전부 하트 관련이라 하트색 단색으로).
+   무기/스킬/코스튬 탭은 기존 파란색 그대로. */
+.shop-cards-box--heart { background: linear-gradient(180deg, #e0574d, #b8362a); box-shadow: 0 4px 0 #7a2018, inset 0 2px 3px rgba(255,255,255,0.25); }
 /* 헤더 줄 — 점만(화살표는 배너 안으로 이동, 아래 참고). 화살표가 없으니 최소 공간만. */
 .shop-cards-head { flex: 0 0 auto; min-height: 10px; display: flex; align-items: center; padding: 2px 2px 4px 2px; }
 .shop-dots { flex: 1 1 auto; display: flex; gap: 5px; }
