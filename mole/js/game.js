@@ -1762,6 +1762,10 @@
     });
     updateFeverHud();
     updateInvincibleHud();
+    if (state.feverEventActive && sharedLaneControls) {
+      const secondsLeft = (state.feverEventUntil - performance.now()) / 1000;
+      sharedLaneControls.setFeverScoreboard(run.combo.combo, secondsLeft);
+    }
   }
 
   function syncPops() {
