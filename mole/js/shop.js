@@ -89,16 +89,30 @@
 
     // 가운데 카드 1장만 스윙하던 것 → 왼쪽부터 순차적으로 전체 카드에 스윙(사용자 지정:
     // "가운데만 주니 의미없다, 왼쪽부터 순차적으로"), 5초마다 한 바퀴씩.
+    // 하트 카드 제목박스 순차 플래시(사용자 지정: "1번 카드부터 플래시 효과 순차적으로",
+    // "스윙효과 끝나고 카드가 멈춰있을때 효과발동") — 각 카드 스윙(0.8s)이 끝난 직후 그
+    // 카드부터 순서대로 발동.
+    var SWING_MS = 800;
     setInterval(function () {
       var cards = cardsEl.children;
       if (!cards.length) return;
-      Array.prototype.forEach.call(cards, function (c) { c.classList.remove('shop-card--swing'); });
+      Array.prototype.forEach.call(cards, function (c) {
+        c.classList.remove('shop-card--swing');
+        var nb = c.querySelector('.shop-card-name-box');
+        if (nb) nb.classList.remove('shop-namebox-flash');
+      });
       Array.prototype.forEach.call(cards, function (c, i) {
         setTimeout(function () {
           if (!c.classList.contains('shop-card')) return;
           void c.offsetWidth; // 리플로우 강제 — 같은 클래스 재부착해도 애니메이션 재실행되게
           c.classList.add('shop-card--swing');
         }, i * 220);
+        setTimeout(function () {
+          var nb = c.querySelector('.shop-card-name-box');
+          if (!nb) return;
+          void nb.offsetWidth;
+          nb.classList.add('shop-namebox-flash');
+        }, i * 220 + SWING_MS);
       });
     }, 5000);
 

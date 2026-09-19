@@ -2955,9 +2955,19 @@ body { background: var(--lm-page); }
 /* 상단 돔 효과(사용자 정정: "카드가 아니라, 카드 안에 있는 상단에 있는 하트+1 박스를
    이야기한거야") — 원래 .shop-card--rich(카드 외곽 전체)에 있던 "위 중앙에서 들어올렸을때
    양끝이 조금 내려간" 돔 형태를 이 안쪽 제목박스로 옮김. 카드 외곽은 평범한 둥근모서리로. */
+/* 돔 곡선을 매끄럽게(사용자 지정: "매끄럽지가 않아") — 5점 직선 근사 대신 포물선을
+   10등분한 점들로 부드러운 곡선처럼 보이게. */
 .shop-card-name-box { width: 100%; border-radius: 8px;
   padding: 4px 0;
-  clip-path: polygon(0% 5px, 15% 2px, 50% 0, 85% 2px, 100% 5px, 100% 100%, 52% 100%, 50% 90%, 48% 100%, 0% 100%); }
+  clip-path: polygon(0% 5px, 10% 3.2px, 20% 1.8px, 30% 0.8px, 40% 0.2px, 50% 0, 60% 0.2px, 70% 0.8px,
+    80% 1.8px, 90% 3.2px, 100% 5px, 100% 100%, 52% 100%, 50% 90%, 48% 100%, 0% 100%); }
+/* 순차 플래시 효과(사용자 지정: "1번 카드부터 플래시 효과 순차적으로", 스윙이 끝나고
+   멈췄을 때 발동) — shop.js 에서 카드 스윙 종료 직후 순서대로 이 클래스를 부착. */
+@keyframes shop-namebox-flash {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.6); }
+}
+.shop-namebox-flash { animation: shop-namebox-flash 0.4s ease-out; }
 /* 사용자 지정 색상: 제목박스=진한 분홍(카드1·2)/진한 파랑(카드3)+흰 글자, 이미지·알약
    박스=연한 분홍(카드1·2)/연한 하늘(카드3). */
 .shop-card--pink .shop-card-name-box { background: #e6508f; }
