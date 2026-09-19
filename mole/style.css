@@ -2821,7 +2821,9 @@ body { background: var(--lm-page); }
 /* 재화탭 전용 하트색(빨강) 카드박스(사용자 지정: "재화모드일때 파란색 박스는 아래 하트,
    코인, 티켓색깔로... 통일성을 주고싶어" → 카드 3장이 전부 하트 관련이라 하트색 단색으로).
    무기/스킬/코스튬 탭은 기존 파란색 그대로. */
-.shop-cards-box--heart { background: linear-gradient(180deg, #e0574d, #b8362a); box-shadow: 0 4px 0 #7a2018, inset 0 2px 3px rgba(255,255,255,0.25); }
+/* 사용자 지정: "빨간색이 갈색처럼 보인다" — 어두운 톤 대신 하트 착지 캡슐과 동일한 더
+   선명한 빨강으로. */
+.shop-cards-box--heart { background: linear-gradient(180deg, #ff8f85, #d93c2e); box-shadow: 0 4px 0 #a12a1e, inset 0 2px 3px rgba(255,255,255,0.25); }
 /* 코인 필터=노랑, 티켓 필터=하늘색(사용자 지정) — HUD 착지 캡슐(.shop-hud-fly--landed)과
    동일 팔레트로 통일감. */
 .shop-cards-box--coin { background: linear-gradient(180deg, #ffe27a, #f0a800); box-shadow: 0 4px 0 #b87800, inset 0 2px 3px rgba(255,255,255,0.25); }
