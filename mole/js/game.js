@@ -2171,17 +2171,27 @@
   // 바뀌는게 아니라... 천천히 약 10초 동안 화면교체 완성"). 20초 보너스타임 카운트다운은
   // 이 진입 연출(10초)이 완전히 끝난 뒤에 시작한다.
   const FEVER_TRANSITION_MS = 5000;
+  // 화면 정지 전 정리 단계(사용자 지정: "두더지, 동물들이 다 구멍으로 들어간후, 화면이
+  // 정지되고, 아래로 내려가야함") — 떠 있는 두더지/동물을 전부 자연 퇴장(땅속으로 내려가는
+  // 연출)시키고, 그 연출(spawn-scheduler.js RETREAT_SEC=0.6s)이 끝날 때까지 기다린 뒤에야
+  // 회전+스왑 연출을 시작한다.
+  const FEVER_RETREAT_WAIT_MS = 650;
   function startFeverEvent() {
     state.feverEventActive = true;
     state.pausedByFever = true;
-    if (sharedLaneControls) sharedLaneControls.spinBoardBlank(true);
+    const feverBoardEl = document.getElementById('mole-board');
+    if (feverBoardEl && MG.HitFx.dopamineUpWord) MG.HitFx.dopamineUpWord(feverBoardEl);
+    if (state.scheduler.forceRetreatAll) state.scheduler.forceRetreatAll();
     setTimeout(() => {
-      swapBoardPositions(true);
+      if (sharedLaneControls) sharedLaneControls.spinBoardBlank(true);
       setTimeout(() => {
-        state.feverEventUntil = performance.now() + 20000;
-        setTimeout(endFeverEvent, 20000);
+        swapBoardPositions(true);
+        setTimeout(() => {
+          state.feverEventUntil = performance.now() + 20000;
+          setTimeout(endFeverEvent, 20000);
+        }, FEVER_TRANSITION_MS);
       }, FEVER_TRANSITION_MS);
-    }, FEVER_TRANSITION_MS);
+    }, FEVER_RETREAT_WAIT_MS);
   }
   function endFeverEvent() {
     swapBoardPositions(false);

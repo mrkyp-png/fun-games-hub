@@ -291,6 +291,16 @@
       regions.forEach((r) => completedRegions.add(r.id));
     }
 
+    // 피버타임 진입 전 정리(사용자 지정: "두더지, 동물들이 다 구멍으로 들어간후, 화면이
+    // 정지되고, 아래로 내려가야함") — 떠 있는 모든 두더지/동물을 시간초과와 동일한 자연
+    // 퇴장 경로(땅속으로 천천히 내려가는 연출, RETREAT_SEC)로 밀어넣는다. 이미 죽어가는
+    // 중이거나 침몰 중인 건 그대로 둔다(중복 처리 방지).
+    function forceRetreatAll() {
+      active.forEach((pop) => {
+        if (!pop.dying && pop.sinkIn <= 0) pop.remaining = 0;
+      });
+    }
+
     // 디버그: 그 구멍의 안 맞은 다타 두더지를 연사 대상으로 강제 (연출 확인용).
     function debugForceBurst(regionId) {
       var hit = null;
@@ -339,7 +349,7 @@
       return pop;
     }
 
-    return { tick, resolveHit, resolveRegion, isComplete, completedRegionCount, getActivePops, forceCompleteAll, debugForceBurst, debugForceMole, debugForceAnimal, debugForceBombMole, lockMoleRegions, unlockMoleRegions };
+    return { tick, resolveHit, resolveRegion, isComplete, completedRegionCount, getActivePops, forceCompleteAll, forceRetreatAll, debugForceBurst, debugForceMole, debugForceAnimal, debugForceBombMole, lockMoleRegions, unlockMoleRegions };
   }
 
   const api = { create };

@@ -639,6 +639,11 @@
     return spawnAt(boardEl, 'hit-fx-powerup', 0.5, 0.5, 'POWER UP');
   }
 
+  // 피버타임 진입 문구(사용자 지정: "도파민 업! 문구 삽입") — POWER UP 과 같은 연출 재사용.
+  function dopamineUpWord(boardEl) {
+    return spawnAt(boardEl, 'hit-fx-powerup', 0.5, 0.5, '도파민 업!');
+  }
+
   function moleHit(boardEl, xFrac, yFrac) {
     shake(boardEl);
     spawnAt(boardEl, 'hit-fx-burst', xFrac, yFrac, '<span>' + window.FGH.I18N.t('mole.fx.bam') + '</span>');
@@ -899,6 +904,6 @@
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
-  const api = { moleHit, moleBlast, bombBlast, juggle, moleTap, obstacleHit, whiff, emerge, emergeSound, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, cannonClone, punchStar, powerUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, fight, moleVoice };
+  const api = { moleHit, moleBlast, bombBlast, juggle, moleTap, obstacleHit, whiff, emerge, emergeSound, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, cannonClone, punchStar, powerUpWord, dopamineUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, fight, moleVoice };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);

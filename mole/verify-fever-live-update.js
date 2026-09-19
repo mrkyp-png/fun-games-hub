@@ -18,8 +18,9 @@ const PORT = process.env.SMOKE_PORT || 8844;
     }
 
     await page.evaluate(() => window.__debugPumpCombo(100));
-    // 진입 연출(회전 5s + 스왑 5s = 10s)이 끝나야 20초 카운트다운이 실제로 시작된다.
-    await new Promise((r) => setTimeout(r, 10500));
+    // 진입 연출(퇴장정리 0.65s + 회전 5s + 스왑 5s ≈ 10.65s)이 끝나야 20초 카운트다운이
+    // 실제로 시작된다.
+    await new Promise((r) => setTimeout(r, 11200));
 
     const feverState = await page.evaluate(() => window.__debugGetFeverState());
     assert.strictEqual(feverState.active, true, 'fever active after combo 100');
