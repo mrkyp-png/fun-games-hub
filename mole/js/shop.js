@@ -44,11 +44,13 @@
   // 상점 "무기" 탭 = 아이템보관창(inventory-screen.js) 무기탭과 같은 4종(사용자 지정: "지금 있는
   // 뿅망치, 팡팡 캐논, 황금 묠니르, 알리 판취 넣어서 구성"). 가격은 참고 이미지 스타일을 맞추기
   // 위한 표시용 placeholder — 실제 구매 로직에 연결하지 않음(사용자: "일단 넣고 이후 수정").
+  // price = 현금(원) 결제 가격, coinPrice = 게임 코인 결제 가격 — 사용자 지정: "코인으로
+  // 살수도 있고, 현금으로도 살수 있다고"(두 가지 결제 수단 공존).
   var WEAPONS = [
-    { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/hammer.png', price: null },
-    { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1.png', price: 10000 },
-    { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldhammer-0.png', price: 50000 },
-    { id: 'alipunch', name: '알리 판취', nameEn: 'Ali Punch', thumb: 'assets/weapons/alipunch-jab.png', price: 100000 }
+    { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/hammer.png', price: null, coinPrice: null },
+    { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1.png', price: 10000, coinPrice: 100000 },
+    { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldhammer-0.png', price: 50000, coinPrice: 500000 },
+    { id: 'alipunch', name: '알리 판취', nameEn: 'Ali Punch', thumb: 'assets/weapons/alipunch-jab.png', price: 100000, coinPrice: 1000000 }
   ];
 
   function create(opts) {
@@ -262,6 +264,24 @@
             done();
           }
         }));
+        // 코인 결제 옵션 — 사용자 지정: "코인으로 살수도 있고, 현금으로도 살수 있다고"
+        // (두가지 선택). 현금 구매 버튼 바로 아래 작은 버튼으로 추가.
+        if (w.coinPrice) {
+          var coinBtn = document.createElement('button');
+          coinBtn.type = 'button';
+          coinBtn.className = 'shop-card-btn shop-card-btn--rich shop-card-btn--coinalt';
+          if (disabled) coinBtn.disabled = true;
+          coinBtn.innerHTML = ICONS.coins + '<b>' + w.coinPrice.toLocaleString() + '</b>';
+          if (!disabled) {
+            coinBtn.addEventListener('click', function () {
+              if (MG.Economy.spendCoins(w.coinPrice)) {
+                localStorage.setItem('mole.weapon', w.id);
+                done();
+              } else alert(T('mole.shop.noCoin'));
+            });
+          }
+          cardsEl.lastElementChild.appendChild(coinBtn);
+        }
       });
     }
 

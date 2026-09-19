@@ -3021,6 +3021,12 @@ body { background: var(--lm-page); }
   box-shadow: 0 4px 0 #1c4f96, 0 4px 1px rgba(0,0,0,0.18), 0 8px 10px rgba(0,0,0,0.32),
     inset 0 2px 2px rgba(255,255,255,0.8), inset 0 -3px 4px rgba(0,40,90,0.4); }
 .shop-card-btn--ad svg { fill: #fff; }
+/* 무기 코인 결제 옵션 — 현금 구매 버튼 바로 아래 작은 보조 버튼(사용자 지정: "코인으로
+   살수도 있고, 현금으로도 살수 있다고"). margin-top:auto(기본 .shop-card-btn) 대신 작은
+   고정 간격만 — 위 현금 버튼이 이미 카드 맨 아래로 당겨져 있어, 이 버튼은 그 바로 밑에
+   붙으면 됨. */
+.shop-card-btn--coinalt { height: 26px; margin-top: 4px !important; font-size: 0.62rem; gap: 2px; }
+.shop-card-btn--coinalt > svg { width: 16px !important; height: 16px !important; }
 /* 재생 아이콘 박스 — 원이 아니라 사각(유튜브 아이콘 모양, 사용자 지정: "원이 아니고
    사각모양(유튜브 이모티콘 모양)"). */
 .scb-play-box { display: flex; align-items: center; justify-content: center; width: 18px; height: 18px;
