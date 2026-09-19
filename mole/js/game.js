@@ -1672,8 +1672,10 @@
     updateLiveDifficulty();
     const tickResult = state.scheduler.tick(dt);
     // 타겟(§8·§10 에 따라 두더지 또는 동물일 수 있음)을 처치 못 하고 시간초과로 놓치면
-    // 헛방·방해물과 동일하게 콤보 초기화.
-    if (tickResult.expired.some((e) => effectiveHitType(state.config, e.type) === 'mole' && e.timedOut)) run.combo.onObstacleHit();
+    // 헛방·방해물과 동일하게 콤보 초기화. 단, 피버타임 진입 연출(10초) 동안엔 플레이어가
+    // 아직 손 쓸 수 없는 상태라 이 시간초과로 콤보가 깎이면 안 된다(사용자가 콤보100으로
+    // 트리거해놓고 전광판엔 0이 뜨는 버그로 발견 — 스폰은 계속 돌지만 판정만 유예).
+    if (!state.pausedByFever && tickResult.expired.some((e) => effectiveHitType(state.config, e.type) === 'mole' && e.timedOut)) run.combo.onObstacleHit();
     // "의문사" 방지(사용자 지정) — 무적 중에 올라온 방해물은, 그 사이 무적이 끝나도
     // 계속 안전 취급되도록 스폰 순간에 낙인찍는다(spawn-scheduler.js 가 그대로 전달).
     if (alipunchInvincible()) {
@@ -1762,7 +1764,7 @@
     });
     updateFeverHud();
     updateInvincibleHud();
-    if (state.feverEventActive && sharedLaneControls) {
+    if (state.feverEventActive && state.feverEventUntil > 0 && sharedLaneControls) {
       const secondsLeft = (state.feverEventUntil - performance.now()) / 1000;
       sharedLaneControls.setFeverScoreboard(run.combo.combo, secondsLeft);
     }
@@ -2129,38 +2131,58 @@
 
   // 게임보드↔버튼보드 자리 교차 스왑(FLIP 기법) — toSwapped=true 면 보드가 아래로, 버튼보드가
   // 위로. 두 요소는 같은 폭(--sq)의 정사각형이라 서로 상대 위치로 translateY 만 하면 된다.
+  // #mole-hammer-layer(무기 레이어)는 보드 밖(#game-screen 직속) 별도 요소라 보드와 같이
+  // 안 움직이면 무기만 원래 자리에 남는다(사용자 보고: "무기가 아래로 안내려오고") — 보드와
+  // 같은 delta 로 같이 옮기되, 기존 CSS 의 translateX(-50%) 가로중앙정렬을 인라인
+  // transform 으로 덮어쓰면 안 되므로 항상 같이 합쳐서 넣는다.
   let boardSwapped = false;
   function swapBoardPositions(toSwapped) {
     if (toSwapped === boardSwapped) return;
     const board = document.getElementById('mole-board');
     const bar = document.getElementById('lane-button-bar');
+    const hammerLayer = document.getElementById('mole-hammer-layer');
     if (!board || !bar) return;
     const boardRect = board.getBoundingClientRect();
     const barRect = bar.getBoundingClientRect();
     const delta = barRect.top - boardRect.top; // 보드가 버튼보드 자리로 가려면 +delta 만큼 아래로
-    [board, bar].forEach((el) => { el.classList.add('fever-swap-animating'); });
+    [board, bar, hammerLayer].forEach((el) => { if (el) el.classList.add('fever-swap-animating'); });
     board.style.transform = toSwapped ? `translateY(${delta}px)` : '';
     bar.style.transform = toSwapped ? `translateY(${-delta}px)` : '';
+    if (hammerLayer) hammerLayer.style.transform = toSwapped ? `translateX(-50%) translateY(${delta}px)` : 'translateX(-50%)';
     setTimeout(() => {
-      board.classList.remove('fever-swap-animating');
-      bar.classList.remove('fever-swap-animating');
-    }, 650);
+      [board, bar, hammerLayer].forEach((el) => { if (el) el.classList.remove('fever-swap-animating'); });
+    }, 5050);
     boardSwapped = toSwapped;
   }
 
+  // spinBoardBlank(회전)와 swapBoardPositions(이동)는 둘 다 결국 같은 요소(#lane-button-bar)의
+  // 인라인 transform 을 건드리는데, 동시에 실행하면 나중에 끝나는 쪽의 cleanup(transform
+  // 초기화)이 먼저 것을 지워버려 스왑이 도로 풀려버렸다(사용자 보고: "전광판이... 아래에
+  // 나옴", "게임이 안됨") — 순차 실행으로 완전히 분리한다: 진입은 회전이 끝난 뒤 이동 시작,
+  // 퇴장은 이동이 끝난 뒤 회전 시작. 각 단계 5초씩, 총 10초(사용자 지정: "급하게 휙휙
+  // 바뀌는게 아니라... 천천히 약 10초 동안 화면교체 완성"). 20초 보너스타임 카운트다운은
+  // 이 진입 연출(10초)이 완전히 끝난 뒤에 시작한다.
+  const FEVER_TRANSITION_MS = 5000;
   function startFeverEvent() {
     state.feverEventActive = true;
     state.pausedByFever = true;
     if (sharedLaneControls) sharedLaneControls.spinBoardBlank(true);
-    swapBoardPositions(true);
-    state.feverEventUntil = performance.now() + 20000;
-    setTimeout(endFeverEvent, 20000);
+    setTimeout(() => {
+      swapBoardPositions(true);
+      setTimeout(() => {
+        state.feverEventUntil = performance.now() + 20000;
+        setTimeout(endFeverEvent, 20000);
+      }, FEVER_TRANSITION_MS);
+    }, FEVER_TRANSITION_MS);
   }
   function endFeverEvent() {
     swapBoardPositions(false);
-    if (sharedLaneControls) sharedLaneControls.spinBoardBlank(false);
+    setTimeout(() => {
+      if (sharedLaneControls) sharedLaneControls.spinBoardBlank(false);
+    }, FEVER_TRANSITION_MS + 50);
     state.pausedByFever = false;
     state.feverEventActive = false;
+    state.feverEventUntil = 0;
   }
 
   // 콤보가 100·200·300… 을 새로 넘겼으면 공유 생명 보상 (풀에 영구 반영).

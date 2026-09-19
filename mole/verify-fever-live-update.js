@@ -18,8 +18,8 @@ const PORT = process.env.SMOKE_PORT || 8844;
     }
 
     await page.evaluate(() => window.__debugPumpCombo(100));
-    // 메인루프(rAF)가 몇 프레임 돌면서 updateHUD()가 자연히 전광판을 갱신해야 한다.
-    await new Promise((r) => setTimeout(r, 300));
+    // 진입 연출(회전 5s + 스왑 5s = 10s)이 끝나야 20초 카운트다운이 실제로 시작된다.
+    await new Promise((r) => setTimeout(r, 10500));
 
     const feverState = await page.evaluate(() => window.__debugGetFeverState());
     assert.strictEqual(feverState.active, true, 'fever active after combo 100');

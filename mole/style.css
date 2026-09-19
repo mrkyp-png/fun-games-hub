@@ -538,7 +538,8 @@ body { background: var(--lm-page); }
 }
 /* 피버타임 보드 교차 스왑(사용자 지정: "서로 교차되면서 내려오는 방식") — FLIP 기법으로
    JS가 매긴 translateY 를 이 transition 이 부드럽게 만든다. */
-.fever-swap-animating { transition: transform 0.6s cubic-bezier(.4, 0, .2, 1) !important; }
+/* 5초(사용자 지정: "천천히 약 10초 동안 화면교체 완성" — 회전 5s + 이 이동 5s = 10초). */
+.fever-swap-animating { transition: transform 5s cubic-bezier(.4, 0, .2, 1) !important; }
 /* 챕터별 보드 배경(사용자 지정) — 4~6=가을, 7~9=겨울. */
 .mole-board--autumn { background: #1b2b4a url('assets/board-scene-autumn.jpeg') center / cover no-repeat; }
 .mole-board--winter { background: #1b2b4a url('assets/board-scene-winter.png') center / cover no-repeat; }

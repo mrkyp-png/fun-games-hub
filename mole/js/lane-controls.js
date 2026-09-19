@@ -355,21 +355,24 @@
     // 피버타임(터치캐치 보너스타임) 전용 — 버튼보드 전체를 10바퀴 회전시켜 숫자판↔전광판을
     // 전환한다. spinChannelsIn()의 simple 분기와 같은 "버튼보드 통째로 rotateY" 기법을 재사용
     // (일반 모드의 spinChannelsIn()은 버튼 개별 플립이라 이 용도엔 안 맞음).
+    // 5초에 걸쳐 천천히 10바퀴(사용자 지정: "급하게 휙휙 바뀌는게 아니라... 천천히 약 10초
+    // 동안 화면교체 완성" — 회전 5s + 이후 game.js 의 자리교차 스왑 5s = 총 10초).
+    var SPIN_BLANK_MS = 5000;
     function spinBoardBlank(toBlank) {
       if (!buttonBar) return;
       var scoreboard = document.getElementById('fever-scoreboard');
       buttonBar.style.transition = 'none';
       buttonBar.style.transform = 'perspective(1200px) rotateY(0deg)';
       void buttonBar.offsetWidth;
-      buttonBar.style.transition = 'transform 0.9s cubic-bezier(.2, .7, .3, 1)';
+      buttonBar.style.transition = 'transform ' + (SPIN_BLANK_MS / 1000) + 's cubic-bezier(.2, .7, .3, 1)';
       buttonBar.style.transform = 'perspective(1200px) rotateY(3600deg)';
       setTimeout(function () {
         if (scoreboard) scoreboard.hidden = !toBlank;
         Array.prototype.forEach.call(buttonBar.querySelectorAll('.lane-button'), function (b) {
           b.style.visibility = toBlank ? 'hidden' : '';
         });
-      }, 450); // 회전 절반(뒤집힌 순간) 시점에 얼굴 전환 — 정면에서 전환이 안 보이게
-      setTimeout(function () { buttonBar.style.transition = ''; buttonBar.style.transform = ''; }, 950);
+      }, SPIN_BLANK_MS / 2); // 회전 절반(뒤집힌 순간) 시점에 얼굴 전환 — 정면에서 전환이 안 보이게
+      setTimeout(function () { buttonBar.style.transition = ''; buttonBar.style.transform = ''; }, SPIN_BLANK_MS + 50);
     }
     function setFeverScoreboard(comboVal, secondsLeft) {
       var c = document.getElementById('fever-sb-combo');
