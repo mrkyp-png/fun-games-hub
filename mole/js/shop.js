@@ -449,9 +449,11 @@
       renderTabs();
       RENDERERS[activeTab]();
       updateDots();
-      // 재화탭일 때만 카드박스를 하트색(빨강)으로(사용자 지정: "재화모드일때 파란색 박스는
-      // 아래 하트 색깔로... 통일성을 주고싶어") — 무기/스킬/코스튬은 기존 파란색 유지.
-      cardsBoxEl.classList.toggle('shop-cards-box--heart', activeTab === 'currency');
+      // 재화탭 카드박스 색 = 하트/코인/티켓 캡슐 필터에 맞춰 빨강/노랑/파랑(사용자 지정:
+      // "하트선택시 빨강, 코인선택시 노랑, 티켓선택시 파랑") — 필터 없음(전체)은 하트 기본.
+      // 무기/스킬/코스튬탭은 기존 파란색 유지.
+      cardsBoxEl.classList.remove('shop-cards-box--heart', 'shop-cards-box--coin', 'shop-cards-box--ticket');
+      if (activeTab === 'currency') cardsBoxEl.classList.add('shop-cards-box--' + (currencyFilter || 'heart'));
     }
 
     function show() {

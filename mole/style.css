@@ -2822,6 +2822,10 @@ body { background: var(--lm-page); }
    코인, 티켓색깔로... 통일성을 주고싶어" → 카드 3장이 전부 하트 관련이라 하트색 단색으로).
    무기/스킬/코스튬 탭은 기존 파란색 그대로. */
 .shop-cards-box--heart { background: linear-gradient(180deg, #e0574d, #b8362a); box-shadow: 0 4px 0 #7a2018, inset 0 2px 3px rgba(255,255,255,0.25); }
+/* 코인 필터=노랑, 티켓 필터=하늘색(사용자 지정) — HUD 착지 캡슐(.shop-hud-fly--landed)과
+   동일 팔레트로 통일감. */
+.shop-cards-box--coin { background: linear-gradient(180deg, #ffe27a, #f0a800); box-shadow: 0 4px 0 #b87800, inset 0 2px 3px rgba(255,255,255,0.25); }
+.shop-cards-box--ticket { background: linear-gradient(180deg, #8fd8ff, #3ba8e0); box-shadow: 0 4px 0 #2a7ba8, inset 0 2px 3px rgba(255,255,255,0.25); }
 /* 헤더 줄 — 점만(화살표는 배너 안으로 이동, 아래 참고). 화살표가 없으니 최소 공간만. */
 .shop-cards-head { flex: 0 0 auto; min-height: 10px; display: flex; align-items: center; padding: 2px 2px 4px 2px; }
 .shop-dots { flex: 1 1 auto; display: flex; gap: 5px; }
