@@ -48,8 +48,8 @@
   // 살수도 있고, 현금으로도 살수 있다고"(두 가지 결제 수단 공존).
   var WEAPONS = [
     { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/hammer.png', price: null, coinPrice: null },
-    { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1.png', price: 10000, coinPrice: 5 },
-    { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldhammer-0.png', price: 50000, coinPrice: 12 },
+    { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1.png', price: 10000, coinPrice: 100000 },
+    { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldhammer-0.png', price: 50000, coinPrice: 500000 },
     { id: 'alipunch', name: '알리 판취', nameEn: 'Ali Punch', thumb: 'assets/weapons/alipunch-jab.png', price: 100000, coinPrice: 1000000 }
   ];
 
@@ -207,12 +207,12 @@
       var defs = [
         { kind: 'heart', rich: true, theme: 'pink', art: heroArt('solo'),
           name: T('mole.shop.heart1'), desc: T('mole.shop.descHeart1'), pillText: '+1',
-          btnHtml: ICONS.coins + '<b>500</b>', btnDisabled: MG.Economy.getCoins() < 500,
-          onClick: function () { if (MG.Economy.spendCoins(500)) { MG.Economy.addHearts(1); done(); } else alert(T('mole.shop.noCoin')); } },
+          btnHtml: ICONS.coins + '<b>5</b>', btnDisabled: MG.Economy.getCoins() < 5,
+          onClick: function () { if (MG.Economy.spendCoins(5)) { MG.Economy.addHearts(1); done(); } else alert(T('mole.shop.noCoin')); } },
         { kind: 'heart', rich: true, theme: 'pink', art: heroArt('pile'),
           name: T('mole.shop.heartFull'), desc: T('mole.shop.descHeartFull'), pillText: T('mole.shop.fullPill'),
-          btnHtml: ICONS.coins + '<b>1,200</b>', btnDisabled: MG.Economy.getCoins() < 1200,
-          onClick: function () { if (MG.Economy.spendCoins(1200)) { MG.Economy.addHearts(MG.Economy.HEART_MAX); done(); } else alert(T('mole.shop.noCoin')); } },
+          btnHtml: ICONS.coins + '<b>12</b>', btnDisabled: MG.Economy.getCoins() < 12,
+          onClick: function () { if (MG.Economy.spendCoins(12)) { MG.Economy.addHearts(MG.Economy.HEART_MAX); done(); } else alert(T('mole.shop.noCoin')); } },
         { kind: 'heart', rich: true, theme: 'blue', art: heroArt('ad'),
           name: T('mole.shop.watchHeart'), desc: T('mole.shop.descWatchHeart'), pillText: '+1',
           // 재생 아이콘을 반투명 흰 박스 안에(사용자 지정: "화살표는 투명 흰색 박스안에").
