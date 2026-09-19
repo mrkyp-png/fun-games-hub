@@ -23,9 +23,17 @@ const PORT = process.env.SMOKE_PORT || 8844;
     await page.evaluate(() => window.__debugPumpCombo(100));
     await new Promise((r) => setTimeout(r, 300)); // 다음 rAF 프레임에서 오버라이드 적용
 
+    // 전환(14초) 동안엔 스폰 자체가 완전히 멈춰야 한다(사용자 지정: "전환타임에는
+    // 두더지가 안나오는거야").
+    const duringTransition = await page.evaluate(() => window.__debugGetConfig());
+    assert.strictEqual(duringTransition.maxConcurrentMoles, 0, 'no mole spawns during the 14s transition');
+    assert.strictEqual(duringTransition.maxConcurrentAnimals, 0, 'no animal spawns during the 14s transition');
+
+    // 전환이 끝나 터치캐치가 시작되면 전신(1타) 두더지 최대 8마리 동시출현으로 전환.
+    await new Promise((r) => setTimeout(r, 16300));
     const during = await page.evaluate(() => window.__debugGetConfig());
-    assert.strictEqual(during.multiHit, false, 'multiHit forced off during fever event');
-    assert.strictEqual(during.maxConcurrentMoles, 8, 'up to 8 concurrent moles during fever event');
+    assert.strictEqual(during.multiHit, false, 'multiHit forced off once touch-catch begins');
+    assert.strictEqual(during.maxConcurrentMoles, 8, 'up to 8 concurrent moles once touch-catch begins');
 
     console.log('verify-fever-spawn-config.js: all assertions passed');
   } finally { await browser.close(); }

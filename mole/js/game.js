@@ -1417,7 +1417,8 @@
       feverEventDone: false,
       feverEventActive: false,
       pausedByFever: false,
-      feverEventUntil: 0
+      feverEventUntil: 0,
+      feverTransitioning: false // 진입 전환(14초) 동안만 true — 그동안 새 두더지 스폰 정지
     };
 
     updateHUD();
@@ -1674,7 +1675,15 @@
     // 연장이 아니라, 피버타임용 게임이라고 생각하면됨") — updateLiveDifficulty() 가 매프레임
     // 재계산해버리는 라운드 커브를 덮어써서, 항상 전신(1타)만 최대 8마리 동시 출현시킨다
     // (사용자 지정: "두더지 전신만... 2,3,4타 두저지 등장 NO... 구멍 8개에서 동시 출현").
-    if (state.feverEventActive) {
+    if (state.feverTransitioning) {
+      // 전환(14초) 동안은 완전히 정지 — 새 두더지/동물/폭탄 스폰 자체를 막는다(사용자 지정:
+      // "전환타임에는 두더지가 안나오는거야"). 이미 떠 있던 건 forceRetreatAll() 로 이미
+      // 퇴장 처리됐으므로 tick() 은 그 퇴장 애니메이션만 마저 진행.
+      state.config.maxConcurrentMoles = 0;
+      state.config.maxConcurrentAnimals = 0;
+      state.config.maxConcurrentBombs = 0;
+      state.config.maxConcurrentItems = 0;
+    } else if (state.feverEventActive) {
       state.config.multiHit = false;
       state.config.maxConcurrentMoles = 8;
     }
@@ -2157,9 +2166,13 @@
     board.style.transform = toSwapped ? `translateY(${delta}px)` : '';
     bar.style.transform = toSwapped ? `translateY(${-delta}px)` : '';
     if (hammerLayer) hammerLayer.style.transform = toSwapped ? `translateX(-50%) translateY(${delta}px)` : 'translateX(-50%)';
+    // ⚠️ 이 값이 CSS(.fever-swap-animating) 트랜지션 시간보다 짧으면, 애니메이션이 끝나기도
+    // 전에 transition 규칙을 제공하던 클래스가 빠져서 그 자리에서 뚝 멈춰버린다(사용자 보고:
+    // "전광판이 위로 안가는데" — 실제로는 다 안 가고 중간에 멈춘 것). FEVER_TRANSITION_MS
+    // (CSS 쪽 7s와 동기화된 값)를 그대로 참조해 절대 어긋나지 않게 한다.
     setTimeout(() => {
       [board, bar, hammerLayer].forEach((el) => { if (el) el.classList.remove('fever-swap-animating'); });
-    }, 5050);
+    }, FEVER_TRANSITION_MS + 50);
     boardSwapped = toSwapped;
   }
 
@@ -2183,6 +2196,9 @@
   function startFeverEvent() {
     state.feverEventActive = true;
     state.pausedByFever = true;
+    // 전환(14초) 동안엔 새 두더지가 아예 안 나와야 한다(사용자 지정: "전환타임에는 두더지가
+    // 안나오는거야") — 터치캐치가 실제로 시작되는 순간(feverEventUntil 설정 시점)에 해제.
+    state.feverTransitioning = true;
     if (state.scheduler.forceRetreatAll) state.scheduler.forceRetreatAll();
     setTimeout(() => {
       const feverBoardEl = document.getElementById('mole-board');
@@ -2196,14 +2212,22 @@
         if (roundBgm) roundBgm.pause();
         const feverBgm = document.getElementById('bgm-fever');
         if (feverBgm) { feverBgm.currentTime = 0; feverBgm.volume = BGM_VOL; feverBgm.play().catch(() => {}); }
-        if (sharedLaneControls) sharedLaneControls.spinBoardBlank(true);
-        setTimeout(() => {
-          swapBoardPositions(true);
-          setTimeout(() => {
-            state.feverEventUntil = performance.now() + 20000;
-            setTimeout(showFeverResult, 20000);
-          }, FEVER_TRANSITION_MS);
-        }, FEVER_TRANSITION_MS);
+        // ⚠️ 이전엔 spinBoardBlank(true) 를 부르고 "따로" setTimeout(FEVER_TRANSITION_MS) 로
+        // swapBoardPositions 를 예약했는데, spinBoardBlank 내부의 cleanup 도 거의 같은
+        // 시각(SPIN_BLANK_MS+50)에 buttonBar.style.transform 을 지워버려서, swap 이 막
+        // 세팅한 translateY 를 그 직후 지워버리는 경합이 실기기에서 실제로 재현됐다(사용자
+        // 스크린샷: 전광판이 원래 자리에 그대로 남고 보드만 내려가 겹쳐 보임). 콜백으로
+        // 완전히 순서를 보장한다 — spinBoardBlank 가 "진짜 끝난 뒤"에만 swap 시작.
+        if (sharedLaneControls) {
+          sharedLaneControls.spinBoardBlank(true, () => {
+            swapBoardPositions(true);
+            setTimeout(() => {
+              state.feverTransitioning = false;
+              state.feverEventUntil = performance.now() + 20000;
+              setTimeout(showFeverResult, 20000);
+            }, FEVER_TRANSITION_MS);
+          });
+        }
       }, FEVER_DOPAMINE_WORD_MS);
     }, FEVER_RETREAT_WAIT_MS);
   }

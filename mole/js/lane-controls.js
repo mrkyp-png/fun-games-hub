@@ -360,8 +360,8 @@
     // 와 반드시 같은 값이어야 한다(둘이 따로 놀면 회전은 끝났는데 스왑 시작을 더 기다리는
     // 식으로 어긋남).
     var SPIN_BLANK_MS = 7000;
-    function spinBoardBlank(toBlank) {
-      if (!buttonBar) return;
+    function spinBoardBlank(toBlank, onComplete) {
+      if (!buttonBar) { if (onComplete) onComplete(); return; }
       var scoreboard = document.getElementById('fever-scoreboard');
       buttonBar.style.transition = 'none';
       buttonBar.style.transform = 'perspective(1200px) rotateY(0deg)';
@@ -374,7 +374,11 @@
           b.style.visibility = toBlank ? 'hidden' : '';
         });
       }, SPIN_BLANK_MS / 2); // 회전 절반(뒤집힌 순간) 시점에 얼굴 전환 — 정면에서 전환이 안 보이게
-      setTimeout(function () { buttonBar.style.transition = ''; buttonBar.style.transform = ''; }, SPIN_BLANK_MS + 50);
+      setTimeout(function () {
+        buttonBar.style.transition = '';
+        buttonBar.style.transform = '';
+        if (onComplete) onComplete();
+      }, SPIN_BLANK_MS + 50);
     }
     function setFeverScoreboard(comboVal, secondsLeft) {
       var c = document.getElementById('fever-sb-combo');
