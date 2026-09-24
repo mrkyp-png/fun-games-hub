@@ -19,14 +19,20 @@
   // 챕터→라운드 재구조화(2026-09-17): 라운드1(구 챕터1~3 병합) = 9홀(3x3), 라운드2~8(구 챕터4~10) = 16홀(4x4).
   function isSmallBoardChapter() { return currentChapter() === 1; }
   function roundGridSize() { return isSmallBoardChapter() ? 3 : GRID_SIZE; }
-  // 챕터별 보드 배경 — 4~6=가을, 7~9=겨울(사용자 지정). 나머지는 기본(board-scene.jpg).
+  // 라운드별 시즌 — 1~2=봄, 3~4=여름, 5~6=가을, 7~8=겨울(사용자 지정). 보드 배경·구멍 이미지가 공유.
+  function roundSeason() {
+    const ch = currentChapter();
+    if (ch >= 1 && ch <= 2) return 'spring';
+    if (ch >= 3 && ch <= 4) return 'summer';
+    if (ch >= 5 && ch <= 6) return 'autumn';
+    if (ch >= 7 && ch <= 8) return 'winter';
+    return 'spring';
+  }
   function applyBoardTheme() {
     const el = document.getElementById('mole-board');
     if (!el) return;
-    el.classList.remove('mole-board--autumn', 'mole-board--winter');
-    const ch = currentChapter();
-    if (ch >= 2 && ch <= 4) el.classList.add('mole-board--autumn');
-    else if (ch >= 5 && ch <= 7) el.classList.add('mole-board--winter');
+    el.classList.remove('mole-board--spring', 'mole-board--summer', 'mole-board--autumn', 'mole-board--winter');
+    el.classList.add('mole-board--' + roundSeason());
   }
   // 챕터별 날씨(사용자 지정: 챕터6 라운드1~10=비, 챕터9 라운드1~10=눈) + 챕터6은 흐린 날씨라
   // 하늘 쪽 구름도 추가(사용자: "흐린날씨에는 구름이 많고"). 매 라운드 시작마다 호출(멱등).
@@ -1334,7 +1340,8 @@
     const holeLayer = MG.HoleLayer.create({
       container: document.getElementById('mole-hole-layer'),
       frontContainer: document.getElementById('mole-hole-front-layer'),
-      spawnPoints
+      spawnPoints,
+      season: roundSeason()
     });
 
     // 장착 무기 = 망치(기본) / 대포 스킨 / 골드해머(지진) / 알리 펀치(글러브 2개). 인터페이스 동일
@@ -2196,6 +2203,10 @@
     const ease = 'cubic-bezier(.4, 0, .2, 1)';
     board.style.transition = `top ${ms / 1000}s ${ease}`;
     [dialpad, hammerLayer].forEach((el) => { if (el) el.style.transition = `transform ${ms / 1000}s ${ease}`; });
+    // 피버타임 나이트 배경/구멍(사용자 지정) — 보드가 버튼보드 자리로 슬라이딩을 시작하는
+    // 순간부터 나이트, 복귀 슬라이딩 시작 순간부터 라운드 시즌으로.
+    board.classList.toggle('mole-board--night', toSwapped);
+    if (state && state.holeLayer) state.holeLayer.setSeason(toSwapped ? 'night' : roundSeason());
     board.style.top = toSwapped ? `${delta}px` : '0';
     dialpad.style.transform = toSwapped ? `translateY(${-delta}px)` : '';
     if (hammerLayer) hammerLayer.style.transform = toSwapped ? `translateX(-50%) translateY(${delta}px)` : 'translateX(-50%)';

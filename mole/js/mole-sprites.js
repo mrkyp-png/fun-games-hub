@@ -97,6 +97,9 @@
     const files = [];
     for (let i = 1; i <= POSE_COUNT; i++) files.push('mole' + i);
     files.push('peek1', 'peek2', 'helmet', 'hole', 'hole-front', 'shield');
+    ['spring', 'summer', 'autumn', 'winter', 'night'].forEach(function (s) {
+      files.push('hole-' + s, 'hole-front-' + s);
+    });
     OBSTACLES.forEach(function (o) { files.push(o, o + '-x', o + '-peek1', o + '-peek2'); });
     preloadRefs = files.map(function (f) {
       const img = new Image();
