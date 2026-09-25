@@ -2679,7 +2679,13 @@ body { background: var(--lm-page); }
 /* 배경 = 게임 기존 보드 배경 이미지(board-scene.jpg)를 흐리게(사용자 지정: "상점UI 처럼
    뿌옇게") — ::before 로 블러만 따로 먹여 위 컨텐츠(hud/배너/카드/탭)는 선명하게 유지. */
 /* 손으로 밀면 화면 자체가 좌우로 살짝 밀리던 것 수정(사용자 지정) — 가로 오버플로우/터치 잠금. */
-#shop-screen { overflow-y: hidden; overflow-x: hidden; touch-action: pan-y; background: #cfe4ff; isolation: isolate; }
+/* 사용자 지적: "위 카드가 길어짐에 따라 카드박스도 길어지고 아래 탭바까지 밀려 내려간다" —
+   원인은 .board-screen 의 flex-direction:column 에서 .shop-cards-box(flex:1 0 auto,
+   shrink 금지)가 콘텐츠 크기만큼 항상 커지고, 그 뒤에 오는 .shop-tabbar 는 그 아래로
+   순서대로 배치될 뿐이라 카드가 커지면 자연스럽게 밀려났던 것. grid(auto/1fr/auto)로
+   바꿔 가운데 행(카드박스)이 배너~탭바 사이 "남는 공간"으로 고정되게 하면, 카드가
+   그보다 커져도 탭바 위치는 항상 그대로(카드박스 안에서만 스크롤됨). */
+#shop-screen { display: grid; grid-template-rows: auto 1fr auto; overflow-y: hidden; overflow-x: hidden; touch-action: pan-y; background: #cfe4ff; isolation: isolate; }
 #shop-screen::before { content: ''; position: absolute; inset: -10px; z-index: 0;
   background: url('assets/board-scene.jpg') center/cover no-repeat;
   filter: blur(4px) brightness(1.15) saturate(0.85); }
@@ -2837,7 +2843,7 @@ body { background: var(--lm-page); }
    항상 온전히 감싸게 고정. */
 .shop-cards-box { position: relative; flex: 1 0 auto; margin: 10px 10px 0; padding: 6px 8px 8px; border-radius: 16px;
   background: linear-gradient(180deg, #2a5cc9, #1c3f96); box-shadow: 0 4px 0 #12285e, inset 0 2px 3px rgba(255,255,255,0.25);
-  display: flex; flex-direction: column; min-height: 0; }
+  display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
 /* 재화탭 전용 하트색(빨강) 카드박스(사용자 지정: "재화모드일때 파란색 박스는 아래 하트,
    코인, 티켓색깔로... 통일성을 주고싶어" → 카드 3장이 전부 하트 관련이라 하트색 단색으로).
    무기/스킬/코스튬 탭은 기존 파란색 그대로. */
