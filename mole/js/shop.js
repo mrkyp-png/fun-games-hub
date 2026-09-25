@@ -453,9 +453,6 @@
       // 무기/스킬/코스튬탭은 기존 파란색 유지.
       cardsBoxEl.classList.remove('shop-cards-box--heart', 'shop-cards-box--coin', 'shop-cards-box--ticket');
       if (activeTab === 'currency') cardsBoxEl.classList.add('shop-cards-box--' + (currencyFilter || 'heart'));
-      // 무기탭 카드 확대 스코프용(사용자 지정: "무기카드도 하트카드와 높이 통일, 단 하나 고치면
-      // 같이 고쳐지게 하지말고") — 재화탭과 별개의 독립 클래스, CSS도 따로 복제해서 쓴다.
-      cardsBoxEl.classList.toggle('shop-cards-box--weapon', activeTab === 'weapon');
     }
 
     function show() {

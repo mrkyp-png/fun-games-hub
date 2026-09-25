@@ -2915,43 +2915,6 @@ body { background: var(--lm-page); }
 .shop-card { box-sizing: border-box; position: relative; overflow: hidden; flex: 0 0 calc((100% - 20px) / 3); height: 176px; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px 5px 11px;
   background: linear-gradient(180deg, #ffffff, #eef4ff); border-radius: 14px; border: 2px solid #cfe0fb;
   box-shadow: 0 3px 0 #b9cdf0, 0 4px 10px rgba(20,60,140,0.15); text-align: center; }
-/* 재화탭 카드만 아래로 2cm 확장(사용자 지정) — 재화탭일 때만 붙는 카드박스 색상 클래스
-   (.shop-cards-box--heart/coin/ticket)로 스코프해 무기/코스튬 탭 카드는 그대로 176px 유지.
-   사용자 지정: "카드 아래 여백은 좌/우와 같게" — 기존 bottom 11px을 좌우(5px)에 맞춤.
-   늘어난 높이는 이미지를 적당히 키우고(고정값 — %로 채우면 광고카드 아이콘이 카드 밖으로
-   넘쳐 잘렸음, 사용자 지적) 아래 설명글도 살짝 키워서 나눠 채움(글 줄 수는 유지). */
-.shop-cards-box--heart .shop-card,
-.shop-cards-box--coin .shop-card,
-.shop-cards-box--ticket .shop-card { height: calc(176px + 2cm); padding-bottom: 5px; }
-.shop-cards-box--heart .shop-card-badge--hero,
-.shop-cards-box--coin .shop-card-badge--hero,
-.shop-cards-box--ticket .shop-card-badge--hero { height: 78px; }
-.shop-cards-box--heart .shop-card--rich .shop-card-name,
-.shop-cards-box--coin .shop-card--rich .shop-card-name,
-.shop-cards-box--ticket .shop-card--rich .shop-card-name { font-size: 0.66rem; }
-.shop-cards-box--heart .shop-card-desc,
-.shop-cards-box--coin .shop-card-desc,
-.shop-cards-box--ticket .shop-card-desc { font-size: 0.57rem; }
-/* 사용자 지정: "하트+1 등 제목박스 안 글자가 답답해" — 제목박스(이름 pill) 상하 패딩 확대. */
-.shop-cards-box--heart .shop-card-name-box,
-.shop-cards-box--coin .shop-card-name-box,
-.shop-cards-box--ticket .shop-card-name-box { padding: 7px 0; }
-/* 사용자 지정: "이미지 박스 밑에 글자들과 하트+1/가득충전은 아래로 좀더" — 겹침은 없었지만
-   답답한 느낌이라, 설명글을 이미지박스에서 더 떼어놓는다(기존 gap 2px 위에 추가). */
-.shop-cards-box--heart .shop-card-desc,
-.shop-cards-box--coin .shop-card-desc,
-.shop-cards-box--ticket .shop-card-desc { margin-top: 8px; }
-/* 무기카드 높이를 재화카드와 동일하게(사용자 지정: "무기카드도 하트카드와 높이 통일, 단
-   하나 고치면 똑같이 고쳐지게 하지말고") — 재화탭 규칙과 완전히 독립된 클래스로 따로
-   복제해서 관리(지금은 값이 같지만, 이후 한쪽만 고쳐도 서로 영향 없음). */
-.shop-cards-box--weapon .shop-card { height: calc(176px + 2cm); }
-/* 사용자 지정: "카드 안 무기박스도 하트 박스와 크기 맞춰" — 캐논/골드묠니르/알리판취(리치
-   카드)의 이미지박스를 하트와 같은 78px로. 재화탭 규칙과는 독립된 복제본. */
-.shop-cards-box--weapon .shop-card-badge--hero { height: 78px; }
-/* 사용자 지정: "뿅망치는 카드 중앙에 배치" — 뿅망치는 리치카드가 아닌 기본 카드 타입이라
-   내용을 세로 중앙 정렬. margin-top:auto(버튼)가 정렬을 무력화하니 뿅망치 버튼만 해제. */
-.shop-cards-box--weapon .shop-card:not(.shop-card--rich) { justify-content: center; }
-.shop-cards-box--weapon .shop-card-btn--plain { margin-top: 0; }
 /* 쉬머 스윕(사용자 지정: "상품안 상품, 상품선택 박스" — 기존 idle-crown-sweep 재사용, 시작버튼과
    같은 대각선 빛 쓸기). */
 .shop-card::after { content: ''; position: absolute; inset: -60%; z-index: 2; pointer-events: none;
@@ -3095,7 +3058,7 @@ body { background: var(--lm-page); }
 .shop-card-badge--hero .hero-ad-heart { position: absolute; left: 34%; top: 40%; transform: translate(-50%, -50%);
   max-width: none; max-height: none; height: 62%; width: auto; z-index: 1; }
 .shop-card-badge--hero .hero-ad-icon { position: absolute; left: 68%; top: 74%; transform: translate(-50%, -50%);
-  max-width: none; max-height: none; height: 80%; width: auto; z-index: 2; }
+  max-width: none; max-height: none; height: 100%; width: auto; z-index: 2; }
 /* 무기 카드를 하트 카드와 같은 리치 카드 형태로(사용자 지정: "무기카드는 광고 보고 하트+1
    카드 타입으로") — 중간 박스(.shop-card-img-box)에 무기 이미지를 중앙 배치. 알리 판취는
    기존과 동일하게 좌/우 글러브 한 쌍(오른쪽은 거울상). */
