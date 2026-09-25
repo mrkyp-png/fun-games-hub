@@ -3574,7 +3574,7 @@ body { background: var(--lm-page); }
 .cos-detail-char-wrap { position: relative; flex: 0 0 auto; align-self: stretch; width: 21%; margin: 0.1cm 0; }
 /* 사용자 지정: "두더지 10% 키우기" 이후 "20% 더 키우기" — 110% × 1.2 = 132%.
    중심 기준으로 확대(상하좌우 대칭), 0.1cm 여백이 양쪽에서 균등하게 줄어드는 방식. */
-.cos-detail-char { position: absolute; left: 50%; top: 50%; height: 132%; width: auto; max-width: none;
+.cos-detail-char { position: absolute; left: 50%; top: 50%; height: 118.8%; width: auto; max-width: none;
   transform: translate(-50%, -50%); object-fit: contain; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35)); }
 .cos-detail-mid { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .cos-detail-name-row { display: flex; align-items: center; gap: 6px; }
@@ -3583,7 +3583,11 @@ body { background: var(--lm-page); }
 .cos-detail-effect-lbl { font-size: 0.6rem; font-weight: 700; opacity: 0.8; margin-bottom: 2px; }
 .cos-detail-effect-row { display: flex; align-items: baseline; gap: 4px; font-size: 0.64rem; font-weight: 800; flex-wrap: nowrap; white-space: nowrap; }
 .cos-detail-effect-row img { width: 14px; height: 14px; align-self: center; flex: 0 0 auto; }
-.cos-detail-effect-name { overflow: hidden; text-overflow: ellipsis; }
+/* flex:1 1 0 + min-width:0 — 실기기에서 "두더지 하강 딜레이"가 "딜.."로 심하게 잘리던
+   문제(사용자 스크린샷 확인). flex item 기본 min-width:auto가 축소를 막아 ellipsis가
+   기기별로 들쭉날쭉하게 작동했음 — min-width:0으로 명시해 항상 안정적으로 남는
+   공간만큼만 채우고 넘치면 말줄임표. */
+.cos-detail-effect-name { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .cos-detail-effect-val { color: #ffd93b; flex: 0 0 auto; }
 /* 사용자 지정: "유니폼 아이콘+보유중 삭제, 획득방법 문구로 교체". */
 /* word-break:keep-all — 실기기(안드로이드)에서 폰트 렌더링 차이로 "가능"이 "가"/"능"으로
