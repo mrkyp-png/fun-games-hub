@@ -3586,7 +3586,9 @@ body { background: var(--lm-page); }
 .cos-detail-effect-name { overflow: hidden; text-overflow: ellipsis; }
 .cos-detail-effect-val { color: #ffd93b; flex: 0 0 auto; }
 /* 사용자 지정: "유니폼 아이콘+보유중 삭제, 획득방법 문구로 교체". */
-.cos-detail-acquire { font-size: 0.6rem; font-weight: 700; opacity: 0.85; line-height: 1.2; }
+/* word-break:keep-all — 실기기(안드로이드)에서 폰트 렌더링 차이로 "가능"이 "가"/"능"으로
+   단어 중간에 줄바꿈되던 문제(사용자 스크린샷으로 확인) — 한글 단어 단위로만 줄바꿈. */
+.cos-detail-acquire { font-size: 0.6rem; font-weight: 700; opacity: 0.85; line-height: 1.2; word-break: keep-all; }
 /* 사용자 지정: "우측 흰색박스 삭제, 유니폼아이콘 삭제" — 감싸던 박스(.cos-detail-btnbox)를
    없애고 버튼 자체에 크기(flex:0 0 22%, 이전 박스 폭과 동일)를 직접 부여. */
 .cos-detail-btn { flex: 0 0 22%; align-self: center; font-size: 0.78rem; padding: 8px 2px;
