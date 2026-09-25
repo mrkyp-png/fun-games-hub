@@ -2716,8 +2716,10 @@ body { background: var(--lm-page); }
    2라운드부터의 가을 배경(board-scene-autumn.jpg)을 흐리게. 상단 HUD·메일아이콘 없음,
    배너가 맨 위로. */
 #inventory-screen { overflow-y: hidden; overflow-x: hidden; touch-action: pan-y; background: #cfe4ff; isolation: isolate; }
+/* 사용자 지정: "게임화면 배경은 코스튬 UI 및 에셋 폴더에 있는 배경화면 이미지로 변경" —
+   야구장 스타디움 이미지로 교체(assets/costume/bg-stadium.jpg, 코스튬/몰리그 테마와 통일). */
 #inventory-screen::before { content: ''; position: absolute; inset: -10px; z-index: 0;
-  background: url('assets/board-scene-autumn.jpg') center 78%/cover no-repeat;
+  background: url('assets/costume/bg-stadium.jpg') center 60%/cover no-repeat;
   filter: blur(2px) brightness(1.1) saturate(0.9); }
 #inventory-screen::after { content: ''; position: absolute; inset: 0; z-index: 0; background: rgba(210, 232, 255, 0.2); }
 #inventory-screen > *:not(.inv-frame) { position: relative; z-index: 1; }
@@ -2754,6 +2756,13 @@ body { background: var(--lm-page); }
 .inv-cards-box { position: relative; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0;
   margin: 10px 10px 0; padding: 6px 8px 8px; border-radius: 16px;
   background: linear-gradient(180deg, #2a5cc9, #1c3f96); box-shadow: 0 4px 0 #12285e, inset 0 2px 3px rgba(255,255,255,0.25); }
+/* 사용자 지정: "전체파란박스 좌측 상단 바깥쪽에 에셋2의 왼쪽 두더지 이미지" — .inv-cards-box
+   자체엔 overflow 가 없어(스크롤은 안쪽 .inv-body 담당) 박스 밖으로 자연스럽게 걸치게 둘 수
+   있음. 코스튬 탭 전용(paint()가 hidden 토글). */
+/* 사용자 지정: "박스 외곽선까지 내려와 붙어야함, 크기는 30% 작게" — 13%→9%(약 -30%),
+   위치는 이미지 하단이 박스 상단 외곽선에 딱 닿도록(뜨지 않게) 재조정. */
+.inv-cos-peek-mole { position: absolute; left: calc(-6px + 0.9cm); top: -40.8px; width: 10.8%; height: auto;
+  z-index: 3; pointer-events: none; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35)); }
 .inv-cards-head { flex: 0 0 auto; min-height: 10px; display: flex; align-items: center; padding: 2px 2px 4px 2px; }
 .inv-dots { flex: 1 1 auto; display: flex; gap: 5px; }
 .inv-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.35); }
@@ -3479,56 +3488,109 @@ body { background: var(--lm-page); }
 
 /* 코스튬 탭 — 5개 팀 카드(가로 스크롤) + 상세 + 획득 방법(명세서 §1~§58). */
 .cos-wrap { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
-.cos-logo { flex: 0 0 auto; max-width: 31%; height: auto; margin: 2px auto 0; object-fit: contain; }
-.cos-cards { flex: 0 0 auto; display: flex; gap: 6px; overflow-x: auto; overflow-y: visible;
-  padding: 4px 2px 6px; scrollbar-width: none; }
+/* 몰리그 전광판 — 전체파란박스(.inv-cards-box) 밖, 화면 최상단(사용자 지정: "전체파란박스
+   안에 있으면 안됨, 최대한 게임화면 상단에 위치, 전체파란박스는 전광판 아래에 위치,
+   겹치지 않아야함"). #inventory-screen 은 .board-screen 의 flex-direction:column 을
+   그대로 쓰므로, 문서 순서상 맨 위에 두면 자동으로 최상단에 위치하고 .inv-cards-box 는
+   flex:1 1 auto(shrink 허용)라 그만큼 자연히 아래로 밀려 겹치지 않는다. */
+.inv-cos-logo { flex: 0 0 auto; max-width: 31%; height: auto; margin: 4px auto calc(-18px - 0.2cm); object-fit: contain; display: block;
+  position: relative; z-index: 5; }
+/* z-index:5 위 규칙이 안 먹혔던 원인 — #inventory-screen > *:not(.inv-frame){z-index:1}
+   (ID 선택자라 명시도가 더 높음, 사용자 지적: "전광판이 앞에 나와야 하는데 파란박스가
+   앞에 나와있음")이 모든 자식에 z-index:1을 강제해 덮어썼음. 같은 명시도(ID+클래스)로
+   맞추고 이 규칙 뒤에 둬서 소스 순서로 이기게 함 — 전광판만 파란박스보다 위로. */
+#inventory-screen > .inv-cos-logo { z-index: 5; }
+/* 사용자 지정: "카드/엠블럼 감싸는 박스를 상세파란박스와 0.1cm 여백만 남기고 늘리세요" —
+   flex:0 0 auto(내용 크기)→1 1 auto(남는 공간 전부 차지)로. */
+/* margin으로 좌/우를 상세박스(8px)와 정확히 일치시킴. overflow-x:auto + overflow-y:visible
+   조합은 CSS 스펙상 visible이 auto로 강제 전환돼(사용자 지적: "노란 글로우 세로로 잘림")
+   상하 글로우까지 잘렸었음 — 지금은 카드 5장이 정확히 다 들어가 가로 스크롤이 필요 없으므로
+   overflow:visible로 전환해 문제 원천 해결(카드가 6개 이상으로 늘어나면 재검토 필요). */
+.cos-cards { flex: 1 1 auto; display: flex; gap: 6px; overflow: visible;
+  padding: 4px 2px 6px; margin: 0 -10.64px 0 -6px; scrollbar-width: none; }
 .cos-cards::-webkit-scrollbar { display: none; }
 /* 엠블럼 자리는 그대로 두되(사용자 지정), 카드 테두리/배경을 엠블럼까지 감싸도록 wrap
    쪽으로 옮겨서 "엠블럼이 카드 안에 들어있는" 하나의 큰 카드처럼 보이게 한다. */
-.cos-card-wrap { box-sizing: border-box; position: relative; flex: 0 0 auto; width: 19%; padding: 6px 4px 4px; cursor: pointer;
-  border-radius: 12px; border: 2px solid transparent; background: #0c1c3a;
-  display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.cos-card-wrap--sel { border-color: #ffd93b; box-shadow: 0 0 0 2px #ffd93b, 0 0 10px 3px rgba(255,217,59,0.85); }
-/* 높이 고정(폭 기준X) — 엠블럼마다 원본 가로세로 비율이 달라 폭 기준이면 카드 줄이
-   들쭉날쭉해지던 것(사용자 지적: "카드 줄 안맞고") 수정. */
-.cos-card-emblem { height: 26px; width: auto; max-width: 90%; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5)); }
-.cos-card {
-  box-sizing: border-box; position: relative; display: block; width: 100%; aspect-ratio: 205/234;
-  border-radius: 8px; overflow: hidden;
-}
+/* 사용자 지정: "카드를 검은박스 크기로 맞추고난 후 검은박스는 삭제" — 카드가 이제
+   박스 전체를 채우므로 배경(검은색)을 없앰. 레이아웃(폭/패딩/정렬)은 그대로 유지. */
+/* background:transparent 명시 필수 — 이 요소는 <button> 태그라 배경을 안 정해주면
+   브라우저 기본 버튼 배경(회백색)이 그대로 드러남(사용자 지적: "흰색이 나타나있음"). */
+/* 사용자 지적: "좌우 간격이 상세박스와 동일해 보이지 않음" — 5장×19%+간격 합이 행 폭보다
+   7px 커서(overflow) 마지막 카드가 밀려 좌(14px)/우(7.16px) 비대칭이었음. 18.4%로 줄여
+   overflow 제거 후 아래 margin 보정으로 상세박스(8px)와 정확히 맞춤. */
+.cos-card-wrap { box-sizing: border-box; position: relative; flex: 0 0 auto; width: 18.4%; cursor: pointer;
+  border-radius: 12px; border: 2px solid #4a90f5; background: transparent; }
+/* 사용자 지정: "카드는 파란색 테두리, 선택카드는 노란색 굵게 글로우". */
+/* border-width는 다른 카드와 동일하게 2px 유지(카드 높이가 border 두께만큼 달라지는 것
+   방지, 사용자 지적: "카드 높이도 안 맞네") — "굵게"는 box-shadow 겹으로 표현. */
+.cos-card-wrap--sel { border-color: #ffd93b; box-shadow: 0 0 0 2px #ffd93b, 0 0 14px 4px rgba(255,217,59,0.9); }
+/* 사용자 지정: "카드 배경이 검은박스가 되는 것" — 카드(.cos-card)가 검은박스 전체를
+   position:absolute+inset:0 으로 그대로 차지(=완전히 같은 크기). 엠블럼은 이제 별도
+   공간을 차지하지 않고 카드 위에 겹쳐서(오버레이) 표시. */
+.cos-card { box-sizing: border-box; position: absolute; inset: 0; border-radius: 12px; overflow: hidden; }
+/* 카드 위 오버레이 — 높이 고정(폭 기준X, 엠블럼마다 원본 비율이 달라 폭 기준이면
+   들쭉날쭉했음, 사용자 지적: "카드 줄 안맞고"). */
+.cos-card-emblem { position: absolute; left: 50%; top: calc(6px + 0.1cm); transform: translateX(-50%); z-index: 2;
+  height: 26px; width: auto; max-width: 90%; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5)); }
 .cos-card-wrap--locked .cos-card-char, .cos-card-wrap--locked .cos-card-emblem { filter: grayscale(0.7) brightness(0.75); }
 .cos-card-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.cos-card-char { position: absolute; left: 50%; bottom: 14%; height: 66%; width: auto; max-width: 88%;
+.cos-card-char { position: absolute; left: 50%; bottom: 14%; height: 59.4%; width: auto; max-width: 88%;
   transform: translateX(-50%); object-fit: contain; }
 /* 보유 상태 박스를 카드 맨 아래로 최대한 붙여서(사용자 지정) 위 배경(전광판 포함)이 제대로 보이게. */
-.cos-card-status { position: absolute; left: 4%; right: 4%; bottom: 1%; padding: 2px 0; border-radius: 6px;
+/* 사용자 지정: "녹색박스 상하 높이 120%, 위로 0.2cm" — 기존 실측 높이 18px 기준 21.6px(1.2배).
+   패딩 대신 명시적 height + flex 중앙정렬로 텍스트가 항상 수직 중앙에 오게. */
+.cos-card-status { position: absolute; left: 4%; right: 4%; bottom: calc(1% + 0.2cm); height: 21.6px;
+  display: flex; align-items: center; justify-content: center; border-radius: 6px;
   background: linear-gradient(180deg, #57d977, #2fb457); color: #fff; font-size: 0.6rem; font-weight: 800; text-align: center; }
 .cos-card--locked .cos-card-status { background: linear-gradient(180deg, #9a9aa4, #74747c); }
-.cos-card-check { position: absolute; right: 3%; top: 3%; width: 18%; aspect-ratio: 1; border-radius: 50%;
+/* 사용자 지적: "체크표시 찌그러져보임" — aspect-ratio:1이 absolute+flex 조합에서 제대로
+   안 먹혀 실측 10.97×15px(원이 아님)로 나왔음. width/height를 고정 px로 직접 맞춰 확실한
+   원형으로. */
+.cos-card-check { position: absolute; right: 3%; top: 3%; width: 12px; height: 12px; border-radius: 50%;
   background: #2fb457; color: #fff; font-size: 0.65rem; font-weight: 900; display: flex; align-items: center; justify-content: center;
   box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
 
+/* 사용자 지정: "상세설명박스 좌/우/아래 간격이 하트카드와 동일해야함(단, 하트카드 위치
+   바뀌어도 같이 안 바뀌게)" — 하트카드의 실측 간격은 8px(.shop-cards-box 패딩). 여기는
+   .inv-cards-box 패딩(8px) 위에 .inv-body 패딩(4px)이 한 겹 더 있어 그대로면 12px이 되므로,
+   상세설명박스에만 -4px 마진을 줘서 좌/우/아래를 8px로 맞춘다(공용 패딩 값 자체는 안 건드림
+   — 다른 탭에 영향 없음, 하트카드 쪽 값이 바뀌어도 여기 -4px는 독립적이라 안 바뀜). */
+/* 사용자 지정: "카드박스를 상세파란박스와 0.1cm 여백만 남기고 늘려라" — .cos-cards가
+   flex:1 1 auto로 남는 공간을 차지하게 됐으니 margin-top:auto(바닥에 붙이던 용도)는 더
+   이상 필요없음. .cos-wrap의 기존 gap(6px)이 이미 있으므로 정확히 0.1cm가 되도록 그
+   차이만큼 보정(calc(0.1cm - 6px)). 아래쪽 -4px는 기존 그대로(하트카드와 동일한 8px 유지). */
 .cos-detail { flex: 0 0 auto; display: flex; gap: 6px; padding: 8px; border-radius: 12px;
-  background: linear-gradient(180deg, #2f6fed, #1f4fc4); color: #fff; }
-.cos-detail-char { flex: 0 0 auto; width: 21%; object-fit: contain; align-self: center; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35)); }
+  margin: calc(0.1cm - 6px) -4px -4px; background: linear-gradient(180deg, #2f6fed, #1f4fc4); color: #fff; }
+/* 사용자 지정: "두더지 위아래 여유는 0.1cm만" — 기존엔 width:21% 고정+align-self:center라
+   이미지 원본 비율에 따라 위아래 여유가 들쭉날쭉(팀별 원본 여백도 달라 blue_bears는 15.9%
+   투명 여백이 있었음 — assets/costume/char-*-detail.png 로 그 투명 여백 자체를 크롭해
+   제거함, renderCostumeDetail 에서만 사용, 작은 카드용 원본은 안 건드림).
+   1차 시도(img 직접 stretch, 그다음 div 래퍼+height:100%)는 둘 다 실패 — img가 education
+   퍼센트 높이라 부모 높이가 아직 미확정인 1차 계산 단계에서 auto(원본 560px)로 풀려버려
+   래퍼의 "내용 기준 높이"까지 560px로 오염시켜 박스 전체가 583px로 폭발했음(순환 문제).
+   해결: img를 position:absolute로 완전히 정상 흐름 밖으로 빼서 래퍼의 내용 기준 높이
+   계산에 아예 관여를 못 하게 함 — 그러면 빈 래퍼는 stretch가 정상 작동(박스 높이-0.2cm로
+   결정적으로 늘어남), 그 안의 절대배치 img는 그 확정된 높이의 100%로 정확히 맞춰짐. */
+.cos-detail-char-wrap { position: relative; flex: 0 0 auto; align-self: stretch; width: 21%; margin: 0.1cm 0; }
+/* 사용자 지정: "두더지 10% 키우기" 이후 "20% 더 키우기" — 110% × 1.2 = 132%.
+   중심 기준으로 확대(상하좌우 대칭), 0.1cm 여백이 양쪽에서 균등하게 줄어드는 방식. */
+.cos-detail-char { position: absolute; left: 50%; top: 50%; height: 132%; width: auto; max-width: none;
+  transform: translate(-50%, -50%); object-fit: contain; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35)); }
 .cos-detail-mid { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .cos-detail-name-row { display: flex; align-items: center; gap: 6px; }
 .cos-detail-name { font-size: 0.8rem; font-weight: 800; }
-.cos-detail-info { flex: 0 0 auto; width: 20px; height: 20px; border-radius: 50%; border: none;
-  background: rgba(255,255,255,0.2); color: #fff; font-size: 0.65rem; line-height: 1; cursor: pointer; padding: 0; }
 .cos-detail-effect { background: rgba(255,255,255,0.12); border-radius: 8px; padding: 5px 8px; }
 .cos-detail-effect-lbl { font-size: 0.6rem; font-weight: 700; opacity: 0.8; margin-bottom: 2px; }
 .cos-detail-effect-row { display: flex; align-items: baseline; gap: 4px; font-size: 0.64rem; font-weight: 800; flex-wrap: nowrap; white-space: nowrap; }
 .cos-detail-effect-row img { width: 14px; height: 14px; align-self: center; flex: 0 0 auto; }
 .cos-detail-effect-name { overflow: hidden; text-overflow: ellipsis; }
 .cos-detail-effect-val { color: #ffd93b; flex: 0 0 auto; }
-.cos-detail-owned { display: flex; align-items: center; gap: 5px; font-size: 0.66rem; font-weight: 700; }
-.cos-detail-owned img { width: 14px; height: 14px; }
-.cos-detail-btnbox { flex: 0 0 auto; width: 22%; display: flex; align-items: center; justify-content: center;
-  background: rgba(255,255,255,0.12); border-radius: 8px; padding: 4px; }
-.cos-detail-btn { font-size: 0.6rem; padding: 8px 2px; width: 100%;
-  display: flex; align-items: center; justify-content: center; gap: 4px; }
-.cos-detail-btn-ico { width: 13px; height: 13px; }
+/* 사용자 지정: "유니폼 아이콘+보유중 삭제, 획득방법 문구로 교체". */
+.cos-detail-acquire { font-size: 0.6rem; font-weight: 700; opacity: 0.85; line-height: 1.2; }
+/* 사용자 지정: "우측 흰색박스 삭제, 유니폼아이콘 삭제" — 감싸던 박스(.cos-detail-btnbox)를
+   없애고 버튼 자체에 크기(flex:0 0 22%, 이전 박스 폭과 동일)를 직접 부여. */
+.cos-detail-btn { flex: 0 0 22%; align-self: center; font-size: 0.78rem; padding: 8px 2px;
+  display: flex; align-items: center; justify-content: center; }
 
 /* 난이도: 고수·전설은 버튼 불(어느 구멍에 두더지) 끔 */
 /* 라이트 DIM (고수): 버튼 배경 불빛은 끄고, 숫자·글씨·아이콘 색만 앰버로 바꾼다 ("불 켜진" 느낌) */

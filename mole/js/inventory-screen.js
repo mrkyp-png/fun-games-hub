@@ -86,6 +86,8 @@
     var tabsEl = el.querySelector('[data-inv-tabs]');
     var bannerTxtEl = el.querySelector('[data-inv-banner-txt]');
     var bannerEl = el.querySelector('.inv-banner');
+    var cosLogoEl = el.querySelector('.inv-cos-logo');
+    var cosPeekMoleEl = el.querySelector('.inv-cos-peek-mole');
     var headEl = el.querySelector('.inv-cards-head');
     var dotsEl = el.querySelector('[data-inv-dots]');
     var prevBtn = el.querySelector('[data-inv-prev]');
@@ -238,7 +240,6 @@
       if (!costumeSelectedId || !MG.CostumeTeams.teamById(costumeSelectedId)) costumeSelectedId = equippedId;
       body.innerHTML =
         '<div class="cos-wrap">' +
-          '<img class="cos-logo" alt="" src="assets/costume/logo.png">' +
           '<div class="cos-cards" data-cos-cards></div>' +
           '<div class="cos-detail" data-cos-detail></div>' +
         '</div>';
@@ -254,7 +255,7 @@
           '<img class="cos-card-emblem" alt="" src="assets/costume/emblem-' + team.id + '.png">' +
           '<span class="cos-card">' +
             '<img class="cos-card-bg" alt="" src="assets/costume/bg-' + team.id + '.png">' +
-            '<img class="cos-card-char" alt="" src="assets/costume/char-' + team.id + '.png">' +
+            '<img class="cos-card-char" alt="" src="assets/costume/char-' + team.id + '-detail.png">' +
             '<span class="cos-card-status">' + T(owned ? 'mole.cos.owned' : 'mole.cos.notOwned') + '</span>' +
             (selected ? '<span class="cos-card-check">✓</span>' : '') +
           '</span>';
@@ -270,30 +271,25 @@
       var detail = body.querySelector('[data-cos-detail]');
       if (!team) { detail.innerHTML = ''; return; }
       var owned = MG.CostumeTeams.owns(id);
-      var name = (I18N.lang === 'en' ? team.nameEn + ' ' + T('mole.cos.suffixEn') : team.nameKo + ' ' + T('mole.cos.suffixKo'));
+      var name = (I18N.lang === 'en' ? team.nameEn : team.nameKo);
       var effectVal = (MG.CostumeTeams.BASE_EFFECT_VALUE * MG.CostumeTeams.upgradeLevel(id)).toFixed(1);
       detail.innerHTML =
-        '<img class="cos-detail-char" alt="" src="assets/costume/char-' + id + '.png">' +
+        '<div class="cos-detail-char-wrap"><img class="cos-detail-char" alt="" src="assets/costume/char-' + id + '-detail.png"></div>' +
         '<div class="cos-detail-mid">' +
-          '<div class="cos-detail-name-row"><span class="cos-detail-name"></span>' +
-            '<button type="button" class="cos-detail-info" aria-label="' + T('mole.cos.acquireTitle') + '">🔍</button></div>' +
+          '<div class="cos-detail-name-row"><span class="cos-detail-name"></span></div>' +
           '<div class="cos-detail-effect">' +
             '<div class="cos-detail-effect-lbl"></div>' +
             '<div class="cos-detail-effect-row"><img alt="" src="assets/costume/clock.png">' +
               '<span class="cos-detail-effect-name"></span><b class="cos-detail-effect-val"></b></div>' +
           '</div>' +
-          '<div class="cos-detail-owned"><img alt="" src="assets/costume/tshirt.png"><span></span></div>' +
+          '<div class="cos-detail-acquire"></div>' +
         '</div>' +
-        '<div class="cos-detail-btnbox"><button type="button" class="inv-equip cos-detail-btn">' +
-          '<img class="cos-detail-btn-ico" alt="" src="assets/costume/tshirt.png"><span></span></button></div>';
+        '<button type="button" class="inv-equip cos-detail-btn"><span></span></button>';
       detail.querySelector('.cos-detail-name').textContent = name;
       detail.querySelector('.cos-detail-effect-lbl').textContent = T('mole.cos.effectTitle');
       detail.querySelector('.cos-detail-effect-name').textContent = T('mole.cos.effectName');
       detail.querySelector('.cos-detail-effect-val').textContent = '+' + effectVal + (I18N.lang === 'en' ? 's' : '초');
-      detail.querySelector('.cos-detail-owned span').textContent = T(owned ? 'mole.cos.owned' : 'mole.cos.notOwned');
-      detail.querySelector('.cos-detail-info').addEventListener('click', function () {
-        alert(T('mole.cos.acquireTitle') + '\n' + T('mole.cos.acquireDesc'));
-      });
+      detail.querySelector('.cos-detail-acquire').textContent = T('mole.cos.acquireLine');
       var btn = detail.querySelector('.cos-detail-btn');
       var isEquipped = owned && id === equippedId;
       btn.querySelector('span').textContent = isEquipped ? T('mole.cos.equipped') : T('mole.cos.equip');
@@ -326,6 +322,10 @@
       headEl.style.display = active === 'weapon' ? '' : 'none';
       // 코스튬 탭은 상단 안내 박스를 통째로 없앤다(사용자 지정, 2026-09-25).
       if (bannerEl) bannerEl.style.display = active === 'costume' ? 'none' : '';
+      // 몰리그 전광판은 코스튬 탭에서만, 전체파란박스 밖(화면 최상단)에 표시.
+      if (cosLogoEl) cosLogoEl.hidden = active !== 'costume';
+      // 좌측 상단 바깥쪽 두더지도 코스튬 탭 전용.
+      if (cosPeekMoleEl) cosPeekMoleEl.hidden = active !== 'costume';
       if (active === 'weapon') {
         renderWeapons();
       } else if (active === 'costume') {

@@ -7,7 +7,7 @@
   var K_LEVEL = 'mole.costume.level.'; // + id
 
   var TEAMS = [
-    { id: 'blue_bears', nameKo: '블루베어스', nameEn: 'Blue Bears' },
+    { id: 'blue_bears', nameKo: '블루 베어스', nameEn: 'Blue Bears' },
     { id: 'red_wings', nameKo: '레드윙스', nameEn: 'Red Wings' },
     { id: 'mount_stars', nameKo: '마운트스타즈', nameEn: 'Mount Stars' },
     { id: 'sun_giants', nameKo: '선자이언츠', nameEn: 'Sun Giants' },
