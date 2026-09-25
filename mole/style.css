@@ -3581,8 +3581,11 @@ body { background: var(--lm-page); }
 .cos-detail-name { font-size: 0.8rem; font-weight: 800; }
 .cos-detail-effect { background: rgba(255,255,255,0.12); border-radius: 8px; padding: 5px 8px; }
 .cos-detail-effect-lbl { font-size: 0.6rem; font-weight: 700; opacity: 0.8; margin-bottom: 2px; }
-.cos-detail-effect-row { display: flex; align-items: baseline; gap: 4px; font-size: 0.64rem; font-weight: 800; flex-wrap: nowrap; white-space: nowrap; }
-.cos-detail-effect-row img { width: 14px; height: 14px; align-self: center; flex: 0 0 auto; }
+/* 실측: "두더지 하강 딜레이"가 필요로 하는 너비(136.77px)가 실제 남는 공간(110.75px)보다
+   커서 ellipsis가 발동했음(사용자 지적: "폭을 줄여서 딜.. 이 안되게") — 폰트/아이콘/간격을
+   줄여 한 줄에 다 들어가게(0.64rem→0.56rem 등, 여유있게 계산). */
+.cos-detail-effect-row { display: flex; align-items: baseline; gap: 3px; font-size: 0.56rem; font-weight: 800; flex-wrap: nowrap; white-space: nowrap; }
+.cos-detail-effect-row img { width: 12px; height: 12px; align-self: center; flex: 0 0 auto; }
 /* flex:1 1 0 + min-width:0 — 실기기에서 "두더지 하강 딜레이"가 "딜.."로 심하게 잘리던
    문제(사용자 스크린샷 확인). flex item 기본 min-width:auto가 축소를 막아 ellipsis가
    기기별로 들쭉날쭉하게 작동했음 — min-width:0으로 명시해 항상 안정적으로 남는
@@ -3592,7 +3595,9 @@ body { background: var(--lm-page); }
 /* 사용자 지정: "유니폼 아이콘+보유중 삭제, 획득방법 문구로 교체". */
 /* word-break:keep-all — 실기기(안드로이드)에서 폰트 렌더링 차이로 "가능"이 "가"/"능"으로
    단어 중간에 줄바꿈되던 문제(사용자 스크린샷으로 확인) — 한글 단어 단위로만 줄바꿈. */
-.cos-detail-acquire { font-size: 0.6rem; font-weight: 700; opacity: 0.85; line-height: 1.2; word-break: keep-all; }
+/* 사용자 지정: "한 줄로 처리하기로 했는데 왜 2줄로" — 실측: 필요 너비 268.86px vs
+   박스 폭 180.67px, 0.4rem 이하로 줄여야 한 줄에 들어감. */
+.cos-detail-acquire { font-size: 0.4rem; font-weight: 700; opacity: 0.85; line-height: 1.2; white-space: nowrap; }
 /* 사용자 지정: "우측 흰색박스 삭제, 유니폼아이콘 삭제" — 감싸던 박스(.cos-detail-btnbox)를
    없애고 버튼 자체에 크기(flex:0 0 22%, 이전 박스 폭과 동일)를 직접 부여. */
 .cos-detail-btn { flex: 0 0 22%; align-self: center; font-size: 0.78rem; padding: 8px 2px;

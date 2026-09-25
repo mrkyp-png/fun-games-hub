@@ -8,10 +8,10 @@
 
   var TEAMS = [
     { id: 'blue_bears', nameKo: '블루 베어스', nameEn: 'Blue Bears' },
-    { id: 'red_wings', nameKo: '레드윙스', nameEn: 'Red Wings' },
-    { id: 'mount_stars', nameKo: '마운트스타즈', nameEn: 'Mount Stars' },
-    { id: 'sun_giants', nameKo: '선자이언츠', nameEn: 'Sun Giants' },
-    { id: 'cloud_cups', nameKo: '클라우드컵스', nameEn: 'Cloud Cups' }
+    { id: 'red_wings', nameKo: '레드 윙스', nameEn: 'Red Wings' },
+    { id: 'mount_stars', nameKo: '마운트 스타즈', nameEn: 'Mount Stars' },
+    { id: 'sun_giants', nameKo: '선 자이언츠', nameEn: 'Sun Giants' },
+    { id: 'cloud_cups', nameKo: '클라우드 컵스', nameEn: 'Cloud Cups' }
   ];
 
   var EFFECT_TYPE = 'MOLE_DESCENT_DELAY';
