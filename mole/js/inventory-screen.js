@@ -1,9 +1,10 @@
 (function (root) {
   'use strict';
   // 아이템 보관 — 무기 / 스킬 / 코스튬 / 사진 탭(사용자 지정, 2026-09-18 상점과 동일한
-  // 카드/탭 비주얼로 개편). 현재는 무기 탭만 실제 구현, 나머지는 준비중 placeholder.
+  // 카드/탭 비주얼로 개편). 무기·코스튬 탭 실제 구현, 나머지는 준비중 placeholder.
   var I18N = root.FGH.I18N;
   var T = function (k) { return I18N.t(k); };
+  var MG = root.MoleGame;
 
   // 능력치 표 3줄 (라벨 = i18n 키, 값 = [ko, en]).
   var STAT_ROWS = ['mole.inv.stat.visibility', 'mole.inv.stat.attack', 'mole.inv.stat.defense'];
@@ -84,12 +85,14 @@
     var body = el.querySelector('[data-inv-body]');
     var tabsEl = el.querySelector('[data-inv-tabs]');
     var bannerTxtEl = el.querySelector('[data-inv-banner-txt]');
-    var headEl = el.querySelector('.shop-cards-head');
+    var bannerEl = el.querySelector('.inv-banner');
+    var headEl = el.querySelector('.inv-cards-head');
     var dotsEl = el.querySelector('[data-inv-dots]');
     var prevBtn = el.querySelector('[data-inv-prev]');
     var nextBtn = el.querySelector('[data-inv-next]');
     el.querySelector('[data-back="inventory"]')?.addEventListener('click', opts.onClose);
     var active = 'weapon';
+    var costumeSelectedId = null; // 코스튬 탭 안에서만 쓰는 "선택" 상태(착용 상태와 별개, §14)
 
     // 상점 카드줄과 동일한 점+화살표 페이징(사용자 지정: "상점 구조와 동일하되 한페이지 한장씩").
     // ⚠️ 처음엔 scrollBy(상대량) 방식이었는데, 카드 실측폭(getBoundingClientRect)과 grid의
@@ -109,7 +112,7 @@
     nextBtn.addEventListener('click', function () { goTo(pageIdx + 1); });
     function syncDots() {
       Array.prototype.forEach.call(dotsEl.children, function (d, i) {
-        d.classList.toggle('shop-dot--on', i === pageIdx);
+        d.classList.toggle('inv-dot--on', i === pageIdx);
       });
     }
     // renderWeapons() 가 매번 grid 를 통째로 새로 만들기 때문에(body.innerHTML), 장착 버튼을
@@ -123,7 +126,7 @@
       if (pageIdx > n - 1) pageIdx = Math.max(0, n - 1);
       for (var i = 0; i < n; i++) {
         var d = document.createElement('span');
-        d.className = 'shop-dot';
+        d.className = 'inv-dot';
         dotsEl.appendChild(d);
       }
       syncDots();
@@ -227,14 +230,90 @@
       updateDots();
     }
 
+    // 코스튬 탭 — 5개 팀 카드(가로 스크롤) + 선택 코스튬 상세 + 획득 방법(§1~§58).
+    // 무기 탭과 달리 페이지네이션(점/화살표) 없이 카드 줄만 가로 스크롤한다.
+    function renderCostumes() {
+      var locked = !!(opts.gameInProgress && opts.gameInProgress());
+      var equippedId = MG.CostumeTeams.equippedId();
+      if (!costumeSelectedId || !MG.CostumeTeams.teamById(costumeSelectedId)) costumeSelectedId = equippedId;
+      body.innerHTML =
+        '<div class="cos-wrap">' +
+          '<img class="cos-logo" alt="" src="assets/costume/logo.png">' +
+          '<div class="cos-cards" data-cos-cards></div>' +
+          '<div class="cos-detail" data-cos-detail></div>' +
+        '</div>';
+
+      var cardsEl = body.querySelector('[data-cos-cards]');
+      MG.CostumeTeams.teams().forEach(function (team) {
+        var owned = MG.CostumeTeams.owns(team.id);
+        var selected = team.id === costumeSelectedId;
+        var wrap = document.createElement('button');
+        wrap.type = 'button';
+        wrap.className = 'cos-card-wrap' + (selected ? ' cos-card-wrap--sel' : '') + (owned ? '' : ' cos-card-wrap--locked');
+        wrap.innerHTML =
+          '<img class="cos-card-emblem" alt="" src="assets/costume/emblem-' + team.id + '.png">' +
+          '<span class="cos-card">' +
+            '<img class="cos-card-bg" alt="" src="assets/costume/bg-' + team.id + '.png">' +
+            '<img class="cos-card-char" alt="" src="assets/costume/char-' + team.id + '.png">' +
+            '<span class="cos-card-status">' + T(owned ? 'mole.cos.owned' : 'mole.cos.notOwned') + '</span>' +
+            (selected ? '<span class="cos-card-check">✓</span>' : '') +
+          '</span>';
+        wrap.addEventListener('click', function () { costumeSelectedId = team.id; renderCostumes(); });
+        cardsEl.appendChild(wrap);
+      });
+
+      renderCostumeDetail(costumeSelectedId, equippedId, locked);
+    }
+
+    function renderCostumeDetail(id, equippedId, locked) {
+      var team = MG.CostumeTeams.teamById(id);
+      var detail = body.querySelector('[data-cos-detail]');
+      if (!team) { detail.innerHTML = ''; return; }
+      var owned = MG.CostumeTeams.owns(id);
+      var name = (I18N.lang === 'en' ? team.nameEn + ' ' + T('mole.cos.suffixEn') : team.nameKo + ' ' + T('mole.cos.suffixKo'));
+      var effectVal = (MG.CostumeTeams.BASE_EFFECT_VALUE * MG.CostumeTeams.upgradeLevel(id)).toFixed(1);
+      detail.innerHTML =
+        '<img class="cos-detail-char" alt="" src="assets/costume/char-' + id + '.png">' +
+        '<div class="cos-detail-mid">' +
+          '<div class="cos-detail-name-row"><span class="cos-detail-name"></span>' +
+            '<button type="button" class="cos-detail-info" aria-label="' + T('mole.cos.acquireTitle') + '">🔍</button></div>' +
+          '<div class="cos-detail-effect">' +
+            '<div class="cos-detail-effect-lbl"></div>' +
+            '<div class="cos-detail-effect-row"><img alt="" src="assets/costume/clock.png">' +
+              '<span class="cos-detail-effect-name"></span><b class="cos-detail-effect-val"></b></div>' +
+          '</div>' +
+          '<div class="cos-detail-owned"><img alt="" src="assets/costume/tshirt.png"><span></span></div>' +
+        '</div>' +
+        '<div class="cos-detail-btnbox"><button type="button" class="inv-equip cos-detail-btn">' +
+          '<img class="cos-detail-btn-ico" alt="" src="assets/costume/tshirt.png"><span></span></button></div>';
+      detail.querySelector('.cos-detail-name').textContent = name;
+      detail.querySelector('.cos-detail-effect-lbl').textContent = T('mole.cos.effectTitle');
+      detail.querySelector('.cos-detail-effect-name').textContent = T('mole.cos.effectName');
+      detail.querySelector('.cos-detail-effect-val').textContent = '+' + effectVal + (I18N.lang === 'en' ? 's' : '초');
+      detail.querySelector('.cos-detail-owned span').textContent = T(owned ? 'mole.cos.owned' : 'mole.cos.notOwned');
+      detail.querySelector('.cos-detail-info').addEventListener('click', function () {
+        alert(T('mole.cos.acquireTitle') + '\n' + T('mole.cos.acquireDesc'));
+      });
+      var btn = detail.querySelector('.cos-detail-btn');
+      var isEquipped = owned && id === equippedId;
+      btn.querySelector('span').textContent = isEquipped ? T('mole.cos.equipped') : T('mole.cos.equip');
+      btn.disabled = !owned || isEquipped || locked;
+      if (owned && !isEquipped && !locked) {
+        btn.addEventListener('click', function () {
+          MG.CostumeTeams.equip(id);
+          renderCostumes();
+        });
+      }
+    }
+
     function renderTabs() {
       tabsEl.innerHTML = '';
       TABS.forEach(function (t) {
         var b = document.createElement('button');
         b.type = 'button';
-        b.className = 'shop-tab' + (t.id === active ? ' shop-tab--on' : '');
-        b.innerHTML = '<span class="shop-tab-ico">' + t.icon + '</span><span class="shop-tab-lbl"></span>';
-        b.querySelector('.shop-tab-lbl').textContent = T(t.i18n);
+        b.className = 'inv-tab' + (t.id === active ? ' inv-tab--on' : '');
+        b.innerHTML = '<span class="inv-tab-ico">' + t.icon + '</span><span class="inv-tab-lbl"></span>';
+        b.querySelector('.inv-tab-lbl').textContent = T(t.i18n);
         b.addEventListener('click', function () { active = t.id; pageIdx = 0; paint(); });
         tabsEl.appendChild(b);
       });
@@ -245,15 +324,20 @@
       var tab = TABS.filter(function (t) { return t.id === active; })[0];
       if (tab) bannerTxtEl.textContent = T(tab.banner);
       headEl.style.display = active === 'weapon' ? '' : 'none';
+      // 코스튬 탭은 상단 안내 박스를 통째로 없앤다(사용자 지정, 2026-09-25).
+      if (bannerEl) bannerEl.style.display = active === 'costume' ? 'none' : '';
       if (active === 'weapon') {
         renderWeapons();
+      } else if (active === 'costume') {
+        dotsEl.innerHTML = '';
+        renderCostumes();
       } else {
         dotsEl.innerHTML = '';
         body.innerHTML = '<p class="inv-soon">' + T('mole.inv.soon') + '</p>';
       }
     }
 
-    return { show: function () { active = 'weapon'; paint(); } };
+    return { show: function () { active = 'weapon'; costumeSelectedId = null; paint(); } };
   }
 
   var api = { create: create };

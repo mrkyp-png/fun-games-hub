@@ -11,8 +11,7 @@ const tests = [
   'test-sw-shell-sync.js',
   'test-spawn-scheduler.js',
   'test-mole-sprites.js',
-  'test-economy.js',
-  'test-face-store.js'
+  'test-economy.js'
 ];
 
 let failed = false;

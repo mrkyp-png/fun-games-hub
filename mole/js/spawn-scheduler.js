@@ -145,7 +145,8 @@
         }
         pop.hitsTaken = 0;
         // 알리 펀치 [방어]: 내려가기(자연 만료) 전 0.1초 더 여유(기획서 §7, config.moleUpBonus).
-        pop.remaining = config.popDuration * DURATION_MULT[pop.hitsRequired] + (config.moleUpBonus || 0);
+        // 코스튬 효과(두더지 하강 딜레이, config.costumeUpBonus)는 무기 효과와 별개로 가산된다.
+        pop.remaining = config.popDuration * DURATION_MULT[pop.hitsRequired] + (config.moleUpBonus || 0) + (config.costumeUpBonus || 0);
       } else {
         pop.poseIndex = Math.floor(rng.next() * (config.obstacleCount || 5)); // 어느 동물인지
         if (type === 'animal') {

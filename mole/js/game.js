@@ -477,11 +477,9 @@
   }
 
   // ---------- 더보기 메뉴 / 난이도 / 사람두더지 (독립앱 Phase 1) ----------
-  let screenNav = null, moreMenu = null, faceMaker = null, faceLocker = null;
-  let shop = null, daily = null, scoreScreen = null, settingsScreen = null, costumeScreen = null, inventoryScreen = null;
+  let screenNav = null, moreMenu = null, faceMaker = null;
+  let shop = null, daily = null, scoreScreen = null, settingsScreen = null, inventoryScreen = null;
   let currentDiff = 'easy';        // 현재 판 난이도
-  let activeFaceUrl = null;        // 활성 사람두더지 얼굴 원본 크롭 objectURL (합성 재료)
-  let activeFaceMap = null;        // 포즈별 "얼굴+몸체 합성 완료" 이미지 맵 (게임에 넘김)
 
   // 라이트(힌트) 축 — 내부 id 는 easy/mid/legend 유지(= ON/DIM/OFF). 동물/폭탄은 이제 챕터가 결정.
   const DIFFS = ['easy', 'mid', 'legend'];
@@ -536,22 +534,6 @@
     DIFFS.forEach((d) => gs.classList.remove('diff-' + d));
     gs.classList.add('diff-' + diff);
   }
-  // 활성 사람두더지 얼굴 → 포즈별 합성 이미지 맵을 만든다. 원본 사진/얼굴 원은 게임에 안 넘긴다.
-  function loadActiveFace() {
-    const id = MG.FaceStore.getActiveId();
-    if (activeFaceUrl) { URL.revokeObjectURL(activeFaceUrl); activeFaceUrl = null; }
-    if (activeFaceMap) { MG.MoleComposite.revoke(activeFaceMap); activeFaceMap = null; }
-    if (!id) return Promise.resolve(null);
-    return MG.FaceStore.getFace(id).then((rec) => {
-      if (!rec) return null;
-      activeFaceUrl = URL.createObjectURL(rec.blob);
-      return MG.MoleComposite.build(activeFaceUrl, rec.costume, rec.shape).then((map) => {
-        activeFaceMap = map;
-        return map;
-      }).catch(() => null);
-    });
-  }
-
   // 대화 화면 "시작" 버튼(들)이 부르는 진입점. 타이핑 인트로(챕터+준비 문구) → 활성 얼굴 로드 → 라운드 1.
   // 시작 시 생명을 미리 깎지 않는다 — 현재 공유 풀 그대로 플레이하고, 동물 맞을 때만 -1.
   // 단 풀이 0이면 플레이 자체가 불가(즉시 게임오버) → "생명 없음" 모달.
@@ -581,7 +563,7 @@
     applyDiffClass(currentDiff);
     preloadRoundMoles(); // 라운드1 플레이하는 동안 미리 받아둬야 라운드2 전환 때 안 늦음
     playStartIntro(() => {
-      loadActiveFace().catch(() => null).then(() => startRound({ fresh: true }));
+      startRound({ fresh: true });
     });
   }
 
@@ -767,7 +749,7 @@
         if (state && state.feverEventActive) return; // 피버타임 중엔 홈/상점 등 화면이동 전부 비활성화
         if (action === 'home') { showStartScreen(); return; }
         const sub = { shop: 'shop-screen', score: 'score-screen', daily: 'daily-screen',
-          quest: 'quest-screen', friends: 'friends-screen', locker: 'face-locker',
+          quest: 'quest-screen', friends: 'friends-screen',
           inventory: 'inventory-screen', settings: 'settings-screen', lightMode: 'light-popup',
           mail: 'mailbox-screen' }[action];
         if (sub) { openMore(sub); if (sharedLaneControls) sharedLaneControls.setActiveNav(action); }
@@ -1043,7 +1025,6 @@
     if (moreMenu) moreMenu.refresh();
     if (sub) {
       screenNav.show(sub);
-      if (sub === 'face-locker' && faceLocker) faceLocker.show();
       if (sub === 'shop-screen' && shop) shop.show();
       if (sub === 'daily-screen' && daily) daily.show();
       if (sub === 'score-screen' && scoreScreen) scoreScreen.show();
@@ -1308,8 +1289,9 @@
       reverseTarget: reverseTarget,
       dualTarget: dualTarget,
       obstacleRatioBoost: (!isSmallBoardChapter() && ch === 8) ? 1.1 : 1,  // 라운드8(구챕터10): 방해물 스폰 빈도 10% 상향
-      cannonBurst: weapon === 'cannon',   // 대포 연사 스킬 (2·3타 두더지 첫 타 10%)
-      moleUpBonus: weapon === 'alipunch' ? 0.1 : 0   // 알리 펀치 [방어]: 내려가기 전 0.1초 더 여유(§7)
+      cannonBurst: weapon === 'cannon',   // 대포 연사 스킬 (2·3타 두더지 연타 확률 10%)
+      moleUpBonus: weapon === 'alipunch' ? 0.1 : 0,   // 알리 펀치 [방어]: 내려가기 전 0.1초 더 여유(§7)
+      costumeUpBonus: MG.CostumeTeams.activeEffectValue()  // 착용중인 코스튬 효과: 두더지 하강 딜레이
     };
 
     const scheduler = MG.SpawnScheduler.create({ regions, spawnPoints, config, rng });
@@ -1335,7 +1317,6 @@
       });
     }
     sharedPopElements.clear();
-    if (sharedPopElements.setFace) sharedPopElements.setFace(activeFaceMap);
 
     const holeLayer = MG.HoleLayer.create({
       container: document.getElementById('mole-hole-layer'),
@@ -2755,13 +2736,11 @@
 
     // 디버그 훅 — 지렁이 게임과 동일 컨벤션, 영구 보존.
     window.__debugStartGame = (diff, chapter) => {
-      loadActiveFace().then(() => {
-        currentDiff = DIFFS.indexOf(diff) > -1 ? diff : 'easy';
-        localStorage.setItem('mole.difficulty', currentDiff);
-        if (chapter >= 1 && chapter <= MG.Progress.MAX_CHAPTER) setChapter(chapter);
-        applyDiffClass(currentDiff);
-        startRound({ fresh: true });
-      });
+      currentDiff = DIFFS.indexOf(diff) > -1 ? diff : 'easy';
+      localStorage.setItem('mole.difficulty', currentDiff);
+      if (chapter >= 1 && chapter <= MG.Progress.MAX_CHAPTER) setChapter(chapter);
+      applyDiffClass(currentDiff);
+      startRound({ fresh: true });
     };
     window.__debugSetChapter = (n) => { setChapter(n); };
     window.__debugPlayStartIntro = () => { playStartIntro(() => {}); }; // beginGame() 이 거치는 타이핑 인트로만 단독 재생(테스트용)
@@ -2879,18 +2858,12 @@
       refreshBoardStats();
     };
     window.__debugExitApp = () => exitApp();
-    window.__debugAddFace = function () {
-      return fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=')
-        .then((r) => r.blob())
-        .then((b) => MG.FaceStore.saveFace(b, '테스트'))
-        .then((id) => { MG.FaceStore.setActive(id); if (moreMenu) moreMenu.refresh(); return id; });
-    };
   });
 
   // 더보기 메뉴 + 하위 화면 모듈 인스턴스 생성·배선.
   function wireMoreMenu() {
     screenNav = MG.ScreenNav.create({
-      screens: ['face-maker', 'costume-screen', 'face-locker', 'shop-screen', 'mailbox-screen', 'daily-screen', 'score-screen', 'settings-screen', 'inventory-screen', 'help-screen', 'privacy-screen', 'quest-screen', 'friends-screen', 'light-popup']
+      screens: ['face-maker', 'shop-screen', 'mailbox-screen', 'daily-screen', 'score-screen', 'settings-screen', 'inventory-screen', 'help-screen', 'privacy-screen', 'quest-screen', 'friends-screen', 'light-popup']
     });
     // 메일함(사용자 지정: "구매→메일함 도착→수령" 흐름 예정) — 지금은 아이콘+빈 화면 스캐폴드만,
     // 실제 수령 로직 없음. 상점 안에서 열리므로(더보기 경유 X) 뒤로가기는 screenNav.back()만.
@@ -2898,26 +2871,8 @@
 
     faceMaker = MG.FaceMaker.create({
       root: document.getElementById('face-maker'),
-      onDone: onFaceMade,
+      onDone: function () {},
       onCancel: () => screenNav.back()
-    });
-    costumeScreen = MG.CostumeScreen.create({
-      root: document.getElementById('costume-screen'),
-      onClose: () => closeMore(),
-      onSave: (faceId, costume) => {
-        MG.FaceStore.setCostume(faceId, costume).then(() => {
-          MG.FaceStore.setActive(faceId);
-          closeMore();
-        });
-      }
-    });
-    faceLocker = MG.FaceLocker.create({
-      root: document.getElementById('face-locker'),
-      onMake: () => { screenNav.show('face-maker'); faceMaker.open({}); },
-      onEdit: (rec) => { screenNav.show('costume-screen'); costumeScreen.open(rec); },
-      // 다이얼패드에서 바로 들어오는 진입점(사용자 지정) — 나갈 땐 더보기가 아니라 홈/게임으로.
-      onPick: () => closeMore(),
-      onClose: () => closeMore()
     });
     shop = MG.Shop.create({
       root: document.getElementById('shop-screen'),
@@ -2962,11 +2917,4 @@
   }
 
   // 얼굴 크롭 저장 완료 → 바로 꾸미기 화면으로.
-  function onFaceMade(id) {
-    MG.FaceStore.getFace(id).then((rec) => {
-      if (!rec) { screenNav.back(); return; }
-      screenNav.show('costume-screen');
-      costumeScreen.open(rec);
-    });
-  }
 })();

@@ -3,7 +3,6 @@
   // 사진 선택 → 원형 크롭 → 미리보기 → 저장. 원본 사진은 메모리에서만 쓰고 저장 안 함.
   var MG = root.MoleGame;
   var OUT = 320;
-  var MOLE_BODY = 'assets/moles/mole1.png';
 
   function create(opts) {
     var el = opts.root;
@@ -181,37 +180,17 @@
 
     el.querySelector('[data-fm-next]').addEventListener('click', function () {
       lastCropDataUrl = renderCrop();
-      if (session.profile) {
-        // 프로필 사진 모드: 두더지 몸 합성 없이 원형 얼굴만 미리보기
-        previewBox.innerHTML = '<div class="fm-preview-face-only"><img src="' + lastCropDataUrl + '" alt=""></div>';
-        stage('preview');
-      } else {
-        // 게임과 동일하게 "얼굴+몸체 합성 완료" 이미지를 미리보기 (원본 사진 노출 없음)
-        previewBox.innerHTML = '<div class="fm-preview-mole"><img src="' + MOLE_BODY + '" alt=""></div>';
-        stage('preview');
-        MG.MoleComposite.buildOne(lastCropDataUrl, null, 'mole1', lastShape).then(function (url) {
-          var img = previewBox.querySelector('img');
-          if (img) img.src = url;
-        });
-      }
+      // 프로필 사진 모드만 지원 — 원형 얼굴만 미리보기.
+      previewBox.innerHTML = '<div class="fm-preview-face-only"><img src="' + lastCropDataUrl + '" alt=""></div>';
+      stage('preview');
     });
     el.querySelector('[data-fm-redo]').addEventListener('click', function () { stage('crop'); });
     el.querySelector('[data-fm-save]').addEventListener('click', function () {
-      if (session.profile) {
-        (session.onDone || onDone)(lastCropDataUrl);
-        return;
-      }
-      dataUrlToBlob(lastCropDataUrl)
-        .then(function (blob) { return MG.FaceStore.saveFace(blob, nameInput.value.trim(), null, lastShape); })
-        .then(function (id) { MG.FaceStore.setActive(id); onDone(id); })
-        .catch(function (err) {
-          alert(root.FGH.I18N.t(err && err.message === 'full' ? 'mole.fm.full' : 'mole.fm.priv'));
-        });
+      (session.onDone || onDone)(lastCropDataUrl);
     });
     el.querySelectorAll('[data-fm-cancel]').forEach(function (b) {
       b.addEventListener('click', function () { onCancel(); });
     });
-    function dataUrlToBlob(url) { return fetch(url).then(function (r) { return r.blob(); }); }
 
     return { open: open };
   }

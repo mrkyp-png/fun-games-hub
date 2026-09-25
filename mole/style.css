@@ -2595,9 +2595,13 @@ body { background: var(--lm-page); }
 .mm-pills { display: flex; gap: 8px; padding: 10px 12px 14px; align-items: flex-start; }
 /* 파란 박스 3개 = Amateur/Normal/Pro 캡슐(.diff-alias-row)과 같은 폭으로 정렬(사용자 지정:
    "파란박스는 아마추어 너비에 맞춰서") — 같은 gap(8px)·좌우 padding(12px)을 맞춰 열이 일치하게
-   하고, .shop-cards-box 원래 여백(margin:6px 10px, 단일 박스 전제)은 3분할 컬럼엔 안 맞아 0으로.
-   세로로 길게(pill + 라운드 그리드) 내려오도록 flex-direction:column 유지. */
-.diff-col.shop-cards-box { flex: 1; min-width: 0; margin: 0; padding: 8px; gap: 8px; }
+   하고, 단일 박스 전제인 여백(margin:6px 10px)은 3분할 컬럼엔 안 맞아 0으로.
+   세로로 길게(pill + 라운드 그리드) 내려오도록 flex-direction:column 유지.
+   전용 클래스로 완전 독립 — 상점(.shop-cards-box) CSS를 고쳐도 이 박스엔 영향 없음
+   (예전엔 .shop-cards-box를 그대로 재사용해 상점 쪽 수정이 여기로 번졌었음). */
+.diff-pill-box { position: relative; flex: 1; min-width: 0; margin: 0; padding: 8px; border-radius: 16px;
+  background: linear-gradient(180deg, #2a5cc9, #1c3f96); box-shadow: 0 4px 0 #12285e, inset 0 2px 3px rgba(255,255,255,0.25);
+  display: flex; flex-direction: column; gap: 8px; min-height: 0; }
 .diff-col > .mm-pill { flex: 0 0 auto; width: 100%; }
 .mm-pill { flex: 1; min-width: 0; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 4px;
@@ -2669,80 +2673,6 @@ body { background: var(--lm-page); }
 .fm-preview-face-only img { width: 100%; aspect-ratio: 1; border-radius: 50%; object-fit: cover; display: block; }
 .fm-priv { margin-top: auto; padding: 8px 14px 12px; font-size: 0.72rem; color: #9a9aa0; text-align: center; }
 
-/* ---------- 사람두더지 꾸미기 ---------- */
-.costume-screen { align-items: stretch; }
-.cs-stage { position: relative; width: 200px; height: 200px; margin: 14px auto 8px; }
-.cs-slot { position: absolute; width: 66px; height: 66px; border: 2px dashed #d3d3d8; border-radius: 14px;
-  display: flex; align-items: center; justify-content: center; overflow: hidden; background: #f4f4f6;
-  will-change: transform, opacity;
-  transition: transform 0.5s cubic-bezier(.3,.85,.25,1.25), opacity 0.35s, border-color 0.3s; }
-.cs-slot img, .cs-slot svg { width: 100%; height: 100%; object-fit: cover; }
-.cs-slot--hat     { left: 67px; top: 0; }
-.cs-slot--body    { left: 67px; bottom: 0; }
-.cs-slot--face    { left: 0; top: 67px; }
-.cs-slot--glasses { right: 0; top: 67px; }
-.cs-stage--merge .cs-slot {
-  left: 67px; top: 67px; right: auto; bottom: auto;
-  transform: scale(0.35); opacity: 0; border-color: transparent;
-}
-
-.cs-rows { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; padding: 4px 0 8px; }
-.cs-rows::-webkit-scrollbar { display: none; }
-.cs-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; }
-.cs-row-lbl { flex: 0 0 34px; font-size: 0.72rem; font-weight: 800; color: #8a8a90; }
-.cs-strip { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px; }
-.cs-strip::-webkit-scrollbar { display: none; }
-.cs-chip { position: relative; flex: 0 0 auto; width: 48px; height: 48px; border-radius: 12px;
-  border: 2px solid transparent; background: #f0f0f2; cursor: pointer; padding: 4px;
-  display: flex; align-items: center; justify-content: center; }
-.cs-chip img, .cs-chip .cs-thumb { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
-.cs-chip--on { border-color: #57d977; }
-.cs-chip--lock { opacity: 0.5; }
-.cs-lock { position: absolute; right: -2px; bottom: -2px; font-size: 11px; }
-
-.cs-compose { margin: 6px 14px 14px; padding: 14px; border: none; border-radius: 12px;
-  background: linear-gradient(180deg, #ffcf4a, #f0a800); color: #3a2600; font-weight: 900;
-  font-size: 1rem; letter-spacing: 0.1em; cursor: pointer;
-  box-shadow: 0 5px 0 #b98200, 0 8px 16px rgba(0,0,0,0.4); }
-.cs-compose:active { transform: translateY(4px); box-shadow: 0 1px 0 #b98200; }
-
-.cs-result { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 16px; background: rgba(255,255,255,0.96); }
-.cs-card { width: 58%; aspect-ratio: 470/548; }
-.cs-result-btns { display: flex; gap: 12px; }
-.cs-redo, .cs-save { padding: 10px 26px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; }
-.cs-redo { background: #e6e6ea; color: #3a3a41; }
-.cs-save { background: linear-gradient(180deg,#57d977,#2fb457); color: #fff; }
-.cs-result--in .cs-card { animation: cs-pop 0.5s cubic-bezier(.2,1.5,.4,1) both; }
-@keyframes cs-pop {
-  0% { transform: scale(0.2) rotate(-12deg); opacity: 0; }
-  60% { transform: scale(1.12) rotate(3deg); opacity: 1; }
-  100% { transform: scale(1) rotate(0); }
-}
-.cs-result--in::before {
-  content: ''; position: absolute; left: 50%; top: 42%; width: 8px; height: 8px;
-  border-radius: 50%; box-shadow:
-    40px -20px 0 2px #ffd93b, -44px -10px 0 2px #4dd0ff, 10px -50px 0 2px #ff5a8a,
-    -20px 40px 0 2px #69db7c, 50px 24px 0 2px #da77f2, -50px 20px 0 2px #ffa94d;
-  animation: cs-spark 0.6s 0.1s ease-out both;
-}
-@keyframes cs-spark {
-  0% { transform: translate(-50%,-50%) scale(0.2); opacity: 1; }
-  100% { transform: translate(-50%,-50%) scale(2.4); opacity: 0; }
-}
-
-/* 보관함 */
-.face-locker .fl-new { margin-left: auto; background: none; border: none; color: #57d977; font-weight: 800; cursor: pointer; }
-.fl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 14px; }
-.fl-card { background: #f4f4f6; border-radius: 12px; padding: 10px; text-align: center; border: 2px solid transparent; }
-.fl-card--active { border-color: #57d977; }
-.fl-thumb { width: 68%; margin: 0 auto; aspect-ratio: 470/548; }
-.fl-thumb-img { width: 100%; display: block; }
-.fl-name { margin-top: 4px; font-size: 0.8rem; color: #55555c; min-height: 1em; }
-.fl-actions { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
-.fl-actions button { padding: 5px 0; border: none; border-radius: 6px; background: #ececef; color: #3a3a41; font-size: 0.72rem; cursor: pointer; }
-.fl-empty { padding: 24px; text-align: center; color: #9a9aa0; }
-
 /* 상점 — 2026-09-18 카드/탭 구조 개편(사용자 제공 참고 이미지 스타일, 하늘색 톤 + 입체감).
    상단 뒤로가기바 삭제 → #shop-screen 자체 세로 스크롤도 막고(사용자 지정: "상하로 스크롤 되면
    안됨") flex 로 hud/배너/카드/탭을 화면 안에 꽉 채워 배치, 카드 줄만 가로 스크롤. */
@@ -2791,8 +2721,53 @@ body { background: var(--lm-page); }
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude; }
-.inv-banner { margin-top: 6px; }
-.inv-cards-box { display: flex; flex-direction: column; min-height: 0; }
+/* 아이템 보관창 배너/카드박스/탭바 — 예전엔 상점(.shop-banner/.shop-cards-box/.shop-tab 등)
+   클래스를 그대로 같이 썼는데, 상점 쪽을 손대지 않았는데도 아이템 쪽 CSS 수정이 상점에도
+   그대로 번져 보이는 문제(사용자 지적: "왜 박스들이 한개 바꾸면 다같이 바뀌는지") — 아이템
+   보관창 전용 클래스로 완전히 분리했다. 값은 상점과 100% 동일(기존 사이즈 그대로 유지),
+   앞으로 한쪽만 고쳐도 다른 쪽엔 절대 영향 없다. */
+.inv-banner { margin-top: 6px; flex: 0 0 auto; margin-left: 10px; margin-right: 10px; padding: 4px 10px; border-radius: 14px; min-height: 44px;
+  background: linear-gradient(180deg, #4a90f5, #2f6fed 60%, #1f4fc4);
+  box-shadow: 0 4px 0 #163a94, inset 0 3px 3px rgba(255,255,255,0.55), inset 0 -6px 8px rgba(0,30,90,0.35);
+  display: flex; align-items: center; gap: 6px; box-sizing: border-box; }
+.inv-banner-pic { width: 24px; height: 24px; border-radius: 50%; background: #fff; object-fit: cover; flex: 0 0 auto;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.25); }
+.inv-banner-txt { flex: 1 1 auto; min-width: 0; color: #fff; font-weight: 800; font-size: 0.68rem; text-shadow: 0 2px 0 rgba(0,30,90,0.4); }
+.inv-arrow { border: none; border-radius: 9px; position: relative; flex: 0 0 auto; width: 26px; height: 26px; margin-left: 4px;
+  overflow: hidden; background: linear-gradient(180deg, #ffffff, #dbe6fb); color: #1c3f96;
+  font-size: 1rem; font-weight: 900; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 0 #9fb3d9, 0 3px 5px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.9);
+  cursor: pointer; transition: transform 0.1s ease; }
+.inv-arrow::before { content: ''; position: absolute; left: 10%; right: 10%; top: 2px; height: 38%;
+  border-radius: 6px; background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0)); pointer-events: none; }
+.inv-arrow:active { transform: scale(0.88); }
+/* flex-shrink:0 을 상점처럼 쓰면 코스튬 탭처럼 내용이 길 때 박스가 화면 밖으로 늘어나
+   하단 탭바 위치가 탭마다 오르락내리락했다(사용자 지적) — 아이템 보관창은 무조건 고정
+   높이(배너~탭바 사이)만 차지하고 넘치는 내용은 .inv-body 안에서만 스크롤. */
+.inv-cards-box { position: relative; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0;
+  margin: 10px 10px 0; padding: 6px 8px 8px; border-radius: 16px;
+  background: linear-gradient(180deg, #2a5cc9, #1c3f96); box-shadow: 0 4px 0 #12285e, inset 0 2px 3px rgba(255,255,255,0.25); }
+.inv-cards-head { flex: 0 0 auto; min-height: 10px; display: flex; align-items: center; padding: 2px 2px 4px 2px; }
+.inv-dots { flex: 1 1 auto; display: flex; gap: 5px; }
+.inv-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.35); }
+.inv-dot--on { background: #fff; }
+.inv-tabbar { flex: 0 0 auto; display: flex; gap: 4px; padding: 9px 10px 9px; margin-top: -1.13px; }
+.inv-tab { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 0.5px 4px 0; border: none; border-radius: 14px; overflow: hidden;
+  background: linear-gradient(180deg, #74e389 0%, #47cc6a 46%, #2ea951 100%);
+  box-shadow: 0 5px 0 #1c8340, inset 0 2px 2px rgba(255,255,255,0.7), inset 0 -5px 7px rgba(0,80,35,0.35);
+  color: #fff; font-weight: 800; font-size: 0.68rem; cursor: pointer; transition: transform 0.1s ease; }
+.inv-tab:active { transform: scale(0.92); }
+.inv-tab::before { content: ''; position: absolute; left: 3%; right: 3%; top: 3px; height: 40%;
+  border-radius: 8px; background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0)); pointer-events: none; }
+.inv-tab::after { content: ''; position: absolute; inset: -60%; z-index: 2; pointer-events: none;
+  background: linear-gradient(115deg, transparent 44%, rgba(255,255,255,0.3) 50%, transparent 56%);
+  animation: idle-crown-sweep 2.8s ease-in-out infinite; }
+.inv-tab-ico { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; line-height: 1; margin-top: 1.13px; }
+.inv-tab-ico img { width: 22px; height: 22px; object-fit: contain; display: block; }
+.inv-tab-ico svg { width: 22px; height: 22px; display: block; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); }
+.inv-tab--on { background: linear-gradient(180deg, #4a90f5, #2f6fed 60%, #1f4fc4); box-shadow: 0 5px 0 #163a94, inset 0 2px 2px rgba(255,255,255,0.7), inset 0 -5px 7px rgba(0,30,90,0.35); }
 
 /* 최상단 하트/코인/티켓 — 참고 이미지와 동일하게 [원형배지][숫자][+] 캡슐, 화면 좌우 끝까지
    분산(사용자 지정: "바탕화면과 동일한 디자인으로, 좌우 최대한 활용"). */
@@ -2940,6 +2915,43 @@ body { background: var(--lm-page); }
 .shop-card { box-sizing: border-box; position: relative; overflow: hidden; flex: 0 0 calc((100% - 20px) / 3); height: 176px; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px 5px 11px;
   background: linear-gradient(180deg, #ffffff, #eef4ff); border-radius: 14px; border: 2px solid #cfe0fb;
   box-shadow: 0 3px 0 #b9cdf0, 0 4px 10px rgba(20,60,140,0.15); text-align: center; }
+/* 재화탭 카드만 아래로 2cm 확장(사용자 지정) — 재화탭일 때만 붙는 카드박스 색상 클래스
+   (.shop-cards-box--heart/coin/ticket)로 스코프해 무기/코스튬 탭 카드는 그대로 176px 유지.
+   사용자 지정: "카드 아래 여백은 좌/우와 같게" — 기존 bottom 11px을 좌우(5px)에 맞춤.
+   늘어난 높이는 이미지를 적당히 키우고(고정값 — %로 채우면 광고카드 아이콘이 카드 밖으로
+   넘쳐 잘렸음, 사용자 지적) 아래 설명글도 살짝 키워서 나눠 채움(글 줄 수는 유지). */
+.shop-cards-box--heart .shop-card,
+.shop-cards-box--coin .shop-card,
+.shop-cards-box--ticket .shop-card { height: calc(176px + 2cm); padding-bottom: 5px; }
+.shop-cards-box--heart .shop-card-badge--hero,
+.shop-cards-box--coin .shop-card-badge--hero,
+.shop-cards-box--ticket .shop-card-badge--hero { height: 78px; }
+.shop-cards-box--heart .shop-card--rich .shop-card-name,
+.shop-cards-box--coin .shop-card--rich .shop-card-name,
+.shop-cards-box--ticket .shop-card--rich .shop-card-name { font-size: 0.66rem; }
+.shop-cards-box--heart .shop-card-desc,
+.shop-cards-box--coin .shop-card-desc,
+.shop-cards-box--ticket .shop-card-desc { font-size: 0.57rem; }
+/* 사용자 지정: "하트+1 등 제목박스 안 글자가 답답해" — 제목박스(이름 pill) 상하 패딩 확대. */
+.shop-cards-box--heart .shop-card-name-box,
+.shop-cards-box--coin .shop-card-name-box,
+.shop-cards-box--ticket .shop-card-name-box { padding: 7px 0; }
+/* 사용자 지정: "이미지 박스 밑에 글자들과 하트+1/가득충전은 아래로 좀더" — 겹침은 없었지만
+   답답한 느낌이라, 설명글을 이미지박스에서 더 떼어놓는다(기존 gap 2px 위에 추가). */
+.shop-cards-box--heart .shop-card-desc,
+.shop-cards-box--coin .shop-card-desc,
+.shop-cards-box--ticket .shop-card-desc { margin-top: 8px; }
+/* 무기카드 높이를 재화카드와 동일하게(사용자 지정: "무기카드도 하트카드와 높이 통일, 단
+   하나 고치면 똑같이 고쳐지게 하지말고") — 재화탭 규칙과 완전히 독립된 클래스로 따로
+   복제해서 관리(지금은 값이 같지만, 이후 한쪽만 고쳐도 서로 영향 없음). */
+.shop-cards-box--weapon .shop-card { height: calc(176px + 2cm); }
+/* 사용자 지정: "카드 안 무기박스도 하트 박스와 크기 맞춰" — 캐논/골드묠니르/알리판취(리치
+   카드)의 이미지박스를 하트와 같은 78px로. 재화탭 규칙과는 독립된 복제본. */
+.shop-cards-box--weapon .shop-card-badge--hero { height: 78px; }
+/* 사용자 지정: "뿅망치는 카드 중앙에 배치" — 뿅망치는 리치카드가 아닌 기본 카드 타입이라
+   내용을 세로 중앙 정렬. margin-top:auto(버튼)가 정렬을 무력화하니 뿅망치 버튼만 해제. */
+.shop-cards-box--weapon .shop-card:not(.shop-card--rich) { justify-content: center; }
+.shop-cards-box--weapon .shop-card-btn--plain { margin-top: 0; }
 /* 쉬머 스윕(사용자 지정: "상품안 상품, 상품선택 박스" — 기존 idle-crown-sweep 재사용, 시작버튼과
    같은 대각선 빛 쓸기). */
 .shop-card::after { content: ''; position: absolute; inset: -60%; z-index: 2; pointer-events: none;
@@ -2950,7 +2962,6 @@ body { background: var(--lm-page); }
 .shop-card-badge { flex: 0 0 auto; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; }
 .shop-card-badge svg { width: 62%; height: 62%; fill: none; stroke: #d3395a; }
 .shop-card-badge img { max-width: 72%; max-height: 72%; object-fit: contain; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.25)); }
-.shop-card-badge .cs-thumb { width: 20px; height: 20px; background: #fff; border-radius: 6px; }
 /* 알리 판취 좌/우 글러브 한 쌍 — 아이템보관창(.inv-thumb--pair)과 동일하게 오른쪽은 거울상. */
 .shop-card-badge--pair { width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; gap: 2px; }
 .shop-card-badge--pair img { max-width: 46%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.25)); }
@@ -3084,7 +3095,7 @@ body { background: var(--lm-page); }
 .shop-card-badge--hero .hero-ad-heart { position: absolute; left: 34%; top: 40%; transform: translate(-50%, -50%);
   max-width: none; max-height: none; height: 62%; width: auto; z-index: 1; }
 .shop-card-badge--hero .hero-ad-icon { position: absolute; left: 68%; top: 74%; transform: translate(-50%, -50%);
-  max-width: none; max-height: none; height: 100%; width: auto; z-index: 2; }
+  max-width: none; max-height: none; height: 80%; width: auto; z-index: 2; }
 /* 무기 카드를 하트 카드와 같은 리치 카드 형태로(사용자 지정: "무기카드는 광고 보고 하트+1
    카드 타입으로") — 중간 박스(.shop-card-img-box)에 무기 이미지를 중앙 배치. 알리 판취는
    기존과 동일하게 좌/우 글러브 한 쌍(오른쪽은 거울상). */
@@ -3496,6 +3507,59 @@ body { background: var(--lm-page); }
 .inv-equip:active { transform: scale(0.93); }
 .inv-equip:disabled { background: #d8dbe0; color: #8a8a90; cursor: default; box-shadow: none; }
 .inv-equip:disabled::before { display: none; }
+
+/* 코스튬 탭 — 5개 팀 카드(가로 스크롤) + 상세 + 획득 방법(명세서 §1~§58). */
+.cos-wrap { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
+.cos-logo { flex: 0 0 auto; max-width: 31%; height: auto; margin: 2px auto 0; object-fit: contain; }
+.cos-cards { flex: 0 0 auto; display: flex; gap: 6px; overflow-x: auto; overflow-y: visible;
+  padding: 4px 2px 6px; scrollbar-width: none; }
+.cos-cards::-webkit-scrollbar { display: none; }
+/* 엠블럼 자리는 그대로 두되(사용자 지정), 카드 테두리/배경을 엠블럼까지 감싸도록 wrap
+   쪽으로 옮겨서 "엠블럼이 카드 안에 들어있는" 하나의 큰 카드처럼 보이게 한다. */
+.cos-card-wrap { box-sizing: border-box; position: relative; flex: 0 0 auto; width: 19%; padding: 6px 4px 4px; cursor: pointer;
+  border-radius: 12px; border: 2px solid transparent; background: #0c1c3a;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.cos-card-wrap--sel { border-color: #ffd93b; box-shadow: 0 0 0 2px #ffd93b, 0 0 10px 3px rgba(255,217,59,0.85); }
+/* 높이 고정(폭 기준X) — 엠블럼마다 원본 가로세로 비율이 달라 폭 기준이면 카드 줄이
+   들쭉날쭉해지던 것(사용자 지적: "카드 줄 안맞고") 수정. */
+.cos-card-emblem { height: 26px; width: auto; max-width: 90%; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5)); }
+.cos-card {
+  box-sizing: border-box; position: relative; display: block; width: 100%; aspect-ratio: 205/234;
+  border-radius: 8px; overflow: hidden;
+}
+.cos-card-wrap--locked .cos-card-char, .cos-card-wrap--locked .cos-card-emblem { filter: grayscale(0.7) brightness(0.75); }
+.cos-card-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cos-card-char { position: absolute; left: 50%; bottom: 14%; height: 66%; width: auto; max-width: 88%;
+  transform: translateX(-50%); object-fit: contain; }
+/* 보유 상태 박스를 카드 맨 아래로 최대한 붙여서(사용자 지정) 위 배경(전광판 포함)이 제대로 보이게. */
+.cos-card-status { position: absolute; left: 4%; right: 4%; bottom: 1%; padding: 2px 0; border-radius: 6px;
+  background: linear-gradient(180deg, #57d977, #2fb457); color: #fff; font-size: 0.6rem; font-weight: 800; text-align: center; }
+.cos-card--locked .cos-card-status { background: linear-gradient(180deg, #9a9aa4, #74747c); }
+.cos-card-check { position: absolute; right: 3%; top: 3%; width: 18%; aspect-ratio: 1; border-radius: 50%;
+  background: #2fb457; color: #fff; font-size: 0.65rem; font-weight: 900; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+
+.cos-detail { flex: 0 0 auto; display: flex; gap: 6px; padding: 8px; border-radius: 12px;
+  background: linear-gradient(180deg, #2f6fed, #1f4fc4); color: #fff; }
+.cos-detail-char { flex: 0 0 auto; width: 21%; object-fit: contain; align-self: center; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35)); }
+.cos-detail-mid { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.cos-detail-name-row { display: flex; align-items: center; gap: 6px; }
+.cos-detail-name { font-size: 0.8rem; font-weight: 800; }
+.cos-detail-info { flex: 0 0 auto; width: 20px; height: 20px; border-radius: 50%; border: none;
+  background: rgba(255,255,255,0.2); color: #fff; font-size: 0.65rem; line-height: 1; cursor: pointer; padding: 0; }
+.cos-detail-effect { background: rgba(255,255,255,0.12); border-radius: 8px; padding: 5px 8px; }
+.cos-detail-effect-lbl { font-size: 0.6rem; font-weight: 700; opacity: 0.8; margin-bottom: 2px; }
+.cos-detail-effect-row { display: flex; align-items: baseline; gap: 4px; font-size: 0.64rem; font-weight: 800; flex-wrap: nowrap; white-space: nowrap; }
+.cos-detail-effect-row img { width: 14px; height: 14px; align-self: center; flex: 0 0 auto; }
+.cos-detail-effect-name { overflow: hidden; text-overflow: ellipsis; }
+.cos-detail-effect-val { color: #ffd93b; flex: 0 0 auto; }
+.cos-detail-owned { display: flex; align-items: center; gap: 5px; font-size: 0.66rem; font-weight: 700; }
+.cos-detail-owned img { width: 14px; height: 14px; }
+.cos-detail-btnbox { flex: 0 0 auto; width: 22%; display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.12); border-radius: 8px; padding: 4px; }
+.cos-detail-btn { font-size: 0.6rem; padding: 8px 2px; width: 100%;
+  display: flex; align-items: center; justify-content: center; gap: 4px; }
+.cos-detail-btn-ico { width: 13px; height: 13px; }
 
 /* 난이도: 고수·전설은 버튼 불(어느 구멍에 두더지) 끔 */
 /* 라이트 DIM (고수): 버튼 배경 불빛은 끄고, 숫자·글씨·아이콘 색만 앰버로 바꾼다 ("불 켜진" 느낌) */

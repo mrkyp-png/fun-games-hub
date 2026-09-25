@@ -302,21 +302,9 @@
       });
     }
 
+    // 코스튬 상점 카드는 신규 야구팀 코스튬 시스템에 맞춰 재구현 예정 — 그 전까지 준비중 표시.
     function renderCostumeCards() {
-      cardsEl.innerHTML = '';
-      MG.Costume.sets().forEach(function (s) {
-        if (s.id === 'starter') return;
-        var owned = MG.Costume.ownsSet(s.id);
-        cardsEl.appendChild(card({
-          badge: MG.CostumeArt.chip('hat', s.hat) + MG.CostumeArt.chip('body', s.body) + MG.CostumeArt.chip('glasses', s.glasses),
-          name: s.name,
-          price: owned ? null : (s.price.toLocaleString() + '🪙'),
-          btnText: owned ? T('mole.cos.setOwned') : T('mole.cos.setBuy', { n: s.price.toLocaleString() }),
-          btnDisabled: owned,
-          equipped: owned,
-          onClick: function () { if (MG.Costume.buySet(s.id)) done(); else alert(T('mole.shop.noCoin')); }
-        }));
-      });
+      cardsEl.innerHTML = '<p class="shop-soon">' + T('mole.inv.soon') + '</p>';
     }
 
     // 스킬 탭 — 아직 게임에 없는 카테고리(사용자 지정: "스킬(만들어야지)") — 뼈대만, 준비중 표시.
@@ -465,6 +453,9 @@
       // 무기/스킬/코스튬탭은 기존 파란색 유지.
       cardsBoxEl.classList.remove('shop-cards-box--heart', 'shop-cards-box--coin', 'shop-cards-box--ticket');
       if (activeTab === 'currency') cardsBoxEl.classList.add('shop-cards-box--' + (currencyFilter || 'heart'));
+      // 무기탭 카드 확대 스코프용(사용자 지정: "무기카드도 하트카드와 높이 통일, 단 하나 고치면
+      // 같이 고쳐지게 하지말고") — 재화탭과 별개의 독립 클래스, CSS도 따로 복제해서 쓴다.
+      cardsBoxEl.classList.toggle('shop-cards-box--weapon', activeTab === 'weapon');
     }
 
     function show() {

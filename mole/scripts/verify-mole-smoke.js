@@ -110,38 +110,6 @@ const FACE_PNG_B64 =
       }),
       true, 'FaceDetect returns {ok:false} for a non-face image (composite falls back to circle)');
 
-    // 메이커: 더보기 메뉴 [만들기] → 사진 주입 → 크롭 → 저장
-    await page.click('#more-menu [data-mm-make]');
-    await page.waitForSelector('#face-maker [data-fm-stage="pick"]:not([hidden])');
-    assert.ok(await page.evaluate(() => !!document.querySelector('#face-maker [data-fm-cancel]:not([hidden])')),
-      'maker from the menu shows a cancel button');
-    const tmp = path.join(os.tmpdir(), 'smokeface_' + Date.now() + '.png');
-    fs.writeFileSync(tmp, Buffer.from(FACE_PNG_B64, 'base64'));
-    await (await page.$('#face-maker [data-fm-file]')).uploadFile(tmp);
-    await page.waitForSelector('#face-maker [data-fm-stage="crop"]:not([hidden])', { timeout: 4000 });
-    await page.click('#face-maker [data-fm-next]');
-    await page.waitForSelector('#face-maker [data-fm-stage="preview"]:not([hidden])');
-    await page.click('#face-maker [data-fm-save]');
-    await page.waitForFunction(() => !!window.MoleGame.FaceStore.getActiveId(), { timeout: 4000 });
-    fs.unlinkSync(tmp);
-    assert.strictEqual(await page.evaluate(() => window.MoleGame.FaceStore.count()), 1, 'maker saved one face');
-
-    // 크롭 저장 → 꾸미기 화면 → [합성] → 짜잔 카드 → [저장]
-    await page.waitForSelector('#costume-screen:not([hidden])', { timeout: 4000 });
-    const rows = await page.evaluate(() => document.querySelectorAll('#costume-screen .cs-row').length);
-    assert.ok(rows >= 4, '꾸미기 4줄 (모자/얼굴/몸/안경)');
-    await page.click('#costume-screen [data-cs-compose]');
-    await page.waitForSelector('#costume-screen [data-cs-result]:not([hidden])', { timeout: 8000 });
-    assert.ok(await page.evaluate(() => /^blob:/.test(document.querySelector('#costume-screen [data-cs-card]').src)), '합성 결과 카드');
-    await page.click('#costume-screen [data-cs-save]');
-    await new Promise((r) => setTimeout(r, 400));
-    assert.strictEqual(await page.evaluate(() => document.getElementById('costume-screen').hidden), true, '저장 후 꾸미기 닫힘');
-
-    // 이후 섹션 위해 더보기 메뉴 다시 열기
-    await page.click('#btn-back-to-hub');
-    await new Promise((r) => setTimeout(r, 150));
-    assert.strictEqual(await page.evaluate(() => document.getElementById('more-menu').hidden), false, 'more-menu re-opens');
-
     // 프로필 사진: 아바타 탭 → 메이커(프로필 모드) → 저장 → mole.profilePic
     await page.click('#more-menu [data-mm-avatar]');
     await page.waitForSelector('#face-maker [data-fm-stage="pick"]:not([hidden])');
@@ -209,7 +177,7 @@ const FACE_PNG_B64 =
     assert.strictEqual(afterStart.boardStartHidden, true, 'board-start hidden during play');
     assert.strictEqual(await score(), 0, 'score starts at 0');
 
-    // ---- 3) 두더지 = 하나의 합성 이미지 (원본 사진/레이어 없음) ----
+    // ---- 3) 두더지 = 기본 스프라이트 (얼굴합성 기능 제거됨) ----
     let moleImg = null;
     for (let i = 0; i < 30 && !moleImg; i++) {
       await new Promise((r) => setTimeout(r, 100));
@@ -218,23 +186,11 @@ const FACE_PNG_B64 =
         return img ? img.getAttribute('src') : null;
       });
     }
-    // 활성 얼굴이 있으므로 두더지 이미지는 합성본(blob:) 이어야 한다
-    assert.ok(moleImg && /^blob:/.test(moleImg), `mole renders as ONE composited image (got ${moleImg})`);
-    // 별도 얼굴 레이어(.mole-face)나 원본 사진 img 가 없어야 한다
-    assert.strictEqual(await page.evaluate(() => document.querySelectorAll('#mole-pop-layer .mole-face, #mole-pop-layer img:not(.mole-pop-img)').length), 0,
-      'no separate face/photo layer — only the composited .mole-pop-img');
+    assert.ok(moleImg && /assets\/moles\//.test(moleImg), `mole renders with the default sprite (got ${moleImg})`);
     assert.strictEqual(await page.evaluate(() => document.querySelectorAll('.mole-pop--mole .mole-pop-img').length),
       await page.evaluate(() => document.querySelectorAll('.mole-pop--mole').length), 'one image per mole pop');
     assert.strictEqual(await page.evaluate(() => document.querySelectorAll('#mole-hole-layer .mole-hole').length), 16, '16 holes');
     assert.strictEqual(await page.evaluate(() => document.querySelectorAll('#mole-hole-front-layer .mole-hole-front').length), 16, '16 front rims');
-    // 얼굴 없는 게임은 기본 스프라이트
-    await page.evaluate(() => { window.MoleGame.FaceStore.clearActive(); });
-    await page.evaluate(() => window.__debugStartGame('easy'));
-    await waitIntroDone();
-    await page.waitForFunction(() => {
-      const img = document.querySelector('.mole-pop--mole .mole-pop-img');
-      return img && /assets\/moles\//.test(img.src);
-    }, { timeout: 8000 });
 
     // ---- 4) 직접 터치 무효 ----
     const beforeDirect = await score();
