@@ -505,14 +505,14 @@
     // "사진관 UI 및 에셋/명세서.txt". 상단 코스튬 5개 엠블럼 + 얼굴형 3슬롯(현재 코스튬 기준) +
     // 이름/효과/게임적용 + 우측 상단 돋보기(전체 컬렉션 진입).
     function renderPhoto() {
-      var locked = !!(opts.gameInProgress && opts.gameInProgress());
       var PS = MG.PhotoStudio;
+      // 사용자 지정(2026-09-26): 하단 이름/효과/게임적용 바 + 투명박스 전부 삭제,
+      // 돋보기는 정사각형 영역 최우측 상단 모서리로 독립 이동(엠블럼 줄과 안 겹침).
       body.innerHTML =
         '<div class="photo-square">' +
           '<button type="button" class="photo-search-btn" data-photo-search aria-label="전체 컬렉션">🔍</button>' +
           '<div class="photo-emblems" data-photo-emblems></div>' +
           '<div class="photo-slots" data-photo-slots></div>' +
-          '<div class="photo-detail" data-photo-detail></div>' +
         '</div>';
 
       var emblemsEl = body.querySelector('[data-photo-emblems]');
@@ -536,8 +536,10 @@
         slot.className = 'photo-slot' + (sel ? ' photo-slot--sel' : '');
         // 사용자 지정: 완성 여부와 무관하게 항상 얼굴형 캐릭터 이미지를 보여주고(§"제일
         // 중요"), 미완성은 흑백 처리로만 구분. 얼굴형 이름은 카드 좌상단 대각선 띠로.
+        // 캐릭터 발밑에는 에셋6의 원형 발판(선택=골드/그외=블루)을 배경으로 깐다.
         slot.innerHTML =
           '<span class="photo-slot-frame">' +
+            '<img class="photo-slot-pedestal" alt="" src="assets/photo/pedestal_' + (sel ? 'gold' : 'blue') + '.png">' +
             '<img class="photo-slot-img' + (completed ? '' : ' photo-slot-img--locked') + '" alt="" src="assets/photo/characters/' + id + '.png">' +
             '<span class="photo-slot-ribbon"></span>' +
             (applied ? '<span class="photo-slot-applied">✓</span>' : '') +
@@ -547,44 +549,10 @@
         slotsEl.appendChild(slot);
       });
 
-      renderPhotoDetail(photoFace + '_' + photoCostumeId, locked);
-
       body.querySelector('[data-photo-search]').addEventListener('click', function () {
         photoCollectionOpen = true;
         renderPhotoCollection();
       });
-    }
-
-    function renderPhotoDetail(id, locked) {
-      var PS = MG.PhotoStudio;
-      var detail = body.querySelector('[data-photo-detail]');
-      var completed = PS.isCompleted(id);
-      var applied = PS.isApplied(id);
-      detail.innerHTML =
-        '<div class="photo-detail-name"></div>' +
-        '<div class="photo-detail-effect"><span></span><b></b></div>' +
-        '<div class="photo-detail-btns">' +
-          '<button type="button" class="inv-equip photo-detail-rename" data-photo-rename></button>' +
-          '<button type="button" class="inv-equip photo-detail-apply" data-photo-apply></button>' +
-        '</div>';
-      detail.querySelector('.photo-detail-name').textContent = completed ? PS.nameOf(id, I18N.lang) : T('mole.photo.locked');
-      detail.querySelector('.photo-detail-effect span').textContent = T('mole.photo.effectTitle');
-      detail.querySelector('.photo-detail-effect b').textContent = completed
-        ? ('+' + PS.CHAR_EFFECT_VALUE + (I18N.lang === 'en' ? 's' : '초') + ' ' + T('mole.photo.effectName'))
-        : '-';
-      var renameBtn = detail.querySelector('[data-photo-rename]');
-      renameBtn.textContent = T('mole.photo.rename');
-      renameBtn.disabled = !completed || locked;
-      if (completed && !locked) renameBtn.addEventListener('click', function () { openPhotoRenameDialog(id); });
-      var applyBtn = detail.querySelector('[data-photo-apply]');
-      applyBtn.textContent = applied ? T('mole.photo.applied') : T('mole.photo.apply');
-      applyBtn.disabled = !completed || locked || (!applied && PS.appliedIds().length >= PS.MAX_APPLIED);
-      if (!applyBtn.disabled) {
-        applyBtn.addEventListener('click', function () {
-          PS.toggleApply(id);
-          renderPhoto();
-        });
-      }
     }
 
     // 이름 변경 팝업 — game.js showQuitDialog()와 동일한 .ad-overlay/.quit-card 재사용(§33).
@@ -700,7 +668,10 @@
           (applied ? '<div class="photo-zoom-applied"></div>' : '') +
           '<div class="photo-zoom-name"></div>' +
           '<div class="photo-zoom-effect"><span></span><b></b></div>' +
-          '<button type="button" class="inv-equip photo-zoom-rename" data-photo-zoom-rename></button>' +
+          '<div class="photo-zoom-btns">' +
+            '<button type="button" class="inv-equip photo-zoom-rename" data-photo-zoom-rename></button>' +
+            '<button type="button" class="inv-equip photo-zoom-apply" data-photo-zoom-apply></button>' +
+          '</div>' +
         '</div>';
       zoom.querySelector('.photo-zoom-name').textContent = completed ? PS.nameOf(id, I18N.lang) : T('mole.photo.locked');
       if (applied) zoom.querySelector('.photo-zoom-applied').textContent = '✓ ' + T('mole.photo.applied');
@@ -712,6 +683,16 @@
       renameBtn.textContent = T('mole.photo.rename');
       renameBtn.disabled = !completed;
       if (completed) renameBtn.addEventListener('click', function () { openPhotoRenameDialog(id); });
+      var applyBtn = zoom.querySelector('[data-photo-zoom-apply]');
+      applyBtn.textContent = applied ? T('mole.photo.applied') : T('mole.photo.apply');
+      applyBtn.disabled = !completed || (!applied && PS.appliedIds().length >= PS.MAX_APPLIED);
+      if (!applyBtn.disabled) {
+        applyBtn.addEventListener('click', function () {
+          PS.toggleApply(id);
+          renderPhotoDetailZoom(id);
+          renderPhotoCollection();
+        });
+      }
       zoom.querySelector('[data-photo-zoom-close]').addEventListener('click', function () {
         zoom.remove();
         photoDetailId = null;

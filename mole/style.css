@@ -3806,14 +3806,17 @@ body { background: var(--lm-page); }
      따라오게 해서 항상 박스 안에 100% 들어오면서 정사각형을 유지한다. */
   flex-shrink: 0;
 }
+/* 사용자 지정: 돋보기는 정사각형 영역 최우측 상단 모서리에 독립적으로(엠블럼 줄 폭
+   계산과 무관하게 항상 코너에 고정, 살짝 겹쳐도 됨). */
 .photo-search-btn {
-  position: absolute; right: 6px; top: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 50%;
+  position: absolute; right: 3px; top: 3px; z-index: 6; width: 26px; height: 26px; border-radius: 50%;
   border: 2px solid #ffd93b; background: linear-gradient(180deg, #2f6fed, #1c3f96); color: #fff;
-  font-size: 0.85rem; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  font-size: 0.75rem; display: flex; align-items: center; justify-content: center; cursor: pointer;
   box-shadow: 0 2px 4px rgba(0,0,0,0.4);
 }
+/* 사용자 지정: "엠블럼 박스는 전체 박스 좌/우/위쪽 여백 0.1cm로, 최대한 크게". */
 .photo-emblems { position: relative; z-index: 2; display: flex; justify-content: center; gap: 4px;
-  padding: 6px 34px 4px; }
+  padding: 0.1cm 0.1cm 4px; }
 /* 사용자 지정: "엠블럼은 박스 안에 있게(각각 박스 안에 엠블럼이 있게)" — 선택 여부와
    무관하게 항상 카드형 박스 안에 담는다. */
 .photo-emblem { flex: 1 1 0; min-width: 0; max-width: 20%; padding: 3px; border-radius: 8px;
@@ -3822,8 +3825,10 @@ body { background: var(--lm-page); }
 .photo-emblem--on { background: rgba(255,217,59,0.35); border-color: #ffd93b; box-shadow: 0 0 0 2px #ffd93b; }
 .photo-emblem img { width: 100%; height: auto; object-fit: contain; display: block; }
 
-.photo-slots { position: relative; z-index: 2; flex: 1 1 auto; min-height: 0; display: flex; gap: 6px;
-  padding: 4px 8px; }
+/* 사용자 지정: "카드 3개도 좌/우 여백 0.1cm로 최대한 넓게, 카드간 간격은 줄여도 됨".
+   하단 이름/효과/게임적용 바가 삭제돼 .photo-slots가 남는 세로공간을 전부 차지한다. */
+.photo-slots { position: relative; z-index: 2; flex: 1 1 auto; min-height: 0; display: flex; gap: 3px;
+  padding: 4px 0.1cm; }
 .photo-slot { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center;
   gap: 3px; background: none; border: none; cursor: pointer; }
 .photo-slot-frame {
@@ -3832,28 +3837,21 @@ body { background: var(--lm-page); }
   justify-content: center; overflow: hidden;
 }
 .photo-slot--sel .photo-slot-frame { border-color: #ffd93b; box-shadow: inset 0 0 0 2px #ffd93b, 0 0 10px 2px rgba(255,217,59,0.7); }
-.photo-slot-img { width: 100%; height: 100%; object-fit: contain; }
+/* 사용자 지정: "카드안 케릭 신발 밑에는 에셋6의 원 구조물을 넣으세요"(선택=골드/그외=블루). */
+.photo-slot-pedestal { position: absolute; left: 50%; bottom: 6%; width: 82%; height: auto;
+  transform: translateX(-50%); z-index: 1; }
+.photo-slot-img { position: relative; z-index: 2; width: 100%; height: 100%; object-fit: contain; }
 .photo-slot-img--locked, .photo-coll-card-img--locked, .photo-zoom-img--locked { filter: grayscale(1) brightness(0.7); }
 .photo-slot-applied { position: absolute; right: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%;
   background: #57d977; color: #fff; font-size: 10px; font-weight: 900; display: flex; align-items: center;
-  justify-content: center; box-shadow: 0 0 0 2px #142a63; z-index: 2; }
+  justify-content: center; box-shadow: 0 0 0 2px #142a63; z-index: 3; }
 /* 사용자 지정: "얼굴형 글자는 카드 왼쪽 상단에 띠모양(사선형태)" — 코너 리본. */
 .photo-slot-ribbon {
-  position: absolute; left: -28%; top: 12%; z-index: 3; width: 100%;
+  position: absolute; left: -28%; top: 12%; z-index: 4; width: 100%;
   transform: rotate(-40deg); transform-origin: center;
   background: linear-gradient(180deg, #2f6fed, #1c3f96); color: #fff; text-align: center;
   font-size: 0.42rem; font-weight: 800; padding: 2px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
-
-.photo-detail { position: relative; z-index: 2; flex: 0 0 auto; display: flex; align-items: center; gap: 6px;
-  padding: 6px 8px; background: rgba(10,20,50,0.55); }
-.photo-detail-name { flex: 1 1 auto; min-width: 0; font-size: 0.6rem; font-weight: 800; color: #ffd93b;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.photo-detail-effect { flex: 0 0 auto; display: flex; align-items: baseline; gap: 3px; font-size: 0.48rem;
-  font-weight: 700; color: #cfe0ff; }
-.photo-detail-effect b { color: #ffd93b; }
-.photo-detail-btns { flex: 0 0 auto; display: flex; gap: 4px; }
-.photo-detail-rename, .photo-detail-apply { font-size: 0.44rem; padding: 5px 7px; width: auto; }
 
 /* 전체 컬렉션 — Bottom Sheet/Overlay(§6, §19~23), .photo-square 와 동일 크기.
    사용자 지정: "컬렉션 화면 에셋1/에셋2 사용" — 트로피 헤더(위) + 카드 그리드
@@ -3905,7 +3903,8 @@ body { background: var(--lm-page); }
 .photo-zoom-name { font-size: 0.7rem; font-weight: 900; color: #ffd93b; }
 .photo-zoom-effect { display: flex; gap: 4px; font-size: 0.52rem; font-weight: 700; color: #cfe0ff; }
 .photo-zoom-effect b { color: #ffd93b; }
-.photo-zoom-rename { width: auto; padding: 5px 14px; font-size: 0.5rem; margin-top: 2px; }
+.photo-zoom-btns { display: flex; gap: 6px; margin-top: 2px; }
+.photo-zoom-rename, .photo-zoom-apply { width: auto; padding: 5px 14px; font-size: 0.5rem; }
 
 @keyframes photo-shake {
   0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); }
