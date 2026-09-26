@@ -3784,9 +3784,9 @@ body { background: var(--lm-page); }
   grid-template-rows: repeat(2, minmax(0, 1fr)); justify-content: stretch; }
 .skl-right-icons--grid2 .skl-mini { width: 100%; height: 100%; aspect-ratio: auto; }
 
-/* 사진관 탭(§8~35) — 기존 정사각형 영역 안에서만 표시(§4, §21). 명세서: 바탕화면
-   "사진관 UI 및 에셋/명세서.txt". .photo-square 를 aspect-ratio:1 로 만들어 .inv-body의
-   나머지 직사각형 탭들과 달리 정사각형만 차지하고 가운데 정렬한다. */
+/* 사진관 탭(§8~35). 명세서: 바탕화면 "사진관 UI 및 에셋/명세서.txt".
+   사용자 지정: 정사각형 제약 폐기, .photo-square 는 이제 .inv-body 전체 폭(엠블럼과
+   동일한 좌우 끝)을 쓰는 직사각형 영역. */
 /* 사용자 지정: "전체파란박스는 3D입체로 들어간 이미지, 그안에 배경화면이 있게" —
    :has()로 사진관 탭일 때만 전체파란박스 자체에 배경화면을 깔고 안쪽으로 눌린
    3D 느낌(다중 inset 그림자)을 준다. .photo-square 는 이제 배경 없이 그 위에
@@ -3798,15 +3798,11 @@ body { background: var(--lm-page); }
     inset 10px 0 18px rgba(0,0,0,0.4), inset -10px 0 18px rgba(0,0,0,0.4);
 }
 .photo-square {
-  position: relative; flex: 1 1 auto; min-height: 0; width: auto; max-width: 100%;
-  aspect-ratio: 1; margin: 0 auto calc(0.1cm - 12px);
+  position: relative; flex: 1 1 auto; min-height: 0; width: 100%;
+  margin: 0 0 calc(0.1cm - 12px);
   border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;
-  /* width:100% 기준이면 세로가 부족한 박스 안에서 정사각형이 찌그러지거나(§8 위반)
-     스크롤로 잘려 보였음 — 높이를 기준으로 정사각형을 잡고 폭은 aspect-ratio로
-     따라오게 해서 항상 박스 안에 100% 들어오면서 정사각형을 유지한다.
-     height:100%(고정 %)로는 margin을 줘도 크기 자체가 안 늘어나서(위치만 이동)
-     flex:1 1 auto로 바꿔야 .skl-wrap과 동일한 calc(0.1cm - Npx) 패딩 상쇄가
-     실제 크기 증가로 이어진다. 위쪽 상쇄는 이제 첫 자식인 .photo-emblems가 담당. */
+  /* 사용자 지정: 정사각형 제약 해제 — 카드 3장이 엠블럼 줄과 동일한 좌우 끝(.inv-body
+     전체 폭)까지 넓어지도록 폭을 정사각형(aspect-ratio) 대신 100%로 고정. */
 }
 /* 사용자 지정: 돋보기는 정사각형 영역 최우측 상단 모서리에 독립적으로(엠블럼 줄 폭
    계산과 무관하게 항상 코너에 고정, 살짝 겹쳐도 됨). */
@@ -3823,7 +3819,7 @@ body { background: var(--lm-page); }
 /* 사용자 지정: 정사각형(.photo-square) 밖으로 빼서 .inv-body 전체 폭을 쓰게 함(엠블럼 확대).
    이제 .inv-body의 첫 자식이라 위쪽 패딩 상쇄(calc(0.1cm - 10px))는 여기로 옮긴다. */
 .photo-emblems { flex: 0 0 auto; display: flex; justify-content: center; gap: 4px;
-  margin-top: calc(0.1cm - 10px); padding: 0 0.1cm 4px; }
+  margin-top: calc(0.3cm - 10px); padding: 0 0.1cm 4px; }
 /* 사용자 지정: "엠블럼은 박스 안에 있게" + "엠블럼 박스는 투명이면 안됨, 파란박스로" —
    선택 여부와 무관하게 항상 불투명 파란 박스 안에 담는다(배경사진이 안 비침). */
 .photo-emblem { flex: 1 1 0; min-width: 0; max-width: 20%; padding: 3px; border-radius: 8px;
