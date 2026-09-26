@@ -3586,8 +3586,12 @@ body { background: var(--lm-page); }
 .cos-detail-char-wrap { position: relative; flex: 0 0 auto; align-self: stretch; width: 21%; margin: 0.1cm 0; }
 /* 사용자 지정: "두더지 10% 키우기" 이후 "20% 더 키우기" — 110% × 1.2 = 132%.
    중심 기준으로 확대(상하좌우 대칭), 0.1cm 여백이 양쪽에서 균등하게 줄어드는 방식. */
-.cos-detail-char { position: absolute; left: 50%; top: calc(50% - 0.1cm); height: auto; width: 85.6%; max-width: none;
-  transform: translate(-50%, -50%); object-fit: contain; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35)); }
+/* 사용자 지적: "수평기준 높이 틀림" — center(top:50%) 정렬은 캐릭터별 이미지 전체 높이
+   차이에 따라 발 위치(수평 기준선)가 미세하게 달라짐. bottom 기준 정렬로 바꿔 모든
+   캐릭터의 발이 항상 같은 수평선에 맞도록(각 이미지는 발이 캔버스 맨 아래에 오게
+   크롭돼 있음). */
+.cos-detail-char { position: absolute; left: 50%; bottom: 5%; height: auto; width: 94.16%; max-width: none;
+  transform: translateX(-50%); object-fit: contain; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35)); }
 .cos-detail-mid { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .cos-detail-name-row { display: flex; align-items: center; gap: 6px; }
 .cos-detail-name { font-size: 0.8rem; font-weight: 800; }
