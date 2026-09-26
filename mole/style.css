@@ -3506,8 +3506,10 @@ body { background: var(--lm-page); }
    조합은 CSS 스펙상 visible이 auto로 강제 전환돼(사용자 지적: "노란 글로우 세로로 잘림")
    상하 글로우까지 잘렸었음 — 지금은 카드 5장이 정확히 다 들어가 가로 스크롤이 필요 없으므로
    overflow:visible로 전환해 문제 원천 해결(카드가 6개 이상으로 늘어나면 재검토 필요). */
-.cos-cards { flex: 1 1 auto; display: flex; gap: 6px; overflow: visible;
-  padding: 4px 2px 6px; margin: 0 -10.64px 0 -6px; scrollbar-width: none; }
+/* 사용자 지정: "카드 사이사이 간격을 좁혀서 외곽(캐릭터) 잘리는거 보완" — gap 6px→3px로
+   줄인 만큼 카드 폭(.cos-card-wrap)을 늘려 카드 자체를 더 크게. */
+.cos-cards { flex: 1 1 auto; display: flex; gap: 3px; overflow: visible;
+  padding: 4px 2px 6px; margin: 0 -12.02px 0 -6px; scrollbar-width: none; }
 .cos-cards::-webkit-scrollbar { display: none; }
 /* 엠블럼 자리는 그대로 두되(사용자 지정), 카드 테두리/배경을 엠블럼까지 감싸도록 wrap
    쪽으로 옮겨서 "엠블럼이 카드 안에 들어있는" 하나의 큰 카드처럼 보이게 한다. */
@@ -3518,7 +3520,7 @@ body { background: var(--lm-page); }
 /* 사용자 지적: "좌우 간격이 상세박스와 동일해 보이지 않음" — 5장×19%+간격 합이 행 폭보다
    7px 커서(overflow) 마지막 카드가 밀려 좌(14px)/우(7.16px) 비대칭이었음. 18.4%로 줄여
    overflow 제거 후 아래 margin 보정으로 상세박스(8px)와 정확히 맞춤. */
-.cos-card-wrap { box-sizing: border-box; position: relative; flex: 0 0 auto; width: 18.4%; cursor: pointer;
+.cos-card-wrap { box-sizing: border-box; position: relative; flex: 0 0 auto; width: 19%; cursor: pointer;
   border-radius: 12px; border: 2px solid #4a90f5; background: transparent; }
 /* 사용자 지정: "카드는 파란색 테두리, 선택카드는 노란색 굵게 글로우". */
 /* border-width는 다른 카드와 동일하게 2px 유지(카드 높이가 border 두께만큼 달라지는 것
