@@ -100,6 +100,11 @@
     // 페이지(◀ N/M ▶)는 독립적으로 유지.
     var activePage = 0;
     var passivePage = 0;
+    // 사진관 탭 상태 — 현재 보고 있는 코스튬/얼굴형, 전체 컬렉션·상세 오버레이 열림 여부(§20).
+    var photoCostumeId = 'blue_bears';
+    var photoFace = 'round';
+    var photoCollectionOpen = false;
+    var photoDetailId = null;
 
     // 상점 카드줄과 동일한 점+화살표 페이징(사용자 지정: "상점 구조와 동일하되 한페이지 한장씩").
     // ⚠️ 처음엔 scrollBy(상대량) 방식이었는데, 카드 실측폭(getBoundingClientRect)과 grid의
@@ -488,6 +493,233 @@
       });
     }
 
+    var PHOTO_FACE_I18N = { round: 'mole.photo.faceRound', sturdy: 'mole.photo.faceSturdy', sharp: 'mole.photo.faceSharp' };
+
+    // 사진관 메인 화면 — 기존 정사각형 영역 안에서만 표시(§8, §35). 명세서: 바탕화면
+    // "사진관 UI 및 에셋/명세서.txt". 상단 코스튬 5개 엠블럼 + 얼굴형 3슬롯(현재 코스튬 기준) +
+    // 이름/효과/게임적용 + 우측 상단 돋보기(전체 컬렉션 진입).
+    function renderPhoto() {
+      var locked = !!(opts.gameInProgress && opts.gameInProgress());
+      var PS = MG.PhotoStudio;
+      body.innerHTML =
+        '<div class="photo-square">' +
+          '<button type="button" class="photo-search-btn" data-photo-search aria-label="전체 컬렉션">🔍</button>' +
+          '<div class="photo-emblems" data-photo-emblems></div>' +
+          '<div class="photo-slots" data-photo-slots></div>' +
+          '<div class="photo-detail" data-photo-detail></div>' +
+        '</div>';
+
+      var emblemsEl = body.querySelector('[data-photo-emblems]');
+      PS.costumes().forEach(function (c) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'photo-emblem' + (c.id === photoCostumeId ? ' photo-emblem--on' : '');
+        b.innerHTML = '<img alt="" src="assets/costume/emblem-' + c.id + '.png">';
+        b.addEventListener('click', function () { photoCostumeId = c.id; renderPhoto(); });
+        emblemsEl.appendChild(b);
+      });
+
+      var slotsEl = body.querySelector('[data-photo-slots]');
+      PS.faceTypes().forEach(function (f) {
+        var id = f.id + '_' + photoCostumeId;
+        var completed = PS.isCompleted(id);
+        var applied = PS.isApplied(id);
+        var sel = f.id === photoFace;
+        var slot = document.createElement('button');
+        slot.type = 'button';
+        slot.className = 'photo-slot' + (sel ? ' photo-slot--sel' : '');
+        slot.innerHTML =
+          '<span class="photo-slot-frame">' +
+            (completed ? '<img class="photo-slot-img" alt="" src="assets/photo/characters/' + id + '.png">' : '<span class="photo-slot-lock">🔒</span>') +
+            (applied ? '<span class="photo-slot-applied">✓</span>' : '') +
+          '</span>' +
+          '<span class="photo-slot-name"></span>';
+        slot.querySelector('.photo-slot-name').textContent = T(PHOTO_FACE_I18N[f.id]);
+        slot.addEventListener('click', function () { photoFace = f.id; renderPhoto(); });
+        slotsEl.appendChild(slot);
+      });
+
+      renderPhotoDetail(photoFace + '_' + photoCostumeId, locked);
+
+      body.querySelector('[data-photo-search]').addEventListener('click', function () {
+        photoCollectionOpen = true;
+        renderPhotoCollection();
+      });
+    }
+
+    function renderPhotoDetail(id, locked) {
+      var PS = MG.PhotoStudio;
+      var detail = body.querySelector('[data-photo-detail]');
+      var completed = PS.isCompleted(id);
+      var applied = PS.isApplied(id);
+      detail.innerHTML =
+        '<div class="photo-detail-name"></div>' +
+        '<div class="photo-detail-effect"><span></span><b></b></div>' +
+        '<div class="photo-detail-btns">' +
+          '<button type="button" class="inv-equip photo-detail-rename" data-photo-rename></button>' +
+          '<button type="button" class="inv-equip photo-detail-apply" data-photo-apply></button>' +
+        '</div>';
+      detail.querySelector('.photo-detail-name').textContent = completed ? PS.nameOf(id, I18N.lang) : T('mole.photo.locked');
+      detail.querySelector('.photo-detail-effect span').textContent = T('mole.photo.effectTitle');
+      detail.querySelector('.photo-detail-effect b').textContent = completed
+        ? ('+' + PS.CHAR_EFFECT_VALUE + (I18N.lang === 'en' ? 's' : '초') + ' ' + T('mole.photo.effectName'))
+        : '-';
+      var renameBtn = detail.querySelector('[data-photo-rename]');
+      renameBtn.textContent = T('mole.photo.rename');
+      renameBtn.disabled = !completed || locked;
+      if (completed && !locked) renameBtn.addEventListener('click', function () { openPhotoRenameDialog(id); });
+      var applyBtn = detail.querySelector('[data-photo-apply]');
+      applyBtn.textContent = applied ? T('mole.photo.applied') : T('mole.photo.apply');
+      applyBtn.disabled = !completed || locked || (!applied && PS.appliedIds().length >= PS.MAX_APPLIED);
+      if (!applyBtn.disabled) {
+        applyBtn.addEventListener('click', function () {
+          PS.toggleApply(id);
+          renderPhoto();
+        });
+      }
+    }
+
+    // 이름 변경 팝업 — game.js showQuitDialog()와 동일한 .ad-overlay/.quit-card 재사용(§33).
+    function openPhotoRenameDialog(id) {
+      var v = document.createElement('div');
+      v.className = 'ad-overlay';
+      v.innerHTML = '<div class="ad-overlay-card quit-card">' +
+        '<div class="quit-title"></div>' +
+        '<input type="text" class="fm-name photo-rename-input" maxlength="12">' +
+        '<div class="quit-btns">' +
+        '<button type="button" data-q="no"></button>' +
+        '<button type="button" class="quit-yes" data-q="yes"></button></div></div>';
+      v.querySelector('.quit-title').textContent = T('mole.photo.rename');
+      var input = v.querySelector('.photo-rename-input');
+      input.placeholder = T('mole.photo.renamePlaceholder');
+      input.value = MG.PhotoStudio.nameOf(id, I18N.lang);
+      v.querySelector('[data-q="no"]').textContent = T('mole.photo.renameCancel');
+      v.querySelector('[data-q="yes"]').textContent = T('mole.photo.renameSave');
+      document.body.appendChild(v);
+      v.querySelector('[data-q="no"]').addEventListener('click', function () { v.remove(); });
+      v.querySelector('[data-q="yes"]').addEventListener('click', function () {
+        var res = MG.PhotoStudio.setName(id, input.value.trim());
+        if (!res.ok) {
+          input.classList.remove('is-shake'); void input.offsetWidth; input.classList.add('is-shake');
+          return;
+        }
+        v.remove();
+        renderPhoto();
+        if (photoCollectionOpen) renderPhotoCollection();
+        if (photoDetailId) renderPhotoDetailZoom(photoDetailId);
+      });
+    }
+
+    // 전체 컬렉션 — 기존 사진관 위 Bottom Sheet/Overlay(§6, §19~23), 정사각형 영역 그대로(§21).
+    function renderPhotoCollection() {
+      var PS = MG.PhotoStudio;
+      var square = body.querySelector('.photo-square');
+      if (!square) return; // 탭 전환 등으로 이미 사라짐
+      var overlay = square.querySelector('[data-photo-overlay]');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'photo-overlay';
+        overlay.setAttribute('data-photo-overlay', '');
+        square.appendChild(overlay);
+      }
+      overlay.innerHTML =
+        '<button type="button" class="photo-coll-back" data-photo-back>‹</button>' +
+        '<img class="photo-coll-header" alt="" src="assets/photo/collection-header.png">' +
+        '<div class="photo-coll-progress" data-photo-progress></div>' +
+        '<div class="photo-coll-grid" data-photo-grid></div>';
+      overlay.querySelector('[data-photo-progress]').textContent = PS.completedCount() + ' / ' + PS.TOTAL;
+
+      var grid = overlay.querySelector('[data-photo-grid]');
+      PS.faceTypes().forEach(function (f) {
+        PS.charactersFor(f.id).forEach(function (def) {
+          var id = def.id;
+          var completed = PS.isCompleted(id);
+          var applied = PS.isApplied(id);
+          var card = document.createElement('button');
+          card.type = 'button';
+          card.className = 'photo-coll-card';
+          card.innerHTML =
+            '<img class="photo-coll-card-frame" alt="" src="assets/photo/card-frame.png">' +
+            (completed ? '<img class="photo-coll-card-img" alt="" src="assets/photo/characters/' + id + '.png">' : '<span class="photo-coll-card-lock">🔒</span>') +
+            (applied ? '<span class="photo-coll-card-applied">✓</span>' : '');
+          if (completed) card.addEventListener('click', function () { photoDetailId = id; renderPhotoDetailZoom(id); });
+          grid.appendChild(card);
+        });
+      });
+
+      // reflow 뒤에 열림 클래스를 줘야 슬라이드 업 트랜지션이 실제로 재생된다.
+      overlay.classList.remove('is-open');
+      void overlay.offsetWidth;
+      overlay.classList.add('is-open');
+      overlay.querySelector('[data-photo-back]').addEventListener('click', closePhotoCollection);
+    }
+    function closePhotoCollection() {
+      var square = body.querySelector('.photo-square');
+      var overlay = square && square.querySelector('[data-photo-overlay]');
+      photoCollectionOpen = false;
+      photoDetailId = null;
+      if (!overlay) return;
+      overlay.classList.remove('is-open');
+      setTimeout(function () { if (overlay.parentNode) overlay.remove(); }, 300);
+    }
+
+    // 확대 상세(§31~34) — 컬렉션 위에 뜨는 DETAIL LAYER, 완성된 캐릭터만 진입 가능.
+    function renderPhotoDetailZoom(id) {
+      var PS = MG.PhotoStudio;
+      var overlay = body.querySelector('[data-photo-overlay]');
+      if (!overlay) return;
+      var zoom = overlay.querySelector('[data-photo-zoom]');
+      if (!zoom) {
+        zoom = document.createElement('div');
+        zoom.className = 'photo-zoom';
+        zoom.setAttribute('data-photo-zoom', '');
+        overlay.appendChild(zoom);
+      }
+      var list = PS.characters();
+      var idx = -1;
+      for (var i = 0; i < list.length; i++) if (list[i].id === id) { idx = i; break; }
+      var completed = PS.isCompleted(id);
+      var applied = PS.isApplied(id);
+      zoom.innerHTML =
+        '<div class="photo-zoom-dim" data-photo-zoom-dim></div>' +
+        '<div class="photo-zoom-card">' +
+          '<button type="button" class="photo-zoom-close" data-photo-zoom-close>✕</button>' +
+          '<button type="button" class="photo-zoom-nav photo-zoom-nav--prev" data-photo-zoom-prev>‹</button>' +
+          '<button type="button" class="photo-zoom-nav photo-zoom-nav--next" data-photo-zoom-next>›</button>' +
+          '<span class="photo-zoom-imgwrap">' +
+            (completed ? '<img class="photo-zoom-img" alt="" src="assets/photo/characters/' + id + '.png">' : '<span class="photo-zoom-lock">🔒</span>') +
+          '</span>' +
+          (applied ? '<div class="photo-zoom-applied"></div>' : '') +
+          '<div class="photo-zoom-name"></div>' +
+          '<div class="photo-zoom-effect"><span></span><b></b></div>' +
+          '<button type="button" class="inv-equip photo-zoom-rename" data-photo-zoom-rename></button>' +
+        '</div>';
+      zoom.querySelector('.photo-zoom-name').textContent = completed ? PS.nameOf(id, I18N.lang) : T('mole.photo.locked');
+      if (applied) zoom.querySelector('.photo-zoom-applied').textContent = '✓ ' + T('mole.photo.applied');
+      zoom.querySelector('.photo-zoom-effect span').textContent = T('mole.photo.effectTitle');
+      zoom.querySelector('.photo-zoom-effect b').textContent = completed
+        ? ('+' + PS.CHAR_EFFECT_VALUE + (I18N.lang === 'en' ? 's' : '초') + ' ' + T('mole.photo.effectName'))
+        : '-';
+      var renameBtn = zoom.querySelector('[data-photo-zoom-rename]');
+      renameBtn.textContent = T('mole.photo.rename');
+      renameBtn.disabled = !completed;
+      if (completed) renameBtn.addEventListener('click', function () { openPhotoRenameDialog(id); });
+      zoom.querySelector('[data-photo-zoom-close]').addEventListener('click', function () {
+        zoom.remove();
+        photoDetailId = null;
+      });
+      zoom.querySelector('[data-photo-zoom-dim]').addEventListener('click', function () {
+        zoom.remove();
+        photoDetailId = null;
+      });
+      var prevBtn3 = zoom.querySelector('[data-photo-zoom-prev]');
+      var nextBtn3 = zoom.querySelector('[data-photo-zoom-next]');
+      prevBtn3.disabled = idx <= 0;
+      nextBtn3.disabled = idx >= list.length - 1;
+      prevBtn3.addEventListener('click', function () { if (idx > 0) { photoDetailId = list[idx - 1].id; renderPhotoDetailZoom(photoDetailId); } });
+      nextBtn3.addEventListener('click', function () { if (idx < list.length - 1) { photoDetailId = list[idx + 1].id; renderPhotoDetailZoom(photoDetailId); } });
+    }
+
     function renderTabs() {
       tabsEl.innerHTML = '';
       TABS.forEach(function (t) {
@@ -510,6 +742,9 @@
       // 사용자 지정(2026-09-26): 스킬 탭도 코스튬 탭처럼 상단 안내 배너 삭제 —
       // "어떤 스킬을 장착할까요? 박스 삭제해 필요없네" + 그만큼 전체파란박스가 위로 올라옴.
       if (bannerEl) bannerEl.style.display = (active === 'costume' || active === 'skill') ? 'none' : '';
+      // 사진관 탭 배너는 안내문구만 쓰고 무기탭용 좌우 페이지 화살표는 숨김(§9).
+      prevBtn.style.display = active === 'photo' ? 'none' : '';
+      nextBtn.style.display = active === 'photo' ? 'none' : '';
       // 몰리그 전광판은 코스튬 탭에서만, 전체파란박스 밖(화면 최상단)에 표시.
       if (cosLogoEl) cosLogoEl.hidden = active !== 'costume';
       // 좌측 상단 바깥쪽 두더지도 코스튬 탭 전용.
@@ -522,13 +757,20 @@
       } else if (active === 'skill') {
         dotsEl.innerHTML = '';
         renderSkills();
+      } else if (active === 'photo') {
+        dotsEl.innerHTML = '';
+        renderPhoto();
       } else {
         dotsEl.innerHTML = '';
         body.innerHTML = '<p class="inv-soon">' + T('mole.inv.soon') + '</p>';
       }
     }
 
-    return { show: function () { active = 'weapon'; costumeSelectedId = null; activePage = 0; passivePage = 0; paint(); } };
+    return { show: function () {
+      active = 'weapon'; costumeSelectedId = null; activePage = 0; passivePage = 0;
+      photoCostumeId = 'blue_bears'; photoFace = 'round'; photoCollectionOpen = false; photoDetailId = null;
+      paint();
+    } };
   }
 
   var api = { create: create };

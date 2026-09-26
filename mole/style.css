@@ -3779,6 +3779,110 @@ body { background: var(--lm-page); }
 .skl-mini img { width: 100%; height: 100%; object-fit: contain; }
 .skl-mini--empty { background: rgba(255,255,255,0.2); }
 
+/* 사진관 탭(§8~35) — 기존 정사각형 영역 안에서만 표시(§4, §21). 명세서: 바탕화면
+   "사진관 UI 및 에셋/명세서.txt". .photo-square 를 aspect-ratio:1 로 만들어 .inv-body의
+   나머지 직사각형 탭들과 달리 정사각형만 차지하고 가운데 정렬한다. */
+.photo-square {
+  position: relative; width: 100%; max-width: 100%; aspect-ratio: 1; margin: 0 auto;
+  border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;
+  background: url('assets/photo/background.jpg') center/cover no-repeat;
+}
+.photo-search-btn {
+  position: absolute; right: 6px; top: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 50%;
+  border: 2px solid #ffd93b; background: linear-gradient(180deg, #2f6fed, #1c3f96); color: #fff;
+  font-size: 0.85rem; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+.photo-emblems { position: relative; z-index: 2; display: flex; justify-content: center; gap: 4px;
+  padding: 6px 34px 4px; }
+.photo-emblem { flex: 1 1 0; min-width: 0; max-width: 20%; padding: 2px; border: none; border-radius: 8px;
+  background: rgba(10,20,50,0.35); cursor: pointer; }
+.photo-emblem--on { background: rgba(255,217,59,0.35); box-shadow: 0 0 0 2px #ffd93b; }
+.photo-emblem img { width: 100%; height: auto; object-fit: contain; display: block; }
+
+.photo-slots { position: relative; z-index: 2; flex: 1 1 auto; min-height: 0; display: flex; gap: 6px;
+  padding: 4px 8px; }
+.photo-slot { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center;
+  gap: 3px; background: none; border: none; cursor: pointer; }
+.photo-slot-frame {
+  position: relative; width: 100%; flex: 1 1 auto; min-height: 0; border-radius: 10px;
+  background: rgba(20,40,90,0.55); border: 2px solid #4a90f5; display: flex; align-items: center;
+  justify-content: center; overflow: hidden;
+}
+.photo-slot--sel .photo-slot-frame { border-color: #ffd93b; box-shadow: inset 0 0 0 2px #ffd93b, 0 0 10px 2px rgba(255,217,59,0.7); }
+.photo-slot-lock { font-size: 1.6rem; opacity: 0.75; }
+.photo-slot-img { width: 100%; height: 100%; object-fit: contain; }
+.photo-slot-applied { position: absolute; right: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%;
+  background: #57d977; color: #fff; font-size: 10px; font-weight: 900; display: flex; align-items: center;
+  justify-content: center; box-shadow: 0 0 0 2px #142a63; }
+.photo-slot-name { font-size: 0.5rem; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
+
+.photo-detail { position: relative; z-index: 2; flex: 0 0 auto; display: flex; align-items: center; gap: 6px;
+  padding: 6px 8px; background: rgba(10,20,50,0.55); }
+.photo-detail-name { flex: 1 1 auto; min-width: 0; font-size: 0.6rem; font-weight: 800; color: #ffd93b;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.photo-detail-effect { flex: 0 0 auto; display: flex; align-items: baseline; gap: 3px; font-size: 0.48rem;
+  font-weight: 700; color: #cfe0ff; }
+.photo-detail-effect b { color: #ffd93b; }
+.photo-detail-btns { flex: 0 0 auto; display: flex; gap: 4px; }
+.photo-detail-rename, .photo-detail-apply { font-size: 0.44rem; padding: 5px 7px; width: auto; }
+
+/* 전체 컬렉션 — Bottom Sheet/Overlay(§6, §19~23), .photo-square 와 동일 크기. */
+.photo-overlay {
+  position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column;
+  background: linear-gradient(180deg, #1c1430, #0c0a18); transform: translateY(100%);
+  transition: transform 0.32s ease-out; padding: 6px;
+}
+.photo-overlay.is-open { transform: translateY(0); }
+.photo-coll-back { position: absolute; left: 8px; top: 8px; z-index: 3; width: 28px; height: 28px;
+  border-radius: 50%; border: none; background: #2f6fed; color: #fff; font-size: 1rem; font-weight: 900;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.photo-coll-header { width: 100%; height: auto; display: block; margin-top: 2px; }
+.photo-coll-progress { text-align: center; font-size: 0.62rem; font-weight: 900; color: #ffd93b;
+  margin: 2px 0 6px; }
+.photo-coll-grid { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.photo-coll-card { position: relative; border: none; background: rgba(255,255,255,0.05); border-radius: 8px;
+  padding: 0; cursor: pointer; overflow: hidden; }
+.photo-coll-card-frame { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
+.photo-coll-card-img { position: absolute; inset: 8%; width: 84%; height: 84%; object-fit: contain; }
+.photo-coll-card-lock { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; opacity: 0.7; }
+.photo-coll-card-applied { position: absolute; right: 6%; top: 6%; width: 14px; height: 14px; border-radius: 50%;
+  background: #57d977; color: #fff; font-size: 9px; font-weight: 900; display: flex; align-items: center;
+  justify-content: center; box-shadow: 0 0 0 2px #142a63; }
+
+/* 확대 상세(§31~34) — 컬렉션 위 DETAIL LAYER, 배경 Dim. */
+.photo-zoom { position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; }
+.photo-zoom-dim { position: absolute; inset: 0; background: rgba(0,0,0,0.72); }
+.photo-zoom-card {
+  position: relative; z-index: 1; width: 76%; max-width: 260px; padding: 14px 10px 10px;
+  border-radius: 14px; background: linear-gradient(180deg, #2a5cc9, #1c3f96);
+  border: 3px solid #ffd93b; box-shadow: 0 0 18px 4px rgba(255,217,59,0.5);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.photo-zoom-close { position: absolute; right: 6px; top: 6px; width: 22px; height: 22px; border-radius: 50%;
+  border: none; background: rgba(0,0,0,0.4); color: #fff; font-size: 0.7rem; cursor: pointer; }
+.photo-zoom-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 26px; height: 26px;
+  border-radius: 50%; border: none; background: rgba(0,0,0,0.4); color: #fff; font-size: 0.9rem;
+  font-weight: 900; cursor: pointer; }
+.photo-zoom-nav--prev { left: -10px; }
+.photo-zoom-nav--next { right: -10px; }
+.photo-zoom-nav:disabled { opacity: 0.3; cursor: default; }
+.photo-zoom-imgwrap { width: 70%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
+.photo-zoom-img { width: 100%; height: 100%; object-fit: contain; }
+.photo-zoom-lock { font-size: 2.4rem; opacity: 0.8; }
+.photo-zoom-applied { font-size: 0.6rem; font-weight: 900; color: #57d977; }
+.photo-zoom-name { font-size: 0.7rem; font-weight: 900; color: #ffd93b; }
+.photo-zoom-effect { display: flex; gap: 4px; font-size: 0.52rem; font-weight: 700; color: #cfe0ff; }
+.photo-zoom-effect b { color: #ffd93b; }
+.photo-zoom-rename { width: auto; padding: 5px 14px; font-size: 0.5rem; margin-top: 2px; }
+
+@keyframes photo-shake {
+  0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); }
+}
+.is-shake { animation: photo-shake 0.3s ease-in-out; }
+
 /* 난이도: 고수·전설은 버튼 불(어느 구멍에 두더지) 끔 */
 /* 라이트 DIM (고수): 버튼 배경 불빛은 끄고, 숫자·글씨·아이콘 색만 앰버로 바꾼다 ("불 켜진" 느낌) */
 #game-screen.diff-mid .lane-button--hot { background: transparent; box-shadow: none; }

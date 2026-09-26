@@ -2871,6 +2871,8 @@
     window.__debugSetWeapon = (w) => {
       localStorage.setItem('mole.weapon', w === 'cannon' ? 'cannon' : (w === 'goldhammer' ? 'goldhammer' : (w === 'alipunch' ? 'alipunch' : 'hammer')));
     };
+    // 제작소가 아직 없어 사진관 캐릭터를 완성할 방법이 없음 — 테스트 전용(예: 'round_blue_bears').
+    window.__debugPhotoComplete = (id) => MG.PhotoStudio.markCompleted(id);
     window.__debugForceQuake = () => { forceQuakeNext = true; }; // 다음 두더지 타격에서 지진 강제 발동
     window.__debugQuakeAt = (regionId) => { if (state) quakeRipple(regionId | 0, 0); }; // 그 구멍에서 지진 파동 즉시
     // 디버그 전용: 지정 구멍에 즉시 두더지(1타, poseIndex 지정 가능 — 0=전신) 강제 스폰 (타격점 확인용).
