@@ -3808,20 +3808,23 @@ body { background: var(--lm-page); }
 }
 /* 사용자 지정: 돋보기는 정사각형 영역 최우측 상단 모서리에 독립적으로(엠블럼 줄 폭
    계산과 무관하게 항상 코너에 고정, 살짝 겹쳐도 됨). */
-.photo-search-btn {
-  position: absolute; right: 3px; top: 3px; z-index: 6; width: 26px; height: 26px; border-radius: 50%;
+/* 사용자 지정: "돋보기는 게임화면 모서리로 아예 옮겨라, 티커 바로 밑" — 전체파란박스
+   밖, #inventory-screen 최상단 코너에 고정(위치는 추후 재조정 예정). */
+.inv-photo-search {
+  width: 28px; height: 28px; border-radius: 50%;
   border: 2px solid #ffd93b; background: linear-gradient(180deg, #2f6fed, #1c3f96); color: #fff;
-  font-size: 0.75rem; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  font-size: 0.8rem; display: flex; align-items: center; justify-content: center; cursor: pointer;
   box-shadow: 0 2px 4px rgba(0,0,0,0.4);
 }
+#inventory-screen > .inv-photo-search { position: absolute; top: 4px; right: 6px; z-index: 6; }
 /* 사용자 지정: "엠블럼 박스는 전체 박스 좌/우/위쪽 여백 0.1cm로, 최대한 크게". */
 .photo-emblems { position: relative; z-index: 2; display: flex; justify-content: center; gap: 4px;
   padding: 0.1cm 0.1cm 4px; }
-/* 사용자 지정: "엠블럼은 박스 안에 있게(각각 박스 안에 엠블럼이 있게)" — 선택 여부와
-   무관하게 항상 카드형 박스 안에 담는다. */
+/* 사용자 지정: "엠블럼은 박스 안에 있게" + "엠블럼 박스는 투명이면 안됨, 파란박스로" —
+   선택 여부와 무관하게 항상 불투명 파란 박스 안에 담는다(배경사진이 안 비침). */
 .photo-emblem { flex: 1 1 0; min-width: 0; max-width: 20%; padding: 3px; border-radius: 8px;
-  border: 2px solid rgba(255,255,255,0.4); background: rgba(10,20,50,0.55); cursor: pointer;
-  box-shadow: inset 0 1px 2px rgba(255,255,255,0.2); }
+  border: 2px solid rgba(255,255,255,0.4); background: linear-gradient(180deg, #2a5cc9, #1c3f96);
+  cursor: pointer; box-shadow: inset 0 1px 2px rgba(255,255,255,0.2); }
 .photo-emblem--on { background: rgba(255,217,59,0.35); border-color: #ffd93b; box-shadow: 0 0 0 2px #ffd93b; }
 .photo-emblem img { width: 100%; height: auto; object-fit: contain; display: block; }
 
@@ -3830,17 +3833,22 @@ body { background: var(--lm-page); }
 .photo-slots { position: relative; z-index: 2; flex: 1 1 auto; min-height: 0; display: flex; gap: 3px;
   padding: 4px 0.1cm; }
 .photo-slot { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center;
-  gap: 3px; background: none; border: none; cursor: pointer; }
+  justify-content: center; gap: 3px; background: none; border: none; cursor: pointer; }
+/* 사용자 지정: "카드 크기에 맞게 케릭 사이즈 최대한 크게, 카드 벗어나면 안됨" — 프레임을
+   슬롯 전체(길쭉한 직사각형)로 늘리면 캐릭터 비율과 안 맞아 위아래가 뜬다. 프레임 자체를
+   캐릭터 이미지 평균 비율에 맞춰(세로가 남으면 슬롯 안에서 위아래 중앙정렬) 캐릭터가
+   프레임을 거의 꽉 채우게 한다. */
 .photo-slot-frame {
-  position: relative; width: 100%; height: 100%; border-radius: 10px;
+  position: relative; width: 100%; aspect-ratio: 0.74; max-height: 100%; border-radius: 10px;
   background: rgba(20,40,90,0.55); border: 2px solid #4a90f5; display: flex; align-items: center;
   justify-content: center; overflow: hidden;
 }
 .photo-slot--sel .photo-slot-frame { border-color: #ffd93b; box-shadow: inset 0 0 0 2px #ffd93b, 0 0 10px 2px rgba(255,217,59,0.7); }
-/* 사용자 지정: "카드안 케릭 신발 밑에는 에셋6의 원 구조물을 넣으세요"(선택=골드/그외=블루). */
-.photo-slot-pedestal { position: absolute; left: 50%; bottom: 6%; width: 82%; height: auto;
+/* 사용자 지정: "케릭 신발 밑에는 에셋6의 원 구조물을"(선택=골드/그외=블루), 발과 붙게 배치. */
+.photo-slot-pedestal { position: absolute; left: 50%; bottom: 4%; width: 88%; height: auto;
   transform: translateX(-50%); z-index: 1; }
-.photo-slot-img { position: relative; z-index: 2; width: 100%; height: 100%; object-fit: contain; }
+.photo-slot-img { position: relative; z-index: 2; width: 100%; height: 100%; object-fit: contain;
+  object-position: bottom center; }
 .photo-slot-img--locked, .photo-coll-card-img--locked, .photo-zoom-img--locked { filter: grayscale(1) brightness(0.7); }
 .photo-slot-applied { position: absolute; right: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%;
   background: #57d977; color: #fff; font-size: 10px; font-weight: 900; display: flex; align-items: center;

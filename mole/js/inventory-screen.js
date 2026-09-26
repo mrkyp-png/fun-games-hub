@@ -88,6 +88,13 @@
     var bannerEl = el.querySelector('.inv-banner');
     var cosLogoEl = el.querySelector('.inv-cos-logo');
     var cosPeekMoleEl = el.querySelector('.inv-cos-peek-mole');
+    var photoSearchBtn = el.querySelector('.inv-photo-search');
+    if (photoSearchBtn) {
+      photoSearchBtn.addEventListener('click', function () {
+        photoCollectionOpen = true;
+        renderPhotoCollection();
+      });
+    }
     var headEl = el.querySelector('.inv-cards-head');
     var dotsEl = el.querySelector('[data-inv-dots]');
     var prevBtn = el.querySelector('[data-inv-prev]');
@@ -506,11 +513,11 @@
     // 이름/효과/게임적용 + 우측 상단 돋보기(전체 컬렉션 진입).
     function renderPhoto() {
       var PS = MG.PhotoStudio;
-      // 사용자 지정(2026-09-26): 하단 이름/효과/게임적용 바 + 투명박스 전부 삭제,
-      // 돋보기는 정사각형 영역 최우측 상단 모서리로 독립 이동(엠블럼 줄과 안 겹침).
+      // 사용자 지정(2026-09-26): 하단 이름/효과/게임적용 바 + 투명박스 전부 삭제.
+      // 돋보기는 전체파란박스 밖(#inventory-screen 최상단 코너)의 별도 고정 버튼으로
+      // 이동(paint()에서 탭별로 토글, create()에서 클릭 1회만 배선).
       body.innerHTML =
         '<div class="photo-square">' +
-          '<button type="button" class="photo-search-btn" data-photo-search aria-label="전체 컬렉션">🔍</button>' +
           '<div class="photo-emblems" data-photo-emblems></div>' +
           '<div class="photo-slots" data-photo-slots></div>' +
         '</div>';
@@ -547,11 +554,6 @@
         slot.querySelector('.photo-slot-ribbon').textContent = T(PHOTO_FACE_I18N[f.id]);
         slot.addEventListener('click', function () { photoFace = f.id; renderPhoto(); });
         slotsEl.appendChild(slot);
-      });
-
-      body.querySelector('[data-photo-search]').addEventListener('click', function () {
-        photoCollectionOpen = true;
-        renderPhotoCollection();
       });
     }
 
@@ -739,6 +741,7 @@
       if (cosLogoEl) cosLogoEl.hidden = active !== 'costume';
       // 좌측 상단 바깥쪽 두더지도 코스튬 탭 전용.
       if (cosPeekMoleEl) cosPeekMoleEl.hidden = active !== 'costume';
+      if (photoSearchBtn) photoSearchBtn.hidden = active !== 'photo';
       if (active === 'weapon') {
         renderWeapons();
       } else if (active === 'costume') {
