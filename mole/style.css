@@ -3778,6 +3778,11 @@ body { background: var(--lm-page); }
   background: rgba(255,255,255,0.5); overflow: hidden; }
 .skl-mini img { width: 100%; height: 100%; object-fit: contain; }
 .skl-mini--empty { background: rgba(255,255,255,0.2); }
+/* 사용자 지정: 액티브 4슬롯(알리판취)은 2열×2행 — 왼쪽열=왼쪽(별표)버튼, 오른쪽열=
+   오른쪽(통화)버튼. 셀을 꽉 채워 아이콘을 최대한 크게(사용자: "최대한 크게할수있고"). */
+.skl-right-icons--grid2 { display: grid; grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, minmax(0, 1fr)); justify-content: stretch; }
+.skl-right-icons--grid2 .skl-mini { width: 100%; height: 100%; aspect-ratio: auto; }
 
 /* 사진관 탭(§8~35) — 기존 정사각형 영역 안에서만 표시(§4, §21). 명세서: 바탕화면
    "사진관 UI 및 에셋/명세서.txt". .photo-square 를 aspect-ratio:1 로 만들어 .inv-body의

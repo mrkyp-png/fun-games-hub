@@ -449,19 +449,25 @@
       secs[0].querySelector('.skl-right-lbl b').textContent = lo.activeSkills.length + '/' + slots.active;
       secs[1].querySelector('.skl-right-lbl span').textContent = T('mole.skl.passive');
       secs[1].querySelector('.skl-right-lbl b').textContent = lo.passiveSkills.length + '/' + slots.passive;
+      // 사용자 지정: 액티브 슬롯이 4개(알리판취)면 패시브 박스를 줄이고 액티브가 더 넓게
+      // (2행 배치라 세로 공간이 더 필요) — 2슬롯 무기(캐논/골드묠니르)는 기존 50:50 유지.
+      secs[0].style.flex = (slots.active > 2 ? 2 : 1) + ' 1 0';
+      secs[1].style.flex = '1 1 0';
       fillMiniIcons(right.querySelector('[data-skl-r-active]'), lo.activeSkills, slots.active);
       fillMiniIcons(right.querySelector('[data-skl-r-passive]'), lo.passiveSkills, slots.passive);
     }
     function fillMiniIcons(el, ids, max) {
       el.innerHTML = '';
-      // 슬롯 수(4 또는 2)에 맞춰 폭 상한을 계산 — 높이는 CSS가 100%로 꽉 채우고,
-      // 이 max-width가 겹침 방지용 캡(사용자 지정: "겹치면 안됨").
-      var maxWidthPct = Math.floor(100 / max) - 3;
+      // 사용자 지정: 액티브 4슬롯(알리판취)은 2열×2행 — 왼쪽 열=왼쪽(별표) 버튼 슬롯,
+      // 오른쪽 열=오른쪽(통화) 버튼 슬롯("왼쪽은 왼쪽 버튼, 오른쪽은 오른쪽버튼에 장착").
+      // ids 순서는 [통화0, 통화1, 별표0, 별표1](applySkillSlots) — 화면 배치는
+      // [별표0, 통화0, 별표1, 통화1] 순서로 넣어야 왼쪽열=별표/오른쪽열=통화가 된다.
+      el.classList.toggle('skl-right-icons--grid2', max > 2);
+      var order = max > 2 ? [2, 0, 3, 1] : null;
       for (var i = 0; i < max; i++) {
-        var id = ids[i];
+        var id = ids[order ? order[i] : i];
         var mini = document.createElement('span');
         mini.className = 'skl-mini' + (id ? '' : ' skl-mini--empty');
-        mini.style.maxWidth = maxWidthPct + '%';
         if (id) {
           var s = MG.Skills.skillById(id);
           if (s) mini.innerHTML = '<img alt="" src="' + s.icon + '">';
