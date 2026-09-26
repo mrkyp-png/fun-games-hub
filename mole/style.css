@@ -3551,7 +3551,7 @@ body { background: var(--lm-page); }
    된 적이 없어, 박스가 사라진 지금은 이 트릭 자체가 낭비 — 작은 양수 간격으로 단순화하고
    실제 여유(전광판-카드 간격)는 .inv-body 위쪽 패딩에서 만든다(아래 참고, 상세박스를
    줄여 아낀 공간을 여기 씀). */
-.inv-cos-logo { flex: 0 0 auto; max-width: 31%; height: auto; margin: 4px auto 2px; object-fit: contain; display: block;
+.inv-cos-logo { flex: 0 0 auto; max-width: 31%; height: auto; margin: 4px auto calc(2px - 0.2cm); object-fit: contain; display: block;
   position: relative; z-index: 5; }
 /* z-index:5 위 규칙이 안 먹혔던 원인 — #inventory-screen > *:not(.inv-frame){z-index:1}
    (ID 선택자라 명시도가 더 높음, 사용자 지적: "전광판이 앞에 나와야 하는데 파란박스가
