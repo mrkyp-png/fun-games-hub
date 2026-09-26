@@ -747,6 +747,19 @@
     if (!weak) spawnAt(boardEl, 'hit-fx-ring', xFrac, yFrac).style.setProperty('--ring', '#d9b382');
   }
 
+  // 스킬 사용 플레이스홀더 연출 — 실제 게임 효과가 아직 정의되지 않은 스킬(빙결/골드2배/
+  // 융단폭격/AI)용, 보드 중앙에 스킬 이름만 잠깐 띄운다("시스템만 먼저" 구현 — 사용자 확인).
+  function skillWord(boardEl, text) {
+    return spawnAt(boardEl, 'hit-fx-burstword', 0.5, 0.42, text);
+  }
+
+  // 스킬 "타겟팅"(§54~58) — 실제 버튼보드의 타겟 구멍 위에 조준 링 + 타겟팅 원형 아이콘을
+  // 표시(화면 중앙 고정 금지, 실제 좌표 사용). iconUrl = assets/skills/targeting.png.
+  function targetLock(boardEl, xFrac, yFrac, iconUrl) {
+    return spawnAt(boardEl, 'hit-fx-target', xFrac, yFrac,
+      '<img class="hit-fx-target-ico" src="' + iconUrl + '" alt="">');
+  }
+
   // 골드해머 지진: 발동/피격 구멍의 갈색 먼지 파동 링 + 흙먼지.
   function quakeDust(boardEl, xFrac, yFrac) {
     const r = spawnAt(boardEl, 'hit-fx-ring hit-fx-ring--quake', xFrac, yFrac);
@@ -904,6 +917,6 @@
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
-  const api = { moleHit, moleBlast, bombBlast, juggle, moleTap, obstacleHit, whiff, emerge, emergeSound, warmup, uiTap, typeTick, scorePop, burstWord, starBurst, shake, quakeDust, quakeClone, cannonClone, punchStar, powerUpWord, dopamineUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, fight, moleVoice };
+  const api = { moleHit, moleBlast, bombBlast, juggle, moleTap, obstacleHit, whiff, emerge, emergeSound, warmup, uiTap, typeTick, scorePop, burstWord, skillWord, starBurst, shake, quakeDust, quakeClone, targetLock, cannonClone, punchStar, powerUpWord, dopamineUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, fight, moleVoice };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);

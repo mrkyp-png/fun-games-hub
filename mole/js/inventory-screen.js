@@ -95,6 +95,8 @@
     el.querySelector('[data-back="inventory"]')?.addEventListener('click', opts.onClose);
     var active = 'weapon';
     var costumeSelectedId = null; // 코스튬 탭 안에서만 쓰는 "선택" 상태(착용 상태와 별개, §14)
+    var skillTab = 'active'; // 스킬 탭 안의 액티브/패시브 서브탭
+    var skillPage = 0; // 스킬 탭 안의 액티브/패시브 각각의 페이지(4개씩, 명세서 §17~19)
 
     // 상점 카드줄과 동일한 점+화살표 페이징(사용자 지정: "상점 구조와 동일하되 한페이지 한장씩").
     // ⚠️ 처음엔 scrollBy(상대량) 방식이었는데, 카드 실측폭(getBoundingClientRect)과 grid의
@@ -302,6 +304,155 @@
       }
     }
 
+    // 스킬 탭 — 메인화면.png 참고: 상단 액티브/패시브/복원 3버튼 + 좌측 4개씩 페이징 카드 +
+    // 우측 현재 무기 미리보기(§10~11, §17~22, §41~42). 명세서: 바탕화면 "스킬 UI 및 에셋/명세서.txt".
+    var SKL_PER_PAGE = 4;
+    function renderSkills() {
+      var locked = !!(opts.gameInProgress && opts.gameInProgress());
+      var weaponId = equipped();
+      var weapon = WEAPONS.filter(function (w) { return w.id === weaponId; })[0];
+      var slots = MG.Skills.slotsFor(weaponId);
+      var lo = MG.Skills.loadoutFor(weaponId);
+      var list = skillTab === 'active' ? MG.Skills.activeSkills() : MG.Skills.passiveSkills();
+      var maxSlots = skillTab === 'active' ? slots.active : slots.passive;
+      var equippedList = skillTab === 'active' ? lo.activeSkills : lo.passiveSkills;
+
+      var pageCount = Math.max(1, Math.ceil(list.length / SKL_PER_PAGE));
+      if (skillPage > pageCount - 1) skillPage = pageCount - 1;
+      var pageItems = list.slice(skillPage * SKL_PER_PAGE, skillPage * SKL_PER_PAGE + SKL_PER_PAGE);
+      while (pageItems.length < SKL_PER_PAGE) pageItems.push(null); // 남는 칸 = "추후 추가 예정"(§19)
+
+      body.innerHTML =
+        '<div class="skl-wrap">' +
+          '<div class="skl-toolbar">' +
+            '<button type="button" class="skl-tbtn" data-skl-tab="active"><img class="skl-tbtn-ico" alt="" src="assets/skills/active_skill.png"><span></span></button>' +
+            '<button type="button" class="skl-tbtn" data-skl-tab="passive"><img class="skl-tbtn-ico" alt="" src="assets/skills/passive_skill.png"><span></span></button>' +
+            '<button type="button" class="skl-tbtn skl-tbtn--restore" data-skl-restore><img class="skl-tbtn-ico" alt="" src="assets/skills/restore.png"><span></span></button>' +
+          '</div>' +
+          '<div class="skl-body">' +
+            '<div class="skl-left">' +
+              '<div class="skl-left-head"><span class="skl-left-title"></span>' +
+                '<div class="skl-pager"><button type="button" class="skl-parrow" data-skl-prev>‹</button>' +
+                  '<span class="skl-pnum"></span><button type="button" class="skl-parrow" data-skl-next>›</button></div>' +
+              '</div>' +
+              '<div class="skl-grid" data-skl-grid></div>' +
+            '</div>' +
+            '<div class="skl-right" data-skl-right></div>' +
+          '</div>' +
+        '</div>';
+
+      var tbtnActive = body.querySelector('.skl-tbtn[data-skl-tab="active"]');
+      var tbtnPassive = body.querySelector('.skl-tbtn[data-skl-tab="passive"]');
+      tbtnActive.classList.toggle('is-on', skillTab === 'active');
+      tbtnPassive.classList.toggle('is-on', skillTab === 'passive');
+      tbtnActive.querySelector('span').textContent = T('mole.skl.active');
+      tbtnPassive.querySelector('span').textContent = T('mole.skl.passive');
+      tbtnActive.addEventListener('click', function () { skillTab = 'active'; skillPage = 0; renderSkills(); });
+      tbtnPassive.addEventListener('click', function () { skillTab = 'passive'; skillPage = 0; renderSkills(); });
+      var restoreBtn = body.querySelector('[data-skl-restore]');
+      restoreBtn.querySelector('span').textContent = T('mole.skl.restore');
+      restoreBtn.disabled = locked;
+      if (!locked) restoreBtn.addEventListener('click', function () { confirmRestoreSkills(weaponId); });
+
+      body.querySelector('.skl-left-title').textContent =
+        T(skillTab === 'active' ? 'mole.skl.active' : 'mole.skl.passive') + ' (' + equippedList.length + '/' + maxSlots + ')';
+      body.querySelector('.skl-pnum').textContent = (skillPage + 1) + ' / ' + pageCount;
+      var prevBtn2 = body.querySelector('[data-skl-prev]');
+      var nextBtn2 = body.querySelector('[data-skl-next]');
+      prevBtn2.disabled = skillPage <= 0;
+      nextBtn2.disabled = skillPage >= pageCount - 1;
+      prevBtn2.addEventListener('click', function () { if (skillPage > 0) { skillPage--; renderSkills(); } });
+      nextBtn2.addEventListener('click', function () { if (skillPage < pageCount - 1) { skillPage++; renderSkills(); } });
+
+      var gridEl = body.querySelector('[data-skl-grid]');
+      pageItems.forEach(function (skill) {
+        var cell = document.createElement('div');
+        if (!skill) {
+          cell.className = 'skl-card skl-card--locked';
+          cell.innerHTML = '<span class="skl-card-lock">🔒</span><span class="skl-card-soon"></span>';
+          cell.querySelector('.skl-card-soon').textContent = T('mole.skl.comingSoon');
+          gridEl.appendChild(cell);
+          return;
+        }
+        var qty = MG.Skills.getQuantity(skill.id);
+        var isEquipped = equippedList.indexOf(skill.id) > -1;
+        cell.className = 'skl-card' + (isEquipped ? ' skl-card--on' : '') + (qty <= 0 ? ' skl-card--empty' : '');
+        cell.innerHTML =
+          '<div class="skl-card-icowrap"><img class="skl-card-ico" alt="" src="' + skill.icon + '">' +
+            (isEquipped ? '<span class="skl-card-check">✓</span>' : '') + '</div>' +
+          '<div class="skl-card-name"></div>' +
+          '<div class="skl-card-qty"></div>' +
+          '<button type="button" class="inv-equip skl-card-btn"></button>';
+        cell.querySelector('.skl-card-name').textContent = I18N.lang === 'en' ? skill.nameEn : skill.nameKo;
+        cell.querySelector('.skl-card-qty').textContent = T('mole.skl.qtyPrefix') + qty;
+        var cbtn = cell.querySelector('.skl-card-btn');
+        cbtn.textContent = isEquipped ? T('mole.inv.equipped') : T('mole.inv.equip');
+        cbtn.disabled = locked || maxSlots <= 0 || (!isEquipped && qty <= 0);
+        if (!locked) {
+          cbtn.addEventListener('click', function () {
+            var res = MG.Skills.toggleEquip(weaponId, skill.id, locked);
+            if (res.ok) renderSkills();
+          });
+        }
+        gridEl.appendChild(cell);
+      });
+
+      renderSkillRight(weaponId, weapon, lo, slots);
+    }
+
+    function renderSkillRight(weaponId, weapon, lo, slots) {
+      var right = body.querySelector('[data-skl-right]');
+      right.innerHTML =
+        '<div class="skl-right-title"></div>' +
+        '<div class="skl-right-imgwrap"><img class="skl-right-img" alt="" src="' + (weapon ? weapon.thumb : '') + '"></div>' +
+        '<div class="skl-right-sec"><div class="skl-right-lbl"><img class="skl-right-lbl-ico" alt="" src="assets/skills/active_skill.png">' +
+          '<span></span><b></b></div><div class="skl-right-icons" data-skl-r-active></div></div>' +
+        '<div class="skl-right-sec"><div class="skl-right-lbl"><img class="skl-right-lbl-ico" alt="" src="assets/skills/passive_skill.png">' +
+          '<span></span><b></b></div><div class="skl-right-icons" data-skl-r-passive></div></div>';
+      right.querySelector('.skl-right-title').textContent = weapon ? nameOf(weapon) : '';
+      var secs = right.querySelectorAll('.skl-right-sec');
+      secs[0].querySelector('.skl-right-lbl span').textContent = T('mole.skl.active');
+      secs[0].querySelector('.skl-right-lbl b').textContent = lo.activeSkills.length + '/' + slots.active;
+      secs[1].querySelector('.skl-right-lbl span').textContent = T('mole.skl.passive');
+      secs[1].querySelector('.skl-right-lbl b').textContent = lo.passiveSkills.length + '/' + slots.passive;
+      fillMiniIcons(right.querySelector('[data-skl-r-active]'), lo.activeSkills, slots.active);
+      fillMiniIcons(right.querySelector('[data-skl-r-passive]'), lo.passiveSkills, slots.passive);
+    }
+    function fillMiniIcons(el, ids, max) {
+      el.innerHTML = '';
+      for (var i = 0; i < max; i++) {
+        var id = ids[i];
+        var mini = document.createElement('span');
+        mini.className = 'skl-mini' + (id ? '' : ' skl-mini--empty');
+        if (id) {
+          var s = MG.Skills.skillById(id);
+          if (s) mini.innerHTML = '<img alt="" src="' + s.icon + '">';
+        }
+        el.appendChild(mini);
+      }
+    }
+
+    // 복원 확인 팝업 — game.js showQuitDialog() 와 동일한 .ad-overlay/.quit-card 마크업 재사용(§50).
+    function confirmRestoreSkills(weaponId) {
+      var v = document.createElement('div');
+      v.className = 'ad-overlay';
+      v.innerHTML = '<div class="ad-overlay-card quit-card">' +
+        '<div class="quit-title"></div>' +
+        '<div class="quit-btns">' +
+        '<button type="button" data-q="no"></button>' +
+        '<button type="button" class="quit-yes" data-q="yes"></button></div></div>';
+      v.querySelector('.quit-title').textContent = T('mole.skl.restoreTitle');
+      v.querySelector('[data-q="no"]').textContent = T('mole.skl.restoreCancel');
+      v.querySelector('[data-q="yes"]').textContent = T('mole.skl.restoreOk');
+      document.body.appendChild(v);
+      v.querySelector('[data-q="no"]').addEventListener('click', function () { v.remove(); });
+      v.querySelector('[data-q="yes"]').addEventListener('click', function () {
+        v.remove();
+        MG.Skills.restore(weaponId);
+        renderSkills();
+      });
+    }
+
     function renderTabs() {
       tabsEl.innerHTML = '';
       TABS.forEach(function (t) {
@@ -310,7 +461,7 @@
         b.className = 'inv-tab' + (t.id === active ? ' inv-tab--on' : '');
         b.innerHTML = '<span class="inv-tab-ico">' + t.icon + '</span><span class="inv-tab-lbl"></span>';
         b.querySelector('.inv-tab-lbl').textContent = T(t.i18n);
-        b.addEventListener('click', function () { active = t.id; pageIdx = 0; paint(); });
+        b.addEventListener('click', function () { active = t.id; pageIdx = 0; skillTab = 'active'; skillPage = 0; paint(); });
         tabsEl.appendChild(b);
       });
     }
@@ -331,13 +482,16 @@
       } else if (active === 'costume') {
         dotsEl.innerHTML = '';
         renderCostumes();
+      } else if (active === 'skill') {
+        dotsEl.innerHTML = '';
+        renderSkills();
       } else {
         dotsEl.innerHTML = '';
         body.innerHTML = '<p class="inv-soon">' + T('mole.inv.soon') + '</p>';
       }
     }
 
-    return { show: function () { active = 'weapon'; costumeSelectedId = null; paint(); } };
+    return { show: function () { active = 'weapon'; costumeSelectedId = null; skillTab = 'active'; skillPage = 0; paint(); } };
   }
 
   var api = { create: create };

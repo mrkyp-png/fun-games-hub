@@ -462,6 +462,15 @@ body { background: var(--lm-page); }
 }
 .board-hearts.life-bonus { animation: life-bonus 0.5s ease-out; }
 
+/* 게임 중 현재 적용된 패시브 스킬 표시(§31) — 하트 반대쪽(좌측 상단), 아이콘+이름 캡슐. */
+.skl-passive-hud { position: absolute; left: 2.5%; top: 2.5%; z-index: 7; display: flex; flex-direction: column;
+  gap: 3px; pointer-events: none; }
+.skl-passive-hud:empty { display: none; }
+.skl-passive-badge { display: flex; align-items: center; gap: 3px; padding: 2px 6px 2px 2px; border-radius: 999px;
+  background: rgba(10,20,50,0.55); box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+.skl-passive-badge img { width: 16px; height: 16px; object-fit: contain; }
+.skl-passive-badge span { font-size: 0.5rem; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.6); white-space: nowrap; }
+
 /* 콤보 — 게임박스 맨 아래 가운데. 잔디 이미지 끝까지 내려도 됨(사용자 요청). 0이면 빈 텍스트라 안 보임. */
 .board-combo {
   position: absolute;
@@ -1920,6 +1929,10 @@ body { background: var(--lm-page); }
   color: var(--lm-ink);
 }
 
+/* 스킬 "타겟팅" 강조(§55) — 매 프레임 갱신되는 lane-button--hot과 독립된 별도 클래스라
+   다음 프레임에 바로 지워지지 않는다. */
+.lane-target-hot { box-shadow: 0 0 0 3px #ff4d4d, 0 0 16px 4px rgba(255,77,77,0.8) !important; }
+
 /* 화면 전환 플래시 — 더보기↔홈, 게임종료→홈 전환마다 잠깐 번쩍(대각선 광선 스윕).
    참고 영상은 순백색 플래시인데, 매번(일상적 메뉴 이동마다) 나오면 눈 피로가 커서
    흰색 대신 색(보라/진한 노랑) 플래시로 톤다운 — 사용자 확정. 두 색 중 랜덤. */
@@ -2076,6 +2089,26 @@ body { background: var(--lm-page); }
 /* 지진 먼지 파동 — 기존 링/흙먼지 재사용, 갈색·조금 크게. */
 .hit-fx-ring--quake { width: 30%; border-width: 4px; animation-duration: 0.5s; }
 .hit-fx-dust--quake { width: 10px; height: 10px; }
+
+/* 스킬 "타겟팅"(§55~58) — 실제 타겟 구멍 위 조준 링 + 원형 아이콘(화면 중앙 고정 아님). */
+.hit-fx-target { position: absolute; width: 30%; aspect-ratio: 1; transform: translate(-50%, -50%);
+  pointer-events: none; z-index: 40; animation: hit-fx-target-pop 1.1s ease-out forwards; }
+.hit-fx-target::before { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 3px solid #ff4d4d;
+  box-shadow: 0 0 14px 4px rgba(255,77,77,0.7); animation: hit-fx-target-ring 1.1s ease-out forwards; }
+.hit-fx-target-ico { position: absolute; inset: 8%; width: 84%; height: 84%; object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+@keyframes hit-fx-target-pop {
+  0% { transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
+  15% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+  30% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
+@keyframes hit-fx-target-ring {
+  0% { transform: scale(0.6); opacity: 0.9; }
+  50% { transform: scale(1.15); opacity: 0.6; }
+  100% { transform: scale(1.3); opacity: 0; }
+}
 .lane-hammer-img--hit { animation: lane-hammer-squash 0.16s ease-out; }
 @keyframes lane-hammer-squash {
   0% { transform: scale(1, 1); }
@@ -3646,6 +3679,75 @@ body { background: var(--lm-page); }
    없애고 버튼 자체에 크기(flex:0 0 22%, 이전 박스 폭과 동일)를 직접 부여. */
 .cos-detail-btn { flex: 0 0 22%; align-self: center; font-size: 0.78rem; padding: 8px 2px;
   display: flex; align-items: center; justify-content: center; }
+
+/* 스킬 탭(§10~11, §17~22, §41~42) — "스킬 UI 및 에셋/메인화면.png" 레이아웃 재현:
+   상단 액티브/패시브/복원 3버튼 + 좌측 4개씩 페이징 카드 목록 + 우측 무기 미리보기. */
+.skl-wrap { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; gap: 6px; }
+.skl-toolbar { display: flex; gap: 4px; }
+.skl-tbtn {
+  flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 4px;
+  padding: 7px 2px; border: none; border-radius: 10px; cursor: pointer;
+  background: linear-gradient(180deg, #2f6fed, #1f4fc4); color: #cfe0ff; font-weight: 800; font-size: 0.62rem;
+  box-shadow: 0 2px 0 #12285e, inset 0 1px 2px rgba(255,255,255,0.2);
+}
+.skl-tbtn.is-on { background: linear-gradient(180deg, #4fa3ff, #1f6ff0); color: #fff; box-shadow: 0 2px 0 #0e3aa8, inset 0 1px 3px rgba(255,255,255,0.5); }
+.skl-tbtn:disabled { opacity: 0.5; cursor: default; }
+.skl-tbtn-ico { width: 16px; height: 16px; object-fit: contain; flex: 0 0 auto; }
+.skl-tbtn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.skl-body { display: flex; gap: 6px; flex: 1 1 auto; min-height: 0; }
+.skl-left { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.skl-left-head { display: flex; align-items: center; justify-content: space-between; padding: 0 2px; }
+.skl-left-title { font-size: 0.62rem; font-weight: 800; color: #ffd93b; }
+.skl-pager { display: flex; align-items: center; gap: 4px; }
+.skl-pnum { font-size: 0.6rem; font-weight: 800; color: #fff; min-width: 24px; text-align: center; }
+.skl-parrow {
+  width: 20px; height: 20px; border: none; border-radius: 6px; background: linear-gradient(180deg, #3a7bff, #1f4fc4);
+  color: #fff; font-weight: 900; font-size: 0.7rem; line-height: 1; cursor: pointer; box-shadow: 0 2px 0 #12285e;
+}
+.skl-parrow:active { transform: scale(0.9); }
+.skl-parrow:disabled { opacity: 0.4; cursor: default; }
+
+.skl-grid { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.skl-card {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 5px 2px 6px; border-radius: 10px; background: linear-gradient(180deg, #1f3f8e, #142a63);
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.15);
+}
+.skl-card--on { box-shadow: 0 0 0 2px #ffd93b, inset 0 1px 2px rgba(255,255,255,0.15); }
+.skl-card-icowrap { position: relative; width: 62%; aspect-ratio: 1; }
+.skl-card-ico { width: 100%; height: 100%; object-fit: contain; }
+.skl-card--empty .skl-card-ico { filter: grayscale(0.6) brightness(0.6); }
+.skl-card-check {
+  position: absolute; right: -6%; top: -6%; width: 16px; height: 16px; border-radius: 50%; background: #57d977;
+  color: #fff; font-size: 10px; font-weight: 900; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 2px #142a63;
+}
+.skl-card-name { font-size: 0.52rem; font-weight: 800; color: #fff; text-align: center; }
+.skl-card-qty { font-size: 0.44rem; font-weight: 700; color: #a9c0ef; }
+.skl-card-btn { width: 92%; padding: 3px 0; font-size: 0.44rem; }
+.skl-card--locked { align-items: center; justify-content: center; background: rgba(20,42,99,0.55); }
+.skl-card-lock { font-size: 1rem; opacity: 0.6; }
+.skl-card-soon { font-size: 0.44rem; font-weight: 700; color: #a9c0ef; text-align: center; white-space: pre-line; margin-top: 2px; }
+
+.skl-right {
+  flex: 0 0 32%; display: flex; flex-direction: column; gap: 5px; padding: 6px; border-radius: 12px;
+  background: linear-gradient(180deg, #ffe9b0, #f6c15a); box-shadow: 0 4px 0 #b9862a, inset 0 2px 2px rgba(255,255,255,0.5);
+}
+.skl-right-title { font-size: 0.62rem; font-weight: 900; color: #6a4315; text-align: center; }
+.skl-right-imgwrap {
+  border-radius: 10px; background: radial-gradient(circle, #fff6da 0%, #ffb23c 75%, #f5a531 100%);
+  aspect-ratio: 1.3; display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.skl-right-img { width: 76%; height: 76%; object-fit: contain; }
+.skl-right-sec { background: rgba(255,255,255,0.35); border-radius: 8px; padding: 4px 5px; }
+.skl-right-lbl { display: flex; align-items: center; gap: 3px; font-size: 0.48rem; font-weight: 800; color: #6a4315; margin-bottom: 3px; }
+.skl-right-lbl-ico { width: 12px; height: 12px; object-fit: contain; }
+.skl-right-lbl b { margin-left: auto; color: #a3550f; }
+.skl-right-icons { display: flex; gap: 3px; }
+.skl-mini { flex: 1 1 0; aspect-ratio: 1; border-radius: 7px; background: rgba(255,255,255,0.5); overflow: hidden; }
+.skl-mini img { width: 100%; height: 100%; object-fit: contain; }
+.skl-mini--empty { background: rgba(255,255,255,0.2); }
 
 /* 난이도: 고수·전설은 버튼 불(어느 구멍에 두더지) 끔 */
 /* 라이트 DIM (고수): 버튼 배경 불빛은 끄고, 숫자·글씨·아이콘 색만 앰버로 바꾼다 ("불 켜진" 느낌) */

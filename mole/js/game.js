@@ -806,13 +806,14 @@
     // 게임 중엔 이 코너(구멍 15 자리)가 "스킬 슬롯 2개"로 바뀐다 (캐논·특수망치, gs-laneskill). 홈에선 "시작" 버튼.
     // 껍데기 — 슬롯 스킬은 LANE_SKILLS 에 지정 (0 위 반원 · 1 아래 반원). 빈 슬롯 탭은 무동작(화면이동 X).
     if (!btn.querySelector('.lane-items')) {
-      btn.appendChild(createLaneItemsBox());
+      btn.appendChild(createLaneItemsBox(LANE_SKILLS, renderLaneItems));
       renderLaneItems();
     }
   }
 
-  // 스킬 슬롯 카드 2장 DOM(빈 슬롯 껍데기, 탭 눌림/물결만) — 통화버튼·알리펀치 별표버튼 공용.
-  function createLaneItemsBox() {
+  // 스킬 슬롯 카드 2장 DOM(탭 눌림/물결 + 실제 스킬 사용) — 통화버튼·알리펀치 별표버튼 공용.
+  // slotsArr = LANE_SKILLS 또는 STAR_SKILLS(내용은 참조로 바로 조회 — 재생성 없이 mutate).
+  function createLaneItemsBox(slotsArr, rerender) {
     const box = document.createElement('div');
     box.className = 'lane-items';
     box.setAttribute('aria-hidden', 'true');
@@ -833,7 +834,7 @@
         try { if (window.FGH.Settings.vibrate) window.FGH.Settings.vibrate(16); } catch (err) { /* 무시 */ }
       });
       const rel = () => it.classList.remove('is-press');
-      it.addEventListener('pointerup', rel);
+      it.addEventListener('pointerup', () => { rel(); useSkillSlot(slotsArr, i, rerender); });
       it.addEventListener('pointercancel', rel);
       it.addEventListener('pointerleave', rel);
       box.appendChild(it);
@@ -841,7 +842,8 @@
     return box;
   }
 
-  // 스킬 슬롯 2칸 (게임 중 우하단 코너, 통화버튼). null = 빈 칸. 예: { icon: '⚡', id: 'xxx' }
+  // 스킬 슬롯 2칸 (게임 중 우하단 코너, 통화버튼). null = 빈 칸. { id, icon } — icon = PNG 경로.
+  // 실제 내용은 게임 시작 시 skills.js Loadout 스냅샷에서 채워진다(applySkillSlots 참고).
   const LANE_SKILLS = [null, null];
   function renderLaneItems() {
     const box = document.querySelector('#lane-button-bar .lane-button--call .lane-items');
@@ -850,7 +852,7 @@
       const it = LANE_SKILLS[i];
       el.classList.toggle('lane-item--empty', !it);
       const iconEl = el.querySelector('.lane-item-icon');
-      if (iconEl) iconEl.textContent = it && it.icon ? it.icon : '';
+      if (iconEl) iconEl.innerHTML = it ? '<img alt="" src="' + it.icon + '">' : '';
     });
   }
 
@@ -860,7 +862,7 @@
   function wireAlipunchStarButton() {
     const btn = document.querySelector('#lane-button-bar [data-region="12"]');
     if (!btn || btn.querySelector('.lane-items')) return;
-    btn.appendChild(createLaneItemsBox());
+    btn.appendChild(createLaneItemsBox(STAR_SKILLS, renderStarItems));
     renderStarItems();
   }
   function renderStarItems() {
@@ -870,8 +872,91 @@
       const it = STAR_SKILLS[i];
       el.classList.toggle('lane-item--empty', !it);
       const iconEl = el.querySelector('.lane-item-icon');
-      if (iconEl) iconEl.textContent = it && it.icon ? it.icon : '';
+      if (iconEl) iconEl.innerHTML = it ? '<img alt="" src="' + it.icon + '">' : '';
     });
+  }
+
+  // 게임 시작(fresh)에만 무기 Loadout 스냅샷을 확정(패시브는 여기서 소비까지 확정, §64).
+  // 라운드 전환마다 다시 부르지 않음 — PLAYING 내내 이 스냅샷을 그대로 쓴다(§34).
+  let skillSession = { weaponId: null, activeSkills: [], passiveApplied: [] };
+  function skillSlotFor(id) {
+    if (!id) return null;
+    const s = MG.Skills.skillById(id);
+    return s ? { id: id, icon: s.icon } : null;
+  }
+  // LANE_SKILLS(통화버튼 2칸) → STAR_SKILLS(알리펀치 별표 2칸 더) 순서로 채운다.
+  function applySkillSlots(weaponId, laneSkillZone) {
+    const ids = laneSkillZone ? skillSession.activeSkills : [];
+    LANE_SKILLS[0] = skillSlotFor(ids[0]);
+    LANE_SKILLS[1] = skillSlotFor(ids[1]);
+    STAR_SKILLS[0] = skillSlotFor(ids[2]);
+    STAR_SKILLS[1] = skillSlotFor(ids[3]);
+    renderLaneItems();
+    renderStarItems();
+    renderPassiveHud();
+  }
+  // 현재 세션에 실제 적용된 패시브(§30~31) 배지 — 좌측 상단, 라운드 내내 유지.
+  function renderPassiveHud() {
+    const host = document.getElementById('skl-passive-hud');
+    if (!host) return;
+    host.innerHTML = '';
+    (skillSession.passiveApplied || []).forEach((id) => {
+      const s = MG.Skills.skillById(id);
+      if (!s) return;
+      const b = document.createElement('div');
+      b.className = 'skl-passive-badge';
+      b.innerHTML = '<img alt="" src="' + s.icon + '"><span></span>';
+      b.querySelector('span').textContent = I18N.lang === 'en' ? s.nameEn : s.nameKo;
+      host.appendChild(b);
+    });
+  }
+
+  // 슬롯 탭 = 액티브 스킬 사용. 빈 슬롯 탭은 무동작(§ "빈 슬롯 탭=무동작"). 인트로/카운트다운·
+  // 게임 종료 후에는 무시. 사용 성공 시 Inventory -1(§28), 0이 되면 슬롯 자동 비움(§33).
+  function useSkillSlot(slotsArr, i, rerender) {
+    if (!state || state.ended || state.introActive) return;
+    const it = slotsArr[i];
+    if (!it) return;
+    if (!MG.Skills.consumeOne(it.id)) return; // 수량 0 — 실패(음수 방지, §81)
+    if (MG.Skills.getQuantity(it.id) <= 0) slotsArr[i] = null;
+    rerender();
+    runSkillEffect(it.id);
+  }
+
+  // 타겟팅만 실제 연출/효과(§54~59) — 나머지 4개는 게임 내 실제 효과가 아직 미정의(사용자
+  // 확인: "시스템만 먼저") → 소비/UI만 실제로 동작, 화면엔 플레이스홀더 이름만 표시.
+  function runSkillEffect(id) {
+    if (id === 'targeting') { activateTargeting(); return; }
+    const board = document.getElementById('mole-board');
+    const skill = MG.Skills.skillById(id);
+    if (board && skill) MG.HitFx.skillWord(board, I18N.lang === 'en' ? skill.nameEn : skill.nameKo);
+  }
+
+  // 타겟팅 실제 게임 연출(§54~59): 실제 버튼보드의 살아있는 두더지 하나를 골라 타겟 영역
+  // 강조 + 조준 아이콘 표시 → 그 두더지를 실제로 처치(하드코딩된 화면 중앙 좌표 아님, §59).
+  function activateTargeting() {
+    if (!state || state.ended) return;
+    const board = document.getElementById('mole-board');
+    const live = state.spawnPoints.filter((sp) => liveMoleAt(sp.regionId));
+    const pick = live.length ? live[Math.floor(state.rng.next() * live.length)] : null;
+    const sp = pick || state.spawnPoints[Math.floor(state.rng.next() * state.spawnPoints.length)];
+    if (!sp || !board) return;
+    // 매 프레임 실제 hot-mole 상태를 덮어쓰는 setCellHot(§ "hot 표시") 대신, 독립된 클래스로
+    // 강조(§55) — 그래야 targeting 하이라이트가 다음 프레임에 바로 지워지지 않는다.
+    const cellBtn = document.querySelector('#lane-button-bar [data-region="' + sp.regionId + '"]');
+    if (cellBtn) {
+      cellBtn.classList.add('lane-target-hot');
+      setTimeout(() => cellBtn.classList.remove('lane-target-hot'), 900);
+    }
+    MG.HitFx.targetLock(board, sp.x, sp.y, 'assets/skills/targeting.png');
+    if (!pick) return; // 타격할 두더지 없음 — 시각 연출만
+    setTimeout(() => {
+      if (!state || state.ended || !liveMoleAt(sp.regionId)) return;
+      // quake:true 재사용 — 쿨다운/헛방 게이트를 통과하고(자동타격) 다타 두더지도 한번에 소탕(확정 처치).
+      const res = state.scheduler.resolveRegion(sp.regionId, { targeting: true, quake: true });
+      if (!res.length || res.every((r) => r.ignored)) return;
+      onHammerImpact(sp.x, sp.y, res, { noHitstop: true });
+    }, 500);
   }
 
   function showQuitDialog() {
@@ -1234,6 +1319,14 @@
     const laneSkillZone = weapon !== 'hammer'; // 캐논·골드해머·알리펀치 = 통화버튼 스킬존(§8 포함)
     document.getElementById('game-screen').classList.toggle('gs-laneskill', laneSkillZone);
     document.getElementById('game-screen').classList.toggle('gs-alipunch', weapon === 'alipunch');
+    // 게임 세션 시작(fresh)에만 스킬 Loadout 스냅샷 확정 — 패시브 소비도 여기서 1회만(§64, §30).
+    // 라운드가 넘어갈 때는 다시 부르지 않아 스냅샷이 세션 내내 유지된다(§34, §39).
+    if (opts && opts.fresh) {
+      skillSession = laneSkillZone
+        ? MG.Skills.snapshotForGameStart(weapon)
+        : { weaponId: weapon, activeSkills: [], passiveApplied: [] };
+    }
+    applySkillSlots(weapon, laneSkillZone);
     // 홈→게임 첫 진입(fresh)에만 — 채널(유튜브 아이콘) 버튼을 10바퀴 돌려 숫자 버튼으로 전환.
     // 회전 전까지는 기존 홈 다이얼패드 그대로 있다가, 인트로가 끝나 실제 게임판이 드러나는
     // 지금 이 순간에만 돈다(사용자 지정).
