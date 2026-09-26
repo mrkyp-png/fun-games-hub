@@ -21,12 +21,13 @@
   function teams() { return TEAMS.slice(); }
   function teamById(id) { return TEAMS.filter(function (t) { return t.id === id; })[0] || null; }
 
-  // 지금은 상점/이벤트 획득 경로가 아직 없어(§24) 데모 상태로 5종 전부 보유 처리.
-  // 실제 획득 로직이 붙으면 이 기본값만 [] 로 바꾸면 됨 — 구조는 이미 확장 가능.
+  // 지금은 상점/이벤트 획득 경로가 아직 없어(§24) 데모 상태 — 사용자 지정(2026-09-26):
+  // "샘플로 미착용 카드도 하나(5번째)" — 클라우드 컵스만 기본 미보유로 남겨 잠금 상태
+  // 샘플로 보이게 함. 실제 획득 로직이 붙으면 이 기본값만 [] 로 바꾸면 됨.
   function ownedIds() {
     var a;
     try { a = JSON.parse(localStorage.getItem(K_OWNED)); } catch (e) { a = null; }
-    if (!a) a = TEAMS.map(function (t) { return t.id; });
+    if (!a) a = TEAMS.map(function (t) { return t.id; }).filter(function (id) { return id !== 'cloud_cups'; });
     return a;
   }
   function owns(id) { return ownedIds().indexOf(id) > -1; }

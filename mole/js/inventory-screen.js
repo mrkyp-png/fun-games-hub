@@ -291,7 +291,7 @@
       detail.innerHTML =
         '<div class="cos-detail-char-wrap"><img class="cos-detail-char" alt="" src="assets/costume/char-' + id + '-detail.png"></div>' +
         '<div class="cos-detail-mid">' +
-          '<div class="cos-detail-name-row"><span class="cos-detail-name"></span></div>' +
+          '<div class="cos-detail-name-row"><img class="cos-detail-emblem" alt="" src="assets/costume/emblem-cap-' + id + '.png"><span class="cos-detail-name"></span></div>' +
           '<div class="cos-detail-effect">' +
             '<div class="cos-detail-effect-lbl"></div>' +
             '<div class="cos-detail-effect-row"><img alt="" src="assets/costume/clock.png">' +
