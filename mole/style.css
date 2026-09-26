@@ -3798,13 +3798,15 @@ body { background: var(--lm-page); }
     inset 10px 0 18px rgba(0,0,0,0.4), inset -10px 0 18px rgba(0,0,0,0.4);
 }
 .photo-square {
-  position: relative; height: 100%; width: auto; max-width: 100%; max-height: 100%;
-  aspect-ratio: 1; margin: 0 auto;
+  position: relative; flex: 1 1 auto; min-height: 0; width: auto; max-width: 100%;
+  aspect-ratio: 1; margin: 0 auto calc(0.1cm - 12px);
   border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;
   /* width:100% 기준이면 세로가 부족한 박스 안에서 정사각형이 찌그러지거나(§8 위반)
      스크롤로 잘려 보였음 — 높이를 기준으로 정사각형을 잡고 폭은 aspect-ratio로
-     따라오게 해서 항상 박스 안에 100% 들어오면서 정사각형을 유지한다. */
-  flex-shrink: 0;
+     따라오게 해서 항상 박스 안에 100% 들어오면서 정사각형을 유지한다.
+     height:100%(고정 %)로는 margin을 줘도 크기 자체가 안 늘어나서(위치만 이동)
+     flex:1 1 auto로 바꿔야 .skl-wrap과 동일한 calc(0.1cm - Npx) 패딩 상쇄가
+     실제 크기 증가로 이어진다. 위쪽 상쇄는 이제 첫 자식인 .photo-emblems가 담당. */
 }
 /* 사용자 지정: 돋보기는 정사각형 영역 최우측 상단 모서리에 독립적으로(엠블럼 줄 폭
    계산과 무관하게 항상 코너에 고정, 살짝 겹쳐도 됨). */
@@ -3818,8 +3820,10 @@ body { background: var(--lm-page); }
 }
 #inventory-screen > .inv-photo-search { position: absolute; top: 4px; right: 6px; z-index: 6; }
 /* 사용자 지정: "엠블럼 박스는 전체 박스 좌/우/위쪽 여백 0.1cm로, 최대한 크게". */
-.photo-emblems { position: relative; z-index: 2; display: flex; justify-content: center; gap: 4px;
-  padding: 0.1cm 0.1cm 4px; }
+/* 사용자 지정: 정사각형(.photo-square) 밖으로 빼서 .inv-body 전체 폭을 쓰게 함(엠블럼 확대).
+   이제 .inv-body의 첫 자식이라 위쪽 패딩 상쇄(calc(0.1cm - 10px))는 여기로 옮긴다. */
+.photo-emblems { flex: 0 0 auto; display: flex; justify-content: center; gap: 4px;
+  margin-top: calc(0.1cm - 10px); padding: 0 0.1cm 4px; }
 /* 사용자 지정: "엠블럼은 박스 안에 있게" + "엠블럼 박스는 투명이면 안됨, 파란박스로" —
    선택 여부와 무관하게 항상 불투명 파란 박스 안에 담는다(배경사진이 안 비침). */
 .photo-emblem { flex: 1 1 0; min-width: 0; max-width: 20%; padding: 3px; border-radius: 8px;
@@ -3833,13 +3837,11 @@ body { background: var(--lm-page); }
 .photo-slots { position: relative; z-index: 2; flex: 1 1 auto; min-height: 0; display: flex; gap: 3px;
   padding: 4px 0.1cm; }
 .photo-slot { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 3px; background: none; border: none; cursor: pointer; }
-/* 사용자 지정: "카드 크기에 맞게 케릭 사이즈 최대한 크게, 카드 벗어나면 안됨" — 프레임을
-   슬롯 전체(길쭉한 직사각형)로 늘리면 캐릭터 비율과 안 맞아 위아래가 뜬다. 프레임 자체를
-   캐릭터 이미지 평균 비율에 맞춰(세로가 남으면 슬롯 안에서 위아래 중앙정렬) 캐릭터가
-   프레임을 거의 꽉 채우게 한다. */
+  gap: 3px; background: none; border: none; cursor: pointer; }
+/* 카드(프레임) 자체는 슬롯 전체 크기 그대로 유지(사용자 지적: "카드 크기를 왜 더
+   작게 하냐") — 캐릭터만 이 안에서 object-fit:contain으로 최대 크기로 표시. */
 .photo-slot-frame {
-  position: relative; width: 100%; aspect-ratio: 0.74; max-height: 100%; border-radius: 10px;
+  position: relative; width: 100%; height: 100%; border-radius: 10px;
   background: rgba(20,40,90,0.55); border: 2px solid #4a90f5; display: flex; align-items: center;
   justify-content: center; overflow: hidden;
 }

@@ -516,9 +516,11 @@
       // 사용자 지정(2026-09-26): 하단 이름/효과/게임적용 바 + 투명박스 전부 삭제.
       // 돋보기는 전체파란박스 밖(#inventory-screen 최상단 코너)의 별도 고정 버튼으로
       // 이동(paint()에서 탭별로 토글, create()에서 클릭 1회만 배선).
+      // 사용자 지정: "엠블럼 박스만 사이즈 키워봐" — 정사각형(.photo-square) 밖으로 빼서
+      // .inv-body 전체 폭(정사각형보다 넓음)을 그대로 쓰게 한다.
       body.innerHTML =
+        '<div class="photo-emblems" data-photo-emblems></div>' +
         '<div class="photo-square">' +
-          '<div class="photo-emblems" data-photo-emblems></div>' +
           '<div class="photo-slots" data-photo-slots></div>' +
         '</div>';
 
