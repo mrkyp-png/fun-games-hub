@@ -3586,7 +3586,7 @@ body { background: var(--lm-page); }
 .cos-detail-char-wrap { position: relative; flex: 0 0 auto; align-self: stretch; width: 21%; margin: 0.1cm 0; }
 /* 사용자 지정: "두더지 10% 키우기" 이후 "20% 더 키우기" — 110% × 1.2 = 132%.
    중심 기준으로 확대(상하좌우 대칭), 0.1cm 여백이 양쪽에서 균등하게 줄어드는 방식. */
-.cos-detail-char { position: absolute; left: 50%; top: 50%; height: auto; width: 95.1%; max-width: none;
+.cos-detail-char { position: absolute; left: 50%; top: calc(50% - 0.1cm); height: auto; width: 85.6%; max-width: none;
   transform: translate(-50%, -50%); object-fit: contain; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35)); }
 .cos-detail-mid { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .cos-detail-name-row { display: flex; align-items: center; gap: 6px; }
