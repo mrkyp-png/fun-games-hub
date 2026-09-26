@@ -747,8 +747,9 @@
       // 코스튬 탭은 상단 안내 박스를 통째로 없앤다(사용자 지정, 2026-09-25).
       // 사용자 지정(2026-09-26): 스킬 탭도 코스튬 탭처럼 상단 안내 배너 삭제 —
       // "어떤 스킬을 장착할까요? 박스 삭제해 필요없네" + 그만큼 전체파란박스가 위로 올라옴.
-      if (bannerEl) bannerEl.style.display = (active === 'costume' || active === 'skill') ? 'none' : '';
-      // 사진관 탭 배너는 안내문구만 쓰고 무기탭용 좌우 페이지 화살표는 숨김(§9).
+      // 사진관 탭도 동일 처리(사용자 지정): "어느 사진을 고르시겠어요? 박스 삭제하고
+      // 파란전체박스를 스킬화면과 같은 크기로" — 배너 숨기면 flex 구조상 자동으로 커짐.
+      if (bannerEl) bannerEl.style.display = (active === 'costume' || active === 'skill' || active === 'photo') ? 'none' : '';
       prevBtn.style.display = active === 'photo' ? 'none' : '';
       nextBtn.style.display = active === 'photo' ? 'none' : '';
       // 몰리그 전광판은 코스튬 탭에서만, 전체파란박스 밖(화면 최상단)에 표시.

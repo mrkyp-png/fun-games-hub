@@ -3788,9 +3788,14 @@ body { background: var(--lm-page); }
    "사진관 UI 및 에셋/명세서.txt". .photo-square 를 aspect-ratio:1 로 만들어 .inv-body의
    나머지 직사각형 탭들과 달리 정사각형만 차지하고 가운데 정렬한다. */
 .photo-square {
-  position: relative; width: 100%; max-width: 100%; aspect-ratio: 1; margin: 0 auto;
+  position: relative; height: 100%; width: auto; max-width: 100%; max-height: 100%;
+  aspect-ratio: 1; margin: 0 auto;
   border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;
   background: url('assets/photo/background.jpg') center/cover no-repeat;
+  /* width:100% 기준이면 세로가 부족한 박스 안에서 정사각형이 찌그러지거나(§8 위반)
+     스크롤로 잘려 보였음 — 높이를 기준으로 정사각형을 잡고 폭은 aspect-ratio로
+     따라오게 해서 항상 박스 안에 100% 들어오면서 정사각형을 유지한다. */
+  flex-shrink: 0;
 }
 .photo-search-btn {
   position: absolute; right: 6px; top: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 50%;
