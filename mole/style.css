@@ -2803,16 +2803,6 @@ body { background: var(--lm-page); }
 .inv-cards-box { position: relative; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0;
   margin: 10px 10px 0; padding: 6px 8px 8px; border-radius: 16px;
   background: linear-gradient(180deg, #2a5cc9, #1c3f96); animation: inv-cards-box-glow 4s ease-in-out infinite; }
-/* 사용자 지정: "전체파란박스 좌측 상단 바깥쪽에 에셋2의 왼쪽 두더지 이미지" — .inv-cards-box
-   자체엔 overflow 가 없어(스크롤은 안쪽 .inv-body 담당) 박스 밖으로 자연스럽게 걸치게 둘 수
-   있음. 코스튬 탭 전용(paint()가 hidden 토글). */
-/* 사용자 지적: "박스와 위로 떨어져있는 문제" — top:-40.8px 처럼 고정 px 오프셋은 이
-   이미지의 실제 렌더링 높이(width:%기반이라 화면폭에 따라 달라짐)와 안 맞으면 뜨거나
-   박스 안으로 파고듦. bottom:100% 는 "내 아래쪽 끝 = 부모(박스) 위쪽 끝"이라는 뜻이라
-   이미지 실제 높이·화면폭과 무관하게 항상 정확히 닿음(음수 margin-bottom만 살짝 줘서
-   테두리에 걸치는 느낌). */
-.inv-cos-peek-mole { position: absolute; left: calc(-6px + 0.9cm); bottom: 100%; margin-bottom: calc(-6px + 0.15cm); width: 10.8%; height: auto;
-  z-index: 3; pointer-events: none; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35)); }
 .inv-cards-head { flex: 0 0 auto; min-height: 10px; display: flex; align-items: center; padding: 2px 2px 4px 2px; }
 .inv-dots { flex: 1 1 auto; display: flex; gap: 5px; }
 .inv-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.35); }
@@ -3538,6 +3528,12 @@ body { background: var(--lm-page); }
 
 /* 코스튬 탭 — 5개 팀 카드(가로 스크롤) + 상세 + 획득 방법(명세서 §1~§58). */
 .cos-wrap { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
+/* 사용자 지정(2026-09-26): "전체 파란박스는 삭제한다" — 코스튬 탭일 때만 .inv-cards-box의
+   배경/글로우/여백을 전부 제거해 카드·상세박스가 게임화면 가장자리(0.1cm)까지 확장되게 함. */
+.inv-cards-box:has(.cos-wrap) { background: none; animation: none; box-shadow: none;
+  margin: 0; padding: 0; border-radius: 0; }
+.inv-cards-box:has(.cos-wrap) .inv-cards-head { display: none; }
+.inv-cards-box:has(.cos-wrap) .inv-body { padding: 4px 0.1cm; }
 /* 몰리그 전광판 — 전체파란박스(.inv-cards-box) 밖, 화면 최상단(사용자 지정: "전체파란박스
    안에 있으면 안됨, 최대한 게임화면 상단에 위치, 전체파란박스는 전광판 아래에 위치,
    겹치지 않아야함"). #inventory-screen 은 .board-screen 의 flex-direction:column 을
@@ -3561,7 +3557,7 @@ body { background: var(--lm-page); }
    대신 안전 여유를 두고(카드 폭을 살짝 줄임, 아래 참고) 마진도 detail박스와 동일한
    단순한 -4px(패딩 4px 상쇄)로 통일 — 여러 화면 폭(360~430px)에서 재확인 완료. */
 .cos-cards { flex: 1 1 auto; display: flex; justify-content: space-between; gap: 3px; overflow: visible;
-  padding: 4px 2px 6px; margin: 0 -4px 0 -4px; scrollbar-width: none; }
+  padding: 4px 2px 6px; margin: 0; scrollbar-width: none; }
 .cos-cards::-webkit-scrollbar { display: none; }
 /* 엠블럼 자리는 그대로 두되(사용자 지정), 카드 테두리/배경을 엠블럼까지 감싸도록 wrap
    쪽으로 옮겨서 "엠블럼이 카드 안에 들어있는" 하나의 큰 카드처럼 보이게 한다. */
@@ -3600,28 +3596,23 @@ body { background: var(--lm-page); }
    들쭉날쭉했음, 사용자 지적: "카드 줄 안맞고"). */
 .cos-card-emblem { position: absolute; left: 50%; top: calc(6px - 0.1cm); transform: translateX(-50%); z-index: 2;
   height: 26px; width: auto; max-width: 90%; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5)); }
-.cos-card-wrap--locked .cos-card-char, .cos-card-wrap--locked .cos-card-emblem { filter: grayscale(0.7) brightness(0.75); }
+.cos-card-wrap--locked .cos-card-char, .cos-card-wrap--locked .cos-card-emblem, .cos-card-wrap--locked .cos-card-bg {
+  filter: grayscale(1) brightness(0.75); }
 .cos-card-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-/* 사용자 지적: "폰에서는 녹색박스가 케릭 가슴 밑에 있음, 카드 길이도 훨씬 길고" — 카드
-   행의 실제 높이가 기기마다 달라서(위쪽 상세박스 컨텐츠 높이에 따라 남는 공간이 바뀌는
-   flex 구조), height:%기준 크기는 카드가 길어지면 같이 커져야 하는데 max-width:88%에
-   걸려 오히려 작아졌었음. width 기준(카드 폭은 화면폭 비율로 훨씬 안정적)으로 바꿔서
-   카드 높이가 기기별로 달라져도 캐릭터 크기는 항상 일정하게. */
-.cos-card-char { position: absolute; z-index: 2; left: 50%; bottom: calc(14% + 0.2cm); width: 85%; height: auto; max-height: none;
+/* 사용자 지정(2026-09-26): "카드안 보유 녹색박스는 삭제, 케릭은 최대한 크게" — 하단
+   상태 띠가 없어졌으니 그 자리까지 캐릭터가 차지하도록 폭/하단 여백 확대. */
+.cos-card-char { position: absolute; z-index: 2; left: 50%; bottom: 2%; width: 96%; height: auto; max-height: none;
   transform: translateX(-50%); object-fit: contain; }
-/* 보유 상태 박스를 카드 맨 아래로 최대한 붙여서(사용자 지정) 위 배경(전광판 포함)이 제대로 보이게. */
-/* 사용자 지정: "녹색박스 상하 높이 120%, 위로 0.2cm" — 기존 실측 높이 18px 기준 21.6px(1.2배).
-   패딩 대신 명시적 height + flex 중앙정렬로 텍스트가 항상 수직 중앙에 오게. */
-.cos-card-status { position: absolute; left: 4%; right: 4%; bottom: calc(1% - 0.1cm); height: 21.6px; z-index: 2;
-  display: flex; align-items: center; justify-content: center; border-radius: 6px;
-  background: linear-gradient(180deg, #57d977, #2fb457); color: #fff; font-size: 0.6rem; font-weight: 800; text-align: center; }
-.cos-card--locked .cos-card-status { background: linear-gradient(180deg, #9a9aa4, #74747c); }
 /* 사용자 지적: "체크표시 찌그러져보임" — aspect-ratio:1이 absolute+flex 조합에서 제대로
    안 먹혀 실측 10.97×15px(원이 아님)로 나왔음. width/height를 고정 px로 직접 맞춰 확실한
    원형으로. */
-.cos-card-check { position: absolute; right: 3%; top: 3%; width: 12px; height: 12px; border-radius: 50%;
+.cos-card-check { position: absolute; right: 3%; top: 3%; width: 14px; height: 14px; border-radius: 50%;
   background: #2fb457; color: #fff; font-size: 0.65rem; font-weight: 900; display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+  z-index: 3; box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+/* 사용자 지정(2026-09-26): "미보유면 체크표시 자리에 자물쇠 아이콘" — 체크와 동일 위치/크기. */
+.cos-card-lock { position: absolute; right: 3%; top: 3%; width: 14px; height: 14px; border-radius: 50%;
+  background: rgba(30,30,38,0.8); color: #fff; font-size: 0.6rem; display: flex; align-items: center; justify-content: center;
+  z-index: 3; box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
 
 /* 사용자 지정: "상세설명박스 좌/우/아래 간격이 하트카드와 동일해야함(단, 하트카드 위치
    바뀌어도 같이 안 바뀌게)" — 하트카드의 실측 간격은 8px(.shop-cards-box 패딩). 여기는
@@ -3634,10 +3625,13 @@ body { background: var(--lm-page); }
    차이만큼 보정(calc(0.1cm - 6px)). 아래쪽 -4px는 기존 그대로(하트카드와 동일한 8px 유지). */
 /* 사용자 지정: "상세파란박스는 안쪽으로 들어간 3D 느낌, 테두리는 그대로" — inset 그림자로
    오목하게 눌린 패널 느낌(위쪽 진한 그림자+아래쪽 옅은 하이라이트). */
-.cos-detail { flex: 0 0 auto; display: flex; gap: 6px; padding: 8px; border-radius: 12px;
-  margin: calc(0.1cm - 6px) -4px -4px; background: linear-gradient(180deg, #2f6fed, #1f4fc4); color: #fff;
-  box-shadow: inset 0 6px 14px rgba(0,0,0,0.6), inset 0 -3px 5px rgba(255,255,255,0.25),
-    inset 6px 0 10px rgba(0,0,0,0.3), inset -6px 0 10px rgba(0,0,0,0.3); }
+/* 사용자 지정(2026-09-26): "상세박스는 게임화면에서 최대한 크게, 색깔은 코스튬 변경 파일과
+   동일하게" — 카드와 동일하게 좌우 0.1cm까지 확장(음수 마진 제거), 청록 테두리+남색
+   배경으로 재색상, 내부 요소(캐릭터·글자) 확대. */
+.cos-detail { flex: 0 0 auto; display: flex; gap: 8px; padding: 10px; border-radius: 12px;
+  margin: calc(0.1cm - 6px) 0 0 0; background: linear-gradient(180deg, #143a66, #0d2748); color: #fff;
+  border: 2px solid #4fd8ff;
+  box-shadow: 0 0 10px 2px rgba(79,216,255,0.35), inset 0 1px 3px rgba(255,255,255,0.15); }
 /* 사용자 지정: "두더지 위아래 여유는 0.1cm만" — 기존엔 width:21% 고정+align-self:center라
    이미지 원본 비율에 따라 위아래 여유가 들쭉날쭉(팀별 원본 여백도 달라 blue_bears는 15.9%
    투명 여백이 있었음 — assets/costume/char-*-detail.png 로 그 투명 여백 자체를 크롭해
@@ -3648,7 +3642,7 @@ body { background: var(--lm-page); }
    해결: img를 position:absolute로 완전히 정상 흐름 밖으로 빼서 래퍼의 내용 기준 높이
    계산에 아예 관여를 못 하게 함 — 그러면 빈 래퍼는 stretch가 정상 작동(박스 높이-0.2cm로
    결정적으로 늘어남), 그 안의 절대배치 img는 그 확정된 높이의 100%로 정확히 맞춰짐. */
-.cos-detail-char-wrap { position: relative; flex: 0 0 auto; align-self: stretch; width: 21%; margin: 0.1cm 0; }
+.cos-detail-char-wrap { position: relative; flex: 0 0 auto; align-self: stretch; width: 22%; margin: 0.1cm 0; }
 /* 사용자 지정: "두더지 10% 키우기" 이후 "20% 더 키우기" — 110% × 1.2 = 132%.
    중심 기준으로 확대(상하좌우 대칭), 0.1cm 여백이 양쪽에서 균등하게 줄어드는 방식. */
 /* 사용자 지적: "수평기준 높이 틀림" — center(top:50%) 정렬은 캐릭터별 이미지 전체 높이
@@ -3657,16 +3651,16 @@ body { background: var(--lm-page); }
    크롭돼 있음). */
 .cos-detail-char { position: absolute; left: 50%; bottom: calc(5% - 0.2cm); height: auto; width: 94.16%; max-width: none;
   transform: translateX(-50%); object-fit: contain; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35)); }
-.cos-detail-mid { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.cos-detail-mid { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 6px; justify-content: center; }
 .cos-detail-name-row { display: flex; align-items: center; gap: 6px; }
-.cos-detail-name { font-size: 0.8rem; font-weight: 800; }
-.cos-detail-effect { background: rgba(255,255,255,0.12); border-radius: 8px; padding: 5px 8px; }
-.cos-detail-effect-lbl { font-size: 0.6rem; font-weight: 700; opacity: 0.8; margin-bottom: 2px; }
+.cos-detail-name { font-size: 1.05rem; font-weight: 800; }
+.cos-detail-effect { background: rgba(255,255,255,0.12); border-radius: 8px; padding: 7px 10px; }
+.cos-detail-effect-lbl { font-size: 0.75rem; font-weight: 700; opacity: 0.8; margin-bottom: 3px; }
 /* 실측: "두더지 하강 딜레이"가 필요로 하는 너비(136.77px)가 실제 남는 공간(110.75px)보다
    커서 ellipsis가 발동했음(사용자 지적: "폭을 줄여서 딜.. 이 안되게") — 폰트/아이콘/간격을
    줄여 한 줄에 다 들어가게(0.64rem→0.56rem 등, 여유있게 계산). */
-.cos-detail-effect-row { display: flex; align-items: baseline; gap: 3px; font-size: 0.56rem; font-weight: 800; flex-wrap: nowrap; white-space: nowrap; }
-.cos-detail-effect-row img { width: 12px; height: 12px; align-self: center; flex: 0 0 auto; }
+.cos-detail-effect-row { display: flex; align-items: baseline; gap: 3px; font-size: 0.68rem; font-weight: 800; flex-wrap: nowrap; white-space: nowrap; }
+.cos-detail-effect-row img { width: 14px; height: 14px; align-self: center; flex: 0 0 auto; }
 /* flex:1 1 0 + min-width:0 — 실기기에서 "두더지 하강 딜레이"가 "딜.."로 심하게 잘리던
    문제(사용자 스크린샷 확인). flex item 기본 min-width:auto가 축소를 막아 ellipsis가
    기기별로 들쭉날쭉하게 작동했음 — min-width:0으로 명시해 항상 안정적으로 남는
@@ -3678,10 +3672,10 @@ body { background: var(--lm-page); }
    단어 중간에 줄바꿈되던 문제(사용자 스크린샷으로 확인) — 한글 단어 단위로만 줄바꿈. */
 /* 사용자 지정: "한 줄로 처리하기로 했는데 왜 2줄로" — 실측: 필요 너비 268.86px vs
    박스 폭 180.67px, 0.4rem 이하로 줄여야 한 줄에 들어감. */
-.cos-detail-acquire { font-size: 0.4rem; font-weight: 700; opacity: 0.85; line-height: 1.2; white-space: nowrap; }
+.cos-detail-acquire { font-size: 0.58rem; font-weight: 700; opacity: 0.85; line-height: 1.2; white-space: nowrap; }
 /* 사용자 지정: "우측 흰색박스 삭제, 유니폼아이콘 삭제" — 감싸던 박스(.cos-detail-btnbox)를
    없애고 버튼 자체에 크기(flex:0 0 22%, 이전 박스 폭과 동일)를 직접 부여. */
-.cos-detail-btn { flex: 0 0 22%; align-self: center; font-size: 0.78rem; padding: 8px 2px;
+.cos-detail-btn { flex: 0 0 19%; align-self: center; font-size: 0.92rem; padding: 10px 2px;
   display: flex; align-items: center; justify-content: center; }
 
 /* 스킬 탭(§10~11, §17~22, §41~42) — "스킬 UI 및 에셋/메인화면.png" 레이아웃 재현, 이후

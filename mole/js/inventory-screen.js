@@ -87,7 +87,6 @@
     var bannerTxtEl = el.querySelector('[data-inv-banner-txt]');
     var bannerEl = el.querySelector('.inv-banner');
     var cosLogoEl = el.querySelector('.inv-cos-logo');
-    var cosPeekMoleEl = el.querySelector('.inv-cos-peek-mole');
     var photoSearchBtn = el.querySelector('.inv-photo-search');
     if (photoSearchBtn) {
       photoSearchBtn.addEventListener('click', function () {
@@ -273,8 +272,7 @@
           '<span class="cos-card">' +
             '<img class="cos-card-bg" alt="" src="assets/costume/bg-' + team.id + '.png">' +
             '<img class="cos-card-char" alt="" src="assets/costume/char-' + team.id + '-detail.png">' +
-            '<span class="cos-card-status">' + T(owned ? 'mole.cos.owned' : 'mole.cos.notOwned') + '</span>' +
-            (selected ? '<span class="cos-card-check">✓</span>' : '') +
+            (owned ? '<span class="cos-card-check">✓</span>' : '<span class="cos-card-lock">🔒</span>') +
           '</span>';
         wrap.addEventListener('click', function () { costumeSelectedId = team.id; renderCostumes(); });
         cardsEl.appendChild(wrap);
@@ -741,8 +739,6 @@
       nextBtn.style.display = active === 'photo' ? 'none' : '';
       // 몰리그 전광판은 코스튬 탭에서만, 전체파란박스 밖(화면 최상단)에 표시.
       if (cosLogoEl) cosLogoEl.hidden = active !== 'costume';
-      // 좌측 상단 바깥쪽 두더지도 코스튬 탭 전용.
-      if (cosPeekMoleEl) cosPeekMoleEl.hidden = active !== 'costume';
       if (photoSearchBtn) photoSearchBtn.hidden = active !== 'photo';
       if (active === 'weapon') {
         renderWeapons();
