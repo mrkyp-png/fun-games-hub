@@ -3787,11 +3787,20 @@ body { background: var(--lm-page); }
 /* 사진관 탭(§8~35) — 기존 정사각형 영역 안에서만 표시(§4, §21). 명세서: 바탕화면
    "사진관 UI 및 에셋/명세서.txt". .photo-square 를 aspect-ratio:1 로 만들어 .inv-body의
    나머지 직사각형 탭들과 달리 정사각형만 차지하고 가운데 정렬한다. */
+/* 사용자 지정: "전체파란박스는 3D입체로 들어간 이미지, 그안에 배경화면이 있게" —
+   :has()로 사진관 탭일 때만 전체파란박스 자체에 배경화면을 깔고 안쪽으로 눌린
+   3D 느낌(다중 inset 그림자)을 준다. .photo-square 는 이제 배경 없이 그 위에
+   얹히는 투명 레이어. */
+.inv-cards-box:has(.photo-square) {
+  background: url('assets/photo/background.jpg') center/cover no-repeat;
+  box-shadow: 0 4px 0 #12285e, inset 0 0 0 3px rgba(0,0,0,0.35),
+    inset 0 10px 18px rgba(0,0,0,0.55), inset 0 -10px 18px rgba(0,0,0,0.55),
+    inset 10px 0 18px rgba(0,0,0,0.4), inset -10px 0 18px rgba(0,0,0,0.4);
+}
 .photo-square {
   position: relative; height: 100%; width: auto; max-width: 100%; max-height: 100%;
   aspect-ratio: 1; margin: 0 auto;
   border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;
-  background: url('assets/photo/background.jpg') center/cover no-repeat;
   /* width:100% 기준이면 세로가 부족한 박스 안에서 정사각형이 찌그러지거나(§8 위반)
      스크롤로 잘려 보였음 — 높이를 기준으로 정사각형을 잡고 폭은 aspect-ratio로
      따라오게 해서 항상 박스 안에 100% 들어오면서 정사각형을 유지한다. */
@@ -3805,9 +3814,12 @@ body { background: var(--lm-page); }
 }
 .photo-emblems { position: relative; z-index: 2; display: flex; justify-content: center; gap: 4px;
   padding: 6px 34px 4px; }
-.photo-emblem { flex: 1 1 0; min-width: 0; max-width: 20%; padding: 2px; border: none; border-radius: 8px;
-  background: rgba(10,20,50,0.35); cursor: pointer; }
-.photo-emblem--on { background: rgba(255,217,59,0.35); box-shadow: 0 0 0 2px #ffd93b; }
+/* 사용자 지정: "엠블럼은 박스 안에 있게(각각 박스 안에 엠블럼이 있게)" — 선택 여부와
+   무관하게 항상 카드형 박스 안에 담는다. */
+.photo-emblem { flex: 1 1 0; min-width: 0; max-width: 20%; padding: 3px; border-radius: 8px;
+  border: 2px solid rgba(255,255,255,0.4); background: rgba(10,20,50,0.55); cursor: pointer;
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.2); }
+.photo-emblem--on { background: rgba(255,217,59,0.35); border-color: #ffd93b; box-shadow: 0 0 0 2px #ffd93b; }
 .photo-emblem img { width: 100%; height: auto; object-fit: contain; display: block; }
 
 .photo-slots { position: relative; z-index: 2; flex: 1 1 auto; min-height: 0; display: flex; gap: 6px;
@@ -3815,17 +3827,23 @@ body { background: var(--lm-page); }
 .photo-slot { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center;
   gap: 3px; background: none; border: none; cursor: pointer; }
 .photo-slot-frame {
-  position: relative; width: 100%; flex: 1 1 auto; min-height: 0; border-radius: 10px;
+  position: relative; width: 100%; height: 100%; border-radius: 10px;
   background: rgba(20,40,90,0.55); border: 2px solid #4a90f5; display: flex; align-items: center;
   justify-content: center; overflow: hidden;
 }
 .photo-slot--sel .photo-slot-frame { border-color: #ffd93b; box-shadow: inset 0 0 0 2px #ffd93b, 0 0 10px 2px rgba(255,217,59,0.7); }
-.photo-slot-lock { font-size: 1.6rem; opacity: 0.75; }
 .photo-slot-img { width: 100%; height: 100%; object-fit: contain; }
+.photo-slot-img--locked, .photo-coll-card-img--locked, .photo-zoom-img--locked { filter: grayscale(1) brightness(0.7); }
 .photo-slot-applied { position: absolute; right: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%;
   background: #57d977; color: #fff; font-size: 10px; font-weight: 900; display: flex; align-items: center;
-  justify-content: center; box-shadow: 0 0 0 2px #142a63; }
-.photo-slot-name { font-size: 0.5rem; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
+  justify-content: center; box-shadow: 0 0 0 2px #142a63; z-index: 2; }
+/* 사용자 지정: "얼굴형 글자는 카드 왼쪽 상단에 띠모양(사선형태)" — 코너 리본. */
+.photo-slot-ribbon {
+  position: absolute; left: -28%; top: 12%; z-index: 3; width: 100%;
+  transform: rotate(-40deg); transform-origin: center;
+  background: linear-gradient(180deg, #2f6fed, #1c3f96); color: #fff; text-align: center;
+  font-size: 0.42rem; font-weight: 800; padding: 2px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
 
 .photo-detail { position: relative; z-index: 2; flex: 0 0 auto; display: flex; align-items: center; gap: 6px;
   padding: 6px 8px; background: rgba(10,20,50,0.55); }
@@ -3837,30 +3855,32 @@ body { background: var(--lm-page); }
 .photo-detail-btns { flex: 0 0 auto; display: flex; gap: 4px; }
 .photo-detail-rename, .photo-detail-apply { font-size: 0.44rem; padding: 5px 7px; width: auto; }
 
-/* 전체 컬렉션 — Bottom Sheet/Overlay(§6, §19~23), .photo-square 와 동일 크기. */
+/* 전체 컬렉션 — Bottom Sheet/Overlay(§6, §19~23), .photo-square 와 동일 크기.
+   사용자 지정: "컬렉션 화면 에셋1/에셋2 사용" — 트로피 헤더(위) + 카드 그리드
+   배경(아래) 2단 구성, 카드는 그리드 이미지 위에 코드로 겹쳐 찍는다. */
 .photo-overlay {
   position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column;
-  background: linear-gradient(180deg, #1c1430, #0c0a18); transform: translateY(100%);
+  background: #0c0a18; transform: translateY(100%);
   transition: transform 0.32s ease-out; padding: 6px;
 }
 .photo-overlay.is-open { transform: translateY(0); }
 .photo-coll-back { position: absolute; left: 8px; top: 8px; z-index: 3; width: 28px; height: 28px;
   border-radius: 50%; border: none; background: #2f6fed; color: #fff; font-size: 1rem; font-weight: 900;
   cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.photo-coll-header { width: 100%; height: auto; display: block; margin-top: 2px; }
-.photo-coll-progress { text-align: center; font-size: 0.62rem; font-weight: 900; color: #ffd93b;
-  margin: 2px 0 6px; }
-.photo-coll-grid { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 4px; }
-.photo-coll-card { position: relative; border: none; background: rgba(255,255,255,0.05); border-radius: 8px;
-  padding: 0; cursor: pointer; overflow: hidden; }
-.photo-coll-card-frame { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
-.photo-coll-card-img { position: absolute; inset: 8%; width: 84%; height: 84%; object-fit: contain; }
-.photo-coll-card-lock { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  font-size: 1.1rem; opacity: 0.7; }
-.photo-coll-card-applied { position: absolute; right: 6%; top: 6%; width: 14px; height: 14px; border-radius: 50%;
+.photo-coll-header { flex: 0 0 auto; width: 80%; height: auto; display: block; margin: 2px auto 0; }
+.photo-coll-progress { flex: 0 0 auto; text-align: center; font-size: 0.62rem; font-weight: 900; color: #ffd93b;
+  margin: 2px 0 4px; }
+.photo-coll-gridwrap {
+  position: relative; flex: 1 1 auto; min-height: 0; border-radius: 8px; overflow: hidden;
+  background: url('assets/photo/collection-grid.jpg') center/100% 100% no-repeat;
+}
+.photo-coll-grid { position: absolute; left: 13.5%; top: 7%; right: 1.5%; bottom: 5.5%;
+  display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 3%; }
+.photo-coll-card { position: relative; border: none; background: none; padding: 0; cursor: pointer; overflow: hidden; }
+.photo-coll-card-img { position: absolute; inset: 6%; width: 88%; height: 88%; object-fit: contain; }
+.photo-coll-card-applied { position: absolute; right: 4%; top: 2%; width: 14px; height: 14px; border-radius: 50%;
   background: #57d977; color: #fff; font-size: 9px; font-weight: 900; display: flex; align-items: center;
-  justify-content: center; box-shadow: 0 0 0 2px #142a63; }
+  justify-content: center; box-shadow: 0 0 0 2px #142a63; z-index: 2; }
 
 /* 확대 상세(§31~34) — 컬렉션 위 DETAIL LAYER, 배경 Dim. */
 .photo-zoom { position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; }
@@ -3881,7 +3901,6 @@ body { background: var(--lm-page); }
 .photo-zoom-nav:disabled { opacity: 0.3; cursor: default; }
 .photo-zoom-imgwrap { width: 70%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
 .photo-zoom-img { width: 100%; height: 100%; object-fit: contain; }
-.photo-zoom-lock { font-size: 2.4rem; opacity: 0.8; }
 .photo-zoom-applied { font-size: 0.6rem; font-weight: 900; color: #57d977; }
 .photo-zoom-name { font-size: 0.7rem; font-weight: 900; color: #ffd93b; }
 .photo-zoom-effect { display: flex; gap: 4px; font-size: 0.52rem; font-weight: 700; color: #cfe0ff; }

@@ -534,13 +534,15 @@
         var slot = document.createElement('button');
         slot.type = 'button';
         slot.className = 'photo-slot' + (sel ? ' photo-slot--sel' : '');
+        // 사용자 지정: 완성 여부와 무관하게 항상 얼굴형 캐릭터 이미지를 보여주고(§"제일
+        // 중요"), 미완성은 흑백 처리로만 구분. 얼굴형 이름은 카드 좌상단 대각선 띠로.
         slot.innerHTML =
           '<span class="photo-slot-frame">' +
-            (completed ? '<img class="photo-slot-img" alt="" src="assets/photo/characters/' + id + '.png">' : '<span class="photo-slot-lock">🔒</span>') +
+            '<img class="photo-slot-img' + (completed ? '' : ' photo-slot-img--locked') + '" alt="" src="assets/photo/characters/' + id + '.png">' +
+            '<span class="photo-slot-ribbon"></span>' +
             (applied ? '<span class="photo-slot-applied">✓</span>' : '') +
-          '</span>' +
-          '<span class="photo-slot-name"></span>';
-        slot.querySelector('.photo-slot-name').textContent = T(PHOTO_FACE_I18N[f.id]);
+          '</span>';
+        slot.querySelector('.photo-slot-ribbon').textContent = T(PHOTO_FACE_I18N[f.id]);
         slot.addEventListener('click', function () { photoFace = f.id; renderPhoto(); });
         slotsEl.appendChild(slot);
       });
@@ -632,7 +634,7 @@
         '<button type="button" class="photo-coll-back" data-photo-back>‹</button>' +
         '<img class="photo-coll-header" alt="" src="assets/photo/collection-header.png">' +
         '<div class="photo-coll-progress" data-photo-progress></div>' +
-        '<div class="photo-coll-grid" data-photo-grid></div>';
+        '<div class="photo-coll-gridwrap"><div class="photo-coll-grid" data-photo-grid></div></div>';
       overlay.querySelector('[data-photo-progress]').textContent = PS.completedCount() + ' / ' + PS.TOTAL;
 
       var grid = overlay.querySelector('[data-photo-grid]');
@@ -644,11 +646,11 @@
           var card = document.createElement('button');
           card.type = 'button';
           card.className = 'photo-coll-card';
+          // 사용자 지정: 완성 여부와 무관하게 항상 엠블럼 팀에 맞는 얼굴형 캐릭터를 표시(§"제일 중요").
           card.innerHTML =
-            '<img class="photo-coll-card-frame" alt="" src="assets/photo/card-frame.png">' +
-            (completed ? '<img class="photo-coll-card-img" alt="" src="assets/photo/characters/' + id + '.png">' : '<span class="photo-coll-card-lock">🔒</span>') +
+            '<img class="photo-coll-card-img' + (completed ? '' : ' photo-coll-card-img--locked') + '" alt="" src="assets/photo/characters/' + id + '.png">' +
             (applied ? '<span class="photo-coll-card-applied">✓</span>' : '');
-          if (completed) card.addEventListener('click', function () { photoDetailId = id; renderPhotoDetailZoom(id); });
+          card.addEventListener('click', function () { photoDetailId = id; renderPhotoDetailZoom(id); });
           grid.appendChild(card);
         });
       });
@@ -693,7 +695,7 @@
           '<button type="button" class="photo-zoom-nav photo-zoom-nav--prev" data-photo-zoom-prev>‹</button>' +
           '<button type="button" class="photo-zoom-nav photo-zoom-nav--next" data-photo-zoom-next>›</button>' +
           '<span class="photo-zoom-imgwrap">' +
-            (completed ? '<img class="photo-zoom-img" alt="" src="assets/photo/characters/' + id + '.png">' : '<span class="photo-zoom-lock">🔒</span>') +
+            '<img class="photo-zoom-img' + (completed ? '' : ' photo-zoom-img--locked') + '" alt="" src="assets/photo/characters/' + id + '.png">' +
           '</span>' +
           (applied ? '<div class="photo-zoom-applied"></div>' : '') +
           '<div class="photo-zoom-name"></div>' +
