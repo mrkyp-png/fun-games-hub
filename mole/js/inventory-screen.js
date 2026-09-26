@@ -95,8 +95,11 @@
     el.querySelector('[data-back="inventory"]')?.addEventListener('click', opts.onClose);
     var active = 'weapon';
     var costumeSelectedId = null; // 코스튬 탭 안에서만 쓰는 "선택" 상태(착용 상태와 별개, §14)
-    var skillTab = 'active'; // 스킬 탭 안의 액티브/패시브 서브탭
-    var skillPage = 0; // 스킬 탭 안의 액티브/패시브 각각의 페이지(4개씩, 명세서 §17~19)
+    // 사용자 지정(2026-09-26): 액티브/패시브를 탭 전환이 아니라 한 화면에 박스 2개로 동시
+    // 표시(위=액티브, 아래=패시브), 상단 토글버튼은 삭제하고 [복원]만 유지. 각 박스 안
+    // 페이지(◀ N/M ▶)는 독립적으로 유지.
+    var activePage = 0;
+    var passivePage = 0;
 
     // 상점 카드줄과 동일한 점+화살표 페이징(사용자 지정: "상점 구조와 동일하되 한페이지 한장씩").
     // ⚠️ 처음엔 scrollBy(상대량) 방식이었는데, 카드 실측폭(getBoundingClientRect)과 grid의
@@ -304,8 +307,9 @@
       }
     }
 
-    // 스킬 탭 — 메인화면.png 참고: 상단 액티브/패시브/복원 3버튼 + 좌측 4개씩 페이징 카드 +
-    // 우측 현재 무기 미리보기(§10~11, §17~22, §41~42). 명세서: 바탕화면 "스킬 UI 및 에셋/명세서.txt".
+    // 스킬 탭 — 메인화면.png 참고 + 사용자 지정(2026-09-26): 액티브/패시브를 탭 전환이 아니라
+    // 좌측에 박스 2개(위=액티브, 아래=패시브)로 한 화면에 동시 표시 + 우측 무기 미리보기
+    // (§10~11, §17~22, §41~42). 명세서: 바탕화면 "스킬 UI 및 에셋/명세서.txt".
     var SKL_PER_PAGE = 4;
     function renderSkills() {
       var locked = !!(opts.gameInProgress && opts.gameInProgress());
@@ -313,58 +317,78 @@
       var weapon = WEAPONS.filter(function (w) { return w.id === weaponId; })[0];
       var slots = MG.Skills.slotsFor(weaponId);
       var lo = MG.Skills.loadoutFor(weaponId);
-      var list = skillTab === 'active' ? MG.Skills.activeSkills() : MG.Skills.passiveSkills();
-      var maxSlots = skillTab === 'active' ? slots.active : slots.passive;
-      var equippedList = skillTab === 'active' ? lo.activeSkills : lo.passiveSkills;
-
-      var pageCount = Math.max(1, Math.ceil(list.length / SKL_PER_PAGE));
-      if (skillPage > pageCount - 1) skillPage = pageCount - 1;
-      var pageItems = list.slice(skillPage * SKL_PER_PAGE, skillPage * SKL_PER_PAGE + SKL_PER_PAGE);
-      while (pageItems.length < SKL_PER_PAGE) pageItems.push(null); // 남는 칸 = "추후 추가 예정"(§19)
 
       body.innerHTML =
         '<div class="skl-wrap">' +
-          '<div class="skl-toolbar">' +
-            '<button type="button" class="skl-tbtn" data-skl-tab="active"><img class="skl-tbtn-ico" alt="" src="assets/skills/active_skill.png"><span></span></button>' +
-            '<button type="button" class="skl-tbtn" data-skl-tab="passive"><img class="skl-tbtn-ico" alt="" src="assets/skills/passive_skill.png"><span></span></button>' +
-            '<button type="button" class="skl-tbtn skl-tbtn--restore" data-skl-restore><img class="skl-tbtn-ico" alt="" src="assets/skills/restore.png"><span></span></button>' +
-          '</div>' +
           '<div class="skl-body">' +
             '<div class="skl-left">' +
-              '<div class="skl-left-head"><span class="skl-left-title"></span>' +
-                '<div class="skl-pager"><button type="button" class="skl-parrow" data-skl-prev>‹</button>' +
-                  '<span class="skl-pnum"></span><button type="button" class="skl-parrow" data-skl-next>›</button></div>' +
+              '<div class="skl-box" data-skl-box="active">' +
+                '<div class="skl-left-head"><span class="skl-left-title"></span>' +
+                  '<div class="skl-pager"><button type="button" class="skl-parrow" data-skl-prev>‹</button>' +
+                    '<span class="skl-pnum"></span><button type="button" class="skl-parrow" data-skl-next>›</button></div>' +
+                  '<button type="button" class="skl-box-restore" data-skl-restore><img alt="" src="assets/skills/restore.png"></button>' +
+                '</div>' +
+                '<div class="skl-grid" data-skl-grid></div>' +
               '</div>' +
-              '<div class="skl-grid" data-skl-grid></div>' +
+              '<div class="skl-box" data-skl-box="passive">' +
+                '<div class="skl-left-head"><span class="skl-left-title"></span>' +
+                  '<div class="skl-pager"><button type="button" class="skl-parrow" data-skl-prev>‹</button>' +
+                    '<span class="skl-pnum"></span><button type="button" class="skl-parrow" data-skl-next>›</button></div>' +
+                  '<button type="button" class="skl-box-restore" data-skl-restore><img alt="" src="assets/skills/restore.png"></button>' +
+                '</div>' +
+                '<div class="skl-grid" data-skl-grid></div>' +
+              '</div>' +
             '</div>' +
             '<div class="skl-right" data-skl-right></div>' +
           '</div>' +
         '</div>';
 
-      var tbtnActive = body.querySelector('.skl-tbtn[data-skl-tab="active"]');
-      var tbtnPassive = body.querySelector('.skl-tbtn[data-skl-tab="passive"]');
-      tbtnActive.classList.toggle('is-on', skillTab === 'active');
-      tbtnPassive.classList.toggle('is-on', skillTab === 'passive');
-      tbtnActive.querySelector('span').textContent = T('mole.skl.active');
-      tbtnPassive.querySelector('span').textContent = T('mole.skl.passive');
-      tbtnActive.addEventListener('click', function () { skillTab = 'active'; skillPage = 0; renderSkills(); });
-      tbtnPassive.addEventListener('click', function () { skillTab = 'passive'; skillPage = 0; renderSkills(); });
-      var restoreBtn = body.querySelector('[data-skl-restore]');
-      restoreBtn.querySelector('span').textContent = T('mole.skl.restore');
+      renderSkillBox('active', weaponId, locked, slots.active, lo.activeSkills);
+      renderSkillBox('passive', weaponId, locked, slots.passive, lo.passiveSkills);
+
+      renderSkillRight(weaponId, weapon, lo, slots);
+    }
+
+    // kind = 'active' | 'passive'. maxSlots/equippedList = 해당 종류의 슬롯 수·현재 장착 목록.
+    function renderSkillBox(kind, weaponId, locked, maxSlots, equippedList) {
+      var box = body.querySelector('[data-skl-box="' + kind + '"]');
+      var restoreBtn = box.querySelector('[data-skl-restore]');
+      restoreBtn.setAttribute('aria-label', T('mole.skl.restore'));
       restoreBtn.disabled = locked;
-      if (!locked) restoreBtn.addEventListener('click', function () { confirmRestoreSkills(weaponId); });
+      if (!locked) {
+        restoreBtn.addEventListener('click', function () {
+          confirmRestoreSkills(weaponId, kind === 'active' ? 'ACTIVE' : 'PASSIVE');
+        });
+      }
+      var list = kind === 'active' ? MG.Skills.activeSkills() : MG.Skills.passiveSkills();
+      var pageCount = Math.max(1, Math.ceil(list.length / SKL_PER_PAGE));
+      var page = kind === 'active' ? activePage : passivePage;
+      if (page > pageCount - 1) page = pageCount - 1;
+      var pageItems = list.slice(page * SKL_PER_PAGE, page * SKL_PER_PAGE + SKL_PER_PAGE);
+      while (pageItems.length < SKL_PER_PAGE) pageItems.push(null); // 남는 칸 = "추후 추가 예정"(§19)
 
-      body.querySelector('.skl-left-title').textContent =
-        T(skillTab === 'active' ? 'mole.skl.active' : 'mole.skl.passive') + ' (' + equippedList.length + '/' + maxSlots + ')';
-      body.querySelector('.skl-pnum').textContent = (skillPage + 1) + ' / ' + pageCount;
-      var prevBtn2 = body.querySelector('[data-skl-prev]');
-      var nextBtn2 = body.querySelector('[data-skl-next]');
-      prevBtn2.disabled = skillPage <= 0;
-      nextBtn2.disabled = skillPage >= pageCount - 1;
-      prevBtn2.addEventListener('click', function () { if (skillPage > 0) { skillPage--; renderSkills(); } });
-      nextBtn2.addEventListener('click', function () { if (skillPage < pageCount - 1) { skillPage++; renderSkills(); } });
+      box.querySelector('.skl-left-title').textContent =
+        T(kind === 'active' ? 'mole.skl.active' : 'mole.skl.passive') + ' (' + equippedList.length + '/' + maxSlots + ')';
+      box.querySelector('.skl-pnum').textContent = (page + 1) + ' / ' + pageCount;
+      var prevBtn2 = box.querySelector('[data-skl-prev]');
+      var nextBtn2 = box.querySelector('[data-skl-next]');
+      prevBtn2.disabled = page <= 0;
+      nextBtn2.disabled = page >= pageCount - 1;
+      prevBtn2.addEventListener('click', function () {
+        if (kind === 'active' ? activePage > 0 : passivePage > 0) {
+          if (kind === 'active') activePage--; else passivePage--;
+          renderSkills();
+        }
+      });
+      nextBtn2.addEventListener('click', function () {
+        var cur = kind === 'active' ? activePage : passivePage;
+        if (cur < pageCount - 1) {
+          if (kind === 'active') activePage++; else passivePage++;
+          renderSkills();
+        }
+      });
 
-      var gridEl = body.querySelector('[data-skl-grid]');
+      var gridEl = box.querySelector('[data-skl-grid]');
       pageItems.forEach(function (skill) {
         var cell = document.createElement('div');
         if (!skill) {
@@ -396,8 +420,6 @@
         }
         gridEl.appendChild(cell);
       });
-
-      renderSkillRight(weaponId, weapon, lo, slots);
     }
 
     function renderSkillRight(weaponId, weapon, lo, slots) {
@@ -433,7 +455,8 @@
     }
 
     // 복원 확인 팝업 — game.js showQuitDialog() 와 동일한 .ad-overlay/.quit-card 마크업 재사용(§50).
-    function confirmRestoreSkills(weaponId) {
+    // type('ACTIVE'|'PASSIVE') — 사용자 지정: 액티브/패시브 박스마다 개별 복원 버튼.
+    function confirmRestoreSkills(weaponId, type) {
       var v = document.createElement('div');
       v.className = 'ad-overlay';
       v.innerHTML = '<div class="ad-overlay-card quit-card">' +
@@ -441,14 +464,15 @@
         '<div class="quit-btns">' +
         '<button type="button" data-q="no"></button>' +
         '<button type="button" class="quit-yes" data-q="yes"></button></div></div>';
-      v.querySelector('.quit-title').textContent = T('mole.skl.restoreTitle');
+      v.querySelector('.quit-title').textContent = T('mole.skl.restoreConfirmA') +
+        T(type === 'ACTIVE' ? 'mole.skl.active' : 'mole.skl.passive') + T('mole.skl.restoreConfirmB');
       v.querySelector('[data-q="no"]').textContent = T('mole.skl.restoreCancel');
       v.querySelector('[data-q="yes"]').textContent = T('mole.skl.restoreOk');
       document.body.appendChild(v);
       v.querySelector('[data-q="no"]').addEventListener('click', function () { v.remove(); });
       v.querySelector('[data-q="yes"]').addEventListener('click', function () {
         v.remove();
-        MG.Skills.restore(weaponId);
+        MG.Skills.restore(weaponId, type);
         renderSkills();
       });
     }
@@ -461,7 +485,7 @@
         b.className = 'inv-tab' + (t.id === active ? ' inv-tab--on' : '');
         b.innerHTML = '<span class="inv-tab-ico">' + t.icon + '</span><span class="inv-tab-lbl"></span>';
         b.querySelector('.inv-tab-lbl').textContent = T(t.i18n);
-        b.addEventListener('click', function () { active = t.id; pageIdx = 0; skillTab = 'active'; skillPage = 0; paint(); });
+        b.addEventListener('click', function () { active = t.id; pageIdx = 0; activePage = 0; passivePage = 0; paint(); });
         tabsEl.appendChild(b);
       });
     }
@@ -491,7 +515,7 @@
       }
     }
 
-    return { show: function () { active = 'weapon'; costumeSelectedId = null; skillTab = 'active'; skillPage = 0; paint(); } };
+    return { show: function () { active = 'weapon'; costumeSelectedId = null; activePage = 0; passivePage = 0; paint(); } };
   }
 
   var api = { create: create };

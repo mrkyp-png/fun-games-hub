@@ -1790,6 +1790,10 @@ body { background: var(--lm-page); }
     inset 0 2px 2px rgba(255, 255, 255, 0.7),
     inset 0 -3px 5px rgba(0, 0, 0, 0.22);
 }
+/* 스킬 아이콘(§4~5) — 원본 PNG가 커서 버튼 밖으로 넘치던 것을 버튼 안에 작게 맞춤. */
+.lane-item-icon { position: relative; z-index: 2; display: flex; align-items: center;
+  justify-content: center; width: 58%; height: 58%; pointer-events: none; }
+.lane-item-icon img { width: 100%; height: 100%; object-fit: contain; }
 /* 물결(ripple) — 사각형 중심에서 얇은 초록 테두리 선이 점점 커지고 굵어지며 바깥 테두리까지
    퍼진 뒤 사라짐 (채워진 원 X, 링 O — scale 이 커질수록 border 도 같이 굵어 보인다). */
 .lane-item::before {
@@ -3680,25 +3684,23 @@ body { background: var(--lm-page); }
 .cos-detail-btn { flex: 0 0 22%; align-self: center; font-size: 0.78rem; padding: 8px 2px;
   display: flex; align-items: center; justify-content: center; }
 
-/* 스킬 탭(§10~11, §17~22, §41~42) — "스킬 UI 및 에셋/메인화면.png" 레이아웃 재현:
-   상단 액티브/패시브/복원 3버튼 + 좌측 4개씩 페이징 카드 목록 + 우측 무기 미리보기. */
+/* 스킬 탭(§10~11, §17~22, §41~42) — "스킬 UI 및 에셋/메인화면.png" 레이아웃 재현, 이후
+   사용자 지정(2026-09-26)으로 상단 액티브/패시브/복원 토글바 삭제 — 액티브/패시브 박스가
+   한 화면에 동시에 나오고, [복원]은 각 박스 헤더 안에 개별로 들어감(박스별 개별 복원). */
 .skl-wrap { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; gap: 6px; }
-.skl-toolbar { display: flex; gap: 4px; }
-.skl-tbtn {
-  flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 4px;
-  padding: 7px 2px; border: none; border-radius: 10px; cursor: pointer;
-  background: linear-gradient(180deg, #2f6fed, #1f4fc4); color: #cfe0ff; font-weight: 800; font-size: 0.62rem;
-  box-shadow: 0 2px 0 #12285e, inset 0 1px 2px rgba(255,255,255,0.2);
-}
-.skl-tbtn.is-on { background: linear-gradient(180deg, #4fa3ff, #1f6ff0); color: #fff; box-shadow: 0 2px 0 #0e3aa8, inset 0 1px 3px rgba(255,255,255,0.5); }
-.skl-tbtn:disabled { opacity: 0.5; cursor: default; }
-.skl-tbtn-ico { width: 16px; height: 16px; object-fit: contain; flex: 0 0 auto; }
-.skl-tbtn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
 .skl-body { display: flex; gap: 6px; flex: 1 1 auto; min-height: 0; }
-.skl-left { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-.skl-left-head { display: flex; align-items: center; justify-content: space-between; padding: 0 2px; }
-.skl-left-title { font-size: 0.62rem; font-weight: 800; color: #ffd93b; }
+.skl-left { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.skl-box { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: 4px;
+  padding: 4px; border-radius: 10px; background: rgba(0,0,0,0.12); }
+.skl-left-head { display: flex; align-items: center; gap: 4px; padding: 0 2px; }
+.skl-left-title { flex: 1 1 auto; min-width: 0; font-size: 0.62rem; font-weight: 800; color: #ffd93b; }
+.skl-box-restore {
+  flex: 0 0 auto; width: 20px; height: 20px; padding: 3px; border: none; border-radius: 6px; cursor: pointer;
+  background: linear-gradient(180deg, #3a7bff, #1f4fc4); box-shadow: 0 2px 0 #12285e;
+}
+.skl-box-restore img { width: 100%; height: 100%; object-fit: contain; }
+.skl-box-restore:active { transform: scale(0.9); }
+.skl-box-restore:disabled { opacity: 0.4; cursor: default; }
 .skl-pager { display: flex; align-items: center; gap: 4px; }
 .skl-pnum { font-size: 0.6rem; font-weight: 800; color: #fff; min-width: 24px; text-align: center; }
 .skl-parrow {

@@ -23,10 +23,12 @@
     alipunch: { active: 4, passive: 2 }
   };
 
-  // 데모 기본 수량 — 아직 상점/보물상자 지급 경로가 없어(§46~49) 명세서 §45 예시값을 그대로 시드.
+  // 데모 기본 수량 — 아직 상점/보물상자 지급 경로가 없어(§46~49) 사용자 지정으로 테스트용
+  // 1000개씩 시드(2026-09-26, "테스트용으로 할려면 필요합니다. 패시브 스킬도").
   // 실제 지급 경로가 생기면 이 기본값만 {}(전부 0)로 바꾸면 됨 — 구조는 이미 확장 가능.
   var DEFAULT_INVENTORY = {
-    freeze: 3, goldDouble: 5, targeting: 2, carpetBombing: 1, ai: 0, shield: 3, feverTime: 2
+    freeze: 1000, goldDouble: 1000, targeting: 1000, carpetBombing: 1000, ai: 1000,
+    shield: 1000, feverTime: 1000
   };
 
   function skillById(id) {
@@ -151,10 +153,14 @@
     if (changed) saveLoadouts(all);
   }
   // 복원 — 현재 무기 하나만 빈 Loadout으로. Inventory 환불 아님(§50~51).
-  function restore(weaponId) {
+  // type('ACTIVE'|'PASSIVE') 지정 시 그쪽 슬롯만 복원(사용자 지정: 액티브/패시브 박스마다
+  // 개별 복원 버튼), 생략 시 무기 전체(액티브+패시브 둘 다) 복원.
+  function restore(weaponId, type) {
     var all = loadLoadouts();
     if (!all[weaponId]) return;
-    all[weaponId] = { activeSkills: [], passiveSkills: [] };
+    if (type === 'ACTIVE') all[weaponId].activeSkills = [];
+    else if (type === 'PASSIVE') all[weaponId].passiveSkills = [];
+    else all[weaponId] = { activeSkills: [], passiveSkills: [] };
     saveLoadouts(all);
   }
 
