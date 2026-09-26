@@ -310,7 +310,7 @@
     // 스킬 탭 — 메인화면.png 참고 + 사용자 지정(2026-09-26): 액티브/패시브를 탭 전환이 아니라
     // 좌측에 박스 2개(위=액티브, 아래=패시브)로 한 화면에 동시 표시 + 우측 무기 미리보기
     // (§10~11, §17~22, §41~42). 명세서: 바탕화면 "스킬 UI 및 에셋/명세서.txt".
-    var SKL_PER_PAGE = 4;
+    var SKL_PER_PAGE = 3; // 사용자 지정(2026-09-26): "4개까지 보여줄필요없다" — 3개로 줄여 카드/글자를 크게
     function renderSkills() {
       var locked = !!(opts.gameInProgress && opts.gameInProgress());
       var weaponId = equipped();
@@ -424,9 +424,16 @@
 
     function renderSkillRight(weaponId, weapon, lo, slots) {
       var right = body.querySelector('[data-skl-right]');
+      // 알리 판취 = 무기 화면과 동일하게 글러브 2개(오른쪽은 거울상) 표시(사용자 지정).
+      var imgHtml = (weapon && weapon.id === 'alipunch')
+        ? '<div class="skl-right-imgwrap skl-right-imgwrap--pair">' +
+            '<img class="skl-right-img" alt="" src="' + weapon.thumb + '">' +
+            '<img class="skl-right-img skl-right-img--mirror" alt="" src="' + weapon.thumb + '">' +
+          '</div>'
+        : '<div class="skl-right-imgwrap"><img class="skl-right-img" alt="" src="' + (weapon ? weapon.thumb : '') + '"></div>';
       right.innerHTML =
         '<div class="skl-right-title"></div>' +
-        '<div class="skl-right-imgwrap"><img class="skl-right-img" alt="" src="' + (weapon ? weapon.thumb : '') + '"></div>' +
+        imgHtml +
         '<div class="skl-right-sec"><div class="skl-right-lbl"><img class="skl-right-lbl-ico" alt="" src="assets/skills/active_skill.png">' +
           '<span></span><b></b></div><div class="skl-right-icons" data-skl-r-active></div></div>' +
         '<div class="skl-right-sec"><div class="skl-right-lbl"><img class="skl-right-lbl-ico" alt="" src="assets/skills/passive_skill.png">' +
@@ -496,7 +503,9 @@
       if (tab) bannerTxtEl.textContent = T(tab.banner);
       headEl.style.display = active === 'weapon' ? '' : 'none';
       // 코스튬 탭은 상단 안내 박스를 통째로 없앤다(사용자 지정, 2026-09-25).
-      if (bannerEl) bannerEl.style.display = active === 'costume' ? 'none' : '';
+      // 사용자 지정(2026-09-26): 스킬 탭도 코스튬 탭처럼 상단 안내 배너 삭제 —
+      // "어떤 스킬을 장착할까요? 박스 삭제해 필요없네" + 그만큼 전체파란박스가 위로 올라옴.
+      if (bannerEl) bannerEl.style.display = (active === 'costume' || active === 'skill') ? 'none' : '';
       // 몰리그 전광판은 코스튬 탭에서만, 전체파란박스 밖(화면 최상단)에 표시.
       if (cosLogoEl) cosLogoEl.hidden = active !== 'costume';
       // 좌측 상단 바깥쪽 두더지도 코스튬 탭 전용.
