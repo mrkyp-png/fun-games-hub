@@ -3540,6 +3540,10 @@ body { background: var(--lm-page); }
 .cos-card-emblem { position: absolute; left: 50%; top: calc(6px - 0.1cm); transform: translateX(-50%); z-index: 2;
   height: 26px; width: auto; max-width: 90%; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5)); }
 .cos-card-wrap--locked .cos-card-char, .cos-card-wrap--locked .cos-card-emblem { filter: grayscale(0.7) brightness(0.75); }
+/* 사용자 지정: "카드는 녹색박스 제외하고 히트 플래시 적용" — 배경+캐릭터에만 걸어서
+   (.cos-card-status는 제외) 다이얼패드 버튼과 동일한 밝기 펄스(lane-hitflash-btn) 재사용,
+   상시 반복이라 버튼용보다 느린 주기로. */
+.cos-card-bg, .cos-card-char { animation: lane-hitflash-btn 2.6s ease-in-out infinite; }
 .cos-card-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 /* 사용자 지적: "폰에서는 녹색박스가 케릭 가슴 밑에 있음, 카드 길이도 훨씬 길고" — 카드
    행의 실제 높이가 기기마다 달라서(위쪽 상세박스 컨텐츠 높이에 따라 남는 공간이 바뀌는
