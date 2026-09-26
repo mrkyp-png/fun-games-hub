@@ -2759,9 +2759,12 @@ body { background: var(--lm-page); }
 /* 사용자 지정: "전체파란박스 좌측 상단 바깥쪽에 에셋2의 왼쪽 두더지 이미지" — .inv-cards-box
    자체엔 overflow 가 없어(스크롤은 안쪽 .inv-body 담당) 박스 밖으로 자연스럽게 걸치게 둘 수
    있음. 코스튬 탭 전용(paint()가 hidden 토글). */
-/* 사용자 지정: "박스 외곽선까지 내려와 붙어야함, 크기는 30% 작게" — 13%→9%(약 -30%),
-   위치는 이미지 하단이 박스 상단 외곽선에 딱 닿도록(뜨지 않게) 재조정. */
-.inv-cos-peek-mole { position: absolute; left: calc(-6px + 0.9cm); top: -40.8px; width: 10.8%; height: auto;
+/* 사용자 지적: "박스와 위로 떨어져있는 문제" — top:-40.8px 처럼 고정 px 오프셋은 이
+   이미지의 실제 렌더링 높이(width:%기반이라 화면폭에 따라 달라짐)와 안 맞으면 뜨거나
+   박스 안으로 파고듦. bottom:100% 는 "내 아래쪽 끝 = 부모(박스) 위쪽 끝"이라는 뜻이라
+   이미지 실제 높이·화면폭과 무관하게 항상 정확히 닿음(음수 margin-bottom만 살짝 줘서
+   테두리에 걸치는 느낌). */
+.inv-cos-peek-mole { position: absolute; left: calc(-6px + 0.9cm); bottom: 100%; margin-bottom: -6px; width: 10.8%; height: auto;
   z-index: 3; pointer-events: none; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35)); }
 .inv-cards-head { flex: 0 0 auto; min-height: 10px; display: flex; align-items: center; padding: 2px 2px 4px 2px; }
 .inv-dots { flex: 1 1 auto; display: flex; gap: 5px; }
@@ -3538,7 +3541,12 @@ body { background: var(--lm-page); }
   height: 26px; width: auto; max-width: 90%; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5)); }
 .cos-card-wrap--locked .cos-card-char, .cos-card-wrap--locked .cos-card-emblem { filter: grayscale(0.7) brightness(0.75); }
 .cos-card-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.cos-card-char { position: absolute; left: 50%; bottom: 14%; height: 59.4%; width: auto; max-width: 88%;
+/* 사용자 지적: "폰에서는 녹색박스가 케릭 가슴 밑에 있음, 카드 길이도 훨씬 길고" — 카드
+   행의 실제 높이가 기기마다 달라서(위쪽 상세박스 컨텐츠 높이에 따라 남는 공간이 바뀌는
+   flex 구조), height:%기준 크기는 카드가 길어지면 같이 커져야 하는데 max-width:88%에
+   걸려 오히려 작아졌었음. width 기준(카드 폭은 화면폭 비율로 훨씬 안정적)으로 바꿔서
+   카드 높이가 기기별로 달라져도 캐릭터 크기는 항상 일정하게. */
+.cos-card-char { position: absolute; left: 50%; bottom: 14%; width: 85%; height: auto; max-height: none;
   transform: translateX(-50%); object-fit: contain; }
 /* 보유 상태 박스를 카드 맨 아래로 최대한 붙여서(사용자 지정) 위 배경(전광판 포함)이 제대로 보이게. */
 /* 사용자 지정: "녹색박스 상하 높이 120%, 위로 0.2cm" — 기존 실측 높이 18px 기준 21.6px(1.2배).
