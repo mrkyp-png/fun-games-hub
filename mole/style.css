@@ -3537,7 +3537,10 @@ body { background: var(--lm-page); }
    padding-top(6px)+이 4px만으로도 "박스"가 전광판 밑에서 시작되니 문제가 없었지만, 박스가
    투명해진 지금은 카드 실제 그림이 바로 전광판과 겹친다. 위쪽 패딩을 전광판 실제 높이만큼
    확보(상세박스를 줄여 아낀 여유를 여기 씀 — 카드는 여전히 기존보다 커짐). */
-.inv-cards-box:has(.cos-wrap) .inv-body { padding: 8px 0.1cm 0.1cm; }
+/* 사용자 지적(2026-09-26): "상세박스와 토글버튼 간격이 폰에서 0.3cm, 무기/스킬 박스보다
+   높게있음 => 박스를 내려라" — 아래쪽 0.1cm 여유를 없애 박스 하단(=다른 탭과 동일한
+   .inv-cards-box 바닥)에 완전히 붙임. */
+.inv-cards-box:has(.cos-wrap) .inv-body { padding: 8px 0.1cm 0; }
 /* 몰리그 전광판 — 전체파란박스(.inv-cards-box) 밖, 화면 최상단(사용자 지정: "전체파란박스
    안에 있으면 안됨, 최대한 게임화면 상단에 위치, 전체파란박스는 전광판 아래에 위치,
    겹치지 않아야함"). #inventory-screen 은 .board-screen 의 flex-direction:column 을
@@ -3613,8 +3616,10 @@ body { background: var(--lm-page); }
   filter: grayscale(1) brightness(0.75); }
 .cos-card-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 /* 사용자 지정(2026-09-26): "카드안 보유 녹색박스는 삭제, 케릭은 최대한 크게" — 하단
-   상태 띠가 없어졌으니 그 자리까지 캐릭터가 차지하도록 폭/하단 여백 확대. */
-.cos-card-char { position: absolute; z-index: 2; left: 50%; bottom: 2%; width: 96%; height: auto; max-height: none;
+   상태 띠가 없어졌으니 그 자리까지 캐릭터가 차지하도록 폭/하단 여백 확대.
+   사용자 지적: 96%까지 키우니 카드 위쪽 엠블럼(팀명 영문 글자)을 캐릭터 머리가 가림 —
+   상단 여유를 조금 남기도록 살짝 축소. */
+.cos-card-char { position: absolute; z-index: 2; left: 50%; bottom: 2%; width: 86%; height: auto; max-height: none;
   transform: translateX(-50%); object-fit: contain; }
 /* 사용자 지적: "체크표시 찌그러져보임" — aspect-ratio:1이 absolute+flex 조합에서 제대로
    안 먹혀 실측 10.97×15px(원이 아님)로 나왔음. width/height를 고정 px로 직접 맞춰 확실한
@@ -3645,7 +3650,7 @@ body { background: var(--lm-page); }
    전광판과 안 겹치면서도 원래 크기를 되찾도록, 상세박스 안쪽 여백/폰트를 다소 축소해
    상세박스 세로 높이를 줄이고 그만큼(cos-cards가 flex:1이라 자동으로) 카드에 재배분. */
 .cos-detail { flex: 0 0 auto; display: flex; gap: 6px; padding: 6px 8px; border-radius: 12px;
-  margin: calc(0.1cm - 6px) 0 0 0; background: linear-gradient(180deg, #143a66, #0d2748); color: #fff;
+  margin: calc(0.2cm - 6px) 0 0 0; background: linear-gradient(180deg, #143a66, #0d2748); color: #fff;
   border: 2px solid #4fd8ff;
   box-shadow: 0 0 5px 1px rgba(79,216,255,0.3), inset 0 1px 2px rgba(255,255,255,0.15); }
 /* 사용자 지정: "두더지 위아래 여유는 0.1cm만" — 기존엔 width:21% 고정+align-self:center라
