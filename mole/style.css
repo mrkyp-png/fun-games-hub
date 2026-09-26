@@ -3540,7 +3540,7 @@ body { background: var(--lm-page); }
 /* 사용자 지적(2026-09-26): "상세박스와 토글버튼 간격이 폰에서 0.3cm, 무기/스킬 박스보다
    높게있음 => 박스를 내려라" — 아래쪽 0.1cm 여유를 없애 박스 하단(=다른 탭과 동일한
    .inv-cards-box 바닥)에 완전히 붙임. */
-.inv-cards-box:has(.cos-wrap) .inv-body { padding: 8px 0.1cm 0; }
+.inv-cards-box:has(.cos-wrap) .inv-body { padding: 2px 0.1cm 0; }
 /* 몰리그 전광판 — 전체파란박스(.inv-cards-box) 밖, 화면 최상단(사용자 지정: "전체파란박스
    안에 있으면 안됨, 최대한 게임화면 상단에 위치, 전체파란박스는 전광판 아래에 위치,
    겹치지 않아야함"). #inventory-screen 은 .board-screen 의 flex-direction:column 을
@@ -3551,7 +3551,7 @@ body { background: var(--lm-page); }
    된 적이 없어, 박스가 사라진 지금은 이 트릭 자체가 낭비 — 작은 양수 간격으로 단순화하고
    실제 여유(전광판-카드 간격)는 .inv-body 위쪽 패딩에서 만든다(아래 참고, 상세박스를
    줄여 아낀 공간을 여기 씀). */
-.inv-cos-logo { flex: 0 0 auto; max-width: 31%; height: auto; margin: 4px auto 6px; object-fit: contain; display: block;
+.inv-cos-logo { flex: 0 0 auto; max-width: 31%; height: auto; margin: 4px auto 2px; object-fit: contain; display: block;
   position: relative; z-index: 5; }
 /* z-index:5 위 규칙이 안 먹혔던 원인 — #inventory-screen > *:not(.inv-frame){z-index:1}
    (ID 선택자라 명시도가 더 높음, 사용자 지적: "전광판이 앞에 나와야 하는데 파란박스가
