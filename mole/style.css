@@ -1790,9 +1790,9 @@ body { background: var(--lm-page); }
     inset 0 2px 2px rgba(255, 255, 255, 0.7),
     inset 0 -3px 5px rgba(0, 0, 0, 0.22);
 }
-/* 스킬 아이콘(§4~5) — 원본 PNG가 커서 버튼 밖으로 넘치던 것을 버튼 안에 작게 맞춤. */
+/* 스킬 아이콘(§4~5) — 버튼 밖으로 안 넘치는 선에서 최대한 크게(사용자 지정). */
 .lane-item-icon { position: relative; z-index: 2; display: flex; align-items: center;
-  justify-content: center; width: 58%; height: 58%; pointer-events: none; }
+  justify-content: center; width: 92%; height: 92%; pointer-events: none; }
 .lane-item-icon img { width: 100%; height: 100%; object-fit: contain; }
 /* 물결(ripple) — 사각형 중심에서 얇은 초록 테두리 선이 점점 커지고 굵어지며 바깥 테두리까지
    퍼진 뒤 사라짐 (채워진 원 X, 링 O — scale 이 커질수록 border 도 같이 굵어 보인다). */
@@ -3687,7 +3687,11 @@ body { background: var(--lm-page); }
 /* 스킬 탭(§10~11, §17~22, §41~42) — "스킬 UI 및 에셋/메인화면.png" 레이아웃 재현, 이후
    사용자 지정(2026-09-26)으로 상단 액티브/패시브/복원 토글바 삭제 — 액티브/패시브 박스가
    한 화면에 동시에 나오고, [복원]은 각 박스 헤더 안에 개별로 들어감(박스별 개별 복원). */
-.skl-wrap { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; gap: 6px; }
+/* 사용자 지정: "전체파란박스와의 여백... 상하좌우 전부 0.1cm" — .inv-cards-box padding
+   (6px 8px 8px) + .inv-body padding(4px)를 상쇄한 뒤 정확히 0.1cm만 남긴다(다른
+   화면과 동일한 방식, 예: .cos-detail의 calc(0.1cm - Npx) 패턴). */
+.skl-wrap { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; gap: 6px;
+  margin: calc(0.1cm - 10px) calc(0.1cm - 12px) calc(0.1cm - 12px) calc(0.1cm - 12px); }
 .skl-body { display: flex; gap: 6px; flex: 1 1 auto; min-height: 0; }
 .skl-left { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
 .skl-box { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: 4px;
@@ -3725,7 +3729,9 @@ body { background: var(--lm-page); }
   background: linear-gradient(180deg, #1f3f8e, #142a63);
   box-shadow: inset 0 1px 2px rgba(255,255,255,0.15);
 }
-.skl-card--on { box-shadow: 0 0 0 2px #ffd93b, inset 0 1px 2px rgba(255,255,255,0.15); }
+/* 바깥으로 자라는 box-shadow는 .skl-box/.skl-grid의 overflow:hidden에 잘림(사용자 지적:
+   "선택시 노란선 표시선이 잘린다") — inset으로 바꿔 카드 안쪽에서 그린다. */
+.skl-card--on { box-shadow: inset 0 0 0 2px #ffd93b, inset 0 1px 2px rgba(255,255,255,0.15); }
 .skl-card-icowrap { position: relative; flex: 1 1 auto; min-height: 0; width: 100%;
   display: flex; align-items: center; justify-content: center; }
 .skl-card-ico { max-width: 94%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
@@ -3757,12 +3763,19 @@ body { background: var(--lm-page); }
 .skl-right-imgwrap--pair { gap: 2%; }
 .skl-right-imgwrap--pair .skl-right-img { width: 42%; height: 90%; }
 .skl-right-img--mirror { transform: scaleX(-1); }
-.skl-right-sec { background: rgba(255,255,255,0.35); border-radius: 8px; padding: 4px 5px; }
-.skl-right-lbl { display: flex; align-items: center; gap: 3px; font-size: 0.48rem; font-weight: 800; color: #6a4315; margin-bottom: 3px; }
+/* 사용자 지정: "액티브 스킬은 지금보다 크게할수 있는 범위까지 크게(중첩 금지, 알리판취
+   4칸이 가장 빡빡한 기준)" — 무기 이미지 박스(.skl-right-imgwrap)는 그대로 두고, 아래 두
+   섹션이 남는 세로공간을 나눠 가져(flex:1) 그만큼 아이콘도 커진다. 아이콘 자체는
+   높이를 꽉 채우되(height:100%) 폭은 JS가 슬롯수(4/2)에 맞춰 max-width 인라인으로 캡을
+   씌워 겹치지 않게 한다(fillMiniIcons). */
+.skl-right-sec { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column;
+  background: rgba(255,255,255,0.35); border-radius: 8px; padding: 4px 5px; }
+.skl-right-lbl { flex: 0 0 auto; display: flex; align-items: center; gap: 3px; font-size: 0.48rem; font-weight: 800; color: #6a4315; margin-bottom: 3px; }
 .skl-right-lbl-ico { width: 12px; height: 12px; object-fit: contain; }
 .skl-right-lbl b { margin-left: auto; color: #a3550f; }
-.skl-right-icons { display: flex; gap: 3px; }
-.skl-mini { flex: 1 1 0; aspect-ratio: 1; border-radius: 7px; background: rgba(255,255,255,0.5); overflow: hidden; }
+.skl-right-icons { flex: 1 1 auto; min-height: 0; display: flex; gap: 3px; justify-content: center; }
+.skl-mini { flex: 0 0 auto; width: auto; height: 100%; aspect-ratio: 1; border-radius: 7px;
+  background: rgba(255,255,255,0.5); overflow: hidden; }
 .skl-mini img { width: 100%; height: 100%; object-fit: contain; }
 .skl-mini--empty { background: rgba(255,255,255,0.2); }
 

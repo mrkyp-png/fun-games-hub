@@ -449,10 +449,14 @@
     }
     function fillMiniIcons(el, ids, max) {
       el.innerHTML = '';
+      // 슬롯 수(4 또는 2)에 맞춰 폭 상한을 계산 — 높이는 CSS가 100%로 꽉 채우고,
+      // 이 max-width가 겹침 방지용 캡(사용자 지정: "겹치면 안됨").
+      var maxWidthPct = Math.floor(100 / max) - 3;
       for (var i = 0; i < max; i++) {
         var id = ids[i];
         var mini = document.createElement('span');
         mini.className = 'skl-mini' + (id ? '' : ' skl-mini--empty');
+        mini.style.maxWidth = maxWidthPct + '%';
         if (id) {
           var s = MG.Skills.skillById(id);
           if (s) mini.innerHTML = '<img alt="" src="' + s.icon + '">';
