@@ -3590,7 +3590,7 @@ body { background: var(--lm-page); }
    차이에 따라 발 위치(수평 기준선)가 미세하게 달라짐. bottom 기준 정렬로 바꿔 모든
    캐릭터의 발이 항상 같은 수평선에 맞도록(각 이미지는 발이 캔버스 맨 아래에 오게
    크롭돼 있음). */
-.cos-detail-char { position: absolute; left: 50%; bottom: 5%; height: auto; width: 94.16%; max-width: none;
+.cos-detail-char { position: absolute; left: 50%; bottom: calc(5% - 0.2cm); height: auto; width: 94.16%; max-width: none;
   transform: translateX(-50%); object-fit: contain; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35)); }
 .cos-detail-mid { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .cos-detail-name-row { display: flex; align-items: center; gap: 6px; }
