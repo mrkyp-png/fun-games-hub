@@ -2753,9 +2753,14 @@ body { background: var(--lm-page); }
 /* flex-shrink:0 을 상점처럼 쓰면 코스튬 탭처럼 내용이 길 때 박스가 화면 밖으로 늘어나
    하단 탭바 위치가 탭마다 오르락내리락했다(사용자 지적) — 아이템 보관창은 무조건 고정
    높이(배너~탭바 사이)만 차지하고 넘치는 내용은 .inv-body 안에서만 스크롤. */
+/* 사용자 지정: "전체파란박스만 하늘색 글로우" — 안쪽에서 은은하게 맥동. */
+@keyframes inv-cards-box-glow {
+  0%, 100% { box-shadow: 0 4px 0 #12285e, inset 0 2px 3px rgba(255,255,255,0.25), inset 0 0 22px 8px rgba(130,220,255,0.55); }
+  50% { box-shadow: 0 4px 0 #12285e, inset 0 2px 3px rgba(255,255,255,0.25), inset 0 0 46px 16px rgba(130,220,255,0.95); }
+}
 .inv-cards-box { position: relative; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0;
   margin: 10px 10px 0; padding: 6px 8px 8px; border-radius: 16px;
-  background: linear-gradient(180deg, #2a5cc9, #1c3f96); box-shadow: 0 4px 0 #12285e, inset 0 2px 3px rgba(255,255,255,0.25); }
+  background: linear-gradient(180deg, #2a5cc9, #1c3f96); animation: inv-cards-box-glow 3s ease-in-out infinite; }
 /* 사용자 지정: "전체파란박스 좌측 상단 바깥쪽에 에셋2의 왼쪽 두더지 이미지" — .inv-cards-box
    자체엔 overflow 가 없어(스크롤은 안쪽 .inv-body 담당) 박스 밖으로 자연스럽게 걸치게 둘 수
    있음. 코스튬 탭 전용(paint()가 hidden 토글). */
@@ -3534,28 +3539,38 @@ body { background: var(--lm-page); }
 /* 사용자 지정: "카드 배경이 검은박스가 되는 것" — 카드(.cos-card)가 검은박스 전체를
    position:absolute+inset:0 으로 그대로 차지(=완전히 같은 크기). 엠블럼은 이제 별도
    공간을 차지하지 않고 카드 위에 겹쳐서(오버레이) 표시. */
+/* 사용자 지정: "빛이 지나가는 효과"(shimmer) — 다이얼패드 통화버튼과 동일한
+   idle-crown-sweep 재사용. ::after는 z-index 없이도 페인트 순서상 위지만, 녹색박스는
+   제외해야 하므로 상태박스에 z-index를 줘서 항상 그 위에 오게(아래 참고). */
 .cos-card { box-sizing: border-box; position: absolute; inset: 0; border-radius: 12px; overflow: hidden; }
+/* 사용자 지정: "배경에만 적용, 1~5번 카드 순차적으로" — z-index:1(캐릭터<z-index:2 보다
+   아래)이라 배경 위에만 지나가고 캐릭터는 안 덮음. nth-child로 카드마다 0.3s씩 지연시켜
+   순서대로 훑고 지나가게. */
+.cos-card::after { content: ''; position: absolute; inset: -60%; z-index: 1; pointer-events: none;
+  background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.95) 50%, transparent 65%);
+  animation: idle-crown-sweep 2.8s ease-in-out infinite; }
+.cos-card-wrap:nth-child(1) .cos-card::after { animation-delay: 0s; }
+.cos-card-wrap:nth-child(2) .cos-card::after { animation-delay: 0.3s; }
+.cos-card-wrap:nth-child(3) .cos-card::after { animation-delay: 0.6s; }
+.cos-card-wrap:nth-child(4) .cos-card::after { animation-delay: 0.9s; }
+.cos-card-wrap:nth-child(5) .cos-card::after { animation-delay: 1.2s; }
 /* 카드 위 오버레이 — 높이 고정(폭 기준X, 엠블럼마다 원본 비율이 달라 폭 기준이면
    들쭉날쭉했음, 사용자 지적: "카드 줄 안맞고"). */
 .cos-card-emblem { position: absolute; left: 50%; top: calc(6px - 0.1cm); transform: translateX(-50%); z-index: 2;
   height: 26px; width: auto; max-width: 90%; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5)); }
 .cos-card-wrap--locked .cos-card-char, .cos-card-wrap--locked .cos-card-emblem { filter: grayscale(0.7) brightness(0.75); }
-/* 사용자 지정: "카드는 녹색박스 제외하고 히트 플래시 적용" — 배경+캐릭터에만 걸어서
-   (.cos-card-status는 제외) 다이얼패드 버튼과 동일한 밝기 펄스(lane-hitflash-btn) 재사용,
-   상시 반복이라 버튼용보다 느린 주기로. */
-.cos-card-bg, .cos-card-char { animation: lane-hitflash-btn 2.6s ease-in-out infinite; }
 .cos-card-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 /* 사용자 지적: "폰에서는 녹색박스가 케릭 가슴 밑에 있음, 카드 길이도 훨씬 길고" — 카드
    행의 실제 높이가 기기마다 달라서(위쪽 상세박스 컨텐츠 높이에 따라 남는 공간이 바뀌는
    flex 구조), height:%기준 크기는 카드가 길어지면 같이 커져야 하는데 max-width:88%에
    걸려 오히려 작아졌었음. width 기준(카드 폭은 화면폭 비율로 훨씬 안정적)으로 바꿔서
    카드 높이가 기기별로 달라져도 캐릭터 크기는 항상 일정하게. */
-.cos-card-char { position: absolute; left: 50%; bottom: calc(14% + 0.2cm); width: 85%; height: auto; max-height: none;
+.cos-card-char { position: absolute; z-index: 2; left: 50%; bottom: calc(14% + 0.2cm); width: 85%; height: auto; max-height: none;
   transform: translateX(-50%); object-fit: contain; }
 /* 보유 상태 박스를 카드 맨 아래로 최대한 붙여서(사용자 지정) 위 배경(전광판 포함)이 제대로 보이게. */
 /* 사용자 지정: "녹색박스 상하 높이 120%, 위로 0.2cm" — 기존 실측 높이 18px 기준 21.6px(1.2배).
    패딩 대신 명시적 height + flex 중앙정렬로 텍스트가 항상 수직 중앙에 오게. */
-.cos-card-status { position: absolute; left: 4%; right: 4%; bottom: calc(1% - 0.1cm); height: 21.6px;
+.cos-card-status { position: absolute; left: 4%; right: 4%; bottom: calc(1% - 0.1cm); height: 21.6px; z-index: 2;
   display: flex; align-items: center; justify-content: center; border-radius: 6px;
   background: linear-gradient(180deg, #57d977, #2fb457); color: #fff; font-size: 0.6rem; font-weight: 800; text-align: center; }
 .cos-card--locked .cos-card-status { background: linear-gradient(180deg, #9a9aa4, #74747c); }
@@ -3575,8 +3590,12 @@ body { background: var(--lm-page); }
    flex:1 1 auto로 남는 공간을 차지하게 됐으니 margin-top:auto(바닥에 붙이던 용도)는 더
    이상 필요없음. .cos-wrap의 기존 gap(6px)이 이미 있으므로 정확히 0.1cm가 되도록 그
    차이만큼 보정(calc(0.1cm - 6px)). 아래쪽 -4px는 기존 그대로(하트카드와 동일한 8px 유지). */
+/* 사용자 지정: "상세파란박스는 안쪽으로 들어간 3D 느낌, 테두리는 그대로" — inset 그림자로
+   오목하게 눌린 패널 느낌(위쪽 진한 그림자+아래쪽 옅은 하이라이트). */
 .cos-detail { flex: 0 0 auto; display: flex; gap: 6px; padding: 8px; border-radius: 12px;
-  margin: calc(0.1cm - 6px) -4px -4px; background: linear-gradient(180deg, #2f6fed, #1f4fc4); color: #fff; }
+  margin: calc(0.1cm - 6px) -4px -4px; background: linear-gradient(180deg, #2f6fed, #1f4fc4); color: #fff;
+  box-shadow: inset 0 6px 14px rgba(0,0,0,0.6), inset 0 -3px 5px rgba(255,255,255,0.25),
+    inset 6px 0 10px rgba(0,0,0,0.3), inset -6px 0 10px rgba(0,0,0,0.3); }
 /* 사용자 지정: "두더지 위아래 여유는 0.1cm만" — 기존엔 width:21% 고정+align-self:center라
    이미지 원본 비율에 따라 위아래 여유가 들쭉날쭉(팀별 원본 여백도 달라 blue_bears는 15.9%
    투명 여백이 있었음 — assets/costume/char-*-detail.png 로 그 투명 여백 자체를 크롭해
