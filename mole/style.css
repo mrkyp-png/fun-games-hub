@@ -2764,7 +2764,7 @@ body { background: var(--lm-page); }
    박스 안으로 파고듦. bottom:100% 는 "내 아래쪽 끝 = 부모(박스) 위쪽 끝"이라는 뜻이라
    이미지 실제 높이·화면폭과 무관하게 항상 정확히 닿음(음수 margin-bottom만 살짝 줘서
    테두리에 걸치는 느낌). */
-.inv-cos-peek-mole { position: absolute; left: calc(-6px + 0.9cm); bottom: 100%; margin-bottom: -6px; width: 10.8%; height: auto;
+.inv-cos-peek-mole { position: absolute; left: calc(-6px + 0.9cm); bottom: 100%; margin-bottom: calc(-6px + 0.2cm); width: 10.8%; height: auto;
   z-index: 3; pointer-events: none; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35)); }
 .inv-cards-head { flex: 0 0 auto; min-height: 10px; display: flex; align-items: center; padding: 2px 2px 4px 2px; }
 .inv-dots { flex: 1 1 auto; display: flex; gap: 5px; }
@@ -3537,7 +3537,7 @@ body { background: var(--lm-page); }
 .cos-card { box-sizing: border-box; position: absolute; inset: 0; border-radius: 12px; overflow: hidden; }
 /* 카드 위 오버레이 — 높이 고정(폭 기준X, 엠블럼마다 원본 비율이 달라 폭 기준이면
    들쭉날쭉했음, 사용자 지적: "카드 줄 안맞고"). */
-.cos-card-emblem { position: absolute; left: 50%; top: calc(6px + 0.1cm); transform: translateX(-50%); z-index: 2;
+.cos-card-emblem { position: absolute; left: 50%; top: calc(6px - 0.1cm); transform: translateX(-50%); z-index: 2;
   height: 26px; width: auto; max-width: 90%; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5)); }
 .cos-card-wrap--locked .cos-card-char, .cos-card-wrap--locked .cos-card-emblem { filter: grayscale(0.7) brightness(0.75); }
 .cos-card-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -3551,7 +3551,7 @@ body { background: var(--lm-page); }
 /* 보유 상태 박스를 카드 맨 아래로 최대한 붙여서(사용자 지정) 위 배경(전광판 포함)이 제대로 보이게. */
 /* 사용자 지정: "녹색박스 상하 높이 120%, 위로 0.2cm" — 기존 실측 높이 18px 기준 21.6px(1.2배).
    패딩 대신 명시적 height + flex 중앙정렬로 텍스트가 항상 수직 중앙에 오게. */
-.cos-card-status { position: absolute; left: 4%; right: 4%; bottom: calc(1% + 0.2cm); height: 21.6px;
+.cos-card-status { position: absolute; left: 4%; right: 4%; bottom: calc(1% - 0.1cm); height: 21.6px;
   display: flex; align-items: center; justify-content: center; border-radius: 6px;
   background: linear-gradient(180deg, #57d977, #2fb457); color: #fff; font-size: 0.6rem; font-weight: 800; text-align: center; }
 .cos-card--locked .cos-card-status { background: linear-gradient(180deg, #9a9aa4, #74747c); }
@@ -3586,7 +3586,7 @@ body { background: var(--lm-page); }
 .cos-detail-char-wrap { position: relative; flex: 0 0 auto; align-self: stretch; width: 21%; margin: 0.1cm 0; }
 /* 사용자 지정: "두더지 10% 키우기" 이후 "20% 더 키우기" — 110% × 1.2 = 132%.
    중심 기준으로 확대(상하좌우 대칭), 0.1cm 여백이 양쪽에서 균등하게 줄어드는 방식. */
-.cos-detail-char { position: absolute; left: 50%; top: 50%; height: 118.8%; width: auto; max-width: none;
+.cos-detail-char { position: absolute; left: 50%; top: 50%; height: auto; width: 95.1%; max-width: none;
   transform: translate(-50%, -50%); object-fit: contain; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35)); }
 .cos-detail-mid { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .cos-detail-name-row { display: flex; align-items: center; gap: 6px; }
