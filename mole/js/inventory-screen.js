@@ -411,6 +411,7 @@
         var qty = MG.Skills.getQuantity(skill.id);
         var isEquipped = equippedList.indexOf(skill.id) > -1;
         cell.className = 'skl-card' + (isEquipped ? ' skl-card--on' : '') + (qty <= 0 ? ' skl-card--empty' : '');
+        cell.setAttribute('data-skill-id', skill.id);
         cell.innerHTML =
           '<div class="skl-card-icowrap"><img class="skl-card-ico" alt="" src="' + skill.icon + '">' +
             (isEquipped ? '<span class="skl-card-check">✓</span>' : '') + '</div>' +

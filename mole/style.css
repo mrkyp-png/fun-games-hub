@@ -3785,6 +3785,10 @@ body { background: var(--lm-page); }
 .skl-card-name { flex: 0 0 auto; width: 100%; font-size: 0.62rem; font-weight: 800; color: #fff;
   text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .skl-card-qty { flex: 0 0 auto; font-size: 0.48rem; font-weight: 700; color: #a9c0ef; }
+/* 사용자 지적(2026-09-27): "골드 2배" 카드만 실기기에서 이름/수량 글자가 다른 카드보다
+   위로 올라가 보임(반복 실측 확인, 원인 불명 — 코드/에셋은 다른 카드와 동일). 근본 원인을
+   못 찾아 실용적으로 해당 카드만 살짝 아래로 미는 보정을 적용. */
+.skl-card[data-skill-id="goldDouble"] .skl-card-name { margin-top: 0.1cm; }
 .skl-card-btn { flex: 0 0 auto; width: 92%; padding: 3px 0; font-size: 0.48rem; }
 .skl-card--locked { align-items: center; justify-content: center; background: rgba(20,42,99,0.55); }
 .skl-card-lock { font-size: 1rem; opacity: 0.6; }
