@@ -185,14 +185,7 @@
       <div id="skl-passive-hud" class="skl-passive-hud" aria-hidden="true"></div>
       <div id="fever-badge" class="fever-badge" aria-hidden="true" data-i18n="mole.hud.fever" hidden>피버타임!</div>
       <div id="combo-heart-pop" class="combo-heart-pop" aria-hidden="true"></div>
-      <!-- 챕터 선택 — 좌측 상단 고정(두더지 아바타처럼 가장자리 4px).
-           하트/코인/티켓(예전 #board-stats·티켓뱃지)은 다이얼패드 1·2·3번 버튼 안으로 흡수(사용자 지정). -->
-      <span id="chapter-nav" class="chapter-nav-top" aria-hidden="true">
-        <i class="ch-shine" aria-hidden="true"></i>
-        <button type="button" class="ch-arrow ch-arrow--prev" data-ch-prev aria-label="이전 챕터">👈</button>
-        <b class="ch-label"><span class="ch-txt" data-ch-label>라운드 1</span></b>
-        <button type="button" class="ch-arrow ch-arrow--next" data-ch-next aria-label="다음 챕터">👉</button>
-      </span>
+      <!-- 하트/코인/티켓(예전 #board-stats·티켓뱃지)은 다이얼패드 1·2·3번 버튼 안으로 흡수(사용자 지정). -->
 
       <!-- 홈(시작) 상태의 배경 패널 — 카톡 대화 UI 는 삭제(사용자 지정), 다이얼패드(키패드는 아래 그대로)만 보임.
            안에는 원본 3x3 콜라주 구성 그대로 9칸 그리드 5페이지(아케이드/봄/여름/가을/겨울 순서,
@@ -325,6 +318,22 @@
         <div class="nc-big" data-nc-label>챕터 2</div>
         <div class="nc-sub" data-i18n="mole.chapter.soon">준비 중이에요</div>
         <button type="button" class="nc-back" id="nc-back-btn" data-i18n="common.back">나가기</button>
+      </div>
+      <!-- 라운드 표시(2026-09-27, 사용자 지정: "게임화면(게임보드) 안에 아래쪽에 좌우를 맞춰서") —
+           보드 하단에 겹치는 오버레이. 버튼보드(.dialpad)는 절대 건드리지 않음. 홈(is-start)에서만 노출. -->
+      <div id="round-strip" class="round-strip" aria-hidden="true">
+        <button type="button" class="rs-tri rs-tri--prev" data-rs-round-prev aria-label="이전 라운드"></button>
+        <div class="rs-circles">
+          <button type="button" class="rs-circle" data-rs-round="1"><span data-rs-label></span></button>
+          <button type="button" class="rs-circle" data-rs-round="2"><span data-rs-label></span></button>
+          <button type="button" class="rs-circle" data-rs-round="3"><span data-rs-label></span></button>
+          <button type="button" class="rs-circle" data-rs-round="4"><span data-rs-label></span></button>
+          <button type="button" class="rs-circle" data-rs-round="5"><span data-rs-label></span></button>
+          <button type="button" class="rs-circle" data-rs-round="6"><span data-rs-label></span></button>
+          <button type="button" class="rs-circle" data-rs-round="7"><span data-rs-label></span></button>
+          <button type="button" class="rs-circle" data-rs-round="8"><span data-rs-label></span></button>
+        </div>
+        <button type="button" class="rs-tri rs-tri--next" data-rs-round-next aria-label="다음 라운드"></button>
       </div>
     </div>
     <!-- 더보기 메뉴 껍데기 — 화면 UI는 삭제(사용자 지정, 기능은 전부 다이얼패드로 이동).
@@ -563,7 +572,7 @@
       <div id="lane-button-bar">
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
-        <div id="build-tag" aria-hidden="true">v717</div>
+        <div id="build-tag" aria-hidden="true">v718</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -729,7 +738,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=717').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=718').catch(function () {});
       }
     });
   }
