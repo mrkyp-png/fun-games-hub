@@ -595,14 +595,15 @@
     // 전체 컬렉션 — 기존 사진관 위 Bottom Sheet/Overlay(§6, §19~23), 정사각형 영역 그대로(§21).
     function renderPhotoCollection() {
       var PS = MG.PhotoStudio;
-      var square = body.querySelector('.photo-square');
-      if (!square) return; // 탭 전환 등으로 이미 사라짐
-      var overlay = square.querySelector('[data-photo-overlay]');
+      // 사용자 지정(2026-09-27): "돋보기 누르면 아래 버튼보드 전체에 나오게" — 좁은
+      // .photo-square 안이 아니라 #inventory-screen 전체(카드+탭바 영역까지)를 덮도록
+      // 마운트 지점을 바꿔 훨씬 넓게(바탕화면 컬렉션 화면.jpg 구도 참고).
+      var overlay = el.querySelector('[data-photo-overlay]');
       if (!overlay) {
         overlay = document.createElement('div');
         overlay.className = 'photo-overlay';
         overlay.setAttribute('data-photo-overlay', '');
-        square.appendChild(overlay);
+        el.appendChild(overlay);
       }
       overlay.innerHTML =
         '<button type="button" class="photo-coll-back" data-photo-back>‹</button>' +
@@ -636,8 +637,7 @@
       overlay.querySelector('[data-photo-back]').addEventListener('click', closePhotoCollection);
     }
     function closePhotoCollection() {
-      var square = body.querySelector('.photo-square');
-      var overlay = square && square.querySelector('[data-photo-overlay]');
+      var overlay = el.querySelector('[data-photo-overlay]');
       photoCollectionOpen = false;
       photoDetailId = null;
       if (!overlay) return;
@@ -648,7 +648,7 @@
     // 확대 상세(§31~34) — 컬렉션 위에 뜨는 DETAIL LAYER, 완성된 캐릭터만 진입 가능.
     function renderPhotoDetailZoom(id) {
       var PS = MG.PhotoStudio;
-      var overlay = body.querySelector('[data-photo-overlay]');
+      var overlay = el.querySelector('[data-photo-overlay]');
       if (!overlay) return;
       var zoom = overlay.querySelector('[data-photo-zoom]');
       if (!zoom) {

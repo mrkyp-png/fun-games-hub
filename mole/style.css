@@ -3946,21 +3946,26 @@ body { background: var(--lm-page); }
 .photo-slot-status--on { background: linear-gradient(180deg, #63d97c, #2fb457); color: #fff;
   box-shadow: 0 2px 0 #1c8340, inset 0 2px 2px rgba(255,255,255,0.6); }
 
-/* 전체 컬렉션 — Bottom Sheet/Overlay(§6, §19~23), .photo-square 와 동일 크기.
-   사용자 지정: "컬렉션 화면 에셋1/에셋2 사용" — 트로피 헤더(위) + 카드 그리드
-   배경(아래) 2단 구성, 카드는 그리드 이미지 위에 코드로 겹쳐 찍는다. */
+/* 전체 컬렉션 — Bottom Sheet/Overlay(§6, §19~23).
+   사용자 지정(2026-09-27): "돋보기 누르면 아래 버튼보드 전체에 나오게" — 좁은
+   .photo-square 대신 #inventory-screen 전체(카드+탭바 자리까지)를 덮게 확장,
+   바탕화면 "컬렉션 화면.jpg" 구도(트로피 헤더+N/15+카드그리드) 참고해 내부
+   요소도 비례 확대. */
 .photo-overlay {
   position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column;
   background: #0c0a18; transform: translateY(100%);
-  transition: transform 0.32s ease-out; padding: 6px;
+  transition: transform 0.32s ease-out; padding: 8px;
 }
+/* #inventory-screen > *:not(.inv-frame){position:relative;z-index:1} 이 모든 자식에
+   강제 적용되므로, 이 오버레이만 absolute로 다시 덮어써야 전체 화면을 가린다. */
+#inventory-screen > .photo-overlay { position: absolute; z-index: 10; }
 .photo-overlay.is-open { transform: translateY(0); }
-.photo-coll-back { position: absolute; left: 8px; top: 8px; z-index: 3; width: 28px; height: 28px;
-  border-radius: 50%; border: none; background: #2f6fed; color: #fff; font-size: 1rem; font-weight: 900;
+.photo-coll-back { position: absolute; left: 8px; top: 8px; z-index: 3; width: 32px; height: 32px;
+  border-radius: 50%; border: none; background: #2f6fed; color: #fff; font-size: 1.1rem; font-weight: 900;
   cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.photo-coll-header { flex: 0 0 auto; width: 80%; height: auto; display: block; margin: 2px auto 0; }
-.photo-coll-progress { flex: 0 0 auto; text-align: center; font-size: 0.62rem; font-weight: 900; color: #ffd93b;
-  margin: 2px 0 4px; }
+.photo-coll-header { flex: 0 0 auto; width: 72%; height: auto; display: block; margin: 4px auto 0; }
+.photo-coll-progress { flex: 0 0 auto; text-align: center; font-size: 0.85rem; font-weight: 900; color: #ffd93b;
+  margin: 4px 0 6px; }
 .photo-coll-gridwrap {
   position: relative; flex: 1 1 auto; min-height: 0; border-radius: 8px; overflow: hidden;
   background: url('assets/photo/collection-grid.jpg') center/100% 100% no-repeat;
