@@ -595,20 +595,27 @@
     // 전체 컬렉션 — 기존 사진관 위 Bottom Sheet/Overlay(§6, §19~23), 정사각형 영역 그대로(§21).
     function renderPhotoCollection() {
       var PS = MG.PhotoStudio;
-      // 사용자 지정(2026-09-27): "돋보기 누르면 아래 버튼보드 전체에 나오게" — 좁은
-      // .photo-square 안이 아니라 #inventory-screen 전체(카드+탭바 영역까지)를 덮도록
-      // 마운트 지점을 바꿔 훨씬 넓게(바탕화면 컬렉션 화면.jpg 구도 참고).
-      var overlay = el.querySelector('[data-photo-overlay]');
+      // 사용자 지정(2026-09-27): "버튼보드"(게임보드 아래, 하트/코인/티켓~시작버튼이 있는
+      // 흰색 .dialpad 영역, 게임보드와 크기 동일)를 위에서 아래로 슬라이드하며 덮는다.
+      // #inventory-screen 이 아니라 .dialpad 에 마운트.
+      var board = document.querySelector('.dialpad');
+      if (!board) return;
+      var overlay = board.querySelector('[data-photo-overlay]');
       if (!overlay) {
         overlay = document.createElement('div');
         overlay.className = 'photo-overlay';
         overlay.setAttribute('data-photo-overlay', '');
-        el.appendChild(overlay);
+        board.appendChild(overlay);
       }
+      // 사용자 지정: "별빛박스 좌측 위에 전광판(트로피), 우측 안쪽에 N/15" — 헤더는
+      // 전체 높이의 약 10%만 차지, 트로피가 별빛바 위에 겹쳐 올라간다.
       overlay.innerHTML =
         '<button type="button" class="photo-coll-back" data-photo-back>‹</button>' +
-        '<img class="photo-coll-header" alt="" src="assets/photo/collection-header.png">' +
-        '<div class="photo-coll-progress" data-photo-progress></div>' +
+        '<div class="photo-coll-headrow">' +
+          '<img class="photo-coll-starbar" alt="" src="assets/photo/collection-starbar.png">' +
+          '<img class="photo-coll-trophy" alt="" src="assets/photo/collection-trophy.png">' +
+          '<div class="photo-coll-progress" data-photo-progress></div>' +
+        '</div>' +
         '<div class="photo-coll-gridwrap"><div class="photo-coll-grid" data-photo-grid></div></div>';
       overlay.querySelector('[data-photo-progress]').textContent = PS.completedCount() + ' / ' + PS.TOTAL;
 
@@ -630,14 +637,15 @@
         });
       });
 
-      // reflow 뒤에 열림 클래스를 줘야 슬라이드 업 트랜지션이 실제로 재생된다.
+      // reflow 뒤에 열림 클래스를 줘야 슬라이드 다운 트랜지션이 실제로 재생된다.
       overlay.classList.remove('is-open');
       void overlay.offsetWidth;
       overlay.classList.add('is-open');
       overlay.querySelector('[data-photo-back]').addEventListener('click', closePhotoCollection);
     }
     function closePhotoCollection() {
-      var overlay = el.querySelector('[data-photo-overlay]');
+      var board = document.querySelector('.dialpad');
+      var overlay = board && board.querySelector('[data-photo-overlay]');
       photoCollectionOpen = false;
       photoDetailId = null;
       if (!overlay) return;
@@ -648,7 +656,8 @@
     // 확대 상세(§31~34) — 컬렉션 위에 뜨는 DETAIL LAYER, 완성된 캐릭터만 진입 가능.
     function renderPhotoDetailZoom(id) {
       var PS = MG.PhotoStudio;
-      var overlay = el.querySelector('[data-photo-overlay]');
+      var board = document.querySelector('.dialpad');
+      var overlay = board && board.querySelector('[data-photo-overlay]');
       if (!overlay) return;
       var zoom = overlay.querySelector('[data-photo-zoom]');
       if (!zoom) {

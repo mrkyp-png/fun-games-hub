@@ -3947,25 +3947,30 @@ body { background: var(--lm-page); }
   box-shadow: 0 2px 0 #1c8340, inset 0 2px 2px rgba(255,255,255,0.6); }
 
 /* 전체 컬렉션 — Bottom Sheet/Overlay(§6, §19~23).
-   사용자 지정(2026-09-27): "돋보기 누르면 아래 버튼보드 전체에 나오게" — 좁은
-   .photo-square 대신 #inventory-screen 전체(카드+탭바 자리까지)를 덮게 확장,
-   바탕화면 "컬렉션 화면.jpg" 구도(트로피 헤더+N/15+카드그리드) 참고해 내부
-   요소도 비례 확대. */
+   사용자 지정(2026-09-27): "버튼보드"(게임보드 바로 아래, 하트/코인/티켓~시작버튼이
+   있는 흰 .dialpad 영역, 게임보드와 크기 동일)를 위에서 아래로 슬라이드하며 전부
+   덮는다. 헤더(트로피+별빛바+N/15)는 전체 높이의 약 10%만, 나머지 90%는 카드그리드. */
 .photo-overlay {
   position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column;
-  background: #0c0a18; transform: translateY(100%);
+  background: #0c0a18; transform: translateY(-100%);
   transition: transform 0.32s ease-out; padding: 8px;
 }
-/* #inventory-screen > *:not(.inv-frame){position:relative;z-index:1} 이 모든 자식에
-   강제 적용되므로, 이 오버레이만 absolute로 다시 덮어써야 전체 화면을 가린다. */
-#inventory-screen > .photo-overlay { position: absolute; z-index: 10; }
 .photo-overlay.is-open { transform: translateY(0); }
-.photo-coll-back { position: absolute; left: 8px; top: 8px; z-index: 3; width: 32px; height: 32px;
-  border-radius: 50%; border: none; background: #2f6fed; color: #fff; font-size: 1.1rem; font-weight: 900;
+.photo-coll-back { position: absolute; left: 8px; top: 8px; z-index: 3; width: 26px; height: 26px;
+  border-radius: 50%; border: none; background: #2f6fed; color: #fff; font-size: 0.9rem; font-weight: 900;
   cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.photo-coll-header { flex: 0 0 auto; width: 72%; height: auto; display: block; margin: 4px auto 0; }
-.photo-coll-progress { flex: 0 0 auto; text-align: center; font-size: 0.85rem; font-weight: 900; color: #ffd93b;
-  margin: 4px 0 6px; }
+/* 사용자 지정: "별빛박스 좌측 위에 전광판(트로피), 우측 안쪽에 N/15" — 별빛바를
+   기준 배경으로 깔고, 트로피는 그 위에 좌측으로 겹쳐 얹고, 카운터는 우측 안쪽에. */
+.photo-coll-headrow { position: relative; flex: 0 0 10%; min-height: 34px; margin: 0 0 4px; overflow: visible; }
+/* 사용자 지적(2026-09-27): 트로피를 좌측 밖(-18%)으로 걸치게 했더니 화면(overlay) 밖으로
+   잘려 나갔음 — 음수 위치 대신 헤더 줄 안쪽(0 이상)에 놓고, 크기만 키워 별빛바 위로
+   넘치게 해서(height>100%) "겹쳐 보이는" 느낌만 유지. */
+.photo-coll-starbar { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
+  width: 100%; height: 70%; object-fit: fill; }
+.photo-coll-trophy { position: absolute; left: 0; top: 50%; transform: translateY(-58%);
+  height: 190%; width: auto; z-index: 2; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); }
+.photo-coll-progress { position: absolute; right: 6%; top: 50%; transform: translateY(-50%); z-index: 2;
+  font-size: 0.8rem; font-weight: 900; color: #ffd93b; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
 .photo-coll-gridwrap {
   position: relative; flex: 1 1 auto; min-height: 0; border-radius: 8px; overflow: hidden;
   background: url('assets/photo/collection-grid.jpg') center/100% 100% no-repeat;
@@ -3973,7 +3978,11 @@ body { background: var(--lm-page); }
 .photo-coll-grid { position: absolute; left: 13.5%; top: 7%; right: 1.5%; bottom: 5.5%;
   display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 3%; }
 .photo-coll-card { position: relative; border: none; background: none; padding: 0; cursor: pointer; overflow: hidden; }
-.photo-coll-card-img { position: absolute; inset: 6%; width: 88%; height: 88%; object-fit: contain; }
+/* 사용자 지정(2026-09-27): "15개 카드 케릭 수평/좌우 센터 일치" — 기본(center center)
+   대신 .photo-slot-img와 동일하게 bottom center로 앵커해 카드마다 다른 내부 여백에
+   상관없이 항상 같은 기준선(발)에 맞춘다(소스가 이미 얼굴+발 평균 중심으로 재정렬됨). */
+.photo-coll-card-img { position: absolute; inset: 6%; width: 88%; height: 88%; object-fit: contain;
+  object-position: bottom center; }
 .photo-coll-card-applied { position: absolute; right: 4%; top: 2%; width: 14px; height: 14px; border-radius: 50%;
   background: #57d977; color: #fff; font-size: 9px; font-weight: 900; display: flex; align-items: center;
   justify-content: center; box-shadow: 0 0 0 2px #142a63; z-index: 2; }
