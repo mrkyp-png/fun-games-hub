@@ -3914,8 +3914,8 @@ body { background: var(--lm-page); }
    절대 길이 이동에 안 맞아 transform으로 처리. height:100%는 캐릭터가 이미 프레임
    상단에 딱 닿아있어(여유 없음) 그대로 올리면 머리가 잘림 — height를 살짝 줄여
    위쪽에 여유를 미리 만든 뒤 그 안에서 1.2cm 올림(잘림 방지). */
-.photo-slot-img { position: relative; z-index: 2; width: 100%; height: calc(100% - 1.5cm); object-fit: contain;
-  object-position: bottom center; transform: translateY(-1.7cm); }
+.photo-slot-img { position: relative; z-index: 2; width: 100%; height: calc(100% - 0.7cm); object-fit: contain;
+  object-position: bottom center; transform: translateY(-0.6cm); }
 .photo-slot-img--locked, .photo-coll-card-img--locked, .photo-zoom-img--locked { filter: grayscale(1) brightness(0.7); }
 .photo-slot-applied { position: absolute; right: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%;
   background: #57d977; color: #fff; font-size: 10px; font-weight: 900; display: flex; align-items: center;
@@ -3928,13 +3928,15 @@ body { background: var(--lm-page); }
   font-size: 0.42rem; font-weight: 800; padding: 2px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 /* 사용자 지정(2026-09-27): "카드 밑에는 게임적용/게임미적용 박스" — 카드 하단을
-   0.7cm(+0.5cm) 줄여 만든 공간에 상태 표시 박스. flex-basis 고정값 = 프레임이
-   내어줄 정확한 높이(.photo-slot의 gap 3px는 별도이므로 빼줌). */
-.photo-slot-status { flex: 0 0 calc(1.35cm - 3px); width: 100%; padding: 2px 0; display: flex;
+   줄여 만든 공간에 상태 표시 박스. 사용자 지정: "지금의 2/3 수준이면 됨"
+   (1.35cm -> 0.9cm) + "녹색 3D 버튼처럼"(.inv-equip과 동일한 입체 버튼 톤). */
+.photo-slot-status { flex: 0 0 calc(0.9cm - 3px); width: 100%; padding: 2px 0; display: flex;
   align-items: center; justify-content: center; box-sizing: border-box;
-  border-radius: 6px; text-align: center; font-size: 0.4rem; font-weight: 800;
-  background: rgba(154,154,164,0.35); color: #d8dce6; }
-.photo-slot-status--on { background: rgba(87,217,119,0.35); color: #b6ffc9; }
+  border-radius: 999px; text-align: center; font-size: 0.4rem; font-weight: 800;
+  background: linear-gradient(180deg, #4fae63, #2c7a44); color: #d7ffe0;
+  box-shadow: 0 2px 0 #1c5c30, inset 0 1px 2px rgba(255,255,255,0.35); }
+.photo-slot-status--on { background: linear-gradient(180deg, #63d97c, #2fb457); color: #fff;
+  box-shadow: 0 2px 0 #1c8340, inset 0 2px 2px rgba(255,255,255,0.6); }
 
 /* 전체 컬렉션 — Bottom Sheet/Overlay(§6, §19~23), .photo-square 와 동일 크기.
    사용자 지정: "컬렉션 화면 에셋1/에셋2 사용" — 트로피 헤더(위) + 카드 그리드
