@@ -3710,11 +3710,16 @@ body { background: var(--lm-page); }
    사용자 지정(2026-09-26)으로 상단 액티브/패시브/복원 토글바 삭제 — 액티브/패시브 박스가
    한 화면에 동시에 나오고, [복원]은 각 박스 헤더 안에 개별로 들어감(박스별 개별 복원). */
 /* 사용자 지정(2026-09-27): "전체파란박스 삭제" — 코스튬/사진관과 동일하게 스킬 탭도
-   .inv-cards-box의 배경/여백을 제거하고 .inv-body에서 직접 0.1cm 여백을 준다. */
+   .inv-cards-box의 배경/여백을 제거한다. */
 .inv-cards-box:has(.skl-wrap) { background: none; animation: none; box-shadow: none;
   margin: 0; padding: 0; border-radius: 0; }
-.inv-cards-box:has(.skl-wrap) .inv-body { padding: 0.1cm; }
-.skl-wrap { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; gap: 6px; }
+.inv-cards-box:has(.skl-wrap) .inv-body { padding: 0; }
+/* 사용자 지적(2026-09-27): "위/좌/우 여유 없음, 아래만 여유 큼" — .inv-body(overflow-y:auto)
+   의 padding으로 여백을 만들면 스크롤 컨테이너 특성상 아래쪽 padding이 실제로 반영되지
+   않는 경우가 있어(위쪽만 보이고 아래는 과도하게 큼) — 스크롤 컨테이너 padding 대신
+   실제 콘텐츠(.skl-wrap) 자체에 margin으로 사방 0.1cm를 직접 준다. */
+.skl-wrap { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; gap: 6px;
+  margin: 0.1cm; }
 .skl-body { display: flex; gap: 6px; flex: 1 1 auto; min-height: 0; }
 .skl-left { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
 /* 사용자 지정(2026-09-27): "액티브/패시브 스킬박스 투명 => 파란색 박스로" — 반투명
