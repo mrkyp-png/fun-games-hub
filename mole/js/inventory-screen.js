@@ -615,8 +615,22 @@
           '<img class="photo-coll-starbar" alt="" src="assets/photo/collection-starbar.png">' +
           '<img class="photo-coll-trophy" alt="" src="assets/photo/collection-trophy.png">' +
           '<div class="photo-coll-progress" data-photo-progress></div>' +
+          '<div class="photo-coll-hint"></div>' +
         '</div>' +
-        '<div class="photo-coll-gridwrap"><div class="photo-coll-grid" data-photo-grid></div></div>';
+        '<div class="photo-coll-gridwrap">' +
+          '<div class="photo-coll-rowlabels"></div>' +
+          '<div class="photo-coll-grid" data-photo-grid></div>' +
+        '</div>';
+      overlay.querySelector('.photo-coll-hint').textContent = T('mole.photo.collHint');
+      // 사용자 지정(2026-09-27): "앞쪽 노란박스에 위에서부터 동글형/듬직형/날렵형" —
+      // 골드 플레이트(에셋에 이미 그려진 부분) 위에 세로 라벨 오버레이.
+      var rowlabelsEl = overlay.querySelector('.photo-coll-rowlabels');
+      PS.faceTypes().forEach(function (f) {
+        var lbl = document.createElement('span');
+        lbl.className = 'photo-coll-rowlabel';
+        lbl.textContent = T(PHOTO_FACE_I18N[f.id]);
+        rowlabelsEl.appendChild(lbl);
+      });
       overlay.querySelector('[data-photo-progress]').textContent = PS.completedCount() + ' / ' + PS.TOTAL;
 
       var grid = overlay.querySelector('[data-photo-grid]');
