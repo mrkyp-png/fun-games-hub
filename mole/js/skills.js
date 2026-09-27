@@ -8,7 +8,7 @@
 
   var SKILLS = [
     { id: 'freeze', type: 'ACTIVE', nameKo: '빙결', nameEn: 'Freeze', icon: 'assets/skills/freeze.png' },
-    { id: 'goldDouble', type: 'ACTIVE', nameKo: '골드 2배', nameEn: 'Gold x2', icon: 'assets/skills/gold_double.png' },
+    { id: 'goldDouble', type: 'ACTIVE', nameKo: '골드 2배', nameEn: 'Gold x2', icon: 'assets/skills/gold-double-v2.png' },
     { id: 'targeting', type: 'ACTIVE', nameKo: '타겟팅', nameEn: 'Targeting', icon: 'assets/skills/targeting.png' },
     { id: 'carpetBombing', type: 'ACTIVE', nameKo: '융단폭격', nameEn: 'Carpet Bombing', icon: 'assets/skills/carpet_bombing.png' },
     { id: 'ai', type: 'ACTIVE', nameKo: 'AI', nameEn: 'AI', icon: 'assets/skills/ai.png' },
