@@ -3717,8 +3717,11 @@ body { background: var(--lm-page); }
 .skl-wrap { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; gap: 6px; }
 .skl-body { display: flex; gap: 6px; flex: 1 1 auto; min-height: 0; }
 .skl-left { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+/* 사용자 지정(2026-09-27): "액티브/패시브 스킬박스 투명 => 파란색 박스로" — 반투명
+   검정 대신 앱 전반의 파란 박스 톤(예: .inv-cards-box)과 동일한 그라디언트로. */
 .skl-box { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: 4px;
-  padding: 4px; border-radius: 10px; background: rgba(0,0,0,0.12); overflow: hidden; }
+  padding: 4px; border-radius: 10px; background: linear-gradient(180deg, #2a5cc9, #1c3f96);
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.15); overflow: hidden; }
 .skl-left-head { display: flex; align-items: center; gap: 4px; padding: 0 2px; }
 .skl-left-title { flex: 1 1 auto; min-width: 0; font-size: 0.62rem; font-weight: 800; color: #ffd93b; }
 .skl-box-restore {
@@ -3799,8 +3802,13 @@ body { background: var(--lm-page); }
 .skl-right-lbl { flex: 0 0 auto; display: flex; align-items: center; gap: 3px; font-size: 0.48rem; font-weight: 800; color: #fff; margin-bottom: 3px; }
 .skl-right-lbl-ico { width: 12px; height: 12px; object-fit: contain; }
 .skl-right-lbl b { margin-left: auto; color: #ffd93b; }
-.skl-right-icons { flex: 1 1 auto; min-height: 0; display: flex; gap: 3px; justify-content: center; }
-.skl-mini { flex: 0 0 auto; width: auto; height: 100%; aspect-ratio: 1; border-radius: 7px;
+.skl-right-icons { flex: 1 1 auto; min-height: 0; display: flex; gap: 3px; justify-content: center;
+  align-items: center; }
+/* 사용자 지적(2026-09-27): height:100%+aspect-ratio:1(폭=높이)로 만들면 아이콘 개수가
+   늘어나거나 박스가 좁을 때 폭 합이 우측박스 폭을 넘어 밖으로 삐져나갔음. flex:1 1 0로
+   가로폭을 개수만큼 균등 분배해 절대 넘치지 않게 하고, max-height로 세로도 캡. */
+.skl-mini { flex: 1 1 0; min-width: 0; max-width: 100%; height: auto; max-height: 100%;
+  aspect-ratio: 1; border-radius: 7px;
   background: rgba(255,255,255,0.5); overflow: hidden; }
 .skl-mini img { width: 100%; height: 100%; object-fit: contain; }
 .skl-mini--empty { background: rgba(255,255,255,0.2); }
