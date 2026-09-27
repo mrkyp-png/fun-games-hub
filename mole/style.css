@@ -179,10 +179,10 @@ body { background: var(--lm-page); }
 .round-strip {
   display: none;
   position: relative;
-  width: 56%;
-  margin: 0 auto 2px;
+  width: 100%;
   aspect-ratio: 3 / 1;
   background: url('assets/round-strip.png') center/100% 100% no-repeat;
+  margin: 0 0 4px;
 }
 #game-screen.is-start .round-strip { display: block; }
 .round-strip [data-rs-round="1"] { left: 15.93%; }
@@ -202,12 +202,12 @@ body { background: var(--lm-page); }
   padding: 0;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  color: #1c1006; font-size: 0.72rem; font-weight: 900; line-height: 1; letter-spacing: -0.03em;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+  color: #fff5d9; font-size: 0.5rem; font-weight: 900; line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
   transition: transform 0.07s ease, filter 0.07s ease;
 }
 .rs-circle:active { transform: translate(-50%, -50%) scale(0.88); }
-.rs-circle.is-locked { color: rgba(28, 16, 6, 0.4); pointer-events: none; }
+.rs-circle.is-locked { color: rgba(255, 245, 217, 0.45); pointer-events: none; }
 .rs-circle.is-current {
   box-shadow: 0 0 6px 3px #ffce33, 0 0 14px 6px rgba(255, 206, 51, 0.55);
   animation: rs-current-pulse 1.4s ease-in-out infinite;
@@ -222,10 +222,10 @@ body { background: var(--lm-page); }
   16%      { transform: translate(-50%, -50%) scale(1.35); }
 }
 
-/* 양옆 삼각 컷아웃(투명 구멍) 안에 딱 맞게 — 라운드 ◀▶ 이동 3D 버튼(사용자 지정: 난이도 아님) */
+/* 양옆 삼각 컷아웃 — 난이도(Amateur/Normal/Pro) 전환 3D 버튼 */
 .rs-tri {
   position: absolute; top: 62.22%;
-  width: 7.2%; height: 35%;
+  width: 9.4%; height: 46.55%;
   transform: translate(-50%, -50%);
   border: none; padding: 0; cursor: pointer;
   background: linear-gradient(160deg, #d8a24a, #8a5a20);
@@ -288,11 +288,6 @@ body { background: var(--lm-page); }
   --hud-h: 46px;
   --hinge-h: 14px;
   --sq: min(100%, calc((100dvh - var(--hud-h) - var(--hinge-h)) / 2));
-}
-/* 홈(라운드 표시 노출 중)일 때만 정사각 두 개를 살짝 줄여 라운드 표시 자리(약 84px)를 확보
-   — #game-screen이 overflow:hidden이라 자리를 안 비켜주면 버튼보드 아래쪽이 잘려나감(사용자 지적). */
-#game-screen.is-start {
-  --sq: min(100%, calc((100dvh - var(--hud-h) - var(--hinge-h) - 84px) / 2));
 }
 #game-screen .icon-btn { width: 34px; height: 34px; }
 #game-screen .icon-btn img, #game-screen .icon-btn svg { width: 22px; height: 22px; }
