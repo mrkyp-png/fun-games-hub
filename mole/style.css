@@ -3746,11 +3746,16 @@ body { background: var(--lm-page); }
 /* 사용자 지적(2026-09-27): "스킬화면 화살표버튼은 뭔가 틀려요" — 20px 박스에
    font-size 0.7rem(11.2px)라 삼각형이 유독 작고 안쪽에 치우쳐 보였음. 다른
    화살표 버튼들과 비슷한 비율로 박스/폰트 확대. */
+/* 사용자 지적(2026-09-27): "무기 좌우버튼처럼 안쪽에 뿌연 하이라이트로 3D 효과" —
+   .inv-arrow::before와 동일한 글로시 오버레이 추가(position:relative+overflow:hidden 필요). */
 .skl-parrow {
+  position: relative; overflow: hidden;
   width: 24px; height: 24px; border: none; border-radius: 7px; background: linear-gradient(180deg, #3a7bff, #1f4fc4);
   color: #fff; font-weight: 900; font-size: 0.85rem; line-height: 1; cursor: pointer; box-shadow: 0 2px 0 #12285e;
   display: flex; align-items: center; justify-content: center;
 }
+.skl-parrow::before { content: ''; position: absolute; left: 10%; right: 10%; top: 2px; height: 38%;
+  border-radius: 6px; background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0)); pointer-events: none; }
 .skl-parrow:active { transform: scale(0.9); }
 .skl-parrow:disabled { opacity: 0.4; cursor: default; }
 
@@ -3957,8 +3962,17 @@ body { background: var(--lm-page); }
 /* 사용자 지적(2026-09-27): "버튼보드 안에 배경화면 포함 모든게 들어가야" — overflow가
    없어서 트로피처럼 음수 위치로 튀어나온 요소가 버튼보드(.dialpad) 밖으로 새어나갈 수
    있었음. 오버레이 자체를 완전히 클리핑해서 무엇도 밖으로 안 나가게 확실히 막는다. */
+/* 사용자 지적(2026-09-27, 실기기 실측): ".dialpad는 화면 꽉 채운 폭"(위 §"종료 제스처
+   안내" 주석 참고) — 게임보드(#inventory-screen)는 --sq 로 폭이 제한/가운데정렬되는데
+   .dialpad 자체는 전체 폭이라, inset:0으로 꽉 채우면 게임보드보다 넓게(풀스크린처럼)
+   보였음. 게임보드와 동일한 폭(--sq)으로 가운데 정렬해야 실제로 "버튼보드 영역 안"
+   (게임보드와 시각적으로 같은 폭)에 들어간다. */
+/* left/right:0 + margin:auto로 가운데 정렬 — transform은 슬라이드 애니메이션 전용으로
+   비워둔다(translateX 센터링과 translateY 슬라이드가 같은 transform 값을 두고
+   충돌해 슬라이드 시 센터링이 사라지는 버그가 있었음). */
 .photo-overlay {
-  position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column;
+  position: absolute; top: 0; bottom: 0; left: 0; right: 0; width: var(--sq); margin: 0 auto;
+  z-index: 10; display: flex; flex-direction: column;
   overflow: hidden;
   background: #0c0a18 url('assets/photo/background.jpg') center/cover no-repeat;
   padding: 8px;
@@ -3993,7 +4007,9 @@ body { background: var(--lm-page); }
 }
 .photo-coll-grid { position: absolute; left: 13.5%; top: 7%; right: 1.5%; bottom: 5.5%;
   display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 3%; }
-.photo-coll-card { position: relative; border: none; background: none; padding: 0; cursor: pointer; overflow: hidden; }
+.photo-coll-card { position: relative; border: none; background: none; padding: 0; cursor: pointer; overflow: hidden;
+  transition: transform 0.08s ease; }
+.photo-coll-card:active { transform: scale(0.93); }
 /* 사용자 지정(2026-09-27): "15개 카드 케릭 수평/좌우 센터 일치" — 기본(center center)
    대신 .photo-slot-img와 동일하게 bottom center로 앵커해 카드마다 다른 내부 여백에
    상관없이 항상 같은 기준선(발)에 맞춘다(소스가 이미 얼굴+발 평균 중심으로 재정렬됨). */

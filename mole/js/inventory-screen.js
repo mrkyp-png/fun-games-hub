@@ -637,9 +637,21 @@
         });
       });
 
-      // 슬라이드 트랜지션 제거(위 .photo-overlay 주석 참고) — is-open 클래스는 이제
-      // 시각 효과가 없지만 닫기 로직(closePhotoCollection)과의 호환을 위해 유지.
+      // 사용자 지정(2026-09-27): "위에서 아래로 내려오는 등장" — CSS class+transition
+      // 방식은 새로 append된 엘리먼트에서 트랜지션이 안 걸리고 닫힘 위치에 고정되는
+      // 버그가 있었음(§photo-overlay 주석 참고) — Web Animations API로 재생하되,
+      // 애니메이션이 어떤 이유로든 안 먹히는 환경 대비 안전장치로 짧은 지연 뒤
+      // 인라인 스타일로 최종 위치를 강제 고정(컬렉션 화면 자체가 안 보이는 최악의
+      // 상황만은 절대 없게).
       overlay.classList.add('is-open');
+      var openAnim = overlay.animate(
+        [{ transform: 'translateY(-100%)' }, { transform: 'translateY(0)' }],
+        { duration: 280, easing: 'ease-out', fill: 'forwards' }
+      );
+      // fill:'forwards'인 애니메이션 효과는 끝나도 계속 남아 인라인 스타일보다 우선
+      // 적용됨(실측 확인) — 안전장치에서 인라인 스타일을 주기 전에 반드시 cancel()로
+      // 애니메이션 효과 자체를 제거해야 실제로 적용된다.
+      setTimeout(function () { openAnim.cancel(); overlay.style.transform = 'translateY(0)'; }, 320);
       overlay.querySelector('[data-photo-back]').addEventListener('click', closePhotoCollection);
     }
     function closePhotoCollection() {
@@ -648,8 +660,17 @@
       photoCollectionOpen = false;
       photoDetailId = null;
       if (!overlay) return;
-      // 슬라이드 트랜지션 제거로 애니메이션 대기가 필요 없어짐 — 즉시 제거.
-      overlay.remove();
+      // 애니메이션 완료 콜백이 항상 확실하게 오는 게 아니어서(환경에 따라 지연/누락
+      // 가능성 확인됨) setTimeout을 안전장치로 같이 둔다 — 어느 쪽이든 먼저 오는
+      // 대로 제거, 뒤로가기 버튼이 절대 "먹통"이 되지 않도록.
+      var removed = false;
+      function removeOnce() { if (!removed && overlay.parentNode) { removed = true; overlay.remove(); } }
+      var closeAnim = overlay.animate(
+        [{ transform: 'translateY(0)' }, { transform: 'translateY(-100%)' }],
+        { duration: 220, easing: 'ease-in', fill: 'forwards' }
+      );
+      closeAnim.onfinish = removeOnce;
+      setTimeout(removeOnce, 260);
     }
 
     // 확대 상세(§31~34) — 컬렉션 위에 뜨는 DETAIL LAYER, 완성된 캐릭터만 진입 가능.
@@ -731,7 +752,13 @@
         b.className = 'inv-tab' + (t.id === active ? ' inv-tab--on' : '');
         b.innerHTML = '<span class="inv-tab-ico">' + t.icon + '</span><span class="inv-tab-lbl"></span>';
         b.querySelector('.inv-tab-lbl').textContent = T(t.i18n);
-        b.addEventListener('click', function () { active = t.id; pageIdx = 0; activePage = 0; passivePage = 0; paint(); });
+        b.addEventListener('click', function () {
+          active = t.id; pageIdx = 0; activePage = 0; passivePage = 0;
+          // 사용자 지정(2026-09-27): "컬렉션 화면은 사진관 탭일 때만 유지, 다른 탭으로
+          // 전환하면 닫혀야 함".
+          if (active !== 'photo' && photoCollectionOpen) closePhotoCollection();
+          paint();
+        });
         tabsEl.appendChild(b);
       });
     }
