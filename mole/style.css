@@ -3527,7 +3527,12 @@ body { background: var(--lm-page); }
 .inv-equip:disabled::before { display: none; }
 
 /* 코스튬 탭 — 5개 팀 카드(가로 스크롤) + 상세 + 획득 방법(명세서 §1~§58). */
-.cos-wrap { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
+/* 사용자 지적(2026-09-27): 아래 상세박스 좌우 여백이 79px/80px로 1px 비대칭 — 좌우를
+   .inv-body의 독립된 두 padding(left/right) 대신 .cos-wrap 하나에 width+margin:auto로
+   묶어서 브라우저가 남는 공간을 한 번에 대칭 분배하게 한다(양쪽 각각 반올림되는 padding
+   방식보다 안정적). */
+.cos-wrap { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 6px;
+  width: calc(100% - 0.2cm); margin: 0 auto; }
 /* 사용자 지정(2026-09-26): "전체 파란박스는 삭제한다" — 코스튬 탭일 때만 .inv-cards-box의
    배경/글로우/여백을 전부 제거해 카드·상세박스가 게임화면 가장자리(0.1cm)까지 확장되게 함. */
 .inv-cards-box:has(.cos-wrap) { background: none; animation: none; box-shadow: none;
@@ -3540,7 +3545,7 @@ body { background: var(--lm-page); }
 /* 사용자 지적(2026-09-26): "상세박스와 토글버튼 간격이 폰에서 0.3cm, 무기/스킬 박스보다
    높게있음 => 박스를 내려라" — 아래쪽 0.1cm 여유를 없애 박스 하단(=다른 탭과 동일한
    .inv-cards-box 바닥)에 완전히 붙임. */
-.inv-cards-box:has(.cos-wrap) .inv-body { padding: 2px 0.1cm 0; }
+.inv-cards-box:has(.cos-wrap) .inv-body { padding: 2px 0 0; }
 /* 몰리그 전광판 — 전체파란박스(.inv-cards-box) 밖, 화면 최상단(사용자 지정: "전체파란박스
    안에 있으면 안됨, 최대한 게임화면 상단에 위치, 전체파란박스는 전광판 아래에 위치,
    겹치지 않아야함"). #inventory-screen 은 .board-screen 의 flex-direction:column 을
@@ -3765,7 +3770,12 @@ body { background: var(--lm-page); }
 .skl-card--on { box-shadow: inset 0 0 0 2px #ffd93b, inset 0 1px 2px rgba(255,255,255,0.15); }
 .skl-card-icowrap { position: relative; flex: 1 1 auto; min-height: 0; width: 100%;
   display: flex; align-items: center; justify-content: center; }
-.skl-card-ico { max-width: 94%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+/* 사용자 지적(2026-09-27): "골드 2배만 작아 보인다" — 실측 결과 실제 픽셀 크기는 다른
+   아이콘과 거의 동일(카드 스크린샷에서 폭 80px로 동일)했음. 금색 아이콘이 카드의 파란
+   배경과 명도 대비가 낮아 시각적으로 작아 보이는 착시로 판단 — 모든 카드 아이콘에 약한
+   그림자를 줘서 배경과의 경계를 또렷하게(금색 아이콘에 특히 도움이 됨). */
+.skl-card-ico { max-width: 94%; max-height: 100%; width: auto; height: auto; object-fit: contain;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.45)); }
 .skl-card--empty .skl-card-ico { filter: grayscale(0.6) brightness(0.6); }
 .skl-card-check {
   position: absolute; right: 2%; top: 0; width: 16px; height: 16px; border-radius: 50%; background: #57d977;
