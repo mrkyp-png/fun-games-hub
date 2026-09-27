@@ -637,9 +637,8 @@
         });
       });
 
-      // reflow 뒤에 열림 클래스를 줘야 슬라이드 다운 트랜지션이 실제로 재생된다.
-      overlay.classList.remove('is-open');
-      void overlay.offsetWidth;
+      // 슬라이드 트랜지션 제거(위 .photo-overlay 주석 참고) — is-open 클래스는 이제
+      // 시각 효과가 없지만 닫기 로직(closePhotoCollection)과의 호환을 위해 유지.
       overlay.classList.add('is-open');
       overlay.querySelector('[data-photo-back]').addEventListener('click', closePhotoCollection);
     }
@@ -649,8 +648,8 @@
       photoCollectionOpen = false;
       photoDetailId = null;
       if (!overlay) return;
-      overlay.classList.remove('is-open');
-      setTimeout(function () { if (overlay.parentNode) overlay.remove(); }, 300);
+      // 슬라이드 트랜지션 제거로 애니메이션 대기가 필요 없어짐 — 즉시 제거.
+      overlay.remove();
     }
 
     // 확대 상세(§31~34) — 컬렉션 위에 뜨는 DETAIL LAYER, 완성된 캐릭터만 진입 가능.

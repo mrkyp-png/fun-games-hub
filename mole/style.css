@@ -3950,14 +3950,15 @@ body { background: var(--lm-page); }
    사용자 지정(2026-09-27): "버튼보드"(게임보드 바로 아래, 하트/코인/티켓~시작버튼이
    있는 흰 .dialpad 영역, 게임보드와 크기 동일)를 위에서 아래로 슬라이드하며 전부
    덮는다. 헤더(트로피+별빛바+N/15)는 전체 높이의 약 10%만, 나머지 90%는 카드그리드. */
-/* 사용자 지정(2026-09-27): "전체배경은 사진관 배경, 모서리 일부만 나올 정도". */
+/* 사용자 지적(2026-09-27): "컬렉션이 폰 전체화면으로 나온다" — 슬라이드 트랜지션이
+   특정 상황에서 완료되지 않고 translateY(-100%)(닫힘 위치, 버튼보드 바깥/위쪽)에
+   멈춰버려 엉뚱한 위치에 나타나는 버그였음(실측 확인: transform이 계속 -390px에
+   고정). 원인 규명이 어려워 트랜지션 자체를 제거 — 항상 정위치에 즉시 표시. */
 .photo-overlay {
   position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column;
   background: #0c0a18 url('assets/photo/background.jpg') center/cover no-repeat;
-  transform: translateY(-100%);
-  transition: transform 0.32s ease-out; padding: 8px;
+  padding: 8px;
 }
-.photo-overlay.is-open { transform: translateY(0); }
 /* 사용자 지정(2026-09-27): "복원 버튼과 유사한 형태" — .skl-box-restore와 동일한
    블루 그라디언트+진한 그림자 톤으로. */
 .photo-coll-back { position: absolute; left: 8px; top: 8px; z-index: 3; width: 28px; height: 28px;
@@ -3973,9 +3974,9 @@ body { background: var(--lm-page); }
    넘치게 해서(height>100%) "겹쳐 보이는" 느낌만 유지. */
 .photo-coll-starbar { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
   width: 100%; height: 70%; object-fit: fill; }
-/* 사용자 지정(2026-09-27): "위가 잘림 -> 좌측 0.2cm, 아래로 0.2cm 이동". */
-.photo-coll-trophy { position: absolute; left: -0.2cm; top: 50%; transform: translateY(calc(-58% + 0.2cm));
-  height: 190%; width: auto; z-index: 2; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); }
+/* 사용자 지정(2026-09-27): "30% 축소, 좌측으로 0.5cm 추가 이동". */
+.photo-coll-trophy { position: absolute; left: -0.7cm; top: 50%; transform: translateY(calc(-58% + 0.2cm));
+  height: 133%; width: auto; z-index: 2; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); }
 .photo-coll-progress { position: absolute; right: 6%; top: 50%; transform: translateY(-50%); z-index: 2;
   font-size: 0.8rem; font-weight: 900; color: #ffd93b; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
 .photo-coll-gridwrap {
@@ -3988,7 +3989,7 @@ body { background: var(--lm-page); }
 /* 사용자 지정(2026-09-27): "15개 카드 케릭 수평/좌우 센터 일치" — 기본(center center)
    대신 .photo-slot-img와 동일하게 bottom center로 앵커해 카드마다 다른 내부 여백에
    상관없이 항상 같은 기준선(발)에 맞춘다(소스가 이미 얼굴+발 평균 중심으로 재정렬됨). */
-.photo-coll-card-img { position: absolute; inset: 6%; width: 88%; height: 88%; object-fit: contain;
+.photo-coll-card-img { position: absolute; inset: 2%; width: 96%; height: 96%; object-fit: contain;
   object-position: bottom center; }
 .photo-coll-card-applied { position: absolute; right: 4%; top: 2%; width: 14px; height: 14px; border-radius: 50%;
   background: #57d977; color: #fff; font-size: 9px; font-weight: 900; display: flex; align-items: center;
