@@ -334,16 +334,16 @@
             '<div class="skl-left">' +
               '<div class="skl-box" data-skl-box="active">' +
                 '<div class="skl-left-head"><span class="skl-left-title"></span>' +
-                  '<div class="skl-pager"><button type="button" class="skl-parrow" data-skl-prev>‹</button>' +
-                    '<span class="skl-pnum"></span><button type="button" class="skl-parrow" data-skl-next>›</button></div>' +
+                  '<div class="skl-pager"><button type="button" class="skl-parrow" data-skl-prev>◀</button>' +
+                    '<span class="skl-pnum"></span><button type="button" class="skl-parrow" data-skl-next>▶</button></div>' +
                   '<button type="button" class="skl-box-restore" data-skl-restore><img alt="" src="assets/skills/restore.png"></button>' +
                 '</div>' +
                 '<div class="skl-grid" data-skl-grid></div>' +
               '</div>' +
               '<div class="skl-box" data-skl-box="passive">' +
                 '<div class="skl-left-head"><span class="skl-left-title"></span>' +
-                  '<div class="skl-pager"><button type="button" class="skl-parrow" data-skl-prev>‹</button>' +
-                    '<span class="skl-pnum"></span><button type="button" class="skl-parrow" data-skl-next>›</button></div>' +
+                  '<div class="skl-pager"><button type="button" class="skl-parrow" data-skl-prev>◀</button>' +
+                    '<span class="skl-pnum"></span><button type="button" class="skl-parrow" data-skl-next>▶</button></div>' +
                   '<button type="button" class="skl-box-restore" data-skl-restore><img alt="" src="assets/skills/restore.png"></button>' +
                 '</div>' +
                 '<div class="skl-grid" data-skl-grid></div>' +
@@ -666,8 +666,8 @@
         '<div class="photo-zoom-dim" data-photo-zoom-dim></div>' +
         '<div class="photo-zoom-card">' +
           '<button type="button" class="photo-zoom-close" data-photo-zoom-close>✕</button>' +
-          '<button type="button" class="photo-zoom-nav photo-zoom-nav--prev" data-photo-zoom-prev>‹</button>' +
-          '<button type="button" class="photo-zoom-nav photo-zoom-nav--next" data-photo-zoom-next>›</button>' +
+          '<button type="button" class="photo-zoom-nav photo-zoom-nav--prev" data-photo-zoom-prev>◀</button>' +
+          '<button type="button" class="photo-zoom-nav photo-zoom-nav--next" data-photo-zoom-next>▶</button>' +
           '<span class="photo-zoom-imgwrap">' +
             '<img class="photo-zoom-img' + (completed ? '' : ' photo-zoom-img--locked') + '" alt="" src="assets/photo/characters/' + id + '.png">' +
           '</span>' +

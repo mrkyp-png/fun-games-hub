@@ -4008,3 +4008,22 @@ body { background: var(--lm-page); }
 /* 라이트 OFF (전설): 아무 표시 없음 */
 #game-screen.diff-legend .lane-button--hot { background: transparent; box-shadow: none; }
 #game-screen.diff-legend .lane-button--call.lane-button--hot { background: #2ecc57; box-shadow: none; }
+
+/* 사용자 지정(2026-09-27): 앱 전체 좌우 화살표 버튼(‹›) 통일 — "그린 아웃라인 캡슐"
+   디자인을 흰색+입체감(누르는 느낌)으로. 기존 배경/모양(그라디언트 등)을 흰색 테두리
+   아웃라인 캡슐로 덮어쓰고, 클릭 시 아래로 눌리는 3D 프레스 효과를 추가한다.
+   대상: 무기/코스튬 카드 넘기기(.inv-arrow), 상점 카드 넘기기(.shop-arrow),
+   스킬 페이지 넘기기(.skl-parrow), 사진관 확대보기 넘기기(.photo-zoom-nav). */
+.inv-arrow, .shop-arrow, .skl-parrow, .photo-zoom-nav {
+  background: rgba(20,40,90,0.65) !important; border: 2px solid #fff !important; border-radius: 8px !important;
+  color: #fff !important; box-shadow: 0 3px 0 rgba(255,255,255,0.3), 0 4px 6px rgba(0,0,0,0.35),
+    inset 0 1px 2px rgba(255,255,255,0.25) !important;
+  transition: transform 0.08s ease, box-shadow 0.08s ease !important;
+}
+.inv-arrow:active, .shop-arrow:active, .skl-parrow:active, .photo-zoom-nav:active {
+  transform: translateY(2px) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.2), inset 0 1px 3px rgba(0,0,0,0.4) !important;
+}
+.inv-arrow:disabled, .shop-arrow:disabled, .skl-parrow:disabled, .photo-zoom-nav:disabled {
+  opacity: 0.35; box-shadow: 0 2px 0 rgba(255,255,255,0.15) !important; transform: none !important;
+}

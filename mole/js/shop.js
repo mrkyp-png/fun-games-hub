@@ -320,8 +320,8 @@
       bannerEl.innerHTML =
         '<img alt="" class="shop-banner-pic" src="assets/avatar-mole.png">' +
         '<span class="shop-banner-txt"></span>' +
-        '<button type="button" class="shop-arrow shop-arrow--prev" data-shop-prev aria-label="이전">‹</button>' +
-        '<button type="button" class="shop-arrow shop-arrow--next" data-shop-next aria-label="다음">›</button>';
+        '<button type="button" class="shop-arrow shop-arrow--prev" data-shop-prev aria-label="이전">◀</button>' +
+        '<button type="button" class="shop-arrow shop-arrow--next" data-shop-next aria-label="다음">▶</button>';
       bannerEl.querySelector('.shop-banner-txt').textContent = T('mole.shop.welcome');
       bannerEl.querySelector('[data-shop-prev]').addEventListener('click', function () { cardsEl.scrollBy({ left: -cardUnit() * 3, behavior: 'smooth' }); });
       bannerEl.querySelector('[data-shop-next]').addEventListener('click', function () { cardsEl.scrollBy({ left: cardUnit() * 3, behavior: 'smooth' }); });
