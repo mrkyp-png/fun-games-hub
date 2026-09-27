@@ -3909,20 +3909,18 @@ body { background: var(--lm-page); }
 /* 사용자 지정(2026-09-27): "원은 위로 0.3cm, 케릭이 원 앞으로" — z-index는 이미
    캐릭터(2)>원(1)이라 앞에 있음, 위치만 추가 상향. */
 .photo-slot-pedestal { position: absolute; left: 50%; bottom: 4%; width: 88%; height: auto;
-  transform: translateX(-50%) translateY(-0.3cm); z-index: 1; }
-/* 사용자 지정(2026-09-27): "케릭은 위로 1.2cm" — object-position은 프레임 내부 앵커라
-   절대 길이 이동에 안 맞아 transform으로 처리. height:100%는 캐릭터가 이미 프레임
-   상단에 딱 닿아있어(여유 없음) 그대로 올리면 머리가 잘림 — height를 살짝 줄여
-   위쪽에 여유를 미리 만든 뒤 그 안에서 1.2cm 올림(잘림 방지). */
+  transform: translateX(-50%) translateY(-0.1cm); z-index: 1; }
+/* 사용자 지정(2026-09-27): 케릭터/원 위치 미세조정 — 원 위에 선 느낌이 나도록 둘 다
+   살짝 하향(케릭터 순하향 0.35cm, 원 순하향 0.2cm — 이전 상향값에서 빼는 방식). */
 .photo-slot-img { position: relative; z-index: 2; width: 100%; height: calc(100% - 0.7cm); object-fit: contain;
-  object-position: bottom center; transform: translateY(-0.6cm); }
+  object-position: bottom center; transform: translateY(-0.25cm); }
 .photo-slot-img--locked, .photo-coll-card-img--locked, .photo-zoom-img--locked { filter: grayscale(1) brightness(0.7); }
 .photo-slot-applied { position: absolute; right: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%;
   background: #57d977; color: #fff; font-size: 10px; font-weight: 900; display: flex; align-items: center;
   justify-content: center; box-shadow: 0 0 0 2px #142a63; z-index: 3; }
 /* 사용자 지정: "얼굴형 글자는 카드 왼쪽 상단에 띠모양(사선형태)" — 코너 리본. */
 .photo-slot-ribbon {
-  position: absolute; left: -28%; top: 12%; z-index: 4; width: 100%;
+  position: absolute; left: -28%; top: calc(12% - 0.3cm); z-index: 4; width: 100%;
   transform: rotate(-40deg); transform-origin: center;
   background: linear-gradient(180deg, #2f6fed, #1c3f96); color: #fff; text-align: center;
   font-size: 0.42rem; font-weight: 800; padding: 2px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.5);
@@ -3932,7 +3930,7 @@ body { background: var(--lm-page); }
    (1.35cm -> 0.9cm) + "녹색 3D 버튼처럼"(.inv-equip과 동일한 입체 버튼 톤). */
 .photo-slot-status { flex: 0 0 calc(0.9cm - 3px); width: 100%; padding: 2px 0; display: flex;
   align-items: center; justify-content: center; box-sizing: border-box;
-  border-radius: 999px; text-align: center; font-size: 0.4rem; font-weight: 800;
+  border-radius: 999px; text-align: center; font-size: 0.56rem; font-weight: 800;
   background: linear-gradient(180deg, #4fae63, #2c7a44); color: #d7ffe0;
   box-shadow: 0 2px 0 #1c5c30, inset 0 1px 2px rgba(255,255,255,0.35); }
 .photo-slot-status--on { background: linear-gradient(180deg, #63d97c, #2fb457); color: #fff;
