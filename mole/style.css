@@ -3743,9 +3743,13 @@ body { background: var(--lm-page); }
 .skl-box-restore:disabled { opacity: 0.4; cursor: default; }
 .skl-pager { display: flex; align-items: center; gap: 4px; }
 .skl-pnum { font-size: 0.6rem; font-weight: 800; color: #fff; min-width: 24px; text-align: center; }
+/* 사용자 지적(2026-09-27): "스킬화면 화살표버튼은 뭔가 틀려요" — 20px 박스에
+   font-size 0.7rem(11.2px)라 삼각형이 유독 작고 안쪽에 치우쳐 보였음. 다른
+   화살표 버튼들과 비슷한 비율로 박스/폰트 확대. */
 .skl-parrow {
-  width: 20px; height: 20px; border: none; border-radius: 6px; background: linear-gradient(180deg, #3a7bff, #1f4fc4);
-  color: #fff; font-weight: 900; font-size: 0.7rem; line-height: 1; cursor: pointer; box-shadow: 0 2px 0 #12285e;
+  width: 24px; height: 24px; border: none; border-radius: 7px; background: linear-gradient(180deg, #3a7bff, #1f4fc4);
+  color: #fff; font-weight: 900; font-size: 0.85rem; line-height: 1; cursor: pointer; box-shadow: 0 2px 0 #12285e;
+  display: flex; align-items: center; justify-content: center;
 }
 .skl-parrow:active { transform: scale(0.9); }
 .skl-parrow:disabled { opacity: 0.4; cursor: default; }
@@ -3866,11 +3870,17 @@ body { background: var(--lm-page); }
    계산과 무관하게 항상 코너에 고정, 살짝 겹쳐도 됨). */
 /* 사용자 지정: "돋보기는 게임화면 모서리로 아예 옮겨라, 티커 바로 밑" — 전체파란박스
    밖, #inventory-screen 최상단 코너에 고정(위치는 추후 재조정 예정). */
+/* 사용자 지정(2026-09-27): 돋보기 디자인 17번("다크 사각+시안 테두리") + 입체감. */
 .inv-photo-search {
-  width: 28px; height: 28px; border-radius: 50%;
-  border: 2px solid #ffd93b; background: linear-gradient(180deg, #2f6fed, #1c3f96); color: #fff;
-  font-size: 0.8rem; display: flex; align-items: center; justify-content: center; cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  width: 30px; height: 30px; border-radius: 8px;
+  border: 2px solid #57d9ff; background: linear-gradient(180deg, #3a4568, #232b46); color: #fff;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  box-shadow: 0 3px 0 #12172a, 0 4px 6px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.15);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.inv-photo-search:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #12172a, inset 0 1px 3px rgba(0,0,0,0.4);
 }
 #inventory-screen > .inv-photo-search { position: absolute; top: 4px; right: 6px; z-index: 6; }
 /* 사용자 지정: "엠블럼 박스는 전체 박스 좌/우/위쪽 여백 0.1cm로, 최대한 크게". */
