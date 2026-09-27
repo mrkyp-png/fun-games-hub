@@ -318,7 +318,6 @@
     localStorage.setItem('mole.difficulty', d); // "설정만" — 선택 표시만 바꾸고 화면 이동 없음
     if (moreMenu) moreMenu.refresh();
     refreshLightPopup();
-    refreshChapterNav();
   }
   function refreshLightPopup() {
     const el = document.getElementById('light-popup');
@@ -1208,53 +1207,45 @@
     maybeShowStartCoach();
   }
 
-  // 라운드 표시(홈화면, 2026-09-27) — 원 8개(현재 라이트의 A/N/P 접두사 + 라운드번호),
-  // 현재 라운드 글로우 + 해금 안 된 라운드 dim. mole.chapter 를 설정.
-  const ROUND_TIER_PREFIX = { easy: 'A', mid: 'N', legend: 'P' };
+  // 챕터 선택 ◀ 챕터 N ▶ — 열린 챕터가 2개 이상일 때만 표시. mole.chapter 를 설정.
+  // HUD 주소창 자리를 차지 → 그때 주소창 숨김.
   function refreshChapterNav() {
-    const strip = document.getElementById('round-strip');
-    if (!strip) return;
-    const light = currentLight();
-    const maxCh = MG.Progress.maxChapterFor(light);
+    const nav = document.getElementById('chapter-nav');
+    if (!nav) return;
+    const maxCh = MG.Progress.maxChapterFor(currentLight());
+    // 항상 표시 — 챕터가 하나만 열렸어도 "ROUND 1" 배지는 보이고, 양쪽 화살표만 비활성.
     let ch = currentChapter();
     if (ch > maxCh) { ch = maxCh; setChapter(ch); }
-    const prefix = ROUND_TIER_PREFIX[light] || 'A';
-    strip.querySelectorAll('[data-rs-round]').forEach((btn) => {
-      const n = parseInt(btn.getAttribute('data-rs-round'), 10);
-      btn.querySelector('[data-rs-label]').textContent = prefix + n;
-      btn.classList.toggle('is-locked', !MG.Progress.isUnlocked(n, light));
-      btn.classList.toggle('is-current', n === ch);
-    });
+    nav.hidden = false;
+    nav.setAttribute('data-ch', String(ch)); // 챕터별 불빛 색 (style.css #chapter-nav[data-ch="N"])
+    // "ROUND N" 표기(사용자 지정, 언어 무관 고정 — 챕터 이름/부제(chapterLabel) 등 다른 표시는 그대로).
+    nav.querySelector('[data-ch-label]').textContent = 'ROUND ' + ch;
+    nav.querySelector('[data-ch-prev]').disabled = ch <= 1;
+    nav.querySelector('[data-ch-next]').disabled = ch >= maxCh;
     // 챕터 입장권 (2시간마다 +1, 입장 시 -1) — 다이얼패드 3번 버튼 카운터로 표시(사용자 지정).
     if (sharedLaneControls) sharedLaneControls.setHudStat('tickets', MG.Economy.formatK(MG.Economy.getTickets()));
   }
   function wireChapterNav() {
-    const strip = document.getElementById('round-strip');
-    if (!strip) return;
-    strip.querySelectorAll('[data-rs-round]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const n = parseInt(btn.getAttribute('data-rs-round'), 10);
-        const light = currentLight();
-        if (!MG.Progress.isUnlocked(n, light)) return;
-        const before = currentChapter();
-        setChapter(n);
-        refreshChapterNav();
-        if (n !== before) {
-          btn.classList.remove('rs-flare'); void btn.offsetWidth; btn.classList.add('rs-flare');
-          setTimeout(() => btn.classList.remove('rs-flare'), 900);
-        }
-      });
-    });
-    // 양옆 삼각 버튼 — 난이도(라이트) 전환. 기존 setDifficulty 그대로 재사용(잠긴 라이트는 무시됨).
-    const TIER_ORDER = ['easy', 'mid', 'legend'];
-    const stepTier = (d) => {
-      const i = TIER_ORDER.indexOf(currentLight());
-      const next = TIER_ORDER[Math.max(0, Math.min(TIER_ORDER.length - 1, i + d))];
-      setDifficulty(next);
+    const nav = document.getElementById('chapter-nav');
+    if (!nav) return;
+    const step = (d) => {
+      const maxCh = MG.Progress.maxChapterFor(currentLight());
+      const before = currentChapter();
+      const ch = Math.max(1, Math.min(maxCh, before + d));
+      setChapter(ch);
+      // 홈 화면 버튼바는 기존 16버튼 다이얼러로 불변(사용자 지정) — 챕터 넘겨봐도 안 바뀜.
       refreshChapterNav();
+      // 챕터가 실제로 바뀌었으면 글자에서 아우라가 확 터졌다 가라앉는 연출
+      if (ch !== before) {
+        const lbl = nav.querySelector('.ch-label');
+        if (lbl) {
+          lbl.classList.remove('ch-flare'); void lbl.offsetWidth; lbl.classList.add('ch-flare');
+          setTimeout(() => lbl.classList.remove('ch-flare'), 900); // 끝나면 떼서 평소 아우라 펄스로 복귀
+        }
+      }
     };
-    strip.querySelector('[data-rs-tier-prev]').addEventListener('click', () => stepTier(-1));
-    strip.querySelector('[data-rs-tier-next]').addEventListener('click', () => stepTier(1));
+    nav.querySelector('[data-ch-prev]').addEventListener('click', () => step(-1));
+    nav.querySelector('[data-ch-next]').addEventListener('click', () => step(1));
   }
 
   // 티커: 문구 길이가 달라도(언어/힌트) 스크롤 속도가 일정하도록 duration 을 폭에 맞추고,

@@ -160,6 +160,19 @@ body { background: var(--lm-page); }
 }
 .hg-cell.is-press::after { animation: hg-cell-gradborder-fade 0.35s ease; }
 @keyframes hg-cell-gradborder-fade { 0% { opacity: 0; } 35% { opacity: 0.9; } 100% { opacity: 0; } }
+/* ◀ ROUND N ▶ — "ROUND N" 은 알약 박스(테두리를 타고 도는 불빛, 챕터별 색), 양옆은 꼬리 달린
+   3D 화살표 버튼(누르면 쑥 들어감). 항상 표시. 우측 하단(사용자 지정 — #build-tag는 이후
+   다이얼패드 하트 아이콘 위로 이동해 더 이상 같은 줄이 아님). */
+.chapter-nav-top { display: none; }
+#game-screen.is-start .chapter-nav-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  position: absolute; right: 6px; bottom: 4px; z-index: 9;
+  padding: 3px 5px;
+}
+#chapter-nav[hidden] { display: none; }
+
 /* 메탈릭 샤인 스윕(사용자 지정, press-feel-options 후보 중 선택) — "능력치" 글자에만 적용
    (챕터 글자는 제외, 사용자 지정). 대각선 빛이 은은하게 계속 흐름. */
 .inv-stat-h::after {
@@ -174,67 +187,82 @@ body { background: var(--lm-page); }
   70%, 100% { transform: translateX(60%); }
 }
 
-/* 라운드 표시(홈화면, 2026-09-27) — 게임보드 아래 버튼보드 상단, assets/round-strip.png
-   (2172x724, 3:1) 위에 8개 원형 버튼 + 양옆 삼각 난이도전환 버튼을 실측 %좌표로 배치. */
-.round-strip {
-  display: none;
-  position: relative;
-  width: 100%;
-  aspect-ratio: 3 / 1;
-  background: url('assets/round-strip.png') center/100% 100% no-repeat;
-  margin: 0 0 4px;
-}
-#game-screen.is-start .round-strip { display: block; }
-.round-strip [data-rs-round="1"] { left: 15.93%; }
-.round-strip [data-rs-round="2"] { left: 25.39%; }
-.round-strip [data-rs-round="3"] { left: 35.03%; }
-.round-strip [data-rs-round="4"] { left: 44.81%; }
-.round-strip [data-rs-round="5"] { left: 54.72%; }
-.round-strip [data-rs-round="6"] { left: 64.36%; }
-.round-strip [data-rs-round="7"] { left: 74.03%; }
-.round-strip [data-rs-round="8"] { left: 83.61%; }
-.rs-circle {
-  position: absolute; top: 65.61%;
-  width: 6.35%; aspect-ratio: 1 / 1;
-  transform: translate(-50%, -50%);
-  border: none; border-radius: 50%;
-  background: transparent;
-  padding: 0;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  color: #fff5d9; font-size: 0.5rem; font-weight: 900; line-height: 1;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
-  transition: transform 0.07s ease, filter 0.07s ease;
-}
-.rs-circle:active { transform: translate(-50%, -50%) scale(0.88); }
-.rs-circle.is-locked { color: rgba(255, 245, 217, 0.45); pointer-events: none; }
-.rs-circle.is-current {
-  box-shadow: 0 0 6px 3px #ffce33, 0 0 14px 6px rgba(255, 206, 51, 0.55);
-  animation: rs-current-pulse 1.4s ease-in-out infinite;
-}
-@keyframes rs-current-pulse {
-  0%, 100% { box-shadow: 0 0 6px 3px #ffce33, 0 0 14px 6px rgba(255, 206, 51, 0.55); }
-  50%      { box-shadow: 0 0 9px 4px #ffe27a, 0 0 20px 9px rgba(255, 206, 51, 0.75); }
-}
-.rs-circle.rs-flare { animation: rs-current-pulse 1.4s ease-in-out infinite, rs-flare 0.85s ease-out; }
-@keyframes rs-flare {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  16%      { transform: translate(-50%, -50%) scale(1.35); }
+/* 챕터별 불빛 색 (1 풀그린 → 2 스카이 → 3 앰버 → 4 바이올렛 → 5 크림슨: 난이도 상승 톤) */
+#chapter-nav { --ch-glow: #ff8a00; --ch-glow-lt: #ffd36b; --ch-glow-dk: #ff5e00; --ch-glow-soft: rgba(255, 130, 0, 0.5); }
+#chapter-nav[data-ch="1"] { --ch-glow: #16b364; --ch-glow-lt: #6ee7a8; --ch-glow-dk: #0b7a42; --ch-glow-soft: rgba(22, 179, 100, 0.5); }
+#chapter-nav[data-ch="2"] { --ch-glow: #3b9eff; --ch-glow-lt: #a5cdff; --ch-glow-dk: #1667c9; --ch-glow-soft: rgba(59, 158, 255, 0.5); }
+#chapter-nav[data-ch="3"] { --ch-glow: #ff8a00; --ch-glow-lt: #ffd36b; --ch-glow-dk: #ff5e00; --ch-glow-soft: rgba(255, 138, 0, 0.5); }
+#chapter-nav[data-ch="4"] { --ch-glow: #a855f7; --ch-glow-lt: #d8b4fe; --ch-glow-dk: #7c2fd4; --ch-glow-soft: rgba(168, 85, 247, 0.5); }
+#chapter-nav[data-ch="5"] { --ch-glow: #ef3b3b; --ch-glow-lt: #ff9a9a; --ch-glow-dk: #c81e1e; --ch-glow-soft: rgba(239, 59, 59, 0.5); }
+
+
+/* (c) 시작(통화) 버튼과 똑같은 대각선 빛 쓸기(idle-crown-sweep, 2.8s) — 모든 챕터. */
+.ch-shine { position: absolute; inset: 0; z-index: 2; border-radius: inherit; overflow: hidden; pointer-events: none; display: none; }
+#game-screen.is-start #chapter-nav .ch-shine { display: block; }
+.ch-shine::before {
+  content: '';
+  position: absolute; inset: -60%;
+  /* 흰색으로 글자를 덮지 않게 — 아주 옅은 빛만(사용자: "글자안 흰색 나오는거 투명으로") */
+  background: linear-gradient(115deg, transparent 44%, rgba(255, 255, 255, 0.2) 50%, transparent 56%);
+  animation: idle-crown-sweep 2.8s ease-in-out infinite;
 }
 
-/* 양옆 삼각 컷아웃 — 난이도(Amateur/Normal/Pro) 전환 3D 버튼 */
-.rs-tri {
-  position: absolute; top: 62.22%;
-  width: 9.4%; height: 46.55%;
-  transform: translate(-50%, -50%);
-  border: none; padding: 0; cursor: pointer;
-  background: linear-gradient(160deg, #d8a24a, #8a5a20);
-  box-shadow: 0 3px 0 #5c3a12, inset 0 1px 1px rgba(255, 255, 255, 0.35);
-  transition: transform 0.07s ease, box-shadow 0.07s ease;
+/* 손가락 이모지(👈 👉). 박스 없이 — 그림자로 살짝 떠 있고, 누르면 쑥 들어가는 느낌. */
+.ch-arrow {
+  width: 24px; height: 26px;
+  flex: 0 0 auto;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background: none;
+  font-size: 17px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 1.5px rgba(0, 0, 0, 0.4)) drop-shadow(0 0 0.5px rgba(255, 255, 255, 0.6));
+  transition: transform 0.07s ease, filter 0.07s ease;
 }
-.rs-tri--prev { left: 5.226%; clip-path: polygon(100% 0%, 0% 50%, 100% 100%); }
-.rs-tri--next { left: 94.43%; clip-path: polygon(0% 0%, 100% 50%, 0% 100%); }
-.rs-tri:active { transform: translate(-50%, calc(-50% + 3px)); box-shadow: 0 0 0 #5c3a12, inset 0 1px 1px rgba(255, 255, 255, 0.35); }
+.ch-arrow:active:not(:disabled) {
+  transform: translateY(2px) scale(0.9);
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.45));
+}
+.ch-arrow:disabled { cursor: default; filter: grayscale(1) opacity(0.35); }
+
+.ch-label {
+  position: relative;
+  font-size: 0.82rem; font-weight: 800; line-height: 1;
+  color: #fff; /* 검은색이라 잘 안 보인다는 사용자 피드백으로 흰색 변경 */
+  background: transparent;
+  padding: 3px 2px;               /* 글자↔손 이모지 간격 축소 (사용자 요청) */
+  white-space: nowrap;
+}
+.ch-txt { display: inline-block; }
+/* 티켓 이모지 + 개수 — 다음(👉) 손 이모지 옆. 동작은 추후 지정. */
+.ch-ticket {
+  flex: 0 0 auto;
+  font-size: 16px;
+  line-height: 1;
+  margin-left: 2px;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+}
+.ch-ticket-n {
+  flex: 0 0 auto;
+  font-size: 0.78rem; font-weight: 800; line-height: 1;
+  color: #1c1c22;
+  margin-left: 1px;
+}
+/* 챕터 바꿀 때 — 글자 아우라가 확 터졌다 가라앉음 (game.js 가 .ch-label 에 .ch-flare, 900ms 뒤 제거) */
+.ch-label.ch-flare { animation: ch-flare 0.85s ease-out; }
+.ch-label.ch-flare .ch-txt { animation: ch-flare-aura 0.85s ease-out; }
+@keyframes ch-flare {
+  0%, 100% { transform: scale(1); }
+  16%      { transform: scale(1.12); }
+}
+@keyframes ch-flare-aura {
+  0%   { text-shadow: 0 0 2px var(--ch-glow), 0 0 6px var(--ch-glow-soft); }
+  16%  { text-shadow: 0 0 6px var(--ch-glow-lt), 0 0 16px var(--ch-glow),
+         0 0 32px var(--ch-glow), 0 0 50px var(--ch-glow-soft); }
+  100% { text-shadow: 0 0 2px var(--ch-glow), 0 0 6px var(--ch-glow-soft); }
+}
 
 /* HUD: 시작 상태엔 브라우저 주소창, 플레이 상태엔 티커. #game-screen.is-start 로 스위치. */
 #hud-addr {
