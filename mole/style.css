@@ -3850,6 +3850,11 @@ body { background: var(--lm-page); }
     inset 0 10px 18px rgba(0,0,0,0.55), inset 0 -10px 18px rgba(0,0,0,0.55),
     inset 10px 0 18px rgba(0,0,0,0.4), inset -10px 0 18px rgba(0,0,0,0.4);
 }
+/* 사용자 지적(2026-09-27): "우측에 위아래 스크롤바가 생겼다" — .photo-emblems+
+   .photo-square 합계가 .inv-body 가용 높이보다 ~4px 커서 스크롤이 뜸(원인:
+   서브픽셀 누적, 카드 높이 조정으로도 해소 안 됨). 이 탭은 스크롤이 필요 없는
+   고정 레이아웃이라 overflow만 감춤(내용 잘림 없음, 4px는 시각적으로 무의미). */
+.inv-cards-box:has(.photo-square) .inv-body { overflow-y: hidden; }
 .photo-square {
   position: relative; flex: 1 1 auto; min-height: 0; width: 100%;
   margin: 0 0 calc(0.1cm - 12px);
@@ -3888,18 +3893,29 @@ body { background: var(--lm-page); }
 .photo-slot { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center;
   gap: 3px; background: none; border: none; cursor: pointer; }
 /* 카드(프레임) 자체는 슬롯 전체 크기 그대로 유지(사용자 지적: "카드 크기를 왜 더
-   작게 하냐") — 캐릭터만 이 안에서 object-fit:contain으로 최대 크기로 표시. */
+   작게 하냐") — 캐릭터만 이 안에서 object-fit:contain으로 최대 크기로 표시.
+   사용자 지정(2026-09-27): "카드 아래부분을 위로 0.7cm(+0.5cm 추가)" — 카드 하단만
+   들어올려 게임적용 박스 자리를 만든다. height:calc(100% - Ncm)는 .photo-slot의
+   높이가 percentage 기준으로 명확히 안 잡혀 값을 바꿔도 반영이 안 됐음(실측 확인) —
+   flex:1 1 auto(min-height:0)로 "상태박스를 제외한 나머지 전부"를 차지하게 바꾸고,
+   상태박스 쪽에 고정 높이(flex:0 0 1.35cm)를 줘서 그만큼 프레임이 줄어들게 함. */
 .photo-slot-frame {
-  position: relative; width: 100%; height: 100%; border-radius: 10px;
+  position: relative; width: 100%; flex: 1 1 auto; min-height: 0; border-radius: 10px;
   background: rgba(20,40,90,0.55); border: 2px solid #4a90f5; display: flex; align-items: center;
   justify-content: center; overflow: hidden;
 }
 .photo-slot--sel .photo-slot-frame { border-color: #ffd93b; box-shadow: inset 0 0 0 2px #ffd93b, 0 0 10px 2px rgba(255,217,59,0.7); }
 /* 사용자 지정: "케릭 신발 밑에는 에셋6의 원 구조물을"(선택=골드/그외=블루), 발과 붙게 배치. */
+/* 사용자 지정(2026-09-27): "원은 위로 0.3cm, 케릭이 원 앞으로" — z-index는 이미
+   캐릭터(2)>원(1)이라 앞에 있음, 위치만 추가 상향. */
 .photo-slot-pedestal { position: absolute; left: 50%; bottom: 4%; width: 88%; height: auto;
-  transform: translateX(-50%); z-index: 1; }
-.photo-slot-img { position: relative; z-index: 2; width: 100%; height: 100%; object-fit: contain;
-  object-position: bottom center; }
+  transform: translateX(-50%) translateY(-0.3cm); z-index: 1; }
+/* 사용자 지정(2026-09-27): "케릭은 위로 1.2cm" — object-position은 프레임 내부 앵커라
+   절대 길이 이동에 안 맞아 transform으로 처리. height:100%는 캐릭터가 이미 프레임
+   상단에 딱 닿아있어(여유 없음) 그대로 올리면 머리가 잘림 — height를 살짝 줄여
+   위쪽에 여유를 미리 만든 뒤 그 안에서 1.2cm 올림(잘림 방지). */
+.photo-slot-img { position: relative; z-index: 2; width: 100%; height: calc(100% - 1.5cm); object-fit: contain;
+  object-position: bottom center; transform: translateY(-1.7cm); }
 .photo-slot-img--locked, .photo-coll-card-img--locked, .photo-zoom-img--locked { filter: grayscale(1) brightness(0.7); }
 .photo-slot-applied { position: absolute; right: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%;
   background: #57d977; color: #fff; font-size: 10px; font-weight: 900; display: flex; align-items: center;
@@ -3911,6 +3927,14 @@ body { background: var(--lm-page); }
   background: linear-gradient(180deg, #2f6fed, #1c3f96); color: #fff; text-align: center;
   font-size: 0.42rem; font-weight: 800; padding: 2px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
+/* 사용자 지정(2026-09-27): "카드 밑에는 게임적용/게임미적용 박스" — 카드 하단을
+   0.7cm(+0.5cm) 줄여 만든 공간에 상태 표시 박스. flex-basis 고정값 = 프레임이
+   내어줄 정확한 높이(.photo-slot의 gap 3px는 별도이므로 빼줌). */
+.photo-slot-status { flex: 0 0 calc(1.35cm - 3px); width: 100%; padding: 2px 0; display: flex;
+  align-items: center; justify-content: center; box-sizing: border-box;
+  border-radius: 6px; text-align: center; font-size: 0.4rem; font-weight: 800;
+  background: rgba(154,154,164,0.35); color: #d8dce6; }
+.photo-slot-status--on { background: rgba(87,217,119,0.35); color: #b6ffc9; }
 
 /* 전체 컬렉션 — Bottom Sheet/Overlay(§6, §19~23), .photo-square 와 동일 크기.
    사용자 지정: "컬렉션 화면 에셋1/에셋2 사용" — 트로피 헤더(위) + 카드 그리드
