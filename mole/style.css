@@ -3950,24 +3950,31 @@ body { background: var(--lm-page); }
    사용자 지정(2026-09-27): "버튼보드"(게임보드 바로 아래, 하트/코인/티켓~시작버튼이
    있는 흰 .dialpad 영역, 게임보드와 크기 동일)를 위에서 아래로 슬라이드하며 전부
    덮는다. 헤더(트로피+별빛바+N/15)는 전체 높이의 약 10%만, 나머지 90%는 카드그리드. */
+/* 사용자 지정(2026-09-27): "전체배경은 사진관 배경, 모서리 일부만 나올 정도". */
 .photo-overlay {
   position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column;
-  background: #0c0a18; transform: translateY(-100%);
+  background: #0c0a18 url('assets/photo/background.jpg') center/cover no-repeat;
+  transform: translateY(-100%);
   transition: transform 0.32s ease-out; padding: 8px;
 }
 .photo-overlay.is-open { transform: translateY(0); }
-.photo-coll-back { position: absolute; left: 8px; top: 8px; z-index: 3; width: 26px; height: 26px;
-  border-radius: 50%; border: none; background: #2f6fed; color: #fff; font-size: 0.9rem; font-weight: 900;
+/* 사용자 지정(2026-09-27): "복원 버튼과 유사한 형태" — .skl-box-restore와 동일한
+   블루 그라디언트+진한 그림자 톤으로. */
+.photo-coll-back { position: absolute; left: 8px; top: 8px; z-index: 3; width: 28px; height: 28px;
+  border-radius: 50%; border: none; background: linear-gradient(180deg, #3a7bff, #1f4fc4);
+  box-shadow: 0 2px 0 #12285e; color: #fff; font-size: 0.9rem; font-weight: 900;
   cursor: pointer; display: flex; align-items: center; justify-content: center; }
 /* 사용자 지정: "별빛박스 좌측 위에 전광판(트로피), 우측 안쪽에 N/15" — 별빛바를
    기준 배경으로 깔고, 트로피는 그 위에 좌측으로 겹쳐 얹고, 카운터는 우측 안쪽에. */
-.photo-coll-headrow { position: relative; flex: 0 0 10%; min-height: 34px; margin: 0 0 4px; overflow: visible; }
+/* 사용자 지정(2026-09-27): "별빛박스 위아래 폭 1.5배" — 헤더 행 전체를 1.5배로. */
+.photo-coll-headrow { position: relative; flex: 0 0 15%; min-height: 51px; margin: 0 0 4px; overflow: visible; }
 /* 사용자 지적(2026-09-27): 트로피를 좌측 밖(-18%)으로 걸치게 했더니 화면(overlay) 밖으로
    잘려 나갔음 — 음수 위치 대신 헤더 줄 안쪽(0 이상)에 놓고, 크기만 키워 별빛바 위로
    넘치게 해서(height>100%) "겹쳐 보이는" 느낌만 유지. */
 .photo-coll-starbar { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
   width: 100%; height: 70%; object-fit: fill; }
-.photo-coll-trophy { position: absolute; left: 0; top: 50%; transform: translateY(-58%);
+/* 사용자 지정(2026-09-27): "위가 잘림 -> 좌측 0.2cm, 아래로 0.2cm 이동". */
+.photo-coll-trophy { position: absolute; left: -0.2cm; top: 50%; transform: translateY(calc(-58% + 0.2cm));
   height: 190%; width: auto; z-index: 2; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); }
 .photo-coll-progress { position: absolute; right: 6%; top: 50%; transform: translateY(-50%); z-index: 2;
   font-size: 0.8rem; font-weight: 900; color: #ffd93b; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
@@ -3990,8 +3997,9 @@ body { background: var(--lm-page); }
 /* 확대 상세(§31~34) — 컬렉션 위 DETAIL LAYER, 배경 Dim. */
 .photo-zoom { position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; }
 .photo-zoom-dim { position: absolute; inset: 0; background: rgba(0,0,0,0.72); }
+/* 사용자 지정(2026-09-27): "카드 확대화면 윗부분 잘림 -> 10% 축소". */
 .photo-zoom-card {
-  position: relative; z-index: 1; width: 76%; max-width: 260px; padding: 14px 10px 10px;
+  position: relative; z-index: 1; width: 68.4%; max-width: 234px; padding: 14px 10px 10px;
   border-radius: 14px; background: linear-gradient(180deg, #2a5cc9, #1c3f96);
   border: 3px solid #ffd93b; box-shadow: 0 0 18px 4px rgba(255,217,59,0.5);
   display: flex; flex-direction: column; align-items: center; gap: 4px;
