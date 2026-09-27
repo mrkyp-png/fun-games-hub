@@ -1245,16 +1245,23 @@
         }
       });
     });
-    // 양옆 삼각 버튼 — 난이도(라이트) 전환. 기존 setDifficulty 그대로 재사용(잠긴 라이트는 무시됨).
-    const TIER_ORDER = ['easy', 'mid', 'legend'];
-    const stepTier = (d) => {
-      const i = TIER_ORDER.indexOf(currentLight());
-      const next = TIER_ORDER[Math.max(0, Math.min(TIER_ORDER.length - 1, i + d))];
-      setDifficulty(next);
+    // 양옆 삼각 버튼(투명 컷아웃 자리) — 라운드 글로우를 ◀▶ 로 한 칸씩 이동(사용자 지정).
+    const step = (d) => {
+      const maxCh = MG.Progress.maxChapterFor(currentLight());
+      const before = currentChapter();
+      const ch = Math.max(1, Math.min(maxCh, before + d));
+      setChapter(ch);
       refreshChapterNav();
+      if (ch !== before) {
+        const cur = strip.querySelector('.rs-circle.is-current');
+        if (cur) {
+          cur.classList.remove('rs-flare'); void cur.offsetWidth; cur.classList.add('rs-flare');
+          setTimeout(() => cur.classList.remove('rs-flare'), 900);
+        }
+      }
     };
-    strip.querySelector('[data-rs-tier-prev]').addEventListener('click', () => stepTier(-1));
-    strip.querySelector('[data-rs-tier-next]').addEventListener('click', () => stepTier(1));
+    strip.querySelector('[data-rs-round-prev]').addEventListener('click', () => step(-1));
+    strip.querySelector('[data-rs-round-next]').addEventListener('click', () => step(1));
   }
 
   // 티커: 문구 길이가 달라도(언어/힌트) 스크롤 속도가 일정하도록 duration 을 폭에 맞추고,
