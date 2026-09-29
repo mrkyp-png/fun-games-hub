@@ -387,6 +387,8 @@
           // 그 중심 기준으로 안정된 크기의 박스를 재구성 — 중심은 대칭 트랜스폼에서 안 흔들림.
           var r = btn.getBoundingClientRect();
           var w = btn.offsetWidth, h = btn.offsetHeight;
+          // A안(버튼보드 직사각형) — 칸이 직사각형이어도 원 모양 유지: 지름 = 짧은 변(사용자 지정).
+          w = h = Math.min(w, h);
           var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
           var n = MG.Economy.formatK(kind === 'heart' ? MG.Economy.getHearts()
             : kind === 'coin' ? MG.Economy.getCoins() : MG.Economy.getTickets());
