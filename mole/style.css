@@ -1809,6 +1809,12 @@ body { background: var(--lm-page); }
 .lane-item[data-slot="0"] { left: 3%; top: 3%; }
 .lane-item[data-slot="1"] { right: 3%; bottom: 5%; } /* 아래 두께(4px)만큼 조금 더 위로 */
 /* 빈 원 — 은은한 테두리만, 눌림·물결 없음 */
+/* 알리펀치 왼쪽(✱ 칸) 스킬 슬롯은 대각선을 반대(\)로 — 오른쪽 칸(/)과 좌우 대칭(사용자 지정 v743). 원은 오른쪽 위·왼쪽 아래. */
+[data-region="12"] .lane-items::before {
+  background: linear-gradient(to top right, transparent calc(50% - 0.5px), rgba(23, 23, 26, 0.3) calc(50% - 0.5px), rgba(23, 23, 26, 0.3) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+}
+[data-region="12"] .lane-item[data-slot="0"] { left: auto; right: 3%; top: 3%; }
+[data-region="12"] .lane-item[data-slot="1"] { right: auto; left: 3%; bottom: 5%; }
 .lane-item--empty { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.2); cursor: default; }
 /* 장착된 스킬 — 원 가득 아이콘 + 아래 두께(번짐 없음 — 성능), 누르면 두께만큼 내려앉음 */
 .lane-item:not(.lane-item--empty) {
