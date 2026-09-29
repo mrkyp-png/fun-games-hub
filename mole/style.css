@@ -338,7 +338,7 @@ body { background: var(--lm-page); }
 #game-screen .icon-btn { width: 34px; height: 34px; }
 #game-screen .icon-btn img, #game-screen .icon-btn svg { width: 22px; height: 22px; }
 /* 게임보드 안 좌상단(사용자 지정) — 보드가 카메라 자리까지 덮으므로 버튼은 카메라 아래로(safe-top). */
-#btn-back-to-hub { position: absolute; top: max(8px, calc(var(--safe-top) - var(--edge) + 4px)); left: 8px; overflow: hidden; }
+#btn-back-to-hub { position: absolute; top: 8px; left: 8px; overflow: hidden; z-index: 50; } /* 게임판(#mole-board) 안 — 판 위 연출들보다 위 */ /* 위·왼쪽 같은 간격으로 모서리에 딱(사용자 지정 v736) — 카메라 구멍은 보통 위 가운데라 왼쪽 모서리는 피할 필요 없음 */
 /* 게임 중 홈버튼 — 원형 유지, 톤만 사진관 돋보기(.inv-photo-search)처럼(사용자 지정 v735): 다크 그라데이션 +
    시안 테두리 + 아래 두께, 누르면 내려앉음. 홈 화면(is-start)의 프로필은 기존 그대로(금색 링+쉬머). */
 #game-screen:not(.is-start) #btn-back-to-hub {
@@ -374,7 +374,7 @@ body { background: var(--lm-page); }
   padding: 0;
   box-sizing: border-box;
   width: var(--sq);
-  height: 0; /* 티커 줄 없음 — 좌상단 버튼만 게임보드 위에 띄움(#btn-back-to-hub absolute, 이 박스 기준) */
+  height: 0; /* 티커 줄 없음 — 빈 칸막이(위 여백 --edge 만 담당). 좌상단 버튼은 v736부터 #mole-board 안 */
   position: relative; z-index: 20; /* .game-hud 에 transform 이 걸려 자체 쌓임맥락 — 게임판보다 위로 */
   margin: var(--edge) auto 0;
   flex: 0 0 auto;
@@ -567,7 +567,8 @@ body { background: var(--lm-page); }
 #lane-button-bar #build-tag { color: rgba(255, 255, 255, 0.4); }
 /* 입체감(사용자: 어두운 우주 위에서 판이 납작해 보임 → 샘플 4번, v733) — 두 판 바깥에만 빛테두리·두께(아래 6px)·
    짙은 그림자·은은한 빛번짐. 판 안 내용은 그대로. */
-#mole-board, #lane-button-bar {
+/* 버튼보드는 부모 .dialpad 가 contain:paint 라 자식 그림자가 잘려(아래쪽·피버 전환 때 외곽 끊김, v735 실기기) → .dialpad 자체에 건다. */
+#mole-board, .dialpad {
   box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.75), 0 0 10px 2px rgba(150, 190, 255, 0.65), 0 6px 0 #6c7384, 0 14px 18px rgba(0, 0, 0, 0.85);
 }
 #fold-hinge {
@@ -1422,7 +1423,8 @@ body { background: var(--lm-page); }
    perspective 3D 회전(책장 효과) 중 실기기에서 GPU 컴포지팅이 형제 요소까지 같이 다시 그리며
    다이얼패드가 0.7~1초 하얗게 비는 버그가 있었음(데스크톱 시뮬레이션엔 안 잡힘, 사용자 영상으로
    확인). 다이얼패드를 독립된 레이어로 격리해 위쪽 회전 애니메이션의 영향을 안 받게 한다. */
-.dialpad { position: relative; flex: 0 0 auto; touch-action: manipulation; contain: paint; }
+.dialpad { position: relative; flex: 0 0 auto; touch-action: manipulation; contain: paint;
+  width: var(--sq); margin: 0 auto; border-radius: 10px; } /* 크기를 버튼보드와 딱 맞춤 — 입체 테두리를 여기 건다 */
 
 /* 홈 화면 축제 분위기(사용자 지정) — BGM 비트마다 버튼 몇 개가 각자 독립적으로(전체가 같이
    말고, 사용자 지정) 커졌다 흔들림. game.js pulseDialPad() 가 매 비트마다 버튼 하나씩 이 클래스를

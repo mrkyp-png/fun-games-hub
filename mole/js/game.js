@@ -2260,15 +2260,13 @@
     // 3D 회전 버그 격리용) 자식이 박스 밖으로 나가면 잘린다 — 컨테이너인 .dialpad 자체를 옮긴다.
     const dialpad = document.querySelector('.dialpad');
     const hammerLayer = document.getElementById('mole-hammer-layer');
-    // 게임판 좌상단 홈 버튼도 게임판과 같이 이동(사용자 지정 v734 — 게임판만 내려가고 버튼은 남아 있었음)
-    const homeBtn = document.getElementById('btn-back-to-hub');
     if (!board || !bar || !dialpad) return;
     const boardRect = board.getBoundingClientRect();
     const barRect = bar.getBoundingClientRect();
     const delta = barRect.top - boardRect.top; // 보드가 버튼보드 자리로 가려면 +delta 만큼 아래로
     const ease = 'cubic-bezier(.4, 0, .2, 1)';
     board.style.transition = `top ${ms / 1000}s ${ease}`;
-    [dialpad, hammerLayer, homeBtn].forEach((el) => { if (el) el.style.transition = `transform ${ms / 1000}s ${ease}`; });
+    [dialpad, hammerLayer].forEach((el) => { if (el) el.style.transition = `transform ${ms / 1000}s ${ease}`; });
     // 피버타임 나이트 배경/구멍(사용자 지정) — 보드가 버튼보드 자리로 슬라이딩을 시작하는
     // 순간부터 나이트, 복귀 슬라이딩 시작 순간부터 라운드 시즌으로.
     board.classList.toggle('mole-board--night', toSwapped);
@@ -2276,10 +2274,9 @@
     board.style.top = toSwapped ? `${delta}px` : '0';
     dialpad.style.transform = toSwapped ? `translateY(${-delta}px)` : '';
     if (hammerLayer) hammerLayer.style.transform = toSwapped ? `translateX(-50%) translateY(${delta}px)` : 'translateX(-50%)';
-    if (homeBtn) homeBtn.style.transform = toSwapped ? `translateY(${delta}px)` : '';
     setTimeout(() => {
       board.style.transition = '';
-      [dialpad, hammerLayer, homeBtn].forEach((el) => { if (el) el.style.transition = ''; });
+      [dialpad, hammerLayer].forEach((el) => { if (el) el.style.transition = ''; });
     }, ms + 50);
     boardSwapped = toSwapped;
   }
