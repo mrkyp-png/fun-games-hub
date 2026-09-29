@@ -139,36 +139,7 @@
       <button id="btn-back-to-hub" class="icon-btn" aria-label="나가기" data-i18n-aria-label="common.back">
         <!-- 실제 플레이 중: 홈 아이콘(탭하면 라운드 나가고 홈으로, 사용자 지정 — 예전 ⊞ 더보기 아이콘 대체). -->
         <svg class="hub-menu-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5M6 10v9h5v-5h2v5h5v-9"/></svg>
-        <!-- 홈 화면에서만 이 아이콘 대신 프로필 사진(탭하면 사진 변경, 사용자 지정) — game.js refreshHubAvatar() 가 배경으로 채운다. -->
-        <span id="hub-avatar" class="hub-avatar" aria-hidden="true"></span>
       </button>
-      <!-- 시작 상태: 브라우저 주소창 (게임 URL) + 최고점수. 플레이 상태: 증권 전광판 스타일 티커. -->
-      <div id="hud-addr" class="hud-addr" aria-hidden="true">
-        <div class="ticker-viewport">
-          <div class="ticker-track">
-            <span class="ticker-seg">
-              <b class="hud-addr-url" data-i18n="mole.addr.url">두더지팡</b><i class="hud-addr-nick" data-hud-nick></i><i class="hud-addr-score" data-hud-score></i>
-            </span>
-            <span class="ticker-seg">
-              <b class="hud-addr-url" data-i18n="mole.addr.url">두더지팡</b><i class="hud-addr-nick" data-hud-nick></i><i class="hud-addr-score" data-hud-score></i>
-            </span>
-          </div>
-        </div>
-      </div>
-      <div id="hud-ticker" aria-hidden="true">
-        <div class="hud-timer-fill" aria-hidden="true"></div>
-        <b id="hud-timer" class="tk-timer" aria-hidden="true"></b>
-        <div class="ticker-viewport">
-          <div class="ticker-track">
-            <span class="ticker-seg">
-              <b class="tk-mode"></b><i class="tk-tip1"></i><i class="tk-tip2"></i>
-            </span>
-            <span class="ticker-seg">
-              <b class="tk-mode"></b><i class="tk-tip1"></i><i class="tk-tip2"></i>
-            </span>
-          </div>
-        </div>
-      </div>
     </div>
     <div id="mole-board" class="mole-board">
       <img id="mole-emoji-img" class="mole-board-layer" alt="">
@@ -193,7 +164,8 @@
            개별적으로 사라졌다/나타났다·회전·확대축소. -->
       <div id="board-start" class="board-panel board-start">
         <div id="home-grid" aria-hidden="true">
-          <div class="hg-page is-active">
+        <div class="hg-track">
+          <div class="hg-page">
             <div class="hg-cell"><img src="assets/home-showcase/arcade-1.jpg" alt=""></div>
             <div class="hg-cell"><img src="assets/home-showcase/arcade-2.jpg" alt=""></div>
             <div class="hg-cell"><img src="assets/home-showcase/arcade-3.jpg" alt=""></div>
@@ -248,6 +220,20 @@
             <div class="hg-cell"><img src="assets/home-showcase/winter-8.jpg" alt=""></div>
             <div class="hg-cell"><img src="assets/home-showcase/winter-9.jpg" alt=""></div>
           </div>
+          <!-- 이음매 없는 루프용 복제(맨 앞 아케이드 재사용) — 스크롤이 여기 도달하면 진짜 1페이지와
+               똑같이 보여서, 애니메이션이 0%로 순간복귀해도 티가 안 남(사용자 지정: 계속 위로). -->
+          <div class="hg-page" aria-hidden="true">
+            <div class="hg-cell"><img src="assets/home-showcase/arcade-1.jpg" alt=""></div>
+            <div class="hg-cell"><img src="assets/home-showcase/arcade-2.jpg" alt=""></div>
+            <div class="hg-cell"><img src="assets/home-showcase/arcade-3.jpg" alt=""></div>
+            <div class="hg-cell"><img src="assets/home-showcase/arcade-4.jpg" alt=""></div>
+            <div class="hg-cell"><img src="assets/home-showcase/arcade-5.jpg" alt=""></div>
+            <div class="hg-cell"><img src="assets/home-showcase/arcade-6.jpg" alt=""></div>
+            <div class="hg-cell"><img src="assets/home-showcase/arcade-7.jpg" alt=""></div>
+            <div class="hg-cell"><img src="assets/home-showcase/arcade-8.jpg" alt=""></div>
+            <div class="hg-cell"><img src="assets/home-showcase/arcade-9.jpg" alt=""></div>
+          </div>
+        </div>
         </div>
       </div>
 
@@ -319,22 +305,23 @@
         <div class="nc-sub" data-i18n="mole.chapter.soon">준비 중이에요</div>
         <button type="button" class="nc-back" id="nc-back-btn" data-i18n="common.back">나가기</button>
       </div>
-      <!-- 라운드 표시(2026-09-27, 사용자 지정: "게임화면(게임보드) 안에 아래쪽에 좌우를 맞춰서") —
-           보드 하단에 겹치는 오버레이. 버튼보드(.dialpad)는 절대 건드리지 않음. 홈(is-start)에서만 노출. -->
-      <div id="round-strip" class="round-strip" aria-hidden="true">
-        <button type="button" class="rs-tri rs-tri--prev" data-rs-round-prev aria-label="이전 라운드"></button>
-        <div class="rs-circles">
-          <button type="button" class="rs-circle" data-rs-round="1"><span data-rs-label></span></button>
-          <button type="button" class="rs-circle" data-rs-round="2"><span data-rs-label></span></button>
-          <button type="button" class="rs-circle" data-rs-round="3"><span data-rs-label></span></button>
-          <button type="button" class="rs-circle" data-rs-round="4"><span data-rs-label></span></button>
-          <button type="button" class="rs-circle" data-rs-round="5"><span data-rs-label></span></button>
-          <button type="button" class="rs-circle" data-rs-round="6"><span data-rs-label></span></button>
-          <button type="button" class="rs-circle" data-rs-round="7"><span data-rs-label></span></button>
-          <button type="button" class="rs-circle" data-rs-round="8"><span data-rs-label></span></button>
-        </div>
-        <button type="button" class="rs-tri rs-tri--next" data-rs-round-next aria-label="다음 라운드"></button>
+    </div>
+    <!-- 라운드 표시(2026-09-27, 사용자 지정: "게임화면(게임보드) 안에 아래쪽에 좌우를 맞춰서" +
+         "입체감을 주려고 한다" — 보드 경계 아래로 살짝 넘치는 3D 느낌, 잘리면 안 됨) —
+         #mole-board 형제로 두어 board의 overflow:hidden에 안 잘리게 함. 홈(is-start)에서만 노출. -->
+    <div id="round-strip" class="round-strip" aria-hidden="true">
+      <button type="button" class="rs-tri rs-tri--prev" data-rs-round-prev aria-label="이전 라운드"></button>
+      <div class="rs-circles">
+        <button type="button" class="rs-circle" data-rs-round="1"><span data-rs-label></span></button>
+        <button type="button" class="rs-circle" data-rs-round="2"><span data-rs-label></span></button>
+        <button type="button" class="rs-circle" data-rs-round="3"><span data-rs-label></span></button>
+        <button type="button" class="rs-circle" data-rs-round="4"><span data-rs-label></span></button>
+        <button type="button" class="rs-circle" data-rs-round="5"><span data-rs-label></span></button>
+        <button type="button" class="rs-circle" data-rs-round="6"><span data-rs-label></span></button>
+        <button type="button" class="rs-circle" data-rs-round="7"><span data-rs-label></span></button>
+        <button type="button" class="rs-circle" data-rs-round="8"><span data-rs-label></span></button>
       </div>
+      <button type="button" class="rs-tri rs-tri--next" data-rs-round-next aria-label="다음 라운드"></button>
     </div>
     <!-- 더보기 메뉴 껍데기 — 화면 UI는 삭제(사용자 지정, 기능은 전부 다이얼패드로 이동).
          빈 컨테이너만 남김: 더보기 화면 열기/닫기(flipSwap)의 중간 전환 대상 + 일시정지
@@ -572,7 +559,7 @@
       <div id="lane-button-bar">
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
-        <div id="build-tag" aria-hidden="true">v718</div>
+        <div id="build-tag" aria-hidden="true">v720</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -654,6 +641,12 @@
     function revealHomeScatter() {
       if (homeRevealed) return;
       homeRevealed = true;
+      // 홈 배경 스크롤(사용자 지정: "첫화면 나온두 15초 대기후부터는 계속 올라가야지") —
+      // 지금 이 시점(홈이 실제로 드러난 순간)부터 15초 뒤에 스크롤 시작.
+      setTimeout(function () {
+        var track = document.querySelector('.hg-track');
+        if (track) track.classList.add('hg-scrolling');
+      }, 15000);
       var pieces = Array.prototype.slice.call(document.querySelectorAll('.hg-cell, .lane-button'));
       var hud = document.querySelector('.game-hud');
       if (hud) pieces.push(hud);
@@ -738,7 +731,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=718').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=720').catch(function () {});
       }
     });
   }

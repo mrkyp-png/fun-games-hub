@@ -123,40 +123,21 @@
   // 홈 화면 다이얼패드 1·2·4번(하트·코인·스코어) 카운터 + 상단 티커 최고점수 — 공유 풀에서
   // 다시 읽어 그린다. 광고/콤보/동물 등으로 값이 바뀔 때마다 호출해 홈·더보기·게임이 같은 수를 보이게 한다.
   function refreshBoardStats() {
-    const best = bestFor(currentLight());
     if (sharedLaneControls) {
       sharedLaneControls.setHudStat('hearts', MG.Economy.formatK(MG.Economy.getHearts()));
       sharedLaneControls.setHudStat('coins', MG.Economy.formatK(MG.Economy.getCoins()));
     }
-    document.querySelectorAll('[data-hud-score]').forEach((el) => {
-      el.textContent = I18N.t('mole.addr.best', { n: best.toLocaleString() });
-    });
-    const nick = localStorage.getItem('mole.nick') || '두더지';
-    document.querySelectorAll('[data-hud-nick]').forEach((el) => { el.textContent = nick; });
-    refreshHubAvatar();
     if (moreMenu) {
       const mm = document.getElementById('more-menu');
       if (mm && !mm.hidden) moreMenu.refresh();
     }
   }
 
-  // 홈 화면 게임판 자리(#board-start 뒤) — 원본 3x3 콜라주 구도를 유지한 9칸 그리드 페이지가
-  // 3장(1~9/10~18/19~27) 있고, 20~30초 간격으로 다음 페이지로 전환(사용자 지정: "한장에 9개가
-  // 다들어가있는 이미지 그대로 사용"). 페이지 전환 중엔 각 칸이 재생 중인 홈 BGM 비트에 맞춰
-  // 개별적으로 사라졌다/나타났다·회전·확대축소(popTile → pulseGridCells 로 교체).
-  // is-start 아닐 땐 board-start 자체가 가려지므로 안 보임 — 타이머·루프는 그냥 항상 돌아도 무해.
+  // 홈 화면 게임판 자리(#board-start 뒤) — 원본 3x3 콜라주 구도를 유지한 9칸 그리드 페이지 5장
+  // (아케이드→봄→여름→가을→겨울)이 첫 화면 15초 대기 후부터 계속 위로 스크롤(사용자 지정,
+  // 2026-09-27 — 페이지 전환식(CSS .hg-track 애니메이션)이라 여기선 비트 이펙트만 돌린다.
+  // is-start 아닐 땐 board-start 자체가 가려지므로 안 보임 — 루프는 그냥 항상 돌아도 무해.
   function initHomeShowcase() {
-    const pages = Array.prototype.slice.call(document.querySelectorAll('.hg-page'));
-    if (!pages.length) return;
-    let idx = 0;
-    (function nextPage() {
-      setTimeout(() => {
-        pages[idx].classList.remove('is-active');
-        idx = (idx + 1) % pages.length;
-        pages[idx].classList.add('is-active');
-        nextPage();
-      }, 20000 + Math.random() * 10000); // 20~30초
-    })();
     initHomeShowcaseBeat();
   }
 
@@ -237,9 +218,16 @@
   // "너무 산만함", 히트 플래시는 "눈이 너무 아픔" 피드백으로 빼고, 그라디언트 테두리도 "펄스
   // 효과만" 요청으로 마저 빼서 눌림 스케일 하나만 유지).
   function pulseGridCells() {
-    const page = document.querySelector('.hg-page.is-active');
-    if (!page) return;
-    const cells = page.querySelectorAll('.hg-cell');
+    const grid = document.getElementById('home-grid');
+    if (!grid) return;
+    const gridRect = grid.getBoundingClientRect();
+    // 연속 스크롤 중이라 "활성 페이지" 개념이 없음 — 지금 뷰포트에 걸쳐 있는 페이지(전환 중엔
+    // 2개)의 칸만 후보로 삼는다.
+    const visiblePages = Array.prototype.filter.call(document.querySelectorAll('.hg-page'), (p) => {
+      const r = p.getBoundingClientRect();
+      return r.bottom > gridRect.top && r.top < gridRect.bottom;
+    });
+    const cells = visiblePages.reduce((acc, p) => acc.concat(Array.prototype.slice.call(p.querySelectorAll('.hg-cell'))), []);
     if (!cells.length) return;
     const n = 2 + ((Math.random() * 3) | 0); // 2~4개, 동시에 움직여도 됨(사용자 지정)
     for (let i = 0; i < n; i++) {
@@ -288,14 +276,7 @@
     }
   }
 
-  // 홈 화면 좌상단 ⊞ 자리 — 프로필 사진(사용자 지정, 더보기의 mm-avatar와 같은 소스).
-  function refreshHubAvatar() {
-    const av = document.getElementById('hub-avatar');
-    if (!av) return;
-    const pic = localStorage.getItem('mole.profilePic');
-    av.style.backgroundImage = pic ? 'url("' + pic + '")' : 'url("assets/moles/mole1.png")';
-  }
-  // 프로필 사진 변경 — 홈 화면 좌상단 아바타 탭(사용자 지정, 더보기의 editAvatar와 동일 로직).
+  // 프로필 사진 변경 — 홈 화면 다이얼패드 7번 "프로필" 버튼(사용자 지정, 더보기의 editAvatar와 동일 로직).
   function editProfileAvatar() {
     screenNav.show('face-maker');
     faceMaker.open({
@@ -303,7 +284,6 @@
       onDone: (dataUrl) => {
         try { localStorage.setItem('mole.profilePic', dataUrl); } catch (e) { alert(I18N.t('mole.fm.priv')); }
         screenNav.back();
-        refreshHubAvatar();
         if (moreMenu) moreMenu.refresh();
       }
     });
@@ -749,8 +729,9 @@
         if (navLocked) return;
         if (state && state.feverEventActive) return; // 피버타임 중엔 홈/상점 등 화면이동 전부 비활성화
         if (action === 'home') { showStartScreen(); return; }
+        if (action === 'profile') { editProfileAvatar(); return; }
         const sub = { shop: 'shop-screen', score: 'score-screen', daily: 'daily-screen',
-          quest: 'quest-screen', friends: 'friends-screen',
+          quest: 'quest-screen',
           inventory: 'inventory-screen', settings: 'settings-screen', lightMode: 'light-popup',
           mail: 'mailbox-screen' }[action];
         if (sub) { openMore(sub); if (sharedLaneControls) sharedLaneControls.setActiveNav(action); }
@@ -1204,7 +1185,6 @@
 
     refreshChapterNav();
     refreshBoardStats();
-    tuneAddrTicker();
     maybeShowStartCoach();
   }
 
@@ -1264,20 +1244,6 @@
     strip.querySelector('[data-rs-round-next]').addEventListener('click', () => step(1));
   }
 
-  // 티커: 문구 길이가 달라도(언어/힌트) 스크롤 속도가 일정하도록 duration 을 폭에 맞추고,
-  // 루프 이동량(--tk-shift)도 세그먼트 1개 폭 그대로 px 로 박아준다 — 키프레임의 -50%(트랙 절반)에
-  // 의존하면 기기별 서브픽셀 반올림으로 세그먼트 폭과 어긋나 "문장 중간에 끊고 처음으로" 버그가 남.
-  function tuneTicker(rootSel, pxPerSec) {
-    const seg = document.querySelector(rootSel + ' .ticker-seg');
-    const track = document.querySelector(rootSel + ' .ticker-track');
-    if (!seg || !track) return;
-    const w = seg.getBoundingClientRect().width;
-    if (w > 0) {
-      track.style.setProperty('--tk-shift', '-' + Math.round(w) + 'px');
-      track.style.animationDuration = Math.max(12, w / pxPerSec).toFixed(1) + 's';
-    }
-  }
-  function tuneAddrTicker() { tuneTicker('#hud-addr', 60); }
 
   // 초록 버튼 롱프레스=종료 안내 말풍선 — 1회만.
   function maybeShowStartCoach() {
@@ -2230,7 +2196,6 @@
           state.timeRemaining = Math.max(0, state.timeRemaining - 3); // 스펙 §8
           run.combo.onObstacleHit();
           MG.HitFx.obstacleHit(board, r.xFrac, r.yFrac, 'bomb');
-          flashHud('hud-ticker'); // 시간 −3 — 티커 전체를 잠깐 번쩍
         }
       }
     });
@@ -2790,7 +2755,6 @@
     I18N.onChange(() => {
       const mm = document.getElementById('more-menu');
       if (moreMenu && mm && !mm.hidden) moreMenu.refresh();
-      tuneAddrTicker();
     });
 
     // 두더지/방해물/구멍/망치 스프라이트를 지금 미리 디코드 (시작화면 대화 도는 동안).
@@ -2811,7 +2775,7 @@
 
     // ⚠️ 핵심 리스너 배선을 showStartScreen() 보다 먼저 — showStartScreen 안에서 예외가 나도
     // (예: 스테일 캐시로 모듈 하나 누락) ⊞ 홈버튼·일시정지 등이 죽지 않도록.
-    // 좌상단 아이콘 — 홈: 프로필 사진(탭하면 사진 변경). 실제 플레이 중: 홈 아이콘(탭하면
+    // 좌상단 아이콘 — 홈: 숨김(프로필은 다이얼패드 7번으로 이동). 실제 플레이 중: 홈 아이콘(탭하면
     // 라운드 나가고 홈으로, 사용자 지정 — 더보기 화면이 다이얼패드로 흡수돼 필요 없어짐).
     document.getElementById('btn-back-to-hub').addEventListener('click', (e) => {
       if (navLocked) return; // 인트로/카운트다운/라운드 전환 중엔 안 먹힘 (회색 음영)
@@ -2820,8 +2784,6 @@
       if (state && state.feverEventActive) return;
       // 결과 화면에선 = 곧장 홈으로 (다시하기 버튼 없앰 — 중복).
       if (!document.getElementById('gameover-overlay').hidden) { showStartScreen({ retry: true, originEl: e.currentTarget }); return; }
-      const isStart = document.getElementById('game-screen').classList.contains('is-start');
-      if (isStart) { editProfileAvatar(); return; }
       showStartScreen();
     });
     // 앱 전체 버튼 탭음(버튼소리2 고정) — 게임 키패드(#lane-button-bar, 다이얼패드일 땐 버튼소리1을

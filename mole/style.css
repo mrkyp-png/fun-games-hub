@@ -123,20 +123,33 @@ body { background: var(--lm-page); }
   background: var(--lm-chat);   /* 대화 홈 = 연한 웜그레이 (잔디는 플레이 중에만) — 이미지 로드 전 폴백 */
   overflow: hidden;
 }
-/* 홈 화면 홍보 이미지 — 원본 3x3 콜라주 구도 그대로 9칸 그리드 페이지 3장이 20~30초마다
-   전환(사용자 지정: "한장에 9개가 다들어가있는 이미지 그대로 사용"). 페이지 안에서는 각 칸이
-   홈 BGM 비트에 맞춰 개별적으로 사라졌다/나타났다·회전·확대축소. */
+/* 홈 화면 홍보 이미지 — 원본 3x3 콜라주 구도 그대로 9칸 그리드 페이지 5장(아케이드→봄→여름→
+   가을→겨울)이 첫 화면 15초 대기 후부터 계속 위로 스크롤(사용자 지정, 2026-09-27). 맨 끝에
+   아케이드 복제 페이지를 하나 더 붙여, 스크롤이 거기 닿는 순간 0%로 순간복귀해도 이음매가 안 보임
+   (고전적 무한루프 기법). 페이지 안에서는 각 칸이 홈 BGM 비트에 맞춰 개별적으로 눌림. */
 #home-grid { position: absolute; inset: 0; overflow: hidden; }
+.hg-track { position: absolute; inset: 0; }
+/* 홈 화면이 실제로 드러난 시점(revealHomeScatter, index.html)부터 15초 뒤 JS가 이 클래스를
+   붙인다 — CSS animation-delay는 로딩/인트로 동안(화면이 안 보이는데도) 이미 타이머가 돌아
+   "나오자마자 벌써 스크롤 중"이 되는 문제가 있어 JS 트리거로 대체(사용자 지정: 나온 뒤 15초). */
+.hg-track.hg-scrolling { animation: hg-scroll 75s linear infinite; }
 .hg-page {
-  position: absolute; inset: 0;
+  position: absolute; left: 0; right: 0; height: 100%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  opacity: 0; z-index: 0;
-  transition: opacity 0.9s ease;
   pointer-events: none;
 }
-.hg-page.is-active { opacity: 1; z-index: 1; }
+.hg-page:nth-child(1) { top: 0%; }
+.hg-page:nth-child(2) { top: 100%; }
+.hg-page:nth-child(3) { top: 200%; }
+.hg-page:nth-child(4) { top: 300%; }
+.hg-page:nth-child(5) { top: 400%; }
+.hg-page:nth-child(6) { top: 500%; }
+@keyframes hg-scroll {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-500%); }
+}
 .hg-cell { position: relative; overflow: hidden; }
 .hg-cell img {
   /* 펄스로 scale(0.98)까지 줄어들어도 칸보다 항상 커서 배경이 비치지 않게 여유분(4%) 확보 */
@@ -174,16 +187,29 @@ body { background: var(--lm-page); }
   70%, 100% { transform: translateX(60%); }
 }
 
-/* 라운드 표시(게임화면=게임보드 안, 2026-09-27, 사용자 지정) — 보드 하단에 겹치는 오버레이,
-   버튼보드는 전혀 건드리지 않음(레이아웃에 자리를 차지하지 않는 절대배치). 보드 좌우 폭 그대로 정렬.
+/* 라운드 표시(게임화면=게임보드 안, 2026-09-27, 사용자 지정) — 보드 하단 경계에 걸쳐 살짝
+   넘치는 3D 오버레이("입체감을 주려고 한다" — 넘치는 부분이 잘리면 안 됨, 사용자 지정).
+   #mole-board 의 overflow:hidden 에 안 잘리게 형제로 두고, #game-screen 기준 좌표로 위치를
+   맞춘다(--hud-h/--sq 는 #game-screen 에 정의됨). 버튼보드(.dialpad)는 전혀 건드리지 않음.
    assets/round-strip.png(2172x724, 3:1) 위에 8개 원형 버튼 + 양옆 삼각버튼을 실측 %좌표로 배치. */
 .round-strip {
   display: none;
-  position: absolute; left: 0; right: 0; bottom: 0;
-  width: 100%;
+  position: absolute; left: 50%;
+  width: var(--sq);
+  transform: translateX(-50%);
+  /* 보드 바닥선(hud-h + sq) 기준, 스트립 높이(sq/3)만큼 위로 올렸다가 0.5cm 다시 내려
+     "보드 안에 대부분 걸치고 바닥선 아래로 0.5cm만 넘치는" 모양을 만든다. */
+  top: calc(var(--hud-h) + var(--sq) - (var(--sq) / 3) + 0.5cm);
   aspect-ratio: 3 / 1;
   background: url('assets/round-strip.png') center/100% 100% no-repeat;
   z-index: 8;
+}
+/* 표시판(나무틀/ROUND 로고) 이 삼각버튼보다 앞에 나오도록(사용자 지정) — 같은 그림을 앞에
+   한 번 더 겹쳐, 삼각버튼이 투명 홀 밖으로 튀어나온 부분을 나무틀 그림이 덮게 한다. */
+.round-strip::after {
+  content: ''; position: absolute; inset: 0;
+  background: url('assets/round-strip.png') center/100% 100% no-repeat;
+  z-index: 9; pointer-events: none;
 }
 #game-screen.is-start .round-strip { display: block; }
 .round-strip [data-rs-round="1"] { left: 15.93%; }
@@ -237,39 +263,6 @@ body { background: var(--lm-page); }
 .rs-tri--next { left: 94.43%; clip-path: polygon(0% 0%, 100% 50%, 0% 100%); }
 .rs-tri:active { transform: translate(-50%, calc(-50% + 3px)); box-shadow: 0 0 0 #5c3a12, inset 0 1px 1px rgba(255, 255, 255, 0.35); }
 
-/* HUD: 시작 상태엔 브라우저 주소창, 플레이 상태엔 티커. #game-screen.is-start 로 스위치. */
-#hud-addr {
-  display: none;
-  flex: 1;
-  min-width: 0;
-  align-items: center;
-  gap: 6px;
-  height: 30px;
-  padding: 0 12px;
-  border-radius: 999px;
-  background: var(--lm-fill);
-  color: var(--lm-muted);
-  font-size: 0.82rem;
-  font-weight: 600;
-}
-.hud-addr-url {
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-  animation: addr-hue 4s linear infinite;
-}
-@keyframes addr-hue {
-  0%   { color: #e0559b; }
-  25%  { color: #f4a300; }
-  50%  { color: #16a34a; }
-  75%  { color: #3a7bd5; }
-  100% { color: #e0559b; }
-}
-/* "두더지팡" + 최고점수가 #hud-ticker 와 같은 방식으로 스크롤(.ticker-viewport/.ticker-track 재사용). */
-.hud-addr .ticker-seg { font-size: 0.82rem; font-weight: 600; }
-.hud-addr-nick { margin-left: 8px; }
-.hud-addr-score { margin-left: 6px; }
-#game-screen.is-start #hud-addr { display: flex; }
-#game-screen.is-start #hud-ticker { display: none; }
 #game-screen.is-start #hud-score,
 #game-screen.is-start #hud-hearts,
 #game-screen.is-start #hud-combo,
@@ -314,12 +307,10 @@ body { background: var(--lm-page); }
   animation: idle-crown-sweep 2.8s ease-in-out infinite;
   pointer-events: none;
 }
-/* 홈 화면(is-start)에서는 ⊞ 대신 프로필 사진(사용자 지정) — 골든 링·쉬머(::before/::after)는
-   버튼 자체에 붙어 있어 사진 위에도 그대로 유지된다. */
-.hub-menu-ic, .hub-avatar { display: block; width: 100%; height: 100%; border-radius: 50%; }
-.hub-avatar { display: none; background: center/cover no-repeat; }
-#game-screen.is-start .hub-menu-ic { display: none; }
-#game-screen.is-start .hub-avatar { display: block; }
+/* 홈 화면(is-start)에서는 좌상단 버튼을 비워둔다(프로필은 다이얼패드 7번으로 이동, 사용자 지정) —
+   visibility 로 숨겨 HUD 줄 높이/배치는 그대로. */
+.hub-menu-ic { display: block; width: 100%; height: 100%; border-radius: 50%; }
+#game-screen.is-start #btn-back-to-hub { visibility: hidden; }
 
 .game-hud {
   display: flex;
@@ -329,79 +320,6 @@ body { background: var(--lm-page); }
   height: var(--hud-h);
   flex: 0 0 auto;
   flex-wrap: nowrap;
-}
-
-/* 티커 — 다이얼러 검색바처럼 둥근 어두운 바(박스 테두리 추가, 사용자 지정). 안에서 종목/스탯이
-   왼쪽으로 흐르고, 왼쪽 끝에 남은시간 숫자(카운트다운)가 고정 표기된다. */
-#hud-ticker {
-  position: relative;
-  flex: 1;
-  min-width: 0;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0 10px;
-  overflow: hidden;
-  border-radius: 999px;
-  border: 1.5px solid rgba(0, 0, 0, 0.16);
-  background: var(--lm-fill);
-}
-/* 남은시간 비율(%) 만큼 왼쪽부터 채워진 반투명 빨강 — 시간이 줄수록 오른쪽 끝이 왼쪽으로
-   줄어드는 방식(사용자 지정: "우측에서 좌측으로 줄어듬"), 50% 투명도라 아래 글자는 계속 보임.
-   game.js updateHUD() 가 --tk-time-pct 로 갱신. */
-.hud-timer-fill {
-  position: absolute;
-  inset: 0;
-  width: var(--tk-time-pct, 100%);
-  background: rgba(214, 40, 40, 0.5);
-  z-index: 0;
-  transition: width 0.25s linear;
-  pointer-events: none;
-}
-.tk-timer {
-  position: relative;
-  z-index: 1;
-  flex: 0 0 auto;
-  font-size: 0.9rem;
-  font-weight: 900;
-  color: var(--lm-text);
-}
-.ticker-viewport {
-  position: relative;
-  z-index: 1;
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
-}
-.ticker-track {
-  display: flex;
-  width: max-content;
-  white-space: nowrap;
-  animation: ticker-scroll 20s linear infinite;
-  will-change: transform; /* 저사양 폰에서 스크롤 끊기는 것(사용자 보고) 방지 - GPU 합성 유도 */
-  backface-visibility: hidden;
-}
-.ticker-seg {
-  display: inline-flex;
-  align-items: center;
-  gap: 16px;
-  padding-right: 16px;
-  font-size: 0.74rem;
-  font-weight: 700;
-}
-.ticker-seg .tk-mode { color: #b26a00; letter-spacing: 0.02em; }
-.ticker-seg i { font-style: normal; color: var(--lm-muted); font-weight: 600; }
-@keyframes ticker-scroll {
-  from { transform: translateX(0); }
-  to { transform: translateX(var(--tk-shift, -50%)); } /* --tk-shift = 세그먼트 1개 폭(px), game.js tuneTicker 가 설정 */
-}
-#hud-ticker.hud-flash { animation: ticker-flash 0.35s ease-out; } /* 폭탄으로 시간 −3 */
-@keyframes ticker-flash {
-  0%, 100% { background: var(--lm-fill); }
-  35% { background: rgba(255, 90, 90, 0.45); }
 }
 
 /* 점수 — 밤하늘 중앙에 크게 고정 (달 안 가리게 위쪽). 애니메이션은 나중에. */
