@@ -820,6 +820,7 @@
       it.appendChild(icon);
       it.addEventListener('pointerdown', (e) => {
         e.stopPropagation();
+        if (it.classList.contains('lane-item--empty')) return; // 빈 원은 누름 효과·진동 없음(사용자 지정 v740)
         it.classList.add('is-press');
         it.classList.remove('is-rip'); void it.offsetWidth; it.classList.add('is-rip'); // 물결 재발동
         try { if (window.FGH.Settings.vibrate) window.FGH.Settings.vibrate(16); } catch (err) { /* 무시 */ }

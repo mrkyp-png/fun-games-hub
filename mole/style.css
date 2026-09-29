@@ -573,7 +573,8 @@ body { background: var(--lm-page); }
    짙은 그림자·은은한 빛번짐. 판 안 내용은 그대로. */
 /* 버튼보드는 부모 .dialpad 가 contain:paint 라 자식 그림자가 잘려(아래쪽·피버 전환 때 외곽 끊김, v735 실기기) → .dialpad 자체에 건다. */
 #mole-board, .dialpad {
-  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.75), 0 0 10px 2px rgba(150, 190, 255, 0.65), 0 6px 0 #6c7384, 0 14px 18px rgba(0, 0, 0, 0.85);
+  /* v740 성능: 번짐(blur) 그림자 2겹 제거 — 두더지 움직임·피버 전광판 갱신마다 판 전체와 함께 다시 그려져 버벅임·깜빡임 원인(예전에도 글로우 약화로 완화했었음). 선명한 빛테두리 + 두께만. */
+  box-shadow: 0 0 0 1.5px rgba(200, 225, 255, 0.85), 0 0 0 3px rgba(120, 170, 255, 0.35), 0 6px 0 #6c7384;
 }
 #fold-hinge {
   position: relative;
@@ -1715,69 +1716,48 @@ body { background: var(--lm-page); }
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call::before,
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call::after { display: none; }
 /* 위/아래 각각 독립된 흰색 키캡 카드 2장 (바탕화면 버튼 참고: 둥근 사각, 흰색, 얇은 하이라이트 줄 + 바닥 회색 그림자) */
-#game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-items {
-  display: flex; flex-direction: column; gap: 8%; position: absolute; inset: 3%;
-  border-radius: 0; overflow: visible;
-  /* 카드 하단 3D 그림자(.lane-item box-shadow, 최대 9px)가 다이얼패드 구획선 밑으로 삐져나와
-     보이던 것(사용자 지적) — 통째로 살짝 위로 이동해 셀 안에 들어오게. */
-  transform: translateY(-6%);
+/* 스킬 슬롯(v740, 사용자 지정): 칸에 대각선(/)을 긋고, 두 삼각형 안에 들어가는 가장 큰 원 2개(왼쪽 위=슬롯0,
+   오른쪽 아래=슬롯1). 칸 자체는 누름 효과 없음 — 스킬이 장착된 원만 눌림. 알리펀치는 좌하단 ✱ 칸도 같은 모양. */
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-items,
+#game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-items {
+  display: block; position: absolute; inset: 0; overflow: visible;
 }
-/* 형태 = 로딩화면 GET NOW 버튼(#splash .splash-hint)과 동일: 알약 모양 + 두꺼운 3D 아래 그림자 + 광택. */
+/* 대각선 구분선 */
+.lane-items::before {
+  content: ''; position: absolute; inset: 4%; pointer-events: none;
+  background: linear-gradient(to bottom right, transparent calc(50% - 1px), rgba(255, 255, 255, 0.28) calc(50% - 1px), rgba(255, 255, 255, 0.28) calc(50% + 1px), transparent calc(50% + 1px));
+}
+/* 원 — 직각삼각형 내접원 지름 = 변의 (2-√2) ≈ 58.6%, 여백 두고 55% */
 .lane-item {
-  position: relative; flex: 1 1 0; width: 100%;
+  position: absolute; width: 55%; aspect-ratio: 1; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: clamp(11px, 4.4vw, 18px); line-height: 1; color: #3a3d44;
-  border-radius: 999px;
-  /* 은근한 회색 — 옆 숫자키(흰색)와 색은 비슷하되(사용자 지정, 기존 초록은 "후짐") 입체감이
-     죽지 않게 톤 대비는 확보(너무 옅으면 그림자가 안 보여 밋밋해짐 — 사용자 지적). */
-  background: linear-gradient(180deg, #eef0f2 0%, #d7dade 46%, #b9bec4 100%);
-  box-shadow:
-    0 5px 0 #8b9099,
-    0 5px 2px rgba(0, 0, 0, 0.2),
-    0 9px 12px rgba(0, 0, 0, 0.28),
-    inset 0 2px 2px rgba(255, 255, 255, 0.85),
-    inset 0 -4px 6px rgba(0, 0, 0, 0.18);
-  transition: transform 0.09s ease, box-shadow 0.09s ease;
   -webkit-tap-highlight-color: transparent; cursor: pointer; user-select: none;
-  overflow: hidden;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
 }
-/* 상단 광택 (로딩화면 버튼과 동일한 사탕 버튼 느낌) */
-.lane-item::after {
-  content: ''; position: absolute; left: 10%; right: 10%; top: 4px; height: 38%;
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0));
-  pointer-events: none;
+.lane-item[data-slot="0"] { left: 1.5%; top: 1.5%; }
+.lane-item[data-slot="1"] { right: 1.5%; bottom: 1.5%; }
+/* 빈 원 — 은은한 테두리만, 눌림·물결 없음 */
+.lane-item--empty { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.2); cursor: default; }
+/* 장착된 스킬 — 원 가득 아이콘 + 아래 두께(번짐 없음 — 성능), 누르면 두께만큼 내려앉음 */
+.lane-item:not(.lane-item--empty) {
+  background: radial-gradient(circle at 50% 35%, #4a5a92, #25305a);
+  box-shadow: inset 0 0 0 2px #57d9ff, 0 4px 0 #141a33;
 }
-/* 홈 화면 "시작" 버튼과 같은 대각선 빛 스윕 — 실제 자식 엘리먼트라 각 사각형(overflow:hidden)에 각자 갇혀서 돈다. */
-.lane-item-sweep {
-  position: absolute; inset: -60%;
-  background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.85) 50%, transparent 58%);
-  animation: idle-crown-sweep 2.8s ease-in-out infinite;
-  pointer-events: none;
+.lane-item:not(.lane-item--empty).is-press {
+  transform: translateY(4px) scale(0.95);
+  box-shadow: inset 0 0 0 2px #57d9ff, 0 0 0 #141a33;
 }
-/* 눌림 — 아주 깊게 눌리는 느낌 */
-.lane-item.is-press {
-  z-index: 3;
-  transform: translateY(5px) scale(0.97);
-  box-shadow:
-    0 1px 0 #8b9099,
-    0 2px 2px rgba(0, 0, 0, 0.22),
-    0 3px 5px rgba(0, 0, 0, 0.28),
-    inset 0 2px 2px rgba(255, 255, 255, 0.7),
-    inset 0 -3px 5px rgba(0, 0, 0, 0.22);
-}
-/* 스킬 아이콘(§4~5) — 버튼 밖으로 안 넘치는 선에서 최대한 크게(사용자 지정). */
+.lane-item-sweep { display: none; }
 .lane-item-icon { position: relative; z-index: 2; display: flex; align-items: center;
-  justify-content: center; width: 92%; height: 92%; pointer-events: none; }
-.lane-item-icon img { width: 100%; height: 100%; object-fit: contain; }
-/* 물결(ripple) — 사각형 중심에서 얇은 초록 테두리 선이 점점 커지고 굵어지며 바깥 테두리까지
-   퍼진 뒤 사라짐 (채워진 원 X, 링 O — scale 이 커질수록 border 도 같이 굵어 보인다). */
+  justify-content: center; width: 88%; height: 88%; pointer-events: none; }
+.lane-item-icon img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+/* 물결 — 장착된 원을 눌렀을 때만(시안 링) */
 .lane-item::before {
-  content: ''; position: absolute; inset: 0; border-radius: 999px;
-  border: 6px solid rgba(46, 204, 87, 0.95);
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  border: 4px solid rgba(87, 217, 255, 0.95);
   opacity: 0; transform: scale(0.12); pointer-events: none;
 }
-.lane-item.is-rip::before { animation: lane-item-ripple 0.5s ease-out; }
+.lane-item:not(.lane-item--empty).is-rip::before { animation: lane-item-ripple 0.5s ease-out; }
 @keyframes lane-item-ripple {
   0%   { opacity: 0.95; transform: scale(0.12); }
   100% { opacity: 0;    transform: scale(1); }
@@ -1854,22 +1834,22 @@ body { background: var(--lm-page); }
    테두리가 빛나고 안쪽이 은은하게 밝음. 누르면 빛이 안으로 모이며 살짝 어두워짐. */
 .lane-button.lane-button--hot { /* .lane-button:not(--call){radius:0} 보다 우선하도록 2클래스 */
   background: radial-gradient(circle at 50% 40%, rgba(87, 217, 255, 0.30), rgba(87, 217, 255, 0.08));
-  box-shadow: inset 0 0 0 2px #57d9ff, inset 0 0 16px rgba(87, 217, 255, 0.6), 0 0 12px 1px rgba(87, 217, 255, 0.65);
+  box-shadow: inset 0 0 0 2px #57d9ff, 0 0 0 1px rgba(87, 217, 255, 0.45); /* v740 성능: 번짐 제거(켜짐/꺼짐마다 다시 그려짐) */
   border-radius: 12px;
 }
 .lane-button.lane-button--hot:active {
   background: radial-gradient(circle at 50% 50%, rgba(87, 217, 255, 0.45), rgba(87, 217, 255, 0.18));
-  box-shadow: inset 0 0 0 2px #57d9ff, inset 0 0 22px rgba(87, 217, 255, 0.8), 0 0 6px 1px rgba(87, 217, 255, 0.4);
+  box-shadow: inset 0 0 0 2px #57d9ff, inset 0 0 0 4px rgba(87, 217, 255, 0.35);
 }
 /* 알리 판취 스킬(무적) 발동 중 = 골드 네온(사용자 지정 v737) — 무적 중 안전해진 동물(--hot-safe)도 같은 골드. */
 #game-screen.gs-invincible .lane-button.lane-button--hot, .lane-button.lane-button--hot-safe { /* 어두운 판에서 티 나게 진하게(사용자 지정) */
   background: radial-gradient(circle at 50% 40%, rgba(255, 222, 80, 0.62), rgba(255, 190, 30, 0.22));
-  box-shadow: inset 0 0 0 3px #ffd84a, inset 0 0 22px rgba(255, 215, 70, 0.85), 0 0 18px 4px rgba(255, 200, 40, 0.9);
+  box-shadow: inset 0 0 0 3px #ffd84a, 0 0 0 2px rgba(255, 200, 40, 0.6); /* v740 성능: 번짐 제거 */
   border-radius: 12px;
 }
 #game-screen.gs-invincible .lane-button.lane-button--hot:active, .lane-button.lane-button--hot-safe:active {
   background: radial-gradient(circle at 50% 50%, rgba(255, 222, 80, 0.75), rgba(255, 190, 30, 0.35));
-  box-shadow: inset 0 0 0 3px #ffd84a, inset 0 0 28px rgba(255, 215, 70, 1), 0 0 8px 2px rgba(255, 200, 40, 0.55);
+  box-shadow: inset 0 0 0 3px #ffd84a, inset 0 0 0 5px rgba(255, 215, 70, 0.4);
 }
 /* 통화 버튼도 두더지 있으면 다른 버튼과 똑같은 파란 하이라이트 (라이트 ON 에서만).
    DIM/OFF 는 아래 diff-mid/legend 규칙이 다시 초록으로. */
@@ -2110,16 +2090,12 @@ body { background: var(--lm-page); }
   overflow: visible;
 }
 #game-screen.gs-alipunch:not(.is-start) [data-region="12"]:active { transform: none; background: transparent; }
-#game-screen.gs-alipunch:not(.is-start) [data-region="12"] > .lane-num,
-#game-screen.gs-alipunch:not(.is-start) [data-region="12"] > .lane-sub {
-  display: none;
+/* 스킬 원 2개만 보이게 — ✱ 키의 숫자·글자·앞뒷면 카드 전부 숨김(v740: 예전 알약 카드가 가리던 ✱ 가 원 뒤로 비쳤음) */
+#game-screen.gs-alipunch:not(.is-start) [data-region="12"] > :not(.lane-items):not(.lane-cell-line) {
+  visibility: hidden;
 }
 #game-screen.gs-alipunch:not(.is-start) [data-region="12"]::before,
 #game-screen.gs-alipunch:not(.is-start) [data-region="12"]::after { display: none; }
-#game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-items {
-  display: flex; flex-direction: column; gap: 8%; position: absolute; inset: 3%;
-  border-radius: 0; overflow: visible;
-}
 
 /* ---- 무기 스킨: 대포 ---- 위치·transform 은 lane-cannon.js 가 넣는다 ---- */
 .lane-cannon { position: absolute; inset: 0; pointer-events: none; overflow: visible; }

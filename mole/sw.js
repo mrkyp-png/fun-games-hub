@@ -3,7 +3,7 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-const CACHE = 'mole-game-v739';
+const CACHE = 'mole-game-v740';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -286,7 +286,14 @@ self.addEventListener('fetch', (e) => {
       // navigate(첫 화면 index.html)도 no-cache(v739) — GitHub Pages 가 index.html 을 max-age=600 으로 줘서, 설치 앱
       // (start_url=index.html, 브라우저 탭 /mole/ 과 캐시 키가 다름)이 최대 10분간 옛 첫 화면을 쓰며 새 배포를 못 알아챘음.
       const revalidate = e.request.mode === 'navigate' || e.request.destination === 'script' || e.request.destination === 'style';
-      const res = await fetch(e.request, revalidate ? { cache: 'no-cache' } : undefined);
+      // 첫 화면(navigate)은 주소에 매번 다른 꼬리표를 붙여 GitHub Pages CDN 의 서버별 옛 복사본(최대 10분)을 건너뛰고
+      // 원본에서 받는다(v740) — 연속 배포 직후 앱 버전이 새 것↔예전 것으로 왔다 갔다 하던 문제.
+      let req = e.request;
+      if (e.request.mode === 'navigate') {
+        const u = new URL(e.request.url); u.searchParams.set('_fresh', Date.now());
+        req = new Request(u.toString(), { credentials: 'same-origin' });
+      }
+      const res = await fetch(req, revalidate ? { cache: 'no-store' } : undefined);
       if (res && res.ok && (res.type === 'basic' || res.type === 'cors')) {
         const copy = res.clone();
         caches.open(CACHE).then((c) => c.put(e.request, copy));
