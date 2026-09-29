@@ -279,19 +279,21 @@ body { background: var(--lm-page); }
   overflow: hidden;
   /* 정사각 박스 양옆/위에 남는 여백 = 폴더폰 몸체(베젤). */
   background: var(--lm-bezel);
-  /* 전체화면(노치 영역까지 화면으로 씀) — 상단 줄(티커 있던 46px) 삭제, 노치 높이만 비워둔다.
-     --hud-h 를 쓰는 게임판/버튼보드(--sq)·메뉴 화면(top: var(--hud-h)) 크기·위치는 자동 재계산.
-     노치 없는 기기는 0 → 게임판이 화면 맨 위부터 시작(사용자 지정). */
+  /* 전체화면 레이아웃(사용자 지정 (나)안): 사방 0.2cm 여백 → 티커 줄(46px, 노치폰은 카메라 높이만큼
+     위로 더 — 줄이 카메라 자리를 포함) → 게임보드·버튼보드(둘 다 같은 크기 정사각형, 최대한 크게)
+     → 세로로 남는 공간은 전부 경첩(#fold-hinge)이 흡수. --hud-h = 게임판 윗변까지의 거리(메뉴 화면
+     top 기준). 세로가 짧은 폰은 보드를 세로에 맞춰 줄이고 경첩은 최소 14px, 좌우 여백이 넓어짐. */
   --safe-top: env(safe-area-inset-top, 0px);
-  --hud-h: var(--safe-top);
-  --hinge-h: 14px;
-  --sq: min(100%, calc((100dvh - var(--hud-h) - var(--hinge-h)) / 2));
+  --edge: 0.2cm;
+  --tick-h: 46px;
+  --hud-h: calc(var(--edge) + var(--safe-top) + var(--tick-h));
+  --sq: min(calc(100vw - 2 * var(--edge)), calc((100dvh - var(--hud-h) - var(--edge) - 14px) / 2)); /* 100vw: 경첩 height 에서도 쓰여 % 는 세로 기준이 돼버림 */
+  --hinge-h: max(14px, calc(100dvh - var(--hud-h) - var(--edge) - 2 * var(--sq)));
 }
 #game-screen .icon-btn { width: 34px; height: 34px; }
 #game-screen .icon-btn img, #game-screen .icon-btn svg { width: 22px; height: 22px; }
 /* 홈버튼(⊞) — 노란 원테두리 + PLAY/이어가기와 같은 쉬머 이펙트 (플레이중/홈 화면 공통, 같은 버튼) */
-/* 게임판 안 좌상단(사용자 지정) — 게임판(가로 중앙, 폭 --sq) 왼쪽 위 모서리에서 8px 안쪽. */
-#btn-back-to-hub { position: absolute; top: calc(var(--safe-top) + 8px); left: calc((100% - var(--sq)) / 2 + 8px); z-index: 20; overflow: hidden; }
+#btn-back-to-hub { position: relative; flex: 0 0 auto; overflow: hidden; }
 /* 인트로/카운트다운/라운드 전환 중 = 잠금(회색 음영). 클릭도 무시(JS navLocked). */
 #btn-back-to-hub.nav-locked { opacity: 0.4; filter: grayscale(0.8); pointer-events: none; }
 #btn-back-to-hub.nav-locked::before { box-shadow: inset 0 0 0 2px rgba(150, 150, 150, 0.6); }
@@ -312,19 +314,32 @@ body { background: var(--lm-page); }
   animation: idle-crown-sweep 2.8s ease-in-out infinite;
   pointer-events: none;
 }
-/* 홈 화면(is-start)에서는 좌상단 버튼을 비워둔다(프로필은 다이얼패드 7번으로 이동, 사용자 지정) —
-   visibility 로 숨겨 HUD 줄 높이/배치는 그대로. */
-.hub-menu-ic { display: block; width: 100%; height: 100%; border-radius: 50%; }
-#game-screen.is-start #btn-back-to-hub { visibility: hidden; }
+/* 홈 화면(is-start)에서는 같은 자리에 홈 아이콘 대신 프로필 사진(탭=사진 변경, 사용자 지정) —
+   골든 링·쉬머(::before/::after)는 버튼 자체에 붙어 있어 사진 위에도 그대로 유지된다. */
+.hub-menu-ic, .hub-avatar { display: block; width: 100%; height: 100%; border-radius: 50%; }
+.hub-avatar { display: none; background: center/cover no-repeat; }
+#game-screen.is-start .hub-menu-ic { display: none; }
+#game-screen.is-start .hub-avatar { display: block; }
+/* 티커 자리 — 내용은 사용자가 정할 때까지 비워둔 박스만(예전 티커와 같은 모양). */
+.hud-box {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(0, 0, 0, 0.16);
+  background: var(--lm-fill);
+}
 
 .game-hud {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 0;
-  height: 0; /* 상단 줄 삭제 — 홈버튼만 게임판 좌상단 위에 띄움(#btn-back-to-hub absolute) */
-  position: relative; z-index: 20; /* .game-hud 에 transform 이 걸려 자체 쌓임맥락이라, 뒤에 오는 게임판보다 위로 */
-  margin-top: var(--safe-top);
+  box-sizing: border-box;
+  width: var(--sq);
+  height: var(--tick-h);
+  position: relative; z-index: 20; /* .game-hud 에 transform 이 걸려 자체 쌓임맥락 — 게임판 이펙트보다 위로 */
+  margin: calc(var(--edge) + var(--safe-top)) auto 0;
   flex: 0 0 auto;
   flex-wrap: nowrap;
 }
