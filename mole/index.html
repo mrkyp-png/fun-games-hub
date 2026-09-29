@@ -461,6 +461,48 @@
         <p class="mailbox-empty" data-i18n="mole.shop.mailboxEmpty">아직 도착한 우편이 없어요</p>
       </div>
 
+      <!-- 제작소 합성 전체화면 — 바탕화면 "제작소 UI 및 에셋" 명세·에셋 기준(v750). 수치·상태는 js/workshop.js -->
+      <div class="board-screen ws-screen" id="workshop-screen" hidden>
+        <div class="ws-ui">
+          <button type="button" class="ws-close" data-ws-close aria-label="닫기"><img src="assets/workshop/close.png" alt=""></button>
+          <div class="ws-sign"><img src="assets/workshop/sign.png" alt=""><b data-i18n="mole.ws.title">제작소</b><small>MOLE PANG</small></div>
+          <div class="ws-tabs">
+            <button type="button" class="ws-tab is-on" data-ws-tab="weapon"><span data-i18n="mole.ws.tabWeapon">무기 합성</span></button>
+            <button type="button" class="ws-tab" data-ws-tab="costume"><span data-i18n="mole.ws.tabCostume">코스튬 합성</span></button>
+          </div>
+          <div class="ws-stage">
+            <img class="ws-stage-img" src="assets/workshop/stage.png" alt="">
+            <span class="ws-lbl ws-lbl--l" data-i18n="mole.ws.target">합성 대상</span>
+            <span class="ws-lbl ws-lbl--r" data-i18n="mole.ws.material">합성 재료</span>
+            <button type="button" class="ws-arrow ws-arrow--prev" data-ws-arrow="prev" aria-label="이전">‹</button>
+            <button type="button" class="ws-arrow ws-arrow--next" data-ws-arrow="next" aria-label="다음">›</button>
+            <div class="ws-item ws-item--l" data-ws-target><img alt="" data-ws-target-img><b data-ws-target-lv></b></div>
+            <span class="ws-name" data-ws-target-name></span>
+            <div class="ws-item ws-item--r" data-ws-mat><img alt="" data-ws-mat-img><b data-ws-mat-lv></b></div>
+            <span class="ws-matn" data-ws-mat-n></span>
+            <img class="ws-goose" src="assets/workshop/goose-1.png" alt="">
+          </div>
+          <div class="ws-panel">
+            <div class="ws-row"><span data-i18n="mole.ws.rate">성공 확률</span><b data-ws-rate></b></div>
+            <div class="ws-row"><span data-i18n="mole.ws.cost">합성 비용</span><b><i class="ws-coin"></i><span data-ws-cost></span></b></div>
+          </div>
+          <div class="ws-coins"><span data-i18n="mole.ws.coins">보유 코인</span><i class="ws-coin"></i><b data-ws-coins></b></div>
+          <button type="button" class="ws-go" data-ws-go><span data-i18n="mole.ws.go">합성하기</span></button>
+          <div class="ws-notice"><i>!</i><span data-ws-notice></span></div>
+        </div>
+        <div class="ws-fx" data-ws-fx hidden>
+          <img class="ws-fx-goose" data-ws-goose alt="">
+          <img class="ws-egg" data-ws-egg alt="">
+          <div class="ws-ham" data-ws-ham><img class="ws-bolt" data-ws-bolt alt=""><img class="ws-mj" src="assets/workshop/mjolnir.png" alt=""></div>
+          <div class="ws-result" data-ws-result hidden>
+            <div class="ws-res-glow" data-ws-res-glow><img alt="" data-ws-res-img></div>
+            <p class="ws-res-title" data-ws-res-title></p>
+            <p class="ws-res-sub" data-ws-res-sub></p>
+            <button type="button" class="ws-res-ok" data-ws-ok data-i18n="mole.daily.ok">확인</button>
+          </div>
+        </div>
+      </div>
+
       <!-- 일일출석(DAILY REWARD) 전체화면 — 바탕화면 "일일출석 UI 및 에셋" 명세·에셋 기준(v748). 카드 글자·수량·상태는 js/daily.js 가 그린다. -->
       <div class="board-screen dr-screen" id="daily-screen" hidden>
         <button type="button" class="dr-back" data-back="daily" aria-label="뒤로" data-i18n-aria-label="common.back"><img src="assets/score/btn-back.png" alt=""></button>
@@ -600,7 +642,7 @@
       <div id="lane-button-bar">
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
-        <div id="build-tag" aria-hidden="true">v749</div>
+        <div id="build-tag" aria-hidden="true">v750</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -636,6 +678,7 @@
 <script src="js/face-maker.js"></script>
 <script src="js/shop.js"></script>
 <script src="js/daily.js"></script>
+<script src="js/workshop.js"></script>
 <script src="js/score-screen.js"></script>
 <script src="js/settings-screen.js"></script>
 <script src="js/inventory-screen.js"></script>
@@ -788,7 +831,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=749').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=750').catch(function () {});
       }
     });
   }

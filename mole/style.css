@@ -2756,6 +2756,97 @@ body { background: var(--lm-page); }
   padding: 10px 22px; border-radius: 99px; background: rgba(15, 10, 40, 0.9); color: #fff; font-weight: 800; font-size: 0.95rem; white-space: nowrap;
   box-shadow: 0 0 0 2px #ffd24a; }
 .sr-toast.is-on { animation: dr-toast 1.8s ease both; }
+/* ===== 제작소 합성 전체화면 — 명세서·에셋 기준(v750). 레이어: 배경(마굿간) → 간판·탭 → 받침대(대상·거위·재료) → 정보판 → 버튼 → 연출 ===== */
+#workshop-screen.ws-screen {
+  position: fixed; inset: 0; top: 0; left: 0; transform: none; width: 100%; height: 100%;
+  border-radius: 0; box-shadow: none; z-index: 300; overflow: hidden; display: block;
+  background: #3a2210 url('assets/workshop/bg.jpg') center / cover no-repeat; color: #fff;
+  --w: min(100vw - 16px, 460px, (100dvh - 30px) * 0.62);
+}
+.ws-ui { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; overflow-y: auto; scrollbar-width: none;
+  padding: calc(env(safe-area-inset-top, 0px) + 4px) 0 calc(env(safe-area-inset-bottom, 0px) + 8px); gap: calc(var(--w) * 0.02); }
+.ws-ui::-webkit-scrollbar { display: none; }
+.ws-screen.is-fx .ws-ui { visibility: hidden; } /* 연출 중엔 합성 UI 숨김(§23) */
+.ws-close { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 8px); right: 8px; z-index: 5; width: 46px; height: 46px;
+  padding: 0; border: none; background: none; cursor: pointer; }
+.ws-close img { width: 100%; height: 100%; object-fit: contain; }
+.ws-close:active { transform: scale(0.9); }
+.ws-sign { position: relative; width: calc(var(--w) * 0.5); flex: 0 0 auto; margin-top: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ws-sign img { width: 100%; display: block; }
+.ws-sign b { position: absolute; top: 42%; font-size: calc(var(--w) * 0.085); font-weight: 900; color: #fff; -webkit-text-stroke: 4px #5a2c0a; paint-order: stroke fill; transform: translateY(-50%); }
+.ws-sign small { position: absolute; top: 74%; font-size: calc(var(--w) * 0.032); font-weight: 900; color: #ffd84a; -webkit-text-stroke: 2px #5a2c0a; paint-order: stroke fill; transform: translateY(-50%); letter-spacing: 0.04em; }
+.ws-tabs { width: calc(var(--w) * 0.66); display: flex; gap: 3%; flex: 0 0 auto; }
+.ws-tab { flex: 1; aspect-ratio: 251 / 93; border: none; padding: 0; cursor: pointer; background: url('assets/workshop/tab-off.png') center / 100% 100% no-repeat;
+  font-size: calc(var(--w) * 0.042); font-weight: 900; color: #fff; -webkit-text-stroke: 3px rgba(0,0,0,0.45); paint-order: stroke fill; }
+.ws-tab.is-on { background-image: url('assets/workshop/tab-on.png'); color: #3a2400; -webkit-text-stroke: 0; }
+.ws-tab:active { transform: scale(0.96); }
+.ws-stage { position: relative; width: var(--w); aspect-ratio: 857 / 507; flex: 0 0 auto; container-type: inline-size; }
+.ws-stage-img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ws-lbl { position: absolute; top: 2.5%; width: 30%; text-align: center; font-size: 4.2cqw; font-weight: 900; color: #fff; }
+.ws-lbl--l { left: 2%; } .ws-lbl--r { right: 1%; }
+.ws-item { position: absolute; top: 19%; width: 24%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
+.ws-item--l { left: 4.5%; } .ws-item--r { right: 3.5%; }
+.ws-item img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.ws-item.has-glow img { filter: drop-shadow(0 0 0.6cqw var(--glow)) drop-shadow(0 0 1.6cqw var(--glow)); } /* 강화 Glow — 원본 이미지는 그대로, 필터 VFX */
+.ws-item b { position: absolute; right: 2%; bottom: 0; font-size: 7cqw; font-weight: 900; color: #fff; -webkit-text-stroke: 1.1cqw #2a0b55; paint-order: stroke fill; }
+.ws-item--r b { -webkit-text-stroke-color: #0b2a55; }
+.ws-item.is-empty img { filter: grayscale(1) brightness(0.45); }
+.ws-name { position: absolute; left: 2%; top: 11%; width: 32%; text-align: center; font-size: 3.4cqw; font-weight: 800; color: #ffe7a8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ws-matn { position: absolute; right: 1%; top: 11%; width: 32%; text-align: center; font-size: 3.4cqw; font-weight: 800; color: #bfe3ff; }
+.ws-goose { position: absolute; left: 50%; top: 18%; width: 30%; transform: translateX(-50%); }
+.ws-arrow { position: absolute; top: 26%; width: 7%; aspect-ratio: 1; border: none; border-radius: 50%; padding: 0; cursor: pointer;
+  font-size: 5cqw; font-weight: 900; line-height: 1; color: #3a2400; background: linear-gradient(180deg, #ffe45a, #f2b300); box-shadow: 0 0.5cqw 0 #a86a00; z-index: 2; }
+.ws-arrow--prev { left: 0; } .ws-arrow--next { left: 30%; }
+.ws-arrow:active { transform: translateY(0.4cqw); box-shadow: none; }
+.ws-panel { position: relative; width: calc(var(--w) * 0.8); aspect-ratio: 658 / 212; flex: 0 0 auto; display: flex; flex-direction: column; justify-content: center;
+  background: url('assets/workshop/panel.png') center / 100% 100% no-repeat; padding: 0 12%; box-sizing: border-box; gap: 4%; }
+.ws-row { display: flex; align-items: center; justify-content: space-between; font-weight: 900; font-size: calc(var(--w) * 0.045); color: #f3e7d0; }
+.ws-row b { display: flex; align-items: center; gap: 6px; font-size: calc(var(--w) * 0.065); color: #fff; }
+.ws-coin { display: inline-block; width: calc(var(--w) * 0.06); height: calc(var(--w) * 0.06); border-radius: 50%; flex: 0 0 auto;
+  background: radial-gradient(circle at 35% 30%, #fff3a0, #ffc21a 55%, #d98a00); box-shadow: inset 0 0 0 2px #b36b00; }
+.ws-coins { width: calc(var(--w) * 0.64); aspect-ratio: 550 / 69; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; gap: 4%;
+  background: url('assets/workshop/coinbar.png') center / 100% 100% no-repeat; font-weight: 900; font-size: calc(var(--w) * 0.04); color: #f3e7d0; }
+.ws-coins b { font-size: calc(var(--w) * 0.048); color: #fff; }
+.ws-coins b.is-short { color: #ff8f8f; }
+.ws-go { width: calc(var(--w) * 0.78); aspect-ratio: 636 / 133; flex: 0 0 auto; border: none; padding: 0; cursor: pointer;
+  background: url('assets/workshop/btn.png') center / 100% 100% no-repeat; font-size: calc(var(--w) * 0.075); font-weight: 900; color: #3a2400; transition: transform 0.08s, filter 0.2s; }
+.ws-go:active:not(:disabled) { transform: translateY(3px) scale(0.98); }
+.ws-go:disabled { filter: grayscale(0.8) brightness(0.8); cursor: default; }
+.ws-notice { width: calc(var(--w) * 0.84); aspect-ratio: 648 / 90; flex: 0 0 auto; margin-bottom: auto; display: flex; align-items: center; gap: 3%; padding: 0 5%; box-sizing: border-box;
+  background: url('assets/workshop/notice.png') center / 100% 100% no-repeat; font-weight: 800; font-size: calc(var(--w) * 0.03); color: #fff3dc; letter-spacing: -0.02em; }
+.ws-notice i { flex: 0 0 auto; width: calc(var(--w) * 0.06); height: calc(var(--w) * 0.06); border-radius: 50%; background: #fff3dc; color: #5a2c0a;
+  font-style: normal; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+/* ---- 합성 연출 ---- */
+.ws-fx { position: absolute; inset: 0; z-index: 10; background: rgba(20, 10, 0, 0.35); overflow: hidden; }
+.ws-fx.is-flash::after { content: ''; position: absolute; inset: 0; background: #fff; animation: ws-flash 0.35s ease-out forwards; pointer-events: none; }
+@keyframes ws-flash { from { opacity: 0.85; } to { opacity: 0; } }
+.ws-screen.is-shake .ws-fx { animation: ws-shake 0.3s ease-out; }
+@keyframes ws-shake { 0%, 100% { transform: none; } 20% { transform: translate(-6px, 3px); } 40% { transform: translate(5px, -4px); } 60% { transform: translate(-3px, 2px); } 80% { transform: translate(2px, -1px); } }
+.ws-fx-goose { position: absolute; left: 50%; top: 32%; width: calc(var(--w) * 0.5); transform: translate(-50%, 0); transition: transform 0.13s linear; }
+.ws-egg { position: absolute; left: 50%; top: 30%; width: calc(var(--w) * 0.52); transform: translate(-50%, 0); }
+.ws-egg.is-drop { animation: ws-drop 0.7s cubic-bezier(.3, 0, .5, 1) both; }
+@keyframes ws-drop { 0% { transform: translate(-50%, -160%); } 70% { transform: translate(-50%, 0); } 85% { transform: translate(-50%, -6%); } 100% { transform: translate(-50%, 0); } }
+.ws-egg.is-shiver { animation: ws-shiver 0.1s linear infinite alternate; }
+@keyframes ws-shiver { from { transform: translate(-51%, 0) rotate(-1.5deg); } to { transform: translate(-49%, 0) rotate(1.5deg); } }
+.ws-ham { position: absolute; left: 50%; top: 18%; width: calc(var(--w) * 0.48); transform-origin: 50% 85%; transform: translate(60%, -120%) rotate(55deg); opacity: 0; z-index: 2; }
+/* 번개 에셋(에셋2) = 골드 묠니르+녹색 번개 한 장 — 연출 중엔 이 프레임만 보이고 순서대로 바뀜. 원본 묠니르(에셋8)는 번개 없을 때 폴백 */
+.ws-mj { display: none; }
+.ws-bolt { position: relative; width: 100%; display: block; }
+.ws-ham.is-in { opacity: 1; transform: translate(30%, -40%) rotate(35deg); transition: transform 0.45s cubic-bezier(.2, .8, .3, 1), opacity 0.2s; }
+.ws-ham.is-hit { opacity: 1; transform: translate(-18%, -2%) rotate(-12deg); transition: transform 0.09s cubic-bezier(.6, 0, 1, .6); } /* 망치 머리가 알 윗면에 닿는 위치 */
+.ws-ham.is-out { opacity: 0; transform: translate(80%, -90%) rotate(60deg); transition: transform 0.35s ease-in, opacity 0.35s; }
+.ws-result { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+.ws-res-glow { width: calc(var(--w) * 0.5); aspect-ratio: 1; display: flex; align-items: center; justify-content: center; animation: ws-pop 0.55s cubic-bezier(.2,1.4,.4,1) both; }
+@keyframes ws-pop { from { transform: scale(0); } to { transform: scale(1); } }
+.ws-res-glow img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.ws-res-glow.has-glow img { filter: drop-shadow(0 0 4px var(--glow)) drop-shadow(0 0 14px var(--glow)); }
+.ws-result.is-ng .ws-res-glow img { filter: grayscale(0.6) brightness(0.7); }
+.ws-res-title { margin: 0; font-size: calc(var(--w) * 0.09); font-weight: 900; color: #ffe45a; -webkit-text-stroke: 5px #5a2c0a; paint-order: stroke fill; }
+.ws-result.is-ng .ws-res-title { color: #c9c9d1; -webkit-text-stroke-color: #2a2a33; }
+.ws-res-sub { margin: 0; font-size: calc(var(--w) * 0.05); font-weight: 900; color: #fff; -webkit-text-stroke: 3px #3a1a00; paint-order: stroke fill; }
+.ws-res-ok { margin-top: 6px; padding: 10px 44px; border: none; border-radius: 99px; font-size: 1.05rem; font-weight: 900; color: #5a3a00; cursor: pointer;
+  background: linear-gradient(180deg, #ffe45a, #f2b300); box-shadow: 0 4px 0 #b07c00, inset 0 2px 0 rgba(255,255,255,0.6); }
+.ws-res-ok:active { transform: translateY(3px); box-shadow: 0 1px 0 #b07c00; }
 /* ===== 일일출석(DAILY REWARD) 전체화면 — 명세서·에셋 기준(v748). 레이어: 배경 → 광고판·두더지 → 보드 → 카드 → 버튼 → 선물상자 → 토스트 ===== */
 #daily-screen.dr-screen {
   position: fixed; inset: 0; top: 0; left: 0; transform: none; width: 100%; height: 100%;

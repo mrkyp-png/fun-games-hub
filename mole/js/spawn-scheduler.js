@@ -239,7 +239,7 @@
         var fullClear = !!(opts && (opts.quake || opts.alipunch));
         pop.hitsTaken = fullClear ? pop.hitsRequired : pop.hitsTaken + 1;
         // 전신(첫 타) + 대포 → 10% 로 연사 발동. 판정은 이 타격 순간.
-        if (!fullClear && pop.hitsTaken === 1 && (pop._forceBurst || (config.cannonBurst && rng.next() < BURST_CHANCE))) pop.burstActive = true;
+        if (!fullClear && pop.hitsTaken === 1 && (pop._forceBurst || (config.cannonBurst && rng.next() < BURST_CHANCE + (config.burstBonus || 0)))) pop.burstActive = true;
         if (pop.hitsTaken < pop.hitsRequired) {
           pop.hitCooldown = HIT_COOLDOWN;
           return { type: pop.type, regionId: pop.regionId, done: false, xFrac: pop.x, yFrac: pop.y, hitsTaken: pop.hitsTaken, hitsRequired: pop.hitsRequired, burst: !!pop.burstActive };

@@ -468,7 +468,7 @@
 
   // ---------- 더보기 메뉴 / 난이도 / 사람두더지 (독립앱 Phase 1) ----------
   let screenNav = null, moreMenu = null, faceMaker = null;
-  let shop = null, daily = null, scoreScreen = null, settingsScreen = null, inventoryScreen = null;
+  let shop = null, daily = null, workshop = null, scoreScreen = null, settingsScreen = null, inventoryScreen = null;
   let currentDiff = 'easy';        // 현재 판 난이도
 
   // 라이트(힌트) 축 — 내부 id 는 easy/mid/legend 유지(= ON/DIM/OFF). 동물/폭탄은 이제 챕터가 결정.
@@ -740,7 +740,7 @@
         if (action === 'home') { showStartScreen(); return; }
         if (action === 'profile') { editProfileAvatar(); return; }
         const sub = { shop: 'shop-screen', score: 'score-screen', daily: 'daily-screen',
-          quest: 'quest-screen',
+          quest: 'quest-screen', locker: 'workshop-screen',
           inventory: 'inventory-screen', settings: 'settings-screen', lightMode: 'light-popup',
           mail: 'mailbox-screen' }[action];
         if (sub) { openMore(sub); if (sharedLaneControls) sharedLaneControls.setActiveNav(action); }
@@ -1104,6 +1104,7 @@
       screenNav.show(sub);
       if (sub === 'shop-screen' && shop) shop.show();
       if (sub === 'daily-screen' && daily) daily.show();
+      if (sub === 'workshop-screen' && workshop) workshop.show();
       if (sub === 'score-screen' && scoreScreen) scoreScreen.show();
       if (sub === 'settings-screen' && settingsScreen) settingsScreen.show();
       if (sub === 'inventory-screen' && inventoryScreen) inventoryScreen.show();
@@ -1375,6 +1376,7 @@
       dualTarget: dualTarget,
       obstacleRatioBoost: (!isSmallBoardChapter() && ch === 8) ? 1.1 : 1,  // 라운드8(구챕터10): 방해물 스폰 빈도 10% 상향
       cannonBurst: weapon === 'cannon',   // 대포 연사 스킬 (2·3타 두더지 연타 확률 10%)
+      burstBonus: (MG.Workshop ? MG.Workshop.weaponChanceBonus('cannon') : 0), // 제작소 강화 +단계×1%p(v750)
       moleUpBonus: weapon === 'alipunch' ? 0.1 : 0,   // 알리 펀치 [방어]: 내려가기 전 0.1초 더 여유(§7)
       costumeUpBonus: MG.CostumeTeams.activeEffectValue()  // 착용중인 코스튬 효과: 두더지 하강 딜레이
     };
@@ -1952,7 +1954,7 @@
     // (=방해물)를 잘못 쳐도 지진이 발동 → 연쇄로 주변 두더지(=방해물)를 더 때려 페널티만 쌓이는
     // 버그가 있었음(사용자 리포트) — effectiveHitType 으로 "진짜 타겟"인지 판정하도록 수정.
     if (state.weapon === 'goldhammer' && primary && effectiveHitType(state.config, primary.type) === 'mole' && typeof primary.done === 'boolean') {
-      if (forceQuakeNext || state.rng.next() < QUAKE_CHANCE) {
+      if (forceQuakeNext || state.rng.next() < QUAKE_CHANCE + (MG.Workshop ? MG.Workshop.weaponChanceBonus('goldhammer') : 0)) {
         forceQuakeNext = false;
         if (sharedLaneControls) sharedLaneControls.flashBurst(regionId); // 캐논과 동일한 골드 링(사용자 지정)
         setTimeout(() => quakeRipple(regionId, 0), 40);
@@ -2070,7 +2072,7 @@
           onHammerImpact(p.x, p.y, res, { noHitstop: true });
           MG.HitFx.quakeDust(board, p.x, p.y);
           if (res.some((r) => r.type === 'mole' && r.done)) { killed.push(id); paintPad(); }
-          if (!forceQuakeNext && state.rng.next() < QUAKE_CHANCE) quakeRipple(id, depth + 1);
+          if (!forceQuakeNext && state.rng.next() < QUAKE_CHANCE + (MG.Workshop ? MG.Workshop.weaponChanceBonus('goldhammer') : 0)) quakeRipple(id, depth + 1);
         });
       }, k * QUAKE_CLONE_GAP);
     });
@@ -2158,7 +2160,7 @@
             MG.HitFx.punch(); // 랜덤 타격음 (별 이펙트만으로는 소리가 안 남 — 버그 수정)
             MG.HitFx.punchStar(board, r.xFrac, r.yFrac);
             // [공격력] 무적 발동 확률 20%, 5초(§7).
-            if (state.rng.next() < ALIPUNCH_INVINCIBLE_CHANCE) {
+            if (state.rng.next() < ALIPUNCH_INVINCIBLE_CHANCE + (MG.Workshop ? MG.Workshop.weaponChanceBonus('alipunch') : 0)) /* 제작소 강화 +단계×1%p */ {
               state.alipunchInvincibleUntil = performance.now() + ALIPUNCH_INVINCIBLE_MS;
               MG.HitFx.powerUpWord(board); // "POWER UP" — 무적 발동 알림(보드 중앙)
               // 캐논과 동일한 골드 링(사용자 지정).
@@ -2948,7 +2950,7 @@
   // 더보기 메뉴 + 하위 화면 모듈 인스턴스 생성·배선.
   function wireMoreMenu() {
     screenNav = MG.ScreenNav.create({
-      screens: ['face-maker', 'shop-screen', 'mailbox-screen', 'daily-screen', 'score-screen', 'settings-screen', 'inventory-screen', 'help-screen', 'privacy-screen', 'quest-screen', 'friends-screen', 'light-popup']
+      screens: ['face-maker', 'shop-screen', 'mailbox-screen', 'daily-screen', 'workshop-screen', 'score-screen', 'settings-screen', 'inventory-screen', 'help-screen', 'privacy-screen', 'quest-screen', 'friends-screen', 'light-popup']
     });
     // 메일함(사용자 지정: "구매→메일함 도착→수령" 흐름 예정) — 지금은 아이콘+빈 화면 스캐폴드만,
     // 실제 수령 로직 없음. 상점 안에서 열리므로(더보기 경유 X) 뒤로가기는 screenNav.back()만.
@@ -2965,6 +2967,11 @@
       onChange: () => { if (moreMenu) moreMenu.refresh(); },
       // 무기 탭 구매 잠금 — 게임 진행 중(라운드1~클리어)에만 비활성화.
       gameInProgress: () => !!(state && !state.ended)
+    });
+    workshop = MG.Workshop.create({
+      root: document.getElementById('workshop-screen'),
+      onClose: () => closeMore(),
+      onChange: () => { refreshBoardStats(); if (moreMenu) moreMenu.refresh(); }
     });
     daily = MG.Daily.create({
       root: document.getElementById('daily-screen'),
