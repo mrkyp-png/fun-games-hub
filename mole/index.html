@@ -561,7 +561,9 @@
       <div id="lane-button-bar">
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
-        <div id="build-tag" aria-hidden="true">v726</div>
+        <div id="build-tag" aria-hidden="true">v727</div>
+        <!-- ⚠️임시 진단(카메라 줄 검은 띠 원인 조사) — 확인 끝나면 삭제 -->
+        <div id="dbg-tag" aria-hidden="true" style="position:absolute;left:24%;top:2px;z-index:9;font:700 10px/1.25 monospace;color:#c00;pointer-events:none;white-space:pre"></div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -733,7 +735,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=726').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=727').catch(function () {});
       }
     });
   }
@@ -741,6 +743,22 @@
   // 전환하고, 뒤로가기 제스처 등으로 풀리면 다음 탭에 다시 전환한다.
   // ⚠️ manifest 는 standalone 유지: display:fullscreen 으로 설치된 크롬 앱은 카메라(노치) 줄을 검은
   // 띠로 막고 요소 전체화면을 요청해도 안 풀어줬음(v725 실기기 확인). 브라우저 탭은 이 방식으로 꽉 참.
+  // ⚠️임시 진단 표시(카메라 줄 조사용) — 확인 끝나면 이 블록과 #dbg-tag 삭제.
+  (function () {
+    var probe = document.createElement('div');
+    probe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none';
+    document.body.appendChild(probe);
+    function mode() { var m = ['fullscreen', 'standalone', 'minimal-ui', 'browser']; for (var i = 0; i < m.length; i++) if (matchMedia('(display-mode: ' + m[i] + ')').matches) return m[i]; return '?'; }
+    setInterval(function () {
+      var t = document.getElementById('dbg-tag'); if (!t) return;
+      var vv = window.visualViewport;
+      t.textContent = 'mode:' + mode() + ' fs:' + (document.fullscreenElement ? 'Y' : 'N') + '
+' +
+        'win:' + innerWidth + 'x' + innerHeight + ' vv:' + (vv ? Math.round(vv.width) + 'x' + Math.round(vv.height) : '-') + '
+' +
+        'scr:' + screen.width + 'x' + screen.height + ' safeTop:' + probe.getBoundingClientRect().height.toFixed(1) + ' dpr:' + devicePixelRatio;
+    }, 500);
+  })();
   (function () {
     var el = document.documentElement;
     if (!el.requestFullscreen) return;
