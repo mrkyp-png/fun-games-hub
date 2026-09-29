@@ -224,8 +224,11 @@
       'mole.daily.r.ticket': '티켓',
       'mole.daily.r.skill': '스킬',
 
-      'mole.score.noHist': '아직 플레이 기록이 없어요',
-      'mole.score.bestOf': '{d} 최고 {n}점',
+      'mole.score.rule': '랭킹은 도달한 최고 라운드의 최고 득점을 기준으로 합니다!',
+      'mole.score.mine': '내 순위',
+      'mole.score.dev': '개발 중',
+      'mole.score.rhythmSoon': '리듬팡은 지금 개발 중이에요!',
+      'mole.score.empty': '아직 랭킹 기록이 없어요',
 
       'mole.set.bgm': '배경음악',
       'mole.set.sfx': '효과음',
@@ -468,8 +471,11 @@
       'mole.daily.r.ticket': 'Tickets',
       'mole.daily.r.skill': 'Skill',
 
-      'mole.score.noHist': 'No plays yet',
-      'mole.score.bestOf': '{d} best {n}',
+      'mole.score.rule': 'Ranked by highest round reached, then best score in it!',
+      'mole.score.mine': 'My rank',
+      'mole.score.dev': 'In development',
+      'mole.score.rhythmSoon': 'RhythmPang is in development!',
+      'mole.score.empty': 'No ranking records yet',
 
       'mole.set.bgm': 'Music',
       'mole.set.sfx': 'Sound FX',
