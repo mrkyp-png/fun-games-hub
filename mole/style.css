@@ -666,9 +666,22 @@ body { background: var(--lm-page); }
 /* 입체감(사용자: 어두운 우주 위에서 판이 납작해 보임 → 샘플 4번, v733) — 두 판 바깥에만 빛테두리·두께(아래 6px)·
    짙은 그림자·은은한 빛번짐. 판 안 내용은 그대로. */
 /* 버튼보드는 부모 .dialpad 가 contain:paint 라 자식 그림자가 잘려(아래쪽·피버 전환 때 외곽 끊김, v735 실기기) → .dialpad 자체에 건다. */
-#mole-board, .dialpad {
+#mole-board, .dialpad, .board-screen, .more-menu { /* 메뉴 화면(스코어·일일 등)도 게임판 위에 따로 뜨는 판이라 같은 테두리를 줌(v746 — 외곽선이 빠져 보였음) */
   /* v740 성능: 번짐(blur) 그림자 2겹 제거 — 두더지 움직임·피버 전광판 갱신마다 판 전체와 함께 다시 그려져 버벅임·깜빡임 원인(예전에도 글로우 약화로 완화했었음). 선명한 빛테두리 + 두께만. */
-  box-shadow: 0 0 0 1.5px rgba(200, 225, 255, 0.85), 0 0 0 3px rgba(120, 170, 255, 0.35), 0 6px 0 #6c7384;
+  /* 입체감 D안(사용자 선택 v746): 두꺼운 창틀(어두운 선-금속 선-어두운 선) + 아래 두께. 번짐 없음(성능). */
+  box-shadow: 0 0 0 3px #1c2340, 0 0 0 5px #5b6788, 0 0 0 7px #1c2340, 0 8px 0 7px #0e1226;
+}
+/* 게임판을 창틀 안으로 들여다보는 느낌 — 가장자리 안쪽 음영(움푹) + 위 왼쪽 유리 광택. 그라데이션만(번짐 없음). */
+#mole-board::after {
+  content: ''; position: absolute; inset: 0; z-index: 15; pointer-events: none; border-radius: inherit;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.5), inset 0 6px 0 rgba(0, 0, 0, 0.35), inset 0 -3px 0 rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(to right, rgba(0, 0, 20, 0.45), rgba(0, 0, 20, 0) 7%, rgba(0, 0, 20, 0) 93%, rgba(0, 0, 20, 0.45)),
+    linear-gradient(to bottom, rgba(0, 0, 20, 0.3), rgba(0, 0, 20, 0) 7%, rgba(0, 0, 20, 0) 92%, rgba(0, 0, 20, 0.5));
+}
+#mole-board::before {
+  content: ''; position: absolute; inset: 0; z-index: 16; pointer-events: none; border-radius: inherit;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.06) 22%, rgba(255, 255, 255, 0) 23%);
 }
 #fold-hinge {
   position: relative;
