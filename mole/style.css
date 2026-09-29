@@ -2600,6 +2600,25 @@ body { background: var(--lm-page); }
   font-weight: 700; border-bottom: 1px solid rgba(0,0,0,0.09); flex: 0 0 auto; }
 .bs-back { background: none; border: none; color: #1f1f24; font-size: 1.4rem; line-height: 1; cursor: pointer; padding: 0 4px; }
 .bs-title { font-size: 0.95rem; }
+/* 흰 메뉴 화면들 → 버튼보드와 같은 청회색 톤(사용자 지정 v744: 우주 배경·어두운 버튼보드 사이에서 흰 화면만 튐).
+   팔레트 변수를 이 화면들 안에서만 바꿔 글자·선이 자동으로 밝아지게 하고, 고정색으로 박힌 것만 아래서 따로 보정. */
+#score-screen, #mailbox-screen, #daily-screen, #help-screen, #settings-screen, #privacy-screen, #quest-screen, #friends-screen {
+  background: linear-gradient(180deg, #34406c 0%, #2b3560 60%, #262f55 100%); color: #eef3ff;
+  --lm-ink: #f2f6ff; --lm-muted: #b3c1e0; --lm-line: rgba(255, 255, 255, 0.12); --lm-line-2: rgba(255, 255, 255, 0.07);
+  --lm-fill: rgba(255, 255, 255, 0.08); --lm-surface: #34406c; --lm-pad: #2e3a64;
+}
+#score-screen .board-screen-bar, #mailbox-screen .board-screen-bar, #daily-screen .board-screen-bar, #help-screen .board-screen-bar, #settings-screen .board-screen-bar, #privacy-screen .board-screen-bar, #quest-screen .board-screen-bar, #friends-screen .board-screen-bar { border-bottom-color: rgba(255, 255, 255, 0.12); }
+#score-screen .bs-back, #mailbox-screen .bs-back, #daily-screen .bs-back, #help-screen .bs-back, #settings-screen .bs-back, #privacy-screen .bs-back, #quest-screen .bs-back, #friends-screen .bs-back { color: #eef3ff; }
+#score-screen .score-best-row { color: #eef3ff; }
+#score-screen .score-empty, #mailbox-screen .score-empty { color: #b3c1e0; }
+#daily-screen .daily-cell { background: rgba(255, 255, 255, 0.08); color: #eef3ff; }
+#daily-screen .daily-cell i { color: #b3c1e0; }
+#daily-screen .daily-cell--today { border-color: #ffce33; background: rgba(255, 206, 51, 0.14); }
+#settings-screen .set-row { border-bottom-color: rgba(255, 255, 255, 0.1); }
+#settings-screen .set-lang:not(.set-lang--on) { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: #dbe5ff; }
+#settings-screen .set-reset { color: #ff8f8f; border-color: rgba(255, 143, 143, 0.5); }
+#settings-screen .set-ic { color: #dbe5ff; stroke: #dbe5ff; }
+
 
 /* 더보기 메뉴 본체 — 2026-09-18 개편(사용자 지정, 애니팡 참고): 예전엔 다이얼패드까지 덮는
    전체 화면이었으나, 이제 보드 영역(.mole-board 와 같은 자리·크기)에만 들어가고 다이얼패드는
