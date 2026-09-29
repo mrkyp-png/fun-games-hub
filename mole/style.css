@@ -1424,7 +1424,8 @@ body { background: var(--lm-page); }
    다이얼패드가 0.7~1초 하얗게 비는 버그가 있었음(데스크톱 시뮬레이션엔 안 잡힘, 사용자 영상으로
    확인). 다이얼패드를 독립된 레이어로 격리해 위쪽 회전 애니메이션의 영향을 안 받게 한다. */
 .dialpad { position: relative; flex: 0 0 auto; touch-action: manipulation; contain: paint;
-  width: var(--sq); margin: 0 auto; border-radius: 10px; } /* 크기를 버튼보드와 딱 맞춤 — 입체 테두리를 여기 건다 */
+  width: var(--sq); margin: 0 auto; border-radius: 10px; /* 크기를 버튼보드와 딱 맞춤 — 입체 테두리를 여기 건다 */
+  background: #2e3a64; } /* 받침판: 연타 때 버튼보드가 한 프레임 비어도 뒤 우주(별빛)가 비치지 않게 같은 톤으로 받침(v737) */
 
 /* 홈 화면 축제 분위기(사용자 지정) — BGM 비트마다 버튼 몇 개가 각자 독립적으로(전체가 같이
    말고, 사용자 지정) 커졌다 흔들림. game.js pulseDialPad() 가 매 비트마다 버튼 하나씩 이 클래스를
@@ -1845,44 +1846,26 @@ body { background: var(--lm-page); }
 
 /* 두더지가 그 구멍에 있음 — 눌러야 할 키. 다이얼러처럼 보이게 은은한 하이라이트.
    바둑알처럼 입체감(광원 좌상단 글로시 하이라이트 + 하단 음영, 사용자 지정). */
-.lane-button--hot {
-  background: radial-gradient(circle at 32% 28%,
-    rgba(210, 228, 255, 0.95) 0%, rgba(140, 185, 255, 0.65) 40%,
-    rgba(90, 145, 230, 0.45) 70%, rgba(60, 110, 200, 0.32) 100%);
-  box-shadow:
-    inset 0 3px 4px rgba(255, 255, 255, 0.55),
-    inset 0 -4px 5px rgba(20, 50, 110, 0.35),
-    0 0 10px 1px rgba(120, 170, 255, 0.4);
+/* 두더지 칸 알림(아마추어) — 시안 네온(사용자 지정 v737: 어두운 버튼보드에서 연한 하늘 그라데이션이 후짐).
+   테두리가 빛나고 안쪽이 은은하게 밝음. 누르면 빛이 안으로 모이며 살짝 어두워짐. */
+.lane-button.lane-button--hot { /* .lane-button:not(--call){radius:0} 보다 우선하도록 2클래스 */
+  background: radial-gradient(circle at 50% 40%, rgba(87, 217, 255, 0.30), rgba(87, 217, 255, 0.08));
+  box-shadow: inset 0 0 0 2px #57d9ff, inset 0 0 16px rgba(87, 217, 255, 0.6), 0 0 12px 1px rgba(87, 217, 255, 0.65);
+  border-radius: 12px;
 }
-/* 파란 버튼(hot) 누를 때 전용 프레스 효과(사용자 지정) — 일반 버튼:active(검은 오버레이)를
-   덮어쓰고, 광원·음영을 반전시켜(밝은 위→어두운 안쪽) 파란 원 자체가 안으로 파묻히는 느낌.
-   특이도(3클래스+active)가 .lane-button:active(2클래스+active)보다 높아 정상적으로 우선함. */
-.lane-button--hot:active {
-  background: radial-gradient(circle at 32% 28%,
-    rgba(140, 185, 255, 0.9) 0%, rgba(90, 145, 230, 0.8) 55%, rgba(60, 110, 200, 0.7) 100%);
-  box-shadow:
-    inset 0 4px 7px rgba(15, 40, 100, 0.55),
-    inset 0 -2px 3px rgba(255, 255, 255, 0.35),
-    0 0 6px 1px rgba(120, 170, 255, 0.3);
+.lane-button.lane-button--hot:active {
+  background: radial-gradient(circle at 50% 50%, rgba(87, 217, 255, 0.45), rgba(87, 217, 255, 0.18));
+  box-shadow: inset 0 0 0 2px #57d9ff, inset 0 0 22px rgba(87, 217, 255, 0.8), 0 0 6px 1px rgba(87, 217, 255, 0.4);
 }
-/* 알리 판취 무적 중 안전해진 동물 = 파란색 대신 노란색(사용자 지정) — 위 --hot 과 같은
-   3D 돌 하이라이트 구조, 색만 파랑→노랑. */
-.lane-button--hot-safe {
-  background: radial-gradient(circle at 32% 28%,
-    rgba(255, 245, 200, 0.95) 0%, rgba(255, 220, 90, 0.65) 40%,
-    rgba(230, 175, 30, 0.45) 70%, rgba(200, 140, 10, 0.32) 100%);
-  box-shadow:
-    inset 0 3px 4px rgba(255, 255, 255, 0.55),
-    inset 0 -4px 5px rgba(110, 75, 5, 0.35),
-    0 0 10px 1px rgba(255, 210, 80, 0.4);
+/* 알리 판취 스킬(무적) 발동 중 = 골드 네온(사용자 지정 v737) — 무적 중 안전해진 동물(--hot-safe)도 같은 골드. */
+#game-screen.gs-invincible .lane-button.lane-button--hot, .lane-button.lane-button--hot-safe { /* 어두운 판에서 티 나게 진하게(사용자 지정) */
+  background: radial-gradient(circle at 50% 40%, rgba(255, 222, 80, 0.62), rgba(255, 190, 30, 0.22));
+  box-shadow: inset 0 0 0 3px #ffd84a, inset 0 0 22px rgba(255, 215, 70, 0.85), 0 0 18px 4px rgba(255, 200, 40, 0.9);
+  border-radius: 12px;
 }
-.lane-button--hot-safe:active {
-  background: radial-gradient(circle at 32% 28%,
-    rgba(255, 220, 90, 0.9) 0%, rgba(230, 175, 30, 0.8) 55%, rgba(200, 140, 10, 0.7) 100%);
-  box-shadow:
-    inset 0 4px 7px rgba(90, 60, 5, 0.55),
-    inset 0 -2px 3px rgba(255, 255, 255, 0.35),
-    0 0 6px 1px rgba(255, 210, 80, 0.3);
+#game-screen.gs-invincible .lane-button.lane-button--hot:active, .lane-button.lane-button--hot-safe:active {
+  background: radial-gradient(circle at 50% 50%, rgba(255, 222, 80, 0.75), rgba(255, 190, 30, 0.35));
+  box-shadow: inset 0 0 0 3px #ffd84a, inset 0 0 28px rgba(255, 215, 70, 1), 0 0 8px 2px rgba(255, 200, 40, 0.55);
 }
 /* 통화 버튼도 두더지 있으면 다른 버튼과 똑같은 파란 하이라이트 (라이트 ON 에서만).
    DIM/OFF 는 아래 diff-mid/legend 규칙이 다시 초록으로. */
