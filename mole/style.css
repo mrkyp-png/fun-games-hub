@@ -694,6 +694,28 @@ body { background: var(--lm-page); }
   background: linear-gradient(180deg, #2b303c 0%, #4a5061 46%, #4a5061 54%, #232833 100%);
   box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.35), 0 3px 8px rgba(0, 0, 0, 0.35);
 }
+/* 시간 게이지(v747, 사용자 지정: 네온은 흐리니 선명한 단색) — 게임 중에만. 홈에선 기존 경첩 장식 그대로. */
+.hinge-fill, #hinge-time { display: none; }
+#game-screen:not(.is-start) .hinge-fill {
+  display: block; position: absolute; left: 0; top: 2px; bottom: 2px; z-index: 2; width: var(--tk-time-pct, 100%);
+  border-radius: 0 4px 4px 0; transition: width 0.25s linear, background 0.3s;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 45%), linear-gradient(180deg, #5ee86f, #25b53f);
+}
+#game-screen:not(.is-start) #fold-hinge.hinge--mid .hinge-fill {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 45%), linear-gradient(180deg, #ffe066, #f2b400);
+}
+#game-screen:not(.is-start) #fold-hinge.hinge--low .hinge-fill {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 45%), linear-gradient(180deg, #ff6b6b, #e02424);
+  animation: hinge-low-blink 0.5s ease-in-out infinite alternate;
+}
+@keyframes hinge-low-blink { from { opacity: 1; } to { opacity: 0.45; } }
+#game-screen:not(.is-start) #hinge-time {
+  display: block; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 3;
+  font-size: 10px; font-weight: 900; line-height: 1; color: #fff; -webkit-text-stroke: 2.5px #10152b; paint-order: stroke fill;
+}
+#game-screen:not(.is-start) #fold-hinge::before, #game-screen:not(.is-start) #fold-hinge::after { display: none; } /* 게이지 중엔 접힘선·축 숨김 */
+#fold-hinge.hud-flash .hinge-fill { animation: hinge-hit-flash 0.35s ease-out; }
+@keyframes hinge-hit-flash { 0%, 100% { filter: none; } 35% { filter: brightness(2.2); } }
 #fold-hinge::before { /* 가운데 접힘선 */
   content: '';
   position: absolute;

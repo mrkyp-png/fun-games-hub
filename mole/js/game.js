@@ -2204,6 +2204,7 @@
           updateShieldHud();
         } else {
           state.timeRemaining = Math.max(0, state.timeRemaining - 3); // 스펙 §8
+          flashHud('fold-hinge'); // 시간 −3 — 경첩 시간 게이지를 잠깐 번쩍(v747)
           run.combo.onObstacleHit();
           MG.HitFx.obstacleHit(board, r.xFrac, r.yFrac, 'bomb');
         }

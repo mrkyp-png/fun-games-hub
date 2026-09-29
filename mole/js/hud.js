@@ -30,14 +30,17 @@
         : '❤️'.repeat(state.lives) + '🖤'.repeat(Math.max(0, 3 - state.lives));
     }
 
-    // 시간 = 티커 박스 왼쪽 끝 숫자로 표기 ("초" 단위 생략) + 박스 안 반투명 빨강이 남은
-    // 비율만큼 우측에서 좌측으로 줄어듦(사용자 지정).
-    var timer = document.getElementById('hud-timer');
-    if (timer) timer.textContent = String(Math.max(0, Math.ceil(state.timeRemaining)));
-    var ticker = document.getElementById('hud-ticker');
-    if (ticker && state.timeTotal > 0) {
-      var pct = Math.max(0, Math.min(1, state.timeRemaining / state.timeTotal)) * 100;
-      ticker.style.setProperty('--tk-time-pct', pct + '%');
+    // 시간 = 두 판 사이 경첩(#fold-hinge)이 게이지(사용자 지정 v747) — 남은 비율만큼 오른쪽에서 왼쪽으로
+    // 줄어들고, 가운데에 남은 초. 색: 절반 이상 초록 → 절반 아래 노랑 → 5초 이하 빨강+깜빡.
+    var hinge = document.getElementById('fold-hinge');
+    if (hinge && state.timeTotal > 0) {
+      var left = Math.max(0, state.timeRemaining);
+      var ratio = Math.max(0, Math.min(1, left / state.timeTotal));
+      hinge.style.setProperty('--tk-time-pct', (ratio * 100).toFixed(2) + '%');
+      hinge.classList.toggle('hinge--mid', ratio < 0.5 && left > 5);
+      hinge.classList.toggle('hinge--low', left <= 5);
+      var ht = document.getElementById('hinge-time');
+      if (ht) ht.textContent = String(Math.ceil(left));
     }
 
     // 콤보 = 게임화면 하단 중앙(하트가 있는 줄)에 표기. 0이면 표시 안 함.
