@@ -223,6 +223,28 @@ body { background: var(--lm-page); }
 .hg-spark:nth-of-type(4) { left: 26%; top: 72%; }
 .hg-spark:nth-of-type(5) { left: 66%; top: 80%; animation-delay: -1.3s; width: 10%; }
 @keyframes hg-spark { 0%, 60%, 100% { transform: scale(0) rotate(0deg); opacity: 0; } 75% { transform: scale(1) rotate(45deg); opacity: 1; } }
+/* 아케이드 그림 3장(1·6·8, 격자에 흩어지게)에 오락실 연출(사용자 지정 v745): 1=네온 반짝이, 6=음표 떠오름, 8=색종이. */
+.hg-spark--a { left: 8%; top: 12%; } .hg-spark--b { left: 80%; top: 8%; animation-delay: -0.9s; width: 10%; } .hg-spark--c { left: 70%; top: 44%; animation-delay: -1.8s; width: 9%; }
+.hg-note { position: absolute; bottom: 8%; font-style: normal; font-weight: 900; font-size: clamp(14px, 5vw, 22px); line-height: 1; pointer-events: none; z-index: 1;
+  -webkit-text-stroke: 1px rgba(40, 0, 60, 0.6); animation: hg-note-rise 3.6s ease-out infinite; opacity: 0; }
+.hg-note--a { left: 12%; color: #ff6fe0; }
+.hg-note--b { left: 46%; color: #57d9ff; animation-delay: -1.2s; animation-duration: 4.2s; }
+.hg-note--c { left: 76%; color: #ffe03a; animation-delay: -2.4s; }
+@keyframes hg-note-rise {
+  0% { transform: translate(0, 0) rotate(-12deg) scale(0.7); opacity: 0; } 15% { opacity: 1; }
+  50% { transform: translate(40%, -180%) rotate(12deg) scale(1); } 85% { opacity: 1; }
+  100% { transform: translate(-20%, -380%) rotate(-8deg) scale(1.1); opacity: 0; } }
+.hg-conf { position: absolute; top: 0; width: 3.2%; height: 6%; border-radius: 1px; pointer-events: none; z-index: 1;
+  animation: hg-conf-fall 4s linear infinite; }
+.hg-conf--1 { left: 36%; background: #ff4fd8; animation-duration: 3.8s; animation-delay: -3.6s; }
+.hg-conf--2 { left: 67%; background: #57d9ff; animation-duration: 3.5s; animation-delay: -0.3s; }
+.hg-conf--3 { left: 57%; background: #ffe03a; animation-duration: 4.3s; animation-delay: -1.4s; }
+.hg-conf--4 { left: 13%; background: #7dff8a; animation-duration: 3.6s; animation-delay: -2.7s; }
+.hg-conf--5 { left: 41%; background: #ff8a3d; animation-duration: 4.8s; animation-delay: -4.1s; }
+.hg-conf--6 { left: 39%; background: #b48bff; animation-duration: 3.6s; animation-delay: -4.6s; }
+@keyframes hg-conf-fall {
+  0% { transform: translate(0, -150%) rotate(0deg) rotateY(0deg); } 50% { transform: translate(180%, 700%) rotate(200deg) rotateY(180deg); }
+  100% { transform: translate(-80%, 1700%) rotate(400deg) rotateY(360deg); } }
 @keyframes hg-bfly-path-a {
   0% { transform: translate(-30%, 320%) rotate(-10deg); } 25% { transform: translate(180%, 160%) rotate(12deg); }
   50% { transform: translate(360%, 260%) rotate(-8deg); } 75% { transform: translate(250%, 60%) rotate(10deg); }
