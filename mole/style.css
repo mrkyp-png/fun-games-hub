@@ -279,7 +279,11 @@ body { background: var(--lm-page); }
   overflow: hidden;
   /* 정사각 박스 양옆/위에 남는 여백 = 폴더폰 몸체(베젤). */
   background: var(--lm-bezel);
-  --hud-h: 46px;
+  /* 전체화면(노치 영역까지 화면으로 씀) — 상단 줄만 노치 높이만큼 내리고, --hud-h 에 포함시켜
+     게임판/버튼보드(--sq)·메뉴 화면(top: var(--hud-h)) 크기·위치가 자동 재계산되게 함.
+     노치 없는 기기는 0 이라 기존과 동일. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --hud-h: calc(46px + var(--safe-top));
   --hinge-h: 14px;
   --sq: min(100%, calc((100dvh - var(--hud-h) - var(--hinge-h)) / 2));
 }
@@ -317,7 +321,8 @@ body { background: var(--lm-page); }
   align-items: center;
   gap: 8px;
   padding: 3px 8px;
-  height: var(--hud-h);
+  height: calc(var(--hud-h) - var(--safe-top));
+  margin-top: var(--safe-top);
   flex: 0 0 auto;
   flex-wrap: nowrap;
 }

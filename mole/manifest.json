@@ -4,7 +4,7 @@
   "description": "레인 버튼으로 두더지를 잡아 우주 그림을 완성하는 게임",
   "start_url": "./index.html",
   "scope": "./",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "portrait",
   "background_color": "#fdf3e0",
   "theme_color": "#fdf3e0",
