@@ -279,18 +279,19 @@ body { background: var(--lm-page); }
   overflow: hidden;
   /* 정사각 박스 양옆/위에 남는 여백 = 폴더폰 몸체(베젤). */
   background: var(--lm-bezel);
-  /* 전체화면(노치 영역까지 화면으로 씀) — 상단 줄만 노치 높이만큼 내리고, --hud-h 에 포함시켜
-     게임판/버튼보드(--sq)·메뉴 화면(top: var(--hud-h)) 크기·위치가 자동 재계산되게 함.
-     노치 없는 기기는 0 이라 기존과 동일. */
+  /* 전체화면(노치 영역까지 화면으로 씀) — 상단 줄(티커 있던 46px) 삭제, 노치 높이만 비워둔다.
+     --hud-h 를 쓰는 게임판/버튼보드(--sq)·메뉴 화면(top: var(--hud-h)) 크기·위치는 자동 재계산.
+     노치 없는 기기는 0 → 게임판이 화면 맨 위부터 시작(사용자 지정). */
   --safe-top: env(safe-area-inset-top, 0px);
-  --hud-h: calc(46px + var(--safe-top));
+  --hud-h: var(--safe-top);
   --hinge-h: 14px;
   --sq: min(100%, calc((100dvh - var(--hud-h) - var(--hinge-h)) / 2));
 }
 #game-screen .icon-btn { width: 34px; height: 34px; }
 #game-screen .icon-btn img, #game-screen .icon-btn svg { width: 22px; height: 22px; }
 /* 홈버튼(⊞) — 노란 원테두리 + PLAY/이어가기와 같은 쉬머 이펙트 (플레이중/홈 화면 공통, 같은 버튼) */
-#btn-back-to-hub { position: relative; overflow: hidden; }
+/* 게임판 안 좌상단(사용자 지정) — 게임판(가로 중앙, 폭 --sq) 왼쪽 위 모서리에서 8px 안쪽. */
+#btn-back-to-hub { position: absolute; top: calc(var(--safe-top) + 8px); left: calc((100% - var(--sq)) / 2 + 8px); z-index: 20; overflow: hidden; }
 /* 인트로/카운트다운/라운드 전환 중 = 잠금(회색 음영). 클릭도 무시(JS navLocked). */
 #btn-back-to-hub.nav-locked { opacity: 0.4; filter: grayscale(0.8); pointer-events: none; }
 #btn-back-to-hub.nav-locked::before { box-shadow: inset 0 0 0 2px rgba(150, 150, 150, 0.6); }
@@ -320,8 +321,9 @@ body { background: var(--lm-page); }
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 3px 8px;
-  height: calc(var(--hud-h) - var(--safe-top));
+  padding: 0;
+  height: 0; /* 상단 줄 삭제 — 홈버튼만 게임판 좌상단 위에 띄움(#btn-back-to-hub absolute) */
+  position: relative; z-index: 20; /* .game-hud 에 transform 이 걸려 자체 쌓임맥락이라, 뒤에 오는 게임판보다 위로 */
   margin-top: var(--safe-top);
   flex: 0 0 auto;
   flex-wrap: nowrap;
