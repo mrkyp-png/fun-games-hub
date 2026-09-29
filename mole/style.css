@@ -2659,18 +2659,104 @@ body { background: var(--lm-page); }
 .bs-title { font-size: 0.95rem; }
 /* 흰 메뉴 화면들 → 버튼보드와 같은 청회색 톤(사용자 지정 v744: 우주 배경·어두운 버튼보드 사이에서 흰 화면만 튐).
    팔레트 변수를 이 화면들 안에서만 바꿔 글자·선이 자동으로 밝아지게 하고, 고정색으로 박힌 것만 아래서 따로 보정. */
-#score-screen, #mailbox-screen, #daily-screen, #help-screen, #settings-screen, #privacy-screen, #quest-screen, #friends-screen {
+#score-screen, #mailbox-screen, #help-screen, #settings-screen, #privacy-screen, #quest-screen, #friends-screen {
   background: linear-gradient(180deg, #34406c 0%, #2b3560 60%, #262f55 100%); color: #eef3ff;
   --lm-ink: #f2f6ff; --lm-muted: #b3c1e0; --lm-line: rgba(255, 255, 255, 0.12); --lm-line-2: rgba(255, 255, 255, 0.07);
   --lm-fill: rgba(255, 255, 255, 0.08); --lm-surface: #34406c; --lm-pad: #2e3a64;
 }
-#score-screen .board-screen-bar, #mailbox-screen .board-screen-bar, #daily-screen .board-screen-bar, #help-screen .board-screen-bar, #settings-screen .board-screen-bar, #privacy-screen .board-screen-bar, #quest-screen .board-screen-bar, #friends-screen .board-screen-bar { border-bottom-color: rgba(255, 255, 255, 0.12); }
-#score-screen .bs-back, #mailbox-screen .bs-back, #daily-screen .bs-back, #help-screen .bs-back, #settings-screen .bs-back, #privacy-screen .bs-back, #quest-screen .bs-back, #friends-screen .bs-back { color: #eef3ff; }
+#score-screen .board-screen-bar, #mailbox-screen .board-screen-bar, #help-screen .board-screen-bar, #settings-screen .board-screen-bar, #privacy-screen .board-screen-bar, #quest-screen .board-screen-bar, #friends-screen .board-screen-bar { border-bottom-color: rgba(255, 255, 255, 0.12); }
+#score-screen .bs-back, #mailbox-screen .bs-back, #help-screen .bs-back, #settings-screen .bs-back, #privacy-screen .bs-back, #quest-screen .bs-back, #friends-screen .bs-back { color: #eef3ff; }
+/* ===== 일일출석(DAILY REWARD) 전체화면 — 명세서·에셋 기준(v748). 레이어: 배경 → 광고판·두더지 → 보드 → 카드 → 버튼 → 선물상자 → 토스트 ===== */
+#daily-screen.dr-screen {
+  position: fixed; inset: 0; top: 0; left: 0; transform: none; width: 100%; height: 100%;
+  border-radius: 0; box-shadow: none; z-index: 300; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
+  background: #1b1245 url('assets/daily/bg.jpg') center top / cover no-repeat; color: #fff;
+  --w: min(100vw - 20px, 460px, (100dvh - 70px) * 0.64);
+}
+.dr-back { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); left: 10px; z-index: 5;
+  width: 46px; height: 46px; padding: 0; border: none; background: none; cursor: pointer; transition: transform 0.08s; }
+.dr-back img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.dr-back:active { transform: scale(0.9); }
+.dr-stage { position: relative; width: var(--w); display: flex; flex-direction: column; align-items: center; }
+.dr-top { position: relative; width: 100%; height: calc(var(--w) * 0.36); z-index: 2; }
+.dr-sign { position: absolute; left: 50%; top: 0; width: 60%; transform: translateX(-50%); z-index: 1; }
+.dr-mole { position: absolute; bottom: calc(var(--w) * -0.035); z-index: 2; }
+.dr-mole--l { left: -2%; width: 31%; }
+.dr-mole--r { right: -2%; width: 29%; }
+/* 메인판 = 분리 에셋의 빈 메인판을 9분할(border-image)로 — 전구 테두리는 그대로 두고 세로만 늘려 카드를 크게(v748: 원래 보드판 비율 그대로는 카드가 너무 작아 글씨가 안 보였음). */
+.dr-board { position: relative; width: 100%; box-sizing: border-box; z-index: 1; border-style: solid;
+  border-width: calc(var(--w) * 80 / 758) calc(var(--w) * 58 / 758) calc(var(--w) * 59 / 758);
+  border-image: url('assets/daily/panel.png') 80 58 59 fill stretch round; }
+.dr-plate { position: absolute; left: 50%; top: calc(var(--w) * -58 / 758); transform: translate(-50%, -50%); width: 50%; text-align: center;
+  font-size: calc(var(--w) * 0.021); font-weight: 800; color: #ffe7a8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-shadow: 0 1px 0 #4a2600; letter-spacing: -0.03em; }
+/* 카드 7장: 윗줄 4장,아랫줄 3장(명세 §14) — 12칸 그리드로 윗줄 3칸씩, 아랫줄 4칸씩 */
+.dr-cards { display: grid; grid-template-columns: repeat(12, 1fr); grid-auto-rows: calc(var(--w) * 0.33); gap: calc(var(--w) * 0.018); padding: calc(var(--w) * 0.01); }
+.dr-card { position: relative; container-type: size; display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  padding: 6% 6% 7%; box-sizing: border-box; border-radius: 12px; grid-column: span 3;
+  background: linear-gradient(180deg, #e0e3c6, #cfd3ad); border: 2.5px solid #fffbe6; box-shadow: inset 0 2px 4px rgba(0,0,0,0.08); }
+.dr-card:nth-child(n+5) { grid-column: span 4; }
+.dr-day { width: 90%; height: 15cqh; border-radius: 99px; display: flex; align-items: center; justify-content: center;
+  font-size: min(10cqh, 17cqw); font-weight: 900; color: #fff; background: #4a4e58; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.25); }
+.dr-ico { flex: 1 1 auto; min-height: 0; max-width: 88%; object-fit: contain; margin: 2% 0 0; }
+.dr-qty { font-size: min(11cqh, 19cqw); line-height: 1.05; font-weight: 900; color: #33240c; text-shadow: 0 1px 0 rgba(255,255,255,0.8); white-space: nowrap; }
+.dr-status { width: 96%; height: 16cqh; border-radius: 99px; margin-top: 3%; display: flex; align-items: center; justify-content: center;
+  font-size: min(9.5cqh, 16cqw); font-weight: 900; white-space: nowrap; color: #e9ebef; background: linear-gradient(180deg, #6d717b, #50535c);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.18), inset 0 -2px 0 rgba(0,0,0,0.25); }
+.dr-card--claimed .dr-day { background: #1f7a3e; }
+.dr-card--claimed .dr-status { background: linear-gradient(180deg, #2fae57, #1b7e3b); color: #fff; }
+.dr-card--available { border-color: #ff9ce6; box-shadow: 0 0 0 3px rgba(255, 156, 230, 0.5); cursor: pointer; animation: dr-avail 1.2s ease-in-out infinite alternate; }
+.dr-card--available .dr-day, .dr-card--d7 .dr-day { background: #7b3fd9; }
+.dr-card--available .dr-status { background: linear-gradient(180deg, #ffe45a, #f2b300); color: #5a3a00; box-shadow: inset 0 2px 0 rgba(255,255,255,0.6), 0 2px 0 #b07c00; }
+.dr-card--available:active { transform: scale(0.95); }
+.dr-card--next .dr-status { background: linear-gradient(180deg, #5b7fc9, #3d5ea3); color: #fff; }
+.dr-card--locked .dr-ico { filter: saturate(0.75); }
+@keyframes dr-avail { from { box-shadow: 0 0 0 2px rgba(255,156,230,0.35); } to { box-shadow: 0 0 0 5px rgba(255,156,230,0.65); } }
+.dr-card--pop { animation: dr-pop 0.45s ease-out; }
+@keyframes dr-pop { 0% { transform: scale(1); } 40% { transform: scale(1.12); } 100% { transform: scale(1); } }
+.dr-btns { width: 100%; display: flex; justify-content: space-between; margin-top: calc(var(--w) * 0.05); }
+.dr-btn { position: relative; width: 48.5%; aspect-ratio: 516 / 141; border: none; padding: 0; cursor: pointer; background: center / 100% 100% no-repeat;
+  display: flex; align-items: center; justify-content: center; transition: transform 0.08s, filter 0.2s; }
+.dr-btn--claim { background-image: url('assets/daily/btn-green.png'); }
+.dr-btn--ad { background-image: url('assets/daily/btn-yellow.png'); aspect-ratio: 445 / 140; }
+.dr-btn:active:not(:disabled) { transform: translateY(2px) scale(0.97); }
+.dr-btn:disabled { filter: grayscale(0.75) brightness(0.85); cursor: default; }
+.dr-btn-ico { position: absolute; left: -3%; top: 50%; height: 108%; transform: translateY(-50%); }
+.dr-btn span { padding-left: 26%; display: flex; flex-direction: column; align-items: center; line-height: 1.05; }
+.dr-btn--claim span { font-size: calc(var(--w) * 0.044); font-weight: 900; color: #fff; -webkit-text-stroke: 3px #0f5a28; paint-order: stroke fill; }
+.dr-btn--ad .dr-btn-ico { height: 92%; left: -1%; }
+.dr-btn--ad span { padding-left: 42%; color: #4a2c00; font-weight: 900; }
+.dr-btn--ad span small { font-size: calc(var(--w) * 0.03); font-weight: 800; }
+.dr-btn--ad span b { font-size: calc(var(--w) * 0.04); }
+/* 선물상자(Day 7 랜덤) 연출 */
+.dr-gift { position: absolute; inset: 0; z-index: 10; background: rgba(12, 6, 34, 0.82); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.dr-gift-stage { position: relative; width: min(62vw, 270px); aspect-ratio: 1; }
+.dr-gift-box { position: absolute; left: 50%; bottom: 0; width: 82%; transform: translateX(-50%); z-index: 2; }
+.dr-gift-rays { position: absolute; left: 50%; bottom: 38%; width: 115%; transform: translateX(-50%) scale(0.4); opacity: 0; z-index: 1; transition: opacity 0.35s, transform 0.5s; }
+.dr-gift-spark { position: absolute; width: 20%; opacity: 0; z-index: 3; }
+.dr-gift-spark--a { left: 4%; top: 18%; }
+.dr-gift-spark--b { right: 2%; top: 30%; width: 14%; }
+.dr-gift-item { position: absolute; left: 50%; top: 42%; width: 42%; transform: translate(-50%, 0) scale(0); z-index: 4; }
+.dr-gift.is-shake .dr-gift-box { animation: dr-shake 0.12s ease-in-out infinite alternate; }
+@keyframes dr-shake { from { transform: translateX(-50%) rotate(-7deg); } to { transform: translateX(-50%) rotate(7deg); } }
+.dr-gift.is-spark .dr-gift-spark { animation: dr-spark 0.6s ease-in-out infinite alternate; }
+@keyframes dr-spark { from { opacity: 0.2; transform: scale(0.6); } to { opacity: 1; transform: scale(1.1); } }
+.dr-gift.is-open .dr-gift-rays { opacity: 1; transform: translateX(-50%) scale(1.15); }
+.dr-gift.is-item .dr-gift-item { animation: dr-item 0.55s cubic-bezier(.2,1.4,.4,1) forwards; }
+@keyframes dr-item { from { transform: translate(-50%, 0) scale(0); } to { transform: translate(-50%, -95%) scale(1); } }
+.dr-gift-txt { min-height: 1.4em; margin: 18px 0 10px; font-size: 1.35rem; font-weight: 900; color: #fff; -webkit-text-stroke: 4px #4a1d00; paint-order: stroke fill; text-align: center; }
+.dr-gift-ok { padding: 10px 44px; border: none; border-radius: 99px; font-size: 1.05rem; font-weight: 900; color: #5a3a00; cursor: pointer;
+  background: linear-gradient(180deg, #ffe45a, #f2b300); box-shadow: 0 4px 0 #b07c00, inset 0 2px 0 rgba(255,255,255,0.6); }
+.dr-gift-ok:active { transform: translateY(3px); box-shadow: 0 1px 0 #b07c00; }
+.dr-toast { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 9%); transform: translateX(-50%); z-index: 11;
+  padding: 10px 22px; border-radius: 99px; background: rgba(15, 10, 40, 0.88); color: #fff; font-weight: 800; font-size: 0.95rem; white-space: nowrap;
+  box-shadow: 0 0 0 2px #ffd24a; }
+.dr-toast.is-on { animation: dr-toast 1.8s ease both; }
+@keyframes dr-toast { 0% { opacity: 0; transform: translate(-50%, 10px); } 12%, 80% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; } }
 #score-screen .score-best-row { color: #eef3ff; }
 #score-screen .score-empty, #mailbox-screen .score-empty { color: #b3c1e0; }
-#daily-screen .daily-cell { background: rgba(255, 255, 255, 0.08); color: #eef3ff; }
-#daily-screen .daily-cell i { color: #b3c1e0; }
-#daily-screen .daily-cell--today { border-color: #ffce33; background: rgba(255, 206, 51, 0.14); }
 #settings-screen .set-row { border-bottom-color: rgba(255, 255, 255, 0.1); }
 #settings-screen .set-lang:not(.set-lang--on) { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: #dbe5ff; }
 #settings-screen .set-reset { color: #ff8f8f; border-color: rgba(255, 143, 143, 0.5); }
@@ -3283,16 +3369,6 @@ body { background: var(--lm-page); }
 .shop-tab--on { background: linear-gradient(180deg, #4a90f5, #2f6fed 60%, #1f4fc4); box-shadow: 0 5px 0 #163a94, inset 0 2px 2px rgba(255,255,255,0.7), inset 0 -5px 7px rgba(0,30,90,0.35); }
 
 /* 일일 */
-.daily-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 14px; }
-.daily-cell { background: #f4f4f6; border-radius: 10px; padding: 12px 4px; text-align: center; border: 2px solid transparent; }
-.daily-cell i { display: block; font-style: normal; font-size: 0.7rem; color: #8a8a90; }
-.daily-cell b { font-size: 0.85rem; }
-.daily-cell--done { opacity: 0.45; }
-.daily-cell--today { border-color: #f2c14e; }
-.daily-claim { margin: 6px 14px; padding: 12px; border: none; border-radius: 10px;
-  background: linear-gradient(180deg, #57d977, #2fb457); color: #fff; font-weight: 800; cursor: pointer; }
-.daily-claim:disabled { background: #e6e6ea; color: #a0a0a6; }
-.daily-2x { margin: 0 14px 12px; padding: 10px; border: none; border-radius: 10px; background: #ececef; color: #3a3a41; cursor: pointer; }
 
 /* 정적 화면 + 스코어 */
 .info-body { padding: 16px; line-height: 1.6; font-size: 0.86rem; color: #3a3a41; }
