@@ -2799,16 +2799,34 @@ body { background: var(--lm-page); }
 .ws-stage-img { position: absolute; inset: 0; width: 100%; height: 100%; }
 .ws-lbl { position: absolute; top: 2.5%; width: 30%; text-align: center; font-size: 4.2cqw; font-weight: 900; color: #fff; }
 .ws-lbl--l { left: 2%; } .ws-lbl--r { right: 1%; }
-.ws-item { position: absolute; top: 19%; width: 24%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
+.ws-item { position: absolute; top: 14%; width: 24%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
 .ws-item--l { left: 4.5%; } .ws-item--r { right: 3.5%; }
 .ws-item img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .ws-item.has-glow img { filter: drop-shadow(0 0 0.6cqw var(--glow)) drop-shadow(0 0 1.6cqw var(--glow)); } /* 강화 Glow — 원본 이미지는 그대로, 필터 VFX */
 .ws-item b { position: absolute; right: 2%; bottom: 0; font-size: 7cqw; font-weight: 900; color: #fff; -webkit-text-stroke: 1.1cqw #2a0b55; paint-order: stroke fill; }
 .ws-item--r b { -webkit-text-stroke-color: #0b2a55; }
 .ws-item.is-empty img { filter: grayscale(1) brightness(0.45); }
+/* 재료 칸 = 버튼(탭 → 재료 선택 팝업). 선택 전엔 빈 칸 + ＋ 표시(v758) */
+.ws-item--r { cursor: pointer; }
+.ws-item--r.is-unsel::after { content: '+'; position: absolute; font-size: 14cqw; font-weight: 900; color: rgba(255, 255, 255, 0.85); animation: ws-plus 1.2s ease-in-out infinite; }
+@keyframes ws-plus { 50% { transform: scale(1.15); opacity: 0.6; } }
+.ws-pick { position: absolute; inset: 0; z-index: 12; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.55); }
+.ws-pick[hidden] { display: none; }
+.ws-pick-box { width: calc(var(--w) * 0.86); max-height: 76%; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 16px 14px; box-sizing: border-box; border-radius: 18px;
+  background: linear-gradient(#7a4a1e, #4e2c0e); box-shadow: 0 0 0 3px #d9a441, 0 8px 20px rgba(0, 0, 0, 0.5); }
+.ws-pick-title { margin: 0; font-size: calc(var(--w) * 0.06); font-weight: 900; color: #ffe45a; -webkit-text-stroke: 3px #3a1a00; paint-order: stroke fill; }
+.ws-pick-list { width: 100%; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.ws-pick-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 4px; border: none; border-radius: 12px; background: rgba(0, 0, 0, 0.3); color: #fff; cursor: pointer; font: inherit; }
+.ws-pick-item.is-on { box-shadow: 0 0 0 3px #ffd24a; }
+.ws-pick-item:disabled { opacity: 0.4; cursor: default; }
+.ws-pick-img { position: relative; width: 100%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
+.ws-pick-img img { max-width: 90%; max-height: 90%; object-fit: contain; }
+.ws-pick-img b { position: absolute; right: 4%; bottom: 0; font-size: 0.85rem; font-weight: 900; -webkit-text-stroke: 3px #0b2a55; paint-order: stroke fill; }
+.ws-pick-name { font-size: 0.72rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.ws-pick-n { font-size: 0.62rem; font-weight: 700; color: #bfe3ff; white-space: nowrap; }
 .ws-name { position: absolute; left: 2%; top: 11%; width: 32%; text-align: center; font-size: 3.4cqw; font-weight: 800; color: #ffe7a8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ws-matn { position: absolute; right: 1%; top: 11%; width: 32%; text-align: center; font-size: 3.4cqw; font-weight: 800; color: #bfe3ff; }
-.ws-goose { position: absolute; left: 50%; top: 18%; width: 30%; transform: translateX(-50%); }
+.ws-goose { position: absolute; left: 50%; top: -4%; width: 30%; transform: translateX(-50%); }
 .ws-arrow { position: absolute; top: 26%; width: 7%; aspect-ratio: 1; border: none; border-radius: 50%; padding: 0; cursor: pointer;
   font-size: 5cqw; font-weight: 900; line-height: 1; color: #3a2400; background: linear-gradient(180deg, #ffe45a, #f2b300); box-shadow: 0 0.5cqw 0 #a86a00; z-index: 2; }
 .ws-arrow--prev { left: 0; } .ws-arrow--next { left: 30%; }
@@ -2837,18 +2855,49 @@ body { background: var(--lm-page); }
 @keyframes ws-flash { from { opacity: 0.85; } to { opacity: 0; } }
 .ws-screen.is-shake .ws-fx { animation: ws-shake 0.3s ease-out; }
 @keyframes ws-shake { 0%, 100% { transform: none; } 20% { transform: translate(-6px, 3px); } 40% { transform: translate(5px, -4px); } 60% { transform: translate(-3px, 2px); } 80% { transform: translate(2px, -1px); } }
-.ws-fx-goose { position: absolute; left: 50%; top: 32%; width: calc(var(--w) * 0.5); transform: translate(-50%, 0); transition: transform 0.13s linear; }
+.ws-fx-goose { position: absolute; left: 50%; top: 5%; width: calc(var(--w) * 0.5); transform: translate(-50%, 0); transition: transform 0.13s linear; }
 .ws-egg { position: absolute; left: 50%; top: 30%; width: calc(var(--w) * 0.52); transform: translate(-50%, 0); }
 .ws-egg.is-drop { animation: ws-drop 0.7s cubic-bezier(.3, 0, .5, 1) both; }
 @keyframes ws-drop { 0% { transform: translate(-50%, -160%); } 70% { transform: translate(-50%, 0); } 85% { transform: translate(-50%, -6%); } 100% { transform: translate(-50%, 0); } }
 .ws-egg.is-shiver { animation: ws-shiver 0.1s linear infinite alternate; }
+/* 알 낳기(v758): 날아오르는 거위 밑에서 작게 떨어져 커지며 대기 위치로 → 대기 중 살짝 숨쉬기 + 탭 */
+.ws-egg { transform-origin: 50% 100%; }
+/* 알만(egg-solo) 거위 발밑에서 작게 떨어져 받침대(egg-ped)에 안착 → 통통 → 확대(사용자 지정 v758). 두 장 모두 알 1번 이미지와 같은 틀·좌표 */
+/* 거위 날아오르기 효과(사용자 지정 v758): 잔상 2겹(느린 transition 으로 뒤따라옴) + 이륙 먼지 바람 + 황금 깃털 */
+.ws-ghost { pointer-events: none; }
+.ws-ghost--1 { opacity: 0.4; transition: transform 0.26s linear; }
+.ws-ghost--2 { opacity: 0.18; transition: transform 0.42s linear; }
+.ws-rise { position: absolute; left: 50%; top: 30%; width: calc(var(--w) * 0.5); height: 0; transform: translateX(-50%); pointer-events: none; }
+.ws-rise i { position: absolute; opacity: 0; }
+.ws-puff { left: 50%; top: 0; width: 90%; height: calc(var(--w) * 0.14); margin-left: -45%; margin-top: calc(var(--w) * -0.07); border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255, 246, 220, 0.9) 0%, rgba(255, 230, 170, 0.5) 45%, transparent 70%); }
+.ws-rise.is-on .ws-puff { animation: ws-puff 0.7s ease-out both; }
+@keyframes ws-puff { 0% { opacity: 0.95; transform: scale(0.3, 0.5); } 100% { opacity: 0; transform: scale(1.7, 1.1); } }
+.ws-fth { top: -10px; width: calc(var(--w) * 0.035); height: calc(var(--w) * 0.08); border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%;
+  background: linear-gradient(90deg, #ffd23c, #fff3a8 50%, #e8a712); box-shadow: 0 0 4px rgba(255, 210, 60, 0.8); }
+.ws-fth:nth-child(2) { left: 18%; --dx: -30px; --r: -160deg; } .ws-fth:nth-child(3) { left: 38%; --dx: -12px; --r: 120deg; }
+.ws-fth:nth-child(4) { left: 58%; --dx: 14px; --r: -110deg; } .ws-fth:nth-child(5) { left: 78%; --dx: 32px; --r: 170deg; } .ws-fth:nth-child(6) { left: 48%; --dx: 4px; --r: 200deg; }
+.ws-rise.is-on .ws-fth { animation: ws-fth 1.5s ease-in both; }
+.ws-rise.is-on .ws-fth:nth-child(3) { animation-delay: 0.12s; } .ws-rise.is-on .ws-fth:nth-child(4) { animation-delay: 0.06s; } .ws-rise.is-on .ws-fth:nth-child(5) { animation-delay: 0.18s; } .ws-rise.is-on .ws-fth:nth-child(6) { animation-delay: 0.24s; }
+@keyframes ws-fth { 0% { opacity: 1; transform: translate(0, -20px) rotate(0); } 30% { transform: translate(calc(var(--dx) * -0.6), 10px) rotate(calc(var(--r) * 0.4)); }
+  65% { opacity: 1; transform: translate(var(--dx), 50px) rotate(calc(var(--r) * 0.8)); } 100% { opacity: 0; transform: translate(calc(var(--dx) * 0.4), 95px) rotate(var(--r)); } }
+.ws-ped, .ws-egg-solo { position: absolute; left: 50%; top: 30%; width: calc(var(--w) * 0.52); transform: translate(-50%, 0); }
+.ws-egg-solo { transform-origin: 50% 75.2%; transform: translate(-50%, -68%) scale(0.3); }
+.ws-egg-solo.is-lay { animation: ws-lay 1.7s both; }
+@keyframes ws-lay { 0% { transform: translate(-50%, -68%) scale(0.3); animation-timing-function: cubic-bezier(.5, 0, 1, .6); }
+  38% { transform: translate(-50%, 0) scale(0.3); animation-timing-function: ease-out; } 46% { transform: translate(-50%, -8%) scale(0.3); animation-timing-function: ease-in; }
+  54% { transform: translate(-50%, 0) scale(0.3); animation-timing-function: cubic-bezier(.3, 1.3, .5, 1); } 100% { transform: translate(-50%, 0) scale(1); } }
+.ws-egg.is-wait { cursor: pointer; animation: ws-wobble 1.2s ease-in-out infinite; } /* 탭 대기: 좌우 까딱(사용자 지정 v758) */
+@keyframes ws-wobble { 0%, 100% { transform: translate(-50%, 0) rotate(0); } 25% { transform: translate(-50%, 0) rotate(-3deg); filter: brightness(1.12); } 75% { transform: translate(-50%, 0) rotate(3deg); filter: brightness(1.12); } }
+.ws-egg-hint { position: absolute; left: 0; right: 0; top: 76%; margin: 0; text-align: center; font-size: calc(var(--w) * 0.065); font-weight: 900; color: #fff; -webkit-text-stroke: 4px #5a2c0a; paint-order: stroke fill;
+  pointer-events: none; animation: ws-plus 1s ease-in-out infinite; }
 @keyframes ws-shiver { from { transform: translate(-51%, 0) rotate(-1.5deg); } to { transform: translate(-49%, 0) rotate(1.5deg); } }
 .ws-ham { position: absolute; left: 50%; top: 18%; width: calc(var(--w) * 0.48); transform-origin: 50% 85%; transform: translate(60%, -120%) rotate(55deg); opacity: 0; z-index: 2; }
 /* 번개 에셋(에셋2) = 골드 묠니르+녹색 번개 한 장 — 연출 중엔 이 프레임만 보이고 순서대로 바뀜. 원본 묠니르(에셋8)는 번개 없을 때 폴백 */
 .ws-mj { display: none; }
 .ws-bolt { position: relative; width: 100%; display: block; }
 .ws-ham.is-in { opacity: 1; transform: translate(30%, -40%) rotate(35deg); transition: transform 0.45s cubic-bezier(.2, .8, .3, 1), opacity 0.2s; }
-.ws-ham.is-hit { opacity: 1; transform: translate(-18%, -2%) rotate(-12deg); transition: transform 0.09s cubic-bezier(.6, 0, 1, .6); } /* 망치 머리가 알 윗면에 닿는 위치 */
+.ws-ham.is-hit { opacity: 1; transform: translate(-5%, -46%) rotate(-75deg); transition: transform 0.09s cubic-bezier(.6, 0, 1, .6); } /* 망치 머리 아랫면이 알 꼭대기(정중앙)에 닿는 위치(사용자 지정 v758) */
 .ws-ham.is-out { opacity: 0; transform: translate(80%, -90%) rotate(60deg); transition: transform 0.35s ease-in, opacity 0.35s; }
 .ws-result { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
 .ws-res-glow { width: calc(var(--w) * 0.5); aspect-ratio: 1; display: flex; align-items: center; justify-content: center; animation: ws-pop 0.55s cubic-bezier(.2,1.4,.4,1) both; }
