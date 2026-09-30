@@ -5140,11 +5140,11 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .photo-slot--sel .photo-slot-rclip { left: -2px !important; right: -2px !important; top: calc(0.7cm + 0.5px) !important; }
 /* v804(사용자 지정): 사진관 카드 배경 = 선택한 팀 고유 원색(반투명 → 원색). 뒤 배경은 카드 윗선 위로만 보임 */
 [data-photo-slots] .photo-slot::before { background: var(--team-c, #1f63f0) !important; }
-[data-photo-slots][data-team="blue_bears"]  { --team-c: linear-gradient(180deg, #3b7bff, #1646c9); }
-[data-photo-slots][data-team="red_wings"]   { --team-c: linear-gradient(180deg, #ff4a4a, #c4141c); }
-[data-photo-slots][data-team="mount_stars"] { --team-c: linear-gradient(180deg, #2fcf6a, #127a3a); }
-[data-photo-slots][data-team="sun_giants"]  { --team-c: linear-gradient(180deg, #ffb21f, #e36a00); }
-[data-photo-slots][data-team="cloud_cups"]  { --team-c: linear-gradient(180deg, #a76bff, #6a2fd1); }
+[data-photo-slots][data-team="blue_bears"]  { --team-c: #1f5eff; }
+[data-photo-slots][data-team="red_wings"]   { --team-c: #e8141c; }
+[data-photo-slots][data-team="mount_stars"] { --team-c: #15a847; }
+[data-photo-slots][data-team="sun_giants"]  { --team-c: #ff8c00; }
+[data-photo-slots][data-team="cloud_cups"]  { --team-c: #8a3cff; }
 /* v805(사용자 지정: 왼쪽 여백 재발) — 띠 상자를 카드 테두리 상자(.photo-slot, ::before 와 같은 기준)에 직접 배치.
    버튼 안쪽 여백·프레임 위치와 무관하게 테두리 두께만큼만 안쪽 → 어떤 기기에서도 동일 */
 .photo-slot > .photo-slot-rclip { left: 2px !important; right: 2px !important; top: calc(0.7cm + 2px) !important; bottom: calc(0.9cm + 0.2cm) !important; z-index: 4; }
