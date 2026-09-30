@@ -5057,3 +5057,4 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 /* v795(사용자 지정): 사진관 얼굴형 리본(동글형 등) 끝이 줄어든 카드 모서리와 만나게 — 카드 위가 0.3cm 내려간 만큼 리본도 내림 */
 .photo-slot-ribbon { translate: 0 0.3cm; }
 .ws-item--r.is-unsel::after { top: 50%; left: 50%; margin: -17.5cqw 0 0 -5.2cqw; } /* v795(사용자 지정): 재료 + 표시를 빈 칸 가운데로(위로) */
+.cos-detail { translate: 0 -0.1cm; } /* v797(사용자 지정): 코스튬 세부정보 박스만 위로 0.1cm(크기·카드 그대로) */
