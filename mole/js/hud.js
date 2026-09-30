@@ -40,7 +40,7 @@
       hinge.classList.toggle('hinge--mid', ratio < 0.5 && left > 5);
       hinge.classList.toggle('hinge--low', left <= 5);
       var ht = document.getElementById('hinge-time');
-      if (ht) ht.textContent = String(Math.ceil(left));
+      if (ht) ht.textContent = left > 0 ? String(Math.ceil(left)) : ''; // 0초는 숫자 숨김(사용자 지정 v753)
     }
 
     // 콤보 = 게임화면 하단 중앙(하트가 있는 줄)에 표기. 0이면 표시 안 함.
