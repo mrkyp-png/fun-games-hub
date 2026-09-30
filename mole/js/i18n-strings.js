@@ -309,6 +309,7 @@
       'mole.daily.r.skill': '스킬',
 
       'mole.score.rule': '랭킹은 도달한 최고 라운드의 최고 득점을 기준으로 합니다!',
+      'mole.score.me': '나',
       'mole.score.mine': '내 순위',
       'mole.score.dev': '개발 중',
       'mole.score.rhythmSoon': '리듬팡은 지금 개발 중이에요!',
@@ -640,6 +641,7 @@
       'mole.daily.r.skill': 'Skill',
 
       'mole.score.rule': 'Ranked by highest round reached, then best score in it!',
+      'mole.score.me': 'Me',
       'mole.score.mine': 'My rank',
       'mole.score.dev': 'In development',
       'mole.score.rhythmSoon': 'RhythmPang is in development!',

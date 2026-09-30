@@ -92,7 +92,13 @@
     }
 
     function show() {
-      var list = sortRanking(RankingSource.top('mole_pang')).slice(0, 10);
+      // v785(사용자 지정): 내 최고 기록도 랭킹에 넣어 순위대로 표시(서버 전엔 나 혼자라 1위)
+      var me = myBest();
+      var all = RankingSource.top('mole_pang').slice();
+      if (me) all.push({ playerName: T('mole.score.me'), avatar: myAvatar(), mode: me.mode, highestRound: me.round, highestScore: me.score, isMe: true });
+      var sorted = sortRanking(all);
+      var myRank = 0; sorted.forEach(function (e, i) { if (e.isMe) myRank = i + 1; });
+      var list = sorted.slice(0, 10);
       // TOP 3 — 배치 2위 · 1위 · 3위(가운데 1위가 가장 큼)
       top3.innerHTML = '';
       [2, 1, 3].forEach(function (place) { top3.appendChild(cardHtml(list[place - 1], place)); });
@@ -119,12 +125,11 @@
         note.textContent = T('mole.score.empty');
         rows.appendChild(note);
       }
-      // 내 순위 — 순위 번호는 서버 랭킹이 있어야 계산 가능(지금은 —)
-      var me = myBest();
+      // 내 순위
       mine.innerHTML = '<span class="sr-mine-lbl"><small></small><b></b></span><span class="sr-ava"><img alt=""></span>' +
         '<span class="sr-name"></span><span class="sr-pill"></span><strong class="sr-score"></strong>';
       mine.querySelector('small').textContent = T('mole.score.mine');
-      mine.querySelector('.sr-mine-lbl b').textContent = '—';
+      mine.querySelector('.sr-mine-lbl b').textContent = myRank ? String(myRank) : '—';
       mine.querySelector('.sr-ava img').src = myAvatar();
       mine.querySelector('.sr-name').textContent = T('mole.pad.gameMole');
       mine.querySelector('.sr-pill').textContent = me ? code(me.mode, me.round) : '—';
