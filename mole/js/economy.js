@@ -130,5 +130,7 @@
     getCoins: getCoins, addCoins: addCoins, spendCoins: spendCoins, formatK: formatK
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = { Economy: api };
+  // ⚠️ 개발용: 합성 테스트용 코인 100,000 1회 지급(사용자 요청 v756) — 출시 전 삭제
+  if (ls() && !ls().getItem('mole.devCoinGrant1')) { addCoins(100000); ls().setItem('mole.devCoinGrant1', '1'); }
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.Economy = api; }
 })(typeof window !== 'undefined' ? window : null);
