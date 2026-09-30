@@ -131,10 +131,27 @@
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { camError(); return; }
       navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 960 } }, audio: false }).then(function (s) {
         if (st.screen !== 2) { s.getTracks().forEach(function (t) { t.stop(); }); return; }
+        setZoom(1);
         st.stream = s; video.srcObject = s; video.play().catch(function () {});
         detectLoop();
       }).catch(camError);
     }
+    // 두 손가락 줌(사용자 지정 v757): 기본 = 카메라 원본 전체(가장 작게), 벌리면 화면 꽉 찰 때까지 확대.
+    var zoom = 1, pinch = null, camScr = video.parentElement;
+    function zoomMax() {
+      var vw = video.videoWidth, vh = video.videoHeight, sw = camScr.clientWidth, sh = camScr.clientHeight;
+      if (!vw || !vh || !sw || !sh) return 1;
+      var k = Math.min(sw / vw, sh / vh);
+      return Math.max(sw / (vw * k), sh / (vh * k));
+    }
+    function setZoom(z) { zoom = Math.max(1, Math.min(zoomMax(), z)); video.style.setProperty('--z', zoom); }
+    function dist(t) { return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); }
+    camScr.addEventListener('touchstart', function (e) { if (e.touches.length === 2) pinch = { d: dist(e.touches), z: zoom }; }, { passive: true });
+    camScr.addEventListener('touchmove', function (e) {
+      if (!pinch || e.touches.length !== 2) return;
+      e.preventDefault(); setZoom(pinch.z * dist(e.touches) / pinch.d);
+    }, { passive: false });
+    camScr.addEventListener('touchend', function (e) { if (e.touches.length < 2) pinch = null; });
     function camError() { $('[data-fs-camerr]').hidden = false; setCamState('error', T('mole.fs.camDenied')); }
     $('[data-fs-retry]').addEventListener('click', startCamera);
     function stopCamera() {

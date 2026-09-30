@@ -2891,7 +2891,8 @@ body { background: var(--lm-page); }
 .fs-intro-list i { font-style: normal; font-size: calc(var(--w) * 0.06); flex: 0 0 auto; }
 /* 02 카메라 */
 .fs-scr--cam { background: #000; justify-content: flex-end; }
-.fs-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+.fs-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; transform: scale(calc(-1 * var(--z, 1)), var(--z, 1)); } /* 핀치 줌 v757 */
+.fs-scr--cam { touch-action: none; }
 .fs-cam-hint { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 60px); left: 50%; transform: translateX(-50%); margin: 0; padding: 8px 18px; border-radius: 99px;
   background: rgba(0, 0, 0, 0.6); font-weight: 800; font-size: 0.95rem; white-space: nowrap; box-shadow: 0 0 0 1.5px rgba(255,255,255,0.4); }
 .fs-guide { position: absolute; left: 50%; top: 46%; width: min(78vw, 62dvh * 0.75); transform: translate(-50%, -50%); fill: none; }
