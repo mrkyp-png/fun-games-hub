@@ -24,7 +24,9 @@
   }
 
   function avgColor(ctx, x, y, r) {
-    var d = ctx.getImageData(Math.max(0, Math.round(x - r)), Math.max(0, Math.round(y - r)), r * 2, r * 2).data;
+    var cw = ctx.canvas.width, ch = ctx.canvas.height;
+    var sx = Math.min(cw - 1, Math.max(0, Math.round(x - r))), sy = Math.min(ch - 1, Math.max(0, Math.round(y - r)));
+    var d = ctx.getImageData(sx, sy, Math.max(1, Math.min(r * 2, cw - sx)), Math.max(1, Math.min(r * 2, ch - sy))).data;
     var s = [0, 0, 0], n = 0;
     for (var i = 0; i < d.length; i += 4) { if (d[i + 3] < 200) continue; s[0] += d[i]; s[1] += d[i + 1]; s[2] += d[i + 2]; n++; }
     return n ? [s[0] / n, s[1] / n, s[2] / n] : [220, 180, 150];
@@ -57,7 +59,8 @@
       mc.beginPath(); ov.forEach(function (p, i) { if (i) mc.lineTo(p.x, p.y); else mc.moveTo(p.x, p.y); }); mc.closePath(); mc.fillStyle = '#000'; mc.fill();
       cc.globalCompositeOperation = 'destination-in'; cc.drawImage(mk, 0, 0); cc.globalCompositeOperation = 'source-over';
       var bb = det.box, x0 = Math.max(0, Math.floor(bb.x - 10)), y0 = Math.max(0, Math.floor(bb.y - 10));
-      var ww = Math.min(cut.width - x0, Math.ceil(bb.w + 20)), hh = Math.min(cut.height - y0, Math.ceil(bb.h + 20));
+      x0 = Math.min(x0, cut.width - 1); y0 = Math.min(y0, cut.height - 1);
+      var ww = Math.max(1, Math.min(cut.width - x0, Math.ceil(bb.w + 20))), hh = Math.max(1, Math.min(cut.height - y0, Math.ceil(bb.h + 20)));
       var id = cc.getImageData(x0, y0, ww, hh), d = id.data;
       for (var i = 0; i < d.length; i += 4) { d[i] = Math.min(255, d[i] * gain[0]); d[i + 1] = Math.min(255, d[i + 1] * gain[1]); d[i + 2] = Math.min(255, d[i + 2] * gain[2]); }
       cc.putImageData(id, x0, y0);
@@ -184,11 +187,14 @@
     $('[data-fs-shutter]').addEventListener('click', function () {
       if (!video.videoWidth || st.busy) return;
       st.busy = true;
-      var c = document.createElement('canvas'); c.width = video.videoWidth; c.height = video.videoHeight;
-      c.getContext('2d').drawImage(video, 0, 0);
+      // v770: 폰 카메라 원본이 커서(메모리) 합성이 실패하던 것 — 긴 변 960px 로 줄여서 촬영본을 만든다
+      var k = Math.min(1, 960 / Math.max(video.videoWidth, video.videoHeight));
+      var c = document.createElement('canvas'); c.width = Math.round(video.videoWidth * k); c.height = Math.round(video.videoHeight * k);
+      c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
       el.classList.remove('is-snap'); void el.offsetWidth; el.classList.add('is-snap');
       MG.FaceDetect.detect(c).then(function (det) {
         st.busy = false;
+        if (!det || !det.ok) { setCamState('idle', T('mole.fs.cam.none')); toast(T('mole.fs.retake')); return; }
         var j = judge(det, c.width, c.height);
         if (j !== 'ok') { setCamState('idle', T('mole.fs.cam.' + j)); toast(T('mole.fs.retake')); return; }
         st.photo = c; st.det = det; st.results = {}; st.face = null;
@@ -239,7 +245,12 @@
         .then(function (u) { st.results.sharp = u; return after(700); })
         .then(function () { mark(3, 'done'); mark(4, 'now'); t0 = Date.now(); return after(600); })
         .then(function () { mark(4, 'done'); st.busy = false; later(function () { go(5); }, 350); })
-        .catch(function () { st.busy = false; toast(T('mole.fs.err')); go(3); });
+        .catch(function (e) {
+          // v770: 실패 원인을 짧게 함께 표시(폰에서만 나는 오류 확인용)
+          var why = (e && (e.name || e.type || e.message)) || 'err';
+          try { localStorage.setItem('mole.fs.lastErr', String(e && (e.stack || e.message || e))); } catch (x) { /* 무시 */ }
+          st.busy = false; toast(T('mole.fs.err') + ' (' + String(why).slice(0, 40) + ')'); go(3);
+        });
     }
 
     // ---- SCREEN_05/06 얼굴형 선택 ----
