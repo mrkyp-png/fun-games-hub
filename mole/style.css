@@ -2942,7 +2942,7 @@ body { background: var(--lm-page); }
 .ws-mj { display: none; }
 .ws-bolt { position: relative; width: 100%; display: block; }
 .ws-ham.is-in { opacity: 1; transform: translate(30%, -40%) rotate(35deg); transition: transform 0.45s cubic-bezier(.2, .8, .3, 1), opacity 0.2s; }
-.ws-ham.is-hit { opacity: 1; transform: translate(-5%, -46%) rotate(-75deg); transition: transform 0.09s cubic-bezier(.6, 0, 1, .6); } /* 망치 머리 아랫면이 알 꼭대기(정중앙)에 닿는 위치(사용자 지정 v758) */
+.ws-ham.is-hit { opacity: 1; transform: translate(1%, -47.5%) rotate(-75deg); transition: transform 0.09s cubic-bezier(.6, 0, 1, .6); } /* 망치 머리 아랫면이 알 꼭대기(정중앙)에 닿는 위치(사용자 지정 v758) */
 .ws-ham.is-out { opacity: 0; transform: translate(80%, -90%) rotate(60deg); transition: transform 0.35s ease-in, opacity 0.35s; }
 .ws-result { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
 .ws-res-glow { width: calc(var(--w) * 0.5); aspect-ratio: 1; display: flex; align-items: center; justify-content: center; animation: ws-pop 0.55s cubic-bezier(.2,1.4,.4,1) both; }
