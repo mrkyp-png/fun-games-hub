@@ -153,7 +153,7 @@
       var success = Math.random() * 100 < RATE[lv];
       if (success) setLevel(kind, it.id, lv + 1);
       if (opts.onChange) opts.onChange();
-      play(it, lv, success);
+      preloadFrames().then(function () { play(it, lv, success); }); // 첫 강화도 연출 프레임이 다 준비된 뒤 시작(v772)
     });
 
     // 연출(사용자 지정 v758): 거위 날갯짓 → 날아오르며 알(기존 알 이미지)을 작게 낳음 → 알이 커지며 대기 위치
@@ -206,7 +206,7 @@
     $('[data-ws-egg]').addEventListener('click', function () {
       if (!pending || !pending.ready) return;
       pending.ready = false;
-      strike(pending.it, pending.lv, pending.success, pending.eggSet);
+      var pd = pending; preloadFrames().then(function () { strike(pd.it, pd.lv, pd.success, pd.eggSet); }); // 프레임 다 받은 뒤 시작
     });
 
     function strike(it, lv, success, eggSet) {
@@ -261,7 +261,24 @@
       render();
     });
 
+    // v772: 연출 프레임(거위 10·알 성공/실패 각 10·번개 6)은 JS 로만 쓰여 처음엔 아직 안 받아진 상태 —
+    // 첫 강화 때 알 깨짐 연출이 빈 그림으로 지나가 바로 결과가 나왔음(사용자 보고). 제작소를 열 때 미리 받아 디코딩.
+    var framesReady = null;
+    function preloadFrames() {
+      if (framesReady) return framesReady;
+      var list = [], i;
+      for (i = 1; i <= 10; i++) list.push(A + 'goose-' + i + '.png', A + 'egg-ok-' + i + '.png', A + 'egg-ng-' + i + '.png');
+      for (i = 1; i <= 6; i++) list.push(A + 'bolt-' + i + '.png');
+      list.push(A + 'egg-solo.png', A + 'egg-ped.png', A + 'egg-ped-front.png');
+      framesReady = Promise.all(list.map(function (u) {
+        var im = new Image(); im.src = u;
+        return im.decode ? im.decode().catch(function () {}) : new Promise(function (r) { im.onload = im.onerror = r; });
+      }));
+      return framesReady;
+    }
+
     function show() {
+      preloadFrames();
       clearTimers(); stopBolt();
       running = false; pending = null; selMat = null; pick.hidden = true;
       $('[data-ws-ped]').hidden = true; $('[data-ws-eggsolo]').hidden = true; $('[data-ws-pedfront]').hidden = true;
