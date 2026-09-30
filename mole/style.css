@@ -1585,9 +1585,10 @@ body { background: var(--lm-page); }
 /* 랜덤으로 하나 더 섞이는 강조 변형(사용자 지정) — 플래시(불투명도 깜빡임), 글자 커짐. 글자
    커짐은 버튼 자신이 아니라 안의 숫자/자막 span 에 적용(사용자 지정 — 좌우 흔들림 대체). */
 @keyframes lane-attnflash { 0%, 50%, 100% { opacity: 1; } 25%, 75% { opacity: 0.25; } }
+.lane-button.beat-textgrow .lane-num { display: inline-block; }
+/* 자막(.lane-sub)은 flex 세로(윗줄 자음/아랫줄 영문) 유지 — inline-block 이면 한 줄로 붙음(v754) */
 .lane-button.beat-textgrow .lane-num,
 .lane-button.beat-textgrow .lane-sub {
-  display: inline-block;
   animation: lane-text-grow 0.5s ease;
 }
 @keyframes lane-text-grow { 0% { transform: scale(1); } 45% { transform: scale(1.35); } 100% { transform: scale(1); } }
