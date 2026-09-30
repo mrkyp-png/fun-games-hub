@@ -158,6 +158,7 @@
       var ghosts = el.querySelectorAll('[data-ws-ghost]'), rise = $('[data-ws-rise]');
       ghosts.forEach(function (gh) { gh.hidden = true; gh.style.transform = ''; }); rise.className = 'ws-rise';
       ped.hidden = false; solo.hidden = true; solo.className = 'ws-egg-solo';
+      $('[data-ws-pedfront]').hidden = false; // 받침대 앞 띠는 처음부터 거위·알 앞(v760)
       var eggSet = success ? 'egg-ok-' : 'egg-ng-';
       pending = { it: it, lv: lv, success: success, eggSet: eggSet };
       var t = 0;

@@ -2855,7 +2855,7 @@ body { background: var(--lm-page); }
 @keyframes ws-flash { from { opacity: 0.85; } to { opacity: 0; } }
 .ws-screen.is-shake .ws-fx { animation: ws-shake 0.3s ease-out; }
 @keyframes ws-shake { 0%, 100% { transform: none; } 20% { transform: translate(-6px, 3px); } 40% { transform: translate(5px, -4px); } 60% { transform: translate(-3px, 2px); } 80% { transform: translate(2px, -1px); } }
-.ws-fx-goose { position: absolute; left: 50%; top: 5%; width: calc(var(--w) * 0.5); transform: translate(-50%, 0); transition: transform 0.13s linear; }
+.ws-fx-goose { z-index: 1; /* 받침대 앞(사용자 지정) + 날기 전 대기 = 받침대 위(발 기준 아래 정렬, 사용자 지정 v760) */ position: absolute; left: 50%; bottom: calc(70% - var(--dy) - var(--w) * 0.52); width: calc(var(--w) * 0.5); transform: translate(-50%, 0); transition: transform 0.13s linear; }
 /* 알 프레임은 받침대 아래 기준으로 정렬(프레임마다 높이가 달라도 받침대 자리 고정), 아래 22%(받침대 다리)는 잘라 고정 받침대(.ws-pedfront)만 보이게(v759) */
 .ws-egg { position: absolute; left: 50%; bottom: calc(70% - var(--dy) - var(--w) * 0.52 * 363 / 298); width: calc(var(--w) * 0.52); transform: translate(-50%, 0); clip-path: inset(-20% -20% 22% -20%); }
 .ws-egg.is-drop { animation: ws-drop 0.7s cubic-bezier(.3, 0, .5, 1) both; }
@@ -2868,7 +2868,7 @@ body { background: var(--lm-page); }
 .ws-ghost { pointer-events: none; }
 .ws-ghost--1 { opacity: 0.4; transition: transform 0.26s linear; }
 .ws-ghost--2 { opacity: 0.18; transition: transform 0.42s linear; }
-.ws-rise { position: absolute; left: 50%; top: 30%; width: calc(var(--w) * 0.5); height: 0; transform: translateX(-50%); pointer-events: none; }
+.ws-rise { position: absolute; left: 50%; top: calc(30% + var(--dy) + var(--w) * 0.48); width: calc(var(--w) * 0.5); height: 0; transform: translateX(-50%); pointer-events: none; }
 .ws-rise i { position: absolute; opacity: 0; }
 .ws-puff { left: 50%; top: 0; width: 90%; height: calc(var(--w) * 0.14); margin-left: -45%; margin-top: calc(var(--w) * -0.07); border-radius: 50%;
   background: radial-gradient(ellipse, rgba(255, 246, 220, 0.9) 0%, rgba(255, 230, 170, 0.5) 45%, transparent 70%); }
@@ -2883,7 +2883,7 @@ body { background: var(--lm-page); }
 @keyframes ws-fth { 0% { opacity: 1; transform: translate(0, -20px) rotate(0); } 30% { transform: translate(calc(var(--dx) * -0.6), 10px) rotate(calc(var(--r) * 0.4)); }
   65% { opacity: 1; transform: translate(var(--dx), 50px) rotate(calc(var(--r) * 0.8)); } 100% { opacity: 0; transform: translate(calc(var(--dx) * 0.4), 95px) rotate(var(--r)); } }
 .ws-ped, .ws-egg-solo { position: absolute; left: 50%; top: calc(30% + var(--dy)); width: calc(var(--w) * 0.52); transform: translate(-50%, 0); }
-.ws-pedfront { z-index: 1; pointer-events: none; } /* 받침대 앞부분 — 알 위에 고정(알만 움직임) */
+.ws-pedfront { z-index: 2; pointer-events: none; } /* 받침대 앞부분 — 알 위에 고정(알만 움직임) */
 .ws-egg-solo { transform-origin: 50% 75.2%; transform: translate(-50%, calc(-68% - var(--dy))) scale(0.3); }
 .ws-egg-solo.is-lay { animation: ws-lay 1.7s both; }
 @keyframes ws-lay { 0% { transform: translate(-50%, calc(-68% - var(--dy))) scale(0.3); animation-timing-function: cubic-bezier(.5, 0, 1, .6); }
@@ -2894,7 +2894,7 @@ body { background: var(--lm-page); }
 .ws-egg-hint { position: absolute; left: 0; right: 0; top: calc(63% + var(--dy)); margin: 0; text-align: center; font-size: calc(var(--w) * 0.065); font-weight: 900; color: #fff; -webkit-text-stroke: 4px #5a2c0a; paint-order: stroke fill;
   pointer-events: none; animation: ws-plus 1s ease-in-out infinite; }
 @keyframes ws-shiver { from { transform: translate(-51%, 0) rotate(-1.5deg); } to { transform: translate(-49%, 0) rotate(1.5deg); } }
-.ws-ham { position: absolute; left: 50%; top: calc(18% + var(--dy)); width: calc(var(--w) * 0.48); transform-origin: 50% 85%; transform: translate(60%, -120%) rotate(55deg); opacity: 0; z-index: 2; }
+.ws-ham { position: absolute; left: 50%; top: calc(18% + var(--dy)); width: calc(var(--w) * 0.48); transform-origin: 50% 85%; transform: translate(60%, -120%) rotate(55deg); opacity: 0; z-index: 3; }
 /* 번개 에셋(에셋2) = 골드 묠니르+녹색 번개 한 장 — 연출 중엔 이 프레임만 보이고 순서대로 바뀜. 원본 묠니르(에셋8)는 번개 없을 때 폴백 */
 .ws-mj { display: none; }
 .ws-bolt { position: relative; width: 100%; display: block; }
