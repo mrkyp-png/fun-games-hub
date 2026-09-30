@@ -25,11 +25,33 @@
 
   function avgColor(ctx, x, y, r) {
     var cw = ctx.canvas.width, ch = ctx.canvas.height;
+    if (!fin(x) || !fin(y)) return [220, 180, 150];
     var sx = Math.min(cw - 1, Math.max(0, Math.round(x - r))), sy = Math.min(ch - 1, Math.max(0, Math.round(y - r)));
     var d = ctx.getImageData(sx, sy, Math.max(1, Math.min(r * 2, cw - sx)), Math.max(1, Math.min(r * 2, ch - sy))).data;
     var s = [0, 0, 0], n = 0;
     for (var i = 0; i < d.length; i += 4) { if (d[i + 3] < 200) continue; s[0] += d[i]; s[1] += d[i + 1]; s[2] += d[i + 2]; n++; }
     return n ? [s[0] / n, s[1] / n, s[2] / n] : [220, 180, 150];
+  }
+
+  // v786(폰 실패 원인: 일부 기준점 좌표가 NaN 으로 와서 getImageData 에서 멈춤) — 좌표가 비었으면 얼굴 윤곽 범위로 대신 계산
+  function fin(v) { return typeof v === 'number' && isFinite(v); }
+  function fixDet(det, W, H) {
+    var ov = (det.oval || []).filter(function (p) { return p && fin(p.x) && fin(p.y); });
+    var b = det.box;
+    if (!b || !fin(b.x) || !fin(b.y) || !fin(b.w) || !fin(b.h) || b.w <= 0 || b.h <= 0) {
+      if (ov.length < 3) return null;
+      var xs = ov.map(function (p) { return p.x; }), ys = ov.map(function (p) { return p.y; });
+      var x0 = Math.min.apply(null, xs), y0 = Math.min.apply(null, ys);
+      b = { x: x0, y: y0, w: Math.max.apply(null, xs) - x0, h: Math.max.apply(null, ys) - y0 };
+    }
+    function at(p, fx, fy) {
+      var q = (p && fin(p.x) && fin(p.y)) ? { x: p.x, y: p.y } : { x: b.x + b.w * fx, y: b.y + b.h * fy };
+      q.x = Math.min(W - 1, Math.max(0, q.x)); q.y = Math.min(H - 1, Math.max(0, q.y)); return q;
+    }
+    if (ov.length < 3) ov = [0, 1, 2, 3, 4, 5, 6, 7].map(function (k) { var a = k / 8 * Math.PI * 2; return { x: b.x + b.w / 2 + Math.cos(a) * b.w / 2, y: b.y + b.h / 2 + Math.sin(a) * b.h / 2 }; });
+    return { ok: true, count: det.count || 1, oval: ov, box: b,
+      eyeL: at(det.eyeL, 0.3, 0.4), eyeR: at(det.eyeR, 0.7, 0.4), cheekL: at(det.cheekL, 0.02, 0.55), cheekR: at(det.cheekR, 0.98, 0.55),
+      chin: at(det.chin, 0.5, 1), nose: at(det.nose, 0.5, 0.6), skinL: at(det.skinL, 0.3, 0.62), skinR: at(det.skinR, 0.7, 0.62) };
   }
 
   // 한 캐릭터(얼굴형×코스튬)에 촬영 얼굴을 합성 → dataURL
@@ -161,12 +183,13 @@
       var k = Math.min(sw / vw, sh / vh);
       return Math.max(sw / (vw * k), sh / (vh * k));
     }
-    function setZoom(z) { zoom = Math.max(1, Math.min(zoomMax(), z)); video.style.setProperty('--z', zoom); }
+    // v786(사용자 지정): 항상 화면 꽉 채움 고정 — 축소하면 위아래 검은 띠가 얼굴 가이드 안으로 들어왔음. 핀치 줌 비활성.
+    function setZoom() { zoom = zoomMax(); video.style.setProperty('--z', zoom); }
     function dist(t) { return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); }
     camScr.addEventListener('touchstart', function (e) { if (e.touches.length === 2) pinch = { d: dist(e.touches), z: zoom }; }, { passive: true });
     camScr.addEventListener('touchmove', function (e) {
       if (!pinch || e.touches.length !== 2) return;
-      e.preventDefault(); setZoom(pinch.z * dist(e.touches) / pinch.d);
+      e.preventDefault();
     }, { passive: false });
     camScr.addEventListener('touchend', function (e) { if (e.touches.length < 2) pinch = null; });
     function camError() { $('[data-fs-camerr]').hidden = false; setCamState('error', T('mole.fs.camDenied')); }
@@ -220,7 +243,9 @@
         if (!det || !det.ok) { setCamState('idle', T('mole.fs.cam.none')); toast(T('mole.fs.retake')); return; }
         var j = judge(det, c.width);
         if (j !== 'ok') { setCamState('idle', T('mole.fs.cam.' + j)); toast(T('mole.fs.retake')); return; }
-        st.photo = c; st.det = det; st.results = {}; st.face = null;
+        var fd = fixDet(det, c.width, c.height);
+        if (!fd) { setCamState('idle', T('mole.fs.cam.none')); toast(T('mole.fs.retake')); return; }
+        st.photo = c; st.det = fd; st.results = {}; st.face = null;
         go(3);
       });
     });
