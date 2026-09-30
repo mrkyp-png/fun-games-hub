@@ -5056,7 +5056,7 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .ws-stage .ws-arrow--next { left: 29%; }
 /* v795(사용자 지정): 사진관 얼굴형 리본(동글형 등) 끝이 줄어든 카드 모서리와 만나게 — 카드 위가 0.3cm 내려간 만큼 리본도 내림 */
 .photo-slot-ribbon { translate: 0 0; }
-.ws-item--r.is-unsel::after { top: 50%; left: 50%; margin: -17.5cqw 0 0 -5.2cqw; } /* v795(사용자 지정): 재료 + 표시를 빈 칸 가운데로(위로) */
+.ws-item--r.is-unsel::after { top: 50%; left: 50%; margin: -17.5cqw 0 0 -4cqw; } /* v795(사용자 지정): 재료 + 표시를 빈 칸 가운데로(위로) */
 .cos-detail { translate: 0 -0.1cm; } /* v797(사용자 지정): 코스튬 세부정보 박스만 위로 0.1cm(크기·카드 그대로) */
 /* ===== v798(사용자 지정): 광산 맵 입체감 — 어둡게 하지 않고 요소만 떠 보이게(짧고 옅은 그림자 + 윗광택) ===== */
 /* 1) 요소별 그림자 */
@@ -5075,9 +5075,24 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .rm-bottom { box-shadow: inset 0 0 0 0.6cqw #3a1f09, inset 0 1cqw 0 rgba(255, 225, 170, 0.35), inset 0 -1cqw 0 rgba(0, 0, 0, 0.25), 0 -0.6cqw 1.6cqw rgba(0, 0, 0, 0.3); }
 .rm-icon-img { filter: drop-shadow(0 0.6cqw 0.5cqw rgba(0, 0, 0, 0.35)); }
 /* v799(사용자 지정): 카드 윗선(0.7cm 아래) 위쪽은 잘라서 리본 끝이 카드 모서리에 정확히 걸치게 */
-.photo-slot-rclip { position: absolute; left: 0; right: 0; top: 0.7cm; bottom: 0; overflow: hidden; border-radius: 10px 10px 0 0; z-index: 4; pointer-events: none; }
+.photo-slot-rclip { position: absolute; left: -6px; right: -6px; top: calc(0.7cm - 1px); bottom: 0; overflow: hidden; border-radius: 10px 10px 0 0; z-index: 4; pointer-events: none; }
 /* 얼굴형 리본 = 모서리 대각선 띠, 화려하게(금·주황 그라데이션 + 광택 + 흰 테두리) */
 .photo-slot-ribbon { left: -30%; top: calc(12% - 0.3cm + 0.15cm); padding: 3px 0; font-size: 0.5rem; font-weight: 900; letter-spacing: 0.04em;
   background: linear-gradient(180deg, #ffe46b 0%, #ffb627 45%, #ff7a1a 100%); color: #fff; -webkit-text-stroke: 2px #a0400a; paint-order: stroke fill;
   border-top: 1.5px solid #fff6c8; border-bottom: 1.5px solid #b34d06; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.6); }
 .photo-slot--sel .photo-slot-ribbon { background: linear-gradient(180deg, #ff9ce6 0%, #ff4fb3 45%, #d4238a 100%); -webkit-text-stroke-color: #7a0f4c; border-top-color: #ffe0f5; border-bottom-color: #8a1558; }
+/* v800(사용자 지정): 제작소 합성 대상 = 밀어서 넘기기 + 아래 위치 점 + 넘길 수 있음을 알리는 좌우 흔들림 */
+.ws-dots { position: absolute; left: 16.6%; top: 61.5%; transform: translateX(-50%); z-index: 4; display: flex; gap: 1.2cqw; pointer-events: none; }
+.ws-dots[hidden] { display: none; }
+.ws-dots i { width: 2.4cqw; height: 2.4cqw; border-radius: 50%; background: rgba(255, 255, 255, 0.5); box-shadow: 0 0 0 0.3cqw rgba(60, 30, 0, 0.6); }
+.ws-dots i.is-on { background: #ffd23c; box-shadow: 0 0 0 0.3cqw #6b3a12, 0 0 1.2cqw #ffd23c; }
+.ws-item--l { touch-action: pan-y; cursor: grab; }
+.ws-item--l.is-swipeable img { animation: ws-hint 3.2s ease-in-out infinite; }
+@keyframes ws-hint { 0%, 60%, 100% { transform: none; } 70% { transform: translateX(-12%) rotate(-6deg); } 80% { transform: translateX(12%) rotate(6deg); } 90% { transform: translateX(-4%); } }
+.ws-item--l.is-swipe-l img { animation: ws-swipe-l 0.28s ease-out; }
+.ws-item--l.is-swipe-r img { animation: ws-swipe-r 0.28s ease-out; }
+@keyframes ws-swipe-l { from { transform: translateX(40%); opacity: 0.3; } to { transform: none; opacity: 1; } }
+@keyframes ws-swipe-r { from { transform: translateX(-40%); opacity: 0.3; } to { transform: none; opacity: 1; } }
+/* v800(사용자 지정): 좌우 짚더미 위로 먼지 더 많이 — 짚 색 먼지가 위로 피어오름 */
+.ws-dust i.ws-dust--hay { width: 4px; height: 4px; background: radial-gradient(circle, #fff3c4 0 30%, rgba(240, 200, 110, 0.7) 55%, transparent 75%); animation-name: ws-hay-dust; }
+@keyframes ws-hay-dust { 0% { opacity: 0; transform: translate(0, 0) scale(0.6); } 15% { opacity: 0.9; } 60% { transform: translate(8px, -45px) scale(1); } 85% { opacity: 0.5; } 100% { opacity: 0; transform: translate(-6px, -80px) scale(1.2); } }

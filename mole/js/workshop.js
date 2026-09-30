@@ -112,12 +112,33 @@
         : coins < COST ? T('mole.ws.noCoin')
         : !selMat ? T('mole.ws.pickHint')
         : T(tab === 'weapon' ? 'mole.ws.ruleWeapon' : 'mole.ws.ruleCostume');
-      el.querySelectorAll('[data-ws-arrow]').forEach(function (b) { b.hidden = items(tab).length < 2; });
+      el.querySelectorAll('[data-ws-arrow]').forEach(function (b) { b.hidden = true; }); // v800: 화살표 대신 밀어서 넘기기(사용자 지정)
+      var dots = $('[data-ws-dots]'), n = items(tab).length;
+      dots.innerHTML = ''; dots.hidden = n < 2;
+      for (var di = 0; di < n; di++) { var dd = document.createElement('i'); if (di === idx[tab]) dd.className = 'is-on'; dots.appendChild(dd); }
+      $('[data-ws-target]').classList.toggle('is-swipeable', n > 1);
     }
 
     el.querySelectorAll('[data-ws-tab]').forEach(function (b) {
       b.addEventListener('click', function () { if (running) return; tab = b.dataset.wsTab; selMat = null; render(); });
     });
+    // v800(사용자 지정): 합성 대상 원판을 좌우로 밀어서 넘기기
+    (function () {
+      var zone = $('[data-ws-target]'), x0 = null, y0 = 0;
+      function start(x, y) { if (running) return; x0 = x; y0 = y; }
+      function end(x, y) {
+        if (x0 === null) return; var dx = x - x0, dy = y - y0; x0 = null;
+        if (Math.abs(dx) < 30 || Math.abs(dx) < Math.abs(dy) || items(tab).length < 2) return;
+        idx[tab] += dx < 0 ? 1 : -1; selMat = null;
+        zone.classList.remove('is-swipe-l', 'is-swipe-r'); void zone.offsetWidth; zone.classList.add(dx < 0 ? 'is-swipe-l' : 'is-swipe-r');
+        render();
+      }
+      zone.addEventListener('touchstart', function (e) { start(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+      zone.addEventListener('touchend', function (e) { var t = e.changedTouches[0]; end(t.clientX, t.clientY); });
+      zone.addEventListener('dragstart', function (e) { e.preventDefault(); }); // 그림 끌기 방지(마우스)
+      zone.addEventListener('mousedown', function (e) { start(e.clientX, e.clientY); });
+      window.addEventListener('mouseup', function (e) { end(e.clientX, e.clientY); });
+    })();
     el.querySelectorAll('[data-ws-arrow]').forEach(function (b) {
       b.addEventListener('click', function () { if (running) return; idx[tab] += (b.dataset.wsArrow === 'next' ? 1 : -1); selMat = null; render(); });
     });
