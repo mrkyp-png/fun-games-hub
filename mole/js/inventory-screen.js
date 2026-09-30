@@ -520,7 +520,7 @@
             (applied ? '<span class="photo-slot-applied">✓</span>' : '') +
           '</span>' +
           '<span class="photo-slot-status' + (applied ? ' photo-slot-status--on' : '') + '"></span>';
-        slot.querySelector('.photo-slot-ribtxt').textContent = T(PHOTO_FACE_I18N[f.id]);
+        slot.querySelector('.photo-slot-ribtxt').textContent = T(PHOTO_FACE_I18N[f.id]); slot.appendChild(slot.querySelector('.photo-slot-rclip')); // v805: 띠를 카드(테두리 박스)에 직접 붙여 기기별 여백 차이 없앰
         slot.querySelector('.photo-slot-status').textContent =
           T(applied ? 'mole.photo.slotApplied' : 'mole.photo.slotNotApplied');
         slot.addEventListener('click', function () { photoFace = f.id; renderPhoto(); });
