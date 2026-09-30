@@ -107,7 +107,7 @@
         '<span class="lane-flip">' +
         '<span class="lane-face lane-face--back">' + faceHtml + '</span>' +
         '<span class="lane-face lane-face--front lane-face--secret">' +
-          '<span class="lane-num lane-num--secret"' + (lbl ? ' data-i18n="' + lbl + '"' : '') + '>' + f.label + '</span>' +
+          '<span class="lane-num lane-num--secret"' + (lbl ? ' data-i18n="' + lbl + '"' : '') + '>' + (lbl && root.FGH && root.FGH.I18N ? root.FGH.I18N.t(lbl) : f.label) + '</span>' + // v773: 그릴 때 현재 언어로
         '</span>' +
         '</span>';
     } else if (hud) {

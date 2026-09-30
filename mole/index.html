@@ -103,19 +103,14 @@
      아무 버튼이나 눌러도 화면이 깨짐, 사용자 보고: "더큰 문제 생김")가 나서 되돌림 — 원인
      미상, 별도로 다시 조사 필요. 원래의 미세한 클릭통과 버그(홈 진입 첫 12초)보다 이쪽이
      훨씬 치명적이라 우선 원복. */
-  #power-on-overlay { position: fixed; inset: 0; z-index: 9999; pointer-events: none; overflow: hidden; }
-  #power-on-dot {
-    position: absolute; top: 50%; left: 50%; width: 2px; height: 2px; border-radius: 50%; will-change: width, height;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 0 0 9999px #000;
-  }
-  /* 인트로 종료 순간 "화면이 정중앙 점으로 흡수" (사용자 지정) — 다 보이는 상태(거대한 원=투명
-     구멍)에서 시작해 0.6초 만에 점으로 수축, 화면이 빨려들듯 검게 닫힘. */
-  #power-on-dot.is-huge { width: var(--dot-max, 250vmax); height: var(--dot-max, 250vmax); transition: none; }
-  /* v770: 0×0 이면 일부 폰(GPU)이 요소를 아예 안 그려 box-shadow 검은막이 사라지고 홈이 번쩍 비쳤음 — 최소 2px 유지 */
-  #power-on-dot.is-shrink { width: 2px; height: 2px; transition: width 0.6s cubic-bezier(.6, 0, .9, .4), height 0.6s cubic-bezier(.6, 0, .9, .4); }
-  /* 홈 화면 등장 — 점에서 5초에 걸쳐 전체화면으로 확장(휴대폰 켜지는 느낌). */
-  #power-on-dot.is-expand { width: var(--dot-max, 250vmax); height: var(--dot-max, 250vmax); transition: width 10s linear, height 10s linear; }
+  /* v773(사용자 녹화로 원인 확인): 예전엔 검은막을 "커지는 점 + 9999px box-shadow"로 그렸는데, 폰 GPU가 이 거대한 레이어를
+     감당하느라 확장 도중 홈 그림판을 한 프레임 통째로 빼먹어 번쩍였음. → 검은 판 1장 + 원형 구멍 마스크(--pr)로 교체. */
+  @property --pr { syntax: '<length>'; inherits: false; initial-value: 0px; }
+  #power-on-overlay { position: fixed; inset: 0; z-index: 9999; pointer-events: none; overflow: hidden; background: #000;
+    -webkit-mask: radial-gradient(circle at 50% 50%, transparent var(--pr), #000 calc(var(--pr) + 1.5px));
+            mask: radial-gradient(circle at 50% 50%, transparent var(--pr), #000 calc(var(--pr) + 1.5px)); --pr: 0px; }
+  #power-on-overlay.is-expand { --pr: var(--dot-max, 150vmax); transition: --pr 10s linear; }
+  #power-on-dot { display: none; }
 </style>
 </head>
 <body>
@@ -785,7 +780,7 @@
       <div id="lane-button-bar">
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
-        <div id="build-tag" aria-hidden="true">v772</div>
+        <div id="build-tag" aria-hidden="true">v773</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -920,16 +915,15 @@
         // 훨씬 커서 3~5초만에 이미 다 드러나버림) → 정확히 대각선만큼만 커지게 해 10초 내내
         // 실제로 커지는 게 보이게 한다.
         var diag = Math.ceil(Math.sqrt(window.innerWidth * window.innerWidth + window.innerHeight * window.innerHeight)) + 20;
-        dot.style.setProperty('--dot-max', diag + 'px');
+        overlay.style.setProperty('--dot-max', Math.ceil(diag / 2) + 'px'); // 반지름
         overlay.hidden = false;
         // v768(사용자 지정: 첫 진입 번쩍임 삭제): 홈을 잠깐 보여줬다가 점으로 수축하던 단계를 없애고 바로 검은 화면에서 시작.
-        dot.className = '';
-        dot.classList.add('is-shrink');
+        overlay.classList.remove('is-expand');
         setTimeout(function () {
           // 이 시점엔 점이 이미 0×0(검은화면) — 여기서부터 2초간 검게 유지 후 확장 시작.
           setTimeout(function () {
-            dot.classList.remove('is-shrink');
-            dot.classList.add('is-expand');
+            void overlay.offsetWidth;
+            overlay.classList.add('is-expand');
             doScatter();
             try { window.FGH && window.FGH.fadeInHomeBgm && window.FGH.fadeInHomeBgm(10000); } catch (e) { /* 무시 */ }
             setTimeout(function () { overlay.hidden = true; }, 10000);
@@ -998,7 +992,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=772').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=773').catch(function () {});
       }
     });
   }
