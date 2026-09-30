@@ -2874,14 +2874,26 @@ body { background: var(--lm-page); }
   background: radial-gradient(ellipse, rgba(255, 246, 220, 0.9) 0%, rgba(255, 230, 170, 0.5) 45%, transparent 70%); }
 .ws-rise.is-on .ws-puff { animation: ws-puff 0.7s ease-out both; }
 @keyframes ws-puff { 0% { opacity: 0.95; transform: scale(0.3, 0.5); } 100% { opacity: 0; transform: scale(1.7, 1.1); } }
-.ws-fth { top: -10px; width: calc(var(--w) * 0.035); height: calc(var(--w) * 0.08); border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%;
-  background: linear-gradient(90deg, #ffd23c, #fff3a8 50%, #e8a712); box-shadow: 0 0 4px rgba(255, 210, 60, 0.8); }
-.ws-fth:nth-child(2) { left: 18%; --dx: -30px; --r: -160deg; } .ws-fth:nth-child(3) { left: 38%; --dx: -12px; --r: 120deg; }
-.ws-fth:nth-child(4) { left: 58%; --dx: 14px; --r: -110deg; } .ws-fth:nth-child(5) { left: 78%; --dx: 32px; --r: 170deg; } .ws-fth:nth-child(6) { left: 48%; --dx: 4px; --r: 200deg; }
-.ws-rise.is-on .ws-fth { animation: ws-fth 1.5s ease-in both; }
+/* 깃털(사용자 지정 v761): 거위 몸통 높이에서 흩어져 좌우로 흔들리며 내려와 받침대 양옆 바닥에 내려앉은 뒤 사라짐. 색 = 거위 몸(노랑+주황 그림자+깃대) */
+.ws-fth { top: 0; width: calc(var(--w) * 0.032); height: calc(var(--w) * 0.085); border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%;
+  background: linear-gradient(90deg, #f29e00 0%, #ffd21f 30%, #fff08a 44%, #c98200 49%, #c98200 51%, #ffe45a 58%, #ffc814 75%, #e89400 100%);
+  box-shadow: 0 0 0 1px rgba(180, 105, 0, 0.55); }
+.ws-fth:nth-child(2) { left: 22%; --dx: calc(var(--w) * -0.2); --ly: calc(var(--w) * 0.17); --r: -150deg; --sw: calc(var(--w) * 0.05); }
+.ws-fth:nth-child(3) { left: 36%; --dx: calc(var(--w) * -0.12); --ly: calc(var(--w) * 0.21); --r: 110deg; --sw: calc(var(--w) * -0.04); }
+.ws-fth:nth-child(4) { left: 60%; --dx: calc(var(--w) * 0.13); --ly: calc(var(--w) * 0.2); --r: -100deg; --sw: calc(var(--w) * 0.045); }
+.ws-fth:nth-child(5) { left: 76%; --dx: calc(var(--w) * 0.2); --ly: calc(var(--w) * 0.16); --r: 160deg; --sw: calc(var(--w) * -0.05); }
+.ws-fth:nth-child(6) { left: 48%; --dx: calc(var(--w) * 0.02); --ly: calc(var(--w) * 0.23); --r: 200deg; --sw: calc(var(--w) * 0.04); }
+.ws-rise.is-on .ws-fth { animation: ws-fth 2.6s ease-in-out both; }
 .ws-rise.is-on .ws-fth:nth-child(3) { animation-delay: 0.12s; } .ws-rise.is-on .ws-fth:nth-child(4) { animation-delay: 0.06s; } .ws-rise.is-on .ws-fth:nth-child(5) { animation-delay: 0.18s; } .ws-rise.is-on .ws-fth:nth-child(6) { animation-delay: 0.24s; }
-@keyframes ws-fth { 0% { opacity: 1; transform: translate(0, -20px) rotate(0); } 30% { transform: translate(calc(var(--dx) * -0.6), 10px) rotate(calc(var(--r) * 0.4)); }
-  65% { opacity: 1; transform: translate(var(--dx), 50px) rotate(calc(var(--r) * 0.8)); } 100% { opacity: 0; transform: translate(calc(var(--dx) * 0.4), 95px) rotate(var(--r)); } }
+@keyframes ws-fth {
+  0% { opacity: 0; transform: translate(0, calc(var(--w) * -0.3)) rotate(0); }
+  6% { opacity: 1; }
+  25% { transform: translate(calc(var(--dx) * 0.35 + var(--sw)), calc(var(--w) * -0.2)) rotate(calc(var(--r) * 0.3)); }
+  45% { transform: translate(calc(var(--dx) * 0.6 - var(--sw)), calc(var(--w) * -0.06)) rotate(calc(var(--r) * 0.55)); }
+  65% { transform: translate(calc(var(--dx) * 0.85 + var(--sw) * 0.5), calc(var(--ly) * 0.7)) rotate(calc(var(--r) * 0.8)); }
+  78% { opacity: 1; transform: translate(var(--dx), var(--ly)) rotate(var(--r)) scaleY(0.75); }
+  90% { opacity: 1; transform: translate(var(--dx), var(--ly)) rotate(var(--r)) scaleY(0.75); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--ly)) rotate(var(--r)) scaleY(0.75); } }
 .ws-ped, .ws-egg-solo { position: absolute; left: 50%; top: calc(30% + var(--dy)); width: calc(var(--w) * 0.52); transform: translate(-50%, 0); }
 .ws-pedfront { z-index: 2; pointer-events: none; } /* 받침대 앞부분 — 알 위에 고정(알만 움직임) */
 .ws-egg-solo { transform-origin: 50% 75.2%; transform: translate(-50%, calc(-68% - var(--dy))) scale(0.3); }

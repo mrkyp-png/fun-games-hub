@@ -13,14 +13,25 @@
   var RATE = [50, 45, 40, 35, 30];
   var GLOW = ['', '#ffe24a', '#4aa8ff', '#b35cff', '#ff9a2e', '#ff3b3b']; // 단계별 강화 Glow(별도 VFX 레이어)
 
-  // ⚠️ 개발용 기본 재료 수량 — 아직 재료 획득 경로(상점·보상)가 없어 테스트용으로 10개씩.
+  // ⚠️ 개발용 기본 재료 수량 — 아직 재료 획득 경로(상점·보상)가 없어 테스트용으로 50개씩.
   //    획득 경로가 생기면 DEV_MATERIALS = 0 으로.
-  var DEV_MATERIALS = 10;
+  var DEV_MATERIALS = 50;
   // ⚠️ 개발용: 재료 10개씩 1회 재지급(사용자 요청 v758) — 저장된 재료 수를 지워 기본값(10)으로. 출시 전 삭제
   try {
     if (!localStorage.getItem('mole.devMatGrant1')) {
       Object.keys(localStorage).filter(function (k) { return k.indexOf('mole.ws.mat.') === 0; }).forEach(function (k) { localStorage.removeItem(k); });
       localStorage.setItem('mole.devMatGrant1', '1');
+    }
+  } catch (e) { /* 무시 */ }
+
+  // ⚠️ 개발용(사용자 요청 v761): 코인 1,000,000 · 재료 50개씩 · 무기/코스튬 강화 단계 +0 초기화 — 1회. 출시 전 삭제
+  try {
+    if (!localStorage.getItem('mole.devGrant2')) {
+      localStorage.setItem('mole.coins', '1000000');
+      Object.keys(localStorage).filter(function (k) { return k.indexOf('mole.ws.mat.') === 0 || k.indexOf('mole.weapon.level.') === 0; })
+        .forEach(function (k) { localStorage.removeItem(k); });
+      if (root.MoleGame && root.MoleGame.CostumeTeams) root.MoleGame.CostumeTeams.teams().forEach(function (t) { root.MoleGame.CostumeTeams.setEnhanceLevel(t.id, 0); });
+      localStorage.setItem('mole.devGrant2', '1');
     }
   } catch (e) { /* 무시 */ }
 
