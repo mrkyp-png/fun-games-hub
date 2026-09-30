@@ -1851,10 +1851,10 @@ body { background: var(--lm-page); }
 #game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-items {
   display: block; position: absolute; inset: 0; overflow: visible;
 }
-/* 대각선 구분선 */
+/* 대각선 구분선 — 칸 사각 테두리(옆 칸과 같은 크기) 안에 가운데 대각선 두 줄(사용자 지정 v752), 구획선과 같은 색·굵기 */
 .lane-items::before {
-  content: ''; position: absolute; inset: 0; pointer-events: none; /* 각 칸 구획선(.lane-cell-line)과 같은 색·굵기(1px, v742) */
-  background: linear-gradient(to bottom right, transparent calc(50% - 0.5px), rgba(23, 23, 26, 0.3) calc(50% - 0.5px), rgba(23, 23, 26, 0.3) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to bottom right, transparent calc(50% - 2.5px), rgba(23, 23, 26, 0.3) calc(50% - 2.5px), rgba(23, 23, 26, 0.3) calc(50% - 1.5px), transparent calc(50% - 1.5px), transparent calc(50% + 1.5px), rgba(23, 23, 26, 0.3) calc(50% + 1.5px), rgba(23, 23, 26, 0.3) calc(50% + 2.5px), transparent calc(50% + 2.5px));
 }
 /* 원 — 직각삼각형 내접원 지름 ≈ 58.6% 이지만, 테두리·아래 두께가 대각선에 겹쳐 보여(사용자 지적) 48% + 모서리 3% */
 .lane-item {
@@ -1863,15 +1863,27 @@ body { background: var(--lm-page); }
   -webkit-tap-highlight-color: transparent; cursor: pointer; user-select: none;
   transition: transform 0.08s ease, box-shadow 0.08s ease;
 }
-.lane-item[data-slot="0"] { left: 3%; top: 3%; }
-.lane-item[data-slot="1"] { right: 3%; bottom: 5%; } /* 아래 두께(4px)만큼 조금 더 위로 */
+/* 원 중심 = 각 직각삼각형의 내심(세 변에서 같은 거리 r) — 칸이 직사각형이어도 가운데(사용자 지정 v752).
+   r = (가로 + 세로 - 대각선) / 2, 원 반지름 = 24cqw. */
+.lane-items { container-type: size; --in: calc((100cqw + 100cqh - hypot(100cqw, 100cqh)) / 2 - 24cqw); }
+.lane-item[data-slot="0"] { left: var(--in); top: var(--in); }
+.lane-item[data-slot="1"] { right: var(--in); bottom: var(--in); }
 /* 빈 원 — 은은한 테두리만, 눌림·물결 없음 */
 /* 알리펀치 왼쪽(✱ 칸) 스킬 슬롯은 대각선을 반대(\)로 — 오른쪽 칸(/)과 좌우 대칭(사용자 지정 v743). 원은 오른쪽 위·왼쪽 아래. */
 [data-region="12"] .lane-items::before {
-  background: linear-gradient(to top right, transparent calc(50% - 0.5px), rgba(23, 23, 26, 0.3) calc(50% - 0.5px), rgba(23, 23, 26, 0.3) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+  background: linear-gradient(to top right, transparent calc(50% - 2.5px), rgba(23, 23, 26, 0.3) calc(50% - 2.5px), rgba(23, 23, 26, 0.3) calc(50% - 1.5px), transparent calc(50% - 1.5px), transparent calc(50% + 1.5px), rgba(23, 23, 26, 0.3) calc(50% + 1.5px), rgba(23, 23, 26, 0.3) calc(50% + 2.5px), transparent calc(50% + 2.5px));
 }
-[data-region="12"] .lane-item[data-slot="0"] { left: auto; right: 3%; top: 3%; }
-[data-region="12"] .lane-item[data-slot="1"] { right: auto; left: 3%; bottom: 5%; }
+[data-region="12"] .lane-item[data-slot="0"] { left: auto; right: var(--in); top: var(--in); }
+[data-region="12"] .lane-item[data-slot="1"] { right: auto; left: var(--in); bottom: var(--in); }
+/* 대각선이 지나가는 두 모서리 — 두 줄 사이 틈에는 칸 테두리를 그리지 않음(사용자 지정 v752) */
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-cell-line {
+  -webkit-mask: linear-gradient(to bottom right, #000 calc(50% - 1.5px), transparent calc(50% - 1.5px), transparent calc(50% + 1.5px), #000 calc(50% + 1.5px));
+          mask: linear-gradient(to bottom right, #000 calc(50% - 1.5px), transparent calc(50% - 1.5px), transparent calc(50% + 1.5px), #000 calc(50% + 1.5px));
+}
+#game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-cell-line {
+  -webkit-mask: linear-gradient(to top right, #000 calc(50% - 1.5px), transparent calc(50% - 1.5px), transparent calc(50% + 1.5px), #000 calc(50% + 1.5px));
+          mask: linear-gradient(to top right, #000 calc(50% - 1.5px), transparent calc(50% - 1.5px), transparent calc(50% + 1.5px), #000 calc(50% + 1.5px));
+}
 .lane-item--empty { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.2); cursor: default; }
 /* 장착된 스킬 — 원 가득 아이콘 + 아래 두께(번짐 없음 — 성능), 누르면 두께만큼 내려앉음 */
 .lane-item:not(.lane-item--empty) {
@@ -1906,6 +1918,8 @@ body { background: var(--lm-page); }
    지름 = min(칸 폭, 칸 높이), 칸 가운데 정렬. 칸 높이 = (버튼보드 높이 - 행 간격 3개)/4 → cqh. */
 #lane-button-bar { container-type: size; }
 .lane-button--call { width: min(100%, calc((100cqh - 6px) / 4)); height: auto; aspect-ratio: 1; justify-self: center; align-self: center; }
+/* 게임 중 스킬칸(원 아님)은 옆 버튼 칸과 같은 크기로 꽉 채움(사용자 지정 v752) */
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call { width: 100%; height: 100%; aspect-ratio: auto; justify-self: stretch; align-self: stretch; }
 .lane-call-idle {
   position: absolute;
   inset: 0;
