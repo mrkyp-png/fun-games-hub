@@ -132,7 +132,7 @@
       setCamState('idle');
       $('[data-fs-camerr]').hidden = true;
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { camError(); return; }
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 960 }, height: { ideal: 1280 }, aspectRatio: { ideal: 0.75 } }, audio: false }) /* v771: 세로 영상 요청(가로 영상이면 위아래 검은 띠) */.then(function (s) {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 960 } }, audio: false }) /* v783: v771 세로 비율 요청이 일부 폰에서 검은 화면 — 원래 요청으로 복귀(위아래 띠는 기본 꽉 채움 줌으로 해결) */.then(function (s) {
         if (st.screen !== 2) { s.getTracks().forEach(function (t) { t.stop(); }); return; }
         // v771: 기본 = 화면 꽉 채움(위아래 검은 띠 없음). 두 손가락으로 오므리면 원본 전체까지 작아짐.
         video.addEventListener('loadedmetadata', function () { setZoom(zoomMax()); }, { once: true });
