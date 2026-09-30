@@ -783,7 +783,7 @@
       <div id="lane-button-bar">
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
-        <div id="build-tag" aria-hidden="true">v801</div>
+        <div id="build-tag" aria-hidden="true">v802</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -826,11 +826,18 @@ window.FGH = window.FGH || {};
 window.FGH.rollOut = function (el, done) {
   var c = el.cloneNode(true);
   c.classList.remove('is-in', 'is-out', 'is-rollup');
+  c.classList.add('roll-clone');
   c.style.position = 'fixed'; c.style.inset = '0'; c.style.zIndex = '10050'; c.style.pointerEvents = 'none';
-  c.style.animation = 'screen-rollup 0.5s cubic-bezier(.6, 0, .8, .4) both';
+  c.style.willChange = 'transform'; c.style.contain = 'layout paint'; c.style.boxShadow = '0 12px 24px rgba(0,0,0,0.45)';
   el.parentNode.appendChild(c);
+  // v802(사용자 지정: 말림 도중 한 번 '꿀꺽' 멈춤) — 뒤 홈 화면 다시 그리기(무거움)를 말림 시작 전에 끝낸다:
+  // 복제본이 화면을 가린 채 정지해 있는 동안 done() → 2프레임 뒤 말림 시작(GPU 이동) → 움직이는 도중엔 끊김 없음.
   done();
-  setTimeout(function () { c.remove(); }, 560);
+  // 뒤 홈 그림이 처음 그려지는(이미지 올리는) 부담이 말림 초반에 걸리지 않게, 그 작업이 끝날 시간(약 0.15초)을 두고 시작
+  setTimeout(function () { requestAnimationFrame(function () {
+    c.style.animation = 'screen-rollup-gpu 0.5s cubic-bezier(.45, 0, .75, .5) both';
+    setTimeout(function () { c.remove(); }, 560);
+  }); }, 150);
 };
 </script>
 <script src="js/workshop.js"></script>
@@ -1009,7 +1016,7 @@ window.FGH.rollOut = function (el, done) {
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=801').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=802').catch(function () {});
       }
     });
   }

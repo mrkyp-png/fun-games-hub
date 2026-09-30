@@ -5097,3 +5097,6 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .ws-dust i.ws-dust--hay { width: 4px; height: 4px; background: radial-gradient(circle, #fff3c4 0 30%, rgba(240, 200, 110, 0.7) 55%, transparent 75%); animation-name: ws-hay-dust; }
 @keyframes ws-hay-dust { 0% { opacity: 0; transform: translate(0, 0) scale(0.6); } 15% { opacity: 0.9; } 60% { transform: translate(8px, -45px) scale(1); } 85% { opacity: 0.5; } 100% { opacity: 0; transform: translate(-6px, -80px) scale(1.2); } }
 .photo-slot-ribbon { width: 150%; left: -58%; top: calc(12% - 0.3cm + 0.15cm - 4px); } /* v801: 리본을 길게 — 기기 폭이 달라도 왼쪽 카드선까지 닿게(넘치는 부분은 잘림) */
+/* v802: 뒤로가기 말림을 GPU 이동으로 — 아래 끝이 살짝 말려 들어가며(scaleY) 위로 올라감 */
+@keyframes screen-rollup-gpu { from { transform: translate3d(0, 0, 0); } 70% { transform: translate3d(0, -72%, 0) scaleY(0.96); } to { transform: translate3d(0, -104%, 0) scaleY(0.9); } }
+.roll-clone * { animation: none !important; transition: none !important; } /* v802: 말려 올라가는 복제본 안 애니메이션 정지 → 매 프레임 다시 그리기 부담 제거 */

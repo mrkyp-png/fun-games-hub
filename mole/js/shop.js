@@ -440,7 +440,7 @@
     // 어느 경로로 나가도(홈 아이콘, 메일함 등 — 뒤로가기 버튼이 없어 경로가 다양함) 탭 전환과
     // 동일하게 롤아웃(사용자 지정: "재화버튼 외 다른 버튼을 누르면 전부 적용, 홈화면도 동일").
     new MutationObserver(function () {
-      if (el.hidden) rollOutHudFlys();
+      if (el.hidden) removeHudFlys(); // v802(사용자 지정: 다른 화면 갈 때 원 잔상) — 상점을 떠날 땐 즉시 제거(탭 전환 롤아웃은 그대로)
     }).observe(el, { attributes: true, attributeFilter: ['hidden'] });
     return { show: show };
   }
