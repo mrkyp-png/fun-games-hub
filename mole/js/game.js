@@ -2968,6 +2968,13 @@
       // 무기 탭 구매 잠금 — 게임 진행 중(라운드1~클리어)에만 비활성화.
       gameInProgress: () => !!(state && !state.ended)
     });
+    const faceStudioEl = document.getElementById('face-studio');
+    const faceStudio = MG.FaceStudio.create({
+      root: faceStudioEl,
+      onClose: () => { faceStudioEl.hidden = true; if (workshop) workshop.show(); },
+      onChange: () => { if (moreMenu) moreMenu.refresh(); }
+    });
+    document.querySelector('[data-ws-photo]').addEventListener('click', () => { faceStudioEl.hidden = false; faceStudio.open(); });
     workshop = MG.Workshop.create({
       root: document.getElementById('workshop-screen'),
       onClose: () => closeMore(),

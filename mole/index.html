@@ -466,9 +466,10 @@
         <div class="ws-ui">
           <button type="button" class="ws-close" data-ws-close aria-label="닫기"><img src="assets/workshop/close.png" alt=""></button>
           <div class="ws-sign"><img src="assets/workshop/sign.png" alt=""><b data-i18n="mole.ws.title">제작소</b><small>MOLE PANG</small></div>
-          <div class="ws-tabs">
+          <div class="ws-tabs ws-tabs--3">
             <button type="button" class="ws-tab is-on" data-ws-tab="weapon"><span data-i18n="mole.ws.tabWeapon">무기 합성</span></button>
             <button type="button" class="ws-tab" data-ws-tab="costume"><span data-i18n="mole.ws.tabCostume">코스튬 합성</span></button>
+            <button type="button" class="ws-tab" data-ws-photo><span data-i18n="mole.fs.tabPhoto">사진 합성</span></button>
           </div>
           <div class="ws-stage">
             <img class="ws-stage-img" src="assets/workshop/stage.png" alt="">
@@ -501,6 +502,104 @@
             <button type="button" class="ws-res-ok" data-ws-ok data-i18n="mole.daily.ok">확인</button>
           </div>
         </div>
+      </div>
+
+      <!-- 제작소 "사진 합성" 전체화면(7단계) — 바탕화면 "제작소 UI 및 에셋(얼굴합성)" 명세·에셋 기준(v751). js/face-studio.js -->
+      <div class="fs-root" id="face-studio" hidden>
+        <button type="button" class="fs-back" data-fs-back aria-label="뒤로" data-i18n-aria-label="common.back"><img src="assets/score/btn-back.png" alt=""></button>
+        <!-- SCREEN_01 사진 촬영 안내 -->
+        <section class="fs-scr fs-scr--intro" data-fs-screen="1">
+          <div class="fs-intro-card">
+            <div class="fs-intro-cam" aria-hidden="true">📷</div>
+            <h2 data-i18n="mole.fs.introTitle">사진 촬영</h2>
+            <p class="fs-intro-sub" data-i18n="mole.fs.introSub">사진을 촬영하여 나만의 캐릭터를 만들어보세요!</p>
+            <ul class="fs-intro-list">
+              <li><i>✅</i><span data-i18n="mole.fs.n1">촬영한 사진은 캐릭터 생성·얼굴 합성에만 사용됩니다.</span></li>
+              <li><i>📵</i><span data-i18n="mole.fs.n2">사진은 기기에서만 처리되며 서버에 저장하지 않습니다.</span></li>
+              <li><i>🗑️</i><span data-i18n="mole.fs.n3">촬영한 원본 사진은 합성이 끝나면 자동으로 삭제됩니다.</span></li>
+              <li><i>🚫</i><span data-i18n="mole.fs.n4">갤러리에 저장되지 않으며 공유 기능이 없습니다.</span></li>
+              <li><i>🙋</i><span data-i18n="mole.fs.n5">본인만 촬영해주세요. 다른 사람의 사진은 사용하지 마세요.</span></li>
+            </ul>
+          </div>
+          <button type="button" class="fs-btn" data-fs-agree><span data-i18n="mole.fs.agree">동의하고 촬영하기</span></button>
+        </section>
+        <!-- SCREEN_02 카메라 촬영 -->
+        <section class="fs-scr fs-scr--cam" data-fs-screen="2" hidden>
+          <video class="fs-video" data-fs-video playsinline muted autoplay></video>
+          <p class="fs-cam-hint" data-fs-hint></p>
+          <svg class="fs-guide" data-fs-guide viewBox="0 0 300 400" aria-hidden="true">
+            <path class="fs-g-corner" d="M20 60V20h40M240 20h40v40M280 340v40h-40M60 380H20v-40" />
+            <line class="fs-g-mid" x1="150" y1="40" x2="150" y2="360" />
+            <ellipse class="fs-g-oval" cx="150" cy="195" rx="95" ry="130" />
+            <path class="fs-g-side" d="M62 130 Q48 195 62 262M238 130 Q252 195 238 262" />
+          </svg>
+          <p class="fs-cam-ready" data-fs-ready hidden data-i18n="mole.fs.ready">촬영 준비 완료!</p>
+          <button type="button" class="fs-shutter" data-fs-shutter disabled aria-label="촬영"></button>
+          <div class="fs-camerr" data-fs-camerr hidden><p data-i18n="mole.fs.camDenied">카메라를 사용할 수 없어요. 카메라 권한을 허용해 주세요.</p><button type="button" class="fs-btn fs-btn--sm" data-fs-retry><span data-i18n="mole.fs.retry">다시 시도</span></button></div>
+        </section>
+        <!-- SCREEN_03 코스튬 선택 -->
+        <section class="fs-scr fs-scr--costume" data-fs-screen="3" hidden>
+          <div class="fs-embs">
+            <button type="button" data-fs-emb="blue_bears"><img src="assets/facestudio/emb-blue_bears.png" alt="Blue Bears"></button>
+            <button type="button" data-fs-emb="red_wings"><img src="assets/facestudio/emb-red_wings.png" alt="Red Wings"></button>
+            <button type="button" data-fs-emb="mount_stars"><img src="assets/facestudio/emb-mount_stars.png" alt="Mount Stars"></button>
+            <button type="button" data-fs-emb="sun_giants"><img src="assets/facestudio/emb-sun_giants.png" alt="Sun Giants"></button>
+            <button type="button" data-fs-emb="cloud_cups"><img src="assets/facestudio/emb-cloud_cups.png" alt="Cloud Cups"></button>
+          </div>
+          <p class="fs-cname" data-fs-cname></p>
+          <div class="fs-cstage">
+            <button type="button" class="fs-carrow fs-carrow--l" data-fs-carrow="prev" aria-label="이전"><img src="assets/facestudio/arrow-l.png" alt=""></button>
+            <button type="button" class="fs-carrow fs-carrow--r" data-fs-carrow="next" aria-label="다음"><img src="assets/facestudio/arrow-r.png" alt=""></button>
+            <div class="fs-ccards">
+              <div class="fs-ccard" data-fs-ccard><img alt=""><img class="fs-ped" src="assets/facestudio/ped-blue.png" alt=""></div>
+              <div class="fs-ccard fs-ccard--mid" data-fs-ccard><img alt=""><img class="fs-ped" src="assets/facestudio/ped-gold.png" alt=""></div>
+              <div class="fs-ccard" data-fs-ccard><img alt=""><img class="fs-ped" src="assets/facestudio/ped-blue.png" alt=""></div>
+            </div>
+          </div>
+          <button type="button" class="fs-btn" data-fs-costume-ok><span data-i18n="mole.fs.costumeOk">이 코스튬으로 결정하기</span></button>
+        </section>
+        <!-- SCREEN_04 합성 진행 -->
+        <section class="fs-scr fs-scr--prog" data-fs-screen="4" hidden>
+          <h2 class="fs-title" data-i18n="mole.fs.progTitle">캐릭터를 만들어주세요!</h2>
+          <p class="fs-sub" data-i18n="mole.fs.progSub">잠시만 기다려주세요.</p>
+          <div class="fs-ring"><canvas class="fs-ring-face" data-fs-ringface></canvas><img src="assets/facestudio/ring.png" alt=""></div>
+          <ul class="fs-steps">
+            <li data-fs-step><i></i><span data-i18n="mole.fs.s1">얼굴 분석 중...</span></li>
+            <li data-fs-step><i></i><span data-i18n="mole.fs.s2">얼굴형 맞춤 조정 중...</span></li>
+            <li data-fs-step><i></i><span data-i18n="mole.fs.s3">피부색 보정 중...</span></li>
+            <li data-fs-step><i></i><span data-i18n="mole.fs.s4">캐릭터와 합성 중...</span></li>
+            <li data-fs-step><i></i><span data-i18n="mole.fs.s5">마무리 중...</span></li>
+          </ul>
+        </section>
+        <!-- SCREEN_05/06 얼굴형 선택 -->
+        <section class="fs-scr fs-scr--face" data-fs-screen="5 6" hidden>
+          <h2 class="fs-title" data-fs-face-title></h2>
+          <p class="fs-sub" data-i18n="mole.fs.faceSub">내 얼굴에 가장 잘 어울리는 얼굴형을 선택해보세요.</p>
+          <div class="fs-fcards">
+            <button type="button" class="fs-fcard" data-fs-fcard="round"><img class="fs-fcard-q" src="assets/facestudio/qcard.png" alt=""><img class="fs-fcard-char" alt=""><b data-i18n="mole.fs.round">동글형</b><small data-i18n="mole.fs.roundDesc">둥근 얼굴로 귀엽고 친근한 느낌</small></button>
+            <button type="button" class="fs-fcard" data-fs-fcard="sturdy"><img class="fs-fcard-q" src="assets/facestudio/qcard.png" alt=""><img class="fs-fcard-char" alt=""><b data-i18n="mole.fs.sturdy">듬직형</b><small data-i18n="mole.fs.sturdyDesc">넓은 얼굴로 강하고 듬직한 느낌</small></button>
+            <button type="button" class="fs-fcard" data-fs-fcard="sharp"><img class="fs-fcard-q" src="assets/facestudio/qcard.png" alt=""><img class="fs-fcard-char" alt=""><b data-i18n="mole.fs.sharp">날렵형</b><small data-i18n="mole.fs.sharpDesc">슬림한 얼굴로 날렵하고 세련된 느낌</small></button>
+          </div>
+          <div class="fs-mascot"><img src="assets/facestudio/mascot.png" alt=""><p class="fs-bubble" data-fs-bubble></p></div>
+          <button type="button" class="fs-btn" data-fs-face-ok><span data-i18n="mole.fs.faceOk">이 얼굴형으로 만들기</span></button>
+        </section>
+        <!-- SCREEN_07 완성 -->
+        <section class="fs-scr fs-scr--done" data-fs-screen="7" hidden>
+          <h2 class="fs-title fs-title--big" data-i18n="mole.fs.doneTitle">완성된 캐릭터!</h2>
+          <div class="fs-done-stage">
+            <i class="fs-confetti" aria-hidden="true"></i>
+            <img class="fs-final" data-fs-final alt="">
+            <div class="fs-polaroid"><img data-fs-polaroid alt=""><b>Nice!</b></div>
+          </div>
+          <p class="fs-done-msg" data-i18n="mole.fs.doneMsg">와! 나만의 캐릭터가 완성됐어요!</p>
+          <button type="button" class="fs-btn" data-fs-use><span data-i18n="mole.fs.use">게임에서 사용하기</span></button>
+          <p class="fs-applied" data-fs-applied></p>
+          <div class="fs-done-sub">
+            <button type="button" class="fs-sbtn" data-fs-other data-i18n="mole.fs.other">다른 얼굴형 보기</button>
+            <button type="button" class="fs-sbtn" data-fs-home data-i18n="mole.fs.home">제작소로 돌아가기</button>
+          </div>
+        </section>
+        <div class="fs-toast" data-fs-toast hidden></div>
       </div>
 
       <!-- 일일출석(DAILY REWARD) 전체화면 — 바탕화면 "일일출석 UI 및 에셋" 명세·에셋 기준(v748). 카드 글자·수량·상태는 js/daily.js 가 그린다. -->
@@ -642,7 +741,7 @@
       <div id="lane-button-bar">
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
-        <div id="build-tag" aria-hidden="true">v750</div>
+        <div id="build-tag" aria-hidden="true">v751</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -679,6 +778,7 @@
 <script src="js/shop.js"></script>
 <script src="js/daily.js"></script>
 <script src="js/workshop.js"></script>
+<script src="js/face-studio.js"></script>
 <script src="js/score-screen.js"></script>
 <script src="js/settings-screen.js"></script>
 <script src="js/inventory-screen.js"></script>
@@ -831,7 +931,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=750').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=751').catch(function () {});
       }
     });
   }

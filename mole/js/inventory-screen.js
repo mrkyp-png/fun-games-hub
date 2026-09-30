@@ -548,7 +548,7 @@
         slot.innerHTML =
           '<span class="photo-slot-frame">' +
             '<img class="photo-slot-pedestal" alt="" src="assets/photo/pedestal_' + (sel ? 'gold' : 'blue') + '.png">' +
-            '<img class="photo-slot-img' + (completed ? '' : ' photo-slot-img--locked') + '" alt="" src="assets/photo/characters/' + id + '.png">' +
+            '<img class="photo-slot-img' + (completed ? '' : ' photo-slot-img--locked') + '" alt="" src="' + MG.PhotoStudio.imageFor(id) + '">' +
             '<span class="photo-slot-ribbon"></span>' +
             (applied ? '<span class="photo-slot-applied">✓</span>' : '') +
           '</span>' +
@@ -644,7 +644,7 @@
           card.className = 'photo-coll-card';
           // 사용자 지정: 완성 여부와 무관하게 항상 엠블럼 팀에 맞는 얼굴형 캐릭터를 표시(§"제일 중요").
           card.innerHTML =
-            '<img class="photo-coll-card-img' + (completed ? '' : ' photo-coll-card-img--locked') + '" alt="" src="assets/photo/characters/' + id + '.png">' +
+            '<img class="photo-coll-card-img' + (completed ? '' : ' photo-coll-card-img--locked') + '" alt="" src="' + MG.PhotoStudio.imageFor(id) + '">' +
             (applied ? '<span class="photo-coll-card-applied">✓</span>' : '');
           card.addEventListener('click', function () { photoDetailId = id; renderPhotoDetailZoom(id); });
           grid.appendChild(card);
@@ -712,7 +712,7 @@
           '<button type="button" class="photo-zoom-nav photo-zoom-nav--prev" data-photo-zoom-prev>◀</button>' +
           '<button type="button" class="photo-zoom-nav photo-zoom-nav--next" data-photo-zoom-next>▶</button>' +
           '<span class="photo-zoom-imgwrap">' +
-            '<img class="photo-zoom-img' + (completed ? '' : ' photo-zoom-img--locked') + '" alt="" src="assets/photo/characters/' + id + '.png">' +
+            '<img class="photo-zoom-img' + (completed ? '' : ' photo-zoom-img--locked') + '" alt="" src="' + MG.PhotoStudio.imageFor(id) + '">' +
           '</span>' +
           (applied ? '<div class="photo-zoom-applied"></div>' : '') +
           '<div class="photo-zoom-name"></div>' +

@@ -124,6 +124,24 @@
     return true;
   }
 
+  // 제작소 사진 합성 결과 저장(v751) — 합성 이미지(dataURL)는 캐릭터별 키에 따로, 완성 표시는 기존 상태에.
+  // 저장 공간 부족 등으로 실패하면 false(완성 표시도 하지 않음 — 이미지 없는 완성 캐릭터 방지).
+  var K_IMG = 'mole.photo.img.';
+  function saveComposite(id, dataUrl, info) {
+    if (!characterDef(id) || !dataUrl) return false;
+    try {
+      localStorage.setItem(K_IMG + id, dataUrl);
+      localStorage.setItem(K_IMG + id + '.meta', JSON.stringify({ id: id, costumeId: info && info.costumeId, faceType: info && info.faceType, createdAt: new Date().toISOString() }));
+    } catch (e) { return false; }
+    return markCompleted(id);
+  }
+  // 사진관·게임 표시용 이미지 — 합성 결과가 있으면 그것, 없으면 얼굴 빈 기본 캐릭터.
+  function imageFor(id) {
+    var u = null;
+    try { u = localStorage.getItem(K_IMG + id); } catch (e) { u = null; }
+    return u || ('assets/photo/characters/' + id + '.png');
+  }
+
   // 개별 캐릭터 효과(§17) — 등장한 캐릭터 하나의 효과만 적용, 중첩 없음.
   function effectFor(id) { return isCompleted(id) ? CHAR_EFFECT_VALUE : 0; }
   // 전체 컬렉션 보상(§18) — 개별 효과와 별개로 관리.
@@ -146,7 +164,7 @@
     charactersFor: charactersFor,
     isCompleted: isCompleted, isApplied: isApplied, nameOf: nameOf, setName: setName,
     appliedIds: appliedIds, completedCount: completedCount, isCollectionComplete: isCollectionComplete,
-    toggleApply: toggleApply, markCompleted: markCompleted,
+    toggleApply: toggleApply, markCompleted: markCompleted, saveComposite: saveComposite, imageFor: imageFor,
     effectFor: effectFor, globalEffectValue: globalEffectValue, appliedPoolForGame: appliedPoolForGame
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = { PhotoStudio: api };

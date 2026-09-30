@@ -33,12 +33,13 @@
     meshP = (typeof FaceMesh !== 'undefined' ? Promise.resolve() : loadScript(VENDOR + 'face_mesh.js'))
       .then(function () {
         var m = new FaceMesh({ locateFile: function (f) { return VENDOR + f; } });
-        m.setOptions({ maxNumFaces: 1, refineLandmarks: false, minDetectionConfidence: 0.4 });
+        // 2명까지 찾아 '여러 얼굴' 촬영 실패를 판정(얼굴합성 명세 §8, v751). 결과 계산은 첫 얼굴 기준 그대로.
+        m.setOptions({ maxNumFaces: 2, refineLandmarks: false, minDetectionConfidence: 0.4 });
         m.onResults(function (r) {
           var f = pending; pending = null;
           if (!f) return;
-          var lm = r.multiFaceLandmarks && r.multiFaceLandmarks[0];
-          f(lm || null);
+          var all = r.multiFaceLandmarks || [];
+          f(all[0] || null, all.length);
         });
         return m;
       });
@@ -56,7 +57,7 @@
           settled = true; pending = null;
           resolve({ ok: false, oval: [], box: null });
         }, 8000);
-        pending = function (lm) {
+        pending = function (lm, count) {
           if (settled) return;
           settled = true; clearTimeout(timer);
           if (!lm) { resolve({ ok: false, oval: [], box: null }); return; }
@@ -65,7 +66,10 @@
           var ys = pts.map(function (p) { return p.y; });
           var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
           var y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
-          resolve({ ok: true, oval: pts, box: { x: x0, y: y0, w: x1 - x0, h: y1 - y0 } });
+          var P = function (i) { return { x: lm[i].x * w, y: lm[i].y * h }; };
+          // 얼굴합성용 기준점(v751): 눈 바깥꼬리 33/263, 볼 끝 234/454, 턱 152, 코끝 1, 볼 살 샘플 50/280
+          resolve({ ok: true, oval: pts, box: { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }, count: count || 1,
+            eyeL: P(33), eyeR: P(263), cheekL: P(234), cheekR: P(454), chin: P(152), nose: P(1), skinL: P(50), skinR: P(280) });
         };
         mesh.send({ image: src }).catch(function () {
           if (settled) return;
