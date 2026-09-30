@@ -2705,6 +2705,19 @@ body { background: var(--lm-page); }
 .sr-back img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .sr-back:active { transform: scale(0.9); }
 .sr-title { width: calc(var(--w) * 0.56); flex: 0 0 auto; }
+/* ===== v778 스코어 4위 이하 = 두툼한 카드(사용자 참고 이미지 구성) ===== */
+#score-screen .sr-rows { gap: calc(var(--w) * 0.02); }
+#score-screen .sr-row { height: calc(var(--w) * 0.15); grid-template-columns: 10% 15% 1fr 26%; column-gap: 2%; padding: 0 3%; box-sizing: border-box; border-radius: calc(var(--w) * 0.035);
+  background: linear-gradient(180deg, #ffffff 0%, #eef2fa 100%); border: 0; box-shadow: 0 5px 0 #b9c3d8, 0 7px 10px rgba(0, 0, 0, 0.3), inset 0 2px 0 #fff; }
+#score-screen .sr-row .sr-rank { font-size: calc(var(--w) * 0.07); color: #5a6680; }
+#score-screen .sr-row .sr-ava { width: calc(var(--w) * 0.115); height: calc(var(--w) * 0.115); border-radius: calc(var(--w) * 0.028); overflow: hidden; background: linear-gradient(180deg, #8fb6ff, #5b7fd6); box-shadow: 0 0 0 2px #fff, 0 2px 4px rgba(0,0,0,0.3); }
+#score-screen .sr-row .sr-ava img { width: 100%; height: 100%; object-fit: cover; }
+.sr-who { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; }
+#score-screen .sr-row .sr-name { padding: 0; font-size: calc(var(--w) * 0.048); font-weight: 900; color: #2a3558; max-width: 100%; }
+#score-screen .sr-row .sr-pill { font-size: calc(var(--w) * 0.03); padding: 1px 10px; }
+.sr-sbox { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 74%; border-radius: calc(var(--w) * 0.025); background: linear-gradient(180deg, #f4f6fb, #dfe5f1); box-shadow: inset 0 2px 3px rgba(0,0,0,0.15), 0 0 0 2px #cfd7e6; }
+.sr-sbox i { font-style: normal; font-size: calc(var(--w) * 0.026); font-weight: 900; color: #7a869f; letter-spacing: 0.08em; }
+#score-screen .sr-row .sr-sbox .sr-score { padding: 0; text-align: center; font-size: calc(var(--w) * 0.048); color: #2a3558; }
 /* ===== 스코어 화면 애니메이션(사용자 지정 v765): ①꽃잎·금빛 흩날림 ②제목 광택+별 반짝 ③1위 카드 빛+왕관 반짝 ④4~10위 차례 등장 ⑤내 순위 반짝 ===== */
 .sr-fx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
 .sr-fx i { position: absolute; top: -4%; opacity: 0; animation: sr-fall linear infinite; }

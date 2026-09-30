@@ -102,7 +102,9 @@
         var e = list[r - 1];
         var row = document.createElement('div');
         row.className = 'sr-row' + (e ? '' : ' is-empty');
-        row.innerHTML = '<b class="sr-rank"></b><span class="sr-ava"><img alt=""></span><span class="sr-name"></span><span class="sr-pill"></span><strong class="sr-score"></strong>';
+        // 4위 이하 = 두툼한 흰 카드(사용자 참고 이미지 구성, v778): 순위 · 아바타 · 이름/라운드 뱃지 · 오른쪽 점수 박스
+        row.innerHTML = '<b class="sr-rank"></b><span class="sr-ava"><img alt=""></span><span class="sr-who"><span class="sr-name"></span><span class="sr-pill"></span></span>' +
+          '<span class="sr-sbox"><i>SCORE</i><strong class="sr-score"></strong></span>';
         row.querySelector('.sr-rank').textContent = String(r);
         row.querySelector('.sr-ava img').src = e ? (e.avatar || 'assets/moles/mole1.png') : 'assets/moles/mole1.png';
         row.querySelector('.sr-name').textContent = e ? e.playerName : '—';
