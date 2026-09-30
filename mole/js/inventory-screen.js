@@ -515,7 +515,7 @@
           '<span class="photo-slot-frame">' +
             '<img class="photo-slot-pedestal" alt="" src="assets/photo/pedestal_' + (sel ? 'gold' : 'blue') + '.png">' +
             '<img class="photo-slot-img' + (completed ? '' : ' photo-slot-img--locked') + '" alt="" src="' + MG.PhotoStudio.imageFor(id) + '">' +
-            '<span class="photo-slot-ribbon"></span>' +
+            '<span class="photo-slot-rclip"><span class="photo-slot-ribbon"></span></span>' + // v799: 리본만 카드 윗선 기준으로 자름
             (applied ? '<span class="photo-slot-applied">✓</span>' : '') +
           '</span>' +
           '<span class="photo-slot-status' + (applied ? ' photo-slot-status--on' : '') + '"></span>';

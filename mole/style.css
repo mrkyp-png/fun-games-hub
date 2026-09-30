@@ -4993,7 +4993,7 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
    보이는 틀(테두리·배경)을 뒤쪽 별도 상자로 그려 크기만 키운다. 캐릭·원 위치 불변. */
 .photo-slot { position: relative; }
 .photo-slot-frame { background: transparent !important; border-color: transparent !important; box-shadow: none !important; z-index: 1; }
-.photo-slot::before { content: ''; position: absolute; left: 0; right: 0; top: 0.3cm; bottom: calc(0.9cm + 0.2cm); z-index: 0; /* v792: 카드 줄임 — 위 0.3cm 내림, 아래 0.2cm 올림(사용자 지정) */ pointer-events: none;
+.photo-slot::before { content: ''; position: absolute; left: 0; right: 0; top: 0.7cm; bottom: calc(0.9cm + 0.2cm); z-index: 0; /* v792: 카드 줄임 · v799: 위를 더 내려 뒤 PHOTO 간판·사진이 보이게(아래는 그대로) */ pointer-events: none;
   border-radius: 10px; background: rgba(20,40,90,0.55); border: 2px solid #4a90f5; box-sizing: border-box; }
 .photo-slot--sel::before { border-color: #ffd93b; box-shadow: inset 0 0 0 2px #ffd93b, 0 0 10px 2px rgba(255,217,59,0.7); }
 .photo-slot-status { position: relative; z-index: 2; }
@@ -5055,7 +5055,7 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .ws-stage .ws-arrow--prev { left: 0.5%; }
 .ws-stage .ws-arrow--next { left: 29%; }
 /* v795(사용자 지정): 사진관 얼굴형 리본(동글형 등) 끝이 줄어든 카드 모서리와 만나게 — 카드 위가 0.3cm 내려간 만큼 리본도 내림 */
-.photo-slot-ribbon { translate: 0 0.3cm; }
+.photo-slot-ribbon { translate: 0 0; }
 .ws-item--r.is-unsel::after { top: 50%; left: 50%; margin: -17.5cqw 0 0 -5.2cqw; } /* v795(사용자 지정): 재료 + 표시를 빈 칸 가운데로(위로) */
 .cos-detail { translate: 0 -0.1cm; } /* v797(사용자 지정): 코스튬 세부정보 박스만 위로 0.1cm(크기·카드 그대로) */
 /* ===== v798(사용자 지정): 광산 맵 입체감 — 어둡게 하지 않고 요소만 떠 보이게(짧고 옅은 그림자 + 윗광택) ===== */
@@ -5074,3 +5074,10 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .rm-light:active { transform: translateY(1cqw); box-shadow: 0 0.2cqw 0 rgba(0, 0, 0, 0.35), inset 0 0.9cqw 0 rgba(255, 255, 255, 0.45); }
 .rm-bottom { box-shadow: inset 0 0 0 0.6cqw #3a1f09, inset 0 1cqw 0 rgba(255, 225, 170, 0.35), inset 0 -1cqw 0 rgba(0, 0, 0, 0.25), 0 -0.6cqw 1.6cqw rgba(0, 0, 0, 0.3); }
 .rm-icon-img { filter: drop-shadow(0 0.6cqw 0.5cqw rgba(0, 0, 0, 0.35)); }
+/* v799(사용자 지정): 카드 윗선(0.7cm 아래) 위쪽은 잘라서 리본 끝이 카드 모서리에 정확히 걸치게 */
+.photo-slot-rclip { position: absolute; left: 0; right: 0; top: 0.7cm; bottom: 0; overflow: hidden; border-radius: 10px 10px 0 0; z-index: 4; pointer-events: none; }
+/* 얼굴형 리본 = 모서리 대각선 띠, 화려하게(금·주황 그라데이션 + 광택 + 흰 테두리) */
+.photo-slot-ribbon { left: -30%; top: calc(12% - 0.3cm + 0.15cm); padding: 3px 0; font-size: 0.5rem; font-weight: 900; letter-spacing: 0.04em;
+  background: linear-gradient(180deg, #ffe46b 0%, #ffb627 45%, #ff7a1a 100%); color: #fff; -webkit-text-stroke: 2px #a0400a; paint-order: stroke fill;
+  border-top: 1.5px solid #fff6c8; border-bottom: 1.5px solid #b34d06; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.6); }
+.photo-slot--sel .photo-slot-ribbon { background: linear-gradient(180deg, #ff9ce6 0%, #ff4fb3 45%, #d4238a 100%); -webkit-text-stroke-color: #7a0f4c; border-top-color: #ffe0f5; border-bottom-color: #8a1558; }
