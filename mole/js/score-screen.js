@@ -6,7 +6,7 @@
   'use strict';
   var MG = root.MoleGame;
   var T = function (k, p) { return root.FGH.I18N.t(k, p); };
-  var MODE_CODE = { easy: 'AR', mid: 'NP', legend: 'PR' }; // 라이트 ON/DIM/OFF = 아마추어/일반/프로
+  var MODE_CODE = { easy: 'A', mid: 'N', legend: 'P' }; // 라이트 ON/DIM/OFF = 아마추어/일반/프로 — 홈 라운드 표시(A1·N1·P1)와 통일(v780, 사용자 지정)
   var MODE_ORDER = ['easy', 'mid', 'legend'];
   var UNROLL_MS = 550, ROLLUP_MS = 450;
 
@@ -36,7 +36,7 @@
       return (rb - ra) || (b.highestScore - a.highestScore);
     });
   }
-  function code(mode, round) { return (MODE_CODE[mode] || 'AR') + round; }
+  function code(mode, round) { return (MODE_CODE[mode] || 'A') + round; }
   function myAvatar() { return localStorage.getItem('mole.profilePic') || 'assets/moles/mole1.png'; }
   function fmt(n) { return (n || 0).toLocaleString('en-US'); }
 
