@@ -3038,6 +3038,136 @@ body { background: var(--lm-page); }
 /* 제작소 탭 3개(사진 합성 추가) */
 .ws-tabs--3 { width: calc(var(--w) * 0.96); }
 .ws-tabs--3 .ws-tab { font-size: calc(var(--w) * 0.038); }
+/* ===== 라운드 선택 광산 맵(v763) — 명세 "MOLE PANG 라운드 선택 화면". 레이어: 배경 → 배경효과 → 땅굴 라운드 → 두더지 → 정보판 → 하단 UI ===== */
+#roundmap-screen.rm-screen {
+  position: fixed; inset: 0; top: 0; left: 0; transform: none; width: 100%; height: 100%;
+  border-radius: 0; box-shadow: none; z-index: 300; overflow: hidden; background: #120a06;
+  display: flex; align-items: center; justify-content: center;
+}
+#roundmap-screen.rm-screen[hidden] { display: none; }
+/* 화면 비율이 맵(941:1672)보다 길 때 생기는 위아래 빈 곳 = 같은 배경을 흐리게 크게 깔아 채움(v763) */
+#roundmap-screen.rm-screen::before { content: ''; position: absolute; inset: -40px; background: center / cover no-repeat; filter: blur(18px) brightness(0.55); }
+#roundmap-screen[data-light="easy"]::before { background-image: url('assets/roundmap/bg-easy.jpg'); }
+#roundmap-screen[data-light="mid"]::before { background-image: url('assets/roundmap/bg-mid.jpg'); }
+#roundmap-screen[data-light="legend"]::before { background-image: url('assets/roundmap/bg-legend.jpg'); }
+.rm-stage { position: relative; width: min(100vw, 100dvh * 941 / 1672); aspect-ratio: 941 / 1672; container-type: inline-size; overflow: hidden; }
+.rm-bg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.rm-top { position: absolute; left: 21%; top: 0.3%; width: 27cqw; z-index: 3; pointer-events: none; animation: rm-bob 2.4s ease-in-out infinite; transform-origin: 50% 100%; }
+@keyframes rm-bob { 50% { transform: translateY(-0.8cqw) rotate(-1.5deg); } }
+.rm-back { z-index: 20; }
+
+/* 배경 효과(사용자 요청 v763): 난이도별 입자 + 랜턴 깜빡임 + 광물 반짝임 */
+.rm-fx { position: absolute; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+.rm-fx i { position: absolute; border-radius: 50%; opacity: 0; }
+.rm-screen[data-light="easy"] .rm-fx i { width: 0.9cqw; height: 0.9cqw; background: rgba(255, 226, 170, 0.8); box-shadow: 0 0 1.2cqw rgba(255, 210, 120, 0.8); animation: rm-dust 9s linear infinite; }
+.rm-screen[data-light="mid"] .rm-fx i { width: 0.8cqw; height: 0.8cqw; background: #bff3ff; box-shadow: 0 0 1.6cqw 0.4cqw rgba(90, 200, 255, 0.85); animation: rm-firefly 7s ease-in-out infinite; }
+.rm-screen[data-light="legend"] .rm-fx i { width: 0.8cqw; height: 1.1cqw; background: #ffd24a; box-shadow: 0 0 1.4cqw 0.3cqw rgba(255, 90, 20, 0.9); animation: rm-ember 5s linear infinite; }
+@keyframes rm-dust { 0% { opacity: 0; transform: translate(0, 0); } 15% { opacity: 0.8; } 85% { opacity: 0.6; } 100% { opacity: 0; transform: translate(6cqw, -14cqw); } }
+@keyframes rm-firefly { 0%, 100% { opacity: 0; transform: translate(0, 0); } 25% { opacity: 1; transform: translate(3cqw, -3cqw); } 50% { opacity: 0.3; transform: translate(-2cqw, -6cqw); } 75% { opacity: 1; transform: translate(2cqw, -9cqw); } }
+@keyframes rm-ember { 0% { opacity: 0; transform: translate(0, 0) scale(1); } 10% { opacity: 1; } 100% { opacity: 0; transform: translate(3cqw, -40cqw) scale(0.4); } }
+/* 랜턴 불빛 깜빡임 — 배경 속 랜턴 자리에 따뜻한 빛 번짐 */
+.rm-glow { position: absolute; width: 22cqw; aspect-ratio: 1; margin: -11cqw 0 0 -11cqw; border-radius: 50%; pointer-events: none; z-index: 1;
+  background: radial-gradient(circle, rgba(255, 190, 90, 0.45) 0%, rgba(255, 150, 40, 0.18) 40%, transparent 70%); mix-blend-mode: screen; animation: rm-flicker 2.2s ease-in-out infinite; }
+.rm-glow:nth-child(2n) { animation-duration: 2.9s; animation-delay: -1s; }
+@keyframes rm-flicker { 0%, 100% { opacity: 0.9; transform: scale(1); } 20% { opacity: 0.6; } 45% { opacity: 1; transform: scale(1.06); } 70% { opacity: 0.7; } }
+/* 광물 반짝임 */
+.rm-spark { position: absolute; width: 4cqw; height: 4cqw; margin: -2cqw 0 0 -2cqw; pointer-events: none; z-index: 1; opacity: 0;
+  background: radial-gradient(circle, #fff 0 10%, transparent 12%), linear-gradient(90deg, transparent 46%, #fff 50%, transparent 54%), linear-gradient(0deg, transparent 46%, #fff 50%, transparent 54%);
+  animation: rm-twinkle 3s ease-in-out infinite; }
+.rm-spark:nth-of-type(2n) { animation-delay: -1.3s; } .rm-spark:nth-of-type(3n) { animation-delay: -2.1s; }
+@keyframes rm-twinkle { 0%, 70%, 100% { opacity: 0; transform: scale(0.3) rotate(0); } 82% { opacity: 1; transform: scale(1) rotate(45deg); } }
+/* Pro: 용암빛 숨쉬기 */
+.rm-screen[data-light="legend"] .rm-fx::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 70%, rgba(255, 80, 0, 0.22), transparent 70%); mix-blend-mode: screen; animation: rm-lava 3.5s ease-in-out infinite; }
+@keyframes rm-lava { 50% { opacity: 0.35; } }
+
+/* Amateur 나비·잠자리(사용자 지정 v763) — 나비는 홈 봄 그림 나비(.hg-bfly) 재사용, 크기·경로만 이 화면용 */
+.rm-fx .rm-bfly { width: 6.5cqw; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
+.rm-fx .rm-bfly--1 { animation-name: rm-bf-1; animation-duration: 14s; }
+.rm-fx .rm-bfly--2 { animation-name: rm-bf-2; animation-duration: 17s; animation-delay: -6s; }
+.rm-fx .rm-bfly--3 { animation-name: rm-bf-3; animation-duration: 12s; animation-delay: -3s; }
+@keyframes rm-bf-1 { 0% { transform: translate(8cqw, 22cqw) rotate(-10deg); } 25% { transform: translate(30cqw, 12cqw) rotate(12deg); } 50% { transform: translate(52cqw, 18cqw) rotate(-8deg); } 75% { transform: translate(26cqw, 26cqw) rotate(10deg); } 100% { transform: translate(8cqw, 22cqw) rotate(-10deg); } }
+@keyframes rm-bf-2 { 0% { transform: translate(88cqw, 8cqw) rotate(8deg); } 30% { transform: translate(70cqw, 2cqw) rotate(-12deg); } 60% { transform: translate(60cqw, 12cqw) rotate(10deg); } 100% { transform: translate(88cqw, 8cqw) rotate(8deg); } }
+@keyframes rm-bf-3 { 0% { transform: translate(4cqw, 6cqw); } 35% { transform: translate(18cqw, 1cqw) rotate(14deg); } 70% { transform: translate(12cqw, 14cqw) rotate(-10deg); } 100% { transform: translate(4cqw, 6cqw); } }
+.rm-dfly { position: absolute; left: 0; top: 0; width: 9cqw; aspect-ratio: 60 / 40; pointer-events: none; z-index: 1; animation: rm-df-1 11s linear infinite; }
+.rm-dfly b { position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 40'%3E%3Cg fill='%23d8f4ff' fill-opacity='.72' stroke='%235a8aa8' stroke-width='.8'%3E%3Cellipse cx='22' cy='11' rx='14' ry='4.2' transform='rotate(-12 22 11)'/%3E%3Cellipse cx='38' cy='11' rx='14' ry='4.2' transform='rotate(12 38 11)'/%3E%3Cellipse cx='23' cy='19' rx='12' ry='3.6' transform='rotate(10 23 19)'/%3E%3Cellipse cx='37' cy='19' rx='12' ry='3.6' transform='rotate(-10 37 19)'/%3E%3C/g%3E%3Crect x='28.2' y='8' width='3.6' height='30' rx='1.8' fill='%2322a3a0' stroke='%23105c5a' stroke-width='.8'/%3E%3Ccircle cx='30' cy='8' r='3.6' fill='%2330c2b8' stroke='%23105c5a' stroke-width='.8'/%3E%3Ccircle cx='28.6' cy='7' r='1' fill='%23fff'/%3E%3Ccircle cx='31.4' cy='7' r='1' fill='%23fff'/%3E%3C/svg%3E") center / 100% 100% no-repeat; animation: rm-df-buzz 0.08s linear infinite alternate; }
+.rm-dfly--2 { width: 7.5cqw; animation-name: rm-df-2; animation-duration: 15s; animation-delay: -7s; }
+@keyframes rm-df-buzz { from { transform: scaleX(1); } to { transform: scaleX(0.9); } }
+/* 잠자리 특유의 '멈췄다가 휙' 비행: 제자리 호버링 → 빠르게 다음 지점으로 */
+@keyframes rm-df-1 { 0%, 18% { transform: translate(-12cqw, 10cqw) rotate(90deg); } 26%, 44% { transform: translate(36cqw, 4cqw) rotate(80deg); } 52%, 70% { transform: translate(62cqw, 14cqw) rotate(110deg); } 78%, 90% { transform: translate(92cqw, 6cqw) rotate(85deg); } 100% { transform: translate(112cqw, 10cqw) rotate(90deg); } }
+@keyframes rm-df-2 { 0%, 16% { transform: translate(110cqw, 20cqw) rotate(-90deg); } 26%, 46% { transform: translate(74cqw, 25cqw) rotate(-100deg); } 56%, 76% { transform: translate(40cqw, 16cqw) rotate(-75deg); } 86%, 92% { transform: translate(14cqw, 24cqw) rotate(-95deg); } 100% { transform: translate(-14cqw, 20cqw) rotate(-90deg); } }
+/* 땅굴 라운드 — 각 .rm-round 는 굴 중심 좌표(0×0) 기준으로 자식 배치 */
+.rm-rounds { position: absolute; inset: 0; z-index: 2; }
+.rm-round { position: absolute; width: 0; height: 0; padding: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.rm-round > * { position: absolute; pointer-events: none; }
+.rm-round::before { content: ''; position: absolute; left: -10cqw; top: -8cqw; width: 20cqw; height: 14cqw; pointer-events: auto; } /* 터치 영역 */
+/* 땅굴 깊이감(사용자 위임 v763): ① 화면 가장자리 안쪽 그림자 = 굴 입구에서 들여다보는 느낌
+   ② 굴마다 안쪽 그림자, 아래 굴일수록 더 어둡게(--d = 라운드 번호) = 점점 깊이 내려가는 느낌 */
+.rm-stage::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: radial-gradient(ellipse 75% 62% at 50% 48%, transparent 55%, rgba(20, 8, 0, 0.35) 80%, rgba(10, 4, 0, 0.7) 100%),
+    linear-gradient(180deg, transparent 70%, rgba(0, 0, 0, 0.28) 100%);
+  box-shadow: inset 0 0 6cqw 2cqw rgba(0, 0, 0, 0.55); }
+#roundmap-screen[data-light="easy"] .rm-stage::after { display: none; } /* Amateur(지상)는 굴 바깥 그림자 없음 — 굴 안쪽만(사용자 지정) */
+.rm-depth { left: -9.8cqw; top: -4.6cqw; width: 19.6cqw; height: 9cqw; border-radius: 50%;
+  background: radial-gradient(ellipse 60% 55% at 50% 58%, rgba(0, 0, 0, calc(0.35 + var(--d) * 0.04)) 0%, rgba(0, 0, 0, calc(0.18 + var(--d) * 0.025)) 55%, transparent 78%);
+  box-shadow: inset 0 1.6cqw 1.8cqw -0.4cqw rgba(0, 0, 0, calc(0.45 + var(--d) * 0.03)), inset 0 -0.6cqw 1cqw -0.4cqw rgba(255, 190, 110, 0.18); }
+.rm-dark { left: -9.5cqw; top: -4.2cqw; width: 19cqw; height: 8cqw; border-radius: 50%; background: rgba(0, 0, 0, 0.55); box-shadow: 0 0 2cqw 1cqw rgba(0, 0, 0, 0.45); display: none; }
+.rm-panel { left: -8.8cqw; top: 1.2cqw; width: 17.6cqw; height: 5cqw; z-index: 3; display: flex; align-items: center; justify-content: center;
+  background: url('assets/roundmap/panel.png') center / 100% 100% no-repeat; }
+.rm-panel b { font-size: 3cqw; font-weight: 900; color: #5a2c0a; letter-spacing: 0.02em; white-space: nowrap; }
+.rm-crown { left: -4.3cqw; top: -5.2cqw; width: 8.6cqw; display: none; filter: drop-shadow(0 0.4cqw 0.4cqw rgba(0, 0, 0, 0.4)); }
+.rm-check { left: 7.4cqw; top: -1.6cqw; width: 6cqw; z-index: 4; display: none; }
+.rm-lock { left: -3.2cqw; top: -5.6cqw; width: 6.4cqw; display: none; }
+.rm-mole { left: -11cqw; top: -17cqw; width: 22cqw; z-index: 2; display: none; transform-origin: 50% 100%; animation: rm-bob 1.8s ease-in-out infinite; }
+.rm-arrow { left: -17.5cqw; top: -3.5cqw; width: 5cqw; z-index: 4; display: none; animation: rm-poke 0.9s ease-in-out infinite; }
+@keyframes rm-poke { 50% { transform: translateX(1.2cqw); } }
+.rm-round[data-state="clear"] .rm-crown, .rm-round[data-state="clear"] .rm-check { display: block; }
+.rm-round[data-state="locked"] .rm-lock, .rm-round[data-state="locked"] .rm-dark { display: block; }
+.rm-round[data-state="locked"] .rm-panel { filter: brightness(0.75) saturate(0.7); }
+.rm-round[data-state="current"] .rm-mole, .rm-round[data-state="current"] .rm-arrow { display: block; }
+.rm-round[data-state="current"] .rm-panel { filter: drop-shadow(0 0 1cqw #ffd84a) drop-shadow(0 0 0.4cqw #ffb300); }
+.rm-round[data-state="current"] .rm-check { display: block; }
+.rm-round[data-state="current"] .rm-check[hidden], .rm-round .rm-check[hidden] { display: none; }
+.rm-round.is-deny .rm-lock, .rm-icon.is-deny { animation: rm-deny 0.35s ease; }
+@keyframes rm-deny { 20%, 60% { transform: translateX(-0.8cqw); } 40%, 80% { transform: translateX(0.8cqw); } }
+
+/* 우측 상단 정보판 */
+.rm-board { position: absolute; left: 61%; top: 7.6%; width: 37cqw; z-index: 4; }
+.rm-board-img { width: 100%; display: block; }
+.rm-board-light { position: absolute; left: 13%; right: 11%; top: 17%; display: flex; align-items: center; gap: 4%; }
+.rm-board-light img { width: 22%; }
+.rm-board-light b { font-size: 4.4cqw; font-weight: 900; color: #ffd84a; white-space: nowrap; text-shadow: 0 0 1cqw rgba(255, 200, 60, 0.6); }
+.rm-board-rows { position: absolute; left: 13%; right: 12%; top: 42%; bottom: 15%; display: flex; flex-direction: column; justify-content: space-between; }
+.rm-board-rows p { margin: 0; display: flex; align-items: center; gap: 4%; }
+.rm-board-rows img { width: 16%; }
+.rm-board-rows span { flex: 1; font-size: 2.6cqw; font-weight: 800; color: #f1e6d6; white-space: nowrap; }
+.rm-board-rows b { font-size: 3.3cqw; font-weight: 900; color: #fff; white-space: nowrap; }
+.rm-screen[data-light="mid"] .rm-board-light b { color: #9fe8ff; text-shadow: 0 0 1cqw rgba(80, 200, 255, 0.6); }
+.rm-screen[data-light="legend"] .rm-board-light b { color: #ff8a6a; text-shadow: 0 0 1cqw rgba(255, 80, 40, 0.6); }
+
+/* 하단: 라운드 아이콘 + 난이도 버튼 */
+.rm-bottom { position: absolute; left: 1.5%; right: 1.5%; bottom: 0.8%; z-index: 6; display: flex; flex-direction: column; gap: 1.2cqw; padding: 1.8cqw 1.6cqw;
+  border-radius: 3cqw; background: linear-gradient(180deg, #7a4a22, #4e2b10); box-shadow: inset 0 0 0 0.6cqw #3a1f09, inset 0 0.8cqw 0 rgba(255, 220, 160, 0.18), 0 1cqw 2cqw rgba(0, 0, 0, 0.5); }
+.rm-icons { display: flex; justify-content: space-between; }
+.rm-icon { position: relative; width: 11.2cqw; aspect-ratio: 1; border: 0; padding: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.rm-icon-img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.rm-icon b { position: absolute; left: 4%; bottom: -3%; font-size: 4.2cqw; font-weight: 900; color: #fff; -webkit-text-stroke: 0.9cqw #3a1f09; paint-order: stroke fill; line-height: 1; }
+.rm-icon-check { position: absolute; right: -4%; bottom: -4%; width: 42%; display: none; }
+.rm-icon[data-state="clear"] .rm-icon-check { display: block; }
+.rm-icon[data-state="current"] { transform: scale(1.12); }
+.rm-icon[data-state="current"] b { color: #ffe45a; }
+.rm-icon[data-state="locked"] b { color: #9a9aa3; }
+.rm-lights { display: flex; gap: 2cqw; }
+.rm-light { flex: 1; height: 10.5cqw; border: 0; border-radius: 2.6cqw; cursor: pointer; font-size: 4.6cqw; font-weight: 900; color: #fff; -webkit-text-stroke: 0.8cqw rgba(0, 0, 0, 0.35); paint-order: stroke fill;
+  box-shadow: 0 0.9cqw 0 rgba(0, 0, 0, 0.35), inset 0 0.8cqw 0 rgba(255, 255, 255, 0.35); transition: transform 0.08s, box-shadow 0.08s; }
+.rm-light:active { transform: translateY(0.7cqw); box-shadow: 0 0.2cqw 0 rgba(0, 0, 0, 0.35), inset 0 0.8cqw 0 rgba(255, 255, 255, 0.35); }
+.rm-light--easy { background: linear-gradient(180deg, #ffd84a, #f0a400); color: #5a3000; -webkit-text-stroke: 0; }
+.rm-light--mid { background: linear-gradient(180deg, #3fd06a, #14893a); }
+.rm-light--legend { background: linear-gradient(180deg, #ff5b4a, #c3170f); }
+.rm-light.is-on { outline: 0.7cqw solid #fff; outline-offset: 0.3cqw; animation: rm-lighton 1.6s ease-in-out infinite; }
+@keyframes rm-lighton { 50% { filter: brightness(1.15); box-shadow: 0 0.9cqw 0 rgba(0, 0, 0, 0.35), 0 0 3cqw 0.6cqw rgba(255, 240, 180, 0.7); } }
+.rm-light.is-locked { filter: grayscale(0.85) brightness(0.6); }
+.rm-light.is-locked::after { content: '🔒'; margin-left: 1cqw; font-size: 3.6cqw; -webkit-text-stroke: 0; }
+.rm-light.is-deny { animation: rm-deny 0.35s ease; }
 /* ===== 일일출석(DAILY REWARD) 전체화면 — 명세서·에셋 기준(v748). 레이어: 배경 → 광고판·두더지 → 보드 → 카드 → 버튼 → 선물상자 → 토스트 ===== */
 #daily-screen.dr-screen {
   position: fixed; inset: 0; top: 0; left: 0; transform: none; width: 100%; height: 100%;

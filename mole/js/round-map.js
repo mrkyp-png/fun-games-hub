@@ -1,0 +1,129 @@
+// 라운드 선택 광산 맵(v763) — 바탕화면 "MOLE PANG 라운드 선택 화면 최종 구현 명세서" 기준.
+// 두더지가 S자 땅굴을 따라 내려가는 세로 맵. 난이도(Amateur/Normal/Pro = 라이트 ON/DIM/OFF)별로
+// 배경·헬멧 색·정보판 내용만 바뀌고 구도는 같다. 현재 라운드 = localStorage 'mole.chapter'(홈과 공유),
+// 난이도 = 'mole.difficulty'. 실제 저장·검증은 game.js 가 넘겨준 콜백(select/setLight)이 한다.
+(function (root) {
+  'use strict';
+  var MG = root.MoleGame;
+  var T = function (k, p) { return root.FGH.I18N.t(k, p); };
+  var A = 'assets/roundmap/';
+  var LIGHTS = ['easy', 'mid', 'legend'];
+  // 배경별 굴 중심(941×1672 기준 px) — 배경마다 그림이 조금씩 달라 굴 위치를 따로 잰 값.
+  var HOLES = {
+    easy:   [[310, 235], [434, 398], [312, 549], [469, 703], [598, 840], [420, 976], [594, 1116], [456, 1258]],
+    mid:    [[334, 251], [453, 413], [333, 562], [466, 711], [595, 855], [443, 1008], [590, 1152], [467, 1298]],
+    legend: [[326, 252], [452, 415], [328, 563], [470, 713], [606, 848], [436, 982], [600, 1115], [464, 1255]]
+  };
+  var BW = 941, BH = 1672;
+  // 배경 효과 위치(941×1672 px): 랜턴 불빛 / 광물 반짝임 — 배경 그림의 랜턴·광물 자리
+  var FX = {
+    easy:   { glow: [[125, 318], [832, 560], [138, 930]], spark: [[95, 520], [262, 862], [180, 1245], [790, 1010], [760, 1255]] },
+    mid:    { glow: [[80, 300], [835, 640], [95, 900], [880, 420]], spark: [[70, 700], [140, 420], [780, 1380], [860, 820], [130, 1130]] },
+    legend: { glow: [[108, 330], [92, 600], [840, 650], [125, 970], [880, 1100]], spark: [[150, 1410], [860, 1360], [60, 470], [300, 660]] }
+  };
+
+  function create(opts) {
+    var el = opts.root;
+    var $ = function (s) { return el.querySelector(s); };
+    var view = null; // 지금 보고 있는 난이도
+
+    el.querySelector('[data-back="roundmap"]').addEventListener('click', function () { opts.onClose(); });
+    el.querySelectorAll('[data-rm-light]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var l = b.getAttribute('data-rm-light');
+        if (!MG.Progress.isLightUnlocked(l)) { flash(b); return; }
+        view = l; opts.setLight(l); render();
+      });
+    });
+
+    function flash(b) { b.classList.remove('is-deny'); void b.offsetWidth; b.classList.add('is-deny'); }
+
+    // 굴 8개 + 하단 아이콘 8개 뼈대 1회 생성
+    var tunnel = $('[data-rm-rounds]'), icons = $('[data-rm-icons]');
+    for (var n = 1; n <= 8; n++) {
+      (function (n) {
+        var r = document.createElement('button');
+        r.type = 'button'; r.className = 'rm-round'; r.setAttribute('data-n', n);
+        r.style.setProperty('--d', n);
+        r.innerHTML = '<span class="rm-depth"></span><span class="rm-dark"></span><img class="rm-mole" alt=""><img class="rm-arrow" src="' + A + 'arrow.png" alt="">' +
+          '<img class="rm-crown" src="' + A + 'crown.png" alt=""><img class="rm-lock" src="' + A + 'lock.png" alt="">' +
+          '<span class="rm-panel"><b></b></span><img class="rm-check" src="' + A + 'check.png" alt="">';
+        r.addEventListener('click', function () { pick(n, r); });
+        tunnel.appendChild(r);
+        var ic = document.createElement('button');
+        ic.type = 'button'; ic.className = 'rm-icon'; ic.setAttribute('data-n', n);
+        ic.innerHTML = '<img class="rm-icon-img" alt=""><b>' + n + '</b><img class="rm-icon-check" src="' + A + 'check.png" alt="">';
+        ic.addEventListener('click', function () { pick(n, ic); });
+        icons.appendChild(ic);
+      })(n);
+    }
+
+    function pick(n, btn) {
+      if (!MG.Progress.isUnlocked(n, view)) { flash(btn); return; }
+      opts.select(n);
+      render();
+    }
+
+    function renderFx() {
+      var fx = $('[data-rm-fx]'); if (fx.getAttribute('data-for') === view) return;
+      fx.setAttribute('data-for', view); fx.innerHTML = '';
+      var f = FX[view], html = '';
+      f.glow.forEach(function (p) { html += '<span class="rm-glow" style="left:' + (p[0] / BW * 100) + '%;top:' + (p[1] / BH * 100) + '%"></span>'; });
+      f.spark.forEach(function (p) { html += '<span class="rm-spark" style="left:' + (p[0] / BW * 100) + '%;top:' + (p[1] / BH * 100) + '%"></span>'; });
+      // Amateur(지상 광산): 나비 3마리 + 잠자리 2마리가 하늘·풀밭 위를 날아다님(사용자 지정 v763)
+      if (view === 'easy') {
+        html += '<span class="hg-bfly hg-bfly--p rm-bfly rm-bfly--1"></span><span class="hg-bfly hg-bfly--y rm-bfly rm-bfly--2"></span><span class="hg-bfly hg-bfly--b rm-bfly rm-bfly--3"></span>';
+        html += '<span class="rm-dfly rm-dfly--1"><b></b></span><span class="rm-dfly rm-dfly--2"><b></b></span>';
+      }
+      for (var i = 0; i < 18; i++) {
+        html += '<i style="left:' + (5 + Math.random() * 90).toFixed(1) + '%;top:' + (15 + Math.random() * 70).toFixed(1) + '%;animation-delay:' + (-Math.random() * 9).toFixed(2) + 's"></i>';
+      }
+      fx.innerHTML = html;
+    }
+
+    function render() {
+      var cur = opts.currentChapter();
+      renderFx();
+      el.setAttribute('data-light', view);
+      $('[data-rm-bg]').src = A + 'bg-' + view + '.jpg';
+      $('[data-rm-top]').src = A + 'mole-top-' + view + '.png';
+      var holes = HOLES[view];
+      el.querySelectorAll('.rm-round').forEach(function (r) {
+        var n = +r.getAttribute('data-n');
+        var h = holes[n - 1];
+        r.style.left = (h[0] / BW * 100) + '%';
+        r.style.top = (h[1] / BH * 100) + '%';
+        var cleared = MG.Progress.get(n, view).cleared, open = MG.Progress.isUnlocked(n, view);
+        var st = n === cur ? 'current' : !open ? 'locked' : cleared ? 'clear' : 'open';
+        r.setAttribute('data-state', st);
+        r.querySelector('.rm-mole').src = A + 'mole-cur-' + view + '.png';
+        r.querySelector('.rm-panel b').textContent = T('mole.rm.round', { n: n });
+        r.querySelector('.rm-check').hidden = !cleared;
+      });
+      el.querySelectorAll('.rm-icon').forEach(function (ic) {
+        var n = +ic.getAttribute('data-n');
+        var cleared = MG.Progress.get(n, view).cleared, open = MG.Progress.isUnlocked(n, view);
+        var st = n === cur ? 'current' : !open ? 'locked' : cleared ? 'clear' : 'open';
+        ic.setAttribute('data-state', st);
+        ic.querySelector('.rm-icon-img').src = st === 'locked' ? A + 'icon-lock.png' : st === 'current' ? A + 'icon-cur-' + view + '.png' : A + 'icon-mole-' + view + '.png';
+      });
+      // 정보판 — 라이트 이름 + 실제 게임 규칙값(game.js SCORE_MULT/COMBO_LIFE_BONUS 에서 받음)
+      var rule = opts.rules(view);
+      $('[data-rm-light-name]').textContent = T('mole.rm.light.' + view);
+      $('[data-rm-base]').textContent = '×' + rule.base.toFixed(1);
+      $('[data-rm-fever]').textContent = '×' + rule.fever.toFixed(1);
+      $('[data-rm-heart]').textContent = T('mole.rm.heart', { n: rule.heart });
+      el.querySelectorAll('[data-rm-light]').forEach(function (b) {
+        var l = b.getAttribute('data-rm-light');
+        b.classList.toggle('is-on', l === view);
+        b.classList.toggle('is-locked', !MG.Progress.isLightUnlocked(l));
+      });
+    }
+
+    function show() { view = opts.currentLight(); render(); }
+    return { show: show };
+  }
+
+  var api = { create: create };
+  if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.RoundMap = api; }
+})(typeof window !== 'undefined' ? window : null);

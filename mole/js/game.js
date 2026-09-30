@@ -104,7 +104,7 @@
   // 즉시 공유 풀에 반영되고, 홈·더보기·게임 화면이 항상 같은 수를 보여준다. setRunLives() 로만 바꾼다.
   let run = null;     // { combo: ComboScore, lives, comboMilestone }
   const COMBO_LIFE_STEP = 100; // 콤보가 이 배수를 넘길 때마다 목숨 보상 판정
-  const COMBO_LIFE_BONUS = { easy: 0, mid: 1, legend: 2 }; // 라이트 ON/DIM/OFF 별 목숨 보상 개수
+  const COMBO_LIFE_BONUS = { easy: 1, mid: 1, legend: 2 }; // v763: Amateur 도 +1(사용자 지정) // 라이트 ON/DIM/OFF 별 목숨 보상 개수
   const JUGGLE_BONUS = 30;     // 저글(더블) 점수 — 작은 덤 (콤보 점수표 안 씀)
   let rafId = null;
   let lastTime = 0;
@@ -301,9 +301,8 @@
   // 라이트 ON/DIM/OFF — 더보기 알약(mm-pill)과 다이얼패드 ✱("두더지팡") 팝업(light-popup)이
   // 공유하는 단일 로직. 뿅망치는 라이트 ON 만 사용 가능(사용자 지정) — 양쪽 다 한 번 더 방어.
   function setDifficulty(d) {
-    const w = localStorage.getItem('mole.weapon');
-    const paidWeapon = w === 'cannon' || w === 'goldhammer' || w === 'alipunch';
-    if (!paidWeapon && d !== 'easy') return;
+    // v763: 뿅망치도 DIM/OFF 가능(사용자 결정). 대신 난이도 해금(Amateur→Normal→Pro 라운드8 클리어) 확인.
+    if (!MG.Progress.isLightUnlocked(d)) return;
     localStorage.setItem('mole.difficulty', d); // "설정만" — 선택 표시만 바꾸고 화면 이동 없음
     if (moreMenu) moreMenu.refresh();
     refreshLightPopup();
@@ -313,12 +312,10 @@
     const el = document.getElementById('light-popup');
     if (!el) return;
     const diff = localStorage.getItem('mole.difficulty') || 'easy';
-    const w = localStorage.getItem('mole.weapon');
-    const hammerOnly = w !== 'cannon' && w !== 'goldhammer' && w !== 'alipunch';
     el.querySelectorAll('[data-lp-diff]').forEach((b) => {
       const d = b.getAttribute('data-lp-diff');
       b.classList.toggle('mm-pill--on', d === diff);
-      if (d === 'mid' || d === 'legend') b.classList.toggle('mm-pill--locked', hammerOnly);
+      b.classList.toggle('mm-pill--locked', !MG.Progress.isLightUnlocked(d));
     });
     // 라운드1~8 클리어 표시 — 라이트 박스 3개 각각 아래에 자기 몫의 라운드1~8 미니 그리드
     // (사용자 지정: "라이트 3개 박스별 아래로 각 ROUND 1~8의 박스가 있어야해").
@@ -468,6 +465,7 @@
 
   // ---------- 더보기 메뉴 / 난이도 / 사람두더지 (독립앱 Phase 1) ----------
   let screenNav = null, moreMenu = null, faceMaker = null;
+  let roundMap = null;
   let shop = null, daily = null, workshop = null, scoreScreen = null, settingsScreen = null, inventoryScreen = null;
   let currentDiff = 'easy';        // 현재 판 난이도
 
@@ -491,9 +489,7 @@
     localStorage.setItem('mole.chapter', String(n));
     if (n === 1) {
       localStorage.setItem('mole.weapon', 'hammer');
-      // 뿅망치는 라이트 ON 만 사용 가능(사용자 지정) — 라운드1 진입 시 강제 장착과 세트로 같이 내림.
-      const diff = localStorage.getItem('mole.difficulty');
-      if (diff === 'mid' || diff === 'legend') localStorage.setItem('mole.difficulty', 'easy');
+      // v763: 뿅망치도 DIM/OFF 가능 — 라운드1 진입 시 난이도를 ON 으로 내리던 것 삭제(사용자 결정).
     }
   }
   // 챕터 이름표 ("챕터 N : 부제"). 이름 없으면 "챕터 N".
@@ -741,7 +737,7 @@
         if (action === 'profile') { editProfileAvatar(); return; }
         const sub = { shop: 'shop-screen', score: 'score-screen', daily: 'daily-screen',
           quest: 'quest-screen', locker: 'workshop-screen',
-          inventory: 'inventory-screen', settings: 'settings-screen', lightMode: 'light-popup',
+          inventory: 'inventory-screen', settings: 'settings-screen', lightMode: 'roundmap-screen',
           mail: 'mailbox-screen' }[action];
         if (sub) { openMore(sub); if (sharedLaneControls) sharedLaneControls.setActiveNav(action); }
       }
@@ -1109,6 +1105,7 @@
       if (sub === 'settings-screen' && settingsScreen) settingsScreen.show();
       if (sub === 'inventory-screen' && inventoryScreen) inventoryScreen.show();
       if (sub === 'light-popup') refreshLightPopup();
+      if (sub === 'roundmap-screen' && roundMap) roundMap.show();
     }
   }
   function closeMore(e) {
@@ -2950,7 +2947,7 @@
   // 더보기 메뉴 + 하위 화면 모듈 인스턴스 생성·배선.
   function wireMoreMenu() {
     screenNav = MG.ScreenNav.create({
-      screens: ['face-maker', 'shop-screen', 'mailbox-screen', 'daily-screen', 'workshop-screen', 'score-screen', 'settings-screen', 'inventory-screen', 'help-screen', 'privacy-screen', 'quest-screen', 'friends-screen', 'light-popup']
+      screens: ['face-maker', 'shop-screen', 'mailbox-screen', 'daily-screen', 'workshop-screen', 'score-screen', 'settings-screen', 'inventory-screen', 'help-screen', 'privacy-screen', 'quest-screen', 'friends-screen', 'light-popup', 'roundmap-screen']
     });
     // 메일함(사용자 지정: "구매→메일함 도착→수령" 흐름 예정) — 지금은 아이콘+빈 화면 스캐폴드만,
     // 실제 수령 로직 없음. 상점 안에서 열리므로(더보기 경유 X) 뒤로가기는 screenNav.back()만.
@@ -2984,6 +2981,17 @@
       root: document.getElementById('daily-screen'),
       onClose: () => closeMore(),
       onChange: () => { if (moreMenu) moreMenu.refresh(); }
+    });
+    roundMap = MG.RoundMap.create({
+      root: document.getElementById('roundmap-screen'),
+      onClose: () => closeMore(),
+      currentLight: () => currentLight(),
+      currentChapter: () => currentChapter(),
+      // 난이도 이동: 그 난이도로 바꾸고, 그 난이도에서 열린 가장 높은 라운드로(처음 진입 = 라운드1).
+      setLight: (l) => { setDifficulty(l); setChapter(MG.Progress.maxChapterFor(l)); refreshChapterNav(); },
+      // 라운드 선택 = 홈 현재 라운드와 같은 저장값(mole.chapter) — 시작하면 이 라운드부터.
+      select: (n) => { setChapter(n); refreshChapterNav(); },
+      rules: (l) => ({ base: SCORE_MULT[l].base, fever: SCORE_MULT[l].fever, heart: COMBO_LIFE_BONUS[l] })
     });
     scoreScreen = MG.ScoreScreen.create({
       root: document.getElementById('score-screen'),

@@ -206,11 +206,6 @@
         if (!locked) {
           btn.addEventListener('click', function () {
             localStorage.setItem('mole.weapon', w.id);
-            // 뿅망치는 라이트 ON 만 사용 가능(사용자 지정) — DIM/OFF 였으면 ON 으로.
-            if (w.id === 'hammer') {
-              var diff = localStorage.getItem('mole.difficulty');
-              if (diff === 'mid' || diff === 'legend') localStorage.setItem('mole.difficulty', 'easy');
-            }
             renderWeapons();
           });
         }

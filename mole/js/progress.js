@@ -37,8 +37,18 @@
 
   function unlockAll() { return ls() && ls().getItem('mole.unlockAll') === '1'; }
 
+  // 난이도 해금(라운드 선택 맵 명세 v763): Amateur 항상 / Normal = Amateur 라운드8 클리어 /
+  // Pro = Normal 라운드8 클리어. 해금된 난이도끼리는 자유 이동.
+  function isLightUnlocked(light) {
+    if (unlockAll() || light === 'easy') return true;
+    if (light === 'mid') return get(MAX_CHAPTER, 'easy').cleared;
+    if (light === 'legend') return get(MAX_CHAPTER, 'mid').cleared;
+    return false;
+  }
+
   function isUnlocked(ch, light) {
     if (ch < 1 || ch > MAX_CHAPTER) return false;
+    if (!isLightUnlocked(light)) return false;
     if (unlockAll() || ch === 1) return true;
     return get(ch - 1, light).cleared;
   }
@@ -74,7 +84,7 @@
 
   var api = {
     LIGHTS: LIGHTS, MAX_CHAPTER: MAX_CHAPTER, CLEAR_TARGET: CLEAR_TARGET,
-    key: key, get: get, isUnlocked: isUnlocked, maxChapterFor: maxChapterFor,
+    key: key, get: get, isUnlocked: isUnlocked, isLightUnlocked: isLightUnlocked, maxChapterFor: maxChapterFor,
     target: target, record: record
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = { Progress: api };
