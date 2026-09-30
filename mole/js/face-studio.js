@@ -132,9 +132,10 @@
       setCamState('idle');
       $('[data-fs-camerr]').hidden = true;
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { camError(); return; }
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 960 } }, audio: false }).then(function (s) {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 960 }, height: { ideal: 1280 }, aspectRatio: { ideal: 0.75 } }, audio: false }) /* v771: 세로 영상 요청(가로 영상이면 위아래 검은 띠) */.then(function (s) {
         if (st.screen !== 2) { s.getTracks().forEach(function (t) { t.stop(); }); return; }
-        setZoom(1);
+        // v771: 기본 = 화면 꽉 채움(위아래 검은 띠 없음). 두 손가락으로 오므리면 원본 전체까지 작아짐.
+        video.addEventListener('loadedmetadata', function () { setZoom(zoomMax()); }, { once: true });
         st.stream = s; video.srcObject = s; video.play().catch(function () {});
         detectLoop();
       }).catch(camError);
@@ -162,16 +163,25 @@
       if (st.stream) { st.stream.getTracks().forEach(function (t) { t.stop(); }); st.stream = null; }
       video.srcObject = null;
     }
-    // 얼굴 위치 판정(§6): 1명, 화면 가운데, 적당한 크기, 기울기 작음
-    function judge(det, w, h) {
+    // 얼굴 위치 판정(v771, 사용자 지정): 얼굴 윤곽이 화면의 가이드 타원 안에 다 들어오면 촬영 가능.
+    // 가이드 타원(화면 좌표)을 카메라 영상 좌표로 바꿔(object-fit contain × 줌, 좌우 거울) 윤곽 점이 모두 안에 있는지 본다.
+    function guideInVideo(scaleToDet) {
+      var g = $('[data-fs-guide]').getBoundingClientRect(), r = camScr.getBoundingClientRect();
+      var vw = video.videoWidth, vh = video.videoHeight;
+      var k = Math.min(r.width / vw, r.height / vh) * zoom; // 화면 px / 영상 px
+      var ecx = g.left + g.width * 150 / 300, ecy = g.top + g.height * 195 / 400;
+      var rx = g.width * 95 / 300, ry = g.height * 130 / 400;
+      var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      return { x: (vw / 2 - (ecx - cx) / k) * scaleToDet, y: (vh / 2 + (ecy - cy) / k) * scaleToDet, rx: rx / k * scaleToDet, ry: ry / k * scaleToDet };
+    }
+    function judge(det, w) {
       if (!det || !det.ok) return 'none';
-      if (det.count > 1) return 'many';
-      var cx = det.box.x + det.box.w / 2, cy = det.box.y + det.box.h / 2, m = Math.min(w, h);
-      if (det.box.w < m * 0.28) return 'small';
-      if (det.box.w > m * 0.85) return 'big';
-      if (Math.abs(cx - w / 2) > w * 0.14 || Math.abs(cy - h * 0.48) > h * 0.16) return 'off';
+      var e = guideInVideo(w / video.videoWidth);
+      var out = det.oval.some(function (p) { var dx = (p.x - e.x) / e.rx, dy = (p.y - e.y) / e.ry; return dx * dx + dy * dy > 1.2; }); // 윤곽점(이마 위쪽 포함)이 타원선을 조금 넘는 건 허용
+      if (out) return (det.box.h > e.ry * 2 || det.box.w > e.rx * 2) ? 'big' : 'off';
+      if (det.box.h < e.ry * 2 * 0.5) return 'small';
       var tilt = Math.abs(det.eyeR.y - det.eyeL.y) / Math.max(1, Math.abs(det.eyeR.x - det.eyeL.x));
-      if (tilt > 0.2) return 'tilt';
+      if (tilt > 0.3) return 'tilt';
       return 'ok';
     }
     function detectLoop() {
@@ -179,7 +189,7 @@
       if (!video.videoWidth) { st.loop = setTimeout(detectLoop, 200); return; }
       MG.FaceDetect.detect(video).then(function (det) {
         if (st.screen !== 2) return;
-        var j = judge(det, video.videoWidth, video.videoHeight);
+        var j = judge(det, video.videoWidth);
         setCamState(j === 'ok' ? 'ready' : 'idle', j === 'ok' ? T('mole.fs.camHint') : T('mole.fs.cam.' + j));
         st.loop = setTimeout(detectLoop, 300);
       });
@@ -195,7 +205,7 @@
       MG.FaceDetect.detect(c).then(function (det) {
         st.busy = false;
         if (!det || !det.ok) { setCamState('idle', T('mole.fs.cam.none')); toast(T('mole.fs.retake')); return; }
-        var j = judge(det, c.width, c.height);
+        var j = judge(det, c.width);
         if (j !== 'ok') { setCamState('idle', T('mole.fs.cam.' + j)); toast(T('mole.fs.retake')); return; }
         st.photo = c; st.det = det; st.results = {}; st.face = null;
         go(3);

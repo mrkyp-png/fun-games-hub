@@ -38,7 +38,7 @@
   var WEAPONS = [
     { id: 'cannon', ko: '팡팡 캐논', en: 'Pang Pang Cannon', img: A + 'w-cannon.png', done: A + 'w-cannon-front.png' },
     { id: 'goldhammer', ko: '골드 묠니르', en: 'Gold Mjolnir', img: A + 'w-goldhammer.png', done: A + 'w-goldhammer.png' },
-    { id: 'alipunch', ko: '알리 판취', en: 'Ali Punch', img: 'assets/weapons/alipunch-jab.png', done: 'assets/weapons/alipunch-jab.png' }
+    { id: 'alipunch', ko: '알리 판취', en: 'Ali Punch', img: 'assets/weapons/alipunch-pair.png', done: 'assets/weapons/alipunch-pair.png' } // 글러브 두 짝, 여백으로 조금 작게(v771)
   ];
 
   // ---- 저장(단일 기준값) ----
@@ -171,6 +171,8 @@
       ped.hidden = false; solo.hidden = true; solo.className = 'ws-egg-solo';
       $('[data-ws-pedfront]').hidden = false; // 받침대 앞 띠는 처음부터 거위·알 앞(v760)
       var eggSet = success ? 'egg-ok-' : 'egg-ng-';
+      // v771: 커진 알 이미지를 미리 받아 디코딩 — 교체 순간 빈 프레임(깜빡임) 방지
+      var eggPre = new Image(); eggPre.src = A + eggSet + '1.png'; var eggReady = eggPre.decode ? eggPre.decode().catch(function () {}) : Promise.resolve();
       pending = { it: it, lv: lv, success: success, eggSet: eggSet };
       var t = 0;
       // 1) 황금거위 10포즈 — 1~5 제자리 날갯짓, 6~10 상승하며 퇴장. 6번째에서 알을 낳음
@@ -191,7 +193,12 @@
       later(function () { goose.style.transform = 'translate(-50%, -700%)'; ghosts.forEach(function (gh) { gh.style.transform = goose.style.transform; }); }, t);
       t += 1600;
       // 받침대 위에서 다 커진 알 = 기존 알 1번 이미지(받침대 포함)로 교체
-      later(function () { egg.src = A + eggSet + '1.png'; egg.hidden = false; ped.hidden = true; solo.hidden = true; $('[data-ws-pedfront]').hidden = false; ghosts.forEach(function (gh) { gh.hidden = true; }); }, t);
+      later(function () {
+        egg.src = A + eggSet + '1.png';
+        eggReady.then(function () { return egg.decode ? egg.decode().catch(function () {}) : null; }).then(function () {
+          requestAnimationFrame(function () { egg.hidden = false; ped.hidden = true; solo.hidden = true; $('[data-ws-pedfront]').hidden = false; ghosts.forEach(function (gh) { gh.hidden = true; }); });
+        });
+      }, t);
       // 2) 알 대기 — 탭하면 타격
       later(function () { goose.hidden = true; egg.className = 'ws-egg is-wait'; $('[data-ws-egghint]').hidden = false; pending.ready = true; }, t);
     }
