@@ -2685,7 +2685,7 @@ body { background: var(--lm-page); }
 #score-screen.sr-screen {
   position: fixed; inset: 0; top: 0; left: 0; transform: none; width: 100%; height: 100%;
   border-radius: 0; box-shadow: none; z-index: 300; overflow: hidden; display: block;
-  background: #1a0306; color: #1f2a4a;
+  background: #1a0306 url('assets/score/bg-palace.jpg') center / cover no-repeat; color: #1f2a4a; /* 카펫 뒤 궁전 배경(사용자 제공 v765) */
   --w: min(100vw - 20px, 440px, (100dvh - 40px) * 0.47);
 }
 .sr-carpet { position: absolute; inset: 0; background: url('assets/score/carpet.png') center top / cover no-repeat; clip-path: inset(0 0 0 0); }
@@ -2705,6 +2705,37 @@ body { background: var(--lm-page); }
 .sr-back img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .sr-back:active { transform: scale(0.9); }
 .sr-title { width: calc(var(--w) * 0.56); flex: 0 0 auto; }
+/* ===== 스코어 화면 애니메이션(사용자 지정 v765): ①꽃잎·금빛 흩날림 ②제목 광택+별 반짝 ③1위 카드 빛+왕관 반짝 ④4~10위 차례 등장 ⑤내 순위 반짝 ===== */
+.sr-fx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+.sr-fx i { position: absolute; top: -4%; opacity: 0; animation: sr-fall linear infinite; }
+.sr-petal { width: 11px; height: 8px; border-radius: 80% 0 80% 0; background: linear-gradient(135deg, #ffd1e6, #ff7ab8); box-shadow: 0 0 3px rgba(255, 120, 180, 0.5); }
+.sr-glint { width: 7px; height: 7px; background: radial-gradient(circle, #fff 0 20%, #ffd84a 40%, transparent 70%); }
+@keyframes sr-fall { 0% { opacity: 0; transform: translate(0, 0) rotate(0); } 8% { opacity: 0.95; } 50% { transform: translate(var(--sx), 55vh) rotate(260deg); } 92% { opacity: 0.8; } 100% { opacity: 0; transform: translate(calc(var(--sx) * -0.5), 108vh) rotate(520deg); } }
+.sr-ui { z-index: 1; }
+.sr-title-wrap { position: relative; display: block; flex: 0 0 auto; line-height: 0; }
+.sr-title-wrap::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+  -webkit-mask: url('assets/score/title.png') center / 100% 100% no-repeat; mask: url('assets/score/title.png') center / 100% 100% no-repeat;
+  background: linear-gradient(110deg, transparent 38%, rgba(255, 255, 255, 0.85) 50%, transparent 62%) no-repeat; background-size: 250% 100%; animation: sr-shine 3.4s ease-in-out infinite; }
+@keyframes sr-shine { 0%, 55% { background-position: 130% 0; } 100% { background-position: -30% 0; } }
+.sr-tw { position: absolute; width: calc(var(--w) * 0.05); height: calc(var(--w) * 0.05); margin: calc(var(--w) * -0.025) 0 0 calc(var(--w) * -0.025); pointer-events: none; opacity: 0;
+  background: radial-gradient(circle, #fff 0 12%, transparent 16%), linear-gradient(90deg, transparent 45%, #fff 50%, transparent 55%), linear-gradient(0deg, transparent 45%, #fff 50%, transparent 55%);
+  animation: sr-twinkle 2.6s ease-in-out infinite; }
+.sr-tw:nth-of-type(2) { animation-delay: -0.7s; } .sr-tw:nth-of-type(3) { animation-delay: -1.4s; } .sr-tw:nth-of-type(4) { animation-delay: -2s; }
+@keyframes sr-twinkle { 0%, 65%, 100% { opacity: 0; transform: scale(0.3) rotate(0); } 80% { opacity: 1; transform: scale(1) rotate(45deg); } }
+.sr-card--1 .sr-card-bg { animation: sr-gold 2.2s ease-in-out infinite; }
+@keyframes sr-gold { 0%, 100% { filter: drop-shadow(0 0 4px rgba(255, 210, 60, 0.5)); } 50% { filter: drop-shadow(0 0 14px rgba(255, 220, 80, 0.95)) brightness(1.08); } }
+.sr-card::after { content: ''; position: absolute; left: 50%; top: 3%; width: 22%; aspect-ratio: 1; margin-left: -11%; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle, #fff 0 12%, transparent 16%), linear-gradient(90deg, transparent 45%, #fff 50%, transparent 55%), linear-gradient(0deg, transparent 45%, #fff 50%, transparent 55%);
+  animation: sr-twinkle 3s ease-in-out infinite; }
+.sr-card--2::after { animation-delay: -1s; } .sr-card--3::after { animation-delay: -2s; }
+.sr-screen.is-in .sr-row { animation: sr-row-in 0.4s cubic-bezier(.2, .9, .3, 1.15) both; }
+.sr-screen.is-in .sr-row:nth-child(1) { animation-delay: 0.55s; } .sr-screen.is-in .sr-row:nth-child(2) { animation-delay: 0.62s; }
+.sr-screen.is-in .sr-row:nth-child(3) { animation-delay: 0.69s; } .sr-screen.is-in .sr-row:nth-child(4) { animation-delay: 0.76s; }
+.sr-screen.is-in .sr-row:nth-child(5) { animation-delay: 0.83s; } .sr-screen.is-in .sr-row:nth-child(6) { animation-delay: 0.9s; }
+.sr-screen.is-in .sr-row:nth-child(7) { animation-delay: 0.97s; }
+@keyframes sr-row-in { from { opacity: 0; transform: translateX(-40%); } to { opacity: 1; transform: none; } }
+.sr-mine { animation: sr-mine 2s ease-in-out infinite; }
+@keyframes sr-mine { 0%, 100% { filter: drop-shadow(0 0 2px rgba(255, 220, 80, 0.4)); } 50% { filter: drop-shadow(0 0 10px rgba(255, 230, 110, 1)); } }
 .sr-tabs { width: var(--w); display: flex; justify-content: space-between; flex: 0 0 auto; }
 .sr-tab { position: relative; width: 49%; aspect-ratio: 426 / 141; border: none; padding: 0; cursor: pointer; background: center / 100% 100% no-repeat;
   display: flex; align-items: center; justify-content: center; }
@@ -2766,7 +2797,6 @@ body { background: var(--lm-page); }
   border-image: url('assets/score/info.png') 14 34 14 118 fill stretch;
   color: #fff; font-weight: 800; font-size: calc(var(--w) * 0.03); line-height: 1.2; }
 .sr-info span { padding-left: 3%; }
-.sr-deco { width: calc(var(--w) * 0.42); flex: 0 0 auto; margin-top: calc(var(--w) * -0.01); }
 .sr-toast { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 12%); transform: translateX(-50%); z-index: 11;
   padding: 10px 22px; border-radius: 99px; background: rgba(15, 10, 40, 0.9); color: #fff; font-weight: 800; font-size: 0.95rem; white-space: nowrap;
   box-shadow: 0 0 0 2px #ffd24a; }

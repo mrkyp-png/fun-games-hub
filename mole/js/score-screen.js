@@ -47,6 +47,15 @@
     var mine = el.querySelector('[data-sr-mine]');
     var toastEl = el.querySelector('[data-sr-toast]');
     var closing = false, timers = [];
+    // 배경 꽃잎·금빛 반짝이 흩날림(사용자 지정 v765) — 1회 생성, CSS 로 무한 반복
+    (function () {
+      var fx = el.querySelector('[data-sr-fx]'), html = '';
+      for (var i = 0; i < 16; i++) {
+        html += '<i class="' + (i % 3 ? 'sr-petal' : 'sr-glint') + '" style="left:' + (Math.random() * 96).toFixed(1) + '%;animation-duration:' +
+          (7 + Math.random() * 6).toFixed(1) + 's;animation-delay:' + (-Math.random() * 12).toFixed(1) + 's;--sx:' + (Math.random() * 60 - 30).toFixed(0) + 'px"></i>';
+      }
+      fx.innerHTML = html;
+    })();
 
     function toast(msg) {
       toastEl.textContent = msg; toastEl.hidden = false;
