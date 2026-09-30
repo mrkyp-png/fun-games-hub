@@ -3334,6 +3334,12 @@ body { background: var(--lm-page); }
 .dr-card--claimed .dr-status { font-size: min(15cqh, 11.5cqw); letter-spacing: -0.02em; } /* ✓수령완료 5글자 — 박스 안에 들어가게 */
 .dr-card:nth-child(7) .dr-day { height: auto; font-size: calc(var(--w) * 0.046); }
 .dr-card:nth-child(7) .dr-status { height: calc(var(--w) * 0.08); font-size: calc(var(--w) * 0.046); }
+/* v774(사용자 지정): 7일차 상태 박스를 위로 — 카드 아래 테두리에 걸려 잘리던 것 */
+.dr-card:nth-child(7) .dr-status { margin-top: 0; transform: translateY(-22%); }
+.dr-card:nth-child(7) .dr-qty { transform: translateY(-12%); }
+/* 영어처럼 긴 상태 글자(Tomorrow 등)도 박스 안에 — 글자 크기를 박스 폭 기준으로 한 번 더 제한 */
+.dr-status { padding: 0 6%; box-sizing: border-box; }
+.dr-card--next .dr-status, .dr-card--locked .dr-status { font-size: min(17cqh, 11cqw); }
 /* ===== 일일출석 애니메이션(사용자 지정 v766): ①카드 차례 뒤집기 등장 ②보상 아이콘 날아가기 ③7일차 선물 들썩임 ⑤간판 전구 불빛 돌기 ===== */
 .dr-cards { perspective: 900px; }
 .dr-cards.is-enter .dr-card { animation: dr-flip 0.5s cubic-bezier(.2, .9, .3, 1.1) both !important; }
