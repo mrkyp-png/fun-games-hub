@@ -16,10 +16,13 @@
   };
   var BW = 941, BH = 1672;
   // 배경 효과 위치(941×1672 px): 랜턴 불빛 / 광물 반짝임 — 배경 그림의 랜턴·광물 자리
+  // 배경 효과 위치(941×1672 px). glow=랜턴 불빛, spark=금·보석이 있는 곳에서만 반짝(사용자 지정 v767),
+  // bubble=물(폭포 아래 웅덩이)이 있는 곳에서만 물방울이 올라옴(Normal, 사용자 지정 v767).
   var FX = {
-    easy:   { glow: [[125, 318], [832, 560], [138, 930]], spark: [[95, 520], [262, 862], [180, 1245], [790, 1010], [760, 1255]] },
-    mid:    { glow: [[80, 300], [835, 640], [95, 900], [880, 420]], spark: [[70, 700], [140, 420], [780, 1380], [860, 820], [130, 1130]] },
-    legend: { glow: [[108, 330], [92, 600], [840, 650], [125, 970], [880, 1100]], spark: [[150, 1410], [860, 1360], [60, 470], [300, 660]] }
+    easy:   { glow: [[125, 318], [832, 560], [138, 930]], spark: [[70, 540], [110, 520], [262, 862], [790, 1020], [770, 990], [180, 1160], [760, 1245]], bubble: [] },
+    mid:    { glow: [[130, 350], [840, 680], [260, 920], [860, 90]], spark: [[300, 140], [80, 600], [160, 1030], [190, 1180], [750, 330], [800, 120], [250, 450]],
+              bubble: [[700, 790], [800, 1090], [745, 1300], [300, 1290], [300, 1560], [440, 1600], [590, 1610]] },
+    legend: { glow: [[108, 330], [92, 600], [840, 650], [125, 970], [880, 1100]], spark: [[140, 430], [200, 1180], [860, 1240]], bubble: [] }
   };
 
   function create(opts) {
@@ -75,7 +78,12 @@
         html += '<span class="hg-bfly hg-bfly--p rm-bfly rm-bfly--1"></span><span class="hg-bfly hg-bfly--y rm-bfly rm-bfly--2"></span><span class="hg-bfly hg-bfly--b rm-bfly rm-bfly--3"></span>';
         html += '<span class="rm-dfly rm-dfly--1"><b></b></span><span class="rm-dfly rm-dfly--2"><b></b></span>';
       }
-      for (var i = 0; i < 18; i++) {
+      f.bubble.forEach(function (p, k) {
+        for (var b = 0; b < 3; b++) {
+          html += '<em class="rm-bub" style="left:' + ((p[0] + (Math.random() * 40 - 20)) / BW * 100).toFixed(2) + '%;top:' + (p[1] / BH * 100).toFixed(2) + '%;animation-delay:' + (-Math.random() * 2.6).toFixed(2) + 's;animation-duration:' + (2 + Math.random() * 1.4).toFixed(2) + 's"></em>';
+        }
+      });
+      for (var i = 0; i < (view === 'mid' ? 0 : 18); i++) {
         html += '<i style="left:' + (5 + Math.random() * 90).toFixed(1) + '%;top:' + (15 + Math.random() * 70).toFixed(1) + '%;animation-delay:' + (-Math.random() * 9).toFixed(2) + 's"></i>';
       }
       fx.innerHTML = html;

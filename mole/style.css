@@ -3103,11 +3103,16 @@ body { background: var(--lm-page); }
 .rm-glow:nth-child(2n) { animation-duration: 2.9s; animation-delay: -1s; }
 @keyframes rm-flicker { 0%, 100% { opacity: 0.9; transform: scale(1); } 20% { opacity: 0.6; } 45% { opacity: 1; transform: scale(1.06); } 70% { opacity: 0.7; } }
 /* 광물 반짝임 */
-.rm-spark { position: absolute; width: 4cqw; height: 4cqw; margin: -2cqw 0 0 -2cqw; pointer-events: none; z-index: 1; opacity: 0;
+.rm-spark { position: absolute; width: 5cqw; height: 5cqw; margin: -2.5cqw 0 0 -2.5cqw; pointer-events: none; z-index: 1; opacity: 0;
   background: radial-gradient(circle, #fff 0 10%, transparent 12%), linear-gradient(90deg, transparent 46%, #fff 50%, transparent 54%), linear-gradient(0deg, transparent 46%, #fff 50%, transparent 54%);
   animation: rm-twinkle 3s ease-in-out infinite; }
 .rm-spark:nth-of-type(2n) { animation-delay: -1.3s; } .rm-spark:nth-of-type(3n) { animation-delay: -2.1s; }
 @keyframes rm-twinkle { 0%, 70%, 100% { opacity: 0; transform: scale(0.3) rotate(0); } 82% { opacity: 1; transform: scale(1) rotate(45deg); } }
+/* Normal 물방울(v767): 폭포 아래 물웅덩이에서만 보글보글 올라옴 */
+.rm-bub { position: absolute; width: 1.8cqw; height: 1.8cqw; margin-left: -0.9cqw; border-radius: 50%; pointer-events: none; z-index: 1; opacity: 0;
+  background: radial-gradient(circle at 32% 30%, #fff 0 16%, rgba(210, 245, 255, 0.35) 24% 58%, rgba(120, 215, 255, 0.95) 66% 72%, transparent 76%);
+  animation: rm-bub 2.6s ease-in infinite; }
+@keyframes rm-bub { 0% { opacity: 0; transform: translate(0, 0) scale(0.5); } 15% { opacity: 1; } 60% { transform: translate(0.8cqw, -6cqw) scale(1); } 85% { opacity: 0.9; } 100% { opacity: 0; transform: translate(-0.6cqw, -11cqw) scale(1.15); } }
 /* Pro: 용암빛 숨쉬기 */
 .rm-screen[data-light="legend"] .rm-fx::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 70%, rgba(255, 80, 0, 0.22), transparent 70%); mix-blend-mode: screen; animation: rm-lava 3.5s ease-in-out infinite; }
 @keyframes rm-lava { 50% { opacity: 0.35; } }
@@ -3121,9 +3126,13 @@ body { background: var(--lm-page); }
 @keyframes rm-bf-2 { 0% { transform: translate(86cqw, 6cqw) rotate(8deg); } 30% { transform: translate(70cqw, 1cqw) rotate(-12deg); } 60% { transform: translate(58cqw, 8cqw) rotate(10deg); } 100% { transform: translate(86cqw, 6cqw) rotate(8deg); } }
 @keyframes rm-bf-3 { 0% { transform: translate(38cqw, 4cqw); } 35% { transform: translate(52cqw, 1cqw) rotate(14deg); } 70% { transform: translate(44cqw, 8cqw) rotate(-10deg); } 100% { transform: translate(38cqw, 4cqw); } }
 .rm-dfly { position: absolute; left: 0; top: 0; width: 7cqw; aspect-ratio: 60 / 40; pointer-events: none; z-index: 1; transition: transform var(--t, 0.6s) cubic-bezier(.3, .1, .3, 1); } /* 하늘 안에서만 무작위 이동(JS, 사용자 지정) */
-.rm-dfly b { position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 40'%3E%3Cg fill='%23d8f4ff' fill-opacity='.72' stroke='%235a8aa8' stroke-width='.8'%3E%3Cellipse cx='22' cy='11' rx='14' ry='4.2' transform='rotate(-12 22 11)'/%3E%3Cellipse cx='38' cy='11' rx='14' ry='4.2' transform='rotate(12 38 11)'/%3E%3Cellipse cx='23' cy='19' rx='12' ry='3.6' transform='rotate(10 23 19)'/%3E%3Cellipse cx='37' cy='19' rx='12' ry='3.6' transform='rotate(-10 37 19)'/%3E%3C/g%3E%3Crect x='28.2' y='8' width='3.6' height='30' rx='1.8' fill='%2322a3a0' stroke='%23105c5a' stroke-width='.8'/%3E%3Ccircle cx='30' cy='8' r='3.6' fill='%2330c2b8' stroke='%23105c5a' stroke-width='.8'/%3E%3Ccircle cx='28.6' cy='7' r='1' fill='%23fff'/%3E%3Ccircle cx='31.4' cy='7' r='1' fill='%23fff'/%3E%3C/svg%3E") center / 100% 100% no-repeat; animation: rm-df-buzz 0.08s linear infinite alternate; }
+.rm-dfly b { position: absolute; inset: 0; z-index: 1; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 40'%3E%3Crect x='28.2' y='8' width='3.6' height='30' rx='1.8' fill='%2322a3a0' stroke='%23105c5a' stroke-width='.8'/%3E%3Ccircle cx='30' cy='8' r='3.6' fill='%2330c2b8' stroke='%23105c5a' stroke-width='.8'/%3E%3Ccircle cx='28.6' cy='7' r='1' fill='%23fff'/%3E%3Ccircle cx='31.4' cy='7' r='1' fill='%23fff'/%3E%3C/svg%3E") center / 100% 100% no-repeat; }
+/* 잠자리 날갯짓(v767): 좌우 날개 한 쌍씩 몸통 쪽을 축으로 빠르게 파닥(scaleX) */
+.rm-dfly::before, .rm-dfly::after { content: ''; position: absolute; top: 0; bottom: 0; width: 50%; background: center / 100% 100% no-repeat; animation: rm-df-flap 0.07s linear infinite alternate; }
+.rm-dfly::before { left: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 40'%3E%3Cg fill='%23d8f4ff' fill-opacity='.75' stroke='%235a8aa8' stroke-width='.8'%3E%3Cellipse cx='22' cy='11' rx='14' ry='4.2' transform='rotate(-12 22 11)'/%3E%3Cellipse cx='23' cy='19' rx='12' ry='3.6' transform='rotate(10 23 19)'/%3E%3C/g%3E%3C/svg%3E"); transform-origin: 100% 50%; }
+.rm-dfly::after { right: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 40'%3E%3Cg fill='%23d8f4ff' fill-opacity='.75' stroke='%235a8aa8' stroke-width='.8'%3E%3Cellipse cx='8' cy='11' rx='14' ry='4.2' transform='rotate(12 8 11)'/%3E%3Cellipse cx='7' cy='19' rx='12' ry='3.6' transform='rotate(-10 7 19)'/%3E%3C/g%3E%3C/svg%3E"); transform-origin: 0% 50%; animation-delay: -0.035s; }
+@keyframes rm-df-flap { from { transform: scaleX(1); opacity: 0.95; } to { transform: scaleX(0.35); opacity: 0.6; } }
 .rm-dfly--2 { width: 6cqw; }
-@keyframes rm-df-buzz { from { transform: scaleX(1); } to { transform: scaleX(0.9); } }
 /* 땅굴 라운드 — 각 .rm-round 는 굴 중심 좌표(0×0) 기준으로 자식 배치 */
 .rm-rounds { position: absolute; inset: 0; z-index: 2; }
 .rm-round { position: absolute; width: 0; height: 0; padding: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
