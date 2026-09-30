@@ -3336,7 +3336,8 @@ body { background: var(--lm-page); }
 .dr-card:nth-child(7) .dr-status { height: calc(var(--w) * 0.08); font-size: calc(var(--w) * 0.046); }
 /* v774(사용자 지정): 7일차 상태 박스를 위로 — 카드 아래 테두리에 걸려 잘리던 것 */
 .dr-card:nth-child(7) .dr-status { margin-top: 0; transform: translateY(-8%); }
-.dr-card:nth-child(7) .dr-qty { transform: translateY(-4%); }
+.dr-card:nth-child(7) .dr-qty { display: none; } /* v776: '랜덤' 글자 삭제(사용자 지정) */
+.dr-card:nth-child(7) .dr-status { grid-row: 2 / 4; align-self: center; }
 /* 영어처럼 긴 상태 글자(Tomorrow 등)도 박스 안에 — 글자 크기를 박스 폭 기준으로 한 번 더 제한 */
 .dr-status { padding: 0 6%; box-sizing: border-box; }
 .dr-card--next .dr-status, .dr-card--locked .dr-status { font-size: min(17cqh, 11cqw); }
