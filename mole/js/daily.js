@@ -107,10 +107,9 @@
     var busy = false;
     var timers = [];
     el.querySelector('[data-back="daily"]').addEventListener('click', function () {
-      if (busy || el.classList.contains('is-rollup')) return; // 지급·연출 중엔 나가지 않음(중복 지급/상태 꼬임 방지, §18)
+      if (busy) return; // 지급·연출 중엔 나가지 않음(중복 지급/상태 꼬임 방지, §18)
       // v790(사용자 지정): 화면 전체가 위로 말려 올라가며 사라짐
-      el.classList.add('is-rollup');
-      setTimeout(function () { el.classList.remove('is-rollup'); opts.onClose(); }, 520);
+      root.FGH.rollOut(el, opts.onClose);
     });
 
     function later(fn, ms) { var t = setTimeout(fn, ms); timers.push(t); return t; }

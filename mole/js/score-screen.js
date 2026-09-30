@@ -64,15 +64,7 @@
     }
 
     el.querySelector('[data-back="score"]').addEventListener('click', function () {
-      if (closing) return;
-      closing = true;
-      el.classList.remove('is-in');
-      el.classList.add('is-out'); // UI 퇴장 → 양탄자가 아래에서 위로 말려 올라감
-      timers.push(setTimeout(function () {
-        el.classList.remove('is-out');
-        closing = false;
-        opts.onClose();
-      }, ROLLUP_MS + 150));
+      root.FGH.rollOut(el, opts.onClose); // v796: 화면 전체 말림(복제본) + 뒤에 홈 즉시
     });
     el.querySelector('[data-sr-game="rhythm"]').addEventListener('click', function () {
       toast(T('mole.score.rhythmSoon')); // 개발 중 — 진입 불가(§13)
