@@ -140,6 +140,7 @@
         var card = document.createElement('div');
         card.className = 'dr-card dr-card--' + s + (i === 7 ? ' dr-card--d7' : '');
         card.dataset.day = String(i);
+        card.dataset.stamp = T('mole.daily.stamp'); // 받은 날 도장 글자(v766)
         card.innerHTML =
           '<span class="dr-day"></span>' +
           '<img class="dr-ico" alt="" src="' + ASSET + rw.icon + '">' +
@@ -203,7 +204,7 @@
       show();
       toast(T('mole.daily.got', { name: rewardName(res), n: res.n.toLocaleString() }));
       var card = grid.querySelector('[data-day="' + (st.day === 1 ? 7 : st.day - 1) + '"]');
-      if (card) { card.classList.add('dr-card--pop'); }
+      if (card) { card.classList.add('dr-card--pop'); flyIcons(card, rewardIcon(res)); }
       if (opts.onChange) opts.onChange();
     }
     claimBtn.addEventListener('click', claim);
@@ -271,7 +272,30 @@
       }
     }
 
-    return { show: show, claimableToday: claimableToday, cleanup: cleanup };
+    // ① 화면 열 때 카드가 1일차부터 차례로 뒤집히며 등장(사용자 지정 v766) — 외부에서 여는 경우만
+    var enterT = null;
+    function open() {
+      show();
+      grid.classList.remove('is-enter'); void grid.offsetWidth; grid.classList.add('is-enter');
+      clearTimeout(enterT); enterT = setTimeout(function () { grid.classList.remove('is-enter'); }, 1700);
+    }
+    // ② 받기 순간 보상 아이콘이 카드에서 여러 개 튀어나와 위(간판 쪽)로 날아가 사라짐
+    function flyIcons(card, src) {
+      var host = el.querySelector('.dr-stage'); if (!card || !host) return;
+      var hr = host.getBoundingClientRect(), cr = card.getBoundingClientRect();
+      for (var i = 0; i < 8; i++) {
+        var im = document.createElement('img');
+        im.className = 'dr-fly'; im.src = src; im.alt = '';
+        im.style.left = (cr.left - hr.left + cr.width / 2) + 'px';
+        im.style.top = (cr.top - hr.top + cr.height / 2) + 'px';
+        im.style.setProperty('--dx', (Math.random() * 120 - 60).toFixed(0) + 'px');
+        im.style.setProperty('--ty', (-(cr.top - hr.top) + 40).toFixed(0) + 'px');
+        im.style.animationDelay = (i * 0.06).toFixed(2) + 's';
+        host.appendChild(im);
+        (function (im) { setTimeout(function () { im.remove(); }, 1500); })(im);
+      }
+    }
+    return { show: open, claimableToday: claimableToday, cleanup: cleanup };
   }
   var api = { create: create, CONFIG: CONFIG };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.Daily = api; }

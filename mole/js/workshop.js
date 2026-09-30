@@ -183,13 +183,13 @@
             // 날아오르는 효과(사용자 지정 v758): 이륙 먼지 바람 + 황금 깃털 + 잔상 2겹
             if (g >= 6) ghosts.forEach(function (gh) { gh.hidden = false; gh.src = goose.src; gh.style.transform = goose.style.transform; });
             if (g === 6) { rise.className = 'ws-rise'; void rise.offsetWidth; rise.className = 'ws-rise is-on'; }
-            if (g === 6) { solo.hidden = false; solo.className = 'ws-egg-solo is-lay'; }
+            if (g === 7) { solo.hidden = false; solo.className = 'ws-egg-solo is-lay'; } // v766: 거위가 충분히 떠오른 뒤(7번째 포즈, 아직 화면에 보일 때) 알 낙하(사용자 지정)
           }, t);
         })(g);
         t += g <= 5 ? 170 : 130;
       }
       later(function () { goose.style.transform = 'translate(-50%, -700%)'; ghosts.forEach(function (gh) { gh.style.transform = goose.style.transform; }); }, t);
-      t += 1300;
+      t += 1600;
       // 받침대 위에서 다 커진 알 = 기존 알 1번 이미지(받침대 포함)로 교체
       later(function () { egg.src = A + eggSet + '1.png'; egg.hidden = false; ped.hidden = true; solo.hidden = true; $('[data-ws-pedfront]').hidden = false; ghosts.forEach(function (gh) { gh.hidden = true; }); }, t);
       // 2) 알 대기 — 탭하면 타격

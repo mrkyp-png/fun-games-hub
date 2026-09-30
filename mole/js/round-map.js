@@ -89,7 +89,7 @@
       if (el.hidden || view !== 'easy') return;
       el.querySelectorAll('.rm-dfly').forEach(function (d) {
         if (Math.random() < 0.45) return; // 일부는 제자리 호버링
-        var x = 3 + Math.random() * 86, y = 0.5 + Math.random() * 11; // cqw — 하늘 띠 안
+        var x = 3 + Math.random() * 86, y = 0.5 + Math.random() * 7; // cqw — 하늘 띠 안(굴·풀밭 아래로 안 내려옴)
         var ang = (Math.random() < 0.5 ? 90 : -90) + (Math.random() * 30 - 15);
         d.style.setProperty('--t', (0.35 + Math.random() * 0.5).toFixed(2) + 's');
         d.style.transform = 'translate(' + x.toFixed(1) + 'cqw,' + y.toFixed(1) + 'cqw) rotate(' + ang.toFixed(0) + 'deg)';
@@ -102,7 +102,6 @@
       renderFx();
       el.setAttribute('data-light', view);
       $('[data-rm-bg]').src = A + 'bg-' + view + '.jpg';
-      $('[data-rm-top]').src = A + 'mole-top-' + view + '.png';
       var holes = HOLES[view];
       el.querySelectorAll('.rm-round').forEach(function (r) {
         var n = +r.getAttribute('data-n');
