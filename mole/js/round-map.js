@@ -19,10 +19,10 @@
   // 배경 효과 위치(941×1672 px). glow=랜턴 불빛, spark=금·보석이 있는 곳에서만 반짝(사용자 지정 v767),
   // bubble=물(폭포 아래 웅덩이)이 있는 곳에서만 물방울이 올라옴(Normal, 사용자 지정 v767).
   var FX = {
-    easy:   { glow: [[125, 318], [832, 560], [138, 930]], spark: [[70, 540], [110, 520], [262, 862], [790, 1020], [770, 990], [180, 1160], [760, 1245]], bubble: [] },
-    mid:    { glow: [[130, 350], [840, 680], [260, 920], [860, 90]], spark: [[300, 140], [80, 600], [160, 1030], [190, 1180], [750, 330], [800, 120], [250, 450]],
+    easy:   { glow: [[125, 318], [832, 560], [138, 930]], spark: [[75, 509], [83, 542], [267, 859], [767, 1026], [800, 1000], [175, 1118], [183, 1151], [284, 1234], [759, 1243], [25, 1068]], bubble: [] },
+    mid:    { glow: [[130, 350], [840, 680], [260, 920], [860, 90]], spark: [[300, 125], [208, 128], [475, 40], [800, 120], [750, 325], [175, 450], [247, 450], [67, 600], [158, 617], [225, 734], [759, 776], [167, 1034], [183, 1151]],
               bubble: [[700, 790], [800, 1090], [745, 1300], [300, 1290], [300, 1560], [440, 1600], [590, 1610]] },
-    legend: { glow: [[108, 330], [92, 600], [840, 650], [125, 970], [880, 1100]], spark: [[140, 430], [200, 1180], [860, 1240]], bubble: [] }
+    legend: { glow: [[108, 330], [92, 600], [840, 650], [125, 970], [880, 1100]], spark: [[167, 425], [140, 440], [208, 1151], [158, 1168], [859, 1243]], bubble: [] }
   };
 
   function create(opts) {
@@ -72,7 +72,7 @@
       fx.setAttribute('data-for', view); fx.innerHTML = '';
       var f = FX[view], html = '';
       f.glow.forEach(function (p) { html += '<span class="rm-glow" style="left:' + (p[0] / BW * 100) + '%;top:' + (p[1] / BH * 100) + '%"></span>'; });
-      f.spark.forEach(function (p) { html += '<span class="rm-spark" style="left:' + (p[0] / BW * 100) + '%;top:' + (p[1] / BH * 100) + '%"></span>'; });
+      f.spark.forEach(function (p) { for (var k = 0; k < 5; k++) { var ox = k ? (Math.random() * 60 - 30) : 0, oy = k ? (Math.random() * 50 - 25) : 0; html += '<span class="rm-spark" style="left:' + ((p[0] + ox) / BW * 100) + '%;top:' + ((p[1] + oy) / BH * 100) + '%;animation-delay:' + (-Math.random() * 3).toFixed(2) + 's;animation-duration:' + (2.2 + Math.random() * 1.6).toFixed(2) + 's;scale:' + (0.6 + Math.random() * 0.6).toFixed(2) + '"></span>'; } }); // v801: 보석 반짝임 5배(사용자 지정)
       // Amateur(지상 광산): 나비 3마리 + 잠자리 2마리가 하늘·풀밭 위를 날아다님(사용자 지정 v763)
       if (view === 'easy') {
         html += '<span class="hg-bfly hg-bfly--p rm-bfly rm-bfly--1"></span><span class="hg-bfly hg-bfly--y rm-bfly rm-bfly--2"></span><span class="hg-bfly hg-bfly--b rm-bfly rm-bfly--3"></span>';

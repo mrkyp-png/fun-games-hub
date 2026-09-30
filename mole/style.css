@@ -5096,3 +5096,4 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 /* v800(사용자 지정): 좌우 짚더미 위로 먼지 더 많이 — 짚 색 먼지가 위로 피어오름 */
 .ws-dust i.ws-dust--hay { width: 4px; height: 4px; background: radial-gradient(circle, #fff3c4 0 30%, rgba(240, 200, 110, 0.7) 55%, transparent 75%); animation-name: ws-hay-dust; }
 @keyframes ws-hay-dust { 0% { opacity: 0; transform: translate(0, 0) scale(0.6); } 15% { opacity: 0.9; } 60% { transform: translate(8px, -45px) scale(1); } 85% { opacity: 0.5; } 100% { opacity: 0; transform: translate(-6px, -80px) scale(1.2); } }
+.photo-slot-ribbon { width: 150%; left: -58%; top: calc(12% - 0.3cm + 0.15cm - 4px); } /* v801: 리본을 길게 — 기기 폭이 달라도 왼쪽 카드선까지 닿게(넘치는 부분은 잘림) */
