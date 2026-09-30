@@ -129,46 +129,17 @@
 
     // 무기 탭 아이콘 — 후보 시트(뿅망치 만화 소프트해머, #7) 사용자 선택, 시계방향 45도 회전 +
     // 그라디언트/하이라이트로 입체감(사용자 지정: "7번으로 해서 시계방향 45도 회전, 입체감").
-    var WEAPON_TAB_ICON =
-      '<svg viewBox="0 0 64 64">' +
-      '<defs>' +
-        '<linearGradient id="wpHandle" x1="0" y1="0" x2="1" y2="1">' +
-          '<stop offset="0" stop-color="#fbe6a8"/><stop offset="1" stop-color="#c99a3e"/>' +
-        '</linearGradient>' +
-        '<linearGradient id="wpHead" x1="0" y1="0" x2="0" y2="1">' +
-          '<stop offset="0" stop-color="#ff6b5e"/><stop offset="1" stop-color="#c72e22"/>' +
-        '</linearGradient>' +
-      '</defs>' +
-      '<g transform="rotate(45 32 32)">' +
-        '<rect x="29" y="30" width="6" height="24" rx="3" fill="url(#wpHandle)"/>' +
-        '<rect x="14" y="12" width="36" height="20" rx="10" fill="url(#wpHead)"/>' +
-        '<rect x="14" y="12" width="36" height="8" rx="6" fill="#fff" opacity="0.35"/>' +
-        '<path d="M32 16 33.5 20 38 20 34.5 22.6 36 27 32 24.2 28 27 29.5 22.6 26 20 30.5 20Z" fill="#fff"/>' +
-      '</g></svg>';
+    var WEAPON_TAB_ICON = '<img src="assets/tabs/weapon.png" alt="">'; // 사용자 제공 이미지(v755)
 
     // 스킬 탭 아이콘 — 후보 시트 #7(음양) 사용자 최종 선택, 그라디언트+하이라이트로 입체감.
-    var SKILL_TAB_ICON =
-      '<svg viewBox="0 0 64 64">' +
-      '<defs>' +
-        '<radialGradient id="skWhite" cx="0.35" cy="0.3" r="0.8">' +
-          '<stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d6d6dc"/>' +
-        '</radialGradient>' +
-        '<linearGradient id="skBlack" x1="0" y1="0" x2="1" y2="1">' +
-          '<stop offset="0" stop-color="#4a4a54"/><stop offset="1" stop-color="#0c0c12"/>' +
-        '</linearGradient>' +
-      '</defs>' +
-      '<circle cx="32" cy="32" r="24" fill="url(#skWhite)" stroke="#0c0c12" stroke-width="2"/>' +
-      '<path d="M32 8 A12 12 0 0 1 32 32 A12 12 0 0 0 32 56 A24 24 0 0 0 32 8 Z" fill="url(#skBlack)"/>' +
-      '<circle cx="32" cy="20" r="4" fill="#0c0c12"/>' +
-      '<circle cx="32" cy="44" r="4" fill="url(#skWhite)"/>' +
-      '</svg>';
+    var SKILL_TAB_ICON = '<img src="assets/tabs/skill.png" alt="">'; // 사용자 제공 이미지(v755)
 
     // 하단 탭 아이콘 — 이모지(사용자 지정: "이모지나 이미지 넣어야함", 참고 이미지의 하트/망치/별/옷 자리).
     var TABS = [
-      { id: 'currency', i18n: 'mole.shop.tabCurrency', icon: '💰' },
+      { id: 'currency', i18n: 'mole.shop.tabCurrency', icon: '<img src="assets/tabs/currency.png" alt="">' },
       { id: 'weapon', i18n: 'mole.shop.tabWeapon', icon: WEAPON_TAB_ICON },
       { id: 'skill', i18n: 'mole.shop.tabSkill', icon: SKILL_TAB_ICON },
-      { id: 'costume', i18n: 'mole.shop.tabCostume', icon: '👕' }
+      { id: 'costume', i18n: 'mole.shop.tabCostume', icon: '<img src="assets/tabs/costume.png" alt="">' }
     ];
     var activeTab = 'currency';
     var currencyFilter = null; // null=전체, 'heart'/'coin'/'ticket'=다이얼패드 캡슐 클릭으로 필터

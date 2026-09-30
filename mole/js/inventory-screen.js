@@ -29,39 +29,10 @@
   // 하단 탭 아이콘 — 상점(shop.js)과 같은 그라디언트 입체 아이콘 재사용(사용자 지정: "동일한
   // 스타일로"). 사진 탭은 다이얼패드 "사진보관" 카메라 아이콘(lane-controls.js SVG.locker)
   // 재사용 + 같은 톤의 그라디언트만 추가.
-  var WEAPON_TAB_ICON =
-    '<svg viewBox="0 0 64 64">' +
-    '<defs>' +
-      '<linearGradient id="ivWpHandle" x1="0" y1="0" x2="1" y2="1">' +
-        '<stop offset="0" stop-color="#fbe6a8"/><stop offset="1" stop-color="#c99a3e"/>' +
-      '</linearGradient>' +
-      '<linearGradient id="ivWpHead" x1="0" y1="0" x2="0" y2="1">' +
-        '<stop offset="0" stop-color="#ff6b5e"/><stop offset="1" stop-color="#c72e22"/>' +
-      '</linearGradient>' +
-    '</defs>' +
-    '<g transform="rotate(45 32 32)">' +
-      '<rect x="29" y="30" width="6" height="24" rx="3" fill="url(#ivWpHandle)"/>' +
-      '<rect x="14" y="12" width="36" height="20" rx="10" fill="url(#ivWpHead)"/>' +
-      '<rect x="14" y="12" width="36" height="8" rx="6" fill="#fff" opacity="0.35"/>' +
-      '<path d="M32 16 33.5 20 38 20 34.5 22.6 36 27 32 24.2 28 27 29.5 22.6 26 20 30.5 20Z" fill="#fff"/>' +
-    '</g></svg>';
-  var SKILL_TAB_ICON =
-    '<svg viewBox="0 0 64 64">' +
-    '<defs>' +
-      '<radialGradient id="ivSkWhite" cx="0.35" cy="0.3" r="0.8">' +
-        '<stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d6d6dc"/>' +
-      '</radialGradient>' +
-      '<linearGradient id="ivSkBlack" x1="0" y1="0" x2="1" y2="1">' +
-        '<stop offset="0" stop-color="#4a4a54"/><stop offset="1" stop-color="#0c0c12"/>' +
-      '</linearGradient>' +
-    '</defs>' +
-    '<circle cx="32" cy="32" r="24" fill="url(#ivSkWhite)" stroke="#0c0c12" stroke-width="2"/>' +
-    '<path d="M32 8 A12 12 0 0 1 32 32 A12 12 0 0 0 32 56 A24 24 0 0 0 32 8 Z" fill="url(#ivSkBlack)"/>' +
-    '<circle cx="32" cy="20" r="4" fill="#0c0c12"/>' +
-    '<circle cx="32" cy="44" r="4" fill="url(#ivSkWhite)"/>' +
-    '</svg>';
+  var WEAPON_TAB_ICON = '<img src="assets/tabs/weapon.png" alt="">'; // 사용자 제공 이미지(v755)
+  var SKILL_TAB_ICON = '<img src="assets/tabs/skill.png" alt="">'; // 사용자 제공 이미지(v755)
   // 코스튬 아이콘 = 상점과 동일한 이모지로 통일(사용자 지정: "아이템에서도 코스튬 이모지 변경").
-  var COSTUME_TAB_ICON = '👕';
+  var COSTUME_TAB_ICON = '<img src="assets/tabs/costume.png" alt="">';
   var PHOTO_TAB_ICON =
     '<svg viewBox="0 0 24 24">' +
     '<defs><linearGradient id="ivPhBody" x1="0" y1="0" x2="0" y2="1">' +
