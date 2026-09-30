@@ -79,6 +79,22 @@
         html += '<i style="left:' + (5 + Math.random() * 90).toFixed(1) + '%;top:' + (15 + Math.random() * 70).toFixed(1) + '%;animation-delay:' + (-Math.random() * 9).toFixed(2) + 's"></i>';
       }
       fx.innerHTML = html;
+      if (view === 'easy') setTimeout(flyDragonflies, 50);
+    }
+
+    // 잠자리(Amateur): 위쪽 하늘(배경 y 0~120px) 안에서만 무작위 지점으로 '호버링 → 휙' 이동(사용자 지정)
+    var dflyTimer = null;
+    function flyDragonflies() {
+      clearTimeout(dflyTimer);
+      if (el.hidden || view !== 'easy') return;
+      el.querySelectorAll('.rm-dfly').forEach(function (d) {
+        if (Math.random() < 0.45) return; // 일부는 제자리 호버링
+        var x = 3 + Math.random() * 86, y = 0.5 + Math.random() * 11; // cqw — 하늘 띠 안
+        var ang = (Math.random() < 0.5 ? 90 : -90) + (Math.random() * 30 - 15);
+        d.style.setProperty('--t', (0.35 + Math.random() * 0.5).toFixed(2) + 's');
+        d.style.transform = 'translate(' + x.toFixed(1) + 'cqw,' + y.toFixed(1) + 'cqw) rotate(' + ang.toFixed(0) + 'deg)';
+      });
+      dflyTimer = setTimeout(flyDragonflies, 900 + Math.random() * 1400);
     }
 
     function render() {
@@ -120,7 +136,7 @@
       });
     }
 
-    function show() { view = opts.currentLight(); render(); }
+    function show() { view = opts.currentLight(); render(); setTimeout(flyDragonflies, 50); }
     return { show: show };
   }
 
