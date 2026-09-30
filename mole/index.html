@@ -487,6 +487,7 @@
 
       <!-- 제작소 합성 전체화면 — 바탕화면 "제작소 UI 및 에셋" 명세·에셋 기준(v750). 수치·상태는 js/workshop.js -->
       <div class="board-screen ws-screen" id="workshop-screen" hidden>
+        <div class="ws-dust" aria-hidden="true"><i style="left:46%;top:29%;animation-delay:-3.6s;animation-duration:7.2s"></i><i style="left:73%;top:22%;animation-delay:-3.3s;animation-duration:7.2s"></i><i style="left:69%;top:37%;animation-delay:-0.3s;animation-duration:8.7s"></i><i style="left:13%;top:40%;animation-delay:-0.8s;animation-duration:8.7s"></i><i style="left:77%;top:25%;animation-delay:-8.5s;animation-duration:9.5s"></i><i style="left:79%;top:17%;animation-delay:-5.2s;animation-duration:8.6s"></i><i style="left:33%;top:15%;animation-delay:-5.0s;animation-duration:7.5s"></i><i style="left:58%;top:28%;animation-delay:-4.9s;animation-duration:9.3s"></i><i style="left:76%;top:33%;animation-delay:-0.9s;animation-duration:9.3s"></i><i style="left:29%;top:57%;animation-delay:-0.9s;animation-duration:9.8s"></i><i style="left:77%;top:17%;animation-delay:-5.6s;animation-duration:9.0s"></i><i style="left:73%;top:64%;animation-delay:-7.0s;animation-duration:8.9s"></i><i style="left:63%;top:56%;animation-delay:-2.7s;animation-duration:10.2s"></i><i style="left:94%;top:41%;animation-delay:-0.7s;animation-duration:8.2s"></i></div>
         <div class="ws-ui">
           <button type="button" class="ws-close" data-ws-close aria-label="닫기"><img src="assets/workshop/close.png" alt=""></button>
           <div class="ws-sign"><img src="assets/workshop/sign.png" alt=""><b data-i18n="mole.ws.title">제작소</b><small>MOLE PANG</small></div>
@@ -780,7 +781,7 @@
       <div id="lane-button-bar">
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
-        <div id="build-tag" aria-hidden="true">v791</div>
+        <div id="build-tag" aria-hidden="true">v793</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -992,7 +993,7 @@
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=791').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=793').catch(function () {});
       }
     });
   }
