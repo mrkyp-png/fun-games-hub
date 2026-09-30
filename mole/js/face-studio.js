@@ -34,20 +34,30 @@
 
   // 한 캐릭터(얼굴형×코스튬)에 촬영 얼굴을 합성 → dataURL
   function compose(photo, det, charId) {
-    return Promise.all([meta(), loadImg('assets/photo/characters/' + charId + '.png'), loadImg('assets/photo/masks/' + charId + '.png')]).then(function (r) {
+    var stage = 'load';
+    function tag(e) { var x = new Error('[' + stage + '] ' + ((e && (e.message || e.type)) || e)); x.name = (e && e.name) || 'Error'; return x; }
+    return Promise.all([meta().catch(function (e) { stage = 'meta'; throw tag(e); }),
+      loadImg('assets/photo/characters/' + charId + '.png').catch(function (e) { stage = 'char'; throw tag(e); }),
+      loadImg('assets/photo/masks/' + charId + '.png').catch(function (e) { stage = 'mask'; throw tag(e); })]).then(function (r) {
+     try {
+      stage = 'meta2';
       var m = r[0][charId], body = r[1], mask = r[2];
+      stage = 'body';
       var W = m.w, H = m.h, bx = m.box[0], by = m.box[1], bw = m.box[2], bh = m.box[3];
       var out = document.createElement('canvas'); out.width = W; out.height = H;
       var oc = out.getContext('2d');
       oc.drawImage(body, 0, 0);
       // 캐릭터 얼굴 피부색(마스크 중앙 샘플)
+      stage = 'skinC';
       var cS = avgColor(oc, bx + bw / 2, by + bh * 0.6, 8);
+      stage = 'skinU';
       // 촬영 얼굴 피부색(양 볼)
       var pc = photo.getContext('2d');
       var a = avgColor(pc, det.skinL.x, det.skinL.y, 6), b = avgColor(pc, det.skinR.x, det.skinR.y, 6);
       var uS = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
       var gain = uS.map(function (u, i) { var g = cS[i] / Math.max(1, u); return Math.max(0.6, Math.min(1.7, 1 + (g - 1) * 0.6)); });
       // 1) 얼굴 오려내기(윤곽 폴리곤 + 부드러운 경계) + 피부색 보정
+      stage = 'cut';
       var faceW = Math.hypot(det.cheekR.x - det.cheekL.x, det.cheekR.y - det.cheekL.y);
       var cut = document.createElement('canvas'); cut.width = photo.width; cut.height = photo.height;
       var cc = cut.getContext('2d');
@@ -65,6 +75,7 @@
       for (var i = 0; i < d.length; i += 4) { d[i] = Math.min(255, d[i] * gain[0]); d[i + 1] = Math.min(255, d[i + 1] * gain[1]); d[i + 2] = Math.min(255, d[i + 2] * gain[2]); }
       cc.putImageData(id, x0, y0);
       // 2) 얼굴 레이어: 보정 피부색으로 얼굴형 전체를 채우고(얼굴형 윤곽 유지) 그 위에 얼굴을 맞춰 얹는다
+      stage = 'layer';
       var fl = document.createElement('canvas'); fl.width = W; fl.height = H;
       var fc = fl.getContext('2d');
       var fill = cS.map(function (c, i) { return Math.round(c * 0.72 + uS[i] * gain[i] * 0.28); });
@@ -80,9 +91,11 @@
       // 3) 확정 얼굴형 마스크로 윤곽 확정
       fc.globalCompositeOperation = 'destination-in'; fc.drawImage(mask, 0, 0);
       oc.drawImage(fl, 0, 0);
+      stage = 'encode';
       var url = out.toDataURL('image/webp', 0.9);
       if (url.indexOf('image/webp') < 0) url = out.toDataURL('image/png');
       return url;
+     } catch (e) { throw tag(e); }
     });
   }
 
@@ -101,10 +114,10 @@
       if (n === 5) renderFaceSelect(false);
       if (n === 6) renderFaceSelect(true);
     }
-    function toast(msg) {
+    function toast(msg, ms) {
       var t = $('[data-fs-toast]'); t.textContent = msg; t.hidden = false;
       t.classList.remove('is-on'); void t.offsetWidth; t.classList.add('is-on');
-      clearTimeout(toast._t); toast._t = setTimeout(function () { t.hidden = true; }, 1900);
+      clearTimeout(toast._t); toast._t = setTimeout(function () { t.hidden = true; }, ms || 1900);
     }
 
     // ---- 뒤로가기: 단계별 이전 화면(촬영 데이터는 유지, §58) ----
@@ -275,9 +288,9 @@
         .then(function () { mark(4, 'done'); st.busy = false; later(function () { go(5); }, 350); })
         .catch(function (e) {
           // v770: 실패 원인을 짧게 함께 표시(폰에서만 나는 오류 확인용)
-          var why = (e && (e.name || e.type || e.message)) || 'err';
+          var why = (e && (e.message || e.name || e.type)) || 'err'; // v784: 단계+메시지 표시(폰 원인 확인용)
           try { localStorage.setItem('mole.fs.lastErr', String(e && (e.stack || e.message || e))); } catch (x) { /* 무시 */ }
-          st.busy = false; toast(T('mole.fs.err') + ' (' + String(why).slice(0, 40) + ')'); go(3);
+          st.busy = false; toast(T('mole.fs.err') + ' (' + String(why).slice(0, 90) + ')', 6000); go(3);
         });
     }
 

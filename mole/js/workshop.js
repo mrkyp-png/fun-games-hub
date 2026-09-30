@@ -58,8 +58,9 @@
 
   function items(kind) {
     if (kind === 'weapon') return WEAPONS;
-    return MG.CostumeTeams.teams().filter(function (t) { return MG.CostumeTeams.owns(t.id); }).map(function (t) {
-      return { id: t.id, ko: t.nameKo, en: t.nameEn, img: 'assets/costume/char-' + t.id + '-detail.png', done: 'assets/costume/char-' + t.id + '-detail.png' };
+    // v784(사용자 지정): 5팀 전부 표시(미보유 = 클라우드 컵스 등도 목록에 — 합성은 보유해야 가능)
+    return MG.CostumeTeams.teams().map(function (t) {
+      return { id: t.id, ko: t.nameKo, en: t.nameEn, owned: MG.CostumeTeams.owns(t.id), img: 'assets/costume/char-' + t.id + '-detail.png', done: 'assets/costume/char-' + t.id + '-detail.png' };
     });
   }
   function nameOf(it) { return root.FGH.I18N.lang === 'en' ? it.en : it.ko; }
@@ -100,9 +101,12 @@
       $('[data-ws-cost]').textContent = COST.toLocaleString('en-US');
       $('[data-ws-coins]').textContent = coins.toLocaleString('en-US');
       $('[data-ws-coins]').classList.toggle('is-short', coins < COST);
-      var ok = !!it && lv < MAX && mats > 0 && !!selMat && coins >= COST && !running;
+      var notOwned = !!it && it.owned === false;
+      $('[data-ws-target]').classList.toggle('is-notowned', notOwned);
+      var ok = !!it && !notOwned && lv < MAX && mats > 0 && !!selMat && coins >= COST && !running;
       $('[data-ws-go]').disabled = !ok;
       $('[data-ws-notice]').textContent = !it ? T('mole.ws.noItem')
+        : notOwned ? T('mole.ws.notOwned')
         : lv >= MAX ? T('mole.ws.maxed')
         : !mats ? T('mole.ws.noMat')
         : coins < COST ? T('mole.ws.noCoin')

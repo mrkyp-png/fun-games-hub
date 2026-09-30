@@ -4933,3 +4933,5 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.2)
 .fs-ccards.is-in-prev .fs-ccard > img:first-child { animation: fs-in-prev 0.18s ease-out; }
 @keyframes fs-in-next { from { transform: translateX(40%); opacity: 0.4; } to { transform: none; opacity: 1; } }
 @keyframes fs-in-prev { from { transform: translateX(-40%); opacity: 0.4; } to { transform: none; opacity: 1; } }
+.ws-item.is-notowned img { filter: grayscale(1) brightness(0.55); } /* v784: 미보유 코스튬 흐리게 */
+.fs-toast { white-space: normal; max-width: 90vw; text-align: center; animation-duration: 6s !important; } /* v784: 오류 문구 줄바꿈 표시 */
