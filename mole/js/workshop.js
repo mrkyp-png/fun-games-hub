@@ -141,7 +141,7 @@
       pick.hidden = false;
     });
     $('[data-ws-pick-close]').addEventListener('click', function () { pick.hidden = true; });
-    $('[data-ws-close]').addEventListener('click', function () { if (running) return; opts.onClose(); });
+    $('[data-ws-close]').addEventListener('click', function () { if (running || el.classList.contains('is-rollup')) return; el.classList.add('is-rollup'); setTimeout(function () { el.classList.remove('is-rollup'); opts.onClose(); }, 520); }); // v790: 위로 말리며 사라짐
 
     // ---- 합성 실행 ----
     $('[data-ws-go]').addEventListener('click', function () {
