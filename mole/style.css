@@ -2707,6 +2707,11 @@ body { background: var(--lm-page); }
 .sr-title { width: calc(var(--w) * 0.56); flex: 0 0 auto; }
 /* ===== v778 스코어 4위 이하 = 두툼한 카드(사용자 참고 이미지 구성) ===== */
 #score-screen .sr-rows { gap: calc(var(--w) * 0.02); }
+/* v779(사용자 지정): 내 순위 칸·안내는 화면 아래 고정, 4~10위 목록만 스크롤 */
+#score-screen .sr-ui { overflow: hidden; }
+#score-screen .sr-rows { flex: 1 1 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; padding: 2px 2px 10px; box-sizing: border-box; }
+#score-screen .sr-rows::-webkit-scrollbar { display: none; }
+#score-screen .sr-row { flex: 0 0 auto; }
 #score-screen .sr-row { height: calc(var(--w) * 0.15); grid-template-columns: 10% 15% 1fr 26%; column-gap: 2%; padding: 0 3%; box-sizing: border-box; border-radius: calc(var(--w) * 0.035);
   background: linear-gradient(180deg, #ffffff 0%, #eef2fa 100%); border: 0; box-shadow: 0 5px 0 #b9c3d8, 0 7px 10px rgba(0, 0, 0, 0.3), inset 0 2px 0 #fff; }
 #score-screen .sr-row .sr-rank { font-size: calc(var(--w) * 0.07); color: #5a6680; }
