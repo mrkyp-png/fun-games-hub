@@ -2797,6 +2797,8 @@ body { background: var(--lm-page); }
 .ws-tab:active { transform: scale(0.96); }
 .ws-stage { position: relative; width: var(--w); aspect-ratio: 857 / 507; flex: 0 0 auto; container-type: inline-size; }
 .ws-stage-img { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* 파란 깃발 아랫부분만 강화판(ws-panel)보다 앞 — 깃발이 판 위로 늘어지고, 기둥 끝은 판에 가려짐(사용자 지정 v762). stage.png 의 같은 좌표 조각 */
+.ws-stage-banner { position: absolute; left: calc(240 / 700 * 100%); top: calc(290 / 414 * 100%); width: calc(220 / 700 * 100%); z-index: 4; pointer-events: none; }
 .ws-lbl { position: absolute; top: 2.5%; width: 30%; text-align: center; font-size: 4.2cqw; font-weight: 900; color: #fff; }
 .ws-lbl--l { left: 2%; } .ws-lbl--r { right: 1%; }
 .ws-item { position: absolute; top: 14%; width: 24%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
@@ -2827,11 +2829,10 @@ body { background: var(--lm-page); }
 .ws-name { position: absolute; left: 2%; top: 11%; width: 32%; text-align: center; font-size: 3.4cqw; font-weight: 800; color: #ffe7a8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ws-matn { position: absolute; right: 1%; top: 11%; width: 32%; text-align: center; font-size: 3.4cqw; font-weight: 800; color: #bfe3ff; }
 .ws-goose { position: absolute; left: 50%; top: -4%; width: 30%; transform: translateX(-50%); }
-.ws-arrow { position: absolute; top: 26%; width: 7%; aspect-ratio: 1; border: none; border-radius: 50%; padding: 0; cursor: pointer;
-  font-size: 5cqw; font-weight: 900; line-height: 1; color: #3a2400; background: linear-gradient(180deg, #ffe45a, #f2b300); box-shadow: 0 0.5cqw 0 #a86a00; z-index: 2; }
-.ws-arrow--prev { left: 0; } .ws-arrow--next { left: 30%; }
-.ws-arrow:active { transform: translateY(0.4cqw); box-shadow: none; }
-.ws-panel { position: relative; width: calc(var(--w) * 0.8); aspect-ratio: 658 / 212; flex: 0 0 auto; display: flex; flex-direction: column; justify-content: center;
+/* 대상 넘기기 = 아이템 화면 우측 위 화살표(.inv-arrow) 모양, 대상 받침대(보라 원반) 아래 가운데(사용자 지정 v762) */
+.ws-stage .ws-arrow { position: absolute; top: 74%; z-index: 2; margin: 0; padding: 0; }
+.ws-arrow--prev { left: calc(10.8% - 28px); } .ws-arrow--next { left: 21.1%; } /* 받침대 기둥 양옆 */
+.ws-panel { /* 기둥 끝을 덮도록 위로 겹침(사용자 지정 v762) */ margin-top: calc(var(--w) * -0.06); z-index: 3; position: relative; width: calc(var(--w) * 0.8); aspect-ratio: 658 / 212; flex: 0 0 auto; display: flex; flex-direction: column; justify-content: center;
   background: url('assets/workshop/panel.png') center / 100% 100% no-repeat; padding: 0 12%; box-sizing: border-box; gap: 4%; }
 .ws-row { display: flex; align-items: center; justify-content: space-between; font-weight: 900; font-size: calc(var(--w) * 0.045); color: #f3e7d0; }
 .ws-row b { display: flex; align-items: center; gap: 6px; font-size: calc(var(--w) * 0.065); color: #fff; }
