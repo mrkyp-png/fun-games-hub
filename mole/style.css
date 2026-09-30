@@ -5040,3 +5040,20 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .ws-arc text { font-size: 26px; font-weight: 900; fill: #fff; stroke: #2a1506; stroke-width: 6px; paint-order: stroke fill; letter-spacing: 0; }
 .ws-matn { display: none; } /* v794(사용자 지정): "보유 50개" 삭제 — 합성 대상 이름(.ws-name)은 유지 */
 .ws-name { top: 8%; } /* v794(사용자 지정): 팡팡 캐논 이름 위로 조금 */
+/* v795(사용자 지정 1안): 좌우 버튼 = 합성 대상 원판 양옆에 붙은 금색 삼각 화살표(빛남 + 바깥쪽으로 까딱) */
+.ws-stage .ws-arrow { top: 51%; width: 6.5%; aspect-ratio: 0.8; margin: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; z-index: 3; cursor: pointer;
+  transform: translateY(-50%); filter: drop-shadow(0 0 3px rgba(255, 210, 60, 0.9)) drop-shadow(0 2px 1px rgba(60, 30, 0, 0.8)); }
+.ws-stage .ws-arrow::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, #fff3a0 0%, #ffd23c 45%, #e89a00 100%);
+  clip-path: polygon(100% 0, 0 50%, 100% 100%); border-radius: 2px; }
+.ws-stage .ws-arrow--next::before { clip-path: polygon(0 0, 100% 50%, 0 100%); }
+.ws-stage .ws-arrow--prev { left: -3.5%; animation: ws-arr-l 1.4s ease-in-out infinite; }
+.ws-stage .ws-arrow--next { left: 33.5%; animation: ws-arr-r 1.4s ease-in-out infinite; }
+@keyframes ws-arr-l { 50% { transform: translate(-25%, -50%); } }
+@keyframes ws-arr-r { 50% { transform: translate(25%, -50%); } }
+.ws-stage .ws-arrow:active { filter: brightness(1.3) drop-shadow(0 0 6px #ffd23c); }
+.ws-stage .ws-arrow { width: 8%; z-index: 5; }
+.ws-stage .ws-arrow--prev { left: 0.5%; }
+.ws-stage .ws-arrow--next { left: 29%; }
+/* v795(사용자 지정): 사진관 얼굴형 리본(동글형 등) 끝이 줄어든 카드 모서리와 만나게 — 카드 위가 0.3cm 내려간 만큼 리본도 내림 */
+.photo-slot-ribbon { translate: 0 0.3cm; }
+.ws-item--r.is-unsel::after { top: 50%; left: 50%; margin: -19cqw 0 0 -4cqw; } /* v795(사용자 지정): 재료 + 표시를 빈 칸 가운데로(위로) */
