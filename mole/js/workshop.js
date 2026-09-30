@@ -179,7 +179,7 @@
       later(function () { goose.style.transform = 'translate(-50%, -700%)'; ghosts.forEach(function (gh) { gh.style.transform = goose.style.transform; }); }, t);
       t += 1300;
       // 받침대 위에서 다 커진 알 = 기존 알 1번 이미지(받침대 포함)로 교체
-      later(function () { egg.src = A + eggSet + '1.png'; egg.hidden = false; ped.hidden = true; solo.hidden = true; ghosts.forEach(function (gh) { gh.hidden = true; }); }, t);
+      later(function () { egg.src = A + eggSet + '1.png'; egg.hidden = false; ped.hidden = true; solo.hidden = true; $('[data-ws-pedfront]').hidden = false; ghosts.forEach(function (gh) { gh.hidden = true; }); }, t);
       // 2) 알 대기 — 탭하면 타격
       later(function () { goose.hidden = true; egg.className = 'ws-egg is-wait'; $('[data-ws-egghint]').hidden = false; pending.ready = true; }, t);
     }
@@ -203,7 +203,7 @@
       later(function () {
         ham.classList.remove('is-in'); ham.classList.add('is-hit');
         egg.src = A + eggSet + '2.png'; egg.classList.add('is-shiver');
-        el.classList.remove('is-shake'); void el.offsetWidth; el.classList.add('is-shake');
+        // 화면 흔들림 없음 — 타격 떨림은 알에만(받침대 고정, 사용자 지정 v759)
         fx.classList.remove('is-flash'); void fx.offsetWidth; fx.classList.add('is-flash');
         try { MG.HitFx && MG.HitFx.uiTap && MG.HitFx.uiTap(1); } catch (e) { /* 무시 */ }
       }, t);
@@ -216,7 +216,7 @@
       t += 300;
       // 5) 결과 공개
       later(function () {
-        ham.hidden = true; stopBolt(); pending = null;
+        ham.hidden = true; stopBolt(); pending = null; $('[data-ws-pedfront]').hidden = true;
         var nlv = success ? lv + 1 : lv;
         egg.hidden = true;
         res.hidden = false;
@@ -245,7 +245,7 @@
     function show() {
       clearTimers(); stopBolt();
       running = false; pending = null; selMat = null; pick.hidden = true;
-      $('[data-ws-ped]').hidden = true; $('[data-ws-eggsolo]').hidden = true;
+      $('[data-ws-ped]').hidden = true; $('[data-ws-eggsolo]').hidden = true; $('[data-ws-pedfront]').hidden = true;
       el.classList.remove('is-fx', 'is-shake');
       $('[data-ws-fx]').hidden = true;
       render();
