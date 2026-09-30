@@ -576,7 +576,7 @@
       // 사용자 지정: "별빛박스 좌측 위에 전광판(트로피), 우측 안쪽에 N/15" — 헤더는
       // 전체 높이의 약 10%만 차지, 트로피가 별빛바 위에 겹쳐 올라간다.
       overlay.innerHTML =
-        '<button type="button" class="photo-coll-back" data-photo-back>‹</button>' +
+        '<button type="button" class="photo-coll-back" data-photo-back aria-label="뒤로"><img src="assets/score/btn-back.png" alt=""></button>' + // v781: 다른 화면과 같은 시안 뒤로가기
         '<div class="photo-coll-headrow">' +
           '<img class="photo-coll-starbar" alt="" src="assets/photo/collection-starbar.png">' +
           '<img class="photo-coll-trophy" alt="" src="assets/photo/collection-trophy.png">' +

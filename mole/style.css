@@ -4443,7 +4443,7 @@ body { background: var(--lm-page); }
    사용자 지적: 96%까지 키우니 카드 위쪽 엠블럼(팀명 영문 글자)을 캐릭터 머리가 가림 —
    상단 여유를 조금 남기도록 살짝 축소. */
 .cos-card-char { position: absolute; z-index: 2; left: 50%; bottom: 2%; width: 86%; height: auto; max-height: none;
-  transform: translateX(-50%); object-fit: contain; }
+  transform: translateX(-50%) translateY(-0.8cm); object-fit: contain; } /* v781: 위로 0.5cm + 0.3cm(사용자 지정) */
 /* 사용자 지적: "체크표시 찌그러져보임" — aspect-ratio:1이 absolute+flex 조합에서 제대로
    안 먹혀 실측 10.97×15px(원이 아님)로 나왔음. width/height를 고정 px로 직접 맞춰 확실한
    원형으로. */
@@ -4739,11 +4739,11 @@ body { background: var(--lm-page); }
 /* 사용자 지정(2026-09-27): "원은 위로 0.3cm, 케릭이 원 앞으로" — z-index는 이미
    캐릭터(2)>원(1)이라 앞에 있음, 위치만 추가 상향. */
 .photo-slot-pedestal { position: absolute; left: 50%; bottom: 4%; width: 88%; height: auto;
-  transform: translateX(-50%) translateY(-0.1cm); z-index: 1; }
+  transform: translateX(-50%) translateY(-0.5cm); z-index: 1; } /* v781: 원 위로 0.4cm(사용자 지정) */
 /* 사용자 지정(2026-09-27): 케릭터/원 위치 미세조정 — 원 위에 선 느낌이 나도록 둘 다
    살짝 하향(케릭터 순하향 0.35cm, 원 순하향 0.2cm — 이전 상향값에서 빼는 방식). */
 .photo-slot-img { position: relative; z-index: 2; width: 100%; height: calc(100% - 0.7cm); object-fit: contain;
-  object-position: bottom center; transform: translateY(-0.25cm); }
+  object-position: bottom center; transform: translateY(-0.85cm); } /* v781: 캐릭 위로 0.4+0.2cm(원 발판 위에 서게, 사용자 지정) */
 .photo-slot-img--locked, .photo-coll-card-img--locked, .photo-zoom-img--locked { filter: grayscale(1) brightness(0.7); }
 .photo-slot-applied { position: absolute; right: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%;
   background: #57d977; color: #fff; font-size: 10px; font-weight: 900; display: flex; align-items: center;
@@ -4920,3 +4920,8 @@ body { background: var(--lm-page); }
 .inv-arrow:disabled, .shop-arrow:disabled, .skl-parrow:disabled, .photo-zoom-nav:disabled {
   opacity: 0.35; box-shadow: 0 2px 0 rgba(255,255,255,0.15) !important; transform: none !important;
 }
+/* v781(사용자 지정 A안): 뒤로가기 버튼(스코어·일일출석·광산 맵·사진 합성) 그림은 그대로, 색만 돋보기 톤 시안으로 */
+img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.2) brightness(0.9); }
+.photo-coll-back { width: 40px; height: 40px; border: 0 !important; background: none !important; box-shadow: none !important; padding: 0; }
+.photo-coll-back img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.cos-card-emblem { translate: 0 0.3cm; } /* v781: 카드 안 엠블럼 아래로 0.3cm(사용자 지정) */
