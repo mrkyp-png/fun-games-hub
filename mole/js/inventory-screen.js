@@ -500,6 +500,7 @@
       });
 
       var slotsEl = body.querySelector('[data-photo-slots]');
+      slotsEl.setAttribute('data-team', photoCostumeId); // v804: 카드 색 = 팀 고유색(사용자 지정)
       PS.faceTypes().forEach(function (f) {
         var id = f.id + '_' + photoCostumeId;
         var completed = PS.isCompleted(id);
