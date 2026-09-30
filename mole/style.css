@@ -5100,3 +5100,30 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 /* v802: 뒤로가기 말림을 GPU 이동으로 — 아래 끝이 살짝 말려 들어가며(scaleY) 위로 올라감 */
 @keyframes screen-rollup-gpu { from { transform: translate3d(0, 0, 0); } 70% { transform: translate3d(0, -72%, 0) scaleY(0.96); } to { transform: translate3d(0, -104%, 0) scaleY(0.9); } }
 .roll-clone * { animation: none !important; transition: none !important; } /* v802: 말려 올라가는 복제본 안 애니메이션 정지 → 매 프레임 다시 그리기 부담 제거 */
+/* v803(사용자 지정: 리본 왼쪽 틈·노란 노이즈) — 회전 띠 대신, 카드 안쪽 모서리 기준 정사각형에 대각선 띠를 도형으로 잘라 그림.
+   띠 양끝이 카드 왼선·윗선에 수학적으로 정확히 닿고(기기 폭 무관), 테두리 선(노이즈 원인)은 없앰. */
+.photo-slot-rclip { left: 2px !important; right: 2px !important; top: calc(0.7cm + 2px) !important; border-radius: 8px 8px 0 0; }
+.photo-slot-rclip .photo-slot-ribbon { position: absolute; left: 0 !important; top: 0 !important; width: 100% !important; aspect-ratio: 1; height: auto; translate: none !important;
+  transform: none !important; padding: 0 !important; border: 0 !important; box-shadow: none !important; font-size: 0;
+  clip-path: polygon(0 20%, 20% 0, 40% 0, 0 40%); background: linear-gradient(135deg, #ffe46b 0%, #ffb627 45%, #ff7a1a 100%); }
+.photo-slot--sel .photo-slot-rclip .photo-slot-ribbon { background: linear-gradient(135deg, #ff9ce6 0%, #ff4fb3 45%, #d4238a 100%); }
+.photo-slot-ribtxt { position: absolute; left: 15%; top: 15%; transform: translate(-50%, -50%) rotate(-45deg); z-index: 1; white-space: nowrap;
+  font-size: 0.5rem; font-weight: 900; color: #fff; -webkit-text-stroke: 2px #a0400a; paint-order: stroke fill; letter-spacing: 0.04em; }
+.photo-slot--sel .photo-slot-ribtxt { -webkit-text-stroke-color: #7a0f4c; }
+/* v803: 띠 두껍게 + 글자 띠 가운데 */
+.photo-slot-rclip .photo-slot-ribbon { clip-path: polygon(0 12%, 12% 0, 38% 0, 0 38%); }
+.photo-slot-ribtxt { left: 12.5%; top: 12.5%; font-size: 0.56rem; }
+/* v803(사용자 지정): 얼굴형마다 띠 색 다르게 — 동글형 분홍 / 듬직형 주황 / 날렵형 청록 (선택 여부와 무관) */
+.photo-slot:nth-child(1) .photo-slot-rclip .photo-slot-ribbon { background: linear-gradient(135deg, #ffb3ec 0%, #ff4fb3 50%, #d4238a 100%); }
+.photo-slot:nth-child(2) .photo-slot-rclip .photo-slot-ribbon { background: linear-gradient(135deg, #ffe46b 0%, #ffa31a 50%, #f06a00 100%); }
+.photo-slot:nth-child(3) .photo-slot-rclip .photo-slot-ribbon { background: linear-gradient(135deg, #8ff5e0 0%, #1fc9b0 50%, #0f8a86 100%); }
+.photo-slot:nth-child(1) .photo-slot-ribtxt { -webkit-text-stroke-color: #7a0f4c; }
+.photo-slot:nth-child(2) .photo-slot-ribtxt { -webkit-text-stroke-color: #9a3f00; }
+.photo-slot:nth-child(3) .photo-slot-ribtxt { -webkit-text-stroke-color: #0a4f4c; }
+/* v803 보정: 틀(카드 테두리 안쪽)에 정확히 맞춤 + 글자를 띠 정사각형 안에서 띠 방향(-45°)으로 */
+.photo-slot-rclip { left: -5px !important; right: -5px !important; top: calc(0.7cm - 0px) !important; } /* 띠 끝이 테두리 선 안쪽까지 덮어 틈 없음 */
+.photo-slot-rclip .photo-slot-ribbon { clip-path: polygon(0 10%, 10% 0, 36% 0, 0 36%); }
+.photo-slot-ribtxt { left: 11.5% !important; top: 11.5% !important; transform: translate(-50%, -50%) rotate(-45deg) !important; font-size: 0.5rem; }
+.photo-slot:nth-child(1) .photo-slot-rclip .photo-slot-ribbon { background: linear-gradient(135deg, #ffb3ec 0%, #ff4fb3 18%, #d4238a 36%); }
+.photo-slot:nth-child(2) .photo-slot-rclip .photo-slot-ribbon { background: linear-gradient(135deg, #ffe46b 0%, #ffa31a 18%, #f06a00 36%); }
+.photo-slot:nth-child(3) .photo-slot-rclip .photo-slot-ribbon { background: linear-gradient(135deg, #8ff5e0 0%, #1fc9b0 18%, #0f8a86 36%); }
