@@ -213,22 +213,40 @@
     });
 
     // ---- SCREEN_03 코스튬 선택 ----
+    // v782(사용자 지정): 좌우 화살표 = 카드가 한 장씩 옆으로 이동(전체 5팀×3얼굴형 15장을 한 줄로 이어 붙인 목록,
+    // 가운데 금색 발판 카드가 현재 선택). 엠블럼을 누르면 그 팀 가운데 카드로 이동.
+    var cpos = 1; // 0..14
+    function cardSrc(k) { k = (k + 15) % 15; return 'assets/photo/characters/' + FACE_ORDER[k % 3] + '_' + COSTUME_ORDER[Math.floor(k / 3)] + '.png'; }
     function renderCostume() {
+      st.costume = Math.floor(((cpos % 15) + 15) % 15 / 3);
       var cid = COSTUME_ORDER[st.costume];
       el.querySelectorAll('[data-fs-emb]').forEach(function (b) { b.classList.toggle('is-on', b.dataset.fsEmb === cid); });
       var cards = el.querySelectorAll('[data-fs-ccard] > img:first-child');
-      FACE_ORDER.forEach(function (f, i) { cards[i].src = 'assets/photo/characters/' + f + '_' + cid + '.png'; });
+      [-1, 0, 1].forEach(function (d, i) { cards[i].src = cardSrc(cpos + d); });
       $('[data-fs-cname]').textContent = costumeName(cid);
     }
     function costumeName(cid) {
       var c = MG.PhotoStudio.costumes().filter(function (x) { return x.id === cid; })[0];
       return c ? (root.FGH.I18N.lang === 'en' ? c.nameEn : c.nameKo) : cid;
     }
+    var sliding = false;
+    function slide(dir) {
+      if (sliding) return; sliding = true;
+      var box = $('.fs-ccards');
+      box.classList.remove('is-slide-next', 'is-slide-prev'); void box.offsetWidth;
+      box.classList.add(dir > 0 ? 'is-slide-next' : 'is-slide-prev');
+      setTimeout(function () {
+        cpos = (cpos + dir + 15) % 15; st.results = {}; renderCostume();
+        box.classList.remove('is-slide-next', 'is-slide-prev');
+        box.classList.add(dir > 0 ? 'is-in-next' : 'is-in-prev');
+        setTimeout(function () { box.classList.remove('is-in-next', 'is-in-prev'); sliding = false; }, 180);
+      }, 160);
+    }
     el.querySelectorAll('[data-fs-emb]').forEach(function (b) {
-      b.addEventListener('click', function () { st.costume = COSTUME_ORDER.indexOf(b.dataset.fsEmb); st.results = {}; renderCostume(); });
+      b.addEventListener('click', function () { cpos = COSTUME_ORDER.indexOf(b.dataset.fsEmb) * 3 + 1; st.results = {}; renderCostume(); });
     });
     el.querySelectorAll('[data-fs-carrow]').forEach(function (b) {
-      b.addEventListener('click', function () { st.costume = (st.costume + (b.dataset.fsCarrow === 'next' ? 1 : 4)) % 5; st.results = {}; renderCostume(); });
+      b.addEventListener('click', function () { slide(b.dataset.fsCarrow === 'next' ? 1 : -1); });
     });
     $('[data-fs-costume-ok]').addEventListener('click', function () { if (!st.photo) { go(2); return; } runComposite(); });
 
@@ -309,7 +327,7 @@
     $('[data-fs-other]').addEventListener('click', function () { go(6); });
     $('[data-fs-home]').addEventListener('click', function () { if (saveCharacter()) close(); });
 
-    function open() { st.costume = 0; st.face = null; st.results = {}; st.photo = null; st.det = null; go(1); meta(); }
+    function open() { st.costume = 0; cpos = 1; st.face = null; st.results = {}; st.photo = null; st.det = null; go(1); meta(); }
     return { open: open, close: close };
   }
 

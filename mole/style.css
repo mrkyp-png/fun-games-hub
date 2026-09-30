@@ -3029,12 +3029,12 @@ body { background: var(--lm-page); }
 .fs-cstage { position: relative; width: var(--w); }
 .fs-carrow { position: absolute; top: 36%; z-index: 2; width: 9%; border: none; background: none; padding: 0; cursor: pointer; }
 .fs-carrow img { width: 100%; } .fs-carrow--l { left: -1%; } .fs-carrow--r { right: -1%; }
-.fs-ccards { display: flex; justify-content: center; align-items: flex-end; gap: 2%; padding: 0 9%; }
+.fs-ccards { display: flex; justify-content: center; align-items: flex-end; gap: 4%; padding: 0 10%; } /* v782: 발판 안 겹치게 간격 */
 .fs-ccard { position: relative; width: 30%; display: flex; flex-direction: column; align-items: center; }
 .fs-ccard > img:first-child { position: relative; z-index: 1; width: 100%; aspect-ratio: 370 / 540; object-fit: contain; border-radius: 12px;
   background: url('assets/facestudio/card.png') center / 100% 100% no-repeat; padding: 6%; box-sizing: border-box; }
 .fs-ccard--mid > img:first-child { background-image: url('assets/facestudio/card-sel.png'); }
-.fs-ped { width: 112%; margin-top: -8%; }
+.fs-ped { width: 100%; margin-top: -8%; }
 /* 04 합성 진행 */
 .fs-ring { position: relative; width: calc(var(--w) * 0.62); aspect-ratio: 1; }
 .fs-ring img { position: absolute; inset: 0; width: 100%; height: 100%; animation: fs-ring-spin 3s linear infinite; }
@@ -4925,3 +4925,11 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.2)
 .photo-coll-back { width: 40px; height: 40px; border: 0 !important; background: none !important; box-shadow: none !important; padding: 0; }
 .photo-coll-back img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .cos-card-emblem { translate: 0 0.3cm; } /* v781: 카드 안 엠블럼 아래로 0.3cm(사용자 지정) */
+/* v782: 카드 한 장씩 밀리는 슬라이드 */
+.fs-ccard > img:first-child { transition: none; }
+.fs-ccards.is-slide-next .fs-ccard > img:first-child { transition: transform 0.16s ease-in, opacity 0.16s; transform: translateX(-108%); opacity: 0.4; }
+.fs-ccards.is-slide-prev .fs-ccard > img:first-child { transition: transform 0.16s ease-in, opacity 0.16s; transform: translateX(108%); opacity: 0.4; }
+.fs-ccards.is-in-next .fs-ccard > img:first-child { animation: fs-in-next 0.18s ease-out; }
+.fs-ccards.is-in-prev .fs-ccard > img:first-child { animation: fs-in-prev 0.18s ease-out; }
+@keyframes fs-in-next { from { transform: translateX(40%); opacity: 0.4; } to { transform: none; opacity: 1; } }
+@keyframes fs-in-prev { from { transform: translateX(-40%); opacity: 0.4; } to { transform: none; opacity: 1; } }
