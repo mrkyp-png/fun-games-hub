@@ -3323,6 +3323,17 @@ body { background: var(--lm-page); }
 .dr-card--locked .dr-status { background: linear-gradient(180deg, #9aa0ad, #6b7080 60%, #555a68); color: #eef0f5; }
 .dr-card:nth-child(7) .dr-day { height: calc(var(--w) * 0.058); font-size: calc(var(--w) * 0.04); min-width: 40%; }
 .dr-card:nth-child(7) .dr-status { height: calc(var(--w) * 0.066); font-size: calc(var(--w) * 0.04); }
+/* v769(사용자 지정): 일차는 박스 없이 글자만(외곽선 글씨), 상태 박스는 상하로 더 두껍게·글자 더 크게 */
+.dr-day, .dr-card--claimed .dr-day, .dr-card--available .dr-day, .dr-card--d7 .dr-day { background: none !important; border: 0; box-shadow: none; height: auto; min-width: 0; padding: 0;
+  font-size: min(17cqh, 15cqw); color: #fff; -webkit-text-stroke: 3px #4a3a1a; paint-order: stroke fill; text-shadow: 0 2px 0 rgba(0,0,0,0.25); }
+.dr-day::before, .dr-day::after { display: none; }
+.dr-card--claimed .dr-day { -webkit-text-stroke-color: #145c2e; }
+.dr-card--available .dr-day, .dr-card--d7 .dr-day { -webkit-text-stroke-color: #4a1a8a; }
+.dr-status { height: 31cqh; font-size: min(17cqh, 14cqw); }
+.dr-card--available .dr-status { font-size: min(19cqh, 15.5cqw); }
+.dr-card--claimed .dr-status { font-size: min(15cqh, 11.5cqw); letter-spacing: -0.02em; } /* ✓수령완료 5글자 — 박스 안에 들어가게 */
+.dr-card:nth-child(7) .dr-day { height: auto; font-size: calc(var(--w) * 0.046); }
+.dr-card:nth-child(7) .dr-status { height: calc(var(--w) * 0.08); font-size: calc(var(--w) * 0.046); }
 /* ===== 일일출석 애니메이션(사용자 지정 v766): ①카드 차례 뒤집기 등장 ②보상 아이콘 날아가기 ③7일차 선물 들썩임 ⑤간판 전구 불빛 돌기 ===== */
 .dr-cards { perspective: 900px; }
 .dr-cards.is-enter .dr-card { animation: dr-flip 0.5s cubic-bezier(.2, .9, .3, 1.1) both !important; }
