@@ -1139,9 +1139,12 @@
   let rhythm = null;
   function openRhythm() {
     const el = document.getElementById('rhythm-screen');
-    if (!rhythm) rhythm = window.__rhythm = MG.Rhythm.create({ root: el, onClose: () => { el.hidden = true; playScreenBgm('home'); refreshBoardStats(); } });
+    // v840(사용자 지정): 리듬팡 진입·홈 복귀도 글리치
+    if (!rhythm) rhythm = window.__rhythm = MG.Rhythm.create({ root: el, onClose: () => { window.FGH.rollOut(el, () => { el.hidden = true; playScreenBgm('home'); refreshBoardStats(); }); } });
     stopBgm();
     rhythm.open();
+    el.classList.remove('glitch-in'); void el.offsetWidth; el.classList.add('glitch-in');
+    setTimeout(() => el.classList.remove('glitch-in'), 260);
   }
   function showStartScreen(opts) {
     showStartScreenNow(opts);
