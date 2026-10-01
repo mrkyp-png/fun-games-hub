@@ -826,7 +826,7 @@
       <div id="lane-button-bar">
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
-        <div id="build-tag" aria-hidden="true">v835</div>
+        <div id="build-tag" aria-hidden="true">v836</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -878,8 +878,8 @@ window.FGH.rollOut = function (el, done) {
   done();
   // 뒤 홈 그림이 처음 그려지는(이미지 올리는) 부담이 말림 초반에 걸리지 않게, 그 작업이 끝날 시간(약 0.15초)을 두고 시작
   setTimeout(function () { requestAnimationFrame(function () {
-    c.style.animation = 'screen-rollup-gpu 0.5s cubic-bezier(.45, 0, .75, .5) both';
-    setTimeout(function () { c.remove(); }, 560);
+    c.style.animation = 'screen-glitch-out 0.42s steps(1, end) both'; // v836: 롤업 → 글리치(사용자 지정, 비교표 17번)
+    setTimeout(function () { c.remove(); }, 460);
   }); }, 150);
 };
 </script>
@@ -987,6 +987,15 @@ window.FGH.rollOut = function (el, done) {
         overlay.hidden = false;
         // v768(사용자 지정: 첫 진입 번쩍임 삭제): 홈을 잠깐 보여줬다가 점으로 수축하던 단계를 없애고 바로 검은 화면에서 시작.
         overlay.classList.remove('is-expand');
+        // v836(사용자 지정): 인트로가 끝날 때 인트로 화면이 원으로 오므라들며 검게 흡수 — 인트로가 떠 있을 때만(홈이 비치면 v768 번쩍임 재발)
+        var shrinkMs = 0;
+        if (document.getElementById('intro-screen')) {
+          shrinkMs = 1000;
+          overlay.style.transition = 'none'; overlay.style.setProperty('--pr', Math.ceil(diag / 2) + 'px');
+          void overlay.offsetWidth;
+          overlay.style.transition = '--pr 1s ease-in'; overlay.style.setProperty('--pr', '0px');
+          setTimeout(function () { overlay.style.transition = ''; overlay.style.removeProperty('--pr'); }, shrinkMs + 20);
+        }
         setTimeout(function () {
           // 이 시점엔 점이 이미 0×0(검은화면) — 여기서부터 2초간 검게 유지 후 확장 시작.
           setTimeout(function () {
@@ -996,7 +1005,7 @@ window.FGH.rollOut = function (el, done) {
             try { window.FGH && window.FGH.fadeInHomeBgm && window.FGH.fadeInHomeBgm(10000); } catch (e) { /* 무시 */ }
             setTimeout(function () { overlay.hidden = true; }, 3000);
           }, 2000);
-        }, 0);
+        }, shrinkMs + 40);
       } else {
         // 오버레이 엘리먼트가 없으면(방어적) 기존 방식 그대로.
         doScatter();
@@ -1060,7 +1069,7 @@ window.FGH.rollOut = function (el, done) {
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=835').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=836').catch(function () {});
       }
     });
   }

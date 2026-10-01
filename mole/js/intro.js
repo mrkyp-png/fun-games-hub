@@ -94,7 +94,7 @@
       if (raf) cancelAnimationFrame(raf);
       try { localStorage.setItem(SEEN_KEY, '1'); } catch (e) { /* 무시 */ }
       if (onDone) onDone();
-      setTimeout(function () { scr.remove(); }, 300);
+      setTimeout(function () { scr.remove(); }, 1200); // v836: 오므라드는 연출(1초) 동안 인트로가 남아 있어야 함
     }
 
     var scr = document.createElement('div');
