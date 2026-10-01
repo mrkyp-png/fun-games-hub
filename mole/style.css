@@ -5659,3 +5659,55 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .photo-coll-card-img { inset: 7% 8%; width: 84%; height: 86%; object-position: center center; }
 .photo-coll-progress { left: 44%; right: 5%; top: 37%; text-align: center; font-size: 0.85rem; }
 .photo-coll-hint { left: 44%; right: 5%; top: 61%; font-size: 0.48rem; }
+
+/* ===== v865: 사진관 컬렉션 — 갈색 진열장 → 남청색 + 팀 색 칸(1·2), 캐릭 둥실(4), 유리 빛 훑기(5), 완성 칸 빛(6), 트로피 빛·전체 완성 번쩍(7)
+   transform/opacity 애니만(폰 깜빡임 방지) ===== */
+.photo-coll-gridwrap { background: linear-gradient(180deg, #1c3a6e 0%, #132a52 60%, #0d1f40 100%);
+  border: 2px solid rgba(110, 200, 255, 0.75); box-shadow: inset 0 0 18px rgba(80, 170, 255, 0.35), 0 3px 0 #081733; border-radius: 12px; }
+.photo-coll-grid { left: 14%; right: 3%; top: 4%; bottom: 4%; gap: 3% 2%; }
+.photo-coll-rowlabels { left: 2%; width: 10%; top: 4%; bottom: 4%; gap: 3%; }
+.photo-coll-rowlabel { border-radius: 8px; color: #4a2a08; text-shadow: 0 1px 0 rgba(255,240,190,0.7);
+  background: linear-gradient(90deg, #f7c94a, #ffe68a 50%, #e8ad2a); box-shadow: inset 0 0 0 2px #fff3c0, 0 0 0 2px #b77a12, 0 2px 0 3px #6b4206; }
+.photo-coll-card { border-radius: 10px; overflow: visible; isolation: isolate;
+  background: radial-gradient(ellipse at 50% 40%, var(--tc1) 0%, var(--tc2) 75%);
+  box-shadow: inset 0 0 0 2px #ffe68a, 0 0 0 2px #c58a14, inset 0 3px 0 4px rgba(255,255,255,0.12); }
+.photo-coll-card:nth-child(5n+1) { --tc1: #3d7bff; --tc2: #12307a; }
+.photo-coll-card:nth-child(5n+2) { --tc1: #ff4d5e; --tc2: #7a1020; }
+.photo-coll-card:nth-child(5n+3) { --tc1: #2fd27a; --tc2: #0c5a33; }
+.photo-coll-card:nth-child(5n+4) { --tc1: #ff9a2e; --tc2: #7a3a06; }
+.photo-coll-card:nth-child(5n+5) { --tc1: #a96bff; --tc2: #3e1880; }
+/* 4) 캐릭 둥실 + 발밑 그림자 */
+.photo-coll-card-img { z-index: 1; will-change: transform; animation: pc-float 2.6s ease-in-out infinite; }
+.photo-coll-card::before { content: ''; position: absolute; left: 30%; right: 30%; bottom: 6%; height: 7%; border-radius: 50%; z-index: 0;
+  background: radial-gradient(closest-side, rgba(0,0,0,0.5), rgba(0,0,0,0)); will-change: transform, opacity; animation: pc-shadow 2.6s ease-in-out infinite; }
+.photo-coll-card:nth-child(5n+2) .photo-coll-card-img, .photo-coll-card:nth-child(5n+2)::before { animation-delay: -0.5s; }
+.photo-coll-card:nth-child(5n+3) .photo-coll-card-img, .photo-coll-card:nth-child(5n+3)::before { animation-delay: -1s; }
+.photo-coll-card:nth-child(5n+4) .photo-coll-card-img, .photo-coll-card:nth-child(5n+4)::before { animation-delay: -1.5s; }
+.photo-coll-card:nth-child(5n+5) .photo-coll-card-img, .photo-coll-card:nth-child(5n+5)::before { animation-delay: -2s; }
+@keyframes pc-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5%); } }
+@keyframes pc-shadow { 0%, 100% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(0.75); opacity: 0.55; } }
+/* 5) 유리 빛 훑기 */
+.photo-coll-sweep { position: absolute; top: -10%; bottom: -10%; left: 0; width: 22%; z-index: 3; pointer-events: none; will-change: transform;
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.28), rgba(255,255,255,0)); transform: translateX(-120%) skewX(-18deg); animation: pc-sweep 4.5s ease-in-out infinite; }
+@keyframes pc-sweep { 0%, 50% { transform: translateX(-120%) skewX(-18deg); } 85%, 100% { transform: translateX(560%) skewX(-18deg); } }
+/* 6) 완성 칸: 금빛 숨쉬기 + 반짝이 */
+.photo-coll-card.is-done::after { content: ''; position: absolute; inset: -3px; border-radius: 12px; z-index: 2; pointer-events: none;
+  box-shadow: 0 0 0 2px #fff2a0, 0 0 12px 4px rgba(255, 210, 60, 0.9); opacity: 0.35; will-change: opacity; animation: inv-breath 1.8s ease-in-out infinite; }
+.photo-coll-tw { position: absolute; width: 16%; aspect-ratio: 1; z-index: 3; opacity: 0; pointer-events: none; will-change: transform, opacity; animation: inv-tw 1.9s ease-in-out infinite;
+  background: radial-gradient(circle, #fff 0 12%, rgba(255,255,255,0) 14%), linear-gradient(#fff, #fff) center / 2px 100% no-repeat, linear-gradient(#fff, #fff) center / 100% 2px no-repeat; }
+/* 7) 트로피 빛 훑기 + 전체 완성 시 금빛 번쩍 */
+.photo-coll-trophy-wrap { position: absolute; left: -0.7cm; top: 50%; height: 100%; aspect-ratio: 900 / 292; transform: translateY(calc(-58% + 0.2cm)); z-index: 2; }
+.photo-coll-trophy-wrap .photo-coll-trophy { position: static; display: block; width: 100%; height: 100%; transform: none; left: auto; top: auto; }
+.photo-coll-trophy-wrap .rx-shine i { animation-duration: 3.2s; }
+.photo-overlay.is-all .photo-coll-trophy-wrap { animation: pc-trophy 1.6s ease-in-out infinite; }
+@keyframes pc-trophy { 0%, 100% { transform: translateY(calc(-58% + 0.2cm)) scale(1); } 50% { transform: translateY(calc(-58% + 0.2cm)) scale(1.08); } }
+.photo-overlay.is-all .photo-coll-trophy-wrap::after { content: ''; position: absolute; inset: -10%; border-radius: 50%; pointer-events: none; z-index: -1;
+  background: radial-gradient(closest-side, rgba(255, 220, 80, 0.85), rgba(255, 200, 40, 0)); opacity: 0.4; animation: inv-breath 1.6s ease-in-out infinite; }
+.photo-coll-x { position: absolute; right: 4px; top: 4px; z-index: 30; width: 44px; padding: 0; border: 0; background: none; cursor: pointer; transition: transform 0.08s; }
+.photo-coll-x img { width: 100%; display: block; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.45)); }
+.photo-coll-x:active { transform: translateY(2px) scale(0.92); }
+/* v865: 동글형/듬직형/날렵형 글자 크게 + 글자 간격 */
+.photo-coll-rowlabel { font-size: 0.82rem; letter-spacing: 3px; font-weight: 900; }
+/* v865: 카드 감싸는 판 = 코스튬 아래 정보 박스 색(남청 #143a66→#0d2748 + 하늘색 #4fd8ff 테두리·빛) */
+.photo-coll-gridwrap { background: linear-gradient(180deg, #143a66, #0d2748); border: 2px solid #4fd8ff;
+  box-shadow: 0 0 5px 1px rgba(79,216,255,0.3), inset 0 1px 2px rgba(255,255,255,0.15); }

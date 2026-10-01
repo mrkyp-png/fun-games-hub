@@ -620,16 +620,18 @@
       // 사용자 지정: "별빛박스 좌측 위에 전광판(트로피), 우측 안쪽에 N/15" — 헤더는
       // 전체 높이의 약 10%만 차지, 트로피가 별빛바 위에 겹쳐 올라간다.
       overlay.innerHTML =
-        '<button type="button" class="photo-coll-back" data-photo-back aria-label="뒤로"><img src="assets/score/btn-back.png" alt=""></button>' + // v781: 다른 화면과 같은 시안 뒤로가기
+        '<button type="button" class="photo-coll-x" data-photo-back aria-label="닫기"><img src="assets/workshop/pick/x.png" alt=""></button>' + // v865(사용자 지정): 뒤로가기 → 오른쪽 빨간 X
         '<div class="photo-coll-headrow">' +
           '<img class="photo-coll-starbar" alt="" src="assets/photo/collection-starbar.png">' +
-          '<img class="photo-coll-trophy" alt="" src="assets/photo/collection-trophy.png">' +
+          '<span class="photo-coll-trophy-wrap"><img class="photo-coll-trophy" alt="" src="assets/photo/collection-trophy.png">' +
+            '<span class="rx-shine" style="-webkit-mask-image:url(assets/photo/collection-trophy.png);mask-image:url(assets/photo/collection-trophy.png)"><i></i></span></span>' + // v865: 트로피 빛 훑기
           '<div class="photo-coll-progress" data-photo-progress></div>' +
           '<div class="photo-coll-hint"></div>' +
         '</div>' +
         '<div class="photo-coll-gridwrap">' +
           '<div class="photo-coll-rowlabels"></div>' +
           '<div class="photo-coll-grid" data-photo-grid></div>' +
+          '<span class="photo-coll-sweep"></span>' + // v865: 진열장 유리 빛 훑기
         '</div>';
       overlay.querySelector('.photo-coll-hint').textContent = T('mole.photo.collHint');
       // 사용자 지정(2026-09-27): "앞쪽 노란박스에 위에서부터 동글형/듬직형/날렵형" —
@@ -642,6 +644,7 @@
         rowlabelsEl.appendChild(lbl);
       });
       overlay.querySelector('[data-photo-progress]').textContent = PS.completedCount() + ' / ' + PS.TOTAL;
+      overlay.classList.toggle('is-all', PS.completedCount() >= PS.TOTAL); // v865: 다 모으면 트로피 금빛 번쩍
 
       var grid = overlay.querySelector('[data-photo-grid]');
       PS.faceTypes().forEach(function (f) {
@@ -651,11 +654,12 @@
           var applied = PS.isApplied(id);
           var card = document.createElement('button');
           card.type = 'button';
-          card.className = 'photo-coll-card';
+          card.className = 'photo-coll-card' + (completed ? ' is-done' : ''); // v865: 완성 칸 강조
           // 사용자 지정: 완성 여부와 무관하게 항상 엠블럼 팀에 맞는 얼굴형 캐릭터를 표시(§"제일 중요").
           card.innerHTML =
             '<img class="photo-coll-card-img' + (completed ? '' : ' photo-coll-card-img--locked') + '" alt="" src="' + MG.PhotoStudio.imageFor(id) + '">' +
-            (applied ? '<span class="photo-coll-card-applied">✓</span>' : '');
+            (applied ? '<span class="photo-coll-card-applied">✓</span>' : '') +
+            (completed ? '<i class="photo-coll-tw" style="left:14%;top:12%"></i><i class="photo-coll-tw" style="right:12%;top:30%;animation-delay:-0.7s"></i><i class="photo-coll-tw" style="left:22%;bottom:16%;animation-delay:-1.3s"></i>' : '');
           card.addEventListener('click', function () { photoDetailId = id; renderPhotoDetailZoom(id); });
           grid.appendChild(card);
         });
