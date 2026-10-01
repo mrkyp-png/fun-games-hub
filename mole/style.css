@@ -676,7 +676,7 @@ body { background: var(--lm-page); }
   content: ''; position: absolute; inset: 0; z-index: 15; pointer-events: none; border-radius: inherit;
   box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.5), inset 0 6px 0 rgba(0, 0, 0, 0.35), inset 0 -3px 0 rgba(255, 255, 255, 0.12);
   background:
-    linear-gradient(to right, rgba(0, 0, 20, 0.45), rgba(0, 0, 20, 0) 7%, rgba(0, 0, 20, 0) 93%, rgba(0, 0, 20, 0.45)),
+    linear-gradient(to right, rgba(0, 0, 20, 0.2), rgba(0, 0, 20, 0) 5%, rgba(0, 0, 20, 0) 95%, rgba(0, 0, 20, 0.2)), /* v823: 양옆 그림자 옅게(사용자 지정 — 화면이 어두워 보임) */
     linear-gradient(to bottom, rgba(0, 0, 20, 0.3), rgba(0, 0, 20, 0) 7%, rgba(0, 0, 20, 0) 92%, rgba(0, 0, 20, 0.5));
 }
 #mole-board::before {
