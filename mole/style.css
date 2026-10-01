@@ -5245,3 +5245,18 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 @keyframes rp-cue2 { from { opacity: 0.5; } to { opacity: 1; } }
 /* v817: 배경의 파란 레인 줄 삭제(사용자 지정) */
 .rp-lane { border-left: 0; background: none; }
+
+/* v818: 결과·일시정지·난이도 선택 버튼 = 스코어 화면 두더지팡 박스 그림(색만 다르게) */
+.rp-cbtn, .rp-dbtn { border: 14px solid transparent; border-radius: 0; box-shadow: none; background: none; border-image: url('assets/rhythm/box-yellow.png') 36 fill / 14px stretch;
+  color: #fff; -webkit-text-stroke: 3px #b25a00; paint-order: stroke fill; }
+.rp-cbtn { padding: 0; font-size: 1.15rem; }
+.rp-dbtn { padding: 0 6px; }
+.rp-dbtn b { -webkit-text-stroke: 4px #b25a00; }
+.rp-dbtn small { -webkit-text-stroke: 0; }
+.rp-cbtn:active, .rp-dbtn:active { transform: scale(0.97); box-shadow: none; }
+.rp-cbtn--sub { background: none; box-shadow: none; border-image-source: url('assets/rhythm/box-blue.png'); -webkit-text-stroke-color: #1c3f9a; }
+.rp-dbtn--easy { background: none; }
+.rp-dbtn--normal { background: none; border-image-source: url('assets/rhythm/box-green.png'); }
+.rp-dbtn--normal b { -webkit-text-stroke-color: #12702e; }
+.rp-dbtn--hard { background: none; border-image-source: url('assets/rhythm/box-red.png'); }
+.rp-dbtn--hard b { -webkit-text-stroke-color: #9a1208; }

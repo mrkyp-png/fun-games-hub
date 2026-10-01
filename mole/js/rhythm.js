@@ -149,7 +149,7 @@
       if (t < n.spawnTime) {
         var u = 1 - (n.spawnTime - t) / LAUNCH, x0 = n.pts[0][0], hx = x0 + (L.W / 2 - x0) * 0.55, hy = L.horizonY;
         return { x: hx + (x0 - hx) * u, y: hy + (n.pts[0][1] - hy) * (1 - (1 - u) * (1 - u)), sc: 0.22 + 0.78 * u,
-          rot: spin ? -(n.spawnTime - t) * 1080 : 0, op: Math.min(1, u * 3) };
+          rot: spin ? -(n.spawnTime - t) * 1080 : n.weaponType === 'heart' ? 180 * Math.min(1, (1 - u) / 0.2) : 0, op: Math.min(1, u * 3) }; // 화살: 올라갈 땐 뒤집혀(촉 위) 꼭대기에서 돌아 촉 아래로(v818)
       }
       var p = posAt(n, t);
       return { x: p.x, y: p.y, sc: 1, rot: spin ? (t - n.spawnTime) * 240 : 0, op: 1 };
