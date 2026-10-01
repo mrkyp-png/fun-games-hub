@@ -4743,7 +4743,7 @@ body { background: var(--lm-page); }
 /* 사용자 지정(2026-09-27): 케릭터/원 위치 미세조정 — 원 위에 선 느낌이 나도록 둘 다
    살짝 하향(케릭터 순하향 0.35cm, 원 순하향 0.2cm — 이전 상향값에서 빼는 방식). */
 .photo-slot-img { position: relative; z-index: 2; width: 100%; height: calc(100% - 0.7cm); object-fit: contain;
-  object-position: bottom center; transform: translateY(-0.85cm); } /* v781: 캐릭 위로 0.4+0.2cm(원 발판 위에 서게, 사용자 지정) */
+  object-position: bottom center; transform: translateY(-0.75cm); } /* v781: 캐릭 위로 0.4+0.2cm(원 발판 위에 서게, 사용자 지정) / v825: 0.1cm 하향(원반 위 서는 느낌) */
 .photo-slot-img--locked, .photo-coll-card-img--locked, .photo-zoom-img--locked { filter: grayscale(1) brightness(0.7); }
 .photo-slot-applied { position: absolute; right: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%;
   background: #57d977; color: #fff; font-size: 10px; font-weight: 900; display: flex; align-items: center;
@@ -4926,7 +4926,7 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 @keyframes back-glow { 50% { filter: hue-rotate(170deg) saturate(1.45) brightness(1.4) drop-shadow(0 0 5px #8ae8ff) drop-shadow(0 0 16px rgba(87, 217, 255, 0.95)); } }
 .photo-coll-back { width: 40px; height: 40px; border: 0 !important; background: none !important; box-shadow: none !important; padding: 0; }
 .photo-coll-back img { width: 100%; height: 100%; object-fit: contain; display: block; }
-.cos-card-emblem { translate: 0 0.3cm; } /* v781: 카드 안 엠블럼 아래로 0.3cm(사용자 지정) */
+.cos-card-emblem { translate: 0 0.2cm; } /* v781: 카드 안 엠블럼 아래로 0.3cm(사용자 지정) / v825: 0.1cm 위로 → 0.2cm */
 /* v782: 카드 한 장씩 밀리는 슬라이드 */
 .fs-ccard > img:first-child { transition: none; }
 .fs-ccards.is-slide-next .fs-ccard > img:first-child { transition: transform 0.16s ease-in, opacity 0.16s; transform: translateX(-108%); opacity: 0.4; }
