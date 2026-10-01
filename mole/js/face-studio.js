@@ -171,6 +171,7 @@
         if (st.screen !== 2) { s.getTracks().forEach(function (t) { t.stop(); }); return; }
         // v771: 기본 = 화면 꽉 채움(위아래 검은 띠 없음). 두 손가락으로 오므리면 원본 전체까지 작아짐.
         video.addEventListener('loadedmetadata', function () { setZoom(zoomMax()); }, { once: true });
+        var vbg = $('[data-fs-videobg]'); if (vbg) { vbg.srcObject = s; vbg.play().catch(function () {}); }
         st.stream = s; video.srcObject = s; video.play().catch(function () {});
         detectLoop();
       }).catch(camError);
@@ -184,12 +185,14 @@
       return Math.max(sw / (vw * k), sh / (vh * k));
     }
     // v786(사용자 지정): 항상 화면 꽉 채움 고정 — 축소하면 위아래 검은 띠가 얼굴 가이드 안으로 들어왔음. 핀치 줌 비활성.
-    function setZoom() { zoom = zoomMax(); video.style.setProperty('--z', zoom); }
+    // v809(사용자 지정: 꽉 찬 화면에서 얼굴 크기 조절 불가) — 두 손가락 줌 복구. 줄이면 생기는 위아래 빈 곳은
+    // 같은 카메라 영상을 흐리게 깔아(검은 띠 없음) 채운다. 기본 = 꽉 채움.
+    function setZoom(z) { zoom = Math.max(1, Math.min(zoomMax(), z == null ? zoomMax() : z)); video.style.setProperty('--z', zoom); }
     function dist(t) { return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); }
     camScr.addEventListener('touchstart', function (e) { if (e.touches.length === 2) pinch = { d: dist(e.touches), z: zoom }; }, { passive: true });
     camScr.addEventListener('touchmove', function (e) {
       if (!pinch || e.touches.length !== 2) return;
-      e.preventDefault();
+      e.preventDefault(); setZoom(pinch.z * dist(e.touches) / pinch.d);
     }, { passive: false });
     camScr.addEventListener('touchend', function (e) { if (e.touches.length < 2) pinch = null; });
     function camError() { $('[data-fs-camerr]').hidden = false; setCamState('error', T('mole.fs.camDenied')); }
@@ -197,7 +200,7 @@
     function stopCamera() {
       clearTimeout(st.loop); st.loop = null;
       if (st.stream) { st.stream.getTracks().forEach(function (t) { t.stop(); }); st.stream = null; }
-      video.srcObject = null;
+      video.srcObject = null; var vbg2 = $('[data-fs-videobg]'); if (vbg2) vbg2.srcObject = null;
     }
     // 얼굴 위치 판정(v771, 사용자 지정): 얼굴 윤곽이 화면의 가이드 타원 안에 다 들어오면 촬영 가능.
     // 가이드 타원(화면 좌표)을 카메라 영상 좌표로 바꿔(object-fit contain × 줌, 좌우 거울) 윤곽 점이 모두 안에 있는지 본다.

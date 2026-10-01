@@ -5197,3 +5197,6 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
   background: linear-gradient(180deg, #fff07a, #f0a800); box-shadow: 0 4px 0 #b07c00; }
 .rp-cbtn--sub { color: #fff; background: linear-gradient(180deg, #7fa6ff, #3558b5); box-shadow: 0 4px 0 #233c80; }
 .ws-dots { left: 4.5%; top: 3.5%; transform: none; gap: 1cqw; } /* v808(사용자 지정): 위치 점 = 합성 대상 이름 왼쪽 위(글자와 안 겹치게) */
+/* v809: 카메라 축소 시 빈 곳 = 같은 영상 흐리게(검은 띠 대신) + 줌 안내 */
+.fs-video-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); filter: blur(18px) brightness(0.7); }
+.fs-zoom-tip { position: absolute; left: 0; right: 0; bottom: 150px; margin: 0; text-align: center; font-size: 0.8rem; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); pointer-events: none; }
