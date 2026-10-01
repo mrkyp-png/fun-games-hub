@@ -10,7 +10,7 @@
   // ---- 튜닝 데이터(코드 하드코딩 대신 여기서만 조절) ----
   var CONFIG = {
     song: { src: 'audio/bgm-game-1.mp3', bpm: 83.0, firstBeat: 0.232 }, // BPM·첫 박 = 곡 분석값
-    chart: { startBeat: 8, beats: 64 },            // 8박(인트로) 뒤부터 64박
+    chart: { startBeat: 8, beats: 116 },           // 8박(인트로) 뒤부터 116박 = 한 판 약 90초(사용자 지정 v837, 이전 64박≈52초)
     judge: { perfectMs: 70, greatMs: 130, goodMs: 200 },
     score: { PERFECT: 300, GREAT: 200, GOOD: 100 },
     hpMax: 10,

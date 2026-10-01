@@ -5429,3 +5429,6 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
   60% { transform: translate3d(-2%, 0, 0); opacity: 1; }
   80%, 100% { transform: translate3d(0, 0, 0); opacity: 1; }
 }
+/* v837: 홈 두더지팡·리듬팡 글자 = 버튼 폭에 맞춰 최대한 크게(사용자 지정) */
+.lane-face--secret { container-type: inline-size; }
+.lane-num--secret { font-size: 24cqw; line-height: 1; white-space: nowrap; letter-spacing: -0.02em; }
