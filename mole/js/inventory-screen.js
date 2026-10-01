@@ -640,7 +640,12 @@
       PS.faceTypes().forEach(function (f) {
         var lbl = document.createElement('span');
         lbl.className = 'photo-coll-rowlabel';
-        lbl.textContent = T(PHOTO_FACE_I18N[f.id]);
+        // v866(사용자 지정): 리듬팡 '일시정지' 글자처럼 노랑→주황 그라데이션 + 진갈색 외곽선·그림자, 세로로 한 글자씩
+        var txt = T(PHOTO_FACE_I18N[f.id]), chars = Array.from(txt), gid = 'pcg' + f.id, vbH = chars.length * 100;
+        var tx = function (cls, dy) { return chars.map(function (ch, i) { return '<text class="' + cls + '" x="50" y="' + (i * 100 + 82 + dy) + '" text-anchor="middle">' + ch.replace(/[<&>]/g, '') + '</text>'; }).join(''); };
+        lbl.innerHTML = '<svg class="pc-rl-svg" viewBox="0 0 100 ' + vbH + '" aria-label="' + txt + '"><defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">' +
+          '<stop offset="0" stop-color="#fff58a"/><stop offset="0.45" stop-color="#ffcf1f"/><stop offset="1" stop-color="#ff7a00"/></linearGradient></defs>' +
+          tx('pc-rl-sh', 6) + tx('pc-rl-st', 0) + tx('pc-rl-fill', 0).replace(/class="pc-rl-fill"/g, 'class="pc-rl-fill" fill="url(#' + gid + ')"') + '</svg>';
         rowlabelsEl.appendChild(lbl);
       });
       overlay.querySelector('[data-photo-progress]').textContent = PS.completedCount() + ' / ' + PS.TOTAL;
