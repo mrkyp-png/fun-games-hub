@@ -178,6 +178,9 @@
           '<span class="rp-judge"></span>';
         lanesEl.appendChild(ln);
       }
+      // v831: MISS 맞은 두더지 머리 위 빙글 별(레인 컨테이너 = 무대 좌표)
+      for (var di = 0; di < 4; di++) { var dz = document.createElement('span'); dz.className = 'rp-dizzy'; dz.innerHTML = '<i>★</i><i>★</i><i>★</i>'; lanesEl.appendChild(dz); }
+      dizzyEls = lanesEl.querySelectorAll('.rp-dizzy'); tgtEls = lanesEl.querySelectorAll('.rp-target');
       var bt = $('[data-rp-btns]'); bt.innerHTML = ''; btnEls = null;
       for (var j = 0; j < 4; j++) {
         (function (j) {
@@ -197,6 +200,7 @@
         var m = ln.querySelector('.rp-mole'); var md = meta[CHARS[i]];
         m.style.width = L.moleW + 'px'; m.style.height = (md.h * (L.moleW / md.w)) + 'px'; m.style.aspectRatio = 'auto'; m.style.top = (L.moleBottom - md.h * (L.moleW / md.w)) + 'px';
         ln.querySelector('.rp-judge').style.top = (L.targetY - L.targetR * 2.2) + 'px';
+        var h0 = headAt(i, 0), dz = dizzyEls[i]; dz.style.left = h0.x + 'px'; dz.style.top = (h0.y - h0.r * 1.1) + 'px'; dz.style.width = (h0.r * 2.4) + 'px';
       });
     }
     // v824: 폰을 껐다 켜면(전체화면 복귀 등) 화면 높이가 바뀌는데 배치를 다시 안 해서 두더지·타겟이 올라가 있던 것 — 크기 바뀌면 다시 계산
@@ -211,7 +215,7 @@
       });
     });
     // v813(깜빡임 제거): 7프레임을 미리 겹쳐 두고 보이는 것만 바꿈 — img src 교체 순간 빈 프레임이 생기던 것
-    var moleFrame = [-1, -1, -1, -1], moleEls = null, btnEls = null;
+    var moleFrame = [-1, -1, -1, -1], moleEls = null, btnEls = null, dizzyEls = null, tgtEls = null, lastPulse = -1;
     function setMoleFrame(i, f) {
       if (moleFrame[i] === f) return;
       var m = (moleEls || (moleEls = el.querySelectorAll('.rp-mole')))[i];
@@ -296,14 +300,34 @@
       st.score += Math.round(CONFIG.score[g] * (1 + Math.min(st.combo, 100) / 200));
       n.vx = (Math.random() < 0.5 ? -1 : 1) * (L.laneW * (1.5 + Math.random())); n.vy = -L.H * 1.1; n.bx = n.cx; n.by = n.cy;
       showJudge(lane, g, g.toLowerCase()); pang(lane, n.cx, n.cy); hud(); sfx('hit');
+      burst(n.cx, n.cy, g === 'PERFECT' ? 10 : g === 'GREAT' ? 7 : 5); if (g === 'PERFECT') replay(stage, 'rp-shake'); comboFx();
       try { MG.HitFx && MG.HitFx.uiTap && MG.HitFx.uiTap(1); } catch (e) { /* 무시 */ }
     }
     function miss(lane, n) {
       if (n) { n.state = 'miss'; if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); if (n.wind) n.wind.style.opacity = '0'; }
       st.cnt.MISS++; st.combo = 0; st.hp = Math.max(0, st.hp - 1);
       st.moles[lane].hurtAt = now();
-      showJudge(lane, 'MISS', 'miss'); hud();
+      showJudge(lane, 'MISS', 'miss'); hud(); replay(hippo, 'is-no');
       if (st.hp <= 0) gameOver(false);
+    }
+    // ---- v831 연출 ----
+    var hippo = el.querySelector('.rp-hippo');
+    function replay(node, cls) { node.classList.remove(cls); void node.offsetWidth; node.classList.add(cls); }
+    function burst(x, y, k) { // 명중 자리에서 반짝이 조각이 사방으로
+      for (var i = 0; i < k; i++) {
+        var a = (i / k) * Math.PI * 2 + Math.random() * 0.5, d = L.laneW * (0.45 + Math.random() * 0.35), sp = document.createElement('span');
+        sp.className = 'rp-spark'; sp.textContent = i % 3 ? '✦' : '★'; sp.style.left = x + 'px'; sp.style.top = y + 'px';
+        sp.style.setProperty('--dx', (Math.cos(a) * d).toFixed(1) + 'px'); sp.style.setProperty('--dy', (Math.sin(a) * d).toFixed(1) + 'px');
+        sp.style.color = ['#fff36b', '#ffffff', '#ffb3e6', '#8ff0ff'][i % 4]; wlayer.appendChild(sp);
+        (function (sp) { setTimeout(function () { sp.remove(); }, 560); })(sp);
+      }
+    }
+    function comboFx() {
+      var c = $('[data-rp-combo]'); replay(c, 'is-bump');
+      if (st.combo === 10 || st.combo === 30 || (st.combo >= 50 && st.combo % 50 === 0)) {
+        var mt = document.createElement('span'); mt.className = 'rp-milestone'; mt.textContent = st.combo + ' COMBO!'; stage.appendChild(mt);
+        setTimeout(function () { mt.remove(); }, 1300); replay(hippo, 'is-cheer');
+      } else if (st.combo % 10 === 0) replay(hippo, 'is-cheer');
     }
     function pang(lane, x, y) {
       var p = document.createElement('span'); p.className = 'rp-pang'; p.textContent = 'PANG!';
@@ -330,8 +354,12 @@
         moleEls[i].style.translate = '0 ' + (-liftAt(i, f)) + 'px';
         var me = moleEls[i];
         me.classList.toggle('is-hurt', t - m.hurtAt < 0.45);
+        dizzyEls[i].classList.toggle('is-on', t - m.hurtAt < 1.0);
         heads.push({ h: headAt(i, f), jumping: f > 0 && f < 6 });
       }
+      // v831: 박자마다 타겟 원이 톡 커졌다 줄어듦(곡 BPM 기준)
+      if (t > 0) { var bp = (t - CONFIG.song.firstBeat) * CONFIG.song.bpm / 60, ph = bp - Math.floor(bp), sc = (1 + 0.1 * Math.max(0, 1 - ph * 4)).toFixed(3);
+        if (sc !== lastPulse) { lastPulse = sc; for (var ti = 0; ti < 4; ti++) tgtEls[ti].style.scale = sc; } }
       // 무기
       st.notes.forEach(function (n) {
         // v812(사용자 지정): 바다 수평선 부근에서 정면으로 던져져(작게) 포물선으로 화면 최상단까지 올라온 뒤(크게) 두더지 쪽으로 떨어짐
@@ -393,12 +421,18 @@
       var r = $('[data-rp-result]');
       var bk = 'mole.rp.best.' + diff, old = parseInt(localStorage.getItem(bk), 10) || 0, isNew = st.score > old;
       if (isNew) localStorage.setItem(bk, String(st.score));
-      $('[data-rp-res-best]').innerHTML = '<small>' + diff + ' BEST</small><b>' + Math.max(old, st.score).toLocaleString('en-US') + '</b>' + (isNew && st.score > 0 ? '<i>NEW!</i>' : '');
+      $('[data-rp-res-best]').innerHTML = '<small>' + diff + ' BEST</small><b>' + Math.max(old, st.score).toLocaleString('en-US') + '</b>';
+      var stamp = $('[data-rx-new]'); stamp.classList.remove('is-on');
       r.classList.toggle('is-fail', !clear);
-      $('[data-rp-res-score]').textContent = st.score.toLocaleString('en-US');
+      var sEl = $('[data-rp-res-score]'), fin = st.score; sEl.textContent = '0';
       $('[data-rp-res-combo]').textContent = st.maxCombo;
       ['PERFECT', 'GREAT', 'GOOD', 'MISS'].forEach(function (g) { $('[data-rp-res-' + g.toLowerCase() + ']').textContent = st.cnt[g]; });
-      setTimeout(function () { r.hidden = false; }, clear ? 700 : 300);
+      setTimeout(function () {
+        r.hidden = false;
+        var t0 = performance.now(); // v831: 점수 0 → 최종 카운트업(0.9초) 뒤 신기록이면 NEW! 도장
+        (function up(now) { var k = Math.min(1, (now - t0) / 900), e = 1 - Math.pow(1 - k, 3); sEl.textContent = Math.round(fin * e).toLocaleString('en-US');
+          if (k < 1) requestAnimationFrame(up); else if (isNew && fin > 0) stamp.classList.add('is-on'); })(t0);
+      }, clear ? 700 : 300);
     }
 
     function pause(on) {
