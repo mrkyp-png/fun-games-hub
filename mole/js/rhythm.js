@@ -54,7 +54,7 @@
 
     function preload() {
       var list = [];
-      CHARS.forEach(function (c) { for (var i = 1; i <= 7; i++) list.push(A + 'jump-' + c + '-' + i + '.png'); });
+      CHARS.forEach(function (c) { list.push(A + 'jump-' + c + '-strip.png'); });
       WEAPONS.forEach(function (w) { list.push(A + 'w-' + w + '.png'); });
       return Promise.all(list.map(function (u) { var im = new Image(); im.src = u; imgs[u] = im; return im.decode ? im.decode().catch(function () {}) : null; }));
     }
@@ -142,6 +142,19 @@
       var xm = L.laneX[n.midLane];
       return [[xs, y0], [xs, L.p1 * 0.62], [xm, L.p1 * 1.15], [xm, L.p2 * 0.95], [xt, L.p2 * 1.32], [xt, L.targetY]];
     }
+    // 무기 화면 상태(위치·크기·회전·투명도). 부메랑·원반은 던져 올라올 땐 빠르게, 내려올 땐 천천히 회전(사용자 지정 v816)
+    function flyAt(n, t) {
+      var spin = n.weaponType === 'boomerang' || n.weaponType === 'disc';
+      if (t < n.spawnTime - LAUNCH) return { x: 0, y: -999, sc: 1, rot: 0, op: 0 };
+      if (t < n.spawnTime) {
+        var u = 1 - (n.spawnTime - t) / LAUNCH, x0 = n.pts[0][0], hx = x0 + (L.W / 2 - x0) * 0.55, hy = L.horizonY;
+        return { x: hx + (x0 - hx) * u, y: hy + (n.pts[0][1] - hy) * (1 - (1 - u) * (1 - u)), sc: 0.22 + 0.78 * u,
+          rot: spin ? -(n.spawnTime - t) * 1080 : 0, op: Math.min(1, u * 3) };
+      }
+      var p = posAt(n, t);
+      return { x: p.x, y: p.y, sc: 1, rot: spin ? (t - n.spawnTime) * 240 : 0, op: 1 };
+    }
+    function xf(q) { return 'translate(' + (q.x - L.weaponR * 1.2) + 'px,' + (q.y - L.weaponR * 1.2) + 'px) scale(' + q.sc.toFixed(3) + ') rotate(' + q.rot.toFixed(1) + 'deg)'; }
     function pathLen(pts) { var s = 0; for (var i = 1; i < pts.length; i++) s += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); return s; }
     function posAt(n, t) { // t = 음악 시각
       var v = n.len / DIFFS[diff].travel, d = (t - n.spawnTime) * v;
@@ -160,7 +173,7 @@
         var ln = document.createElement('div'); ln.className = 'rp-lane'; ln.style.left = (i * 25) + '%';
         ln.innerHTML = '<img class="rp-target" src="' + A + 'target-' + (i + 1) + '.png" alt="">' +
           '<img class="rp-hole" src="' + A + 'hole-' + (i + 1) + '.png" alt="">' +
-          '<span class="rp-mole">' + [1, 2, 3, 4, 5, 6, 7].map(function (k) { return '<img alt="" src="' + A + 'jump-' + CHARS[i] + '-' + k + '.png"' + (k === 1 ? ' class="is-on"' : '') + '>'; }).join('') + '</span>' +
+          '<span class="rp-mole" style="background-image:url(' + A + 'jump-' + CHARS[i] + '-strip.png)"></span>' +
           '<span class="rp-judge"></span>';
         lanesEl.appendChild(ln);
       }
@@ -189,9 +202,8 @@
     var moleFrame = [-1, -1, -1, -1], moleEls = null, btnEls = null;
     function setMoleFrame(i, f) {
       if (moleFrame[i] === f) return;
-      var imgs = (moleEls || (moleEls = el.querySelectorAll('.rp-mole')))[i].children;
-      if (moleFrame[i] >= 0) imgs[moleFrame[i]].classList.remove('is-on'); else for (var k = 0; k < imgs.length; k++) imgs[k].classList.remove('is-on');
-      imgs[f].classList.add('is-on'); moleFrame[i] = f;
+      var m = (moleEls || (moleEls = el.querySelectorAll('.rp-mole')))[i];
+      m.style.backgroundPosition = (f / 6 * 100) + '% 0'; moleFrame[i] = f;
     }
     function showJudge(i, txt, cls) {
       var j = el.querySelectorAll('.rp-judge')[i]; j.textContent = txt; j.className = 'rp-judge is-' + cls;
@@ -214,7 +226,12 @@
         // v813: 무기 그림을 시작 전에 전부 만들어 둠(숨김) — 플레이 중 생성/삭제로 인한 깜빡임 제거
         wlayer.innerHTML = '';
         notes.forEach(function (n) { n.el = document.createElement('img'); n.el.className = 'rp-weapon'; n.el.src = A + 'w-' + n.weaponType + '.png';
-          n.el.style.width = (L.weaponR * 2.4) + 'px'; n.el.style.visibility = 'hidden'; n.el.decoding = 'sync'; wlayer.appendChild(n.el); });
+          n.el.style.width = (L.weaponR * 2.4) + 'px'; n.el.style.opacity = '0'; n.el.decoding = 'sync';
+          // 눈덩이·하트 화살 = 날아오는 잔상 2겹(사용자 지정 v816)
+          if (n.weaponType === 'snow' || n.weaponType === 'heart') {
+            n.trail = [0.32, 0.15].map(function (op) { var g = n.el.cloneNode(); g.className = 'rp-weapon rp-trail'; g.dataset.op = op; wlayer.appendChild(g); return g; });
+          }
+          wlayer.appendChild(n.el); });
         notes.forEach(function (n) { n.pts = routeOf(n); n.len = pathLen(n.pts); n.spawnTime = n.targetTime - DIFFS[diff].travel; n.state = 'wait'; });
         st = { notes: notes, score: 0, combo: 0, maxCombo: 0, hp: CONFIG.hpMax, cnt: { PERFECT: 0, GREAT: 0, GOOD: 0, MISS: 0 },
           moles: [0, 1, 2, 3].map(function () { return { jumpAt: -9, hurtAt: -9 }; }), over: false, paused: false };
@@ -254,7 +271,7 @@
       best.n.press = { grade: ms <= J.perfectMs ? 'PERFECT' : ms <= J.greatMs ? 'GREAT' : 'GOOD', lane: lane };
     }
     function hit(n, lane) {
-      n.state = 'hit'; n.hitAt = now();
+      n.state = 'hit'; n.hitAt = now(); if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; });
       var g = n.press.grade; st.cnt[g]++; st.combo++; st.maxCombo = Math.max(st.maxCombo, st.combo);
       st.score += Math.round(CONFIG.score[g] * (1 + Math.min(st.combo, 100) / 200));
       n.vx = (Math.random() < 0.5 ? -1 : 1) * (L.laneW * (1.5 + Math.random())); n.vy = -L.H * 1.1; n.bx = n.cx; n.by = n.cy;
@@ -262,7 +279,7 @@
       try { MG.HitFx && MG.HitFx.uiTap && MG.HitFx.uiTap(1); } catch (e) { /* 무시 */ }
     }
     function miss(lane, n) {
-      if (n) n.state = 'miss';
+      if (n) { n.state = 'miss'; if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); }
       st.cnt.MISS++; st.combo = 0; st.hp = Math.max(0, st.hp - 1);
       st.moles[lane].hurtAt = now();
       showJudge(lane, 'MISS', 'miss'); hud();
@@ -277,6 +294,7 @@
     function loop() {
       raf = requestAnimationFrame(loop);
       if (!st || st.paused) return;
+      if (st.ended) { cancelAnimationFrame(raf); return; } // v816: 종료 후 결과창 뒤에서 계속 판정·연출이 돌며 깜빡이던 것 정지
       var t = now();
       // 카운트인 표시
       var ci = $('[data-rp-count]');
@@ -298,17 +316,19 @@
       st.notes.forEach(function (n) {
         // v812(사용자 지정): 바다 수평선 부근에서 정면으로 던져져(작게) 포물선으로 화면 최상단까지 올라온 뒤(크게) 두더지 쪽으로 떨어짐
         if (n.state === 'wait' && t >= n.spawnTime - LAUNCH) {
-          n.state = 'live'; n.el.style.visibility = 'visible';
+          n.state = 'live';
+          if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; });
         }
         if (n.state === 'live') {
-          if (t < n.spawnTime) { // 던져 올라오는 구간(판정 없음)
-            var u = 1 - (n.spawnTime - t) / LAUNCH, x0 = n.pts[0][0], hx = x0 + (L.W / 2 - x0) * 0.55, hy = L.horizonY;
-            var lx = hx + (x0 - hx) * u, ly = hy + (n.pts[0][1] - hy) * (1 - (1 - u) * (1 - u)), sc = 0.22 + 0.78 * u;
-            n.el.style.transform = 'translate(' + (lx - L.weaponR * 1.2) + 'px,' + (ly - L.weaponR * 1.2) + 'px) scale(' + sc.toFixed(3) + ')';
-            n.el.style.opacity = String(Math.min(1, u * 3)); n.cx = lx; n.cy = -9999; return;
-          }
-          var p = posAt(n, t); n.cx = p.x; n.cy = p.y;
-          n.el.style.transform = 'translate(' + (p.x - L.weaponR * 1.2) + 'px,' + (p.y - L.weaponR * 1.2) + 'px)'; // 정면샷 — 회전 없음
+          var cur = flyAt(n, t);
+          n.el.style.transform = xf(cur); n.el.style.opacity = String(cur.op);
+          if (n.trail) n.trail.forEach(function (g, gi) {
+            var q = flyAt(n, t - 0.035 * (gi + 1));
+            if (q.op <= 0) { g.style.opacity = '0'; return; }
+            g.style.transform = xf(q); g.style.opacity = String(q.op * +g.dataset.op);
+          });
+          if (t < n.spawnTime) { n.cx = cur.x; n.cy = -9999; return; } // 던져 올라오는 구간(판정 없음)
+          var p = cur; n.cx = p.x; n.cy = p.y;
           // 물리 충돌: 그 레인 두더지가 점프 중이고 머리 원과 무기 원이 겹침
           var hd = heads[n.targetLane];
           if (Math.abs(p.x - L.laneX[n.targetLane]) < 1 && hd.jumping && Math.hypot(p.x - hd.h.x, p.y - hd.h.y) < hd.h.r + L.weaponR) {
@@ -322,13 +342,13 @@
           var k = t - n.hitAt; n.cx = n.bx + n.vx * k; n.cy = n.by + n.vy * k + L.H * 2.2 * k * k;
           n.el.style.transform = 'translate(' + (n.cx - L.weaponR * 1.2) + 'px,' + (n.cy - L.weaponR * 1.2) + 'px) rotate(' + (t * 900) + 'deg)';
           n.el.style.opacity = String(Math.max(0, 1 - k * 1.6));
-          if (k > 0.7) { n.el.style.visibility = 'hidden'; n.state = 'done'; }
+          if (k > 0.7) { n.el.style.opacity = '0'; if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); n.state = 'done'; }
         }
         if (n.state === 'miss') { // 두더지에 맞고 튕겨 떨어짐
           if (!n.missAt) n.missAt = t;
           var q = t - n.missAt; n.el.style.opacity = String(Math.max(0, 1 - q * 2.5));
           n.el.style.transform += ' translateY(' + (q * 120) + 'px)';
-          if (q > 0.4) { n.el.style.visibility = 'hidden'; n.state = 'done'; }
+          if (q > 0.4) { n.el.style.opacity = '0'; if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); n.state = 'done'; }
         }
       });
       // v814(사용자 지정): 무기가 타겟에 다가오면(도착 0.5초 전~도착 0.15초 후) 그 레인 버튼에 불빛
@@ -341,7 +361,7 @@
     }
 
     function gameOver(clear) {
-      if (st.ended) return; st.ended = true; st.over = true;
+      if (st.ended) return; st.ended = true; st.over = true; el.querySelectorAll('.rp-btn').forEach(function (b) { b.classList.remove('is-cue'); }); // 결과창 뒤 버튼 반짝임 정지
       try { src.stop(ctx.currentTime + (clear ? 0.8 : 0.05)); } catch (e) { /* 무시 */ }
       var r = $('[data-rp-result]');
       $('[data-rp-res-title]').textContent = clear ? 'CLEAR!' : 'GAME OVER';

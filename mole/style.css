@@ -5226,3 +5226,8 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 /* v815(사용자 지정): 리듬팡 배경 하늘에 하마 구름 — 천천히 둥실 */
 .rp-hippo { position: absolute; left: 4%; top: 9%; width: 58%; opacity: 0.95; pointer-events: none; animation: rp-hippo 6s ease-in-out infinite; }
 @keyframes rp-hippo { 0%, 100% { transform: translate(0, 0) rotate(-1deg); } 50% { transform: translate(4%, -4%) rotate(1.5deg); } }
+
+/* v816: 두더지 = 7프레임 스트립 한 장(깜빡임 제거), 무기 잔상 */
+.rp-mole { background-repeat: no-repeat; background-size: 700% 100%; background-position: 0 0; }
+.rp-mole img { display: none; }
+.rp-trail { filter: blur(1.5px) brightness(1.15); }
