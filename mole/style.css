@@ -5628,3 +5628,7 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 /* v857 수정: 선택 탭 글자 그라데이션(배경 잘라내기)이 외곽선과 겹쳐 물감처럼 번짐 → 단색 노랑, 외곽선 얇게 */
 .inv-tab .inv-tab-lbl { -webkit-text-stroke-width: 3px; }
 .inv-tab.inv-tab--on .inv-tab-lbl { background: none; -webkit-background-clip: border-box; background-clip: border-box; color: #ffe14a; -webkit-text-stroke: 3px #0f2f86; }
+/* v858: 상점 하단 탭 글자도 아이템과 동일(둥근 글꼴+진초록 외곽선·두께, 선택 탭 노랑+살짝 크게) */
+.shop-tab .shop-tab-lbl { font-family: 'Jua', 'Lilita One', sans-serif; font-weight: 400; font-size: 1.02rem; color: #fff; letter-spacing: 0.01em;
+  -webkit-text-stroke: 3px #0e6a2a; paint-order: stroke fill; text-shadow: 0 2px 0 #0b4d1f; transition: transform 0.15s; }
+.shop-tab.shop-tab--on .shop-tab-lbl { color: #ffe14a; -webkit-text-stroke: 3px #0f2f86; text-shadow: 0 2px 0 #0a1f5c; transform: scale(1.1); }
