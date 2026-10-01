@@ -55,7 +55,7 @@
     function preload() {
       var list = [];
       CHARS.forEach(function (c) { list.push(A + 'jump-' + c + '-strip.png'); });
-      WEAPONS.forEach(function (w) { list.push(A + 'w-' + w + '.png'); });
+      WEAPONS.forEach(function (w) { list.push(A + 'w-' + w + '.png'); }); list.push(A + 'w-disc-face.png');
       return Promise.all(list.map(function (u) { var im = new Image(); im.src = u; imgs[u] = im; return im.decode ? im.decode().catch(function () {}) : null; }));
     }
     function loadMeta() { return meta ? Promise.resolve(meta) : fetch(A + 'jump-meta.json').then(function (r) { return r.json(); }).then(function (m) { meta = m; return m; }); }
@@ -226,6 +226,12 @@
         // v813: 무기 그림을 시작 전에 전부 만들어 둠(숨김) — 플레이 중 생성/삭제로 인한 깜빡임 제거
         wlayer.innerHTML = '';
         notes.forEach(function (n) { n.el = document.createElement('img'); n.el.className = 'rp-weapon'; n.el.src = A + 'w-' + n.weaponType + '.png';
+          // 원반 = 테두리 그림은 그대로, 가운데 발바닥 면만 회전(사용자 지정 v817)
+          if (n.weaponType === 'disc') {
+            var img = n.el; img.className = ''; n.el = document.createElement('span'); n.el.className = 'rp-weapon rp-disc'; n.el.appendChild(img);
+            n.face = document.createElement('img'); n.face.src = A + 'w-disc-face.png'; n.face.decoding = 'sync';
+            var fw = document.createElement('span'); fw.className = 'rp-disc-face'; fw.appendChild(n.face); n.el.appendChild(fw);
+          }
           n.el.style.width = (L.weaponR * 2.4) + 'px'; n.el.style.opacity = '0'; n.el.decoding = 'sync';
           // 눈덩이·하트 화살 = 날아오는 잔상 2겹(사용자 지정 v816)
           if (n.weaponType === 'snow' || n.weaponType === 'heart') {
@@ -321,6 +327,7 @@
         }
         if (n.state === 'live') {
           var cur = flyAt(n, t);
+          if (n.face) { n.face.style.transform = 'rotate(' + cur.rot.toFixed(1) + 'deg)'; cur = Object.assign({}, cur, { rot: 0 }); }
           n.el.style.transform = xf(cur); n.el.style.opacity = String(cur.op);
           if (n.trail) n.trail.forEach(function (g, gi) {
             var q = flyAt(n, t - 0.035 * (gi + 1));
