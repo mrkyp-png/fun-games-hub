@@ -107,6 +107,9 @@
       Array.prototype.forEach.call(dotsEl.children, function (d, i) {
         d.classList.toggle('inv-dot--on', i === pageIdx);
       });
+      // v855(사용자 지정): 바깥 창 색 = 보고 있는 무기 등급 색
+      var box = el.querySelector('.inv-cards-box');
+      if (box) box.setAttribute('data-rar', active === 'weapon' && WEAPONS[pageIdx] ? WEAPONS[pageIdx].rarity : '');
     }
     // renderWeapons() 가 매번 grid 를 통째로 새로 만들기 때문에(body.innerHTML), 장착 버튼을
     // 눌러 재렌더될 때도 새 grid 는 항상 scrollLeft=0 에서 시작 — pageIdx 는 그대로 두고

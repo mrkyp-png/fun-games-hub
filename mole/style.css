@@ -5598,3 +5598,18 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .inv-card[class*="inv-card--"] .inv-stat-tbl th { padding-top: 3px; padding-bottom: 3px; }
 .inv-card[class*="inv-card--"] .inv-stat-tbl td { padding-top: 3px; padding-bottom: 3px; line-height: 1.25; }
 .inv-desc { margin-top: 5px; padding: 5px 7px; line-height: 1.4; }
+/* ===== v855: 무기 탭 바깥 창 = 등급 색 게임 창(금속 리벳 + 빛 테두리). 글로우는 box-shadow 애니 대신 ::after 투명도만(폰 깜빡임 방지) ===== */
+.inv-cards-box[data-rar]:not([data-rar=""]) { animation: none; border: 3px solid var(--rw-edge); padding: 6px 7px 8px;
+  background: var(--rw-bg); box-shadow: 0 4px 0 var(--rw-deep), inset 0 2px 0 rgba(255,255,255,0.45), inset 0 -3px 0 rgba(0,0,0,0.18); transition: border-color 0.25s; }
+.inv-cards-box[data-rar="basic"] { --rw-edge: #c9d3e3; --rw-deep: #5d6a82; --rw-glow: 210, 225, 255; --rw-bg: linear-gradient(180deg, #9aa8bf 0%, #6f7d96 55%, #56627a 100%); }
+.inv-cards-box[data-rar="rare"] { --rw-edge: #6fd0ff; --rw-deep: #0c2f86; --rw-glow: 100, 200, 255; --rw-bg: linear-gradient(180deg, #2f7bf0 0%, #1a4fc4 55%, #12389a 100%); }
+.inv-cards-box[data-rar="epic"] { --rw-edge: #e39bff; --rw-deep: #3e0f78; --rw-glow: 220, 130, 255; --rw-bg: linear-gradient(180deg, #9b45ef 0%, #6f22c4 55%, #521897 100%); }
+.inv-cards-box[data-rar="legend"] { --rw-edge: #7ff2c8; --rw-deep: #0a4f39; --rw-glow: 90, 240, 190; --rw-bg: linear-gradient(180deg, #23b98a 0%, #138a66 55%, #0d6a4e 100%); }
+/* 모서리 금속 리벳 4개 */
+.inv-cards-box[data-rar]:not([data-rar=""])::before { content: ''; position: absolute; inset: 5px; pointer-events: none; z-index: 3;
+  --rv: radial-gradient(circle at 40% 35%, #ffffff 0 18%, #d5dce8 30%, #8a96ab 62%, rgba(0,0,0,0) 66%);
+  background: var(--rv) left top / 11px 11px no-repeat, var(--rv) right top / 11px 11px no-repeat, var(--rv) left bottom / 11px 11px no-repeat, var(--rv) right bottom / 11px 11px no-repeat; }
+/* 안쪽 빛 숨쉬기 — 투명도만 */
+.inv-cards-box[data-rar]:not([data-rar=""])::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 0;
+  box-shadow: inset 0 0 22px 6px rgba(var(--rw-glow), 0.55); opacity: 0.4; will-change: opacity; animation: inv-breath 3s ease-in-out infinite; }
+.inv-cards-box[data-rar]:not([data-rar=""]) > * { position: relative; z-index: 1; }
