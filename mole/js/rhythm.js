@@ -152,7 +152,7 @@
           rot: spin ? -(n.spawnTime - t) * 1080 : n.weaponType === 'heart' ? 180 : 0, op: Math.min(1, u * 3) }; // 화살: 올라갈 땐 뒤집혀(촉 위), 꼭대기에서 회전 없이 바로 촉 아래 그림으로(v821)
       }
       var p = posAt(n, t);
-      return { x: p.x, y: p.y, sc: big, rot: spin ? (t - n.spawnTime) * 240 : n.weaponType === 'snow' ? (t - n.spawnTime) * 300 : 0, op: 1 }; // v833: 눈덩이도 내려올 때 굴러 회전(사용자 지정)
+      return { x: p.x, y: p.y, sc: big, rot: spin ? (t - n.spawnTime) * 240 : 0, op: 1 };
     }
     function sizeWind(n) { n.wind.style.width = (L.weaponR * 2.6) + 'px'; n.wind.style.height = (L.weaponR * 4.4) + 'px'; n.wind.style.opacity = '0'; }
     function xf(q) { return 'translate(' + (q.x - L.weaponR * 1.2) + 'px,' + (q.y - L.weaponR * 1.2) + 'px) scale(' + q.sc.toFixed(3) + ') rotate(' + q.rot.toFixed(1) + 'deg)'; }
@@ -180,7 +180,7 @@
       }
       // v831: MISS 맞은 두더지 머리 위 빙글 별(레인 컨테이너 = 무대 좌표)
       for (var di = 0; di < 4; di++) { var dz = document.createElement('span'); dz.className = 'rp-dizzy'; dz.innerHTML = '<i>★</i><i>★</i><i>★</i>'; lanesEl.appendChild(dz); }
-      dizzyEls = lanesEl.querySelectorAll('.rp-dizzy'); tgtEls = lanesEl.querySelectorAll('.rp-target');
+      dizzyEls = lanesEl.querySelectorAll('.rp-dizzy');
       var bt = $('[data-rp-btns]'); bt.innerHTML = ''; btnEls = null;
       for (var j = 0; j < 4; j++) {
         (function (j) {
@@ -215,7 +215,7 @@
       });
     });
     // v813(깜빡임 제거): 7프레임을 미리 겹쳐 두고 보이는 것만 바꿈 — img src 교체 순간 빈 프레임이 생기던 것
-    var moleFrame = [-1, -1, -1, -1], moleEls = null, btnEls = null, dizzyEls = null, tgtEls = null, lastPulse = -1;
+    var moleFrame = [-1, -1, -1, -1], moleEls = null, btnEls = null, dizzyEls = null;
     function setMoleFrame(i, f) {
       if (moleFrame[i] === f) return;
       var m = (moleEls || (moleEls = el.querySelectorAll('.rp-mole')))[i];
@@ -247,6 +247,12 @@
             var img = n.el; img.className = ''; n.el = document.createElement('span'); n.el.className = 'rp-weapon rp-disc'; n.el.appendChild(img);
             n.face = document.createElement('img'); n.face.src = A + 'w-disc-face.png'; n.face.decoding = 'sync';
             var fw = document.createElement('span'); fw.className = 'rp-disc-face'; fw.appendChild(n.face); n.el.appendChild(fw);
+          }
+          // v834: 눈덩이 = x축으로 굴러오는 공(공 모양 그대로, 표면 무늬만 위→아래로 흐름)
+          if (n.weaponType === 'snow') {
+            var sb = n.el; sb.className = ''; n.el = document.createElement('span'); n.el.className = 'rp-weapon rp-snow'; n.el.appendChild(sb);
+            var rl = document.createElement('span'); rl.className = 'rp-snow-roll'; n.roll = document.createElement('img'); n.roll.src = A + 'w-snow-roll.jpg'; n.roll.decoding = 'sync';
+            rl.appendChild(n.roll); n.el.appendChild(rl); var sh = document.createElement('span'); sh.className = 'rp-snow-shade'; n.el.appendChild(sh);
           }
           n.el.style.width = (L.weaponR * 2.4) + 'px'; n.el.style.opacity = '0'; n.el.decoding = 'sync';
           // 눈덩이·하트 화살 = 날아오는 잔상 2겹(사용자 지정 v816)
@@ -302,7 +308,7 @@
       st.score += Math.round(CONFIG.score[g] * (1 + Math.min(st.combo, 100) / 200));
       n.vx = (Math.random() < 0.5 ? -1 : 1) * (L.laneW * (1.5 + Math.random())); n.vy = -L.H * 1.1; n.bx = n.cx; n.by = n.cy;
       showJudge(lane, g, g.toLowerCase()); pang(lane, n.cx, n.cy); hud(); sfx('hit');
-      burst(n.cx, n.cy, g === 'PERFECT' ? 10 : g === 'GREAT' ? 7 : 5); if (g === 'PERFECT') replay(tgtEls[lane], 'rp-shake'); comboFx();
+      burst(n.cx, n.cy, g === 'PERFECT' ? 10 : g === 'GREAT' ? 7 : 5); comboFx();
       try { MG.HitFx && MG.HitFx.uiTap && MG.HitFx.uiTap(1); } catch (e) { /* 무시 */ }
     }
     function miss(lane, n) {
@@ -314,6 +320,20 @@
     }
     // ---- v831 연출 ----
     var hippo = el.querySelector('.rp-hippo'), sparks = [], sparkI = 0;
+    // v834: 갈매기 = 날개 위아래 날갯짓 + 매번 랜덤 높이·방향·속도·크기로 날아감(사용자 지정)
+    el.querySelectorAll('.rp-gull').forEach(function (g) {
+      function fly() {
+        var ltr = Math.random() < 0.5, W = el.clientWidth || 400;
+        g.style.setProperty('--x0', (ltr ? -50 : W + 50) + 'px'); g.style.setProperty('--x1', (ltr ? W + 50 : -50) + 'px');
+        g.style.setProperty('--dy', ((Math.random() - 0.5) * 60).toFixed(0) + 'px');
+        g.style.top = (18 + Math.random() * 16).toFixed(1) + '%'; g.style.width = (16 + Math.random() * 14).toFixed(0) + 'px';
+        g.style.animationDuration = (9 + Math.random() * 9).toFixed(1) + 's'; g.style.animationDelay = (Math.random() * 5).toFixed(1) + 's';
+        g.firstChild.style.animationDuration = (0.32 + Math.random() * 0.2).toFixed(2) + 's';
+        g.classList.remove('is-fly'); void g.offsetWidth; g.classList.add('is-fly');
+      }
+      g.addEventListener('animationend', function (e) { if (e.target === g) fly(); });
+      fly();
+    });
     function replay(node, cls) { node.classList.remove(cls); void node.offsetWidth; node.classList.add(cls); }
     function burst(x, y, k) { // 명중 자리에서 반짝이 조각이 사방으로
       for (var i = 0; i < k; i++) {
@@ -358,9 +378,6 @@
         dizzyEls[i].classList.toggle('is-on', t - m.hurtAt < 1.0);
         heads.push({ h: headAt(i, f), jumping: f > 0 && f < 6 });
       }
-      // v831: 박자마다 타겟 원이 톡 커졌다 줄어듦(곡 BPM 기준)
-      if (t > 0) { var bp = (t - CONFIG.song.firstBeat) * CONFIG.song.bpm / 60, ph = bp - Math.floor(bp), sc = (1 + 0.1 * Math.max(0, 1 - ph * 4)).toFixed(3);
-        if (sc !== lastPulse) { lastPulse = sc; for (var ti = 0; ti < 4; ti++) tgtEls[ti].style.scale = sc; } }
       // 무기
       st.notes.forEach(function (n) {
         // v812(사용자 지정): 바다 수평선 부근에서 정면으로 던져져(작게) 포물선으로 화면 최상단까지 올라온 뒤(크게) 두더지 쪽으로 떨어짐
@@ -372,8 +389,10 @@
           var cur = flyAt(n, t);
           if (n.face) { n.face.style.transform = 'rotate(' + cur.rot.toFixed(1) + 'deg)'; cur = Object.assign({}, cur, { rot: 0 }); }
           n.el.style.transform = xf(cur); n.el.style.opacity = String(cur.op);
+          if (n.roll && t >= n.spawnTime) n.roll.style.transform = 'translateY(' + (-50 + 50 * (((t - n.spawnTime) * 1.8) % 1)).toFixed(2) + '%)';
           if (n.trail) n.trail.forEach(function (g, gi) {
-            var q = flyAt(n, t - 0.035 * (gi + 1)); if (n.face) q.rot = 0; // 원반 잔상은 테두리 고정
+            var boom = n.weaponType === 'boomerang', q = flyAt(n, t - (boom ? 0.08 : 0.035) * (gi + 1)); if (n.face) q.rot = 0; // 원반 잔상은 테두리 고정
+            if (boom) q.rot = cur.rot; // v834: 부메랑 잔상은 뒤쪽에만 — 본체와 같은 각도로, 더 멀리 떨어뜨려 감싸는 번짐 없앰
             if (q.op <= 0) { g.style.opacity = '0'; return; }
             g.style.transform = xf(q); g.style.opacity = String(q.op * +g.dataset.op);
           });

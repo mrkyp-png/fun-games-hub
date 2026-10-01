@@ -5340,11 +5340,9 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
     linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.95) 55%, #fff) 63% 70% / 4px 80% no-repeat,
     linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.95) 55%, #fff) 88% 72% / 3px 50% no-repeat; }
 /* ===== v831: 리듬팡 연출 7종 (전부 transform/opacity 애니 — 폰 깜빡임 방지) ===== */
-/* 1) 명중 반짝이 조각 + PERFECT 화면 흔들림 */
+/* 1) 명중 반짝이 조각 */
 .rp-spark { position: absolute; z-index: 6; pointer-events: none; font-size: 18px; line-height: 1; translate: -50% -50%; animation: rp-spark 0.55s ease-out forwards; }
 @keyframes rp-spark { 0% { transform: translate(0, 0) scale(0.4); opacity: 1; } 60% { opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(1.1) rotate(160deg); opacity: 0; } }
-.rp-stage.rp-shake { animation: rp-shake 0.14s linear; }
-@keyframes rp-shake { 25% { transform: translate(3px, -2px); } 50% { transform: translate(-3px, 2px); } 75% { transform: translate(2px, 1px); } }
 /* 2) 콤보 숫자 통통 + 10·30·50… 콤보 큰 글자 */
 [data-rp-combo] { display: inline-block; }
 [data-rp-combo].is-bump { animation: rp-bump 0.22s ease-out; }
@@ -5353,8 +5351,6 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
   color: #ffe14a; -webkit-text-stroke: 6px #b23a00; paint-order: stroke fill; animation: rp-mile 1.25s ease-out forwards; }
 @keyframes rp-mile { 0% { transform: translate(-50%, 0) scale(0.3); opacity: 0; } 18% { transform: translate(-50%, 0) scale(1.25); opacity: 1; } 30% { transform: translate(-50%, 0) scale(1); }
   75% { opacity: 1; } 100% { transform: translate(-50%, -40px) scale(1); opacity: 0; } }
-/* 3) 박자 출렁임(타겟 scale 은 JS) */
-.rp-target { transition: scale 0.06s linear; }
 /* 4) 하마 반응 — 콤보면 들썩, MISS 면 고개 젓기 */
 .rp-hippo.is-cheer { animation: rp-hippo 6s ease-in-out infinite, rp-cheer 0.7s ease-out; }
 @keyframes rp-cheer { 20% { translate: 0 -7%; rotate: -5deg; } 45% { translate: 0 0; rotate: 0deg; } 65% { translate: 0 -4%; rotate: 4deg; } 100% { translate: 0 0; rotate: 0deg; } }
@@ -5379,12 +5375,6 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .rp-twk { position: absolute; width: 10px; height: 10px; opacity: 0; animation: rp-twk 3s ease-in-out infinite;
   background: radial-gradient(circle, #fff 0 18%, rgba(255,255,255,0) 20%), linear-gradient(#fff, #fff) center / 2px 100% no-repeat, linear-gradient(#fff, #fff) center / 100% 2px no-repeat; }
 @keyframes rp-twk { 0%, 70%, 100% { opacity: 0; transform: scale(0.3); } 82% { opacity: 1; transform: scale(1.2) rotate(45deg); } }
-.rp-gull { position: absolute; left: 0; width: 26px; animation: rp-gull 16s linear infinite; }
-.rp-gull svg { display: block; width: 100%; animation: rp-flap 0.45s ease-in-out infinite alternate; transform-origin: 50% 70%; }
-.rp-gull--1 { top: 27%; animation-delay: -3s; }
-.rp-gull--2 { top: 31%; width: 18px; animation-delay: -11s; animation-duration: 21s; }
-@keyframes rp-gull { 0% { transform: translateX(-40px); } 55%, 100% { transform: translateX(calc(100vw + 40px)) translateY(-14px); } }
-@keyframes rp-flap { to { transform: scaleY(0.45); } }
 .rp-spark { font-size: 26px; -webkit-text-stroke: 2px rgba(120, 50, 0, 0.55); paint-order: stroke fill; }
 .rp-dizzy i { font-size: 19px; }
 /* ===== v832: 폰 깜빡임 대책 ===== */
@@ -5394,14 +5384,28 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 /* 반짝이 = 미리 만든 조각 재사용, 평소 투명 */
 .rp-spark { opacity: 0; animation: none; will-change: transform, opacity; }
 .rp-spark.is-on { animation: rp-spark 0.55s ease-out forwards; }
-/* PERFECT 흔들림 = 무대 전체 대신 그 칸 타겟만 */
-.rp-stage.rp-shake { animation: none; }
-.rp-target.rp-shake { animation: rp-tshake 0.14s linear; }
-@keyframes rp-tshake { 25% { transform: translate(calc(-50% + 3px), -2px); } 50% { transform: translate(calc(-50% - 3px), 2px); } 75% { transform: translate(calc(-50% + 2px), 1px); } }
-/* 박자 출렁임: 타겟을 따로 들고 있게(다시 그리지 않음), 매 프레임 transition 재시작 제거 */
-.rp-target { transition: none; will-change: transform, scale; }
 /* 부메랑·원반 바람 줄기: 3줄로 줄이고 짧고 반투명하게(사용자 지정) */
 .rp-wind { background:
     linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.8)) 25% 100% / 3px 45% no-repeat,
     linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.8)) 50% 100% / 3px 60% no-repeat,
     linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.8)) 75% 100% / 3px 45% no-repeat; }
+/* v834: 눈덩이 굴러오기 — 원래 공 그림 위에 원형 창 안에서 표면 무늬가 위→아래로 흐름 + 구 음영 */
+.rp-snow { display: block; }
+.rp-snow > img { display: block; width: 100%; }
+.rp-snow-roll, .rp-snow-shade { position: absolute; left: 12%; top: 13.4%; width: 76%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; }
+.rp-snow-roll img { display: block; width: 100%; will-change: transform; opacity: 0.9; }
+.rp-snow-shade { background: radial-gradient(circle at 34% 28%, rgba(255,255,255,0.75), rgba(255,255,255,0) 38%), radial-gradient(circle, rgba(120,170,230,0) 52%, rgba(95,150,220,0.55) 100%); }
+/* v834: 갈매기 다시 — 날개를 위아래로 퍼덕(날개 모양 자체가 변함) + JS 가 매 비행마다 높이·방향·속도·크기 랜덤 */
+.rp-gull { position: absolute; left: 0; top: 25%; width: 22px; opacity: 0; animation: none; will-change: transform; }
+.rp-gull.is-fly { animation: rp-gull2 12s linear 1 both; }
+@keyframes rp-gull2 { 0% { transform: translate(var(--x0), 0); opacity: 1; } 50% { transform: translate(calc((var(--x0) + var(--x1)) / 2), calc(var(--dy) * 0.6)); } 100% { transform: translate(var(--x1), var(--dy)); opacity: 1; } }
+.rp-gull-b { display: block; animation: rp-bob 0.42s ease-in-out infinite alternate; }
+.rp-gull svg { display: block; width: 100%; overflow: visible; }
+.rp-gull path { animation: rp-wing 0.42s ease-in-out infinite alternate; }
+@keyframes rp-wing { from { d: path('M2 11 Q11 1 20 9 Q29 1 38 11'); } to { d: path('M2 5 Q11 15 20 9 Q29 15 38 5'); } }
+@keyframes rp-bob { from { transform: translateY(1px); } to { transform: translateY(-2px); } }
+/* v834: 눈덩이 굴림 — 원래 공의 가장자리 음영은 살리고(가장자리로 갈수록 무늬 흐리게) 가운데 뭉치 무늬만 흐름 */
+.rp-snow-roll { left: 7%; top: 8.3%; width: 86%; -webkit-mask-image: radial-gradient(circle, #000 52%, transparent 71%); mask-image: radial-gradient(circle, #000 52%, transparent 71%); }
+.rp-snow-roll img { opacity: 1; }
+.rp-snow-shade { left: 7%; top: 8.3%; width: 86%; background: radial-gradient(circle at 34% 28%, rgba(255,255,255,0.5), rgba(255,255,255,0) 34%), radial-gradient(circle, rgba(120,170,230,0) 45%, rgba(95,150,220,0.35) 72%, rgba(95,150,220,0) 73%); }
+.rp-snow-shade { background: radial-gradient(circle at 34% 28%, rgba(255,255,255,0.35), rgba(255,255,255,0) 30%), radial-gradient(circle, rgba(120,170,230,0) 40%, rgba(90,140,215,0.45) 70%, rgba(95,150,220,0) 72%); }
