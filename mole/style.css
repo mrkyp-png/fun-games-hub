@@ -5311,3 +5311,7 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .rx-sub span { font-size: 6.6cqw; -webkit-text-stroke: 1.4cqw #0a1f5c; }
 /* v828: 결과창 아래 금별이 늘어나 찌그러지던 것 — 모서리 조각을 별 크기만큼 크게 잘라 늘어나지 않게 */
 .rx-card--res::after { border-width: 44px 82px 66px; border-image: url('assets/rhythm/ui/go-frame.png') 44 82 66 / 44px 82px 66px stretch; }
+/* v829: 일시정지 창 — 그만하기 줄의 하트·글자를 계속하기 줄(▶·글자) 열에 맞춤 */
+.rx-ic--heart { left: 30%; }
+.rx-btn--b span { left: 42%; }
+.rx-cost { right: 6%; }
