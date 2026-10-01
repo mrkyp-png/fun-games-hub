@@ -631,7 +631,6 @@
         '<div class="photo-coll-gridwrap">' +
           '<div class="photo-coll-rowlabels"></div>' +
           '<div class="photo-coll-grid" data-photo-grid></div>' +
-          '<span class="photo-coll-sweep"></span>' + // v865: 진열장 유리 빛 훑기
         '</div>';
       overlay.querySelector('.photo-coll-hint').textContent = T('mole.photo.collHint');
       // 사용자 지정(2026-09-27): "앞쪽 노란박스에 위에서부터 동글형/듬직형/날렵형" —
