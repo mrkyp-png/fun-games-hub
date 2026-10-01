@@ -5618,3 +5618,13 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .inv-card[class*="inv-card--"] .inv-stat-tbl td { padding-top: 2px; padding-bottom: 2px; line-height: 1.15; }
 .inv-desc { margin-top: 4px; padding: 4px 7px; line-height: 1.28; }
 .inv-card[class*="inv-card--"] .inv-name { margin-bottom: 3px; }
+/* v857: 아이템 하단 탭 글자 = 둥근 게임 글꼴 + 진한 외곽선·아래 두께, 선택 탭만 금빛+살짝 크게(사용자 선택 1+3+4) */
+.inv-tab .inv-tab-lbl { font-family: 'Jua', 'Lilita One', sans-serif; font-weight: 400; font-size: 1.02rem; color: #fff; letter-spacing: 0.01em;
+  -webkit-text-stroke: 4px #0e6a2a; paint-order: stroke fill; text-shadow: 0 2px 0 #0b4d1f; transition: transform 0.15s; }
+.inv-tab.inv-tab--on .inv-tab-lbl { -webkit-text-stroke-color: #0f2f86; text-shadow: 0 2px 0 #0a1f5c; transform: scale(1.1);
+  background: linear-gradient(180deg, #fff8a8 0%, #ffd63a 50%, #ff9f1a 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+/* v857: 장착 버튼 넓이 = 바로 위 등급 카드 넓이(4장 통일) */
+.inv-card[class*="inv-card--"] .inv-equip { width: 88%; align-self: center; }
+/* v857 수정: 선택 탭 글자 그라데이션(배경 잘라내기)이 외곽선과 겹쳐 물감처럼 번짐 → 단색 노랑, 외곽선 얇게 */
+.inv-tab .inv-tab-lbl { -webkit-text-stroke-width: 3px; }
+.inv-tab.inv-tab--on .inv-tab-lbl { background: none; -webkit-background-clip: border-box; background-clip: border-box; color: #ffe14a; -webkit-text-stroke: 3px #0f2f86; }

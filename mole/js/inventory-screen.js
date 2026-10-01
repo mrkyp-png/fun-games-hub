@@ -24,7 +24,7 @@
               ['주변 두더지 지진 연타 15% (2·3타 두더지 소탕 포함)', '15% quake — chain-hits nearby moles (clears 2·3-hit moles too)'],
               ['-', '-']] },
     { id: 'alipunch', name: '알리 판취', nameEn: 'Ali Punch', thumb: 'assets/weapons/alipunch-jab.png', rarity: 'legend',
-      desc: ['전설의 챔피언 알리의 힘을 담은\n강력한 글러브! 빠르고 강한 연타로\n모든 두더지를 한 번에 날려버린다!', 'Gloves holding the power of\nthe legendary champ Ali! Fast, heavy\ncombos blast every mole away!'],
+      desc: ['전설의 챔피언 알리의 힘을 담은\n강력한 글러브! 빠르고 강한\n연타로 모든 두더지를 한 번에\n날려버린다!', 'Gloves holding the power of\nthe legendary champ Ali! Fast, heavy\ncombos blast every mole away!'],
       stats: [['Hole 16 → 14 · 경계선 추가', 'Holes 16 → 14 · Cell borders'],
               ['무적 5초 확률 20% (모든 동물 타격 가능), 2·3타 두더지 소탕 포함', '20% chance — 5s invincibility (any animal is safe to hit), clears 2·3-hit moles'],
               ['하강 딜레이 +0.1초(무적 중 +0.3초 추가)', '+0.1s before mole retreats (+0.3s more while invincible)']] }
