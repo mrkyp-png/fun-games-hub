@@ -257,9 +257,10 @@
       c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
       el.classList.remove('is-snap'); void el.offsetWidth; el.classList.add('is-snap');
       var ready = st.lastDet;
-      MG.FaceDetect.detect(c).then(function (det) {
+      // v838(사용자: 여전히 "다시 촬영" 반복) — 버튼이 켜질 때 확인된 얼굴이 있으면 촬영본을 다시 인식하지 않고 바로 진행.
+      // 다시 인식은 확인된 얼굴이 없을 때만(이론상 거의 없음).
+      (ready ? Promise.resolve(scaleDet(ready.det, c.width / ready.w)) : MG.FaceDetect.detect(c)).then(function (det) {
         st.busy = false;
-        if ((!det || !det.ok) && ready) det = scaleDet(ready.det, c.width / ready.w); // v835: 촬영본 인식 실패 → 직전 확인된 얼굴 위치로 진행
         if (!det || !det.ok) { setCamState('idle', T('mole.fs.cam.none')); toast(T('mole.fs.retake')); return; }
         // v811(사용자 지정: 촬영해도 다음으로 안 넘어감) — 버튼이 켜졌을 때 이미 판정 통과, 촬영본은 얼굴만 있으면 진행
         var fd = fixDet(det, c.width, c.height);
