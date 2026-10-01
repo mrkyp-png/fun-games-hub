@@ -5471,3 +5471,49 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .ws-pick-note { position: relative; margin: 0; width: calc(var(--w) * 0.5); aspect-ratio: 248 / 80; background: url('assets/workshop/pick/tag-no.png') center / 100% 100% no-repeat; }
 .ws-pick-note[hidden] { display: none; }
 .ws-pick-note b { position: absolute; left: 26%; right: 5%; top: 50%; transform: translateY(-50%); text-align: center; white-space: nowrap; font-size: calc(var(--w) * 0.036); color: #fff; }
+
+/* ===== v847: 아이템 > 무기 카드 새 디자인(바탕화면 "무기보관 에셋 변경" 시안) ===== */
+.inv-card.inv-card--basic, .inv-card.inv-card--rare, .inv-card.inv-card--epic, .inv-card.inv-card--legend {
+  padding: 10px 10px 12px; background: linear-gradient(180deg, #f7faff, #e9f0fb); border: 0; border-radius: 16px; box-shadow: inset 0 0 0 2px rgba(255,255,255,0.9); }
+.inv-card--on { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.9) !important; }
+.inv-card[class*="inv-card--"] .inv-top { gap: 10px; align-items: flex-start; }
+.inv-card[class*="inv-card--"] .inv-left { width: 44%; gap: 0; }
+.inv-rcard { position: relative; width: 100%; aspect-ratio: 380 / 560; margin-top: 10%; background: center / 100% 100% no-repeat; display: flex; align-items: center; justify-content: center; }
+.inv-card--basic .inv-rcard { background-image: url('assets/inventory/rarity/card-basic.png'); }
+.inv-card--rare .inv-rcard { background-image: url('assets/inventory/rarity/card-rare.png'); }
+.inv-card--epic .inv-rcard { background-image: url('assets/inventory/rarity/card-epic.png'); }
+.inv-card--legend .inv-rcard { background-image: url('assets/inventory/rarity/card-legend.png'); }
+.inv-badge { position: absolute; left: 50%; top: 0; width: 92%; transform: translate(-50%, -48%); z-index: 3; pointer-events: none; }
+.inv-card--epic .inv-badge, .inv-card--legend .inv-badge { width: 104%; transform: translate(-50%, -62%); }
+.inv-thumb-zoom { width: 120px; flex: 0 0 auto; transform: scale(1.12); margin-top: 8%; }
+.inv-card[class*="inv-card--"] .inv-equip { width: 100%; margin-top: -9%; z-index: 4; padding: 9px 0; font-size: 0.95rem; font-weight: 900; border: 3px solid #13692e;
+  -webkit-text-stroke: 1px #145a28; paint-order: stroke fill; box-shadow: 0 3px 0 #0e4d22, inset 0 2px 2px rgba(255,255,255,0.6); }
+.inv-card[class*="inv-card--"] .inv-equip:disabled { border-color: #8d939c; color: #fff; -webkit-text-stroke: 1px #6d737c; background: url('assets/inventory/rarity/pill-basic.png') center / 100% 100% no-repeat; box-shadow: none; }
+.inv-card[class*="inv-card--"] .inv-right { position: relative; padding-top: 4px; }
+.inv-card[class*="inv-card--"] .inv-right::before { content: '🐾'; position: absolute; right: 0; top: -2px; font-size: 1.7rem; opacity: 0.14; filter: grayscale(1); pointer-events: none; }
+.inv-card[class*="inv-card--"] .inv-name { display: block; font-size: 1.32rem; font-weight: 900; line-height: 1.15; margin: 2px 0 8px; white-space: nowrap; }
+.inv-card--basic .inv-name { color: #1b2766; } .inv-card--rare .inv-name { color: #1546c9; } .inv-card--epic .inv-name { color: #4a1aa3; } .inv-card--legend .inv-name { color: #0d5c3a; }
+.inv-card[class*="inv-card--"] .inv-stat { margin: 0; }
+.inv-card[class*="inv-card--"] .inv-stat-h { width: 58%; margin: 0 0 -2px; padding: 3px 0; position: relative; z-index: 1; text-align: center; color: #fff; -webkit-text-stroke: 0;
+  font-size: 0.74rem; font-weight: 900; background-position: center; background-size: 100% 100%; background-repeat: no-repeat; text-shadow: 0 1px 1px rgba(0,0,0,0.35); }
+.inv-card--basic .inv-stat-h, .inv-card--rare .inv-stat-h { background-image: url('assets/inventory/rarity/pill-rare.png'); }
+.inv-card--epic .inv-stat-h { background-image: url('assets/inventory/rarity/pill-epic.png'); }
+.inv-card--legend .inv-stat-h { background-image: url('assets/inventory/rarity/pill-legend.png'); }
+.inv-card[class*="inv-card--"] .inv-stat-tbl { background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(30,60,120,0.12); font-size: 0.66rem; overflow: hidden; }
+.inv-card[class*="inv-card--"] .inv-stat-tbl tr + tr th, .inv-card[class*="inv-card--"] .inv-stat-tbl tr + tr td { border-top: 1px solid #e3e8f2; }
+.inv-card[class*="inv-card--"] .inv-stat-tbl th { padding: 7px 6px 7px 8px; color: #5c6476; font-size: 0.74rem; vertical-align: middle; }
+.inv-card[class*="inv-card--"] .inv-stat-tbl td { padding: 7px 8px 7px 2px; color: #1d2340; }
+.inv-card[class*="inv-card--"] .inv-stat-tbl td.inv-stat-dash { text-align: left; padding-left: 10px; }
+.inv-desc { margin: 8px 0 0; padding: 8px 9px; background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(30,60,120,0.12);
+  font-size: 0.66rem; font-weight: 700; line-height: 1.5; color: #2c3350; white-space: pre-line; text-align: left; }
+/* v847 조정: 무기 카드 세로 공간에 맞게 압축 */
+.inv-card[class*="inv-card--"] { padding: 8px 8px 8px; }
+.inv-card[class*="inv-card--"] .inv-left { width: 40%; }
+.inv-rcard { margin-top: 12%; }
+.inv-thumb-zoom { transform: scale(1); margin-top: 6%; }
+.inv-card[class*="inv-card--"] .inv-equip { padding: 6px 0; font-size: 0.85rem; }
+.inv-card[class*="inv-card--"] .inv-name { font-size: 1.15rem; margin: 0 0 5px; }
+.inv-card[class*="inv-card--"] .inv-stat-tbl th { padding: 4px 5px 4px 7px; font-size: 0.66rem; }
+.inv-card[class*="inv-card--"] .inv-stat-tbl td { padding: 4px 6px 4px 2px; font-size: 0.6rem; line-height: 1.3; }
+.inv-desc { margin-top: 6px; padding: 6px 7px; font-size: 0.58rem; line-height: 1.45; word-break: keep-all; }
+.inv-card[class*="inv-card--"] .inv-right::before { font-size: 1.3rem; }

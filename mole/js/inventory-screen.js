@@ -9,18 +9,22 @@
   // 능력치 표 3줄 (라벨 = i18n 키, 값 = [ko, en]).
   var STAT_ROWS = ['mole.inv.stat.visibility', 'mole.inv.stat.attack', 'mole.inv.stat.defense'];
   var WEAPONS = [
-    { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/hammer.png',
+    { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/hammer.png', rarity: 'basic',
+      desc: ['기본 무기.\n간단하지만 강력한 타격감으로\n두더지를 시원하게!', 'The basic weapon.\nSimple but punchy —\nbonk those moles!'],
       stats: [['-', '-'], ['-', '-'], ['-', '-']] },
-    { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1.png',
+    { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1.png', rarity: 'rare',
+      desc: ['강력한 포탄으로\n더 많은 두더지를 한 번에!\n넓은 범위를 커버하는 든든한 무기!', 'Powerful cannonballs\nhit more moles at once —\na sturdy weapon with wide reach!'],
       stats: [['Hole 16 → 15 · 경계선 추가', 'Holes 16 → 15 · Cell borders'],
               ['2·3타 두더지 연타 확률 10%', '10% burst on 2·3-hit moles'],
               ['-', '-']] },
-    { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldhammer-0.png',
+    { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldhammer-0.png', rarity: 'epic',
+      desc: ['전설의 힘을 담은 황금 망치!\n지면을 울리는 강력한 충격으로\n주변의 두더지를 한 번에 처치한다!', 'A golden hammer of legend!\nIts ground-shaking blow\ntakes out nearby moles at once!'],
       gemGlow: true,   // 보석(파란불빛) 부분에 맥동 글로우
       stats: [['Hole 16 → 15 · 경계선 추가', 'Holes 16 → 15 · Cell borders'],
               ['주변 두더지 지진 연타 15% (2·3타 두더지 소탕 포함)', '15% quake — chain-hits nearby moles (clears 2·3-hit moles too)'],
               ['-', '-']] },
-    { id: 'alipunch', name: '알리 판취', nameEn: 'Ali Punch', thumb: 'assets/weapons/alipunch-jab.png',
+    { id: 'alipunch', name: '알리 판취', nameEn: 'Ali Punch', thumb: 'assets/weapons/alipunch-jab.png', rarity: 'legend',
+      desc: ['전설의 챔피언 알리의 힘을 담은\n강력한 글러브! 빠르고 강한 연타로\n모든 두더지를 한 번에 날려버린다!', 'Gloves holding the power of\nthe legendary champ Ali! Fast, heavy\ncombos blast every mole away!'],
       stats: [['Hole 16 → 14 · 경계선 추가', 'Holes 16 → 14 · Cell borders'],
               ['무적 5초 확률 20% (모든 동물 타격 가능), 2·3타 두더지 소탕 포함', '20% chance — 5s invincibility (any animal is safe to hit), clears 2·3-hit moles'],
               ['하강 딜레이 +0.1초(무적 중 +0.3초 추가)', '+0.1s before mole retreats (+0.3s more while invincible)']] }
@@ -179,17 +183,22 @@
         // 카드가 거의 전체폭이라 좌(이름+이미지)/우(능력치) 2단 배치(사용자 지정: "이름과
         // 이미지 좌측배치, 능력치 우측배치"). 장착 버튼은 흰색 카드 안, 이미지 바로 밑
         // (사용자 지정: "파란 박스에 있는 장착 박스는 흰색박스 아이템 밑으로 옮긴다").
+        // v847(사용자 시안 "무기보관 에셋 변경"): 왼쪽 = 등급 카드(BASIC/RARE/EPIC/LEGENDARY 배경+배지) 안에 무기 + 장착,
+        // 오른쪽 = 큰 이름 / 능력치 알약 머리 / 흰 표 / 설명 박스. 특수 애니메이션(88px 기준 좌표)은 thumb 를 통째로 확대해 유지.
+        card.className += ' inv-card--' + w.rarity;
         card.innerHTML =
           '<div class="inv-top">' +
-            '<div class="inv-left"><span class="inv-name"></span>' + thumbHtml +
+            '<div class="inv-left"><div class="inv-rcard"><img class="inv-badge" alt="" src="assets/inventory/rarity/badge-' + w.rarity + '.png">' +
+              '<div class="inv-thumb-zoom">' + thumbHtml + '</div></div>' +
               '<button type="button" class="inv-equip"></button></div>' +
-            '<div class="inv-right"><div class="inv-stat">' +
+            '<div class="inv-right"><span class="inv-name"></span><div class="inv-stat">' +
               '<div class="inv-stat-h"></div>' +
               '<table class="inv-stat-tbl"><tbody>' +
                 w.stats.map(function () { return '<tr><th></th><td></td></tr>'; }).join('') +
               '</tbody></table>' +
-            '</div></div>' +
+            '</div><p class="inv-desc"></p></div>' +
           '</div>';
+        card.querySelector('.inv-desc').textContent = I18N.lang === 'en' ? w.desc[1] : w.desc[0];
         card.querySelector('.inv-name').textContent = nameOf(w);
         card.querySelector('.inv-stat-h').textContent = T('mole.inv.statHead');
         var trs = card.querySelectorAll('.inv-stat-tbl tr');
