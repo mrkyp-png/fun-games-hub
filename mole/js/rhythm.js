@@ -144,15 +144,15 @@
     }
     // 무기 화면 상태(위치·크기·회전·투명도). 부메랑·원반은 던져 올라올 땐 빠르게, 내려올 땐 천천히 회전(사용자 지정 v816)
     function flyAt(n, t) {
-      var spin = n.weaponType === 'boomerang' || n.weaponType === 'disc';
+      var spin = n.weaponType === 'boomerang' || n.weaponType === 'disc', big = spin ? 1.2 : 1; // 부메랑·원반 1.2배(사용자 지정 v822: 화살·눈덩이보다 작아 보임)
       if (t < n.spawnTime - LAUNCH) return { x: 0, y: -999, sc: 1, rot: 0, op: 0 };
       if (t < n.spawnTime) {
         var u = 1 - (n.spawnTime - t) / LAUNCH, x0 = n.pts[0][0], hx = x0 + (L.W / 2 - x0) * 0.55, hy = L.horizonY;
-        return { x: hx + (x0 - hx) * u, y: hy + (n.pts[0][1] - hy) * (1 - (1 - u) * (1 - u)), sc: 0.22 + 0.78 * u,
+        return { x: hx + (x0 - hx) * u, y: hy + (n.pts[0][1] - hy) * (1 - (1 - u) * (1 - u)), sc: (0.22 + 0.78 * u) * big,
           rot: spin ? -(n.spawnTime - t) * 1080 : n.weaponType === 'heart' ? 180 : 0, op: Math.min(1, u * 3) }; // 화살: 올라갈 땐 뒤집혀(촉 위), 꼭대기에서 회전 없이 바로 촉 아래 그림으로(v821)
       }
       var p = posAt(n, t);
-      return { x: p.x, y: p.y, sc: 1, rot: spin ? (t - n.spawnTime) * 240 : 0, op: 1 };
+      return { x: p.x, y: p.y, sc: big, rot: spin ? (t - n.spawnTime) * 240 : 0, op: 1 };
     }
     function xf(q) { return 'translate(' + (q.x - L.weaponR * 1.2) + 'px,' + (q.y - L.weaponR * 1.2) + 'px) scale(' + q.sc.toFixed(3) + ') rotate(' + q.rot.toFixed(1) + 'deg)'; }
     function pathLen(pts) { var s = 0; for (var i = 1; i < pts.length; i++) s += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); return s; }
@@ -347,7 +347,7 @@
         }
         if (n.state === 'hit') { // 튕김
           var k = t - n.hitAt; n.cx = n.bx + n.vx * k; n.cy = n.by + n.vy * k + L.H * 2.2 * k * k;
-          n.el.style.transform = 'translate(' + (n.cx - L.weaponR * 1.2) + 'px,' + (n.cy - L.weaponR * 1.2) + 'px) rotate(' + (t * 900) + 'deg)';
+          n.el.style.transform = 'translate(' + (n.cx - L.weaponR * 1.2) + 'px,' + (n.cy - L.weaponR * 1.2) + 'px) scale(' + (n.weaponType === 'boomerang' || n.weaponType === 'disc' ? 1.2 : 1) + ') rotate(' + (t * 900) + 'deg)';
           n.el.style.opacity = String(Math.max(0, 1 - k * 1.6));
           if (k > 0.7) { n.el.style.opacity = '0'; if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); n.state = 'done'; }
         }
