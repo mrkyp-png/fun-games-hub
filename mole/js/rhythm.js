@@ -198,6 +198,16 @@
         ln.querySelector('.rp-judge').style.top = (L.targetY - L.targetR * 2.2) + 'px';
       });
     }
+    // v824: 폰을 껐다 켜면(전체화면 복귀 등) 화면 높이가 바뀌는데 배치를 다시 안 해서 두더지·타겟이 올라가 있던 것 — 크기 바뀌면 다시 계산
+    root.addEventListener('resize', function () {
+      if (!st || !meta || el.hidden) return;
+      layout(); placeStatic();
+      st.notes.forEach(function (n) {
+        n.pts = routeOf(n); n.len = pathLen(n.pts);
+        if (n.el) n.el.style.width = (L.weaponR * 2.4) + 'px';
+        if (n.trail) n.trail.forEach(function (g) { g.style.width = (L.weaponR * 2.4) + 'px'; });
+      });
+    });
     // v813(깜빡임 제거): 7프레임을 미리 겹쳐 두고 보이는 것만 바꿈 — img src 교체 순간 빈 프레임이 생기던 것
     var moleFrame = [-1, -1, -1, -1], moleEls = null, btnEls = null;
     function setMoleFrame(i, f) {
