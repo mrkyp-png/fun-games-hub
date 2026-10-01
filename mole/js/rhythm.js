@@ -9,12 +9,13 @@
 
   // ---- 튜닝 데이터(코드 하드코딩 대신 여기서만 조절) ----
   var CONFIG = {
-    song: { src: 'audio/bgm-game-1.mp3', bpm: 83.0, firstBeat: 0.232 }, // BPM·첫 박 = 곡 분석값
+    song: { src: 'audio/bgm-game-1.mp3', bpm: 83.0, firstBeat: 0.232 }, // BPM·첫 박 = 곡 분석값(곡 데이터가 없을 때 예비)
+    songData: 'audio/rp/fever.json', // v843: 곡 분석 데이터(반주·멜로디 분리 + 난이도별 노트 시각) — 맞히면 멜로디가 연주됨
     chart: { startBeat: 8, beats: 116 },           // 8박(인트로) 뒤부터 116박 = 한 판 약 90초(사용자 지정 v837, 이전 64박≈52초)
     judge: { perfectMs: 70, greatMs: 130, goodMs: 200 },
     score: { PERFECT: 300, GREAT: 200, GOOD: 100 },
     hpMax: 10,
-    jumpFrameMs: 80,                                // 7프레임 × 80ms
+    jumpFrameMs: 60,                                // 7프레임 × 60ms (v843: 80→60, 점프 반응 빠르게 — 사용자 지정)
     apexFrame: 3,                                   // 0부터 — 최고점 프레임(에셋 실측)
     travelSec: 1.6,                                 // 무기 출발→타겟 시간
     countIn: 3
@@ -59,13 +60,17 @@
       return Promise.all(list.map(function (u) { var im = new Image(); im.src = u; imgs[u] = im; return im.decode ? im.decode().catch(function () {}) : null; }));
     }
     function loadMeta() { return meta ? Promise.resolve(meta) : fetch(A + 'jump-meta.json').then(function (r) { return r.json(); }).then(function (m) { meta = m; return m; }); }
+    var song = null, melBuf = null, melGain = null; // v843: 연주형(맞히면 멜로디 나옴, 놓치면 끊김 — 기타히어로 방식)
+    function decode(u) { return fetch(u).then(function (r) { return r.arrayBuffer(); }).then(function (ab) { return new Promise(function (res, rej) { ctx.decodeAudioData(ab, res, rej); }); }); }
     function loadSong() {
       if (!ctx) ctx = new (root.AudioContext || root.webkitAudioContext)();
       if (buffer) return Promise.resolve(buffer);
-      return fetch(CONFIG.song.src).then(function (r) { return r.arrayBuffer(); }).then(function (ab) {
-        return new Promise(function (res, rej) { ctx.decodeAudioData(ab, res, rej); });
-      }).then(function (b) { buffer = b; return b; });
+      return fetch(CONFIG.songData).then(function (r) { return r.json(); }).then(function (d) {
+        song = d;
+        return Promise.all([decode(d.back), decode(d.melody)]).then(function (b) { buffer = b[0]; melBuf = b[1]; return buffer; });
+      }).catch(function () { song = null; return decode(CONFIG.song.src).then(function (b) { buffer = b; return b; }); });
     }
+    function melody(on) { if (melGain) melGain.gain.setTargetAtTime(on ? 1 : 0, ctx.currentTime, on ? 0.01 : 0.03); }
 
     // ---- 레이아웃(px) ----
     var L = {};
@@ -112,15 +117,17 @@
     function buildChart() {
       var D = DIFFS[diff], spb = 60 / CONFIG.song.bpm, notes = [], seed = 7 + diff.length, prev = -1, same = 0, id = 0, lastAt = {};
       function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
-      for (var k = 0; k < CONFIG.chart.beats; k++) {
-        if (k % D.rest === D.rest - 1) continue;           // 마디 끝 쉼
-        var subs = (k % 2 === 1 && rnd() < D.half) ? [0, 0.5] : [0]; // 반박(1.5박 등) 노트
-        subs.forEach(function (sub) {
-          var beat = CONFIG.chart.startBeat + k + sub;
+      // v843: 곡 데이터가 있으면 멜로디 소리 시작점(분석값)을 노트 시각으로 — 누르는 타이밍 = 멜로디 리듬
+      var times = null;
+      if (song && song.charts && song.charts[diff]) times = song.charts[diff];
+      else { times = []; for (var kk = 0; kk < CONFIG.chart.beats; kk++) { if (kk % D.rest === D.rest - 1) continue; times.push(CONFIG.song.firstBeat + (CONFIG.chart.startBeat + kk) * spb); if (kk % 2 === 1 && rnd() < D.half) times.push(CONFIG.song.firstBeat + (CONFIG.chart.startBeat + kk + 0.5) * spb); } }
+      times.forEach(function (T0) {
+        [0].forEach(function () {
+          var beat = song ? T0 / (60 / song.bpm) : (T0 - CONFIG.song.firstBeat) / spb;
           var lane = Math.floor(rnd() * 4);
           if (lane === prev) { same++; if (same >= 2) { lane = (lane + 1 + Math.floor(rnd() * 3)) % 4; same = 0; } } else same = 0;
           // 같은 레인은 두더지 점프(7프레임)가 끝날 시간 이상 간격 — 못 치는 노트 방지(v811)
-          var tt = CONFIG.song.firstBeat + beat * spb, gap = 7 * CONFIG.jumpFrameMs / 1000 + 0.1;
+          var tt = T0, gap = 7 * CONFIG.jumpFrameMs / 1000 + 0.1;
           for (var tries = 0; tries < 4 && tt - (lastAt[lane] || -9) < gap; tries++) lane = (lane + 1) % 4;
           lastAt[lane] = tt;
           prev = lane;
@@ -128,10 +135,10 @@
           var mid = t2 ? (lane + 1 + Math.floor(rnd() * 3)) % 4 : lane;
           var start = t1 ? (mid + 1 + Math.floor(rnd() * 3)) % 4 : lane;
           if (t1 && !t2 && start === lane) start = (lane + 1) % 4;
-          notes.push({ id: id++, beatIndex: beat, targetTime: CONFIG.song.firstBeat + beat * spb, startLane: start, targetLane: lane,
+          notes.push({ id: id++, beatIndex: beat, targetTime: T0, startLane: start, targetLane: lane,
             midLane: mid, routePoint1: t1 ? 1 : 0, routePoint2: t2 ? 1 : 0, weaponType: WEAPONS[lane], difficulty: diff });
         });
-      }
+      });
       return notes;
     }
     // 경로(직선→꺾임→직선): 꼭짓점 목록
@@ -271,7 +278,10 @@
         // 카운트인: 3·2·1·START 가 끝나는 순간 음악 0초
         var startAt = ctx.currentTime + CONFIG.countIn + 0.15;
         st.t0 = startAt;
-        src = ctx.createBufferSource(); src.buffer = buffer; src.connect(ctx.destination); src.start(startAt);
+        var s1 = ctx.createBufferSource(); s1.buffer = buffer; s1.connect(ctx.destination); s1.start(startAt);
+        var s2 = null;
+        if (melBuf) { s2 = ctx.createBufferSource(); s2.buffer = melBuf; melGain = ctx.createGain(); melGain.gain.value = 1; s2.connect(melGain); melGain.connect(ctx.destination); s2.start(startAt); }
+        src = { stop: function (w) { s1.stop(w); if (s2) s2.stop(w); } };
         hud(); // (무기 풀은 위에서 생성 — 여기서 비우지 않음)
         var rr = el.querySelector('[data-rp-result]'); if (!rr.classList.contains('rp-push-out')) rr.hidden = true; // 밀려나는 중이면 연출 끝에 숨김
         cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
@@ -282,7 +292,8 @@
     function press(lane) {
       if (!st || st.over || st.paused || now() < 0) return;
       var t = now(), m = st.moles[lane];
-      if (t - m.jumpAt < 7 * CONFIG.jumpFrameMs / 1000) return; // 점프 중 재입력 무시
+      // v843(사용자: 연속 무기 두 번째가 안 뜀) — 올라가는 중엔 무시, 최고점 지나 내려오는 중이면 바로 다시 점프
+      if (t - m.jumpAt < (CONFIG.apexFrame + 1) * CONFIG.jumpFrameMs / 1000) return;
       m.jumpAt = t; sfx('jump');
       var apexT = t + (CONFIG.apexFrame + 0.5) * CONFIG.jumpFrameMs / 1000;
       // 이 레인에서 판정 대상 노트(아직 처리 안 된 가장 가까운 것)
@@ -304,6 +315,7 @@
     }
     function hit(n, lane) {
       n.state = 'hit'; n.hitAt = now(); if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); if (n.wind) n.wind.style.opacity = '0';
+      melody(true);
       var g = n.press.grade; st.cnt[g]++; st.combo++; st.maxCombo = Math.max(st.maxCombo, st.combo);
       st.score += Math.round(CONFIG.score[g] * (1 + Math.min(st.combo, 100) / 200));
       n.vx = (Math.random() < 0.5 ? -1 : 1) * (L.laneW * (1.5 + Math.random())); n.vy = -L.H * 1.1; n.bx = n.cx; n.by = n.cy;
@@ -313,6 +325,7 @@
     }
     function miss(lane, n) {
       if (n) { n.state = 'miss'; if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); if (n.wind) n.wind.style.opacity = '0'; }
+      melody(false);
       st.cnt.MISS++; st.combo = 0; st.hp = Math.max(0, st.hp - 1);
       st.moles[lane].hurtAt = now();
       showJudge(lane, 'MISS', 'miss'); hud(); replay(hippo, 'is-no');
