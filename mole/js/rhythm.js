@@ -256,7 +256,7 @@
           }
           n.el.style.width = (L.weaponR * 2.4) + 'px'; n.el.style.opacity = '0'; n.el.decoding = 'sync';
           // 눈덩이·하트 화살 = 날아오는 잔상 2겹(사용자 지정 v816)
-          { // 4종 모두 잔상 — 원반·부메랑도(사용자 지정 v830)
+          if (n.weaponType !== 'boomerang') { // 잔상: 부메랑은 제외(사용자 지정 v835 — 바람 3줄만)
             n.trail = [0.32, 0.15].map(function (op) { var g = n.el.cloneNode(true); g.className = n.el.className + ' rp-trail'; g.dataset.op = op; wlayer.appendChild(g); return g; });
           }
           // 부메랑·원반 = 내려올 때 뒤로 바람 줄기(사용자 지정 v830)
@@ -400,7 +400,7 @@
             if (t < n.spawnTime) n.wind.style.opacity = '0';
             else { var pv = flyAt(n, t - 0.03), ang = Math.atan2(-(cur.x - pv.x), cur.y - pv.y) * 180 / Math.PI;
               n.wind.style.transform = 'translate(' + (cur.x - L.weaponR * 1.3) + 'px,' + (cur.y - L.weaponR * 4.4) + 'px) rotate(' + ang.toFixed(1) + 'deg)';
-              n.wind.style.opacity = (0.45 + 0.08 * Math.sin(t * 38)).toFixed(2); } // v832: 반투명(사용자 지정)
+              n.wind.style.opacity = ((n.weaponType === 'boomerang' ? 0.32 : 0.45) + 0.06 * Math.sin(t * 38)).toFixed(2); } // v832: 반투명(사용자 지정)
           }
           if (t < n.spawnTime) { n.cx = cur.x; n.cy = -9999; return; } // 던져 올라오는 구간(판정 없음)
           var p = cur; n.cx = p.x; n.cy = p.y;

@@ -46,7 +46,15 @@
     return meshP;
   }
 
+  // v835: 인식 요청을 한 줄로 세움 — FaceMesh 는 한 번에 하나만 처리. 실시간 인식 중에 촬영 인식이 겹치면
+  // 촬영 쪽이 실패로 끝나 "다시 촬영해 주세요"만 반복되던 고질 버그(폰에서 거의 매번)
+  var chain = Promise.resolve();
   function detect(src) {
+    var p = chain.then(function () { return detectNow(src); });
+    chain = p.catch(function () {});
+    return p;
+  }
+  function detectNow(src) {
     var w = src.naturalWidth || src.videoWidth || src.width;
     var h = src.naturalHeight || src.videoHeight || src.height;
     return getMesh().then(function (mesh) {

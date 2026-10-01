@@ -222,6 +222,12 @@
       if (tilt > 0.3) return 'tilt';
       return 'ok';
     }
+    function scaleDet(d, k) {
+      function sp(p) { return p ? { x: p.x * k, y: p.y * k } : p; }
+      var o = { ok: true, count: d.count, oval: d.oval.map(sp), box: d.box && { x: d.box.x * k, y: d.box.y * k, w: d.box.w * k, h: d.box.h * k } };
+      ['eyeL', 'eyeR', 'cheekL', 'cheekR', 'chin', 'nose', 'skinL', 'skinR'].forEach(function (n) { o[n] = sp(d[n]); });
+      return o;
+    }
     var bgTimer = null;
     function paintBg() {
       clearTimeout(bgTimer);
@@ -237,6 +243,7 @@
       MG.FaceDetect.detect(video).then(function (det) {
         if (st.screen !== 2) return;
         var j = judge(det, video.videoWidth);
+        st.lastDet = j === 'ok' ? { det: det, w: video.videoWidth } : null; // v835: 버튼이 켜질 때 확인된 얼굴(촬영 인식 실패 시 대신 사용)
         setCamState(j === 'ok' ? 'ready' : 'idle', j === 'ok' ? T('mole.fs.camHint') : T('mole.fs.cam.' + j));
         st.loop = setTimeout(detectLoop, 300);
       });
@@ -249,8 +256,10 @@
       var c = document.createElement('canvas'); c.width = Math.round(video.videoWidth * k); c.height = Math.round(video.videoHeight * k);
       c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
       el.classList.remove('is-snap'); void el.offsetWidth; el.classList.add('is-snap');
+      var ready = st.lastDet;
       MG.FaceDetect.detect(c).then(function (det) {
         st.busy = false;
+        if ((!det || !det.ok) && ready) det = scaleDet(ready.det, c.width / ready.w); // v835: 촬영본 인식 실패 → 직전 확인된 얼굴 위치로 진행
         if (!det || !det.ok) { setCamState('idle', T('mole.fs.cam.none')); toast(T('mole.fs.retake')); return; }
         // v811(사용자 지정: 촬영해도 다음으로 안 넘어감) — 버튼이 켜졌을 때 이미 판정 통과, 촬영본은 얼굴만 있으면 진행
         var fd = fixDet(det, c.width, c.height);
