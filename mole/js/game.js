@@ -1108,7 +1108,7 @@
       if (sub === 'light-popup') refreshLightPopup();
       if (sub === 'roundmap-screen' && roundMap) roundMap.show();
       // v836(사용자 지정): 뒤로가기와 같은 글리치로 진입 — 스코어·출석·제작소·광산지도
-      if (['score-screen', 'daily-screen', 'workshop-screen', 'roundmap-screen'].indexOf(sub) >= 0) {
+      if (['score-screen', 'daily-screen', 'workshop-screen', 'roundmap-screen', 'shop-screen', 'inventory-screen'].indexOf(sub) >= 0) { // v862: 상점·아이템도
         const gs = document.getElementById(sub);
         gs.classList.remove('glitch-in'); void gs.offsetWidth; gs.classList.add('glitch-in');
         setTimeout(() => gs.classList.remove('glitch-in'), 260);
@@ -1147,6 +1147,9 @@
     setTimeout(() => el.classList.remove('glitch-in'), 260);
   }
   function showStartScreen(opts) {
+    // v862(사용자 지정): 상점·아이템 화면에서 홈으로 갈 때도 글리치로 사라짐
+    const out = ['shop-screen', 'inventory-screen'].map((id) => document.getElementById(id)).find((x) => x && !x.hidden);
+    if (out && window.FGH && window.FGH.rollOut) { window.FGH.rollOut(out, () => showStartScreenNow(opts)); return; }
     showStartScreenNow(opts);
   }
   function showStartScreenNow(opts) {
