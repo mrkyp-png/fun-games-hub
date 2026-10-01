@@ -5437,3 +5437,36 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .rp-push-in { animation: rp-push-in 0.7s ease-in-out both; }
 @keyframes rp-push-out { to { transform: translate3d(-100%, 0, 0); } }
 @keyframes rp-push-in { 0% { transform: translate3d(100%, 0, 0); } 70% { transform: translate3d(-6%, 0, 0); } 85% { transform: translate3d(2%, 0, 0); } 100% { transform: none; } }
+
+/* ===== v845: 합성 재료 선택 창 새 디자인(사용자 시안) — 제작소 간판 제목, 색 카드 5종, 녹색 체크 ===== */
+.ws-pick-box--v2 { position: relative; width: calc(var(--w) * 0.94); max-height: 92%; gap: 6px; padding: 0 0 6px; background: none; box-shadow: none; border-radius: 0; }
+.ws-pick-sign { position: relative; width: calc(var(--w) * 0.62); flex: 0 0 auto; }
+.ws-pick-sign img { width: 100%; display: block; }
+.ws-pick-sign b { position: absolute; left: 0; right: 0; top: calc(42% + 0.2cm); transform: translateY(-50%); text-align: center; white-space: nowrap;
+  font-size: calc(var(--w) * 0.068); font-weight: 900; color: #fff; -webkit-text-stroke: 4px #5a2c0a; paint-order: stroke fill; }
+.ws-pick-x { position: absolute; right: 0; top: calc(var(--w) * 0.1); width: calc(var(--w) * 0.12); padding: 0; border: 0; background: none; cursor: pointer; }
+.ws-pick-x img { width: 100%; display: block; }
+.ws-pick-x:active, .ws-pick-ok:active { transform: translateY(3px) scale(0.96); }
+.ws-pick-box--v2 .ws-pick-list { display: flex; flex-wrap: wrap; justify-content: center; gap: calc(var(--w) * 0.025); overflow-y: auto; padding: 6px 2px; }
+.ws-pcard { position: relative; width: calc(var(--w) * 0.29); flex: 0 0 auto; aspect-ratio: 330 / 430; padding: 0; border-radius: 0; background: center / 100% 100% no-repeat; box-shadow: none; display: block; }
+.ws-pcard--blue { background-image: url('assets/workshop/pick/card-blue.png'); }
+.ws-pcard--red { background-image: url('assets/workshop/pick/card-red.png'); }
+.ws-pcard--green { background-image: url('assets/workshop/pick/card-green.png'); }
+.ws-pcard--orange { background-image: url('assets/workshop/pick/card-orange.png'); }
+.ws-pcard--purple { background-image: url('assets/workshop/pick/card-purple.png'); }
+.ws-pcard .ws-pick-img { position: absolute; left: 14%; right: 14%; top: 13%; height: 48%; width: auto; aspect-ratio: auto; }
+.ws-pcard .ws-pick-img img { max-width: 100%; max-height: 100%; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.45)); }
+.ws-pcard .ws-pick-name { position: absolute; left: 12%; right: 12%; top: 69%; height: 10%; display: flex; align-items: center; justify-content: center;
+  font-size: calc(var(--w) * 0.03); color: #fff; -webkit-text-stroke: 2px rgba(0, 0, 0, 0.6); paint-order: stroke fill; }
+.ws-pcard .ws-pick-n { position: absolute; left: 10%; right: 10%; top: 82%; height: 9%; display: flex; align-items: center; justify-content: center; font-size: calc(var(--w) * 0.028); color: #ffe45a; }
+.ws-pcard.is-on { box-shadow: 0 0 0 3px #ffd24a, 0 0 12px 3px rgba(255, 200, 40, 0.75); border-radius: 10px; }
+.ws-pcard-chk { position: absolute; right: -4%; top: -3%; width: 24%; display: none; }
+.ws-pcard.is-on .ws-pcard-chk { display: block; }
+.ws-pcard:disabled { opacity: 1; filter: brightness(0.5) saturate(0.6); }
+.ws-pcard-no { position: absolute; left: 4%; right: 4%; top: 36%; aspect-ratio: 248 / 80; background: url('assets/workshop/pick/tag-no.png') center / 100% 100% no-repeat; filter: brightness(2) saturate(1.6); }
+.ws-pcard-no b { position: absolute; left: 30%; right: 6%; top: 50%; transform: translateY(-50%); font-size: calc(var(--w) * 0.024); color: #fff; white-space: nowrap; text-align: center; }
+.ws-pick-ok { width: calc(var(--w) * 0.6); aspect-ratio: 566 / 141; margin-top: 4px; padding: 0; border: 0; cursor: pointer; background: url('assets/workshop/pick/btn-close.png') center / 100% 100% no-repeat; transition: transform 0.06s; }
+.ws-pick-ok span { font-size: calc(var(--w) * 0.06); font-weight: 900; color: #4a2a00; }
+.ws-pick:has(.ws-pick-box--v2) { background: rgba(0, 0, 0, 0.75); }
+.ws-pcard-no { left: 2%; right: 2%; }
+.ws-pcard-no b { left: 26%; right: 4%; font-size: calc(var(--w) * 0.021); letter-spacing: -0.03em; }

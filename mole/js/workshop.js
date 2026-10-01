@@ -147,21 +147,24 @@
     $('[data-ws-mat]').addEventListener('click', function () {
       if (running) return;
       var target = cur(); var list = $('[data-ws-pick-list]'); list.innerHTML = '';
-      items(tab).forEach(function (m) {
+      var COLORS = ['blue', 'red', 'green', 'orange', 'purple']; // v845: 재료 순서대로 카드 색 고정
+      items(tab).forEach(function (m, i) {
         var n = materials(tab, m.id), same = !!target && m.id === target.id;
         var b = document.createElement('button'); b.type = 'button';
-        b.className = 'ws-pick-item' + (m.id === selMat ? ' is-on' : '');
+        b.className = 'ws-pick-item ws-pcard ws-pcard--' + COLORS[i % 5] + (m.id === selMat ? ' is-on' : '');
         b.disabled = !same || !n;
-        b.innerHTML = '<span class="ws-pick-img"><img alt=""></span><span class="ws-pick-name"></span><span class="ws-pick-n"></span>';
+        b.innerHTML = '<span class="ws-pick-img"><img alt=""></span><span class="ws-pick-name"></span><span class="ws-pick-n"></span>' +
+          (!same ? '<span class="ws-pcard-no"><b></b></span>' : '') + '<img class="ws-pcard-chk" src="assets/roundmap/check.png" alt="">';
         b.querySelector('img').src = m.img;
         b.querySelector('.ws-pick-name').textContent = nameOf(m);
-        b.querySelector('.ws-pick-n').textContent = !same ? T('mole.ws.pickNo') : T('mole.ws.have', { n: n });
+        b.querySelector('.ws-pick-n').textContent = T('mole.ws.have', { n: n });
+        if (!same) b.querySelector('.ws-pcard-no b').textContent = T('mole.ws.pickNo');
         b.addEventListener('click', function () { selMat = m.id; pick.hidden = true; render(); });
         list.appendChild(b);
       });
       pick.hidden = false;
     });
-    $('[data-ws-pick-close]').addEventListener('click', function () { pick.hidden = true; });
+    el.querySelectorAll('[data-ws-pick-close]').forEach(function (c) { c.addEventListener('click', function () { pick.hidden = true; }); }); // v845: X + 닫기
     $('[data-ws-close]').addEventListener('click', function () { if (running) return; root.FGH.rollOut(el, opts.onClose); }); // v790: 위로 말리며 사라짐
 
     // ---- 합성 실행 ----
