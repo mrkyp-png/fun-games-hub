@@ -735,6 +735,7 @@
         if (state && state.feverEventActive) return; // 피버타임 중엔 홈/상점 등 화면이동 전부 비활성화
         if (action === 'home') { showStartScreen(); return; }
         if (action === 'profile') { editProfileAvatar(); return; }
+        if (action === 'rhythm') { openRhythm(); return; } // 리듬팡(v807)
         const sub = { shop: 'shop-screen', score: 'score-screen', daily: 'daily-screen',
           quest: 'quest-screen', locker: 'workshop-screen',
           inventory: 'inventory-screen', settings: 'settings-screen', lightMode: 'roundmap-screen',
@@ -1128,6 +1129,14 @@
   }
 
   // ---------- 시작 화면 ----------
+  // 리듬팡(v807) — 전체화면, 홈 BGM 멈추고 리듬팡 곡 재생. 닫으면 홈 BGM 복귀.
+  let rhythm = null;
+  function openRhythm() {
+    const el = document.getElementById('rhythm-screen');
+    if (!rhythm) rhythm = window.__rhythm = MG.Rhythm.create({ root: el, onClose: () => { el.hidden = true; playScreenBgm('home'); } });
+    stopBgm();
+    rhythm.open();
+  }
   function showStartScreen(opts) {
     showStartScreenNow(opts);
   }

@@ -59,7 +59,7 @@
     { num: '7', kr: 'ㅅ', en: 'PQRS', hud: 'profile', action: 'profile' }, { num: '8', kr: 'ㅇ', en: 'TUV', hud: 'locker', action: 'locker' }, { num: '9', kr: 'ㅈㅊ', en: 'WXYZ', hud: 'settings', action: 'settings' },
       { nav: '아이템', svg: SVG.inventory, i18n: 'mole.pad.lblInventory', action: 'inventory', navBack: { nav: '최근기록', svg: SVG.clock, i18n: 'mole.pad.recent' } },
     { num: '✱', kr: '', en: '', hud: 'label', label: '두더지팡', labelI18n: 'mole.pad.gameMole', action: 'lightMode' },
-    { num: '0', kr: '', en: '+', hud: 'label', label: '리듬팡', labelI18n: 'mole.pad.gameRhythm' },
+    { num: '0', kr: '', en: '+', hud: 'label', label: '리듬팡', labelI18n: 'mole.pad.gameRhythm', action: 'rhythm' },
     { num: '#', kr: '', en: '', hud: 'mail', action: 'mail' },
     { nav: '시작', svg: SVG.phone, call: true, i18n: 'mole.start.btn' }
   ];

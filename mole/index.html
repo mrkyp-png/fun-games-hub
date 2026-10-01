@@ -362,6 +362,32 @@
             <button type="button" class="dr-back rm-back" data-back="roundmap" aria-label="뒤로" data-i18n-aria-label="common.back"><img src="assets/score/btn-back.png" alt=""></button>
         </div>
       </div>
+      <!-- 리듬팡(RHYTHM PANG) 1차 — js/rhythm.js. 바탕화면 "리듬팡 UI 및 에셋/명세서.txt" -->
+      <div class="rp-screen" id="rhythm-screen" hidden>
+        <div class="rp-stage" data-rp-stage>
+          <div class="rp-lanes" data-rp-lanes></div>
+          <div class="rp-weapons" data-rp-weapons></div>
+          <div class="rp-hud"><b data-rp-score>0</b><span data-rp-combo></span></div>
+          <button type="button" class="rp-pausebtn" data-rp-pausebtn aria-label="pause">II</button>
+          <div class="rp-count" data-rp-count hidden></div>
+        </div>
+        <div class="rp-bottom">
+          <div class="rp-hpbar" data-rp-hpbar><i data-rp-hp></i></div>
+          <div class="rp-btns" data-rp-btns></div>
+        </div>
+        <div class="rp-modal" data-rp-pause hidden><div class="rp-card"><p class="rp-card-t">PAUSE</p>
+          <button type="button" class="rp-cbtn" data-rp-resume data-i18n="mole.rp.resume">계속하기</button>
+          <button type="button" class="rp-cbtn rp-cbtn--sub" data-rp-quit data-i18n="mole.rp.quit">그만하기</button></div></div>
+        <div class="rp-modal" data-rp-result hidden><div class="rp-card"><p class="rp-card-t" data-rp-res-title>CLEAR!</p>
+          <p class="rp-res-score"><small>SCORE</small><b data-rp-res-score>0</b></p>
+          <p class="rp-res-row">MAX COMBO <b data-rp-res-combo>0</b></p>
+          <p class="rp-res-row rp-perfect">PERFECT <b data-rp-res-perfect>0</b></p>
+          <p class="rp-res-row rp-great">GREAT <b data-rp-res-great>0</b></p>
+          <p class="rp-res-row rp-good">GOOD <b data-rp-res-good>0</b></p>
+          <p class="rp-res-row rp-miss">MISS <b data-rp-res-miss>0</b></p>
+          <button type="button" class="rp-cbtn" data-rp-retry data-i18n="mole.rp.retry">다시하기</button>
+          <button type="button" class="rp-cbtn rp-cbtn--sub" data-rp-home data-i18n="mole.rp.home">홈으로</button></div></div>
+      </div>
     <div class="board-screen" id="light-popup" hidden>
         <!-- 라이트 ON/DIM/OFF 와 같은 값을 가리키는 별도 표기(동기화, 사용자 지정) — 상점
              하트/코인/티켓 캡슐(.shop-hud-stat) 스타일 재사용, data-lp-diff 공유해 기존
@@ -783,7 +809,7 @@
       <div id="lane-button-bar">
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
-        <div id="build-tag" aria-hidden="true">v806</div>
+        <div id="build-tag" aria-hidden="true">v807</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -842,6 +868,7 @@ window.FGH.rollOut = function (el, done) {
 </script>
 <script src="js/workshop.js"></script>
 <script src="js/round-map.js"></script>
+<script src="js/rhythm.js"></script>
 <script src="js/face-studio.js"></script>
 <script src="js/score-screen.js"></script>
 <script src="js/settings-screen.js"></script>
@@ -1016,7 +1043,7 @@ window.FGH.rollOut = function (el, done) {
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=806').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=807').catch(function () {});
       }
     });
   }
