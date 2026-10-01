@@ -21,12 +21,12 @@
       desc: ['전설의 힘을 담은 황금 망치!\n지면을 울리는 강력한 충격으로\n주변의 두더지를 한 번에 처치한다!', 'A golden hammer of legend!\nIts ground-shaking blow\ntakes out nearby moles at once!'],
       gemGlow: true,   // 보석(파란불빛) 부분에 맥동 글로우
       stats: [['Hole 16 → 15 · 경계선 추가', 'Holes 16 → 15 · Cell borders'],
-              ['주변 두더지 지진 연타 15% (2·3타 두더지 소탕 포함)', '15% quake — chain-hits nearby moles (clears 2·3-hit moles too)'],
+              ['주변 두더지 지진 연타 15% (2·3타 두더지 소탕 포함)', '15% quake — chain-hits nearby moles (clears 2·3-hit moles too)'],
               ['-', '-']] },
     { id: 'alipunch', name: '알리 판취', nameEn: 'Ali Punch', thumb: 'assets/weapons/alipunch-jab.png', rarity: 'legend',
       desc: ['전설의 챔피언 알리의 힘을 담은\n강력한 글러브! 빠르고 강한 연타로\n모든 두더지를 한 번에 날려버린다!', 'Gloves holding the power of\nthe legendary champ Ali! Fast, heavy\ncombos blast every mole away!'],
       stats: [['Hole 16 → 14 · 경계선 추가', 'Holes 16 → 14 · Cell borders'],
-              ['무적 5초 확률 20% (모든 동물 타격 가능), 2·3타 두더지 소탕 포함', '20% chance — 5s invincibility (any animal is safe to hit), clears 2·3-hit moles'],
+              ['무적 5초 확률 20% (모든 동물 타격 가능), 2·3타 두더지 소탕 포함', '20% chance — 5s invincibility (any animal is safe to hit), clears 2·3-hit moles'],
               ['하강 딜레이 +0.1초(무적 중 +0.3초 추가)', '+0.1s before mole retreats (+0.3s more while invincible)']] }
   ];
 
@@ -238,7 +238,24 @@
         grid.appendChild(card);
       });
       updateDots();
+      requestAnimationFrame(fitRights);
     }
+    // v856(사용자: 작은 폰에서 알리 판취 설명 박스 아래 잘림) — 오른쪽 칸(이름~설명)이 카드 높이를 넘으면 그만큼 비율로 축소
+    function fitRights() {
+      el.querySelectorAll('.inv-card').forEach(function (c) {
+        if (!c.offsetParent) return;
+        var cs = getComputedStyle(c), room = c.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 2;
+        // 오른쪽(이름~설명)은 넘친 만큼 축소, 왼쪽(등급 카드+장착)은 위 여백 포함 높이로 축소(작은 폰에서 장착 버튼 잘림)
+        var r = c.querySelector('.inv-right');
+        if (r) { r.style.transform = ''; r.style.width = ''; var need = r.scrollHeight;
+          if (need > room && room > 0) { var k = Math.max(0.6, room / need); r.style.transformOrigin = '0 0'; r.style.transform = 'scale(' + k.toFixed(3) + ')'; r.style.width = (100 / k).toFixed(2) + '%'; } }
+        var l = c.querySelector('.inv-left');
+        if (l) { l.style.transform = ''; l.style.marginBottom = ''; var top = l.getBoundingClientRect().top - c.getBoundingClientRect().top - parseFloat(cs.paddingTop);
+          var needL = top + l.scrollHeight;
+          if (needL > room && room > 0) { var kl = Math.max(0.6, room / needL); l.style.transformOrigin = '50% 0'; l.style.transform = 'scale(' + kl.toFixed(3) + ')'; } }
+      });
+    }
+    root.addEventListener('resize', function () { if (active === 'weapon') fitRights(); });
 
     // 코스튬 탭 — 5개 팀 카드(가로 스크롤) + 선택 코스튬 상세 + 획득 방법(§1~§58).
     // 무기 탭과 달리 페이지네이션(점/화살표) 없이 카드 줄만 가로 스크롤한다.

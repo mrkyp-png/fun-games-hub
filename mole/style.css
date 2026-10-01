@@ -5613,3 +5613,8 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .inv-cards-box[data-rar]:not([data-rar=""])::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 0;
   box-shadow: inset 0 0 22px 6px rgba(var(--rw-glow), 0.55); opacity: 0.4; will-change: opacity; animation: inv-breath 3s ease-in-out infinite; }
 .inv-cards-box[data-rar]:not([data-rar=""]) > * { position: relative; z-index: 1; }
+/* v856: 능력치 표·설명 줄간격 좁힘(알리 판취 설명 박스 아래 잘림) */
+.inv-card[class*="inv-card--"] .inv-stat-tbl th { padding-top: 2px; padding-bottom: 2px; }
+.inv-card[class*="inv-card--"] .inv-stat-tbl td { padding-top: 2px; padding-bottom: 2px; line-height: 1.15; }
+.inv-desc { margin-top: 4px; padding: 4px 7px; line-height: 1.28; }
+.inv-card[class*="inv-card--"] .inv-name { margin-bottom: 3px; }
