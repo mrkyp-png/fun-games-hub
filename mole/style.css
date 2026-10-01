@@ -5421,7 +5421,7 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
   75%, 100% { transform: translate3d(0, 0, 0); opacity: 0; }
 }
 /* v836: 진입 글리치(뒤로가기 글리치와 짝) */
-.glitch-in { animation: screen-glitch-in 0.42s steps(1, end) both; }
+.glitch-in { animation: screen-glitch-in 0.2s steps(1, end) both; } /* v839: 0.42→0.2초 */
 @keyframes screen-glitch-in {
   0% { transform: translate3d(6%, 0, 0); opacity: 0.6; }
   20% { transform: translate3d(-4%, 1%, 0); opacity: 1; }

@@ -1111,7 +1111,7 @@
       if (['score-screen', 'daily-screen', 'workshop-screen', 'roundmap-screen'].indexOf(sub) >= 0) {
         const gs = document.getElementById(sub);
         gs.classList.remove('glitch-in'); void gs.offsetWidth; gs.classList.add('glitch-in');
-        setTimeout(() => gs.classList.remove('glitch-in'), 480);
+        setTimeout(() => gs.classList.remove('glitch-in'), 260);
       }
     }
   }
