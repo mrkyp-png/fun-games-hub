@@ -5652,3 +5652,10 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .inv-card[class*="inv-card--"] .inv-name { color: #fff !important; -webkit-text-stroke: 4px var(--edge); paint-order: stroke fill; text-shadow: 0 2px 0 rgba(0,0,0,0.35); }
 .inv-card[class*="inv-card--"] .inv-right::before { filter: none; opacity: 0.22; }
 .inv-card[class*="inv-card--"] .inv-stat-tbl, .inv-card[class*="inv-card--"] .inv-desc { background-color: #f3f7fe; }
+/* v864: 사진관 컬렉션 — 15칸을 배경 금테 칸에 정확히 맞춤(배경 collection-grid.jpg 실측: 칸 x105~775/800, y56~480/533),
+   캐릭은 칸 가운데, 위 별빛박스 글자는 트로피 오른쪽 어두운 판 안 가운데로 */
+.photo-coll-grid { left: 13.125%; right: 3.125%; top: 10.5%; bottom: 9.94%; gap: 2.6% 1.2%; }
+.photo-coll-rowlabels { left: 2.875%; width: 8.75%; top: 10.5%; bottom: 9.94%; gap: 2.6%; }
+.photo-coll-card-img { inset: 7% 8%; width: 84%; height: 86%; object-position: center center; }
+.photo-coll-progress { left: 44%; right: 5%; top: 37%; text-align: center; font-size: 0.85rem; }
+.photo-coll-hint { left: 44%; right: 5%; top: 61%; font-size: 0.48rem; }
