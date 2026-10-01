@@ -154,12 +154,13 @@
 
     // ---- 화면 요소 ----
     function buildStage() {
-      var lanesEl = $('[data-rp-lanes]'); lanesEl.innerHTML = '';
+      var lanesEl = $('[data-rp-lanes]'); lanesEl.innerHTML = ''; moleEls = null;
       for (var i = 0; i < 4; i++) {
         var ln = document.createElement('div'); ln.className = 'rp-lane'; ln.style.left = (i * 25) + '%';
         ln.innerHTML = '<img class="rp-target" src="' + A + 'target-' + (i + 1) + '.png" alt="">' +
           '<img class="rp-hole" src="' + A + 'hole-' + (i + 1) + '.png" alt="">' +
-          '<img class="rp-mole" alt="">' + '<span class="rp-judge"></span>';
+          '<span class="rp-mole">' + [1, 2, 3, 4, 5, 6, 7].map(function (k) { return '<img alt="" src="' + A + 'jump-' + CHARS[i] + '-' + k + '.png"' + (k === 1 ? ' class="is-on"' : '') + '>'; }).join('') + '</span>' +
+          '<span class="rp-judge"></span>';
         lanesEl.appendChild(ln);
       }
       var bt = $('[data-rp-btns]'); bt.innerHTML = '';
@@ -179,13 +180,17 @@
         var t = ln.querySelector('.rp-target'); t.style.width = (L.targetR * 2.6) + 'px'; t.style.top = (L.targetY - L.targetR * 1.3) + 'px';
         var h = ln.querySelector('.rp-hole'); h.style.width = (L.laneW * 0.98) + 'px'; h.style.top = (L.moleBottom - L.laneW * 0.32) + 'px';
         var m = ln.querySelector('.rp-mole'); var md = meta[CHARS[i]];
-        m.style.width = L.moleW + 'px'; m.style.top = (L.moleBottom - md.h * (L.moleW / md.w)) + 'px';
+        m.style.width = L.moleW + 'px'; m.style.height = (md.h * (L.moleW / md.w)) + 'px'; m.style.aspectRatio = 'auto'; m.style.top = (L.moleBottom - md.h * (L.moleW / md.w)) + 'px';
         ln.querySelector('.rp-judge').style.top = (L.targetY - L.targetR * 2.2) + 'px';
       });
     }
+    // v813(깜빡임 제거): 7프레임을 미리 겹쳐 두고 보이는 것만 바꿈 — img src 교체 순간 빈 프레임이 생기던 것
+    var moleFrame = [-1, -1, -1, -1], moleEls = null;
     function setMoleFrame(i, f) {
-      var m = el.querySelectorAll('.rp-mole')[i]; var src = A + 'jump-' + CHARS[i] + '-' + (f + 1) + '.png';
-      if (m.getAttribute('src') !== src) m.setAttribute('src', src);
+      if (moleFrame[i] === f) return;
+      var imgs = (moleEls || (moleEls = el.querySelectorAll('.rp-mole')))[i].children;
+      if (moleFrame[i] >= 0) imgs[moleFrame[i]].classList.remove('is-on'); else for (var k = 0; k < imgs.length; k++) imgs[k].classList.remove('is-on');
+      imgs[f].classList.add('is-on'); moleFrame[i] = f;
     }
     function showJudge(i, txt, cls) {
       var j = el.querySelectorAll('.rp-judge')[i]; j.textContent = txt; j.className = 'rp-judge is-' + cls;
@@ -205,15 +210,19 @@
         if (ctx.state === 'suspended') ctx.resume();
         buildStage(); layout(); placeStatic(); // 버튼을 먼저 만들어야 무대 높이가 정확(v812)
         var notes = buildChart();
+        // v813: 무기 그림을 시작 전에 전부 만들어 둠(숨김) — 플레이 중 생성/삭제로 인한 깜빡임 제거
+        wlayer.innerHTML = '';
+        notes.forEach(function (n) { n.el = document.createElement('img'); n.el.className = 'rp-weapon'; n.el.src = A + 'w-' + n.weaponType + '.png';
+          n.el.style.width = (L.weaponR * 2.4) + 'px'; n.el.style.visibility = 'hidden'; n.el.decoding = 'sync'; wlayer.appendChild(n.el); });
         notes.forEach(function (n) { n.pts = routeOf(n); n.len = pathLen(n.pts); n.spawnTime = n.targetTime - DIFFS[diff].travel; n.state = 'wait'; });
         st = { notes: notes, score: 0, combo: 0, maxCombo: 0, hp: CONFIG.hpMax, cnt: { PERFECT: 0, GREAT: 0, GOOD: 0, MISS: 0 },
           moles: [0, 1, 2, 3].map(function () { return { jumpAt: -9, hurtAt: -9 }; }), over: false, paused: false };
-        for (var i = 0; i < 4; i++) setMoleFrame(i, 0);
+        moleFrame = [-1, -1, -1, -1]; for (var i = 0; i < 4; i++) setMoleFrame(i, 0);
         // 카운트인: 3·2·1·START 가 끝나는 순간 음악 0초
         var startAt = ctx.currentTime + CONFIG.countIn + 0.15;
         st.t0 = startAt;
         src = ctx.createBufferSource(); src.buffer = buffer; src.connect(ctx.destination); src.start(startAt);
-        wlayer.innerHTML = ''; hud();
+        hud(); // (무기 풀은 위에서 생성 — 여기서 비우지 않음)
         el.querySelector('[data-rp-result]').hidden = true;
         cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
       });
@@ -278,8 +287,9 @@
         var m = st.moles[i], dt = (t - m.jumpAt) * 1000, f = 0;
         if (dt >= 0 && dt < 7 * CONFIG.jumpFrameMs) f = Math.min(6, Math.floor(dt / CONFIG.jumpFrameMs));
         setMoleFrame(i, f);
-        el.querySelectorAll('.rp-mole')[i].style.translate = '0 ' + (-liftAt(i, f)) + 'px';
-        var me = el.querySelectorAll('.rp-mole')[i];
+        moleFrame = moleFrame || [-1, -1, -1, -1];
+        moleEls[i].style.translate = '0 ' + (-liftAt(i, f)) + 'px';
+        var me = moleEls[i];
         me.classList.toggle('is-hurt', t - m.hurtAt < 0.45);
         heads.push({ h: headAt(i, f), jumping: f > 0 && f < 6 });
       }
@@ -287,8 +297,7 @@
       st.notes.forEach(function (n) {
         // v812(사용자 지정): 바다 수평선 부근에서 정면으로 던져져(작게) 포물선으로 화면 최상단까지 올라온 뒤(크게) 두더지 쪽으로 떨어짐
         if (n.state === 'wait' && t >= n.spawnTime - LAUNCH) {
-          n.state = 'live'; n.el = document.createElement('img'); n.el.className = 'rp-weapon'; n.el.src = A + 'w-' + n.weaponType + '.png';
-          n.el.style.width = (L.weaponR * 2.4) + 'px'; wlayer.appendChild(n.el);
+          n.state = 'live'; n.el.style.visibility = 'visible';
         }
         if (n.state === 'live') {
           if (t < n.spawnTime) { // 던져 올라오는 구간(판정 없음)
@@ -312,13 +321,13 @@
           var k = t - n.hitAt; n.cx = n.bx + n.vx * k; n.cy = n.by + n.vy * k + L.H * 2.2 * k * k;
           n.el.style.transform = 'translate(' + (n.cx - L.weaponR * 1.2) + 'px,' + (n.cy - L.weaponR * 1.2) + 'px) rotate(' + (t * 900) + 'deg)';
           n.el.style.opacity = String(Math.max(0, 1 - k * 1.6));
-          if (k > 0.7) { n.el.remove(); n.state = 'done'; }
+          if (k > 0.7) { n.el.style.visibility = 'hidden'; n.state = 'done'; }
         }
         if (n.state === 'miss') { // 두더지에 맞고 튕겨 떨어짐
           if (!n.missAt) n.missAt = t;
           var q = t - n.missAt; n.el.style.opacity = String(Math.max(0, 1 - q * 2.5));
           n.el.style.transform += ' translateY(' + (q * 120) + 'px)';
-          if (q > 0.4) { n.el.remove(); n.state = 'done'; }
+          if (q > 0.4) { n.el.style.visibility = 'hidden'; n.state = 'done'; }
         }
       });
       // 종료: 모든 노트 처리 후

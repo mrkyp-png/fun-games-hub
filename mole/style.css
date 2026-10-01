@@ -5217,3 +5217,4 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .rp-btns { gap: 3px; }
 .rp-btn { padding: 0; min-width: 0; }
 .rp-btn img { width: 100%; height: auto; aspect-ratio: 222 / 205; object-fit: contain; } /* 그림 로드 전에도 높이 확정 → 무대 높이 계산 정확 */
+.rp-mole { display: block; aspect-ratio: 330 / 611; } .rp-mole img { position: absolute; left: 0; bottom: 0; width: 100%; visibility: hidden; } .rp-mole img.is-on { visibility: visible; } /* v813 */
