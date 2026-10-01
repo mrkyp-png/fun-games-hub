@@ -789,6 +789,8 @@
 
     function paint() {
       renderTabs();
+      // v860: 무기 탭에서 넘어올 때 등급 창 색(data-rar)이 남아 코스튬·사진관 배경을 덮던 버그 — 탭 바뀌면 항상 초기화
+      var rbox = el.querySelector('.inv-cards-box'); if (rbox) rbox.setAttribute('data-rar', '');
       var tab = TABS.filter(function (t) { return t.id === active; })[0];
       if (tab) bannerTxtEl.textContent = T(tab.banner);
       headEl.style.display = active === 'weapon' ? '' : 'none';

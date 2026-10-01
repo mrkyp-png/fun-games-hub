@@ -5634,3 +5634,8 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .shop-tab.shop-tab--on .shop-tab-lbl { color: #ffe14a; -webkit-text-stroke: 3px #0f2f86; text-shadow: 0 2px 0 #0a1f5c; transform: scale(1.1); }
 /* v859: 탭 글꼴 변경으로 탭 높이 46→50px 커져 코스튬·사진관 카드가 줄던 것 — 글자 줄높이 고정으로 원래 높이(46px) 복구 */
 .inv-tab .inv-tab-lbl, .shop-tab .shop-tab-lbl { line-height: 1; height: 0.98em; display: block; }
+/* v860(사용자 지정): 코스튬 카드 엠블럼 0.2cm 위·캐릭 0.15cm 아래 / 사진관 상단 엠블럼 줄 0.3cm 아래·카드 캐릭 0.15cm 아래 */
+.cos-card-emblem { translate: 0 0; }
+.cos-card-char { transform: translateX(-50%) translateY(-0.25cm) !important; }
+.photo-emblems { margin-top: 0.3cm; }
+.photo-slot-img { transform: translateY(-0.6cm); }
