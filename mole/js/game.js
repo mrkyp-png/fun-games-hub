@@ -1140,7 +1140,7 @@
   function openRhythm() {
     const el = document.getElementById('rhythm-screen');
     // v840(사용자 지정): 리듬팡 진입·홈 복귀도 글리치
-    if (!rhythm) rhythm = window.__rhythm = MG.Rhythm.create({ root: el, onClose: () => { window.FGH.rollOut(el, () => { el.hidden = true; playScreenBgm('home'); refreshBoardStats(); }); } });
+    if (!rhythm) rhythm = window.__rhythm = MG.Rhythm.create({ root: el, onClose: (why) => { window.FGH[why === 'quit' ? 'pushOut' : 'rollOut'](el, () => { el.hidden = true; playScreenBgm('home'); refreshBoardStats(); }); } }); // v841: 일시정지→그만하기 = 탄성 밀어내기
     stopBgm();
     rhythm.open();
     el.classList.remove('glitch-in'); void el.offsetWidth; el.classList.add('glitch-in');

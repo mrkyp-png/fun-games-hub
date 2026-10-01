@@ -5432,3 +5432,8 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 /* v837: 홈 두더지팡·리듬팡 글자 = 버튼 폭에 맞춰 최대한 크게(사용자 지정) */
 .lane-face--secret { container-type: inline-size; }
 .lane-num--secret { font-size: 24cqw; line-height: 1; white-space: nowrap; letter-spacing: -0.02em; }
+/* v841: 탄성 밀어내기(비교표 12번) — 리듬팡 게임 진입, 일시정지→그만하기 홈 복귀 */
+.rp-push-out { animation: rp-push-out 0.7s ease-in-out both; }
+.rp-push-in { animation: rp-push-in 0.7s ease-in-out both; }
+@keyframes rp-push-out { to { transform: translate3d(-100%, 0, 0); } }
+@keyframes rp-push-in { 0% { transform: translate3d(100%, 0, 0); } 70% { transform: translate3d(-6%, 0, 0); } 85% { transform: translate3d(2%, 0, 0); } 100% { transform: none; } }

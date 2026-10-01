@@ -273,7 +273,7 @@
         st.t0 = startAt;
         src = ctx.createBufferSource(); src.buffer = buffer; src.connect(ctx.destination); src.start(startAt);
         hud(); // (무기 풀은 위에서 생성 — 여기서 비우지 않음)
-        el.querySelector('[data-rp-result]').hidden = true;
+        var rr = el.querySelector('[data-rp-result]'); if (!rr.classList.contains('rp-push-out')) rr.hidden = true; // 밀려나는 중이면 연출 끝에 숨김
         cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
       });
     }
@@ -469,17 +469,17 @@
     });
     $('[data-rp-pausebtn]').addEventListener('click', function () { pause(true); });
     $('[data-rp-resume]').addEventListener('click', function () { pause(false); });
-    $('[data-rp-quit]').addEventListener('click', function () { if (MG.Economy) MG.Economy.spendHeart(); close(); }); // 그만하기 = 하트 1개 차감(사용자 지정 v820)
-    $('[data-rp-retry]').addEventListener('click', function () { start(); });
+    $('[data-rp-quit]').addEventListener('click', function () { if (MG.Economy) MG.Economy.spendHeart(); close('quit'); }); // 그만하기(v841: 탄성 밀어내기로 홈) = 하트 1개 차감(사용자 지정 v820)
+    $('[data-rp-retry]').addEventListener('click', function () { pushInGame($('[data-rp-result]')); start(); }); // v841: 다시하기 = 탄성 밀어내기
     $('[data-rp-home]').addEventListener('click', function () { close(); });
     $('[data-rp-other]').addEventListener('click', function () { cancelAnimationFrame(raf); try { src && src.stop(); } catch (e) { /* 무시 */ } st = null; showSelect(); });
 
-    function close() {
+    function close(why) {
       cancelAnimationFrame(raf);
       try { src && src.stop(); } catch (e) { /* 무시 */ }
       if (ctx && ctx.state === 'suspended') ctx.resume();
       st = null; $('[data-rp-pause]').hidden = true;
-      opts.onClose();
+      opts.onClose(why);
     }
     function showSelect() {
       $('[data-rp-result]').hidden = true; $('[data-rp-pause]').hidden = true;
@@ -489,9 +489,17 @@
       });
       $('[data-rp-select]').hidden = false;
     }
+    // v841: 탄성 밀어내기로 게임 화면 진입(난이도 선택 → 게임, 결과창 다시하기 → 게임)
+    function pushInGame(modal) {
+      var mv = [$('[data-rp-stage]'), el.querySelector('.rp-bottom')];
+      modal.classList.add('rp-push-out'); mv.forEach(function (m) { m.classList.remove('rp-push-in'); void m.offsetWidth; m.classList.add('rp-push-in'); });
+      setTimeout(function () { modal.hidden = true; modal.classList.remove('rp-push-out'); mv.forEach(function (m) { m.classList.remove('rp-push-in'); }); }, 720);
+    }
     el.querySelectorAll('[data-rp-diff]').forEach(function (b) {
       b.addEventListener('click', function () {
-        diff = b.getAttribute('data-rp-diff'); $('[data-rp-select]').hidden = true;
+        diff = b.getAttribute('data-rp-diff');
+        // v841(사용자 지정): 게임 화면 진입 = 탄성 밀어내기 — 난이도 창은 왼쪽으로 밀려나고 게임 화면이 오른쪽에서 튕기듯 들어옴
+        pushInGame($('[data-rp-select]'));
         if (!ctx) ctx = new (root.AudioContext || root.webkitAudioContext)();
         if (ctx.state === 'suspended') ctx.resume(); // 사용자 탭 안에서 소리 허용
         start();
