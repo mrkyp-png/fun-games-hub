@@ -1133,7 +1133,7 @@
   let rhythm = null;
   function openRhythm() {
     const el = document.getElementById('rhythm-screen');
-    if (!rhythm) rhythm = window.__rhythm = MG.Rhythm.create({ root: el, onClose: () => { el.hidden = true; playScreenBgm('home'); } });
+    if (!rhythm) rhythm = window.__rhythm = MG.Rhythm.create({ root: el, onClose: () => { el.hidden = true; playScreenBgm('home'); refreshBoardStats(); } });
     stopBgm();
     rhythm.open();
   }

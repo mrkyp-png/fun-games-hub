@@ -5260,3 +5260,11 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .rp-dbtn--normal b { -webkit-text-stroke-color: #12702e; }
 .rp-dbtn--hard { background: none; border-image-source: url('assets/rhythm/box-red.png'); }
 .rp-dbtn--hard b { -webkit-text-stroke-color: #9a1208; }
+
+/* v820: 그만하기 = 하트 -1 표시 */
+.rp-cbtn[data-rp-quit] { position: relative; }
+.rp-cost { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 1px; }
+.rp-cost img { width: 30px; height: auto; display: block; }
+.rp-cost b { font-size: 1.05rem; font-weight: 900; color: #ff5a6e; -webkit-text-stroke: 3px #fff; paint-order: stroke fill; }
+.rp-cbtn, .rp-dbtn { transition: transform 0.06s; }
+.rp-cbtn.is-press, .rp-dbtn.is-press { transform: translateY(3px) scale(0.95); filter: brightness(0.88); }

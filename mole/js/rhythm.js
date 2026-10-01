@@ -387,9 +387,14 @@
       st.paused = on; $('[data-rp-pause]').hidden = !on;
       if (on) ctx.suspend(); else ctx.resume();
     }
+    // 창 버튼 누름 효과(v820) — 폰에서 :active 가 잘 안 먹어 직접 클래스 토글
+    el.querySelectorAll('.rp-cbtn, .rp-dbtn').forEach(function (b) {
+      b.addEventListener('pointerdown', function () { b.classList.add('is-press'); });
+      ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { b.addEventListener(ev, function () { b.classList.remove('is-press'); }); });
+    });
     $('[data-rp-pausebtn]').addEventListener('click', function () { pause(true); });
     $('[data-rp-resume]').addEventListener('click', function () { pause(false); });
-    $('[data-rp-quit]').addEventListener('click', function () { close(); });
+    $('[data-rp-quit]').addEventListener('click', function () { if (MG.Economy) MG.Economy.spendHeart(); close(); }); // 그만하기 = 하트 1개 차감(사용자 지정 v820)
     $('[data-rp-retry]').addEventListener('click', function () { start(); });
     $('[data-rp-home]').addEventListener('click', function () { close(); });
     $('[data-rp-other]').addEventListener('click', function () { cancelAnimationFrame(raf); try { src && src.stop(); } catch (e) { /* 무시 */ } st = null; showSelect(); });
