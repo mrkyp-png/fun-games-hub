@@ -5586,3 +5586,8 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .inv-card[class*="inv-card--"] .inv-stat-tbl tr:nth-child(3) th::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l8 3v6c0 5.2-3.4 9.4-8 11-4.6-1.6-8-5.8-8-11V5z' fill='%23ff6b6b' stroke='%232a3a66' stroke-width='1.8'/%3E%3Cpath d='M12 5l5 2v4c0 3.4-2 6.2-5 7.4z' fill='%23fff' opacity='.45'/%3E%3C/svg%3E"); }
 .inv-card[class*="inv-card--"] .inv-desc { color: #24305a; }
 .inv-card[class*="inv-card--"] .inv-stat-tbl td { word-break: keep-all; }
+/* v853: 4등급 카드 위치·크기 통일(에픽/레전드 기준) — 배지 크기·높이도 같게 */
+.inv-card[class*="inv-card--"] .inv-rcard { width: 88%; margin-top: 27%; }
+.inv-card.inv-card--basic .inv-badge, .inv-card.inv-card--rare .inv-badge { width: 92%; }
+.inv-card--basic .inv-badge { transform: translate(-50%, -48%); }
+@keyframes inv-rare { 0%, 70%, 100% { transform: translate(-50%, -48%); } 78% { transform: translate(-50%, -58%) rotate(-6deg); } 86% { transform: translate(-50%, -46%) rotate(3deg); } }
