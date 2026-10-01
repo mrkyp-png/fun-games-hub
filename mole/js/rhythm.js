@@ -25,6 +25,7 @@
     NORMAL: { travel: 1.5, judge: { perfectMs: 65, greatMs: 120, goodMs: 180 }, half: 0.25, turn1: 0.35, turn2: 0,    rest: 8 },
     HARD:   { travel: 1.3, judge: { perfectMs: 50, greatMs: 95,  goodMs: 150 }, half: 0.5,  turn1: 0.3,  turn2: 0.35, rest: 16 }
   };
+  var LAUNCH = 0.75; // 수평선에서 최상단까지 던져 올라오는 시간(초)
   var CHARS = ['cap', 'pink', 'braid', 'punk'];
   var WEAPONS = ['snow', 'boomerang', 'disc', 'heart'];
 
@@ -75,18 +76,34 @@
       L.moleW = L.laneW * 0.92;
       L.moleBottom = H * 0.80;                    // 두더지 발바닥(구멍 중심) y
       L.p1 = H * 0.24; L.p2 = H * 0.40;
+      L.horizonY = H * 0.37; // 해변 배경 바다 수평선 근처
       // 타겟창 = 두더지 최고점 머리 위치(가장 높이 오르는 캐릭터 기준 평균)
+      // v812: 타겟창 높이 고정(무대의 71% — 사용자가 확인한 기존 위치). 최고점 머리가 여기 닿도록 기준 바닥을 역산.
+      L.lift = undefined; L.moleBottom = 0;
       var heads = CHARS.map(function (c, i) { return headAt(i, CONFIG.apexFrame); });
-      L.targetY = heads.reduce(function (s, h) { return s + h.y; }, 0) / 4;
+      var K = -heads.reduce(function (s, h) { return s + h.y; }, 0) / 4;
+      L.targetY = H * 0.71;
+      L.moleBottom = L.targetY + K;
       L.targetR = L.laneW * 0.36;
       L.weaponR = L.laneW * 0.22;
       L.speed = 0; // 노트별 경로 길이/시간으로 계산
+      // v812(사용자 지정): 두더지는 시간(HP) 바 바로 위로 내림, 타겟창은 그대로 →
+      // 내려간 만큼 점프를 더 높이 띄워(lift) 최고점 머리가 여전히 타겟창에 닿게.
+      var oldBottom = L.moleBottom;
+      L.moleBottom = H - L.laneW * 0.3 - 4; // 구멍(테두리) 아래끝이 시간 바 바로 위에 오게 — 버튼과 안 겹침
+      L.lift = L.moleBottom - oldBottom;
+    }
+    // 프레임별 추가 상승량 = (그 프레임이 대기 자세보다 오른 정도 ÷ 최고점이 오른 정도) × lift
+    function liftAt(i, f) {
+      if (!L.lift) return 0;
+      var bb = meta[CHARS[i]].bb, rise = bb[0][1] - bb[f][1], top = bb[0][1] - bb[CONFIG.apexFrame][1];
+      return top > 0 ? Math.max(0, rise / top) * L.lift : 0;
     }
     // 두더지 i 의 프레임 f 머리 원(화면 px)
     function headAt(i, f) {
       var m = meta[CHARS[i]], s = L.moleW / m.w, bb = m.bb[f];
       var bw = (bb[2] - bb[0]) * s;
-      var top = L.moleBottom - (m.h - bb[1]) * s;  // 캔버스 아래 = 구멍
+      var top = L.moleBottom - (m.h - bb[1]) * s - (L.lift !== undefined ? liftAt(i, f) : 0);  // 캔버스 아래 = 구멍
       return { x: L.laneX[i], y: top + bw * 0.36, r: bw * 0.36 };
     }
 
@@ -118,7 +135,7 @@
     }
     // 경로(직선→꺾임→직선): 꼭짓점 목록
     function routeOf(n) {
-      var xs = L.laneX[n.startLane], xt = L.laneX[n.targetLane], y0 = -L.weaponR * 2;
+      var xs = L.laneX[n.startLane], xt = L.laneX[n.targetLane], y0 = L.weaponR * 1.3; // v812: 던져진 무기가 올라온 최상단
       if (!n.routePoint1) return [[xs, y0], [xt, L.targetY]];
       if (!n.routePoint2) return [[xs, y0], [xs, L.p1], [xt, L.p2], [xt, L.targetY]];
       var xm = L.laneX[n.midLane];
@@ -186,7 +203,7 @@
     function start() {
       Promise.all([loadMeta(), loadSong(), preload()]).then(loadSfx).then(function () {
         if (ctx.state === 'suspended') ctx.resume();
-        layout(); buildStage(); placeStatic();
+        buildStage(); layout(); placeStatic(); // 버튼을 먼저 만들어야 무대 높이가 정확(v812)
         var notes = buildChart();
         notes.forEach(function (n) { n.pts = routeOf(n); n.len = pathLen(n.pts); n.spawnTime = n.targetTime - DIFFS[diff].travel; n.state = 'wait'; });
         st = { notes: notes, score: 0, combo: 0, maxCombo: 0, hp: CONFIG.hpMax, cnt: { PERFECT: 0, GREAT: 0, GOOD: 0, MISS: 0 },
@@ -261,19 +278,27 @@
         var m = st.moles[i], dt = (t - m.jumpAt) * 1000, f = 0;
         if (dt >= 0 && dt < 7 * CONFIG.jumpFrameMs) f = Math.min(6, Math.floor(dt / CONFIG.jumpFrameMs));
         setMoleFrame(i, f);
+        el.querySelectorAll('.rp-mole')[i].style.translate = '0 ' + (-liftAt(i, f)) + 'px';
         var me = el.querySelectorAll('.rp-mole')[i];
         me.classList.toggle('is-hurt', t - m.hurtAt < 0.45);
         heads.push({ h: headAt(i, f), jumping: f > 0 && f < 6 });
       }
       // 무기
       st.notes.forEach(function (n) {
-        if (n.state === 'wait' && t >= n.spawnTime) {
+        // v812(사용자 지정): 바다 수평선 부근에서 정면으로 던져져(작게) 포물선으로 화면 최상단까지 올라온 뒤(크게) 두더지 쪽으로 떨어짐
+        if (n.state === 'wait' && t >= n.spawnTime - LAUNCH) {
           n.state = 'live'; n.el = document.createElement('img'); n.el.className = 'rp-weapon'; n.el.src = A + 'w-' + n.weaponType + '.png';
           n.el.style.width = (L.weaponR * 2.4) + 'px'; wlayer.appendChild(n.el);
         }
         if (n.state === 'live') {
+          if (t < n.spawnTime) { // 던져 올라오는 구간(판정 없음)
+            var u = 1 - (n.spawnTime - t) / LAUNCH, x0 = n.pts[0][0], hx = x0 + (L.W / 2 - x0) * 0.55, hy = L.horizonY;
+            var lx = hx + (x0 - hx) * u, ly = hy + (n.pts[0][1] - hy) * (1 - (1 - u) * (1 - u)), sc = 0.22 + 0.78 * u;
+            n.el.style.transform = 'translate(' + (lx - L.weaponR * 1.2) + 'px,' + (ly - L.weaponR * 1.2) + 'px) scale(' + sc.toFixed(3) + ')';
+            n.el.style.opacity = String(Math.min(1, u * 3)); n.cx = lx; n.cy = -9999; return;
+          }
           var p = posAt(n, t); n.cx = p.x; n.cy = p.y;
-          n.el.style.transform = 'translate(' + (p.x - L.weaponR * 1.2) + 'px,' + (p.y - L.weaponR * 1.2) + 'px) rotate(' + (t * 400) + 'deg)';
+          n.el.style.transform = 'translate(' + (p.x - L.weaponR * 1.2) + 'px,' + (p.y - L.weaponR * 1.2) + 'px)'; // 정면샷 — 회전 없음
           // 물리 충돌: 그 레인 두더지가 점프 중이고 머리 원과 무기 원이 겹침
           var hd = heads[n.targetLane];
           if (Math.abs(p.x - L.laneX[n.targetLane]) < 1 && hd.jumping && Math.hypot(p.x - hd.h.x, p.y - hd.h.y) < hd.h.r + L.weaponR) {

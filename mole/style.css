@@ -5212,3 +5212,8 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .rp-dbtn--normal { background: linear-gradient(180deg, #3fd06a, #14893a); }
 .rp-dbtn--hard { background: linear-gradient(180deg, #ff5b4a, #c3170f); }
 .rp-res-best { margin: 0 0 6px; font-weight: 900; color: #ffe45a; }
+/* v812(사용자 지정): 리듬팡 버튼 최대 크기 — 화면 폭 꽉(서로 안 겹치게 3px 간격) */
+.rp-bottom { padding-left: 3px; padding-right: 3px; }
+.rp-btns { gap: 3px; }
+.rp-btn { padding: 0; min-width: 0; }
+.rp-btn img { width: 100%; height: auto; aspect-ratio: 222 / 205; object-fit: contain; } /* 그림 로드 전에도 높이 확정 → 무대 높이 계산 정확 */
