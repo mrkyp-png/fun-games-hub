@@ -5632,3 +5632,5 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .shop-tab .shop-tab-lbl { font-family: 'Jua', 'Lilita One', sans-serif; font-weight: 400; font-size: 1.02rem; color: #fff; letter-spacing: 0.01em;
   -webkit-text-stroke: 3px #0e6a2a; paint-order: stroke fill; text-shadow: 0 2px 0 #0b4d1f; transition: transform 0.15s; }
 .shop-tab.shop-tab--on .shop-tab-lbl { color: #ffe14a; -webkit-text-stroke: 3px #0f2f86; text-shadow: 0 2px 0 #0a1f5c; transform: scale(1.1); }
+/* v859: 탭 글꼴 변경으로 탭 높이 46→50px 커져 코스튬·사진관 카드가 줄던 것 — 글자 줄높이 고정으로 원래 높이(46px) 복구 */
+.inv-tab .inv-tab-lbl, .shop-tab .shop-tab-lbl { line-height: 1; height: 0.98em; display: block; }
