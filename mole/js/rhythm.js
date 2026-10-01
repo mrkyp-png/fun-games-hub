@@ -37,10 +37,10 @@
     var st = null, raf = 0;
     var imgs = {}, diff = 'EASY';
     // 효과음(기존 게임 사운드 재사용) — 성공 = 타격음, 실패 = 두더지 아야
-    var SFX = { hit: ['audio/hit1.mp3', 'audio/hit2.mp3', 'audio/hit3.mp3', 'audio/hit4.mp3'], miss: ['audio/mole-hurt-1.mp3', 'audio/mole-hurt-2.mp3', 'audio/mole-hurt-3.mp3'] };
+    var SFX = { hit: ['audio/hit1.mp3', 'audio/hit2.mp3', 'audio/hit3.mp3', 'audio/hit4.mp3'], jump: ['audio/mole-emerge.mp3'] }; // v814(사용자 지정): 실패 목소리(아야 등) 삭제, 두더지 점프 = 두더지팡 등장 소리
     var sfxBuf = {};
     function loadSfx() {
-      var all = SFX.hit.concat(SFX.miss);
+      var all = SFX.hit.concat(SFX.jump);
       return Promise.all(all.map(function (u) {
         if (sfxBuf[u]) return null;
         return fetch(u).then(function (r) { return r.arrayBuffer(); }).then(function (ab) { return new Promise(function (res) { ctx.decodeAudioData(ab, function (b) { sfxBuf[u] = b; res(); }, function () { res(); }); }); }).catch(function () {});
@@ -48,7 +48,7 @@
     }
     function sfx(kind) {
       var list = SFX[kind], b = sfxBuf[list[Math.floor(Math.random() * list.length)]]; if (!b || !ctx) return;
-      var s = ctx.createBufferSource(), g = ctx.createGain(); g.gain.value = kind === 'hit' ? 0.7 : 0.55;
+      var s = ctx.createBufferSource(), g = ctx.createGain(); g.gain.value = kind === 'hit' ? 0.7 : 0.6;
       s.buffer = b; s.connect(g); g.connect(ctx.destination); s.start();
     }
 
@@ -90,7 +90,8 @@
       // v812(사용자 지정): 두더지는 시간(HP) 바 바로 위로 내림, 타겟창은 그대로 →
       // 내려간 만큼 점프를 더 높이 띄워(lift) 최고점 머리가 여전히 타겟창에 닿게.
       var oldBottom = L.moleBottom;
-      L.moleBottom = H - L.laneW * 0.3 - 4; // 구멍(테두리) 아래끝이 시간 바 바로 위에 오게 — 버튼과 안 겹침
+      L.sink = L.laneW * 0.1; // v814: 두더지를 구멍 속으로 조금 내림(떠 보이지 않게)
+      L.moleBottom = H - L.laneW * 0.3 - 4 + L.sink; // 구멍(테두리) 아래끝이 시간 바 바로 위에 오게 — 버튼과 안 겹침
       L.lift = L.moleBottom - oldBottom;
     }
     // 프레임별 추가 상승량 = (그 프레임이 대기 자세보다 오른 정도 ÷ 최고점이 오른 정도) × lift
@@ -163,7 +164,7 @@
           '<span class="rp-judge"></span>';
         lanesEl.appendChild(ln);
       }
-      var bt = $('[data-rp-btns]'); bt.innerHTML = '';
+      var bt = $('[data-rp-btns]'); bt.innerHTML = ''; btnEls = null;
       for (var j = 0; j < 4; j++) {
         (function (j) {
           var b = document.createElement('button'); b.type = 'button'; b.className = 'rp-btn';
@@ -178,14 +179,14 @@
       var lanes = el.querySelectorAll('.rp-lane');
       lanes.forEach(function (ln, i) {
         var t = ln.querySelector('.rp-target'); t.style.width = (L.targetR * 2.6) + 'px'; t.style.top = (L.targetY - L.targetR * 1.3) + 'px';
-        var h = ln.querySelector('.rp-hole'); h.style.width = (L.laneW * 0.98) + 'px'; h.style.top = (L.moleBottom - L.laneW * 0.32) + 'px';
+        var h = ln.querySelector('.rp-hole'); h.style.width = (L.laneW * 0.98) + 'px'; h.style.top = (L.moleBottom - L.sink - L.laneW * 0.32) + 'px';
         var m = ln.querySelector('.rp-mole'); var md = meta[CHARS[i]];
         m.style.width = L.moleW + 'px'; m.style.height = (md.h * (L.moleW / md.w)) + 'px'; m.style.aspectRatio = 'auto'; m.style.top = (L.moleBottom - md.h * (L.moleW / md.w)) + 'px';
         ln.querySelector('.rp-judge').style.top = (L.targetY - L.targetR * 2.2) + 'px';
       });
     }
     // v813(깜빡임 제거): 7프레임을 미리 겹쳐 두고 보이는 것만 바꿈 — img src 교체 순간 빈 프레임이 생기던 것
-    var moleFrame = [-1, -1, -1, -1], moleEls = null;
+    var moleFrame = [-1, -1, -1, -1], moleEls = null, btnEls = null;
     function setMoleFrame(i, f) {
       if (moleFrame[i] === f) return;
       var imgs = (moleEls || (moleEls = el.querySelectorAll('.rp-mole')))[i].children;
@@ -233,7 +234,7 @@
       if (!st || st.over || st.paused || now() < 0) return;
       var t = now(), m = st.moles[lane];
       if (t - m.jumpAt < 7 * CONFIG.jumpFrameMs / 1000) return; // 점프 중 재입력 무시
-      m.jumpAt = t;
+      m.jumpAt = t; sfx('jump');
       var apexT = t + (CONFIG.apexFrame + 0.5) * CONFIG.jumpFrameMs / 1000;
       // 이 레인에서 판정 대상 노트(아직 처리 안 된 가장 가까운 것)
       var best = null;
@@ -264,7 +265,7 @@
       if (n) n.state = 'miss';
       st.cnt.MISS++; st.combo = 0; st.hp = Math.max(0, st.hp - 1);
       st.moles[lane].hurtAt = now();
-      showJudge(lane, 'MISS', 'miss'); hud(); sfx('miss');
+      showJudge(lane, 'MISS', 'miss'); hud();
       if (st.hp <= 0) gameOver(false);
     }
     function pang(lane, x, y) {
@@ -330,6 +331,11 @@
           if (q > 0.4) { n.el.style.visibility = 'hidden'; n.state = 'done'; }
         }
       });
+      // v814(사용자 지정): 무기가 타겟에 다가오면(도착 0.5초 전~도착 0.15초 후) 그 레인 버튼에 불빛
+      var cue = [0, 0, 0, 0];
+      st.notes.forEach(function (n) { if (n.state === 'live' && n.targetTime - t < 0.5 && n.targetTime - t > -0.15) cue[n.targetLane] = 1; });
+      var btns = btnEls || (btnEls = el.querySelectorAll('.rp-btn'));
+      for (var bi = 0; bi < 4; bi++) if (btns[bi]) btns[bi].classList.toggle('is-cue', !!cue[bi]);
       // 종료: 모든 노트 처리 후
       if (!st.over && st.notes.every(function (n) { return n.state === 'done'; })) { st.over = true; setTimeout(function () { gameOver(true); }, 900); }
     }

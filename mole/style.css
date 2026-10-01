@@ -5218,3 +5218,8 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .rp-btn { padding: 0; min-width: 0; }
 .rp-btn img { width: 100%; height: auto; aspect-ratio: 222 / 205; object-fit: contain; } /* 그림 로드 전에도 높이 확정 → 무대 높이 계산 정확 */
 .rp-mole { display: block; aspect-ratio: 330 / 611; } .rp-mole img { position: absolute; left: 0; bottom: 0; width: 100%; visibility: hidden; } .rp-mole img.is-on { visibility: visible; } /* v813 */
+/* v814(사용자 지정): 버튼 세로 1.3배 + 무기가 다가오면 그 레인 버튼에 불빛 */
+.rp-btn img { aspect-ratio: 222 / 266 !important; object-fit: fill !important; }
+.rp-btn { position: relative; border-radius: 16px; }
+.rp-btn.is-cue img { filter: brightness(1.35) saturate(1.2) drop-shadow(0 0 6px #fff) drop-shadow(0 0 14px rgba(255, 255, 255, 0.9)); animation: rp-cue 0.25s ease-in-out infinite alternate; }
+@keyframes rp-cue { to { filter: brightness(1.6) saturate(1.3) drop-shadow(0 0 9px #fff) drop-shadow(0 0 20px rgba(255, 255, 255, 1)); } }
