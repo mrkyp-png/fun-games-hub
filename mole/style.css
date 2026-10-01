@@ -5463,10 +5463,11 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .ws-pcard-chk { position: absolute; right: -4%; top: -3%; width: 24%; display: none; }
 .ws-pcard.is-on .ws-pcard-chk { display: block; }
 .ws-pcard:disabled { opacity: 1; filter: brightness(0.5) saturate(0.6); }
-.ws-pcard-no { position: absolute; left: 4%; right: 4%; top: 36%; aspect-ratio: 248 / 80; background: url('assets/workshop/pick/tag-no.png') center / 100% 100% no-repeat; filter: brightness(2) saturate(1.6); }
-.ws-pcard-no b { position: absolute; left: 30%; right: 6%; top: 50%; transform: translateY(-50%); font-size: calc(var(--w) * 0.024); color: #fff; white-space: nowrap; text-align: center; }
 .ws-pick-ok { width: calc(var(--w) * 0.6); aspect-ratio: 566 / 141; margin-top: 4px; padding: 0; border: 0; cursor: pointer; background: url('assets/workshop/pick/btn-close.png') center / 100% 100% no-repeat; transition: transform 0.06s; }
 .ws-pick-ok span { font-size: calc(var(--w) * 0.06); font-weight: 900; color: #4a2a00; }
 .ws-pick:has(.ws-pick-box--v2) { background: rgba(0, 0, 0, 0.75); }
-.ws-pcard-no { left: 2%; right: 2%; }
-.ws-pcard-no b { left: 26%; right: 4%; font-size: calc(var(--w) * 0.021); letter-spacing: -0.03em; }
+/* v846: 제목 글자 = 간판 판자 세로 가운데(판자 52~218px/219 → 61.6%), '같은 종류만 가능' = 카드 아래 한 번만 */
+.ws-pick-sign b { top: 61.6%; }
+.ws-pick-note { position: relative; margin: 0; width: calc(var(--w) * 0.5); aspect-ratio: 248 / 80; background: url('assets/workshop/pick/tag-no.png') center / 100% 100% no-repeat; }
+.ws-pick-note[hidden] { display: none; }
+.ws-pick-note b { position: absolute; left: 26%; right: 5%; top: 50%; transform: translateY(-50%); text-align: center; white-space: nowrap; font-size: calc(var(--w) * 0.036); color: #fff; }

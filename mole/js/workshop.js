@@ -147,21 +147,22 @@
     $('[data-ws-mat]').addEventListener('click', function () {
       if (running) return;
       var target = cur(); var list = $('[data-ws-pick-list]'); list.innerHTML = '';
-      var COLORS = ['blue', 'red', 'green', 'orange', 'purple']; // v845: 재료 순서대로 카드 색 고정
+      var COLORS = ['blue', 'red', 'green', 'orange', 'purple'], anyNo = false; // v845: 재료 순서대로 카드 색 고정
       items(tab).forEach(function (m, i) {
         var n = materials(tab, m.id), same = !!target && m.id === target.id;
         var b = document.createElement('button'); b.type = 'button';
         b.className = 'ws-pick-item ws-pcard ws-pcard--' + COLORS[i % 5] + (m.id === selMat ? ' is-on' : '');
         b.disabled = !same || !n;
         b.innerHTML = '<span class="ws-pick-img"><img alt=""></span><span class="ws-pick-name"></span><span class="ws-pick-n"></span>' +
-          (!same ? '<span class="ws-pcard-no"><b></b></span>' : '') + '<img class="ws-pcard-chk" src="assets/roundmap/check.png" alt="">';
+          '<img class="ws-pcard-chk" src="assets/roundmap/check.png" alt="">';
         b.querySelector('img').src = m.img;
         b.querySelector('.ws-pick-name').textContent = nameOf(m);
         b.querySelector('.ws-pick-n').textContent = T('mole.ws.have', { n: n });
-        if (!same) b.querySelector('.ws-pcard-no b').textContent = T('mole.ws.pickNo');
+        if (!same) anyNo = true;
         b.addEventListener('click', function () { selMat = m.id; pick.hidden = true; render(); });
         list.appendChild(b);
       });
+      $('[data-ws-pick-note]').hidden = !anyNo; // v846: 카드마다 붙이지 않고 별도 자리에 한 번만
       pick.hidden = false;
     });
     el.querySelectorAll('[data-ws-pick-close]').forEach(function (c) { c.addEventListener('click', function () { pick.hidden = true; }); }); // v845: X + 닫기
