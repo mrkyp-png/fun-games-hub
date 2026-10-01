@@ -35,7 +35,7 @@
       b.addEventListener('click', function () {
         var l = b.getAttribute('data-rm-light');
         if (!MG.Progress.isLightUnlocked(l)) { flash(b); return; }
-        view = l; opts.setLight(l); render();
+        view = l; render(); // v844(사용자 지정): 탭은 그 난이도 지도 보기만 — 내 위치(홈 라운드)는 라운드를 눌러야 바뀜
       });
     });
 
@@ -63,6 +63,7 @@
 
     function pick(n, btn) {
       if (!MG.Progress.isUnlocked(n, view)) { flash(btn); return; }
+      if (view !== opts.currentLight()) opts.setLight(view); // 다른 난이도 지도에서 라운드를 고르면 그 난이도로 이동
       opts.select(n);
       render();
     }

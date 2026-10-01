@@ -164,6 +164,7 @@
       $('[data-fs-hint]').textContent = msg || T('mole.fs.camHint');
     }
     function startCamera() {
+      st.lastDet = null; // v844: 새로 촬영 화면에 들어오면 이전 얼굴 기록 비움
       setCamState('idle');
       $('[data-fs-camerr]').hidden = true;
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { camError(); return; }
@@ -243,7 +244,8 @@
       MG.FaceDetect.detect(video).then(function (det) {
         if (st.screen !== 2) return;
         var j = judge(det, video.videoWidth);
-        st.lastDet = j === 'ok' ? { det: det, w: video.videoWidth } : null; // v835: 버튼이 켜질 때 확인된 얼굴(촬영 인식 실패 시 대신 사용)
+        // v844: 정상 판정된 얼굴은 다음 판정이 흔들려도 지우지 않고 보관(촬영 시 이걸로 바로 진행)
+        if (j === 'ok') st.lastDet = { det: det, w: video.videoWidth };
         setCamState(j === 'ok' ? 'ready' : 'idle', j === 'ok' ? T('mole.fs.camHint') : T('mole.fs.cam.' + j));
         st.loop = setTimeout(detectLoop, 300);
       });
@@ -257,17 +259,18 @@
       c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
       el.classList.remove('is-snap'); void el.offsetWidth; el.classList.add('is-snap');
       var ready = st.lastDet;
-      // v838(사용자: 여전히 "다시 촬영" 반복) — 버튼이 켜질 때 확인된 얼굴이 있으면 촬영본을 다시 인식하지 않고 바로 진행.
-      // 다시 인식은 확인된 얼굴이 없을 때만(이론상 거의 없음).
-      (ready ? Promise.resolve(scaleDet(ready.det, c.width / ready.w)) : MG.FaceDetect.detect(c)).then(function (det) {
-        st.busy = false;
+      st.busy = false;
+      // v844(사용자: 폰에서 계속 "다시 촬영") — 찍은 사진으로 얼굴을 다시 찾는 단계 완전 삭제(폰에서 이 단계가 실패).
+      // 카메라 화면에서 정상 확인된 얼굴 위치를 찍은 사진 크기에 맞춰 그대로 사용. 확인된 얼굴이 한 번도 없을 때만 다시 촬영.
+      (function () {
+        var det = ready ? scaleDet(ready.det, c.width / ready.w) : null;
         if (!det || !det.ok) { setCamState('idle', T('mole.fs.cam.none')); toast(T('mole.fs.retake')); return; }
         // v811(사용자 지정: 촬영해도 다음으로 안 넘어감) — 버튼이 켜졌을 때 이미 판정 통과, 촬영본은 얼굴만 있으면 진행
         var fd = fixDet(det, c.width, c.height);
         if (!fd) { setCamState('idle', T('mole.fs.cam.none')); toast(T('mole.fs.retake')); return; }
         st.photo = c; st.det = fd; st.results = {}; st.face = null;
         go(3);
-      });
+      })();
     });
 
     // ---- SCREEN_03 코스튬 선택 ----
