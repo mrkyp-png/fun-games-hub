@@ -5639,3 +5639,9 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .cos-card-char { transform: translateX(-50%) translateY(-0.25cm) !important; }
 .photo-emblems { margin-top: 0.3cm; }
 .photo-slot-img { transform: translateY(-0.6cm); }
+/* v861: 사진관 카드 원형 발판도 캐릭과 같이 0.15cm 아래(사용자 지정) */
+.photo-slot-pedestal { transform: translateX(-50%) translateY(-0.35cm); }
+.photo-emblems { margin-top: 0.25cm; } /* v861: 0.3cm 내린 것에서 0.05cm 다시 위로(사용자 지정) */
+/* v861: 코스튬 카드 캐릭 0.1cm 위(-0.25→-0.35cm), 엠블럼 0.05cm 아래(사용자 지정) */
+.cos-card-char { transform: translateX(-50%) translateY(-0.35cm) !important; }
+.cos-card-emblem { translate: 0 0.05cm; }
