@@ -5561,3 +5561,8 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .inv-mote { position: absolute; bottom: 4%; width: 4%; aspect-ratio: 1; border-radius: 50%; z-index: 3; opacity: 0; will-change: transform, opacity;
   background: radial-gradient(circle, #fff6b0, #ffc93a 55%, rgba(255,200,40,0) 72%); animation: inv-mote 2.8s ease-out infinite; }
 @keyframes inv-mote { 0% { opacity: 0; transform: translateY(0) scale(0.6); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-900%) scale(1.1); } }
+/* v850: EPIC·LEGENDARY 배지 윗부분 잘림 — 카드 위 여백을 늘려 배지가 다 보이게, 묠니르 QUAKE! 글자 오른쪽으로(앞글자 잘림) */
+.inv-card--epic .inv-rcard, .inv-card--legend .inv-rcard { margin-top: 30%; }
+.inv-card--epic .inv-badge, .inv-card--legend .inv-badge { width: 100%; }
+.inv-card--epic .inv-hammer-word { left: calc(50% - 22px); z-index: 5; }
+.inv-card--epic .inv-rcard, .inv-card--legend .inv-rcard { width: 88%; margin-top: 27%; }
