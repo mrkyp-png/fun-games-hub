@@ -152,7 +152,7 @@
           rot: spin ? -(n.spawnTime - t) * 1080 : n.weaponType === 'heart' ? 180 : 0, op: Math.min(1, u * 3) }; // 화살: 올라갈 땐 뒤집혀(촉 위), 꼭대기에서 회전 없이 바로 촉 아래 그림으로(v821)
       }
       var p = posAt(n, t);
-      return { x: p.x, y: p.y, sc: big, rot: spin ? (t - n.spawnTime) * 240 : 0, op: 1 };
+      return { x: p.x, y: p.y, sc: big, rot: spin ? (t - n.spawnTime) * 240 : n.weaponType === 'snow' ? (t - n.spawnTime) * 300 : 0, op: 1 }; // v833: 눈덩이도 내려올 때 굴러 회전(사용자 지정)
     }
     function sizeWind(n) { n.wind.style.width = (L.weaponR * 2.6) + 'px'; n.wind.style.height = (L.weaponR * 4.4) + 'px'; n.wind.style.opacity = '0'; }
     function xf(q) { return 'translate(' + (q.x - L.weaponR * 1.2) + 'px,' + (q.y - L.weaponR * 1.2) + 'px) scale(' + q.sc.toFixed(3) + ') rotate(' + q.rot.toFixed(1) + 'deg)'; }
