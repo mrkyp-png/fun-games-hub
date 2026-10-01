@@ -5591,3 +5591,10 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .inv-card.inv-card--basic .inv-badge, .inv-card.inv-card--rare .inv-badge { width: 92%; }
 .inv-card--basic .inv-badge { transform: translate(-50%, -48%); }
 @keyframes inv-rare { 0%, 70%, 100% { transform: translate(-50%, -48%); } 78% { transform: translate(-50%, -58%) rotate(-6deg); } 86% { transform: translate(-50%, -46%) rotate(3deg); } }
+/* v854: 오른쪽(이름~설명) 전체를 위로 올리고 간격 통일 — 설명 박스 아래 잘림 방지 */
+.inv-card[class*="inv-card--"] .inv-right { padding-top: 0; margin-top: -2px; }
+.inv-card[class*="inv-card--"] .inv-name { font-size: 1.08rem; margin: 0 0 4px; line-height: 1.1; }
+.inv-card[class*="inv-card--"] .inv-stat-h { padding: 2px 0; font-size: 0.7rem; }
+.inv-card[class*="inv-card--"] .inv-stat-tbl th { padding-top: 3px; padding-bottom: 3px; }
+.inv-card[class*="inv-card--"] .inv-stat-tbl td { padding-top: 3px; padding-bottom: 3px; line-height: 1.25; }
+.inv-desc { margin-top: 5px; padding: 5px 7px; line-height: 1.4; }
