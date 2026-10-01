@@ -106,7 +106,8 @@
     }
 
     function render() {
-      var cur = opts.currentChapter();
+      // v842(사용자 지정): 현재 위치 두더지는 지금 선택된 난이도 지도에만 — 다른 난이도 탭에선 현재 표시 없음
+      var cur = view === opts.currentLight() ? opts.currentChapter() : -1;
       renderFx();
       el.setAttribute('data-light', view);
       $('[data-rm-bg]').src = A + 'bg-' + view + '.jpg';
@@ -128,7 +129,7 @@
         var cleared = MG.Progress.get(n, view).cleared, open = MG.Progress.isUnlocked(n, view);
         var st = n === cur ? 'current' : !open ? 'locked' : cleared ? 'clear' : 'open';
         ic.setAttribute('data-state', st);
-        ic.querySelector('.rm-icon-img').src = st === 'locked' ? A + 'icon-lock.png' : st === 'current' ? A + 'icon-cur-' + view + '.png' : A + 'icon-mole-' + view + '.png';
+        ic.querySelector('.rm-icon-img').src = st === 'locked' ? A + 'icon-lock.png' : st === 'current' ? A + 'icon-cur-' + view + '.png' : A + 'icon-hole-' + view + '.png'; // v842(사용자 지정): 두더지는 현재 위치 한 마리만 — 나머지 열린 라운드는 빈 굴
       });
       // 정보판 — 라이트 이름 + 실제 게임 규칙값(game.js SCORE_MULT/COMBO_LIFE_BONUS 에서 받음)
       var rule = opts.rules(view);
