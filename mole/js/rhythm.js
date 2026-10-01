@@ -19,6 +19,12 @@
     travelSec: 1.6,                                 // 무기 출발→타겟 시간
     countIn: 3
   };
+  // 난이도(명세 §30) — EASY 직선 위주·넓은 판정 / NORMAL POINT1 꺾임·반박 노트 / HARD POINT1+POINT2·빠른 연속·좁은 판정
+  var DIFFS = {
+    EASY:   { travel: 1.8, judge: { perfectMs: 80, greatMs: 150, goodMs: 220 }, half: 0,    turn1: 0.15, turn2: 0,    rest: 8 },
+    NORMAL: { travel: 1.5, judge: { perfectMs: 65, greatMs: 120, goodMs: 180 }, half: 0.25, turn1: 0.35, turn2: 0,    rest: 8 },
+    HARD:   { travel: 1.3, judge: { perfectMs: 50, greatMs: 95,  goodMs: 150 }, half: 0.5,  turn1: 0.3,  turn2: 0.35, rest: 16 }
+  };
   var CHARS = ['cap', 'pink', 'braid', 'punk'];
   var WEAPONS = ['snow', 'boomerang', 'disc', 'heart'];
 
@@ -28,7 +34,22 @@
     var stage = $('[data-rp-stage]'), wlayer = $('[data-rp-weapons]');
     var meta = null, buffer = null, ctx = null, src = null;
     var st = null, raf = 0;
-    var imgs = {};
+    var imgs = {}, diff = 'EASY';
+    // 효과음(기존 게임 사운드 재사용) — 성공 = 타격음, 실패 = 두더지 아야
+    var SFX = { hit: ['audio/hit1.mp3', 'audio/hit2.mp3', 'audio/hit3.mp3', 'audio/hit4.mp3'], miss: ['audio/mole-hurt-1.mp3', 'audio/mole-hurt-2.mp3', 'audio/mole-hurt-3.mp3'] };
+    var sfxBuf = {};
+    function loadSfx() {
+      var all = SFX.hit.concat(SFX.miss);
+      return Promise.all(all.map(function (u) {
+        if (sfxBuf[u]) return null;
+        return fetch(u).then(function (r) { return r.arrayBuffer(); }).then(function (ab) { return new Promise(function (res) { ctx.decodeAudioData(ab, function (b) { sfxBuf[u] = b; res(); }, function () { res(); }); }); }).catch(function () {});
+      }));
+    }
+    function sfx(kind) {
+      var list = SFX[kind], b = sfxBuf[list[Math.floor(Math.random() * list.length)]]; if (!b || !ctx) return;
+      var s = ctx.createBufferSource(), g = ctx.createGain(); g.gain.value = kind === 'hit' ? 0.7 : 0.55;
+      s.buffer = b; s.connect(g); g.connect(ctx.destination); s.start();
+    }
 
     function preload() {
       var list = [];
@@ -71,30 +92,41 @@
 
     // ---- 채보(EASY): 박마다 1노트, 가끔 POINT1 꺾임 ----
     function buildChart() {
-      var spb = 60 / CONFIG.song.bpm, notes = [], seed = 7, prev = -1, same = 0;
+      var D = DIFFS[diff], spb = 60 / CONFIG.song.bpm, notes = [], seed = 7 + diff.length, prev = -1, same = 0, id = 0, lastAt = {};
       function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
       for (var k = 0; k < CONFIG.chart.beats; k++) {
-        var beat = CONFIG.chart.startBeat + k;
-        if (k % 8 === 7) continue;                 // 8박마다 한 박 쉼
-        var lane = Math.floor(rnd() * 4);
-        if (lane === prev) { same++; if (same >= 2) { lane = (lane + 1 + Math.floor(rnd() * 3)) % 4; same = 0; } } else same = 0;
-        prev = lane;
-        var turn = (k % 6 === 5);                  // EASY: 가끔만 꺾임
-        var start = turn ? (lane + (rnd() < 0.5 ? 1 : 3)) % 4 : lane;
-        notes.push({ id: k, beatIndex: beat, targetTime: CONFIG.song.firstBeat + beat * spb, startLane: start, targetLane: lane,
-          routePoint1: turn ? 1 : 0, routePoint2: 0, weaponType: WEAPONS[lane], difficulty: 'EASY' });
+        if (k % D.rest === D.rest - 1) continue;           // 마디 끝 쉼
+        var subs = (k % 2 === 1 && rnd() < D.half) ? [0, 0.5] : [0]; // 반박(1.5박 등) 노트
+        subs.forEach(function (sub) {
+          var beat = CONFIG.chart.startBeat + k + sub;
+          var lane = Math.floor(rnd() * 4);
+          if (lane === prev) { same++; if (same >= 2) { lane = (lane + 1 + Math.floor(rnd() * 3)) % 4; same = 0; } } else same = 0;
+          // 같은 레인은 두더지 점프(7프레임)가 끝날 시간 이상 간격 — 못 치는 노트 방지(v811)
+          var tt = CONFIG.song.firstBeat + beat * spb, gap = 7 * CONFIG.jumpFrameMs / 1000 + 0.1;
+          for (var tries = 0; tries < 4 && tt - (lastAt[lane] || -9) < gap; tries++) lane = (lane + 1) % 4;
+          lastAt[lane] = tt;
+          prev = lane;
+          var t2 = rnd() < D.turn2, t1 = t2 || rnd() < D.turn1;
+          var mid = t2 ? (lane + 1 + Math.floor(rnd() * 3)) % 4 : lane;
+          var start = t1 ? (mid + 1 + Math.floor(rnd() * 3)) % 4 : lane;
+          if (t1 && !t2 && start === lane) start = (lane + 1) % 4;
+          notes.push({ id: id++, beatIndex: beat, targetTime: CONFIG.song.firstBeat + beat * spb, startLane: start, targetLane: lane,
+            midLane: mid, routePoint1: t1 ? 1 : 0, routePoint2: t2 ? 1 : 0, weaponType: WEAPONS[lane], difficulty: diff });
+        });
       }
       return notes;
     }
     // 경로(직선→꺾임→직선): 꼭짓점 목록
     function routeOf(n) {
       var xs = L.laneX[n.startLane], xt = L.laneX[n.targetLane], y0 = -L.weaponR * 2;
-      if (n.startLane === n.targetLane) return [[xs, y0], [xt, L.targetY]];
-      return [[xs, y0], [xs, L.p1], [xt, L.p2], [xt, L.targetY]];
+      if (!n.routePoint1) return [[xs, y0], [xt, L.targetY]];
+      if (!n.routePoint2) return [[xs, y0], [xs, L.p1], [xt, L.p2], [xt, L.targetY]];
+      var xm = L.laneX[n.midLane];
+      return [[xs, y0], [xs, L.p1 * 0.62], [xm, L.p1 * 1.15], [xm, L.p2 * 0.95], [xt, L.p2 * 1.32], [xt, L.targetY]];
     }
     function pathLen(pts) { var s = 0; for (var i = 1; i < pts.length; i++) s += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); return s; }
     function posAt(n, t) { // t = 음악 시각
-      var v = n.len / CONFIG.travelSec, d = (t - n.spawnTime) * v;
+      var v = n.len / DIFFS[diff].travel, d = (t - n.spawnTime) * v;
       if (d >= n.len) return { x: n.pts[n.pts.length - 1][0], y: L.targetY + (d - n.len) }; // 타겟 지나면 계속 아래로 직선
       for (var i = 1; i < n.pts.length; i++) {
         var a = n.pts[i - 1], b = n.pts[i], sl = Math.hypot(b[0] - a[0], b[1] - a[1]);
@@ -152,11 +184,11 @@
     // ---- 진행 ----
     function now() { return ctx.currentTime - st.t0; } // 음악 시각(초)
     function start() {
-      Promise.all([loadMeta(), loadSong(), preload()]).then(function () {
+      Promise.all([loadMeta(), loadSong(), preload()]).then(loadSfx).then(function () {
         if (ctx.state === 'suspended') ctx.resume();
         layout(); buildStage(); placeStatic();
         var notes = buildChart();
-        notes.forEach(function (n) { n.pts = routeOf(n); n.len = pathLen(n.pts); n.spawnTime = n.targetTime - CONFIG.travelSec; n.state = 'wait'; });
+        notes.forEach(function (n) { n.pts = routeOf(n); n.len = pathLen(n.pts); n.spawnTime = n.targetTime - DIFFS[diff].travel; n.state = 'wait'; });
         st = { notes: notes, score: 0, combo: 0, maxCombo: 0, hp: CONFIG.hpMax, cnt: { PERFECT: 0, GREAT: 0, GOOD: 0, MISS: 0 },
           moles: [0, 1, 2, 3].map(function () { return { jumpAt: -9, hurtAt: -9 }; }), over: false, paused: false };
         for (var i = 0; i < 4; i++) setMoleFrame(i, 0);
@@ -184,7 +216,7 @@
         var d = Math.abs(apexT - n.targetTime);
         if (!best || d < best.d) best = { n: n, d: d };
       });
-      var J = CONFIG.judge;
+      var J = DIFFS[diff].judge;
       if (!best || best.d * 1000 > J.goodMs) {
         // 잘못된 레인/근처에 노트 없음 → MISS(명세 §22)
         if (!best) { miss(lane, null); return; }
@@ -199,14 +231,14 @@
       var g = n.press.grade; st.cnt[g]++; st.combo++; st.maxCombo = Math.max(st.maxCombo, st.combo);
       st.score += Math.round(CONFIG.score[g] * (1 + Math.min(st.combo, 100) / 200));
       n.vx = (Math.random() < 0.5 ? -1 : 1) * (L.laneW * (1.5 + Math.random())); n.vy = -L.H * 1.1; n.bx = n.cx; n.by = n.cy;
-      showJudge(lane, g, g.toLowerCase()); pang(lane, n.cx, n.cy); hud();
+      showJudge(lane, g, g.toLowerCase()); pang(lane, n.cx, n.cy); hud(); sfx('hit');
       try { MG.HitFx && MG.HitFx.uiTap && MG.HitFx.uiTap(1); } catch (e) { /* 무시 */ }
     }
     function miss(lane, n) {
       if (n) n.state = 'miss';
       st.cnt.MISS++; st.combo = 0; st.hp = Math.max(0, st.hp - 1);
       st.moles[lane].hurtAt = now();
-      showJudge(lane, 'MISS', 'miss'); hud();
+      showJudge(lane, 'MISS', 'miss'); hud(); sfx('miss');
       if (st.hp <= 0) gameOver(false);
     }
     function pang(lane, x, y) {
@@ -249,7 +281,7 @@
             else { n.hurtBy = true; miss(n.targetLane, n); }
           }
           // 아무도 못 맞힘 → 무기가 가만히 있는 두더지 머리에 맞음 = MISS
-          else if (t > n.targetTime + CONFIG.judge.goodMs / 1000 && p.y >= heads[n.targetLane].h.y - heads[n.targetLane].h.r) miss(n.targetLane, n);
+          else if (t > n.targetTime + DIFFS[diff].judge.goodMs / 1000 && p.y >= heads[n.targetLane].h.y - heads[n.targetLane].h.r) miss(n.targetLane, n);
         }
         if (n.state === 'hit') { // 튕김
           var k = t - n.hitAt; n.cx = n.bx + n.vx * k; n.cy = n.by + n.vy * k + L.H * 2.2 * k * k;
@@ -273,6 +305,9 @@
       try { src.stop(ctx.currentTime + (clear ? 0.8 : 0.05)); } catch (e) { /* 무시 */ }
       var r = $('[data-rp-result]');
       $('[data-rp-res-title]').textContent = clear ? 'CLEAR!' : 'GAME OVER';
+      var bk = 'mole.rp.best.' + diff, old = parseInt(localStorage.getItem(bk), 10) || 0, isNew = st.score > old;
+      if (isNew) localStorage.setItem(bk, String(st.score));
+      $('[data-rp-res-best]').textContent = diff + '  BEST ' + Math.max(old, st.score).toLocaleString('en-US') + (isNew && st.score > 0 ? '  NEW!' : '');
       r.classList.toggle('is-fail', !clear);
       $('[data-rp-res-score]').textContent = st.score.toLocaleString('en-US');
       $('[data-rp-res-combo]').textContent = st.maxCombo;
@@ -290,6 +325,7 @@
     $('[data-rp-quit]').addEventListener('click', function () { close(); });
     $('[data-rp-retry]').addEventListener('click', function () { start(); });
     $('[data-rp-home]').addEventListener('click', function () { close(); });
+    $('[data-rp-other]').addEventListener('click', function () { cancelAnimationFrame(raf); try { src && src.stop(); } catch (e) { /* 무시 */ } st = null; showSelect(); });
 
     function close() {
       cancelAnimationFrame(raf);
@@ -298,8 +334,25 @@
       st = null; $('[data-rp-pause]').hidden = true;
       opts.onClose();
     }
-    function open() { el.hidden = false; $('[data-rp-pause]').hidden = true; requestAnimationFrame(start); }
-    return { open: open, close: close, CONFIG: CONFIG, press: function (l) { press(l); }, dbg: function () { return st ? { t: now(), notes: st.notes, score: st.score, combo: st.combo, hp: st.hp, cnt: st.cnt } : null; } };
+    function showSelect() {
+      $('[data-rp-result]').hidden = true; $('[data-rp-pause]').hidden = true;
+      el.querySelectorAll('[data-rp-diff]').forEach(function (b) {
+        var d = b.getAttribute('data-rp-diff'), best = parseInt(localStorage.getItem('mole.rp.best.' + d), 10) || 0;
+        b.querySelector('small').textContent = best ? 'BEST ' + best.toLocaleString('en-US') : '';
+      });
+      $('[data-rp-select]').hidden = false;
+    }
+    el.querySelectorAll('[data-rp-diff]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        diff = b.getAttribute('data-rp-diff'); $('[data-rp-select]').hidden = true;
+        if (!ctx) ctx = new (root.AudioContext || root.webkitAudioContext)();
+        if (ctx.state === 'suspended') ctx.resume(); // 사용자 탭 안에서 소리 허용
+        start();
+      });
+    });
+    $('[data-rp-sel-close]').addEventListener('click', function () { close(); });
+    function open() { el.hidden = false; $('[data-rp-pause]').hidden = true; $('[data-rp-result]').hidden = true; wlayer.innerHTML = ''; showSelect(); }
+    return { open: open, close: close, CONFIG: CONFIG, setDiff: function (d) { diff = d; }, start: function () { start(); }, press: function (l) { press(l); }, dbg: function () { return st ? { t: now(), notes: st.notes, score: st.score, combo: st.combo, hp: st.hp, cnt: st.cnt } : null; } };
   }
 
   var api = { create: create };

@@ -171,7 +171,6 @@
         if (st.screen !== 2) { s.getTracks().forEach(function (t) { t.stop(); }); return; }
         // v771: 기본 = 화면 꽉 채움(위아래 검은 띠 없음). 두 손가락으로 오므리면 원본 전체까지 작아짐.
         video.addEventListener('loadedmetadata', function () { setZoom(zoomMax()); }, { once: true });
-        var vbg = $('[data-fs-videobg]'); if (vbg) { vbg.srcObject = s; vbg.play().catch(function () {}); }
         st.stream = s; video.srcObject = s; video.play().catch(function () {});
         detectLoop();
       }).catch(camError);
@@ -198,9 +197,9 @@
     function camError() { $('[data-fs-camerr]').hidden = false; setCamState('error', T('mole.fs.camDenied')); }
     $('[data-fs-retry]').addEventListener('click', startCamera);
     function stopCamera() {
-      clearTimeout(st.loop); st.loop = null;
+      clearTimeout(st.loop); st.loop = null; clearTimeout(bgTimer); bgTimer = null;
       if (st.stream) { st.stream.getTracks().forEach(function (t) { t.stop(); }); st.stream = null; }
-      video.srcObject = null; var vbg2 = $('[data-fs-videobg]'); if (vbg2) vbg2.srcObject = null;
+      video.srcObject = null;
     }
     // 얼굴 위치 판정(v771, 사용자 지정): 얼굴 윤곽이 화면의 가이드 타원 안에 다 들어오면 촬영 가능.
     // 가이드 타원(화면 좌표)을 카메라 영상 좌표로 바꿔(object-fit contain × 줌, 좌우 거울) 윤곽 점이 모두 안에 있는지 본다.
@@ -223,7 +222,16 @@
       if (tilt > 0.3) return 'tilt';
       return 'ok';
     }
+    var bgTimer = null;
+    function paintBg() {
+      clearTimeout(bgTimer);
+      if (st.screen !== 2 || !st.stream) return;
+      var cv = $('[data-fs-videobg]');
+      if (cv && video.videoWidth) { cv.width = 90; cv.height = Math.round(90 * video.videoHeight / video.videoWidth); try { cv.getContext('2d').drawImage(video, 0, 0, cv.width, cv.height); } catch (e) { /* 무시 */ } }
+      bgTimer = setTimeout(paintBg, 120);
+    }
     function detectLoop() {
+      if (!bgTimer) paintBg();
       if (st.screen !== 2 || !st.stream) return;
       if (!video.videoWidth) { st.loop = setTimeout(detectLoop, 200); return; }
       MG.FaceDetect.detect(video).then(function (det) {
@@ -244,8 +252,7 @@
       MG.FaceDetect.detect(c).then(function (det) {
         st.busy = false;
         if (!det || !det.ok) { setCamState('idle', T('mole.fs.cam.none')); toast(T('mole.fs.retake')); return; }
-        var j = judge(det, c.width);
-        if (j !== 'ok') { setCamState('idle', T('mole.fs.cam.' + j)); toast(T('mole.fs.retake')); return; }
+        // v811(사용자 지정: 촬영해도 다음으로 안 넘어감) — 버튼이 켜졌을 때 이미 판정 통과, 촬영본은 얼굴만 있으면 진행
         var fd = fixDet(det, c.width, c.height);
         if (!fd) { setCamState('idle', T('mole.fs.cam.none')); toast(T('mole.fs.retake')); return; }
         st.photo = c; st.det = fd; st.results = {}; st.face = null;
