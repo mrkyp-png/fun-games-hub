@@ -256,6 +256,8 @@
           // 부메랑·원반 = 내려올 때 뒤로 바람 줄기(사용자 지정 v830)
           if (n.weaponType === 'boomerang' || n.weaponType === 'disc') { n.wind = document.createElement('span'); n.wind.className = 'rp-wind'; sizeWind(n); wlayer.appendChild(n.wind); }
           wlayer.appendChild(n.el); });
+        // v832: 반짝이 조각 40개 미리 생성(깜빡임 방지 — 게임 중 DOM 생성 금지 원칙)
+        sparks = []; for (var si = 0; si < 40; si++) { var sk = document.createElement('span'); sk.className = 'rp-spark'; wlayer.appendChild(sk); sparks.push(sk); }
         notes.forEach(function (n) { n.pts = routeOf(n); n.len = pathLen(n.pts); n.spawnTime = n.targetTime - DIFFS[diff].travel; n.state = 'wait'; });
         st = { notes: notes, score: 0, combo: 0, maxCombo: 0, hp: CONFIG.hpMax, cnt: { PERFECT: 0, GREAT: 0, GOOD: 0, MISS: 0 },
           moles: [0, 1, 2, 3].map(function () { return { jumpAt: -9, hurtAt: -9 }; }), over: false, paused: false };
@@ -300,7 +302,7 @@
       st.score += Math.round(CONFIG.score[g] * (1 + Math.min(st.combo, 100) / 200));
       n.vx = (Math.random() < 0.5 ? -1 : 1) * (L.laneW * (1.5 + Math.random())); n.vy = -L.H * 1.1; n.bx = n.cx; n.by = n.cy;
       showJudge(lane, g, g.toLowerCase()); pang(lane, n.cx, n.cy); hud(); sfx('hit');
-      burst(n.cx, n.cy, g === 'PERFECT' ? 10 : g === 'GREAT' ? 7 : 5); if (g === 'PERFECT') replay(stage, 'rp-shake'); comboFx();
+      burst(n.cx, n.cy, g === 'PERFECT' ? 10 : g === 'GREAT' ? 7 : 5); if (g === 'PERFECT') replay(tgtEls[lane], 'rp-shake'); comboFx();
       try { MG.HitFx && MG.HitFx.uiTap && MG.HitFx.uiTap(1); } catch (e) { /* 무시 */ }
     }
     function miss(lane, n) {
@@ -311,15 +313,14 @@
       if (st.hp <= 0) gameOver(false);
     }
     // ---- v831 연출 ----
-    var hippo = el.querySelector('.rp-hippo');
+    var hippo = el.querySelector('.rp-hippo'), sparks = [], sparkI = 0;
     function replay(node, cls) { node.classList.remove(cls); void node.offsetWidth; node.classList.add(cls); }
     function burst(x, y, k) { // 명중 자리에서 반짝이 조각이 사방으로
       for (var i = 0; i < k; i++) {
-        var a = (i / k) * Math.PI * 2 + Math.random() * 0.5, d = L.laneW * (0.45 + Math.random() * 0.35), sp = document.createElement('span');
-        sp.className = 'rp-spark'; sp.textContent = i % 3 ? '✦' : '★'; sp.style.left = x + 'px'; sp.style.top = y + 'px';
+        var a = (i / k) * Math.PI * 2 + Math.random() * 0.5, d = L.laneW * (0.45 + Math.random() * 0.35);
+        var sp = sparks[sparkI++ % sparks.length]; sp.textContent = i % 3 ? '✦' : '★'; sp.style.left = x + 'px'; sp.style.top = y + 'px';
         sp.style.setProperty('--dx', (Math.cos(a) * d).toFixed(1) + 'px'); sp.style.setProperty('--dy', (Math.sin(a) * d).toFixed(1) + 'px');
-        sp.style.color = ['#fff36b', '#ffffff', '#ffb3e6', '#8ff0ff'][i % 4]; wlayer.appendChild(sp);
-        (function (sp) { setTimeout(function () { sp.remove(); }, 560); })(sp);
+        sp.style.color = ['#fff36b', '#ffffff', '#ffb3e6', '#8ff0ff'][i % 4]; replay(sp, 'is-on');
       }
     }
     function comboFx() {
@@ -380,7 +381,7 @@
             if (t < n.spawnTime) n.wind.style.opacity = '0';
             else { var pv = flyAt(n, t - 0.03), ang = Math.atan2(-(cur.x - pv.x), cur.y - pv.y) * 180 / Math.PI;
               n.wind.style.transform = 'translate(' + (cur.x - L.weaponR * 1.3) + 'px,' + (cur.y - L.weaponR * 4.4) + 'px) rotate(' + ang.toFixed(1) + 'deg)';
-              n.wind.style.opacity = (0.85 + 0.15 * Math.sin(t * 38)).toFixed(2); }
+              n.wind.style.opacity = (0.45 + 0.08 * Math.sin(t * 38)).toFixed(2); } // v832: 반투명(사용자 지정)
           }
           if (t < n.spawnTime) { n.cx = cur.x; n.cy = -9999; return; } // 던져 올라오는 구간(판정 없음)
           var p = cur; n.cx = p.x; n.cy = p.y;
