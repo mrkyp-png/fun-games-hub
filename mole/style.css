@@ -5303,3 +5303,11 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .rx-pt-st { fill: #6e2003; stroke: #6e2003; stroke-width: 16px; }
 .rx-pt-fill { stroke: #fff7c0; stroke-width: 2px; }
 .rx-ptxt { top: 12%; }
+/* v828: 한글 모드 = "난이도를 고르세요"/"홈으로"(글자 지운 띠 + i18n 글자), 일시정지 글자 0.25cm 아래 */
+.rx-sub { aspect-ratio: 436 / 69; background: url('assets/rhythm/ui/d-sub-blank.png') center / 100% 100% no-repeat; display: flex; align-items: center; justify-content: center; }
+.rx-sub span { font-size: 5.4cqw; line-height: 1; padding-bottom: 0.4cqw; white-space: nowrap; -webkit-text-stroke: 1cqw #0a1f5c; paint-order: stroke fill; }
+.rx-sub span:lang(ko), .rx-btn span { font-family: 'Lilita One', 'Jua', sans-serif; }
+.rx-ptxt { transform: translateY(0.25cm); } /* 일시정지·CLEAR 둘 다(사용자 지정) */
+.rx-sub span { font-size: 6.6cqw; -webkit-text-stroke: 1.4cqw #0a1f5c; }
+/* v828: 결과창 아래 금별이 늘어나 찌그러지던 것 — 모서리 조각을 별 크기만큼 크게 잘라 늘어나지 않게 */
+.rx-card--res::after { border-width: 44px 82px 66px; border-image: url('assets/rhythm/ui/go-frame.png') 44 82 66 / 44px 82px 66px stretch; }
