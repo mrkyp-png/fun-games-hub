@@ -5523,3 +5523,41 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .inv-card[class*="inv-card--"] .inv-equip::before { display: none; }
 .inv-card[class*="inv-card--"] .inv-equip:active:not(:disabled) { transform: translateY(3px) scale(0.94); filter: brightness(0.9); }
 .inv-card[class*="inv-card--"] .inv-equip:disabled { background: url('assets/inventory/rarity/btn-equipped.png') center / 100% 100% no-repeat; border: 0; -webkit-text-stroke: 3px #5d636c; }
+/* ===== v849: 무기 등급 카드 연출(캐논 RARE / 묠니르 EPIC / 알리 LEGENDARY, 뿅망치 제외) — transform·opacity 만 ===== */
+.inv-rcard { isolation: isolate; }
+.inv-rcard .inv-thumb-zoom { position: relative; z-index: 2; }
+.inv-rfx { position: absolute; inset: 2.5% 3%; border-radius: 9%; overflow: hidden; z-index: 1; pointer-events: none; }
+/* 1) 빛살 회전 */
+.inv-rays { position: absolute; left: 50%; top: 50%; width: 180%; aspect-ratio: 1; margin: -90% 0 0 -90%; opacity: 0.45; will-change: transform;
+  background: repeating-conic-gradient(rgba(255,255,255,0.55) 0deg 7deg, rgba(255,255,255,0) 7deg 22deg);
+  -webkit-mask-image: radial-gradient(circle, #000 0, #000 22%, transparent 62%); mask-image: radial-gradient(circle, #000 0, #000 22%, transparent 62%);
+  animation: inv-rays 16s linear infinite; }
+.inv-card--epic .inv-rays { animation-duration: 10s; opacity: 0.5; }
+.inv-card--legend .inv-rays { animation-duration: 6.5s; opacity: 0.6; }
+@keyframes inv-rays { to { transform: rotate(360deg); } }
+/* 2) 반짝이 */
+.inv-tw { position: absolute; width: 13%; aspect-ratio: 1; opacity: 0; will-change: transform, opacity; animation: inv-tw 1.85s ease-in-out infinite;
+  background: radial-gradient(circle, #fff 0 12%, rgba(255,255,255,0) 14%), linear-gradient(#fff, #fff) center / 2px 100% no-repeat, linear-gradient(#fff, #fff) center / 100% 2px no-repeat; }
+@keyframes inv-tw { 0%, 55%, 100% { opacity: 0; transform: scale(0.3) rotate(0deg); } 72% { opacity: 1; transform: scale(1.1) rotate(45deg); } }
+/* 3) RARE: 배지 별 톡(배지 한 장이라 왼쪽 별 기준으로 톡 튀며 기울기) */
+.inv-card--rare .inv-badge { transform-origin: 18% 60%; animation: inv-rare 2.6s ease-in-out infinite; }
+@keyframes inv-rare { 0%, 70%, 100% { transform: translate(-50%, -48%); } 78% { transform: translate(-50%, -58%) rotate(-6deg); } 86% { transform: translate(-50%, -46%) rotate(3deg); } }
+/* 4) EPIC/LEGEND: 날개 퍼덕(배지 가로 살짝 늘었다 줄기), 왕관 반짝, 테두리 숨쉬기 */
+.inv-card--epic .inv-badge { animation: inv-flap-e 1.6s ease-in-out infinite; }
+.inv-card--legend .inv-badge { animation: inv-flap-l 1.3s ease-in-out infinite; }
+@keyframes inv-flap-e { 0%, 100% { transform: translate(-50%, -62%) scaleX(1); } 50% { transform: translate(-50%, -64%) scaleX(1.06); } }
+@keyframes inv-flap-l { 0%, 100% { transform: translate(-50%, -62%) scaleX(1); } 50% { transform: translate(-50%, -65%) scaleX(1.08); } }
+.inv-crown-tw { position: absolute; left: 50%; top: -9%; z-index: 4; width: 16%; aspect-ratio: 1; margin-left: -8%; opacity: 0; pointer-events: none; animation: inv-tw 1.4s ease-in-out infinite;
+  background: radial-gradient(circle, #fff 0 14%, rgba(255,255,255,0) 16%), linear-gradient(#fff, #fff) center / 2px 100% no-repeat, linear-gradient(#fff, #fff) center / 100% 2px no-repeat; }
+.inv-card--legend .inv-crown-tw { top: -11%; }
+.inv-glow { position: absolute; inset: -2%; z-index: 0; border-radius: 10%; pointer-events: none; opacity: 0.3; will-change: opacity; animation: inv-breath 2.4s ease-in-out infinite; }
+.inv-card--epic .inv-glow { background: radial-gradient(ellipse at center, rgba(190, 80, 255, 0) 55%, rgba(200, 90, 255, 0.85) 75%, rgba(200, 90, 255, 0) 92%); }
+.inv-card--legend .inv-glow { background: radial-gradient(ellipse at center, rgba(40, 230, 160, 0) 55%, rgba(80, 255, 190, 0.85) 75%, rgba(80, 255, 190, 0) 92%); }
+@keyframes inv-breath { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+/* 5) LEGEND: 빛줄기 훑기 + 금빛 입자 */
+.inv-sweep { position: absolute; top: -20%; bottom: -20%; left: 0; width: 34%; z-index: 3; will-change: transform;
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,230,0.75), rgba(255,255,255,0)); transform: translateX(-150%) skewX(-18deg); animation: inv-sweep 3.2s ease-in-out infinite; }
+@keyframes inv-sweep { 0%, 45% { transform: translateX(-150%) skewX(-18deg); } 80%, 100% { transform: translateX(380%) skewX(-18deg); } }
+.inv-mote { position: absolute; bottom: 4%; width: 4%; aspect-ratio: 1; border-radius: 50%; z-index: 3; opacity: 0; will-change: transform, opacity;
+  background: radial-gradient(circle, #fff6b0, #ffc93a 55%, rgba(255,200,40,0) 72%); animation: inv-mote 2.8s ease-out infinite; }
+@keyframes inv-mote { 0% { opacity: 0; transform: translateY(0) scale(0.6); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-900%) scale(1.1); } }

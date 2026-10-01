@@ -146,6 +146,20 @@
     function nameOf(w) {
       return I18N.lang === 'en' ? w.nameEn : w.name;
     }
+    // v849(사용자 지정): 등급 카드 연출 — 뿅망치(basic) 제외. 빛살 회전·반짝이(공통), 배지 별 톡(rare),
+    // 날개 퍼덕·왕관 반짝·보라 숨쉬기(epic), 날개·보석·빛줄기 훑기·금빛 입자(legend). transform/opacity 만(폰 깜빡임 방지).
+    function rarityFx(r) {
+      if (r === 'basic') return '';
+      var tw = [[18, 22], [78, 30], [24, 70], [74, 74], [50, 14]].map(function (p, i) { return '<i class="inv-tw" style="left:' + p[0] + '%;top:' + p[1] + '%;animation-delay:-' + (i * 0.37).toFixed(2) + 's"></i>'; }).join('');
+      var extra = '';
+      if (r === 'epic' || r === 'legend') extra += '<span class="inv-glow"></span><i class="inv-crown-tw"></i>';
+      if (r === 'legend') {
+        extra += '<span class="inv-sweep"></span>';
+        for (var k = 0; k < 7; k++) extra += '<i class="inv-mote" style="left:' + (12 + k * 12) + '%;animation-delay:-' + (k * 0.41).toFixed(2) + 's;animation-duration:' + (2.4 + (k % 3) * 0.5) + 's"></i>';
+      }
+      return '<span class="inv-rfx"><span class="inv-rays"></span>' + tw + (r === 'legend' ? extra.replace('<span class="inv-glow"></span><i class="inv-crown-tw"></i>', '') : '') + '</span>' +
+        (r === 'epic' || r === 'legend' ? '<span class="inv-glow"></span><i class="inv-crown-tw"></i>' : '');
+    }
     function renderWeapons() {
       var cur = equipped();
       var locked = !!(opts.gameInProgress && opts.gameInProgress());
@@ -188,7 +202,7 @@
         card.className += ' inv-card--' + w.rarity;
         card.innerHTML =
           '<div class="inv-top">' +
-            '<div class="inv-left"><div class="inv-rcard"><img class="inv-badge" alt="" src="assets/inventory/rarity/badge-' + w.rarity + '.png">' +
+            '<div class="inv-left"><div class="inv-rcard"><img class="inv-badge" alt="" src="assets/inventory/rarity/badge-' + w.rarity + '.png">' + rarityFx(w.rarity) +
               '<div class="inv-thumb-zoom">' + thumbHtml + '</div></div>' +
               '<button type="button" class="inv-equip"></button></div>' +
             '<div class="inv-right"><span class="inv-name"></span><div class="inv-stat">' +
