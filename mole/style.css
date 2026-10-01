@@ -5196,3 +5196,4 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .rp-cbtn { display: block; width: 100%; margin-top: 10px; padding: 11px 0; border: 0; border-radius: 99px; font-size: 1.05rem; font-weight: 900; color: #5a3a00;
   background: linear-gradient(180deg, #fff07a, #f0a800); box-shadow: 0 4px 0 #b07c00; }
 .rp-cbtn--sub { color: #fff; background: linear-gradient(180deg, #7fa6ff, #3558b5); box-shadow: 0 4px 0 #233c80; }
+.ws-dots { left: 4.5%; top: 3.5%; transform: none; gap: 1cqw; } /* v808(사용자 지정): 위치 점 = 합성 대상 이름 왼쪽 위(글자와 안 겹치게) */
