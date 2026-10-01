@@ -5187,31 +5187,11 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .rp-btn.is-down img { transform: translateY(4px) scale(0.94); filter: brightness(1.25); }
 .rp-modal { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; background: rgba(0, 10, 40, 0.6); }
 .rp-modal[hidden] { display: none; }
-.rp-card { width: min(80vw, 320px); padding: 18px 16px; border-radius: 20px; text-align: center; background: linear-gradient(180deg, #1c4fb8, #10306f); box-shadow: 0 0 0 3px #57d9ff, 0 10px 24px rgba(0, 0, 0, 0.5); color: #fff; }
-.rp-card-t { margin: 0 0 10px; font-size: 1.9rem; font-weight: 900; color: #ffe45a; -webkit-text-stroke: 5px #6a2a00; paint-order: stroke fill; }
-.rp-modal.is-fail .rp-card-t { color: #ff8a7a; }
-.rp-res-score { margin: 0 0 8px; display: flex; flex-direction: column; } .rp-res-score small { font-weight: 800; opacity: 0.8; } .rp-res-score b { font-size: 2rem; font-weight: 900; }
-.rp-res-row { margin: 3px 0; display: flex; justify-content: space-between; font-weight: 900; padding: 0 10%; }
-.rp-perfect b { color: #ffe45a; } .rp-great b { color: #6dffa0; } .rp-good b { color: #8fd8ff; } .rp-miss b { color: #ff8a7a; }
-.rp-cbtn { display: block; width: 100%; margin-top: 10px; padding: 11px 0; border: 0; border-radius: 99px; font-size: 1.05rem; font-weight: 900; color: #5a3a00;
-  background: linear-gradient(180deg, #fff07a, #f0a800); box-shadow: 0 4px 0 #b07c00; }
-.rp-cbtn--sub { color: #fff; background: linear-gradient(180deg, #7fa6ff, #3558b5); box-shadow: 0 4px 0 #233c80; }
 .ws-dots { left: 4.5%; top: 3.5%; transform: none; gap: 1cqw; } /* v808(사용자 지정): 위치 점 = 합성 대상 이름 왼쪽 위(글자와 안 겹치게) */
 /* v809: 카메라 축소 시 빈 곳 = 같은 영상 흐리게(검은 띠 대신) + 줌 안내 */
 .fs-video-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); filter: blur(18px) brightness(0.7); }
 .fs-zoom-tip { position: absolute; left: 0; right: 0; bottom: 150px; margin: 0; text-align: center; font-size: 0.8rem; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); pointer-events: none; }
 
-/* 리듬팡 v810: 난이도 선택·최고점 */
-.rp-sel-sub { margin: 0 0 6px; font-weight: 800; opacity: 0.9; }
-.rp-dbtn { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 10px; padding: 12px 18px; border: 0; border-radius: 16px; color: #fff; font: inherit;
-  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.35), inset 0 3px 0 rgba(255, 255, 255, 0.35); }
-.rp-dbtn b { font-size: 1.3rem; font-weight: 900; -webkit-text-stroke: 3px rgba(0, 0, 0, 0.3); paint-order: stroke fill; }
-.rp-dbtn small { font-size: 0.8rem; font-weight: 800; opacity: 0.95; }
-.rp-dbtn:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.35); }
-.rp-dbtn--easy { background: linear-gradient(180deg, #ffd84a, #f0a400); }
-.rp-dbtn--normal { background: linear-gradient(180deg, #3fd06a, #14893a); }
-.rp-dbtn--hard { background: linear-gradient(180deg, #ff5b4a, #c3170f); }
-.rp-res-best { margin: 0 0 6px; font-weight: 900; color: #ffe45a; }
 /* v812(사용자 지정): 리듬팡 버튼 최대 크기 — 화면 폭 꽉(서로 안 겹치게 3px 간격) */
 .rp-bottom { padding-left: 3px; padding-right: 3px; }
 .rp-btns { gap: 3px; }
@@ -5246,25 +5226,80 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 /* v817: 배경의 파란 레인 줄 삭제(사용자 지정) */
 .rp-lane { border-left: 0; background: none; }
 
-/* v818: 결과·일시정지·난이도 선택 버튼 = 스코어 화면 두더지팡 박스 그림(색만 다르게) */
-.rp-cbtn, .rp-dbtn { border: 14px solid transparent; border-radius: 0; box-shadow: none; background: none; border-image: url('assets/rhythm/box-yellow.png') 36 fill / 14px stretch;
-  color: #fff; -webkit-text-stroke: 3px #b25a00; paint-order: stroke fill; }
-.rp-cbtn { padding: 0; font-size: 1.15rem; }
-.rp-dbtn { padding: 0 6px; }
-.rp-dbtn b { -webkit-text-stroke: 4px #b25a00; }
-.rp-dbtn small { -webkit-text-stroke: 0; }
-.rp-cbtn:active, .rp-dbtn:active { transform: scale(0.97); box-shadow: none; }
-.rp-cbtn--sub { background: none; box-shadow: none; border-image-source: url('assets/rhythm/box-blue.png'); -webkit-text-stroke-color: #1c3f9a; }
-.rp-dbtn--easy { background: none; }
-.rp-dbtn--normal { background: none; border-image-source: url('assets/rhythm/box-green.png'); }
-.rp-dbtn--normal b { -webkit-text-stroke-color: #12702e; }
-.rp-dbtn--hard { background: none; border-image-source: url('assets/rhythm/box-red.png'); }
-.rp-dbtn--hard b { -webkit-text-stroke-color: #9a1208; }
 
-/* v820: 그만하기 = 하트 -1 표시 */
-.rp-cbtn[data-rp-quit] { position: relative; }
-.rp-cost { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 1px; }
-.rp-cost img { width: 30px; height: auto; display: block; }
-.rp-cost b { font-size: 1.05rem; font-weight: 900; color: #ff5a6e; -webkit-text-stroke: 3px #fff; paint-order: stroke fill; }
-.rp-cbtn, .rp-dbtn { transition: transform 0.06s; }
-.rp-cbtn.is-press, .rp-dbtn.is-press { transform: translateY(3px) scale(0.95); filter: brightness(0.88); }
+/* ===== v826: 리듬팡 창 3종 새 디자인(바탕화면 "리듬팡 UI 및 에셋/2차" 시안) — 부품 그림 조립 + 숫자·글자만 코드 ===== */
+.rx-card { position: relative; width: min(86vw, 340px); container-type: inline-size; display: flex; flex-direction: column; align-items: center;
+  padding: 0 7% 9%; font-family: 'Lilita One', 'Jua', sans-serif; color: #fff; }
+.rx-card::before, .rx-card::after { content: ''; position: absolute; pointer-events: none; border-style: solid; }
+.rx-card::before { inset: 3.5% 3%; z-index: 0; border-width: 30px; border-image: url('assets/rhythm/ui/d-inner.png') 40 fill / 30px stretch; }
+.rx-card::after { inset: 0; z-index: 0; border-width: 70px 90px 100px; border-image: url('assets/rhythm/ui/d-frame.png') 70 90 100 fill / 70px 90px 100px stretch; }
+.rx-card::after { border-image-slice: 70 90 100; } /* 가운데는 비움(안쪽 판이 보이게) */
+.rx-card > * { position: relative; z-index: 1; }
+.rx-card--res::before { border-image-source: url('assets/rhythm/ui/go-inner.png'); }
+.rx-card--res::after { border-width: 44px; border-image: url('assets/rhythm/ui/go-frame.png') 44 / 44px stretch; }
+.rx-card--pause { width: min(88vw, 350px); }
+.rx-card--pause::before { border-image-source: url('assets/rhythm/ui/p-inner.png'); }
+.rx-card--pause::after { border-width: 70px 90px 90px; border-image: url('assets/rhythm/ui/p-frame.png') 70 90 90 / 70px 90px 90px stretch; }
+/* 제목판 */
+.rx-title { width: 110%; max-width: none; margin: -9% 0 0; display: block; }
+.rx-plaque { width: 112%; margin: -12% 0 -2%; }
+.rx-plaque img { display: block; width: 100%; }
+.rx-ptxt { position: absolute; left: 14%; right: 14%; top: 22%; text-align: center; font-size: 15cqw; line-height: 1; white-space: nowrap;
+  color: #ffd43a; -webkit-text-stroke: 1.6cqw #7a2a06; paint-order: stroke fill; text-shadow: 0 1cqw 0 #5a1d02; font-weight: 400; }
+.rx-ptxt:lang(ko), [data-rx-pause-t] { font-family: 'Jua', 'Lilita One', sans-serif; }
+.rx-card--res .rx-clear-title { display: block; }
+.rx-card--res .rx-go-title { display: none; }
+.rp-modal.is-fail .rx-clear-title { display: none; }
+.rp-modal.is-fail .rx-go-title { display: block; }
+.rx-sub { width: 82%; margin: 1% 0 3%; display: block; }
+/* 버튼 공통 = 그림 버튼 + 글자 */
+.rx-btn { position: relative; display: block; width: 100%; border: 0; padding: 0; margin: 2.2% 0 0; background: center / 100% 100% no-repeat; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; font: inherit; color: #fff; transition: transform 0.06s; }
+.rx-btn.is-press { transform: translateY(3px) scale(0.95); filter: brightness(0.88); }
+.rx-btn span { position: absolute; top: 50%; transform: translateY(-54%); font-size: 9cqw; line-height: 1; white-space: nowrap; -webkit-text-stroke: 1.3cqw #0c2c86; paint-order: stroke fill; }
+.rx-btn--y, .rx-btn--retry { aspect-ratio: 589 / 143; background-image: url('assets/rhythm/ui/btn-yellow.png'); }
+.rx-btn--y span, .rx-btn--retry span { -webkit-text-stroke-color: #8a3a06; }
+.rx-btn--b { aspect-ratio: 593 / 143; background-image: url('assets/rhythm/ui/btn-blue.png'); }
+.rx-btn--retry { aspect-ratio: 459 / 109; background-image: url('assets/rhythm/ui/btn-retry.png'); }
+.rx-btn--diff { aspect-ratio: 458 / 105; background-image: url('assets/rhythm/ui/btn-diff.png'); }
+.rx-btn--home { aspect-ratio: 458 / 103; background-image: url('assets/rhythm/ui/btn-home.png'); }
+.rx-btn--retry span, .rx-btn--diff span, .rx-btn--home span { left: 43%; }
+.rx-btn--selhome { width: 84%; margin-top: 3%; }
+.rx-ic { position: absolute; top: 50%; transform: translate(-50%, -50%); height: 62%; width: auto; }
+.rx-ic--play { left: 30%; }
+.rx-btn--y span { left: 42%; }
+.rx-ic--heart { left: 22%; height: 66%; }
+.rx-btn--b span { left: 35%; }
+.rx-cost { position: absolute; right: 9%; top: 50%; transform: translateY(-54%); display: flex; align-items: center; gap: 0.5cqw; font-style: normal; font-size: 8cqw;
+  -webkit-text-stroke: 1.2cqw #0c2c86; paint-order: stroke fill; }
+.rx-cost img { height: 7.5cqw; width: auto; }
+/* 난이도 버튼(EASY/NORMAL/HARD 글자·BEST 라벨은 그림, 최고점 숫자만 코드) */
+.rx-dbtn { aspect-ratio: 568 / 140; margin-top: 2%; }
+.rx-dbtn--easy { background-image: url('assets/rhythm/ui/d-easy.png'); }
+.rx-dbtn--normal { background-image: url('assets/rhythm/ui/d-normal.png'); }
+.rx-dbtn--hard { background-image: url('assets/rhythm/ui/d-hard.png'); }
+.rx-dbtn small { position: absolute; left: 66%; right: 4%; top: 44%; height: 34%; display: flex; align-items: center; justify-content: flex-end;
+  font-size: 6.6cqw; color: #4a1c00; padding-right: 3%; }
+/* 결과 */
+.rx-score-l { margin: 0; font-size: 6.5cqw; -webkit-text-stroke: 1cqw #0a1f5c; paint-order: stroke fill; }
+.rx-score { width: 104%; aspect-ratio: 487 / 140; background: url('assets/rhythm/ui/go-score.png') center / 100% 100% no-repeat; display: flex; align-items: center; justify-content: center; }
+.rx-score b { font-size: 14cqw; font-weight: 400; -webkit-text-stroke: 1.4cqw #0a1f5c; paint-order: stroke fill; }
+.rx-best { width: 88%; aspect-ratio: 405 / 64; margin-top: 1%; background: url('assets/rhythm/ui/go-best.png') center / 100% 100% no-repeat; display: flex; align-items: center;
+  justify-content: center; gap: 2.5cqw; padding-left: 8%; color: #ffd84a; }
+.rx-best small { font-size: 5.2cqw; } .rx-best b { font-size: 7.4cqw; font-weight: 400; }
+.rx-best i { font-style: normal; font-size: 4.6cqw; color: #ff7a9a; }
+.rx-stats { width: 100%; aspect-ratio: 453 / 267; margin-top: 1.5%; background: url('assets/rhythm/ui/go-stats.png') center / 100% 100% no-repeat;
+  display: grid; grid-template-rows: repeat(5, 1fr); padding: 0.6% 7% 1.2% 0; }
+.rx-stats b { display: flex; align-items: center; justify-content: flex-end; font-size: 6.6cqw; font-weight: 400; }
+.rx-stats b:nth-child(2) { color: #ffe14a; } .rx-stats b:nth-child(3) { color: #5df07a; } .rx-stats b:nth-child(4) { color: #8fe6ff; } .rx-stats b:nth-child(5) { color: #ff7b8a; }
+.rx-card--res .rx-btn { margin-top: 1.6%; }
+.rx-card--res .rx-btn--retry { margin-top: 3%; }
+.rx-card--pause, .rx-card--res { padding-bottom: 12%; }
+.rx-card--sel { padding-bottom: 11%; }
+.rx-ptxt { color: #ffc61e; -webkit-text-stroke: 2.2cqw #8a2c04; text-shadow: 0 1.2cqw 0 #5a1d02; }
+.rx-ptxt { position: absolute; left: 10%; right: 10%; top: 12%; width: 80%; height: auto; overflow: visible; -webkit-text-stroke: 0; text-shadow: none; }
+.rx-ptxt text { paint-order: stroke fill; stroke-linejoin: round; }
+.rx-pt-sh { fill: #4a1402; stroke: #4a1402; stroke-width: 16px; }
+.rx-pt-st { fill: #6e2003; stroke: #6e2003; stroke-width: 16px; }
+.rx-pt-fill { stroke: #fff7c0; stroke-width: 2px; }
+.rx-ptxt { top: 12%; }

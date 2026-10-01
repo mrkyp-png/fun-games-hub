@@ -381,10 +381,9 @@
       if (st.ended) return; st.ended = true; st.over = true; el.querySelectorAll('.rp-btn').forEach(function (b) { b.classList.remove('is-cue'); }); // 결과창 뒤 버튼 반짝임 정지
       try { src.stop(ctx.currentTime + (clear ? 0.8 : 0.05)); } catch (e) { /* 무시 */ }
       var r = $('[data-rp-result]');
-      $('[data-rp-res-title]').textContent = clear ? 'CLEAR!' : 'GAME OVER';
       var bk = 'mole.rp.best.' + diff, old = parseInt(localStorage.getItem(bk), 10) || 0, isNew = st.score > old;
       if (isNew) localStorage.setItem(bk, String(st.score));
-      $('[data-rp-res-best]').textContent = diff + '  BEST ' + Math.max(old, st.score).toLocaleString('en-US') + (isNew && st.score > 0 ? '  NEW!' : '');
+      $('[data-rp-res-best]').innerHTML = '<small>' + diff + ' BEST</small><b>' + Math.max(old, st.score).toLocaleString('en-US') + '</b>' + (isNew && st.score > 0 ? '<i>NEW!</i>' : '');
       r.classList.toggle('is-fail', !clear);
       $('[data-rp-res-score]').textContent = st.score.toLocaleString('en-US');
       $('[data-rp-res-combo]').textContent = st.maxCombo;
@@ -394,11 +393,13 @@
 
     function pause(on) {
       if (!st || st.ended) return;
+      var pt = (root.FGH && root.FGH.I18N && root.FGH.I18N.lang === 'en') ? 'PAUSE' : '일시정지'; // v826: 한글은 일시정지
+      el.querySelectorAll('[data-rx-pause-t] textPath').forEach(function (t) { t.textContent = pt; });
       st.paused = on; $('[data-rp-pause]').hidden = !on;
       if (on) ctx.suspend(); else ctx.resume();
     }
     // 창 버튼 누름 효과(v820) — 폰에서 :active 가 잘 안 먹어 직접 클래스 토글
-    el.querySelectorAll('.rp-cbtn, .rp-dbtn').forEach(function (b) {
+    el.querySelectorAll('.rx-btn').forEach(function (b) {
       b.addEventListener('pointerdown', function () { b.classList.add('is-press'); });
       ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { b.addEventListener(ev, function () { b.classList.remove('is-press'); }); });
     });
@@ -420,7 +421,7 @@
       $('[data-rp-result]').hidden = true; $('[data-rp-pause]').hidden = true;
       el.querySelectorAll('[data-rp-diff]').forEach(function (b) {
         var d = b.getAttribute('data-rp-diff'), best = parseInt(localStorage.getItem('mole.rp.best.' + d), 10) || 0;
-        b.querySelector('small').textContent = best ? 'BEST ' + best.toLocaleString('en-US') : '';
+        b.querySelector('small').textContent = best.toLocaleString('en-US');
       });
       $('[data-rp-select]').hidden = false;
     }
