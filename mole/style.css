@@ -5517,3 +5517,9 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .inv-card[class*="inv-card--"] .inv-stat-tbl td { padding: 4px 6px 4px 2px; font-size: 0.6rem; line-height: 1.3; }
 .inv-desc { margin-top: 6px; padding: 6px 7px; font-size: 0.58rem; line-height: 1.45; word-break: keep-all; }
 .inv-card[class*="inv-card--"] .inv-right::before { font-size: 1.3rem; }
+/* v848: 장착 버튼 = 스코어 두더지팡 박스 그림(색 유지: 장착=초록, 장착됨=회색) + 누름 효과 */
+.inv-card[class*="inv-card--"] .inv-equip { aspect-ratio: 426 / 141; padding: 0; border: 0; border-radius: 0; overflow: visible; box-shadow: none;
+  background: url('assets/inventory/rarity/btn-equip.png') center / 100% 100% no-repeat; color: #fff; -webkit-text-stroke: 3px #146a2c; paint-order: stroke fill; font-size: 1rem; transition: transform 0.08s; }
+.inv-card[class*="inv-card--"] .inv-equip::before { display: none; }
+.inv-card[class*="inv-card--"] .inv-equip:active:not(:disabled) { transform: translateY(3px) scale(0.94); filter: brightness(0.9); }
+.inv-card[class*="inv-card--"] .inv-equip:disabled { background: url('assets/inventory/rarity/btn-equipped.png') center / 100% 100% no-repeat; border: 0; -webkit-text-stroke: 3px #5d636c; }
