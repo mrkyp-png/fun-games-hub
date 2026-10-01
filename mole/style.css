@@ -5315,3 +5315,27 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .rx-ic--heart { left: 30%; }
 .rx-btn--b span { left: 42%; }
 .rx-cost { right: 6%; }
+/* v830: 부메랑·원반 내려올 때 바람 줄기(무기 뒤쪽, 무기 쪽이 진하고 멀수록 투명) */
+.rp-wind { position: absolute; left: 0; top: 0; pointer-events: none; transform-origin: 50% 100%; will-change: transform, opacity;
+  background:
+    linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.9)) 18% 100% / 3px 55% no-repeat,
+    linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.95)) 50% 100% / 4px 85% no-repeat,
+    linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.9)) 82% 100% / 3px 65% no-repeat; }
+/* v830: 창 위 제목판(전광판)에 빛이 지나가는 효과 — 판 그림 모양대로 가려서 판 위에만, transform 애니라 가벼움 */
+.rx-title img { display: block; width: 100%; }
+.rx-shine { position: absolute; inset: 0; overflow: hidden; pointer-events: none; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+.rx-shine i { position: absolute; top: -10%; bottom: -10%; left: 0; width: 28%; transform: translateX(-120%) skewX(-20deg); will-change: transform;
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.75) 50%, rgba(255,255,255,0)); animation: rx-shine 2.8s ease-in-out infinite; }
+@keyframes rx-shine { 0% { transform: translateX(-120%) skewX(-20deg); } 55%, 100% { transform: translateX(480%) skewX(-20deg); } }
+/* v830: 바람 줄기 더 또렷하게(하늘 배경에 묻혀 안 보였음) */
+.rp-wind { background:
+    linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1)) 14% 100% / 4px 50% no-repeat,
+    linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1)) 38% 100% / 5px 80% no-repeat,
+    linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1)) 62% 100% / 5px 95% no-repeat,
+    linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1)) 86% 100% / 4px 60% no-repeat;
+  filter: drop-shadow(0 0 2px rgba(20, 70, 160, 0.85)); }
+.rp-wind { background:
+    linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.95) 55%, #fff) 12% 72% / 3px 45% no-repeat,
+    linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.95) 55%, #fff) 37% 70% / 4px 70% no-repeat,
+    linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.95) 55%, #fff) 63% 70% / 4px 80% no-repeat,
+    linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.95) 55%, #fff) 88% 72% / 3px 50% no-repeat; }

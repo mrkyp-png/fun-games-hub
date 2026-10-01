@@ -154,6 +154,7 @@
       var p = posAt(n, t);
       return { x: p.x, y: p.y, sc: big, rot: spin ? (t - n.spawnTime) * 240 : 0, op: 1 };
     }
+    function sizeWind(n) { n.wind.style.width = (L.weaponR * 2.6) + 'px'; n.wind.style.height = (L.weaponR * 4.4) + 'px'; n.wind.style.opacity = '0'; }
     function xf(q) { return 'translate(' + (q.x - L.weaponR * 1.2) + 'px,' + (q.y - L.weaponR * 1.2) + 'px) scale(' + q.sc.toFixed(3) + ') rotate(' + q.rot.toFixed(1) + 'deg)'; }
     function pathLen(pts) { var s = 0; for (var i = 1; i < pts.length; i++) s += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); return s; }
     function posAt(n, t) { // t = 음악 시각
@@ -206,6 +207,7 @@
         n.pts = routeOf(n); n.len = pathLen(n.pts);
         if (n.el) n.el.style.width = (L.weaponR * 2.4) + 'px';
         if (n.trail) n.trail.forEach(function (g) { g.style.width = (L.weaponR * 2.4) + 'px'; });
+        if (n.wind) sizeWind(n);
       });
     });
     // v813(깜빡임 제거): 7프레임을 미리 겹쳐 두고 보이는 것만 바꿈 — img src 교체 순간 빈 프레임이 생기던 것
@@ -244,9 +246,11 @@
           }
           n.el.style.width = (L.weaponR * 2.4) + 'px'; n.el.style.opacity = '0'; n.el.decoding = 'sync';
           // 눈덩이·하트 화살 = 날아오는 잔상 2겹(사용자 지정 v816)
-          if (n.weaponType === 'snow' || n.weaponType === 'heart') {
-            n.trail = [0.32, 0.15].map(function (op) { var g = n.el.cloneNode(); g.className = 'rp-weapon rp-trail'; g.dataset.op = op; wlayer.appendChild(g); return g; });
+          { // 4종 모두 잔상 — 원반·부메랑도(사용자 지정 v830)
+            n.trail = [0.32, 0.15].map(function (op) { var g = n.el.cloneNode(true); g.className = n.el.className + ' rp-trail'; g.dataset.op = op; wlayer.appendChild(g); return g; });
           }
+          // 부메랑·원반 = 내려올 때 뒤로 바람 줄기(사용자 지정 v830)
+          if (n.weaponType === 'boomerang' || n.weaponType === 'disc') { n.wind = document.createElement('span'); n.wind.className = 'rp-wind'; sizeWind(n); wlayer.appendChild(n.wind); }
           wlayer.appendChild(n.el); });
         notes.forEach(function (n) { n.pts = routeOf(n); n.len = pathLen(n.pts); n.spawnTime = n.targetTime - DIFFS[diff].travel; n.state = 'wait'; });
         st = { notes: notes, score: 0, combo: 0, maxCombo: 0, hp: CONFIG.hpMax, cnt: { PERFECT: 0, GREAT: 0, GOOD: 0, MISS: 0 },
@@ -287,7 +291,7 @@
       best.n.press = { grade: ms <= J.perfectMs ? 'PERFECT' : ms <= J.greatMs ? 'GREAT' : 'GOOD', lane: lane };
     }
     function hit(n, lane) {
-      n.state = 'hit'; n.hitAt = now(); if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; });
+      n.state = 'hit'; n.hitAt = now(); if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); if (n.wind) n.wind.style.opacity = '0';
       var g = n.press.grade; st.cnt[g]++; st.combo++; st.maxCombo = Math.max(st.maxCombo, st.combo);
       st.score += Math.round(CONFIG.score[g] * (1 + Math.min(st.combo, 100) / 200));
       n.vx = (Math.random() < 0.5 ? -1 : 1) * (L.laneW * (1.5 + Math.random())); n.vy = -L.H * 1.1; n.bx = n.cx; n.by = n.cy;
@@ -295,7 +299,7 @@
       try { MG.HitFx && MG.HitFx.uiTap && MG.HitFx.uiTap(1); } catch (e) { /* 무시 */ }
     }
     function miss(lane, n) {
-      if (n) { n.state = 'miss'; if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); }
+      if (n) { n.state = 'miss'; if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); if (n.wind) n.wind.style.opacity = '0'; }
       st.cnt.MISS++; st.combo = 0; st.hp = Math.max(0, st.hp - 1);
       st.moles[lane].hurtAt = now();
       showJudge(lane, 'MISS', 'miss'); hud();
@@ -333,17 +337,23 @@
         // v812(사용자 지정): 바다 수평선 부근에서 정면으로 던져져(작게) 포물선으로 화면 최상단까지 올라온 뒤(크게) 두더지 쪽으로 떨어짐
         if (n.state === 'wait' && t >= n.spawnTime - LAUNCH) {
           n.state = 'live';
-          if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; });
+          if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); if (n.wind) n.wind.style.opacity = '0';
         }
         if (n.state === 'live') {
           var cur = flyAt(n, t);
           if (n.face) { n.face.style.transform = 'rotate(' + cur.rot.toFixed(1) + 'deg)'; cur = Object.assign({}, cur, { rot: 0 }); }
           n.el.style.transform = xf(cur); n.el.style.opacity = String(cur.op);
           if (n.trail) n.trail.forEach(function (g, gi) {
-            var q = flyAt(n, t - 0.035 * (gi + 1));
+            var q = flyAt(n, t - 0.035 * (gi + 1)); if (n.face) q.rot = 0; // 원반 잔상은 테두리 고정
             if (q.op <= 0) { g.style.opacity = '0'; return; }
             g.style.transform = xf(q); g.style.opacity = String(q.op * +g.dataset.op);
           });
+          if (n.wind) {
+            if (t < n.spawnTime) n.wind.style.opacity = '0';
+            else { var pv = flyAt(n, t - 0.03), ang = Math.atan2(-(cur.x - pv.x), cur.y - pv.y) * 180 / Math.PI;
+              n.wind.style.transform = 'translate(' + (cur.x - L.weaponR * 1.3) + 'px,' + (cur.y - L.weaponR * 4.4) + 'px) rotate(' + ang.toFixed(1) + 'deg)';
+              n.wind.style.opacity = (0.85 + 0.15 * Math.sin(t * 38)).toFixed(2); }
+          }
           if (t < n.spawnTime) { n.cx = cur.x; n.cy = -9999; return; } // 던져 올라오는 구간(판정 없음)
           var p = cur; n.cx = p.x; n.cy = p.y;
           // 물리 충돌: 그 레인 두더지가 점프 중이고 머리 원과 무기 원이 겹침
@@ -359,13 +369,13 @@
           var k = t - n.hitAt; n.cx = n.bx + n.vx * k; n.cy = n.by + n.vy * k + L.H * 2.2 * k * k;
           n.el.style.transform = 'translate(' + (n.cx - L.weaponR * 1.2) + 'px,' + (n.cy - L.weaponR * 1.2) + 'px) scale(' + (n.weaponType === 'boomerang' || n.weaponType === 'disc' ? 1.2 : 1) + ') rotate(' + (t * 900) + 'deg)';
           n.el.style.opacity = String(Math.max(0, 1 - k * 1.6));
-          if (k > 0.7) { n.el.style.opacity = '0'; if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); n.state = 'done'; }
+          if (k > 0.7) { n.el.style.opacity = '0'; if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); if (n.wind) n.wind.style.opacity = '0'; n.state = 'done'; }
         }
         if (n.state === 'miss') { // 두더지에 맞고 튕겨 떨어짐
           if (!n.missAt) n.missAt = t;
           var q = t - n.missAt; n.el.style.opacity = String(Math.max(0, 1 - q * 2.5));
           n.el.style.transform += ' translateY(' + (q * 120) + 'px)';
-          if (q > 0.4) { n.el.style.opacity = '0'; if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); n.state = 'done'; }
+          if (q > 0.4) { n.el.style.opacity = '0'; if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); if (n.wind) n.wind.style.opacity = '0'; n.state = 'done'; }
         }
       });
       // v814(사용자 지정): 무기가 타겟에 다가오면(도착 0.5초 전~도착 0.15초 후) 그 레인 버튼에 불빛
