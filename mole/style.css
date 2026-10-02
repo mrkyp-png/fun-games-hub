@@ -6330,3 +6330,14 @@ html, body, .cosmic-bg { background: #2a190d; }
 #game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.is-tint-miss { border-image-source: url('assets/home2/btn-red.png'); }
 #game-screen:not(.is-start) .lane-button.is-tint-hit:not(.lane-button--call), #game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.is-tint-hit { animation: lane-hit-pop 0.3s ease-out; }
 @keyframes lane-hit-pop { 0% { scale: 1.08; } 100% { scale: 1; } }
+/* v954: 두더지 초록(.lane-button--hot) 규칙이 선택자가 더 강해 연타 두더지 맞힘 분홍·실패 빨강이 가려지던 것 — 분홍·빨강이 항상 이기게 */
+#game-screen:not(.is-start):not(.diff-mid):not(.diff-legend) .lane-button.lane-button.is-tint-hit .lane-face--key,
+#game-screen:not(.is-start).diff-mid .lane-button.lane-button.is-tint-hit .lane-face--key,
+#game-screen:not(.is-start).diff-legend .lane-button.lane-button.is-tint-hit .lane-face--key{ --cap: url('assets/home2/btn-pink.png'); }
+#game-screen:not(.is-start):not(.diff-mid):not(.diff-legend) .lane-button.lane-button.is-tint-miss .lane-face--key,
+#game-screen:not(.is-start).diff-mid .lane-button.lane-button.is-tint-miss .lane-face--key,
+#game-screen:not(.is-start).diff-legend .lane-button.lane-button.is-tint-miss .lane-face--key { --cap: url('assets/home2/btn-red.png'); }
+#game-screen:not(.is-start):not(.diff-mid):not(.diff-legend) .lane-button--simple.lane-button--simple.is-tint-hit{ border-image-source: url('assets/home2/btn-pink.png'); }
+#game-screen:not(.is-start):not(.diff-mid):not(.diff-legend) .lane-button--simple.lane-button--simple.is-tint-miss { border-image-source: url('assets/home2/btn-red.png'); }
+#game-screen:not(.is-start):not(.gs-laneskill):not(.diff-mid):not(.diff-legend) .lane-button--call.lane-button--call.is-tint-hit{ border-image-source: url('assets/home2/btn-pink.png'); }
+#game-screen:not(.is-start):not(.gs-laneskill):not(.diff-mid):not(.diff-legend) .lane-button--call.lane-button--call.is-tint-miss { border-image-source: url('assets/home2/btn-red.png'); }
