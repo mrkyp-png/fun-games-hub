@@ -1107,8 +1107,9 @@
       if (sub === 'inventory-screen' && inventoryScreen) inventoryScreen.show();
       if (sub === 'light-popup') refreshLightPopup();
       if (sub === 'roundmap-screen' && roundMap) roundMap.show();
+      if (sub === 'quest-screen' && window.__questScreen) window.__questScreen.show();
       // v836(사용자 지정): 뒤로가기와 같은 글리치로 진입 — 스코어·출석·제작소·광산지도
-      if (['score-screen', 'daily-screen', 'workshop-screen', 'roundmap-screen', 'shop-screen', 'inventory-screen'].indexOf(sub) >= 0) { // v862: 상점·아이템도
+      if (['score-screen', 'daily-screen', 'workshop-screen', 'roundmap-screen', 'shop-screen', 'inventory-screen', 'quest-screen'].indexOf(sub) >= 0) { // v862: 상점·아이템도
         const gs = document.getElementById(sub);
         gs.classList.remove('glitch-in'); void gs.offsetWidth; gs.classList.add('glitch-in');
         setTimeout(() => gs.classList.remove('glitch-in'), 260);
@@ -2537,6 +2538,8 @@
 
     // 클리어 판정 = 누적점수 ≥ 목표(완벽 플레이 90%). 통과 시 다음 챕터 해금.
     const prog = MG.Progress.record(chapter, light, total);
+    // v894: 퀘스트·업적 기록(플레이 수, 점수, 최고 콤보, 처치 수)
+    try { if (MG.Quest) MG.Quest.recordGame({ score: total, maxCombo: run.combo.maxCombo, kills: run.combo.kills }); } catch (e) { /* 무시 */ }
 
     // 코인 = 점수 ÷ 5000 (내림) + 10라운드 완주 보너스 20 (사용자 지정 v269 — 예전 ÷10000 은 너무 박했음).
     const coins = Math.floor(total / 5000) + (reason === 'done' ? 20 : 0);
@@ -2998,6 +3001,14 @@
       onClose: () => closeMore(),
       onChange: () => { refreshBoardStats(); if (moreMenu) moreMenu.refresh(); }
     });
+    // v894: 퀘스트·업적 화면
+    const questScreen = MG.Quest.create({
+      root: document.getElementById('quest-screen'),
+      onClose: () => closeMore(),
+      onPlay: () => closeMore(), // 바로가기 = 홈(시작 버튼으로 바로 플레이)
+      onChange: () => { refreshBoardStats(); if (moreMenu) moreMenu.refresh(); }
+    });
+    window.__questScreen = questScreen;
     daily = MG.Daily.create({
       root: document.getElementById('daily-screen'),
       onClose: () => closeMore(),

@@ -5839,3 +5839,74 @@ html, body, .cosmic-bg { background: #0a1230; }
 .ws-item img[src*="w-goldhammer"], .ws-stage img[src*="w-goldhammer"] { transform: scale(0.9); }
 /* v892: 그만하기 -1 = 하트 없이 숫자만, 왼쪽으로 */
 .rx-cost { right: calc(15% + 0.2cm); }
+
+/* ===== v894: 퀘스트·업적 화면(바탕화면 "퀘스트 UI 및 에셋" 시안) — 일일출석처럼 전체화면 ===== */
+#quest-screen.qs-screen { position: fixed; inset: 0; top: 0; left: 0; transform: none; width: 100%; height: 100%; border-radius: 0; box-shadow: none; z-index: 300; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
+  background: #3a2410 url('assets/quest/bg.jpg') center / cover no-repeat; color: #3a2410; --w: min(100vw - 16px, 470px, (100dvh - 30px) * 0.56); font-family: 'Jua', 'Lilita One', sans-serif; }
+.qs-stage { position: relative; width: var(--w); display: flex; flex-direction: column; align-items: stretch; max-height: 100%; }
+.qs-head { position: relative; flex: 0 0 auto; }
+.qs-head-img { display: block; width: 100%; }
+.qs-title { position: absolute; left: 34%; right: 9%; top: 8%; width: 57%; overflow: visible; }
+.qs-screen[data-mode="ach"] .qs-title { left: 30%; width: 62%; top: 12%; }
+.qs-title text { font-family: 'Lilita One', 'Jua', sans-serif; font-size: 84px; paint-order: stroke fill; stroke-linejoin: round; }
+.qs-t-sh { fill: #4a1402; stroke: #4a1402; stroke-width: 14px; } .qs-t-st { fill: #6e2003; stroke: #6e2003; stroke-width: 14px; }
+.qs-t-fill { stroke: #fff7c0; stroke-width: 2px; }
+.qs-x { position: absolute; right: -2%; top: 26%; width: 13%; padding: 0; border: 0; background: none; cursor: pointer; transition: transform 0.08s; }
+.qs-x img { width: 100%; display: block; }
+.qs-tabs { position: absolute; left: 4.5%; right: 4.5%; bottom: 7%; height: 26%; display: flex; gap: 1.5%; }
+.qs-tabs button { flex: 1; border: 0; border-radius: 10px 10px 4px 4px; cursor: pointer; font-family: 'Lilita One', 'Jua', sans-serif; font-size: calc(var(--w) * 0.05); color: #f3e2c0;
+  background: linear-gradient(180deg, #6a4126, #4a2a14); box-shadow: inset 0 2px 0 rgba(255,255,255,0.12); -webkit-text-stroke: 1.5px #2a1406; paint-order: stroke fill; }
+.qs-tabs button.is-on { color: #fff; background: linear-gradient(180deg, #4fa6ff, #1c63e0); box-shadow: inset 0 2px 0 rgba(255,255,255,0.45), 0 0 0 2px #9fd2ff; -webkit-text-stroke: 1.5px #0c3a8a; }
+.qs-screen[data-mode="weekly"] .qs-tabs button.is-on { background: linear-gradient(180deg, #b86bff, #7a2ee0); box-shadow: inset 0 2px 0 rgba(255,255,255,0.45), 0 0 0 2px #dcb6ff; -webkit-text-stroke-color: #3e0f78; }
+.qs-screen[data-mode="ach"] .qs-tabs button { font-size: calc(var(--w) * 0.042); }
+.qs-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 7px; padding: 6px 4px 8px;
+  background: linear-gradient(180deg, #7a4a24, #5a3416); border-radius: 0 0 18px 18px; box-shadow: inset 0 0 0 3px #3a2008, inset 0 3px 8px rgba(0,0,0,0.35); }
+.qs-card { position: relative; display: flex; align-items: center; gap: 2%; padding: 7px 8px; border-radius: 12px;
+  background: linear-gradient(180deg, #fff8ea, #f3e2c2); box-shadow: inset 0 0 0 2px #d6b27e, 0 3px 0 #a87a44; }
+.qs-ico { flex: 0 0 17%; display: flex; align-items: center; justify-content: center; }
+.qs-ico img { width: 100%; height: auto; display: block; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.25)); }
+.qs-mid { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.qs-name { font-size: calc(var(--w) * 0.044); color: #2a1a08; font-weight: 400; line-height: 1.1; }
+.qs-desc { font-family: system-ui, sans-serif; font-size: calc(var(--w) * 0.026); font-weight: 600; color: #6a5236; line-height: 1.3; }
+.qs-barrow { display: flex; align-items: center; gap: 6px; }
+.qs-cnt { font-size: calc(var(--w) * 0.034); color: #2a1a08; white-space: nowrap; }
+.qs-bar { flex: 1; height: 11px; border-radius: 99px; background: #8b7a68; box-shadow: inset 0 2px 2px rgba(0,0,0,0.3); overflow: hidden; display: block; }
+.qs-bar > i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(180deg, #6fc1ff, #1f7ae0); box-shadow: inset 0 2px 0 rgba(255,255,255,0.45); }
+.qs-card--purple .qs-bar > i { background: linear-gradient(180deg, #c48bff, #7b34e0); }
+.qs-card--green .qs-bar > i { background: linear-gradient(180deg, #5fe07a, #1fa64a); }
+.qs-rw { flex: 0 0 26%; align-self: stretch; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-left: 2px solid rgba(160, 120, 70, 0.35); padding-left: 4px; }
+.qs-rwline { display: flex; align-items: center; justify-content: center; gap: 3px; }
+.qs-rwline img { width: calc(var(--w) * 0.08); height: auto; }
+.qs-rwline b { font-family: 'Lilita One', 'Jua', sans-serif; font-weight: 400; font-size: calc(var(--w) * 0.04); color: #2a1a08; white-space: nowrap; }
+.qs-btn { width: 96%; padding: 5px 0; border: 0; border-radius: 10px; cursor: pointer; font-family: 'Jua', sans-serif; font-size: calc(var(--w) * 0.038); color: #fff; text-align: center; transition: transform 0.08s; }
+.qs-btn--go { background: linear-gradient(180deg, #4fb0ff, #1660d8); box-shadow: inset 0 2px 0 rgba(255,255,255,0.45), 0 3px 0 #0c3a8a; -webkit-text-stroke: 1.5px #0c3a8a; paint-order: stroke fill; }
+.qs-btn--claim { color: #fff; background: linear-gradient(180deg, #ffe066, #f5a800); box-shadow: inset 0 2px 0 rgba(255,255,255,0.6), 0 3px 0 #a86a00; -webkit-text-stroke: 1.5px #8a4a00; paint-order: stroke fill; animation: qs-claim 1s ease-in-out infinite; }
+@keyframes qs-claim { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+.qs-btn--lock { display: block; background: linear-gradient(180deg, #b9b9b9, #8a8a8a); color: #fff; box-shadow: inset 0 2px 0 rgba(255,255,255,0.35), 0 3px 0 #5a5a5a; cursor: default; }
+.qs-btn.is-press, .qs-x.is-press, .qs-achbtn.is-press, .qs-tabs button.is-press { transform: translateY(2px) scale(0.95); }
+.qs-check { width: calc(var(--w) * 0.11); height: auto; }
+.qs-card.is-done { filter: saturate(0.85); }
+.qs-card--sum { background: linear-gradient(180deg, #fffdf6, #f7ead0); }
+.qs-sumcnt { flex: 0 0 auto; font-family: 'Lilita One', 'Jua', sans-serif; font-weight: 400; font-size: calc(var(--w) * 0.065); color: #2a1a08; padding: 0 6px; }
+.qs-shield { width: 100%; aspect-ratio: 139 / 157; background: center / contain no-repeat; display: flex; align-items: center; justify-content: center;
+  font-family: 'Lilita One', sans-serif; font-size: calc(var(--w) * 0.075); color: #fff; -webkit-text-stroke: 3px rgba(60, 30, 0, 0.75); paint-order: stroke fill; padding-bottom: 6%; box-sizing: border-box; }
+.qs-all { display: flex; align-items: center; gap: 2%; padding: 8px 10px; border-radius: 14px; color: #fff;
+  background: linear-gradient(180deg, #5a3218, #3e200c); box-shadow: inset 0 0 0 2px #c08a3a, 0 3px 0 #2a1406; }
+.qs-all--weekly { background: linear-gradient(180deg, #7a3ad8, #4a1a98); box-shadow: inset 0 0 0 2px #c79bff, 0 3px 0 #2a0a5a; }
+.qs-all-gift { flex: 0 0 17%; width: 17%; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4)); }
+.qs-all-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.qs-all-txt b { font-family: 'Lilita One', 'Jua', sans-serif; font-weight: 400; font-size: calc(var(--w) * 0.05); color: #ffd84a; -webkit-text-stroke: 2px #4a2006; paint-order: stroke fill; }
+.qs-all-txt span { font-family: system-ui, sans-serif; font-size: calc(var(--w) * 0.026); font-weight: 600; color: #f3e2c0; }
+.qs-all-rw { flex: 0 0 28%; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.qs-all-rw .qs-rwline b { color: #fff; -webkit-text-stroke: 2px #2a1406; paint-order: stroke fill; }
+.qs-achbtn { position: relative; flex: 0 0 auto; align-self: center; width: 76%; margin-top: 8px; padding: 0; border: 0; background: none; cursor: pointer; transition: transform 0.08s; }
+.qs-achbtn img { width: 100%; display: block; }
+.qs-achbtn span { position: absolute; left: 22%; right: 14%; top: 50%; transform: translateY(-52%); text-align: center; font-family: 'Lilita One', 'Jua', sans-serif;
+  font-size: calc(var(--w) * 0.052); color: #ffd84a; -webkit-text-stroke: 2px #3a1a04; paint-order: stroke fill; }
+/* v894 다듬기: 제목은 두더지 오른쪽, ACHIEVEMENT 글자는 트로피 아래쪽 띠로 */
+.qs-title { left: 42%; width: 48%; top: 10%; }
+.qs-screen[data-mode="ach"] .qs-title { left: 40%; width: 52%; top: 9%; }
+.qs-achbtn span { left: 0; right: 0; top: auto; bottom: -4%; transform: none; font-size: calc(var(--w) * 0.042); }
+.qs-achbtn { margin-bottom: 4px; }
+.qs-desc { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
