@@ -151,6 +151,7 @@
     }
     // v849(사용자 지정): 등급 카드 연출 — 뿅망치(basic) 제외. 빛살 회전·반짝이(공통), 배지 별 톡(rare),
     // 날개 퍼덕·왕관 반짝·보라 숨쉬기(epic), 날개·보석·빛줄기 훑기·금빛 입자(legend). transform/opacity 만(폰 깜빡임 방지).
+    var SKILL_RARITY = { freeze: 'rare', goldDouble: 'rare', shield: 'rare', feverTime: 'rare', targeting: 'epic', carpetBombing: 'epic', ai: 'legend' };
     function rarityFx(r) {
       if (r === 'basic') return '';
       var tw = [[18, 22], [78, 30], [24, 70], [74, 74], [50, 14]].map(function (p, i) { return '<i class="inv-tw" style="left:' + p[0] + '%;top:' + p[1] + '%;animation-delay:-' + (i * 0.37).toFixed(2) + 's"></i>'; }).join('');
@@ -419,9 +420,12 @@
         }
         var qty = MG.Skills.getQuantity(skill.id);
         var isEquipped = equippedList.indexOf(skill.id) > -1;
-        cell.className = 'skl-card' + (isEquipped ? ' skl-card--on' : '') + (qty <= 0 ? ' skl-card--empty' : '');
+        // v868(사용자 지정): 스킬 카드 = 무기 카드와 같은 등급 카드 형태. 등급: 빙결·골드2배·실드·피버타임=RARE, 타겟팅·융단폭격=EPIC, AI=LEGENDARY
+        var rar = SKILL_RARITY[skill.id] || 'rare';
+        cell.className = 'skl-card skl-rcard skl-rar-' + rar + ' inv-card--' + rar + (isEquipped ? ' skl-card--on' : '') + (qty <= 0 ? ' skl-card--empty' : '');
         cell.setAttribute('data-skill-id', skill.id);
         cell.innerHTML =
+          rarityFx(rar) + '<img class="skl-badge" alt="" src="assets/inventory/rarity/badge-' + rar + '.png">' +
           '<div class="skl-card-icowrap"><img class="skl-card-ico" alt="" src="' + skill.icon + '">' +
             (isEquipped ? '<span class="skl-card-check">✓</span>' : '') + '</div>' +
           '<div class="skl-card-name"></div>' +

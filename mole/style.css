@@ -5717,3 +5717,33 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 /* v866: 라벨 바탕 = 진한 갈색 나무판(일시정지 나무판 느낌) + 금테 — 금빛 글자가 또렷하게 */
 .photo-coll-rowlabel { background: linear-gradient(90deg, #5a2a0c 0%, #8a4a1c 45%, #6a3410 100%);
   box-shadow: inset 0 0 0 2px #ffd56a, 0 0 0 2px #a8700e, inset 0 2px 0 3px rgba(255,200,120,0.18), 0 2px 0 3px #3a1a04; }
+
+/* ===== v868: 스킬 카드 = 무기 카드 형태(등급 카드 배경·배지·빛살/반짝이, 두더지팡 박스 장착 버튼) ===== */
+.skl-card.skl-rcard { background: center / 100% 100% no-repeat; box-shadow: none; padding: 22% 4% 4%; overflow: hidden; isolation: isolate; border-radius: 9px; }
+.skl-card.skl-rar-rare { background-image: url('assets/inventory/rarity/card-rare.png'); }
+.skl-card.skl-rar-epic { background-image: url('assets/inventory/rarity/card-epic.png'); }
+.skl-card.skl-rar-legend { background-image: url('assets/inventory/rarity/card-legend.png'); }
+.skl-rcard .inv-rfx { inset: 3% 4%; }
+.skl-rcard .inv-glow { inset: 0; }
+.skl-rcard > *:not(.inv-rfx):not(.inv-glow) { position: relative; z-index: 2; }
+.skl-badge { position: absolute !important; left: 50%; top: 1%; width: 92%; transform: translateX(-50%); z-index: 3 !important; pointer-events: none; }
+.skl-rar-epic .skl-badge, .skl-rar-legend .skl-badge { width: 100%; top: -1%; }
+.skl-rcard .inv-crown-tw { display: none; }
+.skl-rcard .skl-card-name { color: #fff; font-size: 0.66rem; -webkit-text-stroke: 3px rgba(10, 20, 60, 0.85); paint-order: stroke fill; }
+.skl-rcard .skl-card-qty { color: #fff; -webkit-text-stroke: 2px rgba(10, 20, 60, 0.75); paint-order: stroke fill; }
+.skl-card[data-skill-id="goldDouble"].skl-rcard .skl-card-name { margin-top: 0; }
+.skl-rcard.skl-card--on { box-shadow: inset 0 0 0 3px #ffd93b, 0 0 0 0 transparent; }
+.skl-rcard .skl-card-btn { width: 96%; aspect-ratio: 426 / 141; padding: 0; border: 0; border-radius: 0; box-shadow: none; overflow: visible;
+  background: url('assets/inventory/rarity/btn-equip.png') center / 100% 100% no-repeat; color: #fff; font-size: 0.62rem; -webkit-text-stroke: 2px #146a2c; paint-order: stroke fill; transition: transform 0.08s; }
+.skl-rcard .skl-card-btn::before { display: none; }
+.skl-rcard .skl-card-btn:active:not(:disabled) { transform: translateY(2px) scale(0.94); filter: brightness(0.9); }
+.skl-rcard .skl-card-btn:disabled { background: url('assets/inventory/rarity/btn-equipped.png') center / 100% 100% no-repeat; color: #fff; -webkit-text-stroke: 2px #5d636c; }
+/* v868: 배지 아주 작게(카드 상단), 스킬 아이콘은 가리지 않고 다 보이게 */
+.skl-card.skl-rcard { padding-top: 15%; }
+.skl-badge { width: 62% !important; top: 2% !important; }
+/* 골드 2배만 폰에서 아이콘·이름이 위로 떠 보이던 원인: 이름 줄의 숫자 '2'가 다른 대체 글꼴로 그려져 줄 높이가 커지고,
+   그만큼 아이콘 칸(flex:1)이 줄어 아이콘이 작고 위로 보임 — 이름·수량 줄 높이를 고정해 모든 카드 같은 크기로 */
+.skl-rcard .skl-card-name { line-height: 1.15; height: 1.15em; overflow: hidden; }
+.skl-rcard .skl-card-qty { line-height: 1.15; height: 1.15em; }
+.skl-card.skl-rcard { padding-top: 24%; }
+.skl-badge { width: 56% !important; top: 3% !important; }
