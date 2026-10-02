@@ -5787,3 +5787,6 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .skl-mini--legend { box-shadow: 0 0 0 2px #7ff2c8, 0 0 8px 2px rgba(90, 240, 190, 0.85); }
 .skl-mini.is-pop { animation: skl-pop 0.45s cubic-bezier(.2, 1.6, .4, 1); }
 @keyframes skl-pop { 0% { transform: scale(0.3); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+/* v872: 오른쪽 무기 칸 등급 배지 삭제(사용자 지정) */
+.skl-rw-badge { display: none; }
+.skl-right-imgwrap.skl-rw { padding-top: 0; }
