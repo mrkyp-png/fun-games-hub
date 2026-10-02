@@ -244,16 +244,31 @@
       el.querySelectorAll('.inv-badge').forEach(function (im) { if (!im.complete) im.addEventListener('load', function () { requestAnimationFrame(function () { fitRights(); fitLefts(); }); }, { once: true }); });
     }
     // v856(사용자: 작은 폰에서 알리 판취 설명 박스 아래 잘림) — 오른쪽 칸(이름~설명)이 카드 높이를 넘으면 그만큼 비율로 축소
+    // v874(사용자: 작은 폰에서 알리 판취 설명 박스가 좁아짐, 에픽만 간격이 다름) — 넘칠 때 오른쪽 칸을 줄이되
+    // 폭은 그대로 유지(줄인 만큼 넓혀서 축소 → 박스 폭 동일), 4장 모두 같은 비율로 줄여 글자 크기·간격 통일
+    function applyRight(r, k, colW) {
+      r.style.transformOrigin = '0 0';
+      if (k >= 1) { r.style.transform = ''; r.style.flex = ''; r.style.width = ''; r.style.marginRight = ''; return; }
+      r.style.flex = '0 0 ' + (colW / k).toFixed(1) + 'px'; r.style.width = (colW / k).toFixed(1) + 'px';
+      r.style.marginRight = (colW - colW / k).toFixed(1) + 'px'; r.style.transform = 'scale(' + k.toFixed(3) + ')';
+    }
     function fitRights() {
+      var items = [];
       el.querySelectorAll('.inv-card').forEach(function (c) {
-        if (!c.offsetParent) return;
+        var r = c.querySelector('.inv-right'); if (!r || !c.getBoundingClientRect().height) return;
+        applyRight(r, 1, 0);
         var cs = getComputedStyle(c), room = c.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 2;
-        // 오른쪽(이름~설명)은 넘친 만큼 축소, 왼쪽(등급 카드+장착)은 위 여백 포함 높이로 축소(작은 폰에서 장착 버튼 잘림)
-        var r = c.querySelector('.inv-right');
-        if (r) { r.style.transform = ''; r.style.width = ''; var need = r.scrollHeight;
-          if (need > room && room > 0) { var k = Math.max(0.6, room / need); r.style.transformOrigin = '0 0'; r.style.transform = 'scale(' + k.toFixed(3) + ')'; r.style.width = (100 / k).toFixed(2) + '%'; } }
-        // v870(사용자 지정): 장착 버튼 위치를 4장 모두 같게 — 왼쪽은 아래 공통 계산(fitLefts)에서 처리
+        items.push({ r: r, room: room, colW: r.getBoundingClientRect().width });
       });
+      var k = 1;
+      items.forEach(function (it) {
+        var fits = function (kk) { applyRight(it.r, kk, it.colW); return it.r.scrollHeight * kk <= it.room; };
+        if (fits(1)) return;
+        var lo = 0.6, hi = 1; // 들어맞는 가장 큰 비율을 이분 탐색
+        for (var n = 0; n < 8; n++) { var mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid; }
+        k = Math.min(k, lo);
+      });
+      items.forEach(function (it) { applyRight(it.r, k, it.colW); });
     }
     root.addEventListener('resize', function () { if (active === 'weapon') { fitRights(); fitLefts(); } });
     // v870(사용자 지정): 무기 카드 왼쪽(등급 카드+장착) — 4장 모두 장착 버튼 높이가 같게. 등급 카드+장착 묶음을 같은 기준으로

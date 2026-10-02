@@ -5797,3 +5797,5 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .skl-rw.inv-card--epic { --rw-line: #e39bff; background-image: radial-gradient(circle at 50% 50%, #fde8ff 0%, #d36bff 38%, #6a1aa8 100%) !important; }
 .skl-rw.inv-card--legend { --rw-line: #7ff2c8; background-image: radial-gradient(circle at 50% 50%, #e8fff5 0%, #3fe0a6 38%, #0b7a55 100%) !important; }
 .skl-rw .inv-tw { display: none; }
+/* v874: 스킬 화면(액티브+패시브+장착 패널) 0.1cm 아래로 — 위로 쏠린 것 세로 가운데(사용자 지정) */
+.skl-wrap { transform: translateY(0.1cm); }
