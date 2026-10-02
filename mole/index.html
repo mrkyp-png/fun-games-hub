@@ -95,6 +95,11 @@
     border-radius: 0; background: url('assets/home2/wide-purple.png') center / 100% 100% no-repeat; box-shadow: none; filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.45));
     font: 400 clamp(22px, 7vw, 34px)/1 'Jua', 'Lilita One', sans-serif; letter-spacing: 0.02em; color: #fff; -webkit-text-stroke: 4px rgba(50, 10, 130, 0.8); paint-order: stroke fill; text-shadow: none; }
   #splash .splash-hint::before { display: none; }
+  /* v929(사용자 지정): GET NOW 글자 = MOLE PANG 광고판 글자 형식(노랑→주황 그라데이션, 굵은 갈색 외곽선, 아래 두께) */
+  .splash-txt { position: relative; font: 400 clamp(26px, 8.4vw, 40px)/1 'Lilita One', 'Jua', sans-serif; letter-spacing: 0.03em; -webkit-text-stroke: 0;
+    color: transparent; background: linear-gradient(180deg, #fff9c4 0%, #ffe14a 38%, #ffb21e 70%, #ff8a00 100%); -webkit-background-clip: text; background-clip: text; }
+  .splash-txt::before { content: attr(data-t); position: absolute; left: 0; top: 0; z-index: -1; color: #5a2a06; -webkit-text-stroke: 9px #5a2a06;
+    text-shadow: 0 5px 0 #3a1803, 0 7px 6px rgba(0, 0, 0, 0.45); }
   #splash .splash-cta.is-pressed .splash-hint, #splash .splash-cta:active .splash-hint { animation: none; transform: translateY(5px) scale(0.94); box-shadow: none; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.4)) brightness(0.92); transition: transform 0.08s ease, filter 0.08s ease; }
   #splash.is-hiding { opacity: 0; pointer-events: none; }
   @keyframes splash-in { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
@@ -864,7 +869,7 @@
       <div id="lane-button-bar">
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
-        <div id="build-tag" aria-hidden="true">v928</div>
+        <div id="build-tag" aria-hidden="true">v929</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -954,7 +959,7 @@ window.FGH.rollOut = function (el, done) {
     if (!s) return;
     var cta = document.createElement('div');
     cta.className = 'splash-cta';
-    cta.innerHTML = '<div class="splash-hint"><span>GET NOW</span></div><div class="splash-hand" aria-hidden="true">👆</div>'; // v928: 리듬팡 버튼 모양
+    cta.innerHTML = '<div class="splash-hint"><span class="splash-txt" data-t="GET NOW">GET NOW</span></div><div class="splash-hand" aria-hidden="true">👆</div>'; // v928: 리듬팡 버튼 모양
     s.appendChild(cta);
 
     var start = performance.now();
@@ -1118,7 +1123,7 @@ window.FGH.rollOut = function (el, done) {
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=928').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=929').catch(function () {});
       }
     });
   }
