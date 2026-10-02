@@ -5761,3 +5761,29 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .inv-card[class*="inv-card--"] .inv-stat-tbl th { width: 5.6em; }
 .inv-card[class*="inv-card--"] .inv-stat-tbl td { letter-spacing: -0.03em; }
 .inv-card[class*="inv-card--"] .inv-stat-tbl td { overflow-wrap: anywhere; } /* v870: 작은 폰에서 한 줄 묶음 문구가 잘리면 그때만 줄바꿈 */
+
+/* ===== v871: 스킬 화면 오른쪽 장착 패널 — 무기 칸=등급 카드(1), 슬롯 판 파랑/보라 유리(2), 빈 슬롯 점선+(3), 장착 슬롯 등급 빛·톡(4) ===== */
+.skl-right-title { font-family: 'Jua', 'Lilita One', sans-serif; font-weight: 400; font-size: 0.86rem; color: #fff; -webkit-text-stroke: 3px #3d8dff; paint-order: stroke fill; }
+.skl-right-title.skl-rt-basic { -webkit-text-stroke-color: #6b7a96; } .skl-right-title.skl-rt-epic { -webkit-text-stroke-color: #b25cff; } .skl-right-title.skl-rt-legend { -webkit-text-stroke-color: #20c08a; }
+.skl-right-imgwrap.skl-rw { position: relative; isolation: isolate; background: center / 100% 100% no-repeat; padding-top: 14%; }
+.skl-rw.inv-card--basic { background-image: url('assets/inventory/rarity/card-basic.png'); }
+.skl-rw.inv-card--rare { background-image: url('assets/inventory/rarity/card-rare.png'); }
+.skl-rw.inv-card--epic { background-image: url('assets/inventory/rarity/card-epic.png'); }
+.skl-rw.inv-card--legend { background-image: url('assets/inventory/rarity/card-legend.png'); }
+.skl-rw .inv-rfx { inset: 3%; }
+.skl-rw .inv-glow, .skl-rw .inv-crown-tw { display: none; }
+.skl-rw .skl-right-img { position: relative; z-index: 2; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4)); }
+.skl-rw-badge { position: absolute; left: 50%; top: 3%; width: 46%; transform: translateX(-50%); z-index: 3; pointer-events: none; }
+.skl-right-sec.skl-sec--active { background: linear-gradient(180deg, rgba(70, 150, 255, 0.55), rgba(30, 80, 190, 0.55)); box-shadow: inset 0 0 0 1.5px rgba(120, 200, 255, 0.9), inset 0 2px 0 rgba(255,255,255,0.25); }
+.skl-right-sec.skl-sec--passive { background: linear-gradient(180deg, rgba(170, 100, 255, 0.55), rgba(100, 40, 190, 0.55)); box-shadow: inset 0 0 0 1.5px rgba(210, 160, 255, 0.9), inset 0 2px 0 rgba(255,255,255,0.25); }
+.skl-right-lbl { font-size: 0.52rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+.skl-mini { position: relative; overflow: visible; }
+.skl-mini.skl-mini--empty { background: rgba(10, 25, 70, 0.35); border: 2px dashed rgba(220, 240, 255, 0.75); box-sizing: border-box; animation: skl-empty 2.2s ease-in-out infinite; will-change: opacity; }
+.skl-mini.skl-mini--empty::after { content: '+'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.85); font-size: 1.3rem; font-weight: 900; line-height: 1; }
+@keyframes skl-empty { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+.skl-mini.skl-mini--rare, .skl-mini.skl-mini--epic, .skl-mini.skl-mini--legend { background: rgba(255,255,255,0.18); border-radius: 9px; }
+.skl-mini--rare { box-shadow: 0 0 0 2px #6fd0ff, 0 0 8px 2px rgba(100, 200, 255, 0.8); }
+.skl-mini--epic { box-shadow: 0 0 0 2px #e39bff, 0 0 8px 2px rgba(220, 130, 255, 0.85); }
+.skl-mini--legend { box-shadow: 0 0 0 2px #7ff2c8, 0 0 8px 2px rgba(90, 240, 190, 0.85); }
+.skl-mini.is-pop { animation: skl-pop 0.45s cubic-bezier(.2, 1.6, .4, 1); }
+@keyframes skl-pop { 0% { transform: scale(0.3); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }

@@ -470,21 +470,24 @@
       });
     }
 
+    var lastSkillWeapon = null;
     function renderSkillRight(weaponId, weapon, lo, slots) {
       var right = body.querySelector('[data-skl-right]');
+      var wr = (weapon && weapon.rarity) || 'basic'; // v871: 무기 칸 = 장착 무기 등급 카드
       // 알리 판취 = 무기 화면과 동일하게 글러브 2개(오른쪽은 거울상) 표시(사용자 지정).
       var imgHtml = (weapon && weapon.id === 'alipunch')
-        ? '<div class="skl-right-imgwrap skl-right-imgwrap--pair">' +
+        ? '<div class="skl-right-imgwrap skl-right-imgwrap--pair skl-rw inv-card--' + wr + '">' + rarityFx(wr) + '<img class="skl-rw-badge" alt="" src="assets/inventory/rarity/badge-' + wr + '.png">' +
             '<img class="skl-right-img" alt="" src="' + weapon.thumb + '">' +
             '<img class="skl-right-img skl-right-img--mirror" alt="" src="' + weapon.thumb + '">' +
           '</div>'
-        : '<div class="skl-right-imgwrap"><img class="skl-right-img" alt="" src="' + (weapon ? weapon.thumb : '') + '"></div>';
+        : '<div class="skl-right-imgwrap skl-rw inv-card--' + wr + '">' + rarityFx(wr) + '<img class="skl-rw-badge" alt="" src="assets/inventory/rarity/badge-' + wr + '.png">' +
+          '<img class="skl-right-img" alt="" src="' + (weapon ? weapon.thumb : '') + '"></div>';
       right.innerHTML =
-        '<div class="skl-right-title"></div>' +
+        '<div class="skl-right-title skl-rt-' + wr + '"></div>' +
         imgHtml +
-        '<div class="skl-right-sec"><div class="skl-right-lbl"><img class="skl-right-lbl-ico" alt="" src="assets/skills/active_skill.png">' +
+        '<div class="skl-right-sec skl-sec--active"><div class="skl-right-lbl"><img class="skl-right-lbl-ico" alt="" src="assets/skills/active_skill.png">' +
           '<span></span><b></b></div><div class="skl-right-icons" data-skl-r-active></div></div>' +
-        '<div class="skl-right-sec"><div class="skl-right-lbl"><img class="skl-right-lbl-ico" alt="" src="assets/skills/passive_skill.png">' +
+        '<div class="skl-right-sec skl-sec--passive"><div class="skl-right-lbl"><img class="skl-right-lbl-ico" alt="" src="assets/skills/passive_skill.png">' +
           '<span></span><b></b></div><div class="skl-right-icons" data-skl-r-passive></div></div>';
       right.querySelector('.skl-right-title').textContent = weapon ? nameOf(weapon) : '';
       var secs = right.querySelectorAll('.skl-right-sec');
@@ -496,11 +499,16 @@
       // (2행 배치라 세로 공간이 더 필요) — 2슬롯 무기(캐논/골드묠니르)는 기존 50:50 유지.
       secs[0].style.flex = (slots.active > 2 ? 2 : 1) + ' 1 0';
       secs[1].style.flex = '1 1 0';
+      if (lastSkillWeapon !== weaponId) prevEquipped = null; // 무기 바뀌면 첫 렌더는 튀지 않게
+      curEquipped = [];
       fillMiniIcons(right.querySelector('[data-skl-r-active]'), lo.activeSkills, slots.active);
       fillMiniIcons(right.querySelector('[data-skl-r-passive]'), lo.passiveSkills, slots.passive);
+      prevEquipped = curEquipped.slice(); lastSkillWeapon = weaponId;
     }
+    var prevEquipped = null, curEquipped = [];
     function fillMiniIcons(el, ids, max) {
       el.innerHTML = '';
+      ids.forEach(function (x) { if (x) curEquipped.push(x); });
       // 사용자 지정: 액티브 4슬롯(알리판취)은 2열×2행 — 왼쪽 열=왼쪽(별표) 버튼 슬롯,
       // 오른쪽 열=오른쪽(통화) 버튼 슬롯("왼쪽은 왼쪽 버튼, 오른쪽은 오른쪽버튼에 장착").
       // ids 순서는 [통화0, 통화1, 별표0, 별표1](applySkillSlots) — 화면 배치는
@@ -514,6 +522,8 @@
         if (id) {
           var s = MG.Skills.skillById(id);
           if (s) mini.innerHTML = '<img alt="" src="' + s.icon + '">';
+          mini.className += ' skl-mini--' + (SKILL_RARITY[id] || 'rare'); // v871: 장착 슬롯 = 스킬 등급 색 빛 테두리
+          if (prevEquipped && prevEquipped.indexOf(id) < 0) mini.classList.add('is-pop'); // 새로 장착한 것만 톡 튀며 들어옴
         }
         el.appendChild(mini);
       }
