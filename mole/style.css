@@ -6181,3 +6181,5 @@ html, body, .cosmic-bg { background: #2a190d; }
 /* v909(사용자 지정): 광산 화면 뒤로 아케이드 칸 테두리 반짝임·연출이 비치던 것 — 광산이 다 나타난 뒤(페이드 1.2초)엔 아케이드 판을 숨김, 광산이 걷힐 땐 즉시 다시 보임 */
 #home-grid { transition: visibility 0s; }
 #game-screen.home-mine #home-grid { visibility: hidden; transition: visibility 0s 1.2s; }
+/* v910(사용자 지정): 리듬팡 캐릭터를 두더지팡 두더지 머리 크기에 맞춰 작게 */
+.h2w-rhythm .h2w-char { height: auto; width: 50%; max-width: none; left: 3%; bottom: 6%; }
