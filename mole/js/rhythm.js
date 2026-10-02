@@ -115,7 +115,7 @@
 
     // ---- 채보(EASY): 박마다 1노트, 가끔 POINT1 꺾임 ----
     function buildChart() {
-      var D = DIFFS[diff], spb = 60 / CONFIG.song.bpm, notes = [], seed = (Date.now() ^ (Math.random() * 0x7fffffff)) & 0x7fffffff, prev = -1, same = 0, id = 0, lastAt = {};
+      var D = DIFFS[diff], spb = 60 / CONFIG.song.bpm, notes = [], seed = (Date.now() ^ (Math.random() * 0x7fffffff)) & 0x7fffffff, id = 0, lastAt = {};
       // v923(사용자 지정): 시작값이 난이도별 고정(7 + 길이)이라 판마다 무기 자리가 똑같았음 — 판마다 새 시작값
       function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
       // v843: 곡 데이터가 있으면 멜로디 소리 시작점(분석값)을 노트 시각으로 — 누르는 타이밍 = 멜로디 리듬
@@ -126,12 +126,11 @@
         [0].forEach(function () {
           var beat = song ? T0 / (60 / song.bpm) : (T0 - CONFIG.song.firstBeat) / spb;
           var lane = Math.floor(rnd() * 4);
-          if (lane === prev) { same++; if (same >= 2) { lane = (lane + 1 + Math.floor(rnd() * 3)) % 4; same = 0; } } else same = 0;
+          // v924(사용자 지정): 같은 자리 연속 허용 — "3번 연속 금지" 규칙 삭제(점프 시간 간격 규칙만 유지)
           // 같은 레인은 두더지 점프(7프레임)가 끝날 시간 이상 간격 — 못 치는 노트 방지(v811)
           var tt = T0, gap = 7 * CONFIG.jumpFrameMs / 1000 + 0.1;
           for (var tries = 0; tries < 4 && tt - (lastAt[lane] || -9) < gap; tries++) lane = (lane + 1) % 4;
           lastAt[lane] = tt;
-          prev = lane;
           var t2 = rnd() < D.turn2, t1 = t2 || rnd() < D.turn1;
           var mid = t2 ? (lane + 1 + Math.floor(rnd() * 3)) % 4 : lane;
           var start = t1 ? (mid + 1 + Math.floor(rnd() * 3)) % 4 : lane;
