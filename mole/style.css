@@ -6068,3 +6068,12 @@ html, body, .cosmic-bg { background: #0a1230; }
 /* v904(사용자 선택 C안): 상점에 있는 동안 + 버튼이 통통 */
 .h2-pill.is-shop .h2-plus { animation: h2-plus-bounce 0.9s ease-in-out infinite; }
 @keyframes h2-plus-bounce { 0%, 100% { transform: translateY(-50%) scale(1); } 30% { transform: translateY(-68%) scale(1.12); } 55% { transform: translateY(-46%) scale(0.96); } }
+/* v905(사용자 지정): 두더지팡·리듬팡 버튼 위아래 폭 줄이고 왼쪽 캐릭터 키움(버튼 위로 살짝 튀어나옴) */
+#game-screen.is-start .lane-face--wide::before { top: 17%; bottom: 7%; }
+.h2w-mole .h2w-char, .h2w-rhythm .h2w-char { left: 2%; bottom: 8%; height: 100%; max-width: 76%; }
+.h2w-rhythm .h2w-char { height: 104%; }
+.h2w-note { top: 20%; height: 30%; }
+.h2w-mole .h2w-lbl { margin-bottom: 14%; }
+.h2w-rhythm .h2w-lbl { top: 16%; }
+.h2w-mole .h2w-char { max-width: 94%; height: auto; width: 94%; left: 0; bottom: 6%; }
+.h2w-mole .h2w-lbl { margin-bottom: 9%; z-index: 1; }
