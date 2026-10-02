@@ -5927,3 +5927,6 @@ html, body, .cosmic-bg { background: #0a1230; }
 .qs-lv button.is-on.qs-lv-mid { color: #fff; background: linear-gradient(180deg, #4fb0ff, #1660d8); -webkit-text-stroke-color: #0c3a8a; }
 .qs-lv button.is-on.qs-lv-legend { color: #fff; background: linear-gradient(180deg, #ff7a6a, #d8281c); -webkit-text-stroke-color: #6a0c06; }
 .qs-lv button.is-lock { opacity: 0.6; }
+/* v898: 스코어·일일 화면 뒤로가기 → 퀘스트 빨간 X(오른쪽), 높이는 기존 뒤로가기와 같게(46px) */
+.sr-back.is-x, .dr-back.is-x { left: auto; right: 10px; width: auto; height: 46px; }
+.sr-back.is-x img, .dr-back.is-x img { width: auto; height: 100%; }

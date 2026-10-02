@@ -486,7 +486,7 @@
         <div class="sr-carpet" aria-hidden="true"></div>
         <div class="sr-fx" data-sr-fx aria-hidden="true"></div>
         <div class="sr-ui">
-          <button type="button" class="sr-back" data-back="score" aria-label="뒤로" data-i18n-aria-label="common.back"><img src="assets/score/btn-back.png" alt=""></button>
+          <button type="button" class="sr-back is-x" data-back="score" aria-label="뒤로" data-i18n-aria-label="common.back"><img src="assets/workshop/pick/x.png" alt=""></button>
           <span class="sr-title-wrap"><img class="sr-title" src="assets/score/title.png" alt="SCORE RANKING"><i class="sr-tw" style="left:14%;top:30%"></i><i class="sr-tw" style="left:84%;top:26%"></i><i class="sr-tw" style="left:30%;top:88%"></i><i class="sr-tw" style="left:72%;top:86%"></i></span>
           <div class="sr-tabs">
             <button type="button" class="sr-tab sr-tab--on" data-sr-game="mole"><span data-i18n="mole.pad.gameMole">두더지팡</span></button>
@@ -692,7 +692,7 @@
 
       <!-- 일일출석(DAILY REWARD) 전체화면 — 바탕화면 "일일출석 UI 및 에셋" 명세·에셋 기준(v748). 카드 글자·수량·상태는 js/daily.js 가 그린다. -->
       <div class="board-screen dr-screen" id="daily-screen" hidden>
-        <button type="button" class="dr-back" data-back="daily" aria-label="뒤로" data-i18n-aria-label="common.back"><img src="assets/score/btn-back.png" alt=""></button>
+        <button type="button" class="dr-back is-x" data-back="daily" aria-label="뒤로" data-i18n-aria-label="common.back"><img src="assets/workshop/pick/x.png" alt=""></button>
         <div class="dr-stage">
           <div class="dr-top">
             <img class="dr-mole dr-mole--l" src="assets/daily/mole-left.png" alt="">
@@ -824,7 +824,7 @@
       <div id="lane-button-bar">
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
-        <div id="build-tag" aria-hidden="true">v897</div>
+        <div id="build-tag" aria-hidden="true">v898</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1071,7 +1071,7 @@ window.FGH.rollOut = function (el, done) {
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=897').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=898').catch(function () {});
       }
     });
   }
