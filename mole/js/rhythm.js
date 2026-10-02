@@ -283,7 +283,7 @@
         if (melBuf) { s2 = ctx.createBufferSource(); s2.buffer = melBuf; melGain = ctx.createGain(); melGain.gain.value = 1; s2.connect(melGain); melGain.connect(ctx.destination); s2.start(startAt); }
         src = { stop: function (w) { s1.stop(w); if (s2) s2.stop(w); } };
         hud(); // (무기 풀은 위에서 생성 — 여기서 비우지 않음)
-        var rr = el.querySelector('[data-rp-result]'); if (!rr.classList.contains('rp-push-out')) rr.hidden = true; // 밀려나는 중이면 연출 끝에 숨김
+        el.querySelector('[data-rp-result]').hidden = true;
         cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
       });
     }
@@ -504,9 +504,10 @@
     }
     // v841: 탄성 밀어내기로 게임 화면 진입(난이도 선택 → 게임, 결과창 다시하기 → 게임)
     function pushInGame(modal) {
-      var mv = [$('[data-rp-stage]'), el.querySelector('.rp-bottom')];
-      modal.classList.add('rp-push-out'); mv.forEach(function (m) { m.classList.remove('rp-push-in'); void m.offsetWidth; m.classList.add('rp-push-in'); });
-      setTimeout(function () { modal.hidden = true; modal.classList.remove('rp-push-out'); mv.forEach(function (m) { m.classList.remove('rp-push-in'); }); }, 720);
+      // v878(사용자 지정): 탄성 밀어내기 → 글리치(다른 화면과 통일)
+      modal.hidden = true;
+      el.classList.remove('glitch-in'); void el.offsetWidth; el.classList.add('glitch-in');
+      setTimeout(function () { el.classList.remove('glitch-in'); }, 260);
     }
     el.querySelectorAll('[data-rp-diff]').forEach(function (b) {
       b.addEventListener('click', function () {
