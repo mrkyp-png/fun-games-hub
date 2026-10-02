@@ -6200,3 +6200,9 @@ html, body, .cosmic-bg { background: #2a190d; }
 /* v914(사용자 지정): ROUND 판 1.35배(0.58→0.783), 오른쪽 끝, 프로필 사진은 숫자판 아래로 */
 #game-screen .round-strip { width: calc(var(--sq) * 0.783); left: calc(50% + var(--sq) / 2 - var(--sq) * 0.783 * 0.9 - 3px); }
 #game-screen.is-start.home-mine #btn-back-to-hub { transform: translate(calc(var(--sq) - 100% - 16px), calc(var(--sq) * 0.33)); }
+/* v915(사용자 지정): 로고를 ROUND 판 앞으로(게임판 밖 같은 층, z 9 > ROUND 8), ROUND 글자판 조금 작게 */
+#hm-logo-front { display: none; position: absolute; z-index: 9; left: calc(50% - var(--sq) / 2 + var(--sq) * 0.015); top: calc(var(--hud-h) + var(--sq) * 0.0056);
+  width: calc(var(--sq) * 0.4); opacity: 0; transition: opacity 1.2s ease; pointer-events: none; }
+#game-screen.is-start #hm-logo-front { display: block; }
+#game-screen.is-start.home-mine #hm-logo-front { opacity: 1; }
+.rs-head { left: 25%; width: 50%; top: 6%; }
