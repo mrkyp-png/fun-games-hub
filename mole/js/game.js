@@ -122,7 +122,23 @@
 
   // 홈 화면 다이얼패드 1·2·4번(하트·코인·스코어) 카운터 + 상단 티커 최고점수 — 공유 풀에서
   // 다시 읽어 그린다. 광고/콤보/동물 등으로 값이 바뀔 때마다 호출해 홈·더보기·게임이 같은 수를 보이게 한다.
+  // v917(사용자 지정): 받을 보상이 있으면 홈 버튼(일일·퀘스트·메일함) 오른쪽 위에 빨간 점.
+  // 메일함은 아직 우편 기능이 없어 MG.Mail.claimable 이 생기면 자동으로 붙음.
+  function refreshHomeBadges() {
+    const has = {
+      daily: !!(MG.Daily && MG.Daily.claimable && MG.Daily.claimable()),
+      quest: !!(MG.Quest && MG.Quest.claimable && MG.Quest.claimable() > 0),
+      mail: !!(MG.Mail && MG.Mail.claimable && MG.Mail.claimable())
+    };
+    const REG = { daily: 5, quest: 6, mail: 9 };
+    Object.keys(REG).forEach((k) => {
+      const b = document.querySelector('#lane-button-bar [data-region="' + REG[k] + '"]');
+      if (b) b.classList.toggle('has-badge', has[k]);
+    });
+  }
+  setInterval(refreshHomeBadges, 3000); // 자정 넘어 일일 출석이 다시 열리는 것 등
   function refreshBoardStats() {
+    refreshHomeBadges();
     if (sharedLaneControls) {
       sharedLaneControls.setHudStat('hearts', MG.Economy.formatK(MG.Economy.getHearts()));
       sharedLaneControls.setHudStat('coins', MG.Economy.formatK(MG.Economy.getCoins()));

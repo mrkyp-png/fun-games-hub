@@ -87,7 +87,7 @@
   function h2Face(color, ic, lblKey, lblTxt) {
     return '<span class="lane-face lane-face--front lane-face--h2 h2-' + color + '">' +
       '<img class="h2-ic" src="' + H2 + ic + '.png" alt="">' +
-      '<span class="h2-lbl"' + (lblKey ? ' data-i18n="' + lblKey + '"' : '') + '>' + lblTxt + '</span></span>';
+      '<span class="h2-lbl"' + (lblKey ? ' data-i18n="' + lblKey + '"' : '') + '>' + lblTxt + '</span><i class="h2-dot" aria-hidden="true"></i></span>';
   }
   function h2Wide(kind, lblKey, lblTxt) { // ✱ = 두더지팡(노랑), 0 = 리듬팡(보라) — 홈에선 두 칸 반씩 넓게
     return '<span class="lane-face lane-face--front lane-face--wide h2w-' + kind + '">' +

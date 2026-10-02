@@ -298,6 +298,6 @@
     }
     return { show: open, claimableToday: claimableToday, cleanup: cleanup };
   }
-  var api = { create: create, CONFIG: CONFIG };
+  var api = { create: create, CONFIG: CONFIG, claimable: function () { return read().lastClaim !== today(); } }; // v917: 홈 빨간 점용
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.Daily = api; }
 })(typeof window !== 'undefined' ? window : null);
