@@ -6214,3 +6214,8 @@ html, body, .cosmic-bg { background: #2a190d; }
   background: radial-gradient(circle at 35% 30%, #ff8a80, #ff2a1a 55%, #c4100a); box-shadow: 0 0 0 2px #fff, 0 2px 3px rgba(0, 0, 0, 0.4); animation: h2-dot 1.6s ease-in-out infinite; }
 .has-badge .h2-dot { display: block; }
 @keyframes h2-dot { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.18); } }
+/* v918(사용자 지정): 상점·아이템 배경을 버튼보드와 같은 나무판으로 */
+#shop-screen, #inventory-screen { background: #5a3418; }
+#shop-screen::before, #inventory-screen::before { inset: 0; filter: none; background: none; box-sizing: border-box; border-style: solid; border-color: transparent;
+  border-width: 16px 9px 11px; border-image: url('assets/home2/wood.png') 110 52 58 52 fill / 16px 9px 11px stretch; }
+#shop-screen::after, #inventory-screen::after { background: none; }
