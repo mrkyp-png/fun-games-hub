@@ -6206,3 +6206,6 @@ html, body, .cosmic-bg { background: #2a190d; }
 #game-screen.is-start #hm-logo-front { display: block; }
 #game-screen.is-start.home-mine #hm-logo-front { opacity: 1; }
 .rs-head { left: 25%; width: 50%; top: 6%; }
+/* v916(사용자 지정): 겨울→광산 페이드 중 아케이드 칸 테두리 반짝임·칸 연출이 비치던 것 — 광산으로 바뀌는 순간 같이 서서히 끄고, 아케이드로 돌아올 땐 서서히 켬 */
+.hg-cell::before, .hg-cell > i { transition: opacity 1.2s ease; }
+#game-screen.home-mine .hg-cell::before, #game-screen.home-mine .hg-cell > i { opacity: 0 !important; }

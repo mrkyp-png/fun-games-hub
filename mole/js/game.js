@@ -221,6 +221,7 @@
   function pulseGridCells() {
     const grid = document.getElementById('home-grid');
     if (!grid) return;
+    if (document.getElementById('game-screen').classList.contains('home-mine')) return; // v916: 광산 화면(페이드 중 포함)엔 아케이드 칸 펄스 안 함
     const gridRect = grid.getBoundingClientRect();
     // 연속 스크롤 중이라 "활성 페이지" 개념이 없음 — 지금 뷰포트에 걸쳐 있는 페이지(전환 중엔
     // 2개)의 칸만 후보로 삼는다.
