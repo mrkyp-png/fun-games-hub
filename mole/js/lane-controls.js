@@ -56,11 +56,12 @@
       { nav: '상점', svg: SVG.shop, i18n: 'mole.more.shop', action: 'shop', navBack: { nav: '연락처', svg: SVG.person, i18n: 'mole.pad.contacts' } },
     { num: '4', kr: 'ㄹ', en: 'GHI', hud: 'score', action: 'score' }, { num: '5', kr: 'ㅁ', en: 'JKL', hud: 'daily', action: 'daily' }, { num: '6', kr: 'ㅂㅍ', en: 'MNO', hud: 'quest', action: 'quest' },
       { nav: '홈', svg: SVG.home, action: 'home', noLabel: true, navBack: { nav: '키패드', svg: SVG.pad, i18n: 'mole.pad.keypad' } },
-    { num: '7', kr: 'ㅅ', en: 'PQRS', hud: 'profile', action: 'profile' }, { num: '8', kr: 'ㅇ', en: 'TUV', hud: 'locker', action: 'locker' }, { num: '9', kr: 'ㅈㅊ', en: 'WXYZ', hud: 'settings', action: 'settings' },
+    // v875(사용자 지정): 7 프로필 삭제 → 제작소, 8 → 메일함(# 에서 이동), # → 물음표(미니게임 등 추가 예정, 리듬팡 글자 크기)
+    { num: '7', kr: 'ㅅ', en: 'PQRS', hud: 'locker', action: 'locker' }, { num: '8', kr: 'ㅇ', en: 'TUV', hud: 'mail', action: 'mail' }, { num: '9', kr: 'ㅈㅊ', en: 'WXYZ', hud: 'settings', action: 'settings' },
       { nav: '아이템', svg: SVG.inventory, i18n: 'mole.pad.lblInventory', action: 'inventory', navBack: { nav: '최근기록', svg: SVG.clock, i18n: 'mole.pad.recent' } },
     { num: '✱', kr: '', en: '', hud: 'label', label: '두더지팡', labelI18n: 'mole.pad.gameMole', action: 'lightMode' },
     { num: '0', kr: '', en: '+', hud: 'label', label: '리듬팡', labelI18n: 'mole.pad.gameRhythm', action: 'rhythm' },
-    { num: '#', kr: '', en: '', hud: 'mail', action: 'mail' },
+    { num: '#', kr: '', en: '', hud: 'label', label: '?' },
     { nav: '시작', svg: SVG.phone, call: true, i18n: 'mole.start.btn' }
   ];
 
