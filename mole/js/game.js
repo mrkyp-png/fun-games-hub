@@ -17,11 +17,11 @@
   const DIFFICULTY_CURVE_OFFSET = 40;
   function roundSeconds() { return currentChapter() === 1 ? ROUND1_SECONDS : ROUND_SECONDS_LONG; }
   // v949(사용자 지정): 노말·프로 1라운드 = 16구멍 몸풀기(업그레이드 무기 사용 가능). 아마추어 1라운드만 9구멍 연습판.
-  // 끝값 = 2라운드 시작값(두더지 약 5마리·머무는 시간)에 이어지게. 프로는 2~8라운드 머무는 시간 ×0.9.
-  const PRO_POP_MULT = 0.9;
+  // 끝값 = 2라운드 시작값(두더지 약 5마리·머무는 시간)에 이어지게. 프로는 2~8라운드 머무는 시간 ×0.98(v950).
+  const PRO_POP_MULT = 0.98; // v950(사용자 지정): 프로 2라운드 시작 머무는 시간 = 2.2초(아마추어·노말 2.24초)
   const WARMUP = {
     mid: { moles: [3, 5], pop: [2.5, 2.3], multiHitAt: 20, animalsAt: 40 },
-    legend: { moles: [4, 5], pop: [2.3, 2.02], multiHitAt: 0, animalsAt: 30 }
+    legend: { moles: [4, 5], pop: [2.4, 2.2], multiHitAt: 0, animalsAt: 30 }
   };
   function isWarmupRound() { return currentChapter() === 1 && currentLight() !== 'easy'; }
   function popMult() { return currentLight() === 'legend' ? PRO_POP_MULT : 1; }
@@ -1783,7 +1783,7 @@
       const curveElapsed = elapsed + DIFFICULTY_CURVE_OFFSET;
       const total = DIFFICULTY_CURVE_SECONDS;
       const ch = currentChapter();
-      cfg.popDuration = MG.interpolate(MG.MOLE_DURATION, curveElapsed, total) * popMult(); // v949: 프로 ×0.9
+      cfg.popDuration = MG.interpolate(MG.MOLE_DURATION, curveElapsed, total) * popMult(); // v949: 프로 배수(PRO_POP_MULT)
       cfg.maxConcurrentMoles = Math.round(MG.interpolate(cfg.reverseTarget ? MG.MAX_CONCURRENT_ANIMALS : MG.MAX_CONCURRENT_MOLES, curveElapsed, total));
       cfg.maxConcurrentAnimals = Math.round(MG.interpolate(cfg.reverseTarget ? MG.MAX_CONCURRENT_MOLES : MG.MAX_CONCURRENT_ANIMALS, curveElapsed, total));
       // 게이팅은 currentChapter() 로 직접 판정(§4) — cfg 의 현재값(예: bombChance)으로 게이팅을
