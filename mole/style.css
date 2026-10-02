@@ -6227,3 +6227,5 @@ html, body, .cosmic-bg { background: #2a190d; }
 .hm-lid { position: absolute; border-radius: 50% 50% 45% 45%; background: var(--fur); border-bottom: 2px solid rgba(70, 30, 10, 0.75); box-sizing: border-box;
   transform-origin: 50% 0; transform: scaleY(0); animation: hm-blink 4.6s linear infinite; pointer-events: none; }
 @keyframes hm-blink { 0%, 91%, 100% { transform: scaleY(0); } 94%, 96% { transform: scaleY(1); } }
+/* v925(사용자 지정): 로고를 왼쪽 끝으로 — ROUND 판에 가려지는 부분 최소화 */
+#hm-logo-front { left: calc(50% - var(--sq) / 2 - var(--sq) * 0.012); }
