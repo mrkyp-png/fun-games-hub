@@ -256,7 +256,7 @@
       try {
         if (!diagEl) { diagEl = document.createElement('div'); diagEl.className = 'fs-diag'; video.parentElement.appendChild(diagEl); }
         diagLog.push(msg); if (diagLog.length > 4) diagLog.shift();
-        diagEl.textContent = 'v880 | ' + diagLog.join(' / ');
+        diagEl.textContent = 'v881 | ' + diagLog.join(' / ');
       } catch (e) { /* 무시 */ }
     }
     window.addEventListener('error', function (e) { if (st.screen === 2) diag('ERR ' + (e.message || e)); });
@@ -289,9 +289,16 @@
         // v880(진단 결과: 이 폰은 얼굴 인식 좌표가 전부 NaN(숫자 아님)으로 나옴 → 판정이 거짓 'ok', 사진 처리 단계에서 실패).
         // ① 폰 내장 얼굴 인식(FaceDetector)으로 얼굴 상자를 구하고, ② 그것도 없으면 화면의 가이드 타원(사용자가 얼굴을 맞춘 자리)을 얼굴 위치로 사용.
         diag('mesh NaN box=' + (det.box ? [det.box.x, det.box.w].map(function (v) { return Math.round(v); }).join(',') : '-'));
+        // v881(사용자: 합성 구도 안 맞음 — 얼굴이 너무 크게 들어가 이마~입만 보임): 상자만 있을 때 기준점을 얼굴 전체가 들어가게 잡음.
+        // 볼 끝을 상자보다 바깥(폭 1.3배)으로 → 합성 배율이 작아져 턱·이마까지 들어감, 눈 높이 = 상자 위에서 45%.
+        function boxDet(b, eL, eR) {
+          var P = function (fx, fy) { return { x: b.x + b.w * fx, y: b.y + b.h * fy }; };
+          return { ok: true, count: 1, oval: [], box: b, eyeL: eL || P(0.3, 0.45), eyeR: eR || P(0.7, 0.45), cheekL: P(-0.15, 0.55), cheekR: P(1.15, 0.55),
+            chin: P(0.5, 1), nose: P(0.5, 0.62), skinL: P(0.3, 0.64), skinR: P(0.7, 0.64) };
+        }
         function byGuide() {
           var e = guideInVideo(c.width / video.videoWidth);
-          var g = fixDet({ ok: true, count: 1, oval: [], box: { x: e.x - e.rx, y: e.y - e.ry, w: e.rx * 2, h: e.ry * 2 } }, c.width, c.height);
+          var g = fixDet(boxDet({ x: e.x - e.rx, y: e.y - e.ry, w: e.rx * 2, h: e.ry * 2 }), c.width, c.height);
           if (g) proceed(g, 'guide'); else { diag('guide fail'); setCamState('idle', T('mole.fs.cam.none')); toast(T('mole.fs.retake')); }
         }
         if ('FaceDetector' in root) {
@@ -301,7 +308,7 @@
               var bb = f.boundingBox, L = {};
               (f.landmarks || []).forEach(function (lm) { if (lm.locations && lm.locations[0]) L[lm.type + (L[lm.type] ? '2' : '')] = lm.locations[0]; });
               var eyes = [L.eye, L.eye2].filter(Boolean).sort(function (p, q) { return p.x - q.x; });
-              var nd = fixDet({ ok: true, count: 1, oval: [], box: { x: bb.x, y: bb.y, w: bb.width, h: bb.height }, eyeL: eyes[0], eyeR: eyes[1], nose: L.nose }, c.width, c.height);
+              var nd = fixDet(boxDet({ x: bb.x, y: bb.y, w: bb.width, h: bb.height }, eyes[0], eyes[1]), c.width, c.height);
               if (nd) proceed(nd, 'native'); else byGuide();
             }).catch(function () { byGuide(); });
             return;
