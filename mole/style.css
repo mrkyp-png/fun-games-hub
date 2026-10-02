@@ -6219,3 +6219,5 @@ html, body, .cosmic-bg { background: #2a190d; }
 #shop-screen::before, #inventory-screen::before { inset: 0; filter: none; background: none; box-sizing: border-box; border-style: solid; border-color: transparent;
   border-width: 16px 9px 11px; border-image: url('assets/home2/wood.png') 110 52 58 52 fill / 16px 9px 11px stretch; }
 #shop-screen::after, #inventory-screen::after { background: none; }
+/* v919(사용자 지정): 상점·아이템 테두리 무지개 → 금색 */
+.shop-frame, .inv-frame { background: linear-gradient(135deg, #fff2b0 0%, #ffd34a 22%, #c98a12 45%, #ffe27a 62%, #b8770c 82%, #ffd34a 100%); }
