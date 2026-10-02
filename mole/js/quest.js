@@ -136,10 +136,10 @@
 
     function render() {
       var s = read(), en = EN(), list = $('[data-qs-list]'), tabs = $('[data-qs-tabs]');
-      el.setAttribute('data-mode', mode);
+      el.setAttribute('data-mode', mode); el.setAttribute('data-lang', en ? 'en' : 'ko');
       $('.qs-head-img').src = A + (mode === 'ach' ? 'head-ach.png' : mode === 'weekly' ? 'head-weekly.png' : 'head-daily.png');
-      setTitle(mode === 'ach' ? 'ACHIEVEMENT' : 'QUEST');
-      $('[data-qs-ach] span').textContent = mode === 'ach' ? 'QUEST' : 'ACHIEVEMENT';
+      setTitle(mode === 'ach' ? (en ? 'ACHIEVEMENT' : '업적') : (en ? 'QUEST' : '퀘스트')); // v896: 한글 모드는 한글
+      $('[data-qs-ach] span').textContent = mode === 'ach' ? (en ? 'QUEST' : '퀘스트') : (en ? 'ACHIEVEMENT' : '업적');
       var html = '';
       if (mode !== 'ach') {
         tabs.innerHTML = '<button type="button" data-qs-mode="daily" class="' + (mode === 'daily' ? 'is-on' : '') + '">DAILY</button>' +

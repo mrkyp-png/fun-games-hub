@@ -5914,3 +5914,7 @@ html, body, .cosmic-bg { background: #0a1230; }
 /* v895: 업적 탭 5개(RHYTHM 추가) — 글자 조금 작게 */
 .qs-screen[data-mode="ach"] .qs-tabs { gap: 1%; }
 .qs-screen[data-mode="ach"] .qs-tabs button { font-size: calc(var(--w) * 0.036); padding: 0; }
+/* v896: 한글 제목(퀘스트/업적)은 둥근 한글 글꼴 */
+.qs-screen[data-lang="ko"] .qs-title text, .qs-screen[data-lang="ko"] .qs-achbtn span { font-family: 'Jua', 'Lilita One', sans-serif; }
+.qs-screen[data-lang="ko"] .qs-title text { font-size: 108px; }
+.qs-screen[data-lang="ko"] .qs-achbtn span { font-size: calc(var(--w) * 0.058); }
