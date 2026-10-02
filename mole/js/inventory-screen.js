@@ -250,10 +250,18 @@
         var r = c.querySelector('.inv-right');
         if (r) { r.style.transform = ''; r.style.width = ''; var need = r.scrollHeight;
           if (need > room && room > 0) { var k = Math.max(0.6, room / need); r.style.transformOrigin = '0 0'; r.style.transform = 'scale(' + k.toFixed(3) + ')'; r.style.width = (100 / k).toFixed(2) + '%'; } }
-        var l = c.querySelector('.inv-left');
-        if (l) { l.style.transform = ''; l.style.marginBottom = ''; var top = l.getBoundingClientRect().top - c.getBoundingClientRect().top - parseFloat(cs.paddingTop);
-          var needL = top + l.scrollHeight;
-          if (needL > room && room > 0) { var kl = Math.max(0.6, room / needL); l.style.transformOrigin = '50% 0'; l.style.transform = 'scale(' + kl.toFixed(3) + ')'; } }
+        // v869(사용자 지정): 왼쪽 묶음(배지 윗부분~장착 버튼)을 카드 세로 가운데에 — 넘치면 그만큼 축소
+        var l = c.querySelector('.inv-left'), bd = c.querySelector('.inv-badge'), eq = c.querySelector('.inv-equip');
+        if (l && bd && eq) {
+          l.style.transform = '';
+          var cr = c.getBoundingClientRect(), lr = l.getBoundingClientRect();
+          var gTop = Math.min(bd.getBoundingClientRect().top, lr.top), gBot = eq.getBoundingClientRect().bottom, gH = gBot - gTop;
+          var cTop = cr.top + parseFloat(cs.paddingTop), cBot = cr.bottom - parseFloat(cs.paddingBottom), cH = cBot - cTop;
+          var kl = gH > cH ? Math.max(0.6, cH / gH) : 1;
+          var dy = (cTop + cBot) / 2 - (gTop + gBot) / 2;
+          l.style.transformOrigin = '50% ' + ((gTop + gBot) / 2 - lr.top).toFixed(1) + 'px';
+          l.style.transform = 'translateY(' + dy.toFixed(1) + 'px)' + (kl < 1 ? ' scale(' + kl.toFixed(3) + ')' : '');
+        }
       });
     }
     root.addEventListener('resize', function () { if (active === 'weapon') fitRights(); });
