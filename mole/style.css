@@ -5799,3 +5799,6 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 html, body, .cosmic-bg { background: #0a1230; }
 /* v878: 글리치를 transform 대신 translate 로 — 상점·아이템 등 화면이 원래 transform(translateX(-50%))으로 가운데 정렬돼 있어,
    transform 을 덮어쓰면 글리치 동안 화면이 반 폭 오른쪽으로 밀려 왼쪽이 흰색으로 보였음(사용자 녹화로 확인) */
+/* ⚠️ v879 임시 진단 글자(사진 촬영 원인 확인 후 삭제) */
+.fs-diag { position: absolute; left: 4px; right: 4px; bottom: 4px; z-index: 50; padding: 3px 5px; border-radius: 6px; background: rgba(0,0,0,0.75);
+  color: #7dff9a; font: 700 11px/1.3 monospace; word-break: break-all; pointer-events: none; }

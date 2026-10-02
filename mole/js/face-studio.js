@@ -250,7 +250,20 @@
         st.loop = setTimeout(detectLoop, 300);
       });
     }
+    // ⚠️ v879 임시 진단(사용자 폰 촬영 실패 원인 확인용, 원인 고치면 삭제) — 카메라 화면 맨 아래 작은 글자
+    var diagEl = null, diagLog = [];
+    function diag(msg) {
+      try {
+        if (!diagEl) { diagEl = document.createElement('div'); diagEl.className = 'fs-diag'; video.parentElement.appendChild(diagEl); }
+        diagLog.push(msg); if (diagLog.length > 4) diagLog.shift();
+        diagEl.textContent = 'v879 | ' + diagLog.join(' / ');
+      } catch (e) { /* 무시 */ }
+    }
+    window.addEventListener('error', function (e) { if (st.screen === 2) diag('ERR ' + (e.message || e)); });
+    window.addEventListener('unhandledrejection', function (e) { if (st.screen === 2) diag('REJ ' + ((e.reason && e.reason.message) || e.reason)); });
+    $('[data-fs-shutter]').addEventListener('pointerdown', function () { diag('down dis=' + $('[data-fs-shutter]').disabled); });
     $('[data-fs-shutter]').addEventListener('click', function () {
+      diag('click vw=' + video.videoWidth + ' busy=' + st.busy + ' ready=' + (st.lastDet ? 'Y' : 'N'));
       if (!video.videoWidth || st.busy) return;
       st.busy = true;
       // v770: 폰 카메라 원본이 커서(메모리) 합성이 실패하던 것 — 긴 변 960px 로 줄여서 촬영본을 만든다
@@ -264,12 +277,13 @@
       // 카메라 화면에서 정상 확인된 얼굴 위치를 찍은 사진 크기에 맞춰 그대로 사용. 확인된 얼굴이 한 번도 없을 때만 다시 촬영.
       (function () {
         var det = ready ? scaleDet(ready.det, c.width / ready.w) : null;
-        if (!det || !det.ok) { setCamState('idle', T('mole.fs.cam.none')); toast(T('mole.fs.retake')); return; }
+        if (!det || !det.ok) { diag('no det'); setCamState('idle', T('mole.fs.cam.none')); toast(T('mole.fs.retake')); return; }
         // v811(사용자 지정: 촬영해도 다음으로 안 넘어감) — 버튼이 켜졌을 때 이미 판정 통과, 촬영본은 얼굴만 있으면 진행
         var fd = fixDet(det, c.width, c.height);
-        if (!fd) { setCamState('idle', T('mole.fs.cam.none')); toast(T('mole.fs.retake')); return; }
+        if (!fd) { diag('no fd'); setCamState('idle', T('mole.fs.cam.none')); toast(T('mole.fs.retake')); return; }
         st.photo = c; st.det = fd; st.results = {}; st.face = null;
-        go(3);
+        diag('go3');
+        try { go(3); diag('go3 ok scr=' + st.screen); } catch (e) { diag('go3 ERR ' + e.message); throw e; }
       })();
     });
 
