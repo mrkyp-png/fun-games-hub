@@ -6188,3 +6188,5 @@ html, body, .cosmic-bg { background: #2a190d; }
 /* v912: 폰마다 칸 비율이 달라 앞발이 버튼 아래로 삐져나오던 것 — 버튼 아랫선(7%) 아래는 잘라내고, 캐릭터를 조금 더 올림(위로 튀어나온 머리는 그대로) */
 .h2w-rhythm .h2w-char, .h2w-mole .h2w-char { bottom: 12%; }
 .lane-face--wide { clip-path: inset(-80% -10% 7% -10%); }
+/* v913(사용자 지정): 두더지 쏙 들어갔다 나오기 삭제(손 부분 때문에 자연스럽게 안 됨) */
+.hm-pop { animation: none; }
