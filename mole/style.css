@@ -6229,3 +6229,8 @@ html, body, .cosmic-bg { background: #2a190d; }
 @keyframes hm-blink { 0%, 91%, 100% { transform: scaleY(0); } 94%, 96% { transform: scaleY(1); } }
 /* v925(사용자 지정): 로고를 왼쪽 끝으로 — ROUND 판에 가려지는 부분 최소화 */
 #hm-logo-front { left: calc(50% - var(--sq) / 2 - var(--sq) * 0.012); }
+/* v926(사용자 지정 1번): 상점·아이템 상단 파란 배너 → 제작소 나무 간판(sign.png) 가로로 늘림 — 못·쇠고리 모서리는 그대로, 가운데 나무만 늘림 */
+.shop-banner, .inv-banner { background: none; box-shadow: none; border-radius: 0; min-height: 0; margin-top: 0; padding: 0 2px;
+  border-style: solid; border-color: transparent; border-width: 24px 22px 11px;
+  border-image: url('assets/workshop/sign.png') 88 95 44 fill / 24px 22px 11px stretch; }
+.shop-banner-txt, .inv-banner-txt { color: #fff; -webkit-text-stroke: 2.5px #4a2208; paint-order: stroke fill; text-shadow: 0 2px 0 rgba(60, 25, 5, 0.5); }
