@@ -257,7 +257,7 @@
       try {
         if (!diagEl) { diagEl = document.createElement('div'); diagEl.className = 'fs-diag'; video.parentElement.appendChild(diagEl); }
         diagLog.push(msg); if (diagLog.length > 4) diagLog.shift();
-        diagEl.textContent = 'v884 | ' + diagLog.join(' / ');
+        diagEl.textContent = 'v885 | ' + diagLog.join(' / ');
       } catch (e) { /* 무시 */ }
     }
     window.addEventListener('error', function (e) { if (st.screen === 2) diag('ERR ' + (e.message || e)); });
@@ -294,7 +294,7 @@
         // 볼 끝을 상자보다 바깥(폭 1.3배)으로 → 합성 배율이 작아져 턱·이마까지 들어감, 눈 높이 = 상자 위에서 45%.
         function boxDet(b, eL, eR) {
           var P = function (fx, fy) { return { x: b.x + b.w * fx, y: b.y + b.h * fy }; };
-          return { ok: true, count: 1, oval: [], box: b, eyeL: eL || P(0.3, 0.5), eyeR: eR || P(0.7, 0.5), cheekL: P(-0.1, 0.55), cheekR: P(1.1, 0.55), /* v883: 1.3배 너무 작음 / 1.12배 입·턱 잘림(사용자) → 1.2배 + 얼굴을 위로 */
+          return { ok: true, count: 1, oval: [], box: b, eyeL: eL || P(0.3, 0.55), eyeR: eR || P(0.7, 0.55), /* v885: 얼굴 조금 더 위로(사용자) */ cheekL: P(-0.1, 0.55), cheekR: P(1.1, 0.55), /* v883: 1.3배 너무 작음 / 1.12배 입·턱 잘림(사용자) → 1.2배 + 얼굴을 위로 */
             chin: P(0.5, 1), nose: P(0.5, 0.62), skinL: P(0.3, 0.64), skinR: P(0.7, 0.64) };
         }
         function byGuide() {
