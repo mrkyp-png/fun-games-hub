@@ -223,6 +223,11 @@
         // 홈 화면 전용 내비(하트·코인·티켓·스코어·상점·홈·… — FACES 의 action 필드) — 탭하면 그
         // 화면으로 이동. 실제 플레이 중(isHome() false)엔 평범한 숫자 타격 버튼일 뿐이라 무시.
         if (faces[id].action && onHomeAction && (!isHome || isHome())) onHomeAction(faces[id].action);
+        // v904(사용자 선택 C안): 홈에서 하트·코인·티켓 알약의 + → 상점 재화 탭의 그 재화 상품으로(상점 안에선 shop.js 가 처리)
+        if (onHomeAction && (!isHome || isHome()) && e.target && e.target.closest && e.target.closest('.h2-plus') && !b.querySelector('.h2-pill.is-shop')) {
+          root.MoleGame.shopPick = { hearts: 'heart', coins: 'coin', tickets: 'ticket' }[faces[id].hud] || null;
+          onHomeAction('shop');
+        }
       });
       buttonBar.appendChild(b);
       buttons[id] = b;

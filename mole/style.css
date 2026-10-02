@@ -3679,27 +3679,6 @@ body { background: var(--lm-page); }
   background: linear-gradient(180deg, #5c9bff, #2f6fed); color: #fff;
   font-weight: 900; font-size: 0.75rem; line-height: 1; cursor: pointer;
   box-shadow: 0 1px 3px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,30,90,0.4); }
-/* 다이얼패드 착지 캡슐(사용자 지정: "두더지팡으로 이동", "안착 전엔 파란 재화박스로 통일,
-   안착 후 하트=빨강/코인=노랑/티켓=하늘색"). position/size 는 JS 가 실측(getBoundingClientRect)
-   으로 매번 채움 — 여기선 모양·색만. */
-.shop-hud-fly { position: fixed; z-index: 500; display: flex; align-items: center; justify-content: center;
-  gap: 2px; border-radius: 999px; cursor: pointer; overflow: hidden;
-  background: linear-gradient(180deg, #4a90f5, #2f6fed);
-  box-shadow: 0 4px 0 #163a94, inset 0 3px 3px rgba(255,255,255,0.7), inset 0 -4px 6px rgba(0,20,70,0.4);
-  transition: transform 0.1s ease; }
-/* 눌림 스케일(사용자 지정: "각 버튼은 눌림 스케일 효과줘야하고") — 착지 후 인라인 transform 이
-   비워져야 이 :active 가 먹힘(JS transitionend 참고). */
-.shop-hud-fly:active { transform: scale(0.88); }
-/* 아이콘 감싸던 원형 배경 삭제, 글자는 검은색으로 통일(사용자 지정). */
-.shop-hud-fly .shop-hud-ico { width: 55%; height: 55%; background: none; box-shadow: none; position: relative; z-index: 1; }
-.shop-hud-fly .shop-hud-ico svg { fill: none; stroke: #fff; stroke-width: 2.2; }
-.shop-hud-fly .shop-hud-n { font-size: 0.62rem; font-weight: 800; color: #000; position: relative; z-index: 1; }
-.shop-hud-fly--landed.shop-hud-fly--heart { background: linear-gradient(180deg, #ff8f85, #d93c2e);
-  box-shadow: 0 4px 0 #a12a1e, inset 0 -4px 6px rgba(80,10,5,0.4); }
-.shop-hud-fly--landed.shop-hud-fly--coin { background: linear-gradient(180deg, #ffe27a, #f0a800);
-  box-shadow: 0 4px 0 #b87800, inset 0 -4px 6px rgba(90,55,0,0.4); }
-.shop-hud-fly--landed.shop-hud-fly--ticket { background: linear-gradient(180deg, #8fd8ff, #3ba8e0);
-  box-shadow: 0 4px 0 #2a7ba8, inset 0 -4px 6px rgba(10,50,80,0.4); }
 /* 배너 = 위아래 폭 최소화(사용자 지정: "배너박스 아래위 폭 줄이고") — 상품박스에 세로공간 양보. */
 /* 배너 더 줄임(사용자 지정: "인사 박스를 줄여... 화살표 버튼 크게할수있어") — 화살표에
    세로공간 양보. */
@@ -6082,3 +6061,10 @@ html, body, .cosmic-bg { background: #0a1230; }
 #game-screen:not(.is-start) #lane-button-bar { gap: 0; padding: 1px 1px calc(1px + env(safe-area-inset-bottom, 0px)); }
 #game-screen:not(.is-start) .lane-face--key::before { inset: 0; }
 #game-screen:not(.is-start) .lane-hotfx { inset: 0; }
+/* v904(사용자 선택 A안): 상점에 있는 동안 하트·코인·티켓 알약에 금빛 테두리 */
+.h2-pill.is-shop { box-shadow: inset 0 2px 3px rgba(0,0,0,0.6), 0 0 0 2px #ffd84a, 0 0 8px 2px rgba(255, 200, 40, 0.65); animation: h2-pill-shop 1.6s ease-in-out infinite; }
+@keyframes h2-pill-shop { 0%, 100% { box-shadow: inset 0 2px 3px rgba(0,0,0,0.6), 0 0 0 2px #ffd84a, 0 0 6px 1px rgba(255, 200, 40, 0.5); }
+  50% { box-shadow: inset 0 2px 3px rgba(0,0,0,0.6), 0 0 0 2px #ffe680, 0 0 12px 3px rgba(255, 210, 60, 0.8); } }
+/* v904(사용자 선택 C안): 상점에 있는 동안 + 버튼이 통통 */
+.h2-pill.is-shop .h2-plus { animation: h2-plus-bounce 0.9s ease-in-out infinite; }
+@keyframes h2-plus-bounce { 0%, 100% { transform: translateY(-50%) scale(1); } 30% { transform: translateY(-68%) scale(1.12); } 55% { transform: translateY(-46%) scale(0.96); } }

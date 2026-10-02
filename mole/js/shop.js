@@ -314,7 +314,7 @@
     // 적용되도록") — 캡슐은 생성 시점 숫자로 고정돼있어 그 이후 변동은 반영이 안 됐었음.
     function refreshHudFlyNumbers() {
       ['heart', 'coin', 'ticket'].forEach(function (kind) {
-        var n = document.querySelector('.shop-hud-fly--' + kind + ' .shop-hud-n');
+        var n = document.querySelector('#lane-button-bar [data-region="' + DIALPAD_REGION[kind] + '"] .lane-hud-n'); // v904: 알약 숫자 직접 갱신
         if (!n) return;
         n.textContent = MG.Economy.formatK(kind === 'heart' ? MG.Economy.getHearts()
           : kind === 'coin' ? MG.Economy.getCoins() : MG.Economy.getTickets());
@@ -324,76 +324,35 @@
     function removeHudFlys() {
       pendingTimers.forEach(clearTimeout);
       pendingTimers = [];
-      Array.prototype.forEach.call(document.querySelectorAll('.shop-hud-fly'), function (n) { n.remove(); });
+      Array.prototype.forEach.call(document.querySelectorAll('.h2-pill.is-shop'), function (n) { n.classList.remove('is-shop'); });
     }
     // 무기 등 다른 탭 누르면 왼쪽으로 빠르게 롤아웃 후 제거(사용자 지정: "왼쪽으로 빠르게
     // 롤인으로 사라져야해").
     // 들어올 때(우측에서 순차 롤인)와 마찬가지로 나갈 때도 순차적으로(사용자 지정: "순차적으로
     // 사라지게"), 다만 진입(350ms 간격)보다 훨씬 빠르게(60ms 간격, 사용자 지정: "속도는 빠르게").
-    function rollOutHudFlys() {
-      var flys = document.querySelectorAll('.shop-hud-fly');
-      if (!flys.length) return;
-      var stagger = 60;
-      Array.prototype.forEach.call(flys, function (cap, i) {
-        setTimeout(function () {
-          cap.style.transition = 'transform 0.22s ease-in, opacity 0.22s ease-in';
-          cap.style.transform = 'translateX(-160px) rotate(-260deg)';
-          cap.style.opacity = '0';
-        }, i * stagger);
-      });
-      pendingTimers.push(setTimeout(removeHudFlys, (flys.length - 1) * stagger + 240));
-    }
+    // v904(사용자 선택 A안): 홈 버튼보드 개편으로 하트/코인/티켓이 알약(그림 아이콘+수량)이 됨 — 따로 동그라미 캡슐을
+    // 띄우지 않고 알약 안의 아이콘이 기존 연출 그대로 들어옴(티켓·코인 = 옆에서 굴러옴, 하트 = 위에서 떨어짐),
+    // 착지 후 상점에 있는 동안 알약에 금빛 테두리. 알약을 누르면 그 재화 상품만 보기(예전 캡슐 클릭 기능).
     function animateHudEntrance() {
       removeHudFlys();
-      var order = ['ticket', 'coin', 'heart'];
-      var icons = { heart: ICONS.hearts, coin: ICONS.coins, ticket: ICONS.tickets };
-      order.forEach(function (kind, i) {
+      ['ticket', 'coin', 'heart'].forEach(function (kind, i) {
         pendingTimers.push(setTimeout(function () {
           var btn = document.querySelector('#lane-button-bar [data-region="' + DIALPAD_REGION[kind] + '"]');
-          if (!btn) return;
-          // ⚠️ 버그(사용자 보고: "올때마다 크기가 조금씩 변함", "어떨땐 겹치고") — 이 버튼은 숫자↔
-          // 아이콘 3D 뒤집기 카드(.lane-flip)라, 뒤집는 도중(rotateY 트랜지션 중)에 딱 측정하면
-          // getBoundingClientRect() 가 압축된 폭/틀어진 위치를 반환함. 폭·높이는 트랜스폼 영향
-          // 안 받는 offsetWidth/offsetHeight(레이아웃 값)로, 위치는 rect 의 "중심점"만 써서
-          // 그 중심 기준으로 안정된 크기의 박스를 재구성 — 중심은 대칭 트랜스폼에서 안 흔들림.
-          var r = btn.getBoundingClientRect();
-          var w = btn.offsetWidth, h = btn.offsetHeight;
-          // A안(버튼보드 직사각형) — 칸이 직사각형이어도 원 모양 유지: 지름 = 짧은 변(사용자 지정).
-          w = h = Math.min(w, h);
-          var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-          var n = MG.Economy.formatK(kind === 'heart' ? MG.Economy.getHearts()
-            : kind === 'coin' ? MG.Economy.getCoins() : MG.Economy.getTickets());
-          var cap = document.createElement('div');
-          cap.className = 'shop-hud-fly shop-hud-fly--' + kind;
-          cap.innerHTML = '<span class="shop-hud-ico">' + icons[kind] + '</span><b class="shop-hud-n">' + n + '</b>';
-          cap.style.width = w + 'px';
-          cap.style.height = h + 'px';
-          cap.style.left = (cx - w / 2) + 'px';
-          cap.style.top = (cy - h / 2) + 'px';
-          document.body.appendChild(cap);
-          // 시작 위치: 티켓/코인=옆에서 굴러들어옴(롤인), 하트=위에서 떨어짐(슬라이드다운).
-          cap.style.transform = kind === 'heart' ? 'translateY(-140px)' : 'translateX(150px) rotate(300deg)';
-          cap.style.opacity = '0';
-          requestAnimationFrame(function () {
-            requestAnimationFrame(function () {
-              cap.style.transition = 'transform 0.5s cubic-bezier(.25,.85,.3,1.1), opacity 0.25s, background 0.3s, box-shadow 0.3s';
-              cap.style.transform = 'translate(0,0) rotate(0deg)';
-              cap.style.opacity = '1';
+          var pill = btn && btn.querySelector('.h2-pill'), ic = pill && pill.querySelector('.h2-pill-ic');
+          if (!ic) return;
+          var from = kind === 'heart' ? 'translateY(-50%) translateY(-140px)' : 'translateY(-50%) translateX(150px) rotate(300deg)';
+          if (ic.animate) ic.animate([{ transform: from, opacity: 0 }, { transform: 'translateY(-50%)', opacity: 1 }],
+            { duration: 500, easing: 'cubic-bezier(.25,.85,.3,1.1)' });
+          pill.classList.add('is-shop');
+          if (!btn._shopPick) {
+            btn._shopPick = true;
+            btn.addEventListener('click', function () {
+              if (!pill.classList.contains('is-shop')) return;
+              activeTab = 'currency';
+              currencyFilter = kind;
+              render();
             });
-          });
-          cap.addEventListener('transitionend', function onEnd() {
-            cap.removeEventListener('transitionend', onEnd);
-            cap.classList.add('shop-hud-fly--landed');
-            // 인라인 transform/transition 정리 — 안 지우면 CSS :active 눌림 스케일이
-            // 인라인 스타일에 밀려 안 먹힘(사용자 지정: "눌림 스케일 효과줘야하고").
-            cap.style.transform = '';
-            cap.style.transition = '';
-          });
-          cap.addEventListener('click', function () {
-            activeTab = 'currency';
-            currencyFilter = kind;
-            render();
-          });
+          }
         }, i * 350));
       });
     }
@@ -433,7 +392,7 @@
     function show() {
       renderBanner();
       activeTab = 'currency';
-      currencyFilter = null;
+      currencyFilter = (MG && MG.shopPick) || null; MG.shopPick = null; // v904: 홈에서 알약 + 를 눌러 들어오면 그 재화 상품만
       cardsEl.scrollLeft = 0;
       render();
       animateHudEntrance();
