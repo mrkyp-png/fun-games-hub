@@ -6223,3 +6223,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 .shop-frame, .inv-frame { background: linear-gradient(135deg, #fff2b0 0%, #ffd34a 22%, #c98a12 45%, #ffe27a 62%, #b8770c 82%, #ffd34a 100%); }
 /* v921(사용자 지정 1번): 아케이드 사진 칸 경계 하늘색 네온 → 짙은 나무 액자 + 안쪽 얇은 금색 선 */
 .hg-cell::before { box-shadow: inset 0 0 0 2px #4a2a12, inset 0 0 0 3px #d9a441, inset 0 0 0 4px rgba(90, 50, 15, 0.7), inset 0 0 14px 2px rgba(40, 20, 5, 0.45); }
+/* v922(사용자 지정): 홈 광산 두더지 눈 깜빡임 — 털색 눈꺼풀이 위에서 내려왔다 올라감(밀짚모자는 원래 눈 감은 웃음이라 제외, 파란모자는 윙크라 뜬 눈만) */
+.hm-lid { position: absolute; border-radius: 50% 50% 45% 45%; background: var(--fur); border-bottom: 2px solid rgba(70, 30, 10, 0.75); box-sizing: border-box;
+  transform-origin: 50% 0; transform: scaleY(0); animation: hm-blink 4.6s linear infinite; pointer-events: none; }
+@keyframes hm-blink { 0%, 91%, 100% { transform: scaleY(0); } 94%, 96% { transform: scaleY(1); } }
