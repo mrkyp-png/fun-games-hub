@@ -115,7 +115,8 @@
 
     // ---- 채보(EASY): 박마다 1노트, 가끔 POINT1 꺾임 ----
     function buildChart() {
-      var D = DIFFS[diff], spb = 60 / CONFIG.song.bpm, notes = [], seed = 7 + diff.length, prev = -1, same = 0, id = 0, lastAt = {};
+      var D = DIFFS[diff], spb = 60 / CONFIG.song.bpm, notes = [], seed = (Date.now() ^ (Math.random() * 0x7fffffff)) & 0x7fffffff, prev = -1, same = 0, id = 0, lastAt = {};
+      // v923(사용자 지정): 시작값이 난이도별 고정(7 + 길이)이라 판마다 무기 자리가 똑같았음 — 판마다 새 시작값
       function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
       // v843: 곡 데이터가 있으면 멜로디 소리 시작점(분석값)을 노트 시각으로 — 누르는 타이밍 = 멜로디 리듬
       var times = null;
