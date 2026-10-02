@@ -256,7 +256,7 @@
       try {
         if (!diagEl) { diagEl = document.createElement('div'); diagEl.className = 'fs-diag'; video.parentElement.appendChild(diagEl); }
         diagLog.push(msg); if (diagLog.length > 4) diagLog.shift();
-        diagEl.textContent = 'v879 | ' + diagLog.join(' / ');
+        diagEl.textContent = 'v880 | ' + diagLog.join(' / ');
       } catch (e) { /* 무시 */ }
     }
     window.addEventListener('error', function (e) { if (st.screen === 2) diag('ERR ' + (e.message || e)); });
@@ -280,10 +280,34 @@
         if (!det || !det.ok) { diag('no det'); setCamState('idle', T('mole.fs.cam.none')); toast(T('mole.fs.retake')); return; }
         // v811(사용자 지정: 촬영해도 다음으로 안 넘어감) — 버튼이 켜졌을 때 이미 판정 통과, 촬영본은 얼굴만 있으면 진행
         var fd = fixDet(det, c.width, c.height);
-        if (!fd) { diag('no fd'); setCamState('idle', T('mole.fs.cam.none')); toast(T('mole.fs.retake')); return; }
-        st.photo = c; st.det = fd; st.results = {}; st.face = null;
-        diag('go3');
-        try { go(3); diag('go3 ok scr=' + st.screen); } catch (e) { diag('go3 ERR ' + e.message); throw e; }
+        function proceed(f, how) {
+          st.photo = c; st.det = f; st.results = {}; st.face = null;
+          diag('go3 ' + how);
+          try { go(3); diag('ok scr=' + st.screen); } catch (e) { diag('go3 ERR ' + e.message); throw e; }
+        }
+        if (fd) { proceed(fd, 'mesh'); return; }
+        // v880(진단 결과: 이 폰은 얼굴 인식 좌표가 전부 NaN(숫자 아님)으로 나옴 → 판정이 거짓 'ok', 사진 처리 단계에서 실패).
+        // ① 폰 내장 얼굴 인식(FaceDetector)으로 얼굴 상자를 구하고, ② 그것도 없으면 화면의 가이드 타원(사용자가 얼굴을 맞춘 자리)을 얼굴 위치로 사용.
+        diag('mesh NaN box=' + (det.box ? [det.box.x, det.box.w].map(function (v) { return Math.round(v); }).join(',') : '-'));
+        function byGuide() {
+          var e = guideInVideo(c.width / video.videoWidth);
+          var g = fixDet({ ok: true, count: 1, oval: [], box: { x: e.x - e.rx, y: e.y - e.ry, w: e.rx * 2, h: e.ry * 2 } }, c.width, c.height);
+          if (g) proceed(g, 'guide'); else { diag('guide fail'); setCamState('idle', T('mole.fs.cam.none')); toast(T('mole.fs.retake')); }
+        }
+        if ('FaceDetector' in root) {
+          try {
+            new root.FaceDetector({ fastMode: false, maxDetectedFaces: 1 }).detect(c).then(function (faces) {
+              var f = faces && faces[0]; if (!f || !f.boundingBox) { byGuide(); return; }
+              var bb = f.boundingBox, L = {};
+              (f.landmarks || []).forEach(function (lm) { if (lm.locations && lm.locations[0]) L[lm.type + (L[lm.type] ? '2' : '')] = lm.locations[0]; });
+              var eyes = [L.eye, L.eye2].filter(Boolean).sort(function (p, q) { return p.x - q.x; });
+              var nd = fixDet({ ok: true, count: 1, oval: [], box: { x: bb.x, y: bb.y, w: bb.width, h: bb.height }, eyeL: eyes[0], eyeR: eyes[1], nose: L.nose }, c.width, c.height);
+              if (nd) proceed(nd, 'native'); else byGuide();
+            }).catch(function () { byGuide(); });
+            return;
+          } catch (e) { /* 내장 인식 없음 → 가이드 */ }
+        }
+        byGuide();
       })();
     });
 
