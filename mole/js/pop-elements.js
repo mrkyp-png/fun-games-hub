@@ -14,11 +14,11 @@
 
   // 대포 장착 시 처치 두더지는 구멍으로 안 내려가고 그 자리에서 그을려 흩뿌리며 사라진다.
   function isCannonEquipped() {
-    try { return localStorage.getItem('mole.weapon') === 'cannon'; } catch (e) { return false; }
+    try { return ((window.MoleGame && window.MoleGame.roundWeapon) || localStorage.getItem('mole.weapon')) === 'cannon'; } catch (e) { return false; }
   }
   // 알리 펀치 장착 시 처치 두더지는 구멍으로 안 내려가고 움찔→뒤로 튕겨나가며 축소·소멸(기획서 §6).
   function isAlipunchEquipped() {
-    try { return localStorage.getItem('mole.weapon') === 'alipunch'; } catch (e) { return false; }
+    try { return ((window.MoleGame && window.MoleGame.roundWeapon) || localStorage.getItem('mole.weapon')) === 'alipunch'; } catch (e) { return false; }
   }
   // 무적(§7) 중인지 — game.js 가 매 프레임 #mole-board 에 토글하는 클래스를 그대로 읽는다.
   function isAlipunchInvincible() {

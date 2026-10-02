@@ -187,7 +187,7 @@
   }
 
   function isCannonEquipped() {
-    try { return localStorage.getItem('mole.weapon') === 'cannon'; } catch (e) { return false; }
+    try { return ((window.MoleGame && window.MoleGame.roundWeapon) || localStorage.getItem('mole.weapon')) === 'cannon'; } catch (e) { return false; }
   }
 
   // 캐논 인트로 — 옆면 이동 후 제자리에서 포즈(각도)가 바뀔 때의 "철컥" 소리(사용자 제공).
@@ -251,7 +251,7 @@
   // 위치까지 회전·확대(느리게→빠르게)하는 것과 맞춰, 소리도 작게 시작해 재생 끝(=착지)에
   // 원본 음량이 되도록(볼륨 램프) + 재생속도도 느리게→빠르게(회전 가속과 맞춤, 피치도 같이 오름).
   function isGoldhammerEquipped() {
-    try { return localStorage.getItem('mole.weapon') === 'goldhammer'; } catch (e) { return false; }
+    try { return ((window.MoleGame && window.MoleGame.roundWeapon) || localStorage.getItem('mole.weapon')) === 'goldhammer'; } catch (e) { return false; }
   }
   const GOLDHAMMER_SPIN_URL = 'audio/goldhammer-spin.mp3';
   let goldhammerSpinBuffer = null;
@@ -296,7 +296,7 @@
   let punchVoiceBuffers = null; // { style: AudioBuffer }
   let punchVoiceLoading = false;
   function isAlipunchEquipped() {
-    try { return localStorage.getItem('mole.weapon') === 'alipunch'; } catch (e) { return false; }
+    try { return ((window.MoleGame && window.MoleGame.roundWeapon) || localStorage.getItem('mole.weapon')) === 'alipunch'; } catch (e) { return false; }
   }
 
   // 알리 펀치 전용 타격 충격음 — 뿅망치가 hammer-sfx-*로 교체(v490)되기 전 쓰던 원래 타격음

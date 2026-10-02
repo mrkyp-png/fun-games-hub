@@ -16,8 +16,17 @@
   const DIFFICULTY_CURVE_SECONDS = 140;
   const DIFFICULTY_CURVE_OFFSET = 40;
   function roundSeconds() { return currentChapter() === 1 ? ROUND1_SECONDS : ROUND_SECONDS_LONG; }
+  // v949(사용자 지정): 노말·프로 1라운드 = 16구멍 몸풀기(업그레이드 무기 사용 가능). 아마추어 1라운드만 9구멍 연습판.
+  // 끝값 = 2라운드 시작값(두더지 약 5마리·머무는 시간)에 이어지게. 프로는 2~8라운드 머무는 시간 ×0.9.
+  const PRO_POP_MULT = 0.9;
+  const WARMUP = {
+    mid: { moles: [3, 5], pop: [2.5, 2.3], multiHitAt: 20, animalsAt: 40 },
+    legend: { moles: [4, 5], pop: [2.3, 2.02], multiHitAt: 0, animalsAt: 30 }
+  };
+  function isWarmupRound() { return currentChapter() === 1 && currentLight() !== 'easy'; }
+  function popMult() { return currentLight() === 'legend' ? PRO_POP_MULT : 1; }
   // 챕터→라운드 재구조화(2026-09-17): 라운드1(구 챕터1~3 병합) = 9홀(3x3), 라운드2~8(구 챕터4~10) = 16홀(4x4).
-  function isSmallBoardChapter() { return currentChapter() === 1; }
+  function isSmallBoardChapter() { return currentChapter() === 1 && currentLight() === 'easy'; }
   function roundGridSize() { return isSmallBoardChapter() ? 3 : GRID_SIZE; }
   // 라운드별 시즌 — 1~2=봄, 3~4=여름, 5~6=가을, 7~8=겨울(사용자 지정). 보드 배경·구멍 이미지가 공유.
   function roundSeason() {
@@ -504,7 +513,7 @@
   // 이동 — 놓쳤던 것을 Puppeteer 검증(라운드2 캐논 인트로가 안 보이는 문제) 중 발견해 수정.
   function setChapter(n) {
     localStorage.setItem('mole.chapter', String(n));
-    if (n === 1) {
+    if (n === 1 && currentLight() === 'easy') { // v949: 노말·프로 1라운드는 16구멍이라 장착 무기 유지
       localStorage.setItem('mole.weapon', 'hammer');
       // v763: 뿅망치도 DIM/OFF 가능 — 라운드1 진입 시 난이도를 ON 으로 내리던 것 삭제(사용자 결정).
     }
@@ -1346,6 +1355,7 @@
       : (wRaw === 'cannon' ? 'cannon' : (wRaw === 'goldhammer' ? 'goldhammer'
         : (wRaw === 'alipunch' ? 'alipunch' : 'hammer')));
     const laneSkillZone = weapon !== 'hammer'; // 캐논·골드해머·알리펀치 = 통화버튼 스킬존(§8 포함)
+    MG.roundWeapon = weapon; // v949: 타격·처치 연출이 장착값 대신 이번 라운드 실제 무기를 보게(hit-fx·pop-elements)
     document.getElementById('game-screen').classList.toggle('gs-laneskill', laneSkillZone);
     document.getElementById('game-screen').classList.toggle('gs-alipunch', weapon === 'alipunch');
     // 게임 세션 시작(fresh)에만 스킬 Loadout 스냅샷 확정 — 패시브 소비도 여기서 1회만(§64, §30).
@@ -1401,7 +1411,7 @@
       strongBombChance: (!isSmallBoardChapter() && ch >= 4) ? MG.interpolate(MG.STRONG_BOMB_CHANCE_BY_ROUND, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS) : 0,
       maxConcurrentItems: 0,   // 실드 아이템 스폰 삭제(사용자 지정, 2026-09-14)
       shieldItems: false,
-      popDuration: isSmallBoardChapter() ? 2.5 : MG.interpolate(MG.MOLE_DURATION, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS),
+      popDuration: isSmallBoardChapter() ? 2.5 : MG.interpolate(MG.MOLE_DURATION, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS) * popMult(),
       molePoseCount: MG.MoleSprites.POSE_COUNT,
       obstacleCount: MG.MoleSprites.OBSTACLE_COUNT,
       obstacles: !isSmallBoardChapter(),  // 라운드1은 40초부터(updateLiveDifficulty), 라운드2~8은 항상
@@ -1417,6 +1427,12 @@
       costumeUpBonus: MG.CostumeTeams.activeEffectValue()  // 착용중인 코스튬 효과: 두더지 하강 딜레이
     };
 
+    if (isWarmupRound()) { // v949: 노말·프로 1라운드(16구멍) 시작값 — 이후 updateLiveDifficulty 가 60초 동안 이어 올림
+      const wu = WARMUP[currentLight()];
+      config.maxConcurrentMoles = wu.moles[0]; config.popDuration = wu.pop[0];
+      config.maxConcurrentAnimals = 0; config.obstacles = false; config.multiHit = wu.multiHitAt === 0;
+      config.maxConcurrentBombs = 0; config.bombChance = 0; config.strongBombChance = 0;
+    }
     const scheduler = MG.SpawnScheduler.create({ regions, spawnPoints, config, rng });
 
     if (!sharedPopElements) {
@@ -1747,7 +1763,14 @@
     if (!state) return;
     const cfg = state.config;
     const elapsed = roundSeconds() - state.timeRemaining;
-    if (isSmallBoardChapter()) {
+    if (isWarmupRound()) {
+      const wu = WARMUP[currentLight()];
+      cfg.maxConcurrentMoles = Math.round(MG.interpolate(wu.moles, elapsed, ROUND1_SECONDS));
+      cfg.popDuration = MG.interpolate(wu.pop, elapsed, ROUND1_SECONDS);
+      cfg.multiHit = elapsed >= wu.multiHitAt;
+      cfg.obstacles = elapsed >= wu.animalsAt;
+      cfg.maxConcurrentAnimals = elapsed >= wu.animalsAt ? Math.round(MG.interpolate([0, 2], elapsed - wu.animalsAt, ROUND1_SECONDS - wu.animalsAt)) : 0;
+    } else if (isSmallBoardChapter()) {
       // 라운드1(구 챕터1~2~3 병합) — 60초, 3구간(각 20초) 연속. 두더지 수만 전 구간에서
       // 연속 보간, 다타·동물은 시간 임계값에서 켜진다(자막 없이).
       cfg.maxConcurrentMoles = Math.round(MG.interpolate(MG.SMALL_CHAPTER_MOLES, elapsed, ROUND1_SECONDS));
@@ -1760,7 +1783,7 @@
       const curveElapsed = elapsed + DIFFICULTY_CURVE_OFFSET;
       const total = DIFFICULTY_CURVE_SECONDS;
       const ch = currentChapter();
-      cfg.popDuration = MG.interpolate(MG.MOLE_DURATION, curveElapsed, total);
+      cfg.popDuration = MG.interpolate(MG.MOLE_DURATION, curveElapsed, total) * popMult(); // v949: 프로 ×0.9
       cfg.maxConcurrentMoles = Math.round(MG.interpolate(cfg.reverseTarget ? MG.MAX_CONCURRENT_ANIMALS : MG.MAX_CONCURRENT_MOLES, curveElapsed, total));
       cfg.maxConcurrentAnimals = Math.round(MG.interpolate(cfg.reverseTarget ? MG.MAX_CONCURRENT_MOLES : MG.MAX_CONCURRENT_ANIMALS, curveElapsed, total));
       // 게이팅은 currentChapter() 로 직접 판정(§4) — cfg 의 현재값(예: bombChance)으로 게이팅을
