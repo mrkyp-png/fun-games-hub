@@ -267,6 +267,8 @@
       const b = buttons[id];
       if (!b) return;
       let ind = b.querySelector('.lane-bomb-indicator');
+      b.classList.toggle('lane-button--bomb', !!kind); // v951: 폭탄 칸 = 버튼 빨강
+      b.classList.toggle('lane-button--bomb-strong', kind === 'strong');
       if (!kind) { if (ind) ind.remove(); return; }
       if (!ind) {
         ind = document.createElement('span');

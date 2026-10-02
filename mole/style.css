@@ -6264,3 +6264,56 @@ html, body, .cosmic-bg { background: #2a190d; }
 /* v942: X 조금 위로(동굴 윗선 바로 아래) */
 .rm-back.is-x { top: calc(env(safe-area-inset-top, 0px) + 8.6%); }
 .rm-board { top: calc(env(safe-area-inset-top, 0px) + 8.6% + 56px); }
+
+/* ===== v951(사용자 지정): 게임 중 버튼 알림 = 버튼 색 자체를 바꿈 — 두더지(아마추어) 초록 · 알리 판취 무적 노랑 · 폭탄 빨강+진한 💣 ·
+   맞힘 분홍 0.3초 톡 · 실패 빨강+짧은 흔들림(사용자 지정). 폰 깜빡임 방지: 그림은 미리 읽어 두고, 색은 그림 교체·움직임은 transform/translate·opacity 만. ===== */
+.h2-preload { position: absolute; left: 0; top: 0; width: 2px; height: 2px; opacity: 0.01; pointer-events: none;
+  background: url('assets/home2/btn-green.png'), url('assets/home2/btn-orange.png'), url('assets/home2/btn-pink.png'), url('assets/home2/btn-red.png');
+  background-size: 1px 1px; background-repeat: no-repeat; }
+/* 예전 하늘색·금색 빛 덮개·버튼 바탕 빛은 끔(버튼 색으로 대신) */
+#game-screen:not(.is-start) .lane-button > .lane-hotfx { opacity: 0; background: none; box-shadow: none; inset: 0; border-radius: 0; box-sizing: border-box;
+  border-style: solid; border-color: transparent; border-width: 13px 15px; border-image: var(--fx, none) 62 66 fill / 13px 15px stretch; }
+#game-screen:not(.is-start) .lane-button:not(.lane-button--call).lane-button--hot,
+#game-screen:not(.is-start) .lane-button:not(.lane-button--call).lane-button--hot-safe { background: transparent; box-shadow: none; }
+/* 두더지 있음(아마추어 = 불빛 ON) → 초록 */
+#game-screen:not(.is-start):not(.diff-mid):not(.diff-legend) .lane-button--hot .lane-face--key { --cap: url('assets/home2/btn-green.png'); }
+#game-screen:not(.is-start):not(.diff-mid):not(.diff-legend) .lane-button--simple.lane-button--hot { border-image-source: url('assets/home2/btn-green.png'); }
+/* 알리 판취 무적 중 → 노랑(홈 퀘스트 버튼 색) */
+#game-screen:not(.is-start).gs-invincible .lane-button.lane-button--hot .lane-face--key,
+#game-screen:not(.is-start) .lane-button.lane-button--hot-safe .lane-face--key { --cap: url('assets/home2/btn-orange.png'); }
+#game-screen:not(.is-start).gs-invincible .lane-button--simple.lane-button--hot,
+#game-screen:not(.is-start) .lane-button--simple.lane-button--hot-safe { border-image-source: url('assets/home2/btn-orange.png'); }
+/* 폭탄 → 버튼은 두더지 칸 그대로(초록), 그 위에 진한 💣 — 맞힐지 피할지 플레이어가 판단(사용자 지정 v951) */
+#game-screen:not(.is-start) .lane-bomb-indicator { opacity: 1; font-size: clamp(1.4rem, 8.4vw, 2.6rem); z-index: 4; }
+#game-screen:not(.is-start) .lane-bomb-indicator--normal, #game-screen:not(.is-start) .lane-bomb-indicator--strong { filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.55)); }
+#game-screen:not(.is-start) .lane-bomb-indicator--strong { animation: lane-bomb-strong 0.6s ease-in-out infinite; }
+@keyframes lane-bomb-strong { 0%, 100% { transform: rotate(30deg) scaleX(-1) scale(1); } 50% { transform: rotate(30deg) scaleX(-1) scale(1.22); } }
+/* 맞힘 → 분홍 0.3초 + 톡 / 실패 → 빨강 0.4초 + 짧은 흔들림 (예전 초록·빨강 테두리 물결은 끔, 캐논 연사 금색은 유지) */
+#game-screen:not(.is-start) .lane-button:not(.lane-button--call).lane-button--flash:not(.lane-button--burst)::before,
+#game-screen:not(.is-start) .lane-button:not(.lane-button--call).lane-button--flash:not(.lane-button--burst)::after { animation: none; }
+#game-screen:not(.is-start) .lane-button:not(.lane-button--call).lane-button--flash:not(.lane-button--miss):not(.lane-button--burst) > .lane-hotfx {
+  --fx: url('assets/home2/btn-pink.png'); animation: lane-hit-pink 0.3s ease-out; }
+@keyframes lane-hit-pink { 0% { opacity: 1; transform: scale(1.1); } 60% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1); } }
+#game-screen:not(.is-start) .lane-button:not(.lane-button--call).lane-button--flash.lane-button--miss > .lane-hotfx {
+  --fx: url('assets/home2/btn-red.png'); animation: lane-miss-grey 0.4s linear; }
+@keyframes lane-miss-grey { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+#game-screen:not(.is-start) .lane-button:not(.lane-button--call).lane-button--flash.lane-button--miss { animation: lane-miss-shake 0.3s ease-out; }
+@keyframes lane-miss-shake { 0%, 100% { translate: 0 0; } 20% { translate: -5px 0; } 40% { translate: 5px 0; } 60% { translate: -3px 0; } 80% { translate: 2px 0; } }
+/* v951(사용자 지정): 게임 중 통화 칸(뿅망치일 때 15번 구멍)도 다른 칸과 같은 파란 사각 버튼 — 두더지면 초록·무적 노랑, 맞힘 분홍·실패 빨강 동일 */
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call,
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call:active,
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.lane-button--hot {
+  width: 100%; height: 100%; aspect-ratio: auto; justify-self: stretch; align-self: stretch; border-radius: 0; overflow: visible; box-shadow: none;
+  background: none; box-sizing: border-box; border-style: solid; border-color: transparent; border-width: 13px 15px;
+  border-image: url('assets/home2/btn-blue.png') 62 66 fill / 13px 15px stretch; }
+#game-screen:not(.is-start):not(.gs-laneskill):not(.diff-mid):not(.diff-legend) .lane-button--call.lane-button--hot { border-image-source: url('assets/home2/btn-green.png'); }
+#game-screen:not(.is-start):not(.gs-laneskill).gs-invincible .lane-button--call.lane-button--hot,
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.lane-button--hot-safe { border-image-source: url('assets/home2/btn-orange.png'); }
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call .lane-ico,
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call .lane-lbl { color: #fff; }
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call .lane-call-idle { display: none; }
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.lane-button--flash::before,
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.lane-button--flash::after { animation: none; }
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.lane-button--flash:not(.lane-button--miss):not(.lane-button--burst) > .lane-hotfx { inset: -13px -15px; --fx: url('assets/home2/btn-pink.png'); animation: lane-hit-pink 0.3s ease-out; }
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.lane-button--flash.lane-button--miss > .lane-hotfx { inset: -13px -15px; --fx: url('assets/home2/btn-red.png'); animation: lane-miss-grey 0.4s linear; }
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.lane-button--flash.lane-button--miss { animation: lane-miss-shake 0.3s ease-out; }
