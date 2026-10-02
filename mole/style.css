@@ -6185,3 +6185,6 @@ html, body, .cosmic-bg { background: #2a190d; }
 .h2w-rhythm .h2w-char { height: auto; width: 50%; max-width: none; left: 3%; bottom: 6%; }
 .h2w-rhythm .h2w-char { width: 62%; left: 1%; bottom: 6%; } /* v911: 너무 작다는 지적 — 50→62% */
 .h2w-rhythm .h2w-char, .h2w-mole .h2w-char { bottom: 10%; } /* v911: 앞발이 버튼 아래 바깥으로 나오던 것 — 버튼 안으로 */
+/* v912: 폰마다 칸 비율이 달라 앞발이 버튼 아래로 삐져나오던 것 — 버튼 아랫선(7%) 아래는 잘라내고, 캐릭터를 조금 더 올림(위로 튀어나온 머리는 그대로) */
+.h2w-rhythm .h2w-char, .h2w-mole .h2w-char { bottom: 12%; }
+.lane-face--wide { clip-path: inset(-80% -10% 7% -10%); }
