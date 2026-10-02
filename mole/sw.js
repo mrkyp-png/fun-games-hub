@@ -27,7 +27,6 @@ const SHELL = [
   './assets/board-scene-autumn.jpg',
   './assets/board-scene-winter.jpg',
   './assets/board-scene-night.jpg',
-  './assets/home-showcase/arcade-1.jpg', // v927: 로딩 이미지
   './assets/avatar-mole.png',
   './assets/avatar-hippo.png',
   './assets/cloud1.png',
