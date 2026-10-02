@@ -6248,3 +6248,16 @@ html, body, .cosmic-bg { background: #2a190d; }
 .round-strip .rs-circle.rs-flare { animation: rs-flare 0.85s ease-out; }
 /* v940(사용자 지정): 두더지팡(라운드 맵) 뒤로가기 → 오른쪽 빨간 X(스코어·일일과 같은 모양), X 자리만큼 칠판을 아래로 */
 .rm-board { top: calc(env(safe-area-inset-top, 0px) + 7% + 54px); }
+/* v941(사용자 지정): 퀘스트 받기·바로가기·미완료 버튼 = 스코어 화면 두더지팡 버튼 그림, 색은 그대로(받기 노랑·바로가기 파랑·미완료 회색) */
+.qs-btn { background: center / 100% 100% no-repeat; box-shadow: none; border-radius: 0; aspect-ratio: 426 / 141; padding: 0; display: flex; align-items: center; justify-content: center; font-weight: 900; }
+.qs-btn--claim { background-image: url('assets/quest/btn-yellow.png'); -webkit-text-stroke: 2.5px #b25a00; }
+.qs-btn--go { background-image: url('assets/quest/btn-blue.png'); -webkit-text-stroke: 2.5px #0c3a8a; }
+.qs-btn--lock { background-image: url('assets/quest/btn-grey.png'); -webkit-text-stroke: 2.5px #4a4a4a; }
+.qs-btn--claim::after { border-radius: 40%; }
+.qs-btn { -webkit-text-stroke-width: 0 !important; color: #fff; }
+.qs-btn--claim { text-shadow: 0 1px 0 #a24e00, 1px 0 0 #a24e00, -1px 0 0 #a24e00, 0 -1px 0 #a24e00, 0 2px 1px rgba(0,0,0,0.3); }
+.qs-btn--go { text-shadow: 0 1px 0 #0c3a8a, 1px 0 0 #0c3a8a, -1px 0 0 #0c3a8a, 0 -1px 0 #0c3a8a, 0 2px 1px rgba(0,0,0,0.3); }
+.qs-btn--lock { color: #f2f2f2; text-shadow: 0 1px 0 #555, 1px 0 0 #555, -1px 0 0 #555, 0 -1px 0 #555; }
+/* v941(사용자 지정): 라운드 맵 X 를 동굴 바로 아래로(위 하늘엔 나비·잠자리가 날아다님), 칠판은 X 아래로 */
+.rm-back.is-x { top: calc(env(safe-area-inset-top, 0px) + 12.5%); }
+.rm-board { top: calc(env(safe-area-inset-top, 0px) + 12.5% + 56px); }
