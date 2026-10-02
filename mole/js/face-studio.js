@@ -339,8 +339,8 @@
       st.costume = Math.floor(((cpos % 15) + 15) % 15 / 3);
       var cid = COSTUME_ORDER[st.costume];
       el.querySelectorAll('[data-fs-emb]').forEach(function (b) { b.classList.toggle('is-on', b.dataset.fsEmb === cid); });
-      var cards = el.querySelectorAll('[data-fs-ccard] > img:first-child');
-      [-1, 0, 1].forEach(function (d, i) { cards[i].src = cardSrc(cpos + d); });
+      var cards = el.querySelectorAll('[data-fs-ccard] > img');
+      [0, 1, 2].forEach(function (d, i) { cards[i].src = cardSrc(st.costume * 3 + d); }); // v887: 선택 팀의 3얼굴형
       $('[data-fs-cname]').textContent = costumeName(cid);
     }
     function costumeName(cid) {
@@ -354,7 +354,7 @@
       box.classList.remove('is-slide-next', 'is-slide-prev'); void box.offsetWidth;
       box.classList.add(dir > 0 ? 'is-slide-next' : 'is-slide-prev');
       setTimeout(function () {
-        cpos = (cpos + dir + 15) % 15; st.results = {}; renderCostume();
+        cpos = (cpos + dir * 3 + 15) % 15; st.results = {}; renderCostume(); // v887: 화살표 = 팀 단위(3장씩)
         box.classList.remove('is-slide-next', 'is-slide-prev');
         box.classList.add(dir > 0 ? 'is-in-next' : 'is-in-prev');
         setTimeout(function () { box.classList.remove('is-in-next', 'is-in-prev'); sliding = false; }, 180);

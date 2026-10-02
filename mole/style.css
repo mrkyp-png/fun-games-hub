@@ -5802,3 +5802,20 @@ html, body, .cosmic-bg { background: #0a1230; }
 /* ⚠️ v879 임시 진단 글자(사진 촬영 원인 확인 후 삭제) */
 .fs-diag { position: absolute; left: 4px; right: 4px; bottom: 4px; z-index: 50; padding: 3px 5px; border-radius: 6px; background: rgba(0,0,0,0.75);
   color: #7dff9a; font: 700 11px/1.3 monospace; word-break: break-all; pointer-events: none; }
+
+/* ===== v887: 코스튬 선택 = 팀 3장 묶음(금테 하나), 발판 원 삭제, 카드 위 얼굴형 이름표 ===== */
+.fs-ccards { position: relative; align-items: stretch; gap: 2.5%; padding: 3% 3.5% 3%; margin: 0 9%; border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 216, 74, 0.18), rgba(255, 180, 30, 0.08));
+  box-shadow: 0 0 0 3px #ffd84a, 0 0 14px 3px rgba(255, 200, 60, 0.6), inset 0 0 12px rgba(255, 220, 120, 0.25); }
+.fs-ccard { width: 32%; }
+.fs-ccard > img { position: relative; z-index: 1; width: 100%; aspect-ratio: 370 / 540; object-fit: contain; border-radius: 12px;
+  background: url('assets/facestudio/card.png') center / 100% 100% no-repeat; padding: 6%; box-sizing: border-box; }
+.fs-ctag { display: block; margin: 0 0 4px; padding: 2px 0; width: 100%; text-align: center; border-radius: 99px; font-size: 0.72rem; font-weight: 900; color: #fff;
+  background: linear-gradient(180deg, #2c5bd8, #173a9a); box-shadow: inset 0 0 0 1.5px rgba(150, 210, 255, 0.8); -webkit-text-stroke: 2px #0a1f5c; paint-order: stroke fill; }
+.fs-ccards.is-slide-next .fs-ccard > img, .fs-ccards.is-slide-prev .fs-ccard > img { transition: none; transform: none; opacity: 1; }
+.fs-ccards.is-in-next .fs-ccard > img, .fs-ccards.is-in-prev .fs-ccard > img { animation: none; }
+.fs-ccards.is-slide-next, .fs-ccards.is-slide-prev { transition: transform 0.16s ease-in, opacity 0.16s; opacity: 0.2; }
+.fs-ccards.is-slide-next { transform: translateX(-30%); } .fs-ccards.is-slide-prev { transform: translateX(30%); }
+.fs-ccards.is-in-next { animation: fs-grp-next 0.2s ease-out; } .fs-ccards.is-in-prev { animation: fs-grp-prev 0.2s ease-out; }
+@keyframes fs-grp-next { from { transform: translateX(30%); opacity: 0.2; } to { transform: none; opacity: 1; } }
+@keyframes fs-grp-prev { from { transform: translateX(-30%); opacity: 0.2; } to { transform: none; opacity: 1; } }
