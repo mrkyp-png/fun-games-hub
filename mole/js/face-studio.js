@@ -104,7 +104,8 @@
       fc.fillStyle = 'rgb(' + fill.join(',') + ')'; fc.fillRect(bx - 4, by - 4, bw + 8, bh + 8);
       var ex = (det.eyeL.x + det.eyeR.x) / 2, ey = (det.eyeL.y + det.eyeR.y) / 2;
       var ang = Math.atan2(det.eyeR.y - det.eyeL.y, det.eyeR.x - det.eyeL.x);
-      var s = (bw * 0.9) / faceW;
+      // v884(사용자: 날렵형만 사진이 작음) — 날렵형 얼굴틀은 폭이 좁아(약 196 vs 255) 같은 비율이면 얼굴이 작아짐 → 날렵형은 폭 1.25배 기준(옆은 틀이 잘라 날렵하게)
+      var s = (bw * (charId.indexOf('sharp_') === 0 ? 1.25 : 1) * 0.9) / faceW;
       fc.save();
       fc.translate(bx + bw / 2, by + bh * 0.44); // 눈 높이 기준점(모자 챙 아래)
       fc.rotate(-ang); fc.scale(s, s); fc.translate(-ex, -ey);
@@ -256,7 +257,7 @@
       try {
         if (!diagEl) { diagEl = document.createElement('div'); diagEl.className = 'fs-diag'; video.parentElement.appendChild(diagEl); }
         diagLog.push(msg); if (diagLog.length > 4) diagLog.shift();
-        diagEl.textContent = 'v883 | ' + diagLog.join(' / ');
+        diagEl.textContent = 'v884 | ' + diagLog.join(' / ');
       } catch (e) { /* 무시 */ }
     }
     window.addEventListener('error', function (e) { if (st.screen === 2) diag('ERR ' + (e.message || e)); });
