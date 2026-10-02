@@ -135,8 +135,9 @@
           var mid = t2 ? (lane + 1 + Math.floor(rnd() * 3)) % 4 : lane;
           var start = t1 ? (mid + 1 + Math.floor(rnd() * 3)) % 4 : lane;
           if (t1 && !t2 && start === lane) start = (lane + 1) % 4;
+          // v947(사용자 지정): 무기 종류가 자리(WEAPONS[lane])에 묶여 같은 무기는 늘 같은 타겟창으로 갔음 — 무기도 무작위
           notes.push({ id: id++, beatIndex: beat, targetTime: T0, startLane: start, targetLane: lane,
-            midLane: mid, routePoint1: t1 ? 1 : 0, routePoint2: t2 ? 1 : 0, weaponType: WEAPONS[lane], difficulty: diff });
+            midLane: mid, routePoint1: t1 ? 1 : 0, routePoint2: t2 ? 1 : 0, weaponType: WEAPONS[Math.floor(rnd() * WEAPONS.length)], difficulty: diff });
         });
       });
       return notes;
