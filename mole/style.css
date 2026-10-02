@@ -6078,3 +6078,7 @@ html, body, .cosmic-bg { background: #0a1230; }
 /* 넓은 두더지팡/리듬팡 — 비트 펄스가 넓어진 버튼 자기 중심 기준으로 */
 #game-screen.is-start [data-region="12"] { transform-origin: 75% 50%; }
 #game-screen.is-start [data-region="13"] { transform-origin: 125% 50%; }
+/* v903(사용자 지정): 게임 중 버튼 더 크게 — 칸 사이 틈·버튼 그림 여백을 없애 칸을 꽉 채움 */
+#game-screen:not(.is-start) #lane-button-bar { gap: 0; padding: 1px 1px calc(1px + env(safe-area-inset-bottom, 0px)); }
+#game-screen:not(.is-start) .lane-face--key::before { inset: 0; }
+#game-screen:not(.is-start) .lane-hotfx { inset: 0; }
