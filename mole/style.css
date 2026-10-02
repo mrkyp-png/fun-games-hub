@@ -6246,3 +6246,5 @@ html, body, .cosmic-bg { background: #2a190d; }
 .round-strip .rs-circle.is-current::before { content: ''; position: absolute; inset: -11.8%; z-index: -1; background: url('assets/home2/rs-on.png') center / 100% 100% no-repeat; animation: rs-on-pulse 1.4s ease-in-out infinite; }
 @keyframes rs-on-pulse { 0%, 100% { transform: scale(1); filter: brightness(1); } 50% { transform: scale(1.06); filter: brightness(1.15); } }
 .round-strip .rs-circle.rs-flare { animation: rs-flare 0.85s ease-out; }
+/* v940(사용자 지정): 두더지팡(라운드 맵) 뒤로가기 → 오른쪽 빨간 X(스코어·일일과 같은 모양), X 자리만큼 칠판을 아래로 */
+.rm-board { top: calc(env(safe-area-inset-top, 0px) + 7% + 54px); }
