@@ -164,6 +164,19 @@
            사용자 지정) 가 20~30초마다 다음 페이지로 넘어가고, 그 동안 각 칸이 홈 BGM 비트에 맞춰
            개별적으로 사라졌다/나타났다·회전·확대축소. -->
       <div id="board-start" class="board-panel board-start">
+        <!-- v906(사용자 지정): 홈 광산 화면 — 광산 15초 → 페이드 → 아래 아케이드~겨울 스크롤(75초) → 끝나면 다시 광산으로 페이드, 반복.
+             하늘은 직접 제작(sky.jpg), 광산·로고·두더지는 바탕화면 "홈화면 개편 UI 및 에셋". -->
+        <div id="home-mine" aria-hidden="true">
+          <div class="hm-stage">
+            <img class="hm-mine" src="assets/home2/mine.png" alt="">
+            <img class="hm-piece hm-mole hm-pink" src="assets/home2/mole-pink.png" alt="">
+            <img class="hm-piece hm-mole hm-braid" src="assets/home2/mole-braid.png" alt="">
+            <img class="hm-piece hm-mole hm-sun" src="assets/home2/mole-sun.png" alt="">
+            <img class="hm-piece hm-mole hm-punk" src="assets/home2/mole-punk.png" alt="">
+            <img class="hm-piece hm-mole hm-cap" src="assets/home2/mole-cap.png" alt="">
+            <img class="hm-piece hm-logo" src="assets/home2/logo.png" alt="">
+          </div>
+        </div>
         <div id="home-grid" aria-hidden="true">
         <div class="hg-track">
           <div class="hg-page">
@@ -311,6 +324,7 @@
          "입체감을 주려고 한다" — 보드 경계 아래로 살짝 넘치는 3D 느낌, 잘리면 안 됨) —
          #mole-board 형제로 두어 board의 overflow:hidden에 안 잘리게 함. 홈(is-start)에서만 노출. -->
     <div id="round-strip" class="round-strip" aria-hidden="true">
+      <img class="rs-head" src="assets/home2/round-head.png" alt=""><img class="rs-bar" src="assets/home2/round-bar.png" alt="">
       <button type="button" class="rs-tri rs-tri--prev" data-rs-round-prev aria-label="이전 라운드"></button>
       <div class="rs-circles">
         <button type="button" class="rs-circle" data-rs-round="1"><span data-rs-label></span></button>
@@ -824,7 +838,7 @@
       <div id="lane-button-bar">
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
-        <div id="build-tag" aria-hidden="true">v905</div>
+        <div id="build-tag" aria-hidden="true">v906</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -938,23 +952,30 @@ window.FGH.rollOut = function (el, done) {
       // 홈 배경 스크롤(사용자 지정: "첫화면 나온두 15초 대기후부터는 계속 올라가야지") —
       // 홈이 다 열린 시점(검은 화면 2초 + 확장 10초 끝)부터 15초 뒤에 스크롤 시작(v768: 전엔 확장 중에도 시간이
       // 흘러 화면이 다 열리자마자 봄 그림이 올라오고 있었음 — 첫 화면은 아케이드 9장이어야 함, 사용자 지정).
-      setTimeout(function () {
-        var track = document.querySelector('.hg-track');
-        if (!track) return;
-        track.classList.add('hg-scrolling');
-        // 다른 화면 갔다가 홈으로 돌아와도 그림이 처음부터 다시 시작하지 않고 계속 이어서 올라가게(사용자 지정 v744):
-        // 홈판(#board-start)이 숨겨지면(display:none) 애니메이션이 처음으로 리셋되므로, 다시 보일 때 흐른 시간만큼 앞당겨 준다.
-        var t0 = performance.now();
-        var bs = document.getElementById('board-start');
-        if (bs && window.MutationObserver) {
-          new MutationObserver(function () {
-            if (bs.hidden) return;
-            track.style.animationDelay = (-((performance.now() - t0) / 1000) % 75).toFixed(2) + 's';
-          }).observe(bs, { attributes: true, attributeFilter: ['hidden'] });
+      // v906(사용자 지정): 광산 화면(15초) → 1.2초 페이드 → 아케이드~겨울 스크롤(75초) → 겨울이 끝나면 광산으로 페이드, 계속 반복.
+      // 프로필 사진은 광산일 땐 오른쪽, 아케이드로 바뀔 때 원래 자리(왼쪽 위)로 서서히 이동(CSS .home-mine).
+      // 시간은 홈이 다 열린 시점(검은 화면 2초 + 확장 10초 = 12초 뒤)부터 잰다. 다른 화면 갔다 와도 흐른 시간 그대로 이어짐.
+      (function () {
+        var MINE = 15000, FADE = 1200, SCROLL = 75000, CYCLE = MINE + FADE + SCROLL;
+        var gs = document.getElementById('game-screen'), track = document.querySelector('.hg-track');
+        var bs = document.getElementById('board-start'), t0 = performance.now() + 12000, timer = 0;
+        if (!gs || !track) return;
+        function apply() {
+          var p = performance.now() - t0, wait;
+          if (p < 0) { p = 0; wait = -(performance.now() - t0); } else { p = p % CYCLE; }
+          var mine = p < MINE, scrolling = p >= MINE + FADE;
+          gs.classList.toggle('home-mine', mine);
+          if (scrolling) { track.style.animationDelay = (-(p - MINE - FADE) / 1000).toFixed(2) + 's'; track.classList.add('hg-scrolling'); }
+          else track.classList.remove('hg-scrolling'); // 스크롤 끝(아케이드 복제 페이지) = 첫 페이지와 같은 그림이라 되돌려도 이음매 없음
+          clearTimeout(timer);
+          timer = setTimeout(apply, wait != null ? wait : (mine ? MINE - p : scrolling ? CYCLE - p : MINE + FADE - p) + 20);
         }
-      }, 12000); // v788(사용자 지정): 검은 원 막이 사라지는 순간(검은 화면 2초 + 확장 10초)부터 바로 스크롤
+        gs.classList.add('home-mine');
+        apply();
+        if (bs && window.MutationObserver) new MutationObserver(function () { if (!bs.hidden) apply(); }).observe(bs, { attributes: true, attributeFilter: ['hidden'] });
+      })(); // v788(사용자 지정): 검은 원 막이 사라지는 순간(검은 화면 2초 + 확장 10초)부터 바로 스크롤
       // 흩뿌려 등장 = 첫 페이지(아케이드 9칸)만 — 다른 페이지 칸까지 흩뿌리면 봄 그림이 화면 안으로 날아듦(v768)
-      var pieces = Array.prototype.slice.call(document.querySelectorAll('.hg-page:first-child .hg-cell, .lane-button'));
+      var pieces = Array.prototype.slice.call(document.querySelectorAll('.hg-page:first-child .hg-cell, .lane-button, #home-mine .hm-piece')); // v906: 광산 화면 조각도 흩뿌려 등장
       var hud = document.querySelector('.game-hud');
       if (hud) pieces.push(hud);
       function doScatter() {
@@ -1071,7 +1092,7 @@ window.FGH.rollOut = function (el, done) {
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=905').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=906').catch(function () {});
       }
     });
   }
