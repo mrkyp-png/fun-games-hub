@@ -75,6 +75,27 @@
     mail: 'mole.shop.mailbox'
   };
 
+  // v902: 홈 버튼보드 개편(바탕화면 "홈화면 개편 UI 및 에셋" 시안) — 앞면(홈) = 색 버튼 + 그림 아이콘,
+  // 뒷면(게임 중 다이얼패드) = 파란 버튼(기본색, 사용자 지정). 버튼 그림은 assets/home2/.
+  const H2 = 'assets/home2/';
+  const HOME2 = {
+    score: ['red', 'ic-score'], daily: ['blue', 'ic-daily'], quest: ['orange', 'ic-quest'],
+    locker: ['pink', 'ic-workshop'], mail: ['teal', 'ic-mail'], settings: ['blue2', 'ic-settings'],
+    shop: ['none', 'ic-shop'], home: ['purple', 'ic-home'], inventory: ['green', 'ic-items']
+  };
+  const PILL_IC = { hearts: 'ic-heart', coins: 'ic-coin', tickets: 'ic-ticket' };
+  function h2Face(color, ic, lblKey, lblTxt) {
+    return '<span class="lane-face lane-face--front lane-face--h2 h2-' + color + '">' +
+      '<img class="h2-ic" src="' + H2 + ic + '.png" alt="">' +
+      '<span class="h2-lbl"' + (lblKey ? ' data-i18n="' + lblKey + '"' : '') + '>' + lblTxt + '</span></span>';
+  }
+  function h2Wide(kind, lblKey, lblTxt) { // ✱ = 두더지팡(노랑), 0 = 리듬팡(보라) — 홈에선 두 칸 반씩 넓게
+    return '<span class="lane-face lane-face--front lane-face--wide h2w-' + kind + '">' +
+      '<img class="h2w-char" src="' + H2 + (kind === 'mole' ? 'char-mole' : 'char-rhythm') + '.png" alt="">' +
+      (kind === 'rhythm' ? '<img class="h2w-note" src="' + H2 + 'ic-note.png" alt="">' : '') +
+      '<span class="h2-lbl h2w-lbl"' + (lblKey ? ' data-i18n="' + lblKey + '"' : '') + '>' + lblTxt + '</span></span>';
+  }
+
   function fillFace(btn, f, id, simple) {
     btn.classList.remove('lane-button--flippable', 'is-flipped');
     var faceHtml;
@@ -106,10 +127,10 @@
       var lbl = f.labelI18n;
       btn.innerHTML =
         '<span class="lane-flip">' +
-        '<span class="lane-face lane-face--back">' + faceHtml + '</span>' +
-        '<span class="lane-face lane-face--front lane-face--secret">' +
-          '<span class="lane-num lane-num--secret"' + (lbl ? ' data-i18n="' + lbl + '"' : '') + '>' + (lbl && root.FGH && root.FGH.I18N ? root.FGH.I18N.t(lbl) : f.label) + '</span>' + // v773: 그릴 때 현재 언어로
-        '</span>' +
+        '<span class="lane-face lane-face--back lane-face--key">' + faceHtml + '</span>' +
+        (f.action === 'lightMode' || f.action === 'rhythm'
+          ? h2Wide(f.action === 'rhythm' ? 'rhythm' : 'mole', lbl, lbl && root.FGH && root.FGH.I18N ? root.FGH.I18N.t(lbl) : f.label)
+          : '<span class="lane-face lane-face--front"></span>') + // v902: # 칸은 홈에서 없음(시안), 게임 중엔 # 키
         '</span>';
     } else if (hud) {
       // 아이콘은 숫자 자리(왼쪽), 자음/영문 자리(오른쪽, .lane-sub)엔 이 둘 중 하나(사용자 지정):
@@ -119,17 +140,15 @@
       var I2 = root.FGH && root.FGH.I18N;
       var lblKey2 = HUD_LABEL[hud];
       var lblTxt2 = lblKey2 && I2 ? I2.t(lblKey2) : '';
-      var subHtml = HUD_COUNTS[hud]
-        ? '<span class="lane-sub"><b class="lane-hud-n" data-hud="' + hud + '">0</b></span>'
-        : '<span class="lane-sub">' +
-            (lblTxt2 ? '<span class="lane-en"' + (lblKey2 ? ' data-i18n="' + lblKey2 + '"' : '') + '>' + lblTxt2 + '</span>' : '') +
-          '</span>';
+      // v902: 하트/코인/티켓 = 어두운 알약(그림 아이콘 + 수량 + 파란 +), 나머지 = 색 버튼 + 그림 아이콘 + 글자
+      var frontHtml = HUD_COUNTS[hud]
+        ? '<span class="lane-face lane-face--front lane-face--pill"><span class="h2-pill"><img class="h2-pill-ic" src="' + H2 + PILL_IC[hud] + '.png" alt="">' +
+            '<b class="lane-hud-n" data-hud="' + hud + '">0</b><img class="h2-plus" src="' + H2 + 'plus.png" alt=""></span></span>'
+        : h2Face(HOME2[hud][0], HOME2[hud][1], lblKey2, lblTxt2);
       btn.innerHTML =
         '<span class="lane-flip">' +
-        '<span class="lane-face lane-face--back">' + faceHtml + '</span>' +
-        '<span class="lane-face lane-face--front lane-face--hud">' +
-          SVG[hud] + subHtml +
-        '</span>' +
+        '<span class="lane-face lane-face--back lane-face--key">' + faceHtml + '</span>' +
+        frontHtml +
         '</span>';
     } else if (f.navBack && !simple) {
       // 4열 내비(상점/홈/아이템) — 실제 플레이 중엔 원래 모습(연락처/키패드/최근기록)으로
@@ -140,17 +159,20 @@
       var backFaceHtml = '<span class="lane-ico">' + f.navBack.svg + '</span><span class="lane-lbl"' + backAttr + '>' + backLabel + '</span>';
       btn.innerHTML =
         '<span class="lane-flip">' +
-        '<span class="lane-face lane-face--back">' + backFaceHtml + '</span>' +
-        '<span class="lane-face lane-face--front">' + faceHtml + '</span>' +
+        '<span class="lane-face lane-face--back lane-face--key">' + backFaceHtml + '</span>' +
+        h2Face(HOME2[f.action][0], HOME2[f.action][1], f.i18n || 'mole.pad.home', f.i18n && I ? I.t(f.i18n) : (I ? I.t('mole.pad.home') : '홈')) +
         '</span>';
     } else {
       btn.innerHTML = faceHtml;
+      if (f.call) btn.insertAdjacentHTML('afterbegin', '<img class="h2-start" src="' + H2 + 'ic-start.png" alt="">'); // v902: 홈 시작 버튼 그림
     }
     // 유료무기(캐논·황금해머·알리펀치) 다이얼패드 구획선(사용자 지정) — 버튼 자신의 실제 박스(그리드 셀과
     // 정확히 같은 크기)에 꽉 차는 사각 테두리. innerHTML 로 매번 새로 그려지므로 fillFace 안에서 같이 추가
     // (버튼 생성 시·언어 전환 시 다 여기를 거침 — 한 곳에서만 관리).
     // 보더 색은 style.css 가 #game-screen.gs-laneskill 스코프에서만 입힌다(뿅망치·홈 화면은 투명).
     btn.insertAdjacentHTML('beforeend', '<span class="lane-cell-line" aria-hidden="true"></span>');
+    // v902: 두더지 칸 표시(hot) — 버튼 그림이 버튼 배경을 덮으므로 맨 위 별도 층에 그린다
+    btn.insertAdjacentHTML('beforeend', '<span class="lane-hotfx" aria-hidden="true"></span>');
   }
 
   // 동전 뒤집기 — 10바퀴 휙 돌고 반 바퀴 더 돌아 반대 면에 착지 (누적 각도). spinChannelsIn() 이 씀.

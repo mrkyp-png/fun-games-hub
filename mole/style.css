@@ -5983,3 +5983,98 @@ html, body, .cosmic-bg { background: #0a1230; }
 .qs-lv button.is-on { opacity: 1; }
 .qs-lv button.is-lock { opacity: 0.35; }
 .qs-lv button:active { transform: scale(0.96); }
+
+/* ===== v902: 홈 버튼보드 개편(시안 "홈화면 개편 UI 및 에셋") — 크기·구도는 기존 그대로, 그림만 교체 ===== */
+/* 나무판 — 9분할로 늘려 테두리 두께 유지 */
+#lane-button-bar { box-sizing: border-box; background: none; border-style: solid; border-color: transparent; border-width: 16px 9px 11px;
+  border-image: url('assets/home2/wood.png') 110 52 58 52 fill / 16px 9px 11px stretch; border-radius: 0; padding: 2px 2px calc(2px + env(safe-area-inset-bottom, 0px)); }
+.dialpad { background: #3a2210; }
+/* 버튼 그림(9분할) — 칸 비율이 시안과 달라도 모서리가 찌그러지지 않게 */
+.lane-face--h2::before, .lane-face--key::before, .lane-face--wide::before {
+  content: ''; position: absolute; inset: 2px; z-index: -1; border-style: solid; border-color: transparent; border-width: 13px 15px;
+  border-image: var(--cap) 62 66 fill / 13px 15px stretch; }
+.lane-face--key { --cap: url('assets/home2/btn-blue.png'); }
+.h2-red { --cap: url('assets/home2/btn-red.png'); } .h2-blue { --cap: url('assets/home2/btn-blue.png'); }
+.h2-orange { --cap: url('assets/home2/btn-orange.png'); } .h2-purple { --cap: url('assets/home2/btn-purple.png'); }
+.h2-pink { --cap: url('assets/home2/btn-pink.png'); } .h2-teal { --cap: url('assets/home2/btn-teal.png'); }
+.h2-blue2 { --cap: url('assets/home2/btn-blue2.png'); } .h2-green { --cap: url('assets/home2/btn-green.png'); }
+.h2-none::before { display: none; }
+.lane-face { border-radius: 0; }
+/* 홈 앞면: 그림 아이콘 위 + 글자 아래 */
+.lane-face--h2 { flex-direction: column; gap: 0; padding: 8% 6% 10%; box-sizing: border-box; }
+.h2-ic { flex: 1 1 auto; min-height: 0; max-width: 78%; object-fit: contain; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); }
+.h2-lbl { flex: 0 0 auto; font-family: 'Jua', 'Lilita One', sans-serif; font-size: clamp(0.62rem, 3.3vw, 0.95rem); line-height: 1.05; color: #fff; white-space: nowrap;
+  -webkit-text-stroke: 3px rgba(40, 20, 60, 0.55); paint-order: stroke fill; }
+.h2-none .h2-ic { max-width: 88%; }
+.h2-none .h2-lbl { margin-top: -6%; }
+/* 하트·코인·티켓 알약 */
+.lane-face--pill { padding: 0 4%; box-sizing: border-box; }
+.h2-pill { position: relative; width: 100%; height: 44%; border-radius: 99px; background: linear-gradient(180deg, #1c1410, #2e2018); box-shadow: inset 0 2px 3px rgba(0,0,0,0.6), 0 1px 0 rgba(255,220,160,0.25);
+  display: flex; align-items: center; justify-content: center; }
+.h2-pill-ic { position: absolute; left: -6%; top: 50%; height: 125%; width: auto; transform: translateY(-50%); filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
+.h2-plus { position: absolute; right: -5%; top: 50%; height: 108%; width: auto; transform: translateY(-50%); }
+.h2-pill .lane-hud-n { color: #fff; font-family: 'Lilita One', 'Jua', sans-serif; font-weight: 400; font-size: clamp(0.6rem, 3vw, 0.9rem); margin-left: 8%; margin-right: 14%; }
+/* 두더지팡 / 리듬팡 — 홈에선 ✱·0 두 칸이 #칸까지 반씩 나눠 넓게(시안: ? 없음) */
+#game-screen.is-start [data-region="12"] { z-index: 2; }
+#game-screen.is-start [data-region="13"] { z-index: 1; }
+#game-screen.is-start [data-region="14"] { visibility: hidden; pointer-events: none; }
+[data-region="12"] .lane-face--wide { right: calc(-50% - 1px); }
+[data-region="13"] .lane-face--wide { left: calc(50% + 1px); right: calc(-100% - 2px); }
+.lane-face--wide { justify-content: flex-end; padding-right: 7%; box-sizing: border-box; }
+.lane-face--wide::before { border-width: 18px 22px; border-image-slice: 120 130 fill; border-image-width: 18px 22px; }
+.h2w-mole { --cap: url('assets/home2/wide-yellow.png'); }
+.h2w-rhythm { --cap: url('assets/home2/wide-purple.png'); }
+.h2w-char { position: absolute; left: 3%; bottom: 8%; height: 84%; width: auto; max-width: 62%; object-fit: contain; object-position: left bottom; }
+.h2w-note { position: absolute; right: 9%; top: 9%; height: 34%; width: auto; }
+.h2w-lbl { position: relative; font-size: clamp(0.85rem, 4.4vw, 1.3rem); white-space: pre-line; text-align: center; }
+.h2w-mole .h2w-lbl { -webkit-text-stroke-color: rgba(170, 60, 0, 0.75); }
+.h2w-rhythm .h2w-lbl { -webkit-text-stroke-color: rgba(50, 10, 130, 0.75); top: 12%; }
+/* 시작 버튼 — 홈에선 시안 그림(초록 원 + ▶), 글자는 아래쪽 */
+.h2-start { display: none; }
+#game-screen.is-start .lane-button--call { background: transparent; overflow: visible; }
+#game-screen.is-start .lane-button--call .h2-start { display: block; position: absolute; inset: -4%; width: 108%; height: 108%; object-fit: contain; pointer-events: none; }
+#game-screen.is-start .lane-button--call > .lane-ico { display: none; }
+#game-screen.is-start .lane-button--call > .lane-lbl { position: absolute; bottom: 13%; left: 0; right: 0; text-align: center; font-family: 'Jua', 'Lilita One', sans-serif;
+  font-size: clamp(0.7rem, 3.4vw, 1rem); -webkit-text-stroke: 3px rgba(0, 80, 20, 0.6); paint-order: stroke fill; }
+#game-screen.is-start .lane-button--call:active { background: transparent; }
+/* 게임 중 다이얼패드(파란 버튼) — 흰 숫자·글자 */
+.lane-face--key .lane-num { color: #fff; text-shadow: 0 2px 0 rgba(10, 40, 120, 0.55); }
+.lane-face--key .lane-sub, .lane-face--key .lane-lbl { color: rgba(235, 245, 255, 0.92); }
+.lane-face--key .lane-ico { color: #fff; }
+.lane-button--simple { box-sizing: border-box; border-style: solid; border-color: transparent; border-width: 13px 15px;
+  border-image: url('assets/home2/btn-blue.png') 62 66 fill / 13px 15px stretch; }
+.lane-button--simple .lane-num { color: #fff; text-shadow: 0 2px 0 rgba(10, 40, 120, 0.55); }
+.lane-button--simple .lane-sub { color: rgba(235, 245, 255, 0.92); }
+/* 두더지 칸 표시(hot) — 맨 위 층 */
+.lane-hotfx { position: absolute; inset: 2px; border-radius: 14px; pointer-events: none; z-index: 3; opacity: 0; }
+.lane-button--hot > .lane-hotfx { opacity: 1; background: radial-gradient(circle at 50% 40%, rgba(160, 240, 255, 0.55), rgba(87, 217, 255, 0.18)); box-shadow: inset 0 0 0 3px #7fe6ff, 0 0 0 2px rgba(87, 217, 255, 0.6); }
+#game-screen.gs-invincible .lane-button--hot > .lane-hotfx, .lane-button--hot-safe > .lane-hotfx { opacity: 1; background: radial-gradient(circle at 50% 40%, rgba(255, 230, 110, 0.7), rgba(255, 190, 30, 0.28)); box-shadow: inset 0 0 0 3px #ffd84a, 0 0 0 2px rgba(255, 200, 40, 0.6); }
+#game-screen.diff-mid .lane-button--hot > .lane-hotfx, #game-screen.diff-legend .lane-button--hot > .lane-hotfx { opacity: 0; }
+/* v902 다듬기: 알약 아이콘 작게(수량이 보이게), 두더지팡 글자는 캐릭터 오른쪽, 게임 숫자 굵게 */
+.h2-pill { height: 34%; }
+.h2-pill-ic { left: -9%; height: 118%; max-width: 40%; object-fit: contain; }
+.h2-plus { right: -7%; height: 100%; }
+.h2-pill .lane-hud-n { margin-left: 22%; margin-right: 20%; font-size: clamp(0.55rem, 2.7vw, 0.82rem); white-space: nowrap; }
+.h2w-mole .h2w-char { height: 78%; max-width: 64%; bottom: 10%; }
+.h2w-lbl { margin-top: 0; }
+.h2w-mole .h2w-lbl { align-self: flex-end; margin-bottom: 16%; }
+.lane-face--key .lane-num, .lane-button--simple .lane-num { font-family: 'Lilita One', 'Jua', sans-serif; font-size: clamp(1.2rem, 7.4vw, 2.3rem); }
+.h2-pill-ic { left: -12%; height: 112%; }
+.h2-plus { right: -8%; height: 92%; }
+.h2-pill .lane-hud-n { margin-left: 26%; margin-right: 22%; font-size: clamp(0.5rem, 2.5vw, 0.76rem); letter-spacing: -0.02em; }
+.h2w-mole .h2w-char { height: 74%; max-width: 60%; bottom: 9%; }
+.h2w-mole .h2w-lbl { margin-bottom: 12%; font-size: clamp(0.78rem, 3.9vw, 1.15rem); }
+/* 게임 중 통화(구멍) 버튼도 시안 초록 원 테두리 그림 */
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call { background: url('assets/home2/btn-start.png') center / contain no-repeat; }
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call:active { background: url('assets/home2/btn-start.png') center / contain no-repeat; }
+.h2-pill .lane-hud-n { margin-right: 27%; letter-spacing: -0.04em; }
+.h2w-mole .h2w-char { height: 82%; max-width: 72%; bottom: 7%; }
+/* v902(사용자 지정): 홈에서 버튼 간격 줄이고 상점 줄을 낮춰 아래 버튼들을 위로 — 게임 중 16칸은 그대로 같은 크기 */
+#game-screen.is-start #lane-button-bar { grid-template-rows: 0.6fr 1fr 1fr 1fr; gap: 0; }
+#game-screen.is-start .lane-face--h2::before, #game-screen.is-start .lane-face--wide::before { inset: 0; }
+#game-screen.is-start [data-region="12"] .lane-face--wide { right: -50%; }
+#game-screen.is-start [data-region="13"] .lane-face--wide { left: 50%; right: -100%; }
+#game-screen.is-start .h2-pill { height: 54%; }
+/* 넓은 두더지팡/리듬팡 — 비트 펄스가 넓어진 버튼 자기 중심 기준으로 */
+#game-screen.is-start [data-region="12"] { transform-origin: 75% 50%; }
+#game-screen.is-start [data-region="13"] { transform-origin: 125% 50%; }
