@@ -5918,3 +5918,12 @@ html, body, .cosmic-bg { background: #0a1230; }
 .qs-screen[data-lang="ko"] .qs-title text, .qs-screen[data-lang="ko"] .qs-achbtn span { font-family: 'Jua', 'Lilita One', sans-serif; }
 .qs-screen[data-lang="ko"] .qs-title text { font-size: 108px; }
 .qs-screen[data-lang="ko"] .qs-achbtn span { font-size: calc(var(--w) * 0.058); }
+
+/* v897: 업적 ROUND 탭 난이도 선택(아마추어/노말/프로) */
+.qs-lv { display: flex; gap: 6px; padding: 2px 2px 0; }
+.qs-lv button { flex: 1; padding: 6px 0; border: 0; border-radius: 99px; cursor: pointer; font-family: 'Jua', sans-serif; font-size: calc(var(--w) * 0.04); color: #f3e2c0;
+  background: linear-gradient(180deg, #6a4126, #4a2a14); box-shadow: inset 0 2px 0 rgba(255,255,255,0.12), 0 2px 0 #2a1406; -webkit-text-stroke: 1px #2a1406; paint-order: stroke fill; }
+.qs-lv button.is-on.qs-lv-easy { color: #fff; background: linear-gradient(180deg, #5fe07a, #1fa64a); -webkit-text-stroke-color: #0e5a24; }
+.qs-lv button.is-on.qs-lv-mid { color: #fff; background: linear-gradient(180deg, #4fb0ff, #1660d8); -webkit-text-stroke-color: #0c3a8a; }
+.qs-lv button.is-on.qs-lv-legend { color: #fff; background: linear-gradient(180deg, #ff7a6a, #d8281c); -webkit-text-stroke-color: #6a0c06; }
+.qs-lv button.is-lock { opacity: 0.6; }

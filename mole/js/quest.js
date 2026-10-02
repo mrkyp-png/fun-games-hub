@@ -41,7 +41,9 @@
     { ko: ['NORMAL 풀콤보', 'NORMAL을 MISS 없이 클리어하세요.'], en: ['NORMAL Full Combo', 'Clear NORMAL with no MISS.'], v: function (r) { return r.fc.NORMAL ? 1 : 0; }, goal: 1 },
     { ko: ['HARD 풀콤보', 'HARD를 MISS 없이 클리어하세요.'], en: ['HARD Full Combo', 'Clear HARD with no MISS.'], v: function (r) { return r.fc.HARD ? 1 : 0; }, goal: 1 }
   ];
-  function achReward(i) { return i < 7 ? ['coin', ACH_COINS[i]] : ['ticket', 10]; }
+  // v897(사용자 지정): ROUND 업적은 난이도(아마추어/노말/프로)별로 따로 — 보상 노말 1.5배·프로 2배
+  var LV = ['easy', 'mid', 'legend'], LV_MULT = { easy: 1, mid: 1.5, legend: 2 };
+  function achReward(i, lv) { var m = LV_MULT[lv || 'easy'] || 1; return i < 7 ? ['coin', Math.round(ACH_COINS[i] * m)] : ['ticket', Math.round(10 * m)]; }
 
   // ---- 저장 ----
   function ls() { try { return root.localStorage; } catch (e) { return null; } }
@@ -76,26 +78,31 @@
     else if (rw[0] === 'heart') MG.Economy.addHearts(rw[1]);
     else if (rw[0] === 'ticket') MG.Economy.addTickets(rw[1]);
   }
-  function maxRoundReached() {
-    var n = 1, P = MG.Progress;
-    for (var c = 2; c <= P.MAX_CHAPTER; c++) if (P.LIGHTS.some(function (l) { return P.isUnlocked(c, l); })) n = c;
+  function maxRoundReached(lv) {
+    var n = 0, P = MG.Progress;
+    if (!P.isLightUnlocked(lv)) return 0;
+    for (var c = 1; c <= P.MAX_CHAPTER; c++) if (P.isUnlocked(c, lv)) n = c;
     return n;
   }
-  function round8Cleared() { var P = MG.Progress; return P.LIGHTS.some(function (l) { return P.get(P.MAX_CHAPTER, l).cleared; }); }
+  function round8Cleared(lv) { var P = MG.Progress; return P.get(P.MAX_CHAPTER, lv).cleared; }
   function achValue(tab, s) {
     if (tab === 'score') return s.a.bestScore; if (tab === 'combo') return s.a.bestCombo; if (tab === 'mole') return s.a.kills;
-    return maxRoundReached();
+    return maxRoundReached(achLv);
   }
   function achDone(tab, i, s) {
     if (tab === 'rhythm') { var R = RHYTHM_ACH[i]; return R.v(s.r) >= R.goal; }
-    if (tab === 'round' && i === 7) return round8Cleared();
+    if (tab === 'round' && i === 7) return round8Cleared(achLv);
     return achValue(tab, s) >= ACH[tab][i];
   }
   // 받을 수 있는 보상 개수(홈 배지 등에 쓸 수 있게)
+  var achLv = 'easy'; // ROUND 탭에서 보고 있는 난이도
+  function cKey(tab, i) { return tab === 'round' && achLv !== 'easy' ? 'round-' + achLv + i : tab + i; } // 아마추어는 기존 키 유지
   function claimable() {
     var s = read(), n = 0;
     [['d', DAILY], ['w', WEEKLY]].forEach(function (p) { p[1].forEach(function (q) { if (!s[p[0]].claimed[q.id] && (s[p[0]][q.stat] | 0) >= q.goal) n++; }); });
-    Object.keys(ACH).forEach(function (tab) { ACH[tab].forEach(function (v, i) { if (!s.a.claimed[tab + i] && achDone(tab, i, s)) n++; }); });
+    var keep = achLv;
+    Object.keys(ACH).forEach(function (tab) { (tab === 'round' ? LV : ['easy']).forEach(function (lv) { achLv = lv; ACH[tab].forEach(function (v, i) { if (!s.a.claimed[cKey(tab, i)] && achDone(tab, i, s)) n++; }); }); });
+    achLv = keep;
     return n;
   }
 
@@ -162,9 +169,13 @@
           (allSt === 'done' ? '<img class="qs-check" src="' + A + 'ic-check.png" alt="">' : allSt === 'claim' ? '<button type="button" class="qs-btn qs-btn--claim" data-qs-all>' + (en ? 'Claim' : '받기') + '</button>' : '<span class="qs-btn qs-btn--lock">' + (en ? 'Locked' : '미완료') + '</span>') + '</div></div>';
       } else {
         tabs.innerHTML = ['round', 'score', 'combo', 'mole', 'rhythm'].map(function (t) { return '<button type="button" data-qs-ach-tab="' + t + '" class="' + (achTab === t ? 'is-on' : '') + '">' + t.toUpperCase() + '</button>'; }).join('');
+        if (achTab === 'round') html += '<div class="qs-lv">' + LV.map(function (lv) {
+          var nm = { easy: en ? 'Amateur' : '아마추어', mid: en ? 'Normal' : '노말', legend: en ? 'Pro' : '프로' }[lv];
+          var locked = !MG.Progress.isLightUnlocked(lv);
+          return '<button type="button" data-qs-lv="' + lv + '" class="qs-lv-' + lv + (achLv === lv ? ' is-on' : '') + (locked ? ' is-lock' : '') + '">' + (locked ? '🔒 ' : '') + nm + '</button>'; }).join('') + '</div>';
         var val = achValue(achTab, s);
         ACH[achTab].forEach(function (goal, i) {
-          var ok = achDone(achTab, i, s), state = s.a.claimed[achTab + i] ? 'done' : ok ? 'claim' : 'lock';
+          var ok = achDone(achTab, i, s), state = s.a.claimed[cKey(achTab, i)] ? 'done' : ok ? 'claim' : 'lock';
           var name, desc, cnt, pct;
           if (achTab === 'rhythm') {
             var RA = RHYTHM_ACH[i], rv = RA.v(s.r);
@@ -182,7 +193,7 @@
             cnt = fmt(Math.min(val, goal)) + ' / ' + fmt(goal); pct = val / goal * 100;
           }
           html += card({ tone: 'green', icon: '<span class="qs-shield" style="background-image:url(' + A + 'sh-' + SHIELDS[i] + '.png)">' + (i + 1) + '</span>',
-            name: name, desc: desc, cnt: cnt, pct: pct, rw: i === 7 ? ['ticket', 10] : achReward(i), state: state === 'lock' ? 'lock' : state })
+            name: name, desc: desc, cnt: cnt, pct: pct, rw: achReward(i, achTab === 'round' ? achLv : 'easy'), state: state === 'lock' ? 'lock' : state })
             .replace('<div class="qs-card ', '<div data-qs-a="' + i + '" class="qs-card ').replace(/<button type="button" class="qs-btn qs-btn--go" data-qs-go>[^<]*<\/button>/, state === 'lock' ? '' : '$&');
         });
       }
@@ -196,8 +207,8 @@
             if (!q || s2[key].claimed[q.id] || (s2[key][q.stat] | 0) < q.goal) return;
             give(q.reward); s2[key].claimed[q.id] = true;
           } else {
-            var i = +c.getAttribute('data-qs-a'); if (s2.a.claimed[achTab + i] || !achDone(achTab, i, s2)) return;
-            give(i === 7 ? ['ticket', 10] : achReward(i)); s2.a.claimed[achTab + i] = true;
+            var i = +c.getAttribute('data-qs-a'); if (s2.a.claimed[cKey(achTab, i)] || !achDone(achTab, i, s2)) return;
+            give(achReward(i, achTab === 'round' ? achLv : 'easy')); s2.a.claimed[cKey(achTab, i)] = true;
           }
           save(s2); pop(b); render(); if (opts.onChange) opts.onChange();
         });
@@ -208,6 +219,7 @@
         give(ALL_REWARD[mode]); s2[key].claimed.all = true; save(s2); pop(allBtn); render(); if (opts.onChange) opts.onChange();
       });
       tabs.querySelectorAll('[data-qs-mode]').forEach(function (b) { b.addEventListener('click', function () { mode = b.getAttribute('data-qs-mode'); render(); }); });
+      list.querySelectorAll('[data-qs-lv]').forEach(function (b) { b.addEventListener('click', function () { achLv = b.getAttribute('data-qs-lv'); render(); }); });
       tabs.querySelectorAll('[data-qs-ach-tab]').forEach(function (b) { b.addEventListener('click', function () { achTab = b.getAttribute('data-qs-ach-tab'); render(); }); });
       el.querySelectorAll('.qs-btn, .qs-x, .qs-achbtn, .qs-tabs button').forEach(function (b) {
         b.addEventListener('pointerdown', function () { b.classList.add('is-press'); });
@@ -215,7 +227,7 @@
       });
     }
     function pop(b) { try { MG.HitFx && MG.HitFx.uiTap && MG.HitFx.uiTap(1); } catch (e) { /* 무시 */ } }
-    function show() { mode = 'daily'; achTab = 'round'; render(); }
+    function show() { mode = 'daily'; achTab = 'round'; achLv = 'easy'; render(); }
     return { show: show, render: render };
   }
   var api = { create: create, recordGame: recordGame, recordRhythm: recordRhythm, claimable: claimable, DAILY: DAILY, WEEKLY: WEEKLY, ACH: ACH };
