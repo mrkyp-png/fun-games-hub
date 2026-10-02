@@ -5790,3 +5790,10 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 /* v872: 오른쪽 무기 칸 등급 배지 삭제(사용자 지정) */
 .skl-rw-badge { display: none; }
 .skl-right-imgwrap.skl-rw { padding-top: 0; }
+/* v873: 스킬 화면 오른쪽 무기 칸 — 별 그림 없애기(등급 카드 그림에 별이 그려져 있어 그림 대신 등급 색 빛 바탕), 반짝이 별 삭제 */
+.skl-right-imgwrap.skl-rw { border: 2px solid var(--rw-line, #6fd0ff); box-sizing: border-box; }
+.skl-rw.inv-card--basic { --rw-line: #c9d3e3; background-image: radial-gradient(circle at 50% 50%, #ffffff 0%, #cfe0f5 35%, #7f95b8 100%) !important; }
+.skl-rw.inv-card--rare { --rw-line: #6fd0ff; background-image: radial-gradient(circle at 50% 50%, #e6f6ff 0%, #4fb2ff 38%, #1250c4 100%) !important; }
+.skl-rw.inv-card--epic { --rw-line: #e39bff; background-image: radial-gradient(circle at 50% 50%, #fde8ff 0%, #d36bff 38%, #6a1aa8 100%) !important; }
+.skl-rw.inv-card--legend { --rw-line: #7ff2c8; background-image: radial-gradient(circle at 50% 50%, #e8fff5 0%, #3fe0a6 38%, #0b7a55 100%) !important; }
+.skl-rw .inv-tw { display: none; }
