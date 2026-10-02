@@ -5837,3 +5837,5 @@ html, body, .cosmic-bg { background: #0a1230; }
 .photo-zoom-card--cloud_cups { background: radial-gradient(ellipse at 50% 35%, #a96bff, #3e1880); }
 /* v891: 제작소 골드 묠니르 아주 조금 작게(사용자 지정) */
 .ws-item img[src*="w-goldhammer"], .ws-stage img[src*="w-goldhammer"] { transform: scale(0.9); }
+/* v892: 그만하기 -1 = 하트 없이 숫자만, 왼쪽으로 */
+.rx-cost { right: 15%; }
