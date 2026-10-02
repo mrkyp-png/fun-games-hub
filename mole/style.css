@@ -5931,3 +5931,43 @@ html, body, .cosmic-bg { background: #0a1230; }
 /* v899: 퀘스트/업적 전환 버튼 — 트로피 빼고 글자를 버튼 가운데에 크게 */
 .qs-achbtn span { left: 18%; right: 18%; top: 50%; bottom: auto; transform: translateY(-50%); font-size: calc(var(--w) * 0.062); }
 .qs-screen[data-lang="ko"] .qs-achbtn span { font-size: calc(var(--w) * 0.07); }
+/* v900: 일일/주간 탭 전환 시 머리판 그림 비율이 달라(480×253 / 447×254) 높이가 흔들리던 것 — 머리판 높이 고정 */
+.qs-head-img { aspect-ratio: 480 / 253; height: auto; object-fit: fill; }
+.qs-screen[data-mode="ach"] .qs-head-img { aspect-ratio: 533 / 271; }
+.qs-screen[data-lang="ko"] .qs-tabs button { font-family: 'Jua', 'Lilita One', sans-serif; }
+.qs-screen[data-lang="ko"] .qs-all-txt b { font-family: 'Jua', 'Lilita One', sans-serif; }
+/* v900: 퀘스트 애니메이션 1~6 (transform·opacity 위주, 폰 깜빡임 방지) */
+/* 1. 받기 버튼 빛 띠 */
+.qs-btn--claim { position: relative; overflow: hidden; }
+.qs-btn--claim::after { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 40%; pointer-events: none;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,0.8), transparent); transform: translateX(-120%); animation: qs-shine 1.8s ease-in-out infinite; }
+@keyframes qs-shine { 0% { transform: translateX(-120%); } 45%, 100% { transform: translateX(280%); } }
+/* 2. 보상 날아가기 */
+.qs-fly { position: fixed; z-index: 10; height: auto; pointer-events: none; will-change: transform, opacity; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.35)); }
+.qs-fly-txt { position: fixed; z-index: 11; pointer-events: none; font-family: 'Lilita One', 'Jua', sans-serif; font-weight: 400; font-size: calc(var(--w) * 0.06);
+  color: #ffd84a; -webkit-text-stroke: 2px #4a2006; paint-order: stroke fill; white-space: nowrap; }
+/* 3. 진행 막대 차오르기 */
+.qs-bar > i { transition: width 0.8s cubic-bezier(.2,.8,.3,1); }
+/* 4. ALL CLEAR 선물상자 흔들림 + 반짝이 */
+.qs-all-giftw { position: relative; flex: 0 0 17%; width: 17%; }
+.qs-all-giftw .qs-all-gift { display: block; width: 100%; }
+.qs-all.is-ready .qs-all-gift { transform-origin: 50% 90%; animation: qs-wiggle 1.6s ease-in-out infinite; }
+@keyframes qs-wiggle { 0%, 45%, 100% { transform: rotate(0) scale(1); } 10% { transform: rotate(-10deg) scale(1.08); } 20% { transform: rotate(9deg) scale(1.08); } 30% { transform: rotate(-6deg) scale(1.05); } 38% { transform: rotate(3deg) scale(1.02); } }
+.qs-spk { position: absolute; width: 22%; aspect-ratio: 1; pointer-events: none; opacity: 0; animation: qs-spk 1.6s ease-out infinite;
+  background: radial-gradient(circle, #fff 0 18%, rgba(255,240,140,0.9) 30%, transparent 65%); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); }
+.qs-spk:nth-of-type(1) { left: -10%; top: 0; } .qs-spk:nth-of-type(2) { right: -12%; top: 10%; animation-delay: 0.25s; }
+.qs-spk:nth-of-type(3) { left: 40%; top: -18%; animation-delay: 0.5s; } .qs-spk:nth-of-type(4) { left: -6%; bottom: 8%; animation-delay: 0.75s; }
+.qs-spk:nth-of-type(5) { right: -8%; bottom: 0; animation-delay: 1s; } .qs-spk:nth-of-type(6) { left: 60%; top: 30%; animation-delay: 1.25s; }
+@keyframes qs-spk { 0% { opacity: 0; transform: scale(0.2) rotate(0); } 25% { opacity: 1; transform: scale(1.1) rotate(45deg); } 55%, 100% { opacity: 0; transform: scale(0.3) rotate(90deg); } }
+/* 5. 위쪽 두더지 — 숨쉬듯 살짝 위아래 + 가끔 눈 깜빡임 (머리판 높이 고정 규칙과 같은 비율) */
+.qs-mole { position: absolute; left: 0; top: 0; width: 100%; pointer-events: none; animation: qs-bob 2.4s ease-in-out infinite; will-change: transform; }
+.qs-mole img { display: block; width: 100%; aspect-ratio: 480 / 253; object-fit: fill; }
+.qs-screen[data-mode="ach"] .qs-mole img { aspect-ratio: 533 / 271; }
+@keyframes qs-bob { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+.qs-lid { position: absolute; border-radius: 50% 50% 46% 46%; border-bottom: 3px solid #5a2a10; background-image: linear-gradient(180deg, rgba(90,40,10,0.25), transparent 45%, rgba(90,40,10,0.3)); box-sizing: border-box; transform-origin: 50% 0; transform: scaleY(0); animation: qs-blink 4.2s linear infinite; }
+@keyframes qs-blink { 0%, 90%, 100% { transform: scaleY(0); } 93%, 95% { transform: scaleY(1); } }
+/* 6. 완료한 업적 방패에 빛 스침 */
+.qs-shield.is-ok { position: relative; }
+.qs-shield.is-ok::after { content: ''; position: absolute; inset: 0; pointer-events: none; -webkit-mask: var(--sh) center / contain no-repeat; mask: var(--sh) center / contain no-repeat;
+  background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.85) 50%, transparent 60%) 120% 0 / 300% 100% no-repeat; animation: qs-shsh 3s ease-in-out infinite; animation-delay: inherit; }
+@keyframes qs-shsh { 0% { background-position: 120% 0; } 35%, 100% { background-position: -20% 0; } }

@@ -114,7 +114,7 @@
     var $ = function (q) { return el.querySelector(q); };
     el.innerHTML =
       '<div class="qs-stage">' +
-        '<div class="qs-head"><img class="qs-head-img" alt="">' +
+        '<div class="qs-head"><img class="qs-head-img" alt=""><div class="qs-mole"><img alt=""><i class="qs-lid"></i><i class="qs-lid"></i></div>' +
           '<svg class="qs-title" viewBox="0 0 500 110" aria-hidden="true"><defs><linearGradient id="qsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff58a"/><stop offset="0.45" stop-color="#ffcf1f"/><stop offset="1" stop-color="#ff8a00"/></linearGradient></defs>' +
             '<text class="qs-t-sh" x="0" y="86" transform="translate(0 6)"></text><text class="qs-t-st" x="0" y="86"></text><text class="qs-t-fill" x="0" y="86" fill="url(#qsg)"></text></svg>' +
           '<button type="button" class="qs-x" data-qs-close aria-label="close"><img src="assets/workshop/pick/x.png" alt=""></button>' +
@@ -123,8 +123,8 @@
         '<div class="qs-list" data-qs-list></div>' +
         '<button type="button" class="qs-achbtn" data-qs-ach><img src="' + A + 'ach-btn-blank.png" alt=""><span></span></button>' +
       '</div>';
-    $('[data-qs-close]').addEventListener('click', function () { if (mode === 'ach') { mode = 'daily'; render(); return; } if (root.FGH && root.FGH.rollOut) root.FGH.rollOut(el, opts.onClose); else opts.onClose(); }); // v898: 나갈 때 글리치
-    $('[data-qs-ach]').addEventListener('click', function () { mode = mode === 'ach' ? 'daily' : 'ach'; render(); });
+    $('[data-qs-close]').addEventListener('click', function () { if (mode === 'ach') { mode = 'daily'; render(true); return; } if (root.FGH && root.FGH.rollOut) root.FGH.rollOut(el, opts.onClose); else opts.onClose(); }); // v898: 나갈 때 글리치
+    $('[data-qs-ach]').addEventListener('click', function () { mode = mode === 'ach' ? 'daily' : 'ach'; render(true); });
 
     function setTitle(txt) { el.querySelectorAll('.qs-title text').forEach(function (t) { t.textContent = txt; t.setAttribute('x', '250'); t.setAttribute('text-anchor', 'middle'); }); }
     function btnHtml(state) {
@@ -141,16 +141,17 @@
       '</div>';
     }
 
-    function render() {
+    function render(fill) {
       var s = read(), en = EN(), list = $('[data-qs-list]'), tabs = $('[data-qs-tabs]');
       el.setAttribute('data-mode', mode); el.setAttribute('data-lang', en ? 'en' : 'ko');
       $('.qs-head-img').src = A + (mode === 'ach' ? 'head-ach.png' : mode === 'weekly' ? 'head-weekly.png' : 'head-daily.png');
+      placeMole();
       setTitle(mode === 'ach' ? (en ? 'ACHIEVEMENT' : '업적') : (en ? 'QUEST' : '퀘스트')); // v896: 한글 모드는 한글
       $('[data-qs-ach] span').textContent = mode === 'ach' ? (en ? 'QUEST' : '퀘스트') : (en ? 'ACHIEVEMENT' : '업적');
       var html = '';
       if (mode !== 'ach') {
-        tabs.innerHTML = '<button type="button" data-qs-mode="daily" class="' + (mode === 'daily' ? 'is-on' : '') + '">DAILY</button>' +
-          '<button type="button" data-qs-mode="weekly" class="' + (mode === 'weekly' ? 'is-on' : '') + '">WEEKLY</button>';
+        tabs.innerHTML = '<button type="button" data-qs-mode="daily" class="' + (mode === 'daily' ? 'is-on' : '') + '">' + (en ? 'DAILY' : '일일') + '</button>' +
+          '<button type="button" data-qs-mode="weekly" class="' + (mode === 'weekly' ? 'is-on' : '') + '">' + (en ? 'WEEKLY' : '주간') + '</button>';
         var key = mode === 'daily' ? 'd' : 'w', Q = mode === 'daily' ? DAILY : WEEKLY, st = s[key], tone = mode === 'daily' ? 'blue' : 'purple';
         var doneN = Q.filter(function (q) { return (st[q.stat] | 0) >= q.goal; }).length;
         html += '<div class="qs-card qs-card--sum qs-card--' + tone + '"><div class="qs-ico"><img src="' + A + 'ic-cal.png" alt=""></div>' +
@@ -163,12 +164,13 @@
             cnt: fmt(Math.min(v, q.goal)) + ' / ' + fmt(q.goal), pct: v / q.goal * 100, rw: q.reward, state: state }).replace('<div class="qs-card ', '<div data-qs-q="' + q.id + '" class="qs-card ');
         });
         var all = doneN === 3, allSt = st.claimed.all ? 'done' : all ? 'claim' : 'lock', rw = ALL_REWARD[mode];
-        html += '<div class="qs-all qs-all--' + mode + '"><img class="qs-all-gift" src="' + A + (mode === 'daily' ? 'gift-red' : 'gift-purple') + '.png" alt="">' +
-          '<div class="qs-all-txt"><b>' + (mode === 'daily' ? 'DAILY' : 'WEEKLY') + ' ALL CLEAR</b><span>' + (mode === 'daily' ? (en ? 'Finish all daily quests for a bonus!' : '모든 일일 퀘스트를 완료하고 추가 보상을 받아요!') : (en ? 'Finish all weekly quests for a bonus!' : '모든 주간 퀘스트를 완료하고 추가 보상을 받아요!')) + '</span></div>' +
+        html += '<div class="qs-all qs-all--' + mode + (allSt === 'claim' ? ' is-ready' : '') + '"><span class="qs-all-giftw"><img class="qs-all-gift" src="' + A + (mode === 'daily' ? 'gift-red' : 'gift-purple') + '.png" alt="">' +
+          (allSt === 'claim' ? '<i class="qs-spk"></i><i class="qs-spk"></i><i class="qs-spk"></i><i class="qs-spk"></i><i class="qs-spk"></i><i class="qs-spk"></i>' : '') + '</span>' +
+          '<div class="qs-all-txt"><b>' + (en ? (mode === 'daily' ? 'DAILY' : 'WEEKLY') + ' ALL CLEAR' : (mode === 'daily' ? '일일' : '주간') + ' 올클리어') + '</b><span>' + (mode === 'daily' ? (en ? 'Finish all daily quests for a bonus!' : '모든 일일 퀘스트를 완료하고 추가 보상을 받아요!') : (en ? 'Finish all weekly quests for a bonus!' : '모든 주간 퀘스트를 완료하고 추가 보상을 받아요!')) + '</span></div>' +
           '<div class="qs-all-rw"><div class="qs-rwline"><img src="' + (rw[0] === 'ticket' ? A + 'ticket-gold.png' : rwIcon(rw)) + '" alt=""><b>× ' + fmt(rw[1]) + '</b></div>' +
           (allSt === 'done' ? '<img class="qs-check" src="' + A + 'ic-check.png" alt="">' : allSt === 'claim' ? '<button type="button" class="qs-btn qs-btn--claim" data-qs-all>' + (en ? 'Claim' : '받기') + '</button>' : '<span class="qs-btn qs-btn--lock">' + (en ? 'Locked' : '미완료') + '</span>') + '</div></div>';
       } else {
-        tabs.innerHTML = ['round', 'score', 'combo', 'mole', 'rhythm'].map(function (t) { return '<button type="button" data-qs-ach-tab="' + t + '" class="' + (achTab === t ? 'is-on' : '') + '">' + t.toUpperCase() + '</button>'; }).join('');
+        tabs.innerHTML = ['round', 'score', 'combo', 'mole', 'rhythm'].map(function (t) { return '<button type="button" data-qs-ach-tab="' + t + '" class="' + (achTab === t ? 'is-on' : '') + '">' + (en ? t.toUpperCase() : { round: '라운드', score: '점수', combo: '콤보', mole: '두더지', rhythm: '리듬팡' }[t]) + '</button>'; }).join(''); // v900: 한글 모드 한글
         if (achTab === 'round') html += '<div class="qs-lv">' + LV.map(function (lv) {
           var nm = { easy: en ? 'Amateur' : '아마추어', mid: en ? 'Normal' : '노말', legend: en ? 'Pro' : '프로' }[lv];
           var locked = !MG.Progress.isLightUnlocked(lv);
@@ -192,12 +194,19 @@
               (en ? 'Defeat ' + fmt(goal) + ' moles in total.' : '두더지를 누적 ' + fmt(goal) + '마리 처치하세요.');
             cnt = fmt(Math.min(val, goal)) + ' / ' + fmt(goal); pct = val / goal * 100;
           }
-          html += card({ tone: 'green', icon: '<span class="qs-shield" style="background-image:url(' + A + 'sh-' + SHIELDS[i] + '.png)">' + (i + 1) + '</span>',
+          var shUrl = 'url(' + A + 'sh-' + SHIELDS[i] + '.png)';
+          html += card({ tone: 'green', icon: '<span class="qs-shield' + (state === 'lock' ? '' : ' is-ok') + '" style="background-image:' + shUrl + ';--sh:' + shUrl + ';animation-delay:' + (i * 0.3) + 's">' + (i + 1) + '</span>',
             name: name, desc: desc, cnt: cnt, pct: pct, rw: achReward(i, achTab === 'round' ? achLv : 'easy'), state: state === 'lock' ? 'lock' : state })
             .replace('<div class="qs-card ', '<div data-qs-a="' + i + '" class="qs-card ').replace(/<button type="button" class="qs-btn qs-btn--go" data-qs-go>[^<]*<\/button>/, state === 'lock' ? '' : '$&');
         });
       }
       list.innerHTML = html;
+      if (fill) { // v900: 진행 막대 0 → 현재 값까지 차오르기
+        var bars = list.querySelectorAll('.qs-bar > i'), ws = [];
+        bars.forEach(function (b) { ws.push(b.style.width); b.style.width = '0%'; });
+        void list.offsetWidth;
+        bars.forEach(function (b, k) { b.style.width = ws[k]; });
+      }
       list.querySelectorAll('[data-qs-go]').forEach(function (b) { b.addEventListener('click', function () { opts.onPlay(); }); });
       list.querySelectorAll('[data-qs-claim]').forEach(function (b) {
         b.addEventListener('click', function () {
@@ -210,24 +219,63 @@
             var i = +c.getAttribute('data-qs-a'); if (s2.a.claimed[cKey(achTab, i)] || !achDone(achTab, i, s2)) return;
             give(achReward(i, achTab === 'round' ? achLv : 'easy')); s2.a.claimed[cKey(achTab, i)] = true;
           }
-          save(s2); pop(b); render(); if (opts.onChange) opts.onChange();
+          save(s2); pop(b); fly(c.querySelector('.qs-rwline img'), c.querySelector('.qs-rwline b')); render(); if (opts.onChange) opts.onChange();
         });
       });
       var allBtn = list.querySelector('[data-qs-all]');
       if (allBtn) allBtn.addEventListener('click', function () {
         var s2 = read(), key = mode === 'daily' ? 'd' : 'w'; if (s2[key].claimed.all) return;
-        give(ALL_REWARD[mode]); s2[key].claimed.all = true; save(s2); pop(allBtn); render(); if (opts.onChange) opts.onChange();
+        give(ALL_REWARD[mode]); s2[key].claimed.all = true; save(s2); pop(allBtn); fly(list.querySelector('.qs-all-rw img'), list.querySelector('.qs-all-rw b')); render(); if (opts.onChange) opts.onChange();
       });
-      tabs.querySelectorAll('[data-qs-mode]').forEach(function (b) { b.addEventListener('click', function () { mode = b.getAttribute('data-qs-mode'); render(); }); });
-      list.querySelectorAll('[data-qs-lv]').forEach(function (b) { b.addEventListener('click', function () { achLv = b.getAttribute('data-qs-lv'); render(); }); });
-      tabs.querySelectorAll('[data-qs-ach-tab]').forEach(function (b) { b.addEventListener('click', function () { achTab = b.getAttribute('data-qs-ach-tab'); render(); }); });
+      tabs.querySelectorAll('[data-qs-mode]').forEach(function (b) { b.addEventListener('click', function () { mode = b.getAttribute('data-qs-mode'); render(true); }); });
+      list.querySelectorAll('[data-qs-lv]').forEach(function (b) { b.addEventListener('click', function () { achLv = b.getAttribute('data-qs-lv'); render(true); }); });
+      tabs.querySelectorAll('[data-qs-ach-tab]').forEach(function (b) { b.addEventListener('click', function () { achTab = b.getAttribute('data-qs-ach-tab'); render(true); }); });
       el.querySelectorAll('.qs-btn, .qs-x, .qs-achbtn, .qs-tabs button').forEach(function (b) {
         b.addEventListener('pointerdown', function () { b.classList.add('is-press'); });
         ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { b.addEventListener(ev, function () { b.classList.remove('is-press'); }); });
       });
     }
+    // v900: 위쪽 두더지 — 머리판 그림의 두더지 부분만 잘라 겹치고(아랫선 기준으로 살짝 커졌다 작아짐) 가끔 눈 깜빡임.
+    // 눈 위치·털 색은 각 머리판 그림에서 잰 값(원본 px). ach 두더지는 오른눈이 이미 윙크라 왼눈만.
+    var MOLE = {
+      daily: { w: 480, h: 253, cut: 150, right: 300, fur: '#de8047', eyes: [[132, 157, 79, 105], [202, 226, 80, 104]] },
+      weekly: { w: 447, h: 254, cut: 150, right: 300, fur: '#da7d48', eyes: [[126, 153, 77, 102], [196, 220, 78, 102]] },
+      ach: { w: 533, h: 271, cut: 158, right: 300, fur: '#f19154', eyes: [[120, 146, 82, 106]] }
+    };
+    function placeMole() {
+      var g = MOLE[mode], m = $('.qs-mole'), pc = function (v, t) { return (v / t * 100) + '%'; };
+      m.querySelector('img').src = $('.qs-head-img').src;
+      m.style.clipPath = 'inset(0 ' + pc(g.w - g.right, g.w) + ' ' + pc(g.h - g.cut, g.h) + ' 0)';
+      m.style.transformOrigin = pc(g.right * 0.5, g.w) + ' ' + pc(g.cut, g.h);
+      m.querySelectorAll('.qs-lid').forEach(function (l, k) {
+        var e = g.eyes[k]; l.style.display = e ? '' : 'none'; if (!e) return;
+        l.style.left = pc(e[0] - 6, g.w); l.style.width = pc(e[1] - e[0] + 12, g.w);
+        l.style.top = pc(e[2] - 6, g.h); l.style.height = pc(e[3] - e[2] + 12, g.h); l.style.backgroundColor = g.fur;
+      });
+    }
+    // v900: 받기 → 보상 아이콘 6개가 위쪽(제목)으로 날아가며 사라짐 + "+수량" 글자
+    function fly(img, numEl) {
+      if (!img || !img.animate) return;
+      var r = img.getBoundingClientRect(), t = $('.qs-title').getBoundingClientRect();
+      var tx = t.left + t.width / 2 - (r.left + r.width / 2), ty = t.top + t.height / 2 - (r.top + r.height / 2);
+      for (var k = 0; k < 6; k++) (function (k) {
+        var f = document.createElement('img'); f.src = img.src; f.className = 'qs-fly';
+        f.style.left = r.left + 'px'; f.style.top = r.top + 'px'; f.style.width = r.width + 'px';
+        el.appendChild(f);
+        var sx = (Math.random() - 0.5) * r.width * 3, sy = -r.height * (0.6 + Math.random());
+        f.animate([
+          { transform: 'translate(0,0) scale(0.6)', opacity: 1 },
+          { transform: 'translate(' + sx + 'px,' + sy + 'px) scale(1.15)', opacity: 1, offset: 0.3 },
+          { transform: 'translate(' + tx + 'px,' + ty + 'px) scale(0.5)', opacity: 0 }
+        ], { duration: 650 + k * 70, delay: k * 40, easing: 'cubic-bezier(.4,0,.6,1)', fill: 'both' }).onfinish = function () { f.remove(); };
+      })(k);
+      var n = document.createElement('b'); n.className = 'qs-fly-txt'; n.textContent = '+' + (numEl ? numEl.textContent.replace(/[^\d,]/g, '') : '');
+      n.style.left = (r.left + r.width / 2) + 'px'; n.style.top = r.top + 'px'; el.appendChild(n);
+      n.animate([{ transform: 'translate(-50%,0) scale(0.6)', opacity: 0 }, { transform: 'translate(-50%,-20px) scale(1.1)', opacity: 1, offset: 0.25 },
+        { transform: 'translate(-50%,-55px) scale(1)', opacity: 0 }], { duration: 900, easing: 'ease-out', fill: 'both' }).onfinish = function () { n.remove(); };
+    }
     function pop(b) { try { MG.HitFx && MG.HitFx.uiTap && MG.HitFx.uiTap(1); } catch (e) { /* 무시 */ } }
-    function show() { mode = 'daily'; achTab = 'round'; achLv = 'easy'; render(); }
+    function show() { mode = 'daily'; achTab = 'round'; achLv = 'easy'; render(true); }
     return { show: show, render: render };
   }
   var api = { create: create, recordGame: recordGame, recordRhythm: recordRhythm, claimable: claimable, DAILY: DAILY, WEEKLY: WEEKLY, ACH: ACH };
