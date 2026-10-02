@@ -119,6 +119,7 @@
             '<text class="qs-t-sh" x="0" y="86" transform="translate(0 6)"></text><text class="qs-t-st" x="0" y="86"></text><text class="qs-t-fill" x="0" y="86" fill="url(#qsg)"></text></svg>' +
           '<button type="button" class="qs-x" data-qs-close aria-label="close"><img src="assets/workshop/pick/x.png" alt=""></button>' +
           '<div class="qs-tabs" data-qs-tabs></div>' +
+          '<img class="qs-paws" alt="">' + // v901: 두더지 손은 탭 상자보다 앞
         '</div>' +
         '<div class="qs-list" data-qs-list></div>' +
         '<button type="button" class="qs-achbtn" data-qs-ach><img src="' + A + 'ach-btn-blank.png" alt=""><span></span></button>' +
@@ -146,6 +147,7 @@
       el.setAttribute('data-mode', mode); el.setAttribute('data-lang', en ? 'en' : 'ko');
       $('.qs-head-img').src = A + (mode === 'ach' ? 'head-ach.png' : mode === 'weekly' ? 'head-weekly.png' : 'head-daily.png');
       placeMole();
+      $('.qs-paws').src = A + (mode === 'ach' ? 'paws-ach.png' : mode === 'weekly' ? 'paws-weekly.png' : 'paws-daily.png');
       setTitle(mode === 'ach' ? (en ? 'ACHIEVEMENT' : '업적') : (en ? 'QUEST' : '퀘스트')); // v896: 한글 모드는 한글
       $('[data-qs-ach] span').textContent = mode === 'ach' ? (en ? 'QUEST' : '퀘스트') : (en ? 'ACHIEVEMENT' : '업적');
       var html = '';

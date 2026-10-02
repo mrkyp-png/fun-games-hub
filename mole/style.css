@@ -5971,3 +5971,15 @@ html, body, .cosmic-bg { background: #0a1230; }
 .qs-shield.is-ok::after { content: ''; position: absolute; inset: 0; pointer-events: none; -webkit-mask: var(--sh) center / contain no-repeat; mask: var(--sh) center / contain no-repeat;
   background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.85) 50%, transparent 60%) 120% 0 / 300% 100% no-repeat; animation: qs-shsh 3s ease-in-out infinite; animation-delay: inherit; }
 @keyframes qs-shsh { 0% { background-position: 120% 0; } 35%, 100% { background-position: -20% 0; } }
+/* v901: 두더지 손(머리판 그림에서 손만 잘라낸 PNG)을 탭 상자 위에 겹쳐 손이 상자 앞에 나오게 */
+.qs-paws { position: absolute; left: 0; top: 0; width: 100%; aspect-ratio: 480 / 253; object-fit: fill; pointer-events: none; }
+.qs-screen[data-mode="ach"] .qs-paws { aspect-ratio: 533 / 271; }
+/* v901: 업적 ROUND 난이도 버튼 — 스코어 화면 두더지팡 버튼 그림, 아마추어=노랑·노말=초록·프로=빨강, 고르지 않은 건 흐리게 */
+.qs-lv button { aspect-ratio: 426 / 141; padding: 0; border-radius: 0; box-shadow: none; background: center / 100% 100% no-repeat; color: #fff;
+  font-weight: 900; -webkit-text-stroke: 3px #b25a00; paint-order: stroke fill; opacity: 0.55; transition: transform 0.08s; }
+.qs-lv button.qs-lv-easy, .qs-lv button.is-on.qs-lv-easy { background: url('assets/quest/lv-yellow.png') center / 100% 100% no-repeat; -webkit-text-stroke-color: #b25a00; }
+.qs-lv button.qs-lv-mid, .qs-lv button.is-on.qs-lv-mid { background: url('assets/quest/lv-green.png') center / 100% 100% no-repeat; -webkit-text-stroke-color: #1e6a14; }
+.qs-lv button.qs-lv-legend, .qs-lv button.is-on.qs-lv-legend { background: url('assets/quest/lv-red.png') center / 100% 100% no-repeat; -webkit-text-stroke-color: #8a1206; }
+.qs-lv button.is-on { opacity: 1; }
+.qs-lv button.is-lock { opacity: 0.35; }
+.qs-lv button:active { transform: scale(0.96); }
