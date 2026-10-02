@@ -35,6 +35,15 @@
     }
   } catch (e) { /* 무시 */ }
 
+  // ⚠️ 개발용(사용자 요청 v955): 무기·코스튬 강화 단계만 +0 으로 1회 초기화(코인·재료는 그대로). 출시 전 삭제
+  try {
+    if (!localStorage.getItem('mole.devResetLv3')) {
+      Object.keys(localStorage).filter(function (k) { return k.indexOf('mole.weapon.level.') === 0; }).forEach(function (k) { localStorage.removeItem(k); });
+      if (root.MoleGame && root.MoleGame.CostumeTeams) root.MoleGame.CostumeTeams.teams().forEach(function (t) { root.MoleGame.CostumeTeams.setEnhanceLevel(t.id, 0); });
+      localStorage.setItem('mole.devResetLv3', '1');
+    }
+  } catch (e) { /* 무시 */ }
+
   var WEAPONS = [
     { id: 'cannon', ko: '팡팡 캐논', en: 'Pang Pang Cannon', img: A + 'w-cannon.png', done: A + 'w-cannon-front.png' },
     { id: 'goldhammer', ko: '골드 묠니르', en: 'Gold Mjolnir', img: A + 'w-goldhammer.png', done: A + 'w-goldhammer.png' },
