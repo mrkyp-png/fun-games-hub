@@ -10,7 +10,7 @@
   // ---- 튜닝 데이터(코드 하드코딩 대신 여기서만 조절) ----
   var CONFIG = {
     song: { src: 'audio/bgm-game-1.mp3', bpm: 83.0, firstBeat: 0.232 }, // BPM·첫 박 = 곡 분석값(곡 데이터가 없을 때 예비)
-    songData: 'audio/rp/fever.json', // v843: 곡 분석 데이터(반주·멜로디 분리 + 난이도별 노트 시각) — 맞히면 멜로디가 연주됨
+    songData: 'audio/rp/fever2.json', // v843: 곡 분석 데이터(반주·멜로디 분리 + 난이도별 노트 시각) — 맞히면 멜로디가 연주됨
     chart: { startBeat: 8, beats: 116 },           // 8박(인트로) 뒤부터 116박 = 한 판 약 90초(사용자 지정 v837, 이전 64박≈52초)
     judge: { perfectMs: 70, greatMs: 130, goodMs: 200 },
     score: { PERFECT: 300, GREAT: 200, GOOD: 100 },
@@ -446,7 +446,12 @@
       var btns = btnEls || (btnEls = el.querySelectorAll('.rp-btn'));
       for (var bi = 0; bi < 4; bi++) if (btns[bi]) btns[bi].classList.toggle('is-cue', !!cue[bi]);
       // 종료: 모든 노트 처리 후
-      if (!st.over && st.notes.every(function (n) { return n.state === 'done'; })) { st.over = true; setTimeout(function () { gameOver(true); }, 900); }
+      // v948(사용자 지정): 곡 끝(마무리)까지 듣고 결과창 — 예전엔 마지막 노트 0.9초 뒤 바로 끊었음
+      if (!st.over && st.notes.every(function (n) { return n.state === 'done'; })) {
+        st.over = true;
+        var left = buffer && buffer.duration ? (buffer.duration - now()) * 1000 : 0;
+        setTimeout(function () { gameOver(true); }, Math.max(900, left - 300));
+      }
     }
 
     function gameOver(clear) {
