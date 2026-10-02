@@ -6234,3 +6234,15 @@ html, body, .cosmic-bg { background: #2a190d; }
   border-style: solid; border-color: transparent; border-width: 24px 22px 11px;
   border-image: url('assets/workshop/sign.png') 88 95 44 fill / 24px 22px 11px stretch; }
 .shop-banner-txt, .inv-banner-txt { color: #fff; -webkit-text-stroke: 2.5px #4a2208; paint-order: stroke fill; text-shadow: 0 2px 0 rgba(60, 25, 5, 0.5); }
+/* v939(사용자 제공 원 그림): ROUND 숫자 원 = 기본(파랑)·현재(노란 빛)·잠김(회색) 그림. 숫자판은 원 없는 자리까지 정리한 그림 위에 원을 얹음 */
+.round-strip [data-rs-round="1"] { left: 17.65%; } .round-strip [data-rs-round="2"] { left: 26.89%; }
+.round-strip [data-rs-round="3"] { left: 36.14%; } .round-strip [data-rs-round="4"] { left: 45.38%; }
+.round-strip [data-rs-round="5"] { left: 54.62%; } .round-strip [data-rs-round="6"] { left: 63.86%; }
+.round-strip [data-rs-round="7"] { left: 73.11%; } .round-strip [data-rs-round="8"] { left: 82.35%; }
+.round-strip .rs-circle { top: 76.7%; width: 10.6%; background: url('assets/home2/rs-normal.png') center / 100% 100% no-repeat; box-shadow: none; animation: none;
+  font-family: 'Lilita One', 'Jua', sans-serif; font-weight: 400; font-size: clamp(0.62rem, 3.3vw, 0.95rem); color: #fff; -webkit-text-stroke: 2px rgba(0, 20, 90, 0.75); paint-order: stroke fill; text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5); }
+.round-strip .rs-circle.is-locked { background-image: url('assets/home2/rs-lock.png'); background-color: transparent; color: rgba(255, 255, 255, 0.55); }
+.round-strip .rs-circle.is-current { background: none; box-shadow: none; animation: none; z-index: 11; }
+.round-strip .rs-circle.is-current::before { content: ''; position: absolute; inset: -11.8%; z-index: -1; background: url('assets/home2/rs-on.png') center / 100% 100% no-repeat; animation: rs-on-pulse 1.4s ease-in-out infinite; }
+@keyframes rs-on-pulse { 0%, 100% { transform: scale(1); filter: brightness(1); } 50% { transform: scale(1.06); filter: brightness(1.15); } }
+.round-strip .rs-circle.rs-flare { animation: rs-flare 0.85s ease-out; }
