@@ -5802,8 +5802,4 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 /* v876: 화면 전환(글리치·탄성 밀어내기) 중 화면이 옆으로 밀릴 때 뒤 바탕이 흰색으로 비치던 것 —
    ① 앱 맨 뒤 바탕을 우주 남색으로(리듬팡 그만하기 → 홈 밀려 들어올 때) ② 글리치로 들어오는 화면 좌우에 남색 띠(밀린 틈 메움) */
 html, body, .cosmic-bg { background: #0a1230; }
-.glitch-in { box-shadow: -48px 0 0 #0d1838, 48px 0 0 #0d1838; }
 .rp-push-in, .rp-push-out { box-shadow: -60px 0 0 #0d1838, 60px 0 0 #0d1838; }
-/* v876: 화면 열리는 첫 순간(그림 그려지기 전)에 비치던 흰 바탕 → 남색 */
-#mole-board, .board-start { background-color: #0d1838; }
-.board-screen { background-color: #0d1838; }
