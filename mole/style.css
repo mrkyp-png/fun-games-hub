@@ -6190,3 +6190,13 @@ html, body, .cosmic-bg { background: #2a190d; }
 .lane-face--wide { clip-path: inset(-80% -10% 7% -10%); }
 /* v913(사용자 지정): 두더지 쏙 들어갔다 나오기 삭제(손 부분 때문에 자연스럽게 안 됨) */
 .hm-pop { animation: none; }
+/* v914(사용자 지정): 홈 ROUND 판 1.5배, 좌우 삼각형 삭제, 하트 줄 0.15cm 위로 */
+#game-screen .round-strip { width: calc(var(--sq) * 0.87); left: calc(50% + var(--sq) / 2 - var(--sq) * 0.87 - 4px); }
+.round-strip .rs-tri { display: none; }
+.round-strip .rs-circle { font-size: clamp(0.6rem, 3.2vw, 0.9rem); }
+#game-screen.is-start [data-region="0"], #game-screen.is-start [data-region="1"], #game-screen.is-start [data-region="2"], #game-screen.is-start [data-region="3"] { translate: 0 -0.15cm; }
+/* v914: ROUND 판 오른쪽 끝까지(그림 오른쪽 여백 10%만큼 밀어 숫자판 끝을 판 끝에 맞춤) */
+#game-screen .round-strip { left: calc(50% + var(--sq) / 2 - var(--sq) * 0.87 * 0.9 - 3px); }
+/* v914(사용자 지정): ROUND 판 1.35배(0.58→0.783), 오른쪽 끝, 프로필 사진은 숫자판 아래로 */
+#game-screen .round-strip { width: calc(var(--sq) * 0.783); left: calc(50% + var(--sq) / 2 - var(--sq) * 0.783 * 0.9 - 3px); }
+#game-screen.is-start.home-mine #btn-back-to-hub { transform: translate(calc(var(--sq) - 100% - 16px), calc(var(--sq) * 0.33)); }
