@@ -5835,3 +5835,5 @@ html, body, .cosmic-bg { background: #0a1230; }
 .photo-zoom-card--mount_stars { background: radial-gradient(ellipse at 50% 35%, #2fd27a, #0c5a33); }
 .photo-zoom-card--sun_giants { background: radial-gradient(ellipse at 50% 35%, #ff9a2e, #7a3a06); }
 .photo-zoom-card--cloud_cups { background: radial-gradient(ellipse at 50% 35%, #a96bff, #3e1880); }
+/* v891: 제작소 골드 묠니르 아주 조금 작게(사용자 지정) */
+.ws-item img[src*="w-goldhammer"], .ws-stage img[src*="w-goldhammer"] { transform: scale(0.9); }
