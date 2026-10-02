@@ -6183,3 +6183,5 @@ html, body, .cosmic-bg { background: #2a190d; }
 #game-screen.home-mine #home-grid { visibility: hidden; transition: visibility 0s 1.2s; }
 /* v910(사용자 지정): 리듬팡 캐릭터를 두더지팡 두더지 머리 크기에 맞춰 작게 */
 .h2w-rhythm .h2w-char { height: auto; width: 50%; max-width: none; left: 3%; bottom: 6%; }
+.h2w-rhythm .h2w-char { width: 62%; left: 1%; bottom: 6%; } /* v911: 너무 작다는 지적 — 50→62% */
+.h2w-rhythm .h2w-char, .h2w-mole .h2w-char { bottom: 10%; } /* v911: 앞발이 버튼 아래 바깥으로 나오던 것 — 버튼 안으로 */
