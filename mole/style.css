@@ -5819,3 +5819,8 @@ html, body, .cosmic-bg { background: #0a1230; }
 .fs-ccards.is-in-next { animation: fs-grp-next 0.2s ease-out; } .fs-ccards.is-in-prev { animation: fs-grp-prev 0.2s ease-out; }
 @keyframes fs-grp-next { from { transform: translateX(30%); opacity: 0.2; } to { transform: none; opacity: 1; } }
 @keyframes fs-grp-prev { from { transform: translateX(-30%); opacity: 0.2; } to { transform: none; opacity: 1; } }
+/* v888: 코스튬 3장 묶음 노란 박스에 일일 화면과 같은 빛이 테두리를 따라 도는 효과 */
+.fs-ccards::after { content: ''; position: absolute; inset: -7px; padding: 7px; border-radius: 20px; z-index: 3; pointer-events: none;
+  background: conic-gradient(from var(--dr-a), transparent 0 70%, rgba(255, 250, 190, 1) 80%, transparent 90%, transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mix-blend-mode: screen; animation: dr-marquee 3s linear infinite; }
