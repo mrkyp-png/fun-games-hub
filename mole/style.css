@@ -5907,7 +5907,6 @@ html, body, .cosmic-bg { background: #0a1230; }
 /* v894 다듬기: 제목은 두더지 오른쪽, ACHIEVEMENT 글자는 트로피 아래쪽 띠로 */
 .qs-title { left: 42%; width: 48%; top: 10%; }
 .qs-screen[data-mode="ach"] .qs-title { left: 40%; width: 52%; top: 9%; }
-.qs-achbtn span { left: 0; right: 0; top: auto; bottom: -4%; transform: none; font-size: calc(var(--w) * 0.042); }
 .qs-achbtn { margin-bottom: 4px; }
 .qs-desc { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
@@ -5917,7 +5916,6 @@ html, body, .cosmic-bg { background: #0a1230; }
 /* v896: 한글 제목(퀘스트/업적)은 둥근 한글 글꼴 */
 .qs-screen[data-lang="ko"] .qs-title text, .qs-screen[data-lang="ko"] .qs-achbtn span { font-family: 'Jua', 'Lilita One', sans-serif; }
 .qs-screen[data-lang="ko"] .qs-title text { font-size: 108px; }
-.qs-screen[data-lang="ko"] .qs-achbtn span { font-size: calc(var(--w) * 0.058); }
 
 /* v897: 업적 ROUND 탭 난이도 선택(아마추어/노말/프로) */
 .qs-lv { display: flex; gap: 6px; padding: 2px 2px 0; }
@@ -5930,3 +5928,6 @@ html, body, .cosmic-bg { background: #0a1230; }
 /* v898: 스코어·일일 화면 뒤로가기 → 퀘스트 빨간 X(오른쪽), 높이는 기존 뒤로가기와 같게(46px) */
 .sr-back.is-x, .dr-back.is-x { left: auto; right: 10px; width: auto; height: 46px; }
 .sr-back.is-x img, .dr-back.is-x img { width: auto; height: 100%; }
+/* v899: 퀘스트/업적 전환 버튼 — 트로피 빼고 글자를 버튼 가운데에 크게 */
+.qs-achbtn span { left: 18%; right: 18%; top: 50%; bottom: auto; transform: translateY(-50%); font-size: calc(var(--w) * 0.062); }
+.qs-screen[data-lang="ko"] .qs-achbtn span { font-size: calc(var(--w) * 0.07); }

@@ -121,7 +121,7 @@
           '<div class="qs-tabs" data-qs-tabs></div>' +
         '</div>' +
         '<div class="qs-list" data-qs-list></div>' +
-        '<button type="button" class="qs-achbtn" data-qs-ach><img src="' + A + 'ach-btn.png" alt=""><span></span></button>' +
+        '<button type="button" class="qs-achbtn" data-qs-ach><img src="' + A + 'ach-btn-blank.png" alt=""><span></span></button>' +
       '</div>';
     $('[data-qs-close]').addEventListener('click', function () { if (mode === 'ach') { mode = 'daily'; render(); return; } if (root.FGH && root.FGH.rollOut) root.FGH.rollOut(el, opts.onClose); else opts.onClose(); }); // v898: 나갈 때 글리치
     $('[data-qs-ach]').addEventListener('click', function () { mode = mode === 'ach' ? 'daily' : 'ach'; render(); });
