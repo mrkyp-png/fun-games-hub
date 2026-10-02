@@ -5824,3 +5824,5 @@ html, body, .cosmic-bg { background: #0a1230; }
   background: conic-gradient(from var(--dr-a), transparent 0 70%, rgba(255, 250, 190, 1) 80%, transparent 90%, transparent 100%);
   -webkit-mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor; mix-blend-mode: screen; animation: dr-marquee 3s linear infinite; }
+/* v889: 홈 두더지팡·리듬팡 라벨 — 영어(두 줄)일 때 줄바꿈 표시 */
+.lane-num--secret { white-space: pre-line; text-align: center; }

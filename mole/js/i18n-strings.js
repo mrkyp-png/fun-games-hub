@@ -378,8 +378,8 @@
       'mole.pad.lblProfile': 'Profile',
       'mole.pad.lblLocker': 'Photos',
       'mole.pad.lblInventory': 'Items',
-      'mole.pad.gameMole': 'MolePang',
-      'mole.pad.gameRhythm': 'RhythmPang',
+      'mole.pad.gameMole': 'Mole\nPang', // v889: 영어는 두 줄(옆 글자와 겹침)
+      'mole.pad.gameRhythm': 'Rhythm\nPang',
       'mole.rp.resume': 'Resume', 'mole.rp.quit': 'Quit', 'mole.rp.retry': 'Retry', 'mole.rp.home': 'Home', 'mole.rp.other': 'Difficulty', 'mole.rp.pick': 'Choose a difficulty',
       'mole.count.go': 'Go!',
       'mole.result.allClear': 'All rounds clear!',
