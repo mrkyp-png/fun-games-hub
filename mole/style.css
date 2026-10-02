@@ -6111,3 +6111,22 @@ html, body, .cosmic-bg { background: #0a1230; }
 .round-strip .rs-tri { top: 77.5%; width: 6.4%; height: 17%; }
 .round-strip .rs-tri--prev { left: 4.6%; }
 .round-strip .rs-tri--next { left: 95.4%; }
+/* ===== v907(사용자 선택 A안): 우주 배경 → 광산 흙·바위 톤 — 바깥 배경·판 테두리·경첩을 따뜻한 갈색으로 ===== */
+html, body, .cosmic-bg { background: #2a190d; }
+#game-screen {
+  background:
+    linear-gradient(#3a2210, #3a2210) no-repeat center bottom var(--edge) / var(--sq) var(--sqh),
+    radial-gradient(ellipse at 20% 15%, rgba(140, 90, 45, 0.35), transparent 55%),
+    radial-gradient(ellipse at 85% 70%, rgba(110, 75, 50, 0.3), transparent 60%),
+    linear-gradient(180deg, #4a2e17 0%, #33200f 45%, #2a1a0f 75%, #3a3530 100%);
+}
+#gs-edge { display: none; }
+#mole-board, .dialpad, .board-screen, .more-menu { box-shadow: 0 0 0 3px #26140a, 0 0 0 5px #9a6a35, 0 0 0 7px #26140a, 0 8px 0 7px #170c05; }
+#fold-hinge { background: linear-gradient(180deg, #2e1a0b 0%, #6e4522 46%, #6e4522 54%, #26150a 100%); }
+#fold-hinge::after { background: linear-gradient(180deg, #c89558, #6b4220); } /* 힌지 축도 나무·놋쇠 톤 */
+/* v907(사용자 지정): 두더지를 광산 그림의 실제 구멍 가운데에 — 구멍 5개를 그림에서 재서 맞춤, 몸 아래 틈은 털로 늘려 구멍 테두리까지 채운 그림(-x) */
+.hm-pink { left: 30.56%; top: 41.51%; width: 17.78%; }
+.hm-braid { left: 56.25%; top: 44.26%; width: 20.28%; }
+.hm-sun { left: 7.5%; top: 55.77%; width: 20.28%; }
+.hm-punk { left: 73.06%; top: 57.77%; width: 21.94%; }
+.hm-cap { left: 30.56%; top: 61.02%; width: 28.61%; }
