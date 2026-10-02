@@ -5910,3 +5910,7 @@ html, body, .cosmic-bg { background: #0a1230; }
 .qs-achbtn span { left: 0; right: 0; top: auto; bottom: -4%; transform: none; font-size: calc(var(--w) * 0.042); }
 .qs-achbtn { margin-bottom: 4px; }
 .qs-desc { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* v895: 업적 탭 5개(RHYTHM 추가) — 글자 조금 작게 */
+.qs-screen[data-mode="ach"] .qs-tabs { gap: 1%; }
+.qs-screen[data-mode="ach"] .qs-tabs button { font-size: calc(var(--w) * 0.036); padding: 0; }

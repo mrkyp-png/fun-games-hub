@@ -454,6 +454,7 @@
       var r = $('[data-rp-result]');
       var bk = 'mole.rp.best.' + diff, old = parseInt(localStorage.getItem(bk), 10) || 0, isNew = st.score > old;
       if (isNew) localStorage.setItem(bk, String(st.score));
+      try { if (MG.Quest) MG.Quest.recordRhythm({ diff: diff, clear: clear, miss: st.cnt.MISS, perfect: st.cnt.PERFECT }); } catch (e) { /* 무시 */ } // v895: 리듬팡 업적
       $('[data-rp-res-best]').innerHTML = '<small>' + diff + ' BEST</small><b>' + Math.max(old, st.score).toLocaleString('en-US') + '</b>';
       var stamp = $('[data-rx-new]'); stamp.classList.remove('is-on');
       r.classList.toggle('is-fail', !clear);

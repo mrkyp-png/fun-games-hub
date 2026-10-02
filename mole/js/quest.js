@@ -27,8 +27,20 @@
     round: [1, 2, 3, 4, 5, 6, 7, 8],
     score: [30000, 50000, 100000, 150000, 200000, 300000, 500000, 1000000],   // 사용자 지정: 3만부터
     combo: [100, 200, 300, 400, 500, 600, 700, 800],                          // 사용자 지정: 100부터 100단위
-    mole: [100, 500, 1000, 3000, 5000, 10000, 30000, 100000]
+    mole: [100, 500, 1000, 3000, 5000, 10000, 30000, 100000],
+    rhythm: [0, 1, 2, 3, 4, 5, 6, 7] // v895(사용자 지정: 리듬팡은 업적만) — 아래 RHYTHM_ACH 순서
   };
+  // 리듬팡 업적 8개: 판수·클리어·풀콤보·PERFECT 누적
+  var RHYTHM_ACH = [
+    { ko: ['리듬팡 첫 플레이', '리듬팡을 1회 플레이하세요.'], en: ['First RhythmPang', 'Play RhythmPang once.'], v: function (r) { return r.plays; }, goal: 1 },
+    { ko: ['EASY 클리어', 'EASY 난이도를 클리어하세요.'], en: ['Clear EASY', 'Clear EASY difficulty.'], v: function (r) { return r.clear.EASY ? 1 : 0; }, goal: 1 },
+    { ko: ['NORMAL 클리어', 'NORMAL 난이도를 클리어하세요.'], en: ['Clear NORMAL', 'Clear NORMAL difficulty.'], v: function (r) { return r.clear.NORMAL ? 1 : 0; }, goal: 1 },
+    { ko: ['PERFECT 500개', 'PERFECT 판정을 누적 500개 받으세요.'], en: ['500 PERFECTs', 'Get 500 PERFECTs in total.'], v: function (r) { return r.perfect; }, goal: 500 },
+    { ko: ['HARD 클리어', 'HARD 난이도를 클리어하세요.'], en: ['Clear HARD', 'Clear HARD difficulty.'], v: function (r) { return r.clear.HARD ? 1 : 0; }, goal: 1 },
+    { ko: ['EASY 풀콤보', 'EASY를 MISS 없이 클리어하세요.'], en: ['EASY Full Combo', 'Clear EASY with no MISS.'], v: function (r) { return r.fc.EASY ? 1 : 0; }, goal: 1 },
+    { ko: ['NORMAL 풀콤보', 'NORMAL을 MISS 없이 클리어하세요.'], en: ['NORMAL Full Combo', 'Clear NORMAL with no MISS.'], v: function (r) { return r.fc.NORMAL ? 1 : 0; }, goal: 1 },
+    { ko: ['HARD 풀콤보', 'HARD를 MISS 없이 클리어하세요.'], en: ['HARD Full Combo', 'Clear HARD with no MISS.'], v: function (r) { return r.fc.HARD ? 1 : 0; }, goal: 1 }
+  ];
   function achReward(i) { return i < 7 ? ['coin', ACH_COINS[i]] : ['ticket', 10]; }
 
   // ---- 저장 ----
@@ -40,6 +52,7 @@
     s = s || {};
     s.d = s.d || {}; s.w = s.w || {}; s.a = s.a || { bestScore: 0, bestCombo: 0, kills: 0, claimed: {} };
     s.a.claimed = s.a.claimed || {};
+    s.r = s.r || { plays: 0, perfect: 0, clear: {}, fc: {} };
     if (s.d.key !== dayKey()) s.d = { key: dayKey(), plays: 0, bestScore: 0, bestCombo: 0, claimed: {} };
     if (s.w.key !== weekKey()) s.w = { key: weekKey(), plays: 0, score30k: 0, combo100: 0, claimed: {} };
     return s;
@@ -51,6 +64,11 @@
     s.d.plays++; s.d.bestScore = Math.max(s.d.bestScore, score); s.d.bestCombo = Math.max(s.d.bestCombo, combo);
     s.w.plays++; if (score >= 30000) s.w.score30k++; if (combo >= 100) s.w.combo100++;
     s.a.bestScore = Math.max(s.a.bestScore, score); s.a.bestCombo = Math.max(s.a.bestCombo, combo); s.a.kills += (r.kills | 0);
+    save(s);
+  }
+  function recordRhythm(r) {
+    var s = read(); s.r.plays++; s.r.perfect += (r.perfect | 0);
+    if (r.clear) { s.r.clear[r.diff] = true; if ((r.miss | 0) === 0) s.r.fc[r.diff] = true; }
     save(s);
   }
   function give(rw) {
@@ -69,6 +87,7 @@
     return maxRoundReached();
   }
   function achDone(tab, i, s) {
+    if (tab === 'rhythm') { var R = RHYTHM_ACH[i]; return R.v(s.r) >= R.goal; }
     if (tab === 'round' && i === 7) return round8Cleared();
     return achValue(tab, s) >= ACH[tab][i];
   }
@@ -142,12 +161,15 @@
           '<div class="qs-all-rw"><div class="qs-rwline"><img src="' + (rw[0] === 'ticket' ? A + 'ticket-gold.png' : rwIcon(rw)) + '" alt=""><b>× ' + fmt(rw[1]) + '</b></div>' +
           (allSt === 'done' ? '<img class="qs-check" src="' + A + 'ic-check.png" alt="">' : allSt === 'claim' ? '<button type="button" class="qs-btn qs-btn--claim" data-qs-all>' + (en ? 'Claim' : '받기') + '</button>' : '<span class="qs-btn qs-btn--lock">' + (en ? 'Locked' : '미완료') + '</span>') + '</div></div>';
       } else {
-        tabs.innerHTML = ['round', 'score', 'combo', 'mole'].map(function (t) { return '<button type="button" data-qs-ach-tab="' + t + '" class="' + (achTab === t ? 'is-on' : '') + '">' + t.toUpperCase() + '</button>'; }).join('');
+        tabs.innerHTML = ['round', 'score', 'combo', 'mole', 'rhythm'].map(function (t) { return '<button type="button" data-qs-ach-tab="' + t + '" class="' + (achTab === t ? 'is-on' : '') + '">' + t.toUpperCase() + '</button>'; }).join('');
         var val = achValue(achTab, s);
         ACH[achTab].forEach(function (goal, i) {
           var ok = achDone(achTab, i, s), state = s.a.claimed[achTab + i] ? 'done' : ok ? 'claim' : 'lock';
           var name, desc, cnt, pct;
-          if (achTab === 'round') {
+          if (achTab === 'rhythm') {
+            var RA = RHYTHM_ACH[i], rv = RA.v(s.r);
+            name = (en ? RA.en : RA.ko)[0]; desc = (en ? RA.en : RA.ko)[1]; cnt = fmt(Math.min(rv, RA.goal)) + ' / ' + fmt(RA.goal); pct = rv / RA.goal * 100;
+          } else if (achTab === 'round') {
             name = i === 7 ? (en ? 'Clear ROUND 8' : 'ROUND 8 클리어') : (en ? 'Reach ROUND ' + goal : 'ROUND ' + goal + ' 도달');
             desc = i === 7 ? (en ? 'Clear ROUND 8.' : 'ROUND 8을 클리어하세요.') : (en ? 'Reach ROUND ' + goal + '.' : 'ROUND ' + goal + '에 도달하세요.');
             cnt = (ok ? 1 : 0) + ' / 1'; pct = ok ? 100 : 0;
@@ -196,6 +218,6 @@
     function show() { mode = 'daily'; achTab = 'round'; render(); }
     return { show: show, render: render };
   }
-  var api = { create: create, recordGame: recordGame, claimable: claimable, DAILY: DAILY, WEEKLY: WEEKLY, ACH: ACH };
+  var api = { create: create, recordGame: recordGame, recordRhythm: recordRhythm, claimable: claimable, DAILY: DAILY, WEEKLY: WEEKLY, ACH: ACH };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.Quest = api; }
 })(typeof window !== 'undefined' ? window : null);
