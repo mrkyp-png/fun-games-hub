@@ -6261,3 +6261,6 @@ html, body, .cosmic-bg { background: #2a190d; }
 /* v941(사용자 지정): 라운드 맵 X 를 동굴 바로 아래로(위 하늘엔 나비·잠자리가 날아다님), 칠판은 X 아래로 */
 .rm-back.is-x { top: calc(env(safe-area-inset-top, 0px) + 12.5%); }
 .rm-board { top: calc(env(safe-area-inset-top, 0px) + 12.5% + 56px); }
+/* v942: X 조금 위로(동굴 윗선 바로 아래) */
+.rm-back.is-x { top: calc(env(safe-area-inset-top, 0px) + 8.6%); }
+.rm-board { top: calc(env(safe-area-inset-top, 0px) + 8.6% + 56px); }
