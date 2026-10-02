@@ -667,6 +667,7 @@
     caretEl.hidden = true; // 타이핑 시작 전엔 깜빡이는 커서도 같이 숨김(사용자 보고)
     overlay.classList.remove('is-opening');
     overlay.hidden = false;
+    document.getElementById('game-screen').classList.add('gs-intro'); // v952: ROUND 판·로고도 홈과 같이 사라짐
     restartCurtainPattern(overlay);
     setHammerLayerVisible(false);
     // "챕터N : 부제" 한 줄이던 걸 두 줄로 쪼갬(1줄=챕터N, 2줄=부제) + 팁 문구를 3번째
@@ -1180,6 +1181,7 @@
     showStartScreenNow(opts);
   }
   function showStartScreenNow(opts) {
+    document.getElementById('game-screen').classList.remove('gs-intro');
     sessionGen++; // 진행 중이던 카운트다운/자동진행 타이머 무효화
     gameStarting = false;
     setNavLock(false);

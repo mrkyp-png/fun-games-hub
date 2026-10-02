@@ -6317,3 +6317,6 @@ html, body, .cosmic-bg { background: #2a190d; }
 #game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.lane-button--flash:not(.lane-button--miss):not(.lane-button--burst) > .lane-hotfx { inset: -13px -15px; --fx: url('assets/home2/btn-pink.png'); animation: lane-hit-pink 0.3s ease-out; }
 #game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.lane-button--flash.lane-button--miss > .lane-hotfx { inset: -13px -15px; --fx: url('assets/home2/btn-red.png'); animation: lane-miss-grey 0.4s linear; }
 #game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.lane-button--flash.lane-button--miss { animation: lane-miss-shake 0.3s ease-out; }
+/* v952(사용자 지정): 게임 진입(인트로 시작)하면 ROUND 판·로고도 홈 화면과 같이 사라짐 */
+#game-screen .round-strip { transition: opacity 0.5s ease; }
+#game-screen.gs-intro .round-strip, #game-screen.gs-intro #hm-logo-front { opacity: 0 !important; pointer-events: none; transition: opacity 0.5s ease; }

@@ -367,6 +367,14 @@
           flip.style.transform = '';
         }, 950);
       });
+      // v952(사용자 지정): 뿅망치일 때 통화 칸도 같이 회전 — 이제 게임 중 통화 칸이 다른 칸과 같은 파란 버튼이라(v951)
+      // 버튼째 돌려도 앞뒤가 같은 파랑. 스킬 무기(gs-laneskill)일 땐 스킬 슬롯이라 그대로 둠.
+      const gs = document.getElementById('game-screen');
+      const call = buttonBar && buttonBar.querySelector('.lane-button--call');
+      if (call && call.animate && !(gs && gs.classList.contains('gs-laneskill'))) {
+        call.animate([{ transform: 'perspective(600px) rotateY(0deg)' }, { transform: 'perspective(600px) rotateY(3600deg)' }], // 10바퀴(끝에서 앞면 그대로 — 반 바퀴 더 돌면 뒤집힌 글자로 멈췄다 튐)
+          { duration: 900, easing: 'cubic-bezier(.2, .7, .3, 1)' });
+      }
       // ⚠️통화 버튼·알리펀치 별표 버튼 자체를 통째로 돌리던 연출은 삭제됨(사용자 지정 —
       // 버튼 element 전체를 돌리면 그 버튼 고유 배경색(초록/빨강)이 회전 중 그대로 드러나
       // "녹색·빨간색이 보인다"/"안 나오는 버튼도 있다"처럼 무기별로 들쭉날쭉해 보였음).
