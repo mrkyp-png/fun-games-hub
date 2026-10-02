@@ -72,12 +72,23 @@
       // 캐릭터 얼굴 피부색(마스크 중앙 샘플)
       stage = 'skinC';
       var cS = avgColor(oc, bx + bw / 2, by + bh * 0.6, 8);
+      // v886(사용자: 카드 얼굴색과 촬영 얼굴색 차이 큼 — 사진이 빛 받아 허옇게) — 목표색을 캐릭터의 귀·목 살색(마스크 밖 살색 픽셀 평균)
+      // 쪽으로 당기고(가운데 연한 살색 35% + 귀/목 65%), 촬영 얼굴은 볼 2점 대신 얼굴 가운데 넓은 영역 평균, 보정 강도 0.6 → 0.95
+      try {
+        var mc0 = document.createElement('canvas'); mc0.width = W; mc0.height = H; var mx0 = mc0.getContext('2d'); mx0.drawImage(mask, 0, 0);
+        var ex0 = Math.max(0, bx - 50), ew0 = Math.min(W - ex0, bw + 100);
+        var bd = oc.getImageData(ex0, by, ew0, bh).data, md = mx0.getImageData(ex0, by, ew0, bh).data, sk = [0, 0, 0], sn = 0;
+        for (var q = 0; q < bd.length; q += 4) { var R = bd[q], G = bd[q + 1], B = bd[q + 2];
+          if (md[q + 3] < 128 && bd[q + 3] > 200 && R > 180 && R > G + 40 && G > B + 15) { sk[0] += R; sk[1] += G; sk[2] += B; sn++; } }
+        if (sn > 200) cS = cS.map(function (v, i) { return v * 0.35 + (sk[i] / sn) * 0.65; });
+      } catch (e) { /* 실패하면 가운데 색만 */ }
       stage = 'skinU';
-      // 촬영 얼굴 피부색(양 볼)
       var pc = photo.getContext('2d');
-      var a = avgColor(pc, det.skinL.x, det.skinL.y, 6), b = avgColor(pc, det.skinR.x, det.skinR.y, 6);
-      var uS = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
-      var gain = uS.map(function (u, i) { var g = cS[i] / Math.max(1, u); return Math.max(0.6, Math.min(1.7, 1 + (g - 1) * 0.6)); });
+      var fb = det.box, uS = [0, 0, 0];
+      [[0.5, 0.55], [0.32, 0.62], [0.68, 0.62], [0.5, 0.38]].forEach(function (f) {
+        var c0 = avgColor(pc, fb.x + fb.w * f[0], fb.y + fb.h * f[1], Math.max(6, Math.round(fb.w * 0.08)));
+        uS[0] += c0[0] / 4; uS[1] += c0[1] / 4; uS[2] += c0[2] / 4; });
+      var gain = uS.map(function (u, i) { var g = cS[i] / Math.max(1, u); return Math.max(0.5, Math.min(1.8, 1 + (g - 1) * 0.95)); });
       // 1) 얼굴 오려내기(윤곽 폴리곤 + 부드러운 경계) + 피부색 보정
       stage = 'cut';
       var faceW = Math.hypot(det.cheekR.x - det.cheekL.x, det.cheekR.y - det.cheekL.y);
@@ -257,7 +268,7 @@
       try {
         if (!diagEl) { diagEl = document.createElement('div'); diagEl.className = 'fs-diag'; video.parentElement.appendChild(diagEl); }
         diagLog.push(msg); if (diagLog.length > 4) diagLog.shift();
-        diagEl.textContent = 'v885 | ' + diagLog.join(' / ');
+        diagEl.textContent = 'v886 | ' + diagLog.join(' / ');
       } catch (e) { /* 무시 */ }
     }
     window.addEventListener('error', function (e) { if (st.screen === 2) diag('ERR ' + (e.message || e)); });
