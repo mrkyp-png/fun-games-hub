@@ -220,6 +220,10 @@
         // "캐논, 황금, 알리펀치 키패드, 최근기록에 녹색" 등, 재현 무기 상관없이 전부 동일 원인).
         // 애니메이션 길이만큼 지나면 클래스 자체를 확실히 떼서 재사용(재생성)돼도 안 남게 한다.
         setTimeout(() => b.classList.remove('lane-button--flash', 'lane-button--miss'), 800);
+        // v953: 버튼 색(맞힘 분홍 0.3초·실패 빨강 0.4초)은 짧게 따로 — 숫자·글자는 그대로 보이게 버튼 그림만 바꿈
+        clearTimeout(b._tintT); b.classList.remove('is-tint-hit', 'is-tint-miss');
+        b.classList.add(bad ? 'is-tint-miss' : 'is-tint-hit');
+        b._tintT = setTimeout(() => b.classList.remove('is-tint-hit', 'is-tint-miss'), bad ? 400 : 300);
         // 홈 화면 전용 내비(하트·코인·티켓·스코어·상점·홈·… — FACES 의 action 필드) — 탭하면 그
         // 화면으로 이동. 실제 플레이 중(isHome() false)엔 평범한 숫자 타격 버튼일 뿐이라 무시.
         if (faces[id].action && onHomeAction && (!isHome || isHome())) onHomeAction(faces[id].action);

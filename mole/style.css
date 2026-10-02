@@ -6320,3 +6320,13 @@ html, body, .cosmic-bg { background: #2a190d; }
 /* v952(사용자 지정): 게임 진입(인트로 시작)하면 ROUND 판·로고도 홈 화면과 같이 사라짐 */
 #game-screen .round-strip { transition: opacity 0.5s ease; }
 #game-screen.gs-intro .round-strip, #game-screen.gs-intro #hm-logo-front { opacity: 0 !important; pointer-events: none; transition: opacity 0.5s ease; }
+/* v953(사용자 지정): 맞힘(분홍 0.3초)·실패(빨강 0.4초)에도 숫자·글자가 보이게 — 덮개 대신 버튼 그림 자체를 바꿈(글자는 원래대로 위). JS 가 is-tint-* 를 짧게 붙였다 뗌 */
+#game-screen:not(.is-start) .lane-button:not(.lane-button--burst) > .lane-hotfx { animation: none !important; opacity: 0 !important; }
+#game-screen:not(.is-start) .lane-button.is-tint-hit .lane-face--key { --cap: url('assets/home2/btn-pink.png'); }
+#game-screen:not(.is-start) .lane-button.is-tint-miss .lane-face--key { --cap: url('assets/home2/btn-red.png'); }
+#game-screen:not(.is-start) .lane-button--simple.is-tint-hit,
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.is-tint-hit { border-image-source: url('assets/home2/btn-pink.png'); }
+#game-screen:not(.is-start) .lane-button--simple.is-tint-miss,
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.is-tint-miss { border-image-source: url('assets/home2/btn-red.png'); }
+#game-screen:not(.is-start) .lane-button.is-tint-hit:not(.lane-button--call), #game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.is-tint-hit { animation: lane-hit-pop 0.3s ease-out; }
+@keyframes lane-hit-pop { 0% { scale: 1.08; } 100% { scale: 1; } }
