@@ -406,6 +406,8 @@
         b.className = 'shop-tab' + (t.id === activeTab ? ' shop-tab--on' : '');
         b.innerHTML = '<span class="shop-tab-ico">' + t.icon + '</span><span class="shop-tab-lbl"></span>';
         b.querySelector('.shop-tab-lbl').textContent = T(t.i18n);
+        (function (lb) { requestAnimationFrame(function () { lb.style.transform = ''; var room = b.clientWidth * 0.86, w = lb.scrollWidth; // v890: 긴 영어 탭 글자 가로로만 좁힘
+          if (w > room) { lb.style.display = 'inline-block'; lb.style.transform = 'scaleX(' + (room / w).toFixed(3) + ')'; } }); })(b.querySelector('.shop-tab-lbl'));
         b.addEventListener('click', function () {
           // 하트/코인/티켓 캡슐은 탭 전환과 무관하게 상점에 있는 동안 항상 유지(사용자 지정:
           // "재화 버튼시에만 나타나라고 했는데 실수야 — 상점에 있을때는 항시 존재, 다른

@@ -778,7 +778,7 @@
       var applied = PS.isApplied(id);
       zoom.innerHTML =
         '<div class="photo-zoom-dim" data-photo-zoom-dim></div>' +
-        '<div class="photo-zoom-card">' +
+        '<div class="photo-zoom-card photo-zoom-card--' + ((PS.characterDef(id) || {}).costumeId || '') + '">' + // v890: 확대 카드 = 그 팀 색
           '<button type="button" class="photo-zoom-close" data-photo-zoom-close>✕</button>' +
           '<button type="button" class="photo-zoom-nav photo-zoom-nav--prev" data-photo-zoom-prev>◀</button>' +
           '<button type="button" class="photo-zoom-nav photo-zoom-nav--next" data-photo-zoom-next>▶</button>' +
@@ -829,6 +829,14 @@
       nextBtn3.addEventListener('click', function () { if (idx < list.length - 1) { photoDetailId = list[idx + 1].id; renderPhotoDetailZoom(photoDetailId); } });
     }
 
+    // v890(사용자: 영어 'Costumes' 가 탭 박스 모서리와 겹침) — 글자가 탭 폭의 86%를 넘으면 가로로만 좁힘
+    function fitTabLabel(lb) {
+      requestAnimationFrame(function () {
+        lb.style.transform = ''; var tab = lb.closest('button'); if (!tab) return;
+        var room = tab.clientWidth * 0.86, w = lb.scrollWidth;
+        if (w > room) { lb.style.display = 'inline-block'; lb.style.transform = 'scaleX(' + (room / w).toFixed(3) + ')'; }
+      });
+    }
     function renderTabs() {
       tabsEl.innerHTML = '';
       TABS.forEach(function (t) {
@@ -837,6 +845,7 @@
         b.className = 'inv-tab' + (t.id === active ? ' inv-tab--on' : '');
         b.innerHTML = '<span class="inv-tab-ico">' + t.icon + '</span><span class="inv-tab-lbl"></span>';
         b.querySelector('.inv-tab-lbl').textContent = T(t.i18n);
+        fitTabLabel(b.querySelector('.inv-tab-lbl'));
         b.addEventListener('click', function () {
           active = t.id; pageIdx = 0; activePage = 0; passivePage = 0;
           // 사용자 지정(2026-09-27): "컬렉션 화면은 사진관 탭일 때만 유지, 다른 탭으로
