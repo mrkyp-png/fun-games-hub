@@ -5752,7 +5752,7 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .inv-card[class*="inv-card--"] .inv-left { align-self: center; }
 .inv-card[class*="inv-card--"] .inv-rcard { margin-top: 0; }
 .inv-card.inv-card--basic, .inv-card.inv-card--rare, .inv-card.inv-card--epic, .inv-card.inv-card--legend { overflow: visible; }
-.inv-grid:has(.inv-card--legend) { padding-top: 0; }
+.inv-grid:has(.inv-card--legend) { padding-top: 8px; } /* v870: 작은 폰에서 EPIC·LEGENDARY 왕관 배지 윗부분 잘림 방지 */
 /* v869: 배지 윗부분까지 포함한 묶음(배지+카드+장착)을 세로 가운데로 — 배지 넘침만큼 위 여백 확보 */
 /* v869: 무기 카드 전체를 훑던 빛 삭제(능력치 머리 빛은 유지) */
 .inv-card.inv-card--basic::after, .inv-card.inv-card--rare::after, .inv-card.inv-card--epic::after, .inv-card.inv-card--legend::after { content: none; animation: none; }
@@ -5760,3 +5760,4 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .inv-card[class*="inv-card--"] .inv-stat-tbl { table-layout: fixed; width: 100%; }
 .inv-card[class*="inv-card--"] .inv-stat-tbl th { width: 5.6em; }
 .inv-card[class*="inv-card--"] .inv-stat-tbl td { letter-spacing: -0.03em; }
+.inv-card[class*="inv-card--"] .inv-stat-tbl td { overflow-wrap: anywhere; } /* v870: 작은 폰에서 한 줄 묶음 문구가 잘리면 그때만 줄바꿈 */
