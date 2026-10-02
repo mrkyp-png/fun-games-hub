@@ -169,12 +169,28 @@
         <div id="home-mine" aria-hidden="true">
           <div class="hm-stage">
             <img class="hm-mine" src="assets/home2/mine.png" alt="">
-            <img class="hm-piece hm-mole hm-pink" src="assets/home2/mole-pink-x.png" alt="">
-            <img class="hm-piece hm-mole hm-braid" src="assets/home2/mole-braid-x.png" alt="">
-            <img class="hm-piece hm-mole hm-sun" src="assets/home2/mole-sun-x.png" alt="">
-            <img class="hm-piece hm-mole hm-punk" src="assets/home2/mole-punk-x.png" alt="">
-            <img class="hm-piece hm-mole hm-cap" src="assets/home2/mole-cap-x.png" alt="">
-            <img class="hm-piece hm-logo" src="assets/home2/logo.png" alt="">
+            <i class="hm-glow" style="left:3.1%;top:42.3%;--d:0s;--t:2.3s"></i>
+            <i class="hm-glow" style="left:10.8%;top:43.5%;--d:0.7s;--t:2.9s"></i>
+            <i class="hm-glow" style="left:21.5%;top:35.4%;--d:1.3s;--t:2.1s"></i>
+            <i class="hm-glow" style="left:30.3%;top:37.3%;--d:0.4s;--t:3.1s"></i>
+            <i class="hm-glow" style="left:39.6%;top:36.0%;--d:1.9s;--t:2.6s"></i>
+            <i class="hm-glow" style="left:45.4%;top:32.9%;--d:1.1s;--t:2.2s"></i>
+            <i class="hm-glow" style="left:48.9%;top:30.4%;--d:0.2s;--t:3.3s"></i>
+            <i class="hm-glow" style="left:65.3%;top:33.5%;--d:1.6s;--t:2.7s"></i>
+            <i class="hm-glow" style="left:89.6%;top:31.0%;--d:0.9s;--t:2.4s"></i>
+            <i class="hm-glow" style="left:97.6%;top:55.4%;--d:1.4s;--t:3.0s"></i>
+            <i class="hm-glow" style="left:21.5%;top:82.9%;--d:0.5s;--t:2.5s"></i>
+            <div class="hm-piece hm-mole hm-pink"><div class="hm-pop"><img class="hm-body" src="assets/home2/mole-pink-x.png" alt=""></div></div>
+            <div class="hm-piece hm-mole hm-braid"><div class="hm-pop"><img class="hm-body" src="assets/home2/wave-braid-base.png" alt=""><img class="hm-hand" src="assets/home2/wave-braid-part.png" alt=""></div></div>
+            <div class="hm-piece hm-mole hm-sun"><div class="hm-pop"><img class="hm-body" src="assets/home2/wave-sun-base.png" alt=""><img class="hm-hand" src="assets/home2/wave-sun-part.png" alt=""></div></div>
+            <div class="hm-piece hm-mole hm-punk"><div class="hm-pop"><img class="hm-body" src="assets/home2/mole-punk-x.png" alt=""></div></div>
+            <div class="hm-piece hm-mole hm-cap"><div class="hm-pop"><img class="hm-body" src="assets/home2/wave-cap-base.png" alt=""><img class="hm-hand" src="assets/home2/wave-cap-part.png" alt=""></div></div>
+            <i class="hm-spk" style="left:4.2%;top:78.6%;--d:0s"></i>
+            <i class="hm-spk" style="left:8.6%;top:80.4%;--d:0.6s"></i>
+            <i class="hm-spk" style="left:6.0%;top:83.0%;--d:1.2s"></i>
+            <i class="hm-spk" style="left:93.0%;top:81.0%;--d:0.3s"></i>
+            <i class="hm-spk" style="left:96.5%;top:84.5%;--d:1.0s"></i>
+            <div class="hm-piece hm-logo"><img src="assets/home2/logo.png" alt=""></div>
           </div>
         </div>
         <div id="home-grid" aria-hidden="true">
@@ -838,7 +854,7 @@
       <div id="lane-button-bar">
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
-        <div id="build-tag" aria-hidden="true">v907</div>
+        <div id="build-tag" aria-hidden="true">v908</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1092,7 +1108,7 @@ window.FGH.rollOut = function (el, done) {
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=907').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=908').catch(function () {});
       }
     });
   }

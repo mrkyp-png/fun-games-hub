@@ -91,7 +91,9 @@
   }
   function h2Wide(kind, lblKey, lblTxt) { // ✱ = 두더지팡(노랑), 0 = 리듬팡(보라) — 홈에선 두 칸 반씩 넓게
     return '<span class="lane-face lane-face--front lane-face--wide h2w-' + kind + '">' +
-      '<img class="h2w-char" src="' + H2 + (kind === 'mole' ? 'char-mole' : 'char-rhythm') + '.png" alt="">' +
+      (kind === 'mole' // v908: 망치는 따로 떼어 주먹을 축으로 휘두름(망치가 주먹 뒤 층이라 쥔 모습 유지)
+        ? '<span class="h2w-char h2w-charbox"><img class="h2w-hammer" src="' + H2 + 'hammer-part.png" alt=""><img class="h2w-body" src="' + H2 + 'hammer-base.png" alt=""></span>'
+        : '<img class="h2w-char" src="' + H2 + 'char-rhythm.png" alt="">') +
       (kind === 'rhythm' ? '<img class="h2w-note" src="' + H2 + 'ic-note.png" alt="">' : '') +
       '<span class="h2-lbl h2w-lbl"' + (lblKey ? ' data-i18n="' + lblKey + '"' : '') + '>' + lblTxt + '</span></span>';
   }
@@ -164,7 +166,7 @@
         '</span>';
     } else {
       btn.innerHTML = faceHtml;
-      if (f.call) btn.insertAdjacentHTML('afterbegin', '<img class="h2-start" src="' + H2 + 'ic-start.png" alt="">'); // v902: 홈 시작 버튼 그림
+      if (f.call) btn.insertAdjacentHTML('afterbegin', '<span class="h2-start"><img src="' + H2 + 'ic-start.png" alt=""><img class="h2-play" src="' + H2 + 'start-play.png" alt=""></span>'); // v902: 홈 시작 버튼 그림 / v908: ▶ 따로 툭
     }
     // 유료무기(캐논·황금해머·알리펀치) 다이얼패드 구획선(사용자 지정) — 버튼 자신의 실제 박스(그리드 셀과
     // 정확히 같은 크기)에 꽉 차는 사각 테두리. innerHTML 로 매번 새로 그려지므로 fillFace 안에서 같이 추가

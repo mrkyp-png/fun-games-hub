@@ -6130,3 +6130,52 @@ html, body, .cosmic-bg { background: #2a190d; }
 .hm-sun { left: 7.5%; top: 55.77%; width: 20.28%; }
 .hm-punk { left: 73.06%; top: 57.77%; width: 21.94%; }
 .hm-cap { left: 30.56%; top: 61.02%; width: 28.61%; }
+
+/* ===== v908(사용자 지정 1·2·3·5·6·7·9): 홈 애니메이션 — transform·opacity 만(폰 깜빡임 방지) ===== */
+/* 1. 두더지 쏙 들어갔다 나오기 — 구멍 테두리(그림 아래 끝) 아래로는 잘려 안 보임, 한 마리씩 차례로 */
+.hm-mole { position: absolute; clip-path: inset(-40% -40% 0 -40%); }
+.hm-mole img { display: block; width: 100%; height: auto; }
+.hm-pop { position: relative; animation: hm-pop 9s ease-in-out infinite; will-change: transform; }
+.hm-pink .hm-pop { animation-delay: 0s; } .hm-punk .hm-pop { animation-delay: 1.8s; } .hm-sun .hm-pop { animation-delay: 3.6s; }
+.hm-braid .hm-pop { animation-delay: 5.4s; } .hm-cap .hm-pop { animation-delay: 7.2s; }
+@keyframes hm-pop { 0%, 60%, 100% { transform: translateY(0); } 66%, 76% { transform: translateY(102%); } 82% { transform: translateY(-7%); } 86% { transform: translateY(2%); } 89% { transform: translateY(0); } }
+/* 2. 손 흔들기 — 손만 떼어 손목을 축으로 */
+.hm-hand { position: absolute; left: 0; top: 0; width: 100%; animation: hm-wave 3.2s ease-in-out infinite; }
+.hm-sun .hm-hand { transform-origin: 12.5% 63%; animation-delay: 0.4s; }
+.hm-braid .hm-hand { transform-origin: 12.3% 63.6%; animation-delay: 1.5s; }
+.hm-cap .hm-hand { transform-origin: 13.3% 67%; animation-delay: 2.4s; }
+@keyframes hm-wave { 0%, 55%, 100% { transform: rotate(0); } 63% { transform: rotate(-14deg); } 71% { transform: rotate(10deg); } 79% { transform: rotate(-12deg); } 87% { transform: rotate(6deg); } 94% { transform: rotate(0); } }
+/* 3. 랜턴 불빛 일렁임 */
+.hm-glow { position: absolute; width: 10%; aspect-ratio: 1; margin: -5% 0 0 -5%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(255, 225, 130, 0.7) 0%, rgba(255, 175, 60, 0.28) 38%, rgba(255, 160, 40, 0) 70%);
+  animation: hm-glow var(--t, 2.5s) ease-in-out var(--d, 0s) infinite alternate; }
+@keyframes hm-glow { 0% { opacity: 0.35; transform: scale(0.85); } 40% { opacity: 0.9; transform: scale(1.05); } 55% { opacity: 0.6; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1.12); } }
+/* 5. 로고·ROUND 간판 바람에 살짝 + 로고에 빛 스침 */
+.hm-logo { position: absolute; left: 1.5%; top: 0.5%; width: 40%; transform-origin: 50% 0; animation: hm-sway 4.6s ease-in-out infinite; }
+.hm-logo img { display: block; width: 100%; height: auto; }
+.hm-logo::after { content: ''; position: absolute; inset: 0; pointer-events: none; -webkit-mask: url('assets/home2/logo.png') center / 100% 100% no-repeat; mask: url('assets/home2/logo.png') center / 100% 100% no-repeat;
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.75) 50%, transparent 60%) 130% 0 / 300% 100% no-repeat; animation: hm-shine 5s ease-in-out 1s infinite; }
+@keyframes hm-shine { 0% { background-position: 130% 0; } 30%, 100% { background-position: -30% 0; } }
+@keyframes hm-sway { 0%, 100% { transform: rotate(-1.4deg); } 50% { transform: rotate(1.4deg); } }
+.rs-head { transform-origin: 50% 0; animation: hm-sway 3.8s ease-in-out -1s infinite; }
+/* 6. 보석·TNT 반짝이 */
+.hm-spk { position: absolute; width: 4.5%; aspect-ratio: 1; margin: -2.25% 0 0 -2.25%; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle, #fff 0 18%, rgba(255, 245, 170, 0.9) 30%, transparent 65%);
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); animation: hm-spk 1.8s ease-out var(--d, 0s) infinite; }
+@keyframes hm-spk { 0%, 100% { opacity: 0; transform: scale(0.2) rotate(0); } 25% { opacity: 1; transform: scale(1.1) rotate(45deg); } 55% { opacity: 0; transform: scale(0.3) rotate(90deg); } }
+/* 7. 시작 버튼 숨쉬기 + ▶ 툭 */
+#game-screen.is-start .lane-button--call .h2-start { display: block; position: absolute; inset: -4%; pointer-events: none; animation: h2-breath 2s ease-in-out infinite; }
+.h2-start img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.h2-start .h2-play { transform-origin: 52.5% 45.7%; animation: h2-play 2.4s ease-in-out infinite; }
+@keyframes h2-breath { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@keyframes h2-play { 0%, 70%, 100% { transform: scale(1); } 78% { transform: scale(1.22); } 86% { transform: scale(0.96); } 92% { transform: scale(1.06); } }
+/* 9. 두더지팡 망치 휘두르기 · 리듬팡 고개 까딱 · 음표 둥실 */
+.h2w-charbox { display: block; aspect-ratio: 300 / 172; }
+.h2w-charbox img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+.h2w-hammer { transform-origin: 56.7% 76.7%; animation: h2-hammer 3.4s ease-in-out infinite; }
+@keyframes h2-hammer { 0%, 62%, 100% { transform: rotate(0); } 70% { transform: rotate(-24deg); } 76% { transform: rotate(16deg); } 82% { transform: rotate(-4deg); } 88% { transform: rotate(0); } }
+.h2w-rhythm .h2w-char { transform-origin: 50% 100%; animation: h2-bob 0.9s ease-in-out infinite; }
+@keyframes h2-bob { 0%, 100% { transform: rotate(-3deg) translateY(0); } 50% { transform: rotate(3deg) translateY(-3%); } }
+.h2w-note { animation: h2-note 2.2s ease-in-out infinite; }
+@keyframes h2-note { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-14%) rotate(8deg); } }
+.hm-glow { width: 13%; margin: -6.5% 0 0 -6.5%; mix-blend-mode: screen; background: radial-gradient(circle, rgba(255, 235, 150, 0.95) 0%, rgba(255, 185, 70, 0.45) 35%, rgba(255, 160, 40, 0) 70%); }
