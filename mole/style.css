@@ -6391,3 +6391,12 @@ html, body, .cosmic-bg { background: #2a190d; }
 #game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call:active > .lane-ico,
 #game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call:active > .lane-lbl { translate: 0 2px; }
 #game-screen:not(.is-start) .lane-button:active { transform: none; background: transparent; }
+/* v957(사용자 지정): 게임 버튼 좌우 더 넓게 — 판 테두리 얇게, 칸 사이 틈 없애고 테두리를 칸 끝까지 */
+#game-screen:not(.is-start) #lane-button-bar { border-width: 11px 9px calc(11px + env(safe-area-inset-bottom, 0px)); border-image-width: 11px 9px; padding: 0; gap: 0; }
+#game-screen:not(.is-start) .lane-face--key::after { inset: -2px -3px; }
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call::after { inset: -2px -3px; }
+#game-screen:not(.is-start) .lane-face--key::before, #game-screen:not(.is-start) .lane-button--simple::before,
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call::before { inset: 6% 5%; }
+#game-screen:not(.is-start) .lane-button:not(.lane-button--call):active .lane-face--key::before,
+#game-screen:not(.is-start) .lane-button--simple:active::before,
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call:active::before { inset: 9% 8%; }
