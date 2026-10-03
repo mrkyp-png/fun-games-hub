@@ -6400,3 +6400,6 @@ html, body, .cosmic-bg { background: #2a190d; }
 #game-screen:not(.is-start) .lane-button:not(.lane-button--call):active .lane-face--key::before,
 #game-screen:not(.is-start) .lane-button--simple:active::before,
 #game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call:active::before { inset: 9% 8%; }
+/* v958(사용자 지정): 버튼 테두리끼리 겹치지 않게 — 테두리를 칸 안쪽(1px)으로 */
+#game-screen:not(.is-start) .lane-face--key::after,
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call::after { inset: 1px; }
