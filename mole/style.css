@@ -6341,3 +6341,53 @@ html, body, .cosmic-bg { background: #2a190d; }
 #game-screen:not(.is-start):not(.diff-mid):not(.diff-legend) .lane-button--simple.lane-button--simple.is-tint-miss { border-image-source: url('assets/home2/btn-red.png'); }
 #game-screen:not(.is-start):not(.gs-laneskill):not(.diff-mid):not(.diff-legend) .lane-button--call.lane-button--call.is-tint-hit{ border-image-source: url('assets/home2/btn-pink.png'); }
 #game-screen:not(.is-start):not(.gs-laneskill):not(.diff-mid):not(.diff-legend) .lane-button--call.lane-button--call.is-tint-miss { border-image-source: url('assets/home2/btn-red.png'); }
+/* ===== v956(사용자 지정): 버튼보드 배경 = 새 나무판(바탕화면 "버튼보드 배경.png"), 게임 중 버튼 = 나무 테두리(바탕화면 "버튼 테두리.png") 씌움 — 색은 그대로 ===== */
+#lane-button-bar { border-width: 14px 14px calc(14px + env(safe-area-inset-bottom, 0px));
+  border-image: url('assets/home2/board-bg.png') 64 fill / 14px stretch; }
+.dialpad { background: #5a2e10; }
+/* 게임 중 버튼: 나무 테두리 안에 파란 버튼(테두리 두께만큼 버튼을 안쪽으로) */
+#game-screen:not(.is-start) .lane-face--key::before { inset: 9%; }
+#game-screen:not(.is-start) .lane-face--key::after { content: ''; position: absolute; inset: 1px; z-index: -1; pointer-events: none;
+  border-style: solid; border-color: transparent; border-width: 15px; border-image: url('assets/home2/btn-frame.png') 80 fill / 15px stretch; }
+#game-screen:not(.is-start) .lane-button--simple { border-image: none; background: url('assets/home2/btn-frame.png') center / 100% 100% no-repeat; }
+#game-screen:not(.is-start) .lane-button--simple::before { content: ''; position: absolute; inset: 9%; z-index: -1; border-style: solid; border-color: transparent; border-width: 13px 15px;
+  border-image: url('assets/home2/btn-blue.png') 62 66 fill / 13px 15px stretch; opacity: 1; animation: none; transform: none; border-radius: 0; }
+/* v956: 통화 칸(뿅망치)도 나무 테두리 — 칸 자체 테두리그림은 끄고, ::before = 색 버튼(--ccap), ::after = 나무 테두리 */
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.lane-button--call { border: 0 !important; border-image: none !important; background: none !important; --ccap: url('assets/home2/btn-blue.png'); }
+#game-screen:not(.is-start):not(.gs-laneskill):not(.diff-mid):not(.diff-legend) .lane-button--call.lane-button--hot { --ccap: url('assets/home2/btn-green.png'); }
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.lane-button--hot-safe { --ccap: url('assets/home2/btn-orange.png'); }
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.is-tint-hit { --ccap: url('assets/home2/btn-pink.png'); }
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.is-tint-miss { --ccap: url('assets/home2/btn-red.png'); }
+#game-screen:not(.is-start):not(.gs-laneskill):not(.diff-mid):not(.diff-legend) .lane-button--call.lane-button--call.is-tint-hit { --ccap: url('assets/home2/btn-pink.png'); }
+#game-screen:not(.is-start):not(.gs-laneskill):not(.diff-mid):not(.diff-legend) .lane-button--call.lane-button--call.is-tint-miss { --ccap: url('assets/home2/btn-red.png'); }
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call::before {
+  content: ''; display: block; position: absolute; inset: 9%; opacity: 1; animation: none !important; transform: none; border-radius: 0; z-index: 0; pointer-events: none;
+  border-style: solid; border-color: transparent; border-width: 13px 15px; border-image: var(--ccap) 62 66 fill / 13px 15px stretch; }
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call::after {
+  content: ''; display: block; position: absolute; inset: 1px; opacity: 1; animation: none !important; box-shadow: none; border-radius: 0; z-index: 0; pointer-events: none;
+  border-style: solid; border-color: transparent; border-width: 15px; border-image: url('assets/home2/btn-frame.png') 80 / 15px stretch; }
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call > .lane-ico, #game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call > .lane-lbl { position: relative; z-index: 1; }
+/* ===== v956(사용자 지정): 스킬 칸 = 바탕화면 "스킬박스.png"(위 세모·아래 세모 나무 테두리) — 대각선 대신 위·아래로 나눔, 원은 각 세모 안 ===== */
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-items::before,
+#game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-items::before {
+  inset: 2% 4%; background: url('assets/home2/skill-box.png') center / 100% 100% no-repeat; }
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-cell-line,
+#game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-cell-line { -webkit-mask: none; mask: none; border-color: transparent; }
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-item,
+#game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-item { width: auto; height: 25%; aspect-ratio: 1; left: 50%; right: auto; transform: translate(-50%, -50%); }
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-item[data-slot="0"],
+#game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-item[data-slot="0"] { top: 31.5%; bottom: auto; }
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-item[data-slot="1"],
+#game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-item[data-slot="1"] { top: 74%; bottom: auto; }
+#game-screen.gs-laneskill:not(.is-start) .lane-item:not(.lane-item--empty).is-press { transform: translate(-50%, -50%) translateY(3px) scale(0.92); }
+/* ===== v956(사용자 지정): 게임 버튼 최대한 크게 + 누름 효과 ===== */
+#game-screen:not(.is-start) .lane-face--key::before { inset: 7%; }
+#game-screen:not(.is-start) .lane-button--simple::before { inset: 7%; }
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call::before { inset: 7%; }
+#game-screen:not(.is-start) .lane-button:not(.lane-button--call):active .lane-face--key::before,
+#game-screen:not(.is-start) .lane-button--simple:active::before,
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call:active::before { inset: 10%; filter: brightness(0.88); }
+#game-screen:not(.is-start) .lane-button:not(.lane-button--call):active .lane-face--key > *,
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call:active > .lane-ico,
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call:active > .lane-lbl { translate: 0 2px; }
+#game-screen:not(.is-start) .lane-button:active { transform: none; background: transparent; }
