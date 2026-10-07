@@ -6419,3 +6419,8 @@ html, body, .cosmic-bg { background: #2a190d; }
 #game-screen:not(.is-start) .lane-button--simple::after { content: ''; display: block; position: absolute; inset: 1px; opacity: 1; animation: none !important; box-shadow: none; border-radius: 0; z-index: 0; pointer-events: none;
   border-style: solid; border-color: transparent; border-width: 15px; border-image: url('assets/home2/btn-frame-gold.png') 80 / 15px stretch; }
 #game-screen:not(.is-start) .lane-button--simple > .lane-num, #game-screen:not(.is-start) .lane-button--simple > .lane-sub { position: relative; z-index: 1; }
+/* v960(사용자 지정): 버튼 더 크게(겹침 없이) — 판 테두리 칸은 금테두리 그림 두께만큼만(그림 크기 11px 9px 유지), 버튼 테두리는 칸에 딱 맞게 */
+#game-screen:not(.is-start) #lane-button-bar { border-width: 6px 5px calc(6px + env(safe-area-inset-bottom, 0px)); border-image-width: 11px 9px; }
+#game-screen:not(.is-start) .lane-face--key::after,
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call::after,
+#game-screen:not(.is-start) .lane-button--simple::after { inset: 0; }
