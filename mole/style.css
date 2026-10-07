@@ -6403,3 +6403,19 @@ html, body, .cosmic-bg { background: #2a190d; }
 /* v958(사용자 지정): 버튼 테두리끼리 겹치지 않게 — 테두리를 칸 안쪽(1px)으로 */
 #game-screen:not(.is-start) .lane-face--key::after,
 #game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call::after { inset: 1px; }
+/* v959(사용자 지정): 게임 화면 나무 테두리 → 금색 — 버튼보드 안쪽 테두리(바탕화면 "버튼보드 안쪽 테두리.png"), 버튼 테두리(바탕화면 "버튼 테두리.png") */
+#game-screen:not(.is-start) #lane-button-bar { border-image-source: url('assets/home2/board-bg-gold.png'); }
+#game-screen:not(.is-start) .lane-face--key::after,
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call::after { border-image-source: url('assets/home2/btn-frame-gold.png'); }
+/* v959: 라운드1(9칸) 버튼 안 보이던 버그 — ::before(z-index:-1)가 판 배경 뒤로 숨고, 초록/분홍/빨강이 칸 자체 border-image 라 모서리만 보이던 것.
+   통화 칸 방식으로: 칸 테두리·배경 끄고 ::before = 색 버튼(--scap), ::after = 금테두리(칸에 꽉) */
+#game-screen:not(.is-start) .lane-button--simple { border: 0 !important; border-image: none !important; background: none !important; --scap: url('assets/home2/btn-blue.png'); }
+#game-screen:not(.is-start):not(.diff-mid):not(.diff-legend) .lane-button--simple.lane-button--hot { --scap: url('assets/home2/btn-green.png'); }
+#game-screen:not(.is-start).gs-invincible .lane-button--simple.lane-button--hot,
+#game-screen:not(.is-start) .lane-button--simple.lane-button--hot-safe { --scap: url('assets/home2/btn-orange.png'); }
+#game-screen:not(.is-start) .lane-button--simple.lane-button--simple.is-tint-hit { --scap: url('assets/home2/btn-pink.png'); }
+#game-screen:not(.is-start) .lane-button--simple.lane-button--simple.is-tint-miss { --scap: url('assets/home2/btn-red.png'); }
+#game-screen:not(.is-start) .lane-button--simple::before { z-index: 0; border-image: var(--scap) 62 66 fill / 13px 15px stretch; }
+#game-screen:not(.is-start) .lane-button--simple::after { content: ''; display: block; position: absolute; inset: 1px; opacity: 1; animation: none !important; box-shadow: none; border-radius: 0; z-index: 0; pointer-events: none;
+  border-style: solid; border-color: transparent; border-width: 15px; border-image: url('assets/home2/btn-frame-gold.png') 80 / 15px stretch; }
+#game-screen:not(.is-start) .lane-button--simple > .lane-num, #game-screen:not(.is-start) .lane-button--simple > .lane-sub { position: relative; z-index: 1; }
