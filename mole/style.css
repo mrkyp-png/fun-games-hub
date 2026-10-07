@@ -6424,3 +6424,12 @@ html, body, .cosmic-bg { background: #2a190d; }
 #game-screen:not(.is-start) .lane-face--key::after,
 #game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call::after,
 #game-screen:not(.is-start) .lane-button--simple::after { inset: 0; }
+/* v961(사용자 지정): 스킬 칸 = 네모(대각선 /, ✱ 칸은 \) 금테두리 + 안쪽 파란 버튼, 원은 각 세모 안 최대(그림 실측 내접원) */
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-items::before { inset: 0; background-image: url('assets/home2/skill-box-gold.png'); }
+#game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-items::before { inset: 0; background-image: url('assets/home2/skill-box-gold-l.png'); }
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-item,
+#game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-item { width: 28%; height: auto; right: auto; bottom: auto; }
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-item[data-slot="0"] { left: 29.5%; top: 29.5%; }
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-item[data-slot="1"] { left: 69%; top: 69%; }
+#game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-item[data-slot="0"] { left: 70.5%; top: 29.5%; }
+#game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-item[data-slot="1"] { left: 31%; top: 69%; }
