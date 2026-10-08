@@ -14,18 +14,18 @@
       stats: [['-', '-'], ['-', '-'], ['-', '-']] },
     { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1.png', rarity: 'rare',
       desc: ['강력한 포탄으로\n더 많은 두더지를 한 번에!\n넓은 범위를 커버하는 든든한 무기!', 'Powerful cannonballs\nhit more moles at once —\na sturdy weapon with wide reach!'],
-      stats: [['Hole 16 → 15 · 경계선 추가', 'Holes 16 → 15 · Cell borders'],
+      stats: [['Hole 16 → 15', 'Holes 16 → 15'],
               ['2·3타 두더지 연타 확률 10%', '10% burst on 2·3-hit moles'],
               ['-', '-']] },
     { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldhammer-0.png', rarity: 'epic',
       desc: ['전설의 힘을 담은 황금 망치!\n지면을 울리는 강력한 충격으로\n주변의 두더지를 한 번에 처치한다!', 'A golden hammer of legend!\nIts ground-shaking blow\ntakes out nearby moles at once!'],
       gemGlow: true,   // 보석(파란불빛) 부분에 맥동 글로우
-      stats: [['Hole 16 → 15 · 경계선 추가', 'Holes 16 → 15 · Cell borders'],
+      stats: [['Hole 16 → 15', 'Holes 16 → 15'],
               ['주변 두더지 지진 연타 15% (2·3타 두더지 소탕 포함)', '15% quake — chain-hits nearby moles (clears 2·3-hit moles too)'],
               ['-', '-']] },
     { id: 'alipunch', name: '알리 판취', nameEn: 'Ali Punch', thumb: 'assets/weapons/alipunch-jab.png', rarity: 'legend',
       desc: ['전설의 챔피언 알리의 힘을 담은\n강력한 글러브! 빠르고 강한\n연타로 모든 두더지를 한 번에\n날려버린다!', 'Gloves holding the power of\nthe legendary champ Ali! Fast, heavy\ncombos blast every mole away!'],
-      stats: [['Hole 16 → 14 · 경계선 추가', 'Holes 16 → 14 · Cell borders'],
+      stats: [['Hole 16 → 14', 'Holes 16 → 14'],
               ['무적 5초 확률 20% (모든 동물 타격 가능), 2·3타 두더지 소탕 포함', '20% chance — 5s invincibility (any animal is safe to hit), clears 2·3-hit moles'],
               ['하강 딜레이 +0.1초(무적 중 +0.3초 추가)', '+0.1s before mole retreats (+0.3s more while invincible)']] }
   ];
