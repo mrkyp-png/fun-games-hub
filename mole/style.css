@@ -1730,7 +1730,7 @@ body { background: var(--lm-page); }
   pointer-events: none;
   z-index: 4;
 }
-.lane-quake-shade.is-kill { background: rgba(255, 255, 255, 0.92); }
+.lane-quake-shade.is-kill { background: transparent; } /* v975: 흰 덮개 → 분홍 버튼(lane-controls.js is-tint-hit) */
 .lane-quake-shade.is-on { animation: lane-quake-shade 0.6s ease-out forwards; }
 @keyframes lane-quake-shade {
   0%   { opacity: 0; }

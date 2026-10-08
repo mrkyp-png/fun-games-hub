@@ -313,6 +313,8 @@
         let sh = b.querySelector('.lane-quake-shade');
         if (!sh) { sh = document.createElement('span'); sh.className = 'lane-quake-shade'; b.appendChild(sh); }
         sh.classList.toggle('is-kill', kill.has(id));
+        // v975(사용자 지정): 처치 칸 = 흰 덮개 대신 다른 무기처럼 분홍 버튼(맞힘 0.3초)
+        if (kill.has(id)) { clearTimeout(b._tintT); b.classList.remove('is-tint-miss'); b.classList.add('is-tint-hit'); b._tintT = setTimeout(() => b.classList.remove('is-tint-hit'), 300); }
         sh.classList.remove('is-on'); void sh.offsetWidth; sh.classList.add('is-on');
       });
       if (buttonBar) {

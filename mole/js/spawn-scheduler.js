@@ -213,6 +213,7 @@
     function resolveOne(pop, opts) {
       var isBurstShot = !!(opts && opts.burst);            // 대포 연사 자동샷
       var isAuto = isBurstShot || !!(opts && opts.quake);  // 자동타격(연사/지진) — 쿨다운·무패널티게이트 통과
+      if (opts && opts.quake) pop.quakeAt = performance.now();
 
       // 연사(burst) 진행 중: 자동샷만 실제 처리하고, 유저가 그 구멍을 더 때리는 건
       // 두더지가 사라질 때까지 무패널티로 무시 (헛방 아님, 콤보 리셋 X). (사용자 지정)
@@ -220,6 +221,11 @@
         return { type: 'mole', regionId: pop.regionId, ignored: true, xFrac: pop.x, yFrac: pop.y };
       }
 
+      // v975(사용자 지정): 골드해머 지진이 처리한 칸은 연출(0.64초) 동안 유저가 눌러도 무시 —
+      // 분신 망치가 날아가는 중이라 두더지·초록 버튼이 아직 보여서 누르면 헛방으로 콤보가 끊기던 것.
+      if (!isAuto && pop.quakeAt && performance.now() - pop.quakeAt < 640) {
+        return { type: 'mole', regionId: pop.regionId, ignored: true, xFrac: pop.x, yFrac: pop.y };
+      }
       // 저글 보너스(스펙 2026-09-04 §4): 1방 두더지를 잡은 뒤 내려가는 창에 한 번 더 맞히면
       // 콤보 +1 보너스. 두더지당 1회. 못 맞혀도 페널티 없음. 2·3방 다타는 제외.
       // 단 두더지가 "시각적으로 보일 때"만 — 다 사라진 뒤 때리면 명백한 헛방(콤보 리셋). (사용자 지정)
