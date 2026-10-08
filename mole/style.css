@@ -6448,3 +6448,6 @@ html, body, .cosmic-bg { background: #2a190d; }
 #game-screen:has(#start-intro-overlay:not([hidden])) #btn-back-to-hub { opacity: 0 !important; pointer-events: none; }
 /* v974(사용자 지정): 리듬팡 첫 화면(난이도 선택 중)엔 녹색 HP바 숨김 — 게임 시작하면 보임 */
 #rhythm-screen:has([data-rp-select]:not([hidden])) .rp-hpbar { visibility: hidden; }
+/* v978(사용자 지정): 스코어 TOP3 카드 이름 글자판이 눌려 잘리던 것 — 이름·알약·점수는 줄어들지 않게, 사진 원을 조금 줄여 공간 확보 */
+.sr-card .sr-name, .sr-card .sr-pill, .sr-card .sr-score { flex-shrink: 0; line-height: 1.2; }
+.sr-card .sr-ava { width: 46cqw; height: 46cqw; margin-top: 2%; }
