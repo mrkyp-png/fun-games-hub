@@ -3242,7 +3242,7 @@ body { background: var(--lm-page); }
 .dr-sign { position: absolute; left: 50%; top: 0; width: 60%; transform: translateX(-50%); z-index: 1; }
 .dr-mole { position: absolute; bottom: calc(var(--w) * -0.035); z-index: 2; }
 .dr-mole--l { left: -2%; width: 31%; }
-.dr-mole--r { right: -2%; width: 29%; }
+.dr-mole--r { right: 0; width: 29%; } /* v965: -2% → 0, 흔드는 손 끝이 화면 밖으로 잘리던 것 */
 /* 메인판 = 분리 에셋의 빈 메인판을 9분할(border-image)로 — 전구 테두리는 그대로 두고 세로만 늘려 카드를 크게(v748: 원래 보드판 비율 그대로는 카드가 너무 작아 글씨가 안 보였음). */
 .dr-board { position: relative; width: 100%; box-sizing: border-box; z-index: 1; border-style: solid;
   border-width: calc(var(--w) * 80 / 758) calc(var(--w) * 58 / 758) calc(var(--w) * 59 / 758);
