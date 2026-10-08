@@ -6444,3 +6444,5 @@ html, body, .cosmic-bg { background: #2a190d; }
 /* v971(사용자 지정): 라운드 동그라미가 아래 토글버튼에 가려지던 것 — 줄 사이 간격 키움, 토글버튼 높이 1.4배 */
 .rm-bottom { gap: 3.4cqw; }
 .rm-light { height: 14.7cqw; }
+/* v972(사용자 지정): 이야기 화면(분홍) 떠 있는 동안 프로필 사진 잔상 — 그동안만 숨김 */
+#game-screen:has(#start-intro-overlay:not([hidden])) #btn-back-to-hub { opacity: 0 !important; pointer-events: none; }
