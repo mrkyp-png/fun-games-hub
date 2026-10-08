@@ -450,7 +450,8 @@
       if (!st.over && st.notes.every(function (n) { return n.state === 'done'; })) {
         st.over = true;
         var left = buffer && buffer.duration ? (buffer.duration - now()) * 1000 : 0;
-        setTimeout(function () { gameOver(true); }, Math.max(900, left - 300));
+        var me = st; // v980: 이 판의 클리어 타이머 — 그 사이 그만하기/다른 난이도로 새 판이 시작되면 새 판을 클리어 처리하던 버그(HARD 클리어·풀콤보 잘못 기록)
+        setTimeout(function () { if (st === me) gameOver(true); }, Math.max(900, left - 300));
       }
     }
 
