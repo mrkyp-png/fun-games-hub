@@ -6433,3 +6433,11 @@ html, body, .cosmic-bg { background: #2a190d; }
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-item[data-slot="1"] { left: 70.5%; top: 70.5%; }
 #game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-item[data-slot="0"] { left: 70.7%; top: 29.3%; }
 #game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-item[data-slot="1"] { left: 29.5%; top: 70.5%; }
+/* v966(사용자 지정): 두더지 손은 아래 판 앞에 — 두더지만 판(z3) 위로(dr-top 쌓임맥락 해제, 광고판·문구판 순서는 그대로).
+   손이 판 테두리(윗면)에 6px 걸치게 내림. 손 사이 몸통 아래 6px는 그림에서 투명 처리(판 뒤로 들어간 것처럼). */
+#daily-screen .dr-top { z-index: auto; }
+#daily-screen .dr-mole { z-index: 4; }
+#daily-screen .dr-mole--l { bottom: calc(var(--w) * -0.0594); } /* 손톱 끝 둥글게 이어 그려 그림이 12px 길어진 만큼 보정 */
+#daily-screen .dr-mole--r { bottom: calc(var(--w) * -0.0604); }
+/* v966(사용자 지정): 문구가 오른쪽 두더지 손에 가려지던 것 — 글자 크기 87%(폭 173→150px) */
+#daily-screen .dr-plate { font-size: calc(var(--w) * 0.0225); }
