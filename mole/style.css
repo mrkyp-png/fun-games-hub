@@ -6451,3 +6451,6 @@ html, body, .cosmic-bg { background: #2a190d; }
 /* v978(사용자 지정): 스코어 TOP3 카드 이름 글자판이 눌려 잘리던 것 — 이름·알약·점수는 줄어들지 않게, 사진 원을 조금 줄여 공간 확보 */
 .sr-card .sr-name, .sr-card .sr-pill, .sr-card .sr-score { flex-shrink: 0; line-height: 1.2; }
 .sr-card .sr-ava { width: 46cqw; height: 46cqw; margin-top: 2%; }
+/* v979(사용자 지정): 퀘스트·업적 제목 글자를 나무판 가운데로 */
+.qs-title { top: 30%; }
+.qs-screen[data-mode="ach"] .qs-title { top: 33%; }
