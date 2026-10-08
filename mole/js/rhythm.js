@@ -527,7 +527,11 @@
       });
     });
     $('[data-rp-sel-close]').addEventListener('click', function () { close(); });
-    function open() { el.hidden = false; $('[data-rp-pause]').hidden = true; $('[data-rp-result]').hidden = true; wlayer.innerHTML = ''; showSelect(); }
+    function open() { el.hidden = false; $('[data-rp-pause]').hidden = true; $('[data-rp-result]').hidden = true; wlayer.innerHTML = '';
+      // v974(사용자 지정): 진입 시 배경은 항상 첫 화면 — 지난 판의 두더지·구멍·버튼·점수·HP 잔상 비움(시작하면 start() 가 다시 만듦)
+      $('[data-rp-lanes]').innerHTML = ''; $('[data-rp-btns]').innerHTML = ''; moleEls = null; btnEls = null;
+      $('[data-rp-score]').textContent = '0'; $('[data-rp-combo]').textContent = ''; $('[data-rp-hp]').style.width = ''; $('[data-rp-hpbar]').classList.remove('is-low');
+      showSelect(); }
     return { open: open, close: close, CONFIG: CONFIG, setDiff: function (d) { diff = d; }, start: function () { start(); }, press: function (l) { press(l); }, dbg: function () { return st ? { t: now(), notes: st.notes, score: st.score, combo: st.combo, hp: st.hp, cnt: st.cnt } : null; } };
   }
 
