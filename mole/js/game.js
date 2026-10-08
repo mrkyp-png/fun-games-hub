@@ -600,7 +600,7 @@
   // 보이고, 노랑이 빠르게 따라잡아 앞질러서 최종 단색이 노랑이 된다.
   let winFxTimer = null; // 승리 화면 불꽃놀이 반복 스폰 — 화면 전환(닫힘) 시 clearInterval
   let curtainPatternGen = 0;
-  function restartCurtainPattern(overlay, reversed) {
+  function restartCurtainPattern(overlay, reversed, duration) {
     const curtains = overlay.querySelectorAll('.ri-curtain');
     // 좌/우 패널이 각자 자기 왼쪽 모서리(0,0) 기준으로 따로 타일링돼서, 우측 패널은
     // 화면상 중앙(좌측 패널 너비만큼 떨어진 지점)부터 시작해 타일 위상이 어긋나 중앙에
@@ -614,7 +614,7 @@
       }
     });
     const myGen = ++curtainPatternGen;
-    const DURATION = 2300;
+    const DURATION = duration || 2300;
     const SLOW_MAX = 45; // px — 먼저 보이는 색, 처음부터 끝까지 꾸준히(선형) 천천히 커짐
     const FAST_MAX = 70; // px — 나중 색, 처음엔 거의 안 보이다(cubic ease-in) 뒤늦게 확 커져
                           // 앞의 색을 따라잡고 앞질러 타일 전체를 뒤덮는다("따라잡는 재미").
@@ -668,7 +668,7 @@
     overlay.classList.remove('is-opening');
     overlay.hidden = false;
     document.getElementById('game-screen').classList.add('gs-intro'); // v952: ROUND 판·로고도 홈과 같이 사라짐
-    restartCurtainPattern(overlay);
+    restartCurtainPattern(overlay, false, 1000); // v973(사용자 지정): 시작 → 챕터 글자까지 1초
     setHammerLayerVisible(false);
     // "챕터N : 부제" 한 줄이던 걸 두 줄로 쪼갬(1줄=챕터N, 2줄=부제) + 팁 문구를 3번째
     // 줄로 - 총 3줄이 순서대로 타이핑(사용자 요청).
@@ -714,7 +714,7 @@
           });
         });
       });
-    }, 2300); // 커튼 패턴이 분홍으로 다 정리된 뒤에 타이핑 시작
+    }, 1000); // 커튼 패턴이 분홍으로 다 정리된 뒤에 타이핑 시작(v973: 2.3초 → 1초)
   }
 
   // ---------- 시작화면 초록 버튼: 탭=시작 / 꾹=종료 대기 / 다시 탭=종료창 ----------
