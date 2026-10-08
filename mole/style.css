@@ -6441,3 +6441,6 @@ html, body, .cosmic-bg { background: #2a190d; }
 #daily-screen .dr-mole--r { bottom: calc(var(--w) * -0.0604); }
 /* v966(사용자 지정): 문구가 오른쪽 두더지 손에 가려지던 것 — 글자 크기 87%(폭 173→150px) */
 #daily-screen .dr-plate { font-size: calc(var(--w) * 0.0225); }
+/* v971(사용자 지정): 라운드 동그라미가 아래 토글버튼에 가려지던 것 — 줄 사이 간격 키움, 토글버튼 높이 1.4배 */
+.rm-bottom { gap: 3.4cqw; }
+.rm-light { height: 14.7cqw; }
