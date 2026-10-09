@@ -6466,17 +6466,18 @@ html, body, .cosmic-bg { background: #2a190d; }
 /* 토글버튼 = 나무 틀 + 초록 버튼, 선택 = 파란 네온 버튼 — 아이템·상점 공통(사용자 지정: "여기서 셋팅되면 다른곳도 동일") */
 .inv-tab, .shop-tab { border: 9px solid transparent !important; border-image: url('assets/costume2/tab-frame.png') 50 / 9px stretch !important; border-radius: 0;
   outline: none; box-shadow: none; overflow: visible; padding-top: 0; padding-bottom: 0;
-  background: url('assets/costume2/tab-green.png') center / calc(100% - 4px) calc(100% - 4px) no-repeat, linear-gradient(180deg, #30ef6e, #04b954 55%, #037735) !important;
+  background: url('assets/costume2/tab-green.png') center / 100% 100% no-repeat, linear-gradient(180deg, #30ef6e, #04b954 55%, #037735) !important;
   background-origin: border-box, padding-box !important; background-clip: border-box, padding-box !important; } /* 둥근 모서리 틈도 같은 색으로 꽉(v992) */
 .inv-tabbar, .shop-tabbar { padding-top: 3px; padding-bottom: 3px; gap: 0; }
 /* v992(사용자 지정): 누르면 나무 틀은 그대로, 안의 버튼만 눌림(작아지며 살짝 아래로) */
 .inv-tab, .shop-tab { transition: background-size 0.08s ease, background-position 0.08s ease !important; }
 .inv-tab:active, .shop-tab:active { transform: none !important; } /* v992: 버튼은 틀에 꽉 찬 채로 — 크기 안 줄이고 안쪽만 어둡게 눌림 */
-.inv-tab:active::before, .shop-tab:active::before { display: block; content: ''; position: absolute; inset: 0; left: 0; right: 0; top: 0; height: auto; z-index: 1; pointer-events: none;
-  border-radius: 0; background: rgba(0, 0, 0, 0.16); box-shadow: inset 0 5px 7px rgba(0, 0, 0, 0.45); }
+/* v994(사용자 지정): 누르면 안쪽 버튼 전체가 눌린 그림으로(크기 그대로, 틈 없음) — 테두리는 그대로 */
+.inv-tab:active, .shop-tab:active { background-image: url('assets/costume2/tab-green-press.png'), linear-gradient(180deg, #26be58, #039443 55%, #025f2a) !important; }
+.inv-tab--on:active, .shop-tab--on:active { background-image: url('assets/costume2/tab-blue-press.png'), linear-gradient(180deg, #029ac9, #005ac9 55%, #003ac9) !important; }
 .inv-tab > *, .shop-tab > * { transition: transform 0.08s ease; }
 .inv-tab:active > *, .shop-tab:active > * { transform: translateY(2px) scale(0.92); }
-.inv-tab--on, .shop-tab--on { background-image: url('assets/costume2/tab-blue.png'), linear-gradient(180deg, #02c1fc, #0071fb 55%, #0049fb) !important; filter: drop-shadow(0 0 4px rgba(90, 200, 255, 0.9)); }
+.inv-tab--on, .shop-tab--on { background-image: url('assets/costume2/tab-blue.png'), linear-gradient(180deg, #02c1fc, #0071fb 55%, #0049fb) !important; } /* v994: 선택 글로우가 위아래 회색 띠로 보여 삭제 */
 .inv-tab::before, .shop-tab::before, .inv-tab::after, .shop-tab::after { display: none; }
 /* 코스튬 탭 배경 = 나무 오두막(선반·랜턴·모자·야구공) */
 #inventory-screen[data-tab="costume"]::before { inset: 0; border-image: none; border-width: 0; background: url('assets/costume2/bg-cabin.jpg') center top / 100% 100% no-repeat; filter: none; }
@@ -6534,3 +6535,5 @@ html, body, .cosmic-bg { background: #2a190d; }
 #inventory-screen[data-tab="costume"] .cos-detail-name-row { min-width: 0; flex-wrap: nowrap; }
 #inventory-screen[data-tab="costume"] .cos-detail-name { white-space: nowrap; min-width: 0; flex: 1 1 auto; overflow: visible; }
 #inventory-screen[data-tab="costume"] .cos-card-emblem { display: none; } /* v993(사용자 지정): 카드 5개 위 엠블럼 삭제(폰에서 잘림) */
+/* v994(사용자 지정): 상세 효과 이름 "…" 금지, 한 줄 */
+#inventory-screen[data-tab="costume"] .cos-detail-effect-name { overflow: visible; text-overflow: clip; white-space: nowrap; }

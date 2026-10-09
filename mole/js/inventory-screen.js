@@ -351,14 +351,19 @@
         '<button type="button" class="inv-equip cos-detail-btn"><span></span></button>';
       detail.querySelector('.cos-detail-name').textContent = name;
       // v993(사용자 지정): 팀 이름은 항상 한 줄 — 폰에서 "마운트 스타즈"가 두 줄로 넘어가 카드가 깨지던 것. 넘치면 글자 폭만 줄임
-      requestAnimationFrame(function () {
+      function fitCosLines() { // v994: 글꼴이 늦게 로드되면 폭이 바뀌어 폰에서 다시 "…"/두 줄 되던 것 — 글꼴 준비 후에도 다시 맞춤
         var nm = detail.querySelector('.cos-detail-name'); if (!nm || !nm.clientWidth) return;
+        nm.style.transform = ''; nm.style.width = '';
+        var ef0 = detail.querySelector('.cos-detail-effect-name'); if (ef0) ef0.textContent = T('mole.cos.effectName');
         var k = nm.clientWidth / nm.scrollWidth;
         if (k < 1) { nm.style.display = 'inline-block'; nm.style.transformOrigin = '0 50%'; nm.style.transform = 'scaleX(' + Math.max(k, 0.6).toFixed(3) + ')'; nm.style.width = (nm.scrollWidth) + 'px'; }
         var ef = detail.querySelector('.cos-detail-effect-name'); // 효과 이름도 "…" 없이 한 줄
         if (ef && ef.clientWidth) { ef.style.overflow = 'visible'; ef.style.textOverflow = 'clip'; var k2 = ef.clientWidth / ef.scrollWidth;
           if (k2 < 1) { ef.innerHTML = '<span style="display:inline-block;transform-origin:0 50%;transform:scaleX(' + Math.max(k2, 0.6).toFixed(3) + ')">' + ef.innerHTML + '</span>'; } }
-      });
+      }
+      requestAnimationFrame(fitCosLines);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { requestAnimationFrame(fitCosLines); });
+      setTimeout(fitCosLines, 400);
       detail.querySelector('.cos-detail-effect-lbl').textContent = T('mole.cos.effectTitle');
       detail.querySelector('.cos-detail-effect-name').textContent = T('mole.cos.effectName');
       detail.querySelector('.cos-detail-effect-val').textContent = '+' + effectVal + (I18N.lang === 'en' ? 's' : '초');
