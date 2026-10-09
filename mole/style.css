@@ -6556,7 +6556,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 #inventory-screen[data-tab="skill"] .skl-box-restore { background: none; }
 #inventory-screen[data-tab="skill"] .skl-pnum { min-width: 30px; height: 18px; line-height: 18px; font-size: 0.56rem; color: #fff; background: url('assets/skin2/sk-pnum.png') center / 100% 100% no-repeat; }
 /* 카드 칸: 나뭇잎 나무 틀 안에 갈색 액자 4칸 */
-#inventory-screen[data-tab="skill"] .skl-grid { grid-template-columns: repeat(4, 1fr); gap: 2px; padding: 1px 0;
+#inventory-screen[data-tab="skill"] .skl-grid { grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 1px 0;
   border: 14px solid transparent; border-width: 14px 18px 13px 18px; border-image: url('assets/skin2/sk-frame.png') 76 52 78 52 / 26px 18px 27px 18px stretch; overflow: visible; } /* 기둥 둥근 머리가 늘어나지 않게 조각선을 머리 밖으로 */
 #inventory-screen[data-tab="skill"] .skl-card { border: 6px solid transparent; border-image: url('assets/skin2/sk-cell.png') 24 / 6px stretch; /* 모서리 볼트가 찌그러지지 않게 가로세로 같은 배율 */
   border-radius: 0; background-color: #3b2212; background-origin: padding-box; background-clip: padding-box; }
@@ -6615,7 +6615,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 #inventory-screen[data-tab="weapon"] .inv-card { flex-basis: 100%; height: 100%; margin: 0; }
 /* v995(사용자 지정): 무기 액자 = 맨 위 레이어(내용이 틀을 덮지 않게) + 가로세로 같은 배율(볼트 동그랗게) */
 #inventory-screen[data-tab="weapon"] .inv-card { border: 0 !important; border-image: none !important; padding: 15px 15px 14px; background: #3b2212 !important; }
-#inventory-screen[data-tab="weapon"] .inv-card::after { content: ''; position: absolute; inset: 0; z-index: 20; pointer-events: none;
+#inventory-screen[data-tab="weapon"] .inv-card::before { content: ''; position: absolute; inset: 0; z-index: 20; pointer-events: none; /* v996: ::after 는 빛 지나가는 효과 자리라 틀은 ::before 로 */
   border: 14px solid transparent; border-image: url('assets/skin2/w-cardframe.png') 36 / 14px stretch; }
 /* v995(사용자 지정): 스킬 화면 모든 볼트·둥근 피스가 찌그러지지 않게 — 늘이는 대신 끝 조각은 그대로, 가운데만 늘림(가로세로 같은 배율) */
 #inventory-screen[data-tab="skill"] .skl-plank { background: none; border: solid transparent; border-width: 0 19px; border-image: url('assets/skin2/sk-plank.png') 0 60 fill / 0 19px stretch; padding: 0 2px; }
@@ -6632,3 +6632,39 @@ html, body, .cosmic-bg { background: #2a190d; }
 #inventory-screen[data-tab="skill"] .skl-mini.skl-mini--empty::after { content: ''; display: block; position: absolute; inset: 0; background: url('assets/skin2/sk-plus.png') center / 72% auto no-repeat; } /* 칸 그림(border-image fill)이 배경을 덮어서 ⊕를 위 레이어로 */
 /* v995(사용자 지정): 스킬 화면 풀 있는 테두리 삭제(카드 칸만) */
 #inventory-screen[data-tab="skill"] .skl-grid { border: 0 !important; border-image: none !important; padding: 0; }
+#inventory-screen[data-tab="skill"] .skl-wrap { margin: 4px 10px 9px; } /* v996: 패시브 박스가 토글박스에 가려지지 않게 아래 여유 */
+/* v996(사용자 지정): 카드 간격 최소, 왼쪽 카드 칸과 오른쪽 박스 사이 틈 없음 */
+#inventory-screen[data-tab="skill"] .skl-grid { gap: 0; }
+#inventory-screen[data-tab="skill"] .skl-body { gap: 0; }
+#inventory-screen[data-tab="skill"] .skl-left { gap: 2px; }
+/* v996(사용자 지정): 오른쪽 무기 이름 살짝 아래로 */
+#inventory-screen[data-tab="skill"] .skl-right-title { padding-top: 4px; box-sizing: border-box; }
+/* v996(사용자 지정): RARE·EPIC·LEGEND 이름판 줄 맞춤 — 그림마다 왕관 높이가 달라 판 가운데가 어긋나던 것(배지 폭 56% 기준으로 판 중심 맞춤) */
+#inventory-screen[data-tab="skill"] .skl-rar-epic .skl-badge { margin-top: -7.7%; }
+#inventory-screen[data-tab="skill"] .skl-rar-legend .skl-badge { margin-top: -4.6%; }
+/* v996(사용자 지정): 스킬 이름·보유 수량 위로 */
+#inventory-screen[data-tab="skill"] .skl-rcard .skl-card-name, #inventory-screen[data-tab="skill"] .skl-rcard .skl-card-qty { top: -6px; }
+/* v996(사용자 지정): 코스튬 광고판 볼트 동그랗게 — 늘이지 않고 끝 조각 고정, 가운데만 늘림 */
+#inventory-screen[data-tab="costume"] > .inv-cos-logo { background: none; border: 0 solid transparent; border-image: url('assets/costume2/sign.png') 28 96 32 96 fill / 9px 30px 10px 30px stretch; }
+/* v996(사용자 지정): 무기·코스튬 배경 좌우 등불이 밝아졌다 어두워졌다(배경 그림 등불 위치 16.6%/82.8%, 7%) */
+#inventory-screen[data-tab="costume"]::after, #inventory-screen[data-tab="weapon"]::after { display: block; content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; mix-blend-mode: screen;
+  background: radial-gradient(70px 70px at 16.6% 6.5%, rgba(255, 236, 160, 1) 0%, rgba(255, 190, 70, 0.75) 25%, rgba(255, 150, 40, 0.25) 60%, rgba(255, 150, 40, 0) 100%),
+              radial-gradient(70px 70px at 82.8% 6.5%, rgba(255, 236, 160, 1) 0%, rgba(255, 190, 70, 0.75) 25%, rgba(255, 150, 40, 0.25) 60%, rgba(255, 150, 40, 0) 100%);
+  animation: inv-lantern 2.6s ease-in-out infinite; }
+@keyframes inv-lantern { 0%, 100% { opacity: 0; } 45% { opacity: 1; } 55% { opacity: 0.8; } 62% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { #inventory-screen[data-tab="costume"]::after, #inventory-screen[data-tab="weapon"]::after { animation: none; opacity: 0.6; } }
+/* v996(사용자 지정): 무기 이름 나무 간판 — 등불 사이 선반 위, 카드 안 이름은 숨김 */
+#inventory-screen > .inv-wsign { position: absolute; z-index: 5; left: 50%; top: 5.2%; transform: translateX(-50%); width: 50%; height: 9%; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: center; padding-top: 2px; white-space: nowrap;
+  border: solid transparent; border-width: 0 26px; border-image: url('assets/skin2/rt-plank.png') 0 62 fill / 0 26px stretch;
+  font-family: 'Jua', sans-serif; font-size: 1.2rem; color: #fff; -webkit-text-stroke: 4px #4a2208; paint-order: stroke fill; pointer-events: none; }
+#inventory-screen > .inv-wsign[hidden] { display: none; }
+#inventory-screen > .inv-wsign.is-swap { animation: inv-wsign-swing 0.5s ease-out; transform-origin: 50% 0; }
+@keyframes inv-wsign-swing { 0% { transform: translateX(-50%) rotate(-5deg); } 45% { transform: translateX(-50%) rotate(3deg); } 75% { transform: translateX(-50%) rotate(-1deg); } 100% { transform: translateX(-50%) rotate(0); } }
+#inventory-screen[data-tab="weapon"] .inv-name { display: none; }
+/* v996(사용자 지정): 능력치 표와 설명 박스 사이 간격 */
+#inventory-screen[data-tab="weapon"] .inv-desc { margin-top: 8px; }
+/* v996(사용자 지정): 무기 이름판 높이 1.5배(가운데 높이 유지, 볼트 동그랗게 — 폭 기준 비율 고정) */
+#inventory-screen > .inv-wsign { top: 2.9%; height: auto; aspect-ratio: 3.25; border-width: 0 calc((100vw - 22px) * 0.0994); border-image-width: 0 calc((100vw - 22px) * 0.0994); font-size: 1.45rem; padding-top: 3px; }
+/* v996(사용자 지정): 능력치·설명 박스를 왼쪽 카드 BASIC 판보다 조금 아래로 */
+#inventory-screen[data-tab="weapon"] .inv-right { margin-top: 32px; }

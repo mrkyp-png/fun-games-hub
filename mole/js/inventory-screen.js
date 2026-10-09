@@ -62,6 +62,10 @@
     var bannerTxtEl = el.querySelector('[data-inv-banner-txt]');
     var bannerEl = el.querySelector('.inv-banner');
     var cosLogoEl = el.querySelector('.inv-cos-logo');
+    // v996(사용자 지정): 무기 탭 상단 등불 사이 = 무기 이름 나무 간판(넘기면 이름 바뀜)
+    var wSignEl = document.createElement('div');
+    wSignEl.className = 'inv-wsign'; wSignEl.hidden = true;
+    if (cosLogoEl) cosLogoEl.parentNode.insertBefore(wSignEl, cosLogoEl.nextSibling); else el.appendChild(wSignEl);
     var photoSearchBtn = el.querySelector('.inv-photo-search');
     if (photoSearchBtn) {
       photoSearchBtn.addEventListener('click', function () {
@@ -110,6 +114,8 @@
       // v855(사용자 지정): 바깥 창 색 = 보고 있는 무기 등급 색
       var box = el.querySelector('.inv-cards-box');
       if (box) box.setAttribute('data-rar', active === 'weapon' && WEAPONS[pageIdx] ? WEAPONS[pageIdx].rarity : '');
+      var nm = WEAPONS[pageIdx] ? nameOf(WEAPONS[pageIdx]) : '';
+      if (wSignEl.textContent !== nm) { wSignEl.textContent = nm; wSignEl.classList.remove('is-swap'); void wSignEl.offsetWidth; wSignEl.classList.add('is-swap'); }
     }
     // renderWeapons() 가 매번 grid 를 통째로 새로 만들기 때문에(body.innerHTML), 장착 버튼을
     // 눌러 재렌더될 때도 새 grid 는 항상 scrollLeft=0 에서 시작 — pageIdx 는 그대로 두고
@@ -383,7 +389,7 @@
     // 스킬 탭 — 메인화면.png 참고 + 사용자 지정(2026-09-26): 액티브/패시브를 탭 전환이 아니라
     // 좌측에 박스 2개(위=액티브, 아래=패시브)로 한 화면에 동시 표시 + 우측 무기 미리보기
     // (§10~11, §17~22, §41~42). 명세서: 바탕화면 "스킬 UI 및 에셋/명세서.txt".
-    var SKL_PER_PAGE = 4; // v995(스킬·무기 UI 2차 참조): 한 줄 4칸 (이전: 3칸, 2026-09-26 사용자 지정)
+    var SKL_PER_PAGE = 3; // 사용자 지정(2026-09-26, v996 재확인): 한 줄 3칸 — 카드/글자 크게
     function renderSkills() {
       var locked = !!(opts.gameInProgress && opts.gameInProgress());
       var weaponId = equipped();
@@ -896,6 +902,7 @@
       nextBtn.style.display = active === 'photo' ? 'none' : '';
       // 몰리그 전광판은 코스튬 탭에서만, 전체파란박스 밖(화면 최상단)에 표시.
       if (cosLogoEl) cosLogoEl.hidden = active !== 'costume';
+      wSignEl.hidden = active !== 'weapon';
       if (photoSearchBtn) photoSearchBtn.hidden = active !== 'photo';
       if (active === 'weapon') {
         renderWeapons();
