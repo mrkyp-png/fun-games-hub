@@ -6460,3 +6460,5 @@ html, body, .cosmic-bg { background: #2a190d; }
 .hm-sun { top: 56.9%; } /* v982(사용자 지정): 해바라기 두더지 살짝 아래로 — 몸 아래가 앞 턱 뒤로 */
 /* v988(사용자 지정): 일일·주간 탭 바꿀 때 목록 길이 차이로 화면(세로 가운데 정렬)이 위아래로 움직여 제목 높이가 달라지던 것 — 페이지 높이 고정(현재 일일 높이) */
 .qs-screen:not([data-mode="ach"]) .qs-stage { height: min(100%, calc(var(--w) * 1.962)); }
+/* v990(사용자 지정): 아케이드 1번 그림 교체(두더지 얼굴 크게) — 반짝이를 얼굴 피해 뒤 별 배경(위 양쪽 모서리)으로 */
+.hg-spark--a { left: 2%; top: 0%; } .hg-spark--b { left: 85%; top: 2%; } .hg-spark--c { left: 57%; top: -2%; }
