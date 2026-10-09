@@ -128,7 +128,7 @@
       'mole.cos.owned': '보유',
       'mole.cos.notOwned': '미보유',
       'mole.cos.equip': '미착용',
-      'mole.cos.equipped': '착용',
+      'mole.cos.equipped': '착용중', // v991: 목표 코스튬 UI
       'mole.cos.effectTitle': '코스튬 효과',
       'mole.cos.effectName': '두더지 하강 딜레이',
       'mole.cos.acquireLine': '획득방법 : 이벤트, 상점에서 구입 가능',

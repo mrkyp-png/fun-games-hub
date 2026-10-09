@@ -3,7 +3,7 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-const CACHE = 'mole-game-v990';
+const CACHE = 'mole-game-v991';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -62,11 +62,20 @@ const SHELL = [
   './assets/costume/emblem-cap-mount_stars.png',
   './assets/costume/emblem-cap-sun_giants.png',
   './assets/costume/emblem-cap-cloud_cups.png',
-  './assets/costume/bg-blue_bears.png',
-  './assets/costume/bg-red_wings.png',
-  './assets/costume/bg-mount_stars.png',
-  './assets/costume/bg-sun_giants.png',
-  './assets/costume/bg-cloud_cups.png',
+  './assets/costume2/card-blue_bears.jpg',
+  './assets/costume2/card-red_wings.jpg',
+  './assets/costume2/card-mount_stars.jpg',
+  './assets/costume2/card-sun_giants.jpg',
+  './assets/costume2/card-cloud_cups.jpg',
+  './assets/costume2/bg-cabin.jpg',
+  './assets/costume2/sign.png',
+  './assets/costume2/tab-frame.png',
+  './assets/costume2/tab-green.png',
+  './assets/costume2/tab-blue.png',
+  './assets/costume2/box-frame-s.png',
+  './assets/costume2/box-frame-w.png',
+  './assets/costume2/leather-w.png',
+  './assets/costume2/parchment.png',
   './assets/costume/logo.png',
   './assets/costume/bg-stadium.jpg',
   './assets/costume/clock.png',

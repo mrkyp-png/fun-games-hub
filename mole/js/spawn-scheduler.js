@@ -221,9 +221,10 @@
         return { type: 'mole', regionId: pop.regionId, ignored: true, xFrac: pop.x, yFrac: pop.y };
       }
 
-      // v975(사용자 지정): 골드해머 지진이 처리한 칸은 연출(0.64초) 동안 유저가 눌러도 무시 —
+      // v975(사용자 지정): 골드해머 지진이 처리한 칸은 유저가 눌러도 무시 —
       // 분신 망치가 날아가는 중이라 두더지·초록 버튼이 아직 보여서 누르면 헛방으로 콤보가 끊기던 것.
-      if (!isAuto && pop.quakeAt && performance.now() - pop.quakeAt < 640) {
+      // v991: 0.64초 → 두더지가 완전히 사라질 때까지(분신 비행+내려가는 0.6초 동안에도 보여서 여전히 끊겼음)
+      if (!isAuto && pop.quakeAt) {
         return { type: 'mole', regionId: pop.regionId, ignored: true, xFrac: pop.x, yFrac: pop.y };
       }
       // 저글 보너스(스펙 2026-09-04 §4): 1방 두더지를 잡은 뒤 내려가는 창에 한 번 더 맞히면
@@ -279,6 +280,11 @@
         const r = resolveOne(pop, opts);
         if (r) out.push(r);
       });
+      // v991(사용자 지정): 지진 진행 중(0.64초 잠금) 그 범위의 빈 칸이 같이 깜빡여 누르면 헛방으로 콤보가 끊기던 것 — 무시
+      if (!out.length && !(opts && (opts.quake || opts.burst)) && lockedMoleRegionCounts.has(regionId)) {
+        const sp = spawnPoints.find((p) => p.regionId === regionId);
+        out.push({ type: 'mole', regionId, ignored: true, xFrac: sp ? sp.x : 0.5, yFrac: sp ? sp.y : 0.5 });
+      }
       return out;
     }
 

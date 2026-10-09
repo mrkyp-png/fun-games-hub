@@ -317,9 +317,9 @@
         wrap.type = 'button';
         wrap.className = 'cos-card-wrap' + (selected ? ' cos-card-wrap--sel' : '') + (owned ? '' : ' cos-card-wrap--locked');
         wrap.innerHTML =
-          '<img class="cos-card-emblem" alt="" src="assets/costume/emblem-' + team.id + '.png">' +
+          '<img class="cos-card-emblem" alt="" src="assets/costume/emblem-cap-' + team.id + '.png">' + // v991: 큰 팀 글자 로고(목표 UI)
           '<span class="cos-card">' +
-            '<img class="cos-card-bg" alt="" src="assets/costume/bg-' + team.id + '.png">' +
+            '<img class="cos-card-bg" alt="" src="assets/costume2/card-' + team.id + '.jpg">' +
             '<img class="cos-card-char" alt="" src="assets/costume/char-' + team.id + '-detail.png">' +
             (owned ? '<span class="cos-card-check">✓</span>' : '<span class="cos-card-lock">🔒</span>') +
           '</span>';
@@ -338,7 +338,7 @@
       var name = (I18N.lang === 'en' ? team.nameEn : team.nameKo);
       var effectVal = (MG.CostumeTeams.BASE_EFFECT_VALUE * MG.CostumeTeams.upgradeLevel(id)).toFixed(1);
       detail.innerHTML =
-        '<div class="cos-detail-char-wrap"><img class="cos-detail-char" alt="" src="assets/costume/char-' + id + '-detail.png"></div>' +
+        '<div class="cos-detail-char-wrap"><img class="cos-detail-bg" alt="" src="assets/costume2/card-' + id + '.jpg"><img class="cos-detail-char" alt="" src="assets/costume/char-' + id + '-detail.png"></div>' +
         '<div class="cos-detail-mid">' +
           '<div class="cos-detail-name-row"><img class="cos-detail-emblem" alt="" src="assets/costume/emblem-cap-' + id + '.png"><span class="cos-detail-name"></span></div>' +
           '<div class="cos-detail-effect">' +
@@ -858,6 +858,7 @@
     }
 
     function paint() {
+      el.setAttribute('data-tab', active); // v991: 코스튬 UI 2차 — 탭별 배경(CSS)
       renderTabs();
       // v860: 무기 탭에서 넘어올 때 등급 창 색(data-rar)이 남아 코스튬·사진관 배경을 덮던 버그 — 탭 바뀌면 항상 초기화
       var rbox = el.querySelector('.inv-cards-box'); if (rbox) rbox.setAttribute('data-rar', '');
