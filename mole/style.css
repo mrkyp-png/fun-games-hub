@@ -6668,3 +6668,31 @@ html, body, .cosmic-bg { background: #2a190d; }
 #inventory-screen > .inv-wsign { top: 2.9%; height: auto; aspect-ratio: 3.25; border-width: 0 calc((100vw - 22px) * 0.0994); border-image-width: 0 calc((100vw - 22px) * 0.0994); font-size: 1.45rem; padding-top: 3px; }
 /* v996(사용자 지정): 능력치·설명 박스를 왼쪽 카드 BASIC 판보다 조금 아래로 */
 #inventory-screen[data-tab="weapon"] .inv-right { margin-top: 32px; }
+/* v997(사용자 지정): 오른쪽 장착 칸 — 크림 박스가 나무 틀과 겹치지 않게 틀 안쪽에, 슬롯은 크게·정중앙 */
+#inventory-screen[data-tab="skill"] .skl-right-panel { padding: 3px 3px; gap: 4px; }
+#inventory-screen[data-tab="skill"] .skl-right-imgwrap, #inventory-screen[data-tab="skill"] .skl-right-sec { margin: 0; }
+#inventory-screen[data-tab="skill"] .skl-right-imgwrap { flex: 1 1 0; }
+#inventory-screen[data-tab="skill"] .skl-right-sec { display: flex; flex-direction: column; }
+#inventory-screen[data-tab="skill"] .skl-right-lbl { margin-bottom: 2px; }
+#inventory-screen[data-tab="skill"] .skl-right-icons { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; gap: 4px; }
+#inventory-screen[data-tab="skill"] .skl-right-icons--grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); align-content: center; justify-items: center; align-items: center; }
+#inventory-screen[data-tab="skill"] .skl-mini { flex: 0 1 auto; width: auto; height: 100%; max-width: 48%; max-height: 100%; aspect-ratio: 1; }
+#inventory-screen[data-tab="skill"] .skl-right-icons--grid2 .skl-mini { height: 100%; max-width: 100%; }
+#inventory-screen[data-tab="skill"] .skl-right-imgwrap, #inventory-screen[data-tab="skill"] .skl-right-sec { border-width: 9px !important; border-image-width: 9px !important; }
+#inventory-screen[data-tab="skill"] .skl-mini { height: auto; width: calc(50% - 2px); max-width: none; max-height: 100%; aspect-ratio: 1; }
+#inventory-screen[data-tab="skill"] .skl-right-icons--grid2 .skl-mini { width: auto; height: 100%; max-width: 100%; }
+/* v997(사용자 지정): 장착돼도 글로우·튀는 효과 없이 같은 칸에 스킬 아이콘만 */
+#inventory-screen[data-tab="skill"] .skl-mini.skl-mini--rare, #inventory-screen[data-tab="skill"] .skl-mini.skl-mini--epic, #inventory-screen[data-tab="skill"] .skl-mini.skl-mini--legend { box-shadow: none; animation: none; border-radius: 4px; }
+#inventory-screen[data-tab="skill"] .skl-mini.is-pop { animation: none; }
+#inventory-screen[data-tab="skill"] .skl-mini::before { display: none; }
+#inventory-screen[data-tab="skill"] .skl-mini img { width: 78%; height: 78%; margin: 11%; object-fit: contain; }
+#inventory-screen[data-tab="skill"] .skl-mini.skl-mini--rare, #inventory-screen[data-tab="skill"] .skl-mini.skl-mini--epic, #inventory-screen[data-tab="skill"] .skl-mini.skl-mini--legend { background: none; }
+#inventory-screen[data-tab="skill"] .skl-mini img { width: 96%; height: 96%; margin: 2%; }
+/* v997(사용자 지정): 액티브/패시브 이름판 — 아이콘 삭제, 글자가 판 안에 다 들어가게 */
+#inventory-screen[data-tab="skill"] .skl-head-ico { display: none; }
+#inventory-screen[data-tab="skill"] .skl-plank { justify-content: center; }
+#inventory-screen[data-tab="skill"] .skl-left-title { flex: 0 0 auto; overflow: visible; }
+#inventory-screen[data-tab="skill"] .skl-mini img { transform: scale(1.3); } /* 스킬 아이콘 그림 여백이 커서 칸에 맞게 확대 */
+#inventory-screen[data-tab="skill"] .skl-mini { overflow: hidden; }
+/* v997(사용자 지정): 전체 박스 조금 아래로, 토글박스와 안 겹치게 */
+#inventory-screen[data-tab="skill"] .skl-wrap { margin: 11px 10px 8px; }

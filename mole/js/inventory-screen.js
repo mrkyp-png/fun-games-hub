@@ -428,6 +428,10 @@
       renderSkillRight(weaponId, weapon, lo, slots);
       // v995: 카드 4칸이라 좁음 — 스킬 이름이 "…"로 잘리지 않게 넘치면 글자 폭만 줄여 한 줄
       requestAnimationFrame(function () {
+        body.querySelectorAll('.skl-left-title').forEach(function (t) { // v997: 이름판 안에 글자 다 들어가게 폭만 줄임
+          var room = t.parentNode.clientWidth - 4;
+          if (t.scrollWidth > room) { t.style.display = 'inline-block'; t.style.transformOrigin = '50% 50%'; t.style.transform = 'scaleX(' + Math.max(room / t.scrollWidth, 0.5).toFixed(3) + ')'; }
+        });
         body.querySelectorAll('.skl-card-name').forEach(function (n) {
           if (!n.clientWidth || n.scrollWidth <= n.clientWidth) return;
           n.innerHTML = '<span style="display:inline-block;transform-origin:0 50%;transform:scaleX(' + Math.max(n.clientWidth / n.scrollWidth, 0.55).toFixed(3) + ')">' + n.innerHTML + '</span>';
