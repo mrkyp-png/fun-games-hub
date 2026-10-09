@@ -47,7 +47,7 @@
   var WEAPONS = [
     { id: 'cannon', ko: '팡팡 캐논', en: 'Pang Pang Cannon', img: A + 'w-cannon.png', done: A + 'w-cannon-front.png' },
     { id: 'goldhammer', ko: '골드 묠니르', en: 'Gold Mjolnir', img: A + 'w-goldhammer.png', done: A + 'w-goldhammer.png' },
-    { id: 'alipunch', ko: '알리 판취', en: 'Ali Punch', img: A + 'w-alipunch.png', done: A + 'w-alipunch.png' } // 글러브 두 짝 — v891: 여백 잘라 캐논과 비슷한 크기(사용자 지정)
+    { id: 'alipunch', ko: '킹 판취', en: 'King Punch', img: A + 'w-alipunch.png', done: A + 'w-alipunch.png' } // 글러브 두 짝 — v891: 여백 잘라 캐논과 비슷한 크기(사용자 지정)
   ];
 
   // ---- 저장(단일 기준값) ----

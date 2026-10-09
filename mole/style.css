@@ -6696,3 +6696,15 @@ html, body, .cosmic-bg { background: #2a190d; }
 #inventory-screen[data-tab="skill"] .skl-mini { overflow: hidden; }
 /* v997(사용자 지정): 전체 박스 조금 아래로, 토글박스와 안 겹치게 */
 #inventory-screen[data-tab="skill"] .skl-wrap { margin: 11px 10px 8px; }
+/* v998(사용자 지정): 오른쪽 장착 슬롯 최대한 크게 — 무기 그림 칸 줄이고 테두리·여백 최소 */
+#inventory-screen[data-tab="skill"] .skl-right-panel { padding: 2px 1px; gap: 3px; }
+#inventory-screen[data-tab="skill"] .skl-right-imgwrap { flex: 0.62 1 0; }
+#inventory-screen[data-tab="skill"] .skl-right-imgwrap, #inventory-screen[data-tab="skill"] .skl-right-sec { border-width: 7px !important; border-image-width: 7px !important; }
+#inventory-screen[data-tab="skill"] .skl-right-sec { padding: 0 1px 1px; }
+#inventory-screen[data-tab="skill"] .skl-right-lbl { margin-bottom: 1px; font-size: 0.46rem; }
+#inventory-screen[data-tab="skill"] .skl-right-icons { gap: 3px; }
+#inventory-screen[data-tab="skill"] .skl-right-icons--grid2 { gap: 3px; }
+#inventory-screen[data-tab="skill"] .skl-mini { width: calc(50% - 1.5px); }
+#inventory-screen[data-tab="skill"] .skl-right-icons--grid2 .skl-mini { width: 100%; height: auto; max-height: 100%; aspect-ratio: 1; }
+/* v998: 오른쪽 패널 틀 — 그림에 그려진 크림 칸이 틀 조각에 딸려와 박스 아래 겹쳐 보이던 것 → 크림 앞에서 자름(가로세로 같은 배율 0.4) */
+#inventory-screen[data-tab="skill"] .skl-right-panel { border-width: 21px 11px 15px; border-image: url('assets/skin2/rt-panel.png') 52 27 37 27 / 21px 11px 15px stretch; background: #6e2a05 padding-box; }
