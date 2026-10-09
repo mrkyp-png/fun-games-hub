@@ -203,6 +203,16 @@
         });
       }
       list.innerHTML = html;
+      // v989(사용자 지정): 설명이 끝 몇 글자("요." 등) 때문에 두 줄 되면 글자 폭을 가로로 줄여 한 줄로(최소 75%, 그래도 넘치면 두 줄 그대로)
+      requestAnimationFrame(function () {
+        el.querySelectorAll('.qs-mid .qs-desc, .qs-all-txt > span').forEach(function (d) {
+          if (!d.clientWidth) return;
+          d.style.whiteSpace = 'nowrap';
+          var k = d.clientWidth / d.scrollWidth;
+          if (k >= 1 || k < 0.75) { d.style.whiteSpace = ''; return; }
+          d.innerHTML = '<span style="display:inline-block;transform:scaleX(' + (k - 0.005).toFixed(3) + ');transform-origin:0 50%">' + d.innerHTML + '</span>';
+        });
+      });
       if (fill) { // v900: 진행 막대 0 → 현재 값까지 차오르기
         var bars = list.querySelectorAll('.qs-bar > i'), ws = [];
         bars.forEach(function (b) { ws.push(b.style.width); b.style.width = '0%'; });
