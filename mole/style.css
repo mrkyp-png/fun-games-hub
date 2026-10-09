@@ -6466,9 +6466,17 @@ html, body, .cosmic-bg { background: #2a190d; }
 /* 토글버튼 = 나무 틀 + 초록 버튼, 선택 = 파란 네온 버튼 — 아이템·상점 공통(사용자 지정: "여기서 셋팅되면 다른곳도 동일") */
 .inv-tab, .shop-tab { border: 9px solid transparent !important; border-image: url('assets/costume2/tab-frame.png') 50 / 9px stretch !important; border-radius: 0;
   outline: none; box-shadow: none; overflow: visible; padding-top: 0; padding-bottom: 0;
-  background: url('assets/costume2/tab-green.png') center / calc(100% - 9px) calc(100% - 9px) no-repeat !important; background-origin: border-box !important; background-clip: border-box !important; }
-.inv-tabbar, .shop-tabbar { padding-top: 3px; padding-bottom: 3px; gap: 2px; }
-.inv-tab--on, .shop-tab--on { background-image: url('assets/costume2/tab-blue.png') !important; filter: drop-shadow(0 0 4px rgba(90, 200, 255, 0.9)); }
+  background: url('assets/costume2/tab-green.png') center / calc(100% - 4px) calc(100% - 4px) no-repeat, linear-gradient(180deg, #30ef6e, #04b954 55%, #037735) !important;
+  background-origin: border-box, padding-box !important; background-clip: border-box, padding-box !important; } /* 둥근 모서리 틈도 같은 색으로 꽉(v992) */
+.inv-tabbar, .shop-tabbar { padding-top: 3px; padding-bottom: 3px; gap: 0; }
+/* v992(사용자 지정): 누르면 나무 틀은 그대로, 안의 버튼만 눌림(작아지며 살짝 아래로) */
+.inv-tab, .shop-tab { transition: background-size 0.08s ease, background-position 0.08s ease !important; }
+.inv-tab:active, .shop-tab:active { transform: none !important; } /* v992: 버튼은 틀에 꽉 찬 채로 — 크기 안 줄이고 안쪽만 어둡게 눌림 */
+.inv-tab:active::before, .shop-tab:active::before { display: block; content: ''; position: absolute; inset: 0; left: 0; right: 0; top: 0; height: auto; z-index: 1; pointer-events: none;
+  border-radius: 0; background: rgba(0, 0, 0, 0.16); box-shadow: inset 0 5px 7px rgba(0, 0, 0, 0.45); }
+.inv-tab > *, .shop-tab > * { transition: transform 0.08s ease; }
+.inv-tab:active > *, .shop-tab:active > * { transform: translateY(2px) scale(0.92); }
+.inv-tab--on, .shop-tab--on { background-image: url('assets/costume2/tab-blue.png'), linear-gradient(180deg, #02c1fc, #0071fb 55%, #0049fb) !important; filter: drop-shadow(0 0 4px rgba(90, 200, 255, 0.9)); }
 .inv-tab::before, .shop-tab::before, .inv-tab::after, .shop-tab::after { display: none; }
 /* 코스튬 탭 배경 = 나무 오두막(선반·랜턴·모자·야구공) */
 #inventory-screen[data-tab="costume"]::before { inset: 0; border-image: none; border-width: 0; background: url('assets/costume2/bg-cabin.jpg') center top / 100% 100% no-repeat; filter: none; }
@@ -6489,12 +6497,18 @@ html, body, .cosmic-bg { background: #2a190d; }
 /* 상세: 왼쪽 = 나무 틀 + 팀 경기장 + 캐릭터, 오른쪽 = 나뭇잎 나무 틀 + 가죽 */
 #inventory-screen[data-tab="costume"] .cos-detail { position: relative; background: none; border: 0; box-shadow: none; border-radius: 0; gap: 0; padding: 0; min-height: 30%; }
 #inventory-screen[data-tab="costume"] .cos-detail::before { content: ''; position: absolute; left: 29%; right: 0; top: 0; bottom: 0; z-index: 0;
-  border: 12px solid transparent; border-image: url('assets/costume2/box-frame-w.png') 60 / 12px stretch;
-  background: url('assets/costume2/leather-w.png') center / 100% 100% no-repeat; background-clip: padding-box; }
+  border: 12px solid transparent; border-image: url('assets/costume2/box-frame-s.png') 50 / 12px stretch; /* v992: 잎 달린 틀은 오른쪽 변에 잎이 길게 늘어나서 → 잎 없는 틀 + 잎 따로 */
+  background: url('assets/costume2/leather-w.png') center / calc(100% - 10px) calc(100% - 10px) no-repeat; background-origin: border-box; background-clip: border-box; }
+#inventory-screen[data-tab="costume"] .cos-detail::after { content: ''; position: absolute; left: 29%; right: 0; top: 0; bottom: 0; z-index: 2; pointer-events: none;
+  background: url('assets/costume2/leaf-a.png') left 3px top 3px / 24px auto no-repeat, url('assets/costume2/leaf-b.png') right 2px top 2px / 24px auto no-repeat; }
 #inventory-screen[data-tab="costume"] .cos-detail > * { position: relative; z-index: 1; }
-#inventory-screen[data-tab="costume"] .cos-detail-char-wrap { width: 28%; margin: 0 1% 0 0; box-sizing: border-box; overflow: hidden;
+#inventory-screen[data-tab="costume"] .cos-detail-char-wrap { width: 28%; margin: 0 1% 0 0; box-sizing: border-box; overflow: hidden; }
+#inventory-screen[data-tab="costume"] .cos-detail-char-wrap::after { content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none;
   border: 10px solid transparent; border-image: url('assets/costume2/box-frame-s.png') 50 / 10px stretch; }
-#inventory-screen[data-tab="costume"] .cos-detail-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+#inventory-screen[data-tab="costume"] .cos-detail-bg { position: absolute; inset: 4px; width: calc(100% - 8px); height: calc(100% - 8px); object-fit: cover; }
+#inventory-screen[data-tab="costume"] .cos-detail-char { z-index: 2; width: auto; height: calc(100% - 14px); max-width: 92%; object-fit: contain; object-position: 50% 100%; bottom: 7px; } /* 액자 높이에 맞춰 — 모자가 위로 안 잘리게 */
+#inventory-screen[data-tab="costume"] .cos-detail-char[src*="mount_stars"] { scale: 0.95; transform-origin: 50% 100%; } /* v992: 모자 잘림 → 5% 작게 */
+#inventory-screen[data-tab="costume"] .inv-body { overflow: hidden; }
 #inventory-screen[data-tab="costume"] .cos-detail-mid { padding: 12px 0 10px 14px; gap: 4px; justify-content: flex-start; }
 #inventory-screen[data-tab="costume"] .cos-detail-emblem { width: 30px; height: 30px; }
 #inventory-screen[data-tab="costume"] .cos-detail-name { font-family: 'Jua', sans-serif; font-weight: 400; font-size: 1.15rem; color: #fff; -webkit-text-stroke: 3px #2a1406; paint-order: stroke fill; }
@@ -6505,8 +6519,14 @@ html, body, .cosmic-bg { background: #2a190d; }
 #inventory-screen[data-tab="costume"] .cos-detail-effect-val { color: #e0201a; }
 #inventory-screen[data-tab="costume"] .cos-detail-acquire { color: #fff3d6; opacity: 1; display: flex; align-items: center; gap: 4px; }
 #inventory-screen[data-tab="costume"] .cos-detail-acquire::before { content: ''; flex: 0 0 auto; width: 12px; height: 12px; background: url('assets/costume/trophy.png') center / contain no-repeat; }
-#inventory-screen[data-tab="costume"] .cos-detail-btn { flex: 0 0 22%; margin-right: 12px; border-radius: 14px; font-family: 'Jua', sans-serif; font-weight: 400; font-size: 0.85rem; color: #fff;
+#inventory-screen[data-tab="costume"] .cos-detail-btn { flex: 0 0 19%; margin: 0 16px 0 6px; font-size: 0.78rem !important; border-radius: 14px; font-family: 'Jua', sans-serif; font-weight: 400; font-size: 0.85rem; color: #fff;
   background: linear-gradient(180deg, #3fd86a, #1fa848); border: 2px solid #e8ffe8; box-shadow: 0 3px 0 #146b30; -webkit-text-stroke: 2px #145a28; paint-order: stroke fill; }
 #inventory-screen[data-tab="costume"] .cos-detail-btn:disabled { opacity: 1; background: linear-gradient(180deg, #c9c9c9, #8e8e8e); border-color: #f2f2f2; box-shadow: 0 3px 0 #5c5c5c; -webkit-text-stroke-color: #555; }
 #inventory-screen[data-tab="costume"] .cos-detail-btn { gap: 3px; }
 #inventory-screen[data-tab="costume"] .cos-detail-btn::before { content: ''; flex: 0 0 auto; width: 20px; height: 20px; background: url('assets/costume/tshirt.png') center / contain no-repeat; }
+/* v992(사용자 지정): 카드·상세 사진·상세 설명 박스를 나무 테두리 안쪽, 토글박스 좌우 끝에 맞춤(토글바 padding 10px) */
+#inventory-screen[data-tab="costume"] .cos-wrap { width: calc(100% - 20px); }
+#inventory-screen[data-tab="costume"] .cos-cards { padding-left: 0; padding-right: 0; }
+#inventory-screen[data-tab="costume"] .cos-detail-effect { padding-left: 7px; padding-right: 7px; }
+#inventory-screen[data-tab="costume"] .cos-detail-effect-row { padding: 3px 4px; gap: 2px; letter-spacing: -0.03em; }
+#inventory-screen[data-tab="costume"] .cos-card-char[src*="red_wings"] { width: 100%; } /* v992: 공 안 잘리게 다시 오린 그림(폭 360→376) — 다른 팀과 같은 크기로 */
