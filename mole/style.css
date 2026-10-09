@@ -6708,3 +6708,6 @@ html, body, .cosmic-bg { background: #2a190d; }
 #inventory-screen[data-tab="skill"] .skl-right-icons--grid2 .skl-mini { width: 100%; height: auto; max-height: 100%; aspect-ratio: 1; }
 /* v998: 오른쪽 패널 틀 — 그림에 그려진 크림 칸이 틀 조각에 딸려와 박스 아래 겹쳐 보이던 것 → 크림 앞에서 자름(가로세로 같은 배율 0.4) */
 #inventory-screen[data-tab="skill"] .skl-right-panel { border-width: 21px 11px 15px; border-image: url('assets/skin2/rt-panel.png') 52 27 37 27 / 21px 11px 15px stretch; background: #6e2a05 padding-box; }
+/* v999(사용자 지정): 무기 카드 안 좌우 여백 같게(왼쪽 23px·오른쪽 14px → 양쪽 19px) */
+#inventory-screen[data-tab="weapon"] .inv-left { margin-left: -4px; }
+#inventory-screen[data-tab="weapon"] .inv-right { margin-right: 5px; }
