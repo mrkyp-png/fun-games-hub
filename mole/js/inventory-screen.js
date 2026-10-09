@@ -135,6 +135,7 @@
       for (var i = 0; i < n; i++) {
         var d = document.createElement('span');
         d.className = 'inv-dot';
+        (function (k) { d.addEventListener('click', function () { goTo(k); }); })(i); // v1001: 점 눌러 이동
         dotsEl.appendChild(d);
       }
       syncDots();
@@ -645,6 +646,7 @@
         slot.type = 'button';
         slot.className = 'ph2-slot' + (sel ? ' is-sel' : '');
         slot.innerHTML =
+          '<img class="ph2-cbg" alt="" src="assets/costume2/card-' + photoCostumeId + '.jpg">' + // v1001(사용자 지정): 카드 안 = 고른 팀 경기장
           '<img class="ph2-card" alt="" src="assets/photo2/card-' + (sel ? 'gold' : 'blue') + '.png">' +
           '<span class="ph2-name"></span>' +
           '<img class="ph2-char' + (completed ? '' : ' photo-slot-img--locked') + '" alt="" src="' + PS.imageFor(id) + '">' +

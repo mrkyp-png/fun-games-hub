@@ -6753,3 +6753,74 @@ html, body, .cosmic-bg { background: #2a190d; }
 .photo-coll-card > .ph2-cframe { position: absolute; inset: -2px; z-index: 3; pointer-events: none; border: 7px solid transparent; border-image: url('assets/photo2/coll-card.png') 22 19 22 18 / 7px stretch; }
 .photo-coll-card.is-done::after { inset: -2px; border-radius: 0; }
 .inv-stat-line { display: block; white-space: nowrap; transform-origin: 0 50%; width: max-content; } /* v1000: 능력치 줄 한 줄 유지 */
+/* v1001(사용자 지정): 사진 카드 3장 좌우 폭 줄임, 캐릭터는 원반 위에 */
+.ph2-slots { align-items: center; gap: 6px; }
+.ph2-slot { height: auto; width: 23%; max-height: 100%; }
+.ph2-char { bottom: 30%; height: 52%; }
+/* v1001(사용자 지정, 참조 "사진관 화면.png"): 큰 나무 액자 폭 = 화면의 약 82%(가운데), 받침대 86%, 카드 3장은 액자 안을 꽉 채움 */
+.ph2-frame { flex: 0 0 auto; width: 82%; height: 64%; margin: 22px auto 0; }
+.ph2-stand { width: 88%; margin-top: -6px; }
+.ph2-slots { inset: -4px -2px -2px; gap: 3px; align-items: stretch; }
+.ph2-slot { width: auto; height: 100%; max-width: 33%; }
+.ph2-emb { flex-basis: 17.5%; }
+.ph2-embs { padding: 0 8px; margin-top: -40px; }
+.ph2-frame { margin-top: 14px; }
+.ph2-char { height: 60%; left: 2%; width: 96%; }
+.ph2-frame { height: 59%; }
+.ph2-stand { width: 86%; margin-top: -8px; }
+/* v1001(사용자 지정): 사진관 뒷배경 = 컬렉션과 같은 나무판 오두막, 카드 안 = 고른 팀 경기장 */
+#inventory-screen[data-tab="photo"]::before { background: url('assets/photo2/coll-bg.jpg') center top / 100% 100% no-repeat; }
+.ph2-cbg { position: absolute; left: 7%; right: 7%; top: 4%; bottom: 34%; width: 86%; height: 62%; object-fit: cover; z-index: 0; }
+.ph2-card { z-index: 0; }
+.ph2-emb.is-on img { filter: drop-shadow(0 0 3px #fff3a0) drop-shadow(0 0 8px #ffd23c) drop-shadow(0 0 14px rgba(255, 200, 40, 0.9)); } /* 나무 배경에서도 선택 팀이 잘 보이게 */
+/* v1001(사용자 지정): 돋보기는 원래 자리(오른쪽 위) — 엠블럼 폭 줄이고 조금 아래로 내려 겹침 없앰 */
+.ph2-embs { padding: 0 44px; margin-top: -18px; }
+.ph2-emb { flex-basis: 16.5%; }
+.ph2-frame { margin-top: 8px; }
+/* v1001(사용자 지정): 무기 화면 좌우 화살표 삭제 → 액자 안 왼쪽 위 점(누르면 이동, 손으로 밀어도 이동) */
+#inventory-screen[data-tab="weapon"] .inv-arrow { display: none !important; }
+#inventory-screen[data-tab="weapon"] .inv-cards-box { position: relative; }
+#inventory-screen[data-tab="weapon"] .inv-cards-head { display: flex !important; position: absolute; left: 20px; top: 17px; z-index: 30; min-height: 0; padding: 0; }
+#inventory-screen[data-tab="weapon"] .inv-dots { gap: 6px; }
+#inventory-screen[data-tab="weapon"] .inv-dot { width: 9px; height: 9px; cursor: pointer; background: rgba(255, 230, 190, 0.45); box-shadow: 0 0 0 1.5px rgba(60, 25, 5, 0.8); transition: transform 0.15s ease; }
+#inventory-screen[data-tab="weapon"] .inv-dot--on { background: #ffd23c; transform: scale(1.35); box-shadow: 0 0 0 1.5px #6b3a00, 0 0 6px rgba(255, 210, 60, 0.9); }
+#inventory-screen[data-tab="weapon"] .inv-cards-head { top: 26px; left: 24px; } /* v1001: 점이 액자 테두리에 걸치지 않게 안쪽으로 */
+/* v1001(사용자 지정 1번): 액자를 받침대 위에 바로 올리고 그림자 — 떠 보이지 않게 */
+.ph2-frame { filter: drop-shadow(0 6px 5px rgba(30, 10, 0, 0.55)) drop-shadow(0 0 10px rgba(30, 10, 0, 0.35)); }
+.ph2-stand { position: relative; z-index: 0; width: 92%; margin-top: -20px; filter: drop-shadow(0 8px 6px rgba(25, 8, 0, 0.7)); }
+.ph2-stand::after { content: ''; position: absolute; left: 4%; right: 4%; top: 88%; height: 16px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 0%, rgba(20, 6, 0, 0.6), rgba(20, 6, 0, 0) 70%); }
+/* v1001(사용자 지정): 점은 카드(배지·무기) 아래 층 — 카드 바탕색을 상자로 옮기고 카드는 투명하게 */
+#inventory-screen[data-tab="weapon"] .inv-cards-box, #inventory-screen[data-tab="weapon"] .inv-cards-box[data-rar] { background: #3b2212 !important; background-clip: border-box !important; }
+#inventory-screen[data-tab="weapon"] .inv-card { background: transparent !important; }
+#inventory-screen[data-tab="weapon"] .inv-cards-head { z-index: 1; }
+#inventory-screen[data-tab="weapon"] .inv-body { position: relative; z-index: 2; }
+/* v1001(사용자 지정): 왼쪽 무기 카드·오른쪽 능력치 전체 조금 아래로 */
+#inventory-screen[data-tab="weapon"] .inv-left, #inventory-screen[data-tab="weapon"] .inv-right { position: relative; top: 14px; }
+/* v1001(사용자 지정): 사진관 배경 = 코스튬 화면 배경, 받침대를 액자 아래로 — 액자가 받침대 윗면에 올려진 모습 */
+#inventory-screen[data-tab="photo"]::before { background: url('assets/costume2/bg-cabin.jpg') center top / 100% 100% no-repeat; }
+.ph2-frame { position: relative; z-index: 1; filter: drop-shadow(0 4px 3px rgba(30, 10, 0, 0.5)); }
+.ph2-stand { width: 96%; margin-top: -12px; z-index: 0; }
+/* v1001(사용자 지정) 사진관 애니메이션: ①배경 등불 깜빡임 ②액자 램프 빛 ③선택 카드 빛 지나가기 + 엠블럼 살짝 흔들림 */
+#inventory-screen[data-tab="photo"]::after { display: block; content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; mix-blend-mode: screen;
+  background: radial-gradient(70px 70px at 16.6% 6.5%, rgba(255, 236, 160, 1) 0%, rgba(255, 190, 70, 0.75) 25%, rgba(255, 150, 40, 0.25) 60%, rgba(255, 150, 40, 0) 100%),
+              radial-gradient(70px 70px at 82.8% 6.5%, rgba(255, 236, 160, 1) 0%, rgba(255, 190, 70, 0.75) 25%, rgba(255, 150, 40, 0.25) 60%, rgba(255, 150, 40, 0) 100%);
+  animation: inv-lantern 2.6s ease-in-out infinite; }
+.ph2-frame::after { content: ''; position: absolute; left: -22px; right: -22px; top: -40px; height: 150px; z-index: 3; pointer-events: none; mix-blend-mode: screen;
+  background: radial-gradient(60px 90px at 21% 32px, rgba(255, 230, 150, 0.75), rgba(255, 200, 90, 0.25) 45%, rgba(255, 180, 60, 0) 100%),
+              radial-gradient(60px 90px at 50% 32px, rgba(255, 230, 150, 0.75), rgba(255, 200, 90, 0.25) 45%, rgba(255, 180, 60, 0) 100%),
+              radial-gradient(60px 90px at 79% 32px, rgba(255, 230, 150, 0.75), rgba(255, 200, 90, 0.25) 45%, rgba(255, 180, 60, 0) 100%);
+  animation: ph2-lamp 3.4s ease-in-out infinite; }
+@keyframes ph2-lamp { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+.ph2-slot { overflow: hidden; }
+.ph2-slot.is-sel::after { content: ''; position: absolute; top: -10%; bottom: -10%; left: 0; width: 40%; z-index: 4; pointer-events: none;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 252, 220, 0.6), rgba(255, 255, 255, 0)); transform: translateX(-150%) skewX(-18deg);
+  animation: ph2-shine 3s ease-in-out infinite; }
+@keyframes ph2-shine { 0%, 55% { transform: translateX(-150%) skewX(-18deg); } 85%, 100% { transform: translateX(320%) skewX(-18deg); } }
+@keyframes ph2-sway { 0%, 100% { rotate: -2.2deg; } 50% { rotate: 2.2deg; } }
+@media (prefers-reduced-motion: reduce) { .ph2-frame::after, .ph2-slot.is-sel::after, .ph2-emb, #inventory-screen[data-tab="photo"]::after { animation: none; } }
+.ph2-frame::after { top: -20px; height: 170px;
+  background: radial-gradient(50px 90px at 21% 52px, rgba(255, 230, 150, 0.7), rgba(255, 200, 90, 0.22) 45%, rgba(255, 180, 60, 0) 100%),
+              radial-gradient(50px 90px at 50% 52px, rgba(255, 230, 150, 0.7), rgba(255, 200, 90, 0.22) 45%, rgba(255, 180, 60, 0) 100%),
+              radial-gradient(50px 90px at 79% 52px, rgba(255, 230, 150, 0.7), rgba(255, 200, 90, 0.22) 45%, rgba(255, 180, 60, 0) 100%);
+  -webkit-mask: linear-gradient(180deg, transparent 0, #000 30px); mask: linear-gradient(180deg, transparent 0, #000 30px); }
