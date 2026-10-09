@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>두더지팡!</title>
+<link rel="icon" href="icons/icon-192-hippo.png">
+<style>
+  /* PC 전용 액자 — 게임을 폰 폭(430px)으로 가운데 띄움 */
+  html, body { margin: 0; height: 100%; background: #111; overflow: hidden; }
+  iframe { display: block; margin: 0 auto; border: 0; width: min(430px, 100vw); height: 100vh; height: 100dvh; }
+</style>
+</head>
+<body>
+<iframe src="index.html" allow="fullscreen; autoplay; camera; microphone" allowfullscreen></iframe>
+<script>document.querySelector('iframe').src = 'index.html' + location.search + location.hash;</script>
+</body>
+</html>
