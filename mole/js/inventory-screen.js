@@ -121,6 +121,12 @@
     // 눌러 재렌더될 때도 새 grid 는 항상 scrollLeft=0 에서 시작 — pageIdx 는 그대로 두고
     // 즉시(비-스무스) 그 위치로 복원해야 "장착 누르면 뿅망치 화면으로 튕김" 버그가 안 생긴다
     // (사용자 보고: "장착 버튼 누르면 뿅망치 화면나오고 장착이 안됨"). 탭 전환일 때만 0으로.
+    function fitStatLines() {
+      body.querySelectorAll('.inv-stat-line').forEach(function (ln) {
+        ln.style.transform = ''; var room = ln.parentNode.clientWidth - 10;
+        if (room > 0 && ln.scrollWidth > room) ln.style.transform = 'scaleX(' + Math.max(room / ln.scrollWidth, 0.6).toFixed(3) + ')';
+      });
+    }
     function updateDots() {
       var g = grid();
       dotsEl.innerHTML = '';
@@ -133,6 +139,8 @@
       }
       syncDots();
       if (g && g.children[pageIdx]) g.scrollLeft = g.children[pageIdx].offsetLeft;
+      requestAnimationFrame(fitStatLines);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { requestAnimationFrame(fitStatLines); });
     }
     // 카드를 손으로 직접 스와이프했을 때도 pageIdx/점/장착버튼이 같이 따라가야 함(화살표
     // 클릭 외 유일한 페이지 이동 경로) — grid 는 렌더마다 새로 만들어지므로(body.innerHTML),
@@ -232,6 +240,8 @@
           var v = (I18N.lang === 'en' ? s[1] : s[0]);
           td.textContent = v;
           if (v === '-') td.classList.add('inv-stat-dash'); // 값 없음 = 중앙정렬
+          // v1000(사용자 지정): 괄호 부분은 둘째 줄로, 각 줄은 넘치면 글자 폭만 줄여 한 줄 유지(")"만 밑으로 떨어지던 것)
+          if (v.indexOf(' (') > 0) td.innerHTML = v.split(' (').map(function (t, k) { return '<span class="inv-stat-line">' + (k ? '(' : '') + t.replace(/[<&>]/g, '') + '</span>'; }).join('');
         });
         var btn = card.querySelector('.inv-equip');
         btn.textContent = w.id === cur ? T('mole.inv.equipped') : T('mole.inv.equip');
@@ -605,29 +615,27 @@
     // 이름/효과/게임적용 + 우측 상단 돋보기(전체 컬렉션 진입).
     function renderPhoto() {
       var PS = MG.PhotoStudio;
-      // 사용자 지정(2026-09-26): 하단 이름/효과/게임적용 바 + 투명박스 전부 삭제.
-      // 돋보기는 전체파란박스 밖(#inventory-screen 최상단 코너)의 별도 고정 버튼으로
-      // 이동(paint()에서 탭별로 토글, create()에서 클릭 1회만 배선).
-      // 사용자 지정: "엠블럼 박스만 사이즈 키워봐" — 정사각형(.photo-square) 밖으로 빼서
-      // .inv-body 전체 폭(정사각형보다 넓음)을 그대로 쓰게 한다.
+      // v1000(사용자 지정, 바탕화면 "사진관 UI 2차 개선"): 팀색 꼰 밧줄에 매달린 엠블럼 간판 5개 +
+      // 야구 장식·램프 달린 나무 액자 안에 주황 카드 3장(선택=금색, 그외=파랑) + 아래 나무 받침대.
+      // 버튼 글자는 기존 그대로 "게임적용 / 게임미적용"(사용자 지정).
       body.innerHTML =
-        '<div class="photo-emblems" data-photo-emblems></div>' +
-        '<div class="photo-square">' +
-          '<div class="photo-slots" data-photo-slots></div>' +
-        '</div>';
+        '<div class="ph2-embs" data-photo-emblems></div>' +
+        '<div class="ph2-frame"><div class="ph2-slots" data-photo-slots></div></div>' +
+        '<div class="ph2-stand"></div>';
 
       var emblemsEl = body.querySelector('[data-photo-emblems]');
-      PS.costumes().forEach(function (c) {
+      PS.costumes().forEach(function (c, i) {
         var b = document.createElement('button');
         b.type = 'button';
-        b.className = 'photo-emblem' + (c.id === photoCostumeId ? ' photo-emblem--on' : '');
-        b.innerHTML = '<img alt="" src="assets/costume/emblem-' + c.id + '.png">';
+        b.className = 'ph2-emb' + (c.id === photoCostumeId ? ' is-on' : '');
+        b.style.animationDelay = '-' + (i * 0.7).toFixed(1) + 's';
+        b.innerHTML = '<img alt="" src="assets/photo2/emb-' + c.id + '.png">';
         b.addEventListener('click', function () { photoCostumeId = c.id; renderPhoto(); });
         emblemsEl.appendChild(b);
       });
 
       var slotsEl = body.querySelector('[data-photo-slots]');
-      slotsEl.setAttribute('data-team', photoCostumeId); // v804: 카드 색 = 팀 고유색(사용자 지정)
+      slotsEl.setAttribute('data-team', photoCostumeId);
       PS.faceTypes().forEach(function (f) {
         var id = f.id + '_' + photoCostumeId;
         var completed = PS.isCompleted(id);
@@ -635,21 +643,14 @@
         var sel = f.id === photoFace;
         var slot = document.createElement('button');
         slot.type = 'button';
-        slot.className = 'photo-slot' + (sel ? ' photo-slot--sel' : '');
-        // 사용자 지정: 완성 여부와 무관하게 항상 얼굴형 캐릭터 이미지를 보여주고(§"제일
-        // 중요"), 미완성은 흑백 처리로만 구분. 얼굴형 이름은 카드 좌상단 대각선 띠로.
-        // 캐릭터 발밑에는 에셋6의 원형 발판(선택=골드/그외=블루)을 배경으로 깐다.
+        slot.className = 'ph2-slot' + (sel ? ' is-sel' : '');
         slot.innerHTML =
-          '<span class="photo-slot-frame">' +
-            '<img class="photo-slot-pedestal" alt="" src="assets/photo/pedestal_' + (sel ? 'gold' : 'blue') + '.png">' +
-            '<img class="photo-slot-img' + (completed ? '' : ' photo-slot-img--locked') + '" alt="" src="' + MG.PhotoStudio.imageFor(id) + '">' +
-            '<span class="photo-slot-rclip"><span class="photo-slot-ribbon"><b class="photo-slot-ribtxt"></b></span></span>' + // v799: 리본만 카드 윗선 기준으로 자름
-            (applied ? '<span class="photo-slot-applied">✓</span>' : '') +
-          '</span>' +
-          '<span class="photo-slot-status' + (applied ? ' photo-slot-status--on' : '') + '"></span>';
-        slot.querySelector('.photo-slot-ribtxt').textContent = T(PHOTO_FACE_I18N[f.id]); slot.appendChild(slot.querySelector('.photo-slot-rclip')); // v805: 띠를 카드(테두리 박스)에 직접 붙여 기기별 여백 차이 없앰
-        slot.querySelector('.photo-slot-status').textContent =
-          T(applied ? 'mole.photo.slotApplied' : 'mole.photo.slotNotApplied');
+          '<img class="ph2-card" alt="" src="assets/photo2/card-' + (sel ? 'gold' : 'blue') + '.png">' +
+          '<span class="ph2-name"></span>' +
+          '<img class="ph2-char' + (completed ? '' : ' photo-slot-img--locked') + '" alt="" src="' + PS.imageFor(id) + '">' +
+          '<span class="ph2-btn' + (applied ? ' is-on' : '') + '"></span>';
+        slot.querySelector('.ph2-name').textContent = T(PHOTO_FACE_I18N[f.id]);
+        slot.querySelector('.ph2-btn').textContent = T(applied ? 'mole.photo.slotApplied' : 'mole.photo.slotNotApplied');
         slot.addEventListener('click', function () { photoFace = f.id; renderPhoto(); });
         slotsEl.appendChild(slot);
       });
@@ -748,6 +749,7 @@
             '<img class="photo-coll-card-img' + (completed ? '' : ' photo-coll-card-img--locked') + '" alt="" src="' + MG.PhotoStudio.imageFor(id) + '">' +
             (applied ? '<span class="photo-coll-card-applied">✓</span>' : '') +
             (completed ? '<i class="photo-coll-tw" style="left:14%;top:12%"></i><i class="photo-coll-tw" style="right:12%;top:30%;animation-delay:-0.7s"></i><i class="photo-coll-tw" style="left:22%;bottom:16%;animation-delay:-1.3s"></i>' : '');
+          card.insertAdjacentHTML('beforeend', '<i class="ph2-cframe"></i>'); // v1000: 주황 카드 액자(안쪽 반듯)
           card.addEventListener('click', function () { photoDetailId = id; renderPhotoDetailZoom(id); });
           grid.appendChild(card);
         });

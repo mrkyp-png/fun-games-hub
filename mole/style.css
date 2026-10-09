@@ -6711,3 +6711,45 @@ html, body, .cosmic-bg { background: #2a190d; }
 /* v999(사용자 지정): 무기 카드 안 좌우 여백 같게(왼쪽 23px·오른쪽 14px → 양쪽 19px) */
 #inventory-screen[data-tab="weapon"] .inv-left { margin-left: -4px; }
 #inventory-screen[data-tab="weapon"] .inv-right { margin-right: 5px; }
+/* ===== v1000 사진관 UI 2차(사용자 지정, 바탕화면 "사진관 UI 2차 개선") ===== */
+#inventory-screen[data-tab="photo"]::before { inset: 0; border-image: none; border-width: 0; background: url('assets/photo/background.jpg') center / cover no-repeat; filter: none; }
+#inventory-screen[data-tab="photo"]::after, #inventory-screen[data-tab="photo"] > .inv-frame { display: none; }
+#inventory-screen[data-tab="photo"] .inv-cards-box { background: none !important; box-shadow: none !important; animation: none; border: 0; padding: 0; margin: 0 6px; }
+#inventory-screen[data-tab="photo"] .inv-body { padding: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
+/* 엠블럼 간판 5개 — 팀색 꼰 밧줄, 천장에서 매달려 살짝 흔들림 */
+.ph2-embs { flex: 0 0 auto; width: 100%; display: flex; justify-content: space-between; padding: 0 6px; box-sizing: border-box; margin-top: -14px; }
+.ph2-emb { flex: 0 0 18%; padding: 0; border: 0; background: none; cursor: pointer; transform-origin: 50% 0; animation: ph2-sway 4.2s ease-in-out infinite; }
+.ph2-emb img { display: block; width: 100%; height: auto; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.45)); }
+.ph2-emb.is-on img { filter: drop-shadow(0 0 4px #ffe14a) drop-shadow(0 0 9px rgba(255, 210, 60, 0.9)); }
+.ph2-emb:active { scale: 0.94; }
+@keyframes ph2-sway { 0%, 100% { rotate: -1.6deg; } 50% { rotate: 1.6deg; } }
+/* 나무 액자(램프·야구 장식) — 장식은 늘이지 않고 안쪽 나무판만 늘림(가로세로 같은 배율) */
+.ph2-frame { flex: 1 1 auto; min-height: 0; width: 100%; box-sizing: border-box; position: relative; z-index: 1; margin-top: 2px;
+  border: solid transparent; border-width: 46px 22px 27px; border-image: url('assets/photo2/frame.png') 83 40 49 40 fill / 46px 22px 27px stretch; }
+.ph2-slots { position: absolute; inset: -6px 0 -2px; display: flex; gap: 4px; justify-content: center; align-items: stretch; }
+.ph2-slot { position: relative; flex: 0 1 auto; height: 100%; aspect-ratio: 200 / 377; padding: 0; border: 0; background: none; cursor: pointer; }
+.ph2-card { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ph2-name { position: absolute; left: 14%; right: 14%; top: 5.6%; height: 8.6%; display: flex; align-items: center; justify-content: center; z-index: 2;
+  font-family: 'Jua', sans-serif; font-size: 0.72rem; color: #fff; -webkit-text-stroke: 2.5px #12307a; paint-order: stroke fill; white-space: nowrap; }
+.ph2-slot.is-sel .ph2-name { -webkit-text-stroke-color: #6b3a00; }
+.ph2-char { position: absolute; left: 8%; width: 84%; bottom: 23%; height: 58%; object-fit: contain; object-position: 50% 100%; z-index: 1; }
+.ph2-btn { position: absolute; left: 9.5%; right: 9.5%; top: 81.6%; height: 13%; border-radius: 6px; z-index: 2; display: flex; align-items: center; justify-content: center;
+  font-family: 'Jua', sans-serif; font-size: 0.66rem; white-space: nowrap; color: #fff;
+  background: linear-gradient(180deg, #a9b3c2, #707c8e); box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.45), inset 0 -2px 0 rgba(0, 0, 0, 0.25); -webkit-text-stroke: 2px #3d4655; paint-order: stroke fill; }
+.ph2-btn.is-on { background: linear-gradient(180deg, #ffe04a, #ffb20e); -webkit-text-stroke-color: #9a5200; }
+.ph2-slot:active .ph2-card, .ph2-slot:active .ph2-char { filter: brightness(0.92); }
+/* 받침대 */
+.ph2-stand { flex: 0 0 auto; width: 104%; aspect-ratio: 700 / 73; margin-top: -10px; background: url('assets/photo2/stand.png') center / 100% 100% no-repeat; }
+.ph2-embs { margin-top: -26px; } /* 밧줄이 화면 위로 이어지게 */
+.ph2-embs { margin-top: -30px; padding: 0 22px; }
+.ph2-emb { flex-basis: 15%; }
+.ph2-frame { margin-top: 22px; border-width: 40px 19px 23px; border-image-width: 40px 19px 23px; }
+.ph2-slots { inset: -4px 0 -2px; gap: 3px; }
+/* ===== v1000 사진관 컬렉션(돋보기) 2차 — 나무판 오두막 배경, 카드마다 주황 액자(안쪽 반듯) ===== */
+.photo-overlay { background: #6e2a05 url('assets/photo2/coll-bg.jpg') center top / 100% 100% no-repeat; }
+.photo-overlay::after { display: none; }
+.photo-coll-gridwrap { background: none !important; border: 0 !important; box-shadow: none !important; border-radius: 0; }
+.photo-coll-card { border-radius: 0; box-shadow: none; }
+.photo-coll-card > .ph2-cframe { position: absolute; inset: -2px; z-index: 3; pointer-events: none; border: 7px solid transparent; border-image: url('assets/photo2/coll-card.png') 22 19 22 18 / 7px stretch; }
+.photo-coll-card.is-done::after { inset: -2px; border-radius: 0; }
+.inv-stat-line { display: block; white-space: nowrap; transform-origin: 0 50%; width: max-content; } /* v1000: 능력치 줄 한 줄 유지 */
