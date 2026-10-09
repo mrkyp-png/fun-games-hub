@@ -6530,3 +6530,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 #inventory-screen[data-tab="costume"] .cos-detail-effect { padding-left: 7px; padding-right: 7px; }
 #inventory-screen[data-tab="costume"] .cos-detail-effect-row { padding: 3px 4px; gap: 2px; letter-spacing: -0.03em; }
 #inventory-screen[data-tab="costume"] .cos-card-char[src*="red_wings"] { width: 100%; } /* v992: 공 안 잘리게 다시 오린 그림(폭 360→376) — 다른 팀과 같은 크기로 */
+/* v993(사용자 지정): 상세 팀 이름 한 줄 고정 */
+#inventory-screen[data-tab="costume"] .cos-detail-name-row { min-width: 0; flex-wrap: nowrap; }
+#inventory-screen[data-tab="costume"] .cos-detail-name { white-space: nowrap; min-width: 0; flex: 1 1 auto; overflow: visible; }
+#inventory-screen[data-tab="costume"] .cos-card-emblem { display: none; } /* v993(사용자 지정): 카드 5개 위 엠블럼 삭제(폰에서 잘림) */
