@@ -6796,7 +6796,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 #inventory-screen[data-tab="weapon"] .inv-cards-head { z-index: 1; }
 #inventory-screen[data-tab="weapon"] .inv-body { position: relative; z-index: 2; }
 /* v1001(사용자 지정): 왼쪽 무기 카드·오른쪽 능력치 전체 조금 아래로 */
-#inventory-screen[data-tab="weapon"] .inv-left, #inventory-screen[data-tab="weapon"] .inv-right { position: relative; top: 14px; }
+#inventory-screen[data-tab="weapon"] .inv-left { position: relative; top: 14px; } /* v1003: 능력치 박스는 원위치(사용자 지정) */
 /* v1001(사용자 지정): 사진관 배경 = 코스튬 화면 배경, 받침대를 액자 아래로 — 액자가 받침대 윗면에 올려진 모습 */
 #inventory-screen[data-tab="photo"]::before { background: url('assets/costume2/bg-cabin.jpg') center top / 100% 100% no-repeat; }
 .ph2-frame { position: relative; z-index: 1; filter: drop-shadow(0 4px 3px rgba(30, 10, 0, 0.5)); }
@@ -6836,3 +6836,22 @@ html, body, .cosmic-bg { background: #2a190d; }
 .ph2-embs { position: relative; z-index: 3; }
 .ph2-frame { height: 80%; margin-top: -62px; z-index: 1; }
 .ph2-frame { height: 70%; margin-top: -14px; }
+/* v1003(사용자 지정): 점은 오른쪽 위로, EPIC·LEGENDARY 배지는 액자 테두리 앞으로(잘리지 않게) */
+#inventory-screen[data-tab="weapon"] .inv-cards-head { left: auto; right: 24px; }
+#inventory-screen[data-tab="weapon"] .inv-left { z-index: 25; }
+/* v1003(사용자 지정): 램프 빛 = 액자 위 전등 3개 자리(카드 모자 위 아님) — ::after 기준은 테두리 안쪽이라 바깥 위쪽 기준으로 계산 */
+.ph2-frame::after { top: -40px; height: 46px;
+  background: radial-gradient(18px 13px at 21% 20px, rgba(255, 240, 170, 1), rgba(255, 200, 80, 0.45) 55%, rgba(255, 180, 60, 0) 100%),
+              radial-gradient(18px 13px at 50% 24px, rgba(255, 240, 170, 1), rgba(255, 200, 80, 0.45) 55%, rgba(255, 180, 60, 0) 100%),
+              radial-gradient(18px 13px at 79% 20px, rgba(255, 240, 170, 1), rgba(255, 200, 80, 0.45) 55%, rgba(255, 180, 60, 0) 100%); }
+/* v1003(사용자 지정): EPIC·LEGENDARY 배지가 카드 위 테두리에 잘리지 않게 위쪽 여유 */
+#inventory-screen[data-tab="weapon"] .inv-grid { padding-top: 0; margin-top: 0; }
+#inventory-screen[data-tab="weapon"] .inv-card { overflow: visible; }
+/* v1003(사용자 지정): 설명 박스 위로 — 능력치 표 줄 간격 줄이고 표와 설명 사이 좁힘 */
+#inventory-screen[data-tab="weapon"] .inv-card[class*="inv-card--"] .inv-stat-tbl th, #inventory-screen[data-tab="weapon"] .inv-card[class*="inv-card--"] .inv-stat-tbl td { padding-top: 3px; padding-bottom: 3px; }
+#inventory-screen[data-tab="weapon"] .inv-desc { margin-top: 4px; }
+#inventory-screen[data-tab="weapon"] .inv-right { margin-top: 10px; } /* v1003: 설명 박스 안 잘리게 오른쪽 전체 위로(32→10px) */
+#inventory-screen[data-tab="weapon"] .inv-cards-head { top: 15px; } /* 능력치 판과 안 겹치게 */
+#inventory-screen[data-tab="weapon"] .inv-right { margin-top: 9px; }
+/* v1003(사용자 지정): 설명 박스 글자 줄간격 줄여 높이 줄임 */
+#inventory-screen[data-tab="weapon"] .inv-desc { line-height: 1.22; padding-top: 5px; padding-bottom: 5px; }

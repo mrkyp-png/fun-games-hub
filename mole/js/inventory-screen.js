@@ -242,7 +242,7 @@
           td.textContent = v;
           if (v === '-') td.classList.add('inv-stat-dash'); // 값 없음 = 중앙정렬
           // v1000(사용자 지정): 괄호 부분은 둘째 줄로, 각 줄은 넘치면 글자 폭만 줄여 한 줄 유지(")"만 밑으로 떨어지던 것)
-          if (v.indexOf(' (') > 0) td.innerHTML = v.split(' (').map(function (t, k) { return '<span class="inv-stat-line">' + (k ? '(' : '') + t.replace(/[<&>]/g, '') + '</span>'; }).join('');
+          if (v.indexOf(' (') > 0) td.innerHTML = v.split(' (').map(function (t, k) { return (k ? '(' : '') + t; }).join('|').replace(/\), /g, '),|').split('|').map(function (t) { return '<span class="inv-stat-line">' + t.replace(/[<&>]/g, '') + '</span>'; }).join(''); // v1003: "), " 뒤도 줄바꿈
         });
         var btn = card.querySelector('.inv-equip');
         btn.textContent = w.id === cur ? T('mole.inv.equipped') : T('mole.inv.equip');
