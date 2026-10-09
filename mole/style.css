@@ -6824,3 +6824,15 @@ html, body, .cosmic-bg { background: #2a190d; }
               radial-gradient(50px 90px at 50% 52px, rgba(255, 230, 150, 0.7), rgba(255, 200, 90, 0.22) 45%, rgba(255, 180, 60, 0) 100%),
               radial-gradient(50px 90px at 79% 52px, rgba(255, 230, 150, 0.7), rgba(255, 200, 90, 0.22) 45%, rgba(255, 180, 60, 0) 100%);
   -webkit-mask: linear-gradient(180deg, transparent 0, #000 30px); mask: linear-gradient(180deg, transparent 0, #000 30px); }
+/* v1002(사용자 지정): 사진이 액자에 꽉 차게 — 액자 폭을 카드 3장 폭에 맞춤(어느 폰이든 좌우 여백 없음) */
+.ph2-frame { width: auto; max-width: 96%; display: flex; }
+.ph2-slots { position: static; inset: auto; height: 100%; margin: -4px -2px -2px; gap: 3px; }
+.ph2-slot { flex: 0 0 auto; height: calc(100% + 6px); width: auto; max-width: none; }
+/* v1002(사용자 지정): 사진은 밝아지지 않게 — 빛은 액자 위 램프 전구에만 */
+.ph2-frame::after { top: -40px; height: 70px; left: -19px; right: -19px; -webkit-mask: none; mask: none;
+  background: radial-gradient(22px 16px at 21% 60px, rgba(255, 240, 170, 1), rgba(255, 200, 80, 0.45) 55%, rgba(255, 180, 60, 0) 100%),
+              radial-gradient(22px 16px at 79% 60px, rgba(255, 240, 170, 1), rgba(255, 200, 80, 0.45) 55%, rgba(255, 180, 60, 0) 100%); }
+/* v1002(사용자 지정): 액자를 위로 크게 — 엠블럼이 액자 위를 덮어도 됨, 사진 최대 */
+.ph2-embs { position: relative; z-index: 3; }
+.ph2-frame { height: 80%; margin-top: -62px; z-index: 1; }
+.ph2-frame { height: 70%; margin-top: -14px; }
