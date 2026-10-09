@@ -6537,3 +6537,98 @@ html, body, .cosmic-bg { background: #2a190d; }
 #inventory-screen[data-tab="costume"] .cos-card-emblem { display: none; } /* v993(사용자 지정): 카드 5개 위 엠블럼 삭제(폰에서 잘림) */
 /* v994(사용자 지정): 상세 효과 이름 "…" 금지, 한 줄 */
 #inventory-screen[data-tab="costume"] .cos-detail-effect-name { overflow: visible; text-overflow: clip; white-space: nowrap; }
+/* ===== v995 스킬 UI 2차(사용자 지정, 바탕화면 "스킬, 무기 UI 2차 개선/스킬화면 에셋/스킬화면 참조.png") ===== */
+#inventory-screen[data-tab="skill"]::before { inset: 0; border-image: none; border-width: 0; background: url('assets/skin2/bg-skill.jpg') center top / 100% 100% no-repeat; filter: none; }
+#inventory-screen[data-tab="skill"]::after, #inventory-screen[data-tab="skill"] > .inv-frame { display: none; }
+#inventory-screen[data-tab="skill"] .skl-wrap { margin: 0 10px; }
+#inventory-screen[data-tab="skill"] .skl-box { background: none; box-shadow: none; border-radius: 0; padding: 0; gap: 1px; overflow: visible; }
+/* 머리줄: 나뭇잎 나무 이름판(⚡/🛡 + 글자) · 주황 ◀ 숫자칸 ▶ · 🔄 */
+#inventory-screen[data-tab="skill"] .skl-left-head { height: 26px; padding: 0; gap: 2px; }
+#inventory-screen[data-tab="skill"] .skl-plank { flex: 1 1 auto; min-width: 0; height: 100%; display: flex; align-items: center; gap: 3px; padding: 0 9px 0 9px; box-sizing: border-box;
+  background: url('assets/skin2/sk-plank.png') center / 100% 100% no-repeat; }
+#inventory-screen[data-tab="skill"] .skl-head-ico { height: 16px; width: auto; flex: 0 0 auto; }
+#inventory-screen[data-tab="skill"] .skl-left-title { font-family: 'Jua', sans-serif; font-weight: 400; font-size: 0.62rem; color: #fff; white-space: nowrap; -webkit-text-stroke: 2.5px #4a2208; paint-order: stroke fill; }
+#inventory-screen[data-tab="skill"] .skl-pager { gap: 1px; }
+#inventory-screen[data-tab="skill"] .skl-parrow, #inventory-screen[data-tab="skill"] .skl-box-restore { width: 23px; height: 22px; padding: 0; border: 0; border-radius: 0; box-shadow: none; color: transparent; font-size: 0;
+  background: url('assets/skin2/sk-prev.png') center / 100% 100% no-repeat; }
+#inventory-screen[data-tab="skill"] .skl-parrow[data-skl-next] { background-image: url('assets/skin2/sk-next.png'); }
+#inventory-screen[data-tab="skill"] .skl-parrow::before { display: none; }
+#inventory-screen[data-tab="skill"] .skl-box-restore { background: none; }
+#inventory-screen[data-tab="skill"] .skl-pnum { min-width: 30px; height: 18px; line-height: 18px; font-size: 0.56rem; color: #fff; background: url('assets/skin2/sk-pnum.png') center / 100% 100% no-repeat; }
+/* 카드 칸: 나뭇잎 나무 틀 안에 갈색 액자 4칸 */
+#inventory-screen[data-tab="skill"] .skl-grid { grid-template-columns: repeat(4, 1fr); gap: 2px; padding: 1px 0;
+  border: 14px solid transparent; border-width: 14px 18px 13px 18px; border-image: url('assets/skin2/sk-frame.png') 76 52 78 52 / 26px 18px 27px 18px stretch; overflow: visible; } /* 기둥 둥근 머리가 늘어나지 않게 조각선을 머리 밖으로 */
+#inventory-screen[data-tab="skill"] .skl-card { border: 6px solid transparent; border-image: url('assets/skin2/sk-cell.png') 24 / 6px stretch; /* 모서리 볼트가 찌그러지지 않게 가로세로 같은 배율 */
+  border-radius: 0; background-color: #3b2212; background-origin: padding-box; background-clip: padding-box; }
+#inventory-screen[data-tab="skill"] .skl-card.skl-rcard { padding-top: 22%; }
+#inventory-screen[data-tab="skill"] .skl-rcard .skl-card-name { font-size: 0.52rem; -webkit-text-stroke-width: 2px; }
+#inventory-screen[data-tab="skill"] .skl-card-qty { font-size: 0.4rem; }
+#inventory-screen[data-tab="skill"] .skl-card-btn { font-size: 0.42rem; }
+#inventory-screen[data-tab="skill"] .skl-card--locked { background: #3b2212; }
+#inventory-screen[data-tab="skill"] .skl-rcard.skl-card--on { box-shadow: inset 0 0 0 2px #ffd93b; }
+/* 오른쪽: 나뭇잎 이름판 + 크림 칸 3개 나무 틀 */
+#inventory-screen[data-tab="skill"] .skl-right { background: none; border: 0; box-shadow: none; border-radius: 0; padding: 0; gap: 0; }
+#inventory-screen[data-tab="skill"] .skl-right-title { flex: 0 0 auto; height: 30px; display: flex; align-items: center; justify-content: center; margin: 0 -3px -3px; position: relative; z-index: 2;
+  background: url('assets/skin2/rt-plank.png') center / 100% 100% no-repeat; font-size: 0.8rem; -webkit-text-stroke: 3px #4a2208 !important; }
+#inventory-screen[data-tab="skill"] .skl-right-panel { flex: 1 1 auto; min-height: 0; position: relative; background: url('assets/skin2/rt-panel.png') center / 100% 100% no-repeat; }
+#inventory-screen[data-tab="skill"] .skl-right-imgwrap { position: absolute; left: 9%; right: 9%; top: 10%; height: 33%; aspect-ratio: auto; background: none !important; padding: 0; border-radius: 6px; }
+#inventory-screen[data-tab="skill"] .skl-right-imgwrap .inv-rfx, #inventory-screen[data-tab="skill"] .skl-rw-badge { display: none; }
+#inventory-screen[data-tab="skill"] .skl-right-sec { position: absolute; left: 12%; right: 12%; background: none !important; box-shadow: none !important; border-radius: 0; padding: 3px 3px; }
+#inventory-screen[data-tab="skill"] .skl-sec--active { top: 45.2%; height: 23.2%; }
+#inventory-screen[data-tab="skill"] .skl-sec--passive { top: 72.4%; height: 22%; }
+#inventory-screen[data-tab="skill"] .skl-right-lbl { color: #6b3410; text-shadow: none; font-family: 'Jua', sans-serif; font-weight: 400; font-size: 0.5rem; }
+#inventory-screen[data-tab="skill"] .skl-right-lbl-ico { width: 11px; height: 11px; }
+#inventory-screen[data-tab="skill"] .skl-right-lbl b { color: #7a3e10; }
+#inventory-screen[data-tab="skill"] .skl-mini { border-radius: 4px; background: url('assets/skin2/rt-slot.png') center / 100% 100% no-repeat; }
+#inventory-screen[data-tab="skill"] .skl-mini.skl-mini--empty { border: 0; animation: none; background: url('assets/skin2/sk-plus.png') center / 58% auto no-repeat, url('assets/skin2/rt-slot.png') center / 100% 100% no-repeat; }
+#inventory-screen[data-tab="skill"] .skl-mini.skl-mini--empty::after { display: none; }
+#inventory-screen[data-tab="skill"] .skl-parrow { background: url('assets/skin2/sk-prev.png') center / 100% 100% no-repeat !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; color: transparent !important; }
+#inventory-screen[data-tab="skill"] .skl-parrow[data-skl-next] { background-image: url('assets/skin2/sk-next.png') !important; }
+#inventory-screen[data-tab="skill"] .skl-parrow:active { box-shadow: none !important; }
+#inventory-screen[data-tab="skill"] .skl-right-imgwrap.skl-rw { border: 0; }
+#inventory-screen[data-tab="skill"] .skl-right-lbl { gap: 2px; white-space: nowrap; }
+#inventory-screen[data-tab="skill"] .skl-right-lbl b { flex: 0 0 auto; padding-right: 1px; }
+#inventory-screen[data-tab="skill"] .skl-right-lbl span { min-width: 0; overflow: hidden; }
+#inventory-screen[data-tab="skill"] .skl-rcard .skl-card-name { overflow: visible; white-space: nowrap; }
+/* ===== v995 무기 UI 2차(사용자 지정, "스킬, 무기 UI 2차 개선/무기화면 에셋") — 안내줄 삭제(◀▶는 틀 양옆으로), 랜턴 오두막, 나뭇잎 바깥 틀 + 주황 카드 액자 ===== */
+#inventory-screen[data-tab="weapon"]::before { inset: 0; border-image: none; border-width: 0; background: url('assets/skin2/bg-weapon.jpg') center top / 100% 100% no-repeat; filter: none; }
+#inventory-screen[data-tab="weapon"]::after, #inventory-screen[data-tab="weapon"] > .inv-frame { display: none; }
+#inventory-screen[data-tab="weapon"] .inv-banner { position: absolute !important; left: 0; right: 0; top: 50%; height: 0; min-height: 0; margin: 0; padding: 0; border: 0; background: none; box-shadow: none; z-index: 6 !important; overflow: visible; }
+#inventory-screen[data-tab="weapon"] .inv-banner::before, #inventory-screen[data-tab="weapon"] .inv-banner::after,
+#inventory-screen[data-tab="weapon"] .inv-banner-pic, #inventory-screen[data-tab="weapon"] .inv-banner-txt { display: none; }
+#inventory-screen[data-tab="weapon"] .inv-arrow { position: absolute; top: -18px; width: 22px; height: 32px; margin: 0; color: transparent !important; font-size: 0;
+  background: url('assets/skin2/arrow-l.png') center / contain no-repeat !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+#inventory-screen[data-tab="weapon"] .inv-arrow::before, #inventory-screen[data-tab="weapon"] .inv-arrow::after { display: none; }
+#inventory-screen[data-tab="weapon"] .inv-arrow--prev { left: 4px; }
+#inventory-screen[data-tab="weapon"] .inv-arrow--next { right: 4px; background-image: url('assets/skin2/arrow-r.png') !important; }
+/* 위쪽 선반(랜턴) 보이게 비워 두고, 그 아래 나뭇잎 나무 틀 */
+#inventory-screen[data-tab="weapon"] .inv-cards-box, #inventory-screen[data-tab="weapon"] .inv-cards-box[data-rar] { margin: 17% 10px 0; padding: 0; animation: none; background: none !important; box-shadow: none;
+  border: 0 !important; border-image: none !important; border-radius: 0; } /* v995(사용자 지정): 풀 있는 바깥 테두리 삭제 */
+#inventory-screen[data-tab="weapon"] .inv-cards-box::before, #inventory-screen[data-tab="weapon"] .inv-cards-box::after { display: none; }
+#inventory-screen[data-tab="weapon"] .inv-cards-head { display: none; }
+/* 무기 카드 = 주황 액자 + 짙은 나무 안쪽 */
+#inventory-screen[data-tab="weapon"] .inv-card { border: 12px solid transparent; border-width: 11px 12px 11px 11px; border-image: url('assets/skin2/w-cardframe.png') 31 26 31 24 / 11px 12px 11px 11px stretch;
+  border-radius: 0; box-shadow: none; background: #3b2212 padding-box !important; }
+#inventory-screen[data-tab="weapon"] .inv-card, #inventory-screen[data-tab="weapon"] .inv-card.inv-card--on { box-shadow: none !important; }
+/* v995(사용자 지정): 무기 카드 액자를 바깥 테두리 자리까지 확장 */
+#inventory-screen[data-tab="weapon"] .inv-body { padding: 0 !important; margin: 0 !important; }
+#inventory-screen[data-tab="weapon"] .inv-card { flex-basis: 100%; height: 100%; margin: 0; }
+/* v995(사용자 지정): 무기 액자 = 맨 위 레이어(내용이 틀을 덮지 않게) + 가로세로 같은 배율(볼트 동그랗게) */
+#inventory-screen[data-tab="weapon"] .inv-card { border: 0 !important; border-image: none !important; padding: 15px 15px 14px; background: #3b2212 !important; }
+#inventory-screen[data-tab="weapon"] .inv-card::after { content: ''; position: absolute; inset: 0; z-index: 20; pointer-events: none;
+  border: 14px solid transparent; border-image: url('assets/skin2/w-cardframe.png') 36 / 14px stretch; }
+/* v995(사용자 지정): 스킬 화면 모든 볼트·둥근 피스가 찌그러지지 않게 — 늘이는 대신 끝 조각은 그대로, 가운데만 늘림(가로세로 같은 배율) */
+#inventory-screen[data-tab="skill"] .skl-plank { background: none; border: solid transparent; border-width: 0 19px; border-image: url('assets/skin2/sk-plank.png') 0 60 fill / 0 19px stretch; padding: 0 2px; }
+#inventory-screen[data-tab="skill"] .skl-right-title { background: none; border: solid transparent; border-width: 0 19px; border-image: url('assets/skin2/rt-plank.png') 0 62 fill / 0 19px stretch; }
+#inventory-screen[data-tab="skill"] .skl-right-panel { display: flex; flex-direction: column; gap: 5px; box-sizing: border-box; background: #8e4718 padding-box;
+  border: solid transparent; border-width: 19px 12px; border-image: url('assets/skin2/rt-panel.png') 50 30 / 19px 12px stretch; padding: 0; }
+#inventory-screen[data-tab="skill"] .skl-right-imgwrap, #inventory-screen[data-tab="skill"] .skl-right-sec { position: relative; left: auto; right: auto; top: auto; height: auto;
+  border: 12px solid transparent !important; border-image: url('assets/skin2/rt-cream.png') 42 fill / 12px stretch !important; box-sizing: border-box; }
+#inventory-screen[data-tab="skill"] .skl-right-imgwrap { flex: 1.35 1 0; min-height: 0; padding: 0; margin: 0 -3px; }
+#inventory-screen[data-tab="skill"] .skl-right-sec { min-height: 0; padding: 0; margin: 0 -3px; }
+#inventory-screen[data-tab="skill"] .skl-mini, #inventory-screen[data-tab="skill"] .skl-mini.skl-mini--empty { background: none; border: 5px solid transparent; border-image: url('assets/skin2/rt-slot.png') 18 fill / 5px stretch; box-sizing: border-box; }
+#inventory-screen[data-tab="skill"] .skl-mini.skl-mini--empty { background: url('assets/skin2/sk-plus.png') center / 70% auto no-repeat; }
+#inventory-screen[data-tab="skill"] .skl-pnum { background: none; border: solid transparent; border-width: 4px; border-image: url('assets/skin2/sk-pnum.png') 14 fill / 4px stretch; line-height: 10px; height: 18px; box-sizing: border-box; }
+#inventory-screen[data-tab="skill"] .skl-mini.skl-mini--empty::after { content: ''; display: block; position: absolute; inset: 0; background: url('assets/skin2/sk-plus.png') center / 72% auto no-repeat; } /* 칸 그림(border-image fill)이 배경을 덮어서 ⊕를 위 레이어로 */
+/* v995(사용자 지정): 스킬 화면 풀 있는 테두리 삭제(카드 칸만) */
+#inventory-screen[data-tab="skill"] .skl-grid { border: 0 !important; border-image: none !important; padding: 0; }

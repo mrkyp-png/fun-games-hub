@@ -3,7 +3,7 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-const CACHE = 'mole-game-v994';
+const CACHE = 'mole-game-v995';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -74,6 +74,24 @@ const SHELL = [
   './assets/costume2/tab-blue.png',
   './assets/costume2/tab-green-press.png',
   './assets/costume2/tab-blue-press.png',
+  './assets/skin2/arrow-l.png',
+  './assets/skin2/arrow-r.png',
+  './assets/skin2/bg-skill.jpg',
+  './assets/skin2/bg-weapon.jpg',
+  './assets/skin2/ic-active.png',
+  './assets/skin2/ic-passive.png',
+  './assets/skin2/rt-cream.png',
+  './assets/skin2/rt-panel.png',
+  './assets/skin2/rt-plank.png',
+  './assets/skin2/rt-slot.png',
+  './assets/skin2/sk-cell.png',
+  './assets/skin2/sk-next.png',
+  './assets/skin2/sk-plank.png',
+  './assets/skin2/sk-plus.png',
+  './assets/skin2/sk-pnum.png',
+  './assets/skin2/sk-prev.png',
+  './assets/skin2/sk-restore.png',
+  './assets/skin2/w-cardframe.png',
   './assets/costume2/box-frame-s.png',
   './assets/costume2/box-frame-w.png',
   './assets/costume2/leather-w.png',

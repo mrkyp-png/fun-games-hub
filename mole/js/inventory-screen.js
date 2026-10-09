@@ -383,7 +383,7 @@
     // 스킬 탭 — 메인화면.png 참고 + 사용자 지정(2026-09-26): 액티브/패시브를 탭 전환이 아니라
     // 좌측에 박스 2개(위=액티브, 아래=패시브)로 한 화면에 동시 표시 + 우측 무기 미리보기
     // (§10~11, §17~22, §41~42). 명세서: 바탕화면 "스킬 UI 및 에셋/명세서.txt".
-    var SKL_PER_PAGE = 3; // 사용자 지정(2026-09-26): "4개까지 보여줄필요없다" — 3개로 줄여 카드/글자를 크게
+    var SKL_PER_PAGE = 4; // v995(스킬·무기 UI 2차 참조): 한 줄 4칸 (이전: 3칸, 2026-09-26 사용자 지정)
     function renderSkills() {
       var locked = !!(opts.gameInProgress && opts.gameInProgress());
       var weaponId = equipped();
@@ -396,18 +396,18 @@
           '<div class="skl-body">' +
             '<div class="skl-left">' +
               '<div class="skl-box" data-skl-box="active">' +
-                '<div class="skl-left-head"><span class="skl-left-title"></span>' +
+                '<div class="skl-left-head"><span class="skl-plank"><img class="skl-head-ico" alt="" src="assets/skin2/ic-active.png"><span class="skl-left-title"></span></span>' +
                   '<div class="skl-pager"><button type="button" class="skl-parrow" data-skl-prev>◀</button>' +
                     '<span class="skl-pnum"></span><button type="button" class="skl-parrow" data-skl-next>▶</button></div>' +
-                  '<button type="button" class="skl-box-restore" data-skl-restore><img alt="" src="assets/skills/restore.png"></button>' +
+                  '<button type="button" class="skl-box-restore" data-skl-restore><img alt="" src="assets/skin2/sk-restore.png"></button>' +
                 '</div>' +
                 '<div class="skl-grid" data-skl-grid></div>' +
               '</div>' +
               '<div class="skl-box" data-skl-box="passive">' +
-                '<div class="skl-left-head"><span class="skl-left-title"></span>' +
+                '<div class="skl-left-head"><span class="skl-plank"><img class="skl-head-ico" alt="" src="assets/skin2/ic-passive.png"><span class="skl-left-title"></span></span>' +
                   '<div class="skl-pager"><button type="button" class="skl-parrow" data-skl-prev>◀</button>' +
                     '<span class="skl-pnum"></span><button type="button" class="skl-parrow" data-skl-next>▶</button></div>' +
-                  '<button type="button" class="skl-box-restore" data-skl-restore><img alt="" src="assets/skills/restore.png"></button>' +
+                  '<button type="button" class="skl-box-restore" data-skl-restore><img alt="" src="assets/skin2/sk-restore.png"></button>' +
                 '</div>' +
                 '<div class="skl-grid" data-skl-grid></div>' +
               '</div>' +
@@ -420,6 +420,13 @@
       renderSkillBox('passive', weaponId, locked, slots.passive, lo.passiveSkills);
 
       renderSkillRight(weaponId, weapon, lo, slots);
+      // v995: 카드 4칸이라 좁음 — 스킬 이름이 "…"로 잘리지 않게 넘치면 글자 폭만 줄여 한 줄
+      requestAnimationFrame(function () {
+        body.querySelectorAll('.skl-card-name').forEach(function (n) {
+          if (!n.clientWidth || n.scrollWidth <= n.clientWidth) return;
+          n.innerHTML = '<span style="display:inline-block;transform-origin:0 50%;transform:scaleX(' + Math.max(n.clientWidth / n.scrollWidth, 0.55).toFixed(3) + ')">' + n.innerHTML + '</span>';
+        });
+      });
     }
 
     // kind = 'active' | 'passive'. maxSlots/equippedList = 해당 종류의 슬롯 수·현재 장착 목록.
@@ -513,11 +520,11 @@
           '<img class="skl-right-img" alt="" src="' + (weapon ? weapon.thumb : '') + '"></div>';
       right.innerHTML =
         '<div class="skl-right-title skl-rt-' + wr + '"></div>' +
-        imgHtml +
-        '<div class="skl-right-sec skl-sec--active"><div class="skl-right-lbl"><img class="skl-right-lbl-ico" alt="" src="assets/skills/active_skill.png">' +
+        '<div class="skl-right-panel">' + imgHtml +
+        '<div class="skl-right-sec skl-sec--active"><div class="skl-right-lbl"><img class="skl-right-lbl-ico" alt="" src="assets/skin2/ic-active.png">' +
           '<span></span><b></b></div><div class="skl-right-icons" data-skl-r-active></div></div>' +
-        '<div class="skl-right-sec skl-sec--passive"><div class="skl-right-lbl"><img class="skl-right-lbl-ico" alt="" src="assets/skills/passive_skill.png">' +
-          '<span></span><b></b></div><div class="skl-right-icons" data-skl-r-passive></div></div>';
+        '<div class="skl-right-sec skl-sec--passive"><div class="skl-right-lbl"><img class="skl-right-lbl-ico" alt="" src="assets/skin2/ic-passive.png">' +
+          '<span></span><b></b></div><div class="skl-right-icons" data-skl-r-passive></div></div></div>';
       right.querySelector('.skl-right-title').textContent = weapon ? nameOf(weapon) : '';
       var secs = right.querySelectorAll('.skl-right-sec');
       secs[0].querySelector('.skl-right-lbl span').textContent = T('mole.skl.active');
