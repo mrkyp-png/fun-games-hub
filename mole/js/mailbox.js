@@ -72,14 +72,12 @@
     el.innerHTML =
       '<div class="mb-frame">' +
         '<div class="mb-head">' +
-          '<button type="button" class="mb-back" data-mb-back aria-label="back"><img src="assets/mailbox/back.png" alt=""></button>' +
           '<div class="mb-plank"><img class="mb-plank-img" src="assets/mailbox/plank.png" alt=""><img class="mb-plank-env" src="assets/mailbox/env-heart.png" alt=""></div>' +
           '<button type="button" class="mb-all" data-mb-all aria-label="claim all"><img src="assets/mailbox/ic-mail.png" alt=""><img src="assets/mailbox/ic-check.png" alt=""></button>' +
         '</div>' +
         '<div class="mb-list" data-mb-list></div>' +
       '</div>';
     var listEl = el.querySelector('[data-mb-list]');
-    el.querySelector('[data-mb-back]').addEventListener('click', function () { if (opts.onBack) opts.onBack(); });
     el.querySelector('[data-mb-all]').addEventListener('click', function () {
       var got = claimAll(); if (!got.length) return;
       render(false); if (opts.onClaim) opts.onClaim();

@@ -6923,3 +6923,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 .mb-claim:active:not(:disabled) { transform: scale(0.9); }
 .mb-claim.is-done { filter: grayscale(1) brightness(0.95); -webkit-text-stroke-color: #555; font-size: 0.72rem; cursor: default; }
 .mb-card.is-claimed { filter: saturate(0.6); opacity: 0.85; }
+/* v1008(사용자 지정): 메일함 뒤로가기 삭제 — 이름판 가운데 크게, 전체받기는 오른쪽 */
+.mb-head { justify-content: center; }
+.mb-plank { width: 58%; }
+.mb-all { position: absolute; right: 0; top: 50%; translate: 0 -50%; }
