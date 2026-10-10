@@ -6877,3 +6877,7 @@ html, body, .cosmic-bg { background: #2a190d; }
               radial-gradient(circle 9px at calc(19px + (100% - 38px) * 0.8365) 32px, rgba(70, 30, 5, 0.75), rgba(70, 30, 5, 0) 100%);
   animation: ph2-lamp-off 3.4s ease-in-out infinite; }
 @keyframes ph2-lamp-off { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+/* v1006(사용자 지정): 토글 4칸 폭 항상 같게(영어처럼 긴 글자도 칸 안 넓힘, 글자만 가로로 줄임) + 길게 눌러도 그림 저장 메뉴 안 뜨게 */
+.inv-tab, .shop-tab { flex: 1 1 0 !important; min-width: 0 !important; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.inv-tab .inv-tab-lbl, .shop-tab .shop-tab-lbl { white-space: nowrap; transform-origin: 50% 50%; }
+.inv-tab img, .shop-tab img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; pointer-events: none; }
