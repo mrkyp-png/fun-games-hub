@@ -54,8 +54,8 @@
       var c = card('globe', 'mole.set.lang', slot('drop', '<span class="st2-flag"></span>'), function () {
         var v = document.createElement('div');
         v.className = 'ad-overlay';
-        v.innerHTML = '<div class="ad-overlay-card quit-card"><div class="quit-title"></div><div class="quit-btns">' +
-          '<button type="button" data-lang="ko">🇰🇷 한국어</button><button type="button" data-lang="en">🇺🇸 English</button></div></div>';
+        v.innerHTML = '<div class="ad-overlay-card quit-card"><img class="quit-ico" src="' + A + 'ic-globe.png" alt=""><div class="quit-title"></div><div class="quit-btns">' +
+          '<button type="button" class="quit-yes" data-lang="ko">🇰🇷 한국어</button><button type="button" class="quit-yes" data-lang="en">🇺🇸 English</button></div></div>';
         v.querySelector('.quit-title').textContent = T('mole.set.lang');
         v.addEventListener('click', function (e) {
           var l = e.target.closest('[data-lang]');
@@ -67,21 +67,22 @@
       c.querySelector('.st2-flag').textContent = flag();
     }
 
-    function soon() {
-      var v = document.createElement('div');
-      v.className = 'ad-overlay';
-      v.innerHTML = '<div class="ad-overlay-card quit-card"><div class="quit-title"></div><div class="quit-btns"><button type="button" class="quit-yes" data-q="ok">OK</button></div></div>';
-      v.querySelector('.quit-title').textContent = T('mole.inv.soon');
-      v.querySelector('[data-q="ok"]').addEventListener('click', function () { v.remove(); });
-      document.body.appendChild(v);
+    // v1011(사용자 지정 3번): 준비 중 = 작은 말풍선이 잠깐 떴다 사라짐
+    function soon(e) {
+      var host = (e && e.currentTarget) || el, r = host.getBoundingClientRect();
+      var t = document.createElement('div');
+      t.className = 'st2-toast'; t.textContent = T('mole.inv.soon');
+      t.style.left = (r.left + r.width / 2) + 'px'; t.style.top = (r.top - 6) + 'px';
+      document.body.appendChild(t);
+      setTimeout(function () { t.remove(); }, 1500);
     }
 
     // 데이터 초기화 — 바로 지우지 않고 확인 팝업(명세 §6⑨)
     function confirmReset() {
       var v = document.createElement('div');
       v.className = 'ad-overlay';
-      v.innerHTML = '<div class="ad-overlay-card quit-card"><div class="quit-title"></div>' +
-        '<div class="quit-btns"><button type="button" data-q="no"></button><button type="button" class="quit-yes" data-q="yes"></button></div></div>';
+      v.innerHTML = '<div class="ad-overlay-card quit-card"><img class="quit-ico" src="' + A + 'ic-trash.png" alt=""><div class="quit-title"></div>' +
+        '<div class="quit-btns"><button type="button" data-q="no"></button><button type="button" class="quit-yes quit-danger" data-q="yes"></button></div></div>';
       v.querySelector('.quit-title').textContent = T('mole.set.resetConfirm');
       v.querySelector('[data-q="no"]').textContent = T('mole.skl.restoreCancel');
       v.querySelector('[data-q="yes"]').textContent = T('mole.set.reset');
@@ -102,7 +103,7 @@
       langCard();
       card('guide', 'mole.more.help', slot('arrow'), opts.onHelp || soon);
       card('contact', 'mole.more.contact', slot('arrow'), opts.onContact || soon);
-      card('noad', 'mole.set.adfree', slot('arrow'), soon);
+      card('noad', 'mole.set.adfree', slot('arrow')).classList.add('is-off'); // v1011(사용자 지정): 광고 제거 = 회색만, 누름 없음
       card('shield', 'mole.more.privacy', slot('arrow'), opts.onPrivacy || soon);
       card('trash', 'mole.set.reset', slot('arrow'), confirmReset);
       // 이름판 글자 "…" 없이 판 안에 한 줄

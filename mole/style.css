@@ -6954,3 +6954,25 @@ html, body, .cosmic-bg { background: #2a190d; }
 .st2-card, .st2-card * { -webkit-touch-callout: none; user-select: none; }
 .st2-card img { -webkit-user-drag: none; pointer-events: none; }
 .st2-lbl { font-size: 0.8rem; }
+.st2-tog { aspect-ratio: 150 / 65; object-fit: contain; } /* v1011: OFF 그림 높이가 달라도 칸 높이 같게(이름판 안 움직임) */
+/* ===== v1011(사용자 지정): 확인 팝업(.quit-card) 게임 톤 — 나무 테두리 + 크림 바탕 + 초록/회색 버튼, 튀어나오는 등장. 앱 전체 공용 ===== */
+.ad-overlay-card.quit-card { width: 80%; max-width: 330px; padding: 16px 14px 14px; border-radius: 0; box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45); color: #3a2008;
+  background: #fbe8b8 padding-box; border: solid transparent; border-width: 30px 18px 18px; border-image: url('assets/mailbox/frame-bare.png') 135 52 66 52 / 30px 18px 18px stretch round;
+  animation: qc-pop 0.28s cubic-bezier(.2, 1.4, .5, 1) both; }
+@keyframes qc-pop { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.quit-card .quit-title { font-family: 'Jua', sans-serif; font-weight: 400; font-size: 1.05rem; line-height: 1.35; color: #4a2508; margin-bottom: 14px; white-space: pre-line; }
+.quit-card .quit-ico { display: block; width: 64px; height: auto; margin: -4px auto 6px; }
+.quit-card .quit-btns { gap: 10px; }
+.quit-card .quit-btns button { height: 44px; padding: 0 4px; border: 0; border-radius: 0; font-family: 'Jua', sans-serif; font-weight: 400; font-size: 1rem; color: #fff; white-space: nowrap;
+  background: url('assets/mailbox/btn-green.png') center / 100% 100% no-repeat; filter: grayscale(1) brightness(1.05); -webkit-text-stroke: 2.5px #4a4f58; paint-order: stroke fill; transition: transform 0.08s; }
+.quit-card .quit-btns .quit-yes { filter: none; -webkit-text-stroke-color: #145a28; }
+.quit-card .quit-btns .quit-danger { background-image: url('assets/mailbox/btn-red.png'); -webkit-text-stroke-color: #6b0f0f; }
+.quit-card .quit-btns button:active { transform: scale(0.92); }
+.quit-card .photo-rename-input { border: 2px solid #c58a14; border-radius: 8px; background: #fffaf0; }
+.st2-toast { position: fixed; z-index: 60; transform: translate(-50%, -100%); padding: 6px 12px; border-radius: 12px; white-space: nowrap; pointer-events: none;
+  background: #fbe8b8; border: 3px solid #8a4a14; color: #4a2508; font-family: 'Jua', sans-serif; font-size: 0.85rem; box-shadow: 0 4px 8px rgba(0,0,0,0.35);
+  animation: st2-toast 1.5s ease both; }
+.st2-toast::after { content: ''; position: absolute; left: 50%; bottom: -9px; translate: -50% 0; border: 7px solid transparent; border-top-color: #8a4a14; border-bottom: 0; }
+@keyframes st2-toast { 0% { opacity: 0; margin-top: 6px; } 15%, 75% { opacity: 1; margin-top: 0; } 100% { opacity: 0; margin-top: -6px; } }
+.st2-card.is-off { filter: grayscale(1) brightness(0.85); }
+.st2-card.is-off .st2-bottom { pointer-events: none; }
