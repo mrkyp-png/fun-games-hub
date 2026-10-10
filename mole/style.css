@@ -6855,3 +6855,25 @@ html, body, .cosmic-bg { background: #2a190d; }
 #inventory-screen[data-tab="weapon"] .inv-right { margin-top: calc(9px + 0.3cm); } /* v1004(사용자 지정): 0.3cm 아래로 */
 /* v1003(사용자 지정): 설명 박스 글자 줄간격 줄여 높이 줄임 */
 #inventory-screen[data-tab="weapon"] .inv-desc { line-height: 1.22; padding-top: 5px; padding-bottom: 5px; }
+/* v1005(사용자 지정): 램프 빛을 전구 위치에 정확히 — 액자 그림의 전구(원본 x 20.8/49.8/79.1%, y 66px)를 테두리 배율(40/83)로 환산 */
+.ph2-frame::after { top: -40px; height: 60px; left: -19px; right: -19px;
+  background: radial-gradient(16px 11px at calc(19px + (100% - 38px) * 0.1635) 32px, rgba(255, 245, 190, 1), rgba(255, 205, 90, 0.5) 55%, rgba(255, 180, 60, 0) 100%),
+              radial-gradient(16px 11px at 50% 34px, rgba(255, 245, 190, 1), rgba(255, 205, 90, 0.5) 55%, rgba(255, 180, 60, 0) 100%),
+              radial-gradient(16px 11px at calc(19px + (100% - 38px) * 0.8365) 32px, rgba(255, 245, 190, 1), rgba(255, 205, 90, 0.5) 55%, rgba(255, 180, 60, 0) 100%); }
+/* v1005(사용자 지정): 전구 = 동그란 빛(원형) */
+.ph2-frame::after {
+  background: radial-gradient(circle 11px at calc(19px + (100% - 38px) * 0.1635) 32px, rgba(255, 248, 200, 1) 0%, rgba(255, 220, 110, 0.85) 45%, rgba(255, 190, 70, 0) 100%),
+              radial-gradient(circle 11px at 50% 34px, rgba(255, 248, 200, 1) 0%, rgba(255, 220, 110, 0.85) 45%, rgba(255, 190, 70, 0) 100%),
+              radial-gradient(circle 11px at calc(19px + (100% - 38px) * 0.8365) 32px, rgba(255, 248, 200, 1) 0%, rgba(255, 220, 110, 0.85) 45%, rgba(255, 190, 70, 0) 100%); }
+@keyframes ph2-lamp { 0%, 100% { opacity: 0; } 50% { opacity: 1; } } /* v1005: 꺼졌다 켜졌다 차이 크게 */
+/* v1005: 전구 그림 자체가 켜진 그림이라 차이가 안 보임 → 꺼질 때는 전구를 어둡게(::before), 켜질 때는 동그란 빛을 크게(::after) */
+.ph2-frame::after {
+  background: radial-gradient(circle 20px at calc(19px + (100% - 38px) * 0.1635) 32px, rgba(255, 250, 215, 1) 0%, rgba(255, 225, 120, 0.9) 35%, rgba(255, 190, 70, 0) 100%),
+              radial-gradient(circle 20px at 50% 34px, rgba(255, 250, 215, 1) 0%, rgba(255, 225, 120, 0.9) 35%, rgba(255, 190, 70, 0) 100%),
+              radial-gradient(circle 20px at calc(19px + (100% - 38px) * 0.8365) 32px, rgba(255, 250, 215, 1) 0%, rgba(255, 225, 120, 0.9) 35%, rgba(255, 190, 70, 0) 100%); }
+.ph2-frame::before { content: ''; position: absolute; top: -40px; height: 60px; left: -19px; right: -19px; z-index: 3; pointer-events: none;
+  background: radial-gradient(circle 9px at calc(19px + (100% - 38px) * 0.1635) 32px, rgba(70, 30, 5, 0.75), rgba(70, 30, 5, 0) 100%),
+              radial-gradient(circle 9px at 50% 34px, rgba(70, 30, 5, 0.75), rgba(70, 30, 5, 0) 100%),
+              radial-gradient(circle 9px at calc(19px + (100% - 38px) * 0.8365) 32px, rgba(70, 30, 5, 0.75), rgba(70, 30, 5, 0) 100%);
+  animation: ph2-lamp-off 3.4s ease-in-out infinite; }
+@keyframes ph2-lamp-off { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
