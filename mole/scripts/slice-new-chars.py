@@ -109,6 +109,38 @@ def do_sheet(path, team, names, cols, rows, scale=None):
         canvas.save(os.path.join(OUT, name + '.png'), optimize=True)
     return scale
 
+def fill_bottom_gaps(path, rows=70):
+    """전신 아래쪽: 같은 줄 안의 빈 틈(이웃 칸 자르면서 생긴 삼각 홈)을 메움 — 색은 주변 몸 색으로 inpaint."""
+    im = np.asarray(Image.open(path).convert('RGBA')).copy(); H, W, _ = im.shape
+    a = im[..., 3] > 40; gap = np.zeros((H, W), np.uint8)
+    for y in range(H - rows, H):
+        xs = np.where(a[y])[0]
+        if len(xs) < 2: continue
+        row = ~a[y, xs[0]:xs[-1] + 1]
+        if row.any(): gap[y, xs[0]:xs[-1] + 1][row] = 1
+    semi = np.zeros((H, W), bool); semi[H - 12:] = (im[H - 12:, :, 3] > 0) & (im[H - 12:, :, 3] < 250)
+    im[semi, 3] = 255   # 바닥 몇 줄의 반투명 선(배 아래 얇은 줄 비침) 불투명하게
+    if not gap.any():
+        Image.fromarray(im).save(path, optimize=True); return 0
+    rgb = cv2.inpaint(np.ascontiguousarray(im[..., :3]), gap, 7, cv2.INPAINT_TELEA)
+    m = gap.astype(bool); im[m, :3] = rgb[m]; im[m, 3] = 255
+    Image.fromarray(im).save(path, optimize=True); return int(m.sum())
+
+def tiger_ears():
+    for f in sorted(os.listdir(OUT)):
+        if not (f.startswith('tiger') and f[5:6] in '-123456' and not f.startswith('tiger-x')): continue
+        p = os.path.join(OUT, f); im = np.asarray(Image.open(p).convert('RGBA')).copy(); a = im[..., 3] > 40
+        hsv = cv2.cvtColor(np.ascontiguousarray(im[..., :3]), cv2.COLOR_RGB2HSV).astype(int); Hh, Ss, Vv = hsv[..., 0], hsv[..., 1], hsv[..., 2]
+        helm = (Vv < 60) & (Ss < 120) & a; ys = np.where(helm)[0]
+        if not len(ys): continue
+        ht = ys.min(); hb = ht + int((ys.max() - ht) * 0.75); zone = np.zeros_like(a); zone[ht:hb] = True
+        fur = a & zone & ~helm & (Hh <= 16) & (Ss > 70) & (Vv > 40)
+        body = a & (np.arange(a.shape[0])[:, None] > hb + 10) & (Hh >= 8) & (Hh <= 22) & (Ss > 150) & (Vv > 170)
+        if body.sum() < 50 or not fur.any(): continue
+        bh, bs, bv = np.median(Hh[body]), np.median(Ss[body]), np.median(Vv[body]); fs, fv = np.median(Ss[fur]), np.median(Vv[fur])
+        nh = hsv.copy(); nh[..., 0][fur] = bh; nh[..., 1][fur] = np.clip(Ss[fur] * (bs / max(fs, 1)), 0, 255); nh[..., 2][fur] = np.clip(Vv[fur] * (bv / max(fv, 1)), 0, 255)
+        im[..., :3] = cv2.cvtColor(nh.astype(np.uint8), cv2.COLOR_HSV2RGB); Image.fromarray(im).save(p, optimize=True)
+
 def main():
     d = os.path.join(SRC, '두더지 이미지 (베어스)')
     do_sheet(os.path.join(d, '전신.png'), 'blue', ['mole%d' % i for i in range(1, 16)], 5, 3)
@@ -124,6 +156,10 @@ def main():
         do_sheet(os.path.join(d, full), team, ['%s%d' % (name, i) for i in range(1, 7)], 3, 2)
         do_sheet(os.path.join(d, head), team, ['%s-head%d' % (name, i) for i in range(1, 7)], 3, 2)
         do_sheet(os.path.join(d, peek), team, ['%s-peek%d' % (name, i) for i in range(1, 7)], 3, 2)
+    tiger_ears()   # 호랑이 귀 바깥 털 = 몸 골드색(사용자 지정)
+    for f in sorted(os.listdir(OUT)):
+        import re
+        if re.match(r'^(mole|lion|rabbit|hippo|tiger)\d+\.png$', f): fill_bottom_gaps(os.path.join(OUT, f))
     print('done')
 
 if __name__ == '__main__':
