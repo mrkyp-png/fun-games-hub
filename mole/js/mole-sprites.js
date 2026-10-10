@@ -67,9 +67,10 @@
   }
 
   // 방해물 동물 (동물들.png). animal(목숨 -1) = 일반 얼굴, bomb(시간 -3초) = 고글 낀 버전(-x).
-  // v1018: 새 3D 동물 4종(rabbit·tiger·hippo·lion, 각 6포즈 + 머리·빼꼼). 강아지는 사용자 검토 제외 — 예전 그림 유지.
-  // index = 동물 + 5 × 포즈 (spawn-scheduler 가 0..OBSTACLE_COUNT-1 에서 고름).
-  const OBSTACLES = ['rabbit', 'tiger', 'hippo', 'lion', 'dog'];
+  // v1018: 새 3D 동물 4종(rabbit·tiger·hippo·lion, 각 6포즈 + 머리·빼꼼).
+  // v1021(사용자 지정): 강아지는 새 그림 정해질 때까지 출현 안 함 — 넣을 땐 목록에 'dog' 다시 추가.
+  // index = 동물 + 동물수 × 포즈 (spawn-scheduler 가 0..OBSTACLE_COUNT-1 에서 고름).
+  const OBSTACLES = ['rabbit', 'tiger', 'hippo', 'lion'];
   const ANIMAL_POSES = 6;
   const NEW_ANIMALS = { rabbit: 1, tiger: 1, hippo: 1, lion: 1 };
   const OBSTACLE_COUNT = OBSTACLES.length * ANIMAL_POSES;

@@ -53,12 +53,12 @@ const S = require('../js/mole-sprites.js');
 
 // 8) 방해물 동물: animal = 일반 얼굴, bomb = 고글(-x) 버전
 {
-  assert.strictEqual(S.OBSTACLE_COUNT, 30); // 동물 5 × 포즈 6
+  assert.strictEqual(S.OBSTACLE_COUNT, 24); // 동물 4 × 포즈 6 (강아지 제외 v1021)
   assert.strictEqual(S.obstacleFile('animal', 0), 'rabbit1');
   assert.strictEqual(S.obstacleFile('bomb', 0), 'rabbit1'); // 새 동물 폭탄 = 같은 그림 + 이모지
-  assert.strictEqual(S.obstacleFile('animal', 4), 'dog');
-  assert.strictEqual(S.obstacleFile('bomb', 4), 'dog-x');
-  assert.strictEqual(S.obstacleFile('animal', 5), 'rabbit2', '동물 다음 줄 = 다음 포즈');
+  assert.strictEqual(S.obstacleFile('animal', 4), 'rabbit2');
+  assert.strictEqual(S.obstacleFile('bomb', 3), 'lion1');
+  assert.strictEqual(S.obstacleFile('animal', 5), 'tiger2', '동물 다음 줄 = 다음 포즈');
   assert.strictEqual(S.animalFileForDepth('tiger3', 1), 'tiger-head3');
   assert.strictEqual(S.animalFileForDepth('tiger3', 2), 'tiger-peek3');
 }
