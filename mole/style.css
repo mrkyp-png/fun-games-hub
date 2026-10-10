@@ -6852,6 +6852,6 @@ html, body, .cosmic-bg { background: #2a190d; }
 #inventory-screen[data-tab="weapon"] .inv-desc { margin-top: 4px; }
 #inventory-screen[data-tab="weapon"] .inv-right { margin-top: 10px; } /* v1003: 설명 박스 안 잘리게 오른쪽 전체 위로(32→10px) */
 #inventory-screen[data-tab="weapon"] .inv-cards-head { top: 15px; } /* 능력치 판과 안 겹치게 */
-#inventory-screen[data-tab="weapon"] .inv-right { margin-top: 9px; }
+#inventory-screen[data-tab="weapon"] .inv-right { margin-top: calc(9px + 0.3cm); } /* v1004(사용자 지정): 0.3cm 아래로 */
 /* v1003(사용자 지정): 설명 박스 글자 줄간격 줄여 높이 줄임 */
 #inventory-screen[data-tab="weapon"] .inv-desc { line-height: 1.22; padding-top: 5px; padding-bottom: 5px; }
