@@ -2938,8 +2938,8 @@
     window.__debugForceBombMole = (regionId, kind) => {
       if (state && state.scheduler) state.scheduler.debugForceBombMole(regionId | 0, kind);
     };
-    window.__debugForceAnimal = (regionId) => {
-      if (state && state.scheduler) state.scheduler.debugForceAnimal(regionId | 0);
+    window.__debugForceAnimal = (regionId, poseIndex) => {
+      if (state && state.scheduler) state.scheduler.debugForceAnimal(regionId | 0, poseIndex);
     };
     window.__debugSpawnPoint = (regionId) => {
       const s = state && state.spawnPoints.find((p) => p.regionId === (regionId | 0));

@@ -19,6 +19,7 @@
       img.src = MS.spriteUrl(sprite);
       img.style.left = (sp.x * 100) + '%';
       img.style.top = (sp.y * 100) + '%';
+      if (cls === 'mole-hole-front') img.style.zIndex = 3 + Math.round(sp.y * 100) * 2; // 자기 줄 캐릭터 바로 앞(v1018)
       parent.appendChild(img);
       list.push(img);
     }

@@ -10,8 +10,9 @@
   // 모든 프레임(전신 9종 + 빠끔 2종 + 모자)은 slice-mole-sprites.py 가 헬멧 폭 기준으로
   // 스케일을 맞춰 같은 400x428 캔버스에 얹어 두므로, 게임은 한 박스에 그대로 그리면 된다.
 
-  const POSE_COUNT = 8;
-  const DEPTH_FILE = { 1: 'peek1', 2: 'peek2', 3: 'helmet' };
+  // v1018(사용자 지정): 새 3D 두더지(바탕화면 "케릭 UI 및 에셋", 파란 B 헬멧) 15포즈 — 포즈마다 짝 맞는 머리·빼꼼.
+  //   깊이 사다리: 0 전신(moleN) → 1 머리(mole-headN) → 2 빼꼼(mole-peekN) → 3 모자(helmet) → 4 사라짐
+  const POSE_COUNT = 15;
   // 깊이별 translateY (프레임 높이 대비 %). 프레임 교체가 "숨는" 연출의 대부분을 하고,
   // translateY 는 내려가는 "움직임"만 살짝 더한다. 4는 클립 밖으로 완전히 내려보냄.
   const DEPTH_SINK = [0, 6, 11, 15, 120];
@@ -49,8 +50,11 @@
   }
 
   function fileForDepth(depth, poseIndex) {
-    if (depth <= 0) return 'mole' + (poseIndex + 1);
-    if (DEPTH_FILE[depth]) return DEPTH_FILE[depth];
+    const n = (poseIndex || 0) + 1;
+    if (depth <= 0) return 'mole' + n;
+    if (depth === 1) return 'mole-head' + n;
+    if (depth === 2) return 'mole-peek' + n;
+    if (depth === 3) return 'helmet';
     return null; // depth >= 4
   }
 
@@ -63,11 +67,17 @@
   }
 
   // 방해물 동물 (동물들.png). animal(목숨 -1) = 일반 얼굴, bomb(시간 -3초) = 고글 낀 버전(-x).
+  // v1018: 새 3D 동물 4종(rabbit·tiger·hippo·lion, 각 6포즈 + 머리·빼꼼). 강아지는 사용자 검토 제외 — 예전 그림 유지.
+  // index = 동물 + 5 × 포즈 (spawn-scheduler 가 0..OBSTACLE_COUNT-1 에서 고름).
   const OBSTACLES = ['rabbit', 'tiger', 'hippo', 'lion', 'dog'];
-  const OBSTACLE_COUNT = OBSTACLES.length;
+  const ANIMAL_POSES = 6;
+  const NEW_ANIMALS = { rabbit: 1, tiger: 1, hippo: 1, lion: 1 };
+  const OBSTACLE_COUNT = OBSTACLES.length * ANIMAL_POSES;
 
   function obstacleFile(type, index) {
-    return OBSTACLES[index % OBSTACLE_COUNT] + (type === 'bomb' ? '-x' : '');
+    const name = OBSTACLES[index % OBSTACLES.length];
+    if (!NEW_ANIMALS[name]) return name + (type === 'bomb' ? '-x' : '');
+    return name + (Math.floor(index / OBSTACLES.length) % ANIMAL_POSES + 1); // 폭탄도 같은 그림 + 폭탄 이모지(pop-elements)
   }
 
   // 동물 다타(챕터8 전용, 동물이 타겟으로 뒤집히는 챕터라 두더지처럼 다타 도입 — 사용자 지정).
@@ -80,6 +90,8 @@
   }
   function animalFileForDepth(animalName, depth) {
     if (depth <= 0) return animalName;
+    const mm = /^([a-z]+)(\d+)$/.exec(animalName);
+    if (mm) return depth === 1 ? mm[1] + '-head' + mm[2] : depth === 2 ? mm[1] + '-peek' + mm[2] : null; // 새 동물: 머리 → 빼꼼
     const suf = ANIMAL_DEPTH_FILE[depth];
     return suf ? (animalName + '-' + suf) : null;
   }
@@ -95,12 +107,15 @@
   function preloadAll() {
     if (preloadRefs) return preloadRefs;
     const files = [];
-    for (let i = 1; i <= POSE_COUNT; i++) files.push('mole' + i);
-    files.push('peek1', 'peek2', 'helmet', 'hole', 'hole-front', 'shield');
+    for (let i = 1; i <= POSE_COUNT; i++) files.push('mole' + i, 'mole-head' + i, 'mole-peek' + i);
+    files.push('helmet', 'hole', 'hole-front', 'shield');
     ['spring', 'summer', 'autumn', 'winter', 'night'].forEach(function (s) {
       files.push('hole-' + s, 'hole-front-' + s);
     });
-    OBSTACLES.forEach(function (o) { files.push(o, o + '-x', o + '-peek1', o + '-peek2'); });
+    OBSTACLES.forEach(function (o) {
+      if (!NEW_ANIMALS[o]) { files.push(o, o + '-x', o + '-peek1', o + '-peek2'); return; }
+      for (let i = 1; i <= ANIMAL_POSES; i++) files.push(o + i, o + '-head' + i, o + '-peek' + i);
+    });
     preloadRefs = files.map(function (f) {
       const img = new Image();
       img.src = spriteUrl(f);

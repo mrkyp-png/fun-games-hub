@@ -105,6 +105,7 @@
       el.className = 'mole-pop mole-pop--' + pop.type;
       el.style.left = (pop.x * 100) + '%';
       el.style.top = (pop.y * 100) + '%';
+      el.style.zIndex = 2 + Math.round(pop.y * 100) * 2; // 윗줄 구멍 앞턱보다 앞, 자기 구멍 앞턱보다 뒤(v1018)
       const img = document.createElement('img');
       img.className = 'mole-pop-img';
       img.alt = '';
@@ -113,7 +114,7 @@
       if (pop.bombKind) {
         bombEl = buildBombOverlay(pop.bombKind);
         el.appendChild(bombEl);
-      } else if (pop.type === 'bomb' && MS.obstacleFile('animal', pop.poseIndex) === 'dog') {
+      } else if (pop.type === 'bomb') { // v1018: 새 동물엔 고글(-x) 그림이 없어 폭탄 동물 = 같은 그림 + 폭탄 이모지(강아지와 동일)
         bombEl = buildAnimalBombOverlay();
         el.appendChild(bombEl);
       }
@@ -202,11 +203,7 @@
       // 모자 = 우 0.1cm · 위 0.4cm. 전신 포즈 좌우보정: mole2·mole3 = 좌 0.1cm, mole5 = 좌 0.03cm.
       let peekLift = '';
       let peekX = '-50%';
-      if (m.kind === 'mole' && file === 'peek1') peekLift = ' - 0.15cm';
-      else if (m.kind === 'mole' && file === 'peek2') peekLift = ' - 0.2cm';
-      else if (m.kind === 'mole' && file === 'helmet') { peekLift = ' - 0.4cm'; peekX = 'calc(-50% + 0.1cm)'; }
-      else if (m.kind === 'mole' && (file === 'mole2' || file === 'mole3')) peekX = 'calc(-50% - 0.1cm)';
-      else if (m.kind === 'mole' && file === 'mole5') peekX = 'calc(-50% - 0.03cm)';
+      // v1018: 새 그림은 헬멧 가운데 기준으로 잘라 둬서 예전 포즈별 보정(peek1/peek2/helmet/mole2·3·5)은 안 씀
       m.img.style.transform = 'translate(' + peekX + ', calc(' + sink + '%' + peekLift + '))';
       // 폭탄 오버레이도 두더지 sink 를 따라 같이 내려가되, 침몰(dying) 중엔 옆으로도 살짝
       // 끌어당겨 5시 방향(대각선 아래)으로 빠지게 한다 — 그냥 수직으로만 내리면 구멍 흙턱에

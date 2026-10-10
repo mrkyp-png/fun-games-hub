@@ -26,8 +26,8 @@ const S = require('../js/mole-sprites.js');
 {
   assert.strictEqual(S.fileForDepth(0, 0), 'mole1', 'poseIndex 0 → mole1');
   assert.strictEqual(S.fileForDepth(0, 7), 'mole8', 'poseIndex 7 → mole8');
-  assert.strictEqual(S.fileForDepth(1, 3), 'peek1');
-  assert.strictEqual(S.fileForDepth(2, 3), 'peek2');
+  assert.strictEqual(S.fileForDepth(1, 3), 'mole-head4'); // v1018 새 그림: 깊이1 = 같은 포즈 머리
+  assert.strictEqual(S.fileForDepth(2, 3), 'mole-peek4'); // 깊이2 = 같은 포즈 빼꼼
   assert.strictEqual(S.fileForDepth(3, 3), 'helmet');
   assert.strictEqual(S.fileForDepth(4, 3), null, '깊이 4 이상은 사라진 상태(그림 없음)');
 }
@@ -40,7 +40,7 @@ const S = require('../js/mole-sprites.js');
 
 // 6) 포즈 개수 (파란 모자·팔벌린 포즈 제외 → 8종)
 {
-  assert.strictEqual(S.POSE_COUNT, 8);
+  assert.strictEqual(S.POSE_COUNT, 15);
 }
 
 // 7) sink 보간: 깊이 0 = 안 내려감, 깊이 4 = 클립 밖(>100%), 중간값은 단조 증가
@@ -53,12 +53,14 @@ const S = require('../js/mole-sprites.js');
 
 // 8) 방해물 동물: animal = 일반 얼굴, bomb = 고글(-x) 버전
 {
-  assert.strictEqual(S.OBSTACLE_COUNT, 5);
-  assert.strictEqual(S.obstacleFile('animal', 0), 'rabbit');
-  assert.strictEqual(S.obstacleFile('bomb', 0), 'rabbit-x');
+  assert.strictEqual(S.OBSTACLE_COUNT, 30); // 동물 5 × 포즈 6
+  assert.strictEqual(S.obstacleFile('animal', 0), 'rabbit1');
+  assert.strictEqual(S.obstacleFile('bomb', 0), 'rabbit1'); // 새 동물 폭탄 = 같은 그림 + 이모지
   assert.strictEqual(S.obstacleFile('animal', 4), 'dog');
   assert.strictEqual(S.obstacleFile('bomb', 4), 'dog-x');
-  assert.strictEqual(S.obstacleFile('animal', 5), 'rabbit', 'index wraps by OBSTACLE_COUNT');
+  assert.strictEqual(S.obstacleFile('animal', 5), 'rabbit2', '동물 다음 줄 = 다음 포즈');
+  assert.strictEqual(S.animalFileForDepth('tiger3', 1), 'tiger-head3');
+  assert.strictEqual(S.animalFileForDepth('tiger3', 2), 'tiger-peek3');
 }
 
 // 9) HEAD_ANCHOR: 11개 포즈, 각 값이 정상 범위 (스프라이트는 콘텐츠 바닥정렬 = 얼굴이 캔버스 아래쪽)
