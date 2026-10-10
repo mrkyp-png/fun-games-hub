@@ -116,6 +116,13 @@
         });
         listEl.appendChild(c);
       });
+      // v1009(사용자 지정): 제목·설명 "…" 없이 — 넘치면 글자 폭만 줄여 한 줄
+      requestAnimationFrame(function () {
+        listEl.querySelectorAll('.mb-title, .mb-desc').forEach(function (t) {
+          var room = t.parentNode.clientWidth; if (!room || t.scrollWidth <= room) return;
+          t.style.transform = 'scaleX(' + Math.max(room / t.scrollWidth, 0.55).toFixed(3) + ')';
+        });
+      });
     }
     return { show: function () { listEl.scrollTop = 0; render(true); syncRemote(function (n) { if (n) render(false); }); } };
   }

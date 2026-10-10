@@ -6927,3 +6927,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 .mb-head { justify-content: center; }
 .mb-plank { width: 58%; }
 .mb-all { position: absolute; right: 0; top: 50%; translate: 0 -50%; }
+/* v1009(사용자 지정): 메일함 테두리 양옆 굵게 */
+.mb-frame { margin: 4px 2px; border-left-width: 26px; border-right-width: 26px; border-image-width: 52px 28px 25px 28px; }
+.mb-head { left: -22px; right: -22px; }
+.mb-title, .mb-desc { overflow: visible; text-overflow: clip; width: max-content; max-width: none; transform-origin: 0 50%; } /* v1009: … 금지 */
