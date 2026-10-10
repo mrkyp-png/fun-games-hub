@@ -4,119 +4,114 @@
   var I18N = root.FGH.I18N;
   var T = function (k) { return I18N.t(k); };
 
-  var ICONS = {
-    bgm: '<path d="M9 18V5l11-2v13M9 13l11-2"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
-    sfx: '<path d="M4 9v6h4l5 4V5L8 9zM17 8a5 5 0 010 8M19.5 5.5a9 9 0 010 13"/>',
-    vib: '<rect x="8" y="4" width="8" height="16" rx="1.5"/><path d="M4 8v8M20 8v8"/>'
-  };
+  // v1010 설정 화면 — 바탕화면 "설정함 UI 및 에셋/MOLE_PANG_설정화면_최종_명세서" 3×3 카드(순서 고정, §7).
+  // 카드 = 노란 박스 + 나무판 뒤 아이콘 + 갈색 이름판(글자는 코드) + 아래 칸(토글 / ▼ / ›). 에셋은 assets/settings2 각각 독립.
+  var A = 'assets/settings2/';
 
   function create(opts) {
     var el = opts.root;
+    el.classList.add('st2-screen');
+    el.innerHTML =
+      '<div class="mb-frame st2-frame">' +
+        '<div class="mb-head"><div class="st2-head"><img src="' + A + 'head.png" alt=""></div></div>' +
+        '<div class="st2-grid" data-set-list></div>' +
+      '</div>';
     var list = el.querySelector('[data-set-list]');
-    el.querySelector('[data-back="settings"]').addEventListener('click', opts.onClose);
 
-    function toggleRow(iconKey, labelKey, settingName) {
-      var row = document.createElement('div');
-      row.className = 'set-row';
-      row.innerHTML =
-        '<svg class="set-ic" viewBox="0 0 24 24" aria-hidden="true">' + ICONS[iconKey] + '</svg>' +
-        '<span class="set-lbl"></span>' +
-        '<button type="button" class="set-toggle" role="switch"><span class="set-knob"></span></button>';
-      row.querySelector('.set-lbl').textContent = T(labelKey);
-      var btn = row.querySelector('.set-toggle');
+    function card(icon, labelKey, bottomHtml, onClick) {
+      var c = document.createElement('div');
+      c.className = 'st2-card';
+      c.innerHTML =
+        '<img class="st2-card-bg" src="' + A + 'card.png" alt="">' +
+        '<div class="st2-art"><img class="st2-wood" src="' + A + 'wood.png" alt=""><img class="st2-ic" src="' + A + 'ic-' + icon + '.png" alt=""></div>' +
+        '<div class="st2-plank"><img src="' + A + 'plank.png" alt=""><span class="st2-lbl"></span></div>' +
+        '<button type="button" class="st2-bottom">' + bottomHtml + '</button>';
+      c.querySelector('.st2-lbl').textContent = T(labelKey);
+      if (onClick) c.querySelector('.st2-bottom').addEventListener('click', onClick);
+      list.appendChild(c);
+      return c;
+    }
+
+    function toggleCard(icon, labelKey, settingName) {
+      var c = card(icon, labelKey, '<img class="st2-tog" alt="">');
+      var img = c.querySelector('.st2-tog'), b = c.querySelector('.st2-bottom');
       function paint() {
         var on = S.get(settingName);
-        btn.classList.toggle('set-toggle--on', on);
-        btn.setAttribute('aria-checked', on ? 'true' : 'false');
+        img.src = A + (on ? 'tog-on.png' : 'tog-off.png');
+        b.setAttribute('role', 'switch'); b.setAttribute('aria-checked', on ? 'true' : 'false');
       }
-      btn.addEventListener('click', function () {
-        S.set(settingName, !S.get(settingName));
-        paint();
+      b.addEventListener('click', function () {
+        S.set(settingName, !S.get(settingName)); paint();
         if (settingName === 'vibration' && S.get('vibration')) S.vibrate(30);
       });
       paint();
-      list.appendChild(row);
     }
 
-    function langRow() {
-      var row = document.createElement('div');
-      row.className = 'set-row';
-      row.innerHTML =
-        '<svg class="set-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 000 18M12 3a14 14 0 010 18"/></svg>' +
-        '<span class="set-lbl"></span>' +
-        '<button type="button" class="set-lang" data-lang="ko">한국어</button>' +
-        '<button type="button" class="set-lang" data-lang="en">EN</button>';
-      row.querySelector('.set-lbl').textContent = T('mole.set.lang');
-      var btns = row.querySelectorAll('.set-lang');
-      function paint() {
-        var cur = S.get('lang');
-        btns.forEach(function (b) { b.classList.toggle('set-lang--on', b.getAttribute('data-lang') === cur); });
-      }
-      btns.forEach(function (b) {
-        b.addEventListener('click', function () { S.set('lang', b.getAttribute('data-lang')); paint(); rebuild(); });
+    function slot(kind, inner) { return '<img class="st2-slot" src="' + A + 'slot-' + kind + '.png" alt="">' + (inner || ''); }
+
+    function langCard() {
+      var flag = function () { return S.get('lang') === 'en' ? '🇺🇸' : '🇰🇷'; };
+      var c = card('globe', 'mole.set.lang', slot('drop', '<span class="st2-flag"></span>'), function () {
+        var v = document.createElement('div');
+        v.className = 'ad-overlay';
+        v.innerHTML = '<div class="ad-overlay-card quit-card"><div class="quit-title"></div><div class="quit-btns">' +
+          '<button type="button" data-lang="ko">🇰🇷 한국어</button><button type="button" data-lang="en">🇺🇸 English</button></div></div>';
+        v.querySelector('.quit-title').textContent = T('mole.set.lang');
+        v.addEventListener('click', function (e) {
+          var l = e.target.closest('[data-lang]');
+          if (l) { S.set('lang', l.getAttribute('data-lang')); v.remove(); rebuild(); }
+          else if (e.target === v) v.remove();
+        });
+        document.body.appendChild(v);
       });
-      paint();
-      list.appendChild(row);
+      c.querySelector('.st2-flag').textContent = flag();
     }
 
-    function linkRow(iconSvg, labelKey, onClick) {
-      var row = document.createElement('div');
-      row.className = 'set-row set-row--link';
-      row.innerHTML =
-        '<svg class="set-ic" viewBox="0 0 24 24" aria-hidden="true">' + iconSvg + '</svg>' +
-        '<span class="set-lbl"></span>' +
-        '<span class="set-chev" aria-hidden="true">›</span>';
-      row.querySelector('.set-lbl').textContent = T(labelKey);
-      row.addEventListener('click', onClick);
-      list.appendChild(row);
+    function soon() {
+      var v = document.createElement('div');
+      v.className = 'ad-overlay';
+      v.innerHTML = '<div class="ad-overlay-card quit-card"><div class="quit-title"></div><div class="quit-btns"><button type="button" class="quit-yes" data-q="ok">OK</button></div></div>';
+      v.querySelector('.quit-title').textContent = T('mole.inv.soon');
+      v.querySelector('[data-q="ok"]').addEventListener('click', function () { v.remove(); });
+      document.body.appendChild(v);
     }
 
-    // 광고 제거 배지 — 원래 홈 화면(board-start)에 떠있던 걸 설정 안으로 이동(사용자 지시).
-    // 원래도 클릭 동작이 없었던 순수 배지라, 여기서도 그대로(추후 구매 플로우 연결 대기).
-    function adfreeRow() {
-      var row = document.createElement('div');
-      row.className = 'set-row set-row--adfree';
-      row.innerHTML = '<img class="set-adfree-badge" src="assets/adfree-badge.png" alt="">' +
-        '<span class="set-lbl"></span>';
-      row.querySelector('.set-lbl').textContent = T('mole.set.adfree');
-      list.appendChild(row);
-    }
-
-    function resetRow() {
-      var row = document.createElement('div');
-      row.className = 'set-row set-row--reset';
-      row.innerHTML = '<button type="button" class="set-reset"></button>';
-      var b = row.querySelector('.set-reset');
-      b.textContent = T('mole.set.reset');
-      b.addEventListener('click', function () {
-        if (!confirm(T('mole.set.resetConfirm'))) return;
+    // 데이터 초기화 — 바로 지우지 않고 확인 팝업(명세 §6⑨)
+    function confirmReset() {
+      var v = document.createElement('div');
+      v.className = 'ad-overlay';
+      v.innerHTML = '<div class="ad-overlay-card quit-card"><div class="quit-title"></div>' +
+        '<div class="quit-btns"><button type="button" data-q="no"></button><button type="button" class="quit-yes" data-q="yes"></button></div></div>';
+      v.querySelector('.quit-title').textContent = T('mole.set.resetConfirm');
+      v.querySelector('[data-q="no"]').textContent = T('mole.skl.restoreCancel');
+      v.querySelector('[data-q="yes"]').textContent = T('mole.set.reset');
+      v.querySelector('[data-q="no"]').addEventListener('click', function () { v.remove(); });
+      v.querySelector('[data-q="yes"]').addEventListener('click', function () {
         try { localStorage.clear(); } catch (e) {}
         if (root.indexedDB && root.indexedDB.deleteDatabase) root.indexedDB.deleteDatabase('moleFaces');
         location.reload();
       });
-      list.appendChild(row);
+      document.body.appendChild(v);
     }
 
     function rebuild() {
       list.innerHTML = '';
-      toggleRow('bgm', 'mole.set.bgm', 'music');
-      toggleRow('sfx', 'mole.set.sfx', 'sound');
-      toggleRow('vib', 'mole.set.vib', 'vibration');
-      langRow();
-      adfreeRow();
-      if (opts.onHelp) {
-        linkRow('<path d="M5 4.5A1.5 1.5 0 016.5 3H19v18H6.5A1.5 1.5 0 015 19.5zM9 3v18"/>',
-          'mole.more.help', opts.onHelp);
-      }
-      if (opts.onContact) {
-        linkRow('<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="m4 7 8 6 8-6"/>',
-          'mole.more.contact', opts.onContact);
-      }
-      if (opts.onPrivacy) {
-        linkRow('<path d="M12 3l7 3v5.5c0 4.5-2.8 7.5-7 9-4.2-1.5-7-4.5-7-9V6z"/>',
-          'mole.more.privacy', opts.onPrivacy);
-      }
-      resetRow();
+      toggleCard('music', 'mole.set.bgm', 'music');
+      toggleCard('sound', 'mole.set.sfx', 'sound');
+      toggleCard('vib', 'mole.set.vib', 'vibration');
+      langCard();
+      card('guide', 'mole.more.help', slot('arrow'), opts.onHelp || soon);
+      card('contact', 'mole.more.contact', slot('arrow'), opts.onContact || soon);
+      card('noad', 'mole.set.adfree', slot('arrow'), soon);
+      card('shield', 'mole.more.privacy', slot('arrow'), opts.onPrivacy || soon);
+      card('trash', 'mole.set.reset', slot('arrow'), confirmReset);
+      // 이름판 글자 "…" 없이 판 안에 한 줄
+      requestAnimationFrame(function () {
+        list.querySelectorAll('.st2-lbl').forEach(function (t) {
+          var room = t.parentNode.clientWidth * 0.82; if (!room || t.scrollWidth <= room) return;
+          t.style.transform = 'translate(-50%, -50%) scaleX(' + Math.max(room / t.scrollWidth, 0.5).toFixed(3) + ')';
+        });
+      });
     }
 
     return { show: rebuild };

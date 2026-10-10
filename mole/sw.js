@@ -3,7 +3,7 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-const CACHE = 'mole-game-v1009';
+const CACHE = 'mole-game-v1010';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -74,6 +74,23 @@ const SHELL = [
   './assets/costume2/tab-blue.png',
   './assets/costume2/tab-green-press.png',
   './assets/costume2/tab-blue-press.png',
+  './assets/settings2/card.png',
+  './assets/settings2/head.png',
+  './assets/settings2/ic-contact.png',
+  './assets/settings2/ic-globe.png',
+  './assets/settings2/ic-guide.png',
+  './assets/settings2/ic-music.png',
+  './assets/settings2/ic-noad.png',
+  './assets/settings2/ic-shield.png',
+  './assets/settings2/ic-sound.png',
+  './assets/settings2/ic-trash.png',
+  './assets/settings2/ic-vib.png',
+  './assets/settings2/plank.png',
+  './assets/settings2/slot-arrow.png',
+  './assets/settings2/slot-drop.png',
+  './assets/settings2/tog-off.png',
+  './assets/settings2/tog-on.png',
+  './assets/settings2/wood.png',
   './assets/mailbox/back.png',
   './assets/mailbox/bg.jpg',
   './assets/mailbox/btn-blue.png',

@@ -6931,3 +6931,26 @@ html, body, .cosmic-bg { background: #2a190d; }
 .mb-frame { margin: 4px 2px; border-left-width: 26px; border-right-width: 26px; border-image-width: 52px 28px 25px 28px; }
 .mb-head { left: -22px; right: -22px; }
 .mb-title, .mb-desc { overflow: visible; text-overflow: clip; width: max-content; max-width: none; transform-origin: 0 50%; } /* v1009: … 금지 */
+/* ===== v1010 설정 화면(사용자 지정, "설정함 UI 및 에셋" 명세·목표 에셋) — 메일함과 같은 나무 테두리 + 3×3 카드 ===== */
+#settings-screen.st2-screen { background: #5a3418 url('assets/mailbox/bg.jpg') center / cover no-repeat; padding: 0; overflow: hidden; display: flex; color: #3a2008; }
+.st2-frame { margin: 4px 2px; border-left-width: 26px; border-right-width: 26px; border-image-width: 52px 28px 25px 28px; }
+.st2-head { width: 54%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.st2-head img { height: 100%; width: auto; object-fit: contain; }
+.st2-grid { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 7px 5px 8px; }
+.st2-card { position: relative; min-height: 0; display: flex; flex-direction: column; align-items: center; padding: 5% 7% 7%; box-sizing: border-box;
+  background: url('assets/settings2/card.png') center / 100% 100% no-repeat; }
+.st2-card-bg { display: none; }
+.st2-art { position: relative; flex: 1 1 auto; min-height: 0; width: 92%; display: flex; align-items: flex-end; justify-content: center; margin-bottom: -4px; }
+.st2-wood { position: absolute; left: 14%; right: 14%; bottom: 12%; width: 72%; height: auto; }
+.st2-ic { position: relative; max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); }
+.st2-plank { position: relative; flex: 0 0 auto; width: 100%; z-index: 1; }
+.st2-plank img { display: block; width: 100%; height: auto; }
+.st2-lbl { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); white-space: nowrap; font-family: 'Jua', sans-serif; font-size: 0.74rem; color: #fff; -webkit-text-stroke: 2.5px #4a2208; paint-order: stroke fill; }
+.st2-bottom { position: relative; flex: 0 0 auto; width: 88%; margin-top: 3px; padding: 0; border: 0; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.08s; }
+.st2-bottom:active { transform: scale(0.92); }
+.st2-tog { width: 82%; height: auto; display: block; }
+.st2-slot { width: 100%; height: auto; display: block; }
+.st2-flag { position: absolute; left: 14%; top: 50%; transform: translateY(-50%); font-size: 1rem; line-height: 1; }
+.st2-card, .st2-card * { -webkit-touch-callout: none; user-select: none; }
+.st2-card img { -webkit-user-drag: none; pointer-events: none; }
+.st2-lbl { font-size: 0.8rem; }
