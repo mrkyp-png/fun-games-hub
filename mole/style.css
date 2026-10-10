@@ -7099,7 +7099,6 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .mole-pop-img[src*="/lion"] { width: 118%; }
 .mole-pop-img[src*="/tiger"] { width: 95%; }
 /* v1018(사용자 지정): 두더지 조금 위로 + 살짝 홀쭉하게(가로만 92%) */
-.mole-pop--mole .mole-pop-img { bottom: -2.5%; scale: 0.92 1; } /* 배 아래 잘린 단면이 구멍 앞턱에 가려지는 선까지만 올림 */
+.mole-pop--mole .mole-pop-img { bottom: -2.5%; width: 104%; height: 112.9%; object-fit: fill; } /* v1020: 홀쭉(가로 92%)을 scale 대신 크기로 — scale 은 등장 애니메이션과 겹쳐 올라온 뒤 오른쪽으로 밀렸음 */
 /* v1018(사용자 지정): 토끼만 몸 단면 안 보이게 위치 조정(사자·호랑이·하마는 전신 보이게 원래 높이) */
 .mole-pop--animal .mole-pop-img[src*="/rabbit"], .mole-pop--bomb .mole-pop-img[src*="/rabbit"] { bottom: -3.5%; } /* 몸 단면 안 보이게 — 헬멧은 두더지보다 조금 낮음 */
-.mole-pop--mole .mole-pop-img { translate: -4% 0; } /* v1018(사용자 지정): 두더지를 구멍 가운데로 살짝 왼쪽 */
