@@ -3014,10 +3014,12 @@
   // 더보기 메뉴 + 하위 화면 모듈 인스턴스 생성·배선.
   function wireMoreMenu() {
     screenNav = MG.ScreenNav.create({
-      screens: ['face-maker', 'shop-screen', 'mailbox-screen', 'daily-screen', 'workshop-screen', 'score-screen', 'settings-screen', 'inventory-screen', 'help-screen', 'privacy-screen', 'quest-screen', 'friends-screen', 'light-popup', 'roundmap-screen']
+      screens: ['face-maker', 'shop-screen', 'mailbox-screen', 'daily-screen', 'workshop-screen', 'score-screen', 'settings-screen', 'inventory-screen', 'help-screen', 'privacy-screen', 'quest-screen', 'friends-screen', 'light-popup', 'roundmap-screen', 'contact-screen']
     });
     // 메일함(사용자 지정: "구매→메일함 도착→수령" 흐름 예정) — 지금은 아이콘+빈 화면 스캐폴드만,
     // 실제 수령 로직 없음. 상점 안에서 열리므로(더보기 경유 X) 뒤로가기는 screenNav.back()만.
+    // v1013: 문의하기 화면(js/contact.js) — 뒤로 = 설정
+    window.__contact = MG.Contact.create({ root: document.getElementById('contact-screen'), onBack: () => screenNav.back() });
     // v1007: 메일함 화면(js/mailbox.js)
     window.__mailbox = MG.Mailbox.createScreen({ root: document.getElementById('mailbox-screen'), onBack: () => screenNav.back(), onClaim: () => refreshBoardStats() });
 
@@ -3078,7 +3080,7 @@
       onClose: () => closeMore(),
       onPrivacy: () => screenNav.show('privacy-screen'),
       onHelp: () => screenNav.show('help-screen'),
-      onContact: () => { window.location.href = 'mailto:mrkyp@hanmail.net'; }
+      onContact: () => { screenNav.show('contact-screen'); window.__contact.show(); const c = document.getElementById('contact-screen'); c.classList.remove('glitch-in'); void c.offsetWidth; c.classList.add('glitch-in'); setTimeout(() => c.classList.remove('glitch-in'), 260); } // v1013: 문의하기 화면
     });
     inventoryScreen = MG.InventoryScreen.create({
       root: document.getElementById('inventory-screen'),

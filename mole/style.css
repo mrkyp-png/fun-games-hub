@@ -6976,3 +6976,52 @@ html, body, .cosmic-bg { background: #2a190d; }
 @keyframes st2-toast { 0% { opacity: 0; margin-top: 6px; } 15%, 75% { opacity: 1; margin-top: 0; } 100% { opacity: 0; margin-top: -6px; } }
 .st2-card.is-off { filter: grayscale(1) brightness(0.85); }
 .st2-card.is-off .st2-bottom { pointer-events: none; }
+/* ===== v1013 문의하기(사용자 지정, "문의하기 UI" 명세·시안) ===== */
+#contact-screen.ct-screen { background: #5a3418 url('assets/mailbox/bg.jpg') center / cover no-repeat; padding: 0; overflow: hidden; display: flex; color: #3a2008; }
+.ct-frame { position: relative; flex: 1 1 auto; margin: 2px 2px 4px; display: flex; min-height: 0; box-sizing: border-box;
+  border: solid transparent; border-width: 40px 14px 18px; border-image: url('assets/contact/frame.png') 96 34 42 34 fill / 40px 14px 18px stretch; }
+.ct-back { position: absolute; left: -10px; top: -40px; width: 42px; height: 42px; padding: 0; border: 0; background: none; z-index: 3; cursor: pointer; transition: transform 0.08s; }
+.ct-back img { width: 100%; height: 100%; display: block; }
+.ct-back:active { transform: scale(0.9); }
+.ct-panel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 6px; padding: 8px 8px 6px; border-radius: 10px; background: #fbefd2; box-shadow: inset 0 0 0 2px rgba(200, 140, 60, 0.35); overflow-y: auto; }
+.ct-sec { flex: 0 0 auto; display: flex; flex-direction: column; gap: 4px; padding: 6px 8px 8px; border-radius: 10px; background: rgba(255, 248, 230, 0.8); box-shadow: inset 0 0 0 1.5px rgba(220, 170, 100, 0.45); position: relative; }
+.ct-sec--grow { flex: 1 1 auto; min-height: 90px; }
+.ct-lbl { font-family: 'Jua', sans-serif; font-weight: 400; font-size: 0.95rem; color: #3a2008; }
+.ct-drop { height: 40px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px 2px; border: 0; cursor: pointer;
+  background: url('assets/contact/bar.png') center / 100% 100% no-repeat; font-family: 'Jua', sans-serif; font-size: 0.95rem; color: #4a2508; }
+.ct-drop i { font-style: normal; font-size: 0.9rem; color: #3a1a05; }
+.ct-menu { position: absolute; left: 8px; right: 8px; top: 72px; z-index: 5; display: flex; flex-direction: column; padding: 4px; border-radius: 10px; background: #fff6df; border: 3px solid #b8741c; box-shadow: 0 6px 12px rgba(0,0,0,0.3); }
+.ct-menu[hidden] { display: none; }
+.ct-menu button { padding: 9px 12px; border: 0; background: none; text-align: left; font-family: 'Jua', sans-serif; font-size: 0.92rem; color: #4a2508; border-radius: 6px; cursor: pointer; }
+.ct-menu button.is-on { background: #ffd34a; }
+.ct-field { width: 100%; box-sizing: border-box; border: solid transparent; border-width: 9px 11px; border-image: url('assets/contact/field.png') 22 26 fill / 9px 11px stretch;
+  background: none; font: 600 0.88rem/1.35 system-ui, sans-serif; color: #3a2008; outline: none; }
+.ct-field::placeholder { color: #b89a78; }
+.ct-area { flex: 1 1 auto; min-height: 60px; resize: none; padding: 2px 4px; }
+.ct-mail { height: 40px; padding: 0 4px; }
+.ct-err { min-height: 1em; margin: -2px 0 0; text-align: center; font-size: 0.75rem; font-weight: 800; color: #d6281f; }
+.ct-send { position: relative; flex: 0 0 auto; height: 50px; margin: 0 22px 2px; border: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;
+  background: url('assets/contact/btn.png') center / 100% 100% no-repeat; font-family: 'Jua', sans-serif; font-size: 1.15rem; color: #3a1a05; transition: transform 0.08s; }
+.ct-send:active { transform: scale(0.94); }
+.ct-plane { height: 34px; width: auto; }
+.ct-trail { height: 22px; width: auto; margin-right: -8px; margin-top: 10px; }
+.ct-leaf { position: absolute; height: 44px; width: auto; top: 50%; translate: 0 -50%; pointer-events: none; }
+.ct-leaf--l { left: -26px; }
+.ct-leaf--r { right: -26px; transform: scaleX(-1); }
+.ct-trail { height: 26px; margin-top: 12px; margin-right: -4px; }
+.ct-frame { border-top-width: 30px; border-image-width: 30px 14px 18px; } /* v1013: 뒤로가기 없음 — 위 테두리만 */
+/* v1013(사용자 지정): 액자 풀(잎)이 크림 판 위로 — 테두리를 위 레이어(::after)로 한 번 더 그림(가운데 비움) */
+.ct-frame::after { content: ''; position: absolute; z-index: 4; pointer-events: none; left: -14px; right: -14px; top: -30px; bottom: -18px;
+  border: solid transparent; border-width: 30px 14px 18px; border-image: url('assets/contact/frame.png') 96 34 42 34 / 30px 14px 18px stretch;
+  -webkit-mask: linear-gradient(#000 0 0); }
+.ct-frame { position: relative; }
+.ct-frame::before { content: ''; position: absolute; z-index: 5; pointer-events: none; left: -14px; right: -14px; bottom: -18px; height: 90px;
+  background: url('assets/contact/leaf-bl.png') left bottom / auto 100% no-repeat, url('assets/contact/leaf-br.png') right bottom / auto 100% no-repeat; }
+.ct-send { margin-bottom: 22px; } /* 버튼 잎과 틀 잎이 겹치지 않게 */
+.ct-panel { margin: -8px -8px -8px; border-radius: 0; padding: 14px 14px 10px; box-shadow: none; } /* v1013(사용자 지정): 나무 틀 안을 꽉 채움 — 가장자리는 틀(위 레이어)이 덮음 */
+#contact-screen.ct-screen { background: #8a4a1a url('assets/mailbox/bg.jpg') center 80% / 140% auto no-repeat; } /* v1013(사용자 지정): 위 모서리 대각선(지붕) 검은 부분 안 보이게 — 나무판 부분만 */
+/* v1013(사용자 지정): 테두리 볼트(피스) 원형 — 위·옆·아래 같은 배율(메일함·설정 0.5, 문의하기 0.42) */
+.mb-frame, .st2-frame { border-width: 67px 26px 33px; border-image-width: 67px 26px 33px; }
+.mb-head { top: -56px; }
+.ct-frame { border-width: 40px 14px 18px; border-image-width: 40px 14px 18px; }
+.ct-frame::after { top: -40px; border-width: 40px 14px 18px; border-image-width: 40px 14px 18px; }
