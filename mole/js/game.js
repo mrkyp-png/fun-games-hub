@@ -1137,7 +1137,7 @@
       if (sub === 'quest-screen' && window.__questScreen) window.__questScreen.show();
       if (sub === 'mailbox-screen' && window.__mailbox) window.__mailbox.show();
       // v836(사용자 지정): 뒤로가기와 같은 글리치로 진입 — 스코어·출석·제작소·광산지도
-      if (['score-screen', 'daily-screen', 'workshop-screen', 'roundmap-screen', 'shop-screen', 'inventory-screen', 'quest-screen'].indexOf(sub) >= 0) { // v862: 상점·아이템도
+      if (['score-screen', 'daily-screen', 'workshop-screen', 'roundmap-screen', 'shop-screen', 'inventory-screen', 'quest-screen', 'mailbox-screen', 'settings-screen'].indexOf(sub) >= 0) { // v862: 상점·아이템도
         const gs = document.getElementById(sub);
         gs.classList.remove('glitch-in'); void gs.offsetWidth; gs.classList.add('glitch-in');
         setTimeout(() => gs.classList.remove('glitch-in'), 260);
