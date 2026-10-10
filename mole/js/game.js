@@ -1135,6 +1135,7 @@
       if (sub === 'light-popup') refreshLightPopup();
       if (sub === 'roundmap-screen' && roundMap) roundMap.show();
       if (sub === 'quest-screen' && window.__questScreen) window.__questScreen.show();
+      if (sub === 'mailbox-screen' && window.__mailbox) window.__mailbox.show();
       // v836(사용자 지정): 뒤로가기와 같은 글리치로 진입 — 스코어·출석·제작소·광산지도
       if (['score-screen', 'daily-screen', 'workshop-screen', 'roundmap-screen', 'shop-screen', 'inventory-screen', 'quest-screen'].indexOf(sub) >= 0) { // v862: 상점·아이템도
         const gs = document.getElementById(sub);
@@ -3017,7 +3018,8 @@
     });
     // 메일함(사용자 지정: "구매→메일함 도착→수령" 흐름 예정) — 지금은 아이콘+빈 화면 스캐폴드만,
     // 실제 수령 로직 없음. 상점 안에서 열리므로(더보기 경유 X) 뒤로가기는 screenNav.back()만.
-    document.querySelector('[data-back="mailbox"]').addEventListener('click', () => screenNav.back());
+    // v1007: 메일함 화면(js/mailbox.js)
+    window.__mailbox = MG.Mailbox.createScreen({ root: document.getElementById('mailbox-screen'), onBack: () => screenNav.back(), onClaim: () => refreshBoardStats() });
 
     faceMaker = MG.FaceMaker.create({
       root: document.getElementById('face-maker'),

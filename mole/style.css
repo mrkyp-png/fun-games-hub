@@ -6881,3 +6881,45 @@ html, body, .cosmic-bg { background: #2a190d; }
 .inv-tab, .shop-tab { flex: 1 1 0 !important; min-width: 0 !important; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 .inv-tab .inv-tab-lbl, .shop-tab .shop-tab-lbl { white-space: nowrap; transform-origin: 50% 50%; }
 .inv-tab img, .shop-tab img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; pointer-events: none; }
+/* ===== v1007 메일함(사용자 지정, 바탕화면 "메일함 UI 및 에셋" 명세·목표 화면) — 위 박스(게임보드 자리) 안 ===== */
+#mailbox-screen.mb-screen { background: #5a3418 url('assets/mailbox/bg.jpg') center / cover no-repeat; padding: 0; overflow: hidden; display: flex; }
+.mb-frame { position: relative; flex: 1 1 auto; margin: 4px; display: flex; flex-direction: column; min-height: 0; box-sizing: border-box;
+  border: solid transparent; border-width: 52px 18px 24px; border-image: url('assets/mailbox/frame-bare.png') 135 52 66 52 / 52px 20px 25px 20px stretch round;
+  background: #13284f padding-box; }
+.mb-head { position: absolute; left: -14px; right: -14px; top: -52px; height: 58px; display: flex; align-items: center; justify-content: space-between; z-index: 3; pointer-events: none; }
+.mb-head > * { pointer-events: auto; }
+.mb-back { width: 50px; height: 50px; padding: 0; border: 0; background: none; cursor: pointer; transition: transform 0.08s; }
+.mb-back img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.mb-back:active { transform: scale(0.9); }
+.mb-plank { position: relative; width: 48%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.mb-plank-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.mb-plank-env { position: relative; height: 62%; width: auto; transform: rotate(-4deg); filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
+.mb-all { position: relative; width: 74px; height: 40px; padding: 0 6px; border: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 2px;
+  background: url('assets/mailbox/btn-blue.png') center / 100% 100% no-repeat; transition: transform 0.08s; }
+.mb-all img { height: 52%; width: auto; }
+.mb-all:active { transform: scale(0.92); }
+/* 메일 목록 — 가운데만 스크롤 */
+.mb-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 7px 5px 9px; display: flex; flex-direction: column; gap: 6px; scrollbar-width: thin; scrollbar-color: #4aa8ff transparent; }
+.mb-empty { margin: auto; color: #b3c1e0; font-size: 0.85rem; text-align: center; }
+.mb-card { flex: 0 0 auto; position: relative; display: flex; align-items: center; gap: 4px; padding: 6px 7px 6px 5px; min-height: 64px; box-sizing: border-box;
+  background: url('assets/mailbox/card.png') center / 100% 100% no-repeat; cursor: pointer; }
+.mb-card.is-enter { animation: mb-in 0.35s ease-out both; }
+@keyframes mb-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.mb-env { position: relative; flex: 0 0 22%; display: flex; align-items: center; justify-content: center; }
+.mb-env img { width: 100%; height: auto; }
+.mb-dot { position: absolute; right: 2%; top: -2px; width: 11px; height: 11px; border-radius: 50%; background: #ff2a2a; box-shadow: 0 0 0 2px #fff; }
+.mb-txt { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px; color: #4a2c12; }
+.mb-title { font-family: 'Jua', sans-serif; font-weight: 400; font-size: 0.82rem; color: #3a2008; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mb-desc { font-size: 0.6rem; font-weight: 700; color: #6a4a2a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mb-date { font-size: 0.56rem; font-weight: 700; color: #7a5a3a; }
+.mb-date::before { content: '🕓 '; font-size: 0.6rem; }
+.mb-reward { position: relative; flex: 0 0 17%; aspect-ratio: 1; border-radius: 8px; background: rgba(170, 130, 80, 0.25); display: flex; align-items: center; justify-content: center; }
+.mb-reward img { width: 82%; height: 82%; object-fit: contain; }
+.mb-amt { position: absolute; right: 2px; bottom: 0; font-family: 'Jua', sans-serif; font-size: 0.66rem; color: #fff; -webkit-text-stroke: 2.5px #3a1a05; paint-order: stroke fill; white-space: nowrap; }
+.mb-reward.is-pop img { animation: mb-pop 0.5s ease-out forwards; }
+@keyframes mb-pop { 0% { transform: scale(1); opacity: 1; } 40% { transform: scale(1.5); opacity: 1; } 100% { transform: scale(1.8); opacity: 0; } }
+.mb-claim { flex: 0 0 21%; height: 36px; padding: 0; border: 0; cursor: pointer; font-family: 'Jua', sans-serif; font-size: 0.86rem; color: #fff;
+  background: url('assets/mailbox/btn-green.png') center / 100% 100% no-repeat; -webkit-text-stroke: 2.5px #145a28; paint-order: stroke fill; transition: transform 0.08s; white-space: nowrap; }
+.mb-claim:active:not(:disabled) { transform: scale(0.9); }
+.mb-claim.is-done { filter: grayscale(1) brightness(0.95); -webkit-text-stroke-color: #555; font-size: 0.72rem; cursor: default; }
+.mb-card.is-claimed { filter: saturate(0.6); opacity: 0.85; }
