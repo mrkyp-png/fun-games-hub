@@ -7025,3 +7025,21 @@ html, body, .cosmic-bg { background: #2a190d; }
 .mb-head { top: -56px; }
 .ct-frame { border-width: 40px 14px 18px; border-image-width: 40px 14px 18px; }
 .ct-frame::after { top: -40px; border-width: 40px 14px 18px; border-image-width: 40px 14px 18px; }
+/* v1014(사용자 지정): 문의하기 — 폰에서 스크롤로 위가 잘리지 않게 전부 한 화면에(내용 칸이 줄어듦), 연노랑 판이 나무 틀 안 꽉 */
+.ct-panel { overflow: hidden; margin: -12px; padding: 16px 14px 12px; gap: 5px; }
+.ct-sec { padding: 5px 8px 7px; gap: 3px; }
+.ct-sec--grow { min-height: 0; }
+.ct-area { min-height: 34px; }
+.ct-drop, .ct-mail { height: 36px; }
+.ct-send { height: 46px; margin-bottom: 18px; }
+/* v1014(사용자 지정): 문의하기 판 = 안쪽을 연노랑으로 채운 액자 그림 하나(틀 안 꽉, 노이즈 없음) */
+.ct-frame { border-image: url('assets/contact/frame-filled.png') 96 34 42 34 fill / 40px 14px 18px stretch; }
+.ct-frame::before, .ct-frame::after { display: none; }
+.ct-panel { margin: 0 -4px 0; padding: 6px 6px 4px; background: none; box-shadow: none; }
+.ct-send { margin-bottom: 26px; }
+.ct-frame::before { display: block; content: ''; position: absolute; z-index: 3; pointer-events: none; left: -14px; right: -14px; bottom: -18px; height: 76px;
+  background: url('assets/contact/leaf-bl.png') left bottom / auto 100% no-repeat, url('assets/contact/leaf-br.png') right bottom / auto 100% no-repeat; }
+/* v1014(사용자 지정): 액자(나무판·기둥)가 내용보다 앞 — 같은 액자 그림(안쪽 비움)을 맨 위에 한 번 더 */
+.ct-frame::after { display: block; content: ''; position: absolute; z-index: 4; pointer-events: none; left: -14px; right: -14px; top: -40px; bottom: -18px; -webkit-mask: none;
+  border: solid transparent; border-width: 40px 14px 18px; border-image: url('assets/contact/frame-top.png') 96 34 42 34 / 40px 14px 18px stretch; }
+.ct-frame::before { z-index: 5; }
