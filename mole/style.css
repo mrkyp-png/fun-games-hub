@@ -7196,3 +7196,10 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-screen, .rb-screen * { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 .rb-screen img { pointer-events: none; -webkit-user-drag: none; }
 .rb-flow-canvas { position:absolute; left:calc(100% * 26 / 952); top:calc(100% * 1056 / 2078); width:calc(100% * 300 / 952); height:calc(100% * 300 / 2078); z-index:2; pointer-events:none; contain:strict; isolation:isolate; }
+
+/* V 1050 G: approved glass style on all nine lower buttons. */
+.rb-color.rb-color--glass { opacity: .2; }
+.rb-hit--glass .rb-press-face { background: linear-gradient(135deg,#ffffff24,transparent 28%,#ffffff0a 40%,#ffffff24 43%,transparent 47%,var(--glass-soft) 76%,var(--glass-body)), radial-gradient(ellipse at 48% 38%,#ffffff0a,transparent 68%); box-shadow: inset 1px 1px 2px #ffffffb3, inset -1px -2px 3px var(--glass-edge), inset 0 0 5px var(--glass-body); }
+.rb-hit--glass .rb-press-face::before { height: 15%; opacity: .7; background: linear-gradient(180deg,#ffffff99,#ffffff14 45%,transparent); }
+.rb-hit--glass.is-pressed .rb-press-face { background: linear-gradient(135deg,#00000038,transparent 65%,var(--glass-soft)); box-shadow: inset 3px 3px 5px #00000073, inset -1px -1px 3px #ffffff59; }
+.rb-hit--glass.is-pressed .rb-press-face::before { opacity: .18; }

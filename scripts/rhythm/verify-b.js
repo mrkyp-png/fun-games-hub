@@ -27,7 +27,7 @@ const puppeteer = require('puppeteer-core');
   assert(await page.evaluate(()=>{const z=s=>Number(getComputedStyle(document.querySelector(s)).zIndex);return z('.rb-skeleton')>z('.rb-button-glow')&&z('.rb-button-glow')>z('.rb-color')&&z('.rb-color')>z('.rb-circuit');}));
   assert.equal(await page.evaluate(()=>document.querySelectorAll('.rb-button-glow svg, .rb-button-glow path').length),0);
   assert(await page.evaluate(()=>Array.from(document.querySelectorAll('.rb-color')).every((el,i)=>{const r=el.getBoundingClientRect(),g=document.querySelectorAll('.rb-button-glow')[i].getBoundingClientRect();return Math.abs(r.x+r.width/2-g.x-g.width/2)<.05&&Math.abs(r.y+r.height/2-g.y-g.height/2)<.05&&r.width>g.width&&getComputedStyle(el).clipPath==='none';})));
-  assert(await page.evaluate(()=>Array.from(document.querySelectorAll('.rb-color')).every(el=>getComputedStyle(el).opacity==='0.7')));
+  assert(await page.evaluate(()=>Array.from(document.querySelectorAll('.rb-color')).every(el=>getComputedStyle(el).opacity==='0.2')));
   assert(await page.evaluate(()=>Array.from(document.querySelectorAll('.rb-mini')).every(el=>{const r=el.getBoundingClientRect();return Math.abs(r.width-r.height)<.05;})));
   await page.evaluate(async()=>{const img=new Image();img.src='assets/rhythm-b/mini-user.png';await img.decode();});
   assert(await page.evaluate(()=>new Set(Array.from(document.querySelectorAll('.rb-mini'),el=>el.style.backgroundSize.split(' ')[1])).size===1));
@@ -101,6 +101,6 @@ const puppeteer = require('puppeteer-core');
   await page.waitForSelector('[data-rp-types]:not([hidden])');
   assert.equal(await page.evaluate(()=>window.__rhythmB.flowDebug().running),false);
   assert.deepEqual(errors,[]);
-  console.log('PASS: uniform 18 cells and centers at 3 viewport sizes; existing 18 circuits preserved; 9 mini boards square with square corners; 9 color boxes opacity .7; score/combo; shared A pause/resume/quit; no page errors.');
+  console.log('PASS: uniform 18 cells and centers at 3 viewport sizes; existing 18 circuits preserved; 9 mini boards square with square corners; 9 glass color boxes opacity .2; score/combo; shared A pause/resume/quit; no page errors.');
  } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

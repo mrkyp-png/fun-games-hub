@@ -15,6 +15,7 @@
       const index = i % 9, lower = i >= 9;
       const img = document.createElement('img');
       img.className = 'rb-circuit'; img.alt = '';
+      if (lower) { img.classList.add('rb-circuit--glass'); img.style.filter = 'url(#rb-circuit-tint-' + index + ')'; }
       img.src = 'assets/rhythm-b/circuit-user.png';
       // V 1038 G: high-opacity straight body edges, excluding all four protrusions.
       // Source body [64,63,1228,1179] maps to an exact 244x244 square.
@@ -34,6 +35,12 @@
     frame.src = 'assets/rhythm-b/skeleton-uniform.png'; board.appendChild(frame);
     // V 1027 G: 확정된 뼈대/회로판 위에만 추가. 소형판 원본 파일은 분리하지 않는다.
     const colors = ['#086aff', '#ff1529', '#ffc400', '#05e52e', '#a500ff', '#ff0099', '#ff7900', '#00cfff', '#a65121'];
+    const tintDefs = document.createElementNS(ns, 'svg');
+    tintDefs.setAttribute('width', '0'); tintDefs.setAttribute('height', '0'); tintDefs.setAttribute('aria-hidden', 'true'); tintDefs.style.position = 'absolute';
+    tintDefs.innerHTML = '<defs>' + colors.map((color, i) => {
+      const rgb = [1, 3, 5].map(start => parseInt(color.slice(start, start + 2), 16) / 255);
+      return '<filter id="rb-circuit-tint-' + i + '" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="' + rgb[0] + ' 0 0 0 0  0 ' + rgb[1] + ' 0 0 0  0 0 ' + rgb[2] + ' 0 0  0 0 0 1 0"/></filter>';
+    }).join('') + '</defs>'; board.appendChild(tintDefs);
     function place(el, cx, cy, width, height = width) {
       el.style.left = ((cx - width / 2) / 952 * 100) + '%';
       el.style.top = ((cy - height / 2) / 2078 * 100) + '%';
@@ -44,6 +51,7 @@
     for (let i = 0; i < 9; i++) {
       const col = i % 3, row = Math.floor(i / 3), cx = 176 + col * 300;
       const color = document.createElement('div'); color.className = 'rb-color';
+      color.classList.add('rb-color--glass');
       color.style.backgroundColor = colors[i];
       // V 1028 G: 넓은 메탈 면의 실제 안쪽 경계까지 채움. 모든 하단 요소가 같은 중심 사용.
       const xb = buttonXs[col], yb = buttonYs[row];
@@ -57,6 +65,10 @@
       glow.style.setProperty('--button-color', colors[i]);
       place(glow, buttonCx, buttonCy, buttonWidth, buttonHeight);
       const hit = document.createElement('button'); hit.type = 'button'; hit.className = 'rb-hit';
+      hit.classList.add('rb-hit--glass');
+      hit.style.setProperty('--glass-edge', colors[i] + 'b3');
+      hit.style.setProperty('--glass-body', colors[i] + '26');
+      hit.style.setProperty('--glass-soft', colors[i] + '12');
       hit.style.setProperty('--button-color', colors[i]);
       hit.setAttribute('aria-label', (i + 1) + '번 리듬 버튼');
       hit.innerHTML = '<span class="rb-press-face" aria-hidden="true"></span>';
@@ -109,8 +121,22 @@
     place(pauseButton, 876, 991, 86, 86);
     function releaseAll() { pressSurfaces.forEach(el => el.classList.remove('is-pressed', 'is-hit-flash')); }
     flowFx = root.MoleGame.RhythmBFlow.create({ board, colors });
+    let artReady = null;
+    const artImages = [];
+    function prepareAssets() {
+      if (artReady) return artReady;
+      const urls = new Set(Array.from(board.querySelectorAll('img'), img => img.src));
+      ['mini-user.png', 'pause-options.png', 'character/run-strip.png', ...colors.map((_, i) => 'note-inner-line-' + i + '.png')].forEach(name => urls.add('assets/rhythm-b/' + name));
+      artReady = Promise.all(Array.from(urls, src => new Promise((resolve, reject) => {
+        const img = new Image(); artImages.push(img);
+        img.onload = () => img.decode().then(resolve, reject);
+        img.onerror = () => reject(new Error('B image failed: ' + src));
+        img.src = src;
+      }))).catch(error => { artReady = null; artImages.length = 0; throw error; });
+      return artReady;
+    }
     play = root.MoleGame.RhythmBPlay.create({
-      root: opts.root, board, rules: opts.rules, loadSong: opts.loadSong,
+      root: opts.root, board, rules: opts.rules, loadSong: opts.loadSong, prepareAssets,
       onFinish: (stats, clear) => {
         running = false; releaseAll();
         flowFx.stop();

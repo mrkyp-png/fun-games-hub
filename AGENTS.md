@@ -290,3 +290,45 @@
 - 사용자가 "배포"로 V1046입체감 개선 및 V1047진동·중첩·버튼번쩍임 완화 수정의 커밋·푸시·배포를 승인함.
 - 배포 직전 로컬HEAD와원격master는 b57c3ed0c8b924906fcdc6be3cab6cdb998ab1cf로동일. 기존미추적에셋/중간파일은보존하고실제코드와필요검증스크립트만선택해커밋한다.
 - 직전 전체검증결과는위V1047기록참조. 배포직전구문·SWshell·diff공백재확인통과. 배포성공/실제사이트반영은확인후별도기록.
+
+## 2026-10-14 / V 1047 G 배포 완료
+- 사용자배포승인에따라커밋aba2eb1b82a374a1fa57036303b151c38528ca58을origin/master로push완료. GitHub Pages 실행38422634144 completed/success확인.
+- 실제사이트 index/style/SW/play/flow/캐릭터strip이로컬과일치(SHA256,텍스트줄바꿈정규화)함확인. V1047G반영.
+- 실제사이트Edge검증통과:18칸치수·회로중앙/프레임고정·앞레이어/9개회로canvas/눌림·복원·hitflash/일시정지·재개·그만두기/contextmenu취소/3뷰포트/pageerror없음.
+- 실제폰물리진동과사용자환경다른버튼번쩍임소멸은사용자확인필요. 사이트테스트통과만으로기기증상해결확정하지않음.
+- 이기록은배포후로컬인수인계추가이며미커밋. 다음수정/배포는사용자승인범위확인,Claude·기존변경보존,G/C연속번호규칙반드시인계.
+
+## 2026-10-14 / V1047 G 성능 지침 점검 (게임코드 변경 없음)
+- 사용자 "바탕화면에 게임제작 규칙 버벅임 방지 확인" 및 "점검할거는 하세요"에따른점검. Desktop/게임 제작 규칙 버벅임 방지의JPG4장확인: 사전이미지로딩, transform이동, Canvas또는미리생성객체재사용. 화면전체무재그리기/성능무조건보장문구는검증없는보장으로받아들이지않음.
+- review/audit-b-performance-v1047.js, 결과review/rhythm-b-performance-audit-v1047.json. Edge모바일에뮬레이션390x884/DPR2로실측(실제폰아님).
+- HARD노트221개/board내DOM763개. 1초59프레임중회로canvas bounds조회531회(9회/프레임), mini검색35회, character-light쓰기35회. Layout61회/RecalcStyle82회는페이지전체수치이므로모두B코드탓으로단정금지.
+- 입력2회에서rb-hit/rb-color class변경은0번버튼에만발생. 다른버튼상태변경없음. 실제폰상하부번쩍임원인미확정; 기존버벅임추정사용자가부인, 확인없이해결주장금지.
+- 플레이측정중run-strip이미지요청관측. 공통preloadAllArt는존재하지만B는이완료를기다리지않으며스프라이트/테두리decode완료barrier없음. 요청만으로네트워크재다운로드나캐시미스단정금지.
+- 개선후보: B필수이미지load/decode완료후카운트인시작; canvas크기조회는크기변경시에만; 소실점/HUD참조캐시;12fps스프라이트갱신을실제프레임변경때만수행. 미사용노트다량DOM은pool고려. 시각효과임의삭제/전체Canvas재작성은별도설계승인없이하지않음.
+- 이번점검은게임코드/버전/배포수정없음, 새review측정자료와인수인계만작성. 실제배포V1047G(aba2eb1). 수정전허락/배포별도허락/기존변경보존/G·C번호연속규칙다음에이전트에반드시인계.
+
+## 2026-10-14 / V 1048 G — 승인된 성능3항목 개선 (미배포)
+- 사용자 "진행"으로 승인: 필수이미지로딩완료보장/불필요한회로크기조회제거/캐릭터중복갱신감소. 뼈대·이미지·색상·배치·판정·음악시각·진동·간격·효과 유지. 전체Canvas재작성/DOMpool전환/효과삭제는하지않음.
+- rhythm-b.js prepareAssets: 뼈대/회로/글로우/소형판/일시정지/16프레임strip/9판정선 이미지load+decode Promise모두기다리고참조보관. 성공cache재사용, 실패시cache초기화해재시도가능.
+- rhythm-b-play.js는loadSong과prepareAssets를병렬로기다린뒤countin시계/음악시작. 로딩취소generation체크유지. 오류문구게임자료로일반화. HUD/소실점참조create시캐시.12fpssprite는실제frame변경때만backgroundPosition쓰기,같은진행도에서transform/opacity/brightness중복쓰기생략. 접근곡선·밝기값·목표scale1불변.
+- rhythm-b-flow.js는ResizeObserver/windowresize/start에서dirty표시,그때만1개canvas실측하여9개동일크기설정. 보통프레임에서DOM크기읽기없음. 회로경로/색/속도/clip/개수그대로.
+- 동일Edge모바일에뮬레이션390x884/DPR2측정 review/rhythm-b-performance-audit-v1047.json→v1048.json:1초간flowRectReads531→0,miniQueries35→0,게임진행중이미지요청1→0. 프레임59→60은이단일표본일뿐성능보장근거아님. 전체페이지Layout61→60으로거의유지: 모든reflow제거했다고말하지않음. backgroundPositionWrites측정필드는계측미구현0이므로실제횟수근거로사용금지. 실제스프라이트12fps변경조건은소스확인.
+- verify-b-assets.js 통과:준비대기중음악시작0/완료후1회/중간취소유령음악없음/decode실패시음악없음. 기존clock/90랜덤차트간격·160ms진동/B치수·중앙·flowresize·pause·hitflash·contextmenu검증통과. 실제음악회귀는병렬브라우저실행중HARD타이밍실패1회가있었고,측정작업종료후단독재실행3난이도모두각1판정604점/게임오버·결과·retry·난이도·홈/A기록불변통과. 검증창을느슨하게바꿔통과시키지않음.
+- 사용자가보고한실제폰상하부번쩍임은원인여전히미확정이며이번최적화로해결됐다고보고하지않음. 후속필요시최신폰영상/브라우저조건확인후별도분리진단.
+- 로컬V1048G,커밋·푸시·배포없음. 현재실제배포V1047G(aba2eb1). 기존사용자/Claude변경및이전인수인계보존. 다음에이전트도수정승인/배포별도승인/G·C연속번호/뼈대·배치임의변경금지지침준수.
+
+## 2026-10-14 / V1049 G 단일 파란 유리시안 → V1050 G 전체9개 적용 (미배포)
+- 사용자 승인단계: 파란버튼하나20%색농도/원색회로/흰색회로빛/유리반사·눌림비교시안→"다 적용"으로하부9개동일스타일확대승인. 배포승인은없음.
+- 전체하부rb-color opacity.7→.2. rb-hit--glass는기존face범위/원본모서리clip안에서대각반사·윗면반사·해당원색가장자리명암. 누를때반사줄고기존1px/.992누름유지. 새바깥테두리/뼈대변형/칸배치변경없음.
+- 원본circuit-user.png파일/알파/크기/중앙불변. 하부9img에만native SVG feColorMatrix로원본RGB명암을각9색으로곱함(흰픽셀은정확히기존palette원색). 상부9회로filter없음. SVGdefs9개코드로만추가,원본재생성/수정없음. 유리명암색도해당button색변수사용.
+- 회로빛9개전부흰색으로변경. 원래경로/속도/랜덤/긴50%/27flow/9canvas클립/일시정지유지. 프레임z4앞/유리facez3/회로빛z2/색판z1/회로z0유지. 글로우원래안쪽실선이미지보존.
+- verify-glass-nine.js:9개opacity20/9개해당색filter/상부회로무필터/회로빛nontransparent RGB흰색/9개개별눌림복원·프레임회로위치고정통과. 랜덤flow잠깐비는것은정상이며모든칸동시에빛이있어야한다는잘못된검증은제거함. 전체흐름동작은verify-b검사.
+- verify-b.js는opacity기대20%로갱신. 병렬검증중100ms후hitflash검사실패1회(160ms유한애니메이션)있었으며단독재실행3뷰포트/18칸기하/중앙/눌림·flash·pause/quit/contextmenu/pageerror검증통과. 원본에셋gitdiff없음. assetsbarrier/clock검증통과,구문/SWshell/diff공백통과.
+- preview: review/blue-glass-compare-v1049.png는단일파랑비교의역사자료, review/glass-nine-v1050.png가최신전체9개화면. scripts/rhythm/verify-blue-glass.js는단일파랑시점전용이며현재전체9개검증은verify-glass-nine.js사용.
+- 기존미배포V1048성능개선및기존Claude/사용자변경보존. 로컬V1050G,실제배포V1047G(aba2eb1). 커밋/푸시/배포없음. 실제폰상하부번쩍임원인여전히미확정,유리변경으로해결됐다고단정금지.
+- 다음에이전트에도수정승인/배포별도승인/G·C연속번호/기존변경보존/뼈대·배치임의변경금지규칙인계.
+
+## 2026-10-14 / V 1050 G 배포 승인
+- 사용자 "배포해요"로 현재V1050G(하부9개유리·원색회로·흰색빛 및V1048사전로딩/반복계산개선)의커밋·푸시·배포를승인함.
+- 배포직전HEAD와원격master는aba2eb1b82a374a1fa57036303b151c38528ca58로동일. 검증결과위기록참조,SWshell/diff공백재확인통과. 실제코드와관련검증스크립트만선택하고기존미추적원본/중간파일보존.
+- 실제폰번쩍임해결은확정하지않음. 배포결과는Pages및실제사이트확인후별도기록.

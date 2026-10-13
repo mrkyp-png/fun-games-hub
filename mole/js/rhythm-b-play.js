@@ -10,18 +10,21 @@
   const status=document.createElement('div');status.className='rb-game-status';
   status.innerHTML=['MISS','GOOD','GREAT','PERFECT'].map(g=>'<div class="rb-total rb-total--'+g.toLowerCase()+'"><small>'+g+'</small><b data-rb-total="'+g+'">'+(g==='MISS'?'0 / 10':'0')+'</b></div>').join('');
   status.style.cssText='left:5.35%;top:95.57%;width:89.3%;height:1.925%';board.appendChild(status);
-  const error= document.createElement('div');error.className='rb-load-error';error.hidden=true;error.setAttribute('role','alert');error.textContent='음악을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.';board.appendChild(error);
+  const error= document.createElement('div');error.className='rb-load-error';error.hidden=true;error.setAttribute('role','alert');error.textContent='게임 자료를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.';board.appendChild(error);
+  const scoreEl=hud.querySelector('[data-rb-score]'),comboEl=hud.querySelector('[data-rb-combo]'),judgeEl=hud.querySelector('[data-rb-judge]');
+  const totalEls=Object.fromEntries(['MISS','GOOD','GREAT','PERFECT'].map(g=>[g,hud.querySelector('[data-rb-total="'+g+'"]')]));
+  const foci=Array.from(hud.querySelectorAll('.rb-mini'),mini=>({x:parseFloat(mini.style.getPropertyValue('--depth-x'))/100,y:parseFloat(mini.style.getPropertyValue('--depth-y'))/100}));
   function time(){return state&&context?context.currentTime-state.t0:0;}
   function label(text,grade) {
-   const el=hud.querySelector('[data-rb-judge]');el.textContent=text;
+   const el=judgeEl;el.textContent=text;
    const parent=el.parentElement;parent.dataset.grade=grade||'';
    parent.classList.add('is-judging');
    el.getAnimations().forEach(a=>{if(a.animationName==='rb-judge-pop')a.currentTime=0;});
   }
   function updateHud(){
-   hud.querySelector('[data-rb-score]').textContent=String(state.score).padStart(6,'0');
-   hud.querySelector('[data-rb-combo]').textContent=state.combo;
-   for(const g of ['MISS','GOOD','GREAT','PERFECT'])hud.querySelector('[data-rb-total="'+g+'"]').textContent=g==='MISS'?state.cnt.MISS+' / 10':state.cnt[g];
+   scoreEl.textContent=String(state.score).padStart(6,'0');
+   comboEl.textContent=state.combo;
+   for(const g of ['MISS','GOOD','GREAT','PERFECT'])totalEls[g].textContent=g==='MISS'?state.cnt.MISS+' / 10':state.cnt[g];
   }
   function muteMelody(on){if(melodyGain&&context)melodyGain.gain.setTargetAtTime(on?1:0,context.currentTime,on?.01:.03);}
   function vibrate(ms){try{if(root.FGH&&root.FGH.Settings&&root.FGH.Settings.vibrate)root.FGH.Settings.vibrate(ms);else if(root.navigator&&root.navigator.vibrate)root.navigator.vibrate(ms);}catch(e){}}
@@ -52,18 +55,19 @@
    vibrate(160);
   }
   function placeNote(n,p){
-   const col=n.lane%3,row=Math.floor(n.lane/3),mini=hud.querySelectorAll('.rb-mini')[n.lane];
-   const focusX=parseFloat(mini.style.getPropertyValue('--depth-x'))/100;
-   const focusY=parseFloat(mini.style.getPropertyValue('--depth-y'))/100;
+   const focusX=foci[n.lane].x,focusY=foci[n.lane].y;
    const u=Math.pow(Math.max(0,Math.min(1,p)),1.55),scale=.075+.925*u;
    const dx=(focusX-.5)*304*(1-u),dy=(focusY-.5)*304*(1-u);
-   n.el.style.transform='translate('+(dx/300*100)+'%,'+(dy/300*100)+'%) scale('+scale+')';
-   n.el.style.opacity=String(.3+.7*u);
+   if(n.lastU!==u){
+    n.el.style.transform='translate('+(dx/300*100)+'%,'+(dy/300*100)+'%) scale('+scale+')';
+    n.el.style.opacity=String(.3+.7*u);
+    n.character.style.setProperty('--character-light',String(.7+.3*u));
+    n.lastU=u;
+   }
    n.el.dataset.progress=String(p);
    // Both visuals share this transform; only the ring determines judgement.
    const spriteFrame=Math.floor(Math.max(0,time()-n.spawnTime)*12)%16;
-   n.character.style.backgroundPosition=(spriteFrame/15*100)+'% 0%';
-   n.character.style.setProperty('--character-light',String(.7+.3*u));
+   if(n.spriteFrame!==spriteFrame){n.character.style.backgroundPosition=(spriteFrame/15*100)+'% 0%';n.spriteFrame=spriteFrame;}
   }
   function tick(){
    if(!state||state.ended)return;
@@ -85,7 +89,7 @@
    stop();const token=generation;error.hidden=true;label('LOADING');
    state={diff,notes:[],score:0,combo:0,maxCombo:0,cnt:{PERFECT:0,GREAT:0,GOOD:0,MISS:0},paused:false,ended:false,loading:true,t0:Infinity,count:null};updateHud();
    try{
-    const data=await opts.loadSong();if(token!==generation)return false;
+    const [data]=await Promise.all([opts.loadSong(),opts.prepareAssets?opts.prepareAssets():Promise.resolve()]);if(token!==generation)return false;
     context=data.ctx;
     let times=data.song&&data.song.charts&&data.song.charts[diff];
     if(!times){const c=rules.config,spb=60/c.song.bpm,D=rules.diffs[diff];times=[];for(let i=0;i<c.chart.beats;i++){if(i%D.rest===D.rest-1)continue;times.push(c.song.firstBeat+(c.chart.startBeat+i)*spb);if(i%2&&Math.random()<D.half)times.push(c.song.firstBeat+(c.chart.startBeat+i+.5)*spb);}}
