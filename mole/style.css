@@ -7133,17 +7133,18 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 
 /* V 1040 G: dim upper rooms; native circuit flow; fixed frame, spring-loaded faces. */
 .rb-mini { filter: none; }
-.rb-mini::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at var(--depth-x,50%) var(--depth-y,60%), #00000073 0%, #00000073 10%, #0000004d 32%, #00000000 72%); pointer-events: none; }
+.rb-mini::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at var(--depth-x,50%) var(--depth-y,60%), #000000ad 0%, #0000009e 10%, #00000066 30%, #00000026 48%, #00000000 72%); pointer-events: none; }
 .rb-flow { position: absolute; transform: translate(-50%, -50%); z-index: 2; pointer-events: none; overflow: visible; }
 .rb-flow path { fill: none; stroke: var(--flow-color); stroke-width: 14; stroke-linecap: round; stroke-linejoin: round; opacity: 0; filter: drop-shadow(0 0 3px var(--flow-color)) drop-shadow(0 0 12px var(--flow-color)); }
 .rb-hit { position: absolute; z-index: 3; appearance: none; margin: 0; border: 0; padding: 0; background: none; cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; clip-path: polygon(12% 0,88% 0,100% 12%,100% 88%,88% 100%,12% 100%,0 88%,0 12%); }
-.rb-press-face { position: absolute; inset: calc(100% * 25 / 304); pointer-events: none; clip-path: polygon(8% 0,92% 0,100% 8%,100% 92%,92% 100%,8% 100%,0 92%,0 8%); background: linear-gradient(135deg,#ffffff12,transparent 45%,#00000012); box-shadow: inset 3px 3px 6px #ffffff33, inset -3px -3px 6px #00000044; }
-.rb-press-face::before { content: ''; position: absolute; left: 7%; right: 7%; top: 3%; height: 12%; opacity: .4; background: linear-gradient(180deg,#ffffff33,transparent); border-radius: 35% 35% 50% 50%; }
+.rb-press-face { position: absolute; inset: calc(100% * 25 / 304); pointer-events: none; clip-path: polygon(8% 0,92% 0,100% 8%,100% 92%,92% 100%,8% 100%,0 92%,0 8%); background: linear-gradient(135deg,#ffffff30,transparent 38%,#00000012), radial-gradient(ellipse at 42% 34%,#ffffff16,transparent 66%); box-shadow: inset 2px 2px 3px #ffffff73, inset -2px -2px 4px #00000030, inset 0 0 7px #ffffff1a; }
+.rb-press-face::before { content: ''; position: absolute; left: 7%; right: 7%; top: 3%; height: 17%; opacity: .65; background: linear-gradient(180deg,#ffffff66,#ffffff14 45%,transparent); border-radius: 35% 35% 50% 50%; }
 .rb-color, .rb-press-face { transition: transform 180ms cubic-bezier(.2,1.1,.45,1), filter 120ms ease; transform-origin: center; }
 .rb-circuit, .rb-flow { transition: transform 180ms cubic-bezier(.2,1.1,.45,1); transform-origin: center; }
 .rb-color.is-pressed, .rb-hit.is-pressed .rb-press-face { transform: translateY(1px) scale(.992); transition-duration: 120ms; transition-timing-function: ease-out; }
 .rb-color.is-pressed { filter: brightness(.96); }
-.rb-hit.is-pressed .rb-press-face { background: linear-gradient(135deg,#00000016,transparent 65%,#ffffff0a); box-shadow: inset 4px 4px 8px #00000066, inset -4px -4px 8px #ffffff2b; }
+.rb-hit.is-pressed .rb-press-face { background: linear-gradient(135deg,#00000026,transparent 65%,#ffffff0a); box-shadow: inset 3px 3px 6px #00000059, inset -2px -2px 4px #ffffff33; }
+.rb-hit.is-pressed .rb-press-face::before { opacity: .2; }
 .rb-hit:focus-visible { outline: 2px solid #fff; outline-offset: -12px; }
 .rb-pause-button { transition: transform 180ms cubic-bezier(.2,1.1,.45,1), filter 100ms ease; filter: drop-shadow(0 3px 1px #000c); }
 .rb-pause-button:active { transform: none; filter: drop-shadow(0 3px 1px #000c); }
@@ -7175,7 +7176,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-note { position: absolute; width: calc(100% * 300 / 952); height: calc(100% * 300 / 2078); z-index: 5; pointer-events: none; transform-origin: center; will-change: transform, opacity; }
 .rb-note[hidden] { display: none; }
 .rb-note-ring { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 0 1px var(--note-color)); }
-.rb-character { position: absolute; left: 16.666667%; top: 8.333333%; width: 66.666667%; height: 83.333333%; background: url(assets/rhythm-b/character/run-strip.png) 0 0 / 1600% 100% no-repeat; filter: drop-shadow(1px 0 0 var(--note-color)) drop-shadow(-1px 0 0 var(--note-color)) drop-shadow(0 1px 0 var(--note-color)) drop-shadow(0 -1px 0 var(--note-color)) drop-shadow(0 0 3px var(--note-color)); }
+.rb-character { position: absolute; left: 16.666667%; top: 8.333333%; width: 66.666667%; height: 83.333333%; background: url(assets/rhythm-b/character/run-strip.png) 0 0 / 1600% 100% no-repeat; filter: brightness(var(--character-light,1)) drop-shadow(1px 0 0 var(--note-color)) drop-shadow(-1px 0 0 var(--note-color)) drop-shadow(0 1px 0 var(--note-color)) drop-shadow(0 -1px 0 var(--note-color)) drop-shadow(0 0 3px var(--note-color)); }
 .rb-game-status { position: absolute; z-index: 5; display: grid; grid-template-columns: repeat(4,1fr); align-items: center; color: white; pointer-events: none; }
 .rb-total { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 3px; font-family: sans-serif; line-height: 1; }
 .rb-total small { font-size: clamp(8px,2.3vw,10px); font-weight: 800; }
@@ -7194,4 +7195,4 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* V 1044 G: native image menus disabled; lower-only canvas contains all light painting. */
 .rb-screen, .rb-screen * { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 .rb-screen img { pointer-events: none; -webkit-user-drag: none; }
-.rb-flow-canvas { position:absolute; left:calc(100% * 26 / 952); top:calc(100% * 1056 / 2078); width:calc(100% * 900 / 952); height:calc(100% * 900 / 2078); z-index:2; pointer-events:none; contain:strict; isolation:isolate; }
+.rb-flow-canvas { position:absolute; left:calc(100% * 26 / 952); top:calc(100% * 1056 / 2078); width:calc(100% * 300 / 952); height:calc(100% * 300 / 2078); z-index:2; pointer-events:none; contain:strict; isolation:isolate; }

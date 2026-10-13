@@ -3,8 +3,8 @@
  'use strict';
  const MG=root.MoleGame;
  function create(opts){
-  const canvas=document.createElement('canvas');canvas.className='rb-flow-canvas';canvas.setAttribute('aria-hidden','true');opts.board.appendChild(canvas);
-  const ctx=canvas.getContext('2d'),colors=opts.colors;
+  const surfaces=Array.from({length:9},(_,cell)=>{const canvas=document.createElement('canvas');canvas.className='rb-flow-canvas';canvas.dataset.cell=cell;canvas.setAttribute('aria-hidden','true');canvas.style.left=((26+(cell%3)*300)/952*100)+'%';canvas.style.top=((1056+Math.floor(cell/3)*300)/2078*100)+'%';opts.board.appendChild(canvas);return {canvas,ctx:canvas.getContext('2d')};});
+  let ctx;const colors=opts.colors;
   const routes=MG.rhythmBCircuitRoutes.map(d=>{
    const vertices=Array.from(d.matchAll(/(\d+),(\d+)/g),m=>({x:28+(Number(m[1])-64)*244/1164,y:28+(Number(m[2])-63)*244/1116}));
    const distances=[0];for(let i=1;i<vertices.length;i++)distances.push(distances[i-1]+Math.hypot(vertices[i].x-vertices[i-1].x,vertices[i].y-vertices[i-1].y));
@@ -13,7 +13,7 @@
   const slots=Array.from({length:27},(_,i)=>({cell:Math.floor(i/3),next:0,route:null,kind:null}));
   let running=false,paused=false,frame=0,origin=0,pauseAt=0,dpr=1,ratio=1;
   const reduced=root.matchMedia('(prefers-reduced-motion: reduce)');
-  function resize(){const r=canvas.getBoundingClientRect();dpr=Math.min(root.devicePixelRatio||1,2);const n=Math.max(1,Math.round(r.width*dpr));if(canvas.width!==n||canvas.height!==n){canvas.width=n;canvas.height=n;}ratio=n/900;}
+  function resize(){dpr=Math.min(root.devicePixelRatio||1,2);for(const {canvas} of surfaces){const r=canvas.getBoundingClientRect(),n=Math.max(1,Math.round(r.width*dpr));if(canvas.width!==n||canvas.height!==n){canvas.width=n;canvas.height=n;}}ratio=surfaces[0].canvas.width/300;}
   function schedule(s,t){const long=Math.random()<.5;s.kind=long?'long':'short';s.route=routes[(long?40:0)+Math.floor(Math.random()*40)];s.reverse=Math.random()<.5;s.tail=(90+Math.random()*90)*244/1164;s.start=t;s.duration=long?1800+Math.random()*900:650+Math.random()*550;s.next=t+s.duration+80+Math.random()*550;}
   function segment(route,lo,hi){
    if(hi<=lo)return false;let begun=false;ctx.beginPath();
@@ -26,7 +26,7 @@
    }return begun;
   }
   function draw(t){
-   resize();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.setTransform(ratio,0,0,ratio,0,0);
+   resize();for(const s of surfaces){s.ctx.setTransform(1,0,0,1,0,0);s.ctx.clearRect(0,0,s.canvas.width,s.canvas.height);s.ctx.setTransform(ratio,0,0,ratio,0,0);}
    if(reduced.matches)return;
    for(const s of slots){
     if(t>=s.next)schedule(s,t);if(!s.route)continue;
@@ -35,7 +35,7 @@
     const lo=Math.max(0,s.reverse?head:head-s.tail),hi=Math.min(length,s.reverse?head+s.tail:head);
     if(hi<=lo)continue;
     const alpha=p<.15?p/.15:p>.8?(1-p)/.2:1;
-    ctx.save();ctx.translate((s.cell%3)*300,Math.floor(s.cell/3)*300);
+    ctx=surfaces[s.cell].ctx;ctx.save();
     // Hard clip in logical cell coordinates: a light cannot paint any other button.
     ctx.beginPath();ctx.rect(28,28,244,244);ctx.clip();
     if(segment(s.route,lo,hi)){
@@ -48,8 +48,8 @@
   return {
    start(){cancelAnimationFrame(frame);running=true;paused=false;origin=performance.now();slots.forEach(s=>{s.route=null;s.next=Math.random()*500;});loop();},
    pause(on){if(!running||on===paused)return;paused=on;if(on){pauseAt=performance.now();cancelAnimationFrame(frame);}else{origin+=performance.now()-pauseAt;loop();}},
-   stop(){running=false;paused=false;cancelAnimationFrame(frame);ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);},
-   dbg(){return {running,paused,slots:slots.map(s=>({cell:s.cell,kind:s.kind})),renderer:'canvas',clip:[28,28,244,244]};}
+   stop(){running=false;paused=false;cancelAnimationFrame(frame);for(const s of surfaces){s.ctx.setTransform(1,0,0,1,0,0);s.ctx.clearRect(0,0,s.canvas.width,s.canvas.height);}},
+   dbg(){return {running,paused,slots:slots.map(s=>({cell:s.cell,kind:s.kind})),renderer:'canvas',canvasCount:surfaces.length,clip:[28,28,244,244]};}
   };
  }
  MG.RhythmBFlow={create};

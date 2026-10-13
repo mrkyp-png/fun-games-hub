@@ -15,7 +15,8 @@
   function label(text,grade) {
    const el=hud.querySelector('[data-rb-judge]');el.textContent=text;
    const parent=el.parentElement;parent.dataset.grade=grade||'';
-   parent.classList.remove('is-judging');void parent.offsetWidth;parent.classList.add('is-judging');
+   parent.classList.add('is-judging');
+   el.getAnimations().forEach(a=>{if(a.animationName==='rb-judge-pop')a.currentTime=0;});
   }
   function updateHud(){
    hud.querySelector('[data-rb-score]').textContent=String(state.score).padStart(6,'0');
@@ -23,6 +24,7 @@
    for(const g of ['MISS','GOOD','GREAT','PERFECT'])hud.querySelector('[data-rb-total="'+g+'"]').textContent=g==='MISS'?state.cnt.MISS+' / 10':state.cnt[g];
   }
   function muteMelody(on){if(melodyGain&&context)melodyGain.gain.setTargetAtTime(on?1:0,context.currentTime,on?.01:.03);}
+  function vibrate(ms){try{if(root.FGH&&root.FGH.Settings&&root.FGH.Settings.vibrate)root.FGH.Settings.vibrate(ms);else if(root.navigator&&root.navigator.vibrate)root.navigator.vibrate(ms);}catch(e){}}
   function stopAudio(){sources.forEach(s=>{try{s.stop();}catch(e){}});sources=[];melodyGain=null;}
   function clearRings(){rings.forEach(el=>el.remove());rings.length=0;}
   function stop(){generation++;cancelAnimationFrame(frame);stopAudio();clearRings();state=null;error.hidden=true;}
@@ -47,6 +49,7 @@
    const grade=rules.grade(delta*1000,state.diff);if(!grade)return;
    best.state='hit';best.el.hidden=true;state.cnt[grade]++;state.combo++;state.maxCombo=Math.max(state.maxCombo,state.combo);
    state.score+=rules.points(grade,state.combo);muteMelody(true);label(grade,grade);updateHud();
+   vibrate(160);
   }
   function placeNote(n,p){
    const col=n.lane%3,row=Math.floor(n.lane/3),mini=hud.querySelectorAll('.rb-mini')[n.lane];
@@ -60,6 +63,7 @@
    // Both visuals share this transform; only the ring determines judgement.
    const spriteFrame=Math.floor(Math.max(0,time()-n.spawnTime)*12)%16;
    n.character.style.backgroundPosition=(spriteFrame/15*100)+'% 0%';
+   n.character.style.setProperty('--character-light',String(.7+.3*u));
   }
   function tick(){
    if(!state||state.ended)return;
@@ -85,8 +89,11 @@
     context=data.ctx;
     let times=data.song&&data.song.charts&&data.song.charts[diff];
     if(!times){const c=rules.config,spb=60/c.song.bpm,D=rules.diffs[diff];times=[];for(let i=0;i<c.chart.beats;i++){if(i%D.rest===D.rest-1)continue;times.push(c.song.firstBeat+(c.chart.startBeat+i)*spb);if(i%2&&Math.random()<D.half)times.push(c.song.firstBeat+(c.chart.startBeat+i+.5)*spb);}}
-    const last=Array(9).fill(-9);state.notes=times.map((targetTime,id)=>{
-     let lane=Math.floor(Math.random()*9);for(let j=0;j<9&&targetTime-last[lane]<.3;j++)lane=(lane+1)%9;last[lane]=targetTime;
+    const D=rules.diffs[diff],laneGap=D.travel+D.judge.goodMs/1000+.2;
+    const last=Array(9).fill(-Infinity);state.notes=times.map((targetTime,id)=>{
+     const free=last.map((t,lane)=>lane).filter(lane=>targetTime-last[lane]>=laneGap);
+     if(!free.length)throw new Error('Chart exceeds nine independent lane windows');
+     const lane=free[Math.floor(Math.random()*free.length)];last[lane]=targetTime;
      const el=document.createElement('div');el.className='rb-note';el.setAttribute('aria-hidden','true');el.hidden=true;
      const character=document.createElement('span');character.className='rb-character';el.appendChild(character);
      const ring=document.createElement('img');ring.className='rb-note-ring';ring.alt='';ring.draggable=false;ring.src='assets/rhythm-b/note-inner-line-'+lane+'.png';el.appendChild(ring);

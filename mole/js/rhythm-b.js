@@ -65,9 +65,8 @@
       function down() {
         if (!running || paused) return;
         surfaces.forEach(el => el.classList.add('is-pressed'));
-        hit.classList.remove('is-hit-flash');
-        void hit.offsetWidth;
         hit.classList.add('is-hit-flash');
+        hit.getAnimations({subtree:true}).forEach(a=>{if(a.animationName==='rb-hit-flash')a.currentTime=0;});
         if (play) play.press(i);
       }
       function up() { surfaces.forEach(el => el.classList.remove('is-pressed')); }

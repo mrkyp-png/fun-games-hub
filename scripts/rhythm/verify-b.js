@@ -43,7 +43,7 @@ const puppeteer = require('puppeteer-core');
   assert(centers.every(Boolean)); assert.deepEqual(errors,[]);
   assert.equal(await page.$$eval('.rb-hit', els=>els.length),9);
   assert.equal(await page.$$eval('.rb-flow', els=>els.length),0);
-  assert.equal(await page.$$eval('.rb-flow-canvas', els=>els.length),1);
+  assert.equal(await page.$$eval('.rb-flow-canvas', els=>els.length),9);
   assert.equal(await page.evaluate(()=>window.__rhythmB.flowDebug().slots.length),27);
   assert(await page.$eval('.rb-mini',el=>getComputedStyle(el).filter==='none'&&getComputedStyle(el,'::after').backgroundImage.includes('radial-gradient')));
   await page.waitForFunction(()=>{const c=document.querySelector('.rb-flow-canvas');return c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((v,i)=>i%4===3&&v>0);});
