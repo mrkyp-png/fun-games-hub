@@ -369,3 +369,50 @@
 ## 2026-10-14 / V1052 G 배포 승인
 - 사용자 "배포"로상부회로9개숨김비교시험의커밋/푸시/배포승인. 배포전HEAD와origin/master동일87c47963747ae7bab9dee6ce1d383a8bac514e54확인. 직전verify-b전체동작/회로visibility/기하검증통과,SWshell/diff공백재확인.
 - 기존변경보존하고해당코드/검증/인수인계만선택한다. 번쩍임원인/해결여부는실제폰확인전확정하지않음.
+
+## 2026-10-14 / V1052 G 배포 완료
+- 사용자승인에따라60f55a33792b5478f74058000f64f8ad0445d126 origin/master push완료. Pages실행38435788362 completed/success확인(동일커밋직전실행38435787299 cancelled였으나후속성공실행확인).
+- 실제사이트index/style/SW/play/flow/캐릭터strip이로컬과동일함검증(SHA256,텍스트줄바꿈정규화). 표시/캐시V1052G.
+- 실제사이트Edge검증통과:상부9회로visibility hidden/하부9visible, 원본뼈대·18칸기하/회로중앙/9유리20%/눌림복원/9canvas/pause·resume·quit/contextmenu방지/pageerror없음. 사용자휴대폰번쩍임변화확인대기,원인해결확정금지.
+- 이완료기록은배포후로컬인수인계추가이며미커밋. 다음에이전트도수정승인/배포별도승인/G·C연속번호/Claude·기존변경보존/뼈대임의변형금지지침준수.
+
+## 2026-10-14 / V1053 G — B MISS를 캐릭터 단위로 변경 (미배포,현재V1054에포함)
+- 사용자 "추천대로 진행" 승인: B빈칸입력에점수/MISS/콤보페널티없음,놓친캐릭터당MISS1회,10마리실패게임오버. A현행빈칸페널티/240ms점프재입력제한은변경하지않음. 새연타cooldown/너무이른입력즉시실패규칙추가안함.
+- rhythm-b-play.press에best없으면return,miss는pending노트가있을때만집계해중복방지. 성공처리후재입력도해당캐릭터에추가판정없음. 음악/채보/점수식/판정시간/진동불변.
+- verify-b-miss-per-note.js:성공후900빈칸/반복입력에score301/combo1/MISS0보존,5마리놓침MISS5,같은시계반복frame추가MISS없음,10마리놓침게임오버1회. clock/90랜덤차트·진동검증통과.
+- verify-b-game.js:빈칸스팸후통계불변검사+실제10자동MISS를기다리는종료검사로변경. 재시작이빠른로딩으로glitch-in전환중pause/quit클릭경쟁이있어test가전환끝·pause팝업표시를기다리게수정(게임로직변경없음). 재실행3난이도실제음악각PERFECT/GREAT/GOOD1회604점,빈칸페널티없음,10자동MISS결과/retry·난이도·홈/A기록불변/pageerror없음통과. A소스gitdiff없음.
+
+## 2026-10-14 / V1054 G — 성공한 소형판 개별 흔들림 (미배포)
+- 사용자 "성공시각해당소형판흔들림가능? 두더지팡전체화면" 후 "진행해주세요"로해당칸만흔들림승인. B성공onHit(lane,grade)콜백에서그칸rb-mini만WebAnimations transform translate3d로140ms작은진동(-1.5px→+1.2px→-.6px→0). 전체상부/메탈뼈대/다른소형판/아래버튼/캐릭터판정테두리이동없음. 빈칸/실패에는흔들림없음.
+- pause/stop/open/게임오버의releaseAll에애니메이션cancel추가,반복성공시그칸기존shake만취소·재시작. reduced-motion설정이면흔들림생략하되성공점수는동일. 히트플래시삭제상태/상부회로숨김/유리9개/흰회로빛/160ms진동유지.
+- verify-b-success-shake.js 통과:PERFECT/GREAT/GOOD각각해당칸만animation1·나머지0/뼈대rect불변/끝나면복귀/빈칸noShake·MISS0·콤보보존/pause즉시cancel/reduced-motionscore301·shake0. 처음test의고정200ms대기는headless애니메이션시작대기로불안정해정상종료조건대기로변경,실제duration140ms유지.
+- 구문/SWshell/diff공백통과. 로컬V1054G에미배포V1053MISS수정포함. 커밋·푸시·배포없음,현재실제배포V1052G(60f55a3). 실제폰번쩍임원인은별개미확정,새흔들림효과와구분해확인.
+- 다음에이전트에도수정사전승인/배포별도승인/G·C연속번호/Claude·사용자변경보존/뼈대임의변형금지규칙인계. 사용자별도승인없이MISS빈칸페널티/히트플래시되살리지말것.
+
+## 2026-10-14 / V1055 G — 개별 성공 흔들림 강도 조정 (미배포)
+- 사용자노트북에서못느낀다는피드백및"네"승인:최대1.5px/140ms→4px/200ms. keyframes0→(-4px,1px)→(3px,-.8px)→(-1.5px,.4px)→0. 메탈뼈대/다른칸고정,성공한해당소형판만움직임. 다른시각효과/판정규칙변경없음.
+- verify-b-success-shake.js실제effect.duration200/keyframes4px검사추가통과,PERFECT/GREAT/GOOD해당칸만움직임/복귀/프레임고정/빈칸무MISS·콤보보존/pausecancel/reduced-motion생략검증통과. 구문·SWshell·diff공백통과.
+- 기존미배포V1053MISS단위수정과V1054성공흔들림포함. 로컬V1055G,커밋/푸시/배포없음. 현재공개배포V1052G(60f55a3)에는성공흔들림이아직없음을사용자에게설명. 로컬확인은http://localhost:8844/mole/pc.html .
+- 다음에이전트도수정승인/배포별도승인/G·C연속번호/Claude·기존변경보존/뼈대임의변형금지지침인계. 실제폰번쩍임원인은여전히별개미확정.
+
+## 2026-10-14 / V1056 G — 성공 흔들림 한 단계 강화 (미배포)
+- 사용자 "한단계 더 올려보죠" 승인:최대6px/220ms. keyframes0→(-6px,1.5px)→(4.5px,-1.2px)→(-2.2px,.6px)→0. 해당소형판만움직이고메탈뼈대·다른칸고정. 다른기능수정없음.
+- verify-b-success-shake.js실제duration220/keyframes6px/3성공판정별해당칸만흔들림·복귀·프레임고정·빈칸무페널티·pausecancel·reduced-motion검증통과. SWshell/diff공백통과.
+- 로컬V1056G. 기존미배포V1053MISS수정및성공흔들림포함,커밋/푸시/배포없음. 공개배포V1052G에는성공흔들림아직없음. 로컬미리보기localhost:8844/mole/pc.html.
+- 다음에이전트도수정승인/배포별도승인/G·C연속번호/기존Claude·사용자변경보존/뼈대임의변형금지지침인계.
+
+## 2026-10-14 / V1057~V1060 G — 성공 연출·시작 문구 (미배포, 최종V1060)
+- 사용자확정: 성공시캐릭터만튕김,접근테두리는제자리에서즉시사라짐,소형판220ms/6px흔들림유지,PANG글자는그칸제자리유지. 캐릭터는잠깐1.2배커지고가장앞에서화면밖으로퇴장,방향은매번랜덤. 초기한칸안위로제안은후속사용자"밖으로/제일앞/랜덤"지시로대체됨.
+- 최종play.successEffect: 성공노트ring.hidden=true,wrapper는고정한채character만WebAnimations(350ms) 1→1.2배→랜덤0..360도방향으로화면밖이동/회전/마지막fade. X1500%/Y1200%반경은논리3000px로판정창의최소wrapper scale에서도게임보드밖도달. 스핀도랜덤. CSSis-hit-out z8로게임표면들보다앞,모달z20은유지. 캐릭터만확대하고뼈대/소형판/테두리크기변형없음. reduced-motion이면100msfade만.
+- PANG!은A색상스타일(흰글자·분홍stroke)을참고한rb-pang,칸마다9개미리생성. 해당칸중심에200ms고정표시후fade만,transform/확대/이동애니메이션없음. 캐릭터와별도board자식이라따라날아가지않음. 타격시DOM생성/이미지로드없음.
+- 시작ARE YOU READY? 3회:기존3.15초countin을3등분,파랑#43dcff→노랑#fff05b→분홍#ff5ba9,scale.72→.9→1.08로증가,각800ms표시+짧은간격. HUD3→2→1동기화. 음악0초GO!(초록#56ff88,scale1.16)500ms. WebAudio기준시각/채보/음악시작지연변경없음. 사용자빠른템포음성은준비예정으로파일아직없어미연결.
+- effects Set으로character/PANG/시작문구애니메이션추적. pause/resume함께정지/재개,stop/retry/게임오버취소·숨김·정리. 판정/점수는노트statehit로한번만처리,빈칸무MISS/캐릭터1마리당MISS1회규칙유지.
+- verify-b-pang-ready.js:세번문구/서로다른색/크기증가/GO시각;ring제자리숨김·ringanimation0;actorfront/z8·scale1.2·350ms·8방향모두실제bounds보드밖;PANGtransformanimation없음·rect고정;타격DOM개수불변/점수301한번;pause/resume/stop정리검증통과. review/rhythm-b-ready-v1060.png 및rhythm-b-pang-v1060.png는시각확인자료.
+- 성공shake(220ms6px)/MISS5=5·10마리게임오버/clock기존판정·CLEAR·로딩취소/구문/SWshell/diff공백검증통과. A코드/원본에셋수정없음.
+- 로컬V1060G. 기존미배포V1053MISS수정/1054~56흔들림을포함,커밋·푸시·배포없음. 실제배포V1052G(60f55a3)에는이새기능없음. 노트북로컬미리보기localhost:8844/mole/pc.html에서확인.
+- 다음에이전트도수정승인/배포별도승인/G·C연속번호/Claude·사용자기존변경보존/뼈대임의변형금지인계. PANG이동/테두리날림/빈칸MISS/히트플래시임의재추가금지. 실제폰상하부번쩍임원인은별개미확정.
+
+## 2026-10-14 / V1060 G 배포 승인
+- 사용자 "배포해주세요"로현재V1060G및기존미배포V1053MISS단위수정/성공흔들림/캐릭터랜덤퇴장/고정PANG/READY3회·GO의커밋·푸시·배포승인. 음성파일미준비이므로음성미포함.
+- 배포직전HEAD/origin master동일60f55a33792b5478f74058000f64f8ad0445d126확인. 기존원본·사용자·Claude변경보존,실제코드/관련검증스크립트만명시선택. 직전기능검증결과위기록참조,SWshell/구문/diff공백배포전재확인.
+- 실제사이트반영및Pages완료확인후별도완료기록. 기존상하부번쩍임원인/해결은이번연출배포와별개로단정금지.

@@ -6,6 +6,21 @@
     const buttonXs = [[26, 326], [326, 626], [626, 926]];
     const buttonYs = [[1056, 1356], [1356, 1656], [1656, 1956]];
     const pressSurfaces = [];
+    const miniSurfaces = [], shakes = Array(9).fill(null);
+    function clearShakes() { shakes.forEach(animation => { if (animation) animation.cancel(); }); shakes.fill(null); }
+    function shakeMini(lane) {
+      if (root.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      if (shakes[lane]) shakes[lane].cancel();
+      const animation = miniSurfaces[lane].animate([
+        { transform: 'translate3d(0,0,0)', offset: 0 },
+        { transform: 'translate3d(-6px,1.5px,0)', offset: .2 },
+        { transform: 'translate3d(4.5px,-1.2px,0)', offset: .45 },
+        { transform: 'translate3d(-2.2px,.6px,0)', offset: .7 },
+        { transform: 'translate3d(0,0,0)', offset: 1 }
+      ], { duration: 220, easing: 'ease-out' });
+      shakes[lane] = animation;
+      animation.onfinish = () => { if (shakes[lane] === animation) shakes[lane] = null; };
+    }
     let flowFx = null;
     opts.root.addEventListener("contextmenu", e => e.preventDefault());
     opts.root.addEventListener("dragstart", e => e.preventDefault());
@@ -104,6 +119,7 @@
       // V 1030 G: 아래 버튼과 동일한 304 정사각형 한 장만 메탈 아래까지 채운다.
       // 안쪽 실선 기준 축소판/중복 이미지를 추가하지 않는다. 뼈대는 앞 레이어 유지.
       place(mini, 176 + col * 300, 176 + row * 300, 304);
+      miniSurfaces.push(mini);
     }
     const upperGlow = document.createElement('img'); upperGlow.className = 'rb-upper-glow'; upperGlow.alt = ''; upperGlow.src = 'assets/rhythm-b/upper-uniform-glow.png'; board.appendChild(upperGlow);
     const score = document.createElement('div'); score.className = 'rb-status rb-status--score';
@@ -117,7 +133,7 @@
     pauseButton.innerHTML = '<span class="rb-pause-well" aria-hidden="true"></span><span class="rb-pause-face" aria-hidden="true"></span>';
     pauseButton.addEventListener('click', () => opts.onPause());
     place(pauseButton, 876, 991, 86, 86);
-    function releaseAll() { pressSurfaces.forEach(el => el.classList.remove('is-pressed')); }
+    function releaseAll() { pressSurfaces.forEach(el => el.classList.remove('is-pressed')); clearShakes(); }
     flowFx = root.MoleGame.RhythmBFlow.create({ board, colors });
     let artReady = null;
     const artImages = [];
@@ -135,6 +151,7 @@
     }
     play = root.MoleGame.RhythmBPlay.create({
       root: opts.root, board, rules: opts.rules, loadSong: opts.loadSong, prepareAssets,
+      onHit: shakeMini,
       onFinish: (stats, clear) => {
         running = false; releaseAll();
         flowFx.stop();

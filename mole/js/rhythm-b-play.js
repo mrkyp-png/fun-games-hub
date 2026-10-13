@@ -6,7 +6,44 @@
   const board=opts.board, rules=opts.rules, hud=opts.root;
   let state=null, context=null, sources=[], melodyGain=null, frame=0, generation=0;
   const rings=[];
+  const effects=new Set(),pangAnimations=Array(9).fill(null);
+  let startAnimation=null;
   const colors=['#086aff','#ff1529','#ffc400','#05e52e','#a500ff','#ff0099','#ff7900','#00cfff','#a65121'];
+  const pangs=colors.map((_,lane)=>{const el=document.createElement('span');el.className='rb-pang';el.textContent='PANG!';el.hidden=true;el.setAttribute('aria-hidden','true');el.style.left=((176+(lane%3)*300)/952*100)+'%';el.style.top=((176+Math.floor(lane/3)*300)/2078*100)+'%';board.appendChild(el);return el;});
+  const startCallout=document.createElement('div');startCallout.className='rb-start-callout';startCallout.hidden=true;startCallout.setAttribute('aria-hidden','true');board.appendChild(startCallout);
+  function animateEffect(el,keyframes,duration,done){const a=el.animate(keyframes,{duration,easing:'ease-out'});effects.add(a);a.onfinish=()=>{effects.delete(a);if(done)done();};a.oncancel=()=>effects.delete(a);return a;}
+  function clearEffects(){for(const a of effects)a.cancel();effects.clear();pangs.forEach(el=>el.hidden=true);pangAnimations.fill(null);startAnimation=null;startCallout.hidden=true;}
+  function showStart(stage){
+   if(state.startPhase===stage)return;state.startPhase=stage;
+   if(startAnimation)startAnimation.cancel();
+   const scale=[.72,.9,1.08,1.16][stage];
+   startCallout.textContent=stage===3?'GO!':'ARE YOU READY?';startCallout.dataset.stage=String(stage);
+   startCallout.style.color=['#43dcff','#fff05b','#ff5ba9','#56ff88'][stage];startCallout.hidden=false;
+   const still=root.matchMedia('(prefers-reduced-motion: reduce)').matches;
+   const a=animateEffect(startCallout,still?[{opacity:1},{opacity:1}]:[
+    {transform:'translate(-50%,-50%) scale('+(scale*.88)+')',opacity:0,offset:0},
+    {transform:'translate(-50%,-50%) scale('+scale+')',opacity:1,offset:.15},
+    {transform:'translate(-50%,-50%) scale('+scale+')',opacity:1,offset:.75},
+    {transform:'translate(-50%,-50%) scale('+scale+')',opacity:0,offset:1}
+   ],stage===3?500:800,()=>{if(startAnimation===a){startCallout.hidden=true;startAnimation=null;}});
+   startAnimation=a;
+  }
+  function successEffect(n,t){
+   n.el.hidden=false;placeNote(n,(t-n.spawnTime)/rules.diffs[state.diff].travel);
+   n.ring.hidden=true;n.el.classList.add('is-hit-out');
+   const reduced=root.matchMedia('(prefers-reduced-motion: reduce)').matches,angle=Math.random()*Math.PI*2;
+   const flyX=Math.cos(angle)*1500,flyY=Math.sin(angle)*1200,spin=Math.random()<.5?-1:1;
+   animateEffect(n.character,reduced?[{opacity:1},{opacity:0}]:[
+    {transform:'translate(0,0) rotate(0deg) scale(1)',opacity:1,offset:0},
+    {transform:'translate(0,0) rotate(0deg) scale(1.2)',opacity:1,offset:.2},
+    {transform:'translate('+(flyX*.32)+'%,'+(flyY*.32)+'%) rotate('+(spin*28)+'deg) scale(1)',opacity:1,offset:.65},
+    {transform:'translate('+flyX+'%,'+flyY+'%) rotate('+(spin*65)+'deg) scale(.8)',opacity:0,offset:1}
+   ],reduced?100:350,()=>n.el.hidden=true);
+   if(pangAnimations[n.lane])pangAnimations[n.lane].cancel();
+   const pang=pangs[n.lane];pang.hidden=false;
+   const a=animateEffect(pang,[{opacity:1,offset:0},{opacity:1,offset:.75},{opacity:0,offset:1}],200,()=>{if(pangAnimations[n.lane]===a){pang.hidden=true;pangAnimations[n.lane]=null;}});
+   pangAnimations[n.lane]=a;
+  }
   const status=document.createElement('div');status.className='rb-game-status';
   status.innerHTML=['MISS','GOOD','GREAT','PERFECT'].map(g=>'<div class="rb-total rb-total--'+g.toLowerCase()+'"><small>'+g+'</small><b data-rb-total="'+g+'">'+(g==='MISS'?'0 / 10':'0')+'</b></div>').join('');
   status.style.cssText='left:5.35%;top:95.57%;width:89.3%;height:1.925%';board.appendChild(status);
@@ -30,15 +67,16 @@
   function vibrate(ms){try{if(root.FGH&&root.FGH.Settings&&root.FGH.Settings.vibrate)root.FGH.Settings.vibrate(ms);else if(root.navigator&&root.navigator.vibrate)root.navigator.vibrate(ms);}catch(e){}}
   function stopAudio(){sources.forEach(s=>{try{s.stop();}catch(e){}});sources=[];melodyGain=null;}
   function clearRings(){rings.forEach(el=>el.remove());rings.length=0;}
-  function stop(){generation++;cancelAnimationFrame(frame);stopAudio();clearRings();state=null;error.hidden=true;}
+  function stop(){generation++;cancelAnimationFrame(frame);stopAudio();clearEffects();clearRings();state=null;error.hidden=true;}
   function finish(clear){
    if(!state||state.ended)return;
-   state.ended=true;cancelAnimationFrame(frame);stopAudio();rings.forEach(el=>el.hidden=true);
+   state.ended=true;cancelAnimationFrame(frame);stopAudio();clearEffects();rings.forEach(el=>el.hidden=true);
    opts.onFinish({score:state.score,combo:state.combo,maxCombo:state.maxCombo,cnt:{...state.cnt},diff:state.diff},clear);
   }
   function miss(note){
    if(!state||state.ended)return;
-   if(note){note.state='miss';note.el.hidden=true;}
+   if(!note||note.state!=='pending')return;
+   note.state='miss';note.el.hidden=true;
    state.cnt.MISS++;state.combo=0;muteMelody(false);label('MISS','MISS');updateHud();
    if(state.cnt.MISS>=10)finish(false);
   }
@@ -47,12 +85,13 @@
    const t=time();
    let best=null,delta=Infinity;
    for(const n of state.notes){if(n.state==='pending'&&n.lane===lane&&t>=n.spawnTime){const d=Math.abs(t-n.targetTime);if(d<delta){best=n;delta=d;}}}
-   if(!best){miss(null);return;}
+   if(!best)return; // Empty input never changes score, combo, or MISS.
    // Like A: an existing future note outside the input window remains pending until its deadline.
    const grade=rules.grade(delta*1000,state.diff);if(!grade)return;
-   best.state='hit';best.el.hidden=true;state.cnt[grade]++;state.combo++;state.maxCombo=Math.max(state.maxCombo,state.combo);
+   best.state='hit';successEffect(best,t);state.cnt[grade]++;state.combo++;state.maxCombo=Math.max(state.maxCombo,state.combo);
    state.score+=rules.points(grade,state.combo);muteMelody(true);label(grade,grade);updateHud();
    vibrate(160);
+   if(opts.onHit)opts.onHit(lane,grade);
   }
   function placeNote(n,p){
    const focusX=foci[n.lane].x,focusY=foci[n.lane].y;
@@ -73,8 +112,9 @@
    if(!state||state.ended)return;
    if(state.paused){frame=requestAnimationFrame(tick);return;}
    const t=time();
-   if(t<0){const count=String(Math.max(1,Math.ceil(-t)));if(state.count!==count){state.count=count;label(count);}}
-   else if(state.count!=='GO'){state.count='GO';label('START');}
+   if(t<0){const stage=Math.max(0,Math.min(2,Math.floor((t+rules.config.countIn+.15)/((rules.config.countIn+.15)/3))));showStart(stage);const count=String(3-stage);if(state.count!==count){state.count=count;label(count);}}
+   else if(state.count!=='GO'){state.count='GO';label('GO!');showStart(3);}
+   if(t>=.6)startCallout.hidden=true;
    const D=rules.diffs[state.diff];
    for(const n of state.notes){
     if(state.ended)break;
@@ -87,7 +127,7 @@
   }
   async function start(diff){
    stop();const token=generation;error.hidden=true;label('LOADING');
-   state={diff,notes:[],score:0,combo:0,maxCombo:0,cnt:{PERFECT:0,GREAT:0,GOOD:0,MISS:0},paused:false,ended:false,loading:true,t0:Infinity,count:null};updateHud();
+   state={diff,notes:[],score:0,combo:0,maxCombo:0,cnt:{PERFECT:0,GREAT:0,GOOD:0,MISS:0},paused:false,ended:false,loading:true,t0:Infinity,count:null,startPhase:-1};updateHud();
    try{
     const [data]=await Promise.all([opts.loadSong(),opts.prepareAssets?opts.prepareAssets():Promise.resolve()]);if(token!==generation)return false;
     context=data.ctx;
@@ -103,17 +143,18 @@
      const ring=document.createElement('img');ring.className='rb-note-ring';ring.alt='';ring.draggable=false;ring.src='assets/rhythm-b/note-inner-line-'+lane+'.png';el.appendChild(ring);
      el.style.left=((26+(lane%3)*300)/952*100)+'%';el.style.top=((26+Math.floor(lane/3)*300)/2078*100)+'%';
      el.style.setProperty('--note-color',colors[lane]);board.appendChild(el);rings.push(el);
-     return {id,lane,targetTime,spawnTime:targetTime-rules.diffs[diff].travel,state:'pending',el,character};
+     return {id,lane,targetTime,spawnTime:targetTime-rules.diffs[diff].travel,state:'pending',el,character,ring};
     });
     state.duration=Math.max(data.back.duration,(times[times.length-1]||0)+rules.diffs[diff].judge.goodMs/1000);
     state.t0=context.currentTime+rules.config.countIn+.15;state.loading=false;
+    showStart(0);
     const back=context.createBufferSource();back.buffer=data.back;back.connect(context.destination);back.start(state.t0);sources.push(back);
     if(data.melody){const mel=context.createBufferSource();mel.buffer=data.melody;melodyGain=context.createGain();melodyGain.gain.value=1;mel.connect(melodyGain);melodyGain.connect(context.destination);mel.start(state.t0);sources.push(mel);}
     if(state.paused)await context.suspend();
     frame=requestAnimationFrame(tick);return true;
    }catch(e){if(token!==generation)return false;state.loading=false;state.ended=true;state.error=String(e.message||e);label('ERROR');error.hidden=false;stopAudio();return false;}
   }
-  function pause(on){if(!state||state.ended)return;state.paused=on;if(context&&!state.loading){if(on)context.suspend();else context.resume();}}
+  function pause(on){if(!state||state.ended)return;state.paused=on;effects.forEach(a=>on?a.pause():a.play());if(context&&!state.loading){if(on)context.suspend();else context.resume();}}
   return {start,stop,pause,press,dbg:()=>state?{t:time(),diff:state.diff,loading:state.loading,paused:state.paused,ended:state.ended,error:state.error,score:state.score,combo:state.combo,maxCombo:state.maxCombo,cnt:{...state.cnt},notes:state.notes.map(n=>({id:n.id,lane:n.lane,targetTime:n.targetTime,spawnTime:n.spawnTime,state:n.state}))}:null};
  }
  MG.RhythmBPlay={create};
