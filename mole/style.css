@@ -7197,3 +7197,6 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-hit--glass .rb-press-face::before { height: 15%; opacity: .7; background: linear-gradient(180deg,#ffffff99,#ffffff14 45%,transparent); }
 .rb-hit--glass.is-pressed .rb-press-face { background: linear-gradient(135deg,#00000038,transparent 65%,var(--glass-soft)); box-shadow: inset 3px 3px 5px #00000073, inset -1px -1px 3px #ffffff59; }
 .rb-hit--glass.is-pressed .rb-press-face::before { opacity: .18; }
+
+/* V 1052 G: comparison test hides only the nine circuits behind the upper rooms. */
+.rb-circuit--upper-hidden { visibility: hidden; }

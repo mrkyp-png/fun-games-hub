@@ -15,6 +15,7 @@
       const index = i % 9, lower = i >= 9;
       const img = document.createElement('img');
       img.className = 'rb-circuit'; img.alt = '';
+      if (!lower) img.classList.add('rb-circuit--upper-hidden');
       if (lower) { img.classList.add('rb-circuit--glass'); img.style.filter = 'url(#rb-circuit-tint-' + index + ')'; }
       img.src = 'assets/rhythm-b/circuit-user.png';
       // V 1038 G: high-opacity straight body edges, excluding all four protrusions.
