@@ -10,6 +10,7 @@ const W = (ms) => new Promise((r) => setTimeout(r, ms));
   await p.evaluate(() => { const x = document.querySelector('[id*="skip" i], [class*="skip" i]'); if (x) x.click(); }); await W(9000);
   const c = await p.evaluate(() => { const x = document.querySelector('#lane-button-bar [data-region="13"] .lane-face--wide'); const r = x.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; });
   await p.mouse.click(c.x, c.y); await W(1200);
+  await p.click('[data-rp-type="A"]'); // V 1023 G: 기존 게임은 A 타입
   await p.evaluate((d) => document.querySelector('[data-rp-diff="' + d + '"]').click(), process.argv[2] || 'HARD'); await W(2000);
   await p.evaluate(() => { window.__bot = setInterval(() => { const d = window.__rhythm.dbg(); if (!d) return; d.notes.forEach((n) => { if (n.state === 'live' && !n.__p && n.targetTime - 0.21 - d.t <= 0.008) { n.__p = 1; window.__rhythm.press(n.targetLane); } }); }, 4); });
   for (let i = 0; i < 170; i++) { if (await p.evaluate(() => !document.querySelector('[data-rp-result]').hidden)) break; await W(1000); }

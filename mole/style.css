@@ -5131,6 +5131,15 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 #rhythm-screen.rp-screen { position: fixed; inset: 0; z-index: 400; display: flex; flex-direction: column; overflow: hidden;
   background: #0d3b66 url('assets/rhythm/bg-beach.jpg') center / cover no-repeat; touch-action: none; user-select: none; -webkit-user-select: none; }
 #rhythm-screen[hidden] { display: none; }
+/* V 1023 G: A/B 진입 선택 및 리듬팡2 제작 중 안내 */
+.rp-type-panel { position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px; overflow: auto; background: rgba(7, 35, 75, .72); color: white; text-align: center; }
+.rp-type-panel[hidden], #rhythm-screen .rp-stage[hidden] { display: none; }
+.rp-type-panel h2 { margin: 0; font-size: clamp(24px, 6vw, 38px); }
+.rp-type-panel p { margin: 0 0 12px; }
+.rp-type-panel button { flex-shrink: 0; width: min(100%, 340px); min-height: 58px; padding: 12px 20px; border: 2px solid #e4ceff; border-radius: 20px; background: linear-gradient(#9862db, #6135a1); box-shadow: 0 5px 0 #382061; color: white; font: inherit; font-size: 21px; cursor: pointer; }
+.rp-type-panel button b { margin-right: 14px; color: #ffe484; }
+.rp-type-panel button:active { transform: translateY(3px); box-shadow: 0 2px 0 #382061; }
+.rp-type-panel button:focus-visible { outline: 3px solid #ffe484; outline-offset: 4px; }
 .rp-stage { position: relative; flex: 1 1 auto; min-height: 0; }
 .rp-lanes, .rp-weapons { position: absolute; inset: 0; }
 .rp-weapons { pointer-events: none; }

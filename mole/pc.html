@@ -3,16 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>두더지팡!</title>
+<title>두더지팡! · 휴대폰 미리보기</title>
 <link rel="icon" href="icons/icon-192-hippo.png">
 <style>
-  /* PC 전용 액자 — 게임을 폰 폭(430px)으로 가운데 띄움 */
+  /* V 1024 G: 게임의 논리 화면은 390×844, 노트북에는 같은 비율로 축소. */
   html, body { margin: 0; height: 100%; background: #111; overflow: hidden; }
-  iframe { display: block; margin: 0 auto; border: 0; width: min(430px, 100vw); height: 100vh; height: 100dvh; }
+  body { display: flex; align-items: center; justify-content: center; }
+  .phone-preview { position: relative; flex: none; width: 390px; height: 844px; }
+  iframe { display: block; border: 0; width: 390px; height: 844px; transform-origin: top left; }
 </style>
 </head>
 <body>
-<iframe src="index.html" allow="fullscreen; autoplay; camera; microphone" allowfullscreen></iframe>
-<script>document.querySelector('iframe').src = 'index.html' + location.search + location.hash;</script>
+<div class="phone-preview">
+  <iframe src="index.html" title="휴대폰 게임 화면" allow="fullscreen 'none'; autoplay; camera; microphone"></iframe>
+</div>
+<script>
+  const frame = document.querySelector('iframe');
+  const preview = document.querySelector('.phone-preview');
+  function fitPhone() {
+    const scale = Math.min(1, window.innerWidth / 390, window.innerHeight / 844);
+    preview.style.width = (390 * scale) + 'px';
+    preview.style.height = (844 * scale) + 'px';
+    frame.style.transform = 'scale(' + scale + ')';
+  }
+  fitPhone();
+  window.addEventListener('resize', fitPhone);
+  frame.src = 'index.html' + location.search + location.hash;
+</script>
 </body>
 </html>
