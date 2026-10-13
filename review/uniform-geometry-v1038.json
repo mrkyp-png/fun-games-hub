@@ -1,0 +1,24 @@
+{
+  "cells": 18,
+  "pitch": 300,
+  "opening_bounds": [
+    23,
+    23,
+    277,
+    277
+  ],
+  "opening_width": 254,
+  "opening_height": 254,
+  "opening_alpha_identical": true,
+  "joint_size": [
+    57,
+    57
+  ],
+  "joint_resized": false,
+  "source_tile": [
+    26,
+    1056,
+    326,
+    1356
+  ]
+}

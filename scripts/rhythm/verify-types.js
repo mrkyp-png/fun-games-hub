@@ -21,9 +21,10 @@ const puppeteer = require('puppeteer-core');
     await page.waitForSelector('[data-rp-types]:not([hidden])');
     assert.equal(await page.$eval('[data-rp-select]', el => el.hidden), true);
     await page.click('[data-rp-type="B"]');
-    await page.waitForSelector('[data-rp-building]:not([hidden])');
+    await page.waitForSelector('[data-rp-b]:not([hidden])');
     assert.equal(await page.evaluate(() => window.__rhythm.dbg()), null);
-    await page.click('[data-rp-types-back]');
+    assert.equal(await page.$$eval('.rb-circuit', els => els.length), 18);
+    await page.evaluate(() => window.__rhythm.open()); // 정적 B 시안 확인 후 A 회귀 검사
     await page.waitForSelector('[data-rp-types]:not([hidden])');
     for (const [width, height] of [[390, 844], [844, 390], [1280, 800]]) {
       await page.setViewport({ width, height });
@@ -47,6 +48,6 @@ const puppeteer = require('puppeteer-core');
     await page.click('[data-rp-types-home]');
     await page.waitForSelector('#rhythm-screen[hidden]');
     assert.deepEqual(errors, []);
-    console.log('PASS: home → types; B → building → types; A → difficulties → EASY → pause → quit; reopen → types → home; three viewport sizes; no page errors');
+    console.log('PASS: home → types; B static skeleton + 9 circuits; A → difficulties → EASY → pause → quit; reopen → types → home; three viewport sizes; no page errors');
   } finally { await browser.close(); }
 })().catch(e => { console.error(e); process.exitCode = 1; });

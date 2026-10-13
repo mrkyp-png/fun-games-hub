@@ -37,6 +37,7 @@
     var meta = null, buffer = null, ctx = null, src = null;
     var st = null, raf = 0;
     var imgs = {}, diff = 'EASY';
+    var bGame = null, activeB = false;
     // 효과음(기존 게임 사운드 재사용) — 성공 = 타격음, 실패 = 두더지 아야
     var SFX = { hit: ['audio/hit1.mp3', 'audio/hit2.mp3', 'audio/hit3.mp3', 'audio/hit4.mp3'], jump: ['audio/mole-emerge.mp3'] }; // v814(사용자 지정): 실패 목소리(아야 등) 삭제, 두더지 점프 = 두더지팡 등장 소리
     var sfxBuf = {};
@@ -477,6 +478,10 @@
     }
 
     function pause(on) {
+      if (activeB) {
+        el.querySelectorAll('[data-rx-pause-t] textPath').forEach(function (t) { t.textContent = '일시정지'; });
+        bGame.pause(on); $('[data-rp-pause]').hidden = !on; return;
+      }
       if (!st || st.ended) return;
       var pt = (root.FGH && root.FGH.I18N && root.FGH.I18N.lang === 'en') ? 'PAUSE' : '일시정지'; // v826: 한글은 일시정지
       el.querySelectorAll('[data-rx-pause-t] textPath').forEach(function (t) { t.textContent = pt; });
@@ -490,12 +495,16 @@
     });
     $('[data-rp-pausebtn]').addEventListener('click', function () { pause(true); });
     $('[data-rp-resume]').addEventListener('click', function () { pause(false); });
-    $('[data-rp-quit]').addEventListener('click', function () { if (MG.Economy) MG.Economy.spendHeart(); close('quit'); }); // 그만하기(v841: 탄성 밀어내기로 홈) = 하트 1개 차감(사용자 지정 v820)
+    $('[data-rp-quit]').addEventListener('click', function () {
+      if (activeB) { showTypes(); return; } // B 규칙 확정 전: 하트 차감 없이 타입 선택 복귀.
+      if (MG.Economy) MG.Economy.spendHeart(); close('quit');
+    });
     $('[data-rp-retry]').addEventListener('click', function () { pushInGame($('[data-rp-result]')); start(); }); // v841: 다시하기 = 탄성 밀어내기
     $('[data-rp-home]').addEventListener('click', function () { close(); });
     $('[data-rp-other]').addEventListener('click', function () { cancelAnimationFrame(raf); try { src && src.stop(); } catch (e) { /* 무시 */ } st = null; showSelect(); });
 
     function close(why) {
+      if (bGame) bGame.stop(); activeB = false;
       cancelAnimationFrame(raf);
       try { src && src.stop(); } catch (e) { /* 무시 */ }
       if (ctx && ctx.state === 'suspended') ctx.resume();
@@ -530,10 +539,13 @@
     $('[data-rp-sel-close]').addEventListener('click', function () { close(); });
     // V 1023 G: 홈 → 타입 선택 → A 기존 난이도 / B 제작 중.
     function showTypes() {
+      if (bGame) bGame.stop(); activeB = false;
+      $('[data-rp-pause]').hidden = true;
       $('[data-rp-select]').hidden = true;
-      $('[data-rp-building]').hidden = true;
+      $('[data-rp-b]').hidden = true;
       $('[data-rp-types]').hidden = false;
       stage.hidden = true;
+      el.classList.remove('is-type-b');
     }
     $('[data-rp-type="A"]').addEventListener('click', function () {
       $('[data-rp-types]').hidden = true;
@@ -542,9 +554,11 @@
     });
     $('[data-rp-type="B"]').addEventListener('click', function () {
       $('[data-rp-types]').hidden = true;
-      $('[data-rp-building]').hidden = false;
+      $('[data-rp-b]').hidden = false;
+      el.classList.add('is-type-b'); activeB = true;
+      if (!bGame) bGame = root.__rhythmB = MG.RhythmB.create({ root: $('[data-rp-b]'), onPause: function () { pause(true); } });
+      bGame.open();
     });
-    $('[data-rp-types-back]').addEventListener('click', showTypes);
     $('[data-rp-types-home]').addEventListener('click', function () { close(); });
     function open() { el.hidden = false; $('[data-rp-pause]').hidden = true; $('[data-rp-result]').hidden = true; wlayer.innerHTML = '';
       // v974(사용자 지정): 진입 시 배경은 항상 첫 화면 — 지난 판의 두더지·구멍·버튼·점수·HP 잔상 비움(시작하면 start() 가 다시 만듦)
