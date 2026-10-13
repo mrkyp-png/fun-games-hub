@@ -57,7 +57,7 @@ const puppeteer = require('puppeteer-core');
   await page.mouse.move(buttonBox.x,buttonBox.y);await page.mouse.down();
   await new Promise(r=>setTimeout(r,100));
   assert(await page.$eval('.rb-color',el=>el.classList.contains('is-pressed')&&getComputedStyle(el).transform!=='none'));
-  assert(await page.$eval('.rb-hit',el=>el.classList.contains('is-hit-flash')&&getComputedStyle(el,'::after').animationName==='rb-hit-flash'));
+  assert(await page.$eval('.rb-hit',el=>!el.classList.contains('is-hit-flash')&&getComputedStyle(el,'::after').animationName==='none'));assert(await page.$eval('.rb-hit',el=>getComputedStyle(el,'::after').content==='none'));
   assert.equal(await page.$eval('.rb-skeleton',el=>JSON.stringify(el.getBoundingClientRect())),frameBefore);
   assert.equal(await page.$$eval('.rb-circuit',els=>JSON.stringify(els[9].getBoundingClientRect())),circuitBefore);
   await (await page.$('.rb-board')).screenshot({path:'review/rhythm-b-pressed-v1040.png'});

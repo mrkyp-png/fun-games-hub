@@ -77,8 +77,6 @@
       function down() {
         if (!running || paused) return;
         surfaces.forEach(el => el.classList.add('is-pressed'));
-        hit.classList.add('is-hit-flash');
-        hit.getAnimations({subtree:true}).forEach(a=>{if(a.animationName==='rb-hit-flash')a.currentTime=0;});
         if (play) play.press(i);
       }
       function up() { surfaces.forEach(el => el.classList.remove('is-pressed')); }
@@ -87,7 +85,6 @@
         down(); hit.setPointerCapture(e.pointerId);
       });
       ['pointerup', 'pointercancel', 'lostpointercapture', 'blur'].forEach(type => hit.addEventListener(type, up));
-      hit.addEventListener('animationend', e => { if (e.animationName === 'rb-hit-flash') hit.classList.remove('is-hit-flash'); });
       hit.addEventListener('keydown', e => { if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); if (!e.repeat) down(); } });
       hit.addEventListener('keyup', e => { if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); up(); } });
       const mini = document.createElement('div'); mini.className = 'rb-mini';
@@ -119,7 +116,7 @@
     pauseButton.innerHTML = '<span class="rb-pause-well" aria-hidden="true"></span><span class="rb-pause-face" aria-hidden="true"></span>';
     pauseButton.addEventListener('click', () => opts.onPause());
     place(pauseButton, 876, 991, 86, 86);
-    function releaseAll() { pressSurfaces.forEach(el => el.classList.remove('is-pressed', 'is-hit-flash')); }
+    function releaseAll() { pressSurfaces.forEach(el => el.classList.remove('is-pressed')); }
     flowFx = root.MoleGame.RhythmBFlow.create({ board, colors });
     let artReady = null;
     const artImages = [];

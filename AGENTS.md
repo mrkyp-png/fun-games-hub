@@ -332,3 +332,23 @@
 - 사용자 "배포해요"로 현재V1050G(하부9개유리·원색회로·흰색빛 및V1048사전로딩/반복계산개선)의커밋·푸시·배포를승인함.
 - 배포직전HEAD와원격master는aba2eb1b82a374a1fa57036303b151c38528ca58로동일. 검증결과위기록참조,SWshell/diff공백재확인통과. 실제코드와관련검증스크립트만선택하고기존미추적원본/중간파일보존.
 - 실제폰번쩍임해결은확정하지않음. 배포결과는Pages및실제사이트확인후별도기록.
+
+## 2026-10-14 / V 1050 G 배포 완료
+- 사용자승인에따라커밋1ca7013af53d4046f0f3d1932d932d06e1fb665a origin/master push완료. Pages실행38429570326 completed/success확인.
+- 실제 https://mrkyp-png.github.io/fun-games-hub/mole/index.html 의index/style/SW/play/flow/캐릭터strip이로컬과동일함검증(텍스트줄바꿈정규화SHA256,PNG동일). 표시/캐시V1050G.
+- 실제사이트Edge검증통과:9개유리색농도20%,18칸치수/회로중앙/원본뼈대앞레이어,9canvas흐름,눌림·복원/hitflash/일시정지·재개·그만두기/contextmenu방지/3뷰포트/pageerror없음. 색상회로·흰색빛의변경된코드동일함확인.
+- 이번배포는V1048최적화및9개유리스타일을포함. 실제폰상하부번쩍임해결확정아님. 사용자환경재확인필요.
+- 이배포후완료기록은로컬인수인계추가이며미커밋. 다음수정·배포는승인범위확인,Claude/기존사용자변경보존,G·C연속번호규칙인계.
+
+## 2026-10-14 / V1051 G — 사용자지시로 B 히트플래시 삭제 (미배포)
+- 사용자 "일단 히트 플래시는 삭제하세요" 승인에따라B입력hitflash클래스추가/애니메이션재시작/animationend처리및rb-hit::after플래시CSS/keyframes/reduced-motion규칙삭제. releaseAll도is-pressed만정리. 다른게임의hinge-hit-flash는별개이므로유지.
+- 버튼9개유리/눌림복원/반사광/원색회로/흰색회로빛/160ms진동/판정·음악/뼈대·배치불변. 로컬표시·캐시V1051G. 커밋·푸시·배포없음,실제배포V1050G(1ca7013).
+- 삭제전진단은게임코드변경없이브라우저임시CSS/RAF정지/터치에뮬레이션으로수행: review/diagnose-flicker-v1050.js(독립장면),diagnose-flicker-full-v1050.js(실제게임부모포함),diagnose-flicker-repeat-v1050.js(반복). 실제폰아님.
+- 실제게임고정장면의반복3회: baselineA/B/C 모두누른하부0번외하부1번에733px미세변화, noFlashA/B/C는누른0번만변화/다른17개내부0px. 상부9칸은모든조건에서0px로재현못함. report/pixel-results는review/flicker-repeat-v1050. 미세픽셀변화가사용자가본가시적번쩍임과같다는확정금지. 실제휴대폰브라우저환경질문은답변아직없음.
+- 이진단은플래시관련합성의원인후보근거이며GPU/버벅임/용량탓으로단정금지. 상부증상및실제폰해결여부사용자확인필요.
+- 삭제후verify-b.js 통과:160msflash존재검사를없음(content none/animationName none)검사로변경;3뷰포트기하/18회로중앙/눌림복원/9canvas빛/pause·resume·quit/contextmenu/pageerror검증통과. 구문/SWshell/diff공백검사통과.
+- 다음에이전트도수정사전승인/배포별도승인/G·C연속번호/Claude·사용자기존변경보존/뼈대임의변경금지지침준수. 히트플래시다시추가하지말것.
+
+## 2026-10-14 / V1051 G 배포 승인
+- 사용자 "배포"로히트플래시삭제V1051G의커밋/푸시/배포승인. 배포전HEAD/origin master동일1ca7013af53d4046f0f3d1932d932d06e1fb665a확인. 직전동작검증통과및SWshell/diff공백재확인.
+- 기존원본/미추적자료보존. 실제폰상하부번쩍임해결단정없이배포후확인한다.

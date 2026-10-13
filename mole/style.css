@@ -7159,12 +7159,6 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-pause-face::after { content: ""; position: absolute; inset: 14% 12% 20%; border-radius: 8%; transition: box-shadow 120ms ease; }
 .rb-pause-button:active .rb-pause-face::after { box-shadow: inset 3px 3px 5px #0006, inset -3px -3px 5px #fff2; }
 
-/* V 1041 G: short per-hit flash stays inside the fixed metal frame. */
-.rb-hit::after { content: ''; position: absolute; inset: calc(100% * 25 / 304); pointer-events: none; clip-path: polygon(8% 0,92% 0,100% 8%,100% 92%,92% 100%,8% 100%,0 92%,0 8%); background: radial-gradient(ellipse at center,#ffffff99 0%,var(--button-color) 42%,transparent 80%); mix-blend-mode: screen; opacity: 0; }
-.rb-hit.is-hit-flash::after { animation: rb-hit-flash 160ms ease-out; }
-@keyframes rb-hit-flash { 0% { opacity: .85; } 35% { opacity: .5; } 100% { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .rb-hit.is-hit-flash::after { animation-duration: 80ms; } }
-
 /* V 1042 G: isolate static upper rooms from lower SVG/filter repaints and tap highlights. */
 .rb-screen { -webkit-tap-highlight-color: transparent; }
 .rb-board { isolation: isolate; }
