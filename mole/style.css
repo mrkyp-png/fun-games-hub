@@ -7170,3 +7170,28 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-mini { contain: paint; isolation: isolate; transform: translateZ(0); backface-visibility: hidden; }
 .rb-flow { contain: paint; isolation: isolate; overflow: hidden; }
 .rb-hit { isolation: isolate; }
+
+/* V 1043 G: border-note game; existing room/frame geometry stays fixed. */
+.rb-note { position: absolute; width: calc(100% * 300 / 952); height: calc(100% * 300 / 2078); z-index: 5; pointer-events: none; transform-origin: center; will-change: transform, opacity; }
+.rb-note[hidden] { display: none; }
+.rb-note-ring { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 0 1px var(--note-color)); }
+.rb-character { position: absolute; left: 16.666667%; top: 8.333333%; width: 66.666667%; height: 83.333333%; background: url(assets/rhythm-b/character/run-strip.png) 0 0 / 1600% 100% no-repeat; filter: drop-shadow(1px 0 0 var(--note-color)) drop-shadow(-1px 0 0 var(--note-color)) drop-shadow(0 1px 0 var(--note-color)) drop-shadow(0 -1px 0 var(--note-color)) drop-shadow(0 0 3px var(--note-color)); }
+.rb-game-status { position: absolute; z-index: 5; display: grid; grid-template-columns: repeat(4,1fr); align-items: center; color: white; pointer-events: none; }
+.rb-total { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 3px; font-family: sans-serif; line-height: 1; }
+.rb-total small { font-size: clamp(8px,2.3vw,10px); font-weight: 800; }
+.rb-total b { font-size: clamp(10px,2.9vw,12px); }
+.rb-total--miss, .rb-status--judge[data-grade=MISS] { color: #ff4d5e; }
+.rb-total--good, .rb-status--judge[data-grade=GOOD] { color: #4fdaff; }
+.rb-total--great, .rb-status--judge[data-grade=GREAT] { color: #64f88a; }
+.rb-total--perfect, .rb-status--judge[data-grade=PERFECT] { color: #ffe542; }
+.rb-status--judge b { font-size: clamp(12px,4vw,22px); }
+.rb-status--judge.is-judging b { animation: rb-judge-pop 140ms ease-out; }
+@keyframes rb-judge-pop { from { opacity:.5; transform:scale(1.12); } to { opacity:1; transform:scale(1); } }
+.rb-load-error { position:absolute; left:10%; right:10%; top:43%; z-index:6; padding:8px; background:#101923ee; color:white; text-align:center; font:12px/1.4 sans-serif; }
+.rb-load-error[hidden] { display:none; }
+#rhythm-screen.is-type-b > [data-rp-result], #rhythm-screen.is-type-b > [data-rp-select] { z-index:20; }
+
+/* V 1044 G: native image menus disabled; lower-only canvas contains all light painting. */
+.rb-screen, .rb-screen * { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.rb-screen img { pointer-events: none; -webkit-user-drag: none; }
+.rb-flow-canvas { position:absolute; left:calc(100% * 26 / 952); top:calc(100% * 1056 / 2078); width:calc(100% * 900 / 952); height:calc(100% * 900 / 2078); z-index:2; pointer-events:none; contain:strict; isolation:isolate; }

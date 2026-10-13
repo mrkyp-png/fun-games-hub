@@ -5,8 +5,11 @@
     const board = opts.root.querySelector('.rb-board');
     const buttonXs = [[26, 326], [326, 626], [626, 926]];
     const buttonYs = [[1056, 1356], [1356, 1656], [1656, 1956]];
-    const flowSlots = [], pressSurfaces = [];
-    let running = false, paused = false;
+    const pressSurfaces = [];
+    let flowFx = null;
+    opts.root.addEventListener("contextmenu", e => e.preventDefault());
+    opts.root.addEventListener("dragstart", e => e.preventDefault());
+    let running = false, paused = false, play = null;
     const ns = 'http://www.w3.org/2000/svg';
     for (let i = 0; i < 18; i++) {
       const index = i % 9, lower = i >= 9;
@@ -24,17 +27,7 @@
       img.style.left = ((cx - (646 - 1281 / 2) * scaleX) / 952 * 100) + '%';
       img.style.top = ((cy - (621 - 1228 / 2) * scaleY) / 2078 * 100) + '%';
       board.appendChild(img);
-      if (lower) {
-        const flow = document.createElementNS(ns, 'svg');
-        flow.classList.add('rb-flow'); flow.setAttribute('viewBox', '0 0 1281 1228');
-        flow.setAttribute('preserveAspectRatio', 'none'); flow.setAttribute('aria-hidden', 'true');
-        flow.style.cssText = img.style.cssText;
-        board.appendChild(flow);
-        for (let j = 0; j < 3; j++) {
-          const path = document.createElementNS(ns, 'path'); flow.appendChild(path);
-          flowSlots.push({ path, timer: null, animation: null });
-        }
-      }
+
     }
     const frame = document.createElement('img');
     frame.className = 'rb-skeleton'; frame.alt = '정사각형으로 조정한 원본 뼈대';
@@ -68,9 +61,6 @@
       hit.setAttribute('aria-label', (i + 1) + '번 리듬 버튼');
       hit.innerHTML = '<span class="rb-press-face" aria-hidden="true"></span>';
       place(hit, buttonCx, buttonCy, 304);
-      const circuit = board.querySelectorAll('.rb-circuit')[9 + i];
-      const flow = board.querySelectorAll('.rb-flow')[i];
-      flow.style.setProperty('--flow-color', colors[i]);
       const surfaces = [hit, color]; pressSurfaces.push(...surfaces);
       function down() {
         if (!running || paused) return;
@@ -78,6 +68,7 @@
         hit.classList.remove('is-hit-flash');
         void hit.offsetWidth;
         hit.classList.add('is-hit-flash');
+        if (play) play.press(i);
       }
       function up() { surfaces.forEach(el => el.classList.remove('is-pressed')); }
       hit.addEventListener('pointerdown', e => {
@@ -117,40 +108,31 @@
     pauseButton.innerHTML = '<span class="rb-pause-well" aria-hidden="true"></span><span class="rb-pause-face" aria-hidden="true"></span>';
     pauseButton.addEventListener('click', () => opts.onPause());
     place(pauseButton, 876, 991, 86, 86);
-    function next(slot, delay = 80 + Math.random() * 550) {
-      clearTimeout(slot.timer);
-      if (!running || paused) return;
-      slot.timer = setTimeout(() => {
-        if (!running || paused) return;
-        const routes = root.MoleGame.rhythmBCircuitRoutes;
-        const long = Math.random() < .5;
-        slot.path.dataset.flowKind = long ? 'long' : 'short';
-        slot.path.setAttribute('d', routes[(long ? 40 : 0) + Math.floor(Math.random() * 40)]);
-        const length = slot.path.getTotalLength(), tail = 90 + Math.random() * 90;
-        slot.path.style.strokeDasharray = tail + ' ' + (length + tail);
-        const reverse = Math.random() < .5;
-        const offsets = reverse ? [-tail, length + tail] : [length + tail, -tail];
-        slot.animation = slot.path.animate([
-          { strokeDashoffset: offsets[0], opacity: 0 },
-          { opacity: 1, offset: .15 }, { opacity: 1, offset: .8 },
-          { strokeDashoffset: offsets[1], opacity: 0 }
-        ], { duration: long ? 1800 + Math.random() * 900 : 650 + Math.random() * 550, easing: 'linear' });
-        slot.animation.onfinish = () => { slot.animation = null; next(slot); };
-      }, delay);
-    }
     function releaseAll() { pressSurfaces.forEach(el => el.classList.remove('is-pressed', 'is-hit-flash')); }
+    flowFx = root.MoleGame.RhythmBFlow.create({ board, colors });
+    play = root.MoleGame.RhythmBPlay.create({
+      root: opts.root, board, rules: opts.rules, loadSong: opts.loadSong,
+      onFinish: (stats, clear) => {
+        running = false; releaseAll();
+        flowFx.stop();
+        opts.onResult(stats, clear);
+      }
+    });
     return {
-      open() {
+      open(difficulty) {
         running = true; paused = false; board.classList.remove('is-paused'); releaseAll();
-        flowSlots.forEach(slot => { clearTimeout(slot.timer); if (slot.animation) slot.animation.cancel(); slot.animation = null; next(slot, Math.random() * 500); });
+        flowFx.start();
+        return play.start(difficulty || 'EASY');
       },
       stop() {
-        running = false; paused = false; releaseAll();
-        flowSlots.forEach(slot => { clearTimeout(slot.timer); if (slot.animation) slot.animation.cancel(); slot.animation = null; });
+        running = false; paused = false; releaseAll(); play.stop();
+        flowFx.stop();
       },
+      dbg() { return play.dbg(); },
+      flowDebug() { return flowFx.dbg(); },
       pause(on) {
-        paused = on; board.classList.toggle('is-paused', on); releaseAll();
-        flowSlots.forEach(slot => { clearTimeout(slot.timer); if (slot.animation) { if (on) slot.animation.pause(); else slot.animation.play(); } else if (!on) next(slot); });
+        paused = on; play.pause(on); board.classList.toggle('is-paused', on); releaseAll();
+        flowFx.pause(on);
       }
     };
   }

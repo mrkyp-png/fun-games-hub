@@ -37,7 +37,7 @@
     var meta = null, buffer = null, ctx = null, src = null;
     var st = null, raf = 0;
     var imgs = {}, diff = 'EASY';
-    var bGame = null, activeB = false;
+    var bGame = null, activeB = false, resultSerial = 0;
     // 효과음(기존 게임 사운드 재사용) — 성공 = 타격음, 실패 = 두더지 아야
     var SFX = { hit: ['audio/hit1.mp3', 'audio/hit2.mp3', 'audio/hit3.mp3', 'audio/hit4.mp3'], jump: ['audio/mole-emerge.mp3'] }; // v814(사용자 지정): 실패 목소리(아야 등) 삭제, 두더지 점프 = 두더지팡 등장 소리
     var sfxBuf = {};
@@ -244,6 +244,7 @@
     // ---- 진행 ----
     function now() { return ctx.currentTime - st.t0; } // 음악 시각(초)
     function start() {
+      resultSerial++;
       Promise.all([loadMeta(), loadSong(), preload()]).then(loadSfx).then(function () {
         if (ctx.state === 'suspended') ctx.resume();
         buildStage(); layout(); placeStatic(); // 버튼을 먼저 만들어야 무대 높이가 정확(v812)
@@ -319,7 +320,7 @@
       n.state = 'hit'; n.hitAt = now(); if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); if (n.wind) n.wind.style.opacity = '0';
       melody(true);
       var g = n.press.grade; st.cnt[g]++; st.combo++; st.maxCombo = Math.max(st.maxCombo, st.combo);
-      st.score += Math.round(CONFIG.score[g] * (1 + Math.min(st.combo, 100) / 200));
+      st.score += sharedRules.points(g, st.combo);
       n.vx = (Math.random() < 0.5 ? -1 : 1) * (L.laneW * (1.5 + Math.random())); n.vy = -L.H * 1.1; n.bx = n.cx; n.by = n.cy;
       showJudge(lane, g, g.toLowerCase()); pang(lane, n.cx, n.cy); hud(); sfx('hit');
       burst(n.cx, n.cy, g === 'PERFECT' ? 10 : g === 'GREAT' ? 7 : 5); comboFx();
@@ -459,20 +460,25 @@
     function gameOver(clear) {
       if (st.ended) return; st.ended = true; st.over = true; el.querySelectorAll('.rp-btn').forEach(function (b) { b.classList.remove('is-cue'); }); // 결과창 뒤 버튼 반짝임 정지
       try { src.stop(ctx.currentTime + (clear ? 0.8 : 0.05)); } catch (e) { /* 무시 */ }
+      showResult(st, clear, false);
+    }
+    function showResult(result, clear, isB) {
+      var token = ++resultSerial, resultDiff = isB ? result.diff : diff;
       var r = $('[data-rp-result]');
-      var bk = 'mole.rp.best.' + diff, old = parseInt(localStorage.getItem(bk), 10) || 0, isNew = st.score > old;
-      if (isNew) localStorage.setItem(bk, String(st.score));
-      try { if (MG.Quest) MG.Quest.recordRhythm({ diff: diff, clear: clear, miss: st.cnt.MISS, perfect: st.cnt.PERFECT }); } catch (e) { /* 무시 */ } // v895: 리듬팡 업적
-      $('[data-rp-res-best]').innerHTML = '<small>' + diff + ' BEST</small><b>' + Math.max(old, st.score).toLocaleString('en-US') + '</b>';
+      var bk = (isB ? 'mole.rp.b.best.' : 'mole.rp.best.') + resultDiff, old = parseInt(localStorage.getItem(bk), 10) || 0, isNew = result.score > old;
+      if (isNew) localStorage.setItem(bk, String(result.score));
+      try { if (!isB && MG.Quest) MG.Quest.recordRhythm({ diff: resultDiff, clear: clear, miss: result.cnt.MISS, perfect: result.cnt.PERFECT }); } catch (e) { /* 무시 */ } // v895: 리듬팡 업적
+      $('[data-rp-res-best]').innerHTML = '<small>' + resultDiff + ' BEST</small><b>' + Math.max(old, result.score).toLocaleString('en-US') + '</b>';
       var stamp = $('[data-rx-new]'); stamp.classList.remove('is-on');
       r.classList.toggle('is-fail', !clear);
-      var sEl = $('[data-rp-res-score]'), fin = st.score; sEl.textContent = '0';
-      $('[data-rp-res-combo]').textContent = st.maxCombo;
-      ['PERFECT', 'GREAT', 'GOOD', 'MISS'].forEach(function (g) { $('[data-rp-res-' + g.toLowerCase() + ']').textContent = st.cnt[g]; });
+      var sEl = $('[data-rp-res-score]'), fin = result.score; sEl.textContent = '0';
+      $('[data-rp-res-combo]').textContent = result.maxCombo;
+      ['PERFECT', 'GREAT', 'GOOD', 'MISS'].forEach(function (g) { $('[data-rp-res-' + g.toLowerCase() + ']').textContent = result.cnt[g]; });
       setTimeout(function () {
+        if (token !== resultSerial) return;
         r.hidden = false;
         var t0 = performance.now(); // v831: 점수 0 → 최종 카운트업(0.9초) 뒤 신기록이면 NEW! 도장
-        (function up(now) { var k = Math.min(1, (now - t0) / 900), e = 1 - Math.pow(1 - k, 3); sEl.textContent = Math.round(fin * e).toLocaleString('en-US');
+        (function up(now) { if (token !== resultSerial) return; var k = Math.min(1, (now - t0) / 900), e = 1 - Math.pow(1 - k, 3); sEl.textContent = Math.round(fin * e).toLocaleString('en-US');
           if (k < 1) requestAnimationFrame(up); else if (isNew && fin > 0) stamp.classList.add('is-on'); })(t0);
       }, clear ? 700 : 300);
     }
@@ -499,11 +505,12 @@
       if (activeB) { showTypes(); return; } // B 규칙 확정 전: 하트 차감 없이 타입 선택 복귀.
       if (MG.Economy) MG.Economy.spendHeart(); close('quit');
     });
-    $('[data-rp-retry]').addEventListener('click', function () { pushInGame($('[data-rp-result]')); start(); }); // v841: 다시하기 = 탄성 밀어내기
+    $('[data-rp-retry]').addEventListener('click', function () { resultSerial++; pushInGame($('[data-rp-result]')); if (activeB) bGame.open(diff); else start(); }); // v841: 다시하기 = 탄성 밀어내기
     $('[data-rp-home]').addEventListener('click', function () { close(); });
-    $('[data-rp-other]').addEventListener('click', function () { cancelAnimationFrame(raf); try { src && src.stop(); } catch (e) { /* 무시 */ } st = null; showSelect(); });
+    $('[data-rp-other]').addEventListener('click', function () { if (activeB) { bGame.stop(); showSelect(); return; } cancelAnimationFrame(raf); try { src && src.stop(); } catch (e) { /* 무시 */ } st = null; showSelect(); });
 
     function close(why) {
+      resultSerial++;
       if (bGame) bGame.stop(); activeB = false;
       cancelAnimationFrame(raf);
       try { src && src.stop(); } catch (e) { /* 무시 */ }
@@ -512,9 +519,10 @@
       opts.onClose(why);
     }
     function showSelect() {
+      resultSerial++;
       $('[data-rp-result]').hidden = true; $('[data-rp-pause]').hidden = true;
       el.querySelectorAll('[data-rp-diff]').forEach(function (b) {
-        var d = b.getAttribute('data-rp-diff'), best = parseInt(localStorage.getItem('mole.rp.best.' + d), 10) || 0;
+        var d = b.getAttribute('data-rp-diff'), best = parseInt(localStorage.getItem((activeB ? 'mole.rp.b.best.' : 'mole.rp.best.') + d), 10) || 0;
         b.querySelector('small').textContent = best.toLocaleString('en-US');
       });
       $('[data-rp-select]').hidden = false;
@@ -531,6 +539,7 @@
         diff = b.getAttribute('data-rp-diff');
         // v841(사용자 지정): 게임 화면 진입 = 탄성 밀어내기 — 난이도 창은 왼쪽으로 밀려나고 게임 화면이 오른쪽에서 튕기듯 들어옴
         pushInGame($('[data-rp-select]'));
+        if (activeB) { bGame.open(diff); return; }
         if (!ctx) ctx = new (root.AudioContext || root.webkitAudioContext)();
         if (ctx.state === 'suspended') ctx.resume(); // 사용자 탭 안에서 소리 허용
         start();
@@ -539,6 +548,8 @@
     $('[data-rp-sel-close]').addEventListener('click', function () { close(); });
     // V 1023 G: 홈 → 타입 선택 → A 기존 난이도 / B 제작 중.
     function showTypes() {
+      resultSerial++;
+      $('[data-rp-result]').hidden = true;
       if (bGame) bGame.stop(); activeB = false;
       $('[data-rp-pause]').hidden = true;
       $('[data-rp-select]').hidden = true;
@@ -556,8 +567,17 @@
       $('[data-rp-types]').hidden = true;
       $('[data-rp-b]').hidden = false;
       el.classList.add('is-type-b'); activeB = true;
-      if (!bGame) bGame = root.__rhythmB = MG.RhythmB.create({ root: $('[data-rp-b]'), onPause: function () { pause(true); } });
-      bGame.open();
+      if (!bGame) bGame = root.__rhythmB = MG.RhythmB.create({
+        root: $('[data-rp-b]'), rules: sharedRules,
+        loadSong: function () {
+          if (!ctx) ctx = new (root.AudioContext || root.webkitAudioContext)();
+          if (ctx.state === 'suspended') ctx.resume();
+          return loadSong().then(function () { return { ctx: ctx, back: buffer, melody: melBuf, song: song }; });
+        },
+        onPause: function () { pause(true); },
+        onResult: function (stats, clear) { showResult(stats, clear, true); }
+      });
+      showSelect();
     });
     $('[data-rp-types-home]').addEventListener('click', function () { close(); });
     function open() { el.hidden = false; $('[data-rp-pause]').hidden = true; $('[data-rp-result]').hidden = true; wlayer.innerHTML = '';
@@ -568,6 +588,11 @@
     return { open: open, close: close, CONFIG: CONFIG, setDiff: function (d) { diff = d; }, start: function () { start(); }, press: function (l) { press(l); }, dbg: function () { return st ? { t: now(), notes: st.notes, score: st.score, combo: st.combo, hp: st.hp, cnt: st.cnt } : null; } };
   }
 
-  var api = { create: create };
+  var sharedRules = {
+    config: CONFIG, diffs: DIFFS,
+    grade: function (ms, difficulty) { var J = DIFFS[difficulty].judge; return ms <= J.perfectMs ? 'PERFECT' : ms <= J.greatMs ? 'GREAT' : ms <= J.goodMs ? 'GOOD' : null; },
+    points: function (grade, combo) { return Math.round(CONFIG.score[grade] * (1 + Math.min(combo, 100) / 200)); }
+  };
+  var api = { create: create, rules: sharedRules };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.Rhythm = api; }
 })(typeof window !== 'undefined' ? window : null);

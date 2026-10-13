@@ -22,6 +22,8 @@ const puppeteer = require('puppeteer-core');
     assert.equal(await page.$eval('[data-rp-select]', el => el.hidden), true);
     await page.click('[data-rp-type="B"]');
     await page.waitForSelector('[data-rp-b]:not([hidden])');
+    await page.waitForSelector('[data-rp-select]:not([hidden])');
+    assert.equal(await page.$$eval('[data-rp-diff]',els=>els.length),3);
     assert.equal(await page.evaluate(() => window.__rhythm.dbg()), null);
     assert.equal(await page.$$eval('.rb-circuit', els => els.length), 18);
     await page.evaluate(() => window.__rhythm.open()); // 정적 B 시안 확인 후 A 회귀 검사

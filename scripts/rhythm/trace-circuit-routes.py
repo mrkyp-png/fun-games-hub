@@ -5,7 +5,7 @@ import numpy as np
 from scipy.ndimage import distance_transform_edt
 from collections import deque
 from skimage.morphology import skeletonize, opening, disk, remove_small_objects
-import random,json
+import random,json,re,cv2
 p=Path('mole/assets/rhythm-b');im=np.array(Image.open(p/'circuit-user.png').convert('RGBA'))
 metal=(im[:,:,3]>220)&(im[:,:,:3].min(axis=2)>110)
 metal=remove_small_objects(opening(metal,disk(2)),max_size=59)
@@ -48,6 +48,13 @@ for attempt in range(500):
  long_routes.append('M'+' L'.join(f'{x},{y}' for y,x in walk))
 assert len(long_routes)==40,len(long_routes)
 routes=short_routes+long_routes
+# Keep original metal vertices while removing redundant straight-line steps.
+simplified=[]
+for route in routes:
+ pts=np.array([[int(x),int(y)] for x,y in re.findall(r'(\d+),(\d+)',route)],dtype=np.int32).reshape((-1,1,2))
+ pts=cv2.approxPolyDP(pts,.8,False).reshape((-1,2))
+ simplified.append('M'+' L'.join(f'{x},{y}' for x,y in pts))
+routes=simplified
 Path('mole/js/rhythm-b-routes.js').write_text('// V 1040 G: paths traced from original circuit-user.png pixels.\nwindow.MoleGame = window.MoleGame || {};\nwindow.MoleGame.rhythmBCircuitRoutes = '+json.dumps(routes,separators=(',',':'))+';\n',encoding='utf-8')
 Path('review/circuit-routes-v1040.json').write_text(json.dumps({'routes':len(routes),'short_routes':40,'long_routes':40,'method':'native metal skeleton; 40 short and 40 long; every vertex on source metal','max_distance_to_metal':0}),encoding='utf-8')
 print('PASS:',len(routes),'paths, each vertex on original narrow-metal skeleton')
