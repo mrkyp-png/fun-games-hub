@@ -152,6 +152,7 @@
       miniSurfaces.push(mini);
     }
     const upperGlow = document.createElement('img'); upperGlow.className = 'rb-upper-glow'; upperGlow.alt = ''; upperGlow.src = 'assets/rhythm-b/upper-uniform-glow.png'; board.appendChild(upperGlow);
+    for(const y of [936,1118]){const line=document.createElement('div');line.className='rb-zone-divider';line.setAttribute('aria-hidden','true');line.style.top=(y/2078*100)+'%';board.appendChild(line);}
     const score = document.createElement('div'); score.className = 'rb-status rb-status--score';
     score.innerHTML = '<small>SCORE</small><b data-rb-score>000000</b>'; place(score, 176, 991, 248, 90);
     const judge = document.createElement('div'); judge.className = 'rb-status rb-status--judge';

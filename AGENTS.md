@@ -556,3 +556,24 @@
 ## 2026-10-14 / V 1079 G — 배포 승인
 - 사용자 "배포하세요"로V1078원형포털/성공280ms10px흔들림,V1079상하외곽2.5배/글로우변경 커밋·푸시·배포승인. localHEAD/remote master 86452cc8dcf3c8e64e16f09a46ff0698f94ff5a7동일확인. 기존사용자·Claude·미추적중간자료보존,승인파일만명시선택.
 - build-circuit-rim.py는SVG재생성만수행하도록정리(프로덕션코드변경/버전치환은제외). 원본및내부선유지검증통과,JS구문/SWshell/diff공백통과. 실제성공은push/Pages/공개검증후기록. 다음에이전트도수정전허락/배포별도허락/G·C연속번호/기존변경보존준수.
+
+## 2026-10-14 / V 1079 G — 배포 완료
+- 사용자승인으로f64c415acb8235d26424ea6e5c6a92a323aecef8 origin/master push완료. Pages38564759985 completed/success확인.
+- 공개9파일(index/style/SW/play/view/flow/characterstrip/thincircuit/rimSVG)로컬SHA256일치확인. 공개verify-b-live-v1079.js3viewport/중심·치수/개별입력/공유pause·resume·quit/pageerror없음통과. V1078원형9포털·성공강화흔들림/V1079상하2.5배외곽·글로우반영.
+- URL https://mrkyp-png.github.io/fun-games-hub/mole/index.html?v=1079 . 실제휴대폰체감/기존번쩍임완전소멸은사용자확인필요,단정금지. 완료기록은로컬만추가,추가커밋·재배포없음.
+- 다음신규버전V1080G(최신G/C재확인). 다음에이전트필수:수정사전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존/임의변경금지.
+
+## 2026-10-14 / V 1080 G — 캐릭터 본체 표시 + 기존 칸색 글로우 (미배포)
+- 사용자 "진행해봐" 승인: 원형포털/회로가사이버분위기를만들므로본체표정·달림을보이게하고기존바깥글로우유지. 9칸색SVGfilter의feMerge마지막에SourceGraphic합성하여원본본체를기존색윤곽/blur위에표시. 원본sprite픽셀/16frame/크기·속도/성공날림/판정·음악/포털·HUD·하부버튼불변.
+- verify-b-wire-lights9필터마지막merge가SourceGraphic검사 및원형9포털/외곽2.5/회전·안전영역·pause통과. dynamic-space전진/BPM/접근가속/성공wave통과. success-shake3판정해당칸280ms10px/빈입력·pause·reducedmotion통과. JS구문/SWshell/diff공백통과. review/character-visible-v1080.png 실제렌더확인.
+- 로컬V1080G,공개V1079G(f64c415). 커밋/푸시/배포없음. 다음에이전트필수:수정사전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존/임의변경금지. 테스트출력outline-only는이전명칭이며실제filter는본체+윤곽으로검증.
+
+## 2026-10-14 / V 1081 G — 3구역 네온 구분선 / 안쪽 진행바 (미배포)
+- 사용자 "진행" 및진행바안쪽배치·밋밋함개선안에 "네" 승인. 상부포털/중앙HUD/하부회로 구분하는청록가로선2개 y936/1118에배치. 기존요소·간격/캐릭터·게임동작변경없음. 선1CSSpx/절제된청록gradient·glow,구역박스새로추가하지않음.
+- 곡진행바좌우26→52논리px로인셋,top3CSSpx/높이5CSSpx,청록테두리·약한발광·8구간눈금·밝은진행끝점추가. 카메라안전영역그대로,상부포털과비중첩. 음악시계/퍼센트/일시정지/초기화로직불변,새반짝임애니메이션없음.
+- verify-b-wire-lights:2선/포털bottom<첫선<HUDtop/세부판bottom<둘째선<회로top/진행바보드안쪽·포털위비중첩 및기존원형·SourceGraphic본체·순환·안전여백·pause검증통과. verify-b-progress카운트인0/50·75·100%/pause/reset통과. JS구문/SWshell/diff공백통과. review/zones-progress-v1081.png실제렌더확인.
+- 로컬V1081G(미배포V1080캐릭터본체표시포함),공개V1079G(f64c415). 커밋/푸시/배포없음. 다음에이전트필수:수정사전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존/임의변경금지.
+
+## 2026-10-14 / V 1081 G — 배포 승인
+- 사용자 "배포"로V1080캐릭터본체+칸색글로우/V1081네온2구분선·안쪽진행바 커밋·푸시·배포승인. localHEAD/remote master f64c415acb8235d26424ea6e5c6a92a323aecef8동일확인. 기존/Claude변경보존,명시승인파일만선택.
+- 직전9필터본체/구역선비중첩/진행바음악시계·pause/reset·SWshell/diff공백검증통과. 실제배포성공은push/Pages/공개파일검증후기록. 다음에이전트도수정사전허락/배포별도허락/G·C연속번호/기존변경보존준수.

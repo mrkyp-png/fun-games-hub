@@ -7293,3 +7293,10 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 
 /* V 1079 G: 바깥 테두리만2.5배, 내부선 유지. */
 .rb-portal-rim { stroke-width: 2.5; opacity: .7; filter: drop-shadow(0 0 1.5px currentColor); }
+
+/* V 1081 G: 3구역 분리, 안쪽 곡 진행바 정돈. */
+.rb-zone-divider { position: absolute; left: calc(100% * 26 / 952); right: calc(100% * 26 / 952); height: 1px; z-index: 4; pointer-events: none; background: linear-gradient(90deg,transparent,#00cfff66 12%,#53e4ff99 50%,#00cfff66 88%,transparent); box-shadow: 0 0 4px #00cfff30; }
+.rb-song-progress { left: calc(100% * 52 / 952); right: calc(100% * 52 / 952); top: 3px; height: 5px; box-sizing: border-box; border: 1px solid #38cfe84d; border-radius: 4px; background: #081922; box-shadow: 0 0 5px #00cfff30; }
+.rb-song-progress::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(90deg,transparent 0 calc(12.5% - 1px),#0008 calc(12.5% - 1px) 12.5%); }
+.rb-song-progress-fill { position: relative; background: linear-gradient(90deg,#086aff,#00cfff 70%,#7df5ff); }
+.rb-song-progress-fill::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 4px; background: #c5ffff; box-shadow: 0 0 5px #7df5ff; }
