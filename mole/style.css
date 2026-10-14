@@ -7363,3 +7363,20 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-practice-option { width: 90%; margin: 4px 0; font-size: 4.5cqw; text-align: center; cursor: pointer; }
 .rb-practice-option small { display: block; margin-top: 5px; font-size: 3.8cqw; color: #c9f5ff; }
 .rb-practice-option input { accent-color: #15cfff; }
+
+/* V 1093 G: earlier character visibility and +10% idle lines; button impact restored in V1096. */
+.rb-wire-tunnel { filter: brightness(1.45475); }
+.rb-circuit--glass { opacity: .33; }
+
+/* V 1094 G: shared dimmed board/HUD, expanding ready callouts. */
+.rb-start-shade { position:absolute; inset:0; z-index:8; background:#000; pointer-events:none; }
+.rb-start-shade[hidden] { display:none; }
+.rb-start-callout { top:44%; width:90%; z-index:9; font-size:clamp(32px,13vw,72px); line-height:1.05; text-shadow:0 2px 3px #000,0 0 12px currentColor; }
+.rb-start-callout[data-stage="3"] { font-size:clamp(64px,24vw,128px); }
+
+/* V 1095 G: double every upper portal circle stroke. */
+.rb-wire-tunnel circle[stroke-width] { stroke-width: 2; }
+.rb-wire-tunnel circle.rb-portal-rim { stroke-width: 5; }
+.rb-wire-tunnel circle.rb-wire-light { stroke-width: 4; }
+.rb-wire-tunnel .rb-space-section { stroke-width: 2.8; }
+.rb-wire-tunnel .rb-space-hit-wave { stroke-width: 4.8; }

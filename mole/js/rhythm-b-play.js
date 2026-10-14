@@ -35,21 +35,22 @@
   function darkenLane(lane){holoLights[lane].style.opacity='0';}
   function clearLights(){holoLights.forEach((_,i)=>darkenLane(i));}
   const pangs=colors.map((_,lane)=>{const el=document.createElement('span');el.className='rb-pang';el.textContent='PANG!';el.hidden=true;el.setAttribute('aria-hidden','true');el.style.left=((176+(lane%3)*300)/952*100)+'%';el.style.top=((176+Math.floor(lane/3)*300)/2078*100)+'%';board.appendChild(el);return el;});
-  const startCallout=document.createElement('div');startCallout.className='rb-start-callout';startCallout.hidden=true;startCallout.setAttribute('aria-hidden','true');board.appendChild(startCallout);
+  const startCallout=document.createElement('div');startCallout.className='rb-start-callout';startCallout.hidden=true;startCallout.setAttribute('aria-hidden','true');hud.appendChild(startCallout);
+  const startShade=document.createElement('div');startShade.className='rb-start-shade';startShade.hidden=true;startShade.setAttribute('aria-hidden','true');hud.appendChild(startShade);
   function animateEffect(el,keyframes,duration,done){const a=el.animate(keyframes,{duration,easing:'ease-out'});effects.add(a);a.onfinish=()=>{effects.delete(a);if(done)done();};a.oncancel=()=>effects.delete(a);return a;}
-  function clearEffects(){for(const a of effects)a.cancel();effects.clear();pangs.forEach(el=>el.hidden=true);pangAnimations.fill(null);startAnimation=null;startCallout.hidden=true;}
+  function clearEffects(){for(const a of effects)a.cancel();effects.clear();pangs.forEach(el=>el.hidden=true);pangAnimations.fill(null);startAnimation=null;startCallout.hidden=true;startShade.hidden=true;startShade.style.opacity='0';}
   function showStart(stage){
    if(state.startPhase===stage)return;state.startPhase=stage;
    if(startAnimation)startAnimation.cancel();
-   const scale=[.72,.9,1.08,1.16][stage];
-   startCallout.textContent=stage===3?'GO!':'ARE YOU READY?';startCallout.dataset.stage=String(stage);
+   const scale=[.64,.82,1,1.2][stage];
+   startCallout.innerHTML=stage===3?'GO!':'ARE YOU<br>READY!';startCallout.dataset.stage=String(stage);
    startCallout.style.color=['#43dcff','#fff05b','#ff5ba9','#56ff88'][stage];startCallout.hidden=false;
    const still=root.matchMedia('(prefers-reduced-motion: reduce)').matches;
    const a=animateEffect(startCallout,still?[{opacity:1},{opacity:1}]:[
-    {transform:'translate(-50%,-50%) scale('+(scale*.88)+')',opacity:0,offset:0},
+    {transform:'translate(-50%,-50%) scale('+(scale*.82)+')',opacity:0,offset:0},
     {transform:'translate(-50%,-50%) scale('+scale+')',opacity:1,offset:.15},
-    {transform:'translate(-50%,-50%) scale('+scale+')',opacity:1,offset:.75},
-    {transform:'translate(-50%,-50%) scale('+scale+')',opacity:0,offset:1}
+    {transform:'translate(-50%,-50%) scale('+(scale*1.12)+')',opacity:.85,offset:.55},
+    {transform:'translate(-50%,-50%) scale('+(scale*1.35)+')',opacity:0,offset:1}
    ],stage===3?500:800,()=>{if(startAnimation===a){startCallout.hidden=true;startAnimation=null;}});
    startAnimation=a;
   }
@@ -155,7 +156,7 @@
   }
   function placeNote(n,p){
    const focusX=foci[n.lane].x,focusY=foci[n.lane].y;
-   const u=Math.pow(Math.max(0,Math.min(1,p)),1.55),scale=.075+.925*u;
+   const u=Math.pow(Math.max(0,Math.min(1,p)),1.55),scale=.13+.87*u;
    const dx=(focusX-.5)*296*(1-u),dy=(focusY-.5)*296*(1-u);
    if(n.lastU!==u){
     n.el.style.transform='translate('+(dx/300*100)+'%,'+(dy/300*100)+'%) scale('+scale+')';
@@ -173,6 +174,7 @@
    if(!state||state.ended)return;
    if(state.paused){frame=requestAnimationFrame(tick);return;}
    const t=time();
+   startShade.hidden=t>=.4;startShade.style.opacity=String(t<0?[.9,.78,.62][Math.max(0,Math.min(2,Math.floor((t+rules.config.countIn+.15)/((rules.config.countIn+.15)/3))))]:Math.max(0,.62*(1-t/.4)));
    updateProgress(state.duration>0?t/state.duration:0);
    if(t<0){const stage=Math.max(0,Math.min(2,Math.floor((t+rules.config.countIn+.15)/((rules.config.countIn+.15)/3))));showStart(stage);const count=String(3-stage);if(state.count!==count){state.count=count;label(count);}}
    else if(state.count!=='GO'){state.count='GO';label('GO!');showStart(3);}
@@ -189,7 +191,7 @@
    if(!state.ended)frame=requestAnimationFrame(tick);
   }
   async function start(diff,options){
-   stop();const token=generation;error.hidden=true;label('LOADING');
+   stop();const token=generation;error.hidden=true;label('LOADING');startShade.hidden=false;startShade.style.opacity='.9';
    state={diff,practice:!!(options&&options.practice),notes:[],score:0,combo:0,maxCombo:0,cnt:{PERFECT:0,GREAT:0,GOOD:0,MISS:0},paused:false,ended:false,loading:true,t0:Infinity,count:null,startPhase:-1};updateHud();
    try{
     const [data]=await Promise.all([opts.loadSong(),opts.prepareAssets?opts.prepareAssets():Promise.resolve()]);if(token!==generation)return false;
@@ -224,7 +226,7 @@
     if(data.melody){const mel=context.createBufferSource();mel.buffer=data.melody;melodyGain=context.createGain();melodyGain.gain.value=1;mel.connect(melodyGain);melodyGain.connect(context.destination);mel.start(state.t0);sources.push(mel);}
     if(state.paused)await context.suspend();
     frame=requestAnimationFrame(tick);return true;
-   }catch(e){if(token!==generation)return false;state.loading=false;state.ended=true;state.error=String(e.message||e);label('ERROR');error.hidden=false;stopAudio();return false;}
+   }catch(e){if(token!==generation)return false;state.loading=false;state.ended=true;state.error=String(e.message||e);label('ERROR');error.hidden=false;startShade.hidden=true;stopAudio();return false;}
   }
   function pause(on){if(!state||state.ended)return;state.paused=on;effects.forEach(a=>{if(a.playState!=='idle'){if(on)a.pause();else a.play();}});if(context&&!state.loading){if(on)context.suspend();else context.resume();}}
   return {start,stop,pause,press,dbg:()=>state?{t:time(),diff:state.diff,practice:state.practice,loading:state.loading,paused:state.paused,ended:state.ended,error:state.error,score:state.score,combo:state.combo,maxCombo:state.maxCombo,cnt:{...state.cnt},notes:state.notes.map(n=>({id:n.id,lane:n.lane,targetTime:n.targetTime,spawnTime:n.spawnTime,state:n.state}))}:null};
