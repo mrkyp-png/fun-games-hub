@@ -25,3 +25,11 @@
 ## 4) 검증
     node scripts/rhythm/bot-test.js HARD    # 로컬 서버(node scripts/serve.js, :8844) 필요. 봇이 완벽 입력 → 결과창 수치 출력
 - ⚠ 봇 여러 개 동시 실행 금지(노트북 느려져 가짜 MISS). 봇 입력 시각 = targetTime - (apexFrame+0.5)*jumpFrameMs(현재 0.21초).
+
+## 2026-10-15 / 실제 곡 채보와 B 곡 목록
+- B 곡 목록은 rhythm.js CONFIG.bSongs의 {id,title,duration,chart} 항목을 추가하면 된다. chart JSON의 back은 필수, melody는 선택. 기존 fever2 기록키는 유지하고 새 곡은 곡 ID별로 기록을 분리한다.
+- Le monde attendra demain: 사용자 제공 Desktop WAV(119.96초/48kHz/stereo/16bit)를 수정하지 않고 MP3 192kbps(약2.88MB)로 인코딩. 원본 전체 사용. 아직 분석 기반 1차 채보이며 실제 사용자 플레이로 박자감/후렴 후보와 난이도를 조정해야 한다.
+- 재생성: analyze-suno-song.py → refine-suno-grid.py → track-suno-beats.py → build-suno-b-chart.py. 중간 분석 JSON/NPZ는 review에 생성된다. 드라이브 구간은 스펙트럼 강도 기반 후보이며 보컬 후렴을 직접 청취·확정했다고 표현하지 않는다.
+- JSON patterns[난이도]는 {time,lanes:[0..8],sound:'kick'|'snare'|'hat',section} 이벤트 배열이다. lanes2개는 동시 입력, charts에는 동일 시각 두 노트가 보존된다. 기존 숫자 charts만 있는 fever2는 기존 랜덤 배치로 재생한다. beats 배열은 실제 온셋에 맞춘 시각으로 공간 박자 호흡을 동기화한다.
+- 새 곡에는 hitFeedback:true, 음악은 full mix를 계속 재생하고 성공에만 사전 생성된 짧은 퍼커션 버퍼를 재생한다. 반주/보컬 분리 파일이 없으므로 실패 시 보컬만 끄는 연출은 사용하지 않는다. 효과음 설정 OFF를 존중한다.
+- 테스트 모드가 곡 팝업에서 기본 체크되어 있다. B open/start의 {practice:true} 옵션으로 MISS가 10회 넘어도 곡 끝까지, 결과는 TEST 표기·최고점 저장 제외. 체크 해제하면 기존10MISS게임오버. A 규칙은 변경하지 않는다.

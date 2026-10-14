@@ -655,3 +655,28 @@
 ## 2026-10-14 / V 1089 G — 최종 선호 상태 배포 승인
 - 사용자 "지금이딱좋네"로현재상태기준확정후 "배포" 승인. 배경5%/포털brightness1.3225(내부선포함)/회로·flow1.15상태 커밋·푸시·배포. localHEAD/remote master0a00ff3a12be29c4f080a5ad9f84933c25fcbf9b동일확인. Claude·사용자·미추적기존자료보존,승인파일만명시선택.
 - 직전18포털·광/18회로·flow필터/배경5%픽셀/60콤보·pause/reset·안전영역·SWshell/diff검증통과. 실제성공은Pages/공개검증후기록. 다음에이전트수정사전허락/배포별도허락/G·C연속번호/既存변경보존준수. 이선호상태를임의로추가변경하지말것.
+
+## 2026-10-14 / V 1089 G — Pages 배포 반영
+- 사용자승인으로e7cedacaa183edb7e6b2dfd31715d30707e7b732 origin/master push완료. Pages38582834107 completed/success확인. 공개10파일로컬SHA256일치. 최종선호배경5%/포털brightness1.3225(내부포함)/하부회로·flow1.15반영.
+- 공개verify-b-live-v1089.js3viewport/개별입력/pause·resume·quit/pageerror없음통과. URL https://mrkyp-png.github.io/fun-games-hub/mole/index.html?v=1089 . 실제휴대폰체감/기존번쩍임완전소멸단정금지. 완료기록로컬만추가,추가커밋·재배포없음. 다음V1090G(최신G/C재확인). 다음에이전트필수:수정사전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존/임의변경금지.
+
+## 2026-10-15 / V 1090 G — B 곡 선택 팝업 (미배포)
+- 사용자새실제노래작업준비,곡선택팝업·곡추가가능구조제안에 "네" 승인. B진입→곡선택→기존3난이도→게임순서. 기존rx-card/d-title디자인재사용,제목/길이/선택/타입선택/홈버튼. 난이도창에선택곡명·곡다시선택추가(B에만표시),결과다른난이도는같은곡유지/재시도같은곡. A진입·음악·최고점유지.
+- CONFIG.bSongs 항목{id,title,duration,chart} 목록으로확장. 현재등록은fever2 기존테스트곡1개(2:01). B전용loadBSong은선택chart의back/선택적melody를같은AudioContext로로드,곡id별decoded cache/pendingpromise,실패캐시제거. A loadSong/버퍼와분리하여다른곡선택이A곡을덮어쓰지않음. 기본fever2최고점은기존mole.rp.b.best.*유지,새곡은mole.rp.b.best.<id>.*로분리. 새제목은textContent로렌더.
+- 바탕화면 Le monde attendra demain.wav 읽기확인:119.96초/48000Hz/2ch/16bitPCM/23046162bytes. 원본수정·이동·삭제·게임복사/채보연결아직안함. 실곡분석후bSongs에등록할예정. 새곡이현재플레이가능하다고보고금지.
+- 사용자수노표시 "유효기간 ~2026.10.29" 질문. 공식help다운로드페이지확인했지만문구만으로링크/크레딧/기타기한확정불가라고설명,화면캡처요청. 이미저장된일반WAV파일이그날자동삭제되지않는것은확인. 이용권리만료라고단정하지말것.
+- 사용자리듬감문제:현재테스트는음악에맞춰연주하는느낌약하고MISS시멜로디감소수준. 신나는파트2버튼동시·반복패턴요청,벌스단일/후렴2개동시/구간전환교차를실제드럼·강박·멜로디에맞춰설계하는방향설명. 실제채보새로만들기전음악분석필요. 같은칸캐릭터겹침방지기준은존중. 기본V1089디자인임의변경금지.
+- verify-b-song-select.js:초기곡팝업/제목·길이/뒤로·홈/A전용요소숨김,테스트용2번째곡catalog추가및mockchart실제로드(노트[2])/곡별best222 vs기존111/일시정지·종료검증통과. 실제게임verify-b/verify-types A회귀·3viewport·입력·pause/resume/quit/pageerror없음통과. 기존verify-b-game/character도곡선택단계에맞게갱신. JS구문/SWshell/diff공백통과. review/song-select-v1090.png렌더확인.
+- 로컬V1090G,공개V1089G(e7cedac). 커밋/푸시/배포없음. 다음에이전트필수:수정사전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존/임의변경금지.
+
+## 2026-10-15 / V 1091–1092 G — 실제 곡과 끝까지 테스트 모드 (미배포)
+- 사용자 승인: 실제 노래 채보 연결, 신나는 구간 2버튼 동시/반복 패턴, 미스가 나더라도 끝까지 테스트. 기본 디자인 V1089 유지. 이전 V1090의 미연결 상태를 이 기록으로 갱신한다.
+- Desktop 원본 Le monde attendra demain.wav(119.96초) 보존. SHA256 a24bf87b809570792a872771be57c9cd5771a7d8b4c394f4e93619f8be68b8e8. 게임용 MP3 2,880,620bytes와 JSON 채보 추가. B 곡 선택 첫 항목으로 등록, 기존 테스트곡도 유지.
+- 분석 기반 1차 채보: EASY 139노트/20동시패턴, NORMAL 258/40, HARD 306/70. 가변 박자 추적과 에너지 구간 기반이며 실제 청취로 후렴/체감 검증 완료했다고 주장하지 말 것. 동일 칸 최소 간격 2.22/1.88/1.65초. 고정 채보 재시작 재현, 최대 2노트 동시. 음악은 전체 믹스 계속 재생, 성공 타격음 사전 생성.
+- V1092: 난이도 창 테스트 모드 기본 ON. 10MISS 이후에도 곡 끝까지, 최고점 저장 제외, SCORE · TEST 및 결과 TEST 표시. OFF는 기존 10MISS 게임오버/최고점 저장. A 규칙과 기록 유지.
+- 검증 통과: verify-b-suno-chart(3난이도 전체 올퍼펙트/간격/동시/타격음), verify-b-suno-live(실제 MP3/2터치/pause/resume/종료), verify-b-practice(3난이도 전부 놓쳐도 끝까지), verify-b-practice-records(테스트 기록 제외/일반 기록/A 보존), verify-b-song-select, verify-types, verify-b(3화면/배치/입력/오류 없음), 기존 clock/miss-per-note/lanes-haptics/assets, SW shell/JS구문/diff 공백 검사. 주관적인 음악 싱크는 사용자 플레이 검토 필요.
+- 로컬 V1092 G, 공개 V1089 G(e7cedac). 커밋·푸시·배포하지 않음. 로컬 http://localhost:8844/mole/pc.html .
+- 다음 에이전트 필수: 수정 전 사용자 허락, 배포 별도 허락. Codex V 0000 G / Claude Code V 0000 C, 최신 로컬 번호 확인 후 연속 번호. 기존/Claude/사용자 변경을 덮어쓰거나 되돌리지 말 것. 임의 디자인/에셋 변경 금지. 어려운 에셋 보정은 사용자에게 요청. 작업·검증 결과 이 파일에 인계. 현재 작업 배포 승인 없음.
+
+## 2026-10-15 / V 1092 G — 배포 승인
+- 사용자 "배포"로 현재 실제 곡/곡 선택/3난이도/테스트 모드의 커밋·푸시·배포 승인. 원격 master와 로컬 HEAD e7cedac 일치 확인. 승인된 변경 및 재현·검증 스크립트만 명시적으로 선택, 기존 미추적 에셋/작업 자료 보존. 완료 여부는 Pages 및 공개 파일·실제 게임 검증 후 기록.

@@ -10,6 +10,7 @@
   // ---- 튜닝 데이터(코드 하드코딩 대신 여기서만 조절) ----
   var CONFIG = {
     song: { src: 'audio/bgm-game-1.mp3', bpm: 83.0, firstBeat: 0.232 }, // BPM·첫 박 = 곡 분석값(곡 데이터가 없을 때 예비)
+    bSongs: [{ id: 'le-monde-attendra-demain', title: 'Le monde attendra demain', duration: 119.96, chart: 'audio/rp/le-monde-attendra-demain.json' }, { id: 'fever2', title: '기존 테스트곡', duration: 120.6, chart: 'audio/rp/fever2.json' }],
     songData: 'audio/rp/fever2.json', // v843: 곡 분석 데이터(반주·멜로디 분리 + 난이도별 노트 시각) — 맞히면 멜로디가 연주됨
     chart: { startBeat: 8, beats: 116 },           // 8박(인트로) 뒤부터 116박 = 한 판 약 90초(사용자 지정 v837, 이전 64박≈52초)
     judge: { perfectMs: 70, greatMs: 130, goodMs: 200 },
@@ -38,6 +39,8 @@
     var st = null, raf = 0;
     var imgs = {}, diff = 'EASY';
     var bGame = null, activeB = false, resultSerial = 0;
+    var selectedBSong = CONFIG.bSongs[0], bSongCache = {}, bSongPending = {};
+    function bBestPrefix() { return selectedBSong.id === 'fever2' ? 'mole.rp.b.best.' : 'mole.rp.b.best.' + selectedBSong.id + '.'; }
     // 효과음(기존 게임 사운드 재사용) — 성공 = 타격음, 실패 = 두더지 아야
     var SFX = { hit: ['audio/hit1.mp3', 'audio/hit2.mp3', 'audio/hit3.mp3', 'audio/hit4.mp3'], jump: ['audio/mole-emerge.mp3'] }; // v814(사용자 지정): 실패 목소리(아야 등) 삭제, 두더지 점프 = 두더지팡 등장 소리
     var sfxBuf = {};
@@ -70,6 +73,32 @@
         song = d;
         return Promise.all([decode(d.back), decode(d.melody)]).then(function (b) { buffer = b[0]; melBuf = b[1]; return buffer; });
       }).catch(function () { song = null; return decode(CONFIG.song.src).then(function (b) { buffer = b; return b; }); });
+    }
+    function loadBSong() {
+      var choice = selectedBSong;
+      if (bSongCache[choice.id]) return Promise.resolve(bSongCache[choice.id]);
+      if (bSongPending[choice.id]) return bSongPending[choice.id];
+      bSongPending[choice.id] = fetch(choice.chart).then(function (r) { if (!r.ok) throw new Error('곡 자료를 불러오지 못했습니다.'); return r.json(); }).then(function (data) {
+        return Promise.all([decode(data.back), data.melody ? decode(data.melody) : Promise.resolve(null)]).then(function (audio) {
+          return bSongCache[choice.id] = { ctx: ctx, back: audio[0], melody: audio[1], song: data };
+        });
+      }).finally(function () { delete bSongPending[choice.id]; });
+      return bSongPending[choice.id];
+    }
+    function showSongs() {
+      resultSerial++;
+      if (bGame) bGame.stop();
+      $('[data-rp-select]').hidden = true; $('[data-rp-result]').hidden = true; $('[data-rp-pause]').hidden = true;
+      var list = $('[data-rp-song-list]'); list.replaceChildren();
+      CONFIG.bSongs.forEach(function (choice) {
+        var button = document.createElement('button'); button.type = 'button'; button.className = 'rb-song-choice'; button.dataset.rpSong = choice.id;
+        var title = document.createElement('b'); title.textContent = choice.title;
+        var detail = document.createElement('small'), seconds = Math.round(choice.duration || 0);
+        detail.textContent = (seconds ? Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0') + ' · ' : '') + '선택';
+        button.append(title, detail); button.addEventListener('click', function () { selectedBSong = choice; showSelect(); }); list.appendChild(button);
+      });
+      if (!CONFIG.bSongs.length) list.textContent = '등록된 곡이 없습니다.';
+      $('[data-rp-songs]').hidden = false;
     }
     function melody(on) { if (melGain) melGain.gain.setTargetAtTime(on ? 1 : 0, ctx.currentTime, on ? 0.01 : 0.03); }
 
@@ -465,10 +494,10 @@
     function showResult(result, clear, isB) {
       var token = ++resultSerial, resultDiff = isB ? result.diff : diff;
       var r = $('[data-rp-result]');
-      var bk = (isB ? 'mole.rp.b.best.' : 'mole.rp.best.') + resultDiff, old = parseInt(localStorage.getItem(bk), 10) || 0, isNew = result.score > old;
+      var bk = (isB ? bBestPrefix() : 'mole.rp.best.') + resultDiff, old = parseInt(localStorage.getItem(bk), 10) || 0, isNew = !(isB && result.practice) && result.score > old;
       if (isNew) localStorage.setItem(bk, String(result.score));
       try { if (!isB && MG.Quest) MG.Quest.recordRhythm({ diff: resultDiff, clear: clear, miss: result.cnt.MISS, perfect: result.cnt.PERFECT }); } catch (e) { /* 무시 */ } // v895: 리듬팡 업적
-      $('[data-rp-res-best]').innerHTML = '<small>' + resultDiff + ' BEST</small><b>' + Math.max(old, result.score).toLocaleString('en-US') + '</b>';
+      $('[data-rp-res-best]').innerHTML = '<small>' + (isB && result.practice ? 'TEST · ' + resultDiff : resultDiff + ' BEST') + '</small><b>' + (isB && result.practice ? old : Math.max(old, result.score)).toLocaleString('en-US') + '</b>';
       var stamp = $('[data-rx-new]'); stamp.classList.remove('is-on');
       r.classList.toggle('is-fail', !clear);
       var sEl = $('[data-rp-res-score]'), fin = result.score; sEl.textContent = '0';
@@ -505,7 +534,7 @@
       if (activeB) { showTypes(); return; } // B 규칙 확정 전: 하트 차감 없이 타입 선택 복귀.
       if (MG.Economy) MG.Economy.spendHeart(); close('quit');
     });
-    $('[data-rp-retry]').addEventListener('click', function () { resultSerial++; pushInGame($('[data-rp-result]')); if (activeB) bGame.open(diff); else start(); }); // v841: 다시하기 = 탄성 밀어내기
+    $('[data-rp-retry]').addEventListener('click', function () { resultSerial++; pushInGame($('[data-rp-result]')); if (activeB) bGame.open(diff, { practice: $('[data-rp-practice]').checked }); else start(); }); // v841: 다시하기 = 탄성 밀어내기
     $('[data-rp-home]').addEventListener('click', function () { close(); });
     $('[data-rp-other]').addEventListener('click', function () { if (activeB) { bGame.stop(); showSelect(); return; } cancelAnimationFrame(raf); try { src && src.stop(); } catch (e) { /* 무시 */ } st = null; showSelect(); });
 
@@ -520,9 +549,13 @@
     }
     function showSelect() {
       resultSerial++;
+      $('[data-rp-songs]').hidden = true;
+      $('[data-rp-song-back]').hidden = !activeB;
+      $('[data-rp-selected-song]').hidden = !activeB;
+      $('[data-rp-selected-song]').textContent = activeB ? selectedBSong.title : '';
       $('[data-rp-result]').hidden = true; $('[data-rp-pause]').hidden = true;
       el.querySelectorAll('[data-rp-diff]').forEach(function (b) {
-        var d = b.getAttribute('data-rp-diff'), best = parseInt(localStorage.getItem((activeB ? 'mole.rp.b.best.' : 'mole.rp.best.') + d), 10) || 0;
+        var d = b.getAttribute('data-rp-diff'), best = parseInt(localStorage.getItem((activeB ? bBestPrefix() : 'mole.rp.best.') + d), 10) || 0;
         b.querySelector('small').textContent = best.toLocaleString('en-US');
       });
       $('[data-rp-select]').hidden = false;
@@ -539,7 +572,7 @@
         diff = b.getAttribute('data-rp-diff');
         // v841(사용자 지정): 게임 화면 진입 = 탄성 밀어내기 — 난이도 창은 왼쪽으로 밀려나고 게임 화면이 오른쪽에서 튕기듯 들어옴
         pushInGame($('[data-rp-select]'));
-        if (activeB) { bGame.open(diff); return; }
+        if (activeB) { bGame.open(diff, { practice: $('[data-rp-practice]').checked }); return; }
         if (!ctx) ctx = new (root.AudioContext || root.webkitAudioContext)();
         if (ctx.state === 'suspended') ctx.resume(); // 사용자 탭 안에서 소리 허용
         start();
@@ -553,6 +586,7 @@
       if (bGame) bGame.stop(); activeB = false;
       $('[data-rp-pause]').hidden = true;
       $('[data-rp-select]').hidden = true;
+      $('[data-rp-songs]').hidden = true;
       $('[data-rp-b]').hidden = true;
       $('[data-rp-types]').hidden = false;
       stage.hidden = true;
@@ -572,13 +606,16 @@
         loadSong: function () {
           if (!ctx) ctx = new (root.AudioContext || root.webkitAudioContext)();
           if (ctx.state === 'suspended') ctx.resume();
-          return loadSong().then(function () { return { ctx: ctx, back: buffer, melody: melBuf, song: song }; });
+          return loadBSong();
         },
         onPause: function () { pause(true); },
         onResult: function (stats, clear) { showResult(stats, clear, true); }
       });
-      showSelect();
+      showSongs();
     });
+    $('[data-rp-song-back]').addEventListener('click', showSongs);
+    $('[data-rp-songs-back]').addEventListener('click', showTypes);
+    $('[data-rp-songs-home]').addEventListener('click', function () { close(); });
     $('[data-rp-types-home]').addEventListener('click', function () { close(); });
     function open() { el.hidden = false; $('[data-rp-pause]').hidden = true; $('[data-rp-result]').hidden = true; wlayer.innerHTML = '';
       // v974(사용자 지정): 진입 시 배경은 항상 첫 화면 — 지난 판의 두더지·구멍·버튼·점수·HP 잔상 비움(시작하면 start() 가 다시 만듦)

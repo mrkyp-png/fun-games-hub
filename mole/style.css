@@ -7345,3 +7345,21 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 
 /* V 1089 G: 포털 내부선·외곽선·회전·전진·파동 및 접근광만 추가15%. */
 .rb-wire-tunnel, .rb-holo-light { filter: brightness(1.3225); }
+
+/* V 1090 G: B 곡 선택 후 기존 난이도 선택. */
+#rhythm-screen.is-type-b > [data-rp-songs] { z-index: 20; }
+.rb-song-card { max-height: calc(100dvh - 40px); box-sizing: border-box; }
+.rb-song-card h2 { font-size: 6.5cqw; margin: 2% 0 5%; text-align: center; }
+.rb-song-list { width: 90%; min-height: 70px; max-height: 36dvh; overflow-y: auto; overscroll-behavior: contain; }
+.rb-song-choice { display: flex; flex-direction: column; gap: 5px; width: 100%; margin: 5px 0 10px; padding: 12px 10px; border: 2px solid #57d9ff; border-radius: 14px; background: linear-gradient(#257cbe,#12477a); color: #fff; cursor: pointer; font: inherit; text-align: center; }
+.rb-song-choice b { font-size: 5cqw; overflow-wrap: anywhere; }
+.rb-song-choice small { color: #d7f5ff; font-size: 4cqw; }
+.rb-song-choice:active, .rb-song-nav:active { transform: translateY(2px) scale(.98); }
+.rb-song-nav { width: 84%; margin: 8px 0 0; padding: 9px; border: 1px solid #7ddaff; border-radius: 10px; background: #164c7d; color: #fff; font: inherit; font-size: 4.8cqw; cursor: pointer; }
+.rb-selected-song { width: 90%; text-align: center; font-size: 4.5cqw; margin: 0 0 5px; color: #c9f5ff; overflow-wrap: anywhere; }
+.rb-song-nav[hidden], .rb-selected-song[hidden] { display: none; }
+
+/* V 1092 G: 곡 전체 확인용 테스트 모드. */
+.rb-practice-option { width: 90%; margin: 4px 0; font-size: 4.5cqw; text-align: center; cursor: pointer; }
+.rb-practice-option small { display: block; margin-top: 5px; font-size: 3.8cqw; color: #c9f5ff; }
+.rb-practice-option input { accent-color: #15cfff; }

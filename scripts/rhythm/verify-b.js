@@ -11,7 +11,7 @@ const puppeteer = require('puppeteer-core');
   await new Promise(r=>setTimeout(r,14000));
   const button=await page.evaluateHandle(()=>Array.from(document.querySelectorAll('#lane-button-bar .lane-face--wide')).pop());
   await button.asElement().click();
-  await page.waitForSelector('[data-rp-types]:not([hidden])'); await page.click('[data-rp-type=B]');
+  await page.waitForSelector('[data-rp-types]:not([hidden])'); await page.click('[data-rp-type=B]');await page.waitForSelector('[data-rp-songs]:not([hidden])');await page.click('[data-rp-song=fever2]');
   await page.waitForSelector('[data-rp-select]:not([hidden])');await page.click('[data-rp-diff=EASY]');
   await page.waitForFunction(()=>window.__rhythmB.dbg()&&!window.__rhythmB.dbg().loading);
   await page.waitForFunction(()=>Array.from(document.querySelectorAll('.rb-board img')).every(i=>i.complete&&i.naturalWidth>0));

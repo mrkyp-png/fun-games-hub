@@ -20,7 +20,7 @@ const puppeteer = require('puppeteer-core');
     await page.click(home);
     await page.waitForSelector('[data-rp-types]:not([hidden])');
     assert.equal(await page.$eval('[data-rp-select]', el => el.hidden), true);
-    await page.click('[data-rp-type="B"]');
+    await page.click('[data-rp-type="B"]');await page.waitForSelector('[data-rp-songs]:not([hidden])');await page.click('[data-rp-song=fever2]');
     await page.waitForSelector('[data-rp-b]:not([hidden])');
     await page.waitForSelector('[data-rp-select]:not([hidden])');
     assert.equal(await page.$$eval('[data-rp-diff]',els=>els.length),3);

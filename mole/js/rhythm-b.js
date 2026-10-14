@@ -191,10 +191,10 @@
       }
     });
     return {
-      open(difficulty) {
+      open(difficulty, options) {
         running = true; board.classList.add('rb-wire-running'); paused = false; board.classList.remove('is-paused'); releaseAll();
         flowFx.start();
-        return play.start(difficulty || 'EASY');
+        return play.start(difficulty || 'EASY', options);
       },
       stop() {
         running = false; board.classList.remove('rb-wire-running'); paused = false; releaseAll(); play.stop();

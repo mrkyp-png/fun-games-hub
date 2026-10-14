@@ -109,3 +109,7 @@
 
 # 리듬팡 곡 (v843)
 - audio/bgm-fever.mp3, audio/rp/fever-back.mp3, audio/rp/fever-melody.mp3 : 사용자가 Suno 로 직접 제작한 곡(피버 브금). rp/ 두 파일은 Demucs 로 분리(반주=드럼+베이스+보컬 / 멜로디) 후 0~92초 구간.
+
+# 리듬팡 B 실제 곡 (V 1091 G)
+- audio/rp/le-monde-attendra-demain.mp3 : 사용자 제공 Suno 제작곡 "Le monde attendra demain". 원본 바탕화면 WAV 119.96초/48kHz/stereo/16bit PCM, SHA256 a24bf87b809570792a872771be57c9cd5771a7d8b4c394f4e93619f8be68b8e8. 원본은 유지하고 게임용 MP3 192kbps로 인코딩.
+- audio/rp/le-monde-attendra-demain.json : 원본 스펙트럼 온셋·가변 박자 추적 기반 1차 B 채보.
