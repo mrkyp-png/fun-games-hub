@@ -7321,3 +7321,6 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 @media (prefers-reduced-motion: reduce) { .rb-combo-atmosphere { transition: none; } .rb-combo-sweep { display: none; } }
 
 .rb-combo-energized .rb-perimeter-fill { stroke-width: 2; filter: drop-shadow(0 0 2px var(--combo-accent)); }
+
+/* V 1083 G: 둥근 화면 모서리 회피, 기존 반대 방향 2줄 곡 진행선 유지. */
+.rb-song-progress { inset: 12px; width: auto; height: auto; }
