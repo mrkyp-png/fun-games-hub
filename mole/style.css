@@ -7324,3 +7324,16 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 
 /* V 1083 G: 둥근 화면 모서리 회피, 기존 반대 방향 2줄 곡 진행선 유지. */
 .rb-song-progress { inset: 12px; width: auto; height: auto; }
+
+/* V 1084 G: 선이 아닌 배경 원색 전환, 포털·회로 내부 제외. */
+.rb-combo-background { position: absolute; inset: 0; z-index: -1; pointer-events: none; mask: url('assets/rhythm-b/combo-background-mask.svg') 0 0 / 100% 100% no-repeat; mask-mode: luminance; }
+.rb-combo-atmosphere { z-index: 0; background: var(--combo-color); }
+.rb-combo-region { display: none; }
+.rb-combo-sweep { z-index: 1; }
+.rb-mini { background-color: #000; }
+.rb-status b, .rb-status small, .rb-total b, .rb-total small { -webkit-text-stroke: .7px #000; paint-order: stroke fill; text-shadow: 0 1px 2px #000,0 0 3px #000; }
+
+/* V 1086 G: 게임판 밖 안전여백에도 동일30% 콤보배경 연결. */
+.rb-combo-screen-background { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.rb-combo-screen-tone { position: absolute; inset: 0; opacity: 0; transition: opacity 500ms ease; }
+@media (prefers-reduced-motion: reduce) { .rb-combo-screen-tone { transition: none; } }

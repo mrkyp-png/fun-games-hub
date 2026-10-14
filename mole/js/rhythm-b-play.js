@@ -12,12 +12,15 @@
   const progressLines=Array.from(perimeter.querySelectorAll('.rb-perimeter-fill'));let lastProgress=-1,lastPercent=-1;
   function updateProgress(value){const v=Math.round(Math.max(0,Math.min(1,value))*1000);if(v!==lastProgress){progressLines.forEach(el=>el.style.strokeDashoffset=String(100-v/10));lastProgress=v;}const pct=Math.floor(v/10);if(pct!==lastPercent){progress.setAttribute('aria-valuenow',String(pct));lastPercent=pct;}}
   updateProgress(0);
-  const comboPalette=['#00cfff','#287aff','#ad50ff','#ff329e','#ffce38'];
-  const comboLayers=comboPalette.map((color,stage)=>{const group=document.createElement('div');group.className='rb-combo-atmosphere';group.style.setProperty('--combo-color',color);group.dataset.theme=stage;group.innerHTML='<span class="rb-combo-region rb-combo-region--upper"></span><span class="rb-combo-region rb-combo-region--lower"></span>';board.appendChild(group);return group;});
-  const comboSweeps=['upper','lower'].map(side=>{const el=document.createElement('div');el.className='rb-combo-sweep rb-combo-sweep--'+side;el.innerHTML='<span></span>';board.appendChild(el);return el;});
+  const comboPalette=['#00ffff','#0066ff','#8000ff','#ff00aa','#ffcc00'];
+  const comboScreenBackground=document.createElement('div');comboScreenBackground.className='rb-combo-screen-background';hud.appendChild(comboScreenBackground);
+  const comboScreenTones=comboPalette.map(color=>{const tone=document.createElement('div');tone.className='rb-combo-screen-tone';tone.style.backgroundColor=color;comboScreenBackground.appendChild(tone);return tone;});
+  const comboBackground=document.createElement('div');comboBackground.className='rb-combo-background';board.appendChild(comboBackground);
+  const comboLayers=comboPalette.map((color,stage)=>{const group=document.createElement('div');group.className='rb-combo-atmosphere';group.style.setProperty('--combo-color',color);group.dataset.theme=stage;group.innerHTML='<span class="rb-combo-region rb-combo-region--upper"></span><span class="rb-combo-region rb-combo-region--lower"></span>';comboBackground.appendChild(group);return group;});
+  const comboSweeps=['upper','lower'].map(side=>{const el=document.createElement('div');el.className='rb-combo-sweep rb-combo-sweep--'+side;el.innerHTML='<span></span>';comboBackground.appendChild(el);return el;});
   let comboStage=0,comboSweepAnimations=[];
   function updateCombo(combo,immediate=false){const stage=Math.floor(combo/10);if(stage===comboStage&&!immediate)return;comboStage=stage;board.dataset.comboStage=String(stage);const color=stage?comboPalette[(stage-1)%5]:'#00cfff';board.style.setProperty('--combo-accent',color);hud.style.setProperty('--combo-accent',color);hud.classList.toggle('rb-combo-energized',stage>=5);
-   comboLayers.forEach((el,i)=>{el.style.transitionDuration=immediate?'0ms':'500ms';el.style.opacity=stage&&i===(stage-1)%5?String(.14+.015*Math.min(stage,5)):'0';});
+   comboLayers.forEach((el,i)=>{el.style.transitionDuration=immediate?'0ms':'500ms';el.style.opacity=stage&&i===(stage-1)%5?'0.3':'0';comboScreenTones[i].style.transitionDuration=immediate?'0ms':'500ms';comboScreenTones[i].style.opacity=el.style.opacity;});
    comboSweepAnimations.forEach(a=>{effects.delete(a);a.cancel();});comboSweepAnimations=[];
    if(stage&&!immediate){const reduced=root.matchMedia('(prefers-reduced-motion: reduce)').matches;if(!reduced){board.querySelectorAll('.rb-zone-divider').forEach(el=>comboSweepAnimations.push(animateEffect(el,[{opacity:.6},{opacity:1,offset:.15},{opacity:.6}],500)));}if(!reduced)comboSweeps.forEach((el,i)=>{el.style.setProperty('--combo-color',color);comboSweepAnimations.push(animateEffect(el.firstElementChild,[{transform:'translateY('+(i?'-100%':'800%')+')',opacity:0,offset:0},{opacity:.65,offset:.12},{transform:'translateY('+(i?'800%':'-100%')+')',opacity:0,offset:1}],500));});}
   }

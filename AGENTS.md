@@ -610,3 +610,28 @@
 ## 2026-10-14 / V 1083 G — 배포 승인
 - 사용자 "배포하세요"로외곽바12px인셋/둥근모서리보정 커밋·푸시·배포승인. 기존반대방향2줄·속도·콤보색상유지. localHEAD/remote master064e21a49d9448de557303c3fa99c602445916bb동일확인. 기존/Claude/미추적자료보존,승인파일만선택.
 - 직전진행시계/10~60콤보/상하전환/pause/reset/구분선·안전영역검증통과,SWshell/diff공백재확인통과. 실제배포성공은Pages/공개검증후기록. 다음에이전트수정사전허락/배포별도허락/G·C연속번호/既存변경보존준수.
+
+## 2026-10-14 / V 1083 G — Pages 반영
+- 사용자승인으로9c50e363a16d9b7eacc3eb3cb56dd1cc3234e8d8 origin/master push완료. Pages38574518316 completed/success확인. 공개9파일로컬SHA256일치확인. 기존2줄반대방향·진행속도·콤보효과유지,외곽12CSSpx인셋/둥근모서리만반영.
+- 공개verify-b-live-v1083.js3viewport/개별버튼/pause·resume·quit/pageerror없음통과. 실제폰모서리잘림보정체감은사용자확인필요. URL https://mrkyp-png.github.io/fun-games-hub/mole/index.html?v=1083 . 이완료기록로컬만추가,추가커밋·재배포없음. 다음V1084G(최신G/C재확인),다음에이전트수정사전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존준수.
+
+## 2026-10-14 / V 1084 G — 배경 원색 전환 / 내부색 제외 (미배포)
+- 사용자정정:원색으로변하는것은네온선만아닌배경.포털원안/회로판안쪽은변화없이,중앙은배경이어짐/글자가독성유지. "일단해봅시다" 승인. 10콤보주기palette 청록#00ffff/파랑#0066ff/보라#8000ff/분홍#ff00aa/금빛#ffcc00순환. 기존희미한radial영역대신같은board전영역원색opacity1/500ms전환. 중앙까지연결,기존게임판밖안전여백은검정유지.
+- 원형9개반지름144.2/하부원본회로외곽9개를검정홀로뺀code-native SVG luminance mask추가. source회로외곽path를body268스케일로정확매핑(cx176+300col,cy1286+300row),포털중심기존좌표. 신규comboBackground부모에서배경/전환sweep함께mask하여내부침범방지. 흔들리는mini에도black배경을추가해이동중내부색보존. 원본PNG/기존SVG내부/캐릭터/회로색변경없음.
+- 중앙글자는.7px검정stroke/검정textshadow로읽기유지,별도불투명중앙박스추가없음. 기존외곽2줄반대방향·속도/10단계/50강조/콤보중앙확산/판정·점수불변. build-combo-background-mask.py는mask재생성만수행. SWshell신규mask추가.
+- verify-b-combo-perimeter60콤보5원색/상하공통/파동·pause·MISS/reset통과. 테스트setContent about:blank에서는CSSmask의CORS차단이생겨실제same-origin페이지로이동후fixture설정하도록수정(제품CORS변경없음). 실제mask파일HTTP200 및렌더확인. verify-combo-background-mask.py 분석전용mask캡처에서18내부검정/상부·중앙·하부노출배경정확#ffcc00픽셀검사통과. review/combo-primary-v1084.png 렌더확인. 순환·원형·안전영역/pause/진행시계/SWshell/JS구문/diff공백검증통과.
+- 로컬V1084G,공개V1083G(9c50e36). 커밋/푸시/배포없음. 다음에이전트필수:수정사전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존/임의변경금지. 사용자와원색범위소통우선,선색만으로오해하지말것.
+
+## 2026-10-14 / V 1085 G — 배경30% (미배포)
+- 사용자20%요청후즉시"30%로해보죠"로최종수정. 콤보활성배경opacity1→.3만변경,원색palette/18내부제외mask/중앙연결/전환sweep/글자보조/게임동작그대로. 20%중간버전없음. 최초V1082배경은.155~.215radial이었으므로20%무조건더밝다단정하지않고설명했으며현재30%는균일범위로더넓게보임.
+- 콤보테스트는전환파동및opacity가안정된뒤stage50캡처. 분석픽셀포인트를외곽바glow가겹치던좌측에서포털사이/중앙/회로사이로이동. 제품배경문제아닌측정지점충돌이었음. verify-combo-background-mask18내부black/3영역배경RGB77,61,0≈#ffcc00의30%검증통과. review/combo-background30-v1085.png 및mask-only분석자료. combo60단계/pause/MISS500ms복귀/stop/진행도/SWshell/diff검사통과.
+- 로컬V1085G(미배포V1084내부제외mask포함),공개V1083G(9c50e36). 커밋/푸시/배포없음. 다음에이전트필수:수정사전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존/임의변경금지.
+
+## 2026-10-14 / V 1086 G — 상단 검정 끊김 보정 (미배포)
+- 사용자"윗쪽색안가는구역" 지적. 기존V1084~1085배경이board안에만있어카메라안전여백/측면/하단이검게남던범위문제확인. 기존전체배경적용승인범위보정으로HUD전체뒤에동일5원색·30%톤레이어추가. board의불투명black바탕+18내부제외mask는그대로여서내부중복합성/색침범없음. stage색/500ms전환/stop즉시초기화동기화. 게임판위치·카메라safe영역·외곽진행선불변.
+- verify-combo-background-mask18내부black/상중하노출30%RGB77,61,0 및top(195,8)/side(8,442)/bottom(195,875)여백동일30%픽셀검증통과. combo60단계/상하·색고유값/pause/MISS500ms/reset검증통과. JS구문/SWshell/diff공백통과. review/combo-full-background-v1086.png실제렌더확인.
+- 로컬V1086G(미배포1084내부제외·1085배경30%포함),공개V1083G(9c50e36). 커밋/푸시/배포없음. 다음에이전트필수:수정사전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존/임의변경금지.
+
+## 2026-10-14 / V 1086 G — 배포 승인
+- 사용자 "배포"로V1084원색배경/18내부제외mask,V1085밝기30%,V1086전체화면여백연결 커밋·푸시·배포승인. localHEAD/remote master9c50e363a16d9b7eacc3eb3cb56dd1cc3234e8d8동일확인. 승인파일만명시선택,Claude·사용자·미추적기존자료보존.
+- 직전60콤보·18내부black/상중하및여백30%픽셀검사·진행도·pause/reset·SWshell/diff공백통과. 실제성공은push/Pages/공개검증후기록. 다음에이전트수정사전허락/배포별도허락/G·C연속번호/기존변경보존준수.
