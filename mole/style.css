@@ -7337,3 +7337,11 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-combo-screen-background { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
 .rb-combo-screen-tone { position: absolute; inset: 0; opacity: 0; transition: opacity 500ms ease; }
 @media (prefers-reduced-motion: reduce) { .rb-combo-screen-tone { transition: none; } }
+
+/* V 1087 G: 배경15%, 원형 포털·회로 색 밝기 상대15% 증가. */
+.rb-wire-tunnel, .rb-holo-light, .rb-flow-canvas { filter: brightness(1.15); }
+.rb-circuit--glass { filter: var(--circuit-tint) brightness(1.15); }
+.rb-circuit--glass.is-pressed { filter: var(--circuit-tint) drop-shadow(0 0 3px var(--button-color)) drop-shadow(0 0 7px var(--button-color)) brightness(1.15); }
+
+/* V 1089 G: 포털 내부선·외곽선·회전·전진·파동 및 접근광만 추가15%. */
+.rb-wire-tunnel, .rb-holo-light { filter: brightness(1.3225); }

@@ -635,3 +635,23 @@
 ## 2026-10-14 / V 1086 G — 배포 승인
 - 사용자 "배포"로V1084원색배경/18내부제외mask,V1085밝기30%,V1086전체화면여백연결 커밋·푸시·배포승인. localHEAD/remote master9c50e363a16d9b7eacc3eb3cb56dd1cc3234e8d8동일확인. 승인파일만명시선택,Claude·사용자·미추적기존자료보존.
 - 직전60콤보·18내부black/상중하및여백30%픽셀검사·진행도·pause/reset·SWshell/diff공백통과. 실제성공은push/Pages/공개검증후기록. 다음에이전트수정사전허락/배포별도허락/G·C연속번호/기존변경보존준수.
+
+## 2026-10-14 / V 1086 G — Pages 배포 반영
+- 사용자승인으로0a00ff3a12be29c4f080a5ad9f84933c25fcbf9b origin/master push완료. Pages38580230871 completed/success확인. 공개10파일(index/style/SW/play/view/flow/characterstrip/thin/rim/새combo-mask)로컬SHA256일치. V1084내부색제외/V1085배경30%/V1086상단·측면·하단색연결반영.
+- 공개verify-b-live-v1086.js3viewport/중심·치수/개별입력/pause·resume·quit/pageerror없음통과. URL https://mrkyp-png.github.io/fun-games-hub/mole/index.html?v=1086 . 실제휴대폰체감/기존번쩍임완전소멸단정금지. 완료기록로컬만추가,추가커밋·재배포없음. 다음V1087G(최신G/C재확인). 다음에이전트필수:수정사전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존/임의변경금지.
+
+## 2026-10-14 / V 1087 G — 배경15% / 회로·포털밝기+15% (미배포)
+- 사용자 "15%로하고회로판과위의원모든색15%밝기올려" 승인. board/여백콤보tone opacity .3→.15,18내부색제외범위/5원색/10단계·전환·외곽속도유지.
+- 상부SVG원형포털전체(외곽·내부·회전·전진·성공wave)/접근holo조명,하부회로정지·누름글로우 및움직이는회로빛에brightness(1.15). 상대밝기15%증가이며opacity15%p가산아님. 캐릭터본체·캐릭터glow/HUD/외곽진행선색변경없음. 원본에셋변경없음.
+- 36요소(9포털/9접근광/9canvas/9회로)computedfilterbrightness1.15 검사통과. combo60단계/pause/MISS·stop회귀,픽셀18내부black/상중하및여백15%gold≈RGB38,31,0검사통과. 하부9누름6%/flow정렬/원중심/반동/pausecleanup검증통과. SWshell/diff공백통과. review/background15-bright15-v1087.png렌더확인.
+- 로컬V1087G,공개V1086G(0a00ff3). 커밋/푸시/배포없음. 다음에이전트필수:수정사전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존/임의변경금지.
+
+## 2026-10-14 / V 1088–1089 G — 배경5% / 포털 추가15% (미배포)
+- V1088 사용자 "5%로낮춰봐요(배경)" 승인:콤보배경/전체여백tone opacity.15→.05. 원색/내부제외mask/전환·효과불변. combo60단계/pause/reset/픽셀18내부black·상중하및여백gold5%RGB13,10,0/SWshell/diff검증통과. review/background5-v1088.png.
+- V1089 사용자 "포털만15%밝기올려" 및 "안쪽선까지다포함" 승인. 현재포털brightness1.15에추가15%=>1.3225. 상부SVG전체(외곽/안쪽동심원·방사연결선/회전·전진·성공파동)및접근holo광만적용. 하부회로·flow brightness1.15/캐릭터·HUD·외곽진행바불변. 상대밝기기준이며opacity가산아님. 배경5%유지.
+- computedfilter18포털·광1.3225/18하부회로·flow1.15검사와기존순환·안전영역·pause통과. combo60단계/배경5%픽셀/진행도/SWshell/diff공백회귀검증. 원본에셋변경없음.
+- 로컬V1089G(1087~1088미배포변경포함),공개V1086G(0a00ff3). 커밋/푸시/배포없음. 다음에이전트필수:수정사전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존/임의변경금지.
+
+## 2026-10-14 / V 1089 G — 최종 선호 상태 배포 승인
+- 사용자 "지금이딱좋네"로현재상태기준확정후 "배포" 승인. 배경5%/포털brightness1.3225(내부선포함)/회로·flow1.15상태 커밋·푸시·배포. localHEAD/remote master0a00ff3a12be29c4f080a5ad9f84933c25fcbf9b동일확인. Claude·사용자·미추적기존자료보존,승인파일만명시선택.
+- 직전18포털·광/18회로·flow필터/배경5%픽셀/60콤보·pause/reset·안전영역·SWshell/diff검증통과. 실제성공은Pages/공개검증후기록. 다음에이전트수정사전허락/배포별도허락/G·C연속번호/既存변경보존준수. 이선호상태를임의로추가변경하지말것.
