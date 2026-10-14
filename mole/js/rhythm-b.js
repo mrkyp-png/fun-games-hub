@@ -16,11 +16,11 @@
       if (shakes[lane]) shakes[lane].cancel();
       const animation = miniSurfaces[lane].animate([
         { transform: 'translate3d(0,0,0)', offset: 0 },
-        { transform: 'translate3d(-6px,1.5px,0)', offset: .2 },
-        { transform: 'translate3d(4.5px,-1.2px,0)', offset: .45 },
-        { transform: 'translate3d(-2.2px,.6px,0)', offset: .7 },
+        { transform: 'translate3d(-10px,3px,0)', offset: .2 },
+        { transform: 'translate3d(8px,-2.5px,0)', offset: .45 },
+        { transform: 'translate3d(-4px,1.2px,0)', offset: .7 },
         { transform: 'translate3d(0,0,0)', offset: 1 }
-      ], { duration: 220, easing: 'ease-out' });
+      ], { duration: 280, easing: 'ease-out' });
       shakes[lane] = animation;
       animation.onfinish = () => { if (shakes[lane] === animation) shakes[lane] = null; };
     }
@@ -35,7 +35,7 @@
       img.className = 'rb-circuit'; img.alt = '';
       if (!lower) { img.classList.add('rb-circuit--hologram'); img.style.filter = 'url(#rb-circuit-tint-' + index + ')'; }
       if (lower) { img.classList.add('rb-circuit--glass'); img.style.setProperty('--circuit-tint','url(#rb-circuit-tint-' + index + ')'); }
-      img.src = 'assets/rhythm-b/circuit-thin.svg';
+      img.src = lower ? 'assets/rhythm-b/circuit-rim.svg' : 'assets/rhythm-b/circuit-thin.svg';
       // V 1038 G: high-opacity straight body edges, excluding all four protrusions.
       // Source body [64,63,1228,1179] maps to an exact 244x244 square.
       const body = lower ? 268 : 244;
@@ -136,16 +136,18 @@
       // V 1030 G: 아래 버튼과 동일한 304 정사각형 한 장만 메탈 아래까지 채운다.
       // 안쪽 실선 기준 축소판/중복 이미지를 추가하지 않는다. 뼈대는 앞 레이어 유지.
       place(mini, 176 + col * 300, 176 + row * 300, 296);
-      // V 1068 G: 동일한 벡터 구조를 기존 캐릭터 소실점에 맞춘다.
-      const fx=(focusX-sx)/sw*304, fy=(focusY-sy)/sh*304;
-      const corners=[[24,4],[280,4],[300,24],[300,280],[280,300],[24,300],[4,280],[4,24]];
+      // V 1078 G: 9개 동일한 중심의 원형 포털.
+      const fx=152,fy=152,radius=148;
+      mini.style.setProperty('--depth-x','50%');mini.style.setProperty('--depth-y','50%');
+      const points=Array.from({length:8},(_,k)=>{const angle=k*Math.PI/4;return [fx+radius*Math.cos(angle),fy+radius*Math.sin(angle)];});
       const tunnel=document.createElementNS(ns,'svg');tunnel.classList.add('rb-wire-tunnel');tunnel.setAttribute('viewBox','0 0 304 304');tunnel.setAttribute('aria-hidden','true');
-      const rays=corners.map(([x,y])=>'M'+x+','+y+' L'+fx+','+fy).join(' ');
-      tunnel.innerHTML='<path d="'+rays+'" fill="none" stroke="currentColor" stroke-width=".9" opacity=".28"/>'+[1,.72,.48,.29,.15].map((scale,depth)=>'<polygon points="'+corners.map(([x,y])=>(fx+(x-fx)*scale)+','+(fy+(y-fy)*scale)).join(' ')+'" fill="none" stroke="currentColor" stroke-width="1" opacity="'+(.55-depth*.09)+'"/>').join('');
-      const loop=document.createElementNS(ns,'polygon');loop.classList.add('rb-wire-light');loop.setAttribute('points',corners.map(([x,y])=>(fx+(x-fx)*.72)+','+(fy+(y-fy)*.72)).join(' '));loop.setAttribute('pathLength','100');loop.style.setProperty('--wire-delay',(-i*.73)+'s');tunnel.appendChild(loop);
-      const inward=document.createElementNS(ns,'path');inward.classList.add('rb-wire-light','rb-wire-light--inward');const start=corners[(i*3)%8];inward.setAttribute('d','M'+start[0]+','+start[1]+' L'+fx+','+fy);inward.setAttribute('pathLength','100');inward.style.setProperty('--wire-delay',(-i*.91)+'s');tunnel.appendChild(inward);
-      for(let depth=0;depth<3;depth++){const section=document.createElementNS(ns,'polygon');section.classList.add('rb-space-section');section.setAttribute('points',corners.map(p=>p.join(',')).join(' '));section.dataset.focusX=fx;section.dataset.focusY=fy;tunnel.appendChild(section);}
-      const wave=document.createElementNS(ns,'polygon');wave.classList.add('rb-space-hit-wave');wave.setAttribute('points',corners.map(p=>p.join(',')).join(' '));wave.style.transformOrigin=fx+'px '+fy+'px';tunnel.appendChild(wave);
+      const rays=points.map(([x,y])=>'M'+x+','+y+' L'+fx+','+fy).join(' ');
+      tunnel.innerHTML='<path d="'+rays+'" fill="none" stroke="currentColor" stroke-width=".9" opacity=".28"/>'+[1,.72,.48,.29,.15].map((scale,depth)=>'<circle class="'+(depth===0?'rb-portal-rim':'')+'" cx="152" cy="152" r="'+(radius*scale)+'" fill="none" stroke="currentColor" stroke-width="1" opacity="'+(.55-depth*.09)+'"/>').join('');
+      function circle(className,r){const el=document.createElementNS(ns,'circle');el.classList.add(className);el.setAttribute('cx',fx);el.setAttribute('cy',fy);el.setAttribute('r',r);return el;}
+      const loop=circle('rb-wire-light',radius*.72);loop.setAttribute('pathLength','100');loop.style.setProperty('--wire-delay',(-i*.73)+'s');tunnel.appendChild(loop);
+      const inward=document.createElementNS(ns,'path');inward.classList.add('rb-wire-light','rb-wire-light--inward');const start=points[(i*3)%8];inward.setAttribute('d','M'+start[0]+','+start[1]+' L'+fx+','+fy);inward.setAttribute('pathLength','100');inward.style.setProperty('--wire-delay',(-i*.91)+'s');tunnel.appendChild(inward);
+      for(let depth=0;depth<3;depth++){const section=circle('rb-space-section',radius);section.dataset.focusX=fx;section.dataset.focusY=fy;tunnel.appendChild(section);}
+      const wave=circle('rb-space-hit-wave',radius);wave.style.transformOrigin=fx+'px '+fy+'px';tunnel.appendChild(wave);
       mini.appendChild(tunnel);
       miniSurfaces.push(mini);
     }

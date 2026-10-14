@@ -7287,3 +7287,9 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-flow-canvas.is-pressed { transform: translateY(2px) scale(.94); }
 .rb-circuit-pulse { left: 49.9088%; top: calc(50.271% + 2px); }
 @media (prefers-reduced-motion: reduce) { .rb-circuit--glass, .rb-flow-canvas { transition: none; } }
+
+/* V 1078 G: 상부9 원형 포털과 원형 접근 조명. */
+.rb-mini, .rb-holo-light { clip-path: circle(48.684211% at 50% 50%); border-radius: 50%; }
+
+/* V 1079 G: 바깥 테두리만2.5배, 내부선 유지. */
+.rb-portal-rim { stroke-width: 2.5; opacity: .7; filter: drop-shadow(0 0 1.5px currentColor); }

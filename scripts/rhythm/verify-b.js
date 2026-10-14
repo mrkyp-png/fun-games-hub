@@ -17,7 +17,7 @@ const puppeteer = require('puppeteer-core');
   await page.waitForFunction(()=>Array.from(document.querySelectorAll('.rb-board img')).every(i=>i.complete&&i.naturalWidth>0));
   assert.equal(await page.evaluate(()=>document.querySelectorAll('.rb-circuit').length),18);
   assert(await page.$$eval('.rb-circuit',els=>els.every((el,i)=>getComputedStyle(el).visibility===(i<9?'hidden':'visible'))));
-  assert.equal(await page.evaluate(()=>new Set(Array.from(document.querySelectorAll('.rb-circuit'),i=>i.src)).size),1);
+  assert.equal(await page.evaluate(()=>new Set(Array.from(document.querySelectorAll('.rb-circuit'),i=>i.src)).size),2);
   assert(await page.evaluate(()=>{const a=Array.from(document.querySelectorAll('.rb-circuit'),i=>i.getBoundingClientRect());return a.every((r,i)=>Math.abs(r.width-a[i<9?0:9].width)<.01&&Math.abs(r.height-a[i<9?0:9].height)<.01);}));
   assert.equal(await page.evaluate(()=>document.querySelectorAll('.rb-skeleton').length),1);
   assert.equal(await page.evaluate(()=>document.querySelectorAll('.rb-mini').length),9);

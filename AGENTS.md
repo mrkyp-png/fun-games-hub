@@ -533,3 +533,26 @@
 - verify-glass-nine:9칸각각회로와flow .94검사,원중심.5CSSpx이내,해당칸만기존밝기/글로우/물결,160ms반동1.01keyframe확인,복원후모든좌표동일,pause반동취소 통과. verify-b-dynamic-space27단면/beat/가속/파동/score/pause/reducedmotion회귀통과. JS구문/SW shell/diff공백통과.
 - 사용자 "배포하세요"로V1074배치·안전영역/V1075진행바/V1076동적공간/V1077누름까지커밋/푸시/배포승인. 배포전localHEAD와remote master f3420f4738bc423b22a9c1baf452bc3b46d73cb6동일확인. 승인파일만선택,원본미추적자료보존. 배포성공은Pages/공개검증후별도기록.
 - 다음에이전트필수:수정사전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존/임의변경금지.
+
+## 2026-10-14 / V 1077 G — 배포 완료
+- 사용자승인으로86452cc8dcf3c8e64e16f09a46ff0698f94ff5a7 origin/master push완료. Pages38562171959 completed/success확인.
+- 공개8파일(index/style/SW/play/view/flow/characterstrip/thincircuitSVG)SHA256로컬일치확인. 공개verify-b-live-v1077.js3viewport치수/중심/9버튼강화눌림/공유pause/resume/quit/pageerror없음통과. 로컬전체검사도통과. 실제휴대폰카메라/효과체감/기존번쩍임소멸은사용자확인필요,완전해결단정금지.
+- URL https://mrkyp-png.github.io/fun-games-hub/mole/index.html?v=1077 . V1074배치·카메라여백/V1075진행바/V1076동적공간4종/V1077강화누름모두공개반영.
+- 완료기록만로컬추가,추가커밋/재배포없음. 다음신규버전V1078G(최신C/G번호다시확인). 다음에이전트필수:수정사전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존/임의변경금지.
+
+## 2026-10-14 / V 1078 G — 전체 원형 포털 / 강한 성공 흔들림 (미배포)
+- 사용자 "전체 원형포털로 변경합시다" 및 "성공시 흔들림을 심하게" 요청. 상부9칸 사각polygon→SVGcircle로변경,중심152,152/반지름148/296칸크기·기존9센터유지. 정적동심원5/회전circle1/전진circle3/성공wavecircle1,8방사연결선. 기존원색·phase·BPM호흡·접근가속 유지.
+- 소실점/캐릭터출현기준각칸50%,50%로통일,원형mini 및접근조명clip circle48.684211%. 기존 판정시간·음악·점수·캐릭터윤곽·날림/PANG/하부회로버튼·HUD배치·카메라여백/진행바불변.
+- 성공한mini만최대10CSSpx/280ms진동(-10,3→8,-2.5→-4,1.2→0),기존6px/220ms보다강화. 다른칸/전체화면흔들림없음. pause/stopcancel, reduced-motion생략유지.
+- verify-b-wire-lights 9원형clip/각10circle/사각polygon0/동일중심검사 및기존회전·안전영역·pause/resume/stop통과. verify-b-success-shake PERFECT/GREAT/GOOD해당칸만280ms/10px/복원·빈입력·pause·reducedmotion통과. verify-b-dynamic-space 전진/BPM/접근가속/원형성공파동통과. verify-glass-nine 하부6%누름/회로flow정렬/반동/pause·센터통과. clock점수/CLEAR/MISS10/오디오정리 및JS구문/SW shell/diff공백통과. review/circle-portals-v1078.png 실제렌더확인.
+- 로컬V1078G,공개V1077G(86452cc). 커밋/푸시/배포없음. 다음에이전트필수:수정사전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존/임의변경금지.
+
+## 2026-10-14 / V 1079 G — 상하 외곽선 강화 (미배포)
+- 사용자 "아래 회로판버튼도 동일하게" 및 "진행해보시죠" 승인. 상부9포털정적바깥circle에rb-portal-rim 지정,stroke1→2.5/opacity.7/같은색1.5pxdrop-shadow. 안쪽원/동적링/연결선 굵기유지.
+- 하부는원본circuit-user.png 동일metal mask의가장큰외부contour를50개점으로단순화해원래회로판외곽형태유지. 신규circuit-rim.svg에기존thin SVG전체그대로+외곽path stroke15(6의2.5배)/stdDev3은은한glow 추가. 임의사각틀추가없음. 원본PNG/thinSVG수정없음.하부9src만새SVG,숨긴상부회로thin유지,SWshell에새SVG등록.
+- build-circuit-rim.py로재현가능. XML검증으로내부path속성완전동일/외곽15확인. verify-b-wire-lights9바깥circle2.5px/기존9원형/순환·안전여백·pause검증통과. verify-glass-nine하부6%누름/flow정렬/원중심/반동/pausecleanup통과. JS구문/SWshell/diff공백통과. review/outer-rims-v1079.png렌더확인.
+- 로컬V1079G(미배포V1078원형포털·흔들림포함),공개V1077G(86452cc). 커밋/푸시/배포없음. 다음에이전트필수:수정사전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존/임의변경금지.
+
+## 2026-10-14 / V 1079 G — 배포 승인
+- 사용자 "배포하세요"로V1078원형포털/성공280ms10px흔들림,V1079상하외곽2.5배/글로우변경 커밋·푸시·배포승인. localHEAD/remote master 86452cc8dcf3c8e64e16f09a46ff0698f94ff5a7동일확인. 기존사용자·Claude·미추적중간자료보존,승인파일만명시선택.
+- build-circuit-rim.py는SVG재생성만수행하도록정리(프로덕션코드변경/버전치환은제외). 원본및내부선유지검증통과,JS구문/SWshell/diff공백통과. 실제성공은push/Pages/공개검증후기록. 다음에이전트도수정전허락/배포별도허락/G·C연속번호/기존변경보존준수.
