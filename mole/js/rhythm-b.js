@@ -6,6 +6,7 @@
     const buttonXs = [[26, 326], [326, 626], [626, 926]];
     const buttonYs = [[1056, 1356], [1356, 1656], [1656, 1956]];
     const pressSurfaces = [];
+    const pulseAnimations = Array(9).fill(null);
     const miniSurfaces = [], shakes = Array(9).fill(null);
     function clearShakes() { shakes.forEach(animation => { if (animation) animation.cancel(); }); shakes.fill(null); }
     function shakeMini(lane) {
@@ -30,9 +31,9 @@
       const index = i % 9, lower = i >= 9;
       const img = document.createElement('img');
       img.className = 'rb-circuit'; img.alt = '';
-      if (!lower) img.classList.add('rb-circuit--upper-hidden');
-      if (lower) { img.classList.add('rb-circuit--glass'); img.style.filter = 'url(#rb-circuit-tint-' + index + ')'; }
-      img.src = 'assets/rhythm-b/circuit-user.png';
+      if (!lower) { img.classList.add('rb-circuit--hologram'); img.style.filter = 'url(#rb-circuit-tint-' + index + ')'; }
+      if (lower) { img.classList.add('rb-circuit--glass'); img.style.setProperty('--circuit-tint','url(#rb-circuit-tint-' + index + ')'); }
+      img.src = 'assets/rhythm-b/circuit-thin.svg';
       // V 1038 G: high-opacity straight body edges, excluding all four protrusions.
       // Source body [64,63,1228,1179] maps to an exact 244x244 square.
       const scaleX = 244 / 1164, scaleY = 244 / 1116;
@@ -87,12 +88,17 @@
       hit.style.setProperty('--glass-soft', colors[i] + '12');
       hit.style.setProperty('--button-color', colors[i]);
       hit.setAttribute('aria-label', (i + 1) + '번 리듬 버튼');
-      hit.innerHTML = '<span class="rb-press-face" aria-hidden="true"></span>';
+      hit.innerHTML = '<span class="rb-press-face" aria-hidden="true"></span><span class="rb-circuit-pulse" aria-hidden="true"></span>';
+      const pulse=hit.querySelector('.rb-circuit-pulse');
       place(hit, buttonCx, buttonCy, 304);
-      const surfaces = [hit, color]; pressSurfaces.push(...surfaces);
+      const circuit = board.querySelectorAll(".rb-circuit--glass")[i];
+      circuit.style.setProperty('--button-color', colors[i]);
+      const surfaces = [hit, color, circuit]; pressSurfaces.push(...surfaces);
       function down() {
         if (!running || paused) return;
         surfaces.forEach(el => el.classList.add('is-pressed'));
+        if(pulseAnimations[i]) pulseAnimations[i].cancel();
+        pulseAnimations[i]=pulse.animate([{transform:'scale(.08)',opacity:1,offset:0},{transform:'scale(.28)',opacity:1,offset:.18},{transform:'scale(1)',opacity:.65,offset:.7},{transform:'scale(1.35)',opacity:0,offset:1}],{duration:480,easing:'ease-out'});
         if (play) play.press(i);
       }
       function up() { surfaces.forEach(el => el.classList.remove('is-pressed')); }
@@ -104,6 +110,7 @@
       hit.addEventListener('keydown', e => { if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); if (!e.repeat) down(); } });
       hit.addEventListener('keyup', e => { if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); up(); } });
       const mini = document.createElement('div'); mini.className = 'rb-mini';
+      mini.style.setProperty('--holo-color', colors[i]);
       mini.setAttribute('aria-label', (i + 1) + '번 게임보드');
       // V 1029 G: 사용자가 테두리를 제거한 원본 그대로. 9분할/모서리 변형 없음.
       const sourceXs = [[110, 499], [579, 959], [1041, 1428]];
@@ -119,6 +126,15 @@
       // V 1030 G: 아래 버튼과 동일한 304 정사각형 한 장만 메탈 아래까지 채운다.
       // 안쪽 실선 기준 축소판/중복 이미지를 추가하지 않는다. 뼈대는 앞 레이어 유지.
       place(mini, 176 + col * 300, 176 + row * 300, 304);
+      // V 1068 G: 동일한 벡터 구조를 기존 캐릭터 소실점에 맞춘다.
+      const fx=(focusX-sx)/sw*304, fy=(focusY-sy)/sh*304;
+      const corners=[[24,4],[280,4],[300,24],[300,280],[280,300],[24,300],[4,280],[4,24]];
+      const tunnel=document.createElementNS(ns,'svg');tunnel.classList.add('rb-wire-tunnel');tunnel.setAttribute('viewBox','0 0 304 304');tunnel.setAttribute('aria-hidden','true');
+      const rays=corners.map(([x,y])=>'M'+x+','+y+' L'+fx+','+fy).join(' ');
+      tunnel.innerHTML='<path d="'+rays+'" fill="none" stroke="currentColor" stroke-width=".9" opacity=".28"/>'+[1,.72,.48,.29,.15].map((scale,depth)=>'<polygon points="'+corners.map(([x,y])=>(fx+(x-fx)*scale)+','+(fy+(y-fy)*scale)).join(' ')+'" fill="none" stroke="currentColor" stroke-width="1" opacity="'+(.55-depth*.09)+'"/>').join('');
+      const loop=document.createElementNS(ns,'polygon');loop.classList.add('rb-wire-light');loop.setAttribute('points',corners.map(([x,y])=>(fx+(x-fx)*.72)+','+(fy+(y-fy)*.72)).join(' '));loop.setAttribute('pathLength','100');loop.style.setProperty('--wire-delay',(-i*.73)+'s');tunnel.appendChild(loop);
+      const inward=document.createElementNS(ns,'path');inward.classList.add('rb-wire-light','rb-wire-light--inward');const start=corners[(i*3)%8];inward.setAttribute('d','M'+start[0]+','+start[1]+' L'+fx+','+fy);inward.setAttribute('pathLength','100');inward.style.setProperty('--wire-delay',(-i*.91)+'s');tunnel.appendChild(inward);
+      mini.appendChild(tunnel);
       miniSurfaces.push(mini);
     }
     const upperGlow = document.createElement('img'); upperGlow.className = 'rb-upper-glow'; upperGlow.alt = ''; upperGlow.src = 'assets/rhythm-b/upper-uniform-glow.png'; board.appendChild(upperGlow);
@@ -129,11 +145,11 @@
     const combo = document.createElement('div'); combo.className = 'rb-status rb-status--combo';
     combo.innerHTML = '<small>COMBO</small><b data-rb-combo>0</b>'; place(combo, 744, 991, 144, 90);
     const pauseButton = document.createElement('button'); pauseButton.type = 'button';
-    pauseButton.className = 'rb-pause-button'; pauseButton.setAttribute('aria-label', '일시정지');
-    pauseButton.innerHTML = '<span class="rb-pause-well" aria-hidden="true"></span><span class="rb-pause-face" aria-hidden="true"></span>';
+    pauseButton.className = 'rb-pause-button rb-pause-button--a'; pauseButton.setAttribute('aria-label', '일시정지');
+    pauseButton.innerHTML = '<span class="rb-pause-face" aria-hidden="true">II</span>';
     pauseButton.addEventListener('click', () => opts.onPause());
     place(pauseButton, 876, 991, 86, 86);
-    function releaseAll() { pressSurfaces.forEach(el => el.classList.remove('is-pressed')); clearShakes(); }
+    function releaseAll() { pressSurfaces.forEach(el => el.classList.remove('is-pressed')); clearShakes(); pulseAnimations.forEach(a=>{if(a)a.cancel();}); pulseAnimations.fill(null); }
     flowFx = root.MoleGame.RhythmBFlow.create({ board, colors });
     let artReady = null;
     const artImages = [];
@@ -153,19 +169,19 @@
       root: opts.root, board, rules: opts.rules, loadSong: opts.loadSong, prepareAssets,
       onHit: shakeMini,
       onFinish: (stats, clear) => {
-        running = false; releaseAll();
+        running = false; board.classList.remove('rb-wire-running'); releaseAll();
         flowFx.stop();
         opts.onResult(stats, clear);
       }
     });
     return {
       open(difficulty) {
-        running = true; paused = false; board.classList.remove('is-paused'); releaseAll();
+        running = true; board.classList.add('rb-wire-running'); paused = false; board.classList.remove('is-paused'); releaseAll();
         flowFx.start();
         return play.start(difficulty || 'EASY');
       },
       stop() {
-        running = false; paused = false; releaseAll(); play.stop();
+        running = false; board.classList.remove('rb-wire-running'); paused = false; releaseAll(); play.stop();
         flowFx.stop();
       },
       dbg() { return play.dbg(); },

@@ -4,7 +4,7 @@
  const MG=root.MoleGame;
  function create(opts){
   const surfaces=Array.from({length:9},(_,cell)=>{const canvas=document.createElement('canvas');canvas.className='rb-flow-canvas';canvas.dataset.cell=cell;canvas.setAttribute('aria-hidden','true');canvas.style.left=((26+(cell%3)*300)/952*100)+'%';canvas.style.top=((1056+Math.floor(cell/3)*300)/2078*100)+'%';opts.board.appendChild(canvas);return {canvas,ctx:canvas.getContext('2d')};});
-  let ctx;const colors=opts.colors,lightColors=colors.map(()=>'#ffffff');
+  let ctx;const colors=opts.colors,lightColors=colors.slice();
   const routes=MG.rhythmBCircuitRoutes.map(d=>{
    const vertices=Array.from(d.matchAll(/(\d+),(\d+)/g),m=>({x:28+(Number(m[1])-64)*244/1164,y:28+(Number(m[2])-63)*244/1116}));
    const distances=[0];for(let i=1;i<vertices.length;i++)distances.push(distances[i-1]+Math.hypot(vertices[i].x-vertices[i-1].x,vertices[i].y-vertices[i-1].y));

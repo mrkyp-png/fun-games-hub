@@ -9,6 +9,11 @@
   const effects=new Set(),pangAnimations=Array(9).fill(null);
   let startAnimation=null;
   const colors=['#086aff','#ff1529','#ffc400','#05e52e','#a500ff','#ff0099','#ff7900','#00cfff','#a65121'];
+  const outlineDefs=document.createElementNS('http://www.w3.org/2000/svg','svg');outlineDefs.setAttribute('width','0');outlineDefs.setAttribute('height','0');outlineDefs.style.position='absolute';outlineDefs.setAttribute('aria-hidden','true');
+  outlineDefs.innerHTML='<defs>'+colors.map((color,i)=>'<filter id="rb-character-outline-'+i+'" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB"><feMorphology in="SourceAlpha" operator="dilate" radius="2.5" result="wide"/><feComposite in="wide" in2="SourceAlpha" operator="out" result="edge"/><feFlood flood-color="'+color+'"/><feComposite in2="edge" operator="in" result="line"/><feGaussianBlur in="line" stdDeviation="2" result="glow"/><feMerge><feMergeNode in="glow"/><feMergeNode in="line"/></feMerge></filter>').join('')+'</defs>';board.appendChild(outlineDefs);
+  const holoLights=colors.map((color,lane)=>{const el=document.createElement('div');el.className='rb-holo-light';el.setAttribute('aria-hidden','true');el.style.cssText='left:'+((24+(lane%3)*300)/952*100)+'%;top:'+((24+Math.floor(lane/3)*300)/2078*100)+'%;width:'+(304/952*100)+'%;height:'+(304/2078*100)+'%;--holo-color:'+color;board.appendChild(el);return el;});
+  function darkenLane(lane){holoLights[lane].style.opacity='0';}
+  function clearLights(){holoLights.forEach((_,i)=>darkenLane(i));}
   const pangs=colors.map((_,lane)=>{const el=document.createElement('span');el.className='rb-pang';el.textContent='PANG!';el.hidden=true;el.setAttribute('aria-hidden','true');el.style.left=((176+(lane%3)*300)/952*100)+'%';el.style.top=((176+Math.floor(lane/3)*300)/2078*100)+'%';board.appendChild(el);return el;});
   const startCallout=document.createElement('div');startCallout.className='rb-start-callout';startCallout.hidden=true;startCallout.setAttribute('aria-hidden','true');board.appendChild(startCallout);
   function animateEffect(el,keyframes,duration,done){const a=el.animate(keyframes,{duration,easing:'ease-out'});effects.add(a);a.onfinish=()=>{effects.delete(a);if(done)done();};a.oncancel=()=>effects.delete(a);return a;}
@@ -67,16 +72,16 @@
   function vibrate(ms){try{if(root.FGH&&root.FGH.Settings&&root.FGH.Settings.vibrate)root.FGH.Settings.vibrate(ms);else if(root.navigator&&root.navigator.vibrate)root.navigator.vibrate(ms);}catch(e){}}
   function stopAudio(){sources.forEach(s=>{try{s.stop();}catch(e){}});sources=[];melodyGain=null;}
   function clearRings(){rings.forEach(el=>el.remove());rings.length=0;}
-  function stop(){generation++;cancelAnimationFrame(frame);stopAudio();clearEffects();clearRings();state=null;error.hidden=true;}
+  function stop(){generation++;cancelAnimationFrame(frame);stopAudio();clearEffects();clearRings();clearLights();state=null;error.hidden=true;}
   function finish(clear){
    if(!state||state.ended)return;
-   state.ended=true;cancelAnimationFrame(frame);stopAudio();clearEffects();rings.forEach(el=>el.hidden=true);
+   state.ended=true;clearLights();cancelAnimationFrame(frame);stopAudio();clearEffects();rings.forEach(el=>el.hidden=true);
    opts.onFinish({score:state.score,combo:state.combo,maxCombo:state.maxCombo,cnt:{...state.cnt},diff:state.diff},clear);
   }
   function miss(note){
    if(!state||state.ended)return;
    if(!note||note.state!=='pending')return;
-   note.state='miss';note.el.hidden=true;
+   note.state='miss';note.el.hidden=true;darkenLane(note.lane);
    state.cnt.MISS++;state.combo=0;muteMelody(false);label('MISS','MISS');updateHud();
    if(state.cnt.MISS>=10)finish(false);
   }
@@ -88,7 +93,7 @@
    if(!best)return; // Empty input never changes score, combo, or MISS.
    // Like A: an existing future note outside the input window remains pending until its deadline.
    const grade=rules.grade(delta*1000,state.diff);if(!grade)return;
-   best.state='hit';successEffect(best,t);state.cnt[grade]++;state.combo++;state.maxCombo=Math.max(state.maxCombo,state.combo);
+   best.state='hit';successEffect(best,t);darkenLane(best.lane);state.cnt[grade]++;state.combo++;state.maxCombo=Math.max(state.maxCombo,state.combo);
    state.score+=rules.points(grade,state.combo);muteMelody(true);label(grade,grade);updateHud();
    vibrate(160);
    if(opts.onHit)opts.onHit(lane,grade);
@@ -101,6 +106,7 @@
     n.el.style.transform='translate('+(dx/300*100)+'%,'+(dy/300*100)+'%) scale('+scale+')';
     n.el.style.opacity=String(.3+.7*u);
     n.character.style.setProperty('--character-light',String(.7+.3*u));
+    const light=holoLights[n.lane];light.style.setProperty('--holo-radius',(8+u*92)+'%');light.style.opacity=String(.15+.45*u);
     n.lastU=u;
    }
    n.el.dataset.progress=String(p);
@@ -139,7 +145,7 @@
      if(!free.length)throw new Error('Chart exceeds nine independent lane windows');
      const lane=free[Math.floor(Math.random()*free.length)];last[lane]=targetTime;
      const el=document.createElement('div');el.className='rb-note';el.setAttribute('aria-hidden','true');el.hidden=true;
-     const character=document.createElement('span');character.className='rb-character';el.appendChild(character);
+     const character=document.createElement('span');character.className='rb-character';character.style.setProperty('--outline-filter','url(#rb-character-outline-'+lane+')');el.appendChild(character);
      const ring=document.createElement('img');ring.className='rb-note-ring';ring.alt='';ring.draggable=false;ring.src='assets/rhythm-b/note-inner-line-'+lane+'.png';el.appendChild(ring);
      el.style.left=((26+(lane%3)*300)/952*100)+'%';el.style.top=((26+Math.floor(lane/3)*300)/2078*100)+'%';
      el.style.setProperty('--note-color',colors[lane]);board.appendChild(el);rings.push(el);

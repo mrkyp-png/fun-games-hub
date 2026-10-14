@@ -7206,3 +7206,60 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-pang { position:absolute; z-index:6; transform:translate(-50%,-50%); color:#fff; font:900 clamp(16px,5vw,26px)/1 sans-serif; -webkit-text-stroke:3px #ff4fb3; paint-order:stroke fill; pointer-events:none; }
 .rb-start-callout { position:absolute; left:50%; top:23%; width:94%; z-index:7; transform:translate(-50%,-50%); color:#fff05b; text-align:center; font:900 clamp(22px,7vw,38px)/1.2 sans-serif; text-shadow:0 2px 2px #000,0 0 6px #000; pointer-events:none; }
 .rb-pang[hidden], .rb-start-callout[hidden] { display:none; }
+
+/* V 1063 G: 전체 메탈 틀과 고정 테두리 제거. 18칸 동일 대각선 컷. */
+.rb-skeleton, .rb-button-glow, .rb-upper-glow { display: none; }
+.rb-color, .rb-mini, .rb-hit {
+  clip-path: polygon(7.236842% .657895%,92.763158% .657895%,99.342105% 7.236842%,99.342105% 92.763158%,92.763158% 99.342105%,7.236842% 99.342105%,.657895% 92.763158%,.657895% 7.236842%);
+}
+.rb-hit .rb-press-face { inset: .657895%; clip-path: polygon(6.666667% 0,93.333333% 0,100% 6.666667%,100% 93.333333%,93.333333% 100%,6.666667% 100%,0 93.333333%,0 6.666667%); }
+
+/* V 1064 G: 상부는 얇은 회로 위에 투영되는 어두운 홀로그램 공간. */
+.rb-circuit--hologram { visibility: visible; opacity: .72; mask-image: radial-gradient(ellipse at center, transparent 0%, #0003 24%, #000 55%); -webkit-mask-image: radial-gradient(ellipse at center, transparent 0%, #0003 24%, #000 55%); }
+.rb-mini { opacity: .24; }
+.rb-mini::after { background: radial-gradient(ellipse at var(--depth-x,50%) var(--depth-y,60%), #000 0%, #000e 18%, #0009 42%, #0005 70%, #0003 100%); }
+.rb-mini::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, transparent 0 3px, #0006 3px 4px); }
+
+/* V 1065 G: 사용자 지시 — 상부 회로 및 접근 판정 틀 표시 제거. */
+.rb-circuit--hologram { visibility: hidden; }
+.rb-note-ring { display: none; }
+
+/* V 1066 G: 아래 회로는 대기30%, 누르고 있는 해당 칸만 기존 밝기. */
+.rb-circuit--glass { opacity: .3; }
+.rb-circuit--glass.is-pressed { opacity: 1; }
+
+/* V 1067 G: 윤곽선만 표시, 접근 중 중심에서 바깥으로 퍼지는 칸별 조명. */
+.rb-character { filter: var(--outline-filter); }
+.rb-holo-light { position: absolute; z-index: 2; pointer-events: none; opacity: 0; transition: opacity 180ms ease-out; contain: paint; clip-path: polygon(7.236842% .657895%,92.763158% .657895%,99.342105% 7.236842%,99.342105% 92.763158%,92.763158% 99.342105%,7.236842% 99.342105%,.657895% 92.763158%,.657895% 7.236842%); background: radial-gradient(ellipse var(--holo-radius,8%) var(--holo-radius,8%) at center, var(--holo-color) 0%, transparent 72%); }
+@media (prefers-reduced-motion: reduce) { .rb-holo-light { transition: none; } }
+
+/* V 1068 G: 래스터 터널 배경 제거, 칸별 얇은 원근 벡터선. */
+.rb-mini { background-image: none; opacity: 1; color: var(--holo-color); }
+.rb-mini::before, .rb-mini::after { content: none; }
+.rb-wire-tunnel { display: block; width: 100%; height: 100%; overflow: hidden; }
+
+/* V 1069 G: 유리면 제거, 회로 누름 발광과 중심에서 퍼지는 빛. */
+.rb-color, .rb-hit .rb-press-face { display: none; }
+.rb-circuit--glass { filter: var(--circuit-tint); transition: scale 160ms ease-out, translate 160ms ease-out; }
+.rb-circuit--glass.is-pressed { filter: var(--circuit-tint) drop-shadow(0 0 3px var(--button-color)) drop-shadow(0 0 7px var(--button-color)); scale: .975; translate: 0 1px; }
+.rb-circuit-pulse { position: absolute; inset: 9%; border-radius: 50%; opacity: 0; pointer-events: none; background: radial-gradient(circle, #fff 0%, #fff 7%, var(--button-color) 18%, transparent 42%, transparent 57%, var(--button-color) 66%, #fff 70%, var(--button-color) 74%, transparent 82%); }
+@media (prefers-reduced-motion: reduce) { .rb-circuit--glass { transition: none; } }
+
+/* V 1070 G: 원본 중앙 원(644.75,624.65), body 중심(646,621), 눌림1px 보정. */
+.rb-circuit-pulse { inset: auto; left: 49.9138%; top: calc(50.2559% + 1px); width: 82%; height: 82%; translate: -50% -50%; }
+
+/* V 1071 G: 리듬팡 A와 동일한 파란 원형 일시정지, 안쪽 면 누름 유지. */
+.rb-pause-button--a { border: 3px solid #57d9ff; border-radius: 50%; color: #fff; background: radial-gradient(circle at 35% 30%, #4fb8ff, #135aa8); box-shadow: 0 0 10px #57d9ffb3; overflow: hidden; }
+.rb-pause-button--a .rb-pause-face { inset: 0; clip-path: none; border-radius: 50%; display: grid; place-items: center; font: 900 clamp(12px,4vw,20px)/1 sans-serif; }
+.rb-pause-button--a:active .rb-pause-face { transform: translateY(1px) scale(.94); filter: brightness(.82); box-shadow: inset 0 2px 4px #0005; }
+
+/* 중앙 고정: 개별 scale 속성이 기존 translate(-50%) 기준점을 이동시키지 않도록 변환 순서 명시. */
+.rb-circuit--glass { transition: transform 160ms ease-out, translate 160ms ease-out; }
+.rb-circuit--glass.is-pressed { scale: none; transform: translate(-50%, -50%) scale(.975); }
+
+/* V 1072 G: 상부 원근선만 따라가는 은은한 순환 빛. */
+.rb-wire-light { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 8 92; opacity: .65; animation: rb-wire-circulate 6s linear infinite; animation-delay: var(--wire-delay,0s); animation-play-state: paused; }
+.rb-wire-light--inward { stroke-width: 1.6; stroke-dasharray: 7 193; opacity: .45; animation-duration: 8s; }
+.rb-wire-running:not(.is-paused) .rb-wire-light { animation-play-state: running; }
+@keyframes rb-wire-circulate { to { stroke-dashoffset: -200; } }
+@media (prefers-reduced-motion: reduce) { .rb-wire-light { display: none; } }
