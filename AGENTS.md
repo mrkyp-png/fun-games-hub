@@ -495,3 +495,41 @@
 - 하부 중앙확산 y오차 원인: 회로 translate 1px는 CSS 화면px인데 이전 보정은1논리px였다. pulse top calc(50.2559% + 1px)로 좌표단위 통일. V1073 G. CENTER 디버그 제거.
 - 최종 verify-glass-nine 통과:9회로 각각 누름/발광/물결/기존밝기복원/흐름원색, 모든9원 중심이 실제 source중심644.75,624.65 대비 x/y .5CSSpx 이내,다른버튼반응없음. full verify-b:3viewport 치수/중심/공유 pause/resume/quit/pageerror 없음 통과. verify-b-wire-lights:순환/9위상/pause/resume/stop/reducedmotion 및 캐릭터윤곽/접근조명 통과. SW shell 통과.
 - 실제 배포 성공은 push/Pages실행/공개파일검증 후 기록. 다음 에이전트도 수정 전 허락/배포 별도 허락/G·C 연속번호/기존 변경 보존 규칙 준수.
+
+## 2026-10-14 / V 1073 G — 배포 완료
+- 사용자 배포 승인에 따라 f3420f4738bc423b22a9c1baf452bc3b46d73cb6 origin/master push 완료. Pages run38555223247 completed/success, build/deploy/report 전부 success 확인.
+- 공개 index/style/SW/play/view/flow/캐릭터strip/얇은회로SVG8파일 로컬과SHA256동일(텍스트CRLF정규화) 확인. 공개 주소 verify-b-live-v1073.js 3viewport 중심/치수/9입력/공유pause/resume/quit/pageerror없음 통과. 테스트의 눌림완료 확인은160ms transition 종료 이후220ms 대기하도록 조정(기존100ms는전환중 .975정확값검사로 간헐실패), 배포코드 수정 없음.
+- 주소 https://mrkyp-png.github.io/fun-games-hub/mole/index.html . 휴대폰 실제 체감은 사용자 확인 예정. 기존 번쩍임의 완전해결을 단정하지 않는다.
+- 이 완료기록은 로컬에만 추가, 추가 커밋/재배포하지 않음. 다음 에이전트도 수정 사전 허락/배포 별도 허락/G·C 연속번호/Claude·사용자 기존 변경 보존 규칙 준수. 다음 신규버전 V1074 G부터(더높은C/G존재 재확인).
+
+## 2026-10-14 / V 1074 G — 중앙 세부판·회로 확대·상부 간격·카메라 여백 (미배포)
+- 사용자 승인: 세부정보를 중앙점수판 아래로, 하부회로 중첩없이 확대. 추가 카메라가 상부 중앙칸을 가리는 문제 및 상부칸 간격 요청, body268안 안내 후 "네" 승인.
+- 하부 body244→268(약9.8%확대), source전체폭294.94논리px로 pitch300보다 작아 돌출부끼리 비중첩. 글로우도 원본img 범위안 clip-path inset(0)로 인접칸 침범 억제. 하부 grid 시작1056→1136(+80), 각 중심은동일x/y+80. 끝2036으로2078보드안. 기존 위상/버튼색/판정 불변.
+- 회로 flow mapping body268/offset16/clip16,16,268,268/tail및선폭같은배율로 조정. 누름물결 중심49.9054%/calc(50.2811% +1px), 폭90%로 확대. 기존 실제원중심644.75,624.65 일치검사9칸통과.
+- 세부 MISS/GOOD/GREAT/PERFECT는 y1048..1102(50.433%,height2.599%)로 중앙HUD하단1036과하부회로상단사이. 위치만변경, 통계/글자/게임로직불변.
+- 상부 mini304→296로 줄여 칸간 간격확보, 기존중심/벡터geometry/소실점비율유지. 캐릭터 초기소실점오프셋304→296 및 접근조명bounds296동기화. 아래회로 외곽과비슷한간격(상부선약12논리px, 회로돌출부약12px) 확보.
+- B에만 safe padding top max(32px,env(safe-area-inset-top)),bottom env. 보드 폭도안전여백뺀100dvh기준으로계산하여전체높이보존. Android env0에서도카메라를피할최소32px적용. 실제기기카메라별물리영역은휴대폰확인필요, 확정해결단정금지. A변경없음.
+- verify-b-wire-lights:3viewport360/390/430 안전상단/하단, HUD→세부판→하부순서, 상하칸가로비중첩/회로268 검사통과. 순환/pause/resume/stop/reducedmotion/캐릭터효과검증통과. verify-glass-nine9눌림/센터/원색flow/복원, verify-b-clock점수/CLEAR/MISS10/오디오정리 통과. review/spacing-safe-v1074.png 실제렌더확인. JS구문/SW shell통과.
+- 로컬V1074G,공개V1073G(f3420f4). 커밋/푸시/배포없음. 다음에이전트필수:수정사전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존/임의변경금지.
+- 최종 full verify-b.js 통과:상부숨긴회로244/하부268그룹별동일치수,상부296/중심,하부+80좌표,3viewport,공유pause/resume/quit,pageerror없음. 44px상단/34px하단 안전영역 시뮬레이션도 통과. 검사출력문일부는과거명칭(glass)이남아있으나실제검사는최신기준으로수행. diff공백검사통과.
+
+## 2026-10-14 / V 1075 G — 곡 진행바 / 카카오 영상 확인 (미배포)
+- 사용자 진행바 추가 승인. 카메라 안전여백은 유지하고 board top1CSSpx/높이3px/좌우26논리px의 청록 진행바 생성. AudioContext시계 t/state.duration 사용, 카운트인0/곡끝100/중도gameover 현재비율유지/stop·retry0, pause tick guard로정지. role progressbar 및0..100 aria값. 실제음악길이와 마지막판정tail중큰값 기준.
+- verify-b-progress.js 카운트인0/음악시계50·75·100/pause고정/CLEAR/stop·retry초기화 통과. 기존 clock 점수/CLEAR/MISS10/경계/audio취소 정리 통과. JS구문/SW shell/diff공백 통과. 로컬V1075G,공개V1073G. 커밋/푸시/배포없음.
+- Desktop KakaoTalk_20261014_204806176.mp4 읽기확인(31.8667초/30fps/1080x2340),12시점contact sheet review/kakao-video-contact.png 확인. 발판접근/배경색전환/주변빛동작의리듬게임참고영상. 원본수정없음.
+- 사용자 현재 핵심: B는캐릭터·일부빛만움직여전체공간정적으로느껴짐. 동적리듬게임을위한아이디어요청중,새디자인구현승인아직없음. 진행바이외임의수정금지. 다음에이전트도수정사전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존규칙인계.
+
+## 2026-10-14 / V 1076 G — 리듬 공간 동적 연출4종 (미배포)
+- 사용자 "일단 다 적용해봅시다" 승인: 지속적 공간전진/박자호흡/캐릭터접근가속/성공공간파동 전부 구현. 각 mini 기존 SVG에 단면3개와 성공파동1개만사전생성(27+9). 기존기하/중심/상하간격/회로/판정/진행바 유지.
+- 기존 AudioContext tick사용, section matrix를소실점중심에서scale .035..1로확대하며순환. 초당위상 .13+접근률*.22, 칸별초기위상차. 접근노트없어도전진. 실제 data.song bpm/firstBeat(현곡143.5/.242)기준 지수감쇠호흡. 각 mini opacity .72+beat*.16+approach*.12로 제한, 전면플래시/새배경/색상전환추가없음.
+- 성공한해당칸만420ms 소실점발파동(scale .08→1,최대opacity .9),기존effect집합관리로pause/resume/stop/finish동기화. 기존캐릭터날림/PANG/개별흔들림 유지. 판정·score·MISS규칙변경없음. 화면전체흔들림추가안함.
+- 전진과박자호흡은오디오시계가멈추면고정,stop·retry때phase/opacity/접근초기화. reducedmotion에서는신규section/wave숨김 및beat0,캐릭터기존접근안내유지. 매frame DOM생성/레이아웃측정/새canvas/filter없음,9mini및27section참조캐시. 색상별기존원색재사용.
+- verify-b-dynamic-space.js:27단면/9파동,빈칸전진속도.13,실제박자밝기/감쇠,접근칸만2배이상가속/다른칸접근0,성공파동해당칸1개및score301,pause고정/resume/stopcleanup/reducedmotion 통과. 기존 verify-b-clock 점수/CLEAR/MISS10/취소·오디오정리/경계,verify-b-progress카운트인/50·75·100/pause/reset,verify-b-wire-lights9위상/순환/안전영역및pause회귀통과. JS구문/SW shell/diff공백검사통과. review/dynamic-space-v1076.png 렌더확인.
+- 로컬V1076G,공개V1073G(f3420f4). V1074배치·V1075진행바도아직미배포. 커밋/푸시/배포없음. 다음에이전트필수:수정사전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존/임의수정금지.
+
+## 2026-10-14 / V 1077 G — 강화 누름 / 배포 승인
+- 사용자 "진행해보세요" 승인:하부회로6%축소(.94),2CSSpx하강,70ms진입. 손뗄때현재transform에서1.01확대후기본복원160ms. 연타시이전rebound취소,중복pointerup발사방지.9칸rebound참조관리,releaseAll(pause/stop/gameover/retry)에서취소.
+- 움직이는회로빛canvas도같은scale/translate로눌려회로원본과정렬. 중앙물결left49.9088%,topcalc(50.271%+2px)으로새눌림중심동기화. 기존물결/색상/밝기·음악/판정유지. reducedmotion은반동생략/transition없음.
+- verify-glass-nine:9칸각각회로와flow .94검사,원중심.5CSSpx이내,해당칸만기존밝기/글로우/물결,160ms반동1.01keyframe확인,복원후모든좌표동일,pause반동취소 통과. verify-b-dynamic-space27단면/beat/가속/파동/score/pause/reducedmotion회귀통과. JS구문/SW shell/diff공백통과.
+- 사용자 "배포하세요"로V1074배치·안전영역/V1075진행바/V1076동적공간/V1077누름까지커밋/푸시/배포승인. 배포전localHEAD와remote master f3420f4738bc423b22a9c1baf452bc3b46d73cb6동일확인. 승인파일만선택,원본미추적자료보존. 배포성공은Pages/공개검증후별도기록.
+- 다음에이전트필수:수정사전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존/임의변경금지.

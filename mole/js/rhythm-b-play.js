@@ -5,13 +5,18 @@
  function create(opts) {
   const board=opts.board, rules=opts.rules, hud=opts.root;
   let state=null, context=null, sources=[], melodyGain=null, frame=0, generation=0;
+  const progress=document.createElement('div');progress.className='rb-song-progress';progress.setAttribute('role','progressbar');progress.setAttribute('aria-label','곡 진행도');progress.setAttribute('aria-valuemin','0');progress.setAttribute('aria-valuemax','100');progress.setAttribute('aria-valuenow','0');
+  const progressFill=document.createElement('span');progressFill.className='rb-song-progress-fill';progress.appendChild(progressFill);board.appendChild(progress);
+  let lastProgress=-1,lastPercent=-1;
+  function updateProgress(value){const v=Math.round(Math.max(0,Math.min(1,value))*1000);if(v!==lastProgress){progressFill.style.transform='scaleX('+(v/1000)+')';lastProgress=v;}const pct=Math.floor(v/10);if(pct!==lastPercent){progress.setAttribute('aria-valuenow',String(pct));lastPercent=pct;}}
+  updateProgress(0);
   const rings=[];
   const effects=new Set(),pangAnimations=Array(9).fill(null);
   let startAnimation=null;
   const colors=['#086aff','#ff1529','#ffc400','#05e52e','#a500ff','#ff0099','#ff7900','#00cfff','#a65121'];
   const outlineDefs=document.createElementNS('http://www.w3.org/2000/svg','svg');outlineDefs.setAttribute('width','0');outlineDefs.setAttribute('height','0');outlineDefs.style.position='absolute';outlineDefs.setAttribute('aria-hidden','true');
   outlineDefs.innerHTML='<defs>'+colors.map((color,i)=>'<filter id="rb-character-outline-'+i+'" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB"><feMorphology in="SourceAlpha" operator="dilate" radius="2.5" result="wide"/><feComposite in="wide" in2="SourceAlpha" operator="out" result="edge"/><feFlood flood-color="'+color+'"/><feComposite in2="edge" operator="in" result="line"/><feGaussianBlur in="line" stdDeviation="2" result="glow"/><feMerge><feMergeNode in="glow"/><feMergeNode in="line"/></feMerge></filter>').join('')+'</defs>';board.appendChild(outlineDefs);
-  const holoLights=colors.map((color,lane)=>{const el=document.createElement('div');el.className='rb-holo-light';el.setAttribute('aria-hidden','true');el.style.cssText='left:'+((24+(lane%3)*300)/952*100)+'%;top:'+((24+Math.floor(lane/3)*300)/2078*100)+'%;width:'+(304/952*100)+'%;height:'+(304/2078*100)+'%;--holo-color:'+color;board.appendChild(el);return el;});
+  const holoLights=colors.map((color,lane)=>{const el=document.createElement('div');el.className='rb-holo-light';el.setAttribute('aria-hidden','true');el.style.cssText='left:'+((28+(lane%3)*300)/952*100)+'%;top:'+((28+Math.floor(lane/3)*300)/2078*100)+'%;width:'+(296/952*100)+'%;height:'+(296/2078*100)+'%;--holo-color:'+color;board.appendChild(el);return el;});
   function darkenLane(lane){holoLights[lane].style.opacity='0';}
   function clearLights(){holoLights.forEach((_,i)=>darkenLane(i));}
   const pangs=colors.map((_,lane)=>{const el=document.createElement('span');el.className='rb-pang';el.textContent='PANG!';el.hidden=true;el.setAttribute('aria-hidden','true');el.style.left=((176+(lane%3)*300)/952*100)+'%';el.style.top=((176+Math.floor(lane/3)*300)/2078*100)+'%';board.appendChild(el);return el;});
@@ -36,6 +41,7 @@
   function successEffect(n,t){
    n.el.hidden=false;placeNote(n,(t-n.spawnTime)/rules.diffs[state.diff].travel);
    n.ring.hidden=true;n.el.classList.add('is-hit-out');
+   const wave=spaceWaves[n.lane];if(wave&&!spaceReduced.matches){if(waveAnimations[n.lane])waveAnimations[n.lane].cancel();waveAnimations[n.lane]=animateEffect(wave,[{transform:'scale(.08)',opacity:0,offset:0},{transform:'scale(.3)',opacity:.9,offset:.2},{transform:'scale(1)',opacity:0,offset:1}],420);}
    const reduced=root.matchMedia('(prefers-reduced-motion: reduce)').matches,angle=Math.random()*Math.PI*2;
    const flyX=Math.cos(angle)*1500,flyY=Math.sin(angle)*1200,spin=Math.random()<.5?-1:1;
    animateEffect(n.character,reduced?[{opacity:1},{opacity:0}]:[
@@ -51,11 +57,29 @@
   }
   const status=document.createElement('div');status.className='rb-game-status';
   status.innerHTML=['MISS','GOOD','GREAT','PERFECT'].map(g=>'<div class="rb-total rb-total--'+g.toLowerCase()+'"><small>'+g+'</small><b data-rb-total="'+g+'">'+(g==='MISS'?'0 / 10':'0')+'</b></div>').join('');
-  status.style.cssText='left:5.35%;top:95.57%;width:89.3%;height:1.925%';board.appendChild(status);
+  status.style.cssText='left:5.35%;top:50.433%;width:89.3%;height:2.599%';board.appendChild(status);
   const error= document.createElement('div');error.className='rb-load-error';error.hidden=true;error.setAttribute('role','alert');error.textContent='게임 자료를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.';board.appendChild(error);
   const scoreEl=hud.querySelector('[data-rb-score]'),comboEl=hud.querySelector('[data-rb-combo]'),judgeEl=hud.querySelector('[data-rb-judge]');
   const totalEls=Object.fromEntries(['MISS','GOOD','GREAT','PERFECT'].map(g=>[g,hud.querySelector('[data-rb-total="'+g+'"]')]));
   const foci=Array.from(hud.querySelectorAll('.rb-mini'),mini=>({x:parseFloat(mini.style.getPropertyValue('--depth-x'))/100,y:parseFloat(mini.style.getPropertyValue('--depth-y'))/100}));
+  const spaceMinis=Array.from(hud.querySelectorAll('.rb-mini'));
+  const spaceSections=spaceMinis.map(m=>Array.from(m.querySelectorAll('.rb-space-section')));
+  const spaceWaves=spaceMinis.map(m=>m.querySelector('.rb-space-hit-wave'));
+  const spacePhases=Array.from({length:9},(_,i)=>i*.071),spaceApproach=Array(9).fill(0),waveAnimations=Array(9).fill(null);
+  const spaceReduced=root.matchMedia('(prefers-reduced-motion: reduce)');let spaceLastTime=null;
+  function resetSpace(){spaceLastTime=null;spacePhases.forEach((_,i)=>{spacePhases[i]=i*.071;spaceApproach[i]=0;});spaceMinis.forEach(m=>{m.style.removeProperty('--space-beat');m.style.removeProperty('--space-approach');});spaceSections.flat().forEach(el=>{el.style.opacity='0';el.removeAttribute('transform');});waveAnimations.fill(null);}
+  function updateSpace(t){
+   const dt=spaceLastTime===null?0:Math.max(0,t-spaceLastTime);spaceLastTime=t;spaceApproach.fill(0);
+   for(const n of state.notes)if(n.state==='pending'&&t>=n.spawnTime&&t<=n.targetTime+rules.diffs[state.diff].judge.goodMs/1000)spaceApproach[n.lane]=Math.max(spaceApproach[n.lane],Math.max(0,Math.min(1,(t-n.spawnTime)/rules.diffs[state.diff].travel)));
+   const first=state.firstBeat,period=60/state.bpm,phase=((t-first)%period+period)%period;
+   const beat=t>=first?Math.exp(-phase/.09):0;
+   spaceMinis.forEach((mini,lane)=>{
+    mini.style.setProperty('--space-beat',String(spaceReduced.matches?0:beat));mini.style.setProperty('--space-approach',String(spaceApproach[lane]));
+    if(spaceReduced.matches){spaceSections[lane].forEach(el=>el.style.opacity='0');return;}
+    spacePhases[lane]=(spacePhases[lane]+dt*(.13+.22*spaceApproach[lane]))%1;
+    spaceSections[lane].forEach((el,depth)=>{const p=(spacePhases[lane]+depth/3)%1,scale=.035+.965*Math.pow(p,1.45),fx=Number(el.dataset.focusX),fy=Number(el.dataset.focusY);el.setAttribute('transform','matrix('+scale+' 0 0 '+scale+' '+(fx*(1-scale))+' '+(fy*(1-scale))+')');el.style.opacity=String(Math.sin(Math.PI*p)*(.38+.3*spaceApproach[lane]));});
+   });
+  }
   function time(){return state&&context?context.currentTime-state.t0:0;}
   function label(text,grade) {
    const el=judgeEl;el.textContent=text;
@@ -72,9 +96,10 @@
   function vibrate(ms){try{if(root.FGH&&root.FGH.Settings&&root.FGH.Settings.vibrate)root.FGH.Settings.vibrate(ms);else if(root.navigator&&root.navigator.vibrate)root.navigator.vibrate(ms);}catch(e){}}
   function stopAudio(){sources.forEach(s=>{try{s.stop();}catch(e){}});sources=[];melodyGain=null;}
   function clearRings(){rings.forEach(el=>el.remove());rings.length=0;}
-  function stop(){generation++;cancelAnimationFrame(frame);stopAudio();clearEffects();clearRings();clearLights();state=null;error.hidden=true;}
+  function stop(){generation++;cancelAnimationFrame(frame);stopAudio();clearEffects();clearRings();clearLights();resetSpace();updateProgress(0);state=null;error.hidden=true;}
   function finish(clear){
    if(!state||state.ended)return;
+   if(clear)updateProgress(1);
    state.ended=true;clearLights();cancelAnimationFrame(frame);stopAudio();clearEffects();rings.forEach(el=>el.hidden=true);
    opts.onFinish({score:state.score,combo:state.combo,maxCombo:state.maxCombo,cnt:{...state.cnt},diff:state.diff},clear);
   }
@@ -101,7 +126,7 @@
   function placeNote(n,p){
    const focusX=foci[n.lane].x,focusY=foci[n.lane].y;
    const u=Math.pow(Math.max(0,Math.min(1,p)),1.55),scale=.075+.925*u;
-   const dx=(focusX-.5)*304*(1-u),dy=(focusY-.5)*304*(1-u);
+   const dx=(focusX-.5)*296*(1-u),dy=(focusY-.5)*296*(1-u);
    if(n.lastU!==u){
     n.el.style.transform='translate('+(dx/300*100)+'%,'+(dy/300*100)+'%) scale('+scale+')';
     n.el.style.opacity=String(.3+.7*u);
@@ -118,10 +143,12 @@
    if(!state||state.ended)return;
    if(state.paused){frame=requestAnimationFrame(tick);return;}
    const t=time();
+   updateProgress(state.duration>0?t/state.duration:0);
    if(t<0){const stage=Math.max(0,Math.min(2,Math.floor((t+rules.config.countIn+.15)/((rules.config.countIn+.15)/3))));showStart(stage);const count=String(3-stage);if(state.count!==count){state.count=count;label(count);}}
    else if(state.count!=='GO'){state.count='GO';label('GO!');showStart(3);}
    if(t>=.6)startCallout.hidden=true;
    const D=rules.diffs[state.diff];
+   updateSpace(t);
    for(const n of state.notes){
     if(state.ended)break;
     if(n.state!=='pending')continue;
@@ -151,6 +178,7 @@
      el.style.setProperty('--note-color',colors[lane]);board.appendChild(el);rings.push(el);
      return {id,lane,targetTime,spawnTime:targetTime-rules.diffs[diff].travel,state:'pending',el,character,ring};
     });
+    state.bpm=Number(data.song&&data.song.bpm)||rules.config.song.bpm;state.firstBeat=Number.isFinite(data.song&&data.song.firstBeat)?data.song.firstBeat:rules.config.song.firstBeat;
     state.duration=Math.max(data.back.duration,(times[times.length-1]||0)+rules.diffs[diff].judge.goodMs/1000);
     state.t0=context.currentTime+rules.config.countIn+.15;state.loading=false;
     showStart(0);

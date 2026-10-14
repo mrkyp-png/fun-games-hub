@@ -4,9 +4,11 @@
   function create(opts) {
     const board = opts.root.querySelector('.rb-board');
     const buttonXs = [[26, 326], [326, 626], [626, 926]];
-    const buttonYs = [[1056, 1356], [1356, 1656], [1656, 1956]];
+    const buttonYs = [[1136, 1436], [1436, 1736], [1736, 2036]];
     const pressSurfaces = [];
     const pulseAnimations = Array(9).fill(null);
+    const reboundAnimations = Array.from({length:9},()=>[]);
+    let flowSurfaces=[];
     const miniSurfaces = [], shakes = Array(9).fill(null);
     function clearShakes() { shakes.forEach(animation => { if (animation) animation.cancel(); }); shakes.fill(null); }
     function shakeMini(lane) {
@@ -36,7 +38,8 @@
       img.src = 'assets/rhythm-b/circuit-thin.svg';
       // V 1038 G: high-opacity straight body edges, excluding all four protrusions.
       // Source body [64,63,1228,1179] maps to an exact 244x244 square.
-      const scaleX = 244 / 1164, scaleY = 244 / 1116;
+      const body = lower ? 268 : 244;
+      const scaleX = body / 1164, scaleY = body / 1116;
       img.style.width = (1281 * scaleX / 952 * 100) + '%';
       img.style.height = (1228 * scaleY / 2078 * 100) + '%';
       const xBounds = buttonXs[index % 3], yBounds = buttonYs[Math.floor(index / 3)];
@@ -96,12 +99,19 @@
       const surfaces = [hit, color, circuit]; pressSurfaces.push(...surfaces);
       function down() {
         if (!running || paused) return;
+        reboundAnimations[i].forEach(a=>a.cancel());reboundAnimations[i]=[];
         surfaces.forEach(el => el.classList.add('is-pressed'));
+        if(flowSurfaces[i])flowSurfaces[i].classList.add('is-pressed');
         if(pulseAnimations[i]) pulseAnimations[i].cancel();
         pulseAnimations[i]=pulse.animate([{transform:'scale(.08)',opacity:1,offset:0},{transform:'scale(.28)',opacity:1,offset:.18},{transform:'scale(1)',opacity:.65,offset:.7},{transform:'scale(1.35)',opacity:0,offset:1}],{duration:480,easing:'ease-out'});
         if (play) play.press(i);
       }
-      function up() { surfaces.forEach(el => el.classList.remove('is-pressed')); }
+      function up() {
+        if(!hit.classList.contains('is-pressed'))return;
+        const moving=[circuit,flowSurfaces[i]].filter(Boolean),from=moving.map(el=>getComputedStyle(el).transform);
+        surfaces.forEach(el=>el.classList.remove('is-pressed'));if(flowSurfaces[i])flowSurfaces[i].classList.remove('is-pressed');
+        if(!root.matchMedia('(prefers-reduced-motion: reduce)').matches){reboundAnimations[i]=moving.map((el,j)=>el.animate([{transform:from[j],offset:0},{transform:(j===0?'translate(-50%, -50%) ':'')+'scale(1.01)',offset:.65},{transform:j===0?'translate(-50%, -50%) scale(1)':'none',offset:1}],{duration:160,easing:'ease-out'}));}
+      }
       hit.addEventListener('pointerdown', e => {
         if (e.button !== 0) return;
         down(); hit.setPointerCapture(e.pointerId);
@@ -125,7 +135,7 @@
       mini.style.backgroundPosition = (sx / (1536 - sw) * 100) + '% ' + (sy / (1024 - sh) * 100) + '%';
       // V 1030 G: 아래 버튼과 동일한 304 정사각형 한 장만 메탈 아래까지 채운다.
       // 안쪽 실선 기준 축소판/중복 이미지를 추가하지 않는다. 뼈대는 앞 레이어 유지.
-      place(mini, 176 + col * 300, 176 + row * 300, 304);
+      place(mini, 176 + col * 300, 176 + row * 300, 296);
       // V 1068 G: 동일한 벡터 구조를 기존 캐릭터 소실점에 맞춘다.
       const fx=(focusX-sx)/sw*304, fy=(focusY-sy)/sh*304;
       const corners=[[24,4],[280,4],[300,24],[300,280],[280,300],[24,300],[4,280],[4,24]];
@@ -134,6 +144,8 @@
       tunnel.innerHTML='<path d="'+rays+'" fill="none" stroke="currentColor" stroke-width=".9" opacity=".28"/>'+[1,.72,.48,.29,.15].map((scale,depth)=>'<polygon points="'+corners.map(([x,y])=>(fx+(x-fx)*scale)+','+(fy+(y-fy)*scale)).join(' ')+'" fill="none" stroke="currentColor" stroke-width="1" opacity="'+(.55-depth*.09)+'"/>').join('');
       const loop=document.createElementNS(ns,'polygon');loop.classList.add('rb-wire-light');loop.setAttribute('points',corners.map(([x,y])=>(fx+(x-fx)*.72)+','+(fy+(y-fy)*.72)).join(' '));loop.setAttribute('pathLength','100');loop.style.setProperty('--wire-delay',(-i*.73)+'s');tunnel.appendChild(loop);
       const inward=document.createElementNS(ns,'path');inward.classList.add('rb-wire-light','rb-wire-light--inward');const start=corners[(i*3)%8];inward.setAttribute('d','M'+start[0]+','+start[1]+' L'+fx+','+fy);inward.setAttribute('pathLength','100');inward.style.setProperty('--wire-delay',(-i*.91)+'s');tunnel.appendChild(inward);
+      for(let depth=0;depth<3;depth++){const section=document.createElementNS(ns,'polygon');section.classList.add('rb-space-section');section.setAttribute('points',corners.map(p=>p.join(',')).join(' '));section.dataset.focusX=fx;section.dataset.focusY=fy;tunnel.appendChild(section);}
+      const wave=document.createElementNS(ns,'polygon');wave.classList.add('rb-space-hit-wave');wave.setAttribute('points',corners.map(p=>p.join(',')).join(' '));wave.style.transformOrigin=fx+'px '+fy+'px';tunnel.appendChild(wave);
       mini.appendChild(tunnel);
       miniSurfaces.push(mini);
     }
@@ -149,8 +161,9 @@
     pauseButton.innerHTML = '<span class="rb-pause-face" aria-hidden="true">II</span>';
     pauseButton.addEventListener('click', () => opts.onPause());
     place(pauseButton, 876, 991, 86, 86);
-    function releaseAll() { pressSurfaces.forEach(el => el.classList.remove('is-pressed')); clearShakes(); pulseAnimations.forEach(a=>{if(a)a.cancel();}); pulseAnimations.fill(null); }
+    function releaseAll() { pressSurfaces.forEach(el => el.classList.remove('is-pressed')); clearShakes(); pulseAnimations.forEach(a=>{if(a)a.cancel();}); pulseAnimations.fill(null); reboundAnimations.forEach(list=>{list.forEach(a=>a.cancel());list.length=0;}); }
     flowFx = root.MoleGame.RhythmBFlow.create({ board, colors });
+    flowSurfaces=Array.from(board.querySelectorAll('.rb-flow-canvas'));pressSurfaces.push(...flowSurfaces);
     let artReady = null;
     const artImages = [];
     function prepareAssets() {

@@ -3,10 +3,10 @@
  'use strict';
  const MG=root.MoleGame;
  function create(opts){
-  const surfaces=Array.from({length:9},(_,cell)=>{const canvas=document.createElement('canvas');canvas.className='rb-flow-canvas';canvas.dataset.cell=cell;canvas.setAttribute('aria-hidden','true');canvas.style.left=((26+(cell%3)*300)/952*100)+'%';canvas.style.top=((1056+Math.floor(cell/3)*300)/2078*100)+'%';opts.board.appendChild(canvas);return {canvas,ctx:canvas.getContext('2d')};});
+  const surfaces=Array.from({length:9},(_,cell)=>{const canvas=document.createElement('canvas');canvas.className='rb-flow-canvas';canvas.dataset.cell=cell;canvas.setAttribute('aria-hidden','true');canvas.style.left=((26+(cell%3)*300)/952*100)+'%';canvas.style.top=((1136+Math.floor(cell/3)*300)/2078*100)+'%';opts.board.appendChild(canvas);return {canvas,ctx:canvas.getContext('2d')};});
   let ctx;const colors=opts.colors,lightColors=colors.slice();
   const routes=MG.rhythmBCircuitRoutes.map(d=>{
-   const vertices=Array.from(d.matchAll(/(\d+),(\d+)/g),m=>({x:28+(Number(m[1])-64)*244/1164,y:28+(Number(m[2])-63)*244/1116}));
+   const vertices=Array.from(d.matchAll(/(\d+),(\d+)/g),m=>({x:16+(Number(m[1])-64)*268/1164,y:16+(Number(m[2])-63)*268/1116}));
    const distances=[0];for(let i=1;i<vertices.length;i++)distances.push(distances[i-1]+Math.hypot(vertices[i].x-vertices[i-1].x,vertices[i].y-vertices[i-1].y));
    return {vertices,distances,length:distances[distances.length-1]};
   });
@@ -16,7 +16,7 @@
   const observer=new ResizeObserver(()=>{sizeDirty=true;});observer.observe(opts.board);
   root.addEventListener('resize',()=>{sizeDirty=true;});
   function resize(){if(!sizeDirty)return;sizeDirty=false;dpr=Math.min(root.devicePixelRatio||1,2);const n=Math.max(1,Math.round(surfaces[0].canvas.getBoundingClientRect().width*dpr));for(const {canvas} of surfaces){if(canvas.width!==n||canvas.height!==n){canvas.width=n;canvas.height=n;}}ratio=n/300;}
-  function schedule(s,t){const long=Math.random()<.5;s.kind=long?'long':'short';s.route=routes[(long?40:0)+Math.floor(Math.random()*40)];s.reverse=Math.random()<.5;s.tail=(90+Math.random()*90)*244/1164;s.start=t;s.duration=long?1800+Math.random()*900:650+Math.random()*550;s.next=t+s.duration+80+Math.random()*550;}
+  function schedule(s,t){const long=Math.random()<.5;s.kind=long?'long':'short';s.route=routes[(long?40:0)+Math.floor(Math.random()*40)];s.reverse=Math.random()<.5;s.tail=(90+Math.random()*90)*268/1164;s.start=t;s.duration=long?1800+Math.random()*900:650+Math.random()*550;s.next=t+s.duration+80+Math.random()*550;}
   function segment(route,lo,hi){
    if(hi<=lo)return false;let begun=false;ctx.beginPath();
    for(let i=1;i<route.vertices.length;i++){
@@ -39,10 +39,10 @@
     const alpha=p<.15?p/.15:p>.8?(1-p)/.2:1;
     ctx=surfaces[s.cell].ctx;ctx.save();
     // Hard clip in logical cell coordinates: a light cannot paint any other button.
-    ctx.beginPath();ctx.rect(28,28,244,244);ctx.clip();
+    ctx.beginPath();ctx.rect(16,16,268,268);ctx.clip();
     if(segment(s.route,lo,hi)){
      ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=lightColors[s.cell];ctx.shadowColor=lightColors[s.cell];ctx.shadowBlur=3*dpr;ctx.lineWidth=5;ctx.globalAlpha=alpha*.45;ctx.stroke();
-     ctx.shadowBlur=0;ctx.lineWidth=14*244/1164;ctx.globalAlpha=alpha;ctx.stroke();
+     ctx.shadowBlur=0;ctx.lineWidth=14*268/1164;ctx.globalAlpha=alpha;ctx.stroke();
     }ctx.restore();
    }
   }
@@ -51,7 +51,7 @@
    start(){cancelAnimationFrame(frame);running=true;paused=false;sizeDirty=true;origin=performance.now();slots.forEach(s=>{s.route=null;s.next=Math.random()*500;});loop();},
    pause(on){if(!running||on===paused)return;paused=on;if(on){pauseAt=performance.now();cancelAnimationFrame(frame);}else{origin+=performance.now()-pauseAt;loop();}},
    stop(){running=false;paused=false;cancelAnimationFrame(frame);for(const s of surfaces){s.ctx.setTransform(1,0,0,1,0,0);s.ctx.clearRect(0,0,s.canvas.width,s.canvas.height);}},
-   dbg(){return {running,paused,slots:slots.map(s=>({cell:s.cell,kind:s.kind})),renderer:'canvas',canvasCount:surfaces.length,clip:[28,28,244,244]};}
+   dbg(){return {running,paused,slots:slots.map(s=>({cell:s.cell,kind:s.kind})),renderer:'canvas',canvasCount:surfaces.length,clip:[16,16,268,268]};}
   };
  }
  MG.RhythmBFlow={create};
