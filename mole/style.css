@@ -7300,3 +7300,24 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-song-progress::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(90deg,transparent 0 calc(12.5% - 1px),#0008 calc(12.5% - 1px) 12.5%); }
 .rb-song-progress-fill { position: relative; background: linear-gradient(90deg,#086aff,#00cfff 70%,#7df5ff); }
 .rb-song-progress-fill::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 4px; background: #c5ffff; box-shadow: 0 0 5px #7df5ff; }
+
+/* V 1082 G: 전체 화면 이중 진행선, 10콤보마다 상하 동시 분위기 전환. */
+.rb-screen { padding-left: max(16px,env(safe-area-inset-left,0px)); padding-right: max(16px,env(safe-area-inset-right,0px)); }
+.rb-song-progress { inset: 0; width: 100%; height: 100%; border: 0; border-radius: 0; background: none; box-shadow: none; overflow: visible; }
+.rb-song-progress::after { content: none; }
+.rb-song-progress svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.rb-perimeter-track, .rb-perimeter-fill { fill: none; stroke: var(--combo-accent,#00cfff); stroke-width: 1.5; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.rb-perimeter-track { opacity: .2; }
+.rb-perimeter-fill { stroke-dasharray: 100 100; stroke-dashoffset: 100; stroke-linecap: round; opacity: .85; }
+.rb-combo-atmosphere { position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0; transition: opacity 500ms ease; }
+.rb-combo-region, .rb-combo-sweep { position: absolute; left: 1%; width: 98%; pointer-events: none; }
+.rb-combo-region--upper, .rb-combo-sweep--upper { top: 1.35%; height: 43.1%; }
+.rb-combo-region--lower, .rb-combo-sweep--lower { top: 54.67%; height: 43.31%; }
+.rb-combo-region { background: radial-gradient(ellipse at center,var(--combo-color),transparent 78%); }
+.rb-combo-sweep { z-index: 3; overflow: hidden; contain: paint; }
+.rb-combo-sweep span { position: absolute; inset: 0 0 auto; height: 12%; opacity: 0; background: linear-gradient(transparent,var(--combo-color),transparent); }
+.rb-zone-divider { background: linear-gradient(90deg,transparent,var(--combo-accent,#00cfff) 50%,transparent); opacity: .6; }
+.rb-board[data-combo-stage]:not([data-combo-stage="0"]) .rb-zone-divider { box-shadow: 0 0 7px var(--combo-accent); }
+@media (prefers-reduced-motion: reduce) { .rb-combo-atmosphere { transition: none; } .rb-combo-sweep { display: none; } }
+
+.rb-combo-energized .rb-perimeter-fill { stroke-width: 2; filter: drop-shadow(0 0 2px var(--combo-accent)); }

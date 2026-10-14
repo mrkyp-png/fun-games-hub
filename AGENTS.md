@@ -577,3 +577,21 @@
 ## 2026-10-14 / V 1081 G — 배포 승인
 - 사용자 "배포"로V1080캐릭터본체+칸색글로우/V1081네온2구분선·안쪽진행바 커밋·푸시·배포승인. localHEAD/remote master f64c415acb8235d26424ea6e5c6a92a323aecef8동일확인. 기존/Claude변경보존,명시승인파일만선택.
 - 직전9필터본체/구역선비중첩/진행바음악시계·pause/reset·SWshell/diff공백검증통과. 실제배포성공은push/Pages/공개파일검증후기록. 다음에이전트도수정사전허락/배포별도허락/G·C연속번호/기존변경보존준수.
+
+## 2026-10-14 / V 1081 G — Pages 재시도 및 반영
+- 27029e5aca83428f9a18a4ffed758f3f85c8d739 origin/master push완료. 최초legacy Pages build12:58UTC에서오래building/Actions실행미생성. 공식상태API에는장애없음. 기존gitcredential을메모리에서만사용해Pages설정(master루트)/build상태확인,코드변경없이POST pages/builds재요청queued접수(13:05UTC). 비밀값출력/파일저장없음.
+- 재시도Actions38568885588 completed/success,동일commit확인. 공개9파일SHA256로컬일치확인. 캐릭터본체+glow/3구역구분선/안쪽진행바 V1081 G 반영. 최초상태errored가보였으나후속동일커밋실행성공으로해소.
+- 사용자 성능질문에는시각적으로정돈됐지만실제실행성능개선은측정하지않았다고설명. 새동적효과가늘어실기프레임/입력검증없이가벼워졌다고단정금지.
+- 공개 verify-b-live-v1081.js3viewport 중심·치수/개별입력/pause·resume·quit/pageerror없음 통과. URL https://mrkyp-png.github.io/fun-games-hub/mole/index.html?v=1081 . 이완료기록은로컬만추가,추가커밋/재배포하지않음. 다음신규V1082G(최신G/C재확인). 다음에이전트필수:수정전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존/임의변경금지.
+
+## 2026-10-14 / V 1082 G — 이중 외곽 진행바 / 10콤보 테마·중앙 확산 (미배포)
+- 사용자10·20·30·40·50…매10콤보단계 요청,중앙네온선에서상하로싹퍼지며새색이남는전환안 "오케이". 진행바는상부하부각각아닌화면전체감싸는두줄,카메라겹쳐도됨/안쪽콘텐츠와밀착하지말것/진행승인.
+- 상단단독바제거,root HUD전체에SVG이중외곽progress. 화면상단중앙에서시작하는2경로가반대방향으로돌며같은곡진행률만큼strokeDashoffset100→0. 9원형포털/기존음악시계·pause·retry규칙유지. 화면가장자리진행선은카메라안전여백제약없음,게임판안전상단은유지. 좌우padding최소16CSSpx로콘텐츠와여백확보.
+- floor(combo/10)단계에청록/파랑/보라/분홍/금빛5색순환(60청록…). 상하같은5개분위기레이어각2영역,500ms opacity crossfade. 고유칸색/회로·캐릭터색불변. 강도 .14+.015*min(stage,5)로상한,전진속도4%/단계가산최대20%.50이상진행외곽강조. 중앙2선새색응축500ms/상부위로·하부아래로얇은밴드500ms,전면흰flash없음.
+- MISS콤보0에서500ms기본복귀,stop/retry즉시초기화. sweeps는기존effects집합으로pause/resume/finish정리,취소시effects에서즉시삭제. 점검중취소된idle애니메이션을pause()가되살리는경쟁발견,공용pause루프에서idle제외로해결. reducedmotion은새sweep없음/배경transition없음.
+- verify-b-combo-perimeter.js 실제60회PERFECT로10/20/30/40/50/60색순환/상하공통theme/2파동/고유칸색불변/pause/MISS500ms복귀/stop잔여animation0검사통과. progress음악50%시2경로offset50/카운트인0/75·100/pause/CLEAR/reset통과. dynamicspace/clock/MISS노트단위/기존순환·안전영역회귀통과. JS구문/SWshell/diff공백통과. review/combo-gold-v1082.png50콤보실제렌더및review/combo-perimeter-v1082.png기본외곽확인.
+- 로컬V1082G,공개V1081G(27029e5). 커밋/푸시/배포없음. 다음에이전트필수:수정사전허락/배포별도허락/G·C연속번호/Claude·사용자기존변경보존/임의변경금지.
+
+## 2026-10-14 / V 1082 G — 배포 승인
+- 사용자 "배포"로이중외곽진행선/10콤보단계상하분위기·중앙확산 커밋·푸시·배포승인. localHEAD/remote master27029e5aca83428f9a18a4ffed758f3f85c8d739동일확인. 승인파일만명시선택,Claude·사용자·미추적기존자료보존.
+- 직전60콤보단계·상하같은색·파동·pause·MISS500ms복귀/진행도2선시계/stop초기화·idle애니메이션재생방지/SWshell/diff공백검증통과. 실제성공은push/Pages/공개검증후기록. 다음에이전트도수정전허락/배포별도허락/G·C연속번호/기존변경보존준수.

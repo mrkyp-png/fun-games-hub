@@ -6,10 +6,21 @@
   const board=opts.board, rules=opts.rules, hud=opts.root;
   let state=null, context=null, sources=[], melodyGain=null, frame=0, generation=0;
   const progress=document.createElement('div');progress.className='rb-song-progress';progress.setAttribute('role','progressbar');progress.setAttribute('aria-label','곡 진행도');progress.setAttribute('aria-valuemin','0');progress.setAttribute('aria-valuemax','100');progress.setAttribute('aria-valuenow','0');
-  const progressFill=document.createElement('span');progressFill.className='rb-song-progress-fill';progress.appendChild(progressFill);board.appendChild(progress);
-  let lastProgress=-1,lastPercent=-1;
-  function updateProgress(value){const v=Math.round(Math.max(0,Math.min(1,value))*1000);if(v!==lastProgress){progressFill.style.transform='scaleX('+(v/1000)+')';lastProgress=v;}const pct=Math.floor(v/10);if(pct!==lastPercent){progress.setAttribute('aria-valuenow',String(pct));lastPercent=pct;}}
+  const perimeter=document.createElementNS('http://www.w3.org/2000/svg','svg');perimeter.setAttribute('viewBox','0 0 952 2078');perimeter.setAttribute('preserveAspectRatio','none');perimeter.setAttribute('aria-hidden','true');
+  const perimeterRoutes=['M476 12 H940 V2066 H12 V12 H476','M476 22 H22 V2056 H930 V22 H476'];
+  perimeter.innerHTML=perimeterRoutes.map(d=>'<path class="rb-perimeter-track" d="'+d+'"/><path class="rb-perimeter-fill" pathLength="100" d="'+d+'"/>').join('');progress.appendChild(perimeter);hud.appendChild(progress);
+  const progressLines=Array.from(perimeter.querySelectorAll('.rb-perimeter-fill'));let lastProgress=-1,lastPercent=-1;
+  function updateProgress(value){const v=Math.round(Math.max(0,Math.min(1,value))*1000);if(v!==lastProgress){progressLines.forEach(el=>el.style.strokeDashoffset=String(100-v/10));lastProgress=v;}const pct=Math.floor(v/10);if(pct!==lastPercent){progress.setAttribute('aria-valuenow',String(pct));lastPercent=pct;}}
   updateProgress(0);
+  const comboPalette=['#00cfff','#287aff','#ad50ff','#ff329e','#ffce38'];
+  const comboLayers=comboPalette.map((color,stage)=>{const group=document.createElement('div');group.className='rb-combo-atmosphere';group.style.setProperty('--combo-color',color);group.dataset.theme=stage;group.innerHTML='<span class="rb-combo-region rb-combo-region--upper"></span><span class="rb-combo-region rb-combo-region--lower"></span>';board.appendChild(group);return group;});
+  const comboSweeps=['upper','lower'].map(side=>{const el=document.createElement('div');el.className='rb-combo-sweep rb-combo-sweep--'+side;el.innerHTML='<span></span>';board.appendChild(el);return el;});
+  let comboStage=0,comboSweepAnimations=[];
+  function updateCombo(combo,immediate=false){const stage=Math.floor(combo/10);if(stage===comboStage&&!immediate)return;comboStage=stage;board.dataset.comboStage=String(stage);const color=stage?comboPalette[(stage-1)%5]:'#00cfff';board.style.setProperty('--combo-accent',color);hud.style.setProperty('--combo-accent',color);hud.classList.toggle('rb-combo-energized',stage>=5);
+   comboLayers.forEach((el,i)=>{el.style.transitionDuration=immediate?'0ms':'500ms';el.style.opacity=stage&&i===(stage-1)%5?String(.14+.015*Math.min(stage,5)):'0';});
+   comboSweepAnimations.forEach(a=>{effects.delete(a);a.cancel();});comboSweepAnimations=[];
+   if(stage&&!immediate){const reduced=root.matchMedia('(prefers-reduced-motion: reduce)').matches;if(!reduced){board.querySelectorAll('.rb-zone-divider').forEach(el=>comboSweepAnimations.push(animateEffect(el,[{opacity:.6},{opacity:1,offset:.15},{opacity:.6}],500)));}if(!reduced)comboSweeps.forEach((el,i)=>{el.style.setProperty('--combo-color',color);comboSweepAnimations.push(animateEffect(el.firstElementChild,[{transform:'translateY('+(i?'-100%':'800%')+')',opacity:0,offset:0},{opacity:.65,offset:.12},{transform:'translateY('+(i?'800%':'-100%')+')',opacity:0,offset:1}],500));});}
+  }
   const rings=[];
   const effects=new Set(),pangAnimations=Array(9).fill(null);
   let startAnimation=null;
@@ -76,7 +87,7 @@
    spaceMinis.forEach((mini,lane)=>{
     mini.style.setProperty('--space-beat',String(spaceReduced.matches?0:beat));mini.style.setProperty('--space-approach',String(spaceApproach[lane]));
     if(spaceReduced.matches){spaceSections[lane].forEach(el=>el.style.opacity='0');return;}
-    spacePhases[lane]=(spacePhases[lane]+dt*(.13+.22*spaceApproach[lane]))%1;
+    spacePhases[lane]=(spacePhases[lane]+dt*(.13+.22*spaceApproach[lane])*(1+Math.min(comboStage,5)*.04))%1;
     spaceSections[lane].forEach((el,depth)=>{const p=(spacePhases[lane]+depth/3)%1,scale=.035+.965*Math.pow(p,1.45),fx=Number(el.dataset.focusX),fy=Number(el.dataset.focusY);el.setAttribute('transform','matrix('+scale+' 0 0 '+scale+' '+(fx*(1-scale))+' '+(fy*(1-scale))+')');el.style.opacity=String(Math.sin(Math.PI*p)*(.38+.3*spaceApproach[lane]));});
    });
   }
@@ -89,14 +100,14 @@
   }
   function updateHud(){
    scoreEl.textContent=String(state.score).padStart(6,'0');
-   comboEl.textContent=state.combo;
+   comboEl.textContent=state.combo;updateCombo(state.combo);
    for(const g of ['MISS','GOOD','GREAT','PERFECT'])totalEls[g].textContent=g==='MISS'?state.cnt.MISS+' / 10':state.cnt[g];
   }
   function muteMelody(on){if(melodyGain&&context)melodyGain.gain.setTargetAtTime(on?1:0,context.currentTime,on?.01:.03);}
   function vibrate(ms){try{if(root.FGH&&root.FGH.Settings&&root.FGH.Settings.vibrate)root.FGH.Settings.vibrate(ms);else if(root.navigator&&root.navigator.vibrate)root.navigator.vibrate(ms);}catch(e){}}
   function stopAudio(){sources.forEach(s=>{try{s.stop();}catch(e){}});sources=[];melodyGain=null;}
   function clearRings(){rings.forEach(el=>el.remove());rings.length=0;}
-  function stop(){generation++;cancelAnimationFrame(frame);stopAudio();clearEffects();clearRings();clearLights();resetSpace();updateProgress(0);state=null;error.hidden=true;}
+  function stop(){generation++;cancelAnimationFrame(frame);stopAudio();clearEffects();clearRings();clearLights();resetSpace();updateProgress(0);updateCombo(0,true);state=null;error.hidden=true;}
   function finish(clear){
    if(!state||state.ended)return;
    if(clear)updateProgress(1);
@@ -188,7 +199,7 @@
     frame=requestAnimationFrame(tick);return true;
    }catch(e){if(token!==generation)return false;state.loading=false;state.ended=true;state.error=String(e.message||e);label('ERROR');error.hidden=false;stopAudio();return false;}
   }
-  function pause(on){if(!state||state.ended)return;state.paused=on;effects.forEach(a=>on?a.pause():a.play());if(context&&!state.loading){if(on)context.suspend();else context.resume();}}
+  function pause(on){if(!state||state.ended)return;state.paused=on;effects.forEach(a=>{if(a.playState!=='idle'){if(on)a.pause();else a.play();}});if(context&&!state.loading){if(on)context.suspend();else context.resume();}}
   return {start,stop,pause,press,dbg:()=>state?{t:time(),diff:state.diff,loading:state.loading,paused:state.paused,ended:state.ended,error:state.error,score:state.score,combo:state.combo,maxCombo:state.maxCombo,cnt:{...state.cnt},notes:state.notes.map(n=>({id:n.id,lane:n.lane,targetTime:n.targetTime,spawnTime:n.spawnTime,state:n.state}))}:null};
  }
  MG.RhythmBPlay={create};
