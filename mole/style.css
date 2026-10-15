@@ -7434,7 +7434,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* V 1113 G: an opaque B backdrop stays fixed during board-only entry. */
 #rhythm-screen.is-type-b { background:#000; }
 /* V 1114 G: finish the song by filling the gap, in a separate soft white. */
-.rb-perimeter-band { fill:none; stroke:#d9f5ff; stroke-width:10; stroke-linejoin:round; stroke-linecap:butt; stroke-dasharray:100 100; stroke-dashoffset:100; opacity:.28; }
+.rb-perimeter-band { fill:none; stroke:#ffb800; stroke-width:10; stroke-linejoin:round; stroke-linecap:butt; stroke-dasharray:100 100; stroke-dashoffset:100; opacity:.8; }
 /* V 1115 G: grade-colored judgement bursts rise beyond the status panel. */
 .rb-status--judge { z-index:12; overflow:visible; --judge-peak:1.7; --judge-rise:-18px; }
 .rb-status--judge b { color:inherit; transform-origin:50% 100%; }
@@ -7445,3 +7445,21 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-status--judge.is-judging b { animation:rb-judge-pop 320ms ease-out; }
 @keyframes rb-judge-pop { 0% { opacity:.75; transform:translateY(0) scale(1); } 22%,48% { opacity:1; transform:translateY(var(--judge-rise)) scale(var(--judge-peak)); } 100% { opacity:1; transform:translateY(0) scale(1); } }
 @media (prefers-reduced-motion:reduce) { .rb-status--judge.is-judging b { animation:none; } }
+/* V 1116 G: fixed colored sidewalls, moving bevelled circuit caps. */
+.rb-button-base,.rb-button-cap { position:absolute; pointer-events:none; }
+.rb-button-base { z-index:0; }
+.rb-button-cap { z-index:1; transition:transform 70ms ease-out; }
+.rb-circuit--glass { z-index:2; opacity:.33; }
+.rb-button-cap.is-pressed { transform:translateY(4px) scale(.99); }
+.rb-circuit--glass.is-pressed { transform:translate(-50%,-50%) translateY(4px) scale(.99); }
+.rb-circuit-reflection.is-pressed,.rb-button-lens.is-pressed { transform:translate(-50%,-50%) translateY(4px) scale(.99); }
+.rb-flow-canvas.is-pressed { transform:translateY(4px) scale(.99); }
+@media(prefers-reduced-motion:reduce) { .rb-button-cap { transition:none; } }
+/* V 1118 G: a subtle, stationary floor spill only while pressing. */
+.rb-button-floor-press { position:absolute; z-index:0; pointer-events:none; opacity:0; transition:opacity 70ms ease-out; }
+.rb-button-floor-press.is-pressed { opacity:.65; }
+/* V 1122 G: POWER UP style growth/fade, with a separate right-hand combo lane. */
+.rb-power-word { position:absolute; z-index:20; pointer-events:none; white-space:nowrap; font-family:'Dongle','Segoe UI','Malgun Gothic',sans-serif; font-weight:800; line-height:1; -webkit-text-stroke:1px #000; paint-order:stroke fill; text-shadow:0 0 4px currentColor; }
+.rb-power-word[hidden] { display:none; }
+.rb-power-word--perfect { left:50%; top:47.7%; transform-origin:center; }
+.rb-power-word--combo { left:94%; top:47.7%; transform-origin:100% 100%; }

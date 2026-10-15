@@ -98,7 +98,10 @@
       circuit.style.setProperty('--button-color', colors[i]);
       const reflection=document.createElement('div');reflection.className='rb-circuit-reflection';reflection.setAttribute('aria-hidden','true');reflection.style.cssText=circuit.style.cssText;reflection.style.setProperty('--button-color',colors[i]);reflection.innerHTML='<span class="rb-circuit-outward"></span>';board.appendChild(reflection);
       const lens=document.createElement('div');lens.className='rb-button-lens';lens.setAttribute('aria-hidden','true');lens.style.cssText=circuit.style.cssText;lens.style.setProperty('--glass-color',colors[i]);lens.style.setProperty('--glass-image','url("assets/rhythm-b/glass-lower-v1109/lower-'+i+'.png")');lens.innerHTML='<span class="rb-glass-dome"><span class="rb-glass-spin"></span></span>';board.appendChild(lens);
-      const surfaces = [hit, color, circuit, reflection, lens]; pressSurfaces.push(...surfaces);
+      const floor=document.createElement('img');floor.className='rb-button-floor-press';floor.alt='';floor.src='assets/rhythm-b/button-base-v1118/press-'+i+'.svg';place(floor,buttonCx,buttonCy+16,296,320);
+      const base=document.createElement('img');base.className='rb-button-base';base.alt='';base.src='assets/rhythm-b/button-base-v1118/base-'+i+'.svg';place(base,buttonCx,buttonCy+16,296,320);
+      const cap=document.createElement('img');cap.className='rb-button-cap';cap.alt='';cap.src='assets/rhythm-b/button-face-v1120/face-'+i+'.svg';place(cap,buttonCx,buttonCy,268);
+      const surfaces = [hit, color, circuit, reflection, lens, cap, floor]; pressSurfaces.push(...surfaces);
       function down() {
         if (!running || paused) return;
         reboundAnimations[i].forEach(a=>a.cancel());reboundAnimations[i]=[];
@@ -110,9 +113,9 @@
       }
       function up() {
         if(!hit.classList.contains('is-pressed'))return;
-        const moving=[circuit,reflection,lens,flowSurfaces[i]].filter(Boolean),from=moving.map(el=>getComputedStyle(el).transform);
+        const moving=[circuit,reflection,lens,cap,flowSurfaces[i]].filter(Boolean),from=moving.map(el=>getComputedStyle(el).transform);
         surfaces.forEach(el=>el.classList.remove('is-pressed'));if(flowSurfaces[i])flowSurfaces[i].classList.remove('is-pressed');
-        if(!root.matchMedia('(prefers-reduced-motion: reduce)').matches){reboundAnimations[i]=moving.map((el,j)=>el.animate([{transform:from[j],offset:0},{transform:(el!==flowSurfaces[i]?'translate(-50%, -50%) ':'')+'scale(1.01)',offset:.65},{transform:el!==flowSurfaces[i]?'translate(-50%, -50%) scale(1)':'none',offset:1}],{duration:160,easing:'ease-out'}));}
+        if(!root.matchMedia('(prefers-reduced-motion: reduce)').matches){reboundAnimations[i]=moving.map((el,j)=>el.animate([{transform:from[j],offset:0},{transform:(el!==flowSurfaces[i]&&el!==cap?'translate(-50%, -50%) ':'')+'scale(1.01)',offset:.65},{transform:el!==flowSurfaces[i]&&el!==cap?'translate(-50%, -50%) scale(1)':'none',offset:1}],{duration:160,easing:'ease-out'}));}
       }
       hit.addEventListener('pointerdown', e => {
         if (e.button !== 0) return;

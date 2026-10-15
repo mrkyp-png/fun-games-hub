@@ -10,7 +10,17 @@
   const perimeterRoutes=[12,24].map((inset,index)=>{const left=inset,right=952-inset,top=inset,bottom=2078-inset,r=68-inset;if(index===1)return 'M476 '+top+' H'+(left+r)+' Q'+left+' '+top+' '+left+' '+(top+r)+' V'+(bottom-r)+' Q'+left+' '+bottom+' '+(left+r)+' '+bottom+' H'+(right-r)+' Q'+right+' '+bottom+' '+right+' '+(bottom-r)+' V'+(top+r)+' Q'+right+' '+top+' '+(right-r)+' '+top+' H476';return 'M476 '+top+' H'+(right-r)+' Q'+right+' '+top+' '+right+' '+(top+r)+' V'+(bottom-r)+' Q'+right+' '+bottom+' '+(right-r)+' '+bottom+' H'+(left+r)+' Q'+left+' '+bottom+' '+left+' '+(bottom-r)+' V'+(top+r)+' Q'+left+' '+top+' '+(left+r)+' '+top+' H476';});
   perimeter.innerHTML=perimeterRoutes.map(d=>'<path class="rb-perimeter-track" d="'+d+'"/><path class="rb-perimeter-fill" pathLength="100" d="'+d+'"/>').join('');const band=document.createElementNS('http://www.w3.org/2000/svg','path');band.classList.add('rb-perimeter-band');band.setAttribute('d','M476 18 H884 Q934 18 934 68 V2010 Q934 2060 884 2060 H68 Q18 2060 18 2010 V68 Q18 18 68 18 H476');band.setAttribute('pathLength','100');perimeter.insertBefore(band,perimeter.firstChild);progress.appendChild(perimeter);hud.appendChild(progress);
   const progressLines=Array.from(perimeter.querySelectorAll('.rb-perimeter-fill'));let lastProgress=-1,lastPercent=-1;
-  function updateProgress(value){const v=Math.round(Math.max(0,Math.min(1,value))*1000);if(v!==lastProgress){const outlines=Math.min(1,v/1000*1.5),gap=Math.max(0,Math.min(1,(v/1000-2/3)*3));progressLines.forEach(el=>el.style.strokeDashoffset=String(100-outlines*100));band.style.strokeDashoffset=String(100-gap*100);lastProgress=v;}const pct=Math.floor(v/10);if(pct!==lastPercent){progress.setAttribute('aria-valuenow',String(pct));lastPercent=pct;}}
+  function updateProgress(value){
+   const ratio=Math.max(0,Math.min(1,value)),outlineEnd=2/3;
+   if(ratio!==lastProgress){
+    const outlines=Math.min(1,ratio/outlineEnd),complete=outlines===1;
+    progressLines.forEach(el=>el.style.strokeDashoffset=String(100-outlines*100));
+    const gap=complete?Math.max(0,Math.min(1,(ratio-outlineEnd)/(1-outlineEnd))):0;
+    band.style.visibility=complete?'visible':'hidden';band.style.strokeDashoffset=String(100-gap*100);
+    lastProgress=ratio;
+   }
+   const pct=Math.floor(ratio*100);if(pct!==lastPercent){progress.setAttribute('aria-valuenow',String(pct));lastPercent=pct;}
+  }
   updateProgress(0);
   const comboPalette=['#00ffff','#0066ff','#8000ff','#ff00aa','#ffcc00'];
   const comboScreenBackground=document.createElement('div');comboScreenBackground.className='rb-combo-screen-background';hud.appendChild(comboScreenBackground);
@@ -19,7 +29,7 @@
   const comboLayers=comboPalette.map((color,stage)=>{const group=document.createElement('div');group.className='rb-combo-atmosphere';group.style.setProperty('--combo-color',color);group.dataset.theme=stage;group.innerHTML='<span class="rb-combo-region rb-combo-region--upper"></span><span class="rb-combo-region rb-combo-region--lower"></span>';comboBackground.appendChild(group);return group;});
   const comboSweeps=['upper','lower'].map(side=>{const el=document.createElement('div');el.className='rb-combo-sweep rb-combo-sweep--'+side;el.innerHTML='<span></span>';comboBackground.appendChild(el);return el;});
   let comboStage=0,comboSweepAnimations=[],comboPulse=null;
-  function updateCombo(combo,immediate=false){const stage=Math.floor(combo/10);if(stage===comboStage&&!immediate)return;comboStage=stage;if(comboPulse){comboPulse.cancel();comboPulse=null;}if(stage&&!immediate&&combo%10===0&&!root.matchMedia('(prefers-reduced-motion: reduce)').matches)comboPulse=animateEffect(comboEl,[{transform:'scale(1)'},{transform:'scale(1.5)',offset:.3},{transform:'scale(1)'}],240);board.dataset.comboStage=String(stage);const color=stage?comboPalette[(stage-1)%5]:'#00cfff';board.style.setProperty('--combo-accent',color);hud.style.setProperty('--combo-accent',color);hud.classList.toggle('rb-combo-energized',stage>=5);
+  function updateCombo(combo,immediate=false){const stage=Math.floor(combo/10);if(stage===comboStage&&!immediate)return;comboStage=stage;if(comboPulse){comboPulse.cancel();comboPulse=null;}if(stage&&!immediate&&combo%10===0)showPowerWord('combo',String(combo),comboPalette[(stage-1)%5]);board.dataset.comboStage=String(stage);const color=stage?comboPalette[(stage-1)%5]:'#00cfff';board.style.setProperty('--combo-accent',color);hud.style.setProperty('--combo-accent',color);hud.classList.toggle('rb-combo-energized',stage>=5);
    comboLayers.forEach((el,i)=>{el.style.transitionDuration=immediate?'0ms':'500ms';el.style.opacity=stage&&i===(stage-1)%5?'0.05':'0';comboScreenTones[i].style.transitionDuration=immediate?'0ms':'500ms';comboScreenTones[i].style.opacity=el.style.opacity;});
    comboSweepAnimations.forEach(a=>{effects.delete(a);a.cancel();});comboSweepAnimations=[];
    if(stage&&!immediate){const reduced=root.matchMedia('(prefers-reduced-motion: reduce)').matches;if(!reduced){board.querySelectorAll('.rb-zone-divider').forEach(el=>comboSweepAnimations.push(animateEffect(el,[{opacity:.6},{opacity:1,offset:.15},{opacity:.6}],500)));}if(!reduced)comboSweeps.forEach((el,i)=>{el.style.setProperty('--combo-color',color);comboSweepAnimations.push(animateEffect(el.firstElementChild,[{transform:'translateY('+(i?'-100%':'800%')+')',opacity:0,offset:0},{opacity:.65,offset:.12},{transform:'translateY('+(i?'800%':'-100%')+')',opacity:0,offset:1}],500));});}
@@ -38,7 +48,19 @@
   const startCallout=document.createElement('div');startCallout.className='rb-start-callout';startCallout.hidden=true;startCallout.setAttribute('aria-hidden','true');hud.appendChild(startCallout);
   const startShade=document.createElement('div');startShade.className='rb-start-shade';startShade.hidden=true;startShade.setAttribute('aria-hidden','true');hud.appendChild(startShade);
   function animateEffect(el,keyframes,duration,done){const a=el.animate(keyframes,{duration,easing:'ease-out'});effects.add(a);a.onfinish=()=>{effects.delete(a);if(done)done();};a.oncancel=()=>effects.delete(a);return a;}
-  function clearEffects(){for(const a of effects)a.cancel();effects.clear();pangs.forEach(el=>el.hidden=true);pangAnimations.fill(null);startAnimation=null;startCallout.hidden=true;startShade.hidden=true;startShade.style.opacity='0';comboPulse=null;}
+  const powerWords={};const powerAnimations={};
+  for(const kind of ['perfect','combo']){const word=document.createElement('span');word.className='rb-power-word rb-power-word--'+kind;word.hidden=true;word.setAttribute('aria-hidden','true');board.appendChild(word);powerWords[kind]=word;}
+  function showPowerWord(kind,text,color){
+   const word=powerWords[kind];if(powerAnimations[kind])powerAnimations[kind].cancel();
+   word.textContent=text;word.style.color=color;word.hidden=false;
+   word.style.fontSize=(kind==='perfect'?board.clientWidth*.045:board.clientWidth*.036)+'px';
+   const peak=kind==='combo'?Math.min(4.6,board.clientWidth*.19/Math.max(1,word.offsetWidth)):4.6;
+   const position=kind==='combo'?['translate(-100%,-100%)','translate(-100%,calc(-100% - 42px))','translate(-100%,calc(-100% - 64px))']:['translate(-50%,-50%)','translate(-50%,-50%)','translate(-50%,-50%)'];
+   const reduced=root.matchMedia('(prefers-reduced-motion: reduce)').matches;
+   const frames=reduced?[{opacity:.7},{opacity:0}]:[{transform:position[0]+' scale(.05)',opacity:.7,offset:0},{transform:position[1]+' scale('+(peak*3.5/4.6)+')',opacity:.7,offset:.6},{transform:position[2]+' scale('+peak+')',opacity:0,offset:1}];
+   const a=animateEffect(word,frames,1100,()=>{if(powerAnimations[kind]===a){word.hidden=true;powerAnimations[kind]=null;}});powerAnimations[kind]=a;
+  }
+  function clearEffects(){Object.values(powerWords).forEach(e=>e.hidden=true);for(const kind of Object.keys(powerAnimations))powerAnimations[kind]=null;for(const a of effects)a.cancel();effects.clear();pangs.forEach(el=>el.hidden=true);pangAnimations.fill(null);startAnimation=null;startCallout.hidden=true;startShade.hidden=true;startShade.style.opacity='0';comboPulse=null;}
   function showStart(stage){
    if(state.startPhase===stage)return;state.startPhase=stage;
    if(startAnimation)startAnimation.cancel();
@@ -113,7 +135,8 @@
   function label(text,grade) {
    const el=judgeEl;el.textContent=text;
    const parent=el.parentElement;parent.dataset.grade=grade||'';
-   parent.classList.toggle('is-judging',Boolean(grade));
+   parent.classList.toggle('is-judging',Boolean(grade)&&grade!=='PERFECT');
+   if(grade==='PERFECT')showPowerWord('perfect','PERFECT','#ffe542');
    el.getAnimations().forEach(a=>{if(a.animationName==='rb-judge-pop')a.currentTime=0;});
   }
   function updateHud(){
