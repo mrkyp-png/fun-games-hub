@@ -97,7 +97,7 @@
       const circuit = board.querySelectorAll(".rb-circuit--glass")[i];
       circuit.style.setProperty('--button-color', colors[i]);
       const reflection=document.createElement('div');reflection.className='rb-circuit-reflection';reflection.setAttribute('aria-hidden','true');reflection.style.cssText=circuit.style.cssText;reflection.style.setProperty('--button-color',colors[i]);reflection.innerHTML='<span class="rb-circuit-outward"></span>';board.appendChild(reflection);
-      const lens=document.createElement('div');lens.className='rb-button-lens';lens.setAttribute('aria-hidden','true');lens.style.cssText=circuit.style.cssText;lens.style.setProperty('--glass-color',colors[i]);lens.style.setProperty('--glass-image','url("assets/rhythm-b/glass-cache-v1103/lower-'+i+'.png")');lens.innerHTML='<span class="rb-glass-dome"><span class="rb-glass-spin"></span></span>';board.appendChild(lens);
+      const lens=document.createElement('div');lens.className='rb-button-lens';lens.setAttribute('aria-hidden','true');lens.style.cssText=circuit.style.cssText;lens.style.setProperty('--glass-color',colors[i]);lens.style.setProperty('--glass-image','url("assets/rhythm-b/glass-lower-v1109/lower-'+i+'.png")');lens.innerHTML='<span class="rb-glass-dome"><span class="rb-glass-spin"></span></span>';board.appendChild(lens);
       const surfaces = [hit, color, circuit, reflection, lens]; pressSurfaces.push(...surfaces);
       function down() {
         if (!running || paused) return;
@@ -151,7 +151,6 @@
       for(let depth=0;depth<3;depth++){const section=circle('rb-space-section',radius);section.dataset.focusX=fx;section.dataset.focusY=fy;tunnel.appendChild(section);}
       const wave=circle('rb-space-hit-wave',radius);wave.style.transformOrigin=fx+'px '+fy+'px';tunnel.appendChild(wave);
       mini.appendChild(tunnel);
-      const glass=document.createElement('span');glass.className='rb-portal-glass';glass.setAttribute('aria-hidden','true');glass.style.setProperty('--glass-image','url("assets/rhythm-b/glass-cache-v1103/upper-'+i+'.png")');glass.innerHTML='<span class="rb-glass-spin"></span>';mini.appendChild(glass);
       miniSurfaces.push(mini);
     }
     const upperGlow = document.createElement('img'); upperGlow.className = 'rb-upper-glow'; upperGlow.alt = ''; upperGlow.src = 'assets/rhythm-b/upper-uniform-glow.png'; board.appendChild(upperGlow);
@@ -175,7 +174,7 @@
     function prepareAssets() {
       if (artReady) return artReady;
       const urls = new Set(Array.from(board.querySelectorAll('img'), img => img.src));
-      ['mini-user.png', 'pause-options.png', 'character/run-strip.png', ...colors.map((_, i) => 'note-inner-line-' + i + '.png'), ...colors.flatMap((_,i)=>['glass-cache-v1103/upper-'+i+'.png','glass-cache-v1103/lower-'+i+'.png']), 'glass-cache-v1103/reflection.png'].forEach(name => urls.add('assets/rhythm-b/' + name));
+      ['mini-user.png', 'pause-options.png', 'character/run-strip.png', ...colors.map((_, i) => 'note-inner-line-' + i + '.png'), ...colors.map((_,i)=>'glass-lower-v1109/lower-'+i+'.png')].forEach(name => urls.add('assets/rhythm-b/' + name));
       artReady = Promise.all(Array.from(urls, src => new Promise((resolve, reject) => {
         const img = new Image(); artImages.push(img);
         img.onload = () => img.decode().then(resolve, reject);

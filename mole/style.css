@@ -7420,9 +7420,28 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 
 /* V 1103 G: pre-rendered glass; rotate only a cached highlight texture. */
 .rb-portal-glass, .rb-glass-dome { border:0; box-shadow:none; background:transparent var(--glass-image) center/100% 100% no-repeat; }
-.rb-glass-spin { background:transparent url('assets/rhythm-b/glass-cache-v1103/reflection.png') center/100% 100% no-repeat; }
+.rb-glass-spin { background:transparent url('assets/rhythm-b/glass-cache-v1105/reflection.png') center/100% 100% no-repeat; }
 
-/* V 1104 G: slow Earth drift outside the exact outer progress-frame path. */
-.rb-earth-background { position:absolute; inset:0; z-index:-2; pointer-events:none; overflow:hidden; background:#01050d url('assets/rhythm-b/earth-stars-v1104.jpg') top left/100% auto repeat-y; }
-.rb-earth-video { position:absolute; width:110vmin; height:auto; aspect-ratio:940/1672; left:calc(10% - 55vmin); top:calc(10% - 97.829787vmin); object-fit:fill; clip-path:ellipse(49% 27.55% at 50% 50%); transform:translate(0vw,0vh); }
-.rb-earth-interior { position:absolute; inset:12px; width:calc(100% - 24px); height:calc(100% - 24px); }
+
+/* V 1105 G: static lower glass and half-strength lower-button glow. */
+.rb-button-lens .rb-glass-spin { display:none; animation:none; }
+.rb-circuit-reflection.is-chord-active { opacity:.35; }
+.rb-flow-canvas { filter:brightness(.4025); }
+.rb-circuit--glass.is-pressed { filter:var(--circuit-tint) brightness(1.15); }
+/* V 1112 G: lane-colored solo waves, shared white simultaneous waves. */
+.rb-circuit-outward { background:radial-gradient(circle,transparent 0%,transparent 37%,var(--button-color) 46%,var(--button-color) 50%,var(--button-color) 54%,transparent 63%); }
+.rb-circuit-reflection.is-simultaneous .rb-circuit-outward { background:radial-gradient(circle,transparent 0%,transparent 37%,#fff 46%,#fff 50%,#fff 54%,transparent 63%); }
+/* V 1113 G: an opaque B backdrop stays fixed during board-only entry. */
+#rhythm-screen.is-type-b { background:#000; }
+/* V 1114 G: finish the song by filling the gap, in a separate soft white. */
+.rb-perimeter-band { fill:none; stroke:#d9f5ff; stroke-width:10; stroke-linejoin:round; stroke-linecap:butt; stroke-dasharray:100 100; stroke-dashoffset:100; opacity:.28; }
+/* V 1115 G: grade-colored judgement bursts rise beyond the status panel. */
+.rb-status--judge { z-index:12; overflow:visible; --judge-peak:1.7; --judge-rise:-18px; }
+.rb-status--judge b { color:inherit; transform-origin:50% 100%; }
+.rb-status--judge[data-grade=PERFECT] { --judge-peak:2.3; --judge-rise:-28px; }
+.rb-status--judge[data-grade=GOOD] { --judge-peak:2; --judge-rise:-23px; }
+.rb-status--judge[data-grade=GREAT] { --judge-peak:1.7; --judge-rise:-18px; }
+.rb-status--judge[data-grade=MISS] { --judge-peak:1.4; --judge-rise:-12px; }
+.rb-status--judge.is-judging b { animation:rb-judge-pop 320ms ease-out; }
+@keyframes rb-judge-pop { 0% { opacity:.75; transform:translateY(0) scale(1); } 22%,48% { opacity:1; transform:translateY(var(--judge-rise)) scale(var(--judge-peak)); } 100% { opacity:1; transform:translateY(0) scale(1); } }
+@media (prefers-reduced-motion:reduce) { .rb-status--judge.is-judging b { animation:none; } }

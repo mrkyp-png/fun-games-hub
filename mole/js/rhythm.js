@@ -564,8 +564,11 @@
     function pushInGame(modal) {
       // v878(사용자 지정): 탄성 밀어내기 → 글리치(다른 화면과 통일)
       modal.hidden = true;
-      el.classList.remove('glitch-in'); void el.offsetWidth; el.classList.add('glitch-in');
-      setTimeout(function () { el.classList.remove('glitch-in'); }, 260);
+      // V 1113 G: keep B's opaque screen fixed while only its board enters.
+      var entryTarget = activeB ? $('[data-rp-b] .rb-board') : el;
+      if (activeB) el.classList.remove('glitch-in');
+      entryTarget.classList.remove('glitch-in'); void entryTarget.offsetWidth; entryTarget.classList.add('glitch-in');
+      setTimeout(function () { entryTarget.classList.remove('glitch-in'); }, 260);
     }
     el.querySelectorAll('[data-rp-diff]').forEach(function (b) {
       b.addEventListener('click', function () {
