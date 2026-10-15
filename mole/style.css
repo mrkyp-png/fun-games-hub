@@ -7514,3 +7514,24 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-laser-canvas { position:absolute; inset:0; width:100%; height:100%; z-index:4; pointer-events:none; }
 .rb-glass-grow.is-laser-miss > circle { stroke:#ff2020; stroke-opacity:1; }
 .rb-glass-grow.is-laser-miss > circle:first-child { fill:#590000; }
+/* V 1136 G: preserve the full outer stroke, including its outside half. */
+.rb-mini { clip-path:none; border-radius:0; contain:layout style; overflow:visible; }
+.rb-mini .rb-wire-tunnel { overflow:visible; }
+/* V 1137 G: clear pause face with sky-blue pause bars; retain its border and press. */
+.rb-pause-button--a { background:transparent; color:#57d9ff; }
+.rb-pause-button--a .rb-pause-face { background:transparent; }
+
+/* V 1138 G: event-driven timing energy chamber; no idle animation. */
+.rb-timing-gauge { position:absolute; z-index:5; left:5.462185%; top:50.433%; width:80.2521%; height:2.599%; pointer-events:none; }
+.rb-timing-gauge svg { display:block; width:100%; height:80%; overflow:visible; }
+.rb-timing-caption { position:absolute; top:75%; color:#779bb5; font:700 clamp(6px,1.6vw,8px)/1 sans-serif; letter-spacing:.1em; }
+.rb-timing-caption--early { left:1%; }.rb-timing-caption--center { left:50%; transform:translateX(-50%); color:#779bb5; }.rb-timing-caption--late { right:1%; }
+.rb-timing-light { position:absolute; top:33%; width:92%; height:80%; border-radius:0; background:linear-gradient(180deg,transparent,var(--timing-color) 40%,#fff 50%,var(--timing-color) 60%,transparent); transform:translate(-50%,-50%); }
+.rb-timing-light[hidden] { display:none; }
+
+/* V 1139 G: one brief center-to-glass-rim pulse on note appearance. */
+.rb-spawn-ripple { box-sizing:border-box; position:absolute; z-index:4; pointer-events:none; border:0; background:none; }
+.rb-spawn-ripple[hidden] { display:none; }
+
+/* V 1141 G: animate radius only, keeping the wave stroke equal to the glass rim. */
+.rb-spawn-ripple > svg { display:block; width:100%; height:100%; overflow:visible; }

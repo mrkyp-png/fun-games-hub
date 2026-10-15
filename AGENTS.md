@@ -1001,3 +1001,46 @@
 ## 2026-10-16 / V 1135 G 배포 승인
 - 사용자 "일단 배포해라"로 현재 V1135 로컬 누적 게임 변경 커밋/푸시/Pages 배포 승인. 소리/레이저스타일 별도 샘플은 게임 미적용 상태 유지, 샘플파일은 배포 커밋에서 제외.
 - 원격 master와 로컬 HEAD d62da36 일치 확인. 배포전 레이저rounded/버튼PERFECT/진행1131/clock/실제MP3 HARD2touch 및 pause/resume/quit 재검증 통과. 기존/Claude/원본 보존, 명시선택 stage만 사용.
+
+## 2026-10-16 / V 1135 G Pages 배포 완료
+- 사용자 승인 배포 commit3592106dbc5001acda85e1312b2a5d57a6203f1c origin/master 푸시. Pages38761910718 completed/success 확인. 소리·레이저스타일 비교 샘플은 게임에 미적용/커밋제외 유지.
+- 공개15파일 SHA256일치. 공개 rounded레이저 긴연결/원사이통로/흡수/점등조건/pause정리, 버튼PERFECT11회 위치/10콤보색/중앙일반표시, 전체곡순차두선진행 테스트 통과. 공개 실제MP3 HARD2touch2판정/noMISS/눌림바닥빛/해제/pause/resume/quit/진입배경고정 통과.
+- URL https://mrkyp-png.github.io/fun-games-hub/mole/index.html?v=1135 . 본 완료기록은 로컬 인수인계만 추가, 재배포하지 않음. 휴대폰 버벅임/깜빡임 해결 검증 미완료 상태 유지. 기존/Claude/미추적원본 보존, 다음 에이전트 및 Claude에도 수정사전허락/배포별도허락/G-C연속번호/지시범위만수정 규칙 인계.
+
+## 2026-10-16 / V 1136 G 상부 외곽 굵기 균일화 (미배포)
+- 사용자 상부원 외곽 동일굵기 검증 후 "동일하게 만들어주세요"로 수정 승인. 기존 V1135는9개CSS stroke-width8.216216 동일하지만 .rb-mini clip-path circle48.684211%(선의 중심 반경과 동일) 및 paint containment/SVGoverflow가 바깥 절반을 잘랐음. clip중심과원중심x0.5보드단위 차이로 좌우잘림차이도 존재. 공개390px계산 남는 굵기 좌1.316/우1.692/상하1.504px(전체설정3.008px).
+- .rb-mini clip-path:none/border-radius0/contain:layout style/overflowvisible, 내부SVGoverflowvisible로 외곽 전체 stroke 표시. 원 중심/반경/선설정/내부원/판정/유리/레이저/버튼효과 불변. holo-light의 기존clip은 수정하지 않음. blur/glow 추가 없음.
+- verify-unclipped-rims-v1136:360/390/430px 모바일 viewport에서9개 원 및 chord-ready혼합 상태 동일 CTMstroke/rxry, clip없음/paintcontain없음/부모·SVGoverflowvisible/filter없음 검증. 전체두께 각각2.7559/3.0080/3.2800CSSpx. uniform-rims-v1136.png 시각 확인. verify-press-and-rim-v1129 세난이도 버튼보존/원접촉, verify-laser-rounded-v1135 흡수/조건/정리 통과. 실제 픽셀 안티앨리어싱에 따른 차이는 기하학적 stroke차이와 구분해야 함.
+- 로컬 V1136 G/공개 V1135 G(3592106dbc5001acda85e1312b2a5d57a6203f1c). 커밋/푸시/배포 없음. 수정사전허락/배포별도허락/G-C연속번호/기존·Claude·미추적원본보존/다음에이전트인계 규칙 계속 적용. 버벅임·깜빡임 실제휴대폰 해결확인 미완료.
+
+## 2026-10-16 / V 1137 G 일시정지 투명 바탕 (미배포)
+- 사용자 수정 승인: 일시정지 하늘색 바탕 투명, 내부 흰색2줄 하늘색. .rb-pause-button--a 및 face 배경transparent, 문자color#57d9ff. 기존3px하늘색테두리/크기/그림자/누름(.94scale,1px이동)/클릭동작 유지. 다른버튼/상부원/레이저/판정/소리 변경 없음. V1136 원 잘림수정 보존.
+- verify-pause-clear-v1137:버튼/face투명배경과이미지none, II문자하늘색, 기존border3px,실제mouse down시.94/1px 및투명/색상유지,해제 통과. diff검사 통과. pause-clear-v1137.png 생성.
+- 로컬V1137 G/공개V1135 G. 커밋/푸시/배포 없음. 수정사전허락/배포별도허락/G-C연속번호/기존·Claude·미추적원본보존/다음에이전트인계 규칙 유지.
+
+## 2026-10-16 / V 1138–1143 G 상태바·완주·파동 최종 변경 (미배포)
+- 사용자 승인: MISS 횟수와 무관하게 한곡 완주/작은 판정횟수 대신 시각적 게이지/색상 PERFECT금빛 GREAT보라 GOOD파랑 MISS빨강. 티켓 가격은 변경하지 않음. 일반 모드10MISS 강제종료만 제거, 점수/콤보/판정/최고점정책/테스트최고점제외 유지. A 규칙 불변. 결과 통계4종 유지. 루트 채보규칙 및 scripts/rhythm/README 해당 규칙 갱신.
+- 1138 초기 EARLY/LATE 위치형 발광게이지는 사용자 후속 지시로 대체. 최종1143은 중심고정 에너지 띠가 길어졌다 줄어드는400ms연출. 길이PERFECT1/GREAT.72/GOOD.44/MISS.12, 색#ffe542/#b65cff/#348aff/#ff304f. 한 요소 재사용/새 입력 시 이전연출취소, 대기애니메이션 없음. 화살표/중앙다이아장식 삭제. 사각양끝/사각에너지띠, 별도blur/filter없음. 기본중앙금빛 정적조명 유지.
+- 게이지 폭은 SCORE small의 S 시작~COMBO small의 마지막O 끝까지 실제 text Range좌표로 정렬. 글꼴 준비/labelResize/boardResize에만 측정, 매프레임 측정 없음. 일시정지 x876/y1027로 정보구역936~1118의 위아래중앙. 기존투명배경/하늘색II/누름효과보존. 게이지와 pause중첩없음 검증.
+- 사용자 추가 승인: 캐릭터 등장 시 아래 해당 유리원 중심→외곽 파동. 1139 초기420ms CSSscale,1141반지름전용/선굵기4단위 수정,1143 최종은 별도시계/별도WAAPI를 제거하고 위쪽 내부원과 동일 AudioContext 진행값u=p^1.55를 공유. 위쪽 scale1→3.202..., 아래 r1.8→45. 시작/이동진행률/판정시외곽접촉 정확히 동기화. span94보드단위/SVGcirclecxcy47/stroke4로 유리테두리와 같은 굵기를 이동내내유지. 시작점center175.5/y1286+행300. box-sizingborder-box로 centeroffset 수정. 색상칸별 원색. 캐릭터spawn1회표시,hit/miss/stop/result숨김,pause음악시계따라정지. 기존누름파동480ms/레이저/캐릭터효과 보존.
+- 검증: verify-synced-ripple-v1143 EASY/NORMAL/HARD 각5진행시점 위/아래진행률오차1e-6이하/선4단위고정/동시외곽접촉/pause/hit정리 통과. verify-timing-gauge-v1142 사각양끝/실제S~O정렬/단일재사용에너지/색4종/길이4단계/중앙pause/겹침없음, 일반모드17MISS이후계속플레이/곡끝CLEAR/통계보존/stop정리 통과. scripts/rhythm/verify-b-clock도 변경된 완주규칙에 맞춰10MISS중간진행/곡끝CLEAR로 갱신후통과. verify-laser-rounded-v1135 기존흡수조건 통과. 이전 spawn-ripple-v1139/v1141 테스트는 최종동기화 이전구조이므로 재실행시 최신동기테스트 사용. timing-gauge-v1138/v1140도중간디자인이므로 최신v1142사용.
+- 현재 로컬V1143 G/공개V1135 G(3592106dbc5001acda85e1312b2a5d57a6203f1c). 커밋/푸시/배포없음. 기존1136상부선잘림/1137pause투명 변경 보존. 실제폰버벅임/깜빡임해결확인 미완료, 무조건무버벅임 주장금지. 수정사전허락/배포별도허락/G-C연속번호/기존·Claude·미추적원본보존/다음에이전트인계 규칙 유지. 별도 소리/레이저스타일샘플은 선택미정/게임미적용.
+
+## 2026-10-16 / V 1144 G 상태바 실제 표시폭·대기노랑 제거 (미배포)
+- 사용자 상태바 내부대기노랑삭제 및 SCORE의S~COMBO의마지막O까지실제연장 재지시. 이전 label Range기준 container폭은 맞았으나 SVG기본preserveAspectRatio meet가 내부그림을 가로로축소해 표시선끝은맞지않았음. 원인확인후 preserveAspectRatio:none/viewBox1 0 778 60으로 외곽rect stroke의실제바깥끝1..779가container양끝에 정확히매핑되도록수정.
+- 대기상태 SVG중앙금빛 ellipse/radialGradient삭제, spectrum중앙gold두stop은차분한청회색으로변경, caption노랑도중성색으로변경. PERFECT판정순간의금빛에너지효과/버튼PERFECT 콤보색 유지. 사각양끝/중앙확장수축/scoreS~comboO ResizeObserver 정렬 유지. 잘못된문자열??? aria-label도영문정상문구로교정.
+- verify-timing-gauge-v1144:390px실제SVG stroke왼쪽66.0625==S시작66.0625, 오른쪽313.734375==O끝313.734375 정확일치(오차.02px이하검증),대기gold없음/ellipse없음/aspectnone,4색·4길이·단일재사용·17MISS완주·pause위아래중앙·정리 통과. verify-synced-ripple-v1143 EASY/NORMAL/HARD 5시점공유진행률·굵기·동시도착 유지통과. diff검사통과.
+- 로컬V1144 G/공개V1135 G. 커밋/푸시/배포없음. 기존변경/Claude/원본보존 및 수정사전허락/배포별도허락/G-C연속번호/다음에이전트인계 규칙 유지. 실제폰성능검증미완료.
+
+## 2026-10-16 / V 1145 G 로딩 음표5개 (미배포)
+- 사용자 "Implement the plan"로 계획 실행 승인. 기존하트4개 보존, 로딩그림 동일좌표계에5%크기 인라인SVG음표5개 추가. 위치(15,58)/(85,55)/(24,74)/(68,70)/(89,91)%, 색하늘/분홍/금/보라/민트, 주기2.2/2.4/2.6/2.8/3초 및위상분산. 위아래clamp6~10px transform왕복만, 추가이미지/JS RAF/blur/filter 없음.
+- 그림준비전hidden+animationpaused, is-art이후재생, is-hiding이후pause/기존splash.remove로정리. reduced-motion에서는정지음표. 기존하트/로딩바/GET NOW 클릭 및 게임 변경사항 유지. 게임효과 임의수정 없음.
+- verify-splash-notes-v1145:360/390/430px5개음표상하양끝에서viewport/하트/GET NOW와비중첩,4하트보존,왕복12~20px,필터없음,artgate/reduced-motion/exitpause·removal/GET NOW/오류0통과. 음수delay를포함해검증시계정렬후통과(제품추가수정없음). screenshot splash-notes-v1145.png시각확인. 기존로딩검증verify-splash-loading-v1130리소스보류/준비전표시/완료전환 통과.
+- 로컬V1145 G/공개V1135 G. 커밋/푸시/배포없음. 기존·Claude·사용자원본보존, 수정사전허락/배포별도허락/G-C연속번호/다음에이전트인계 규칙 유지. 실제폰성능해결확인 미완료.
+
+## 2026-10-16 / V 1146 G 외곽 실제 진행 수정·상태바 구간선 및 배포 승인
+- 사용자 외곽한줄완성후대기현상 재지적. 실제SVG픽셀검사로120초기준첫선24초에이미전부밝음/둘째선84초에완성 재현. 원인: pathLength100의 dash보정이 vector-effect:non-scaling-stroke와 축소viewBox좌표에서 어긋남. 이전숫자offset검사만으로놓친제품문제임. 순차진행공식자체는유지.
+- ResizeObserver에서 SVG viewBox와 각path좌표를 실제CSS표시크기로동일비율변환하여1:1좌표사용. 기존선위치/둥근모서리/화면전체2줄/선굵기/color/순차진행불변, dash와표시길이동일좌표보정. 매프레임경로재계산없음. 첫선50%완료직후둘째선바로시작/100%전체완료.
+- 실제MP3119.96초decode후HARD채보/합성AudioContext시계로14시점검사. 매선100개실제화면픽셀에서 .1:[20,0],.2:[40,0],.3:[60,0],.4:[80,0],.49:[98,0],.5:[100,0],.51:[100,2],.6:[100,20],.7:[100,40],.8:[100,60],.9:[100,80],.99:[100,98],1:[100,100] 일치. 연속실시간2분영상검증은아님, 실제렌더와실제곡길이기준샘플검증임. review/verify-perimeter-render-v1146.js 실행후verify-perimeter-pixels-v1146.py로재현.
+- 사용자 "상태바좌우굿그레이트퍼팩트구간선" 및 "네" 승인: 에너지길이범위에맞춰좌우대칭6개고정세로선 GOOD .44파랑/GREAT .72보라/PERFECT1금빛. 중심금빛대기배경복원없음,금빛은새로승인된PERFECT구간선과판정발광에만존재. 화살표없음. 실제S~O표시끝유지. verify-timing-zones-v1146 모든기존게이지동작·대칭6선/색·실제끝좌표통과. verify-synced-ripple-v1143 세난이도동기통과,clock/진행숫자검증통과.
+- 사용자 "배포하세요"로현재V1146누적변경 커밋/푸시/Pages배포승인. 공개V1135/로컬HEAD3592106원격일치확인. 기존·Claude변경/미추적원본보존,명시선택stage만사용. 별도소리·레이저스타일샘플게임미적용유지. 수정사전허락/배포별도허락/G-C연속번호/다음에이전트인계 규칙 계속적용.

@@ -32,4 +32,4 @@
 - 재생성: analyze-suno-song.py → refine-suno-grid.py → track-suno-beats.py → build-suno-b-chart.py. 중간 분석 JSON/NPZ는 review에 생성된다. 드라이브 구간은 스펙트럼 강도 기반 후보이며 보컬 후렴을 직접 청취·확정했다고 표현하지 않는다.
 - JSON patterns[난이도]는 {time,lanes:[0..8],sound:'kick'|'snare'|'hat',section} 이벤트 배열이다. lanes2개는 동시 입력, charts에는 동일 시각 두 노트가 보존된다. 기존 숫자 charts만 있는 fever2는 기존 랜덤 배치로 재생한다. beats 배열은 실제 온셋에 맞춘 시각으로 공간 박자 호흡을 동기화한다.
 - 새 곡에는 hitFeedback:true, 음악은 full mix를 계속 재생하고 성공에만 사전 생성된 짧은 퍼커션 버퍼를 재생한다. 반주/보컬 분리 파일이 없으므로 실패 시 보컬만 끄는 연출은 사용하지 않는다. 효과음 설정 OFF를 존중한다.
-- 테스트 모드가 곡 팝업에서 기본 체크되어 있다. B open/start의 {practice:true} 옵션으로 MISS가 10회 넘어도 곡 끝까지, 결과는 TEST 표기·최고점 저장 제외. 체크 해제하면 기존10MISS게임오버. A 규칙은 변경하지 않는다.
+- 테스트 모드가 곡 팝업에서 기본 체크되어 있다. B open/start의 {practice:true} 옵션으로 MISS가 10회 넘어도 곡 끝까지, 결과는 TEST 표기·최고점 저장 제외. V1143 G부터 체크 해제한 일반 모드도 MISS 횟수와 관계없이 곡 끝까지 진행한다. A 규칙은 변경하지 않는다.

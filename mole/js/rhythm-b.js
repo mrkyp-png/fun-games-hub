@@ -7,6 +7,11 @@
     const buttonYs = [[1136, 1436], [1436, 1736], [1736, 2036]];
     const pressSurfaces = [];
     const pulseAnimations = Array(9).fill(null);
+    const spawnWaves=[],spawnCircles=[];
+    function clearSpawnWaves(){spawnWaves.forEach(e=>e.hidden=true);}
+    function spawnWave(lane){const e=spawnWaves[lane];if(e){spawnCircles[lane].setAttribute('r','1.8');e.hidden=false;}}
+    function advanceSpawnWave(lane,u){const c=spawnCircles[lane];if(c)c.setAttribute('r',String(1.8+43.2*u));}
+    function endSpawnWave(lane){if(spawnWaves[lane])spawnWaves[lane].hidden=true;}
     const reboundAnimations = Array.from({length:9},()=>[]);
     let flowSurfaces=[];
     const miniSurfaces = [], shakes = Array(9).fill(null);
@@ -102,6 +107,7 @@
       const base=document.createElement('img');base.className='rb-button-base';base.alt='';base.src='assets/rhythm-b/button-base-v1118/base-'+i+'.svg';place(base,buttonCx,buttonCy+16,296,320);
       const cap=document.createElement('img');cap.className='rb-button-cap';cap.alt='';cap.src='assets/rhythm-b/button-face-v1124/face-'+i+'.svg';place(cap,buttonCx,buttonCy,268);
       const core=document.createElement('img');core.className='rb-button-core';core.alt='';core.src='assets/rhythm-b/upper-core-v1124/core-'+i+'.svg';place(core,buttonCx,buttonCy,268);
+      const spawnRing=document.createElement('span');spawnRing.className='rb-spawn-ripple';spawnRing.hidden=true;spawnRing.setAttribute('aria-hidden','true');spawnRing.style.setProperty('--button-color',colors[i]);spawnRing.innerHTML='<svg viewBox="0 0 94 94" aria-hidden="true"><circle cx="47" cy="47" r="0" fill="none" stroke="'+colors[i]+'" stroke-width="4"/></svg>';place(spawnRing,buttonCx-.5,buttonCy,94);spawnWaves.push(spawnRing);spawnCircles.push(spawnRing.querySelector('circle'));
       const surfaces = [hit, color, circuit, reflection, lens, cap, floor, core, base]; pressSurfaces.push(...surfaces);
       function down() {
         if (!running || paused) return;
@@ -169,7 +175,7 @@
     pauseButton.className = 'rb-pause-button rb-pause-button--a'; pauseButton.setAttribute('aria-label', '일시정지');
     pauseButton.innerHTML = '<span class="rb-pause-face" aria-hidden="true">II</span>';
     pauseButton.addEventListener('click', () => opts.onPause());
-    place(pauseButton, 876, 991, 86, 86);
+    place(pauseButton, 876, 1027, 86, 86);
     function releaseAll() { if(flowFx)for(let i=0;i<9;i++)flowFx.press(i,false);board.querySelectorAll('.rb-button-cap').forEach((el,i)=>{el.src='assets/rhythm-b/button-face-v1124/face-'+i+'.svg';});pressSurfaces.forEach(el => el.classList.remove('is-pressed')); clearShakes(); pulseAnimations.forEach(a=>{if(a)a.cancel();}); pulseAnimations.fill(null); reboundAnimations.forEach(list=>{list.forEach(a=>a.cancel());list.length=0;}); }
     flowFx = root.MoleGame.RhythmBFlow.create({ board, colors });
     rippleFx=root.MoleGame.RhythmBRipple.create({root:opts.root,board,colors});
@@ -194,21 +200,24 @@
     play = root.MoleGame.RhythmBPlay.create({
       root: opts.root, board, rules: opts.rules, loadSong: opts.loadSong, prepareAssets,
       onHit: shakeMini,
+      onNoteSpawn: spawnWave,
+      onNoteApproach: advanceSpawnWave,
+      onNoteEnd: endSpawnWave,
       onFinish: (stats, clear) => {
         running = false; board.classList.remove('rb-wire-running'); releaseAll();
-        flowFx.stop();rippleFx.stop();laserFx.stop();
+        flowFx.stop();rippleFx.stop();laserFx.stop();clearSpawnWaves();
         opts.onResult(stats, clear);
       }
     });
     return {
       open(difficulty, options) {
-        rippleFx.stop();laserFx.stop();running = true; board.classList.add('rb-wire-running'); paused = false; board.classList.remove('is-paused'); releaseAll();
+        rippleFx.stop();laserFx.stop();clearSpawnWaves();running = true; board.classList.add('rb-wire-running'); paused = false; board.classList.remove('is-paused'); releaseAll();
         flowFx.start();rippleFx.prepare();
         return play.start(difficulty || 'EASY', options);
       },
       stop() {
         running = false; board.classList.remove('rb-wire-running'); paused = false; releaseAll(); play.stop();
-        flowFx.stop();rippleFx.stop();laserFx.stop();
+        flowFx.stop();rippleFx.stop();laserFx.stop();clearSpawnWaves();
       },
       dbg() { return play.dbg(); },
       flowDebug() { return flowFx.dbg(); },
