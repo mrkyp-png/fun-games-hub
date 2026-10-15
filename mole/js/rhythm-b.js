@@ -24,7 +24,7 @@
       shakes[lane] = animation;
       animation.onfinish = () => { if (shakes[lane] === animation) shakes[lane] = null; };
     }
-    let flowFx = null,rippleFx=null;
+    let flowFx = null,rippleFx=null,laserFx=null;
     opts.root.addEventListener("contextmenu", e => e.preventDefault());
     opts.root.addEventListener("dragstart", e => e.preventDefault());
     let running = false, paused = false, play = null;
@@ -111,7 +111,7 @@
         if(flowSurfaces[i])flowSurfaces[i].classList.add('is-pressed');
         if(pulseAnimations[i]) pulseAnimations[i].cancel();
         pulseAnimations[i]=pulse.animate([{transform:'scale(.08)',opacity:.7,offset:0},{transform:'scale(.28)',opacity:.7,offset:.18},{transform:'scale(1)',opacity:.455,offset:.7},{transform:'scale(1.35)',opacity:0,offset:1}],{duration:480,easing:'ease-out'});
-        if (play) play.press(i);
+        if (play) {const occupied=play.hasCharacter(i),grade=play.press(i);if(grade!==undefined&&laserFx)laserFx.emit(i,occupied);}
       }
       function up() {
         if(!hit.classList.contains('is-pressed'))return;
@@ -173,6 +173,7 @@
     function releaseAll() { if(flowFx)for(let i=0;i<9;i++)flowFx.press(i,false);board.querySelectorAll('.rb-button-cap').forEach((el,i)=>{el.src='assets/rhythm-b/button-face-v1124/face-'+i+'.svg';});pressSurfaces.forEach(el => el.classList.remove('is-pressed')); clearShakes(); pulseAnimations.forEach(a=>{if(a)a.cancel();}); pulseAnimations.fill(null); reboundAnimations.forEach(list=>{list.forEach(a=>a.cancel());list.length=0;}); }
     flowFx = root.MoleGame.RhythmBFlow.create({ board, colors });
     rippleFx=root.MoleGame.RhythmBRipple.create({root:opts.root,board,colors});
+    laserFx=root.MoleGame.RhythmBLaser.create({board,colors,hasCharacter:lane=>miniSurfaces[lane].classList.contains('is-note-active')});
     flowSurfaces=Array.from(board.querySelectorAll('.rb-flow-canvas'));pressSurfaces.push(...flowSurfaces);
     function fitGlassStroke(){const ratio=board.querySelector('.rb-wire-tunnel').getBoundingClientRect().width/296;board.querySelectorAll('.rb-glass-grow circle').forEach(e=>e.setAttribute('stroke-width',Number(e.dataset.stroke)*ratio));}
     const glassResize=new ResizeObserver(fitGlassStroke);glassResize.observe(board);fitGlassStroke();
@@ -195,26 +196,27 @@
       onHit: shakeMini,
       onFinish: (stats, clear) => {
         running = false; board.classList.remove('rb-wire-running'); releaseAll();
-        flowFx.stop();rippleFx.stop();
+        flowFx.stop();rippleFx.stop();laserFx.stop();
         opts.onResult(stats, clear);
       }
     });
     return {
       open(difficulty, options) {
-        rippleFx.stop();running = true; board.classList.add('rb-wire-running'); paused = false; board.classList.remove('is-paused'); releaseAll();
+        rippleFx.stop();laserFx.stop();running = true; board.classList.add('rb-wire-running'); paused = false; board.classList.remove('is-paused'); releaseAll();
         flowFx.start();rippleFx.prepare();
         return play.start(difficulty || 'EASY', options);
       },
       stop() {
         running = false; board.classList.remove('rb-wire-running'); paused = false; releaseAll(); play.stop();
-        flowFx.stop();rippleFx.stop();
+        flowFx.stop();rippleFx.stop();laserFx.stop();
       },
       dbg() { return play.dbg(); },
       flowDebug() { return flowFx.dbg(); },
       rippleDebug(){return rippleFx.dbg();},
+      laserDebug(){return laserFx.dbg();},
       pause(on) {
         paused = on; play.pause(on); board.classList.toggle('is-paused', on); releaseAll();
-        flowFx.pause(on);rippleFx.pause(on);
+        flowFx.pause(on);rippleFx.pause(on);laserFx.pause(on);
       }
     };
   }

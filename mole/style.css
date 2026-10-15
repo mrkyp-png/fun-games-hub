@@ -7509,3 +7509,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 
 /* V 1129 G: strengthen only the character-triggered outer circle. */
 .rb-mini .rb-wire-tunnel circle.rb-portal-rim { stroke-width:8.216216216216216; }
+
+/* V 1132 G: laser crosses behind the status text; only the failed glass core lights red. */
+.rb-laser-canvas { position:absolute; inset:0; width:100%; height:100%; z-index:4; pointer-events:none; }
+.rb-glass-grow.is-laser-miss > circle { stroke:#ff2020; stroke-opacity:1; }
+.rb-glass-grow.is-laser-miss > circle:first-child { fill:#590000; }

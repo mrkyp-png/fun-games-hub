@@ -12,7 +12,9 @@
   const progressLines=Array.from(perimeter.querySelectorAll('.rb-perimeter-fill'));let lastProgress=-1,lastPercent=-1;
   function updateProgress(value){
    const ratio=Math.max(0,Math.min(1,value));
-   if(ratio!==lastProgress){progressLines.forEach(el=>el.style.strokeDashoffset=String(100-ratio*100));lastProgress=ratio;}
+   // V 1131 G: traverse the two outlines consecutively across the whole song.
+   // Opposing half-filled outlines must not look like a completed frame midway.
+   if(ratio!==lastProgress){progressLines.forEach((el,i)=>{const lineRatio=Math.max(0,Math.min(1,ratio*2-i));el.style.strokeDashoffset=String(100-lineRatio*100);});lastProgress=ratio;}
    const pct=Math.floor(ratio*100);if(pct!==lastPercent){progress.setAttribute('aria-valuenow',String(pct));lastPercent=pct;}
   }
 
@@ -44,16 +46,16 @@
   const startShade=document.createElement('div');startShade.className='rb-start-shade';startShade.hidden=true;startShade.setAttribute('aria-hidden','true');hud.appendChild(startShade);
   function animateEffect(el,keyframes,duration,done){const a=el.animate(keyframes,{duration,easing:'ease-out'});effects.add(a);a.onfinish=()=>{effects.delete(a);if(done)done();};a.oncancel=()=>effects.delete(a);return a;}
   const powerWords={};const powerAnimations={};
-  for(const kind of ['perfect','combo']){const word=document.createElement('span');word.className='rb-power-word rb-power-word--'+kind;word.hidden=true;word.setAttribute('aria-hidden','true');board.appendChild(word);powerWords[kind]=word;}
+  for(const kind of ['combo',...Array.from({length:9},(_,i)=>'perfect-'+i)]){const word=document.createElement('span'),perfect=kind.startsWith('perfect-');word.className='rb-power-word rb-power-word--'+(perfect?'perfect':'combo');word.hidden=true;word.setAttribute('aria-hidden','true');if(perfect){const lane=Number(kind.slice(8));word.dataset.lane=lane;word.style.left=((176+(lane%3)*300)/952*100)+'%';word.style.top=((1196+Math.floor(lane/3)*300)/2078*100)+'%';}board.appendChild(word);powerWords[kind]=word;}
   function showPowerWord(kind,text,color){
    const word=powerWords[kind];if(powerAnimations[kind])powerAnimations[kind].cancel();
-   word.textContent=text;word.style.color=color;word.hidden=false;if(kind==='perfect')judgeEl.style.visibility='hidden';
-   word.style.fontSize=(kind==='perfect'?board.clientWidth*.045:board.clientWidth*.036)+'px';
+   word.textContent=text;word.style.color=color;word.hidden=false;
+   word.style.fontSize=(kind==='combo'?board.clientWidth*.036:board.clientWidth*.045)+'px';
    const peak=kind==='combo'?Math.min(4.6,board.clientWidth*.19/Math.max(1,word.offsetWidth)):4.6;
    const position=kind==='combo'?['translate(-100%,-100%)','translate(-100%,calc(-100% - 42px))','translate(-100%,calc(-100% - 64px))']:['translate(-50%,-50%)','translate(-50%,-50%)','translate(-50%,-50%)'];
    const reduced=root.matchMedia('(prefers-reduced-motion: reduce)').matches;
    const frames=reduced?[{opacity:.7},{opacity:0}]:[{transform:position[0]+' scale(.05)',opacity:.7,offset:0},{transform:position[1]+' scale('+(peak*3.5/4.6)+')',opacity:.7,offset:.6},{transform:position[2]+' scale('+peak+')',opacity:0,offset:1}];
-   const a=animateEffect(word,frames,1100,()=>{if(powerAnimations[kind]===a){word.hidden=true;powerAnimations[kind]=null;if(kind==='perfect')judgeEl.style.visibility='';}});powerAnimations[kind]=a;
+   const a=animateEffect(word,frames,1100,()=>{if(powerAnimations[kind]===a){word.hidden=true;powerAnimations[kind]=null;}});powerAnimations[kind]=a;
   }
   function clearEffects(){judgeEl.style.visibility='';Object.values(powerWords).forEach(e=>e.hidden=true);for(const kind of Object.keys(powerAnimations))powerAnimations[kind]=null;for(const a of effects)a.cancel();effects.clear();pangs.forEach(el=>el.hidden=true);pangAnimations.fill(null);startAnimation=null;startCallout.hidden=true;startShade.hidden=true;startShade.style.opacity='0';comboPulse=null;}
   function showStart(stage){
@@ -133,10 +135,9 @@
   }
   function time(){return state&&context?context.currentTime-state.t0:0;}
   function label(text,grade) {
-   const el=judgeEl;el.textContent=text;if(grade!=='PERFECT'){if(powerAnimations.perfect)powerAnimations.perfect.cancel();powerAnimations.perfect=null;powerWords.perfect.hidden=true;el.style.visibility='';}
+   const el=judgeEl;el.textContent=text;el.style.visibility='';
    const parent=el.parentElement;parent.dataset.grade=grade||'';
    parent.classList.toggle('is-judging',Boolean(grade)&&grade!=='PERFECT');
-   if(grade==='PERFECT')showPowerWord('perfect','PERFECT','#ffe542');
    el.getAnimations().forEach(a=>{if(a.animationName==='rb-judge-pop')a.currentTime=0;});
   }
   function updateHud(){
@@ -174,18 +175,21 @@
    state.cnt.MISS++;state.combo=0;muteMelody(false);label('MISS','MISS');updateHud();
    if(!state.practice&&state.cnt.MISS>=10)finish(false);
   }
+  function hasCharacter(lane){if(!state||state.ended||state.loading)return false;const t=time();return state.notes.some(n=>n.lane===lane&&((n.state==='pending'&&t>=n.spawnTime&&t<=n.targetTime+rules.diffs[state.diff].judge.goodMs/1000)||(n.state==='hit'&&!n.el.hidden)));}
   function press(lane){
    if(!state||state.ended||state.paused||time()<0)return;
    const t=time();
    let best=null,delta=Infinity;
    for(const n of state.notes){if(n.state==='pending'&&n.lane===lane&&t>=n.spawnTime){const d=Math.abs(t-n.targetTime);if(d<delta){best=n;delta=d;}}}
-   if(!best)return; // Empty input never changes score, combo, or MISS.
+   if(!best)return false; // Empty input never changes score, combo, or MISS.
    // Like A: an existing future note outside the input window remains pending until its deadline.
-   const grade=rules.grade(delta*1000,state.diff);if(!grade)return;
+   const grade=rules.grade(delta*1000,state.diff);if(!grade)return false;
    best.state='hit';hitSound(best,grade);successEffect(best,t);darkenLane(best.lane);state.cnt[grade]++;state.combo++;state.maxCombo=Math.max(state.maxCombo,state.combo);
    state.score+=rules.points(grade,state.combo);muteMelody(true);label(grade,grade);updateHud();
+   if(grade==='PERFECT'){const stage=Math.floor(state.combo/10);showPowerWord('perfect-'+lane,'PERFECT',stage?comboPalette[(stage-1)%comboPalette.length]:'#00cfff');}
    vibrate(160);
    if(opts.onHit)opts.onHit(lane,grade);
+   return grade;
   }
   function placeNote(n,p){
    const focusX=foci[n.lane].x,focusY=foci[n.lane].y;
@@ -264,7 +268,7 @@
    }catch(e){if(token!==generation)return false;state.loading=false;state.ended=true;state.error=String(e.message||e);label('ERROR');error.hidden=false;startShade.hidden=true;stopAudio();return false;}
   }
   function pause(on){if(!state||state.ended)return;state.paused=on;effects.forEach(a=>{if(a.playState!=='idle'){if(on)a.pause();else a.play();}});if(context&&!state.loading){if(on)context.suspend();else context.resume();}}
-  return {start,stop,pause,press,dbg:()=>state?{t:time(),diff:state.diff,practice:state.practice,loading:state.loading,paused:state.paused,ended:state.ended,error:state.error,score:state.score,combo:state.combo,maxCombo:state.maxCombo,cnt:{...state.cnt},notes:state.notes.map(n=>({id:n.id,lane:n.lane,targetTime:n.targetTime,spawnTime:n.spawnTime,state:n.state}))}:null};
+  return {start,stop,pause,press,hasCharacter,dbg:()=>state?{t:time(),diff:state.diff,practice:state.practice,loading:state.loading,paused:state.paused,ended:state.ended,error:state.error,score:state.score,combo:state.combo,maxCombo:state.maxCombo,cnt:{...state.cnt},notes:state.notes.map(n=>({id:n.id,lane:n.lane,targetTime:n.targetTime,spawnTime:n.spawnTime,state:n.state}))}:null};
  }
  MG.RhythmBPlay={create};
 })(window);

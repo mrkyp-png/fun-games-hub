@@ -1,0 +1,49 @@
+{
+  "environment": "Edge headless390x884 DPR2;same current code;laser off/on paired;actual HARD chart10-16s;scheduled inputs with80ms holds;synthetic music clock;not real phone",
+  "report": [
+    {
+      "variant": "off",
+      "frames": 281,
+      "avg": 20.813523131672596,
+      "p95": 33.400000000000546,
+      "over50": 6,
+      "dom": 1361,
+      "styleMs": 553.853,
+      "layoutMs": 103.17599999999999,
+      "taskMs": 2005.849
+    },
+    {
+      "variant": "on",
+      "frames": 305,
+      "avg": 19.612459016393444,
+      "p95": 33.400000000000546,
+      "over50": 3,
+      "dom": 1361,
+      "styleMs": 592.241,
+      "layoutMs": 135.94899999999998,
+      "taskMs": 2152.037
+    },
+    {
+      "variant": "offRepeat",
+      "frames": 353,
+      "avg": 16.992917847025495,
+      "p95": 17,
+      "over50": 0,
+      "dom": 1361,
+      "styleMs": 681.115,
+      "layoutMs": 117.095,
+      "taskMs": 2265.924
+    },
+    {
+      "variant": "onRepeat",
+      "frames": 347,
+      "avg": 17.23775216138328,
+      "p95": 17,
+      "over50": 1,
+      "dom": 1361,
+      "styleMs": 682.8870000000001,
+      "layoutMs": 114.97500000000001,
+      "taskMs": 2318.46
+    }
+  ]
+}

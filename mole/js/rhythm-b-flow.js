@@ -70,5 +70,47 @@
   }
   return {prepare(){resize();},emit(lane){if(paused)return;resize();const c=centers[lane];if(!c)return;waves.push({x:c.x,y:c.y,color:opts.colors[lane],shadow:shadows[lane],start:performance.now(),end:Math.max(...[[0,top],[w,top],[0,h],[w,h]].map(([x,y])=>Math.hypot(x-c.x,y-c.y)))});if(!frame)frame=requestAnimationFrame(draw);},pause(on){if(on===paused)return;paused=on;if(on){pauseAt=performance.now();cancelAnimationFrame(frame);frame=0;}else{const dt=performance.now()-pauseAt;waves.forEach(a=>a.start+=dt);if(waves.length)frame=requestAnimationFrame(draw);}},stop(){cancelAnimationFrame(frame);frame=0;paused=false;waves.length=0;clear();},dbg(){return {active:waves.length,frame:!!frame,top,width:w,height:h,frameBounds:{left:12+24*(w-24)/952,right:w-12-24*(w-24)/952,bottom:h-12-24*(h-24)/2078},centers:centers.map(c=>({...c})),paused};}};
  }};
+ // V 1133 G: long bent beams, one event-driven canvas behind the status panel.
+ MG.RhythmBLaser={create(opts){
+  const canvas=document.createElement('canvas');canvas.className='rb-laser-canvas';canvas.setAttribute('aria-hidden','true');opts.board.appendChild(canvas);
+  const ctx=canvas.getContext('2d'),groups=Array.from(opts.board.querySelectorAll('.rb-glass-grow'));
+  const shots=[],flashes=Array(9).fill(0);let frame=0,paused=false,pauseAt=0,dirty=true,ratio=1,unit=1,history=[];
+  new ResizeObserver(()=>{dirty=true;}).observe(opts.board);
+  function resize(){if(!dirty)return;dirty=false;const b=opts.board.getBoundingClientRect(),dpr=Math.min(root.devicePixelRatio||1,2);unit=b.width/952;ratio=unit*dpr;canvas.width=Math.max(1,Math.round(b.width*dpr));canvas.height=Math.max(1,Math.round(b.height*dpr));}
+  function clear(){ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);}
+  function route(lane,side,outer){
+   const cx=175.5+(lane%3)*300,cy=176+Math.floor(lane/3)*300,r=outer?148*296/304:45;
+   const start={x:cx+side*150,y:1282+Math.floor(lane/3)*300},end={x:cx+side*r/Math.SQRT2,y:cy+r/Math.SQRT2};
+   const bend={x:start.x,y:end.y+Math.abs(start.x-end.x)},vertical=start.y-bend.y,diagonal=Math.hypot(end.x-bend.x,end.y-bend.y);
+   const trim=Math.min(24,vertical/3,diagonal/3),entry={x:bend.x,y:bend.y+trim},exit={x:bend.x+(end.x-bend.x)*trim/diagonal,y:bend.y+(end.y-bend.y)*trim/diagonal};
+   const travel=[start,entry];
+   // V 1135 G: cache a short quadratic bend; no blur or per-frame curve creation.
+   for(let i=1;i<=12;i++){const t=i/12,u=1-t;travel.push({x:u*u*entry.x+2*u*t*bend.x+t*t*exit.x,y:u*u*entry.y+2*u*t*bend.y+t*t*exit.y});}
+   travel.push(end);const distances=[0];for(let i=1;i<travel.length;i++)distances.push(distances[i-1]+Math.hypot(travel[i].x-travel[i-1].x,travel[i].y-travel[i-1].y));
+   return {points:[start,bend,end],travel,distances,trim,length:distances[distances.length-1]};
+  }
+  function crossing(a,b,c,d){const cross=(p,q,r)=>(q.x-p.x)*(r.y-p.y)-(q.y-p.y)*(r.x-p.x);return cross(a,b,c)*cross(a,b,d)<0&&cross(c,d,a)*cross(c,d,b)<0;}
+  function overlap(candidate){let score=0;for(const shot of shots){const other=shot.route,pa=candidate.points,pb=other.points;
+   if(Math.abs(pa[0].x-pb[0].x)<10)score+=Math.max(0,Math.min(pa[0].y,pb[0].y)-Math.max(pa[1].y,pb[1].y));
+   for(let i=0;i<2;i++)for(let j=0;j<2;j++)if(crossing(pa[i],pa[i+1],pb[j],pb[j+1]))score+=30;
+  }return score;}
+  function point(path,distance){const d=Math.max(0,Math.min(path.length,distance));let i=1;while(i<path.distances.length-1&&path.distances[i]<d)i++;const a=path.travel[i-1],b=path.travel[i],f=(d-path.distances[i-1])/(path.distances[i]-path.distances[i-1]);return {x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f};}
+  function draw(now){now=performance.now();frame=0;if(paused)return;resize();clear();ctx.setTransform(ratio,0,0,ratio,0,0);ctx.lineCap='round';ctx.lineJoin='round';
+   for(let i=shots.length-1;i>=0;i--){const shot=shots[i];if(!shot.outer&&opts.hasCharacter(shot.lane)){shot.outer=true;shot.route=route(shot.lane,shot.side,true);}
+    const path=shot.route,p=Math.max(0,(now-shot.start)/240),head=path.length*2*p,tail=Math.max(0,head-path.length);
+    if(head>=path.length&&!shot.arrived){shot.arrived=true;if(!shot.outer&&!opts.hasCharacter(shot.lane)){flashes[shot.lane]=now+220;groups[shot.lane]?.classList.add('is-laser-miss');}history.push({lane:shot.lane,side:shot.side,outer:shot.outer,arrived:true,absorbed:false});if(history.length>16)history.shift();shot.record=history[history.length-1];}
+    if(tail>=path.length){if(shot.record)shot.record.absorbed=true;shots.splice(i,1);continue;}
+    const front=point(path,head),back=point(path,tail);ctx.strokeStyle=opts.colors[shot.lane];ctx.lineWidth=3/unit;ctx.beginPath();ctx.moveTo(back.x,back.y);for(let j=1;j<path.travel.length-1;j++)if(path.distances[j]>tail&&path.distances[j]<head)ctx.lineTo(path.travel[j].x,path.travel[j].y);ctx.lineTo(front.x,front.y);ctx.stroke();
+   }
+   for(let i=0;i<9;i++)if(flashes[i]&&(now>=flashes[i]||opts.hasCharacter(i))){flashes[i]=0;groups[i]?.classList.remove('is-laser-miss');}
+   if(shots.length||flashes.some(Boolean))frame=requestAnimationFrame(draw);else clear();
+  }
+  return {
+   emit(lane,outer){if(paused)return;resize();const left=route(lane,-1,outer),right=route(lane,1,outer),leftScore=overlap(left),rightScore=overlap(right),side=Math.abs(leftScore-rightScore)<.001?(Math.random()<.5?-1:1):(leftScore<rightScore?-1:1);shots.push({lane,outer,side,route:side<0?left:right,start:performance.now(),arrived:false});if(!frame)frame=requestAnimationFrame(draw);},
+   pause(on){if(on===paused)return;paused=on;if(on){pauseAt=performance.now();cancelAnimationFrame(frame);frame=0;}else{const dt=performance.now()-pauseAt;shots.forEach(s=>s.start+=dt);flashes.forEach((t,i)=>{if(t)flashes[i]+=dt;});if(shots.length||flashes.some(Boolean))frame=requestAnimationFrame(draw);}},
+   stop(){cancelAnimationFrame(frame);frame=0;shots.length=0;flashes.fill(0);groups.forEach(g=>g.classList.remove('is-laser-miss'));paused=false;history=[];clear();},
+   dbg(){return {active:shots.length,frame:!!frame,paused,widthPx:3,durationMs:240,flashing:flashes.map(Boolean),shots:shots.map(s=>({lane:s.lane,side:s.side,outer:s.outer,arrived:s.arrived,length:s.route.length,points:s.route.points.map(p=>({...p})),bendTrim:s.route.trim,travel:s.route.travel.map(p=>({...p}))})),history:history.map(s=>({...s}))};}
+  };
+ }};
  MG.RhythmBFlow={create};
 })(window);
