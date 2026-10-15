@@ -8,6 +8,8 @@
     const pressSurfaces = [];
     const pulseAnimations = Array(9).fill(null);
     const spawnWaves=[],spawnCircles=[];
+    const pressPulses=[],pulseLayers=[],pulseClips=[],pulseReach=Array(9).fill(1.35);
+    if(root.CSS&&CSS.registerProperty){try{CSS.registerProperty({name:"--rb-press-wave-scale",syntax:"<number>",inherits:false,initialValue:"1"});}catch(e){}}
     function clearSpawnWaves(){spawnWaves.forEach(e=>e.hidden=true);}
     function spawnWave(lane){const e=spawnWaves[lane];if(e){spawnCircles[lane].setAttribute('r','1.8');e.hidden=false;}}
     function advanceSpawnWave(lane,u){const c=spawnCircles[lane];if(c)c.setAttribute('r',String(1.8+43.2*u));}
@@ -97,7 +99,7 @@
       hit.style.setProperty('--button-color', colors[i]);
       hit.setAttribute('aria-label', (i + 1) + '번 리듬 버튼');
       hit.innerHTML = '<span class="rb-press-face" aria-hidden="true"></span><span class="rb-circuit-pulse" aria-hidden="true"></span>';
-      const pulse=hit.querySelector('.rb-circuit-pulse');
+      const pulse=hit.querySelector('.rb-circuit-pulse');pressPulses.push(pulse);
       place(hit, buttonCx, buttonCy, 304);
       const circuit = board.querySelectorAll(".rb-circuit--glass")[i];
       circuit.style.setProperty('--button-color', colors[i]);
@@ -107,6 +109,7 @@
       const base=document.createElement('img');base.className='rb-button-base';base.alt='';base.src='assets/rhythm-b/button-base-v1118/base-'+i+'.svg';place(base,buttonCx,buttonCy+16,296,320);
       const cap=document.createElement('img');cap.className='rb-button-cap';cap.alt='';cap.src='assets/rhythm-b/button-face-v1124/face-'+i+'.svg';place(cap,buttonCx,buttonCy,268);
       const core=document.createElement('img');core.className='rb-button-core';core.alt='';core.src='assets/rhythm-b/upper-core-v1124/core-'+i+'.svg';place(core,buttonCx,buttonCy,268);
+      hit.addEventListener('focus',()=>core.classList.toggle('is-key-focused',hit.matches(':focus-visible')));hit.addEventListener('blur',()=>core.classList.remove('is-key-focused'));
       const spawnRing=document.createElement('span');spawnRing.className='rb-spawn-ripple';spawnRing.hidden=true;spawnRing.setAttribute('aria-hidden','true');spawnRing.style.setProperty('--button-color',colors[i]);spawnRing.innerHTML='<svg viewBox="0 0 94 94" aria-hidden="true"><circle cx="47" cy="47" r="0" fill="none" stroke="'+colors[i]+'" stroke-width="4"/></svg>';place(spawnRing,buttonCx-.5,buttonCy,94);spawnWaves.push(spawnRing);spawnCircles.push(spawnRing.querySelector('circle'));
       const surfaces = [hit, color, circuit, reflection, lens, cap, floor, core, base]; pressSurfaces.push(...surfaces);
       function down() {
@@ -116,7 +119,7 @@
         surfaces.forEach(el => el.classList.add('is-pressed'));if(flowFx)flowFx.press(i,true);
         if(flowSurfaces[i])flowSurfaces[i].classList.add('is-pressed');
         if(pulseAnimations[i]) pulseAnimations[i].cancel();
-        pulseAnimations[i]=pulse.animate([{transform:'scale(.08)',opacity:.7,offset:0},{transform:'scale(.28)',opacity:.7,offset:.18},{transform:'scale(1)',opacity:.455,offset:.7},{transform:'scale(1.35)',opacity:0,offset:1}],{duration:480,easing:'ease-out'});
+        pulseAnimations[i]=pulse.animate([{'--rb-press-wave-scale':'.08',opacity:.7,offset:0},{'--rb-press-wave-scale':'.28',opacity:.7,offset:.18},{'--rb-press-wave-scale':'1',opacity:.56,offset:.7},{'--rb-press-wave-scale':String(1+(pulseReach[i]-1)*2/3),opacity:.56,offset:.9},{'--rb-press-wave-scale':String(pulseReach[i]),opacity:0,offset:1}],{duration:480,easing:'ease-out'});
         if (play) {const occupied=play.hasCharacter(i),grade=play.press(i);if(grade!==undefined&&laserFx)laserFx.emit(i,occupied);}
       }
       function up() {
@@ -163,6 +166,23 @@
       tunnel.appendChild(glassGroup);
       miniSurfaces.push(mini);
     }
+    // V 1150 G: move the original pulse span out of its clipped button. No second wave.
+    const pulseDefs=document.createElementNS(ns,'svg');pulseDefs.setAttribute('width','0');pulseDefs.setAttribute('height','0');pulseDefs.setAttribute('aria-hidden','true');pulseDefs.style.position='absolute';
+    const defs=document.createElementNS(ns,'defs');pulseDefs.appendChild(defs);opts.root.appendChild(pulseDefs);
+    pressPulses.forEach((pulse,i)=>{const clip=document.createElementNS(ns,'clipPath');clip.id='rb-press-wave-clip-'+i;clip.setAttribute('clipPathUnits','userSpaceOnUse');const path=document.createElementNS(ns,'path');path.setAttribute('clip-rule','evenodd');clip.appendChild(path);defs.appendChild(clip);pulseClips.push(path);const layer=document.createElement('div');layer.className='rb-existing-pulse-layer';layer.setAttribute('aria-hidden','true');layer.style.clipPath='url(#'+clip.id+')';pulse.classList.add('rb-circuit-pulse--extended');pulse.style.setProperty('--button-color',colors[i]);layer.appendChild(pulse);opts.root.appendChild(layer);pulseLayers.push(layer);});
+    function fitPressPulses(){
+      const rb=opts.root.getBoundingClientRect(),bb=board.getBoundingClientRect(),unit=bb.width/952,lower=bb.top-rb.top+1136*unit;
+      const left=12+24*(rb.width-24)/952,right=rb.width-left,bottom=rb.height-12-24*(rb.height-24)/2078;
+      const cores=Array.from(board.querySelectorAll('.rb-button-core'),e=>{const b=e.getBoundingClientRect();return {x:b.left-rb.left+b.width*133.5/268,y:b.top-rb.top+b.height/2,r:b.width*48/268};});
+      pressPulses.forEach((pulse,i)=>{const col=i%3,row=Math.floor(i/3),cx=bb.left-rb.left+(176+col*300+(304*(.499088-.5)))*unit,cy=bb.top-rb.top+(1286+row*300+304*.00271)*unit+2,size=304*.9*unit;
+        pulse.style.left=cx+'px';pulse.style.top=cy+'px';pulse.style.width=size+'px';pulse.style.height=size+'px';
+        let d=`M${left} ${lower}H${right}V${bottom}H${left}Z`;
+        // Preserve this button's original center flash; shield the other eight glass interiors.
+        cores.forEach((c,j)=>{if(j!==i)d+=`M${c.x+c.r} ${c.y}A${c.r} ${c.r} 0 1 0 ${c.x-c.r} ${c.y}A${c.r} ${c.r} 0 1 0 ${c.x+c.r} ${c.y}Z`;});pulseClips[i].setAttribute('d',d);
+        const reach=Math.max(...[[left,lower],[right,lower],[left,bottom],[right,bottom]].map(([x,y])=>Math.hypot(x-cx,y-cy)));pulseReach[i]=Math.max(1.35,reach/(size*.7/Math.SQRT2)*1.06);
+      });
+    }
+    const pulseResize=new ResizeObserver(fitPressPulses);pulseResize.observe(opts.root);pulseResize.observe(board);fitPressPulses();
     const upperGlow = document.createElement('img'); upperGlow.className = 'rb-upper-glow'; upperGlow.alt = ''; upperGlow.src = 'assets/rhythm-b/upper-uniform-glow.png'; board.appendChild(upperGlow);
     for(const y of [936,1118]){const line=document.createElement('div');line.className='rb-zone-divider';line.setAttribute('aria-hidden','true');line.style.top=(y/2078*100)+'%';board.appendChild(line);}
     const score = document.createElement('div'); score.className = 'rb-status rb-status--score';
