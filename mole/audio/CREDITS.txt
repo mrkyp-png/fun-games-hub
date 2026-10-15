@@ -117,3 +117,7 @@
 # 리듬팡 B 실제 곡 (V 1151 G)
 - audio/rp/meet-me-halfway.mp3 : 사용자 제공 Suno 제작곡 "Meet Me Halfway". 바탕화면/채보 원본 MP3 119.56초/48kHz/stereo를 재인코딩 없이 별도 복사. 원본 및 게임용 파일 SHA256 cc5cfd7bb038257f1ca2e08fcbe59b60de8cf3778b0daba306df61afb3933c9c. 원본 보존.
 - audio/rp/meet-me-halfway.json : 스펙트럼 온셋·가변 박자 추적 기반 1차 B 채보. 기존 곡의 레인 배열을 복사하지 않았으며 실제 플레이에 따라 보정할 수 있음.
+
+# 로딩 화면 (V 1153 G)
+- assets/loading-cyber-v1153/characters.webp : 사용자 제공 Desktop/로딩화면 케릭.png. 투명 PNG 원본1774x887을 해상도/알파 유지한 WebP quality94로 저장. 캐릭터/보드 그림 편집·분할 없음, 원본 보존.
+- assets/loading-cyber-v1153/stage.webp : 사용자 제공 Desktop/배경.png. 원본2048x768을 해상도 유지한 WebP quality94로 저장. 무대 그림 편집 없음, 원본 보존.

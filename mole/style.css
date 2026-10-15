@@ -7562,3 +7562,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 
 
 .rb-button-core.is-key-focused { filter:brightness(1.18); }
+
+/* V 1152 G: enlarge only B score/combo values 10%, central judgement 5%. */
+.rb-status--score b,.rb-status--combo b { font-size:clamp(15.4px,5.5vw,27.5px); }
+.rb-status--judge b { font-size:clamp(14.7px,4.83vw,27.3px); }
