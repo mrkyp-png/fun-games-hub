@@ -7410,3 +7410,19 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 
 /* V 1099 G: half-strength upper reflection only. */
 .rb-portal-glass > .rb-glass-spin { opacity: .5; }
+
+/* V 1102 G: glass restored by user; V1101 softer button glows retained. */
+
+/* V 1101 G: soften lower-button glows without changing press or timing. */
+.rb-circuit-reflection.is-chord-active { opacity: .7; }
+.rb-flow-canvas { filter: brightness(.805); }
+.rb-circuit--glass.is-pressed { filter: var(--circuit-tint) drop-shadow(0 0 2px var(--button-color)) drop-shadow(0 0 4px var(--button-color)) brightness(1.15); }
+
+/* V 1103 G: pre-rendered glass; rotate only a cached highlight texture. */
+.rb-portal-glass, .rb-glass-dome { border:0; box-shadow:none; background:transparent var(--glass-image) center/100% 100% no-repeat; }
+.rb-glass-spin { background:transparent url('assets/rhythm-b/glass-cache-v1103/reflection.png') center/100% 100% no-repeat; }
+
+/* V 1104 G: slow Earth drift outside the exact outer progress-frame path. */
+.rb-earth-background { position:absolute; inset:0; z-index:-2; pointer-events:none; overflow:hidden; background:#01050d url('assets/rhythm-b/earth-stars-v1104.jpg') top left/100% auto repeat-y; }
+.rb-earth-video { position:absolute; width:110vmin; height:auto; aspect-ratio:940/1672; left:calc(10% - 55vmin); top:calc(10% - 97.829787vmin); object-fit:fill; clip-path:ellipse(49% 27.55% at 50% 50%); transform:translate(0vw,0vh); }
+.rb-earth-interior { position:absolute; inset:12px; width:calc(100% - 24px); height:calc(100% - 24px); }

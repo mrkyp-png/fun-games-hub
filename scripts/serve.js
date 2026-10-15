@@ -16,7 +16,7 @@ const CERT_DIR = path.join(__dirname, '.devcert');
 const MIME = {
   '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css',
   '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png',
-  '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg'
+  '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.mp4': 'video/mp4', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg'
 };
 
 function handler(req, res) {
@@ -33,7 +33,18 @@ function handler(req, res) {
 
   function finish(err, data, full) {
     if (err) { res.writeHead(404); res.end('not found'); return; }
+    // Video seeking needs byte ranges, including when the background follows the song clock.
+    if (path.extname(full) === '.mp4' && req.headers.range) {
+      const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range);
+      const start = range ? (range[1] ? Number(range[1]) : Math.max(0, data.length - Number(range[2]))) : -1;
+      const end = range ? (range[1] && range[2] ? Math.min(Number(range[2]), data.length - 1) : data.length - 1) : -1;
+      if (start < 0 || start > end || start >= data.length) { res.writeHead(416, { 'Content-Range': 'bytes */' + data.length }); res.end(); return; }
+      res.writeHead(206, { 'Content-Type': 'video/mp4', 'Accept-Ranges': 'bytes', 'Content-Range': 'bytes ' + start + '-' + end + '/' + data.length, 'Content-Length': end - start + 1, 'Cache-Control': 'no-store' });
+      res.end(data.subarray(start, end + 1)); return;
+    }
     res.writeHead(200, {
+      'Content-Length': data.length,
+      'Accept-Ranges': path.extname(full) === '.mp4' ? 'bytes' : 'none',
       'Content-Type': MIME[path.extname(full)] || 'application/octet-stream',
       'Cache-Control': 'no-store' // 미리보기는 항상 최신 파일을 봐야 하므로 브라우저 캐시 금지
     });
