@@ -18,8 +18,8 @@
   const comboBackground=document.createElement('div');comboBackground.className='rb-combo-background';board.appendChild(comboBackground);
   const comboLayers=comboPalette.map((color,stage)=>{const group=document.createElement('div');group.className='rb-combo-atmosphere';group.style.setProperty('--combo-color',color);group.dataset.theme=stage;group.innerHTML='<span class="rb-combo-region rb-combo-region--upper"></span><span class="rb-combo-region rb-combo-region--lower"></span>';comboBackground.appendChild(group);return group;});
   const comboSweeps=['upper','lower'].map(side=>{const el=document.createElement('div');el.className='rb-combo-sweep rb-combo-sweep--'+side;el.innerHTML='<span></span>';comboBackground.appendChild(el);return el;});
-  let comboStage=0,comboSweepAnimations=[];
-  function updateCombo(combo,immediate=false){const stage=Math.floor(combo/10);if(stage===comboStage&&!immediate)return;comboStage=stage;board.dataset.comboStage=String(stage);const color=stage?comboPalette[(stage-1)%5]:'#00cfff';board.style.setProperty('--combo-accent',color);hud.style.setProperty('--combo-accent',color);hud.classList.toggle('rb-combo-energized',stage>=5);
+  let comboStage=0,comboSweepAnimations=[],comboPulse=null;
+  function updateCombo(combo,immediate=false){const stage=Math.floor(combo/10);if(stage===comboStage&&!immediate)return;comboStage=stage;if(comboPulse){comboPulse.cancel();comboPulse=null;}if(stage&&!immediate&&combo%10===0&&!root.matchMedia('(prefers-reduced-motion: reduce)').matches)comboPulse=animateEffect(comboEl,[{transform:'scale(1)'},{transform:'scale(1.5)',offset:.3},{transform:'scale(1)'}],240);board.dataset.comboStage=String(stage);const color=stage?comboPalette[(stage-1)%5]:'#00cfff';board.style.setProperty('--combo-accent',color);hud.style.setProperty('--combo-accent',color);hud.classList.toggle('rb-combo-energized',stage>=5);
    comboLayers.forEach((el,i)=>{el.style.transitionDuration=immediate?'0ms':'500ms';el.style.opacity=stage&&i===(stage-1)%5?'0.05':'0';comboScreenTones[i].style.transitionDuration=immediate?'0ms':'500ms';comboScreenTones[i].style.opacity=el.style.opacity;});
    comboSweepAnimations.forEach(a=>{effects.delete(a);a.cancel();});comboSweepAnimations=[];
    if(stage&&!immediate){const reduced=root.matchMedia('(prefers-reduced-motion: reduce)').matches;if(!reduced){board.querySelectorAll('.rb-zone-divider').forEach(el=>comboSweepAnimations.push(animateEffect(el,[{opacity:.6},{opacity:1,offset:.15},{opacity:.6}],500)));}if(!reduced)comboSweeps.forEach((el,i)=>{el.style.setProperty('--combo-color',color);comboSweepAnimations.push(animateEffect(el.firstElementChild,[{transform:'translateY('+(i?'-100%':'800%')+')',opacity:0,offset:0},{opacity:.65,offset:.12},{transform:'translateY('+(i?'800%':'-100%')+')',opacity:0,offset:1}],500));});}
@@ -38,7 +38,7 @@
   const startCallout=document.createElement('div');startCallout.className='rb-start-callout';startCallout.hidden=true;startCallout.setAttribute('aria-hidden','true');hud.appendChild(startCallout);
   const startShade=document.createElement('div');startShade.className='rb-start-shade';startShade.hidden=true;startShade.setAttribute('aria-hidden','true');hud.appendChild(startShade);
   function animateEffect(el,keyframes,duration,done){const a=el.animate(keyframes,{duration,easing:'ease-out'});effects.add(a);a.onfinish=()=>{effects.delete(a);if(done)done();};a.oncancel=()=>effects.delete(a);return a;}
-  function clearEffects(){for(const a of effects)a.cancel();effects.clear();pangs.forEach(el=>el.hidden=true);pangAnimations.fill(null);startAnimation=null;startCallout.hidden=true;startShade.hidden=true;startShade.style.opacity='0';}
+  function clearEffects(){for(const a of effects)a.cancel();effects.clear();pangs.forEach(el=>el.hidden=true);pangAnimations.fill(null);startAnimation=null;startCallout.hidden=true;startShade.hidden=true;startShade.style.opacity='0';comboPulse=null;}
   function showStart(stage){
    if(state.startPhase===stage)return;state.startPhase=stage;
    if(startAnimation)startAnimation.cancel();
@@ -84,6 +84,16 @@
   const spaceWaves=spaceMinis.map(m=>m.querySelector('.rb-space-hit-wave'));
   const spacePhases=Array.from({length:9},(_,i)=>i*.071),spaceApproach=Array(9).fill(0),waveAnimations=Array(9).fill(null);
   const spaceReduced=root.matchMedia('(prefers-reduced-motion: reduce)');let spaceLastTime=null;
+  const cueCircuits=Array.from(board.querySelectorAll('.rb-circuit-reflection'));
+  function clearCues(){spaceMinis.forEach(e=>e.classList.remove('is-chord-ready'));cueCircuits.forEach(e=>e.classList.remove('is-chord-active'));}
+  function updateCues(t){
+   const upper=Array(9).fill(false),lower=Array(9).fill(false),perfect=rules.diffs[state.diff].judge.perfectMs/1000;
+   for(const n of state.notes){if(n.chordSize<2)continue;const approaching=n.state==='pending'&&t>=n.spawnTime&&t<=n.targetTime+rules.diffs[state.diff].judge.goodMs/1000;
+    if(approaching||n.state==='hit'&&!n.el.hidden)lower[n.lane]=true;
+    if(approaching&&Math.abs(t-n.targetTime)<=perfect)upper[n.lane]=true;
+   }
+   spaceMinis.forEach((e,i)=>e.classList.toggle('is-chord-ready',upper[i]));cueCircuits.forEach((e,i)=>e.classList.toggle('is-chord-active',lower[i]));
+  }
   function resetSpace(){spaceLastTime=null;spacePhases.forEach((_,i)=>{spacePhases[i]=i*.071;spaceApproach[i]=0;});spaceMinis.forEach(m=>{m.style.removeProperty('--space-beat');m.style.removeProperty('--space-approach');});spaceSections.flat().forEach(el=>{el.style.opacity='0';el.removeAttribute('transform');});waveAnimations.fill(null);}
   function updateSpace(t){
    const dt=spaceLastTime===null?0:Math.max(0,t-spaceLastTime);spaceLastTime=t;spaceApproach.fill(0);
@@ -127,11 +137,11 @@
   }
   function stopAudio(){hitSources.forEach(s=>{try{s.stop();}catch(e){}});hitSources.clear();sources.forEach(s=>{try{s.stop();}catch(e){}});sources=[];melodyGain=null;}
   function clearRings(){rings.forEach(el=>el.remove());rings.length=0;}
-  function stop(){generation++;cancelAnimationFrame(frame);stopAudio();clearEffects();clearRings();clearLights();resetSpace();updateProgress(0);updateCombo(0,true);state=null;error.hidden=true;}
+  function stop(){generation++;cancelAnimationFrame(frame);stopAudio();clearEffects();clearRings();clearLights();clearCues();resetSpace();updateProgress(0);updateCombo(0,true);state=null;error.hidden=true;}
   function finish(clear){
    if(!state||state.ended)return;
    if(clear)updateProgress(1);
-   state.ended=true;clearLights();cancelAnimationFrame(frame);stopAudio();clearEffects();rings.forEach(el=>el.hidden=true);
+   state.ended=true;clearLights();clearCues();cancelAnimationFrame(frame);stopAudio();clearEffects();rings.forEach(el=>el.hidden=true);
    opts.onFinish({score:state.score,combo:state.combo,maxCombo:state.maxCombo,cnt:{...state.cnt},diff:state.diff,practice:state.practice},clear);
   }
   function miss(note){
@@ -187,6 +197,7 @@
     if(t>n.targetTime+D.judge.goodMs/1000){miss(n);continue;}
     if(t>=n.spawnTime){n.el.hidden=false;placeNote(n,(t-n.spawnTime)/D.travel);}
    }
+   if(!state.ended)updateCues(t);
    if(!state.ended&&t>=state.duration)finish(true);
    if(!state.ended)frame=requestAnimationFrame(tick);
   }
@@ -202,6 +213,7 @@
     if(authoredNotes)times=authoredNotes.map(n=>n.time);
     if(!times){const c=rules.config,spb=60/c.song.bpm,D=rules.diffs[diff];times=[];for(let i=0;i<c.chart.beats;i++){if(i%D.rest===D.rest-1)continue;times.push(c.song.firstBeat+(c.chart.startBeat+i)*spb);if(i%2&&Math.random()<D.half)times.push(c.song.firstBeat+(c.chart.startBeat+i+.5)*spb);}}
     const D=rules.diffs[diff],laneGap=D.travel+D.judge.goodMs/1000+.2;
+    const chordCounts=new Map();times.forEach(t=>chordCounts.set(t,(chordCounts.get(t)||0)+1));
     const last=Array(9).fill(-Infinity);state.notes=times.map((targetTime,id)=>{
      const free=last.map((t,lane)=>lane).filter(lane=>targetTime-last[lane]>=laneGap);
      if(!free.length)throw new Error('Chart exceeds nine independent lane windows');
@@ -214,7 +226,7 @@
      const ring=document.createElement('img');ring.className='rb-note-ring';ring.alt='';ring.draggable=false;ring.src='assets/rhythm-b/note-inner-line-'+lane+'.png';el.appendChild(ring);
      el.style.left=((26+(lane%3)*300)/952*100)+'%';el.style.top=((26+Math.floor(lane/3)*300)/2078*100)+'%';
      el.style.setProperty('--note-color',colors[lane]);board.appendChild(el);rings.push(el);
-     return {id,lane,targetTime,spawnTime:targetTime-rules.diffs[diff].travel,state:'pending',el,character,ring,sound:authoredNote?authoredNote.sound:'kick',chordSize:authoredNote?authoredNote.chordSize:1};
+     return {id,lane,targetTime,spawnTime:targetTime-rules.diffs[diff].travel,state:'pending',el,character,ring,sound:authoredNote?authoredNote.sound:'kick',chordSize:authoredNote?authoredNote.chordSize:chordCounts.get(targetTime)};
     });
     state.hitFeedback=!!(data.song&&data.song.hitFeedback);if(state.hitFeedback)prepareHitBuffers();
     state.beats=data.song&&Array.isArray(data.song.beats)?data.song.beats:null;state.beatCursor=0;

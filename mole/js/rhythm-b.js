@@ -96,7 +96,9 @@
       place(hit, buttonCx, buttonCy, 304);
       const circuit = board.querySelectorAll(".rb-circuit--glass")[i];
       circuit.style.setProperty('--button-color', colors[i]);
-      const surfaces = [hit, color, circuit]; pressSurfaces.push(...surfaces);
+      const reflection=document.createElement('div');reflection.className='rb-circuit-reflection';reflection.setAttribute('aria-hidden','true');reflection.style.cssText=circuit.style.cssText;reflection.style.setProperty('--button-color',colors[i]);reflection.innerHTML='<span class="rb-circuit-outward"></span>';board.appendChild(reflection);
+      const lens=document.createElement('div');lens.className='rb-button-lens';lens.setAttribute('aria-hidden','true');lens.style.cssText=circuit.style.cssText;lens.style.setProperty('--glass-color',colors[i]);lens.innerHTML='<span class="rb-glass-dome"><span class="rb-glass-spin"></span></span>';board.appendChild(lens);
+      const surfaces = [hit, color, circuit, reflection, lens]; pressSurfaces.push(...surfaces);
       function down() {
         if (!running || paused) return;
         reboundAnimations[i].forEach(a=>a.cancel());reboundAnimations[i]=[];
@@ -108,9 +110,9 @@
       }
       function up() {
         if(!hit.classList.contains('is-pressed'))return;
-        const moving=[circuit,flowSurfaces[i]].filter(Boolean),from=moving.map(el=>getComputedStyle(el).transform);
+        const moving=[circuit,reflection,lens,flowSurfaces[i]].filter(Boolean),from=moving.map(el=>getComputedStyle(el).transform);
         surfaces.forEach(el=>el.classList.remove('is-pressed'));if(flowSurfaces[i])flowSurfaces[i].classList.remove('is-pressed');
-        if(!root.matchMedia('(prefers-reduced-motion: reduce)').matches){reboundAnimations[i]=moving.map((el,j)=>el.animate([{transform:from[j],offset:0},{transform:(j===0?'translate(-50%, -50%) ':'')+'scale(1.01)',offset:.65},{transform:j===0?'translate(-50%, -50%) scale(1)':'none',offset:1}],{duration:160,easing:'ease-out'}));}
+        if(!root.matchMedia('(prefers-reduced-motion: reduce)').matches){reboundAnimations[i]=moving.map((el,j)=>el.animate([{transform:from[j],offset:0},{transform:(el!==flowSurfaces[i]?'translate(-50%, -50%) ':'')+'scale(1.01)',offset:.65},{transform:el!==flowSurfaces[i]?'translate(-50%, -50%) scale(1)':'none',offset:1}],{duration:160,easing:'ease-out'}));}
       }
       hit.addEventListener('pointerdown', e => {
         if (e.button !== 0) return;
@@ -149,6 +151,7 @@
       for(let depth=0;depth<3;depth++){const section=circle('rb-space-section',radius);section.dataset.focusX=fx;section.dataset.focusY=fy;tunnel.appendChild(section);}
       const wave=circle('rb-space-hit-wave',radius);wave.style.transformOrigin=fx+'px '+fy+'px';tunnel.appendChild(wave);
       mini.appendChild(tunnel);
+      const glass=document.createElement('span');glass.className='rb-portal-glass';glass.setAttribute('aria-hidden','true');glass.innerHTML='<span class="rb-glass-spin"></span>';mini.appendChild(glass);
       miniSurfaces.push(mini);
     }
     const upperGlow = document.createElement('img'); upperGlow.className = 'rb-upper-glow'; upperGlow.alt = ''; upperGlow.src = 'assets/rhythm-b/upper-uniform-glow.png'; board.appendChild(upperGlow);
