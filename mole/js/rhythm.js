@@ -494,6 +494,12 @@
     function showResult(result, clear, isB) {
       var token = ++resultSerial, resultDiff = isB ? result.diff : diff;
       var r = $('[data-rp-result]');
+      var rating=sharedRules.resultRating(result.cnt,isB?result.totalNotes:result.notes.length,clear);
+      var rankEl=$('[data-rp-res-rank]'),badgeEl=$('[data-rp-res-achievement]');rankEl.classList.remove('is-stamped');badgeEl.classList.remove('is-stamped');
+      rankEl.textContent=rating.rank;rankEl.dataset.rank=rating.rank;
+      $('[data-rp-res-accuracy]').textContent=(Math.floor(rating.accuracy*100+1e-8)/100).toFixed(2)+'%';
+      badgeEl.textContent=rating.allPerfect?'ALL PERFECT':rating.fullCombo?'FULL COMBO':'';badgeEl.hidden=!badgeEl.textContent;
+
       var bk = (isB ? bBestPrefix() : 'mole.rp.best.') + resultDiff, old = parseInt(localStorage.getItem(bk), 10) || 0, isNew = !(isB && result.practice) && result.score > old;
       if (isNew) localStorage.setItem(bk, String(result.score));
       try { if (!isB && MG.Quest) MG.Quest.recordRhythm({ diff: resultDiff, clear: clear, miss: result.cnt.MISS, perfect: result.cnt.PERFECT }); } catch (e) { /* 무시 */ } // v895: 리듬팡 업적
@@ -508,7 +514,7 @@
         r.hidden = false;
         var t0 = performance.now(); // v831: 점수 0 → 최종 카운트업(0.9초) 뒤 신기록이면 NEW! 도장
         (function up(now) { if (token !== resultSerial) return; var k = Math.min(1, (now - t0) / 900), e = 1 - Math.pow(1 - k, 3); sEl.textContent = Math.round(fin * e).toLocaleString('en-US');
-          if (k < 1) requestAnimationFrame(up); else if (isNew && fin > 0) stamp.classList.add('is-on'); })(t0);
+          if (k < 1) requestAnimationFrame(up); else {if(isNew&&fin>0)stamp.classList.add('is-on');rankEl.classList.add('is-stamped');if(!badgeEl.hidden)badgeEl.classList.add('is-stamped');} })(t0);
       }, clear ? 700 : 300);
     }
 
@@ -631,7 +637,15 @@
   var sharedRules = {
     config: CONFIG, diffs: DIFFS,
     grade: function (ms, difficulty) { var J = DIFFS[difficulty].judge; return ms <= J.perfectMs ? 'PERFECT' : ms <= J.greatMs ? 'GREAT' : ms <= J.goodMs ? 'GOOD' : null; },
-    points: function (grade, combo) { return Math.round(CONFIG.score[grade] * (1 + Math.min(combo, 100) / 200)); }
+    points: function (grade, combo) { return Math.round(CONFIG.score[grade] * (1 + Math.min(combo, 100) / 200)); },
+    resultRating: function (cnt, totalNotes, clear) {
+      var n=totalNotes||0,base=(cnt.PERFECT||0)*300+(cnt.GREAT||0)*200+(cnt.GOOD||0)*100,max=n*300;
+      var accuracy=max?Math.min(100,base/max*100):0,allPerfect=!!clear&&n>0&&cnt.PERFECT===n;
+      var fullCombo=!!clear&&n>0&&(cnt.MISS||0)===0&&(cnt.PERFECT||0)+(cnt.GREAT||0)+(cnt.GOOD||0)===n;
+      var rank='F',bands=[['SS',98],['S',95],['AAA',90],['AA',80],['A',70],['B',60],['C',50],['D',40]];
+      if(allPerfect)rank='SSS';else if(max)for(var i=0;i<bands.length;i++)if(base*100>=max*bands[i][1]){rank=bands[i][0];break;}
+      return {rank:rank,accuracy:accuracy,fullCombo:fullCombo,allPerfect:allPerfect};
+    }
   };
   var api = { create: create, rules: sharedRules };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.Rhythm = api; }

@@ -7535,3 +7535,19 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 
 /* V 1141 G: animate radius only, keeping the wave stroke equal to the glass rim. */
 .rb-spawn-ripple > svg { display:block; width:100%; height:100%; overflow:visible; }
+
+/* V 1149 G: shared A/B final rank and achievement stamps, after score count-up. */
+.rx-rating { width:100%; height:24cqw; display:flex; align-items:center; justify-content:center; gap:5cqw; }
+.rx-rank-stamp { display:grid; place-items:center; min-width:32cqw; height:19cqw; border:2px solid currentColor; border-radius:5px; font-size:14cqw; line-height:1; color:#a8bfd0; opacity:0; transform:rotate(-9deg) scale(1.8); }
+.rx-rank-stamp[data-rank=SSS],.rx-rank-stamp[data-rank=SS] { color:#ffe542; }
+.rx-rank-stamp[data-rank=S],.rx-rank-stamp[data-rank=AAA] { color:#bd8aff; }
+.rx-rank-stamp[data-rank=AA],.rx-rank-stamp[data-rank=A] { color:#65dfff; }
+.rx-rank-stamp[data-rank=F] { color:#ff7289; }
+.rx-rating-detail { display:flex; flex-direction:column; align-items:center; gap:1cqw; }
+.rx-rating-detail small { font-size:3.8cqw; color:#adc4da; }.rx-rating-detail > b { font-size:7cqw; color:#fff; }
+.rx-achievement-stamp { font-size:4cqw; color:#ffe542; white-space:nowrap; opacity:0; }
+.rx-achievement-stamp[hidden] { display:none; }
+.rx-rank-stamp.is-stamped { animation:rx-rank-impact 450ms cubic-bezier(.2,1.4,.4,1) forwards; }
+.rx-achievement-stamp.is-stamped { animation:rx-rank-impact 350ms 120ms ease-out forwards; }
+@keyframes rx-rank-impact { 0% { opacity:0; transform:rotate(-9deg) scale(1.8); } 65% { opacity:1; transform:rotate(-9deg) scale(.95); } 100% { opacity:1; transform:rotate(-9deg) scale(1); } }
+@media(prefers-reduced-motion:reduce) { .rx-rank-stamp.is-stamped,.rx-achievement-stamp.is-stamped { animation:none; opacity:1; transform:none; } }

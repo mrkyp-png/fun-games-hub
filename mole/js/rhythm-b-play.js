@@ -98,7 +98,7 @@
   const status=document.createElement('div');status.className='rb-timing-gauge';status.setAttribute('role','img');status.setAttribute('aria-label','Judgement energy: longest PERFECT, shortest MISS');
   status.innerHTML='<svg viewBox="1 0 778 60" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="rb-timing-spectrum"><stop stop-color="#247dff"/><stop offset=".3" stop-color="#ad58ff"/><stop offset=".46" stop-color="#29465d"/><stop offset=".54" stop-color="#29465d"/><stop offset=".7" stop-color="#ad58ff"/><stop offset="1" stop-color="#247dff"/></linearGradient></defs><rect x="2" y="8" width="776" height="34" fill="#041020" stroke="#37556f" stroke-width="2"/><rect x="16" y="16" width="748" height="18" fill="url(#rb-timing-spectrum)" opacity=".2"/><path d="M24 8H756M24 42H756" stroke="url(#rb-timing-spectrum)" stroke-width="2" opacity=".6"/></svg><span class="rb-timing-caption rb-timing-caption--center">RHYTHM</span>';
   const gaugeSvg=status.querySelector('svg');
-  for(const [grade,strength] of [['GOOD',.44],['GREAT',.72],['PERFECT',1]])for(const side of [-1,1]){const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.dataset.zone=grade;line.dataset.side=side;const x=1+(50+side*46*strength)/100*778;line.setAttribute('x1',x);line.setAttribute('x2',x);line.setAttribute('y1','10');line.setAttribute('y2','40');line.setAttribute('stroke',grade==='GOOD'?'#348aff':grade==='GREAT'?'#b65cff':'#ffe542');line.setAttribute('stroke-width','1');line.setAttribute('vector-effect','non-scaling-stroke');gaugeSvg.appendChild(line);}
+  for(const [grade,strength] of [['GOOD',.44],['GREAT',.72],['PERFECT',1]])for(const side of [-1,1]){const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.dataset.zone=grade;line.dataset.side=side;const x=1+(50+side*46*strength)/100*778;line.setAttribute('x1',x);line.setAttribute('x2',x);line.setAttribute('y1','32');line.setAttribute('y2','42');line.setAttribute('stroke','#7993a8');line.setAttribute('stroke-opacity','.55');line.setAttribute('stroke-width','1');line.setAttribute('vector-effect','non-scaling-stroke');gaugeSvg.appendChild(line);}
   board.appendChild(status);
   const timingColors={PERFECT:'#ffe542',GREAT:'#b65cff',GOOD:'#348aff',MISS:'#ff304f'},timingAnimations=Array(1).fill(null);let timingCursor=0;
   const timingLights=Array.from({length:1},()=>{const el=document.createElement('span');el.className='rb-timing-light';el.hidden=true;status.appendChild(el);return el;});
@@ -182,7 +182,7 @@
    if(!state||state.ended)return;
    if(clear)updateProgress(1);
    state.ended=true;clearLights();clearCues();cancelAnimationFrame(frame);stopAudio();clearEffects();rings.forEach(el=>el.hidden=true);
-   opts.onFinish({score:state.score,combo:state.combo,maxCombo:state.maxCombo,cnt:{...state.cnt},diff:state.diff,practice:state.practice},clear);
+   opts.onFinish({score:state.score,combo:state.combo,maxCombo:state.maxCombo,cnt:{...state.cnt},totalNotes:state.notes.length,diff:state.diff,practice:state.practice},clear);
   }
   function miss(note){
    if(!state||state.ended)return;
