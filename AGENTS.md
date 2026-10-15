@@ -1097,3 +1097,18 @@
 ## 2026-10-16 / V1150 G 배포 승인
 - 사용자 "배포"로 현재 V1150 G 파동 범위/밝기 및 Enter 사각형 수정 커밋·푸시·Pages배포 승인. 최신 검증 재실행 통과: 파동 다른8유리원 침범0, 실제 Enter 사각형 없음, syntax/diff통과. headless p95 50ms/초과4프레임으로 실폰 무버벅임은 미확인. 공개파일 동작/일치 확인 후 결과 보고.
 - 제품5파일 및 최신 검증2파일/인수인계만 명시stage. 새곡/오디오/초안/사용자원본/기존미추적파일 제외 및 보존. 수정사전허락/배포별도허락/G-C연속번호/Claude병행변경보존/다음에이전트·Claude인수인계 규칙 유지.
+
+## 2026-10-16 / V1150 G Pages 배포 완료
+- 사용자 배포승인에 따라9eca985c4a493144dcb4603661fc70bcddbe4f54 origin/master푸시. Pages38788730201 completed/success. 공개13제품파일 SHA256 로컬일치.
+- 공개 verify-original-pulse-extension-v1150-public 및 pixels-public 통과: 단일기존span 확장/별도wave비활성/한줄/기존밝기+.56, 0/4/8번 칸밖전파·다른유리원침범0, Enter 흰사각형없음/원형포커스, stop정리/오류0. 공개headless120프레임 p95 33.4ms/50ms초과2프레임(실폰무버벅임 증거 아님). URL https://mrkyp-png.github.io/fun-games-hub/mole/index.html?v=1150 . 이번 완료기록만 로컬추가/재배포없음. 새곡초안미등록/미배포, 기존·Claude·미추적원본보존 및 수정허락/배포별도허락/G-C연속번호/후속에이전트인수인계 규칙 유지.
+
+## 2026-10-16 / V1151 G Meet Me Halfway 채보 및 3px 파동·배포 승인
+- 사용자 "채보작업 진행"으로 새곡작업 재개 승인. "파동 선 굵기...레이저 굵기와 같으면" 별도수정 승인. "배포하세요"로 최종 V1151 G 커밋·푸시·Pages배포 승인. 기존 게임틀 고정 및 기존·Claude·미추적원본보존, 수정사전허락/배포별도허락/G-C연속번호/다음에이전트·Claude인수인계 유지.
+- Desktop/채보/Meet Me Halfway.mp3 119.56초,2686330bytes,SHA256 cc5cfd7bb038257f1ca2e08fcbe59b60de8cf3778b0daba306df61afb3933c9c. 재인코딩 없이 게임용 복사. 기존곡은 보존하고 목록에 새곡 추가/곡별저장키 분리. 세난이도 고정패턴, 기존곡과다름. 강한구간 동시입력+HARD 온셋필, 긴 빈구간 추가없음. 직접청취확정한후렴은아니며 자동온셋분석 기반1차채보.
+- EASY166노트/28동시/올PERFECT67295점, NORMAL332/56동시/141995점, HARD360/56동시/154595점. 최대노트공백1.033/.534/.534초. 실제최소같은칸간격2.322/1.9156/1.6718초. 분석283박,16박블록에너지후보에맞춰강약구분. 전체119.56초음악은MISS에도계속재생,성공타격피드백,TEST기본ON·기록제외/일반도완주.
+- 파동은 같은 span/흰색·버튼색 한줄/중심발광/480ms/밝기.56/확장범위 유지. radialgradient 띠의 투명끝~끝 넓이를3CSSpx로 보정하여 레이저widthPx3과 일치. 별도renderer/파동 추가없음. 다른8유리원제외,자기칸기존중심발광보존.
+- verify-meet-me-halfway-data.py 및 chart.js 통과:원본게임SHA동일,박자·온셋필/세난이도전곡/고정레인/중복없음/같은칸간격/독립동시점수/효과음OFF/count-in·pause입력차단. verify-b-clock통과:실제시간종료/10MISS이후완주/로드취소/정리.
+- verify-meet-me-halfway-live.js 통과:실제MP3 HARD 재생,이전108노트자동타격후47.7634초실제CDP2터치로combo108→110,MISS0,release/pause/resume/quit. 처음검증은host왕복지연으로너무늦은터치라실패하여,모바일viewport설정과80ms전이벤트송신으로실제판정창내검증(두각각GOOD)했다. 제품타이밍규칙완화없음.
+- verify-meet-me-halfway-records.js 통과:TEST최고점제외/새곡정상최고점저장/기존2곡및A기록보존/A실제진입·pause·종료. 기존A재생/판정/점수코드불변.
+- review/verify-original-pulse-extension-v1151.js 및 pixels-v1151.py 통과:3CSSpx 계산/기존span및단일파동/유리침범0/엔터사각형없음/정리. 배경차분한 실제파동의 칸밖픽셀6491/8971/6866 확인. headless120프레임p95 17.9ms,50ms초과1(폰무버벅임증명아님). 휴대폰성능·깜빡임은실기확인필요.
+- README에재현파이프라인/원칙/검증 추가,CREDITS원본출처/SHA추가. 공개V1150 G(9eca985),로컬V1151 G. 이번배포대상만명시stage,다른미추적파일/원본/실험샘플포함금지.

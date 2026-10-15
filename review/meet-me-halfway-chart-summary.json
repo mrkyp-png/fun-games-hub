@@ -1,0 +1,25 @@
+{
+  "source_sha256": "cc5cfd7bb038257f1ca2e08fcbe59b60de8cf3778b0daba306df61afb3933c9c",
+  "duration": 119.56,
+  "statistics": {
+    "EASY": {
+      "events": 138,
+      "notes": 166,
+      "chords": 28,
+      "minLaneGap": 2.22
+    },
+    "NORMAL": {
+      "events": 276,
+      "notes": 332,
+      "chords": 56,
+      "minLaneGap": 1.88
+    },
+    "HARD": {
+      "events": 304,
+      "notes": 360,
+      "chords": 56,
+      "minLaneGap": 1.65
+    }
+  },
+  "audio_bytes": 2686330
+}

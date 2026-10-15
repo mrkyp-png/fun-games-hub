@@ -10,7 +10,7 @@
   // ---- 튜닝 데이터(코드 하드코딩 대신 여기서만 조절) ----
   var CONFIG = {
     song: { src: 'audio/bgm-game-1.mp3', bpm: 83.0, firstBeat: 0.232 }, // BPM·첫 박 = 곡 분석값(곡 데이터가 없을 때 예비)
-    bSongs: [{ id: 'le-monde-attendra-demain', title: 'Le monde attendra demain', duration: 119.96, chart: 'audio/rp/le-monde-attendra-demain.json' }, { id: 'fever2', title: '기존 테스트곡', duration: 120.6, chart: 'audio/rp/fever2.json' }],
+    bSongs: [{ id: 'le-monde-attendra-demain', title: 'Le monde attendra demain', duration: 119.96, chart: 'audio/rp/le-monde-attendra-demain.json' }, { id: 'meet-me-halfway', title: 'Meet Me Halfway', duration: 119.56, chart: 'audio/rp/meet-me-halfway.json' }, { id: 'fever2', title: '기존 테스트곡', duration: 120.6, chart: 'audio/rp/fever2.json' }],
     songData: 'audio/rp/fever2.json', // v843: 곡 분석 데이터(반주·멜로디 분리 + 난이도별 노트 시각) — 맞히면 멜로디가 연주됨
     chart: { startBeat: 8, beats: 116 },           // 8박(인트로) 뒤부터 116박 = 한 판 약 90초(사용자 지정 v837, 이전 64박≈52초)
     judge: { perfectMs: 70, greatMs: 130, goodMs: 200 },

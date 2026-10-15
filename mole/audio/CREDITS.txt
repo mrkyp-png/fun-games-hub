@@ -113,3 +113,7 @@
 # 리듬팡 B 실제 곡 (V 1091 G)
 - audio/rp/le-monde-attendra-demain.mp3 : 사용자 제공 Suno 제작곡 "Le monde attendra demain". 원본 바탕화면 WAV 119.96초/48kHz/stereo/16bit PCM, SHA256 a24bf87b809570792a872771be57c9cd5771a7d8b4c394f4e93619f8be68b8e8. 원본은 유지하고 게임용 MP3 192kbps로 인코딩.
 - audio/rp/le-monde-attendra-demain.json : 원본 스펙트럼 온셋·가변 박자 추적 기반 1차 B 채보.
+
+# 리듬팡 B 실제 곡 (V 1151 G)
+- audio/rp/meet-me-halfway.mp3 : 사용자 제공 Suno 제작곡 "Meet Me Halfway". 바탕화면/채보 원본 MP3 119.56초/48kHz/stereo를 재인코딩 없이 별도 복사. 원본 및 게임용 파일 SHA256 cc5cfd7bb038257f1ca2e08fcbe59b60de8cf3778b0daba306df61afb3933c9c. 원본 보존.
+- audio/rp/meet-me-halfway.json : 스펙트럼 온셋·가변 박자 추적 기반 1차 B 채보. 기존 곡의 레인 배열을 복사하지 않았으며 실제 플레이에 따라 보정할 수 있음.

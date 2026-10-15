@@ -175,7 +175,7 @@
       const left=12+24*(rb.width-24)/952,right=rb.width-left,bottom=rb.height-12-24*(rb.height-24)/2078;
       const cores=Array.from(board.querySelectorAll('.rb-button-core'),e=>{const b=e.getBoundingClientRect();return {x:b.left-rb.left+b.width*133.5/268,y:b.top-rb.top+b.height/2,r:b.width*48/268};});
       pressPulses.forEach((pulse,i)=>{const col=i%3,row=Math.floor(i/3),cx=bb.left-rb.left+(176+col*300+(304*(.499088-.5)))*unit,cy=bb.top-rb.top+(1286+row*300+304*.00271)*unit+2,size=304*.9*unit;
-        pulse.style.left=cx+'px';pulse.style.top=cy+'px';pulse.style.width=size+'px';pulse.style.height=size+'px';
+        pulse.style.left=cx+'px';pulse.style.top=cy+'px';pulse.style.width=size+'px';pulse.style.height=size+'px';pulse.style.setProperty('--rb-wave-half-band',(1.5/(size/Math.SQRT2)*100)+'%');
         let d=`M${left} ${lower}H${right}V${bottom}H${left}Z`;
         // Preserve this button's original center flash; shield the other eight glass interiors.
         cores.forEach((c,j)=>{if(j!==i)d+=`M${c.x+c.r} ${c.y}A${c.r} ${c.r} 0 1 0 ${c.x-c.r} ${c.y}A${c.r} ${c.r} 0 1 0 ${c.x+c.r} ${c.y}Z`;});pulseClips[i].setAttribute('d',d);
