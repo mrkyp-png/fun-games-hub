@@ -7170,7 +7170,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-note { position: absolute; width: calc(100% * 300 / 952); height: calc(100% * 300 / 2078); z-index: 5; pointer-events: none; transform-origin: center; will-change: transform, opacity; }
 .rb-note[hidden] { display: none; }
 .rb-note-ring { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 0 1px var(--note-color)); }
-.rb-character { position: absolute; left: 16.666667%; top: 8.333333%; width: 66.666667%; height: 83.333333%; background: url(assets/rhythm-b/character/run-strip.png) 0 0 / 1600% 100% no-repeat; filter: brightness(var(--character-light,1)) drop-shadow(1px 0 0 var(--note-color)) drop-shadow(-1px 0 0 var(--note-color)) drop-shadow(0 1px 0 var(--note-color)) drop-shadow(0 -1px 0 var(--note-color)) drop-shadow(0 0 3px var(--note-color)); }
+.rb-character { position: absolute; left: 16.666667%; top: 8.333333%; width: 66.666667%; height: 83.333333%; background: url(assets/rhythm-b/character/hoverboard-v1128/run-strip.png) 0 0 / 800% 100% no-repeat; filter: brightness(var(--character-light,1)) drop-shadow(1px 0 0 var(--note-color)) drop-shadow(-1px 0 0 var(--note-color)) drop-shadow(0 1px 0 var(--note-color)) drop-shadow(0 -1px 0 var(--note-color)) drop-shadow(0 0 3px var(--note-color)); }
 .rb-game-status { position: absolute; z-index: 5; display: grid; grid-template-columns: repeat(4,1fr); align-items: center; color: white; pointer-events: none; }
 .rb-total { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 3px; font-family: sans-serif; line-height: 1; }
 .rb-total small { font-size: clamp(8px,2.3vw,10px); font-weight: 800; }
@@ -7433,8 +7433,6 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-circuit-reflection.is-simultaneous .rb-circuit-outward { background:radial-gradient(circle,transparent 0%,transparent 37%,#fff 46%,#fff 50%,#fff 54%,transparent 63%); }
 /* V 1113 G: an opaque B backdrop stays fixed during board-only entry. */
 #rhythm-screen.is-type-b { background:#000; }
-/* V 1114 G: finish the song by filling the gap, in a separate soft white. */
-.rb-perimeter-band { fill:none; stroke:#ffb800; stroke-width:10; stroke-linejoin:round; stroke-linecap:butt; stroke-dasharray:100 100; stroke-dashoffset:100; opacity:.8; }
 /* V 1115 G: grade-colored judgement bursts rise beyond the status panel. */
 .rb-status--judge { z-index:12; overflow:visible; --judge-peak:1.7; --judge-rise:-18px; }
 .rb-status--judge b { color:inherit; transform-origin:50% 100%; }
@@ -7463,3 +7461,51 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-power-word[hidden] { display:none; }
 .rb-power-word--perfect { left:50%; top:47.7%; transform-origin:center; }
 .rb-power-word--combo { left:94%; top:47.7%; transform-origin:100% 100%; }
+/* V 1124 G: colored central cores, monochrome resting circuit buttons. */
+.rb-upper-core { position:absolute; z-index:2; pointer-events:none; }
+.rb-upper-lens { z-index:3; }
+.rb-mini .rb-wire-tunnel { visibility:hidden; }
+.rb-mini.is-note-active .rb-wire-tunnel { visibility:visible; }
+/* One identical, independently colored core ring above each gray cap. */
+/* User refinement: hide resting circuit bodies; uniform solid-color core rims. */
+.rb-mini .rb-portal-rim,.rb-mini.is-chord-ready .rb-portal-rim { stroke-width:5; filter:none; }
+/* Combo tint fills the inside of the frame, preserving only the small glass cores. */
+.rb-mini { background-color:transparent; }
+.rb-combo-background { mask:url('assets/rhythm-b/combo-core-mask-v1124.svg') center/100% 100% no-repeat; -webkit-mask:url('assets/rhythm-b/combo-core-mask-v1124.svg') center/100% 100% no-repeat; mask-mode:luminance; }
+.rb-combo-region--upper { inset:0; width:100%; height:100%; background:var(--combo-color); }
+.rb-combo-region--lower { display:none; }
+.rb-combo-screen-background { inset:12px; mask:url('assets/rhythm-b/combo-inner-frame-v1124.svg') center/100% 100% no-repeat; -webkit-mask:url('assets/rhythm-b/combo-inner-frame-v1124.svg') center/100% 100% no-repeat; }
+/* Match the core's 4-unit stroke after the 304-to-296 portal scale. */
+.rb-mini .rb-portal-rim,.rb-mini.is-chord-ready .rb-portal-rim { stroke-width:4.108108108108108; }
+/* Explicitly override the older circle-specific stroke rule in every state. */
+.rb-mini .rb-wire-tunnel circle.rb-portal-rim { stroke-width:4.108108108108108; filter:none; }
+/* V 1125 G: one shared lower-screen ripple canvas, masked at each glass core. */
+.rb-screen-ripple { position:absolute; inset:0; width:100%; height:100%; z-index:4; pointer-events:none; }
+/* Match both visible stroke weight and opacity to the solid glass-core rim. */
+.rb-mini .rb-wire-tunnel { opacity:1; filter:none; }
+.rb-mini .rb-wire-tunnel circle.rb-portal-rim { opacity:1; }
+/* Repeat the core's inner contour as well as its outer stroke. */
+.rb-mini .rb-wire-tunnel circle.rb-portal-rim-inner { stroke-width:1.5405405405405406; opacity:.25; filter:none; }
+/* V 1126 G: one static glass texture per lane; only its SVG group scales. */
+.rb-upper-growth { position:absolute; z-index:3; pointer-events:none; overflow:visible; }
+/* Both rims share one SVG coordinate system, eliminating layout-rounding drift. */
+.rb-mini .rb-wire-tunnel { visibility:visible; }
+.rb-mini:not(.is-note-active) .rb-portal-rim,.rb-mini:not(.is-note-active) .rb-portal-rim-inner { visibility:hidden; }
+/* V 1127 G: hide only the glass texture while a character occupies the lane. */
+.rb-mini.is-note-active .rb-glass-grow > image { visibility:hidden; }
+
+/* V 1129 G: preserve the resting design; restore only the legacy pressed face. */
+.rb-circuit--glass { filter:grayscale(1) brightness(.65); }
+.rb-circuit--glass.is-pressed { filter:var(--circuit-tint) brightness(1.15); }
+.rb-button-base,.rb-button-cap { filter:grayscale(1); }
+.rb-button-base.is-pressed,.rb-button-cap.is-pressed { filter:none; }
+.rb-flow-canvas { visibility:hidden; }
+.rb-flow-canvas.is-pressed { visibility:visible; }
+.rb-button-core { position:absolute; z-index:2; pointer-events:none; transition:transform 70ms ease-out; }
+.rb-button-core.is-pressed { visibility:hidden; }
+.rb-circuit--glass:not(.is-pressed) { opacity:0; }
+.rb-button-base:not(.is-pressed),.rb-button-cap:not(.is-pressed) { visibility:hidden; }
+@media(prefers-reduced-motion:reduce) { .rb-button-core { transition:none; } }
+
+/* V 1129 G: strengthen only the character-triggered outer circle. */
+.rb-mini .rb-wire-tunnel circle.rb-portal-rim { stroke-width:8.216216216216216; }

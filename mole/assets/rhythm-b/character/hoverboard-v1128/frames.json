@@ -1,0 +1,139 @@
+{
+  "cell": [
+    200,
+    250
+  ],
+  "order": [
+    3,
+    2,
+    1,
+    5,
+    6,
+    4,
+    8,
+    7
+  ],
+  "frames": [
+    {
+      "sourceFrame": 1,
+      "componentBounds": [
+        16,
+        25,
+        381,
+        475
+      ],
+      "crop": [
+        -3,
+        13,
+        416,
+        525
+      ]
+    },
+    {
+      "sourceFrame": 2,
+      "componentBounds": [
+        399,
+        27,
+        370,
+        466
+      ],
+      "crop": [
+        374,
+        15,
+        794,
+        527
+      ]
+    },
+    {
+      "sourceFrame": 3,
+      "componentBounds": [
+        773,
+        31,
+        374,
+        463
+      ],
+      "crop": [
+        750,
+        19,
+        1170,
+        531
+      ]
+    },
+    {
+      "sourceFrame": 4,
+      "componentBounds": [
+        1153,
+        34,
+        368,
+        473
+      ],
+      "crop": [
+        1127,
+        22,
+        1547,
+        534
+      ]
+    },
+    {
+      "sourceFrame": 5,
+      "componentBounds": [
+        18,
+        536,
+        380,
+        470
+      ],
+      "crop": [
+        -2,
+        524,
+        418,
+        1036
+      ]
+    },
+    {
+      "sourceFrame": 6,
+      "componentBounds": [
+        397,
+        536,
+        387,
+        468
+      ],
+      "crop": [
+        380,
+        524,
+        800,
+        1036
+      ]
+    },
+    {
+      "sourceFrame": 7,
+      "componentBounds": [
+        776,
+        531,
+        378,
+        476
+      ],
+      "crop": [
+        755,
+        519,
+        1175,
+        1031
+      ]
+    },
+    {
+      "sourceFrame": 8,
+      "componentBounds": [
+        1152,
+        523,
+        376,
+        483
+      ],
+      "crop": [
+        1130,
+        511,
+        1550,
+        1023
+      ]
+    }
+  ],
+  "method": "connected alpha components; nearest-body ownership for detached glow; uniform scale; no repaint"
+}

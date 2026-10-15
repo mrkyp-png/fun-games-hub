@@ -24,7 +24,7 @@
       shakes[lane] = animation;
       animation.onfinish = () => { if (shakes[lane] === animation) shakes[lane] = null; };
     }
-    let flowFx = null;
+    let flowFx = null,rippleFx=null;
     opts.root.addEventListener("contextmenu", e => e.preventDefault());
     opts.root.addEventListener("dragstart", e => e.preventDefault());
     let running = false, paused = false, play = null;
@@ -100,12 +100,14 @@
       const lens=document.createElement('div');lens.className='rb-button-lens';lens.setAttribute('aria-hidden','true');lens.style.cssText=circuit.style.cssText;lens.style.setProperty('--glass-color',colors[i]);lens.style.setProperty('--glass-image','url("assets/rhythm-b/glass-lower-v1109/lower-'+i+'.png")');lens.innerHTML='<span class="rb-glass-dome"><span class="rb-glass-spin"></span></span>';board.appendChild(lens);
       const floor=document.createElement('img');floor.className='rb-button-floor-press';floor.alt='';floor.src='assets/rhythm-b/button-base-v1118/press-'+i+'.svg';place(floor,buttonCx,buttonCy+16,296,320);
       const base=document.createElement('img');base.className='rb-button-base';base.alt='';base.src='assets/rhythm-b/button-base-v1118/base-'+i+'.svg';place(base,buttonCx,buttonCy+16,296,320);
-      const cap=document.createElement('img');cap.className='rb-button-cap';cap.alt='';cap.src='assets/rhythm-b/button-face-v1120/face-'+i+'.svg';place(cap,buttonCx,buttonCy,268);
-      const surfaces = [hit, color, circuit, reflection, lens, cap, floor]; pressSurfaces.push(...surfaces);
+      const cap=document.createElement('img');cap.className='rb-button-cap';cap.alt='';cap.src='assets/rhythm-b/button-face-v1124/face-'+i+'.svg';place(cap,buttonCx,buttonCy,268);
+      const core=document.createElement('img');core.className='rb-button-core';core.alt='';core.src='assets/rhythm-b/upper-core-v1124/core-'+i+'.svg';place(core,buttonCx,buttonCy,268);
+      const surfaces = [hit, color, circuit, reflection, lens, cap, floor, core, base]; pressSurfaces.push(...surfaces);
       function down() {
         if (!running || paused) return;
         reboundAnimations[i].forEach(a=>a.cancel());reboundAnimations[i]=[];
-        surfaces.forEach(el => el.classList.add('is-pressed'));
+        cap.src='assets/rhythm-b/button-face-v1120/face-'+i+'.svg';
+        surfaces.forEach(el => el.classList.add('is-pressed'));if(flowFx)flowFx.press(i,true);
         if(flowSurfaces[i])flowSurfaces[i].classList.add('is-pressed');
         if(pulseAnimations[i]) pulseAnimations[i].cancel();
         pulseAnimations[i]=pulse.animate([{transform:'scale(.08)',opacity:.7,offset:0},{transform:'scale(.28)',opacity:.7,offset:.18},{transform:'scale(1)',opacity:.455,offset:.7},{transform:'scale(1.35)',opacity:0,offset:1}],{duration:480,easing:'ease-out'});
@@ -114,6 +116,7 @@
       function up() {
         if(!hit.classList.contains('is-pressed'))return;
         const moving=[circuit,reflection,lens,cap,flowSurfaces[i]].filter(Boolean),from=moving.map(el=>getComputedStyle(el).transform);
+        cap.src='assets/rhythm-b/button-face-v1124/face-'+i+'.svg';if(flowFx)flowFx.press(i,false);
         surfaces.forEach(el=>el.classList.remove('is-pressed'));if(flowSurfaces[i])flowSurfaces[i].classList.remove('is-pressed');
         if(!root.matchMedia('(prefers-reduced-motion: reduce)').matches){reboundAnimations[i]=moving.map((el,j)=>el.animate([{transform:from[j],offset:0},{transform:(el!==flowSurfaces[i]&&el!==cap?'translate(-50%, -50%) ':'')+'scale(1.01)',offset:.65},{transform:el!==flowSurfaces[i]&&el!==cap?'translate(-50%, -50%) scale(1)':'none',offset:1}],{duration:160,easing:'ease-out'}));}
       }
@@ -146,14 +149,12 @@
       mini.style.setProperty('--depth-x','50%');mini.style.setProperty('--depth-y','50%');
       const points=Array.from({length:8},(_,k)=>{const angle=k*Math.PI/4;return [fx+radius*Math.cos(angle),fy+radius*Math.sin(angle)];});
       const tunnel=document.createElementNS(ns,'svg');tunnel.classList.add('rb-wire-tunnel');tunnel.setAttribute('viewBox','0 0 304 304');tunnel.setAttribute('aria-hidden','true');
-      const rays=points.map(([x,y])=>'M'+x+','+y+' L'+fx+','+fy).join(' ');
-      tunnel.innerHTML='<path d="'+rays+'" fill="none" stroke="currentColor" stroke-width=".9" opacity=".28"/>'+[1,.72,.48,.29,.15].map((scale,depth)=>'<circle class="'+(depth===0?'rb-portal-rim':'')+'" cx="152" cy="152" r="'+(radius*scale)+'" fill="none" stroke="currentColor" stroke-width="1" opacity="'+(.55-depth*.09)+'"/>').join('');
-      function circle(className,r){const el=document.createElementNS(ns,'circle');el.classList.add(className);el.setAttribute('cx',fx);el.setAttribute('cy',fy);el.setAttribute('r',r);return el;}
-      const loop=circle('rb-wire-light',radius*.72);loop.setAttribute('pathLength','100');loop.style.setProperty('--wire-delay',(-i*.73)+'s');tunnel.appendChild(loop);
-      const inward=document.createElementNS(ns,'path');inward.classList.add('rb-wire-light','rb-wire-light--inward');const start=points[(i*3)%8];inward.setAttribute('d','M'+start[0]+','+start[1]+' L'+fx+','+fy);inward.setAttribute('pathLength','100');inward.style.setProperty('--wire-delay',(-i*.91)+'s');tunnel.appendChild(inward);
-      for(let depth=0;depth<3;depth++){const section=circle('rb-space-section',radius);section.dataset.focusX=fx;section.dataset.focusY=fy;tunnel.appendChild(section);}
-      const wave=circle('rb-space-hit-wave',radius);wave.style.transformOrigin=fx+'px '+fy+'px';tunnel.appendChild(wave);
+      tunnel.innerHTML='<circle class="rb-portal-rim" cx="151.48648648648648" cy="152" r="148" fill="none" stroke="currentColor" stroke-width="1"/><circle class="rb-portal-rim-inner" cx="151.48648648648648" cy="152" r="144.40540540540542" fill="none" stroke="currentColor" stroke-width="1.5405405405405406"/>';
       mini.appendChild(tunnel);
+      const glassGroup=document.createElementNS(ns,'g');glassGroup.classList.add('rb-glass-grow');
+      const coreRatio=304/296,cxCore=151.48648648648648,cyCore=152;
+      glassGroup.innerHTML='<circle cx="'+cxCore+'" cy="'+cyCore+'" r="'+(45*coreRatio)+'" fill="#010205" stroke="'+colors[i]+'" data-stroke="4" vector-effect="non-scaling-stroke"/><circle cx="'+cxCore+'" cy="'+cyCore+'" r="'+(41.5*coreRatio)+'" fill="none" stroke="'+colors[i]+'" stroke-opacity=".25" data-stroke="1.5" vector-effect="non-scaling-stroke"/><image href="assets/rhythm-b/glass-lower-v1109/lower-'+i+'.png" x="'+(cxCore-40.402*coreRatio)+'" y="'+(cyCore-43.202*coreRatio)+'" width="'+(80.804*coreRatio)+'" height="'+(86.404*coreRatio)+'" preserveAspectRatio="none"/>';
+      tunnel.appendChild(glassGroup);
       miniSurfaces.push(mini);
     }
     const upperGlow = document.createElement('img'); upperGlow.className = 'rb-upper-glow'; upperGlow.alt = ''; upperGlow.src = 'assets/rhythm-b/upper-uniform-glow.png'; board.appendChild(upperGlow);
@@ -169,15 +170,18 @@
     pauseButton.innerHTML = '<span class="rb-pause-face" aria-hidden="true">II</span>';
     pauseButton.addEventListener('click', () => opts.onPause());
     place(pauseButton, 876, 991, 86, 86);
-    function releaseAll() { pressSurfaces.forEach(el => el.classList.remove('is-pressed')); clearShakes(); pulseAnimations.forEach(a=>{if(a)a.cancel();}); pulseAnimations.fill(null); reboundAnimations.forEach(list=>{list.forEach(a=>a.cancel());list.length=0;}); }
+    function releaseAll() { if(flowFx)for(let i=0;i<9;i++)flowFx.press(i,false);board.querySelectorAll('.rb-button-cap').forEach((el,i)=>{el.src='assets/rhythm-b/button-face-v1124/face-'+i+'.svg';});pressSurfaces.forEach(el => el.classList.remove('is-pressed')); clearShakes(); pulseAnimations.forEach(a=>{if(a)a.cancel();}); pulseAnimations.fill(null); reboundAnimations.forEach(list=>{list.forEach(a=>a.cancel());list.length=0;}); }
     flowFx = root.MoleGame.RhythmBFlow.create({ board, colors });
+    rippleFx=root.MoleGame.RhythmBRipple.create({root:opts.root,board,colors});
     flowSurfaces=Array.from(board.querySelectorAll('.rb-flow-canvas'));pressSurfaces.push(...flowSurfaces);
+    function fitGlassStroke(){const ratio=board.querySelector('.rb-wire-tunnel').getBoundingClientRect().width/296;board.querySelectorAll('.rb-glass-grow circle').forEach(e=>e.setAttribute('stroke-width',Number(e.dataset.stroke)*ratio));}
+    const glassResize=new ResizeObserver(fitGlassStroke);glassResize.observe(board);fitGlassStroke();
     let artReady = null;
     const artImages = [];
     function prepareAssets() {
       if (artReady) return artReady;
       const urls = new Set(Array.from(board.querySelectorAll('img'), img => img.src));
-      ['mini-user.png', 'pause-options.png', 'character/run-strip.png', ...colors.map((_, i) => 'note-inner-line-' + i + '.png'), ...colors.map((_,i)=>'glass-lower-v1109/lower-'+i+'.png')].forEach(name => urls.add('assets/rhythm-b/' + name));
+      [...colors.map((_,i)=>'button-face-v1120/face-'+i+'.svg'),'mini-user.png', 'pause-options.png', 'character/hoverboard-v1128/run-strip.png', ...colors.map((_, i) => 'note-inner-line-' + i + '.png'), ...colors.map((_,i)=>'glass-lower-v1109/lower-'+i+'.png')].forEach(name => urls.add('assets/rhythm-b/' + name));
       artReady = Promise.all(Array.from(urls, src => new Promise((resolve, reject) => {
         const img = new Image(); artImages.push(img);
         img.onload = () => img.decode().then(resolve, reject);
@@ -191,25 +195,26 @@
       onHit: shakeMini,
       onFinish: (stats, clear) => {
         running = false; board.classList.remove('rb-wire-running'); releaseAll();
-        flowFx.stop();
+        flowFx.stop();rippleFx.stop();
         opts.onResult(stats, clear);
       }
     });
     return {
       open(difficulty, options) {
-        running = true; board.classList.add('rb-wire-running'); paused = false; board.classList.remove('is-paused'); releaseAll();
-        flowFx.start();
+        rippleFx.stop();running = true; board.classList.add('rb-wire-running'); paused = false; board.classList.remove('is-paused'); releaseAll();
+        flowFx.start();rippleFx.prepare();
         return play.start(difficulty || 'EASY', options);
       },
       stop() {
         running = false; board.classList.remove('rb-wire-running'); paused = false; releaseAll(); play.stop();
-        flowFx.stop();
+        flowFx.stop();rippleFx.stop();
       },
       dbg() { return play.dbg(); },
       flowDebug() { return flowFx.dbg(); },
+      rippleDebug(){return rippleFx.dbg();},
       pause(on) {
         paused = on; play.pause(on); board.classList.toggle('is-paused', on); releaseAll();
-        flowFx.pause(on);
+        flowFx.pause(on);rippleFx.pause(on);
       }
     };
   }
