@@ -121,3 +121,6 @@
 # 로딩 화면 (V 1153 G)
 - assets/loading-cyber-v1153/characters.webp : 사용자 제공 Desktop/로딩화면 케릭.png. 투명 PNG 원본1774x887을 해상도/알파 유지한 WebP quality94로 저장. 캐릭터/보드 그림 편집·분할 없음, 원본 보존.
 - assets/loading-cyber-v1153/stage.webp : 사용자 제공 Desktop/배경.png. 원본2048x768을 해상도 유지한 WebP quality94로 저장. 무대 그림 편집 없음, 원본 보존.
+
+# 로딩 화면 (V 1162 G)
+- assets/loading-stage-v1162/stage.png: 사용자 제공 Desktop/a31bcd31-47c9-41c1-bf32-420809a59f10.png. 941×1672 RGB PNG, 2118416bytes. SHA256 C84916F817025D0A43E99C1092315DC4291142607BF04BFCDEEBA945BDC7554B. 원본 그대로 복사, 재생성·색보정·비트맵 재단 없음. 무대/앞판은 같은 이미지를 CSS로 정렬하고 장식 없는 하단 면만 확장. 기존 캐릭터 WebP는 원본 보존하고 하단의 옛 보드 부분만 CSS로 가림.
