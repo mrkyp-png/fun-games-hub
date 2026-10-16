@@ -96,7 +96,7 @@
     function buildAnimalBombOverlay() {
       const box = document.createElement('div');
       box.className = 'animal-bomb-box';
-      box.innerHTML = '<div class="animal-bomb-emoji">\u{1F4A3}</div>';
+      box.innerHTML = '<div class="animal-bomb-emoji mole-bomb-emoji--normal">\u{1F4A3}</div>';
       return box;
     }
 

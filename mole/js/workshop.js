@@ -210,8 +210,9 @@
       $('[data-ws-pedfront]').hidden = false; // 받침대 앞 띠는 처음부터 거위·알 앞(v760)
       var eggSet = success ? 'egg-ok-' : 'egg-ng-';
       // v771: 커진 알 이미지를 미리 받아 디코딩 — 교체 순간 빈 프레임(깜빡임) 방지
-      var eggPre = new Image(); eggPre.src = A + eggSet + '1.png'; var eggReady = eggPre.decode ? eggPre.decode().catch(function () {}) : Promise.resolve();
+      var eggPre = new Image(); eggPre.src = A + 'egg-solo.png'; var eggReady = eggPre.decode ? eggPre.decode().catch(function () {}) : Promise.resolve();
       pending = { it: it, lv: lv, success: success, eggSet: eggSet };
+      var thisPlay = pending;
       var t = 0;
       // 1) 황금거위 10포즈 — 1~5 제자리 날갯짓, 6~10 상승하며 퇴장. 6번째에서 알을 낳음
       for (var g = 1; g <= 10; g++) {
@@ -232,13 +233,12 @@
       t += 1600;
       // 받침대 위에서 다 커진 알 = 기존 알 1번 이미지(받침대 포함)로 교체
       later(function () {
-        egg.src = A + eggSet + '1.png';
+        egg.src = A + 'egg-solo.png';
         eggReady.then(function () { return egg.decode ? egg.decode().catch(function () {}) : null; }).then(function () {
-          requestAnimationFrame(function () { egg.hidden = false; ped.hidden = true; solo.hidden = true; $('[data-ws-pedfront]').hidden = false; ghosts.forEach(function (gh) { gh.hidden = true; }); });
+          requestAnimationFrame(function () { if (pending !== thisPlay) return; egg.hidden = false; ped.hidden = false; solo.hidden = true; goose.hidden = true; egg.className = 'ws-egg is-wait'; $('[data-ws-egghint]').hidden = false; pending.ready = true; $('[data-ws-pedfront]').hidden = false; ghosts.forEach(function (gh) { gh.hidden = true; }); });
         });
       }, t);
-      // 2) 알 대기 — 탭하면 타격
-      later(function () { goose.hidden = true; ped.hidden = false; egg.className = 'ws-egg is-wait'; $('[data-ws-egghint]').hidden = false; pending.ready = true; }, t);
+      // Standalone egg waits only after decoding; the pedestal stays fixed.
     }
 
     $('[data-ws-egg]').addEventListener('click', function () {
@@ -252,7 +252,7 @@
       var egg = $('[data-ws-egg]'), ham = $('[data-ws-ham]'), bolt = $('[data-ws-bolt]');
       var res = $('[data-ws-result]');
       $('[data-ws-egghint]').hidden = true;
-      egg.className = 'ws-egg'; $('[data-ws-ped]').hidden = true;
+      egg.className = 'ws-egg'; egg.src = A + eggSet + '1.png'; $('[data-ws-ped]').hidden = true;
       var t = 0;
       // 3) 골드 묠니르 + 녹색 번개가 알 꼭대기 타격
       ham.hidden = false; ham.classList.add('is-in'); cycleBolt(bolt, 0);
