@@ -7601,3 +7601,68 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* V1161: inset yellow type selector, small corners, clear soft press. */
 .ct-drop { width:calc(100% + 10px); margin:0 -5px; box-sizing:border-box; border:6px solid transparent; border-image:url('assets/score/tab-on.png') 40 fill / 6px stretch; background:none; border-radius:5px; clip-path:inset(0 round 5px); padding:0 10px; transition:transform 90ms ease,filter 90ms ease; }
 .ct-drop:active { transform:translateY(1px) scale(.99); filter:brightness(.9); }
+
+/* V1164 G: Rhythm A status panels between stage and square controls. */
+#rhythm-screen:not(.is-type-b) .rp-bottom { padding-top:0; }
+#rhythm-screen:not(.is-type-b) .rp-a-status { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:3px; margin-bottom:5px; }
+.rp-a-status-item { position:relative; min-width:0; aspect-ratio:1.55; background-position:center; background-size:118% 118%; background-repeat:no-repeat; color:#fff; pointer-events:none; }
+.rp-a-status-score { background-image:url('assets/rhythm/ui-status-v1164/score.png'); --rp-status-color:#7edfff; }
+.rp-a-status-judgement { background-image:url('assets/rhythm/ui-status-v1164/judgement.png'); --rp-status-color:#ff80f0; }
+.rp-a-status-combo { background-image:url('assets/rhythm/ui-status-v1164/combo.png'); --rp-status-color:#ffe461; }
+.rp-a-status-time { background-image:url('assets/rhythm/ui-status-v1164/time.png'); --rp-status-color:#a1ff80; }
+.rp-a-status-label,.rp-a-status-value { position:absolute; text-align:center; white-space:nowrap; font-family:'Lilita One','Jua',sans-serif; color:var(--rp-status-color); -webkit-text-stroke:1px #15244f; paint-order:stroke fill; text-shadow:0 1px 1px #10152b; line-height:1; }
+.rp-a-status-label { left:34%; right:7%; top:19%; font-size:clamp(9px,2.75vw,13px); }
+.rp-a-status-value { left:18%; right:8%; top:54%; font-size:clamp(15px,4.6vw,22px); letter-spacing:-.035em; }
+.rp-a-status-judgement .rp-a-status-label { left:28%; right:4%; font-size:clamp(8px,2.4vw,11px); }
+.rp-a-status-judgement .rp-a-status-value { left:12%; right:7%; font-size:clamp(13px,4vw,19px); }
+.rp-a-status-combo .rp-a-status-value { left:42%; right:8%; }
+.rp-a-status-time .rp-a-status-label { left:35%; right:30%; }
+.rp-a-status-time .rp-a-status-value { left:29%; right:26%; font-size:clamp(15px,4.6vw,22px); }
+#rhythm-screen:not(.is-type-b) .rp-btn { aspect-ratio:1; }
+#rhythm-screen:not(.is-type-b) .rp-btn img { width:100%; height:100%; aspect-ratio:1!important; object-fit:fill!important; }
+.rp-a-clock { position:absolute; width:118%; height:118%; left:-9%; top:-9%; pointer-events:none; }
+.rp-a-clock-hand { transform-origin:383px 350px; animation:rp-a-clock-tick 12s steps(24,end) infinite; }
+@keyframes rp-a-clock-tick { to { transform:rotate(360deg); } }
+#rhythm-screen:has([data-rp-pause]:not([hidden])) .rp-a-clock-hand,#rhythm-screen:has([data-rp-result]:not([hidden])) .rp-a-clock-hand { animation-play-state:paused; }
+#rhythm-screen:has([data-rp-types]:not([hidden])) .rp-a-status,#rhythm-screen:has([data-rp-select]:not([hidden])) .rp-a-status,#rhythm-screen:has([data-rp-songs]:not([hidden])) .rp-a-status { visibility:hidden; }
+@media(prefers-reduced-motion:reduce) { .rp-a-clock-hand { animation:none; } }
+
+/* Same scale/opacity progression as Rhythm B's PERFECT power word. */
+.rp-a-perfect-word { position:absolute; left:50%; top:0; z-index:6; pointer-events:none; white-space:nowrap; font:800 clamp(14px,4.5vw,22px)/1 'Dongle','Segoe UI',sans-serif; color:#ffe45a; -webkit-text-stroke:1px #523700; paint-order:stroke fill; opacity:0; transform:translate(-50%,-50%) scale(.05); }
+.rp-a-perfect-word.is-on { animation:rp-a-perfect-power 1100ms linear both; }
+@keyframes rp-a-perfect-power { 0% { opacity:.7; transform:translate(-50%,-50%) scale(.05); } 60% { opacity:.7; transform:translate(-50%,-50%) scale(3.5); } 100% { opacity:0; transform:translate(-50%,-50%) scale(4.6); } }
+#rhythm-screen:has([data-rp-pause]:not([hidden])) .rp-a-perfect-word { animation-play-state:paused; }
+@media(prefers-reduced-motion:reduce) { .rp-a-perfect-word.is-on { animation:rp-a-perfect-fade 1100ms linear both; } }
+@keyframes rp-a-perfect-fade { from { opacity:.7; transform:translate(-50%,-50%); } to { opacity:0; transform:translate(-50%,-50%); } }
+
+/* A cloud target: one composited image, rare transform changes, four reused rays. */
+.rp-a-cloud-boss { position:absolute; left:50%; top:max(2%,env(safe-area-inset-top)); width:min(76%,calc(100dvh * .27 * 592 / 464)); aspect-ratio:592/464; transform:translateX(-50%) scale(var(--rp-boss-scale,1)); transform-origin:50% 40%; transition:transform .55s ease-out,opacity .55s ease-out; pointer-events:none; }
+.rp-a-cloud-boss .rp-hippo { left:0; top:0; width:100%; height:100%; isolation:isolate; }
+.rp-a-hippo-image { display:block; width:100%; height:100%; }
+.rp-a-cloud-tint { position:absolute; inset:0; background:var(--rp-boss-color,transparent); mask:url('assets/rhythm/hippo-cloud.png') center/100% 100% no-repeat; mix-blend-mode:color; opacity:1; }
+.rp-a-combo-lasers { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:2; overflow:visible; }
+.rp-a-combo-lasers path { fill:none; stroke:var(--rp-ray-color,#ff94d6); stroke-width:3; stroke-linecap:round; stroke-dasharray:.16 1; stroke-dashoffset:1; opacity:0; }
+.rp-a-combo-lasers.is-on path { animation:rp-a-combo-ray 360ms linear both; }
+.rp-a-combo-lasers path:nth-child(2) { animation-delay:90ms; }
+.rp-a-combo-lasers path:nth-child(3) { animation-delay:180ms; }
+.rp-a-combo-lasers path:nth-child(4) { animation-delay:270ms; }
+@keyframes rp-a-combo-ray { 0% { opacity:.9; stroke-dashoffset:1; } 85% { opacity:.9; } 100% { opacity:0; stroke-dashoffset:-.16; } }
+#rhythm-screen:has([data-rp-pause]:not([hidden])) .rp-a-combo-lasers path { animation-play-state:paused; }
+.rp-a-ticket-reward { margin:5px auto; text-align:center; color:#ffdd5d; font-weight:900; font-size:clamp(13px,4vw,18px); }
+@media(prefers-reduced-motion:reduce) { .rp-a-cloud-boss { transition:none; } .rp-a-combo-lasers.is-on path { animation:none; } }
+
+/* Contact type reuses the exact message field frame and keeps a wood inset. */
+.ct-drop { position:relative; width:100%; margin:0; height:40px; border-image:none; border:5px solid #d8781c; border-radius:9px; clip-path:none; background:#fdf5e1; padding:0 8px; box-shadow:0 0 0 2px #3a1a05,inset 0 0 0 1px rgba(255,200,120,.6); }
+.ct-drop::before { content:""; position:absolute; inset:2px; border:4px solid transparent; border-image:url('assets/score/tab-on.png') 40 fill / 4px stretch; border-radius:3px; clip-path:inset(0 round 3px); pointer-events:none; }
+.ct-drop span,.ct-drop i { position:relative; z-index:1; }
+
+/* Same B judgement gauge geometry, aligned to A's four status panels. */
+#rhythm-screen:not(.is-type-b) .rp-a-timing-gauge { position:relative; left:auto; top:auto; width:100%; height:28px; margin:0 0 3px; z-index:5; }
+.rp-a-timing-gauge .rb-timing-caption { color:#8c642e; }
+
+/* User-supplied calm beach; retain its original proportions. */
+#rhythm-screen.rp-screen:not(.is-type-b) { background-image:url('assets/rhythm/bg-beach-calm-v1164.png'); }
+
+/* Static color-matched triangle bevels follow the original whole-button press. */
+.rp-a-triangle { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; transform-origin:50% 50%; transition:transform .06s; }
+.rp-btn.is-down .rp-a-triangle { transform:translateY(4px) scale(.94); filter:brightness(1.25); }

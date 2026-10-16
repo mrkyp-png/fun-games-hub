@@ -128,6 +128,9 @@
       L.sink = L.laneW * 0.1; // v814: 두더지를 구멍 속으로 조금 내림(떠 보이지 않게)
       L.moleBottom = H - L.laneW * 0.3 - 4 + L.sink; // 구멍(테두리) 아래끝이 시간 바 바로 위에 오게 — 버튼과 안 겹침
       L.lift = L.moleBottom - oldBottom;
+      // Move the entire target/mole/hole group by the same visual offset.
+      var groupShift = Math.min(32, W * 0.06);
+      L.targetY -= groupShift; L.moleBottom -= groupShift;
     }
     // 프레임별 추가 상승량 = (그 프레임이 대기 자세보다 오른 정도 ÷ 최고점이 오른 정도) × lift
     function liftAt(i, f) {
@@ -206,6 +209,13 @@
     }
 
     // ---- 화면 요소 ----
+    function buttonTriangle(i) {
+      var sizes=[[222,194,51,50,167,133],[222,204,51,60,169,143],[221,205,51,61,167,144],[220,205,50,61,168,144]],r=sizes[i];
+      var colors=[['#fff8d6','#ffdb68','#bd8118'],['#ddfbff','#68d7ff','#147fad'],['#ffe5fa','#ff8cde','#ac327f'],['#e4ffec','#8cf1ba','#278b57']][i];
+      var l=r[2],t=r[3],right=r[4],bottom=r[5],cx=(l+right)/2,mid=t+(bottom-t)*.62,id='rp-a-tri-'+i;
+      var face='M '+(cx-4)+' '+(t+4)+' Q '+cx+' '+(t-2)+' '+(cx+4)+' '+(t+4)+' L '+(right-1)+' '+(bottom-8)+' Q '+(right+4)+' '+bottom+' '+(right-5)+' '+bottom+' H '+(l+5)+' Q '+(l-4)+' '+bottom+' '+(l+1)+' '+(bottom-8)+' Z';
+      return '<svg class="rp-a-triangle" viewBox="0 0 '+r[0]+' '+r[1]+'" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="'+id+'" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="'+colors[0]+'"/><stop offset="1" stop-color="'+colors[1]+'"/></linearGradient><clipPath id="'+id+'-clip"><path d="'+face+'"/></clipPath></defs><path d="'+face+'" transform="translate(0 9)" fill="'+colors[2]+'" opacity=".2"/><path d="'+face+'" transform="translate(0 5)" fill="'+colors[2]+'" stroke="'+colors[2]+'" stroke-width="2"/><path d="'+face+'" fill="url(#'+id+')" stroke="'+colors[0]+'" stroke-width="1.5"/><g clip-path="url(#'+id+'-clip)"><path d="M '+cx+' '+t+' L '+cx+' '+mid+' L '+l+' '+bottom+' Z" fill="'+colors[0]+'" opacity=".65"/><path d="M '+cx+' '+t+' L '+right+' '+bottom+' L '+cx+' '+mid+' Z" fill="'+colors[2]+'" opacity=".12"/></g></svg>';
+    }
     function buildStage() {
       var lanesEl = $('[data-rp-lanes]'); lanesEl.innerHTML = ''; moleEls = null;
       for (var i = 0; i < 4; i++) {
@@ -223,7 +233,8 @@
       for (var j = 0; j < 4; j++) {
         (function (j) {
           var b = document.createElement('button'); b.type = 'button'; b.className = 'rp-btn';
-          b.innerHTML = '<img src="' + A + 'btn-' + (j + 1) + '.png" alt="">';
+          b.innerHTML = '<img src="' + A + 'btn-' + (j + 1) + '.png" alt="">' + buttonTriangle(j);
+          var perfectWord = document.createElement('span'); perfectWord.className = 'rp-a-perfect-word'; perfectWord.textContent = 'PERFECT'; perfectWord.setAttribute('aria-hidden','true'); b.appendChild(perfectWord);
           b.addEventListener('pointerdown', function (e) { e.preventDefault(); press(j); b.classList.add('is-down'); });
           ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { b.addEventListener(ev, function () { b.classList.remove('is-down'); }); });
           bt.appendChild(b);
@@ -259,13 +270,33 @@
       var m = (moleEls || (moleEls = el.querySelectorAll('.rp-mole')))[i];
       m.style.backgroundPosition = (f / 6 * 100) + '% 0'; moleFrame[i] = f;
     }
+    var statusJudge = $('[data-rp-status-judge]'), statusTime = $('[data-rp-time]'), statusSeconds = -1;
+    var aGauge=$('.rp-a-timing-gauge'),aGaugeLight=aGauge.querySelector('.rb-timing-light'),aGaugeAnimation=null;
+    var aGaugeReduced=root.matchMedia('(prefers-reduced-motion: reduce)');
+    var aGaugeColors={PERFECT:'#ffd746',GREAT:'#bd77ff',GOOD:'#21bfff',MISS:'#ff6479'};
+    function clearAGauge() { if(aGaugeAnimation)aGaugeAnimation.cancel();aGaugeAnimation=null;aGaugeLight.hidden=true;aGauge.setAttribute('aria-label','Judgement energy: longest PERFECT, shortest MISS'); }
+    function showAGauge(grade) {
+      var strength={PERFECT:1,GREAT:.72,GOOD:.44,MISS:.12}[grade];
+      if(aGaugeAnimation)aGaugeAnimation.cancel();aGaugeLight.hidden=false;aGaugeLight.dataset.grade=grade;aGaugeLight.dataset.strength=strength;aGaugeLight.style.left='50%';aGaugeLight.style.setProperty('--timing-color',aGaugeColors[grade]);aGauge.setAttribute('aria-label',grade);
+      var transform=function(value){return 'translate(-50%,-50%) scaleX('+value+')';};
+      var frames=aGaugeReduced.matches?[{transform:transform(strength),opacity:1},{transform:transform(strength),opacity:0}]:[{transform:transform(.02),opacity:.75,offset:0},{transform:transform(strength),opacity:1,offset:.12},{transform:transform(strength*.85),opacity:.75,offset:.42},{transform:transform(.02),opacity:0,offset:1}];
+      var animation=aGaugeLight.animate(frames,{duration:400,easing:'linear',fill:'both'});aGaugeAnimation=animation;
+      animation.onfinish=function(){if(aGaugeAnimation===animation){aGaugeLight.hidden=true;aGaugeAnimation=null;animation.cancel();}};
+    }
+
+    function updateStatusTime(t) {
+      var seconds = Math.max(0, Math.ceil((buffer ? buffer.duration : 0) - Math.max(0,t)));
+      if (seconds === statusSeconds) return;
+      statusSeconds = seconds; statusTime.textContent = Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2,'0');
+    }
     function showJudge(i, txt, cls) {
+      statusJudge.textContent = txt; showAGauge(txt);
       var j = el.querySelectorAll('.rp-judge')[i]; j.textContent = txt; j.className = 'rp-judge is-' + cls;
       void j.offsetWidth; j.classList.add('is-on');
     }
     function hud() {
       $('[data-rp-score]').textContent = st.score.toLocaleString('en-US');
-      $('[data-rp-combo]').textContent = st.combo > 1 ? st.combo + ' COMBO' : '';
+      $('[data-rp-combo]').textContent = String(st.combo);
       $('[data-rp-hp]').style.width = (st.hp / CONFIG.hpMax * 100) + '%';
       $('[data-rp-hpbar]').classList.toggle('is-low', st.hp <= 3);
     }
@@ -314,6 +345,8 @@
         var s2 = null;
         if (melBuf) { s2 = ctx.createBufferSource(); s2.buffer = melBuf; melGain = ctx.createGain(); melGain.gain.value = 1; s2.connect(melGain); melGain.connect(ctx.destination); s2.start(startAt); }
         src = { stop: function (w) { s1.stop(w); if (s2) s2.stop(w); } };
+        resetBoss(); clearAGauge();
+        statusJudge.textContent = 'READY'; statusSeconds = -1; updateStatusTime(0);
         hud(); // (무기 풀은 위에서 생성 — 여기서 비우지 않음)
         el.querySelector('[data-rp-result]').hidden = true;
         cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
@@ -352,6 +385,7 @@
       st.score += sharedRules.points(g, st.combo);
       n.vx = (Math.random() < 0.5 ? -1 : 1) * (L.laneW * (1.5 + Math.random())); n.vy = -L.H * 1.1; n.bx = n.cx; n.by = n.cy;
       showJudge(lane, g, g.toLowerCase()); pang(lane, n.cx, n.cy); hud(); sfx('hit');
+      if (g === 'PERFECT') replay((btnEls || (btnEls = el.querySelectorAll('.rp-btn')))[lane].querySelector('.rp-a-perfect-word'), 'is-on');
       burst(n.cx, n.cy, g === 'PERFECT' ? 10 : g === 'GREAT' ? 7 : 5); comboFx();
       try { MG.HitFx && MG.HitFx.uiTap && MG.HitFx.uiTap(1); } catch (e) { /* 무시 */ }
     }
@@ -388,8 +422,25 @@
         sp.style.color = ['#fff36b', '#ffffff', '#ffb3e6', '#8ff0ff'][i % 4]; replay(sp, 'is-on');
       }
     }
+    var boss = el.querySelector('.rp-a-cloud-boss'), rays = el.querySelector('.rp-a-combo-lasers'), bossPending = null;
+    var bossColors = ['#ffbd36','#40bfff','#fb66ed','#63ef94'];
+    function resetBoss() { bossPending = null; boss.style.setProperty('--rp-boss-scale','1'); boss.style.setProperty('--rp-boss-color','transparent'); boss.style.opacity='1'; rays.classList.remove('is-on'); }
+    function shrinkBoss(clear) {
+      var hits = st.cnt.PERFECT + st.cnt.GREAT + st.cnt.GOOD, total = st.notes.length;
+      var full = clear && total > 0 && st.cnt.MISS === 0 && hits === total;
+      boss.style.setProperty('--rp-boss-scale',String(full ? 0 : .16 + .84 * (1 - Math.min(1,hits / Math.max(1,total)))));
+      if (full) boss.style.opacity='0';
+    }
+    function fireComboRays() {
+      var r = boss.getBoundingClientRect(), sr = stage.getBoundingClientRect(), color = bossColors[(Math.floor(st.combo/10)-1)%bossColors.length];
+      rays.setAttribute('viewBox','0 0 '+L.W+' '+L.H); rays.style.setProperty('--rp-ray-color',color);
+      var paths = rays.querySelectorAll('path');
+      for (var i=0;i<4;i++) { paths[i].setAttribute('pathLength','1'); paths[i].setAttribute('d','M '+L.laneX[i]+' '+L.targetY+' L '+(r.left-sr.left+r.width*.55)+' '+(r.top-sr.top+r.height*.55)); }
+      replay(rays,'is-on'); bossPending={at:now()+.65,color:color};
+    }
     function comboFx() {
       var c = $('[data-rp-combo]'); replay(c, 'is-bump');
+      if (st.combo > 0 && st.combo % 10 === 0) fireComboRays();
       if (st.combo === 10 || st.combo === 30 || (st.combo >= 50 && st.combo % 50 === 0)) {
         var mt = document.createElement('span'); mt.className = 'rp-milestone'; mt.textContent = st.combo + ' COMBO!'; stage.appendChild(mt);
         setTimeout(function () { mt.remove(); }, 1300); replay(hippo, 'is-cheer');
@@ -406,6 +457,8 @@
       if (!st || st.paused) return;
       if (st.ended) { cancelAnimationFrame(raf); return; } // v816: 종료 후 결과창 뒤에서 계속 판정·연출이 돌며 깜빡이던 것 정지
       var t = now();
+      updateStatusTime(t);
+      if (bossPending && t >= bossPending.at) { boss.style.setProperty('--rp-boss-color',bossPending.color); shrinkBoss(false); bossPending=null; }
       // 카운트인 표시
       var ci = $('[data-rp-count]');
       if (t < 0) { var c = Math.ceil(-t); ci.textContent = c > CONFIG.countIn ? '' : String(c); ci.hidden = false; }
@@ -489,12 +542,17 @@
     function gameOver(clear) {
       if (st.ended) return; st.ended = true; st.over = true; el.querySelectorAll('.rp-btn').forEach(function (b) { b.classList.remove('is-cue'); }); // 결과창 뒤 버튼 반짝임 정지
       try { src.stop(ctx.currentTime + (clear ? 0.8 : 0.05)); } catch (e) { /* 무시 */ }
+      bossPending=null; rays.classList.remove('is-on'); shrinkBoss(clear); clearAGauge();
       showResult(st, clear, false);
     }
     function showResult(result, clear, isB) {
       var token = ++resultSerial, resultDiff = isB ? result.diff : diff;
       var r = $('[data-rp-result]');
       var rating=sharedRules.resultRating(result.cnt,isB?result.totalNotes:result.notes.length,clear);
+      var rewardEl=$('[data-rp-ticket-reward]'); rewardEl.hidden=true;
+      if (!isB && clear && rating.fullCombo && (resultDiff==='NORMAL'||resultDiff==='HARD') && !result.practice && !result.bTicketRewardGranted) {
+        if (MG.Economy && MG.Economy.addRhythmBTickets) { MG.Economy.addRhythmBTickets(1); result.bTicketRewardGranted=true; rewardEl.textContent='RhythmPang B TICKET +1'; rewardEl.hidden=false; }
+      }
       var rankEl=$('[data-rp-res-rank]'),badgeEl=$('[data-rp-res-achievement]');rankEl.classList.remove('is-stamped');badgeEl.classList.remove('is-stamped');
       rankEl.textContent=rating.rank;rankEl.dataset.rank=rating.rank;
       $('[data-rp-res-accuracy]').textContent=(Math.floor(rating.accuracy*100+1e-8)/100).toFixed(2)+'%';
@@ -528,6 +586,7 @@
       el.querySelectorAll('[data-rx-pause-t] textPath').forEach(function (t) { t.textContent = pt; });
       st.paused = on; $('[data-rp-pause]').hidden = !on;
       if (on) ctx.suspend(); else ctx.resume();
+      if(aGaugeAnimation){if(on)aGaugeAnimation.pause();else aGaugeAnimation.play();}
     }
     // 창 버튼 누름 효과(v820) — 폰에서 :active 가 잘 안 먹어 직접 클래스 토글
     el.querySelectorAll('.rx-btn').forEach(function (b) {
@@ -545,6 +604,7 @@
     $('[data-rp-other]').addEventListener('click', function () { if (activeB) { bGame.stop(); showSelect(); return; } cancelAnimationFrame(raf); try { src && src.stop(); } catch (e) { /* 무시 */ } st = null; showSelect(); });
 
     function close(why) {
+      clearAGauge();
       resultSerial++;
       if (bGame) bGame.stop(); activeB = false;
       cancelAnimationFrame(raf);
@@ -626,10 +686,10 @@
     $('[data-rp-songs-back]').addEventListener('click', showTypes);
     $('[data-rp-songs-home]').addEventListener('click', function () { close(); });
     $('[data-rp-types-home]').addEventListener('click', function () { close(); });
-    function open() { el.hidden = false; $('[data-rp-pause]').hidden = true; $('[data-rp-result]').hidden = true; wlayer.innerHTML = '';
+    function open() { resetBoss(); clearAGauge(); el.hidden = false; $('[data-rp-pause]').hidden = true; $('[data-rp-result]').hidden = true; wlayer.innerHTML = '';
       // v974(사용자 지정): 진입 시 배경은 항상 첫 화면 — 지난 판의 두더지·구멍·버튼·점수·HP 잔상 비움(시작하면 start() 가 다시 만듦)
       $('[data-rp-lanes]').innerHTML = ''; $('[data-rp-btns]').innerHTML = ''; moleEls = null; btnEls = null;
-      $('[data-rp-score]').textContent = '0'; $('[data-rp-combo]').textContent = ''; $('[data-rp-hp]').style.width = ''; $('[data-rp-hpbar]').classList.remove('is-low');
+      $('[data-rp-score]').textContent = '0'; $('[data-rp-combo]').textContent = '0'; statusJudge.textContent = 'READY'; statusTime.textContent = '0:00'; statusSeconds = -1; $('[data-rp-hp]').style.width = ''; $('[data-rp-hpbar]').classList.remove('is-low');
       showTypes(); }
     return { open: open, close: close, CONFIG: CONFIG, setDiff: function (d) { diff = d; }, start: function () { start(); }, press: function (l) { press(l); }, dbg: function () { return st ? { t: now(), notes: st.notes, score: st.score, combo: st.combo, hp: st.hp, cnt: st.cnt } : null; } };
   }

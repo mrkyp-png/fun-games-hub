@@ -124,3 +124,12 @@
 
 # 로딩 화면 (V 1162 G)
 - assets/loading-stage-v1162/stage.png: 사용자 제공 Desktop/a31bcd31-47c9-41c1-bf32-420809a59f10.png. 941×1672 RGB PNG, 2118416bytes. SHA256 C84916F817025D0A43E99C1092315DC4291142607BF04BFCDEEBA945BDC7554B. 원본 그대로 복사, 재생성·색보정·비트맵 재단 없음. 무대/앞판은 같은 이미지를 CSS로 정렬하고 장식 없는 하단 면만 확장. 기존 캐릭터 WebP는 원본 보존하고 하단의 옛 보드 부분만 CSS로 가림.
+
+V1164 G: Rhythm A status panels supplied by the user, copied byte-for-byte.
+Desktop folder: Rhythm A UI assets (user moved the four files during implementation).
+score.png: 704a2bae-631b-48f1-b8ac-c84e0c32fcf5.png
+judgement.png: 373ff63a-712f-4e32-bf3e-1876b979e39b.png
+combo.png: 60f92732-e7b3-4ee3-aaef-55d76fe80968.png
+time.png: 707c2f48-4e12-488e-ae7c-a37903a9b8dc.png
+Clock face/hands use a code overlay. Source PNGs remain unchanged.
+V1164 G calm beach: user supplied Desktop/Rhythm A UI assets/background PNG; copied unchanged as assets/rhythm/bg-beach-calm-v1164.png. SHA256 77E1AD1B49DB49677F71FDE0D2EB485BD9C76BF3C7F722E061E6F09E8059113D.

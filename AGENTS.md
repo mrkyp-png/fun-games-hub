@@ -1277,3 +1277,74 @@
 - 사용자 “네, 배포해줏요”로 현재 로딩화면 V1162 G 커밋·푸시·배포 승인. origin/master 44700eb 로컬HEAD와 동일 확인. 제품 index/manifest/sw/새 무대 PNG/출처·인수인계/관련 검증·시안 파일만 명시적으로 선택, 다른 미추적 파일 제외.
 - 초기 검정 화면 검사 통과: CSS 요청을 보류한 초기 html 검정, 아트 준비 전 splash/body 검정, 기존 아트 게이트 유지. 최초 검사 timeout은 CSS를 차단한 상태에서 RAF 기반 검사 대기를 사용한 검사 오류로, 100ms polling으로 교정해 통과. 실제 폰 증상 소멸 확정은 사용자 확인 필요.
 - 5화면 로딩 배치·축소→검정→홈 확대 검증 통과. 추가 효과의 실제 모바일 성능은 실기 확인 필요. 선글라스 반사광은 아직 미적용. 공개 완료 상태는 push/Pages 확인 후 별도 기록.
+
+## 2026-10-16 / V1162 G Pages 배포 완료
+- 사용자 배포 승인에 따라 커밋225cef4b881d9b9588e15e70ab59c6a634070ff6 origin/master 푸시. Pages38899119399 completed/success 확인. 공개 index/manifest/sw/무대PNG4파일 SHA256 커밋 원본과 일치.
+- 공개360×800/390×884/430×932/390×844/430×844 배치·버튼 화면 내·검정 테마 검사 통과. 실제 폰의 첫 화면 갈색 노출/체감 배경 속도/성능은 사용자 확인 필요. 이번 수정은 로딩화면에 한정. 다음 작업은 V1163 G부터 양쪽 최신 번호 확인. 완료 기록은 로컬에만 추가, 별도 재커밋/배포 없음.
+- 공개 URL https://mrkyp-png.github.io/fun-games-hub/mole/index.html?v=1162 . 노트북 원본/기존·사용자·Claude·미추적 변경 보존/수정 사전 허락·배포 별도 허락/G·C 연속 번호/다음 에이전트·Claude 인수인계 규칙 유지.
+
+## 2026-10-16 / V1162 G 이후 — 설치 앱 로딩 전체화면 조사 (제품 수정 없음)
+- Desktop 로딩화면.jpg 확인: 상단 검정 상태바, 하단 #1e6ee1 계열 Android 3버튼 탐색바이며 페이지 내부 여백 아님. 사용자는 홈 설치 앱 실행, GET NOW 후 양쪽 바가 사라진다고 확인. 광고판 밧줄은 brand top 여백 때문에 화면 상단과 끊겨 보임(원본 이미지 훼손 없음). 밧줄 수정 아직 미실시.
+- 사용자: 원래 로딩부터 전체화면이었다고 보고, 이전/현재 비교 허락. Git 조사: V721 0b11ebd manifest display fullscreen 도입, V726 fd430e8에서 실기 카메라 검정 띠 문제로 standalone 복귀. V946 9b860f1 파란 theme/background 도입. V1154/V1161/V1162의 첫 pointerup requestFullscreen(navigationUI:hide) 로직 동일. V1162 manifest 변경은 파랑→검정 2색뿐, display 변경 없음.
+- 최근 로딩 수정이 전체화면 회귀를 일으켰다고 이전 응답에서 단정한 것은 근거 부족. 설치 앱의 실제 표시 모드/설정 갱신 여부는 실기 미확인. 예전 fullscreen 설정이 남았던 앱이 manifest 갱신으로 standalone이 되었을 가능성은 가설이며 확정하지 않는다.
+- 공식 문서: https://web.dev/articles/fullscreen (설치 앱 시작 모드), https://developer.mozilla.org/en-US/docs/Web/API/Element/requestFullscreen (사용자 활성화 필요), https://web.dev/articles/manifest-updates (설치 앱 manifest 갱신 과정). 터치 전 JS 자동 전체화면으로 우회하지 말 것. 시작부터 전체화면 복구는 manifest fullscreen 변경 및 기존 노치 문제 재검증 필요. 이번 턴은 조사만, 제품 파일 수정/커밋/푸시/배포 없음. 로컬/공개 V1162 G 유지.
+- 노트북 원본/기존·사용자·Claude·미추적 변경 보존/수정 사전 허락·배포 별도 허락/Codex G·Claude C 연속 번호/다음 에이전트·Claude 인수인계 규칙 유지.
+
+## 2026-10-16 / V1163 G — 로딩 선글라스 반사광 (미배포)
+- 사용자 “눈은 놔두죠. 안경만이라도 해주세요” 및 “네”로 선글라스 반사광만 승인. 눈 깜빡임/밧줄/설치앱 fullscreen 설정 변경 없음. 현재 공개 V1162 G, 로컬 V1163 G. index 표시/SW등록/cache 버전 연속 갱신.
+- 기존 characters.webp와 동일1774×887 좌표계의 SVG를 같은 top/폭/높이에 겹침. 양쪽 렌즈 내부 경로로 clip하고 안경색의 파랑·청록 반사 띠가5.5초 주기 중 약1.2초 통과, 나머지 숨김. 새 bitmap/원본 색보정/눈 수정/blur/filter/RAF 없음. pointer-events none, 아트 준비 전 숨김·닫기/종료 pause·reduced-motion 숨김.
+- verify-loading-glasses-v1163.js 통과:360/390/430px에서 캐릭터와 SVG 좌표·크기 오차<.1px, 렌즈 clip/터치간섭 없음/좌우 이동/닫기 pause/페이지오류0. 좌·우·대기 스크린샷 시각 확인. 기존 캐릭터 git blob c8b17cde290ae732461389f3146d52d50b5319a7 HEAD와 동일. diff검사 통과. 실기 시각 확인은 필요.
+- 병행 질문: Android 네이티브 앱 패키징 시 immersive mode로 상태/탐색바 숨김 가능하되, 출시만으로 자동이 아닌 앱 설정 필요. https://developer.android.com/develop/ui/views/layout/immersive 공식 근거. 현재 PWA 시작 설정은 변경하지 않음.
+- 커밋·푸시·배포 없음. 기존·사용자·Claude·미추적 변경 보존. 다음 에이전트·Claude 필수: 노트북 원본/수정 사전·배포 별도 허락/Codex G·Claude C 최신 연속번호 확인/변경·검증·미완료 인수인계 유지.
+
+## 2026-10-16 / V1163 G — 리듬 A 원본 에셋 분리 및 로딩 밧줄 (미배포)
+- 사용자 Desktop 리듬팡a.png(1774×887 RGBA)가 글자/숫자 제거 에셋, 리듬A 시안.png가 완성 시안. COMBO 장식은 시안 꽃 대신 원본 게로 확정. “네 분리해보세요”로 원본 그대로8개 재단 승인. 이미지 재생성/색보정/동일크기 강제조정 없음. 원본 폭과 그림 위치가 달라 출력 폭466/419/425/464px로 원본 유지.
+- 산출물 review/rhythm-a-split-v1163/{score-star,judgement-shell,combo-crab,time-seagull,button-yellow,button-blue,button-pink,button-green}.png, crops.json/HTML미리보기/preview.png, ZIP review/rhythm-a-split-v1163.zip. System.Drawing Clone으로 재단; Python은 픽셀 비교 분석만 사용.8개 RGBA 전체 원본 대응범위와 완전일치 확인. 사용자 원본 수정 없음.
+- 중요한 한계: 원본에서 가로 이웃 테두리/글로우가 서로 맞닿거나 겹쳐 단순 재단 시 일부 가장자리에 직선 절단/이웃 색이 남음. 별도 깨끗한8에셋 완성으로 주장하지 말 것. 사용자에게 한계 설명, 임의 복원/생성 안 함. 아직 게임에 적용하지 않음. 어려운 재단/복원은 사용자와 협의하는 공통 규칙 유지.
+- 병행 승인: 광고판 밧줄을 폰 맨 위까지 이어 안 잘려 보이게 하라고 사용자 확인. 광고판 위치 고정, 원본 splash-art.webp 상단 두 밧줄 x396..452/x1138..1193 스트립을 CSS pseudo로 상단 여백에 연장. brand overflow visible로 변경하되 img clip으로 이전 로고 표시 범위885/1961 유지. 원본 이미지 수정 없음. verify-loading-ropes-v1163:양쪽 밧줄 top+offset≈0/광고판 고정/기존 이미지 clip 검사 및 화면 시각 확인. 선글라스3폭 회귀검사 통과.
+- 현재 로컬V1163 G/공개V1162 G. 커밋·푸시·배포 없음. 기존·사용자·Claude·미추적 변경 보존. 다음 에이전트·Claude: 노트북 원본/수정 사전·배포 별도 허락/G·C 최신 연속번호/변경·검증·미완료 인수인계 필수.
+
+## 2026-10-16 / V1164 G — 리듬팡 A 상태창·콤보 구름·티켓 및 문의유형 (미배포)
+- 허락: A 타깃창/두더지/구멍 동일하게 위로, 버튼 정사각형, 사이에 바탕화면 상태창4개, 실제 점수/판정/콤보/시간 연결, 상단 점수 삭제, 녹색바 제거. 아이콘은 박스에 붙인 채 유지. 시계는 흰 얼굴 위 기존 바늘을 가리고 별도 바늘 움직임 승인. 글자/숫자/시간 최대 확대, 상태창 높이 확대. 버튼 테두리 고정+내부 눌림 승인. PERFECT는 B와 같은 버튼 위 확대 효과. 이어10콤보 빛/구름색/축소 및 NORMAL 이상 풀콤보 완주마다 B티켓1장 승인. 문의유형 폭/모서리는 문의내용과 동일, 노란 면 축소해 나무 여백 승인.
+- Desktop 원본4파일을 assets/rhythm/ui-status-v1164/{score,judgement,combo,time}.png에 그대로 복사. 사용자가 작업 중 원본을 Desktop/리듬A UI 보완 및 에셋으로 이동; 그 위치에서 SHA2564개 일치 재확인. 게 장식 확정, 별도 아이콘 분리/이미지 생성/색보정 없음. CREDITS 기록. status row4열/aspect1.55, 기존상단HUD제거, HP바 시각적으로 숨김(게임의HP/MISS10종료규칙은 유지). 숫자/라벨은 CSS확대. 시계 흰 면과 바늘 SVG 오버레이, pause/reduced-motion 대응.
+- layout에서 targetY와 moleBottom에 동일 min(32,W*.06)px 이동, 기존lift 유지하여 타깃/캐릭터/구멍의 상대 점프 관계 보존. 버튼 폭=높이, 원본이미지는 정사각형 표시. 기존 테두리 고정, 원본 내부 면만 clip으로2px/.97/brightness.88 눌림. 기존 cue/PANG/충돌·점수·판정·음악 유지.
+- A 상태창은 score/실제latest판정/현재combo/AudioBuffer.duration-now() 남은초 연결. 시간은 새 RAF 없이 기존loop에서 정수초 변경 시에만 DOM쓰기, 시작2:01→2:00→1:59 감소 및 pause정지검증. 첫연결에서 초기0:00 남던 부분을 보완. PERFECT 단어는 버튼별4개를 미리 생성, B동일1100ms .05→3.5→4.6배/사라짐, pause/reduced-motion 대응.
+- 구름하마: 최초96%안은 사용자 “너무큼/수평선위”로 폐기, 현재 width=min(80%,화면높이*.29*592/464), 중앙/상부 배치.10콤보마다 왼쪽부터4레이저를 재사용 SVG4경로로 순차 발사(360ms+90ms간격), 게임시각 .65초 후 색/크기 반응. 최근 “전체/타깃색” 지시로 하마 전체 alpha-mask 색감 변경,10/20/30/40콤보 노랑/파랑/분홍/초록 반복. 성공누적/실제총노트수로 .16+.84*(1-성공비율) 축소, 풀콤보 완주만 scale0/opacity0. 반복10콤보가 이전성공을 중복집계하지 않으며 곡별 실제 notes.length 사용. 무기·타깃 판정 로직 변경 없음. 새 영상/거대blur/동적DOM풀 추가 없음. 실제폰 프레임 검증은 아직 아님.
+- NORMAL/HARD A clear+fullCombo+!practice에만 B전용티켓1장. Economy getRhythmBTickets/addRhythmBTickets, 저장키 mole.rp.b.tickets. 챕터용기존티켓/하트/코인 보존. 결과객체 bTicketRewardGranted로중복지급방지, 결과창TICKET+1 표시. B입장차감/티켓가격은 미구현(이번허락은선물지급). 기존별점/SSS등급/최고점 변경 없음.
+- 문의유형 최종 .ct-drop은 .ct-area와같은 5px#d8781c/9px모서리/외곽그림자/width100%/margin0. 노란 면 pseudo inset2px로나무테두리노출, 기존누름/4선택/메일전송로직유지(실제전송안함). 초기검사는옛 field.png 규칙만봐서최종ct-area border-image:none과불일치했으며실제최종규칙으로수정해검증통과.
+- 검증: verify-rhythm-a-ui-v1164.js 360×800/390×884/430×932 정사각형/4상태/상단점수없음/HP바없음/시계정지, 실제MISS/PERFECT301점/콤보1/숫자표시/시간감소·pause/고정테두리눌림/브라우저오류0 통과. PERFECT 검사는제어한노트시각을이용한충돌통합검사, 실제유저올퍼펙트플레이검증아님.
+- verify-rhythm-a-rewards-v1164.js 테스트전용메모리계측(제품코드테스트훅없음)으로EASY/실패/MISS/practice보상0, NORMAL/HARD각+1, 반복호출+0, 레이저4개/도착후색·축소/풀콤보소멸통과. 초기fixture의음악시계가pause상태라효과도착을못보던검사문제교정후통과. verify-rhythm-b-smoke-v1164.js B테스트곡9버튼진입/A화면숨김/오류0통과(기존B점수000000형식으로검사수정). verify-contact-cloud-v1164.js 문의3폭/동일좌우·모서리/노란여백/4선택 및 하마3viewport수평선위제약 통과. JS/SW/inline6개/캐시546경로/diff검사통과.
+- 미완료/미승인: 배경을아래로옮기거나파도영상으로교체한것없음. 원본1024×1536이라세로이동은약간의확대가필요하다고설명, 영상은이미지→영상의카메라고정/잔잔한파도6~8초loop프롬프트만제안. 실제폰버벅임/하마색시각확인필요.
+- 로컬V1164 G/공개V1162 G. V1163 선글라스/밧줄미배포변경그대로포함·보존. 커밋/푸시/배포허락없음. 다음에이전트·Claude필수:노트북원본/기존·사용자·Claude·미추적변경보존/수정사전·배포별도허락/CodexG·ClaudeC최신연속번호확인/변경·검증·미완료인수인계.
+- 최종 하마 위치 검사는 타입선택의 숨은 무대가 아닌 실제 EASY 플레이→pause 상태로 보완: 360×800/390×884/430×844에서 실제 보이는 폭>화면50%, 폭≤80%, 하단<화면33% 확인. review/rhythm-a-final-v1164-390x884.png 시각 확인. 문의유형 최종 캡처에서도 문의내용과 좌우/9px모서리/나무색여백 일치 확인.
+
+## 2026-10-16 / V1164 G — A 버튼 기존 전체 눌림 복원 (미배포)
+- 사용자 최신 지시: 새 내부 면 눌림이 이상하므로 버튼 전체가 눌리는 기존 효과 그대로 유지. 새 rp-btn::before 복제면/고정테두리 override/사용하지 않는 --rp-button-face 설정 제거. 기존 .rp-btn.is-down img translateY(4px) scale(.94), brightness(1.25) 및 원래60ms전환이 다시 적용됨. 정사각형/상태창/하마/보상/PERFECT/기존cue 그대로 보존. 앞선 고정테두리 검증 기록은 현재 최종 요구가 아님.
+- 구문/diff 확인. 로컬V1164 G/공개V1162 G, 커밋·푸시·배포 없음. 기존·사용자·Claude 변경 보존, 노트북 원본/수정 사전·배포 별도 허락/G·C 연속번호/다음 에이전트·Claude 인수인계 규칙 유지.
+
+## 2026-10-16 / V1164 G — A 상태창 위 B동일 판정바 (미배포)
+- 사용자 승인: 상태박스4개 바로 위, 좌우폭맞춰 리듬팡B와동일 판정바 적용. 여름해변에맞는 밝은색으로만변경. rp-bottom에 rp-a-timing-gauge 추가, position relative/width100%/height28px로 상태창과양끝일치. B와동일SVG프레임좌표/6개GOOD·GREAT·PERFECT양쪽구간선/RHYTHM라벨/중앙에서늘었다줄어드는단일빛 사용. B코드/스타일/게임규칙변경없음.
+- 판정강도 MISS.12/GOOD.44/GREAT.72/PERFECT1,400ms/.02→강도→강도*.85→.02 및offset0/.12/.42/1을 B와동일 적용. A판정 showJudge에 연결, 바1개 재사용/이전animation취소, pause/resume/start/open/close/gameOver 정리, reduced-motion 대응. 밝은하늘색프레임/밝은금색PERFECT·연보라GREAT·하늘색GOOD·코랄MISS로색만변경. 점수/판정기준/남은시간/버튼전체눌림복원 유지.
+- verify-rhythm-a-timing-v1164.js:실제A시작후360/390/430폭에서4상태창좌우오차<.1px/바가상태창위/구간선6개/4등급정확한강도·키프레임·400ms/pause-resume-hide/브라우저오류0 통과. 테스트용showJudge계측은테스트의요청인터셉트에만있고제품에는훅없음. review/rhythm-a-timing-v1164.png 시각확인. 기존UI검증의버튼기대값도최신전체눌림지시에맞춰정정. JS/diff통과.
+- 로컬V1164 G/공개V1162 G. 커밋·푸시·배포없음. 노트북원본/기존·사용자·Claude변경보존/수정사전·배포별도허락/G·C최신연속번호/다음에이전트·Claude인수인계규칙유지.
+
+## 2026-10-16 / V1164 G — 잔잔한 해변과 수평선 위 하마 (미배포)
+- 사용자 새 배경.png 검토 후 “하마도 수평선 위/조금 작아져도 됨” 지시에 따라 새 배경 기준 배치. 원본은 작업 중 Desktop/리듬A UI 보완 및 에셋/배경.png로 이동됨. assets/rhythm/bg-beach-calm-v1164.png에 원본 그대로 복사(SHA25677E1AD1B49DB49677F71FDE0D2EB485BD9C76BF3C7F722E061E6F09E8059113D 일치). 구도/색/비율/PNG 수정 없음. A타입에만background-image 변경, 기존cover 유지, SW경로추가. 기존원본bg-beach.jpg 보존.
+- 하마width=min(76%,화면높이*.27*592/464)로 추가축소, 중앙/상부 배치/구름아래끝 수평선위 여유. 기존콤보축소/전체색/레이저/시간/판정바/버튼전체눌림 유지. actual EASY화면360×800/390×884/430×844에서하마보이는폭>50%/폭≤76%/수평선위제약/새배경참조검사통과, 390화면시각확인:구멍4개모두마른모래위. 최초원본경로이동으로copy실패한뒤이동된파일확인·원본hash검증·화면검증재수행. 깨진asset참조남기지않음.
+- 영상미추가. 새배경은이미지1장으로프레임별새연산없음. 실제폰성능은확인필요. 로컬V1164 G/공개V1162 G, 커밋·푸시·배포없음. 노트북원본/기존·사용자·Claude변경보존/수정사전·배포별도허락/G·C최신연속번호/다음에이전트·Claude인수인계규칙유지.
+
+## 2026-10-16 / V1164 G — A 판정바 모래색 (미배포)
+- 사용자 요청: 판정바는 모래색과 유사하게. A전용 SVG프레임/바탕/그라디언트/구간선/라벨을 밝은베이지·금빛·갈색으로 변경. B의 판정바는 변경 없음. PERFECT/GREAT/GOOD/MISS 판정 반응색·강도·400ms움직임·좌우폭·위치는 유지. diff검사통과.
+- 로컬V1164 G/공개V1162 G, 커밋·푸시·배포없음. 기존·사용자·Claude변경보존/노트북원본/수정사전·배포별도허락/G·C연속번호/다음에이전트·Claude인수인계유지.
+
+## 2026-10-16 / V1164 G — 버튼 삼각형 입체감·GET NOW 전용 진입 (미배포)
+- 사용자 “버튼색과어울리는삼각형/3D입체감” 승인. 원본 btn-1..4.png는보존, 실제흰삼각형범위측정(각이미지222×194/222×204/221×205/220×205)에맞춘SVG면/좌우명암/5원본px두께/약한9px바닥그림자를오버레이. 색은샴페인골드/하늘색/로즈핑크/민트. 새bitmap/blur/필터애니메이션/RAF없음. SVG와원본img에동일translateY4px/scale.94/brightness1.25/60ms/중앙원점적용하여기존전체버튼눌림그대로. 기존cue/PERFECT워드유지.
+- 사용자 “로딩배경눌러도진입?” 및 “네”로GET NOW만진입 승인. 원인:splash 전체pointerdown→go였음. 리스너를실제splash-hint로한정, armed=false로중복진입차단, role=button/tabIndex/Enter·Space지원. 배경/광고판클릭진입안함, 기존로딩게이트/점축소·검정·홈확대유지. 전역첫터치BGM·전체화면동작은기존유지.
+- 선글라스갑자기사라짐보고점검:로컬SVG/CSS5.5초주기정상, 원본캐릭터변경없음. 현재공개커밋225cef4(V1162)에는loading-glasses-reflection없음(직접Git원본확인). 효과는V1163부터미배포변경이며삭제된것아님. 사용자에게로컬정상/공개미포함설명, 선글라스코드임의변경없음.
+- verify-triangles-loading-v1164.js:배경·광고판클릭후로딩유지/GET NOW진입/로컬안경렌즈clip·활성opacity/4삼각형/360·390·430px원본정렬/눌림img·SVGtransform완전일치/brightness1.25/오류0통과. rest·pressed캡처시각확인. JS/diff통과.
+- 로컬V1164 G/공개V1162 G, 커밋·푸시·배포없음. 기존·사용자·Claude변경보존/노트북원본/수정사전·배포별도허락/CodexG·ClaudeC최신연속번호/다음에이전트·Claude인수인계규칙유지.
+
+## 2026-10-16 / V1164 G — 배포 승인 및 최종 검사
+- 사용자 "배포" 승인으로 V1163 미배포 로딩화면 수정과 V1164 리듬팡 A UI·배경·콤보 보상·문의하기 변경을 함께 배포한다. 관련 파일만 명시적으로 선택하고 기존 사용자/Claude/미추적 파일은 보존한다.
+- 최종 JS 구문 검사와 diff 검사 통과, 서비스워커 SHELL 547개 경로 모두 존재. 앞서 기록한 브라우저 기능 검증 통과. 공개 반영은 푸시 및 Pages 성공 후 별도 확인한다.
+- 다음 에이전트/Claude 공통: 노트북 원본, 수정 사전 승인, 배포 별도 승인, G/C 연속 번호, 기존 변경 보존, 변경·검증·미완료 인수인계 규칙 유지.

@@ -92,6 +92,13 @@
     if (ls()) { ls().setItem(K.tickets, String(v)); ls().setItem(K.ticketsAt, String(at)); }
     return v;
   }
+  // Rhythm B reward tickets are distinct from chapter entry tickets.
+  function getRhythmBTickets() { return Math.max(0, readInt('mole.rp.b.tickets', 0)); }
+  function addRhythmBTickets(n) {
+    var v = getRhythmBTickets() + Math.max(0, n | 0);
+    if (ls()) ls().setItem('mole.rp.b.tickets', String(v));
+    return v;
+  }
   function nextTicketMs() {
     var stored = readInt(K.tickets, TICKET_MAX);
     if (stored >= TICKET_MAX) return 0;
@@ -126,6 +133,7 @@
     HEART_MAX: HEART_MAX, REGEN_MS: REGEN_MS, TICKET_MAX: TICKET_MAX, TICKET_REGEN_MS: TICKET_REGEN_MS,
     regen: regen, getHearts: getHearts, canPlay: canPlay, spendHeart: spendHeart,
     setHearts: setHearts, addHearts: addHearts, nextHeartMs: nextHeartMs,
+    getRhythmBTickets: getRhythmBTickets, addRhythmBTickets: addRhythmBTickets,
     getTickets: getTickets, spendTicket: spendTicket, addTickets: addTickets, nextTicketMs: nextTicketMs,
     getCoins: getCoins, addCoins: addCoins, spendCoins: spendCoins, formatK: formatK
   };
