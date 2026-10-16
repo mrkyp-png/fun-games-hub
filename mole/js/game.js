@@ -1082,16 +1082,8 @@
     inEl.hidden = false;
   }
 
-  // 더보기 메뉴 열기/닫기.
-  // 빠른 연타 방지(사용자 보고: "상점을 빠르게 여러번 누르면 재화 하트화면이 아니라 티켓
-  // 화면이 나옴") — 다이얼패드 키가 숫자↔아이콘 3D 뒤집기 트랜지션 중이라 연타 시 상점 하트/
-  // 코인/티켓 캡슐(shop-hud-fly)의 착지 위치 측정이 꼬여 엉뚱한 키 위에 겹치는 것으로 추정.
-  // 짧은 시간 내 재호출을 아예 무시해 그 경합 창 자체를 없앤다.
-  var lastOpenMoreAt = 0;
+  // V1156: immediate navigation keeps selection and panel in sync.
   function openMore(sub, originEl) {
-    var now = Date.now();
-    if (now - lastOpenMoreAt < 400) return;
-    lastOpenMoreAt = now;
     var isStart = document.getElementById('game-screen').classList.contains('is-start');
     var outEl = document.getElementById(isStart ? 'board-start' : 'mole-board');
     openMoreNow(sub); // more-menu 내용 준비(hidden=false 는 flipSwap 이 처리)
@@ -1409,9 +1401,9 @@
         : Math.round(MG.interpolate(reverseTarget ? MG.MAX_CONCURRENT_ANIMALS : MG.MAX_CONCURRENT_MOLES, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS)),
       maxConcurrentAnimals: isSmallBoardChapter() ? 0
         : Math.round(MG.interpolate(reverseTarget ? MG.MAX_CONCURRENT_MOLES : MG.MAX_CONCURRENT_ANIMALS, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS)),
-      maxConcurrentBombs: (!isSmallBoardChapter() && ch >= 3) ? Math.round(MG.interpolate(MG.MAX_CONCURRENT_BOMBS, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS)) : 0,
-      bombChance: (!isSmallBoardChapter() && ch >= 3) ? MG.interpolate(MG.BOMB_CHANCE_BY_ROUND, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS) : 0,
-      strongBombChance: (!isSmallBoardChapter() && ch >= 4) ? MG.interpolate(MG.STRONG_BOMB_CHANCE_BY_ROUND, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS) : 0,
+      maxConcurrentBombs: (!isSmallBoardChapter() && ch === 6) ? Math.round(MG.interpolate(MG.MAX_CONCURRENT_BOMBS, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS)) : 0,
+      bombChance: (!isSmallBoardChapter() && ch >= 3 && ch !== 6) ? MG.interpolate(MG.BOMB_CHANCE_BY_ROUND, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS) : 0,
+      strongBombChance: (!isSmallBoardChapter() && ch >= 4 && ch !== 6) ? MG.interpolate(MG.STRONG_BOMB_CHANCE_BY_ROUND, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS) : 0,
       maxConcurrentItems: 0,   // 실드 아이템 스폰 삭제(사용자 지정, 2026-09-14)
       shieldItems: false,
       popDuration: isSmallBoardChapter() ? 2.5 : MG.interpolate(MG.MOLE_DURATION, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS) * popMult(),
@@ -1552,6 +1544,7 @@
       timeRemaining: roundSeconds(),
       aliClones: [], // 알리펀치 동시타격 분신 글러브들 — 메인 루프가 매 프레임 update() 돌려줘야 실제로 스윙한다.
       hitstopUntil: 0,
+      quakeFxUntil: 0, // V1158: visible quake tail, extended by actual chained effects.
       alipunchInvincibleUntil: 0, // 알리 펀치 [공격력]: 무적 활성 종료 시각(performance.now() 기준, §7)
       ended: false,
       paused: false,
@@ -1792,13 +1785,10 @@
       // 게이팅은 currentChapter() 로 직접 판정(§4) — cfg 의 현재값(예: bombChance)으로 게이팅을
       // 판단하면 커브 자체가 0에서 시작하는 라운드(막 켜진 라운드3의 t=0)와 아예 꺼진 라운드를
       // 구분할 수 없어, 켜진 라운드가 라운드 내내 0에 고정되는 버그가 있었다(Puppeteer 로 실측 확인).
-      if (ch >= 3) {
-        cfg.maxConcurrentBombs = Math.round(MG.interpolate(MG.MAX_CONCURRENT_BOMBS, curveElapsed, total));
-        cfg.bombChance = MG.interpolate(MG.BOMB_CHANCE_BY_ROUND, curveElapsed, total);
-      }
-      if (ch >= 4) {
-        cfg.strongBombChance = MG.interpolate(MG.STRONG_BOMB_CHANCE_BY_ROUND, curveElapsed, total);
-      }
+      // V1157: bomb animals only in round 6; bomb moles everywhere else.
+      cfg.maxConcurrentBombs = ch === 6 ? Math.round(MG.interpolate(MG.MAX_CONCURRENT_BOMBS, curveElapsed, total)) : 0;
+      cfg.bombChance = ch >= 3 && ch !== 6 ? MG.interpolate(MG.BOMB_CHANCE_BY_ROUND, curveElapsed, total) : 0;
+      cfg.strongBombChance = ch >= 4 && ch !== 6 ? MG.interpolate(MG.STRONG_BOMB_CHANCE_BY_ROUND, curveElapsed, total) : 0;
     }
   }
 
@@ -1963,6 +1953,7 @@
   // 글러브가 남아있었다. 성공/실패 결과화면 포함, 라운드가 끝나는 모든 경로에서 호출
   // (사용자 지정: "성공/실패 화면은 항상 스킬 효과가 안 나타나게 해야함").
   function clearInvincibleFx() {
+    if (state) state.quakeFxUntil = 0;
     const mb = document.getElementById('mole-board');
     if (mb) mb.classList.remove('mole-board--invincible');
     const gs = document.getElementById('game-screen');
@@ -2095,6 +2086,13 @@
   function quakeRipple(originId, depth) {
     depth = depth || 0;
     if (!state || state.ended || depth > QUAKE_MAX_DEPTH) return;
+    const quakeState = state;
+    const extendQuakeHud = () => {
+      if (state === quakeState && !quakeState.ended) {
+        quakeState.quakeFxUntil = Math.max(quakeState.quakeFxUntil || 0, performance.now() + 640);
+      }
+    };
+    extendQuakeHud();
     const board = document.getElementById('mole-board');
     const fxLayer = document.getElementById('mole-hammer-layer'); // overflow:visible — 분신이 보드 밖에서 날아듦
     const sp0 = state.spawnPoints.find((s) => s.regionId === originId);
@@ -2129,8 +2127,10 @@
         if (!p) return;
         const res = state.scheduler.resolveRegion(id, { quake: true });
         if (!res.length || res.every((r) => r.ignored)) return;
+        extendQuakeHud();
         MG.HitFx.quakeClone(fxLayer, quakeClonePose(id), p.x, p.y, quakeCloneKind(id), () => {
           if (!state || state.ended) return;
+          extendQuakeHud();
           onHammerImpact(p.x, p.y, res, { noHitstop: true });
           MG.HitFx.quakeDust(board, p.x, p.y);
           if (res.some((r) => r.type === 'mole' && r.done)) { killed.push(id); paintPad(); }
@@ -2504,8 +2504,11 @@
     if (b) b.classList.toggle('mole-board--invincible', on);
     const cd = document.getElementById('invincible-countdown');
     if (cd) {
-      cd.hidden = !on;
-      if (on) cd.textContent = String(Math.max(1, Math.ceil((state.alipunchInvincibleUntil - performance.now()) / 1000)));
+      const quakeRemaining = state.weapon === 'goldhammer' ? Math.max(0, (state.quakeFxUntil || 0) - performance.now()) : 0;
+      cd.hidden = !on && quakeRemaining <= 0;
+      const label = on ? String(Math.max(1, Math.ceil((state.alipunchInvincibleUntil - performance.now()) / 1000)))
+        : quakeRemaining > 0 ? (Math.ceil(quakeRemaining / 100) / 10).toFixed(1) : '';
+      if (cd.textContent !== label) cd.textContent = label;
     }
     if (state.weapon === 'alipunch') state.config.moleUpBonus = on ? 0.4 : 0.1;
     // 무적 중 권투 글러브 빨간색 → 황금색(글러브는 #mole-hammer-layer, 보드 밖이라 game-screen에 표시).

@@ -238,7 +238,7 @@
         });
       }, t);
       // 2) 알 대기 — 탭하면 타격
-      later(function () { goose.hidden = true; egg.className = 'ws-egg is-wait'; $('[data-ws-egghint]').hidden = false; pending.ready = true; }, t);
+      later(function () { goose.hidden = true; ped.hidden = false; egg.className = 'ws-egg is-wait'; $('[data-ws-egghint]').hidden = false; pending.ready = true; }, t);
     }
 
     $('[data-ws-egg]').addEventListener('click', function () {
@@ -252,7 +252,7 @@
       var egg = $('[data-ws-egg]'), ham = $('[data-ws-ham]'), bolt = $('[data-ws-bolt]');
       var res = $('[data-ws-result]');
       $('[data-ws-egghint]').hidden = true;
-      egg.className = 'ws-egg';
+      egg.className = 'ws-egg'; $('[data-ws-ped]').hidden = true;
       var t = 0;
       // 3) 골드 묠니르 + 녹색 번개가 알 꼭대기 타격
       ham.hidden = false; ham.classList.add('is-in'); cycleBolt(bolt, 0);
