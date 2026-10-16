@@ -7583,3 +7583,6 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 
 /* V1159: inquiry type uses the same rectangular yellow asset as Score's Mole Pang tab. */
 .ct-drop { background-image:url('assets/score/tab-on.png'); }
+
+/* V1160: weather paints above the isolated character/hole stack, below HUD. */
+#mole-weather { z-index:1; }

@@ -171,6 +171,10 @@
   #power-on-overlay.is-expand { --pr: var(--dot-max, 150vmax); transition: --pr 3s linear; } /* v827: 10초→3초(사용자 지정) */
   #power-on-dot { display: none; }
 
+  /* V1160: keep loading art visible during the black-iris contraction. */
+  #splash.is-closing { pointer-events:none; }
+  #splash.is-closing .splash-stage,#splash.is-closing .splash-note,#splash.is-closing .splash-hearts i,#splash.is-closing .splash-hearts i::after { animation-play-state:paused; }
+
   /* V 1153 G: fixed original performers; only the wide stage pans horizontally. */
   #splash { overflow:hidden; background:#020415; isolation:isolate; }
   #splash::before { content:none; }
@@ -208,9 +212,7 @@
     })).then(show);
   })();
 </script>
-<!-- 로딩+인트로 끝→홈 진입 연출(사용자 지정): 2초간 완전 검은화면 → 화면 정중앙 점에서 시작해
-     5초에 걸쳐 전체화면으로 확장(휴대폰 켜지는 느낌). 브금도 같은 5초 동안 서서히 볼륨 상승
-     (game.js window.FGH.fadeInHomeBgm). index.html 의 revealHomeScatter() 가 트리거. -->
+<!-- GET NOW: loading iris closes 1s, black hold 2s, home iris opens 3s. -->
 <div id="power-on-overlay" hidden aria-hidden="true"><div id="power-on-dot"></div></div>
 <div class="cosmic-bg">
 
@@ -964,7 +966,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1159 G</div>
+        <div id="build-tag" aria-hidden="true">V 1160 G</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1049,7 +1051,6 @@ window.FGH.rollOut = function (el, done) {
 <script src="js/region-reveal.js"></script>
 <script src="js/hud.js"></script>
 <script src="js/sky.js"></script>
-<script src="js/intro.js"></script>
 <script src="js/game.js"></script>
 <script>window.FGH.I18N.applyStatic(document);</script>
 <script>
@@ -1090,7 +1091,7 @@ window.FGH.rollOut = function (el, done) {
       (function () {
         var MINE = 15000, FADE = 1200, SCROLL = 75000, CYCLE = MINE + FADE + SCROLL;
         var gs = document.getElementById('game-screen'), track = document.querySelector('.hg-track');
-        var bs = document.getElementById('board-start'), t0 = performance.now() + 12000, timer = 0;
+        var bs = document.getElementById('board-start'), t0 = performance.now() + 6040, timer = 0;
         if (!gs || !track) return;
         // v969(사용자 지정): 폰에서 가끔 칸이 하얗게 비던 것 — 홈 그림 전부 미리 풀어(decode) 붙잡아 둠
         var keepImgs = Array.prototype.map.call(track.querySelectorAll('.hg-cell img'), function (im) {
@@ -1147,15 +1148,12 @@ window.FGH.rollOut = function (el, done) {
         overlay.hidden = false;
         // v768(사용자 지정: 첫 진입 번쩍임 삭제): 홈을 잠깐 보여줬다가 점으로 수축하던 단계를 없애고 바로 검은 화면에서 시작.
         overlay.classList.remove('is-expand');
-        // v836(사용자 지정): 인트로가 끝날 때 인트로 화면이 원으로 오므라들며 검게 흡수 — 인트로가 떠 있을 때만(홈이 비치면 v768 번쩍임 재발)
-        var shrinkMs = 0;
-        if (document.getElementById('intro-screen')) {
-          shrinkMs = 1000;
-          overlay.style.transition = 'none'; overlay.style.setProperty('--pr', Math.ceil(diag / 2) + 'px');
-          void overlay.offsetWidth;
-          overlay.style.transition = '--pr 1s ease-in'; overlay.style.setProperty('--pr', '0px');
-          setTimeout(function () { overlay.style.transition = ''; overlay.style.removeProperty('--pr'); }, shrinkMs + 20);
-        }
+        // V1160: close the visible loading art before removing it.
+        var shrinkMs = 1000;
+        overlay.style.transition = 'none'; overlay.style.setProperty('--pr', Math.ceil(diag / 2) + 'px');
+        void overlay.offsetWidth;
+        overlay.style.transition = '--pr 1s ease-in'; overlay.style.setProperty('--pr', '0px');
+        setTimeout(function () { overlay.style.transition = ''; overlay.style.removeProperty('--pr'); }, shrinkMs + 20);
         setTimeout(function () {
           // 이 시점엔 점이 이미 0×0(검은화면) — 여기서부터 2초간 검게 유지 후 확장 시작.
           setTimeout(function () {
@@ -1204,14 +1202,11 @@ window.FGH.rollOut = function (el, done) {
       cta.classList.add('is-pressed'); // 눌리는 연출 잠깐 보여주고 사라짐
       setTimeout(function () {
         // 앱 최초 1회 인트로 — 스플래시 사라지기 전에 먼저 띄워 홈이 안 비치게 한다.
-        var IN = window.MoleGame && window.MoleGame.Intro;
-        if (IN && IN.shouldShow()) {
-          IN.play(revealHomeScatter);
-        } else {
-          setTimeout(revealHomeScatter, 500); // 스플래시만 사라지는 경우, 그 제거 시점에 맞춤
-        }
-        s.classList.add('is-hiding');
-        setTimeout(function () { s.remove(); }, 500);
+        // V1160: shrink the loading screen under the existing black iris,
+        // then reveal home from the center. The history intro is no longer loaded.
+        s.classList.add('is-closing');
+        revealHomeScatter();
+        setTimeout(function () { s.remove(); }, 1040);
       }, 150);
     }
     s.addEventListener('pointerdown', go);
@@ -1230,7 +1225,7 @@ window.FGH.rollOut = function (el, done) {
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=1159-G').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=1160-G').catch(function () {});
       }
     });
   }
