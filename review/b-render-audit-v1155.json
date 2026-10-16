@@ -1,0 +1,89 @@
+{
+  "environment": "Edge headless mobile 390x884 DPR2; same full HARD chart; measured 48.3-53.3s; 70ms held inputs; seeded randomness; synthetic audio clock aligned to actual t0; scheduled80ms early with exact-target press clock to equalize effects; sequential before/after/after/before; not physical phone",
+  "report": [
+    {
+      "variant": "before",
+      "frames": 110,
+      "p95": 100.10000000000036,
+      "over50": 31,
+      "average": 43.92909090909092,
+      "dom": 1587,
+      "noteDOM": 360,
+      "createsDuringPlay": 0,
+      "classToggleCalls": 2040,
+      "judgements": {
+        "PERFECT": 21,
+        "GREAT": 0,
+        "GOOD": 0,
+        "MISS": 112
+      },
+      "styleMs": 322.356,
+      "layoutMs": 91.095,
+      "taskMs": 1080.675,
+      "heapBytes": 4722896
+    },
+    {
+      "variant": "after",
+      "frames": 108,
+      "p95": 100,
+      "over50": 34,
+      "average": 45.513888888888886,
+      "dom": 522,
+      "noteDOM": 5,
+      "createsDuringPlay": 0,
+      "classToggleCalls": 70,
+      "judgements": {
+        "PERFECT": 21,
+        "GREAT": 0,
+        "GOOD": 0,
+        "MISS": 112
+      },
+      "styleMs": 326.876,
+      "layoutMs": 81.344,
+      "taskMs": 1077.891,
+      "heapBytes": 3751704
+    },
+    {
+      "variant": "afterRepeat",
+      "frames": 119,
+      "p95": 83.39999999999964,
+      "over50": 35,
+      "average": 42.426050420168075,
+      "dom": 522,
+      "noteDOM": 5,
+      "createsDuringPlay": 0,
+      "classToggleCalls": 68,
+      "judgements": {
+        "PERFECT": 21,
+        "GREAT": 0,
+        "GOOD": 0,
+        "MISS": 112
+      },
+      "styleMs": 333.81100000000004,
+      "layoutMs": 84.173,
+      "taskMs": 1138.059,
+      "heapBytes": 3750208
+    },
+    {
+      "variant": "beforeRepeat",
+      "frames": 122,
+      "p95": 100,
+      "over50": 30,
+      "average": 40.700819672131146,
+      "dom": 1587,
+      "noteDOM": 360,
+      "createsDuringPlay": 0,
+      "classToggleCalls": 2256,
+      "judgements": {
+        "PERFECT": 21,
+        "GREAT": 0,
+        "GOOD": 0,
+        "MISS": 112
+      },
+      "styleMs": 377.103,
+      "layoutMs": 111.50500000000001,
+      "taskMs": 1231.673,
+      "heapBytes": 3277720
+    }
+  ]
+}

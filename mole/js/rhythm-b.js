@@ -6,6 +6,10 @@
     const buttonXs = [[26, 326], [326, 626], [626, 926]];
     const buttonYs = [[1136, 1436], [1436, 1736], [1736, 2036]];
     const pressSurfaces = [];
+    const reducedMotion=root.matchMedia('(prefers-reduced-motion: reduce)');
+    const movingSurfaces=[],releaseFrames=[];
+    const pressWaveFrames=Array.from({length:9},()=>[{'--rb-press-wave-scale':'.08',opacity:.7,offset:0},{'--rb-press-wave-scale':'.28',opacity:.7,offset:.18},{'--rb-press-wave-scale':'1',opacity:.56,offset:.7},{'--rb-press-wave-scale':'1',opacity:.56,offset:.9},{'--rb-press-wave-scale':'1.35',opacity:0,offset:1}]);
+    const pressWaveTiming={duration:480,easing:'ease-out'},releaseTiming={duration:160,easing:'ease-out'};
     const pulseAnimations = Array(9).fill(null);
     const spawnWaves=[],spawnCircles=[];
     const pressPulses=[],pulseLayers=[],pulseClips=[],pulseReach=Array(9).fill(1.35);
@@ -19,7 +23,7 @@
     const miniSurfaces = [], shakes = Array(9).fill(null);
     function clearShakes() { shakes.forEach(animation => { if (animation) animation.cancel(); }); shakes.fill(null); }
     function shakeMini(lane) {
-      if (root.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      if (reducedMotion.matches) return;
       if (shakes[lane]) shakes[lane].cancel();
       const animation = miniSurfaces[lane].animate([
         { transform: 'translate3d(0,0,0)', offset: 0 },
@@ -112,22 +116,23 @@
       hit.addEventListener('focus',()=>core.classList.toggle('is-key-focused',hit.matches(':focus-visible')));hit.addEventListener('blur',()=>core.classList.remove('is-key-focused'));
       const spawnRing=document.createElement('span');spawnRing.className='rb-spawn-ripple';spawnRing.hidden=true;spawnRing.setAttribute('aria-hidden','true');spawnRing.style.setProperty('--button-color',colors[i]);spawnRing.innerHTML='<svg viewBox="0 0 94 94" aria-hidden="true"><circle cx="47" cy="47" r="0" fill="none" stroke="'+colors[i]+'" stroke-width="4"/></svg>';place(spawnRing,buttonCx-.5,buttonCy,94);spawnWaves.push(spawnRing);spawnCircles.push(spawnRing.querySelector('circle'));
       const surfaces = [hit, color, circuit, reflection, lens, cap, floor, core, base]; pressSurfaces.push(...surfaces);
+      const moving=[circuit,reflection,lens,cap],from=Array(5).fill('');movingSurfaces.push(moving);
       function down() {
         if (!running || paused) return;
-        reboundAnimations[i].forEach(a=>a.cancel());reboundAnimations[i]=[];
+        reboundAnimations[i].forEach(a=>a.cancel());reboundAnimations[i].length=0;
         cap.src='assets/rhythm-b/button-face-v1120/face-'+i+'.svg';
         surfaces.forEach(el => el.classList.add('is-pressed'));if(flowFx)flowFx.press(i,true);
         if(flowSurfaces[i])flowSurfaces[i].classList.add('is-pressed');
         if(pulseAnimations[i]) pulseAnimations[i].cancel();
-        pulseAnimations[i]=pulse.animate([{'--rb-press-wave-scale':'.08',opacity:.7,offset:0},{'--rb-press-wave-scale':'.28',opacity:.7,offset:.18},{'--rb-press-wave-scale':'1',opacity:.56,offset:.7},{'--rb-press-wave-scale':String(1+(pulseReach[i]-1)*2/3),opacity:.56,offset:.9},{'--rb-press-wave-scale':String(pulseReach[i]),opacity:0,offset:1}],{duration:480,easing:'ease-out'});
+        pulseAnimations[i]=pulse.animate(pressWaveFrames[i],pressWaveTiming);
         if (play) {const occupied=play.hasCharacter(i),grade=play.press(i);if(grade!==undefined&&laserFx)laserFx.emit(i,occupied);}
       }
       function up() {
         if(!hit.classList.contains('is-pressed'))return;
-        const moving=[circuit,reflection,lens,cap,flowSurfaces[i]].filter(Boolean),from=moving.map(el=>getComputedStyle(el).transform);
+        for(let j=0;j<moving.length;j++)from[j]=getComputedStyle(moving[j]).transform;
         cap.src='assets/rhythm-b/button-face-v1124/face-'+i+'.svg';if(flowFx)flowFx.press(i,false);
         surfaces.forEach(el=>el.classList.remove('is-pressed'));if(flowSurfaces[i])flowSurfaces[i].classList.remove('is-pressed');
-        if(!root.matchMedia('(prefers-reduced-motion: reduce)').matches){reboundAnimations[i]=moving.map((el,j)=>el.animate([{transform:from[j],offset:0},{transform:(el!==flowSurfaces[i]&&el!==cap?'translate(-50%, -50%) ':'')+'scale(1.01)',offset:.65},{transform:el!==flowSurfaces[i]&&el!==cap?'translate(-50%, -50%) scale(1)':'none',offset:1}],{duration:160,easing:'ease-out'}));}
+        if(!reducedMotion.matches){const animations=reboundAnimations[i];animations.length=0;for(let j=0;j<moving.length;j++){releaseFrames[i][j][0].transform=from[j];animations.push(moving[j].animate(releaseFrames[i][j],releaseTiming));}}
       }
       hit.addEventListener('pointerdown', e => {
         if (e.button !== 0) return;
@@ -179,7 +184,7 @@
         let d=`M${left} ${lower}H${right}V${bottom}H${left}Z`;
         // Preserve this button's original center flash; shield the other eight glass interiors.
         cores.forEach((c,j)=>{if(j!==i)d+=`M${c.x+c.r} ${c.y}A${c.r} ${c.r} 0 1 0 ${c.x-c.r} ${c.y}A${c.r} ${c.r} 0 1 0 ${c.x+c.r} ${c.y}Z`;});pulseClips[i].setAttribute('d',d);
-        const reach=Math.max(...[[left,lower],[right,lower],[left,bottom],[right,bottom]].map(([x,y])=>Math.hypot(x-cx,y-cy)));pulseReach[i]=Math.max(1.35,reach/(size*.7/Math.SQRT2)*1.06);
+        const reach=Math.max(...[[left,lower],[right,lower],[left,bottom],[right,bottom]].map(([x,y])=>Math.hypot(x-cx,y-cy)));pulseReach[i]=Math.max(1.35,reach/(size*.7/Math.SQRT2)*1.06);pressWaveFrames[i][3]['--rb-press-wave-scale']=String(1+(pulseReach[i]-1)*2/3);pressWaveFrames[i][4]['--rb-press-wave-scale']=String(pulseReach[i]);
       });
     }
     const pulseResize=new ResizeObserver(fitPressPulses);pulseResize.observe(opts.root);pulseResize.observe(board);fitPressPulses();
@@ -201,6 +206,7 @@
     rippleFx=root.MoleGame.RhythmBRipple.create({root:opts.root,board,colors});
     laserFx=root.MoleGame.RhythmBLaser.create({board,colors,hasCharacter:lane=>miniSurfaces[lane].classList.contains('is-note-active')});
     flowSurfaces=Array.from(board.querySelectorAll('.rb-flow-canvas'));pressSurfaces.push(...flowSurfaces);
+    for(let i=0;i<9;i++){movingSurfaces[i].push(flowSurfaces[i]);releaseFrames.push(movingSurfaces[i].map((el,j)=>[{transform:'none',offset:0},{transform:(j<3?'translate(-50%, -50%) ':'')+'scale(1.01)',offset:.65},{transform:j<3?'translate(-50%, -50%) scale(1)':'none',offset:1}]));}
     function fitGlassStroke(){const ratio=board.querySelector('.rb-wire-tunnel').getBoundingClientRect().width/296;board.querySelectorAll('.rb-glass-grow circle').forEach(e=>e.setAttribute('stroke-width',Number(e.dataset.stroke)*ratio));}
     const glassResize=new ResizeObserver(fitGlassStroke);glassResize.observe(board);fitGlassStroke();
     let artReady = null;

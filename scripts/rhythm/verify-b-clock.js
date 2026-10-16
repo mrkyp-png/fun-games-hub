@@ -7,7 +7,7 @@ const result=await page.evaluate(async()=>{
  let duration=4,times=[1,2,3];const data=()=>({ctx,back:{duration},song:{charts:{EASY:times}},melody:null});
  const game=window.MoleGame.RhythmBPlay.create({root,board,rules,loadSong:()=>Promise.resolve(data()),onFinish:(stats,clear)=>finished={stats,clear}});
  await game.start('EASY');ctx.currentTime=4.15;await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
- const first=game.dbg().notes[0],ring=board.querySelectorAll('.rb-note')[0],atTarget=ring.style.transform;game.press(first.lane);
+ const first=game.dbg().notes[0],ring=board.querySelector('.rb-note[data-note-id="'+first.id+'"]'),atTarget=ring.style.transform;game.press(first.lane);
  for(const t of [2,3]){ctx.currentTime=3.15+t;const n=game.dbg().notes.find(n=>n.targetTime===t);game.press(n.lane);}
  ctx.currentTime=7.2;await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));const clear=finished;
  game.stop();ctx.currentTime=0;duration=20;times=Array.from({length:10},(_,i)=>i+1);finished=null;await game.start('EASY');ctx.currentTime=14;await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));const continues=!game.dbg().ended&&game.dbg().cnt.MISS===10;ctx.currentTime=24;await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));const fail=finished;game.stop();
