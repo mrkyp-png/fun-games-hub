@@ -550,17 +550,25 @@
   // 시작 시 생명을 미리 깎지 않는다 — 현재 공유 풀 그대로 플레이하고, 동물 맞을 때만 -1.
   // 단 풀이 0이면 플레이 자체가 불가(즉시 게임오버) → "생명 없음" 모달.
   let gameStarting = false; // 시작 버튼 연타 방지 — 한 번 누르면 홈으로 돌아올 때까지 재진입 차단
-  function beginGame() {
+  function beginGame(fromRoundMap) {
     if (gameStarting || state) return;   // 이미 시작 진행 중이거나 게임 중 — 짧게 연타해도 무시 (길게=arm은 별개)
     // 다이얼패드가 항상 노출돼있어 상점/아이템 등 화면이 열린 채로도 시작 버튼이 눌리는데,
     // 홈 화면일 때만 게임 진입을 허용한다(사용자 지정) — 다른 화면이 열려있으면 무시.
     var mm = document.getElementById('more-menu');
-    if (mm && !mm.hidden) return;
+    const mapStart = fromRoundMap === true && screenNav && screenNav.current() === 'roundmap-screen';
+    if (mm && !mm.hidden && !mapStart) return;
     // 프로필 사진 화면(editProfileAvatar)은 openMoreNow()를 거치지 않고 screenNav 로 직접 열려
     // #more-menu 는 계속 hidden 인 채로 남는다 — screenNav 스택으로 별도 확인.
-    if (screenNav && screenNav.current()) return;
+    if (screenNav && screenNav.current() && !mapStart) return;
     if (MG.Economy.getHearts() <= 0) { showNoHeartModal(); return; }
     if (!MG.Economy.spendTicket()) { showNoTicketModal(); return; } // 챕터 입장권 1장 차감
+    if (mapStart) {
+      screenNav.reset();
+      mm.hidden = true;
+      document.getElementById('mole-board').hidden = false;
+      document.getElementById('board-start').hidden = false;
+      if (sharedLaneControls) sharedLaneControls.setActiveNav(null);
+    }
     refreshChapterNav();
     gameStarting = true;
     setNavLock(true); // 인트로~카운트다운 동안 ⊞ 잠금
@@ -3065,6 +3073,7 @@
     });
     roundMap = MG.RoundMap.create({
       root: document.getElementById('roundmap-screen'),
+      onStart: () => { if (!navLocked) beginGame(true); },
       onClose: () => closeMore(),
       currentLight: () => currentLight(),
       currentChapter: () => currentChapter(),

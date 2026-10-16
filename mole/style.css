@@ -7666,3 +7666,28 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* Static color-matched triangle bevels follow the original whole-button press. */
 .rp-a-triangle { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; transform-origin:50% 50%; transition:transform .06s; }
 .rp-btn.is-down .rp-a-triangle { transform:translateY(4px) scale(.94); filter:brightness(1.25); }
+
+/* V1165: round map close offset and existing home start artwork. */
+.rm-back.is-x { top: max(env(safe-area-inset-top, 0px), calc(env(safe-area-inset-top, 0px) + 8.6% - 1cm)); }
+.rm-start { position: absolute; right: 3%; bottom: calc(env(safe-area-inset-bottom, 0px) + 36cqw); width: 22cqw; aspect-ratio: 1; padding: 0; border: 0; background: transparent; color: white; cursor: pointer; z-index: 7; transition: transform 80ms; }
+.rm-start .h2-start { display: block; position: absolute; inset: -4%; pointer-events: none; }
+.rm-start-label { position: absolute; bottom: 13%; left: 0; right: 0; font-family: 'Jua', 'Lilita One', sans-serif; font-size: clamp(.7rem, 3.4vw, 1rem); -webkit-text-stroke: 3px rgba(0,80,20,.6); paint-order: stroke fill; }
+.rm-start:active { transform: translateY(2px) scale(.94); }
+
+/* V1167: one timed lyric line; no blur, new render loop, or per-frame text replacement. */
+.rp-lyrics { position:absolute; top:calc(env(safe-area-inset-top,0px) + 3px); left:12px; right:64px; height:24px; line-height:24px; overflow:hidden; z-index:25; pointer-events:none; color:#fff; font-family:'Jua',sans-serif; font-size:clamp(12px,3.8vw,16px); text-align:center; text-shadow:0 1px 2px #000; }
+.rp-lyrics[hidden] { display:none; }
+.rp-lyrics-text { display:inline-block; white-space:nowrap; max-width:none; }
+#rhythm-screen.is-type-b .rp-lyrics { left:18px; right:18px; }
+#rhythm-screen.has-rhythm-lyrics .rb-screen { --rb-safe-top:max(32px,calc(env(safe-area-inset-top,0px) + 28px)); }
+
+/* V1167: A combo uses B-style background color and paired 500ms sweeps; hippo colors retained. */
+.rp-a-combo-atmosphere { position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+#rhythm-screen.is-type-b .rp-a-combo-atmosphere { display:none; }
+.rp-a-combo-tone { position:absolute; inset:0; opacity:0; transition:opacity 500ms ease; }
+.rp-a-combo-sweep { position:absolute; left:0; width:100%; height:50%; overflow:hidden; contain:paint; }
+.rp-a-combo-sweep--upper { top:0; }
+.rp-a-combo-sweep--lower { top:50%; }
+.rp-a-combo-sweep span { position:absolute; inset:0 0 auto; height:12%; opacity:0; background:linear-gradient(transparent,var(--combo-color),transparent); }
+#rhythm-screen:not(.is-type-b) > .rp-stage,#rhythm-screen:not(.is-type-b) > .rp-bottom { position:relative; z-index:1; }
+@media(prefers-reduced-motion:reduce) { .rp-a-combo-tone { transition:none; } .rp-a-combo-sweep { display:none; } }

@@ -31,6 +31,7 @@
     var view = null; // 지금 보고 있는 난이도
 
     el.querySelector('[data-back="roundmap"]').addEventListener('click', function () { root.FGH.rollOut(el, opts.onClose); }); // v790: 위로 말리며 사라짐
+    $('[data-rm-start]').addEventListener('click', function () { opts.onStart(); });
     el.querySelectorAll('[data-rm-light]').forEach(function (b) {
       b.addEventListener('click', function () {
         var l = b.getAttribute('data-rm-light');

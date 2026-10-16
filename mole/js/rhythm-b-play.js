@@ -3,7 +3,10 @@
  'use strict';
  const MG=root.MoleGame;
  function create(opts) {
-  const board=opts.board, rules=opts.rules, hud=opts.root;
+  const board=opts.board, hud=opts.root;
+  // V1166: B-only 10% wider GREAT/GOOD windows; PERFECT and shared A rules stay intact.
+  const diffs=Object.fromEntries(Object.entries(opts.rules.diffs).map(([key,value])=>[key,{...value,judge:{...value.judge,greatMs:value.judge.greatMs*11/10,goodMs:value.judge.goodMs*11/10}}]));
+  const rules={...opts.rules,diffs,grade(ms,difficulty){const J=diffs[difficulty].judge;return ms<=J.perfectMs?'PERFECT':ms<=J.greatMs?'GREAT':ms<=J.goodMs?'GOOD':null;}};
   const reducedMotion=root.matchMedia('(prefers-reduced-motion: reduce)'),shadeSteps=[.9,.78,.62];
   let boardWidth=board.clientWidth;new ResizeObserver(()=>{boardWidth=board.clientWidth;}).observe(board);
   let state=null, context=null, sources=[], melodyGain=null, frame=0, generation=0;
@@ -202,7 +205,7 @@
   }
   function stopAudio(){hitSources.forEach(s=>{try{s.stop();}catch(e){}});hitSources.clear();sources.forEach(s=>{try{s.stop();}catch(e){}});sources=[];melodyGain=null;}
   function clearRings(){visibleNotes.length=0;for(const pool of notePools)for(const slot of pool){if(slot.owner)releaseNoteVisual(slot.owner);else{slot.el.hidden=true;slot.el.remove();}}}
-  function stop(){generation++;cancelAnimationFrame(frame);frame=0;stopAudio();clearEffects();clearRings();clearLights();clearCues();resetSpace();updateProgress(0);updateCombo(0,true);state=null;error.hidden=true;}
+  function stop(){if(opts.onStop)opts.onStop();generation++;cancelAnimationFrame(frame);frame=0;stopAudio();clearEffects();clearRings();clearLights();clearCues();resetSpace();updateProgress(0);updateCombo(0,true);state=null;error.hidden=true;}
   function finish(clear){
    if(!state||state.ended)return;
    if(clear)updateProgress(1);
@@ -254,6 +257,7 @@
   function tick(){
    frame=0;if(!state||state.ended||state.paused)return;
    const t=time();
+   if(opts.onTime)opts.onTime(t);
    if(t<.4||!startShade.hidden){startShade.hidden=t>=.4;const opacity=String(t<0?shadeSteps[Math.max(0,Math.min(2,Math.floor((t+rules.config.countIn+.15)/((rules.config.countIn+.15)/3))))]:Math.max(0,.62*(1-t/.4)));if(startShade.style.opacity!==opacity)startShade.style.opacity=opacity;}
    updateProgress(state.duration>0?t/state.duration:0);
    if(t<0){const stage=Math.max(0,Math.min(2,Math.floor((t+rules.config.countIn+.15)/((rules.config.countIn+.15)/3))));showStart(stage);const count=String(3-stage);if(state.count!==count){state.count=count;label(count);}}
@@ -278,6 +282,7 @@
    try{
     const [data]=await Promise.all([opts.loadSong(),opts.prepareAssets?opts.prepareAssets():Promise.resolve()]);if(token!==generation)return false;
     context=data.ctx;
+    if(opts.onSong)opts.onSong(data.song);
     let times=data.song&&data.song.charts&&data.song.charts[diff];
     const authored=data.song&&data.song.patterns&&data.song.patterns[diff];
     const authoredNotes=authored?authored.flatMap(e=>e.lanes.map(lane=>({time:e.time,lane,sound:e.sound||'kick',chordSize:e.lanes.length}))):null;

@@ -7,3 +7,7 @@ scripts/.devcert/
 /기획서/
 /소리/
 _shot.js
+
+# Local lyric analysis dependencies and model (never deploy).
+/.tools/lyrics/
+/.tools/models/

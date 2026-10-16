@@ -133,3 +133,9 @@ combo.png: 60f92732-e7b3-4ee3-aaef-55d76fe80968.png
 time.png: 707c2f48-4e12-488e-ae7c-a37903a9b8dc.png
 Clock face/hands use a code overlay. Source PNGs remain unchanged.
 V1164 G calm beach: user supplied Desktop/Rhythm A UI assets/background PNG; copied unchanged as assets/rhythm/bg-beach-calm-v1164.png. SHA256 77E1AD1B49DB49677F71FDE0D2EB485BD9C76BF3C7F722E061E6F09E8059113D.
+
+# V1167 G: user supplied Suno songs, original MP3 preserved and copied without re-encoding.
+- audio/rp/paper-engine-ride.mp3: Paper-Engine Ride, 119.88s, 2872508 bytes. Source: repository/리듬AB 채보/Paper-Engine Ride.mp3. SHA256 33ef72740f8de06bd0f5e13bb2aa1dae0c701e00555e03539256d0a5250831c6.
+- audio/rp/the-world-is-wide.mp3: The World Is Wide, 119.56s, 2672530 bytes. Source: repository/리듬AB 채보/The World Is Wide.mp3. SHA256 051a6a4aa9107f7c70ec36bf7646688f6fa36ba36d05f489befd8a88e9877a5e.
+- Both new JSON charts are first-pass band-onset/adaptive beat analysis, not verified lyrical-chorus annotations. Four separate *-a.json arrangements use the same full mix and source beats with A four-lane spacing; existing B song data is preserved.
+- V1167 timed lyric JSONs: user-supplied text files in 리듬AB 채보, originals preserved. Local machine word timing and forced supplied-text alignment; review candidates are not manual listening verification. No model, installer dependencies or audio-upload service is included in the game.

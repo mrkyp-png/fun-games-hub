@@ -10,7 +10,7 @@
   // ---- 튜닝 데이터(코드 하드코딩 대신 여기서만 조절) ----
   var CONFIG = {
     song: { src: 'audio/bgm-game-1.mp3', bpm: 83.0, firstBeat: 0.232 }, // BPM·첫 박 = 곡 분석값(곡 데이터가 없을 때 예비)
-    bSongs: [{ id: 'le-monde-attendra-demain', title: 'Le monde attendra demain', duration: 119.96, chart: 'audio/rp/le-monde-attendra-demain.json' }, { id: 'meet-me-halfway', title: 'Meet Me Halfway', duration: 119.56, chart: 'audio/rp/meet-me-halfway.json' }, { id: 'fever2', title: '기존 테스트곡', duration: 120.6, chart: 'audio/rp/fever2.json' }],
+    bSongs: [{ id: 'le-monde-attendra-demain', title: 'Le monde attendra demain', duration: 119.96, chart: 'audio/rp/le-monde-attendra-demain.json', aChart: 'audio/rp/le-monde-attendra-demain-a.json', lyrics: 'audio/rp/le-monde-attendra-demain-lyrics.json' }, { id: 'meet-me-halfway', title: 'Meet Me Halfway', duration: 119.56, chart: 'audio/rp/meet-me-halfway.json', aChart: 'audio/rp/meet-me-halfway-a.json', lyrics: 'audio/rp/meet-me-halfway-lyrics.json' }, { id: 'paper-engine-ride', title: 'Paper-Engine Ride', duration: 119.88, chart: 'audio/rp/paper-engine-ride.json', aChart: 'audio/rp/paper-engine-ride-a.json', lyrics: 'audio/rp/paper-engine-ride-lyrics.json' }, { id: 'the-world-is-wide', title: 'The World Is Wide', duration: 119.56, chart: 'audio/rp/the-world-is-wide.json', aChart: 'audio/rp/the-world-is-wide-a.json', lyrics: 'audio/rp/the-world-is-wide-lyrics.json' }, { id: 'fever2', title: '기존 테스트곡', duration: 120.6, chart: 'audio/rp/fever2.json' }],
     songData: 'audio/rp/fever2.json', // v843: 곡 분석 데이터(반주·멜로디 분리 + 난이도별 노트 시각) — 맞히면 멜로디가 연주됨
     chart: { startBeat: 8, beats: 116 },           // 8박(인트로) 뒤부터 116박 = 한 판 약 90초(사용자 지정 v837, 이전 64박≈52초)
     judge: { perfectMs: 70, greatMs: 130, goodMs: 200 },
@@ -35,12 +35,14 @@
     var el = opts.root;
     var $ = function (s) { return el.querySelector(s); };
     var stage = $('[data-rp-stage]'), wlayer = $('[data-rp-weapons]');
+    var lyricTicker = MG.RhythmLyrics.create(el);
     var meta = null, buffer = null, ctx = null, src = null;
     var st = null, raf = 0;
     var imgs = {}, diff = 'EASY';
     var bGame = null, activeB = false, resultSerial = 0;
-    var selectedBSong = CONFIG.bSongs[0], bSongCache = {}, bSongPending = {};
+    var selectedASong = CONFIG.bSongs[CONFIG.bSongs.length-1], selectedBSong = CONFIG.bSongs[0], bSongCache = {}, bSongPending = {};
     function bBestPrefix() { return selectedBSong.id === 'fever2' ? 'mole.rp.b.best.' : 'mole.rp.b.best.' + selectedBSong.id + '.'; }
+    function aBestPrefix() { return selectedASong.id === 'fever2' ? 'mole.rp.best.' : 'mole.rp.best.' + selectedASong.id + '.'; }
     // 효과음(기존 게임 사운드 재사용) — 성공 = 타격음, 실패 = 두더지 아야
     var SFX = { hit: ['audio/hit1.mp3', 'audio/hit2.mp3', 'audio/hit3.mp3', 'audio/hit4.mp3'], jump: ['audio/mole-emerge.mp3'] }; // v814(사용자 지정): 실패 목소리(아야 등) 삭제, 두더지 점프 = 두더지팡 등장 소리
     var sfxBuf = {};
@@ -68,26 +70,34 @@
     function decode(u) { return fetch(u).then(function (r) { return r.arrayBuffer(); }).then(function (ab) { return new Promise(function (res, rej) { ctx.decodeAudioData(ab, res, rej); }); }); }
     function loadSong() {
       if (!ctx) ctx = new (root.AudioContext || root.webkitAudioContext)();
-      if (buffer) return Promise.resolve(buffer);
-      return fetch(CONFIG.songData).then(function (r) { return r.json(); }).then(function (d) {
-        song = d;
-        return Promise.all([decode(d.back), decode(d.melody)]).then(function (b) { buffer = b[0]; melBuf = b[1]; return buffer; });
-      }).catch(function () { song = null; return decode(CONFIG.song.src).then(function (b) { buffer = b; return b; }); });
+      var choice = selectedASong;
+      return loadBSong({ id: choice.id, chart: choice.aChart || choice.chart, lyrics: choice.lyrics }).catch(function (error) {
+        if (choice.id !== 'fever2') throw error;
+        return decode(CONFIG.song.src).then(function (back) { return {ctx:ctx,back:back,melody:null,song:null}; });
+      });
     }
-    function loadBSong() {
-      var choice = selectedBSong;
-      if (bSongCache[choice.id]) return Promise.resolve(bSongCache[choice.id]);
-      if (bSongPending[choice.id]) return bSongPending[choice.id];
-      bSongPending[choice.id] = fetch(choice.chart).then(function (r) { if (!r.ok) throw new Error('곡 자료를 불러오지 못했습니다.'); return r.json(); }).then(function (data) {
-        return Promise.all([decode(data.back), data.melody ? decode(data.melody) : Promise.resolve(null)]).then(function (audio) {
-          return bSongCache[choice.id] = { ctx: ctx, back: audio[0], melody: audio[1], song: data };
+    function loadBSong(choice) {
+      choice = choice || selectedBSong;
+      var cacheKey = choice.chart;
+      if (bSongCache[cacheKey]) return Promise.resolve(bSongCache[cacheKey]);
+      if (bSongPending[cacheKey]) return bSongPending[cacheKey];
+      bSongPending[cacheKey] = fetch(choice.chart).then(function (r) { if (!r.ok) throw new Error('곡 자료를 불러오지 못했습니다.'); return r.json(); }).then(function (data) {
+        var cached = Object.values(bSongCache).find(function (entry) { return entry.song.back === data.back; });
+        return Promise.all([cached ? Promise.resolve(cached.back) : decode(data.back), data.melody ? (cached && cached.melody ? Promise.resolve(cached.melody) : decode(data.melody)) : Promise.resolve(null), choice.lyrics ? fetch(choice.lyrics).then(function(r){if(!r.ok)throw Error('Lyrics unavailable');return r.json();}).catch(function(){return null;}) : Promise.resolve(null)]).then(function (audio) {
+          // Keep only the selected song decoded; A/B share its full-mix buffer.
+          bSongCache = {};
+          data.lyrics = audio[2];
+          return bSongCache[cacheKey] = { ctx: ctx, back: audio[0], melody: audio[1], song: data };
         });
-      }).finally(function () { delete bSongPending[choice.id]; });
-      return bSongPending[choice.id];
+      }).finally(function () { delete bSongPending[cacheKey]; });
+      return bSongPending[cacheKey];
     }
     function showSongs() {
+      updateACombo(0,true);
+      lyricTicker.clear();
       resultSerial++;
       if (bGame) bGame.stop();
+      cancelAnimationFrame(raf); try { src && src.stop(); } catch (e) {} st = null;
       $('[data-rp-select]').hidden = true; $('[data-rp-result]').hidden = true; $('[data-rp-pause]').hidden = true;
       var list = $('[data-rp-song-list]'); list.replaceChildren();
       CONFIG.bSongs.forEach(function (choice) {
@@ -95,7 +105,7 @@
         var title = document.createElement('b'); title.textContent = choice.title;
         var detail = document.createElement('small'), seconds = Math.round(choice.duration || 0);
         detail.textContent = (seconds ? Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0') + ' · ' : '') + '선택';
-        button.append(title, detail); button.addEventListener('click', function () { selectedBSong = choice; showSelect(); }); list.appendChild(button);
+        button.append(title, detail); button.addEventListener('click', function () { if (activeB) selectedBSong = choice; else selectedASong = choice; showSelect(); }); list.appendChild(button);
       });
       if (!CONFIG.bSongs.length) list.textContent = '등록된 곡이 없습니다.';
       $('[data-rp-songs]').hidden = false;
@@ -149,20 +159,24 @@
     // ---- 채보(EASY): 박마다 1노트, 가끔 POINT1 꺾임 ----
     function buildChart() {
       var D = DIFFS[diff], spb = 60 / CONFIG.song.bpm, notes = [], seed = (Date.now() ^ (Math.random() * 0x7fffffff)) & 0x7fffffff, id = 0, lastAt = {};
+      var authored = song && song.aPatterns && song.aPatterns[diff];
+      if (authored) seed = Array.from(selectedASong.id + diff).reduce(function (h,c) { return ((h*31)+c.charCodeAt(0)) & 0x7fffffff; }, 7);
+      var authoredNotes = authored ? authored.flatMap(function (e) { return e.lanes.map(function (lane) { return {time:e.time,lane:lane}; }); }) : null;
       // v923(사용자 지정): 시작값이 난이도별 고정(7 + 길이)이라 판마다 무기 자리가 똑같았음 — 판마다 새 시작값
       function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
       // v843: 곡 데이터가 있으면 멜로디 소리 시작점(분석값)을 노트 시각으로 — 누르는 타이밍 = 멜로디 리듬
       var times = null;
       if (song && song.charts && song.charts[diff]) times = song.charts[diff];
       else { times = []; for (var kk = 0; kk < CONFIG.chart.beats; kk++) { if (kk % D.rest === D.rest - 1) continue; times.push(CONFIG.song.firstBeat + (CONFIG.chart.startBeat + kk) * spb); if (kk % 2 === 1 && rnd() < D.half) times.push(CONFIG.song.firstBeat + (CONFIG.chart.startBeat + kk + 0.5) * spb); } }
-      times.forEach(function (T0) {
+      if (authoredNotes) times = authoredNotes.map(function (n) { return n.time; });
+      times.forEach(function (T0, noteIndex) {
         [0].forEach(function () {
           var beat = song ? T0 / (60 / song.bpm) : (T0 - CONFIG.song.firstBeat) / spb;
-          var lane = Math.floor(rnd() * 4);
+          var lane = authoredNotes ? authoredNotes[noteIndex].lane : Math.floor(rnd() * 4);
           // v924(사용자 지정): 같은 자리 연속 허용 — "3번 연속 금지" 규칙 삭제(점프 시간 간격 규칙만 유지)
           // 같은 레인은 두더지 점프(7프레임)가 끝날 시간 이상 간격 — 못 치는 노트 방지(v811)
           var tt = T0, gap = 7 * CONFIG.jumpFrameMs / 1000 + 0.1;
-          for (var tries = 0; tries < 4 && tt - (lastAt[lane] || -9) < gap; tries++) lane = (lane + 1) % 4;
+          for (var tries = 0; !authoredNotes && tries < 4 && tt - (lastAt[lane] || -9) < gap; tries++) lane = (lane + 1) % 4;
           lastAt[lane] = tt;
           var t2 = rnd() < D.turn2, t1 = t2 || rnd() < D.turn1;
           var mid = t2 ? (lane + 1 + Math.floor(rnd() * 3)) % 4 : lane;
@@ -304,8 +318,14 @@
     // ---- 진행 ----
     function now() { return ctx.currentTime - st.t0; } // 음악 시각(초)
     function start() {
-      resultSerial++;
-      Promise.all([loadMeta(), loadSong(), preload()]).then(loadSfx).then(function () {
+      lyricTicker.clear();
+      var token = ++resultSerial, practice = $('[data-rp-practice]').checked;
+      try { src && src.stop(); } catch (e) {} cancelAnimationFrame(raf); st = null;
+      Promise.all([loadMeta(), loadSong(), preload()]).then(function (data) {
+        return loadSfx().then(function () { return data[1]; });
+      }).then(function (data) {
+        if (token !== resultSerial || activeB || el.hidden) return;
+        song = data.song; lyricTicker.set(song && song.lyrics); buffer = data.back; melBuf = data.melody; melGain = null;
         if (ctx.state === 'suspended') ctx.resume();
         buildStage(); layout(); placeStatic(); // 버튼을 먼저 만들어야 무대 높이가 정확(v812)
         var notes = buildChart();
@@ -336,7 +356,7 @@
         sparks = []; for (var si = 0; si < 40; si++) { var sk = document.createElement('span'); sk.className = 'rp-spark'; wlayer.appendChild(sk); sparks.push(sk); }
         notes.forEach(function (n) { n.pts = routeOf(n); n.len = pathLen(n.pts); n.spawnTime = n.targetTime - DIFFS[diff].travel; n.state = 'wait'; });
         st = { notes: notes, score: 0, combo: 0, maxCombo: 0, hp: CONFIG.hpMax, cnt: { PERFECT: 0, GREAT: 0, GOOD: 0, MISS: 0 },
-          moles: [0, 1, 2, 3].map(function () { return { jumpAt: -9, hurtAt: -9 }; }), over: false, paused: false };
+          moles: [0, 1, 2, 3].map(function () { return { jumpAt: -9, hurtAt: -9 }; }), over: false, paused: false, practice: practice, songId: selectedASong.id };
         moleFrame = [-1, -1, -1, -1]; for (var i = 0; i < 4; i++) setMoleFrame(i, 0);
         // 카운트인: 3·2·1·START 가 끝나는 순간 음악 0초
         var startAt = ctx.currentTime + CONFIG.countIn + 0.15;
@@ -350,6 +370,9 @@
         hud(); // (무기 풀은 위에서 생성 — 여기서 비우지 않음)
         el.querySelector('[data-rp-result]').hidden = true;
         cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
+      }).catch(function () {
+        if (token !== resultSerial || activeB || el.hidden) return;
+        showSelect(); $('[data-rp-selected-song]').textContent = selectedASong.title + ' · 곡 자료를 불러오지 못했습니다. 다시 선택해주세요.';
       });
     }
 
@@ -392,10 +415,10 @@
     function miss(lane, n) {
       if (n) { n.state = 'miss'; if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); if (n.wind) n.wind.style.opacity = '0'; }
       melody(false);
-      st.cnt.MISS++; st.combo = 0; st.hp = Math.max(0, st.hp - 1);
+      st.cnt.MISS++; st.combo = 0; updateACombo(0,false); st.hp = Math.max(0, st.hp - 1);
       st.moles[lane].hurtAt = now();
       showJudge(lane, 'MISS', 'miss'); hud(); replay(hippo, 'is-no');
-      if (st.hp <= 0) gameOver(false);
+      if (st.hp <= 0 && !st.practice) gameOver(false);
     }
     // ---- v831 연출 ----
     var hippo = el.querySelector('.rp-hippo'), sparks = [], sparkI = 0;
@@ -422,25 +445,31 @@
         sp.style.color = ['#fff36b', '#ffffff', '#ffb3e6', '#8ff0ff'][i % 4]; replay(sp, 'is-on');
       }
     }
-    var boss = el.querySelector('.rp-a-cloud-boss'), rays = el.querySelector('.rp-a-combo-lasers'), bossPending = null;
+    var boss = el.querySelector('.rp-a-cloud-boss');
     var bossColors = ['#ffbd36','#40bfff','#fb66ed','#63ef94'];
-    function resetBoss() { bossPending = null; boss.style.setProperty('--rp-boss-scale','1'); boss.style.setProperty('--rp-boss-color','transparent'); boss.style.opacity='1'; rays.classList.remove('is-on'); }
+    var comboBackdrop=document.createElement('div');comboBackdrop.className='rp-a-combo-atmosphere';el.insertBefore(comboBackdrop,el.firstChild);
+    var comboTones=bossColors.map(function(color){var node=document.createElement('i');node.className='rp-a-combo-tone';node.style.backgroundColor=color;comboBackdrop.appendChild(node);return node;});
+    var comboSweeps=['upper','lower'].map(function(side){var node=document.createElement('div');node.className='rp-a-combo-sweep rp-a-combo-sweep--'+side;node.appendChild(document.createElement('span'));comboBackdrop.appendChild(node);return node;});
+    var comboAnimations=[],aComboStage=0;
+    function clearComboSweeps(){comboAnimations.forEach(function(a){a.cancel();});comboAnimations.length=0;}
+    function updateACombo(combo,immediate){
+      var theme=Math.floor(combo/10);if(theme===aComboStage&&!immediate)return;aComboStage=theme;clearComboSweeps();
+      comboTones.forEach(function(node,i){node.style.transitionDuration=immediate?'0ms':'500ms';node.style.opacity=theme&&i===(theme-1)%bossColors.length?'.05':'0';});
+      if(!theme||immediate)return;
+      var color=bossColors[(theme-1)%bossColors.length];boss.style.setProperty('--rp-boss-color',color);shrinkBoss(false);
+      if(root.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+      comboSweeps.forEach(function(node,i){node.style.setProperty('--combo-color',color);comboAnimations.push(node.firstElementChild.animate([{transform:'translateY('+(i?'-100%':'800%')+')',opacity:0,offset:0},{opacity:.65,offset:.12},{transform:'translateY('+(i?'800%':'-100%')+')',opacity:0,offset:1}],{duration:500,easing:'linear'}));});
+    }
+    function resetBoss() { updateACombo(0,true); boss.style.setProperty('--rp-boss-scale','1'); boss.style.setProperty('--rp-boss-color','transparent'); boss.style.opacity='1'; }
     function shrinkBoss(clear) {
       var hits = st.cnt.PERFECT + st.cnt.GREAT + st.cnt.GOOD, total = st.notes.length;
       var full = clear && total > 0 && st.cnt.MISS === 0 && hits === total;
       boss.style.setProperty('--rp-boss-scale',String(full ? 0 : .16 + .84 * (1 - Math.min(1,hits / Math.max(1,total)))));
       if (full) boss.style.opacity='0';
     }
-    function fireComboRays() {
-      var r = boss.getBoundingClientRect(), sr = stage.getBoundingClientRect(), color = bossColors[(Math.floor(st.combo/10)-1)%bossColors.length];
-      rays.setAttribute('viewBox','0 0 '+L.W+' '+L.H); rays.style.setProperty('--rp-ray-color',color);
-      var paths = rays.querySelectorAll('path');
-      for (var i=0;i<4;i++) { paths[i].setAttribute('pathLength','1'); paths[i].setAttribute('d','M '+L.laneX[i]+' '+L.targetY+' L '+(r.left-sr.left+r.width*.55)+' '+(r.top-sr.top+r.height*.55)); }
-      replay(rays,'is-on'); bossPending={at:now()+.65,color:color};
-    }
     function comboFx() {
       var c = $('[data-rp-combo]'); replay(c, 'is-bump');
-      if (st.combo > 0 && st.combo % 10 === 0) fireComboRays();
+      if (st.combo > 0 && st.combo % 10 === 0) updateACombo(st.combo,false);
       if (st.combo === 10 || st.combo === 30 || (st.combo >= 50 && st.combo % 50 === 0)) {
         var mt = document.createElement('span'); mt.className = 'rp-milestone'; mt.textContent = st.combo + ' COMBO!'; stage.appendChild(mt);
         setTimeout(function () { mt.remove(); }, 1300); replay(hippo, 'is-cheer');
@@ -458,7 +487,7 @@
       if (st.ended) { cancelAnimationFrame(raf); return; } // v816: 종료 후 결과창 뒤에서 계속 판정·연출이 돌며 깜빡이던 것 정지
       var t = now();
       updateStatusTime(t);
-      if (bossPending && t >= bossPending.at) { boss.style.setProperty('--rp-boss-color',bossPending.color); shrinkBoss(false); bossPending=null; }
+      lyricTicker.update(t);
       // 카운트인 표시
       var ci = $('[data-rp-count]');
       if (t < 0) { var c = Math.ceil(-t); ci.textContent = c > CONFIG.countIn ? '' : String(c); ci.hidden = false; }
@@ -540,9 +569,10 @@
     }
 
     function gameOver(clear) {
+      lyricTicker.clear();
       if (st.ended) return; st.ended = true; st.over = true; el.querySelectorAll('.rp-btn').forEach(function (b) { b.classList.remove('is-cue'); }); // 결과창 뒤 버튼 반짝임 정지
       try { src.stop(ctx.currentTime + (clear ? 0.8 : 0.05)); } catch (e) { /* 무시 */ }
-      bossPending=null; rays.classList.remove('is-on'); shrinkBoss(clear); clearAGauge();
+      clearComboSweeps(); shrinkBoss(clear); clearAGauge();
       showResult(st, clear, false);
     }
     function showResult(result, clear, isB) {
@@ -558,10 +588,10 @@
       $('[data-rp-res-accuracy]').textContent=(Math.floor(rating.accuracy*100+1e-8)/100).toFixed(2)+'%';
       badgeEl.textContent=rating.allPerfect?'ALL PERFECT':rating.fullCombo?'FULL COMBO':'';badgeEl.hidden=!badgeEl.textContent;
 
-      var bk = (isB ? bBestPrefix() : 'mole.rp.best.') + resultDiff, old = parseInt(localStorage.getItem(bk), 10) || 0, isNew = !(isB && result.practice) && result.score > old;
+      var bk = (isB ? bBestPrefix() : aBestPrefix()) + resultDiff, old = parseInt(localStorage.getItem(bk), 10) || 0, isNew = !result.practice && result.score > old;
       if (isNew) localStorage.setItem(bk, String(result.score));
-      try { if (!isB && MG.Quest) MG.Quest.recordRhythm({ diff: resultDiff, clear: clear, miss: result.cnt.MISS, perfect: result.cnt.PERFECT }); } catch (e) { /* 무시 */ } // v895: 리듬팡 업적
-      $('[data-rp-res-best]').innerHTML = '<small>' + (isB && result.practice ? 'TEST · ' + resultDiff : resultDiff + ' BEST') + '</small><b>' + (isB && result.practice ? old : Math.max(old, result.score)).toLocaleString('en-US') + '</b>';
+      try { if (!isB && !result.practice && MG.Quest) MG.Quest.recordRhythm({ diff: resultDiff, clear: clear, miss: result.cnt.MISS, perfect: result.cnt.PERFECT }); } catch (e) { /* 무시 */ } // v895: 리듬팡 업적
+      $('[data-rp-res-best]').innerHTML = '<small>' + (result.practice ? 'TEST · ' + resultDiff : resultDiff + ' BEST') + '</small><b>' + (result.practice ? old : Math.max(old, result.score)).toLocaleString('en-US') + '</b>';
       var stamp = $('[data-rx-new]'); stamp.classList.remove('is-on');
       r.classList.toggle('is-fail', !clear);
       var sEl = $('[data-rp-res-score]'), fin = result.score; sEl.textContent = '0';
@@ -577,6 +607,8 @@
     }
 
     function pause(on) {
+      lyricTicker.pause(on);
+      comboAnimations.forEach(function(a){if(on)a.pause();else a.play();});
       if (activeB) {
         el.querySelectorAll('[data-rx-pause-t] textPath').forEach(function (t) { t.textContent = '일시정지'; });
         bGame.pause(on); $('[data-rp-pause]').hidden = !on; return;
@@ -604,6 +636,8 @@
     $('[data-rp-other]').addEventListener('click', function () { if (activeB) { bGame.stop(); showSelect(); return; } cancelAnimationFrame(raf); try { src && src.stop(); } catch (e) { /* 무시 */ } st = null; showSelect(); });
 
     function close(why) {
+      updateACombo(0,true);
+      lyricTicker.clear();
       clearAGauge();
       resultSerial++;
       if (bGame) bGame.stop(); activeB = false;
@@ -616,12 +650,12 @@
     function showSelect() {
       resultSerial++;
       $('[data-rp-songs]').hidden = true;
-      $('[data-rp-song-back]').hidden = !activeB;
-      $('[data-rp-selected-song]').hidden = !activeB;
-      $('[data-rp-selected-song]').textContent = activeB ? selectedBSong.title : '';
+      $('[data-rp-song-back]').hidden = false;
+      $('[data-rp-selected-song]').hidden = false;
+      $('[data-rp-selected-song]').textContent = activeB ? selectedBSong.title : selectedASong.title;
       $('[data-rp-result]').hidden = true; $('[data-rp-pause]').hidden = true;
       el.querySelectorAll('[data-rp-diff]').forEach(function (b) {
-        var d = b.getAttribute('data-rp-diff'), best = parseInt(localStorage.getItem((activeB ? bBestPrefix() : 'mole.rp.best.') + d), 10) || 0;
+        var d = b.getAttribute('data-rp-diff'), best = parseInt(localStorage.getItem((activeB ? bBestPrefix() : aBestPrefix()) + d), 10) || 0;
         b.querySelector('small').textContent = best.toLocaleString('en-US');
       });
       $('[data-rp-select]').hidden = false;
@@ -650,6 +684,8 @@
     $('[data-rp-sel-close]').addEventListener('click', function () { close(); });
     // V 1023 G: 홈 → 타입 선택 → A 기존 난이도 / B 제작 중.
     function showTypes() {
+      updateACombo(0,true);
+      lyricTicker.clear();
       resultSerial++;
       $('[data-rp-result]').hidden = true;
       if (bGame) bGame.stop(); activeB = false;
@@ -664,7 +700,7 @@
     $('[data-rp-type="A"]').addEventListener('click', function () {
       $('[data-rp-types]').hidden = true;
       stage.hidden = false;
-      showSelect();
+      showSongs();
     });
     $('[data-rp-type="B"]').addEventListener('click', function () {
       $('[data-rp-types]').hidden = true;
@@ -677,8 +713,11 @@
           if (ctx.state === 'suspended') ctx.resume();
           return loadBSong();
         },
+        onSong: function (song) { lyricTicker.set(song && song.lyrics); },
+        onTime: function (time) { lyricTicker.update(time); },
+        onStop: function () { lyricTicker.clear(); },
         onPause: function () { pause(true); },
-        onResult: function (stats, clear) { showResult(stats, clear, true); }
+        onResult: function (stats, clear) { lyricTicker.clear(); showResult(stats, clear, true); }
       });
       showSongs();
     });

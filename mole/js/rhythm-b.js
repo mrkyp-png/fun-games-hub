@@ -1,4 +1,4 @@
-﻿// V 1025 G: 뼈대 정사각형 조정 + 아래 회로판 9개만 구성.
+// V 1025 G: 뼈대 정사각형 조정 + 아래 회로판 9개만 구성.
 (function (root) {
   'use strict';
   function create(opts) {
@@ -225,6 +225,7 @@
     }
     play = root.MoleGame.RhythmBPlay.create({
       root: opts.root, board, rules: opts.rules, loadSong: opts.loadSong, prepareAssets,
+      onSong: opts.onSong, onTime: opts.onTime, onStop: opts.onStop,
       onHit: shakeMini,
       onNoteSpawn: spawnWave,
       onNoteApproach: advanceSpawnWave,
