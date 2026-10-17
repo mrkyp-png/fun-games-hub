@@ -357,7 +357,7 @@
     var statusJudge = $('[data-rp-status-judge]'), statusTime = $('[data-rp-time]'), statusSeconds = -1;
     var aGauge=$('.rp-a-timing-gauge'),aGaugeLight=aGauge.querySelector('.rb-timing-light'),aGaugeAnimation=null;
     var aGaugeReduced=root.matchMedia('(prefers-reduced-motion: reduce)');
-    var aGaugeColors={PERFECT:'#ffd746',GREAT:'#bd77ff',GOOD:'#21bfff',MISS:'#ff6479'};
+    var aGaugeColors={PERFECT:'#FF9F1C',GREAT:'#bd77ff',GOOD:'#21bfff',MISS:'#ff6479'};
     function clearAGauge() { if(aGaugeAnimation)aGaugeAnimation.cancel();aGaugeAnimation=null;aGaugeLight.hidden=true;aGauge.setAttribute('aria-label','Judgement energy: longest PERFECT, shortest MISS'); }
     function showAGauge(grade) {
       var strength={PERFECT:1,GREAT:.72,GOOD:.44,MISS:.12}[grade];
