@@ -7767,7 +7767,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen .rb-song-footer .rx-btn--diff { background-image:url('assets/rhythm/ui/btn-diff.png'); }
 #rhythm-screen .rb-song-footer .rx-btn--home { background-image:url('assets/rhythm/ui/btn-home.png'); }
 #rhythm-screen .rb-song-nav.rx-btn { background-size:100% 100%; background-color:transparent; background-position:center; }
-#rhythm-screen .rx-card--res { height:min(860px,calc(100dvh - 48px)); }
+#rhythm-screen .rx-card--res { height:calc(100dvh - 48px); }
 #rhythm-screen .rx-result-body { display:flex; flex-direction:column; align-items:center; width:100%; min-height:0; flex:1 1 auto; overflow:auto; overscroll-behavior:contain; }
 #rhythm-screen .rx-result-body > * { flex-shrink:0; }
 #rhythm-screen .rx-result-actions { width:100%; }
@@ -7778,14 +7778,13 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* V1170: only active A sprites enter layout/compositing; visual filters are unchanged. */
 #rhythm-screen .rp-weapon[hidden],#rhythm-screen .rp-wind[hidden] { display:none!important; }
 #rhythm-screen .rp-pang-pooled { opacity:0; animation:none; }
-#rhythm-screen.has-rhythm-lyrics .rb-screen { --rb-safe-top:calc(env(safe-area-inset-top,0px) + 56px); }
 
 /* V1171: foreground cloud/leaf frame, with controls clear of its lower corners. */
 #rhythm-screen .rx-card::after { z-index:3; }
 #rhythm-screen .rx-card { padding-bottom:76px; }
 #rhythm-screen .rp-type-card { padding-bottom:76px; }
 #rhythm-screen .rb-song-card { padding-bottom:76px; }
-#rhythm-screen .rx-card--res { padding-bottom:68px; }
+#rhythm-screen .rx-card--res { padding-bottom:28px; }
 #rhythm-screen .rb-song-list { scrollbar-width:none; -ms-overflow-style:none; scroll-snap-type:y mandatory; scroll-padding:2px 0 8px; }
 #rhythm-screen .rb-song-list::-webkit-scrollbar { display:none; width:0; height:0; }
 #rhythm-screen .rb-song-choice { height:var(--rp-song-slot,auto); margin:0 0 12px; scroll-snap-align:start; scroll-snap-stop:always; align-content:center; }

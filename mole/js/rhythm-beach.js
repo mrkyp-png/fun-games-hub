@@ -16,7 +16,7 @@
    if(!running||paused)return;
    if(time>=hurtUntil&&hippo.classList.contains('is-cloud-hurt'))hippo.classList.remove('is-cloud-hurt');
    // Two reusable image planes interpolate the8-frame atlas using the existing audio clock.
-   const phase=reduced.matches?0:Math.max(0,time)*2,index=Math.floor(phase)%8,mix=phase-Math.floor(phase);
+   const phase=reduced.matches?0:Math.max(0,time)/3,index=Math.floor(phase)%8,mix=phase-Math.floor(phase);
    if(index!==frame){frame=index;for(let i=0;i<2;i++){const tile=(index+i)%8;layers[i].style.backgroundPosition=((tile%4)*100/3)+'% '+(tile<4?0:100)+'%';}}
    const alpha=reduced.matches?0:Math.round(mix*1000)/1000;if(alpha!==lastOpacity){lastOpacity=alpha;layers[1].style.opacity=String(alpha);}
   }
