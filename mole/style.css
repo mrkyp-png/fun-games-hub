@@ -5172,6 +5172,9 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .rp-judge.is-on { animation: rp-judge 0.55s ease-out both; }
 .rp-judge.is-perfect { color: #ffe45a; } .rp-judge.is-great { color: #6dffa0; } .rp-judge.is-good { color: #8fd8ff; } .rp-judge.is-miss { color: #ff6a6a; }
 @keyframes rp-judge { 0% { opacity: 0; transform: scale(0.5); } 25% { opacity: 1; transform: scale(1.15); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-16px); } }
+/* V1229: Beach MISS disappears quickly with 80% peak opacity. */
+#rhythm-screen:not(.is-type-b) .rp-judge.is-miss.is-on { animation:rp-beach-miss 160ms ease-out both; }
+@keyframes rp-beach-miss { 0% { opacity:0; transform:scale(.5); } 20% { opacity:.8; transform:scale(1.15); } 100% { opacity:0; transform:translateY(-16px); } }
 .rp-pang { position: absolute; transform: translate(-50%, -50%); font-weight: 900; font-size: 1.4rem; color: #fff; -webkit-text-stroke: 5px #ff4fb3; paint-order: stroke fill; pointer-events: none; animation: rp-pang 0.6s ease-out both; }
 @keyframes rp-pang { 0% { transform: translate(-50%, -50%) scale(0.4); opacity: 0; } 30% { transform: translate(-50%, -50%) scale(1.25); opacity: 1; } 100% { transform: translate(-50%, -90%) scale(1); opacity: 0; } }
 .rp-hud { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); left: 0; right: 0; display: flex; flex-direction: column; align-items: center; pointer-events: none; color: #fff; }
@@ -7612,10 +7615,11 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rp-a-status-time { background-image:url('assets/rhythm/ui-status-v1164/time.png'); --rp-status-color:#a1ff80; }
 .rp-a-status-item { background-image:none; }
 .rp-a-status-item::before { content:""; position:absolute; inset:0; background-image:var(--rp-status-image); background-position:center; background-size:118% 118%; background-repeat:no-repeat; opacity:.5; pointer-events:none; }
-.rp-a-status-score { --rp-status-image:url('assets/rhythm/ui-status-v1164/score.png'); }
-.rp-a-status-judgement { --rp-status-image:url('assets/rhythm/ui-status-v1164/judgement.png'); }
-.rp-a-status-combo { --rp-status-image:url('assets/rhythm/ui-status-v1164/combo.png'); }
-.rp-a-status-time { --rp-status-image:url('assets/rhythm/ui-status-v1164/time.png'); }
+.rp-a-status-score { --rp-status-image:url('assets/rhythm/ui-status-v1230/score-box.png'); --rp-status-icons:url('assets/rhythm/ui-status-v1230/score-icons.png'); }
+.rp-a-status-judgement { --rp-status-image:url('assets/rhythm/ui-status-v1230/judgement-box.png'); --rp-status-icons:url('assets/rhythm/ui-status-v1230/judgement-icons.png'); }
+.rp-a-status-combo { --rp-status-image:url('assets/rhythm/ui-status-v1230/combo-box.png'); --rp-status-icons:url('assets/rhythm/ui-status-v1230/combo-icons.png'); }
+.rp-a-status-time { --rp-status-image:url('assets/rhythm/ui-status-v1230/time-box.png'); --rp-status-icons:url('assets/rhythm/ui-status-v1230/time-icons.png'); }
+.rp-a-status-item::after { content:""; position:absolute; inset:0; background:var(--rp-status-icons) center/118% 118% no-repeat; pointer-events:none; opacity:1; }
 .rp-a-status-label,.rp-a-status-value,.rp-a-status-time svg { z-index:1; }
 .rp-a-status-label,.rp-a-status-value { position:absolute; text-align:center; white-space:nowrap; font-family:'Lilita One','Jua',sans-serif; color:var(--rp-status-color); -webkit-text-stroke:1px #15244f; paint-order:stroke fill; text-shadow:0 1px 1px #10152b; line-height:1; }
 .rp-a-status-label { left:34%; right:7%; top:19%; font-size:clamp(9px,2.75vw,13px); }
@@ -7823,9 +7827,10 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen .rb-song-info b { font-size:clamp(16px,5cqw,23px); }
 #rhythm-screen .rb-song-info small { font-size:clamp(12px,3.4cqw,15px); }
 #rhythm-screen .rb-song-info strong { font-size:clamp(12px,3.6cqw,16px); }
-#rhythm-screen .rb-song-footer .rx-btn { height:64px; aspect-ratio:auto; background-image:url('assets/rhythm/ui/btn-blue.png'); }
-#rhythm-screen .rb-song-footer .rx-btn span { top:auto; bottom:9px; left:0; width:100%; transform:none; text-align:center; font-size:clamp(17px,5.5cqw,23px); }
-.rb-song-nav-icon { position:absolute; top:5px; left:50%; transform:translateX(-50%); width:27px; height:27px; fill:#e3faff; stroke:#16478e; stroke-width:1.3; stroke-linejoin:round; }
+#rhythm-screen .rb-song-footer .rx-btn { height:64px; aspect-ratio:auto; background-image:none; }
+#rhythm-screen .rb-song-footer .rx-btn::before { content:""; position:absolute; inset:0; pointer-events:none; border-style:solid; border-width:26.8531px 44.7552px; border-image:url('assets/rhythm/ui/btn-blue.png') 60 100 fill / 26.8531px 44.7552px stretch; }
+#rhythm-screen .rb-song-footer .rx-btn span { top:auto; bottom:12px; left:0; width:100%; transform:none; text-align:center; font-size:clamp(17px,5.5cqw,23px); }
+.rb-song-nav-icon { position:absolute; top:8px; left:50%; transform:translateX(-50%); width:27px; height:27px; fill:#e3faff; stroke:#16478e; stroke-width:1.3; stroke-linejoin:round; }
 @media (prefers-reduced-motion:reduce) { .rp-type-panel:not([hidden]) .rp-type-floor-light { animation:none; } }
 
 .rp-mode-sign svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
@@ -7833,7 +7838,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rp-mode-sign-shadow { fill:#6b2304; stroke:#6b2304; stroke-width:15px; transform:translateY(5px); }
 .rp-mode-sign-fill { fill:#ffe05a; stroke:#fff7c5; stroke-width:2px; }
 #rhythm-screen.is-type-b .rp-mode-sign-fill { fill:#83edff; stroke:#edffff; }
-#rhythm-screen .rb-song-play .rp-a-triangle { position:absolute; inset:auto; left:12%; top:50%; width:30px; height:30px; transform:translateY(-50%) rotate(90deg); }
+#rhythm-screen .rb-song-play .rp-a-triangle { position:absolute; inset:auto; left:12%; top:50%; width:26px; height:26px; transform:translateY(-50%) rotate(90deg); }
 #rhythm-screen .rb-song-play span { left:39%; width:55%; }
 #rhythm-screen:not(.is-type-b) .rp-lyrics { height:36px; line-height:28px; font-size:clamp(16.56px,5.244vw,22.08px); }
 #rhythm-screen:not(.is-type-b).has-rhythm-lyrics .rp-stage { margin-bottom:38px; }
@@ -7917,6 +7922,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen .rp-type-card > [data-rp-types-home] { box-sizing:border-box; width:100%; height:auto; min-height:62px; aspect-ratio:593/143; margin-top:7px; flex-shrink:0; }
 #rhythm-screen .rp-type-card > [data-rp-types-home] { background-size:100% 100%; }
 #rhythm-screen .rx-card:not(.rx-card--res):not(.rx-card--pause).rp-type-card::after { border-width:70px 90px 140px; border-image:url('assets/rhythm/ui/d-frame-type-clean-v1210.png') 70 90 140 fill / 70px 90px 140px stretch; }
+#rhythm-screen .rp-select .rx-card--sel:not(.rx-card--res):not(.rx-card--pause)::after,
+#rhythm-screen .rb-song-card:not(.rx-card--res):not(.rx-card--pause)::after { border-width:70px 90px 140px; border-image:url('assets/rhythm/ui/d-frame-beach-song-v1220.svg') 70 90 140 fill / 70px 90px 140px stretch; }
 #rhythm-screen .rp-type-panel .rp-type-button[data-rp-type="B"] { background-image:url('assets/rhythm/ui/btn-neon-type-v1211.png'); aspect-ratio:593/143; isolation:isolate; }
 #rhythm-screen .rp-type-panel .rp-type-button[data-rp-type="B"]::before { display:none; }
 #rhythm-screen .rp-type-panel .rp-type-button[data-rp-type="B"] span { z-index:1; }
@@ -7943,7 +7950,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 
 /* V1200 G: Preserve original gold pixels exactly; recolor only adjoining blue/cyan rails purple. */
 #rhythm-screen.is-type-b > [data-rp-pause] .rx-card--pause::before { border-image-source:url('assets/rhythm/ui/p-inner-neon-v1197.png'); }
-#rhythm-screen.is-type-b > [data-rp-pause] .rx-card--pause::after { border-width:70px 90px 100px; border-image:url('assets/rhythm/ui/p-frame-neon-gold-v1200.png') 70 90 100 / 70px 90px 100px stretch; }
+#rhythm-screen.is-type-b > [data-rp-pause] .rx-card--pause::after { border-width:70px 90px 100px; border-image:url('assets/rhythm/ui/p-frame-neon-straight-v1216.png') 70 90 100 / 70px 90px 100px stretch; }
 
 /* V1198 G: Neon COMPLETE popup palette and consistent three-button spacing. */
 #rhythm-screen.is-type-b > [data-rp-result] .rx-card--res::before { border-image-source:url('assets/rhythm/ui/go-inner-neon-v1198.png'); }
@@ -7951,3 +7958,12 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen.is-type-b > [data-rp-result] .rx-card--res { padding-left:38px; padding-right:38px; }
 #rhythm-screen.is-type-b > [data-rp-result] .rx-result-actions { box-sizing:border-box; width:100%; gap:5px; }
 #rhythm-screen.is-type-b > [data-rp-result] .rx-result-actions .rx-btn { box-sizing:border-box; width:100%; margin:0; }
+
+/* V1218: clean gold outer rail for Beach COMPLETE only. */
+#rhythm-screen:not(.is-type-b) > [data-rp-result] .rx-card--res::after { border-image-source:url('assets/rhythm/ui/go-frame-beach-blue-v1227.png'); }
+
+/* V1221: the approved Beach song cloud cleanup is shared by both song and difficulty dialogs. */
+
+/* V1223: retain Beach cloud/leaf/star colors while tinting only the Neon rails. */
+#rhythm-screen.is-type-b .rb-song-card:not(.rx-card--res):not(.rx-card--pause)::after { filter:none; border-image-source:url('assets/rhythm/ui/d-frame-neon-song-cloud-v1224.svg'); }
+#rhythm-screen.is-type-b .rp-select .rx-card--sel:not(.rx-card--res):not(.rx-card--pause)::after { filter:none; border-image-source:url('assets/rhythm/ui/d-frame-neon-difficulty-cloud-v1224.svg'); }

@@ -3,17 +3,29 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-const CACHE = 'mole-game-v1214-G';
+const CACHE = 'mole-game-v1230-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
 // vendor/face_mesh/*(약 10MB, 얼굴인식)는 SHELL 제외 — 사람두더지 메이커 처음 열 때만 필요.
 // 처음 요청될 때 아래 fetch 핸들러가 알아서 캐시한다.
 const SHELL = [
+  './assets/rhythm/ui-status-v1230/score-box.png',
+  './assets/rhythm/ui-status-v1230/score-icons.png',
+  './assets/rhythm/ui-status-v1230/judgement-box.png',
+  './assets/rhythm/ui-status-v1230/judgement-icons.png',
+  './assets/rhythm/ui-status-v1230/combo-box.png',
+  './assets/rhythm/ui-status-v1230/combo-icons.png',
+  './assets/rhythm/ui-status-v1230/time-box.png',
+  './assets/rhythm/ui-status-v1230/time-icons.png',
+  './assets/rhythm/ui/d-frame-neon-song-cloud-v1224.svg',
+  './assets/rhythm/ui/d-frame-neon-difficulty-cloud-v1224.svg',
+  './assets/rhythm/ui/d-frame-beach-song-v1220.svg',
+  './assets/rhythm/ui/go-frame-beach-blue-v1227.png',
   './assets/rhythm/ui/go-frame-neon-v1198.png',
   './assets/rhythm/ui/go-inner-neon-v1198.png',
   './assets/rhythm/ui/p-frame-neon-v1197.png',
-  './assets/rhythm/ui/p-frame-neon-gold-v1200.png',
+  './assets/rhythm/ui/p-frame-neon-straight-v1216.png',
   './assets/rhythm/ui/p-inner-neon-v1197.png',
   './assets/rhythm/ui/p-frame-clean-v1196.png',
   './assets/rhythm/ui/btn-neon-type-v1211.png',
