@@ -163,11 +163,8 @@
     function layoutSongRows() {
       var list=$('[data-rp-song-list]'),cards=list.children;
       if(!list.clientHeight||!cards.length)return;
-      var gap=12,available=list.clientHeight-28,minSlot=136;
+      var gap=12,available=list.clientHeight-28;
       var count=Math.min(3,cards.length);
-      if(window.innerHeight<=700)count=1;
-      else if(window.innerWidth<=370)count=Math.min(2,count);
-      while(count>1&&(available-gap*(count-1))/count<minSlot)count--;
       list.style.setProperty('--rp-song-slot',((available-gap*(count-1))/count)+'px');
       list.dataset.visibleCards=String(count);
     }

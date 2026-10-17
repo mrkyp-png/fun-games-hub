@@ -7915,17 +7915,18 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 
 /* V1177 G: tighten the rhythm dialogs while keeping their frame artwork fixed. */
 #rhythm-screen .rx-result-actions { display:flex; flex-direction:column; gap:7px; width:100%; align-items:stretch; }
+#rhythm-screen [data-rp-result] .rx-result-actions { transform:translateY(-0.2cm); }
 #rhythm-screen .rx-result-actions .rx-btn { box-sizing:border-box; width:100%; height:clamp(62px,17.5vw,72px); min-height:0; margin:0; aspect-ratio:auto; background-size:100% 100%; }
 #rhythm-screen .rx-card:not(.rx-card--res):not(.rx-card--pause).rp-type-card { padding-bottom:108px; }
 #rhythm-screen .rp-type-card > .rp-type-button,
 #rhythm-screen .rp-type-card > [data-rp-types-home] { box-sizing:border-box; width:100%; height:auto; min-height:62px; aspect-ratio:593/143; margin-top:7px; flex-shrink:0; }
-#rhythm-screen .rp-type-card > [data-rp-types-home] { background-size:contain; }
+#rhythm-screen .rp-type-card > [data-rp-types-home] { background-size:100% 100%; }
 #rhythm-screen .rp-type-panel .rp-type-button[data-rp-type="B"] { background-image:url('assets/rhythm/ui/btn-blue.png'); isolation:isolate; }
 #rhythm-screen .rp-type-panel .rp-type-button[data-rp-type="B"]::before { content:""; position:absolute; inset:0; z-index:0; pointer-events:none; background:linear-gradient(180deg,#bd8affb8,#6d26c8d9); -webkit-mask:url('assets/rhythm/ui/btn-blue.png') center/100% 100% no-repeat; mask:url('assets/rhythm/ui/btn-blue.png') center/100% 100% no-repeat; }
 #rhythm-screen .rp-type-panel .rp-type-button[data-rp-type="B"] span { z-index:1; }
 #rhythm-screen .rx-card--sel [data-rp-diff],
 #rhythm-screen .rx-card--sel [data-rp-song-back],
-#rhythm-screen .rx-card--sel [data-rp-sel-close] { box-sizing:border-box; height:auto; min-height:52px; margin-top:6px; aspect-ratio:568/142; background-size:contain; background-position:center; background-repeat:no-repeat; flex-shrink:0; }
+#rhythm-screen .rx-card--sel [data-rp-sel-close] { box-sizing:border-box; height:auto; min-height:52px; margin-top:6px; aspect-ratio:568/142; background-size:100% 100%; background-position:center; background-repeat:no-repeat; flex-shrink:0; }
 #rhythm-screen .rx-card:not(.rx-card--res):not(.rx-card--pause).rb-song-card { padding-bottom:84px; }
 #rhythm-screen .rb-song-choice { min-height:154px; }
 #rhythm-screen .rb-song-list[data-visible-cards="3"] .rb-song-choice { min-height:0; padding:6px; gap:4px 10px; }
@@ -7933,8 +7934,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
   #rhythm-screen .rb-song-list[data-visible-cards="3"] .rb-song-actions .rx-btn { height:34px; min-height:34px; }
 }
 /* V1178: purple-tint the Neon album window frame and inner panel only. */
-#rhythm-screen.is-type-b .rb-song-card::before,
-#rhythm-screen.is-type-b .rb-song-card::after { filter:hue-rotate(38deg) saturate(1.06); }
+#rhythm-screen.is-type-b .rb-song-card::before { filter:hue-rotate(38deg) saturate(1.06); }
+#rhythm-screen.is-type-b .rb-song-card::after { filter:hue-rotate(38deg) saturate(1.06) brightness(.72); }
 #rhythm-screen .rp-lyric-syllable { display:inline-block; position:relative; transform-origin:50% 70%; transition:transform 80ms ease-out; }
 #rhythm-screen .rp-lyric-syllable.is-accent { z-index:1; transform:scale(1.28); }
 #rhythm-screen.is-type-b .rb-song-modal { background:rgba(55,20,104,.84); }
