@@ -491,7 +491,7 @@
       if(hitButton){clearTimeout(buttonHitTimers[lane]);hitButton.dataset.grade=g;hitButton.classList.remove('is-hit');void hitButton.offsetWidth;hitButton.classList.add('is-hit');buttonHitTimers[lane]=setTimeout(function(){hitButton.classList.remove('is-hit');delete hitButton.dataset.grade;buttonHitTimers[lane]=0;},420);}
       pang(lane, n.cx, n.cy); hud(); sfx('hit');
       var word=perfectWords[lane],buttonRect=hitButton&&hitButton.getBoundingClientRect(),stageRect=stage.getBoundingClientRect();
-      if(word&&buttonRect){var mole=moleEls&&moleEls[lane],moleRect=mole&&mole.getBoundingClientRect(),wordY=buttonRect.top-stageRect.top+buttonRect.height/2,targetY=moleRect?moleRect.top-stageRect.top+moleRect.height*.14:wordY-120;word.textContent=g;word.dataset.grade=g;word.style.left=(buttonRect.left-stageRect.left+buttonRect.width/2)+'px';word.style.top=wordY+'px';word.style.setProperty('--rp-grade-rise',(-Math.max(0,wordY-targetY))+'px');replay(word,'is-on');}
+      if(word&&buttonRect){var wordY=buttonRect.top-stageRect.top+buttonRect.height/2,targetCenter=L.targetY;word.textContent=g;word.dataset.grade=g;word.style.left=(buttonRect.left-stageRect.left+buttonRect.width/2)+'px';word.style.top=wordY+'px';word.style.setProperty('--rp-grade-rise',(-Math.max(0,wordY-targetCenter+word.offsetHeight/2))+'px');replay(word,'is-on');}
       burst(n.cx, n.cy, g === 'PERFECT' ? 10 : g === 'GREAT' ? 7 : 5); comboFx();
       try { MG.HitFx && MG.HitFx.uiTap && MG.HitFx.uiTap(1); } catch (e) { /* 무시 */ }
     }
