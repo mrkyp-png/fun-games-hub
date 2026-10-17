@@ -5164,7 +5164,8 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .rp-lane:first-child { border-left: 0; }
 .rp-target { position: absolute; left: 50%; transform: translateX(-50%); pointer-events: none; }
 .rp-hole { position: absolute; left: 50%; transform: translateX(-50%); pointer-events: none; }
-.rp-mole { position: absolute; left: 50%; transform: translateX(-50%); pointer-events: none; transform-origin: 50% 90%; }
+.rp-hole-front { display:none; position:absolute; left:50%; height:auto; transform:translateX(-50%); pointer-events:none; }
+.rp-mole { position: absolute; left: 50%; transform: translateX(-50%); z-index: 1; pointer-events: none; transform-origin: 50% 90%; }
 .rp-mole.is-hurt { animation: rp-hurt 0.45s ease-out; }
 @keyframes rp-hurt { 20% { transform: translateX(-50%) rotate(-14deg) translateY(6px); filter: brightness(1.6) saturate(0.6); } 60% { transform: translateX(-50%) rotate(8deg); } 100% { transform: translateX(-50%); } }
 .rp-weapon { position: absolute; left: 0; top: 0; pointer-events: none; filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.35)); will-change: transform; }
@@ -7529,7 +7530,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-timing-gauge svg { display:block; width:100%; height:80%; overflow:visible; }
 .rb-timing-caption { position:absolute; top:75%; color:#779bb5; font:700 clamp(6px,1.6vw,8px)/1 sans-serif; letter-spacing:.1em; }
 .rb-timing-caption--early { left:1%; }.rb-timing-caption--center { left:50%; transform:translateX(-50%); color:#779bb5; }.rb-timing-caption--late { right:1%; }
-.rb-timing-light { position:absolute; top:33%; width:92%; height:80%; border-radius:0; background:linear-gradient(180deg,transparent,var(--timing-color) 40%,#fff 50%,var(--timing-color) 60%,transparent); transform:translate(-50%,-50%); }
+.rb-timing-light { position:absolute; top:33%; width:92%; height:80%; border-radius:0; background:linear-gradient(180deg,transparent,var(--timing-color) 28%,var(--timing-color) 72%,transparent); transform:translate(-50%,-50%); }
 .rb-timing-light[hidden] { display:none; }
 
 /* V 1139 G: one brief center-to-glass-rim pulse on note appearance. */
@@ -7633,8 +7634,9 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen:not(.is-type-b) .rp-btn img { width:100%; height:100%; aspect-ratio:1!important; object-fit:fill!important; }
 #rhythm-screen:not(.is-type-b) .rp-btn img { opacity:.5; transition:opacity .12s,transform .06s; }
 #rhythm-screen:not(.is-type-b) .rp-btn.is-hit img { opacity:1; }
-.rp-a-clock { position:absolute; width:118%; height:118%; left:-9%; top:-9%; pointer-events:none; }
-.rp-a-clock-hand { transform-origin:383px 350px; animation:rp-a-clock-tick 12s steps(24,end) infinite; }
+.rp-a-status-time::after { clip-path:inset(0 0 0 60%); }
+.rp-a-clock { position:absolute; width:25%; height:auto; aspect-ratio:369/426; left:4%; top:12%; pointer-events:none; }
+.rp-a-clock-hand { transform-origin:187px 237px; animation:rp-a-clock-tick 12s steps(24,end) infinite; }
 @keyframes rp-a-clock-tick { to { transform:rotate(360deg); } }
 #rhythm-screen:has([data-rp-pause]:not([hidden])) .rp-a-clock-hand,#rhythm-screen:has([data-rp-result]:not([hidden])) .rp-a-clock-hand { animation-play-state:paused; }
 #rhythm-screen:has([data-rp-types]:not([hidden])) .rp-a-status,#rhythm-screen:has([data-rp-select]:not([hidden])) .rp-a-status,#rhythm-screen:has([data-rp-songs]:not([hidden])) .rp-a-status { visibility:hidden; }
@@ -7679,6 +7681,22 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* Static color-matched triangle bevels follow the original whole-button press. */
 .rp-a-triangle { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; transform-origin:50% 50%; transition:transform .06s; }
 .rp-btn.is-down .rp-a-triangle { transform:translateY(4px) scale(.94); filter:brightness(1.25); }
+/* V1233: Beach-only saturated feedback with a brief in-button colored pulse. */
+#rhythm-screen:not(.is-type-b) .rp-a-status-score { --rp-status-color:#20bfff; }
+#rhythm-screen:not(.is-type-b) .rp-a-status-judgement { --rp-status-color:#ff43d7; }
+#rhythm-screen:not(.is-type-b) .rp-a-status-combo { --rp-status-color:#ffda00; }
+#rhythm-screen:not(.is-type-b) .rp-a-status-time { --rp-status-color:#56f52d; }
+#rhythm-screen:not(.is-type-b) .rp-btn .rp-a-triangle > g > path:first-child { opacity:.15; }
+#rhythm-screen:not(.is-type-b) .rp-btn.is-down img,
+#rhythm-screen:not(.is-type-b) .rp-btn.is-down .rp-a-triangle { transform:translateY(2px) scale(.97); filter:brightness(1.08); }
+#rhythm-screen:not(.is-type-b) .rp-btn::after { inset:5%; border-radius:16%; color:var(--rp-press-color); box-shadow:inset 0 0 12px 2px currentColor; }
+#rhythm-screen:not(.is-type-b) .rp-btn.is-press-fx::after { background:radial-gradient(ellipse at 50% 60%,currentColor,transparent 72%); animation:rp-a-press-color 150ms ease-out both; }
+@keyframes rp-a-press-color { 0% { opacity:0; } 20% { opacity:.65; } 100% { opacity:0; } }
+/* V1234: localized PERFECT reactions leave status boxes/text stationary. */
+.rp-a-status-item.has-perfect-art::after { display:none; }
+.rp-a-status-item > .rp-status-art { position:absolute; left:-9%; top:-9%; width:118%; height:118%; overflow:visible; pointer-events:none; z-index:0; }
+#rhythm-screen:not(.is-type-b) .rp-btns,#rhythm-screen:not(.is-type-b) .rp-btn { overflow:visible; }
+.rp-a-wave { position:absolute; inset:5%; border-radius:24%; pointer-events:none; opacity:0; border:2px solid #064acb; box-shadow:0 0 4px 1px #0649c94d,inset 0 0 10px 4px #063cab55; background:radial-gradient(ellipse,transparent 38%,#0742bc55 62%,#063da82e 76%,transparent 80%); }
 
 /* V1165: round map close offset and existing home start artwork. */
 .rm-back.is-x { top: max(env(safe-area-inset-top, 0px), calc(env(safe-area-inset-top, 0px) + 8.6% - 1cm)); }
@@ -7843,21 +7861,35 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen:not(.is-type-b) .rp-lyrics { height:36px; line-height:28px; font-size:clamp(16.56px,5.244vw,22.08px); }
 #rhythm-screen:not(.is-type-b).has-rhythm-lyrics .rp-stage { margin-bottom:38px; }
 
-/* V1172 Beach: articulated cloud puppet; only small transform/opacity layers move. */
-.rp-a-cloud-boss .rp-hippo,.rp-a-cloud-boss .rp-hippo.is-no,.rp-a-cloud-boss .rp-hippo.is-cheer { animation:none; }
-.rp-cloud-body { position:absolute; left:18%; top:18%; width:82%; height:82%; }
-.rp-cloud-body img,.rp-cloud-arm img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; }
-.rp-cloud-arm { position:absolute; left:-5%; top:-5%; width:70%; height:105%; transform-origin:84% 85%; }
+/* Beach cloud hippo: retain a small idle sway; only the mallet layer reacts on combo. */
+.rp-a-cloud-boss .rp-hippo,.rp-a-cloud-boss .rp-hippo.is-no,.rp-a-cloud-boss .rp-hippo.is-cheer { animation:rp-cloud-sway 6s ease-in-out infinite; }
+.rp-cloud-body { position:absolute; z-index:1; left:18%; top:18%; width:82%; height:82%; }
+.rp-cloud-body,.rp-cloud-skirt,.rp-cloud-arm { opacity:var(--rp-boss-opacity,1); transition:opacity .55s ease-out; }
+.rp-cloud-skirt { position:absolute; z-index:2; left:-1%; top:66%; width:102%; height:36%; pointer-events:none; }
+.rp-cloud-clump { position:absolute; top:0; height:100%; display:block; }
+.rp-cloud-clump-1 { left:28%; width:21.06%; }
+.rp-cloud-clump-2 { left:49.05%; width:25.92%; }
+.rp-cloud-clump-3 { left:74.97%; width:25.03%; }
+.rp-cloud-body img,.rp-cloud-arm img,.rp-cloud-clump img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; }
+.rp-cloud-clump img { object-fit:fill; }
+.rp-cloud-clump .rp-cloud-tint { mask-size:100% 100%; }
+.rp-cloud-arm { position:absolute; z-index:3; left:-5%; top:-5%; width:70%; height:105%; transform-origin:84% 85%; }
 .rp-cloud-hurt { opacity:0; transition:opacity 75ms linear; }
 .rp-cloud-happy { opacity:1; transition:opacity 75ms linear; }
 .is-cloud-hurt .rp-cloud-hurt { opacity:1; }
 .is-cloud-hurt .rp-cloud-happy { opacity:0; }
+.rp-a-cloud-boss .is-cloud-hurt .rp-cloud-arm { animation:rp-cloud-tap .65s ease-out both; }
 .rp-cloud-tint { position:absolute; inset:0; background:var(--rp-boss-color,transparent); mix-blend-mode:color; pointer-events:none; mask-position:center; mask-size:contain; mask-repeat:no-repeat; }
 .rp-cloud-body .rp-cloud-tint { mask-image:url('assets/rhythm/beach-v1172/hippo-happy.webp'); }
-.rp-cloud-arm .rp-cloud-tint { mask-image:url('assets/rhythm/beach-v1172/hippo-arm.webp'); }
+.rp-cloud-clump-1 .rp-cloud-tint { mask-image:url('assets/rhythm/beach-v1172/hippo-cloud-clump-1-v2.png'); }
+.rp-cloud-clump-2 .rp-cloud-tint { mask-image:url('assets/rhythm/beach-v1172/hippo-cloud-clump-2-v2.png'); }
+.rp-cloud-clump-3 .rp-cloud-tint { mask-image:url('assets/rhythm/beach-v1172/hippo-cloud-clump-3-v2.png'); }
+.rp-cloud-arm .rp-cloud-tint { mask-image:url('assets/rhythm/beach-v1172/hippo-hand-mallet-v2.png'); }
+.rp-cloud-arm img { object-fit:contain; }
 .rp-beach-running .rp-cloud-arm { animation:none; }
 .rp-beach-running .rp-cloud-body { animation:rp-cloud-breathe var(--rp-cloud-beat,1.4s) ease-in-out infinite; }
-@keyframes rp-cloud-wave { 0%,100% { transform:rotate(-7deg); } 50% { transform:rotate(11deg); } }
+@keyframes rp-cloud-sway { 0%,100% { transform:translateX(-1.1%) rotate(-.45deg); } 50% { transform:translateX(1.1%) rotate(.45deg); } }
+@keyframes rp-cloud-tap { 0%,100% { transform:rotate(0); } 30% { transform:rotate(7deg) translate(.7%,.7%); } 58% { transform:rotate(-2deg); } 82% { transform:rotate(1.2deg); } }
 @keyframes rp-cloud-breathe { 0%,100% { transform:translateY(0) scaleY(1); } 50% { transform:translateY(-1.5%) scaleY(1.012); } }
 .rp-a-sea { position:absolute; left:0; width:100%; z-index:0; pointer-events:none; overflow:hidden; contain:paint; isolation:isolate; }
 .rp-a-sea i { position:absolute; inset:0; background:url('assets/rhythm/beach-v1172/sea-atlas.webp') 0 0/400% 200% no-repeat; mask-image:linear-gradient(transparent,#000 18px,#000 calc(100% - 40px),transparent); will-change:opacity; }
@@ -7871,7 +7903,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rp-lane .rp-target { opacity:.85; transition:opacity 100ms linear; }
 .rp-lane.is-approaching .rp-target { opacity:1; }
 @keyframes rp-target-orbit { to { transform:rotate(360deg); } }
-.rp-beach-paused .rp-cloud-arm,.rp-beach-paused .rp-cloud-body,.rp-beach-paused .rp-target-orbit > i { animation-play-state:paused; }
+.rp-beach-paused .rp-hippo,.rp-beach-paused .rp-cloud-arm,.rp-beach-paused .rp-cloud-body,.rp-beach-paused .rp-target-orbit > i { animation-play-state:paused; }
 /* Static beach materials preserve the original status artwork and whole-button press. */
 .rp-type-rail-light { opacity:0; }
 .rp-type-panel:not([hidden]) .rp-type-rail-light { animation:rp-rail-flash 5s linear infinite; }
@@ -7881,6 +7913,9 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* V1174: clearer beach targets and larger lyrics with the neon line above the circles. */
 #rhythm-screen:not(.is-type-b) .rp-lane .rp-target { filter:brightness(.76) saturate(1.16); }
 #rhythm-screen:not(.is-type-b) .rp-lane.is-approaching .rp-target { filter:brightness(.9) saturate(1.16); }
+#rhythm-screen:not(.is-type-b) .rp-hole-front { display:block; z-index:2; }
+#rhythm-screen:not(.is-type-b) .rp-mole.is-hurt { animation:rp-beach-mole-hurt .45s ease-out; }
+@keyframes rp-beach-mole-hurt { 0%,100% { transform:translateX(-50%); } 18% { transform:translateX(-50%) translateY(9px) rotate(-9deg) scaleX(.96) scaleY(.93); filter:brightness(1.45) saturate(.65); } 45% { transform:translateX(-50%) translateY(5px) rotate(6deg) scaleX(.98) scaleY(.96); } 72% { transform:translateX(-50%) translateY(7px) rotate(-3deg) scaleX(.96) scaleY(.95); } }
 #rhythm-screen .rp-lyrics { height:45px; line-height:38px; font-size:clamp(20.7px,6.555vw,27.6px); }
 #rhythm-screen:not(.is-type-b) .rp-lyrics { height:54px; line-height:44px; font-size:clamp(24.84px,7.866vw,33.12px); }
 #rhythm-screen:not(.is-type-b).has-rhythm-lyrics .rp-stage { margin-bottom:56px; }
@@ -7888,7 +7923,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen.is-type-b .rp-lyrics { top:max(8px,env(safe-area-inset-top,0px)); left:8px; right:8px; height:30px; line-height:30px; }
 #rhythm-screen.is-type-b .rp-lyrics-pulse { margin:0 5%; line-height:1; }
 #rhythm-screen .rp-modal:not([hidden]) .rx-card,#rhythm-screen .rp-type-panel:not([hidden]) .rx-card { animation:none; }
-@media (prefers-reduced-motion:reduce) { .rp-beach-running .rp-cloud-arm,.rp-beach-running .rp-cloud-body,.rp-beach-running .rp-target-orbit > i,.rp-type-panel:not([hidden]) .rp-type-rail-light,#rhythm-screen .rp-modal:not([hidden]) .rx-card,#rhythm-screen .rp-type-panel:not([hidden]) .rx-card { animation:none; } }
+@media (prefers-reduced-motion:reduce) { .rp-a-cloud-boss .rp-hippo,.rp-beach-running .rp-cloud-arm,.rp-beach-running .rp-cloud-body,.rp-beach-running .rp-cloud-clump,.rp-beach-running .rp-target-orbit > i,.rp-type-panel:not([hidden]) .rp-type-rail-light,#rhythm-screen .rp-modal:not([hidden]) .rx-card,#rhythm-screen .rp-type-panel:not([hidden]) .rx-card { animation:none; } }
 @media (max-height:820px) {
  #rhythm-screen .rb-song-card { padding-top:6px; padding-bottom:70px; }
  #rhythm-screen .rb-song-card .rx-title,#rhythm-screen .rb-song-card .rx-title img { max-height:72px; }

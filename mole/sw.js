@@ -3,13 +3,23 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-const CACHE = 'mole-game-v1230-G';
+const CACHE = 'mole-game-v1248-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
 // vendor/face_mesh/*(약 10MB, 얼굴인식)는 SHELL 제외 — 사람두더지 메이커 처음 열 때만 필요.
 // 처음 요청될 때 아래 fetch 핸들러가 알아서 캐시한다.
 const SHELL = [
+  './js/rhythm-status-art.js',
+  './js/rhythm-status-fx.js',
+  './assets/rhythm/status-perfect-v1237/star.png',
+  './assets/rhythm/status-perfect-v1237/star-map.png',
+  './assets/rhythm/status-perfect-v1237/shell.png',
+  './assets/rhythm/status-perfect-v1237/crab.png',
+  './assets/rhythm/status-perfect-v1237/crab-map.png',
+  './assets/rhythm/status-perfect-v1237/gull.png',
+  './assets/rhythm/status-perfect-v1237/gull-map.png',
+  './assets/rhythm/ui-status-v1232/clock.png',
   './assets/rhythm/ui-status-v1230/score-box.png',
   './assets/rhythm/ui-status-v1230/score-icons.png',
   './assets/rhythm/ui-status-v1230/judgement-box.png',
@@ -34,6 +44,11 @@ const SHELL = [
   './assets/rhythm/beach-v1172/hippo-happy.webp',
   './assets/rhythm/beach-v1172/hippo-hurt.webp',
   './assets/rhythm/beach-v1172/hippo-arm.webp',
+  './assets/rhythm/beach-v1172/hippo-hand-mallet.webp',
+  './assets/rhythm/beach-v1172/hippo-hand-mallet-v2.png',
+  './assets/rhythm/beach-v1172/hippo-cloud-clump-1-v2.png',
+  './assets/rhythm/beach-v1172/hippo-cloud-clump-2-v2.png',
+  './assets/rhythm/beach-v1172/hippo-cloud-clump-3-v2.png',
   './assets/rhythm/beach-v1172/sea-atlas.webp',
   './assets/rhythm/beach-v1172/target-1.svg',
   './assets/rhythm/beach-v1172/target-2.svg',
@@ -63,7 +78,7 @@ const SHELL = [
   './assets/rhythm/ui-status-v1164/judgement.png',
   './assets/rhythm/ui-status-v1164/combo.png',
   './assets/rhythm/ui-status-v1164/time.png',
-  './assets/loading-stage-v1162/stage.png',
+  './assets/loading-stage-v1162/stage-cool-v1248.png',
   './assets/loading-cyber-v1153/characters.webp',
   './audio/rp/meet-me-halfway.mp3',
   './audio/rp/meet-me-halfway.json',

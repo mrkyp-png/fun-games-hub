@@ -125,7 +125,7 @@
   const gaugeSvg=status.querySelector('svg');
   for(const [grade,strength] of [['GOOD',.44],['GREAT',.72],['PERFECT',1]])for(const side of [-1,1]){const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.dataset.zone=grade;line.dataset.side=side;const x=1+(50+side*46*strength)/100*778;line.setAttribute('x1',x);line.setAttribute('x2',x);line.setAttribute('y1','32');line.setAttribute('y2','42');line.setAttribute('stroke','#7993a8');line.setAttribute('stroke-opacity','.55');line.setAttribute('stroke-width','1');line.setAttribute('vector-effect','non-scaling-stroke');gaugeSvg.appendChild(line);}
   board.appendChild(status);
-  const timingColors={PERFECT:'#ffe542',GREAT:'#b65cff',GOOD:'#348aff',MISS:'#ff304f'},timingAnimations=Array(1).fill(null);let timingCursor=0;
+  const timingColors={PERFECT:'#ffea00',GREAT:'#b000ff',GOOD:'#00bfff',MISS:'#ff1744'},timingAnimations=Array(1).fill(null);let timingCursor=0;
   const timingLights=Array.from({length:1},()=>{const el=document.createElement('span');el.className='rb-timing-light';el.hidden=true;status.appendChild(el);return el;});
   function showTiming(grade){const i=0,el=timingLights[i],strength={PERFECT:1,GREAT:.72,GOOD:.44,MISS:.12}[grade];
    if(timingAnimations[i])timingAnimations[i].cancel();el.hidden=false;el.dataset.grade=grade;el.dataset.strength=strength;el.style.left='50%';el.style.setProperty('--timing-color',timingColors[grade]);status.setAttribute('aria-label',grade);
