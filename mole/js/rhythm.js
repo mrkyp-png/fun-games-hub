@@ -36,7 +36,7 @@
     var $ = function (s) { return el.querySelector(s); };
     var stage = $('[data-rp-stage]'), wlayer = $('[data-rp-weapons]');
     var lyricTicker = MG.RhythmLyrics.create(el);
-    var beachVisual = MG.RhythmBeach.create(el), targetLanes=[], targetCue=[0,0,0,0];
+    var beachVisual = MG.RhythmBeach.create(el), targetLanes=[], targetCue=[0,0,0,0], perfectWords=[];
     var meta = null, buffer = null, ctx = null, src = null;
     var st = null, raf = 0;
     var countEl = $('[data-rp-count]'), frameHeads = [0,1,2,3].map(function(){return {h:{x:0,y:0,r:0},jumping:false};}), frameCues=[0,0,0,0];
@@ -199,9 +199,11 @@
       L.sink = L.laneW * 0.1; // v814: 두더지를 구멍 속으로 조금 내림(떠 보이지 않게)
       L.moleBottom = H - L.laneW * 0.3 - 4 + L.sink; // 구멍(테두리) 아래끝이 시간 바 바로 위에 오게 — 버튼과 안 겹침
       L.lift = L.moleBottom - oldBottom;
-      // Move the entire target/mole/hole group by the same visual offset.
+      // Keep the target, judgement point, hole, and mole aligned as one group.
       var groupShift = Math.min(32, W * 0.06);
-      L.targetY -= groupShift; L.moleBottom -= groupShift;
+      var beachDrop = Math.min(28, H * 0.035);
+      L.targetY = L.targetY - groupShift + beachDrop;
+      L.moleBottom = L.moleBottom - groupShift + beachDrop;
     }
     // 프레임별 추가 상승량 = (그 프레임이 대기 자세보다 오른 정도 ÷ 최고점이 오른 정도) × lift
     function liftAt(i, f) {
@@ -307,12 +309,12 @@
       // v831: MISS 맞은 두더지 머리 위 빙글 별(레인 컨테이너 = 무대 좌표)
       for (var di = 0; di < 4; di++) { var dz = document.createElement('span'); dz.className = 'rp-dizzy'; dz.innerHTML = '<i>★</i><i>★</i><i>★</i>'; lanesEl.appendChild(dz); }
       dizzyEls = lanesEl.querySelectorAll('.rp-dizzy');
-      var bt = $('[data-rp-btns]'); bt.innerHTML = ''; btnEls = null;
+      var bt = $('[data-rp-btns]'); bt.innerHTML = ''; btnEls = null; perfectWords=[];
       for (var j = 0; j < 4; j++) {
         (function (j) {
           var b = document.createElement('button'); b.type = 'button'; b.className = 'rp-btn';
           b.innerHTML = '<img src="' + A + 'btn-' + (j + 1) + '.png" alt="">' + buttonTriangle(j);
-          var perfectWord = document.createElement('span'); perfectWord.className = 'rp-a-perfect-word'; perfectWord.textContent = 'PERFECT'; perfectWord.setAttribute('aria-hidden','true'); b.appendChild(perfectWord);
+          var perfectWord = document.createElement('span'); perfectWord.className = 'rp-a-perfect-word'; perfectWord.textContent = 'PERFECT'; perfectWord.setAttribute('aria-hidden','true'); stage.appendChild(perfectWord); perfectWords[j]=perfectWord;
           b.addEventListener('pointerdown', function (e) { e.preventDefault(); press(j); b.classList.add('is-down'); });
           ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { b.addEventListener(ev, function () { b.classList.remove('is-down'); }); });
           bt.appendChild(b);
@@ -477,8 +479,10 @@
       var g = n.press.grade; st.cnt[g]++; st.combo++; st.maxCombo = Math.max(st.maxCombo, st.combo);
       st.score += sharedRules.points(g, st.combo);
       n.vx = (Math.random() < 0.5 ? -1 : 1) * (L.laneW * (1.5 + Math.random())); n.vy = -L.H * 1.1; n.bx = n.cx; n.by = n.cy;
+      n.perfectFlight = null;
+      if(g==='PERFECT'){var dir=n.bx<L.W/2?-1:1,flight=.72;n.perfectFlight={duration:flight,dx:dir*(Math.max(n.bx,L.W-n.bx)+L.weaponR*3),dy:-L.H*.28};}
       showJudge(lane, g, g.toLowerCase()); pang(lane, n.cx, n.cy); hud(); sfx('hit');
-      if (g === 'PERFECT') replay((btnEls || (btnEls = el.querySelectorAll('.rp-btn')))[lane].querySelector('.rp-a-perfect-word'), 'is-on');
+      if (g === 'PERFECT') { var word=perfectWords[lane],peak=Math.min(4.6,stage.clientWidth*.22/Math.max(1,word.offsetWidth)); word.style.left=n.cx+'px'; word.style.top=n.cy+'px'; word.style.setProperty('--rp-perfect-peak',peak); replay(word, 'is-on'); }
       burst(n.cx, n.cy, g === 'PERFECT' ? 10 : g === 'GREAT' ? 7 : 5); comboFx();
       try { MG.HitFx && MG.HitFx.uiTap && MG.HitFx.uiTap(1); } catch (e) { /* 무시 */ }
     }
@@ -615,10 +619,12 @@
           else if (t > n.targetTime + DIFFS[diff].judge.goodMs / 1000 && p.y >= heads[n.targetLane].h.y - heads[n.targetLane].h.r) miss(n.targetLane, n);
         }
         if (n.state === 'hit') { // 튕김
-          var k = t - n.hitAt; n.cx = n.bx + n.vx * k; n.cy = n.by + n.vy * k + L.H * 2.2 * k * k;
+          var k = t - n.hitAt;
+          if(n.perfectFlight){var p=Math.min(1,k/n.perfectFlight.duration);n.cx=n.bx+n.perfectFlight.dx*p;n.cy=n.by+n.perfectFlight.dy*p+L.H*1.25*p*(1-p);}
+          else {n.cx = n.bx + n.vx * k; n.cy = n.by + n.vy * k + L.H * 2.2 * k * k;}
           n.el.style.transform = 'translate(' + (n.cx - L.weaponR * 1.2) + 'px,' + (n.cy - L.weaponR * (n.weaponType==='heart'?2.4*373/307:1.2)) + 'px) scale(' + (n.weaponType === 'boomerang' || n.weaponType === 'disc' ? 1.2 : 1) + ') rotate(' + (t * 900) + 'deg)';
-          n.el.style.opacity = String(Math.max(0, 1 - k * 1.6));
-          if (k > 0.7) { n.el.style.opacity = '0'; if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); if (n.wind) n.wind.style.opacity = '0'; n.state = 'done'; }
+          n.el.style.opacity = n.perfectFlight ? String(Math.max(0,Math.min(1,(n.perfectFlight.duration-k)/(n.perfectFlight.duration*.16)))) : String(Math.max(0, 1 - k * 1.6));
+          if (k > (n.perfectFlight ? n.perfectFlight.duration : 0.7)) { n.el.style.opacity = '0'; if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); if (n.wind) n.wind.style.opacity = '0'; n.state = 'done'; }
         }
         if (n.state === 'miss') { // 두더지에 맞고 튕겨 떨어짐
           if (!n.missAt) n.missAt = t;
