@@ -380,6 +380,7 @@
   const HOME_BGM_COUNT = 6;
   let homeBgmIdx = 0;
   let bgmWantPlay = false; // 지금 화면이 BGM 을 원하는가 (홈/더보기/게임 진입 시 true)
+  let rhythmEntryBgmWantPlay = false;
   const BGM_VOL = 0.35;
   const BGM_FADE_MS = 900;
   let bgmFadeTimer = null;
@@ -401,17 +402,30 @@
     if (feverBgm && !feverBgm.paused) feverBgm.pause();
   }
 
+  function setRhythmEntryBgm(want) {
+    rhythmEntryBgmWantPlay = !!want;
+    const entry = document.getElementById('rhythm-entry-bgm');
+    if (!entry) return;
+    entry.loop = true;
+    entry.volume = BGM_VOL;
+    if (!want) { entry.pause(); entry.currentTime = 0; }
+    applyBgm();
+  }
+
   // BGM 재생/정지의 유일한 결정 지점 — 화면 의도 · 앱 가시성 · 설정을 모두 본다.
   function applyBgm() {
     if (feverBgmOverride) return; // 피버 브금 재생 중엔 라운드 브금을 절대 되살리지 않는다.
     const el = bgmActiveEl();
-    if (!el) return;
     const want = bgmWantPlay && !document.hidden && window.FGH.Settings.get('music');
-    if (want) {
+    if (el && want) {
       if (el.paused) el.play().catch(() => { /* 자동재생 차단 — 다음 제스처(스플래시 탭 등)에 재시도 */ });
-    } else if (!el.paused) {
+    } else if (el && !el.paused) {
       el.pause();
     }
+    const entry = document.getElementById('rhythm-entry-bgm');
+    const wantEntry = rhythmEntryBgmWantPlay && !document.hidden && window.FGH.Settings.get('music');
+    if (entry && wantEntry && entry.paused) entry.play().catch(() => { /* 사용자 입력 시 재시도 */ });
+    else if (entry && !wantEntry && !entry.paused) entry.pause();
   }
 
   // 다른 곡으로 크로스페이드 — 비활성 쪽에 새 곡을 미리 재생 시작해 페이드인, 활성 쪽은
@@ -1169,7 +1183,7 @@
   function openRhythm() {
     const el = document.getElementById('rhythm-screen');
     // v840(사용자 지정): 리듬팡 진입·홈 복귀도 글리치
-    if (!rhythm) rhythm = window.__rhythm = MG.Rhythm.create({ root: el, onClose: (why) => { window.FGH.rollOut(el, () => { el.hidden = true; playScreenBgm('home'); refreshBoardStats(); }); } }); // v841: 일시정지→그만하기 = 탄성 밀어내기
+    if (!rhythm) rhythm = window.__rhythm = MG.Rhythm.create({ root: el, onEntryMusic: setRhythmEntryBgm, onClose: (why) => { window.FGH.rollOut(el, () => { el.hidden = true; playScreenBgm('home'); refreshBoardStats(); }); } }); // v841: 일시정지→그만하기 = 탄성 밀어내기
     stopBgm();
     rhythm.open();
     el.classList.remove('glitch-in'); void el.offsetWidth; el.classList.add('glitch-in');
@@ -2803,7 +2817,8 @@
     window.FGH.Settings.onChange((name) => {
       if (name === 'music') applyBgm();
     });
-    window.FGH.retryBgm = applyBgm; // intro.js 등 외부에서 "혹시 멈춰있으면 재시도"용
+    window.FGH.retryBgm = applyBgm;
+    window.FGH.setRhythmEntryBgm = setRhythmEntryBgm; // rhythm menu entry audio control
     // 스플래시/인트로가 실제로 사라지는 시점에 index.html 이 호출 — 그 전까진 홈 BGM 재생을
     // 미룬다(사용자 지정, deferBgm). 이미 시작돼 있으면 아무 일도 안 함(currentBgm 그대로).
     window.FGH.startHomeBgm = () => playScreenBgm('home');
@@ -2836,7 +2851,7 @@
     let bgmHideTimer = null;
     document.addEventListener('visibilitychange', () => {
       clearTimeout(bgmHideTimer);
-      if (document.hidden) bgmHideTimer = setTimeout(() => { if (document.hidden) { const el = bgmActiveEl(); if (el) el.pause(); } }, 500);
+      if (document.hidden) bgmHideTimer = setTimeout(() => { if (document.hidden) { const el = bgmActiveEl(); if (el) el.pause(); applyBgm(); } }, 500);
       else applyBgm();
     });
     // 언어 전환 시 JS 로 채운 동적 문구도 다시 그린다 (applyStatic 이 못 건드리는 것들).

@@ -7636,13 +7636,13 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen:has([data-rp-types]:not([hidden])) .rp-a-status,#rhythm-screen:has([data-rp-select]:not([hidden])) .rp-a-status,#rhythm-screen:has([data-rp-songs]:not([hidden])) .rp-a-status { visibility:hidden; }
 @media(prefers-reduced-motion:reduce) { .rp-a-clock-hand { animation:none; } }
 
-/* Same scale/opacity progression as Rhythm B's PERFECT power word. */
-.rp-a-perfect-word { position:absolute; left:0; top:0; z-index:6; pointer-events:none; white-space:nowrap; font:800 clamp(14px,4.5vw,22px)/1 'Dongle','Segoe UI',sans-serif; color:#ffe45a; -webkit-text-stroke:1px #523700; paint-order:stroke fill; opacity:0; transform:translate(-50%,-50%) scale(.05); }
-.rp-a-perfect-word.is-on { animation:rp-a-perfect-power 1100ms linear both; }
-@keyframes rp-a-perfect-power { 0% { opacity:.7; transform:translate(-50%,-50%) scale(.05); } 60% { opacity:.7; transform:translate(-50%,-50%) scale(calc(var(--rp-perfect-peak,4.6)*.76087)); } 100% { opacity:0; transform:translate(-50%,-50%) scale(var(--rp-perfect-peak,4.6)); } }
-#rhythm-screen:has([data-rp-pause]:not([hidden])) .rp-a-perfect-word { animation-play-state:paused; }
-@media(prefers-reduced-motion:reduce) { .rp-a-perfect-word.is-on { animation:rp-a-perfect-fade 1100ms linear both; } }
-@keyframes rp-a-perfect-fade { from { opacity:.7; transform:translate(-50%,-50%); } to { opacity:0; transform:translate(-50%,-50%); } }
+/* V1181 G: successful Beach grades rise from their own button to the mole's head. */
+.rp-a-grade-word { position:absolute; left:0; top:0; z-index:6; pointer-events:none; white-space:nowrap; font:900 clamp(18px,5.6vw,27px)/1 'Lilita One','Jua',sans-serif; color:#ffe500; -webkit-text-stroke:2px #765000; paint-order:stroke fill; text-shadow:0 0 8px currentColor,0 2px 2px #111; opacity:0; transform:translate(-50%,0) scale(.45); }
+.rp-a-grade-word[data-grade=GOOD] { color:#00d8ff; -webkit-text-stroke-color:#003d73; }
+.rp-a-grade-word[data-grade=GREAT] { color:#39ff68; -webkit-text-stroke-color:#075223; }
+.rp-a-grade-word.is-on { animation:rp-a-grade-rise 900ms cubic-bezier(.18,.72,.24,1) both; }
+@keyframes rp-a-grade-rise { 0% { opacity:0; transform:translate(-50%,0) scale(.45); } 8% { opacity:1; transform:translate(-50%,-8%) scale(1); } 84% { opacity:1; transform:translate(-50%,var(--rp-grade-rise,-120px)) scale(1); } 100% { opacity:0; transform:translate(-50%,var(--rp-grade-rise,-120px)) scale(1); } }
+#rhythm-screen:has([data-rp-pause]:not([hidden])) .rp-a-grade-word { animation-play-state:paused; }
 
 /* A cloud target: one composited image, rare transform changes, four reused rays. */
 .rp-a-cloud-boss { position:absolute; left:50%; top:max(2%,env(safe-area-inset-top)); width:min(76%,calc(100dvh * .27 * 592 / 464)); aspect-ratio:592/464; transform:translateX(-50%) scale(var(--rp-boss-scale,1)); transform-origin:50% 40%; transition:transform .55s ease-out,opacity .55s ease-out; pointer-events:none; }
@@ -7777,7 +7777,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen .rb-song-footer .rx-btn--home { background-image:url('assets/rhythm/ui/btn-home.png'); }
 #rhythm-screen .rb-song-nav.rx-btn { background-size:100% 100%; background-color:transparent; background-position:center; }
 #rhythm-screen .rx-card--res { height:calc(100dvh - 48px); }
-#rhythm-screen .rx-result-body { display:flex; flex-direction:column; align-items:center; width:100%; min-height:0; flex:1 1 auto; overflow:auto; overscroll-behavior:contain; }
+#rhythm-screen .rx-result-body { display:flex; flex-direction:column; align-items:center; width:100%; min-width:0; min-height:0; flex:1 1 auto; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; }
 #rhythm-screen .rx-result-body > * { flex-shrink:0; }
 #rhythm-screen .rx-result-actions { width:100%; }
 #rhythm-screen .rx-result-actions .rx-btn { margin-top:5px; }
@@ -7884,7 +7884,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen:not(.is-type-b) .rp-lyrics { height:54px; line-height:44px; font-size:clamp(24.84px,7.866vw,33.12px); }
 #rhythm-screen:not(.is-type-b).has-rhythm-lyrics .rp-stage { margin-bottom:56px; }
 #rhythm-screen.is-type-b .rp-lyrics { top:calc(env(safe-area-inset-top,0px) + 2px); left:54px; right:54px; height:45px; line-height:38px; }
-#rhythm-screen.is-type-b .rp-lyrics { top:max(0px,calc(env(safe-area-inset-top,0px) - 3px)); height:31px; line-height:31px; }
+#rhythm-screen.is-type-b .rp-lyrics { top:max(2px,calc(env(safe-area-inset-top,0px) - 3px)); height:30px; line-height:30px; }
+@media (min-height:700px) { #rhythm-screen.is-type-b .rp-lyrics { top:max(8px,env(safe-area-inset-top,0px)); } }
 #rhythm-screen.is-type-b .rp-lyrics-pulse { margin:0 5%; line-height:1; }
 #rhythm-screen .rp-modal:not([hidden]) .rx-card,#rhythm-screen .rp-type-panel:not([hidden]) .rx-card { animation:none; }
 @media (prefers-reduced-motion:reduce) { .rp-beach-running .rp-cloud-arm,.rp-beach-running .rp-cloud-body,.rp-beach-running .rp-target-orbit > i,.rp-type-panel:not([hidden]) .rp-type-rail-light,#rhythm-screen .rp-modal:not([hidden]) .rx-card,#rhythm-screen .rp-type-panel:not([hidden]) .rx-card { animation:none; } }
@@ -7914,19 +7915,31 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 
 /* V1177 G: tighten the rhythm dialogs while keeping their frame artwork fixed. */
 #rhythm-screen .rx-result-actions { display:flex; flex-direction:column; gap:7px; width:100%; align-items:stretch; }
-#rhythm-screen .rx-result-actions .rx-btn { box-sizing:border-box; width:100%; height:clamp(50px,14vw,58px); min-height:0; margin:0; aspect-ratio:auto; background-size:100% 100%; }
+#rhythm-screen .rx-result-actions .rx-btn { box-sizing:border-box; width:100%; height:clamp(62px,17.5vw,72px); min-height:0; margin:0; aspect-ratio:auto; background-size:100% 100%; }
 #rhythm-screen .rx-card:not(.rx-card--res):not(.rx-card--pause).rp-type-card { padding-bottom:108px; }
 #rhythm-screen .rp-type-card > .rp-type-button,
-#rhythm-screen .rp-type-card > [data-rp-types-home] { height:clamp(62px,18cqw,72px); min-height:0; margin-top:7px; aspect-ratio:auto; flex-shrink:0; }
+#rhythm-screen .rp-type-card > [data-rp-types-home] { box-sizing:border-box; width:100%; height:auto; min-height:62px; aspect-ratio:593/143; margin-top:7px; flex-shrink:0; }
+#rhythm-screen .rp-type-card > [data-rp-types-home] { background-size:contain; }
 #rhythm-screen .rp-type-panel .rp-type-button[data-rp-type="B"] { background-image:url('assets/rhythm/ui/btn-blue.png'); isolation:isolate; }
 #rhythm-screen .rp-type-panel .rp-type-button[data-rp-type="B"]::before { content:""; position:absolute; inset:0; z-index:0; pointer-events:none; background:linear-gradient(180deg,#bd8affb8,#6d26c8d9); -webkit-mask:url('assets/rhythm/ui/btn-blue.png') center/100% 100% no-repeat; mask:url('assets/rhythm/ui/btn-blue.png') center/100% 100% no-repeat; }
 #rhythm-screen .rp-type-panel .rp-type-button[data-rp-type="B"] span { z-index:1; }
 #rhythm-screen .rx-card--sel [data-rp-diff],
 #rhythm-screen .rx-card--sel [data-rp-song-back],
-#rhythm-screen .rx-card--sel [data-rp-sel-close] { height:clamp(52px,15vw,60px); min-height:0; margin-top:6px; aspect-ratio:auto; background-size:100% 100%; flex-shrink:0; }
+#rhythm-screen .rx-card--sel [data-rp-sel-close] { box-sizing:border-box; height:auto; min-height:52px; margin-top:6px; aspect-ratio:568/142; background-size:contain; background-position:center; background-repeat:no-repeat; flex-shrink:0; }
 #rhythm-screen .rx-card:not(.rx-card--res):not(.rx-card--pause).rb-song-card { padding-bottom:84px; }
 #rhythm-screen .rb-song-choice { min-height:154px; }
+#rhythm-screen .rb-song-list[data-visible-cards="3"] .rb-song-choice { min-height:0; padding:6px; gap:4px 10px; }
+@media (max-height:860px) {
+  #rhythm-screen .rb-song-list[data-visible-cards="3"] .rb-song-actions .rx-btn { height:34px; min-height:34px; }
+}
+/* V1178: purple-tint the Neon album window frame and inner panel only. */
+#rhythm-screen.is-type-b .rb-song-card::before,
+#rhythm-screen.is-type-b .rb-song-card::after { filter:hue-rotate(38deg) saturate(1.06); }
+#rhythm-screen .rp-lyric-syllable { display:inline-block; position:relative; transform-origin:50% 70%; transition:transform 80ms ease-out; }
+#rhythm-screen .rp-lyric-syllable.is-accent { z-index:1; transform:scale(1.28); }
 #rhythm-screen.is-type-b .rb-song-modal { background:rgba(55,20,104,.84); }
 #rhythm-screen.is-type-b .rp-select { background:rgba(48,16,95,.86); }
+#rhythm-screen.is-type-b .rp-select .rx-card--sel::before,
+#rhythm-screen.is-type-b .rp-select .rx-card--sel::after { filter:hue-rotate(38deg) saturate(1.06); }
 #rhythm-screen.is-type-b .rp-preloader { background:rgba(38,10,79,.96); }
 #rhythm-screen.is-type-b .rp-preloader progress { accent-color:#bb84ff; }

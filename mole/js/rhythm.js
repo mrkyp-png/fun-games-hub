@@ -33,6 +33,7 @@
 
   function create(opts) {
     var el = opts.root;
+    function setEntryBgm(playing) { if (typeof opts.onEntryMusic === 'function') opts.onEntryMusic(!!playing); }
     var $ = function (s) { return el.querySelector(s); };
     var stage = $('[data-rp-stage]'), wlayer = $('[data-rp-weapons]');
     var lyricTicker = MG.RhythmLyrics.create(el);
@@ -119,6 +120,7 @@
       return bSongPending[cacheKey];
     }
     function showSongs() {
+      setEntryBgm(true);
       cancelEntry();
       beachVisual.stop();
       updateModeSign();
@@ -161,8 +163,10 @@
     function layoutSongRows() {
       var list=$('[data-rp-song-list]'),cards=list.children;
       if(!list.clientHeight||!cards.length)return;
-      var gap=12,available=list.clientHeight-28,minSlot=154;
+      var gap=12,available=list.clientHeight-28,minSlot=136;
       var count=Math.min(3,cards.length);
+      if(window.innerHeight<=700)count=1;
+      else if(window.innerWidth<=370)count=Math.min(2,count);
       while(count>1&&(available-gap*(count-1))/count<minSlot)count--;
       list.style.setProperty('--rp-song-slot',((available-gap*(count-1))/count)+'px');
       list.dataset.visibleCards=String(count);
@@ -295,6 +299,7 @@
       return '<svg class="rp-a-triangle" viewBox="0 0 '+r[0]+' '+r[1]+'" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="'+id+'" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="'+colors[0]+'"/><stop offset="1" stop-color="'+colors[1]+'"/></linearGradient><clipPath id="'+id+'-clip"><path d="'+face+'"/></clipPath></defs><path d="'+face+'" transform="translate(0 9)" fill="'+colors[2]+'" opacity=".2"/><path d="'+face+'" transform="translate(0 5)" fill="'+colors[2]+'" stroke="'+colors[2]+'" stroke-width="2"/><path d="'+face+'" fill="url(#'+id+')" stroke="'+colors[0]+'" stroke-width="1.5"/><g clip-path="url(#'+id+'-clip)"><path d="M '+cx+' '+t+' L '+cx+' '+mid+' L '+l+' '+bottom+' Z" fill="'+colors[0]+'" opacity=".65"/><path d="M '+cx+' '+t+' L '+right+' '+bottom+' L '+cx+' '+mid+' Z" fill="'+colors[2]+'" opacity=".12"/></g></svg>';
     }
     function buildStage() {
+      buttonHitTimers.forEach(function(timer){clearTimeout(timer);});buttonHitTimers=[];
       var lanesEl = $('[data-rp-lanes]'); lanesEl.innerHTML = ''; moleEls = null;
       for (var i = 0; i < 4; i++) {
         var ln = document.createElement('div'); ln.className = 'rp-lane'; ln.style.left = (i * 25) + '%';
@@ -314,7 +319,7 @@
         (function (j) {
           var b = document.createElement('button'); b.type = 'button'; b.className = 'rp-btn';
           b.innerHTML = '<img src="' + A + 'btn-' + (j + 1) + '.png" alt="">' + buttonTriangle(j);
-          var perfectWord = document.createElement('span'); perfectWord.className = 'rp-a-perfect-word'; perfectWord.textContent = 'PERFECT'; perfectWord.setAttribute('aria-hidden','true'); stage.appendChild(perfectWord); perfectWords[j]=perfectWord;
+          var perfectWord = document.createElement('span'); perfectWord.className = 'rp-a-grade-word'; perfectWord.setAttribute('aria-hidden','true'); stage.appendChild(perfectWord); perfectWords[j]=perfectWord;
           b.addEventListener('pointerdown', function (e) { e.preventDefault(); press(j); b.classList.add('is-down'); });
           ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { b.addEventListener(ev, function () { b.classList.remove('is-down'); }); });
           bt.appendChild(b);
@@ -346,7 +351,7 @@
       });
     });
     // v813(깜빡임 제거): 7프레임을 미리 겹쳐 두고 보이는 것만 바꿈 — img src 교체 순간 빈 프레임이 생기던 것
-    var moleFrame = [-1, -1, -1, -1], moleEls = null, btnEls = null, dizzyEls = null;
+    var moleFrame = [-1, -1, -1, -1], moleEls = null, btnEls = null, dizzyEls = null, buttonHitTimers=[];
     function setMoleFrame(i, f) {
       if (moleFrame[i] === f) return;
       var m = (moleEls || (moleEls = el.querySelectorAll('.rp-mole')))[i];
@@ -483,9 +488,10 @@
       if(g==='PERFECT'){var dir=n.bx<L.W/2?-1:1,flight=.72;n.perfectFlight={duration:flight,dx:dir*(Math.max(n.bx,L.W-n.bx)+L.weaponR*3),dy:-L.H*.28};}
       showJudge(lane, g, g.toLowerCase());
       var hitButton=btnEls&&btnEls[lane];
-      if(hitButton){hitButton.classList.remove('is-hit');void hitButton.offsetWidth;hitButton.classList.add('is-hit');setTimeout(function(){hitButton.classList.remove('is-hit');},420);}
+      if(hitButton){clearTimeout(buttonHitTimers[lane]);hitButton.dataset.grade=g;hitButton.classList.remove('is-hit');void hitButton.offsetWidth;hitButton.classList.add('is-hit');buttonHitTimers[lane]=setTimeout(function(){hitButton.classList.remove('is-hit');delete hitButton.dataset.grade;buttonHitTimers[lane]=0;},420);}
       pang(lane, n.cx, n.cy); hud(); sfx('hit');
-      if (g === 'PERFECT') { var word=perfectWords[lane],peak=Math.min(4.6,stage.clientWidth*.22/Math.max(1,word.offsetWidth)); word.style.left=n.cx+'px'; word.style.top=n.cy+'px'; word.style.setProperty('--rp-perfect-peak',peak); replay(word, 'is-on'); }
+      var word=perfectWords[lane],buttonRect=hitButton&&hitButton.getBoundingClientRect(),stageRect=stage.getBoundingClientRect();
+      if(word&&buttonRect){var mole=moleEls&&moleEls[lane],moleRect=mole&&mole.getBoundingClientRect(),wordY=buttonRect.top-stageRect.top+buttonRect.height/2,targetY=moleRect?moleRect.top-stageRect.top+moleRect.height*.14:wordY-120;word.textContent=g;word.dataset.grade=g;word.style.left=(buttonRect.left-stageRect.left+buttonRect.width/2)+'px';word.style.top=wordY+'px';word.style.setProperty('--rp-grade-rise',(-Math.max(0,wordY-targetY))+'px');replay(word,'is-on');}
       burst(n.cx, n.cy, g === 'PERFECT' ? 10 : g === 'GREAT' ? 7 : 5); comboFx();
       try { MG.HitFx && MG.HitFx.uiTap && MG.HitFx.uiTap(1); } catch (e) { /* 무시 */ }
     }
@@ -722,6 +728,7 @@
     $('[data-rp-other]').addEventListener('click', function () { if (activeB) { bGame.stop(); showSelect(); return; } cancelAnimationFrame(raf); try { src && src.stop(); } catch (e) { /* 무시 */ } st = null; showSelect(); });
 
     function close(why) {
+      setEntryBgm(false);
       cancelEntry();
       beachVisual.stop();
       updateACombo(0,true);
@@ -736,6 +743,7 @@
       opts.onClose(why);
     }
     function showSelect() {
+      setEntryBgm(true);
       updateModeSign();
       resultSerial++;
       $('[data-rp-songs]').hidden = true;
@@ -755,6 +763,7 @@
     }
     // v841: 탄성 밀어내기로 게임 화면 진입(난이도 선택 → 게임, 결과창 다시하기 → 게임)
     function pushInGame(modal) {
+      setEntryBgm(false);
       // v878(사용자 지정): 탄성 밀어내기 → 글리치(다른 화면과 통일)
       modal.hidden = true;
       // V 1113 G: keep B's opaque screen fixed while only its board enters.
@@ -773,6 +782,7 @@
     $('[data-rp-sel-close]').addEventListener('click', function () { close(); });
     // V 1023 G: 홈 → 타입 선택 → A 기존 난이도 / B 제작 중.
     function showTypes() {
+      setEntryBgm(true);
       cancelEntry();
       beachVisual.stop();
       updateACombo(0,true);
@@ -817,7 +827,7 @@
     $('[data-rp-songs-back]').addEventListener('click', showTypes);
     $('[data-rp-songs-home]').addEventListener('click', function () { close(); });
     $('[data-rp-types-home]').addEventListener('click', function () { close(); });
-    function open() { resetBoss(); clearAGauge(); el.hidden = false; $('[data-rp-pause]').hidden = true; $('[data-rp-result]').hidden = true; wlayer.innerHTML = '';
+    function open() { setEntryBgm(true); resetBoss(); clearAGauge(); el.hidden = false; $('[data-rp-pause]').hidden = true; $('[data-rp-result]').hidden = true; wlayer.innerHTML = '';
       // v974(사용자 지정): 진입 시 배경은 항상 첫 화면 — 지난 판의 두더지·구멍·버튼·점수·HP 잔상 비움(시작하면 start() 가 다시 만듦)
       $('[data-rp-lanes]').innerHTML = ''; $('[data-rp-btns]').innerHTML = ''; moleEls = null; btnEls = null;
       $('[data-rp-score]').textContent = '0'; $('[data-rp-combo]').textContent = '0'; statusJudge.textContent = 'READY'; statusTime.textContent = '0:00'; statusSeconds = -1; $('[data-rp-hp]').style.width = ''; $('[data-rp-hpbar]').classList.remove('is-low');
