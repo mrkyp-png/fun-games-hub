@@ -119,6 +119,7 @@
       const moving=[circuit,reflection,lens,cap],from=Array(5).fill('');movingSurfaces.push(moving);
       function down() {
         if (!running || paused) return;
+        fitPressPulses();
         reboundAnimations[i].forEach(a=>a.cancel());reboundAnimations[i].length=0;
         cap.src='assets/rhythm-b/button-face-v1120/face-'+i+'.svg';
         surfaces.forEach(el => el.classList.add('is-pressed'));if(flowFx)flowFx.press(i,true);

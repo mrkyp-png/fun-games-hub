@@ -5,6 +5,12 @@
   const reduced=root.matchMedia('(prefers-reduced-motion: reduce)');let cues=[],cursor=-1,shown=-2,lastTime=-Infinity,animation=null,paused=false,beatAnimation=null,beats=null,beatCursor=-1,lastPulse=-Infinity,bpm=120,firstBeat=0;
   const beatFrames=[{transform:'scale(1.12)'},{transform:'scale(1)'}];
   const wordColors=['#ff1744','#2979ff','#ffea00','#00e676','#ff9100','#f500ff','#00e5ff'];
+  const neonContainer=screen.querySelector('[data-rp-b]'),neonBoard=neonContainer&&neonContainer.querySelector('.rb-board');let boundsFrame=0,observedPerimeter=null;
+  function fitNeonBounds(){boundsFrame=0;if(!neonBoard)return;if(!screen.classList.contains('is-type-b')){bar.style.removeProperty('left');bar.style.removeProperty('right');bar.style.removeProperty('top');return;}const sr=screen.getBoundingClientRect(),progress=screen.querySelector('[data-rp-b] .rb-song-progress'),pr=progress&&progress.getBoundingClientRect();if(progress&&progress!==observedPerimeter&&root.ResizeObserver){observedPerimeter=progress;resizeObserver.observe(progress);}if(!sr.width||!pr||!pr.width||!pr.height)return;/* The perimeter SVG sits inside a 12px inset box; its visible outer route is another 12 design units inward. Anchor lyrics to that rendered route, not to the board or viewport. */const insetX=12*pr.width/952+6,insetY=12*pr.height/2078+6;bar.style.left=Math.max(0,pr.left-sr.left+insetX)+'px';bar.style.right=Math.max(0,sr.right-pr.right+insetX)+'px';bar.style.top=Math.max(0,pr.top-sr.top+insetY)+'px';}
+  function queueNeonBounds(){if(!boundsFrame)boundsFrame=requestAnimationFrame(fitNeonBounds);}
+  const resizeObserver=root.ResizeObserver?new root.ResizeObserver(queueNeonBounds):null;
+  if(neonBoard&&resizeObserver){resizeObserver.observe(screen);resizeObserver.observe(neonBoard);}
+  if(root.MutationObserver){const modeObserver=new root.MutationObserver(queueNeonBounds);modeObserver.observe(screen,{attributes:true,attributeFilter:['class','style','hidden']});if(neonContainer)modeObserver.observe(neonContainer,{childList:true});}
   const vowels=/[aeiouy]/i;
   let accentSyllables=[],activeAccent=-1;
   function splitSyllables(word){
@@ -20,7 +26,7 @@
   function cancelBeat(){if(beatAnimation){beatAnimation.cancel();beatAnimation=null;}}
   function color(value){if(bar.style.getPropertyValue('--rp-lyric-color')!==value)bar.style.setProperty('--rp-lyric-color',value);}
   function clear(preserveLayout){cancel();cancelBeat();beats=null;beatCursor=-1;lastPulse=-Infinity;bar.style.removeProperty('--rp-lyric-color');cues=[];cursor=-1;shown=-2;lastTime=-Infinity;paused=false;bar.hidden=true;text.textContent='';if(!preserveLayout)screen.classList.remove('has-rhythm-lyrics');}
-  function set(data,timing){clear();beats=timing&&Array.isArray(timing.beats)?timing.beats:null;bpm=Number(timing&&timing.bpm)||120;firstBeat=Number(timing&&timing.firstBeat)||0;cues=(data&&Array.isArray(data.cues)?data.cues:[]).filter(c=>Number.isFinite(c.start)&&Number.isFinite(c.end)&&c.end>c.start&&typeof c.text==='string').slice().sort((a,b)=>a.start-b.start);screen.classList.toggle('has-rhythm-lyrics',cues.length>0);}
+  function set(data,timing){clear();beats=timing&&Array.isArray(timing.beats)?timing.beats:null;bpm=Number(timing&&timing.bpm)||120;firstBeat=Number(timing&&timing.firstBeat)||0;cues=(data&&Array.isArray(data.cues)?data.cues:[]).filter(c=>Number.isFinite(c.start)&&Number.isFinite(c.end)&&c.end>c.start&&typeof c.text==='string').slice().sort((a,b)=>a.start-b.start);screen.classList.toggle('has-rhythm-lyrics',cues.length>0);fitNeonBounds();}
   function update(time){
    if(!cues.length)return;
    if(time<lastTime){cursor=-1;beatCursor=-1;lastPulse=-Infinity;cancelBeat();}lastTime=time;
