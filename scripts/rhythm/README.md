@@ -60,3 +60,11 @@
 - raw transcript/review/base/forced-alignment JSON은 review에 보존. 인식되지 않은 뒤쪽 원문을 앞쪽 후렴에 억지로 붙이지 않도록 끝부분 미정렬 허용. 불확실한 인식 문장을 가사로 대신 쓰지 않는다. 제공 문구와 맞는 추가 반복만 표시. Meet 첫 후렴의 Come on 3회는 인식 후보에 맞춰 원문 반복으로 정렬. World 마지막 Hey, hey는 부분 후렴으로 취급하며 남은 가사를 끝에 억지로 압축하지 않는다.
 - 사용자 재생 확인이 특히 필요한 구간: Meet 약49.9~57.1초의 제공 원문에 없는 짧은 반복/추임새, Paper 약66.0~71.6초의 반복 보컬, World 마지막 약118초 이후 실제 끝부분과 원문 Final Chorus/Outro 차이. 불명확한 단어는 임의 제작하지 않고 사용자 확인 후 보완한다.
 - 컨트롤러는 기존 A/B 오디오 시계로 문장 시작/종료를 판단하고 문장 변경 때만 textContent 변경. 긴 문장만 transform 스크롤, pause/resume 동기화, 간주/종료/곡변경에서 숨김. 새 RAF·캔버스·블러·프레임별 텍스트 재생성 없음. B 정상 안전여백32px은 그대로, 노치 기기에서는 가사 높이를 안전영역 아래에 확보.
+
+## V1170 G — A 성능 및 공용 팝업 검증
+- A/B 정상 전곡 완주·4곡 선택, 테스트 UI 제거. 원본 채보·음악과 점수 보존. B GREAT/GOOD 추가10%(A대비1.21), PERFECT 불변.
+- node review/verify-popups-v1170.js / verify-rhythm-a-render-v1170.js / verify-rhythm-b-windows-v1170.js / verify-b-song-entry-v1170.js
+- node review/profile-rhythm-a-v1170.js optimized: 실제 Edge HARD20초 프레임 측정. baseline/optimized JSON은 로컬 측정이며 폰 성능 보장이 아니다.
+- A 대기/종료 무기 hidden, 스폰 큐/활성 배열/프레임 버퍼/PANG풀 재사용. 궤적1600샘플 비교와346노트 전체 생명주기 검증. 게임 효과 삭제 금지.
+- 앨범 생성 프롬프트/원본/최종경로 review/album-prompts-v1170.json. 기존 광고 서비스는 개발 스텁, 실제 광고망은 별도 작업.
+- 기존 V1168/1169 가사 변경 포함 미배포 V1170. 작업·배포 허락 분리 및 기존 변경 보존, 다음 기믹은 사용자와 논의부터.

@@ -1,0 +1,34 @@
+{
+  "tool": "built-in image_gen.imagegen",
+  "version": "V 1170 G",
+  "covers": [
+    {
+      "id": "le-monde-attendra-demain",
+      "prompt": "Generate one square 1:1 premium 3D cartoon album-cover image for a family rhythm game. The attached transparent mole images are CHARACTER IDENTITY REFERENCES only, not edit targets: preserve the cute round orange-brown mole face, small pink/red nose, big brown eyes and big buck teeth, with the backwards blue baseball cap mole and the pink-haired mole as the protagonists. Scene for the song 'Le monde attendra demain': a cozy Paris-inspired evening cafe and night street, purple and deep blue twilight with warm amber cafe windows, two smiling moles close together in the foreground sharing a quiet joyful moment. Characters very large and readable as a 90px thumbnail, waist-up with simple friendly silhouettes, richly polished toy-like 3D rendering, crisp fur, clear face lighting, restrained background depth, no haze. Full-bleed square composition. No text, letters, logos, music titles, borders, watermarks, UI, or collage. This is the first of a coherent four-cover game album series.",
+      "original": "C:/Users/master/.codex/generated_images/01a133f1-aea3-7b91-8f25-b92f96cc4aed/exec-3269a0d2-f80a-4f9f-a0ef-af04a4b3f46e.png",
+      "asset": "mole/assets/rhythm/albums-v1170/le-monde-attendra-demain.webp",
+      "preparation": "384px proportional thumbnail, WebP quality90, no retouch/crop"
+    },
+    {
+      "id": "meet-me-halfway",
+      "prompt": "Square 1:1 polished 3D cartoon album cover, no text or logos. Use attached cute orange-brown moles as exact character identity references: blue backwards baseball cap mole and pink-haired mole, big eyes, pink noses, buck teeth, soft fur. Song mood Meet Me Halfway: two happy moles reaching hands toward each other in center foreground on a luminous pink and blue evening pedestrian bridge, joyful reunion, characters large enough to read as a tiny thumbnail. Vivid crisp toy-like rendering, soft clear lighting, simple cinematic background, no haze, no borders. Consistent family rhythm game album series.",
+      "original": "C:/Users/master/.codex/generated_images/01a133f1-aea3-7b91-8f25-b92f96cc4aed/exec-4ab2f2bf-6a3c-4748-9087-847e1b2237d3.png",
+      "asset": "mole/assets/rhythm/albums-v1170/meet-me-halfway.webp",
+      "preparation": "384px proportional thumbnail, WebP quality90, no retouch/crop"
+    },
+    {
+      "id": "paper-engine-ride",
+      "prompt": "Square 1:1 premium crisp 3D cartoon album cover, no text, logos, border or UI. Attached cute orange-brown blue-cap mole is the character identity: round furry face, big brown eyes, pink nose, buck teeth, blue backwards baseball cap. Song Paper-Engine Ride: joyful mole rides an oversized folded paper airplane flying above fluffy clouds, dynamic diagonal pose but character face and entire plane readable in a small thumbnail, orange sunset light against bright sky blue, playful adventure. Large foreground character, simple airy background, polished toy-like rendering, crisp lighting no haze. Same family rhythm game album series as colorful night and bridge mole covers.",
+      "original": "C:/Users/master/.codex/generated_images/01a133f1-aea3-7b91-8f25-b92f96cc4aed/exec-e2b784ec-2342-4c04-810e-19f38deec344.png",
+      "asset": "mole/assets/rhythm/albums-v1170/paper-engine-ride.webp",
+      "preparation": "384px proportional thumbnail, WebP quality90, no retouch/crop"
+    },
+    {
+      "id": "the-world-is-wide",
+      "prompt": "One square 1:1 crisp premium 3D cartoon rhythm game album cover, no text, border, logo or UI. Attached orange-brown mole with backwards blue cap and pink-haired mole are exact character identity references. Song The World Is Wide: the two smiling furry moles with little backpacks in foreground traveling together along a wide sunlit road toward green rolling hills, bright turquoise blue sky, sense of discovery and friendship. Characters large and clearly recognizable in a small thumbnail, big brown eyes pink noses buck teeth, polished toy-like fur, clear bright cinematic lighting, simple beautiful landscape background, no haze. Match the colorful charming four-cover family game album series.",
+      "original": "C:/Users/master/.codex/generated_images/01a133f1-aea3-7b91-8f25-b92f96cc4aed/exec-0097f08f-cd4c-45fb-b144-841cd3019054.png",
+      "asset": "mole/assets/rhythm/albums-v1170/the-world-is-wide.webp",
+      "preparation": "384px proportional thumbnail, WebP quality90, no retouch/crop"
+    }
+  ]
+}

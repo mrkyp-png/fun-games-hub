@@ -225,7 +225,7 @@
     }
     play = root.MoleGame.RhythmBPlay.create({
       root: opts.root, board, rules: opts.rules, loadSong: opts.loadSong, prepareAssets,
-      onSong: opts.onSong, onTime: opts.onTime, onStop: opts.onStop,
+      onSong: opts.onSong, onTime: opts.onTime, onStop: opts.onStop, onComboColor: opts.onComboColor,
       onHit: shakeMini,
       onNoteSpawn: spawnWave,
       onNoteApproach: advanceSpawnWave,
@@ -237,6 +237,7 @@
       }
     });
     return {
+      prepare: prepareAssets,
       open(difficulty, options) {
         rippleFx.stop();laserFx.stop();clearSpawnWaves();running = true; board.classList.add('rb-wire-running'); paused = false; board.classList.remove('is-paused'); releaseAll();
         flowFx.start();rippleFx.prepare();

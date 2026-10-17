@@ -7354,7 +7354,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-song-choice { display: flex; flex-direction: column; gap: 5px; width: 100%; margin: 5px 0 10px; padding: 12px 10px; border: 2px solid #57d9ff; border-radius: 14px; background: linear-gradient(#257cbe,#12477a); color: #fff; cursor: pointer; font: inherit; text-align: center; }
 .rb-song-choice b { font-size: 5cqw; overflow-wrap: anywhere; }
 .rb-song-choice small { color: #d7f5ff; font-size: 4cqw; }
-.rb-song-choice:active, .rb-song-nav:active { transform: translateY(2px) scale(.98); }
+.rb-song-nav:active { transform: translateY(2px) scale(.98); }
 .rb-song-nav { width: 84%; margin: 8px 0 0; padding: 9px; border: 1px solid #7ddaff; border-radius: 10px; background: #164c7d; color: #fff; font: inherit; font-size: 4.8cqw; cursor: pointer; }
 .rb-selected-song { width: 90%; text-align: center; font-size: 4.5cqw; margin: 0 0 5px; color: #c9f5ff; overflow-wrap: anywhere; }
 .rb-song-nav[hidden], .rb-selected-song[hidden] { display: none; }
@@ -7691,3 +7691,190 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rp-a-combo-sweep span { position:absolute; inset:0 0 auto; height:12%; opacity:0; background:linear-gradient(transparent,var(--combo-color),transparent); }
 #rhythm-screen:not(.is-type-b) > .rp-stage,#rhythm-screen:not(.is-type-b) > .rp-bottom { position:relative; z-index:1; }
 @media(prefers-reduced-motion:reduce) { .rp-a-combo-tone { transition:none; } .rp-a-combo-sweep { display:none; } }
+
+/* V1168: 15% larger colored lyrics; beat scale and scrolling use separate wrappers. */
+.rp-lyrics { height:30px; line-height:26px; font-size:clamp(13.8px,4.37vw,18.4px); color:color-mix(in srgb,var(--rp-lyric-color,#70ddff) 75%,#fff); -webkit-text-stroke:.65px #000; paint-order:stroke fill; }
+.rp-lyrics-pulse { display:block; width:90%; margin:2px 5%; transform-origin:50% 50%; }
+
+/* V1169: place B lyrics inside the progress outline, above all active portals. */
+#rhythm-screen.is-type-b .rp-lyrics { top:calc(env(safe-area-inset-top,0px) + 27px); }
+
+/* V1170 G: shared Rhythm A/B dialogs; centered content within the original frames. */
+#rhythm-screen > .rp-modal { box-sizing:border-box; padding:24px 10px; overflow-y:auto; overscroll-behavior:contain; }
+#rhythm-screen .rx-card { box-sizing:border-box; width:min(100%,520px); flex-shrink:0; padding:14px 24px 30px; margin:auto; max-width:100%; }
+#rhythm-screen .rx-card > * { flex-shrink:0; }
+#rhythm-screen .rx-card .rx-title { width:100%; margin:0 0 4px; }
+#rhythm-screen .rx-card .rx-plaque { width:100%; margin:0 0 2px; }
+#rhythm-screen .rx-card .rx-btn { align-self:center; width:100%; margin-left:auto; margin-right:auto; }
+#rhythm-screen .rx-card .rx-btn--selhome { width:100%; }
+#rhythm-screen .rx-card--res { padding:8px 26px 32px; }
+#rhythm-screen .rx-card--res .rx-clear-title .rx-ptxt text { font-size:73px; }
+#rhythm-screen .rx-card--res .rx-score { width:100%; }
+#rhythm-screen .rx-card--res .rx-stats { width:100%; box-sizing:border-box; padding-right:12%; }
+#rhythm-screen .rx-card--res .rx-stats b { min-width:0; padding-right:0; font-size:clamp(18px,6cqw,29px); }
+#rhythm-screen .rx-card--res .rx-best { box-sizing:border-box; width:94%; }
+#rhythm-screen .rx-card--pause { padding-top:10px; }
+#rhythm-screen .rx-btn:active { transform:translateY(3px) scale(.97); filter:brightness(.9); }
+#rhythm-screen .rx-btn:focus-visible { outline:3px solid #fff39c; outline-offset:2px; }
+#rhythm-screen .rx-btn--songs { background-image:url('assets/rhythm/ui/btn-blue.png'); aspect-ratio:593/143; }
+#rhythm-screen .rx-btn--songs i { position:absolute; left:22%; top:50%; transform:translate(-50%,-55%); color:#c9f8ff; font-size:clamp(24px,10cqw,42px); font-style:normal; text-shadow:0 2px 0 #12336f; }
+#rhythm-screen .rx-btn--songs span { left:42%; }
+#rhythm-screen .rp-type-panel { box-sizing:border-box; padding:24px 10px; gap:0; }
+#rhythm-screen .rp-type-card { padding:26px 24px 34px; }
+#rhythm-screen .rp-type-card h2 { font-size:clamp(23px,7cqw,34px); margin:4px 0 10px; }
+#rhythm-screen .rp-type-card p { margin:0 0 12px; font-size:clamp(16px,4.8cqw,23px); }
+#rhythm-screen .rp-type-panel .rx-btn { min-height:0; padding:0; border:0; border-radius:0; box-shadow:none; max-width:none; font:inherit; }
+#rhythm-screen .rp-type-button span { left:0; width:100%; text-align:center; font-size:8cqw; }
+#rhythm-screen .rb-song-card { height:min(860px,calc(100dvh - 48px)); max-height:none; padding:12px 20px 28px; }
+#rhythm-screen .rb-song-card .rx-title { width:86%; margin:0 auto; max-height:100px; }
+#rhythm-screen .rb-song-card .rx-title img { max-height:100px; object-fit:contain; }
+#rhythm-screen .rb-song-card h2 { margin:3px 0 12px; font-size:clamp(23px,6.8cqw,32px); }
+#rhythm-screen .rb-song-list { width:100%; min-height:0; max-height:none; flex:1 1 auto; padding:2px 3px 8px; box-sizing:border-box; }
+#rhythm-screen .rb-song-choice { box-sizing:border-box; display:grid; grid-template-columns:84px minmax(0,1fr); gap:10px 12px; margin:0 0 13px; padding:12px; border:2px solid #74d9ff; border-radius:15px; text-align:left; cursor:default; background:linear-gradient(135deg,#194a7f,#152e59); animation:none; }
+.rb-song-album { display:block; width:84px; height:84px; object-fit:cover; border-radius:10px; border:1px solid #b9ebff; box-sizing:border-box; }
+.rb-song-info { min-width:0; align-self:center; display:flex; flex-direction:column; gap:7px; }
+#rhythm-screen .rb-song-info b { font-size:clamp(18px,5.3cqw,25px); line-height:1.14; overflow-wrap:break-word; }
+#rhythm-screen .rb-song-info small { font-family:'Jua',sans-serif; font-size:clamp(12px,3.4cqw,16px); color:#b7ddff; line-height:1.25; }
+.rb-song-info strong { font-family:'Jua',sans-serif; font-size:clamp(13px,3.8cqw,18px); color:#ffe586; font-weight:400; }
+.rb-song-actions { grid-column:1/-1; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; align-items:center; }
+#rhythm-screen .rb-song-actions .rx-btn { margin:0; }
+#rhythm-screen .rb-song-play span { left:0; width:100%; font-size:clamp(19px,5.7cqw,27px); -webkit-text-stroke-width:2px; text-align:center; }
+.rb-song-ad { position:relative; display:flex; align-items:center; justify-content:center; gap:5px; padding:0; border:0; background:none; color:#e5f8ff; font:inherit; cursor:pointer; min-height:44px; }
+.rb-song-ad img { width:40px; height:43px; object-fit:contain; }
+.rb-song-ad span { font-family:'Jua',sans-serif; font-size:clamp(15px,4.3cqw,21px); white-space:nowrap; }
+.rb-song-ad:active { transform:translateY(2px) scale(.96); }
+.rb-song-footer { width:100%; display:flex; gap:8px; }
+#rhythm-screen .rb-song-footer .rb-song-nav { flex:1; width:0; margin:0; padding:0; border:0; border-radius:0; }
+#rhythm-screen .rb-song-nav.rx-btn { padding:0; border:0; border-radius:0; margin-top:8px; }
+#rhythm-screen .rb-song-footer .rx-btn span { left:43%; font-size:clamp(16px,4.7cqw,23px); -webkit-text-stroke-width:2px; }
+.rb-song-message { margin:0; min-height:8px; font-size:14px; color:#ffe796; text-align:center; }
+.rhythm-ad-active > .ad-overlay { z-index:1200; }
+#rhythm-screen .rp-preloader { z-index:50; background:#07142bf5; }
+#rhythm-screen .rp-preloader .rx-card { padding:30px; gap:16px; }
+.rp-preload-album { width:min(56%,200px); aspect-ratio:1; object-fit:cover; border-radius:14px; }
+.rp-preloader h2 { font-size:clamp(22px,6cqw,30px); margin:0; text-align:center; }
+.rp-preloader p { margin:0; font-size:22px; }
+.rp-preloader progress { width:100%; height:16px; accent-color:#5de5ff; }
+.rp-preloader small { font-size:17px; }
+#rhythm-screen:not(.is-type-b).has-rhythm-lyrics .rp-stage { margin-bottom:32px; }
+#rhythm-screen:not(.is-type-b) .rp-lyrics { top:auto; bottom:var(--rp-a-lyric-bottom,190px); left:12px; right:12px; }
+
+@media (prefers-reduced-motion:reduce) { #rhythm-screen .rb-song-choice { animation:none; } }
+#rhythm-screen .rp-type-panel .rx-btn--y { background-image:url('assets/rhythm/ui/btn-yellow.png'); }
+#rhythm-screen .rp-type-panel .rx-btn--b { background-image:url('assets/rhythm/ui/btn-blue.png'); }
+#rhythm-screen .rp-type-panel .rx-btn--home { background-image:url('assets/rhythm/ui/btn-home.png'); }
+#rhythm-screen .rp-type-panel .rx-btn { background-size:100% 100%; background-color:transparent; background-position:center; }
+#rhythm-screen .rb-song-footer .rx-btn--diff { background-image:url('assets/rhythm/ui/btn-diff.png'); }
+#rhythm-screen .rb-song-footer .rx-btn--home { background-image:url('assets/rhythm/ui/btn-home.png'); }
+#rhythm-screen .rb-song-nav.rx-btn { background-size:100% 100%; background-color:transparent; background-position:center; }
+#rhythm-screen .rx-card--res { height:min(860px,calc(100dvh - 48px)); }
+#rhythm-screen .rx-result-body { display:flex; flex-direction:column; align-items:center; width:100%; min-height:0; flex:1 1 auto; overflow:auto; overscroll-behavior:contain; }
+#rhythm-screen .rx-result-body > * { flex-shrink:0; }
+#rhythm-screen .rx-result-actions { width:100%; }
+#rhythm-screen .rx-result-actions .rx-btn { margin-top:5px; }
+.rp-preload-album { animation:rp-album-pop 220ms ease-out; }
+@keyframes rp-album-pop { from { transform:scale(.9); opacity:.4; } to { transform:scale(1); opacity:1; } }
+@media (prefers-reduced-motion:reduce) { .rp-preload-album { animation:none; } }
+/* V1170: only active A sprites enter layout/compositing; visual filters are unchanged. */
+#rhythm-screen .rp-weapon[hidden],#rhythm-screen .rp-wind[hidden] { display:none!important; }
+#rhythm-screen .rp-pang-pooled { opacity:0; animation:none; }
+#rhythm-screen.has-rhythm-lyrics .rb-screen { --rb-safe-top:calc(env(safe-area-inset-top,0px) + 56px); }
+
+/* V1171: foreground cloud/leaf frame, with controls clear of its lower corners. */
+#rhythm-screen .rx-card::after { z-index:3; }
+#rhythm-screen .rx-card { padding-bottom:76px; }
+#rhythm-screen .rp-type-card { padding-bottom:76px; }
+#rhythm-screen .rb-song-card { padding-bottom:76px; }
+#rhythm-screen .rx-card--res { padding-bottom:68px; }
+#rhythm-screen .rb-song-list { scrollbar-width:none; -ms-overflow-style:none; scroll-snap-type:y mandatory; scroll-padding:2px 0 8px; }
+#rhythm-screen .rb-song-list::-webkit-scrollbar { display:none; width:0; height:0; }
+#rhythm-screen .rb-song-choice { height:var(--rp-song-slot,auto); margin:0 0 12px; scroll-snap-align:start; scroll-snap-stop:always; align-content:center; }
+#rhythm-screen .rb-song-choice:last-child { margin-bottom:0; }
+#rhythm-screen .rb-song-actions .rx-btn { height:44px; min-height:44px; aspect-ratio:auto; }
+#rhythm-screen .rb-song-ad { background-image:url('assets/rhythm/ui/btn-blue.png'); background-size:100% 100%; background-position:center; }
+#rhythm-screen .rb-song-ad img { height:43px; width:40px; object-fit:contain; pointer-events:none; }
+#rhythm-screen .rx-card .rx-title,#rhythm-screen .rx-card .rx-plaque { z-index:4; }
+#rhythm-screen .rp-type-card { padding-top:42px; }
+#rhythm-screen .rb-song-card { padding-bottom:90px; }
+#rhythm-screen .rb-song-footer { width:86%; align-self:center; }
+#rhythm-screen .rp-type-panel { background:#071f53 url('assets/rhythm/type-cyber-bg-v1171.webp') center/cover no-repeat; }
+#rhythm-screen .rx-card { padding-left:38px; padding-right:38px; }
+.rp-type-scene-fx { position:absolute; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+#rhythm-screen .rp-type-card { z-index:1; }
+.rp-type-floor-light { opacity:.85; stroke:#d9fbff; }
+.rp-type-lights { opacity:.5; }
+.rp-type-panel:not([hidden]) .rp-type-floor-light { animation:rp-type-orbit 12s linear infinite; }
+.rp-type-panel:not([hidden]) .rp-type-lights { animation:rp-type-light 5s ease-in-out infinite alternate; }
+@keyframes rp-type-orbit { to { stroke-dashoffset:-100; } }
+@keyframes rp-type-light { to { opacity:.9; } }
+#rhythm-screen .rb-song-card { padding-bottom:76px; }
+#rhythm-screen .rb-song-viewport { width:100%; flex:1 1 auto; min-height:0; overflow:hidden; position:relative; }
+#rhythm-screen .rb-song-list { height:100%; padding:14px 3px; scroll-padding:14px 0; }
+.rb-scroll-bar { position:absolute; left:0; right:0; height:18px; z-index:2; pointer-events:none; }
+.rb-scroll-bar--top { top:0; background:linear-gradient(#104a95 0 12%,#104a9500); }
+.rb-scroll-bar--bottom { bottom:0; background:linear-gradient(#0d3c7b00,#0d3c7b 88%); }
+#rhythm-screen .rb-song-choice { padding:8px; grid-template-columns:84px minmax(0,1fr); gap:4px 10px; animation:none; }
+#rhythm-screen .rb-song-album { width:84px; height:84px; }
+#rhythm-screen .rb-song-info { gap:5px; }
+#rhythm-screen .rb-song-info b { font-size:clamp(16px,5cqw,23px); }
+#rhythm-screen .rb-song-info small { font-size:clamp(12px,3.4cqw,15px); }
+#rhythm-screen .rb-song-info strong { font-size:clamp(12px,3.6cqw,16px); }
+#rhythm-screen .rb-song-footer .rx-btn { height:64px; aspect-ratio:auto; background-image:url('assets/rhythm/ui/btn-blue.png'); }
+#rhythm-screen .rb-song-footer .rx-btn span { top:auto; bottom:9px; left:0; width:100%; transform:none; text-align:center; font-size:clamp(17px,5.5cqw,23px); }
+.rb-song-nav-icon { position:absolute; top:5px; left:50%; transform:translateX(-50%); width:27px; height:27px; fill:#e3faff; stroke:#16478e; stroke-width:1.3; stroke-linejoin:round; }
+@media (prefers-reduced-motion:reduce) { .rp-type-panel:not([hidden]) .rp-type-floor-light,.rp-type-panel:not([hidden]) .rp-type-lights { animation:none; } }
+.rp-mode-sign svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+.rp-mode-sign text { paint-order:stroke fill; stroke-linejoin:round; }
+.rp-mode-sign-shadow { fill:#6b2304; stroke:#6b2304; stroke-width:15px; transform:translateY(5px); }
+.rp-mode-sign-fill { fill:#ffe05a; stroke:#fff7c5; stroke-width:2px; }
+#rhythm-screen.is-type-b .rp-mode-sign-fill { fill:#83edff; stroke:#edffff; }
+#rhythm-screen .rb-song-play .rp-a-triangle { position:absolute; inset:auto; left:12%; top:50%; width:30px; height:30px; transform:translateY(-50%) rotate(90deg); }
+#rhythm-screen .rb-song-play span { left:39%; width:55%; }
+#rhythm-screen:not(.is-type-b) .rp-lyrics { height:36px; line-height:28px; font-size:clamp(16.56px,5.244vw,22.08px); }
+#rhythm-screen:not(.is-type-b).has-rhythm-lyrics .rp-stage { margin-bottom:38px; }
+
+/* V1172 Beach: articulated cloud puppet; only small transform/opacity layers move. */
+.rp-a-cloud-boss .rp-hippo,.rp-a-cloud-boss .rp-hippo.is-no,.rp-a-cloud-boss .rp-hippo.is-cheer { animation:none; }
+.rp-cloud-body { position:absolute; left:18%; top:18%; width:82%; height:82%; }
+.rp-cloud-body img,.rp-cloud-arm img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; }
+.rp-cloud-arm { position:absolute; left:-5%; top:-5%; width:70%; height:105%; transform-origin:84% 85%; }
+.rp-cloud-hurt { opacity:0; transition:opacity 75ms linear; }
+.rp-cloud-happy { opacity:1; transition:opacity 75ms linear; }
+.is-cloud-hurt .rp-cloud-hurt { opacity:1; }
+.is-cloud-hurt .rp-cloud-happy { opacity:0; }
+.rp-cloud-tint { position:absolute; inset:0; background:var(--rp-boss-color,transparent); mix-blend-mode:color; pointer-events:none; mask-position:center; mask-size:contain; mask-repeat:no-repeat; }
+.rp-cloud-body .rp-cloud-tint { mask-image:url('assets/rhythm/beach-v1172/hippo-happy.webp'); }
+.rp-cloud-arm .rp-cloud-tint { mask-image:url('assets/rhythm/beach-v1172/hippo-arm.webp'); }
+.rp-beach-running .rp-cloud-arm { animation:none; }
+.rp-beach-running .rp-cloud-body { animation:rp-cloud-breathe var(--rp-cloud-beat,1.4s) ease-in-out infinite; }
+@keyframes rp-cloud-wave { 0%,100% { transform:rotate(-7deg); } 50% { transform:rotate(11deg); } }
+@keyframes rp-cloud-breathe { 0%,100% { transform:translateY(0) scaleY(1); } 50% { transform:translateY(-1.5%) scaleY(1.012); } }
+.rp-a-sea { position:absolute; left:0; width:100%; z-index:0; pointer-events:none; overflow:hidden; contain:paint; isolation:isolate; }
+.rp-a-sea i { position:absolute; inset:0; background:url('assets/rhythm/beach-v1172/sea-atlas.webp') 0 0/400% 200% no-repeat; mask-image:linear-gradient(transparent,#000 18px,#000 calc(100% - 40px),transparent); will-change:opacity; }
+.rp-a-sea[hidden],#rhythm-screen.is-type-b .rp-a-sea { display:none; }
+.rp-a-combo-atmosphere { z-index:1; }
+.rp-target-orbit { position:absolute; left:50%; transform:translateX(-50%); pointer-events:none; }
+.rp-target-orbit > i { position:absolute; inset:0; opacity:.45; }
+.rp-target-orbit b { position:absolute; left:50%; top:16.4%; width:4px; height:4px; border-radius:50%; background:#fff; box-shadow:0 0 4px var(--target-color); transform:translate(-50%,-50%); }
+.rp-beach-running .rp-target-orbit > i { animation:rp-target-orbit 4s linear infinite; }
+.rp-lane.is-approaching .rp-target-orbit > i { opacity:1; }
+.rp-lane .rp-target { opacity:.85; transition:opacity 100ms linear; }
+.rp-lane.is-approaching .rp-target { opacity:1; }
+@keyframes rp-target-orbit { to { transform:rotate(360deg); } }
+.rp-beach-paused .rp-cloud-arm,.rp-beach-paused .rp-cloud-body,.rp-beach-paused .rp-target-orbit > i { animation-play-state:paused; }
+/* Static beach materials preserve the original status artwork and whole-button press. */
+.rp-type-rail-light { opacity:0; }
+.rp-type-panel:not([hidden]) .rp-type-rail-light { animation:rp-rail-flash 5s linear infinite; }
+@keyframes rp-rail-flash { 0% { stroke-dashoffset:15; opacity:0; } 2% { opacity:.9; } 12% { stroke-dashoffset:-100; opacity:.9; } 14%,100% { stroke-dashoffset:-100; opacity:0; } }
+/* Popup contents stay stationary; liquid motion is suspended pending correction. */
+#rhythm-screen .rp-modal:not([hidden]) .rx-card,#rhythm-screen .rp-type-panel:not([hidden]) .rx-card { animation:none; }
+@media (prefers-reduced-motion:reduce) { .rp-beach-running .rp-cloud-arm,.rp-beach-running .rp-cloud-body,.rp-beach-running .rp-target-orbit > i,.rp-type-panel:not([hidden]) .rp-type-rail-light,#rhythm-screen .rp-modal:not([hidden]) .rx-card,#rhythm-screen .rp-type-panel:not([hidden]) .rx-card { animation:none; } }
+@media (max-height:820px) {
+ #rhythm-screen .rb-song-card { padding-top:6px; padding-bottom:70px; }
+ #rhythm-screen .rb-song-card .rx-title,#rhythm-screen .rb-song-card .rx-title img { max-height:72px; }
+ #rhythm-screen .rb-song-card h2 { font-size:22px; margin:2px 0 6px; }
+ #rhythm-screen .rb-song-card .rb-song-message { min-height:4px; }
+ #rhythm-screen .rb-song-info { gap:3px; }
+ #rhythm-screen .rb-song-info b { font-size:16px; line-height:1.1; }
+ #rhythm-screen .rb-song-actions .rx-btn { height:36px; min-height:36px; }
+}

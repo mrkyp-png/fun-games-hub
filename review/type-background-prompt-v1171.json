@@ -1,0 +1,9 @@
+{
+  "tool": "image_gen.imagegen",
+  "version": "V 1171 G",
+  "prompt": "Generate one premium high-resolution portrait 9:16 static outer-screen background for a cute family rhythm game type-selection screen. A sophisticated cybernetic music arena in deep midnight navy and rich royal blue, with restrained electric cyan neon rails, delicate circuit traces along the far left/right edges, subtle luminous rings near the floor, polished clean 3D materials and crisp detail. Keep the middle 70 percent uncluttered dark blue because a large bright blue rounded game popup with cloud and green leaf decorations will cover the center. Peripheral futuristic accents only, friendly colorful game atmosphere rather than dystopian or photoreal industrial. Very faint violet accents, consistent blue tones, controlled lighting, clear not foggy. No characters, no words, no numbers, no buttons, no UI panels, no logos, no watermark. Full-bleed vertical wallpaper. This is ONLY the outer background behind an existing popup, not a new popup design.",
+  "original": "C:/Users/master/.codex/generated_images/01a133f1-aea3-7b91-8f25-b92f96cc4aed/exec-f3dd1649-9204-48ca-a028-d8b1b96510d5.png",
+  "asset": "mole/assets/rhythm/type-cyber-bg-v1171.webp",
+  "scope": "Static outer backdrop of type-selection screen only; existing inner popup preserved",
+  "preparation": "Proportional720x1280 WebP quality90; original PNG retained"
+}

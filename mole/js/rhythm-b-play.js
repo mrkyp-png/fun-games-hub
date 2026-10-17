@@ -5,7 +5,7 @@
  function create(opts) {
   const board=opts.board, hud=opts.root;
   // V1166: B-only 10% wider GREAT/GOOD windows; PERFECT and shared A rules stay intact.
-  const diffs=Object.fromEntries(Object.entries(opts.rules.diffs).map(([key,value])=>[key,{...value,judge:{...value.judge,greatMs:value.judge.greatMs*11/10,goodMs:value.judge.goodMs*11/10}}]));
+  const diffs=Object.fromEntries(Object.entries(opts.rules.diffs).map(([key,value])=>[key,{...value,judge:{...value.judge,greatMs:value.judge.greatMs*121/100,goodMs:value.judge.goodMs*121/100}}]));
   const rules={...opts.rules,diffs,grade(ms,difficulty){const J=diffs[difficulty].judge;return ms<=J.perfectMs?'PERFECT':ms<=J.greatMs?'GREAT':ms<=J.goodMs?'GOOD':null;}};
   const reducedMotion=root.matchMedia('(prefers-reduced-motion: reduce)'),shadeSteps=[.9,.78,.62];
   let boardWidth=board.clientWidth;new ResizeObserver(()=>{boardWidth=board.clientWidth;}).observe(board);
@@ -36,7 +36,7 @@
   const comboLayers=comboPalette.map((color,stage)=>{const group=document.createElement('div');group.className='rb-combo-atmosphere';group.style.setProperty('--combo-color',color);group.dataset.theme=stage;group.innerHTML='<span class="rb-combo-region rb-combo-region--upper"></span><span class="rb-combo-region rb-combo-region--lower"></span>';comboBackground.appendChild(group);return group;});
   const comboSweeps=['upper','lower'].map(side=>{const el=document.createElement('div');el.className='rb-combo-sweep rb-combo-sweep--'+side;el.innerHTML='<span></span>';comboBackground.appendChild(el);return el;});
   let comboStage=0,comboSweepAnimations=[],comboPulse=null;
-  function updateCombo(combo,immediate=false){const stage=Math.floor(combo/10);if(stage===comboStage&&!immediate)return;comboStage=stage;if(comboPulse){comboPulse.cancel();comboPulse=null;}if(stage&&!immediate&&combo%10===0)showPowerWord('combo',String(combo),comboPalette[(stage-1)%5]);board.dataset.comboStage=String(stage);const color=stage?comboPalette[(stage-1)%5]:'#00cfff';board.style.setProperty('--combo-accent',color);hud.style.setProperty('--combo-accent',color);hud.classList.toggle('rb-combo-energized',stage>=5);
+  function updateCombo(combo,immediate=false){const stage=Math.floor(combo/10);if(stage===comboStage&&!immediate)return;comboStage=stage;if(comboPulse){comboPulse.cancel();comboPulse=null;}if(stage&&!immediate&&combo%10===0)showPowerWord('combo',String(combo),comboPalette[(stage-1)%5]);board.dataset.comboStage=String(stage);const color=stage?comboPalette[(stage-1)%5]:'#00cfff';if(opts.onComboColor)opts.onComboColor(color);board.style.setProperty('--combo-accent',color);hud.style.setProperty('--combo-accent',color);hud.classList.toggle('rb-combo-energized',stage>=5);
    comboLayers.forEach((el,i)=>{el.style.transitionDuration=immediate?'0ms':'500ms';el.style.opacity=stage&&i===(stage-1)%5?'0.05':'0';comboScreenTones[i].style.transitionDuration=immediate?'0ms':'500ms';comboScreenTones[i].style.opacity=el.style.opacity;});
    comboSweepAnimations.forEach(a=>{effects.delete(a);a.cancel();});comboSweepAnimations=[];
    if(stage&&!immediate){const reduced=reducedMotion.matches;if(!reduced){board.querySelectorAll('.rb-zone-divider').forEach(el=>comboSweepAnimations.push(animateEffect(el,[{opacity:.6},{opacity:1,offset:.15},{opacity:.6}],500)));}if(!reduced)comboSweeps.forEach((el,i)=>{el.style.setProperty('--combo-color',color);comboSweepAnimations.push(animateEffect(el.firstElementChild,[{transform:'translateY('+(i?'-100%':'800%')+')',opacity:0,offset:0},{opacity:.65,offset:.12},{transform:'translateY('+(i?'800%':'-100%')+')',opacity:0,offset:1}],500));});}
@@ -288,7 +288,9 @@
     const authoredNotes=authored?authored.flatMap(e=>e.lanes.map(lane=>({time:e.time,lane,sound:e.sound||'kick',chordSize:e.lanes.length}))):null;
     if(authoredNotes)times=authoredNotes.map(n=>n.time);
     if(!times){const c=rules.config,spb=60/c.song.bpm,D=rules.diffs[diff];times=[];for(let i=0;i<c.chart.beats;i++){if(i%D.rest===D.rest-1)continue;times.push(c.song.firstBeat+(c.chart.startBeat+i)*spb);if(i%2&&Math.random()<D.half)times.push(c.song.firstBeat+(c.chart.startBeat+i+.5)*spb);}}
-    const D=rules.diffs[diff],laneGap=D.travel+D.judge.goodMs/1000+.2;
+    // Preserve the authored chart's established spacing; the wider judge window
+    // remains shorter than this interval, with at least ~180ms visual separation.
+    const D=rules.diffs[diff],laneGap=Math.max(D.travel+D.judge.goodMs/1000,D.travel+opts.rules.diffs[diff].judge.goodMs*11/10000+.2);
     const chordCounts=new Map();times.forEach(t=>chordCounts.set(t,(chordCounts.get(t)||0)+1));
     const last=Array(9).fill(-Infinity);state.notes=times.map((targetTime,id)=>{
      const free=last.map((t,lane)=>lane).filter(lane=>targetTime-last[lane]>=laneGap);
