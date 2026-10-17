@@ -201,7 +201,7 @@
   function hitSound(note,grade){
    if(!state.hitFeedback||!hitBuffers||!context.createGain)return;
    if(root.FGH&&root.FGH.Settings&&root.FGH.Settings.sfxEnabled&&!root.FGH.Settings.sfxEnabled())return;
-   const source=context.createBufferSource(),gain=context.createGain();source.buffer=hitBuffers[note.sound]||hitBuffers.kick;gain.gain.value=.12*(note.chordSize===2?.7:1)*(grade==='GOOD'?.75:1);source.connect(gain);gain.connect(context.destination);hitSources.add(source);source.onended=()=>{hitSources.delete(source);source.disconnect();gain.disconnect();};source.start();
+   const source=context.createBufferSource(),gain=context.createGain();source.buffer=hitBuffers[note.sound]||hitBuffers.kick;gain.gain.value=.06*(note.chordSize===2?.7:1)*(grade==='GOOD'?.75:1);source.connect(gain);gain.connect(context.destination);hitSources.add(source);source.onended=()=>{hitSources.delete(source);source.disconnect();gain.disconnect();};source.start();
   }
   function stopAudio(){hitSources.forEach(s=>{try{s.stop();}catch(e){}});hitSources.clear();sources.forEach(s=>{try{s.stop();}catch(e){}});sources=[];melodyGain=null;}
   function clearRings(){visibleNotes.length=0;for(const pool of notePools)for(const slot of pool){if(slot.owner)releaseNoteVisual(slot.owner);else{slot.el.hidden=true;slot.el.remove();}}}

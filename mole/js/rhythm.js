@@ -80,7 +80,7 @@
     }
     function sfx(kind) {
       var list = SFX[kind], b = sfxBuf[list[Math.floor(Math.random() * list.length)]]; if (!b || !ctx) return;
-      var s = ctx.createBufferSource(), g = ctx.createGain(); g.gain.value = kind === 'hit' ? 0.7 : 0.6;
+      var s = ctx.createBufferSource(), g = ctx.createGain(); g.gain.value = kind === 'hit' ? 0.35 : 0.3;
       s.buffer = b; s.connect(g); g.connect(ctx.destination); s.start();
     }
 
@@ -161,9 +161,9 @@
     function layoutSongRows() {
       var list=$('[data-rp-song-list]'),cards=list.children;
       if(!list.clientHeight||!cards.length)return;
-      var gap=12,available=list.clientHeight-28;
-      // Three visible albums are the requested layout, not a content-height heuristic.
+      var gap=12,available=list.clientHeight-28,minSlot=154;
       var count=Math.min(3,cards.length);
+      while(count>1&&(available-gap*(count-1))/count<minSlot)count--;
       list.style.setProperty('--rp-song-slot',((available-gap*(count-1))/count)+'px');
       list.dataset.visibleCards=String(count);
     }
@@ -481,7 +481,10 @@
       n.vx = (Math.random() < 0.5 ? -1 : 1) * (L.laneW * (1.5 + Math.random())); n.vy = -L.H * 1.1; n.bx = n.cx; n.by = n.cy;
       n.perfectFlight = null;
       if(g==='PERFECT'){var dir=n.bx<L.W/2?-1:1,flight=.72;n.perfectFlight={duration:flight,dx:dir*(Math.max(n.bx,L.W-n.bx)+L.weaponR*3),dy:-L.H*.28};}
-      showJudge(lane, g, g.toLowerCase()); pang(lane, n.cx, n.cy); hud(); sfx('hit');
+      showJudge(lane, g, g.toLowerCase());
+      var hitButton=btnEls&&btnEls[lane];
+      if(hitButton){hitButton.classList.remove('is-hit');void hitButton.offsetWidth;hitButton.classList.add('is-hit');setTimeout(function(){hitButton.classList.remove('is-hit');},420);}
+      pang(lane, n.cx, n.cy); hud(); sfx('hit');
       if (g === 'PERFECT') { var word=perfectWords[lane],peak=Math.min(4.6,stage.clientWidth*.22/Math.max(1,word.offsetWidth)); word.style.left=n.cx+'px'; word.style.top=n.cy+'px'; word.style.setProperty('--rp-perfect-peak',peak); replay(word, 'is-on'); }
       burst(n.cx, n.cy, g === 'PERFECT' ? 10 : g === 'GREAT' ? 7 : 5); comboFx();
       try { MG.HitFx && MG.HitFx.uiTap && MG.HitFx.uiTap(1); } catch (e) { /* 무시 */ }
@@ -806,7 +809,7 @@
         onTime: function (time) { lyricTicker.update(time); },
         onStop: function () { lyricTicker.clear(); },
         onPause: function () { pause(true); },
-        onResult: function (stats, clear) { lyricTicker.clear(); showResult(stats, clear, true); }
+        onResult: function (stats, clear) { lyricTicker.clear(true); showResult(stats, clear, true); }
       });
       showSongs();
     });

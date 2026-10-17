@@ -80,7 +80,7 @@
   function resize(){if(!dirty)return;dirty=false;const b=opts.board.getBoundingClientRect(),dpr=Math.min(root.devicePixelRatio||1,2);unit=b.width/952;ratio=unit*dpr;canvas.width=Math.max(1,Math.round(b.width*dpr));canvas.height=Math.max(1,Math.round(b.height*dpr));}
   function clear(){ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);}
   function route(lane,side,outer){
-   const cx=175.5+(lane%3)*300,cy=176+Math.floor(lane/3)*300,r=outer?148*296/304:45;
+   const cx=175.5+(lane%3)*300,cy=176+Math.floor(lane/3)*300,r=outer?140:36;
    const start={x:cx+side*150,y:1282+Math.floor(lane/3)*300},end={x:cx+side*r/Math.SQRT2,y:cy+r/Math.SQRT2};
    const bend={x:start.x,y:end.y+Math.abs(start.x-end.x)},vertical=start.y-bend.y,diagonal=Math.hypot(end.x-bend.x,end.y-bend.y);
    const trim=Math.min(24,vertical/3,diagonal/3),entry={x:bend.x,y:bend.y+trim},exit={x:bend.x+(end.x-bend.x)*trim/diagonal,y:bend.y+(end.y-bend.y)*trim/diagonal};
