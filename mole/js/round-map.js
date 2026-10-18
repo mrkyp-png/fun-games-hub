@@ -170,6 +170,34 @@
       dflyTimer = setTimeout(flyDragonflies, 900 + Math.random() * 1400);
     }
 
+    // V1298: horizontal finger-drag pans the complete scene above the fixed black controls.
+    var panByLight = { easy:0, mid:0, legend:0 }, panGesture = null, panSuppressClickUntil = 0, panRaf = 0;
+    function panLimit() { return Math.max(36, el.clientWidth * .2); }
+    function clampPan(x) { var m=panLimit(); return Math.max(-m,Math.min(m,x)); }
+    function applyPan(light) { el.style.setProperty('--rm-pan-x',(panByLight[light || view] || 0).toFixed(1)+'px'); }
+    function stopPanMomentum() { if(panRaf){ root.cancelAnimationFrame(panRaf); panRaf=0; } }
+    function startPanMomentum(light,v) {
+      stopPanMomentum(); if(Math.abs(v)<.08) return; var last=0;
+      function tick(t){ if(!last)last=t; var dt=Math.min(32,t-last); last=t; var before=panByLight[light]||0, after=clampPan(before+v*dt); panByLight[light]=after; applyPan(light); v*=Math.pow(.91,dt/16); if(Math.abs(v)<.025||after===before){panRaf=0;return;} panRaf=root.requestAnimationFrame(tick); }
+      panRaf=root.requestAnimationFrame(tick);
+    }
+    if (el.classList.contains('rm-window-map')) {
+      el.addEventListener('pointerdown',function(e){
+        if(!view || (e.button!==undefined && e.button!==0)) return;
+        var bottom=$('[data-rm-start]').getBoundingClientRect().top, tabs=$('.rm-bottom');
+        if(tabs) bottom=Math.min(bottom,tabs.getBoundingClientRect().top); if(e.clientY>=bottom) return;
+        panGesture={id:e.pointerId,light:view,x:e.clientX,y:e.clientY,lastX:e.clientX,lastTime:e.timeStamp,start:panByLight[view]||0,velocity:0,dragging:false};
+      });
+      el.addEventListener('pointermove',function(e){
+        var g=panGesture; if(!g||e.pointerId!==g.id)return; var dx=e.clientX-g.x,dy=e.clientY-g.y;
+        if(!g.dragging){if(Math.abs(dx)<9&&Math.abs(dy)<9)return;if(Math.abs(dx)<=Math.abs(dy)*1.15){panGesture=null;return;}g.dragging=true;el.classList.add('is-panning');stopPanMomentum();try{el.setPointerCapture(e.pointerId);}catch(_){} }
+        if(!g.dragging)return; e.preventDefault(); var now=e.timeStamp,dt=Math.max(1,now-g.lastTime);g.velocity=(e.clientX-g.lastX)/dt;g.lastX=e.clientX;g.lastTime=now;panByLight[g.light]=clampPan(g.start+dx);applyPan(g.light);
+      });
+      function endPan(e,cancelled){var g=panGesture;if(!g||e.pointerId!==g.id)return;panGesture=null;if(g.dragging){el.classList.remove('is-panning');panSuppressClickUntil=Date.now()+350;if(!cancelled)startPanMomentum(g.light,g.velocity);}}
+      el.addEventListener('pointerup',function(e){endPan(e,false);});el.addEventListener('pointercancel',function(e){endPan(e,true);});el.addEventListener('lostpointercapture',function(e){endPan(e,true);});
+      el.addEventListener('click',function(e){if(Date.now()<panSuppressClickUntil){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();}},true);
+    }
+
     function render() {
       // v842(사용자 지정): 현재 위치 두더지는 지금 선택된 난이도 지도에만 — 다른 난이도 탭에선 현재 표시 없음
       var cur = view === opts.currentLight() ? opts.currentChapter() : -1;

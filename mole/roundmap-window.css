@@ -131,3 +131,17 @@
 /* V1297 G: darken the distant cave plate so the foreground reads with clearer depth. */
 .rm-window-map[data-light="mid"] .rm-rear-bg { filter:brightness(.82) saturate(.82); }
 .rm-window-map[data-light="legend"] .rm-rear-bg { filter:brightness(.78) saturate(.78); }
+
+/* V1298: finger-drag the entire upper scene; the black lower controls remain fixed. */
+#roundmap-screen.rm-window-map::before { transform:translateX(var(--rm-pan-x,0px)); }
+.rm-window-map .rm-stage { left:calc(50% + var(--rm-pan-x,0px)); }
+.rm-window-map .rm-viewer { left:calc(1% + var(--rm-pan-x,0px)); }
+.rm-window-map .rm-board { right:calc(2% - var(--rm-pan-x,0px)); }
+.rm-window-map[data-light="legend"] .rm-board { right:calc(1% - var(--rm-pan-x,0px)); }
+.rm-window-map .rm-back.is-x { left:calc(3% + var(--rm-pan-x,0px)); }
+.rm-window-map .rm-headlamp-beam { left:calc(50% - 50vw + 1vw + var(--rm-pan-x,0px)); }
+.rm-window-map .rm-top-cap { left:var(--rm-pan-x,0px); right:auto; width:100%; height:calc(env(safe-area-inset-top,0px) + 16cqw); }
+.rm-window-map .rm-top-cap img { top:0; left:0; width:100%; height:auto; object-fit:contain; }
+.rm-window-map[data-light="mid"] .rm-viewer,.rm-window-map[data-light="legend"] .rm-viewer { bottom:calc(env(safe-area-inset-bottom,0px) + max(16cqw,60px)); }
+.rm-window-map { touch-action:pan-y; }
+.rm-window-map.is-panning { cursor:grabbing; }
