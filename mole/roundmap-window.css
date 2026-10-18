@@ -1,4 +1,4 @@
-/* V1280 G: isolate the hippo's moving paint layers to avoid bounce trails. */
+/* V1295 G: align crystal halos, remove stray cave sparkles, and add a soft Amateur headlamp. */
 #roundmap-screen.rm-screen.rm-window-map { background:#08090b; }
 #roundmap-screen.rm-window-map::before { inset:0; background-image:var(--rm-backing,url('assets/roundmap/window-v1263/rear-mine.webp')); filter:none; clip-path:inset(0 0 calc(env(safe-area-inset-bottom,0px) + max(19vw,72px)) 0); }
 /* Reserve the bottom controls, including the device safe area, before fitting all eight holes. */
@@ -18,6 +18,7 @@
 @keyframes rm-viewer-step { 0%,100% { transform:translate3d(0,0,0); } 50% { transform:translate3d(0,-.7cqw,0); } }
 .rm-window-map .rm-viewer { animation:rm-viewer-drift 10s ease-in-out -5s infinite alternate; }
 .rm-window-map .rm-viewer-art { display:block; width:100%; height:100%; object-fit:contain; pointer-events:none; filter:saturate(.5); backface-visibility:hidden; will-change:transform; animation:rm-viewer-step .72s ease-in-out infinite; }
+.rm-window-map[data-light="easy"] .rm-viewer-art { animation:none; transform:translate3d(0,0,0); }
 .rm-window-map .rm-fx { z-index:2; }
 .rm-window-map .rm-glow { width:var(--rm-glow-size,14cqw); margin-top:calc(var(--rm-glow-size,14cqw) * -.5); margin-left:calc(var(--rm-glow-size,14cqw) * -.5); }
 .rm-window-map .rm-spark { width:3cqw; height:3cqw; margin:-1.5cqw 0 0 -1.5cqw; }
@@ -67,8 +68,8 @@
 @media(max-height:700px) { .rm-window-map .rm-board { width:26cqw; } .rm-window-map .rm-board-light b { font-size:2.4cqw; } .rm-window-map .rm-board-rows img { display:none; } .rm-window-map .rm-board-rows span { font-size:2cqw; } }
 
 /* Rear image and its highlights form a single moving stacking context. */
-.rm-window-map[data-light="mid"] { --rm-backing:url('assets/roundmap/caves-v1271/normal-rear.webp'); }
-.rm-window-map[data-light="legend"] { --rm-backing:url('assets/roundmap/caves-v1271/pro-rear.webp'); }
+.rm-window-map[data-light="mid"] { --rm-backing:url('assets/roundmap/selected-v1281/normal-rear.webp'); }
+.rm-window-map[data-light="legend"] { --rm-backing:url('assets/roundmap/selected-v1281/pro-rear.webp'); }
 .rm-window-map .rm-stage::after { display:none; }
 .rm-window-map .rm-parallax-scene { z-index:0; isolation:isolate; }
 .rm-window-map .rm-parallax-rear { z-index:0; }
@@ -86,3 +87,43 @@
 .rm-window-map[data-light="legend"] .rm-route-art,.rm-window-map[data-light="legend"] .rm-front-art { filter:brightness(.73) sepia(.25) saturate(.85); }
 @media(prefers-reduced-motion:reduce) { .rm-window-map .rm-rear-gems .rm-spark,.rm-window-map .rm-fx .rm-spark { animation:none; opacity:.45; } .rm-window-map .rm-window-cloud--second { display:none; } }
 @media(prefers-reduced-motion:reduce) { .rm-window-map .rm-start::after { animation:none; opacity:.4; } }
+.rm-window-map .rm-selected-front { position:absolute; inset:0; width:100%; height:100%; z-index:2; pointer-events:none; }
+.rm-window-map .rm-fluid-canvas { position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none; }
+.rm-window-map .rm-front-fluid { z-index:3; }
+.rm-window-map .rm-round2-rock-front { position:absolute; inset:0; width:100%; height:100%; z-index:4; pointer-events:none; clip-path:polygon(20% 75%, 25% 76.5%, 29% 77.4%, 32% 79%, 31% 80.5%, 34% 82%, 32% 83.5%, 36% 85%, 33% 87%, 19% 87%, 18% 83%, 20% 80%); }
+.rm-window-map .rm-fluid-canvas[hidden] { display:none; }
+.rm-window-map[data-light="mid"] .rm-route-art,.rm-window-map[data-light="mid"] .rm-front-art,
+.rm-window-map[data-light="legend"] .rm-route-art,.rm-window-map[data-light="legend"] .rm-front-art { display:none; }
+.rm-window-map[data-light="legend"] .rm-board { right:1%; width:27cqw; }
+@media(max-height:700px) { .rm-window-map[data-light="legend"] .rm-board { width:24cqw; } }
+
+/* Independent top safe-area cap; the approved sky and route stay at original scale. */
+.rm-window-map .rm-top-cap { position:absolute; left:0; right:0; top:0; height:calc(env(safe-area-inset-top,0px) + 16cqw); z-index:4; pointer-events:none; background:linear-gradient(#332216,#332216) top/100% env(safe-area-inset-top,0px) no-repeat; }
+.rm-window-map .rm-top-cap img { position:absolute; top:calc(env(safe-area-inset-top,0px) - 1px); left:0; width:100%; height:16cqw; pointer-events:none; }
+
+.rm-window-map[data-light="legend"] .rm-top-cap { background-image:linear-gradient(#191417,#191417); }
+
+/* The mirrored hippo's headlamp paints only a short pool immediately ahead. */
+.rm-window-map .rm-headlamp-beam { display:none; position:absolute; left:calc(50% - 50vw + 1vw); bottom:0; width:40vw; height:64vw; z-index:2; pointer-events:none; opacity:.72; mix-blend-mode:screen; transform:scaleX(-1); transform-origin:50% 82%; animation:rm-headlamp-drift 10s ease-in-out -5s infinite alternate; }
+.rm-window-map .rm-headlamp-beam svg { display:block; width:100%; height:100%; overflow:visible; filter:blur(.35px) drop-shadow(0 0 1.2vw #ffd87966); animation:rm-headlamp-step .72s ease-in-out infinite; }
+.rm-window-map[data-light="easy"] .rm-headlamp-beam,.rm-window-map[data-light="mid"] .rm-headlamp-beam,.rm-window-map[data-light="legend"] .rm-headlamp-beam { display:block; }
+.rm-window-map[data-light="easy"] .rm-headlamp-beam { opacity:.28; }
+@keyframes rm-headlamp-drift { from { transform:translateX(1.5vw) scaleX(-1); } to { transform:translateX(-1.5vw) scaleX(-1); } }
+@keyframes rm-headlamp-step { 0%,100% { transform:translateX(-.7vw) scaleX(.94); opacity:.64; } 50% { transform:translateX(.8vw) scaleX(1.04); opacity:.9; } }
+@media(prefers-reduced-motion:reduce) { .rm-window-map .rm-headlamp-beam { animation:none; transform:scaleX(-1); } .rm-window-map .rm-headlamp-beam svg { animation:none; transform:none; opacity:.7; } }
+
+/* Small, color-matched halos; their size and pulse speed follow each gem's depth. */
+.rm-window-map .rm-gem-glow { position:absolute; width:var(--gem-size); height:var(--gem-size); margin:calc(var(--gem-size) * -.5) 0 0 calc(var(--gem-size) * -.5); border-radius:50%; pointer-events:none; background:radial-gradient(circle,var(--gem-core) 0 14%,var(--gem-halo) 44%,transparent 78%); mix-blend-mode:screen; filter:drop-shadow(0 0 .8cqw var(--gem-glow)); opacity:.66; animation:rm-gem-breathe 3.2s ease-in-out infinite; }
+.rm-window-map .rm-lantern-glow { position:absolute; width:calc(var(--lantern-size) * 1.7); height:calc(var(--lantern-size) * 1.35); margin:calc(var(--lantern-size) * -.68) 0 0 calc(var(--lantern-size) * -.85); border-radius:50%; pointer-events:none; background:radial-gradient(ellipse,var(--lantern-core) 0 8%,var(--lantern-halo) 30%,var(--lantern-spill) 52%,transparent 76%); mix-blend-mode:screen; filter:blur(.25px) drop-shadow(0 0 .55cqw var(--lantern-halo)); opacity:var(--lantern-min); animation:rm-lantern-breathe 2.15s ease-in-out infinite; }
+@keyframes rm-gem-breathe { 0%,100% { opacity:.54; transform:scale(.94); } 50% { opacity:.86; transform:scale(1.08); } }
+@keyframes rm-lantern-breathe { 0%,100% { opacity:var(--lantern-min); transform:scale(.96); } 53% { opacity:var(--lantern-max); transform:scale(1.04); } }
+@media(prefers-reduced-motion:reduce) { .rm-window-map .rm-gem-glow,.rm-window-map .rm-lantern-glow { animation:none; opacity:.5; } }
+
+/* The selected light tab uses only a quiet edge and matching label tint, without motion. */
+.rm-window-map .rm-light::before { transition:filter .24s ease; }
+.rm-window-map .rm-light.is-on { animation:none; filter:none; }
+.rm-window-map .rm-light--easy.is-on { --rm-tab-glow:#ffe36b99; }
+.rm-window-map .rm-light--mid.is-on { --rm-tab-glow:#70f58b99; }
+.rm-window-map .rm-light--legend.is-on { --rm-tab-glow:#ff797099; }
+.rm-window-map .rm-light.is-on::before { filter:brightness(1.06) drop-shadow(0 0 .55cqw var(--rm-tab-glow)); }
+.rm-window-map .rm-light.is-on span { text-shadow:0 0 .55cqw var(--rm-tab-glow),0 1px 2px #291307; }

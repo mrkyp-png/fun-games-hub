@@ -8,11 +8,15 @@
   var T = function (k, p) { return root.FGH.I18N.t(k, p); };
   var A = 'assets/roundmap/';
   var LIGHTS = ['easy', 'mid', 'legend'];
-  // 고정 절벽의 실제 구멍 중심(941×1672). 세 모드 모두 같은 지형을 사용한다.
+  // 고정 지형의 실제 구멍 중심(941×1672). 모드별 외형만 다르고 진행 로직은 같다.
   // 뒤 동굴의 이동과 무관하게 구멍, 두더지, 잠금 및 터치 기준점은 함께 고정된다.
   var ROUTE = [[674.5, 1448.5], [337.5, 1278.2], [678, 1108.8], [370.5, 930.8],
     [663.5, 776.5], [339.5, 608.1], [639.5, 467.5], [334.5, 325.9]];
-  var HOLES = { easy: ROUTE, mid: ROUTE, legend: ROUTE };
+  var HOLES = {
+    easy: ROUTE,
+    mid: [[696.5,1322],[359.5,1157],[634.5,995],[347,835.5],[610.5,691],[327,550.5],[563.5,430.5],[291.5,254]],
+    legend: [[682,1317.5],[356.5,1112],[679,960.5],[351,789.5],[654,654],[339,502],[614,388.5],[297.5,217]]
+  };
   var BW = 941, BH = 1672;
   // 배경 효과 위치(941×1672 px): 랜턴 불빛 / 광물 반짝임 — 배경 그림의 랜턴·광물 자리
   // 배경 효과 위치(941×1672 px). glow=랜턴 불빛, spark=금·보석이 있는 곳에서만 반짝(사용자 지정 v767),
@@ -23,11 +27,63 @@
               bubble: [[700, 790], [800, 1090], [745, 1300], [300, 1290], [300, 1560], [440, 1600], [590, 1610]] },
     legend: { glow: [[108, 330], [92, 600], [840, 650], [125, 970], [880, 1100]], spark: [[167, 425], [140, 440], [208, 1151], [158, 1168], [859, 1243]], bubble: [] }
   };
+  var CAVE_FX = {
+    // Small color-matched gem halos cover the fixed foreground; rear halos move with the cave plate.
+    easy: {
+      glow:[], spark:[], bubble:[],
+      gem:[[814,337,'cyan'],[847,818,'cyan'],[870,1004,'cyan'],[52,1086,'cyan'],[102,1167,'cyan'],[812,1284,'cyan']],
+      rearGem:[[337,62,'cyan'],[530,147,'violet'],[280,201,'cyan'],[767,492,'amber'],[633,585,'amber'],[419,830,'violet'],[462,857,'cyan'],[37,1030,'cyan'],[821,1176,'amber'],[859,1306,'violet'],[194,1353,'cyan'],[507,1389,'amber'],[425,1471,'violet'],[239,1608,'cyan']],
+      lantern:[[767,492],[633,585],[723,947],[821,1176],[579,1317],[507,1389],[425,1471],[239,1608]],
+      rearLantern:[[767,492],[633,585],[723,947],[821,1176],[579,1317],[507,1389],[425,1471],[239,1608]]
+    },
+    mid: {
+      glow:[], spark:[], bubble:[],
+      gem:[[252,132,'cyan'],[150,190,'violet'],[452,292,'cyan'],[178,426,'cyan'],[150,590,'violet'],[610,575,'cyan'],[290,713,'violet'],[135,770,'cyan'],[78,872,'cyan'],[667,858,'violet'],[203,1015,'cyan'],[680,1198,'violet'],[230,1372,'cyan'],[152,1549,'violet'],[91,1578,'cyan']],
+      rearGem:[[31,227,'cyan'],[206,70,'violet'],[159,193,'violet'],[553,106,'cyan'],[192,325,'cyan'],[153,448,'violet'],[100,587,'cyan'],[714,435,'cyan'],[445,752,'violet'],[516,651,'cyan'],[919,580,'violet'],[800,660,'cyan'],[54,882,'cyan'],[116,1277,'violet'],[255,1368,'cyan'],[83,1369,'violet'],[606,1605,'cyan'],[876,1371,'violet']],
+      lantern:[[220,252],[343,220],[478,565],[646,443],[595,945],[198,845],[294,1181],[430,1166],[785,1340],[658,1271],[620,1490]],
+      rearLantern:[[873,608],[787,341],[807,469],[879,326],[636,184],[545,334],[483,75],[785,462],[852,578],[892,571]]
+    },
+    legend: {
+      glow:[], spark:[], bubble:[],
+      gem:[[205,152,'red'],[395,164,'red'],[526,339,'red'],[671,567,'red'],[82,842,'red'],[255,969,'red'],[389,990,'red'],[540,886,'red'],[620,1190,'red'],[164,1528,'red']],
+      rearGem:[[97,90,'red'],[447,89,'amber'],[480,205,'red'],[743,106,'red'],[824,197,'amber'],[874,178,'red'],[79,612,'red'],[309,541,'amber'],[249,679,'red'],[932,587,'red'],[428,1455,'red'],[669,1263,'amber'],[585,1165,'red'],[587,1140,'amber'],[331,1255,'red'],[318,1427,'amber'],[815,1615,'red'],[779,1534,'red']],
+      lantern:[[220,252],[343,220],[478,565],[646,443],[595,945],[198,845],[294,1181],[430,1166],[785,1340],[658,1271],[620,1490]],
+      rearLantern:[[804,470],[174,163],[272,144],[362,240],[701,406],[501,310],[562,198],[578,927],[543,1086],[838,1452],[823,1507],[901,1218]]
+    }
+  };
+  var GEM_TONES = {
+    cyan:   ['rgba(235,250,255,.82)','rgba(61,182,255,.36)','rgba(35,148,255,.44)'],
+    violet: ['rgba(250,235,255,.80)','rgba(166,94,255,.34)','rgba(133,66,255,.42)'],
+    red:    ['rgba(255,236,224,.84)','rgba(255,72,93,.40)','rgba(255,42,61,.48)'],
+    amber:  ['rgba(255,248,215,.82)','rgba(255,168,63,.34)','rgba(255,127,35,.42)']
+  };
+  var LANTERN_CORE = 'rgba(255,244,198,.56)', LANTERN_HALO = 'rgba(255,181,78,.20)', LANTERN_SPILL = 'rgba(255,145,48,.17)';
+
+  function gemMarkup(gems) {
+    return (gems || []).map(function (p, i) {
+      var tone = GEM_TONES[p[2]] || GEM_TONES.cyan;
+      var depth = Math.max(0, Math.min(1, p[1] / BH));
+      var size = (2.8 + 3.5 * Math.pow(depth, 1.35)).toFixed(2);
+      return '<span class="rm-gem-glow" style="left:' + (p[0] / BW * 100).toFixed(3) + '%;top:' + (p[1] / BH * 100).toFixed(3) + '%;--gem-size:' + size + 'cqw;--gem-depth:' + depth.toFixed(3) + ';--gem-core:' + tone[0] + ';--gem-halo:' + tone[1] + ';--gem-glow:' + tone[2] + ';animation-duration:' + (3.4 - depth * .8).toFixed(2) + 's;animation-delay:-' + ((i * .47) % 3.2).toFixed(2) + 's"></span>';
+    }).join('');
+  }
+  function lanternMarkup(points) {
+    return (points || []).map(function (p, i) {
+      var depth = Math.max(0, Math.min(1, p[1] / BH));
+      var size = (3.0 + 3.1 * Math.pow(depth, 1.2)).toFixed(2);
+      var minAlpha = (.24 + .14 * depth).toFixed(3), maxAlpha = (.36 + .22 * depth).toFixed(3);
+      return '<span class="rm-lantern-glow" style="left:' + (p[0] / BW * 100).toFixed(3) + '%;top:' + (p[1] / BH * 100).toFixed(3) + '%;--lantern-size:' + size + 'cqw;--lantern-depth:' + depth.toFixed(3) + ';--lantern-min:' + minAlpha + ';--lantern-max:' + maxAlpha + ';--lantern-core:' + LANTERN_CORE + ';--lantern-halo:' + LANTERN_HALO + ';--lantern-spill:' + LANTERN_SPILL + ';animation-delay:-' + ((i * .53) % 2.8).toFixed(2) + 's"></span>';
+    }).join('');
+  }
 
   function create(opts) {
     var el = opts.root;
     var $ = function (s) { return el.querySelector(s); };
     var view = null; // 지금 보고 있는 난이도
+    var fluids = MG.RoundMapFluids ? {
+      rear: MG.RoundMapFluids.create($('[data-rm-rear-fluid]'), { root: el }),
+      front: MG.RoundMapFluids.create($('[data-rm-front-fluid]'), { root: el })
+    } : null;
 
     el.querySelector('[data-back="roundmap"]').addEventListener('click', function () { root.FGH.rollOut(el, opts.onClose); }); // v790: 위로 말리며 사라짐
     var startButton = $('[data-rm-start]');
@@ -71,7 +127,15 @@
       var fx = $('[data-rm-fx]'); if (fx.getAttribute('data-for') === view) return;
       fx.setAttribute('data-for', view); fx.innerHTML = '';
       var layered = el.classList.contains('rm-window-map');
-      var f = layered ? FX.easy : FX[view], html = '';
+      var f = layered ? (CAVE_FX[view] || FX.easy) : FX[view], html = '';
+      if (layered) {
+        el.querySelectorAll('[data-rm-gem-layer]').forEach(function (layer) {
+          var rear = CAVE_FX[layer.getAttribute('data-rm-gem-layer')];
+          if (!layer.dataset.baseHtml) layer.dataset.baseHtml = layer.innerHTML;
+          layer.innerHTML = layer.dataset.baseHtml + gemMarkup(rear && rear.rearGem) + lanternMarkup(rear && rear.rearLantern);
+        });
+        html += gemMarkup(f.gem) + lanternMarkup(f.lantern);
+      }
       f.glow.forEach(function (p) { html += '<span class="rm-glow" style="left:' + (p[0] / BW * 100) + '%;top:' + (p[1] / BH * 100) + '%;' + (p[2] ? '--rm-glow-size:' + (p[2] / BW * 100) + 'cqw;' : '') + '"></span>'; });
       f.spark.forEach(function (p) { for (var k = 0; k < (layered ? 1 : 5); k++) { var ox = k ? (Math.random() * 60 - 30) : 0, oy = k ? (Math.random() * 50 - 25) : 0; html += '<span class="rm-spark" style="left:' + ((p[0] + ox) / BW * 100) + '%;top:' + ((p[1] + oy) / BH * 100) + '%;animation-delay:' + (-Math.random() * 3).toFixed(2) + 's;animation-duration:' + (2.2 + Math.random() * 1.6).toFixed(2) + 's;scale:' + (0.6 + Math.random() * 0.6).toFixed(2) + '"></span>'; } }); // Amateur: exact crystal anchors; retain legacy five-spark clusters on other maps.
       // Amateur(지상 광산): 나비 3마리 + 잠자리 2마리가 하늘·풀밭 위를 날아다님(사용자 지정 v763)
@@ -111,7 +175,12 @@
       var cur = view === opts.currentLight() ? opts.currentChapter() : -1;
       renderFx();
       el.setAttribute('data-light', view);
-      $('[data-rm-bg]').src = A + ({ easy: 'window-v1263/scene.webp', mid: 'caves-v1271/normal-rear.webp', legend: 'caves-v1271/pro-rear.webp' }[view]);
+      $('[data-rm-bg]').src = A + ({ easy: 'window-v1263/scene.webp', mid: 'selected-v1281/normal-rear.webp', legend: 'selected-v1281/pro-rear.webp' }[view]);
+      if (fluids && MG.RoundMapFluidScenes) {
+        var scenes = MG.RoundMapFluidScenes;
+        fluids.rear.setScene(view === 'mid' ? scenes['normal-rear'] : view === 'legend' ? scenes['pro-rear'] : null);
+        fluids.front.setScene(view === 'legend' ? scenes['pro-front'] : null);
+      }
       var holes = HOLES[view];
       el.querySelectorAll('.rm-round').forEach(function (r) {
         var n = +r.getAttribute('data-n');
@@ -143,7 +212,9 @@
     }
 
     function show() { view = opts.currentLight(); render(); setTimeout(flyDragonflies, 50); }
-    return { show: show };
+    return { show: show, pauseEffects: function (paused) {
+      if (fluids) { fluids.rear.pause(paused); fluids.front.pause(paused); }
+    } };
   }
 
   var api = { create: create };

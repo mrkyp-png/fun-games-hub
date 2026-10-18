@@ -3,7 +3,7 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-const CACHE = 'mole-game-v1280-G';
+const CACHE = 'mole-game-v1295-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -11,6 +11,20 @@ const CACHE = 'mole-game-v1280-G';
 // 처음 요청될 때 아래 fetch 핸들러가 알아서 캐시한다.
 const SHELL = [
   './roundmap-window.css',
+  './js/round-map-fluids.js',
+  './js/round-map-fluid-scenes.js',
+  './assets/roundmap/frame-v1282/amateur-top-cap.webp',
+  './assets/roundmap/frame-v1282/pro-top-cap.webp',
+  './assets/roundmap/fluids-v1281/water-atlas.webp',
+  './assets/roundmap/fluids-v1285/lava-atlas.webp',
+  './assets/roundmap/selected-v1281/normal-rear.webp',
+  './assets/roundmap/frame-v1282/normal-front-supported.webp',
+  './assets/roundmap/selected-v1281/pro-rear.webp',
+  './assets/roundmap/frame-v1282/pro-front-supported.webp',
+  './assets/roundmap/selected-v1281/normal-rear-liquid-mask.svg',
+  './assets/roundmap/selected-v1281/pro-rear-liquid-mask.svg',
+  './assets/roundmap/selected-v1281/pro-front-liquid-mask.svg',
+
   './assets/roundmap/caves-v1271/normal-rear.webp',
   './assets/roundmap/caves-v1271/pro-rear.webp',
   './assets/roundmap/window-v1263/scene.webp',

@@ -563,19 +563,28 @@
           <div class="rm-parallax-scene" aria-hidden="true">
             <div class="rm-parallax-rear">
               <img class="rm-rear-bg rm-mode-easy" src="assets/roundmap/window-v1263/rear-mine.webp" alt="">
-              <img class="rm-rear-bg rm-mode-mid" src="assets/roundmap/caves-v1271/normal-rear.webp" alt="">
-              <img class="rm-rear-bg rm-mode-legend" src="assets/roundmap/caves-v1271/pro-rear.webp" alt="">
+              <img class="rm-rear-bg rm-mode-mid" src="assets/roundmap/selected-v1281/normal-rear.webp" alt="">
+              <img class="rm-rear-bg rm-mode-legend" src="assets/roundmap/selected-v1281/pro-rear.webp" alt="">
+              <canvas class="rm-fluid-canvas" data-rm-rear-fluid hidden></canvas>
               <div class="rm-cloud-window"><img class="rm-window-cloud" src="assets/roundmap/window-v1263/cloud.webp" alt=""><img class="rm-window-cloud rm-window-cloud--second" src="assets/roundmap/window-v1263/cloud.webp" alt=""></div>
               <div class="rm-rear-gems rm-mode-easy"><span class="rm-spark" style="left:85.0159%;top:17.7033%;animation-delay:-0.4s"></span><span class="rm-spark" style="left:83.7407%;top:39.5933%;animation-delay:-0.87s"></span><span class="rm-spark" style="left:90.3294%;top:52.6316%;animation-delay:-1.34s"></span><span class="rm-spark" style="left:87.1413%;top:76.555%;animation-delay:-1.81s"></span></div>
-              <div class="rm-rear-gems rm-mode-mid"><span class="rm-spark" style="left:5.526%;top:9.9282%;animation-delay:-0.4s"></span><span class="rm-spark" style="left:6.1637%;top:26.1962%;animation-delay:-0.87s"></span><span class="rm-spark" style="left:92.4548%;top:25.8373%;animation-delay:-1.34s"></span><span class="rm-spark" style="left:8.8204%;top:48.3254%;animation-delay:-1.81s"></span><span class="rm-spark" style="left:92.2423%;top:50.1196%;animation-delay:-2.28s"></span><span class="rm-spark" style="left:6.5887%;top:81.9378%;animation-delay:-2.75s"></span><span class="rm-spark" style="left:93.0925%;top:89.1148%;animation-delay:-3.22s"></span></div>
-              <div class="rm-rear-gems rm-mode-legend"><span class="rm-spark" style="left:6.9075%;top:22.2488%;animation-delay:-0.4s"></span><span class="rm-spark" style="left:91.6047%;top:20.8732%;animation-delay:-0.87s"></span><span class="rm-spark" style="left:7.1201%;top:52.1531%;animation-delay:-1.34s"></span><span class="rm-spark" style="left:93.6238%;top:66.2081%;animation-delay:-1.81s"></span><span class="rm-spark" style="left:5.6323%;top:87.201%;animation-delay:-2.28s"></span><span class="rm-spark" style="left:91.3921%;top:90.9091%;animation-delay:-2.75s"></span></div>
+              <div class="rm-rear-gems rm-mode-easy" data-rm-gem-layer="easy"></div>
+              <div class="rm-rear-gems rm-mode-mid" data-rm-gem-layer="mid"></div>
+              <div class="rm-rear-gems rm-mode-legend" data-rm-gem-layer="legend"></div>
             </div>
             <img class="rm-route-art" src="assets/roundmap/window-v1263/route-grounded.webp" alt="">
             <img class="rm-front-art" src="assets/roundmap/window-v1263/foreground-frame.webp" alt="">
+            <img class="rm-selected-front rm-mode-mid" src="assets/roundmap/frame-v1282/normal-front-supported.webp" alt="">
+            <img class="rm-selected-front rm-mode-legend" src="assets/roundmap/frame-v1282/pro-front-supported.webp" alt="">
+            <canvas class="rm-fluid-canvas rm-front-fluid" data-rm-front-fluid hidden></canvas>
+            <img class="rm-round2-rock-front rm-mode-legend" src="assets/roundmap/frame-v1282/pro-front-supported.webp" alt="" aria-hidden="true">
           </div>
           <div class="rm-fx" data-rm-fx></div>
+          <div class="rm-headlamp-beam" aria-hidden="true"><svg viewBox="0 0 100 160" preserveAspectRatio="none"><defs><linearGradient id="rm-headlamp-cone" x1="40" y1="84" x2="17" y2="39" gradientUnits="userSpaceOnUse"><stop stop-color="#fff1ae" stop-opacity=".22"/><stop offset=".48" stop-color="#ffd56b" stop-opacity=".11"/><stop offset="1" stop-color="#ffc858" stop-opacity="0"/></linearGradient><radialGradient id="rm-headlamp-pool"><stop stop-color="#fffbd0" stop-opacity=".58"/><stop offset=".38" stop-color="#ffe49a" stop-opacity=".28"/><stop offset="1" stop-color="#ffc65a" stop-opacity="0"/></radialGradient><radialGradient id="rm-headlamp-source"><stop stop-color="#fff7c2" stop-opacity=".78"/><stop offset="1" stop-color="#ffbb43" stop-opacity="0"/></radialGradient></defs><path d="M40 85 C37 70 25 55 13 43 C10 39 14 36 20 39 C34 49 43 67 44 85 Z" fill="url(#rm-headlamp-cone)"/><ellipse cx="17" cy="42" rx="17" ry="10" fill="url(#rm-headlamp-pool)"/><ellipse cx="40" cy="85" rx="5.5" ry="4" fill="url(#rm-headlamp-source)"/></svg></div>
           <div class="rm-rounds" data-rm-rounds></div>
         </div>
+        <div class="rm-top-cap rm-mode-easy" aria-hidden="true"><img src="assets/roundmap/frame-v1282/amateur-top-cap.webp" alt="" draggable="false"></div>
+        <div class="rm-top-cap rm-mode-legend" aria-hidden="true"><img src="assets/roundmap/frame-v1282/pro-top-cap.webp" alt="" draggable="false"></div>
         <div class="rm-ui">
           <div class="rm-viewer" aria-hidden="true"><img class="rm-viewer-art" src="assets/roundmap/window-v1263/hippo-viewer.webp" alt="" draggable="false"></div>
             <div class="rm-board">
@@ -1078,7 +1087,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1280 G</div>
+        <div id="build-tag" aria-hidden="true">V 1287 G</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1140,6 +1149,8 @@ window.FGH.rollOut = function (el, done) {
 };
 </script>
 <script src="js/workshop.js"></script>
+<script src="js/round-map-fluids.js"></script>
+<script src="js/round-map-fluid-scenes.js"></script>
 <script src="js/round-map.js"></script>
 <script src="js/rhythm-b-routes.js"></script>
 <script src="js/rhythm-b-flow.js"></script>
@@ -1353,7 +1364,7 @@ window.FGH.rollOut = function (el, done) {
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=1280-G').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=1295-G').catch(function () {});
       }
     });
   }
