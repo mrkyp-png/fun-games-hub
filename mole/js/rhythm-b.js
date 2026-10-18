@@ -215,7 +215,7 @@
     function prepareAssets() {
       if (artReady) return artReady;
       const urls = new Set(Array.from(board.querySelectorAll('img'), img => img.src));
-      [...colors.map((_,i)=>'button-face-v1120/face-'+i+'.svg'),'mini-user.png', 'pause-options.png', 'character/hoverboard-v1260/run-strip.png', ...colors.map((_, i) => 'note-inner-line-' + i + '.png'), ...colors.map((_,i)=>'glass-lower-v1109/lower-'+i+'.png')].forEach(name => urls.add('assets/rhythm-b/' + name));
+      [...colors.map((_,i)=>'button-face-v1120/face-'+i+'.svg'),'mini-user.png', 'pause-options.png', 'character/hoverboard-v1128/run-strip.png', ...colors.map((_, i) => 'note-inner-line-' + i + '.png'), ...colors.map((_,i)=>'glass-lower-v1109/lower-'+i+'.png')].forEach(name => urls.add('assets/rhythm-b/' + name));
       artReady = Promise.all(Array.from(urls, src => new Promise((resolve, reject) => {
         const img = new Image(); artImages.push(img);
         img.onload = () => img.decode().then(resolve, reject);
