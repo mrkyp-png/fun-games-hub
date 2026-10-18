@@ -406,7 +406,7 @@
     // v824: 폰을 껐다 켜면(전체화면 복귀 등) 화면 높이가 바뀌는데 배치를 다시 안 해서 두더지·타겟이 올라가 있던 것 — 크기 바뀌면 다시 계산
     root.addEventListener('resize', function () {
       if (!st || !meta || el.hidden) return;
-      layout(); placeStatic();
+      layout(); placeStatic(); cacheHitGeometry();
       st.notes.forEach(function (n) {
         n.pts = routeOf(n); n.len = pathLen(n.pts);
         if (n.el) n.el.style.width = (L.weaponR * 2.4) + 'px';
@@ -416,6 +416,26 @@
     });
     // v813(깜빡임 제거): 7프레임을 미리 겹쳐 두고 보이는 것만 바꿈 — img src 교체 순간 빈 프레임이 생기던 것
     var moleFrame = [-1, -1, -1, -1], moleEls = null, btnEls = null, dizzyEls = null, buttonHitTimers=[];
+    var hitGeometry={topOffset:0,buttons:[]};
+    function cacheHitGeometry(){
+      var stageRect=stage.getBoundingClientRect(),screenRect=el.getBoundingClientRect();
+      hitGeometry.topOffset=Math.max(0,stageRect.top-screenRect.top);
+      btnEls=el.querySelectorAll('.rp-btn');
+      hitGeometry.buttons=Array.from(btnEls,function(button,i){
+        var rect=button.getBoundingClientRect(),word=perfectWords[i];
+        var x=rect.left-stageRect.left+rect.width/2,y=rect.top-stageRect.top+rect.height/2;
+        return {x:x,y:y,rise:-Math.max(0,y-L.targetY+(word?word.offsetHeight/2:0))};
+      });
+    }
+    var replayQueue=new Map(), replayFrame=0;
+    function replay(node,cls){
+      node.classList.remove(cls);
+      var classes=replayQueue.get(node);if(!classes){classes=new Set();replayQueue.set(node,classes);}classes.add(cls);
+      if(!replayFrame)replayFrame=requestAnimationFrame(function(){
+        replayFrame=0;var pending=replayQueue;replayQueue=new Map();
+        pending.forEach(function(names,element){if(element.isConnected)names.forEach(function(name){element.classList.add(name);});});
+      });
+    }
     function setMoleFrame(i, f) {
       if (moleFrame[i] === f) return;
       var m = (moleEls || (moleEls = el.querySelectorAll('.rp-mole')))[i];
@@ -446,7 +466,7 @@
       j.className = 'rp-judge'; j.textContent = '';
       if (txt !== 'MISS') return;
       j.textContent = txt; j.className = 'rp-judge is-miss';
-      void j.offsetWidth; j.classList.add('is-on');
+      replay(j,'is-on');
     }
     function hud() {
       $('[data-rp-score]').textContent = st.score.toLocaleString('en-US');
@@ -467,7 +487,7 @@
         if (token !== resultSerial || activeB || el.hidden) return;
         song = data.song; lyricTicker.set(song && song.lyrics,song); buffer = data.back; melBuf = data.melody; melGain = null;
         if (ctx.state === 'suspended') ctx.resume();
-        buildStage(); layout(); placeStatic(); // 버튼을 먼저 만들어야 무대 높이가 정확(v812)
+        buildStage(); layout(); placeStatic(); cacheHitGeometry(); // 버튼을 먼저 만들어야 무대 높이가 정확(v812)
         var notes = buildChart();
         // v813: 무기 그림을 시작 전에 전부 만들어 둠(숨김) — 플레이 중 생성/삭제로 인한 깜빡임 제거
         wlayer.innerHTML = '';
@@ -562,7 +582,7 @@
       n.vx = (Math.random() < 0.5 ? -1 : 1) * (L.laneW * (1.5 + Math.random())); n.vy = -L.H * 1.1; n.bx = n.cx; n.by = n.cy;
       n.perfectFlight = null;
       if(g==='PERFECT'){
-        var topOffset=Math.max(0,stage.getBoundingClientRect().top-el.getBoundingClientRect().top);
+        var topOffset=hitGeometry.topOffset;
         var endY=-topOffset-L.weaponR*4,margin=Math.min(L.W*.24,L.weaponR*2.5);
         var spread=(n.by-endY)*.45,minX=Math.max(margin,n.bx-spread),maxX=Math.min(L.W-margin,n.bx+spread);
         var endX=minX+Math.random()*Math.max(0,maxX-minX);
@@ -571,10 +591,10 @@
       showJudge(lane, g, g.toLowerCase());
       if(g==='PERFECT'){statusFx.hit();var orbit=targetLanes[lane]&&targetLanes[lane].querySelector('.rp-target-orbit');if(orbit){if(!orbit._perfectRipple)orbit._perfectRipple=orbit.animate([{transform:'translateX(-50%) scale(.82)',opacity:.9},{transform:'translateX(-50%) scale(1.48)',opacity:0}],{duration:520,easing:'cubic-bezier(.16,.7,.3,1)',fill:'both'});else{orbit._perfectRipple.cancel();orbit._perfectRipple.currentTime=0;orbit._perfectRipple.play();}}}
       var hitButton=btnEls&&btnEls[lane];
-      if(hitButton){clearTimeout(buttonHitTimers[lane]);hitButton.dataset.grade=g;hitButton.classList.remove('is-hit');void hitButton.offsetWidth;hitButton.classList.add('is-hit');buttonHitTimers[lane]=setTimeout(function(){hitButton.classList.remove('is-hit');delete hitButton.dataset.grade;buttonHitTimers[lane]=0;},420);}
+      if(hitButton){clearTimeout(buttonHitTimers[lane]);hitButton.dataset.grade=g;replay(hitButton,'is-hit');buttonHitTimers[lane]=setTimeout(function(){hitButton.classList.remove('is-hit');delete hitButton.dataset.grade;buttonHitTimers[lane]=0;},420);}
       pang(lane, n.cx, n.cy); hud(); sfx('hit');
-      var word=perfectWords[lane],buttonRect=hitButton&&hitButton.getBoundingClientRect(),stageRect=stage.getBoundingClientRect();
-      if(word&&buttonRect){var wordY=buttonRect.top-stageRect.top+buttonRect.height/2,targetCenter=L.targetY;word.textContent=g;word.dataset.grade=g;word.style.left=(buttonRect.left-stageRect.left+buttonRect.width/2)+'px';word.style.top=wordY+'px';word.style.setProperty('--rp-grade-rise',(-Math.max(0,wordY-targetCenter+word.offsetHeight/2))+'px');replay(word,'is-on');}
+      var word=perfectWords[lane],geometry=hitGeometry.buttons[lane];
+      if(word&&geometry){word.textContent=g;word.dataset.grade=g;word.style.left=geometry.x+'px';word.style.top=geometry.y+'px';word.style.setProperty('--rp-grade-rise',geometry.rise+'px');replay(word,'is-on');}
       burst(n.cx, n.cy, g === 'PERFECT' ? 10 : g === 'GREAT' ? 7 : 5); comboFx();
       try { MG.HitFx && MG.HitFx.uiTap && MG.HitFx.uiTap(1); } catch (e) { /* 무시 */ }
     }
@@ -597,12 +617,11 @@
         g.style.top = (18 + Math.random() * 16).toFixed(1) + '%'; g.style.width = (16 + Math.random() * 14).toFixed(0) + 'px';
         g.style.animationDuration = (9 + Math.random() * 9).toFixed(1) + 's'; g.style.animationDelay = (Math.random() * 5).toFixed(1) + 's';
         g.firstChild.style.animationDuration = (0.32 + Math.random() * 0.2).toFixed(2) + 's';
-        g.classList.remove('is-fly'); void g.offsetWidth; g.classList.add('is-fly');
+        replay(g,'is-fly');
       }
       g.addEventListener('animationend', function (e) { if (e.target === g) fly(); });
       fly();
     });
-    function replay(node, cls) { node.classList.remove(cls); void node.offsetWidth; node.classList.add(cls); }
     function burst(x, y, k) { // 명중 자리에서 반짝이 조각이 사방으로
       for (var i = 0; i < k; i++) {
         var a = (i / k) * Math.PI * 2 + Math.random() * 0.5, d = L.laneW * (0.45 + Math.random() * 0.35);
@@ -849,7 +868,7 @@
       // V 1113 G: keep B's opaque screen fixed while only its board enters.
       var entryTarget = activeB ? $('[data-rp-b] .rb-board') : el;
       if (activeB) el.classList.remove('glitch-in');
-      entryTarget.classList.remove('glitch-in'); void entryTarget.offsetWidth; entryTarget.classList.add('glitch-in');
+      replay(entryTarget,'glitch-in');
       setTimeout(function () { entryTarget.classList.remove('glitch-in'); }, 260);
     }
     el.querySelectorAll('[data-rp-diff]').forEach(function (b) {

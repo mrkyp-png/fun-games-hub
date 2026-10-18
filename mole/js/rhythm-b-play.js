@@ -222,12 +222,12 @@
    state.cnt.MISS++;state.combo=0;muteMelody(false);label('MISS','MISS');updateHud();
    showTiming('MISS');
   }
-  function hasCharacter(lane){if(!state||state.ended||state.loading)return false;const t=time();return state.notes.some(n=>n.lane===lane&&((n.state==='pending'&&t>=n.spawnTime&&t<=n.targetTime+rules.diffs[state.diff].judge.goodMs/1000)||(n.state==='hit'&&n.visualActive)));}
+  function hasCharacter(lane){if(!state||state.ended||state.loading)return false;const t=time(),notes=state.notesByLane[lane];return notes.some(n=>(n.state==='pending'&&t>=n.spawnTime&&t<=n.targetTime+rules.diffs[state.diff].judge.goodMs/1000)||(n.state==='hit'&&n.visualActive));}
   function press(lane){
    if(!state||state.ended||state.paused||time()<0)return;
    const t=time();
    let best=null,delta=Infinity;
-   for(const n of state.notes){if(n.state==='pending'&&n.lane===lane&&t>=n.spawnTime){const d=Math.abs(t-n.targetTime);if(d<delta){best=n;delta=d;}}}
+   for(const n of state.notesByLane[lane]){if(n.state==='pending'&&t>=n.spawnTime){const d=Math.abs(t-n.targetTime);if(d<delta){best=n;delta=d;}}}
    if(!best)return false; // Empty input never changes score, combo, or MISS.
    // Like A: an existing future note outside the input window remains pending until its deadline.
    const grade=rules.grade(delta*1000,state.diff);if(!grade)return false;
@@ -304,6 +304,7 @@
      last[lane]=targetTime;
      return {id,lane,targetTime,spawnTime:targetTime-rules.diffs[diff].travel,state:'pending',el:null,character:null,ring:null,visualSlot:null,visualActive:false,sound:authoredNote?authoredNote.sound:'kick',chordSize:authoredNote?authoredNote.chordSize:chordCounts.get(targetTime)};
     });
+    state.notesByLane=Array.from({length:9},()=>[]);for(const n of state.notes)state.notesByLane[n.lane].push(n);
     for(let i=1;i<state.notes.length;i++)if(state.notes[i].spawnTime<state.notes[i-1].spawnTime){state.renderOrdered=false;break;}
     // Keep per-note ownership stable within the round; reuse slots only on later rounds.
     for(const n of state.notes)ensureNoteVisual(n);
