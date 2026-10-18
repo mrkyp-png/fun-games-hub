@@ -100,7 +100,7 @@
     {transform:'translate(-50%,-50%) scale('+scale+')',opacity:1,offset:.15},
     {transform:'translate(-50%,-50%) scale('+(scale*1.12)+')',opacity:.85,offset:.55},
     {transform:'translate(-50%,-50%) scale('+(scale*1.35)+')',opacity:0,offset:1}
-   ],stage===3?500:800,()=>{if(startAnimation===a){startCallout.hidden=true;startAnimation=null;}});
+   ],stage===3?500:980,()=>{if(startAnimation===a){startCallout.hidden=true;startAnimation=null;}});
    startAnimation=a;
   }
   const perfectArcs=Array.from({length:9},(_,lane)=>{const el=document.createElement('span');el.className='rb-perfect-arcs';el.setAttribute('aria-hidden','true');el.style.left=((176+(lane%3)*300)/952*100)+'%';el.style.top=((176+Math.floor(lane/3)*300)/2078*100)+'%';el.style.setProperty('--arc-color',colors[lane]);el.innerHTML='<i></i><i></i>';board.appendChild(el);return el;});
@@ -222,7 +222,7 @@
    state.cnt.MISS++;state.combo=0;muteMelody(false);label('MISS','MISS');updateHud();
    showTiming('MISS');
   }
-  function hasCharacter(lane){if(!state||state.ended||state.loading)return false;const t=time(),notes=state.notesByLane[lane];return notes.some(n=>(n.state==='pending'&&t>=n.spawnTime&&t<=n.targetTime+rules.diffs[state.diff].judge.goodMs/1000)||(n.state==='hit'&&n.visualActive));}
+  function hasCharacter(lane){if(!state||state.ended||state.loading||time()<0)return false;const t=time(),notes=state.notesByLane[lane];return notes.some(n=>(n.state==='pending'&&t>=n.spawnTime&&t<=n.targetTime+rules.diffs[state.diff].judge.goodMs/1000)||(n.state==='hit'&&n.visualActive));}
   function press(lane){
    if(!state||state.ended||state.paused||time()<0)return;
    const t=time();
@@ -261,21 +261,22 @@
    frame=0;if(!state||state.ended||state.paused)return;
    const t=time();
    if(opts.onTime)opts.onTime(t);
-   if(t<.4||!startShade.hidden){startShade.hidden=t>=.4;const opacity=String(t<0?shadeSteps[Math.max(0,Math.min(2,Math.floor((t+rules.config.countIn+.15)/((rules.config.countIn+.15)/3))))]:Math.max(0,.62*(1-t/.4)));if(startShade.style.opacity!==opacity)startShade.style.opacity=opacity;}
+   const countIn=rules.config.countIn,readyElapsed=context.currentTime-state.readyStart,inCount=readyElapsed<countIn;
+   if(inCount||t<.4||!startShade.hidden){startShade.hidden=!inCount&&t>=.4;const opacity=String(inCount?shadeSteps[Math.max(0,Math.min(2,Math.floor(readyElapsed/(countIn/3))))]:Math.max(0,.62*(1-t/.4)));if(startShade.style.opacity!==opacity)startShade.style.opacity=opacity;}
    updateProgress(state.duration>0?t/state.duration:0);
-   if(t<rules.config.countIn){const stage=Math.max(0,Math.min(2,Math.floor(t/(rules.config.countIn/3))));showStart(stage);const count=String(Math.max(1,rules.config.countIn-Math.floor(t)));if(state.count!==count){state.count=count;label(count);}}
+   if(inCount){const stage=Math.max(0,Math.min(2,Math.floor(readyElapsed/(countIn/3))));showStart(stage);const count=String(countIn-stage);if(state.count!==count){state.count=count;label(count);}}
    else if(state.count!=='GO'){state.count='GO';label('GO!');showStart(3);}
-   if(t>=.6&&!startCallout.hidden)startCallout.hidden=true;
+   
    const D=rules.diffs[state.diff];
    // V 1124: upper portal has no idle motion; only note-active rims.
-   for(let id=state.renderCursor;id<state.notes.length;id++){
+   for(let id=state.renderCursor;t>=0&&id<state.notes.length;id++){
     const n=state.notes[id];if(state.ended)break;
     if(n.state!=='pending')continue;
     if(t>n.targetTime+D.judge.goodMs/1000){miss(n);continue;}
     if(t>=n.spawnTime){const appearing=!n.visualActive;ensureNoteVisual(n);if(appearing&&opts.onNoteSpawn)opts.onNoteSpawn(n.lane);placeNote(n,(t-n.spawnTime)/D.travel);if(appearing)showNoteVisual(n);}else if(state.renderOrdered)break;
    }
    while(state.renderCursor<state.notes.length&&state.notes[state.renderCursor].state!=='pending')state.renderCursor++;
-   if(!state.ended)updateCues(t);
+   if(!state.ended&&t>=0)updateCues(t);
    if(!state.ended&&t>=state.duration)finish(true);
    if(!state.ended)frame=requestAnimationFrame(tick);
   }
@@ -314,7 +315,7 @@
     state.beats=data.song&&Array.isArray(data.song.beats)?data.song.beats:null;state.beatCursor=0;
     state.bpm=Number(data.song&&data.song.bpm)||rules.config.song.bpm;state.firstBeat=Number.isFinite(data.song&&data.song.firstBeat)?data.song.firstBeat:rules.config.song.firstBeat;
     state.duration=Math.max(data.back.duration,(times[times.length-1]||0)+rules.diffs[diff].judge.goodMs/1000);
-    state.t0=context.currentTime+.05;state.loading=false;
+    state.readyStart=context.currentTime;state.t0=state.readyStart+rules.config.countIn;state.loading=false;
     const gameMusicGain=context.createGain();gameMusicGain.gain.setValueAtTime(0,state.t0);gameMusicGain.gain.linearRampToValueAtTime(1,state.t0+1.4);gameMusicGain.connect(context.destination);
     showStart(0);
     const back=context.createBufferSource();back.buffer=data.back;back.connect(gameMusicGain);back.start(state.t0);sources.push(back);

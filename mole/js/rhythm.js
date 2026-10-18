@@ -260,12 +260,15 @@
       var beachDrop = Math.min(28, H * 0.035);
       L.targetY = L.targetY - groupShift + beachDrop;
       L.moleBottom = L.moleBottom - groupShift + beachDrop;
+      var targetTop = L.targetY - L.targetR * 3.05 / 2;
+      L.apexLift = CHARS.map(function(c,i){var m=meta[c],bb=m.bb[CONFIG.apexFrame],s=L.moleW/m.w;var apexTop=L.moleBottom-(m.h-bb[1])*s-(L.lift||0);return apexTop-targetTop;});
     }
     // 프레임별 추가 상승량 = (그 프레임이 대기 자세보다 오른 정도 ÷ 최고점이 오른 정도) × lift
     function liftAt(i, f) {
       if (!L.lift) return 0;
       var bb = meta[CHARS[i]].bb, rise = bb[0][1] - bb[f][1], top = bb[0][1] - bb[CONFIG.apexFrame][1];
-      return top > 0 ? Math.max(0, rise / top) * L.lift : 0;
+      var ratio = top > 0 ? Math.max(0, Math.min(1, rise / top)) : 0;
+      return ratio * (L.lift + (L.apexLift ? L.apexLift[i] : 0));
     }
     // 두더지 i 의 프레임 f 머리 원(화면 px)
     function headAt(i, f, out) {
@@ -649,9 +652,9 @@
     function resetBoss() { updateACombo(0,true); boss.style.setProperty('--rp-boss-scale','1'); boss.style.setProperty('--rp-boss-color','transparent'); boss.style.setProperty('--rp-boss-opacity','1'); boss.style.opacity='1'; }
     function comboFx() {
       var c = $('[data-rp-combo]'); replay(c, 'is-bump');
-      if (st.combo > 0 && st.combo % 10 === 0) updateACombo(st.combo,false);
-      if (st.combo > 0 && st.combo % 10 === 0) { beachVisual.hurt(now()); beachVisual.combo(); }
-      if (st.combo === 10 || st.combo === 30 || (st.combo >= 50 && st.combo % 50 === 0)) {
+      if (st.combo > 0 && st.combo <= 100 && st.combo % 10 === 0) updateACombo(st.combo,false);
+      if (st.combo > 0 && st.combo <= 100 && st.combo % 10 === 0) { beachVisual.hurt(now()); beachVisual.combo(); }
+      if (st.combo <= 100 && (st.combo === 10 || st.combo === 30 || (st.combo >= 50 && st.combo % 50 === 0))) {
         var mt = document.createElement('span'); mt.className = 'rp-milestone'; mt.textContent = st.combo + ' COMBO!'; stage.appendChild(mt);
         setTimeout(function () { mt.remove(); }, 1300);
       }
