@@ -685,7 +685,8 @@ body { background: var(--lm-page); }
 }
 #fold-hinge {
   position: relative;
-  z-index: 5;
+  z-index: 41;
+  visibility: visible;
   flex: 0 0 auto;
   width: var(--sq);
   height: var(--hinge-h);
@@ -7174,7 +7175,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-note { position: absolute; width: calc(100% * 300 / 952); height: calc(100% * 300 / 2078); z-index: 5; pointer-events: none; transform-origin: center; will-change: transform, opacity; }
 .rb-note[hidden] { display: none; }
 .rb-note-ring { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 0 1px var(--note-color)); }
-.rb-character { position: absolute; left: 16.666667%; top: 8.333333%; width: 66.666667%; height: 83.333333%; background: url(assets/rhythm-b/character/hoverboard-v1260/run-strip.png) 0 0 / 200% 100% no-repeat; filter: brightness(var(--character-light,1)) drop-shadow(1px 0 0 var(--note-color)) drop-shadow(-1px 0 0 var(--note-color)) drop-shadow(0 1px 0 var(--note-color)) drop-shadow(0 -1px 0 var(--note-color)) drop-shadow(0 0 3px var(--note-color)); }
+.rb-character { position: absolute; left: 16.666667%; top: 8.333333%; width: 66.666667%; height: 83.333333%; display: block; object-fit: fill; max-width: none; max-height: none; background: none; filter: brightness(var(--character-light,1)) drop-shadow(1px 0 0 var(--note-color)) drop-shadow(-1px 0 0 var(--note-color)) drop-shadow(0 1px 0 var(--note-color)) drop-shadow(0 -1px 0 var(--note-color)) drop-shadow(0 0 3px var(--note-color)); }
 .rb-game-status { position: absolute; z-index: 5; display: grid; grid-template-columns: repeat(4,1fr); align-items: center; color: white; pointer-events: none; }
 .rb-total { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 3px; font-family: sans-serif; line-height: 1; }
 .rb-total small { font-size: clamp(8px,2.3vw,10px); font-weight: 800; }

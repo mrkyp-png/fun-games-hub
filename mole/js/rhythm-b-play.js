@@ -61,7 +61,10 @@
   const notePools=Array.from({length:9},()=>[]),visibleNotes=[];
   function createNoteVisual(lane){
    const el=document.createElement('div');el.className='rb-note';el.setAttribute('aria-hidden','true');el.hidden=true;
-   const character=document.createElement('span');character.className='rb-character';character.style.setProperty('--outline-filter','url(#rb-character-outline-'+lane+')');el.appendChild(character);
+   const character=document.createElement('img');character.className='rb-character';character.alt='';character.draggable=false;
+   character.src='assets/rhythm-b/character/hoverboard-v1260/frame-00.png';
+   character.style.background='none';character.style.objectFit='fill';
+   character.style.setProperty('--outline-filter','url(#rb-character-outline-'+lane+')');el.appendChild(character);
    const ring=document.createElement('img');ring.className='rb-note-ring';ring.alt='';ring.draggable=false;ring.src='assets/rhythm-b/note-inner-line-'+lane+'.png';el.appendChild(ring);
    el.style.left=((26+(lane%3)*300)/952*100)+'%';el.style.top=((26+Math.floor(lane/3)*300)/2078*100)+'%';el.style.setProperty('--note-color',colors[lane]);
    const slot={el,character,ring,owner:null};notePools[lane].push(slot);return slot;
@@ -267,7 +270,7 @@
    n.el.dataset.progress=String(p);
    // Both visuals share this transform; only the ring determines judgement.
    const elapsed=Math.max(0,time()-n.spawnTime),spriteFrame=Math.floor(elapsed*3)%2;
-   if(n.spriteFrame!==spriteFrame){n.character.style.backgroundPosition=(spriteFrame*100)+'% 0%';n.spriteFrame=spriteFrame;}
+   if(n.spriteFrame!==spriteFrame){n.character.src='assets/rhythm-b/character/hoverboard-v1260/frame-0'+spriteFrame+'.png';n.spriteFrame=spriteFrame;}
   }
   function tick(){
    frame=0;if(!state||state.ended||state.paused)return;

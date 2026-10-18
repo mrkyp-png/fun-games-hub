@@ -1484,3 +1484,12 @@
 - d-frame 아래 장식 전체가 하단 모서리 slice에 들어가도록 bottom slice/width 100→140px, p-frame 90→100px 조정. 장식이 덮는 콘텐츠 영역은 동일한 하단 padding으로 확보. 결과 go-frame은 기존 44/82/66px slice가 아래 장식을 포함하므로 유지.
 - 하단 버튼 에셋 btn-retry(459×109), btn-diff(458×105), btn-home(458×103)는 CSS aspect-ratio가 원본과 일치하여 이미지 왜곡 규칙은 수정하지 않음.
 - 기존 V1174 로컬 변경 함께 보존. 화면 검증·커밋·배포 미실시. 배포 별도 승인 필요.
+
+
+## 2026-10-18 / V1261 G — hinge, loading transition, Neon character rendering
+- User authorized deployment and requested accurate version records. Based on remote V1260 commit d0c8eb5a1ca0080a4eb7a1005320d9d24e9aa847; preserve unrelated remote/local work.
+- Hinge: layer41 above menu shadows; retain requested screen visibility and hide in gameplay/Rhythm. User confirmed hinge fixed locally.
+- Loading: black cover overscans viewport2px; solid-black hold retires splash animations/image layers before center reveal. User confirmed loading residue fixed locally.
+- Neon: replace background-painted span with img; two lossless200x250 PNG frames from existing400x250 strip,3fps; same placement/size, lane outline, approach and hit animations; preload/decode and SW shell updated.
+- Validation: runtime/SW and inline script syntax; scoped whitespace; actual create/place functions tested across9lanes with controlled frame timing; pixel equality to source. Browser launch blocked EPERM/no connected browser, so Neon gameplay visual fix remains unverified. Do not report it visually confirmed.
+- Version/build tag and SW registration/cache all1261 G. Deployment commit and Pages result recorded locally after publication.

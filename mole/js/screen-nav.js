@@ -14,6 +14,15 @@
         var el = document.getElementById(id);
         if (el) el.hidden = (id !== top);
       });
+      var gameScreen = document.getElementById('game-screen');
+      var hinge = document.getElementById('fold-hinge');
+      var hingeScreens = ['mailbox-screen', 'settings-screen', 'inventory-screen', 'shop-screen'];
+      var hingeAllowed = hingeScreens.indexOf(top) >= 0;
+      if (gameScreen) {
+        gameScreen.classList.toggle('hinge-allowed-screen', hingeAllowed);
+        gameScreen.classList.toggle('hinge-hidden-by-nav', !!top && !hingeAllowed);
+        if (hinge) hinge.style.visibility = hingeAllowed || (!top && gameScreen.classList.contains('is-start')) ? 'visible' : 'hidden';
+      }
       if (top) onShow(top);
       else onClose();
     }

@@ -1193,8 +1193,12 @@
   let rhythm = null;
   function openRhythm() {
     const el = document.getElementById('rhythm-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const hinge = document.getElementById('fold-hinge');
+    if (gameScreen) gameScreen.classList.add('hinge-hidden-by-nav');
+    if (hinge) hinge.style.visibility = 'hidden';
     // v840(사용자 지정): 리듬팡 진입·홈 복귀도 글리치
-    if (!rhythm) rhythm = window.__rhythm = MG.Rhythm.create({ root: el, onEntryMusic: setRhythmEntryBgm, onClose: (why) => { window.FGH.rollOut(el, () => { el.hidden = true; playScreenBgm('home'); refreshBoardStats(); }); } }); // v841: 일시정지→그만하기 = 탄성 밀어내기
+    if (!rhythm) rhythm = window.__rhythm = MG.Rhythm.create({ root: el, onEntryMusic: setRhythmEntryBgm, onClose: (why) => { window.FGH.rollOut(el, () => { el.hidden = true; if (gameScreen) gameScreen.classList.remove('hinge-hidden-by-nav'); if (hinge) hinge.style.visibility = gameScreen && gameScreen.classList.contains('is-start') ? 'visible' : 'hidden'; playScreenBgm('home'); refreshBoardStats(); }); } }); // v841: 일시정지→그만하기 = 탄성 밀어내기
     stopBgm();
     rhythm.open();
     el.classList.remove('glitch-in'); void el.offsetWidth; el.classList.add('glitch-in');
@@ -1374,6 +1378,8 @@
     boardStartEl.hidden = true;
     document.getElementById('gameover-overlay').hidden = true;
     document.getElementById('game-screen').classList.remove('is-start');
+    const foldHinge = document.getElementById('fold-hinge');
+    if (foldHinge) foldHinge.style.visibility = 'hidden';
     setCallLabel('game'); // 게임 중: 초록 버튼은 "통화"(위장) — 15번 구멍 타격 담당
     // 캐논·특수망치 = 우하단 코너가 무기존(캐논 본체 or 스킬 슬롯 2개) → 구멍 15 빼고 15구멍. 뿅망치 = 16구멍.
     // (spinChannelsIn 이 gs-laneskill 을 보고 통화 버튼도 같이 돌리므로 그 호출 전에 세팅해야 한다.)

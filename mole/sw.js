@@ -3,7 +3,7 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-const CACHE = 'mole-game-v1260-G';
+const CACHE = 'mole-game-v1261-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -599,6 +599,8 @@ const SHELL = [
   './js/rhythm-b-flow.js',
   './js/rhythm-b-play.js',
   './assets/rhythm-b/character/hoverboard-v1260/run-strip.png',
+  './assets/rhythm-b/character/hoverboard-v1260/frame-00.png',
+  './assets/rhythm-b/character/hoverboard-v1260/frame-01.png',
   './js/rhythm-b.js',
   './assets/rhythm-b/skeleton-uniform.png',
   './assets/rhythm-b/upper-uniform-glow.png',

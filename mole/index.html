@@ -177,10 +177,11 @@
   /* v773(사용자 녹화로 원인 확인): 예전엔 검은막을 "커지는 점 + 9999px box-shadow"로 그렸는데, 폰 GPU가 이 거대한 레이어를
      감당하느라 확장 도중 홈 그림판을 한 프레임 통째로 빼먹어 번쩍였음. → 검은 판 1장 + 원형 구멍 마스크(--pr)로 교체. */
   @property --pr { syntax: '<length>'; inherits: false; initial-value: 0px; }
-  #power-on-overlay { position: fixed; inset: 0; z-index: 9999; pointer-events: none; overflow: hidden; background: #000;
+  #power-on-overlay { position: fixed; inset: -2px; z-index: 9999; pointer-events: none; overflow: hidden; background: #000;
     -webkit-mask: radial-gradient(circle at 50% 50%, transparent var(--pr), #000 calc(var(--pr) + 1.5px));
             mask: radial-gradient(circle at 50% 50%, transparent var(--pr), #000 calc(var(--pr) + 1.5px)); --pr: 0px; }
   #power-on-overlay.is-expand { --pr: var(--dot-max, 150vmax); transition: --pr 3s linear; } /* v827: 10초→3초(사용자 지정) */
+  #power-on-overlay.is-black { -webkit-mask: none; mask: none; }
   #power-on-dot { display: none; }
 
   /* V1160: keep loading art visible during the black-iris contraction. */
@@ -1063,7 +1064,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1260 G</div>
+        <div id="build-tag" aria-hidden="true">V 1261 G</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1256,10 +1257,17 @@ window.FGH.rollOut = function (el, done) {
         overlay.style.transition = 'none'; overlay.style.setProperty('--pr', Math.ceil(diag / 2) + 'px');
         void overlay.offsetWidth;
         overlay.style.transition = '--pr 1s ease-in'; overlay.style.setProperty('--pr', '0px');
-        setTimeout(function () { overlay.style.transition = ''; overlay.style.removeProperty('--pr'); }, shrinkMs + 20);
+        setTimeout(function () {
+          overlay.classList.add('is-black');
+          if (s.getAnimations) s.getAnimations({ subtree: true }).forEach(function (a) { a.cancel(); });
+          s.replaceChildren();
+          s.hidden = true;
+          overlay.style.transition = ''; overlay.style.removeProperty('--pr');
+        }, shrinkMs + 20);
         setTimeout(function () {
           // 이 시점엔 점이 이미 0×0(검은화면) — 여기서부터 2초간 검게 유지 후 확장 시작.
           setTimeout(function () {
+            overlay.classList.remove('is-black');
             void overlay.offsetWidth;
             overlay.classList.add('is-expand');
             doScatter();
@@ -1330,7 +1338,7 @@ window.FGH.rollOut = function (el, done) {
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=1260-G').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=1261-G').catch(function () {});
       }
     });
   }
