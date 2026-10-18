@@ -87,7 +87,7 @@
    const frames=reduced?[{opacity:.7},{opacity:0}]:[{transform:position[0]+' scale(.05)',opacity:.7,offset:0},{transform:position[1]+' scale('+(peak*3.5/4.6)+')',opacity:.7,offset:.6},{transform:position[2]+' scale('+peak+')',opacity:0,offset:1}];
    const a=animateEffect(word,frames,1100,()=>{if(powerAnimations[kind]===a){word.hidden=true;powerAnimations[kind]=null;}});powerAnimations[kind]=a;
   }
-  function clearEffects(){clearTiming();judgeEl.style.visibility='';Object.values(powerWords).forEach(e=>e.hidden=true);for(const kind of Object.keys(powerAnimations))powerAnimations[kind]=null;for(const a of effects)a.cancel();effects.clear();pangs.forEach(el=>el.hidden=true);pangAnimations.fill(null);startAnimation=null;startCallout.hidden=true;startShade.hidden=true;startShade.style.opacity='0';comboPulse=null;}
+  function clearEffects(){clearTiming();judgeEl.style.visibility='';Object.values(powerWords).forEach(e=>e.hidden=true);for(const kind of Object.keys(powerAnimations))powerAnimations[kind]=null;for(const a of effects)a.cancel();effects.clear();perfectArcAnimations.flat().forEach(a=>{a.cancel();a.currentTime=0;});pangs.forEach(el=>el.hidden=true);pangAnimations.fill(null);startAnimation=null;startCallout.hidden=true;startShade.hidden=true;startShade.style.opacity='0';comboPulse=null;}
   function showStart(stage){
    if(state.startPhase===stage)return;state.startPhase=stage;
    if(startAnimation)startAnimation.cancel();
@@ -103,10 +103,13 @@
    ],stage===3?500:800,()=>{if(startAnimation===a){startCallout.hidden=true;startAnimation=null;}});
    startAnimation=a;
   }
-  function successEffect(n,t){
+  const perfectArcs=Array.from({length:9},(_,lane)=>{const el=document.createElement('span');el.className='rb-perfect-arcs';el.setAttribute('aria-hidden','true');el.style.left=((176+(lane%3)*300)/952*100)+'%';el.style.top=((176+Math.floor(lane/3)*300)/2078*100)+'%';el.style.setProperty('--arc-color',colors[lane]);el.innerHTML='<i></i><i></i>';board.appendChild(el);return el;});
+  const perfectArcAnimations=perfectArcs.map(el=>Array.from(el.children,(node,index)=>{const a=node.animate([{transform:'rotate('+(index?110:-70)+'deg) scale(.45)',opacity:0},{transform:'rotate('+(index?150:-110)+'deg) scale(1)',opacity:.9,offset:.22},{transform:'rotate('+(index?190:-150)+'deg) scale(1.18)',opacity:0}],{duration:460,easing:'ease-out',fill:'none'});a.pause();a.currentTime=0;return a;}));
+  function successEffect(n,t,grade){
    ensureNoteVisual(n);placeNote(n,(t-n.spawnTime)/rules.diffs[state.diff].travel);
    n.ring.hidden=true;n.el.classList.add('is-hit-out');showNoteVisual(n);
    const wave=spaceWaves[n.lane];if(wave&&!spaceReduced.matches){if(waveAnimations[n.lane])waveAnimations[n.lane].cancel();waveAnimations[n.lane]=animateEffect(wave,[{transform:'scale(.08)',opacity:0,offset:0},{transform:'scale(.3)',opacity:.9,offset:.2},{transform:'scale(1)',opacity:0,offset:1}],420);}
+   if(grade==='PERFECT'&&!reducedMotion.matches)perfectArcAnimations[n.lane].forEach(a=>{a.currentTime=0;a.play();});
    const reduced=reducedMotion.matches,angle=Math.random()*Math.PI*2;
    const flyX=Math.cos(angle)*1500,flyY=Math.sin(angle)*1200,spin=Math.random()<.5?-1:1;
    animateEffect(n.character,reduced?[{opacity:1},{opacity:0}]:[
@@ -228,7 +231,7 @@
    if(!best)return false; // Empty input never changes score, combo, or MISS.
    // Like A: an existing future note outside the input window remains pending until its deadline.
    const grade=rules.grade(delta*1000,state.diff);if(!grade)return false;
-   best.state='hit';hitSound(best,grade);successEffect(best,t);darkenLane(best.lane);state.cnt[grade]++;state.combo++;state.maxCombo=Math.max(state.maxCombo,state.combo);
+   best.state='hit';hitSound(best,grade);successEffect(best,t,grade);darkenLane(best.lane);state.cnt[grade]++;state.combo++;state.maxCombo=Math.max(state.maxCombo,state.combo);
    state.score+=rules.points(grade,state.combo);muteMelody(true);label(grade,grade);updateHud();
    showTiming(grade,(t-best.targetTime)*1000);
    if(grade==='PERFECT'){const stage=Math.floor(state.combo/10);showPowerWord('perfect-'+lane,'PERFECT',stage?comboPalette[(stage-1)%comboPalette.length]:'#00cfff');}
@@ -260,7 +263,7 @@
    if(opts.onTime)opts.onTime(t);
    if(t<.4||!startShade.hidden){startShade.hidden=t>=.4;const opacity=String(t<0?shadeSteps[Math.max(0,Math.min(2,Math.floor((t+rules.config.countIn+.15)/((rules.config.countIn+.15)/3))))]:Math.max(0,.62*(1-t/.4)));if(startShade.style.opacity!==opacity)startShade.style.opacity=opacity;}
    updateProgress(state.duration>0?t/state.duration:0);
-   if(t<0){const stage=Math.max(0,Math.min(2,Math.floor((t+rules.config.countIn+.15)/((rules.config.countIn+.15)/3))));showStart(stage);const count=String(3-stage);if(state.count!==count){state.count=count;label(count);}}
+   if(t<rules.config.countIn){const stage=Math.max(0,Math.min(2,Math.floor(t/(rules.config.countIn/3))));showStart(stage);const count=String(Math.max(1,rules.config.countIn-Math.floor(t)));if(state.count!==count){state.count=count;label(count);}}
    else if(state.count!=='GO'){state.count='GO';label('GO!');showStart(3);}
    if(t>=.6&&!startCallout.hidden)startCallout.hidden=true;
    const D=rules.diffs[state.diff];
@@ -310,8 +313,7 @@
     state.beats=data.song&&Array.isArray(data.song.beats)?data.song.beats:null;state.beatCursor=0;
     state.bpm=Number(data.song&&data.song.bpm)||rules.config.song.bpm;state.firstBeat=Number.isFinite(data.song&&data.song.firstBeat)?data.song.firstBeat:rules.config.song.firstBeat;
     state.duration=Math.max(data.back.duration,(times[times.length-1]||0)+rules.diffs[diff].judge.goodMs/1000);
-    state.t0=context.currentTime+rules.config.countIn+.15;state.loading=false;
-    if(opts.onEntryMusic)opts.onEntryMusic(false,(rules.config.countIn+.15+1.4)*1000);
+    state.t0=context.currentTime+.05;state.loading=false;
     const gameMusicGain=context.createGain();gameMusicGain.gain.setValueAtTime(0,state.t0);gameMusicGain.gain.linearRampToValueAtTime(1,state.t0+1.4);gameMusicGain.connect(context.destination);
     showStart(0);
     const back=context.createBufferSource();back.buffer=data.back;back.connect(gameMusicGain);back.start(state.t0);sources.push(back);
@@ -320,7 +322,7 @@
     if(!state.paused&&!frame)frame=requestAnimationFrame(tick);return true;
    }catch(e){if(token!==generation)return false;state.loading=false;state.ended=true;state.error=String(e.message||e);label('ERROR');error.hidden=false;startShade.hidden=true;stopAudio();return false;}
   }
-  function pause(on){if(!state||state.ended)return;state.paused=on;if(on){cancelAnimationFrame(frame);frame=0;}effects.forEach(a=>{if(a.playState!=='idle'){if(on)a.pause();else a.play();}});if(context&&!state.loading){if(on)context.suspend();else context.resume();}if(!on&&!state.loading&&!frame)frame=requestAnimationFrame(tick);}
+  function pause(on){if(!state||state.ended)return;state.paused=on;if(on){cancelAnimationFrame(frame);frame=0;}effects.forEach(a=>{if(a.playState!=='idle'){if(on)a.pause();else a.play();}});perfectArcAnimations.flat().forEach(a=>{if(on&&a.playState==='running'){a._rhythmPaused=true;a.pause();}else if(!on&&a._rhythmPaused){a._rhythmPaused=false;a.play();}});if(context&&!state.loading){if(on)context.suspend();else context.resume();}if(!on&&!state.loading&&!frame)frame=requestAnimationFrame(tick);}
   return {start,stop,pause,press,hasCharacter,dbg:()=>state?{t:time(),diff:state.diff,practice:state.practice,loading:state.loading,paused:state.paused,ended:state.ended,error:state.error,score:state.score,combo:state.combo,maxCombo:state.maxCombo,cnt:{...state.cnt},notes:state.notes.map(n=>({id:n.id,lane:n.lane,targetTime:n.targetTime,spawnTime:n.spawnTime,state:n.state}))}:null};
  }
  MG.RhythmBPlay={create};

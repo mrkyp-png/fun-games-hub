@@ -8003,3 +8003,20 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* V1223: retain Beach cloud/leaf/star colors while tinting only the Neon rails. */
 #rhythm-screen.is-type-b .rb-song-card:not(.rx-card--res):not(.rx-card--pause)::after { filter:none; border-image-source:url('assets/rhythm/ui/d-frame-neon-song-cloud-v1224.svg'); }
 #rhythm-screen.is-type-b .rp-select .rx-card--sel:not(.rx-card--res):not(.rx-card--pause)::after { filter:none; border-image-source:url('assets/rhythm/ui/d-frame-neon-difficulty-cloud-v1224.svg'); }
+
+/* Lightweight, event-only rhythm flourishes: composited scale/opacity, no per-frame JS. */
+.rp-target-orbit::after { content:""; position:absolute; inset:0; border:2px solid var(--target-color); border-radius:50%; opacity:0; pointer-events:none; }
+.rp-a-cloud-boss.is-combo-pop::after { content:""; position:absolute; inset:-8%; border:3px solid rgba(105,224,255,.9); border-radius:48%; opacity:0; pointer-events:none; animation:rp-beach-combo-ring 620ms ease-out both; }
+@keyframes rp-beach-combo-ring { 0% { transform:scale(.82); opacity:.85; } 100% { transform:scale(1.16); opacity:0; } }
+.rp-section-flash { position:absolute; z-index:10; inset:8px; border-radius:24px; pointer-events:none; }
+.rp-section-flash::before { content:""; position:absolute; inset:0; border:3px solid #78e9ff; border-radius:inherit; opacity:0; transform:scale(.985); }
+#rhythm-screen:not(.is-type-b) .rp-section-flash::before { border-color:#f5dd82; }
+#rhythm-screen.is-type-b .rp-section-flash::before { border-color:#39ddff; }
+#rhythm-screen.rp-chorus-hit .rp-section-flash::before { animation:rp-chorus-entry 680ms ease-out both; }
+@keyframes rp-chorus-entry { 0% { opacity:.6; transform:scale(.985); } 100% { opacity:0; transform:scale(1.018); } }
+.rb-perfect-arcs { position:absolute; z-index:8; width:31%; aspect-ratio:1; transform:translate(-50%,-50%); pointer-events:none; }
+.rb-perfect-arcs i { position:absolute; inset:6%; border:2px solid transparent; border-top-color:var(--arc-color); border-left-color:var(--arc-color); border-radius:50%; opacity:0; }
+.rb-perfect-arcs i:nth-child(2) { inset:15%; border-top-color:var(--combo-accent,#00cfff); border-left-color:var(--combo-accent,#00cfff); }
+.rb-glass-grow > circle { transition:stroke .28s ease; }
+.rb-board[data-combo-stage]:not([data-combo-stage="0"]) .rb-glass-grow > circle { stroke:var(--combo-accent); }
+@media(prefers-reduced-motion:reduce) { .rp-a-cloud-boss.is-combo-pop::after,#rhythm-screen.rp-chorus-hit .rp-section-flash::before { animation:none; } }

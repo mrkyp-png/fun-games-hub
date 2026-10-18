@@ -2,7 +2,7 @@
  'use strict';
  function create(screen){
   const bar=document.createElement('div'),pulse=document.createElement('span'),text=document.createElement('span');bar.className='rp-lyrics';bar.hidden=true;bar.setAttribute('aria-label','Song lyrics');text.className='rp-lyrics-text';pulse.className='rp-lyrics-pulse';pulse.appendChild(text);bar.appendChild(pulse);screen.appendChild(bar);
-  const reduced=root.matchMedia('(prefers-reduced-motion: reduce)');let cues=[],cursor=-1,shown=-2,lastTime=-Infinity,animation=null,paused=false,beatAnimation=null,beats=null,beatCursor=-1,lastPulse=-Infinity,bpm=120,firstBeat=0;
+  const reduced=root.matchMedia('(prefers-reduced-motion: reduce)');let cues=[],cursor=-1,shown=-2,lastTime=-Infinity,animation=null,paused=false,beatAnimation=null,beats=null,beatCursor=-1,lastPulse=-Infinity,bpm=120,firstBeat=0,lastSection='';
   const beatFrames=[{transform:'scale(1.12)'},{transform:'scale(1)'}];
   const wordColors=['#ff1744','#2979ff','#ffea00','#00e676','#ff9100','#f500ff','#00e5ff'];
   const neonContainer=screen.querySelector('[data-rp-b]'),neonBoard=neonContainer&&neonContainer.querySelector('.rb-board');let boundsFrame=0,observedPerimeter=null;
@@ -25,7 +25,7 @@
   function cancel(){if(animation){animation.cancel();animation=null;}}
   function cancelBeat(){if(beatAnimation){beatAnimation.cancel();beatAnimation=null;}}
   function color(value){if(bar.style.getPropertyValue('--rp-lyric-color')!==value)bar.style.setProperty('--rp-lyric-color',value);}
-  function clear(preserveLayout){cancel();cancelBeat();beats=null;beatCursor=-1;lastPulse=-Infinity;bar.style.removeProperty('--rp-lyric-color');cues=[];cursor=-1;shown=-2;lastTime=-Infinity;paused=false;bar.hidden=true;text.textContent='';if(!preserveLayout)screen.classList.remove('has-rhythm-lyrics');}
+  function clear(preserveLayout){cancel();cancelBeat();beats=null;beatCursor=-1;lastPulse=-Infinity;lastSection='';screen.dispatchEvent(new CustomEvent('rp-section-change',{detail:{section:''}}));bar.style.removeProperty('--rp-lyric-color');cues=[];cursor=-1;shown=-2;lastTime=-Infinity;paused=false;bar.hidden=true;text.textContent='';if(!preserveLayout)screen.classList.remove('has-rhythm-lyrics');}
   function set(data,timing){clear();beats=timing&&Array.isArray(timing.beats)?timing.beats:null;bpm=Number(timing&&timing.bpm)||120;firstBeat=Number(timing&&timing.firstBeat)||0;cues=(data&&Array.isArray(data.cues)?data.cues:[]).filter(c=>Number.isFinite(c.start)&&Number.isFinite(c.end)&&c.end>c.start&&typeof c.text==='string').slice().sort((a,b)=>a.start-b.start);screen.classList.toggle('has-rhythm-lyrics',cues.length>0);fitNeonBounds();}
   function update(time){
    if(!cues.length)return;
@@ -37,6 +37,7 @@
    const at=beats?beats[beatCursor]:firstBeat+beat*60/bpm;
    if(index>=0&&!paused&&!reduced.matches&&beat>=0&&beat!==lastPulse&&time-at>=0&&time-at<.18){cancelBeat();lastPulse=beat;beatAnimation=pulse.animate(beatFrames,{duration:180,easing:'ease-out'});beatAnimation.currentTime=(time-at)*1000;}
    if(index!==shown){shown=index;cancel();bar.hidden=index<0;accentSyllables=[];activeAccent=-1;
+    const section=index>=0?String(cues[index].section||''):'';if(section!==lastSection){lastSection=section;screen.dispatchEvent(new CustomEvent('rp-section-change',{detail:{section}}));}
     if(index<0){cancelBeat();text.textContent='';return;}
     const cue=cues[index];text.replaceChildren();text.style.transform='';let word=0;
     cue.text.split(/(\s+)/).forEach(part=>{
