@@ -99,6 +99,23 @@
     var bGame = null, activeB = false, resultSerial = 0;
     var selectedASong = CONFIG.bSongs[0], selectedBSong = CONFIG.bSongs[0], bSongCache = {}, bSongPending = {};
     var adRequired=false, adReady=false, adBusy=false, entryBusy=false, entryGeneration=0, entryLoadingTimer=0;
+    var rhythmArtReady=null;
+    function preloadRhythmArt(){
+      if(rhythmArtReady)return rhythmArtReady;
+      var urls=new Set(),urlPattern=/url\(\s*['"]?([^'")]+)['"]?\s*\)/gi;
+      function add(raw,base){if(!raw||/^data:|^blob:/i.test(raw))return;try{var u=new URL(raw,base||document.baseURI);if(/\.(?:png|jpe?g|webp|gif|svg|avif)(?:[?#]|$)/i.test(u.href))urls.add(u.href);}catch(e){}}
+      function scanText(text,base){var match;urlPattern.lastIndex=0;while((match=urlPattern.exec(text||'')))add(match[1],base);}
+      el.querySelectorAll('img[src],image[href], [style]').forEach(function(node){if(node.currentSrc||node.src)add(node.currentSrc||node.src);if(node.getAttribute('href'))add(node.getAttribute('href'));if(node.getAttribute('style'))scanText(node.getAttribute('style'),document.baseURI);});
+      function walk(rules,base){Array.prototype.forEach.call(rules||[],function(rule){if(rule.cssRules){walk(rule.cssRules,base);return;}var selector=rule.selectorText||'';if(/\.rp-|\.rb-|\.rx-|#rhythm-screen/.test(selector))scanText(rule.cssText,base);});}
+      Array.prototype.forEach.call(document.styleSheets,function(sheet){try{walk(sheet.cssRules,sheet.href||document.baseURI);}catch(e){}});
+      function loadImage(src){return new Promise(function(resolve){var img=new Image();if(img.decode){img.src=src;img.decode().then(resolve,resolve);}else{img.onload=img.onerror=resolve;img.src=src;}});}
+      var sources=Array.from(urls),cursor=0;
+      function loadBatch(){var batch=sources.slice(cursor,cursor+6);cursor+=batch.length;return batch.length?Promise.all(batch.map(loadImage)).then(loadBatch):Promise.resolve();}
+      var waits=[loadBatch()];
+      if(document.fonts&&document.fonts.load)waits.push(document.fonts.load('16px Jua').catch(function(){}),document.fonts.load('16px "Lilita One"').catch(function(){}));
+      rhythmArtReady=Promise.all(waits);
+      return rhythmArtReady;
+    }
     function albumOf(choice) { return choice.id==='fever2' ? 'assets/home2/mole-cap.png' : A+'albums-v1170/'+choice.id+'.webp'; }
     function selectSong(choice){if(activeB)selectedBSong=choice;else selectedASong=choice;}
     function cancelEntry(){entryGeneration++;entryBusy=false;clearTimeout(entryLoadingTimer);$('[data-rp-preloader]').hidden=true;}
@@ -111,20 +128,20 @@
     function launchSong(modal){
       if(entryBusy||adBusy)return;
       if(adRequired&&!adReady){watchSongAd(function(){adReady=true;launchSong(modal);});return;}
-      var token=++entryGeneration,choice=activeB?selectedBSong:selectedASong,wasB=activeB,completed=0,total=wasB?2:4,loader=$('[data-rp-preloader]');entryBusy=true;
+      var token=++entryGeneration,choice=activeB?selectedBSong:selectedASong,wasB=activeB,completed=0,total=wasB?3:5,loader=$('[data-rp-preloader]'),loaderShownAt=0;entryBusy=true;
       if(!ctx)ctx=new(root.AudioContext||root.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume();
       $('[data-rp-preload-album]').src=albumOf(choice);$('[data-rp-preload-title]').textContent=choice.title;
       $('[data-rp-preload-progress]').max=total;$('[data-rp-preload-progress]').value=0;$('[data-rp-preload-detail]').textContent='준비 0 / '+total;loader.hidden=true;
-      clearTimeout(entryLoadingTimer);entryLoadingTimer=setTimeout(function(){if(token===entryGeneration&&entryBusy&&!el.hidden)loader.hidden=false;},300);
+      clearTimeout(entryLoadingTimer);entryLoadingTimer=setTimeout(function(){if(token===entryGeneration&&entryBusy&&!el.hidden){loaderShownAt=Date.now();loader.hidden=false;}},1000);
       function track(p){return Promise.resolve(p).then(function(v){if(token===entryGeneration){completed++;$('[data-rp-preload-progress]').value=completed;$('[data-rp-preload-detail]').textContent='준비 '+completed+' / '+total;}return v;});}
-      var tasks=wasB?[loadBSong(),bGame.prepare()]:[loadSong(),preload(),loadMeta(),loadSfx()];
-      Promise.all(tasks.map(track)).then(function(){if(token!==entryGeneration||el.hidden||activeB!==wasB)return false;pushInGame(modal);return wasB?bGame.open(diff,{practice:false}):start();}).then(function(ok){if(token!==entryGeneration)return;clearTimeout(entryLoadingTimer);loader.hidden=true;entryBusy=false;if(ok)adReady=false;else showSelect();}).catch(function(){if(token!==entryGeneration)return;clearTimeout(entryLoadingTimer);loader.hidden=true;entryBusy=false;showSelect();$('[data-rp-selected-song]').textContent=choice.title+' · 자료를 불러오지 못했습니다. 다시 시도해주세요.';});
+      var tasks=wasB?[loadBSong(),bGame.prepare(),preloadRhythmArt()]:[loadSong(),preload(),loadMeta(),loadSfx(),preloadRhythmArt()];
+      Promise.all(tasks.map(track)).then(function(){if(token!==entryGeneration||el.hidden||activeB!==wasB)return false;clearTimeout(entryLoadingTimer);return new Promise(function(resolve,reject){var hold=loaderShownAt?Math.max(0,280-(Date.now()-loaderShownAt)):0;setTimeout(function(){if(token!==entryGeneration||el.hidden||activeB!==wasB){resolve(false);return;}loader.hidden=true;pushInGame(modal);Promise.resolve(wasB?bGame.open(diff,{practice:false}):start()).then(resolve,reject);},hold);});}).then(function(ok){if(token!==entryGeneration)return;clearTimeout(entryLoadingTimer);loader.hidden=true;entryBusy=false;if(ok)adReady=false;else showSelect();}).catch(function(){if(token!==entryGeneration)return;clearTimeout(entryLoadingTimer);loader.hidden=true;entryBusy=false;showSelect();$('[data-rp-selected-song]').textContent=choice.title+' · 자료를 불러오지 못했습니다. 다시 시도해주세요.';});
     }
     $('[data-rp-preload-cancel]').addEventListener('click',function(){cancelEntry();showSongs();});
     function bBestPrefix() { return selectedBSong.id === 'fever2' ? 'mole.rp.b.best.' : 'mole.rp.b.best.' + selectedBSong.id + '.'; }
     function aBestPrefix() { return selectedASong.id === 'fever2' ? 'mole.rp.best.' : 'mole.rp.best.' + selectedASong.id + '.'; }
     // 효과음(기존 게임 사운드 재사용) — 성공 = 타격음, 실패 = 두더지 아야
-    var SFX = { hit: ['audio/hit1.mp3', 'audio/hit2.mp3', 'audio/hit3.mp3', 'audio/hit4.mp3'], jump: ['audio/mole-emerge.mp3'], countdown: ['audio/countdown-jump-dry.mp3'] }; // v814(사용자 지정): 실패 목소리(아야 등) 삭제, 두더지 점프 = 두더지팡 등장 소리
+    var SFX = { hit: ['audio/hit1.mp3', 'audio/hit2.mp3', 'audio/hit3.mp3', 'audio/hit4.mp3'], jump: ['audio/mole-emerge.mp3'], countdown: ['audio/countdown-jump-mixkit.mp3'] }; // v814(사용자 지정): 실패 목소리(아야 등) 삭제, 두더지 점프 = 두더지팡 등장 소리
     var sfxBuf = {};
     function loadSfx() {
       var all = SFX.hit.concat(SFX.jump, SFX.countdown);
@@ -529,12 +546,15 @@
         var countdownBuffer = sfxBuf[SFX.countdown[0]];
         sfx('countdown', countdownAt);
         var startAt = countdownAt + (countdownBuffer ? countdownBuffer.duration : 0);
+        var musicLead = Math.min(0.65, countdownBuffer ? countdownBuffer.duration * 0.2 : 0.65);
+        var musicAt = startAt - musicLead;
         st.countdownAt = countdownAt;
-        st.t0 = startAt;
-        var gameMusicGain = ctx.createGain(); gameMusicGain.gain.setValueAtTime(0, startAt); gameMusicGain.gain.linearRampToValueAtTime(1, startAt + 1.4); gameMusicGain.connect(ctx.destination);
-        var s1 = ctx.createBufferSource(); s1.buffer = buffer; s1.connect(gameMusicGain); s1.start(startAt);
+        st.playAt = startAt;
+        st.t0 = musicAt;
+        var gameMusicGain = ctx.createGain(); gameMusicGain.gain.setValueAtTime(0, musicAt); gameMusicGain.gain.linearRampToValueAtTime(1, musicAt + 1.4); gameMusicGain.connect(ctx.destination);
+        var s1 = ctx.createBufferSource(); s1.buffer = buffer; s1.connect(gameMusicGain); s1.start(musicAt);
         var s2 = null;
-        if (melBuf) { s2 = ctx.createBufferSource(); s2.buffer = melBuf; melGain = ctx.createGain(); melGain.gain.value = 1; s2.connect(melGain); melGain.connect(gameMusicGain); s2.start(startAt); }
+        if (melBuf) { s2 = ctx.createBufferSource(); s2.buffer = melBuf; melGain = ctx.createGain(); melGain.gain.value = 1; s2.connect(melGain); melGain.connect(gameMusicGain); s2.start(musicAt); }
         src = { stop: function (w) { s1.stop(w); if (s2) s2.stop(w); } };
         resetBoss(); clearAGauge();
         beachVisual.start(song&&song.bpm);
@@ -551,7 +571,7 @@
     // 버튼 → 점프. 리듬 판정은 "두더지가 최고점에 닿는 시각" 기준(입력 시각 + 최고점까지 시간).
     function clearButtonWaves(){buttonWaves.forEach(function(a){if(a)a.cancel();});buttonWaves=[];}
     function press(lane) {
-      if (!st || st.over || st.paused || now() < 0) return;
+      if (!st || st.over || st.paused || now() < 0 || (st.playAt && ctx.currentTime < st.playAt)) return;
       if(btnEls&&btnEls[lane])replay(btnEls[lane],'is-press-fx');
       var button=btnEls&&btnEls[lane],wave=button&&button.querySelector('.rp-a-wave');
       if(wave){if(buttonWaves[lane])buttonWaves[lane].cancel();var wa=wave.animate([{transform:'scale(.96)',opacity:0},{transform:'scale(1.08)',opacity:.75,offset:.22},{transform:'scale(1.18)',opacity:0}],{duration:260,easing:'ease-out',fill:'both'});buttonWaves[lane]=wa;wa.onfinish=function(){if(buttonWaves[lane]===wa){wa.cancel();buttonWaves[lane]=null;}};}
@@ -675,8 +695,9 @@
       lyricTicker.update(t);
       // 카운트인 표시: 음성이 끝날 때까지 입력·노트·음악 시계는 시작하지 않음
       var ci = countEl, countdownElapsed = ctx.currentTime - st.countdownAt;
-      if (t < 0) { ci.textContent = countdownElapsed < 1 ? '3' : countdownElapsed < 2 ? '2' : countdownElapsed < 3 ? '1' : 'JUMP'; ci.hidden = false; }
+      if (ctx.currentTime < st.playAt) { ci.textContent = countdownElapsed < 0.85 ? '3' : countdownElapsed < 1.70 ? '2' : countdownElapsed < 2.55 ? '1' : 'JUMP'; ci.hidden = false; }
       else ci.hidden = true;
+      if (ctx.currentTime < st.playAt) return;
       // 두더지 프레임 + 머리 원
       var heads = frameHeads;
       for (var i = 0; i < 4; i++) {
