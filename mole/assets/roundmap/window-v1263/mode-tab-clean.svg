@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 180">
+  <defs>
+    <linearGradient id="edge" x2="0" y2="1"><stop stop-color="#d6a15c"/><stop offset=".45" stop-color="#97602e"/><stop offset="1" stop-color="#4e2d19"/></linearGradient>
+    <linearGradient id="wood" x2="0" y2="1"><stop stop-color="#965c31"/><stop offset=".5" stop-color="#704023"/><stop offset="1" stop-color="#59301c"/></linearGradient>
+    <linearGradient id="pin" x2="0" y2="1"><stop stop-color="#e4bf76"/><stop offset="1" stop-color="#8a5a2f"/></linearGradient>
+  </defs>
+  <path d="M23 25 Q20 18 31 18 L265 18 Q277 18 278 28 L285 63 Q286 69 293 77 Q298 84 292 92 L279 111 L276 149 Q275 160 263 160 L34 160 Q23 160 22 149 L18 116 L7 94 Q2 86 8 78 L19 62Z" fill="url(#edge)" stroke="#43291c" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M33 32 Q29 32 29 40 L25 67 L15 86 L27 111 L31 139 Q31 146 39 146 L257 146 Q265 146 265 138 L268 107 L282 86 L271 68 L266 40 Q266 32 258 32Z" fill="url(#wood)" stroke="#deb276" stroke-opacity=".55" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M39 48 Q112 43 161 48 T258 47 M37 130 Q112 135 176 130 T258 132" fill="none" stroke="#d4a16b" stroke-opacity=".16" stroke-width="1.5" stroke-linecap="round"/>
+  <g fill="url(#pin)" stroke="#55331d" stroke-width="1.5"><circle cx="40" cy="43" r="5"/><circle cx="255" cy="43" r="5"/><circle cx="40" cy="136" r="5"/><circle cx="255" cy="136" r="5"/></g>
+</svg>

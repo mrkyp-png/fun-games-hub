@@ -5970,12 +5970,14 @@ html, body, .cosmic-bg { background: #0a1230; }
 .qs-spk:nth-of-type(5) { right: -8%; bottom: 0; animation-delay: 1s; } .qs-spk:nth-of-type(6) { left: 60%; top: 30%; animation-delay: 1.25s; }
 @keyframes qs-spk { 0% { opacity: 0; transform: scale(0.2) rotate(0); } 25% { opacity: 1; transform: scale(1.1) rotate(45deg); } 55%, 100% { opacity: 0; transform: scale(0.3) rotate(90deg); } }
 /* 5. 위쪽 두더지 — 숨쉬듯 살짝 위아래 + 가끔 눈 깜빡임 (머리판 높이 고정 규칙과 같은 비율) */
-.qs-mole { position: absolute; left: 0; top: 0; width: 100%; pointer-events: none; animation: qs-bob 2.4s ease-in-out infinite; will-change: transform; }
+.qs-mole { position: absolute; left: 0; top: 0; width: 100%; pointer-events: none; animation: qs-bob 2.4s ease-in-out infinite, qs-blink 2.1s linear infinite; will-change: transform; }
 .qs-mole img { display: block; width: 100%; aspect-ratio: 480 / 253; object-fit: fill; }
 .qs-screen[data-mode="ach"] .qs-mole img { aspect-ratio: 533 / 271; }
 @keyframes qs-bob { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
-.qs-lid { position: absolute; border-radius: 50% 50% 46% 46%; border-bottom: 3px solid #5a2a10; background-image: linear-gradient(180deg, rgba(90,40,10,0.25), transparent 45%, rgba(90,40,10,0.3)); box-sizing: border-box; transform-origin: 50% 0; transform: scaleY(0); animation: qs-blink 4.2s linear infinite; }
-@keyframes qs-blink { 0%, 90%, 100% { transform: scaleY(0); } 93%, 95% { transform: scaleY(1); } }
+.qs-lid { position: absolute; border-radius: 50% 50% 46% 46%; border-bottom: 3px solid #5a2a10; background-image: linear-gradient(180deg, rgba(90,40,10,0.25), transparent 45%, rgba(90,40,10,0.3)); box-sizing: border-box; transform-origin: 50% 0; transform: scaleY(var(--qs-eye-close, 0)); }
+@property --qs-eye-close { syntax: '<number>'; inherits: true; initial-value: 0; }
+/* Both eyelids inherit one animated value, including when a tab unhides an eye. */
+@keyframes qs-blink { 0%, 90%, 100% { --qs-eye-close: 0; } 93%, 95% { --qs-eye-close: 1; } }
 /* 6. 완료한 업적 방패에 빛 스침 */
 .qs-shield.is-ok { position: relative; }
 .qs-shield.is-ok::after { content: ''; position: absolute; inset: 0; pointer-events: none; -webkit-mask: var(--sh) center / contain no-repeat; mask: var(--sh) center / contain no-repeat;
@@ -8023,3 +8025,4 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-glass-grow > circle { transition:stroke .28s ease; }
 .rb-board[data-combo-stage]:not([data-combo-stage="0"]) .rb-glass-grow > circle { stroke:var(--combo-accent); }
 @media(prefers-reduced-motion:reduce) { .rp-a-cloud-boss.is-combo-pop::after,#rhythm-screen.rp-chorus-hit .rp-section-flash::before { animation:none; } }
+

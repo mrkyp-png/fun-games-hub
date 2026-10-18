@@ -1493,3 +1493,13 @@
 - Neon: replace background-painted span with img; two lossless200x250 PNG frames from existing400x250 strip,3fps; same placement/size, lane outline, approach and hit animations; preload/decode and SW shell updated.
 - Validation: runtime/SW and inline script syntax; scoped whitespace; actual create/place functions tested across9lanes with controlled frame timing; pixel equality to source. Browser launch blocked EPERM/no connected browser, so Neon gameplay visual fix remains unverified. Do not report it visually confirmed.
 - Version/build tag and SW registration/cache all1261 G. Deployment commit and Pages result recorded locally after publication.
+
+
+
+## 2026-10-18 / V1270 G - Approved mine round map release
+- User explicitly authorized deployment on 2026-10-18. Based on current remote V1261 G (dd1ed958); no force push or unrelated local changes.
+- Includes V1262 synchronized quest blinking at twice the prior speed, and V1263-V1270 approved Amateur layered mine scene, moving rear mine/cloud, opposing mirrored left hippo at 70% opacity, larger timber mode controls, gem start control, repositioned chalkboard and top-aligned close button.
+- Eight burrows progress bottom1 to top8; measured centers, 1.5x mole images; synthetic oval shadows and duplicate lower icons removed. Save/unlock rules unchanged. Normal/Pro keep original backgrounds pending subsequent work.
+- Asset provenance remains in desktop source folder and local review manifest. Preserve original raster assets; mode controls use clean vector edges.
+- Validation: actual Progress/RoundMap modules and 10 viewport/safe-area numerical geometry models passed; JS syntax, asset references and SW shell checked. Actual browser rendering unavailable; numerical verification must not be described as visual QA.
+- Build tag, SW registration and cache V1270 G. Deployment commit and workflow result recorded locally after completion.

@@ -6,7 +6,6 @@
 <meta property="og:description" content="귀여운 동물들과 함께 즐기는 MOLE PANG 리듬 액션 게임입니다.">
 <meta property="og:image" content="https://mrkyp-png.github.io/fun-games-hub/mole/assets/home2/splash-art.webp">
 <meta property="og:url" content="https://mrkyp-png.github.io/fun-games-hub/mole/">
-
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style id="loading-first-paint">
   /* Keep the initial canvas black before external styles and artwork arrive. */
@@ -39,6 +38,7 @@
 <link rel="stylesheet" href="../cosmic-theme.css">
 <link rel="stylesheet" href="../common/settings.css">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="roundmap-window.css">
 <style>
   /* 로딩 스플래시 — style.css 로딩 전에도 바로 뜨게 인라인. */
   #splash {
@@ -181,6 +181,7 @@
     -webkit-mask: radial-gradient(circle at 50% 50%, transparent var(--pr), #000 calc(var(--pr) + 1.5px));
             mask: radial-gradient(circle at 50% 50%, transparent var(--pr), #000 calc(var(--pr) + 1.5px)); --pr: 0px; }
   #power-on-overlay.is-expand { --pr: var(--dot-max, 150vmax); transition: --pr 3s linear; } /* v827: 10초→3초(사용자 지정) */
+  /* Use an unmasked black surface during the hold; retire the loading layers underneath. */
   #power-on-overlay.is-black { -webkit-mask: none; mask: none; }
   #power-on-dot { display: none; }
 
@@ -556,13 +557,19 @@
     <!-- 2026-09-18(사용자 지정): 예전엔 화면 전체를 덮는 중앙 카드형 팝업(.ad-overlay)이었으나,
          다른 12개 화면과 통일해 보드 영역(.board-screen)에 들어가고 다이얼패드는 그대로 노출. -->
       <!-- 라운드 선택 광산 맵(v763) — 명세 "MOLE PANG 라운드 선택 화면". js/round-map.js -->
-      <div class="board-screen rm-screen" id="roundmap-screen" data-light="easy" hidden>
+      <div class="board-screen rm-screen rm-window-map" id="roundmap-screen" data-light="easy" hidden>
         <div class="rm-stage">
           <img class="rm-bg" data-rm-bg alt="">
+          <div class="rm-parallax-scene" aria-hidden="true">
+            <div class="rm-parallax-rear"><img class="rm-rear-bg" src="assets/roundmap/window-v1263/rear-mine.webp" alt=""><div class="rm-cloud-window"><img class="rm-window-cloud" src="assets/roundmap/window-v1263/cloud.webp" alt=""></div></div>
+            <img class="rm-route-art" src="assets/roundmap/window-v1263/route-grounded.webp" alt="">
+            <img class="rm-front-art" src="assets/roundmap/window-v1263/foreground-frame.webp" alt="">
+          </div>
           <div class="rm-fx" data-rm-fx></div>
           <div class="rm-rounds" data-rm-rounds></div>
         </div>
         <div class="rm-ui">
+          <img class="rm-viewer" src="assets/roundmap/window-v1263/hippo-viewer.webp" alt="" aria-hidden="true">
             <div class="rm-board">
               <img class="rm-board-img" src="assets/roundmap/board.png" alt="">
               <div class="rm-board-light"><img src="assets/roundmap/ic-bulb.png" alt=""><b data-rm-light-name></b></div>
@@ -573,14 +580,13 @@
               </div>
             </div>
             <div class="rm-bottom">
-              <div class="rm-icons" data-rm-icons></div>
               <div class="rm-lights">
-                <button type="button" class="rm-light rm-light--easy" data-rm-light="easy"><span data-i18n="mole.diff.amateur">Amateur</span></button>
-                <button type="button" class="rm-light rm-light--mid" data-rm-light="mid"><span data-i18n="mole.diff.normal">Normal</span></button>
-                <button type="button" class="rm-light rm-light--legend" data-rm-light="legend"><span data-i18n="mole.diff.pro">Pro</span></button>
+                <button type="button" class="rm-light rm-light--easy" data-rm-light="easy"><span data-i18n="mole.rm.mode.easy">Amateur</span></button>
+                <button type="button" class="rm-light rm-light--mid" data-rm-light="mid"><span data-i18n="mole.rm.mode.mid">Normal</span></button>
+                <button type="button" class="rm-light rm-light--legend" data-rm-light="legend"><span data-i18n="mole.rm.mode.legend">Pro</span></button>
               </div>
             </div>
-            <button type="button" class="rm-start" data-rm-start><span class="h2-start" aria-hidden="true"><img src="assets/home2/ic-start.png" alt=""><img class="h2-play" src="assets/home2/start-play.png" alt=""></span><span class="rm-start-label" data-i18n="mole.start.btn">Start</span></button>
+            <button type="button" class="rm-start" data-rm-start aria-label="시작" data-i18n-aria-label="mole.start.btn"><img class="rm-start-gem" src="assets/roundmap/window-v1263/start-gem.webp" alt=""></button>
             <button type="button" class="dr-back rm-back is-x" data-back="roundmap" aria-label="뒤로" data-i18n-aria-label="common.back"><img src="assets/workshop/pick/x.png" alt=""></button><!-- v940: 뒤로가기 → 오른쪽 빨간 X -->
         </div>
       </div>
@@ -1064,7 +1070,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1261 G</div>
+        <div id="build-tag" aria-hidden="true">V 1270 G</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1259,6 +1265,7 @@ window.FGH.rollOut = function (el, done) {
         overlay.style.transition = '--pr 1s ease-in'; overlay.style.setProperty('--pr', '0px');
         setTimeout(function () {
           overlay.classList.add('is-black');
+          // Retire animated image/compositor layers while the opaque cover is in place.
           if (s.getAnimations) s.getAnimations({ subtree: true }).forEach(function (a) { a.cancel(); });
           s.replaceChildren();
           s.hidden = true;
@@ -1338,7 +1345,7 @@ window.FGH.rollOut = function (el, done) {
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=1261-G').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=1270-G').catch(function () {});
       }
     });
   }
