@@ -584,6 +584,7 @@
           <div class="rm-rounds" data-rm-rounds></div>
         </div>
         <div class="rm-top-cap rm-mode-easy" aria-hidden="true"><img src="assets/roundmap/frame-v1282/amateur-top-cap.webp" alt="" draggable="false"></div>
+        <div class="rm-top-cap rm-mode-mid" aria-hidden="true"><img src="assets/roundmap/frame-v1297/normal-top-cap.webp" alt="" draggable="false"></div>
         <div class="rm-top-cap rm-mode-legend" aria-hidden="true"><img src="assets/roundmap/frame-v1282/pro-top-cap.webp" alt="" draggable="false"></div>
         <div class="rm-ui">
           <div class="rm-viewer" aria-hidden="true"><img class="rm-viewer-art" src="assets/roundmap/window-v1263/hippo-viewer.webp" alt="" draggable="false"></div>
@@ -1364,7 +1365,7 @@ window.FGH.rollOut = function (el, done) {
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=1295-G').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=1297-G').catch(function () {});
       }
     });
   }
