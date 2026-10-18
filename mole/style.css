@@ -7911,6 +7911,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* Popup contents stay stationary; liquid motion is suspended pending correction. */
 
 /* V1174: clearer beach targets and larger lyrics with the neon line above the circles. */
+#rhythm-screen:not(.is-type-b) .rp-lane .rp-target { opacity:.5; }
 #rhythm-screen:not(.is-type-b) .rp-lane .rp-target { filter:brightness(.76) saturate(1.16); }
 #rhythm-screen:not(.is-type-b) .rp-lane.is-approaching .rp-target { filter:brightness(.9) saturate(1.16); }
 #rhythm-screen:not(.is-type-b) .rp-hole-front { display:block; z-index:2; }
