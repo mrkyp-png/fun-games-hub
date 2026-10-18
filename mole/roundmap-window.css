@@ -145,3 +145,8 @@
 .rm-window-map[data-light="mid"] .rm-viewer,.rm-window-map[data-light="legend"] .rm-viewer { bottom:calc(env(safe-area-inset-bottom,0px) + max(16cqw,60px)); }
 .rm-window-map { touch-action:pan-y; }
 .rm-window-map.is-panning { cursor:grabbing; }
+
+/* V1299: restore the opaque safe-area cap above the artwork. */
+.rm-window-map .rm-top-cap { left:var(--rm-pan-x,0px); right:auto; width:100%; height:calc(env(safe-area-inset-top,0px) + 16cqw); overflow:hidden; background:linear-gradient(#332216,#332216) top/100% env(safe-area-inset-top,0px) no-repeat; }
+.rm-window-map[data-light="legend"] .rm-top-cap { background-image:linear-gradient(#191417,#191417); }
+.rm-window-map .rm-top-cap img { top:calc(env(safe-area-inset-top,0px) - 1px); left:0; width:100%; height:16cqw; object-fit:fill; }
