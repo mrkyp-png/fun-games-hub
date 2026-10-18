@@ -7913,7 +7913,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* V1174: clearer beach targets and larger lyrics with the neon line above the circles. */
 #rhythm-screen:not(.is-type-b) .rp-lane .rp-target { opacity:.5; }
 #rhythm-screen:not(.is-type-b) .rp-lane .rp-target { filter:brightness(.76) saturate(1.16); }
-#rhythm-screen:not(.is-type-b) .rp-lane.is-approaching .rp-target { filter:brightness(.9) saturate(1.16); }
+#rhythm-screen:not(.is-type-b) .rp-lane.is-approaching .rp-target { filter:none; }
 #rhythm-screen:not(.is-type-b) .rp-hole-front { display:block; z-index:2; }
 #rhythm-screen:not(.is-type-b) .rp-mole.is-hurt { animation:rp-beach-mole-hurt .45s ease-out; }
 @keyframes rp-beach-mole-hurt { 0%,100% { transform:translateX(-50%); } 18% { transform:translateX(-50%) translateY(9px) rotate(-9deg) scaleX(.96) scaleY(.93); filter:brightness(1.45) saturate(.65); } 45% { transform:translateX(-50%) translateY(5px) rotate(6deg) scaleX(.98) scaleY(.96); } 72% { transform:translateX(-50%) translateY(7px) rotate(-3deg) scaleX(.96) scaleY(.95); } }

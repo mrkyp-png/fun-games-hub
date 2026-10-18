@@ -381,6 +381,7 @@
   let homeBgmIdx = 0;
   let bgmWantPlay = false; // 지금 화면이 BGM 을 원하는가 (홈/더보기/게임 진입 시 true)
   let rhythmEntryBgmWantPlay = false;
+  let rhythmEntryFadeTimer = null;
   const BGM_VOL = 0.35;
   const BGM_FADE_MS = 900;
   let bgmFadeTimer = null;
@@ -402,13 +403,23 @@
     if (feverBgm && !feverBgm.paused) feverBgm.pause();
   }
 
-  function setRhythmEntryBgm(want) {
+  function setRhythmEntryBgm(want, fadeMs) {
     rhythmEntryBgmWantPlay = !!want;
     const entry = document.getElementById('rhythm-entry-bgm');
     if (!entry) return;
+    if (rhythmEntryFadeTimer) { cancelAnimationFrame(rhythmEntryFadeTimer); rhythmEntryFadeTimer = null; }
     entry.loop = true;
     entry.volume = BGM_VOL;
-    if (!want) { entry.pause(); entry.currentTime = 0; }
+    if (!want && fadeMs > 0 && !entry.paused && !document.hidden && window.FGH.Settings.get('music')) {
+      const start = performance.now(), from = entry.volume;
+      const fade = function () {
+        const k = Math.min(1, (performance.now() - start) / fadeMs);
+        entry.volume = from * (1 - k);
+        if (k < 1) { rhythmEntryFadeTimer = requestAnimationFrame(fade); return; }
+        rhythmEntryFadeTimer = null; entry.pause(); entry.currentTime = 0; entry.volume = BGM_VOL;
+      };
+      rhythmEntryFadeTimer = requestAnimationFrame(fade);
+    } else if (!want) { entry.pause(); entry.currentTime = 0; }
     applyBgm();
   }
 
@@ -425,7 +436,7 @@
     const entry = document.getElementById('rhythm-entry-bgm');
     const wantEntry = rhythmEntryBgmWantPlay && !document.hidden && window.FGH.Settings.get('music');
     if (entry && wantEntry && entry.paused) entry.play().catch(() => { /* 사용자 입력 시 재시도 */ });
-    else if (entry && !wantEntry && !entry.paused) entry.pause();
+    else if (entry && !wantEntry && !entry.paused && !rhythmEntryFadeTimer) entry.pause();
   }
 
   // 다른 곡으로 크로스페이드 — 비활성 쪽에 새 곡을 미리 재생 시작해 페이드인, 활성 쪽은

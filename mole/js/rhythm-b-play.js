@@ -1,4 +1,4 @@
-﻿// V 1043 G: B test chart. Shared A song/rules; border reaches the native glow at targetTime.
+// V 1043 G: B test chart. Shared A song/rules; border reaches the native glow at targetTime.
 (function (root) {
  'use strict';
  const MG=root.MoleGame;
@@ -311,9 +311,11 @@
     state.bpm=Number(data.song&&data.song.bpm)||rules.config.song.bpm;state.firstBeat=Number.isFinite(data.song&&data.song.firstBeat)?data.song.firstBeat:rules.config.song.firstBeat;
     state.duration=Math.max(data.back.duration,(times[times.length-1]||0)+rules.diffs[diff].judge.goodMs/1000);
     state.t0=context.currentTime+rules.config.countIn+.15;state.loading=false;
+    if(opts.onEntryMusic)opts.onEntryMusic(false,(rules.config.countIn+.15+1.4)*1000);
+    const gameMusicGain=context.createGain();gameMusicGain.gain.setValueAtTime(0,state.t0);gameMusicGain.gain.linearRampToValueAtTime(1,state.t0+1.4);gameMusicGain.connect(context.destination);
     showStart(0);
-    const back=context.createBufferSource();back.buffer=data.back;back.connect(context.destination);back.start(state.t0);sources.push(back);
-    if(data.melody){const mel=context.createBufferSource();mel.buffer=data.melody;melodyGain=context.createGain();melodyGain.gain.value=1;mel.connect(melodyGain);melodyGain.connect(context.destination);mel.start(state.t0);sources.push(mel);}
+    const back=context.createBufferSource();back.buffer=data.back;back.connect(gameMusicGain);back.start(state.t0);sources.push(back);
+    if(data.melody){const mel=context.createBufferSource();mel.buffer=data.melody;melodyGain=context.createGain();melodyGain.gain.value=1;mel.connect(melodyGain);melodyGain.connect(gameMusicGain);mel.start(state.t0);sources.push(mel);}
     if(state.paused)await context.suspend();
     if(!state.paused&&!frame)frame=requestAnimationFrame(tick);return true;
    }catch(e){if(token!==generation)return false;state.loading=false;state.ended=true;state.error=String(e.message||e);label('ERROR');error.hidden=false;startShade.hidden=true;stopAudio();return false;}

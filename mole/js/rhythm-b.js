@@ -225,7 +225,7 @@
       return artReady;
     }
     play = root.MoleGame.RhythmBPlay.create({
-      root: opts.root, board, rules: opts.rules, loadSong: opts.loadSong, prepareAssets,
+      root: opts.root, board, rules: opts.rules, loadSong: opts.loadSong, prepareAssets, onEntryMusic: opts.onEntryMusic,
       onSong: opts.onSong, onTime: opts.onTime, onStop: opts.onStop, onComboColor: opts.onComboColor,
       onHit: shakeMini,
       onNoteSpawn: spawnWave,

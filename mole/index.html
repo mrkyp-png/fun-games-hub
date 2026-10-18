@@ -603,9 +603,9 @@
         </div>
         <div class="rp-bottom">
           <div class="rb-timing-gauge rp-a-timing-gauge" role="img" aria-label="Judgement energy: longest PERFECT, shortest MISS"><svg viewBox="1 0 778 60" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="rp-a-timing-spectrum"><stop stop-color="#e5b873"/><stop offset=".3" stop-color="#f1d19e"/><stop offset=".46" stop-color="#fff1d5"/><stop offset=".54" stop-color="#fff1d5"/><stop offset=".7" stop-color="#f1d19e"/><stop offset="1" stop-color="#e5b873"/></linearGradient></defs><rect x="2" y="8" width="776" height="34" fill="#fff0cf" stroke="#bd8b47" stroke-width="2"/><rect x="16" y="16" width="748" height="18" fill="url(#rp-a-timing-spectrum)" opacity=".45"/><path d="M24 8H756M24 42H756" stroke="url(#rp-a-timing-spectrum)" stroke-width="2" opacity=".8"/><line data-zone="GOOD" data-side="-1" x1="232.53280000000004" x2="232.53280000000004" y1="32" y2="42" stroke="#a47940" stroke-opacity=".7" stroke-width="1" vector-effect="non-scaling-stroke"/><line data-zone="GOOD" data-side="1" x1="547.4671999999999" x2="547.4671999999999" y1="32" y2="42" stroke="#a47940" stroke-opacity=".7" stroke-width="1" vector-effect="non-scaling-stroke"/><line data-zone="GREAT" data-side="-1" x1="132.32640000000004" x2="132.32640000000004" y1="32" y2="42" stroke="#a47940" stroke-opacity=".7" stroke-width="1" vector-effect="non-scaling-stroke"/><line data-zone="GREAT" data-side="1" x1="647.6736000000001" x2="647.6736000000001" y1="32" y2="42" stroke="#a47940" stroke-opacity=".7" stroke-width="1" vector-effect="non-scaling-stroke"/><line data-zone="PERFECT" data-side="-1" x1="32.120000000000005" x2="32.120000000000005" y1="32" y2="42" stroke="#a47940" stroke-opacity=".7" stroke-width="1" vector-effect="non-scaling-stroke"/><line data-zone="PERFECT" data-side="1" x1="747.88" x2="747.88" y1="32" y2="42" stroke="#a47940" stroke-opacity=".7" stroke-width="1" vector-effect="non-scaling-stroke"/></svg><span class="rb-timing-caption rb-timing-caption--center">RHYTHM</span><span class="rb-timing-light" hidden></span></div>
-          <div class="rp-a-status" aria-label="Game status"><div class="rp-a-status-item rp-a-status-score"><span class="rp-a-status-label">SCORE</span><b class="rp-a-status-value" data-rp-score>0</b></div><div class="rp-a-status-item rp-a-status-judgement"><span class="rp-a-status-label">JUDGEMENT</span><b class="rp-a-status-value" data-rp-status-judge>READY</b></div><div class="rp-a-status-item rp-a-status-combo"><span class="rp-a-status-label">COMBO</span><b class="rp-a-status-value" data-rp-combo>0</b></div><div class="rp-a-status-item rp-a-status-time"><svg class="rp-a-clock" viewBox="0 0 369 426" aria-hidden="true"><image href="assets/rhythm/ui-status-v1232/clock.png" width="369" height="426"/><g stroke="#14651c" stroke-width="8" stroke-linecap="round"><path d="M187 237L187 181"/><path class="rp-a-clock-hand" d="M187 237L187 140"/></g><circle cx="187" cy="237" r="12" fill="#31b838" stroke="#14651c" stroke-width="5"/></svg><span class="rp-a-status-label">TIME</span><b class="rp-a-status-value" data-rp-time>0:00</b></div></div>
-          <div class="rp-hpbar" data-rp-hpbar hidden><i data-rp-hp></i></div>
           <div class="rp-btns" data-rp-btns></div>
+          <div class="rp-hpbar" data-rp-hpbar hidden><i data-rp-hp></i></div>
+          <div class="rp-a-status" aria-label="Game status"><div class="rp-a-status-item rp-a-status-score"><span class="rp-a-status-label">SCORE</span><b class="rp-a-status-value" data-rp-score>0</b></div><div class="rp-a-status-item rp-a-status-judgement"><span class="rp-a-status-label">JUDGEMENT</span><b class="rp-a-status-value" data-rp-status-judge>READY</b></div><div class="rp-a-status-item rp-a-status-combo"><span class="rp-a-status-label">COMBO</span><b class="rp-a-status-value" data-rp-combo>0</b></div><div class="rp-a-status-item rp-a-status-time"><svg class="rp-a-clock" viewBox="0 0 369 426" aria-hidden="true"><image href="assets/rhythm/ui-status-v1232/clock.png" width="369" height="426"/><g stroke="#14651c" stroke-width="8" stroke-linecap="round"><path d="M187 237L187 181"/><path class="rp-a-clock-hand" d="M187 237L187 140"/></g><circle cx="187" cy="237" r="12" fill="#31b838" stroke="#14651c" stroke-width="5"/></svg><span class="rp-a-status-label">TIME</span><b class="rp-a-status-value" data-rp-time>0:00</b></div></div>
         </div>
         <!-- v826: 리듬팡 창 3종 = 바탕화면 "리듬팡 UI 및 에셋/2차" 시안·에셋(부품 잘라 조립, 숫자·글자만 코드) -->
         <div class="rp-modal" data-rp-pause hidden><div class="rx-card rx-card--pause">
@@ -1058,7 +1058,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1249 G</div>
+        <div id="build-tag" aria-hidden="true">V 1251 G</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1325,7 +1325,7 @@ window.FGH.rollOut = function (el, done) {
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=1242-G').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=1251-G').catch(function () {});
       }
     });
   }

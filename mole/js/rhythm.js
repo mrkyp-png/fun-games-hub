@@ -83,7 +83,7 @@
 
   function create(opts) {
     var el = opts.root;
-    function setEntryBgm(playing) { if (typeof opts.onEntryMusic === 'function') opts.onEntryMusic(!!playing); }
+    function setEntryBgm(playing, fadeMs) { if (typeof opts.onEntryMusic === 'function') opts.onEntryMusic(!!playing, fadeMs); }
     var $ = function (s) { return el.querySelector(s); };
     var stage = $('[data-rp-stage]'), wlayer = $('[data-rp-weapons]');
     var lyricTicker = MG.RhythmLyrics.create(el);
@@ -359,9 +359,9 @@
       for (var i = 0; i < 4; i++) {
         var ln = document.createElement('div'); ln.className = 'rp-lane'; ln.style.left = (i * 25) + '%';
         var colorIndex = colorMap[i];
-        ln.style.setProperty('--target-color',['#ffc94c','#5bd8ff','#ff8dce','#66e5b2'][colorIndex]);
+        ln.style.setProperty('--target-color',(beachPalette ? ['#ffc400','#009cff','#ee16a6','#10c848'] : ['#ffc94c','#5bd8ff','#ff8dce','#66e5b2'])[colorIndex]);
         var holeSize = HOLE_SIZE[i];
-        ln.innerHTML = '<img class="rp-target" src="' + A + 'beach-v1172/target-' + (colorIndex + 1) + '.svg" alt=""><span class="rp-target-orbit" aria-hidden="true"><i><b></b></i></span>' +
+        ln.innerHTML = '<img class="rp-target" src="' + A + (beachPalette ? 'beach-target-v1250/target-' : 'beach-v1172/target-') + (colorIndex + 1) + '.svg" alt=""><span class="rp-target-orbit" aria-hidden="true"><i><b></b></i></span>' +
           '<img class="rp-hole" src="' + A + 'hole-' + (i + 1) + '.png" alt="">' +
           '<span class="rp-mole" style="background-image:url(' + A + 'jump-' + CHARS[i] + '-strip.png)"></span>' +
           '<svg class="rp-hole-front" viewBox="0 0 ' + holeSize[0] + ' ' + holeSize[1] + '" aria-hidden="true"><defs><clipPath id="rp-hole-front-' + i + '" clipPathUnits="objectBoundingBox"><path d="' + holeFrontPath(i) + '"/></clipPath></defs><image href="' + A + 'hole-' + (i + 1) + '.png" width="' + holeSize[0] + '" height="' + holeSize[1] + '" clip-path="url(#rp-hole-front-' + i + ')"/></svg>' +
@@ -501,9 +501,11 @@
         // 카운트인: 3·2·1·START 가 끝나는 순간 음악 0초
         var startAt = ctx.currentTime + CONFIG.countIn + 0.15;
         st.t0 = startAt;
-        var s1 = ctx.createBufferSource(); s1.buffer = buffer; s1.connect(ctx.destination); s1.start(startAt);
+        setEntryBgm(false, (CONFIG.countIn + 0.15 + 1.4) * 1000);
+        var gameMusicGain = ctx.createGain(); gameMusicGain.gain.setValueAtTime(0, startAt); gameMusicGain.gain.linearRampToValueAtTime(1, startAt + 1.4); gameMusicGain.connect(ctx.destination);
+        var s1 = ctx.createBufferSource(); s1.buffer = buffer; s1.connect(gameMusicGain); s1.start(startAt);
         var s2 = null;
-        if (melBuf) { s2 = ctx.createBufferSource(); s2.buffer = melBuf; melGain = ctx.createGain(); melGain.gain.value = 1; s2.connect(melGain); melGain.connect(ctx.destination); s2.start(startAt); }
+        if (melBuf) { s2 = ctx.createBufferSource(); s2.buffer = melBuf; melGain = ctx.createGain(); melGain.gain.value = 1; s2.connect(melGain); melGain.connect(gameMusicGain); s2.start(startAt); }
         src = { stop: function (w) { s1.stop(w); if (s2) s2.stop(w); } };
         resetBoss(); clearAGauge();
         beachVisual.start(song&&song.bpm);
@@ -836,7 +838,6 @@
     }
     // v841: 탄성 밀어내기로 게임 화면 진입(난이도 선택 → 게임, 결과창 다시하기 → 게임)
     function pushInGame(modal) {
-      setEntryBgm(false);
       // v878(사용자 지정): 탄성 밀어내기 → 글리치(다른 화면과 통일)
       modal.hidden = true;
       // V 1113 G: keep B's opaque screen fixed while only its board enters.
