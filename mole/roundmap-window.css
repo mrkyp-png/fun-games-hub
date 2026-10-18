@@ -1,5 +1,6 @@
 /* V1297 G: align Amateur gem halos and extend all cave caps through the phone safe area. */
 #roundmap-screen.rm-screen.rm-window-map { background:#08090b; }
+#roundmap-screen.rm-window-map { touch-action:none; }
 #roundmap-screen.rm-window-map::before { inset:0; background-image:var(--rm-backing,url('assets/roundmap/window-v1263/rear-mine.webp')); filter:none; clip-path:inset(0 0 calc(env(safe-area-inset-bottom,0px) + max(19vw,72px)) 0); transform:translateX(var(--rm-pan-x,0px)); pointer-events:none; }
 /* Reserve the bottom controls, including the device safe area, before fitting all eight holes. */
 .rm-window-map .rm-stage { top:env(safe-area-inset-top,0px); left:calc(50% + var(--rm-pan-x,0px)); width:calc((100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - max(19vw,72px)) * 941 / 1672); transform:translateX(-50%); }
@@ -152,3 +153,4 @@
 @keyframes rm-stage-in-from-left { from { transform:translateX(calc(-50% - 8vw)); opacity:.45; } to { transform:translateX(-50%); opacity:1; } }
 @keyframes rm-cap-in-from-right { from { transform:translateX(8vw); opacity:.45; } to { transform:translateX(0); opacity:1; } }
 @keyframes rm-cap-in-from-left { from { transform:translateX(-8vw); opacity:.45; } to { transform:translateX(0); opacity:1; } }
+

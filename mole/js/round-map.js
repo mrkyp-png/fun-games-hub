@@ -31,11 +31,13 @@
     // Small color-matched gem halos cover the fixed foreground; rear halos move with the cave plate.
     easy: {
       glow:[], spark:[], bubble:[],
-      // Anchored to the six visible blue crystal clusters in the foreground artwork.
-      gem:[[804,298,'cyan'],[803,645,'cyan'],[140,704,'cyan'],[856,851,'cyan'],[83,1026,'cyan'],[885,1237,'cyan']],
-      rearGem:[[337,62,'cyan'],[530,147,'violet'],[280,201,'cyan'],[767,492,'amber'],[633,585,'amber'],[419,830,'violet'],[462,857,'cyan'],[37,1030,'cyan'],[821,1176,'amber'],[859,1306,'violet'],[194,1353,'cyan'],[507,1389,'amber'],[425,1471,'violet'],[239,1608,'cyan']],
-      lantern:[[767,492],[633,585],[723,947],[821,1176],[579,1317],[507,1389],[425,1471],[239,1608]],
-      rearLantern:[[767,492],[633,585],[723,947],[821,1176],[579,1317],[507,1389],[425,1471],[239,1608]]
+      // The fixed foreground has one prominent blue cluster in the treasure cart.
+      gem:[[83,1026,'cyan']],
+      // Background crystals are anchored to the moving rear-mine artwork.
+      rearGem:[[170,180,'cyan'],[110,290,'cyan'],[200,605,'cyan'],[45,652,'cyan'],[148,872,'cyan'],[171,1047,'cyan'],[885,174,'cyan'],[793,287,'cyan'],[851,492,'cyan'],[800,653,'cyan'],[856,846,'cyan'],[773,1018,'cyan'],[818,1270,'cyan']],
+      // Fixed frame lanterns; rear fixtures live in the moving mine layer below.
+      lantern:[[115,310],[880,418]],
+      rearLantern:[[270,174],[137,425],[72,575],[645,340],[882,330]]
     },
     mid: {
       glow:[], spark:[], bubble:[],
@@ -319,3 +321,4 @@
   var api = { create: create };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.RoundMap = api; }
 })(typeof window !== 'undefined' ? window : null);
+
