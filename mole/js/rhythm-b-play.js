@@ -1,4 +1,4 @@
-﻿// V 1043 G: B test chart. Shared A song/rules; border reaches the native glow at targetTime.
+// V 1043 G: B test chart. Shared A song/rules; border reaches the native glow at targetTime.
 (function (root) {
  'use strict';
  const MG=root.MoleGame;
@@ -7,7 +7,7 @@
   // V1166: B-only 10% wider GREAT/GOOD windows; PERFECT and shared A rules stay intact.
   const diffs=Object.fromEntries(Object.entries(opts.rules.diffs).map(([key,value])=>[key,{...value,judge:{...value.judge,greatMs:value.judge.greatMs*121/100,goodMs:value.judge.goodMs*121/100}}]));
   const rules={...opts.rules,diffs,grade(ms,difficulty){const J=diffs[difficulty].judge;return ms<=J.perfectMs?'PERFECT':ms<=J.greatMs?'GREAT':ms<=J.goodMs?'GOOD':null;}};
-  const reducedMotion=root.matchMedia('(prefers-reduced-motion: reduce)'),shadeSteps=[.9,.58,0];
+  const reducedMotion=root.matchMedia('(prefers-reduced-motion: reduce)'),shadeSteps=[.9,.78,.62];
   let boardWidth=board.clientWidth;new ResizeObserver(()=>{boardWidth=board.clientWidth;}).observe(board);
   let state=null, context=null, sources=[], melodyGain=null, frame=0, generation=0;
   const progress=document.createElement('div');progress.className='rb-song-progress';progress.setAttribute('role','progressbar');progress.setAttribute('aria-label','곡 진행도');progress.setAttribute('aria-valuemin','0');progress.setAttribute('aria-valuemax','100');progress.setAttribute('aria-valuenow','0');
@@ -44,18 +44,6 @@
   let hitBuffers=null,hitBufferContext=null;const hitSources=new Set();
   const effects=new Set(),pangAnimations=Array(9).fill(null);
   let startAnimation=null;
-  const READY_AUDIO_PATHS=['audio/ready-female-calm.mp3','audio/ready-male-emphasis.mp3'];
-  let readyAudioContext=null,readyAudioBuffers=null;
-  async function loadReadyAudio(ctx){
-   if(readyAudioContext===ctx&&readyAudioBuffers)return readyAudioBuffers;
-   const buffers=await Promise.all(READY_AUDIO_PATHS.map(async path=>{try{const response=await fetch(path);if(!response.ok)throw new Error('Ready audio unavailable: '+path);return await ctx.decodeAudioData(await response.arrayBuffer());}catch(e){return null;}}));
-   readyAudioContext=ctx;readyAudioBuffers=buffers;return buffers;
-  }
-  function playReadyAudio(buffer,when){
-   if(!buffer||!context)return;const source=context.createBufferSource(),gain=context.createGain(),tail=Math.min(.1,buffer.duration*.12);
-   source.buffer=buffer;gain.gain.value=.72;gain.gain.setValueAtTime(.72,when+Math.max(0,buffer.duration-tail));gain.gain.linearRampToValueAtTime(0,when+buffer.duration);
-   source.connect(gain);gain.connect(context.destination);source.start(when);source.stop(when+buffer.duration);sources.push(source);
-  }
   const colors=['#086aff','#ff1529','#ffc400','#05e52e','#a500ff','#ff0099','#ff7900','#00cfff','#a65121'];
   // V 1155 G: visual slots are reusable; chart notes and judgement remain independent.
   const notePools=Array.from({length:9},()=>[]),visibleNotes=[];
@@ -73,15 +61,13 @@
    slot.owner=n;n.visualSlot=slot;n.el=slot.el;n.el.dataset.noteId=String(n.id);n.character=slot.character;n.ring=slot.ring;
    n.el.hidden=true;n.el.classList.remove('is-hit-out');n.ring.hidden=false;n.character.style.transform='';n.character.style.opacity='';n.lastU=NaN;n.spriteFrame=-1;
   }
-  function showNoteVisual(n){if(!n.visualActive){visibleNotes.push(n);if(state&&state.activeVisualsByLane)state.activeVisualsByLane[n.lane]++;}if(n.el.parentNode!==board){let next=null;for(const other of visibleNotes)if(other.visualActive&&other.id>n.id&&(!next||other.id<next.id))next=other;board.insertBefore(n.el,next?next.el:null);}n.visualActive=true;n.el.hidden=false;}
+  function showNoteVisual(n){if(!n.visualActive)visibleNotes.push(n);if(n.el.parentNode!==board){let next=null;for(const other of visibleNotes)if(other.visualActive&&other.id>n.id&&(!next||other.id<next.id))next=other;board.insertBefore(n.el,next?next.el:null);}n.visualActive=true;n.el.hidden=false;}
   function releaseNoteVisual(n){
-   const slot=n.visualSlot;if(n.visualActive&&state&&state.activeVisualsByLane)state.activeVisualsByLane[n.lane]=Math.max(0,state.activeVisualsByLane[n.lane]-1);n.visualActive=false;if(!slot)return;
+   const slot=n.visualSlot;n.visualActive=false;if(!slot)return;
    if(slot.owner===n){slot.el.hidden=true;slot.el.remove();slot.owner=null;}n.visualSlot=null;
   }
   const outlineDefs=document.createElementNS('http://www.w3.org/2000/svg','svg');outlineDefs.setAttribute('width','0');outlineDefs.setAttribute('height','0');outlineDefs.style.position='absolute';outlineDefs.setAttribute('aria-hidden','true');
-  // Keep the crisp lane-color outline and sprite; skip the per-character blur pass,
-  // which scales poorly when Normal/Hard show several moving notes at once.
-  outlineDefs.innerHTML='<defs>'+colors.map((color,i)=>'<filter id="rb-character-outline-'+i+'" x="-12%" y="-12%" width="124%" height="124%" color-interpolation-filters="sRGB"><feMorphology in="SourceAlpha" operator="dilate" radius="2.5" result="wide"/><feComposite in="wide" in2="SourceAlpha" operator="out" result="edge"/><feFlood flood-color="'+color+'" flood-opacity="0.35"/><feComposite in2="edge" operator="in" result="line"/><feMerge><feMergeNode in="line"/><feMergeNode in="SourceGraphic"/></feMerge></filter>').join('')+'</defs>';board.appendChild(outlineDefs);
+  outlineDefs.innerHTML='<defs>'+colors.map((color,i)=>'<filter id="rb-character-outline-'+i+'" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB"><feMorphology in="SourceAlpha" operator="dilate" radius="2.5" result="wide"/><feComposite in="wide" in2="SourceAlpha" operator="out" result="edge"/><feFlood flood-color="'+color+'" flood-opacity="0.35"/><feComposite in2="edge" operator="in" result="line"/><feGaussianBlur in="line" stdDeviation="2" result="glow"/><feMerge><feMergeNode in="glow"/><feMergeNode in="line"/><feMergeNode in="SourceGraphic"/></feMerge></filter>').join('')+'</defs>';board.appendChild(outlineDefs);
   const holoLights=colors.map((color,lane)=>{const el=document.createElement('div');el.className='rb-holo-light';el.setAttribute('aria-hidden','true');el.style.cssText='left:'+((28+(lane%3)*300)/952*100)+'%;top:'+((28+Math.floor(lane/3)*300)/2078*100)+'%;width:'+(296/952*100)+'%;height:'+(296/2078*100)+'%;--holo-color:'+color;board.appendChild(el);return el;});
   function darkenLane(lane){holoLights[lane].style.opacity='0';}
   function clearLights(){holoLights.forEach((_,i)=>darkenLane(i));}
@@ -102,19 +88,19 @@
    const a=animateEffect(word,frames,1100,()=>{if(powerAnimations[kind]===a){word.hidden=true;powerAnimations[kind]=null;}});powerAnimations[kind]=a;
   }
   function clearEffects(){clearTiming();judgeEl.style.visibility='';Object.values(powerWords).forEach(e=>e.hidden=true);for(const kind of Object.keys(powerAnimations))powerAnimations[kind]=null;for(const a of effects)a.cancel();effects.clear();perfectArcAnimations.flat().forEach(a=>{a.cancel();a.currentTime=0;});pangs.forEach(el=>el.hidden=true);pangAnimations.fill(null);startAnimation=null;startCallout.hidden=true;startShade.hidden=true;startShade.style.opacity='0';comboPulse=null;}
-  function showStart(stage,duration){
+  function showStart(stage){
    if(state.startPhase===stage)return;state.startPhase=stage;
    if(startAnimation)startAnimation.cancel();
-   const scale=[.78,.98,1.18][stage];
-   startCallout.innerHTML=stage===2?'GO':'ARE YOU<br>READY!';startCallout.dataset.stage=String(stage);
-   startCallout.style.color=['#43dcff','#ff5ba9','#56ff88'][stage];startCallout.hidden=false;
+   const scale=[.64,.82,1,1.2][stage];
+   startCallout.innerHTML=stage===3?'GO!':'ARE YOU<br>READY!';startCallout.dataset.stage=String(stage);
+   startCallout.style.color=['#43dcff','#fff05b','#ff5ba9','#56ff88'][stage];startCallout.hidden=false;
    const still=reducedMotion.matches;
    const a=animateEffect(startCallout,still?[{opacity:1},{opacity:1}]:[
     {transform:'translate(-50%,-50%) scale('+(scale*.82)+')',opacity:0,offset:0},
     {transform:'translate(-50%,-50%) scale('+scale+')',opacity:1,offset:.15},
     {transform:'translate(-50%,-50%) scale('+(scale*1.12)+')',opacity:.85,offset:.55},
     {transform:'translate(-50%,-50%) scale('+(scale*1.35)+')',opacity:0,offset:1}
-   ],duration||([1500,980,460][stage]),()=>{if(startAnimation===a){startCallout.hidden=true;startAnimation=null;}});
+   ],stage===3?500:980,()=>{if(startAnimation===a){startCallout.hidden=true;startAnimation=null;}});
    startAnimation=a;
   }
   const perfectArcs=Array.from({length:9},(_,lane)=>{const el=document.createElement('span');el.className='rb-perfect-arcs';el.setAttribute('aria-hidden','true');el.style.left=((176+(lane%3)*300)/952*100)+'%';el.style.top=((176+Math.floor(lane/3)*300)/2078*100)+'%';el.style.setProperty('--arc-color',colors[lane]);el.innerHTML='<i></i><i></i>';board.appendChild(el);return el;});
@@ -236,15 +222,13 @@
    state.cnt.MISS++;state.combo=0;muteMelody(false);label('MISS','MISS');updateHud();
    showTiming('MISS');
   }
-  function hasCharacter(lane){if(!state||state.ended||state.loading||time()<0||(state.playAt&&context.currentTime<state.playAt))return false;if(state.activeVisualsByLane[lane]>0)return true;const t=time(),notes=state.notesByLane[lane],good=rules.diffs[state.diff].judge.goodMs/1000;let i=state.laserCursors[lane];while(i<notes.length){const n=notes[i];if(n.state!=='pending'||t>n.targetTime+good){i++;continue;}state.laserCursors[lane]=i;return t>=n.spawnTime;}state.laserCursors[lane]=i;return false;}
+  function hasCharacter(lane){if(!state||state.ended||state.loading||time()<0)return false;const t=time(),notes=state.notesByLane[lane];return notes.some(n=>(n.state==='pending'&&t>=n.spawnTime&&t<=n.targetTime+rules.diffs[state.diff].judge.goodMs/1000)||(n.state==='hit'&&n.visualActive));}
   function press(lane){
-   if(!state||state.ended||state.paused||time()<0||(state.playAt&&context.currentTime<state.playAt))return;
-   const t=time(),notes=state.notesByLane[lane],good=rules.diffs[state.diff].judge.goodMs/1000;let cursor=state.pressCursors[lane];
-   while(cursor<notes.length&&(notes[cursor].state!=='pending'||t>notes[cursor].targetTime+good))cursor++;
-   state.pressCursors[lane]=cursor;
-   const best=notes[cursor];if(!best||t<best.spawnTime)return false;
-   const delta=Math.abs(t-best.targetTime);
-   // Empty input never changes score, combo, or MISS.
+   if(!state||state.ended||state.paused||time()<0)return;
+   const t=time();
+   let best=null,delta=Infinity;
+   for(const n of state.notesByLane[lane]){if(n.state==='pending'&&t>=n.spawnTime){const d=Math.abs(t-n.targetTime);if(d<delta){best=n;delta=d;}}}
+   if(!best)return false; // Empty input never changes score, combo, or MISS.
    // Like A: an existing future note outside the input window remains pending until its deadline.
    const grade=rules.grade(delta*1000,state.diff);if(!grade)return false;
    best.state='hit';hitSound(best,grade);successEffect(best,t,grade);darkenLane(best.lane);state.cnt[grade]++;state.combo++;state.maxCombo=Math.max(state.maxCombo,state.combo);
@@ -263,48 +247,45 @@
    if(n.lastU!==u){
     n.el.style.transform='translate('+(dx/300*100)+'%,'+(dy/300*100)+'%) scale('+scale+')';
     n.el.style.opacity=String(.3+.7*u);
-    const glassU=Math.round(u*24)/24;
-    scaleGlass(n.lane,1+(glassTarget-1)*glassU);
-    if(opts.onNoteApproach)opts.onNoteApproach(n.lane,glassU);
+    n.character.style.setProperty('--character-light',String(.7+.3*u));
+    scaleGlass(n.lane,1+(glassTarget-1)*u);
+    if(opts.onNoteApproach)opts.onNoteApproach(n.lane,u);
     n.lastU=u;
    }
+   n.el.dataset.progress=String(p);
    // Both visuals share this transform; only the ring determines judgement.
-   const elapsed=Math.max(0,time()-n.spawnTime),spriteFrame=Math.floor(elapsed*3)%2;
-   if(n.spriteFrame!==spriteFrame){n.character.style.backgroundPosition=(spriteFrame*100)+'% 0%';n.spriteFrame=spriteFrame;}
+   const elapsed=Math.max(0,time()-n.spawnTime),spriteFrame=Math.floor(elapsed*12)%8;
+   if(n.spriteFrame!==spriteFrame){n.character.style.backgroundPosition=(spriteFrame/7*100)+'% 0%';n.spriteFrame=spriteFrame;}
   }
   function tick(){
    frame=0;if(!state||state.ended||state.paused)return;
    const t=time();
    if(opts.onTime)opts.onTime(t);
-    const countIn=state.countIn,readyElapsed=context.currentTime-state.readyStart,inCount=readyElapsed<countIn;
-    const stage=readyElapsed<state.readySecondAt?0:readyElapsed<state.readyGoAt?1:2;
-    if(inCount){const opacity=shadeSteps[stage];startShade.hidden=opacity<=0;if(!startShade.hidden&&startShade.style.opacity!==String(opacity))startShade.style.opacity=String(opacity);}else startShade.hidden=true;
+   const countIn=rules.config.countIn,readyElapsed=context.currentTime-state.readyStart,inCount=readyElapsed<countIn;
+   if(inCount||t<.4||!startShade.hidden){startShade.hidden=!inCount&&t>=.4;const opacity=String(inCount?shadeSteps[Math.max(0,Math.min(2,Math.floor(readyElapsed/(countIn/3))))]:Math.max(0,.62*(1-t/.4)));if(startShade.style.opacity!==opacity)startShade.style.opacity=opacity;}
    updateProgress(state.duration>0?t/state.duration:0);
-   if(inCount){const stageCount=String(3-stage);if(state.startPhase!==stage)showStart(stage,[state.readySecondAt,state.readyGoAt-state.readySecondAt,countIn-state.readyGoAt][stage]*1000);if(state.count!==stageCount){state.count=stageCount;label(stageCount);}}
-   else if(state.count!=='GO'){state.count='GO';label('GO!');}
-   if(inCount){frame=requestAnimationFrame(tick);return;}
+   if(inCount){const stage=Math.max(0,Math.min(2,Math.floor(readyElapsed/(countIn/3))));showStart(stage);const count=String(countIn-stage);if(state.count!==count){state.count=count;label(count);}}
+   else if(state.count!=='GO'){state.count='GO';label('GO!');showStart(3);}
+   
    const D=rules.diffs[state.diff];
    // V 1124: upper portal has no idle motion; only note-active rims.
-    for(let id=state.renderCursor;t>=0&&id<state.notes.length;id++){
+   for(let id=state.renderCursor;t>=0&&id<state.notes.length;id++){
     const n=state.notes[id];if(state.ended)break;
     if(n.state!=='pending')continue;
     if(t>n.targetTime+D.judge.goodMs/1000){miss(n);continue;}
     if(t>=n.spawnTime){const appearing=!n.visualActive;ensureNoteVisual(n);if(appearing&&opts.onNoteSpawn)opts.onNoteSpawn(n.lane);placeNote(n,(t-n.spawnTime)/D.travel);if(appearing)showNoteVisual(n);}else if(state.renderOrdered)break;
    }
    while(state.renderCursor<state.notes.length&&state.notes[state.renderCursor].state!=='pending')state.renderCursor++;
-   const goodWindow=D.judge.goodMs/1000;
-   for(let lane=0;lane<9;lane++){const notes=state.notesByLane[lane];let cursor=state.laserCursors[lane];while(cursor<notes.length&&(notes[cursor].state!=='pending'||t>notes[cursor].targetTime+goodWindow))cursor++;state.laserCursors[lane]=cursor;}
-    if(!state.ended&&t>=0)updateCues(t);
+   if(!state.ended&&t>=0)updateCues(t);
    if(!state.ended&&t>=state.duration)finish(true);
    if(!state.ended)frame=requestAnimationFrame(tick);
   }
   async function start(diff,options){
    stop();const token=generation;error.hidden=true;label('LOADING');startShade.hidden=false;startShade.style.opacity='.9';
-   state={diff,practice:!!(options&&options.practice),notes:[],score:0,combo:0,maxCombo:0,cnt:{PERFECT:0,GREAT:0,GOOD:0,MISS:0},paused:false,ended:false,loading:true,t0:Infinity,count:null,startPhase:-1,renderCursor:0,renderOrdered:true,pressCursors:Array(9).fill(0),laserCursors:Array(9).fill(0),activeVisualsByLane:Array(9).fill(0)};updateHud();
+   state={diff,practice:!!(options&&options.practice),notes:[],score:0,combo:0,maxCombo:0,cnt:{PERFECT:0,GREAT:0,GOOD:0,MISS:0},paused:false,ended:false,loading:true,t0:Infinity,count:null,startPhase:-1,renderCursor:0,renderOrdered:true};updateHud();
    try{
     const [data]=await Promise.all([opts.loadSong(),opts.prepareAssets?opts.prepareAssets():Promise.resolve()]);if(token!==generation)return false;
     context=data.ctx;
-    const readyBuffers=await loadReadyAudio(context);if(token!==generation)return false;
     if(opts.onSong)opts.onSong(data.song);
     let times=data.song&&data.song.charts&&data.song.charts[diff];
     const authored=data.song&&data.song.patterns&&data.song.patterns[diff];
@@ -324,7 +305,7 @@
      last[lane]=targetTime;
      return {id,lane,targetTime,spawnTime:targetTime-rules.diffs[diff].travel,state:'pending',el:null,character:null,ring:null,visualSlot:null,visualActive:false,sound:authoredNote?authoredNote.sound:'kick',chordSize:authoredNote?authoredNote.chordSize:chordCounts.get(targetTime)};
     });
-    state.notesByLane=Array.from({length:9},()=>[]);for(const n of state.notes)state.notesByLane[n.lane].push(n);state.notesByLane.forEach(notes=>notes.sort((a,b)=>a.targetTime-b.targetTime));
+    state.notesByLane=Array.from({length:9},()=>[]);for(const n of state.notes)state.notesByLane[n.lane].push(n);
     for(let i=1;i<state.notes.length;i++)if(state.notes[i].spawnTime<state.notes[i-1].spawnTime){state.renderOrdered=false;break;}
     // Keep per-note ownership stable within the round; reuse slots only on later rounds.
     for(const n of state.notes)ensureNoteVisual(n);
@@ -334,10 +315,9 @@
     state.beats=data.song&&Array.isArray(data.song.beats)?data.song.beats:null;state.beatCursor=0;
     state.bpm=Number(data.song&&data.song.bpm)||rules.config.song.bpm;state.firstBeat=Number.isFinite(data.song&&data.song.firstBeat)?data.song.firstBeat:rules.config.song.firstBeat;
     state.duration=Math.max(data.back.duration,(times[times.length-1]||0)+rules.diffs[diff].judge.goodMs/1000);
-     const readyAt=context.currentTime+.05,firstDuration=readyBuffers[0]?readyBuffers[0].duration:1.5,secondDuration=readyBuffers[1]?readyBuffers[1].duration:1;
-     state.readyStart=readyAt;state.readySecondAt=firstDuration+.08;state.readyGoAt=state.readySecondAt+secondDuration+.08;state.countIn=Math.max(rules.config.countIn,state.readyGoAt+.4);state.playAt=state.readyStart+state.countIn;const musicLead=Math.min(.85,secondDuration*.55);state.t0=state.playAt-musicLead;state.loading=false;
-    playReadyAudio(readyBuffers[0],readyAt);playReadyAudio(readyBuffers[1],readyAt+state.readySecondAt);
+    state.readyStart=context.currentTime;state.t0=state.readyStart+rules.config.countIn;state.loading=false;
     const gameMusicGain=context.createGain();gameMusicGain.gain.setValueAtTime(0,state.t0);gameMusicGain.gain.linearRampToValueAtTime(1,state.t0+1.4);gameMusicGain.connect(context.destination);
+    showStart(0);
     const back=context.createBufferSource();back.buffer=data.back;back.connect(gameMusicGain);back.start(state.t0);sources.push(back);
     if(data.melody){const mel=context.createBufferSource();mel.buffer=data.melody;melodyGain=context.createGain();melodyGain.gain.value=1;mel.connect(melodyGain);melodyGain.connect(gameMusicGain);mel.start(state.t0);sources.push(mel);}
     if(state.paused)await context.suspend();
