@@ -685,6 +685,7 @@ body { background: var(--lm-page); }
 }
 #fold-hinge {
   position: relative;
+  /* Menu panels sit at 40 and cast a 15px downward shadow over this 14px gap. */
   z-index: 41;
   visibility: visible;
   flex: 0 0 auto;
@@ -695,6 +696,7 @@ body { background: var(--lm-page); }
   background: linear-gradient(180deg, #2b303c 0%, #4a5061 46%, #4a5061 54%, #232833 100%);
   box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.35), 0 3px 8px rgba(0, 0, 0, 0.35);
 }
+/* 초기 홈에서는 항상 표시. 게임·제외 메뉴는 화면 전환 JS가 직접 숨긴다. */
 /* 시간 게이지(v747, 사용자 지정: 네온은 흐리니 선명한 단색) — 게임 중에만. 홈에선 기존 경첩 장식 그대로. */
 .hinge-fill, #hinge-time { display: none; }
 #game-screen:not(.is-start) .hinge-fill {
@@ -5870,8 +5872,9 @@ html, body, .cosmic-bg { background: #0a1230; }
 .qs-tabs button.is-on { color: #fff; background: linear-gradient(180deg, #4fa6ff, #1c63e0); box-shadow: inset 0 2px 0 rgba(255,255,255,0.45), 0 0 0 2px #9fd2ff; -webkit-text-stroke: 1.5px #0c3a8a; }
 .qs-screen[data-mode="weekly"] .qs-tabs button.is-on { background: linear-gradient(180deg, #b86bff, #7a2ee0); box-shadow: inset 0 2px 0 rgba(255,255,255,0.45), 0 0 0 2px #dcb6ff; -webkit-text-stroke-color: #3e0f78; }
 .qs-screen[data-mode="ach"] .qs-tabs button { font-size: calc(var(--w) * 0.042); }
-.qs-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 7px; padding: 6px 4px 8px;
+.qs-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 7px; padding: 6px 4px 8px;
   background: linear-gradient(180deg, #7a4a24, #5a3416); border-radius: 0 0 18px 18px; box-shadow: inset 0 0 0 3px #3a2008, inset 0 3px 8px rgba(0,0,0,0.35); }
+.qs-list::-webkit-scrollbar { display: none; }
 .qs-card { position: relative; display: flex; align-items: center; gap: 2%; padding: 7px 8px; border-radius: 12px;
   background: linear-gradient(180deg, #fff8ea, #f3e2c2); box-shadow: inset 0 0 0 2px #d6b27e, 0 3px 0 #a87a44; }
 .qs-ico { flex: 0 0 17%; display: flex; align-items: center; justify-content: center; }
@@ -6253,7 +6256,8 @@ html, body, .cosmic-bg { background: #2a190d; }
   border-width: 16px 9px 11px; border-image: url('assets/home2/wood.png') 110 52 58 52 fill / 16px 9px 11px stretch; }
 #shop-screen::after, #inventory-screen::after { background: none; }
 /* v919(사용자 지정): 상점·아이템 테두리 무지개 → 금색 */
-.shop-frame, .inv-frame { background: linear-gradient(135deg, #fff2b0 0%, #ffd34a 22%, #c98a12 45%, #ffe27a 62%, #b8770c 82%, #ffd34a 100%); }
+.shop-frame { background: none; }
+.inv-frame { background: linear-gradient(135deg, #fff2b0 0%, #ffd34a 22%, #c98a12 45%, #ffe27a 62%, #b8770c 82%, #ffd34a 100%); }
 /* v921(사용자 지정 1번): 아케이드 사진 칸 경계 하늘색 네온 → 짙은 나무 액자 + 안쪽 얇은 금색 선 */
 .hg-cell::before { box-shadow: inset 0 0 0 2px #4a2a12, inset 0 0 0 3px #d9a441, inset 0 0 0 4px rgba(90, 50, 15, 0.7), inset 0 0 14px 2px rgba(40, 20, 5, 0.45); }
 /* v922(사용자 지정): 홈 광산 두더지 눈 깜빡임 — 털색 눈꺼풀이 위에서 내려왔다 올라감(밀짚모자는 원래 눈 감은 웃음이라 제외, 파란모자는 윙크라 뜬 눈만) */
@@ -7826,7 +7830,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen .rb-song-choice:last-child { margin-bottom:0; }
 #rhythm-screen .rb-song-actions .rx-btn { height:44px; min-height:44px; aspect-ratio:auto; }
 #rhythm-screen .rb-song-ad { background-image:url('assets/rhythm/ui/btn-blue.png'); background-size:100% 100%; background-position:center; }
-#rhythm-screen .rb-song-ad img { height:43px; width:40px; object-fit:contain; pointer-events:none; }
+#rhythm-screen .rb-song-ad img { height:43px; width:40px; object-fit:contain; pointer-events:none; -webkit-mask-image:radial-gradient(ellipse 2px 2px at 14% 2%,transparent 98%,#000 100%); mask-image:radial-gradient(ellipse 2px 2px at 14% 2%,transparent 98%,#000 100%); }
 #rhythm-screen .rx-card .rx-title,#rhythm-screen .rx-card .rx-plaque { z-index:4; }
 #rhythm-screen .rp-type-card { padding-top:42px; }
 #rhythm-screen .rb-song-card { padding-bottom:90px; }
@@ -7916,9 +7920,9 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* Popup contents stay stationary; liquid motion is suspended pending correction. */
 
 /* V1174: clearer beach targets and larger lyrics with the neon line above the circles. */
-#rhythm-screen:not(.is-type-b) .rp-lane .rp-target { opacity:.5; }
-#rhythm-screen:not(.is-type-b) .rp-lane .rp-target { filter:brightness(.76) saturate(1.16); }
-#rhythm-screen:not(.is-type-b) .rp-lane.is-approaching .rp-target { filter:none; }
+#rhythm-screen:not(.is-type-b) .rp-lane .rp-target { opacity:1; filter:none; }
+#rhythm-screen:not(.is-type-b) .rp-target-inner-accent { position:absolute; left:50%; transform:translateX(-50%); opacity:0; pointer-events:none; transition:opacity 90ms linear; }
+#rhythm-screen:not(.is-type-b) .rp-lane.is-approaching .rp-target-inner-accent { opacity:1; }
 #rhythm-screen:not(.is-type-b) .rp-hole-front { display:block; z-index:2; }
 #rhythm-screen:not(.is-type-b) .rp-mole.is-hurt { animation:rp-beach-mole-hurt .45s ease-out; }
 @keyframes rp-beach-mole-hurt { 0%,100% { transform:translateX(-50%); } 18% { transform:translateX(-50%) translateY(9px) rotate(-9deg) scaleX(.96) scaleY(.93); filter:brightness(1.45) saturate(.65); } 45% { transform:translateX(-50%) translateY(5px) rotate(6deg) scaleX(.98) scaleY(.96); } 72% { transform:translateX(-50%) translateY(7px) rotate(-3deg) scaleX(.96) scaleY(.95); } }
@@ -7930,6 +7934,13 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen.is-type-b .rp-lyrics-pulse { margin:0 5%; line-height:1; }
 #rhythm-screen .rp-modal:not([hidden]) .rx-card,#rhythm-screen .rp-type-panel:not([hidden]) .rx-card { animation:none; }
 @media (prefers-reduced-motion:reduce) { .rp-a-cloud-boss .rp-hippo,.rp-beach-running .rp-cloud-arm,.rp-beach-running .rp-cloud-body,.rp-beach-running .rp-cloud-clump,.rp-beach-running .rp-target-orbit > i,.rp-type-panel:not([hidden]) .rp-type-rail-light,#rhythm-screen .rp-modal:not([hidden]) .rx-card,#rhythm-screen .rp-type-panel:not([hidden]) .rx-card { animation:none; } }
+
+/* Lightweight, event-only rhythm flourishes: composited scale/opacity, no per-frame JS. */
+.rb-perfect-arcs { position:absolute; z-index:8; width:31%; aspect-ratio:1; transform:translate(-50%,-50%); pointer-events:none; }
+.rb-perfect-arcs i { position:absolute; inset:6%; border:2px solid transparent; border-top-color:var(--arc-color); border-left-color:var(--arc-color); border-radius:50%; opacity:0; }
+.rb-perfect-arcs i:nth-child(2) { inset:15%; border-top-color:var(--combo-accent,#00cfff); border-left-color:var(--combo-accent,#00cfff); }
+.rb-glass-grow > circle { transition:stroke .28s ease; }
+.rb-board[data-combo-stage]:not([data-combo-stage="0"]) .rb-glass-grow > circle { stroke:var(--combo-accent); }
 @media (max-height:820px) {
  #rhythm-screen .rb-song-card { padding-top:6px; padding-bottom:70px; }
  #rhythm-screen .rb-song-card .rx-title,#rhythm-screen .rb-song-card .rx-title img { max-height:72px; }
@@ -8008,21 +8019,3 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* V1223: retain Beach cloud/leaf/star colors while tinting only the Neon rails. */
 #rhythm-screen.is-type-b .rb-song-card:not(.rx-card--res):not(.rx-card--pause)::after { filter:none; border-image-source:url('assets/rhythm/ui/d-frame-neon-song-cloud-v1224.svg'); }
 #rhythm-screen.is-type-b .rp-select .rx-card--sel:not(.rx-card--res):not(.rx-card--pause)::after { filter:none; border-image-source:url('assets/rhythm/ui/d-frame-neon-difficulty-cloud-v1224.svg'); }
-
-/* Lightweight, event-only rhythm flourishes: composited scale/opacity, no per-frame JS. */
-.rp-target-orbit::after { content:""; position:absolute; inset:0; border:2px solid var(--target-color); border-radius:50%; opacity:0; pointer-events:none; }
-.rp-a-cloud-boss.is-combo-pop::after { content:""; position:absolute; inset:-8%; border:3px solid rgba(105,224,255,.9); border-radius:48%; opacity:0; pointer-events:none; animation:rp-beach-combo-ring 620ms ease-out both; }
-@keyframes rp-beach-combo-ring { 0% { transform:scale(.82); opacity:.85; } 100% { transform:scale(1.16); opacity:0; } }
-.rp-section-flash { position:absolute; z-index:10; inset:8px; border-radius:24px; pointer-events:none; }
-.rp-section-flash::before { content:""; position:absolute; inset:0; border:3px solid #78e9ff; border-radius:inherit; opacity:0; transform:scale(.985); }
-#rhythm-screen:not(.is-type-b) .rp-section-flash::before { border-color:#f5dd82; }
-#rhythm-screen.is-type-b .rp-section-flash::before { border-color:#39ddff; }
-#rhythm-screen.rp-chorus-hit .rp-section-flash::before { animation:rp-chorus-entry 680ms ease-out both; }
-@keyframes rp-chorus-entry { 0% { opacity:.6; transform:scale(.985); } 100% { opacity:0; transform:scale(1.018); } }
-.rb-perfect-arcs { position:absolute; z-index:8; width:31%; aspect-ratio:1; transform:translate(-50%,-50%); pointer-events:none; }
-.rb-perfect-arcs i { position:absolute; inset:6%; border:2px solid transparent; border-top-color:var(--arc-color); border-left-color:var(--arc-color); border-radius:50%; opacity:0; }
-.rb-perfect-arcs i:nth-child(2) { inset:15%; border-top-color:var(--combo-accent,#00cfff); border-left-color:var(--combo-accent,#00cfff); }
-.rb-glass-grow > circle { transition:stroke .28s ease; }
-.rb-board[data-combo-stage]:not([data-combo-stage="0"]) .rb-glass-grow > circle { stroke:var(--combo-accent); }
-@media(prefers-reduced-motion:reduce) { .rp-a-cloud-boss.is-combo-pop::after,#rhythm-screen.rp-chorus-hit .rp-section-flash::before { animation:none; } }
-

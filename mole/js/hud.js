@@ -30,8 +30,7 @@
         : '❤️'.repeat(state.lives) + '🖤'.repeat(Math.max(0, 3 - state.lives));
     }
 
-    // 시간 = 두 판 사이 경첩(#fold-hinge)이 게이지(사용자 지정 v747) — 남은 비율만큼 오른쪽에서 왼쪽으로
-    // 줄어들고, 가운데에 남은 초. 색: 절반 이상 초록 → 절반 아래 노랑 → 5초 이하 빨강+깜빡.
+    // 시간 = 두 판 사이 경첩(#fold-hinge)이 게이지 — 남은 비율만큼 줄고, 남은 초와 시간 구간별 색으로 표시.
     var hinge = document.getElementById('fold-hinge');
     if (hinge && state.timeTotal > 0) {
       var left = Math.max(0, state.timeRemaining);

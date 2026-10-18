@@ -275,7 +275,7 @@
   // 적용 안 함, 사용자 지정) + 랜덤으로 하나 더 섞는 강조 변형(기존 팝/플래시/셰이크). 클래스
   // 여러 개로는 animation 단축 속성이 충돌해서(위 style.css 주석 참고) JS 에서 직접 콤마로 이어
   // 인라인 지정.
-  const LANE_ALWAYS = ['lane-press-scale 0.3s ease', 'lane-hitflash-btn 0.28s ease'];
+  const LANE_ALWAYS = ['lane-press-scale 0.3s ease'];
   // 'textgrow' 는 인라인 애니메이션이 아니라 버튼 안의 숫자/자막 span 에 붙는 클래스라 따로 처리
   // (좌우 흔들림 대체, 사용자 지정).
   const LANE_VARIANTS = ['lane-beat-pulse 0.4s ease-out', 'lane-attnflash 0.5s ease', 'textgrow'];
@@ -383,6 +383,7 @@
   let rhythmEntryBgmWantPlay = false;
   let rhythmEntryFadeTimer = null;
   const BGM_VOL = 0.35;
+  const HOME_BGM_VOL = BGM_VOL * 0.7;
   const BGM_FADE_MS = 900;
   let bgmFadeTimer = null;
   // 피버타임 브금이 재생 중인 동안, 다른 이벤트(자동재생 정책 재시도용 입력 리스너 등)가
@@ -392,6 +393,7 @@
 
   function bgmActiveEl() { return bgmEls ? bgmEls[bgmActiveIdx] : null; }
   function bgmInactiveEl() { return bgmEls ? bgmEls[1 - bgmActiveIdx] : null; }
+  function bgmVolume(file) { return /\/bgm-home-\d/.test(file || '') ? HOME_BGM_VOL : BGM_VOL; }
 
   // 홈/더보기 BGM 삭제(사용자 지정, 신규 트랙 삽입 예정) — 그 화면 진입 시 그냥 정지.
   // 어떤 경로로 나가든(홈/더보기 등) 피버 브금이 겹쳐 남지 않게 안전장치로 같이 정지.
@@ -446,6 +448,8 @@
     const from = bgmActiveEl();
     const to = bgmInactiveEl();
     if (bgmFadeTimer) { clearTimeout(bgmFadeTimer); bgmFadeTimer = null; }
+    const previousFile = currentBgm;
+    const targetVolume = bgmVolume(file);
     currentBgm = file;
     to.loop = loop;
     if (to.src.indexOf(file) === -1) to.src = file;
@@ -457,7 +461,7 @@
     if (!want) {
       from.pause();
       from.currentTime = 0;
-      from.volume = BGM_VOL;
+      from.volume = bgmVolume(previousFile);
       bgmActiveIdx = 1 - bgmActiveIdx;
       return;
     }
@@ -471,12 +475,12 @@
     // 계속 들림). k 는 경과시간 기준이라 콜백이 늦게 와도 뜀 없이 정확히 따라잡는다.
     (function step() {
       const k = Math.min(1, (performance.now() - start) / BGM_FADE_MS);
-      to.volume = BGM_VOL * k;
+      to.volume = targetVolume * k;
       from.volume = fromStartVol * (1 - k);
       if (k < 1) { bgmFadeTimer = setTimeout(step, 50); return; }
       from.pause();
       from.currentTime = 0;
-      from.volume = BGM_VOL;
+      from.volume = bgmVolume(previousFile);
       bgmActiveIdx = 1 - bgmActiveIdx;
       bgmFadeTimer = null;
     })();
@@ -571,7 +575,7 @@
     DIFFS.forEach((d) => gs.classList.remove('diff-' + d));
     gs.classList.add('diff-' + diff);
   }
-  // 대화 화면 "시작" 버튼(들)이 부르는 진입점. 타이핑 인트로(챕터+준비 문구) → 활성 얼굴 로드 → 라운드 1.
+  // 홈 화면 "시작" 버튼 진입점. 설명 타이핑 단계를 건너뛰고 곧바로 라운드 화면으로 전환한다.
   // 시작 시 생명을 미리 깎지 않는다 — 현재 공유 풀 그대로 플레이하고, 동물 맞을 때만 -1.
   // 단 풀이 0이면 플레이 자체가 불가(즉시 게임오버) → "생명 없음" 모달.
   let gameStarting = false; // 시작 버튼 연타 방지 — 한 번 누르면 홈으로 돌아올 때까지 재진입 차단
@@ -607,9 +611,7 @@
     currentDiff = currentDifficulty();
     applyDiffClass(currentDiff);
     preloadRoundMoles(); // 라운드1 플레이하는 동안 미리 받아둬야 라운드2 전환 때 안 늦음
-    playStartIntro(() => {
-      startRound({ fresh: true });
-    });
+    startRound({ fresh: true });
   }
 
   // 라운드 전환 두더지 이미지 6장(텍스트 콜아웃 있던 2장 제외) — 늦게 로드되면 "라운드N" 글자만 먼저 뜨고 이미지가
@@ -1373,7 +1375,7 @@
     if (state && state.laneHammer) state.laneHammer.clear();
     resetHot();
 
-    // 홈→게임 진입 전환은 이제 타이핑 인트로+커튼(playStartIntro)이 담당 — 플래시 제거(사용자 요청).
+    // 홈→게임 진입은 설명 타이핑을 건너뛰고 라운드 카운트다운으로 바로 전환한다.
     const boardStartEl = document.getElementById('board-start');
     boardStartEl.hidden = true;
     document.getElementById('gameover-overlay').hidden = true;
@@ -2825,7 +2827,7 @@
     if (feverResultBtn) feverResultBtn.addEventListener('click', () => { endFeverEvent(); });
     bgmEls = [document.getElementById('bgm-a'), document.getElementById('bgm-b')];
     bgmEls.forEach((el) => {
-      el.volume = BGM_VOL;
+      el.volume = bgmVolume(currentBgm);
       // 곡이 끝나갈 때(끝나고 나서가 아니라) 다음 곡으로 미리 크로스페이드 — 홈은 4곡,
       // 게임은 3곡을 순차 재생·순환(플레이리스트). 비활성 쪽 이벤트는 bgmNearEndTick 안에서 무시.
       el.addEventListener('timeupdate', () => bgmNearEndTick(el));
@@ -2853,7 +2855,7 @@
         const el2 = bgmActiveEl(); // 크로스페이드로 활성 엘리먼트가 바뀌었을 수 있음
         if (!el2) return;
         const k = Math.min(1, (performance.now() - t0) / dur);
-        el2.volume = BGM_VOL * k;
+        el2.volume = HOME_BGM_VOL * k;
         if (k < 1) requestAnimationFrame(step);
       })();
     };

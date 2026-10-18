@@ -31,6 +31,7 @@
     // Small color-matched gem halos cover the fixed foreground; rear halos move with the cave plate.
     easy: {
       glow:[], spark:[], bubble:[],
+      // Anchored to the six visible blue crystal clusters in the foreground artwork.
       gem:[[804,298,'cyan'],[803,645,'cyan'],[140,704,'cyan'],[856,851,'cyan'],[83,1026,'cyan'],[885,1237,'cyan']],
       rearGem:[[337,62,'cyan'],[530,147,'violet'],[280,201,'cyan'],[767,492,'amber'],[633,585,'amber'],[419,830,'violet'],[462,857,'cyan'],[37,1030,'cyan'],[821,1176,'amber'],[859,1306,'violet'],[194,1353,'cyan'],[507,1389,'amber'],[425,1471,'violet'],[239,1608,'cyan']],
       lantern:[[767,492],[633,585],[723,947],[821,1176],[579,1317],[507,1389],[425,1471],[239,1608]],
@@ -170,32 +171,101 @@
       dflyTimer = setTimeout(flyDragonflies, 900 + Math.random() * 1400);
     }
 
-    // V1298: horizontal finger-drag pans the complete scene above the fixed black controls.
-    var panByLight = { easy:0, mid:0, legend:0 }, panGesture = null, panSuppressClickUntil = 0, panRaf = 0;
+    // Touch-drag from any screen area, including the opaque cap and black lower panel.
+    // Mode maps form a left-to-right pager: Amateur, Normal, Pro.
+    var panByLight = { easy: 0, mid: 0, legend: 0 };
+    var panGesture = null, panSuppressClickUntil = 0, panRaf = 0;
+    var pageAnimationTimer = 0, pageOrder = ['easy', 'mid', 'legend'];
     function panLimit() { return Math.max(36, el.clientWidth * .2); }
-    function clampPan(x) { var m=panLimit(); return Math.max(-m,Math.min(m,x)); }
-    function applyPan(light) { el.style.setProperty('--rm-pan-x',(panByLight[light || view] || 0).toFixed(1)+'px'); }
-    function stopPanMomentum() { if(panRaf){ root.cancelAnimationFrame(panRaf); panRaf=0; } }
-    function startPanMomentum(light,v) {
-      stopPanMomentum(); if(Math.abs(v)<.08) return; var last=0;
-      function tick(t){ if(!last)last=t; var dt=Math.min(32,t-last); last=t; var before=panByLight[light]||0, after=clampPan(before+v*dt); panByLight[light]=after; applyPan(light); v*=Math.pow(.91,dt/16); if(Math.abs(v)<.025||after===before){panRaf=0;return;} panRaf=root.requestAnimationFrame(tick); }
-      panRaf=root.requestAnimationFrame(tick);
+    function clampPan(value) { var limit = panLimit(); return Math.max(-limit, Math.min(limit, value)); }
+    function applyPan(light) {
+      el.style.setProperty('--rm-pan-x', (panByLight[light || view] || 0).toFixed(1) + 'px');
+    }
+    function stopPanMomentum() {
+      if (panRaf) { root.cancelAnimationFrame(panRaf); panRaf = 0; }
+    }
+    function startPanMomentum(light, velocity) {
+      stopPanMomentum();
+      if (Math.abs(velocity) < .08) return;
+      var lastTime = 0;
+      function tick(time) {
+        if (!lastTime) lastTime = time;
+        var dt = Math.min(32, time - lastTime); lastTime = time;
+        var before = panByLight[light] || 0;
+        var after = clampPan(before + velocity * dt);
+        panByLight[light] = after; applyPan(light);
+        velocity *= Math.pow(.91, dt / 16);
+        if (Math.abs(velocity) < .025 || after === before) { panRaf = 0; return; }
+        panRaf = root.requestAnimationFrame(tick);
+      }
+      panRaf = root.requestAnimationFrame(tick);
+    }
+    function animatePage(entrySide) {
+      root.clearTimeout(pageAnimationTimer);
+      el.classList.remove('rm-page-from-left', 'rm-page-from-right');
+      void el.offsetWidth;
+      el.classList.add(entrySide === 'right' ? 'rm-page-from-right' : 'rm-page-from-left');
+      pageAnimationTimer = root.setTimeout(function () {
+        el.classList.remove('rm-page-from-left', 'rm-page-from-right');
+      }, 280);
     }
     if (el.classList.contains('rm-window-map')) {
-      el.addEventListener('pointerdown',function(e){
-        if(!view || (e.button!==undefined && e.button!==0)) return;
-        var bottom=$('[data-rm-start]').getBoundingClientRect().top, tabs=$('.rm-bottom');
-        if(tabs) bottom=Math.min(bottom,tabs.getBoundingClientRect().top); if(e.clientY>=bottom) return;
-        panGesture={id:e.pointerId,light:view,x:e.clientX,y:e.clientY,lastX:e.clientX,lastTime:e.timeStamp,start:panByLight[view]||0,velocity:0,dragging:false};
+      el.addEventListener('pointerdown', function (event) {
+        if (!view || (event.button !== undefined && event.button !== 0)) return;
+        panGesture = { id:event.pointerId, light:view, x:event.clientX, y:event.clientY,
+          lastX:event.clientX, lastTime:event.timeStamp, start:panByLight[view] || 0, velocity:0, dragDx:0, dragging:false };
+      }, true);
+      el.addEventListener('pointermove', function (event) {
+        var g = panGesture;
+        if (!g || event.pointerId !== g.id) return;
+        var dx = event.clientX - g.x, dy = event.clientY - g.y;
+        if (!g.dragging) {
+          if (Math.abs(dx) < 9 && Math.abs(dy) < 9) return;
+          if (Math.abs(dx) <= Math.abs(dy) * 1.15) { panGesture = null; return; }
+          g.dragging = true; el.classList.add('is-panning'); stopPanMomentum();
+          try { el.setPointerCapture(event.pointerId); } catch (_) {}
+        }
+        event.preventDefault();
+        g.dragDx = dx;
+        var now = event.timeStamp, elapsed = Math.max(1, now - g.lastTime);
+        g.velocity = (event.clientX - g.lastX) / elapsed;
+        g.lastX = event.clientX; g.lastTime = now;
+        panByLight[g.light] = clampPan(g.start + dx); applyPan(g.light);
       });
-      el.addEventListener('pointermove',function(e){
-        var g=panGesture; if(!g||e.pointerId!==g.id)return; var dx=e.clientX-g.x,dy=e.clientY-g.y;
-        if(!g.dragging){if(Math.abs(dx)<9&&Math.abs(dy)<9)return;if(Math.abs(dx)<=Math.abs(dy)*1.15){panGesture=null;return;}g.dragging=true;el.classList.add('is-panning');stopPanMomentum();try{el.setPointerCapture(e.pointerId);}catch(_){} }
-        if(!g.dragging)return; e.preventDefault(); var now=e.timeStamp,dt=Math.max(1,now-g.lastTime);g.velocity=(e.clientX-g.lastX)/dt;g.lastX=e.clientX;g.lastTime=now;panByLight[g.light]=clampPan(g.start+dx);applyPan(g.light);
-      });
-      function endPan(e,cancelled){var g=panGesture;if(!g||e.pointerId!==g.id)return;panGesture=null;if(g.dragging){el.classList.remove('is-panning');panSuppressClickUntil=Date.now()+350;if(!cancelled)startPanMomentum(g.light,g.velocity);}}
-      el.addEventListener('pointerup',function(e){endPan(e,false);});el.addEventListener('pointercancel',function(e){endPan(e,true);});el.addEventListener('lostpointercapture',function(e){endPan(e,true);});
-      el.addEventListener('click',function(e){if(Date.now()<panSuppressClickUntil){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();}},true);
+      function endPan(event, cancelled) {
+        var g = panGesture;
+        if (!g || (event && event.pointerId !== g.id)) return;
+        panGesture = null;
+        if (g.dragging) {
+          el.classList.remove('is-panning');
+          panSuppressClickUntil = Date.now() + 350;
+          var dx = g.dragDx || 0;
+          if (!cancelled && Math.abs(dx) >= 14) {
+            var from = pageOrder.indexOf(g.light), to = from + (dx < 0 ? 1 : -1);
+            var next = pageOrder[to];
+            if (next && MG.Progress.isLightUnlocked(next)) {
+              panByLight[g.light] = g.start;
+              view = next;
+              render();
+              animatePage(dx < 0 ? 'right' : 'left');
+            } else {
+              panByLight[g.light] = g.start;
+              applyPan(g.light);
+              if (next) flash(el.querySelector('[data-rm-light="' + next + '"]'));
+            }
+          } else {
+            panByLight[g.light] = g.start;
+            applyPan(g.light);
+            if (!cancelled) startPanMomentum(g.light, g.velocity);
+          }
+        }
+      }
+      el.addEventListener('pointerup', function (event) { endPan(event, false); });
+      el.addEventListener('pointercancel', function (event) { endPan(event, true); });
+      el.addEventListener('lostpointercapture', function (event) { endPan(event, true); });
+      el.addEventListener('click', function (event) {
+        if (Date.now() < panSuppressClickUntil) { event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation(); }
+      }, true);
     }
 
     function render() {
@@ -203,6 +273,7 @@
       var cur = view === opts.currentLight() ? opts.currentChapter() : -1;
       renderFx();
       el.setAttribute('data-light', view);
+      applyPan(view);
       $('[data-rm-bg]').src = A + ({ easy: 'window-v1263/scene.webp', mid: 'selected-v1281/normal-rear.webp', legend: 'selected-v1281/pro-rear.webp' }[view]);
       if (fluids && MG.RoundMapFluidScenes) {
         var scenes = MG.RoundMapFluidScenes;

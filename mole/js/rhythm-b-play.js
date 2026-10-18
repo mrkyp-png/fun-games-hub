@@ -76,13 +76,15 @@
    slot.owner=n;n.visualSlot=slot;n.el=slot.el;n.el.dataset.noteId=String(n.id);n.character=slot.character;n.ring=slot.ring;
    n.el.hidden=true;n.el.classList.remove('is-hit-out');n.ring.hidden=false;n.character.style.transform='';n.character.style.opacity='';n.lastU=NaN;n.spriteFrame=-1;
   }
-  function showNoteVisual(n){if(!n.visualActive)visibleNotes.push(n);if(n.el.parentNode!==board){let next=null;for(const other of visibleNotes)if(other.visualActive&&other.id>n.id&&(!next||other.id<next.id))next=other;board.insertBefore(n.el,next?next.el:null);}n.visualActive=true;n.el.hidden=false;}
+  function showNoteVisual(n){if(!n.visualActive){visibleNotes.push(n);if(state&&state.activeVisualsByLane)state.activeVisualsByLane[n.lane]++;}if(n.el.parentNode!==board){let next=null;for(const other of visibleNotes)if(other.visualActive&&other.id>n.id&&(!next||other.id<next.id))next=other;board.insertBefore(n.el,next?next.el:null);}n.visualActive=true;n.el.hidden=false;}
   function releaseNoteVisual(n){
-   const slot=n.visualSlot;n.visualActive=false;if(!slot)return;
+   const slot=n.visualSlot;if(n.visualActive&&state&&state.activeVisualsByLane)state.activeVisualsByLane[n.lane]=Math.max(0,state.activeVisualsByLane[n.lane]-1);n.visualActive=false;if(!slot)return;
    if(slot.owner===n){slot.el.hidden=true;slot.el.remove();slot.owner=null;}n.visualSlot=null;
   }
   const outlineDefs=document.createElementNS('http://www.w3.org/2000/svg','svg');outlineDefs.setAttribute('width','0');outlineDefs.setAttribute('height','0');outlineDefs.style.position='absolute';outlineDefs.setAttribute('aria-hidden','true');
-  outlineDefs.innerHTML='<defs>'+colors.map((color,i)=>'<filter id="rb-character-outline-'+i+'" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB"><feMorphology in="SourceAlpha" operator="dilate" radius="2.5" result="wide"/><feComposite in="wide" in2="SourceAlpha" operator="out" result="edge"/><feFlood flood-color="'+color+'" flood-opacity="0.35"/><feComposite in2="edge" operator="in" result="line"/><feGaussianBlur in="line" stdDeviation="2" result="glow"/><feMerge><feMergeNode in="glow"/><feMergeNode in="line"/><feMergeNode in="SourceGraphic"/></feMerge></filter>').join('')+'</defs>';board.appendChild(outlineDefs);
+  // Keep the crisp lane-color outline and sprite; skip the per-character blur pass,
+  // which scales poorly when Normal/Hard show several moving notes at once.
+  outlineDefs.innerHTML='<defs>'+colors.map((color,i)=>'<filter id="rb-character-outline-'+i+'" x="-12%" y="-12%" width="124%" height="124%" color-interpolation-filters="sRGB"><feMorphology in="SourceAlpha" operator="dilate" radius="2.5" result="wide"/><feComposite in="wide" in2="SourceAlpha" operator="out" result="edge"/><feFlood flood-color="'+color+'" flood-opacity="0.35"/><feComposite in2="edge" operator="in" result="line"/><feMerge><feMergeNode in="line"/><feMergeNode in="SourceGraphic"/></feMerge></filter>').join('')+'</defs>';board.appendChild(outlineDefs);
   const holoLights=colors.map((color,lane)=>{const el=document.createElement('div');el.className='rb-holo-light';el.setAttribute('aria-hidden','true');el.style.cssText='left:'+((28+(lane%3)*300)/952*100)+'%;top:'+((28+Math.floor(lane/3)*300)/2078*100)+'%;width:'+(296/952*100)+'%;height:'+(296/2078*100)+'%;--holo-color:'+color;board.appendChild(el);return el;});
   function darkenLane(lane){holoLights[lane].style.opacity='0';}
   function clearLights(){holoLights.forEach((_,i)=>darkenLane(i));}
@@ -237,13 +239,15 @@
    state.cnt.MISS++;state.combo=0;muteMelody(false);label('MISS','MISS');updateHud();
    showTiming('MISS');
   }
-  function hasCharacter(lane){if(!state||state.ended||state.loading||time()<0||(state.playAt&&context.currentTime<state.playAt))return false;const t=time(),notes=state.notesByLane[lane];return notes.some(n=>(n.state==='pending'&&t>=n.spawnTime&&t<=n.targetTime+rules.diffs[state.diff].judge.goodMs/1000)||(n.state==='hit'&&n.visualActive));}
+  function hasCharacter(lane){if(!state||state.ended||state.loading||time()<0||(state.playAt&&context.currentTime<state.playAt))return false;if(state.activeVisualsByLane[lane]>0)return true;const t=time(),notes=state.notesByLane[lane],good=rules.diffs[state.diff].judge.goodMs/1000;let i=state.laserCursors[lane];while(i<notes.length){const n=notes[i];if(n.state!=='pending'||t>n.targetTime+good){i++;continue;}state.laserCursors[lane]=i;return t>=n.spawnTime;}state.laserCursors[lane]=i;return false;}
   function press(lane){
    if(!state||state.ended||state.paused||time()<0||(state.playAt&&context.currentTime<state.playAt))return;
-   const t=time();
-   let best=null,delta=Infinity;
-   for(const n of state.notesByLane[lane]){if(n.state==='pending'&&t>=n.spawnTime){const d=Math.abs(t-n.targetTime);if(d<delta){best=n;delta=d;}}}
-   if(!best)return false; // Empty input never changes score, combo, or MISS.
+   const t=time(),notes=state.notesByLane[lane],good=rules.diffs[state.diff].judge.goodMs/1000;let cursor=state.pressCursors[lane];
+   while(cursor<notes.length&&(notes[cursor].state!=='pending'||t>notes[cursor].targetTime+good))cursor++;
+   state.pressCursors[lane]=cursor;
+   const best=notes[cursor];if(!best||t<best.spawnTime)return false;
+   const delta=Math.abs(t-best.targetTime);
+   // Empty input never changes score, combo, or MISS.
    // Like A: an existing future note outside the input window remains pending until its deadline.
    const grade=rules.grade(delta*1000,state.diff);if(!grade)return false;
    best.state='hit';hitSound(best,grade);successEffect(best,t,grade);darkenLane(best.lane);state.cnt[grade]++;state.combo++;state.maxCombo=Math.max(state.maxCombo,state.combo);
@@ -262,12 +266,11 @@
    if(n.lastU!==u){
     n.el.style.transform='translate('+(dx/300*100)+'%,'+(dy/300*100)+'%) scale('+scale+')';
     n.el.style.opacity=String(.3+.7*u);
-    n.character.style.setProperty('--character-light',String(.7+.3*u));
-    scaleGlass(n.lane,1+(glassTarget-1)*u);
-    if(opts.onNoteApproach)opts.onNoteApproach(n.lane,u);
+    const glassU=Math.round(u*24)/24;
+    scaleGlass(n.lane,1+(glassTarget-1)*glassU);
+    if(opts.onNoteApproach)opts.onNoteApproach(n.lane,glassU);
     n.lastU=u;
    }
-   n.el.dataset.progress=String(p);
    // Both visuals share this transform; only the ring determines judgement.
    const elapsed=Math.max(0,time()-n.spawnTime),spriteFrame=Math.floor(elapsed*3)%2;
    if(n.spriteFrame!==spriteFrame){n.character.src='assets/rhythm-b/character/hoverboard-v1260/frame-0'+spriteFrame+'.png';n.spriteFrame=spriteFrame;}
@@ -276,30 +279,31 @@
    frame=0;if(!state||state.ended||state.paused)return;
    const t=time();
    if(opts.onTime)opts.onTime(t);
-   const countIn=state.countIn,readyElapsed=context.currentTime-state.readyStart,inCount=readyElapsed<countIn;
-   const stage=readyElapsed<state.readySecondAt?0:readyElapsed<state.readyGoAt?1:2;
-   if(inCount){const opacity=shadeSteps[stage];startShade.hidden=opacity<=0;if(!startShade.hidden&&startShade.style.opacity!==String(opacity))startShade.style.opacity=String(opacity);}else startShade.hidden=true;
+    const countIn=state.countIn,readyElapsed=context.currentTime-state.readyStart,inCount=readyElapsed<countIn;
+    const stage=readyElapsed<state.readySecondAt?0:readyElapsed<state.readyGoAt?1:2;
+    if(inCount){const opacity=shadeSteps[stage];startShade.hidden=opacity<=0;if(!startShade.hidden&&startShade.style.opacity!==String(opacity))startShade.style.opacity=String(opacity);}else startShade.hidden=true;
    updateProgress(state.duration>0?t/state.duration:0);
    if(inCount){const stageCount=String(3-stage);if(state.startPhase!==stage)showStart(stage,[state.readySecondAt,state.readyGoAt-state.readySecondAt,countIn-state.readyGoAt][stage]*1000);if(state.count!==stageCount){state.count=stageCount;label(stageCount);}}
    else if(state.count!=='GO'){state.count='GO';label('GO!');}
    if(inCount){frame=requestAnimationFrame(tick);return;}
-   
    const D=rules.diffs[state.diff];
    // V 1124: upper portal has no idle motion; only note-active rims.
-   for(let id=state.renderCursor;t>=0&&id<state.notes.length;id++){
+    for(let id=state.renderCursor;t>=0&&id<state.notes.length;id++){
     const n=state.notes[id];if(state.ended)break;
     if(n.state!=='pending')continue;
     if(t>n.targetTime+D.judge.goodMs/1000){miss(n);continue;}
     if(t>=n.spawnTime){const appearing=!n.visualActive;ensureNoteVisual(n);if(appearing&&opts.onNoteSpawn)opts.onNoteSpawn(n.lane);placeNote(n,(t-n.spawnTime)/D.travel);if(appearing)showNoteVisual(n);}else if(state.renderOrdered)break;
    }
    while(state.renderCursor<state.notes.length&&state.notes[state.renderCursor].state!=='pending')state.renderCursor++;
-   if(!state.ended&&t>=0)updateCues(t);
+   const goodWindow=D.judge.goodMs/1000;
+   for(let lane=0;lane<9;lane++){const notes=state.notesByLane[lane];let cursor=state.laserCursors[lane];while(cursor<notes.length&&(notes[cursor].state!=='pending'||t>notes[cursor].targetTime+goodWindow))cursor++;state.laserCursors[lane]=cursor;}
+    if(!state.ended&&t>=0)updateCues(t);
    if(!state.ended&&t>=state.duration)finish(true);
    if(!state.ended)frame=requestAnimationFrame(tick);
   }
   async function start(diff,options){
    stop();const token=generation;error.hidden=true;label('LOADING');startShade.hidden=false;startShade.style.opacity='.9';
-   state={diff,practice:!!(options&&options.practice),notes:[],score:0,combo:0,maxCombo:0,cnt:{PERFECT:0,GREAT:0,GOOD:0,MISS:0},paused:false,ended:false,loading:true,t0:Infinity,count:null,startPhase:-1,renderCursor:0,renderOrdered:true};updateHud();
+   state={diff,practice:!!(options&&options.practice),notes:[],score:0,combo:0,maxCombo:0,cnt:{PERFECT:0,GREAT:0,GOOD:0,MISS:0},paused:false,ended:false,loading:true,t0:Infinity,count:null,startPhase:-1,renderCursor:0,renderOrdered:true,pressCursors:Array(9).fill(0),laserCursors:Array(9).fill(0),activeVisualsByLane:Array(9).fill(0)};updateHud();
    try{
     const [data]=await Promise.all([opts.loadSong(),opts.prepareAssets?opts.prepareAssets():Promise.resolve()]);if(token!==generation)return false;
     context=data.ctx;
@@ -323,7 +327,7 @@
      last[lane]=targetTime;
      return {id,lane,targetTime,spawnTime:targetTime-rules.diffs[diff].travel,state:'pending',el:null,character:null,ring:null,visualSlot:null,visualActive:false,sound:authoredNote?authoredNote.sound:'kick',chordSize:authoredNote?authoredNote.chordSize:chordCounts.get(targetTime)};
     });
-    state.notesByLane=Array.from({length:9},()=>[]);for(const n of state.notes)state.notesByLane[n.lane].push(n);
+    state.notesByLane=Array.from({length:9},()=>[]);for(const n of state.notes)state.notesByLane[n.lane].push(n);state.notesByLane.forEach(notes=>notes.sort((a,b)=>a.targetTime-b.targetTime));
     for(let i=1;i<state.notes.length;i++)if(state.notes[i].spawnTime<state.notes[i-1].spawnTime){state.renderOrdered=false;break;}
     // Keep per-note ownership stable within the round; reuse slots only on later rounds.
     for(const n of state.notes)ensureNoteVisual(n);
@@ -333,11 +337,10 @@
     state.beats=data.song&&Array.isArray(data.song.beats)?data.song.beats:null;state.beatCursor=0;
     state.bpm=Number(data.song&&data.song.bpm)||rules.config.song.bpm;state.firstBeat=Number.isFinite(data.song&&data.song.firstBeat)?data.song.firstBeat:rules.config.song.firstBeat;
     state.duration=Math.max(data.back.duration,(times[times.length-1]||0)+rules.diffs[diff].judge.goodMs/1000);
-    const readyAt=context.currentTime+.05,firstDuration=readyBuffers[0]?readyBuffers[0].duration:1.5,secondDuration=readyBuffers[1]?readyBuffers[1].duration:1;
-    state.readyStart=readyAt;state.readySecondAt=firstDuration+.08;state.readyGoAt=state.readySecondAt+secondDuration+.08;state.countIn=Math.max(rules.config.countIn,state.readyGoAt+.4);state.playAt=state.readyStart+state.countIn;const musicLead=Math.min(.85,secondDuration*.55);state.t0=state.playAt-musicLead;state.loading=false;
+     const readyAt=context.currentTime+.05,firstDuration=readyBuffers[0]?readyBuffers[0].duration:1.5,secondDuration=readyBuffers[1]?readyBuffers[1].duration:1;
+     state.readyStart=readyAt;state.readySecondAt=firstDuration+.08;state.readyGoAt=state.readySecondAt+secondDuration+.08;state.countIn=Math.max(rules.config.countIn,state.readyGoAt+.4);state.playAt=state.readyStart+state.countIn;const musicLead=Math.min(.85,secondDuration*.55);state.t0=state.playAt-musicLead;state.loading=false;
     playReadyAudio(readyBuffers[0],readyAt);playReadyAudio(readyBuffers[1],readyAt+state.readySecondAt);
-    const gameMusicGain=context.createGain();gameMusicGain.gain.setValueAtTime(0,state.t0);gameMusicGain.gain.linearRampToValueAtTime(1,state.t0+1.4);gameMusicGain.connect(context.destination);
-    showStart(0);
+    const gameMusicGain=context.createGain();gameMusicGain.gain.setValueAtTime(0,state.t0);gameMusicGain.gain.linearRampToValueAtTime(.56,state.t0+1.4);gameMusicGain.connect(context.destination);
     const back=context.createBufferSource();back.buffer=data.back;back.connect(gameMusicGain);back.start(state.t0);sources.push(back);
     if(data.melody){const mel=context.createBufferSource();mel.buffer=data.melody;melodyGain=context.createGain();melodyGain.gain.value=1;mel.connect(melodyGain);melodyGain.connect(gameMusicGain);mel.start(state.t0);sources.push(mel);}
     if(state.paused)await context.suspend();

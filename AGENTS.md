@@ -1516,3 +1516,9 @@
 - Publishing the complete review build makes the previously prepared Normal/Pro screens and motion available on the public page. Parent is V1270 G, with nine scoped files changed.
 
 - Hippo bounce paint layers isolated into outer drift/mirror and inner translate3d bounce, with bounded paint containment, to address user-reported trails. Visual resolution needs user confirmation. Amateur artwork unchanged; new Normal/Pro concept proposals await selection and are not included.
+
+
+## 2026-10-19 / V1300 G — 게임 진입·라운드 선택 수정 배포
+- 홈 시작 버튼에서 설명 타이핑 단계를 건너뛰고 라운드 화면으로 바로 진입하며, 라운드 카운트다운은 유지한다. 리듬팡 곡 선택 광고 아이콘의 노란 점을 제거했다.
+- 완료된 아마추어·노말·프로 배경 명암과 터치 좌우 스와이프 조정도 함께 배포했다. 검수·임시 파일은 제외했다.
+- JS 구문 및 diff 공백 검사 통과. 브라우저/실기기 검수는 이번 세션에서 수행하지 않았다. 기준 원격 master: 57c4ca9697d55f8f6a0d5ac1b10d5a5b0d158c15.
