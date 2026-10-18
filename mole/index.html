@@ -6,7 +6,6 @@
 <meta property="og:description" content="귀여운 동물들과 함께 즐기는 MOLE PANG 리듬 액션 게임입니다.">
 <meta property="og:image" content="https://mrkyp-png.github.io/fun-games-hub/mole/assets/home2/splash-art.webp">
 <meta property="og:url" content="https://mrkyp-png.github.io/fun-games-hub/mole/">
-
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style id="loading-first-paint">
   /* Keep the initial canvas black before external styles and artwork arrive. */
@@ -463,271 +462,7 @@
              win-fx-starpop 클래스로 고른다. -->
         <div class="go-starpop" aria-hidden="true"></div>
         <div class="go-confetti" aria-hidden="true"></div>
-        <p id="gameover-reason" class="go-word">성공</p>
-        <div class="go-hippo-wrap"><img id="gameover-hippo" class="go-hippo" alt="" draggable="false"></div>
-        <p id="gameover-score" class="gameover-score">0점</p>
-        <!-- 불꽃놀이 전용 레이어 — 색종이(.go-confetti)와 달리 하마 위로 겹쳐도 됨(사용자 지정). -->
-        <div class="go-fireworks" aria-hidden="true"></div>
-        <!-- 실패 추가 연출(사용자 지정 4종 중 매번 랜덤 1개, fail-fx-more.html 후보) — 기존
-             빗줄기(go-confetti)는 그대로 유지, 이 위에 얹힌다. game.js 가 fail-fx-1/3/4/8
-             중 하나를 #gameover-overlay 에 붙여 그 하나만 재생시킨다. -->
-        <div class="fail-fx-layer" aria-hidden="true">
-          <div class="fail-frame"></div>
-          <div class="fail-ribbon fail-ribbon--l"></div>
-          <div class="fail-ribbon fail-ribbon--r"></div>
-          <p class="fail-plaque" data-i18n="mole.fail.plaque">삼가 다시 도전...</p>
-          <div class="fail-stamp" data-i18n="mole.fail.stamp">재도전</div>
-          <div class="fail-dust-layer"></div>
-          <div class="fail-heart-crack">💔</div>
-          <div class="fail-heart-layer"></div>
-          <div class="fail-ash-layer"></div>
-          <div class="fail-vignette"></div>
-        </div>
-      </div>
-
-      <!-- 피버타임(터치캐치 보너스타임) 종료 결과창 — 사용자 지정: "타임 끝나면, 창하나
-           띠워줘 게임복귀 문구 나오게" — 바로 원위치 복귀하지 않고 점수 확인 후 버튼을
-           눌러야 복귀 연출이 시작된다. -->
-      <div id="fever-result-overlay" class="overlay" hidden>
-        <div class="fever-result-box">
-          <p class="fever-result-title">피버타임 종료!</p>
-          <p class="fever-result-score"><b id="fever-result-score">0</b>점 획득</p>
-          <button type="button" id="fever-result-btn" class="fever-result-btn">게임복귀</button>
-        </div>
-      </div>
-
-      <!-- 라운드 시작 카운트다운 (매 라운드: "라운드 N" → 3·2·1·시작!) -->
-      <!-- 시작 버튼 누르면 라운드1 카운트다운 전에 한 번 — 챕터 이름 + 준비 문구 타이핑, 끝나면 커튼 오픈. -->
-      <div id="start-intro-overlay" class="overlay round-intro board-panel" hidden aria-hidden="true">
-        <div class="ri-curtain ri-curtain--l"></div>
-        <div class="ri-curtain ri-curtain--r"></div>
-        <div id="si-chapter-num" class="si-line1"></div>
-        <div id="si-chapter-sub" class="si-line2"></div>
-        <div class="si-line3"><span id="si-tip-text"></span><span id="si-caret" class="si-caret" aria-hidden="true" hidden></span></div>
-      </div>
-
-      <div id="round-intro-overlay" class="overlay round-intro board-panel" hidden aria-hidden="true">
-        <div class="ri-curtain ri-curtain--l"></div>
-        <div class="ri-curtain ri-curtain--r"></div>
-        <div id="round-intro-title" class="round-intro-title">라운드 1</div>
-        <img id="round-intro-mole" class="round-intro-mole" alt="" hidden>
-        <div id="round-intro-count" class="round-intro-count">3</div>
-        <!-- 종료(exitApp) 시 커튼 닫힌 뒤: window.close() 가 안 먹히는 브라우저/홈화면 PWA 에서
-             정체불명 화면 대신 안내. 탭하면 다시 열림. 진짜 종료는 Phase 2 네이티브 래퍼. -->
-        <button type="button" id="bye-msg" class="bye-msg" hidden></button>
-      </div>
-
-      <!-- 승리 화면에서 왼쪽 스와이프 시 나타나는 다음 챕터 화면 (placeholder — Phase B 대기) -->
-      <div id="next-chapter-panel" class="overlay board-panel" hidden>
-        <div class="nc-big" data-nc-label>챕터 2</div>
-        <div class="nc-sub" data-i18n="mole.chapter.soon">준비 중이에요</div>
-        <button type="button" class="nc-back" id="nc-back-btn" data-i18n="common.back">나가기</button>
-      </div>
-    </div>
-    <!-- 라운드 표시(2026-09-27, 사용자 지정: "게임화면(게임보드) 안에 아래쪽에 좌우를 맞춰서" +
-         "입체감을 주려고 한다" — 보드 경계 아래로 살짝 넘치는 3D 느낌, 잘리면 안 됨) —
-         #mole-board 형제로 두어 board의 overflow:hidden에 안 잘리게 함. 홈(is-start)에서만 노출. -->
-    <!-- v915(사용자 지정): MOLE PANG 로고가 ROUND 판보다 앞에 — 게임판 밖(ROUND 판과 같은 층)으로 옮겨 그 위에 그림. 광산 화면일 때만 보임 -->
-    <div class="hm-piece hm-logo" id="hm-logo-front" aria-hidden="true"><img src="assets/home2/logo.png" alt=""></div>
-    <div id="round-strip" class="round-strip" aria-hidden="true">
-      <img class="rs-head" src="assets/home2/round-head-2.png" alt=""><img class="rs-bar" src="assets/home2/round-bar.png" alt="">
-      <button type="button" class="rs-tri rs-tri--prev" data-rs-round-prev aria-label="이전 라운드"></button>
-      <div class="rs-circles">
-        <button type="button" class="rs-circle" data-rs-round="1"><span data-rs-label></span></button>
-        <button type="button" class="rs-circle" data-rs-round="2"><span data-rs-label></span></button>
-        <button type="button" class="rs-circle" data-rs-round="3"><span data-rs-label></span></button>
-        <button type="button" class="rs-circle" data-rs-round="4"><span data-rs-label></span></button>
-        <button type="button" class="rs-circle" data-rs-round="5"><span data-rs-label></span></button>
-        <button type="button" class="rs-circle" data-rs-round="6"><span data-rs-label></span></button>
-        <button type="button" class="rs-circle" data-rs-round="7"><span data-rs-label></span></button>
-        <button type="button" class="rs-circle" data-rs-round="8"><span data-rs-label></span></button>
-      </div>
-      <button type="button" class="rs-tri rs-tri--next" data-rs-round-next aria-label="다음 라운드"></button>
-    </div>
-    <!-- 더보기 메뉴 껍데기 — 화면 UI는 삭제(사용자 지정, 기능은 전부 다이얼패드로 이동).
-         빈 컨테이너만 남김: 더보기 화면 열기/닫기(flipSwap)의 중간 전환 대상 + 일시정지
-         북키핑(openMore/openMoreNow/closeMore)이 여전히 이 엘리먼트를 쓴다 — position:fixed 인데
-         mole-board 자식이면 mole-board 가 flipSwap 으로 rotateY 될 때 그게 containing block 이
-         되어 화면 전체가 아니라 mole-board 박스 기준으로 깨져 렌더링되므로 형제로 유지. -->
-    <div id="more-menu" class="board-panel more-menu" hidden></div>
-    <!-- 라이트 ON/DIM/OFF 선택 작은 창 — 다이얼패드 ✱("두더지팡") 버튼으로 진입(사용자 지정).
-         mole-board 형제로(더보기와 같은 이유 — position:fixed가 flipSwap 컨테이닝 블록에 갇히는 버그 방지). -->
-    <!-- 2026-09-18(사용자 지정): 예전엔 화면 전체를 덮는 중앙 카드형 팝업(.ad-overlay)이었으나,
-         다른 12개 화면과 통일해 보드 영역(.board-screen)에 들어가고 다이얼패드는 그대로 노출. -->
-      <!-- 라운드 선택 광산 맵(v763) — 명세 "MOLE PANG 라운드 선택 화면". js/round-map.js -->
-      <div class="board-screen rm-screen" id="roundmap-screen" data-light="easy" hidden>
-        <div class="rm-stage">
-          <img class="rm-bg" data-rm-bg alt="">
-          <div class="rm-fx" data-rm-fx></div>
-          <div class="rm-rounds" data-rm-rounds></div>
-        </div>
-        <div class="rm-ui">
-            <div class="rm-board">
-              <img class="rm-board-img" src="assets/roundmap/board.png" alt="">
-              <div class="rm-board-light"><img src="assets/roundmap/ic-bulb.png" alt=""><b data-rm-light-name></b></div>
-              <div class="rm-board-rows">
-                <p><img src="assets/roundmap/ic-coin.png" alt=""><span data-i18n="mole.rm.base">기본 점수</span><b data-rm-base></b></p>
-                <p><img src="assets/roundmap/ic-fire.png" alt=""><span data-i18n="mole.rm.fever">피버 점수</span><b data-rm-fever></b></p>
-                <p><img src="assets/roundmap/ic-heart.png" alt=""><span data-i18n="mole.rm.combo">콤보 100</span><b data-rm-heart></b></p>
-              </div>
-            </div>
-            <div class="rm-bottom">
-              <div class="rm-icons" data-rm-icons></div>
-              <div class="rm-lights">
-                <button type="button" class="rm-light rm-light--easy" data-rm-light="easy"><span data-i18n="mole.diff.amateur">Amateur</span></button>
-                <button type="button" class="rm-light rm-light--mid" data-rm-light="mid"><span data-i18n="mole.diff.normal">Normal</span></button>
-                <button type="button" class="rm-light rm-light--legend" data-rm-light="legend"><span data-i18n="mole.diff.pro">Pro</span></button>
-              </div>
-            </div>
-            <button type="button" class="rm-start" data-rm-start><span class="h2-start" aria-hidden="true"><img src="assets/home2/ic-start.png" alt=""><img class="h2-play" src="assets/home2/start-play.png" alt=""></span><span class="rm-start-label" data-i18n="mole.start.btn">Start</span></button>
-            <button type="button" class="dr-back rm-back is-x" data-back="roundmap" aria-label="뒤로" data-i18n-aria-label="common.back"><img src="assets/workshop/pick/x.png" alt=""></button><!-- v940: 뒤로가기 → 오른쪽 빨간 X -->
-        </div>
-      </div>
-      <!-- 리듬팡(RHYTHM PANG) 1차 — js/rhythm.js. 바탕화면 "리듬팡 UI 및 에셋/명세서.txt" -->
-      <div class="rp-screen" id="rhythm-screen" hidden>
-        <div class="rp-a-sea" hidden aria-hidden="true"><i></i><i></i></div>
-        <section class="rp-type-panel" data-rp-types hidden aria-labelledby="rp-types-title">
-          <svg class="rp-type-scene-fx" viewBox="0 0 941 1672" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><path class="rp-type-floor-light" d="M470 1375 C350 1375 200 1386 100 1420 C20 1445 20 1475 100 1504 C250 1540 350 1548 470 1549 C590 1550 690 1530 840 1504 C920 1475 920 1445 840 1420 C740 1386 590 1375 470 1375Z" pathLength="100" fill="none" stroke="#d9fbff" stroke-width="9" stroke-linecap="round" stroke-dasharray="7 93"/><g class="rp-type-rail-light" fill="none" stroke="#dcf7ff" stroke-width="6" stroke-linecap="round"><path d="M0 1195 L8 1197 L16 1200 L24 1202 L32 1205 L40 1207 L48 1209 L56 1212 L64 1215 L72 1217 L80 1220 L88 1222 L96 1225 L104 1228 L112 1230 L120 1233 L128 1236 L136 1239 L144 1242 L152 1245 L160 1248 L168 1250 L176 1253 L184 1256 L192 1260 L200 1263 L208 1266 L216 1269 L224 1272 L232 1275 L240 1278 L248 1282 L256 1285" pathLength="100" stroke-dasharray="12 88"/><path d="M940 1195 L932 1197 L924 1200 L916 1202 L908 1205 L900 1207 L892 1209 L884 1212 L876 1215 L868 1217 L860 1220 L852 1222 L844 1225 L836 1228 L828 1230 L820 1233 L812 1236 L804 1239 L796 1242 L788 1245 L780 1248 L772 1250 L764 1253 L756 1256 L748 1260 L740 1263 L732 1266 L724 1269 L716 1272 L708 1275 L700 1278 L692 1282 L684 1285" pathLength="100" stroke-dasharray="12 88"/></g></svg>
-          <div class="rx-card rx-card--sel rp-type-card"><h2 id="rp-types-title">리듬팡 타입 선택</h2>
-          <p>플레이할 타입을 고르세요</p>
-          <button type="button" class="rx-btn rx-btn--y rp-type-button" data-rp-type="A"><span>리듬팡 비치</span></button>
-          <button type="button" class="rx-btn rx-btn--b rp-type-button" data-rp-type="B"><span>리듬팡 네온</span></button>
-          <button type="button" class="rx-btn rx-btn--home" data-rp-types-home><span>홈으로</span></button></div>
-        </section>
-        <section class="rb-screen" data-rp-b hidden aria-label="리듬팡 B타입 게임">
-          <div class="rb-board"></div>
-        </section>
-        <div class="rp-stage" data-rp-stage>
-          <div class="rp-a-cloud-boss"><div class="rp-hippo"><div class="rp-cloud-body"><img class="rp-cloud-happy" src="assets/rhythm/beach-v1172/hippo-happy.webp" alt="웃는 구름하마"><img class="rp-cloud-hurt" src="assets/rhythm/beach-v1172/hippo-hurt.webp" alt=""><i class="rp-cloud-tint"></i></div><div class="rp-cloud-skirt"><span class="rp-cloud-clump rp-cloud-clump-1"><img src="assets/rhythm/beach-v1172/hippo-cloud-clump-1-v2.png" alt=""><i class="rp-cloud-tint"></i></span><span class="rp-cloud-clump rp-cloud-clump-2"><img src="assets/rhythm/beach-v1172/hippo-cloud-clump-2-v2.png" alt=""><i class="rp-cloud-tint"></i></span><span class="rp-cloud-clump rp-cloud-clump-3"><img src="assets/rhythm/beach-v1172/hippo-cloud-clump-3-v2.png" alt=""><i class="rp-cloud-tint"></i></span></div><div class="rp-cloud-arm"><img src="assets/rhythm/beach-v1172/hippo-hand-mallet-v2.png" alt=""><i class="rp-cloud-tint"></i></div></div></div>
-          <div class="rp-deco" aria-hidden="true"><i class="rp-twk" style="left:8%;top:41%;animation-delay:-0.3s"></i><i class="rp-twk" style="left:23%;top:47%;animation-delay:-1.4s"></i><i class="rp-twk" style="left:37%;top:43%;animation-delay:-2.2s"></i><i class="rp-twk" style="left:52%;top:50%;animation-delay:-0.8s"></i><i class="rp-twk" style="left:66%;top:44%;animation-delay:-1.9s"></i><i class="rp-twk" style="left:81%;top:48%;animation-delay:-0.1s"></i><i class="rp-twk" style="left:93%;top:42%;animation-delay:-2.6s"></i><i class="rp-twk" style="left:15%;top:55%;animation-delay:-1.1s"></i><i class="rp-twk" style="left:45%;top:57%;animation-delay:-2.9s"></i><i class="rp-twk" style="left:74%;top:56%;animation-delay:-0.6s"></i><span class="rp-gull"><span class="rp-gull-b"><svg viewBox="0 0 40 16"><path d="M2 11 Q11 1 20 9 Q29 1 38 11" fill="none" stroke="#3a4a5e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span><span class="rp-gull"><span class="rp-gull-b"><svg viewBox="0 0 40 16"><path d="M2 11 Q11 1 20 9 Q29 1 38 11" fill="none" stroke="#3a4a5e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span><span class="rp-gull"><span class="rp-gull-b"><svg viewBox="0 0 40 16"><path d="M2 11 Q11 1 20 9 Q29 1 38 11" fill="none" stroke="#3a4a5e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span></div>
-          <div class="rp-lanes" data-rp-lanes></div>
-          <div class="rp-weapons" data-rp-weapons></div>
-
-          <button type="button" class="rp-pausebtn" data-rp-pausebtn aria-label="pause">II</button>
-          <div class="rp-count" data-rp-count hidden></div>
-        </div>
-        <div class="rp-bottom">
-          <div class="rb-timing-gauge rp-a-timing-gauge" role="img" aria-label="Judgement energy: longest PERFECT, shortest MISS"><svg viewBox="1 0 778 60" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="rp-a-timing-spectrum"><stop stop-color="#e5b873"/><stop offset=".3" stop-color="#f1d19e"/><stop offset=".46" stop-color="#fff1d5"/><stop offset=".54" stop-color="#fff1d5"/><stop offset=".7" stop-color="#f1d19e"/><stop offset="1" stop-color="#e5b873"/></linearGradient></defs><rect x="2" y="8" width="776" height="34" fill="#fff0cf" stroke="#bd8b47" stroke-width="2"/><rect x="16" y="16" width="748" height="18" fill="url(#rp-a-timing-spectrum)" opacity=".45"/><path d="M24 8H756M24 42H756" stroke="url(#rp-a-timing-spectrum)" stroke-width="2" opacity=".8"/><line data-zone="GOOD" data-side="-1" x1="232.53280000000004" x2="232.53280000000004" y1="32" y2="42" stroke="#a47940" stroke-opacity=".7" stroke-width="1" vector-effect="non-scaling-stroke"/><line data-zone="GOOD" data-side="1" x1="547.4671999999999" x2="547.4671999999999" y1="32" y2="42" stroke="#a47940" stroke-opacity=".7" stroke-width="1" vector-effect="non-scaling-stroke"/><line data-zone="GREAT" data-side="-1" x1="132.32640000000004" x2="132.32640000000004" y1="32" y2="42" stroke="#a47940" stroke-opacity=".7" stroke-width="1" vector-effect="non-scaling-stroke"/><line data-zone="GREAT" data-side="1" x1="647.6736000000001" x2="647.6736000000001" y1="32" y2="42" stroke="#a47940" stroke-opacity=".7" stroke-width="1" vector-effect="non-scaling-stroke"/><line data-zone="PERFECT" data-side="-1" x1="32.120000000000005" x2="32.120000000000005" y1="32" y2="42" stroke="#a47940" stroke-opacity=".7" stroke-width="1" vector-effect="non-scaling-stroke"/><line data-zone="PERFECT" data-side="1" x1="747.88" x2="747.88" y1="32" y2="42" stroke="#a47940" stroke-opacity=".7" stroke-width="1" vector-effect="non-scaling-stroke"/></svg><span class="rb-timing-caption rb-timing-caption--center">RHYTHM</span><span class="rb-timing-light" hidden></span></div>
-          <div class="rp-btns" data-rp-btns></div>
-          <div class="rp-hpbar" data-rp-hpbar hidden><i data-rp-hp></i></div>
-          <div class="rp-a-status" aria-label="Game status"><div class="rp-a-status-item rp-a-status-score"><span class="rp-a-status-label">SCORE</span><b class="rp-a-status-value" data-rp-score>0</b></div><div class="rp-a-status-item rp-a-status-judgement"><span class="rp-a-status-label">JUDGEMENT</span><b class="rp-a-status-value" data-rp-status-judge>READY</b></div><div class="rp-a-status-item rp-a-status-combo"><span class="rp-a-status-label">COMBO</span><b class="rp-a-status-value" data-rp-combo>0</b></div><div class="rp-a-status-item rp-a-status-time"><svg class="rp-a-clock" viewBox="0 0 369 426" aria-hidden="true"><image href="assets/rhythm/ui-status-v1232/clock.png" width="369" height="426"/><g stroke="#14651c" stroke-width="8" stroke-linecap="round"><path d="M187 237L187 181"/><path class="rp-a-clock-hand" d="M187 237L187 140"/></g><circle cx="187" cy="237" r="12" fill="#31b838" stroke="#14651c" stroke-width="5"/></svg><span class="rp-a-status-label">TIME</span><b class="rp-a-status-value" data-rp-time>0:00</b></div></div>
-        </div>
-        <!-- v826: 리듬팡 창 3종 = 바탕화면 "리듬팡 UI 및 에셋/2차" 시안·에셋(부품 잘라 조립, 숫자·글자만 코드) -->
-        <div class="rp-modal" data-rp-pause hidden><div class="rx-card rx-card--pause">
-          <div class="rx-plaque"><img src="assets/rhythm/ui/p-plaque.png" alt=""><svg class="rx-ptxt" viewBox="0 0 500 135" aria-hidden="true"><defs><path id="rxarc1" d="M 18 126 Q 250 40 482 126"/><linearGradient id="rxg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff58a"/><stop offset="0.45" stop-color="#ffcf1f"/><stop offset="1" stop-color="#ff7a00"/></linearGradient></defs><text class="rx-pt-sh" transform="translate(0 6)" text-anchor="middle" font-family="Jua, 'Lilita One', sans-serif" font-size="94" data-rx-pause-t><textPath href="#rxarc1" startOffset="50%">일시정지</textPath></text><text class="rx-pt-st" text-anchor="middle" font-family="Jua, 'Lilita One', sans-serif" font-size="94" data-rx-pause-t><textPath href="#rxarc1" startOffset="50%">일시정지</textPath></text><text class="rx-pt-fill" fill="url(#rxg1)" text-anchor="middle" font-family="Jua, 'Lilita One', sans-serif" font-size="94" data-rx-pause-t><textPath href="#rxarc1" startOffset="50%">일시정지</textPath></text></svg><span class="rx-shine" style="-webkit-mask-image:url(assets/rhythm/ui/p-plaque.png);mask-image:url(assets/rhythm/ui/p-plaque.png)"><i></i></span></div>
-          <button type="button" class="rx-btn rx-btn--y" data-rp-resume><img class="rx-ic rx-ic--play" src="assets/rhythm/ui/ic-play.png" alt=""><span data-i18n="mole.rp.resume">계속하기</span></button>
-          <button type="button" class="rx-btn rx-btn--b" data-rp-quit><img class="rx-ic rx-ic--heart" src="assets/rhythm/ui/ic-heart.png" alt=""><span data-i18n="mole.rp.quit">그만하기</span><em class="rx-cost">-1</em></button>
-        </div></div>
-        <div class="rp-modal" data-rp-result hidden><div class="rx-card rx-card--res">
-          <div class="rx-title rx-go-title"><img src="assets/rhythm/ui/go-title.png" alt="GAME OVER"><span class="rx-shine" style="-webkit-mask-image:url(assets/rhythm/ui/go-title.png);mask-image:url(assets/rhythm/ui/go-title.png)"><i></i></span></div>
-          <div class="rx-plaque rx-clear-title"><img src="assets/rhythm/ui/p-plaque.png" alt=""><svg class="rx-ptxt" viewBox="0 0 500 135" aria-hidden="true"><defs><path id="rxarc2" d="M 18 126 Q 250 40 482 126"/><linearGradient id="rxg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff58a"/><stop offset="0.45" stop-color="#ffcf1f"/><stop offset="1" stop-color="#ff7a00"/></linearGradient></defs><text class="rx-pt-sh" transform="translate(0 6)" text-anchor="middle" font-family="'Lilita One', Jua, sans-serif" font-size="94"><textPath href="#rxarc2" startOffset="50%">COMPLETE</textPath></text><text class="rx-pt-st" text-anchor="middle" font-family="'Lilita One', Jua, sans-serif" font-size="94"><textPath href="#rxarc2" startOffset="50%">COMPLETE</textPath></text><text class="rx-pt-fill" fill="url(#rxg2)" text-anchor="middle" font-family="'Lilita One', Jua, sans-serif" font-size="94"><textPath href="#rxarc2" startOffset="50%">COMPLETE</textPath></text></svg><span class="rx-shine" style="-webkit-mask-image:url(assets/rhythm/ui/p-plaque.png);mask-image:url(assets/rhythm/ui/p-plaque.png)"><i></i></span></div>
-          <div class="rx-result-body"><p class="rx-score-l">SCORE</p>
-          <div class="rx-score"><b data-rp-res-score>0</b><em class="rx-new" data-rx-new>NEW!</em></div>
-          <div class="rx-best" data-rp-res-best></div><div class="rp-a-ticket-reward" data-rp-ticket-reward hidden></div><div class="rx-rating"><b class="rx-rank-stamp" data-rp-res-rank aria-label="Final grade">F</b><div class="rx-rating-detail"><small>ACCURACY</small><b data-rp-res-accuracy>0.00%</b><strong class="rx-achievement-stamp" data-rp-res-achievement hidden></strong></div></div>
-          <div class="rx-stats"><b data-rp-res-combo>0</b><b data-rp-res-perfect>0</b><b data-rp-res-great>0</b><b data-rp-res-good>0</b><b data-rp-res-miss>0</b></div>
-          </div><div class="rx-result-actions"><button type="button" class="rx-btn rx-btn--retry" data-rp-retry><span data-i18n="mole.rp.retry">다시하기</span></button>
-          <button type="button" class="rx-btn rx-btn--diff" data-rp-other><span data-i18n="mole.rp.other">난이도 선택</span></button>
-          <button type="button" class="rx-btn rx-btn--b rx-btn--songs" data-rp-home><i aria-hidden="true">♫</i><span>곡 선택</span></button></div>
-        </div></div>
-        <div class="rp-modal rb-song-modal" data-rp-songs hidden role="dialog" aria-modal="true" aria-labelledby="rb-song-title"><div class="rx-card rx-card--sel rb-song-card">
-          <div class="rx-title rp-mode-sign" aria-label="RhythmPang Beach"><img src="assets/rhythm/ui/p-plaque.png" alt=""><svg viewBox="0 0 645 259" aria-hidden="true"><defs><path id="rp-mode-arc-songs" d="M105 177 Q322 92 540 177"/></defs><text class="rp-mode-sign-shadow" text-anchor="middle" font-size="96" font-family="Lilita One, Jua, sans-serif"><textPath data-rp-mode-name href="#rp-mode-arc-songs" startOffset="50%">BEACH</textPath></text><text class="rp-mode-sign-fill" text-anchor="middle" font-size="96" font-family="Lilita One, Jua, sans-serif"><textPath data-rp-mode-name href="#rp-mode-arc-songs" startOffset="50%">BEACH</textPath></text></svg></div>
-          <h2 id="rb-song-title">곡을 고르세요</h2>
-          <div class="rb-song-viewport"><div class="rb-song-list" data-rp-song-list></div><i class="rb-scroll-bar rb-scroll-bar--top" aria-hidden="true"></i><i class="rb-scroll-bar rb-scroll-bar--bottom" aria-hidden="true"></i></div>
-          <p class="rb-song-message" data-rp-song-message role="status"></p>
-          <div class="rb-song-footer"><button type="button" class="rx-btn rx-btn--diff rb-song-nav" data-rp-songs-back><svg class="rb-song-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2h6l.7 3 2.6 1.5 3-.8 3 5.2-2.3 2.2v3l2.3 2.2-3 5.2-3-.8-2.6 1.5-.7 3H9l-.7-3L5.7 22l-3 .8-3-5.2L2 15.4v-3L-.3 10.2l3-5.2 3 .8L8.3 4.3Z" transform="translate(2 0) scale(.83)"/><circle cx="12" cy="12" r="3.4" fill="#237cda"/></svg><span>타입 선택</span></button>
-          <button type="button" class="rx-btn rx-btn--home rb-song-nav" data-rp-songs-home><svg class="rb-song-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 11 12 2 22 11 20 13V22H14V15H10V22H4V13Z"/></svg><span>홈으로</span></button></div>
-        </div></div>
-        <div class="rp-modal rp-preloader" data-rp-preloader hidden role="status" aria-live="polite"><div class="rx-card"><img class="rp-preload-album" data-rp-preload-album alt=""><h2 data-rp-preload-title></h2><p>게임 준비 중</p><progress data-rp-preload-progress max="4" value="0"></progress><small data-rp-preload-detail>음악과 화면을 불러옵니다</small><button type="button" class="rx-btn rx-btn--b rx-btn--songs" data-rp-preload-cancel><i aria-hidden="true">♫</i><span>곡 선택</span></button></div></div>
-        <div class="rp-modal rp-select" data-rp-select hidden><div class="rx-card rx-card--sel">
-          <div class="rx-title rp-mode-sign" aria-label="RhythmPang Beach"><img src="assets/rhythm/ui/p-plaque.png" alt=""><svg viewBox="0 0 645 259" aria-hidden="true"><defs><path id="rp-mode-arc-difficulty" d="M105 177 Q322 92 540 177"/></defs><text class="rp-mode-sign-shadow" text-anchor="middle" font-size="96" font-family="Lilita One, Jua, sans-serif"><textPath data-rp-mode-name href="#rp-mode-arc-difficulty" startOffset="50%">BEACH</textPath></text><text class="rp-mode-sign-fill" text-anchor="middle" font-size="96" font-family="Lilita One, Jua, sans-serif"><textPath data-rp-mode-name href="#rp-mode-arc-difficulty" startOffset="50%">BEACH</textPath></text></svg></div>
-          <p class="rb-selected-song" data-rp-selected-song hidden></p>
-          <div class="rx-sub"><span data-i18n="mole.rp.pick">난이도를 고르세요</span></div>
-          <button type="button" class="rx-btn rx-dbtn rx-dbtn--easy" data-rp-diff="EASY"><small></small></button>
-          <button type="button" class="rx-btn rx-dbtn rx-dbtn--normal" data-rp-diff="NORMAL"><small></small></button>
-          <button type="button" class="rx-btn rx-dbtn rx-dbtn--hard" data-rp-diff="HARD"><small></small></button>
-          <button type="button" class="rx-btn rx-btn--b rx-btn--songs rb-song-nav" data-rp-song-back hidden><i aria-hidden="true">♫</i><span>곡 선택</span></button>
-          <button type="button" class="rx-btn rx-btn--home rx-btn--selhome" data-rp-sel-close><span data-i18n="mole.rp.home">홈으로</span></button>
-        </div></div>
-      </div>
-    <div class="board-screen" id="light-popup" hidden>
-        <!-- 라이트 ON/DIM/OFF 와 같은 값을 가리키는 별도 표기(동기화, 사용자 지정) — 상점
-             하트/코인/티켓 캡슐(.shop-hud-stat) 스타일 재사용, data-lp-diff 공유해 기존
-             setDifficulty/refreshLightPopup 로직 그대로 자동 연동. -->
-        <div class="diff-alias-row">
-          <button type="button" class="shop-hud-stat diff-alias-btn diff-alias-btn--amateur" data-lp-diff="easy"><b data-i18n="mole.diff.amateur">Amateur</b></button>
-          <button type="button" class="shop-hud-stat diff-alias-btn diff-alias-btn--normal" data-lp-diff="mid"><b data-i18n="mole.diff.normal">Normal</b></button>
-          <button type="button" class="shop-hud-stat diff-alias-btn diff-alias-btn--pro" data-lp-diff="legend"><b data-i18n="mole.diff.pro">Pro</b></button>
-        </div>
-        <!-- 라이트 박스 3개를 각각 독립된 파란 박스로 구획(사용자 지정: "파란색 박스는 구획하자
-             .. 아마추어,일반,프로로 3개의 박스로") — 전용 클래스(.diff-pill-box, 상점 박스와
-             완전 분리, 값만 동일하게 유지), 박스마다 pill+자기 몫의 라운드1~8 미니 그리드. -->
-        <div class="mm-pills">
-          <div class="diff-col diff-pill-box">
-            <button type="button" class="mm-pill" data-lp-diff="easy">
-              <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"/></svg>
-              <span data-i18n="mole.diff.easy">라이트 ON</span>
-            </button>
-            <div class="round-progress round-progress--easy" data-round-progress="easy"></div>
-          </div>
-          <div class="diff-col diff-pill-box">
-            <button type="button" class="mm-pill mm-pill--mult" data-lp-diff="mid">
-              <span class="mm-pill-row">
-                <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"/></svg>
-                <span class="mm-pill-mx"><b data-i18n="mole.diff.mid.mult">×1.2</b><i data-i18n="mole.diff.mid.fever">피버 ×1.5</i></span>
-              </span>
-              <span class="mm-pill-combo" data-i18n="mole.diff.mid.combo">콤보100 하트</span>
-              <span data-i18n="mole.diff.mid">라이트 DIM</span>
-            </button>
-            <div class="round-progress round-progress--mid" data-round-progress="mid"></div>
-          </div>
-          <div class="diff-col diff-pill-box">
-            <button type="button" class="mm-pill mm-pill--mult" data-lp-diff="legend">
-              <span class="mm-pill-row">
-                <svg class="mm-pill-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0012 3z"/></svg>
-                <span class="mm-pill-mx"><b data-i18n="mole.diff.legend.mult">×2.0</b><i data-i18n="mole.diff.legend.fever">피버 ×3.0</i></span>
-              </span>
-              <span class="mm-pill-combo" data-i18n="mole.diff.legend.combo">콤보100 ❤️X2</span>
-              <span data-i18n="mole.diff.legend">라이트 OFF</span>
-            </button>
-            <div class="round-progress round-progress--legend" data-round-progress="legend"></div>
-          </div>
-        </div>
-    </div>
-    <!-- 더보기 메뉴 하위 화면들 (screen-nav.js 가 배타 토글) — mole-board 형제로 이동.
-         이 화면들도 more-menu(v168)와 똑같이 position:fixed 인데 mole-board 자식이었음 —
-         플레이 중 더보기를 열면 mole-board 가 hidden 되어 그 자손인 이 화면들도 통째로
-         0x0 렌더링돼 "아이콘 눌러도 안 먹힘"(클릭 자체는 됐지만 화면이 안 보임)으로 보였음. -->
-    <div class="board-screen face-maker" id="face-maker" hidden>
-        <div class="board-screen-bar">
-          <button type="button" class="bs-back" data-fm-cancel aria-label="뒤로">‹</button>
-          <span class="bs-title" data-i18n="mole.fm.title">사람두더지 만들기</span>
-        </div>
-        <div class="fm-stage" data-fm-stage="pick">
-          <p class="fm-hint" data-i18n="mole.fm.pickHint">사진을 골라주세요</p>
-          <label class="fm-pick-btn"><span data-i18n="mole.fm.pick">사진 선택</span>
-            <input type="file" accept="image/*" data-fm-file hidden></label>
-        </div>
-        <div class="fm-stage" data-fm-stage="crop" hidden>
-          <p class="fm-hint" data-i18n="mole.fm.cropHint">얼굴을 원 안에 맞춰주세요</p>
-          <div class="fm-crop" data-fm-crop>
-            <img class="fm-crop-img" data-fm-img alt="">
-            <div class="fm-crop-ring" aria-hidden="true"></div>
-          </div>
-          <button type="button" class="fm-next" data-fm-next data-i18n="mole.fm.next">다음</button>
-        </div>
-        <div class="fm-stage" data-fm-stage="preview" hidden>
-          <p class="fm-hint" data-i18n="mole.fm.previewHint">이 두더지로 할까요?</p>
-          <div class="fm-preview" data-fm-preview></div>
-          <input type="text" class="fm-name" data-fm-name maxlength="12" placeholder="이름 (선택)" data-i18n-placeholder="mole.fm.namePh">
-          <div class="fm-preview-btns">
-            <button type="button" class="fm-redo" data-fm-redo data-i18n="mole.fm.redo">다시</button>
-            <button type="button" class="fm-save" data-fm-save data-i18n="mole.fm.save">저장</button>
-          </div>
-        </div>
-        <p class="fm-priv" data-i18n="mole.fm.priv">사진은 이 기기에서만 처리돼요. 업로드하지 않아요.</p>
-      </div>
-
-      <!-- 스코어 랭킹 전체화면 — 바탕화면 "스코어 UI 및 에셋" 명세·에셋 기준(v749). 순위 데이터는 js/score-screen.js 가 그린다. -->
+ 어 랭킹 전체화면 — 바탕화면 "스코어 UI 및 에셋" 명세·에셋 기준(v749). 순위 데이터는 js/score-screen.js 가 그린다. -->
       <div class="board-screen sr-screen" id="score-screen" hidden>
         <div class="sr-carpet" aria-hidden="true"></div>
         <div class="sr-fx" data-sr-fx aria-hidden="true"></div>
@@ -1063,7 +798,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1258 G</div>
+        <div id="build-tag" aria-hidden="true">V 1260 G</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1330,7 +1065,7 @@ window.FGH.rollOut = function (el, done) {
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=1258-G').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=1260-G').catch(function () {});
       }
     });
   }
