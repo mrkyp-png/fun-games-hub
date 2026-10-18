@@ -89,6 +89,9 @@
     var lyricTicker = MG.RhythmLyrics.create(el);
     var statusFx = MG.RhythmStatusFx.create(el), buttonWaves=[];
     var beachVisual = MG.RhythmBeach.create(el), targetLanes=[], targetCue=[0,0,0,0], perfectWords=[];
+    var chorusFx=document.createElement('span'),chorusFxTimer=0,lastLyricSection='';chorusFx.className='rp-section-flash';chorusFx.setAttribute('aria-hidden','true');el.appendChild(chorusFx);
+    function showChorusFx(){if(root.matchMedia('(prefers-reduced-motion: reduce)').matches)return;clearTimeout(chorusFxTimer);el.classList.remove('rp-chorus-hit');void el.offsetWidth;el.classList.add('rp-chorus-hit');chorusFxTimer=setTimeout(function(){el.classList.remove('rp-chorus-hit');},720);}
+    el.addEventListener('rp-section-change',function(event){var section=String(event.detail&&event.detail.section||''),isChorus=/chorus/i.test(section);if(isChorus&&!/chorus/i.test(lastLyricSection))showChorusFx();lastLyricSection=section;});
     var meta = null, buffer = null, ctx = null, src = null;
     var st = null, raf = 0;
     var countEl = $('[data-rp-count]'), frameHeads = [0,1,2,3].map(function(){return {h:{x:0,y:0,r:0},jumping:false};}), frameCues=[0,0,0,0];
@@ -96,23 +99,6 @@
     var bGame = null, activeB = false, resultSerial = 0;
     var selectedASong = CONFIG.bSongs[0], selectedBSong = CONFIG.bSongs[0], bSongCache = {}, bSongPending = {};
     var adRequired=false, adReady=false, adBusy=false, entryBusy=false, entryGeneration=0, entryLoadingTimer=0;
-    var rhythmArtReady=null;
-    function preloadRhythmArt(){
-      if(rhythmArtReady)return rhythmArtReady;
-      var urls=new Set(),urlPattern=/url\(\s*['"]?([^'")]+)['"]?\s*\)/gi;
-      function add(raw,base){if(!raw||/^data:|^blob:/i.test(raw))return;try{var u=new URL(raw,base||document.baseURI);if(/\.(?:png|jpe?g|webp|gif|svg|avif)(?:[?#]|$)/i.test(u.href))urls.add(u.href);}catch(e){}}
-      function scanText(text,base){var match;urlPattern.lastIndex=0;while((match=urlPattern.exec(text||'')))add(match[1],base);}
-      el.querySelectorAll('img[src],image[href], [style]').forEach(function(node){if(node.currentSrc||node.src)add(node.currentSrc||node.src);if(node.getAttribute('href'))add(node.getAttribute('href'));if(node.getAttribute('style'))scanText(node.getAttribute('style'),document.baseURI);});
-      function walk(rules,base){Array.prototype.forEach.call(rules||[],function(rule){if(rule.cssRules){walk(rule.cssRules,base);return;}var selector=rule.selectorText||'';if(/\.rp-|\.rb-|\.rx-|#rhythm-screen/.test(selector))scanText(rule.cssText,base);});}
-      Array.prototype.forEach.call(document.styleSheets,function(sheet){try{walk(sheet.cssRules,sheet.href||document.baseURI);}catch(e){}});
-      function loadImage(src){return new Promise(function(resolve){var img=new Image();if(img.decode){img.src=src;img.decode().then(resolve,resolve);}else{img.onload=img.onerror=resolve;img.src=src;}});}
-      var sources=Array.from(urls),cursor=0;
-      function loadBatch(){var batch=sources.slice(cursor,cursor+6);cursor+=batch.length;return batch.length?Promise.all(batch.map(loadImage)).then(loadBatch):Promise.resolve();}
-      var waits=[loadBatch()];
-      if(document.fonts&&document.fonts.load)waits.push(document.fonts.load('16px Jua').catch(function(){}),document.fonts.load('16px "Lilita One"').catch(function(){}));
-      rhythmArtReady=Promise.all(waits);
-      return rhythmArtReady;
-    }
     function albumOf(choice) { return choice.id==='fever2' ? 'assets/home2/mole-cap.png' : A+'albums-v1170/'+choice.id+'.webp'; }
     function selectSong(choice){if(activeB)selectedBSong=choice;else selectedASong=choice;}
     function cancelEntry(){entryGeneration++;entryBusy=false;clearTimeout(entryLoadingTimer);$('[data-rp-preloader]').hidden=true;}
@@ -125,20 +111,20 @@
     function launchSong(modal){
       if(entryBusy||adBusy)return;
       if(adRequired&&!adReady){watchSongAd(function(){adReady=true;launchSong(modal);});return;}
-      var token=++entryGeneration,choice=activeB?selectedBSong:selectedASong,wasB=activeB,completed=0,total=wasB?3:5,loader=$('[data-rp-preloader]'),loaderShownAt=0;entryBusy=true;
+      var token=++entryGeneration,choice=activeB?selectedBSong:selectedASong,wasB=activeB,completed=0,total=wasB?2:4,loader=$('[data-rp-preloader]');entryBusy=true;
       if(!ctx)ctx=new(root.AudioContext||root.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume();
       $('[data-rp-preload-album]').src=albumOf(choice);$('[data-rp-preload-title]').textContent=choice.title;
       $('[data-rp-preload-progress]').max=total;$('[data-rp-preload-progress]').value=0;$('[data-rp-preload-detail]').textContent='준비 0 / '+total;loader.hidden=true;
-      clearTimeout(entryLoadingTimer);entryLoadingTimer=setTimeout(function(){if(token===entryGeneration&&entryBusy&&!el.hidden){loaderShownAt=Date.now();loader.hidden=false;}},1000);
+      clearTimeout(entryLoadingTimer);entryLoadingTimer=setTimeout(function(){if(token===entryGeneration&&entryBusy&&!el.hidden)loader.hidden=false;},300);
       function track(p){return Promise.resolve(p).then(function(v){if(token===entryGeneration){completed++;$('[data-rp-preload-progress]').value=completed;$('[data-rp-preload-detail]').textContent='준비 '+completed+' / '+total;}return v;});}
-      var tasks=wasB?[loadBSong(),bGame.prepare(),preloadRhythmArt()]:[loadSong(),preload(),loadMeta(),loadSfx(),preloadRhythmArt()];
-      Promise.all(tasks.map(track)).then(function(){if(token!==entryGeneration||el.hidden||activeB!==wasB)return false;clearTimeout(entryLoadingTimer);return new Promise(function(resolve,reject){var hold=loaderShownAt?Math.max(0,280-(Date.now()-loaderShownAt)):0;setTimeout(function(){if(token!==entryGeneration||el.hidden||activeB!==wasB){resolve(false);return;}loader.hidden=true;pushInGame(modal);Promise.resolve(wasB?bGame.open(diff,{practice:false}):start()).then(resolve,reject);},hold);});}).then(function(ok){if(token!==entryGeneration)return;clearTimeout(entryLoadingTimer);loader.hidden=true;entryBusy=false;if(ok)adReady=false;else showSelect();}).catch(function(){if(token!==entryGeneration)return;clearTimeout(entryLoadingTimer);loader.hidden=true;entryBusy=false;showSelect();$('[data-rp-selected-song]').textContent=choice.title+' · 자료를 불러오지 못했습니다. 다시 시도해주세요.';});
+      var tasks=wasB?[loadBSong(),bGame.prepare()]:[loadSong(),preload(),loadMeta(),loadSfx()];
+      Promise.all(tasks.map(track)).then(function(){if(token!==entryGeneration||el.hidden||activeB!==wasB)return false;pushInGame(modal);return wasB?bGame.open(diff,{practice:false}):start();}).then(function(ok){if(token!==entryGeneration)return;clearTimeout(entryLoadingTimer);loader.hidden=true;entryBusy=false;if(ok)adReady=false;else showSelect();}).catch(function(){if(token!==entryGeneration)return;clearTimeout(entryLoadingTimer);loader.hidden=true;entryBusy=false;showSelect();$('[data-rp-selected-song]').textContent=choice.title+' · 자료를 불러오지 못했습니다. 다시 시도해주세요.';});
     }
     $('[data-rp-preload-cancel]').addEventListener('click',function(){cancelEntry();showSongs();});
     function bBestPrefix() { return selectedBSong.id === 'fever2' ? 'mole.rp.b.best.' : 'mole.rp.b.best.' + selectedBSong.id + '.'; }
     function aBestPrefix() { return selectedASong.id === 'fever2' ? 'mole.rp.best.' : 'mole.rp.best.' + selectedASong.id + '.'; }
     // 효과음(기존 게임 사운드 재사용) — 성공 = 타격음, 실패 = 두더지 아야
-    var SFX = { hit: ['audio/hit1.mp3', 'audio/hit2.mp3', 'audio/hit3.mp3', 'audio/hit4.mp3'], jump: ['audio/mole-emerge.mp3'], countdown: ['audio/countdown-jump-mixkit.mp3'] }; // 카운트다운은 비치 모드 전용
+    var SFX = { hit: ['audio/hit1.mp3', 'audio/hit2.mp3', 'audio/hit3.mp3', 'audio/hit4.mp3'], jump: ['audio/mole-emerge.mp3'], countdown: ['audio/countdown-jump-dry.mp3'] }; // v814(사용자 지정): 실패 목소리(아야 등) 삭제, 두더지 점프 = 두더지팡 등장 소리
     var sfxBuf = {};
     function loadSfx() {
       var all = SFX.hit.concat(SFX.jump, SFX.countdown);
@@ -274,17 +260,12 @@
       var beachDrop = Math.min(28, H * 0.035);
       L.targetY = L.targetY - groupShift + beachDrop;
       L.moleBottom = L.moleBottom - groupShift + beachDrop;
-      // Align each measured sprite apex head top with the target upper edge.
       var targetTop = L.targetY - L.targetR * 3.05 / 2;
-      L.apexLift = CHARS.map(function (c) {
-        var m = meta[c], bb = m.bb[CONFIG.apexFrame], s = L.moleW / m.w;
-        var apexTop = L.moleBottom - (m.h - bb[1]) * s - (L.lift || 0);
-        return apexTop - targetTop;
-      });
+      L.apexLift = CHARS.map(function(c,i){var m=meta[c],bb=m.bb[CONFIG.apexFrame],s=L.moleW/m.w;var apexTop=L.moleBottom-(m.h-bb[1])*s-(L.lift||0);return apexTop-targetTop;});
     }
     // 프레임별 추가 상승량 = (그 프레임이 대기 자세보다 오른 정도 ÷ 최고점이 오른 정도) × lift
     function liftAt(i, f) {
-      if (L.lift === undefined) return 0;
+      if (!L.lift) return 0;
       var bb = meta[CHARS[i]].bb, rise = bb[0][1] - bb[f][1], top = bb[0][1] - bb[CONFIG.apexFrame][1];
       var ratio = top > 0 ? Math.max(0, Math.min(1, rise / top)) : 0;
       return ratio * (L.lift + (L.apexLift ? L.apexLift[i] : 0));
@@ -386,7 +367,7 @@
         var colorIndex = colorMap[i];
         ln.style.setProperty('--target-color',(beachPalette ? ['#ffc400','#009cff','#ee16a6','#10c848'] : ['#ffc94c','#5bd8ff','#ff8dce','#66e5b2'])[colorIndex]);
         var holeSize = HOLE_SIZE[i];
-        ln.innerHTML = '<img class="rp-target" src="' + A + (beachPalette ? 'beach-target-v1250/target-' : 'beach-v1172/target-') + (colorIndex + 1) + '.svg" alt=""><svg class="rp-target-inner-accent" viewBox="0 0 250 250" aria-hidden="true"><circle cx="125" cy="125" r="84" fill="none" stroke="var(--target-color)" stroke-width="3.75"/><path d="M125 23V62M125 188V227M23 125H62M188 125H227" fill="none" stroke="var(--target-color)" stroke-width="6" stroke-linecap="round"/></svg><span class="rp-target-orbit" aria-hidden="true"><i><b></b></i></span>' +
+        ln.innerHTML = '<img class="rp-target" src="' + A + (beachPalette ? 'beach-target-v1250/target-' : 'beach-v1172/target-') + (colorIndex + 1) + '.svg" alt=""><span class="rp-target-orbit" aria-hidden="true"><i><b></b></i></span>' +
           '<img class="rp-hole" src="' + A + 'hole-' + (i + 1) + '.png" alt="">' +
           '<span class="rp-mole" style="background-image:url(' + A + 'jump-' + CHARS[i] + '-strip.png)"></span>' +
           '<svg class="rp-hole-front" viewBox="0 0 ' + holeSize[0] + ' ' + holeSize[1] + '" aria-hidden="true"><defs><clipPath id="rp-hole-front-' + i + '" clipPathUnits="objectBoundingBox"><path d="' + holeFrontPath(i) + '"/></clipPath></defs><image href="' + A + 'hole-' + (i + 1) + '.png" width="' + holeSize[0] + '" height="' + holeSize[1] + '" clip-path="url(#rp-hole-front-' + i + ')"/></svg>' +
@@ -415,8 +396,8 @@
       var lanes = el.querySelectorAll('.rp-lane');
       lanes.forEach(function (ln, i) {
         var size=L.targetR*3.05;
-        var t = ln.querySelector('.rp-target'),orbit=ln.querySelector('.rp-target-orbit'),innerAccent=ln.querySelector('.rp-target-inner-accent');
-        t.style.width=orbit.style.width=innerAccent.style.width=size+'px';orbit.style.height=innerAccent.style.height=size+'px';t.style.top=orbit.style.top=innerAccent.style.top=(L.targetY-size/2)+'px';
+        var t = ln.querySelector('.rp-target'),orbit=ln.querySelector('.rp-target-orbit');
+        t.style.width=orbit.style.width=size+'px';orbit.style.height=size+'px';t.style.top=orbit.style.top=(L.targetY-size/2)+'px';
         var h = ln.querySelector('.rp-hole'), holeTop = L.moleBottom - L.sink - L.laneW * 0.32 + (i === 0 ? L.laneW * 0.05 : 0); h.style.width = (L.laneW * 0.98) + 'px'; h.style.top = holeTop + 'px';
         var hf = ln.querySelector('.rp-hole-front'); hf.style.width = h.style.width; hf.style.top = holeTop + 'px';
         var m = ln.querySelector('.rp-mole'); var md = meta[CHARS[i]];
@@ -543,20 +524,17 @@
         st = { notes: notes, score: 0, combo: 0, maxCombo: 0, hp: CONFIG.hpMax, cnt: { PERFECT: 0, GREAT: 0, GOOD: 0, MISS: 0 },
           moles: [0, 1, 2, 3].map(function () { return { jumpAt: -9, hurtAt: -9 }; }), over: false, paused: false, practice: practice, songId: selectedASong.id, renderQueue:notes.slice().sort(function(a,b){return a.spawnTime-b.spawnTime;}), spawnCursor:0, activeNotes:[], doneCount:0 };
         moleFrame = [-1, -1, -1, -1]; for (var i = 0; i < 4; i++) setMoleFrame(i, 0);
-        // 3·2·1·JUMP 음성이 끝난 뒤 음악과 실제 플레이 시계를 시작한다.
+        // 카운트인: 3·2·1·JUMP 음성이 끝난 뒤 음악과 플레이 시작
         var countdownAt = ctx.currentTime + 0.05;
         var countdownBuffer = sfxBuf[SFX.countdown[0]];
         sfx('countdown', countdownAt);
         var startAt = countdownAt + (countdownBuffer ? countdownBuffer.duration : 0);
-        var musicLead = Math.min(0.65, countdownBuffer ? countdownBuffer.duration * 0.2 : 0.65);
-        var musicAt = startAt - musicLead;
         st.countdownAt = countdownAt;
-        st.playAt = startAt;
-        st.t0 = musicAt;
-        var gameMusicGain = ctx.createGain(); gameMusicGain.gain.setValueAtTime(0, musicAt); gameMusicGain.gain.linearRampToValueAtTime(1, musicAt + 1.4); gameMusicGain.connect(ctx.destination);
-        var s1 = ctx.createBufferSource(); s1.buffer = buffer; s1.connect(gameMusicGain); s1.start(musicAt);
+        st.t0 = startAt;
+        var gameMusicGain = ctx.createGain(); gameMusicGain.gain.setValueAtTime(0, startAt); gameMusicGain.gain.linearRampToValueAtTime(1, startAt + 1.4); gameMusicGain.connect(ctx.destination);
+        var s1 = ctx.createBufferSource(); s1.buffer = buffer; s1.connect(gameMusicGain); s1.start(startAt);
         var s2 = null;
-        if (melBuf) { s2 = ctx.createBufferSource(); s2.buffer = melBuf; melGain = ctx.createGain(); melGain.gain.value = 1; s2.connect(melGain); melGain.connect(gameMusicGain); s2.start(musicAt); }
+        if (melBuf) { s2 = ctx.createBufferSource(); s2.buffer = melBuf; melGain = ctx.createGain(); melGain.gain.value = 1; s2.connect(melGain); melGain.connect(gameMusicGain); s2.start(startAt); }
         src = { stop: function (w) { s1.stop(w); if (s2) s2.stop(w); } };
         resetBoss(); clearAGauge();
         beachVisual.start(song&&song.bpm);
@@ -573,7 +551,7 @@
     // 버튼 → 점프. 리듬 판정은 "두더지가 최고점에 닿는 시각" 기준(입력 시각 + 최고점까지 시간).
     function clearButtonWaves(){buttonWaves.forEach(function(a){if(a)a.cancel();});buttonWaves=[];}
     function press(lane) {
-      if (!st || st.over || st.paused || now() < 0 || (st.playAt && ctx.currentTime < st.playAt)) return;
+      if (!st || st.over || st.paused || now() < 0) return;
       if(btnEls&&btnEls[lane])replay(btnEls[lane],'is-press-fx');
       var button=btnEls&&btnEls[lane],wave=button&&button.querySelector('.rp-a-wave');
       if(wave){if(buttonWaves[lane])buttonWaves[lane].cancel();var wa=wave.animate([{transform:'scale(.96)',opacity:0},{transform:'scale(1.08)',opacity:.75,offset:.22},{transform:'scale(1.18)',opacity:0}],{duration:260,easing:'ease-out',fill:'both'});buttonWaves[lane]=wa;wa.onfinish=function(){if(buttonWaves[lane]===wa){wa.cancel();buttonWaves[lane]=null;}};}
@@ -614,7 +592,7 @@
         n.perfectFlight={duration:.72,dx:endX-n.bx,dy:endY-n.by};
       }
       showJudge(lane, g, g.toLowerCase());
-      if(g==='PERFECT')statusFx.hit();
+      if(g==='PERFECT'){statusFx.hit();var orbit=targetLanes[lane]&&targetLanes[lane].querySelector('.rp-target-orbit');if(orbit){if(!orbit._perfectRipple)orbit._perfectRipple=orbit.animate([{transform:'translateX(-50%) scale(.82)',opacity:.9},{transform:'translateX(-50%) scale(1.48)',opacity:0}],{duration:520,easing:'cubic-bezier(.16,.7,.3,1)',fill:'both'});else{orbit._perfectRipple.cancel();orbit._perfectRipple.currentTime=0;orbit._perfectRipple.play();}}}
       var hitButton=btnEls&&btnEls[lane];
       if(hitButton){clearTimeout(buttonHitTimers[lane]);hitButton.dataset.grade=g;replay(hitButton,'is-hit');buttonHitTimers[lane]=setTimeout(function(){hitButton.classList.remove('is-hit');delete hitButton.dataset.grade;buttonHitTimers[lane]=0;},420);}
       pang(lane, n.cx, n.cy); hud(); sfx('hit');
@@ -695,11 +673,10 @@
       beachVisual.update(t);
       updateStatusTime(t);
       lyricTicker.update(t);
-      // 카운트다운 중에는 입력·노트·음악 시계가 멈춰 있고, 음성이 끝난 뒤 게임이 시작된다.
+      // 카운트인 표시: 음성이 끝날 때까지 입력·노트·음악 시계는 시작하지 않음
       var ci = countEl, countdownElapsed = ctx.currentTime - st.countdownAt;
-      if (ctx.currentTime < st.playAt) { ci.textContent = countdownElapsed < 0.85 ? '3' : countdownElapsed < 1.70 ? '2' : countdownElapsed < 2.55 ? '1' : 'JUMP'; ci.hidden = false; }
+      if (t < 0) { ci.textContent = countdownElapsed < 1 ? '3' : countdownElapsed < 2 ? '2' : countdownElapsed < 3 ? '1' : 'JUMP'; ci.hidden = false; }
       else ci.hidden = true;
-      if (ctx.currentTime < st.playAt) return;
       // 두더지 프레임 + 머리 원
       var heads = frameHeads;
       for (var i = 0; i < 4; i++) {
