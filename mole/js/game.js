@@ -575,7 +575,7 @@
     DIFFS.forEach((d) => gs.classList.remove('diff-' + d));
     gs.classList.add('diff-' + diff);
   }
-    // 홈 화면 시작은 설명을 보여주고, 두더지팡 라운드 선택 화면에서 온 경우만 바로 시작한다.
+  // 홈 화면 시작은 설명을 보여주고, 두더지팡 라운드 선택 화면에서 온 경우만 바로 시작한다.
   // 시작 시 생명을 미리 깎지 않는다 — 현재 공유 풀 그대로 플레이하고, 동물 맞을 때만 -1.
   // 단 풀이 0이면 플레이 자체가 불가(즉시 게임오버) → "생명 없음" 모달.
   let gameStarting = false; // 시작 버튼 연타 방지 — 한 번 누르면 홈으로 돌아올 때까지 재진입 차단
@@ -1498,7 +1498,248 @@
     sharedPopElements.clear();
 
     const holeLayer = MG.HoleLayer.create({
-      container: document.getElementById('mole-hole-layer'l - popMs);
+      container: document.getElementById('mole-hole-layer'),
+      frontContainer: document.getElementById('mole-hole-front-layer'),
+      spawnPoints,
+      season: roundSeason()
+    });
+
+    // 장착 무기 = 망치(기본) / 대포 스킨 / 골드해머(지진) / 알리 펀치(글러브 2개). 인터페이스 동일
+    // (strike/update/home/clear/isBusy).
+    const WeaponMod = (weapon === 'cannon' && MG.LaneCannon) ? MG.LaneCannon
+      : (weapon === 'alipunch' && MG.LaneBoxing) ? MG.LaneBoxing : MG.LaneHammer;
+    const hammerOpts = { layer: document.getElementById('mole-hammer-layer') };
+    if (weapon === 'hammer') hammerOpts.idle = 'bounce'; // 대기 애니메이션(사용자 지정, 잠깐 자리 비웠을 때)
+    if (weapon === 'cannon') {
+      // 캐논 인트로 전용 이미지들(body-flip/a3-mirror/a4-mirror) — HTML에 없고 JS가 실행
+      // 시점에 처음 .src 를 주기 때문에, 캐시 없는 첫 플레이에서 네트워크 로딩 중 작은
+      // 깨진 이미지 아이콘이 잠깐 보였다(사용자 리포트, 두 번째부턴 캐시로 정상). 미리 로드.
+      ['cannon-intro-body-flip', 'cannon-a3-mirror', 'cannon-a4-mirror'].forEach((n) => {
+        const i = new Image(); i.src = 'assets/weapons/' + n + '.png';
+      });
+    }
+    if (weapon === 'goldhammer') {
+      hammerOpts.sprite = 'assets/weapons/goldhammer.png';
+      // 스프라이트가 이미 뿅망치 축각도(~21°)로 잘려있어 degOffset 불필요 → 스윙 궤적·타격점이 뿅망치와 동일.
+      hammerOpts.grip = { x: 56, y: 72 };        // 골드해머 스프라이트 손잡이 잡는 점
+      hammerOpts.cssClass = 'lane-hammer--gold'; // 뿅망치보다 1.2배 크게
+      // 골드해머는 그립(56%,72%)·타격면 위치·크기(17.5% vs 14.04%)가 뿅망치와 달라 기본 gripOff 그대로 쓰면
+      // 타격면이 목표보다 위/옆으로 빗나간다. 스프라이트 픽셀(빨간 타격면 중심 vs 그립)을 실측 + 회전변환으로
+      // 역산한 값(대략치 — 실기기에서 미세조정 필요할 수 있음).
+      hammerOpts.gripOff = { x: 0.097, y: -0.065 }; // 타격점 좌측으로 0.1cm 추가이동 (누적 0.2cm, 좌표계=보드분수 1cm≈0.1)
+      hammerOpts.emptyDy = -0.025; // 빈 구멍 헛스윙 전용: 공용 AIM_DY(-0.055)보다 아래로 0.3cm (뿅망치는 그대로)
+      hammerOpts.homeMarginTop = '-0.3cm';       // 대기 위치를 기본(0.2cm 아래)에서 위로 0.5cm
+      hammerOpts.homeDegOffset = 20;             // 대기 각도만 시계방향으로 20도 추가 회전
+      hammerOpts.idle = 'spin';                  // 대기 애니메이션 — 제자리 360도 회전(사용자 지정)
+      // 지진 분신 포즈 미리 로드 (첫 지진 때 이미지가 늦게 떠서 안 보이는 것 방지)
+      ['goldhammer-0', 'goldhammer-90'].forEach((n) => { const i = new Image(); i.src = 'assets/weapons/' + n + '.png'; });
+    }
+    // 동시타격 오버플로(분신) — 랜덤 배정에서 "진짜"를 못 받은 나머지 타격들이 여기로 온다.
+    // 무기별로 다른 분신 연출(quakeClone/cannonClone 재사용, 사용자 지정 — "황금묠니르처럼
+    // 분신 개념"). 실제 타격 판정(onImpact)은 그대로 호출하므로 콤보/점수는 정상 반영된다.
+    function weaponCloneOverflow(targetXFrac, targetYFrac, onImpact, frameKey, regionId) {
+      const fxLayer = document.getElementById('mole-hammer-layer'); // overflow:visible
+      if (weapon === 'cannon') {
+        // 분신 몸체·포즈 맞추기는 포기(사용자 지정 — "쉬운 방법"): 게임판 밖에 분신 대포가
+        // 있다고 치고, 왼쪽 외곽~좌하단 모서리~아래쪽 외곽 경로 위 랜덤한 지점에서 포탄만
+        // 목표까지 날아간다(randomCannonCloneStart, 정확한 경로는 사용자 지정). 랜덤이라
+        // 동시에 여러 개(8개까지 실기기 확인) 떠도 자연스럽게 안 겹친다.
+        // ⚠️ 판 밖은 안 보이게(clip) 하려던 시도(#mole-board)는 무작위 시작점과 목표 거리가
+        // 들쭉날쭉해서 "어떤 건 잘 보이고 어떤 건 중앙 근처에서 톡 나타남"으로 일관성이
+        // 없었다(사용자 리포트) — 사용자 지정으로 클리핑을 포기하고 fxLayer(mole-hammer-layer,
+        // overflow:visible)에 그려 판 밖 구간부터 항상 전체가 보이게 확정.
+        const start = randomCannonCloneStart();
+        MG.HitFx.cannonClone(fxLayer, start.x, start.y, targetXFrac, targetYFrac, onImpact);
+      } else if (weapon === 'alipunch') {
+        // 분신도 실제 위치와 "같은 글러브·같은 애니메이션"이어야 한다(사용자 지정) — 일반
+        // quakeClone 대신 lane-boxing.js 가 export 하는 makeGlove 로 그 구역의 진짜 글러브를
+        // 하나 더 만들어(50% 투명) 똑같이 strike() 시킨다. 무적 중 황금색 필터(.lane-boxing-glove
+        // img 셀렉터 기반)도 클래스가 같아서 자동으로 같이 적용된다.
+        const LB = MG.LaneBoxing;
+        const style = LB && LB.ZONES && LB.ZONES[regionId];
+        const side = LB && LB.GLOVE_OF && LB.GLOVE_OF[regionId];
+        if (LB && LB.makeGlove && style && side) {
+          const home = side === 'L' ? LB.HOME_L : LB.HOME_R;
+          const cloneCss = 'lane-boxing-glove--' + side.toLowerCase() + ' lane-boxing-glove--clone';
+          const glove = LB.makeGlove(fxLayer, home, cloneCss, side);
+          glove.strike(targetXFrac, targetYFrac, style, onImpact, regionId);
+          // update() 를 직접 돌려줘야 실제로 스윙·페인트되고 onImpact 도 불린다(makeGlove 는
+          // 자기 스스로 애니메이션을 굴리지 않음) — 메인 루프가 매 프레임 이 배열을 순회한다.
+          if (state) state.aliClones.push(glove);
+          setTimeout(() => {
+            glove.clear();
+            if (state) {
+              const i = state.aliClones.indexOf(glove);
+              if (i > -1) state.aliClones.splice(i, 1);
+            }
+          }, 400); // 스윙 전체 주기(reach+return ≈240ms)보다 넉넉히
+        } else if (onImpact) {
+          onImpact(); // 방어적 폴백 — 연출 없이도 판정(콤보/점수)은 반영
+        }
+      } else if (weapon === 'goldhammer') {
+        MG.HitFx.quakeClone(fxLayer, quakeClonePose(regionId), targetXFrac, targetYFrac, quakeCloneKind(regionId), onImpact);
+      } else {
+        MG.HitFx.quakeClone(fxLayer, 'assets/hammer.png', targetXFrac, targetYFrac, quakeCloneKind(regionId), onImpact, 'quake-clone--hammer');
+      }
+    }
+    const laneHammer = MG.WeaponPool.create(WeaponMod, hammerOpts, { onOverflow: weaponCloneOverflow });
+
+    state = {
+      regions, spawnPoints, scheduler, holeLayer, laneHammer, weapon, rng, config,
+      timeRemaining: roundSeconds(),
+      aliClones: [], // 알리펀치 동시타격 분신 글러브들 — 메인 루프가 매 프레임 update() 돌려줘야 실제로 스윙한다.
+      hitstopUntil: 0,
+      quakeFxUntil: 0, // V1158: visible quake tail, extended by actual chained effects.
+      alipunchInvincibleUntil: 0, // 알리 펀치 [공격력]: 무적 활성 종료 시각(performance.now() 기준, §7)
+      ended: false,
+      paused: false,
+      introActive: true, // 카운트다운 동안은 시간도 안 흐르고 구멍 입력도 무시 (handleCell 참고)
+      // 피버타임(터치캐치 보너스타임, 콤보100) — 기존 콤보50 점수배율 피버(isFever())와는 별개.
+      feverEventDone: false,
+      feverEventActive: false,
+      pausedByFever: false,
+      feverEventUntil: 0,
+      feverTransitioning: false, // 진입/퇴장 전환 동안만 true — 그동안 새 두더지 스폰 정지
+      feverResultShown: false // 20초 종료 후 결과창 떠 있는 동안 true — 스폰(+ 등장효과음) 정지
+    };
+
+    updateHUD();
+    playRoundIntro(() => {
+      if (myGen !== sessionGen || !state) return; // 그 사이 나가버림 — 이 콜백 무효
+      state.introActive = false;
+      setNavLock(false); // 라운드 실제 진행 → ⊞ 다시 활성
+      lastTime = performance.now();
+      rafId = requestAnimationFrame(loop);
+    });
+  }
+
+  // 모든 라운드(1~8): "라운드 N" 타이틀·음성 없이 바로 Ready → GO! 카운트다운(줌인 + 색상,
+  // GO! 는 흰 플래시) → 퇴장(사용자 지정, 2026-09-17 — 타이틀 단계가 불필요하다고 판단).
+  // 커튼 없음(투명 오버레이, 보드가 비침), 장식용 두더지 이미지도 없음.
+  // 골드해머 인트로 "회전 등장" 시작 위치 — 키패드 '✱' 키 중심의 lane-hammer 좌표계
+  // (#mole-hammer-layer 기준) 분수(실측).
+  const GH_SPIN_START = { x: 0.128, y: 1.871 };
+
+  function playRoundIntro(onDone) {
+    const myGen = sessionGen;
+    const overlay = document.getElementById('round-intro-overlay');
+    const title = document.getElementById('round-intro-title');
+    const count = document.getElementById('round-intro-count');
+    const moleImg = document.getElementById('round-intro-mole');
+
+    overlay.hidden = false;
+    count.hidden = true;
+    count.className = 'round-intro-count';
+    title.textContent = '';
+    moleImg.hidden = true;
+    // 캐논/골드해머/뿅망치 인트로 연출 — 모든 라운드(1~8)에서 이 함수 시작 시점에 바로 시작
+    // (사용자 지정). 커튼 없이 느긋한 타이밍(구 라운드1 전용이었던 쪽) 하나로 통일.
+    if (state.weapon === 'cannon') playCannonIntro(false);
+    if (state.weapon === 'goldhammer') playGoldHammerIntro(false);
+    if (state.weapon === 'hammer') playHammerIntro(false);
+    overlay.classList.remove('has-mole', 'mole-in', 'is-opening'); // 커튼 효과 없음(투명, 모든 라운드 공통)
+    // 알리 펀치: 인트로 시작부터 바로 글러브가 보여야 한다(사용자 지적).
+    if (state.weapon === 'alipunch') setHammerLayerVisible(true);
+
+    // 인트로 동안은 메인 루프(loop, requestAnimationFrame)가 아직 시작 전이라 laneHammer.update()가
+    // 한 번도 안 불려서 시연 애니메이션이 화면에 안 그려짐 — 인트로 전용 가벼운 틱을 별도로 돌린다.
+    function tickHammerDuring(ms) {
+      const end = performance.now() + ms;
+      let last = performance.now();
+      (function step(now) {
+        if (myGen !== sessionGen || !state || !state.laneHammer) return;
+        const dt = Math.min(0.1, ((now || performance.now()) - last) / 1000);
+        last = now || performance.now();
+        state.laneHammer.update(dt);
+        if (last < end) requestAnimationFrame(step);
+      })();
+    }
+
+    // 캐논 인트로 등장 연출(사용자 지정) — 라운드 시작하자마자 좌측에서 등장해 대기위치까지
+    // 이동(옆면-외곽선, 바퀴 회전) → 도착하면 3시 방향(a3 거울상) → 12시 방향(a4 거울상) 포즈를
+    // 짧게 거쳐 → 실제 대포(평소 대기 포즈)로 교체. 평소엔 #mole-hammer-layer(진짜 대포)를
+    // 숨겨뒀다가 끝나면 교체. fast 인자는 항상 false(모든 라운드 동일 타이밍으로 통일).
+    function playCannonIntro(fast) {
+      const ci = document.getElementById('cannon-intro');
+      if (!ci) return;
+      setHammerLayerVisible(false); // 실제 대포는 인트로 끝날 때까지 숨김(사용자 지적)
+      const rig = ci.querySelector('.ci-rig');
+      const body = ci.querySelector('.ci-body');
+      const wheels = ci.querySelectorAll('.ci-wheel');
+      ci.hidden = false;
+      // 이미지마다 실제 크기가 달라(옆면 이미지는 여백이 많고, a3·a4 는 lane-cannon.js 의
+      // 자체 보정 폭 사용) 폭을 하나로 통일하면 전환 때 크기가 튀어 이질감 생김(사용자 지적).
+      // 이미지 바뀔 때마다 그 이미지에 맞는 폭을 직접 지정.
+      // .ci-rig 에 폭을 직접 준다(% width는 부모=#cannon-intro 기준으로 고정폭이라 안전).
+      // .ci-body 에 width:%를 주면 부모(.ci-rig, 폭 미지정)를 기준으로 순환 참조가 생겨
+      // 프레임마다 계속 줄어드는 버그가 났었음(사용자 보고 "애니메이션 다 깨짐") — 그래서
+      // 크기는 항상 rig 에 준다.
+      // 완료 시점 = 카운트다운 종료·퇴장(is-opening) 시작 순간에 맞춘다(사용자 지정 "딱 맞춰야함").
+      // 타이틀 단계 삭제(2026-09-17, "라운드 N" 글자+음성 제거) 후 전체 흐름이 250(초기 지연)+
+      // 1010(Ready 650+GO! 후 360) = 1260ms 로 짧아져 travelMs/holdMs 도 그에 맞춰 축소 — Puppeteer 재검증.
+      const travelMs = fast ? 3000 : 900;
+      const holdMs = fast ? 205 : 180;
+      rig.style.width = '27.8%'; // 실측 24.2%(a3)에서 +15% — 옆면 이미지는 여백이 많아서 보정
+      rig.style.animationDuration = travelMs + 'ms';
+      body.src = 'assets/weapons/cannon-intro-body-flip.png'; // 이동 중엔 항상 이 이미지(사용자 지정)
+      wheels.forEach((w) => w.classList.remove('ci-hide'));
+      rig.className = 'ci-rig ci-play'; // 좌측 등장 → 대기위치까지 이동(바퀴는 계속 회전)
+      MG.HitFx.cannonWheelRoll(); // 바퀴 굴러가는 소리(사용자 제공, Pixabay) — 이동 시작과 동시에
+      setTimeout(() => { // 도착 — 3시 방향 포즈로 전환(바퀴는 이 포즈 그림에 이미 있어 오버레이 숨김)
+        if (myGen !== sessionGen) return;
+        wheels.forEach((w) => w.classList.add('ci-hide'));
+        rig.style.width = '25%'; // a3 실측 24.2% + 15%, 다시 -10%(사용자 지정)
+        body.src = 'assets/weapons/cannon-a3-mirror.png';
+        MG.HitFx.cannonRotateClick(); // 각도 전환 "철컥" 소리(사용자 제공)
+      }, travelMs); // GO!(라운드1)/타이핑 끝(라운드2~10) 타이밍에 정착이 맞춰지도록(사용자 지정)
+      setTimeout(() => { // 12시 방향 포즈로 전환
+        if (myGen !== sessionGen) return;
+        rig.style.width = '23.6%'; // a4 실측 21.6% + 15%, 다시 -5%(사용자 지정)
+        body.src = 'assets/weapons/cannon-a4-mirror.png';
+        MG.HitFx.cannonRotateClick(); // 각도 전환 "철컥" 소리(사용자 제공)
+      }, travelMs + holdMs);
+      setTimeout(() => { // 완료 — 인트로 숨기고 실제 대포(평소 대기 포즈)로 교체
+        if (myGen !== sessionGen) return;
+        ci.hidden = true;
+        rig.className = 'ci-rig';
+        setHammerLayerVisible(true);
+      }, travelMs + holdMs * 2);
+    }
+
+    // 골드해머 라운드 인트로 등장 연출(사용자 지정 "회전 등장") — 키패드 '✱' 키 위치에서 작게·
+    // 0도 포즈로 시작해, 대기 위치로 날아가며 회전(느리게→빠르게)·확대(작게→크게) 동시 진행,
+    // 회전이 정확히 대기 각도에 맞춰 끝나는 순간 기본 스프라이트로 교체해 안착.
+    // 시작 좌표는 실행 시점에 '✱' 키를 직접 찾아 실측한다 — 다이얼패드(.dialpad)는 보드
+    // (#mole-hammer-layer, --sq 기준 정사각형)와 별개 레이아웃이라, 화면 비율이 다르면 고정
+    // 분수값 하나로는 두 좌표계 비율이 안 맞아 화면 크기별로 위치가 어긋난다(사용자 지적).
+    function playGoldHammerIntro(fast) {
+      if (!state.laneHammer || !state.laneHammer.spinIn) return;
+      setHammerLayerVisible(true);
+      const layer = document.getElementById('mole-hammer-layer');
+      const starNum = Array.from(document.querySelectorAll('#lane-button-bar .lane-button .lane-num'))
+        .find((n) => n.textContent.trim() === '✱');
+      let sx = GH_SPIN_START.x, sy = GH_SPIN_START.y; // 폴백(요소를 못 찾을 때만)
+      if (layer && starNum) {
+        const lr = layer.getBoundingClientRect();
+        const range = document.createRange();
+        range.selectNodeContents(starNum);
+        const r = range.getBoundingClientRect();
+        sx = (r.x + r.width / 2 - lr.x) / lr.width;
+        sy = (r.y + r.height / 2 - lr.y) / lr.height;
+      }
+      const ms = fast ? 3380 : 1260; // 타이틀 단계 삭제 후 전체 흐름 250+1010=1260ms — Puppeteer 재검증
+      state.laneHammer.spinIn(sx, sy, ms, 4, 0.04, () => {});
+      const SOUND_MS = 1837; // audio/goldhammer-spin.mp3 실측 길이(ffprobe) — 재생이 착지 시점에 끝나도록
+      setTimeout(() => { if (myGen === sessionGen) MG.HitFx.goldHammerSpin(); }, Math.max(0, ms - SOUND_MS));
+    }
+
+    // 뿅망치 라운드 인트로 등장 연출(사용자 지정 "쭉 늘어났다 팡 등장").
+    function playHammerIntro(fast) {
+      if (!state.laneHammer || !state.laneHammer.popIn) return;
+      setHammerLayerVisible(true);
+      const total = fast ? 3380 : 1260; // 타이틀 단계 삭제 후 전체 흐름 250+1010=1260ms — Puppeteer 재검증
+      const popMs = 650;
+      const delay = Math.max(0, total - popMs);
       state.laneHammer.popIn(delay, popMs, () => {});
       setTimeout(() => { if (myGen === sessionGen) MG.HitFx.hammerPop(); }, delay); // 뿅 소리 — 등장과 동시에
     }
