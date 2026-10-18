@@ -1,5 +1,5 @@
 // 라운드 선택 광산 맵(v763) — 바탕화면 "MOLE PANG 라운드 선택 화면 최종 구현 명세서" 기준.
-// 두더지가 S자 땅굴을 따라 내려가는 세로 맵. 난이도(Amateur/Normal/Pro = 라이트 ON/DIM/OFF)별로
+// 아래 오른쪽 1번에서 좌우 계단을 따라 위쪽 8번으로 올라가는 세로 맵. 난이도별로
 // 배경·헬멧 색·정보판 내용만 바뀌고 구도는 같다. 현재 라운드 = localStorage 'mole.chapter'(홈과 공유),
 // 난이도 = 'mole.difficulty'. 실제 저장·검증은 game.js 가 넘겨준 콜백(select/setLight)이 한다.
 (function (root) {
@@ -8,13 +8,11 @@
   var T = function (k, p) { return root.FGH.I18N.t(k, p); };
   var A = 'assets/roundmap/';
   var LIGHTS = ['easy', 'mid', 'legend'];
-  // 배경별 굴 중심(941×1672 기준 px) — 배경마다 그림이 조금씩 달라 굴 위치를 따로 잰 값.
-  var HOLES = {
-    // Enter beside the foreground hippo, then climb toward the sunlit entrance.
-    easy:   [[674.5, 1448.5], [337.5, 1278.2], [678, 1108.8], [370.5, 930.8], [663.5, 776.5], [339.5, 608.1], [639.5, 467.5], [334.5, 325.9]],
-    mid:    [[334, 251], [453, 413], [333, 562], [466, 711], [595, 855], [443, 1008], [590, 1152], [467, 1298]],
-    legend: [[326, 252], [452, 415], [328, 563], [470, 713], [606, 848], [436, 982], [600, 1115], [464, 1255]]
-  };
+  // 고정 절벽의 실제 구멍 중심(941×1672). 세 모드 모두 같은 지형을 사용한다.
+  // 뒤 동굴의 이동과 무관하게 구멍, 두더지, 잠금 및 터치 기준점은 함께 고정된다.
+  var ROUTE = [[674.5, 1448.5], [337.5, 1278.2], [678, 1108.8], [370.5, 930.8],
+    [663.5, 776.5], [339.5, 608.1], [639.5, 467.5], [334.5, 325.9]];
+  var HOLES = { easy: ROUTE, mid: ROUTE, legend: ROUTE };
   var BW = 941, BH = 1672;
   // 배경 효과 위치(941×1672 px): 랜턴 불빛 / 광물 반짝임 — 배경 그림의 랜턴·광물 자리
   // 배경 효과 위치(941×1672 px). glow=랜턴 불빛, spark=금·보석이 있는 곳에서만 반짝(사용자 지정 v767),
@@ -32,7 +30,10 @@
     var view = null; // 지금 보고 있는 난이도
 
     el.querySelector('[data-back="roundmap"]').addEventListener('click', function () { root.FGH.rollOut(el, opts.onClose); }); // v790: 위로 말리며 사라짐
-    $('[data-rm-start]').addEventListener('click', function () { opts.onStart(); });
+    var startButton = $('[data-rm-start]');
+    startButton.addEventListener('click', function () { opts.onStart(); });
+    startButton.addEventListener('contextmenu', function (event) { event.preventDefault(); });
+    startButton.addEventListener('dragstart', function (event) { event.preventDefault(); });
     el.querySelectorAll('[data-rm-light]').forEach(function (b) {
       b.addEventListener('click', function () {
         var l = b.getAttribute('data-rm-light');
@@ -69,9 +70,10 @@
     function renderFx() {
       var fx = $('[data-rm-fx]'); if (fx.getAttribute('data-for') === view) return;
       fx.setAttribute('data-for', view); fx.innerHTML = '';
-      var f = FX[view], html = '';
+      var layered = el.classList.contains('rm-window-map');
+      var f = layered ? FX.easy : FX[view], html = '';
       f.glow.forEach(function (p) { html += '<span class="rm-glow" style="left:' + (p[0] / BW * 100) + '%;top:' + (p[1] / BH * 100) + '%;' + (p[2] ? '--rm-glow-size:' + (p[2] / BW * 100) + 'cqw;' : '') + '"></span>'; });
-      f.spark.forEach(function (p) { for (var k = 0; k < (view === 'easy' ? 1 : 5); k++) { var ox = k ? (Math.random() * 60 - 30) : 0, oy = k ? (Math.random() * 50 - 25) : 0; html += '<span class="rm-spark" style="left:' + ((p[0] + ox) / BW * 100) + '%;top:' + ((p[1] + oy) / BH * 100) + '%;animation-delay:' + (-Math.random() * 3).toFixed(2) + 's;animation-duration:' + (2.2 + Math.random() * 1.6).toFixed(2) + 's;scale:' + (0.6 + Math.random() * 0.6).toFixed(2) + '"></span>'; } }); // Amateur: exact crystal anchors; retain legacy five-spark clusters on other maps.
+      f.spark.forEach(function (p) { for (var k = 0; k < (layered ? 1 : 5); k++) { var ox = k ? (Math.random() * 60 - 30) : 0, oy = k ? (Math.random() * 50 - 25) : 0; html += '<span class="rm-spark" style="left:' + ((p[0] + ox) / BW * 100) + '%;top:' + ((p[1] + oy) / BH * 100) + '%;animation-delay:' + (-Math.random() * 3).toFixed(2) + 's;animation-duration:' + (2.2 + Math.random() * 1.6).toFixed(2) + 's;scale:' + (0.6 + Math.random() * 0.6).toFixed(2) + '"></span>'; } }); // Amateur: exact crystal anchors; retain legacy five-spark clusters on other maps.
       // Amateur(지상 광산): 나비 3마리 + 잠자리 2마리가 하늘·풀밭 위를 날아다님(사용자 지정 v763)
       if (view === 'easy' && !el.classList.contains('rm-window-map')) {
         html += '<span class="hg-bfly hg-bfly--p rm-bfly rm-bfly--1"></span><span class="hg-bfly hg-bfly--y rm-bfly rm-bfly--2"></span><span class="hg-bfly hg-bfly--b rm-bfly rm-bfly--3"></span>';
@@ -82,7 +84,7 @@
           html += '<em class="rm-bub" style="left:' + ((p[0] + (Math.random() * 40 - 20)) / BW * 100).toFixed(2) + '%;top:' + (p[1] / BH * 100).toFixed(2) + '%;animation-delay:' + (-Math.random() * 2.6).toFixed(2) + 's;animation-duration:' + (2 + Math.random() * 1.4).toFixed(2) + 's"></em>';
         }
       });
-      for (var i = 0; i < (view === 'legend' ? 18 : 0); i++) {
+      for (var i = 0; i < (!layered && view === 'legend' ? 18 : 0); i++) {
         html += '<i style="left:' + (5 + Math.random() * 90).toFixed(1) + '%;top:' + (15 + Math.random() * 70).toFixed(1) + '%;animation-delay:' + (-Math.random() * 9).toFixed(2) + 's"></i>';
       }
       fx.innerHTML = html;
@@ -109,7 +111,7 @@
       var cur = view === opts.currentLight() ? opts.currentChapter() : -1;
       renderFx();
       el.setAttribute('data-light', view);
-      $('[data-rm-bg]').src = A + (view === 'easy' ? 'window-v1263/scene.webp' : 'bg-' + view + '.jpg');
+      $('[data-rm-bg]').src = A + ({ easy: 'window-v1263/scene.webp', mid: 'caves-v1271/normal-rear.webp', legend: 'caves-v1271/pro-rear.webp' }[view]);
       var holes = HOLES[view];
       el.querySelectorAll('.rm-round').forEach(function (r) {
         var n = +r.getAttribute('data-n');

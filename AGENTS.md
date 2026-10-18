@@ -1503,3 +1503,16 @@
 - Asset provenance remains in desktop source folder and local review manifest. Preserve original raster assets; mode controls use clean vector edges.
 - Validation: actual Progress/RoundMap modules and 10 viewport/safe-area numerical geometry models passed; JS syntax, asset references and SW shell checked. Actual browser rendering unavailable; numerical verification must not be described as visual QA.
 - Build tag, SW registration and cache V1270 G. Deployment commit and workflow result recorded locally after completion.
+
+
+## 2026-10-18 / V1280 G - Open all modes/rounds and release Normal/Pro mine screens
+- Prepared from public V1270 G, preserving hinge fixes and quest synchronization. Includes no unrelated local edits.
+- New enclosed blue crystal/waterfall Normal cave and ruby/lava Pro cave. Shared solid cliff route: round1 bottom right, zigzag upward to round8. Burrows/markers/locks/touch positions stay fixed; background gems move within the rear stacking context, occluded by foreground terrain/frame.
+- Rear cave moves in two axes and recedes gradually for18s; mirrored left hippo moves oppositely and bounces every0.72s. Amateur keeps horizontal drift and two faster staggered clouds.
+- Removed blurred upper fill, retained matte black footer. Yellow/green/red labels remain colored even when modes are locked. Start button blocks image context menus/drag and animates only the green interior, preserving play triangle and outer stone.
+- Module and depth/numerical checks passed; actual browser visual QA remains unavailable. Desktop review previews retained. Public verification uses a direct public-read fallback if the environment's dead proxy fails.
+
+- User requested all game content opened for review; fresh installs now have all24 difficulty/round combinations available. Existing scores/clear records preserved without fabricated progress. Sequential progression remains available for development using explicit mole.unlockAll=0.
+- Publishing the complete review build makes the previously prepared Normal/Pro screens and motion available on the public page. Parent is V1270 G, with nine scoped files changed.
+
+- Hippo bounce paint layers isolated into outer drift/mirror and inner translate3d bounce, with bounded paint containment, to address user-reported trails. Visual resolution needs user confirmation. Amateur artwork unchanged; new Normal/Pro concept proposals await selection and are not included.

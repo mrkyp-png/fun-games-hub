@@ -6,11 +6,13 @@
   //    (챕터N, 라이트L) 클리어 → (챕터N+1, 라이트L) 열림.
   //  - 클리어 = 그 판 누적점수 ≥ CLEAR_TARGET[챕터] (완벽 플레이의 90%).
   //  - 저장: localStorage 'mole.progress' = { "c<ch>-<light>": { cleared, best } }
-  //  - 개발용: localStorage 'mole.unlockAll' === '1' → 전부 열림.
+  //  - 현재 검토 빌드는 전 난이도/라운드 개방. 기록을 클리어로 조작하지 않는다.
+  //    개발용 mole.unlockAll='0'으로 순차 해금을 재현, '1'로 강제 개방.
 
   var K = 'mole.progress';
   var LIGHTS = ['easy', 'mid', 'legend']; // = ON / DIM / OFF
   var MAX_CHAPTER = 8;
+  var REVIEW_UNLOCK_ALL = true; // 사용자 요청: 게임 오픈 전 전체 화면/라운드 확인.
   // 챕터 진행(전체 챕터 기획서 2026-09-14): 1~3 = 9홀/5라운드(뿅망치 전용) 튜토리얼,
   // 4~10 = 16홀/10라운드 본편(빼꼼→동물→폭탄→모자(4타)→타겟전환→반격 순 난이도 추가).
 
@@ -35,11 +37,17 @@
     return { cleared: !!(rec && rec.cleared), best: (rec && rec.best) || 0 };
   }
 
-  function unlockAll() { return ls() && ls().getItem('mole.unlockAll') === '1'; }
+  function unlockAll() {
+    try {
+      var flag = ls() && ls().getItem('mole.unlockAll');
+      return flag === '1' || (flag !== '0' && REVIEW_UNLOCK_ALL);
+    } catch (e) { return REVIEW_UNLOCK_ALL; }
+  }
 
   // 난이도 해금(라운드 선택 맵 명세 v763): Amateur 항상 / Normal = Amateur 라운드8 클리어 /
   // Pro = Normal 라운드8 클리어. 해금된 난이도끼리는 자유 이동.
   function isLightUnlocked(light) {
+    if (LIGHTS.indexOf(light) < 0) return false;
     if (unlockAll() || light === 'easy') return true;
     if (light === 'mid') return get(MAX_CHAPTER, 'easy').cleared;
     if (light === 'legend') return get(MAX_CHAPTER, 'mid').cleared;
