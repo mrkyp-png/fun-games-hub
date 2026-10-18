@@ -124,19 +124,19 @@
     function bBestPrefix() { return selectedBSong.id === 'fever2' ? 'mole.rp.b.best.' : 'mole.rp.b.best.' + selectedBSong.id + '.'; }
     function aBestPrefix() { return selectedASong.id === 'fever2' ? 'mole.rp.best.' : 'mole.rp.best.' + selectedASong.id + '.'; }
     // 효과음(기존 게임 사운드 재사용) — 성공 = 타격음, 실패 = 두더지 아야
-    var SFX = { hit: ['audio/hit1.mp3', 'audio/hit2.mp3', 'audio/hit3.mp3', 'audio/hit4.mp3'], jump: ['audio/mole-emerge.mp3'] }; // v814(사용자 지정): 실패 목소리(아야 등) 삭제, 두더지 점프 = 두더지팡 등장 소리
+    var SFX = { hit: ['audio/hit1.mp3', 'audio/hit2.mp3', 'audio/hit3.mp3', 'audio/hit4.mp3'], jump: ['audio/mole-emerge.mp3'], countdown: ['audio/countdown-jump-dry.mp3'] }; // v814(사용자 지정): 실패 목소리(아야 등) 삭제, 두더지 점프 = 두더지팡 등장 소리
     var sfxBuf = {};
     function loadSfx() {
-      var all = SFX.hit.concat(SFX.jump);
+      var all = SFX.hit.concat(SFX.jump, SFX.countdown);
       return Promise.all(all.map(function (u) {
         if (sfxBuf[u]) return null;
         return fetch(u).then(function (r) { return r.arrayBuffer(); }).then(function (ab) { return new Promise(function (res) { ctx.decodeAudioData(ab, function (b) { sfxBuf[u] = b; res(); }, function () { res(); }); }); }).catch(function () {});
       }));
     }
-    function sfx(kind) {
+    function sfx(kind, when) {
       var list = SFX[kind], b = sfxBuf[list[Math.floor(Math.random() * list.length)]]; if (!b || !ctx) return;
-      var s = ctx.createBufferSource(), g = ctx.createGain(); g.gain.value = kind === 'hit' ? 0.35 : 0.3;
-      s.buffer = b; s.connect(g); g.connect(ctx.destination); s.start();
+      var s = ctx.createBufferSource(), g = ctx.createGain(); g.gain.value = kind === 'hit' ? 0.35 : (kind === 'countdown' ? 0.22 : 0.3);
+      s.buffer = b; s.connect(g); g.connect(ctx.destination); if (typeof when === 'number') s.start(when); else s.start();
     }
 
     function preload() {
@@ -501,8 +501,12 @@
         st = { notes: notes, score: 0, combo: 0, maxCombo: 0, hp: CONFIG.hpMax, cnt: { PERFECT: 0, GREAT: 0, GOOD: 0, MISS: 0 },
           moles: [0, 1, 2, 3].map(function () { return { jumpAt: -9, hurtAt: -9 }; }), over: false, paused: false, practice: practice, songId: selectedASong.id, renderQueue:notes.slice().sort(function(a,b){return a.spawnTime-b.spawnTime;}), spawnCursor:0, activeNotes:[], doneCount:0 };
         moleFrame = [-1, -1, -1, -1]; for (var i = 0; i < 4; i++) setMoleFrame(i, 0);
-        // 카운트인: 3·2·1·START 가 끝나는 순간 음악 0초
-        var startAt = ctx.currentTime + 0.05;
+        // 카운트인: 3·2·1·JUMP 음성이 끝난 뒤 음악과 플레이 시작
+        var countdownAt = ctx.currentTime + 0.05;
+        var countdownBuffer = sfxBuf[SFX.countdown[0]];
+        sfx('countdown', countdownAt);
+        var startAt = countdownAt + (countdownBuffer ? countdownBuffer.duration : 0);
+        st.countdownAt = countdownAt;
         st.t0 = startAt;
         var gameMusicGain = ctx.createGain(); gameMusicGain.gain.setValueAtTime(0, startAt); gameMusicGain.gain.linearRampToValueAtTime(1, startAt + 1.4); gameMusicGain.connect(ctx.destination);
         var s1 = ctx.createBufferSource(); s1.buffer = buffer; s1.connect(gameMusicGain); s1.start(startAt);
@@ -647,10 +651,10 @@
       beachVisual.update(t);
       updateStatusTime(t);
       lyricTicker.update(t);
-      // 카운트인 표시
-      var ci = countEl;
-      if (t < CONFIG.countIn) { var c = CONFIG.countIn - Math.floor(Math.max(0,t)); ci.textContent = c > 0 ? String(c) : 'START'; ci.hidden = false; }
-      else if (t < CONFIG.countIn + 0.6) { ci.textContent = 'START'; ci.hidden = false; } else ci.hidden = true;
+      // 카운트인 표시: 음성이 끝날 때까지 입력·노트·음악 시계는 시작하지 않음
+      var ci = countEl, countdownElapsed = ctx.currentTime - st.countdownAt;
+      if (t < 0) { ci.textContent = countdownElapsed < 1 ? '3' : countdownElapsed < 2 ? '2' : countdownElapsed < 3 ? '1' : 'JUMP'; ci.hidden = false; }
+      else ci.hidden = true;
       // 두더지 프레임 + 머리 원
       var heads = frameHeads;
       for (var i = 0; i < 4; i++) {
