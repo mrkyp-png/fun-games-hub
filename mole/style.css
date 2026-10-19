@@ -486,8 +486,8 @@ body { background: var(--lm-page); }
 
 /* 게임 중 상단 상태판(V1315 C, 사용자 지정) — 리듬팡 비치 박스(불투명도 비치보다 10% 낮춤 .5→.4)를
    홈버튼(가운데, 카메라 구멍 아래) 좌우에 2개씩. 아래 끝 48px = 윗줄 두더지 최고점(약 54px)과 겹치지 않게(사용자 지정). */
-.ms-status { position: absolute; left: 8px; right: 8px; top: 6px; height: 42px; z-index: 7; pointer-events: none;
-  display: grid; grid-template-columns: 1fr 1fr 51px 1fr 1fr; gap: 3px; }
+.ms-status { position: absolute; left: 3px; right: 3px; top: 6px; height: 42px; z-index: 7; pointer-events: none;
+  display: grid; grid-template-columns: 1fr 1fr 47px 1fr 1fr; gap: 0; } /* 여백 최소(사용자 지정) */
 .ms-box { position: relative; min-width: 0; }
 .ms-box::before { content: ""; position: absolute; inset: 0; background: var(--ms-box) center / 118% 118% no-repeat; opacity: 0.4; }
 .ms-score { --ms-box: url('assets/rhythm/ui-status-v1230/score-box.png'); --ms-color: #20bfff; }
@@ -503,6 +503,8 @@ body { background: var(--lm-page); }
   font-family: 'Lilita One', 'Jua', sans-serif; -webkit-text-stroke: 1px #15244f; paint-order: stroke fill; text-shadow: 0 1px 1px #10152b; }
 .ms-label { top: 10%; font-size: 12px; color: var(--ms-color); }
 .ms-val { top: 46%; font-size: 19px; color: #fff; }
+/* 숫자가 길어지면 오른쪽 기준으로 왼쪽(아이콘 앞)으로 늘어나되 박스(왼쪽 4%) 안에서 멈춤(사용자 지정) */
+.ms-val { left: auto; min-width: 54%; max-width: 90%; }
 .ms-time.is-low .ms-val { color: #ff4d4d; animation: ms-low-blink 0.5s ease-in-out infinite alternate; }
 @keyframes ms-low-blink { from { opacity: 1; } to { opacity: 0.45; } }
 .ms-time.hud-flash { animation: ms-hit-flash 0.35s ease-out; }
@@ -2461,24 +2463,6 @@ body { background: var(--lm-page); }
   paint-order: stroke fill;
   pointer-events: none;
   animation: hit-score 0.45s ease-out 0.15s both; /* PANG! 바로 뒤 빠르게 */
-}
-/* 점수 타격 "PANG!" (V1316 C) — 히트 지점에서 크게 터졌다 사라짐 */
-.hit-fx-pang {
-  position: absolute;
-  transform: translate(-50%, -60%);
-  font: 400 2.1rem/1 'Lilita One', 'Jua', sans-serif;
-  color: #ffe14d;
-  -webkit-text-stroke: 3px #7a3300;
-  paint-order: stroke fill;
-  text-shadow: 0 3px 0 #7a3300, 0 0 12px rgba(255, 200, 40, 0.85);
-  pointer-events: none;
-  z-index: 8;
-  animation: hit-pang 0.4s ease-out forwards;
-}
-@keyframes hit-pang {
-  0%   { transform: translate(-50%, -60%) scale(0.3) rotate(-8deg); opacity: 0; }
-  30%  { transform: translate(-50%, -80%) scale(1.25) rotate(-4deg); opacity: 1; }
-  100% { transform: translate(-50%, -90%) scale(1) rotate(-4deg); opacity: 0; }
 }
 @keyframes hit-score {
   0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
