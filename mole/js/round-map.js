@@ -8,6 +8,16 @@
   var T = function (k, p) { return root.FGH.I18N.t(k, p); };
   var A = 'assets/roundmap/';
   var LIGHTS = ['easy', 'mid', 'legend'];
+  var TICKER_ITEMS = {
+    easy: [{ key: 'mole.rm.ground.easybase', icon: 'score' }, { key: 'mole.rm.ground.easy', icon: 'fever' }],
+    mid: [{ key: 'mole.rm.ground.mid', icon: 'score' }, { key: 'mole.rm.ground.mid2', icon: 'fever' }, { key: 'mole.rm.ground.mid3', icon: 'combo' }],
+    legend: [{ key: 'mole.rm.ground.legend', icon: 'score' }, { key: 'mole.rm.ground.legend2', icon: 'fever' }, { key: 'mole.rm.ground.legend3', icon: 'combo' }]
+  };
+  var TICKER_ICON_SVG = {
+    score: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m12 5.8 1.75 3.7 4.05.58-2.93 2.86.7 4.04L12 15.07l-3.57 1.91.68-4.04-2.92-2.86 4.04-.58z" fill="currentColor"/></svg>',
+    fever: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.3 2.7c.7 4.4-2.9 5.2-2.1 8.1 1.1-.6 1.7-1.8 1.9-3.1 3.5 2.5 5.8 5 5.1 8.1-.6 3-3.1 5.2-6.3 5.2-3.5 0-6.1-2.5-6.1-5.9 0-2.8 1.4-4.9 4.2-7.4-.1 2.2.4 3.1 1.1 3.7.1-3.1 3-4.7 2.2-8.7z" fill="currentColor"/><path d="M12.3 13.1c1.8 1.5 2.7 2.6 2.7 4.1a3 3 0 1 1-6 0c0-1.2.7-2.4 2-3.8-.1 1.2.2 1.6.6 1.9.6-.6.9-1.3.7-2.2z" fill="#382319" opacity=".72"/></svg>',
+    combo: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-8.4-5.1-9.2-10.2C2.2 6.9 4.5 4 7.7 4c1.9 0 3.4 1.1 4.3 2.7C13 5.1 14.5 4 16.3 4c3.2 0 5.5 2.9 4.9 6.8C20.4 15.9 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="m12 8.1 1 2.1 2.3.3-1.7 1.6.4 2.3-2-1.1-2 1.1.4-2.3-1.7-1.6 2.3-.3z" fill="currentColor"/></svg>'
+  };
   // 고정 지형의 실제 구멍 중심(941×1672). 모드별 외형만 다르고 진행 로직은 같다.
   // 뒤 동굴의 이동과 무관하게 구멍, 두더지, 잠금 및 터치 기준점은 함께 고정된다.
   var ROUTE = [[674.5, 1448.5], [337.5, 1278.2], [678, 1108.8], [370.5, 930.8],
@@ -34,7 +44,7 @@
       // The fixed foreground has one prominent blue cluster in the treasure cart.
       gem:[[83,1026,'cyan']],
       // Background crystals are anchored to the moving rear-mine artwork.
-      rearGem:[[170,180,'cyan'],[110,290,'cyan'],[200,605,'cyan'],[45,652,'cyan'],[148,872,'cyan'],[171,1047,'cyan'],[885,174,'cyan'],[793,287,'cyan'],[851,492,'cyan'],[800,653,'cyan'],[856,846,'cyan'],[773,1018,'cyan'],[818,1270,'cyan']],
+      rearGem:[[170,180,'cyan'],[170,290,'cyan'],[204,608,'cyan'],[148,872,'cyan'],[171,1047,'cyan'],[885,174,'cyan'],[807,287,'cyan'],[849,518,'cyan'],[844,613,'cyan'],[856,846,'cyan'],[840,1040,'cyan'],[837,1276,'cyan']],
       // Fixed frame lanterns; rear fixtures live in the moving mine layer below.
       lantern:[[115,310],[880,418]],
       rearLantern:[[270,174],[137,425],[72,575],[645,340],[882,330]]
@@ -48,8 +58,11 @@
     },
     legend: {
       glow:[], spark:[], bubble:[],
-      gem:[[205,152,'red'],[395,164,'red'],[526,339,'red'],[671,567,'red'],[82,842,'red'],[255,969,'red'],[389,990,'red'],[540,886,'red'],[620,1190,'red'],[164,1528,'red']],
-      rearGem:[[97,90,'red'],[447,89,'amber'],[480,205,'red'],[743,106,'red'],[824,197,'amber'],[874,178,'red'],[79,612,'red'],[309,541,'amber'],[249,679,'red'],[932,587,'red'],[428,1455,'red'],[669,1263,'amber'],[585,1165,'red'],[587,1140,'amber'],[331,1255,'red'],[318,1427,'amber'],[815,1615,'red'],[779,1534,'red']],
+      // Coordinates are centered on the visible pink crystal faces in pro-front-supported.webp.
+      // Avoid the previous bare-rock/lantern points and keep one halo per nearby crystal cluster.
+      gem:[[205,152,'red'],[395,164,'red'],[542,339,'red'],[558,578,'red'],[57,839,'red'],[585,858,'red'],[255,969,'red'],[389,990,'red'],[635,1174,'red'],[157,1472,'red'],[857,1464,'red'],[834,1587,'red'],[795,1615,'red']],
+      // Only keep exposed rear crystals; the former left-side point was on bare rock.
+      rearGem:[[34,1200,'red'],[145,1480,'red'],[850,1445,'red'],[856,1618,'red']],
       lantern:[[220,252],[343,220],[478,565],[646,443],[595,945],[198,845],[294,1181],[430,1166],[785,1340],[658,1271],[620,1490]],
       rearLantern:[[804,470],[174,163],[272,144],[362,240],[701,406],[501,310],[562,198],[578,927],[543,1086],[838,1452],[823,1507],[901,1218]]
     }
@@ -83,6 +96,43 @@
     var el = opts.root;
     var $ = function (s) { return el.querySelector(s); };
     var view = null; // 지금 보고 있는 난이도
+    function updateTicker() {
+      var ticker = $('[data-rm-ticker]');
+      if (!ticker) return;
+      var items = TICKER_ITEMS[view] || [];
+      var text = items.map(function (item) { return T(item.key); }).join('　·　');
+      var label = $('[data-rm-ticker-label]'), track = $('[data-rm-ticker-track]');
+      if (label) label.textContent = text;
+      if (!track) return;
+      var copies = track.querySelectorAll('[data-rm-ticker-copy]');
+      copies.forEach(function (copy) {
+        copy.textContent = '';
+        items.forEach(function (item, index) {
+          if (index) {
+            var separator = document.createElement('span');
+            separator.className = 'rm-top-ticker-separator';
+            separator.textContent = '·';
+            copy.appendChild(separator);
+          }
+          var entry = document.createElement('span');
+          entry.className = 'rm-top-ticker-item';
+          var icon = document.createElement('span');
+          icon.className = 'rm-top-ticker-icon rm-top-ticker-icon--' + item.icon;
+          icon.innerHTML = TICKER_ICON_SVG[item.icon];
+          var phrase = document.createElement('span');
+          phrase.textContent = T(item.key);
+          entry.appendChild(icon);
+          entry.appendChild(phrase);
+          copy.appendChild(entry);
+        });
+      });
+      var fontSize = parseFloat(root.getComputedStyle(ticker).fontSize) || 14;
+      var distance = Math.max(copies[0] ? copies[0].scrollWidth : 0, Array.from(text).length * fontSize * .68) + fontSize * 2;
+      track.style.setProperty('--rm-ticker-duration', Math.max(15, Math.min(40, distance / 24)).toFixed(1) + 's');
+      track.style.animation = 'none';
+      void track.offsetWidth;
+      track.style.animation = '';
+    }
     var fluids = MG.RoundMapFluids ? {
       rear: MG.RoundMapFluids.create($('[data-rm-rear-fluid]'), { root: el }),
       front: MG.RoundMapFluids.create($('[data-rm-front-fluid]'), { root: el })
@@ -245,7 +295,9 @@
           if (!cancelled && Math.abs(dx) >= 14) {
             var from = pageOrder.indexOf(g.light), to = from + (dx < 0 ? 1 : -1);
             var next = pageOrder[to];
-            if (next && MG.Progress.isLightUnlocked(next)) {
+            // Browsing the three map designs must not depend on progression. Actual round
+            // selection and difficulty changes remain guarded by their existing lock checks.
+            if (next) {
               panByLight[g.light] = g.start;
               view = next;
               render();
@@ -275,6 +327,7 @@
       var cur = view === opts.currentLight() ? opts.currentChapter() : -1;
       renderFx();
       el.setAttribute('data-light', view);
+      updateTicker();
       applyPan(view);
       $('[data-rm-bg]').src = A + ({ easy: 'window-v1263/scene.webp', mid: 'selected-v1281/normal-rear.webp', legend: 'selected-v1281/pro-rear.webp' }[view]);
       if (fluids && MG.RoundMapFluidScenes) {
@@ -297,12 +350,7 @@
         r.querySelector('.rm-panel b').textContent = T('mole.rm.round', { n: n });
         r.querySelector('.rm-check').hidden = !cleared;
       });
-      // 정보판 — 라이트 이름 + 실제 게임 규칙값(game.js SCORE_MULT/COMBO_LIFE_BONUS 에서 받음)
-      var rule = opts.rules(view);
-      $('[data-rm-light-name]').textContent = T('mole.rm.light.' + view);
-      $('[data-rm-base]').textContent = '×' + rule.base.toFixed(1);
-      $('[data-rm-fever]').textContent = '×' + rule.fever.toFixed(1);
-      $('[data-rm-heart]').textContent = T('mole.rm.heart', { n: rule.heart });
+      // Bonus details scroll in the opaque top strip; keep the foreground floor clear.
       el.querySelectorAll('[data-rm-light]').forEach(function (b) {
         var l = b.getAttribute('data-rm-light');
         b.classList.toggle('is-on', l === view);

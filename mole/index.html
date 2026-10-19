@@ -586,22 +586,17 @@
         <div class="rm-top-cap rm-mode-easy" aria-hidden="true"><img src="assets/roundmap/frame-v1298/amateur-top-cap.webp" alt="" draggable="false"></div>
         <div class="rm-top-cap rm-mode-mid" aria-hidden="true"><img src="assets/roundmap/frame-v1298/normal-top-cap.webp" alt="" draggable="false"></div>
         <div class="rm-top-cap rm-mode-legend" aria-hidden="true"><img src="assets/roundmap/frame-v1298/pro-top-cap.webp" alt="" draggable="false"></div>
+        <div class="rm-top-ticker" data-rm-ticker>
+          <span class="rm-top-ticker-sr" data-rm-ticker-label role="status" aria-live="polite"></span>
+          <div class="rm-top-ticker-viewport" aria-hidden="true"><div class="rm-top-ticker-track" data-rm-ticker-track><span class="rm-top-ticker-copy" data-rm-ticker-copy></span><span class="rm-top-ticker-copy" data-rm-ticker-copy></span></div></div>
+        </div>
         <div class="rm-ui">
           <div class="rm-viewer" aria-hidden="true"><img class="rm-viewer-art" src="assets/roundmap/window-v1263/hippo-viewer.webp" alt="" draggable="false"></div>
-            <div class="rm-board">
-              <img class="rm-board-img" src="assets/roundmap/board.png" alt="">
-              <div class="rm-board-light"><img src="assets/roundmap/ic-bulb.png" alt=""><b data-rm-light-name></b></div>
-              <div class="rm-board-rows">
-                <p><img src="assets/roundmap/ic-coin.png" alt=""><span data-i18n="mole.rm.base">기본 점수</span><b data-rm-base></b></p>
-                <p><img src="assets/roundmap/ic-fire.png" alt=""><span data-i18n="mole.rm.fever">피버 점수</span><b data-rm-fever></b></p>
-                <p><img src="assets/roundmap/ic-heart.png" alt=""><span data-i18n="mole.rm.combo">콤보 100</span><b data-rm-heart></b></p>
-              </div>
-            </div>
             <div class="rm-bottom">
               <div class="rm-lights">
-                <button type="button" class="rm-light rm-light--easy" data-rm-light="easy"><span data-i18n="mole.rm.mode.easy">Amateur</span></button>
-                <button type="button" class="rm-light rm-light--mid" data-rm-light="mid"><span data-i18n="mole.rm.mode.mid">Normal</span></button>
-                <button type="button" class="rm-light rm-light--legend" data-rm-light="legend"><span data-i18n="mole.rm.mode.legend">Pro</span></button>
+                <button type="button" class="rm-light rm-light--easy" data-rm-light="easy"><span data-i18n="mole.rm.mode.easy">Amateur</span><small data-i18n="mole.rm.light.easy">라이트 ON</small></button>
+                <button type="button" class="rm-light rm-light--mid" data-rm-light="mid"><span data-i18n="mole.rm.mode.mid">Normal</span><small data-i18n="mole.rm.light.mid">라이트 DIM</small></button>
+                <button type="button" class="rm-light rm-light--legend" data-rm-light="legend"><span data-i18n="mole.rm.mode.legend">Pro</span><small data-i18n="mole.rm.light.legend">라이트 OFF</small></button>
               </div>
             </div>
             <button type="button" class="rm-start" data-rm-start aria-label="시작" data-i18n-aria-label="mole.start.btn"><img class="rm-start-gem" draggable="false" src="assets/roundmap/window-v1263/start-gem.webp" alt=""></button>
@@ -1088,7 +1083,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1302 G</div>
+        <div id="build-tag" aria-hidden="true">V 1303 G</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1365,7 +1360,7 @@ window.FGH.rollOut = function (el, done) {
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=1302-G').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=1303-G').catch(function () {});
       }
     });
   }

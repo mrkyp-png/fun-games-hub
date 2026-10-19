@@ -348,7 +348,7 @@
         out.x=hx+(x0-hx)*u;out.y=hy+(n.pts[0][1]-hy)*(1-(1-u)*(1-u));out.sc=(.22+.78*u)*big;
         out.rot=spin?-(n.spawnTime-t)*1080:n.weaponType==='heart'?180:0;out.op=Math.min(1,u*3);return out;
       }
-      posAt(n,t,out);out.sc=big;out.rot=spin?(t-n.spawnTime)*240:0;out.op=1;return out;
+      posAt(n,t,out);out.sc=big;out.rot=spin?(t-n.spawnTime)*(n.weaponType==='boomerang'?2400:240):0;out.op=1;return out;
     }
     function sizeWind(n) { n.wind.style.width = (L.weaponR * 2.6) + 'px'; n.wind.style.height = (L.weaponR * 4.4) + 'px'; n.wind.style.opacity = '0'; }
     function xf(q, n) { return 'translate(' + (q.x - L.weaponR * 1.2) + 'px,' + (q.y - L.weaponR * (n && n.weaponType === 'heart' ? 2.4 * 373 / 307 : 1.2)) + 'px) scale(' + q.sc.toFixed(3) + ') rotate(' + q.rot.toFixed(1) + 'deg)'; }
