@@ -141,6 +141,8 @@
    the device safe area so the solid dark strip cannot appear above the frame. */
 .rm-window-map[data-light="mid"] .rm-top-cap img,
 .rm-window-map[data-light="legend"] .rm-top-cap img { top:0; height:calc(env(safe-area-inset-top,0px) + 16cqw); }
+.rm-window-map[data-light="mid"] .rm-top-cap,
+.rm-window-map[data-light="legend"] .rm-top-cap { background:none; }
 
 
 /* Keep the hippo and its light behind the fixed black lower panel. */
