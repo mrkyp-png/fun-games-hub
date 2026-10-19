@@ -62,7 +62,7 @@
 
     }
     const frame = document.createElement('img');
-    frame.className = 'rb-skeleton'; frame.alt = '정사각형으로 조정한 원본 뼈대';
+    frame.className = 'rb-skeleton'; frame.alt = root.FGH.I18N.t('mole.rp.b.frame');
     frame.src = 'assets/rhythm-b/skeleton-uniform.png'; board.appendChild(frame);
     // V 1027 G: 확정된 뼈대/회로판 위에만 추가. 소형판 원본 파일은 분리하지 않는다.
     const colors = ['#086aff', '#ff1529', '#ffc400', '#05e52e', '#a500ff', '#ff0099', '#ff7900', '#00cfff', '#a65121'];
@@ -101,7 +101,7 @@
       hit.style.setProperty('--glass-body', colors[i] + '26');
       hit.style.setProperty('--glass-soft', colors[i] + '12');
       hit.style.setProperty('--button-color', colors[i]);
-      hit.setAttribute('aria-label', (i + 1) + '번 리듬 버튼');
+      hit.setAttribute('aria-label', root.FGH.I18N.t('mole.rp.b.btn', { n: i + 1 }));
       hit.innerHTML = '<span class="rb-press-face" aria-hidden="true"></span><span class="rb-circuit-pulse" aria-hidden="true"></span>';
       const pulse=hit.querySelector('.rb-circuit-pulse');pressPulses.push(pulse);
       place(hit, buttonCx, buttonCy, 304);
@@ -144,7 +144,7 @@
       hit.addEventListener('keyup', e => { if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); up(); } });
       const mini = document.createElement('div'); mini.className = 'rb-mini';
       mini.style.setProperty('--holo-color', colors[i]);
-      mini.setAttribute('aria-label', (i + 1) + '번 게임보드');
+      mini.setAttribute('aria-label', root.FGH.I18N.t('mole.rp.b.board', { n: i + 1 }));
       // V 1029 G: 사용자가 테두리를 제거한 원본 그대로. 9분할/모서리 변형 없음.
       const sourceXs = [[110, 499], [579, 959], [1041, 1428]];
       // V 1039 G: all rows use a 302px source height; no first-row-only compression.
@@ -198,7 +198,7 @@
     const combo = document.createElement('div'); combo.className = 'rb-status rb-status--combo';
     combo.innerHTML = '<small>COMBO</small><b data-rb-combo>0</b>'; place(combo, 744, 991, 144, 90);
     const pauseButton = document.createElement('button'); pauseButton.type = 'button';
-    pauseButton.className = 'rb-pause-button rb-pause-button--a'; pauseButton.setAttribute('aria-label', '일시정지');
+    pauseButton.className = 'rb-pause-button rb-pause-button--a'; pauseButton.setAttribute('aria-label', root.FGH.I18N.t('mole.rp.pause'));
     pauseButton.innerHTML = '<span class="rb-pause-face" aria-hidden="true">II</span>';
     pauseButton.addEventListener('click', () => opts.onPause());
     place(pauseButton, 876, 1027, 86, 86);

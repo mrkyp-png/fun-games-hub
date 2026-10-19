@@ -47,6 +47,7 @@
       'mole.pad.gameMole': '두더지팡',
       'mole.pad.gameRhythm': '리듬팡',
       'mole.rp.resume': '계속하기', 'mole.rp.quit': '그만하기', 'mole.rp.retry': '다시하기', 'mole.rp.home': '홈으로', 'mole.rp.other': '난이도 선택', 'mole.rp.pick': '난이도를 고르세요',
+      'mole.rp.types.title': '리듬팡 타입 선택', 'mole.rp.types.sub': '플레이할 타입을 고르세요', 'mole.rp.type.a': '리듬팡 비치', 'mole.rp.type.b': '리듬팡 네온', 'mole.rp.bGame': '리듬팡 B타입 게임', 'mole.rp.pause': '일시정지', 'mole.rp.songs': '곡 선택', 'mole.rp.songs.pick': '곡을 고르세요', 'mole.rp.songs.type': '타입 선택', 'mole.rp.songs.diffs': '난이도 3종', 'mole.rp.songs.first': '첫 기록에 도전하세요', 'mole.rp.songs.play': '실행', 'mole.rp.songs.playAria': '{title} 실행', 'mole.rp.songs.adAria': '{title} 광고 보고 플레이', 'mole.rp.songs.none': '등록된 곡이 없습니다.', 'mole.rp.preload.title': '게임 준비 중', 'mole.rp.preload.detail': '음악과 화면을 불러옵니다', 'mole.rp.preload.count': '준비 {n} / {total}', 'mole.rp.ad.notReady': '광고를 준비하지 못했습니다.', 'mole.rp.ad.once': '광고 완료 후 1회 플레이할 수 있습니다.', 'mole.rp.ad.fail': '광고를 불러오지 못했습니다.', 'mole.rp.err.retry': '자료를 불러오지 못했습니다. 다시 시도해주세요.', 'mole.rp.err.reselect': '곡 자료를 불러오지 못했습니다. 다시 선택해주세요.', 'mole.rp.err.game': '게임 자료를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.', 'mole.rp.progress': '곡 진행도', 'mole.rp.b.btn': '{n}번 리듬 버튼', 'mole.rp.b.board': '{n}번 게임보드', 'mole.rp.b.frame': '정사각형으로 조정한 원본 뼈대',
       'mole.count.go': '시작!',
       'mole.result.allClear': '전체 클리어!',
       'mole.result.score': '{n}점',
@@ -397,6 +398,7 @@
       'mole.pad.gameMole': 'Mole\nPang', // v889: 영어는 두 줄(옆 글자와 겹침)
       'mole.pad.gameRhythm': 'Rhythm\nPang',
       'mole.rp.resume': 'Resume', 'mole.rp.quit': 'Quit', 'mole.rp.retry': 'Retry', 'mole.rp.home': 'Home', 'mole.rp.other': 'Difficulty', 'mole.rp.pick': 'Choose a difficulty',
+      'mole.rp.types.title': 'Select Type', 'mole.rp.types.sub': 'Choose a type to play', 'mole.rp.type.a': 'Rhythm Pang Beach', 'mole.rp.type.b': 'Rhythm Pang Neon', 'mole.rp.bGame': 'Rhythm Pang Type B game', 'mole.rp.pause': 'PAUSE', 'mole.rp.songs': 'Select Song', 'mole.rp.songs.pick': 'Choose a song', 'mole.rp.songs.type': 'Type', 'mole.rp.songs.diffs': '3 Difficulties', 'mole.rp.songs.first': 'Set your first record', 'mole.rp.songs.play': 'Play', 'mole.rp.songs.playAria': 'Play {title}', 'mole.rp.songs.adAria': 'Watch ad to play {title}', 'mole.rp.songs.none': 'No songs available.', 'mole.rp.preload.title': 'Getting Ready', 'mole.rp.preload.detail': 'Loading music and screen', 'mole.rp.preload.count': 'Loading {n} / {total}', 'mole.rp.ad.notReady': 'Ad is not ready.', 'mole.rp.ad.once': 'Watch the full ad to play once.', 'mole.rp.ad.fail': 'Failed to load the ad.', 'mole.rp.err.retry': 'Failed to load. Please try again.', 'mole.rp.err.reselect': 'Failed to load the song. Please choose again.', 'mole.rp.err.game': 'Failed to load game data. Please try again later.', 'mole.rp.progress': 'Song progress', 'mole.rp.b.btn': 'Rhythm button {n}', 'mole.rp.b.board': 'Game board {n}', 'mole.rp.b.frame': 'Game frame',
       'mole.count.go': 'Go!',
       'mole.result.allClear': 'All rounds clear!',
       'mole.result.score': '{n} pts',

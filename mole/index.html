@@ -608,13 +608,13 @@
         <div class="rp-a-sea" hidden aria-hidden="true"><i></i><i></i></div>
         <section class="rp-type-panel" data-rp-types hidden aria-labelledby="rp-types-title">
           <svg class="rp-type-scene-fx" viewBox="0 0 941 1672" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><path class="rp-type-floor-light" d="M470 1375 C350 1375 200 1386 100 1420 C20 1445 20 1475 100 1504 C250 1540 350 1548 470 1549 C590 1550 690 1530 840 1504 C920 1475 920 1445 840 1420 C740 1386 590 1375 470 1375Z" pathLength="100" fill="none" stroke="#d9fbff" stroke-width="9" stroke-linecap="round" stroke-dasharray="7 93"/><g class="rp-type-rail-light" fill="none" stroke="#dcf7ff" stroke-width="6" stroke-linecap="round"><path d="M0 1195 L8 1197 L16 1200 L24 1202 L32 1205 L40 1207 L48 1209 L56 1212 L64 1215 L72 1217 L80 1220 L88 1222 L96 1225 L104 1228 L112 1230 L120 1233 L128 1236 L136 1239 L144 1242 L152 1245 L160 1248 L168 1250 L176 1253 L184 1256 L192 1260 L200 1263 L208 1266 L216 1269 L224 1272 L232 1275 L240 1278 L248 1282 L256 1285" pathLength="100" stroke-dasharray="12 88"/><path d="M940 1195 L932 1197 L924 1200 L916 1202 L908 1205 L900 1207 L892 1209 L884 1212 L876 1215 L868 1217 L860 1220 L852 1222 L844 1225 L836 1228 L828 1230 L820 1233 L812 1236 L804 1239 L796 1242 L788 1245 L780 1248 L772 1250 L764 1253 L756 1256 L748 1260 L740 1263 L732 1266 L724 1269 L716 1272 L708 1275 L700 1278 L692 1282 L684 1285" pathLength="100" stroke-dasharray="12 88"/></g></svg>
-          <div class="rx-card rx-card--sel rp-type-card"><h2 id="rp-types-title">리듬팡 타입 선택</h2>
-          <p>플레이할 타입을 고르세요</p>
-          <button type="button" class="rx-btn rx-btn--y rp-type-button" data-rp-type="A"><span>리듬팡 비치</span></button>
-          <button type="button" class="rx-btn rx-btn--b rp-type-button" data-rp-type="B"><span>리듬팡 네온</span></button>
-          <button type="button" class="rx-btn rx-btn--home" data-rp-types-home><span>홈으로</span></button></div>
+          <div class="rx-card rx-card--sel rp-type-card"><h2 id="rp-types-title" data-i18n="mole.rp.types.title">리듬팡 타입 선택</h2>
+          <p data-i18n="mole.rp.types.sub">플레이할 타입을 고르세요</p>
+          <button type="button" class="rx-btn rx-btn--y rp-type-button" data-rp-type="A"><span data-i18n="mole.rp.type.a">리듬팡 비치</span></button>
+          <button type="button" class="rx-btn rx-btn--b rp-type-button" data-rp-type="B"><span data-i18n="mole.rp.type.b">리듬팡 네온</span></button>
+          <button type="button" class="rx-btn rx-btn--home" data-rp-types-home><span data-i18n="mole.rp.home">홈으로</span></button></div>
         </section>
-        <section class="rb-screen" data-rp-b hidden aria-label="리듬팡 B타입 게임">
+        <section class="rb-screen" data-rp-b hidden aria-label="리듬팡 B타입 게임" data-i18n-aria-label="mole.rp.bGame">
           <div class="rb-board"></div>
         </section>
         <div class="rp-stage" data-rp-stage>
@@ -647,17 +647,17 @@
           <div class="rx-stats"><b data-rp-res-combo>0</b><b data-rp-res-perfect>0</b><b data-rp-res-great>0</b><b data-rp-res-good>0</b><b data-rp-res-miss>0</b></div>
           </div><div class="rx-result-actions"><button type="button" class="rx-btn rx-btn--retry" data-rp-retry><span data-i18n="mole.rp.retry">다시하기</span></button>
           <button type="button" class="rx-btn rx-btn--diff" data-rp-other><span data-i18n="mole.rp.other">난이도 선택</span></button>
-          <button type="button" class="rx-btn rx-btn--b rx-btn--songs" data-rp-home><i aria-hidden="true">♫</i><span>곡 선택</span></button></div>
+          <button type="button" class="rx-btn rx-btn--b rx-btn--songs" data-rp-home><i aria-hidden="true">♫</i><span data-i18n="mole.rp.songs">곡 선택</span></button></div>
         </div></div>
         <div class="rp-modal rb-song-modal" data-rp-songs hidden role="dialog" aria-modal="true" aria-labelledby="rb-song-title"><div class="rx-card rx-card--sel rb-song-card">
           <div class="rx-title rp-mode-sign" aria-label="RhythmPang Beach"><img src="assets/rhythm/ui/p-plaque.png" alt=""><svg viewBox="0 0 645 259" aria-hidden="true"><defs><path id="rp-mode-arc-songs" d="M105 177 Q322 92 540 177"/></defs><text class="rp-mode-sign-shadow" text-anchor="middle" font-size="96" font-family="Lilita One, Jua, sans-serif"><textPath data-rp-mode-name href="#rp-mode-arc-songs" startOffset="50%">BEACH</textPath></text><text class="rp-mode-sign-fill" text-anchor="middle" font-size="96" font-family="Lilita One, Jua, sans-serif"><textPath data-rp-mode-name href="#rp-mode-arc-songs" startOffset="50%">BEACH</textPath></text></svg></div>
-          <h2 id="rb-song-title">곡을 고르세요</h2>
+          <h2 id="rb-song-title" data-i18n="mole.rp.songs.pick">곡을 고르세요</h2>
           <div class="rb-song-viewport"><div class="rb-song-list" data-rp-song-list></div><i class="rb-scroll-bar rb-scroll-bar--top" aria-hidden="true"></i><i class="rb-scroll-bar rb-scroll-bar--bottom" aria-hidden="true"></i></div>
           <p class="rb-song-message" data-rp-song-message role="status"></p>
-          <div class="rb-song-footer"><button type="button" class="rx-btn rx-btn--diff rb-song-nav" data-rp-songs-back><svg class="rb-song-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2h6l.7 3 2.6 1.5 3-.8 3 5.2-2.3 2.2v3l2.3 2.2-3 5.2-3-.8-2.6 1.5-.7 3H9l-.7-3L5.7 22l-3 .8-3-5.2L2 15.4v-3L-.3 10.2l3-5.2 3 .8L8.3 4.3Z" transform="translate(2 0) scale(.83)"/><circle cx="12" cy="12" r="3.4" fill="#237cda"/></svg><span>타입 선택</span></button>
-          <button type="button" class="rx-btn rx-btn--home rb-song-nav" data-rp-songs-home><svg class="rb-song-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 11 12 2 22 11 20 13V22H14V15H10V22H4V13Z"/></svg><span>홈으로</span></button></div>
+          <div class="rb-song-footer"><button type="button" class="rx-btn rx-btn--diff rb-song-nav" data-rp-songs-back><svg class="rb-song-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2h6l.7 3 2.6 1.5 3-.8 3 5.2-2.3 2.2v3l2.3 2.2-3 5.2-3-.8-2.6 1.5-.7 3H9l-.7-3L5.7 22l-3 .8-3-5.2L2 15.4v-3L-.3 10.2l3-5.2 3 .8L8.3 4.3Z" transform="translate(2 0) scale(.83)"/><circle cx="12" cy="12" r="3.4" fill="#237cda"/></svg><span data-i18n="mole.rp.songs.type">타입 선택</span></button>
+          <button type="button" class="rx-btn rx-btn--home rb-song-nav" data-rp-songs-home><svg class="rb-song-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 11 12 2 22 11 20 13V22H14V15H10V22H4V13Z"/></svg><span data-i18n="mole.rp.home">홈으로</span></button></div>
         </div></div>
-        <div class="rp-modal rp-preloader" data-rp-preloader hidden role="status" aria-live="polite"><div class="rx-card"><img class="rp-preload-album" data-rp-preload-album alt=""><h2 data-rp-preload-title></h2><p>게임 준비 중</p><progress data-rp-preload-progress max="4" value="0"></progress><small data-rp-preload-detail>음악과 화면을 불러옵니다</small><button type="button" class="rx-btn rx-btn--b rx-btn--songs" data-rp-preload-cancel><i aria-hidden="true">♫</i><span>곡 선택</span></button></div></div>
+        <div class="rp-modal rp-preloader" data-rp-preloader hidden role="status" aria-live="polite"><div class="rx-card"><img class="rp-preload-album" data-rp-preload-album alt=""><h2 data-rp-preload-title></h2><p data-i18n="mole.rp.preload.title">게임 준비 중</p><progress data-rp-preload-progress max="4" value="0"></progress><small data-rp-preload-detail data-i18n="mole.rp.preload.detail">음악과 화면을 불러옵니다</small><button type="button" class="rx-btn rx-btn--b rx-btn--songs" data-rp-preload-cancel><i aria-hidden="true">♫</i><span data-i18n="mole.rp.songs">곡 선택</span></button></div></div>
         <div class="rp-modal rp-select" data-rp-select hidden><div class="rx-card rx-card--sel">
           <div class="rx-title rp-mode-sign" aria-label="RhythmPang Beach"><img src="assets/rhythm/ui/p-plaque.png" alt=""><svg viewBox="0 0 645 259" aria-hidden="true"><defs><path id="rp-mode-arc-difficulty" d="M105 177 Q322 92 540 177"/></defs><text class="rp-mode-sign-shadow" text-anchor="middle" font-size="96" font-family="Lilita One, Jua, sans-serif"><textPath data-rp-mode-name href="#rp-mode-arc-difficulty" startOffset="50%">BEACH</textPath></text><text class="rp-mode-sign-fill" text-anchor="middle" font-size="96" font-family="Lilita One, Jua, sans-serif"><textPath data-rp-mode-name href="#rp-mode-arc-difficulty" startOffset="50%">BEACH</textPath></text></svg></div>
           <p class="rb-selected-song" data-rp-selected-song hidden></p>
@@ -665,7 +665,7 @@
           <button type="button" class="rx-btn rx-dbtn rx-dbtn--easy" data-rp-diff="EASY"><small></small></button>
           <button type="button" class="rx-btn rx-dbtn rx-dbtn--normal" data-rp-diff="NORMAL"><small></small></button>
           <button type="button" class="rx-btn rx-dbtn rx-dbtn--hard" data-rp-diff="HARD"><small></small></button>
-          <button type="button" class="rx-btn rx-btn--b rx-btn--songs rb-song-nav" data-rp-song-back hidden><i aria-hidden="true">♫</i><span>곡 선택</span></button>
+          <button type="button" class="rx-btn rx-btn--b rx-btn--songs rb-song-nav" data-rp-song-back hidden><i aria-hidden="true">♫</i><span data-i18n="mole.rp.songs">곡 선택</span></button>
           <button type="button" class="rx-btn rx-btn--home rx-btn--selhome" data-rp-sel-close><span data-i18n="mole.rp.home">홈으로</span></button>
         </div></div>
       </div>
@@ -1083,7 +1083,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1312 C</div>
+        <div id="build-tag" aria-hidden="true">V 1313 C</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1360,7 +1360,7 @@ window.FGH.rollOut = function (el, done) {
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=1312-C').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=1313-C').catch(function () {});
       }
     });
   }

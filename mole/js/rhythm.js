@@ -118,9 +118,9 @@
     function cancelEntry(){entryGeneration++;entryBusy=false;clearTimeout(entryLoadingTimer);$('[data-rp-preloader]').hidden=true;}
     function watchSongAd(done){
       if(adBusy||entryBusy)return;
-      if(!MG.Ads||!MG.Ads.rewarded){$('[data-rp-song-message]').textContent='광고를 준비하지 못했습니다.';return;}
+      if(!MG.Ads||!MG.Ads.rewarded){$('[data-rp-song-message]').textContent=root.FGH.I18N.t('mole.rp.ad.notReady');return;}
       adBusy=true;var token=resultSerial;document.body.classList.add('rhythm-ad-active');
-      Promise.resolve().then(function(){return MG.Ads.rewarded();}).then(function(ok){adBusy=false;if(token===resultSerial&&!el.hidden&&ok)done();else if(token===resultSerial)$('[data-rp-song-message]').textContent='광고 완료 후 1회 플레이할 수 있습니다.';}).catch(function(){if(token===resultSerial)$('[data-rp-song-message]').textContent='광고를 불러오지 못했습니다.';}).finally(function(){adBusy=false;document.body.classList.remove('rhythm-ad-active');});
+      Promise.resolve().then(function(){return MG.Ads.rewarded();}).then(function(ok){adBusy=false;if(token===resultSerial&&!el.hidden&&ok)done();else if(token===resultSerial)$('[data-rp-song-message]').textContent=root.FGH.I18N.t('mole.rp.ad.once');}).catch(function(){if(token===resultSerial)$('[data-rp-song-message]').textContent=root.FGH.I18N.t('mole.rp.ad.fail');}).finally(function(){adBusy=false;document.body.classList.remove('rhythm-ad-active');});
     }
     function launchSong(modal){
       if(entryBusy||adBusy)return;
@@ -128,11 +128,11 @@
       var token=++entryGeneration,choice=activeB?selectedBSong:selectedASong,wasB=activeB,completed=0,total=wasB?3:5,loader=$('[data-rp-preloader]'),loaderShownAt=0;entryBusy=true;
       if(!ctx)ctx=new(root.AudioContext||root.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume();
       $('[data-rp-preload-album]').src=albumOf(choice);$('[data-rp-preload-title]').textContent=choice.title;
-      $('[data-rp-preload-progress]').max=total;$('[data-rp-preload-progress]').value=0;$('[data-rp-preload-detail]').textContent='준비 0 / '+total;loader.hidden=true;
+      $('[data-rp-preload-progress]').max=total;$('[data-rp-preload-progress]').value=0;$('[data-rp-preload-detail]').textContent=root.FGH.I18N.t('mole.rp.preload.count',{n:0,total:total});loader.hidden=true;
       clearTimeout(entryLoadingTimer);entryLoadingTimer=setTimeout(function(){if(token===entryGeneration&&entryBusy&&!el.hidden){loaderShownAt=Date.now();loader.hidden=false;}},1000);
-      function track(p){return Promise.resolve(p).then(function(v){if(token===entryGeneration){completed++;$('[data-rp-preload-progress]').value=completed;$('[data-rp-preload-detail]').textContent='준비 '+completed+' / '+total;}return v;});}
+      function track(p){return Promise.resolve(p).then(function(v){if(token===entryGeneration){completed++;$('[data-rp-preload-progress]').value=completed;$('[data-rp-preload-detail]').textContent=root.FGH.I18N.t('mole.rp.preload.count',{n:completed,total:total});}return v;});}
       var tasks=wasB?[loadBSong(),bGame.prepare(),preloadRhythmArt()]:[loadSong(),preload(),loadMeta(),loadSfx(),preloadRhythmArt()];
-      Promise.all(tasks.map(track)).then(function(){if(token!==entryGeneration||el.hidden||activeB!==wasB)return false;clearTimeout(entryLoadingTimer);return new Promise(function(resolve,reject){var hold=loaderShownAt?Math.max(0,280-(Date.now()-loaderShownAt)):0;setTimeout(function(){if(token!==entryGeneration||el.hidden||activeB!==wasB){resolve(false);return;}loader.hidden=true;pushInGame(modal);Promise.resolve(wasB?bGame.open(diff,{practice:false}):start()).then(resolve,reject);},hold);});}).then(function(ok){if(token!==entryGeneration)return;clearTimeout(entryLoadingTimer);loader.hidden=true;entryBusy=false;if(ok)adReady=false;else showSelect();}).catch(function(){if(token!==entryGeneration)return;clearTimeout(entryLoadingTimer);loader.hidden=true;entryBusy=false;showSelect();$('[data-rp-selected-song]').textContent=choice.title+' · 자료를 불러오지 못했습니다. 다시 시도해주세요.';});
+      Promise.all(tasks.map(track)).then(function(){if(token!==entryGeneration||el.hidden||activeB!==wasB)return false;clearTimeout(entryLoadingTimer);return new Promise(function(resolve,reject){var hold=loaderShownAt?Math.max(0,280-(Date.now()-loaderShownAt)):0;setTimeout(function(){if(token!==entryGeneration||el.hidden||activeB!==wasB){resolve(false);return;}loader.hidden=true;pushInGame(modal);Promise.resolve(wasB?bGame.open(diff,{practice:false}):start()).then(resolve,reject);},hold);});}).then(function(ok){if(token!==entryGeneration)return;clearTimeout(entryLoadingTimer);loader.hidden=true;entryBusy=false;if(ok)adReady=false;else showSelect();}).catch(function(){if(token!==entryGeneration)return;clearTimeout(entryLoadingTimer);loader.hidden=true;entryBusy=false;showSelect();$('[data-rp-selected-song]').textContent=choice.title+' · '+root.FGH.I18N.t('mole.rp.err.retry');});
     }
     $('[data-rp-preload-cancel]').addEventListener('click',function(){cancelEntry();showSongs();});
     function bBestPrefix() { return selectedBSong.id === 'fever2' ? 'mole.rp.b.best.' : 'mole.rp.b.best.' + selectedBSong.id + '.'; }
@@ -208,21 +208,21 @@
         var info = document.createElement('div'); info.className = 'rb-song-info';
         var title = document.createElement('b'); title.textContent = choice.id === 'fever2' ? 'Rhythm Fever' : choice.title;
         var detail = document.createElement('small'), seconds = Math.round(choice.duration || 0);
-        detail.textContent = Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0') + ' · 난이도 3종';
+        detail.textContent = Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0') + ' · ' + root.FGH.I18N.t('mole.rp.songs.diffs');
         var record = document.createElement('strong'), prefix = (activeB ? 'mole.rp.b.best.' : 'mole.rp.best.') + (choice.id === 'fever2' ? '' : choice.id + '.');
         var best = 0, grade = '';
         ['EASY','NORMAL','HARD'].forEach(function(d){var score=Number(localStorage.getItem(prefix+d))||0;if(score>best){best=score;try{grade=JSON.parse(localStorage.getItem(prefix+d+'.result')||'null').rank;}catch(e){grade='';}}});
-        record.textContent = best ? 'BEST ' + best.toLocaleString('en-US') + (grade ? ' · '+grade : '') : '첫 기록에 도전하세요';
+        record.textContent = best ? 'BEST ' + best.toLocaleString('en-US') + (grade ? ' · '+grade : '') : root.FGH.I18N.t('mole.rp.songs.first');
         info.append(title, detail, record);
         var actions = document.createElement('div'); actions.className = 'rb-song-actions';
-        var play = document.createElement('button'); play.type='button'; play.className='rx-btn rx-btn--y rb-song-play'; play.dataset.rpSong=choice.id; play.innerHTML=buttonTriangle(0,'-song-'+choice.id)+'<span>실행</span>'; play.setAttribute('aria-label',choice.title+' 실행');
+        var play = document.createElement('button'); play.type='button'; play.className='rx-btn rx-btn--y rb-song-play'; play.dataset.rpSong=choice.id; play.innerHTML=buttonTriangle(0,'-song-'+choice.id)+'<span>'+root.FGH.I18N.t('mole.rp.songs.play')+'</span>'; play.setAttribute('aria-label',root.FGH.I18N.t('mole.rp.songs.playAria',{title:choice.title}));
         play.querySelector('svg').setAttribute('viewBox','45 43 133 105');play.querySelector('svg').setAttribute('preserveAspectRatio','xMidYMid meet');
         play.addEventListener('click',function(){selectSong(choice);adRequired=false;adReady=false;showSelect();});
-        var ad = document.createElement('button'); ad.type='button'; ad.className='rx-btn rx-btn--b rb-song-ad'; ad.innerHTML='<img src="assets/shop/ad-icon.png" alt="">'; ad.setAttribute('aria-label',choice.title+' 광고 보고 플레이');
+        var ad = document.createElement('button'); ad.type='button'; ad.className='rx-btn rx-btn--b rb-song-ad'; ad.innerHTML='<img src="assets/shop/ad-icon.png" alt="">'; ad.setAttribute('aria-label',root.FGH.I18N.t('mole.rp.songs.adAria',{title:choice.title}));
         ad.addEventListener('click',function(){selectSong(choice);watchSongAd(function(){adRequired=true;adReady=true;showSelect();});});
         actions.append(play,ad);card.append(album,info,actions);list.appendChild(card);
       });
-      if (!CONFIG.bSongs.length) list.textContent = '등록된 곡이 없습니다.';
+      if (!CONFIG.bSongs.length) list.textContent = root.FGH.I18N.t('mole.rp.songs.none');
       $('[data-rp-songs]').hidden = false;
       layoutSongRows();
       list.scrollTop = 0;
@@ -566,7 +566,7 @@
         cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); return true;
       }).catch(function () {
         if (token !== resultSerial || activeB || el.hidden) return;
-        showSelect(); $('[data-rp-selected-song]').textContent = selectedASong.title + ' · 곡 자료를 불러오지 못했습니다. 다시 선택해주세요.'; return false;
+        showSelect(); $('[data-rp-selected-song]').textContent = selectedASong.title + ' · ' + root.FGH.I18N.t('mole.rp.err.reselect'); return false;
       });
     }
 
@@ -827,11 +827,11 @@
       lyricTicker.pause(on);
       comboAnimations.forEach(function(a){if(on)a.pause();else a.play();});
       if (activeB) {
-        el.querySelectorAll('[data-rx-pause-t] textPath').forEach(function (t) { t.textContent = '일시정지'; });
+        el.querySelectorAll('[data-rx-pause-t] textPath').forEach(function (t) { t.textContent = root.FGH.I18N.t('mole.rp.pause'); });
         bGame.pause(on); $('[data-rp-pause]').hidden = !on; return;
       }
       if (!st || st.ended) return;
-      var pt = (root.FGH && root.FGH.I18N && root.FGH.I18N.lang === 'en') ? 'PAUSE' : '일시정지'; // v826: 한글은 일시정지
+      var pt = root.FGH.I18N.t('mole.rp.pause'); // v826: 한글은 일시정지, 영어는 PAUSE
       el.querySelectorAll('[data-rx-pause-t] textPath').forEach(function (t) { t.textContent = pt; });
       st.paused = on; $('[data-rp-pause]').hidden = !on;
       if (on) ctx.suspend(); else ctx.resume();
