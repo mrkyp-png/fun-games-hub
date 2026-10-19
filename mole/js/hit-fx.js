@@ -612,10 +612,11 @@
     }
   }
 
-  // 타격으로 얻은 점수 — 히트 지점에서 "+N" 이 위로 떠오른다.
-  // game.js 가 콤보·라이트·피버 배율이 이미 반영된 실제 증가분을 넘긴다.
+  // 타격으로 얻은 점수 — 히트 지점에 "PANG!" 이 터지고, 바로 뒤 "+N" 이 빠르게 떠오른다(사용자 지정 V1316 C:
+  // 점수가 카운팅되는 모든 타격). game.js 가 콤보·라이트·피버 배율이 이미 반영된 실제 증가분을 넘긴다.
   function scorePop(boardEl, xFrac, yFrac, points) {
     if (!points || points <= 0) return;
+    spawnAt(boardEl, 'hit-fx-pang', xFrac, yFrac, 'PANG!');
     return spawnAt(boardEl, 'hit-fx-score', xFrac, yFrac, '+' + points);
   }
 
@@ -642,9 +643,9 @@
     return spawnAt(boardEl, 'hit-fx-powerup', 0.5, 0.5, '도파민 업!');
   }
 
-  function moleHit(boardEl, xFrac, yFrac) {
+  function moleHit(boardEl, xFrac, yFrac, noWord) {
     shake(boardEl);
-    spawnAt(boardEl, 'hit-fx-burst', xFrac, yFrac, '<span>' + window.FGH.I18N.t('mole.fx.bam') + '</span>');
+    if (!noWord) spawnAt(boardEl, 'hit-fx-burst', xFrac, yFrac, '<span>' + window.FGH.I18N.t('mole.fx.bam') + '</span>'); // 처치 땐 scorePop 의 PANG! 이 대신
     spawnAt(boardEl, 'hit-fx-helmet', xFrac, yFrac);
     starBurst(boardEl, xFrac, yFrac);
     for (let i = 0; i < 5; i++) {

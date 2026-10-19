@@ -2275,7 +2275,7 @@
               // 캐논과 동일한 골드 링(사용자 지정).
               if (sharedLaneControls && opts && opts.regionId != null) sharedLaneControls.flashBurst(opts.regionId);
             }
-          } else MG.HitFx.moleHit(board, r.xFrac, r.yFrac);
+          } else MG.HitFx.moleHit(board, r.xFrac, r.yFrac, true);
           moleHits += 1;
         } else {
           MG.HitFx.moleTap(board, r.xFrac, r.yFrac);
