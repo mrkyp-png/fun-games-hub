@@ -342,9 +342,14 @@
       <div id="mole-pop-layer" class="mole-board-layer"></div>
       <div id="mole-hole-front-layer" class="mole-board-layer"></div>
       </div>
-      <div id="hud-score" aria-hidden="true">0</div>
-      <div id="hud-hearts" class="board-hearts" aria-hidden="true"></div>
-      <div id="hud-combo" class="board-combo" aria-hidden="true"></div>
+      <!-- 게임 중 상단 상태판(V1315 C, 사용자 지정): 리듬팡 비치 상태판 박스 — SCORE·COMBO | 홈버튼(카메라 구멍 아래) | TIME·HEART -->
+      <div id="mole-status" class="ms-status" aria-hidden="true">
+        <div class="ms-box ms-score"><img class="ms-ic" src="assets/quest/ic-trophy.png" alt=""><span class="ms-label">SCORE</span><b id="hud-score" class="ms-val">0</b></div>
+        <div class="ms-box ms-combo"><img class="ms-ic" src="assets/quest/ic-fire.png" alt=""><span class="ms-label">COMBO</span><b id="hud-combo" class="ms-val">0</b></div>
+        <i></i>
+        <div id="hud-time" class="ms-box ms-time"><svg class="ms-clock" viewBox="0 0 369 426" aria-hidden="true"><image href="assets/rhythm/ui-status-v1232/clock.png" width="369" height="426"/><g stroke="#14651c" stroke-width="8" stroke-linecap="round"><path d="M187 237L187 181"/><path class="ms-clock-hand" d="M187 237L187 140"/></g><circle cx="187" cy="237" r="12" fill="#31b838" stroke="#14651c" stroke-width="5"/></svg><span class="ms-label">TIME</span><b id="hud-time-val" class="ms-val">0:00</b></div>
+        <div class="ms-box ms-heart"><img class="ms-ic" src="assets/quest/ic-heart.png" alt=""><span class="ms-label">HEART</span><b id="hud-hearts" class="ms-val">0</b></div>
+      </div>
       <div id="skl-passive-hud" class="skl-passive-hud" aria-hidden="true"></div>
       <div id="fever-badge" class="fever-badge" aria-hidden="true" data-i18n="mole.hud.fever" hidden>피버타임!</div>
       <div id="combo-heart-pop" class="combo-heart-pop" aria-hidden="true"></div>
@@ -1066,8 +1071,7 @@
         <img class="ci-smoke" src="assets/weapons/cannon-fx5.png" alt="">
       </div>
     </div>
-    <!-- 경첩 = 게임 중 시간 게이지(v747) — js/hud.js 가 --tk-time-pct·색 단계·남은 초를 갱신 -->
-    <div id="fold-hinge" aria-hidden="true"><div class="hinge-fill"></div><b id="hinge-time"></b></div>
+    <div id="fold-hinge" aria-hidden="true"></div>
     <div class="dialpad">
       <div class="start-coach" data-start-coach>
         <span data-i18n="mole.start.coach">여기를 꾹 눌렀다 다시 누르면 게임을 종료할 수 있어요</span>
@@ -1083,7 +1087,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1314 C</div>
+        <div id="build-tag" aria-hidden="true">V 1315 C</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1360,7 +1364,7 @@ window.FGH.rollOut = function (el, done) {
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=1314-C').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=1315-C').catch(function () {});
       }
     });
   }

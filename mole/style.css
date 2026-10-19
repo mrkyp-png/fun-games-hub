@@ -387,9 +387,7 @@ body { background: var(--lm-page); }
 /* 눌림: 노란 면이 홈 속으로 들어감(아래로 + 축소 + 어두워짐) → 둘레에 어두운 홈이 드러남 */
 .rs-tri:active::before { transform: translateY(5%) scale(0.8); filter: brightness(0.85); }
 
-#game-screen.is-start #hud-score,
-#game-screen.is-start #hud-hearts,
-#game-screen.is-start #hud-combo,
+#game-screen.is-start #mole-status,
 #game-screen.is-start #fever-badge,
 #game-screen.is-start #combo-heart-pop { display: none; }
 
@@ -445,6 +443,13 @@ body { background: var(--lm-page); }
 }
 #game-screen:not(.is-start) #btn-back-to-hub:active { transform: translateY(2px); box-shadow: 0 1px 0 #12172a, inset 0 1px 3px rgba(0, 0, 0, 0.4); }
 #game-screen:not(.is-start) #btn-back-to-hub .hub-menu-ic { width: 18px; height: 18px; stroke-width: 2.6; }
+/* V1315 C(사용자 지정): 상단 상태판 가운데 = 카메라 구멍 아래, 1.2배, 투명도 30% */
+#game-screen:not(.is-start) #btn-back-to-hub { top: 6px; left: calc(50% - 18px); width: 36px; height: 36px; opacity: 0.7; }
+#game-screen:not(.is-start) #btn-back-to-hub.nav-locked { opacity: 0.28; }
+/* 아케이드 홈버튼 그림(GPT Imagegen, 비치 박스 톤) — 기존 SVG 아이콘·테두리 대신 */
+#game-screen:not(.is-start) #btn-back-to-hub, #game-screen:not(.is-start) #btn-back-to-hub:active {
+  border: 0; background: url('assets/home-btn-arcade.png') center / contain no-repeat; box-shadow: none; }
+#game-screen:not(.is-start) #btn-back-to-hub .hub-menu-ic { display: none; }
 /* 인트로/카운트다운/라운드 전환 중 = 잠금(회색 음영). 클릭도 무시(JS navLocked). */
 #btn-back-to-hub.nav-locked { opacity: 0.4; filter: grayscale(0.8); pointer-events: none; }
 #btn-back-to-hub.nav-locked::after { display: none; }
@@ -479,39 +484,33 @@ body { background: var(--lm-page); }
   flex-wrap: nowrap;
 }
 
-/* 점수 — 밤하늘 중앙에 크게 고정 (달 안 가리게 위쪽). 애니메이션은 나중에. */
-#hud-score {
-  position: absolute;
-  top: 1.5%;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 6;
-  pointer-events: none;
-  font-weight: 800;
-  font-size: clamp(1.56rem, 8.5vw, 2.7rem);
-  color: #fff;
-  -webkit-text-stroke: 3px #000;
-  paint-order: stroke fill;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
-  letter-spacing: 0.01em;
-}
-
-/* 하트 — 게임박스 우측 상단(예전 일시정지 버튼 자리, 하늘 영역). */
-.board-hearts {
-  position: absolute;
-  right: 2.5%;
-  top: 2.5%;
-  z-index: 7;
-  pointer-events: none;
-  text-align: right;
-  font-size: clamp(1.05rem, 4.7vw, 1.5rem);
-  letter-spacing: 1px;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
-}
-.board-hearts.life-bonus { animation: life-bonus 0.5s ease-out; }
+/* 게임 중 상단 상태판(V1315 C, 사용자 지정) — 리듬팡 비치 박스(불투명도 비치보다 10% 낮춤 .5→.4)를
+   홈버튼(가운데, 카메라 구멍 아래) 좌우에 2개씩. 높이 38px = 윗줄 두더지가 끝까지 올라와도 약 10px 여유. */
+.ms-status { position: absolute; left: 8px; right: 8px; top: 6px; height: 38px; z-index: 7; pointer-events: none;
+  display: grid; grid-template-columns: 1fr 1fr 44px 1fr 1fr; gap: 4px; }
+.ms-box { position: relative; min-width: 0; }
+.ms-box::before { content: ""; position: absolute; inset: 0; background: var(--ms-box) center / 118% 118% no-repeat; opacity: 0.4; }
+.ms-score { --ms-box: url('assets/rhythm/ui-status-v1230/score-box.png'); --ms-color: #20bfff; }
+.ms-combo { --ms-box: url('assets/rhythm/ui-status-v1230/combo-box.png'); --ms-color: #ffda00; }
+.ms-time { --ms-box: url('assets/rhythm/ui-status-v1230/time-box.png'); --ms-color: #56f52d; }
+.ms-heart { --ms-box: url('assets/rhythm/ui-status-v1230/judgement-box.png'); --ms-color: #ff43d7; }
+.ms-ic { position: absolute; left: 4%; top: 50%; height: 70%; width: auto; transform: translateY(-50%); }
+.ms-heart .ms-ic { height: 58%; }
+/* 시계는 원 지름이 다른 아이콘 높이(70%)와 같게 — 원 = 그림 폭, 원 중심 = 그림 높이 56% 지점 */
+.ms-clock { position: absolute; left: 4%; height: 81%; width: auto; aspect-ratio: 369 / 426; top: calc(50% - 0.56 * 81%); }
+.ms-clock-hand { transform-origin: 187px 237px; transition: transform 0.25s linear; }
+.ms-label, .ms-val { position: absolute; left: 40%; right: 6%; text-align: center; white-space: nowrap; line-height: 1;
+  font-family: 'Lilita One', 'Jua', sans-serif; -webkit-text-stroke: 1px #15244f; paint-order: stroke fill; text-shadow: 0 1px 1px #10152b; }
+.ms-label { top: 14%; font-size: 9px; color: var(--ms-color); }
+.ms-val { top: 50%; font-size: 13px; color: #fff; }
+.ms-time.is-low .ms-val { color: #ff4d4d; animation: ms-low-blink 0.5s ease-in-out infinite alternate; }
+@keyframes ms-low-blink { from { opacity: 1; } to { opacity: 0.45; } }
+.ms-time.hud-flash { animation: ms-hit-flash 0.35s ease-out; }
+@keyframes ms-hit-flash { 0%, 100% { filter: none; } 35% { filter: brightness(2.2); } }
+#hud-hearts.life-bonus { animation: life-bonus 0.5s ease-out; }
 
 /* 게임 중 현재 적용된 패시브 스킬 표시(§31) — 하트 반대쪽(좌측 상단), 아이콘+이름 캡슐. */
-.skl-passive-hud { position: absolute; left: 2.5%; top: 2.5%; z-index: 7; display: flex; flex-direction: column;
+.skl-passive-hud { position: absolute; left: 2.5%; top: 50px; z-index: 7; display: flex; flex-direction: column;
   gap: 3px; pointer-events: none; }
 .skl-passive-hud:empty { display: none; }
 .skl-passive-badge { display: flex; align-items: center; gap: 3px; padding: 2px 6px 2px 2px; border-radius: 999px;
@@ -519,21 +518,6 @@ body { background: var(--lm-page); }
 .skl-passive-badge img { width: 16px; height: 16px; object-fit: contain; }
 .skl-passive-badge span { font-size: 0.5rem; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.6); white-space: nowrap; }
 
-/* 콤보 — 게임박스 맨 아래 가운데. 잔디 이미지 끝까지 내려도 됨(사용자 요청). 0이면 빈 텍스트라 안 보임. */
-.board-combo {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  transform: translateX(-50%);
-  z-index: 4;
-  pointer-events: none;
-  font-weight: 800;
-  font-size: clamp(1.5rem, 6.2vw, 2.2rem);
-  color: #ffcf4a;
-  -webkit-text-stroke: 3px #000;
-  paint-order: stroke;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.75);
-}
 
 /* 피버타임 배지 — 게임박스 상단 가운데(점수 아래). 콤보 50+ (챕터 3부터). */
 .fever-badge {
@@ -697,28 +681,6 @@ body { background: var(--lm-page); }
   box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.35), 0 3px 8px rgba(0, 0, 0, 0.35);
 }
 /* 초기 홈에서는 항상 표시. 게임·제외 메뉴는 화면 전환 JS가 직접 숨긴다. */
-/* 시간 게이지(v747, 사용자 지정: 네온은 흐리니 선명한 단색) — 게임 중에만. 홈에선 기존 경첩 장식 그대로. */
-.hinge-fill, #hinge-time { display: none; }
-#game-screen:not(.is-start) .hinge-fill {
-  display: block; position: absolute; left: 0; top: 2px; bottom: 2px; z-index: 2; width: var(--tk-time-pct, 100%);
-  border-radius: 0 4px 4px 0; transition: width 0.25s linear, background 0.3s;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 45%), linear-gradient(180deg, #5ee86f, #25b53f);
-}
-#game-screen:not(.is-start) #fold-hinge.hinge--mid .hinge-fill {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 45%), linear-gradient(180deg, #ffe066, #f2b400);
-}
-#game-screen:not(.is-start) #fold-hinge.hinge--low .hinge-fill {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 45%), linear-gradient(180deg, #ff6b6b, #e02424);
-  animation: hinge-low-blink 0.5s ease-in-out infinite alternate;
-}
-@keyframes hinge-low-blink { from { opacity: 1; } to { opacity: 0.45; } }
-#game-screen:not(.is-start) #hinge-time {
-  display: block; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 3;
-  font-size: 10px; font-weight: 900; line-height: 1; color: #fff; -webkit-text-stroke: 2.5px #10152b; paint-order: stroke fill;
-}
-#game-screen:not(.is-start) #fold-hinge::before, #game-screen:not(.is-start) #fold-hinge::after { display: none; } /* 게이지 중엔 접힘선·축 숨김 */
-#fold-hinge.hud-flash .hinge-fill { animation: hinge-hit-flash 0.35s ease-out; }
-@keyframes hinge-hit-flash { 0%, 100% { filter: none; } 35% { filter: brightness(2.2); } }
 #fold-hinge::before { /* 가운데 접힘선 */
   content: '';
   position: absolute;
@@ -4304,7 +4266,7 @@ body { background: var(--lm-page); }
 /* 게임화면 둥근 글자체(Dongle, 사용자 선택) — 홈화면·다이얼패드 숫자·더보기메뉴는 그대로,
    라운드전환/카운트다운/점수·하트·콤보/결과화면/타격 이펙트 텍스트만 적용. */
 #round-intro-title, #round-intro-count, .si-line1, .si-line2, .si-line3,
-#hud-score, .board-hearts, .board-combo, .tk-timer,
+.tk-timer,
 .go-word, .gameover-score,
 .hit-fx-burst span {
   font-family: 'Dongle', 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;

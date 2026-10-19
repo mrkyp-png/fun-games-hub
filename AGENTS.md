@@ -1,3 +1,10 @@
+## 2026-10-19 / V1315 C — 게임 상단 상태판·아케이드 홈버튼·브금 되감기 제거 (배포)
+- 브금: 시작 버튼 탭 후 설명→카운트다운 때 게임 브금이 0초로 되감기던 syncGameBgmForCountdown(V1306 G) 제거(관련 syncGameBgm 옵션·bgmFadeUntil 정리). 시작 탭부터 끊김 없이 이어짐.
+- 시간 바: 경첩(#fold-hinge)이 게임 중 숨겨져 시간 게이지가 안 보이던 상태 → 게이지 코드(.hinge-fill/#hinge-time/hud.js/CSS) 삭제, 경첩 자체는 홈 장식으로 유지.
+- 상단 상태판 #mole-status(사용자 지정): 리듬팡 비치 박스(ui-status-v1230 *-box, 불투명도 .4 = 비치보다 10% 더 투명) 4칸 SCORE(퀘스트 ic-trophy)·COMBO(ic-fire) | 홈 | TIME(비치 clock.png, 바늘=흐른 비율, 5초 이하 빨강 깜빡, −3초 번쩍)·HEART(ic-heart). 높이 38px — 윗줄 두더지 최고점과 약 10px 여유. 기존 #hud-score/#hud-hearts/#hud-combo id는 박스 값으로 이동(숫자만 표시), 콤보 i18n 문구 삭제. 패시브 스킬 표시는 겹침 때문에 상태판 아래(top 50px)로 이동.
+- 홈버튼(게임 중): 카메라 구멍 아래 가운데, 36px, 투명도 30%, 그림 = GPT Imagegen 아케이드 네온 버튼 assets/home-btn-arcade.png.
+- 헤드리스 412×800 캡처로 확인. 토끼·사자 등 큰 동물과의 여유, 실제 폰 확인은 미완료. 자동 테스트 미실행(node --check 만).
+
 ## 2026-10-19 / V1314 C — 홈 시작 Ready·GO, 해금 순서 버그, 노말·프로 원근감 (배포)
 - 홈 화면 '시작'으로 진입할 때만 카운트다운을 예전처럼 Ready → GO!(사용자 지정). 라운드맵 시작·다음 라운드는 3-2-1-GO! 유지. game.js: startRound→playRoundIntro 에 homeEntry 옵션(fresh && !fromRoundMap). Edge headless 재현으로 홈: 소개 타이핑→Ready→GO! 1회 확인. (사용자 보고 '3,2,1 GO 한 번 더'는 노트북에서 2회 재현 안 됨 — 홈 진입 단계 변경으로 해결 합의)
 - 해금 버그: 노말 5단계인데 프로 1단계 열림. 원인 = 해금이 '직전 라운드/라운드8 클리어' 한 칸만 확인 → 전체 해금(검토용) 때 순서 건너뛴 클리어 기록(노말8 등)으로 열림. progress.js chainCleared(1~N 모두 클리어)로 변경, 기록은 삭제 안 함. node 시나리오(노말1~4+8 → 프로 잠김, 1~8 전부 → 프로 R1만, 신규 → 아마 R1만) 통과.

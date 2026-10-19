@@ -386,7 +386,6 @@
   const HOME_BGM_VOL = BGM_VOL * 0.7;
   const BGM_FADE_MS = 900;
   let bgmFadeTimer = null;
-  let bgmFadeUntil = 0;
   // 피버타임 브금이 재생 중인 동안, 다른 이벤트(자동재생 정책 재시도용 입력 리스너 등)가
   // applyBgm() 을 다시 불러 라운드 브금을 되살리는 걸 막는다(사용자 보고: "피버타임 중간에
   // 피버타임 브금외 본게임 브금 나오기 시작함" — 터치할 때마다 걸리는 입력 리스너가 원인).
@@ -452,7 +451,6 @@
     const previousFile = currentBgm;
     const targetVolume = bgmVolume(file);
     currentBgm = file;
-    bgmFadeUntil = performance.now() + BGM_FADE_MS;
     to.loop = loop;
     if (to.src.indexOf(file) === -1) to.src = file;
     to.currentTime = 0;
@@ -465,7 +463,6 @@
       from.currentTime = 0;
       from.volume = bgmVolume(previousFile);
       bgmActiveIdx = 1 - bgmActiveIdx;
-      bgmFadeUntil = 0;
       return;
     }
     const p = to.play();
@@ -486,7 +483,6 @@
       from.volume = bgmVolume(previousFile);
       bgmActiveIdx = 1 - bgmActiveIdx;
       bgmFadeTimer = null;
-      bgmFadeUntil = 0;
     })();
   }
 
@@ -510,19 +506,6 @@
       if (el.currentTime > 0.5) el.currentTime = 0; // 같은 곡 재진입 — 이미 재생 중일 때만 되감기(로딩 blip 방지)
       applyBgm();
     }
-  }
-
-  // 각 진입 경로의 안내 길이가 달라도 첫 카운트다운 시작점에 게임 BGM을 0초로 맞춘다.
-  // 재생 허용은 시작 버튼 탭의 사용자 제스처에서 이미 확보하고, 여기서는 재생 위치만 맞춘다.
-  function syncGameBgmForCountdown() {
-    if (currentBgm !== 'audio/bgm-game-1.mp3') return;
-    // A round-map start can reach its countdown while the click-triggered crossfade
-    // is still running. Reset the incoming game track, never the outgoing home track.
-    const incoming = bgmFadeUntil > performance.now() ? bgmInactiveEl() : null;
-    const el = incoming || bgmActiveEl();
-    if (!el) return;
-    try { el.currentTime = 0; } catch (e) { /* 메타데이터 로딩 중이면 다음 입력에서 재시도 */ }
-    if (!incoming) applyBgm();
   }
 
   // 곡이 끝나가면(마지막 BGM_FADE_MS + 여유) 다음 곡으로 미리 크로스페이드 시작 —
@@ -1627,7 +1610,7 @@
       setNavLock(false); // 라운드 실제 진행 → ⊞ 다시 활성
       lastTime = performance.now();
       rafId = requestAnimationFrame(loop);
-    }, { syncGameBgm: !!(opts && opts.fresh), homeEntry: !!(opts && opts.fresh && !opts.fromRoundMap) });
+    }, { homeEntry: !!(opts && opts.fresh && !opts.fromRoundMap) });
   }
 
   // 모든 라운드(1~8): "라운드 N" 타이틀·음성 없이 바로 Ready → GO! 카운트다운(줌인 + 색상,
@@ -1813,7 +1796,6 @@
     const introDelay = 250;
     setTimeout(() => {
       if (myGen !== sessionGen) return;
-      if (options.syncGameBgm) syncGameBgmForCountdown();
       runCountdown(exitAndStart);
     }, introDelay); // 홈 안내 여부와 무관하게 같은 지연 뒤 카운트다운을 시작한다.
   }
@@ -1988,7 +1970,6 @@
       timeRemaining: state.timeRemaining,
       timeTotal: roundSeconds(),
       combo: run.combo.combo,
-      isMaxCombo: run.combo.isMaxCombo(),
       score: run.combo.score, // 1라운드부터 누적 (콤보·점수 한 통)
       modeLabel: chapterLabel(currentChapter()), // 게임화면 티커 맨 앞 = 현재 챕터 이름 ("두더지팡" 대체)
       chapterDesc: chapterDesc(currentChapter()) // 챕터2~10 안내문구 — 있으면 티커의 기존 팁 문구 대체(사용자 지정)
@@ -2334,7 +2315,7 @@
           updateShieldHud();
         } else {
           state.timeRemaining = Math.max(0, state.timeRemaining - 3); // 스펙 §8
-          flashHud('fold-hinge'); // 시간 −3 — 경첩 시간 게이지를 잠깐 번쩍(v747)
+          flashHud('hud-time'); // 시간 −3 — 상태판 TIME 칸을 잠깐 번쩍
           run.combo.onObstacleHit();
           MG.HitFx.obstacleHit(board, r.xFrac, r.yFrac, 'bomb');
         }

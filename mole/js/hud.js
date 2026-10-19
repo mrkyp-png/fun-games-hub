@@ -23,32 +23,21 @@
     if (score) score.textContent = (state.score || 0).toLocaleString();
 
     var hearts = document.getElementById('hud-hearts');
-    if (hearts) {
-      // 5개 이상이면 아이콘 반복 대신 "❤️ N"
-      hearts.textContent = state.lives >= 5
-        ? '❤️ ' + state.lives
-        : '❤️'.repeat(state.lives) + '🖤'.repeat(Math.max(0, 3 - state.lives));
-    }
+    if (hearts) hearts.textContent = String(state.lives);
 
-    // 시간 = 두 판 사이 경첩(#fold-hinge)이 게이지 — 남은 비율만큼 줄고, 남은 초와 시간 구간별 색으로 표시.
-    var hinge = document.getElementById('fold-hinge');
-    if (hinge && state.timeTotal > 0) {
+    // 시간 = 상단 상태판 TIME 칸 — 남은 시간 m:ss, 시계 바늘은 흐른 비율만큼 한 바퀴, 5초 이하 빨강 깜빡임.
+    var time = document.getElementById('hud-time');
+    if (time && state.timeTotal > 0) {
       var left = Math.max(0, state.timeRemaining);
-      var ratio = Math.max(0, Math.min(1, left / state.timeTotal));
-      hinge.style.setProperty('--tk-time-pct', (ratio * 100).toFixed(2) + '%');
-      hinge.classList.toggle('hinge--mid', ratio < 0.5 && left > 5);
-      hinge.classList.toggle('hinge--low', left <= 5);
-      var ht = document.getElementById('hinge-time');
-      if (ht) ht.textContent = left > 0 ? String(Math.ceil(left)) : ''; // 0초는 숫자 숨김(사용자 지정 v753)
+      var sec = Math.ceil(left);
+      document.getElementById('hud-time-val').textContent = Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+      var hand = time.querySelector('.ms-clock-hand');
+      if (hand) hand.style.transform = 'rotate(' + ((1 - left / state.timeTotal) * 360).toFixed(1) + 'deg)';
+      time.classList.toggle('is-low', left <= 5);
     }
 
-    // 콤보 = 게임화면 하단 중앙(하트가 있는 줄)에 표기. 0이면 표시 안 함.
     var combo = document.getElementById('hud-combo');
-    if (combo) {
-      combo.textContent = state.combo > 0
-        ? I.t(state.isMaxCombo ? 'mole.hud.maxCombo' : 'mole.hud.combo', { n: state.combo })
-        : '';
-    }
+    if (combo) combo.textContent = String(state.combo || 0);
   }
 
   var api = { update: update };
