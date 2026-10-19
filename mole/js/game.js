@@ -1953,7 +1953,7 @@
 
   // 점수 배율 — 라이트(난이도) × 피버타임. 사용자 지정 표.
   const SCORE_MULT = {
-    easy:   { base: 1,   fever: 1 },   // 라이트 ON
+    easy:   { base: 1,   fever: 1.2 }, // 라이트 ON (피버 ×1.2, 사용자 지정 V1312 C)
     mid:    { base: 1.2, fever: 1.5 }, // 라이트 DIM
     legend: { base: 2,   fever: 3 }    // 라이트 OFF
   };

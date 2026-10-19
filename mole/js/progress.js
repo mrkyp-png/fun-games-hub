@@ -12,7 +12,7 @@
   var K = 'mole.progress';
   var LIGHTS = ['easy', 'mid', 'legend']; // = ON / DIM / OFF
   var MAX_CHAPTER = 8;
-  var REVIEW_UNLOCK_ALL = true; // 사용자 요청: 게임 오픈 전 전체 화면/라운드 확인.
+  var REVIEW_UNLOCK_ALL = false; // 검토용 전체 개방 — 해제(사용자 지정 V1312 C).
   // 챕터 진행(전체 챕터 기획서 2026-09-14): 1~3 = 9홀/5라운드(뿅망치 전용) 튜토리얼,
   // 4~10 = 16홀/10라운드 본편(빼꼼→동물→폭탄→모자(4타)→타겟전환→반격 순 난이도 추가).
 
