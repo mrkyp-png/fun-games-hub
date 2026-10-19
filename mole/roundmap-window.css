@@ -153,7 +153,7 @@
 .rm-window-map .rm-ui::before { content:''; position:absolute; left:0; right:0; bottom:0; height:calc(env(safe-area-inset-bottom,0px) + max(19vw,72px)); background:#08090b; z-index:5; pointer-events:none; }
 
 /* The floor stays clear; mode bonuses scroll through the existing opaque top area. */
-.rm-window-map .rm-top-ticker { position:absolute; z-index:5; top:max(2px,calc(env(safe-area-inset-top,0px) - 4.6cqw)); left:9%; right:15%; height:5.8cqw; overflow:hidden; pointer-events:none; color:#fff; font-size:4.875cqw; font-weight:800; line-height:1; letter-spacing:.035em; text-shadow:0 1px 2px #100b08,0 0 5px #100b08; }
+.rm-window-map .rm-top-ticker { position:absolute; z-index:5; top:max(2px,calc(env(safe-area-inset-top,0px) - 4.6cqw)); left:0; right:0; height:5.8cqw; overflow:hidden; pointer-events:none; color:#fff; font-size:4.875cqw; font-weight:800; line-height:1; letter-spacing:.035em; text-shadow:0 1px 2px #100b08,0 0 5px #100b08; }
 .rm-window-map .rm-top-ticker-viewport { width:100%; height:100%; overflow:hidden; }
 .rm-window-map .rm-top-ticker-track { display:flex; width:max-content; height:100%; align-items:center; animation:rm-ticker-scroll var(--rm-ticker-duration,24s) linear infinite; will-change:transform; }
 .rm-window-map .rm-top-ticker-copy { display:flex; flex:none; height:100%; align-items:center; gap:1.35cqw; padding-right:8cqw; white-space:nowrap; }
