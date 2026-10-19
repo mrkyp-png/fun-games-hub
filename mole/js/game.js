@@ -386,6 +386,7 @@
   const HOME_BGM_VOL = BGM_VOL * 0.7;
   const BGM_FADE_MS = 900;
   let bgmFadeTimer = null;
+  let bgmFadeUntil = 0;
   // 피버타임 브금이 재생 중인 동안, 다른 이벤트(자동재생 정책 재시도용 입력 리스너 등)가
   // applyBgm() 을 다시 불러 라운드 브금을 되살리는 걸 막는다(사용자 보고: "피버타임 중간에
   // 피버타임 브금외 본게임 브금 나오기 시작함" — 터치할 때마다 걸리는 입력 리스너가 원인).
@@ -451,6 +452,7 @@
     const previousFile = currentBgm;
     const targetVolume = bgmVolume(file);
     currentBgm = file;
+    bgmFadeUntil = performance.now() + BGM_FADE_MS;
     to.loop = loop;
     if (to.src.indexOf(file) === -1) to.src = file;
     to.currentTime = 0;
@@ -463,6 +465,7 @@
       from.currentTime = 0;
       from.volume = bgmVolume(previousFile);
       bgmActiveIdx = 1 - bgmActiveIdx;
+      bgmFadeUntil = 0;
       return;
     }
     const p = to.play();
@@ -483,6 +486,7 @@
       from.volume = bgmVolume(previousFile);
       bgmActiveIdx = 1 - bgmActiveIdx;
       bgmFadeTimer = null;
+      bgmFadeUntil = 0;
     })();
   }
 
@@ -506,6 +510,19 @@
       if (el.currentTime > 0.5) el.currentTime = 0; // 같은 곡 재진입 — 이미 재생 중일 때만 되감기(로딩 blip 방지)
       applyBgm();
     }
+  }
+
+  // 각 진입 경로의 안내 길이가 달라도 첫 카운트다운 시작점에 게임 BGM을 0초로 맞춘다.
+  // 재생 허용은 시작 버튼 탭의 사용자 제스처에서 이미 확보하고, 여기서는 재생 위치만 맞춘다.
+  function syncGameBgmForCountdown() {
+    if (currentBgm !== 'audio/bgm-game-1.mp3') return;
+    // A round-map start can reach its countdown while the click-triggered crossfade
+    // is still running. Reset the incoming game track, never the outgoing home track.
+    const incoming = bgmFadeUntil > performance.now() ? bgmInactiveEl() : null;
+    const el = incoming || bgmActiveEl();
+    if (!el) return;
+    try { el.currentTime = 0; } catch (e) { /* 메타데이터 로딩 중이면 다음 입력에서 재시도 */ }
+    if (!incoming) applyBgm();
   }
 
   // 곡이 끝나가면(마지막 BGM_FADE_MS + 여유) 다음 곡으로 미리 크로스페이드 시작 —
@@ -575,7 +592,7 @@
     DIFFS.forEach((d) => gs.classList.remove('diff-' + d));
     gs.classList.add('diff-' + diff);
   }
-  // 홈 화면 시작은 설명을 보여주고, 두더지팡 라운드 선택 화면에서 온 경우만 바로 시작한다.
+    // 홈 화면 시작은 설명을 보여주고, 두더지팡 라운드 선택 화면에서 온 경우만 바로 시작한다.
   // 시작 시 생명을 미리 깎지 않는다 — 현재 공유 풀 그대로 플레이하고, 동물 맞을 때만 -1.
   // 단 풀이 0이면 플레이 자체가 불가(즉시 게임오버) → "생명 없음" 모달.
   let gameStarting = false; // 시작 버튼 연타 방지 — 한 번 누르면 홈으로 돌아올 때까지 재진입 차단
@@ -612,7 +629,7 @@
     applyDiffClass(currentDiff);
     preloadRoundMoles(); // 라운드1 플레이하는 동안 미리 받아둬야 라운드2 전환 때 안 늦음
     if (fromRoundMap) {
-      startRound({ fresh: true });
+      startRound({ fresh: true, fromRoundMap: true });
     } else {
       playStartIntro(() => startRound({ fresh: true }));
     }
@@ -1409,7 +1426,7 @@
     // 홈→게임 첫 진입(fresh)에만 — 채널(유튜브 아이콘) 버튼을 10바퀴 돌려 숫자 버튼으로 전환.
     // 회전 전까지는 기존 홈 다이얼패드 그대로 있다가, 인트로가 끝나 실제 게임판이 드러나는
     // 지금 이 순간에만 돈다(사용자 지정).
-    if (opts && opts.fresh && sharedLaneControls) sharedLaneControls.spinChannelsIn();
+    if (opts && opts.fresh && !opts.fromRoundMap && sharedLaneControls) sharedLaneControls.spinChannelsIn();
     // 새 게임 시작(fresh)일 때만 더보기 메뉴를 닫는다. 자동 다음 라운드는 메뉴를 건드리지 않음
     // (플레이 중 메뉴 열어둔 채 라운드가 넘어가도 화면이 안 튀게).
     if (opts && opts.fresh) {
@@ -1610,7 +1627,7 @@
       setNavLock(false); // 라운드 실제 진행 → ⊞ 다시 활성
       lastTime = performance.now();
       rafId = requestAnimationFrame(loop);
-    });
+    }, { syncGameBgm: !!(opts && opts.fresh) });
   }
 
   // 모든 라운드(1~8): "라운드 N" 타이틀·음성 없이 바로 Ready → GO! 카운트다운(줌인 + 색상,
@@ -1620,7 +1637,8 @@
   // (#mole-hammer-layer 기준) 분수(실측).
   const GH_SPIN_START = { x: 0.128, y: 1.871 };
 
-  function playRoundIntro(onDone) {
+  function playRoundIntro(onDone, options) {
+    options = options || {};
     const myGen = sessionGen;
     const overlay = document.getElementById('round-intro-overlay');
     const title = document.getElementById('round-intro-title');
@@ -1750,13 +1768,13 @@
       count.hidden = false;
       const alipunchReady = state.weapon === 'alipunch' && state.laneHammer && state.laneHammer.meet;
       if (alipunchReady) { setHammerLayerVisible(true); tickHammerDuring(650 + 360); }
-      const STEPS = ['Ready', 'GO!']; // 무조건 영어 (사용자 지정, 스펠링 확인됨)
+      const STEPS = ['3', '2', '1', 'GO!'];
       let i = 0;
       (function tick() {
         if (myGen !== sessionGen) return;
         const go = i >= STEPS.length - 1;
         count.textContent = STEPS[i];
-        count.className = 'round-intro-count ' + (go ? 'cgo' : 'c' + (STEPS.length - i));
+        count.className = 'round-intro-count ' + (go ? 'cgo' : 'c' + (STEPS.length - i - 1));
         void count.offsetWidth;
         count.classList.add('pop'); // 줌인 애니
         if (alipunchReady) {
@@ -1791,10 +1809,12 @@
       setTimeout(() => { if (myGen === sessionGen) onDone(); }, 260 + 200);
     }
 
+    const introDelay = 250;
     setTimeout(() => {
       if (myGen !== sessionGen) return;
+      if (options.syncGameBgm) syncGameBgmForCountdown();
       runCountdown(exitAndStart);
-    }, 250); // 챕터/라운드 커튼 열린 직후 바로 (모든 라운드 공통)
+    }, introDelay); // 홈 안내 여부와 무관하게 같은 지연 뒤 카운트다운을 시작한다.
   }
 
   // 라운드 경과시간에 따라 state.config 의 시간형 필드를 매 프레임 갱신한다. spawn-scheduler.js
