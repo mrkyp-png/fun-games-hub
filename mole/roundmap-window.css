@@ -1,5 +1,6 @@
 /* V1297 G: align Amateur gem halos and extend all cave caps through the phone safe area. */
 #roundmap-screen.rm-screen.rm-window-map { background:#08090b; }
+#roundmap-screen.rm-screen.rm-window-map { position:fixed; inset:0; top:0; right:0; bottom:0; left:0; width:100vw; height:100dvh; min-height:100svh; max-height:none; transform:none; }
 #roundmap-screen.rm-window-map { touch-action:none; }
 #roundmap-screen.rm-window-map::before { inset:0; background-image:var(--rm-backing,url('assets/roundmap/window-v1263/rear-mine.webp')); filter:none; clip-path:inset(0 0 calc(env(safe-area-inset-bottom,0px) + max(19vw,72px)) 0); transform:translateX(var(--rm-pan-x,0px)); pointer-events:none; }
 /* Reserve the bottom controls, including the device safe area, before fitting all eight holes. */
@@ -114,7 +115,7 @@
 @media(prefers-reduced-motion:reduce) { .rm-window-map .rm-headlamp-beam { animation:none; transform:scaleX(-1); } .rm-window-map .rm-headlamp-beam svg { animation:none; transform:none; opacity:.7; } }
 
 /* Small, color-matched halos; their size and pulse speed follow each gem's depth. */
-.rm-window-map .rm-gem-glow { position:absolute; width:var(--gem-size); height:var(--gem-size); margin:calc(var(--gem-size) * -.5) 0 0 calc(var(--gem-size) * -.5); border-radius:50%; pointer-events:none; background:radial-gradient(circle,var(--gem-core) 0 14%,var(--gem-halo) 44%,transparent 78%); mix-blend-mode:screen; filter:drop-shadow(0 0 .8cqw var(--gem-glow)); opacity:.66; animation:rm-gem-breathe 3.2s ease-in-out infinite; }
+.rm-window-map .rm-gem-glow { display:none !important; }
 .rm-window-map .rm-lantern-glow { position:absolute; width:calc(var(--lantern-size) * 1.7); height:calc(var(--lantern-size) * 1.35); margin:calc(var(--lantern-size) * -.68) 0 0 calc(var(--lantern-size) * -.85); border-radius:50%; pointer-events:none; background:radial-gradient(ellipse,var(--lantern-core) 0 8%,var(--lantern-halo) 30%,var(--lantern-spill) 52%,transparent 76%); mix-blend-mode:screen; filter:blur(.25px) drop-shadow(0 0 .55cqw var(--lantern-halo)); opacity:var(--lantern-min); animation:rm-lantern-breathe 2.15s ease-in-out infinite; }
 @keyframes rm-gem-breathe { 0%,100% { opacity:.54; transform:scale(.94); } 50% { opacity:.86; transform:scale(1.08); } }
 @keyframes rm-lantern-breathe { 0%,100% { opacity:var(--lantern-min); transform:scale(.96); } 53% { opacity:var(--lantern-max); transform:scale(1.04); } }
@@ -140,21 +141,19 @@
 .rm-window-map .rm-ui::before { content:''; position:absolute; left:0; right:0; bottom:0; height:calc(env(safe-area-inset-bottom,0px) + max(19vw,72px)); background:#08090b; z-index:5; pointer-events:none; }
 
 /* The floor stays clear; mode bonuses scroll through the existing opaque top area. */
-.rm-window-map .rm-top-ticker { position:absolute; z-index:5; top:calc(env(safe-area-inset-top,0px) + 5.8cqw); left:9%; right:15%; height:4.4cqw; overflow:hidden; pointer-events:none; color:#f5e6c8; font-size:3.25cqw; font-weight:800; line-height:1; letter-spacing:.035em; text-shadow:0 1px 2px #100b08,0 0 5px #100b08; }
+.rm-window-map .rm-top-ticker { position:absolute; z-index:5; top:max(2px,calc(env(safe-area-inset-top,0px) - 4.6cqw)); left:9%; right:15%; height:5.8cqw; overflow:hidden; pointer-events:none; color:#fff; font-size:4.875cqw; font-weight:800; line-height:1; letter-spacing:.035em; text-shadow:0 1px 2px #100b08,0 0 5px #100b08; }
 .rm-window-map .rm-top-ticker-viewport { width:100%; height:100%; overflow:hidden; }
 .rm-window-map .rm-top-ticker-track { display:flex; width:max-content; height:100%; align-items:center; animation:rm-ticker-scroll var(--rm-ticker-duration,24s) linear infinite; will-change:transform; }
 .rm-window-map .rm-top-ticker-copy { display:flex; flex:none; height:100%; align-items:center; gap:1.35cqw; padding-right:8cqw; white-space:nowrap; }
 .rm-window-map .rm-top-ticker-item { display:inline-flex; flex:none; align-items:center; gap:1.15cqw; }
-.rm-window-map .rm-top-ticker-icon { display:inline-flex; width:3.5cqw; height:3.5cqw; flex:none; align-items:center; justify-content:center; filter:drop-shadow(0 1px 1px #120b08aa); }
-.rm-window-map .rm-top-ticker-icon svg { display:block; width:100%; height:100%; overflow:visible; }
-.rm-window-map .rm-top-ticker-icon--score { color:#f4c967; }
-.rm-window-map .rm-top-ticker-icon--fever { color:#f29b70; }
-.rm-window-map .rm-top-ticker-icon--combo { color:#f1a7bd; }
+.rm-window-map .rm-top-ticker-icon { display:inline-flex; width:4.1cqw; height:4.1cqw; flex:none; align-items:center; justify-content:center; filter:drop-shadow(0 1px 1px #120b08aa); }
+.rm-window-map .rm-top-ticker-icon img { display:block; width:100%; height:100%; object-fit:contain; }
 .rm-window-map .rm-top-ticker-separator { display:inline-block; margin:0 1.2cqw; color:#ddc8a7; opacity:.55; }
 .rm-window-map .rm-top-ticker-sr { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
-.rm-window-map[data-light="easy"] .rm-top-ticker { top:max(2px,calc(env(safe-area-inset-top,0px) - 4.6cqw)); color:#ffe2a0; }
-.rm-window-map[data-light="mid"] .rm-top-ticker { color:#d8f1cf; }
-.rm-window-map[data-light="legend"] .rm-top-ticker { color:#ffd7c3; }
+.rm-window-map[data-light="easy"] .rm-top-ticker,
+.rm-window-map[data-light="mid"] .rm-top-ticker,
+.rm-window-map[data-light="legend"] .rm-top-ticker { top:max(2px,calc(env(safe-area-inset-top,0px) - 4.6cqw)); color:#fff; }
+.rm-window-map .rm-rear-gems .rm-spark { display:none !important; }
 @keyframes rm-ticker-scroll { from { transform:translateX(0); } to { transform:translateX(-50%); } }
 @media(prefers-reduced-motion:reduce) { .rm-window-map .rm-top-ticker-track { animation:none; transform:none; } }
 .rm-window-map .rm-bottom,.rm-window-map .rm-start,.rm-window-map .rm-back { z-index:6; }
