@@ -88,6 +88,9 @@
 .rm-window-map[data-light="mid"] .rm-selected-front,
 .rm-window-map[data-light="legend"] .rm-selected-front,
 .rm-window-map[data-light="legend"] .rm-round2-rock-front { filter:brightness(1.3); }
+/* 노말·프로: 뒷 배경이 앞 라운드 그림과 밝기·색이 같아 원근감이 없었음 → 뒷 배경만 어둡게+채도↓(사용자 선택 A안, V1314 C) */
+.rm-window-map[data-light="mid"] .rm-parallax-rear,
+.rm-window-map[data-light="legend"] .rm-parallax-rear { filter:brightness(.55) saturate(.75); }
 @media(prefers-reduced-motion:reduce) { .rm-window-map .rm-rear-gems .rm-spark,.rm-window-map .rm-fx .rm-spark { animation:none; opacity:.45; } .rm-window-map .rm-window-cloud--second { display:none; } }
 @media(prefers-reduced-motion:reduce) { .rm-window-map .rm-start::after { animation:none; opacity:.4; } }
 .rm-window-map .rm-selected-front { position:absolute; inset:0; width:100%; height:100%; z-index:2; pointer-events:none; }

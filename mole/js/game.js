@@ -1627,7 +1627,7 @@
       setNavLock(false); // 라운드 실제 진행 → ⊞ 다시 활성
       lastTime = performance.now();
       rafId = requestAnimationFrame(loop);
-    }, { syncGameBgm: !!(opts && opts.fresh) });
+    }, { syncGameBgm: !!(opts && opts.fresh), homeEntry: !!(opts && opts.fresh && !opts.fromRoundMap) });
   }
 
   // 모든 라운드(1~8): "라운드 N" 타이틀·음성 없이 바로 Ready → GO! 카운트다운(줌인 + 색상,
@@ -1768,7 +1768,8 @@
       count.hidden = false;
       const alipunchReady = state.weapon === 'alipunch' && state.laneHammer && state.laneHammer.meet;
       if (alipunchReady) { setHammerLayerVisible(true); tickHammerDuring(650 + 360); }
-      const STEPS = ['3', '2', '1', 'GO!'];
+      // 홈 화면 시작으로 진입할 때만 예전처럼 Ready → GO!(사용자 지정 V1314 C), 그 외(라운드맵 시작·다음 라운드)는 3-2-1-GO!
+      const STEPS = options.homeEntry ? ['Ready', 'GO!'] : ['3', '2', '1', 'GO!'];
       let i = 0;
       (function tick() {
         if (myGen !== sessionGen) return;

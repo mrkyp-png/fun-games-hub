@@ -44,13 +44,20 @@
     } catch (e) { return REVIEW_UNLOCK_ALL; }
   }
 
-  // 난이도 해금(라운드 선택 맵 명세 v763): Amateur 항상 / Normal = Amateur 라운드8 클리어 /
-  // Pro = Normal 라운드8 클리어. 해금된 난이도끼리는 자유 이동.
+  // 1~upTo 라운드를 모두 클리어했는지. 해금은 반드시 차례대로 깬 경우만 — 전체 해금(검토용) 때 순서를
+  // 건너뛰어 남은 클리어 기록(예: 노말 8만 클리어)으로 다음 난이도·라운드가 열리던 버그 수정(V1314 C).
+  function chainCleared(upTo, light) {
+    for (var c = 1; c <= upTo; c++) if (!get(c, light).cleared) return false;
+    return true;
+  }
+
+  // 난이도 해금(라운드 선택 맵 명세 v763): Amateur 항상 / Normal = Amateur 라운드1~8 클리어 /
+  // Pro = Normal 라운드1~8 클리어. 해금된 난이도끼리는 자유 이동.
   function isLightUnlocked(light) {
     if (LIGHTS.indexOf(light) < 0) return false;
     if (unlockAll() || light === 'easy') return true;
-    if (light === 'mid') return get(MAX_CHAPTER, 'easy').cleared;
-    if (light === 'legend') return get(MAX_CHAPTER, 'mid').cleared;
+    if (light === 'mid') return chainCleared(MAX_CHAPTER, 'easy');
+    if (light === 'legend') return chainCleared(MAX_CHAPTER, 'easy') && chainCleared(MAX_CHAPTER, 'mid');
     return false;
   }
 
@@ -58,7 +65,7 @@
     if (ch < 1 || ch > MAX_CHAPTER) return false;
     if (!isLightUnlocked(light)) return false;
     if (unlockAll() || ch === 1) return true;
-    return get(ch - 1, light).cleared;
+    return chainCleared(ch - 1, light);
   }
 
   // 그 라이트에서 열려 있는 가장 높은 챕터 (시작 버튼이 플레이할 챕터).
