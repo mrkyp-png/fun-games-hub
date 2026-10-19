@@ -13,10 +13,10 @@
     mid: [{ key: 'mole.rm.ground.mid', icon: 'score' }, { key: 'mole.rm.ground.mid2', icon: 'fever' }, { key: 'mole.rm.ground.mid3', icon: 'combo' }],
     legend: [{ key: 'mole.rm.ground.legend', icon: 'score' }, { key: 'mole.rm.ground.legend2', icon: 'fever' }, { key: 'mole.rm.ground.legend3', icon: 'combo' }]
   };
-  var TICKER_ICON_SVG = {
-    score: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m12 5.8 1.75 3.7 4.05.58-2.93 2.86.7 4.04L12 15.07l-3.57 1.91.68-4.04-2.92-2.86 4.04-.58z" fill="currentColor"/></svg>',
-    fever: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.3 2.7c.7 4.4-2.9 5.2-2.1 8.1 1.1-.6 1.7-1.8 1.9-3.1 3.5 2.5 5.8 5 5.1 8.1-.6 3-3.1 5.2-6.3 5.2-3.5 0-6.1-2.5-6.1-5.9 0-2.8 1.4-4.9 4.2-7.4-.1 2.2.4 3.1 1.1 3.7.1-3.1 3-4.7 2.2-8.7z" fill="currentColor"/><path d="M12.3 13.1c1.8 1.5 2.7 2.6 2.7 4.1a3 3 0 1 1-6 0c0-1.2.7-2.4 2-3.8-.1 1.2.2 1.6.6 1.9.6-.6.9-1.3.7-2.2z" fill="#382319" opacity=".72"/></svg>',
-    combo: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-8.4-5.1-9.2-10.2C2.2 6.9 4.5 4 7.7 4c1.9 0 3.4 1.1 4.3 2.7C13 5.1 14.5 4 16.3 4c3.2 0 5.5 2.9 4.9 6.8C20.4 15.9 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="m12 8.1 1 2.1 2.3.3-1.7 1.6.4 2.3-2-1.1-2 1.1.4-2.3-1.7-1.6 2.3-.3z" fill="currentColor"/></svg>'
+  var TICKER_ICON_SRC = {
+    score: A + 'ic-coin.png',
+    fever: A + 'ic-fire.png',
+    combo: A + 'ic-heart.png'
   };
   // 고정 지형의 실제 구멍 중심(941×1672). 모드별 외형만 다르고 진행 로직은 같다.
   // 뒤 동굴의 이동과 무관하게 구멍, 두더지, 잠금 및 터치 기준점은 함께 고정된다.
@@ -118,7 +118,11 @@
           entry.className = 'rm-top-ticker-item';
           var icon = document.createElement('span');
           icon.className = 'rm-top-ticker-icon rm-top-ticker-icon--' + item.icon;
-          icon.innerHTML = TICKER_ICON_SVG[item.icon];
+          var iconImage = document.createElement('img');
+          iconImage.src = TICKER_ICON_SRC[item.icon];
+          iconImage.alt = '';
+          iconImage.setAttribute('aria-hidden', 'true');
+          icon.appendChild(iconImage);
           var phrase = document.createElement('span');
           phrase.textContent = T(item.key);
           entry.appendChild(icon);
