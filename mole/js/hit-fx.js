@@ -15,9 +15,7 @@
 
   // 두더지 처치 타격음 파일 (사용자 제공, 바탕화면 "뿅망치-음향-단일" 2종 — 2026-09-17 재교체,
   // 01은 사용자 지정으로 볼륨 부스트). 타격마다 랜덤 1개 + 지터.
-  const HIT_URLS = [
-    'audio/hammer-sfx-01.mp3', 'audio/hammer-sfx-02.mp3'
-  ];
+  const HIT_URLS = ['audio/hammer-sfx-02.mp3'];
   let hitBuffers = null;   // AudioBuffer[] (디코드 완료 후)
   let hitLoading = false;
 
@@ -920,3 +918,4 @@
   const api = { moleHit, moleBlast, bombBlast, juggle, moleTap, obstacleHit, whiff, emerge, emergeSound, warmup, uiTap, typeTick, scorePop, burstWord, skillWord, starBurst, shake, quakeDust, quakeClone, targetLock, cannonClone, punchStar, powerUpWord, dopamineUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, fight, moleVoice };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);
+
