@@ -144,7 +144,33 @@
 
     el.querySelector('[data-back="roundmap"]').addEventListener('click', function () { root.FGH.rollOut(el, opts.onClose); }); // v790: 위로 말리며 사라짐
     var startButton = $('[data-rm-start]');
-    startButton.addEventListener('click', function () { opts.onStart(); });
+    // 홈 초록 시작 버튼과 같은 동작(V1318 C, 사용자 지정): 탭=시작 / 꾹(0.6초)=종료 대기 / 다시 탭=종료창
+    var startLabel = $('[data-rm-start-label]'), holdT = null, longFired = false, armed = false, revertT = null;
+    function setArmed(on) {
+      armed = on;
+      clearTimeout(revertT);
+      startButton.classList.toggle('rm-start--armed', on);
+      startLabel.textContent = T(on ? 'mole.start.armLabel' : 'mole.start.btn');
+      if (on) revertT = setTimeout(function () { setArmed(false); }, 3200);
+    }
+    setArmed(false);
+    if (root.FGH.I18N.onChange) root.FGH.I18N.onChange(function () { setArmed(armed); });
+    startButton.addEventListener('pointerdown', function () {
+      longFired = false;
+      holdT = setTimeout(function () {
+        longFired = true;
+        setArmed(true);
+        if (root.FGH.Settings.vibrate) root.FGH.Settings.vibrate();
+      }, 600);
+    });
+    startButton.addEventListener('pointercancel', function () { clearTimeout(holdT); });
+    startButton.addEventListener('pointerleave', function () { clearTimeout(holdT); });
+    startButton.addEventListener('click', function () {
+      clearTimeout(holdT);
+      if (longFired) { longFired = false; return; } // 방금 꾹 눌러 무장 → 이 탭은 무시
+      if (armed) { setArmed(false); opts.onQuit(); }
+      else opts.onStart();
+    });
     startButton.addEventListener('contextmenu', function (event) { event.preventDefault(); });
     startButton.addEventListener('dragstart', function (event) { event.preventDefault(); });
     el.querySelectorAll('[data-rm-light]').forEach(function (b) {

@@ -510,6 +510,8 @@ body { background: var(--lm-page); }
 .ms-time.hud-flash { animation: ms-hit-flash 0.35s ease-out; }
 @keyframes ms-hit-flash { 0%, 100% { filter: none; } 35% { filter: brightness(2.2); } }
 #hud-hearts.life-bonus { animation: life-bonus 0.5s ease-out; }
+/* 성공/실패 결과 화면(.overlay z10)이 떠도 상태판 4칸은 그대로 보이게(사용자 지정 V1318 C) */
+#mole-board:has(#gameover-overlay:not([hidden])) #mole-status { z-index: 11; }
 
 /* 게임 중 현재 적용된 패시브 스킬 표시(§31) — 하트 반대쪽(좌측 상단), 아이콘+이름 캡슐. */
 .skl-passive-hud { position: absolute; left: 2.5%; top: 50px; z-index: 7; display: flex; flex-direction: column;
@@ -7675,7 +7677,12 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* V1165: round map close offset and existing home start artwork. */
 .rm-back.is-x { top: max(env(safe-area-inset-top, 0px), calc(env(safe-area-inset-top, 0px) + 8.6% - 1cm)); }
 .rm-start { position: absolute; right: 3%; bottom: calc(env(safe-area-inset-bottom, 0px) + 36cqw); width: 22cqw; aspect-ratio: 1; padding: 0; border: 0; background: transparent; color: white; cursor: pointer; z-index: 7; transition: transform 80ms; }
-.rm-start .h2-start { display: block; position: absolute; inset: -4%; pointer-events: none; }
+.rm-start .h2-start { display: block; position: absolute; inset: -4%; pointer-events: none; animation: h2-breath 2s ease-in-out infinite; }
+.rm-start .lane-call-idle { opacity: 1; }
+/* 꾹 눌러 종료 대기 — 홈 시작 버튼(.lane-button--armed)과 같은 빨강 깜빡임·두 줄 안내 */
+.rm-start.rm-start--armed { border-radius: 50%; background: #e53935; animation: call-arm-pulse 1s ease-in-out infinite; }
+.rm-start.rm-start--armed .lane-call-idle { opacity: 0; }
+.rm-start.rm-start--armed .rm-start-label { font-size: clamp(0.52rem, 2.5vw, 0.7rem); font-weight: 800; line-height: 1.2; white-space: pre-line; }
 .rm-start-label { position: absolute; bottom: 13%; left: 0; right: 0; font-family: 'Jua', 'Lilita One', sans-serif; font-size: clamp(.7rem, 3.4vw, 1rem); -webkit-text-stroke: 3px rgba(0,80,20,.6); paint-order: stroke fill; }
 .rm-start:active { transform: translateY(2px) scale(.94); }
 

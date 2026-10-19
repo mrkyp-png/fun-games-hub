@@ -3114,6 +3114,7 @@
     roundMap = MG.RoundMap.create({
       root: document.getElementById('roundmap-screen'),
       onStart: () => { if (!navLocked) beginGame(true); },
+      onQuit: () => showQuitDialog(), // 시작 버튼 꾹 → 다시 탭 = 종료창(홈 시작 버튼과 동일)
       onClose: () => closeMore(),
       currentLight: () => currentLight(),
       currentChapter: () => currentChapter(),
