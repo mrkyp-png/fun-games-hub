@@ -143,6 +143,10 @@
 .rm-window-map[data-light="legend"] .rm-top-cap img { top:0; height:calc(env(safe-area-inset-top,0px) + 16cqw); }
 .rm-window-map[data-light="mid"] .rm-top-cap,
 .rm-window-map[data-light="legend"] .rm-top-cap { background:none; }
+/* Normal and Pro use the open cave compositions underneath; do not cover
+   their upper openings with the separate rock-ceiling cap artwork. */
+.rm-window-map[data-light="mid"] .rm-top-cap.rm-mode-mid,
+.rm-window-map[data-light="legend"] .rm-top-cap.rm-mode-legend { display:none; }
 
 
 /* Keep the hippo and its light behind the fixed black lower panel. */
