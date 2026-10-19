@@ -137,6 +137,12 @@
 .rm-window-map[data-light="legend"] .rm-top-cap { background-image:linear-gradient(#191417,#191417); }
 .rm-window-map .rm-top-cap img { top:calc(env(safe-area-inset-top,0px) - 1px); left:0; width:100%; height:16cqw; object-fit:fill; }
 
+/* Match Amateur's edge-to-edge phone layout: extend Normal/Pro artwork behind
+   the device safe area so the solid dark strip cannot appear above the frame. */
+.rm-window-map[data-light="mid"] .rm-top-cap img,
+.rm-window-map[data-light="legend"] .rm-top-cap img { top:0; height:calc(env(safe-area-inset-top,0px) + 16cqw); }
+
+
 /* Keep the hippo and its light behind the fixed black lower panel. */
 .rm-window-map .rm-ui::before { content:''; position:absolute; left:0; right:0; bottom:0; height:calc(env(safe-area-inset-bottom,0px) + max(19vw,72px)); background:#08090b; z-index:5; pointer-events:none; }
 
