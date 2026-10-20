@@ -14,7 +14,7 @@
     legend: [{ key: 'mole.rm.ground.legend', icon: 'score' }, { key: 'mole.rm.ground.legend2', icon: 'fever' }, { key: 'mole.rm.ground.legend3', icon: 'combo' }]
   };
   var TICKER_ICON_SRC = {
-    score: A + 'ic-coin.png',
+    score: 'assets/quest/ic-trophy.png',
     fever: A + 'ic-fire.png',
     combo: A + 'ic-heart.png'
   };

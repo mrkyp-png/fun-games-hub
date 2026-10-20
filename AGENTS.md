@@ -1,3 +1,9 @@
+## 2026-10-20 / V1319 C — 라운드맵 위·아래 원근(구멍 앞 그림), 티커 기본점수 아이콘=트로피 (배포)
+- 원근 A안(사용자 선택, 3모드 모두): .rm-depth-shade 4개(아마추어 route·front, 노말, 프로)를 앞 그림 이미지로 mask 한 검정 그라데이션(위 .45 → 45% .2 → 85% 0). 아마추어 route용은 route-art 와 같은 translateY/scaleY. 그림·라운드 좌표·터치 불변.
+- 티커 기본 점수 아이콘 ic-coin → assets/quest/ic-trophy.png(상태판 SCORE와 동일).
+- 주의: 헤드리스에서 data-light 만 바꾸면 라운드 표시가 아마추어 좌표에 남음(render 안 됨) — 노말·프로 좌표는 정상(폰 확인됨).
+- 헤드리스 캡처 확인, 실제 폰 미확인.
+
 ## 2026-10-19 / V1318 C — 라운드맵 시작 버튼 = 홈 초록 시작 버튼, 결과 화면에도 상태판 유지 (배포)
 - 라운드맵 .rm-start: start-gem 보석 그림·불꽃(::after) 삭제 → 홈 시작 버튼과 같은 h2-start(ic-start + start-play ▶, 숨쉬기·▶ 툭) + lane-call-idle 빛 + '시작' 글자. 기능도 동일: 탭=시작, 0.6초 꾹=“한 번 더 누르면 종료”(3.2초 후 복귀), 다시 탭=showQuitDialog(RoundMap opts.onQuit). sw.js 사전캐시에서 start-gem 2개 제거(파일은 남김).
 - 성공/실패 결과(#gameover-overlay, z10)가 떠도 #mole-status 를 z11로 올려 4칸 유지(:has).

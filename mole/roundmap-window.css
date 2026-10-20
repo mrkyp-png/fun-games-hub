@@ -181,4 +181,9 @@
 @keyframes rm-stage-in-from-left { from { transform:translateX(calc(-50% - 8vw)); opacity:.45; } to { transform:translateX(-50%); opacity:1; } }
 @keyframes rm-cap-in-from-right { from { transform:translateX(8vw); opacity:.45; } to { transform:translateX(0); opacity:1; } }
 @keyframes rm-cap-in-from-left { from { transform:translateX(-8vw); opacity:.45; } to { transform:translateX(0); opacity:1; } }
-
+/* V1319 C 위·아래 원근(A안): 구멍 있는 앞 그림 모양으로 잘린 그라데이션 — 위(먼 라운드)는 어둡게, 아래(가까운 라운드)는 그대로. 그림·터치 위치 불변 */
+.rm-window-map .rm-depth-shade { position:absolute; inset:0; z-index:2; pointer-events:none; background:linear-gradient(to bottom,rgba(0,0,0,.45) 0%,rgba(0,0,0,.2) 45%,rgba(0,0,0,0) 85%); -webkit-mask:var(--rm-depth-mask) center/100% 100% no-repeat; mask:var(--rm-depth-mask) center/100% 100% no-repeat; }
+.rm-window-map .rm-depth-easy-route { z-index:1; --rm-depth-mask:url('assets/roundmap/window-v1263/route-grounded.webp'); transform-origin:0 0; transform:translateY(6.58%) scaleY(.913); }
+.rm-window-map .rm-depth-easy-front { --rm-depth-mask:url('assets/roundmap/window-v1263/foreground-frame.webp'); }
+.rm-window-map .rm-depth-mid { --rm-depth-mask:url('assets/roundmap/frame-v1282/normal-front-supported.webp'); }
+.rm-window-map .rm-depth-legend { --rm-depth-mask:url('assets/roundmap/frame-v1282/pro-front-supported.webp'); }
