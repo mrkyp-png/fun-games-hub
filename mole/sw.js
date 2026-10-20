@@ -3,7 +3,7 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-const CACHE = 'mole-game-v1332-C';
+const CACHE = 'mole-game-v1333-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -687,8 +687,12 @@ const SHELL = [
   './js/game.js'
 ];
 
+// V1333 C: 662개 파일을 addAll 로 한꺼번에 요청하면 폰 크롬이 동시 요청 한도를 넘겨(ERR_INSUFFICIENT_RESOURCES)
+// 그 순간 화면의 다른 그림 요청까지 실패 → 시작·X·재화 아이콘이 깨진 그림으로 뜸. 6개씩 나눠 차례로 받는다.
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then(async (c) => {
+    for (let i = 0; i < SHELL.length; i += 6) await c.addAll(SHELL.slice(i, i + 6));
+  }).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {
@@ -728,6 +732,10 @@ self.addEventListener('fetch', (e) => {
     } catch (err) {
       const cached = await caches.match(e.request);
       if (cached) return cached;
+      // V1333 C: 순간 네트워크 실패(동시 요청 한도 등)로 그림이 깨진 채 남지 않게 0.4초 뒤 한 번 더 받아 본다
+      if (e.request.mode !== 'navigate') {
+        try { await new Promise((r) => setTimeout(r, 400)); return await fetch(e.request); } catch (err2) { /* 아래 오류 응답 */ }
+      }
       // 오프라인 + 캐시에 없음. undefined 를 반환하면 브라우저가 "인터넷 연결 없음" 페이지를 띄우므로 금지.
       if (e.request.mode === 'navigate') {
         return (await caches.match('./index.html')) || (await caches.match('./')) || Response.error();

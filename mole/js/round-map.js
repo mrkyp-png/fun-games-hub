@@ -112,7 +112,7 @@
         firstSwap = now; onCovered();
       }
       if (holdOpen && holdOpen() && now - firstSwap < 1200) { root.requestAnimationFrame(function () { wait(); }); return; } // 교체된 화면이 아직 준비 중이면 덮은 채 대기(최대 1.2초)
-      var last = run(0, span, 315, 60).pop();
+      var last = run(0, span, 315, 0).pop();
       last.onfinish = function () { bandHost.style.visibility = 'hidden'; if (onDone) onDone(); };
     }, 310);
   }
