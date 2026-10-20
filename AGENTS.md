@@ -1,3 +1,9 @@
+## 2026-10-21 / V1355 C — 후렴 패턴 다양화 + 패턴 종합표 (미배포)
+- 사용자: "두 곡 후렴 패턴이 똑같다, 예시를 그대로 하지 말고 창작 — 대각선 3개, 외곽 모서리 4개, 1~9 순서 등", "패턴 종합표 필요", "두 곡 중 하나는 다르게".
+- 패턴 원본 scripts/rhythm/pattern_library.py(네온 23종·비치 11종). build-pattern-charts.py: 후렴마다 곡·난이도·후렴번호 고정 무작위로 도형을 통째로 배치(간격 걸리면 다른 도형→0~2박 늦춘 안 쓴 도형→쉼), 바로 앞 반복 금지, 비치 도형 사이 1박. --avoid 다른곡: 같은 후렴·난이도 도형 회피 → Take This Night Around 를 --avoid be-my-destiny 로 생성.
+- 종합표: build-pattern-catalog.py → review/pattern-catalog.png, 리듬팡 패턴 종합표.md(도형표+곡별 후렴 사용 도형). 다음 곡도 이 목록에 도형을 추가해 쓰고 --avoid 로 겹침 줄일 것.
+- 검증: 12채보 같은칸 간격 위반 0, 모든 노트 박 위. 최대 동시 E2/N3/H4.
+
 ## 2026-10-21 / V1354 C — 새 2곡(Be My Destiny, Take This Night Around) A/B 추가 + 후렴 패턴식 채보 (미배포)
 - 사용자: 바탕화면 MP3 2곡 추가, 참고영상(네온 게임스타일 추가.mp4: 가로줄 3개 동시→다음 줄 쓸기, 2개 짝 좌우 이동)처럼 "아주 규칙적·시각적" 채보 시도. 사용자 선택 B안 = 후렴만 패턴식, 나머지는 기존 방식. 가사 TXT·앨범(GPT 이미지젠) 포함.
 - 원본: 리듬AB 채보/Be My Destiny.mp3(119.56초)·Take This Night Around.mp3(207.96초)+가사 TXT(카톡 전달본 복사). 게임용 mole/audio/rp/<id>.mp3 바이트 동일 복사(SHA 확인).

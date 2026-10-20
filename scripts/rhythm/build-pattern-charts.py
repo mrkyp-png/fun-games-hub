@@ -7,7 +7,7 @@
 from pathlib import Path
 import json,itertools,hashlib,argparse
 import numpy as np
-ap=argparse.ArgumentParser();ap.add_argument('source',type=Path);ap.add_argument('songid');ap.add_argument('title');ap.add_argument('chorus',nargs='+');a=ap.parse_args()
+ap=argparse.ArgumentParser();ap.add_argument('source',type=Path);ap.add_argument('songid');ap.add_argument('title');ap.add_argument('chorus',nargs='+');ap.add_argument('--avoid',default='');a=ap.parse_args()  # --avoid 다른곡id: 그 곡의 같은 후렴·난이도 도형을 되도록 피함(곡끼리 다르게)
 prefix=Path('review')/a.songid;out=Path('mole/audio/rp')
 r=json.loads(Path(str(prefix)+'-analysis.json').read_text(encoding='utf-8'));beats=r['beats'];duration=r['duration']
 chorus=[tuple(float(x) for x in c.split('-')) for c in a.chorus]
@@ -23,48 +23,52 @@ def in_chorus(k):
 def kind(k):
  if k<16:return 'intro'
  return next((b['kind'] for b in r['blocks'] if b['startBeat']<=k<b['startBeat']+16),'outro')
-R=[(0,1,2),(3,4,5),(6,7,8)];C=[(0,3,6),(1,4,7),(2,5,8)];EDGE=[0,1,2,5,8,7,6,3]
-# 후렴 도형표: 박 오프셋(마디 기준) → 칸들. 16박 단위 두 구절(A·B)을 번갈아.
-def b_shape(diff,off):
- ph=(off//16)%2;o=off%16
- if diff=='EASY':
-  if o%2:return None
-  seq=[(0,2),(3,5),(6,8),(4,),None,(0,6),(1,7),(2,8)] if ph==0 else [(0,8),(2,6),(4,),None,(1,7),(3,5),(4,),None]
-  return seq[o//2]
- if diff=='NORMAL':
-  if o%2:return None
-  seq=[None,R[0],R[1],R[2],None,R[0],R[1],R[2]] if ph==0 else [None,C[0],C[1],C[2],None,C[0],C[1],C[2]]
-  return seq[o//2]
- # HARD: 구절A = 테두리 시계방향 한 칸씩 + 마디마다 가운데, 구절B = 가로줄 쓸기(2박) + 사이 가운데열
- if ph==0:
-  lanes=[EDGE[o%8]]+([4] if o%4==0 else [])
-  return tuple(lanes)
- seq={0:R[0],2:R[1],4:R[2],8:R[0],10:R[1],12:R[2]}
- return seq.get(o)
-def a_shape(diff,off):
- ph=(off//16)%2;o=off%16
- if diff=='EASY':
-  if o%2:return None
-  return [(0,),(1,),(2,),(3,),(3,),(2,),(1,),(0,)][o//2] if ph==0 else [(0,3),None,(1,2),None,(0,3),None,(1,2),None][o//2]
- if diff=='NORMAL':
-  return [(0,),(1,),(2,),(3,),(2,),(1,),(0,),None][o%8] if ph==0 else ([(0,3),(1,2)][(o//2)%2] if o%2==0 else None)
- if ph==0:return [(0,),(1,),(2,),(3,),(2,),(1,),(0,),(1,)][o%8]
- return [(0,3),(1,2)][o%2]  # 양끝·안쪽 짝 매박 번갈아(같은 버튼 2박=0.86초 간격)
+import random,sys
+sys.path.insert(0,str(Path(__file__).resolve().parent))
+from pattern_library import B_MOTIFS,A_MOTIFS
+# V1355 C: 후렴마다 패턴 목록에서 곡·난이도·후렴번호로 고정된 무작위 순서로 도형을 골라 이어 붙임(같은 곡 다시 만들면 동일).
+# 도형 하나를 통째로 넣을 수 있을 때만(같은 칸 간격·후렴 끝 안) 넣고, 못 넣으면 다른 도형 → 다 안 되면 2박 쉼.
+AVOID=json.loads((Path('review')/(a.avoid+'-chart-summary.json')).read_text(encoding='utf-8')) if a.avoid else None
+def plan(motifs,diff,gap,last,k0,k1,ci,lanes_n):
+ rng=random.Random(f'{a.songid}|{diff}|{ci}|{lanes_n}');pool=[m for m in motifs if diff in m['step']];events=[];used=[];pos=k0;prev=None
+ other=set()
+ if AVOID:
+  ch=AVOID['motifsB' if lanes_n==9 else 'motifsA'].get(diff,[]);other=set(ch[ci]) if ci<len(ch) else set()
+  pool=[m for m in pool if m['id'] not in other]+[m for m in pool if m['id'] in other]
+ while pos<k1:
+  order=pool[:];rng.shuffle(order);order.sort(key=lambda m:m['id'] in other);order=[m for m in order if m['id']!=prev]+[m for m in order if m['id']==prev];order.sort(key=lambda m:(m['id']==prev,used.count(m['id'])))
+  placed=False
+  # 안 쓴 도형을 0~2박 늦춰서라도 먼저 시도, 안 되면 쓴 도형(바로 앞 도형은 맨 뒤)
+  fresh=[m for m in order if m['id'] not in used];tries=[(d,m) for d in (0,1,2) for m in fresh]+[(0,m) for m in order if m['id'] in used]
+  for d,m in tries:
+   st=m['step'][diff];ks=[pos+d+i*st for i in range(len(m['steps']))]
+   if ks[-1]>=k1 or ks[-1]>=len(beats):continue
+   sim=last[:];ok=True
+   for kk,shp in zip(ks,m['steps']):
+    t=beats[kk]
+    if any(t-sim[l]<gap+1e-4 for l in shp):ok=False;break
+    for l in shp:sim[l]=t
+   if not ok:continue
+   last[:]=sim;events+=[(kk,shp,m['id']) for kk,shp in zip(ks,m['steps'])];used.append(m['id']);prev=m['id'];pos=ks[-1]+st+(1 if lanes_n==4 else 0);placed=True;break  # A 는 도형 사이 1박 숨
+  if not placed:pos+=1 if lanes_n==4 else 2
+ return events,used
 def sound(k):return 'kick' if k%2==0 else 'snare'
 seed=int(hashlib.sha256(a.songid.encode()).hexdigest()[:8],16)
-patterns={};stats={}
+patterns={};stats={};usage={};ausage={}
 for diff,gap in [('EASY',2.242),('NORMAL',1.898),('HARD',1.665)]:
  last=[-1e9]*9;notes=[];rests=0
  seq=[0,4,8,7,3,1,5,2,6,0,8,2,6,4][seed%5:][:9];pairs=[(0,8),(2,6),(1,7),(3,5),(0,2),(6,8)]
+ chorusMap={};usage[diff]=[]
  for k,b in enumerate(beats):
   if b<2 or b>duration-1.4:continue
   off=in_chorus(k)
   if off is not None:
-   shp=b_shape(diff,off)
-   if not shp:continue
-   if any(b-last[l]<gap+1e-4 for l in shp):rests+=1;continue
-   for l in shp:last[l]=b
-   notes.append({'time':round(b,4),'lanes':list(shp),'sound':'kick' if len(shp)>1 else sound(k),'section':'chorus-pattern'});continue
+   if off==0:
+    ci=[w[0] for w in cwin].index(k);ev,used=plan(B_MOTIFS,diff,gap,last,k,cwin[ci][1],ci,9);usage[diff].append(used)
+    for kk,shp,mid in ev:chorusMap[kk]=(shp,mid)
+   if k in chorusMap:
+    shp,mid=chorusMap[k];notes.append({'time':round(b,4),'lanes':list(shp),'sound':'kick' if len(shp)>1 else sound(k),'section':'chorus-pattern','motif':mid})
+   continue
   # 후렴 밖: 기존 B 방식(정박, 강한 구간 2버튼)
   if diff=='EASY' and k%2:continue
   drive=kind(k)=='drive';count=2 if drive and (k%4==0 if diff!='HARD' else k%4 in (0,2)) else 1
@@ -76,22 +80,23 @@ for diff,gap in [('EASY',2.242),('NORMAL',1.898),('HARD',1.665)]:
    pref=seq[k%len(seq)];lanes=[min(free,key=lambda i:(i!=pref,abs(i//3-pref//3)+abs(i%3-pref%3),last[i]))]
   for l in lanes:last[l]=b
   notes.append({'time':round(b,4),'lanes':lanes,'sound':sound(k),'section':kind(k)})
- patterns[diff]=notes;stats[diff]={'events':len(notes),'notes':sum(len(n['lanes']) for n in notes),'chorusEvents':sum(n['section']=='chorus-pattern' for n in notes),'triples':sum(len(n['lanes'])==3 for n in notes),'pairs':sum(len(n['lanes'])==2 for n in notes),'chorusRests':rests}
+ patterns[diff]=notes;stats[diff]={'events':len(notes),'notes':sum(len(n['lanes']) for n in notes),'chorusEvents':sum(n['section']=='chorus-pattern' for n in notes),'triples':sum(len(n['lanes'])==3 for n in notes),'quads':sum(len(n['lanes'])==4 for n in notes),'pairs':sum(len(n['lanes'])==2 for n in notes),'chorusRests':rests}
 meta={'id':a.songid,'title':a.title,'back':f'audio/rp/{a.songid}.mp3','bpm':r['bpm'],'firstBeat':r['firstBeat'],'length':duration,'beats':beats,'hitFeedback':True,'sections':r['blocks'],'chorusPattern':[{'start':beats[k0],'end':beats[k1]} for k0,k1 in cwin],'patterns':patterns,'charts':{d:[e['time'] for e in v for _ in e['lanes']] for d,v in patterns.items()},'chartVersion':1,'analysisNote':'Chorus windows from local lyric transcription timing (candidates, not listening-verified); chorus uses regular geometric patterns, other sections beat-based first pass.'}
 (out/f'{a.songid}.json').write_text(json.dumps(meta,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
 # A(4버튼)
 apats={};astats={}
 for diff in ['EASY','NORMAL','HARD']:
- last=[-1e9]*4;outn=[];rests=0;sq=[[0,1,3,2],[2,0,1,3],[1,3,0,2],[3,2,0,1]][(seed+len(diff))%4]
+ last=[-1e9]*4;outn=[];rests=0;chorusMap={};ausage[diff]=[];sq=[[0,1,3,2],[2,0,1,3],[1,3,0,2],[3,2,0,1]][(seed+len(diff))%4]
  for k,b in enumerate(beats):
   if b<2 or b>duration-1.4:continue
   off=in_chorus(k)
   if off is not None:
-   shp=a_shape(diff,off)
-   if not shp:continue
-   if any(b-last[l]<.56+1e-4 for l in shp):rests+=1;continue
-   for l in shp:last[l]=b
-   outn.append({'time':round(b,4),'lanes':list(shp),'sound':'kick','section':'chorus-pattern'});continue
+   if off==0:
+    ci=[w[0] for w in cwin].index(k);ev,used=plan(A_MOTIFS,diff,.56,last,k,cwin[ci][1],ci,4);ausage[diff].append(used)
+    for kk,shp,mid in ev:chorusMap[kk]=(shp,mid)
+   if k in chorusMap:
+    shp,mid=chorusMap[k];outn.append({'time':round(b,4),'lanes':list(shp),'sound':'kick','section':'chorus-pattern','motif':mid})
+   continue
   if diff=='EASY' and k%2:continue
   if diff=='NORMAL' and k%2 and kind(k)!='drive':continue
   free=[i for i in range(4) if b-last[i]>=.56+1e-4]
@@ -104,5 +109,5 @@ am={k:meta[k] for k in ['id','title','back','bpm','firstBeat','length','beats','
 target=out/f'{a.songid}.mp3'
 if target.exists():assert target.read_bytes()==a.source.read_bytes(),'Refuse to replace a different existing song'
 else:target.write_bytes(a.source.read_bytes())
-summary={'source_sha256':hashlib.sha256(a.source.read_bytes()).hexdigest(),'chorusBeats':cwin,'B':stats,'A':astats}
+summary={'source_sha256':hashlib.sha256(a.source.read_bytes()).hexdigest(),'chorusBeats':cwin,'B':stats,'A':astats,'motifsB':usage,'motifsA':ausage}
 Path(str(prefix)+'-chart-summary.json').write_text(json.dumps(summary,indent=2),encoding='utf-8');print(json.dumps(summary))
