@@ -444,7 +444,7 @@ body { background: var(--lm-page); }
 #game-screen:not(.is-start) #btn-back-to-hub:active { transform: translateY(2px); box-shadow: 0 1px 0 #12172a, inset 0 1px 3px rgba(0, 0, 0, 0.4); }
 #game-screen:not(.is-start) #btn-back-to-hub .hub-menu-ic { width: 18px; height: 18px; stroke-width: 2.6; }
 /* V1315 C(사용자 지정): 상단 상태판 가운데 = 카메라 구멍 아래, 47px, 투명도 30% */
-#game-screen:not(.is-start) #btn-back-to-hub { top: 2px; left: calc(50% - 23.5px); width: 47px; height: 47px; opacity: 0.7; }
+#game-screen:not(.is-start) #btn-back-to-hub { top: 2px; left: calc(50% - 23.5px); width: 47px; height: 47px; opacity: 1; } /* V1326 C 투명도 없음(사용자 지정) */
 #game-screen:not(.is-start) #btn-back-to-hub.nav-locked { opacity: 0.28; }
 /* 아케이드 홈버튼 그림(GPT Imagegen, 비치 박스 톤) — 기존 SVG 아이콘·테두리 대신 */
 #game-screen:not(.is-start) #btn-back-to-hub, #game-screen:not(.is-start) #btn-back-to-hub:active {

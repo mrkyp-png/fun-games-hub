@@ -1,3 +1,9 @@
+## 2026-10-20 / V1326 C — 노말·프로 버벅임(유체 마스크 캐시), 가려진 유체 제거, 전환 2배속, 시작 버튼 전환, 홈 버튼 불투명 (배포)
+- round-map-fluids.js: destination-in SVG 마스크(수천 rect+blur)를 매 프레임 drawImage → 캔버스 크기별 1회 래스터화(maskCache). 노말·프로 버벅임 주원인 추정(아마추어는 유체 없음).
+- 유체 zone: 뒷 배경 흔들림 범위(±3%,±0.7%,scale 1.10~1.21) 전부에서 앞 그림(alpha>230)에 가려지는 zone 제거(노말 9→5), 일부 가려지는 zone 은 zone.clip 분수로 보이는 부분만 그림(노말 2·프로 2).
+- 띠 전환 2배속(덮기 .31, 대기 .06, 걷기 .315). 광산지도 시작→게임도 띠 전환(game.js onStart, 하트·티켓 부족이면 바로 beginGame 안내).
+- 게임 중 홈 버튼 opacity .7→1 (nav-locked .28 유지).
+
 ## 2026-10-20 / V1325 C — Motion Prompt #018 띠 전환, 진입 한 번에, 노말·프로 버벅임 (배포)
 - 띠 전환: round-map.js shapeTransition(MIT (c) 2026 Shohei Ohtaki, motion-prompt #018 원본 타이밍/모양 그대로, 색만 노랑·초록·빨강·보라). body 에 fixed canvas. 모드 전환(탭·스와이프, dir=순서 방향), 홈→지도(game.js openMoreNow, rm-preparing 동안 덮은 채 대기 최대 1.2초), X→홈(거울, 기존 FGH.rollOut 대체). 기존 rm-page-from 슬라이드·animatePage 삭제.
 - 진입: .rm-preparing > * 전부 숨김(하마·버튼판·선·재화 먼저 뜨던 문제).

@@ -24,7 +24,7 @@
   function create(canvas, options) {
     if (!canvas) return null;
     var ctx = canvas.getContext('2d'), host = options.root;
-    var scene = null, atlas = null, mask = null, ticket = 0;
+    var scene = null, atlas = null, mask = null, maskCache = null, ticket = 0;
     var frameId = 0, elapsed = 0, last = 0, paintedAt = -Infinity, paused = false;
     var reduced = root.matchMedia('(prefers-reduced-motion: reduce)');
     var observer, resizeObserver;
@@ -41,11 +41,13 @@
       var cellWidth = atlas.naturalWidth / scene.columns, cellHeight = atlas.naturalHeight / scene.rows;
       var crop = scene.crop || [0, 0, 1, 1];
       ctx.globalAlpha = alpha * (zone.opacity === undefined ? scene.opacity : zone.opacity);
-      ctx.drawImage(atlas, (index % scene.columns + crop[0]) * cellWidth,
-        (Math.floor(index / scene.columns) + crop[1]) * cellHeight,
-        crop[2] * cellWidth, crop[3] * cellHeight,
-        zone.x + (scene.alignX ? scene.alignX[index] * zone.width : 0),
-        zone.y + (scene.alignY ? scene.alignY[index] * zone.height : 0), zone.width, zone.height);
+      // V1326 C zone.clip = 앞 그림에 안 가려지는 부분만(분수 [x0,y0,x1,y1]) 그림 — 같은 모습, 그리는 면적만 줄임
+      var c = zone.clip || [0, 0, 1, 1];
+      ctx.drawImage(atlas, (index % scene.columns + crop[0] + c[0] * crop[2]) * cellWidth,
+        (Math.floor(index / scene.columns) + crop[1] + c[1] * crop[3]) * cellHeight,
+        (c[2] - c[0]) * crop[2] * cellWidth, (c[3] - c[1]) * crop[3] * cellHeight,
+        zone.x + (scene.alignX ? scene.alignX[index] * zone.width : 0) + c[0] * zone.width,
+        zone.y + (scene.alignY ? scene.alignY[index] * zone.height : 0) + c[1] * zone.height, (c[2] - c[0]) * zone.width, (c[3] - c[1]) * zone.height);
     }
     function paint() {
       if (!scene || !atlas || !mask) return;
@@ -64,7 +66,13 @@
       // A source-aligned liquid mask keeps every moving pixel off the rocks/entrances.
       ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = 'destination-in';
-      ctx.drawImage(mask, 0, 0, 941, 1672);
+      // V1326 C: SVG 마스크(수천 개 사각형+블러)를 매 프레임 다시 그리던 것이 노말·프로 버벅임의 주원인 → 캔버스 크기별로 한 번만 래스터화해 재사용
+      if (!maskCache || maskCache.width !== canvas.width || maskCache.height !== canvas.height) {
+        maskCache = document.createElement('canvas'); maskCache.width = canvas.width; maskCache.height = canvas.height;
+        maskCache.getContext('2d').drawImage(mask, 0, 0, canvas.width, canvas.height);
+      }
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.drawImage(maskCache, 0, 0);
       ctx.globalCompositeOperation = 'source-over';
     }
     function tick(now) {
@@ -84,7 +92,7 @@
     async function setScene(next) {
       if (next === scene) return;
       var version = ++ticket;
-      stop(); scene = next; atlas = mask = null; elapsed = 0;
+      stop(); scene = next; atlas = mask = maskCache = null; elapsed = 0;
       canvas.hidden = !next;
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);

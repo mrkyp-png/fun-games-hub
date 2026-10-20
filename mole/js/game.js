@@ -3179,7 +3179,12 @@
     });
     roundMap = MG.RoundMap.create({
       root: document.getElementById('roundmap-screen'),
-      onStart: () => { if (!navLocked) beginGame(true); },
+      onStart: () => {
+        if (navLocked) return;
+        // V1326 C 광산지도 시작 → 게임 = 띠 전환(하트·티켓 부족이면 전환 없이 바로 안내창)
+        if (MG.Economy.getHearts() <= 0 || MG.Economy.getTickets() <= 0 || gameStarting) { beginGame(true); return; }
+        MG.RoundMap.shapeTransition(1, () => beginGame(true));
+      },
       onQuit: () => showQuitDialog(), // 시작 버튼 꾹 → 다시 탭 = 종료창(홈 시작 버튼과 동일)
       onClose: () => closeMore(),
       currentLight: () => currentLight(),

@@ -72,7 +72,7 @@
   }
 
   // V1325 C 화면 전환 = Motion Prompt #018 "Shape transition"(MIT, (c) 2026 Shohei Ohtaki, showheyohtaki.github.io/motion-prompt/#018).
-  // 원본 그대로: 가로 띠 4개(끝 80px 기울기, 539px 폭 기준 비율), 덮기 0.62초 → 다 덮이고 준비되면 onCovered(화면 교체) → 0.12초 뒤 걷기 0.63초,
+  // 원본 그대로: 가로 띠 4개(끝 80px 기울기, 539px 폭 기준 비율), 덮기 0.31초 → 다 덮이고 준비되면 onCovered(화면 교체) → 0.06초 뒤 걷기 0.315초(원본의 2배 속도, 사용자 지정),
   // 띠마다 14% 지연·구간 58% 동안 cubic ease-in-out. 색만 노랑·초록·빨강·보라(사용자 지정). dir 1 = 좌→우, -1 = 거울. 준비 대기는 최대 1.6초.
   var BAND_COLORS = ['#ffd84a', '#70f58b', '#ff4a3a', '#a66bff'];
   function shapeTransition(dir, onCovered, isReady, onDone, holdOpen) {
@@ -86,10 +86,10 @@
     function clamp(x) { return Math.max(0, Math.min(1, x)); }
     function eIO(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
     (function frame(now) {
-      var u = (now - t0) / 1000, p1 = clamp(u / 0.62), p2 = 0;
+      var u = (now - t0) / 1000, p1 = clamp(u / 0.31), p2 = 0;
       if (p1 >= 1 && !swappedAt && (!isReady || isReady() || u > 1.6)) { swappedAt = firstSwap = now; onCovered(); }
       if (swappedAt && holdOpen && holdOpen() && now - firstSwap < 1200) swappedAt = now; // 교체된 화면이 아직 준비 중이면 덮은 채 대기(최대 1.2초)
-      if (swappedAt) p2 = clamp(((now - swappedAt) / 1000 - 0.12) / 0.63);
+      if (swappedAt) p2 = clamp(((now - swappedAt) / 1000 - 0.06) / 0.315);
       var sk = w * 80 / 539, span = w + sk + 20, bh = h / 4 + 1;
       g.setTransform(dpr, 0, 0, dpr, 0, 0);
       g.clearRect(0, 0, w, h);
