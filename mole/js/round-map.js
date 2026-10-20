@@ -39,16 +39,8 @@
   };
   var CAVE_FX = {
     // Small color-matched gem halos cover the fixed foreground; rear halos move with the cave plate.
-    easy: {
-      glow:[], spark:[], bubble:[],
-      // The fixed foreground has one prominent blue cluster in the treasure cart.
-      gem:[[83,1026,'cyan']],
-      // Background crystals are anchored to the moving rear-mine artwork.
-      rearGem:[[170,180,'cyan'],[170,290,'cyan'],[204,608,'cyan'],[148,872,'cyan'],[171,1047,'cyan'],[885,174,'cyan'],[807,287,'cyan'],[849,518,'cyan'],[844,613,'cyan'],[856,846,'cyan'],[840,1040,'cyan'],[837,1276,'cyan']],
-      // Fixed frame lanterns; rear fixtures live in the moving mine layer below.
-      lantern:[[115,310],[880,418]],
-      rearLantern:[[270,174],[137,425],[72,575],[645,340],[882,330]]
-    },
+    // V1320 C: 아마추어 보석·랜턴 빛은 그림에서 뽑은 층(assets/roundmap/glow-v1320)으로 대체 — 좌표 점 끔
+    easy: { glow:[], spark:[], bubble:[], gem:[], rearGem:[], lantern:[], rearLantern:[] },
     mid: {
       glow:[], spark:[], bubble:[],
       gem:[[252,132,'cyan'],[150,190,'violet'],[452,292,'cyan'],[178,426,'cyan'],[150,590,'violet'],[610,575,'cyan'],[290,713,'violet'],[135,770,'cyan'],[78,872,'cyan'],[667,858,'violet'],[203,1015,'cyan'],[680,1198,'violet'],[230,1372,'cyan'],[152,1549,'violet'],[91,1578,'cyan']],

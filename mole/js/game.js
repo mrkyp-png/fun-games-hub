@@ -167,6 +167,70 @@
     initHomeShowcaseBeat();
   }
 
+  // V1320 C 라운드맵 버튼판 위 선: 병원 심전도 모니터처럼 평소 일자선, BGM 박자(저음 급증)마다 위로 솟음.
+  // 빛나는 점이 좌→우로 그려 나가며 앞의 옛 선을 지움. 분석기 없음/무음이면 약 1초마다 심장박동.
+  function initRoundmapWave() {
+    const screen = document.getElementById('roundmap-screen');
+    const cv = screen && screen.querySelector('[data-rm-wave]');
+    if (!cv) return;
+    const g = cv.getContext('2d');
+    const fd = new Uint8Array(128);
+    const SPIKE = [-0.15, 0.25, 1, -0.45, -0.15, 0.05]; // 심전도 한 박
+    let vals = [], head = 0, queue = [], prevBass = 0, fluxAvg = 0, bassAvg = 0, lastBeat = 0;
+    (function draw(now) {
+      requestAnimationFrame(draw);
+      if (screen.hidden) return;
+      let fBest = null, fSum = 0;
+      if (bgmAnalysers) bgmAnalysers.forEach((a) => {
+        a.analyser.getByteFrequencyData(fd);
+        let sum = 0;
+        for (let i = 0; i < fd.length; i++) sum += fd[i];
+        if (sum > fSum) { fSum = sum; fBest = a.analyser; }
+      });
+      if (fBest && fSum > 0) {
+        fBest.getByteFrequencyData(fd);
+        let bass = 0;
+        for (let i = 0; i < 8; i++) bass += fd[i];
+        const flux = Math.max(0, bass - prevBass);
+        prevBass = bass;
+        fluxAvg = fluxAvg * 0.95 + flux * 0.05;
+        bassAvg = bassAvg * 0.97 + bass * 0.03;
+        if (flux > fluxAvg * 2.5 + 25 && bass > bassAvg * 1.15 && now - lastBeat > 300 && !queue.length) {
+          lastBeat = now;
+          const k = Math.min(1, 0.5 + flux / (fluxAvg * 6 + 60));
+          queue = SPIKE.map((v) => v * k);
+        }
+      } else if (now - lastBeat > 1000 && !queue.length) {
+        lastBeat = now;
+        queue = SPIKE.map((v) => v * 0.8);
+      }
+      const dpr = window.devicePixelRatio || 1, w = Math.round(cv.clientWidth * dpr), h = Math.round(cv.clientHeight * dpr);
+      if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+      const step = 2 * dpr, cols = Math.max(2, Math.floor(w / step) + 1);
+      if (vals.length !== cols) { vals = new Array(cols).fill(0); head = 0; }
+      head = (head + 1) % cols;
+      vals[head] = queue.length ? queue.shift() : 0;
+      const color = getComputedStyle(screen).getPropertyValue('--rm-glow').trim() || '#ffd84a';
+      const lw = 2 * dpr, mid = h / 2 + 4 * dpr, amp = mid - lw;
+      const y = (i) => mid - vals[i] * amp;
+      g.clearRect(0, 0, w, h);
+      g.strokeStyle = color; g.fillStyle = color; g.lineWidth = lw; g.lineJoin = 'round';
+      g.shadowColor = color; g.shadowBlur = 6 * dpr;
+      g.beginPath();
+      g.moveTo(0, y(0));
+      for (let i = 1; i <= head; i++) g.lineTo(i * step, y(i));
+      const gap = Math.min(cols - 1, head + 8);
+      if (gap < cols - 1) {
+        g.moveTo(gap * step, y(gap));
+        for (let i = gap + 1; i < cols; i++) g.lineTo(i * step, y(i));
+      }
+      g.stroke();
+      g.beginPath();
+      g.arc(head * step, y(head), 2.5 * dpr, 0, Math.PI * 2);
+      g.fill();
+    })(performance.now());
+  }
+
   // 재생 중인 홈 BGM(bgm-a/bgm-b 핑퐁) 을 Web Audio AnalyserNode 로 실시간 분석해 저음 에너지가
   // 평균 대비 튈 때("비트")마다 작은 타일 하나를 랜덤 이미지로 팝 전환. 오디오 재생 자체(스피커
   // 출력)는 analyser 를 거쳐 그대로 destination 에 연결해 끊기지 않는다.
@@ -2896,6 +2960,7 @@
     ensureLaneControlsForChapter(false, true); // false = 홈 기본값(16버튼), true = 최초 생성이라 무조건 실행
     wireChapterNav();  // ◀ 챕터 N ▶ (열린 챕터 2개 이상일 때만 노출)
     initHomeShowcase(); // 홈 화면 홍보 이미지 캐러셀(사용자 지정) — board-start 뒤에서 항상 순환
+    initRoundmapWave();
 
     migrateBest();
     wireMoreMenu();

@@ -1,3 +1,10 @@
+## 2026-10-20 / V1320 C — 라운드맵 좌우 노이즈 제거·버튼판 위 심전도 선·프로 뒷 용암 감속·아마추어 보석/랜턴 빛 (배포)
+- 좌우 노이즈: .rm-stage 폭 = max(100vw, 세로비율 폭) → 화면보다 좁을 때 보이던 ::before 예비 배경 틈 제거(roundmap-window.css:7).
+- 버튼판 위 선(사용자 지정: 병원 심전도형, 화면 양끝, 모드색 --rm-glow 노랑/파랑/빨강): canvas[data-rm-wave] + game.js initRoundmapWave. 기존 bgmAnalysers 저음 flux로 박자 감지→심전도 한 박, 좌→우 스윕(점+앞 지움). 분석 불가/무음이면 1초 심장박동. 감도는 헤드리스(저fps)로 못 맞춤 — 폰 확인 필요.
+- 프로 뒷 용암(pro-rear) fps 12→8(재생 속도만, 그림 12장 그대로). 앞 용암·노말 폭포 불변.
+- 아마추어 보석·랜턴: 좌표 점 방식(CAVE_FX.easy) 비움 → 원본 그림에서 보석·랜턴 모양만 뽑은 층 assets/roundmap/glow-v1320/easy-{rear,front}-{gem,lan}.webp(원근 alpha 위.55→아래1) 겹쳐 screen 반짝/깜빡. 위치는 Claude가 확대 확인+사용자 검수(뒤 G8 삭제, 상자 주변 보석 추가). 색만 자동검출은 프로에서 용암과 구분 실패, Codex 랜턴 좌표는 대부분 어긋남 — 노말·프로는 같은 방식으로 다음 작업.
+- 헤드리스 캡처 확인, 실제 폰 미확인.
+
 ## 2026-10-20 / V1319 C — 라운드맵 위·아래 원근(구멍 앞 그림), 티커 기본점수 아이콘=트로피 (배포)
 - 원근 A안(사용자 선택, 3모드 모두): .rm-depth-shade 4개(아마추어 route·front, 노말, 프로)를 앞 그림 이미지로 mask 한 검정 그라데이션(위 .45 → 45% .2 → 85% 0). 아마추어 route용은 route-art 와 같은 translateY/scaleY. 그림·라운드 좌표·터치 불변.
 - 티커 기본 점수 아이콘 ic-coin → assets/quest/ic-trophy.png(상태판 SCORE와 동일).
