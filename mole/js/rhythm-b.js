@@ -45,8 +45,8 @@
       const img = document.createElement('img');
       img.className = 'rb-circuit'; img.alt = '';
       if (!lower) { img.classList.add('rb-circuit--hologram'); img.style.filter = 'url(#rb-circuit-tint-' + index + ')'; }
-      if (lower) { img.classList.add('rb-circuit--glass'); img.style.setProperty('--circuit-tint','url(#rb-circuit-tint-' + index + ')'); }
-      img.src = lower ? 'assets/rhythm-b/circuit-rim.svg' : 'assets/rhythm-b/circuit-thin.svg';
+      if (lower) img.classList.add('rb-circuit--glass'); // V1336 C: 색·밝기(×1.15)는 레인별 SVG(circuit-rim-N.svg)에 구움 — CSS url() 필터 제거
+      img.src = lower ? 'assets/rhythm-b/circuit-rim-' + index + '.svg' : 'assets/rhythm-b/circuit-thin.svg';
       // V 1038 G: high-opacity straight body edges, excluding all four protrusions.
       // Source body [64,63,1228,1179] maps to an exact 244x244 square.
       const body = lower ? 268 : 244;

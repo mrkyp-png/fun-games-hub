@@ -62,12 +62,12 @@
   function createNoteVisual(lane){
    const el=document.createElement('div');el.className='rb-note';el.setAttribute('aria-hidden','true');el.hidden=true;
    const character=document.createElement('img');character.className='rb-character';character.alt='';character.draggable=false;
-   character.src='assets/rhythm-b/character/hoverboard-v1260/frame-00.png';
+   character.src='assets/rhythm-b/character/hoverboard-v1336/frame-00-'+lane+'.png'; // V1336 C: 레인색 테두리를 그림에 구움(SVG 필터 제거)
    character.style.background='none';character.style.objectFit='fill';
-   character.style.setProperty('--outline-filter','url(#rb-character-outline-'+lane+')');el.appendChild(character);
+   el.appendChild(character);
    const ring=document.createElement('img');ring.className='rb-note-ring';ring.alt='';ring.draggable=false;ring.src='assets/rhythm-b/note-inner-line-'+lane+'.png';el.appendChild(ring);
    el.style.left=((26+(lane%3)*300)/952*100)+'%';el.style.top=((26+Math.floor(lane/3)*300)/2078*100)+'%';el.style.setProperty('--note-color',colors[lane]);
-   const slot={el,character,ring,owner:null};notePools[lane].push(slot);return slot;
+   const slot={el,character,ring,owner:null,lane};notePools[lane].push(slot);return slot;
   }
   function ensureNoteVisual(n){
    if(n.visualSlot)return;
@@ -81,11 +81,9 @@
    const slot=n.visualSlot;if(n.visualActive&&state&&state.activeVisualsByLane)state.activeVisualsByLane[n.lane]=Math.max(0,state.activeVisualsByLane[n.lane]-1);n.visualActive=false;if(!slot)return;
    if(slot.owner===n){slot.el.hidden=true;slot.el.remove();slot.owner=null;}n.visualSlot=null;
   }
-  const outlineDefs=document.createElementNS('http://www.w3.org/2000/svg','svg');outlineDefs.setAttribute('width','0');outlineDefs.setAttribute('height','0');outlineDefs.style.position='absolute';outlineDefs.setAttribute('aria-hidden','true');
-  // Keep the crisp lane-color outline and sprite; skip the per-character blur pass,
-  // which scales poorly when Normal/Hard show several moving notes at once.
-  outlineDefs.innerHTML='<defs>'+colors.map((color,i)=>'<filter id="rb-character-outline-'+i+'" x="-12%" y="-12%" width="124%" height="124%" color-interpolation-filters="sRGB"><feMorphology in="SourceAlpha" operator="dilate" radius="2.5" result="wide"/><feComposite in="wide" in2="SourceAlpha" operator="out" result="edge"/><feFlood flood-color="'+color+'" flood-opacity="0.35"/><feComposite in2="edge" operator="in" result="line"/><feMerge><feMergeNode in="line"/><feMergeNode in="SourceGraphic"/></feMerge></filter>').join('')+'</defs>';board.appendChild(outlineDefs);
-  const holoLights=colors.map((color,lane)=>{const el=document.createElement('div');el.className='rb-holo-light';el.setAttribute('aria-hidden','true');el.style.cssText='left:'+((28+(lane%3)*300)/952*100)+'%;top:'+((28+Math.floor(lane/3)*300)/2078*100)+'%;width:'+(296/952*100)+'%;height:'+(296/2078*100)+'%;--holo-color:'+color;board.appendChild(el);return el;});
+  // V1336 C: 캐릭터 테두리 SVG 필터(feMorphology, 캐릭터마다 매 프레임 재계산) 제거 — assets/rhythm-b/character/hoverboard-v1336 에 구움
+  function brighten(c,k){return '#'+[1,3,5].map(i=>Math.min(255,Math.round(parseInt(c.slice(i,i+2),16)*k)).toString(16).padStart(2,'0')).join('');}
+  const holoLights=colors.map((color,lane)=>{const el=document.createElement('div');el.className='rb-holo-light';el.setAttribute('aria-hidden','true');el.style.cssText='left:'+((28+(lane%3)*300)/952*100)+'%;top:'+((28+Math.floor(lane/3)*300)/2078*100)+'%;width:'+(296/952*100)+'%;height:'+(296/2078*100)+'%;--holo-color:'+brighten(color,1.3225);board.appendChild(el);return el;}); // V1336 C: CSS brightness(1.3225) 를 색에 미리 반영
   function darkenLane(lane){holoLights[lane].style.opacity='0';}
   function clearLights(){holoLights.forEach((_,i)=>darkenLane(i));}
   const pangs=colors.map((_,lane)=>{const el=document.createElement('span');el.className='rb-pang';el.textContent='PANG!';el.hidden=true;el.setAttribute('aria-hidden','true');el.style.left=((176+(lane%3)*300)/952*100)+'%';el.style.top=((176+Math.floor(lane/3)*300)/2078*100)+'%';board.appendChild(el);return el;});
@@ -273,7 +271,7 @@
    }
    // Both visuals share this transform; only the ring determines judgement.
    const elapsed=Math.max(0,time()-n.spawnTime),spriteFrame=Math.floor(elapsed*3)%2;
-   if(n.spriteFrame!==spriteFrame){n.character.src='assets/rhythm-b/character/hoverboard-v1260/frame-0'+spriteFrame+'.png';n.spriteFrame=spriteFrame;}
+   if(n.spriteFrame!==spriteFrame){n.character.src='assets/rhythm-b/character/hoverboard-v1336/frame-0'+spriteFrame+'-'+n.lane+'.png';n.spriteFrame=spriteFrame;}
   }
   function tick(){
    frame=0;if(!state||state.ended||state.paused)return;

@@ -1,3 +1,8 @@
+## 2026-10-20 / V1336 C — 리듬팡 네온(B) 버벅임: 실시간 필터를 그림·색에 굽기 (배포)
+- 폰 영상: 캐릭터만일 때 58~60fps, 아래 터치 시작하면 21~39fps·최장 133ms, 터치 무반응(오류 없음 → 입력 지연 추정).
+- 캐릭터 테두리 SVG feMorphology 필터(rb-character-outline-N, 캐릭터마다 매 프레임) 제거 → assets/rhythm-b/character/hoverboard-v1336/frame-0{0,1}-{lane}.png(반경6px·0.35 레인색 구움). 회로 glass CSS url(#rb-circuit-tint) 필터 제거 → circuit-rim-{0..8}.svg(흰 stroke→레인색×1.15). flow canvas shadowBlur 제거(넓은 반투명 선 추가)+brightness(.4025) 색 반영, holo-light brightness(1.3225) 색 반영. style.css 끝 filter:none. ripple canvas dpr 1, 동시 파동 최대 4.
+- game.js 진단: 리듬 아래 버튼 영역 탭이 .rb-hit 아닌 요소면 "RB notbtn", 입력 지연 >120ms 면 "RB late Nms" 기록.
+
 ## 2026-10-20 / V1335 C — 진단 기록을 FPS 밑 줄로 (배포)
 - #fps-meter white-space:pre-line, 기록은 "
 ⚠N 시각 내용" 둘째 줄(사용자 지정: 속도와 같이 보기).

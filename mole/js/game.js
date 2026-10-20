@@ -179,6 +179,19 @@
       try { localStorage.setItem('mole.diag', JSON.stringify(diag)); } catch (e) { /* 무시 */ }
     };
     window.addEventListener('error', (e) => { saveDiag('ERR ' + (e.message || '') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || '')); });
+    // V1336 C 리듬팡 네온 '터치 불량' 기록: 아래 버튼 영역을 눌렀는데 버튼이 아닌 것이 받았거나, 입력이 120ms 넘게 늦게 처리된 경우
+    document.addEventListener('pointerdown', (e) => {
+      const rb = document.querySelector('.rb-screen:not([hidden]) .rb-board');
+      if (!rb) return;
+      const hits = rb.querySelectorAll('.rb-hit');
+      if (!hits.length) return;
+      const a = hits[0].getBoundingClientRect(), z = hits[hits.length - 1].getBoundingClientRect();
+      if (e.clientX < a.left || e.clientX > z.right || e.clientY < a.top || e.clientY > z.bottom) return;
+      const lag = Math.round(performance.now() - e.timeStamp);
+      const hit = e.target && e.target.closest && e.target.closest('.rb-hit');
+      if (!hit) saveDiag('RB notbtn under=' + (e.target ? (e.target.id ? '#' + e.target.id : e.target.tagName + '.' + String(e.target.className && e.target.className.baseVal !== undefined ? e.target.className.baseVal : e.target.className).split(' ')[0]) : '?'));
+      else if (lag > 120) saveDiag('RB late ' + lag + 'ms');
+    }, true);
     document.addEventListener('pointerdown', (e) => {
       const gs = document.getElementById('game-screen');
       if (!state || state.ended || !gs || gs.classList.contains('is-start')) return;

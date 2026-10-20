@@ -7991,3 +7991,5 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* V1223: retain Beach cloud/leaf/star colors while tinting only the Neon rails. */
 #rhythm-screen.is-type-b .rb-song-card:not(.rx-card--res):not(.rx-card--pause)::after { filter:none; border-image-source:url('assets/rhythm/ui/d-frame-neon-song-cloud-v1224.svg'); }
 #rhythm-screen.is-type-b .rp-select .rx-card--sel:not(.rx-card--res):not(.rx-card--pause)::after { filter:none; border-image-source:url('assets/rhythm/ui/d-frame-neon-difficulty-cloud-v1224.svg'); }
+/* V1336 C 리듬팡 네온 버벅임: 매 프레임 재계산되던 필터를 그림·색에 구움 — 캐릭터 테두리(hoverboard-v1336), 회로 색(circuit-rim-N.svg), 홀로 조명·회로 빛 밝기(JS 색) */
+.rb-character, .rb-circuit--glass, .rb-circuit--glass.is-pressed, .rb-holo-light, .rb-flow-canvas { filter: none; }
