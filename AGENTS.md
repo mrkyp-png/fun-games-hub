@@ -1,3 +1,8 @@
+## 2026-10-20 / V1328 C — 광산지도 뒤 홈 애니메이션 정지(버벅임), 임시 FPS·오류 표시 (배포)
+- 원인 후보(실측): 광산지도 열린 동안 뒤에 가려진 홈 애니메이션 31개(로고·다이얼패드·시작버튼)+홈 BGM 박자 효과가 계속 돎. round-map.js 가 #roundmap-screen/#more-menu hidden 관찰해 body.rm-open 토글 → CSS 로 광산지도 밖 animation-play-state:paused, game.js 박자 효과 skip.
+- 임시 #fps-meter(game.js, 왼쪽 위): 0.5초마다 fps·최장 프레임ms + 마지막 window error(메시지@파일:줄). 버벅임·골드 묠니르 확인 후 삭제할 것.
+- 골드 묠니르 영상(바탕화면 KakaoTalk_20261020_133909913.mp4): 약 6초간 눌러도 버튼 분홍/빨강 tint 없음 → lane-controls pointerdown 처리 중 예외 추정(onTap/handleCell). 폰 오류 표시 캡처 대기. 피버 박스는 headless 재현 안 됨(어느 박스인지 사용자 확인 대기).
+
 ## 2026-10-20 / V1327 C — 버튼판 위 선: 심전도·BGM 반응 제거, 고정 글로우 선 (배포)
 - 사용자 지정: 선은 유지, 심전도 효과와 BGM 연동만 제거. game.js initRoundmapWave(rAF 캔버스+analyser) 삭제, canvas[data-rm-wave] → <i class="rm-bottom-line"> CSS 고정선(모드색 --rm-line 노랑/초록/빨강, z3 < 하마 4 < 버튼판 5).
 - 홈 다이얼패드 BGM 박자 효과(pulseDialPad)는 그대로(광산지도에서도 돌고 있음 — 끄려면 사용자 확인 필요).

@@ -163,6 +163,21 @@
   // (아케이드→봄→여름→가을→겨울)이 첫 화면 15초 대기 후부터 계속 위로 스크롤(사용자 지정,
   // 2026-09-27 — 페이지 전환식(CSS .hg-track 애니메이션)이라 여기선 비트 이펙트만 돌린다.
   // is-start 아닐 땐 board-start 자체가 가려지므로 안 보임 — 루프는 그냥 항상 돌아도 무해.
+  // V1328 C 폰 확인용 FPS 표시(임시 — 버벅임 확인 끝나면 삭제). 0.5초마다 평균 FPS·가장 긴 프레임(ms).
+  (function fpsMeter() {
+    const m = document.createElement('div');
+    m.id = 'fps-meter';
+    document.body.appendChild(m);
+    let n = 0, worst = 0, last = performance.now(), t0 = last;
+    // 골드 묠니르 '눌러도 망치 안 감' 확인용 — 스크립트 오류가 나면 마지막 오류 내용을 같이 표시
+    let lastErr = '';
+    window.addEventListener('error', (e) => { lastErr = (e.message || '') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || ''); });
+    (function f(now) {
+      n++; worst = Math.max(worst, now - last); last = now;
+      if (now - t0 >= 500) { m.textContent = Math.round(n * 1000 / (now - t0)) + 'fps ' + Math.round(worst) + 'ms' + (lastErr ? ' ⚠ ' + lastErr : ''); n = 0; worst = 0; t0 = now; }
+      requestAnimationFrame(f);
+    })(last);
+  })();
   function initHomeShowcase() {
     initHomeShowcaseBeat();
   }
@@ -230,6 +245,7 @@
       const beatByAudio = flux > showcaseAvgEnergy * 2.2 && flux > 25 && now - showcaseLastBeat > 320;
       // 곡이 한동안 너무 잠잠해도 완전히 멈춰 보이진 않게 드문 안전망만.
       const beatByFallback = now - showcaseLastBeat > 1800;
+      if (document.body.classList.contains('rm-open')) return; // V1328 C: 광산지도가 덮고 있으면 뒤 홈 박자 효과 안 돌림
       if (beatByAudio || beatByFallback) {
         showcaseLastBeat = now;
         pulseGridCells();

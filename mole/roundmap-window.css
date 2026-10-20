@@ -208,3 +208,9 @@
 .rm-window-map[data-light="easy"] { --rm-line:#ffd84a; }
 .rm-window-map[data-light="mid"] { --rm-line:#70f58b; }
 .rm-window-map[data-light="legend"] { --rm-line:#ff4a3a; }
+/* V1328 C 광산지도가 떠 있는 동안 뒤(가려진 홈 등) 애니메이션 정지 — 폰 버벅임 원인 */
+body.rm-open :not(#roundmap-screen):not(#roundmap-screen *) { animation-play-state:paused !important; }
+body.rm-open :not(#roundmap-screen):not(#roundmap-screen *)::before,
+body.rm-open :not(#roundmap-screen):not(#roundmap-screen *)::after { animation-play-state:paused !important; }
+/* V1328 C 폰 확인용 FPS 표시(임시) */
+#fps-meter { position:fixed; left:4px; top:calc(env(safe-area-inset-top,0px) + 4px); z-index:2147483600; padding:2px 6px; border-radius:6px; background:rgba(0,0,0,.7); color:#7f7; font:700 12px/1.2 monospace; pointer-events:none; max-width:92vw; word-break:break-all; }

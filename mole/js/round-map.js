@@ -433,6 +433,15 @@
       });
     }
 
+    // V1328 C 버벅임: 광산지도(화면 전체 덮음)가 떠 있는 동안 뒤에 가려진 홈 화면 애니메이션 31개(로고·다이얼패드·시작버튼)가
+    // 계속 돌며 폰에서 매 프레임 다시 그려짐 → body.rm-open 동안 광산지도 밖 애니메이션 정지(CSS), 홈 박자 효과 정지(game.js).
+    var moreMenuEl = document.getElementById('more-menu');
+    function syncOpenFlag() { document.body.classList.toggle('rm-open', !el.hidden && !(moreMenuEl && moreMenuEl.hidden)); }
+    if (root.MutationObserver) {
+      var openObs = new MutationObserver(syncOpenFlag);
+      openObs.observe(el, { attributes: true, attributeFilter: ['hidden'] });
+      if (moreMenuEl) openObs.observe(moreMenuEl, { attributes: true, attributeFilter: ['hidden'] });
+    }
     function show() {
       view = opts.currentLight(); render(); setTimeout(flyDragonflies, 50);
       el.classList.add('rm-preparing');
