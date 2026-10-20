@@ -8012,3 +8012,10 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rp-target-glow { position:absolute; left:50%; transform:translateX(-50%); pointer-events:none; opacity:0; transition:opacity 90ms linear; z-index:0; }
 .rp-lane.is-approaching .rp-target-glow { opacity:.7; } /* V1353 C 사용자: 투명도 30% */
 #rhythm-screen.is-type-b .rp-target-glow { display:none; }
+/* V1357 C 사용자 지정 홈 화면 버튼판:
+   1) 홈 화면일 때 홈 버튼도 다른 네비처럼 1.5배 확대(예전 SVG 아이콘 시절 transform:none 예외 해제).
+   2) 홈 화면일 때 박스만 비치게임 버튼과 같은 투명도 50%(아이콘·글자는 그대로). 두더지팡·리듬팡 넓은 박스는 항상 불투명.
+   3) 시작 버튼은 홈 화면에선 그대로, 메일함·설정·상점·아이템 화면에선 50% 투명(그 화면에선 게임 진입 안 됨). */
+#game-screen.is-start .lane-button--home.lane-button--nav-active { transform: scale(1.5); }
+#game-screen.is-start #lane-button-bar[data-nav="home"] .lane-face--h2::before { opacity: .5; }
+#game-screen.is-start #lane-button-bar:is([data-nav="mail"],[data-nav="settings"],[data-nav="shop"],[data-nav="inventory"]) .lane-button--call { opacity: .5; }

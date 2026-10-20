@@ -259,6 +259,7 @@
     // 홈 화면 네비(더보기 기능) — 눌러서 진입한 화면에 대응하는 버튼만 확대·유지(사용자 지정,
     // 애니팡 하단 네비 참고), 홈으로 돌아오면 원위치. action 없으면(null) 전부 해제.
     function setActiveNav(action) {
+      if (buttonBar) buttonBar.dataset.nav = action || ''; // V1357 C: 홈 화면 상태(home/mail/settings/shop/inventory…)를 CSS 로 — 박스 투명·시작버튼 투명
       buttons.forEach((b, id) => {
         if (!b) return;
         b.classList.toggle('lane-button--nav-active', !!action && FACES[id] && FACES[id].action === action);

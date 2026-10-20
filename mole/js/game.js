@@ -1148,6 +1148,9 @@
   function openMore(sub, originEl) {
     var isStart = document.getElementById('game-screen').classList.contains('is-start');
     var outEl = document.getElementById(isStart ? 'board-start' : 'mole-board');
+    // V1357 C: 버튼판 말고 다른 곳(알림 팝업 등)에서 열어도 화면 상태(시작버튼 투명 등)가 맞게
+    const navOf = { 'shop-screen': 'shop', 'mailbox-screen': 'mail', 'settings-screen': 'settings', 'inventory-screen': 'inventory' }[sub];
+    if (navOf && sharedLaneControls) sharedLaneControls.setActiveNav(navOf);
     openMoreNow(sub); // more-menu 내용 준비(hidden=false 는 flipSwap 이 처리)
     flipSwap(outEl, document.getElementById('more-menu'));
     // more-menu 가 보드 자리에 들어가는 구조라 — #board-start 만 숨겨서는 그 부모인
