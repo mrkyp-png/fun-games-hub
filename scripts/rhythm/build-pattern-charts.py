@@ -7,7 +7,7 @@
 from pathlib import Path
 import json,itertools,hashlib,argparse
 import numpy as np
-ap=argparse.ArgumentParser();ap.add_argument('source',type=Path);ap.add_argument('songid');ap.add_argument('title');ap.add_argument('chorus',nargs='+');ap.add_argument('--avoid',default='');a=ap.parse_args()  # --avoid 다른곡id: 그 곡의 같은 후렴·난이도 도형을 되도록 피함(곡끼리 다르게)
+ap=argparse.ArgumentParser();ap.add_argument('source',type=Path);ap.add_argument('songid');ap.add_argument('title');ap.add_argument('chorus',nargs='+');ap.add_argument('--avoid',default='');ap.add_argument('--favor',default='');a=ap.parse_args()  # --avoid 다른곡id: 그 곡의 같은 후렴·난이도 도형을 되도록 피함(곡끼리 다르게)
 prefix=Path('review')/a.songid;out=Path('mole/audio/rp')
 r=json.loads(Path(str(prefix)+'-analysis.json').read_text(encoding='utf-8'));beats=r['beats'];duration=r['duration']
 chorus=[tuple(float(x) for x in c.split('-')) for c in a.chorus]
@@ -29,29 +29,100 @@ from pattern_library import B_MOTIFS,A_MOTIFS
 # V1355 C: 후렴마다 패턴 목록에서 곡·난이도·후렴번호로 고정된 무작위 순서로 도형을 골라 이어 붙임(같은 곡 다시 만들면 동일).
 # 도형 하나를 통째로 넣을 수 있을 때만(같은 칸 간격·후렴 끝 안) 넣고, 못 넣으면 다른 도형 → 다 안 되면 2박 쉼.
 AVOID=json.loads((Path('review')/(a.avoid+'-chart-summary.json')).read_text(encoding='utf-8')) if a.avoid else None
+FAVOR=set(x for x in a.favor.split(',') if x)  # 6) 곡 성격: 주로 쓸 도형 무리(pattern_library GROUP)
+# 5) 가사: 후렴 안 가사 줄 시작 박 = 도형 시작 후보, 같은 가사 줄은 같은 도형·변형·리듬으로(외우는 재미)
+LYR=json.loads(Path(out,a.songid+'-lyrics.json').read_text(encoding='utf-8'))['cues'] if Path(out,a.songid+'-lyrics.json').exists() else []
+def btime(x):
+ i=int(np.floor(x));f=x-i
+ return beats[i] if f<1e-9 else beats[i]+(beats[i+1]-beats[i])*f
+# 1) 변형: 네온 회전·뒤집기, 비치 좌우 뒤집기
+def tf_lane(l,t,n):
+ if n==4:return 3-l if t=='M' else l
+ r,c=divmod(l,3)
+ if t in('R90','R180','R270'):
+  for _ in range({'R90':1,'R180':2,'R270':3}[t]):r,c=c,2-r
+ if t=='MH':c=2-c
+ if t=='MV':r=2-r
+ return r*3+c
+TFS={9:['I','R90','R180','R270','MH','MV'],4:['I','M']}
+MIRROR={9:{'I':'MH','MH':'I','MV':'R180','R180':'MV','R90':'R270','R270':'R90'},4:{'I':'M','M':'I'}}
+# 2) 리듬: even 정박 / sync 마지막 한 박 당김(쉼 뒤) / rush 반 박 몰아치기(HARD 한 칸 도형) / stretch 끝나고 한 박 더 쉼
+def offsets(m,diff,rh):
+ st=m['step'][diff];n=len(m['steps']);o=[i*st for i in range(n)]
+ if rh=='sync':o[-1]+=st
+ if rh=='rush':o=[i*.5 for i in range(n)]
+ if rh=='half':o=[i*st*2 for i in range(n)]
+ if rh=='tight':o=list(range(n))  # 2박 도형을 매 박으로(칸이 안 겹치는 도형만 통과)
+ return o,(st*2 if rh=='stretch' else st)
+SPEED={'rush':2,'tight':2,'even':1,'sync':1,'half':0,'stretch':0}  # 템포 등급(사용자: 템포 차이)
+def rhythms(m,diff):
+ r=['even','half']+(['sync'] if len(m['steps'])>=3 else [])
+ if diff!='EASY' and m['step'][diff]==1 and all(len(x)==1 for x in m['steps']):r.append('rush')
+ if diff!='EASY' and m['step'][diff]==2:r.append('tight')
+ return r
 def plan(motifs,diff,gap,last,k0,k1,ci,lanes_n):
- rng=random.Random(f'{a.songid}|{diff}|{ci}|{lanes_n}');pool=[m for m in motifs if diff in m['step']];events=[];used=[];pos=k0;prev=None
+ rng=random.Random(f'{a.songid}|{diff}|{ci}|{lanes_n}');pool=[m for m in motifs if diff in m['step']];events=[];used=[];pos=k0;prev=None;pending=None;prevHands=1;prevSpeed=1
  other=set()
  if AVOID:
-  ch=AVOID['motifsB' if lanes_n==9 else 'motifsA'].get(diff,[]);other=set(ch[ci]) if ci<len(ch) else set()
-  pool=[m for m in pool if m['id'] not in other]+[m for m in pool if m['id'] in other]
- while pos<k1:
-  order=pool[:];rng.shuffle(order);order.sort(key=lambda m:m['id'] in other);order=[m for m in order if m['id']!=prev]+[m for m in order if m['id']==prev];order.sort(key=lambda m:(m['id']==prev,used.count(m['id'])))
-  placed=False
-  # 안 쓴 도형을 0~2박 늦춰서라도 먼저 시도, 안 되면 쓴 도형(바로 앞 도형은 맨 뒤)
-  fresh=[m for m in order if m['id'] not in used];tries=[(d,m) for d in (0,1,2) for m in fresh]+[(0,m) for m in order if m['id'] in used]
-  for d,m in tries:
-   st=m['step'][diff];ks=[pos+d+i*st for i in range(len(m['steps']))]
-   if ks[-1]>=k1 or ks[-1]>=len(beats):continue
-   sim=last[:];ok=True
-   for kk,shp in zip(ks,m['steps']):
-    t=beats[kk]
-    if any(t-sim[l]<gap+1e-4 for l in shp):ok=False;break
-    for l in shp:sim[l]=t
+  ch=AVOID['motifsB' if lanes_n==9 else 'motifsA'].get(diff,[]);other=set(x.split('/')[0] for x in (ch[ci] if ci<len(ch) else []))
+ anchors={}
+ for c in LYR:
+  if beats[k0]-.05<=c['start']<beats[min(k1,len(beats)-1)]:
+   kb=int(np.argmin([abs(b-c['start']) for b in beats]));anchors[kb]=' '.join(c['text'].lower().split())
+ big=lambda m:max(len(x) for x in m['steps'])>=(2 if diff=='EASY' else 3)
+ small=lambda m:max(len(x) for x in m['steps'])<=(1 if diff!='EASY' else 2)
+ while pos<k1-.01:
+  frac=(pos-k0)/max(1,k1-k0);remain=k1-pos;cands=[]
+  for m in pool:
+   for t in TFS[lanes_n]:
+    for rh in rhythms(m,diff):
+     for d in (0,1,2,3):
+      start=pos+d;sc=rng.random()
+      if m['id'] in FAVOR or m.get('group') in FAVOR:sc+=2.5          # 6) 곡 성격
+      if m['id'] in other:sc-=3                                       # 다른 곡과 겹침 회피
+      sc-=1.5*used.count(m['id'])+(4 if m['id']==prev else 0)         # 반복 줄이기
+      if frac<.2 and small(m):sc+=1.5                                  # 3) 기: 작은 도형
+      mx=max(len(x) for x in m['steps'])
+      if frac>=.2:sc+=.9*(mx-1)                                        # 사용자: 여러 버튼 동시 = 박진감
+      if SPEED[rh]!=prevSpeed:sc+=1.0                                  # 사용자: 템포 차이(느림·보통·빠름 번갈아)
+      if rh=='half':sc-=(2.5 if prevSpeed==0 or frac>.7 else .8)        # 느린 구간은 잠깐만(연속·후렴 끝 금지)
+      if rh in('rush','tight'):sc+=.8
+      sc+=.25*sum(len(x) for x in m['steps'])/max(1,offsets(m,diff,rh)[0][-1]+offsets(m,diff,rh)[1])  # 밀도(박당 누름 수)
+      if remain<=10 and big(m):sc+=2.5                                 # 3) 결: 큰 도형으로 마무리
+      if abs((start-k0)%4)<1e-9:sc+=1.2                               # 2) 마디 첫 박 시작
+      sc-=d*.6
+      key=int(round(start))
+      if key in anchors and abs(start-key)<1e-9:
+       sc+=1.5;mem=MEMO.get((diff,lanes_n,anchors[key]))
+       if mem and mem==(m['id'],t,rh):sc+=8                           # 5) 같은 가사 줄 = 같은 도형
+      if pending and (m['id'],t)==pending:sc+=6                        # 4) 주고받기(거울)
+      if m.get('hands')==2 and prevHands==2:sc-=3                      # 사용자: 줄 3개는 한 손 — 두 손 도형(대각·모서리·마주보기) 연달아 피함
+      cands.append((sc,m,t,rh,start))
+  cands.sort(key=lambda c:-c[0]);placed=False
+  for sc,m,t,rh,start in cands:
+   offs,tail=offsets(m,diff,rh);xs=[start+o for o in offs]
+   if xs[-1]>=k1-.01 or xs[-1]>=len(beats)-1:continue
+   sim=last[:];ok=True;steps=[tuple(tf_lane(l,t,lanes_n) for l in shp) for shp in m['steps']]
+   for x,shp in zip(xs,steps):
+    tt=btime(x)
+    if any(tt-sim[l]<gap+1e-4 for l in shp):ok=False;break
+    for l in shp:sim[l]=tt
    if not ok:continue
-   last[:]=sim;events+=[(kk,shp,m['id']) for kk,shp in zip(ks,m['steps'])];used.append(m['id']);prev=m['id'];pos=ks[-1]+st+(1 if lanes_n==4 else 0);placed=True;break  # A 는 도형 사이 1박 숨
-  if not placed:pos+=1 if lanes_n==4 else 2
- return events,used
+   last[:]=sim;tag=f"{m['id']}/{t}/{rh}";events+=[(x,shp,tag) for x,shp in zip(xs,steps)];used.append(m['id'])
+   key=int(round(start))
+   if key in anchors and abs(start-key)<1e-9:MEMO.setdefault((diff,lanes_n,anchors[key]),(m['id'],t,rh))
+   pending=None if pending else ((m['id'],MIRROR[lanes_n][t]) if rng.random()<.5 else None)
+   prev=m['id'];prevHands=m.get('hands',1);prevSpeed=SPEED[rh];pos=xs[-1]+tail+(1 if lanes_n==4 else 0);placed=True;break
+  if not placed:pos+=1
+ # 3) 마침: 후렴 마지막 박에 가운데(네온 5번) / 안쪽 짝(비치 2·3) 한 번
+ endk=k1-1;fin=(4,) if lanes_n==9 else (1,2)
+ if endk>k0 and not any(abs(x-endk)<1.01 for x,_,_ in events) and all(btime(endk)-last[l]>=gap+1e-4 for l in fin):
+  for l in fin:last[l]=btime(endk)
+  events.append((endk,fin,'finish'));used.append('finish')
+ events.sort(key=lambda e:e[0])
+ tags=[];[tags.append(e[2]) for e in events if not tags or tags[-1]!=e[2]]
+ return events,tags
+MEMO={}
 def sound(k):return 'kick' if k%2==0 else 'snare'
 seed=int(hashlib.sha256(a.songid.encode()).hexdigest()[:8],16)
 patterns={};stats={};usage={};ausage={}
@@ -65,9 +136,7 @@ for diff,gap in [('EASY',2.242),('NORMAL',1.898),('HARD',1.665)]:
   if off is not None:
    if off==0:
     ci=[w[0] for w in cwin].index(k);ev,used=plan(B_MOTIFS,diff,gap,last,k,cwin[ci][1],ci,9);usage[diff].append(used)
-    for kk,shp,mid in ev:chorusMap[kk]=(shp,mid)
-   if k in chorusMap:
-    shp,mid=chorusMap[k];notes.append({'time':round(b,4),'lanes':list(shp),'sound':'kick' if len(shp)>1 else sound(k),'section':'chorus-pattern','motif':mid})
+    for x,shp,mid in ev:notes.append({'time':round(btime(x),4),'lanes':list(shp),'sound':'kick' if len(shp)>1 else ('hat' if x%1 else sound(int(x))),'section':'chorus-pattern','motif':mid})
    continue
   # 후렴 밖: 기존 B 방식(정박, 강한 구간 2버튼)
   if diff=='EASY' and k%2:continue
@@ -93,9 +162,7 @@ for diff in ['EASY','NORMAL','HARD']:
   if off is not None:
    if off==0:
     ci=[w[0] for w in cwin].index(k);ev,used=plan(A_MOTIFS,diff,.56,last,k,cwin[ci][1],ci,4);ausage[diff].append(used)
-    for kk,shp,mid in ev:chorusMap[kk]=(shp,mid)
-   if k in chorusMap:
-    shp,mid=chorusMap[k];outn.append({'time':round(b,4),'lanes':list(shp),'sound':'kick','section':'chorus-pattern','motif':mid})
+    for x,shp,mid in ev:outn.append({'time':round(btime(x),4),'lanes':list(shp),'sound':'kick' if len(shp)>1 else ('hat' if x%1 else 'snare'),'section':'chorus-pattern','motif':mid})
    continue
   if diff=='EASY' and k%2:continue
   if diff=='NORMAL' and k%2 and kind(k)!='drive':continue

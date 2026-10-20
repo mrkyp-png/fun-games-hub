@@ -17,6 +17,10 @@ B_MOTIFS = [
     dict(id='diag-x2', ko='대각선 ↙ → 나머지 모서리(X)', steps=[(2, 4, 6), (0, 8)], step={'NORMAL': 2, 'HARD': 2}),
     dict(id='diag-pairs', ko='대각 모서리 짝 → 가운데', steps=[(0, 8), (2, 6), (4,)], step={'EASY': 2, 'NORMAL': 2}),
     dict(id='diag-slide', ko='대각선 흘러내림(짝)', steps=[(0, 4), (1, 5), (3, 7), (4, 8)], step={'HARD': 2}),
+    dict(id='diag-wave', ko='대각선 물결 1→2·4→3·5·7→6·8→9', steps=[(0,), (1, 3), (2, 4, 6), (5, 7), (8,)], step={'NORMAL': 1, 'HARD': 1}),
+    dict(id='diag-wave-back', ko='대각선 물결 되돌리기 9→6·8→3·5·7→2·4→1', steps=[(8,), (5, 7), (2, 4, 6), (1, 3), (0,)], step={'NORMAL': 1, 'HARD': 1}),
+    dict(id='diag-three', ko='대각선 셋: 1·5·9 → 2·6 → 4·8', steps=[(0, 4, 8), (1, 5), (3, 7)], step={'NORMAL': 2, 'HARD': 1}),
+    dict(id='diag-easy', ko='대각선 짝 흐름 1→2·4→6·8→9', steps=[(0,), (1, 3), (5, 7), (8,)], step={'EASY': 2, 'NORMAL': 1}),
     # 바깥 모서리·십자
     dict(id='corners-burst', ko='네 모서리 → 변 가운데 4 → 가운데', steps=[(0, 2, 6, 8), (1, 3, 5, 7), (4,)], step={'HARD': 2}),
     dict(id='corner-pairs', ko='모서리 위짝 → 아래짝 → 가운데', steps=[(0, 2), (6, 8), (4,)], step={'EASY': 2, 'NORMAL': 2}),
@@ -47,5 +51,22 @@ A_MOTIFS = [
     dict(id='half-swap', ko='왼쪽 짝 ↔ 오른쪽 짝', steps=[(0, 1), (2, 3), (0, 1), (2, 3)], step={'EASY': 2, 'NORMAL': 2, 'HARD': 1}),
     dict(id='cross', ko='1·3 ↔ 2·4 교차', steps=[(0, 2), (1, 3), (0, 2), (1, 3)], step={'EASY': 2, 'NORMAL': 2, 'HARD': 1}),
     dict(id='trill', ko='1·4 번갈아 연타', steps=S(0, 3, 0, 3), step={'HARD': 1}),
-    dict(id='all-four', ko='네 개 동시 → 안쪽 → 양끝', steps=[(0, 1, 2, 3), (1, 2), (0, 3)], step={'HARD': 2}),
+    dict(id='all-four', ko='네 개 동시 → 안쪽 → 양끝', steps=[(0, 1, 2, 3), (1, 2), (0, 3)], step={'NORMAL': 2, 'HARD': 2}),
+    dict(id='tri-slide', ko='세 개 1·2·3 → 2·3·4 밀기', steps=[(0, 1, 2), (1, 2, 3)], step={'NORMAL': 2, 'HARD': 2}),
+    dict(id='tri-wave', ko='세 개 → 한 칸 → 반대 세 개 → 한 칸', steps=[(0, 1, 2), (3,), (1, 2, 3), (0,)], step={'NORMAL': 2, 'HARD': 2}),
+    dict(id='four-pulse', ko='네 개 동시 두 번(2박 간격)', steps=[(0, 1, 2, 3), (0, 1, 2, 3)], step={'HARD': 2}),
 ]
+
+# V1356 C 도형 무리(곡 성격 --favor 용)와 필요한 손(2 = 서로 떨어진 칸 동시 → 두 손). 사용자: 가로줄 3개는 한 손으로 가능.
+GROUP = {'rows-down': 'line', 'rows-up': 'line', 'cols-right': 'line', 'cols-left': 'line', 'rows-split': 'line',
+         'diag-x': 'diag', 'diag-x2': 'diag', 'diag-pairs': 'diag', 'diag-slide': 'diag', 'diag-wave': 'diag', 'diag-wave-back': 'diag', 'diag-three': 'diag', 'diag-easy': 'diag',
+         'corners-burst': 'corner', 'corner-pairs': 'corner', 'plus-burst': 'corner', 'plus-full': 'corner',
+         'seq-1-9': 'seq', 'seq-9-1': 'seq', 'snake': 'seq', 'snake-col': 'seq', 'spiral': 'spin', 'edge-cw': 'spin', 'edge-ccw-pairs': 'spin',
+         'row-ends': 'line', 'col-ends': 'line', 'seq-odd': 'seq',
+         'stairs-up': 'stairs', 'stairs-down': 'stairs', 'bounce': 'stairs', 'zigzag': 'zig', 'zigzag-back': 'zig',
+         'out-in': 'pair', 'in-out': 'pair', 'half-swap': 'pair', 'cross': 'zig', 'trill': 'zig', 'all-four': 'chord', 'tri-slide': 'chord', 'tri-wave': 'chord', 'four-pulse': 'chord'}
+TWO_HANDS = {'diag-pairs',  # 사용자: 대각선 3개도 한 손 가능
+             'corners-burst', 'corner-pairs', 'plus-full', 'edge-ccw-pairs', 'row-ends', 'col-ends', 'cross', 'out-in', 'in-out', 'all-four', 'trill'}
+for _m in B_MOTIFS + A_MOTIFS:
+    _m['group'] = GROUP[_m['id']]
+    _m['hands'] = 2 if _m['id'] in TWO_HANDS else 1
