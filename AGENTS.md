@@ -1,3 +1,6 @@
+## 2026-10-20 / V1353 C — 비치 타겟 글로우 투명도 30% (미배포)
+- 사용자 "투명도 30% 정도". style.css .rp-lane.is-approaching .rp-target-glow opacity 1 → .7.
+
 ## 2026-10-20 / V1352 C — 리듬팡 비치 타겟 원 타이밍 글로우 (미배포)
 - 사용자: 타격 타이밍에 원색으로 바뀔 때 글로우(확실히 밝아지게), 버벅임 걱정 → 그림자 필터 대신 미리 만든 빛 번짐 그림을 투명도만 바꿈.
 - GPT 이미지젠 흰 빛 고리 1장(Sprite Motion Studio outputs/20261020-231213-image-rp-target-glow) → 링 반지름을 타겟 r=84/250 에 맞추고 넓은 번짐(블러 14) 더해 4색 webp(assets/rhythm/beach-target-glow-v1352/glow-1~4, 각 12KB).
