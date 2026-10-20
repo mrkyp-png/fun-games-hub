@@ -119,7 +119,7 @@
       const moving=[circuit,reflection,lens,cap],from=Array(5).fill('');movingSurfaces.push(moving);
       function down() {
         if (!running || paused) return;
-        fitPressPulses();
+        // V1337 C: 누를 때마다 fitPressPulses()(11번 위치 측정+9개 클립 경로 재작성 → 강제 레이아웃·전체 다시 그리기) 하던 것 제거 — 크기 바뀔 때만 ResizeObserver 가 갱신
         reboundAnimations[i].forEach(a=>a.cancel());reboundAnimations[i].length=0;
         cap.src='assets/rhythm-b/button-face-v1120/face-'+i+'.svg';
         surfaces.forEach(el => el.classList.add('is-pressed'));if(flowFx)flowFx.press(i,true);

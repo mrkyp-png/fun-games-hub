@@ -7993,3 +7993,6 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen.is-type-b .rp-select .rx-card--sel:not(.rx-card--res):not(.rx-card--pause)::after { filter:none; border-image-source:url('assets/rhythm/ui/d-frame-neon-difficulty-cloud-v1224.svg'); }
 /* V1336 C 리듬팡 네온 버벅임: 매 프레임 재계산되던 필터를 그림·색에 구움 — 캐릭터 테두리(hoverboard-v1336), 회로 색(circuit-rim-N.svg), 홀로 조명·회로 빛 밝기(JS 색) */
 .rb-character, .rb-circuit--glass, .rb-circuit--glass.is-pressed, .rb-holo-light, .rb-flow-canvas { filter: none; }
+/* V1337 C 판정 글자 튀기 재시작용 — 같은 키프레임 두 이름을 번갈아(rhythm-b-play.js label) */
+@keyframes rb-judge-pop2 { 0% { opacity:.75; transform:translateY(0) scale(1); } 22%,48% { opacity:1; transform:translateY(var(--judge-rise)) scale(var(--judge-peak)); } 100% { opacity:1; transform:translateY(0) scale(1); } }
+.rb-status--judge.is-judging[data-pop="1"] b { animation-name:rb-judge-pop2; }

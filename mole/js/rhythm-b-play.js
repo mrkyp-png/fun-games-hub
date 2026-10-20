@@ -195,11 +195,13 @@
    });
   }
   function time(){return state&&context?context.currentTime-state.t0:0;}
+  let judgePop=false;
   function label(text,grade) {
    const el=judgeEl;el.textContent=text;el.style.visibility='';
    const parent=el.parentElement;parent.dataset.grade=grade||'';
    parent.classList.toggle('is-judging',Boolean(grade)&&grade!=='PERFECT');
-   el.getAnimations().forEach(a=>{if(a.animationName==='rb-judge-pop')a.currentTime=0;});
+   // V1337 C: 판정마다 getAnimations()+currentTime(강제 스타일 계산, 폰 측정 최다 비용) 대신 같은 모양 애니메이션 두 개를 번갈아 걸어 재시작
+   judgePop=!judgePop;parent.dataset.pop=judgePop?'1':'0';
   }
   let shownScore=-1,shownCombo=-1,shownScoreLabel='';
   function updateHud(){
