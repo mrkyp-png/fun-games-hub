@@ -1,3 +1,7 @@
+## 2026-10-20 / V1339 C — 폰 느린 프레임 원인 표시(LoAF, 임시) (배포)
+- 사용자 영상(해석불가.mp4): 효과 끄기 토글 어느 것도 FPS 개선 없음(12~60 오락가락, 비터치 때만 60) → 그리기 아닌 터치 코드 경로 또는 분산 추정. 토글은 display:none 이라 JS 계산은 계속 돎.
+- game.js: PerformanceObserver long-animation-frame, 50ms 이상 프레임의 scripts(sourceURL:charPos 함수, forcedStyleAndLayout)·그리기(렌더 구간)·기타 누적 → #fps-meter 셋째 줄 "🐢 상위2". #rb-fx-toggles top 58px 로 내림. 출시 전 삭제.
+
 ## 2026-10-20 / V1338 C — 네온 버튼 모서리 터치 누락 수정, 폰용 효과 끄기 버튼(임시) (배포)
 - 진단 "RB notbtn under=div.rb-board": .rb-hit clip-path(모서리 깎은 8각형)가 터치 영역도 깎음 → style.css 끝 .rb-hit { clip-path:none } (보이는 그림 없음, 보이는 면은 자식들).
 - 폰 17~20fps 연타 버벅임은 헤드리스(소프트웨어 GL)로 구분 불가 → game.js 에 네온 화면 전용 #rb-fx-toggles(파동/퍼짐/레이저/회로빛/회로판/포털/캐릭, display:none 토글, localStorage mole.rbfx). 1순위 의심=파동(.rb-circuit-pulse--extended: --rb-press-wave-scale 커스텀 속성 애니→transform+radial-gradient 매 프레임 재계산·재페인트, 연타 시 겹침). 출시 전 FPS 표시와 함께 삭제.

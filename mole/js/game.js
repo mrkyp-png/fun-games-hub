@@ -179,6 +179,28 @@
       try { localStorage.setItem('mole.diag', JSON.stringify(diag)); } catch (e) { /* 무시 */ }
     };
     window.addEventListener('error', (e) => { saveDiag('ERR ' + (e.message || '') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || '')); });
+    // V1339 C 느린 프레임 원인 표시(임시, 출시 전 삭제): 폰 크롬의 Long Animation Frame 기록으로 50ms 넘는 프레임마다
+    // 어디서 시간을 썼는지(가장 오래 걸린 코드 파일:위치·함수 / 강제 배치 계산 / 그리기) 누적해 FPS 셋째 줄에 가장 큰 범인 2개 표시.
+    let loafLine = '';
+    try {
+      const agg = {};
+      new PerformanceObserver((list) => {
+        list.getEntries().forEach((f) => {
+          if (f.duration < 50) return;
+          const render = Math.round((f.startTime + f.duration) - (f.renderStart || f.startTime + f.duration));
+          let jsTotal = 0;
+          (f.scripts || []).forEach((sc) => {
+            jsTotal += sc.duration;
+            const where = String(sc.sourceURL || '').split('/').pop() + ':' + (sc.sourceCharPosition >= 0 ? sc.sourceCharPosition : '') + ' ' + String(sc.sourceFunctionName || sc.invoker || '').slice(0, 24);
+            agg[where] = (agg[where] || 0) + sc.duration;
+            if (sc.forcedStyleAndLayoutDuration > 5) agg['강제배치 ' + where] = (agg['강제배치 ' + where] || 0) + sc.forcedStyleAndLayoutDuration;
+          });
+          agg['그리기'] = (agg['그리기'] || 0) + render;
+          agg['기타'] = (agg['기타'] || 0) + Math.max(0, f.duration - jsTotal - render);
+          loafLine = Object.entries(agg).sort((x, y) => y[1] - x[1]).slice(0, 2).map(([k, v]) => k + ' ' + Math.round(v)).join(' | ');
+        });
+      }).observe({ type: 'long-animation-frame', buffered: false });
+    } catch (e) { loafLine = '(LoAF 미지원)'; }
     // V1338 C 네온 버벅임 범인 찾기(임시, 출시 전 삭제): 리듬팡 네온 화면에서만 FPS 밑에 효과 끄기 버튼 —
     // 누르면 그 효과를 숨김(빨강=꺼짐). 폰에서 하나씩 끄며 FPS 비교. 설정은 이 폰에만 저장.
     const RB_FX = [['파동', '.rb-circuit-pulse,.rb-circuit-pulse--extended'], ['퍼짐', '.rb-screen-ripple'], ['레이저', '.rb-laser-canvas'],
@@ -228,7 +250,7 @@
     }, true);
     (function f(now) {
       n++; worst = Math.max(worst, now - last); last = now;
-      if (now - t0 >= 500) { m.textContent = Math.round(n * 1000 / (now - t0)) + 'fps ' + Math.round(worst) + 'ms' + (diag.length ? '\n⚠' + diag.length + ' ' + diag[diag.length - 1] : ''); n = 0; worst = 0; t0 = now; }
+      if (now - t0 >= 500) { m.textContent = Math.round(n * 1000 / (now - t0)) + 'fps ' + Math.round(worst) + 'ms' + (diag.length ? '\n⚠' + diag.length + ' ' + diag[diag.length - 1] : '') + (loafLine ? '\n🐢 ' + loafLine : ''); n = 0; worst = 0; t0 = now; }
       requestAnimationFrame(f);
     })(last);
   })();
