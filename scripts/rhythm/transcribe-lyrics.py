@@ -5,6 +5,7 @@ sys.stdout.reconfigure(encoding='utf-8')
 from faster_whisper import WhisperModel
 model=WhisperModel(str(Path('.tools/models/faster-whisper-small').resolve()),device='cpu',compute_type='int8',cpu_threads=4,num_workers=1)
 songs=[('le-monde-attendra-demain','Le monde attendra demain','fr'),('meet-me-halfway','Meet Me Halfway','en'),('paper-engine-ride','Paper-Engine Ride','en'),('the-world-is-wide','The World Is Wide','en')]
+if len(sys.argv)>1:songs=[tuple(x.split('|')) for x in sys.argv[1:]]  # V1354 C: 'id|Title|lang' 로 지정한 곡만(기존 곡 결과 보존)
 for sid,title,lang in songs:
  out=Path('review')/(sid+'-transcript.json')
  if out.exists():print('CACHED',sid,flush=True);continue

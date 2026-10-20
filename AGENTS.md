@@ -1,3 +1,12 @@
+## 2026-10-21 / V1354 C — 새 2곡(Be My Destiny, Take This Night Around) A/B 추가 + 후렴 패턴식 채보 (미배포)
+- 사용자: 바탕화면 MP3 2곡 추가, 참고영상(네온 게임스타일 추가.mp4: 가로줄 3개 동시→다음 줄 쓸기, 2개 짝 좌우 이동)처럼 "아주 규칙적·시각적" 채보 시도. 사용자 선택 B안 = 후렴만 패턴식, 나머지는 기존 방식. 가사 TXT·앨범(GPT 이미지젠) 포함.
+- 원본: 리듬AB 채보/Be My Destiny.mp3(119.56초)·Take This Night Around.mp3(207.96초)+가사 TXT(카톡 전달본 복사). 게임용 mole/audio/rp/<id>.mp3 바이트 동일 복사(SHA 확인).
+- 분석: analyze-song.py → track-song.py, 둘 다 약139.7 BPM. 후렴 = 로컬 Whisper 가사 전사 시각 기반 후보(청취 확정 아님): BMD 29.4-43.9/58.8-73.4/88.3-103.0초, TTNA 52.6-69.0/111.6-132.0/158.1-181.0초.
+- 채보: 신규 scripts/rhythm/build-pattern-charts.py(B·A 동시 생성). B 후렴: EASY 줄 양끝 짝·열 짝·가운데(2박), NORMAL 가로줄 3개 동시 쓸기(위→아래)·세로줄 쓸기(2박), HARD 테두리 시계방향+마디마다 가운데 / 가로줄 쓸기. A 후렴: 계단 0→3→0, 양끝(0,3)·안쪽(1,2) 짝. 같은 칸 간격 걸리는 도형 박자는 통째로 쉼. 후렴 밖은 기존 정박 방식.
+- 검증: 12채보 모두 같은칸 최소간격 위반 0(B 최소 2.589/1.962/1.672초, A ≥0.813초), 모든 노트 박 위. 실제 화면에서 곡목록 6곡(TTNA 3:28 표시)·네온 HARD 후렴 윗줄 3개 동시·비치 재생·가사 표시 확인. 기존 verify-four-song-*.js 봇은 현재 코드와 안 맞아 기존 곡에서도 실패(별건) — 전곡 자동 올퍼펙트 봇은 미실행.
+- 가사: transcribe-lyrics.py·align-lyrics.py 에 인자(곡 지정) 추가 → 새 2곡만 처리, 기존 곡 가사 JSON 그대로. BMD 41/44, TTNA 30/34 줄 정렬.
+- 앨범: Studio 는 스프라이트(초록배경) 전용이라 Codex 이미지젠 직접 호출(기존 앨범을 참고 그림으로), 원본·프롬프트 review/albums-v1354, 게임 384px webp. rhythm.js CONFIG.bSongs 2곡 추가, sw.js 캐시 목록 추가.
+
 ## 2026-10-20 / V1353 C — 비치 타겟 글로우 투명도 30% (미배포)
 - 사용자 "투명도 30% 정도". style.css .rp-lane.is-approaching .rp-target-glow opacity 1 → .7.
 

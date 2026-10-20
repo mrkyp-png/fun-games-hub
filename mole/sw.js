@@ -3,7 +3,7 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-const CACHE = 'mole-game-v1353-C';
+const CACHE = 'mole-game-v1354-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -114,12 +114,16 @@ const SHELL = [
   './assets/rhythm/albums-v1170/meet-me-halfway.webp',
   './assets/rhythm/albums-v1170/paper-engine-ride.webp',
   './assets/rhythm/albums-v1170/the-world-is-wide.webp',
+  './assets/rhythm/albums-v1170/be-my-destiny.webp',
+  './assets/rhythm/albums-v1170/take-this-night-around.webp',
 
   './js/rhythm-lyrics.js',
   './audio/rp/le-monde-attendra-demain-lyrics.json',
   './audio/rp/meet-me-halfway-lyrics.json',
   './audio/rp/paper-engine-ride-lyrics.json',
   './audio/rp/the-world-is-wide-lyrics.json',
+  './audio/rp/be-my-destiny-lyrics.json',
+  './audio/rp/take-this-night-around-lyrics.json',
   './audio/rp/paper-engine-ride.mp3',
   './audio/rp/paper-engine-ride.json',
   './audio/rp/the-world-is-wide.mp3',
@@ -128,6 +132,12 @@ const SHELL = [
   './audio/rp/meet-me-halfway-a.json',
   './audio/rp/paper-engine-ride-a.json',
   './audio/rp/the-world-is-wide-a.json',
+  './audio/rp/be-my-destiny.mp3',
+  './audio/rp/be-my-destiny.json',
+  './audio/rp/be-my-destiny-a.json',
+  './audio/rp/take-this-night-around.mp3',
+  './audio/rp/take-this-night-around.json',
+  './audio/rp/take-this-night-around-a.json',
   './assets/rhythm/bg-beach-calm-v1164.png',
   './assets/rhythm/ui-status-v1164/score.png',
   './assets/rhythm/ui-status-v1164/judgement.png',

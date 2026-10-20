@@ -1,6 +1,7 @@
 from pathlib import Path
-import json,re,unicodedata,difflib,hashlib
+import json,re,unicodedata,difflib,hashlib,sys
 IDS=[('le-monde-attendra-demain','Le monde attendra demain'),('meet-me-halfway','Meet Me Halfway'),('paper-engine-ride','Paper-Engine Ride'),('the-world-is-wide','The World Is Wide')]
+if len(sys.argv)>1:IDS=[tuple(x.split('|')) for x in sys.argv[1:]]  # V1354 C: 'id|Title' 로 지정한 곡만(기존 곡 가사 JSON 덮어쓰기 방지)
 def tokens(text):return re.findall(r"[^\W_]+(?:['\u2019][^\W_]+)*",text,flags=re.UNICODE)
 def norm(text):return ''.join(c for c in unicodedata.normalize('NFD',text.lower()) if c.isalnum() and not unicodedata.combining(c))
 def similarity(a,b):return 1. if a==b else difflib.SequenceMatcher(None,a,b).ratio()

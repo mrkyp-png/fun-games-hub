@@ -68,3 +68,8 @@
 - A 대기/종료 무기 hidden, 스폰 큐/활성 배열/프레임 버퍼/PANG풀 재사용. 궤적1600샘플 비교와346노트 전체 생명주기 검증. 게임 효과 삭제 금지.
 - 앨범 생성 프롬프트/원본/최종경로 review/album-prompts-v1170.json. 기존 광고 서비스는 개발 스텁, 실제 광고망은 별도 작업.
 - 기존 V1168/1169 가사 변경 포함 미배포 V1170. 작업·배포 허락 분리 및 기존 변경 보존, 다음 기믹은 사용자와 논의부터.
+
+## V1354 C — 후렴 패턴식 채보(새 2곡)
+- `python scripts/rhythm/build-pattern-charts.py "리듬AB 채보/<곡>.mp3" <id> "<제목>" <후렴시작-끝초> ...` → mole/audio/rp/<id>.json(B)·<id>-a.json(A). 선행 analyze-song.py·track-song.py.
+- 후렴 구간은 가사 전사(transcribe-lyrics.py "id|Title|en") 시각을 보고 지정. align-lyrics.py "id|Title" 로 새 곡만 가사 JSON 생성(기존 곡 덮어쓰기 방지).
+- B 칸 번호 = 행*3+열(0 왼쪽 위). 동시 3개(가로/세로줄)는 게임이 각 칸 독립 판정.
