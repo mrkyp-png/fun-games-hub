@@ -1,3 +1,8 @@
+## 2026-10-20 / V1327 C — 버튼판 위 선: 심전도·BGM 반응 제거, 고정 글로우 선 (배포)
+- 사용자 지정: 선은 유지, 심전도 효과와 BGM 연동만 제거. game.js initRoundmapWave(rAF 캔버스+analyser) 삭제, canvas[data-rm-wave] → <i class="rm-bottom-line"> CSS 고정선(모드색 --rm-line 노랑/초록/빨강, z3 < 하마 4 < 버튼판 5).
+- 홈 다이얼패드 BGM 박자 효과(pulseDialPad)는 그대로(광산지도에서도 돌고 있음 — 끄려면 사용자 확인 필요).
+- 버벅임 측정: headless CPU×4 에서 CSS 애니메이션 전부 끄면 60fps — 남은 후보 = 빛 층 drop-shadow 4장, 유체 캔버스. 폰 확인 대기.
+
 ## 2026-10-20 / V1326 C — 노말·프로 버벅임(유체 마스크 캐시), 가려진 유체 제거, 전환 2배속, 시작 버튼 전환, 홈 버튼 불투명 (배포)
 - round-map-fluids.js: destination-in SVG 마스크(수천 rect+blur)를 매 프레임 drawImage → 캔버스 크기별 1회 래스터화(maskCache). 노말·프로 버벅임 주원인 추정(아마추어는 유체 없음).
 - 유체 zone: 뒷 배경 흔들림 범위(±3%,±0.7%,scale 1.10~1.21) 전부에서 앞 그림(alpha>230)에 가려지는 zone 제거(노말 9→5), 일부 가려지는 zone 은 zone.clip 분수로 보이는 부분만 그림(노말 2·프로 2).

@@ -179,12 +179,6 @@
 .rm-window-map .rm-depth-easy-front { --rm-depth-mask:url('assets/roundmap/window-v1263/foreground-frame.webp'); }
 .rm-window-map .rm-depth-mid { --rm-depth-mask:url('assets/roundmap/frame-v1282/normal-front-supported.webp'); background:linear-gradient(to bottom,rgba(0,0,0,.6) 0%,rgba(0,0,0,.3) 45%,rgba(0,0,0,0) 88%); } /* V1324 C 노말만 원근 조금 더(사용자 지정) */
 .rm-window-map .rm-depth-legend { --rm-depth-mask:url('assets/roundmap/frame-v1282/pro-front-supported.webp'); }
-.rm-window-map[data-light="easy"] { --rm-glow:#ffd84a; }
-.rm-window-map[data-light="mid"] { --rm-glow:#70f58b; } /* V1322 C 노말 = 탭 글자색 녹색(사용자 지정) */
-.rm-window-map[data-light="legend"] { --rm-glow:#ff4a3a; }
-/* V1320 C 버튼판 바로 위 심전도 선(game.js initRoundmapWave) — 모드색, 화면 양끝까지 */
-.rm-window-map .rm-bottom-wave { position:absolute; left:0; z-index:3 !important; bottom:calc(env(safe-area-inset-bottom,0px) + 1% + max(78px,19vw) - 17px); width:100%; height:40px; z-index:6; pointer-events:none; }
-@media(max-height:700px) { .rm-window-map .rm-bottom-wave { bottom:calc(env(safe-area-inset-bottom,0px) + 1% + max(72px,18vw) - 17px); } }
 /* V1320 C 아마추어 보석·랜턴 빛: 원본 그림에서 보석·랜턴 모양만 뽑은 층을 겹쳐 반짝임(좌표 점 방식 대체). 뒷 층은 뒷 배경과 함께 움직임 */
 .rm-window-map .rm-glow-layer { position:absolute; inset:0; width:100%; height:100%; z-index:2; pointer-events:none; will-change:opacity; } /* V1325 C: mix-blend-mode:screen 제거 — 아래 용암·폭포 캔버스가 매 프레임 바뀌어 화면 전체를 다시 합성(노말·프로 버벅임 원인) */
 .rm-window-map .rm-glow-gem { filter:brightness(1.5) saturate(1.2) drop-shadow(0 0 4px #6fd3ff); animation:rm-gem-shine 2.6s ease-in-out infinite alternate; }
@@ -195,7 +189,7 @@
 /* V1322 C 라운드맵 첫 진입: 그림이 다 준비될 때까지 가렸다가 한 번에 표시(round-map.js whenModeReady) */
 .rm-window-map.rm-preparing > * { visibility:hidden; } /* V1325 C: 하마·버튼판·선·재화까지 전부 준비 후 한 번에 */
 #roundmap-screen.rm-window-map.rm-preparing::before { visibility:hidden; } /* 예비 배경도 준비 후 함께 */
-/* V1323 C 재화 박스(게임 상태판 반투명 박스 재사용): 아래 선 바로 위, 하마 오른쪽으로 조금 띄움(사용자 지정). 층: 심전도 선 3 < 하마 4 < 검은 버튼판(.rm-ui) 5 */
+/* V1323 C 재화 박스(게임 상태판 반투명 박스 재사용): 아래 선 바로 위, 하마 오른쪽으로 조금 띄움(사용자 지정). 하마 4 < 검은 버튼판(.rm-ui) 5 */
 .rm-window-map .rm-wallet { position:absolute; z-index:6; bottom:calc(env(safe-area-inset-bottom,0px) + 1% + max(78px,19vw) + 10px); left:calc(1% + 40cqw + 14px + var(--rm-pan-x,0px)); display:flex; gap:2px; pointer-events:none; }
 @media(max-height:700px) { .rm-window-map .rm-wallet { bottom:calc(env(safe-area-inset-bottom,0px) + 1% + max(72px,18vw) + 10px); } }
 .rm-window-map .rm-wallet .ms-box { width:64px; height:30px; overflow:hidden; } /* 숫자는 최대 5자(9999K)까지 박스 안 */
@@ -208,3 +202,9 @@
 .rm-window-map .rm-glow-gem.rm-mode-legend { filter:brightness(1.5) saturate(1.2) drop-shadow(0 0 4px #ff4a6a); }
 /* V1325 C 모드 전환 띠(Motion Prompt #018) — 화면 전체 위, 터치는 막지 않음 */
 .rm-shape-transition { position:fixed; inset:0; width:100vw; height:100dvh; z-index:2147483000; pointer-events:none; }
+/* V1327 C 버튼판 바로 위 모드색 글로우 선 — 심전도·BGM 반응 없이 고정(사용자 지정). 층: 선 3 < 하마 4 < 검은 버튼판 5 */
+.rm-window-map .rm-bottom-line { position:absolute; left:0; right:0; z-index:3; bottom:calc(env(safe-area-inset-bottom,0px) + 1% + max(78px,19vw) - 1px); height:2px; pointer-events:none; background:var(--rm-line); box-shadow:0 0 6px 1px var(--rm-line); }
+@media(max-height:700px) { .rm-window-map .rm-bottom-line { bottom:calc(env(safe-area-inset-bottom,0px) + 1% + max(72px,18vw) - 1px); } }
+.rm-window-map[data-light="easy"] { --rm-line:#ffd84a; }
+.rm-window-map[data-light="mid"] { --rm-line:#70f58b; }
+.rm-window-map[data-light="legend"] { --rm-line:#ff4a3a; }

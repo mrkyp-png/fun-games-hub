@@ -588,10 +588,11 @@
           <div class="rm-headlamp-beam" aria-hidden="true"><svg viewBox="0 0 100 160" preserveAspectRatio="none"><defs><linearGradient id="rm-headlamp-cone" x1="40" y1="84" x2="17" y2="39" gradientUnits="userSpaceOnUse"><stop stop-color="#fff1ae" stop-opacity=".22"/><stop offset=".48" stop-color="#ffd56b" stop-opacity=".11"/><stop offset="1" stop-color="#ffc858" stop-opacity="0"/></linearGradient><radialGradient id="rm-headlamp-pool"><stop stop-color="#fffbd0" stop-opacity=".58"/><stop offset=".38" stop-color="#ffe49a" stop-opacity=".28"/><stop offset="1" stop-color="#ffc65a" stop-opacity="0"/></radialGradient><radialGradient id="rm-headlamp-source"><stop stop-color="#fff7c2" stop-opacity=".78"/><stop offset="1" stop-color="#ffbb43" stop-opacity="0"/></radialGradient></defs><path d="M40 85 C37 70 25 55 13 43 C10 39 14 36 20 39 C34 49 43 67 44 85 Z" fill="url(#rm-headlamp-cone)"/><ellipse cx="17" cy="42" rx="17" ry="10" fill="url(#rm-headlamp-pool)"/><ellipse cx="40" cy="85" rx="5.5" ry="4" fill="url(#rm-headlamp-source)"/></svg></div>
           <div class="rm-rounds" data-rm-rounds></div>
         </div>
-        <canvas class="rm-bottom-wave" data-rm-wave aria-hidden="true"></canvas><!-- V1320 C 버튼판 위 모드색 글로우 선 -->
+        
         <div class="rm-top-cap rm-mode-easy" aria-hidden="true"><img src="assets/roundmap/frame-v1298/amateur-top-cap.webp" alt="" draggable="false"></div>
         <div class="rm-top-cap rm-mode-mid" aria-hidden="true"><img src="assets/roundmap/frame-v1298/normal-top-cap.webp" alt="" draggable="false"></div>
         <div class="rm-top-cap rm-mode-legend" aria-hidden="true"><img src="assets/roundmap/frame-v1298/pro-top-cap.webp" alt="" draggable="false"></div>
+        <i class="rm-bottom-line" aria-hidden="true"></i><!-- V1327 C 버튼판 위 모드색 선(움직임 없음) -->
         <div class="rm-wallet" aria-hidden="true"><div class="ms-box ms-combo"><img class="ms-ic" src="assets/home2/ic-coin.png" alt=""><b class="ms-val" data-rm-wallet="coins">0</b></div><div class="ms-box ms-heart"><img class="ms-ic" src="assets/home2/ic-heart.png" alt=""><b class="ms-val" data-rm-wallet="hearts">0</b></div><div class="ms-box ms-score"><img class="ms-ic" src="assets/home2/ic-ticket.png" alt=""><b class="ms-val" data-rm-wallet="tickets">0</b></div></div><!-- V1323 C 코인·하트·티켓 잔량 -->
         <div class="rm-top-ticker" data-rm-ticker>
           <span class="rm-top-ticker-sr" data-rm-ticker-label role="status" aria-live="polite"></span>
@@ -1089,7 +1090,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1326 C</div>
+        <div id="build-tag" aria-hidden="true">V 1327 C</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1366,7 +1367,7 @@ window.FGH.rollOut = function (el, done) {
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=1326-C').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=1327-C').catch(function () {});
       }
     });
   }

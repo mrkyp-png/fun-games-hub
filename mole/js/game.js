@@ -167,65 +167,6 @@
     initHomeShowcaseBeat();
   }
 
-  // V1320 C 라운드맵 버튼판 위 선: 병원 심전도처럼 평소 일자선, BGM 박자(저음 급증)마다 위로 솟음.
-  // V1321 C: 선이 끊기지 않게 좌→우로 계속 흘러감(초당 60칸, fps 무관). 박자 기준은 0.12초 전 대비 저음 증가량이고,
-  // 오래 안 잡히면 기준을 점점 낮춤(폰에서 안 움직이던 문제). 분석기 없음/무음이면 1초마다 심장박동.
-  function initRoundmapWave() {
-    const screen = document.getElementById('roundmap-screen');
-    const cv = screen && screen.querySelector('[data-rm-wave]');
-    if (!cv) return;
-    const g = cv.getContext('2d');
-    const fd = new Uint8Array(128);
-    const SPIKE = [0.25, 0.7, 1, 0.55, 0.15]; // 심전도 한 박 — 일자선 자체가 위로만 솟았다 돌아옴(작은 둔덕·아래 꺼짐 없음, 사용자 지정)
-    let vals = [], queue = [], hist = [], fluxAvg = 10, lastBeat = 0, lastTick = 0, carry = 0;
-    (function draw(now) {
-      requestAnimationFrame(draw);
-      if (screen.hidden) { lastTick = 0; return; }
-      let fBest = null, fSum = 0;
-      if (bgmAnalysers) bgmAnalysers.forEach((a) => {
-        a.analyser.getByteFrequencyData(fd);
-        let sum = 0;
-        for (let i = 0; i < fd.length; i++) sum += fd[i];
-        if (sum > fSum) { fSum = sum; fBest = a.analyser; }
-      });
-      if (fBest && fSum > 0) {
-        fBest.getByteFrequencyData(fd);
-        let bass = 0;
-        for (let i = 0; i < 8; i++) bass += fd[i];
-        hist.push([now, bass]);
-        while (hist.length && now - hist[0][0] > 120) hist.shift();
-        let low = bass;
-        hist.forEach((p) => { if (p[1] < low) low = p[1]; });
-        const flux = bass - low;
-        const relax = Math.max(0.5, Math.min(1, 1 - (now - lastBeat - 1200) / 2500));
-        if (flux > Math.max(10, fluxAvg * 1.8) * relax && now - lastBeat > 600 && !queue.length) {
-          lastBeat = now;
-          fluxAvg = fluxAvg * 0.8 + flux * 0.2;
-          queue = SPIKE.map((v) => v * Math.min(1, 0.55 + flux / (fluxAvg * 4 + 1)));
-        }
-      } else if (now - lastBeat > 1000 && !queue.length) {
-        lastBeat = now;
-        queue = SPIKE.map((v) => v * 0.8);
-      }
-      const dpr = window.devicePixelRatio || 1, w = Math.round(cv.clientWidth * dpr), h = Math.round(cv.clientHeight * dpr);
-      if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
-      const step = 2 * dpr, cols = Math.max(2, Math.floor(w / step) + 1);
-      if (vals.length !== cols) vals = new Array(cols).fill(0);
-      carry += lastTick ? Math.min(2, (now - lastTick) * 0.06) : 1; // 멈췄던 시간은 몰아 건너뛰지 않음(끊김 방지)
-      lastTick = now;
-      for (; carry >= 1; carry--) { vals.unshift(queue.length ? queue.shift() : 0); vals.pop(); }
-      const color = getComputedStyle(screen).getPropertyValue('--rm-glow').trim() || '#ffd84a';
-      const lw = 2 * dpr, mid = h / 2 + 4 * dpr, amp = mid - lw;
-      g.clearRect(0, 0, w, h);
-      g.strokeStyle = color; g.lineWidth = lw; g.lineJoin = 'round';
-      g.shadowColor = color; g.shadowBlur = 6 * dpr;
-      g.beginPath();
-      g.moveTo(0, mid - vals[0] * amp);
-      for (let i = 1; i < cols; i++) g.lineTo(i * step, mid - vals[i] * amp);
-      g.stroke();
-    })(performance.now());
-  }
-
   // 재생 중인 홈 BGM(bgm-a/bgm-b 핑퐁) 을 Web Audio AnalyserNode 로 실시간 분석해 저음 에너지가
   // 평균 대비 튈 때("비트")마다 작은 타일 하나를 랜덤 이미지로 팝 전환. 오디오 재생 자체(스피커
   // 출력)는 analyser 를 거쳐 그대로 destination 에 연결해 끊기지 않는다.
@@ -2961,7 +2902,6 @@
     ensureLaneControlsForChapter(false, true); // false = 홈 기본값(16버튼), true = 최초 생성이라 무조건 실행
     wireChapterNav();  // ◀ 챕터 N ▶ (열린 챕터 2개 이상일 때만 노출)
     initHomeShowcase(); // 홈 화면 홍보 이미지 캐러셀(사용자 지정) — board-start 뒤에서 항상 순환
-    initRoundmapWave();
 
     migrateBest();
     wireMoreMenu();
