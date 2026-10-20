@@ -386,7 +386,7 @@
         var colorIndex = colorMap[i];
         ln.style.setProperty('--target-color',(beachPalette ? ['#ffc400','#009cff','#ee16a6','#10c848'] : ['#ffc94c','#5bd8ff','#ff8dce','#66e5b2'])[colorIndex]);
         var holeSize = HOLE_SIZE[i];
-        ln.innerHTML = '<img class="rp-target" src="' + A + (beachPalette ? 'beach-target-v1250/target-' : 'beach-v1172/target-') + (colorIndex + 1) + '.svg" alt=""><svg class="rp-target-inner-accent" viewBox="0 0 250 250" aria-hidden="true"><circle cx="125" cy="125" r="84" fill="none" stroke="var(--target-color)" stroke-width="3.75"/><path d="M125 23V62M125 188V227M23 125H62M188 125H227" fill="none" stroke="var(--target-color)" stroke-width="6" stroke-linecap="round"/></svg><span class="rp-target-orbit" aria-hidden="true"><i><b></b></i></span>' +
+        ln.innerHTML = (beachPalette ? '<img class="rp-target-glow" src="' + A + 'beach-target-glow-v1352/glow-' + (colorIndex + 1) + '.webp" alt="">' : '') + '<img class="rp-target" src="' + A + (beachPalette ? 'beach-target-v1250/target-' : 'beach-v1172/target-') + (colorIndex + 1) + '.svg" alt=""><svg class="rp-target-inner-accent" viewBox="0 0 250 250" aria-hidden="true"><circle cx="125" cy="125" r="84" fill="none" stroke="var(--target-color)" stroke-width="3.75"/><path d="M125 23V62M125 188V227M23 125H62M188 125H227" fill="none" stroke="var(--target-color)" stroke-width="6" stroke-linecap="round"/></svg><span class="rp-target-orbit" aria-hidden="true"><i><b></b></i></span>' +
           '<img class="rp-hole" src="' + A + 'hole-' + (i + 1) + '.png" alt="">' +
           '<span class="rp-mole" style="background-image:url(' + A + 'jump-' + CHARS[i] + '-strip.png)"></span>' +
           '<svg class="rp-hole-front" viewBox="0 0 ' + holeSize[0] + ' ' + holeSize[1] + '" aria-hidden="true"><defs><clipPath id="rp-hole-front-' + i + '" clipPathUnits="objectBoundingBox"><path d="' + holeFrontPath(i) + '"/></clipPath></defs><image href="' + A + 'hole-' + (i + 1) + '.png" width="' + holeSize[0] + '" height="' + holeSize[1] + '" clip-path="url(#rp-hole-front-' + i + ')"/></svg>' +
@@ -415,7 +415,8 @@
       var lanes = el.querySelectorAll('.rp-lane');
       lanes.forEach(function (ln, i) {
         var size=L.targetR*3.05;
-        var t = ln.querySelector('.rp-target'),orbit=ln.querySelector('.rp-target-orbit'),innerAccent=ln.querySelector('.rp-target-inner-accent');
+        var t = ln.querySelector('.rp-target'),orbit=ln.querySelector('.rp-target-orbit'),innerAccent=ln.querySelector('.rp-target-inner-accent'),glow=ln.querySelector('.rp-target-glow');
+        if(glow){glow.style.width=(size*1.5)+'px';glow.style.top=(L.targetY-size*0.75)+'px';} // V1352 C 타이밍 글로우: 타겟 1.5배, 중심 같게
         t.style.width=orbit.style.width=innerAccent.style.width=size+'px';orbit.style.height=innerAccent.style.height=size+'px';t.style.top=orbit.style.top=innerAccent.style.top=(L.targetY-size/2)+'px';
         var h = ln.querySelector('.rp-hole'), holeTop = L.moleBottom - L.sink - L.laneW * 0.32 + (i === 0 ? L.laneW * 0.05 : 0); h.style.width = (L.laneW * 0.98) + 'px'; h.style.top = holeTop + 'px';
         var hf = ln.querySelector('.rp-hole-front'); hf.style.width = h.style.width; hf.style.top = holeTop + 'px';

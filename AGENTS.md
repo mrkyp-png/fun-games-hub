@@ -1,3 +1,8 @@
+## 2026-10-20 / V1352 C — 리듬팡 비치 타겟 원 타이밍 글로우 (미배포)
+- 사용자: 타격 타이밍에 원색으로 바뀔 때 글로우(확실히 밝아지게), 버벅임 걱정 → 그림자 필터 대신 미리 만든 빛 번짐 그림을 투명도만 바꿈.
+- GPT 이미지젠 흰 빛 고리 1장(Sprite Motion Studio outputs/20261020-231213-image-rp-target-glow) → 링 반지름을 타겟 r=84/250 에 맞추고 넓은 번짐(블러 14) 더해 4색 webp(assets/rhythm/beach-target-glow-v1352/glow-1~4, 각 12KB).
+- rhythm.js: 비치(타입A)만 .rp-target-glow img 를 타겟 앞(DOM)·뒤(쌓임)에, 크기 타겟 1.5배·중심 동일. style.css 끝: 기본 opacity 0, .is-approaching 일 때 1(90ms). 네온(type-b) 숨김.
+
 ## 2026-10-20 / V1351 C — 리듬팡 비치 타격 진동 (미배포)
 - 사용자: "비치게임에서 버튼 누를 때 진동효과, 타격시". rhythm.js hit() 에 160ms 진동(네온 rhythm-b-play.js 와 같은 값, FGH.Settings.vibrate 로 진동 설정 반영). 헛방(MISS)엔 없음.
 

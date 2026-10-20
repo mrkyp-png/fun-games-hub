@@ -8008,3 +8008,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-board :not(button):not(button *), .rb-screen-ripple, .rb-existing-pulse-layer { pointer-events: none; }
 /* V1341 C 네온 '반사' 버벅임(사용자 토글 확인): 9개 반사 층 마스크가 흐림 필터 든 108KB SVG 라 누르거나 안쪽 파동이 움직일 때마다 다시 그려짐 → 같은 모양을 미리 그린 PNG 마스크(640px)로 */
 .rb-circuit-reflection { mask-image:url('assets/rhythm-b/circuit-rim-mask.png'); -webkit-mask-image:url('assets/rhythm-b/circuit-rim-mask.png'); }
+/* V1352 C 사용자: 타격 타이밍에 원색 + 글로우(밝아짐). GPT 이미지젠 빛 번짐 그림 1장을 4색으로 — 투명도만 바꿔서 폰 부담 거의 없음 */
+.rp-target-glow { position:absolute; left:50%; transform:translateX(-50%); pointer-events:none; opacity:0; transition:opacity 90ms linear; z-index:0; }
+.rp-lane.is-approaching .rp-target-glow { opacity:1; }
+#rhythm-screen.is-type-b .rp-target-glow { display:none; }
