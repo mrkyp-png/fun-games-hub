@@ -208,3 +208,8 @@ body.rm-open :not(#roundmap-screen):not(#roundmap-screen *)::after { animation-p
 /* V1330 C 고화질(Real-ESRGAN x4 anime → 1126x2000) + 효과 굽기: 앞 그림 밝기·원근 그림자, 노말·프로 뒷 배경 어둡게, 빛 층 밝기·번짐을 그림 파일에 넣고 런타임 CSS filter·mask 제거.
    빛 층은 보이는 부분만 잘라 위치(inline left/top/width/height)로 배치. 뒤에 깔리던 .rm-bg 전체 그림은 광산지도에서 안 보여 숨김 */
 .rm-window-map .rm-bg { display:none; }
+/* V1338 C 네온 효과 끄기 버튼(임시) — FPS 밑 */
+#rb-fx-toggles { position:fixed; left:4px; top:calc(env(safe-area-inset-top,0px) + 40px); z-index:2147483600; display:flex; flex-wrap:wrap; gap:3px; max-width:70vw; }
+#rb-fx-toggles[hidden] { display:none; }
+#rb-fx-toggles button { padding:3px 6px; border:1px solid #7f7; border-radius:6px; background:rgba(0,0,0,.75); color:#7f7; font:700 11px/1.2 sans-serif; }
+#rb-fx-toggles button.is-off { border-color:#f55; color:#f55; text-decoration:line-through; }

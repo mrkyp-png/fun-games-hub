@@ -7996,3 +7996,5 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* V1337 C 판정 글자 튀기 재시작용 — 같은 키프레임 두 이름을 번갈아(rhythm-b-play.js label) */
 @keyframes rb-judge-pop2 { 0% { opacity:.75; transform:translateY(0) scale(1); } 22%,48% { opacity:1; transform:translateY(var(--judge-rise)) scale(var(--judge-peak)); } 100% { opacity:1; transform:translateY(0) scale(1); } }
 .rb-status--judge.is-judging[data-pop="1"] b { animation-name:rb-judge-pop2; }
+/* V1338 C 네온 터치 불량(RB notbtn under=div.rb-board): 버튼 모서리를 깎은 clip-path 가 터치 영역도 깎아 모서리 탭이 판(rb-board)으로 새던 것 → 터치 영역은 사각형 전체(보이는 그림 없음) */
+.rb-hit { clip-path: none; }

@@ -179,6 +179,25 @@
       try { localStorage.setItem('mole.diag', JSON.stringify(diag)); } catch (e) { /* 무시 */ }
     };
     window.addEventListener('error', (e) => { saveDiag('ERR ' + (e.message || '') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || '')); });
+    // V1338 C 네온 버벅임 범인 찾기(임시, 출시 전 삭제): 리듬팡 네온 화면에서만 FPS 밑에 효과 끄기 버튼 —
+    // 누르면 그 효과를 숨김(빨강=꺼짐). 폰에서 하나씩 끄며 FPS 비교. 설정은 이 폰에만 저장.
+    const RB_FX = [['파동', '.rb-circuit-pulse,.rb-circuit-pulse--extended'], ['퍼짐', '.rb-screen-ripple'], ['레이저', '.rb-laser-canvas'],
+      ['회로빛', '.rb-flow-canvas'], ['회로판', '.rb-circuit--glass'], ['포털', '.rb-space-hit-wave,.rb-perfect-arcs,.rb-spawn-ripple,.rb-space-section'], ['캐릭', '.rb-note']];
+    let rbOff = []; try { rbOff = JSON.parse(localStorage.getItem('mole.rbfx') || '[]'); } catch (e) { rbOff = []; }
+    const rbStyle = document.createElement('style'); document.head.appendChild(rbStyle);
+    const rbBar = document.createElement('div'); rbBar.id = 'rb-fx-toggles'; document.body.appendChild(rbBar);
+    const rbApply = () => {
+      rbStyle.textContent = rbOff.map((k) => (RB_FX.find((f) => f[0] === k) || [0, ''])[1]).filter(Boolean).map((sel) => sel + '{display:none!important}').join('');
+      rbBar.querySelectorAll('button').forEach((b) => b.classList.toggle('is-off', rbOff.indexOf(b.textContent) >= 0));
+      try { localStorage.setItem('mole.rbfx', JSON.stringify(rbOff)); } catch (e) { /* 무시 */ }
+    };
+    RB_FX.forEach(([name]) => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = name;
+      b.addEventListener('click', () => { const i = rbOff.indexOf(name); if (i >= 0) rbOff.splice(i, 1); else rbOff.push(name); rbApply(); });
+      rbBar.appendChild(b);
+    });
+    rbApply();
+    setInterval(() => { rbBar.hidden = !document.querySelector('.rb-screen:not([hidden]) .rb-board'); }, 500);
     // V1336 C 리듬팡 네온 '터치 불량' 기록: 아래 버튼 영역을 눌렀는데 버튼이 아닌 것이 받았거나, 입력이 120ms 넘게 늦게 처리된 경우
     document.addEventListener('pointerdown', (e) => {
       const rb = document.querySelector('.rb-screen:not([hidden]) .rb-board');

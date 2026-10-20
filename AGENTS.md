@@ -1,3 +1,7 @@
+## 2026-10-20 / V1338 C — 네온 버튼 모서리 터치 누락 수정, 폰용 효과 끄기 버튼(임시) (배포)
+- 진단 "RB notbtn under=div.rb-board": .rb-hit clip-path(모서리 깎은 8각형)가 터치 영역도 깎음 → style.css 끝 .rb-hit { clip-path:none } (보이는 그림 없음, 보이는 면은 자식들).
+- 폰 17~20fps 연타 버벅임은 헤드리스(소프트웨어 GL)로 구분 불가 → game.js 에 네온 화면 전용 #rb-fx-toggles(파동/퍼짐/레이저/회로빛/회로판/포털/캐릭, display:none 토글, localStorage mole.rbfx). 1순위 의심=파동(.rb-circuit-pulse--extended: --rb-press-wave-scale 커스텀 속성 애니→transform+radial-gradient 매 프레임 재계산·재페인트, 연타 시 겹침). 출시 전 FPS 표시와 함께 삭제.
+
 ## 2026-10-20 / V1337 C — 리듬팡 네온 터치 시 강제 레이아웃·스타일 계산 제거 (배포)
 - 폰 영상: 캐릭터 많아도 터치 없으면 60fps, 터치 시 28~48 → 터치 코드 경로가 원인.
 - rhythm-b.js down(): 매 누름 fitPressPulses()(getBoundingClientRect 11회+9개 pulse clip path d 재작성) 제거 — ResizeObserver 만 갱신.
