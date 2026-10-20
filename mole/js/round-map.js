@@ -444,6 +444,15 @@
     }
     function show() {
       view = opts.currentLight(); render(); setTimeout(flyDragonflies, 50);
+      // V1329 C: 광산지도가 안정된 뒤 쉬는 틈에 세 모드의 유체 그림·마스크와 모드 그림을 미리 준비(전환 직후 끊김 방지)
+      if (!show.warmed) {
+        show.warmed = true;
+        root.setTimeout(function () {
+          var sc = MG.RoundMapFluidScenes || {}, size = MG.RoundMapFluids && MG.RoundMapFluids.canvasSizeFor($('.rm-stage').getBoundingClientRect());
+          if (size) ['normal-rear', 'pro-rear', 'pro-front'].forEach(function (k) { MG.RoundMapFluids.warm(sc[k], size[0], size[1]); });
+          el.querySelectorAll('.rm-stage img').forEach(function (i) { if (i.decode) i.decode().catch(function () {}); }); // whenModeReady 는 전환 순번을 바꾸므로 여기선 직접 decode
+        }, 1200);
+      }
       el.classList.add('rm-preparing');
       whenModeReady(view, function () { el.classList.remove('rm-preparing'); });
       root.setTimeout(function () { el.classList.remove('rm-preparing'); }, 900); // 그 사이 탭 전환으로 콜백이 취소돼도 반드시 표시

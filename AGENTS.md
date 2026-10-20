@@ -1,3 +1,8 @@
+## 2026-10-20 / V1329 C — 모드 전환 직후 끊김: 유체 그림·마스크 캐시+미리 준비 (배포)
+- 폰 실측(FPS 표시 영상 KakaoTalk_20261020_140705251.mp4): 정지 상태는 세 모드 58~60fps, 전환 직후 ~1초만 19~45fps·최장 100~300ms(프로 최악).
+- 원인: setScene 마다 아틀라스·SVG 마스크 재로딩+마스크 재래스터. round-map-fluids.js 모듈 전역 imageCache(decode 포함)·maskRasterCache(src|크기), warm(scene,w,h). round-map.js show() 첫 진입 1.2초 뒤 세 유체 장면 warm + .rm-stage img decode(whenModeReady 는 순번 바뀌어 사용 안 함).
+- 임시 FPS 표시 유지(폰 재확인용).
+
 ## 2026-10-20 / V1328 C — 광산지도 뒤 홈 애니메이션 정지(버벅임), 임시 FPS·오류 표시 (배포)
 - 원인 후보(실측): 광산지도 열린 동안 뒤에 가려진 홈 애니메이션 31개(로고·다이얼패드·시작버튼)+홈 BGM 박자 효과가 계속 돎. round-map.js 가 #roundmap-screen/#more-menu hidden 관찰해 body.rm-open 토글 → CSS 로 광산지도 밖 animation-play-state:paused, game.js 박자 효과 skip.
 - 임시 #fps-meter(game.js, 왼쪽 위): 0.5초마다 fps·최장 프레임ms + 마지막 window error(메시지@파일:줄). 버벅임·골드 묠니르 확인 후 삭제할 것.
