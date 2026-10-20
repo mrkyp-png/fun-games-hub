@@ -221,14 +221,18 @@
   function prepareHitBuffers(){
    if(!context.createBuffer)return;
    if(hitBufferContext===context&&hitBuffers)return;hitBufferContext=context;hitBuffers={};
-   for(const kind of ['kick','snare','hat']){const sr=context.sampleRate||48000,length=Math.round(sr*(kind==='hat'?.028:.045)),buffer=context.createBuffer(1,length,sr),data=buffer.getChannelData(0);let seed=17,previous=0;
-    for(let i=0;i<length;i++){const t=i/sr,envelope=Math.exp(-t/(kind==='kick'?.012:.008));seed=(seed*1664525+1013904223)>>>0;const noise=seed/2147483648-1;data[i]=(kind==='kick'?Math.sin(2*Math.PI*(110*t+1.2*(1-Math.exp(-t*70)))):kind==='snare'?noise*.65+Math.sin(2*Math.PI*190*t)*.25:(noise-previous)*.4)*envelope;previous=noise;}hitBuffers[kind]=buffer;
-   }
+   // V1359 C 사용자: 물방울 소리(짧은 낮은 사인) → 클랩(손뼉) — 고른 후보 1번과 같은 합성: 노이즈 3번(0·9·18ms) + 꼬리, 900~5000Hz 대역.
+   {const sr=context.sampleRate||48000,length=Math.round(sr*.18),buffer=context.createBuffer(1,length,sr),data=buffer.getChannelData(0);let seed=17,hp=0,prevIn=0,lp=0,peak=0;
+    const aHP=Math.exp(-2*Math.PI*900/sr),aLP=1-Math.exp(-2*Math.PI*5000/sr);
+    for(let i=0;i<length;i++){const t=i/sr;seed=(seed*1664525+1013904223)>>>0;const noise=seed/2147483648-1;hp=aHP*(hp+noise-prevIn);prevIn=noise;lp+=aLP*(hp-lp);
+     let env=0;for(const o of [0,.009,.018])if(t>=o)env+=Math.exp(-(t-o)/.006);if(t>=.02)env+=.5*Math.exp(-(t-.02)/.05);data[i]=lp*env;peak=Math.max(peak,Math.abs(data[i]));}
+    for(let i=0;i<length;i++)data[i]/=peak||1;
+    for(const kind of ['kick','snare','hat'])hitBuffers[kind]=buffer;}
   }
   function hitSound(note,grade){
    if(!state.hitFeedback||!hitBuffers||!context.createGain)return;
    if(root.FGH&&root.FGH.Settings&&root.FGH.Settings.sfxEnabled&&!root.FGH.Settings.sfxEnabled())return;
-   const source=context.createBufferSource(),gain=context.createGain();source.buffer=hitBuffers[note.sound]||hitBuffers.kick;gain.gain.value=.06*(note.chordSize===2?.7:1)*(grade==='GOOD'?.75:1);source.connect(gain);gain.connect(context.destination);hitSources.add(source);source.onended=()=>{hitSources.delete(source);source.disconnect();gain.disconnect();};source.start();
+   const source=context.createBufferSource(),gain=context.createGain();source.buffer=hitBuffers[note.sound]||hitBuffers.kick;gain.gain.value=.05*({2:.7,3:.55,4:.45}[note.chordSize]||1)*(grade==='GOOD'?.75:1);source.connect(gain);gain.connect(context.destination);hitSources.add(source);source.onended=()=>{hitSources.delete(source);source.disconnect();gain.disconnect();};source.start();
   }
   function stopAudio(){hitSources.forEach(s=>{try{s.stop();}catch(e){}});hitSources.clear();sources.forEach(s=>{try{s.stop();}catch(e){}});sources=[];melodyGain=null;}
   function clearRings(){visibleNotes.length=0;for(const pool of notePools)for(const slot of pool){if(slot.owner)releaseNoteVisual(slot.owner);else{slot.el.hidden=true;slot.el.remove();}}}

@@ -81,7 +81,7 @@
   const HOME2 = {
     score: ['red', 'ic-score'], daily: ['blue', 'ic-daily'], quest: ['orange', 'ic-quest'],
     locker: ['pink', 'ic-workshop'], mail: ['teal', 'ic-mail'], settings: ['blue2', 'ic-settings'],
-    shop: ['none', 'ic-shop'], home: ['purple', 'ic-home'], inventory: ['green', 'ic-items']
+    shop: ['none', 'ic-shop'], home: ['none', 'ic-home'], inventory: ['green', 'ic-items'] // V1358 C 사용자: 홈도 상점처럼 테두리(박스) 없이
   };
   const PILL_IC = { hearts: 'ic-heart', coins: 'ic-coin', tickets: 'ic-ticket' };
   function h2Face(color, ic, lblKey, lblTxt) {
