@@ -1,3 +1,8 @@
+## 2026-10-20 / V1331 C — 보석·랜턴 빛 한 단계 밝게, 아마추어 액자 랜턴 최대 밝기 (배포)
+- hd-v1330 빛 12장 재굽기(bake_glow.py): 아마추어·프로 gem brightness1.5→1.9 sat1.3 shadow6, lan1.4→1.8 shadow9 / 노말 gem1.9→2.3 shadow8, lan1.8→2.2 shadow11. 런타임 부하 동일.
+- 아마추어 앞 액자 랜턴(easy-front-lan): 액자=가장 가까움 → 원근 감쇠·원근 그림자 미적용, brightness2.6 shadow14(사용자 지정 "제일 밝아야"). 빛 층 bbox 변경으로 index.html inline 위치 갱신.
+- 제안만 함(미적용): 아마추어 액자 그림 자체의 원근 그림자 제거.
+
 ## 2026-10-20 / V1330 C — 광산지도 고화질(Real-ESRGAN)+효과 굽기, 게임 홈 버튼 금색 집 (배포)
 - 사용자 승인: Real-ESRGAN ncnn x4plus-anime(규칙1 예외 — GPT 이미지젠은 1536px 한계·그림 변형이라 업스케일 불가). 원본 941x1672 → x4 → 1126x2000 LANCZOS, webp q95. assets/roundmap/hd-v1330/ 19장(뒤3·앞3·아마추어 길1·빛12).
 - 런타임 효과를 그림에 굽기: 앞 그림 brightness1.3(노말·프로)+원근 그라데이션, 노말·프로 뒷 배경 brightness.55 saturate.75, 빛 층 brightness/saturate/drop-shadow(+아마추어·프로 앞 빛엔 원근). CSS filter·.rm-depth-shade(HTML·CSS) 제거, .rm-parallax-rear filter 제거 → 뒷 유체는 scene.dim .45(source-atop 검정)로 보정(채도↓는 미적용). 빛 층은 보이는 부분만 잘라 inline left/top/width/height. .rm-bg 숨김. sw 사전캐시 glow-v1320 → hd-v1330. 굽기 스크립트=scratchpad bake.py(재사용 시 참고).
