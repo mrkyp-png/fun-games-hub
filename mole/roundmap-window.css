@@ -25,7 +25,7 @@
 .rm-window-map .rm-glow { width:var(--rm-glow-size,14cqw); margin-top:calc(var(--rm-glow-size,14cqw) * -.5); margin-left:calc(var(--rm-glow-size,14cqw) * -.5); }
 .rm-window-map .rm-spark { width:3cqw; height:3cqw; margin:-1.5cqw 0 0 -1.5cqw; }
 .rm-window-map .rm-rounds { z-index:3; }
-.rm-window-map .rm-viewer { position:absolute; left:calc(1% + var(--rm-pan-x,0px)); right:auto; bottom:calc(env(safe-area-inset-bottom,0px) + max(19cqw,72px)); width:40cqw; aspect-ratio:1; z-index:4; pointer-events:none; opacity:.70; transform:scaleX(-1); overflow:hidden; contain:paint; isolation:isolate; backface-visibility:hidden; will-change:transform; }
+.rm-window-map .rm-viewer { position:absolute; left:calc(1% + var(--rm-pan-x,0px)); right:auto; bottom:calc(env(safe-area-inset-bottom,0px) + max(19cqw,72px)); width:40cqw; aspect-ratio:1; z-index:7; pointer-events:none; opacity:.70; transform:scaleX(-1); overflow:hidden; contain:paint; isolation:isolate; backface-visibility:hidden; will-change:transform; }
 .rm-window-map[data-light="mid"] .rm-viewer,.rm-window-map[data-light="legend"] .rm-viewer { bottom:calc(env(safe-area-inset-bottom,0px) + max(16cqw,60px)); }
 /* Keep the painted burrows; remove synthetic oval shadows, including locked rounds. */
 .rm-window-map .rm-depth,.rm-window-map .rm-round[data-state="locked"] .rm-dark { display:none; }
@@ -202,3 +202,8 @@
 @media(prefers-reduced-motion:reduce) { .rm-window-map .rm-glow-layer { animation:none; opacity:.6; } }
 /* V1322 C 라운드맵 첫 진입: 그림이 다 준비될 때까지 가렸다가 한 번에 표시(round-map.js whenModeReady) */
 .rm-window-map.rm-preparing .rm-stage,.rm-window-map.rm-preparing .rm-top-cap { visibility:hidden; }
+/* V1323 C 재화 박스(게임 상태판 반투명 박스 재사용): 아래 선 바로 위, 하마 오른쪽으로 조금 띄움(사용자 지정). 하마(.rm-viewer)는 z7로 아래 선 앞 */
+.rm-window-map .rm-wallet { position:absolute; z-index:6; bottom:calc(env(safe-area-inset-bottom,0px) + 1% + max(78px,19vw) + 10px); left:calc(1% + 40cqw + 14px + var(--rm-pan-x,0px)); display:flex; gap:2px; pointer-events:none; }
+@media(max-height:700px) { .rm-window-map .rm-wallet { bottom:calc(env(safe-area-inset-bottom,0px) + 1% + max(72px,18vw) + 10px); } }
+.rm-window-map .rm-wallet .ms-box { width:64px; height:30px; overflow:hidden; } /* 숫자는 최대 5자(9999K)까지 박스 안 */
+.rm-window-map .rm-wallet .ms-val { top:50%; transform:translateY(-50%); font-size:15px; }

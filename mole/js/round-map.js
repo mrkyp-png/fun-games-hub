@@ -286,6 +286,14 @@
       Promise.all(imgs.map(function (i) { return i.decode ? i.decode().catch(function () {}) : null; })).then(finish);
       root.setTimeout(finish, 800);
     }
+    // V1323 C 라운드맵 재화 박스(코인·하트·티켓) — 하트는 시간 충전이라 보이는 동안 1초마다 갱신
+    function updateWallet() {
+      var E = MG.Economy; if (!E) return;
+      var v = { coins: E.getCoins(), hearts: E.getHearts(), tickets: E.getTickets() };
+      // 1000 이상은 1000당 K(사용자 지정) — 박스 밖으로 안 넘치게
+      el.querySelectorAll('[data-rm-wallet]').forEach(function (b) { var n = v[b.getAttribute('data-rm-wallet')]; b.textContent = n >= 1000 ? Math.floor(n / 1000) + 'K' : String(n); });
+    }
+    root.setInterval(function () { if (!el.hidden) updateWallet(); }, 1000);
     function animatePage(entrySide) {
       root.clearTimeout(pageAnimationTimer);
       el.classList.remove('rm-page-from-left', 'rm-page-from-right');
@@ -365,6 +373,7 @@
       renderFx();
       el.setAttribute('data-light', view);
       updateTicker();
+      updateWallet();
       applyPan(view);
       $('[data-rm-bg]').src = A + ({ easy: 'window-v1263/scene.webp', mid: 'selected-v1281/normal-rear.webp', legend: 'selected-v1281/pro-rear.webp' }[view]);
       if (fluids && MG.RoundMapFluidScenes) {

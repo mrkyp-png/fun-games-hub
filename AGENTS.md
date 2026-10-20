@@ -1,3 +1,8 @@
+## 2026-10-20 / V1323 C — 라운드맵 코인·하트·티켓 박스, 하마 선 앞 (배포)
+- .rm-wallet: 게임 상태판 .ms-box(반투명) 재사용 3개(코인=combo 노랑, 하트=heart 분홍, 티켓=score 파랑), 아이콘 assets/home2/ic-{coin,heart,ticket}.png. 위치 = 아래 선 바로 위, 하마 오른쪽 14px(사용자 지정, 티커·X 불변). 박스 64×30 overflow:hidden, 1000 이상 1000당 K. round-map.js updateWallet(render 시 + 보이는 동안 1초마다).
+- 하마 .rm-viewer z4→7(아래 심전도 선 앞).
+- 미해결: 화면 전환 시 티커·심전도 선이 버벅임(전환 때 큰 그림 decode 로 메인스레드 막힘 추정, 폰 미측정).
+
 ## 2026-10-20 / V1322 C — 노말 아래 선 녹색, 라운드맵 화면 전환 한 번에 (배포)
 - 노말 --rm-glow #4fc3ff → #70f58b(노말 탭 글자색, 사용자 지정).
 - 화면 전환(round-map.js whenModeReady): 탭·스와이프 전환 시 대상 모드 그림(.rm-mode-X img, 아마추어 route/front, 용암·폭포 atlas/mask)을 decode 후 한 번에 render. 연속 전환은 마지막만(readyTicket), 최대 0.8초 대기. 첫 진입 show()는 .rm-preparing 으로 stage·top-cap 숨겼다 준비 후 표시(0.9초 안전 해제).
