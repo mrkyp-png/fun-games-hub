@@ -164,7 +164,7 @@
       b.addEventListener('click', function () {
         var l = b.getAttribute('data-rm-light');
         if (!MG.Progress.isLightUnlocked(l)) { flash(b); return; }
-        view = l; render(); // v844(사용자 지정): 탭은 그 난이도 지도 보기만 — 내 위치(홈 라운드)는 라운드를 눌러야 바뀜
+        whenModeReady(l, function () { view = l; render(); }); // V1322 C 그림 준비 후 한 번에 전환. v844(사용자 지정): 탭은 그 난이도 지도 보기만 — 내 위치(홈 라운드)는 라운드를 눌러야 바뀜
       });
     });
 
@@ -269,6 +269,23 @@
       }
       panRaf = root.requestAnimationFrame(tick);
     }
+    // V1322 C 화면 전환을 한 번에(사용자 지정): 대상 모드의 그림(앞·뒤·덮개·빛 층·용암/폭포)을 미리 decode 한 뒤 콜백.
+    // 연속 전환은 마지막 것만 반영, 느린 폰은 최대 0.8초만 기다림.
+    var readyTicket = 0;
+    function whenModeReady(light, cb) {
+      var ticket = ++readyTicket, done = false, imgs = [];
+      var sel = '.rm-mode-' + light + (light === 'easy' ? ',.rm-route-art,.rm-front-art' : '');
+      el.querySelectorAll(sel).forEach(function (n) {
+        if (n.tagName === 'IMG') imgs.push(n); else n.querySelectorAll('img').forEach(function (i) { imgs.push(i); });
+      });
+      var scenes = MG.RoundMapFluidScenes || {};
+      (light === 'mid' ? [scenes['normal-rear']] : light === 'legend' ? [scenes['pro-rear'], scenes['pro-front']] : []).forEach(function (sc) {
+        if (sc) [sc.atlas, sc.mask].forEach(function (src) { var i = new Image(); i.src = src; imgs.push(i); });
+      });
+      function finish() { if (done) return; done = true; if (ticket === readyTicket) cb(); }
+      Promise.all(imgs.map(function (i) { return i.decode ? i.decode().catch(function () {}) : null; })).then(finish);
+      root.setTimeout(finish, 800);
+    }
     function animatePage(entrySide) {
       root.clearTimeout(pageAnimationTimer);
       el.classList.remove('rm-page-from-left', 'rm-page-from-right');
@@ -316,9 +333,12 @@
             // selection and difficulty changes remain guarded by their existing lock checks.
             if (next) {
               panByLight[g.light] = g.start;
-              view = next;
-              render();
-              animatePage(dx < 0 ? 'right' : 'left');
+              applyPan(g.light);
+              whenModeReady(next, function () {
+                view = next;
+                render();
+                animatePage(dx < 0 ? 'right' : 'left');
+              });
             } else {
               panByLight[g.light] = g.start;
               applyPan(g.light);
@@ -377,7 +397,12 @@
       });
     }
 
-    function show() { view = opts.currentLight(); render(); setTimeout(flyDragonflies, 50); }
+    function show() {
+      view = opts.currentLight(); render(); setTimeout(flyDragonflies, 50);
+      el.classList.add('rm-preparing');
+      whenModeReady(view, function () { el.classList.remove('rm-preparing'); });
+      root.setTimeout(function () { el.classList.remove('rm-preparing'); }, 900); // 그 사이 탭 전환으로 콜백이 취소돼도 반드시 표시
+    }
     return { show: show, pauseEffects: function (paused) {
       if (fluids) { fluids.rear.pause(paused); fluids.front.pause(paused); }
     } };
