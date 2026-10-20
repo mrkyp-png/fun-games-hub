@@ -2953,6 +2953,7 @@
     document.addEventListener('click', (e) => {
       const btn = e.target.closest('button');
       if (!btn || btn.closest('#lane-button-bar')) return;
+      if (btn.classList.contains('rb-hit')) return; // V1364 C 사용자: 네온 게임 아래 9버튼은 물방울 버튼음 없이 — 맞히면 클랩만
       MG.HitFx.uiTap(1);
     });
     document.getElementById('nc-back-btn').addEventListener('click', () => {
