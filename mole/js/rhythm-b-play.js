@@ -165,7 +165,7 @@
   const glassRings=glassGroups.map((g,lane)=>{const mini=g.closest('.rb-mini');const ring=document.createElement('div');ring.className='rb-glass-ring';ring.hidden=true;ring.style.setProperty('--ring-color',colors[lane]);ring.innerHTML='<i></i>';mini.appendChild(ring);return ring;});
   function scaleGlass(lane,scale){if(!glassGroups[lane]||glassScales[lane]===scale)return;const g=glassGroups[lane],ring=glassRings[lane];
    if(scale===1){ring.hidden=true;g.style.visibility='';}
-   else{if(ring.hidden){const w=parseFloat(g.firstElementChild.getAttribute('stroke-width'))||1.6;ring.style.setProperty('--ring-w',w+'px');ring.style.setProperty('--ring-in',(parseFloat(g.children[1].getAttribute('stroke-width'))||.6)+'px');ring.hidden=false;g.style.visibility='hidden';}
+   else{if(ring.hidden){ring.style.setProperty('--ring-w',((Number(g.firstElementChild.dataset.stroke)||4)*.65)+'px');ring.style.setProperty('--ring-in',((Number(g.children[1].dataset.stroke)||1.5)*.65)+'px');/* V1342 C: 원래 SVG 원 굵기로 원복(화면 실측 약 2.6px·1px, 사용자 지정) */ring.hidden=false;g.style.visibility='hidden';}
     const d=(2*45*304/296*scale/304*100).toFixed(3)+'%';ring.style.width=d;ring.style.height=d;}
    glassScales[lane]=scale;}
   const spaceTunnels=spaceMinis.map(m=>m.querySelector('.rb-wire-tunnel'));
@@ -274,7 +274,7 @@
     n.el.style.transform='translate('+(dx/300*100)+'%,'+(dy/300*100)+'%) scale('+scale+')';
     n.el.style.opacity=String(.3+.7*u);
     const glassU=Math.round(u*24)/24;
-    scaleGlass(n.lane,1+(glassTarget-1)*glassU);
+    scaleGlass(n.lane,1+(glassTarget-1)*u); // V1342 C: 1/24 계단 대신 캐릭터와 같은 연속 크기(계단식 커짐이 버벅임처럼 보임) — 가벼운 HTML 원이라 매 프레임 갱신 부담 작음
     if(opts.onNoteApproach)opts.onNoteApproach(n.lane,glassU);
     n.lastU=u;
    }

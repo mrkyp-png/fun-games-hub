@@ -179,27 +179,39 @@
       try { localStorage.setItem('mole.diag', JSON.stringify(diag)); } catch (e) { /* 무시 */ }
     };
     window.addEventListener('error', (e) => { saveDiag('ERR ' + (e.message || '') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || '')); });
-    // V1339 C 느린 프레임 원인 표시(임시, 출시 전 삭제): 폰 크롬의 Long Animation Frame 기록으로 50ms 넘는 프레임마다
-    // 어디서 시간을 썼는지(가장 오래 걸린 코드 파일:위치·함수 / 강제 배치 계산 / 그리기) 누적해 FPS 셋째 줄에 가장 큰 범인 2개 표시.
-    let loafLine = '';
+    // V1339 C 느린 프레임 원인 표시(임시, 출시 전 삭제): 폰 크롬 Long Animation Frame 기록 — 50ms 넘는 프레임이 어디서 시간을 썼는지
+    // (코드 파일:위치·함수 / 강제배치 / 그리기 / 기타=그래픽칩 대기). V1342 C: 누적 대신 "최근 10초" 합계, 화면이 바뀌면 0부터(사용자 지정).
+    let loafLine = '', loafItems = [], loafScreen = '';
+    const screenKey = () => (document.querySelector('.rb-screen:not([hidden]) .rb-board') ? 'neon' : '') + '|' + ((screenNav && screenNav.current()) || '') + '|' +
+      ((document.getElementById('game-screen') || { classList: { contains: () => false } }).classList.contains('is-start') ? 'home' : 'game');
+    const loafSummary = (now) => {
+      const key = screenKey();
+      if (key !== loafScreen) { loafScreen = key; loafItems = []; }
+      loafItems = loafItems.filter((it) => now - it.t < 10000);
+      const agg = {}; let total = 0;
+      loafItems.forEach((it) => { agg[it.k] = (agg[it.k] || 0) + it.ms; if (it.f) total += it.ms; });
+      const top = Object.entries(agg).filter(([k]) => k).sort((x, y) => y[1] - x[1]).slice(0, 2).map(([k, v]) => k + ' ' + Math.round(v)).join(' | ');
+      return '10초 느림 ' + Math.round(total) + 'ms' + (top ? ' · ' + top : '');
+    };
     try {
-      const agg = {};
       new PerformanceObserver((list) => {
         list.getEntries().forEach((f) => {
           if (f.duration < 50) return;
-          const render = Math.round((f.startTime + f.duration) - (f.renderStart || f.startTime + f.duration));
+          const t = f.startTime + f.duration;
+          const render = Math.round(t - (f.renderStart || t));
           let jsTotal = 0;
+          loafItems.push({ t, k: '', ms: f.duration, f: 1 });
           (f.scripts || []).forEach((sc) => {
             jsTotal += sc.duration;
             const where = String(sc.sourceURL || '').split('/').pop() + ':' + (sc.sourceCharPosition >= 0 ? sc.sourceCharPosition : '') + ' ' + String(sc.sourceFunctionName || sc.invoker || '').slice(0, 24);
-            agg[where] = (agg[where] || 0) + sc.duration;
-            if (sc.forcedStyleAndLayoutDuration > 5) agg['강제배치 ' + where] = (agg['강제배치 ' + where] || 0) + sc.forcedStyleAndLayoutDuration;
+            loafItems.push({ t, k: where, ms: sc.duration });
+            if (sc.forcedStyleAndLayoutDuration > 5) loafItems.push({ t, k: '강제배치 ' + where, ms: sc.forcedStyleAndLayoutDuration });
           });
-          agg['그리기'] = (agg['그리기'] || 0) + render;
-          agg['기타'] = (agg['기타'] || 0) + Math.max(0, f.duration - jsTotal - render);
-          loafLine = Object.entries(agg).sort((x, y) => y[1] - x[1]).slice(0, 2).map(([k, v]) => k + ' ' + Math.round(v)).join(' | ');
+          loafItems.push({ t, k: '그리기', ms: render });
+          loafItems.push({ t, k: '기타', ms: Math.max(0, f.duration - jsTotal - render) });
         });
       }).observe({ type: 'long-animation-frame', buffered: false });
+      loafLine = 'on';
     } catch (e) { loafLine = '(LoAF 미지원)'; }
     // V1338 C 네온 버벅임 범인 찾기(임시, 출시 전 삭제): 리듬팡 네온 화면에서만 FPS 밑에 효과 끄기 버튼 —
     // 누르면 그 효과를 숨김(빨강=꺼짐). 폰에서 하나씩 끄며 FPS 비교. 설정은 이 폰에만 저장.
@@ -253,7 +265,7 @@
     }, true);
     (function f(now) {
       n++; worst = Math.max(worst, now - last); last = now;
-      if (now - t0 >= 500) { m.textContent = Math.round(n * 1000 / (now - t0)) + 'fps ' + Math.round(worst) + 'ms' + (diag.length ? '\n⚠' + diag.length + ' ' + diag[diag.length - 1] : '') + (loafLine ? '\n🐢 ' + loafLine : ''); n = 0; worst = 0; t0 = now; }
+      if (now - t0 >= 500) { m.textContent = Math.round(n * 1000 / (now - t0)) + 'fps ' + Math.round(worst) + 'ms' + (diag.length ? '\n⚠' + diag.length + ' ' + diag[diag.length - 1] : '') + (loafLine === 'on' ? '\n🐢 ' + loafSummary(now) : loafLine ? '\n🐢 ' + loafLine : ''); n = 0; worst = 0; t0 = now; }
       requestAnimationFrame(f);
     })(last);
   })();

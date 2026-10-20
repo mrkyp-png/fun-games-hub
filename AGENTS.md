@@ -1,3 +1,8 @@
+## 2026-10-20 / V1342 C — 네온 커지는 원 연속·굵기 원복, 🐢 최근 10초 기준 (배포)
+- 사용자 확인: V1341 반사 마스크 PNG 후 "엄청 좋아짐"(V1340 부터 상당히 좋았음).
+- rhythm-b-play.js placeNote: scaleGlass 를 1/24 계단(glassU) 대신 연속 u 로(계단식 커짐이 캐릭터 버벅임처럼 보임). .rb-glass-ring 굵기 = data-stroke×0.65px(원래 SVG 화면 실측 ≈2.6px/1px, 사용자 원복 요청).
+- game.js 🐢: 누적 → 최근 10초 합계+상위2, 화면(neon/screenNav/home·game) 바뀌면 0부터.
+
 ## 2026-10-20 / V1341 C — 네온 반사 층 마스크 SVG→PNG (배포)
 - 사용자 토글 확인 "반사가 좀 그런 듯": .rb-circuit-reflection 9개 mask=circuit-rim.svg(108KB, 내부 feGaussianBlur) → 누름 transform·안쪽 outward 애니마다 재래스터. headless 로 640x614 PNG(assets/rhythm-b/circuit-rim-mask.png) 래스터 후 style.css 끝 mask-image 교체.
 - 영상(KakaoTalk_20261020_180926596.mp4): RB notbtn 신규 없음(V1340 장식 pointer-events 수정 효과), 🐢 여전히 기타(GPU 대기) 위주.
