@@ -89,6 +89,8 @@
       // V1326 C: SVG 마스크(수천 개 사각형+블러)를 매 프레임 다시 그리던 것이 노말·프로 버벅임의 주원인 → 캔버스 크기별로 한 번만 래스터화해 재사용
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.drawImage(maskRaster(mask, canvas.width, canvas.height), 0, 0);
+      // V1330 C 뒷 배경 brightness(.55) 를 그림에 구우면서 부모 CSS filter 제거 → 뒷 유체도 같은 만큼 어둡게(scene.dim)
+      if (scene.dim) { ctx.globalCompositeOperation = 'source-atop'; ctx.fillStyle = 'rgba(0,0,0,' + scene.dim + ')'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
       ctx.globalCompositeOperation = 'source-over';
     }
     function tick(now) {

@@ -1,3 +1,9 @@
+## 2026-10-20 / V1330 C — 광산지도 고화질(Real-ESRGAN)+효과 굽기, 게임 홈 버튼 금색 집 (배포)
+- 사용자 승인: Real-ESRGAN ncnn x4plus-anime(규칙1 예외 — GPT 이미지젠은 1536px 한계·그림 변형이라 업스케일 불가). 원본 941x1672 → x4 → 1126x2000 LANCZOS, webp q95. assets/roundmap/hd-v1330/ 19장(뒤3·앞3·아마추어 길1·빛12).
+- 런타임 효과를 그림에 굽기: 앞 그림 brightness1.3(노말·프로)+원근 그라데이션, 노말·프로 뒷 배경 brightness.55 saturate.75, 빛 층 brightness/saturate/drop-shadow(+아마추어·프로 앞 빛엔 원근). CSS filter·.rm-depth-shade(HTML·CSS) 제거, .rm-parallax-rear filter 제거 → 뒷 유체는 scene.dim .45(source-atop 검정)로 보정(채도↓는 미적용). 빛 층은 보이는 부분만 잘라 inline left/top/width/height. .rm-bg 숨김. sw 사전캐시 glow-v1320 → hd-v1330. 굽기 스크립트=scratchpad bake.py(재사용 시 참고).
+- 게임 중 홈 버튼: GPT 이미지젠(Sprite Motion Studio outputs/20261020-152715-image-home-btn-gold) 파란 링+입체 금색 집 → assets/home-btn-gold.png(144px, 초록 배경 코드 제거). style.css 451.
+- 사용자: 모든 화면에 업스케일 확대 적용 예정(이번 결과 보고 결정).
+
 ## 2026-10-20 / V1329 C — 모드 전환 직후 끊김: 유체 그림·마스크 캐시+미리 준비 (배포)
 - 폰 실측(FPS 표시 영상 KakaoTalk_20261020_140705251.mp4): 정지 상태는 세 모드 58~60fps, 전환 직후 ~1초만 19~45fps·최장 100~300ms(프로 최악).
 - 원인: setScene 마다 아틀라스·SVG 마스크 재로딩+마스크 재래스터. round-map-fluids.js 모듈 전역 imageCache(decode 포함)·maskRasterCache(src|크기), warm(scene,w,h). round-map.js show() 첫 진입 1.2초 뒤 세 유체 장면 warm + .rm-stage img decode(whenModeReady 는 순번 바뀌어 사용 안 함).

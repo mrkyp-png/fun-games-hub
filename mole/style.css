@@ -448,7 +448,7 @@ body { background: var(--lm-page); }
 #game-screen:not(.is-start) #btn-back-to-hub.nav-locked { opacity: 0.28; }
 /* 아케이드 홈버튼 그림(GPT Imagegen, 비치 박스 톤) — 기존 SVG 아이콘·테두리 대신 */
 #game-screen:not(.is-start) #btn-back-to-hub, #game-screen:not(.is-start) #btn-back-to-hub:active {
-  border: 0; background: url('assets/home-btn-arcade.png') center / contain no-repeat; box-shadow: none; }
+  border: 0; background: url('assets/home-btn-gold.png') center / contain no-repeat; box-shadow: none; }
 #game-screen:not(.is-start) #btn-back-to-hub .hub-menu-ic { display: none; }
 /* 인트로/카운트다운/라운드 전환 중 = 잠금(회색 음영). 클릭도 무시(JS navLocked). */
 #btn-back-to-hub.nav-locked { opacity: 0.4; filter: grayscale(0.8); pointer-events: none; }

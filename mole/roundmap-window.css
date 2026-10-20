@@ -51,7 +51,7 @@
 .rm-window-map .rm-light--easy { color:#ffe36b; }
 .rm-window-map .rm-light--mid { color:#70f58b; }
 .rm-window-map .rm-light--legend { color:#ff7970; }
-.rm-window-map .rm-light.is-on { animation:none; filter:brightness(1.15) drop-shadow(0 0 3px #ffc25399); }
+.rm-window-map .rm-light.is-on { animation:none; }
 .rm-window-map .rm-light.is-locked { filter:none; }
 .rm-window-map .rm-light.is-locked::before { filter:grayscale(.85) brightness(.6); }
 .rm-window-map .rm-light.is-locked::after { position:absolute; right:7%; bottom:12%; margin:0; font-size:2.6cqw; }
@@ -82,12 +82,7 @@
 .rm-window-map[data-light="mid"] .rm-route-art,.rm-window-map[data-light="mid"] .rm-front-art { filter:saturate(.65); }
 .rm-window-map[data-light="legend"] .rm-route-art,.rm-window-map[data-light="legend"] .rm-front-art { filter:sepia(.25) saturate(.85); }
 /* Keep both cave backdrops at their original brightness; lift only the hole-bearing foreground art. */
-.rm-window-map[data-light="mid"] .rm-selected-front,
-.rm-window-map[data-light="legend"] .rm-selected-front,
-.rm-window-map[data-light="legend"] .rm-round2-rock-front { filter:brightness(1.3); }
 /* 노말·프로: 뒷 배경이 앞 라운드 그림과 밝기·색이 같아 원근감이 없었음 → 뒷 배경만 어둡게+채도↓(사용자 선택 A안, V1314 C) */
-.rm-window-map[data-light="mid"] .rm-parallax-rear,
-.rm-window-map[data-light="legend"] .rm-parallax-rear { filter:brightness(.55) saturate(.75); }
 @media(prefers-reduced-motion:reduce) { .rm-window-map .rm-rear-gems .rm-spark,.rm-window-map .rm-fx .rm-spark { animation:none; opacity:.45; } .rm-window-map .rm-window-cloud--second { display:none; } }
 .rm-window-map .rm-selected-front { position:absolute; inset:0; width:100%; height:100%; z-index:2; pointer-events:none; }
 .rm-window-map .rm-fluid-canvas { position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none; }
@@ -126,7 +121,7 @@
 .rm-window-map .rm-light--easy.is-on { --rm-tab-glow:#ffe36b99; }
 .rm-window-map .rm-light--mid.is-on { --rm-tab-glow:#70f58b99; }
 .rm-window-map .rm-light--legend.is-on { --rm-tab-glow:#ff797099; }
-.rm-window-map .rm-light.is-on::before { filter:brightness(1.06) drop-shadow(0 0 .55cqw var(--rm-tab-glow)); }
+.rm-window-map .rm-light.is-on::before { }
 .rm-window-map .rm-light.is-on span { text-shadow:0 0 .55cqw var(--rm-tab-glow),0 1px 2px #291307; }
 .rm-window-map .rm-light.is-on > span,
 .rm-window-map .rm-light.is-on > small { color:#fff078; text-shadow:0 0 .65cqw #ffdd52,0 0 1.5cqw #ffc21a,0 1px 2px #291307; }
@@ -174,15 +169,10 @@
 
 /* Swiping moves to the adjacent light page; Amateur and Pro stay at the ends. */
 /* V1319 C 위·아래 원근(A안): 구멍 있는 앞 그림 모양으로 잘린 그라데이션 — 위(먼 라운드)는 어둡게, 아래(가까운 라운드)는 그대로. 그림·터치 위치 불변 */
-.rm-window-map .rm-depth-shade { position:absolute; inset:0; z-index:2; pointer-events:none; background:linear-gradient(to bottom,rgba(0,0,0,.45) 0%,rgba(0,0,0,.2) 45%,rgba(0,0,0,0) 85%); -webkit-mask:var(--rm-depth-mask) center/100% 100% no-repeat; mask:var(--rm-depth-mask) center/100% 100% no-repeat; }
-.rm-window-map .rm-depth-easy-route { z-index:1; --rm-depth-mask:url('assets/roundmap/window-v1263/route-grounded.webp'); transform-origin:0 0; transform:translateY(6.58%) scaleY(.913); }
-.rm-window-map .rm-depth-easy-front { --rm-depth-mask:url('assets/roundmap/window-v1263/foreground-frame.webp'); }
-.rm-window-map .rm-depth-mid { --rm-depth-mask:url('assets/roundmap/frame-v1282/normal-front-supported.webp'); background:linear-gradient(to bottom,rgba(0,0,0,.6) 0%,rgba(0,0,0,.3) 45%,rgba(0,0,0,0) 88%); } /* V1324 C 노말만 원근 조금 더(사용자 지정) */
-.rm-window-map .rm-depth-legend { --rm-depth-mask:url('assets/roundmap/frame-v1282/pro-front-supported.webp'); }
 /* V1320 C 아마추어 보석·랜턴 빛: 원본 그림에서 보석·랜턴 모양만 뽑은 층을 겹쳐 반짝임(좌표 점 방식 대체). 뒷 층은 뒷 배경과 함께 움직임 */
-.rm-window-map .rm-glow-layer { position:absolute; inset:0; width:100%; height:100%; z-index:2; pointer-events:none; will-change:opacity; } /* V1325 C: mix-blend-mode:screen 제거 — 아래 용암·폭포 캔버스가 매 프레임 바뀌어 화면 전체를 다시 합성(노말·프로 버벅임 원인) */
-.rm-window-map .rm-glow-gem { filter:brightness(1.5) saturate(1.2) drop-shadow(0 0 4px #6fd3ff); animation:rm-gem-shine 2.6s ease-in-out infinite alternate; }
-.rm-window-map .rm-glow-lan { filter:brightness(1.4) drop-shadow(0 0 6px #ffb84a); animation:rm-lantern-flicker 1.7s linear infinite; }
+.rm-window-map .rm-glow-layer { position:absolute; z-index:2; pointer-events:none; will-change:opacity; } /* V1325 C: mix-blend-mode:screen 제거 — 아래 용암·폭포 캔버스가 매 프레임 바뀌어 화면 전체를 다시 합성(노말·프로 버벅임 원인) */
+.rm-window-map .rm-glow-gem { animation:rm-gem-shine 2.6s ease-in-out infinite alternate; }
+.rm-window-map .rm-glow-lan { animation:rm-lantern-flicker 1.7s linear infinite; }
 @keyframes rm-gem-shine { from { opacity:.2; } to { opacity:.95; } }
 @keyframes rm-lantern-flicker { 0%,100% { opacity:.75; } 20% { opacity:.95; } 35% { opacity:.68; } 55% { opacity:1; } 70% { opacity:.8; } 85% { opacity:.95; } }
 @media(prefers-reduced-motion:reduce) { .rm-window-map .rm-glow-layer { animation:none; opacity:.6; } }
@@ -195,11 +185,11 @@
 .rm-window-map .rm-wallet .ms-box { width:64px; height:30px; overflow:hidden; } /* 숫자는 최대 5자(9999K)까지 박스 안 */
 .rm-window-map .rm-wallet .ms-val { top:50%; transform:translateY(-50%); font-size:15px; }
 /* V1324 C 노말 보석·랜턴 빛 한 단계 더 밝게(사용자 지정) */
-.rm-window-map .rm-glow-gem.rm-mode-mid { filter:brightness(1.9) saturate(1.3) drop-shadow(0 0 6px #6fd3ff); animation-name:rm-gem-shine-mid; z-index:3; }
+.rm-window-map .rm-glow-gem.rm-mode-mid { animation-name:rm-gem-shine-mid; z-index:3; }
 @keyframes rm-gem-shine-mid { from { opacity:.5; } to { opacity:1; } }
-.rm-window-map .rm-glow-lan.rm-mode-mid { filter:brightness(1.8) drop-shadow(0 0 9px #ffb84a); z-index:3; } /* 원근 그림자 층 위로 */
+.rm-window-map .rm-glow-lan.rm-mode-mid { z-index:3; } /* 원근 그림자 층 위로 */
 /* V1324 C 프로 보석 빛은 붉은 번짐(보석 색) */
-.rm-window-map .rm-glow-gem.rm-mode-legend { filter:brightness(1.5) saturate(1.2) drop-shadow(0 0 4px #ff4a6a); }
+.rm-window-map .rm-glow-gem.rm-mode-legend { }
 /* V1325 C 모드 전환 띠(Motion Prompt #018) — 화면 전체 위, 터치는 막지 않음 */
 .rm-shape-transition { position:fixed; inset:0; width:100vw; height:100dvh; z-index:2147483000; pointer-events:none; }
 /* V1327 C 버튼판 바로 위 모드색 글로우 선 — 심전도·BGM 반응 없이 고정(사용자 지정). 층: 선 3 < 하마 4 < 검은 버튼판 5 */
@@ -214,3 +204,6 @@ body.rm-open :not(#roundmap-screen):not(#roundmap-screen *)::before,
 body.rm-open :not(#roundmap-screen):not(#roundmap-screen *)::after { animation-play-state:paused !important; }
 /* V1328 C 폰 확인용 FPS 표시(임시) */
 #fps-meter { position:fixed; left:4px; top:calc(env(safe-area-inset-top,0px) + 4px); z-index:2147483600; padding:2px 6px; border-radius:6px; background:rgba(0,0,0,.7); color:#7f7; font:700 12px/1.2 monospace; pointer-events:none; max-width:92vw; word-break:break-all; }
+/* V1330 C 고화질(Real-ESRGAN x4 anime → 1126x2000) + 효과 굽기: 앞 그림 밝기·원근 그림자, 노말·프로 뒷 배경 어둡게, 빛 층 밝기·번짐을 그림 파일에 넣고 런타임 CSS filter·mask 제거.
+   빛 층은 보이는 부분만 잘라 위치(inline left/top/width/height)로 배치. 뒤에 깔리던 .rm-bg 전체 그림은 광산지도에서 안 보여 숨김 */
+.rm-window-map .rm-bg { display:none; }
