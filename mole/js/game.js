@@ -169,66 +169,16 @@
     m.id = 'fps-meter';
     document.body.appendChild(m);
     let n = 0, last = performance.now(), t0 = last;
-    // V1333 C 골드 묠니르 '눌러도 망치 안 감' 자동 기록(임시, 출시 전 삭제): 게임 중 다이얼패드를 눌렀는데 타격 처리(맞힘/헛방 색)가
-    // 안 된 순간과 스크립트 오류를 폰(localStorage 'mole.diag', 최근 6개)에 남기고 왼쪽 위에 계속 표시 — 앱을 다시 켜도 유지.
+    // V1333 C 스크립트 오류를 폰(localStorage 'mole.diag', 최근 6개)에 남기고 왼쪽 위에 계속 표시 — 앱을 다시 켜도 유지.
+    // V1350 C 사용자: FPS·오류만 — 터치 기록(TAP·RB)과 네온 효과 끄기 버튼(#rb-fx-toggles) 삭제.
     let diag = [];
-    try { diag = JSON.parse(localStorage.getItem('mole.diag') || '[]'); } catch (e) { diag = []; }
+    try { diag = JSON.parse(localStorage.getItem('mole.diag') || '[]').filter((l) => / ERR /.test(l)); } catch (e) { diag = []; } // V1350 C: 오류만(예전 TAP·RB 기록 버림)
     const saveDiag = (line) => {
       const d = new Date(); diag.push(String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ' ' + line);
       diag = diag.slice(-6);
       try { localStorage.setItem('mole.diag', JSON.stringify(diag)); } catch (e) { /* 무시 */ }
     };
     window.addEventListener('error', (e) => { saveDiag('ERR ' + (e.message || '') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || '')); });
-    // V1338 C 네온 버벅임 범인 찾기(임시, 출시 전 삭제): 리듬팡 네온 화면에서만 FPS 밑에 효과 끄기 버튼 —
-    // 누르면 그 효과를 숨김(빨강=꺼짐). 폰에서 하나씩 끄며 FPS 비교. 설정은 이 폰에만 저장.
-    const RB_FX = [['파동', '.rb-circuit-pulse,.rb-circuit-pulse--extended'], ['퍼짐', '.rb-screen-ripple'], ['레이저', '.rb-laser-canvas'],
-      ['회로빛', '.rb-flow-canvas'], ['회로판', '.rb-circuit--glass'], ['포털', '.rb-space-hit-wave,.rb-perfect-arcs,.rb-spawn-ripple,.rb-space-section'], ['캐릭', '.rb-note'],
-      // V1340 C: 폰 기록상 '기타'(그래픽 처리 대기)가 대부분 → 화면 전체·여러 장에 걸린 마스크/잘라내기 층 후보
-      ['배경색', '.rb-combo-background,.rb-combo-screen-background'], ['반사', '.rb-circuit-reflection'], ['포털원', '.rb-mini'], ['홀로', '.rb-holo-light'], ['가사', '.rp-lyrics']];
-    let rbOff = []; try { rbOff = JSON.parse(localStorage.getItem('mole.rbfx') || '[]'); } catch (e) { rbOff = []; }
-    const rbStyle = document.createElement('style'); document.head.appendChild(rbStyle);
-    const rbBar = document.createElement('div'); rbBar.id = 'rb-fx-toggles'; document.body.appendChild(rbBar);
-    const rbApply = () => {
-      rbStyle.textContent = rbOff.map((k) => (RB_FX.find((f) => f[0] === k) || [0, ''])[1]).filter(Boolean).map((sel) => sel + '{display:none!important}').join('');
-      rbBar.querySelectorAll('button').forEach((b) => b.classList.toggle('is-off', rbOff.indexOf(b.textContent) >= 0));
-      try { localStorage.setItem('mole.rbfx', JSON.stringify(rbOff)); } catch (e) { /* 무시 */ }
-    };
-    RB_FX.forEach(([name]) => {
-      const b = document.createElement('button'); b.type = 'button'; b.textContent = name;
-      b.addEventListener('click', () => { const i = rbOff.indexOf(name); if (i >= 0) rbOff.splice(i, 1); else rbOff.push(name); rbApply(); });
-      rbBar.appendChild(b);
-    });
-    rbApply();
-    setInterval(() => { rbBar.hidden = !document.querySelector('.rb-screen:not([hidden]) .rb-board'); }, 500);
-    // V1336 C 리듬팡 네온 '터치 불량' 기록: 아래 버튼 영역을 눌렀는데 버튼이 아닌 것이 받았거나, 입력이 120ms 넘게 늦게 처리된 경우
-    document.addEventListener('pointerdown', (e) => {
-      const rb = document.querySelector('.rb-screen:not([hidden]) .rb-board');
-      if (!rb) return;
-      const hits = rb.querySelectorAll('.rb-hit');
-      if (!hits.length) return;
-      const a = hits[0].getBoundingClientRect(), z = hits[hits.length - 1].getBoundingClientRect();
-      if (e.clientX < a.left || e.clientX > z.right || e.clientY < a.top || e.clientY > z.bottom) return;
-      const lag = Math.round(performance.now() - e.timeStamp);
-      const hit = e.target && e.target.closest && e.target.closest('.rb-hit');
-      const nm = (el) => el ? (el.id ? '#' + el.id : el.tagName + '.' + String(el.className && el.className.baseVal !== undefined ? el.className.baseVal : el.className).split(' ')[0]) : '?';
-      if (!hit) saveDiag('RB notbtn under=' + nm(e.target) + ' in ' + nm(e.target && e.target.parentElement));
-      else if (lag > 120) saveDiag('RB late ' + lag + 'ms');
-    }, true);
-    document.addEventListener('pointerdown', (e) => {
-      const gs = document.getElementById('game-screen');
-      if (!state || state.ended || !gs || gs.classList.contains('is-start')) return;
-      const bar = document.getElementById('lane-button-bar');
-      const r = bar && bar.getBoundingClientRect();
-      if (!r || e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
-      const btn = e.target && e.target.closest && e.target.closest('#lane-button-bar .lane-button');
-      setTimeout(() => {
-        if (state && (state.feverEventActive || state.introActive)) return; // 피버(버튼판 위로 감)·카운트다운 중은 원래 반응 없음
-        if (btn && (btn.classList.contains('is-tint-hit') || btn.classList.contains('is-tint-miss'))) return; // 정상 처리됨
-        const under = e.target ? (e.target.id ? '#' + e.target.id : e.target.tagName + '.' + String(e.target.className).split(' ')[0]) : '?';
-        saveDiag('TAP ' + (btn ? 'btn' + btn.dataset.region : 'notbtn') + ' under=' + under +
-          (state ? ' p' + (state.paused ? 1 : 0) + ' pf' + (state.pausedByFever ? 1 : 0) + ' q' + ((state.quakeFxUntil || 0) > performance.now() ? 1 : 0) + ' w=' + state.weapon : ' nostate'));
-      }, 0);
-    }, true);
     (function f(now) {
       n++; last = now;
       if (now - t0 >= 500) { m.textContent = Math.round(n * 1000 / (now - t0)) + 'fps' + (diag.length ? '\n⚠' + diag.length + ' ' + diag[diag.length - 1] : ''); n = 0; t0 = now; } // V1346 C 사용자: FPS·오류만
