@@ -8031,8 +8031,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .h2w-mole .h2w-char { width: 62%; max-width: 62%; left: 1%; }
 /* V1361 C 사용자: 남자 두더지 마음 — 하트가 두근두근하다가 여자 두더지(리듬팡) 박스로 둥실 날아가 사라짐, 반복 */
 .lane-button:has(.h2w-mole) { z-index: 3; }
-.lane-face--wide.h2w-mole { clip-path: none; }
-.h2w-mole .h2w-char { clip-path: inset(0 0 calc(12% / 1.12) 0); }
+.lane-face--wide.h2w-mole { clip-path: inset(-80% -260% 7% -10%); } /* V1363 C: 원래 아래 7% 잘라내기는 그대로(리듬팡과 같음), 오른쪽만 하트가 옆 박스로 갈 만큼 열기 */
 .h2w-heart { animation: h2-heart-fly 4.2s ease-in-out infinite; transform-origin: 50% 60%; }
 @keyframes h2-heart-fly {
   0%   { transform: translate(0, 0) scale(1); opacity: 1; }
