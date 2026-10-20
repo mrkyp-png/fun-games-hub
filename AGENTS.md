@@ -1,3 +1,6 @@
+## 2026-10-20 / V1351 C — 리듬팡 비치 타격 진동 (미배포)
+- 사용자: "비치게임에서 버튼 누를 때 진동효과, 타격시". rhythm.js hit() 에 160ms 진동(네온 rhythm-b-play.js 와 같은 값, FGH.Settings.vibrate 로 진동 설정 반영). 헛방(MISS)엔 없음.
+
 ## 2026-10-20 / V1350 C — 진단 표시 FPS·오류만 (미배포)
 - 사용자: "FPS와 에러메세지만 보이게". game.js fpsMeter: 네온 효과 끄기 버튼(#rb-fx-toggles, V1338)·네온 터치 기록(RB notbtn/late, V1336)·게임 다이얼 터치 기록(TAP, V1333) 삭제, ERR(스크립트 오류)만 기록. 저장된 mole.diag 도 ERR 줄만 남겨 읽음. roundmap-window.css #rb-fx-toggles 규칙 삭제.
 

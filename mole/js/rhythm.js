@@ -618,6 +618,7 @@
       var hitButton=btnEls&&btnEls[lane];
       if(hitButton){clearTimeout(buttonHitTimers[lane]);hitButton.dataset.grade=g;replay(hitButton,'is-hit');buttonHitTimers[lane]=setTimeout(function(){hitButton.classList.remove('is-hit');delete hitButton.dataset.grade;buttonHitTimers[lane]=0;},420);}
       pang(lane, n.cx, n.cy); hud(); sfx('hit');
+      try { if (root.FGH && root.FGH.Settings && root.FGH.Settings.vibrate) root.FGH.Settings.vibrate(160); else if (navigator.vibrate) navigator.vibrate(160); } catch (e) { /* 무시 */ } // V1351 C 비치 타격 진동(네온과 같은 160ms, 설정 반영)
       var word=perfectWords[lane],geometry=hitGeometry.buttons[lane];
       if(word&&geometry){word.textContent=g;word.dataset.grade=g;word.style.left=geometry.x+'px';word.style.top=geometry.y+'px';word.style.setProperty('--rp-grade-rise',geometry.rise+'px');replay(word,'is-on');}
       burst(n.cx, n.cy, g === 'PERFECT' ? 10 : g === 'GREAT' ? 7 : 5); comboFx();
