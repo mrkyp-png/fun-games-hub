@@ -442,6 +442,9 @@
         r.setAttribute('aria-pressed', st === 'current' ? 'true' : 'false');
         r.setAttribute('aria-disabled', open ? 'false' : 'true');
         r.querySelector('.rm-mole').src = A + 'mole-cur-wave-' + view + '.webp';
+        // V1344 C 원근: 먼(위) 라운드일수록 두더지 작게·어둡게 (라운드1=1 → 라운드8=크기0.72·밝기0.65)
+        r.style.setProperty('--rm-s', (1 - (n - 1) * 0.04).toFixed(2));
+        r.style.setProperty('--rm-b', (1 - (n - 1) * 0.05).toFixed(2));
         r.querySelector('.rm-panel b').textContent = T('mole.rm.round', { n: n });
         r.querySelector('.rm-check').hidden = !cleared;
       });

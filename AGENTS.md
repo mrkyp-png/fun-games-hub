@@ -1,3 +1,9 @@
+## 2026-10-20 / V1344 C — 광산지도 두더지: 12장 부드러운 인사 + 털·흙 색 + 라운드별 원근 (미배포)
+- 사용자: 6장 손 흔들기 부자연 → 12장. 술 먹은 듯 붉은 털 → 홈 광산 파란모자 두더지(assets/moles/mole1.png) 색. 흙은 아마추어 배경색(노말 동일), 프로는 붉은 흙 유지. 손가락 흔드는 손 4·흙 위 손 3 고정.
+- 그림: Sprite Motion Studio(GPT 이미지젠) 1장씩 12장, outputs/20261020-204559-anim-mole-cur-wave12c. 장별 손 각도(0,-8,-15,-20,-15,-8,0,8,15,20,15,8°)·1장째만 눈 감음, 2번째 --ref=mole1.png 로 털색 지정(코드 털 보정은 얼룩 반복이라 폐기). 이번에 studio.js --prompt-file 추가.
+- 후처리: Real-ESRGAN x4 anime → 600px 정렬, 흙=캐니 윤곽으로 돌만 골라(한 장에서 1회, 12장 공통) 황토색, 모자·링 모드색, 헤드램프 4번째 장 것으로 통일 → 420px 12프레임 WebP(첫 장 160ms, 나머지 90ms) ~0.56MB×3.
+- 원근: round-map.js render 에서 라운드 n 마다 --rm-s=1-(n-1)*0.04, --rm-b=1-(n-1)*0.05 → roundmap-window.css 끝 .rm-mole scale(아래 기준)+brightness. 실측 R1 86px/1.0, R4 76px/0.85, R8 62px/0.65.
+
 ## 2026-10-20 / V1343 C — 광산지도 현재 라운드 두더지 = 인사 애니메이션(움직이는 WebP)
 - 그림: GPT 이미지젠(Sprite Motion Studio) 기준그림 outputs/20261020-192244-image-mole-cur-4finger-r3(왼손 4손가락·오른손 3손가락, 엄지 안 보임) → anim outputs/20261020-192525-anim-mole-cur-wave4c(6장: 두 눈 감음→뜸→손 흔듦→처음).
 - 후처리: Real-ESRGAN x4plus-anime → 600px, 모드별 모자·링 색(easy 노랑/mid 초록/legend 빨강, 링은 각도별 반지름 띠로 칠함), 헤드램프는 3번째 장 것을 6장 모두에 붙여 통일, 프레임 흔들림 정렬.

@@ -213,3 +213,5 @@ body.rm-open :not(#roundmap-screen):not(#roundmap-screen *)::after { animation-p
 #rb-fx-toggles[hidden] { display:none; }
 #rb-fx-toggles button { padding:3px 6px; border:1px solid #7f7; border-radius:6px; background:rgba(0,0,0,.75); color:#7f7; font:700 11px/1.2 sans-serif; }
 #rb-fx-toggles button.is-off { border-color:#f55; color:#f55; text-decoration:line-through; }
+/* V1344 C 원근: 라운드별 두더지 크기·밝기(--rm-s/--rm-b 는 round-map.js render 에서 설정), 아래 중심 기준으로 줄임 */
+.rm-window-map .rm-mole { transform:translate(-50%,8%) scale(var(--rm-s,1)); transform-origin:50% 100%; filter:brightness(var(--rm-b,1)) drop-shadow(0 0.8cqw 0.8cqw rgba(60, 30, 0, 0.4)); }
