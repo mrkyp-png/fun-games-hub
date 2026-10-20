@@ -8025,3 +8025,10 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #game-screen.is-start .lane-button--home:not(.lane-button--nav-active) .h2-ic { max-width: 78%; }
 /* V1359 C 사용자: 커진 홈 버튼의 '홈' 글자를 위로(아래 아이템 박스에 걸쳐 보임) */
 #game-screen.is-start .lane-button--home.lane-button--nav-active .h2-lbl { transform: scale(calc(1 / 1.45)); } /* V1360 C 사용자: 커졌을 때 글자는 옆 글자와 같은 크기 */
+/* V1361 C 사용자: 새 여자 두더지(분홍 머리) 크게 */
+.h2w-rhythm .h2w-char { width: 74%; left: -1%; }
+/* V1361 C: 새 남자 두더지(망치 없음) — 모자가 버튼 위로 많이 튀어나와 조금 작게 */
+.h2w-mole .h2w-char { width: 62%; max-width: 62%; left: 1%; }
+/* V1361 C 사용자: 두더지팡 버튼 빈자리 하트가 커졌다 작아졌다(두근두근) */
+.h2w-heart { animation: h2-heartbeat 1.1s ease-in-out infinite; transform-origin: 50% 60%; }
+@keyframes h2-heartbeat { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.22); } 30% { transform: scale(.96); } 45% { transform: scale(1.14); } 60% { transform: scale(1); } }
