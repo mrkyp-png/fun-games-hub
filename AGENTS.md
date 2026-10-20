@@ -1,3 +1,9 @@
+## 2026-10-20 / V1340 C — 네온: 폰 LoAF 결과 GPU 대기 위주, 터치 가로채기 수정, 커지는 원 HTML화, 효과 토글 추가 (배포)
+- 폰 영상(KakaoTalk_20261020_175516067.mp4) 🐢 28초 누적: 기타(스크립트·렌더 외 = 합성/GPU 대기 추정) 16.4초, 그리기 2.0초, JS 상위권 아님 → 병목은 GPU 합성(마스크·clip-path 층 다수).
+- 진단 "RB notbtn under=SPAN" → style.css 끝 .rb-board :not(button):not(button *), .rb-screen-ripple, .rb-existing-pulse-layer { pointer-events:none }. 진단에 부모 요소 추가.
+- 사용자 발견 "위 작은 원 커질 때 버벅임": scaleGlass 가 SVG g transform+circle r 변경(포털 SVG 전체 재래스터) → 커지는 동안 HTML .rb-glass-ring(div 테두리, 콤보·레이저 미스 색 대응) 표시, 크기1이면 원래 SVG. glassInners 제거.
+- #rb-fx-toggles 추가: 배경색(.rb-combo-background/.rb-combo-screen-background 마스크) 반사(.rb-circuit-reflection) 포털원(.rb-mini) 홀로(.rb-holo-light) 가사(.rp-lyrics).
+
 ## 2026-10-20 / V1339 C — 폰 느린 프레임 원인 표시(LoAF, 임시) (배포)
 - 사용자 영상(해석불가.mp4): 효과 끄기 토글 어느 것도 FPS 개선 없음(12~60 오락가락, 비터치 때만 60) → 그리기 아닌 터치 코드 경로 또는 분산 추정. 토글은 display:none 이라 JS 계산은 계속 돎.
 - game.js: PerformanceObserver long-animation-frame, 50ms 이상 프레임의 scripts(sourceURL:charPos 함수, forcedStyleAndLayout)·그리기(렌더 구간)·기타 누적 → #fps-meter 셋째 줄 "🐢 상위2". #rb-fx-toggles top 58px 로 내림. 출시 전 삭제.

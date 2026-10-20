@@ -204,7 +204,9 @@
     // V1338 C 네온 버벅임 범인 찾기(임시, 출시 전 삭제): 리듬팡 네온 화면에서만 FPS 밑에 효과 끄기 버튼 —
     // 누르면 그 효과를 숨김(빨강=꺼짐). 폰에서 하나씩 끄며 FPS 비교. 설정은 이 폰에만 저장.
     const RB_FX = [['파동', '.rb-circuit-pulse,.rb-circuit-pulse--extended'], ['퍼짐', '.rb-screen-ripple'], ['레이저', '.rb-laser-canvas'],
-      ['회로빛', '.rb-flow-canvas'], ['회로판', '.rb-circuit--glass'], ['포털', '.rb-space-hit-wave,.rb-perfect-arcs,.rb-spawn-ripple,.rb-space-section'], ['캐릭', '.rb-note']];
+      ['회로빛', '.rb-flow-canvas'], ['회로판', '.rb-circuit--glass'], ['포털', '.rb-space-hit-wave,.rb-perfect-arcs,.rb-spawn-ripple,.rb-space-section'], ['캐릭', '.rb-note'],
+      // V1340 C: 폰 기록상 '기타'(그래픽 처리 대기)가 대부분 → 화면 전체·여러 장에 걸린 마스크/잘라내기 층 후보
+      ['배경색', '.rb-combo-background,.rb-combo-screen-background'], ['반사', '.rb-circuit-reflection'], ['포털원', '.rb-mini'], ['홀로', '.rb-holo-light'], ['가사', '.rp-lyrics']];
     let rbOff = []; try { rbOff = JSON.parse(localStorage.getItem('mole.rbfx') || '[]'); } catch (e) { rbOff = []; }
     const rbStyle = document.createElement('style'); document.head.appendChild(rbStyle);
     const rbBar = document.createElement('div'); rbBar.id = 'rb-fx-toggles'; document.body.appendChild(rbBar);
@@ -230,7 +232,8 @@
       if (e.clientX < a.left || e.clientX > z.right || e.clientY < a.top || e.clientY > z.bottom) return;
       const lag = Math.round(performance.now() - e.timeStamp);
       const hit = e.target && e.target.closest && e.target.closest('.rb-hit');
-      if (!hit) saveDiag('RB notbtn under=' + (e.target ? (e.target.id ? '#' + e.target.id : e.target.tagName + '.' + String(e.target.className && e.target.className.baseVal !== undefined ? e.target.className.baseVal : e.target.className).split(' ')[0]) : '?'));
+      const nm = (el) => el ? (el.id ? '#' + el.id : el.tagName + '.' + String(el.className && el.className.baseVal !== undefined ? el.className.baseVal : el.className).split(' ')[0]) : '?';
+      if (!hit) saveDiag('RB notbtn under=' + nm(e.target) + ' in ' + nm(e.target && e.target.parentElement));
       else if (lag > 120) saveDiag('RB late ' + lag + 'ms');
     }, true);
     document.addEventListener('pointerdown', (e) => {

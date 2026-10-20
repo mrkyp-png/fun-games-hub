@@ -159,8 +159,15 @@
 
   const foci=Array.from(hud.querySelectorAll('.rb-mini'),mini=>({x:parseFloat(mini.style.getPropertyValue('--depth-x'))/100,y:parseFloat(mini.style.getPropertyValue('--depth-y'))/100}));
   const spaceMinis=Array.from(hud.querySelectorAll('.rb-mini'));
-  const glassGroups=Array.from(hud.querySelectorAll('.rb-glass-grow')),glassInners=glassGroups.map(e=>e.querySelectorAll('circle')[1]),glassScales=Array(9).fill(1),glassTarget=(148*296/304)/45;
-  function scaleGlass(lane,scale){if(glassGroups[lane]&&glassScales[lane]!==scale){glassGroups[lane].setAttribute('transform','translate(151.48648648648648 152) scale('+scale+') translate(-151.48648648648648 -152)');glassInners[lane].setAttribute('r',String((45-3.5/scale)*304/296));glassScales[lane]=scale;}}
+  const glassGroups=Array.from(hud.querySelectorAll('.rb-glass-grow')),glassScales=Array(9).fill(1),glassTarget=(148*296/304)/45;
+  // V1340 C: 위 포털의 작은 원이 커질 때 SVG 속성(transform·r)을 바꿔 포털 SVG 전체를 매번 다시 그리던 것(사용자 발견 '작은원이 커질때 버벅임')
+  // → 커지는 동안만 가벼운 HTML 원(div 테두리)으로 대신 그림. 크기 1(대기)일 때는 원래 SVG 그대로.
+  const glassRings=glassGroups.map((g,lane)=>{const mini=g.closest('.rb-mini');const ring=document.createElement('div');ring.className='rb-glass-ring';ring.hidden=true;ring.style.setProperty('--ring-color',colors[lane]);ring.innerHTML='<i></i>';mini.appendChild(ring);return ring;});
+  function scaleGlass(lane,scale){if(!glassGroups[lane]||glassScales[lane]===scale)return;const g=glassGroups[lane],ring=glassRings[lane];
+   if(scale===1){ring.hidden=true;g.style.visibility='';}
+   else{if(ring.hidden){const w=parseFloat(g.firstElementChild.getAttribute('stroke-width'))||1.6;ring.style.setProperty('--ring-w',w+'px');ring.style.setProperty('--ring-in',(parseFloat(g.children[1].getAttribute('stroke-width'))||.6)+'px');ring.hidden=false;g.style.visibility='hidden';}
+    const d=(2*45*304/296*scale/304*100).toFixed(3)+'%';ring.style.width=d;ring.style.height=d;}
+   glassScales[lane]=scale;}
   const spaceTunnels=spaceMinis.map(m=>m.querySelector('.rb-wire-tunnel'));
   const spaceOpacity=Array(9).fill(null);
   const spaceSections=spaceMinis.map(m=>Array.from(m.querySelectorAll('.rb-space-section')));

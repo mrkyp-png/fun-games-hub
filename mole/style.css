@@ -7998,3 +7998,11 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-status--judge.is-judging[data-pop="1"] b { animation-name:rb-judge-pop2; }
 /* V1338 C 네온 터치 불량(RB notbtn under=div.rb-board): 버튼 모서리를 깎은 clip-path 가 터치 영역도 깎아 모서리 탭이 판(rb-board)으로 새던 것 → 터치 영역은 사각형 전체(보이는 그림 없음) */
 .rb-hit { clip-path: none; }
+/* V1340 C 위 포털 커지는 원(HTML) — SVG .rb-glass-grow 와 같은 모양: 검은 원 + 레인색 테두리 + 안쪽 옅은 테두리 */
+.rb-glass-ring { position:absolute; left:49.83%; top:50%; transform:translate(-50%,-50%); box-sizing:border-box; border-radius:50%; background:#010205; border:var(--ring-w,1.6px) solid var(--ring-color); pointer-events:none; contain:layout paint; transition:border-color .28s ease; }
+.rb-glass-ring[hidden] { display:none; }
+.rb-glass-ring > i { position:absolute; inset:calc(var(--ring-w,1.6px) * .9); border-radius:50%; border:var(--ring-in,.6px) solid var(--ring-color); opacity:.25; }
+.rb-board[data-combo-stage]:not([data-combo-stage="0"]) .rb-glass-ring { --ring-color:var(--combo-accent); }
+.rb-mini:has(.rb-glass-grow.is-laser-miss) .rb-glass-ring { --ring-color:#ff2020; background:#590000; }
+/* V1340 C 네온 판 위 장식(글씨·빛·파동 등)은 터치를 받지 않음 — 진단 'RB notbtn under=SPAN' (버튼·일시정지 버튼만 터치) */
+.rb-board :not(button):not(button *), .rb-screen-ripple, .rb-existing-pulse-layer { pointer-events: none; }
