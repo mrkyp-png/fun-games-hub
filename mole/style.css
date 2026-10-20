@@ -8016,7 +8016,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
    1) 홈 화면일 때 홈 버튼도 다른 네비처럼 1.5배 확대(예전 SVG 아이콘 시절 transform:none 예외 해제).
    2) 홈 화면일 때 박스만 비치게임 버튼과 같은 투명도 50%(아이콘·글자는 그대로). 두더지팡·리듬팡 넓은 박스는 항상 불투명.
    3) 시작 버튼은 홈 화면에선 그대로, 메일함·설정·상점·아이템 화면에선 50% 투명(그 화면에선 게임 진입 안 됨). */
-#game-screen.is-start .lane-button--home.lane-button--nav-active { transform: translateY(-15px) scale(1.45); } /* V1360 C: 홈 글자가 스코어·일일·퀘스트 글자 줄에 맞게 위로 */ /* V1359 C 사용자 지정 1.45배 */
+#game-screen.is-start .lane-button--home.lane-button--nav-active { transform: scale(1.45); } /* V1363 C 사용자: 버튼은 제자리, 글자만 올림 */ /* V1359 C 사용자 지정 1.45배 */
 #game-screen.is-start #lane-button-bar[data-nav="home"] .lane-face--h2::before { opacity: .5; }
 #game-screen.is-start #lane-button-bar:is([data-nav="mail"],[data-nav="settings"],[data-nav="shop"],[data-nav="inventory"]) .lane-button--call { opacity: .5; }
 /* V1358 C 사용자: 홈 아이콘 원본(200x140)이 납작해 보여 세로로 살짝(12%) 늘림 */
@@ -8024,7 +8024,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* V1359 C 사용자: 메일함 등 다른 화면에선 홈 아이콘이 옆 아이콘 크기로(상점식 88%% 대신 다른 버튼과 같은 78%%) */
 #game-screen.is-start .lane-button--home:not(.lane-button--nav-active) .h2-ic { max-width: 78%; }
 /* V1359 C 사용자: 커진 홈 버튼의 '홈' 글자를 위로(아래 아이템 박스에 걸쳐 보임) */
-#game-screen.is-start .lane-button--home.lane-button--nav-active .h2-lbl { transform: scale(calc(1 / 1.45)); } /* V1360 C 사용자: 커졌을 때 글자는 옆 글자와 같은 크기 */
+#game-screen.is-start .lane-button--home.lane-button--nav-active .h2-lbl { transform: translateY(-10.3px) scale(calc(1 / 1.45)); } /* V1360 C 사용자: 커졌을 때 글자는 옆 글자와 같은 크기 */
 /* V1361 C 사용자: 새 여자 두더지(분홍 머리) 크게 */
 .h2w-rhythm .h2w-char { width: 74%; left: -1%; }
 /* V1361 C: 새 남자 두더지(망치 없음) — 모자가 버튼 위로 많이 튀어나와 조금 작게 */
@@ -8047,3 +8047,5 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
   83%  { transform: translate(0, 0) scale(.3); opacity: 0; }
   100% { transform: translate(0, 0) scale(1); opacity: 1; }
 }
+/* V1363 C 사용자: 하트 기본 위치를 아래로 */
+.h2w-mole .h2w-heart { top: 26%; }
