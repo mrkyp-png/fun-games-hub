@@ -41,13 +41,8 @@
     // Small color-matched gem halos cover the fixed foreground; rear halos move with the cave plate.
     // V1320 C: 아마추어 보석·랜턴 빛은 그림에서 뽑은 층(assets/roundmap/glow-v1320)으로 대체 — 좌표 점 끔
     easy: { glow:[], spark:[], bubble:[], gem:[], rearGem:[], lantern:[], rearLantern:[] },
-    mid: {
-      glow:[], spark:[], bubble:[],
-      gem:[[252,132,'cyan'],[150,190,'violet'],[452,292,'cyan'],[178,426,'cyan'],[150,590,'violet'],[610,575,'cyan'],[290,713,'violet'],[135,770,'cyan'],[78,872,'cyan'],[667,858,'violet'],[203,1015,'cyan'],[680,1198,'violet'],[230,1372,'cyan'],[152,1549,'violet'],[91,1578,'cyan']],
-      rearGem:[[31,227,'cyan'],[206,70,'violet'],[159,193,'violet'],[553,106,'cyan'],[192,325,'cyan'],[153,448,'violet'],[100,587,'cyan'],[714,435,'cyan'],[445,752,'violet'],[516,651,'cyan'],[919,580,'violet'],[800,660,'cyan'],[54,882,'cyan'],[116,1277,'violet'],[255,1368,'cyan'],[83,1369,'violet'],[606,1605,'cyan'],[876,1371,'violet']],
-      lantern:[[220,252],[343,220],[478,565],[646,443],[595,945],[198,845],[294,1181],[430,1166],[785,1340],[658,1271],[620,1490]],
-      rearLantern:[[873,608],[787,341],[807,469],[879,326],[636,184],[545,334],[483,75],[785,462],[852,578],[892,571]]
-    },
+    // V1321 C: 노말도 그림에서 뽑은 빛 층으로 대체 — 좌표 점 끔
+    mid: { glow:[], spark:[], bubble:[], gem:[], rearGem:[], lantern:[], rearLantern:[] },
     legend: {
       glow:[], spark:[], bubble:[],
       // Coordinates are centered on the visible pink crystal faces in pro-front-supported.webp.

@@ -167,19 +167,20 @@
     initHomeShowcaseBeat();
   }
 
-  // V1320 C 라운드맵 버튼판 위 선: 병원 심전도 모니터처럼 평소 일자선, BGM 박자(저음 급증)마다 위로 솟음.
-  // 빛나는 점이 좌→우로 그려 나가며 앞의 옛 선을 지움. 분석기 없음/무음이면 약 1초마다 심장박동.
+  // V1320 C 라운드맵 버튼판 위 선: 병원 심전도처럼 평소 일자선, BGM 박자(저음 급증)마다 위로 솟음.
+  // V1321 C: 선이 끊기지 않게 좌→우로 계속 흘러감(초당 60칸, fps 무관). 박자 기준은 0.12초 전 대비 저음 증가량이고,
+  // 오래 안 잡히면 기준을 점점 낮춤(폰에서 안 움직이던 문제). 분석기 없음/무음이면 1초마다 심장박동.
   function initRoundmapWave() {
     const screen = document.getElementById('roundmap-screen');
     const cv = screen && screen.querySelector('[data-rm-wave]');
     if (!cv) return;
     const g = cv.getContext('2d');
     const fd = new Uint8Array(128);
-    const SPIKE = [-0.15, 0.25, 1, -0.45, -0.15, 0.05]; // 심전도 한 박
-    let vals = [], head = 0, queue = [], prevBass = 0, fluxAvg = 0, bassAvg = 0, lastBeat = 0;
+    const SPIKE = [0.25, 0.7, 1, 0.55, 0.15]; // 심전도 한 박 — 일자선 자체가 위로만 솟았다 돌아옴(작은 둔덕·아래 꺼짐 없음, 사용자 지정)
+    let vals = [], queue = [], hist = [], fluxAvg = 10, lastBeat = 0, lastTick = 0, carry = 0;
     (function draw(now) {
       requestAnimationFrame(draw);
-      if (screen.hidden) return;
+      if (screen.hidden) { lastTick = 0; return; }
       let fBest = null, fSum = 0;
       if (bgmAnalysers) bgmAnalysers.forEach((a) => {
         a.analyser.getByteFrequencyData(fd);
@@ -191,14 +192,16 @@
         fBest.getByteFrequencyData(fd);
         let bass = 0;
         for (let i = 0; i < 8; i++) bass += fd[i];
-        const flux = Math.max(0, bass - prevBass);
-        prevBass = bass;
-        fluxAvg = fluxAvg * 0.95 + flux * 0.05;
-        bassAvg = bassAvg * 0.97 + bass * 0.03;
-        if (flux > fluxAvg * 2.5 + 25 && bass > bassAvg * 1.15 && now - lastBeat > 300 && !queue.length) {
+        hist.push([now, bass]);
+        while (hist.length && now - hist[0][0] > 120) hist.shift();
+        let low = bass;
+        hist.forEach((p) => { if (p[1] < low) low = p[1]; });
+        const flux = bass - low;
+        const relax = Math.max(0.5, Math.min(1, 1 - (now - lastBeat - 1200) / 2500));
+        if (flux > Math.max(10, fluxAvg * 1.8) * relax && now - lastBeat > 600 && !queue.length) {
           lastBeat = now;
-          const k = Math.min(1, 0.5 + flux / (fluxAvg * 6 + 60));
-          queue = SPIKE.map((v) => v * k);
+          fluxAvg = fluxAvg * 0.8 + flux * 0.2;
+          queue = SPIKE.map((v) => v * Math.min(1, 0.55 + flux / (fluxAvg * 4 + 1)));
         }
       } else if (now - lastBeat > 1000 && !queue.length) {
         lastBeat = now;
@@ -207,27 +210,19 @@
       const dpr = window.devicePixelRatio || 1, w = Math.round(cv.clientWidth * dpr), h = Math.round(cv.clientHeight * dpr);
       if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
       const step = 2 * dpr, cols = Math.max(2, Math.floor(w / step) + 1);
-      if (vals.length !== cols) { vals = new Array(cols).fill(0); head = 0; }
-      head = (head + 1) % cols;
-      vals[head] = queue.length ? queue.shift() : 0;
+      if (vals.length !== cols) vals = new Array(cols).fill(0);
+      carry += lastTick ? Math.min(10, (now - lastTick) * 0.06) : 1;
+      lastTick = now;
+      for (; carry >= 1; carry--) { vals.unshift(queue.length ? queue.shift() : 0); vals.pop(); }
       const color = getComputedStyle(screen).getPropertyValue('--rm-glow').trim() || '#ffd84a';
       const lw = 2 * dpr, mid = h / 2 + 4 * dpr, amp = mid - lw;
-      const y = (i) => mid - vals[i] * amp;
       g.clearRect(0, 0, w, h);
-      g.strokeStyle = color; g.fillStyle = color; g.lineWidth = lw; g.lineJoin = 'round';
+      g.strokeStyle = color; g.lineWidth = lw; g.lineJoin = 'round';
       g.shadowColor = color; g.shadowBlur = 6 * dpr;
       g.beginPath();
-      g.moveTo(0, y(0));
-      for (let i = 1; i <= head; i++) g.lineTo(i * step, y(i));
-      const gap = Math.min(cols - 1, head + 8);
-      if (gap < cols - 1) {
-        g.moveTo(gap * step, y(gap));
-        for (let i = gap + 1; i < cols; i++) g.lineTo(i * step, y(i));
-      }
+      g.moveTo(0, mid - vals[0] * amp);
+      for (let i = 1; i < cols; i++) g.lineTo(i * step, mid - vals[i] * amp);
       g.stroke();
-      g.beginPath();
-      g.arc(head * step, y(head), 2.5 * dpr, 0, Math.PI * 2);
-      g.fill();
     })(performance.now());
   }
 

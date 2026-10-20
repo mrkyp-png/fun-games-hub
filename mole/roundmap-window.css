@@ -191,8 +191,8 @@
 .rm-window-map[data-light="mid"] { --rm-glow:#4fc3ff; }
 .rm-window-map[data-light="legend"] { --rm-glow:#ff4a3a; }
 /* V1320 C 버튼판 바로 위 심전도 선(game.js initRoundmapWave) — 모드색, 화면 양끝까지 */
-.rm-window-map .rm-bottom-wave { position:absolute; left:0; bottom:calc(env(safe-area-inset-bottom,0px) + 1% + max(78px,19vw) - 13px); width:100%; height:40px; z-index:6; pointer-events:none; }
-@media(max-height:700px) { .rm-window-map .rm-bottom-wave { bottom:calc(env(safe-area-inset-bottom,0px) + 1% + max(72px,18vw) - 13px); } }
+.rm-window-map .rm-bottom-wave { position:absolute; left:0; bottom:calc(env(safe-area-inset-bottom,0px) + 1% + max(78px,19vw) - 17px); width:100%; height:40px; z-index:6; pointer-events:none; }
+@media(max-height:700px) { .rm-window-map .rm-bottom-wave { bottom:calc(env(safe-area-inset-bottom,0px) + 1% + max(72px,18vw) - 17px); } }
 /* V1320 C 아마추어 보석·랜턴 빛: 원본 그림에서 보석·랜턴 모양만 뽑은 층을 겹쳐 반짝임(좌표 점 방식 대체). 뒷 층은 뒷 배경과 함께 움직임 */
 .rm-window-map .rm-glow-layer { position:absolute; inset:0; width:100%; height:100%; z-index:2; pointer-events:none; mix-blend-mode:screen; will-change:opacity; }
 .rm-window-map .rm-glow-gem { filter:brightness(1.5) saturate(1.2) drop-shadow(0 0 4px #6fd3ff); animation:rm-gem-shine 2.6s ease-in-out infinite alternate; }
