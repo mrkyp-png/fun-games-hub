@@ -1,3 +1,7 @@
+## 2026-10-20 / V1335 C — 진단 기록을 FPS 밑 줄로 (배포)
+- #fps-meter white-space:pre-line, 기록은 "
+⚠N 시각 내용" 둘째 줄(사용자 지정: 속도와 같이 보기).
+
 ## 2026-10-20 / V1334 C — 골드 묠니르 먹통 자동 기록(임시) (배포)
 - 헤드리스 자동 플레이(골드해머, 6라운드·수백 탭·지진 25%) 재현 실패 → game.js fpsMeter 에 진단 기록 추가: 게임 중 #lane-button-bar 영역 pointerdown(capture) 후 버튼에 is-tint-hit/miss 가 안 붙으면 "TAP btnN under=요소 p/pf/q/w" 기록, window error 도 기록. localStorage mole.diag 최근 6개, 왼쪽 위 "⚠N 마지막" 표시(재실행 유지). 피버 이벤트·인트로 중 제외. 출시 전 FPS 표시와 함께 삭제.
 

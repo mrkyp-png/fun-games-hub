@@ -196,7 +196,7 @@
     }, true);
     (function f(now) {
       n++; worst = Math.max(worst, now - last); last = now;
-      if (now - t0 >= 500) { m.textContent = Math.round(n * 1000 / (now - t0)) + 'fps ' + Math.round(worst) + 'ms' + (diag.length ? ' ⚠' + diag.length + ' ' + diag[diag.length - 1] : ''); n = 0; worst = 0; t0 = now; }
+      if (now - t0 >= 500) { m.textContent = Math.round(n * 1000 / (now - t0)) + 'fps ' + Math.round(worst) + 'ms' + (diag.length ? '\n⚠' + diag.length + ' ' + diag[diag.length - 1] : ''); n = 0; worst = 0; t0 = now; }
       requestAnimationFrame(f);
     })(last);
   })();

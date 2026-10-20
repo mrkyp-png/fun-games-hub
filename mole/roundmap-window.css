@@ -204,7 +204,7 @@ body.rm-open :not(#roundmap-screen):not(#roundmap-screen *) { animation-play-sta
 body.rm-open :not(#roundmap-screen):not(#roundmap-screen *)::before,
 body.rm-open :not(#roundmap-screen):not(#roundmap-screen *)::after { animation-play-state:paused !important; }
 /* V1328 C 폰 확인용 FPS 표시(임시) */
-#fps-meter { position:fixed; left:4px; top:calc(env(safe-area-inset-top,0px) + 4px); z-index:2147483600; padding:2px 6px; border-radius:6px; background:rgba(0,0,0,.7); color:#7f7; font:700 12px/1.2 monospace; pointer-events:none; max-width:92vw; word-break:break-all; }
+#fps-meter { position:fixed; left:4px; top:calc(env(safe-area-inset-top,0px) + 4px); z-index:2147483600; padding:2px 6px; border-radius:6px; background:rgba(0,0,0,.7); color:#7f7; font:700 12px/1.2 monospace; pointer-events:none; max-width:92vw; word-break:break-all; white-space:pre-line; } /* V1335 C 기록은 FPS 밑 줄 */
 /* V1330 C 고화질(Real-ESRGAN x4 anime → 1126x2000) + 효과 굽기: 앞 그림 밝기·원근 그림자, 노말·프로 뒷 배경 어둡게, 빛 층 밝기·번짐을 그림 파일에 넣고 런타임 CSS filter·mask 제거.
    빛 층은 보이는 부분만 잘라 위치(inline left/top/width/height)로 배치. 뒤에 깔리던 .rm-bg 전체 그림은 광산지도에서 안 보여 숨김 */
 .rm-window-map .rm-bg { display:none; }
