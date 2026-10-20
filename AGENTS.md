@@ -1,3 +1,8 @@
+## 2026-10-20 / V1343 C — 광산지도 현재 라운드 두더지 = 인사 애니메이션(움직이는 WebP)
+- 그림: GPT 이미지젠(Sprite Motion Studio) 기준그림 outputs/20261020-192244-image-mole-cur-4finger-r3(왼손 4손가락·오른손 3손가락, 엄지 안 보임) → anim outputs/20261020-192525-anim-mole-cur-wave4c(6장: 두 눈 감음→뜸→손 흔듦→처음).
+- 후처리: Real-ESRGAN x4plus-anime → 600px, 모드별 모자·링 색(easy 노랑/mid 초록/legend 빨강, 링은 각도별 반지름 띠로 칠함), 헤드램프는 3번째 장 것을 6장 모두에 붙여 통일, 프레임 흔들림 정렬.
+- assets/roundmap/mole-cur-wave-{easy,mid,legend}.webp(6프레임 125ms 무한반복, 각 ~0.5MB). round-map.js 444 src 교체. 옛 mole-cur-*.png 는 남겨둠(이제 미사용).
+
 ## 2026-10-20 / V1342 C — 네온 커지는 원 연속·굵기 원복, 🐢 최근 10초 기준 (배포)
 - 사용자 확인: V1341 반사 마스크 PNG 후 "엄청 좋아짐"(V1340 부터 상당히 좋았음).
 - rhythm-b-play.js placeNote: scaleGlass 를 1/24 계단(glassU) 대신 연속 u 로(계단식 커짐이 캐릭터 버벅임처럼 보임). .rb-glass-ring 굵기 = data-stroke×0.65px(원래 SVG 화면 실측 ≈2.6px/1px, 사용자 원복 요청).

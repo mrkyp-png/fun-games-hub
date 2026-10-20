@@ -441,7 +441,7 @@
         r.setAttribute('data-state', st);
         r.setAttribute('aria-pressed', st === 'current' ? 'true' : 'false');
         r.setAttribute('aria-disabled', open ? 'false' : 'true');
-        r.querySelector('.rm-mole').src = A + 'mole-cur-' + view + '.png';
+        r.querySelector('.rm-mole').src = A + 'mole-cur-wave-' + view + '.webp';
         r.querySelector('.rm-panel b').textContent = T('mole.rm.round', { n: n });
         r.querySelector('.rm-check').hidden = !cleared;
       });
