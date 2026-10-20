@@ -169,12 +169,34 @@
     m.id = 'fps-meter';
     document.body.appendChild(m);
     let n = 0, worst = 0, last = performance.now(), t0 = last;
-    // 골드 묠니르 '눌러도 망치 안 감' 확인용 — 스크립트 오류가 나면 마지막 오류 내용을 같이 표시
-    let lastErr = '';
-    window.addEventListener('error', (e) => { lastErr = (e.message || '') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || ''); });
+    // V1333 C 골드 묠니르 '눌러도 망치 안 감' 자동 기록(임시, 출시 전 삭제): 게임 중 다이얼패드를 눌렀는데 타격 처리(맞힘/헛방 색)가
+    // 안 된 순간과 스크립트 오류를 폰(localStorage 'mole.diag', 최근 6개)에 남기고 왼쪽 위에 계속 표시 — 앱을 다시 켜도 유지.
+    let diag = [];
+    try { diag = JSON.parse(localStorage.getItem('mole.diag') || '[]'); } catch (e) { diag = []; }
+    const saveDiag = (line) => {
+      const d = new Date(); diag.push(String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ' ' + line);
+      diag = diag.slice(-6);
+      try { localStorage.setItem('mole.diag', JSON.stringify(diag)); } catch (e) { /* 무시 */ }
+    };
+    window.addEventListener('error', (e) => { saveDiag('ERR ' + (e.message || '') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || '')); });
+    document.addEventListener('pointerdown', (e) => {
+      const gs = document.getElementById('game-screen');
+      if (!state || state.ended || !gs || gs.classList.contains('is-start')) return;
+      const bar = document.getElementById('lane-button-bar');
+      const r = bar && bar.getBoundingClientRect();
+      if (!r || e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
+      const btn = e.target && e.target.closest && e.target.closest('#lane-button-bar .lane-button');
+      setTimeout(() => {
+        if (state && (state.feverEventActive || state.introActive)) return; // 피버(버튼판 위로 감)·카운트다운 중은 원래 반응 없음
+        if (btn && (btn.classList.contains('is-tint-hit') || btn.classList.contains('is-tint-miss'))) return; // 정상 처리됨
+        const under = e.target ? (e.target.id ? '#' + e.target.id : e.target.tagName + '.' + String(e.target.className).split(' ')[0]) : '?';
+        saveDiag('TAP ' + (btn ? 'btn' + btn.dataset.region : 'notbtn') + ' under=' + under +
+          (state ? ' p' + (state.paused ? 1 : 0) + ' pf' + (state.pausedByFever ? 1 : 0) + ' q' + ((state.quakeFxUntil || 0) > performance.now() ? 1 : 0) + ' w=' + state.weapon : ' nostate'));
+      }, 0);
+    }, true);
     (function f(now) {
       n++; worst = Math.max(worst, now - last); last = now;
-      if (now - t0 >= 500) { m.textContent = Math.round(n * 1000 / (now - t0)) + 'fps ' + Math.round(worst) + 'ms' + (lastErr ? ' ⚠ ' + lastErr : ''); n = 0; worst = 0; t0 = now; }
+      if (now - t0 >= 500) { m.textContent = Math.round(n * 1000 / (now - t0)) + 'fps ' + Math.round(worst) + 'ms' + (diag.length ? ' ⚠' + diag.length + ' ' + diag[diag.length - 1] : ''); n = 0; worst = 0; t0 = now; }
       requestAnimationFrame(f);
     })(last);
   })();
