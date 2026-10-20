@@ -1,3 +1,8 @@
+## 2026-10-20 / V1325 C — Motion Prompt #018 띠 전환, 진입 한 번에, 노말·프로 버벅임 (배포)
+- 띠 전환: round-map.js shapeTransition(MIT (c) 2026 Shohei Ohtaki, motion-prompt #018 원본 타이밍/모양 그대로, 색만 노랑·초록·빨강·보라). body 에 fixed canvas. 모드 전환(탭·스와이프, dir=순서 방향), 홈→지도(game.js openMoreNow, rm-preparing 동안 덮은 채 대기 최대 1.2초), X→홈(거울, 기존 FGH.rollOut 대체). 기존 rm-page-from 슬라이드·animatePage 삭제.
+- 진입: .rm-preparing > * 전부 숨김(하마·버튼판·선·재화 먼저 뜨던 문제).
+- 버벅임: .rm-glow-layer mix-blend-mode:screen 제거 — 아래 폭포/용암 캔버스가 매 프레임 바뀌어 전체 재합성(노말·프로만 버벅인 원인 추정). 폰 확인 필요.
+
 ## 2026-10-20 / V1324 C — 티커·파동 끊김, 하마 층, 진입 한 번에, 노말 원근·빛 강화, 프로 보석/랜턴 빛 (배포)
 - 티커: updateTicker 가 매 render 마다 재생성+애니 재시작 → 글 내용(ticker.dataset.text) 같으면 건너뜀. 심전도: 프레임 지연 몰아 이동 상한 10→2칸.
 - 층: 심전도 선 z3 < 하마 .rm-viewer z4 < .rm-ui(검은 버튼판) z5. 진입 .rm-preparing 시 #roundmap-screen::before 도 숨김.

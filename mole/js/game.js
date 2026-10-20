@@ -1193,6 +1193,12 @@
     if (isStart) document.getElementById('mole-board').hidden = true;
   }
   function openMoreNow(sub) {
+    // V1325 C 홈 → 광산지도 진입 = 띠 전환(Motion Prompt #018) — 다 덮였을 때 실제로 연다.
+    if (sub === 'roundmap-screen' && !openMoreNow.viaBands && MG.RoundMap && MG.RoundMap.shapeTransition && screenNav.current() !== 'roundmap-screen') {
+      const rm = document.getElementById('roundmap-screen');
+      MG.RoundMap.shapeTransition(1, () => { openMoreNow.viaBands = true; openMoreNow(sub); openMoreNow.viaBands = false; }, null, null, () => rm.classList.contains('rm-preparing'));
+      return;
+    }
     // 백스톱: 시작 인트로(챕터 타이핑) 도중 어떻게든 메뉴가 열리면 대기 중이던 라운드 시작을
     // 취소하고 깨끗한 "더보기"만 연다. (평소엔 아래 navLock 으로 ⊞ 자체가 이 시간엔 안 먹힘.)
     var si = document.getElementById('start-intro-overlay');
@@ -1227,7 +1233,7 @@
       if (sub === 'quest-screen' && window.__questScreen) window.__questScreen.show();
       if (sub === 'mailbox-screen' && window.__mailbox) window.__mailbox.show();
       // v836(사용자 지정): 뒤로가기와 같은 글리치로 진입 — 스코어·출석·제작소·광산지도
-      if (['score-screen', 'daily-screen', 'workshop-screen', 'roundmap-screen', 'shop-screen', 'inventory-screen', 'quest-screen', 'mailbox-screen', 'settings-screen'].indexOf(sub) >= 0) { // v862: 상점·아이템도
+      if (sub !== 'roundmap-screen' && ['score-screen', 'daily-screen', 'workshop-screen', 'roundmap-screen', 'shop-screen', 'inventory-screen', 'quest-screen', 'mailbox-screen', 'settings-screen'].indexOf(sub) >= 0) { // v862: 상점·아이템도
         const gs = document.getElementById(sub);
         gs.classList.remove('glitch-in'); void gs.offsetWidth; gs.classList.add('glitch-in');
         setTimeout(() => gs.classList.remove('glitch-in'), 260);

@@ -173,14 +173,6 @@
 .rm-window-map[data-light="easy"] .rm-top-cap.rm-mode-easy { display:none; }
 
 /* Swiping moves to the adjacent light page; Amateur and Pro stay at the ends. */
-.rm-window-map.rm-page-from-right .rm-stage { animation:rm-stage-in-from-right .26s ease-out both; }
-.rm-window-map.rm-page-from-left .rm-stage { animation:rm-stage-in-from-left .26s ease-out both; }
-.rm-window-map.rm-page-from-right .rm-top-cap { animation:rm-cap-in-from-right .26s ease-out both; }
-.rm-window-map.rm-page-from-left .rm-top-cap { animation:rm-cap-in-from-left .26s ease-out both; }
-@keyframes rm-stage-in-from-right { from { transform:translateX(calc(-50% + 8vw)); opacity:.45; } to { transform:translateX(-50%); opacity:1; } }
-@keyframes rm-stage-in-from-left { from { transform:translateX(calc(-50% - 8vw)); opacity:.45; } to { transform:translateX(-50%); opacity:1; } }
-@keyframes rm-cap-in-from-right { from { transform:translateX(8vw); opacity:.45; } to { transform:translateX(0); opacity:1; } }
-@keyframes rm-cap-in-from-left { from { transform:translateX(-8vw); opacity:.45; } to { transform:translateX(0); opacity:1; } }
 /* V1319 C 위·아래 원근(A안): 구멍 있는 앞 그림 모양으로 잘린 그라데이션 — 위(먼 라운드)는 어둡게, 아래(가까운 라운드)는 그대로. 그림·터치 위치 불변 */
 .rm-window-map .rm-depth-shade { position:absolute; inset:0; z-index:2; pointer-events:none; background:linear-gradient(to bottom,rgba(0,0,0,.45) 0%,rgba(0,0,0,.2) 45%,rgba(0,0,0,0) 85%); -webkit-mask:var(--rm-depth-mask) center/100% 100% no-repeat; mask:var(--rm-depth-mask) center/100% 100% no-repeat; }
 .rm-window-map .rm-depth-easy-route { z-index:1; --rm-depth-mask:url('assets/roundmap/window-v1263/route-grounded.webp'); transform-origin:0 0; transform:translateY(6.58%) scaleY(.913); }
@@ -194,14 +186,14 @@
 .rm-window-map .rm-bottom-wave { position:absolute; left:0; z-index:3 !important; bottom:calc(env(safe-area-inset-bottom,0px) + 1% + max(78px,19vw) - 17px); width:100%; height:40px; z-index:6; pointer-events:none; }
 @media(max-height:700px) { .rm-window-map .rm-bottom-wave { bottom:calc(env(safe-area-inset-bottom,0px) + 1% + max(72px,18vw) - 17px); } }
 /* V1320 C 아마추어 보석·랜턴 빛: 원본 그림에서 보석·랜턴 모양만 뽑은 층을 겹쳐 반짝임(좌표 점 방식 대체). 뒷 층은 뒷 배경과 함께 움직임 */
-.rm-window-map .rm-glow-layer { position:absolute; inset:0; width:100%; height:100%; z-index:2; pointer-events:none; mix-blend-mode:screen; will-change:opacity; }
+.rm-window-map .rm-glow-layer { position:absolute; inset:0; width:100%; height:100%; z-index:2; pointer-events:none; will-change:opacity; } /* V1325 C: mix-blend-mode:screen 제거 — 아래 용암·폭포 캔버스가 매 프레임 바뀌어 화면 전체를 다시 합성(노말·프로 버벅임 원인) */
 .rm-window-map .rm-glow-gem { filter:brightness(1.5) saturate(1.2) drop-shadow(0 0 4px #6fd3ff); animation:rm-gem-shine 2.6s ease-in-out infinite alternate; }
 .rm-window-map .rm-glow-lan { filter:brightness(1.4) drop-shadow(0 0 6px #ffb84a); animation:rm-lantern-flicker 1.7s linear infinite; }
 @keyframes rm-gem-shine { from { opacity:.2; } to { opacity:.95; } }
 @keyframes rm-lantern-flicker { 0%,100% { opacity:.75; } 20% { opacity:.95; } 35% { opacity:.68; } 55% { opacity:1; } 70% { opacity:.8; } 85% { opacity:.95; } }
 @media(prefers-reduced-motion:reduce) { .rm-window-map .rm-glow-layer { animation:none; opacity:.6; } }
 /* V1322 C 라운드맵 첫 진입: 그림이 다 준비될 때까지 가렸다가 한 번에 표시(round-map.js whenModeReady) */
-.rm-window-map.rm-preparing .rm-stage,.rm-window-map.rm-preparing .rm-top-cap { visibility:hidden; }
+.rm-window-map.rm-preparing > * { visibility:hidden; } /* V1325 C: 하마·버튼판·선·재화까지 전부 준비 후 한 번에 */
 #roundmap-screen.rm-window-map.rm-preparing::before { visibility:hidden; } /* 예비 배경도 준비 후 함께 */
 /* V1323 C 재화 박스(게임 상태판 반투명 박스 재사용): 아래 선 바로 위, 하마 오른쪽으로 조금 띄움(사용자 지정). 층: 심전도 선 3 < 하마 4 < 검은 버튼판(.rm-ui) 5 */
 .rm-window-map .rm-wallet { position:absolute; z-index:6; bottom:calc(env(safe-area-inset-bottom,0px) + 1% + max(78px,19vw) + 10px); left:calc(1% + 40cqw + 14px + var(--rm-pan-x,0px)); display:flex; gap:2px; pointer-events:none; }
@@ -214,3 +206,5 @@
 .rm-window-map .rm-glow-lan.rm-mode-mid { filter:brightness(1.8) drop-shadow(0 0 9px #ffb84a); z-index:3; } /* 원근 그림자 층 위로 */
 /* V1324 C 프로 보석 빛은 붉은 번짐(보석 색) */
 .rm-window-map .rm-glow-gem.rm-mode-legend { filter:brightness(1.5) saturate(1.2) drop-shadow(0 0 4px #ff4a6a); }
+/* V1325 C 모드 전환 띠(Motion Prompt #018) — 화면 전체 위, 터치는 막지 않음 */
+.rm-shape-transition { position:fixed; inset:0; width:100vw; height:100dvh; z-index:2147483000; pointer-events:none; }

@@ -71,6 +71,41 @@
     }).join('');
   }
 
+  // V1325 C 화면 전환 = Motion Prompt #018 "Shape transition"(MIT, (c) 2026 Shohei Ohtaki, showheyohtaki.github.io/motion-prompt/#018).
+  // 원본 그대로: 가로 띠 4개(끝 80px 기울기, 539px 폭 기준 비율), 덮기 0.62초 → 다 덮이고 준비되면 onCovered(화면 교체) → 0.12초 뒤 걷기 0.63초,
+  // 띠마다 14% 지연·구간 58% 동안 cubic ease-in-out. 색만 노랑·초록·빨강·보라(사용자 지정). dir 1 = 좌→우, -1 = 거울. 준비 대기는 최대 1.6초.
+  var BAND_COLORS = ['#ffd84a', '#70f58b', '#ff4a3a', '#a66bff'];
+  function shapeTransition(dir, onCovered, isReady, onDone, holdOpen) {
+    var cv = document.createElement('canvas');
+    cv.className = 'rm-shape-transition';
+    document.body.appendChild(cv);
+    var g = cv.getContext('2d'), dpr = root.devicePixelRatio || 1;
+    var w = root.innerWidth, h = root.innerHeight;
+    cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+    var swappedAt = 0, firstSwap = 0, t0 = performance.now();
+    function clamp(x) { return Math.max(0, Math.min(1, x)); }
+    function eIO(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+    (function frame(now) {
+      var u = (now - t0) / 1000, p1 = clamp(u / 0.62), p2 = 0;
+      if (p1 >= 1 && !swappedAt && (!isReady || isReady() || u > 1.6)) { swappedAt = firstSwap = now; onCovered(); }
+      if (swappedAt && holdOpen && holdOpen() && now - firstSwap < 1200) swappedAt = now; // 교체된 화면이 아직 준비 중이면 덮은 채 대기(최대 1.2초)
+      if (swappedAt) p2 = clamp(((now - swappedAt) / 1000 - 0.12) / 0.63);
+      var sk = w * 80 / 539, span = w + sk + 20, bh = h / 4 + 1;
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      g.clearRect(0, 0, w, h);
+      if (dir < 0) { g.translate(w, 0); g.scale(-1, 1); }
+      for (var i = 0; i < 4; i++) {
+        var d = i * 0.14, e1 = eIO(clamp((p1 - d) / 0.58)), e2 = eIO(clamp((p2 - d) / 0.58));
+        if (e1 <= 0 || e2 >= 1) continue;
+        var y = i * h / 4, xa = -sk - 10 + e2 * span, xb = -sk - 10 + e1 * span;
+        g.fillStyle = BAND_COLORS[i];
+        g.beginPath(); g.moveTo(xa + sk, y); g.lineTo(xb + sk, y); g.lineTo(xb, y + bh); g.lineTo(xa, y + bh); g.closePath(); g.fill();
+      }
+      if (p2 >= 1) { cv.remove(); if (onDone) onDone(); return; }
+      root.requestAnimationFrame(frame);
+    })(t0);
+  }
+
   function create(opts) {
     var el = opts.root;
     var $ = function (s) { return el.querySelector(s); };
@@ -122,7 +157,7 @@
       front: MG.RoundMapFluids.create($('[data-rm-front-fluid]'), { root: el })
     } : null;
 
-    el.querySelector('[data-back="roundmap"]').addEventListener('click', function () { root.FGH.rollOut(el, opts.onClose); }); // v790: 위로 말리며 사라짐
+    el.querySelector('[data-back="roundmap"]').addEventListener('click', function () { if (transitioning) return; transitioning = true; shapeTransition(-1, opts.onClose, null, function () { transitioning = false; }); }); // V1325 C 홈으로 = 띠 전환(거울). // v790: 위로 말리며 사라짐
     var startButton = $('[data-rm-start]');
     // 홈 초록 시작 버튼과 같은 동작(V1318 C, 사용자 지정): 탭=시작 / 꾹(0.6초)=종료 대기 / 다시 탭=종료창
     var startLabel = $('[data-rm-start-label]'), holdT = null, longFired = false, armed = false, revertT = null;
@@ -157,7 +192,7 @@
       b.addEventListener('click', function () {
         var l = b.getAttribute('data-rm-light');
         if (!MG.Progress.isLightUnlocked(l)) { flash(b); return; }
-        whenModeReady(l, function () { view = l; render(); }); // V1322 C 그림 준비 후 한 번에 전환. v844(사용자 지정): 탭은 그 난이도 지도 보기만 — 내 위치(홈 라운드)는 라운드를 눌러야 바뀜
+        if (l !== view) modeTransition(l, function () { render(); }); // V1322 C 그림 준비 후 한 번에 전환. v844(사용자 지정): 탭은 그 난이도 지도 보기만 — 내 위치(홈 라운드)는 라운드를 눌러야 바뀜
       });
     });
 
@@ -237,7 +272,7 @@
     // Mode maps form a left-to-right pager: Amateur, Normal, Pro.
     var panByLight = { easy: 0, mid: 0, legend: 0 };
     var panGesture = null, panSuppressClickUntil = 0, panRaf = 0;
-    var pageAnimationTimer = 0, pageOrder = ['easy', 'mid', 'legend'];
+    var pageOrder = ['easy', 'mid', 'legend'];
     function panLimit() { return Math.max(36, el.clientWidth * .2); }
     function clampPan(value) { var limit = panLimit(); return Math.max(-limit, Math.min(limit, value)); }
     function applyPan(light) {
@@ -287,14 +322,17 @@
       el.querySelectorAll('[data-rm-wallet]').forEach(function (b) { var n = v[b.getAttribute('data-rm-wallet')]; b.textContent = n >= 1000 ? Math.floor(n / 1000) + 'K' : String(n); });
     }
     root.setInterval(function () { if (!el.hidden) updateWallet(); }, 1000);
-    function animatePage(entrySide) {
-      root.clearTimeout(pageAnimationTimer);
-      el.classList.remove('rm-page-from-left', 'rm-page-from-right');
-      void el.offsetWidth;
-      el.classList.add(entrySide === 'right' ? 'rm-page-from-right' : 'rm-page-from-left');
-      pageAnimationTimer = root.setTimeout(function () {
-        el.classList.remove('rm-page-from-left', 'rm-page-from-right');
-      }, 280);
+    // V1325 C 모드 전환 = Motion Prompt #018 "Shape transition"(MIT, (c) 2026 Shohei Ohtaki, showheyohtaki.github.io/motion-prompt/#018).
+    // 원본 그대로: 가로 띠 4개(끝 80px 기울기, 539px 폭 기준 비율), 덮기 0.62초 → 다 덮이면 다음 화면으로 교체 → 0.12초 뒤 걷기 0.63초,
+    // 띠마다 14% 지연·구간 58% 동안 cubic ease-in-out. 색만 노랑·초록·빨강·보라(사용자 지정). 앞 모드로 가면 좌→우, 뒤로 가면 거울.
+    var transitioning = false;
+    function modeTransition(next, swap) {
+      if (transitioning) return;
+      transitioning = true;
+      var ready = false;
+      whenModeReady(next, function () { ready = true; });
+      shapeTransition(pageOrder.indexOf(next) >= pageOrder.indexOf(view) ? 1 : -1,
+        function () { view = next; swap(); }, function () { return ready; }, function () { transitioning = false; });
     }
     if (el.classList.contains('rm-window-map')) {
       el.addEventListener('pointerdown', function (event) {
@@ -335,11 +373,7 @@
             if (next) {
               panByLight[g.light] = g.start;
               applyPan(g.light);
-              whenModeReady(next, function () {
-                view = next;
-                render();
-                animatePage(dx < 0 ? 'right' : 'left');
-              });
+              modeTransition(next, function () { render(); });
             } else {
               panByLight[g.light] = g.start;
               applyPan(g.light);
@@ -410,7 +444,7 @@
     } };
   }
 
-  var api = { create: create };
+  var api = { create: create, shapeTransition: shapeTransition };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.RoundMap = api; }
 })(typeof window !== 'undefined' ? window : null);
 
