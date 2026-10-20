@@ -75,35 +75,46 @@
   // 원본 그대로: 가로 띠 4개(끝 80px 기울기, 539px 폭 기준 비율), 덮기 0.31초 → 다 덮이고 준비되면 onCovered(화면 교체) → 0.06초 뒤 걷기 0.315초(원본의 2배 속도, 사용자 지정),
   // 띠마다 14% 지연·구간 58% 동안 cubic ease-in-out. 색만 노랑·초록·빨강·보라(사용자 지정). dir 1 = 좌→우, -1 = 거울. 준비 대기는 최대 1.6초.
   var BAND_COLORS = ['#ffd84a', '#70f58b', '#ff4a3a', '#a66bff'];
+  // V1332 C: 매번 화면 크기 캔버스를 만들어 매 프레임 칠하던 것 → 미리 만든 띠 4개(평행사변형 clip-path)를 transform 으로만 이동.
+  // transform 애니메이션은 폰 그래픽 쪽(컴포지터)이 따로 처리해, 전환 순간 메인 처리가 바빠도 띠는 끊기지 않는다.
+  // 띠 한 개 = 아래변 길이 span 의 평행사변형: translateX -span(왼쪽 밖) → 0(덮음) → +span(오른쪽 밖) 이 원래 앞변·뒷변 이동과 같다.
+  var bandHost = null, bandEls = [];
   function shapeTransition(dir, onCovered, isReady, onDone, holdOpen) {
-    var cv = document.createElement('canvas');
-    cv.className = 'rm-shape-transition';
-    document.body.appendChild(cv);
-    var g = cv.getContext('2d'), dpr = root.devicePixelRatio || 1;
-    var w = root.innerWidth, h = root.innerHeight;
-    cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
-    var swappedAt = 0, firstSwap = 0, t0 = performance.now();
-    function clamp(x) { return Math.max(0, Math.min(1, x)); }
-    function eIO(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
-    (function frame(now) {
-      var u = (now - t0) / 1000, p1 = clamp(u / 0.31), p2 = 0;
-      if (p1 >= 1 && !swappedAt && (!isReady || isReady() || u > 1.6)) { swappedAt = firstSwap = now; onCovered(); }
-      if (swappedAt && holdOpen && holdOpen() && now - firstSwap < 1200) swappedAt = now; // 교체된 화면이 아직 준비 중이면 덮은 채 대기(최대 1.2초)
-      if (swappedAt) p2 = clamp(((now - swappedAt) / 1000 - 0.06) / 0.315);
-      var sk = w * 80 / 539, span = w + sk + 20, bh = h / 4 + 1;
-      g.setTransform(dpr, 0, 0, dpr, 0, 0);
-      g.clearRect(0, 0, w, h);
-      if (dir < 0) { g.translate(w, 0); g.scale(-1, 1); }
-      for (var i = 0; i < 4; i++) {
-        var d = i * 0.14, e1 = eIO(clamp((p1 - d) / 0.58)), e2 = eIO(clamp((p2 - d) / 0.58));
-        if (e1 <= 0 || e2 >= 1) continue;
-        var y = i * h / 4, xa = -sk - 10 + e2 * span, xb = -sk - 10 + e1 * span;
-        g.fillStyle = BAND_COLORS[i];
-        g.beginPath(); g.moveTo(xa + sk, y); g.lineTo(xb + sk, y); g.lineTo(xb, y + bh); g.lineTo(xa, y + bh); g.closePath(); g.fill();
+    if (!bandHost) {
+      bandHost = document.createElement('div');
+      bandHost.className = 'rm-shape-transition';
+      BAND_COLORS.forEach(function (c) { var b = document.createElement('i'); b.style.background = c; bandHost.appendChild(b); bandEls.push(b); });
+      document.body.appendChild(bandHost);
+    }
+    var w = root.innerWidth, h = root.innerHeight, sk = w * 80 / 539, span = w + sk + 20, bh = h / 4 + 1;
+    var EASE = 'cubic-bezier(0.65, 0, 0.35, 1)'; // 원본 eIO(cubic ease-in-out)
+    bandHost.style.transform = dir < 0 ? 'scaleX(-1)' : '';
+    bandEls.forEach(function (b, i) {
+      b.style.top = (i * h / 4) + 'px'; b.style.height = bh + 'px';
+      b.style.left = (-sk - 10) + 'px'; b.style.width = (span + sk) + 'px';
+      b.style.clipPath = 'polygon(' + sk + 'px 0, 100% 0, calc(100% - ' + sk + 'px) 100%, 0 100%)';
+      b.getAnimations().forEach(function (a) { a.cancel(); });
+      b.style.transform = 'translateX(' + (-span) + 'px)';
+    });
+    bandHost.style.visibility = 'visible';
+    function run(from, to, base, delay0) {
+      return bandEls.map(function (b, i) {
+        return b.animate([{ transform: 'translateX(' + from + 'px)' }, { transform: 'translateX(' + to + 'px)' }],
+          { duration: 0.58 * base, delay: delay0 + i * 0.14 * base, easing: EASE, fill: 'forwards' });
+      });
+    }
+    run(-span, 0, 310, 0);
+    var t0 = performance.now(), firstSwap = 0;
+    root.setTimeout(function wait() {
+      var now = performance.now();
+      if (!firstSwap) {
+        if (isReady && !isReady() && now - t0 < 1600) { root.requestAnimationFrame(function () { wait(); }); return; }
+        firstSwap = now; onCovered();
       }
-      if (p2 >= 1) { cv.remove(); if (onDone) onDone(); return; }
-      root.requestAnimationFrame(frame);
-    })(t0);
+      if (holdOpen && holdOpen() && now - firstSwap < 1200) { root.requestAnimationFrame(function () { wait(); }); return; } // 교체된 화면이 아직 준비 중이면 덮은 채 대기(최대 1.2초)
+      var last = run(0, span, 315, 60).pop();
+      last.onfinish = function () { bandHost.style.visibility = 'hidden'; if (onDone) onDone(); };
+    }, 310);
   }
 
   function create(opts) {
@@ -322,6 +333,17 @@
       el.querySelectorAll('[data-rm-wallet]').forEach(function (b) { var n = v[b.getAttribute('data-rm-wallet')]; b.textContent = n >= 1000 ? Math.floor(n / 1000) + 'K' : String(n); });
     }
     root.setInterval(function () { if (!el.hidden) updateWallet(); }, 1000);
+    // V1332 C: 한참 가만히 있으면 폰 브라우저가 안 보이는 모드의 풀어 둔 그림을 버림 → 바꿀 때 다시 풀며 20fps 대로 떨어짐.
+    // 광산지도가 떠 있는 동안 12초마다 다른 두 모드 그림을 decode 해 캐시를 살려 둔다(이미 풀려 있으면 거의 비용 없음).
+    root.setInterval(function () {
+      if (el.hidden || document.hidden || !document.body.classList.contains('rm-open')) return;
+      pageOrder.forEach(function (l) {
+        if (l === view) return;
+        el.querySelectorAll('.rm-stage .rm-mode-' + l + (l === 'easy' ? ',.rm-route-art,.rm-front-art' : '')).forEach(function (n) {
+          (n.tagName === 'IMG' ? [n] : Array.prototype.slice.call(n.querySelectorAll('img'))).forEach(function (i) { if (i.decode) i.decode().catch(function () {}); });
+        });
+      });
+    }, 12000);
     // V1325 C 모드 전환 = Motion Prompt #018 "Shape transition"(MIT, (c) 2026 Shohei Ohtaki, showheyohtaki.github.io/motion-prompt/#018).
     // 원본 그대로: 가로 띠 4개(끝 80px 기울기, 539px 폭 기준 비율), 덮기 0.62초 → 다 덮이면 다음 화면으로 교체 → 0.12초 뒤 걷기 0.63초,
     // 띠마다 14% 지연·구간 58% 동안 cubic ease-in-out. 색만 노랑·초록·빨강·보라(사용자 지정). 앞 모드로 가면 좌→우, 뒤로 가면 거울.

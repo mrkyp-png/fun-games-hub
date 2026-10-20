@@ -191,7 +191,8 @@
 /* V1324 C 프로 보석 빛은 붉은 번짐(보석 색) */
 .rm-window-map .rm-glow-gem.rm-mode-legend { }
 /* V1325 C 모드 전환 띠(Motion Prompt #018) — 화면 전체 위, 터치는 막지 않음 */
-.rm-shape-transition { position:fixed; inset:0; width:100vw; height:100dvh; z-index:2147483000; pointer-events:none; }
+.rm-shape-transition { position:fixed; inset:0; z-index:2147483000; pointer-events:none; overflow:hidden; visibility:hidden; }
+.rm-shape-transition > i { position:absolute; display:block; will-change:transform; }
 /* V1327 C 버튼판 바로 위 모드색 글로우 선 — 심전도·BGM 반응 없이 고정(사용자 지정). 층: 선 3 < 하마 4 < 검은 버튼판 5 */
 .rm-window-map .rm-bottom-line { position:absolute; left:0; right:0; z-index:3; bottom:calc(env(safe-area-inset-bottom,0px) + 1% + max(78px,19vw) - 1px); height:2px; pointer-events:none; background:var(--rm-line); box-shadow:0 0 6px 1px var(--rm-line); }
 @media(max-height:700px) { .rm-window-map .rm-bottom-line { bottom:calc(env(safe-area-inset-bottom,0px) + 1% + max(72px,18vw) - 1px); } }

@@ -1,3 +1,8 @@
+## 2026-10-20 / V1332 C — 띠 전환 컴포지터화, 안 보이는 모드 그림 decode 유지 (배포)
+- shapeTransition: 매번 fixed 캔버스 생성+rAF 칠하기 → body 에 .rm-shape-transition div 1개+띠 i 4개(clip-path 평행사변형) 재사용, WAAPI transform translateX(-span→0→+span), easing cubic-bezier(.65,0,.35,1), 덮기 310ms·대기 60·걷기 315ms, 띠 지연 14%·구간 58% 그대로. dir<0 은 host scaleX(-1).
+- 폰이 한참 뒤 안 보이는 모드의 decode 결과를 버려 전환 시 20fps 대 → 광산지도 열린 동안 12초마다 다른 두 모드 img.decode().
+- "투명하게 깔아 두기"는 평소 화면 3중 합성 위험으로 미적용(사용자에게 설명).
+
 ## 2026-10-20 / V1331 C — 보석·랜턴 빛 한 단계 밝게, 아마추어 액자 랜턴 최대 밝기 (배포)
 - hd-v1330 빛 12장 재굽기(bake_glow.py): 아마추어·프로 gem brightness1.5→1.9 sat1.3 shadow6, lan1.4→1.8 shadow9 / 노말 gem1.9→2.3 shadow8, lan1.8→2.2 shadow11. 런타임 부하 동일.
 - 아마추어 앞 액자 랜턴(easy-front-lan): 액자=가장 가까움 → 원근 감쇠·원근 그림자 미적용, brightness2.6 shadow14(사용자 지정 "제일 밝아야"). 빛 층 bbox 변경으로 index.html inline 위치 갱신.
