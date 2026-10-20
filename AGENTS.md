@@ -1,3 +1,10 @@
+## 2026-10-20 / V1324 C — 티커·파동 끊김, 하마 층, 진입 한 번에, 노말 원근·빛 강화, 프로 보석/랜턴 빛 (배포)
+- 티커: updateTicker 가 매 render 마다 재생성+애니 재시작 → 글 내용(ticker.dataset.text) 같으면 건너뜀. 심전도: 프레임 지연 몰아 이동 상한 10→2칸.
+- 층: 심전도 선 z3 < 하마 .rm-viewer z4 < .rm-ui(검은 버튼판) z5. 진입 .rm-preparing 시 #roundmap-screen::before 도 숨김.
+- 노말: .rm-depth-mid 그라데이션 .6/.3/0(88%). 빛 brightness gem1.9·lan1.8, 보석 깜빡 .5→1, 빛 층 z3(원근 그림자 위).
+- 프로: glow-v1320/legend-{rear,front}-{gem,lan}.webp, 보석 색 기준 h328~359(용암 주황 제외)+liquid mask 제외, 사용자 검수(앞 G4·G13 삭제). CAVE_FX.legend 비움 → 세 모드 모두 좌표 점 방식 사용 안 함. 보석 번짐 #ff4a6a.
+- 헤드리스 캡처 확인, 실제 폰 미확인.
+
 ## 2026-10-20 / V1323 C — 라운드맵 코인·하트·티켓 박스, 하마 선 앞 (배포)
 - .rm-wallet: 게임 상태판 .ms-box(반투명) 재사용 3개(코인=combo 노랑, 하트=heart 분홍, 티켓=score 파랑), 아이콘 assets/home2/ic-{coin,heart,ticket}.png. 위치 = 아래 선 바로 위, 하마 오른쪽 14px(사용자 지정, 티커·X 불변). 박스 64×30 overflow:hidden, 1000 이상 1000당 K. round-map.js updateWallet(render 시 + 보이는 동안 1초마다).
 - 하마 .rm-viewer z4→7(아래 심전도 선 앞).

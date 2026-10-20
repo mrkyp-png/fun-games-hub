@@ -43,16 +43,8 @@
     easy: { glow:[], spark:[], bubble:[], gem:[], rearGem:[], lantern:[], rearLantern:[] },
     // V1321 C: 노말도 그림에서 뽑은 빛 층으로 대체 — 좌표 점 끔
     mid: { glow:[], spark:[], bubble:[], gem:[], rearGem:[], lantern:[], rearLantern:[] },
-    legend: {
-      glow:[], spark:[], bubble:[],
-      // Coordinates are centered on the visible pink crystal faces in pro-front-supported.webp.
-      // Avoid the previous bare-rock/lantern points and keep one halo per nearby crystal cluster.
-      gem:[[205,152,'red'],[395,164,'red'],[542,339,'red'],[558,578,'red'],[57,839,'red'],[585,858,'red'],[255,969,'red'],[389,990,'red'],[635,1174,'red'],[157,1472,'red'],[857,1464,'red'],[834,1587,'red'],[795,1615,'red']],
-      // Only keep exposed rear crystals; the former left-side point was on bare rock.
-      rearGem:[[34,1200,'red'],[145,1480,'red'],[850,1445,'red'],[856,1618,'red']],
-      lantern:[[220,252],[343,220],[478,565],[646,443],[595,945],[198,845],[294,1181],[430,1166],[785,1340],[658,1271],[620,1490]],
-      rearLantern:[[804,470],[174,163],[272,144],[362,240],[701,406],[501,310],[562,198],[578,927],[543,1086],[838,1452],[823,1507],[901,1218]]
-    }
+    // V1324 C: 프로도 그림에서 뽑은 빛 층으로 대체 — 좌표 점 끔
+    legend: { glow:[], spark:[], bubble:[], gem:[], rearGem:[], lantern:[], rearLantern:[] }
   };
   var GEM_TONES = {
     cyan:   ['rgba(235,250,255,.82)','rgba(61,182,255,.36)','rgba(35,148,255,.44)'],
@@ -89,8 +81,9 @@
       var items = TICKER_ITEMS[view] || [];
       var text = items.map(function (item) { return T(item.key); }).join('　·　');
       var label = $('[data-rm-ticker-label]'), track = $('[data-rm-ticker-track]');
+      if (!track || ticker.dataset.text === text) return; // V1323 C: 같은 글이면 그대로 — 매 render 재시작(티커 튐) 방지
+      ticker.dataset.text = text;
       if (label) label.textContent = text;
-      if (!track) return;
       var copies = track.querySelectorAll('[data-rm-ticker-copy]');
       copies.forEach(function (copy) {
         copy.textContent = '';

@@ -211,7 +211,7 @@
       if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
       const step = 2 * dpr, cols = Math.max(2, Math.floor(w / step) + 1);
       if (vals.length !== cols) vals = new Array(cols).fill(0);
-      carry += lastTick ? Math.min(10, (now - lastTick) * 0.06) : 1;
+      carry += lastTick ? Math.min(2, (now - lastTick) * 0.06) : 1; // 멈췄던 시간은 몰아 건너뛰지 않음(끊김 방지)
       lastTick = now;
       for (; carry >= 1; carry--) { vals.unshift(queue.length ? queue.shift() : 0); vals.pop(); }
       const color = getComputedStyle(screen).getPropertyValue('--rm-glow').trim() || '#ffd84a';
