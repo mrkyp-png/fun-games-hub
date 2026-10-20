@@ -8006,3 +8006,5 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rb-mini:has(.rb-glass-grow.is-laser-miss) .rb-glass-ring { --ring-color:#ff2020; background:#590000; }
 /* V1340 C 네온 판 위 장식(글씨·빛·파동 등)은 터치를 받지 않음 — 진단 'RB notbtn under=SPAN' (버튼·일시정지 버튼만 터치) */
 .rb-board :not(button):not(button *), .rb-screen-ripple, .rb-existing-pulse-layer { pointer-events: none; }
+/* V1341 C 네온 '반사' 버벅임(사용자 토글 확인): 9개 반사 층 마스크가 흐림 필터 든 108KB SVG 라 누르거나 안쪽 파동이 움직일 때마다 다시 그려짐 → 같은 모양을 미리 그린 PNG 마스크(640px)로 */
+.rb-circuit-reflection { mask-image:url('assets/rhythm-b/circuit-rim-mask.png'); -webkit-mask-image:url('assets/rhythm-b/circuit-rim-mask.png'); }

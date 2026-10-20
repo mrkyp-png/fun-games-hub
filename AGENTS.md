@@ -1,3 +1,7 @@
+## 2026-10-20 / V1341 C — 네온 반사 층 마스크 SVG→PNG (배포)
+- 사용자 토글 확인 "반사가 좀 그런 듯": .rb-circuit-reflection 9개 mask=circuit-rim.svg(108KB, 내부 feGaussianBlur) → 누름 transform·안쪽 outward 애니마다 재래스터. headless 로 640x614 PNG(assets/rhythm-b/circuit-rim-mask.png) 래스터 후 style.css 끝 mask-image 교체.
+- 영상(KakaoTalk_20261020_180926596.mp4): RB notbtn 신규 없음(V1340 장식 pointer-events 수정 효과), 🐢 여전히 기타(GPU 대기) 위주.
+
 ## 2026-10-20 / V1340 C — 네온: 폰 LoAF 결과 GPU 대기 위주, 터치 가로채기 수정, 커지는 원 HTML화, 효과 토글 추가 (배포)
 - 폰 영상(KakaoTalk_20261020_175516067.mp4) 🐢 28초 누적: 기타(스크립트·렌더 외 = 합성/GPU 대기 추정) 16.4초, 그리기 2.0초, JS 상위권 아님 → 병목은 GPU 합성(마스크·clip-path 층 다수).
 - 진단 "RB notbtn under=SPAN" → style.css 끝 .rb-board :not(button):not(button *), .rb-screen-ripple, .rb-existing-pulse-layer { pointer-events:none }. 진단에 부모 요소 추가.
