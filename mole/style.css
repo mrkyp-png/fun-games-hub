@@ -8321,3 +8321,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #game-screen:not(.is-start):not(.diff-mid):not(.diff-legend) .lane-button.lane-button.is-tint-hit .lane-face--key, #game-screen:not(.is-start).diff-mid .lane-button.lane-button.is-tint-hit .lane-face--key, #game-screen:not(.is-start).diff-legend .lane-button.lane-button.is-tint-hit .lane-face--key { --cap: url('assets/home2/btn-pink-deep.png'); }
 #game-screen:not(.is-start):not(.diff-mid):not(.diff-legend) .lane-button.lane-button.is-tint-miss .lane-face--key, #game-screen:not(.is-start).diff-mid .lane-button.lane-button.is-tint-miss .lane-face--key, #game-screen:not(.is-start).diff-legend .lane-button.lane-button.is-tint-miss .lane-face--key { --cap: url('assets/home2/btn-red-deep.png'); }
 #game-screen:not(.is-start).gs-invincible .lane-button--simple.lane-button--hot, #game-screen:not(.is-start) .lane-button--simple.lane-button--hot-safe { --scap: url('assets/home2/btn-orange-deep.png'); }
+/* V1374 C 사용자: 곡 카드 실행·광고 버튼 = 네모 그대로 고해상도(GPT, 빛번짐 없음). 그림 비율 그대로(늘림 없음) */
+#rhythm-screen .rb-song-actions .rb-song-play { background: url('assets/rhythm/ui/v1372/sq-yellow.png') center / 100% 100% no-repeat !important; }
+#rhythm-screen .rb-song-actions .rb-song-ad { background: url('assets/rhythm/ui/v1372/sq-blue.png') center / 100% 100% no-repeat !important; }
+#rhythm-screen .rb-song-actions .rb-song-play, #rhythm-screen .rb-song-actions .rb-song-ad { aspect-ratio: 900 / 211; height: auto; min-height: 0; }
