@@ -142,6 +142,8 @@
   function formatK(n) {
     n = Number(n) || 0;
     if (n < 1000) return String(n);
+    // V1369 C: 1000.0K 는 K 가 + 버튼에 가려 '1000.0l' 로 보였음 → 100만 이상(반올림으로 1000.0K 가 되는 999,950~ 포함)은 M
+    if (n >= 999950) return (n / 1000000).toFixed(1) + 'M';
     return (n / 1000).toFixed(1) + 'K';
   }
 

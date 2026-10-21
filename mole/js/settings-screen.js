@@ -103,7 +103,8 @@
       langCard();
       card('guide', 'mole.more.help', slot('arrow'), opts.onHelp || soon);
       card('contact', 'mole.more.contact', slot('arrow'), opts.onContact || soon);
-      card('noad', 'mole.set.adfree', slot('arrow')).classList.add('is-off'); // v1011(사용자 지정): 광고 제거 = 회색만, 누름 없음
+      var noad = card('noad', 'mole.set.adfree', slot('arrow')); noad.classList.add('is-off'); // v1011(사용자 지정): 광고 제거 = 회색만, 누름 없음
+      noad.dataset.soon = T('mole.inv.soon'); // V1369 C: 회색만이면 고장처럼 보여 '🔒 준비 중' 리본
       card('shield', 'mole.more.privacy', slot('arrow'), opts.onPrivacy || soon);
       card('trash', 'mole.set.reset', slot('arrow'), confirmReset);
       // 이름판 글자 "…" 없이 판 안에 한 줄

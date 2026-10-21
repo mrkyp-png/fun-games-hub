@@ -39,8 +39,8 @@ function check(name, ok, info) { results.push(!!ok); console.log((ok ? 'PASS ' :
     // 리듬팡 진입 = 해금
     await p.evaluate(() => document.querySelector('[data-back="score"]').click()); await W(1200);
     { const c = await p.evaluate(() => { const r = document.querySelector('.h2w-rhythm').getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; }); await p.mouse.click(c.x, c.y); } await W(2000);
-    const entered = await p.evaluate(() => localStorage.getItem('mole.rp.entered'));
-    check('리듬팡에 들어가면 해금 기록', entered === '1', entered);
+    const entered = await p.evaluate(() => ({ flag: localStorage.getItem('mole.rp.entered'), shown: !document.getElementById('rhythm-screen').hidden }));
+    check('리듬팡 버튼 → 리듬팡 화면이 실제로 보이고 해금 기록', entered.flag === '1' && entered.shown, entered); // V1369 C: 화면 안 열리던 회귀 잡기
     await p.evaluate(() => document.querySelector('[data-rp-types-home]').click()); await W(2000);
     await openScore();
     await p.evaluate(() => document.querySelector('[data-sr-game="rhythm"]').click()); await W(500);

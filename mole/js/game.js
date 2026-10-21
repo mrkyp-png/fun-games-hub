@@ -143,6 +143,8 @@
     Object.keys(REG).forEach((k) => {
       const b = document.querySelector('#lane-button-bar [data-region="' + REG[k] + '"]');
       if (b) b.classList.toggle('has-badge', has[k]);
+      const dot = b && b.querySelector('.h2-dot'); // V1369 C: 빨간 점 → 숫자 뱃지(퀘스트는 받을 개수, 나머지는 1)
+      if (dot) dot.dataset.n = !has[k] ? '' : k === 'quest' ? String(Math.min(99, MG.Quest.claimable() | 0) || 1) : '1';
     });
   }
   setInterval(refreshHomeBadges, 3000); // 자정 넘어 일일 출석이 다시 열리는 것 등

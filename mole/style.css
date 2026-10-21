@@ -8094,3 +8094,17 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .sr-album.is-locked .sr-album-btn { filter: grayscale(1) brightness(.7); pointer-events: none; }
 .sr-album-lock { position: absolute; left: 9px; right: 9px; top: 9px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; padding: 10px; box-sizing: border-box; text-align: center; font-style: normal; font-weight: 900; font-size: calc(var(--w) * 0.034); line-height: 1.35; color: #fff; -webkit-text-stroke: 2px rgba(0, 0, 30, 0.6); paint-order: stroke fill; pointer-events: none; }
 .sr-album-lock[hidden] { display: none; }
+
+/* ===== V1369 C UI 보완(사용자 승인 시안 1·2·6) ===== */
+/* 1 재화 줄: 검은 칸 → 볼록한 남보라 유리 알약(입체감 유지), 버전 글자는 재화 칸과 안 겹치게 왼쪽 위 구석 작게 */
+.h2-pill { background: linear-gradient(180deg, #5a4a8a 0%, #2b2357 45%, #1a1440 100%); box-shadow: inset 0 2px 0 rgba(255,255,255,0.35), inset 0 -3px 4px rgba(0,0,0,0.45), 0 2px 0 #120c2a, 0 3px 5px rgba(0,0,0,0.4); }
+#lane-button-bar #build-tag { left: 6px; top: 0; transform: none; font-size: 8px; color: rgba(255, 255, 255, 0.45); }
+/* 2 알림: 빨간 점 → 숫자 뱃지 */
+.has-badge .h2-dot { width: auto; max-width: none; min-width: 20px; height: 20px; aspect-ratio: auto; border-radius: 10px; padding: 0 5px; box-sizing: border-box; top: 2%; right: 3%;
+  display: flex; align-items: center; justify-content: center; font: 400 12px/1 'Lilita One', 'Jua', sans-serif; color: #fff; }
+.has-badge .h2-dot::after { content: attr(data-n); }
+/* 6 설정 광고 제거: 회색 카드 위에 '🔒 준비 중' 리본 */
+.st2-card.is-off { filter: none; }
+.st2-card.is-off .st2-art, .st2-card.is-off .st2-bottom, .st2-card.is-off .st2-card-bg { filter: grayscale(1) brightness(0.85); }
+.st2-card.is-off::after { content: '🔒 ' attr(data-soon); position: absolute; left: 50%; top: 44%; transform: translate(-50%, -50%) rotate(-8deg); white-space: nowrap; z-index: 5; pointer-events: none;
+  background: linear-gradient(#ffcf3a, #f08a00); color: #fff; font: 900 12px/1 'Jua', sans-serif; padding: 5px 9px; border-radius: 8px; border: 2px solid #fff3b0; -webkit-text-stroke: 1px #8a4b00; paint-order: stroke fill; box-shadow: 0 3px 0 #8a4b00; }

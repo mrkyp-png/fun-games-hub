@@ -52,7 +52,8 @@
   // action: 홈 화면에서 탭하면 그 화면으로 이동(onHomeAction 콜백, game.js 가 실제 내비게이션을
   // 담당 — lane-controls 는 게임 상태를 모른다).
   const FACES = [
-    { num: '1', kr: 'ㄱㅋ', en: '', hud: 'hearts' }, { num: '2', kr: 'ㄴ', en: 'ABC', hud: 'coins' }, { num: '3', kr: 'ㄷㅌ', en: 'DEF', hud: 'tickets' },
+    // V1369 C(사용자 지정): 재화 줄 하트·코인 자리 바꿈 → 코인 · 하트 · 티켓
+    { num: '1', kr: 'ㄱㅋ', en: '', hud: 'coins' }, { num: '2', kr: 'ㄴ', en: 'ABC', hud: 'hearts' }, { num: '3', kr: 'ㄷㅌ', en: 'DEF', hud: 'tickets' },
       { nav: '상점', svg: SVG.shop, i18n: 'mole.more.shop', action: 'shop', navBack: { nav: '연락처', svg: SVG.person, i18n: 'mole.pad.contacts' } },
     { num: '4', kr: 'ㄹ', en: 'GHI', hud: 'score', action: 'score' }, { num: '5', kr: 'ㅁ', en: 'JKL', hud: 'daily', action: 'daily' }, { num: '6', kr: 'ㅂㅍ', en: 'MNO', hud: 'quest', action: 'quest' },
       { nav: '홈', svg: SVG.home, action: 'home', noLabel: true, navBack: { nav: '키패드', svg: SVG.pad, i18n: 'mole.pad.keypad' } },
