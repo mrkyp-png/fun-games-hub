@@ -219,6 +219,10 @@
 #splash .splash-stage { inset:0 auto auto 0; width:var(--stage-width); height:calc(var(--stage-width) * 860 / 941); background:url('assets/loading-stage-v1162/stage-cool-v1248.png') center top/100% calc(var(--stage-width) * 1672 / 941) no-repeat; animation:splash-stage-pan 18s ease-in-out infinite alternate; will-change:transform; }
 #splash .splash-front-cap { position:absolute; left:0; right:0; top:var(--front-top); height:min(calc(100vw * 540 / 941),calc(100dvh - var(--front-top))); z-index:0; pointer-events:none; background:url('assets/loading-stage-v1162/stage-cool-v1248.png') center calc(-100vw * 860 / 941)/100% auto no-repeat; }
 #splash .splash-front-face { position:absolute; left:0; right:0; top:min(calc(var(--front-top) + 100vw * 540 / 941),100dvh); bottom:0; z-index:0; pointer-events:none; background:url('assets/loading-stage-v1162/stage-cool-v1248.png') center bottom/100% calc(max(1px,(100dvh - var(--front-top) - 100vw * 540 / 941)) * 1672 / 272) no-repeat; }
+/* V1378 G: 로딩 배경 그림만 검정 30%를 겹쳐 어둡게. 앞쪽 로고·캐릭터·버튼·효과는 유지. */
+#splash .splash-stage, #splash .splash-front-cap, #splash .splash-front-face {
+  background-image: linear-gradient(rgba(0,0,0,.3),rgba(0,0,0,.3)), url('assets/loading-stage-v1162/stage-cool-v1248.png');
+}
 #splash .splash-brand { top:max(calc(env(safe-area-inset-top) + 12px),2.5dvh); }
 #splash > img.splash-performers { top:calc(100vw * 875 / 941 - 100vw * 470 / 1774 + var(--front-drop)); clip-path:inset(0 0 47.0124% 0); }
 #splash .splash-hearts i:nth-child(1) { left:18%!important; top:55vw!important; }
@@ -238,6 +242,8 @@
 
 /* Effects share the source coordinate system and the same moving parent. */
 #splash .splash-stage::after { content:""; position:absolute; inset:0; pointer-events:none; background:inherit; background-size:100% calc(var(--stage-width) * 1672 / 941); filter:brightness(1.65); mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20941%20860%22%20preserveAspectRatio%3D%22none%22%3E%3Cg%20fill%3D%22white%22%3E%3Cellipse%20cx%3D%2273%22%20cy%3D%2253%22%20rx%3D%2215%22%20ry%3D%2210%22%2F%3E%3Cellipse%20cx%3D%22362%22%20cy%3D%2296%22%20rx%3D%2216%22%20ry%3D%2210%22%2F%3E%3Cellipse%20cx%3D%22580%22%20cy%3D%2297%22%20rx%3D%2216%22%20ry%3D%2210%22%2F%3E%3Cellipse%20cx%3D%22869%22%20cy%3D%2254%22%20rx%3D%2215%22%20ry%3D%2210%22%2F%3E%3Cellipse%20cx%3D%22252%22%20cy%3D%22128%22%20rx%3D%2213%22%20ry%3D%228%22%2F%3E%3Cellipse%20cx%3D%22690%22%20cy%3D%22128%22%20rx%3D%2213%22%20ry%3D%228%22%2F%3E%3Crect%20x%3D%22440%22%20y%3D%22560%22%20width%3D%2264%22%20height%3D%22105%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") center/100% 100% no-repeat; animation:loading-lamps-breathe 4.8s ease-in-out infinite; }
+/* 배경을 상속하는 램프 효과에는 어두운 덮개를 복제하지 않음. */
+#splash .splash-stage::after { background-image: url('assets/loading-stage-v1162/stage-cool-v1248.png'); }
 @keyframes loading-lamps-breathe { 0%,100% { opacity:.08; } 50% { opacity:.85; } }
 #splash .loading-stage-lines { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; pointer-events:none; }
 #splash .loading-stage-lines ellipse { fill:none; stroke-width:12; stroke-linecap:round; stroke-dasharray:18 82; animation:loading-ring-flow 6s linear infinite; opacity:.7; }
@@ -1100,7 +1106,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1377 G</div>
+        <div id="build-tag" aria-hidden="true">V 1378 G</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1377,7 +1383,7 @@ window.FGH.rollOut = function (el, done) {
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=1377-G').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=1378-G').catch(function () {});
       }
     });
   }

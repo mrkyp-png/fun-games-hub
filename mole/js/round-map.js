@@ -425,7 +425,8 @@
       if (off || view !== 'easy' || cur < 1) return;
       var r = el.querySelector('.rm-round[data-n="' + cur + '"]'); if (!r) return;
       var desc = T('mole.chapter.desc.' + cur); if (!desc || desc === 'mole.chapter.desc.' + cur) desc = T('mole.startintro.tip');
-      var b = document.createElement('div'); b.className = 'rm-tip' + (cur >= 5 ? ' rm-tip--down' : '');
+      // V1378 G 사용자: 7라운드까지 위쪽 말풍선 유지, 8라운드만 아래쪽.
+      var b = document.createElement('div'); b.className = 'rm-tip' + (cur >= 8 ? ' rm-tip--down' : '');
       b.innerHTML = '<span></span>'; b.firstChild.textContent = T('mole.rm.tip', { desc: desc });
       r.appendChild(b); r.classList.add('has-tip'); // 사용자: 말풍선이 다른 라운드 뒤로 가지 않게(앞으로)
       // V1374 C 사용자: 말풍선 = 원본 그림 그대로(늘리지 않음), 글자만 얹음 → 글자가 넘치면 글자 크기만 줄임

@@ -8424,3 +8424,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #inventory-screen[data-tab="weapon"] .inv-cards-box[data-rar] {
   margin-top: max(0px, calc(17% - 10px));
 }
+/* V1378 G: 카드 사이와 액자의 투명 모서리로 기존 갈색 대신 화면 배경이 보이게. */
+#inventory-screen[data-tab="weapon"] .inv-cards-box,
+#inventory-screen[data-tab="weapon"] .inv-cards-box[data-rar] {
+  background: transparent !important;
+}
