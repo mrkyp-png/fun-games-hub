@@ -175,6 +175,14 @@
     // V1350 C 사용자: FPS·오류만 — 터치 기록(TAP·RB)과 네온 효과 끄기 버튼(#rb-fx-toggles) 삭제.
     let diag = [];
     try { diag = JSON.parse(localStorage.getItem('mole.diag') || '[]').filter((l) => / ERR /.test(l)); } catch (e) { diag = []; } // V1350 C: 오류만(예전 TAP·RB 기록 버림)
+    // Clear only the historical null-combo record once for this fix. New errors remain visible.
+    try {
+      if (!localStorage.getItem('mole.diag.comboGuard1379G')) {
+        diag = diag.filter((line) => !(/Cannot read properties of null.*reading ['"]combo['"]/.test(line) && /@game\.js:/.test(line)));
+        localStorage.setItem('mole.diag', JSON.stringify(diag));
+        localStorage.setItem('mole.diag.comboGuard1379G', '1');
+      }
+    } catch (e) { /* Storage may be unavailable. */ }
     const saveDiag = (line) => {
       const d = new Date(); diag.push(String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ' ' + line);
       diag = diag.slice(-6);
@@ -1609,7 +1617,7 @@
       } else if (weapon === 'goldhammer') {
         MG.HitFx.quakeClone(fxLayer, quakeClonePose(regionId), targetXFrac, targetYFrac, quakeCloneKind(regionId), onImpact);
       } else {
-        MG.HitFx.quakeClone(fxLayer, 'assets/hammer.png', targetXFrac, targetYFrac, quakeCloneKind(regionId), onImpact, 'quake-clone--hammer');
+        MG.HitFx.quakeClone(fxLayer, 'assets/weapons/mallet-yaw10-rest15-v1379.png', targetXFrac, targetYFrac, quakeCloneKind(regionId), onImpact, 'quake-clone--hammer');
       }
     }
     const laneHammer = MG.WeaponPool.create(WeaponMod, hammerOpts, { onOverflow: weaponCloneOverflow });
@@ -1872,7 +1880,7 @@
 
   // ---------- 메인 루프 ----------
   function loop(now) {
-    if (!state || state.ended) return;
+    if (!state || state.ended || !run || !run.combo) return;
     if (state.paused) { lastTime = now; rafId = requestAnimationFrame(loop); return; } // 일시정지: 시간·스폰 정지, 루프만 유지
     const rawDt = Math.min(0.1, (now - lastTime) / 1000);
     lastTime = now;
@@ -1994,6 +2002,7 @@
   }
 
   function updateHUD() {
+    if (!state || !run || !run.combo) return; // V1379 G: home/ended session has no combo state.
     MG.HUD.update({
       round: currentChapter(),
       lives: run.lives,
@@ -2253,7 +2262,7 @@
   }
 
   function onHammerImpact(hitXFrac, hitYFrac, results, opts) {
-    if (!state || state.ended) return;
+    if (!state || state.ended || !run || !run.combo) return;
     const board = document.getElementById('mole-board');
     const cfg = state.config || {};
     let moleHits = 0;
@@ -2372,6 +2381,7 @@
   // (사용자 지정: "일단 테스트가 되어야하니, 라운드2에서만 적용해줘" — 검증 후 !== 1 로 확대).
   // 기존 콤보50 점수배율 피버(isFever())와는 완전히 별개, 서로 건드리지 않는다.
   function checkFeverEventTrigger() {
+    if (!state || !run || !run.combo) return; // V1379 G: home/ended session has no combo state.
     if (state.feverEventDone || state.feverEventActive) return;
     if (currentChapter() !== 2) return;
     // ⚠️테스트용 임시 하향(사용자 지정: "콤보 100달성 빡신데... 콤보 5만 달성해도") — 실기기
@@ -2491,6 +2501,7 @@
   // 끝나면, 창하나 띠워줘 게임복귀 문구 나오게 하고") — "게임복귀" 버튼을 눌러야 실제 복귀
   // 연출(endFeverEvent)이 시작된다. 그동안도 계속 pausedByFever=true 라 타이머는 안 흐른다.
   function showFeverResult() {
+    if (!state || !run || !run.combo) return; // V1379 G: home/ended session has no combo state.
     state.feverResultShown = true;
     if (state.scheduler.forceRetreatAll) state.scheduler.forceRetreatAll(); // 떠 있던 두더지 정리
     const overlay = document.getElementById('fever-result-overlay');
@@ -2502,6 +2513,7 @@
   // 때까지는 게임이 재개되면 안 된다(사용자 지정: "버튼보드 회전이 종료되면, 진행되던
   // 게임이 진행되어야함") — pausedByFever/feverEventActive 해제를 연출 종료 콜백으로 미룬다.
   function endFeverEvent() {
+    if (!state || !run || !run.combo) return; // V1379 G: home/ended session has no combo state.
     state.feverResultShown = false;
     const overlay = document.getElementById('fever-result-overlay');
     if (overlay) overlay.hidden = true;
@@ -2539,6 +2551,7 @@
   // 콤보가 100·200·300… 을 새로 넘겼으면 공유 생명 보상 (풀에 영구 반영).
   // 보상 개수는 라이트 모드별로 다름: ON(easy) 없음 / DIM(mid) +1 / OFF(legend) +2.
   function checkComboLifeBonus() {
+    if (!state || !run || !run.combo) return; // V1379 G: home/ended session has no combo state.
     // ⚠️ 아래 life-bonus 로직은 amount<=0 이면 중간에 return 해버려 그 뒤 코드가 실행 안 됨
     // (라이트 ON=easy 는 per=0 이라 매번 여기서 리턴) — 그래서 피버 트리거는 그 return 과
     // 무관하게 함수 맨 앞에서 항상 체크한다.

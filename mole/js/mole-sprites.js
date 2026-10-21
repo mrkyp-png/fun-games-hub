@@ -124,7 +124,7 @@
       return img;
     });
     const hammer = new Image();
-    hammer.src = 'assets/hammer.png';
+    hammer.src = 'assets/weapons/mallet-yaw10-rest15-v1379.png';
     if (hammer.decode) hammer.decode().catch(function () {});
     preloadRefs.push(hammer);
     return preloadRefs;

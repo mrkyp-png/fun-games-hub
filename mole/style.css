@@ -8429,3 +8429,259 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #inventory-screen[data-tab="weapon"] .inv-cards-box[data-rar] {
   background: transparent !important;
 }
+/* V1379 G: 무기 박스 안쪽만 배경 나무판의 대표 하늘색으로 채움. 바깥 틈/모서리는 투명 유지. */
+#inventory-screen[data-tab="weapon"] .inv-card::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 8px;
+  background: #74cfff;
+  animation: none;
+}
+/* V1379 G: 페이지 점은 고정 헤더에 유지하고, 채움이 있는 스크롤 카드보다 앞에 표시. */
+#inventory-screen[data-tab="weapon"] .inv-cards-head {
+  z-index: 3;
+}
+/* V1379 G: 능력치 표를 장착 줄까지 확장하고, 큰 설명은 ?로 필요할 때만 표시. */
+#inventory-screen[data-tab="weapon"] .inv-right {
+  margin-top: 18px;
+  padding-top: 0;
+  box-sizing: border-box;
+}
+#inventory-screen[data-tab="weapon"] .inv-stat {
+  position: relative;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 32px minmax(0, 1fr);
+  gap: 6px;
+}
+#inventory-screen[data-tab="weapon"] .inv-stat-h {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: none;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 16px;
+}
+#inventory-screen[data-tab="weapon"] .inv-stat-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 140px;
+  height: 32px;
+  box-sizing: border-box;
+  border: solid transparent;
+  border-width: 0 16px;
+  border-image: url('assets/rhythm/ui/v1372/btn-blue.png') 0 105 fill / 0 16px stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  font-family: 'Jua', sans-serif;
+  font-weight: 400;
+  text-shadow: 0 1px 1px #145a91;
+}
+#inventory-screen[data-tab="weapon"] .inv-stat-help {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+}
+#inventory-screen[data-tab="weapon"] .inv-stat-help img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+#inventory-screen[data-tab="weapon"] .inv-stat-help:active img { transform: scale(.9); }
+#inventory-screen[data-tab="weapon"] .inv-stat-help:focus-visible {
+  outline: 2px solid #ffd23c;
+  outline-offset: 2px;
+}
+#inventory-screen[data-tab="weapon"] .inv-stat-tbl {
+  width: 100%;
+  height: 100%;
+}
+#inventory-screen[data-tab="weapon"] .inv-stat-values {
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-x: auto;
+  overscroll-behavior-y: contain;
+  touch-action: auto;
+}
+#inventory-screen[data-tab="weapon"] .inv-card[class*="inv-card--"] .inv-stat-tbl th,
+#inventory-screen[data-tab="weapon"] .inv-card[class*="inv-card--"] .inv-stat-tbl td {
+  padding: 6px 7px;
+  font-size: var(--inv-stat-font, 14px);
+  line-height: 1.45;
+  vertical-align: middle;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+#inventory-screen[data-tab="weapon"] .inv-card[class*="inv-card--"] .inv-stat-tbl th {
+  width: 40%;
+  padding-left: 4px;
+  padding-right: 4px;
+  white-space: nowrap;
+}
+#inventory-screen[data-tab="weapon"] .inv-stat-tbl th::before {
+  width: 13px;
+  height: 13px;
+  margin-right: 2px;
+}
+#inventory-screen[data-tab="weapon"] .inv-stat-line {
+  width: auto;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+#inventory-screen[data-tab="weapon"] .inv-desc {
+  position: absolute;
+  top: 38px;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  margin: 0;
+  max-height: calc(100% - 38px);
+  overflow-y: auto;
+  overscroll-behavior-x: auto;
+  overscroll-behavior-y: contain;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 2px solid #61b5e5;
+  background: #f3f7fe;
+  color: #24305a;
+  font-size: 16px;
+  line-height: 1.5;
+  white-space: pre-line;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+#inventory-screen[data-tab="weapon"] .inv-grid:has(.inv-desc:not([hidden])) {
+  touch-action: auto;
+}
+/* 무기 페이지 가로 넘김은 바깥 목록이 담당. 안쪽 표/설명은 세로 스크롤만 사용. */
+#inventory-screen[data-tab="weapon"] .inv-grid {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  touch-action: pan-x;
+}
+#inventory-screen[data-tab="weapon"] .inv-card {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+/* V1379 G: complete approved tall artwork, 1278 × 1230; no repeated interior. */
+#inventory-screen[data-tab="weapon"] { touch-action: auto; }
+#inventory-screen[data-tab="weapon"] .inv-banner { display: none !important; }
+#inventory-screen[data-tab="weapon"] .inv-cards-box,
+#inventory-screen[data-tab="weapon"] .inv-cards-box[data-rar] {
+  margin: 4px 8px 0; padding: 0; flex: 1 1 auto; min-height: 0; background: transparent !important;
+}
+#inventory-screen[data-tab="weapon"] .inv-cards-box::before,
+#inventory-screen[data-tab="weapon"] .inv-cards-box::after { display: none; }
+#inventory-screen[data-tab="weapon"] .inv-body { position: relative; min-width: 0; min-height: 0; overflow: hidden; }
+.iw-mount { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); }
+.iw-stage {
+  position: relative; width: 1278px; height: 1230px; transform: scale(var(--iw-scale,0)); transform-origin: 0 0;
+  background: url('assets/inventory/ui-v1379/cabinet-buttons-removed.webp') 0 0 / 1278px 1230px no-repeat;
+  font-family: 'Jua',sans-serif; color: #07264c; isolation: isolate;
+}
+.iw-pages { position: absolute; left: 134px; top: 263px; width: 500px; height: 654px; display: flex; gap: 0; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; touch-action: pan-x; }
+.iw-pages::-webkit-scrollbar { display: none; }
+.iw-page { flex: 0 0 500px; width: 500px; height: 654px; position: relative; overflow: hidden; contain: paint; isolation: isolate; scroll-snap-align: start; scroll-snap-stop: always; }
+.iw-stage .iw-name { position: absolute; z-index: 4; left: 330px; top: 35px; width: 620px; height: 90px; display: flex; align-items: center; justify-content: center; text-align: center; white-space: nowrap; font-size: 80px; line-height: 1.05; color: #073b7b; text-shadow: 0 3px #fff; transition: opacity .12s; pointer-events: none; }
+.iw-name.is-fading { opacity: 0; }
+.iw-name[hidden] { display: none; }
+.iw-grade { position: absolute; left: 234px; top: 188px; width: 292px; height: 61px; display: flex; justify-content: center; align-items: center; background-repeat: no-repeat; font-size: 43px; line-height: 1; color: #12355e; text-shadow: 0 2px white; }
+.iw-copy-layer[data-grade="rare"] .iw-grade,.iw-copy-layer[data-grade="epic"] .iw-grade,.iw-copy-layer[data-grade="legend"] .iw-grade { color: #fff; text-shadow: 0 2px #183c65; }
+.iw-copy-layer { position: absolute; inset: 0; pointer-events: none; }
+.iw-copy-layer button { pointer-events: auto; }
+.iw-grade-text,.iw-equip-label,.iw-stat-title,.iw-stat-label,.iw-stat-value { transition: opacity .12s; }
+.iw-copy-layer.is-fading :is(.iw-grade-text,.iw-equip-label,.iw-stat-title,.iw-stat-label,.iw-stat-value) { opacity: 0; }
+.iw-weapon { position: absolute; inset: 0; }
+.iw-preview-unit { position: absolute; left: 50%; top: 50%; width: 120px; height: 88px; transform: translate(-50%,-50%) scale(var(--iw-weapon-scale,1)); }
+.iw-float { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; animation: iw-float 3.6s ease-in-out infinite; }
+.iw-weapon .inv-thumb { width: 120px; height: 88px; flex: none; }
+.iw-weapon .inv-thumb > img:first-child { max-width: 100%; max-height: 100%; object-fit: contain; }
+.iw-weapon .inv-thumb--pair { gap: 8px; }
+.iw-weapon .inv-thumb--pair > img { width: 52px; height: 88px; max-width: 52px; flex: none; object-fit: contain; }
+.iw-stage .iw-equip {
+  position: absolute; left: 127px; top: 974px; width: 512px; height: 134px; margin: 0; padding: 0 25px;
+  display: flex; align-items: center; justify-content: center; border: 0; border-image: none; border-radius: 70px;
+  background: url('assets/inventory/ui-v1379/equip-pill-transparent.webp') center / 100% 100% no-repeat; box-shadow: none; color: white; -webkit-text-stroke: 0; font: 80px/1 'Jua',sans-serif;
+  text-shadow: 0 4px 2px #1555b0; cursor: pointer;
+}
+.iw-stage .iw-equip::before { display: none; }
+.iw-stage .iw-equip:disabled { opacity: 1; cursor: default; }
+.iw-stage .iw-equip:active:not(:disabled) { transform: translateY(4px); filter: brightness(.94); }
+.iw-stat-title { position: absolute; left: 760px; top: 241px; width: 286px; height: 72px; display: flex; align-items: center; justify-content: center; color: white; font-size: 64px; line-height: 1; text-shadow: 0 3px 2px #185ab0; }
+.iw-help { position: absolute; left: 1074px; top: 217px; width: 112px; height: 120px; border: 0; background: none; border-radius: 50%; cursor: pointer; }
+.iw-stats { position: absolute; left: 836px; top: 440px; width: 313px; height: 606px; }
+.iw-stat-row { position: absolute; left: 0; width: 100%; height: 100px; }
+.iw-stat-row:nth-child(1) { top: 0; }
+.iw-stat-row:nth-child(2) { top: 253px; }
+.iw-stat-row:nth-child(3) { top: 507px; }
+.iw-stat-label,.iw-stat-value { position: absolute; top: 0; height: 100px; display: flex; align-items: center; justify-content: center; line-height: 1.1; word-break: keep-all; white-space: normal; text-align: center; }
+.iw-stat-label { left: 0; width: 111px; font-size: 44px; }
+.iw-stat-value { left: 124px; width: 188px; font-size: 50px; }
+/* Full English words use the existing empty space below each icon; never squash text. */
+.iw-stage[data-lang="en"] .iw-stat-label { left: -125px; top: 107px; width: 236px; height: 50px; }
+.iw-stage .iw-head { position: absolute; left: 1001px; top: 149px; height: 35px; padding: 0; z-index: 5; }
+.iw-head .inv-dots { gap: 9px; display: flex; }
+#inventory-screen[data-tab="weapon"] .iw-stage .inv-dot { display: block; width: 35px; height: 35px; border-radius: 50%; background: linear-gradient(#e3e1e7,#b6b4bd); box-shadow: inset 0 1px 2px #7d7d91,0 1px 2px #9696a3; cursor: pointer; transform: none; }
+#inventory-screen[data-tab="weapon"] .iw-stage .inv-dot--on { background: linear-gradient(#43b3ff,#1677eb); box-shadow: inset 0 2px 2px white,0 0 0 2px #1466bd; }
+.iw-stage button:focus-visible { outline: 8px solid #133e75; outline-offset: 3px; }
+@keyframes iw-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+@media (prefers-reduced-motion: reduce) { .iw-float { animation: none; } .iw-stage .iw-name { transition: none; } }
+
+.iw-copy-layer[data-grade="basic"] .iw-grade { background-image: url('assets/inventory/ui-v1379/grade-basic.webp'); background-size: 185.3035px 61.7678px; background-position: 49.2958px -0.7678px; }
+
+.iw-copy-layer[data-grade="rare"] .iw-grade { background-image: url('assets/inventory/ui-v1379/grade-rare.webp'); background-size: 189.5451px 63.1817px; background-position: 46.8641px -0.7854px; }
+
+.iw-copy-layer[data-grade="epic"] .iw-grade { background-image: url('assets/inventory/ui-v1379/grade-epic.webp'); background-size: 190.6360px 63.5453px; background-position: 58.8446px -0.4388px; }
+
+.iw-copy-layer[data-grade="legend"] .iw-grade { background-image: url('assets/inventory/ui-v1379/grade-legend.webp'); background-size: 211.6486px 70.5495px; background-position: 46.8994px -3.8978px; }
+
+.inv-weapon-guide {
+  box-sizing: border-box; width: min(420px,calc(100vw - 24px)); max-width: calc(100vw - 24px); max-height: min(82dvh,650px);
+  padding: 18px; border: 6px solid #77c8ee; border-radius: 24px; background: #fff7e6;
+  color: #173d66; box-shadow: inset 0 0 0 3px #fffdf4,0 8px 0 #327fae,0 16px 40px #12374d66;
+  overflow: hidden; font-family: 'Jua',sans-serif;
+}
+.inv-weapon-guide[open] { display: flex; flex-direction: column; gap: 12px; }
+.inv-weapon-guide::backdrop { background: #092d5077; }
+.inv-guide-header { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+.inv-guide-header h2 { margin: 0; flex: 1; min-width: 0; font-size: 23px; line-height: 1.25; word-break: keep-all; }
+.inv-guide-close { flex: 0 0 84px; height: 42px; border: 2px solid #166bb4; border-radius: 12px; color: #fff; font: inherit; background: linear-gradient(#78d9ff,#248ce5); box-shadow: inset 0 2px 0 #d1f3ff,inset 0 -3px 0 #166bb4,0 4px 0 #124b87; cursor: pointer; }
+.inv-guide-scroll { min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; font-size: 17px; line-height: 1.6; word-break: keep-all; overflow-wrap: break-word; }
+.inv-guide-scroll p { margin: 0 0 12px; }
+.inv-guide-basic { padding: 12px; background: #e1f3ff; border-radius: 12px; }
+.inv-guide-sections section { margin: 0 0 12px; padding: 12px; border: 1px solid #e4d1aa; border-radius: 14px; background: #fffcf4; }
+.inv-guide-sections h3 { margin: 0 0 6px; font-size: 19px; color: #1879bd; }
+.inv-guide-sections .inv-guide-effect { margin-bottom: 0; color: #173d66; }
+.inv-guide-close:focus-visible { outline: 3px solid #143d70; outline-offset: 2px; border-radius: 20px; }
+#inventory-screen > .inv-weapon-guide { position: fixed; inset: 0; margin: auto; z-index: 100; }
+
+
+
+.quake-clone--hammer { height: auto; width: 14.04%; }
+
+.inv-guide-close:active { transform: translateY(3px); box-shadow: inset 0 2px 0 #d1f3ff,0 1px 0 #124b87; }
+.quake-clone--hammer { width: 27.2%; }
+
+/* V1379 G: independent controls over a button-free cabinet; no baked duplicates. */
+.iw-help { left:1076px; top:221px; width:103px; height:112px; background:url('assets/inventory/ui-v1379/help-round-transparent.webp') center/contain no-repeat; }
+.iw-help:active { transform:translateY(3px); filter:brightness(.94); }
+.iw-stat-title { left:733px; top:222px; width:336px; height:112px; background:url('assets/inventory/ui-v1379/ability-pill-transparent.webp') center/contain no-repeat; }

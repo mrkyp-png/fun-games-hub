@@ -434,6 +434,13 @@
       // 화면 밖으로 넘치면 안쪽으로 밀기(꼬리는 두더지 위 그대로)
       var bb = b.getBoundingClientRect(), eb = el.getBoundingClientRect(), dx = 0;
       if (bb.right > eb.right - 6) dx = eb.right - 6 - bb.right; else if (bb.left < eb.left + 6) dx = eb.left + 6 - bb.left;
+      // V1379 G: 7라운드 위쪽 말풍선은 X 버튼과 8px 간격을 두고 왼쪽으로 피함.
+      if (cur === 7) {
+        var close = el.querySelector('[data-back="roundmap"]'), cb = close && close.getBoundingClientRect();
+        if (cb && cb.width > 0 && cb.height > 0 && bb.top < cb.bottom + 8 && bb.bottom > cb.top - 8) {
+          dx = Math.max(eb.left + 6 - bb.left, Math.min(dx, cb.left - 8 - bb.right));
+        }
+      }
       b.style.setProperty('--tip-dx', dx + 'px');
     }
     // V1370 C 사용자: 하마 등 뒤(노란 선 위) '설명 켜기/끄기' 버튼 — 하마와 같이 움직임(CSS 같은 애니메이션)

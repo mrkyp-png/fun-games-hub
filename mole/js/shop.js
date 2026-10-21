@@ -57,7 +57,7 @@
   // price = 현금(원) 결제 가격, coinPrice = 게임 코인 결제 가격 — 사용자 지정: "코인으로
   // 살수도 있고, 현금으로도 살수 있다고"(두 가지 결제 수단 공존).
   var WEAPONS = [
-    { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/hammer.png', price: null, coinPrice: null },
+    { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/inventory/ui-v1379/approved-mallet.webp', price: null, coinPrice: null },
     { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1.png', price: 10000, coinPrice: 100000 },
     { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldhammer-0.png', price: 50000, coinPrice: 500000 },
     { id: 'alipunch', name: '킹 판취', nameEn: 'King Punch', thumb: 'assets/weapons/alipunch-jab.png', price: 100000, coinPrice: 1000000 }

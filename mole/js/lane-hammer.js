@@ -3,7 +3,7 @@
 
   // 망치 하나. 평소 우측 하단 홀스터 → 버튼 누르면 손잡이(grip)를 목표 구멍의 오른쪽 아래에
   // 두고, 머리를 대각선 아래로 휘둘러 두더지 모자를 내리찍는다 (기획서 §5, v1.5 / 레퍼런스 영상).
-  // 망치.png: 머리가 위, 초록 grip 이 아래. transform-origin 을 grip 에 둔다.
+  // V1379 G: 승인된 짧은 크림 손잡이/파란 그립 뿅망치. transform-origin 을 grip 에 둔다.
   // 순수 비주얼 — 게임 상태 모름. update(dt) 를 메인 루프가 매 프레임 호출.
 
   const FLY_SEC = 0.09;    // 홀스터/이전 위치 → 조준 (예비동작)
@@ -11,16 +11,16 @@
   const RISE_SEC = 0.10;
   const HOME_SEC = 0.22;
 
-  const GRIP_X = 25.9;   // 스프라이트 안 손잡이 잡는 점 (%) — 검은 외곽선 추가(301→325px)로 재계산
-  const GRIP_Y = 82.6;
+  const GRIP_X = 33.0;   // 선택한 yaw10/15도 스프라이트의 파란 그립 중심(%)
+  const GRIP_Y = 83.0;
   const HOME_X = 0.90, HOME_Y = 0.965; // 대기 위치 (보드 분수) — 우측 맨 아래 구석. 16번 구멍
                                        // (~0.86,0.84) 아래로 비켜서 안 겹치고, 보드 안(<1)이라 버튼 안 닿음
   const HOME_DEG = 18;                 // 대기: 살짝 눕힘 (머리는 좌상단 잔디 쪽 — 화면 밖으로 안 나가게)
   const READY_DEG = -30;               // 조준: 오른쪽에서 머리 들어올림
   const HIT_DEG = -82;                 // 타격: 머리를 대각선 아래로 휘두름
-  // grip 을 목표에서 이만큼 떨어뜨리면 (머리가 grip 왼쪽-위 0.135/0.064 지점이므로) 머리가 목표에 착지.
-  const GRIP_OFF_X = 0.135;            // grip 을 목표보다 이만큼 오른쪽 (보드 폭 분수)
-  const GRIP_OFF_Y = 0.064;            // grip 을 목표보다 이만큼 아래 (보드 높이 분수)
+  // 짧은 손잡이 그림의 타격면 위치를 HIT_DEG로 회전한 거리. 실기기 접점 검증 필요.
+  const GRIP_OFF_X = 0.060;            // grip 을 목표보다 이만큼 오른쪽 (보드 폭 분수)
+  const GRIP_OFF_Y = 0.047;            // grip 을 목표보다 이만큼 아래 (보드 높이 분수)
   const CLAMP = -0.45;                 // grip 이 보드 가장자리에서 이만큼까지 나가도 됨 (- = 밖 허용)
                                        // 레이어가 보드 밖(클리핑 없음)이라 우측 끝 스윙이 다 보인다
   const AIM_DX = 0.022;                // 타격점 미세보정: + = 오른쪽 (보드 폭 분수, 0.5mm ≈ 0.005 / 1cm ≈ 0.1)
@@ -46,18 +46,20 @@
     //           grip 을 목표에서 이만큼 비켜 놔야 머리가 목표(두더지 헬멧)에 착지. 없으면 뿅망치 기본값.
     // homeDegOffset = 대기 위치 각도만 이만큼 추가 회전(+ = 시계방향). 조준/타격 각도는 영향 없음.
     // emptyDy = 빈 구멍 헛스윙(frameKey 없음) 전용 세로보정. 없으면 공용 AIM_DY(뿅망치 기준).
+    const homeX = sprite ? HOME_X : 0.98;
     const gripX = grip && grip.x != null ? grip.x : GRIP_X;
     const gripY = grip && grip.y != null ? grip.y : GRIP_Y;
-    const goX = gripOff && gripOff.x != null ? gripOff.x : GRIP_OFF_X;
-    const goY = gripOff && gripOff.y != null ? gripOff.y : GRIP_OFF_Y;
+    const malletSizeRatio = sprite ? 1 : 27.2 / 14.04;
+    const goX = gripOff && gripOff.x != null ? gripOff.x : GRIP_OFF_X * malletSizeRatio;
+    const goY = gripOff && gripOff.y != null ? gripOff.y : GRIP_OFF_Y * malletSizeRatio;
     const eDy = emptyDy != null ? emptyDy : AIM_DY;
     const dOff = degOffset || 0;
     const homeMT = homeMarginTop != null ? homeMarginTop : '0.2cm';
-    const hDeg = HOME_DEG + (homeDegOffset || 0);
+    const hDeg = (sprite ? HOME_DEG : 0) + (homeDegOffset || 0);
     const el = document.createElement('div');
     el.className = 'lane-hammer' + (cssClass ? ' ' + cssClass : '');
     const img = document.createElement('img');
-    img.src = sprite || 'assets/hammer.png';
+    img.src = sprite || 'assets/weapons/mallet-yaw10-rest15-v1379.png';
     img.alt = '';
     el.appendChild(img);
     // 골드해머 보석 글로우 — 아이템보관창(.inv-gem-glow)엔 있었는데 게임화면엔 빠져있던 것 추가.
@@ -69,8 +71,8 @@
 
     let phase = 'home';   // 'home' | 'fly' | 'chop' | 'rise' | 'return'
     let t = 0;
-    let fromX = HOME_X, fromY = HOME_Y, fromDeg = hDeg;
-    let aimX = HOME_X, aimY = HOME_Y, gx = HOME_X, gy = HOME_Y, deg = hDeg;
+    let fromX = homeX, fromY = HOME_Y, fromDeg = hDeg;
+    let aimX = homeX, aimY = HOME_Y, gx = homeX, gy = HOME_Y, deg = hDeg;
     let impactCb = null;
     let fired = false;
     let scaleXVal = 1, scaleYVal = 1; // 라운드 인트로 등장 연출 전용(평소엔 항상 1,1)
@@ -81,7 +83,7 @@
     function strike(targetXFrac, targetYFrac, onImpact, frameKey) {
       // 대기 애니메이션 중이었으면 깨끗한 대기 포즈로 스냅 후 스윙 시작(어중간한 각도/높이에서
       // 시작하지 않게). rise·return 도중 끼어든 연타는 원래대로 현재 위치에서 부드럽게 redirect.
-      if (phase === 'home') { deg = hDeg; gx = HOME_X; gy = HOME_Y; scaleXVal = 1; scaleYVal = 1; }
+      if (phase === 'home') { deg = hDeg; gx = homeX; gy = HOME_Y; scaleXVal = 1; scaleYVal = 1; }
       idleT = 0; lastSpinCycleIdx = -1;
       const tx = (typeof targetXFrac === 'number') ? targetXFrac : 0.5;
       const ty = (typeof targetYFrac === 'number') ? targetYFrac : 0.5;
@@ -122,7 +124,7 @@
         if (t >= RISE_SEC) { phase = 'return'; t = 0; fromX = gx; fromY = gy; fromDeg = deg; }
       } else if (phase === 'return') {
         const k = clamp01(t / HOME_SEC);
-        gx = lerp(fromX, HOME_X, k);
+        gx = lerp(fromX, homeX, k);
         gy = lerp(fromY, HOME_Y, k);
         deg = lerp(fromDeg, hDeg, k);
         if (t >= HOME_SEC) { phase = 'home'; t = 0; }
@@ -135,7 +137,7 @@
             if (cycleIdx !== lastSpinCycleIdx) { lastSpinCycleIdx = cycleIdx; spinDir = Math.random() < 0.5 ? 1 : -1; }
             if (cyclePos < SPIN_DUR) { deg = hDeg + spinDir * 360 * ease(cyclePos / SPIN_DUR); }
             else { deg = hDeg; }
-            gx = HOME_X; gy = HOME_Y;
+            gx = homeX; gy = HOME_Y;
           } else if (idle === 'bounce') {
             const cyclePos = (idleT - IDLE_DELAY) % BOUNCE_CYCLE;
             if (cyclePos < BOUNCE_DUR) {
@@ -147,7 +149,7 @@
             } else {
               gy = HOME_Y; deg = hDeg; scaleXVal = 1; scaleYVal = 1;
             }
-            gx = HOME_X;
+            gx = homeX;
           }
         }
       }
@@ -155,14 +157,38 @@
     }
 
     function paint() {
-      el.style.left = (gx * 100).toFixed(2) + '%';
-      el.style.top = (gy * 100).toFixed(2) + '%';
+      // V1379 G: retain the enlarged resting size throughout gameplay (latest user direction).
+      if (!sprite) el.style.width = '27.2%';
+      const restingMallet = !sprite && phase === 'home';
+      const restShiftPx = restingMallet ? 1.2 * 96 / 2.54 : 0;
+      const restDownPx = restingMallet ? 0.3 * 96 / 2.54 : 0;
+      el.style.left = 'calc(' + (gx * 100).toFixed(2) + '% + ' + restShiftPx + 'px)';
+      el.style.top = 'calc(' + (gy * 100).toFixed(2) + '% + ' + restDownPx + 'px)';
       // translate 기준점과 transform-origin(회전·확대 축)을 항상 같은 점으로 맞춘다 — 서로
       // 다르면(그립점 translate + 중앙 회전축 등) 확대·축소 시 그 어긋난 만큼 위치가 밀려 보인다.
       el.style.transformOrigin = anchorX + '% ' + anchorY + '%';
       el.style.transform = 'translate(-' + anchorX + '%, -' + anchorY + '%) rotate(' + (deg + dOff).toFixed(1) + 'deg) scale(' + scaleXVal.toFixed(3) + ', ' + scaleYVal.toFixed(3) + ')';
       el.style.marginTop = phase === 'home' ? homeMT : '0'; // 대기 위치 세로 보정 (기본 0.2cm 아래)
-      el.style.opacity = '1'; // 항상 불투명 — "현실 손이 게임화면을 때리는" 3D 느낌 (사용자 요청)
+      el.style.opacity = !sprite && phase === 'home' ? '0.7' : '1'; // 대기 뿅망치만30% 투명, 공격/등장은 불투명.
+      if (!sprite && phase !== 'home') {
+        // Phone's visible viewport is the boundary, not the narrower game container.
+        const viewport = root.visualViewport;
+        const viewportWidth = viewport ? viewport.width : root.innerWidth;
+        const viewportHeight = viewport ? viewport.height : root.innerHeight;
+        if (viewportWidth && viewportHeight) {
+          const rect = el.getBoundingClientRect();
+          const left = (viewport ? viewport.offsetLeft : 0) + 8;
+          const right = left + viewportWidth - 16;
+          const top = (viewport ? viewport.offsetTop : 0) + 8;
+          const bottom = top + viewportHeight - 16;
+          if (rect.width && rect.height) {
+            const dx = Math.max(left - rect.left, Math.min(0, right - rect.right));
+            const dy = Math.max(top - rect.top, Math.min(0, bottom - rect.bottom));
+            el.style.left = 'calc(' + (gx * 100).toFixed(2) + '% + ' + (restShiftPx + dx) + 'px)';
+            el.style.top = 'calc(' + (gy * 100).toFixed(2) + '% + ' + (restDownPx + dy) + 'px)';
+          }
+        }
+      }
     }
 
     function isBusy() { return phase === 'fly' || phase === 'chop' || phase === 'rise'; }
@@ -177,7 +203,7 @@
       // 않게 한다(고정 cm값이라 전엔 작게 줄여도 항상 위로 밀려 보였음 — 사용자 지적).
       phase = 'spin'; t = 0;
       fired = false;
-      const baseSrc = sprite || 'assets/hammer.png';
+      const baseSrc = sprite || 'assets/weapons/mallet-yaw10-rest15-v1379.png';
       img.src = 'assets/weapons/goldhammer-0.png';
       // 그립점(56,72) 기준 확대·축소는 그립이 아닌 부분(머리 등)이 그만큼 옆으로 남아 별표
       // 중심에서 벗어나 보인다(사용자 지적) — 비행 중엔 스프라이트 정중앙(50,50)을 기준점으로
@@ -192,7 +218,7 @@
       (function step(now) {
         const k = Math.min(1, ((now || performance.now()) - start) / ms);
         const e = ease(k); // k*k — 느리게 시작해 빨라짐(이동·회전·확대 공통)
-        gx = lerp(fromX2, HOME_X, e);
+        gx = lerp(fromX2, homeX, e);
         gy = lerp(fromY2, HOME_Y, e);
         deg = lerp(0, endDeg, e);
         scaleXVal = scaleYVal = lerp(startScale, 1, e);
@@ -205,8 +231,8 @@
           img.style.filter = prevFilter;
           anchorX = gripX; anchorY = gripY;
           phase = 'home';
-          gx = HOME_X; gy = HOME_Y; deg = hDeg; scaleXVal = 1; scaleYVal = 1;
-          fromX = HOME_X; fromY = HOME_Y; fromDeg = hDeg; aimX = HOME_X; aimY = HOME_Y;
+          gx = homeX; gy = HOME_Y; deg = hDeg; scaleXVal = 1; scaleYVal = 1;
+          fromX = homeX; fromY = HOME_Y; fromDeg = hDeg; aimX = homeX; aimY = HOME_Y;
           paint();
           if (onDone) onDone();
         }
@@ -257,9 +283,9 @@
     function home() {
       impactCb = null;
       phase = 'home'; t = 0;
-      gx = HOME_X; gy = HOME_Y; deg = HOME_DEG;
-      fromX = HOME_X; fromY = HOME_Y; fromDeg = HOME_DEG;
-      aimX = HOME_X; aimY = HOME_Y;
+      gx = homeX; gy = HOME_Y; deg = hDeg;
+      fromX = homeX; fromY = HOME_Y; fromDeg = hDeg;
+      aimX = homeX; aimY = HOME_Y;
       fired = false;
       scaleXVal = 1; scaleYVal = 1;
       anchorX = gripX; anchorY = gripY;

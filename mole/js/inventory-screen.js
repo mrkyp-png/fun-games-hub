@@ -9,21 +9,21 @@
   // 능력치 표 3줄 (라벨 = i18n 키, 값 = [ko, en]).
   var STAT_ROWS = ['mole.inv.stat.visibility', 'mole.inv.stat.attack', 'mole.inv.stat.defense'];
   var WEAPONS = [
-    { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/hammer.png', rarity: 'basic',
+    { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/inventory/ui-v1379/approved-mallet.webp', rarity: 'basic', skillSlots: { active: 0, passive: 0 },
       desc: ['기본 무기.\n간단하지만 강력한 타격감으로\n두더지를 시원하게!', 'The basic weapon.\nSimple but punchy —\nbonk those moles!'],
       stats: [['-', '-'], ['-', '-'], ['-', '-']] },
-    { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1.png', rarity: 'rare',
+    { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1.png', rarity: 'rare', skillSlots: { active: 2, passive: 2 },
       desc: ['강력한 포탄으로\n더 많은 두더지를 한 번에!\n넓은 범위를 커버하는 든든한 무기!', 'Powerful cannonballs\nhit more moles at once —\na sturdy weapon with wide reach!'],
       stats: [['Hole 16 → 15', 'Holes 16 → 15'],
               ['2·3타 두더지 연타 확률 10%', '10% burst on 2·3-hit moles'],
               ['-', '-']] },
-    { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldhammer-0.png', rarity: 'epic',
+    { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldhammer-0.png', rarity: 'epic', skillSlots: { active: 2, passive: 2 },
       desc: ['전설의 힘을 담은 황금 망치!\n지면을 울리는 강력한 충격으로\n주변의 두더지를 한 번에 처치한다!', 'A golden hammer of legend!\nIts ground-shaking blow\ntakes out nearby moles at once!'],
       gemGlow: true,   // 보석(파란불빛) 부분에 맥동 글로우
       stats: [['Hole 16 → 15', 'Holes 16 → 15'],
               ['주변 두더지 지진 연타 15% (2·3타 두더지 소탕 포함)', '15% quake — chain-hits nearby moles (clears 2·3-hit moles too)'],
               ['-', '-']] },
-    { id: 'alipunch', name: '킹 판취', nameEn: 'King Punch', thumb: 'assets/weapons/alipunch-jab.png', rarity: 'legend',
+    { id: 'alipunch', name: '킹 판취', nameEn: 'King Punch', thumb: 'assets/weapons/alipunch-jab.png', rarity: 'legend', skillSlots: { active: 4, passive: 2 },
       desc: ['전설적인 복서의 힘을 담은\n강력한 글러브! 빠르고 강한\n연타로 모든 두더지를 한 번에\n날려버린다!', 'Gloves holding the power of\na legendary boxer! Fast, heavy\ncombos blast every mole away!'],
       stats: [['Hole 16 → 14', 'Holes 16 → 14'],
               ['무적 5초 확률 20% (모든 동물 타격 가능), 2·3타 두더지 소탕 포함', '20% chance — 5s invincibility (any animal is safe to hit), clears 2·3-hit moles'],
@@ -97,7 +97,15 @@
     // 보고: "위치가 다 틀어진거같은데") 3~4번째 카드로 갈수록 어긋났음. 절대 인덱스 기준으로
     // 그 카드의 offsetLeft 로 직접 scrollTo 하는 방식으로 교체 — 오차가 누적되지 않는다.
     var pageIdx = 0;
-    function grid() { return body.querySelector('.inv-grid'); }
+    var nameTimer = null;
+    var copyTimer = null;
+    var weaponHelp = null;
+    function closeWeaponHelp() { if (weaponHelp) { weaponHelp.close(); weaponHelp.remove(); weaponHelp = null; } }
+    function fitWeaponName() {
+      wSignEl.style.fontSize = '80px';
+      for (var size = 80; size > 32 && (wSignEl.scrollWidth > wSignEl.clientWidth || wSignEl.scrollHeight > wSignEl.clientHeight); size--) wSignEl.style.fontSize = (size - 1) + 'px';
+    }
+    function grid() { return body.querySelector('.iw-pages, .inv-grid'); }
     function goTo(idx) {
       var g = grid(); if (!g) return;
       var n = g.children.length;
@@ -111,11 +119,51 @@
       Array.prototype.forEach.call(dotsEl.children, function (d, i) {
         d.classList.toggle('inv-dot--on', i === pageIdx);
       });
+      syncWeaponCopy();
       // v855(사용자 지정): 바깥 창 색 = 보고 있는 무기 등급 색
       var box = el.querySelector('.inv-cards-box');
       if (box) box.setAttribute('data-rar', active === 'weapon' && WEAPONS[pageIdx] ? WEAPONS[pageIdx].rarity : '');
       var nm = WEAPONS[pageIdx] ? nameOf(WEAPONS[pageIdx]) : '';
-      if (wSignEl.textContent !== nm) { wSignEl.textContent = nm; wSignEl.classList.remove('is-swap'); void wSignEl.offsetWidth; wSignEl.classList.add('is-swap'); }
+      if (wSignEl.getAttribute('data-name') !== nm) {
+        closeWeaponHelp();
+        clearTimeout(nameTimer);
+        wSignEl.setAttribute('data-name', nm);
+        wSignEl.classList.remove('is-swap');
+        if (!wSignEl.textContent || root.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          wSignEl.textContent = nm; fitWeaponName(); wSignEl.classList.remove('is-fading');
+        } else {
+          wSignEl.classList.add('is-fading');
+          nameTimer = setTimeout(function () { wSignEl.textContent = nm; fitWeaponName(); wSignEl.classList.remove('is-fading'); }, 120);
+        }
+      }
+    }
+    function syncWeaponCopy() {
+      var layer = body.querySelector('.iw-copy-layer');
+      if (!layer || active !== 'weapon') return;
+      var w = WEAPONS[pageIdx];
+      clearTimeout(copyTimer);
+      if (layer.dataset.weapon === w.id) { layer.classList.remove('is-fading'); layer.inert = false; return; }
+      function apply() {
+        if (!layer.isConnected || active !== 'weapon') return;
+        layer.dataset.weapon = w.id; layer.dataset.grade = w.rarity;
+        layer.querySelector('.iw-grade-text').textContent = ({basic:'BASIC',rare:'RARE',epic:'EPIC',legend:'LEGENDARY'})[w.rarity];
+        layer.querySelector('.iw-stat-title').textContent = T('mole.inv.statHead');
+        layer.querySelector('.iw-help').setAttribute('aria-label', nameOf(w) + (I18N.lang === 'en' ? ' weapon guide' : ' 무기 설명'));
+        var rows = layer.querySelectorAll('.iw-stat-row');
+        w.stats.forEach(function (stat, i) {
+          rows[i].querySelector('.iw-stat-label').textContent = T(STAT_ROWS[i]);
+          var value = rows[i].querySelector('.iw-stat-value');
+          value.textContent = compactWeaponStat(w, i);
+          value.setAttribute('aria-label', stat[0] === '-' ? (I18N.lang === 'en' ? 'Basic: no additional effect' : '기본: 추가 효과 없음') : stat[I18N.lang === 'en' ? 1 : 0].replace(/\u00a0/g, ' '));
+        });
+        var btn = layer.querySelector('.iw-equip');
+        btn.querySelector('.iw-equip-label').textContent = T(w.id === equipped() ? 'mole.inv.equipped' : 'mole.inv.equip');
+        btn.disabled = w.id === equipped() || !!(opts.gameInProgress && opts.gameInProgress());
+        layer.classList.remove('is-fading'); layer.inert = false;
+        requestAnimationFrame(fitLefts);
+      }
+      if (!layer.dataset.weapon || root.matchMedia('(prefers-reduced-motion: reduce)').matches) apply();
+      else { layer.classList.add('is-fading'); layer.inert = true; copyTimer = setTimeout(apply, 120); }
     }
     // renderWeapons() 가 매번 grid 를 통째로 새로 만들기 때문에(body.innerHTML), 장착 버튼을
     // 눌러 재렌더될 때도 새 grid 는 항상 scrollLeft=0 에서 시작 — pageIdx 는 그대로 두고
@@ -123,8 +171,7 @@
     // (사용자 보고: "장착 버튼 누르면 뿅망치 화면나오고 장착이 안됨"). 탭 전환일 때만 0으로.
     function fitStatLines() {
       body.querySelectorAll('.inv-stat-line').forEach(function (ln) {
-        ln.style.transform = ''; var room = ln.parentNode.clientWidth - 10;
-        if (room > 0 && ln.scrollWidth > room) ln.style.transform = 'scaleX(' + Math.max(room / ln.scrollWidth, 0.6).toFixed(3) + ')';
+        ln.style.transform = ''; // V1379 G: 설명 값은 가로로 찌그러뜨리지 않고 줄바꿈.
       });
     }
     function updateDots() {
@@ -141,7 +188,7 @@
       syncDots();
       if (g && g.children[pageIdx]) g.scrollLeft = g.children[pageIdx].offsetLeft;
       requestAnimationFrame(fitStatLines);
-      if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { requestAnimationFrame(fitStatLines); });
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { requestAnimationFrame(function () { fitStatLines(); if (active === 'weapon') { fitLefts(); fitRights(); } }); });
     }
     // 카드를 손으로 직접 스와이프했을 때도 pageIdx/점/장착버튼이 같이 따라가야 함(화살표
     // 클릭 외 유일한 페이지 이동 경로) — grid 는 렌더마다 새로 만들어지므로(body.innerHTML),
@@ -181,12 +228,16 @@
     }
     function renderWeapons() {
       var cur = equipped();
-      var locked = !!(opts.gameInProgress && opts.gameInProgress());
-      body.innerHTML = '<div class="inv-grid"></div>';
-      var grid = body.querySelector('.inv-grid');
+      clearTimeout(copyTimer);
+      body.innerHTML = '<div class="iw-mount"><div class="iw-stage"><div class="iw-pages"></div></div></div>';
+      var stage = body.querySelector('.iw-stage');
+      stage.setAttribute('data-lang', I18N.lang);
+      wSignEl.className = 'iw-name'; stage.appendChild(wSignEl);
+      headEl.className = 'iw-head'; stage.appendChild(headEl);
+      var grid = body.querySelector('.iw-pages');
       WEAPONS.forEach(function (w) {
         var card = document.createElement('div');
-        card.className = 'inv-card' + (w.id === cur ? ' inv-card--on' : '');
+        card.className = 'iw-page' + (w.id === cur ? ' iw-page--on' : '');
         // 알리 펀치 = 좌/우 글러브 한 쌍(오른쪽은 왼쪽 이미지 거울상 — 실제 게임과 동일, §1).
         // 강조 애니메이션(사용자 지시): 두 글러브가 2번 맞부딪히고, 2번째에 스파크+"POWER UP" 표시.
         var thumbHtml = w.id === 'alipunch'
@@ -213,106 +264,101 @@
               '</svg>' +
               '<span class="inv-hammer-word">QUAKE!</span>'
             : '') + '</div>';
-        // 카드가 거의 전체폭이라 좌(이름+이미지)/우(능력치) 2단 배치(사용자 지정: "이름과
-        // 이미지 좌측배치, 능력치 우측배치"). 장착 버튼은 흰색 카드 안, 이미지 바로 밑
-        // (사용자 지정: "파란 박스에 있는 장착 박스는 흰색박스 아이템 밑으로 옮긴다").
-        // v847(사용자 시안 "무기보관 에셋 변경"): 왼쪽 = 등급 카드(BASIC/RARE/EPIC/LEGENDARY 배경+배지) 안에 무기 + 장착,
-        // 오른쪽 = 큰 이름 / 능력치 알약 머리 / 흰 표 / 설명 박스. 특수 애니메이션(88px 기준 좌표)은 thumb 를 통째로 확대해 유지.
-        card.className += ' inv-card--' + w.rarity;
-        card.innerHTML =
-          '<div class="inv-top">' +
-            '<div class="inv-left"><div class="inv-rcard"><img class="inv-badge" alt="" src="assets/inventory/rarity/badge-' + w.rarity + '.png">' + rarityFx(w.rarity) +
-              '<div class="inv-thumb-zoom">' + thumbHtml + '</div></div>' +
-              '<button type="button" class="inv-equip"></button></div>' +
-            '<div class="inv-right"><span class="inv-name"></span><div class="inv-stat">' +
-              '<div class="inv-stat-h"></div>' +
-              '<table class="inv-stat-tbl"><tbody>' +
-                w.stats.map(function () { return '<tr><th></th><td></td></tr>'; }).join('') +
-              '</tbody></table>' +
-            '</div><p class="inv-desc"></p></div>' +
-          '</div>';
-        card.querySelector('.inv-desc').textContent = I18N.lang === 'en' ? w.desc[1] : w.desc[0];
-        card.querySelector('.inv-name').textContent = nameOf(w);
-        card.querySelector('.inv-stat-h').textContent = T('mole.inv.statHead');
-        var trs = card.querySelectorAll('.inv-stat-tbl tr');
-        w.stats.forEach(function (s, i) {
-          trs[i].querySelector('th').textContent = T(STAT_ROWS[i]);
-          var td = trs[i].querySelector('td');
-          var v = (I18N.lang === 'en' ? s[1] : s[0]);
-          td.textContent = v;
-          if (v === '-') td.classList.add('inv-stat-dash'); // 값 없음 = 중앙정렬
-          // v1000(사용자 지정): 괄호 부분은 둘째 줄로, 각 줄은 넘치면 글자 폭만 줄여 한 줄 유지(")"만 밑으로 떨어지던 것)
-          if (v.indexOf(' (') > 0) td.innerHTML = v.split(' (').map(function (t, k) { return (k ? '(' : '') + t; }).join('|').replace(/\), /g, '),|').split('|').map(function (t) { return '<span class="inv-stat-line">' + t.replace(/[<&>]/g, '') + '</span>'; }).join(''); // v1003: "), " 뒤도 줄바꿈
-        });
-        var btn = card.querySelector('.inv-equip');
-        btn.textContent = w.id === cur ? T('mole.inv.equipped') : T('mole.inv.equip');
-        btn.disabled = w.id === cur || locked;
-        if (!locked) {
-          btn.addEventListener('click', function () {
-            localStorage.setItem('mole.weapon', w.id);
-            renderWeapons();
-          });
-        }
+        card.setAttribute('data-weapon', w.id);
+        card.setAttribute('data-grade', w.rarity);
+        card.innerHTML = '<div class="iw-weapon"><div class="iw-preview-unit"><div class="iw-float">' + thumbHtml + '</div></div></div>';
         grid.appendChild(card);
       });
+      var copy = document.createElement('div');
+      copy.className = 'iw-copy-layer';
+      copy.innerHTML = '<div class="iw-grade"><span class="iw-grade-text"></span></div><button type="button" class="inv-equip iw-equip"><span class="iw-equip-label"></span></button><span class="iw-stat-title"></span><button type="button" class="iw-help" aria-expanded="false" aria-haspopup="dialog"></button><div class="iw-stats">' + [0,1,2].map(function () { return '<div class="iw-stat-row"><span class="iw-stat-label"></span><span class="iw-stat-value"></span></div>'; }).join('') + '</div>';
+      stage.appendChild(copy);
+      copy.querySelector('.iw-help').addEventListener('click', function () { openWeaponHelp(WEAPONS[pageIdx], this); });
+      copy.querySelector('.iw-equip').addEventListener('click', function () {
+        if (copy.inert || (opts.gameInProgress && opts.gameInProgress())) return;
+        localStorage.setItem('mole.weapon', WEAPONS[pageIdx].id); renderWeapons();
+      });
       updateDots();
-      requestAnimationFrame(function () { fitRights(); fitLefts(); });
+      requestAnimationFrame(function () { fitLefts(); fitRights(); });
       // 배지 그림이 늦게 로드되면 높이 0으로 계산돼 위치가 어긋남 — 로드되면 다시 맞춤
-      el.querySelectorAll('.inv-badge').forEach(function (im) { if (!im.complete) im.addEventListener('load', function () { requestAnimationFrame(function () { fitRights(); fitLefts(); }); }, { once: true }); });
+      el.querySelectorAll('.inv-badge').forEach(function (im) { if (!im.complete) im.addEventListener('load', function () { requestAnimationFrame(function () { fitLefts(); fitRights(); }); }, { once: true }); });
     }
-    // v856(사용자: 작은 폰에서 알리 판취 설명 박스 아래 잘림) — 오른쪽 칸(이름~설명)이 카드 높이를 넘으면 그만큼 비율로 축소
-    // v874(사용자: 작은 폰에서 알리 판취 설명 박스가 좁아짐, 에픽만 간격이 다름) — 넘칠 때 오른쪽 칸을 줄이되
-    // 폭은 그대로 유지(줄인 만큼 넓혀서 축소 → 박스 폭 동일), 4장 모두 같은 비율로 줄여 글자 크기·간격 통일
-    function applyRight(r, k, colW) {
-      r.style.transformOrigin = '0 0';
-      if (k >= 1) { r.style.transform = ''; r.style.flex = ''; r.style.width = ''; r.style.marginRight = ''; return; }
-      r.style.flex = '0 0 ' + (colW / k).toFixed(1) + 'px'; r.style.width = (colW / k).toFixed(1) + 'px';
-      r.style.marginRight = (colW - colW / k).toFixed(1) + 'px'; r.style.transform = 'scale(' + k.toFixed(3) + ')';
+    // V1379 G: Short values stay readable; the dialog contains every full effect.
+    function compactWeaponStat(w, row) {
+      var en = I18N.lang === 'en';
+      if (w.stats[row][0] === '-') return en ? 'Basic' : '기본';
+      if (row === 0) return w.id === 'alipunch' ? '16 → 14' : '16 → 15';
+      if (row === 1) return w.id === 'cannon' ? '10%' : (w.id === 'goldhammer' ? '15%' : '20%');
+      return '+0.1s';
     }
-    function fitRights() {
-      var items = [];
-      el.querySelectorAll('.inv-card').forEach(function (c) {
-        var r = c.querySelector('.inv-right'); if (!r || !c.getBoundingClientRect().height) return;
-        applyRight(r, 1, 0);
-        var cs = getComputedStyle(c), room = c.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 2;
-        items.push({ r: r, room: room, colW: r.getBoundingClientRect().width });
+    function openWeaponHelp(w, trigger) {
+      closeWeaponHelp();
+      var en = I18N.lang === 'en';
+      var dialog = document.createElement('dialog');
+      dialog.className = 'inv-weapon-guide';
+      dialog.setAttribute('aria-labelledby', 'inv-guide-title');
+      dialog.innerHTML = '<div class="inv-guide-header"><h2 id="inv-guide-title"></h2><button type="button" class="inv-guide-close"></button></div><div class="inv-guide-scroll"><p class="inv-guide-intro"></p><p class="inv-guide-skills"></p><p class="inv-guide-basic"></p><div class="inv-guide-sections"></div></div>';
+      dialog.querySelector('h2').textContent = nameOf(w);
+      var close = dialog.querySelector('button');
+      close.textContent = en ? 'Close' : '닫기';
+      dialog.querySelector('.inv-guide-intro').textContent = (en ? w.desc[1] : w.desc[0]).replace(/\n/g, ' ');
+      dialog.querySelector('.inv-guide-skills').textContent = w.skillSlots.active === 0
+        ? (en ? 'Skill equipment: Unavailable for this weapon.' : '스킬 장착: 이 무기는 스킬을 장착할 수 없습니다.')
+        : (en ? 'Skill equipment: ' + w.skillSlots.active + ' active skills and ' + w.skillSlots.passive + ' passive skills.' : '스킬 장착: 액티브 스킬 ' + w.skillSlots.active + '개 · 패시브 스킬 ' + w.skillSlots.passive + '개 장착 가능');
+      dialog.querySelector('.inv-guide-basic').textContent = en ? 'Basic means the standard mallet effect, with no additional weapon bonus.' : '기본은 뿅망치와 같은 기본 효과이며, 해당 능력치에 추가 보너스가 없다는 뜻입니다.';
+      var definitions = en ? [
+        'The number of holes on the board. Fewer holes mean fewer places to watch.',
+        'The chance of activating this weapon’s special attack when you hit.',
+        'Extra time before a mole retreats, giving you more time to hit.'
+      ] : [
+        '게임판의 구멍 수입니다. 구멍이 줄어들면 살펴봐야 할 곳이 줄어듭니다.',
+        '타격할 때 무기 고유의 특수 공격이 발동할 확률입니다.',
+        '두더지가 내려가기 전의 시간을 늘려, 타격할 여유를 줍니다.'
+      ];
+      var sections = dialog.querySelector('.inv-guide-sections');
+      w.stats.forEach(function (stat, i) {
+        var section = document.createElement('section');
+        var heading = document.createElement('h3'); heading.textContent = T(STAT_ROWS[i]);
+        var meaning = document.createElement('p'); meaning.textContent = definitions[i];
+        var effect = document.createElement('p'); effect.className = 'inv-guide-effect';
+        effect.textContent = stat[0] === '-' ? (en ? 'Basic · No additional effect' : '기본 · 추가 효과 없음') : stat[en ? 1 : 0].replace(/\u00a0/g, ' ');
+        section.append(heading, meaning, effect); sections.appendChild(section);
       });
-      var k = 1;
-      items.forEach(function (it) {
-        var fits = function (kk) { applyRight(it.r, kk, it.colW); return it.r.scrollHeight * kk <= it.room; };
-        if (fits(1)) return;
-        var lo = 0.6, hi = 1; // 들어맞는 가장 큰 비율을 이분 탐색
-        for (var n = 0; n < 8; n++) { var mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid; }
-        k = Math.min(k, lo);
-      });
-      items.forEach(function (it) { applyRight(it.r, k, it.colW); });
+      function finish() { trigger.setAttribute('aria-expanded', 'false'); if (weaponHelp === dialog) weaponHelp = null; dialog.remove(); if (trigger.isConnected) trigger.focus(); }
+      dialog.addEventListener('close', finish, {once:true});
+      close.addEventListener('click', function () { dialog.close(); });
+      dialog.addEventListener('click', function (event) { if (event.target === dialog) { var r=dialog.getBoundingClientRect(); if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom) dialog.close(); } });
+      el.appendChild(dialog); weaponHelp = dialog; trigger.setAttribute('aria-expanded','true'); dialog.showModal(); close.focus();
     }
-    root.addEventListener('resize', function () { if (active === 'weapon') { fitRights(); fitLefts(); } });
-    // v870(사용자 지정): 무기 카드 왼쪽(등급 카드+장착) — 4장 모두 장착 버튼 높이가 같게. 등급 카드+장착 묶음을 같은 기준으로
-    // 세로 가운데에 두고, 위로 솟은 배지(EPIC·LEGENDARY 왕관)가 카드 위로 잘리지 않을 만큼 4장 공통으로 내림. 넘치면 공통 비율로 축소.
+    function fitRights() { fitLefts(); }
     function fitLefts() {
-      var cards = Array.prototype.filter.call(el.querySelectorAll('.inv-card'), function (c) { return c.querySelector('.inv-rcard'); });
-      if (!cards.length) return;
-      var info = cards.map(function (c) {
-        var l = c.querySelector('.inv-left'); l.style.transform = '';
-        var cs = getComputedStyle(c), cr = c.getBoundingClientRect(), lr = l.getBoundingClientRect();
-        var rc = c.querySelector('.inv-rcard').getBoundingClientRect(), eq = c.querySelector('.inv-equip').getBoundingClientRect(), bd = c.querySelector('.inv-badge').getBoundingClientRect();
-        var cTop = cr.top + parseFloat(cs.paddingTop) + 2, cBot = cr.bottom - parseFloat(cs.paddingBottom);
-        return { l: l, lTop: lr.top, cTop: cTop, cBot: cBot, gTop: rc.top, gBot: eq.bottom, bTop: Math.min(bd.top, rc.top) };
+      if (active !== 'weapon') return;
+      var mount = body.querySelector('.iw-mount');
+      if (!mount || !body.clientWidth || !body.clientHeight) return;
+      // One complete 1278 × 1230 image. Never repeat or stretch its interior.
+      var scale = Math.min(body.clientWidth / 1278, body.clientHeight / 1230);
+      mount.style.width = (1278 * scale) + 'px';
+      mount.style.height = (1230 * scale) + 'px';
+      mount.style.setProperty('--iw-scale', scale);
+      fitWeaponName();
+      // Visible alpha bounds in the canonical 120 x 88 animation coordinate system.
+      var art = {hammer:[83.44,83.58,-1.09,0.04],cannon:[105.55,88,0,0],goldhammer:[69.06,87.44,0,0],alipunch:[112,80,0,0]};
+      body.querySelectorAll('.iw-page').forEach(function (page) {
+        var a = art[page.dataset.weapon];
+        var unit = page.querySelector('.iw-preview-unit');
+        unit.style.setProperty('--iw-weapon-scale', Math.min(440/a[0], 490/a[1]));
+        page.querySelector('.inv-thumb').style.transform = 'translate(' + a[2] + 'px,' + a[3] + 'px)';
       });
-      // 기준 = 뿅망치(BASIC) 카드: 배지~장착 묶음이 카드 세로 가운데(사용자: "뿅망치 위치가 가장 적당"). 나머지 3장은 장착 버튼을 같은 높이에.
-      var base = info[0], need0 = base.gBot - base.bTop, room0 = base.cBot - base.cTop;
-      var k = need0 > room0 ? Math.max(0.6, room0 / need0) : 1;
-      var mid0 = (base.gTop + base.gBot) / 2, bTop0 = mid0 - (mid0 - base.bTop) * k, gBot0 = mid0 + (base.gBot - mid0) * k;
-      var dy0 = (base.cTop + base.cBot) / 2 - (bTop0 + gBot0) / 2, eqTarget = gBot0 + dy0 - base.cBot;
-      var shift = 0;
-      info.forEach(function (f) { var mid = (f.gTop + f.gBot) / 2; f.dy = (f.cBot + eqTarget) - (mid + (f.gBot - mid) * k); });
-      info.forEach(function (f) {
-        var mid = (f.gTop + f.gBot) / 2;
-        f.l.style.transformOrigin = '50% ' + (mid - f.lTop).toFixed(1) + 'px';
-        f.l.style.transform = 'translateY(' + (f.dy + shift).toFixed(1) + 'px)' + (k < 1 ? ' scale(' + k.toFixed(3) + ')' : '');
+      body.querySelectorAll('.iw-stat-title,.iw-stat-label,.iw-stat-value,.iw-equip,.iw-grade').forEach(function (label) {
+        var grade=label.classList.contains('iw-grade');
+        var statLabel=label.classList.contains('iw-stat-label');
+        var size = label.classList.contains('iw-equip') ? 80 : (label.classList.contains('iw-stat-title') ? 64 : (grade ? 43 : (statLabel ? 44 : 50)));
+        label.style.fontSize = size + 'px';
+        while (size > (grade?25:30) && (label.scrollWidth > label.clientWidth || label.scrollHeight > label.clientHeight)) label.style.fontSize = (--size) + 'px';
       });
     }
+    root.addEventListener('resize', function () { if (active === 'weapon') fitLefts(); });
+    if (root.ResizeObserver) new root.ResizeObserver(function () { if (active === 'weapon') fitLefts(); }).observe(body);
 
     // 코스튬 탭 — 5개 팀 카드(가로 스크롤) + 선택 코스튬 상세 + 획득 방법(§1~§58).
     // 무기 탭과 달리 페이지네이션(점/화살표) 없이 카드 줄만 가로 스크롤한다.
@@ -893,6 +939,7 @@
     }
 
     function paint() {
+      closeWeaponHelp();
       el.setAttribute('data-tab', active); // v991: 코스튬 UI 2차 — 탭별 배경(CSS)
       renderTabs();
       // v860: 무기 탭에서 넘어올 때 등급 창 색(data-rar)이 남아 코스튬·사진관 배경을 덮던 버그 — 탭 바뀌면 항상 초기화
