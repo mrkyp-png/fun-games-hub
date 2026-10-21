@@ -8286,3 +8286,38 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen .rx-card--res .rx-stats b:nth-child(3)::before { content: 'GREAT'; color: #5df07a; }
 #rhythm-screen .rx-card--res .rx-stats b:nth-child(4)::before { content: 'GOOD'; color: #8fe6ff; }
 #rhythm-screen .rx-card--res .rx-stats b:nth-child(5)::before { content: 'MISS'; color: #ff7b8a; }
+
+/* ===== V1373 C 리듬팡 나머지 버튼도 새 알약 버튼(GPT, 별무늬·빛번짐 없음, 양끝 고정·가운데만 늘어남) + 아이콘은 따로 떼어 글자 앞 가운데 정렬 ===== */
+#rhythm-screen .rx-card .rx-btn--y:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn), #rhythm-screen .rx-card .rx-btn--retry:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn), #rhythm-screen .rx-card .rx-btn--b:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn), #rhythm-screen .rx-card .rx-btn--diff:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn), #rhythm-screen .rx-card .rx-btn--home:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn), #rhythm-screen .rx-card .rx-btn--songs:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn) {
+  background: none !important; aspect-ratio: auto !important; height: 58px; min-height: 0; border-style: solid; border-width: 0 29px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 8px; }
+#rhythm-screen .rx-card .rx-btn--y:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn), #rhythm-screen .rx-card .rx-btn--retry:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn) { border-image: url('assets/rhythm/ui/v1372/btn-yellow.png') 0 125 fill / 0 29px stretch; }
+#rhythm-screen .rx-card .rx-btn--b:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn), #rhythm-screen .rx-card .rx-btn--diff:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn), #rhythm-screen .rx-card .rx-btn--home:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn), #rhythm-screen .rx-card .rx-btn--songs:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn) { border-image: url('assets/rhythm/ui/v1372/btn-blue.png') 0 105 fill / 0 29px stretch; }
+#rhythm-screen .rx-card .rx-btn--y:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn) > span, #rhythm-screen .rx-card .rx-btn--retry:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn) > span, #rhythm-screen .rx-card .rx-btn--b:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn) > span, #rhythm-screen .rx-card .rx-btn--diff:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn) > span, #rhythm-screen .rx-card .rx-btn--home:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn) > span, #rhythm-screen .rx-card .rx-btn--songs:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn) > span {
+  position: static; left: auto; right: auto; top: auto; transform: none; width: auto; display: inline-flex; align-items: center; gap: 8px; }
+#rhythm-screen .rx-card .rx-btn > .rx-ic { position: static; transform: none; width: 30px; height: 30px; order: -1; }
+#rhythm-screen .rx-card .rx-btn--songs:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn) > i { position: static; transform: none; font-size: 28px; line-height: 1; }
+#rhythm-screen .rx-card .rx-btn--retry:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn) > span::before, #rhythm-screen .rx-card .rx-btn--diff:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn) > span::before, #rhythm-screen .rx-card .rx-btn--home:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn) > span::before { content: ''; width: 32px; height: 31px; flex: 0 0 auto; background: center / contain no-repeat; }
+#rhythm-screen .rx-card .rx-btn--retry:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn) > span::before { background-image: url('assets/rhythm/ui/v1372/ic-retry.png'); }
+#rhythm-screen .rx-card .rx-btn--diff:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn) > span::before { background-image: url('assets/rhythm/ui/v1372/ic-gear.png'); }
+#rhythm-screen .rx-card .rx-btn--home:not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn) > span::before { background-image: url('assets/rhythm/ui/v1372/ic-house.png'); }
+#rhythm-screen .rx-card .rx-btn > .rx-cost { position: static; transform: none; margin-left: 4px; }
+/* V1373 C 사용자(2라운드 버튼 깨짐): 4×4 칸에서 '칠 차례' 칸이 칸 전체를 버튼 그림으로 채워(border-image fill), 하늘색 나무 테두리 모서리 틈으로 파란 사각이 삐져나옴
+   → 4×4 칸 자체 그림은 끄고 색은 안쪽 버튼(.lane-face--key --cap, 이미 초록/주황/분홍/빨강 처리)만으로 */
+#game-screen:not(.is-start) .lane-button:not(.lane-button--call):not(.lane-button--simple).lane-button--hot { border-image: none !important; background: none !important; }
+/* V1373 C 사용자(2라운드 누르면 깨짐): 여러 줄 선택자로 된 맞힘(분홍)·놓침(빨강) 규칙이 옛 300px 그림을 2배 slice(124 132)로 잘라 깨짐 → 같은 선택자로 딥톤 그림 */
+#game-screen:not(.is-start):not(.diff-mid):not(.diff-legend) .lane-button.lane-button.is-tint-hit .lane-face--key,
+#game-screen:not(.is-start).diff-mid .lane-button.lane-button.is-tint-hit .lane-face--key,
+#game-screen:not(.is-start).diff-legend .lane-button.lane-button.is-tint-hit .lane-face--key { --cap: url('assets/home2/btn-pink-deep.png'); }
+#game-screen:not(.is-start):not(.diff-mid):not(.diff-legend) .lane-button.lane-button.is-tint-miss .lane-face--key,
+#game-screen:not(.is-start).diff-mid .lane-button.lane-button.is-tint-miss .lane-face--key,
+#game-screen:not(.is-start).diff-legend .lane-button.lane-button.is-tint-miss .lane-face--key { --cap: url('assets/home2/btn-red-deep.png'); }
+
+/* V1373 C: 여러 줄 선택자 규칙도 딥톤 그림으로(2배 slice 와 짝) */
+#game-screen:not(.is-start).gs-invincible .lane-button.lane-button--hot .lane-face--key, #game-screen:not(.is-start) .lane-button.lane-button--hot-safe .lane-face--key { --cap: url('assets/home2/btn-orange-deep.png'); }
+#game-screen:not(.is-start).gs-invincible .lane-button--simple.lane-button--hot, #game-screen:not(.is-start) .lane-button--simple.lane-button--hot-safe { border-image-source: url('assets/home2/btn-orange-deep.png'); border-image-slice: 124 132 fill; }
+#game-screen:not(.is-start):not(.gs-laneskill).gs-invincible .lane-button--call.lane-button--hot, #game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.lane-button--hot-safe { border-image-source: url('assets/home2/btn-orange-deep.png'); border-image-slice: 124 132 fill; }
+#game-screen:not(.is-start) .lane-button--simple.is-tint-hit, #game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.is-tint-hit { border-image-source: url('assets/home2/btn-pink-deep.png'); border-image-slice: 124 132 fill; }
+#game-screen:not(.is-start) .lane-button--simple.is-tint-miss, #game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.is-tint-miss { border-image-source: url('assets/home2/btn-red-deep.png'); border-image-slice: 124 132 fill; }
+#game-screen:not(.is-start):not(.diff-mid):not(.diff-legend) .lane-button.lane-button.is-tint-hit .lane-face--key, #game-screen:not(.is-start).diff-mid .lane-button.lane-button.is-tint-hit .lane-face--key, #game-screen:not(.is-start).diff-legend .lane-button.lane-button.is-tint-hit .lane-face--key { --cap: url('assets/home2/btn-pink-deep.png'); }
+#game-screen:not(.is-start):not(.diff-mid):not(.diff-legend) .lane-button.lane-button.is-tint-miss .lane-face--key, #game-screen:not(.is-start).diff-mid .lane-button.lane-button.is-tint-miss .lane-face--key, #game-screen:not(.is-start).diff-legend .lane-button.lane-button.is-tint-miss .lane-face--key { --cap: url('assets/home2/btn-red-deep.png'); }
+#game-screen:not(.is-start).gs-invincible .lane-button--simple.lane-button--hot, #game-screen:not(.is-start) .lane-button--simple.lane-button--hot-safe { --scap: url('assets/home2/btn-orange-deep.png'); }
