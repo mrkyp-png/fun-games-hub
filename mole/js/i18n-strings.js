@@ -6,7 +6,7 @@
     ko: {
       'mole.title': '두더지팡!',
       'mole.start.tag': '10개 라운드, 각 30초! 두더지를 최대한 많이 잡아 점수를 올려요.',
-      'mole.start.btn': '시작',
+      'mole.start.btn': '시작', 'mole.start.go': 'GO',
       'mole.start.callBtn': '통화',
       'mole.coin': '코인',
       'mole.start.armLabel': '한 번 더\n누르면 종료',
@@ -356,7 +356,7 @@
     en: {
       'mole.title': 'Mole Pang!',
       'mole.start.tag': '10 rounds, 30 seconds each! Whack as many moles as you can.',
-      'mole.start.btn': 'Start',
+      'mole.start.btn': 'Start', 'mole.start.go': 'GO',
       'mole.start.callBtn': 'Call',
       'mole.coin': 'coins',
       'mole.start.armLabel': 'Tap again\nto quit',

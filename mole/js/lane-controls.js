@@ -63,7 +63,7 @@
     { num: '✱', kr: '', en: '', hud: 'label', label: '두더지팡', labelI18n: 'mole.pad.gameMole', action: 'lightMode' },
     { num: '0', kr: '', en: '+', hud: 'label', label: '리듬팡', labelI18n: 'mole.pad.gameRhythm', action: 'rhythm' },
     { num: '#', kr: '', en: '', hud: 'label', label: '?' },
-    { nav: '시작', svg: SVG.phone, call: true, i18n: 'mole.start.btn' }
+    { nav: 'GO', svg: SVG.phone, call: true, i18n: 'mole.start.go' } // V1371 C 사용자: 홈 시작 → GO
   ];
 
   // 아이콘 아래 자음/영문 자리에 넣을 설명 글자(사용자 지정) — 더보기와 같은 i18n 키 재사용.

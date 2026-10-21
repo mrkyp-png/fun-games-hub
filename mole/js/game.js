@@ -827,6 +827,7 @@
         if (action === 'home') { showStartScreen(); return; }
         if (action === 'profile') { editProfileAvatar(); return; }
         if (action === 'rhythm') { openRhythm(); return; } // 리듬팡(v807)
+        if (action === 'lightMode') return; // V1371 C 사용자: 두더지팡 박스는 진입 기능 없음 — 두더지팡은 GO(시작) 버튼으로만
         const sub = { shop: 'shop-screen', score: 'score-screen', daily: 'daily-screen',
           quest: 'quest-screen', locker: 'workshop-screen',
           inventory: 'inventory-screen', settings: 'settings-screen', lightMode: 'roundmap-screen',
@@ -851,12 +852,12 @@
       armState.armed = on;
       clearTimeout(armState.revertT);
       btn.classList.toggle('lane-button--armed', on);
-      if (lbl) lbl.textContent = I18N.t(on ? 'mole.start.armLabel' : 'mole.start.btn');
+      if (lbl) lbl.textContent = I18N.t(on ? 'mole.start.armLabel' : 'mole.start.go');
       if (on) armState.revertT = setTimeout(() => setArmed(false), 3200);
     }
     setCallLabel = (mode) => {
       if (armState.armed) setArmed(false);
-      if (lbl) lbl.textContent = I18N.t(mode === 'game' ? 'mole.start.callBtn' : 'mole.start.btn');
+      if (lbl) lbl.textContent = I18N.t(mode === 'game' ? 'mole.start.callBtn' : 'mole.start.go');
     };
 
     // navLocked = 시작 인트로~카운트다운 구간. 이때는 아직 is-start 가 안 벗겨져서

@@ -1,3 +1,8 @@
+## 2026-10-21 / V1371 C — 홈 GO 버튼·두더지팡 박스 진입 삭제·말풍선 개선·설명 끄기 패치 모양
+- 사용자: 두더지팡은 시작(GO) 버튼으로만 진입 → game.js onHomeAction 'lightMode' 무시(박스는 그림만). 홈 시작 글자 = GO(mole.start.go, 지도 안 시작은 '시작' 그대로).
+- 아마추어 말풍선: 두더지 머리 위(bottom 235%), 글자 16.5px(1.5배), 단어 안 끊김(keep-all + balance), 현재 라운드 .has-tip z-index 30(다른 라운드 앞), 화면 밖이면 안쪽으로 밀기(--tip-dx), 가장 긴 줄 폭에 맞춰 너비(좌우 여백 줄임). 사용자 '말풍선 굿'.
+- 설명 끄기 패치: 위 아치 + 아래 양끝이 밖으로 부드럽게 퍼지는 종 모양(인라인 SVG 배경, 30%).
+
 ## 2026-10-21 / V1370 C — 홈 하늘색 테마·창 그림 교체(2배 업스케일)·홈 맨 아래 줄·시작=두더지팡 진입·아마추어 말풍선 설명
 - 홈 버튼판 = GPT '하늘색 관중석' 나무판(assets/home2/board-sky.png, 2배 → slice 128), 홈 버튼 75% 불투명, 홈 바탕·판 테두리·경첩 하늘색(사용자: 어두운 분위기 싫음, 굳이 굵은 테두리 X). 시안·원본 review/board-bright-v1370, board-world-v1370.
 - 위쪽 창 5장 GPT 하늘색 톤(모양 유지) + Real-ESRGAN → 원본 2배 해상도: home2/wood.png(slice 220 104 116 104), mailbox/frame-bare.png(270 104 132 104), skin2/w-cardframe.png(62 52 62 48 / 72), skin2/bg-weapon.jpg, mailbox/bg.jpg. 원본 백업 review/sky-v1370/before. 명판(제목판)은 사용자가 별도 지시 예정.

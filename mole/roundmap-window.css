@@ -257,3 +257,16 @@ body.rm-open :not(#roundmap-screen):not(#roundmap-screen *)::after { animation-p
 .rm-window-map .rm-viewer .rm-tipbtn--back span { background: rgba(255, 216, 74, .3) !important; padding: 5px 12px 4px; border-radius: 60% 60% 0 0 / 100% 100% 0 0; }
 .rm-window-map .rm-viewer .rm-tipbtn--back span { transition: transform .08s ease-out, filter .08s ease-out; }
 .rm-window-map .rm-viewer .rm-tipbtn--back.is-press span { transform: perspective(120px) rotateX(12deg) scale(.88) translateY(2px); filter: brightness(1.35); }
+
+/* V1370 C 사용자: 말풍선 = 두더지 안 가리게(두더지 머리 위로), 글자 1.5배(11→16.5px), 단어 안 끊김, 다른 라운드보다 앞 */
+.rm-round.has-tip { z-index: 30; }
+.rm-tip { bottom: 235%; width: max-content; max-width: 232px; font-size: 16.5px; line-height: 1.35; padding: 8px 12px; word-break: keep-all; overflow-wrap: break-word;
+  transform: translateX(calc(-50% + var(--tip-dx, 0px))); animation: none; }
+.rm-tip::after { left: calc(50% - var(--tip-dx, 0px)); }
+.rm-tip--down { bottom: auto; top: 112%; }
+/* 설명 끄기 등판 패치: 좌우 끝을 완만하게(알약형) */
+.rm-window-map .rm-viewer .rm-tipbtn--back span { border-radius: 999px; padding: 5px 16px 4px; }
+
+.rm-tip { padding: 8px 10px; text-wrap: balance; box-sizing: border-box; } /* V1371 C 사용자: 좌우 여백 줄임 */
+/* V1371 C 사용자: 설명 끄기 패치 = 기존 아치(위 둥글게)에서 아래 양끝이 밖으로 부드럽게 퍼져 내려가는 종 모양 */
+.rm-window-map .rm-viewer .rm-tipbtn--back span { border-radius: 0; padding: 7px 26px 4px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 30' preserveAspectRatio='none'%3E%3Cpath d='M0 30 C14 30 16 2 50 2 C84 2 86 30 100 30 Z' fill='rgba(255,216,74,0.3)'/%3E%3C/svg%3E") center / 100% 100% no-repeat !important; }
