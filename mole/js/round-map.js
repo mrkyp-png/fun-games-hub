@@ -416,7 +416,37 @@
       }, true);
     }
 
+    // V1370 C 사용자 지정: 아마추어 지도에서 현재 라운드 두더지가 말풍선으로 라운드 설명("존경하는 대표님, … 즐거운 라운딩 되세요!")
+    // 옛 시작 설명 화면(타이핑) 대신. 설명 끄기 = localStorage 'mole.rm.tipOff'(끄기 버튼 위치는 사용자가 지정 예정).
+    function paintTipBubble(cur) {
+      var old = el.querySelector('.rm-tip'); if (old) old.remove();
+      var off = false; try { off = localStorage.getItem('mole.rm.tipOff') === '1'; } catch (e) {}
+      if (off || view !== 'easy' || cur < 1) return;
+      var r = el.querySelector('.rm-round[data-n="' + cur + '"]'); if (!r) return;
+      var desc = T('mole.chapter.desc.' + cur); if (!desc || desc === 'mole.chapter.desc.' + cur) desc = T('mole.startintro.tip');
+      var b = document.createElement('div'); b.className = 'rm-tip' + (cur >= 5 ? ' rm-tip--down' : '');
+      b.textContent = T('mole.rm.tip', { desc: desc });
+      r.appendChild(b);
+    }
+    // V1370 C 사용자: 하마 등 뒤(노란 선 위) '설명 켜기/끄기' 버튼 — 하마와 같이 움직임(CSS 같은 애니메이션)
+    var tipBtn = el.querySelector('[data-rm-tipbtn]');
+    function paintTipBtn() {
+      if (!tipBtn) return;
+      var off = false; try { off = localStorage.getItem('mole.rm.tipOff') === '1'; } catch (e) {}
+      tipBtn.querySelector('span').textContent = T(off ? 'mole.rm.tipOn' : 'mole.rm.tipOff');
+      tipBtn.setAttribute('aria-pressed', off ? 'false' : 'true');
+      tipBtn.classList.toggle('is-off', off);
+    }
+    if (tipBtn) { // 사용자: 누름 효과 — 폰에서 :active 가 잘 안 먹어 직접 클래스 토글
+      tipBtn.addEventListener('pointerdown', function () { tipBtn.classList.add('is-press'); });
+      ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { tipBtn.addEventListener(ev, function () { tipBtn.classList.remove('is-press'); }); });
+    }
+    if (tipBtn) tipBtn.addEventListener('click', function () {
+      var off = false; try { off = localStorage.getItem('mole.rm.tipOff') === '1'; localStorage.setItem('mole.rm.tipOff', off ? '0' : '1'); } catch (e) {}
+      paintTipBtn(); paintTipBubble(view === opts.currentLight() ? opts.currentChapter() : -1);
+    });
     function render() {
+      paintTipBtn();
       // v842(사용자 지정): 현재 위치 두더지는 지금 선택된 난이도 지도에만 — 다른 난이도 탭에선 현재 표시 없음
       var cur = view === opts.currentLight() ? opts.currentChapter() : -1;
       renderFx();
@@ -448,6 +478,7 @@
         r.querySelector('.rm-panel b').textContent = T('mole.rm.round', { n: n });
         r.querySelector('.rm-check').hidden = !cleared;
       });
+      paintTipBubble(cur);
       // Bonus details scroll in the opaque top strip; keep the foreground floor clear.
       el.querySelectorAll('[data-rm-light]').forEach(function (b) {
         var l = b.getAttribute('data-rm-light');

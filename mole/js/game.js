@@ -879,7 +879,8 @@
       clearTimeout(holdT);
       if (longFired) { longFired = false; return; } // 방금 꾹 눌러 무장 → 이 up 은 무시
       if (armState.armed) { setArmed(false); showQuitDialog(); }
-      else beginGame();
+      // V1370 C 사용자 지정: 홈 시작 = 바로 게임이 아니라 두더지팡 안(라운드 지도)으로 — 옛 타이핑 설명 화면은 안 거침(지도의 시작은 원래 바로 시작)
+      else { const mm = document.getElementById('more-menu'); if ((mm && !mm.hidden) || (screenNav && screenNav.current())) return; openMore('roundmap-screen'); if (sharedLaneControls) sharedLaneControls.setActiveNav('lightMode'); }
     });
 
     // 게임 중엔 이 코너(구멍 15 자리)가 "스킬 슬롯 2개"로 바뀐다 (캐논·특수망치, gs-laneskill). 홈에선 "시작" 버튼.

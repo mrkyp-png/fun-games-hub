@@ -331,7 +331,7 @@
       'mole.score.mine': '내 순위',
       'mole.score.dev': '개발 중',
       'mole.score.rhythmSoon': '리듬팡은 지금 개발 중이에요!',
-      'mole.score.empty': '아직 랭킹 기록이 없어요', 'mole.score.beach': '비치', 'mole.rp.lock.need': '🔒 「{title}」 A등급 이상이면 열려요', 'mole.score.neon': '네온', 'mole.score.ruleRp': '곡별 순위: 난이도(P>N>A) → 등급 → 점수 순!', 'mole.score.rhythmLocked': '리듬팡에 먼저 들어가 보세요!',
+      'mole.score.empty': '아직 랭킹 기록이 없어요', 'mole.score.beach': '비치', 'mole.rm.tip': '존경하는 대표님, {desc} 즐거운 라운딩 되세요!', 'mole.rm.tipOff': '설명 끄기', 'mole.rm.tipOn': '설명 켜기', 'mole.rp.lock.need': '🔒 「{title}」 A등급 이상이면 열려요', 'mole.score.neon': '네온', 'mole.score.ruleRp': '곡별 순위: 난이도(P>N>A) → 등급 → 점수 순!', 'mole.score.rhythmLocked': '리듬팡에 먼저 들어가 보세요!',
 
       'mole.set.bgm': '배경음악',
       'mole.set.sfx': '효과음',
@@ -681,7 +681,7 @@
       'mole.score.mine': 'My rank',
       'mole.score.dev': 'In development',
       'mole.score.rhythmSoon': 'RhythmPang is in development!',
-      'mole.score.empty': 'No ranking records yet', 'mole.score.beach': 'Beach', 'mole.rp.lock.need': '🔒 Get A or better on "{title}"', 'mole.score.neon': 'Neon', 'mole.score.ruleRp': 'Per song: difficulty (P>N>A), then grade, then score!', 'mole.score.rhythmLocked': 'Enter RhythmPang first!',
+      'mole.score.empty': 'No ranking records yet', 'mole.score.beach': 'Beach', 'mole.rm.tip': 'Dear boss, {desc} Have a great round!', 'mole.rm.tipOff': 'Tips off', 'mole.rm.tipOn': 'Tips on', 'mole.rp.lock.need': '🔒 Get A or better on "{title}"', 'mole.score.neon': 'Neon', 'mole.score.ruleRp': 'Per song: difficulty (P>N>A), then grade, then score!', 'mole.score.rhythmLocked': 'Enter RhythmPang first!',
 
       'mole.set.bgm': 'Music',
       'mole.set.sfx': 'Sound FX',

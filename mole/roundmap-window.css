@@ -210,3 +210,50 @@ body.rm-open :not(#roundmap-screen):not(#roundmap-screen *)::after { animation-p
 .rm-window-map .rm-bg { display:none; }
 /* V1346 C 사용자: 실제 0.2cm 아래로(translate 에 0.2cm). V1344 C 원근: 라운드별 두더지 크기·밝기(--rm-s/--rm-b 는 round-map.js render 에서 설정), 아래 중심 기준으로 줄임 */
 .rm-window-map .rm-mole { transform:translate(-50%,calc(8% + 0.2cm)) scale(var(--rm-s,1)); transform-origin:50% 100%; filter:brightness(var(--rm-b,1)) drop-shadow(0 0.8cqw 0.8cqw rgba(60, 30, 0, 0.4)); }
+
+/* V1370 C 사용자: 두더지팡 안 X 버튼 = 스코어 X 와 같은 크기(높이 46px) */
+.rm-window-map .rm-back.is-x { width: auto; height: 46px; min-width: 0; min-height: 0; }
+.rm-window-map .rm-back.is-x img { width: auto; height: 100%; }
+/* V1370 C 아마추어 지도 말풍선(현재 라운드 두더지 위) */
+.rm-tip { position: absolute; left: 50%; bottom: 135%; transform: translateX(-50%); width: 11.5em; z-index: 8; pointer-events: none; padding: 7px 10px; border-radius: 14px;
+  background: #fffdf3; color: #4a2a0a; border: 2px solid #f2b84b; box-shadow: 0 3px 0 #c98a1e, 0 5px 10px rgba(0,0,0,.25); font: 700 11px/1.35 'Jua', sans-serif; text-align: center; white-space: normal; animation: rm-tip-in .35s ease-out both; }
+.rm-tip::after { content: ''; position: absolute; left: 50%; top: 100%; margin-left: -7px; border: 7px solid transparent; border-top-color: #f2b84b; }
+.rm-tip--down { bottom: auto; top: 115%; }
+.rm-tip--down::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: #f2b84b; }
+@keyframes rm-tip-in { from { opacity: 0; transform: translateX(-50%) scale(.8); } to { opacity: 1; transform: translateX(-50%) scale(1); } }
+
+/* V1370 C 사용자: 설명 켜기/끄기 — 하마 등 뒤, 노란 선 위. 하마(rm-viewer-drift 10s -5s alternate)와 같은 박자로 좌우 이동(뒤집기 없이). 아마추어 지도에서만 */
+@keyframes rm-tipbtn-drift { from { transform: translateX(1.5cqw); } to { transform: translateX(-1.5cqw); } }
+.rm-window-map .rm-tipbtn { display: none; position: absolute; left: calc(3cqw + var(--rm-pan-x,0px)); bottom: calc(env(safe-area-inset-bottom,0px) + 1% + max(78px,19vw) + 4px); z-index: 6;
+  border: 0; padding: 0; background: none; cursor: pointer; animation: rm-tipbtn-drift 10s ease-in-out -5s infinite alternate; }
+.rm-window-map[data-light="easy"] .rm-tipbtn { display: block; }
+.rm-tipbtn span { display: flex; align-items: center; justify-content: center; font: 400 13px/1 'Jua', sans-serif; color: #fff; -webkit-text-stroke: 1px rgba(60,30,0,.6); paint-order: stroke fill; white-space: nowrap; }
+.rm-tipbtn:active { filter: brightness(1.2); }
+.rm-tipbtn.is-off span { color: #ffe8a0; }
+/* 시안 A: 야구공 패치(원형 + 빨간 실밥) */
+.rm-tipbtn--a span { width: 66px; height: 66px; border-radius: 50%; background: rgba(255,255,255,.4); border: 2px dashed rgba(220,40,40,.9); box-shadow: inset 0 0 0 4px rgba(255,255,255,.4), 0 2px 6px rgba(0,0,0,.3); text-align: center; white-space: normal; line-height: 1.1; padding: 0 8px; box-sizing: border-box; }
+/* 시안 B: 리본 배너(양끝 갈라진 띠) */
+.rm-tipbtn--b span { height: 30px; padding: 0 22px; background: rgba(255,190,40,.4); clip-path: polygon(0 0, 100% 0, 88% 50%, 100% 100%, 0 100%, 12% 50%); }
+/* 시안 C: 방패 엠블럼 */
+.rm-tipbtn--c span { width: 62px; height: 70px; background: rgba(80,170,255,.4); clip-path: polygon(50% 0, 100% 14%, 92% 62%, 50% 100%, 8% 62%, 0 14%); white-space: normal; text-align: center; line-height: 1.1; padding: 0 10px 10px; box-sizing: border-box; }
+/* V1370 C 사용자: 옷 등판 로고처럼 — 글자는 한 줄 일직선, 노란 선 바로 위. 바탕은 60% 투명 등판 패치(아래 일자, 위 둥근 아치) */
+.rm-tipbtn--d { bottom: calc(env(safe-area-inset-bottom,0px) + 1% + max(78px,19vw) + 1px); left: calc(4cqw + var(--rm-pan-x,0px)); }
+.rm-tipbtn--d span { height: 26px; padding: 6px 16px 0; box-sizing: border-box; background: rgba(255, 216, 74, .4); border-radius: 60% 60% 0 0 / 100% 100% 0 0;
+  font: 400 14px/1 'Lilita One', 'Jua', sans-serif; letter-spacing: .06em; color: #fff; -webkit-text-stroke: 1.5px #b0560a; paint-order: stroke fill; text-shadow: 0 1px 0 #7a3a00; align-items: flex-end; padding-bottom: 4px; }
+
+/* V1370 C 사용자: 하마 등 뒤 '옷(작업복) 등판 로고' — 하마 그림(.rm-viewer) 안에 넣어 하마와 똑같이 움직임. 하마가 좌우반전이라 글자만 다시 뒤집음 */
+.rm-window-map .rm-viewer .rm-tipbtn--back { display: none; position: absolute; left: 62%; bottom: 7%; /* 사용자: 등 센터(헬멧·등줄기 중심선 — 하마는 반전 표시라 화면상 왼쪽 38%) */ transform: translateX(-50%) scaleX(-1); animation: none; pointer-events: auto; z-index: 2; }
+.rm-window-map[data-light="easy"] .rm-viewer .rm-tipbtn--back { display: block; }
+.rm-window-map[data-light="easy"] .rm-viewer { pointer-events: none; }
+.rm-tipbtn--back span { background: none; padding: 0; height: auto; font: 400 15px/1 'Lilita One', 'Jua', sans-serif; letter-spacing: .08em; color: rgba(255, 220, 90, .9); -webkit-text-stroke: 0;
+  text-shadow: 0 0 1px rgba(0,0,0,.4), 0 1px 0 rgba(120, 70, 0, .6); transform: perspective(120px) rotateX(12deg); mix-blend-mode: screen; }
+.rm-tipbtn--back.is-off span { color: rgba(200, 220, 255, .85); }
+/* V1370 C 사용자: 등판 로고 박스 완전 투명, 글자 투명도 30%(= 불투명 70%) */
+.rm-tipbtn--back, .rm-tipbtn--back span { background: transparent !important; border: 0; box-shadow: none; }
+.rm-tipbtn--back span { opacity: .7; }
+/* V1370 C 사용자: 등판 로고 오른쪽으로 조금, 위로 아주 조금(하마 반전 → left 값을 줄이면 화면상 오른쪽) */
+.rm-window-map .rm-viewer .rm-tipbtn--back { left: 52%; bottom: 9%; }
+/* V1370 C 사용자: 등판 로고에 은은한 박스(30%만 보임) — 위 둥근 아치·아래 일자 패치 */
+.rm-window-map .rm-viewer .rm-tipbtn--back span { background: rgba(255, 216, 74, .3) !important; padding: 5px 12px 4px; border-radius: 60% 60% 0 0 / 100% 100% 0 0; }
+.rm-window-map .rm-viewer .rm-tipbtn--back span { transition: transform .08s ease-out, filter .08s ease-out; }
+.rm-window-map .rm-viewer .rm-tipbtn--back.is-press span { transform: perspective(120px) rotateX(12deg) scale(.88) translateY(2px); filter: brightness(1.35); }

@@ -5969,7 +5969,7 @@ html, body, .cosmic-bg { background: #0a1230; }
 /* ===== v902: 홈 버튼보드 개편(시안 "홈화면 개편 UI 및 에셋") — 크기·구도는 기존 그대로, 그림만 교체 ===== */
 /* 나무판 — 9분할로 늘려 테두리 두께 유지 */
 #lane-button-bar { box-sizing: border-box; background: none; border-style: solid; border-color: transparent; border-width: 16px 9px 11px;
-  border-image: url('assets/home2/wood.png') 110 52 58 52 fill / 16px 9px 11px stretch; border-radius: 0; padding: 2px 2px calc(2px + env(safe-area-inset-bottom, 0px)); }
+  border-image: url('assets/home2/wood.png') 220 104 116 104 fill / 16px 9px 11px stretch; border-radius: 0; padding: 2px 2px calc(2px + env(safe-area-inset-bottom, 0px)); }
 .dialpad { background: #3a2210; }
 /* 버튼 그림(9분할) — 칸 비율이 시안과 달라도 모서리가 찌그러지지 않게 */
 .lane-face--h2::before, .lane-face--key::before, .lane-face--wide::before {
@@ -6220,7 +6220,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 /* v918(사용자 지정): 상점·아이템 배경을 버튼보드와 같은 나무판으로 */
 #shop-screen, #inventory-screen { background: #5a3418; }
 #shop-screen::before, #inventory-screen::before { inset: 0; filter: none; background: none; box-sizing: border-box; border-style: solid; border-color: transparent;
-  border-width: 16px 9px 11px; border-image: url('assets/home2/wood.png') 110 52 58 52 fill / 16px 9px 11px stretch; }
+  border-width: 16px 9px 11px; border-image: url('assets/home2/wood.png') 220 104 116 104 fill / 16px 9px 11px stretch; }
 #shop-screen::after, #inventory-screen::after { background: none; }
 /* v919(사용자 지정): 상점·아이템 테두리 무지개 → 금색 */
 .shop-frame { background: none; }
@@ -6611,7 +6611,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 #inventory-screen[data-tab="weapon"] .inv-cards-box::before, #inventory-screen[data-tab="weapon"] .inv-cards-box::after { display: none; }
 #inventory-screen[data-tab="weapon"] .inv-cards-head { display: none; }
 /* 무기 카드 = 주황 액자 + 짙은 나무 안쪽 */
-#inventory-screen[data-tab="weapon"] .inv-card { border: 12px solid transparent; border-width: 11px 12px 11px 11px; border-image: url('assets/skin2/w-cardframe.png') 31 26 31 24 / 11px 12px 11px 11px stretch;
+#inventory-screen[data-tab="weapon"] .inv-card { border: 12px solid transparent; border-width: 11px 12px 11px 11px; border-image: url('assets/skin2/w-cardframe.png') 62 52 62 48 / 11px 12px 11px 11px stretch;
   border-radius: 0; box-shadow: none; background: #3b2212 padding-box !important; }
 #inventory-screen[data-tab="weapon"] .inv-card, #inventory-screen[data-tab="weapon"] .inv-card.inv-card--on { box-shadow: none !important; }
 /* v995(사용자 지정): 무기 카드 액자를 바깥 테두리 자리까지 확장 */
@@ -6620,7 +6620,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 /* v995(사용자 지정): 무기 액자 = 맨 위 레이어(내용이 틀을 덮지 않게) + 가로세로 같은 배율(볼트 동그랗게) */
 #inventory-screen[data-tab="weapon"] .inv-card { border: 0 !important; border-image: none !important; padding: 15px 15px 14px; background: #3b2212 !important; }
 #inventory-screen[data-tab="weapon"] .inv-card::before { content: ''; position: absolute; inset: 0; z-index: 20; pointer-events: none; /* v996: ::after 는 빛 지나가는 효과 자리라 틀은 ::before 로 */
-  border: 14px solid transparent; border-image: url('assets/skin2/w-cardframe.png') 36 / 14px stretch; }
+  border: 14px solid transparent; border-image: url('assets/skin2/w-cardframe.png') 72 / 14px stretch; }
 /* v995(사용자 지정): 스킬 화면 모든 볼트·둥근 피스가 찌그러지지 않게 — 늘이는 대신 끝 조각은 그대로, 가운데만 늘림(가로세로 같은 배율) */
 #inventory-screen[data-tab="skill"] .skl-plank { background: none; border: solid transparent; border-width: 0 19px; border-image: url('assets/skin2/sk-plank.png') 0 60 fill / 0 19px stretch; padding: 0 2px; }
 #inventory-screen[data-tab="skill"] .skl-right-title { background: none; border: solid transparent; border-width: 0 19px; border-image: url('assets/skin2/rt-plank.png') 0 62 fill / 0 19px stretch; }
@@ -6888,7 +6888,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 /* ===== v1007 메일함(사용자 지정, 바탕화면 "메일함 UI 및 에셋" 명세·목표 화면) — 위 박스(게임보드 자리) 안 ===== */
 #mailbox-screen.mb-screen { background: #5a3418 url('assets/mailbox/bg.jpg') center / cover no-repeat; padding: 0; overflow: hidden; display: flex; }
 .mb-frame { position: relative; flex: 1 1 auto; margin: 4px; display: flex; flex-direction: column; min-height: 0; box-sizing: border-box;
-  border: solid transparent; border-width: 52px 18px 24px; border-image: url('assets/mailbox/frame-bare.png') 135 52 66 52 / 52px 20px 25px 20px stretch round;
+  border: solid transparent; border-width: 52px 18px 24px; border-image: url('assets/mailbox/frame-bare.png') 270 104 132 104 / 52px 20px 25px 20px stretch round;
   background: #13284f padding-box; }
 .mb-head { position: absolute; left: -14px; right: -14px; top: -52px; height: 58px; display: flex; align-items: center; justify-content: space-between; z-index: 3; pointer-events: none; }
 .mb-head > * { pointer-events: auto; }
@@ -6961,7 +6961,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 .st2-tog { aspect-ratio: 150 / 65; object-fit: contain; } /* v1011: OFF 그림 높이가 달라도 칸 높이 같게(이름판 안 움직임) */
 /* ===== v1011(사용자 지정): 확인 팝업(.quit-card) 게임 톤 — 나무 테두리 + 크림 바탕 + 초록/회색 버튼, 튀어나오는 등장. 앱 전체 공용 ===== */
 .ad-overlay-card.quit-card { width: 80%; max-width: 330px; padding: 16px 14px 14px; border-radius: 0; box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45); color: #3a2008;
-  background: #fbe8b8 padding-box; border: solid transparent; border-width: 30px 18px 18px; border-image: url('assets/mailbox/frame-bare.png') 135 52 66 52 / 30px 18px 18px stretch round;
+  background: #fbe8b8 padding-box; border: solid transparent; border-width: 30px 18px 18px; border-image: url('assets/mailbox/frame-bare.png') 270 104 132 104 / 30px 18px 18px stretch round;
   animation: qc-pop 0.28s cubic-bezier(.2, 1.4, .5, 1) both; }
 @keyframes qc-pop { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .quit-card .quit-title { font-family: 'Jua', sans-serif; font-weight: 400; font-size: 1.05rem; line-height: 1.35; color: #4a2508; margin-bottom: 14px; white-space: pre-line; }
@@ -8108,3 +8108,53 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .st2-card.is-off .st2-art, .st2-card.is-off .st2-bottom, .st2-card.is-off .st2-card-bg { filter: grayscale(1) brightness(0.85); }
 .st2-card.is-off::after { content: '🔒 ' attr(data-soon); position: absolute; left: 50%; top: 44%; transform: translate(-50%, -50%) rotate(-8deg); white-space: nowrap; z-index: 5; pointer-events: none;
   background: linear-gradient(#ffcf3a, #f08a00); color: #fff; font: 900 12px/1 'Jua', sans-serif; padding: 5px 9px; border-radius: 8px; border: 2px solid #fff3b0; -webkit-text-stroke: 1px #8a4b00; paint-order: stroke fill; box-shadow: 0 3px 0 #8a4b00; }
+
+/* ===== V1370 C 사용자 지정: 홈 맨 아래 줄 = [리듬팡 2칸][두더지팡 2칸 + 안에 시작 버튼] (게임 중 버튼 배치는 그대로) ===== */
+#game-screen.is-start [data-region="14"] { display: none; }
+#game-screen.is-start [data-region="13"] { grid-row: 4; grid-column: 1 / span 2; transform-origin: 50% 50%; }
+#game-screen.is-start [data-region="12"] { grid-row: 4; grid-column: 3 / span 2; transform-origin: 50% 50%; }
+#game-screen.is-start .lane-button--call { grid-row: 4; grid-column: 4; z-index: 4; transform: translate(4%, 1%) scale(0.72); } /* 사용자: 시작 버튼이 박스 밖으로 안 넘어가게(박스 높이 84% 안에) */
+#game-screen.is-start [data-region="12"] .lane-face--wide, #game-screen.is-start [data-region="13"] .lane-face--wide { left: 0; right: 0; }
+/* 캐릭터·아이콘은 박스가 넓어져도 예전 크기·비율 그대로(예전 1.5칸 폭 기준 % → 2칸 폭으로 환산) */
+#game-screen.is-start .h2w-rhythm .h2w-char { width: 55.5%; }
+#game-screen.is-start .h2w-mole .h2w-char { width: 46.5%; max-width: 46.5%; }
+#game-screen.is-start .h2w-rhythm .h2w-note { right: 6.75%; }
+/* 두더지팡: 오른쪽 절반은 시작 버튼 자리 → 글자·하트는 캐릭터와 시작 버튼 사이로 */
+#game-screen.is-start .h2w-mole .h2w-lbl { position: absolute; left: 2%; right: 48%; bottom: 5%; margin: 0; text-align: center; white-space: nowrap; }
+#game-screen.is-start .h2w-mole .h2w-heart { right: auto; left: 38%; top: 8%; height: 28%; }
+/* 하트는 이제 왼쪽(리듬팡)으로 날아감 */
+#game-screen.is-start .lane-face--wide.h2w-mole { clip-path: inset(-80% -10% 7% -260%); }
+#game-screen.is-start .h2w-heart { animation-name: h2-heart-fly-left; }
+@keyframes h2-heart-fly-left {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+  6%   { transform: translate(0, 0) scale(1.22); }
+  12%  { transform: translate(0, 0) scale(.96); }
+  18%  { transform: translate(0, 0) scale(1.18); }
+  24%  { transform: translate(0, 0) scale(1); }
+  30%  { transform: translate(0, 0) scale(1.15); }
+  36%  { transform: translate(0, 0) scale(1); }
+  55%  { transform: translate(-250%, -55%) scale(1.1); opacity: 1; }
+  72%  { transform: translate(-500%, -20%) scale(.95); opacity: 1; }
+  82%  { transform: translate(-600%, 10%) scale(.6); opacity: 0; }
+  83%  { transform: translate(0, 0) scale(.3); opacity: 0; }
+  100% { transform: translate(0, 0) scale(1); opacity: 1; }
+}
+/* V1370 C 사용자: 두더지팡·리듬팡 박스 높이 약간 크게(위로 넓힘, 아래선·캐릭터 위치는 그대로) */
+#game-screen.is-start [data-region="12"] .lane-face--wide::before, #game-screen.is-start [data-region="13"] .lane-face--wide::before { top: 9%; }
+/* V1370 C 사용자: 오른쪽(두더지팡) 남자 두더지는 거울상 — 왼쪽 리듬팡 여자 두더지 쪽을 바라봄 */
+#game-screen.is-start .h2w-mole .h2w-char { transform: scaleX(-1); }
+/* V1370 C 사용자: 캐릭터 더 크게 — 박스 위로 조금 넘어가 입체감(아래 7% 잘림선은 그대로) */
+#game-screen.is-start .h2w-rhythm .h2w-char { width: 66%; }
+#game-screen.is-start .h2w-mole .h2w-char { width: 56%; max-width: 56%; }
+
+/* V1370 C 사용자: 버전 표시는 로딩 화면(앞판) 왼쪽 위로(버튼판에서는 숨김 — 문의하기는 #build-tag 글자를 그대로 읽음) */
+#build-tag { display: none !important; }
+.splash-ver { position: absolute; left: 8px; top: calc(env(safe-area-inset-top, 0px) + 26px); /* 사용자: 앞판 왼쪽 위(FPS 표시 바로 아래) */ z-index: 5; font: 700 12px/1 'Jua', sans-serif; color: rgba(255, 255, 255, 0.75); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8); pointer-events: none; }
+
+/* ===== V1370 C 사용자 지정: 홈 = 6번 하늘색 관중석 나무판(밝게), 홈 버튼 75% 불투명, 바깥 테두리·바탕·경첩도 하늘색 계열 ===== */
+#game-screen.is-start #lane-button-bar { border-image-source: url('assets/home2/board-sky.png'); border-image-slice: 128 fill; } /* 2배 해상도(업스케일) → slice 64×2 */
+#game-screen.is-start #lane-button-bar[data-nav="home"] .lane-face--h2::before { opacity: .75; }
+#game-screen.is-start { background: linear-gradient(180deg, #d6f0fb 0%, #a9dcf3 55%, #8fcdee 100%); }
+#game-screen.is-start #mole-board, #game-screen.is-start .dialpad, .board-screen, .more-menu { box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px #7cc3e6, 0 0 0 7px #f4fbff, 0 6px 10px 6px rgba(40, 110, 160, 0.25); }
+#game-screen.is-start ~ #fold-hinge, #fold-hinge { background: linear-gradient(180deg, #e9f7fd 0%, #9fd6ef 46%, #9fd6ef 54%, #e9f7fd 100%); }
+#fold-hinge::after { background: linear-gradient(180deg, #ffffff, #7cc3e6); }
