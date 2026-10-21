@@ -1,3 +1,11 @@
+## 2026-10-21 / V1367 C — 스코어 화면 리듬팡 랭킹(앨범 → 비치·네온 → 곡별 순위)
+- 사용자 지정: 리듬팡 탭은 리듬팡에 처음 들어가면 해금(rhythm.js open() → localStorage 'mole.rp.entered'), 전엔 '리듬팡에 먼저 들어가 보세요!' 안내.
+- 리듬팡 탭 = 앨범 목록(2열, CONFIG.bSongs 그대로 → 새 곡 자동 연동, 그림 albums-v1170/<id>.webp). 앨범 박스 = 금테 입체 액자(CSS 그라데이션·그림자) + 곡명 + 비치·네온 버튼 → 그 곡·타입 랭킹(두더지팡과 같은 카드·줄·내 순위), 위 줄 '◀ 앨범 · 곡명 · 타입' 으로 복귀. 1·2·3등 원형 프로필은 사용자 취소.
+- 순위 = 난이도(P>N>A) → 등급(SSS…F, .result.rank) → 점수, 표기 'P · SSS' + 점수. 서버 전이라 내 기록만(RankingSource.top('rhythm_pang:<A|B>:<id>')).
+- 순위 목록 높이를 줄 간격 배수로(fitRows, 카드 그림 늦게 뜨면 ResizeObserver 재계산) + scroll-snap → 반쯤 잘린 줄 안 보임(두더지팡 탭도). 1등 카드 이름 외곽선 잘림(padding 4px), 내 순위 점수 오른쪽 테두리 닿음(글자↓·여백 17%) 수정. 두더지팡·리듬팡 탭 누름 효과(pointer 클래스 토글, scale .93).
+- 앨범 6장 Real-ESRGAN x4plus-anime → 768px webp q92(원본 384px, 백업 review/albums-before-upscale-v1367/) — 곡 선택·로딩 앨범도 선명.
+- 테스트: scripts/rhythm/verify-score-rhythm.js 11/11.
+
 ## 2026-10-21 / V1366 C — 리듬팡 티켓제(한 판 1장) + 보유 수 표시
 - 사용자 지정: 두더지팡에서 재화를 모아 티켓 구입 → 리듬팡. 이번엔 상점 제외(상점 UI 개편 예정, 코인 가격 추후). 네온·비치 공용 = 기존 'mole.rp.b.tickets'(비치 풀콤보 +1 보상 유지).
 - economy.js spendRhythmPlay(): 하루 첫 판 무료('mole.rp.freeDay') → 아니면 티켓 1장, 없으면 false. refundRhythmPlay(kind). rhythm.js launchSong(시작·다시하기·연습 모두)에서 차감, 로딩 실패·취소(cancelEntry)면 환불. 티켓 없으면 시작 안 하고 난이도 창 곡 제목 줄에 '리듬팡 티켓이 없어요'(구매 팝업은 사용자 지시로 뺌).

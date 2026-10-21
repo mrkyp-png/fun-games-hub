@@ -2742,7 +2742,7 @@ body { background: var(--lm-page); }
 .sr-card-body { position: absolute; inset: 22% 8% 10%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
 .sr-card .sr-ava { width: 52cqw; height: 52cqw; margin-top: 4%; }
 .sr-card .sr-name { margin-top: 3%; font-size: 10.5cqw; font-weight: 900; color: #fff; -webkit-text-stroke: 3px rgba(0, 0, 40, 0.55); paint-order: stroke fill;
-  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 4px; box-sizing: border-box; } /* V1367 C: 외곽선(3px)이 잘려 "나" 오른쪽이 깎이던 것 */
 .sr-card .sr-pill { margin-top: 3%; min-width: 60%; font-size: 8.5cqw; padding: 1% 6%; }
 .sr-card .sr-score { margin-top: 2%; font-size: 12cqw; font-weight: 900; color: #fff; -webkit-text-stroke: 3px rgba(0, 0, 40, 0.6); paint-order: stroke fill; }
 .sr-card.is-empty .sr-ava img { filter: brightness(0) opacity(0.25); }
@@ -2777,7 +2777,7 @@ body { background: var(--lm-page); }
 .sr-mine .sr-ava { width: calc(var(--w) * 0.09); height: calc(var(--w) * 0.09); justify-self: center; }
 .sr-mine .sr-name { padding-left: 6%; }
 .sr-mine .sr-pill { font-size: calc(var(--w) * 0.036); padding: 3px 0; }
-.sr-mine .sr-score { text-align: right; padding-right: 12%; font-size: calc(var(--w) * 0.05); color: #1a2f6e; }
+.sr-mine .sr-score { text-align: right; padding-right: 17%; font-size: calc(var(--w) * 0.044); color: #1a2f6e; white-space: nowrap; } /* V1367 C: 큰 점수가 오른쪽 테두리에 닿아 잘리던 것(사용자 보고) */
 /* 랭킹 안내 — 파란 ! + 네이비 박스(9분할: 왼쪽 아이콘 부분 고정) */
 .sr-info { width: var(--w); height: calc(var(--w) * 0.11); flex: 0 0 auto; box-sizing: border-box; display: flex; align-items: center;
   border-style: solid; border-width: calc(var(--w) * 0.012) calc(var(--w) * 0.03) calc(var(--w) * 0.012) calc(var(--w) * 0.11);
@@ -6679,7 +6679,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 #inventory-screen[data-tab="skill"] .skl-right-sec { display: flex; flex-direction: column; }
 #inventory-screen[data-tab="skill"] .skl-right-lbl { margin-bottom: 2px; }
 #inventory-screen[data-tab="skill"] .skl-right-icons { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; gap: 4px; }
-#inventory-screen[data-tab="skill"] .skl-right-icons--grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); align-content: center; justify-items: center; align-items: center; }
+#inventory-screen[data-tab="skill"] .skl-right-icons--grid2 { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(2, minmax(0, 1fr)); align-content: center; justify-items: center; align-items: center; }
 #inventory-screen[data-tab="skill"] .skl-mini { flex: 0 1 auto; width: auto; height: 100%; max-width: 48%; max-height: 100%; aspect-ratio: 1; }
 #inventory-screen[data-tab="skill"] .skl-right-icons--grid2 .skl-mini { height: 100%; max-width: 100%; }
 #inventory-screen[data-tab="skill"] .skl-right-imgwrap, #inventory-screen[data-tab="skill"] .skl-right-sec { border-width: 9px !important; border-image-width: 9px !important; }
@@ -8057,3 +8057,31 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen .rp-ticket-badge--select, #rhythm-screen .rp-ticket-badge--types { display: flex; position: relative; top: auto; right: auto; align-self: center; margin-top: 6px; } /* 난이도·타입 선택 = 홈 버튼 아래 */
 #rhythm-screen .rp-ticket-badge--songs { display: flex; position: relative; top: auto; right: auto; height: 40px; align-self: center; margin-top: 6px; } /* 곡 선택 = 버튼 줄 아래 좌우 가운데(위아래 낮게) */
 #rhythm-screen .rp-ticket-badge--songs img { height: 22px; }
+
+/* V1367 C 스코어 리듬팡 탭: 진입하면 해금, 비치·네온 × 곡별 순위(난이도 P>N>A → 등급 → 점수) */
+.sr-tab--off > span:not(.sr-tab-txt) { font-size: calc(var(--w) * 0.044); font-weight: 900; color: #c9d4ee; margin-right: 6%; }
+.sr-rp { width: var(--w); display: flex; align-items: center; gap: 8px; flex: 0 0 auto; padding: 4px 8px; box-sizing: border-box; border-radius: 14px; background: rgba(20, 30, 70, 0.6); }
+.sr-rp[hidden], .sr-albums[hidden] { display: none; }
+.sr-rp-back { flex: 0 0 auto; border: 0; background: none; color: #ffe461; font-size: calc(var(--w) * 0.05); padding: 0 4px; cursor: pointer; }
+.sr-rp-album { width: calc(var(--w) * 0.1); height: calc(var(--w) * 0.1); border-radius: 8px; object-fit: cover; flex: 0 0 auto; }
+.sr-rp-title { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fff; font-size: calc(var(--w) * 0.038); }
+.sr-rp-tag { flex: 0 0 auto; padding: 3px 12px; border-radius: 99px; font-weight: 900; font-size: calc(var(--w) * 0.034); color: #fff; }
+.sr-rp-tag--a, .sr-album-btn--a { background: linear-gradient(#ffd23a, #f29a00); }
+.sr-rp-tag--b, .sr-album-btn--b { background: linear-gradient(#c04dff, #7a1fd6); }
+/* 앨범 목록(2열) — 앨범 박스마다 비치·네온 버튼 */
+#score-screen.is-albums .sr-top3, #score-screen.is-albums .sr-rows, #score-screen.is-albums .sr-mine { display: none; }
+.sr-albums { width: var(--w); flex: 1 1 0; min-height: 0; overflow-y: auto; scrollbar-width: none; display: grid; grid-template-columns: 1fr 1fr; gap: calc(var(--w) * 0.03); align-content: start; padding: 4px 2px 10px; box-sizing: border-box; }
+.sr-albums::-webkit-scrollbar { display: none; }
+.sr-album { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 9px; border-radius: 16px; border: 3px solid transparent;
+  background: linear-gradient(#fffdf6, #f3ead2) padding-box, linear-gradient(145deg, #fff3b0, #f5c430 25%, #b87a0a 50%, #ffe27a 72%, #9a6206) border-box;
+  box-shadow: 0 5px 0 #6e4304, 0 8px 14px rgba(40, 10, 0, 0.45), inset 0 2px 0 rgba(255, 255, 255, 0.9), inset 0 -3px 6px rgba(150, 100, 20, 0.25); } /* V1367 C: 금테 입체 액자(사용자 지정) */
+.sr-album-img { box-shadow: 0 0 0 2px #c9921c, 0 0 0 4px #fff4c4, inset 0 0 8px rgba(0, 0, 0, 0.3), 0 3px 6px rgba(60, 30, 0, 0.45); }
+.sr-album-img { width: 100%; aspect-ratio: 1; border-radius: 12px; object-fit: cover; display: block; }
+.sr-album-title { width: 100%; text-align: center; color: #203a8a; font-size: calc(var(--w) * 0.034); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sr-album-btns { width: 100%; display: flex; gap: 6px; }
+.sr-album-btn { flex: 1; border: 2px solid #fff; border-radius: 12px; padding: 6px 0; color: #fff; font-weight: 900; font-size: calc(var(--w) * 0.036); -webkit-text-stroke: 1.5px rgba(0, 0, 40, 0.45); paint-order: stroke fill; cursor: pointer; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25); }
+.sr-album-btn:active { transform: scale(0.96); }
+#score-screen .sr-rows { scroll-snap-type: y mandatory; scroll-padding-top: 2px; } /* V1367 C: 스크롤도 줄 단위로 멈춤(반쯤 잘린 줄 안 보이게) */
+#score-screen .sr-row { scroll-snap-align: start; }
+.sr-tab { transition: transform 0.08s ease-out, filter 0.08s ease-out; } /* V1367 C: 탭 누름 효과(사용자 지정) */
+.sr-tab.is-press { transform: scale(0.93) translateY(2px); filter: brightness(1.15); }

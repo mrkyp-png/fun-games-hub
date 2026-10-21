@@ -965,7 +965,7 @@
     $('[data-rp-songs-back]').addEventListener('click', showTypes);
     $('[data-rp-songs-home]').addEventListener('click', function () { close(); });
     $('[data-rp-types-home]').addEventListener('click', function () { close(); });
-    function open() { setEntryBgm(true); resetBoss(); clearAGauge(); el.hidden = false; $('[data-rp-pause]').hidden = true; $('[data-rp-result]').hidden = true; wlayer.innerHTML = '';
+    function open() { try { localStorage.setItem('mole.rp.entered', '1'); } catch (e) {} setEntryBgm(true); // V1367 C: 스코어 리듬팡 탭 해금 resetBoss(); clearAGauge(); el.hidden = false; $('[data-rp-pause]').hidden = true; $('[data-rp-result]').hidden = true; wlayer.innerHTML = '';
       // v974(사용자 지정): 진입 시 배경은 항상 첫 화면 — 지난 판의 두더지·구멍·버튼·점수·HP 잔상 비움(시작하면 start() 가 다시 만듦)
       $('[data-rp-lanes]').innerHTML = ''; $('[data-rp-btns]').innerHTML = ''; moleEls = null; btnEls = null;
       $('[data-rp-score]').textContent = '0'; $('[data-rp-combo]').textContent = '0'; statusJudge.textContent = 'READY'; statusTime.textContent = '0:00'; statusSeconds = -1; $('[data-rp-hp]').style.width = ''; $('[data-rp-hpbar]').classList.remove('is-low');

@@ -37,6 +37,25 @@
     });
   }
   function code(mode, round) { return (MODE_CODE[mode] || 'A') + round; }
+
+  // V1367 C 리듬팡 순위(사용자 지정): 타입(비치 A / 네온 B) × 곡마다 따로. 정렬 = 난이도 높은 것(P>N>A) → 등급 → 점수. 표기 'P · SSS'.
+  var DIFF_ORDER = ['EASY', 'NORMAL', 'HARD'], DIFF_CODE = { EASY: 'A', NORMAL: 'N', HARD: 'P' }, DIFF_CLASS = { EASY: 'easy', NORMAL: 'mid', HARD: 'legend' };
+  var GRADES = ['F', 'D', 'C', 'B', 'A', 'AA', 'AAA', 'S', 'SS', 'SSS'];
+  function rpSongs() { return (MG.Rhythm && MG.Rhythm.rules.config.bSongs) || []; }
+  function rpKey(type, id, d) { return (type === 'B' ? 'mole.rp.b.best.' : 'mole.rp.best.') + (id === 'fever2' ? '' : id + '.') + d; }
+  function rpCmp(a, b) { return (DIFF_ORDER.indexOf(b.diff) - DIFF_ORDER.indexOf(a.diff)) || (GRADES.indexOf(b.grade) - GRADES.indexOf(a.grade)) || (b.score - a.score); }
+  function rpMyBest(type, id) {
+    var best = null;
+    DIFF_ORDER.forEach(function (d) {
+      var score = parseInt(localStorage.getItem(rpKey(type, id, d)), 10) || 0, grade = '';
+      if (!score) return;
+      try { grade = (JSON.parse(localStorage.getItem(rpKey(type, id, d) + '.result') || 'null') || {}).rank || ''; } catch (e) {}
+      var e = { diff: d, grade: grade, score: score };
+      if (!best || rpCmp(e, best) < 0) best = e;
+    });
+    return best;
+  }
+  function rpPill(e) { return DIFF_CODE[e.diff] + (e.grade ? ' · ' + e.grade : ''); }
   function myAvatar() { return localStorage.getItem('mole.profilePic') || 'assets/moles/mole1.png'; }
   function fmt(n) { return (n || 0).toLocaleString('en-US'); }
 
@@ -66,8 +85,53 @@
     el.querySelector('[data-back="score"]').addEventListener('click', function () {
       root.FGH.rollOut(el, opts.onClose); // v796: 화면 전체 말림(복제본) + 뒤에 홈 즉시
     });
-    el.querySelector('[data-sr-game="rhythm"]').addEventListener('click', function () {
-      toast(T('mole.score.rhythmSoon')); // 개발 중 — 진입 불가(§13)
+    // V1367 C(사용자 지정): 리듬팡 탭 = 앨범 목록(앨범마다 비치·네온 버튼) → 누르면 그 곡·타입 랭킹(두더지팡과 같은 화면), ◀ 로 앨범 목록
+    var view = { game: 'mole', type: 'B', song: -1 };
+    function rhythmOpen() { return localStorage.getItem('mole.rp.entered') === '1'; } // 리듬팡에 들어가 본 적 있으면 해금
+    var moleTab = el.querySelector('[data-sr-game="mole"]'), rhythmTab = el.querySelector('[data-sr-game="rhythm"]'), rp = el.querySelector('[data-sr-rp]'), albums = el.querySelector('[data-sr-albums]');
+    function albumSrc(id) { return 'assets/rhythm/albums-v1170/' + id + '.webp'; }
+    rpSongs().forEach(function (song, i) {
+      var box = document.createElement('div'); box.className = 'sr-album';
+      box.innerHTML = '<img class="sr-album-img" alt=""><b class="sr-album-title"></b><span class="sr-album-btns"><button type="button" class="sr-album-btn sr-album-btn--a" data-type="A"></button><button type="button" class="sr-album-btn sr-album-btn--b" data-type="B"></button></span>';
+      box.querySelector('img').src = albumSrc(song.id);
+      box.querySelector('.sr-album-title').textContent = song.title;
+      box.querySelectorAll('button').forEach(function (b) {
+        b.textContent = T(b.dataset.type === 'B' ? 'mole.score.neon' : 'mole.score.beach');
+        b.addEventListener('click', function () { view.song = i; view.type = b.dataset.type; paintTabs(); render(); });
+      });
+      albums.appendChild(box);
+    });
+    el.querySelector('[data-sr-rp-back]').addEventListener('click', function () { view.song = -1; paintTabs(); });
+    function rhythmTop(type, id) {
+      var me = rpMyBest(type, id), all = RankingSource.top('rhythm_pang:' + type + ':' + id).slice(); // 항목: {playerName, avatar, diff, grade, score}
+      if (me) all.push({ playerName: T('mole.score.me'), avatar: myAvatar(), diff: me.diff, grade: me.grade, score: me.score, isMe: true });
+      return { all: all.sort(rpCmp), me: me };
+    }
+    function paintTabs() {
+      if (rhythmOpen() && !rhythmTab.dataset.open) { rhythmTab.dataset.open = '1'; rhythmTab.innerHTML = '<span></span>'; rhythmTab.firstChild.textContent = T('mole.pad.gameRhythm'); }
+      var r = view.game === 'rhythm', list = r && view.song < 0;
+      moleTab.classList.toggle('sr-tab--on', !r); moleTab.classList.toggle('sr-tab--off', r);
+      rhythmTab.classList.toggle('sr-tab--on', r); rhythmTab.classList.toggle('sr-tab--off', !r);
+      el.classList.toggle('is-albums', list);
+      albums.hidden = !list; rp.hidden = !r || list;
+      el.querySelector('[data-sr-rule]').textContent = T(r ? 'mole.score.ruleRp' : 'mole.score.rule');
+      if (r && !list) {
+        var song = rpSongs()[view.song];
+        el.querySelector('[data-sr-album]').src = albumSrc(song.id);
+        el.querySelector('[data-sr-title]').textContent = song.title;
+        el.querySelector('[data-sr-tag]').textContent = T(view.type === 'B' ? 'mole.score.neon' : 'mole.score.beach');
+        el.querySelector('[data-sr-tag]').className = 'sr-rp-tag sr-rp-tag--' + view.type.toLowerCase();
+      }
+    }
+    // 사용자 지정: 두더지팡·리듬팡 탭 누름 효과 — 폰에서 :active 가 잘 안 먹어 직접 클래스 토글(리듬팡 창 버튼과 같은 방식)
+    [moleTab, rhythmTab].forEach(function (t) {
+      t.addEventListener('pointerdown', function () { t.classList.add('is-press'); });
+      ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { t.addEventListener(ev, function () { t.classList.remove('is-press'); }); });
+    });
+    moleTab.addEventListener('click', function () { if (view.game === 'mole') return; view.game = 'mole'; paintTabs(); render(); });
+    rhythmTab.addEventListener('click', function () {
+      if (!rhythmOpen()) { toast(T('mole.score.rhythmLocked')); return; }
+      view.game = 'rhythm'; view.song = -1; paintTabs(); albums.scrollTop = 0;
     });
 
     function cardHtml(entry, place) {
@@ -77,18 +141,29 @@
         '<div class="sr-card-body"><span class="sr-ava"><img alt=""></span><b class="sr-name"></b><span class="sr-pill"></span><strong class="sr-score"></strong></div>';
       c.querySelector('.sr-ava img').src = entry ? (entry.avatar || 'assets/moles/mole1.png') : 'assets/moles/mole1.png';
       c.querySelector('.sr-name').textContent = entry ? entry.playerName : '—';
-      c.querySelector('.sr-pill').textContent = entry ? code(entry.mode, entry.highestRound) : '—';
-      if (entry) c.querySelector('.sr-pill').classList.add('sr-pill--' + entry.mode);
-      c.querySelector('.sr-score').textContent = entry ? fmt(entry.highestScore) : '—';
+      c.querySelector('.sr-pill').textContent = entry ? entry.pill : '—';
+      if (entry) c.querySelector('.sr-pill').classList.add('sr-pill--' + entry.cls);
+      c.querySelector('.sr-score').textContent = entry ? fmt(entry.score) : '—';
       return c;
     }
 
-    function show() {
+    // 화면에 그릴 공통 항목 = { playerName, avatar, pill, cls, score, isMe }
+    function moleBoard() {
       // v785(사용자 지정): 내 최고 기록도 랭킹에 넣어 순위대로 표시(서버 전엔 나 혼자라 1위)
       var me = myBest();
       var all = RankingSource.top('mole_pang').slice();
       if (me) all.push({ playerName: T('mole.score.me'), avatar: myAvatar(), mode: me.mode, highestRound: me.round, highestScore: me.score, isMe: true });
-      var sorted = sortRanking(all);
+      var norm = function (e) { return { playerName: e.playerName, avatar: e.avatar, pill: code(e.mode, e.highestRound), cls: e.mode, score: e.highestScore, isMe: e.isMe }; };
+      return { sorted: sortRanking(all).map(norm), mine: me ? norm({ mode: me.mode, highestRound: me.round, highestScore: me.score }) : null, mineName: T('mole.pad.gameMole') };
+    }
+    function rhythmBoard() {
+      var t = rhythmTop(view.type, rpSongs()[view.song].id), me = t.me;
+      var norm = function (e) { return { playerName: e.playerName, avatar: e.avatar, pill: rpPill(e), cls: DIFF_CLASS[e.diff], score: e.score, isMe: e.isMe }; };
+      return { sorted: t.all.map(norm), mine: me ? norm(me) : null, mineName: T('mole.pad.gameRhythm') + ' ' + T(view.type === 'B' ? 'mole.score.neon' : 'mole.score.beach') };
+    }
+    function render() {
+      var board = view.game === 'rhythm' ? rhythmBoard() : moleBoard(), me = board.mine;
+      var sorted = board.sorted;
       var myRank = 0; sorted.forEach(function (e, i) { if (e.isMe) myRank = i + 1; });
       var list = sorted.slice(0, 10);
       // TOP 3 — 배치 2위 · 1위 · 3위(가운데 1위가 가장 큼)
@@ -106,9 +181,9 @@
         row.querySelector('.sr-rank').textContent = String(r);
         row.querySelector('.sr-ava img').src = e ? (e.avatar || 'assets/moles/mole1.png') : 'assets/moles/mole1.png';
         row.querySelector('.sr-name').textContent = e ? e.playerName : '—';
-        row.querySelector('.sr-pill').textContent = e ? code(e.mode, e.highestRound) : '—';
-        if (e) row.querySelector('.sr-pill').classList.add('sr-pill--' + e.mode);
-        row.querySelector('.sr-score').textContent = e ? fmt(e.highestScore) : '—';
+        row.querySelector('.sr-pill').textContent = e ? e.pill : '—';
+        if (e) row.querySelector('.sr-pill').classList.add('sr-pill--' + e.cls);
+        row.querySelector('.sr-score').textContent = e ? fmt(e.score) : '—';
         rows.appendChild(row);
       }
       if (!list.length) {
@@ -123,10 +198,25 @@
       mine.querySelector('small').textContent = T('mole.score.mine');
       mine.querySelector('.sr-mine-lbl b').textContent = myRank ? String(myRank) : '—';
       mine.querySelector('.sr-ava img').src = myAvatar();
-      mine.querySelector('.sr-name').textContent = T('mole.pad.gameMole');
-      mine.querySelector('.sr-pill').textContent = me ? code(me.mode, me.round) : '—';
-      if (me) mine.querySelector('.sr-pill').classList.add('sr-pill--' + me.mode);
+      mine.querySelector('.sr-name').textContent = board.mineName;
+      mine.querySelector('.sr-pill').textContent = me ? me.pill : '—';
+      if (me) mine.querySelector('.sr-pill').classList.add('sr-pill--' + me.cls);
       mine.querySelector('.sr-score').textContent = me ? fmt(me.score) : '0';
+      fitRows();
+    }
+    // V1367 C(사용자 지정): 스크롤 목록이 반쯤 잘린 줄로 끝나지 않게 — 보이는 높이를 줄 간격의 배수로 맞춤(나머지는 아래 여백)
+    function fitRows() {
+      rows.style.flex = ''; rows.style.height = '';
+      var first = rows.querySelector('.sr-row'); if (!first || !rows.clientHeight) return;
+      var cs = getComputedStyle(rows), gap = parseFloat(cs.rowGap) || 0, padTop = parseFloat(cs.paddingTop) || 0;
+      var pitch = first.offsetHeight + gap, n = Math.max(1, Math.floor((rows.clientHeight - padTop - 4 + gap) / pitch));
+      rows.style.flex = '0 0 auto'; rows.style.height = (padTop + n * pitch - gap + Math.min(4, gap - 1)) + 'px'; // 다음 줄은 간격 안쪽에서 끝나 안 보임
+    }
+    var fitObs = new ResizeObserver(function () { if (!el.hidden) fitRows(); }); // 카드 그림이 늦게 뜨면 위쪽 높이가 바뀜 → 다시 맞춤
+    fitObs.observe(el); fitObs.observe(top3); fitObs.observe(rp);
+    function show() {
+      view.game = 'mole';
+      paintTabs(); render();
       // 진입 — 양탄자가 위에서 아래로 펼쳐진 뒤 UI 등장
       timers.forEach(clearTimeout); timers = [];
       closing = false;
@@ -134,6 +224,6 @@
     }
     return { show: show };
   }
-  var api = { create: create, RankingSource: RankingSource, myBest: myBest, sortRanking: sortRanking };
+  var api = { create: create, RankingSource: RankingSource, myBest: myBest, sortRanking: sortRanking, rpMyBest: rpMyBest, rpCmp: rpCmp };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.ScoreScreen = api; }
 })(typeof window !== 'undefined' ? window : null);
