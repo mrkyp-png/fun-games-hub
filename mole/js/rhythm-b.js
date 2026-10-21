@@ -117,7 +117,7 @@
       const spawnRing=document.createElement('span');spawnRing.className='rb-spawn-ripple';spawnRing.hidden=true;spawnRing.setAttribute('aria-hidden','true');spawnRing.style.setProperty('--button-color',colors[i]);spawnRing.innerHTML='<svg viewBox="0 0 94 94" aria-hidden="true"><circle cx="47" cy="47" r="0" fill="none" stroke="'+colors[i]+'" stroke-width="4"/></svg>';place(spawnRing,buttonCx-.5,buttonCy,94);spawnWaves.push(spawnRing);spawnCircles.push(spawnRing.querySelector('circle'));
       const surfaces = [hit, color, circuit, reflection, lens, cap, floor, core, base]; pressSurfaces.push(...surfaces);
       const moving=[circuit,reflection,lens,cap],from=Array(5).fill('');movingSurfaces.push(moving);
-      function down() {
+      function down(lag) {
         if (!running || paused) return;
         // V1337 C: 누를 때마다 fitPressPulses()(11번 위치 측정+9개 클립 경로 재작성 → 강제 레이아웃·전체 다시 그리기) 하던 것 제거 — 크기 바뀔 때만 ResizeObserver 가 갱신
         reboundAnimations[i].forEach(a=>a.cancel());reboundAnimations[i].length=0;
@@ -126,7 +126,7 @@
         if(flowSurfaces[i])flowSurfaces[i].classList.add('is-pressed');
         if(pulseAnimations[i]) pulseAnimations[i].cancel();
         pulseAnimations[i]=pulse.animate(pressWaveFrames[i],pressWaveTiming);
-        if (play) {const occupied=play.hasCharacter(i),grade=play.press(i);if(grade!==undefined&&laserFx)laserFx.emit(i,occupied);}
+        if (play) {const occupied=play.hasCharacter(i),grade=play.press(i,lag);if(grade!==undefined&&laserFx)laserFx.emit(i,occupied);}
       }
       function up() {
         if(!hit.classList.contains('is-pressed'))return;
@@ -137,7 +137,7 @@
       }
       hit.addEventListener('pointerdown', e => {
         if (e.button !== 0) return;
-        down(); hit.setPointerCapture(e.pointerId);
+        down(opts.rules.eventLag?opts.rules.eventLag(e):0); hit.setPointerCapture(e.pointerId);
       });
       ['pointerup', 'pointercancel', 'lostpointercapture', 'blur'].forEach(type => hit.addEventListener(type, up));
       hit.addEventListener('keydown', e => { if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); if (!e.repeat) down(); } });

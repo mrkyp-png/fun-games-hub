@@ -405,7 +405,7 @@
           b.addEventListener('animationend', function(e){if(e.animationName==='rp-a-press-color')b.classList.remove('is-press-fx');});
           b.innerHTML = '<img src="' + A + 'btn-' + (colorMap[j] + 1) + '.png" alt="">' + buttonTriangle(j)+'<i class="rp-a-wave" aria-hidden="true"></i>';
           var perfectWord = document.createElement('span'); perfectWord.className = 'rp-a-grade-word'; perfectWord.setAttribute('aria-hidden','true'); stage.appendChild(perfectWord); perfectWords[j]=perfectWord;
-          b.addEventListener('pointerdown', function (e) { e.preventDefault(); press(j); b.classList.add('is-down'); });
+          b.addEventListener('pointerdown', function (e) { e.preventDefault(); press(j, sharedRules.eventLag(e)); b.classList.add('is-down'); });
           ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { b.addEventListener(ev, function () { b.classList.remove('is-down'); }); });
           bt.appendChild(b);
         })(j);
@@ -499,7 +499,7 @@
     }
 
     // ---- 진행 ----
-    function now() { return ctx.currentTime - st.t0; } // 음악 시각(초)
+    function now() { return ctx.currentTime - st.t0 - (st.lat || 0); } // 음악 시각(초) — V1365 C: 소리 출력 지연·사용자 보정 반영
     function start() {
       lyricTicker.clear();
       var token = ++resultSerial, practice = false;
@@ -553,7 +553,7 @@
         var musicAt = startAt - musicLead;
         st.countdownAt = countdownAt;
         st.playAt = startAt;
-        st.t0 = musicAt;
+        st.t0 = musicAt; st.lat = sharedRules.latency(ctx);
         var gameMusicGain = ctx.createGain(); gameMusicGain.gain.setValueAtTime(0, musicAt); gameMusicGain.gain.linearRampToValueAtTime(0.56, musicAt + 1.4); gameMusicGain.connect(ctx.destination);
         var s1 = ctx.createBufferSource(); s1.buffer = buffer; s1.connect(gameMusicGain); s1.start(musicAt);
         var s2 = null;
@@ -573,12 +573,12 @@
 
     // 버튼 → 점프. 리듬 판정은 "두더지가 최고점에 닿는 시각" 기준(입력 시각 + 최고점까지 시간).
     function clearButtonWaves(){buttonWaves.forEach(function(a){if(a)a.cancel();});buttonWaves=[];}
-    function press(lane) {
+    function press(lane, lag) {
       if (!st || st.over || st.paused || now() < 0 || (st.playAt && ctx.currentTime < st.playAt)) return;
       if(btnEls&&btnEls[lane])replay(btnEls[lane],'is-press-fx');
       var button=btnEls&&btnEls[lane],wave=button&&button.querySelector('.rp-a-wave');
       if(wave){if(buttonWaves[lane])buttonWaves[lane].cancel();var wa=wave.animate([{transform:'scale(.96)',opacity:0},{transform:'scale(1.08)',opacity:.75,offset:.22},{transform:'scale(1.18)',opacity:0}],{duration:260,easing:'ease-out',fill:'both'});buttonWaves[lane]=wa;wa.onfinish=function(){if(buttonWaves[lane]===wa){wa.cancel();buttonWaves[lane]=null;}};}
-      var t = now(), m = st.moles[lane];
+      var t = now() - (lag || 0), m = st.moles[lane];
       // v843(사용자: 연속 무기 두 번째가 안 뜀) — 올라가는 중엔 무시, 최고점 지나 내려오는 중이면 바로 다시 점프
       if (t - m.jumpAt < (CONFIG.apexFrame + 1) * CONFIG.jumpFrameMs / 1000) return;
       m.jumpAt = t; sfx('jump');
@@ -839,6 +839,12 @@
       if (on) ctx.suspend(); else ctx.resume();
       if(aGaugeAnimation){if(on)aGaugeAnimation.pause();else aGaugeAnimation.play();}
     }
+    // V1365 C: 앱이 가려지면(홈 버튼·전화·알림·화면 잠금) 진행 중인 판을 일시정지 창으로 — 돌아와도 노트가 지나가 MISS 되지 않게
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden || el.hidden) return;
+      if (activeB) { var d = bGame && bGame.dbg(); if (d && !d.loading && !d.ended && !d.paused) pause(true); }
+      else if (st && !st.over && !st.paused) pause(true);
+    });
     // 창 버튼 누름 효과(v820) — 폰에서 :active 가 잘 안 먹어 직접 클래스 토글
     el.querySelectorAll('.rx-btn').forEach(function (b) {
       b.addEventListener('pointerdown', function () { b.classList.add('is-press'); });
@@ -965,6 +971,10 @@
   var sharedRules = {
     config: CONFIG, diffs: DIFFS,
     grade: function (ms, difficulty) { var J = DIFFS[difficulty].judge; return ms <= J.perfectMs ? 'PERFECT' : ms <= J.greatMs ? 'GREAT' : ms <= J.goodMs ? 'GOOD' : null; },
+    // V1365 C: 판정 시계 보정 — 소리 출력 지연(폰 50~150ms)만큼 늦춰 "들리는 박자"에 맞추고, 사용자 보정값(ms, 리듬팡 설정)을 더함
+    latency: function (ctx) { var out = ctx && (ctx.outputLatency || ctx.baseLatency) || 0, user = 0; try { user = Number(localStorage.getItem('mole.rp.offsetMs')) || 0; } catch (e) {} return Math.max(0, Math.min(0.3, out)) + Math.max(-200, Math.min(200, user)) / 1000; },
+    // V1365 C: 터치가 실제로 일어난 뒤 처리까지 밀린 시간(프레임 저하) — 판정은 실제 누른 시각 기준
+    eventLag: function (e) { return e && e.timeStamp ? Math.max(0, Math.min(0.15, (performance.now() - e.timeStamp) / 1000)) : 0; },
     points: function (grade, combo) { return Math.round(CONFIG.score[grade] * (1 + Math.min(combo, 100) / 200)); },
     resultRating: function (cnt, totalNotes, clear) {
       var n=totalNotes||0,base=(cnt.PERFECT||0)*300+(cnt.GREAT||0)*200+(cnt.GOOD||0)*100,max=n*300;

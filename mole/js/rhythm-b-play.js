@@ -201,7 +201,7 @@
     spaceSections[lane].forEach((el,depth)=>{const p=(spacePhases[lane]+depth/3)%1,scale=.035+.965*Math.pow(p,1.45),fx=Number(el.dataset.focusX),fy=Number(el.dataset.focusY);el.setAttribute('transform','matrix('+scale+' 0 0 '+scale+' '+(fx*(1-scale))+' '+(fy*(1-scale))+')');el.style.opacity=String(Math.sin(Math.PI*p)*(.38+.3*spaceApproach[lane]));});
    });
   }
-  function time(){return state&&context?context.currentTime-state.t0:0;}
+  function time(){return state&&context?context.currentTime-state.t0-state.lat:0;} // V1365 C: 소리 출력 지연·사용자 보정(rules.latency)
   let judgePop=false;
   function label(text,grade) {
    const el=judgeEl;el.textContent=text;el.style.visibility='';
@@ -251,9 +251,9 @@
    showTiming('MISS');
   }
   function hasCharacter(lane){if(!state||state.ended||state.loading||time()<0||(state.playAt&&context.currentTime<state.playAt))return false;if(state.activeVisualsByLane[lane]>0)return true;const t=time(),notes=state.notesByLane[lane],good=rules.diffs[state.diff].judge.goodMs/1000;let i=state.laserCursors[lane];while(i<notes.length){const n=notes[i];if(n.state!=='pending'||t>n.targetTime+good){i++;continue;}state.laserCursors[lane]=i;return t>=n.spawnTime;}state.laserCursors[lane]=i;return false;}
-  function press(lane){
+  function press(lane,lag){
    if(!state||state.ended||state.paused||time()<0||(state.playAt&&context.currentTime<state.playAt))return;
-   const t=time(),notes=state.notesByLane[lane],good=rules.diffs[state.diff].judge.goodMs/1000;let cursor=state.pressCursors[lane];
+   const t=time()-(lag||0),notes=state.notesByLane[lane],good=rules.diffs[state.diff].judge.goodMs/1000;let cursor=state.pressCursors[lane]; // V1365 C: 실제 누른 시각(프레임 밀림 제외)
    while(cursor<notes.length&&(notes[cursor].state!=='pending'||t>notes[cursor].targetTime+good))cursor++;
    state.pressCursors[lane]=cursor;
    const best=notes[cursor];if(!best||t<best.spawnTime)return false;
@@ -314,10 +314,10 @@
   }
   async function start(diff,options){
    stop();const token=generation;error.hidden=true;label('LOADING');startShade.hidden=false;startShade.style.opacity='.9';
-   state={diff,practice:!!(options&&options.practice),notes:[],score:0,combo:0,maxCombo:0,cnt:{PERFECT:0,GREAT:0,GOOD:0,MISS:0},paused:false,ended:false,loading:true,t0:Infinity,count:null,startPhase:-1,renderCursor:0,renderOrdered:true,pressCursors:Array(9).fill(0),laserCursors:Array(9).fill(0),activeVisualsByLane:Array(9).fill(0)};updateHud();
+   state={diff,practice:!!(options&&options.practice),notes:[],score:0,combo:0,maxCombo:0,cnt:{PERFECT:0,GREAT:0,GOOD:0,MISS:0},paused:false,ended:false,loading:true,t0:Infinity,lat:0,count:null,startPhase:-1,renderCursor:0,renderOrdered:true,pressCursors:Array(9).fill(0),laserCursors:Array(9).fill(0),activeVisualsByLane:Array(9).fill(0)};updateHud();
    try{
     const [data]=await Promise.all([opts.loadSong(),opts.prepareAssets?opts.prepareAssets():Promise.resolve()]);if(token!==generation)return false;
-    context=data.ctx;
+    context=data.ctx;state.lat=rules.latency?rules.latency(context):0;
     const readyBuffers=await loadReadyAudio(context);if(token!==generation)return false;
     if(opts.onSong)opts.onSong(data.song);
     let times=data.song&&data.song.charts&&data.song.charts[diff];

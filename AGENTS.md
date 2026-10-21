@@ -1,3 +1,10 @@
+## 2026-10-21 / V1365 C — 리듬팡(네온·비치) 판정 정밀화·자동 일시정지·자동 테스트 (미배포)
+- 사용자 명세 「리듬팡 종합 완성도 개선」 1단계 분석 후 사용자 승인 범위만: ①터치 실제 시각 판정 ②소리 출력지연 보정 ③앱 가려지면 자동 일시정지 ④자동 테스트. 판정 범위·피버(리듬팡엔 없음)·Pro 패턴은 사용자 결정으로 현재 유지.
+- rhythm.js sharedRules.latency(ctx) = outputLatency(없으면 baseLatency, 0~0.3초) + localStorage 'mole.rp.offsetMs'(±200, 사용자 보정값 — 설정 UI 위치는 사용자 확인 대기). 비치 now()·네온 time() 이 이 값만큼 뒤 = 노트·판정이 "들리는 박자"에 맞음(오디오 예약은 t0 그대로).
+- sharedRules.eventLag(e) = performance.now()-e.timeStamp(0~0.15초) → 비치 press(lane,lag)·네온 play.press(lane,lag) 가 실제 누른 시각으로 판정(프레임 밀림이 판정을 바꾸지 않음).
+- rhythm.js visibilitychange: 진행 중(네온 로딩·종료·일시정지 아님 / 비치 st 진행 중)이면 pause(true) = 기존 일시정지 창.
+- 테스트: scripts/rhythm/verify-judge-sync.js (serve 8846 필요) — 오디오 시계 고정해 네온 HARD 경계값(50/115/181.5ms)·비치 HARD(50/95/150)·터치 밀림·중복판정·MISS 콤보0·3동시·자동정지·일시정지 중 입력무시·재개·HUD=내부값·판정합=노트수·결과창·최고기록 저장. 38/38 통과. 기존 verify-b-* 봇은 원래부터 깨짐(DOM 부족).
+
 ## 2026-10-21 / V1364 C — 네온 버튼 물방울 소리 제거 (미배포)
 - 사용자: "네온 아래 버튼 누를 때 물방울 소리 계속 남(맞혀도, 빈 곳도)". 원인 = v179(198510f) 앱 전체 버튼 탭음(game.js document click → HitFx.uiTap(1) = audio/ui-tap2.mp3)이 네온 .rb-hit(button)에도 걸림. V1359 클랩(타격 성공음)과 별개라 계속 들렸음. → .rb-hit 제외. 실측: 네온 9버튼 탭 시 소리 호출 5회 → 0회. 비치(.rp-btn)는 미변경.
 
