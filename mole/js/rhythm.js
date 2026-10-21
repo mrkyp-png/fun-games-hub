@@ -117,7 +117,8 @@
     function albumOf(choice) { return choice.id==='fever2' ? 'assets/home2/mole-cap.png' : A+'albums-v1170/'+choice.id+'.webp'; }
     function selectSong(choice){if(activeB)selectedBSong=choice;else selectedASong=choice;}
     // V1366 C: 리듬팡 티켓 — 시작할 때 1장(하루 첫 판 무료), 로딩 실패·취소면 돌려줌
-    function paintTickets(){var E=MG.Economy;if(!E||!E.getRhythmBTickets)return;var n=String(E.getRhythmBTickets());el.querySelectorAll('[data-rp-ticket-count] b').forEach(function(p){p.textContent=n;});} // 사용자: 숫자만
+    function paintTickets(){var E=MG.Economy;if(!E||!E.getTickets)return;var n=E.formatK(E.getTickets()); // V1372 C: 홈 티켓과 같은 수
+      el.querySelectorAll('[data-rp-ticket-count] b').forEach(function(p){p.textContent=n;});} // 사용자: 숫자만
     function refundEntry(){if(entryPaid&&MG.Economy)MG.Economy.refundRhythmPlay(entryPaid);entryPaid=null;paintTickets();}
     function cancelEntry(){if(entryBusy)refundEntry();entryGeneration++;entryBusy=false;clearTimeout(entryLoadingTimer);$('[data-rp-preloader]').hidden=true;}
     function watchSongAd(done){
@@ -224,7 +225,7 @@
         play.querySelector('svg').setAttribute('viewBox','45 43 133 105');play.querySelector('svg').setAttribute('preserveAspectRatio','xMidYMid meet');
         play.addEventListener('click',function(){selectSong(choice);adRequired=false;adReady=false;showSelect();});
         var ad = document.createElement('button'); ad.type='button'; ad.className='rx-btn rx-btn--b rb-song-ad'; ad.innerHTML='<img src="assets/shop/ad-icon.png" alt="">'; ad.setAttribute('aria-label',root.FGH.I18N.t('mole.rp.songs.adAria',{title:choice.title}));
-        ad.addEventListener('click',function(){watchSongAd(function(){MG.Economy.addRhythmBTickets(1);paintTickets();$('[data-rp-song-message]').textContent=root.FGH.I18N.t('mole.rp.ticket.got');});}); // V1365 C: 광고 = 티켓 1장
+        ad.addEventListener('click',function(){watchSongAd(function(){MG.Economy.addTickets(1);paintTickets();$('[data-rp-song-message]').textContent=root.FGH.I18N.t('mole.rp.ticket.got');});}); // V1365 C: 광고 = 티켓 1장
         var lock = sharedRules.songLock(index); // V1368 C: 잠긴 곡 = 어둡게 + 조건 문구, 실행·광고 버튼 막음
         if (lock) { card.classList.add('is-locked'); play.disabled = ad.disabled = true; record.textContent = root.FGH.I18N.t('mole.rp.lock.need', { title: lock.needTitle }); }
         actions.append(play,ad);card.append(album,info,actions);list.appendChild(card);
@@ -805,7 +806,7 @@
       var rating=sharedRules.resultRating(result.cnt,isB?result.totalNotes:result.notes.length,clear);
       var rewardEl=$('[data-rp-ticket-reward]'); rewardEl.hidden=true;
       if (!isB && clear && rating.fullCombo && (resultDiff==='NORMAL'||resultDiff==='HARD') && !result.practice && !result.bTicketRewardGranted) {
-        if (MG.Economy && MG.Economy.addRhythmBTickets) { MG.Economy.addRhythmBTickets(1); result.bTicketRewardGranted=true; rewardEl.textContent='RhythmPang B TICKET +1'; rewardEl.hidden=false; }
+        if (MG.Economy && MG.Economy.addTickets) { MG.Economy.addTickets(1); result.bTicketRewardGranted=true; rewardEl.textContent='TICKET +1'; rewardEl.hidden=false; }
       }
       var rankEl=$('[data-rp-res-rank]'),badgeEl=$('[data-rp-res-achievement]');rankEl.classList.remove('is-stamped');badgeEl.classList.remove('is-stamped');
       rankEl.textContent=rating.rank;rankEl.dataset.rank=rating.rank;

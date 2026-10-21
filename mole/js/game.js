@@ -615,7 +615,7 @@
     // #more-menu 는 계속 hidden 인 채로 남는다 — screenNav 스택으로 별도 확인.
     if (screenNav && screenNav.current() && !mapStart) return;
     if (MG.Economy.getHearts() <= 0) { showNoHeartModal(); return; }
-    if (!MG.Economy.spendTicket()) { showNoTicketModal(); return; } // 챕터 입장권 1장 차감
+    // V1372 C 사용자: 두더지팡은 티켓 개념 없음 — 하트로만 진입(티켓은 리듬팡 전용)
     if (mapStart) {
       screenNav.reset();
       mm.hidden = true;
@@ -827,7 +827,7 @@
         if (action === 'home') { showStartScreen(); return; }
         if (action === 'profile') { editProfileAvatar(); return; }
         if (action === 'rhythm') { openRhythm(); return; } // 리듬팡(v807)
-        if (action === 'lightMode') return; // V1371 C 사용자: 두더지팡 박스는 진입 기능 없음 — 두더지팡은 GO(시작) 버튼으로만
+        // V1372 C 사용자: 두더지팡 박스도 GO 버튼과 같은 기능(두더지팡 라운드 지도 진입) — 아래 sub 맵 lightMode → roundmap-screen
         const sub = { shop: 'shop-screen', score: 'score-screen', daily: 'daily-screen',
           quest: 'quest-screen', locker: 'workshop-screen',
           inventory: 'inventory-screen', settings: 'settings-screen', lightMode: 'roundmap-screen',
@@ -841,6 +841,14 @@
     return true; // 실제로 다시 지었음
   }
 
+  // V1372 C 사용자: 홈의 두더지팡 박스와 GO 버튼은 한 몸 — 어느 쪽을 눌러도 둘이 같이 눌림 효과
+  (function () {
+    const bar = document.getElementById('lane-button-bar');
+    if (!bar) return;
+    const isPair = (t) => t && t.closest && t.closest('[data-region="12"], .lane-button--call');
+    bar.addEventListener('pointerdown', (e) => { if (document.getElementById('game-screen').classList.contains('is-start') && isPair(e.target)) bar.classList.add('mole-pressed'); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => document.addEventListener(ev, () => bar.classList.remove('mole-pressed')));
+  })();
   function wireStartButton() {
     const btn = document.querySelector('#lane-button-bar .lane-button--call');
     if (!btn) return;
@@ -1102,20 +1110,6 @@
     v.querySelector('[data-nh="close"]').addEventListener('click', () => v.remove());
   }
 
-  // 챕터 입장권 소진 — 다음 충전까지 남은 시간 안내. (개발용 상한 10000이라 실제로는 안 뜸.
-  // 출시 전: i18n 키 + 광고/코인 충전 옵션 추가 예정.)
-  function showNoTicketModal() {
-    const ms = MG.Economy.nextTicketMs();
-    const mm = Math.floor(ms / 60000), ss = Math.floor((ms % 60000) / 1000);
-    const v = document.createElement('div');
-    v.className = 'ad-overlay';
-    v.innerHTML = '<div class="ad-overlay-card"><div class="nh-title">챕터 입장권이 없어요</div>' +
-      '<div style="margin:6px 0 12px;font-size:14px;opacity:.8">다음 충전까지 ' +
-      mm + '분 ' + (ss < 10 ? '0' : '') + ss + '초</div>' +
-      '<div class="nh-btns"><button type="button" data-nt="close">' + I18N.t('mole.common.close') + '</button></div></div>';
-    document.body.appendChild(v);
-    v.querySelector('[data-nt="close"]').addEventListener('click', () => v.remove());
-  }
 
   // 화면 전환 플래시(더보기↔홈, 게임종료→홈) — 보라/진한노랑 랜덤. 누른 버튼 위치에서
   // 터져나가는 것처럼 origin 을 그 버튼 중심으로 잡는다(originEl 없으면 화면 중앙).
@@ -3153,7 +3147,7 @@
       onStart: () => {
         if (navLocked) return;
         // V1326 C 광산지도 시작 → 게임 = 띠 전환(하트·티켓 부족이면 전환 없이 바로 안내창)
-        if (MG.Economy.getHearts() <= 0 || MG.Economy.getTickets() <= 0 || gameStarting) { beginGame(true); return; }
+        if (MG.Economy.getHearts() <= 0 || gameStarting) { beginGame(true); return; }
         MG.RoundMap.shapeTransition(1, () => beginGame(true));
       },
       onQuit: () => showQuitDialog(), // 시작 버튼 꾹 → 다시 탭 = 종료창(홈 시작 버튼과 동일)

@@ -1,3 +1,11 @@
+## 2026-10-21 / V1372 C — 게임 화면 하늘색·딥톤 버튼·라운드 배경 2배, 두더지팡 티켓 삭제, 리듬팡 팝업 새 창틀·안쪽 박스, 스코어 앨범 정리
+- 게임 화면: 바탕·판 테두리 하늘색, 버튼보드 board-sky, 버튼 테두리 = GPT 하늘색 나무(btn-frame-sky.png 2배 slice 160, 사용자 선택 B), 게임 버튼 = GPT 딥톤(btn-*-deep.png 2배, slice 124 132, 게임 중 규칙 30개 복제; 홈 버튼은 기존 그림). 라운드 배경 board-scene*.jpg 6장 ESRGAN 2배(원본 review/roundbg-before-v1372).
+- 홈: 확대 안 된 버튼 박스 75% 투명 유지, 두더지팡 박스 = GO 와 같은 진입 + 한몸 눌림(#lane-button-bar.mole-pressed), 상단 라운드 표지판(round-strip) 홈에서 숨김.
+- 사용자: 두더지팡 티켓 개념 삭제(하트만, beginGame·지도 시작에서 티켓 검사 제거, showNoTicketModal 삭제). 리듬팡은 홈 티켓(mole.tickets) 사용(spendTicket/addTickets, 광고·풀콤보 보상도). 재화 줄 티켓 표시는 유지(게임에서 득템).
+- 스코어 리듬팡: 앨범 2열 같은 폭(minmax), 곡명 한 줄, 2줄(4개)만 보이게 높이 맞춤(fitAlbums), 안내 줄 바로 아래. 앨범 목록 되돌리기 = GPT 파란 원 + 노란 ↶ (assets/score/btn-undo.png) + 누름 효과.
+- 리듬팡 팝업(타입·곡·난이도·결과·일시정지): GPT 새 부품 assets/rhythm/ui/v1372 — 장식 없는 창틀(frame / 네온 frame-purple, 9칸 22px) + 모서리 장식 ctop/cbot(원래 비율, 좌우반전 -r) → 늘려도 안 찌그러짐·빛광 최소. 타입 선택 버튼 새 알약(btn-yellow/purple/blue, 양끝 고정) + 집 아이콘(ic-house, 옛 그림에서 오림). 안쪽 박스 go-score/go-best/go-stats/d-easy·normal·hard/d-sub-blank 고해상도·글자 없음 → 글자는 코드. 타입 선택 창 위로(아래 무대 원판 = 나중에 3D 캐릭터 선택 자리).
+- 3·4라운드 설명 '(이미지)' 삭제(4라운드 '히트'→'하트' 오타). 남은 것: 결과·난이도·일시정지·곡카드 안 옛 버튼 그림 교체, 스킬 칸 딥톤(금색 가운데 재생성 필요), 말풍선 GPT 샘플 3장 미적용.
+
 ## 2026-10-21 / V1371 C — 홈 GO 버튼·두더지팡 박스 진입 삭제·말풍선 개선·설명 끄기 패치 모양
 - 사용자: 두더지팡은 시작(GO) 버튼으로만 진입 → game.js onHomeAction 'lightMode' 무시(박스는 그림만). 홈 시작 글자 = GO(mole.start.go, 지도 안 시작은 '시작' 그대로).
 - 아마추어 말풍선: 두더지 머리 위(bottom 235%), 글자 16.5px(1.5배), 단어 안 끊김(keep-all + balance), 현재 라운드 .has-tip z-index 30(다른 라운드 앞), 화면 밖이면 안쪽으로 밀기(--tip-dx), 가장 긴 줄 폭에 맞춰 너비(좌우 여백 줄임). 사용자 '말풍선 굿'.

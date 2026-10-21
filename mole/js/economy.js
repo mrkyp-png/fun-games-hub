@@ -106,14 +106,13 @@
   // 반환: 'free'(오늘 무료) / 'ticket' / false(없음) — 실패 시 refundRhythmPlay(그 값)
   function spendRhythmPlay() {
     if (rhythmFreeToday()) { if (ls()) ls().setItem('mole.rp.freeDay', todayKey()); return 'free'; }
-    var cur = getRhythmBTickets();
-    if (cur <= 0) return false;
-    if (ls()) ls().setItem('mole.rp.b.tickets', String(cur - 1));
+    // V1372 C 사용자: 리듬팡도 홈 화면 티켓(챕터 입장권)과 같은 티켓을 씀
+    if (!spendTicket()) return false;
     return 'ticket';
   }
   function refundRhythmPlay(kind) {
     if (kind === 'free' && ls()) ls().removeItem('mole.rp.freeDay');
-    else if (kind === 'ticket') addRhythmBTickets(1);
+    else if (kind === 'ticket') addTickets(1);
   }
   function nextTicketMs() {
     var stored = readInt(K.tickets, TICKET_MAX);

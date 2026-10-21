@@ -103,10 +103,21 @@
       albums.appendChild(box);
     });
     el.querySelector('[data-sr-rp-back]').addEventListener('click', function () { view.song = -1; paintTabs(); });
+    (function (b) { // 사용자: 되돌리기 버튼 누름 효과(폰에서 :active 대신 클래스)
+      b.addEventListener('pointerdown', function () { b.classList.add('is-press'); });
+      ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { b.addEventListener(ev, function () { b.classList.remove('is-press'); }); });
+    })(el.querySelector('[data-sr-rp-back]'));
     function rhythmTop(type, id) {
       var me = rpMyBest(type, id), all = RankingSource.top('rhythm_pang:' + type + ':' + id).slice(); // 항목: {playerName, avatar, diff, grade, score}
       if (me) all.push({ playerName: T('mole.score.me'), avatar: myAvatar(), diff: me.diff, grade: me.grade, score: me.score, isMe: true });
       return { all: all.sort(rpCmp), me: me };
+    }
+    // V1372 C 사용자: 앨범은 한 화면에 4개(2줄)만 — 3번째 줄이 반쯤 보이지 않게 높이를 2줄에 맞추고, 아래 안내 줄은 그 바로 아래로
+    function fitAlbums() {
+      var first = albums.querySelector('.sr-album'); if (!first || albums.hidden) return;
+      var cs = getComputedStyle(albums), gap = parseFloat(cs.rowGap) || 0;
+      albums.style.flex = '0 0 auto';
+      albums.style.height = (parseFloat(cs.paddingTop) + first.offsetHeight * 2 + gap + 2) + 'px';
     }
     function paintTabs() {
       if (rhythmOpen() && !rhythmTab.dataset.open) { rhythmTab.dataset.open = '1'; rhythmTab.innerHTML = '<span></span>'; rhythmTab.firstChild.textContent = T('mole.pad.gameRhythm'); }
@@ -115,6 +126,7 @@
       rhythmTab.classList.toggle('sr-tab--on', r); rhythmTab.classList.toggle('sr-tab--off', !r);
       el.classList.toggle('is-albums', list);
       albums.hidden = !list; rp.hidden = !r || list;
+      if (list) requestAnimationFrame(fitAlbums);
       if (list) albums.querySelectorAll('.sr-album').forEach(function (box) { // V1368 C: 잠긴 곡 = 어둡게 + 조건, 버튼 막음(리듬팡 곡 선택과 같은 기준)
         var lock = MG.Rhythm.rules.songLock(Number(box.dataset.index)), note = box.querySelector('.sr-album-lock');
         box.classList.toggle('is-locked', !!lock); box.querySelectorAll('button').forEach(function (b) { b.disabled = !!lock; });

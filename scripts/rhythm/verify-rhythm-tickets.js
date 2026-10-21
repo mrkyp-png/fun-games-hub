@@ -20,16 +20,16 @@ function check(name, ok, info) { results.push(!!ok); console.log((ok ? 'PASS ' :
     // 경제 함수
     const eco = await p.evaluate(() => {
       const E = MoleGame.Economy, o = {};
-      localStorage.removeItem('mole.rp.freeDay'); localStorage.setItem('mole.rp.b.tickets', '1');
-      o.free = E.spendRhythmPlay(); o.ticket = E.spendRhythmPlay(); o.none = E.spendRhythmPlay(); o.left = E.getRhythmBTickets();
-      E.refundRhythmPlay('ticket'); o.afterRefund = E.getRhythmBTickets(); E.refundRhythmPlay('free'); o.freeBack = E.rhythmFreeToday();
+      localStorage.removeItem('mole.rp.freeDay'); localStorage.setItem('mole.tickets','1');localStorage.setItem('mole.ticketsAt',String(Date.now()));
+      o.free = E.spendRhythmPlay(); o.ticket = E.spendRhythmPlay(); o.none = E.spendRhythmPlay(); o.left = E.getTickets();
+      E.refundRhythmPlay('ticket'); o.afterRefund = E.getTickets(); E.refundRhythmPlay('free'); o.freeBack = E.rhythmFreeToday();
       return o;
     });
     check('하루 첫 판 무료 → 다음은 티켓 → 없으면 거절', eco.free === 'free' && eco.ticket === 'ticket' && eco.none === false && eco.left === 0, eco);
     check('환불: 티켓 +1, 무료 판 복구', eco.afterRefund === 1 && eco.freeBack, eco);
 
     // 화면: 티켓 0장·무료 사용함·코인 0 상태로 네온 곡 시작
-    await p.evaluate(() => { const d = new Date(); localStorage.setItem('mole.rp.freeDay', d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate()); localStorage.setItem('mole.rp.b.tickets', '0'); });
+    await p.evaluate(() => { const d = new Date(); localStorage.setItem('mole.rp.freeDay', d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate()); localStorage.setItem('mole.tickets','0');localStorage.setItem('mole.ticketsAt',String(Date.now())); });
     { const c = await p.evaluate(() => { const r = document.querySelector('.h2w-rhythm').getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; }); await p.mouse.click(c.x, c.y); } await W(2500);
     const typesBadge = await p.evaluate(() => { const b = document.querySelector('.rp-ticket-badge--types'), r = b.getBoundingClientRect(), h = document.querySelector('[data-rp-types-home]').getBoundingClientRect(); return { text: b.textContent.trim(), below: Math.round(r.top - h.bottom), centerDiff: Math.round((r.left + r.right) / 2 - (h.left + h.right) / 2) }; });
     check('타입 선택 화면: 홈 버튼 아래 표시', typesBadge.text === '0' && typesBadge.below >= 0 && typesBadge.below < 30 && Math.abs(typesBadge.centerDiff) < 8, typesBadge);
@@ -45,18 +45,18 @@ function check(name, ok, info) { results.push(!!ok); console.log((ok ? 'PASS ' :
     await p.screenshot({ path: process.env.SHOT4 || 'review/rhythm-ticket-select.png' });
     const no = await p.evaluate(() => ({ msg: document.querySelector('[data-rp-selected-song]').textContent, select: !document.querySelector('[data-rp-select]').hidden, started: !!(window.__rhythmB && window.__rhythmB.dbg()) }));
     check('티켓 없으면 시작 안 하고 난이도 창에 안내', no.select && !no.started && /티켓이 없어요/.test(no.msg), no);
-    await p.evaluate(() => MoleGame.Economy.addRhythmBTickets(1));
+    await p.evaluate(() => MoleGame.Economy.addTickets(1));
     await p.evaluate(() => document.querySelector('[data-rp-diff="EASY"]').click());
     for (let i = 0; i < 40; i++) { if (await p.evaluate(() => { const d = window.__rhythmB && window.__rhythmB.dbg(); return d && !d.loading; })) break; await W(500); }
-    const go = await p.evaluate(() => ({ tickets: MoleGame.Economy.getRhythmBTickets(), playing: !!(window.__rhythmB.dbg() && !window.__rhythmB.dbg().loading), badgeHidden: [...document.querySelectorAll('.rp-ticket-badge')].every(b => !b.offsetParent) }));
+    const go = await p.evaluate(() => ({ tickets: MoleGame.Economy.getTickets(), playing: !!(window.__rhythmB.dbg() && !window.__rhythmB.dbg().loading), badgeHidden: [...document.querySelectorAll('.rp-ticket-badge')].every(b => !b.offsetParent) }));
     check('티켓 있으면 1장 쓰고 시작, 게임 중엔 표시 숨김', go.tickets === 0 && go.playing && go.badgeHidden, go);
 
     // 로딩 중 취소 → 환불
     await p.evaluate(() => { document.querySelector('[data-rp-pausebtn]').click(); }); await W(300);
     await p.evaluate(() => document.querySelector('[data-rp-other]') && document.querySelector('[data-rp-other]').click()); await W(600);
-    await p.evaluate(() => MoleGame.Economy.addRhythmBTickets(1));
+    await p.evaluate(() => MoleGame.Economy.addTickets(1));
     await p.evaluate(() => { document.querySelector('[data-rp-diff="NORMAL"]').click(); document.querySelector('[data-rp-preload-cancel]').click(); }); await W(500);
-    const refund = await p.evaluate(() => MoleGame.Economy.getRhythmBTickets());
+    const refund = await p.evaluate(() => MoleGame.Economy.getTickets());
     check('로딩 중 취소하면 티켓 돌려받음', refund === 1, refund);
   } catch (e) { console.log('ERROR', e.stack); results.push(false); }
   finally {
