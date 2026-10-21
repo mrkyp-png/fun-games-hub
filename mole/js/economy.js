@@ -99,6 +99,22 @@
     if (ls()) ls().setItem('mole.rp.b.tickets', String(v));
     return v;
   }
+  // V1366 C(사용자 지정): 리듬팡(네온·비치) 한 판 = 리듬팡 티켓 1장(연습·다시하기 포함), 하루 첫 판 무료, 광고 보면 1장.
+  // 코인 구매는 상점 개편 때(가격 추후 결정).
+  function todayKey() { var d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+  function rhythmFreeToday() { return !ls() || ls().getItem('mole.rp.freeDay') !== todayKey(); }
+  // 반환: 'free'(오늘 무료) / 'ticket' / false(없음) — 실패 시 refundRhythmPlay(그 값)
+  function spendRhythmPlay() {
+    if (rhythmFreeToday()) { if (ls()) ls().setItem('mole.rp.freeDay', todayKey()); return 'free'; }
+    var cur = getRhythmBTickets();
+    if (cur <= 0) return false;
+    if (ls()) ls().setItem('mole.rp.b.tickets', String(cur - 1));
+    return 'ticket';
+  }
+  function refundRhythmPlay(kind) {
+    if (kind === 'free' && ls()) ls().removeItem('mole.rp.freeDay');
+    else if (kind === 'ticket') addRhythmBTickets(1);
+  }
   function nextTicketMs() {
     var stored = readInt(K.tickets, TICKET_MAX);
     if (stored >= TICKET_MAX) return 0;
@@ -134,6 +150,7 @@
     regen: regen, getHearts: getHearts, canPlay: canPlay, spendHeart: spendHeart,
     setHearts: setHearts, addHearts: addHearts, nextHeartMs: nextHeartMs,
     getRhythmBTickets: getRhythmBTickets, addRhythmBTickets: addRhythmBTickets,
+    rhythmFreeToday: rhythmFreeToday, spendRhythmPlay: spendRhythmPlay, refundRhythmPlay: refundRhythmPlay,
     getTickets: getTickets, spendTicket: spendTicket, addTickets: addTickets, nextTicketMs: nextTicketMs,
     getCoins: getCoins, addCoins: addCoins, spendCoins: spendCoins, formatK: formatK
   };

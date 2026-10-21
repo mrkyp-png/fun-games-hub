@@ -8049,3 +8049,11 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 }
 /* V1363 C 사용자: 하트 기본 위치를 아래로 */
 .h2w-mole .h2w-heart { top: 26%; }
+
+/* V1366 C 리듬팡 티켓 보유 수(숫자만): 타입·난이도 = 홈 버튼 아래, 곡 선택 = 타입 선택과 홈으로 사이 */
+#rhythm-screen .rp-ticket-badge { display: none; position: absolute; top: calc(env(safe-area-inset-top, 0px) + 2px); right: 4px; z-index: 31; width: 118px; height: 52px; box-sizing: border-box; padding: 0 14px; align-items: center; justify-content: center; white-space: nowrap; font: 700 22px/1 'Lilita One', 'Jua', sans-serif; color: #fff; -webkit-text-stroke: 1px #15244f; paint-order: stroke fill; text-shadow: 0 1px 1px #10152b; pointer-events: none; }
+#rhythm-screen .rp-ticket-badge img { height: 26px; width: auto; margin-right: 8px; }
+#rhythm-screen .rp-ticket-badge::before { content: ""; position: absolute; inset: 0; z-index: -1; background: url('assets/rhythm/ui-status-v1230/combo-box.png') center/118% 118% no-repeat; filter: hue-rotate(14deg) saturate(1.2) brightness(1.15); } /* 비치 상태 박스 그림, 진한 황금(사용자 선택 A) */
+#rhythm-screen .rp-ticket-badge--select, #rhythm-screen .rp-ticket-badge--types { display: flex; position: relative; top: auto; right: auto; align-self: center; margin-top: 6px; } /* 난이도·타입 선택 = 홈 버튼 아래 */
+#rhythm-screen .rp-ticket-badge--songs { display: flex; position: relative; top: auto; right: auto; height: 40px; align-self: center; margin-top: 6px; } /* 곡 선택 = 버튼 줄 아래 좌우 가운데(위아래 낮게) */
+#rhythm-screen .rp-ticket-badge--songs img { height: 22px; }

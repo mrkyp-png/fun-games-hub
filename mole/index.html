@@ -620,7 +620,8 @@
           <p data-i18n="mole.rp.types.sub">플레이할 타입을 고르세요</p>
           <button type="button" class="rx-btn rx-btn--y rp-type-button" data-rp-type="A"><span data-i18n="mole.rp.type.a">리듬팡 비치</span></button>
           <button type="button" class="rx-btn rx-btn--b rp-type-button" data-rp-type="B"><span data-i18n="mole.rp.type.b">리듬팡 네온</span></button>
-          <button type="button" class="rx-btn rx-btn--home" data-rp-types-home><span data-i18n="mole.rp.home">홈으로</span></button></div>
+          <button type="button" class="rx-btn rx-btn--home" data-rp-types-home><span data-i18n="mole.rp.home">홈으로</span></button>
+          <div class="rp-ticket-badge rp-ticket-badge--types" data-rp-ticket-count><img src="assets/home2/ic-ticket.png" alt="Tickets"><b>0</b></div></div>
         </section>
         <section class="rb-screen" data-rp-b hidden aria-label="리듬팡 B타입 게임" data-i18n-aria-label="mole.rp.bGame">
           <div class="rb-board"></div>
@@ -664,6 +665,7 @@
           <p class="rb-song-message" data-rp-song-message role="status"></p>
           <div class="rb-song-footer"><button type="button" class="rx-btn rx-btn--diff rb-song-nav" data-rp-songs-back><svg class="rb-song-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2h6l.7 3 2.6 1.5 3-.8 3 5.2-2.3 2.2v3l2.3 2.2-3 5.2-3-.8-2.6 1.5-.7 3H9l-.7-3L5.7 22l-3 .8-3-5.2L2 15.4v-3L-.3 10.2l3-5.2 3 .8L8.3 4.3Z" transform="translate(2 0) scale(.83)"/><circle cx="12" cy="12" r="3.4" fill="#237cda"/></svg><span data-i18n="mole.rp.songs.type">타입 선택</span></button>
           <button type="button" class="rx-btn rx-btn--home rb-song-nav" data-rp-songs-home><svg class="rb-song-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 11 12 2 22 11 20 13V22H14V15H10V22H4V13Z"/></svg><span data-i18n="mole.rp.home">홈으로</span></button></div>
+          <div class="rp-ticket-badge rp-ticket-badge--songs" data-rp-ticket-count><img src="assets/home2/ic-ticket.png" alt="Tickets"><b>0</b></div>
         </div></div>
         <div class="rp-modal rp-preloader" data-rp-preloader hidden role="status" aria-live="polite"><div class="rx-card"><img class="rp-preload-album" data-rp-preload-album alt=""><h2 data-rp-preload-title></h2><p data-i18n="mole.rp.preload.title">게임 준비 중</p><progress data-rp-preload-progress max="4" value="0"></progress><small data-rp-preload-detail data-i18n="mole.rp.preload.detail">음악과 화면을 불러옵니다</small><button type="button" class="rx-btn rx-btn--b rx-btn--songs" data-rp-preload-cancel><i aria-hidden="true">♫</i><span data-i18n="mole.rp.songs">곡 선택</span></button></div></div>
         <div class="rp-modal rp-select" data-rp-select hidden><div class="rx-card rx-card--sel">
@@ -675,6 +677,7 @@
           <button type="button" class="rx-btn rx-dbtn rx-dbtn--hard" data-rp-diff="HARD"><small></small></button>
           <button type="button" class="rx-btn rx-btn--b rx-btn--songs rb-song-nav" data-rp-song-back hidden><i aria-hidden="true">♫</i><span data-i18n="mole.rp.songs">곡 선택</span></button>
           <button type="button" class="rx-btn rx-btn--home rx-btn--selhome" data-rp-sel-close><span data-i18n="mole.rp.home">홈으로</span></button>
+          <div class="rp-ticket-badge rp-ticket-badge--select" data-rp-ticket-count><img src="assets/home2/ic-ticket.png" alt="Tickets"><b>0</b></div>
         </div></div>
       </div>
     <div class="board-screen" id="light-popup" hidden>
@@ -1090,7 +1093,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1365 C</div>
+        <div id="build-tag" aria-hidden="true">V 1366 C</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1367,7 +1370,7 @@ window.FGH.rollOut = function (el, done) {
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=1365-C').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=1366-C').catch(function () {});
       }
     });
   }

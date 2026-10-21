@@ -95,7 +95,7 @@
     var imgs = {}, diff = 'EASY';
     var bGame = null, activeB = false, resultSerial = 0;
     var selectedASong = CONFIG.bSongs[0], selectedBSong = CONFIG.bSongs[0], bSongCache = {}, bSongPending = {};
-    var adRequired=false, adReady=false, adBusy=false, entryBusy=false, entryGeneration=0, entryLoadingTimer=0;
+    var adRequired=false, adReady=false, adBusy=false, entryPaid=null, entryBusy=false, entryGeneration=0, entryLoadingTimer=0;
     var rhythmArtReady=null;
     function preloadRhythmArt(){
       if(rhythmArtReady)return rhythmArtReady;
@@ -115,7 +115,10 @@
     }
     function albumOf(choice) { return choice.id==='fever2' ? 'assets/home2/mole-cap.png' : A+'albums-v1170/'+choice.id+'.webp'; }
     function selectSong(choice){if(activeB)selectedBSong=choice;else selectedASong=choice;}
-    function cancelEntry(){entryGeneration++;entryBusy=false;clearTimeout(entryLoadingTimer);$('[data-rp-preloader]').hidden=true;}
+    // V1366 C: 리듬팡 티켓 — 시작할 때 1장(하루 첫 판 무료), 로딩 실패·취소면 돌려줌
+    function paintTickets(){var E=MG.Economy;if(!E||!E.getRhythmBTickets)return;var n=String(E.getRhythmBTickets());el.querySelectorAll('[data-rp-ticket-count] b').forEach(function(p){p.textContent=n;});} // 사용자: 숫자만
+    function refundEntry(){if(entryPaid&&MG.Economy)MG.Economy.refundRhythmPlay(entryPaid);entryPaid=null;paintTickets();}
+    function cancelEntry(){if(entryBusy)refundEntry();entryGeneration++;entryBusy=false;clearTimeout(entryLoadingTimer);$('[data-rp-preloader]').hidden=true;}
     function watchSongAd(done){
       if(adBusy||entryBusy)return;
       if(!MG.Ads||!MG.Ads.rewarded){$('[data-rp-song-message]').textContent=root.FGH.I18N.t('mole.rp.ad.notReady');return;}
@@ -125,6 +128,7 @@
     function launchSong(modal){
       if(entryBusy||adBusy)return;
       if(adRequired&&!adReady){watchSongAd(function(){adReady=true;launchSong(modal);});return;}
+      var paid=MG.Economy&&MG.Economy.spendRhythmPlay?MG.Economy.spendRhythmPlay():'free';if(!paid){showSelect();$('[data-rp-selected-song]').textContent=(activeB?selectedBSong:selectedASong).title+' · '+root.FGH.I18N.t('mole.rp.ticket.none');return;}entryPaid=paid;paintTickets();
       var token=++entryGeneration,choice=activeB?selectedBSong:selectedASong,wasB=activeB,completed=0,total=wasB?3:5,loader=$('[data-rp-preloader]'),loaderShownAt=0;entryBusy=true;
       if(!ctx)ctx=new(root.AudioContext||root.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume();
       $('[data-rp-preload-album]').src=albumOf(choice);$('[data-rp-preload-title]').textContent=choice.title;
@@ -132,7 +136,7 @@
       clearTimeout(entryLoadingTimer);entryLoadingTimer=setTimeout(function(){if(token===entryGeneration&&entryBusy&&!el.hidden){loaderShownAt=Date.now();loader.hidden=false;}},1000);
       function track(p){return Promise.resolve(p).then(function(v){if(token===entryGeneration){completed++;$('[data-rp-preload-progress]').value=completed;$('[data-rp-preload-detail]').textContent=root.FGH.I18N.t('mole.rp.preload.count',{n:completed,total:total});}return v;});}
       var tasks=wasB?[loadBSong(),bGame.prepare(),preloadRhythmArt()]:[loadSong(),preload(),loadMeta(),loadSfx(),preloadRhythmArt()];
-      Promise.all(tasks.map(track)).then(function(){if(token!==entryGeneration||el.hidden||activeB!==wasB)return false;clearTimeout(entryLoadingTimer);return new Promise(function(resolve,reject){var hold=loaderShownAt?Math.max(0,280-(Date.now()-loaderShownAt)):0;setTimeout(function(){if(token!==entryGeneration||el.hidden||activeB!==wasB){resolve(false);return;}loader.hidden=true;pushInGame(modal);Promise.resolve(wasB?bGame.open(diff,{practice:false}):start()).then(resolve,reject);},hold);});}).then(function(ok){if(token!==entryGeneration)return;clearTimeout(entryLoadingTimer);loader.hidden=true;entryBusy=false;if(ok)adReady=false;else showSelect();}).catch(function(){if(token!==entryGeneration)return;clearTimeout(entryLoadingTimer);loader.hidden=true;entryBusy=false;showSelect();$('[data-rp-selected-song]').textContent=choice.title+' · '+root.FGH.I18N.t('mole.rp.err.retry');});
+      Promise.all(tasks.map(track)).then(function(){if(token!==entryGeneration||el.hidden||activeB!==wasB)return false;clearTimeout(entryLoadingTimer);return new Promise(function(resolve,reject){var hold=loaderShownAt?Math.max(0,280-(Date.now()-loaderShownAt)):0;setTimeout(function(){if(token!==entryGeneration||el.hidden||activeB!==wasB){resolve(false);return;}loader.hidden=true;pushInGame(modal);Promise.resolve(wasB?bGame.open(diff,{practice:false}):start()).then(resolve,reject);},hold);});}).then(function(ok){if(token!==entryGeneration)return;clearTimeout(entryLoadingTimer);loader.hidden=true;entryBusy=false;if(ok){adReady=false;entryPaid=null;}else{refundEntry();showSelect();}}).catch(function(){if(token!==entryGeneration)return;clearTimeout(entryLoadingTimer);loader.hidden=true;entryBusy=false;refundEntry();showSelect();$('[data-rp-selected-song]').textContent=choice.title+' · '+root.FGH.I18N.t('mole.rp.err.retry');});
     }
     $('[data-rp-preload-cancel]').addEventListener('click',function(){cancelEntry();showSongs();});
     function bBestPrefix() { return selectedBSong.id === 'fever2' ? 'mole.rp.b.best.' : 'mole.rp.b.best.' + selectedBSong.id + '.'; }
@@ -219,11 +223,11 @@
         play.querySelector('svg').setAttribute('viewBox','45 43 133 105');play.querySelector('svg').setAttribute('preserveAspectRatio','xMidYMid meet');
         play.addEventListener('click',function(){selectSong(choice);adRequired=false;adReady=false;showSelect();});
         var ad = document.createElement('button'); ad.type='button'; ad.className='rx-btn rx-btn--b rb-song-ad'; ad.innerHTML='<img src="assets/shop/ad-icon.png" alt="">'; ad.setAttribute('aria-label',root.FGH.I18N.t('mole.rp.songs.adAria',{title:choice.title}));
-        ad.addEventListener('click',function(){selectSong(choice);watchSongAd(function(){adRequired=true;adReady=true;showSelect();});});
+        ad.addEventListener('click',function(){watchSongAd(function(){MG.Economy.addRhythmBTickets(1);paintTickets();$('[data-rp-song-message]').textContent=root.FGH.I18N.t('mole.rp.ticket.got');});}); // V1365 C: 광고 = 티켓 1장
         actions.append(play,ad);card.append(album,info,actions);list.appendChild(card);
       });
       if (!CONFIG.bSongs.length) list.textContent = root.FGH.I18N.t('mole.rp.songs.none');
-      $('[data-rp-songs]').hidden = false;
+      $('[data-rp-songs]').hidden = false; paintTickets();
       layoutSongRows();
       list.scrollTop = 0;
     }
@@ -883,7 +887,7 @@
       $('[data-rp-songs]').hidden = true;
       $('[data-rp-song-back]').hidden = false;
       $('[data-rp-selected-song]').hidden = false;
-      $('[data-rp-selected-song]').textContent = activeB ? selectedBSong.title : selectedASong.title;
+      $('[data-rp-selected-song]').textContent = activeB ? selectedBSong.title : selectedASong.title; paintTickets();
       $('[data-rp-result]').hidden = true; $('[data-rp-pause]').hidden = true;
       el.querySelectorAll('[data-rp-diff]').forEach(function (b) {
         var d = b.getAttribute('data-rp-diff'), best = parseInt(localStorage.getItem((activeB ? bBestPrefix() : aBestPrefix()) + d), 10) || 0;
@@ -915,6 +919,7 @@
     $('[data-rp-sel-close]').addEventListener('click', function () { close(); });
     // V 1023 G: 홈 → 타입 선택 → A 기존 난이도 / B 제작 중.
     function showTypes() {
+      paintTickets();
       setEntryBgm(true);
       cancelEntry();
       beachVisual.stop();

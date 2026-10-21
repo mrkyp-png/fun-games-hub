@@ -30,6 +30,7 @@ function check(name, ok, info) { results.push({ name, ok: !!ok }); console.log((
     // ---------- 공통 규칙 ----------
     const rules = await p.evaluate(() => {
       const R = MoleGame.Rhythm.rules, out = {};
+      localStorage.setItem('mole.rp.b.tickets', '5'); // V1366 C: 판마다 티켓 1장
       localStorage.removeItem('mole.rp.offsetMs');
       out.lat0 = R.latency({ outputLatency: 0.1 }); out.latBase = R.latency({ outputLatency: 0, baseLatency: 0.02 }); out.latCap = R.latency({ outputLatency: 2 });
       localStorage.setItem('mole.rp.offsetMs', '30'); out.latUser = R.latency({ outputLatency: 0.1 });
