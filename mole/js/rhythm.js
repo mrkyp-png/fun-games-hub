@@ -114,7 +114,7 @@
       rhythmArtReady=Promise.all(waits);
       return rhythmArtReady;
     }
-    function albumOf(choice) { return choice.id==='fever2' ? 'assets/home2/mole-cap.png' : A+'albums-v1170/'+choice.id+'.webp'; }
+    function albumOf(choice) { return choice.id==='fever2' ? 'assets/home2/mole-cap.png' : A+'albums-v1170/'+choice.id+'.webp?v=1376'; } // V1376 C: 같은 파일명 교체 → 폰 캐시 무효화
     function selectSong(choice){if(activeB)selectedBSong=choice;else selectedASong=choice;}
     // V1366 C: 리듬팡 티켓 — 시작할 때 1장(하루 첫 판 무료), 로딩 실패·취소면 돌려줌
     function paintTickets(){var E=MG.Economy;if(!E||!E.getTickets)return;var n=E.formatK(E.getTickets()); // V1372 C: 홈 티켓과 같은 수
@@ -245,6 +245,10 @@
       var natural=0;for(var k=0;k<cards.length;k++){var c=cards[k],keep=c.style.height;c.style.height='auto';natural=Math.max(natural,c.offsetHeight);c.style.height=keep;}
       var slot=Math.max(natural,(available-gap*(count-1))/count);
       if(list.style.getPropertyValue('--rp-song-slot')!==slot+'px')list.style.setProperty('--rp-song-slot',slot+'px');
+      // V1376 G: 실제로 들어가는 온전한 카드 수 기준으로 끝 여백을 채움. 마지막 카드의 아래 margin은 CSS에서 제거.
+      var wholeCount=Math.min(count,Math.max(1,Math.floor((available+gap+0.5)/(slot+gap))));
+      var spare=Math.max(0,available-(slot*wholeCount+gap*(wholeCount-1)));
+      var pb=(14+spare)+'px';if(list.style.paddingBottom!==pb)list.style.paddingBottom=pb;
       list.dataset.visibleCards=String(count);
     }
     var songListResize=new ResizeObserver(layoutSongRows);songListResize.observe($('[data-rp-song-list]'));

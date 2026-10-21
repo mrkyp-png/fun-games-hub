@@ -590,21 +590,21 @@ body { background: var(--lm-page); }
   margin: 0 auto;
   overflow: hidden;
   border-radius: 10px; /* 어두운 우주 위라 모서리 제각각이 튐 → 네 모서리 통일(v733) */
-  background: #1b2b4a url('assets/board-scene.jpg') center / cover no-repeat;
+  background: #1b2b4a url('assets/board-scene.jpg?v=1376') center / cover no-repeat;
 }
 /* 피버타임 보드 교차 스왑(사용자 지정: "서로 교차되면서 내려오는 방식") — FLIP 기법.
    진입/퇴장(게임복귀, 빠르게)마다 속도가 달라야 해서 transition 은 CSS 클래스가 아니라
    game.js 의 swapBoardPositions() 가 인라인으로 직접 매긴다. */
 /* 라운드별 보드 배경(사용자 지정) — 1~2=봄, 3~4=여름, 5~6=가을, 7~8=겨울. */
-.mole-board--spring { background: #1b2b4a url('assets/board-scene-spring.jpg') center / cover no-repeat; }
-.mole-board--summer { background: #1b2b4a url('assets/board-scene-summer.jpg') center / cover no-repeat; }
-.mole-board--autumn { background: #1b2b4a url('assets/board-scene-autumn.jpg') center / cover no-repeat; }
-.mole-board--winter { background: #1b2b4a url('assets/board-scene-winter.jpg') center / cover no-repeat; }
+.mole-board--spring { background: #1b2b4a url('assets/board-scene-spring.jpg?v=1376') center / cover no-repeat; }
+.mole-board--summer { background: #1b2b4a url('assets/board-scene-summer.jpg?v=1376') center / cover no-repeat; }
+.mole-board--autumn { background: #1b2b4a url('assets/board-scene-autumn.jpg?v=1376') center / cover no-repeat; }
+.mole-board--winter { background: #1b2b4a url('assets/board-scene-winter.jpg?v=1376') center / cover no-repeat; }
 /* 피버타임(보너스타임) 중 보드 배경 — 계절 배경 대신 나이트 배경(사용자 지정). 보드가
    버튼보드 자리로 슬라이딩하며 전광판과 교차되는 순간부터 적용, 복귀 슬라이딩 때 계절
    배경으로 되돌아간다(game.js swapBoardPositions 에서 토글). 계절 클래스보다 뒤에 와야
    우선순위로 이긴다. */
-.mole-board--night { background: #1b2b4a url('assets/board-scene-night.jpg') center / cover no-repeat; }
+.mole-board--night { background: #1b2b4a url('assets/board-scene-night.jpg?v=1376') center / cover no-repeat; }
 /* 실드(챕터 4~5) 활성 = 보드에 파란 테두리 글로우 (별도 HUD 없이 상태 표시) */
 .mole-board--shielded { box-shadow: inset 0 0 0 4px rgba(90, 170, 255, 0.9), inset 0 0 22px rgba(90, 170, 255, 0.55); }
 
@@ -3524,7 +3524,7 @@ body { background: var(--lm-page); }
    그보다 커져도 탭바 위치는 항상 그대로(카드박스 안에서만 스크롤됨). */
 #shop-screen { display: grid; grid-template-rows: auto 1fr auto; overflow-y: hidden; overflow-x: hidden; touch-action: pan-y; background: #cfe4ff; isolation: isolate; }
 #shop-screen::before { content: ''; position: absolute; inset: -10px; z-index: 0;
-  background: url('assets/board-scene.jpg') center/cover no-repeat;
+  background: url('assets/board-scene.jpg?v=1376') center/cover no-repeat;
   filter: blur(4px) brightness(1.15) saturate(0.85); }
 #shop-screen::after { content: ''; position: absolute; inset: 0; z-index: 0; background: rgba(210, 232, 255, 0.32); }
 /* :not(.shop-frame) — 이 규칙이 ID 선택자라 .shop-frame 자체 규칙(position:absolute)보다
@@ -3536,7 +3536,7 @@ body { background: var(--lm-page); }
    — 세로 스크롤 허용(상점과 달리 여긴 고정 잠글 필요 없음). */
 #light-popup { overflow-y: auto; overflow-x: hidden; touch-action: pan-y; background: #cfe4ff; isolation: isolate; }
 #light-popup::before { content: ''; position: absolute; inset: -10px; z-index: 0;
-  background: url('assets/board-scene.jpg') center/cover no-repeat;
+  background: url('assets/board-scene.jpg?v=1376') center/cover no-repeat;
   filter: blur(4px) brightness(1.15) saturate(0.85); }
 #light-popup::after { content: ''; position: absolute; inset: 0; z-index: 0; background: rgba(210, 232, 255, 0.32); }
 #light-popup > * { position: relative; z-index: 1; }
@@ -5969,7 +5969,7 @@ html, body, .cosmic-bg { background: #0a1230; }
 /* ===== v902: 홈 버튼보드 개편(시안 "홈화면 개편 UI 및 에셋") — 크기·구도는 기존 그대로, 그림만 교체 ===== */
 /* 나무판 — 9분할로 늘려 테두리 두께 유지 */
 #lane-button-bar { box-sizing: border-box; background: none; border-style: solid; border-color: transparent; border-width: 16px 9px 11px;
-  border-image: url('assets/home2/wood.png') 220 104 116 104 fill / 16px 9px 11px stretch; border-radius: 0; padding: 2px 2px calc(2px + env(safe-area-inset-bottom, 0px)); }
+  border-image: url('assets/home2/wood.png?v=1376') 220 104 116 104 fill / 16px 9px 11px stretch; border-radius: 0; padding: 2px 2px calc(2px + env(safe-area-inset-bottom, 0px)); }
 .dialpad { background: #3a2210; }
 /* 버튼 그림(9분할) — 칸 비율이 시안과 달라도 모서리가 찌그러지지 않게 */
 .lane-face--h2::before, .lane-face--key::before, .lane-face--wide::before {
@@ -6220,7 +6220,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 /* v918(사용자 지정): 상점·아이템 배경을 버튼보드와 같은 나무판으로 */
 #shop-screen, #inventory-screen { background: #5a3418; }
 #shop-screen::before, #inventory-screen::before { inset: 0; filter: none; background: none; box-sizing: border-box; border-style: solid; border-color: transparent;
-  border-width: 16px 9px 11px; border-image: url('assets/home2/wood.png') 220 104 116 104 fill / 16px 9px 11px stretch; }
+  border-width: 16px 9px 11px; border-image: url('assets/home2/wood.png?v=1376') 220 104 116 104 fill / 16px 9px 11px stretch; }
 #shop-screen::after, #inventory-screen::after { background: none; }
 /* v919(사용자 지정): 상점·아이템 테두리 무지개 → 금색 */
 .shop-frame { background: none; }
@@ -6374,7 +6374,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 /* ===== v956(사용자 지정): 스킬 칸 = 바탕화면 "스킬박스.png"(위 세모·아래 세모 나무 테두리) — 대각선 대신 위·아래로 나눔, 원은 각 세모 안 ===== */
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-items::before,
 #game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-items::before {
-  inset: 2% 4%; background: url('assets/home2/skill-box.png') center / 100% 100% no-repeat; }
+  inset: 2% 4%; background: url('assets/home2/skill-box.png?v=1376') center / 100% 100% no-repeat; }
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-cell-line,
 #game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-cell-line { -webkit-mask: none; mask: none; border-color: transparent; }
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-item,
@@ -6429,8 +6429,8 @@ html, body, .cosmic-bg { background: #2a190d; }
 #game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call::after,
 #game-screen:not(.is-start) .lane-button--simple::after { inset: 0; }
 /* v961~963(사용자 지정): 스킬 칸 = 네모(위 세모를 거울상으로 아래에 — 두 세모 똑같이)(대각선 /, ✱ 칸은 \) 금테두리 + 안쪽 파란 버튼, 원은 각 세모 안 최대(그림 실측 내접원) */
-#game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-items::before { inset: 0; background-image: url('assets/home2/skill-box-gold.png'); }
-#game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-items::before { inset: 0; background-image: url('assets/home2/skill-box-gold-l.png'); }
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-items::before { inset: 0; background-image: url('assets/home2/skill-box-gold.png?v=1376'); }
+#game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-items::before { inset: 0; background-image: url('assets/home2/skill-box-gold-l.png?v=1376'); }
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-item,
 #game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-item { width: 40%; height: auto; right: auto; bottom: auto; }
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-item[data-slot="0"] { left: 29.3%; top: 29.3%; }
@@ -6484,7 +6484,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 .inv-tab--on, .shop-tab--on { background-image: url('assets/costume2/tab-blue.png'), linear-gradient(180deg, #02c1fc, #0071fb 55%, #0049fb) !important; } /* v994: 선택 글로우가 위아래 회색 띠로 보여 삭제 */
 .inv-tab::before, .shop-tab::before, .inv-tab::after, .shop-tab::after { display: none; }
 /* 코스튬 탭 배경 = 나무 오두막(선반·랜턴·모자·야구공) */
-#inventory-screen[data-tab="costume"]::before { inset: 0; border-image: none; border-width: 0; background: url('assets/costume2/bg-cabin.jpg') center top / 100% 100% no-repeat; filter: none; }
+#inventory-screen[data-tab="costume"]::before { inset: 0; border-image: none; border-width: 0; background: url('assets/costume2/bg-cabin.jpg?v=1376') center top / 100% 100% no-repeat; filter: none; }
 #inventory-screen[data-tab="costume"]::after, #inventory-screen[data-tab="costume"] > .inv-frame { display: none; }
 /* MOLE LEAGUE 로고 뒤 나무 광고판 */
 #inventory-screen[data-tab="costume"] > .inv-cos-logo { max-width: none; width: 52%; box-sizing: border-box; padding: 3% 9% 4%;
@@ -6542,7 +6542,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 /* v994(사용자 지정): 상세 효과 이름 "…" 금지, 한 줄 */
 #inventory-screen[data-tab="costume"] .cos-detail-effect-name { overflow: visible; text-overflow: clip; white-space: nowrap; }
 /* ===== v995 스킬 UI 2차(사용자 지정, 바탕화면 "스킬, 무기 UI 2차 개선/스킬화면 에셋/스킬화면 참조.png") ===== */
-#inventory-screen[data-tab="skill"]::before { inset: 0; border-image: none; border-width: 0; background: url('assets/skin2/bg-skill.jpg') center top / 100% 100% no-repeat; filter: none; }
+#inventory-screen[data-tab="skill"]::before { inset: 0; border-image: none; border-width: 0; background: url('assets/skin2/bg-skill.jpg?v=1376') center top / 100% 100% no-repeat; filter: none; }
 #inventory-screen[data-tab="skill"]::after, #inventory-screen[data-tab="skill"] > .inv-frame { display: none; }
 #inventory-screen[data-tab="skill"] .skl-wrap { margin: 0 10px; }
 #inventory-screen[data-tab="skill"] .skl-box { background: none; box-shadow: none; border-radius: 0; padding: 0; gap: 1px; overflow: visible; }
@@ -6595,7 +6595,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 #inventory-screen[data-tab="skill"] .skl-right-lbl span { min-width: 0; overflow: hidden; }
 #inventory-screen[data-tab="skill"] .skl-rcard .skl-card-name { overflow: visible; white-space: nowrap; }
 /* ===== v995 무기 UI 2차(사용자 지정, "스킬, 무기 UI 2차 개선/무기화면 에셋") — 안내줄 삭제(◀▶는 틀 양옆으로), 랜턴 오두막, 나뭇잎 바깥 틀 + 주황 카드 액자 ===== */
-#inventory-screen[data-tab="weapon"]::before { inset: 0; border-image: none; border-width: 0; background: url('assets/skin2/bg-weapon.jpg') center top / 100% 100% no-repeat; filter: none; }
+#inventory-screen[data-tab="weapon"]::before { inset: 0; border-image: none; border-width: 0; background: url('assets/skin2/bg-weapon.jpg?v=1376') center top / 100% 100% no-repeat; filter: none; }
 #inventory-screen[data-tab="weapon"]::after, #inventory-screen[data-tab="weapon"] > .inv-frame { display: none; }
 #inventory-screen[data-tab="weapon"] .inv-banner { position: absolute !important; left: 0; right: 0; top: 50%; height: 0; min-height: 0; margin: 0; padding: 0; border: 0; background: none; box-shadow: none; z-index: 6 !important; overflow: visible; }
 #inventory-screen[data-tab="weapon"] .inv-banner::before, #inventory-screen[data-tab="weapon"] .inv-banner::after,
@@ -6611,7 +6611,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 #inventory-screen[data-tab="weapon"] .inv-cards-box::before, #inventory-screen[data-tab="weapon"] .inv-cards-box::after { display: none; }
 #inventory-screen[data-tab="weapon"] .inv-cards-head { display: none; }
 /* 무기 카드 = 주황 액자 + 짙은 나무 안쪽 */
-#inventory-screen[data-tab="weapon"] .inv-card { border: 12px solid transparent; border-width: 11px 12px 11px 11px; border-image: url('assets/skin2/w-cardframe.png') 62 52 62 48 / 11px 12px 11px 11px stretch;
+#inventory-screen[data-tab="weapon"] .inv-card { border: 12px solid transparent; border-width: 11px 12px 11px 11px; border-image: url('assets/skin2/w-cardframe.png?v=1376') 62 52 62 48 / 11px 12px 11px 11px stretch;
   border-radius: 0; box-shadow: none; background: #3b2212 padding-box !important; }
 #inventory-screen[data-tab="weapon"] .inv-card, #inventory-screen[data-tab="weapon"] .inv-card.inv-card--on { box-shadow: none !important; }
 /* v995(사용자 지정): 무기 카드 액자를 바깥 테두리 자리까지 확장 */
@@ -6620,7 +6620,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 /* v995(사용자 지정): 무기 액자 = 맨 위 레이어(내용이 틀을 덮지 않게) + 가로세로 같은 배율(볼트 동그랗게) */
 #inventory-screen[data-tab="weapon"] .inv-card { border: 0 !important; border-image: none !important; padding: 15px 15px 14px; background: #3b2212 !important; }
 #inventory-screen[data-tab="weapon"] .inv-card::before { content: ''; position: absolute; inset: 0; z-index: 20; pointer-events: none; /* v996: ::after 는 빛 지나가는 효과 자리라 틀은 ::before 로 */
-  border: 14px solid transparent; border-image: url('assets/skin2/w-cardframe.png') 72 / 14px stretch; }
+  border: 14px solid transparent; border-image: url('assets/skin2/w-cardframe.png?v=1376') 72 / 14px stretch; }
 /* v995(사용자 지정): 스킬 화면 모든 볼트·둥근 피스가 찌그러지지 않게 — 늘이는 대신 끝 조각은 그대로, 가운데만 늘림(가로세로 같은 배율) */
 #inventory-screen[data-tab="skill"] .skl-plank { background: none; border: solid transparent; border-width: 0 19px; border-image: url('assets/skin2/sk-plank.png') 0 60 fill / 0 19px stretch; padding: 0 2px; }
 #inventory-screen[data-tab="skill"] .skl-right-title { background: none; border: solid transparent; border-width: 0 19px; border-image: url('assets/skin2/rt-plank.png') 0 62 fill / 0 19px stretch; }
@@ -6802,7 +6802,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 /* v1001(사용자 지정): 왼쪽 무기 카드·오른쪽 능력치 전체 조금 아래로 */
 #inventory-screen[data-tab="weapon"] .inv-left { position: relative; top: 14px; } /* v1003: 능력치 박스는 원위치(사용자 지정) */
 /* v1001(사용자 지정): 사진관 배경 = 코스튬 화면 배경, 받침대를 액자 아래로 — 액자가 받침대 윗면에 올려진 모습 */
-#inventory-screen[data-tab="photo"]::before { background: url('assets/costume2/bg-cabin.jpg') center top / 100% 100% no-repeat; }
+#inventory-screen[data-tab="photo"]::before { background: url('assets/costume2/bg-cabin.jpg?v=1376') center top / 100% 100% no-repeat; }
 .ph2-frame { position: relative; z-index: 1; filter: drop-shadow(0 4px 3px rgba(30, 10, 0, 0.5)); }
 .ph2-stand { width: 96%; margin-top: -12px; z-index: 0; }
 /* v1001(사용자 지정) 사진관 애니메이션: ①배경 등불 깜빡임 ②액자 램프 빛 ③선택 카드 빛 지나가기 + 엠블럼 살짝 흔들림 */
@@ -6886,9 +6886,9 @@ html, body, .cosmic-bg { background: #2a190d; }
 .inv-tab .inv-tab-lbl, .shop-tab .shop-tab-lbl { white-space: nowrap; transform-origin: 50% 50%; }
 .inv-tab img, .shop-tab img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; pointer-events: none; }
 /* ===== v1007 메일함(사용자 지정, 바탕화면 "메일함 UI 및 에셋" 명세·목표 화면) — 위 박스(게임보드 자리) 안 ===== */
-#mailbox-screen.mb-screen { background: #5a3418 url('assets/mailbox/bg.jpg') center / cover no-repeat; padding: 0; overflow: hidden; display: flex; }
+#mailbox-screen.mb-screen { background: #5a3418 url('assets/mailbox/bg.jpg?v=1376') center / cover no-repeat; padding: 0; overflow: hidden; display: flex; }
 .mb-frame { position: relative; flex: 1 1 auto; margin: 4px; display: flex; flex-direction: column; min-height: 0; box-sizing: border-box;
-  border: solid transparent; border-width: 52px 18px 24px; border-image: url('assets/mailbox/frame-bare.png') 270 104 132 104 / 52px 20px 25px 20px stretch round;
+  border: solid transparent; border-width: 52px 18px 24px; border-image: url('assets/mailbox/frame-bare.png?v=1376') 270 104 132 104 / 52px 20px 25px 20px stretch round;
   background: #13284f padding-box; }
 .mb-head { position: absolute; left: -14px; right: -14px; top: -52px; height: 58px; display: flex; align-items: center; justify-content: space-between; z-index: 3; pointer-events: none; }
 .mb-head > * { pointer-events: auto; }
@@ -6936,7 +6936,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 .mb-head { left: -22px; right: -22px; }
 .mb-title, .mb-desc { overflow: visible; text-overflow: clip; width: max-content; max-width: none; transform-origin: 0 50%; } /* v1009: … 금지 */
 /* ===== v1010 설정 화면(사용자 지정, "설정함 UI 및 에셋" 명세·목표 에셋) — 메일함과 같은 나무 테두리 + 3×3 카드 ===== */
-#settings-screen.st2-screen { background: #5a3418 url('assets/mailbox/bg.jpg') center / cover no-repeat; padding: 0; overflow: hidden; display: flex; color: #3a2008; }
+#settings-screen.st2-screen { background: #5a3418 url('assets/mailbox/bg.jpg?v=1376') center / cover no-repeat; padding: 0; overflow: hidden; display: flex; color: #3a2008; }
 .st2-frame { margin: 4px 2px; border-left-width: 26px; border-right-width: 26px; border-image-width: 52px 28px 25px 28px; }
 .st2-head { width: 54%; height: 100%; display: flex; align-items: center; justify-content: center; }
 .st2-head img { height: 100%; width: auto; object-fit: contain; }
@@ -6961,7 +6961,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 .st2-tog { aspect-ratio: 150 / 65; object-fit: contain; } /* v1011: OFF 그림 높이가 달라도 칸 높이 같게(이름판 안 움직임) */
 /* ===== v1011(사용자 지정): 확인 팝업(.quit-card) 게임 톤 — 나무 테두리 + 크림 바탕 + 초록/회색 버튼, 튀어나오는 등장. 앱 전체 공용 ===== */
 .ad-overlay-card.quit-card { width: 80%; max-width: 330px; padding: 16px 14px 14px; border-radius: 0; box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45); color: #3a2008;
-  background: #fbe8b8 padding-box; border: solid transparent; border-width: 30px 18px 18px; border-image: url('assets/mailbox/frame-bare.png') 270 104 132 104 / 30px 18px 18px stretch round;
+  background: #fbe8b8 padding-box; border: solid transparent; border-width: 30px 18px 18px; border-image: url('assets/mailbox/frame-bare.png?v=1376') 270 104 132 104 / 30px 18px 18px stretch round;
   animation: qc-pop 0.28s cubic-bezier(.2, 1.4, .5, 1) both; }
 @keyframes qc-pop { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .quit-card .quit-title { font-family: 'Jua', sans-serif; font-weight: 400; font-size: 1.05rem; line-height: 1.35; color: #4a2508; margin-bottom: 14px; white-space: pre-line; }
@@ -6981,7 +6981,7 @@ html, body, .cosmic-bg { background: #2a190d; }
 .st2-card.is-off { filter: grayscale(1) brightness(0.85); }
 .st2-card.is-off .st2-bottom { pointer-events: none; }
 /* ===== v1013 문의하기(사용자 지정, "문의하기 UI" 명세·시안) ===== */
-#contact-screen.ct-screen { background: #5a3418 url('assets/mailbox/bg.jpg') center / cover no-repeat; padding: 0; overflow: hidden; display: flex; color: #3a2008; }
+#contact-screen.ct-screen { background: #5a3418 url('assets/mailbox/bg.jpg?v=1376') center / cover no-repeat; padding: 0; overflow: hidden; display: flex; color: #3a2008; }
 .ct-frame { position: relative; flex: 1 1 auto; margin: 2px 2px 4px; display: flex; min-height: 0; box-sizing: border-box;
   border: solid transparent; border-width: 40px 14px 18px; border-image: url('assets/contact/frame.png') 96 34 42 34 fill / 40px 14px 18px stretch; }
 .ct-back { position: absolute; left: -10px; top: -40px; width: 42px; height: 42px; padding: 0; border: 0; background: none; z-index: 3; cursor: pointer; transition: transform 0.08s; }
@@ -7023,7 +7023,7 @@ html, body, .cosmic-bg { background: #2a190d; }
   background: url('assets/contact/leaf-bl.png') left bottom / auto 100% no-repeat, url('assets/contact/leaf-br.png') right bottom / auto 100% no-repeat; }
 .ct-send { margin-bottom: 22px; } /* 버튼 잎과 틀 잎이 겹치지 않게 */
 .ct-panel { margin: -8px -8px -8px; border-radius: 0; padding: 14px 14px 10px; box-shadow: none; } /* v1013(사용자 지정): 나무 틀 안을 꽉 채움 — 가장자리는 틀(위 레이어)이 덮음 */
-#contact-screen.ct-screen { background: #8a4a1a url('assets/mailbox/bg.jpg') center 80% / 140% auto no-repeat; } /* v1013(사용자 지정): 위 모서리 대각선(지붕) 검은 부분 안 보이게 — 나무판 부분만 */
+#contact-screen.ct-screen { background: #8a4a1a url('assets/mailbox/bg.jpg?v=1376') center 80% / 140% auto no-repeat; } /* v1013(사용자 지정): 위 모서리 대각선(지붕) 검은 부분 안 보이게 — 나무판 부분만 */
 /* v1013(사용자 지정): 테두리 볼트(피스) 원형 — 위·옆·아래 같은 배율(메일함·설정 0.5, 문의하기 0.42) */
 .mb-frame, .st2-frame { border-width: 67px 26px 33px; border-image-width: 67px 26px 33px; }
 .mb-head { top: -56px; }
@@ -8345,6 +8345,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* 사용자: 티켓이 너무 내려옴 → 타입 선택·홈으로 두 박스와 티켓을 조금 위로(목록 아래 여백만 줄여 앨범 3개 유지) */
 #rhythm-screen .rx-card.rb-song-card { padding-bottom: 48px !important; } /* 사용자: 타입선택·홈으로·티켓 살짝 위로(아래 테두리와 간격) */
 #rhythm-screen .rb-song-card [data-rp-song-list] { padding-bottom: 4px; }
+/* V1376 G: 끝 여백은 layoutSongRows가 계산하므로 마지막 카드의 중복 간격 제거. */
+#rhythm-screen .rb-song-list > .rb-song-choice:last-child { margin-bottom: 0; }
 /* 사용자: 탭 안쪽 색 박스는 테두리보다 조금 크게(테두리가 색 위를 덮음), 탭 줄은 큰 사각 테두리에 딱 붙게 */
 #inventory-screen .inv-tab, #shop-screen .shop-tab { background-clip: border-box !important; border-image-slice: 128 !important; }
 #inventory-screen .inv-tabbar, #shop-screen .shop-tabbar { padding: 0 2px 2px !important; gap: 2px !important; margin-top: 0 !important; }
