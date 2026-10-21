@@ -240,9 +240,11 @@
     function layoutSongRows() {
       var list=$('[data-rp-song-list]'),cards=list.children;
       if(!list.clientHeight||!cards.length)return;
-      var gap=12,available=list.clientHeight-28;
-      var count=Math.min(3,cards.length);
-      list.style.setProperty('--rp-song-slot',((available-gap*(count-1))/count)+'px');
+      // V1374 C 사용자: 화면이 낮으면 박스가 줄어 사진·버튼이 박스 밖으로 넘침 → 박스 높이 = max(내용 높이, 3개 맞춤 높이). 값이 같으면 안 건드림(관찰자 무한 반복 방지)
+      var gap=12,count=Math.min(3,cards.length),available=list.clientHeight-28;
+      var natural=0;for(var k=0;k<cards.length;k++){var c=cards[k],keep=c.style.height;c.style.height='auto';natural=Math.max(natural,c.offsetHeight);c.style.height=keep;}
+      var slot=Math.max(natural,(available-gap*(count-1))/count);
+      if(list.style.getPropertyValue('--rp-song-slot')!==slot+'px')list.style.setProperty('--rp-song-slot',slot+'px');
       list.dataset.visibleCards=String(count);
     }
     var songListResize=new ResizeObserver(layoutSongRows);songListResize.observe($('[data-rp-song-list]'));

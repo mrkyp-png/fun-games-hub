@@ -8325,3 +8325,39 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen .rb-song-actions .rb-song-play { background: url('assets/rhythm/ui/v1372/sq-yellow.png') center / 100% 100% no-repeat !important; }
 #rhythm-screen .rb-song-actions .rb-song-ad { background: url('assets/rhythm/ui/v1372/sq-blue.png') center / 100% 100% no-repeat !important; }
 #rhythm-screen .rb-song-actions .rb-song-play, #rhythm-screen .rb-song-actions .rb-song-ad { aspect-ratio: 900 / 211; height: auto; min-height: 0; }
+/* V1374 C 스킬 칸 딥톤(GPT, 2배 그림 — background 100% 라 그대로 맞음) */
+#game-screen:not(.is-start) .lane-items::before { background-image: url('assets/home2/skill-box-deep.png'); }
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-items::before { background-image: url('assets/home2/skill-box-gold-deep.png'); }
+#game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-items::before { background-image: url('assets/home2/skill-box-gold-l-deep.png'); }
+/* V1374 C 사용자: 한 화면 3개 유지 + 내용이 박스 안에 — 박스 위아래 안쪽 여백만 줄여 내용 높이를 3개 칸에 맞춤 */
+#rhythm-screen .rb-song-choice { padding-top: 7px; padding-bottom: 7px; gap: 4px; box-sizing: border-box; }
+#rhythm-screen .rb-song-choice { grid-template-rows: 72px 34px; grid-template-columns: 72px minmax(0,1fr); }
+#rhythm-screen .rb-song-choice .rb-song-album { width: 72px; height: 72px; }
+/* V1374 C 사용자: 무기/스킬/코스튬/사진관 탭 = 나무 테두리 대신 흰색 테두리(홈 판 테두리와 같은 흰+하늘 줄), 탭 줄은 위 큰 테두리 안쪽에 맞게 살짝 위로 */
+#inventory-screen .inv-tab, #inventory-screen .inv-tab--on, #shop-screen .shop-tab, #shop-screen .shop-tab--on { border-image: none !important; border: 2px solid #ffffff !important; outline: 0 !important; border-radius: 12px;
+  box-shadow: 0 0 0 2px #7cc3e6, 0 0 0 4px #f4fbff, 0 3px 6px 3px rgba(40, 110, 160, 0.25) !important; }
+#inventory-screen .inv-tabbar { padding: 6px 12px 16px; gap: 8px; }
+/* V1374 C 사용자: 곡 선택 — 타입 선택·홈으로 버튼(과 티켓)을 아래로 내려 목록 칸을 넓힘 → 앨범 3개가 다 보이게 */
+#rhythm-screen .rx-card.rb-song-card { padding-bottom: 16px !important; }
+/* V1374 C 사용자: 무기/스킬/코스튬/사진관(상점 탭 포함) 박스 테두리 = 홈 화면 큰 테두리(하늘색 관중석 나무판 board-sky) 그림으로 */
+#inventory-screen .inv-tab, #inventory-screen .inv-tab--on, #shop-screen .shop-tab, #shop-screen .shop-tab--on {
+  border: 7px solid transparent !important; border-image: url('assets/home2/board-sky.png') 128 / 7px stretch !important; border-radius: 0; box-shadow: 0 3px 5px rgba(40, 110, 160, 0.3) !important; background-clip: padding-box; }
+/* 사용자: 티켓이 너무 내려옴 → 타입 선택·홈으로 두 박스와 티켓을 조금 위로(목록 아래 여백만 줄여 앨범 3개 유지) */
+#rhythm-screen .rx-card.rb-song-card { padding-bottom: 48px !important; } /* 사용자: 타입선택·홈으로·티켓 살짝 위로(아래 테두리와 간격) */
+#rhythm-screen .rb-song-card [data-rp-song-list] { padding-bottom: 4px; }
+/* 사용자: 탭 안쪽 색 박스는 테두리보다 조금 크게(테두리가 색 위를 덮음), 탭 줄은 큰 사각 테두리에 딱 붙게 */
+#inventory-screen .inv-tab, #shop-screen .shop-tab { background-clip: border-box !important; border-image-slice: 128 !important; }
+#inventory-screen .inv-tabbar, #shop-screen .shop-tabbar { padding: 0 2px 2px !important; gap: 2px !important; margin-top: 0 !important; }
+#inventory-screen .inv-tab, #shop-screen .shop-tab { border-radius: 9px !important; } /* 색 채움이 테두리 둥근 모서리 밖으로 안 삐져나오게(테두리 그림은 안 잘림) */
+/* 사용자: 위쪽 흰 큰 테두리 안쪽에 탭 4개가 빈틈없이 꽉 — 좌우·아래 여백 0, 탭 사이 0 */
+#inventory-screen .inv-tabbar, #shop-screen .shop-tabbar { padding: 0 !important; gap: 0 !important; position: relative; z-index: 2; }
+/* 사용자: 작은 테두리와 안쪽 색 박스 사이 빈칸 없이 — 테두리 그림은 바깥 크림색 테만(slice 70), 색은 그 바로 안쪽까지 */
+#inventory-screen .inv-tab, #inventory-screen .inv-tab--on, #shop-screen .shop-tab, #shop-screen .shop-tab--on { border-width: 4px !important; border-image-slice: 70 !important; border-image-width: 4px !important; border-radius: 6px !important; }
+/* 사용자(빨간 표시): 탭 4개는 배경 그림의 크림색 나무 기둥 안쪽 선에 맞춰 좌·우·아래 틈 없이(그림이 화면 폭 100% 라 % 로) */
+#inventory-screen .inv-tabbar, #shop-screen .shop-tabbar { margin: 0 2.5% 1.9% 1.8% !important; } /* 사용자: 틈 안 보이게 나무 기둥에 살짝 겹침 */
+/* 사용자: 탭 테두리 사이사이 틈 없이 — 옆 탭과 테두리 두께만큼 겹치고, 모서리 둥근 틈을 없앰 */
+#inventory-screen .inv-tab + .inv-tab, #shop-screen .shop-tab + .shop-tab { margin-left: -4px !important; }
+#inventory-screen .inv-tab, #shop-screen .shop-tab { border-radius: 2px !important; }
+#inventory-screen .inv-tab--on, #shop-screen .shop-tab--on { z-index: 1; }
+/* 사용자: 안쪽 색 박스가 각 테두리 밖으로 안 나가게 — 색은 테두리 안쪽(2px)부터, 테두리 그림은 4px 로 그 위를 덮어 틈도 없음 */
+#inventory-screen .inv-tab, #inventory-screen .inv-tab--on, #shop-screen .shop-tab, #shop-screen .shop-tab--on { border-width: 2px !important; border-image-width: 4px !important; background-clip: padding-box !important; border-radius: 5px !important; }

@@ -1,3 +1,9 @@
+## 2026-10-21 / V1375 C — 아이템 화면 하늘색·탭 테두리 정리, 곡 선택 앨범 3개, 스킬 칸 딥톤, 말풍선 원본 그림
+- 아이템: 스킬(skin2/bg-skill.jpg)·코스튬/사진관/수집관(costume2/bg-cabin.jpg) 배경 GPT 하늘색 + ESRGAN 2배(원본 review/sky-v1370/before).
+- 무기/스킬/코스튬/사진관(+상점 재화/무기/스킬/코스튬) 탭: 테두리 = 홈 큰 테두리 board-sky(slice 70, border 2px·image-width 4px, 색은 padding-box → 테두리 밖으로 안 나가고 틈 없음), 탭 사이 -4px 겹침, 탭 줄은 배경 크림색 나무 기둥 안쪽 선(사용자 빨간 표시)에 맞춰 margin 0 2.5% 1.9% 1.8%.
+- 곡 선택: 앨범 박스 넘침 수정(layoutSongRows slot=max(내용,3칸), 앨범 72px), 한 화면 3개; 타입 선택·홈으로·티켓 위로(card padding-bottom 48px). 곡 카드 실행·광고 = 네모 고해상도(V1374).
+- 스킬 칸 딥톤 skill-box(-gold,-gold-l)-deep.png. 말풍선 = GPT 크림색 종이 원본(assets/roundmap/tip-bubble.png) 그대로(사용자: 수정 금지, 글자만) — 글자 넘치면 글자 크기만 줄임. 5~8라운드는 그림 상하반전(사용자 확인 필요).
+
 ## 2026-10-21 / V1374 C — 곡 카드 실행·광고 버튼 네모 고해상도
 - 사용자: 곡 선택 카드 안 두 버튼은 네모 형태 유지 + 교체. GPT 고해상도 네모 버튼(빛번짐 없음) assets/rhythm/ui/v1372/sq-yellow.png·sq-blue.png(900px), 크기·위치는 그대로(130x34).
 
