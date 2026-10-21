@@ -8085,3 +8085,12 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #score-screen .sr-row { scroll-snap-align: start; }
 .sr-tab { transition: transform 0.08s ease-out, filter 0.08s ease-out; } /* V1367 C: 탭 누름 효과(사용자 지정) */
 .sr-tab.is-press { transform: scale(0.93) translateY(2px); filter: brightness(1.15); }
+
+/* V1368 C 곡 해금: 잠긴 곡 = 어둡게 + 🔒 조건 문구, 버튼 막음 */
+#rhythm-screen .rb-song-choice.is-locked .rb-song-album { filter: grayscale(.85) brightness(.45); }
+#rhythm-screen .rb-song-choice.is-locked strong { color: #ffd23a; }
+#rhythm-screen .rb-song-choice.is-locked .rx-btn { filter: grayscale(1) brightness(.6); pointer-events: none; }
+.sr-album.is-locked .sr-album-img { filter: grayscale(.85) brightness(.45); }
+.sr-album.is-locked .sr-album-btn { filter: grayscale(1) brightness(.7); pointer-events: none; }
+.sr-album-lock { position: absolute; left: 9px; right: 9px; top: 9px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; padding: 10px; box-sizing: border-box; text-align: center; font-style: normal; font-weight: 900; font-size: calc(var(--w) * 0.034); line-height: 1.35; color: #fff; -webkit-text-stroke: 2px rgba(0, 0, 30, 0.6); paint-order: stroke fill; pointer-events: none; }
+.sr-album-lock[hidden] { display: none; }

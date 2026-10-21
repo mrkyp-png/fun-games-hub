@@ -94,6 +94,7 @@
       var box = document.createElement('div'); box.className = 'sr-album';
       box.innerHTML = '<img class="sr-album-img" alt=""><b class="sr-album-title"></b><span class="sr-album-btns"><button type="button" class="sr-album-btn sr-album-btn--a" data-type="A"></button><button type="button" class="sr-album-btn sr-album-btn--b" data-type="B"></button></span>';
       box.querySelector('img').src = albumSrc(song.id);
+      box.dataset.index = i;
       box.querySelector('.sr-album-title').textContent = song.title;
       box.querySelectorAll('button').forEach(function (b) {
         b.textContent = T(b.dataset.type === 'B' ? 'mole.score.neon' : 'mole.score.beach');
@@ -114,6 +115,13 @@
       rhythmTab.classList.toggle('sr-tab--on', r); rhythmTab.classList.toggle('sr-tab--off', !r);
       el.classList.toggle('is-albums', list);
       albums.hidden = !list; rp.hidden = !r || list;
+      if (list) albums.querySelectorAll('.sr-album').forEach(function (box) { // V1368 C: 잠긴 곡 = 어둡게 + 조건, 버튼 막음(리듬팡 곡 선택과 같은 기준)
+        var lock = MG.Rhythm.rules.songLock(Number(box.dataset.index)), note = box.querySelector('.sr-album-lock');
+        box.classList.toggle('is-locked', !!lock); box.querySelectorAll('button').forEach(function (b) { b.disabled = !!lock; });
+        if (lock && !note) { note = document.createElement('i'); note.className = 'sr-album-lock'; box.appendChild(note); }
+        if (note) note.textContent = lock ? T('mole.rp.lock.need', { title: lock.needTitle }) : '';
+        if (note) note.hidden = !lock;
+      });
       el.querySelector('[data-sr-rule]').textContent = T(r ? 'mole.score.ruleRp' : 'mole.score.rule');
       if (r && !list) {
         var song = rpSongs()[view.song];

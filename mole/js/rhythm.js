@@ -19,7 +19,8 @@
     jumpFrameMs: 60,                                // 7프레임 × 60ms (v843: 80→60, 점프 반응 빠르게 — 사용자 지정)
     apexFrame: 3,                                   // 0부터 — 최고점 프레임(에셋 실측)
     travelSec: 1.6,                                 // 무기 출발→타겟 시간
-    countIn: 3
+    countIn: 3,
+    songLock: false                                 // V1368 C: 곡 해금(앞 2곡 무료·앞 곡 A등급↑) — 사용자 지시 '일단은 다 해금', true 로 켜면 적용
   };
   // 난이도(명세 §30) — EASY 직선 위주·넓은 판정 / NORMAL POINT1 꺾임·반박 노트 / HARD POINT1+POINT2·빠른 연속·좁은 판정
   var DIFFS = {
@@ -224,6 +225,8 @@
         play.addEventListener('click',function(){selectSong(choice);adRequired=false;adReady=false;showSelect();});
         var ad = document.createElement('button'); ad.type='button'; ad.className='rx-btn rx-btn--b rb-song-ad'; ad.innerHTML='<img src="assets/shop/ad-icon.png" alt="">'; ad.setAttribute('aria-label',root.FGH.I18N.t('mole.rp.songs.adAria',{title:choice.title}));
         ad.addEventListener('click',function(){watchSongAd(function(){MG.Economy.addRhythmBTickets(1);paintTickets();$('[data-rp-song-message]').textContent=root.FGH.I18N.t('mole.rp.ticket.got');});}); // V1365 C: 광고 = 티켓 1장
+        var lock = sharedRules.songLock(index); // V1368 C: 잠긴 곡 = 어둡게 + 조건 문구, 실행·광고 버튼 막음
+        if (lock) { card.classList.add('is-locked'); play.disabled = ad.disabled = true; record.textContent = root.FGH.I18N.t('mole.rp.lock.need', { title: lock.needTitle }); }
         actions.append(play,ad);card.append(album,info,actions);list.appendChild(card);
       });
       if (!CONFIG.bSongs.length) list.textContent = root.FGH.I18N.t('mole.rp.songs.none');
@@ -980,6 +983,15 @@
     latency: function (ctx) { var out = ctx && (ctx.outputLatency || ctx.baseLatency) || 0, user = 0; try { user = Number(localStorage.getItem('mole.rp.offsetMs')) || 0; } catch (e) {} return Math.max(0, Math.min(0.3, out)) + Math.max(-200, Math.min(200, user)) / 1000; },
     // V1365 C: 터치가 실제로 일어난 뒤 처리까지 밀린 시간(프레임 저하) — 판정은 실제 누른 시각 기준
     eventLag: function (e) { return e && e.timeStamp ? Math.max(0, Math.min(0.15, (performance.now() - e.timeStamp) / 1000)) : 0; },
+    // V1368 C 곡 해금(사용자 지정): 앞 2곡 무료, 3번째부터 바로 앞 곡을 A등급 이상(비치·네온·난이도 무관) → 새 곡은 목록 끝에 붙어 자동 연결
+    songLock: function (index) {
+      var list = CONFIG.bSongs, prev = list[index - 1], ok = ['A', 'AA', 'AAA', 'S', 'SS', 'SSS'];
+      if (!CONFIG.songLock || index < 2 || !prev) return null;
+      var passed = ['mole.rp.best.', 'mole.rp.b.best.'].some(function (base) { return ['EASY', 'NORMAL', 'HARD'].some(function (d) {
+        try { return ok.indexOf((JSON.parse(localStorage.getItem(base + (prev.id === 'fever2' ? '' : prev.id + '.') + d + '.result') || 'null') || {}).rank) >= 0; } catch (e) { return false; }
+      }); });
+      return passed ? null : { needTitle: prev.title };
+    },
     points: function (grade, combo) { return Math.round(CONFIG.score[grade] * (1 + Math.min(combo, 100) / 200)); },
     resultRating: function (cnt, totalNotes, clear) {
       var n=totalNotes||0,base=(cnt.PERFECT||0)*300+(cnt.GREAT||0)*200+(cnt.GOOD||0)*100,max=n*300;
