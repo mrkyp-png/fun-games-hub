@@ -1618,12 +1618,13 @@
       } else if (weapon === 'goldhammer') {
         goldStrikeClone(fxLayer, regionId, targetXFrac, targetYFrac, onImpact, frameKey);
       } else {
-        MG.HitFx.quakeClone(fxLayer, 'assets/weapons/mallet-yaw10-rest15-v1379.png', targetXFrac, targetYFrac, quakeCloneKind(regionId), onImpact, 'quake-clone--hammer');
+        // V1386 C 사용자: 뿅망치 분신은 메인이 못 따라갈 때만(넘침) — 모든 구멍 메인과 같은 모션.
+        goldStrikeClone(fxLayer, regionId, targetXFrac, targetYFrac, onImpact, frameKey);
       }
     }
     const laneHammer = MG.WeaponPool.create(WeaponMod, hammerOpts, { onOverflow: weaponCloneOverflow });
     // V1385 C: 골드 분신 = 메인과 같은 망치 설정으로 하나 더 만들어 같은 모션으로 휘두름(goldStrikeClone).
-    const goldCloneOpts = weapon === 'goldhammer' ? Object.assign({}, hammerOpts, { idle: undefined, cssClass: hammerOpts.cssClass + ' lane-hammer--clone' }) : null;
+    const goldCloneOpts = (weapon === 'goldhammer' || weapon === 'hammer') ? Object.assign({}, hammerOpts, { idle: undefined, cssClass: (hammerOpts.cssClass ? hammerOpts.cssClass + ' ' : '') + 'lane-hammer--clone' }) : null;
 
     state = {
       regions, spawnPoints, scheduler, holeLayer, laneHammer, weapon, rng, config, goldCloneOpts,
@@ -2154,7 +2155,8 @@
   // V1385 C 사용자: 골드 분신은 메인 타격 모션 그대로(맨 오른쪽 줄만 야오10 정면 찌르기 그림).
   // 메인과 같은 설정의 망치를 하나 더 만들어 휘두르고, 돌아오는 동안 사라지게 한 뒤 지운다.
   function goldStrikeClone(fxLayer, regionId, x, y, onHit, frameKey) {
-    if (quakeCloneKind(regionId) === '90' || !state || !state.goldCloneOpts) {
+    // V1386 C 사용자: 뿅망치는 맨 오른쪽 줄도 메인 동작(정면 찌르기는 골드만).
+    if (!state || !state.goldCloneOpts || (quakeCloneKind(regionId) === '90' && state.weapon === 'goldhammer')) {
       MG.HitFx.quakeClone(fxLayer, quakeClonePose(regionId), x, y, quakeCloneKind(regionId), onHit);
       return;
     }
