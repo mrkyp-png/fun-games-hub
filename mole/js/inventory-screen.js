@@ -17,9 +17,8 @@
       stats: [['Hole 16 → 15', 'Holes 16 → 15'],
               ['2·3타 두더지 연타 확률 10%', '10% burst on 2·3-hit moles'],
               ['-', '-']] },
-    { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldhammer-0.png', rarity: 'epic', skillSlots: { active: 2, passive: 2 },
+    { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldpaw-v1382.webp', rarity: 'epic', skillSlots: { active: 2, passive: 2 },
       desc: ['전설의 힘을 담은 황금 망치!\n지면을 울리는 강력한 충격으로\n주변의 두더지를 한 번에 처치한다!', 'A golden hammer of legend!\nIts ground-shaking blow\ntakes out nearby moles at once!'],
-      gemGlow: true,   // 보석(파란불빛) 부분에 맥동 글로우
       stats: [['Hole 16 → 15', 'Holes 16 → 15'],
               ['주변 두더지 지진 연타 15% (2·3타 두더지 소탕 포함)', '15% quake — chain-hits nearby moles (clears 2·3-hit moles too)'],
               ['-', '-']] },
@@ -342,7 +341,7 @@
       mount.style.setProperty('--iw-scale', scale);
       fitWeaponName();
       // Visible alpha bounds in the canonical 120 x 88 animation coordinate system.
-      var art = {hammer:[83.44,83.58,-1.09,0.04],cannon:[105.55,88,0,0],goldhammer:[69.06,87.44,0,0],alipunch:[112,80,0,0]};
+      var art = {hammer:[83.44,83.58,-1.09,0.04],cannon:[105.55,88,0,0],goldhammer:[63.1,88,0,0],alipunch:[112,80,0,0]};
       body.querySelectorAll('.iw-page').forEach(function (page) {
         var a = art[page.dataset.weapon];
         var unit = page.querySelector('.iw-preview-unit');

@@ -181,7 +181,7 @@
       phase = 'spin'; t = 0;
       fired = false;
       const baseSrc = sprite || 'assets/weapons/mallet-yaw10-rest15-v1379.png';
-      img.src = 'assets/weapons/goldhammer-0.png';
+      img.src = 'assets/weapons/goldpaw-v1382.webp'; // V1382 C: 새 발바닥 망치(정면 포즈 그림 고르기 전까지 같은 그림)
       // 그립점(56,72) 기준 확대·축소는 그립이 아닌 부분(머리 등)이 그만큼 옆으로 남아 별표
       // 중심에서 벗어나 보인다(사용자 지적) — 비행 중엔 스프라이트 정중앙(50,50)을 기준점으로
       // 시작해 대기 위치에 도착할 때 정확히 그립(gripX,gripY)이 되도록 같은 진행률로 블렌딩

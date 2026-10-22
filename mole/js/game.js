@@ -1557,9 +1557,9 @@
       });
     }
     if (weapon === 'goldhammer') {
-      hammerOpts.sprite = 'assets/weapons/goldhammer.png';
+      hammerOpts.sprite = 'assets/weapons/goldpaw-v1382.webp'; // V1382 C: 두더지 발바닥 네모 망치(사용자 확정, ESRGAN x4)
       // 스프라이트가 이미 뿅망치 축각도(~21°)로 잘려있어 degOffset 불필요 → 스윙 궤적·타격점이 뿅망치와 동일.
-      hammerOpts.grip = { x: 56, y: 72 };        // 골드해머 스프라이트 손잡이 잡는 점
+      hammerOpts.grip = { x: 49, y: 72 };        // 골드해머 스프라이트 손잡이 잡는 점 (V1382 C: 새 그림 체크무늬 손잡이 중앙)
       hammerOpts.cssClass = 'lane-hammer--gold'; // 뿅망치보다 1.2배 크게
       // 골드해머는 그립(56%,72%)·타격면 위치·크기(17.5% vs 14.04%)가 뿅망치와 달라 기본 gripOff 그대로 쓰면
       // 타격면이 목표보다 위/옆으로 빗나간다. 스프라이트 픽셀(빨간 타격면 중심 vs 그립)을 실측 + 회전변환으로
@@ -2143,7 +2143,7 @@
   function quakeClonePose(regionId) {
     const kind = quakeCloneKind(regionId);
     // 45(대각선)는 전용 스프라이트 없이 기본 대기 포즈(goldhammer.png, 이미 로드돼있음)를 그대로 쓴다.
-    if (kind === '45') return 'assets/weapons/goldhammer.png';
+    if (kind === '45') return 'assets/weapons/goldpaw-v1382.webp'; // V1382 C: 0°(맨아래줄)·90°(맨오른쪽줄)는 야오 회전 그림 고른 뒤 교체
     return 'assets/weapons/goldhammer-' + kind + '.png';
   }
 
