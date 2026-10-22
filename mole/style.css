@@ -8651,13 +8651,13 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 @keyframes iw-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
 @media (prefers-reduced-motion: reduce) { .iw-float { animation: none; } .iw-stage .iw-name { transition: none; } }
 
-.iw-copy-layer[data-grade="basic"] .iw-grade { background-image: url('assets/inventory/ui-v1379/grade-basic.webp'); background-size: 185.3035px 61.7678px; background-position: 49.2958px -0.7678px; }
+.iw-copy-layer[data-grade="basic"] .iw-grade { background-image: none; }
 
-.iw-copy-layer[data-grade="rare"] .iw-grade { background-image: url('assets/inventory/ui-v1379/grade-rare.webp'); background-size: 189.5451px 63.1817px; background-position: 46.8641px -0.7854px; }
+.iw-copy-layer[data-grade="rare"] .iw-grade { background-image: none; }
 
-.iw-copy-layer[data-grade="epic"] .iw-grade { background-image: url('assets/inventory/ui-v1379/grade-epic.webp'); background-size: 190.6360px 63.5453px; background-position: 58.8446px -0.4388px; }
+.iw-copy-layer[data-grade="epic"] .iw-grade { background-image: none; }
 
-.iw-copy-layer[data-grade="legend"] .iw-grade { background-image: url('assets/inventory/ui-v1379/grade-legend.webp'); background-size: 211.6486px 70.5495px; background-position: 46.8994px -3.8978px; }
+.iw-copy-layer[data-grade="legend"] .iw-grade { background-image: none; }
 
 .inv-weapon-guide {
   box-sizing: border-box; width: min(420px,calc(100vw - 24px)); max-width: calc(100vw - 24px); max-height: min(82dvh,650px);
@@ -8694,3 +8694,10 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #inventory-screen .inv-tab + .inv-tab { margin-left: -1.5px !important; } /* 탭 테두리 사이 1.5px 틈 없앰(겹침 없이 맞닿게) */
 #inventory-screen .inv-tab + .inv-tab:last-child { margin-left: -1px !important; } /* 사용자: 코스튬|사진관 사이 반올림으로 더 겹쳐 실선 사라짐 → 0.5px 뗌 */
 #inventory-screen .inv-tab { height: 57px !important; min-height: 0 !important; } /* 아래 여백 6px 만큼 탭을 낮춰 위 무기 칸 크기 유지(이전 63px) */
+/* V1397 C 사용자: 등급 명판 새 그림(빛 없이). 4장 모두 명판 몸통 기준으로 같은 칸(250×56, 비율 유지)에 맞추고 날개·별·왕관은 크기 상관없이 밖으로. */
+.iw-grade { isolation: isolate; overflow: visible; }
+.iw-grade::before { content: ''; position: absolute; z-index: -1; background: center / 100% 100% no-repeat; pointer-events: none; }
+.iw-copy-layer[data-grade="basic"] .iw-grade::before { left: 22.7px; top: 2.5px; width: 246.5px; height: 56.0px; background-image: url('assets/inventory/ui-v1379/plate-basic-v1397.webp'); }
+.iw-copy-layer[data-grade="rare"] .iw-grade::before { left: 21.0px; top: 4.8px; width: 250.0px; height: 51.3px; background-image: url('assets/inventory/ui-v1379/plate-rare-v1397.webp'); }
+.iw-copy-layer[data-grade="epic"] .iw-grade::before { left: -13.2px; top: -13.3px; width: 318.2px; height: 71.8px; background-image: url('assets/inventory/ui-v1379/plate-epic-v1397.webp'); }
+.iw-copy-layer[data-grade="legend"] .iw-grade::before { left: -12.9px; top: -24.2px; width: 318.1px; height: 82.7px; background-image: url('assets/inventory/ui-v1379/plate-legend-v1397.webp'); }
