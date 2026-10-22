@@ -8404,7 +8404,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 
 /* V1377 G 추가: 아이템 하단 4탭의 좌우·아래 틈 제거, 글자 외곽선까지 들어갈 세로 여유 확보. */
 #inventory-screen .inv-tabbar {
-  margin: 0 !important;
+  margin: 0 6.5px 6px 6.5px !important; /* V1389 C 사용자: 큰 나무 테두리 크림선 안쪽에 틈 없이(픽셀 실측, 이전 0) */
   padding: 0 !important;
 }
 #inventory-screen .inv-tab {
@@ -8688,3 +8688,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .iw-help { left:1076px; top:221px; width:103px; height:112px; background:url('assets/inventory/ui-v1379/help-round-transparent.webp') center/contain no-repeat; }
 .iw-help:active { transform:translateY(3px); filter:brightness(.94); }
 .iw-stat-title { left:733px; top:222px; width:336px; height:112px; background:url('assets/inventory/ui-v1379/ability-pill-transparent.webp') center/contain no-repeat; }
+/* V1389 C 사용자: 아이템 탭 4개는 큰 나무 테두리 안쪽, 서로 테두리 안 겹치게 */
+#inventory-screen .inv-tab + .inv-tab { margin-left: -1.5px !important; } /* 탭 테두리 사이 1.5px 틈 없앰(겹침 없이 맞닿게) */
+#inventory-screen .inv-tab + .inv-tab:last-child { margin-left: -1px !important; } /* 사용자: 코스튬|사진관 사이 반올림으로 더 겹쳐 실선 사라짐 → 0.5px 뗌 */
+#inventory-screen .inv-tab { height: 57px !important; min-height: 0 !important; } /* 아래 여백 6px 만큼 탭을 낮춰 위 무기 칸 크기 유지(이전 63px) */
