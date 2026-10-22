@@ -18,9 +18,10 @@
   const HOME_DEG = 18;                 // 대기: 살짝 눕힘 (머리는 좌상단 잔디 쪽 — 화면 밖으로 안 나가게)
   const READY_DEG = -30;               // 조준: 오른쪽에서 머리 들어올림
   const HIT_DEG = -82;                 // 타격: 머리를 대각선 아래로 휘두름
-  // 짧은 손잡이 그림의 타격면 위치를 HIT_DEG로 회전한 거리. 실기기 접점 검증 필요.
-  const GRIP_OFF_X = 0.060;            // grip 을 목표보다 이만큼 오른쪽 (보드 폭 분수)
-  const GRIP_OFF_Y = 0.047;            // grip 을 목표보다 이만큼 아래 (보드 높이 분수)
+  // V1380 C: 새 뿅망치 그림(27.2%)의 머리 중심을 V1375 C 와 같은 기준으로 HIT_DEG 회전해 재계산.
+  const GRIP_OFF_X = 0.154;            // grip 을 목표보다 이만큼 오른쪽 (보드 폭 분수)
+  const GRIP_OFF_Y = 0.042;            // grip 을 목표보다 이만큼 아래 (보드 높이 분수)
+  const MALLET_BAKED_DEG = 15;         // V1380 C: 새 뿅망치 그림 자체가 시계방향 15도 기울어 있음 → 상쇄해 예전 각도 유지
   const CLAMP = -0.45;                 // grip 이 보드 가장자리에서 이만큼까지 나가도 됨 (- = 밖 허용)
                                        // 레이어가 보드 밖(클리핑 없음)이라 우측 끝 스윙이 다 보인다
   const AIM_DX = 0.022;                // 타격점 미세보정: + = 오른쪽 (보드 폭 분수, 0.5mm ≈ 0.005 / 1cm ≈ 0.1)
@@ -46,16 +47,14 @@
     //           grip 을 목표에서 이만큼 비켜 놔야 머리가 목표(두더지 헬멧)에 착지. 없으면 뿅망치 기본값.
     // homeDegOffset = 대기 위치 각도만 이만큼 추가 회전(+ = 시계방향). 조준/타격 각도는 영향 없음.
     // emptyDy = 빈 구멍 헛스윙(frameKey 없음) 전용 세로보정. 없으면 공용 AIM_DY(뿅망치 기준).
-    const homeX = sprite ? HOME_X : 0.98;
     const gripX = grip && grip.x != null ? grip.x : GRIP_X;
     const gripY = grip && grip.y != null ? grip.y : GRIP_Y;
-    const malletSizeRatio = sprite ? 1 : 27.2 / 14.04;
-    const goX = gripOff && gripOff.x != null ? gripOff.x : GRIP_OFF_X * malletSizeRatio;
-    const goY = gripOff && gripOff.y != null ? gripOff.y : GRIP_OFF_Y * malletSizeRatio;
+    const goX = gripOff && gripOff.x != null ? gripOff.x : GRIP_OFF_X;
+    const goY = gripOff && gripOff.y != null ? gripOff.y : GRIP_OFF_Y;
     const eDy = emptyDy != null ? emptyDy : AIM_DY;
-    const dOff = degOffset || 0;
+    const dOff = degOffset != null ? degOffset : (sprite ? 0 : -MALLET_BAKED_DEG);
     const homeMT = homeMarginTop != null ? homeMarginTop : '0.2cm';
-    const hDeg = (sprite ? HOME_DEG : 0) + (homeDegOffset || 0);
+    const hDeg = HOME_DEG + (homeDegOffset || 0);
     const el = document.createElement('div');
     el.className = 'lane-hammer' + (cssClass ? ' ' + cssClass : '');
     const img = document.createElement('img');
@@ -71,8 +70,8 @@
 
     let phase = 'home';   // 'home' | 'fly' | 'chop' | 'rise' | 'return'
     let t = 0;
-    let fromX = homeX, fromY = HOME_Y, fromDeg = hDeg;
-    let aimX = homeX, aimY = HOME_Y, gx = homeX, gy = HOME_Y, deg = hDeg;
+    let fromX = HOME_X, fromY = HOME_Y, fromDeg = hDeg;
+    let aimX = HOME_X, aimY = HOME_Y, gx = HOME_X, gy = HOME_Y, deg = hDeg;
     let impactCb = null;
     let fired = false;
     let scaleXVal = 1, scaleYVal = 1; // 라운드 인트로 등장 연출 전용(평소엔 항상 1,1)
@@ -83,7 +82,7 @@
     function strike(targetXFrac, targetYFrac, onImpact, frameKey) {
       // 대기 애니메이션 중이었으면 깨끗한 대기 포즈로 스냅 후 스윙 시작(어중간한 각도/높이에서
       // 시작하지 않게). rise·return 도중 끼어든 연타는 원래대로 현재 위치에서 부드럽게 redirect.
-      if (phase === 'home') { deg = hDeg; gx = homeX; gy = HOME_Y; scaleXVal = 1; scaleYVal = 1; }
+      if (phase === 'home') { deg = hDeg; gx = HOME_X; gy = HOME_Y; scaleXVal = 1; scaleYVal = 1; }
       idleT = 0; lastSpinCycleIdx = -1;
       const tx = (typeof targetXFrac === 'number') ? targetXFrac : 0.5;
       const ty = (typeof targetYFrac === 'number') ? targetYFrac : 0.5;
@@ -124,7 +123,7 @@
         if (t >= RISE_SEC) { phase = 'return'; t = 0; fromX = gx; fromY = gy; fromDeg = deg; }
       } else if (phase === 'return') {
         const k = clamp01(t / HOME_SEC);
-        gx = lerp(fromX, homeX, k);
+        gx = lerp(fromX, HOME_X, k);
         gy = lerp(fromY, HOME_Y, k);
         deg = lerp(fromDeg, hDeg, k);
         if (t >= HOME_SEC) { phase = 'home'; t = 0; }
@@ -137,7 +136,7 @@
             if (cycleIdx !== lastSpinCycleIdx) { lastSpinCycleIdx = cycleIdx; spinDir = Math.random() < 0.5 ? 1 : -1; }
             if (cyclePos < SPIN_DUR) { deg = hDeg + spinDir * 360 * ease(cyclePos / SPIN_DUR); }
             else { deg = hDeg; }
-            gx = homeX; gy = HOME_Y;
+            gx = HOME_X; gy = HOME_Y;
           } else if (idle === 'bounce') {
             const cyclePos = (idleT - IDLE_DELAY) % BOUNCE_CYCLE;
             if (cyclePos < BOUNCE_DUR) {
@@ -149,7 +148,7 @@
             } else {
               gy = HOME_Y; deg = hDeg; scaleXVal = 1; scaleYVal = 1;
             }
-            gx = homeX;
+            gx = HOME_X;
           }
         }
       }
@@ -159,36 +158,14 @@
     function paint() {
       // V1379 G: retain the enlarged resting size throughout gameplay (latest user direction).
       if (!sprite) el.style.width = '27.2%';
-      const restingMallet = !sprite && phase === 'home';
-      const restShiftPx = restingMallet ? 1.2 * 96 / 2.54 : 0;
-      const restDownPx = restingMallet ? 0.3 * 96 / 2.54 : 0;
-      el.style.left = 'calc(' + (gx * 100).toFixed(2) + '% + ' + restShiftPx + 'px)';
-      el.style.top = 'calc(' + (gy * 100).toFixed(2) + '% + ' + restDownPx + 'px)';
+      el.style.left = (gx * 100).toFixed(2) + '%';
+      el.style.top = (gy * 100).toFixed(2) + '%';
       // translate 기준점과 transform-origin(회전·확대 축)을 항상 같은 점으로 맞춘다 — 서로
       // 다르면(그립점 translate + 중앙 회전축 등) 확대·축소 시 그 어긋난 만큼 위치가 밀려 보인다.
       el.style.transformOrigin = anchorX + '% ' + anchorY + '%';
       el.style.transform = 'translate(-' + anchorX + '%, -' + anchorY + '%) rotate(' + (deg + dOff).toFixed(1) + 'deg) scale(' + scaleXVal.toFixed(3) + ', ' + scaleYVal.toFixed(3) + ')';
       el.style.marginTop = phase === 'home' ? homeMT : '0'; // 대기 위치 세로 보정 (기본 0.2cm 아래)
       el.style.opacity = !sprite && phase === 'home' ? '0.7' : '1'; // 대기 뿅망치만30% 투명, 공격/등장은 불투명.
-      if (!sprite && phase !== 'home') {
-        // Phone's visible viewport is the boundary, not the narrower game container.
-        const viewport = root.visualViewport;
-        const viewportWidth = viewport ? viewport.width : root.innerWidth;
-        const viewportHeight = viewport ? viewport.height : root.innerHeight;
-        if (viewportWidth && viewportHeight) {
-          const rect = el.getBoundingClientRect();
-          const left = (viewport ? viewport.offsetLeft : 0) + 8;
-          const right = left + viewportWidth - 16;
-          const top = (viewport ? viewport.offsetTop : 0) + 8;
-          const bottom = top + viewportHeight - 16;
-          if (rect.width && rect.height) {
-            const dx = Math.max(left - rect.left, Math.min(0, right - rect.right));
-            const dy = Math.max(top - rect.top, Math.min(0, bottom - rect.bottom));
-            el.style.left = 'calc(' + (gx * 100).toFixed(2) + '% + ' + (restShiftPx + dx) + 'px)';
-            el.style.top = 'calc(' + (gy * 100).toFixed(2) + '% + ' + (restDownPx + dy) + 'px)';
-          }
-        }
-      }
     }
 
     function isBusy() { return phase === 'fly' || phase === 'chop' || phase === 'rise'; }
@@ -218,7 +195,7 @@
       (function step(now) {
         const k = Math.min(1, ((now || performance.now()) - start) / ms);
         const e = ease(k); // k*k — 느리게 시작해 빨라짐(이동·회전·확대 공통)
-        gx = lerp(fromX2, homeX, e);
+        gx = lerp(fromX2, HOME_X, e);
         gy = lerp(fromY2, HOME_Y, e);
         deg = lerp(0, endDeg, e);
         scaleXVal = scaleYVal = lerp(startScale, 1, e);
@@ -231,8 +208,8 @@
           img.style.filter = prevFilter;
           anchorX = gripX; anchorY = gripY;
           phase = 'home';
-          gx = homeX; gy = HOME_Y; deg = hDeg; scaleXVal = 1; scaleYVal = 1;
-          fromX = homeX; fromY = HOME_Y; fromDeg = hDeg; aimX = homeX; aimY = HOME_Y;
+          gx = HOME_X; gy = HOME_Y; deg = hDeg; scaleXVal = 1; scaleYVal = 1;
+          fromX = HOME_X; fromY = HOME_Y; fromDeg = hDeg; aimX = HOME_X; aimY = HOME_Y;
           paint();
           if (onDone) onDone();
         }
@@ -283,9 +260,9 @@
     function home() {
       impactCb = null;
       phase = 'home'; t = 0;
-      gx = homeX; gy = HOME_Y; deg = hDeg;
-      fromX = homeX; fromY = HOME_Y; fromDeg = hDeg;
-      aimX = homeX; aimY = HOME_Y;
+      gx = HOME_X; gy = HOME_Y; deg = hDeg;
+      fromX = HOME_X; fromY = HOME_Y; fromDeg = hDeg;
+      aimX = HOME_X; aimY = HOME_Y;
       fired = false;
       scaleXVal = 1; scaleYVal = 1;
       anchorX = gripX; anchorY = gripY;
