@@ -183,12 +183,15 @@
         localStorage.setItem('mole.diag.comboGuard1379G', '1');
       }
     } catch (e) { /* Storage may be unavailable. */ }
+    // V1399 C 사용자: '에러 메세지 확인 후 조치하고 메세지 지워' — ResizeObserver 오류(무기화면 크기 맞춤)는 V1398 C 에서 고침 → 남은 기록 1회 전부 지움.
+    try { if (!localStorage.getItem('mole.diag.clear1399C')) { diag = []; localStorage.setItem('mole.diag', '[]'); localStorage.setItem('mole.diag.clear1399C', '1'); } } catch (e) { /* 무시 */ }
     const saveDiag = (line) => {
       const d = new Date(); diag.push(String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ' ' + line);
       diag = diag.slice(-6);
       try { localStorage.setItem('mole.diag', JSON.stringify(diag)); } catch (e) { /* 무시 */ }
     };
-    window.addEventListener('error', (e) => { saveDiag('ERR ' + (e.message || '') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || '')); });
+    // 'ResizeObserver loop …' 는 브라우저가 알리는 무해한 경고(게임 동작 영향 없음)라 기록하지 않음.
+    window.addEventListener('error', (e) => { if (/ResizeObserver loop/.test(e.message || '')) return; saveDiag('ERR ' + (e.message || '') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || '')); });
     (function f(now) {
       n++; last = now;
       if (now - t0 >= 500) { m.textContent = Math.round(n * 1000 / (now - t0)) + 'fps' + (diag.length ? '\n⚠' + diag.length + ' ' + diag[diag.length - 1] : ''); n = 0; t0 = now; } // V1346 C 사용자: FPS·오류만
