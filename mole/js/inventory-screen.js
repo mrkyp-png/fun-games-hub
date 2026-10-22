@@ -335,9 +335,12 @@
       var mount = body.querySelector('.iw-mount');
       if (!mount || !body.clientWidth || !body.clientHeight) return;
       // One complete 1278 × 1230 image. Never repeat or stretch its interior.
-      var scale = Math.min(body.clientWidth / 1278, body.clientHeight / 1230);
+      // V1387 C 사용자: 액자(그림 안 x2~1274, y8~1210, 바깥 하늘색은 투명)를 칸 안에 전부 들어가게 맞춤.
+      var scale = Math.min(body.clientWidth / (1274 - 2), body.clientHeight / (1210 - 8)); // 사용자: 큰 테두리 안에 액자 전체가 들어가게(안 잘림)
       mount.style.width = (1278 * scale) + 'px';
       mount.style.height = (1230 * scale) + 'px';
+      mount.style.marginLeft = ((639 - (2 + 1274) / 2) * scale) + 'px';
+      mount.style.marginTop = ((615 - (8 + 1210) / 2) * scale) + 'px';
       mount.style.setProperty('--iw-scale', scale);
       fitWeaponName();
       // Visible alpha bounds in the canonical 120 x 88 animation coordinate system.

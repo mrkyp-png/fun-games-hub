@@ -8589,7 +8589,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #inventory-screen[data-tab="weapon"] .inv-banner { display: none !important; }
 #inventory-screen[data-tab="weapon"] .inv-cards-box,
 #inventory-screen[data-tab="weapon"] .inv-cards-box[data-rar] {
-  margin: 4px 8px 0; padding: 0; flex: 1 1 auto; min-height: 0; background: transparent !important;
+  margin: 0; padding: 0; flex: 1 1 auto; min-height: 0; background: transparent !important; /* V1387 C 사용자: 액자를 판 테두리 바로 밑까지(하늘색 틈 제거, 바깥 테두리가 앞) — 이전 4px 8px 0 */
 }
 #inventory-screen[data-tab="weapon"] .inv-cards-box::before,
 #inventory-screen[data-tab="weapon"] .inv-cards-box::after { display: none; }
@@ -8597,7 +8597,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .iw-mount { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); }
 .iw-stage {
   position: relative; width: 1278px; height: 1230px; transform: scale(var(--iw-scale,0)); transform-origin: 0 0;
-  background: url('assets/inventory/ui-v1379/cabinet-buttons-removed.webp') 0 0 / 1278px 1230px no-repeat;
+  background: url('assets/inventory/ui-v1379/cabinet-frame-v1387.webp') 0 0 / 1278px 1230px no-repeat; /* V1387 C: 액자 바깥 하늘색 배경 투명 처리본 */
   font-family: 'Jua',sans-serif; color: #07264c; isolation: isolate;
 }
 .iw-pages { position: absolute; left: 134px; top: 263px; width: 500px; height: 654px; display: flex; gap: 0; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; touch-action: pan-x; }
