@@ -13,7 +13,7 @@
 
   const GRIP_X = 33.0;   // 선택한 yaw10/15도 스프라이트의 파란 그립 중심(%)
   const GRIP_Y = 83.0;
-  const HOME_X = 0.835, HOME_Y = 0.965; // V1407 C 사용자: 뿅망치·골드 대기 때 오른쪽이 화면 밖으로 살짝 나감 → 대기 위치만 왼쪽으로(0.90→0.835, 타격점 그대로). // 대기 위치 (보드 분수) — 우측 맨 아래 구석. 16번 구멍
+  const HOME_X = 0.90, HOME_Y = 0.965; // 대기 위치 (보드 분수) — 우측 맨 아래 구석. 16번 구멍
                                        // (~0.86,0.84) 아래로 비켜서 안 겹치고, 보드 안(<1)이라 버튼 안 닿음
   const HOME_DEG = 18;                 // 대기: 살짝 눕힘 (머리는 좌상단 잔디 쪽 — 화면 밖으로 안 나가게)
   const READY_DEG = -30;               // 조준: 오른쪽에서 머리 들어올림
@@ -165,6 +165,7 @@
       el.style.transformOrigin = anchorX + '% ' + anchorY + '%';
       el.style.transform = 'translate(-' + anchorX + '%, -' + anchorY + '%) rotate(' + (deg + dOff).toFixed(1) + 'deg) scale(' + scaleXVal.toFixed(3) + ', ' + scaleYVal.toFixed(3) + ')';
       el.style.marginTop = phase === 'home' ? homeMT : '0'; // 대기 위치 세로 보정 (기본 0.2cm 아래)
+      el.style.marginLeft = phase === 'home' ? '-0.2cm' : '0'; // V1408 C 사용자: 대기 위치만 폰 화면 기준 왼쪽 0.2cm(타격점 그대로)
       el.style.opacity = !sprite && phase === 'home' ? '0.7' : '1'; // 대기 뿅망치만30% 투명, 공격/등장은 불투명.
     }
 
