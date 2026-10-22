@@ -988,10 +988,11 @@
   // LANE_SKILLS(통화버튼 2칸) → STAR_SKILLS(알리펀치 별표 2칸 더) 순서로 채운다.
   function applySkillSlots(weaponId, laneSkillZone) {
     const ids = laneSkillZone ? skillSession.activeSkills : [];
+    // V1403 C: 칸마다 원 1개 — 1번째 스킬=오른쪽 아래 칸, 2번째(킹 판취만)=✱ 칸.
     LANE_SKILLS[0] = skillSlotFor(ids[0]);
-    LANE_SKILLS[1] = skillSlotFor(ids[1]);
-    STAR_SKILLS[0] = skillSlotFor(ids[2]);
-    STAR_SKILLS[1] = skillSlotFor(ids[3]);
+    LANE_SKILLS[1] = null;
+    STAR_SKILLS[0] = skillSlotFor(ids[1]);
+    STAR_SKILLS[1] = null;
     renderLaneItems();
     renderStarItems();
     renderPassiveHud();
@@ -1028,6 +1029,8 @@
   // 확인: "시스템만 먼저") → 소비/UI만 실제로 동작, 화면엔 플레이스홀더 이름만 표시.
   function runSkillEffect(id) {
     if (id === 'targeting') { activateTargeting(); return; }
+    // V1403 C 사용자: 실드도 장착형 — 누르면 실드(폭탄 1번 방어) 켜짐, 실드 아이템과 같은 효과.
+    if (id === 'shield' && run) { run.shield = true; const sb = document.getElementById('mole-board'); if (sb) sb.classList.add('mole-board--shielded'); }
     const board = document.getElementById('mole-board');
     const skill = MG.Skills.skillById(id);
     if (board && skill) MG.HitFx.skillWord(board, I18N.lang === 'en' ? skill.nameEn : skill.nameKo);
@@ -1049,7 +1052,7 @@
       cellBtn.classList.add('lane-target-hot');
       setTimeout(() => cellBtn.classList.remove('lane-target-hot'), 900);
     }
-    MG.HitFx.targetLock(board, sp.x, sp.y, 'assets/skills/targeting.png');
+    MG.HitFx.targetLock(board, sp.x, sp.y, 'assets/skills/targeting-v1403.png');
     if (!pick) return; // 타격할 두더지 없음 — 시각 연출만
     setTimeout(() => {
       if (!state || state.ended || !liveMoleAt(sp.regionId)) return;
@@ -2078,6 +2081,11 @@
     if (!state || state.ended || state.introActive || state.paused) return false;
     const sp = state.spawnPoints.find((s) => s.regionId === regionId);
     if (!sp) return false; // 대포 모드에서 없앤 구멍(15) 탭 = 무시 (헛방 처리 안 함)
+    // V1403 C 사용자 '골드 묠니르 지진 끝날 쯤 녹색 버튼 누르면 콤보 깨짐': 지진이 이미 처치 판정한 두더지는
+    // 분신 망치가 내려치기 전까지 화면에 남아 있어 그걸 누르면 빈 구멍(헛방)으로 콤보가 깨졌다 → 그 구멍 탭은 무시.
+    if (state.quakePending && state.quakePending.has(regionId)) return false;
+    // 처치돼서 가라앉는 중(dying)인 두더지만 남은 구멍도 같은 이유로 헛방 아님 — 무시(실측: 지진 처치 직후 누르면 콤보 깨짐 재현됨).
+    if (state.scheduler.getActivePops().some((q) => q.regionId === regionId && q.dying) && !state.scheduler.getActivePops().some((q) => q.regionId === regionId && !q.dying)) return false;
     // 알리 판취 = 2·3타 두더지도 한 번에 소탕(사용자 지정).
     const results = state.scheduler.resolveRegion(regionId, state.weapon === 'alipunch' ? { alipunch: true } : undefined);
 
@@ -2225,9 +2233,12 @@
         if (!p) return;
         const res = state.scheduler.resolveRegion(id, { quake: true });
         if (!res.length || res.every((r) => r.ignored)) return;
+        if (!state.quakePending) state.quakePending = new Set();
+        state.quakePending.add(id);
         extendQuakeHud();
         const fk = sharedPopElements.frameKeyAt ? sharedPopElements.frameKeyAt(id) : null;
         goldStrikeClone(fxLayer, id, p.x, p.y, () => {
+          if (state && state.quakePending) state.quakePending.delete(id);
           if (!state || state.ended) return;
           extendQuakeHud();
           onHammerImpact(p.x, p.y, res, { noHitstop: true });

@@ -3,7 +3,7 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-const CACHE = 'mole-game-v1402-C';
+const CACHE = 'mole-game-v1403-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -15,6 +15,13 @@ const SHELL = [
   './assets/inventory/ui-v1379/equip-pill-transparent.webp',
   './assets/inventory/ui-v1379/cabinet-frame-v1387.webp',
   './assets/inventory/ui-v1379/grade-basic.webp',
+  './assets/inventory/skill-v1403/frame.webp',
+  './assets/inventory/skill-v1403/case.webp',
+  './assets/inventory/skill-v1403/slotpanel.webp',
+  './assets/inventory/skill-v1403/slotring.webp',
+  './assets/inventory/skill-v1403/card.webp',
+  './assets/inventory/skill-v1403/countbox.webp',
+  './assets/skills/targeting-v1403.png',
   './assets/workshop/w-cannon-v1398.png',
   './assets/workshop/w-cannon-front-v1398.png',
   './assets/workshop/w-goldhammer-v1398.png',

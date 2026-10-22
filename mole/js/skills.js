@@ -6,30 +6,25 @@
   var K_INVENTORY = 'mole.skill.inventory';
   var K_LOADOUTS = 'mole.skill.loadouts';
 
+  // V1403 C 사용자: 스킬은 실드·타겟팅·AI 3개만, 전부 장착형(액티브). 패시브 없음.
+  // (빙결·골드2배·융단폭격·피버타임 증가는 목록에서 제외 — 그림 파일은 남겨 둠)
   var SKILLS = [
-    { id: 'freeze', type: 'ACTIVE', nameKo: '빙결', nameEn: 'Freeze', icon: 'assets/skills/freeze.png' },
-    { id: 'goldDouble', type: 'ACTIVE', nameKo: '골드 2배', nameEn: 'Gold x2', icon: 'assets/skills/gold-double-v2.png' },
-    { id: 'targeting', type: 'ACTIVE', nameKo: '타겟팅', nameEn: 'Targeting', icon: 'assets/skills/targeting.png' },
-    { id: 'carpetBombing', type: 'ACTIVE', nameKo: '융단폭격', nameEn: 'Carpet Bombing', icon: 'assets/skills/carpet_bombing.png' },
-    { id: 'ai', type: 'ACTIVE', nameKo: 'AI', nameEn: 'AI', icon: 'assets/skills/ai.png' },
-    { id: 'shield', type: 'PASSIVE', nameKo: '실드', nameEn: 'Shield', icon: 'assets/skills/shield.png' },
-    { id: 'feverTime', type: 'PASSIVE', nameKo: '피버타임 증가', nameEn: 'Fever Time Up', icon: 'assets/skills/fever_time.png' }
+    { id: 'shield', type: 'ACTIVE', nameKo: '실드', nameEn: 'Shield', icon: 'assets/skills/shield.png', descKo: '폭탄 1번 막아요', descEn: 'Blocks one bomb' },
+    { id: 'targeting', type: 'ACTIVE', nameKo: '타겟팅', nameEn: 'Targeting', icon: 'assets/skills/targeting-v1403.png', descKo: '두더지 자동 조준', descEn: 'Auto-aims a mole' },
+    { id: 'ai', type: 'ACTIVE', nameKo: 'AI', nameEn: 'AI', icon: 'assets/skills/ai.png', descKo: '자동으로 공격', descEn: 'Attacks for you' }
   ];
 
   // 무기별 슬롯 — hammer(뿅망치)는 명세서에 없음(스킬 미지원 무기, laneSkillZone=false).
   var WEAPON_SLOTS = {
-    goldhammer: { active: 2, passive: 2 },
-    cannon: { active: 2, passive: 2 },
-    alipunch: { active: 4, passive: 2 }
+    goldhammer: { active: 1, passive: 0 },
+    cannon: { active: 1, passive: 0 },
+    alipunch: { active: 2, passive: 0 }
   };
 
   // 데모 기본 수량 — 아직 상점/보물상자 지급 경로가 없어(§46~49) 사용자 지정으로 테스트용
   // 1000개씩 시드(2026-09-26, "테스트용으로 할려면 필요합니다. 패시브 스킬도").
   // 실제 지급 경로가 생기면 이 기본값만 {}(전부 0)로 바꾸면 됨 — 구조는 이미 확장 가능.
-  var DEFAULT_INVENTORY = {
-    freeze: 1000, goldDouble: 1000, targeting: 1000, carpetBombing: 1000, ai: 1000,
-    shield: 1000, feverTime: 1000
-  };
+  var DEFAULT_INVENTORY = { shield: 1000, targeting: 1000, ai: 1000 };
 
   function skillById(id) {
     for (var i = 0; i < SKILLS.length; i++) if (SKILLS[i].id === id) return SKILLS[i];

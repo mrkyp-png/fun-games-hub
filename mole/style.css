@@ -8713,11 +8713,11 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* V1397 C 사용자: 무기가 은은히 빛나고 보관장 안쪽에 그림자 — 뒤 빛(등급색, 약하게) + 바닥 그림자(장착 버튼 위 바닥, 사용자 지정)(떠오름에 맞춰 커졌다 작아짐). */
 /* 사용자: 빛 색 = 무기 색 */
 .iw-page[data-weapon="hammer"] { --iw-glow: 255, 110, 110; }
-.iw-page[data-weapon="cannon"] { --iw-glow: 150, 230, 80; }
+.iw-page[data-weapon="cannon"] { --iw-glow: 255, 130, 20; } /* 사용자: 캐논 빛 = 주황 */
 .iw-page[data-weapon="goldhammer"] { --iw-glow: 255, 205, 70; }
 .iw-page[data-weapon="alipunch"] { --iw-glow: 255, 90, 90; }
-.iw-page::before { content: ''; position: absolute; left: 50%; top: 52%; width: 420px; height: 420px; transform: translate(-50%, -50%); border-radius: 50%; z-index: 0; pointer-events: none;
-  background: radial-gradient(circle, rgba(var(--iw-glow), 0.55) 0%, rgba(var(--iw-glow), 0.22) 38%, rgba(var(--iw-glow), 0) 68%); animation: iw-glow-float 3.6s ease-in-out infinite; }
+.iw-page::before { content: ''; position: absolute; left: 50%; top: calc(52% + 80px); width: 460px; height: 460px; /* 무기를 80px 내린 만큼 빛도 */ transform: translate(-50%, -50%); border-radius: 50%; z-index: 0; pointer-events: none;
+  background: radial-gradient(circle, rgba(var(--iw-glow), 0.9) 0%, rgba(var(--iw-glow), 0.5) 35%, rgba(var(--iw-glow), 0) 70%); /* 사용자: 뒤 색 그림자 약함 → 진하게 */ animation: iw-glow-float 3.6s ease-in-out infinite; }
 @keyframes iw-glow-float { 0%,100% { transform: translate(-50%, -50%); } 50% { transform: translate(-50%, calc(-50% - 8px)); } } /* 사용자: 뒤 빛도 무기와 같이 위아래 */
 .iw-stage::after { content: ''; position: absolute; left: 234px; top: 922px; width: 300px; height: 44px; border-radius: 50%; z-index: 0; pointer-events: none; /* 사용자 '더 내려' → 무기칸(페이지) 밖 바닥(장착 버튼 위)에 그림 */
   background: radial-gradient(ellipse, rgba(15, 40, 75, 0.55) 0%, rgba(15, 40, 75, 0.25) 45%, rgba(15, 40, 75, 0) 72%); animation: iw-floor-shadow 3.6s ease-in-out infinite; }
@@ -8753,3 +8753,44 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-item:not(.lane-item--empty)[data-slot="0"] .lane-item-icon, #game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-item:not(.lane-item--empty)[data-slot="0"] .lane-item-icon { width: 100%; height: 100%; }
 /* 스킬 아이콘 그림(460px)은 둘레 투명 여백이 약 21% → 그만큼 키워 그림 원이 칸을 꽉 채우게 */
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-item:not(.lane-item--empty)[data-slot="0"] .lane-item-icon img, #game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-item:not(.lane-item--empty)[data-slot="0"] .lane-item-icon img { transform: scale(1.27); }
+/* ===== V1403 C 사용자: 스킬 탭 전면 개편 — 무기 화면 큰 테두리(안쪽 비운 frame.webp) + 시안 1번 정사각. 그림엔 글자 없음 ===== */
+#inventory-screen[data-tab="skill"]::before { background: url('assets/skin2/bg-weapon.jpg?v=1376') center top / 100% 100% no-repeat; }
+#inventory-screen[data-tab="skill"] .inv-banner, #inventory-screen[data-tab="skill"] .inv-cards-head { display: none !important; }
+#inventory-screen[data-tab="skill"] .inv-cards-box, #inventory-screen[data-tab="skill"] .inv-cards-box[data-rar] { margin: 0; padding: 0; flex: 1 1 auto; min-height: 0; background: transparent !important; box-shadow: none; animation: none; }
+#inventory-screen[data-tab="skill"] .inv-cards-box::before, #inventory-screen[data-tab="skill"] .inv-cards-box::after { display: none; }
+#inventory-screen[data-tab="skill"] .inv-body { position: relative; min-width: 0; min-height: 0; overflow: hidden; padding: 0 !important; margin: 0 !important; }
+.ks-mount { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); }
+.ks-stage { position: relative; width: 1278px; height: 1230px; transform: scale(var(--ks-scale,0)); transform-origin: 0 0;
+  background: url('assets/inventory/skill-v1403/frame.webp') 0 0 / 1278px 1230px no-repeat; font-family: 'Jua', sans-serif; color: #07264c; }
+.ks-name { position: absolute; left: 330px; top: 35px; width: 620px; height: 90px; display: flex; align-items: center; justify-content: center; font-size: 72px; line-height: 1; color: #073b7b; text-shadow: 0 3px #fff; white-space: nowrap; }
+.ks-case { position: absolute; left: 118px; top: 166px; width: 520px; height: 474px; background: url('assets/inventory/skill-v1403/case.webp') center / 100% 100% no-repeat; overflow: hidden; }
+/* 사용자: 스킬 탭 무기 = 무기 화면과 같은 무기 연출·뒤 색 빛·바닥 그림자(세트), 조금 작게 */
+.ks-case .ks-wpage { position: absolute; inset: 7% 6% 6%; width: auto; height: auto; flex: none; }
+.ks-wpage .iw-weapon { transform: none; }
+.ks-wpage[data-weapon="goldhammer"] .iw-weapon { transform: rotate(30deg); }
+.ks-wpage::before { top: 50%; width: 400px; height: 400px; }
+.ks-case::after { content: ''; position: absolute; left: 50%; bottom: 40px; width: 300px; height: 46px; margin-left: -150px; border-radius: 50%; pointer-events: none; z-index: 2;
+  background: radial-gradient(ellipse, rgba(15, 40, 75, 0.7) 0%, rgba(15, 40, 75, 0.32) 45%, rgba(15, 40, 75, 0) 72%); animation: iw-floor-shadow 3.6s ease-in-out infinite; }
+.ks-slotpanel { position: absolute; left: 654px; top: 166px; width: 506px; height: 474px; background: url('assets/inventory/skill-v1403/slotpanel.webp') center / 100% 100% no-repeat; }
+.ks-slot-pill { position: absolute; left: 50%; top: 34px; width: 400px; height: 96px; transform: translateX(-50%); background: url('assets/inventory/ui-v1379/ability-pill-transparent.webp') center / 100% 100% no-repeat; display: flex; align-items: center; justify-content: center; }
+.ks-slot-pill span { font-size: 50px; color: #fff; text-shadow: 0 3px #0b3f8c; white-space: nowrap; }
+.ks-slots { position: absolute; left: 0; right: 0; top: 150px; bottom: 26px; display: flex; align-items: center; justify-content: center; gap: 22px; }
+.ks-slot { position: relative; width: 290px; aspect-ratio: 1; padding: 0; border: 0; border-radius: 50%; background: url('assets/inventory/skill-v1403/slotring.webp') center / 100% 100% no-repeat; cursor: pointer; }
+.ks-stage[data-slots="2"] .ks-slot { width: 214px; }
+.ks-slot.is-off { filter: grayscale(.7) brightness(.85); cursor: default; }
+.ks-slot-ico { position: absolute; left: 13%; top: 13%; width: 74%; height: 74%; border-radius: 50%; object-fit: cover; transform: scale(1.27); }
+.ks-cards { position: absolute; left: 118px; top: 656px; width: 1042px; height: 452px; display: flex; gap: 14px; }
+.ks-card { position: relative; flex: 1 1 0; background: url('assets/inventory/skill-v1403/card.webp') center / 100% 100% no-repeat; display: flex; flex-direction: column; align-items: center; }
+.ks-card-ico { width: 160px; height: 160px; margin-top: 24px; object-fit: contain; transform: scale(1.27); }
+.ks-card-name { margin-top: 10px; font-size: 46px; line-height: 1; font-weight: 400; color: #1a2f5e; }
+.ks-card-desc { margin-top: 4px; padding: 0 14px; font-size: 30px; line-height: 1.1; color: #5a4632; white-space: nowrap; }
+.ks-count { margin-top: 8px; width: 240px; height: 56px; display: flex; align-items: center; justify-content: center; gap: 14px; background: url('assets/inventory/skill-v1403/countbox.webp') center / 100% 100% no-repeat; font-size: 34px; color: #1a2f5e; }
+.ks-count i { font-style: normal; }
+.ks-count b { font-weight: 400; font-size: 38px; }
+.ks-equip { position: absolute; left: 50%; bottom: 14px; width: 280px; height: 80px; margin-left: -140px; padding: 0; border: 0; background: url('assets/inventory/ui-v1379/equip-pill-transparent.webp') center / 100% 100% no-repeat; cursor: pointer; }
+.ks-equip span { font-family: 'Jua', sans-serif; font-size: 46px; color: #fff; text-shadow: 0 3px #0b3f8c; }
+.ks-equip.is-on { filter: hue-rotate(95deg) saturate(1.1); }
+/* 누름 효과: 누르는 순간 바로 깊숙이(그림자 줄고 아래로) */
+.ks-press { transition: none; }
+.ks-press:active, .ks-press.is-down { transform: translateY(8px) scale(0.95); filter: brightness(0.86); }
+.ks-equip.is-on:active, .ks-equip.is-on.is-down { filter: hue-rotate(95deg) saturate(1.1) brightness(0.86); }
