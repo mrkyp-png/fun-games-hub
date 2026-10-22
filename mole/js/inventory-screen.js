@@ -366,7 +366,8 @@
       });
     }
     root.addEventListener('resize', function () { if (active === 'weapon') fitLefts(); });
-    if (root.ResizeObserver) new root.ResizeObserver(function () { if (active === 'weapon') fitLefts(); }).observe(body);
+    // V1398 C: 폰 오류창 'ResizeObserver loop completed' — 크기 맞춤을 다음 프레임으로 미뤄 관찰 중 레이아웃 변경을 피함
+    if (root.ResizeObserver) new root.ResizeObserver(function () { if (active === 'weapon') requestAnimationFrame(fitLefts); }).observe(body);
 
     // 코스튬 탭 — 5개 팀 카드(가로 스크롤) + 선택 코스튬 상세 + 획득 방법(§1~§58).
     // 무기 탭과 달리 페이지네이션(점/화살표) 없이 카드 줄만 가로 스크롤한다.

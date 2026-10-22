@@ -45,9 +45,9 @@
   } catch (e) { /* 무시 */ }
 
   var WEAPONS = [
-    { id: 'cannon', ko: '팡팡 캐논', en: 'Pang Pang Cannon', img: A + 'w-cannon.png', done: A + 'w-cannon-front.png' },
-    { id: 'goldhammer', ko: '골드 묠니르', en: 'Gold Mjolnir', img: A + 'w-goldhammer.png', done: A + 'w-goldhammer.png' },
-    { id: 'alipunch', ko: '킹 판취', en: 'King Punch', img: A + 'w-alipunch.png', done: A + 'w-alipunch.png' } // 글러브 두 짝 — v891: 여백 잘라 캐논과 비슷한 크기(사용자 지정)
+    { id: 'cannon', ko: '팡팡 캐논', en: 'Pang Pang Cannon', img: A + 'w-cannon-v1398.png', done: A + 'w-cannon-front-v1398.png' }, // V1398 C: 새 무기 그림(검은 테두리 없음)
+    { id: 'goldhammer', ko: '골드 묠니르', en: 'Gold Mjolnir', img: A + 'w-goldhammer-v1398.png', done: A + 'w-goldhammer-v1398.png' },
+    { id: 'alipunch', ko: '킹 판취', en: 'King Punch', img: A + 'w-alipunch-v1398.png', done: A + 'w-alipunch-v1398.png' } // 글러브 두 짝 — v891: 여백 잘라 캐논과 비슷한 크기(사용자 지정)
   ];
 
   // ---- 저장(단일 기준값) ----

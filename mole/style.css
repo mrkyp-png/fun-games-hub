@@ -8699,8 +8699,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .iw-grade { isolation: isolate; overflow: visible; z-index: 2; left: 124.0px; top: 164.0px; width: 520px; height: 124px; }
 .iw-grade::before { content: ''; position: absolute; z-index: -1; background: center / 100% 100% no-repeat; pointer-events: none; }
 .iw-grade .iw-grade-text { display: inline-block; white-space: nowrap; line-height: 1; transform: translate(var(--tx, 0px), var(--ty, 0px)); }
-.iw-copy-layer[data-grade="basic"] .iw-grade { --tw: 345px; --th: 87px; --tx: -0.1px; --ty: 0.2px; }
-.iw-copy-layer[data-grade="basic"] .iw-grade::before { left: 15.0px; top: 6.3px; width: 490.0px; height: 111.3px; background-image: url('assets/inventory/ui-v1379/plate-basic-v1397.webp'); }
+.iw-copy-layer[data-grade="basic"] .iw-grade { --tw: 296px; --th: 75px; --tx: -0.1px; --ty: 0.2px; }
+.iw-copy-layer[data-grade="basic"] .iw-grade::before { left: 50.0px; top: 14.3px; width: 420.0px; height: 95.4px; /* 사용자: BASIC 너무 큼 → 0.86배 */ background-image: url('assets/inventory/ui-v1379/plate-basic-v1397.webp'); }
 .iw-copy-layer[data-grade="rare"] .iw-grade { --tw: 294px; --th: 68px; --tx: -0.4px; --ty: 5.9px; }
 .iw-copy-layer[data-grade="rare"] .iw-grade::before { left: 15.0px; top: 11.7px; width: 490.0px; height: 100.6px; background-image: url('assets/inventory/ui-v1379/plate-rare-v1397.webp'); }
 .iw-copy-layer[data-grade="epic"] .iw-grade { --tw: 433px; --th: 71px; --tx: -0.2px; --ty: 2.5px; }
@@ -8708,8 +8708,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .iw-copy-layer[data-grade="legend"] .iw-grade { --tw: 351px; --th: 67px; --tx: -0.1px; --ty: 1.7px; }
 .iw-copy-layer[data-grade="legend"] .iw-grade::before { left: -57.8px; top: -47.4px; width: 636.2px; height: 165.4px; background-image: url('assets/inventory/ui-v1379/plate-legend-v1397.webp'); }
 /* V1397 C 사용자: 명판이 커져서 전체 무기 그림을 아래로 */
-.iw-page .iw-weapon { transform: translateY(48px); }
-.iw-page[data-weapon="goldhammer"] .iw-weapon { transform: translate(-60px, 48px) rotate(30deg); } /* 사용자: 골드 묠니르 시계방향 30° */
+.iw-page .iw-weapon { transform: translateY(80px); } /* 사용자 '더 내려' (48→80) */
+.iw-page[data-weapon="goldhammer"] .iw-weapon { transform: translate(-60px, 80px) rotate(30deg); } /* 사용자: 골드 묠니르 시계방향 30° */
 /* V1397 C 사용자: 무기가 은은히 빛나고 보관장 안쪽에 그림자 — 뒤 빛(등급색, 약하게) + 바닥 그림자(장착 버튼 위 바닥, 사용자 지정)(떠오름에 맞춰 커졌다 작아짐). */
 /* 사용자: 빛 색 = 무기 색 */
 .iw-page[data-weapon="hammer"] { --iw-glow: 255, 110, 110; }
@@ -8724,3 +8724,5 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 @keyframes iw-floor-shadow { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.62); opacity: 0.5; } } /* 무기(iw-float, 같은 3.6s·같은 시작) 올라가면 작고 옅게 */
 .iw-page .iw-weapon { z-index: 1; }
 @media (prefers-reduced-motion: reduce) { .iw-stage::after, .iw-page::before { animation: none; } }
+/* 사용자(폰 캡처): 무기 칸 오른쪽 틈으로 다음 무기(킹 판취)가 비침 — 폰 스크롤 위치 소수점 반올림으로 옆 페이지 끝이 1~2px 보임 → 칸 오른쪽 2px 잘라냄 */
+.iw-pages { clip-path: inset(0 2px 0 0); }
