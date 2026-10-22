@@ -32,11 +32,11 @@
   //   a5(-120°) = 3 6   a4(-92°) = 오른쪽 내비열(거의 수직)
   // v293 에서 MZX 우측 0.3cm 이동에 맞춰 aim 재보정. a4(최대각포)만 dx 로 상쇄해 제자리 고정(사용자 요청).
   const POSES = [
-    { key: 'a2', src: 'assets/weapons/cannon-a2.png', w: 0.270, ar: 0.924, mu: 0.08, mv: 0.52, aim: -191, tweak: 0, dx: -0.103, dy: 0.03, blx: -0.008, bly: -0.008 },
-    { key: 'a1', src: 'assets/weapons/cannon-a1.png', w: 0.280, ar: 0.833, mu: 0.07, mv: 0.14, aim: -164, tweak: 0, dx: -0.05, dy: 0.03, blx: 0.017, bly: 0.005 },
-    { key: 'a3', src: 'assets/weapons/cannon-a3.png', w: 0.242, ar: 1.159, mu: 0.32, mv: 0.09, aim: -144, tweak: 0, dx: 0.004, dy: -0.006, blx: -0.046, bly: -0.003 },
-    { key: 'a5', src: 'assets/weapons/cannon-a5.png', w: 0.225, ar: 1.256, mu: 0.17, mv: 0.09, aim: -120, tweak: 0, dx: -0.009, dy: -0.03, blx: 0.005, bly: -0.008 },
-    { key: 'a4', src: 'assets/weapons/cannon-a4.png', w: 0.216, ar: 1.220, mu: 0.48, mv: 0.06, aim: -92,  tweak: 0, dx: 0.001, dy: -0.04, blx: 0.006, bly: 0.003 }
+    { key: 'a2', src: 'assets/weapons/cannon-a2-nol-v1392.png', w: 0.270, ar: 0.924, mu: 0.08, mv: 0.52, aim: -191, tweak: 0, dx: -0.103, dy: 0.03, blx: -0.008, bly: -0.008 },
+    { key: 'a1', src: 'assets/weapons/cannon-a1-nol-v1392.png', w: 0.280, ar: 0.833, mu: 0.07, mv: 0.14, aim: -164, tweak: 0, dx: -0.05, dy: 0.03, blx: 0.017, bly: 0.005 },
+    { key: 'a3', src: 'assets/weapons/cannon-a3-nol-v1392.png', w: 0.242, ar: 1.159, mu: 0.32, mv: 0.09, aim: -144, tweak: 0, dx: 0.004, dy: -0.006, blx: -0.046, bly: -0.003 },
+    { key: 'a5', src: 'assets/weapons/cannon-a5-nol-v1392.png', w: 0.225, ar: 1.256, mu: 0.17, mv: 0.09, aim: -120, tweak: 0, dx: -0.009, dy: -0.03, blx: 0.005, bly: -0.008 },
+    { key: 'a4', src: 'assets/weapons/cannon-a4-nol-v1392.png', w: 0.216, ar: 1.220, mu: 0.48, mv: 0.06, aim: -92,  tweak: 0, dx: 0.001, dy: -0.04, blx: 0.006, bly: 0.003 }
   ];
 
   const REST_KEY = 'a3';                   // 발사 후 되돌아갈 기본 대기 포즈 (1·2·5·9 담당, 사용자 지정)
@@ -50,20 +50,28 @@
   // 회전 기준각(FX_BASE_AIM)은 세 장 다 하나로 통일 — 대포 몸통·화염·불꽃·연기가
   // 항상 같은 방향으로 같이 움직여야 하기 때문(사용자 피드백). 장별로 다르면 스파크→화염
   // 전환 때 각도가 살짝 튀어 보임. 앵커(mu,mv)는 그림마다 실측한 값 그대로 유지.
-  const FX_ADVANCE = 0.015;                // 포구보다 이만큼(보드분수) 더 앞으로
+  const FX_ADVANCE = 0.0085;               // 포구보다 이만큼(보드분수) 더 앞으로 — V1392 C: 검은 테두리 빠져 포구 끝이 물러난 만큼 당김(이전 0.015)
   // mid 포즈만 화염(burn)이 포구와 위치가 안 맞음(사용자 실측) — 우측 0.2cm + 위쪽 0.4cm
   // 이동, 각도 우측(시계방향)으로 10도 추가 회전. 스파크/연기는 이상 없어 그대로 둠.
   // 보드 실측 가로폭을 안 주셔서 폰 화면 가로 ~7cm로 가정해 cm→보드분수 환산 — 실물이 다르면
   // 아래 dx/dy를 (원하는cm / 7 * 실제cm) 로 재계산.
   // 포즈별 이펙트 3겹 미세보정. 각 { dx, dy, rot } (보드분수 / CSS deg, + = 시계).
   //   spark = 불꽃(fx1)   flame = 화염(fx4, 불+연기 메인)   smoke = 연기(fx5, 잔여)
+  // V1392 C 사용자: 3번(a3)처럼 '포구 가운데·불꽃 안쪽·불꽃 바깥'이 포신 방향 일직선이 되게 — a3 의 포구 가운데↔이펙트 관계(포신 기준)를
+  // 모든 포즈에 적용. 포구 가운데 = 포신 끝 노란 테두리 고리 중심(실측). 회전 보정 flame 22·smoke 10 통일.
+  // V1392 C 사용자: 불꽃(스파크·연기) = 포신 방향 일직선 + 포구와 안 겹치게. 그림별 원래 방향(fx1 -146.6°, fx5 -155.5°) 상쇄,
+  // 그림 가운데 줄을 포구 가운데(노란 테두리 고리) 축에 맞추고, 최대 확대 때 그림 뒤끝이 포구 끝보다 0.004 앞에 오게(실측 계산).
   const FX_NUDGE = {
-    a2: { flame: { rot: 5, dx: -0.035, dy: -0.007 }, smoke: { dy: 0.014 } },  // ✱·0·# 제일아래줄
-    a1: { flame: { rot: 15, dx: -0.014, dy: -0.018 }, smoke: { rot: 10, dy: 0.014 } },  // 4·7·8번
-    a3: { spark: { dx: -0.029 }, flame: { rot: 22, dx: -0.043, dy: -0.021 }, smoke: { rot: 10, dx: -0.043, dy: 0.014 } },  // 대기포 1·2·5·9
-    a4: { flame: { rot: 15, dx: 0.014, dy: -0.029 } },                    // 제일우측 내비열
-    a5: { flame: { rot: 5, dx: 0.014, dy: -0.029 } }                      // 3·6번
+    a2: { spark: { rot: -9.4, dx: -0.040, dy: 0.006 }, flame: { rot: 5.9 }, smoke: { rot: -0.5, dx: -0.077, dy: 0.018 } },  // ✱·0·# 제일아래줄
+    a1: { spark: { rot: -4.4, dx: -0.039, dy: 0.002 }, flame: { rot: 5.9 }, smoke: { rot: 4.5, dx: -0.077, dy: -0.003 } },  // 4·7·8번  사용자: 각도 시계 5°
+    a3: { spark: { rot: 0.6, dx: -0.073, dy: -0.014 }, flame: { rot: 5.9 }, smoke: { rot: 9.5, dx: -0.107, dy: -0.032 } },  // 대기포 1·2·5·9  사용자: 각도 시계 5°+5°
+    a4: { spark: { rot: -9.4, dx: -0.007, dy: -0.037 }, flame: { rot: 5.9 }, smoke: { rot: -0.5, dx: -0.014, dy: -0.075 } },  // 제일우측 내비열
+    a5: { spark: { rot: -9.4, dx: -0.014, dy: -0.033 }, flame: { rot: 5.9 }, smoke: { rot: -0.5, dx: -0.038, dy: -0.063 } },  // 3·6번
   };
+
+
+
+
   function fxn(key, which) { return (FX_NUDGE[key] || {})[which]; }
   const FX_BASE_AIM = -156;                // fx 스프라이트가 그려진 기준각 (fx1 -149°, fx4 -163° 평균)
   // 앵커(mu,mv) = 밝은 코어와 "뒷끝(포신에 안 겹치는 경계)"의 중간점. 뒷끝만 쓰면 안 겹치긴
@@ -117,10 +125,11 @@
     rig.style.transformOrigin = (MZX * 100).toFixed(2) + '% ' + (MZY * 100).toFixed(2) + '%';
     // 각 포즈 본체 배치 (top-left 기준) — 포즈의 포구점이 (ax,ay) 에 오도록.
     POSES.forEach((p) => {
-      const hFrac = p.w * p.ar;
+      const bw = p.w * 1.02; // V1392 C 사용자: 검은 테두리 뺀 만큼 본체 102%(포구 고정점 기준)
+      const hFrac = bw * p.ar;
       const im = bodies[p.key];
-      im.style.width = (p.w * 100).toFixed(2) + '%';
-      im.style.left = ((ax(p) - p.mu * p.w) * 100).toFixed(2) + '%';
+      im.style.width = (bw * 100).toFixed(2) + '%';
+      im.style.left = ((ax(p) - p.mu * bw) * 100).toFixed(2) + '%';
       im.style.top = ((ay(p) - p.mv * hFrac) * 100).toFixed(2) + '%';
     });
     // 화염·연기 배치: 그림의 뒷끝 앵커(mu,mv, 정사각이라 ar=1)를 포구보다 FX_ADVANCE만큼
@@ -165,7 +174,7 @@
     // 스파크 → 불+연기 → 잔여 연기 순서로 (CSS 애니메이션 — is-on 토글).
     function playFx() {
       spark.classList.remove('is-on'); void spark.offsetWidth; spark.classList.add('is-on');
-      after(50, () => { burn.classList.remove('is-on'); void burn.offsetWidth; burn.classList.add('is-on'); });
+      // V1392 C 사용자: 중간 메인 화염(fx4) 삭제 — 스파크 → 잔여 연기만.
       after(150, () => { smoke.classList.remove('is-on'); void smoke.offsetWidth; smoke.classList.add('is-on'); });
     }
     function resetFx() { spark.classList.remove('is-on'); burn.classList.remove('is-on'); smoke.classList.remove('is-on'); }

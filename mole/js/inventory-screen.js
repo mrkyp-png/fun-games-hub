@@ -12,7 +12,7 @@
     { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/inventory/ui-v1379/approved-mallet.webp', rarity: 'basic', skillSlots: { active: 0, passive: 0 },
       desc: ['기본 무기.\n간단하지만 강력한 타격감으로\n두더지를 시원하게!', 'The basic weapon.\nSimple but punchy —\nbonk those moles!'],
       stats: [['-', '-'], ['-', '-'], ['-', '-']] },
-    { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1.png', rarity: 'rare', skillSlots: { active: 2, passive: 2 },
+    { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1-nol-v1392.png', rarity: 'rare', skillSlots: { active: 2, passive: 2 },
       desc: ['강력한 포탄으로\n더 많은 두더지를 한 번에!\n넓은 범위를 커버하는 든든한 무기!', 'Powerful cannonballs\nhit more moles at once —\na sturdy weapon with wide reach!'],
       stats: [['Hole 16 → 15', 'Holes 16 → 15'],
               ['2·3타 두더지 연타 확률 10%', '10% burst on 2·3-hit moles'],
@@ -344,7 +344,7 @@
       mount.style.setProperty('--iw-scale', scale);
       fitWeaponName();
       // Visible alpha bounds in the canonical 120 x 88 animation coordinate system.
-      var art = {hammer:[83.44,83.58,-1.09,0.04],cannon:[105.55,88,0,0],goldhammer:[63.1,88,0,0],alipunch:[88,63,0,0]};
+      var art = {hammer:[83.44,83.58,-1.09,0.04],cannon:[87,72,0,0],goldhammer:[63.1,88,0,0],alipunch:[88,63,0,0]};
       body.querySelectorAll('.iw-page').forEach(function (page) {
         var a = art[page.dataset.weapon];
         var unit = page.querySelector('.iw-preview-unit');

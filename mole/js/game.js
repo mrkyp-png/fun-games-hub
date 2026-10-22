@@ -1553,7 +1553,7 @@
       // 시점에 처음 .src 를 주기 때문에, 캐시 없는 첫 플레이에서 네트워크 로딩 중 작은
       // 깨진 이미지 아이콘이 잠깐 보였다(사용자 리포트, 두 번째부턴 캐시로 정상). 미리 로드.
       ['cannon-intro-body-flip', 'cannon-a3-mirror', 'cannon-a4-mirror'].forEach((n) => {
-        const i = new Image(); i.src = 'assets/weapons/' + n + '.png';
+        const i = new Image(); i.src = 'assets/weapons/' + n + '-nol-v1392.png'; // V1392 C: 검은 테두리 없는 그림
       });
     }
     if (weapon === 'goldhammer') {
@@ -1724,7 +1724,7 @@
       const holdMs = fast ? 205 : 180;
       rig.style.width = '27.8%'; // 실측 24.2%(a3)에서 +15% — 옆면 이미지는 여백이 많아서 보정
       rig.style.animationDuration = travelMs + 'ms';
-      body.src = 'assets/weapons/cannon-intro-body-flip.png'; // 이동 중엔 항상 이 이미지(사용자 지정)
+      body.src = 'assets/weapons/cannon-intro-body-flip-nol-v1392.png'; // 이동 중엔 항상 이 이미지(사용자 지정)
       wheels.forEach((w) => w.classList.remove('ci-hide'));
       rig.className = 'ci-rig ci-play'; // 좌측 등장 → 대기위치까지 이동(바퀴는 계속 회전)
       MG.HitFx.cannonWheelRoll(); // 바퀴 굴러가는 소리(사용자 제공, Pixabay) — 이동 시작과 동시에
@@ -1732,13 +1732,13 @@
         if (myGen !== sessionGen) return;
         wheels.forEach((w) => w.classList.add('ci-hide'));
         rig.style.width = '25%'; // a3 실측 24.2% + 15%, 다시 -10%(사용자 지정)
-        body.src = 'assets/weapons/cannon-a3-mirror.png';
+        body.src = 'assets/weapons/cannon-a3-mirror-nol-v1392.png';
         MG.HitFx.cannonRotateClick(); // 각도 전환 "철컥" 소리(사용자 제공)
       }, travelMs); // GO!(라운드1)/타이핑 끝(라운드2~10) 타이밍에 정착이 맞춰지도록(사용자 지정)
       setTimeout(() => { // 12시 방향 포즈로 전환
         if (myGen !== sessionGen) return;
         rig.style.width = '23.6%'; // a4 실측 21.6% + 15%, 다시 -5%(사용자 지정)
-        body.src = 'assets/weapons/cannon-a4-mirror.png';
+        body.src = 'assets/weapons/cannon-a4-mirror-nol-v1392.png';
         MG.HitFx.cannonRotateClick(); // 각도 전환 "철컥" 소리(사용자 제공)
       }, travelMs + holdMs);
       setTimeout(() => { // 완료 — 인트로 숨기고 실제 대포(평소 대기 포즈)로 교체

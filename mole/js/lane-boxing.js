@@ -231,7 +231,7 @@
     // 겹치면 안 되고 외곽선끼리만 닿아야 하므로(사용자 지정) 각자 중앙에서 글러브
     // 반너비만큼 떨어진 지점까지만 접근한다 (.lane-boxing-glove 폭 14.63%,
     // 뻗을 때 1.08배 확대되므로 반너비도 그만큼 커짐 — style.css 참고).
-    const GLOVE_HALF_W = 0.1902 / 2 * 1.08; // V1390 C: 글러브 1.3배
+    const GLOVE_HALF_W = 0.21945 / 2 * 1.08; // V1392 C: 글러브 1.5배
     function meet(onImpact) {
       left.strike(0.5 - GLOVE_HALF_W, HOME_L.y, 'jab', null, null);
       right.strike(0.5 + GLOVE_HALF_W, HOME_R.y, 'jab', onImpact, null);
