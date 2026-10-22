@@ -11,8 +11,8 @@
   // 이미지는 3장만(§5): 잽·라이트훅·레프트훅·대기 = alipunch-jab.png(공용), 스트레이트 전용,
   // 어퍼컷 전용.
 
-  const HOME_L = { x: 0.125, y: 0.921 }; // V1390 C 사용자: 글러브(1.3배) 아래 끝 = 뿅망치 손잡이 끝 높이 421.4px(0.88→0.921)
-  const HOME_R = { x: 0.875, y: 0.921 };
+  const HOME_L = { x: 0.125, y: 0.88 }; // V1391 C 사용자: 맨 아래줄(0·#) 구멍 높이와 같게 — 잽이 직선으로(손잡이 끝 맞춤 0.921 은 대각선이 됨)
+  const HOME_R = { x: 0.875, y: 0.88 };
   const REACH_SEC = 0.10;
   const RETURN_SEC = 0.14;
   const GONE_FADE_SEC = 0.12;
@@ -39,8 +39,11 @@
     L: { idle: 45, jab: 90, straight: 0, upper: 0, hookL: 45 },
     R: { idle: -45, jab: -90, straight: 0, upper: 0, hookR: -45 }
   };
-  function imgTransform(side, deg) {
-    return side === 'R' ? ('rotate(' + deg + 'deg) scaleX(-1)') : ('rotate(' + deg + 'deg)');
+  // V1391 C 사용자: 새 잽 그림(손등 135°)은 원본이 오른손 방향 → 잽 그림만 좌우 거울을 반대로.
+  const FLIP_SWAP = { [SPRITE.jab]: true };
+  function imgTransform(side, deg, src) {
+    const mirror = (side === 'R') !== !!FLIP_SWAP[src];
+    return mirror ? ('rotate(' + deg + 'deg) scaleX(-1)') : ('rotate(' + deg + 'deg)');
   }
   // 구멍별 이미지·각도 오버라이드(사용자 지시) — sprite/deg 중 있는 값만 스타일 기본값 대신 쓴다.
   // 다이얼 숫자 5번(id5): 쨉 이미지로, 35도(대기각 45도에서 반시계 10도 = 45-10).
@@ -51,7 +54,7 @@
   // 다이얼 숫자 6번(id6): 스트레이트 이미지, 대기각(-45)에서 시계 10도 = -35도, 직선 타격 후 복귀.
   const REGION_OVERRIDE = {
     5: { sprite: 'jab', deg: 35 },
-    6: { deg: -35 },
+    6: { sprite: 'jab', deg: -35 }, // V1391 C 사용자: 5번과 짝 — 잽 그림(이전 스트레이트)
     8: { deg: 0 },
     9: { deg: 45 },
     10: { deg: -45 },
@@ -89,10 +92,10 @@
 
     function setPose(s, regionId) {
       const override = regionId != null ? REGION_OVERRIDE[regionId] : null;
-      const src = SPRITE[override ? override.sprite : s] || SPRITE.idle;
+      const src = SPRITE[override && override.sprite ? override.sprite : s] || SPRITE.idle; // V1391 C: 각도만 지정된 구멍(6·8·9·10·11)이 대기 그림으로 빠지던 버그 — 대기/잽 그림이 같을 땐 안 보였음
       if (img.getAttribute('src') !== src) img.setAttribute('src', src);
       const deg = override ? override.deg : (rotTable[s] != null ? rotTable[s] : rotTable.idle);
-      img.style.transform = imgTransform(side, deg);
+      img.style.transform = imgTransform(side, deg, src);
     }
 
     let phase = 'idle'; // idle | reach | return | goneFade | goneHold | backFade
