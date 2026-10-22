@@ -1579,16 +1579,19 @@
     function weaponCloneOverflow(targetXFrac, targetYFrac, onImpact, frameKey, regionId) {
       const fxLayer = document.getElementById('mole-hammer-layer'); // overflow:visible
       if (weapon === 'cannon') {
-        // 분신 몸체·포즈 맞추기는 포기(사용자 지정 — "쉬운 방법"): 게임판 밖에 분신 대포가
-        // 있다고 치고, 왼쪽 외곽~좌하단 모서리~아래쪽 외곽 경로 위 랜덤한 지점에서 포탄만
-        // 목표까지 날아간다(randomCannonCloneStart, 정확한 경로는 사용자 지정). 랜덤이라
-        // 동시에 여러 개(8개까지 실기기 확인) 떠도 자연스럽게 안 겹친다.
-        // ⚠️ 판 밖은 안 보이게(clip) 하려던 시도(#mole-board)는 무작위 시작점과 목표 거리가
-        // 들쭉날쭉해서 "어떤 건 잘 보이고 어떤 건 중앙 근처에서 톡 나타남"으로 일관성이
-        // 없었다(사용자 리포트) — 사용자 지정으로 클리핑을 포기하고 fxLayer(mole-hammer-layer,
-        // overflow:visible)에 그려 판 밖 구간부터 항상 전체가 보이게 확정.
-        const start = randomCannonCloneStart();
-        MG.HitFx.cannonClone(fxLayer, start.x, start.y, targetXFrac, targetYFrac, onImpact);
+        // V1396 C 사용자: 캐논도 뿅망치와 똑같이 — 못 따라갈 때만 메인과 같은 대포(70%)가 같은 자리에서 조준·발사 후 사라짐.
+        const clone = MG.LaneCannon.create({ layer: fxLayer });
+        const cel = fxLayer.lastElementChild;
+        cel.classList.add('lane-cannon--clone');
+        clone.strike(targetXFrac, targetYFrac, onImpact);
+        let last = performance.now();
+        const t0 = last;
+        (function tick(now) {
+          clone.update(Math.min(0.05, Math.max(0, (now - last) / 1000))); last = now;
+          if (now - t0 < 900) { requestAnimationFrame(tick); return; }
+          cel.classList.add('is-fading');
+          setTimeout(() => clone.clear(), 220);
+        })(t0);
       } else if (weapon === 'alipunch') {
         // 분신도 실제 위치와 "같은 글러브·같은 애니메이션"이어야 한다(사용자 지정) — 일반
         // quakeClone 대신 lane-boxing.js 가 export 하는 makeGlove 로 그 구역의 진짜 글러브를
@@ -2117,25 +2120,6 @@
   const QUAKE_MAX_DEPTH = 4;
   const QUAKE_CLONE_GAP = 55; // ms — 분신들 시차 연타
   let forceQuakeNext = false; // __debugForceQuake
-
-  // 캐논 분신 발사 시작점 — 게임판 "밖"(화면 밖에 분신 대포가 있다고 치고, 사용자 지정)에서
-  // 왼쪽 외곽을 타고 내려오다 좌하단 모서리를 돌아 아래쪽 외곽을 타고 이동하는 경로 위의
-  // 랜덤한 한 점. 경로 양끝(사용자 지정): (1) 3번째 줄(row index2) 왼쪽열 높이의 왼쪽 바깥쪽,
-  // (2) 4번째 줄(row index3) 3번째 구멍(#, regionId14) 아래쪽 바깥. grid-partition.js 의
-  // V_TOP=0.27/V_BOTTOM=0.88/gridSize=4 기준 좌표(vStep=(0.88-0.27)/3).
-  // 아래쪽 경로는 게임판 경계(y=1.0) 밑으로 내려가면 다이얼패드(버튼보드) 외곽선에 닿아
-  // 보인다(사용자 지정 — "시작점은 버튼 위어야함", "다이얼패드 외각선은 포탄이 건들면
-  // 안됨") — y=0.97 로 판 바닥 경계 안쪽에 머물게 클램프.
-  const CANNON_CLONE_PATH_A = { x: -0.06, y: 0.27 + ((0.88 - 0.27) / 3) * 2 };  // 3행 왼쪽열 높이
-  const CANNON_CLONE_PATH_CORNER = { x: -0.06, y: 0.97 };                      // 좌하단 바깥 모서리(판 안쪽 경계)
-  const CANNON_CLONE_PATH_B = { x: (2 + 0.5) / 4, y: 0.97 };                    // 4행 3번째구멍(#) 아래(판 안쪽 경계)
-  function randomCannonCloneStart() {
-    const seg1 = CANNON_CLONE_PATH_CORNER.y - CANNON_CLONE_PATH_A.y; // 왼쪽 외곽 구간(세로)
-    const seg2 = CANNON_CLONE_PATH_B.x - CANNON_CLONE_PATH_CORNER.x; // 아래쪽 외곽 구간(가로)
-    const t = Math.random() * (seg1 + seg2);
-    if (t < seg1) return { x: CANNON_CLONE_PATH_A.x, y: CANNON_CLONE_PATH_A.y + t };
-    return { x: CANNON_CLONE_PATH_CORNER.x + (t - seg1), y: CANNON_CLONE_PATH_CORNER.y };
-  }
 
   // 분신 포즈 = 목표 구멍의 다이얼패드 위치 기준 (사용자 지정).
   //  ✱·0·#(12·13·14) = 0°(옆면, 아래로 내리침) / 연락처·키패드·최근기록(3·7·11) = 90°(정면, 직선 찌르기) / 나머지 = 45°(대각선, 내리침)
