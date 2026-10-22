@@ -463,7 +463,8 @@
     var KS = 'assets/inventory/skill-v1403/';
     function renderSkills() {
       var locked = !!(opts.gameInProgress && opts.gameInProgress());
-      var weaponId = equipped();
+      // 사용자: 스킬 탭 무기 = 무기 화면에서 보고 있던 무기(세트). 무기 화면을 안 거쳤으면 장착 무기.
+      var weaponId = (WEAPONS[pageIdx] || {}).id || equipped();
       var weapon = WEAPONS.filter(function (w) { return w.id === weaponId; })[0];
       var nSlots = MG.Skills.slotsFor(weaponId).active;
       var lo = MG.Skills.loadoutFor(weaponId).activeSkills;
@@ -795,7 +796,9 @@
         b.querySelector('.inv-tab-lbl').textContent = T(t.i18n);
         fitTabLabel(b.querySelector('.inv-tab-lbl'));
         b.addEventListener('click', function () {
-          active = t.id; pageIdx = 0; activePage = 0; passivePage = 0;
+          // 사용자: 무기↔스킬 탭은 같은 무기로 세트 — 그 사이 전환은 보던 무기(pageIdx) 유지
+          var keepWeapon = (active === 'weapon' || active === 'skill') && (t.id === 'weapon' || t.id === 'skill');
+          active = t.id; if (!keepWeapon) pageIdx = 0; activePage = 0; passivePage = 0;
           // 사용자 지정(2026-09-27): "컬렉션 화면은 사진관 탭일 때만 유지, 다른 탭으로
           // 전환하면 닫혀야 함".
           if (active !== 'photo' && photoCollectionOpen) closePhotoCollection();
