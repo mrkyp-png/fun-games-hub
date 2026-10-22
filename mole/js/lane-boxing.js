@@ -11,8 +11,8 @@
   // 이미지는 3장만(§5): 잽·라이트훅·레프트훅·대기 = alipunch-jab.png(공용), 스트레이트 전용,
   // 어퍼컷 전용.
 
-  const HOME_L = { x: 0.125, y: 0.88 };
-  const HOME_R = { x: 0.875, y: 0.88 };
+  const HOME_L = { x: 0.125, y: 0.921 }; // V1390 C 사용자: 글러브(1.3배) 아래 끝 = 뿅망치 손잡이 끝 높이 421.4px(0.88→0.921)
+  const HOME_R = { x: 0.875, y: 0.921 };
   const REACH_SEC = 0.10;
   const RETURN_SEC = 0.14;
   const GONE_FADE_SEC = 0.12;
@@ -20,12 +20,13 @@
   const BACK_FADE_SEC = 0.16;
 
   const SPRITE = {
-    idle: 'assets/weapons/alipunch-jab.png',
-    jab: 'assets/weapons/alipunch-jab.png',
-    hookL: 'assets/weapons/alipunch-jab.png',
-    hookR: 'assets/weapons/alipunch-jab.png',
-    straight: 'assets/weapons/alipunch-straight.png',
-    upper: 'assets/weapons/alipunch-upper.png'
+    // V1390 C 사용자: 빨간 만화 주먹 — 어퍼컷=2차 8번(315°)·스트레이트=1차 6번·잽=2차 4번(135°)·대기=1차 10번. 각도표는 그대로.
+    idle: 'assets/weapons/kingfist-idle-v1390.webp',
+    jab: 'assets/weapons/kingfist-jab-v1390.webp',
+    hookL: 'assets/weapons/kingfist-jab-v1390.webp',
+    hookR: 'assets/weapons/kingfist-jab-v1390.webp',
+    straight: 'assets/weapons/kingfist-straight-v1390.webp',
+    upper: 'assets/weapons/kingfist-upper-v1390.webp'
   };
   // 때린 뒤 대기위치로 복귀(true) vs 사라졌다 다시 나타남(false). 전부 복귀로 변경(사용자 지시).
   const RETURNS = { jab: true, straight: true, upper: true, hookL: true, hookR: true };
@@ -227,7 +228,7 @@
     // 겹치면 안 되고 외곽선끼리만 닿아야 하므로(사용자 지정) 각자 중앙에서 글러브
     // 반너비만큼 떨어진 지점까지만 접근한다 (.lane-boxing-glove 폭 14.63%,
     // 뻗을 때 1.08배 확대되므로 반너비도 그만큼 커짐 — style.css 참고).
-    const GLOVE_HALF_W = 0.1463 / 2 * 1.08;
+    const GLOVE_HALF_W = 0.1902 / 2 * 1.08; // V1390 C: 글러브 1.3배
     function meet(onImpact) {
       left.strike(0.5 - GLOVE_HALF_W, HOME_L.y, 'jab', null, null);
       right.strike(0.5 + GLOVE_HALF_W, HOME_R.y, 'jab', onImpact, null);

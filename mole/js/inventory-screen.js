@@ -22,7 +22,7 @@
       stats: [['Hole 16 → 15', 'Holes 16 → 15'],
               ['주변 두더지 지진 연타 15% (2·3타 두더지 소탕 포함)', '15% quake — chain-hits nearby moles (clears 2·3-hit moles too)'],
               ['-', '-']] },
-    { id: 'alipunch', name: '킹 판취', nameEn: 'King Punch', thumb: 'assets/weapons/alipunch-jab.png', rarity: 'legend', skillSlots: { active: 4, passive: 2 },
+    { id: 'alipunch', name: '킹 판취', nameEn: 'King Punch', thumb: 'assets/weapons/kingfist-jab-mirror-v1390.webp', rarity: 'legend', skillSlots: { active: 4, passive: 2 },
       desc: ['전설적인 복서의 힘을 담은\n강력한 글러브! 빠르고 강한\n연타로 모든 두더지를 한 번에\n날려버린다!', 'Gloves holding the power of\na legendary boxer! Fast, heavy\ncombos blast every mole away!'],
       stats: [['Hole 16 → 14', 'Holes 16 → 14'],
               ['무적 5초 확률 20% (모든 동물 타격 가능), 2·3타 두더지 소탕 포함', '20% chance — 5s invincibility (any animal is safe to hit), clears 2·3-hit moles'],
@@ -344,7 +344,7 @@
       mount.style.setProperty('--iw-scale', scale);
       fitWeaponName();
       // Visible alpha bounds in the canonical 120 x 88 animation coordinate system.
-      var art = {hammer:[83.44,83.58,-1.09,0.04],cannon:[105.55,88,0,0],goldhammer:[63.1,88,0,0],alipunch:[112,80,0,0]};
+      var art = {hammer:[83.44,83.58,-1.09,0.04],cannon:[105.55,88,0,0],goldhammer:[63.1,88,0,0],alipunch:[88,63,0,0]};
       body.querySelectorAll('.iw-page').forEach(function (page) {
         var a = art[page.dataset.weapon];
         var unit = page.querySelector('.iw-preview-unit');
