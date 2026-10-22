@@ -19,7 +19,7 @@
   const READY_DEG = -30;               // 조준: 오른쪽에서 머리 들어올림
   const HIT_DEG = -82;                 // 타격: 머리를 대각선 아래로 휘두름
   // V1380 C: 새 뿅망치 그림(27.2%)의 머리 중심을 V1375 C 와 같은 기준으로 HIT_DEG 회전해 재계산.
-  const GRIP_OFF_X = 0.154;            // grip 을 목표보다 이만큼 오른쪽 (보드 폭 분수)
+  const GRIP_OFF_X = 0.134;            // grip 을 목표보다 이만큼 오른쪽 (보드 폭 분수) — V1381 C 사용자: 타격점 0.2cm 왼쪽
   const GRIP_OFF_Y = 0.042;            // grip 을 목표보다 이만큼 아래 (보드 높이 분수)
   const MALLET_BAKED_DEG = 15;         // V1380 C: 새 뿅망치 그림 자체가 시계방향 15도 기울어 있음 → 상쇄해 예전 각도 유지
   const CLAMP = -0.45;                 // grip 이 보드 가장자리에서 이만큼까지 나가도 됨 (- = 밖 허용)
