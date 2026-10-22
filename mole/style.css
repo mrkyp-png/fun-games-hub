@@ -4173,7 +4173,7 @@ body { background: var(--lm-page); }
 .inv-cannon-word {
   /* 사용자 오더: 아래 0.2cm, 좌측 0.3cm, 그 후 글자 잘림으로 우측 0.3cm(좌측 0.3cm 상쇄) +
      추가로 우측 0.3cm. */
-  position: absolute; left: calc(50% - 38.2px - 0.7cm + 8px + 0.3cm); top: calc(10px + 0.2cm);
+  position: absolute; left: calc(50% - 38.2px - 0.7cm + 8px + 0.3cm + 16px); top: calc(10px + 0.2cm); /* V1393 C 사용자: 무기화면 새 액자에서 왼쪽 잘림 → 우측 16px */
   transform: translate(-50%, -50%) scale(0.3);
   opacity: 0;
   pointer-events: none;

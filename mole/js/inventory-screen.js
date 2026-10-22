@@ -9,20 +9,20 @@
   // 능력치 표 3줄 (라벨 = i18n 키, 값 = [ko, en]).
   var STAT_ROWS = ['mole.inv.stat.visibility', 'mole.inv.stat.attack', 'mole.inv.stat.defense'];
   var WEAPONS = [
-    { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/inventory/ui-v1379/approved-mallet.webp', rarity: 'basic', skillSlots: { active: 0, passive: 0 },
+    { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/inventory/ui-v1379/approved-mallet.webp', rarity: 'basic', skillSlots: 0,
       desc: ['기본 무기.\n간단하지만 강력한 타격감으로\n두더지를 시원하게!', 'The basic weapon.\nSimple but punchy —\nbonk those moles!'],
       stats: [['-', '-'], ['-', '-'], ['-', '-']] },
-    { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1-nol-v1392.png', rarity: 'rare', skillSlots: { active: 2, passive: 2 },
+    { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1-nol-v1392.png', rarity: 'rare', skillSlots: 1,
       desc: ['강력한 포탄으로\n더 많은 두더지를 한 번에!\n넓은 범위를 커버하는 든든한 무기!', 'Powerful cannonballs\nhit more moles at once —\na sturdy weapon with wide reach!'],
       stats: [['Hole 16 → 15', 'Holes 16 → 15'],
               ['2·3타 두더지 연타 확률 10%', '10% burst on 2·3-hit moles'],
               ['-', '-']] },
-    { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldpaw-v1382.webp', rarity: 'epic', skillSlots: { active: 2, passive: 2 },
+    { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldpaw-v1382.webp', rarity: 'epic', skillSlots: 1,
       desc: ['전설의 힘을 담은 황금 망치!\n지면을 울리는 강력한 충격으로\n주변의 두더지를 한 번에 처치한다!', 'A golden hammer of legend!\nIts ground-shaking blow\ntakes out nearby moles at once!'],
       stats: [['Hole 16 → 15', 'Holes 16 → 15'],
               ['주변 두더지 지진 연타 15% (2·3타 두더지 소탕 포함)', '15% quake — chain-hits nearby moles (clears 2·3-hit moles too)'],
               ['-', '-']] },
-    { id: 'alipunch', name: '킹 판취', nameEn: 'King Punch', thumb: 'assets/weapons/kingfist-jab-mirror-v1390.webp', rarity: 'legend', skillSlots: { active: 4, passive: 2 },
+    { id: 'alipunch', name: '킹 판취', nameEn: 'King Punch', thumb: 'assets/weapons/kingfist-jab-mirror-v1390.webp', rarity: 'legend', skillSlots: 2,
       desc: ['전설적인 복서의 힘을 담은\n강력한 글러브! 빠르고 강한\n연타로 모든 두더지를 한 번에\n날려버린다!', 'Gloves holding the power of\na legendary boxer! Fast, heavy\ncombos blast every mole away!'],
       stats: [['Hole 16 → 14', 'Holes 16 → 14'],
               ['무적 5초 확률 20% (모든 동물 타격 가능), 2·3타 두더지 소탕 포함', '20% chance — 5s invincibility (any animal is safe to hit), clears 2·3-hit moles'],
@@ -301,9 +301,10 @@
       var close = dialog.querySelector('button');
       close.textContent = en ? 'Close' : '닫기';
       dialog.querySelector('.inv-guide-intro').textContent = (en ? w.desc[1] : w.desc[0]).replace(/\n/g, ' ');
-      dialog.querySelector('.inv-guide-skills').textContent = w.skillSlots.active === 0
+      // V1393 C 사용자: 액티브/패시브 구분 없이 '스킬 장착' 개수만 (캐논·골드 1개, 킹 판취 2개)
+      dialog.querySelector('.inv-guide-skills').textContent = w.skillSlots === 0
         ? (en ? 'Skill equipment: Unavailable for this weapon.' : '스킬 장착: 이 무기는 스킬을 장착할 수 없습니다.')
-        : (en ? 'Skill equipment: ' + w.skillSlots.active + ' active skills and ' + w.skillSlots.passive + ' passive skills.' : '스킬 장착: 액티브 스킬 ' + w.skillSlots.active + '개 · 패시브 스킬 ' + w.skillSlots.passive + '개 장착 가능');
+        : (en ? 'Skill equipment: ' + w.skillSlots + (w.skillSlots === 1 ? ' skill.' : ' skills.') : '스킬 장착: ' + w.skillSlots + '개');
       dialog.querySelector('.inv-guide-basic').textContent = en ? 'Basic means the standard mallet effect, with no additional weapon bonus.' : '기본은 뿅망치와 같은 기본 효과이며, 해당 능력치에 추가 보너스가 없다는 뜻입니다.';
       var definitions = en ? [
         'The number of holes on the board. Fewer holes mean fewer places to watch.',
