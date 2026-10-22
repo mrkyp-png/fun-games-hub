@@ -590,21 +590,21 @@ body { background: var(--lm-page); }
   margin: 0 auto;
   overflow: hidden;
   border-radius: 10px; /* 어두운 우주 위라 모서리 제각각이 튐 → 네 모서리 통일(v733) */
-  background: #1b2b4a url('assets/board-scene.jpg?v=1376') center / cover no-repeat;
+  background: #89d129 url('assets/board-scene.jpg?v=1376') center / cover no-repeat; /* V1400 C 사용자: 진입 때 진한 청색(#1b2b4a) 대신 그림 평균색 */
 }
 /* 피버타임 보드 교차 스왑(사용자 지정: "서로 교차되면서 내려오는 방식") — FLIP 기법.
    진입/퇴장(게임복귀, 빠르게)마다 속도가 달라야 해서 transition 은 CSS 클래스가 아니라
    game.js 의 swapBoardPositions() 가 인라인으로 직접 매긴다. */
 /* 라운드별 보드 배경(사용자 지정) — 1~2=봄, 3~4=여름, 5~6=가을, 7~8=겨울. */
-.mole-board--spring { background: #1b2b4a url('assets/board-scene-spring.jpg?v=1376') center / cover no-repeat; }
-.mole-board--summer { background: #1b2b4a url('assets/board-scene-summer.jpg?v=1376') center / cover no-repeat; }
-.mole-board--autumn { background: #1b2b4a url('assets/board-scene-autumn.jpg?v=1376') center / cover no-repeat; }
-.mole-board--winter { background: #1b2b4a url('assets/board-scene-winter.jpg?v=1376') center / cover no-repeat; }
+.mole-board--spring { background: #9dd047 url('assets/board-scene-spring.jpg?v=1376') center / cover no-repeat; }
+.mole-board--summer { background: #e6c87c url('assets/board-scene-summer.jpg?v=1376') center / cover no-repeat; }
+.mole-board--autumn { background: #e3b136 url('assets/board-scene-autumn.jpg?v=1376') center / cover no-repeat; }
+.mole-board--winter { background: #d2e0f1 url('assets/board-scene-winter.jpg?v=1376') center / cover no-repeat; }
 /* 피버타임(보너스타임) 중 보드 배경 — 계절 배경 대신 나이트 배경(사용자 지정). 보드가
    버튼보드 자리로 슬라이딩하며 전광판과 교차되는 순간부터 적용, 복귀 슬라이딩 때 계절
    배경으로 되돌아간다(game.js swapBoardPositions 에서 토글). 계절 클래스보다 뒤에 와야
    우선순위로 이긴다. */
-.mole-board--night { background: #1b2b4a url('assets/board-scene-night.jpg?v=1376') center / cover no-repeat; }
+.mole-board--night { background: #3f3aac url('assets/board-scene-night.jpg?v=1376') center / cover no-repeat; }
 /* 실드(챕터 4~5) 활성 = 보드에 파란 테두리 글로우 (별도 HUD 없이 상태 표시) */
 .mole-board--shielded { box-shadow: inset 0 0 0 4px rgba(90, 170, 255, 0.9), inset 0 0 22px rgba(90, 170, 255, 0.55); }
 
