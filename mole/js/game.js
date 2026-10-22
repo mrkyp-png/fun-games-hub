@@ -1567,7 +1567,7 @@
       hammerOpts.gripOff = { x: 0.097, y: -0.065 }; // 타격점 좌측으로 0.1cm 추가이동 (누적 0.2cm, 좌표계=보드분수 1cm≈0.1)
       hammerOpts.emptyDy = -0.025; // 빈 구멍 헛스윙 전용: 공용 AIM_DY(-0.055)보다 아래로 0.3cm (뿅망치는 그대로)
       hammerOpts.homeMarginTop = '-0.3cm';       // 대기 위치를 기본(0.2cm 아래)에서 위로 0.5cm
-      hammerOpts.homeDegOffset = 20;             // 대기 각도만 시계방향으로 20도 추가 회전
+      hammerOpts.homeDegOffset = 0;              // V1382 C 사용자: 대기 각도 = 지금 뿅망치와 같게(새 그림 똑바로 0° + 18° = 뿅망치 15°+3°)
       hammerOpts.idle = 'spin';                  // 대기 애니메이션 — 제자리 360도 회전(사용자 지정)
       // 지진 분신 포즈 미리 로드 (첫 지진 때 이미지가 늦게 떠서 안 보이는 것 방지)
       ['goldhammer-0', 'goldhammer-90'].forEach((n) => { const i = new Image(); i.src = 'assets/weapons/' + n + '.png'; });
