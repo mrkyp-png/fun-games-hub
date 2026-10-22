@@ -396,7 +396,11 @@
     if (I && I.onChange && !simple) { // simple(숫자만) 모드는 언어별 서브텍스트가 없어 다시 그릴 게 없음
       I.onChange(function () {
         faces.forEach(function (f, id) {
-          if (f.num && buttons[id]) fillFace(buttons[id], f, id, simple);
+          if (!f.num || !buttons[id]) return;
+          // V1405 C 버그: 언어 다시 그리기가 ✱ 버튼(킹 판취 왼쪽 스킬 칸)을 통째로 다시 써서 스킬 칸이 사라졌다 — 스킬 칸 노드는 살려서 다시 붙임
+          const keep = buttons[id].querySelector('.lane-items');
+          fillFace(buttons[id], f, id, simple);
+          if (keep) buttons[id].appendChild(keep);
         });
       });
     }

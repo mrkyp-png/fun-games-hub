@@ -14,13 +14,11 @@
   ];
   var COSTUMES = [
     { id: 'blue_bears', nameKo: '블루베어스', nameEn: 'Blue Bears' },
-    { id: 'red_wings', nameKo: '레드윙스', nameEn: 'Red Wings' },
     { id: 'mount_stars', nameKo: '마운트스타즈', nameEn: 'Mount Stars' },
-    { id: 'sun_giants', nameKo: '선자이언츠', nameEn: 'Sun Giants' },
     { id: 'cloud_cups', nameKo: '클라우드컵스', nameEn: 'Cloud Cups' }
   ];
   var MAX_APPLIED = 10;
-  var TOTAL = 15;
+  var TOTAL = FACE_TYPES.length * COSTUMES.length; // V1405 C: 3팀 → 9개
   var CHAR_EFFECT_VALUE = 0.1;      // §17: 개별 캐릭터 효과 예시(두더지 하강 딜레이 +0.1초)
   var GLOBAL_EFFECT_VALUE = 0.1;    // §18: 15/15 완성 시 전체 보상(개별 효과와 별도 관리)
 

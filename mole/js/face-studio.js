@@ -10,7 +10,8 @@
   var T = function (k, p) { return root.FGH.I18N.t(k, p); };
   var FA = 'assets/facestudio/';
   var FACE_ORDER = ['round', 'sturdy', 'sharp'];
-  var COSTUME_ORDER = ['blue_bears', 'red_wings', 'mount_stars', 'sun_giants', 'cloud_cups'];
+  var COSTUME_ORDER = ['blue_bears', 'mount_stars', 'cloud_cups']; // V1405 C: 윙스·자이언츠 삭제
+  var NCARD = COSTUME_ORDER.length * 3;
 
   var imgCache = {};
   function loadImg(src) {
@@ -334,9 +335,9 @@
     // v782(사용자 지정): 좌우 화살표 = 카드가 한 장씩 옆으로 이동(전체 5팀×3얼굴형 15장을 한 줄로 이어 붙인 목록,
     // 가운데 금색 발판 카드가 현재 선택). 엠블럼을 누르면 그 팀 가운데 카드로 이동.
     var cpos = 1; // 0..14
-    function cardSrc(k) { k = (k + 15) % 15; return 'assets/photo/characters/' + FACE_ORDER[k % 3] + '_' + COSTUME_ORDER[Math.floor(k / 3)] + '.png'; }
+    function cardSrc(k) { k = (k + NCARD) % NCARD; return 'assets/photo/characters/' + FACE_ORDER[k % 3] + '_' + COSTUME_ORDER[Math.floor(k / 3)] + '.png'; }
     function renderCostume() {
-      st.costume = Math.floor(((cpos % 15) + 15) % 15 / 3);
+      st.costume = Math.floor(((cpos % NCARD) + NCARD) % NCARD / 3);
       var cid = COSTUME_ORDER[st.costume];
       el.querySelectorAll('[data-fs-emb]').forEach(function (b) { b.classList.toggle('is-on', b.dataset.fsEmb === cid); });
       var cards = el.querySelectorAll('[data-fs-ccard] > img');
@@ -354,7 +355,7 @@
       box.classList.remove('is-slide-next', 'is-slide-prev'); void box.offsetWidth;
       box.classList.add(dir > 0 ? 'is-slide-next' : 'is-slide-prev');
       setTimeout(function () {
-        cpos = (cpos + dir * 3 + 15) % 15; st.results = {}; renderCostume(); // v887: 화살표 = 팀 단위(3장씩)
+        cpos = (cpos + dir * 3 + NCARD) % NCARD; st.results = {}; renderCostume(); // v887: 화살표 = 팀 단위(3장씩)
         box.classList.remove('is-slide-next', 'is-slide-prev');
         box.classList.add(dir > 0 ? 'is-in-next' : 'is-in-prev');
         setTimeout(function () { box.classList.remove('is-in-next', 'is-in-prev'); sliding = false; }, 180);

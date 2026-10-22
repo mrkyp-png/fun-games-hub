@@ -448,7 +448,7 @@ body { background: var(--lm-page); }
 #game-screen:not(.is-start) #btn-back-to-hub.nav-locked { opacity: 0.28; }
 /* 아케이드 홈버튼 그림(GPT Imagegen, 비치 박스 톤) — 기존 SVG 아이콘·테두리 대신 */
 #game-screen:not(.is-start) #btn-back-to-hub, #game-screen:not(.is-start) #btn-back-to-hub:active {
-  border: 0; background: url('assets/home-btn-gold.png') center / contain no-repeat; box-shadow: none; }
+  border: 0; background: url('assets/home-btn-matte-v1405.png') center / contain no-repeat; box-shadow: none; }
 #game-screen:not(.is-start) #btn-back-to-hub .hub-menu-ic { display: none; }
 /* 인트로/카운트다운/라운드 전환 중 = 잠금(회색 음영). 클릭도 무시(JS navLocked). */
 #btn-back-to-hub.nav-locked { opacity: 0.4; filter: grayscale(0.8); pointer-events: none; }
@@ -4069,42 +4069,42 @@ body { background: var(--lm-page); }
 .inv-thumb-mirror { animation: inv-bump-r 4s ease-in-out infinite; }
 /* 곡선(아치) 궤적(사용자 지시) — 직선(translateX만)이 아니라 중간에 위로 살짝 뜨며 휘어진다. */
 @keyframes inv-bump-l {
-  0%        { transform: rotate(15deg) translate(0, 0); }
-  4%        { transform: rotate(15deg) translate(5px, -6px); }
-  8%        { transform: rotate(15deg) translate(10px, 0); }
-  12%       { transform: rotate(15deg) translate(5px, -6px); }
-  16%       { transform: rotate(15deg) translate(0, 0); }
-  20%       { transform: rotate(15deg) translate(5px, -6px); }
-  24%       { transform: rotate(15deg) translate(10px, 0); }
-  28%       { transform: rotate(15deg) translate(5px, -6px); }
-  32%       { transform: rotate(15deg) translate(0, 0); }
-  36%       { transform: rotate(15deg) translate(5px, -6px); }
-  40%       { transform: rotate(15deg) translate(10px, 0); }
-  44%       { transform: rotate(15deg) translate(5px, -6px); }
-  48%       { transform: rotate(15deg) translate(0, 0); }
-  52%       { transform: rotate(15deg) translate(5px, -6px); }
-  56%, 62%  { transform: rotate(15deg) translate(10px, 0); } /* 마지막(4번째) 타격 — 스파크 타이밍 맞춰 살짝 오래 붙어있음 */
-  68%       { transform: rotate(15deg) translate(5px, -6px); }
-  74%, 100% { transform: rotate(15deg) translate(0, 0); }    /* 대기위치에서 나머지 시간 정지 */
+  0%        { transform: rotate(var(--kp-tilt, 15deg)) translate(0, 0); }
+  4%        { transform: rotate(var(--kp-tilt, 15deg)) translate(5px, -6px); }
+  8%        { transform: rotate(var(--kp-tilt, 15deg)) translate(10px, 0); }
+  12%       { transform: rotate(var(--kp-tilt, 15deg)) translate(5px, -6px); }
+  16%       { transform: rotate(var(--kp-tilt, 15deg)) translate(0, 0); }
+  20%       { transform: rotate(var(--kp-tilt, 15deg)) translate(5px, -6px); }
+  24%       { transform: rotate(var(--kp-tilt, 15deg)) translate(10px, 0); }
+  28%       { transform: rotate(var(--kp-tilt, 15deg)) translate(5px, -6px); }
+  32%       { transform: rotate(var(--kp-tilt, 15deg)) translate(0, 0); }
+  36%       { transform: rotate(var(--kp-tilt, 15deg)) translate(5px, -6px); }
+  40%       { transform: rotate(var(--kp-tilt, 15deg)) translate(10px, 0); }
+  44%       { transform: rotate(var(--kp-tilt, 15deg)) translate(5px, -6px); }
+  48%       { transform: rotate(var(--kp-tilt, 15deg)) translate(0, 0); }
+  52%       { transform: rotate(var(--kp-tilt, 15deg)) translate(5px, -6px); }
+  56%, 62%  { transform: rotate(var(--kp-tilt, 15deg)) translate(10px, 0); } /* 마지막(4번째) 타격 — 스파크 타이밍 맞춰 살짝 오래 붙어있음 */
+  68%       { transform: rotate(var(--kp-tilt, 15deg)) translate(5px, -6px); }
+  74%, 100% { transform: rotate(var(--kp-tilt, 15deg)) translate(0, 0); }    /* 대기위치에서 나머지 시간 정지 */
 }
 @keyframes inv-bump-r {
-  0%        { transform: rotate(-15deg) scaleX(-1) translate(0, 0); }
-  4%        { transform: rotate(-15deg) scaleX(-1) translate(5px, -6px); }
-  8%        { transform: rotate(-15deg) scaleX(-1) translate(10px, 0); }
-  12%       { transform: rotate(-15deg) scaleX(-1) translate(5px, -6px); }
-  16%       { transform: rotate(-15deg) scaleX(-1) translate(0, 0); }
-  20%       { transform: rotate(-15deg) scaleX(-1) translate(5px, -6px); }
-  24%       { transform: rotate(-15deg) scaleX(-1) translate(10px, 0); }
-  28%       { transform: rotate(-15deg) scaleX(-1) translate(5px, -6px); }
-  32%       { transform: rotate(-15deg) scaleX(-1) translate(0, 0); }
-  36%       { transform: rotate(-15deg) scaleX(-1) translate(5px, -6px); }
-  40%       { transform: rotate(-15deg) scaleX(-1) translate(10px, 0); }
-  44%       { transform: rotate(-15deg) scaleX(-1) translate(5px, -6px); }
-  48%       { transform: rotate(-15deg) scaleX(-1) translate(0, 0); }
-  52%       { transform: rotate(-15deg) scaleX(-1) translate(5px, -6px); }
-  56%, 62%  { transform: rotate(-15deg) scaleX(-1) translate(10px, 0); }
-  68%       { transform: rotate(-15deg) scaleX(-1) translate(5px, -6px); }
-  74%, 100% { transform: rotate(-15deg) scaleX(-1) translate(0, 0); }
+  0%        { transform: rotate(calc(-1 * var(--kp-tilt, 15deg))) scaleX(-1) translate(0, 0); }
+  4%        { transform: rotate(calc(-1 * var(--kp-tilt, 15deg))) scaleX(-1) translate(5px, -6px); }
+  8%        { transform: rotate(calc(-1 * var(--kp-tilt, 15deg))) scaleX(-1) translate(10px, 0); }
+  12%       { transform: rotate(calc(-1 * var(--kp-tilt, 15deg))) scaleX(-1) translate(5px, -6px); }
+  16%       { transform: rotate(calc(-1 * var(--kp-tilt, 15deg))) scaleX(-1) translate(0, 0); }
+  20%       { transform: rotate(calc(-1 * var(--kp-tilt, 15deg))) scaleX(-1) translate(5px, -6px); }
+  24%       { transform: rotate(calc(-1 * var(--kp-tilt, 15deg))) scaleX(-1) translate(10px, 0); }
+  28%       { transform: rotate(calc(-1 * var(--kp-tilt, 15deg))) scaleX(-1) translate(5px, -6px); }
+  32%       { transform: rotate(calc(-1 * var(--kp-tilt, 15deg))) scaleX(-1) translate(0, 0); }
+  36%       { transform: rotate(calc(-1 * var(--kp-tilt, 15deg))) scaleX(-1) translate(5px, -6px); }
+  40%       { transform: rotate(calc(-1 * var(--kp-tilt, 15deg))) scaleX(-1) translate(10px, 0); }
+  44%       { transform: rotate(calc(-1 * var(--kp-tilt, 15deg))) scaleX(-1) translate(5px, -6px); }
+  48%       { transform: rotate(calc(-1 * var(--kp-tilt, 15deg))) scaleX(-1) translate(0, 0); }
+  52%       { transform: rotate(calc(-1 * var(--kp-tilt, 15deg))) scaleX(-1) translate(5px, -6px); }
+  56%, 62%  { transform: rotate(calc(-1 * var(--kp-tilt, 15deg))) scaleX(-1) translate(10px, 0); }
+  68%       { transform: rotate(calc(-1 * var(--kp-tilt, 15deg))) scaleX(-1) translate(5px, -6px); }
+  74%, 100% { transform: rotate(calc(-1 * var(--kp-tilt, 15deg))) scaleX(-1) translate(0, 0); }
 }
 .inv-bump-spark, .inv-bump-word {
   position: absolute; left: 50%; top: 50%;
@@ -8619,7 +8619,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .iw-float { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; animation: iw-float 3.6s ease-in-out infinite; }
 .iw-weapon .inv-thumb { width: 120px; height: 88px; flex: none; }
 .iw-weapon .inv-thumb > img:first-child { max-width: 100%; max-height: 100%; object-fit: contain; }
-.iw-weapon .inv-thumb--pair { gap: 8px; }
+.iw-weapon .inv-thumb--pair { gap: 8px; --kp-tilt: 4deg; } /* 사용자: 킹 판취가 진열장 밖으로 잘림 → 두 장갑 안쪽으로 더 기울여(15→28°) 폭 줄임 */
 .iw-weapon .inv-thumb--pair > img { width: 52px; height: 88px; max-width: 52px; flex: none; object-fit: contain; }
 .iw-stage .iw-equip {
   position: absolute; left: 127px; top: 974px; width: 512px; height: 134px; margin: 0; padding: 0 25px;
@@ -8672,6 +8672,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .inv-guide-close { flex: 0 0 84px; height: 42px; border: 2px solid #166bb4; border-radius: 12px; color: #fff; font: inherit; background: linear-gradient(#78d9ff,#248ce5); box-shadow: inset 0 2px 0 #d1f3ff,inset 0 -3px 0 #166bb4,0 4px 0 #124b87; cursor: pointer; }
 .inv-guide-scroll { min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; font-size: 17px; line-height: 1.6; word-break: keep-all; overflow-wrap: break-word; }
 .inv-guide-scroll p { margin: 0 0 12px; }
+.inv-guide-scroll { scrollbar-width: none; } .inv-guide-scroll::-webkit-scrollbar { display: none; } /* V1405 C 사용자: 설명 오른쪽 스크롤바 안 보이게(스크롤은 그대로 됨) */
 .inv-guide-basic { padding: 12px; background: #e1f3ff; border-radius: 12px; }
 .inv-guide-sections section { margin: 0 0 12px; padding: 12px; border: 1px solid #e4d1aa; border-radius: 14px; background: #fffcf4; }
 .inv-guide-sections h3 { margin: 0 0 6px; font-size: 19px; color: #1879bd; }
@@ -8717,8 +8718,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .iw-page[data-weapon="goldhammer"] { --iw-glow: 255, 205, 70; }
 .iw-page[data-weapon="alipunch"] { --iw-glow: 255, 90, 90; }
 .iw-page::before { content: ''; position: absolute; left: 50%; top: calc(52% + 80px); width: 460px; height: 460px; /* 무기를 80px 내린 만큼 빛도 */ transform: translate(-50%, -50%); border-radius: 50%; z-index: 0; pointer-events: none;
-  background: radial-gradient(circle, rgba(var(--iw-glow), 0.9) 0%, rgba(var(--iw-glow), 0.5) 35%, rgba(var(--iw-glow), 0) 70%); /* 사용자: 뒤 색 그림자 약함 → 진하게 */ animation: iw-glow-float 3.6s ease-in-out infinite; }
-@keyframes iw-glow-float { 0%,100% { transform: translate(-50%, -50%); } 50% { transform: translate(-50%, calc(-50% - 8px)); } } /* 사용자: 뒤 빛도 무기와 같이 위아래 */
+  background: radial-gradient(circle, rgba(var(--iw-glow), 0.75) 0%, rgba(var(--iw-glow), 0.4) 35%, rgba(var(--iw-glow), 0) 70%); /* 사용자: 약간 줄임(0.9→0.75) */ animation: iw-glow-float 3.6s ease-in-out infinite; }
+@keyframes iw-glow-float { 0%,100% { transform: translate(-50%, -50%); } 50% { transform: translate(-50%, calc(-50% - 12px * var(--iw-weapon-scale, 5))); } } /* 사용자: 뒤 빛이 무기와 같은 거리로 같이 위아래(무기 떠오름 12px × 무기 배율) */
 .iw-stage::after { content: ''; position: absolute; left: 234px; top: 922px; width: 300px; height: 44px; border-radius: 50%; z-index: 0; pointer-events: none; /* 사용자 '더 내려' → 무기칸(페이지) 밖 바닥(장착 버튼 위)에 그림 */
   background: radial-gradient(ellipse, rgba(15, 40, 75, 0.55) 0%, rgba(15, 40, 75, 0.25) 45%, rgba(15, 40, 75, 0) 72%); animation: iw-floor-shadow 3.6s ease-in-out infinite; }
 @keyframes iw-floor-shadow { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.62); opacity: 0.5; } } /* 무기(iw-float, 같은 3.6s·같은 시작) 올라가면 작고 옅게 */
@@ -8762,7 +8763,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .ks-mount { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); }
 .ks-stage { position: relative; width: 1278px; height: 1230px; transform: scale(var(--ks-scale,0)); transform-origin: 0 0;
   background: url('assets/inventory/skill-v1403/frame.webp') 0 0 / 1278px 1230px no-repeat; font-family: 'Jua', sans-serif; color: #07264c; }
-.ks-name { position: absolute; left: 330px; top: 35px; width: 620px; height: 90px; display: flex; align-items: center; justify-content: center; font-size: 72px; line-height: 1; color: #073b7b; text-shadow: 0 3px #fff; white-space: nowrap; }
+.ks-name { position: absolute; left: 330px; top: 35px; width: 620px; height: 90px; display: flex; align-items: center; justify-content: center; font-size: 80px; /* 사용자: 무기 화면 이름과 같은 크기 */ line-height: 1; color: #073b7b; text-shadow: 0 3px #fff; white-space: nowrap; }
 .ks-case { position: absolute; left: 118px; top: 166px; width: 520px; height: 474px; background: url('assets/inventory/skill-v1403/case.webp') center / 100% 100% no-repeat; overflow: hidden; }
 /* 사용자: 스킬 탭 무기 = 무기 화면과 같은 무기 연출·뒤 색 빛·바닥 그림자(세트), 조금 작게 */
 .ks-case .ks-wpage { position: absolute; inset: 7% 6% 6%; width: auto; height: auto; flex: none; }
@@ -8794,3 +8795,68 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .ks-press { transition: none; }
 .ks-press:active, .ks-press.is-down { transform: translateY(8px) scale(0.95); filter: brightness(0.86); }
 .ks-equip.is-on:active, .ks-equip.is-on.is-down { filter: hue-rotate(95deg) saturate(1.1) brightness(0.86); }
+/* V1405 C: AI 스킬 남은 초 — 게임판 가운데, 킹 판취 무적 숫자처럼 외곽선만(두더지 가리지 않게 흐리게) */
+.ai-countdown { position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%); z-index: 9; font-weight: 800; font-size: 3.2cm; line-height: 1; color: transparent; -webkit-text-stroke: 5px #1e6fd9; opacity: 0.32; pointer-events: none; }
+.ai-countdown[hidden] { display: none !important; }
+/* V1405 C 사용자: 아이템창 아래 탭 4개 = 시안 스타일(연두 판 + 금 볼트, 고른 탭 = 파랑 + 금테). 그림엔 글자 없음, 9칸 잘라 볼트 안 찌그러지게. 누르면 바로 깊숙이. */
+#inventory-screen .inv-tab, #inventory-screen .inv-tab--on { background: none !important; border-style: solid !important; border-color: transparent !important; border-width: 0 !important; border-radius: 0 !important; /* 그림 테두리(12px)는 border-image 폭만, 실제 테두리 0 → 아이콘·글자 자리 안 좁아져 위아래 가운데 */
+  border-image: url('assets/inventory/skill-v1403/tab-cream.webp') 76 fill / 12px stretch !important; box-shadow: none !important; outline: 0 !important; }
+#inventory-screen .inv-tab--on { border-image: url('assets/inventory/skill-v1403/tab-orange.webp') 76 fill / 12px stretch !important; } /* 사용자: C안 크림 나무 + 고른 탭 주황 */
+#inventory-screen .inv-tab { transition: none !important; }
+#inventory-screen .inv-tab:active { transform: translateY(4px) scale(0.95) !important; filter: brightness(0.88); }
+/* V1405 C 사용자: 코스튬 탭 개편(시안 A) — 스킬 탭 판(.ks-*) 재사용 */
+#inventory-screen[data-tab="costume"]::before { background: url('assets/skin2/bg-weapon.jpg?v=1376') center top / 100% 100% no-repeat; }
+#inventory-screen[data-tab="costume"] .inv-banner, #inventory-screen[data-tab="costume"] .inv-cards-head { display: none !important; }
+#inventory-screen[data-tab="costume"] .inv-cards-box, #inventory-screen[data-tab="costume"] .inv-cards-box[data-rar] { margin: 0; padding: 0; flex: 1 1 auto; min-height: 0; background: transparent !important; box-shadow: none; animation: none; }
+#inventory-screen[data-tab="costume"] .inv-cards-box::before, #inventory-screen[data-tab="costume"] .inv-cards-box::after { display: none; }
+#inventory-screen[data-tab="costume"] .inv-body { position: relative; min-width: 0; min-height: 0; overflow: hidden; padding: 0 !important; margin: 0 !important; }
+.cs-hero { position: absolute; inset: 14% 14% 13%; /* 사용자: 진열장 안쪽에서 벗어남 → 줄임 */ display: flex; align-items: flex-end; justify-content: center; z-index: 1; }
+.cs-hero-img { position: relative; height: 100%; display: block; transform: translateX(var(--feet, 0%)); }
+.cs-hero-img img { height: 100%; width: auto; display: block; }
+.cs-info .ks-slot-pill { width: 440px; }
+.cs-team { font-size: 50px; color: #fff; text-shadow: 0 3px #0b3f8c; white-space: nowrap; }
+.cs-effect { position: absolute; left: 40px; right: 40px; top: 160px; height: 190px; display: flex; align-items: center; gap: 18px; padding: 0 46px 0 40px; background: url('assets/inventory/skill-v1403/countbox.webp') center / 100% 100% no-repeat; }
+.cs-effect img { width: 100px; height: 100px; object-fit: contain; flex: none; }
+.cs-effect-txt { font-size: 37px; line-height: 1.25; color: #1a2f5e; word-break: keep-all; }
+.cs-effect-txt b { display: block; font-weight: 400; color: #d2541c; font-size: 44px; } /* 사용자: 글자가 박스 테두리에 닿음 → 폭 줄임 */
+.cs-acquire { position: absolute; left: 30px; right: 30px; top: 380px; text-align: center; font-size: 32px; color: #5a4632; white-space: nowrap; }
+.cs-card { cursor: pointer; border-radius: 30px; }
+/* 사용자: 두더지 뒤 팀색 그림자(은은하게, 빛 아님) + 아래 카드도 발밑 바닥 그림자 */
+.cs-card-char::before, .cs-hero-img::before { content: ''; position: absolute; left: 50%; top: 46%; width: 135%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; z-index: -1; pointer-events: none;
+  background: radial-gradient(circle, rgba(var(--team), .6) 0%, rgba(var(--team), .38) 40%, rgba(var(--team), 0) 70%); }
+.cs-card-char::after { content: ''; position: absolute; left: 50%; bottom: -12px; width: 84%; height: 38px; transform: translateX(-50%); border-radius: 50%; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse, rgba(15, 40, 75, .7) 0%, rgba(15, 40, 75, .35) 45%, rgba(15, 40, 75, 0) 72%); }
+.cs-card-char, .cs-hero-img { isolation: isolate; }
+.cs-hero-img[data-team="blue_bears"] { --team: 40, 105, 235; } .cs-hero-img[data-team="mount_stars"] { --team: 30, 150, 75; } .cs-hero-img[data-team="cloud_cups"] { --team: 125, 70, 220; }
+.cs-card[data-team="blue_bears"] { --team: 40, 105, 235; }
+.cs-card[data-team="mount_stars"] { --team: 30, 150, 75; }
+.cs-card[data-team="cloud_cups"] { --team: 125, 70, 220; }
+.cs-card .cs-card-char, .cs-card .ks-card-name { position: relative; z-index: 1; }
+.cs-card .ks-equip { z-index: 1; }
+.cs-card.is-sel { filter: drop-shadow(7px 0 0 #ffb22e) drop-shadow(-7px 0 0 #ffb22e) drop-shadow(0 7px 0 #ffb22e) drop-shadow(0 -7px 0 #ffb22e); } /* 사용자: 모서리 틈 → 카드 그림 모양 그대로 따라가는 테두리 */
+.cs-card-char { position: relative; display: block; height: 262px; width: auto; max-width: 86%; margin-top: 24px; /* 사용자: 카드 테두리에 안 닿게 아주 조금 줄임 */ object-fit: contain; }
+.cs-card-char img { height: 100%; width: auto; display: block; }
+.cs-blink { position: absolute; left: 0; top: 0; opacity: 0; }
+.is-blink > .cs-blink { opacity: 1; }
+.cs-card.is-locked .cs-card-char { filter: grayscale(.6) brightness(.8); }
+.cs-card .ks-card-name { margin-top: 4px; }
+.cs-card .ks-equip.is-off { filter: grayscale(.5) brightness(.9); }
+.cs-card .ks-equip.is-on.is-off { filter: hue-rotate(95deg) saturate(1.1); }
+/* 사용자: 팀 바꾸면 진열장 천장판이 검게 → 두더지가 천장에서 떨어져 착지(살짝 눌림) → 천장 원래 색 */
+.cs-ceil { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; background: #05070d;
+  clip-path: polygon(7.4% 7.4%, 92.6% 7.4%, 85.7% 14.3%, 14.3% 14.3%); }
+.cs-clip { position: absolute; inset: 0; z-index: 2; clip-path: inset(7.4% 0 0 0); }
+.cs-hero { transform-origin: 50% 100%; }
+.ks-case.is-drop .cs-ceil { animation: cs-ceil 1.2s ease both; }
+.ks-case.is-drop .cs-hero { animation: cs-drop 1.2s both; }
+/* 사용자: 무기처럼 위아래 둥실은 없음 — 그림자는 낙하·착지·튐에 맞춰 커졌다 작아짐 */
+.cs-stage .ks-case::after { animation: none; z-index: 1; }
+.cs-stage .ks-case.is-drop::after { animation: cs-shadow 1.2s both; }
+@keyframes cs-ceil { 0% { opacity: 0; } 15%, 60% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes cs-drop { 0%, 18% { transform: translateY(-125%); animation-timing-function: cubic-bezier(.5,0,1,1); }
+  48% { transform: translateY(0) scale(1, 1); } 54% { transform: translateY(0) scale(1.1, .86); animation-timing-function: ease-out; }
+  66% { transform: translateY(-14%) scale(.96, 1.04); animation-timing-function: ease-in; } 76% { transform: translateY(0) scale(1.05, .93); animation-timing-function: ease-out; }
+  85% { transform: translateY(-5%) scale(.99, 1.01); animation-timing-function: ease-in; } 92% { transform: translateY(0) scale(1.02, .98); } 100% { transform: translateY(0) scale(1, 1); } }
+@keyframes cs-shadow { 0%, 18% { transform: scale(.3); opacity: .15; animation-timing-function: ease-in; } 48% { transform: scale(1); opacity: 1; } 54% { transform: scale(1.12); opacity: 1; }
+  66% { transform: scale(.75); opacity: .6; } 76% { transform: scale(1.06); opacity: 1; } 85% { transform: scale(.9); opacity: .85; } 92%, 100% { transform: scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .cs-hero, .ks-case.is-drop .cs-hero, .ks-case.is-drop .cs-ceil { animation: none; } }

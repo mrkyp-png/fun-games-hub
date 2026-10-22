@@ -6,11 +6,10 @@
   var K_EQUIPPED = 'mole.costume.equipped';
   var K_LEVEL = 'mole.costume.level.'; // + id
 
+  // V1405 C 사용자: 5팀 → 3팀(베어스·스타즈·컵스). 레드 윙스·선 자이언츠 삭제(그림 파일은 남겨둠).
   var TEAMS = [
     { id: 'blue_bears', nameKo: '블루 베어스', nameEn: 'Blue Bears' },
-    { id: 'red_wings', nameKo: '레드 윙스', nameEn: 'Red Wings' },
     { id: 'mount_stars', nameKo: '마운트 스타즈', nameEn: 'Mount Stars' },
-    { id: 'sun_giants', nameKo: '선 자이언츠', nameEn: 'Sun Giants' },
     { id: 'cloud_cups', nameKo: '클라우드 컵스', nameEn: 'Cloud Cups' }
   ];
 
@@ -28,13 +27,14 @@
     var a;
     try { a = JSON.parse(localStorage.getItem(K_OWNED)); } catch (e) { a = null; }
     if (!a) a = TEAMS.map(function (t) { return t.id; }).filter(function (id) { return id !== 'cloud_cups'; });
-    return a;
+    return a.filter(function (id) { return !!teamById(id); }); // 삭제된 팀 저장값은 무시
   }
   function owns(id) { return ownedIds().indexOf(id) > -1; }
 
   // 기본 착용 = 블루베어스(참고 이미지 기준). 한 번도 착용 안 바꿨으면 이 기본값을 쓴다.
   function equippedId() {
     var id = localStorage.getItem(K_EQUIPPED) || TEAMS[0].id;
+    if (!teamById(id)) id = TEAMS[0].id; // 삭제된 팀(윙스·자이언츠) 착용 중이었으면 베어스로
     return owns(id) ? id : null;
   }
   function equip(id) {

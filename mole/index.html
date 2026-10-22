@@ -335,6 +335,7 @@
     <div class="game-hud">
     </div>
     <div id="mole-board" class="mole-board">
+      <div id="ai-countdown" class="ai-countdown" aria-hidden="true" hidden></div><!-- V1405 C: AI 스킬 남은 초(게임판 가운데) -->
       <!-- 좌상단 홈버튼/프로필 — 게임판 안에 둬서 피버 전환 때 게임판과 한 몸으로 움직이고, 올라오는 버튼보드에 같이 가려지게(사용자 지정 v736) -->
       <button id="btn-back-to-hub" class="icon-btn" aria-label="나가기" data-i18n-aria-label="common.back">
         <!-- 실제 플레이 중: 홈 아이콘(탭하면 라운드 나가고 홈으로, 사용자 지정 — 예전 ⊞ 더보기 아이콘 대체). -->
@@ -784,7 +785,7 @@
             </button>
           </div>
           <div class="sr-albums" data-sr-albums hidden></div>
-          <div class="sr-rp" data-sr-rp hidden><button type="button" class="sr-rp-back" data-sr-rp-back aria-label="albums"><img src="assets/score/btn-undo.png" alt=""></button><img class="sr-rp-album" data-sr-album alt=""><b class="sr-rp-title" data-sr-title></b><span class="sr-rp-tag" data-sr-tag></span></div>
+          <div class="sr-rp" data-sr-rp hidden><button type="button" class="sr-rp-back" data-sr-rp-back aria-label="albums"><img src="assets/score/btn-undo-matte-v1405.png" alt=""></button><img class="sr-rp-album" data-sr-album alt=""><b class="sr-rp-title" data-sr-title></b><span class="sr-rp-tag" data-sr-tag></span></div>
           <div class="sr-top3" data-sr-top3></div>
           <div class="sr-rows" data-sr-rows></div>
           <div class="sr-mine" data-sr-mine></div>
@@ -1106,7 +1107,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1404 C</div>
+        <div id="build-tag" aria-hidden="true">V 1405 C</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1383,7 +1384,7 @@ window.FGH.rollOut = function (el, done) {
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
-        navigator.serviceWorker.register('sw.js?v=1404-C').catch(function () {});
+        navigator.serviceWorker.register('sw.js?v=1405-C').catch(function () {});
       }
     });
   }

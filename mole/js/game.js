@@ -1027,9 +1027,23 @@
 
   // 타겟팅만 실제 연출/효과(§54~59) — 나머지 4개는 게임 내 실제 효과가 아직 미정의(사용자
   // 확인: "시스템만 먼저") → 소비/UI만 실제로 동작, 화면엔 플레이스홀더 이름만 표시.
+  const AI_SKILL_MS = 10000; // 사용자: AI 스킬 10초
+  const AI_HIT_GAP_MS = 320; // 자동 공격 간격(무기 휘두름 0.24초보다 길게)
+  // AI 자동 공격 — 메인 루프가 매 프레임 호출. 진짜 타겟 하나를 골라 실제 탭과 같은 handleCell 로 친다(무기 연출·점수·콤보 동일).
+  function tickAiSkill(now) {
+    if (!state.aiUntil || now >= state.aiUntil || state.pausedByFever || state.feverEventActive) return;
+    if (now < (state.aiNextAt || 0)) return;
+    const live = state.spawnPoints.filter((sp) => liveTargetAt(sp.regionId) && !(state.quakePending && state.quakePending.has(sp.regionId)));
+    if (!live.length) return;
+    const sp = live[Math.floor(state.rng.next() * live.length)];
+    state.aiNextAt = now + AI_HIT_GAP_MS;
+    handleCell(sp.regionId);
+  }
   function runSkillEffect(id) {
     if (id === 'targeting') { activateTargeting(); return; }
     // V1403 C 사용자: 실드도 장착형 — 누르면 실드(폭탄 1번 방어) 켜짐, 실드 아이템과 같은 효과.
+    // V1405 C 사용자: AI = 20초 동안 자동 공격, 남은 시간은 다이얼패드 가운데 카운트다운(킹 판취 무적처럼).
+    if (id === 'ai' && state) { state.aiUntil = performance.now() + AI_SKILL_MS; state.aiNextAt = 0; return; }
     if (id === 'shield' && run) { run.shield = true; const sb = document.getElementById('mole-board'); if (sb) sb.classList.add('mole-board--shielded'); }
     const board = document.getElementById('mole-board');
     const skill = MG.Skills.skillById(id);
@@ -1041,7 +1055,10 @@
   function activateTargeting() {
     if (!state || state.ended) return;
     const board = document.getElementById('mole-board');
-    const live = state.spawnPoints.filter((sp) => liveMoleAt(sp.regionId));
+    // V1405 C 사용자 '타겟팅 쓸 때 콤보 깨지면 안 됨': 역할반전 라운드(두더지=방해물)에서 두더지를 잡아 콤보가 깨졌다 →
+    // 이 라운드의 '진짜 타겟'(effectiveHitType 'mole')만 고름. 폭탄 든 두더지·가라앉는 중 제외.
+    const liveTarget = liveTargetAt;
+    const live = state.spawnPoints.filter((sp) => liveTarget(sp.regionId));
     const pick = live.length ? live[Math.floor(state.rng.next() * live.length)] : null;
     const sp = pick || state.spawnPoints[Math.floor(state.rng.next() * state.spawnPoints.length)];
     if (!sp || !board) return;
@@ -1052,13 +1069,24 @@
       cellBtn.classList.add('lane-target-hot');
       setTimeout(() => cellBtn.classList.remove('lane-target-hot'), 900);
     }
+    // V1405 C 사용자 '타겟팅 쓸 때 콤보 깨지면 안 됨': 조준 중(초록 강조 0.9초) 그 구멍을 눌러도 헛방 아님 — 그동안 탭 무시.
+    // 타격은 타겟팅이 처리(아래 0.5초 뒤 처치). 강조가 남아 있는데 두더지가 이미 사라져 빈 구멍 헛방으로 콤보 깨지던 것.
+    if (pick) {
+      const tgState = state;
+      if (!tgState.quakePending) tgState.quakePending = new Set();
+      tgState.quakePending.add(sp.regionId);
+      setTimeout(() => { if (tgState.quakePending) tgState.quakePending.delete(sp.regionId); }, 950);
+    }
     MG.HitFx.targetLock(board, sp.x, sp.y, 'assets/skills/targeting-v1403.png');
     if (!pick) return; // 타격할 두더지 없음 — 시각 연출만
+    // V1405 C 사용자 '아주 빠르게 누르면 콤보 깨짐': 0.5초 뒤에 처치 판정하던 사이 고른 두더지가 시간초과로 숨어 콤보가 깨졌다
+    // (그 구멍 탭은 무시 중이라 막을 수도 없음) → 고른 순간 바로 처치 판정(숨을 수 없게), 점수·연출만 0.5초 뒤.
+    // quake:true 재사용 — 쿨다운/헛방 게이트를 통과하고(자동타격) 다타 두더지도 한번에 소탕(확정 처치).
+    const res = state.scheduler.resolveRegion(sp.regionId, { targeting: true, quake: true });
+    if (!res.length || res.every((r) => r.ignored)) return;
+    const tgState = state;
     setTimeout(() => {
-      if (!state || state.ended || !liveMoleAt(sp.regionId)) return;
-      // quake:true 재사용 — 쿨다운/헛방 게이트를 통과하고(자동타격) 다타 두더지도 한번에 소탕(확정 처치).
-      const res = state.scheduler.resolveRegion(sp.regionId, { targeting: true, quake: true });
-      if (!res.length || res.every((r) => r.ignored)) return;
+      if (state !== tgState || !state || state.ended) return;
       onHammerImpact(sp.x, sp.y, res, { noHitstop: true });
     }, 500);
   }
@@ -1910,6 +1938,7 @@
       }
     }
 
+    tickAiSkill(now);
     updateLiveDifficulty();
     // 피버타임은 라운드 진행의 연장이 아니라 독립된 미니게임(사용자 지정: "기존 게임진행의
     // 연장이 아니라, 피버타임용 게임이라고 생각하면됨") — updateLiveDifficulty() 가 매프레임
@@ -2052,13 +2081,15 @@
   // 글러브가 남아있었다. 성공/실패 결과화면 포함, 라운드가 끝나는 모든 경로에서 호출
   // (사용자 지정: "성공/실패 화면은 항상 스킬 효과가 안 나타나게 해야함").
   function clearInvincibleFx() {
-    if (state) state.quakeFxUntil = 0;
+    if (state) { state.quakeFxUntil = 0; state.aiUntil = 0; }
     const mb = document.getElementById('mole-board');
     if (mb) mb.classList.remove('mole-board--invincible');
     const gs = document.getElementById('game-screen');
     if (gs) gs.classList.remove('gs-invincible');
     const cd = document.getElementById('invincible-countdown');
     if (cd) cd.hidden = true;
+    const aiCd = document.getElementById('ai-countdown');
+    if (aiCd) aiCd.hidden = true;
   }
 
   // 피버타임 전용 — 보드 위 터치 좌표(0~1 분수)를 가장 가까운 구멍(regionId)으로 역산.
@@ -2181,6 +2212,10 @@
     return out;
   }
 
+  // 이 라운드의 '진짜 타겟'(역할반전이면 동물)이 살아 있는 구멍 — 타겟팅·AI 스킬 공용. 폭탄 든 두더지·가라앉는 중 제외.
+  function liveTargetAt(id) {
+    return state.scheduler.getActivePops().find((q) => q.regionId === id && effectiveHitType(state.config, q.type) === 'mole' && !q.bombKind && !q.dying && !q.killed && !(q.sinkIn > 0));
+  }
   function liveMoleAt(id) {
     // 지진은 폭탄 든 두더지는 스킵해야 함(원래 기획 — 폭탄은 구식 type==='bomb' 시절 걸러졌는데,
     // 지금은 폭탄도 type==='mole'(bombKind 만 다름)라 여기서 새로 막아야 함(사용자 보고 — 지진이
@@ -2623,6 +2658,14 @@
       const label = on ? String(Math.max(1, Math.ceil((state.alipunchInvincibleUntil - performance.now()) / 1000)))
         : quakeRemaining > 0 ? (Math.ceil(quakeRemaining / 100) / 10).toFixed(1) : '';
       if (cd.textContent !== label) cd.textContent = label;
+    }
+    // V1405 C 사용자: AI 남은 시간은 다이얼패드가 아니라 위 게임판 가운데(다른 스킬 카운트다운과 안 겹치게)
+    const aiCd = document.getElementById('ai-countdown');
+    if (aiCd) {
+      const aiRemaining = Math.max(0, (state.aiUntil || 0) - performance.now());
+      aiCd.hidden = aiRemaining <= 0;
+      const aiLabel = aiRemaining > 0 ? String(Math.max(1, Math.ceil(aiRemaining / 1000))) : '';
+      if (aiCd.textContent !== aiLabel) aiCd.textContent = aiLabel;
     }
     if (state.weapon === 'alipunch') state.config.moleUpBonus = on ? 0.4 : 0.1;
     // 무적 중 권투 글러브 빨간색 → 황금색(글러브는 #mole-hammer-layer, 보드 밖이라 game-screen에 표시).

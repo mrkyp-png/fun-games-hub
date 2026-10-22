@@ -9,7 +9,7 @@
   // 능력치 표 3줄 (라벨 = i18n 키, 값 = [ko, en]).
   var STAT_ROWS = ['mole.inv.stat.visibility', 'mole.inv.stat.attack', 'mole.inv.stat.defense'];
   var WEAPONS = [
-    { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/inventory/ui-v1379/approved-mallet.webp', rarity: 'basic', skillSlots: 0,
+    { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/inventory/ui-v1379/approved-mallet-redend-v1405.webp', rarity: 'basic', skillSlots: 0,
       desc: ['기본 무기.\n간단하지만 강력한 타격감으로\n두더지를 시원하게!', 'The basic weapon.\nSimple but punchy —\nbonk those moles!'],
       stats: [['-', '-'], ['-', '-'], ['-', '-']] },
     { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1-nol-v1392.png', rarity: 'rare', skillSlots: 1,
@@ -95,7 +95,7 @@
     // 실제 clientWidth 가 서브픽셀 단위로 살짝 달라 페이지를 넘길 때마다 오차가 누적되어(사용자
     // 보고: "위치가 다 틀어진거같은데") 3~4번째 카드로 갈수록 어긋났음. 절대 인덱스 기준으로
     // 그 카드의 offsetLeft 로 직접 scrollTo 하는 방식으로 교체 — 오차가 누적되지 않는다.
-    var pageIdx = 0;
+    var pageIdx = 0; // 화면 열 때 equippedIdx() 로 맞춤(아래 show)
     var nameTimer = null;
     var copyTimer = null;
     var weaponHelp = null;
@@ -203,6 +203,8 @@
       }
     }, true);
 
+    // 사용자: 무기·스킬 탭은 다른 탭에서 들어와도 항상 장착된 무기부터 보여줌
+    function equippedIdx() { var id = equipped(); for (var i = 0; i < WEAPONS.length; i++) if (WEAPONS[i].id === id) return i; return 0; }
     function equipped() {
       var w = localStorage.getItem('mole.weapon');
       return w === 'cannon' ? 'cannon' : (w === 'goldhammer' ? 'goldhammer' : (w === 'alipunch' ? 'alipunch' : 'hammer'));
@@ -355,6 +357,7 @@
         var a = art[page.dataset.weapon];
         var unit = page.querySelector('.iw-preview-unit');
         unit.style.setProperty('--iw-weapon-scale', Math.min(440/a[0], 490/a[1]));
+        page.style.setProperty('--iw-weapon-scale', Math.min(440/a[0], 490/a[1])); // 뒤 빛이 무기와 같은 거리로 움직이게
         page.querySelector('.inv-thumb').style.transform = 'translate(' + a[2] + 'px,' + a[3] + 'px)';
       });
       body.querySelectorAll('.iw-stat-title,.iw-stat-label,.iw-stat-value,.iw-equip,.iw-grade').forEach(function (label) {
@@ -376,85 +379,79 @@
 
     // 코스튬 탭 — 5개 팀 카드(가로 스크롤) + 선택 코스튬 상세 + 획득 방법(§1~§58).
     // 무기 탭과 달리 페이지네이션(점/화살표) 없이 카드 줄만 가로 스크롤한다.
+    // V1405 C 사용자: 코스튬 탭 개편(시안 A) — 스킬 탭과 같은 큰 테두리·판 구성.
+    // 위 = 고른 팀 진열장(캐릭터 크게, 위아래 둥실) + 팀 이름·효과·획득, 아래 = 팀 카드 3장(착용 버튼).
+    var costumeDrop = false; // 팀을 바꿨을 때만 천장에서 떨어지는 연출
     function renderCostumes() {
       var locked = !!(opts.gameInProgress && opts.gameInProgress());
       var equippedId = MG.CostumeTeams.equippedId();
-      if (!costumeSelectedId || !MG.CostumeTeams.teamById(costumeSelectedId)) costumeSelectedId = equippedId;
-      body.innerHTML =
-        '<div class="cos-wrap">' +
-          '<div class="cos-cards" data-cos-cards></div>' +
-          '<div class="cos-detail" data-cos-detail></div>' +
-        '</div>';
-
-      var cardsEl = body.querySelector('[data-cos-cards]');
-      MG.CostumeTeams.teams().forEach(function (team) {
-        var owned = MG.CostumeTeams.owns(team.id);
-        var selected = team.id === costumeSelectedId;
-        var wrap = document.createElement('button');
-        wrap.type = 'button';
-        wrap.className = 'cos-card-wrap' + (selected ? ' cos-card-wrap--sel' : '') + (owned ? '' : ' cos-card-wrap--locked');
-        wrap.innerHTML =
-          '<img class="cos-card-emblem" alt="" src="assets/costume/emblem-cap-' + team.id + '.png">' + // v991: 큰 팀 글자 로고(목표 UI)
-          '<span class="cos-card">' +
-            '<img class="cos-card-bg" alt="" src="assets/costume2/card-' + team.id + '.jpg">' +
-            '<img class="cos-card-char" alt="" src="assets/costume/char-' + team.id + '-detail.png">' +
-            (owned ? '<span class="cos-card-check">✓</span>' : '<span class="cos-card-lock">🔒</span>') +
-          '</span>';
-        wrap.addEventListener('click', function () { costumeSelectedId = team.id; renderCostumes(); });
-        cardsEl.appendChild(wrap);
-      });
-
-      renderCostumeDetail(costumeSelectedId, equippedId, locked);
-    }
-
-    function renderCostumeDetail(id, equippedId, locked) {
-      var team = MG.CostumeTeams.teamById(id);
-      var detail = body.querySelector('[data-cos-detail]');
-      if (!team) { detail.innerHTML = ''; return; }
-      var owned = MG.CostumeTeams.owns(id);
-      var name = (I18N.lang === 'en' ? team.nameEn : team.nameKo);
-      var effectVal = (MG.CostumeTeams.BASE_EFFECT_VALUE * MG.CostumeTeams.upgradeLevel(id)).toFixed(1);
-      detail.innerHTML =
-        '<div class="cos-detail-char-wrap"><img class="cos-detail-bg" alt="" src="assets/costume2/card-' + id + '.jpg"><img class="cos-detail-char" alt="" src="assets/costume/char-' + id + '-detail.png"></div>' +
-        '<div class="cos-detail-mid">' +
-          '<div class="cos-detail-name-row"><img class="cos-detail-emblem" alt="" src="assets/costume/emblem-cap-' + id + '.png"><span class="cos-detail-name"></span></div>' +
-          '<div class="cos-detail-effect">' +
-            '<div class="cos-detail-effect-lbl"></div>' +
-            '<div class="cos-detail-effect-row"><img alt="" src="assets/costume/clock.png">' +
-              '<span class="cos-detail-effect-name"></span><b class="cos-detail-effect-val"></b></div>' +
-          '</div>' +
-          '<div class="cos-detail-acquire"></div>' +
-        '</div>' +
-        '<button type="button" class="inv-equip cos-detail-btn"><span></span></button>';
-      detail.querySelector('.cos-detail-name').textContent = name;
-      // v993(사용자 지정): 팀 이름은 항상 한 줄 — 폰에서 "마운트 스타즈"가 두 줄로 넘어가 카드가 깨지던 것. 넘치면 글자 폭만 줄임
-      function fitCosLines() { // v994: 글꼴이 늦게 로드되면 폭이 바뀌어 폰에서 다시 "…"/두 줄 되던 것 — 글꼴 준비 후에도 다시 맞춤
-        var nm = detail.querySelector('.cos-detail-name'); if (!nm || !nm.clientWidth) return;
-        nm.style.transform = ''; nm.style.width = '';
-        var ef0 = detail.querySelector('.cos-detail-effect-name'); if (ef0) ef0.textContent = T('mole.cos.effectName');
-        var k = nm.clientWidth / nm.scrollWidth;
-        if (k < 1) { nm.style.display = 'inline-block'; nm.style.transformOrigin = '0 50%'; nm.style.transform = 'scaleX(' + Math.max(k, 0.6).toFixed(3) + ')'; nm.style.width = (nm.scrollWidth) + 'px'; }
-        var ef = detail.querySelector('.cos-detail-effect-name'); // 효과 이름도 "…" 없이 한 줄
-        if (ef && ef.clientWidth) { ef.style.overflow = 'visible'; ef.style.textOverflow = 'clip'; var k2 = ef.clientWidth / ef.scrollWidth;
-          if (k2 < 1) { ef.innerHTML = '<span style="display:inline-block;transform-origin:0 50%;transform:scaleX(' + Math.max(k2, 0.6).toFixed(3) + ')">' + ef.innerHTML + '</span>'; } }
-      }
-      requestAnimationFrame(fitCosLines);
-      if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { requestAnimationFrame(fitCosLines); });
-      setTimeout(fitCosLines, 400);
-      detail.querySelector('.cos-detail-effect-lbl').textContent = T('mole.cos.effectTitle');
-      detail.querySelector('.cos-detail-effect-name').textContent = T('mole.cos.effectName');
-      detail.querySelector('.cos-detail-effect-val').textContent = '+' + effectVal + (I18N.lang === 'en' ? 's' : '초');
-      detail.querySelector('.cos-detail-acquire').textContent = T('mole.cos.acquireLine');
-      var btn = detail.querySelector('.cos-detail-btn');
-      var isEquipped = owned && id === equippedId;
-      btn.querySelector('span').textContent = isEquipped ? T('mole.cos.equipped') : T('mole.cos.equip');
-      btn.disabled = !owned || isEquipped || locked;
-      if (owned && !isEquipped && !locked) {
-        btn.addEventListener('click', function () {
-          MG.CostumeTeams.equip(id);
-          renderCostumes();
+      if (!costumeSelectedId || !MG.CostumeTeams.teamById(costumeSelectedId)) costumeSelectedId = equippedId || MG.CostumeTeams.teams()[0].id;
+      var en = I18N.lang === 'en';
+      var CH = function (id) { return 'assets/costume/char-' + id + '-v1406.webp'; };
+      // 눈 감은 그림(같은 자리·크기)을 위에 겹쳐 두고 아주 잠깐만 보여 깜빡임
+      var CHB = function (id) { return '<img alt="" src="' + CH(id) + '"><img class="cs-blink" alt="" src="assets/costume/char-' + id + '-blink-v1406.webp">'; };
+      // 사용자: 위 진열장 캐릭터는 양발 기준 좌우 가운데(그림마다 양발 가운데가 달라 그만큼 옮김)
+      var FEET = { blue_bears: 7.92, mount_stars: -2.5, cloud_cups: -4.63 };
+      var sel = MG.CostumeTeams.teamById(costumeSelectedId);
+      var cards = MG.CostumeTeams.teams().map(function (t) {
+        var owned = MG.CostumeTeams.owns(t.id);
+        return '<div class="ks-card cs-card' + (t.id === costumeSelectedId ? ' is-sel' : '') + (owned ? '' : ' is-locked') + '" data-cs-pick="' + t.id + '" data-team="' + t.id + '">' +
+          '<span class="cs-card-char">' + CHB(t.id) + '</span><b class="ks-card-name"></b>' +
+          '<button type="button" class="ks-equip ks-press' + (owned && t.id === equippedId ? ' is-on' : '') + '" data-cs-equip="' + t.id + '"><span></span></button></div>';
+      }).join('');
+      body.innerHTML = '<div class="ks-mount"><div class="ks-stage cs-stage">' +
+        '<div class="ks-name"></div>' +
+        '<div class="ks-case' + (costumeDrop ? ' is-drop' : '') + '"><div class="cs-ceil"></div><div class="cs-clip"><div class="cs-hero"><span class="cs-hero-img" data-team="' + sel.id + '" style="--feet:' + (FEET[sel.id] || 0) + '%">' + CHB(sel.id) + '</span></div></div></div>' +
+        '<div class="ks-slotpanel cs-info"><div class="ks-slot-pill"><span class="cs-team"></span></div>' +
+          '<div class="cs-effect"><img alt="" src="assets/costume/clock.png"><span class="cs-effect-txt"></span></div>' +
+          '<div class="cs-acquire"></div></div>' +
+        '<div class="ks-cards">' + cards + '</div></div></div>';
+      costumeDrop = false;
+      var stage = body.querySelector('.ks-stage');
+      stage.querySelector('.ks-name').textContent = en ? 'Costume' : '코스튬';
+      stage.querySelector('.cs-team').textContent = en ? sel.nameEn : sel.nameKo;
+      var effectVal = (MG.CostumeTeams.BASE_EFFECT_VALUE * MG.CostumeTeams.upgradeLevel(sel.id)).toFixed(1);
+      stage.querySelector('.cs-effect-txt').innerHTML = '';
+      stage.querySelector('.cs-effect-txt').appendChild(document.createTextNode(T('mole.cos.effectName')));
+      var v = document.createElement('b'); v.textContent = '+' + effectVal + (en ? 's' : '초'); stage.querySelector('.cs-effect-txt').appendChild(v);
+      stage.querySelector('.cs-acquire').textContent = T('mole.cos.acquireLine');
+      stage.querySelectorAll('.cs-card').forEach(function (c) {
+        var t = MG.CostumeTeams.teamById(c.getAttribute('data-cs-pick'));
+        var owned = MG.CostumeTeams.owns(t.id), isOn = owned && t.id === equippedId;
+        c.querySelector('.ks-card-name').textContent = (en ? t.nameEn : t.nameKo).split(' ').pop();
+        var b = c.querySelector('.ks-equip');
+        b.querySelector('span').textContent = !owned ? T('mole.cos.notOwned') : (isOn ? T('mole.cos.equipped') : (en ? 'Equip' : '착용'));
+        if (!owned || isOn || locked) b.classList.add('is-off');
+        c.addEventListener('click', function (e) {
+          var change = costumeSelectedId !== t.id;
+          if (e.target.closest('[data-cs-equip]') && owned && !isOn && !locked) { MG.CostumeTeams.equip(t.id); costumeSelectedId = t.id; costumeDrop = change; renderCostumes(); return; }
+          if (change) { costumeSelectedId = t.id; costumeDrop = true; renderCostumes(); }
         });
-      }
+      });
+      stage.querySelectorAll('.ks-press').forEach(function (b) {
+        b.addEventListener('pointerdown', function () { if (!b.classList.contains('is-off')) b.classList.add('is-down'); });
+        ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { b.addEventListener(ev, function () { b.classList.remove('is-down'); }); });
+      });
+      startCostumeBlink();
+      fitSkillStage();
+    }
+    // 2~4초마다 무작위 캐릭터 하나가 0.1초 깜빡(가끔 두 번 연속). 코스튬 탭을 떠나면 멈춤.
+    var blinkTimer = null;
+    function startCostumeBlink() {
+      clearTimeout(blinkTimer);
+      (function next() {
+        blinkTimer = setTimeout(function () {
+          if (active !== 'costume') return;
+          var els = body.querySelectorAll('.cs-hero-img, .cs-card-char');
+          if (!els.length) return;
+          var el = els[Math.floor(Math.random() * els.length)];
+          var twice = Math.random() < 0.3;
+          el.classList.add('is-blink');
+          setTimeout(function () { el.classList.remove('is-blink');
+            if (twice) setTimeout(function () { el.classList.add('is-blink'); setTimeout(function () { el.classList.remove('is-blink'); }, 90); }, 120); }, 90);
+          next();
+        }, 2000 + Math.random() * 2000);
+      })();
     }
 
     // V1403 C 사용자: 스킬 탭 전면 개편(시안 1번 정사각) — 무기 화면 큰 테두리 그대로, 안쪽만 새 UI.
@@ -471,7 +468,7 @@
       var en = I18N.lang === 'en';
       // 사용자: 스킬 탭 무기 = 무기 화면 무기와 세트(같은 연출·빛·바닥 그림자), 조금 작게.
       var a = weapon ? WEAPON_ART[weapon.id] : null;
-      var thumb = weapon ? '<div class="iw-page ks-wpage" data-weapon="' + weapon.id + '" data-grade="' + weapon.rarity + '"><div class="iw-weapon"><div class="iw-preview-unit" style="--iw-weapon-scale:' + (Math.min(440 / a[0], 490 / a[1]) * 0.62).toFixed(3) + '"><div class="iw-float">' + weaponThumbHtml(weapon) + '</div></div></div></div>' : '';
+      var thumb = weapon ? '<div class="iw-page ks-wpage" data-weapon="' + weapon.id + '" data-grade="' + weapon.rarity + '" style="--iw-weapon-scale:' + (Math.min(440 / a[0], 490 / a[1]) * 0.62).toFixed(3) + '"><div class="iw-weapon"><div class="iw-preview-unit" style="--iw-weapon-scale:' + (Math.min(440 / a[0], 490 / a[1]) * 0.62).toFixed(3) + '"><div class="iw-float">' + weaponThumbHtml(weapon) + '</div></div></div></div>' : '';
       var slotsHtml = '';
       for (var i = 0; i < Math.max(nSlots, 1); i++) {
         var sid = lo[i], sk = sid ? MG.Skills.skillById(sid) : null;
@@ -521,7 +518,7 @@
       mount.style.marginLeft = ((639 - (2 + 1274) / 2) * scale) + 'px'; mount.style.marginTop = ((615 - (8 + 1210) / 2) * scale) + 'px';
       mount.style.setProperty('--ks-scale', scale);
     }
-    root.addEventListener('resize', function () { if (active === 'skill') fitSkillStage(); });
+    root.addEventListener('resize', function () { if (active === 'skill' || active === 'costume') fitSkillStage(); });
 
     var PHOTO_FACE_I18N = { round: 'mole.photo.faceRound', sturdy: 'mole.photo.faceSturdy', sharp: 'mole.photo.faceSharp' };
 
@@ -798,7 +795,7 @@
         b.addEventListener('click', function () {
           // 사용자: 무기↔스킬 탭은 같은 무기로 세트 — 그 사이 전환은 보던 무기(pageIdx) 유지
           var keepWeapon = (active === 'weapon' || active === 'skill') && (t.id === 'weapon' || t.id === 'skill');
-          active = t.id; if (!keepWeapon) pageIdx = 0; activePage = 0; passivePage = 0;
+          active = t.id; if (!keepWeapon) pageIdx = equippedIdx(); activePage = 0; passivePage = 0;
           // 사용자 지정(2026-09-27): "컬렉션 화면은 사진관 탭일 때만 유지, 다른 탭으로
           // 전환하면 닫혀야 함".
           if (active !== 'photo' && photoCollectionOpen) closePhotoCollection();
@@ -826,7 +823,7 @@
       prevBtn.style.display = active === 'photo' ? 'none' : '';
       nextBtn.style.display = active === 'photo' ? 'none' : '';
       // 몰리그 전광판은 코스튬 탭에서만, 전체파란박스 밖(화면 최상단)에 표시.
-      if (cosLogoEl) cosLogoEl.hidden = active !== 'costume';
+      if (cosLogoEl) cosLogoEl.hidden = true; // V1405 C: 코스튬 탭 개편 — MOLE LEAGUE 간판 안 씀
       wSignEl.hidden = active !== 'weapon';
       if (photoSearchBtn) photoSearchBtn.hidden = active !== 'photo';
       if (active === 'weapon') {
@@ -847,7 +844,7 @@
     }
 
     return { show: function () {
-      active = 'weapon'; costumeSelectedId = null; activePage = 0; passivePage = 0;
+      active = 'weapon'; pageIdx = equippedIdx(); costumeSelectedId = null; activePage = 0; passivePage = 0;
       photoCostumeId = 'blue_bears'; photoFace = 'round'; photoCollectionOpen = false; photoDetailId = null;
       paint();
     } };
