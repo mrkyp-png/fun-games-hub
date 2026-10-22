@@ -335,7 +335,7 @@
     // v782(사용자 지정): 좌우 화살표 = 카드가 한 장씩 옆으로 이동(전체 5팀×3얼굴형 15장을 한 줄로 이어 붙인 목록,
     // 가운데 금색 발판 카드가 현재 선택). 엠블럼을 누르면 그 팀 가운데 카드로 이동.
     var cpos = 1; // 0..14
-    function cardSrc(k) { k = (k + NCARD) % NCARD; return 'assets/photo/characters/' + FACE_ORDER[k % 3] + '_' + COSTUME_ORDER[Math.floor(k / 3)] + '.png'; }
+    function cardSrc(k) { k = (k + NCARD) % NCARD; return 'assets/photo/characters/' + FACE_ORDER[k % 3] + '_' + COSTUME_ORDER[Math.floor(k / 3)] + '-hd.webp'; } // V1406 C: 보여주기용 확대 그림(합성은 원본 .png 좌표 그대로)
     function renderCostume() {
       st.costume = Math.floor(((cpos % NCARD) + NCARD) % NCARD / 3);
       var cid = COSTUME_ORDER[st.costume];

@@ -137,7 +137,7 @@
   function imageFor(id) {
     var u = null;
     try { u = localStorage.getItem(K_IMG + id); } catch (e) { u = null; }
-    return u || ('assets/photo/characters/' + id + '.png');
+    return u || ('assets/photo/characters/' + id + '-hd.webp'); // V1406 C: 확대 그림
   }
 
   // 개별 캐릭터 효과(§17) — 등장한 캐릭터 하나의 효과만 적용, 중첩 없음.

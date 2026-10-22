@@ -92,7 +92,7 @@
   }
   function h2Wide(kind, lblKey, lblTxt) { // ✱ = 두더지팡(노랑), 0 = 리듬팡(보라) — 홈에선 두 칸 반씩 넓게
     return '<span class="lane-face lane-face--front lane-face--wide h2w-' + kind + '">' +
-      '<img class="h2w-char" src="' + H2 + (kind === 'mole' ? 'char-mole' : 'char-rhythm') + '.png" alt="">' +
+      '<img class="h2w-char" src="' + H2 + (kind === 'mole' ? 'char-mole' : 'char-rhythm') + '-hd.webp" alt="">' +
       (kind === 'rhythm' ? '<img class="h2w-note" src="' + H2 + 'ic-note.png" alt="">' : '<img class="h2w-note h2w-heart" src="' + H2 + 'ic-heart.png" alt="">') + // V1361 C 사용자: 두더지팡 빈자리 하트(리듬팡 음표 자리와 같음)
       '<span class="h2-lbl h2w-lbl"' + (lblKey ? ' data-i18n="' + lblKey + '"' : '') + '>' + lblTxt + '</span></span>';
   }
