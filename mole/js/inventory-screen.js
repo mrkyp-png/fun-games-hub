@@ -355,9 +355,14 @@
       body.querySelectorAll('.iw-stat-title,.iw-stat-label,.iw-stat-value,.iw-equip,.iw-grade').forEach(function (label) {
         var grade=label.classList.contains('iw-grade');
         var statLabel=label.classList.contains('iw-stat-label');
-        var size = label.classList.contains('iw-equip') ? 80 : (label.classList.contains('iw-stat-title') ? 64 : (grade ? 43 : (statLabel ? 44 : 50)));
+        var size = label.classList.contains('iw-equip') ? 80 : (label.classList.contains('iw-stat-title') ? 64 : (grade ? 120 : (statLabel ? 44 : 50)));
         label.style.fontSize = size + 'px';
-        while (size > (grade?25:30) && (label.scrollWidth > label.clientWidth || label.scrollHeight > label.clientHeight)) label.style.fontSize = (--size) + 'px';
+        if (grade) {
+          // V1397 C: 명판 장식(::before)이 칸 밖으로 나가 scrollWidth 로 재면 글자가 최소까지 줄던 문제 — 글자 자체를 판 안쪽 칸(--tw/--th)에 맞춤.
+          var gt = label.querySelector('.iw-grade-text'), cs = getComputedStyle(label), tw = parseFloat(cs.getPropertyValue('--tw')) || label.clientWidth, th = parseFloat(cs.getPropertyValue('--th')) || label.clientHeight;
+          while (size > 20 && gt && (gt.offsetWidth > tw || gt.offsetHeight > th)) label.style.fontSize = (--size) + 'px';
+        } else
+        while (size > 30 && (label.scrollWidth > label.clientWidth || label.scrollHeight > label.clientHeight)) label.style.fontSize = (--size) + 'px';
       });
     }
     root.addEventListener('resize', function () { if (active === 'weapon') fitLefts(); });
