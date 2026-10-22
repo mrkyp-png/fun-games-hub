@@ -2108,7 +2108,9 @@ body { background: var(--lm-page); }
 }
 .lane-hammer img { display: block; width: 100%; filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.5)); }
 /* 골드해머(지진 무기) = 뿅망치보다 ~1.2배 크게. 스프라이트 비율이 달라 폭으로 맞춘다. */
-.lane-hammer--gold { width: 19.25%; } /* V1384 C 사용자: 골드 망치 10% 크게(17.5→19.25) */
+.lane-hammer--gold { width: 19.25%; }
+.lane-hammer--clone { opacity: 0.7 !important; transition: opacity 0.2s ease-out; pointer-events: none; } /* V1385 C: 골드 분신(메인 모션) 70% */
+.lane-hammer--clone.is-fading { opacity: 0 !important; } /* V1384 C 사용자: 골드 망치 10% 크게(17.5→19.25) */
 /* 보석(파란빛) 맥동 글로우 — 아이템보관창(.inv-gem-glow)엔 있었는데 게임화면엔 빠져있던 것 추가.
    같은 원본(goldhammer.png) contain 배치라 좌표(%)는 .inv-gem-glow 와 동일. */
 .lane-hammer-gem-glow { display: none; }

@@ -1571,7 +1571,7 @@
       hammerOpts.homeDegOffset = 0;              // V1382 C 사용자: 대기 각도 = 지금 뿅망치와 같게(새 그림 똑바로 0° + 18° = 뿅망치 15°+3°)
       hammerOpts.idle = 'spin';                  // 대기 애니메이션 — 제자리 360도 회전(사용자 지정)
       // 지진 분신 포즈 미리 로드 (첫 지진 때 이미지가 늦게 떠서 안 보이는 것 방지)
-      ['goldhammer-0', 'goldhammer-90'].forEach((n) => { const i = new Image(); i.src = 'assets/weapons/' + n + '.png'; });
+      ['goldpaw-90-v1385.webp'].forEach((n) => { const i = new Image(); i.src = 'assets/weapons/' + n; }); // V1385 C
     }
     // 동시타격 오버플로(분신) — 랜덤 배정에서 "진짜"를 못 받은 나머지 타격들이 여기로 온다.
     // 무기별로 다른 분신 연출(quakeClone/cannonClone 재사용, 사용자 지정 — "황금묠니르처럼
@@ -1616,15 +1616,17 @@
           onImpact(); // 방어적 폴백 — 연출 없이도 판정(콤보/점수)은 반영
         }
       } else if (weapon === 'goldhammer') {
-        MG.HitFx.quakeClone(fxLayer, quakeClonePose(regionId), targetXFrac, targetYFrac, quakeCloneKind(regionId), onImpact);
+        goldStrikeClone(fxLayer, regionId, targetXFrac, targetYFrac, onImpact, frameKey);
       } else {
         MG.HitFx.quakeClone(fxLayer, 'assets/weapons/mallet-yaw10-rest15-v1379.png', targetXFrac, targetYFrac, quakeCloneKind(regionId), onImpact, 'quake-clone--hammer');
       }
     }
     const laneHammer = MG.WeaponPool.create(WeaponMod, hammerOpts, { onOverflow: weaponCloneOverflow });
+    // V1385 C: 골드 분신 = 메인과 같은 망치 설정으로 하나 더 만들어 같은 모션으로 휘두름(goldStrikeClone).
+    const goldCloneOpts = weapon === 'goldhammer' ? Object.assign({}, hammerOpts, { idle: undefined, cssClass: hammerOpts.cssClass + ' lane-hammer--clone' }) : null;
 
     state = {
-      regions, spawnPoints, scheduler, holeLayer, laneHammer, weapon, rng, config,
+      regions, spawnPoints, scheduler, holeLayer, laneHammer, weapon, rng, config, goldCloneOpts,
       timeRemaining: roundSeconds(),
       aliClones: [], // 알리펀치 동시타격 분신 글러브들 — 메인 루프가 매 프레임 update() 돌려줘야 실제로 스윙한다.
       hitstopUntil: 0,
@@ -2144,8 +2146,28 @@
   function quakeClonePose(regionId) {
     const kind = quakeCloneKind(regionId);
     // 45(대각선)는 전용 스프라이트 없이 기본 대기 포즈(goldhammer.png, 이미 로드돼있음)를 그대로 쓴다.
+    if (kind === '90') return 'assets/weapons/goldpaw-90-v1385.webp'; // V1385 C: 맨 오른쪽 줄 = 야오 10번
     if (kind === '45') return 'assets/weapons/goldpaw-v1382.webp'; // V1382 C: 0°(맨아래줄)·90°(맨오른쪽줄)는 야오 회전 그림 고른 뒤 교체
     return 'assets/weapons/goldhammer-' + kind + '.png';
+  }
+
+  // V1385 C 사용자: 골드 분신은 메인 타격 모션 그대로(맨 오른쪽 줄만 야오10 정면 찌르기 그림).
+  // 메인과 같은 설정의 망치를 하나 더 만들어 휘두르고, 돌아오는 동안 사라지게 한 뒤 지운다.
+  function goldStrikeClone(fxLayer, regionId, x, y, onHit, frameKey) {
+    if (quakeCloneKind(regionId) === '90' || !state || !state.goldCloneOpts) {
+      MG.HitFx.quakeClone(fxLayer, quakeClonePose(regionId), x, y, quakeCloneKind(regionId), onHit);
+      return;
+    }
+    const clone = MG.LaneHammer.create(Object.assign({}, state.goldCloneOpts, { layer: fxLayer }));
+    const el = fxLayer.lastElementChild;
+    clone.strike(x, y, onHit, frameKey);
+    let last = performance.now();
+    (function tick(now) {
+      clone.update(Math.min(0.05, Math.max(0, (now - last) / 1000))); last = now;
+      if (clone.isBusy()) { requestAnimationFrame(tick); return; }
+      el.classList.add('is-fading');
+      setTimeout(() => clone.clear(), 220);
+    })(last);
   }
 
   function quakeNeighbors(regionId) {
@@ -2215,14 +2237,15 @@
         const res = state.scheduler.resolveRegion(id, { quake: true });
         if (!res.length || res.every((r) => r.ignored)) return;
         extendQuakeHud();
-        MG.HitFx.quakeClone(fxLayer, quakeClonePose(id), p.x, p.y, quakeCloneKind(id), () => {
+        const fk = sharedPopElements.frameKeyAt ? sharedPopElements.frameKeyAt(id) : null;
+        goldStrikeClone(fxLayer, id, p.x, p.y, () => {
           if (!state || state.ended) return;
           extendQuakeHud();
           onHammerImpact(p.x, p.y, res, { noHitstop: true });
           MG.HitFx.quakeDust(board, p.x, p.y);
           if (res.some((r) => r.type === 'mole' && r.done)) { killed.push(id); paintPad(); }
           if (!forceQuakeNext && state.rng.next() < QUAKE_CHANCE + (MG.Workshop ? MG.Workshop.weaponChanceBonus('goldhammer') : 0)) quakeRipple(id, depth + 1);
-        });
+        }, fk);
       }, k * QUAKE_CLONE_GAP);
     });
   }
