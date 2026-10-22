@@ -2945,8 +2945,13 @@
     let bgmHideTimer = null;
     document.addEventListener('visibilitychange', () => {
       clearTimeout(bgmHideTimer);
-      if (document.hidden) bgmHideTimer = setTimeout(() => { if (document.hidden) { const el = bgmActiveEl(); if (el) el.pause(); applyBgm(); } }, 500);
-      else applyBgm();
+      // V1395 C 사용자: 피버타임 중 폰 꺼도 소리 계속 — 피버 브금(bgm-fever)은 applyBgm 밖이라 따로 멈췄다가 돌아오면 이어서.
+      const feverBgm = document.getElementById('bgm-fever');
+      if (document.hidden) bgmHideTimer = setTimeout(() => { if (document.hidden) { const el = bgmActiveEl(); if (el) el.pause(); if (feverBgm && !feverBgm.paused) { feverBgm.pause(); feverBgm.dataset.hiddenPaused = '1'; } applyBgm(); } }, 500);
+      else {
+        if (feverBgm && feverBgm.dataset.hiddenPaused) { delete feverBgm.dataset.hiddenPaused; if (feverBgmOverride && window.FGH.Settings.get('music')) feverBgm.play().catch(() => {}); }
+        applyBgm();
+      }
     });
     // 언어 전환 시 JS 로 채운 동적 문구도 다시 그린다 (applyStatic 이 못 건드리는 것들).
     I18N.onChange(() => {
