@@ -8488,6 +8488,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .iw-weapon .inv-thumb { width: 120px; height: 88px; flex: none; }
 .iw-weapon .inv-thumb > img:first-child { max-width: 100%; max-height: 100%; object-fit: contain; }
 .iw-weapon .inv-thumb--pair { gap: 8px; --kp-tilt: 4deg; } /* 사용자: 킹 판취가 진열장 밖으로 잘림 → 두 장갑 안쪽으로 더 기울여(15→28°) 폭 줄임 */
+.iw-page:not(.ks-wpage) .inv-thumb--pair { --kp-tilt: 19deg; } /* V1429 C 사용자: 무기 화면 킹판취 왼쪽 시계 15°·오른쪽 반시계 15° 더 */
 .iw-weapon .inv-thumb--pair > img { width: 52px; height: 88px; max-width: 52px; flex: none; object-fit: contain; }
 .iw-stage .iw-equip {
   position: absolute; left: 127px; top: 974px; width: 512px; height: 134px; margin: 0; padding: 0 25px;

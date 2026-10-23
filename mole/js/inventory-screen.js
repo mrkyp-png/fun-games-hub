@@ -347,8 +347,9 @@
       body.querySelectorAll('.iw-page').forEach(function (page) {
         var a = art[page.dataset.weapon];
         var unit = page.querySelector('.iw-preview-unit');
-        unit.style.setProperty('--iw-weapon-scale', Math.min(440/a[0], 490/a[1]));
-        page.style.setProperty('--iw-weapon-scale', Math.min(440/a[0], 490/a[1])); // 뒤 빛이 무기와 같은 거리로 움직이게
+        var sc = Math.min(440/a[0], 490/a[1]) * (page.dataset.weapon === 'cannon' ? 0.96 : 1); // V1429 C 사용자: 캐논 96%
+        unit.style.setProperty('--iw-weapon-scale', sc);
+        page.style.setProperty('--iw-weapon-scale', sc); // 뒤 빛이 무기와 같은 거리로 움직이게
         page.querySelector('.inv-thumb').style.transform = 'translate(' + a[2] + 'px,' + a[3] + 'px)';
       });
       body.querySelectorAll('.iw-stat-title,.iw-stat-label,.iw-stat-value,.iw-equip,.iw-grade').forEach(function (label) {
