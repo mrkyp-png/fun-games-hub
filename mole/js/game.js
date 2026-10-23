@@ -1028,12 +1028,14 @@
   // 타겟팅만 실제 연출/효과(§54~59) — 나머지 4개는 게임 내 실제 효과가 아직 미정의(사용자
   // 확인: "시스템만 먼저") → 소비/UI만 실제로 동작, 화면엔 플레이스홀더 이름만 표시.
   const AI_SKILL_MS = 10000; // 사용자: AI 스킬 10초
-  const AI_HIT_GAP_MS = 320; // 자동 공격 간격(무기 휘두름 0.24초보다 길게)
+  const AI_HIT_GAP_MS = 90; // V1422 C 사용자: 빨리 쳐서 다 잡게(분신 망치가 겹친 타격을 받아줌)
   // AI 자동 공격 — 메인 루프가 매 프레임 호출. 진짜 타겟 하나를 골라 실제 탭과 같은 handleCell 로 친다(무기 연출·점수·콤보 동일).
   function tickAiSkill(now) {
     if (!state.aiUntil || now >= state.aiUntil || state.pausedByFever || state.feverEventActive) return;
     if (now < (state.aiNextAt || 0)) return;
-    const live = state.spawnPoints.filter((sp) => liveTargetAt(sp.regionId) && !(state.quakePending && state.quakePending.has(sp.regionId)));
+    // V1422 C 사용자: 킹 판취 무적 중엔 동물도 쳐도 되는 대상 → AI 도 동물 침(폭탄 든 두더지는 계속 피함)
+    const inv = alipunchInvincible();
+    const live = state.spawnPoints.filter((sp) => (liveTargetAt(sp.regionId) || (inv && liveAnimalAt(sp.regionId))) && !(state.quakePending && state.quakePending.has(sp.regionId)));
     if (!live.length) return;
     const sp = live[Math.floor(state.rng.next() * live.length)];
     state.aiNextAt = now + AI_HIT_GAP_MS;
@@ -1969,7 +1971,8 @@
     // 헛방·방해물과 동일하게 콤보 초기화. 단, 피버타임 진입 연출(10초) 동안엔 플레이어가
     // 아직 손 쓸 수 없는 상태라 이 시간초과로 콤보가 깎이면 안 된다(사용자가 콤보100으로
     // 트리거해놓고 전광판엔 0이 뜨는 버그로 발견 — 스폰은 계속 돌지만 판정만 유예).
-    if (!state.pausedByFever && tickResult.expired.some((e) => effectiveHitType(state.config, e.type) === 'mole' && e.timedOut)) run.combo.onObstacleHit();
+    // V1422 C: 폭탄 든 두더지는 피하는 게 정답 — 시간초과로 들어가도 콤보 안 끊김(AI 도 폭탄 두더지는 피해서 콤보가 끊기던 원인)
+    if (!state.pausedByFever && tickResult.expired.some((e) => effectiveHitType(state.config, e.type) === 'mole' && e.timedOut && !e.bomb)) run.combo.onObstacleHit();
     // "의문사" 방지(사용자 지정) — 무적 중에 올라온 방해물은, 그 사이 무적이 끝나도
     // 계속 안전 취급되도록 스폰 순간에 낙인찍는다(spawn-scheduler.js 가 그대로 전달).
     if (alipunchInvincible()) {
@@ -2238,6 +2241,9 @@
   // 이 라운드의 '진짜 타겟'(역할반전이면 동물)이 살아 있는 구멍 — 타겟팅·AI 스킬 공용. 폭탄 든 두더지·가라앉는 중 제외.
   function liveTargetAt(id) {
     return state.scheduler.getActivePops().find((q) => q.regionId === id && effectiveHitType(state.config, q.type) === 'mole' && !q.bombKind && !q.dying && !q.killed && !(q.sinkIn > 0));
+  }
+  function liveAnimalAt(id) {
+    return state.scheduler.getActivePops().find((q) => q.regionId === id && q.type === 'animal' && !q.bombKind && !q.dying && !q.killed && !(q.sinkIn > 0));
   }
   function liveMoleAt(id) {
     // 지진은 폭탄 든 두더지는 스킵해야 함(원래 기획 — 폭탄은 구식 type==='bomb' 시절 걸러졌는데,
@@ -3119,6 +3125,8 @@
     };
     // 제작소가 아직 없어 사진관 캐릭터를 완성할 방법이 없음 — 테스트 전용(예: 'round_blue_bears').
     window.__debugPhotoComplete = (id) => MG.PhotoStudio.markCompleted(id);
+    window.__debugAiOn = (inv) => { if (!state) return; state.aiUntil = performance.now() + AI_SKILL_MS; state.aiNextAt = 0; if (inv) state.alipunchInvincibleUntil = performance.now() + 5000; };
+    window.__debugCombo = () => (run ? [run.combo.combo, run.combo.maxCombo, run.combo.kills] : null);
     window.__debugForceQuake = () => { forceQuakeNext = true; }; // 다음 두더지 타격에서 지진 강제 발동
     window.__debugQuakeAt = (regionId) => { if (state) quakeRipple(regionId | 0, 0); }; // 그 구멍에서 지진 파동 즉시
     // 디버그 전용: 지정 구멍에 즉시 두더지(1타, poseIndex 지정 가능 — 0=전신) 강제 스폰 (타격점 확인용).

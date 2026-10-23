@@ -185,7 +185,7 @@
           pop.timedOut = true; // 처치 못 하고 시간초과로 내려감 (콤보 리셋 판정용 — game.js)
           pop.remaining = RETREAT_SEC;
         } else {
-          expired.push({ id, type: pop.type, timedOut: !!pop.timedOut });
+          expired.push({ id, type: pop.type, timedOut: !!pop.timedOut, bomb: !!pop.bombKind });
         }
       });
       expired.forEach((e) => {
