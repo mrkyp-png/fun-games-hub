@@ -694,7 +694,7 @@
         glowEl.classList.toggle('has-enh', lv > 0);
         if (lv > 0) glowEl.style.setProperty('--enh', c); else glowEl.style.removeProperty('--enh');
         var b = host.querySelector(':scope > .enh-lv');
-        if (!badge) { if (b) b.remove(); return; }
+        if (!badge || lv <= 0) { if (b) b.remove(); return; } // V1428 C 사용자: +0 은 안 보이게
         if (!b) { b = document.createElement('b'); b.className = 'enh-lv'; host.appendChild(b); }
         b.textContent = '+' + lv;
       }

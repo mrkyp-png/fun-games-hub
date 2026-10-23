@@ -8701,6 +8701,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .cs-card-char::after { content: ''; position: absolute; left: 50%; bottom: -12px; width: 84%; height: 38px; transform: translateX(-50%); border-radius: 50%; z-index: -1; pointer-events: none;
   background: radial-gradient(ellipse, rgba(15, 40, 75, .7) 0%, rgba(15, 40, 75, .35) 45%, rgba(15, 40, 75, 0) 72%); }
 .cs-card-char, .cs-hero-img { isolation: isolate; }
+.cs-card-char::before, .cs-hero-img::before { display: none; } /* V1428 C 사용자: 캐릭 뒤 색깔 그림자 삭제, 발밑 그림자만 */
 .cs-hero-img[data-team="blue_bears"] { --team: 40, 105, 235; } .cs-hero-img[data-team="mount_stars"] { --team: 30, 150, 75; } .cs-hero-img[data-team="cloud_cups"] { --team: 125, 70, 220; }
 .cs-card[data-team="blue_bears"] { --team: 40, 105, 235; }
 .cs-card[data-team="mount_stars"] { --team: 30, 150, 75; }
@@ -8803,8 +8804,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .has-enh { filter: drop-shadow(0 0 2px var(--enh)) drop-shadow(0 0 2px var(--enh)) drop-shadow(0 0 1px var(--enh)); } /* 사용자: 테두리 삭제, 강화 색 빛 2px, 진하게(겹쳐 칠함) */ /* 사용자: 무기·스킬·코스튬은 Glow 말고 같은 색 테두리만 */
 .ph3-stage .has-enh { filter: drop-shadow(0 0 6px var(--enh)) drop-shadow(0 0 16px var(--enh)); } /* 사진관은 Glow 그대로 */
 .enh-lv { position: absolute; right: 6%; top: 4%; z-index: 6; font-family: 'Jua', sans-serif; font-weight: 400; font-size: 64px; line-height: 1; color: #fff; -webkit-text-stroke: 10px #2a0b55; paint-order: stroke fill; pointer-events: none; }
-.cs-card > .enh-lv { right: 14px; top: 12px; font-size: 44px; -webkit-text-stroke: 8px #2a0b55; }
-.ks-case > .enh-lv { right: 26px; top: 22px; }
+.cs-card > .enh-lv { right: 42px; top: 34px; font-size: 44px; -webkit-text-stroke: 8px #2a0b55; }
+.ks-case > .enh-lv { right: 66px; top: 52px; }
 .iw-page:not(.ks-wpage) > .enh-lv { right: 6%; top: 15%; }
 /* V1417 C 사용자: 상점 아래 재화·무기·스킬·코스튬 탭 박스·테두리 = 무기 화면(아이템창)과 같게 */
 #shop-screen .shop-tab, #shop-screen .shop-tab--on { background: none !important; border-style: solid !important; border-color: transparent !important; border-width: 0 !important; border-radius: 0 !important; /* 그림 테두리(12px)는 border-image 폭만, 실제 테두리 0 → 아이콘·글자 자리 안 좁아져 위아래 가운데 */
