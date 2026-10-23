@@ -4,6 +4,13 @@
 - 사용자 후속: 알 타격 때 기울이지 말고 게임 대기 각도(18°) 그대로 — .ws-ham 시작·is-in·is-hit·is-out 모두 rotate(18deg), 위(-30%)→아래(5%) 내려침, 타격점 오른쪽 소폭(translate X -55%).
 - 사용자: 황금알 망치 = 지금 망치 그림 + 파란 번개(GPT 6장 ham-gold-zap1~6-v1409, 같은 크기·자리), 나타날 때부터 타격 직전까지 80ms 번갈아, 타격 순간 번개 없는 그림.
 - 사용자: 게임 지진 발동 때도 무기에 번개 — 메인 골드 + 지진 분신(45 포즈)에 goldZap(0.72초). 버벅임 방지: 게임용 작은 그림 goldpaw-zap1~6-v1409(258×360), 미리 디코드해 붙잡아 둠, 동시에 최대 4개.
+## 2026-10-23 / V1412 C — 사진관 전체 컬렉션 아예 삭제
+- 사용자: '전체컬렉션 아예 삭제' → inventory-screen.js renderPhotoCollection/closePhotoCollection/renderPhotoDetailZoom/openPhotoRenameDialog·관련 변수·탭 전환 처리 삭제, index.html .inv-photo-search 버튼 삭제, style.css 컬렉션 전용 규칙(photo-coll/photo-zoom/photo-overlay/photo-rename) 152줄 삭제(다른 선택자와 같이 쓰는 규칙은 남김). 이름 변경 기능도 같이 사라짐. 사용자: 세부조정·폴리싱 후 상점 UI 수정하면 출시 준비.
+- 사용자: 스킬 슬롯·코스튬 팀 이름·사진관 고른 팀 알약 끝 뾰족 → 끝 둥근 부분 원본 + 가운데 이어 붙인 가로 긴 그림(pill-blue-w42/w65-v1412, 이음매 없음). 사진관 최대 등록 10→9(MAX_APPLIED, 설명창·안내 문구 자동).
+- 사용자: 큰 테두리·등급 명판 노이즈 보정(원본 훼손 없이) — Real-ESRGAN 후 원본 색 복원(평균 색 차 ≤0.01), 2배: cabinet-frame-clean-v1412, skill-v1403/frame-clean-v1412, plate-*-clean-v1412(원본 보존). 사진관 카드 캐릭터 = 코스튬 카드 두더지와 같은 크기(박스 286px, 그림 112%).
+- ⚠️ 원인(제 실수): 컬렉션 CSS 지울 때 여러 줄 선택자 규칙 3개(마지막 선택자가 .photo-overlay)를 통째로 지워 #inventory-screen·#shop-screen 의 흰 나무 테두리(board-sky.png ::before)·바탕색·::after 숨김이 사라졌음 → 등불 윗부분·갈색 띠가 보였던 것. V1411 C(4663c38) 원본에서 그 3개 규칙을 photo 선택자만 빼고 복구, 임시 하늘색 덮기 2개 삭제 → 실제 계산값이 라이브와 같음(board-sky, ::after 없음, 바탕 159,214,239) 확인. 사진관 고른 팀(파란) 버튼 4px 내려 틈 맞춤(크림 버튼 아래 그림자 4px).
+- 사용자: 무기 화면 '능력치' 알약·? 버튼을 파란 판(그림 y207~336) 위아래 가운데로(top 222/221→215).
+
 ## 2026-10-23 / V1411 C — 사진관 개편(무기·스킬·코스튬과 같은 틀, 시안 A)
 - renderPhoto 새로: 스킬 탭 판(.ks-stage) 재사용, 위 진열장(고른 얼굴형) + 팀 버튼 3개·완성 n/3·돋보기(판 안, 기존 .inv-photo-search 숨기고 click 위임), 아래 카드 3장: 보유/미보유 배지 좌측 상단(사용자), 버튼 = 게임적용/게임미적용(표시만, 기존과 같음), 카드 뒤 색 = 시안대로 파랑·초록·보라(사용자), 미완성 실루엣 밝게(grayscale brightness 1.15 — 사용자 '시커멓게 나옴', 그림 알파 정상).
 - 사용자: 위 캐릭터 = 코스튬 화면 캐릭터와 같은 크기 — 사진 그림은 위 여백 13% → .ph3-stage .cs-hero-img height 112%·발 높이 맞춤.

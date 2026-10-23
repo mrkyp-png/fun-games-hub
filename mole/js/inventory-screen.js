@@ -65,13 +65,6 @@
     var wSignEl = document.createElement('div');
     wSignEl.className = 'inv-wsign'; wSignEl.hidden = true;
     if (cosLogoEl) cosLogoEl.parentNode.insertBefore(wSignEl, cosLogoEl.nextSibling); else el.appendChild(wSignEl);
-    var photoSearchBtn = el.querySelector('.inv-photo-search');
-    if (photoSearchBtn) {
-      photoSearchBtn.addEventListener('click', function () {
-        photoCollectionOpen = true;
-        renderPhotoCollection();
-      });
-    }
     var headEl = el.querySelector('.inv-cards-head');
     var dotsEl = el.querySelector('[data-inv-dots]');
     var prevBtn = el.querySelector('[data-inv-prev]');
@@ -87,8 +80,6 @@
     // 사진관 탭 상태 — 현재 보고 있는 코스튬/얼굴형, 전체 컬렉션·상세 오버레이 열림 여부(§20).
     var photoCostumeId = 'blue_bears';
     var photoFace = 'round';
-    var photoCollectionOpen = false;
-    var photoDetailId = null;
 
     // 상점 카드줄과 동일한 점+화살표 페이징(사용자 지정: "상점 구조와 동일하되 한페이지 한장씩").
     // ⚠️ 처음엔 scrollBy(상대량) 방식이었는데, 카드 실측폭(getBoundingClientRect)과 grid의
@@ -629,212 +620,6 @@
       el.appendChild(dialog); weaponHelp = dialog; dialog.showModal(); close.focus();
     }
 
-    // 이름 변경 팝업 — game.js showQuitDialog()와 동일한 .ad-overlay/.quit-card 재사용(§33).
-    function openPhotoRenameDialog(id) {
-      var v = document.createElement('div');
-      v.className = 'ad-overlay';
-      v.innerHTML = '<div class="ad-overlay-card quit-card">' +
-        '<div class="quit-title"></div>' +
-        '<input type="text" class="fm-name photo-rename-input" maxlength="12">' +
-        '<div class="quit-btns">' +
-        '<button type="button" data-q="no"></button>' +
-        '<button type="button" class="quit-yes" data-q="yes"></button></div></div>';
-      v.querySelector('.quit-title').textContent = T('mole.photo.rename');
-      var input = v.querySelector('.photo-rename-input');
-      input.placeholder = T('mole.photo.renamePlaceholder');
-      input.value = MG.PhotoStudio.nameOf(id, I18N.lang);
-      v.querySelector('[data-q="no"]').textContent = T('mole.photo.renameCancel');
-      v.querySelector('[data-q="yes"]').textContent = T('mole.photo.renameSave');
-      document.body.appendChild(v);
-      v.querySelector('[data-q="no"]').addEventListener('click', function () { v.remove(); });
-      v.querySelector('[data-q="yes"]').addEventListener('click', function () {
-        var res = MG.PhotoStudio.setName(id, input.value.trim());
-        if (!res.ok) {
-          input.classList.remove('is-shake'); void input.offsetWidth; input.classList.add('is-shake');
-          return;
-        }
-        v.remove();
-        renderPhoto();
-        if (photoCollectionOpen) renderPhotoCollection();
-        if (photoDetailId) renderPhotoDetailZoom(photoDetailId);
-      });
-    }
-
-    // 전체 컬렉션 — 기존 사진관 위 Bottom Sheet/Overlay(§6, §19~23), 정사각형 영역 그대로(§21).
-    function renderPhotoCollection() {
-      var PS = MG.PhotoStudio;
-      // 사용자 지정(2026-09-27): "버튼보드"(게임보드 아래, 하트/코인/티켓~시작버튼이 있는
-      // 흰색 .dialpad 영역, 게임보드와 크기 동일)를 위에서 아래로 슬라이드하며 덮는다.
-      // #inventory-screen 이 아니라 .dialpad 에 마운트.
-      var board = document.querySelector('.dialpad');
-      if (!board) return;
-      var overlay = board.querySelector('[data-photo-overlay]');
-      if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.className = 'photo-overlay';
-        overlay.setAttribute('data-photo-overlay', '');
-        board.appendChild(overlay);
-      }
-      // 사용자 지정: "별빛박스 좌측 위에 전광판(트로피), 우측 안쪽에 N/15" — 헤더는
-      // 전체 높이의 약 10%만 차지, 트로피가 별빛바 위에 겹쳐 올라간다.
-      overlay.innerHTML =
-        '<button type="button" class="photo-coll-x" data-photo-back aria-label="닫기"><img src="assets/workshop/pick/x.png" alt=""></button>' + // v865(사용자 지정): 뒤로가기 → 오른쪽 빨간 X
-        '<div class="photo-coll-headrow">' +
-          '<img class="photo-coll-starbar" alt="" src="assets/photo/collection-starbar.png">' +
-          '<span class="photo-coll-trophy-wrap"><img class="photo-coll-trophy" alt="" src="assets/photo/collection-trophy.png">' +
-            '<span class="rx-shine" style="-webkit-mask-image:url(assets/photo/collection-trophy.png);mask-image:url(assets/photo/collection-trophy.png)"><i></i></span></span>' + // v865: 트로피 빛 훑기
-          '<div class="photo-coll-progress" data-photo-progress></div>' +
-          '<div class="photo-coll-hint"></div>' +
-        '</div>' +
-        '<div class="photo-coll-gridwrap">' +
-          '<div class="photo-coll-rowlabels"></div>' +
-          '<div class="photo-coll-grid" data-photo-grid></div>' +
-        '</div>';
-      overlay.querySelector('.photo-coll-hint').textContent = T('mole.photo.collHint');
-      // 사용자 지정(2026-09-27): "앞쪽 노란박스에 위에서부터 동글형/듬직형/날렵형" —
-      // 골드 플레이트(에셋에 이미 그려진 부분) 위에 세로 라벨 오버레이.
-      var rowlabelsEl = overlay.querySelector('.photo-coll-rowlabels');
-      PS.faceTypes().forEach(function (f) {
-        var lbl = document.createElement('span');
-        lbl.className = 'photo-coll-rowlabel';
-        // v866(사용자 지정): 리듬팡 '일시정지' 글자처럼 노랑→주황 그라데이션 + 진갈색 외곽선·그림자, 세로로 한 글자씩
-        var txt = T(PHOTO_FACE_I18N[f.id]), chars = Array.from(txt), gid = 'pcg' + f.id, vbH = chars.length * 100;
-        var tx = function (cls, dy) { return chars.map(function (ch, i) { return '<text class="' + cls + '" x="50" y="' + (i * 100 + 82 + dy) + '" text-anchor="middle">' + ch.replace(/[<&>]/g, '') + '</text>'; }).join(''); };
-        lbl.innerHTML = '<svg class="pc-rl-svg" viewBox="0 0 100 ' + vbH + '" aria-label="' + txt + '"><defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">' +
-          '<stop offset="0" stop-color="#fff58a"/><stop offset="0.45" stop-color="#ffcf1f"/><stop offset="1" stop-color="#ff7a00"/></linearGradient></defs>' +
-          tx('pc-rl-sh', 6) + tx('pc-rl-st', 0) + tx('pc-rl-fill', 0).replace(/class="pc-rl-fill"/g, 'class="pc-rl-fill" fill="url(#' + gid + ')"') + '</svg>';
-        rowlabelsEl.appendChild(lbl);
-      });
-      overlay.querySelector('[data-photo-progress]').textContent = PS.completedCount() + ' / ' + PS.TOTAL;
-      overlay.classList.toggle('is-all', PS.completedCount() >= PS.TOTAL); // v865: 다 모으면 트로피 금빛 번쩍
-
-      var grid = overlay.querySelector('[data-photo-grid]');
-      PS.faceTypes().forEach(function (f) {
-        PS.charactersFor(f.id).forEach(function (def) {
-          var id = def.id;
-          var completed = PS.isCompleted(id);
-          var applied = PS.isApplied(id);
-          var card = document.createElement('button');
-          card.type = 'button';
-          card.className = 'photo-coll-card' + (completed ? ' is-done' : ''); // v865: 완성 칸 강조
-          // 사용자 지정: 완성 여부와 무관하게 항상 엠블럼 팀에 맞는 얼굴형 캐릭터를 표시(§"제일 중요").
-          card.innerHTML =
-            '<img class="photo-coll-card-img' + (completed ? '' : ' photo-coll-card-img--locked') + '" alt="" src="' + MG.PhotoStudio.imageFor(id) + '">' +
-            (applied ? '<span class="photo-coll-card-applied">✓</span>' : '') +
-            (completed ? '<i class="photo-coll-tw" style="left:14%;top:12%"></i><i class="photo-coll-tw" style="right:12%;top:30%;animation-delay:-0.7s"></i><i class="photo-coll-tw" style="left:22%;bottom:16%;animation-delay:-1.3s"></i>' : '');
-          card.insertAdjacentHTML('beforeend', '<i class="ph2-cframe"></i>'); // v1000: 주황 카드 액자(안쪽 반듯)
-          card.addEventListener('click', function () { photoDetailId = id; renderPhotoDetailZoom(id); });
-          grid.appendChild(card);
-        });
-      });
-
-      // 사용자 지정(2026-09-27): "위에서 아래로 내려오는 등장" — CSS class+transition
-      // 방식은 새로 append된 엘리먼트에서 트랜지션이 안 걸리고 닫힘 위치에 고정되는
-      // 버그가 있었음(§photo-overlay 주석 참고) — Web Animations API로 재생하되,
-      // 애니메이션이 어떤 이유로든 안 먹히는 환경 대비 안전장치로 짧은 지연 뒤
-      // 인라인 스타일로 최종 위치를 강제 고정(컬렉션 화면 자체가 안 보이는 최악의
-      // 상황만은 절대 없게).
-      overlay.classList.add('is-open');
-      var openAnim = overlay.animate(
-        [{ transform: 'translateY(-100%)' }, { transform: 'translateY(0)' }],
-        { duration: 280, easing: 'ease-out', fill: 'forwards' }
-      );
-      // fill:'forwards'인 애니메이션 효과는 끝나도 계속 남아 인라인 스타일보다 우선
-      // 적용됨(실측 확인) — 안전장치에서 인라인 스타일을 주기 전에 반드시 cancel()로
-      // 애니메이션 효과 자체를 제거해야 실제로 적용된다.
-      setTimeout(function () { openAnim.cancel(); overlay.style.transform = 'translateY(0)'; }, 320);
-      overlay.querySelector('[data-photo-back]').addEventListener('click', closePhotoCollection);
-    }
-    function closePhotoCollection() {
-      var board = document.querySelector('.dialpad');
-      var overlay = board && board.querySelector('[data-photo-overlay]');
-      photoCollectionOpen = false;
-      photoDetailId = null;
-      if (!overlay) return;
-      // 애니메이션 완료 콜백이 항상 확실하게 오는 게 아니어서(환경에 따라 지연/누락
-      // 가능성 확인됨) setTimeout을 안전장치로 같이 둔다 — 어느 쪽이든 먼저 오는
-      // 대로 제거, 뒤로가기 버튼이 절대 "먹통"이 되지 않도록.
-      var removed = false;
-      function removeOnce() { if (!removed && overlay.parentNode) { removed = true; overlay.remove(); } }
-      var closeAnim = overlay.animate(
-        [{ transform: 'translateY(0)' }, { transform: 'translateY(-100%)' }],
-        { duration: 220, easing: 'ease-in', fill: 'forwards' }
-      );
-      closeAnim.onfinish = removeOnce;
-      setTimeout(removeOnce, 260);
-    }
-
-    // 확대 상세(§31~34) — 컬렉션 위에 뜨는 DETAIL LAYER, 완성된 캐릭터만 진입 가능.
-    function renderPhotoDetailZoom(id) {
-      var PS = MG.PhotoStudio;
-      var board = document.querySelector('.dialpad');
-      var overlay = board && board.querySelector('[data-photo-overlay]');
-      if (!overlay) return;
-      var zoom = overlay.querySelector('[data-photo-zoom]');
-      if (!zoom) {
-        zoom = document.createElement('div');
-        zoom.className = 'photo-zoom';
-        zoom.setAttribute('data-photo-zoom', '');
-        overlay.appendChild(zoom);
-      }
-      var list = PS.characters();
-      var idx = -1;
-      for (var i = 0; i < list.length; i++) if (list[i].id === id) { idx = i; break; }
-      var completed = PS.isCompleted(id);
-      var applied = PS.isApplied(id);
-      zoom.innerHTML =
-        '<div class="photo-zoom-dim" data-photo-zoom-dim></div>' +
-        '<div class="photo-zoom-card photo-zoom-card--' + ((PS.characterDef(id) || {}).costumeId || '') + '">' + // v890: 확대 카드 = 그 팀 색
-          '<button type="button" class="photo-zoom-close" data-photo-zoom-close>✕</button>' +
-          '<button type="button" class="photo-zoom-nav photo-zoom-nav--prev" data-photo-zoom-prev>◀</button>' +
-          '<button type="button" class="photo-zoom-nav photo-zoom-nav--next" data-photo-zoom-next>▶</button>' +
-          '<span class="photo-zoom-imgwrap">' +
-            '<img class="photo-zoom-img' + (completed ? '' : ' photo-zoom-img--locked') + '" alt="" src="' + MG.PhotoStudio.imageFor(id) + '">' +
-          '</span>' +
-          (applied ? '<div class="photo-zoom-applied"></div>' : '') +
-          '<div class="photo-zoom-name"></div>' +
-          '<div class="photo-zoom-effect"><span></span><b></b></div>' +
-          '<div class="photo-zoom-btns">' +
-            '<button type="button" class="inv-equip photo-zoom-rename" data-photo-zoom-rename></button>' +
-            '<button type="button" class="inv-equip photo-zoom-apply" data-photo-zoom-apply></button>' +
-          '</div>' +
-        '</div>';
-      zoom.querySelector('.photo-zoom-name').textContent = completed ? PS.nameOf(id, I18N.lang) : T('mole.photo.locked');
-      if (applied) zoom.querySelector('.photo-zoom-applied').textContent = '✓ ' + T('mole.photo.applied');
-      zoom.querySelector('.photo-zoom-effect span').textContent = T('mole.photo.effectTitle');
-      zoom.querySelector('.photo-zoom-effect b').textContent = completed
-        ? ('+' + PS.CHAR_EFFECT_VALUE + (I18N.lang === 'en' ? 's' : '초') + ' ' + T('mole.photo.effectName'))
-        : '-';
-      var renameBtn = zoom.querySelector('[data-photo-zoom-rename]');
-      renameBtn.textContent = T('mole.photo.rename');
-      renameBtn.disabled = !completed;
-      if (completed) renameBtn.addEventListener('click', function () { openPhotoRenameDialog(id); });
-      var applyBtn = zoom.querySelector('[data-photo-zoom-apply]');
-      applyBtn.textContent = applied ? T('mole.photo.applied') : T('mole.photo.apply');
-      applyBtn.disabled = !completed || (!applied && PS.appliedIds().length >= PS.MAX_APPLIED);
-      if (!applyBtn.disabled) {
-        applyBtn.addEventListener('click', function () {
-          PS.toggleApply(id);
-          renderPhotoDetailZoom(id);
-          renderPhotoCollection();
-        });
-      }
-      zoom.querySelector('[data-photo-zoom-close]').addEventListener('click', function () {
-        zoom.remove();
-        photoDetailId = null;
-      });
-      zoom.querySelector('[data-photo-zoom-dim]').addEventListener('click', function () {
-        zoom.remove();
-        photoDetailId = null;
-      });
-      var prevBtn3 = zoom.querySelector('[data-photo-zoom-prev]');
-      var nextBtn3 = zoom.querySelector('[data-photo-zoom-next]');
-      prevBtn3.disabled = idx <= 0;
-      nextBtn3.disabled = idx >= list.length - 1;
-      prevBtn3.addEventListener('click', function () { if (idx > 0) { photoDetailId = list[idx - 1].id; renderPhotoDetailZoom(photoDetailId); } });
-      nextBtn3.addEventListener('click', function () { if (idx < list.length - 1) { photoDetailId = list[idx + 1].id; renderPhotoDetailZoom(photoDetailId); } });
-    }
-
     // v890(사용자: 영어 'Costumes' 가 탭 박스 모서리와 겹침) — 글자가 탭 폭의 86%를 넘으면 가로로만 좁힘
     function fitTabLabel(lb) {
       requestAnimationFrame(function () {
@@ -856,9 +641,6 @@
           // 사용자: 무기↔스킬 탭은 같은 무기로 세트 — 그 사이 전환은 보던 무기(pageIdx) 유지
           var keepWeapon = (active === 'weapon' || active === 'skill') && (t.id === 'weapon' || t.id === 'skill');
           active = t.id; if (!keepWeapon) pageIdx = equippedIdx(); activePage = 0; passivePage = 0;
-          // 사용자 지정(2026-09-27): "컬렉션 화면은 사진관 탭일 때만 유지, 다른 탭으로
-          // 전환하면 닫혀야 함".
-          if (active !== 'photo' && photoCollectionOpen) closePhotoCollection();
           paint();
         });
         tabsEl.appendChild(b);
@@ -885,7 +667,6 @@
       // 몰리그 전광판은 코스튬 탭에서만, 전체파란박스 밖(화면 최상단)에 표시.
       if (cosLogoEl) cosLogoEl.hidden = true; // V1405 C: 코스튬 탭 개편 — MOLE LEAGUE 간판 안 씀
       wSignEl.hidden = active !== 'weapon';
-      if (photoSearchBtn) photoSearchBtn.hidden = true; // V1410 C: 돋보기는 사진관 판 안(.ph3-search)으로
       if (active === 'weapon') {
         renderWeapons();
       } else if (active === 'costume') {
@@ -920,7 +701,7 @@
     }, 5000);
     return { show: function () {
       active = 'weapon'; pageIdx = equippedIdx(); costumeSelectedId = null; activePage = 0; passivePage = 0;
-      photoCostumeId = 'blue_bears'; photoFace = 'round'; photoCollectionOpen = false; photoDetailId = null;
+      photoCostumeId = 'blue_bears'; photoFace = 'round';
       paint();
     } };
   }

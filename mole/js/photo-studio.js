@@ -17,7 +17,7 @@
     { id: 'mount_stars', nameKo: '마운트 스타즈', nameEn: 'Mount Stars' },
     { id: 'cloud_cups', nameKo: '클라우드 컵스', nameEn: 'Cloud Cups' }
   ];
-  var MAX_APPLIED = 10;
+  var MAX_APPLIED = 9; // V1412 C 사용자: 최대 9개 등록(3팀 × 3얼굴형 전부)
   var TOTAL = FACE_TYPES.length * COSTUMES.length; // V1405 C: 3팀 → 9개
   var CHAR_EFFECT_VALUE = 0.1;      // §17: 개별 캐릭터 효과 예시(두더지 하강 딜레이 +0.1초)
   var TEAM_EFFECT_VALUE = 0.1;     // V1411 C 사용자: 팀별 3개(얼굴형 3) 모아 적용 시 하강 딜레이 +0.1초
