@@ -518,55 +518,115 @@
       mount.style.marginLeft = ((639 - (2 + 1274) / 2) * scale) + 'px'; mount.style.marginTop = ((615 - (8 + 1210) / 2) * scale) + 'px';
       mount.style.setProperty('--ks-scale', scale);
     }
-    root.addEventListener('resize', function () { if (active === 'skill' || active === 'costume') fitSkillStage(); });
+    root.addEventListener('resize', function () { if (active === 'skill' || active === 'costume' || active === 'photo') fitSkillStage(); });
 
     var PHOTO_FACE_I18N = { round: 'mole.photo.faceRound', sturdy: 'mole.photo.faceSturdy', sharp: 'mole.photo.faceSharp' };
 
     // 사진관 메인 화면 — 기존 정사각형 영역 안에서만 표시(§8, §35). 명세서: 바탕화면
     // "사진관 UI 및 에셋/명세서.txt". 상단 코스튬 5개 엠블럼 + 얼굴형 3슬롯(현재 코스튬 기준) +
     // 이름/효과/게임적용 + 우측 상단 돋보기(전체 컬렉션 진입).
+    // V1410 C 사용자: 사진관도 무기·스킬·코스튬과 같은 틀(스킬 탭 판 .ks-* 재사용, 시안 A).
+    // 위 = 고른 얼굴형 진열장 + 팀 버튼 3개·완성 n/3·돋보기, 아래 = 얼굴형 카드 3장(보유 배지 좌측 상단, 게임적용/미적용).
     function renderPhoto() {
       var PS = MG.PhotoStudio;
-      // v1000(사용자 지정, 바탕화면 "사진관 UI 2차 개선"): 팀색 꼰 밧줄에 매달린 엠블럼 간판 5개 +
-      // 야구 장식·램프 달린 나무 액자 안에 주황 카드 3장(선택=금색, 그외=파랑) + 아래 나무 받침대.
-      // 버튼 글자는 기존 그대로 "게임적용 / 게임미적용"(사용자 지정).
-      body.innerHTML =
-        '<div class="ph2-embs" data-photo-emblems></div>' +
-        '<div class="ph2-frame"><div class="ph2-slots" data-photo-slots></div></div>' +
-        '<div class="ph2-stand"></div>';
-
-      var emblemsEl = body.querySelector('[data-photo-emblems]');
-      PS.costumes().forEach(function (c, i) {
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'ph2-emb' + (c.id === photoCostumeId ? ' is-on' : '');
-        b.style.animationDelay = '-' + (i * 0.7).toFixed(1) + 's';
-        b.innerHTML = '<img alt="" src="assets/photo2/emb-' + c.id + '.png">';
+      var en = I18N.lang === 'en';
+      var team = photoCostumeId;
+      var selId = photoFace + '_' + team;
+      var nDone = PS.completedCount(); // 사용자: 완성 = 전체 기준 n/9
+      var teams = PS.costumes().map(function (c) {
+        return '<button type="button" class="ph3-team ks-press' + (c.id === team ? ' is-on' : '') + '" data-ph3-team="' + c.id + '"><span></span></button>';
+      }).join('');
+      var cards = PS.faceTypes().map(function (f) {
+        var id = f.id + '_' + team, done = PS.isCompleted(id), on = PS.isApplied(id);
+        return '<div class="ks-card cs-card ph3-card' + (f.id === photoFace ? ' is-sel' : '') + '" data-ph3-face="' + f.id + '" data-team="' + team + '">' +
+          '<span class="ph3-own' + (done ? ' is-own' : '') + '"></span>' +
+          '<span class="cs-card-char"><img class="' + (done ? '' : 'photo-slot-img--locked') + '" alt="" src="' + PS.imageFor(id) + '"></span>' +
+          '<b class="ks-card-name"></b>' +
+          '<span class="ks-equip ph3-btn' + (on ? ' is-on' : '') + (done ? ' is-live ks-press' : '') + '"><span></span></span></div>';
+      }).join('');
+      body.innerHTML = '<div class="ks-mount"><div class="ks-stage cs-stage ph3-stage">' +
+        '<div class="ks-name"></div>' +
+        '<div class="ks-case"><div class="cs-clip"><div class="cs-hero"><span class="cs-hero-img" data-team="' + team + '"><img class="' + (PS.isCompleted(selId) ? '' : 'photo-slot-img--locked') + '" alt="" src="' + PS.imageFor(selId) + '"></span></div></div></div>' +
+        '<div class="ks-slotpanel ph3-info"><div class="ph3-teams">' + teams + '</div>' +
+          '<div class="cs-effect ph3-effect"><img alt="" src="assets/costume/clock.png"><span class="cs-effect-txt"></span></div>' +
+          '<div class="ph3-done"><span class="ph3-done-lbl"></span><b>' + nDone + '/' + PS.TOTAL + '</b></div>' +
+          '<button type="button" class="ph3-search ks-press" aria-label="search"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg></button></div>' +
+        '<div class="ks-cards">' + cards + '</div></div></div>';
+      var stage = body.querySelector('.ks-stage');
+      stage.querySelector('.ks-name').textContent = en ? 'Photo Studio' : '사진관';
+      stage.querySelector('.ph3-done-lbl').textContent = en ? 'Done' : '완성';
+      // 사용자: 사진관 설명박스 — 코스튬 화면과 같은 효과 박스
+      // 사용자: 팀별 3개(얼굴형 3) 모아 적용 +0.1초, 전체(풀) 적용 +0.5초 — 효과 설명(게임 연동은 아직 API만, photo-studio.js 주석)
+      var efx = stage.querySelector('.ph3-effect .cs-effect-txt');
+      efx.innerHTML = '<span class="ph3-ef-row"><i></i><b></b></span><span class="ph3-ef-row"><i></i><b></b></span>';
+      var rows = efx.querySelectorAll('.ph3-ef-row');
+      rows[0].querySelector('i').textContent = en ? 'Team set effect' : '팀세트 적용시 효과'; rows[0].querySelector('b').textContent = '+' + PS.TEAM_EFFECT_VALUE.toFixed(1) + (en ? 's' : '초');
+      rows[1].querySelector('i').textContent = en ? 'Full set effect' : '풀세트 적용시 효과'; rows[1].querySelector('b').textContent = '+' + PS.GLOBAL_EFFECT_VALUE.toFixed(1) + (en ? 's' : '초');
+      stage.querySelectorAll('[data-ph3-team]').forEach(function (b) {
+        var c = PS.costumes().filter(function (x) { return x.id === b.getAttribute('data-ph3-team'); })[0];
+        b.querySelector('span').textContent = en ? c.nameEn : c.nameKo;
         b.addEventListener('click', function () { photoCostumeId = c.id; renderPhoto(); });
-        emblemsEl.appendChild(b);
       });
+      stage.querySelectorAll('[data-ph3-face]').forEach(function (cd) {
+        var f = cd.getAttribute('data-ph3-face'), id = f + '_' + team;
+        cd.querySelector('.ks-card-name').textContent = T(PHOTO_FACE_I18N[f]);
+        cd.querySelector('.ph3-own').textContent = PS.isCompleted(id) ? (en ? 'Owned' : '보유') : (en ? 'Not owned' : '미보유');
+        cd.querySelector('.ph3-btn span').textContent = T(PS.isApplied(id) ? 'mole.photo.slotApplied' : 'mole.photo.slotNotApplied');
+        // 사용자: 전체 컬렉션 삭제 — 카드 누르면 고르기만, 완성 캐릭터는 버튼으로 게임 적용/미적용 바로 바꿈(최대 개수 넘으면 안내)
+        cd.addEventListener('click', function (e) {
+          if (e.target.closest('.ph3-btn') && PS.isCompleted(id)) {
+            var res = PS.toggleApply(id);
+            if (!res.ok && res.reason === 'max-applied') { var bs = cd.querySelector('.ph3-btn span'); bs.textContent = T('mole.photo.maxAppliedReached'); setTimeout(renderPhoto, 1400); return; } // 최대 개수 안내는 버튼 글자로 잠깐
+            photoFace = f; renderPhoto(); return;
+          }
+          if (photoFace !== f) { photoFace = f; renderPhoto(); }
+        });
+      });
+      stage.querySelector('.ph3-search').addEventListener('click', function () { openPhotoHelp(this); }); // 사용자: 돋보기 = 효과 설명
+      stage.querySelectorAll('.ks-press').forEach(function (b) {
+        b.addEventListener('pointerdown', function () { b.classList.add('is-down'); });
+        ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { b.addEventListener(ev, function () { b.classList.remove('is-down'); }); });
+      });
+      fitSkillStage();
+    }
 
-      var slotsEl = body.querySelector('[data-photo-slots]');
-      slotsEl.setAttribute('data-team', photoCostumeId);
-      PS.faceTypes().forEach(function (f) {
-        var id = f.id + '_' + photoCostumeId;
-        var completed = PS.isCompleted(id);
-        var applied = PS.isApplied(id);
-        var sel = f.id === photoFace;
-        var slot = document.createElement('button');
-        slot.type = 'button';
-        slot.className = 'ph2-slot' + (sel ? ' is-sel' : '');
-        slot.innerHTML =
-          '<img class="ph2-cbg" alt="" src="assets/costume2/card-' + photoCostumeId + '.jpg">' + // v1001(사용자 지정): 카드 안 = 고른 팀 경기장
-          '<img class="ph2-card" alt="" src="assets/photo2/card-' + (sel ? 'gold' : 'blue') + '.png">' +
-          '<span class="ph2-name"></span>' +
-          '<img class="ph2-char' + (completed ? '' : ' photo-slot-img--locked') + '" alt="" src="' + PS.imageFor(id) + '">' +
-          '<span class="ph2-btn' + (applied ? ' is-on' : '') + '"></span>';
-        slot.querySelector('.ph2-name').textContent = T(PHOTO_FACE_I18N[f.id]);
-        slot.querySelector('.ph2-btn').textContent = T(applied ? 'mole.photo.slotApplied' : 'mole.photo.slotNotApplied');
-        slot.addEventListener('click', function () { photoFace = f.id; renderPhoto(); });
-        slotsEl.appendChild(slot);
+    // V1411 C 사용자: 사진관 돋보기 = 효과 설명 창(무기 설명 창 .inv-weapon-guide 재사용)
+    function openPhotoHelp(trigger) {
+      closeWeaponHelp();
+      var en = I18N.lang === 'en', PS = MG.PhotoStudio;
+      var sec = function (v) { return '+' + v.toFixed(1) + (en ? 's' : '초'); };
+      var dialog = document.createElement('dialog');
+      dialog.className = 'inv-weapon-guide';
+      dialog.innerHTML = '<div class="inv-guide-header"><h2></h2><button type="button" class="inv-guide-close"></button></div><div class="inv-guide-scroll"><p class="inv-guide-intro"></p><div class="inv-guide-sections"></div></div>';
+      dialog.querySelector('h2').textContent = en ? 'Photo Studio Effects' : '사진관 효과';
+      var close = dialog.querySelector('button');
+      close.textContent = en ? 'Close' : '닫기';
+      dialog.querySelector('.inv-guide-intro').textContent = en
+        ? 'Take a face photo to complete team costume characters. Apply completed characters to the game to slow the moles going down.'
+        : '얼굴을 찍어 팀 코스튬 캐릭터를 완성하고, 완성한 캐릭터를 게임에 적용하면 두더지가 내려가는 속도가 느려집니다.';
+      var rows = en ? [
+        ['Team set effect', 'Complete and apply all 3 face types (Round · Sturdy · Sharp) of one team.', 'Mole descent delay ' + sec(PS.TEAM_EFFECT_VALUE)],
+        ['Full set effect', 'Complete and apply all 9 characters of the 3 teams.', 'Mole descent delay ' + sec(PS.GLOBAL_EFFECT_VALUE)],
+        ['Apply to game', 'Tap the button on a completed card to apply it to the game or remove it. Up to ' + PS.MAX_APPLIED + ' can be applied.', '']
+      ] : [
+        ['팀세트 적용시 효과', '한 팀의 동글형·듬직형·날렵형 3개를 모두 완성해 게임에 적용합니다.', '두더지 하강 딜레이 ' + sec(PS.TEAM_EFFECT_VALUE)],
+        ['풀세트 적용시 효과', '3팀 9개 캐릭터를 모두 완성해 게임에 적용합니다.', '두더지 하강 딜레이 ' + sec(PS.GLOBAL_EFFECT_VALUE)],
+        ['게임 적용', '완성한 카드의 버튼을 누르면 게임 적용 / 게임 미적용이 바뀝니다. 최대 ' + PS.MAX_APPLIED + '개까지 적용됩니다.', '']
+      ];
+      var sections = dialog.querySelector('.inv-guide-sections');
+      rows.forEach(function (row) {
+        var section = document.createElement('section');
+        var h = document.createElement('h3'); h.textContent = row[0];
+        var m = document.createElement('p'); m.textContent = row[1];
+        section.append(h, m);
+        if (row[2]) { var e = document.createElement('p'); e.className = 'inv-guide-effect'; e.textContent = row[2]; section.appendChild(e); }
+        sections.appendChild(section);
       });
+      function finish() { if (weaponHelp === dialog) weaponHelp = null; dialog.remove(); if (trigger && trigger.isConnected) trigger.focus(); }
+      dialog.addEventListener('close', finish, { once: true });
+      close.addEventListener('click', function () { dialog.close(); });
+      dialog.addEventListener('click', function (event) { if (event.target === dialog) dialog.close(); });
+      el.appendChild(dialog); weaponHelp = dialog; dialog.showModal(); close.focus();
     }
 
     // 이름 변경 팝업 — game.js showQuitDialog()와 동일한 .ad-overlay/.quit-card 재사용(§33).
@@ -825,7 +885,7 @@
       // 몰리그 전광판은 코스튬 탭에서만, 전체파란박스 밖(화면 최상단)에 표시.
       if (cosLogoEl) cosLogoEl.hidden = true; // V1405 C: 코스튬 탭 개편 — MOLE LEAGUE 간판 안 씀
       wSignEl.hidden = active !== 'weapon';
-      if (photoSearchBtn) photoSearchBtn.hidden = active !== 'photo';
+      if (photoSearchBtn) photoSearchBtn.hidden = true; // V1410 C: 돋보기는 사진관 판 안(.ph3-search)으로
       if (active === 'weapon') {
         renderWeapons();
       } else if (active === 'costume') {

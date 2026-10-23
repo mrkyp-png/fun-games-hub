@@ -13,14 +13,15 @@
     { id: 'sharp', nameKo: '날렵형', nameEn: 'Sharp' }
   ];
   var COSTUMES = [
-    { id: 'blue_bears', nameKo: '블루베어스', nameEn: 'Blue Bears' },
-    { id: 'mount_stars', nameKo: '마운트스타즈', nameEn: 'Mount Stars' },
-    { id: 'cloud_cups', nameKo: '클라우드컵스', nameEn: 'Cloud Cups' }
+    { id: 'blue_bears', nameKo: '블루 베어스', nameEn: 'Blue Bears' },
+    { id: 'mount_stars', nameKo: '마운트 스타즈', nameEn: 'Mount Stars' },
+    { id: 'cloud_cups', nameKo: '클라우드 컵스', nameEn: 'Cloud Cups' }
   ];
   var MAX_APPLIED = 10;
   var TOTAL = FACE_TYPES.length * COSTUMES.length; // V1405 C: 3팀 → 9개
   var CHAR_EFFECT_VALUE = 0.1;      // §17: 개별 캐릭터 효과 예시(두더지 하강 딜레이 +0.1초)
-  var GLOBAL_EFFECT_VALUE = 0.1;    // §18: 15/15 완성 시 전체 보상(개별 효과와 별도 관리)
+  var TEAM_EFFECT_VALUE = 0.1;     // V1411 C 사용자: 팀별 3개(얼굴형 3) 모아 적용 시 하강 딜레이 +0.1초
+  var GLOBAL_EFFECT_VALUE = 0.5;    // V1411 C 사용자: 풀로(전체) 적용 시 +0.5초 (이전 0.1)    // §18: 15/15 완성 시 전체 보상(개별 효과와 별도 관리)
 
   // 15개 캐릭터 정의 — id 규칙은 명세서 §7 그대로(faceType_costumeId).
   var CHARACTERS = [];
@@ -157,7 +158,7 @@
 
   var api = {
     MAX_APPLIED: MAX_APPLIED, TOTAL: TOTAL,
-    CHAR_EFFECT_VALUE: CHAR_EFFECT_VALUE, GLOBAL_EFFECT_VALUE: GLOBAL_EFFECT_VALUE,
+    CHAR_EFFECT_VALUE: CHAR_EFFECT_VALUE, TEAM_EFFECT_VALUE: TEAM_EFFECT_VALUE, GLOBAL_EFFECT_VALUE: GLOBAL_EFFECT_VALUE,
     faceTypes: faceTypes, costumes: costumes, characters: characters, characterDef: characterDef,
     charactersFor: charactersFor,
     isCompleted: isCompleted, isApplied: isApplied, nameOf: nameOf, setName: setName,

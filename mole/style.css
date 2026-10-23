@@ -8878,3 +8878,52 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
   50% { filter: brightness(1) drop-shadow(0 0 4px rgba(70, 150, 255, .8)) drop-shadow(0 0 10px rgba(40, 120, 255, .5)); }
 }
 .iw-page[data-weapon="goldhammer"].is-zap { --iw-glow: 70, 150, 255; } /* V1410 C 사용자: 번개 빛날 때 뒤 색 그림자도 파란색 */
+/* ===== V1410 C 사용자: 사진관 = 무기·스킬·코스튬과 같은 틀(시안 A). 스킬/코스튬 판 재사용 ===== */
+#inventory-screen[data-tab="photo"]::before { background: url('assets/skin2/bg-weapon.jpg?v=1376') center top / 100% 100% no-repeat; }
+#inventory-screen[data-tab="photo"] .inv-banner, #inventory-screen[data-tab="photo"] .inv-cards-head { display: none !important; }
+#inventory-screen[data-tab="photo"] .inv-cards-box, #inventory-screen[data-tab="photo"] .inv-cards-box[data-rar] { margin: 0; padding: 0; flex: 1 1 auto; min-height: 0; background: transparent !important; box-shadow: none; animation: none; }
+#inventory-screen[data-tab="photo"] .inv-cards-box::before, #inventory-screen[data-tab="photo"] .inv-cards-box::after { display: none; }
+#inventory-screen[data-tab="photo"] .inv-body { position: relative; min-width: 0; min-height: 0; overflow: hidden; padding: 0 !important; margin: 0 !important; }
+.ph3-teams { position: absolute; left: 40px; right: 40px; top: 28px; display: flex; flex-direction: column; gap: 14px; }
+.ph3-team { height: 84px; padding: 0; border: 0; border-radius: 42px; cursor: pointer; background: linear-gradient(#fff6e2, #f2dfb8); box-shadow: inset 0 0 0 4px #d9b98a, 0 4px 0 #b8925e; }
+.ph3-team span { font-family: 'Jua', sans-serif; font-size: 44px; color: #5a3a18; white-space: nowrap; }
+.ph3-team.is-on { background: url('assets/inventory/ui-v1379/ability-pill-transparent.webp') center / 100% 100% no-repeat; box-shadow: none; }
+.ph3-team.is-on span { color: #fff; text-shadow: 0 3px #0b3f8c; }
+.ph3-done { position: absolute; left: 40px; top: 340px; width: 250px; height: 104px; display: flex; align-items: center; justify-content: center; gap: 18px; border-radius: 22px; background: #fff4dc; box-shadow: inset 0 0 0 4px #e2c79c; font-size: 40px; color: #5a3a18; }
+.ph3-done b { font-weight: 400; font-size: 54px; color: #d2541c; }
+.ph3-search { position: absolute; right: 40px; top: 326px; width: 132px; height: 132px; padding: 0; border: 6px solid #fff; border-radius: 50%; cursor: pointer; background: radial-gradient(circle at 35% 30%, #5fb6ff, #1866d8 70%); box-shadow: 0 6px 0 #0b3f8c; display: flex; align-items: center; justify-content: center; }
+.ph3-search svg { width: 64px; height: 64px; }
+.ph3-own { position: absolute; left: 18px; top: 16px; z-index: 3; padding: 4px 16px; border-radius: 16px; font-size: 28px; color: #fff; background: #8a8f99; box-shadow: 0 3px 0 rgba(0,0,0,.2); white-space: nowrap; }
+.ph3-own.is-own { background: #22a650; }
+.ph3-card .cs-card-char { margin-top: 30px; height: 250px; }
+.ph3-btn { display: flex; align-items: center; justify-content: center; cursor: default; filter: grayscale(.5) brightness(.9); }
+.ph3-btn.is-on { filter: hue-rotate(95deg) saturate(1.1); }
+/* 사용자: 시안처럼 카드마다 뒤 색(1=파랑 2=초록 3=보라, 나무판 결) + 미보유도 밝게(시커멓지 않게) */
+.ph3-card .cs-card-char { width: 82%; max-width: 82%; border-radius: 18px; display: flex; justify-content: center; background: repeating-linear-gradient(90deg, rgba(255,255,255,.10) 0 2px, rgba(255,255,255,0) 2px 54px), linear-gradient(var(--ph3a), var(--ph3b)); box-shadow: inset 0 0 0 5px rgba(255,255,255,.35); }
+.ph3-card .cs-card-char::before, .ph3-card .cs-card-char::after { display: none; }
+.ph3-card .cs-card-char img { height: 100%; }
+.ph3-card[data-ph3-face="round"] { --ph3a: #6fc2ff; --ph3b: #2a7fe0; }
+.ph3-card[data-ph3-face="sturdy"] { --ph3a: #7fe08a; --ph3b: #2fae4a; }
+.ph3-card[data-ph3-face="sharp"] { --ph3a: #b99bff; --ph3b: #7a4fe0; }
+.ph3-stage img.photo-slot-img--locked { filter: grayscale(1) brightness(1.15) contrast(.95); }
+.ph3-stage .cs-hero-img { height: 112%; margin-bottom: 1.5%; } /* 사용자: 위 캐릭터 = 코스튬 화면 캐릭터와 같은 크기(사진 그림은 위 여백 13%라 1.12배, 발 높이 맞춤) */
+/* 사용자: 사진관 설명박스(효과) — 팀 버튼 줄여 자리 만듦 */
+.ph3-teams { top: 22px; gap: 10px; }
+.ph3-team { height: 66px; }
+.ph3-team span { font-size: 38px; }
+.ph3-effect { top: 248px; height: 112px; left: 30px; right: 30px; padding: 0 30px 0 26px; }
+.ph3-effect img { width: 76px; height: 76px; }
+.ph3-effect .cs-effect-txt { font-size: 34px; line-height: 1.15; }
+.ph3-effect .cs-effect-txt b { display: inline; margin-left: 10px; font-size: 40px; }
+.ph3-done { top: 374px; height: 86px; }
+.ph3-search { top: 370px; width: 94px; height: 94px; border-width: 5px; }
+.ph3-search svg { width: 46px; height: 46px; }
+.ph3-effect .cs-effect-txt small { display: block; font-size: 26px; color: #2a5aa8; }
+.ph3-effect .cs-effect-txt { font-size: 30px; }
+.ph3-ef-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; white-space: nowrap; }
+.ph3-ef-row i { font-style: normal; font-size: 30px; color: #1a2f5e; }
+.ph3-ef-row b { margin: 0 !important; font-size: 36px !important; }
+.ph3-effect .cs-effect-txt { flex: 1; }
+.ph3-card .ks-card-name { margin-top: 18px; } /* 사용자: 얼굴형 이름 줄 아래로 조금 */
+.ph3-btn.is-live { cursor: pointer; filter: none; } .ph3-btn.is-live.is-on { filter: hue-rotate(95deg) saturate(1.1); } /* 완성 카드만 버튼 눌림 */
+.ph3-ef-row i { font-size: 26px; } .ph3-ef-row b { font-size: 32px !important; }
