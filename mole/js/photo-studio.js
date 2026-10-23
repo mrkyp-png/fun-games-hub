@@ -132,13 +132,49 @@
       localStorage.setItem(K_IMG + id, dataUrl);
       localStorage.setItem(K_IMG + id + '.meta', JSON.stringify({ id: id, costumeId: info && info.costumeId, faceType: info && info.faceType, createdAt: new Date().toISOString() }));
     } catch (e) { return false; }
+    cropComposite(id, dataUrl);
     return markCompleted(id);
+  }
+  // V1426 C: 합성 그림은 370×540 칸 통째라 확대 그림(-hd, 캐릭터 둘레만)보다 작게 보임 →
+  // 보여줄 때만 -hd 와 같은 둘레로 잘라 캐릭터 크기 그대로(저장된 합성 그림은 그대로).
+  var cropped = {};
+  function loadPic(src) {
+    return new Promise(function (res, rej) { var i = new Image(); i.onload = function () { res(i); }; i.onerror = rej; i.src = src; });
+  }
+  function cropComposite(id, raw) {
+    if (typeof document === 'undefined' || !raw) return;
+    var base = 'assets/photo/characters/' + id;
+    Promise.all([loadPic(raw), loadPic(base + '.png'), loadPic(base + '-hd.webp')]).then(function (r) {
+      var comp = r[0], body = r[1], hd = r[2], w = body.naturalWidth, h = body.naturalHeight;
+      var cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+      var cx = cv.getContext('2d'); cx.drawImage(body, 0, 0);
+      var d = cx.getImageData(0, 0, w, h).data, x0 = w, y0 = h, x1 = -1, y1 = -1;
+      for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
+        if (d[(y * w + x) * 4 + 3] > 0) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+      }
+      if (x1 < 0) return;
+      var bw = x1 - x0 + 1, bh = y1 - y0 + 1, hw = hd.naturalWidth, hh = hd.naturalHeight;
+      // -hd 의 둘레 여백(원본 기준 px) = 가로세로 비율로 역산
+      var p = hh !== hw ? Math.max(0, (hw * bh - hh * bw) / (2 * (hh - hw))) : 0;
+      var k = comp.naturalWidth / w;
+      var sx = (x0 - p) * k, sy = (y0 - p) * k, sw = (bw + 2 * p) * k, sh = (bh + 2 * p) * k;
+      var o = document.createElement('canvas'); o.width = Math.round(sw); o.height = Math.round(sh);
+      o.getContext('2d').drawImage(comp, sx, sy, sw, sh, 0, 0, o.width, o.height);
+      var url = o.toDataURL('image/png');
+      cropped[id] = { raw: raw, url: url };
+      Array.prototype.forEach.call(document.querySelectorAll('img'), function (im) { if (im.getAttribute('src') === raw) im.src = url; });
+    }).catch(function () { /* 실패 시 원래 합성 그림 그대로 */ });
   }
   // 사진관·게임 표시용 이미지 — 합성 결과가 있으면 그것, 없으면 얼굴 빈 기본 캐릭터.
   function imageFor(id) {
     var u = null;
     try { u = localStorage.getItem(K_IMG + id); } catch (e) { u = null; }
-    return u || ('assets/photo/characters/' + id + '-hd.webp'); // V1406 C: 확대 그림
+    if (u) {
+      if (cropped[id] && cropped[id].raw === u) return cropped[id].url;
+      if (!cropped[id]) { cropped[id] = { raw: u, url: u }; cropComposite(id, u); }
+      return u;
+    }
+    return 'assets/photo/characters/' + id + '-hd.webp'; // V1406 C: 확대 그림
   }
 
   // 개별 캐릭터 효과(§17) — 등장한 캐릭터 하나의 효과만 적용, 중첩 없음.
