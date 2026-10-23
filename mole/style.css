@@ -8798,3 +8798,4 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .ph3-team.is-on { transform: translateY(4px); } /* 사용자: 크림 버튼은 아래 그림자 4px 가 있어 틈이 좁아 보임 → 고른(파란) 버튼을 4px 내려 틈 맞춤 */
 .ph3-team.is-on.is-down, .ph3-team.is-on:active { transform: translateY(12px) scale(.95); }
 .iw-stat-title { top: 215px; } .iw-help { top: 215px; } /* V1412 C 사용자: 능력치·? 를 파란 판(y207~336) 위아래 가운데로 */
+.cs-card.is-locked { cursor: default; }

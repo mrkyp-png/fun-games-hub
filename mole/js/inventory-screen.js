@@ -414,6 +414,7 @@
         b.querySelector('span').textContent = !owned ? T('mole.cos.notOwned') : (isOn ? T('mole.cos.equipped') : (en ? 'Equip' : '착용'));
         if (!owned || isOn || locked) b.classList.add('is-off');
         c.addEventListener('click', function (e) {
+          if (!owned) return; // 사용자: 미보유 팀은 눌러도 위 진열장 안 바뀜(떨어지는 연출도 없음)
           var change = costumeSelectedId !== t.id;
           if (e.target.closest('[data-cs-equip]') && owned && !isOn && !locked) { MG.CostumeTeams.equip(t.id); costumeSelectedId = t.id; costumeDrop = change; renderCostumes(); return; }
           if (change) { costumeSelectedId = t.id; costumeDrop = true; renderCostumes(); }
