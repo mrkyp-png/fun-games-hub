@@ -1606,6 +1606,7 @@
       hammerOpts.idle = 'spin';                  // 대기 애니메이션 — 제자리 360도 회전(사용자 지정)
       // 지진 분신 포즈 미리 로드 (첫 지진 때 이미지가 늦게 떠서 안 보이는 것 방지)
       ['goldpaw-90-v1385.webp'].forEach((n) => { const i = new Image(); i.src = 'assets/weapons/' + n; }); // V1385 C
+      if (!GOLD_ZAP_KEEP.length) GOLD_ZAP.forEach((u) => { const i = new Image(); i.src = u; if (i.decode) i.decode().catch(() => {}); GOLD_ZAP_KEEP.push(i); }); // V1409 C: 지진 번개 그림(디코드해 붙잡아 둠)
     }
     // 동시타격 오버플로(분신) — 랜덤 배정에서 "진짜"를 못 받은 나머지 타격들이 여기로 온다.
     // 무기별로 다른 분신 연출(quakeClone/cannonClone 재사용, 사용자 지정 — "황금묠니르처럼
@@ -2145,6 +2146,7 @@
       if (forceQuakeNext || state.rng.next() < QUAKE_CHANCE + (MG.Workshop ? MG.Workshop.weaponChanceBonus('goldhammer') : 0)) {
         forceQuakeNext = false;
         if (sharedLaneControls) sharedLaneControls.flashBurst(regionId); // 캐논과 동일한 골드 링(사용자 지정)
+        document.querySelectorAll('#mole-hammer-layer .lane-hammer--gold > img').forEach((im) => goldZap(im)); // V1409 C 사용자: 지진 발동 = 무기에 파란 번개
         setTimeout(() => quakeRipple(regionId, 0), 40);
       }
     }
@@ -2170,6 +2172,24 @@
     if (regionId === 3 || regionId === 7 || regionId === 11) return '90';
     return '45';
   }
+  // V1409 C 사용자: 골드 묠니르 지진 발동 때 무기에 파란 번개(제작소 황금알 망치와 같은 GPT 그림 6장, 같은 각도라 그대로 교체)
+  // 버벅임 방지: 게임용 작은 그림(258×360) + 미리 디코드해 메모리에 붙잡아 둠 + 동시에 번개 도는 망치는 최대 4개
+  const GOLD_ZAP = [1, 2, 3, 4, 5, 6].map((n) => 'assets/weapons/goldpaw-zap' + n + '-v1409.webp');
+  const GOLD_ZAP_KEEP = [];
+  let goldZapActive = 0;
+  function goldZap(img, ms = 720) {
+    if (!img || (!img.dataset.zapOrig && goldZapActive >= 4)) return;
+    if (!img.dataset.zapOrig) goldZapActive++;
+    if (!img.dataset.zapOrig) img.dataset.zapOrig = img.getAttribute('src');
+    clearInterval(img._zapT);
+    let i = 0;
+    img.src = GOLD_ZAP[0];
+    img._zapT = setInterval(() => {
+      i++;
+      if (i * 80 >= ms || !img.isConnected) { clearInterval(img._zapT); img.src = img.dataset.zapOrig; delete img.dataset.zapOrig; goldZapActive = Math.max(0, goldZapActive - 1); return; }
+      img.src = GOLD_ZAP[i % GOLD_ZAP.length];
+    }, 80);
+  }
   function quakeClonePose(regionId) {
     const kind = quakeCloneKind(regionId);
     // 45(대각선)는 전용 스프라이트 없이 기본 대기 포즈(goldhammer.png, 이미 로드돼있음)를 그대로 쓴다.
@@ -2188,6 +2208,7 @@
     }
     const clone = MG.LaneHammer.create(Object.assign({}, state.goldCloneOpts, { layer: fxLayer }));
     const el = fxLayer.lastElementChild;
+    if (state.weapon === 'goldhammer') goldZap(el.querySelector('img'));
     clone.strike(x, y, onHit, frameKey);
     let last = performance.now();
     (function tick(now) {

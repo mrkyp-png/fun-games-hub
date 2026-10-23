@@ -256,16 +256,17 @@
       var t = 0;
       // 3) 골드 묠니르 + 녹색 번개가 알 꼭대기 타격
       ham.hidden = false; ham.classList.add('is-in'); cycleBolt(bolt, 0);
+      later(function () { ham.classList.remove('is-in'); ham.classList.add('is-ready'); }, 390); // V1409 C: 게임처럼 머리 들어올림
       t += 520;
       later(function () {
-        ham.classList.remove('is-in'); ham.classList.add('is-hit');
+        ham.classList.remove('is-in', 'is-ready'); ham.classList.add('is-hit');
         egg.src = A + eggSet + '2.png'; egg.classList.add('is-shiver');
         // 화면 흔들림 없음 — 타격 떨림은 알에만(받침대 고정, 사용자 지정 v759)
         fx.classList.remove('is-flash'); void fx.offsetWidth; fx.classList.add('is-flash');
         try { MG.HitFx && MG.HitFx.uiTap && MG.HitFx.uiTap(1); } catch (e) { /* 무시 */ }
       }, t);
       t += 260;
-      later(function () { ham.classList.remove('is-hit'); ham.classList.add('is-out'); egg.src = A + eggSet + '3.png'; }, t);
+      later(function () { stopBolt(); bolt.src = A + 'ham-gold-v1407.webp'; /* 사용자: 타격 순간까지 번개+글로우, 물러날 때 번개 없는 그림 */ ham.classList.remove('is-hit'); ham.classList.add('is-out'); egg.src = A + eggSet + '3.png'; }, t);
       t += 300;
       later(function () { egg.classList.remove('is-shiver'); }, t);
       // 4) 성공/실패 알 4~10
@@ -286,8 +287,9 @@
 
     var boltTimer = null;
     function cycleBolt(bolt, i) {
-      // V1407 C 사용자: 황금알 때리는 망치도 골드 묠니르(번개 없는 그림 한 장, 빛 최소화)
-      bolt.src = A + 'ham-gold-v1407.webp';
+      // V1407 C 사용자: 황금알 때리는 망치도 골드 묠니르. V1409 C: 타격 바로 전엔 파란 번개 감긴 그림 3장 번갈아(GPT)
+      bolt.src = A + 'ham-gold-zap' + ((i % 6) + 1) + '-v1409.webp';
+      boltTimer = setTimeout(function () { cycleBolt(bolt, i + 1); }, 80);
     }
     function stopBolt() { clearTimeout(boltTimer); boltTimer = null; }
 
@@ -307,7 +309,7 @@
       var list = [], i;
       for (i = 1; i <= 10; i++) list.push(A + 'goose-' + i + '.png', A + 'egg-ok-' + i + '.png', A + 'egg-ng-' + i + '.png');
       for (i = 1; i <= 6; i++) list.push(A + 'bolt-' + i + '.png');
-      list.push(A + 'egg-solo.png', A + 'egg-ped.png', A + 'egg-ped-front.png');
+      list.push(A + 'egg-solo.png', A + 'egg-ped.png', A + 'egg-ped-front.png', A + 'ham-gold-v1407.webp', A + 'ham-gold-zap1-v1409.webp', A + 'ham-gold-zap2-v1409.webp', A + 'ham-gold-zap3-v1409.webp', A + 'ham-gold-zap4-v1409.webp', A + 'ham-gold-zap5-v1409.webp', A + 'ham-gold-zap6-v1409.webp');
       framesReady = Promise.all(list.map(function (u) {
         var im = new Image(); im.src = u;
         return im.decode ? im.decode().catch(function () {}) : new Promise(function (r) { im.onload = im.onerror = r; });
