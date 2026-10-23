@@ -8038,9 +8038,9 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* V1372 C 사용자: 게임 화면도 하늘색 — 바깥 바탕·판 테두리(홈과 동일), 버튼보드 = 하늘색 나무판(board-sky, 2배 → slice 128) */
 #game-screen { background: linear-gradient(180deg, #d6f0fb 0%, #a9dcf3 55%, #8fcdee 100%); }
 #game-screen #mole-board, #game-screen .dialpad { box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px #7cc3e6, 0 0 0 7px #f4fbff, 0 6px 10px 6px rgba(40, 110, 160, 0.25); }
-#game-screen:not(.is-start) #lane-button-bar { border-image-source: url('assets/home2/board-sky.png'); border-image-slice: 128 fill; }
+#game-screen:not(.is-start) #lane-button-bar { border-image-source: url('assets/home2/board-sky.png'); border-image-slice: 128; background-color: #a6dcf5 !important; background-clip: padding-box !important; } /* V1423 C 사용자: 나무 테두리는 그대로, 그 안쪽(버튼 사이·양끝)은 하늘색 */ /* V1423 C 사용자: 버튼 사이 틈 = 하늘색(테두리 그림 가운데 흰 채움 대신) */
 /* V1372 C 사용자 선택 B: 게임 중 버튼 테두리 = 하늘색 나무(GPT, 2배 해상도 → slice 160) */
-#game-screen:not(.is-start) .lane-button--simple::after, #game-screen:not(.is-start) .lane-face--key::after, #game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call::after { border-image-source: url('assets/home2/btn-frame-sky.png'); border-image-slice: 160; }
+#game-screen:not(.is-start) .lane-button--simple::after, #game-screen:not(.is-start) .lane-face--key::after, #game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call::after { border-image-source: url('assets/home2/btn-frame-sky-v1423.png'); border-image-slice: 160; }
 
 /* V1372 C 사용자: 두더지팡 박스 + GO 버튼 한 몸 눌림 효과 */
 #game-screen.is-start [data-region="12"] .lane-face--wide, #game-screen.is-start .lane-button--call .h2-start { transition: transform .08s ease-out, filter .08s ease-out; }
@@ -8816,3 +8816,4 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #shop-screen .shop-tab { height: 57px !important; min-height: 0 !important; padding: 4px 4px 5px; box-sizing: border-box; }
 #shop-screen .shop-tab + .shop-tab { margin-left: -1.5px !important; }
 #shop-screen .shop-tab + .shop-tab:last-child { margin-left: -1px !important; }
+#game-screen .dialpad { background-color: #a6dcf5 !important; } /* V1423 C 사용자: 버튼 오른쪽 끝·줄 사이 틈으로 비치던 갈색 바탕(rgb 90,46,16) → 하늘색 */
