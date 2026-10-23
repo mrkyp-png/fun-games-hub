@@ -699,7 +699,8 @@
         b.textContent = '+' + lv;
       }
       body.querySelectorAll('.iw-page[data-weapon]').forEach(function (pg) {
-        var u = pg.querySelector('.iw-preview-unit'); if (u) put(pg, u, WS.levelOf('weapon', pg.getAttribute('data-weapon')), true);
+        var wid = pg.getAttribute('data-weapon'); if (wid === 'hammer') return; // 사용자: 뿅망치는 강화 없음(수치·Glow 안 붙임)
+        var u = pg.querySelector('.iw-preview-unit'); if (u) put(pg, u, WS.levelOf('weapon', wid), true);
       });
       var photo = !!body.querySelector('.ph3-stage');
       body.querySelectorAll('.cs-card[data-team]').forEach(function (cd) {
