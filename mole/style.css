@@ -8877,3 +8877,4 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
   0% { filter: brightness(1.45) drop-shadow(0 0 10px rgb(120, 190, 255)) drop-shadow(0 0 10px rgb(60, 140, 255)) drop-shadow(0 0 28px rgb(40, 120, 255)) drop-shadow(0 0 50px rgba(30, 100, 255, .9)); }
   50% { filter: brightness(1) drop-shadow(0 0 4px rgba(70, 150, 255, .8)) drop-shadow(0 0 10px rgba(40, 120, 255, .5)); }
 }
+.iw-page[data-weapon="goldhammer"].is-zap { --iw-glow: 70, 150, 255; } /* V1410 C 사용자: 번개 빛날 때 뒤 색 그림자도 파란색 */

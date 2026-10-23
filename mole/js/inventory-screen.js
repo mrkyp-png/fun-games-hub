@@ -843,6 +843,21 @@
       }
     }
 
+    // V1409 C 사용자: 무기·스킬 화면 골드 묠니르도 5초마다 파란 번개(GPT 6장, 0.72초) + 그동안 뒤 색 그림자도 파란색(사용자).
+    var ZAP = [1, 2, 3, 4, 5, 6].map(function (n) { return 'assets/workshop/ham-gold-zap' + n + '-v1409.webp'; });
+    var zapKeep = [];
+    setInterval(function () {
+      if (el.hidden || (active !== 'weapon' && active !== 'skill')) return;
+      if (!zapKeep.length) ZAP.forEach(function (u) { var i = new Image(); i.src = u; zapKeep.push(i); });
+      el.querySelectorAll('.iw-page[data-weapon="goldhammer"] img[src*="goldpaw-v1382"]').forEach(function (img) {
+        if (img._zap) return;
+        var page = img.closest('.iw-page'), orig = img.getAttribute('src'), k = 0; img._zap = true; page.classList.add('is-zap');
+        (function step() {
+          if (k >= 9 || !img.isConnected) { img.src = orig; img._zap = false; page.classList.remove('is-zap'); return; }
+          img.src = ZAP[k % ZAP.length]; k++; setTimeout(step, 80);
+        })();
+      });
+    }, 5000);
     return { show: function () {
       active = 'weapon'; pageIdx = equippedIdx(); costumeSelectedId = null; activePage = 0; passivePage = 0;
       photoCostumeId = 'blue_bears'; photoFace = 'round'; photoCollectionOpen = false; photoDetailId = null;

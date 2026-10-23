@@ -1606,7 +1606,7 @@
       hammerOpts.idle = 'spin';                  // 대기 애니메이션 — 제자리 360도 회전(사용자 지정)
       // 지진 분신 포즈 미리 로드 (첫 지진 때 이미지가 늦게 떠서 안 보이는 것 방지)
       ['goldpaw-90-v1385.webp'].forEach((n) => { const i = new Image(); i.src = 'assets/weapons/' + n; }); // V1385 C
-      if (!GOLD_ZAP_KEEP.length) GOLD_ZAP.forEach((u) => { const i = new Image(); i.src = u; if (i.decode) i.decode().catch(() => {}); GOLD_ZAP_KEEP.push(i); }); // V1409 C: 지진 번개 그림(디코드해 붙잡아 둠)
+      if (!GOLD_ZAP_KEEP.length) GOLD_ZAP.concat(GOLD_ZAP90).forEach((u) => { const i = new Image(); i.src = u; if (i.decode) i.decode().catch(() => {}); GOLD_ZAP_KEEP.push(i); }); // V1409 C: 지진 번개 그림(디코드해 붙잡아 둠)
     }
     // 동시타격 오버플로(분신) — 랜덤 배정에서 "진짜"를 못 받은 나머지 타격들이 여기로 온다.
     // 무기별로 다른 분신 연출(quakeClone/cannonClone 재사용, 사용자 지정 — "황금묠니르처럼
@@ -2177,17 +2177,18 @@
   const GOLD_ZAP = [1, 2, 3, 4, 5, 6].map((n) => 'assets/weapons/goldpaw-zap' + n + '-v1409.webp');
   const GOLD_ZAP_KEEP = [];
   let goldZapActive = 0;
-  function goldZap(img, ms = 720) {
+  const GOLD_ZAP90 = [1, 2].map((n) => 'assets/weapons/goldpaw-90-zap' + n + '-v1409.webp'); // 맨 오른쪽 줄 정면 분신용
+  function goldZap(img, ms = 720, frames = GOLD_ZAP) {
     if (!img || (!img.dataset.zapOrig && goldZapActive >= 4)) return;
     if (!img.dataset.zapOrig) goldZapActive++;
     if (!img.dataset.zapOrig) img.dataset.zapOrig = img.getAttribute('src');
     clearInterval(img._zapT);
     let i = 0;
-    img.src = GOLD_ZAP[0];
+    img.src = frames[0];
     img._zapT = setInterval(() => {
       i++;
       if (i * 80 >= ms || !img.isConnected) { clearInterval(img._zapT); img.src = img.dataset.zapOrig; delete img.dataset.zapOrig; goldZapActive = Math.max(0, goldZapActive - 1); return; }
-      img.src = GOLD_ZAP[i % GOLD_ZAP.length];
+      img.src = frames[i % frames.length];
     }, 80);
   }
   function quakeClonePose(regionId) {
@@ -2204,6 +2205,7 @@
     // V1386 C 사용자: 뿅망치는 맨 오른쪽 줄도 메인 동작(정면 찌르기는 골드만).
     if (!state || !state.goldCloneOpts || (quakeCloneKind(regionId) === '90' && state.weapon === 'goldhammer')) {
       MG.HitFx.quakeClone(fxLayer, quakeClonePose(regionId), x, y, quakeCloneKind(regionId), onHit);
+      if (state && state.weapon === 'goldhammer' && quakeCloneKind(regionId) === '90') goldZap(fxLayer.lastElementChild, 400, GOLD_ZAP90); // V1409 C 사용자: 오른쪽 줄 분신도 번개(2장)
       return;
     }
     const clone = MG.LaneHammer.create(Object.assign({}, state.goldCloneOpts, { layer: fxLayer }));

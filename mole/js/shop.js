@@ -397,6 +397,25 @@
       cardsEl.scrollLeft = 0;
       render();
       animateHudEntrance();
+      startGoldZap();
+    }
+    // V1409 C 사용자: 상점 골드 묠니르에도 5초마다 파란 번개(제작소 황금알 망치와 같은 그림 6장, 0.72초). 상점이 닫히면 멈춤.
+    var ZAP = [1, 2, 3, 4, 5, 6].map(function (n) { return 'assets/workshop/ham-gold-zap' + n + '-v1409.webp'; });
+    var zapTimer = null, zapKeep = [];
+    function startGoldZap() {
+      if (!zapKeep.length) ZAP.forEach(function (u) { var i = new Image(); i.src = u; zapKeep.push(i); });
+      clearInterval(zapTimer);
+      zapTimer = setInterval(function () {
+        if (el.hidden) { clearInterval(zapTimer); return; }
+        el.querySelectorAll('img[src*="goldpaw-v1382"]').forEach(function (img) {
+          if (img._zap) return;
+          var orig = img.getAttribute('src'), k = 0; img._zap = true;
+          (function step() {
+            if (k >= 9 || !img.isConnected) { img.src = orig; img._zap = false; return; }
+            img.src = ZAP[k % ZAP.length]; k++; setTimeout(step, 80);
+          })();
+        });
+      }, 5000);
     }
     // 상점 화면이 닫히면(hidden 속성) 다이얼패드에 착지해있던 캡슐도 같이 정리 — 사용자가
     // 어느 경로로 나가도(홈 아이콘, 메일함 등 — 뒤로가기 버튼이 없어 경로가 다양함) 탭 전환과
