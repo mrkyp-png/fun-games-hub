@@ -838,6 +838,7 @@
     }
 
     function pause(on) {
+      var qc = $('[data-rp-quit-cost]'); if (qc && on) qc.textContent = '-' + quitCost();
       statusFx.pause(on);buttonWaves.forEach(function(a){if(a){if(on)a.pause();else a.play();}});
       if(!activeB)beachVisual.pause(on);
       lyricTicker.pause(on);
@@ -866,8 +867,10 @@
     });
     $('[data-rp-pausebtn]').addEventListener('click', function () { pause(true); });
     $('[data-rp-resume]').addEventListener('click', function () { pause(false); });
+    // V1424 C 사용자: 그만하기 = 하트 대신 파란 음표 티켓, 곡이 2분30초 이상이면 2장(네온·비치 같음)
+    function quitCost() { var s = activeB ? selectedBSong : selectedASong; return (s && s.duration >= 150) ? 2 : 1; }
     $('[data-rp-quit]').addEventListener('click', function () {
-      if (!activeB && MG.Economy) MG.Economy.spendHeart();
+      if (MG.Economy) for (var i = 0; i < quitCost(); i++) MG.Economy.spendTicket();
       showSongs();
     });
     $('[data-rp-retry]').addEventListener('click', function () { launchSong($('[data-rp-result]')); }); // v841: 다시하기 = 탄성 밀어내기

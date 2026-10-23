@@ -8817,3 +8817,10 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #shop-screen .shop-tab + .shop-tab { margin-left: -1.5px !important; }
 #shop-screen .shop-tab + .shop-tab:last-child { margin-left: -1px !important; }
 #game-screen .dialpad { background-color: #a6dcf5 !important; } /* V1423 C 사용자: 버튼 오른쪽 끝·줄 사이 틈으로 비치던 갈색 바탕(rgb 90,46,16) → 하늘색 */
+#rhythm-screen .rx-card .rx-btn > .rx-ic--ticket { width: auto !important; height: 30px !important; object-fit: contain; filter: drop-shadow(1px 0 0 #fff4d6) drop-shadow(-1px 0 0 #fff4d6) drop-shadow(0 1px 0 #fff4d6) drop-shadow(0 -1px 0 #fff4d6); } /* V1424 C: 파란 음표 티켓 — 30×30 정사각에 눌려 찌그러지던 것, 원래 비율 유지 */
+/* V1424 C 사용자: 사진관 캐릭터 잘림·떠 있음 — 그림을 여백 없이 잘라 둬서 1.12배 확대·넘침 잘라내기 없앰. 진열장은 발이 바닥선에, 카드는 칸 안에 통째로 */
+.ph3-stage .cs-hero { inset: 9% 12% 11% !important; align-items: flex-end !important; }
+.ph3-stage .cs-hero-img { height: 100% !important; margin-bottom: 0 !important; transform: none !important; }
+.ph3-stage .cs-hero-img img { height: 100%; width: auto; max-width: 100%; object-fit: contain; object-position: 50% 100%; }
+.ph3-card .cs-card-char { overflow: visible !important; height: 270px !important; margin-top: 22px !important; align-items: center !important; }
+.ph3-card .cs-card-char img { height: 94% !important; width: auto; max-width: 92%; object-fit: contain; margin: auto !important; }
