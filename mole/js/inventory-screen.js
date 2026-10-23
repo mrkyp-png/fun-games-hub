@@ -382,7 +382,7 @@
       // 눈 감은 그림(같은 자리·크기)을 위에 겹쳐 두고 아주 잠깐만 보여 깜빡임
       var CHB = function (id) { return '<img alt="" src="' + CH(id) + '"><img class="cs-blink" alt="" src="assets/costume/char-' + id + '-blink-v1406.webp">'; };
       // 사용자: 위 진열장 캐릭터는 양발 기준 좌우 가운데(그림마다 양발 가운데가 달라 그만큼 옮김)
-      var FEET = { blue_bears: 7.92, mount_stars: -2.5, cloud_cups: -4.63 };
+      var FEET = { blue_bears: 7.92, mount_stars: -2.39, cloud_cups: -4.63 };
       var sel = MG.CostumeTeams.teamById(costumeSelectedId);
       var cards = MG.CostumeTeams.teams().map(function (t) {
         var owned = MG.CostumeTeams.owns(t.id);
