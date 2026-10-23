@@ -133,8 +133,9 @@
         // 가 0(미설정 챕터)이면 절대 안 뜬다. 폭탄 든 두더지는 1방·전신(모자 8=보석/폭탄 든 포즈)
         // 고정 — 다타로 빠끔/모자로 안 바뀌어야 폭탄이 계속 보이므로.
         const bombRoll = rng.next();
-        const strongChance = config.strongBombChance || 0;
-        const bombChance = config.bombChance || 0;
+        // V1430 C 사용자: 6라운드(reverseTarget)는 두더지가 폭탄을 안 듦(동물이 듦, 아래).
+        const strongChance = config.reverseTarget ? 0 : (config.strongBombChance || 0);
+        const bombChance = config.reverseTarget ? 0 : (config.bombChance || 0);
         pop.bombKind = bombRoll < strongChance ? 'strong' : bombRoll < strongChance + bombChance ? 'normal' : null;
         if (pop.bombKind) {
           pop.hitsRequired = 1;
@@ -150,7 +151,14 @@
       } else {
         pop.poseIndex = Math.floor(rng.next() * (config.obstacleCount || 5)); // 어느 동물인지
         if (type === 'animal') {
-          pop.hitsRequired = rollAnimalKind();
+          // V1430 C 사용자: 6라운드는 폭탄을 동물이 듦 — 확률·강력/일반·1방은 폭탄 두더지와 같음.
+          if (config.reverseTarget) {
+            const bombRoll = rng.next();
+            const strongChance = config.strongBombChance || 0;
+            const bombChance = config.bombChance || 0;
+            pop.bombKind = bombRoll < strongChance ? 'strong' : bombRoll < strongChance + bombChance ? 'normal' : null;
+          }
+          pop.hitsRequired = pop.bombKind ? 1 : rollAnimalKind();
           pop.hitsTaken = 0;
           // 다타 동물도 두더지처럼 더 오래 떠 있어야 여러 번 때릴 시간이 생긴다.
           pop.remaining = config.popDuration * (DURATION_MULT[pop.hitsRequired] || 1);

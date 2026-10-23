@@ -1521,8 +1521,8 @@
       maxConcurrentAnimals: isSmallBoardChapter() ? 0
         : Math.round(MG.interpolate(reverseTarget ? MG.MAX_CONCURRENT_MOLES : MG.MAX_CONCURRENT_ANIMALS, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS)),
       maxConcurrentBombs: (!isSmallBoardChapter() && ch === 6) ? Math.round(MG.interpolate(MG.MAX_CONCURRENT_BOMBS, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS)) : 0,
-      bombChance: (!isSmallBoardChapter() && ch >= 3 && ch !== 6) ? MG.interpolate(MG.BOMB_CHANCE_BY_ROUND, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS) : 0,
-      strongBombChance: (!isSmallBoardChapter() && ch >= 4 && ch !== 6) ? MG.interpolate(MG.STRONG_BOMB_CHANCE_BY_ROUND, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS) : 0,
+      bombChance: (!isSmallBoardChapter() && ch >= 3) ? MG.interpolate(MG.BOMB_CHANCE_BY_ROUND, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS) : 0,
+      strongBombChance: (!isSmallBoardChapter() && ch >= 4) ? MG.interpolate(MG.STRONG_BOMB_CHANCE_BY_ROUND, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS) : 0,
       maxConcurrentItems: 0,   // 실드 아이템 스폰 삭제(사용자 지정, 2026-09-14)
       shieldItems: false,
       popDuration: isSmallBoardChapter() ? 2.5 : MG.interpolate(MG.MOLE_DURATION, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS) * popMult(),
@@ -1917,8 +1917,8 @@
       // 구분할 수 없어, 켜진 라운드가 라운드 내내 0에 고정되는 버그가 있었다(Puppeteer 로 실측 확인).
       // V1157: bomb animals only in round 6; bomb moles everywhere else.
       cfg.maxConcurrentBombs = ch === 6 ? Math.round(MG.interpolate(MG.MAX_CONCURRENT_BOMBS, curveElapsed, total)) : 0;
-      cfg.bombChance = ch >= 3 && ch !== 6 ? MG.interpolate(MG.BOMB_CHANCE_BY_ROUND, curveElapsed, total) : 0;
-      cfg.strongBombChance = ch >= 4 && ch !== 6 ? MG.interpolate(MG.STRONG_BOMB_CHANCE_BY_ROUND, curveElapsed, total) : 0;
+      cfg.bombChance = ch >= 3 ? MG.interpolate(MG.BOMB_CHANCE_BY_ROUND, curveElapsed, total) : 0;
+      cfg.strongBombChance = ch >= 4 ? MG.interpolate(MG.STRONG_BOMB_CHANCE_BY_ROUND, curveElapsed, total) : 0;
     }
   }
 
@@ -2245,13 +2245,6 @@
   function liveAnimalAt(id) {
     return state.scheduler.getActivePops().find((q) => q.regionId === id && q.type === 'animal' && !q.bombKind && !q.dying && !q.killed && !(q.sinkIn > 0));
   }
-  function liveMoleAt(id) {
-    // 지진은 폭탄 든 두더지는 스킵해야 함(원래 기획 — 폭탄은 구식 type==='bomb' 시절 걸러졌는데,
-    // 지금은 폭탄도 type==='mole'(bombKind 만 다름)라 여기서 새로 막아야 함(사용자 보고 — 지진이
-    // 폭탄 두더지를 때려 하트가 깎임).
-    return state.scheduler.getActivePops().find((q) =>
-      q.regionId === id && q.type === 'mole' && !q.bombKind && !q.dying && !q.killed && !(q.sinkIn > 0));
-  }
 
   function quakeRipple(originId, depth) {
     depth = depth || 0;
@@ -2288,12 +2281,12 @@
     paintPad();
 
     const targets = quakeNeighbors(originId).filter((id) =>
-      state.spawnPoints.some((s) => s.regionId === id) && liveMoleAt(id));
+      state.spawnPoints.some((s) => s.regionId === id) && liveTargetAt(id)); // V1430 C: 그 라운드 대상만(6라운드=동물), 폭탄 든 것 제외
 
     targets.forEach((id, k) => {
       setTimeout(() => {
         if (!state || state.ended) return;
-        const p = liveMoleAt(id);
+        const p = liveTargetAt(id);
         if (!p) return;
         const res = state.scheduler.resolveRegion(id, { quake: true });
         if (!res.length || res.every((r) => r.ignored)) return;
@@ -2359,8 +2352,7 @@
     results.forEach((r) => {
       if (r.ignored) return; // 연타 쿨다운 중 타격 — 점수·연출·콤보 변화 없음 (헛방도 아님)
       const effType = effectiveHitType(cfg, r.type);
-      // 폭탄 든 두더지(bombKind)는 챕터8 역할반전(reverseTarget)과 무관하게 항상 두더지
-      // 쪽 분기로 — 폭탄은 언제나 "두더지가 든 것"이지 동물로 옮겨간 게 아님(사용자 지정).
+      // 폭탄(bombKind)은 항상 이 분기로 — V1430 C 사용자: 6라운드(reverseTarget)는 폭탄을 동물이 듦(두더지는 안 듦).
       if (effType === 'mole' || r.bombKind) {
         if (r.juggle) {
           const before = run.combo.score;
@@ -2377,7 +2369,7 @@
           // 동물/폭탄 방해물과 동일하게 콤보 리셋. 연출은 대포 처치 폭발 기반 전용 함수
           // bombBlast(사용자 지정 — moleBlast 는 안 건드림, 캐논 무기 자체 연출과 분리).
           // pop-elements.js 의 m.blast 도 bombKind 면 무기 무관 항상 켜짐, 여기와 세트.
-          const bombPenalty = (cfg.reverseTarget ? 1 : 0) + (r.bombKind === 'strong' ? 2 : 1);
+          const bombPenalty = (effType === 'animal' ? 1 : 0) + (r.bombKind === 'strong' ? 2 : 1); // V1430 C: 6라운드 폭탄은 동물(타겟)이 들어 -1/-2 그대로
           setRunLives(run.lives - bombPenalty);
           run.combo.onObstacleHit();
           MG.HitFx.bombBlast(board, r.xFrac, r.yFrac);
