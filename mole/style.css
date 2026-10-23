@@ -8800,7 +8800,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .iw-stat-title { top: 215px; } .iw-help { top: 215px; } /* V1412 C 사용자: 능력치·? 를 파란 판(y207~336) 위아래 가운데로 */
 .cs-card.is-locked { cursor: default; }
 /* V1415 C 사용자: 제작소 강화 수치·Glow (무기·스킬·코스튬, 사진관은 Glow 만) */
-.has-enh { filter: drop-shadow(4px 0 0 var(--enh)) drop-shadow(-4px 0 0 var(--enh)) drop-shadow(0 4px 0 var(--enh)) drop-shadow(0 -4px 0 var(--enh)); } /* 사용자: 무기·스킬·코스튬은 Glow 말고 같은 색 테두리만 */
+.has-enh { filter: drop-shadow(1px 0 0 var(--enh)) drop-shadow(-1px 0 0 var(--enh)) drop-shadow(0 1px 0 var(--enh)) drop-shadow(0 -1px 0 var(--enh)); } /* 사용자: 1px */ /* 사용자: 무기·스킬·코스튬은 Glow 말고 같은 색 테두리만 */
 .ph3-stage .has-enh { filter: drop-shadow(0 0 6px var(--enh)) drop-shadow(0 0 16px var(--enh)); } /* 사진관은 Glow 그대로 */
 .enh-lv { position: absolute; right: 6%; top: 4%; z-index: 6; font-family: 'Jua', sans-serif; font-weight: 400; font-size: 64px; line-height: 1; color: #fff; -webkit-text-stroke: 10px #2a0b55; paint-order: stroke fill; pointer-events: none; }
 .cs-card > .enh-lv { right: 14px; top: 12px; font-size: 44px; -webkit-text-stroke: 8px #2a0b55; }
