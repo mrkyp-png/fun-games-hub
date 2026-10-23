@@ -685,6 +685,31 @@
       }
     }
 
+    // V1415 C 사용자: 제작소 강화 수치(+N)와 강화 Glow 를 무기·스킬·코스튬 화면에 표시, 사진관은 Glow 만(수치 없음).
+    // 각 화면이 다시 그려질 때마다(body 내용 바뀜) 붙인다. Glow 색 = 제작소와 같은 단계별 색.
+    function decorateEnh() {
+      var WS = MG.Workshop; if (!WS || !WS.levelOf) return;
+      function put(host, glowEl, lv, badge) {
+        var c = WS.GLOW[lv] || '';
+        glowEl.classList.toggle('has-enh', lv > 0);
+        if (lv > 0) glowEl.style.setProperty('--enh', c); else glowEl.style.removeProperty('--enh');
+        var b = host.querySelector(':scope > .enh-lv');
+        if (!badge) { if (b) b.remove(); return; }
+        if (!b) { b = document.createElement('b'); b.className = 'enh-lv'; host.appendChild(b); }
+        b.textContent = '+' + lv;
+      }
+      body.querySelectorAll('.iw-page[data-weapon]').forEach(function (pg) {
+        var u = pg.querySelector('.iw-preview-unit'); if (u) put(pg, u, WS.levelOf('weapon', pg.getAttribute('data-weapon')), true);
+      });
+      var photo = !!body.querySelector('.ph3-stage');
+      body.querySelectorAll('.cs-card[data-team]').forEach(function (cd) {
+        var ch = cd.querySelector('.cs-card-char'); if (ch) put(cd, ch, WS.levelOf('costume', cd.getAttribute('data-team')), !photo);
+      });
+      var hero = body.querySelector('.cs-hero-img[data-team]');
+      if (hero) put(hero.closest('.ks-case'), hero, WS.levelOf('costume', hero.getAttribute('data-team')), !photo);
+    }
+    new MutationObserver(function () { requestAnimationFrame(decorateEnh); }).observe(body, { childList: true });
+
     // V1409 C 사용자: 무기·스킬 화면 골드 묠니르도 5초마다 파란 번개(GPT 6장, 0.72초) + 그동안 뒤 색 그림자도 파란색(사용자).
     var ZAP = [1, 2, 3, 4, 5, 6].map(function (n) { return 'assets/workshop/ham-gold-zap' + n + '-v1409.webp'; });
     var zapKeep = [];

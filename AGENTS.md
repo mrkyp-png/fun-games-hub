@@ -4,6 +4,9 @@
 - 사용자 후속: 알 타격 때 기울이지 말고 게임 대기 각도(18°) 그대로 — .ws-ham 시작·is-in·is-hit·is-out 모두 rotate(18deg), 위(-30%)→아래(5%) 내려침, 타격점 오른쪽 소폭(translate X -55%).
 - 사용자: 황금알 망치 = 지금 망치 그림 + 파란 번개(GPT 6장 ham-gold-zap1~6-v1409, 같은 크기·자리), 나타날 때부터 타격 직전까지 80ms 번갈아, 타격 순간 번개 없는 그림.
 - 사용자: 게임 지진 발동 때도 무기에 번개 — 메인 골드 + 지진 분신(45 포즈)에 goldZap(0.72초). 버벅임 방지: 게임용 작은 그림 goldpaw-zap1~6-v1409(258×360), 미리 디코드해 붙잡아 둠, 동시에 최대 4개.
+## 2026-10-23 / V1415 C — 제작소 강화 수치·Glow 를 아이템 화면에
+- 사용자: 강화 수치(+N)·강화 Glow = 무기·스킬·코스튬 화면, 사진관은 Glow 만. inventory-screen decorateEnh()(body 바뀔 때마다 MutationObserver): 무기 .iw-page(무기·스킬) / 코스튬·사진관 .cs-card[data-team]·진열장 .cs-hero-img → Workshop.levelOf, 색 = Workshop.GLOW(제작소와 같음, drop-shadow). workshop api 에 levelOf·GLOW 공개.
+
 ## 2026-10-23 / V1414 C — 코스튬 미보유 팀은 위 진열장 작동 안 함
 - 사용자: 미보유(컵스)면 카드 눌러도 위 진열장·떨어지는 연출 안 바뀜(owned 아니면 click 무시), 미보유 카드 커서 기본.
 

@@ -329,6 +329,6 @@
     return { show: show };
   }
 
-  var api = { create: create, weaponLevel: weaponLevel, weaponChanceBonus: weaponChanceBonus, materials: materials, setMaterials: setMaterials, COST: COST, RATE: RATE };
+  var api = { create: create, levelOf: levelOf, GLOW: GLOW, weaponLevel: weaponLevel, weaponChanceBonus: weaponChanceBonus, materials: materials, setMaterials: setMaterials, COST: COST, RATE: RATE };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.Workshop = api; }
 })(typeof window !== 'undefined' ? window : null);
