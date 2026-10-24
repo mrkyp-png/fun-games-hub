@@ -75,10 +75,10 @@
     function drop() {
       egg.hidden = false;
       dropAnimation = egg.animate([
-        { transform: 'translateY(-165%) scale(.25)', offset: 0 },
-        { transform: 'translateY(0) scale(.35)', offset: .4 },
-        { transform: 'translateY(-7%) scale(.4)', offset: .53 },
-        { transform: 'translateY(0) scale(1)', offset: 1 }
+        { transform: 'translateY(-165%) scale(.25)', opacity: 0, offset: 0 },
+        { transform: 'translateY(0) scale(.35)', opacity: .7, offset: .4 },
+        { transform: 'translateY(-7%) scale(.4)', opacity: 1, offset: .53 },
+        { transform: 'translateY(0) scale(1)', opacity: 1, offset: 1 }
       ], { duration: 1600, easing: 'cubic-bezier(.25,.7,.3,1)', fill: 'forwards' });
       dropAnimation.onfinish = function () { if (!scene.hidden) subject.style.opacity = '.68'; };
     }

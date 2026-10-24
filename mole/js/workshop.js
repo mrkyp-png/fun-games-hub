@@ -329,7 +329,8 @@
         (function (g) { later(function () {
           goose.src = A + 'goose-' + g + '.png';
           var up = g <= 5 ? 0 : (g - 5) * (g - 5) * 22;
-          goose.style.transform = 'translate(-50%, ' + (-up) + '%)';
+          var frameScale = g === 1 ? 0.78 : 1;
+          goose.style.transform = 'translate(-50%, ' + (-up) + '%) scale(' + frameScale + ')';
           if (g === 2) playHammerSound(gooseWingsAudio, 0.825);
           if (g === 3) playHammerSound(gooseShockAudio, 0.75);
           if (g >= 6) ghosts.forEach(function (gh) { gh.hidden = false; gh.src = goose.src; gh.style.transform = goose.style.transform; });
