@@ -9091,3 +9091,10 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
   60% { filter: drop-shadow(0 11px 0 var(--beach-depth)) drop-shadow(0 2px 0 var(--beach-edge)); }
   80% { filter: drop-shadow(0 8px 0 var(--beach-depth)) drop-shadow(0 2px 0 var(--beach-edge)); }
 }
+
+/* One complete music-ticket asset, always fitted without stretching or cropping. */
+img[src$="/ic-ticket-note-complete.webp"] { object-fit: contain !important; object-position: center !important; }
+.shop-card-badge > .ticket-note-icon { width: 62%; height: 62%; }
+.shop-tab-ico > .ticket-note-icon { width: 22px; height: 22px; }
+.shop-card-price--icon > .ticket-note-icon { width: 24px; height: 16px; }
+.shop-card-btn--rich > .ticket-note-icon { width: 33px; height: 22px; }

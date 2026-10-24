@@ -33,6 +33,7 @@
   };
   var ICON_BY_TYPE = { coin: 'item-coin-m.png', heart: 'item-heart.png', ticket: 'item-ticket.png', skill: 'item-skill.png' };
   var ASSET = 'assets/daily/';
+  var TICKET_ICON = 'assets/rhythm/ui/ic-ticket-note-complete.webp';
 
   function dstr(ms) { var d = new Date(ms); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
   function today() { return dstr(Date.now()); }
@@ -93,6 +94,7 @@
     return T('mole.daily.r.' + res.type);
   }
   function rewardIcon(res) {
+    if (res.type === 'ticket') return TICKET_ICON;
     if (res.type === 'skill') { var sk = MG.Skills.skillById(res.skillId); if (sk) return sk.icon; }
     return ASSET + ICON_BY_TYPE[res.type];
   }
@@ -144,7 +146,7 @@
         card.dataset.stamp = T('mole.daily.stamp'); // 받은 날 도장 글자(v766)
         card.innerHTML =
           '<span class="dr-day"></span>' +
-          '<img class="dr-ico" alt="" src="' + ASSET + rw.icon + '">' +
+          '<img class="dr-ico" alt="" src="' + (rw.type === 'ticket' ? TICKET_ICON : ASSET + rw.icon) + '">' +
           '<b class="dr-qty"></b>' +
           '<span class="dr-status"></span>';
         card.querySelector('.dr-day').textContent = T('mole.daily.day', { n: i });

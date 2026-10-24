@@ -10,6 +10,7 @@ const CACHE = 'mole-game-v1443-G';
 // vendor/face_mesh/*(약 10MB, 얼굴인식)는 SHELL 제외 — 사람두더지 메이커 처음 열 때만 필요.
 // 처음 요청될 때 아래 fetch 핸들러가 알아서 캐시한다.
 const SHELL = [
+  './assets/rhythm/ui/ic-ticket-note-complete.webp',
   './assets/workshop/notice-clean-v2.png',
   './assets/workshop/exclamation-blue-v1.png',
   './assets/inventory/ui-v1379/help-round-transparent.webp',

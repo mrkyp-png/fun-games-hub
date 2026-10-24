@@ -107,7 +107,7 @@
   }
 
   function fmt(n) { return (n | 0).toLocaleString('en-US'); }
-  function rwIcon(rw) { return A + (rw[0] === 'coin' ? 'ic-coin' : rw[0] === 'heart' ? 'ic-heart' : 'ic-ticket') + '.png'; }
+  function rwIcon(rw) { if (rw[0] === 'ticket') return 'assets/rhythm/ui/ic-ticket-note-complete.webp'; return A + (rw[0] === 'coin' ? 'ic-coin' : rw[0] === 'heart' ? 'ic-heart' : 'ic-ticket') + '.png'; }
 
   function create(opts) {
     var el = opts.root, mode = 'daily', achTab = 'round';
@@ -169,7 +169,7 @@
         html += '<div class="qs-all qs-all--' + mode + (allSt === 'claim' ? ' is-ready' : '') + '"><span class="qs-all-giftw"><img class="qs-all-gift" src="' + A + (mode === 'daily' ? 'gift-red' : 'gift-purple') + '.png" alt="">' +
           (allSt === 'claim' ? '<i class="qs-spk"></i><i class="qs-spk"></i><i class="qs-spk"></i><i class="qs-spk"></i><i class="qs-spk"></i><i class="qs-spk"></i>' : '') + '</span>' +
           '<div class="qs-all-txt"><b>' + (en ? (mode === 'daily' ? 'DAILY' : 'WEEKLY') + ' ALL CLEAR' : (mode === 'daily' ? '일일' : '주간') + ' 올클리어') + '</b><span>' + (mode === 'daily' ? (en ? 'Finish all daily quests for a bonus!' : '모든 일일 퀘스트를 완료하고 추가 보상을 받아요!') : (en ? 'Finish all weekly quests for a bonus!' : '모든 주간 퀘스트를 완료하고 추가 보상을 받아요!')) + '</span></div>' +
-          '<div class="qs-all-rw"><div class="qs-rwline"><img src="' + (rw[0] === 'ticket' ? A + 'ticket-gold.png' : rwIcon(rw)) + '" alt=""><b>× ' + fmt(rw[1]) + '</b></div>' +
+          '<div class="qs-all-rw"><div class="qs-rwline"><img src="' + rwIcon(rw) + '" alt=""><b>× ' + fmt(rw[1]) + '</b></div>' +
           (allSt === 'done' ? '<img class="qs-check" src="' + A + 'ic-check.png" alt="">' : allSt === 'claim' ? '<button type="button" class="qs-btn qs-btn--claim" data-qs-all>' + (en ? 'Claim' : '받기') + '</button>' : '<span class="qs-btn qs-btn--lock">' + (en ? 'Locked' : '미완료') + '</span>') + '</div></div>';
       } else {
         tabs.innerHTML = ['round', 'score', 'combo', 'mole', 'rhythm'].map(function (t) { return '<button type="button" data-qs-ach-tab="' + t + '" class="' + (achTab === t ? 'is-on' : '') + '">' + (en ? t.toUpperCase() : { round: '라운드', score: '점수', combo: '콤보', mole: '두더지', rhythm: '리듬팡' }[t]) + '</button>'; }).join(''); // v900: 한글 모드 한글
