@@ -8671,6 +8671,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .ks-slotpanel { position: absolute; left: 654px; top: 166px; width: 506px; height: 474px; background: url('assets/inventory/skill-v1403/slotpanel.webp') center / 100% 100% no-repeat; }
 .ks-slot-pill { position: absolute; left: 50%; top: 34px; width: 400px; height: 96px; transform: translateX(-50%); background: url('assets/inventory/ui-v1379/ability-pill-transparent.webp') center / 100% 100% no-repeat; display: flex; align-items: center; justify-content: center; }
 .ks-slot-pill span { font-size: 50px; color: #fff; text-shadow: 0 3px #0b3f8c; white-space: nowrap; }
+.ks-slot-pill .ks-atk-bonus { margin-left: 18px; font-size: 34px; color: #fff5a8; text-shadow: 0 3px #0b3f8c; white-space: nowrap; }
 .ks-slots { position: absolute; left: 0; right: 0; top: 150px; bottom: 26px; display: flex; align-items: center; justify-content: center; gap: 22px; }
 .ks-slot { position: relative; width: 290px; aspect-ratio: 1; padding: 0; border: 0; border-radius: 50%; background: url('assets/inventory/skill-v1403/slotring.webp') center / 100% 100% no-repeat; cursor: pointer; }
 .ks-stage[data-slots="2"] .ks-slot { width: 214px; }
@@ -8788,7 +8789,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .ph3-btn.is-on { filter: hue-rotate(95deg) saturate(1.1); }
 /* 사용자: 시안처럼 카드마다 뒤 색(1=파랑 2=초록 3=보라, 나무판 결) + 미보유도 밝게(시커멓지 않게) */
 .ph3-card .cs-card-char { width: 82%; max-width: 82%; border-radius: 18px; display: flex; justify-content: center; background: repeating-linear-gradient(90deg, rgba(255,255,255,.10) 0 2px, rgba(255,255,255,0) 2px 54px), linear-gradient(var(--ph3a), var(--ph3b)); box-shadow: inset 0 0 0 5px rgba(255,255,255,.35); }
-.ph3-card .cs-card-char::before, .ph3-card .cs-card-char::after { display: none; }
+.ph3-card .cs-card-char::before { display: none; }
+.ph3-card .cs-card-char::after { display: block; background: radial-gradient(ellipse, rgba(0,0,0,.78) 0%, rgba(0,0,0,.38) 48%, rgba(0,0,0,0) 74%); }
 .ph3-card .cs-card-char img { height: 100%; }
 .ph3-card[data-ph3-face="round"] { --ph3a: #6fc2ff; --ph3b: #2a7fe0; }
 .ph3-card[data-ph3-face="sturdy"] { --ph3a: #7fe08a; --ph3b: #2fae4a; }
@@ -8828,6 +8830,9 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .enh-lv { position: absolute; right: 6%; top: 4%; z-index: 6; font-family: 'Jua', sans-serif; font-weight: 400; font-size: 64px; line-height: 1; color: #fff; -webkit-text-stroke: 10px #2a0b55; paint-order: stroke fill; pointer-events: none; }
 .cs-card > .enh-lv { right: 42px; top: 34px; font-size: 44px; -webkit-text-stroke: 8px #2a0b55; }
 .ks-case > .enh-lv { right: 66px; top: 52px; }
+.ks-case.is-drop > .enh-lv { opacity: 0; animation: cs-enh-badge-in .01s linear 1.2s forwards; }
+@keyframes cs-enh-badge-in { to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .ks-case.is-drop > .enh-lv { animation: none; opacity: 1; } }
 .iw-page:not(.ks-wpage) > .enh-lv { right: 6%; top: 15%; }
 /* V1417 C 사용자: 상점 아래 재화·무기·스킬·코스튬 탭 박스·테두리 = 무기 화면(아이템창)과 같게 */
 #shop-screen .shop-tab, #shop-screen .shop-tab--on { background: none !important; border-style: solid !important; border-color: transparent !important; border-width: 0 !important; border-radius: 0 !important; /* 그림 테두리(12px)는 border-image 폭만, 실제 테두리 0 → 아이콘·글자 자리 안 좁아져 위아래 가운데 */

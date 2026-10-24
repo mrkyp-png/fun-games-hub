@@ -1553,7 +1553,7 @@
       cannonBurst: weapon === 'cannon',   // 대포 연사 스킬 (2·3타 두더지 연타 확률 10%)
       burstBonus: (MG.Workshop ? MG.Workshop.weaponChanceBonus('cannon') : 0), // 제작소 강화 +단계×1%p(v750)
       moleUpBonus: weapon === 'alipunch' ? 0.1 : 0,   // 알리 펀치 [방어]: 내려가기 전 0.1초 더 여유(§7)
-      costumeUpBonus: MG.CostumeTeams.activeEffectValue()  // 착용중인 코스튬 효과: 두더지 하강 딜레이
+      costumeUpBonus: MG.CostumeTeams.activeEffectValue() + (MG.PhotoStudio ? MG.PhotoStudio.gameSetEffectValue() : 0)  // 착용중인 코스튬 효과: 두더지 하강 딜레이
     };
 
     if (isWarmupRound()) { // v949: 노말·프로 1라운드(16구멍) 시작값 — 이후 updateLiveDifficulty 가 60초 동안 이어 올림
@@ -2046,7 +2046,9 @@
   }
   function currentScoreMult() {
     const m = SCORE_MULT[currentDifficulty()] || SCORE_MULT.easy;
-    return isFever() ? m.fever : m.base;
+    const base = isFever() ? m.fever : m.base;
+    const attackBonus = MG.Workshop ? MG.Workshop.weaponAttackBonus(state.weapon) : 0;
+    return base * (1 + attackBonus);
   }
   function updateFeverHud() {
     const b = document.getElementById('fever-badge');

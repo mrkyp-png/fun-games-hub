@@ -285,8 +285,12 @@
       var en = I18N.lang === 'en';
       if (w.stats[row][0] === '-') return en ? 'Basic' : '기본';
       if (row === 0) return w.id === 'alipunch' ? '16 → 14' : '16 → 15';
-      if (row === 1) return w.id === 'cannon' ? '10%' : (w.id === 'goldhammer' ? '15%' : '20%');
-      return '+0.1s';
+      if (row === 1) {
+        var base = w.id === 'cannon' ? 10 : (w.id === 'goldhammer' ? 15 : (w.id === 'alipunch' ? 20 : 0));
+        var level = MG.Workshop ? MG.Workshop.weaponLevel(w.id) : 0;
+        return base ? (base + level) + '% +' + level + '%' : (en ? 'Basic' : '\uAE30\uBCF8');
+      }
+      return en ? '+0.1s' : '+0.1\uCD08';
     }
     function openWeaponHelp(w, trigger) {
       closeWeaponHelp();
@@ -320,6 +324,10 @@
         var meaning = document.createElement('p'); meaning.textContent = definitions[i];
         var effect = document.createElement('p'); effect.className = 'inv-guide-effect';
         effect.textContent = stat[0] === '-' ? (en ? 'Basic · No additional effect' : '기본 · 추가 효과 없음') : stat[en ? 1 : 0].replace(/\u00a0/g, ' ');
+        if (i === 1 && w.id !== 'hammer') {
+          var attackBonus = MG.Workshop ? MG.Workshop.weaponAttackBonus(w.id) : 0;
+          effect.textContent += en ? ' Attack power: +' + Math.round(attackBonus * 100) + '%.' : ' \uACF5\uACA9\uB825: +' + Math.round(attackBonus * 100) + '%.';
+        }
         section.append(heading, meaning, effect); sections.appendChild(section);
       });
       function finish() { trigger.setAttribute('aria-expanded', 'false'); if (weaponHelp === dialog) weaponHelp = null; dialog.remove(); if (trigger.isConnected) trigger.focus(); }
@@ -403,7 +411,7 @@
       var stage = body.querySelector('.ks-stage');
       stage.querySelector('.ks-name').textContent = en ? 'Costume' : '코스튬';
       stage.querySelector('.cs-team').textContent = en ? sel.nameEn : sel.nameKo;
-      var effectVal = (MG.CostumeTeams.BASE_EFFECT_VALUE * MG.CostumeTeams.upgradeLevel(sel.id)).toFixed(1);
+      var effectVal = MG.CostumeTeams.effectValue(sel.id).toFixed(2).replace(/0$/, '');
       stage.querySelector('.cs-effect-txt').innerHTML = '';
       stage.querySelector('.cs-effect-txt').appendChild(document.createTextNode(T('mole.cos.effectName')));
       var v = document.createElement('b'); v.textContent = '+' + effectVal + (en ? 's' : '초'); stage.querySelector('.cs-effect-txt').appendChild(v);
@@ -483,6 +491,12 @@
       var stage = body.querySelector('.ks-stage');
       stage.querySelector('.ks-name').textContent = weapon ? nameOf(weapon) : '';
       stage.querySelector('.ks-slot-pill span').textContent = nSlots ? (en ? 'Skill slots ' : '스킬 슬롯 ') + nSlots : (en ? 'No skills' : '스킬 장착 불가');
+      if (weapon && weapon.id !== 'hammer') {
+        var attackBonus = MG.Workshop ? MG.Workshop.weaponAttackBonus(weapon.id) : 0;
+        var attackLabel = document.createElement('b'); attackLabel.className = 'ks-atk-bonus';
+        attackLabel.textContent = (en ? 'Attack +' : '\uACF5\uACA9\uB825 +') + Math.round(attackBonus * 100) + '%';
+        stage.querySelector('.ks-slot-pill').appendChild(attackLabel);
+      }
       stage.querySelectorAll('.ks-card').forEach(function (c, k) {
         var sk = MG.Skills.SKILLS[k];
         c.querySelector('.ks-card-name').textContent = en ? sk.nameEn : sk.nameKo;

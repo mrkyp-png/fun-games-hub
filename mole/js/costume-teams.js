@@ -50,19 +50,20 @@
   }
   function enhanceLevel(id) { return upgradeLevel(id) - 1; }
   function setEnhanceLevel(id, n) { localStorage.setItem(K_LEVEL + id, String(Math.max(0, Math.min(MAX_UPGRADE_LEVEL, n)) + 1)); }
+  function effectValue(id) { return BASE_EFFECT_VALUE + 0.05 * enhanceLevel(id); }
 
   // 현재 착용중인 코스튬의 효과값(초) — 없으면 0. 제작소 강화(§21~22)가 레벨을 올리면
   // 여기서 바로 반영된다(저장값만 읽으므로).
   function activeEffectValue() {
     var id = equippedId();
     if (!id) return 0;
-    return BASE_EFFECT_VALUE * upgradeLevel(id);
+    return effectValue(id);
   }
 
   var api = {
     TEAMS: TEAMS, EFFECT_TYPE: EFFECT_TYPE, BASE_EFFECT_VALUE: BASE_EFFECT_VALUE, MAX_UPGRADE_LEVEL: MAX_UPGRADE_LEVEL,
     teams: teams, teamById: teamById, owns: owns, equippedId: equippedId, equip: equip,
-    upgradeLevel: upgradeLevel, enhanceLevel: enhanceLevel, setEnhanceLevel: setEnhanceLevel, activeEffectValue: activeEffectValue
+    upgradeLevel: upgradeLevel, enhanceLevel: enhanceLevel, setEnhanceLevel: setEnhanceLevel, effectValue: effectValue, activeEffectValue: activeEffectValue
   };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.CostumeTeams = api; }
 })(typeof window !== 'undefined' ? window : null);

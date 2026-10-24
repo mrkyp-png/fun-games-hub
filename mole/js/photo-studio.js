@@ -80,6 +80,15 @@
     var s = loadState();
     return CHARACTERS.map(function (c) { return c.id; }).filter(function (id) { return s[id].isApplied; });
   }
+  function appliedTeamSetCount() {
+    var state = loadState();
+    return COSTUMES.filter(function (team) {
+      return FACE_TYPES.every(function (face) { return state[face.id + '_' + team.id].isApplied; });
+    }).length;
+  }
+  function gameSetEffectValue() {
+    return appliedTeamSetCount() * TEAM_EFFECT_VALUE + (appliedIds().length >= TOTAL ? GLOBAL_EFFECT_VALUE : 0);
+  }
   function completedCount() {
     var s = loadState();
     return CHARACTERS.reduce(function (n, c) { return n + (s[c.id].isCompleted ? 1 : 0); }, 0);
@@ -200,7 +209,7 @@
     isCompleted: isCompleted, isApplied: isApplied, nameOf: nameOf, setName: setName,
     appliedIds: appliedIds, completedCount: completedCount, isCollectionComplete: isCollectionComplete,
     toggleApply: toggleApply, markCompleted: markCompleted, saveComposite: saveComposite, imageFor: imageFor,
-    effectFor: effectFor, globalEffectValue: globalEffectValue, appliedPoolForGame: appliedPoolForGame
+    effectFor: effectFor, globalEffectValue: globalEffectValue, appliedTeamSetCount: appliedTeamSetCount, gameSetEffectValue: gameSetEffectValue, appliedPoolForGame: appliedPoolForGame
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = { PhotoStudio: api };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.PhotoStudio = api; }
