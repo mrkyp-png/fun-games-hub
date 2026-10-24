@@ -3,7 +3,7 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-const CACHE = 'mole-game-v1432-G';
+const CACHE = 'mole-game-v1433-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -733,6 +733,24 @@ const SHELL = [
   './js/face-maker.js',
   './js/shop.js',
   './js/daily.js',
+  './workshop-enhance.css',
+  './js/workshop-enhance.js',
+  './assets/workshop/enhance-v1433/egg-first.png',
+  './assets/workshop/enhance-v1433/egg-growing.png',
+  './assets/workshop/enhance-v1433/egg-intact.png',
+  './assets/workshop/enhance-v1433/egg-separated.png',
+  './assets/workshop/enhance-v1433/front-gem.png',
+  './assets/workshop/enhance-v1433/pedestal-body.png',
+  './assets/workshop/enhance-v1433/pedestal-front.png',
+  './assets/workshop/enhance-v1433/radial-rays.png',
+  './assets/workshop/enhance-v1433/smoke-1.png',
+  './assets/workshop/enhance-v1433/smoke-2.png',
+  './assets/workshop/enhance-v1433/smoke-3.png',
+  './assets/workshop/enhance-v1433/smoke-4.png',
+  './assets/workshop/enhance-v1433/sparkle-1.png',
+  './assets/workshop/enhance-v1433/sparkle-2.png',
+  './assets/workshop/enhance-v1433/sparkle-3.png',
+  './assets/workshop/enhance-v1433/sparkle-4.png',
   './js/workshop.js',
   './js/round-map.js',
   './js/quest.js',

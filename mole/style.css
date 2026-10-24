@@ -2835,6 +2835,15 @@ body { background: var(--lm-page); }
 .ws-item b { position: absolute; right: 2%; bottom: 0; font-size: 7cqw; font-weight: 900; color: #fff; -webkit-text-stroke: 1.1cqw #2a0b55; paint-order: stroke fill; }
 .ws-item--r b { -webkit-text-stroke-color: #0b2a55; }
 .ws-item--l b { right: auto; left: 2%; } /* V1409 C 사용자: 강화 수치(+0)는 왼쪽 표기 */
+/* Proposed costume-only foot-anchor placement. */
+#workshop-screen .ws-item img[src*="assets/costume/char-"] { position:absolute; height:100%; width:auto; max-width:none; max-height:none; left:var(--disc-x); top:var(--disc-y); translate:calc(-100% * var(--foot-x)) calc(-100% * var(--foot-y)); }
+#workshop-screen .ws-pcard .ws-pick-img img[src*="assets/costume/char-"] { position:absolute; height:100%; width:auto; max-width:none; max-height:none; left:49.5%; top:100%; translate:calc(-100% * var(--foot-x)) calc(-100% * var(--foot-y)); }
+#workshop-screen [data-ws-target] { --disc-x:50.89285714%; --disc-y:90.22831301%; }
+#workshop-screen [data-ws-mat] { --disc-x:49.10714286%; --disc-y:90.22831301%; }
+#workshop-screen img[src*="char-blue_bears-v1406"] { --foot-x:0.41712962962962963; --foot-y:0.9833333333333333; }
+#workshop-screen img[src*="char-mount_stars-v1406"] { --foot-x:0.5209466811751904; --foot-y:0.9833333333333333; }
+#workshop-screen img[src*="char-cloud_cups-v1406"] { --foot-x:0.5414521112255407; --foot-y:0.9840277777777777; }
+
 .ws-item.is-empty img { filter: grayscale(1) brightness(0.45); }
 /* 재료 칸 = 버튼(탭 → 재료 선택 팝업). 선택 전엔 빈 칸 + ＋ 표시(v758) */
 .ws-item--r { cursor: pointer; }

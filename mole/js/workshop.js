@@ -79,6 +79,7 @@
     var $ = function (s) { return el.querySelector(s); };
     var tab = 'weapon', idx = { weapon: 0, costume: 0 };
     var running = false, timers = [], selMat = null, pending = null;
+    var enhancement = MG.WorkshopEnhance.create(el);
     function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
     function clearTimers() { timers.forEach(clearTimeout); timers = []; }
 
@@ -194,95 +195,54 @@
       preloadFrames().then(function () { play(it, lv, success); }); // 첫 강화도 연출 프레임이 다 준비된 뒤 시작(v772)
     });
 
-    // 연출(사용자 지정 v758): 거위 날갯짓 → 날아오르며 알(기존 알 이미지)을 작게 낳음 → 알이 커지며 대기 위치
-    //   → 알을 탭하면 묠니르가 알 꼭대기를 타격 → 균열 → 성공/실패 알 → 결과.
+    // New artwork and continuous shell animation; transaction logic above remains unchanged.
     function play(it, lv, success) {
-      var fx = $('[data-ws-fx]');
-      var goose = $('[data-ws-goose]'), egg = $('[data-ws-egg]'), ham = $('[data-ws-ham]');
-      el.classList.add('is-fx');
-      fx.hidden = false; $('[data-ws-result]').hidden = true; $('[data-ws-egghint]').hidden = true;
-      goose.hidden = false; egg.hidden = true; ham.hidden = true;
-      goose.style.transform = ''; egg.className = 'ws-egg'; ham.className = 'ws-ham';
-      var ped = $('[data-ws-ped]'), solo = $('[data-ws-eggsolo]');
+      var fx = $('[data-ws-fx]'), goose = $('[data-ws-goose]'), ham = $('[data-ws-ham]');
       var ghosts = el.querySelectorAll('[data-ws-ghost]'), rise = $('[data-ws-rise]');
+      el.classList.add('is-fx'); fx.hidden = false;
+      $('[data-ws-result]').hidden = true; $('[data-ws-egghint]').hidden = true;
+      goose.hidden = false; goose.style.transform = ''; ham.hidden = true; ham.className = 'ws-ham';
       ghosts.forEach(function (gh) { gh.hidden = true; gh.style.transform = ''; }); rise.className = 'ws-rise';
-      ped.hidden = false; solo.hidden = true; solo.className = 'ws-egg-solo';
-      $('[data-ws-pedfront]').hidden = false; // 받침대 앞 띠는 처음부터 거위·알 앞(v760)
-      var eggSet = success ? 'egg-ok-' : 'egg-ng-';
-      // v771: 커진 알 이미지를 미리 받아 디코딩 — 교체 순간 빈 프레임(깜빡임) 방지
-      var eggPre = new Image(); eggPre.src = A + 'egg-solo.png'; var eggReady = eggPre.decode ? eggPre.decode().catch(function () {}) : Promise.resolve();
-      pending = { it: it, lv: lv, success: success, eggSet: eggSet };
-      var thisPlay = pending;
+      pending = { it: it, lv: lv, success: success };
+      enhancement.prepare(function () { strike(it, lv, success); });
       var t = 0;
-      // 1) 황금거위 10포즈 — 1~5 제자리 날갯짓, 6~10 상승하며 퇴장. 6번째에서 알을 낳음
       for (var g = 1; g <= 10; g++) {
-        (function (g) {
-          later(function () {
-            goose.src = A + 'goose-' + g + '.png';
-            var up = g <= 5 ? 0 : (g - 5) * (g - 5) * 22;
-            goose.style.transform = 'translate(-50%, ' + (-up) + '%)';
-            // 날아오르는 효과(사용자 지정 v758): 이륙 먼지 바람 + 황금 깃털 + 잔상 2겹
-            if (g >= 6) ghosts.forEach(function (gh) { gh.hidden = false; gh.src = goose.src; gh.style.transform = goose.style.transform; });
-            if (g === 6) { rise.className = 'ws-rise'; void rise.offsetWidth; rise.className = 'ws-rise is-on'; }
-            if (g === 7) { solo.hidden = false; solo.className = 'ws-egg-solo is-lay'; } // v766: 거위가 충분히 떠오른 뒤(7번째 포즈, 아직 화면에 보일 때) 알 낙하(사용자 지정)
-          }, t);
-        })(g);
+        (function (g) { later(function () {
+          goose.src = A + 'goose-' + g + '.png';
+          var up = g <= 5 ? 0 : (g - 5) * (g - 5) * 22;
+          goose.style.transform = 'translate(-50%, ' + (-up) + '%)';
+          if (g >= 6) ghosts.forEach(function (gh) { gh.hidden = false; gh.src = goose.src; gh.style.transform = goose.style.transform; });
+          if (g === 6) { rise.className = 'ws-rise'; void rise.offsetWidth; rise.className = 'ws-rise is-on'; }
+          if (g === 7) enhancement.drop();
+        }, t); })(g);
         t += g <= 5 ? 170 : 130;
       }
       later(function () { goose.style.transform = 'translate(-50%, -700%)'; ghosts.forEach(function (gh) { gh.style.transform = goose.style.transform; }); }, t);
-      t += 1600;
-      // 받침대 위에서 다 커진 알 = 기존 알 1번 이미지(받침대 포함)로 교체
       later(function () {
-        egg.src = A + 'egg-solo.png';
-        eggReady.then(function () { return egg.decode ? egg.decode().catch(function () {}) : null; }).then(function () {
-          requestAnimationFrame(function () { if (pending !== thisPlay) return; egg.hidden = false; ped.hidden = false; solo.hidden = true; goose.hidden = true; egg.className = 'ws-egg is-wait'; $('[data-ws-egghint]').hidden = false; pending.ready = true; $('[data-ws-pedfront]').hidden = false; ghosts.forEach(function (gh) { gh.hidden = true; }); });
-        });
-      }, t);
-      // Standalone egg waits only after decoding; the pedestal stays fixed.
+        goose.hidden = true; ghosts.forEach(function (gh) { gh.hidden = true; });
+        enhancement.wait(); $('[data-ws-egghint]').hidden = false;
+      }, t + 1600);
     }
 
-    $('[data-ws-egg]').addEventListener('click', function () {
-      if (!pending || !pending.ready) return;
-      pending.ready = false;
-      var pd = pending; preloadFrames().then(function () { strike(pd.it, pd.lv, pd.success, pd.eggSet); }); // 프레임 다 받은 뒤 시작
-    });
-
-    function strike(it, lv, success, eggSet) {
-      var fx = $('[data-ws-fx]');
-      var egg = $('[data-ws-egg]'), ham = $('[data-ws-ham]'), bolt = $('[data-ws-bolt]');
-      var res = $('[data-ws-result]');
+    function strike(it, lv, success) {
+      var ham = $('[data-ws-ham]'), bolt = $('[data-ws-bolt]');
       $('[data-ws-egghint]').hidden = true;
-      egg.className = 'ws-egg'; egg.src = A + eggSet + '1.png'; $('[data-ws-ped]').hidden = true;
-      var t = 0;
-      // 3) 골드 묠니르 + 녹색 번개가 알 꼭대기 타격
-      ham.hidden = false; ham.classList.add('is-in'); cycleBolt(bolt, 0);
-      later(function () { ham.classList.remove('is-in'); ham.classList.add('is-ready'); }, 390); // V1409 C: 게임처럼 머리 들어올림
-      t += 520;
+      ham.hidden = false; ham.className = 'ws-ham is-in'; cycleBolt(bolt, 0);
+      later(function () { ham.classList.remove('is-in'); ham.classList.add('is-ready'); }, 390);
       later(function () {
         ham.classList.remove('is-in', 'is-ready'); ham.classList.add('is-hit');
-        egg.src = A + eggSet + '2.png'; egg.classList.add('is-shiver');
-        // 화면 흔들림 없음 — 타격 떨림은 알에만(받침대 고정, 사용자 지정 v759)
-        fx.classList.remove('is-flash'); void fx.offsetWidth; fx.classList.add('is-flash');
-        try { MG.HitFx && MG.HitFx.uiTap && MG.HitFx.uiTap(1); } catch (e) { /* 무시 */ }
-      }, t);
-      t += 260;
-      later(function () { stopBolt(); bolt.src = A + 'ham-gold-v1407.webp'; /* 사용자: 타격 순간까지 번개+글로우, 물러날 때 번개 없는 그림 */ ham.classList.remove('is-hit'); ham.classList.add('is-out'); egg.src = A + eggSet + '3.png'; }, t);
-      t += 300;
-      later(function () { egg.classList.remove('is-shiver'); }, t);
-      // 4) 성공/실패 알 4~10
-      for (var e = 4; e <= 10; e++) { (function (e) { later(function () { egg.src = A + eggSet + e + '.png'; }, t); })(e); t += 230; }
-      t += 300;
-      // 5) 결과 공개
-      later(function () {
-        ham.hidden = true; stopBolt(); pending = null; $('[data-ws-pedfront]').hidden = true;
-        var nlv = success ? lv + 1 : lv;
-        egg.hidden = true;
-        res.hidden = false;
-        res.className = 'ws-result ' + (success ? 'is-ok' : 'is-ng');
+        try { MG.HitFx && MG.HitFx.uiTap && MG.HitFx.uiTap(1); } catch (err) { /* sound optional */ }
+      }, 520);
+      later(function () { stopBolt(); bolt.src = A + 'ham-gold-v1407.webp'; ham.classList.remove('is-hit'); ham.classList.add('is-out'); }, 780);
+      enhancement.impact(success, function () {
+        ham.hidden = true; stopBolt(); pending = null;
+        var nlv = success ? lv + 1 : lv, res = $('[data-ws-result]');
+        res.hidden = false; res.className = 'ws-result ' + (success ? 'is-ok' : 'is-ng');
         setItemImg($('[data-ws-res-img]'), $('[data-ws-res-glow]'), success ? it.done : it.img, nlv);
         $('[data-ws-res-title]').textContent = T(success ? 'mole.ws.success' : 'mole.ws.fail');
         $('[data-ws-res-sub]').textContent = nameOf(it) + '  ' + (success ? '+' + lv + ' → +' + nlv : T('mole.ws.keep', { n: lv }));
-      }, t);
+        enhancement.result(success, nlv);
+      });
     }
 
     var boltTimer = null;
@@ -294,6 +254,7 @@
     function stopBolt() { clearTimeout(boltTimer); boltTimer = null; }
 
     $('[data-ws-ok]').addEventListener('click', function () {
+      enhancement.reset(); clearTimers(); stopBolt();
       $('[data-ws-result]').hidden = true;
       $('[data-ws-fx]').hidden = true;
       el.classList.remove('is-fx');
@@ -301,27 +262,24 @@
       render();
     });
 
-    // v772: 연출 프레임(거위 10·알 성공/실패 각 10·번개 6)은 JS 로만 쓰여 처음엔 아직 안 받아진 상태 —
-    // 첫 강화 때 알 깨짐 연출이 빈 그림으로 지나가 바로 결과가 나왔음(사용자 보고). 제작소를 열 때 미리 받아 디코딩.
     var framesReady = null;
     function preloadFrames() {
       if (framesReady) return framesReady;
-      var list = [], i;
-      for (i = 1; i <= 10; i++) list.push(A + 'goose-' + i + '.png', A + 'egg-ok-' + i + '.png', A + 'egg-ng-' + i + '.png');
-      for (i = 1; i <= 6; i++) list.push(A + 'bolt-' + i + '.png');
-      list.push(A + 'egg-solo.png', A + 'egg-ped.png', A + 'egg-ped-front.png', A + 'ham-gold-v1407.webp', A + 'ham-gold-zap1-v1409.webp', A + 'ham-gold-zap2-v1409.webp', A + 'ham-gold-zap3-v1409.webp', A + 'ham-gold-zap4-v1409.webp', A + 'ham-gold-zap5-v1409.webp', A + 'ham-gold-zap6-v1409.webp');
-      framesReady = Promise.all(list.map(function (u) {
+      var list = [];
+      for (var i = 1; i <= 10; i++) list.push(A + 'goose-' + i + '.png');
+      for (var z = 1; z <= 6; z++) list.push(A + 'ham-gold-zap' + z + '-v1409.webp');
+      list.push(A + 'ham-gold-v1407.webp');
+      framesReady = Promise.all([MG.WorkshopEnhance.preload()].concat(list.map(function (u) {
         var im = new Image(); im.src = u;
         return im.decode ? im.decode().catch(function () {}) : new Promise(function (r) { im.onload = im.onerror = r; });
-      }));
+      })));
       return framesReady;
     }
 
     function show() {
       preloadFrames();
-      clearTimers(); stopBolt();
+      clearTimers(); stopBolt(); enhancement.reset();
       running = false; pending = null; selMat = null; pick.hidden = true;
-      $('[data-ws-ped]').hidden = true; $('[data-ws-eggsolo]').hidden = true; $('[data-ws-pedfront]').hidden = true;
       el.classList.remove('is-fx', 'is-shake');
       $('[data-ws-fx]').hidden = true;
       render();
