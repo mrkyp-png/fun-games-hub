@@ -2173,7 +2173,7 @@
 
     // 버튼 이펙트 색: 헛방(구멍에 아무것도 없음) 또는 폭탄이면 빨간색.
     // 알리 펀치 무적 중엔 폭탄도 안전한 타격이므로 빨간색 아님(초록).
-    return results.length === 0 || (results.some((r) => r.type === 'bomb' && !r.safe) && !alipunchInvincible());
+    return results.length === 0 || (results.some((r) => (r.type === 'bomb' || r.bombKind) && !r.safe) && !alipunchInvincible());
   }
 
   // ---------- 골드해머: 지진 ----------

@@ -9044,3 +9044,24 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
   60% { translate: 0 -9px; }
   80% { translate: 0 -5.5px; }
 }
+
+/* Photo studio only: aligned floor shadows and full inset card colors. */
+.ph3-stage .ks-case::after {
+  left: var(--photo-shadow-x, 260px); bottom: var(--photo-shadow-bottom, 40px);
+  width: 270px; height: 48px; margin-left: -135px;
+  background: radial-gradient(ellipse, rgba(10,20,30,.85) 0%, rgba(10,20,30,.62) 25%, rgba(10,20,30,.25) 52%, rgba(10,20,30,0) 74%);
+  animation: none; z-index: 1;
+}
+.ph3-stage .ph3-card { isolation: isolate; }
+.ph3-stage .ph3-card::before {
+  content: ''; position: absolute; inset: 3.8% 5.4%; z-index: 0; pointer-events: none;
+  background: repeating-linear-gradient(90deg, rgba(255,255,255,.10) 0 2px, rgba(255,255,255,0) 2px 54px), linear-gradient(var(--ph3a), var(--ph3b));
+}
+.ph3-stage .ph3-card .cs-card-char { background: none; box-shadow: none; }
+.ph3-stage .ph3-card::after {
+  content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none;
+  background: url('assets/inventory/skill-v1403/card.webp') center / 100% 100% no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 862' preserveAspectRatio='none'%3E%3Cpath fill='white' fill-rule='evenodd' d='M0 0H600V862H0Z M75 35H525A40 40 0 0 1 565 75V787A40 40 0 0 1 525 827H75A40 40 0 0 1 35 787V75A40 40 0 0 1 75 35Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+}
+.ph3-stage .ph3-card > .ph3-own,
+.ph3-stage .ph3-card > .ks-equip { z-index: 5; }

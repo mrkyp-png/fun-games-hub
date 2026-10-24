@@ -288,7 +288,7 @@
       if (row === 1) {
         var base = w.id === 'cannon' ? 10 : (w.id === 'goldhammer' ? 15 : (w.id === 'alipunch' ? 20 : 0));
         var level = MG.Workshop ? MG.Workshop.weaponLevel(w.id) : 0;
-        return base ? (base + level) + '% +' + level + '%' : (en ? 'Basic' : '\uAE30\uBCF8');
+        return base ? (base + level) + '%' : (en ? 'Basic' : '\uAE30\uBCF8');
       }
       return en ? '+0.1s' : '+0.1\uCD08';
     }
@@ -325,8 +325,8 @@
         var effect = document.createElement('p'); effect.className = 'inv-guide-effect';
         effect.textContent = stat[0] === '-' ? (en ? 'Basic · No additional effect' : '기본 · 추가 효과 없음') : stat[en ? 1 : 0].replace(/\u00a0/g, ' ');
         if (i === 1 && w.id !== 'hammer') {
-          var attackBonus = MG.Workshop ? MG.Workshop.weaponAttackBonus(w.id) : 0;
-          effect.textContent += en ? ' Attack power: +' + Math.round(attackBonus * 100) + '%.' : ' \uACF5\uACA9\uB825: +' + Math.round(attackBonus * 100) + '%.';
+          var attackTotal = (w.id === 'cannon' ? 10 : (w.id === 'goldhammer' ? 15 : 20)) + (MG.Workshop ? MG.Workshop.weaponLevel(w.id) : 0);
+          effect.textContent += en ? ' Attack power: ' + attackTotal + '%.' : ' \uACF5\uACA9\uB825: ' + attackTotal + '%.';
         }
         section.append(heading, meaning, effect); sections.appendChild(section);
       });
@@ -492,9 +492,8 @@
       stage.querySelector('.ks-name').textContent = weapon ? nameOf(weapon) : '';
       stage.querySelector('.ks-slot-pill span').textContent = nSlots ? (en ? 'Skill slots ' : '스킬 슬롯 ') + nSlots : (en ? 'No skills' : '스킬 장착 불가');
       if (weapon && weapon.id !== 'hammer') {
-        var attackBonus = MG.Workshop ? MG.Workshop.weaponAttackBonus(weapon.id) : 0;
         var attackLabel = document.createElement('b'); attackLabel.className = 'ks-atk-bonus';
-        attackLabel.textContent = (en ? 'Attack +' : '\uACF5\uACA9\uB825 +') + Math.round(attackBonus * 100) + '%';
+        attackLabel.textContent = (en ? 'Attack ' : '\uACF5\uACA9\uB825 ') + compactWeaponStat(weapon, 1);
         stage.querySelector('.ks-slot-pill').appendChild(attackLabel);
       }
       stage.querySelectorAll('.ks-card').forEach(function (c, k) {
@@ -561,6 +560,12 @@
         '<div class="ks-cards">' + cards + '</div></div></div>';
       var stage = body.querySelector('.ks-stage');
       stage.querySelector('.ks-name').textContent = en ? 'Photo Studio' : '사진관';
+      // Feet coordinates follow the same cropped character art as the photo preview.
+      var photoShadowPositions = {"round_blue_bears":[255.0493,39.5485],"round_cloud_cups":[266.6236,38.2439],"round_mount_stars":[250.007,37.14],"sharp_blue_bears":[253.5123,39.2584],"sharp_cloud_cups":[269.0286,38.218],"sharp_mount_stars":[249.2874,37.14],"sturdy_blue_bears":[250.4999,39.5485],"sturdy_cloud_cups":[268.5333,38.2067],"sturdy_mount_stars":[249.2076,37.14]};
+      var photoShadow = photoShadowPositions[selId] || [260, 40];
+      var photoCase = stage.querySelector('.ks-case');
+      photoCase.style.setProperty('--photo-shadow-x', photoShadow[0] + 'px');
+      photoCase.style.setProperty('--photo-shadow-bottom', photoShadow[1] + 'px');
       stage.querySelector('.ph3-done-lbl').textContent = en ? 'Done' : '완성';
       // 사용자: 사진관 설명박스 — 코스튬 화면과 같은 효과 박스
       // 사용자: 팀별 3개(얼굴형 3) 모아 적용 +0.1초, 전체(풀) 적용 +0.5초 — 효과 설명(게임 연동은 아직 API만, photo-studio.js 주석)
