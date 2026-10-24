@@ -81,8 +81,18 @@
     var running = false, timers = [], selMat = null, pending = null;
     var enhancement = MG.WorkshopEnhance.create(el);
     var workshopHammer = null, hammerRaf = 0, hammerZapTimer = null, hammerFlightAudio = null, hammerHitAudios = null, lastHammerHitIndex = -1;
+    var gooseShockAudio = null, gooseWingsAudio = null;
     function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
-    function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+    function clearTimers() { timers.forEach(clearTimeout); timers = []; stopGooseWingsSound(); }
+
+    function preloadGooseSounds() {
+      if (!gooseShockAudio) { gooseShockAudio = new Audio('audio/goose-surprise.mp3'); gooseShockAudio.preload = 'auto'; }
+      if (!gooseWingsAudio) { gooseWingsAudio = new Audio('audio/goose-wings.mp3'); gooseWingsAudio.preload = 'auto'; }
+    }
+    function stopGooseWingsSound() {
+      if (!gooseWingsAudio) return;
+      try { gooseWingsAudio.pause(); gooseWingsAudio.currentTime = 0; } catch (e) { /* sound is optional */ }
+    }
 
     function preloadHammerSounds() {
       if (!hammerFlightAudio) {
@@ -308,6 +318,7 @@
       $('[data-ws-result]').hidden = true; $('[data-ws-egghint]').hidden = true;
       $('[data-ws-fx-info]').hidden = true;
       clearWorkshopHammer();
+      preloadGooseSounds();
       goose.hidden = false; goose.style.transform = '';
       preloadHammerSounds();
       ghosts.forEach(function (gh) { gh.hidden = true; gh.style.transform = ''; }); rise.className = 'ws-rise';
@@ -319,6 +330,8 @@
           goose.src = A + 'goose-' + g + '.png';
           var up = g <= 5 ? 0 : (g - 5) * (g - 5) * 22;
           goose.style.transform = 'translate(-50%, ' + (-up) + '%)';
+          if (g === 2) playHammerSound(gooseWingsAudio, 0.825);
+          if (g === 3) playHammerSound(gooseShockAudio, 0.75);
           if (g >= 6) ghosts.forEach(function (gh) { gh.hidden = false; gh.src = goose.src; gh.style.transform = goose.style.transform; });
           if (g === 6) { rise.className = 'ws-rise'; void rise.offsetWidth; rise.className = 'ws-rise is-on'; }
           if (g === 7) enhancement.drop();
@@ -342,8 +355,9 @@
       var fxRect = fx.getBoundingClientRect();
       // 사용자가 표시한 알 윗부분 안쪽 타격점에 맞춰 새 알 프레임의 실제 위치로 계산한다.
       var eggRect = fx.querySelector('.ws-new-egg').getBoundingClientRect();
-      var targetX = (eggRect.left + eggRect.width * 0.5 - fxRect.left) / fxRect.width;
-      var targetY = (eggRect.top + eggRect.height * 0.16 - fxRect.top) / fxRect.height;
+      // 요청 조정 누적: 오른쪽 0.3cm, 아래쪽 2.5cm (CSS 96px/in 기준).
+      var targetX = (eggRect.left + eggRect.width * 0.5 + 11.34 - fxRect.left) / fxRect.width;
+      var targetY = (eggRect.top + eggRect.height * 0.16 + 94.5 - fxRect.top) / fxRect.height;
       var hammerEl = fx.querySelector('.ws-enhance-hammer');
       if (hammerEl) hammerEl.classList.add('is-striking');
       startHammerZapAnimation();

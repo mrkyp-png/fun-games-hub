@@ -645,6 +645,8 @@ const SHELL = [
   './audio/goldhammer-sfx-10.mp3',
   './audio/goldhammer-sfx-12.mp3',
   './audio/goldhammer-sfx-15.mp3',
+  './audio/goose-surprise.mp3',
+  './audio/goose-wings.mp3',
   './audio/mole-emerge.mp3',
   './audio/punch-jab.mp3',
   './audio/punch-straight.mp3',
