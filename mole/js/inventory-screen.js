@@ -382,13 +382,14 @@
       var CH = function (id) { return 'assets/costume/char-' + id + '-v1406.webp'; };
       // 눈 감은 그림(같은 자리·크기)을 위에 겹쳐 두고 아주 잠깐만 보여 깜빡임
       var CHB = function (id) { return '<img alt="" src="' + CH(id) + '"><img class="cs-blink" alt="" src="assets/costume/char-' + id + '-blink-v1406.webp">'; };
+      var OUTFIT = { blue_bears: 'assets/costume/outfit-blue_bears.png', mount_stars: 'assets/costume/outfit-mount_stars.png', cloud_cups: 'assets/costume/outfit-cloud_cups.png' };
       // 사용자: 위 진열장 캐릭터는 양발 기준 좌우 가운데(그림마다 양발 가운데가 달라 그만큼 옮김)
       var FEET = { blue_bears: 7.92, mount_stars: -2.39, cloud_cups: -4.63 };
       var sel = MG.CostumeTeams.teamById(costumeSelectedId);
       var cards = MG.CostumeTeams.teams().map(function (t) {
         var owned = MG.CostumeTeams.owns(t.id);
         return '<div class="ks-card cs-card' + (t.id === costumeSelectedId ? ' is-sel' : '') + (owned ? '' : ' is-locked') + '" data-cs-pick="' + t.id + '" data-team="' + t.id + '">' +
-          '<span class="cs-card-char">' + CHB(t.id) + '</span><b class="ks-card-name"></b>' +
+          '<span class="cs-card-char"><img class="cs-outfit" alt="" src="' + OUTFIT[t.id] + '"></span>' +
           '<button type="button" class="ks-equip ks-press' + (owned && t.id === equippedId ? ' is-on' : '') + '" data-cs-equip="' + t.id + '"><span></span></button></div>';
       }).join('');
       body.innerHTML = '<div class="ks-mount"><div class="ks-stage cs-stage">' +
@@ -410,7 +411,6 @@
       stage.querySelectorAll('.cs-card').forEach(function (c) {
         var t = MG.CostumeTeams.teamById(c.getAttribute('data-cs-pick'));
         var owned = MG.CostumeTeams.owns(t.id), isOn = owned && t.id === equippedId;
-        c.querySelector('.ks-card-name').textContent = (en ? t.nameEn : t.nameKo).split(' ').pop();
         var b = c.querySelector('.ks-equip');
         b.querySelector('span').textContent = !owned ? T('mole.cos.notOwned') : (isOn ? T('mole.cos.equipped') : (en ? 'Equip' : '착용'));
         if (!owned || isOn || locked) b.classList.add('is-off');
@@ -435,7 +435,7 @@
       (function next() {
         blinkTimer = setTimeout(function () {
           if (active !== 'costume') return;
-          var els = body.querySelectorAll('.cs-hero-img, .cs-card-char');
+          var els = body.querySelectorAll('.cs-hero-img');
           if (!els.length) return;
           var el = els[Math.floor(Math.random() * els.length)];
           var twice = Math.random() < 0.3;

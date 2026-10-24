@@ -209,6 +209,10 @@
       b.addEventListener('contextmenu', (e) => e.preventDefault()); // 길게 눌러도 브라우저 메뉴 안 뜨게
       b.addEventListener('pointerdown', (e) => {
         e.preventDefault();
+        if (!isHome || !isHome()) {
+          b.style.removeProperty('animation');
+          b.classList.remove('beat-textgrow');
+        }
         if (onTap) onTap(); // 다이얼패드(홈 화면) 전용 탭음 — game.js 가 상황(is-start) 판단
         const bad = onCell(id); // 헛방/폭탄이면 true — 링 색을 빨갛게
         b.classList.remove('lane-button--flash', 'lane-button--miss');
@@ -264,6 +268,28 @@
       buttons.forEach((b, id) => {
         if (!b) return;
         b.classList.toggle('lane-button--nav-active', !!action && FACES[id] && FACES[id].action === action);
+      });
+    }
+
+    function setGameTextless(enabled) {
+      buttons.forEach((b) => {
+        if (!b) return;
+        if (enabled) {
+          if (b._removedGameText) return;
+          b._removedGameText = [];
+          Array.from(b.querySelectorAll('.lane-sub, .lane-lbl')).forEach((node) => {
+            const parent = node.parentNode;
+            const next = node.nextSibling;
+            parent.removeChild(node);
+            b._removedGameText.push({ node, parent, next });
+          });
+          return;
+        }
+        (b._removedGameText || []).forEach(({ node, parent, next }) => {
+          if (!parent.isConnected || !b.contains(parent)) return;
+          parent.insertBefore(node, next && next.parentNode === parent ? next : null);
+        });
+        delete b._removedGameText;
       });
     }
 
@@ -445,7 +471,7 @@
       if (t) t.textContent = String(Math.max(0, Math.ceil(secondsLeft)));
     }
 
-    return { setCellHot, setBombIndicator, setHudStat, flashBurst, flashQuakeArea, setActiveNav, clear, spinChannelsIn, spinBoardBlank, setFeverScoreboard };
+    return { setCellHot, setBombIndicator, setHudStat, flashBurst, flashQuakeArea, setActiveNav, setGameTextless, clear, spinChannelsIn, spinBoardBlank, setFeverScoreboard };
   }
 
   const api = { create };

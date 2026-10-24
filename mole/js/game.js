@@ -572,6 +572,13 @@
     const c = parseInt(localStorage.getItem('mole.chapter'), 10);
     return (c >= 1 && c <= MG.Progress.MAX_CHAPTER) ? c : 1;
   }
+  function applyRoundButtonPalette() {
+    const round = currentChapter();
+    const palette = round <= 2 ? 'red' : round <= 4 ? 'yellow' : round <= 6 ? 'blue' : 'green';
+    const gameScreen = document.getElementById('game-screen');
+    gameScreen.dataset.buttonPalette = palette;
+    gameScreen.dataset.buttonFail = round <= 2 ? 'black' : 'normal';
+  }
   // mole.chapter 를 쓰는 모든 곳에서 이걸로 — 라운드1(뿅망치 전용)으로 들어가면 장착 무기도
   // 뿅망치로 같이 저장해, 보관창 "장착됨" 표시가 실제 플레이 무기와 어긋나지 않게 한다(사용자 지정).
   // 챕터→라운드 재구조화(2026-09-17): 구 챕터1~3(n<=3) 강제 뿅망치 임계값 → 신규 라운드1(n===1)로
@@ -1309,6 +1316,7 @@
     // 홈 화면 = 항상 기존 16버튼 다이얼러(불변, 사용자 지정). 직전 라운드가 챕터1~3(9버튼)
     // 이었다면 여기서 다시 지어짐 — 버튼보드 자체는 항시 고정이라 무연출로 조용히 전환(사용자 지정).
     ensureLaneControlsForChapter(false);
+    if (sharedLaneControls) sharedLaneControls.setGameTextless(false);
     // 홈 BGM(6곡, 사용자 지정 신규) — 접속 시 1번 고정, 이후 순서대로 진행 후 반복.
     // 단, 최초 부팅 직후(스플래시/인트로가 아직 화면을 덮고 있는 동안)엔 재생을 미룬다(사용자
     // 지정 — "브금은 인트로에 안 나오고 홈화면 진입하면 나오게"). index.html 이 인트로/스플래시가
@@ -1439,6 +1447,13 @@
     // 버그 수정 — 라운드 진입 시 항상 원위치.
     if (sharedLaneControls) sharedLaneControls.setActiveNav(null);
     ensureLaneControlsForChapter(isSmallBoardChapter()); // 실제 라운드 진행 중에만 9홀/숫자패드로 전환
+    const laneButtonBar = document.getElementById('lane-button-bar');
+    if (laneButtonBar) laneButtonBar.querySelectorAll('.lane-button').forEach((button) => {
+      button.style.removeProperty('animation');
+      button.classList.remove('beat-textgrow');
+    });
+    if (sharedLaneControls) sharedLaneControls.setGameTextless(true);
+    applyRoundButtonPalette();
     applyBoardTheme();
     applyWeather();
     const myGen = sessionGen;
