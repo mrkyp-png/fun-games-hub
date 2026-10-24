@@ -340,9 +340,10 @@
       $('[data-ws-fx-info]').hidden = true;
       if (!workshopHammer) createWorkshopHammer(fx);
       var fxRect = fx.getBoundingClientRect();
-      // 기존 ws-ham 타격 위치(left:50%, top:18% + 10dvh) 유지.
-      var targetX = 0.5;
-      var targetY = (fxRect.height * 0.18 + window.innerHeight * 0.1) / fxRect.height;
+      // 사용자가 표시한 알 윗부분 안쪽 타격점에 맞춰 새 알 프레임의 실제 위치로 계산한다.
+      var eggRect = fx.querySelector('.ws-new-egg').getBoundingClientRect();
+      var targetX = (eggRect.left + eggRect.width * 0.5 - fxRect.left) / fxRect.width;
+      var targetY = (eggRect.top + eggRect.height * 0.16 - fxRect.top) / fxRect.height;
       var hammerEl = fx.querySelector('.ws-enhance-hammer');
       if (hammerEl) hammerEl.classList.add('is-striking');
       startHammerZapAnimation();
