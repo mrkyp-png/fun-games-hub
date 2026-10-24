@@ -9098,3 +9098,10 @@ img[src$="/ic-ticket-note-complete.webp"] { object-fit: contain !important; obje
 .shop-tab-ico > .ticket-note-icon { width: 22px; height: 22px; }
 .shop-card-price--icon > .ticket-note-icon { width: 24px; height: 16px; }
 .shop-card-btn--rich > .ticket-note-icon { width: 33px; height: 22px; }
+
+/* Home and quest/achievement ticket artwork: 1.3x, with original proportions. */
+#game-screen.is-start .h2-pill-ic[src$="/ic-ticket-note-complete.webp"] {
+  height: 145.6%; max-width: 52%; left: -18%;
+}
+#quest-screen .qs-rwline img[src$="/ic-ticket-note-complete.webp"] { width: calc(var(--w) * 0.104); height: auto; }
+#quest-screen[data-mode="ach"] .qs-tabs button.is-on { box-shadow: inset 0 2px 0 rgba(255,255,255,0.45); }
