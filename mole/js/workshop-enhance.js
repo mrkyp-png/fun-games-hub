@@ -62,8 +62,8 @@
     function prepare(onClick, source) {
       reset(); clickAction = onClick; scene.hidden = false; egg.hidden = true;
       subject.src = source || '';
-      subjectAnchorX = source && source.indexOf('char-blue_bears-v1406') >= 0 ? 45 : 50;
-      subject.className = subjectAnchorX === 45 ? 'ws-new-subject is-blue-bears' : 'ws-new-subject';
+      subjectAnchorX = source && source.indexOf('char-blue_bears-v1406') >= 0 ? 44.4 : 50;
+      subject.className = subjectAnchorX < 50 ? 'ws-new-subject is-blue-bears' : 'ws-new-subject';
       subjectWindow.classList.remove('is-open');
       subjectWindow.style.transform = '';
       subject.style.opacity = '0'; subject.style.transform = 'translate(-' + subjectAnchorX + '%, -50%) scale(.595)'; subject.style.filter = '';
@@ -77,7 +77,7 @@
       dropAnimation = egg.animate([
         { transform: 'translateY(-165%) scale(.25)', opacity: 0, offset: 0 },
         { transform: 'translateY(0) scale(.35)', opacity: .7, offset: .4 },
-        { transform: 'translateY(-7%) scale(.4)', opacity: 1, offset: .53 },
+        { transform: 'translateY(-7%) scale(.4)', opacity: 1, offset: .5 },
         { transform: 'translateY(0) scale(1)', opacity: 1, offset: 1 }
       ], { duration: 1600, easing: 'cubic-bezier(.25,.7,.3,1)', fill: 'forwards' });
       dropAnimation.onfinish = function () { if (!scene.hidden) subject.style.opacity = '.68'; };
@@ -148,15 +148,22 @@
       var from = subject.getBoundingClientRect();
       subject.getAnimations().forEach(function (animation) { animation.cancel(); });
       var placeholder = item, to = placeholder.getBoundingClientRect(), hostRect = host.getBoundingClientRect();
+      var isBears = subject.classList.contains('is-blue-bears');
+      var targetLeft = to.left;
+      if (isBears) {
+        var imageRatio = subject.naturalWidth && subject.naturalHeight ? subject.naturalWidth / subject.naturalHeight : .75;
+        var contentWidthRatio = Math.min(1, imageRatio / (to.width / to.height));
+        targetLeft += to.width * contentWidthRatio * (0.5 - 0.4171);
+      }
       // Keep the same image node and give it the exact result-slot box before moving it.
       // This prevents the inner image's scene-relative 82% sizing from snapping to its
       // natural image size during the handoff.
       subject.className = ''; subject.setAttribute('data-ws-res-img', '');
-      subject.style.cssText = 'position:absolute;left:' + (to.left - hostRect.left) + 'px;top:' + (to.top - hostRect.top) + 'px;width:' + to.width + 'px;height:' + to.height + 'px;max-width:none;max-height:none;object-fit:contain;object-position:center;margin:0;transform-origin:top left;opacity:1;';
+      subject.style.cssText = 'position:absolute;left:' + (targetLeft - hostRect.left) + 'px;top:' + (to.top - hostRect.top) + 'px;width:' + to.width + 'px;height:' + to.height + 'px;max-width:none;max-height:none;object-fit:contain;object-position:center;margin:0;transform-origin:top left;opacity:1;';
       host.replaceChild(subject, placeholder); item = subject;
       if (from.width && from.height && to.width && to.height) {
         subject.animate([
-          { transform: 'translate(' + (from.left - to.left) + 'px,' + (from.top - to.top) + 'px) scale(' + (from.width / to.width) + ',' + (from.height / to.height) + ')' },
+          { transform: 'translate(' + (from.left - targetLeft) + 'px,' + (from.top - to.top) + 'px) scale(' + (from.width / to.width) + ',' + (from.height / to.height) + ')' },
           { transform: 'translate(0,0) scale(1,1)' }
         ], { duration: 650, easing: 'cubic-bezier(.22,.75,.25,1)', fill: 'both' });
       }

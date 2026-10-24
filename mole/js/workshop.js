@@ -314,12 +314,19 @@
     function play(it, lv, success, blackEggRescue) {
       var fx = $('[data-ws-fx]'), goose = $('[data-ws-goose]');
       var ghosts = el.querySelectorAll('[data-ws-ghost]'), rise = $('[data-ws-rise]');
+      // 원본 프레임 얼굴 폭을 5번 프레임(153px)에 맞춘 배율.
+      var gooseFaceWidths = [0, 200, 153, 160, 154, 153, 137, 133, 133, 131, 182];
+      var firstFrameScale = gooseFaceWidths[5] / gooseFaceWidths[1];
       el.classList.add('is-fx'); fx.hidden = false;
       $('[data-ws-result]').hidden = true; $('[data-ws-egghint]').hidden = true;
       $('[data-ws-fx-info]').hidden = true;
       clearWorkshopHammer();
       preloadGooseSounds();
-      goose.hidden = false; goose.style.transform = '';
+      // 첫 프레임은 1배 원본 크기로 잠깐 보이지 않도록 정확한 이미지와 크기를 먼저 지정한다.
+      goose.hidden = true; goose.style.transition = 'none';
+      goose.src = A + 'goose-1.png';
+      goose.style.transform = 'translate(-50%, 0) scale(' + firstFrameScale + ')';
+      goose.hidden = false; void goose.offsetWidth; goose.style.transition = '';
       preloadHammerSounds();
       ghosts.forEach(function (gh) { gh.hidden = true; gh.style.transform = ''; }); rise.className = 'ws-rise';
       pending = { it: it, lv: lv, success: success };
@@ -329,7 +336,7 @@
         (function (g) { later(function () {
           goose.src = A + 'goose-' + g + '.png';
           var up = g <= 5 ? 0 : (g - 5) * (g - 5) * 22;
-          var frameScale = g === 1 ? 0.78 : 1;
+          var frameScale = gooseFaceWidths[5] / gooseFaceWidths[g];
           goose.style.transform = 'translate(-50%, ' + (-up) + '%) scale(' + frameScale + ')';
           if (g === 2) playHammerSound(gooseWingsAudio, 0.825);
           if (g === 3) playHammerSound(gooseShockAudio, 0.75);
