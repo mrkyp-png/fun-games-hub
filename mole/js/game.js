@@ -166,6 +166,7 @@
   // 2026-09-27 — 페이지 전환식(CSS .hg-track 애니메이션)이라 여기선 비트 이펙트만 돌린다.
   // is-start 아닐 땐 board-start 자체가 가려지므로 안 보임 — 루프는 그냥 항상 돌아도 무해.
   // V1328 C 폰 확인용 FPS 표시(임시 — 출시 직전 삭제). 0.5초마다 평균 FPS + 오류 기록(V1346 C: 최장ms·🐢 느린프레임 줄 삭제).
+  let reportInputStall = function () {};
   (function fpsMeter() {
     const m = document.createElement('div');
     m.id = 'fps-meter';
@@ -190,6 +191,16 @@
       diag = diag.slice(-6);
       try { localStorage.setItem('mole.diag', JSON.stringify(diag)); } catch (e) { /* 무시 */ }
     };
+    reportInputStall = function (phase, regionId) {
+      const labels = {
+        surface: '\uBC84\uD2BC \uC804\uB2EC \uC804', handler: '\uBC84\uD2BC \uCC98\uB9AC',
+        resolved: '\uD0C0\uACA9 \uC694\uCCAD \uC804', 'strike-queued': '\uBB34\uAE30 \uD0C0\uACA9 \uB300\uAE30',
+        intro: '\uC2DC\uC791 \uC7A0\uAE08', paused: '\uC77C\uC2DC\uC815\uC9C0',
+        'no-spawn-point': '\uAD6C\uBA4D \uC5C6\uC74C', 'quake-pending': '\uC9C0\uC9C4 \uB300\uAE30',
+        'retreating-only': '\uD1F4\uC7A5 \uD310\uC815'
+      };
+      saveDiag('ERR R6 \uC785\uB825\uC815\uC9C0: ' + (labels[phase] || phase) + (regionId == null ? '' : ' [' + regionId + ']'));
+    };
     // 'ResizeObserver loop …' 는 브라우저가 알리는 무해한 경고(게임 동작 영향 없음)라 기록하지 않음.
     window.addEventListener('error', (e) => { if (/ResizeObserver loop/.test(e.message || '')) return; saveDiag('ERR ' + (e.message || '') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || '')); });
     (function f(now) {
@@ -198,6 +209,44 @@
       requestAnimationFrame(f);
     })(last);
   })();
+  // Keep only a few in-memory values; report a stall through the existing FPS error line.
+  const inputWatch = { state: null, attempts: 0, timer: 0, phase: '', regionId: null, lastReport: 0 };
+  function recordInputTrace(stage, details) {
+    try {
+      if (!state || !state.config || !state.config.reverseTarget) return 0;
+      if (inputWatch.state !== state) {
+        clearTimeout(inputWatch.timer);
+        inputWatch.state = state; inputWatch.attempts = 0; inputWatch.timer = 0;
+      }
+      inputWatch.phase = stage === 'skip' ? details.reason : stage;
+      if (details && details.regionId != null) inputWatch.regionId = details.regionId;
+      if (stage === 'impact') {
+        clearTimeout(inputWatch.timer); inputWatch.timer = 0; inputWatch.attempts = 0;
+      }
+    } catch (e) { /* Diagnostic failures never change gameplay. */ }
+    return 0;
+  }
+  function checkInputStall() {
+    inputWatch.timer = 0;
+    try {
+      const intro = document.getElementById('round-intro-overlay');
+      if (inputWatch.state !== state || !state || state.ended || state.paused || document.hidden || (intro && !intro.hidden)) return;
+      if (inputWatch.attempts < 3 || Date.now() - inputWatch.lastReport < 30000) return;
+      inputWatch.lastReport = Date.now();
+      reportInputStall(inputWatch.phase, inputWatch.regionId);
+    } catch (e) { /* Observe only. */ }
+  }
+  document.addEventListener('pointerdown', (e) => {
+    try {
+      if (!state || !state.config.reverseTarget || state.ended || state.paused) return;
+      if (e.target.closest && e.target.closest('.lane-item')) return;
+      const bar = document.getElementById('lane-button-bar'), r = bar.getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
+      recordInputTrace('surface'); inputWatch.attempts++;
+      if (!inputWatch.timer) inputWatch.timer = setTimeout(checkInputStall, 2500);
+    } catch (err) { /* Never cancel or redirect an event. */ }
+  }, { capture: true, passive: true });
+
   function initHomeShowcase() {
     initHomeShowcaseBeat();
   }
@@ -2130,16 +2179,21 @@
 
   // ---------- 구멍 버튼 입력 → 그 구멍 타격 ----------
   function handleCell(regionId) {
-    if (!state || state.ended || state.introActive || state.paused) return false;
+    recordInputTrace('handler', { regionId });
+    if (!state || state.ended || state.introActive || state.paused) {
+      recordInputTrace('skip', { regionId, reason: !state ? 'no-state' : state.ended ? 'ended' : state.introActive ? 'intro' : 'paused' });
+      return false;
+    }
     const sp = state.spawnPoints.find((s) => s.regionId === regionId);
-    if (!sp) return false; // 대포 모드에서 없앤 구멍(15) 탭 = 무시 (헛방 처리 안 함)
+    if (!sp) { recordInputTrace('skip', { regionId, reason: 'no-spawn-point' }); return false; } // 대포 모드에서 없앤 구멍(15) 탭 = 무시
     // V1403 C 사용자 '골드 묠니르 지진 끝날 쯤 녹색 버튼 누르면 콤보 깨짐': 지진이 이미 처치 판정한 두더지는
     // 분신 망치가 내려치기 전까지 화면에 남아 있어 그걸 누르면 빈 구멍(헛방)으로 콤보가 깨졌다 → 그 구멍 탭은 무시.
-    if (state.quakePending && state.quakePending.has(regionId)) return false;
+    if (state.quakePending && state.quakePending.has(regionId)) { recordInputTrace('skip', { regionId, reason: 'quake-pending' }); return false; }
     // 처치돼서 가라앉는 중(dying)인 두더지만 남은 구멍도 같은 이유로 헛방 아님 — 무시(실측: 지진 처치 직후 누르면 콤보 깨짐 재현됨).
-    if (state.scheduler.getActivePops().some((q) => q.regionId === regionId && q.dying) && !state.scheduler.getActivePops().some((q) => q.regionId === regionId && !q.dying)) return false;
+    if (state.scheduler.getActivePops().some((q) => q.regionId === regionId && q.dying) && !state.scheduler.getActivePops().some((q) => q.regionId === regionId && !q.dying)) { recordInputTrace('skip', { regionId, reason: 'retreating-only' }); return false; }
     // 알리 판취 = 2·3타 두더지도 한 번에 소탕(사용자 지정).
     const results = state.scheduler.resolveRegion(regionId, state.weapon === 'alipunch' ? { alipunch: true } : undefined);
+    recordInputTrace('resolved', { regionId });
 
     const primary = results[0] || null;
     const targetX = primary ? primary.xFrac : sp.x;
@@ -2149,6 +2203,7 @@
     const frameKey = sharedPopElements.frameKeyAt ? sharedPopElements.frameKeyAt(regionId) : null;
     // regionId 는 알리 펀치가 어느 글러브·펀치스타일로 때릴지 구역 판정에 쓴다(다른 무기는 무시).
     state.laneHammer.strike(targetX, targetY, () => onHammerImpact(targetX, targetY, results, { regionId }), frameKey, regionId);
+    recordInputTrace('strike-queued', { regionId });
 
     // 대포 연사: 이번 첫 타에 burst 가 떴으면 — 그 두더지 흙더미에 "BURST!" 띄우고(발동 즉시 인지),
     // 남은 타격을 자동 연속 발사 → 1마리 클리어.
@@ -2360,6 +2415,7 @@
   }
 
   function onHammerImpact(hitXFrac, hitYFrac, results, opts) {
+    recordInputTrace('impact', { regionId: opts && opts.regionId });
     if (!state || state.ended || !run || !run.combo) return;
     const board = document.getElementById('mole-board');
     const cfg = state.config || {};

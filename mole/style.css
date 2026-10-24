@@ -9065,3 +9065,29 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 }
 .ph3-stage .ph3-card > .ph3-own,
 .ph3-stage .ph3-card > .ks-equip { z-index: 5; }
+
+/* Beach only: original artwork/opacity, with a shallow sidewall and spring press. */
+#rhythm-screen:not(.is-type-b) .rp-btns { translate: 0 -6px; margin-bottom: 6px; }
+#rhythm-screen:not(.is-type-b) .rp-beach-face { display: block; width: 100%; height: 100%; transform: translateY(-4px); pointer-events: none; }
+#rhythm-screen:not(.is-type-b) .rp-btn .rp-beach-face img {
+  transform: none;
+  clip-path: polygon(-10% var(--beach-top-cut),110% var(--beach-top-cut),110% 125%,-10% 125%);
+  filter: drop-shadow(0 9px 0 var(--beach-depth)) drop-shadow(0 2px 0 var(--beach-edge));
+}
+#rhythm-screen:not(.is-type-b) .rp-btn .rp-a-triangle,
+#rhythm-screen:not(.is-type-b) .rp-btn.is-down .rp-a-triangle { transform: translateY(-4px); filter: none; }
+#rhythm-screen:not(.is-type-b) .rp-btn.is-beach-spring .rp-beach-face,
+#rhythm-screen:not(.is-type-b) .rp-btn.is-beach-spring .rp-a-triangle { animation: rp-beach-cap-spring 220ms linear; }
+#rhythm-screen:not(.is-type-b) .rp-btn.is-beach-spring .rp-beach-face img { animation: rp-beach-cap-side 220ms linear; }
+@keyframes rp-beach-cap-spring {
+  0%,100% { transform: translateY(-4px); }
+  20%,30% { transform: translateY(3px); }
+  60% { transform: translateY(-6px); }
+  80% { transform: translateY(-3px); }
+}
+@keyframes rp-beach-cap-side {
+  0%,100% { filter: drop-shadow(0 9px 0 var(--beach-depth)) drop-shadow(0 2px 0 var(--beach-edge)); }
+  20%,30% { filter: drop-shadow(0 2px 0 var(--beach-depth)) drop-shadow(0 2px 0 var(--beach-edge)); }
+  60% { filter: drop-shadow(0 11px 0 var(--beach-depth)) drop-shadow(0 2px 0 var(--beach-edge)); }
+  80% { filter: drop-shadow(0 8px 0 var(--beach-depth)) drop-shadow(0 2px 0 var(--beach-edge)); }
+}

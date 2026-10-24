@@ -155,7 +155,8 @@
     }
     function sfx(kind, when) {
       var list = SFX[kind], b = sfxBuf[list[Math.floor(Math.random() * list.length)]]; if (!b || !ctx) return;
-      var s = ctx.createBufferSource(), g = ctx.createGain(); g.gain.value = kind === 'hit' ? 0.35 : (kind === 'countdown' ? 0.22 : 0.3);
+      var s = ctx.createBufferSource(), g = ctx.createGain();
+      g.gain.value = (kind === 'hit' ? 0.35 : (kind === 'countdown' ? 0.22 : 0.3)) * (!el.classList.contains('is-type-b') && (kind === 'hit' || kind === 'jump') ? 0.5 : 1);
       s.buffer = b; s.connect(g); g.connect(ctx.destination); if (typeof when === 'number') s.start(when); else s.start();
     }
 
@@ -417,9 +418,22 @@
           var b = document.createElement('button'); b.type = 'button'; b.className = 'rp-btn';
           b.style.setProperty('--rp-press-color',['#ffd600','#00baff','#ff28ba','#24df5a'][colorMap[j]]);
           b.addEventListener('animationend', function(e){if(e.animationName==='rp-a-press-color')b.classList.remove('is-press-fx');});
-          b.innerHTML = '<img src="' + A + 'btn-' + (colorMap[j] + 1) + '.png" alt="">' + buttonTriangle(j)+'<i class="rp-a-wave" aria-hidden="true"></i>';
+          var beachCap = !el.classList.contains('is-type-b');
+          if (beachCap) {
+            b.style.setProperty('--beach-depth', ['#a66c00','#075ca8','#8f1264','#087c2c'][colorMap[j]]);
+            b.style.setProperty('--beach-edge', ['#694400','#063969','#5b0b40','#05511c'][colorMap[j]]);
+            b.style.setProperty('--beach-top-cut', ['0%','2.75%','3.65%','3.17%'][colorMap[j]]);
+          }
+          b.innerHTML = (beachCap ? '<span class="rp-beach-face">' : '') + '<img src="' + A + 'btn-' + (colorMap[j] + 1) + '.png" alt="">' + (beachCap ? '</span>' : '') + buttonTriangle(j)+'<i class="rp-a-wave" aria-hidden="true"></i>';
           var perfectWord = document.createElement('span'); perfectWord.className = 'rp-a-grade-word'; perfectWord.setAttribute('aria-hidden','true'); stage.appendChild(perfectWord); perfectWords[j]=perfectWord;
-          b.addEventListener('pointerdown', function (e) { e.preventDefault(); press(j, sharedRules.eventLag(e)); b.classList.add('is-down'); });
+          b.addEventListener('pointerdown', function (e) {
+            e.preventDefault(); press(j, sharedRules.eventLag(e)); b.classList.add('is-down');
+            if (beachCap) {
+              clearTimeout(b._beachSpringTimer); b.classList.remove('is-beach-spring'); void b.offsetWidth;
+              b.classList.add('is-beach-spring');
+              b._beachSpringTimer = setTimeout(function () { b.classList.remove('is-beach-spring'); }, 240);
+            }
+          });
           ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { b.addEventListener(ev, function () { b.classList.remove('is-down'); }); });
           bt.appendChild(b);
         })(j);
