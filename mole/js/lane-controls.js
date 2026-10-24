@@ -193,6 +193,8 @@
 
   function create({ buttonBar, gridSize, onCell, onTap, onHomeAction, isHome, simple }) {
     const buttons = [];
+    const aiButtons = [], aiActive = new Set();
+    let aiRaf = 0;
     const keyMap = {};
     const faces = simple ? simpleFaces(gridSize) : FACES;
     const cellCount = gridSize * gridSize; // simple: 숫자칸 9개뿐(정사각형), 통화버튼 없음
@@ -256,6 +258,10 @@
       });
       buttonBar.appendChild(b);
       buttons[id] = b;
+      const bit = document.createElement('span');
+      bit.className = 'lane-ai-bit'; bit.hidden = true; bit.textContent = '0'; bit.setAttribute('aria-hidden', 'true');
+      b.appendChild(bit);
+      aiButtons[id] = { button: b, bit, face: b.querySelector('.lane-face--key') || b, animations: null, start: 0, digit: '0' };
       if (!simple) {
         const krow = KEY_GRID[row];
         if (krow && krow[col]) keyMap[krow[col]] = id;
@@ -268,6 +274,42 @@
       if (id !== undefined) onCell(id);
     }
     window.addEventListener('keydown', onKey);
+
+    function animateAiButtons(now) {
+      aiRaf = 0;
+      aiActive.forEach((entry) => {
+        const elapsed = now - entry.start;
+        if (elapsed >= 220) {
+          entry.bit.hidden = true; entry.button.classList.remove('is-ai-bit'); aiActive.delete(entry);
+          return;
+        }
+        const digit = String(Math.floor(elapsed / 55) % 2);
+        if (digit !== entry.digit) { entry.bit.textContent = digit; entry.digit = digit; }
+      });
+      if (aiActive.size) aiRaf = requestAnimationFrame(animateAiButtons);
+    }
+    function flashAi(id) {
+      const entry = aiButtons[id];
+      if (!entry) return;
+      try {
+        if (!entry.animations) {
+          const spring = [
+            { transform: 'translateY(0)', offset: 0 }, { transform: 'translateY(10px)', offset: .2 },
+            { transform: 'translateY(10px)', offset: .3 }, { transform: 'translateY(-2.5px)', offset: .6 },
+            { transform: 'translateY(1px)', offset: .8 }, { transform: 'translateY(0)', offset: 1 }
+          ];
+          const shadow = (depth) => 'var(--cap-bevel), inset 0 1px 0 var(--cap-rim), 0 ' + depth + 'px 0 var(--cap-side), 0 ' + (depth + 1) + 'px 0 var(--cap-edge)';
+          entry.animations = [
+            entry.face.animate(spring.map((frame, i) => ({ ...frame, boxShadow: shadow([13,3,3,15,12,13][i]) })), { duration: 220, easing: 'linear', pseudoElement: '::before' }),
+            entry.bit.animate(spring, { duration: 220, easing: 'linear' })
+          ];
+        }
+        entry.animations.forEach((animation) => { animation.currentTime = 0; animation.play(); });
+      } catch (e) { /* Cosmetic animation must not interrupt an automatic hit. */ }
+      entry.start = performance.now(); entry.digit = '0'; entry.bit.textContent = '0'; entry.bit.hidden = false;
+      entry.button.classList.add('is-ai-bit'); aiActive.add(entry);
+      if (!aiRaf) aiRaf = requestAnimationFrame(animateAiButtons);
+    }
 
     // safe = 알리 판취 무적 중 안전해진 동물(사용자 지정: 파랑 대신 노랑 하이라이트).
     function setCellHot(id, hot, safe) {
@@ -377,6 +419,8 @@
     }
 
     function clear() {
+      cancelAnimationFrame(aiRaf); aiRaf = 0; aiActive.clear();
+      aiButtons.forEach((entry) => { if (entry.animations) entry.animations.forEach((animation) => animation.cancel()); });
       window.removeEventListener('keydown', onKey);
       buttons.forEach((b) => b.remove());
       buttons.length = 0;
@@ -487,7 +531,7 @@
       if (t) t.textContent = String(Math.max(0, Math.ceil(secondsLeft)));
     }
 
-    return { setCellHot, setBombIndicator, setHudStat, flashBurst, flashQuakeArea, setActiveNav, setGameTextless, clear, spinChannelsIn, spinBoardBlank, setFeverScoreboard };
+    return { setCellHot, setBombIndicator, setHudStat, flashBurst, flashQuakeArea, flashAi, setActiveNav, setGameTextless, clear, spinChannelsIn, spinBoardBlank, setFeverScoreboard };
   }
 
   const api = { create };

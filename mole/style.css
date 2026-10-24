@@ -9105,3 +9105,14 @@ img[src$="/ic-ticket-note-complete.webp"] { object-fit: contain !important; obje
 }
 #quest-screen .qs-rwline img[src$="/ic-ticket-note-complete.webp"] { width: calc(var(--w) * 0.104); height: auto; }
 #quest-screen[data-mode="ach"] .qs-tabs button.is-on { box-shadow: inset 0 2px 0 rgba(255,255,255,0.45); }
+
+/* AI hits temporarily replace labels, without rebuilding or measuring button content. */
+.lane-ai-bit {
+  position: absolute; left: 50%; top: calc(50% - 6.5px); translate: -50% -50%;
+  width: 1.1em; text-align: center; z-index: 3; pointer-events: none;
+  font: clamp(1.2rem, 7.4vw, 2.3rem)/1 'Lilita One', 'Jua', sans-serif;
+  font-variant-numeric: tabular-nums; color: #fff; contain: layout style;
+}
+#game-screen:not(.is-start) .lane-button.is-ai-bit :is(.lane-num,.lane-ico,.lane-lbl,.lane-sub) { visibility: hidden; }
+#game-screen.is-start .lane-ai-bit { display: none; }
+#game-screen:not(.is-start):not(.diff-mid):not(.diff-legend):not(.gs-invincible)[data-button-palette] .lane-button--hot:not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss) .lane-ai-bit { color: #17324d; }

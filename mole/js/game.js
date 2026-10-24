@@ -1096,6 +1096,7 @@
     const sp = live[Math.floor(state.rng.next() * live.length)];
     state.aiNextAt = now + AI_HIT_GAP_MS;
     handleCell(sp.regionId);
+    if (sharedLaneControls && sharedLaneControls.flashAi) sharedLaneControls.flashAi(sp.regionId);
   }
   function runSkillEffect(id) {
     if (id === 'targeting') { activateTargeting(); return; }
@@ -2186,13 +2187,15 @@
     }
     const sp = state.spawnPoints.find((s) => s.regionId === regionId);
     if (!sp) { recordInputTrace('skip', { regionId, reason: 'no-spawn-point' }); return false; } // 대포 모드에서 없앤 구멍(15) 탭 = 무시
-    // V1403 C 사용자 '골드 묠니르 지진 끝날 쯤 녹색 버튼 누르면 콤보 깨짐': 지진이 이미 처치 판정한 두더지는
-    // 분신 망치가 내려치기 전까지 화면에 남아 있어 그걸 누르면 빈 구멍(헛방)으로 콤보가 깨졌다 → 그 구멍 탭은 무시.
-    if (state.quakePending && state.quakePending.has(regionId)) { recordInputTrace('skip', { regionId, reason: 'quake-pending' }); return false; }
-    // 처치돼서 가라앉는 중(dying)인 두더지만 남은 구멍도 같은 이유로 헛방 아님 — 무시(실측: 지진 처치 직후 누르면 콤보 깨짐 재현됨).
-    if (state.scheduler.getActivePops().some((q) => q.regionId === regionId && q.dying) && !state.scheduler.getActivePops().some((q) => q.regionId === regionId && !q.dying)) { recordInputTrace('skip', { regionId, reason: 'retreating-only' }); return false; }
-    // 알리 판취 = 2·3타 두더지도 한 번에 소탕(사용자 지정).
-    const results = state.scheduler.resolveRegion(regionId, state.weapon === 'alipunch' ? { alipunch: true } : undefined);
+    // Already-resolved targets remain harmless to tap, but every tap still moves the weapon.
+    const regionPops = state.scheduler.getActivePops().filter((q) => q.regionId === regionId);
+    const ignoreHit = !!(state.quakePending && state.quakePending.has(regionId)) ||
+      (regionPops.some((q) => q.dying) && !regionPops.some((q) => !q.dying));
+    // Use a visual-only result instead of resolving a defeated target a second time.
+    // The impact handler skips ignored results, so no score, damage or combo penalty is repeated.
+    const results = ignoreHit
+      ? [{ type: regionPops.length ? regionPops[0].type : 'mole', regionId, ignored: true, xFrac: sp.x, yFrac: sp.y }]
+      : state.scheduler.resolveRegion(regionId, state.weapon === 'alipunch' ? { alipunch: true } : undefined);
     recordInputTrace('resolved', { regionId });
 
     const primary = results[0] || null;
@@ -2228,7 +2231,7 @@
 
     // 버튼 이펙트 색: 헛방(구멍에 아무것도 없음) 또는 폭탄이면 빨간색.
     // 알리 펀치 무적 중엔 폭탄도 안전한 타격이므로 빨간색 아님(초록).
-    return results.length === 0 || (results.some((r) => (r.type === 'bomb' || r.bombKind) && !r.safe) && !alipunchInvincible());
+    return !ignoreHit && (results.length === 0 || (results.some((r) => (r.type === 'bomb' || r.bombKind) && !r.safe) && !alipunchInvincible()));
   }
 
   // ---------- 골드해머: 지진 ----------
