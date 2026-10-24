@@ -8883,11 +8883,11 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
   animation: none !important;
 }
 
-/* Use the game's dimensional color sprites directly; only yellow needs a slight hue correction. */
+/* Keep the original dimensional sprites; deepen the color and calm the corner bloom. */
 #game-screen[data-button-palette="red"] { --round-button-sprite: url('assets/home2/btn-red-deep.png'); --round-button-filter: none; }
-#game-screen[data-button-palette="yellow"] { --round-button-sprite: url('assets/home2/btn-orange-deep.png'); --round-button-filter: hue-rotate(15deg) saturate(.95); }
-#game-screen[data-button-palette="blue"] { --round-button-sprite: url('assets/home2/btn-blue-deep.png'); --round-button-filter: none; }
-#game-screen[data-button-palette="green"] { --round-button-sprite: url('assets/home2/btn-green-deep.png'); --round-button-filter: none; }
+#game-screen[data-button-palette="yellow"] { --round-button-sprite: url('assets/home2/btn-orange-deep.png'); --round-button-filter: hue-rotate(24deg) saturate(1.08) brightness(.92); }
+#game-screen[data-button-palette="blue"] { --round-button-sprite: url('assets/home2/btn-blue-deep.png'); --round-button-filter: saturate(1.06) brightness(.90); }
+#game-screen[data-button-palette="green"] { --round-button-sprite: url('assets/home2/btn-green-deep.png'); --round-button-filter: saturate(1.06) brightness(.90); }
 
 #game-screen:not(.is-start)[data-button-palette] .lane-button:not(.lane-button--hot):not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss) .lane-face--key {
   --cap: var(--round-button-sprite);
@@ -8898,9 +8898,9 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #game-screen:not(.is-start):not(.gs-laneskill)[data-button-palette] .lane-button--call:not(.lane-button--hot):not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss) {
   --ccap: var(--round-button-sprite);
 }
-#game-screen:not(.is-start)[data-button-palette="yellow"] .lane-button:not(.lane-button--hot):not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss) .lane-face--key::before,
-#game-screen:not(.is-start)[data-button-palette="yellow"] .lane-button--simple:not(.lane-button--hot):not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss)::before,
-#game-screen:not(.is-start):not(.gs-laneskill)[data-button-palette="yellow"] .lane-button--call:not(.lane-button--hot):not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss)::before {
+#game-screen:not(.is-start)[data-button-palette] .lane-button:not(.lane-button--hot):not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss) .lane-face--key::before,
+#game-screen:not(.is-start)[data-button-palette] .lane-button--simple:not(.lane-button--hot):not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss)::before,
+#game-screen:not(.is-start):not(.gs-laneskill)[data-button-palette] .lane-button--call:not(.lane-button--hot):not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss)::before {
   filter: var(--round-button-filter) !important;
 }
 
