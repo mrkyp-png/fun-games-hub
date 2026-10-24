@@ -210,6 +210,13 @@
       b.addEventListener('pointerdown', (e) => {
         e.preventDefault();
         if (!isHome || !isHome()) {
+          clearTimeout(b._capReboundT);
+          b.classList.remove('is-cap-rebound');
+          void b.offsetWidth;
+          b.classList.add('is-cap-rebound');
+          b._capReboundT = setTimeout(() => b.classList.remove('is-cap-rebound'), 240);
+        }
+        if (!isHome || !isHome()) {
           b.style.removeProperty('animation');
           b.classList.remove('beat-textgrow');
         }

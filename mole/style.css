@@ -8929,3 +8929,97 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #game-screen:not(.is-start) .lane-button--simple { align-items: center; justify-content: center; }
 #game-screen:not(.is-start) .lane-button--simple > .lane-num { margin: 0; text-align: center; line-height: 1; }
 #game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call { align-items: center; justify-content: center; }
+
+/* Local rectangular caps: stationary frames, solid sidewalls, spring release. */
+#game-screen:not(.is-start) .lane-button {
+  --cap-top: #218bfa;
+  --cap-side: #073f9d;
+  --cap-edge: #072b70;
+  --cap-drop: 10px;
+  --cap-rim: #399bfc;
+  --cap-bevel: inset 2px 3px 3px var(--cap-rim), inset -4px -6px 5px color-mix(in srgb, var(--cap-top) 52%, var(--cap-side));
+}
+#game-screen[data-button-palette="red"] .lane-button { --cap-top: #ed3028; --cap-side: #9b171c; --cap-edge: #601015; --cap-rim: #f34b40; }
+#game-screen[data-button-palette="yellow"] .lane-button { --cap-top: #ffd833; --cap-side: #cc8e00; --cap-edge: #805300; --cap-rim: #ffe253; }
+#game-screen[data-button-palette="green"] .lane-button { --cap-top: #2fcf5c; --cap-side: #08752a; --cap-edge: #064a20; --cap-rim: #45d86c; }
+#game-screen:not(.is-start):where(:not(.diff-mid):not(.diff-legend)) .lane-button--hot { --cap-top: #2fcf5c; --cap-side: #08752a; --cap-edge: #064a20; --cap-rim: #45d86c; }
+#game-screen:not(.is-start).gs-invincible .lane-button--hot,
+#game-screen:not(.is-start) .lane-button--hot-safe { --cap-top: #ffab20; --cap-side: #b85b08; --cap-edge: #753605; --cap-rim: #ffb83d; }
+#game-screen:not(.is-start) .lane-button.is-tint-hit { --cap-top: #fa499e; --cap-side: #a91e62; --cap-edge: #67113d; --cap-rim: #fb65ad; }
+#game-screen:not(.is-start) .lane-button.is-tint-miss { --cap-top: #ed3028; --cap-side: #9b171c; --cap-edge: #601015; --cap-rim: #f34b40; }
+#game-screen:not(.is-start)[data-button-fail="black"] .lane-button.is-tint-miss { --cap-top: #333; --cap-side: #171717; --cap-edge: #080808; --cap-rim: #414141; }
+
+#game-screen#game-screen:not(.is-start) .lane-face--key::before,
+#game-screen#game-screen:not(.is-start) .lane-button--simple::before,
+#game-screen#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call::before {
+  inset: 7% 7% calc(7% + 13px) !important;
+  border: 1px solid var(--cap-top);
+  border-top-color: var(--cap-rim);
+  border-image: none;
+  border-radius: 13px;
+  background: var(--cap-top);
+  background-image:
+    linear-gradient(90deg, var(--cap-rim), color-mix(in srgb, var(--cap-top) 58%, white), var(--cap-rim)),
+    radial-gradient(ellipse at 40% 22%, color-mix(in srgb, var(--cap-top) 90%, white) 0%, var(--cap-top) 48%, color-mix(in srgb, var(--cap-top) 86%, black) 78%, color-mix(in srgb, var(--cap-top) 69%, black) 100%);
+  background-size: 40% 2px, 100% 100%;
+  background-position: 13% 2px, center;
+  background-repeat: no-repeat;
+  opacity: 1;
+  box-shadow: var(--cap-bevel), inset 0 1px 0 var(--cap-rim), 0 13px 0 var(--cap-side), 0 14px 0 var(--cap-edge);
+  filter: none !important;
+  translate: 0 0;
+  transition: translate 45ms ease-out, box-shadow 45ms ease-out;
+}
+#game-screen:not(.is-start) .lane-button.is-cap-rebound .lane-face--key::before,
+#game-screen:not(.is-start) .lane-button--simple.is-cap-rebound::before,
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.is-cap-rebound::before,
+#game-screen:not(.is-start) .lane-button.is-cap-rebound .lane-face--key > *,
+#game-screen:not(.is-start) .lane-button--simple.is-cap-rebound > .lane-num,
+#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.is-cap-rebound > :is(.lane-ico, .lane-lbl) {
+  animation: lane-cap-spring 220ms linear !important;
+}
+#game-screen#game-screen:not(.is-start) .lane-button .lane-face--key > *,
+#game-screen#game-screen:not(.is-start) .lane-button:active .lane-face--key > *,
+#game-screen#game-screen:not(.is-start) .lane-button--simple > .lane-num,
+#game-screen#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call > :is(.lane-ico, .lane-lbl),
+#game-screen#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call:active > :is(.lane-ico, .lane-lbl) { translate: 0 -6.5px !important; }
+#game-screen#game-screen:not(.is-start) .lane-button.is-cap-rebound .lane-face--key::before,
+#game-screen#game-screen:not(.is-start) .lane-button--simple.is-cap-rebound::before,
+#game-screen#game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call.is-cap-rebound::before {
+  animation: lane-cap-spring 220ms linear, lane-cap-depth 220ms linear !important;
+}
+@keyframes lane-cap-spring {
+  0% { transform: translateY(0); }
+  20%, 30% { transform: translateY(var(--cap-drop)); }
+  60% { transform: translateY(-2.5px); }
+  80% { transform: translateY(1px); }
+  100% { transform: translateY(0); }
+}
+@keyframes lane-cap-depth {
+  0%, 100% { box-shadow: var(--cap-bevel), inset 0 1px 0 var(--cap-rim), 0 13px 0 var(--cap-side), 0 14px 0 var(--cap-edge); }
+  20%, 30% { box-shadow: var(--cap-bevel), inset 0 1px 0 var(--cap-rim), 0 3px 0 var(--cap-side), 0 4px 0 var(--cap-edge); }
+  60% { box-shadow: var(--cap-bevel), inset 0 1px 0 var(--cap-rim), 0 15px 0 var(--cap-side), 0 16px 0 var(--cap-edge); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #game-screen#game-screen:not(.is-start) .lane-button.is-cap-rebound::before,
+  #game-screen#game-screen:not(.is-start) .lane-button.is-cap-rebound .lane-face--key::before,
+  #game-screen:not(.is-start) .lane-button.is-cap-rebound .lane-face--key > *,
+  #game-screen:not(.is-start) .lane-button.is-cap-rebound > :is(.lane-num, .lane-ico, .lane-lbl) { animation: none !important; }
+}
+
+/* Amateur target notifications recolor both the cap and its sidewall. */
+#game-screen:not(.is-start):not(.diff-mid):not(.diff-legend):not(.gs-invincible)[data-button-palette="red"] .lane-button--hot:not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss) {
+  --cap-top: #ff9b35; --cap-side: #b3500b; --cap-edge: #793008; --cap-rim: #ffb35a;
+}
+#game-screen:not(.is-start):not(.diff-mid):not(.diff-legend):not(.gs-invincible)[data-button-palette="yellow"] .lane-button--hot:not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss) {
+  --cap-top: #fff6d2; --cap-side: #c9a447; --cap-edge: #806322; --cap-rim: #fffbea;
+}
+#game-screen:not(.is-start):not(.diff-mid):not(.diff-legend):not(.gs-invincible)[data-button-palette="blue"] .lane-button--hot:not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss) {
+  --cap-top: #64e6ff; --cap-side: #167fba; --cap-edge: #095079; --cap-rim: #9cf0ff;
+}
+#game-screen:not(.is-start):not(.diff-mid):not(.diff-legend):not(.gs-invincible)[data-button-palette="green"] .lane-button--hot:not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss) {
+  --cap-top: #c8ff9a; --cap-side: #57982e; --cap-edge: #34611c; --cap-rim: #e0ffbf;
+}
+#game-screen:not(.is-start):not(.diff-mid):not(.diff-legend):not(.gs-invincible)[data-button-palette] .lane-button--hot:not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss) :is(.lane-num, .lane-ico, .lane-lbl) {
+  color: #17324d; text-shadow: none;
+}
