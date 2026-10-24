@@ -103,7 +103,7 @@
         if (t > 1.4 && t < 2.25) rotation = Math.sin(t * 28) * .7;
         var eggTransform = 'rotate(' + rotation + 'deg) scale(' + sx + ',' + sy + ')';
         egg.style.transform = eggTransform; subjectWindow.style.transform = eggTransform;
-        var dark = blackEggRescue ? ease(t / .28) * (1 - ease((t - .68) / .24)) : (success ? 0 : ease((t - 1.65) / .9));
+        var dark = blackEggRescue ? ease((effectT - .56) / .36) : (success ? 0 : ease((t - 1.65) / .9));
         egg.style.filter = blackEggRescue
           ? 'grayscale(' + dark + ') brightness(' + (1 - .85 * dark) + ')'
           : 'grayscale(' + (.6 * dark) + ') brightness(' + (1 - .7 * dark) + ')';
