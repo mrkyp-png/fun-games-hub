@@ -208,6 +208,15 @@
       if (faces[id].call) b.insertAdjacentHTML('beforeend', '<span class="lane-call-idle" aria-hidden="true"></span>');
       b.addEventListener('contextmenu', (e) => e.preventDefault()); // 길게 눌러도 브라우저 메뉴 안 뜨게
       b.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('.lane-item') && (!isHome || !isHome())) {
+          clearTimeout(b._capReboundT);
+          b.classList.remove('is-cap-rebound');
+          void b.offsetWidth;
+          b.classList.add('is-cap-rebound');
+          b._capReboundT = setTimeout(() => b.classList.remove('is-cap-rebound'), 240);
+        }
+      }, true);
+      b.addEventListener('pointerdown', (e) => {
         e.preventDefault();
         if (!isHome || !isHome()) {
           clearTimeout(b._capReboundT);
