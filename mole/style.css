@@ -8883,11 +8883,11 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
   animation: none !important;
 }
 
-/* Keep the original dimensional sprites; deepen the color and calm the corner bloom. */
-#game-screen[data-button-palette="red"] { --round-button-sprite: url('assets/home2/btn-red-deep.png'); --round-button-filter: none; }
-#game-screen[data-button-palette="yellow"] { --round-button-sprite: url('assets/home2/btn-orange-deep.png'); --round-button-filter: hue-rotate(24deg) saturate(1.08) brightness(.92); }
-#game-screen[data-button-palette="blue"] { --round-button-sprite: url('assets/home2/btn-blue-deep.png'); --round-button-filter: saturate(1.06) brightness(.90); }
-#game-screen[data-button-palette="green"] { --round-button-sprite: url('assets/home2/btn-green-deep.png'); --round-button-filter: saturate(1.06) brightness(.90); }
+/* Preserve full button brightness and opacity; adjust only hue and saturation. */
+#game-screen[data-button-palette="red"] { --round-button-sprite: url('assets/home2/btn-red-deep.png'); --round-button-filter: none; --skill-empty-top:#ffb0a6; --skill-empty-mid:#ed4135; --skill-empty-bottom:#941b18; --skill-empty-edge:#ff7667; --skill-empty-shadow:#58100e; }
+#game-screen[data-button-palette="yellow"] { --round-button-sprite: url('assets/home2/btn-orange-deep.png'); --round-button-filter: hue-rotate(24deg) saturate(1.08); --skill-empty-top:#fff4a8; --skill-empty-mid:#ffd833; --skill-empty-bottom:#d99200; --skill-empty-edge:#fff078; --skill-empty-shadow:#755000; }
+#game-screen[data-button-palette="blue"] { --round-button-sprite: url('assets/home2/btn-blue-deep.png'); --round-button-filter: saturate(1.06); --skill-empty-top:#a9deff; --skill-empty-mid:#218bfa; --skill-empty-bottom:#073f9d; --skill-empty-edge:#54c5ff; --skill-empty-shadow:#072b70; }
+#game-screen[data-button-palette="green"] { --round-button-sprite: url('assets/home2/btn-green-deep.png'); --round-button-filter: saturate(1.06); --skill-empty-top:#baffab; --skill-empty-mid:#2fcf5c; --skill-empty-bottom:#08752a; --skill-empty-edge:#82f26f; --skill-empty-shadow:#064a20; }
 
 #game-screen:not(.is-start)[data-button-palette] .lane-button:not(.lane-button--hot):not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss) .lane-face--key {
   --cap: var(--round-button-sprite);
@@ -8895,13 +8895,25 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #game-screen:not(.is-start)[data-button-palette] .lane-button--simple:not(.lane-button--hot):not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss) {
   --scap: var(--round-button-sprite);
 }
-#game-screen:not(.is-start):not(.gs-laneskill)[data-button-palette] .lane-button--call:not(.lane-button--hot):not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss) {
+#game-screen:not(.is-start)[data-button-palette] .lane-button--call:not(.lane-button--hot):not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss) {
   --ccap: var(--round-button-sprite);
 }
 #game-screen:not(.is-start)[data-button-palette] .lane-button:not(.lane-button--hot):not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss) .lane-face--key::before,
 #game-screen:not(.is-start)[data-button-palette] .lane-button--simple:not(.lane-button--hot):not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss)::before,
-#game-screen:not(.is-start):not(.gs-laneskill)[data-button-palette] .lane-button--call:not(.lane-button--hot):not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss)::before {
+#game-screen:not(.is-start)[data-button-palette] .lane-button--call:not(.lane-button--hot):not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss)::before {
   filter: var(--round-button-filter) !important;
+}
+
+/* The two skill slots in the call button use the same round palette. */
+#game-screen.gs-laneskill:not(.is-start)[data-button-palette] .lane-button--call .lane-items::after,
+#game-screen.gs-alipunch:not(.is-start)[data-button-palette] [data-region="12"] .lane-items::after {
+  border-image-source: var(--round-button-sprite);
+  filter: var(--round-button-filter);
+}
+#game-screen.gs-laneskill:not(.is-start)[data-button-palette] .lane-button--call .lane-item--empty[data-slot="0"],
+#game-screen.gs-alipunch:not(.is-start)[data-button-palette] [data-region="12"] .lane-item--empty[data-slot="0"] {
+  background: radial-gradient(circle at 38% 30%, var(--skill-empty-top) 0%, var(--skill-empty-mid) 42%, var(--skill-empty-bottom) 100%);
+  box-shadow: inset 0 -5px 8px rgba(0,0,0,.4), inset 0 4px 6px rgba(255,255,255,.35), 0 4px 0 var(--skill-empty-shadow), 0 6px 8px rgba(0,0,0,.35);
 }
 
 /* In rounds 1–2, keep the existing miss sprite and bevel but tint it black. */
