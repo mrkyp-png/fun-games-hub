@@ -181,19 +181,19 @@
       }
 
       if (m.dying && m.punch) {
-        // 알리 펀치 처치: 구멍으로 안 내려가고 — 움찔(초반 짧은 흔들림) → 뒤로 튕겨나가며(위로 이동)
-        // 점점 작아지다 → 서서히 사라짐(기획서 §6. 별 회전은 hit-fx.js punchStar 가 오버레이로 담당).
+        // 킹판취 처치: 크기를 유지하며 좌우로 흔들린 뒤 구멍 아래로 내려감.
+        // 기존 회전 별은 hit-fx.js punchStar가 담당.
         // 폭탄 든 두더지가 알리펀치에 맞으면 이 특수 연출이라 같이 못 움직임 — 감춘다.
         if (m.bombEl) m.bombEl.style.display = 'none';
         const span = GONE_DEPTH - m.dyingFrom;
         const k = span > 0 ? Math.min(1, Math.max(0, (m.shownDepth - m.dyingFrom) / span)) : 1;
-        const flinch = k < 0.18 ? Math.sin(k / 0.18 * Math.PI) * 6 : 0;   // 초반 움찔(좌우 짧게)
-        const knockUp = k < 0.18 ? 0 : Math.min(1, (k - 0.18) / 0.82) * 55;  // 뒤로(위로) 튕겨나감
-        const shrink = k < 0.18 ? 1 : 1 - Math.min(1, (k - 0.18) / 0.82) * 0.75; // 축소
-        m.img.style.opacity = k < 0.4 ? '1' : String(Math.max(0, 1 - (k - 0.4) / 0.6));
+        const wobbleProgress = Math.min(1, k / 0.6);
+        const flinch = Math.sin(wobbleProgress * Math.PI * 6) * (1 - wobbleProgress) * 8;
+        const sink = k <= 0.6 ? 0 : Math.min(1, (k - 0.6) / 0.4) * 130;
+        m.img.style.opacity = '1';
         m.img.style.filter = '';
-        m.img.style.transform = 'translate(-50%, calc(-2% - ' + knockUp.toFixed(1) + '%)) ' +
-          'rotate(' + flinch.toFixed(1) + 'deg) scale(' + shrink.toFixed(3) + ')';
+        m.img.style.transform = 'translate(-50%, calc(-2% + ' + sink.toFixed(1) + '%)) ' +
+          'rotate(' + flinch.toFixed(1) + 'deg)';
         return;
       }
 

@@ -9113,6 +9113,9 @@ img[src$="/ic-ticket-note-complete.webp"] { object-fit: contain !important; obje
   font: clamp(1.2rem, 7.4vw, 2.3rem)/1 'Lilita One', 'Jua', sans-serif;
   font-variant-numeric: tabular-nums; color: #fff; contain: layout style;
 }
+#game-screen:not(.is-start).gs-invincible .lane-button.is-ai-bit {
+  --cap-top: #ffab20; --cap-side: #b85b08; --cap-edge: #753605; --cap-rim: #ffb83d;
+}
 #game-screen:not(.is-start) .lane-button.is-ai-bit :is(.lane-num,.lane-ico,.lane-lbl,.lane-sub) { visibility: hidden; }
 #game-screen.is-start .lane-ai-bit { display: none; }
 #game-screen:not(.is-start):not(.diff-mid):not(.diff-legend):not(.gs-invincible)[data-button-palette] .lane-button--hot:not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss) .lane-ai-bit { color: #17324d; }

@@ -1089,9 +1089,9 @@
   function tickAiSkill(now) {
     if (!state.aiUntil || now >= state.aiUntil || state.pausedByFever || state.feverEventActive) return;
     if (now < (state.aiNextAt || 0)) return;
-    // V1422 C 사용자: 킹 판취 무적 중엔 동물도 쳐도 되는 대상 → AI 도 동물 침(폭탄 든 두더지는 계속 피함)
+    // 무적 중엔 해당 라운드의 방해물도 타격 가능(6라운드는 두더지). 폭탄은 계속 제외.
     const inv = alipunchInvincible();
-    const live = state.spawnPoints.filter((sp) => (liveTargetAt(sp.regionId) || (inv && liveAnimalAt(sp.regionId))) && !(state.quakePending && state.quakePending.has(sp.regionId)));
+    const live = state.spawnPoints.filter((sp) => (liveTargetAt(sp.regionId) || (inv && liveObstacleAt(sp.regionId))) && !(state.quakePending && state.quakePending.has(sp.regionId)));
     if (!live.length) return;
     const sp = live[Math.floor(state.rng.next() * live.length)];
     state.aiNextAt = now + AI_HIT_GAP_MS;
@@ -2317,8 +2317,8 @@
   function liveTargetAt(id) {
     return state.scheduler.getActivePops().find((q) => q.regionId === id && effectiveHitType(state.config, q.type) === 'mole' && !q.bombKind && !q.dying && !q.killed && !(q.sinkIn > 0));
   }
-  function liveAnimalAt(id) {
-    return state.scheduler.getActivePops().find((q) => q.regionId === id && q.type === 'animal' && !q.bombKind && !q.dying && !q.killed && !(q.sinkIn > 0));
+  function liveObstacleAt(id) {
+    return state.scheduler.getActivePops().find((q) => q.regionId === id && effectiveHitType(state.config, q.type) === 'animal' && !q.bombKind && !q.dying && !q.killed && !(q.sinkIn > 0));
   }
 
   function quakeRipple(originId, depth) {
