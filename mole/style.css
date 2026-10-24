@@ -1997,7 +1997,12 @@ body { background: var(--lm-page); }
 
 /* 스킬 "타겟팅" 강조(§55) — 매 프레임 갱신되는 lane-button--hot과 독립된 별도 클래스라
    다음 프레임에 바로 지워지지 않는다. */
-.lane-target-hot { box-shadow: 0 0 0 3px #ff4d4d, 0 0 16px 4px rgba(255,77,77,0.8) !important; }
+/* Targeting: draw inside the cell, above the button artwork and frame. */
+.lane-target-hot > .lane-cell-line { z-index: 4; }
+.lane-target-hot > .lane-cell-line::after {
+  content: ''; position: absolute; inset: 1px; box-sizing: border-box;
+  border: 3px solid #ff4d4d; pointer-events: none;
+}
 
 /* 화면 전환 플래시 — 더보기↔홈, 게임종료→홈 전환마다 잠깐 번쩍(대각선 광선 스윕).
    참고 영상은 순백색 플래시인데, 매번(일상적 메뉴 이동마다) 나오면 눈 피로가 커서
