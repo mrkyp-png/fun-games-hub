@@ -45,7 +45,7 @@
   } catch (e) { /* 무시 */ }
 
   var WEAPONS = [
-    { id: 'cannon', ko: '팡팡 캐논', en: 'Pang Pang Cannon', img: A + 'w-cannon-front-v1398.png', done: A + 'w-cannon-front-v1398.png' }, // V1398 C: 새 무기 그림(검은 테두리 없음). V1405 C 사용자: 캐논은 정면 그림
+    { id: 'cannon', ko: '팡팡 캐논', en: 'Pang Pang Cannon', img: A + 'w-cannon-front-v1435.png', done: A + 'w-cannon-front-v1435.png' }, // V1398 C: 새 무기 그림(검은 테두리 없음). V1405 C 사용자: 캐논은 정면 그림
     { id: 'goldhammer', ko: '골드 묠니르', en: 'Gold Mjolnir', img: A + 'w-goldhammer-v1398.png', done: A + 'w-goldhammer-v1398.png' },
     { id: 'alipunch', ko: '킹 판취', en: 'King Punch', img: A + 'w-alipunch-idle-v1406.png', done: A + 'w-alipunch-idle-v1406.png' } // V1405 C 사용자: 게임 대기 그림(kingfist-idle). V1406 C: 게임과 같게 왼쪽=원본·오른쪽=거울 // 글러브 두 짝 — v891: 여백 잘라 캐논과 비슷한 크기(사용자 지정)
   ];
@@ -204,7 +204,7 @@
       goose.hidden = false; goose.style.transform = ''; ham.hidden = true; ham.className = 'ws-ham';
       ghosts.forEach(function (gh) { gh.hidden = true; gh.style.transform = ''; }); rise.className = 'ws-rise';
       pending = { it: it, lv: lv, success: success };
-      enhancement.prepare(function () { strike(it, lv, success); });
+      enhancement.prepare(function () { strike(it, lv, success); }, success ? it.done : it.img);
       var t = 0;
       for (var g = 1; g <= 10; g++) {
         (function (g) { later(function () {

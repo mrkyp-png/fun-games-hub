@@ -18,7 +18,8 @@
   function create(el) {
     var fx = el.querySelector('[data-ws-fx]');
     var scene = document.createElement('div'); scene.className = 'ws-new-scene'; scene.hidden = true;
-    scene.innerHTML = image('pedestal-body.png', 'ws-new-base') + image('radial-rays.png', 'ws-new-inner') +
+    scene.innerHTML = image('pedestal-body.png', 'ws-new-base') + '<div class="ws-new-subject-window"><img class="ws-new-subject" alt="" draggable="false"></div><div class="ws-new-smoke">' +
+      [1, 2, 3, 4].map(function (n) { return image('smoke-' + n + '.png', ''); }).join('') + '</div>' +
       '<button type="button" class="ws-new-egg" aria-label="알을 터치하세요">' +
       ['intact', 'first', 'growing', 'separated'].map(function (s) { return image('egg-' + s + '.png', 'ws-new-phase'); }).join('') +
       PIECES.map(function (p) {
@@ -27,8 +28,11 @@
       }).join('') + '</button>' + image('pedestal-front.png', 'ws-new-front') + image('front-gem.png', 'ws-new-gem');
     fx.appendChild(scene);
     var egg = scene.querySelector('.ws-new-egg'), phases = scene.querySelectorAll('.ws-new-phase');
-    var shards = scene.querySelectorAll('.ws-new-shard'), inner = scene.querySelector('.ws-new-inner');
+    var shards = scene.querySelectorAll('.ws-new-shard'), subjectWindow = scene.querySelector('.ws-new-subject-window');
+    var subject = scene.querySelector('.ws-new-subject');
+    var insideSmoke = scene.querySelectorAll('.ws-new-smoke img');
     var host = el.querySelector('[data-ws-res-glow]'), item = el.querySelector('[data-ws-res-img]');
+    var resultItemTemplate = item.cloneNode(false);
     var effects = document.createElement('div'); effects.className = 'ws-result-vfx'; effects.setAttribute('aria-hidden', 'true');
     effects.innerHTML = image('radial-rays.png', 'ws-result-rays') + '<div class="ws-result-stars">' +
       [1, 2, 3, 4].map(function (n) { return image('sparkle-' + n + '.png', ''); }).join('') + '</div><div class="ws-result-smoke">' +
@@ -42,13 +46,26 @@
     egg.addEventListener('click', function () { if (ready && clickAction) { ready = false; egg.disabled = true; clickAction(); } });
     function stop() { cancelAnimationFrame(raf); raf = 0; if (dropAnimation) { dropAnimation.cancel(); dropAnimation = null; } }
     function reset() {
-      serial++; stop(); clickAction = null; ready = false; scene.hidden = true; egg.disabled = true;
+      serial++; stop(); clickAction = null; ready = false; scene.hidden = true; scene.classList.remove('is-exiting'); scene.style.opacity = ''; egg.disabled = true;
       effects.className = 'ws-result-vfx'; effects.hidden = true; starsLayer.hidden = true; badge.hidden = true;
       host.querySelectorAll('.ws-result-vfx img').forEach(function (im) { im.style.opacity = ''; });
+      if (item === subject) {
+        subject.getAnimations().forEach(function (animation) { animation.cancel(); });
+        var placeholder = resultItemTemplate.cloneNode(false);
+        host.replaceChild(placeholder, subject); subjectWindow.appendChild(subject);
+        subject.className = 'ws-new-subject'; subject.removeAttribute('data-ws-res-img'); subject.style.cssText = '';
+        item = placeholder;
+      }
+      item.style.opacity = ''; item.style.transition = '';
     }
-    function prepare(onClick) {
+    function prepare(onClick, source) {
       reset(); clickAction = onClick; scene.hidden = false; egg.hidden = true;
-      inner.style.opacity = '0'; egg.style.transform = ''; egg.style.filter = '';
+      subject.src = source || '';
+      subjectWindow.classList.remove('is-open');
+      subjectWindow.style.transform = '';
+      subject.style.opacity = '0'; subject.style.transform = 'translate(-50%,-50%) scale(.595)'; subject.style.filter = '';
+      insideSmoke.forEach(function (im) { im.style.opacity = '0'; });
+      egg.style.transform = ''; egg.style.filter = '';
       phases.forEach(function (im, i) { im.style.opacity = i === 0 ? '1' : '0'; });
       shards.forEach(function (im) { im.style.opacity = '0'; im.style.transform = ''; });
     }
@@ -60,11 +77,16 @@
         { transform: 'translateY(-7%) scale(.4)', offset: .53 },
         { transform: 'translateY(0) scale(1)', offset: 1 }
       ], { duration: 1600, easing: 'cubic-bezier(.25,.7,.3,1)', fill: 'forwards' });
+      dropAnimation.onfinish = function () { if (!scene.hidden) subject.style.opacity = '.68'; };
     }
     function wait() {
       stop(); egg.hidden = false; egg.disabled = false; ready = true;
       var start = performance.now();
-      function tick(now) { angle = Math.sin((now - start) / 1000 * 4.8) * 2.7; egg.style.transform = 'rotate(' + angle + 'deg)'; raf = requestAnimationFrame(tick); }
+      function tick(now) {
+        angle = Math.sin((now - start) / 1000 * 4.8) * 2.7;
+        var transform = 'rotate(' + angle + 'deg)'; egg.style.transform = transform; subjectWindow.style.transform = transform;
+        raf = requestAnimationFrame(tick);
+      }
       raf = requestAnimationFrame(tick);
     }
     function impact(success, reveal) {
@@ -75,7 +97,8 @@
         var rotation = initialAngle * (1 - ease(t / .25)), sx = 1, sy = 1;
         if (t >= .52 && t < 1) { var hit = (t - .52) / .48; sx += .045 * Math.sin(hit * Math.PI); sy -= .08 * Math.sin(hit * Math.PI); }
         if (t > 1.4 && t < 2.25) rotation = Math.sin(t * 28) * .7;
-        egg.style.transform = 'rotate(' + rotation + 'deg) scale(' + sx + ',' + sy + ')';
+        var eggTransform = 'rotate(' + rotation + 'deg) scale(' + sx + ',' + sy + ')';
+        egg.style.transform = eggTransform; subjectWindow.style.transform = eggTransform;
         var dark = success ? 0 : ease((t - 1.65) / .9);
         egg.style.filter = 'grayscale(' + (.6 * dark) + ') brightness(' + (1 - .7 * dark) + ')';
         var a = ease((t - .56) / .36), b = ease((t - 1.05) / .45), d = ease((t - 1.65) / .5);
@@ -88,15 +111,52 @@
           im.style.opacity = t < 2.25 ? 0 : 1 - ease((p - .68) / .32);
           im.style.transform = 'translate(' + x + '%,' + y + '%) rotate(' + r + 'deg)';
         });
-        // Identical initial light for both outcomes; only the reveal differs.
-        inner.style.opacity = .28 * ease((t - .6) / .4) * (1 - ease((t - (success ? 3 : 2.1)) / .7));
-        if (t < 3.65) raf = requestAnimationFrame(tick);
-        else { scene.hidden = true; reveal(); }
+        // Keep the single borderless image 15% smaller through the crack; enlarge it only at the verdict.
+        var growth = ease((t - 3.5) / .2), verdict = growth;
+        subject.style.opacity = .68 + .32 * growth;
+        subject.style.transform = 'translate(-50%,-50%) scale(' + (.595 + .405 * growth) + ')';
+        if (t >= 3.5) subjectWindow.classList.add('is-open');
+        var brightness = 1 + 1.05 * (1 - verdict) - (success ? 0 : .37 * verdict), glowCore = (14 + 24 * (1 - verdict));
+        var glowColor = 'rgba(255,248,213,' + (.98 * (1 - verdict)) + ')';
+        var glowFilter = 'drop-shadow(0 0 ' + glowCore + 'px ' + glowColor + ') drop-shadow(0 0 ' + (glowCore * 1.7) + 'px rgba(255,214,105,' + (.8 * (1 - verdict)) + '))';
+        var subjectFilter = success
+          ? 'brightness(' + brightness + ') ' + glowFilter
+          : 'brightness(' + brightness + ') grayscale(' + (.9 * verdict) + ') ' + glowFilter;
+        subject.style.filter = subjectFilter;
+        var smokeT = success ? -1 : (t - 3.35) / 1.65, smokeFrame = smokeT * 3;
+        insideSmoke.forEach(function (im, i) {
+          im.style.opacity = smokeT < 0 || smokeT > 1 ? 0 : Math.max(0, 1 - Math.abs(i - smokeFrame)) * .55 * ease(smokeT / .12) * (1 - ease((smokeT - .68) / .32));
+        });
+        if (t < 3.9) raf = requestAnimationFrame(tick);
+        else if (success) { reveal(); scene.hidden = true; }
+        else {
+          scene.classList.add('is-exiting'); reveal();
+          setTimeout(function () { if (token === serial) { scene.hidden = true; scene.classList.remove('is-exiting'); scene.style.opacity = ''; } }, 450);
+        }
       }
       raf = requestAnimationFrame(tick);
     }
+    function promoteSubject() {
+      if (item === subject) return;
+      var from = subject.getBoundingClientRect();
+      subject.getAnimations().forEach(function (animation) { animation.cancel(); });
+      var placeholder = item, to = placeholder.getBoundingClientRect(), hostRect = host.getBoundingClientRect();
+      // Keep the same image node and give it the exact result-slot box before moving it.
+      // This prevents the inner image's scene-relative 82% sizing from snapping to its
+      // natural image size during the handoff.
+      subject.className = ''; subject.setAttribute('data-ws-res-img', '');
+      subject.style.cssText = 'position:absolute;left:' + (to.left - hostRect.left) + 'px;top:' + (to.top - hostRect.top) + 'px;width:' + to.width + 'px;height:' + to.height + 'px;max-width:none;max-height:none;object-fit:contain;object-position:center;margin:0;transform-origin:top left;opacity:1;';
+      host.replaceChild(subject, placeholder); item = subject;
+      if (from.width && from.height && to.width && to.height) {
+        subject.animate([
+          { transform: 'translate(' + (from.left - to.left) + 'px,' + (from.top - to.top) + 'px) scale(' + (from.width / to.width) + ',' + (from.height / to.height) + ')' },
+          { transform: 'translate(0,0) scale(1,1)' }
+        ], { duration: 650, easing: 'cubic-bezier(.22,.75,.25,1)', fill: 'both' });
+      }
+    }
     function result(success, level) {
       stop(); effects.hidden = false; effects.className = 'ws-result-vfx ' + (success ? 'is-success' : 'is-failure');
+      promoteSubject(); item.style.opacity = '1'; item.style.transition = '';
       badge.hidden = level <= 0; badge.textContent = '+' + level; starsLayer.hidden = !success; starsLayer.style.opacity = '0';
       // Center effects on each displayed item's visible bounds, excluding file margins.
       var token = serial;
@@ -126,9 +186,10 @@
           stars.forEach(function (im, i) { im.style.opacity = i === a ? 1 : i === b ? u : 0; im.style.zIndex = i === b ? 2 : 1; });
           raf = requestAnimationFrame(tick);
         } else {
-          var s = (t - .35) / 1.65, p = clamp(s), f = p * 3;
+          var s = t / 1.65, p = clamp(s), f = p * 3;
           smoke.forEach(function (im, i) { im.style.opacity = s < 0 || s > 1 ? 0 : Math.max(0, 1 - Math.abs(i - f)) * .6 * ease(s / .12) * (1 - ease((s - .65) / .35)); });
           smokeLayer.style.marginTop = (-20 * p) + 'px';
+          if (t >= .32) item.style.opacity = '1';
           if (t < 2.3) raf = requestAnimationFrame(tick);
         }
       }

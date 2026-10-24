@@ -2870,7 +2870,7 @@ body { background: var(--lm-page); }
 .ws-stage .ws-arrow { position: absolute; top: 74%; z-index: 2; margin: 0; padding: 0; }
 .ws-arrow--prev { left: calc(10.8% - 28px); } .ws-arrow--next { left: 21.1%; } /* 받침대 기둥 양옆 */
 .ws-panel { /* 기둥 끝을 덮도록 위로 겹침(사용자 지정 v762) */ margin-top: calc(var(--w) * -0.06); z-index: 3; position: relative; width: calc(var(--w) * 0.8); aspect-ratio: 658 / 212; flex: 0 0 auto; display: flex; flex-direction: column; justify-content: center;
-  background: url('assets/workshop/panel.png') center / 100% 100% no-repeat; padding: 0 12%; box-sizing: border-box; gap: 4%; }
+  background: url('assets/workshop/clarity-v1434/panel.png') center / 100% 100% no-repeat; padding: 0 12%; box-sizing: border-box; gap: 4%; }
 .ws-row { display: flex; align-items: center; justify-content: space-between; font-weight: 900; font-size: calc(var(--w) * 0.045); color: #f3e7d0; }
 .ws-row b { display: flex; align-items: center; gap: 6px; font-size: calc(var(--w) * 0.065); color: #fff; }
 .ws-coin { display: inline-block; width: calc(var(--w) * 0.06); height: calc(var(--w) * 0.06); border-radius: 50%; flex: 0 0 auto;
