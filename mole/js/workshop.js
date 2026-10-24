@@ -80,8 +80,111 @@
     var tab = 'weapon', idx = { weapon: 0, costume: 0 };
     var running = false, timers = [], selMat = null, pending = null;
     var enhancement = MG.WorkshopEnhance.create(el);
+    var workshopHammer = null, hammerRaf = 0, hammerZapTimer = null, hammerFlightAudio = null, hammerHitAudios = null, lastHammerHitIndex = -1;
     function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
     function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+
+    function preloadHammerSounds() {
+      if (!hammerFlightAudio) {
+        hammerFlightAudio = new Audio('audio/goldhammer-spin.mp3');
+        hammerFlightAudio.preload = 'auto';
+      }
+      if (!hammerHitAudios) {
+        hammerHitAudios = [
+          'audio/goldhammer-sfx-01.mp3', 'audio/goldhammer-sfx-02.mp3', 'audio/goldhammer-sfx-04.mp3',
+          'audio/goldhammer-sfx-06.mp3', 'audio/goldhammer-sfx-10.mp3', 'audio/goldhammer-sfx-12.mp3', 'audio/goldhammer-sfx-15.mp3'
+        ].map(function (src) { var audio = new Audio(src); audio.preload = 'auto'; return audio; });
+      }
+    }
+    function playHammerSound(audio, volume) {
+      if (!audio || (root.FGH && root.FGH.Settings && !root.FGH.Settings.sfxEnabled())) return;
+      try {
+        audio.pause(); audio.currentTime = 0; audio.volume = volume;
+        var playback = audio.play(); if (playback && playback.catch) playback.catch(function () {});
+      } catch (e) { /* sound is optional */ }
+    }
+    function stopHammerFlightSound() {
+      if (!hammerFlightAudio) return;
+      try { hammerFlightAudio.pause(); hammerFlightAudio.currentTime = 0; } catch (e) { /* sound is optional */ }
+    }
+    function playRandomHammerHit() {
+      preloadHammerSounds(); stopHammerFlightSound();
+      var next = Math.floor(Math.random() * hammerHitAudios.length);
+      if (hammerHitAudios.length > 1 && next === lastHammerHitIndex) next = (next + 1 + Math.floor(Math.random() * (hammerHitAudios.length - 1))) % hammerHitAudios.length;
+      lastHammerHitIndex = next; playHammerSound(hammerHitAudios[next], 0.55);
+    }
+    function clearWorkshopHammer() {
+      if (hammerRaf) cancelAnimationFrame(hammerRaf);
+      hammerRaf = 0;
+      stopHammerZapAnimation(false);
+      if (workshopHammer) workshopHammer.clear();
+      workshopHammer = null;
+    }
+    function stopHammerZapAnimation(showBase) {
+      if (hammerZapTimer) clearInterval(hammerZapTimer);
+      hammerZapTimer = null;
+      if (showBase && workshopHammer) {
+        var img = workshopHammerImage();
+        if (img) img.src = A + 'ham-gold-v1407.webp';
+      }
+    }
+    function workshopHammerImage() {
+      var fx = $('[data-ws-fx]');
+      return fx.querySelector('.ws-enhance-hammer img');
+    }
+    function startHammerZapAnimation() {
+      stopHammerZapAnimation(false);
+      var frame = 0;
+      function showFrame() {
+        var img = workshopHammerImage();
+        if (!img || !img.isConnected) return;
+        img.src = A + 'ham-gold-zap' + ((frame++ % 6) + 1) + '-v1409.webp';
+      }
+      showFrame();
+      hammerZapTimer = setInterval(showFrame, 80);
+    }
+    function createWorkshopHammer(layer, onLanded) {
+      clearWorkshopHammer();
+      workshopHammer = MG.LaneHammer.create({
+        layer: layer,
+        sprite: A + 'ham-gold-v1407.webp',
+        introSprite: A + 'ham-gold-v1407.webp',
+        grip: { x: 49, y: 72 },
+        cssClass: 'lane-hammer--gold ws-enhance-hammer',
+        // 기존 제작소 폭(화면의 약 40%)에 맞춰 게임용 골드 망치 오프셋도 약 2배 보정.
+        gripOff: { x: 0.214, y: -0.144 },
+        emptyDy: -0.05,
+        homeMarginTop: '-0.15cm',
+        homeDegOffset: 0,
+        homeXFrac: 0.66,
+        homeYFrac: 0.85,
+        idle: 'bounce',
+        strikeDurationScale: 2,
+        strikeFlyDurationScale: 2 / 0.7
+      });
+      var hammerEl = layer.querySelector('.ws-enhance-hammer');
+      if (hammerEl) hammerEl.classList.add('is-entering');
+      // 거위가 떠난 강화 연출 장면에서만 좌측 하단에서 회전 입장 후 대기 동작을 시작.
+      playHammerSound(hammerFlightAudio, 0.45);
+      workshopHammer.spinIn(0.08, 0.9, 1260, 4, 0.04, function () {
+        hammerEl = layer.querySelector('.ws-enhance-hammer');
+        if (hammerEl) hammerEl.classList.remove('is-entering');
+        animateWorkshopHammer();
+        if (onLanded) onLanded();
+      });
+    }
+    function animateWorkshopHammer() {
+      if (hammerRaf || !workshopHammer) return;
+      var previous = performance.now();
+      function tick(now) {
+        if (!workshopHammer) { hammerRaf = 0; return; }
+        var dt = Math.min(0.05, Math.max(0, (now - previous) / 1000));
+        previous = now;
+        workshopHammer.update(dt);
+        hammerRaf = requestAnimationFrame(tick);
+      }
+      hammerRaf = requestAnimationFrame(tick);
+    }
 
     function cur() { var list = items(tab); if (!list.length) return null; idx[tab] = (idx[tab] + list.length) % list.length; return list[idx[tab]]; }
 
@@ -190,21 +293,26 @@
       setMaterials(kind, it.id, mats - 1);
       selMat = null;
       var success = Math.random() * 100 < RATE[lv];
+      var blackEggRescue = !success && Math.random() < 0.1;
+      if (blackEggRescue) success = true;
       if (success) setLevel(kind, it.id, lv + 1);
       if (opts.onChange) opts.onChange();
-      preloadFrames().then(function () { play(it, lv, success); }); // 첫 강화도 연출 프레임이 다 준비된 뒤 시작(v772)
+      preloadFrames().then(function () { play(it, lv, success, blackEggRescue); }); // 첫 강화도 연출 프레임이 다 준비된 뒤 시작(v772)
     });
 
     // New artwork and continuous shell animation; transaction logic above remains unchanged.
-    function play(it, lv, success) {
-      var fx = $('[data-ws-fx]'), goose = $('[data-ws-goose]'), ham = $('[data-ws-ham]');
+    function play(it, lv, success, blackEggRescue) {
+      var fx = $('[data-ws-fx]'), goose = $('[data-ws-goose]');
       var ghosts = el.querySelectorAll('[data-ws-ghost]'), rise = $('[data-ws-rise]');
       el.classList.add('is-fx'); fx.hidden = false;
       $('[data-ws-result]').hidden = true; $('[data-ws-egghint]').hidden = true;
-      goose.hidden = false; goose.style.transform = ''; ham.hidden = true; ham.className = 'ws-ham';
+      $('[data-ws-fx-info]').hidden = true;
+      clearWorkshopHammer();
+      goose.hidden = false; goose.style.transform = '';
+      preloadHammerSounds();
       ghosts.forEach(function (gh) { gh.hidden = true; gh.style.transform = ''; }); rise.className = 'ws-rise';
       pending = { it: it, lv: lv, success: success };
-      enhancement.prepare(function () { strike(it, lv, success); }, success ? it.done : it.img);
+      enhancement.prepare(function () { strike(it, lv, success, blackEggRescue); }, success ? it.done : it.img);
       var t = 0;
       for (var g = 1; g <= 10; g++) {
         (function (g) { later(function () {
@@ -220,41 +328,45 @@
       later(function () { goose.style.transform = 'translate(-50%, -700%)'; ghosts.forEach(function (gh) { gh.style.transform = goose.style.transform; }); }, t);
       later(function () {
         goose.hidden = true; ghosts.forEach(function (gh) { gh.hidden = true; });
-        enhancement.wait(); $('[data-ws-egghint]').hidden = false;
+        createWorkshopHammer(fx, function () {
+          enhancement.wait(); $('[data-ws-egghint]').hidden = false; $('[data-ws-fx-info]').hidden = false;
+        });
       }, t + 1600);
     }
 
-    function strike(it, lv, success) {
-      var ham = $('[data-ws-ham]'), bolt = $('[data-ws-bolt]');
+    function strike(it, lv, success, blackEggRescue) {
+      var fx = $('[data-ws-fx]');
       $('[data-ws-egghint]').hidden = true;
-      ham.hidden = false; ham.className = 'ws-ham is-in'; cycleBolt(bolt, 0);
-      later(function () { ham.classList.remove('is-in'); ham.classList.add('is-ready'); }, 390);
-      later(function () {
-        ham.classList.remove('is-in', 'is-ready'); ham.classList.add('is-hit');
-        try { MG.HitFx && MG.HitFx.uiTap && MG.HitFx.uiTap(1); } catch (err) { /* sound optional */ }
-      }, 520);
-      later(function () { stopBolt(); bolt.src = A + 'ham-gold-v1407.webp'; ham.classList.remove('is-hit'); ham.classList.add('is-out'); }, 780);
-      enhancement.impact(success, function () {
-        ham.hidden = true; stopBolt(); pending = null;
-        var nlv = success ? lv + 1 : lv, res = $('[data-ws-result]');
-        res.hidden = false; res.className = 'ws-result ' + (success ? 'is-ok' : 'is-ng');
-        setItemImg($('[data-ws-res-img]'), $('[data-ws-res-glow]'), success ? it.done : it.img, nlv);
-        $('[data-ws-res-title]').textContent = T(success ? 'mole.ws.success' : 'mole.ws.fail');
-        $('[data-ws-res-sub]').textContent = nameOf(it) + '  ' + (success ? '+' + lv + ' → +' + nlv : T('mole.ws.keep', { n: lv }));
-        enhancement.result(success, nlv);
+      $('[data-ws-fx-info]').hidden = true;
+      if (!workshopHammer) createWorkshopHammer(fx);
+      var fxRect = fx.getBoundingClientRect();
+      // 기존 ws-ham 타격 위치(left:50%, top:18% + 10dvh) 유지.
+      var targetX = 0.5;
+      var targetY = (fxRect.height * 0.18 + window.innerHeight * 0.1) / fxRect.height;
+      var hammerEl = fx.querySelector('.ws-enhance-hammer');
+      if (hammerEl) hammerEl.classList.add('is-striking');
+      startHammerZapAnimation();
+      workshopHammer.strike(targetX, targetY, function () {
+        playRandomHammerHit();
+        stopHammerZapAnimation(true);
+        hammerEl = fx.querySelector('.ws-enhance-hammer');
+        if (hammerEl) hammerEl.classList.add('is-fading');
+        enhancement.impact(success, function () {
+          clearWorkshopHammer(); stopHammerFlightSound(); pending = null;
+          var nlv = success ? lv + 1 : lv, res = $('[data-ws-result]');
+          res.hidden = false; res.className = 'ws-result ' + (success ? 'is-ok' : 'is-ng');
+          setItemImg($('[data-ws-res-img]'), $('[data-ws-res-glow]'), success ? it.done : it.img, nlv);
+          $('[data-ws-res-title]').textContent = T(success ? 'mole.ws.success' : 'mole.ws.fail');
+          $('[data-ws-res-sub]').textContent = nameOf(it) + '  ' + (success ? '+' + lv + ' → +' + nlv : T('mole.ws.keep', { n: lv }));
+          enhancement.result(success, nlv);
+        }, blackEggRescue);
       });
+      playHammerSound(hammerFlightAudio, 0.45);
+      animateWorkshopHammer();
     }
-
-    var boltTimer = null;
-    function cycleBolt(bolt, i) {
-      // V1407 C 사용자: 황금알 때리는 망치도 골드 묠니르. V1409 C: 타격 바로 전엔 파란 번개 감긴 그림 3장 번갈아(GPT)
-      bolt.src = A + 'ham-gold-zap' + ((i % 6) + 1) + '-v1409.webp';
-      boltTimer = setTimeout(function () { cycleBolt(bolt, i + 1); }, 80);
-    }
-    function stopBolt() { clearTimeout(boltTimer); boltTimer = null; }
 
     $('[data-ws-ok]').addEventListener('click', function () {
-      enhancement.reset(); clearTimers(); stopBolt();
+      enhancement.reset(); clearTimers(); clearWorkshopHammer();
       $('[data-ws-result]').hidden = true;
       $('[data-ws-fx]').hidden = true;
       el.classList.remove('is-fx');
@@ -267,8 +379,8 @@
       if (framesReady) return framesReady;
       var list = [];
       for (var i = 1; i <= 10; i++) list.push(A + 'goose-' + i + '.png');
-      for (var z = 1; z <= 6; z++) list.push(A + 'ham-gold-zap' + z + '-v1409.webp');
       list.push(A + 'ham-gold-v1407.webp');
+      for (var z = 1; z <= 6; z++) list.push(A + 'ham-gold-zap' + z + '-v1409.webp');
       framesReady = Promise.all([MG.WorkshopEnhance.preload()].concat(list.map(function (u) {
         var im = new Image(); im.src = u;
         return im.decode ? im.decode().catch(function () {}) : new Promise(function (r) { im.onload = im.onerror = r; });
@@ -278,7 +390,7 @@
 
     function show() {
       preloadFrames();
-      clearTimers(); stopBolt(); enhancement.reset();
+      clearTimers(); clearWorkshopHammer(); enhancement.reset();
       running = false; pending = null; selMat = null; pick.hidden = true;
       el.classList.remove('is-fx', 'is-shake');
       $('[data-ws-fx]').hidden = true;

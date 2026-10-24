@@ -39,7 +39,7 @@
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
   function ease(k) { return k * k; }
 
-  function create({ layer, sprite, grip, cssClass, degOffset, homeMarginTop, gripOff, homeDegOffset, emptyDy, idle }) {
+  function create({ layer, sprite, introSprite, grip, cssClass, degOffset, homeMarginTop, gripOff, homeDegOffset, emptyDy, idle, homeXFrac, homeYFrac, strikeDurationScale, strikeFlyDurationScale }) {
     // grip = 스프라이트 안 손잡이 잡는 점(%) — 스킨마다 다르면 넘긴다. 없으면 뿅망치 기본값.
     // degOffset = 스킨 스프라이트가 기준 포즈에서 이미 돌아가 있으면 그만큼 상쇄(모든 회전상태에 더함).
     // homeMarginTop = 대기 위치 세로 미세보정 (기본 '0.2cm' 아래로).
@@ -54,6 +54,11 @@
     const eDy = emptyDy != null ? emptyDy : AIM_DY;
     const dOff = degOffset != null ? degOffset : (sprite ? 0 : -MALLET_BAKED_DEG);
     const homeMT = homeMarginTop != null ? homeMarginTop : '0.2cm';
+    const homeX = homeXFrac != null ? homeXFrac : HOME_X;
+    const homeY = homeYFrac != null ? homeYFrac : HOME_Y;
+    const strikeScale = strikeDurationScale != null ? strikeDurationScale : 1;
+    const flySec = FLY_SEC * (strikeFlyDurationScale != null ? strikeFlyDurationScale : strikeScale);
+    const chopSec = CHOP_SEC * strikeScale;
     const hDeg = HOME_DEG + (homeDegOffset || 0);
     const el = document.createElement('div');
     el.className = 'lane-hammer' + (cssClass ? ' ' + cssClass : '');
@@ -70,8 +75,8 @@
 
     let phase = 'home';   // 'home' | 'fly' | 'chop' | 'rise' | 'return'
     let t = 0;
-    let fromX = HOME_X, fromY = HOME_Y, fromDeg = hDeg;
-    let aimX = HOME_X, aimY = HOME_Y, gx = HOME_X, gy = HOME_Y, deg = hDeg;
+    let fromX = homeX, fromY = homeY, fromDeg = hDeg;
+    let aimX = homeX, aimY = homeY, gx = homeX, gy = homeY, deg = hDeg;
     let impactCb = null;
     let fired = false;
     let scaleXVal = 1, scaleYVal = 1; // 라운드 인트로 등장 연출 전용(평소엔 항상 1,1)
@@ -82,7 +87,7 @@
     function strike(targetXFrac, targetYFrac, onImpact, frameKey) {
       // 대기 애니메이션 중이었으면 깨끗한 대기 포즈로 스냅 후 스윙 시작(어중간한 각도/높이에서
       // 시작하지 않게). rise·return 도중 끼어든 연타는 원래대로 현재 위치에서 부드럽게 redirect.
-      if (phase === 'home') { deg = hDeg; gx = HOME_X; gy = HOME_Y; scaleXVal = 1; scaleYVal = 1; }
+      if (phase === 'home') { deg = hDeg; gx = homeX; gy = homeY; scaleXVal = 1; scaleYVal = 1; }
       idleT = 0; lastSpinCycleIdx = -1;
       const tx = (typeof targetXFrac === 'number') ? targetXFrac : 0.5;
       const ty = (typeof targetYFrac === 'number') ? targetYFrac : 0.5;
@@ -100,16 +105,16 @@
       if (phase !== 'home') t += dt;
 
       if (phase === 'fly') {
-        const k = ease(clamp01(t / FLY_SEC));
+        const k = ease(clamp01(t / flySec));
         gx = lerp(fromX, aimX, k);
         gy = lerp(fromY, aimY, k);
         deg = lerp(fromDeg, READY_DEG, k);
-        if (t >= FLY_SEC) { phase = 'chop'; t = 0; fromDeg = deg; }
+        if (t >= flySec) { phase = 'chop'; t = 0; fromDeg = deg; }
       } else if (phase === 'chop') {
-        const k = ease(clamp01(t / CHOP_SEC));
+        const k = ease(clamp01(t / chopSec));
         gx = aimX; gy = aimY;
         deg = lerp(READY_DEG, HIT_DEG, k);
-        if (!fired && t >= CHOP_SEC) {
+        if (!fired && t >= chopSec) {
           fired = true;
           img.classList.remove('lane-hammer-img--hit');
           void img.offsetWidth;
@@ -123,8 +128,8 @@
         if (t >= RISE_SEC) { phase = 'return'; t = 0; fromX = gx; fromY = gy; fromDeg = deg; }
       } else if (phase === 'return') {
         const k = clamp01(t / HOME_SEC);
-        gx = lerp(fromX, HOME_X, k);
-        gy = lerp(fromY, HOME_Y, k);
+        gx = lerp(fromX, homeX, k);
+        gy = lerp(fromY, homeY, k);
         deg = lerp(fromDeg, hDeg, k);
         if (t >= HOME_SEC) { phase = 'home'; t = 0; }
       } else if (phase === 'home' && idle) {
@@ -136,19 +141,19 @@
             if (cycleIdx !== lastSpinCycleIdx) { lastSpinCycleIdx = cycleIdx; spinDir = Math.random() < 0.5 ? 1 : -1; }
             if (cyclePos < SPIN_DUR) { deg = hDeg + spinDir * 360 * ease(cyclePos / SPIN_DUR); }
             else { deg = hDeg; }
-            gx = HOME_X; gy = HOME_Y;
+            gx = homeX; gy = homeY;
           } else if (idle === 'bounce') {
             const cyclePos = (idleT - IDLE_DELAY) % BOUNCE_CYCLE;
             if (cyclePos < BOUNCE_DUR) {
               const k = cyclePos / BOUNCE_DUR;
               const hop = Math.abs(Math.sin(k * Math.PI * 2)) * 0.018; // 위로 튀는 높이(보드분수)
-              gy = HOME_Y - hop;
+              gy = homeY - hop;
               deg = hDeg + Math.sin(k * Math.PI * 2) * 4; // 착지·도약에 맞춰 살짝 까닥
               scaleYVal = 1 - hop * 3; scaleXVal = 1 + hop * 1.5; // 튈 때 살짝 스쿼시
             } else {
-              gy = HOME_Y; deg = hDeg; scaleXVal = 1; scaleYVal = 1;
+              gy = homeY; deg = hDeg; scaleXVal = 1; scaleYVal = 1;
             }
-            gx = HOME_X;
+            gx = homeX;
           }
         }
       }
@@ -182,7 +187,7 @@
       phase = 'spin'; t = 0;
       fired = false;
       const baseSrc = sprite || 'assets/weapons/mallet-yaw10-rest15-v1379.png';
-      img.src = 'assets/weapons/goldpaw-v1382.webp'; // V1382 C: 새 발바닥 망치(정면 포즈 그림 고르기 전까지 같은 그림)
+      img.src = introSprite || 'assets/weapons/goldpaw-v1382.webp'; // V1382 C: 기본 골드 망치 입장 스프라이트
       // 그립점(56,72) 기준 확대·축소는 그립이 아닌 부분(머리 등)이 그만큼 옆으로 남아 별표
       // 중심에서 벗어나 보인다(사용자 지적) — 비행 중엔 스프라이트 정중앙(50,50)을 기준점으로
       // 시작해 대기 위치에 도착할 때 정확히 그립(gripX,gripY)이 되도록 같은 진행률로 블렌딩
@@ -196,8 +201,8 @@
       (function step(now) {
         const k = Math.min(1, ((now || performance.now()) - start) / ms);
         const e = ease(k); // k*k — 느리게 시작해 빨라짐(이동·회전·확대 공통)
-        gx = lerp(fromX2, HOME_X, e);
-        gy = lerp(fromY2, HOME_Y, e);
+        gx = lerp(fromX2, homeX, e);
+        gy = lerp(fromY2, homeY, e);
         deg = lerp(0, endDeg, e);
         scaleXVal = scaleYVal = lerp(startScale, 1, e);
         anchorX = lerp(50, gripX, e);
@@ -209,8 +214,8 @@
           img.style.filter = prevFilter;
           anchorX = gripX; anchorY = gripY;
           phase = 'home';
-          gx = HOME_X; gy = HOME_Y; deg = hDeg; scaleXVal = 1; scaleYVal = 1;
-          fromX = HOME_X; fromY = HOME_Y; fromDeg = hDeg; aimX = HOME_X; aimY = HOME_Y;
+          gx = homeX; gy = homeY; deg = hDeg; scaleXVal = 1; scaleYVal = 1;
+          fromX = homeX; fromY = homeY; fromDeg = hDeg; aimX = homeX; aimY = homeY;
           paint();
           if (onDone) onDone();
         }
@@ -261,9 +266,9 @@
     function home() {
       impactCb = null;
       phase = 'home'; t = 0;
-      gx = HOME_X; gy = HOME_Y; deg = hDeg;
-      fromX = HOME_X; fromY = HOME_Y; fromDeg = hDeg;
-      aimX = HOME_X; aimY = HOME_Y;
+      gx = homeX; gy = homeY; deg = hDeg;
+      fromX = homeX; fromY = homeY; fromDeg = hDeg;
+      aimX = homeX; aimY = homeY;
       fired = false;
       scaleXVal = 1; scaleYVal = 1;
       anchorX = gripX; anchorY = gripY;

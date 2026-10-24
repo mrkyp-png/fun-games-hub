@@ -30,6 +30,7 @@
     var egg = scene.querySelector('.ws-new-egg'), phases = scene.querySelectorAll('.ws-new-phase');
     var shards = scene.querySelectorAll('.ws-new-shard'), subjectWindow = scene.querySelector('.ws-new-subject-window');
     var subject = scene.querySelector('.ws-new-subject');
+    var subjectAnchorX = 50;
     var insideSmoke = scene.querySelectorAll('.ws-new-smoke img');
     var host = el.querySelector('[data-ws-res-glow]'), item = el.querySelector('[data-ws-res-img]');
     var resultItemTemplate = item.cloneNode(false);
@@ -61,9 +62,11 @@
     function prepare(onClick, source) {
       reset(); clickAction = onClick; scene.hidden = false; egg.hidden = true;
       subject.src = source || '';
+      subjectAnchorX = source && source.indexOf('char-blue_bears-v1406') >= 0 ? 45 : 50;
+      subject.className = subjectAnchorX === 45 ? 'ws-new-subject is-blue-bears' : 'ws-new-subject';
       subjectWindow.classList.remove('is-open');
       subjectWindow.style.transform = '';
-      subject.style.opacity = '0'; subject.style.transform = 'translate(-50%,-50%) scale(.595)'; subject.style.filter = '';
+      subject.style.opacity = '0'; subject.style.transform = 'translate(-' + subjectAnchorX + '%, -50%) scale(.595)'; subject.style.filter = '';
       insideSmoke.forEach(function (im) { im.style.opacity = '0'; });
       egg.style.transform = ''; egg.style.filter = '';
       phases.forEach(function (im, i) { im.style.opacity = i === 0 ? '1' : '0'; });
@@ -89,33 +92,37 @@
       }
       raf = requestAnimationFrame(tick);
     }
-    function impact(success, reveal) {
+    function impact(success, reveal, blackEggRescue) {
       stop(); var start = performance.now(), initialAngle = angle, token = serial;
       function tick(now) {
         if (token !== serial) return;
-        var t = (now - start) / 1000, p = clamp((t - 2.25) / 1.25), q = ease(p);
+        var t = (now - start) / 1000, effectT = Math.max(0, t - (blackEggRescue ? .4 : 0));
+        var p = clamp((effectT - 2.25) / 1.25), q = ease(p);
         var rotation = initialAngle * (1 - ease(t / .25)), sx = 1, sy = 1;
         if (t >= .52 && t < 1) { var hit = (t - .52) / .48; sx += .045 * Math.sin(hit * Math.PI); sy -= .08 * Math.sin(hit * Math.PI); }
         if (t > 1.4 && t < 2.25) rotation = Math.sin(t * 28) * .7;
         var eggTransform = 'rotate(' + rotation + 'deg) scale(' + sx + ',' + sy + ')';
         egg.style.transform = eggTransform; subjectWindow.style.transform = eggTransform;
-        var dark = success ? 0 : ease((t - 1.65) / .9);
-        egg.style.filter = 'grayscale(' + (.6 * dark) + ') brightness(' + (1 - .7 * dark) + ')';
-        var a = ease((t - .56) / .36), b = ease((t - 1.05) / .45), d = ease((t - 1.65) / .5);
+        var dark = blackEggRescue ? ease(t / .28) * (1 - ease((t - .68) / .24)) : (success ? 0 : ease((t - 1.65) / .9));
+        egg.style.filter = blackEggRescue
+          ? 'grayscale(' + dark + ') brightness(' + (1 - .85 * dark) + ')'
+          : 'grayscale(' + (.6 * dark) + ') brightness(' + (1 - .7 * dark) + ')';
+        var a = ease((effectT - .56) / .36), b = ease((effectT - 1.05) / .45), d = ease((effectT - 1.65) / .5);
         var weights = [1 - a, a * (1 - b), b * (1 - d), d];
-        phases.forEach(function (im, i) { im.style.opacity = t < 2.25 ? weights[i] : 0; });
+        phases.forEach(function (im, i) { im.style.opacity = effectT < 2.25 ? weights[i] : 0; });
         shards.forEach(function (im, i) {
           var center = PIECES[i].center, x = (center[0] - 627) / 1254 * (success ? 110 : 35) * q;
           var y = success ? (center[1] < 650 ? -22 : 4) * q + 12 * p * p : 24 * p * p - 3 * Math.sin(p * Math.PI);
           var r = (x < 0 ? -1 : 1) * (success ? 30 : 14) * q;
-          im.style.opacity = t < 2.25 ? 0 : 1 - ease((p - .68) / .32);
+          im.style.opacity = effectT < 2.25 ? 0 : 1 - ease((p - .68) / .32);
           im.style.transform = 'translate(' + x + '%,' + y + '%) rotate(' + r + 'deg)';
         });
         // Keep the single borderless image 15% smaller through the crack; enlarge it only at the verdict.
-        var growth = ease((t - 3.5) / .2), verdict = growth;
-        subject.style.opacity = .68 + .32 * growth;
-        subject.style.transform = 'translate(-50%,-50%) scale(' + (.595 + .405 * growth) + ')';
-        if (t >= 3.5) subjectWindow.classList.add('is-open');
+        var growth = ease((effectT - 3.5) / .2), verdict = growth;
+        var innerVisibility = blackEggRescue ? .24 + .44 * ease((t - .68) / .24) : .68;
+        subject.style.opacity = innerVisibility + .32 * growth;
+        subject.style.transform = 'translate(-' + subjectAnchorX + '%, -50%) scale(' + (.595 + .405 * growth) + ')';
+        if (effectT >= 3.5) subjectWindow.classList.add('is-open');
         var brightness = 1 + 1.05 * (1 - verdict) - (success ? 0 : .37 * verdict), glowCore = (14 + 24 * (1 - verdict));
         var glowColor = 'rgba(255,248,213,' + (.98 * (1 - verdict)) + ')';
         var glowFilter = 'drop-shadow(0 0 ' + glowCore + 'px ' + glowColor + ') drop-shadow(0 0 ' + (glowCore * 1.7) + 'px rgba(255,214,105,' + (.8 * (1 - verdict)) + '))';
@@ -127,7 +134,7 @@
         insideSmoke.forEach(function (im, i) {
           im.style.opacity = smokeT < 0 || smokeT > 1 ? 0 : Math.max(0, 1 - Math.abs(i - smokeFrame)) * .55 * ease(smokeT / .12) * (1 - ease((smokeT - .68) / .32));
         });
-        if (t < 3.9) raf = requestAnimationFrame(tick);
+        if (t < 3.9 + (blackEggRescue ? .4 : 0)) raf = requestAnimationFrame(tick);
         else if (success) { reveal(); scene.hidden = true; }
         else {
           scene.classList.add('is-exiting'); reveal();
