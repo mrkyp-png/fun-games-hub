@@ -26,6 +26,7 @@
         var clip = p.points.map(function (v) { return (v[0] / 1254 * 100) + '% ' + (v[1] / 1254 * 100) + '%'; }).join(',');
         return '<img class="ws-new-shard" src="' + A + 'egg-separated.png" alt="" style="clip-path:polygon(' + clip + ')">';
       }).join('') + '</button>' + image('pedestal-front.png', 'ws-new-front') + image('front-gem.png', 'ws-new-gem');
+    var eggShadow = document.createElement('div'); eggShadow.className = 'ws-egg-shadow'; eggShadow.setAttribute('aria-hidden', 'true'); scene.appendChild(eggShadow);
     fx.appendChild(scene);
     var egg = scene.querySelector('.ws-new-egg'), phases = scene.querySelectorAll('.ws-new-phase');
     var shards = scene.querySelectorAll('.ws-new-shard'), subjectWindow = scene.querySelector('.ws-new-subject-window');
@@ -47,6 +48,7 @@
     egg.addEventListener('click', function () { if (ready && clickAction) { ready = false; egg.disabled = true; clickAction(); } });
     function stop() { cancelAnimationFrame(raf); raf = 0; if (dropAnimation) { dropAnimation.cancel(); dropAnimation = null; } }
     function reset() {
+      eggShadow.getAnimations().forEach(function (animation) { animation.cancel(); });
       serial++; stop(); clickAction = null; ready = false; scene.hidden = true; scene.classList.remove('is-exiting'); scene.style.opacity = ''; egg.disabled = true;
       effects.className = 'ws-result-vfx'; effects.hidden = true; starsLayer.hidden = true; badge.hidden = true;
       host.querySelectorAll('.ws-result-vfx img').forEach(function (im) { im.style.opacity = ''; });
@@ -57,6 +59,7 @@
         subject.className = 'ws-new-subject'; subject.removeAttribute('data-ws-res-img'); subject.style.cssText = '';
         item = placeholder;
       }
+      eggShadow.style.opacity = '0'; eggShadow.style.transform = '';
       item.style.opacity = ''; item.style.transition = '';
     }
     function prepare(onClick, source) {
@@ -74,6 +77,8 @@
     }
     function drop() {
       egg.hidden = false;
+      eggShadow.animate([{ opacity: 0, transform: 'translateX(-50%) scale(.4)' }, { opacity: .2, transform: 'translateX(-50%) scale(1)' }], { duration: 1600 });
+      eggShadow.style.opacity = '.2';
       dropAnimation = egg.animate([
         { transform: 'translateY(-165%) scale(.25)', opacity: 0, offset: 0 },
         { transform: 'translateY(0) scale(.35)', opacity: .7, offset: .4 },
@@ -87,6 +92,8 @@
       var start = performance.now();
       function tick(now) {
         angle = Math.sin((now - start) / 1000 * 4.8) * 2.7;
+        eggShadow.style.transform = 'translateX(' + (-50 + angle * .35) + '%) scale(' + (1 - Math.abs(angle) * .006) + ',1)';
+        eggShadow.style.opacity = String(.2 - Math.abs(angle) * .005);
         var transform = 'rotate(' + angle + 'deg)'; egg.style.transform = transform; subjectWindow.style.transform = transform;
         raf = requestAnimationFrame(tick);
       }
@@ -103,6 +110,8 @@
         if (t > 1.4 && t < 2.25) rotation = Math.sin(t * 28) * .7;
         var eggTransform = 'rotate(' + rotation + 'deg) scale(' + sx + ',' + sy + ')';
         egg.style.transform = eggTransform; subjectWindow.style.transform = eggTransform;
+        eggShadow.style.transform = 'translateX(' + (-50 + rotation * .35) + '%) scale(' + sx + ',' + (2 - sy) + ')';
+        eggShadow.style.opacity = String(.2 * (1 - q));
         var dark = blackEggRescue ? ease((effectT - .56) / .36) : (success ? 0 : ease((t - 1.65) / .9));
         egg.style.filter = blackEggRescue
           ? 'grayscale(' + dark + ') brightness(' + (1 - .85 * dark) + ')'

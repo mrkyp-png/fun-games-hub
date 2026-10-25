@@ -33,3 +33,7 @@
 #workshop-screen .ws-result .ws-res-glow{animation:none}
 #workshop-screen .ws-res-title,#workshop-screen .ws-res-sub,#workshop-screen .ws-res-ok{position:relative;z-index:9}
 #workshop-screen .ws-result.is-ng .ws-res-glow img{filter:grayscale(.9) brightness(.68)}
+
+/* Enhancement contact shadows: reused with existing animation loops. */
+#workshop-screen .ws-egg-shadow{position:absolute;left:50%;top:70%;width:24%;height:2.8%;transform:translateX(-50%);border-radius:50%;background:radial-gradient(ellipse,rgba(8,15,39,.9) 0%,rgba(8,15,39,.45) 40%,rgba(8,15,39,0) 73%);opacity:0;z-index:2;pointer-events:none;will-change:transform,opacity}
+#workshop-screen .ws-hammer-shadow{position:absolute;left:66%;top:93%;width:calc(var(--w)*.31);height:calc(var(--w)*.065);border-radius:50%;background:radial-gradient(ellipse,rgba(13,8,22,.85) 0%,rgba(13,8,22,.35) 42%,rgba(13,8,22,0) 73%);opacity:0;z-index:2;pointer-events:none;will-change:transform,opacity;transition:opacity .12s linear}

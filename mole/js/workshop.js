@@ -83,6 +83,7 @@
     var enhancement = MG.WorkshopEnhance.create(el);
     var workshopHammer = null, hammerRaf = 0, hammerZapTimer = null, hammerFlightAudio = null, hammerHitAudios = null, lastHammerHitIndex = -1;
     var gooseShockAudio = null, gooseWingsAudio = null;
+    var hammerShadow = null, shadowHammerEl = null;
     function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
     function clearTimers() { timers.forEach(clearTimeout); timers = []; stopGooseWingsSound(); }
 
@@ -130,6 +131,8 @@
       stopHammerZapAnimation(false);
       if (workshopHammer) workshopHammer.clear();
       workshopHammer = null;
+      if (hammerShadow) hammerShadow.remove();
+      hammerShadow = null; shadowHammerEl = null;
     }
     function stopHammerZapAnimation(showBase) {
       if (hammerZapTimer) clearInterval(hammerZapTimer);
@@ -174,6 +177,8 @@
         strikeFlyDurationScale: 2 / 0.7
       });
       var hammerEl = layer.querySelector('.ws-enhance-hammer');
+      shadowHammerEl = hammerEl;
+      hammerShadow = document.createElement('div'); hammerShadow.className = 'ws-hammer-shadow'; hammerShadow.setAttribute('aria-hidden', 'true'); layer.appendChild(hammerShadow);
       if (hammerEl) hammerEl.classList.add('is-entering');
       // 거위가 떠난 강화 연출 장면에서만 좌측 하단에서 회전 입장 후 대기 동작을 시작.
       playHammerSound(hammerFlightAudio, 0.45);
@@ -192,6 +197,15 @@
         var dt = Math.min(0.05, Math.max(0, (now - previous) / 1000));
         previous = now;
         workshopHammer.update(dt);
+        if (hammerShadow && shadowHammerEl) {
+          var x = parseFloat(shadowHammerEl.style.left) || 66;
+          var y = parseFloat(shadowHammerEl.style.top) || 85;
+          var lift = Math.min(1, Math.abs(85 - y) / 12);
+          hammerShadow.style.left = x + '%';
+          hammerShadow.style.top = (93 + (y - 85) * .55) + '%';
+          hammerShadow.style.transform = 'translate(-50%,-50%) scale(' + (1 - lift * .38) + ')';
+          hammerShadow.style.opacity = shadowHammerEl.classList.contains('is-fading') ? '0' : String(.32 - lift * .2);
+        }
         hammerRaf = requestAnimationFrame(tick);
       }
       hammerRaf = requestAnimationFrame(tick);
