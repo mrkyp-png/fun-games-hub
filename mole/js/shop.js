@@ -11,7 +11,7 @@
   // 새 이미지 없이 앱 기존 아이콘 언어를 그대로 상점 카드 배지에 씀(사용자 지정).
   var ICONS = {
     hearts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg>',
-    coins: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="9" rx="8.5" ry="4.3"/><path d="M3.5 9v3.5c0 2.4 3.8 4.3 8.5 4.3s8.5-1.9 8.5-4.3V9"/><path d="M6.5 9c1.3 1.2 3.4 2 5.5 2s4.2-.8 5.5-2"/></svg>',
+    coins: '<img class="shop-coins-stack" src="assets/shop-ui-v1450/27-coins-three.webp" alt="">',
     tickets: '<img class="ticket-note-icon" src="assets/rhythm/ui/ic-ticket-note-complete.webp" alt="">',
     play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'
   };
@@ -20,21 +20,20 @@
   // 있잖아. 그걸로 써" + "작은하트 5~6개는 작은 하트 이미지 파일에 있는거 쓰고" — 두
   // 원본 파일에서 하트 하나·작은 하트 6개·광고아이콘을 각각 낱개로 잘라(배경 없음, 알파
   // 그대로) 카드별로 조합. 광고아이콘도 낱개(사용자 지정: "하트위에 일부 유튜브가 겹치게").
+  var SHOP_ART = 'assets/shop-ui-v1450/';
   var HEART_ART = {
-    heart: 'assets/shop/single-heart.png',     // 하트 이미지, 유튜브 이미지 파일 속 하트 하나
+    heart: SHOP_ART + '11-heart.webp',
     minis: ['assets/shop/mini-1.png', 'assets/shop/mini-2.png', 'assets/shop/mini-3.png',
-      'assets/shop/mini-4.png', 'assets/shop/mini-5.png', 'assets/shop/mini-6.png'], // 작은 하트 이미지 파일 속 6개
-    ad: 'assets/shop/ad-icon.png'              // 하트 이미지, 유튜브 이미지 파일 속 광고 아이콘만
+      'assets/shop/mini-4.png', 'assets/shop/mini-5.png', 'assets/shop/mini-6.png']
   };
   function heroArt(kind) {
     if (kind === 'solo') return '<img alt="" class="hero-solo" src="' + HEART_ART.heart + '">';
     if (kind === 'ad') {
-      // 하트 위에 광고 아이콘이 겹쳐 올라타는 구도(사용자 지정: "하트위에 일부 유튜브가
-      // 겹치게 올라타기") — 통짜 이미지 대신 하트/아이콘을 낱개로 겹쳐 배치.
-      return '<div class="hero-ad"><img alt="" class="hero-ad-heart" src="' + HEART_ART.heart + '">' +
-        '<img alt="" class="hero-ad-icon" src="' + HEART_ART.ad + '"></div>';
+      return '<div class="hero-ad"><svg class="hero-ad-heart" viewBox="0 0 1254 1254" aria-hidden="true"><defs><clipPath id="shop-ad-heart-contour"><rect x="0" y="200" width="1254" height="1054"></rect></clipPath></defs><image href="' + HEART_ART.heart + '" width="1254" height="1254" clip-path="url(#shop-ad-heart-contour)"></image></svg>' +
+        '<img class="hero-ad-icon" alt="" src="assets/shop/ad-icon-complete.png"></div>';
     }
-    // pile — 메인 하트 하나(가운데, 크게) + 작은 하트 6개(둘레에 흩뿌림).
+    if (kind === 'jar') return '<img class="hero-jar-full" alt="" src="' + SHOP_ART + 'heart-jar-full.png">';
+    // 하트 묶음은 분리한 원본 하트를 개별 배치한다.
     var minis = HEART_ART.minis.map(function (src, i) {
       return '<img alt="" class="hero-mini hero-mini--' + i + '" src="' + src + '">';
     }).join('');
@@ -68,9 +67,11 @@
     var cardsEl = el.querySelector('[data-shop-cards]');
     var cardsBoxEl = el.querySelector('.shop-cards-box');
     var tabsEl = el.querySelector('[data-shop-tabs]');
+    var backEl = el.querySelector('[data-shop-back]');
+    if (backEl) backEl.addEventListener('click', function () { if (opts.onClose) opts.onClose(); });
     var bannerEl = el.querySelector('[data-shop-banner]');
     var dotsEl = el.querySelector('[data-shop-dots]');
-    // 상단 뒤로가기/제목 바 삭제(사용자 지정) — 종료는 다이얼패드 홈 아이콘(onHomeAction 'home')으로.
+    // 제목 바는 생략하고, 상단 좌측 복귀는 Score 화면의 원본 아이콘으로 처리.
 
     // 카드 줄 좌우 화살표+점 페이지 표시(사용자 지정: "상점UI 파일처럼 화살표, 페이지 점들도").
     // 카드 폭이 이제 %기반(style.css .shop-card, 항상 3장 꽉 참)이라 고정 px 대신 실제 렌더된
@@ -81,7 +82,7 @@
     }
     // 화살표는 배너 안(우측)에 있어 renderBanner() 가 매번 새로 그림 — 거기서 바로 배선.
     function updateDots() {
-      var n = cardsEl.children.length;
+      var n = TABS.length;
       dotsEl.innerHTML = '';
       for (var i = 0; i < n; i++) {
         var d = document.createElement('span');
@@ -91,12 +92,12 @@
       syncDots();
     }
     function syncDots() {
-      var idx = Math.round(cardsEl.scrollLeft / cardUnit());
+      var idx = TABS.findIndex(function (tab) { return tab.id === activeTab; });
       Array.prototype.forEach.call(dotsEl.children, function (d, i) {
         d.classList.toggle('shop-dot--on', i === idx);
       });
     }
-    cardsEl.addEventListener('scroll', syncDots);
+    tabsEl.addEventListener('scroll', syncDots);
 
     // 가운데 카드 1장만 스윙하던 것 → 왼쪽부터 순차적으로 전체 카드에 스윙(사용자 지정:
     // "가운데만 주니 의미없다, 왼쪽부터 순차적으로"), 5초마다 한 바퀴씩.
@@ -129,17 +130,19 @@
 
     // 무기 탭 아이콘 — 후보 시트(뿅망치 만화 소프트해머, #7) 사용자 선택, 시계방향 45도 회전 +
     // 그라디언트/하이라이트로 입체감(사용자 지정: "7번으로 해서 시계방향 45도 회전, 입체감").
-    var WEAPON_TAB_ICON = '<img src="assets/tabs/weapon.png" alt="">'; // 사용자 제공 이미지(v755)
+    var WEAPON_TAB_ICON = '<img src="assets/inventory/ui-v1379/approved-mallet-redend-v1405.webp" alt="">'; // 무기 화면 전시용 원본
 
     // 스킬 탭 아이콘 — 후보 시트 #7(음양) 사용자 최종 선택, 그라디언트+하이라이트로 입체감.
     var SKILL_TAB_ICON = '<img src="assets/tabs/skill.png" alt="">'; // 사용자 제공 이미지(v755)
 
     // 하단 탭 아이콘 — 이모지(사용자 지정: "이모지나 이미지 넣어야함", 참고 이미지의 하트/망치/별/옷 자리).
     var TABS = [
-      { id: 'currency', i18n: 'mole.shop.tabCurrency', icon: '<img src="assets/tabs/currency.png" alt="">' },
+      { id: 'currency', i18n: 'mole.shop.tabHeart', icon: '<img src="' + SHOP_ART + '11-heart.webp" alt="">' },
+      { id: 'coin', i18n: 'mole.shop.tabCoin', icon: '<img src="' + SHOP_ART + '27-coins-three.webp" alt="">' },
+      { id: 'ticket', i18n: 'mole.shop.tabTicket', icon: '<img src="' + SHOP_ART + 'ticket-icon.webp" alt="">' },
       { id: 'weapon', i18n: 'mole.shop.tabWeapon', icon: WEAPON_TAB_ICON },
-      { id: 'skill', i18n: 'mole.shop.tabSkill', icon: SKILL_TAB_ICON },
-      { id: 'costume', i18n: 'mole.shop.tabCostume', icon: '<img src="assets/tabs/costume.png" alt="">' }
+      { id: 'skill', i18n: 'mole.shop.tabSkill', icon: '<img src="' + SHOP_ART + 'skill-icon.png" alt="">' },
+      { id: 'costume', i18n: 'mole.shop.tabCostume', icon: '<img src="' + SHOP_ART + 'costume-icon.png" alt="">' }
     ];
     var activeTab = 'currency';
     var currencyFilter = null; // null=전체, 'heart'/'coin'/'ticket'=다이얼패드 캡슐 클릭으로 필터
@@ -204,18 +207,18 @@
 
     function renderCurrencyCards() {
       cardsEl.innerHTML = '';
+      var english = I18N().lang === 'en';
       var defs = [
-        { kind: 'heart', rich: true, theme: 'pink', art: heroArt('solo'),
-          name: T('mole.shop.heart1'), desc: T('mole.shop.descHeart1'), pillText: '+1',
+        { kind: 'heart', rich: true, theme: 'pink', art: heroArt('solo'), name: english ? '+1 heart' : '하트 +1', desc: english ? 'Get 1 heart.' : '하트를 1개 획득합니다.', pillText: '+1',
           btnHtml: ICONS.coins + '<b>5</b>', btnDisabled: MG.Economy.getCoins() < 5,
           onClick: function () { if (MG.Economy.spendCoins(5)) { MG.Economy.addHearts(1); done(); } else alert(T('mole.shop.noCoin')); } },
-        { kind: 'heart', rich: true, theme: 'pink', art: heroArt('pile'),
-          name: T('mole.shop.heartFull'), desc: T('mole.shop.descHeartFull'), pillText: T('mole.shop.fullPill'),
-          btnHtml: ICONS.coins + '<b>12</b>', btnDisabled: MG.Economy.getCoins() < 12,
-          onClick: function () { if (MG.Economy.spendCoins(12)) { MG.Economy.addHearts(MG.Economy.HEART_MAX); done(); } else alert(T('mole.shop.noCoin')); } },
-        { kind: 'heart', rich: true, theme: 'blue', art: heroArt('ad'),
-          name: T('mole.shop.watchHeart'), desc: T('mole.shop.descWatchHeart'), pillText: '+1',
-          // 재생 아이콘을 반투명 흰 박스 안에(사용자 지정: "화살표는 투명 흰색 박스안에").
+        { kind: 'heart', rich: true, theme: 'pink', art: heroArt('pile'), name: english ? '10 hearts' : '하트 ×10', desc: english ? 'Get 10 hearts.' : '하트를 10개 획득합니다.', pillText: '×10',
+          btnHtml: ICONS.coins + '<b>40</b>', btnDisabled: MG.Economy.getCoins() < 40,
+          onClick: function () { if (MG.Economy.spendCoins(40)) { MG.Economy.addHearts(10); done(); } else alert(T('mole.shop.noCoin')); } },
+        { kind: 'heart', rich: true, theme: 'pink', art: heroArt('jar'), name: english ? '30 hearts' : '하트 ×30', desc: english ? 'Get 30 hearts.' : '하트를 30개 획득합니다.', pillText: '×30',
+          btnHtml: ICONS.coins + '<b>100</b>', btnDisabled: MG.Economy.getCoins() < 100,
+          onClick: function () { if (MG.Economy.spendCoins(100)) { MG.Economy.addHearts(30); done(); } else alert(T('mole.shop.noCoin')); } },
+        { kind: 'heart', rich: true, theme: 'blue', art: heroArt('ad'), name: english ? 'Watch ad: +1 heart' : '광고 보고 하트 +1', desc: english ? 'Get 1 heart after watching an ad.' : '광고 시청 후 하트 1개 획득.', pillText: '+1',
           btnHtml: '<span class="scb-play-box">' + ICONS.play + '</span><b>' + T('mole.shop.watchAdBtn') + '</b>', btnDisabled: false,
           onClick: function () { MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addHearts(1); done(); } }); } }
       ];
@@ -283,19 +286,25 @@
       cardsEl.innerHTML = '<p class="shop-soon">' + T('mole.inv.soon') + '</p>';
     }
 
-    var RENDERERS = { currency: renderCurrencyCards, weapon: renderWeaponCards, skill: renderSkillCards, costume: renderCostumeCards };
+    function renderEmptyCategory() { cardsEl.innerHTML = '<p class="shop-soon">' + T('mole.inv.soon') + '</p>'; }
+    var RENDERERS = { currency: renderCurrencyCards, coin: renderEmptyCategory, ticket: renderEmptyCategory,
+      weapon: renderWeaponCards, skill: renderSkillCards, costume: renderCostumeCards };
 
     // 배너 우측 메일 아이콘은 다이얼패드 "#"(시크릿 폐기) 자리로 이동함(사용자 지정) — 배너에는
     // 그 자리에 화살표(‹›)를 대신 넣는다(아이템 화면과 동일 패턴).
     function renderBanner() {
-      bannerEl.innerHTML =
-        '<img alt="" class="shop-banner-pic" src="assets/avatar-mole.png">' +
-        '<span class="shop-banner-txt"></span>' +
-        '<button type="button" class="shop-arrow shop-arrow--prev" data-shop-prev aria-label="이전">◀</button>' +
-        '<button type="button" class="shop-arrow shop-arrow--next" data-shop-next aria-label="다음">▶</button>';
-      bannerEl.querySelector('.shop-banner-txt').textContent = T('mole.shop.welcome');
-      bannerEl.querySelector('[data-shop-prev]').addEventListener('click', function () { cardsEl.scrollBy({ left: -cardUnit() * 3, behavior: 'smooth' }); });
-      bannerEl.querySelector('[data-shop-next]').addEventListener('click', function () { cardsEl.scrollBy({ left: cardUnit() * 3, behavior: 'smooth' }); });
+      var english = I18N().lang === 'en';
+      bannerEl.innerHTML = '<img alt="" class="shop-banner-awning" src="' + SHOP_ART + '01-awning.webp">' +
+        '<span class="shop-banner-nameplate"><svg class="shop-sign-defs" width="0" height="0" aria-hidden="true"><defs>' +
+        '<filter id="shop-sign-color" color-interpolation-filters="sRGB" x="-5%" y="-5%" width="110%" height="110%">' +
+        '<feColorMatrix in="SourceGraphic" type="hueRotate" values="145" result="red"></feColorMatrix>' +
+        '<feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 -4 0 4 0 -0.1" result="blue"></feColorMatrix>' +
+        '<feComposite in="red" in2="blue" operator="in" result="rim"></feComposite>' +
+        '<feComposite in="SourceGraphic" in2="blue" operator="out" result="body"></feComposite>' +
+        '<feMerge><feMergeNode in="body"></feMergeNode><feMergeNode in="rim"></feMergeNode></feMerge></filter></defs></svg>' +
+        '<img class="shop-weapon-sign" src="assets/inventory/ui-v1379/nameplate.webp" alt="">' +
+        '<b class="shop-banner-txt"></b></span>';
+      bannerEl.querySelector('.shop-banner-txt').textContent = english ? 'SHOP' : '상점';
     }
 
     // 하트/코인/티켓 캡슐 = 상점 안이 아니라 다이얼패드(1/2/3 키) 위로 애니메이션 착지(사용자
@@ -349,8 +358,8 @@
             btn._shopPick = true;
             btn.addEventListener('click', function () {
               if (!pill.classList.contains('is-shop')) return;
-              activeTab = 'currency';
-              currencyFilter = kind;
+              activeTab = kind === 'heart' ? 'currency' : kind;
+              currencyFilter = kind === 'heart' ? 'heart' : null;
               render();
             });
           }
@@ -359,6 +368,7 @@
     }
 
     function renderTabs() {
+      var previousScroll = tabsEl.scrollLeft;
       tabsEl.innerHTML = '';
       TABS.forEach(function (t) {
         var b = document.createElement('button');
@@ -374,9 +384,12 @@
           // 버튼일때 왼쪽으로 사라지게") — 탭을 바꿔도 롤아웃/재진입 안 함. 상점을 완전히
           // 벗어날 때만(el.hidden 감시, 파일 하단) 롤아웃.
           activeTab = t.id; currencyFilter = null; cardsEl.scrollLeft = 0; render();
+          var selected = tabsEl.querySelector('.shop-tab--on');
+          if (selected) selected.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
         });
         tabsEl.appendChild(b);
       });
+      tabsEl.scrollLeft = previousScroll;
     }
 
     function render() {
@@ -388,12 +401,88 @@
       // 무기/스킬/코스튬탭은 기존 파란색 유지.
       cardsBoxEl.classList.remove('shop-cards-box--heart', 'shop-cards-box--coin', 'shop-cards-box--ticket');
       if (activeTab === 'currency') cardsBoxEl.classList.add('shop-cards-box--' + (currencyFilter || 'heart'));
+      requestAnimationFrame(alignCoinPrices);
     }
+
+    // Center the visible coin artwork and number ink, keeping their current sizes.
+    function alignCoinPrices() {
+      var ctx = document.createElement('canvas').getContext('2d');
+      cardsEl.querySelectorAll('.shop-card-btn').forEach(function (btn) {
+        var icon = btn.querySelector('.shop-coins-stack'), number = btn.querySelector('b');
+        if (!icon || !number) return;
+        var group = btn.querySelector('.shop-price-group');
+        if (!group) {
+          var size = icon.getBoundingClientRect();
+          group = document.createElement('span');
+          group.className = 'shop-price-group';
+          group.style.setProperty('--price-icon-width', size.width + 'px');
+          group.style.setProperty('--price-icon-height', size.height + 'px');
+          btn.appendChild(group); group.appendChild(icon); group.appendChild(number);
+        }
+        var ir = icon.getBoundingClientRect(), nr = number.getBoundingClientRect();
+        var scale = Math.min(ir.width / 1254, ir.height / 1254);
+        // Unchanged source alpha bounds: [25,93,1224,1216] within 1254 square.
+        icon.style.transform = 'translate(' + (2.5 * scale) + 'px,' + (-27.5 * scale) + 'px)';
+        ctx.font = getComputedStyle(number).font;
+        var m = ctx.measureText(number.textContent);
+        var ascent = m.fontBoundingBoxAscent, descent = m.fontBoundingBoxDescent;
+        var baseline = (nr.height - ascent - descent) / 2 + ascent;
+        var inkWidth = m.actualBoundingBoxLeft + m.actualBoundingBoxRight;
+        var inkCenterX = (m.actualBoundingBoxRight - m.actualBoundingBoxLeft) / 2;
+        var inkCenterY = baseline + (m.actualBoundingBoxDescent - m.actualBoundingBoxAscent) / 2;
+        number.style.transform = 'translate(' + (nr.width / 2 - inkCenterX) + 'px,' + (nr.height / 2 - inkCenterY) + 'px)';
+        var coinPadding = (ir.width - 1199 * scale) / 2;
+        var numberPadding = (nr.width - inkWidth) / 2;
+        group.style.transform = 'translateX(' + ((numberPadding - coinPadding) / 2) + 'px)';
+      });
+      cardsEl.querySelectorAll('.shop-card-pill>span').forEach(function (label) {
+        var rect = label.getBoundingClientRect();
+        ctx.font = getComputedStyle(label).font;
+        var metric = ctx.measureText(label.textContent);
+        var baseline = (rect.height - metric.fontBoundingBoxAscent - metric.fontBoundingBoxDescent) / 2 + metric.fontBoundingBoxAscent;
+        var dx = rect.width / 2 - (metric.actualBoundingBoxRight - metric.actualBoundingBoxLeft) / 2;
+        var dy = rect.height / 2 - baseline - (metric.actualBoundingBoxDescent - metric.actualBoundingBoxAscent) / 2;
+        label.style.transform = 'translate(' + dx + 'px,' + dy + 'px) rotate(-8deg)';
+      });
+      var shell = el.querySelector('.shop-tab-shell');
+      var header = el.querySelector('.shop-cards-head');
+      if (shell && header && cardsEl.children.length) {
+        var enclosureBottom = cardsBoxEl.getBoundingClientRect().bottom + 1;
+        var shellRect = shell.getBoundingClientRect();
+        // Map the original inner contour through the SAME 70px/10px nine-slice
+        // geometry as the unchanged card frame. A 2px source underlap hides AA seams.
+        function sliceCoord(value, sourceSize, targetSize) {
+          if (value <= 70) return value * 10 / 70;
+          if (value >= sourceSize - 70) return targetSize - (sourceSize - value) * 10 / 70;
+          return 10 + (value - 70) * (targetSize - 20) / (sourceSize - 140);
+        }
+        function insetContour(radius) {
+          var points = [];
+          [[525,75,-90],[525,789,0],[75,789,90],[75,75,180]].forEach(function (corner) {
+            for (var step = 0; step <= 16; step++) {
+              var angle = (corner[2] + step * 90 / 16) * Math.PI / 180;
+              var x = corner[0] + radius * Math.cos(angle), y = corner[1] + radius * Math.sin(angle);
+              points.push([sliceCoord(x, 600, shellRect.width), sliceCoord(y, 864, shellRect.height)]);
+            }
+          });
+          return points;
+        }
+        var contour = insetContour(42);
+        shell.style.setProperty('--shop-sky-contour', 'polygon(' + contour.map(function (p) { return p[0].toFixed(3) + 'px ' + p[1].toFixed(3) + 'px'; }).join(',') + ')');
+        var inner = insetContour(40);
+        var ring = 'M0 0H' + shellRect.width + 'V' + shellRect.height + 'H0Z M' + inner.map(function (p) { return p[0].toFixed(3) + ' ' + p[1].toFixed(3); }).join(' L') + 'Z';
+        shell.style.setProperty('--shop-frame-ring', 'path(evenodd, "' + ring + '")');
+        el.style.setProperty('--shop-dots-y', ((enclosureBottom + shellRect.top - header.getBoundingClientRect().height) / 2) + 'px');
+        el.style.setProperty('--shop-dots-right', (el.getBoundingClientRect().right - shellRect.right + 10) + 'px');
+      }
+    }
+    root.addEventListener('resize', function () { if (!el.hidden) requestAnimationFrame(alignCoinPrices); });
 
     function show() {
       renderBanner();
-      activeTab = 'currency';
-      currencyFilter = (MG && MG.shopPick) || null; MG.shopPick = null; // v904: 홈에서 알약 + 를 눌러 들어오면 그 재화 상품만
+      var shopPick = (MG && MG.shopPick) || null;
+      activeTab = shopPick === 'heart' ? 'currency' : (shopPick || 'currency');
+      currencyFilter = shopPick === 'heart' ? 'heart' : null; MG.shopPick = null;
       cardsEl.scrollLeft = 0;
       render();
       animateHudEntrance();

@@ -7699,7 +7699,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen .rb-song-choice:last-child { margin-bottom:0; }
 #rhythm-screen .rb-song-actions .rx-btn { height:44px; min-height:44px; aspect-ratio:auto; }
 #rhythm-screen .rb-song-ad { background-image:url('assets/rhythm/ui/btn-blue.png'); background-size:100% 100%; background-position:center; }
-#rhythm-screen .rb-song-ad img { height:43px; width:40px; object-fit:contain; pointer-events:none; -webkit-mask-image:radial-gradient(ellipse 2px 2px at 14% 2%,transparent 98%,#000 100%); mask-image:radial-gradient(ellipse 2px 2px at 14% 2%,transparent 98%,#000 100%); }
+#rhythm-screen .rb-song-ad img { height:43px; width:40px; object-fit:contain; pointer-events:none; }
 #rhythm-screen .rx-card .rx-title,#rhythm-screen .rx-card .rx-plaque { z-index:4; }
 #rhythm-screen .rp-type-card { padding-top:42px; }
 #rhythm-screen .rb-song-card { padding-bottom:90px; }
@@ -9121,6 +9121,95 @@ img[src$="/ic-ticket-note-complete.webp"] { object-fit: contain !important; obje
 #game-screen.is-start .lane-ai-bit { display: none; }
 #game-screen:not(.is-start):not(.diff-mid):not(.diff-legend):not(.gs-invincible)[data-button-palette] .lane-button--hot:not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss) .lane-ai-bit { color: #17324d; }
 
+/* Shop uses the original matte undo icon from the Score screen. */
+#shop-screen .shop-back {
+  position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); left: 10px; z-index: 10;
+  width: 46px; height: 46px; padding: 0; border: 0; background: none; cursor: pointer;
+}
+#shop-screen .shop-back img { width: 100%; height: 100%; object-fit: contain; display: block; }
+#shop-screen .shop-back:active { transform: scale(0.9); }
+
+/* Shop review: one layout definition, approved artwork proportions, three visible tabs. */
+#shop-screen { position:fixed!important; inset:0!important; transform:none!important; width:100%!important; height:100dvh!important; max-width:none!important; max-height:none!important; display:grid!important; grid-template-rows:auto minmax(0,1fr) auto!important; grid-template-columns:minmax(0,1fr)!important; gap:0!important; padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)!important; border:0!important; border-radius:0!important; box-shadow:none!important; background:#8fcdee!important; overflow:hidden!important; z-index:5000!important; container-type:inline-size; }
+#shop-screen[hidden] { display:none!important; }
+#shop-screen::before,#shop-screen::after,#shop-screen>.shop-frame,#shop-screen .shop-banner::before,#shop-screen .shop-banner::after { display:none!important; }
+#shop-screen>.shop-back { position:absolute!important; top:4px!important; left:4px!important; z-index:20!important; width:38px; height:38px; }
+#shop-screen>.shop-banner { position:relative!important; width:100%!important; height:37cqw!important; min-height:0!important; margin:0!important; padding:0!important; background:none!important; border:0!important; box-shadow:none!important; overflow:visible!important; z-index:2!important; }
+#shop-screen .shop-banner-awning { position:absolute!important; inset:auto 1% 0!important; width:98%!important; height:100%!important; max-height:100%!important; object-fit:fill!important; }
+#shop-screen .shop-banner-nameplate { position:absolute!important; left:27%!important; top:calc(2% - 6px)!important; width:46%!important; height:48%!important; display:grid!important; place-items:center!important; }
+#shop-screen .shop-nameplate-fill,#shop-screen .shop-nameplate-rim { position:absolute!important; inset:0!important; width:100%!important; height:100%!important; object-fit:contain!important; }
+#shop-screen .shop-nameplate-stud { position:absolute!important; top:52%!important; width:6%!important; height:18%!important; object-fit:contain!important; }
+#shop-screen .shop-nameplate-stud--left { left:8%!important; } #shop-screen .shop-nameplate-stud--right { right:8%!important; }
+#shop-screen .shop-banner-txt { position:relative!important; z-index:2!important; margin:0!important; padding:0!important; font:900 6.8cqw/1 'Jua',sans-serif!important; color:#491d06!important; -webkit-text-stroke:0!important; text-shadow:none!important; white-space:nowrap!important; }
+#shop-screen>.shop-cards-box { position:relative!important; display:block!important; height:100%!important; min-height:0!important; margin:-7cqw 6.8% 0!important; padding:1.5cqw 0 5cqw!important; background:none!important; border:0!important; box-shadow:none!important; overflow:visible!important; }
+#shop-screen .shop-cards { position:relative!important; display:grid!important; grid-template-columns:repeat(2,minmax(0,1fr))!important; grid-auto-rows:minmax(0,1fr)!important; grid-template-rows:repeat(2,minmax(0,1fr))!important; gap:1.8cqw!important; width:100%!important; height:100%!important; margin:0!important; padding:0!important; overflow:hidden!important; }
+#shop-screen .shop-card { position:relative!important; display:grid!important; grid-template-rows:16% minmax(0,1fr) 20%!important; width:100%!important; height:100%!important; min-width:0!important; min-height:0!important; aspect-ratio:auto!important; margin:0!important; padding:1.8cqw!important; gap:0!important; background:url('assets/inventory/skill-v1403/card.webp') center/100% 100% no-repeat!important; border:0!important; border-radius:3.4cqw!important; box-shadow:none!important; overflow:hidden!important; clip-path:none!important; animation:none!important; transform:none!important; }
+#shop-screen .shop-card::before,#shop-screen .shop-card::after { display:none!important; }
+#shop-screen .shop-card-name-box,#shop-screen .shop-card-name { position:relative!important; inset:auto!important; display:grid!important; place-items:center!important; align-self:stretch!important; grid-row:1!important; width:100%!important; height:100%!important; min-height:0!important; max-height:none!important; margin:0!important; padding:0!important; background:none!important; border:0!important; border-radius:0!important; box-shadow:none!important; clip-path:none!important; animation:none!important; color:#491d06!important; font:900 6.3cqw/1.1 'Jua',sans-serif!important; white-space:nowrap!important; text-shadow:none!important; -webkit-text-stroke:0!important; }
+#shop-screen .shop-card:last-child .shop-card-name { font-size:4.5cqw!important; }
+#shop-screen .shop-card-img-box { position:relative!important; grid-row:2!important; inset:auto!important; width:100%!important; height:100%!important; min-height:0!important; margin:0!important; padding:0!important; background:none!important; border:0!important; border-radius:0!important; overflow:visible!important; }
+#shop-screen .shop-card-badge--hero { position:absolute!important; inset:0!important; width:100%!important; height:100%!important; margin:0!important; background:none!important; }
+#shop-screen .shop-card-badge--hero img { object-fit:contain!important; max-width:100%!important; max-height:100%!important; }
+#shop-screen .hero-solo { position:absolute!important; inset:0!important; margin:auto!important; width:90%!important; height:94%!important; transform:none!important; }
+#shop-screen .hero-pile,#shop-screen .hero-jar,#shop-screen .hero-ad { position:absolute!important; inset:0!important; width:100%!important; height:100%!important; overflow:visible!important; }
+#shop-screen .hero-pile-main { position:absolute!important; left:25%!important; top:22%!important; width:48%!important; height:70%!important; transform:none!important; }
+#shop-screen .hero-mini { position:absolute!important; width:39%!important; height:57%!important; }
+#shop-screen .hero-mini--0 { left:8%!important; top:17%!important; } #shop-screen .hero-mini--1 { left:14%!important; top:44%!important; }
+#shop-screen .hero-mini--2 { left:34%!important; top:0!important; } #shop-screen .hero-mini--3 { left:45%!important; top:42%!important; }
+#shop-screen .hero-mini--4 { left:60%!important; top:17%!important; } #shop-screen .hero-mini--5 { left:56%!important; top:43%!important; }
+#shop-screen .hero-jar img { position:absolute!important; left:10%!important; top:19%!important; width:80%!important; height:78%!important; transform:none!important; }
+#shop-screen .hero-jar .hero-jar-hearts { position:absolute!important; left:19%!important; top:40%!important; width:62%!important; height:50%!important; display:grid!important; grid-template-columns:repeat(4,1fr)!important; z-index:1!important; }
+#shop-screen .hero-jar .hero-jar-hearts img { position:static!important; width:100%!important; height:100%!important; }
+#shop-screen .hero-jar-front { z-index:2!important; } #shop-screen .hero-jar-reflection { z-index:3!important; }
+#shop-screen .hero-jar .hero-jar-lid { left:28%!important; top:8%!important; width:44%!important; height:25%!important; z-index:4!important; }
+#shop-screen .hero-jar .hero-jar-ribbon { left:44%!important; top:17%!important; width:34%!important; height:37%!important; z-index:5!important; }
+#shop-screen .hero-ad-heart { z-index:1!important; position:absolute!important; left:0!important; top:12%!important; width:64%!important; height:80%!important; transform:none!important; }
+#shop-screen .hero-ad-icon { z-index:2!important; position:absolute!important; left:52%!important; top:16%!important; width:48%!important; height:78%!important; transform:none!important; }
+#shop-screen .shop-card-desc { display:none!important; }
+#shop-screen .shop-card-pill { position:absolute!important; z-index:8!important; right:4%!important; left:auto!important; top:auto!important; bottom:26%!important; width:30%!important; height:15%!important; min-height:0!important; padding:0!important; margin:0!important; display:grid!important; place-items:center!important; background:url('assets/shop-ui-v1450/12-quantity-badge.webp') center/contain no-repeat!important; border:0!important; box-shadow:none!important; transform:none!important; font:900 4.3cqw/1 'Jua',sans-serif!important; color:white!important; -webkit-text-stroke:1px #b21952!important; paint-order:stroke fill!important; }
+#shop-screen .shop-card-pill svg,#shop-screen .shop-card-pill img { display:none!important; }
+#shop-screen .shop-card--blue .shop-card-pill { display:none!important; }
+#shop-screen .shop-card-btn { position:relative!important; inset:auto!important; grid-row:3!important; align-self:end!important; display:flex!important; justify-content:center!important; align-items:center!important; gap:3%!important; width:100%!important; height:10.7cqw!important; min-height:0!important; max-height:100%!important; margin:0!important; padding:0!important; border:0!important; border-radius:2.7cqw!important; background:none!important; box-shadow:none!important; isolation:isolate!important; color:#fff!important; font:900 7cqw/1 'Jua',sans-serif!important; text-shadow:none!important; paint-order:stroke fill!important; -webkit-text-stroke:1px #08611a!important; }
+#shop-screen .shop-card-btn:disabled { opacity:1!important; filter:none!important; }
+#shop-screen .shop-card-btn--ad { background:none!important; box-shadow:none!important; font-size:4.7cqw!important; -webkit-text-stroke:0!important; }
+#shop-screen .shop-card-btn>.shop-coins-stack { width:32%!important; height:100%!important; max-width:none!important; max-height:none!important; margin:0!important; flex:none!important; object-fit:contain!important; }
+#shop-screen .scb-play-box { display:grid!important; place-items:center!important; width:17%!important; height:70%!important; background:none!important; } #shop-screen .scb-play-box svg { width:100%!important; height:100%!important; }
+#shop-screen .shop-cards-head { position:fixed!important; right:var(--shop-dots-right,18px)!important; bottom:auto!important; top:var(--shop-dots-y,75vh)!important; width:auto!important; height:2.5cqw!important; padding:0!important; z-index:3!important; }
+#shop-screen .shop-dots { display:flex!important; gap:1.4cqw!important; align-items:center!important; height:100%!important; } #shop-screen .shop-dot { width:1.8cqw!important; height:1.8cqw!important; border:1px solid #d6aa60!important; border-radius:50%!important; background:#ead3a2!important; } #shop-screen .shop-dot--on { background:#ffae00!important; }
+#shop-screen>.shop-tab-shell { position:relative!important; z-index:2!important; width:calc(100% - 16px)!important; min-width:0!important; height:45cqw!important; min-height:0!important; margin:0 8px 8px!important; padding:10px!important; box-sizing:border-box!important; isolation:isolate!important; border-radius:18px!important; background:none!important; box-shadow:none!important; filter:drop-shadow(0 3px 0 #af8d58)!important; overflow:visible!important; }
+#shop-screen .shop-tab-shell::before { content:''; position:absolute; inset:0; z-index:-1; pointer-events:none; border:10px solid transparent; border-image:url('assets/inventory/skill-v1403/card.webp') 70 / 10px stretch; clip-path:var(--shop-frame-ring,none); filter:brightness(.94) saturate(1.1); }
+#shop-screen .shop-tab-shell::after { content:''; position:absolute; inset:0; z-index:-2; pointer-events:none; background:#03c5b1; -webkit-mask-box-image:none; clip-path:var(--shop-sky-contour,inset(10px round 8px)); }
+#shop-screen .shop-tabbar { position:relative!important; display:flex!important; flex-flow:row nowrap!important; align-items:stretch!important; width:100%!important; height:100%!important; min-width:0!important; min-height:0!important; margin:0!important; padding:4.5px 0!important; gap:0!important; border:0!important; border-radius:10px!important; background:none!important; box-shadow:none!important; overflow-x:auto!important; overflow-y:hidden!important; scroll-snap-type:x mandatory!important; scrollbar-width:none!important; touch-action:pan-x!important; box-sizing:border-box!important; }
+
+#shop-screen .shop-tab { position:relative!important; display:grid!important; grid-template-rows:minmax(0,1fr) 7.8cqw!important; justify-items:center!important; align-items:center!important; flex:0 0 33.333333%!important; width:33.333333%!important; height:100%!important; min-width:0!important; margin:0!important; padding:2.5cqw 1.5cqw 2cqw!important; gap:.8cqw!important; box-sizing:border-box!important; border:0!important; border-radius:3cqw!important; background:none!important; border-image:none!important; box-shadow:none!important; isolation:isolate!important; transform:none!important; translate:none!important; rotate:none!important; scale:none!important; inset:auto!important; scroll-snap-align:none!important; }
+#shop-screen .shop-tab--on { background:none!important; }
+#shop-screen .shop-tab-ico { position:relative!important; display:grid!important; place-items:center!important; width:107px!important; height:84px!important; max-width:100%!important; align-self:center!important; overflow:visible!important; flex:none!important; min-height:0!important; margin:0!important; transform:none!important; }
+#shop-screen .shop-tab-ico img { position:absolute!important; inset:4%!important; width:92%!important; height:92%!important; min-width:0!important; min-height:0!important; max-width:92%!important; max-height:92%!important; object-fit:contain!important; transform:none!important; }
+#shop-screen .shop-tab-lbl { position:relative!important; display:grid!important; width:100%!important; height:100%!important; margin:0!important; padding:0!important; flex:none!important; transform:none!important; font:900 5.8cqw/1.2 'Jua',sans-serif!important; color:#491d06!important; text-align:center!important; place-items:center!important; white-space:nowrap!important; text-shadow:none!important; -webkit-text-stroke:0!important; }
+#shop-screen .shop-tab--on .shop-tab-lbl { color:white!important; text-shadow:0 1px #b65d03!important; }
+#shop-screen .shop-tab + .shop-tab { margin:0!important; }
+#shop-screen .shop-tab:nth-child(1),#shop-screen .shop-tab:nth-child(4) { scroll-snap-align:start!important; }
+#shop-screen .shop-tab::after,#shop-screen .shop-card-btn::after { display:none!important; }
+#shop-screen>.shop-cards-box::before { content:''; position:absolute; top:-12cqw; bottom:0; left:-3cqw; right:-3cqw; z-index:0; pointer-events:none; background:linear-gradient(90deg,#fff1d0,#fff9e9 50%,#fff1d0); border:1.5cqw solid #f8e1b5; border-top:0; border-radius:0; box-shadow:0 0 0 1px #e8bd76,inset 0 0 0 1px #fffdf5; }
+#shop-screen .shop-cards { z-index:1!important; }
+#shop-screen .shop-card-btn::before { content:''!important; display:block!important; position:absolute!important; inset:0!important; width:100%!important; height:100%!important; border-radius:0!important; z-index:-1!important; background:url('assets/inventory/ui-v1379/equip-pill-transparent.webp') center/100% 100% no-repeat!important; filter:hue-rotate(260deg)!important; opacity:1!important; }
+#shop-screen .shop-card-btn--ad::before { filter:hue-rotate(45deg)!important; }
+
+#shop-screen .shop-weapon-sign { position:absolute!important; inset:0!important; width:100%!important; height:100%!important; object-fit:contain!important; filter:url(#shop-sign-color); }
+#shop-screen .shop-sign-defs { position:absolute; width:0; height:0; pointer-events:none; }
+/* Approved tab A: cream raised rim, shallow side, orange selected face. */
+#shop-screen .shop-tab::before { content:''!important; display:block!important; position:absolute!important; left:1cqw!important; right:1cqw!important; top:3px!important; bottom:7px!important; width:auto!important; height:auto!important; z-index:-1!important; pointer-events:none!important; border:3px solid #f9e5bb!important; border-radius:3cqw!important; background:linear-gradient(#fffdf0,#fff1d0)!important; box-shadow:0 4px 0 #cda76b,inset 0 1px 0 white,inset 0 0 0 1px #e4bd7b!important; opacity:1!important; }
+#shop-screen .shop-tab--on::before { border-color:#ffbf44!important; background:linear-gradient(#ffd33a,#ff971b)!important; box-shadow:0 4px 0 #c97718,inset 0 1px 0 #fff1aa,inset 0 0 0 1px #ef8613!important; }
+#shop-screen .shop-tab:active { transform:translateY(3px)!important; filter:none!important; }
+#shop-screen .shop-tab:active::before { box-shadow:0 1px 0 #cda76b,inset 0 1px 0 white,inset 0 0 0 1px #e4bd7b!important; }
+#shop-screen .shop-tab--on:active::before { box-shadow:0 1px 0 #c97718,inset 0 1px 0 #fff1aa,inset 0 0 0 1px #ef8613!important; }
+#shop-screen .shop-tab:active>* { transform:none!important; }
+#shop-screen .shop-price-group { display:inline-flex!important; align-items:center!important; justify-content:center!important; width:max-content!important; height:100%!important; gap:6px!important; pointer-events:none!important; }
+#shop-screen .shop-price-group>.shop-coins-stack { display:block!important; flex:none!important; width:var(--price-icon-width)!important; height:var(--price-icon-height)!important; margin:0!important; max-width:none!important; max-height:none!important; object-fit:contain!important; }
+#shop-screen .shop-price-group>b { display:block!important; flex:none!important; margin:0!important; padding:0!important; font:inherit!important; line-height:1!important; }
+#shop-screen .hero-jar-full { position:absolute!important; inset:0!important; width:100%!important; height:100%!important; object-fit:contain!important; margin:0!important; transform:none!important; }
+#shop-screen .shop-card-name-box { transform:translateY(4px)!important; }
+#shop-screen .shop-card-pill>span { display:block!important; width:max-content!important; height:auto!important; margin:0!important; padding:0!important; line-height:1!important; transform-origin:50% 50%!important; }
 /* Normal DIM on the yellow 3rd/4th round buttons: keep the hint subdued but distinct from the button face. */
 #game-screen.diff-mid[data-button-palette="yellow"] .lane-button--hot :is(.lane-num,.lane-sub,.lane-kr,.lane-en,.lane-lbl) { color: #9b8750; }
 #game-screen.diff-mid[data-button-palette="yellow"] .lane-button--hot .lane-ico svg { stroke: #9b8750; fill: #9b8750; }
