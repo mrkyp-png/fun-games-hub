@@ -184,6 +184,14 @@
         localStorage.setItem('mole.diag.comboGuard1379G', '1');
       }
     } catch (e) { /* Storage may be unavailable. */ }
+    // Clear the saved 11:00 null-combo error once after the V1448 callback guards.
+    try {
+      if (!localStorage.getItem('mole.diag.clearCombo1100After1448G')) {
+        diag = diag.filter((line) => !(/^11:00 ERR /.test(line) && /Cannot read properties of null.*reading ['"]combo['"]/.test(line) && /@game\.js:/.test(line)));
+        localStorage.setItem('mole.diag', JSON.stringify(diag));
+        localStorage.setItem('mole.diag.clearCombo1100After1448G', '1');
+      }
+    } catch (e) { /* Storage may be unavailable. */ }
     // V1399 C 사용자: '에러 메세지 확인 후 조치하고 메세지 지워' — ResizeObserver 오류(무기화면 크기 맞춤)는 V1398 C 에서 고침 → 남은 기록 1회 전부 지움.
     try { if (!localStorage.getItem('mole.diag.clear1399C')) { diag = []; localStorage.setItem('mole.diag', '[]'); localStorage.setItem('mole.diag.clear1399C', '1'); } } catch (e) { /* 무시 */ }
     const saveDiag = (line) => {
