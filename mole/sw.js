@@ -489,6 +489,7 @@ const SHELL = [
   './assets/shop-ui-v1450/skill-icon.png',
   './assets/shop-ui-v1450/ticket-icon.webp',
   './assets/shop/ad-icon-complete.png',
+  './assets/inventory/ui-v1379/nameplate.webp',
   './assets/shop-ui-v1450/heart-jar-full.png',
   './assets/shop/mini-1.png',
   './assets/shop/mini-2.png',
