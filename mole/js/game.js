@@ -2798,6 +2798,7 @@
   // 색 역할을 반대로(분홍이 먼저 천천히, 노랑이 따라잡아 최종 노랑) 재생해 라운드
   // 전환(최종 분홍)과 구분(사용자 요청) — 목숨 소진 실패도 동일하게 적용.
   function closeCurtain(cb) {
+    const myGen = sessionGen;
     const ri = document.getElementById('round-intro-overlay');
     ri.classList.remove('is-opening');
     ri.querySelector('.round-intro-title').textContent = '';
@@ -2807,6 +2808,7 @@
     setHammerLayerVisible(false);
     restartCurtainPattern(ri, true);
     setTimeout(() => {
+      if (myGen !== sessionGen) return; // Discard stale result callback after leaving this session.
       ri.classList.remove('has-mole');
       cb();
     }, 2300);
@@ -2828,6 +2830,7 @@
 
   // 최종 결과 화면 (라운드 완주 or 목숨 소진).
   function finishFromRound(reason) {
+    if (!run || !run.combo) return; // Home may have cleared the session before this callback runs.
     setNavLock(false); // 결과 화면에선 ⊞ = 홈으로 (활성)
     const total = run.combo.score;
     const light = currentLight();
