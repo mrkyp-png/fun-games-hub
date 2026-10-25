@@ -9133,7 +9133,7 @@ img[src$="/ic-ticket-note-complete.webp"] { object-fit: contain !important; obje
 #shop-screen { position:fixed!important; inset:0!important; transform:none!important; width:100%!important; height:100dvh!important; max-width:none!important; max-height:none!important; display:grid!important; grid-template-rows:auto minmax(0,1fr) auto!important; grid-template-columns:minmax(0,1fr)!important; gap:0!important; padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)!important; border:0!important; border-radius:0!important; box-shadow:none!important; background:#8fcdee!important; overflow:hidden!important; z-index:5000!important; container-type:inline-size; }
 #shop-screen[hidden] { display:none!important; }
 #shop-screen::before,#shop-screen::after,#shop-screen>.shop-frame,#shop-screen .shop-banner::before,#shop-screen .shop-banner::after { display:none!important; }
-#shop-screen>.shop-back { position:absolute!important; top:4px!important; left:4px!important; z-index:20!important; width:38px; height:38px; }
+#shop-screen>.shop-back { position:absolute!important; top:8px!important; left:8px!important; z-index:20!important; width:38px; height:38px; }
 #shop-screen>.shop-banner { position:relative!important; width:100%!important; height:37cqw!important; min-height:0!important; margin:0!important; padding:0!important; background:none!important; border:0!important; box-shadow:none!important; overflow:visible!important; z-index:2!important; }
 #shop-screen .shop-banner-awning { position:absolute!important; inset:auto 1% 0!important; width:98%!important; height:100%!important; max-height:100%!important; object-fit:fill!important; }
 #shop-screen .shop-banner-nameplate { position:absolute!important; left:27%!important; top:calc(2% - 6px)!important; width:46%!important; height:48%!important; display:grid!important; place-items:center!important; }
@@ -9190,7 +9190,9 @@ img[src$="/ic-ticket-note-complete.webp"] { object-fit: contain !important; obje
 #shop-screen .shop-tab + .shop-tab { margin:0!important; }
 #shop-screen .shop-tab:nth-child(1),#shop-screen .shop-tab:nth-child(4) { scroll-snap-align:start!important; }
 #shop-screen .shop-tab::after,#shop-screen .shop-card-btn::after { display:none!important; }
-#shop-screen>.shop-cards-box::before { content:''; position:absolute; top:-12cqw; bottom:0; left:-3cqw; right:-3cqw; z-index:0; pointer-events:none; background:linear-gradient(90deg,#fff1d0,#fff9e9 50%,#fff1d0); border:1.5cqw solid #f8e1b5; border-top:0; border-radius:0; box-shadow:0 0 0 1px #e8bd76,inset 0 0 0 1px #fffdf5; }
+#shop-screen>.shop-cards-box::before { content:''; position:absolute; top:-12cqw; bottom:0; left:-3cqw; right:-3cqw; z-index:0; pointer-events:none; border:10px solid transparent; border-image:url('assets/inventory/skill-v1403/card.webp') 70 / 10px stretch; clip-path:var(--shop-product-frame-ring,none); background:none; box-shadow:none; filter:none; }
+#shop-screen>.shop-cards-box::after { content:''; position:absolute; top:-12cqw; bottom:0; left:-3cqw; right:-3cqw; z-index:-1; pointer-events:none; background:linear-gradient(90deg,#fff1d0,#fff9e9 50%,#fff1d0); clip-path:var(--shop-product-fill,inset(10px round 8px)); box-shadow:none; filter:none; }
+
 #shop-screen .shop-cards { z-index:1!important; }
 #shop-screen .shop-card-btn::before { content:''!important; display:block!important; position:absolute!important; inset:0!important; width:100%!important; height:100%!important; border-radius:0!important; z-index:-1!important; background:url('assets/inventory/ui-v1379/equip-pill-transparent.webp') center/100% 100% no-repeat!important; filter:hue-rotate(260deg)!important; opacity:1!important; }
 #shop-screen .shop-card-btn--ad::before { filter:hue-rotate(45deg)!important; }
@@ -9210,6 +9212,16 @@ img[src$="/ic-ticket-note-complete.webp"] { object-fit: contain !important; obje
 #shop-screen .hero-jar-full { position:absolute!important; inset:0!important; width:100%!important; height:100%!important; object-fit:contain!important; margin:0!important; transform:none!important; }
 #shop-screen .shop-card-name-box { transform:translateY(4px)!important; }
 #shop-screen .shop-card-pill>span { display:block!important; width:max-content!important; height:auto!important; margin:0!important; padding:0!important; line-height:1!important; transform-origin:50% 50%!important; }
+/* User-requested content offset; the back button has its own independent position. */
+#shop-screen>.shop-banner,#shop-screen>.shop-cards-box,#shop-screen>.shop-tab-shell { top:-0.3cm!important; }
+/* Background decoration is independent of the shop artwork and future sky colors. */
+#shop-screen>.shop-sky { position:absolute!important; inset:0!important; z-index:0!important; pointer-events:none!important; overflow:hidden!important; }
+#shop-screen .shop-cloud { position:absolute; left:0; width:110px; height:42px; fill:#f5fbff; opacity:.16; animation:shop-cloud-drift 80s linear infinite; will-change:transform; pointer-events:none; }
+#shop-screen .shop-cloud--one { top:0; animation-delay:-21s; }
+#shop-screen .shop-cloud--two { top:43%; width:85px; height:32px; opacity:.12; animation-duration:105s; animation-delay:-67s; }
+#shop-screen .shop-cloud--three { bottom:-5px; width:125px; height:46px; opacity:.14; animation-duration:120s; animation-delay:-85s; }
+@keyframes shop-cloud-drift { from { transform:translateX(-150px); } to { transform:translateX(calc(100vw + 150px)); } }
+@media (prefers-reduced-motion:reduce) { #shop-screen .shop-cloud { animation-duration:240s; } }
 /* Normal DIM on the yellow 3rd/4th round buttons: keep the hint subdued but distinct from the button face. */
 #game-screen.diff-mid[data-button-palette="yellow"] .lane-button--hot :is(.lane-num,.lane-sub,.lane-kr,.lane-en,.lane-lbl) { color: #9b8750; }
 #game-screen.diff-mid[data-button-palette="yellow"] .lane-button--hot .lane-ico svg { stroke: #9b8750; fill: #9b8750; }

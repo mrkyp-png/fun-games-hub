@@ -456,22 +456,30 @@
           if (value >= sourceSize - 70) return targetSize - (sourceSize - value) * 10 / 70;
           return 10 + (value - 70) * (targetSize - 20) / (sourceSize - 140);
         }
-        function insetContour(radius) {
+        function insetContour(radius, width, height) {
           var points = [];
           [[525,75,-90],[525,789,0],[75,789,90],[75,75,180]].forEach(function (corner) {
             for (var step = 0; step <= 16; step++) {
               var angle = (corner[2] + step * 90 / 16) * Math.PI / 180;
               var x = corner[0] + radius * Math.cos(angle), y = corner[1] + radius * Math.sin(angle);
-              points.push([sliceCoord(x, 600, shellRect.width), sliceCoord(y, 864, shellRect.height)]);
+              points.push([sliceCoord(x, 600, width), sliceCoord(y, 864, height)]);
             }
           });
           return points;
         }
-        var contour = insetContour(42);
-        shell.style.setProperty('--shop-sky-contour', 'polygon(' + contour.map(function (p) { return p[0].toFixed(3) + 'px ' + p[1].toFixed(3) + 'px'; }).join(',') + ')');
-        var inner = insetContour(40);
-        var ring = 'M0 0H' + shellRect.width + 'V' + shellRect.height + 'H0Z M' + inner.map(function (p) { return p[0].toFixed(3) + ' ' + p[1].toFixed(3); }).join(' L') + 'Z';
-        shell.style.setProperty('--shop-frame-ring', 'path(evenodd, "' + ring + '")');
+        function applyFrameContour(target, width, height, fillProperty, frameProperty) {
+          var contour = insetContour(42, width, height);
+          target.style.setProperty(fillProperty, 'polygon(' + contour.map(function (p) { return p[0].toFixed(3) + 'px ' + p[1].toFixed(3) + 'px'; }).join(',') + ')');
+          var inner = insetContour(40, width, height);
+          var ring = 'M0 0H' + width + 'V' + height + 'H0Z M' + inner.map(function (p) { return p[0].toFixed(3) + ' ' + p[1].toFixed(3); }).join(' L') + 'Z';
+          target.style.setProperty(frameProperty, 'path(evenodd, "' + ring + '")');
+        }
+        applyFrameContour(shell, shellRect.width, shellRect.height, '--shop-sky-contour', '--shop-frame-ring');
+        var productBox = cardsBoxEl.getBoundingClientRect();
+        var productFrame = getComputedStyle(cardsBoxEl, '::before');
+        var frameWidth = productBox.width - parseFloat(productFrame.left) - parseFloat(productFrame.right);
+        var frameHeight = productBox.height - parseFloat(productFrame.top) - parseFloat(productFrame.bottom);
+        applyFrameContour(cardsBoxEl, frameWidth, frameHeight, '--shop-product-fill', '--shop-product-frame-ring');
         el.style.setProperty('--shop-dots-y', ((enclosureBottom + shellRect.top - header.getBoundingClientRect().height) / 2) + 'px');
         el.style.setProperty('--shop-dots-right', (el.getBoundingClientRect().right - shellRect.right + 10) + 'px');
       }
