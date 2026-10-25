@@ -1930,8 +1930,8 @@ body { background: var(--lm-page); }
 /* 폭탄 든 두더지가 뜬 구멍의 버튼 위에 반투명 폭탄 이모지 + 글로우(사용자 지정). */
 .lane-bomb-indicator {
   position: absolute;
-  left: 50%;
-  top: 50%;
+  left: calc(50% + .04em);
+  top: calc(50% - .14em);
   width: max-content;
   height: auto;
   display: block;
@@ -1940,7 +1940,7 @@ body { background: var(--lm-page); }
   opacity: 0.5;
   pointer-events: none;
   z-index: 2;
-  transform: translate(-50%, -50%) rotate(30deg) scaleX(-1); /* 정사각 버튼 중심에 배치하고 게임보드 폭탄과 같은 각도·거울상 유지 */
+  transform: translate(-50%, -50%) rotate(30deg) scaleX(-1); /* 심지를 제외한 둥근 몸체 중심을 정사각 버튼 중앙에 맞춤 */
 }
 .lane-bomb-indicator--normal {
   filter: drop-shadow(0 0 3px #ff2a1a) drop-shadow(0 0 6px #ff2a1a) drop-shadow(0 0 10px #ff3020);
