@@ -9121,13 +9121,14 @@ img[src$="/ic-ticket-note-complete.webp"] { object-fit: contain !important; obje
 #game-screen.is-start .lane-ai-bit { display: none; }
 #game-screen:not(.is-start):not(.diff-mid):not(.diff-legend):not(.gs-invincible)[data-button-palette] .lane-button--hot:not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss) .lane-ai-bit { color: #17324d; }
 
-/* Shop uses the original matte undo icon from the Score screen. */
+/* Shop and Photo Fusion use the original matte undo icon from the Score screen. */
 #shop-screen .shop-back {
   position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); left: 10px; z-index: 10;
   width: 46px; height: 46px; padding: 0; border: 0; background: none; cursor: pointer;
 }
-#shop-screen .shop-back img { width: 100%; height: 100%; object-fit: contain; display: block; }
-#shop-screen .shop-back:active { transform: scale(0.9); }
+#shop-screen .shop-back img, #face-studio .fs-back img { width: 100%; height: 100%; object-fit: contain; display: block; }
+#shop-screen .shop-back:active, #face-studio .fs-back:active { transform: scale(0.9); }
+#face-studio .fs-back { width: 46px; height: 46px; }
 
 /* Shop review: one layout definition, approved artwork proportions, three visible tabs. */
 #shop-screen { position:fixed!important; inset:0!important; transform:none!important; width:100%!important; height:100dvh!important; max-width:none!important; max-height:none!important; display:grid!important; grid-template-rows:auto minmax(0,1fr) auto!important; grid-template-columns:minmax(0,1fr)!important; gap:0!important; padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)!important; border:0!important; border-radius:0!important; box-shadow:none!important; background:#8fcdee!important; overflow:hidden!important; z-index:5000!important; container-type:inline-size; }

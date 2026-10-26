@@ -32,7 +32,7 @@
   // 하단 탭 아이콘 — 상점(shop.js)과 같은 그라디언트 입체 아이콘 재사용(사용자 지정: "동일한
   // 스타일로"). 사진 탭은 다이얼패드 "사진보관" 카메라 아이콘(lane-controls.js SVG.locker)
   // 재사용 + 같은 톤의 그라디언트만 추가.
-  var WEAPON_TAB_ICON = '<img src="assets/tabs/weapon.png" alt="">'; // 사용자 제공 이미지(v755)
+  var WEAPON_TAB_ICON = '<img src="assets/inventory/ui-v1379/approved-mallet-redend-v1405.webp" alt="">'; // 무기 화면 전시용 원본
   var SKILL_TAB_ICON = '<img src="assets/tabs/skill.png" alt="">'; // 사용자 제공 이미지(v755)
   // 코스튬 아이콘 = 상점과 동일한 이모지로 통일(사용자 지정: "아이템에서도 코스튬 이모지 변경").
   var COSTUME_TAB_ICON = '<img src="assets/tabs/costume.png" alt="">';
