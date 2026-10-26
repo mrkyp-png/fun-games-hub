@@ -61,6 +61,8 @@
   .splash-loading-track { display:block; height:8px; overflow:hidden; border:1px solid #ffffff80; border-radius:999px; background:#00152b99; }
   .splash-loading-fill { display:block; width:35%; height:100%; border-radius:inherit; background:linear-gradient(90deg,#30cfff,#b8f5ff,#30cfff); animation:splash-loading-slide 1.3s ease-in-out infinite alternate; }
   #splash.is-ready .splash-loading { display:none; }
+  #splash.is-ready[data-asset-state="partial"] .splash-loading { display:block; }
+  #splash[data-asset-state="partial"] .splash-loading-track { display:none; }
   #splash:not(.is-art) .splash-loading { display:block; }
   @keyframes splash-loading-slide { from { transform:translateX(0); } to { transform:translateX(186%); } }
   @media(prefers-reduced-motion:reduce) { .splash-loading-fill { animation:none; width:100%; opacity:.7; } }
@@ -301,7 +303,7 @@
 <link rel="stylesheet" href="workshop-enhance.css">
 </head>
 <body>
-<div id="splash" role="img" aria-label="두더지팡!"><div class="splash-stage" aria-hidden="true"><svg class="loading-equalizer" viewBox="0 0 941 860" preserveAspectRatio="none" aria-hidden="true"><defs><mask id="loading-meter-region"><rect x="400" y="535" width="153" height="132" fill="white"/></mask><mask id="loading-meter-active"><rect class="loading-meter-column" x="400" y="535" width="10" height="132" fill="white" style="--meter-time:0.42s;--meter-delay:-0.0s"/><rect class="loading-meter-column" x="413" y="549" width="10" height="118" fill="white" style="--meter-time:0.55s;--meter-delay:-0.21s"/><rect class="loading-meter-column" x="426" y="563" width="10" height="104" fill="white" style="--meter-time:0.6799999999999999s;--meter-delay:-0.42s"/><rect class="loading-meter-column" x="439" y="577" width="10" height="90" fill="white" style="--meter-time:0.81s;--meter-delay:-0.63s"/><rect class="loading-meter-column" x="452" y="535" width="10" height="132" fill="white" style="--meter-time:0.94s;--meter-delay:-0.84s"/><rect class="loading-meter-column" x="465" y="549" width="10" height="118" fill="white" style="--meter-time:0.42s;--meter-delay:-1.05s"/><rect class="loading-meter-column" x="478" y="563" width="10" height="104" fill="white" style="--meter-time:0.55s;--meter-delay:-1.26s"/><rect class="loading-meter-column" x="491" y="577" width="10" height="90" fill="white" style="--meter-time:0.6799999999999999s;--meter-delay:-1.47s"/><rect class="loading-meter-column" x="504" y="535" width="10" height="132" fill="white" style="--meter-time:0.81s;--meter-delay:-1.68s"/><rect class="loading-meter-column" x="517" y="549" width="10" height="118" fill="white" style="--meter-time:0.94s;--meter-delay:-1.89s"/><rect class="loading-meter-column" x="530" y="563" width="10" height="104" fill="white" style="--meter-time:0.42s;--meter-delay:-2.1s"/><rect class="loading-meter-column" x="543" y="577" width="10" height="90" fill="white" style="--meter-time:0.55s;--meter-delay:-2.31s"/></mask></defs><image href="assets/loading-stage-v1162/stage-cool-v1248.png" width="941" height="1672" mask="url(#loading-meter-active)" style="filter:brightness(1.45)"/></svg><svg class="loading-stage-lines" viewBox="0 0 941 860" preserveAspectRatio="none" aria-hidden="true"><defs><mask id="loading-trace-1" maskUnits="userSpaceOnUse" x="0" y="0" width="941" height="860"><ellipse cx="473" cy="592" rx="128" ry="114" stroke="white" pathLength="100" style="animation-delay:-0s"/><ellipse cx="473" cy="592" rx="107" ry="95" stroke="white" pathLength="100" style="animation-delay:-1s"/><ellipse cx="170" cy="562" rx="29" ry="43" stroke="white" pathLength="100" style="animation-delay:-2s"/><ellipse cx="170" cy="651" rx="29" ry="43" stroke="white" pathLength="100" style="animation-delay:-3s"/><ellipse cx="770" cy="562" rx="29" ry="43" stroke="white" pathLength="100" style="animation-delay:-4s"/><ellipse cx="770" cy="651" rx="29" ry="43" stroke="white" pathLength="100" style="animation-delay:-5s"/></mask></defs><image href="assets/loading-stage-v1162/stage-cool-v1248.png" x="0" y="0" width="941" height="1672" mask="url(#loading-trace-1)" style="filter:brightness(1.8);opacity:.9"/></svg></div><div class="splash-front-cap" aria-hidden="true"><svg class="loading-pad-glow" viewBox="0 0 941 540" preserveAspectRatio="none" aria-hidden="true"><defs><radialGradient id="loading-pad-light-0"><stop stop-color="#40d9ff" stop-opacity=".65"/><stop offset=".45" stop-color="#40d9ff" stop-opacity=".25"/><stop offset="1" stop-color="#40d9ff" stop-opacity="0"/></radialGradient><radialGradient id="loading-pad-light-1"><stop stop-color="#bc40f3" stop-opacity=".65"/><stop offset=".45" stop-color="#bc40f3" stop-opacity=".25"/><stop offset="1" stop-color="#bc40f3" stop-opacity="0"/></radialGradient><radialGradient id="loading-pad-light-2"><stop stop-color="#ffae23" stop-opacity=".65"/><stop offset=".45" stop-color="#ffae23" stop-opacity=".25"/><stop offset="1" stop-color="#ffae23" stop-opacity="0"/></radialGradient><radialGradient id="loading-pad-light-3"><stop stop-color="#f449bd" stop-opacity=".65"/><stop offset=".45" stop-color="#f449bd" stop-opacity=".25"/><stop offset="1" stop-color="#f449bd" stop-opacity="0"/></radialGradient></defs><ellipse class="pad-emission" cx="133" cy="105" rx="78" ry="33" fill="url(#loading-pad-light-0)" style="--pad-duration:3.74s;--pad-delay:0s"/><ellipse class="pad-emission" cx="356" cy="105" rx="78" ry="33" fill="url(#loading-pad-light-1)" style="--pad-duration:4.08s;--pad-delay:-0.5s"/><ellipse class="pad-emission" cx="582" cy="105" rx="78" ry="33" fill="url(#loading-pad-light-2)" style="--pad-duration:4.42s;--pad-delay:-1s"/><ellipse class="pad-emission" cx="806" cy="105" rx="78" ry="33" fill="url(#loading-pad-light-3)" style="--pad-duration:4.76s;--pad-delay:-1.5s"/></svg><svg class="loading-stage-lines" viewBox="0 0 941 540" preserveAspectRatio="none" aria-hidden="true"><defs><mask id="loading-trace-2" maskUnits="userSpaceOnUse" x="0" y="0" width="941" height="540"><ellipse cx="133" cy="105" rx="95" ry="43" stroke="white" pathLength="100" style="animation-delay:-0s"/><ellipse cx="356" cy="105" rx="95" ry="43" stroke="white" pathLength="100" style="animation-delay:-1s"/><ellipse cx="582" cy="105" rx="95" ry="43" stroke="white" pathLength="100" style="animation-delay:-2s"/><ellipse cx="806" cy="105" rx="95" ry="43" stroke="white" pathLength="100" style="animation-delay:-3s"/></mask></defs><image href="assets/loading-stage-v1162/stage-cool-v1248.png" x="0" y="-860" width="941" height="1672" mask="url(#loading-trace-2)" style="filter:brightness(1.8);opacity:.9"/></svg></div><div class="splash-front-face" aria-hidden="true"></div><div class="splash-brand" aria-hidden="true"><img src="assets/home2/splash-art.webp" alt=""></div><img class="splash-performers" src="assets/loading-cyber-v1153/characters.webp" alt=""><svg class="splash-glasses" viewBox="0 0 1774 887" aria-hidden="true"><defs><clipPath id="loading-glasses-lenses"><path d="M628 207 Q648 200 693 222 L689 244 Q680 264 648 251 Q628 244 625 229 Z M748 248 Q769 243 803 265 L795 289 Q785 303 760 287 Q746 277 748 248 Z"/></clipPath><linearGradient id="loading-glasses-shine"><stop stop-color="#39bfff" stop-opacity="0"/><stop offset=".48" stop-color="#59dbff" stop-opacity=".55"/><stop offset=".62" stop-color="#d2faff" stop-opacity=".95"/><stop offset="1" stop-color="#236bff" stop-opacity="0"/></linearGradient></defs><g clip-path="url(#loading-glasses-lenses)"><path class="splash-glasses-sweep" d="M640 175 L676 175 L621 325 L585 325 Z" fill="url(#loading-glasses-shine)"/></g></svg><div class="splash-notes" aria-hidden="true"><svg width="0" height="0" style="position:absolute"><defs><symbol id="splash-note-single" viewBox="0 0 32 32"><path d="M13 5V24M13 5C14 12 25 8 23 17" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="9" cy="24" rx="5" ry="3.6" transform="rotate(-20 9 24)" fill="#000" stroke="#000" stroke-width="2.5"/><path d="M13 5V24M13 5C14 12 25 8 23 17" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="9" cy="24" rx="5" ry="3.6" transform="rotate(-20 9 24)" fill="currentColor"/></symbol><symbol id="splash-note-quarter" viewBox="0 0 32 32"><path d="M18 5V24" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="14" cy="24" rx="5" ry="3.6" transform="rotate(-20 14 24)" fill="#000" stroke="#000" stroke-width="2.5"/><path d="M18 5V24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="14" cy="24" rx="5" ry="3.6" transform="rotate(-20 14 24)" fill="currentColor"/></symbol><symbol id="splash-note-pair" viewBox="0 0 32 32"><path d="M12 8V25M27 4V21M12 8L27 4" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="8" cy="25" rx="5" ry="3.6" transform="rotate(-20 8 25)" fill="#000" stroke="#000" stroke-width="2.5"/><ellipse cx="23" cy="21" rx="5" ry="3.6" transform="rotate(-20 23 21)" fill="#000" stroke="#000" stroke-width="2.5"/><path d="M12 8V25M27 4V21M12 8L27 4" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="8" cy="25" rx="5" ry="3.6" transform="rotate(-20 8 25)" fill="currentColor"/><ellipse cx="23" cy="21" rx="5" ry="3.6" transform="rotate(-20 23 21)" fill="currentColor"/></symbol><symbol id="splash-note-double" viewBox="0 0 32 32"><path d="M12 8V25M27 4V21M12 8L27 4M12 13L27 9" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="8" cy="25" rx="5" ry="3.6" transform="rotate(-20 8 25)" fill="#000" stroke="#000" stroke-width="2.5"/><ellipse cx="23" cy="21" rx="5" ry="3.6" transform="rotate(-20 23 21)" fill="#000" stroke="#000" stroke-width="2.5"/><path d="M12 8V25M27 4V21M12 8L27 4M12 13L27 9" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="8" cy="25" rx="5" ry="3.6" transform="rotate(-20 8 25)" fill="currentColor"/><ellipse cx="23" cy="21" rx="5" ry="3.6" transform="rotate(-20 23 21)" fill="currentColor"/></symbol><symbol id="splash-note-triple" viewBox="0 0 32 32"><path d="M9 10V26M19 7V23M29 4V20M9 10L29 4" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="5" cy="26" rx="5" ry="3.6" transform="rotate(-20 5 26)" fill="#000" stroke="#000" stroke-width="2.5"/><ellipse cx="15" cy="23" rx="5" ry="3.6" transform="rotate(-20 15 23)" fill="#000" stroke="#000" stroke-width="2.5"/><ellipse cx="25" cy="20" rx="5" ry="3.6" transform="rotate(-20 25 20)" fill="#000" stroke="#000" stroke-width="2.5"/><path d="M9 10V26M19 7V23M29 4V20M9 10L29 4" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="5" cy="26" rx="5" ry="3.6" transform="rotate(-20 5 26)" fill="currentColor"/><ellipse cx="15" cy="23" rx="5" ry="3.6" transform="rotate(-20 15 23)" fill="currentColor"/><ellipse cx="25" cy="20" rx="5" ry="3.6" transform="rotate(-20 25 20)" fill="currentColor"/></symbol></defs></svg><svg class="splash-note" viewBox="0 0 32 32" style="left:15%;top:58%;color:#5cdeff;--note-duration:2.2s;--note-delay:0s"><use href="#splash-note-single"/></svg><svg class="splash-note" viewBox="0 0 32 32" style="left:85%;top:55%;color:#ff72b6;--note-duration:2.4s;--note-delay:-0.5s"><use href="#splash-note-quarter"/></svg><svg class="splash-note" viewBox="0 0 32 32" style="left:24%;top:74%;color:#ffda54;--note-duration:2.6s;--note-delay:-1s"><use href="#splash-note-pair"/></svg><svg class="splash-note" viewBox="0 0 32 32" style="left:68%;top:70%;color:#bb87ff;--note-duration:2.8s;--note-delay:-1.5s"><use href="#splash-note-double"/></svg><svg class="splash-note" viewBox="0 0 32 32" style="left:89%;top:91%;color:#67f2c5;--note-duration:3s;--note-delay:-2s"><use href="#splash-note-triple"/></svg></div><div class="splash-loading" role="status"><span class="splash-loading-label">로딩 중…</span><span class="splash-loading-track" aria-hidden="true"><span class="splash-loading-fill"></span></span></div></div><!-- v931: 광고판+캐릭터만 오려낸 그림 / v927(사용자 지정): 로딩 이미지 = 홈 아케이드 왼쪽 위 그림 -->
+<div id="splash" role="img" aria-label="두더지팡!"><div class="splash-stage" aria-hidden="true"><svg class="loading-equalizer" viewBox="0 0 941 860" preserveAspectRatio="none" aria-hidden="true"><defs><mask id="loading-meter-region"><rect x="400" y="535" width="153" height="132" fill="white"/></mask><mask id="loading-meter-active"><rect class="loading-meter-column" x="400" y="535" width="10" height="132" fill="white" style="--meter-time:0.42s;--meter-delay:-0.0s"/><rect class="loading-meter-column" x="413" y="549" width="10" height="118" fill="white" style="--meter-time:0.55s;--meter-delay:-0.21s"/><rect class="loading-meter-column" x="426" y="563" width="10" height="104" fill="white" style="--meter-time:0.6799999999999999s;--meter-delay:-0.42s"/><rect class="loading-meter-column" x="439" y="577" width="10" height="90" fill="white" style="--meter-time:0.81s;--meter-delay:-0.63s"/><rect class="loading-meter-column" x="452" y="535" width="10" height="132" fill="white" style="--meter-time:0.94s;--meter-delay:-0.84s"/><rect class="loading-meter-column" x="465" y="549" width="10" height="118" fill="white" style="--meter-time:0.42s;--meter-delay:-1.05s"/><rect class="loading-meter-column" x="478" y="563" width="10" height="104" fill="white" style="--meter-time:0.55s;--meter-delay:-1.26s"/><rect class="loading-meter-column" x="491" y="577" width="10" height="90" fill="white" style="--meter-time:0.6799999999999999s;--meter-delay:-1.47s"/><rect class="loading-meter-column" x="504" y="535" width="10" height="132" fill="white" style="--meter-time:0.81s;--meter-delay:-1.68s"/><rect class="loading-meter-column" x="517" y="549" width="10" height="118" fill="white" style="--meter-time:0.94s;--meter-delay:-1.89s"/><rect class="loading-meter-column" x="530" y="563" width="10" height="104" fill="white" style="--meter-time:0.42s;--meter-delay:-2.1s"/><rect class="loading-meter-column" x="543" y="577" width="10" height="90" fill="white" style="--meter-time:0.55s;--meter-delay:-2.31s"/></mask></defs><image href="assets/loading-stage-v1162/stage-cool-v1248.png" width="941" height="1672" mask="url(#loading-meter-active)" style="filter:brightness(1.45)"/></svg><svg class="loading-stage-lines" viewBox="0 0 941 860" preserveAspectRatio="none" aria-hidden="true"><defs><mask id="loading-trace-1" maskUnits="userSpaceOnUse" x="0" y="0" width="941" height="860"><ellipse cx="473" cy="592" rx="128" ry="114" stroke="white" pathLength="100" style="animation-delay:-0s"/><ellipse cx="473" cy="592" rx="107" ry="95" stroke="white" pathLength="100" style="animation-delay:-1s"/><ellipse cx="170" cy="562" rx="29" ry="43" stroke="white" pathLength="100" style="animation-delay:-2s"/><ellipse cx="170" cy="651" rx="29" ry="43" stroke="white" pathLength="100" style="animation-delay:-3s"/><ellipse cx="770" cy="562" rx="29" ry="43" stroke="white" pathLength="100" style="animation-delay:-4s"/><ellipse cx="770" cy="651" rx="29" ry="43" stroke="white" pathLength="100" style="animation-delay:-5s"/></mask></defs><image href="assets/loading-stage-v1162/stage-cool-v1248.png" x="0" y="0" width="941" height="1672" mask="url(#loading-trace-1)" style="filter:brightness(1.8);opacity:.9"/></svg></div><div class="splash-front-cap" aria-hidden="true"><svg class="loading-pad-glow" viewBox="0 0 941 540" preserveAspectRatio="none" aria-hidden="true"><defs><radialGradient id="loading-pad-light-0"><stop stop-color="#40d9ff" stop-opacity=".65"/><stop offset=".45" stop-color="#40d9ff" stop-opacity=".25"/><stop offset="1" stop-color="#40d9ff" stop-opacity="0"/></radialGradient><radialGradient id="loading-pad-light-1"><stop stop-color="#bc40f3" stop-opacity=".65"/><stop offset=".45" stop-color="#bc40f3" stop-opacity=".25"/><stop offset="1" stop-color="#bc40f3" stop-opacity="0"/></radialGradient><radialGradient id="loading-pad-light-2"><stop stop-color="#ffae23" stop-opacity=".65"/><stop offset=".45" stop-color="#ffae23" stop-opacity=".25"/><stop offset="1" stop-color="#ffae23" stop-opacity="0"/></radialGradient><radialGradient id="loading-pad-light-3"><stop stop-color="#f449bd" stop-opacity=".65"/><stop offset=".45" stop-color="#f449bd" stop-opacity=".25"/><stop offset="1" stop-color="#f449bd" stop-opacity="0"/></radialGradient></defs><ellipse class="pad-emission" cx="133" cy="105" rx="78" ry="33" fill="url(#loading-pad-light-0)" style="--pad-duration:3.74s;--pad-delay:0s"/><ellipse class="pad-emission" cx="356" cy="105" rx="78" ry="33" fill="url(#loading-pad-light-1)" style="--pad-duration:4.08s;--pad-delay:-0.5s"/><ellipse class="pad-emission" cx="582" cy="105" rx="78" ry="33" fill="url(#loading-pad-light-2)" style="--pad-duration:4.42s;--pad-delay:-1s"/><ellipse class="pad-emission" cx="806" cy="105" rx="78" ry="33" fill="url(#loading-pad-light-3)" style="--pad-duration:4.76s;--pad-delay:-1.5s"/></svg><svg class="loading-stage-lines" viewBox="0 0 941 540" preserveAspectRatio="none" aria-hidden="true"><defs><mask id="loading-trace-2" maskUnits="userSpaceOnUse" x="0" y="0" width="941" height="540"><ellipse cx="133" cy="105" rx="95" ry="43" stroke="white" pathLength="100" style="animation-delay:-0s"/><ellipse cx="356" cy="105" rx="95" ry="43" stroke="white" pathLength="100" style="animation-delay:-1s"/><ellipse cx="582" cy="105" rx="95" ry="43" stroke="white" pathLength="100" style="animation-delay:-2s"/><ellipse cx="806" cy="105" rx="95" ry="43" stroke="white" pathLength="100" style="animation-delay:-3s"/></mask></defs><image href="assets/loading-stage-v1162/stage-cool-v1248.png" x="0" y="-860" width="941" height="1672" mask="url(#loading-trace-2)" style="filter:brightness(1.8);opacity:.9"/></svg></div><div class="splash-front-face" aria-hidden="true"></div><div class="splash-brand" aria-hidden="true"><img loading="lazy" decoding="async" src="assets/home2/splash-art.webp" alt=""></div><img loading="lazy" decoding="async" class="splash-performers" src="assets/loading-cyber-v1153/characters.webp" alt=""><svg class="splash-glasses" viewBox="0 0 1774 887" aria-hidden="true"><defs><clipPath id="loading-glasses-lenses"><path d="M628 207 Q648 200 693 222 L689 244 Q680 264 648 251 Q628 244 625 229 Z M748 248 Q769 243 803 265 L795 289 Q785 303 760 287 Q746 277 748 248 Z"/></clipPath><linearGradient id="loading-glasses-shine"><stop stop-color="#39bfff" stop-opacity="0"/><stop offset=".48" stop-color="#59dbff" stop-opacity=".55"/><stop offset=".62" stop-color="#d2faff" stop-opacity=".95"/><stop offset="1" stop-color="#236bff" stop-opacity="0"/></linearGradient></defs><g clip-path="url(#loading-glasses-lenses)"><path class="splash-glasses-sweep" d="M640 175 L676 175 L621 325 L585 325 Z" fill="url(#loading-glasses-shine)"/></g></svg><div class="splash-notes" aria-hidden="true"><svg width="0" height="0" style="position:absolute"><defs><symbol id="splash-note-single" viewBox="0 0 32 32"><path d="M13 5V24M13 5C14 12 25 8 23 17" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="9" cy="24" rx="5" ry="3.6" transform="rotate(-20 9 24)" fill="#000" stroke="#000" stroke-width="2.5"/><path d="M13 5V24M13 5C14 12 25 8 23 17" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="9" cy="24" rx="5" ry="3.6" transform="rotate(-20 9 24)" fill="currentColor"/></symbol><symbol id="splash-note-quarter" viewBox="0 0 32 32"><path d="M18 5V24" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="14" cy="24" rx="5" ry="3.6" transform="rotate(-20 14 24)" fill="#000" stroke="#000" stroke-width="2.5"/><path d="M18 5V24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="14" cy="24" rx="5" ry="3.6" transform="rotate(-20 14 24)" fill="currentColor"/></symbol><symbol id="splash-note-pair" viewBox="0 0 32 32"><path d="M12 8V25M27 4V21M12 8L27 4" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="8" cy="25" rx="5" ry="3.6" transform="rotate(-20 8 25)" fill="#000" stroke="#000" stroke-width="2.5"/><ellipse cx="23" cy="21" rx="5" ry="3.6" transform="rotate(-20 23 21)" fill="#000" stroke="#000" stroke-width="2.5"/><path d="M12 8V25M27 4V21M12 8L27 4" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="8" cy="25" rx="5" ry="3.6" transform="rotate(-20 8 25)" fill="currentColor"/><ellipse cx="23" cy="21" rx="5" ry="3.6" transform="rotate(-20 23 21)" fill="currentColor"/></symbol><symbol id="splash-note-double" viewBox="0 0 32 32"><path d="M12 8V25M27 4V21M12 8L27 4M12 13L27 9" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="8" cy="25" rx="5" ry="3.6" transform="rotate(-20 8 25)" fill="#000" stroke="#000" stroke-width="2.5"/><ellipse cx="23" cy="21" rx="5" ry="3.6" transform="rotate(-20 23 21)" fill="#000" stroke="#000" stroke-width="2.5"/><path d="M12 8V25M27 4V21M12 8L27 4M12 13L27 9" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="8" cy="25" rx="5" ry="3.6" transform="rotate(-20 8 25)" fill="currentColor"/><ellipse cx="23" cy="21" rx="5" ry="3.6" transform="rotate(-20 23 21)" fill="currentColor"/></symbol><symbol id="splash-note-triple" viewBox="0 0 32 32"><path d="M9 10V26M19 7V23M29 4V20M9 10L29 4" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="5" cy="26" rx="5" ry="3.6" transform="rotate(-20 5 26)" fill="#000" stroke="#000" stroke-width="2.5"/><ellipse cx="15" cy="23" rx="5" ry="3.6" transform="rotate(-20 15 23)" fill="#000" stroke="#000" stroke-width="2.5"/><ellipse cx="25" cy="20" rx="5" ry="3.6" transform="rotate(-20 25 20)" fill="#000" stroke="#000" stroke-width="2.5"/><path d="M9 10V26M19 7V23M29 4V20M9 10L29 4" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="5" cy="26" rx="5" ry="3.6" transform="rotate(-20 5 26)" fill="currentColor"/><ellipse cx="15" cy="23" rx="5" ry="3.6" transform="rotate(-20 15 23)" fill="currentColor"/><ellipse cx="25" cy="20" rx="5" ry="3.6" transform="rotate(-20 25 20)" fill="currentColor"/></symbol></defs></svg><svg class="splash-note" viewBox="0 0 32 32" style="left:15%;top:58%;color:#5cdeff;--note-duration:2.2s;--note-delay:0s"><use href="#splash-note-single"/></svg><svg class="splash-note" viewBox="0 0 32 32" style="left:85%;top:55%;color:#ff72b6;--note-duration:2.4s;--note-delay:-0.5s"><use href="#splash-note-quarter"/></svg><svg class="splash-note" viewBox="0 0 32 32" style="left:24%;top:74%;color:#ffda54;--note-duration:2.6s;--note-delay:-1s"><use href="#splash-note-pair"/></svg><svg class="splash-note" viewBox="0 0 32 32" style="left:68%;top:70%;color:#bb87ff;--note-duration:2.8s;--note-delay:-1.5s"><use href="#splash-note-double"/></svg><svg class="splash-note" viewBox="0 0 32 32" style="left:89%;top:91%;color:#67f2c5;--note-duration:3s;--note-delay:-2s"><use href="#splash-note-triple"/></svg></div><div class="splash-loading" role="status"><span class="splash-loading-label">로딩 중…</span><span class="splash-loading-track" aria-hidden="true"><span class="splash-loading-fill"></span></span></div></div><!-- v931: 광고판+캐릭터만 오려낸 그림 / v927(사용자 지정): 로딩 이미지 = 홈 아케이드 왼쪽 위 그림 -->
 <script>
   (function () { // V1470: 시작 화면 필수 이미지 4장을 실제로 decode한 뒤 표시
     var s = document.getElementById('splash'), done = false;
@@ -365,7 +367,7 @@
         <!-- 홈 화면에서만 이 아이콘 대신 프로필 사진(탭하면 사진 변경, 사용자 지정) — game.js refreshHubAvatar() 가 배경으로 채운다. -->
         <span id="hub-avatar" class="hub-avatar" aria-hidden="true"></span>
       </button>
-      <img id="mole-emoji-img" class="mole-board-layer" alt="">
+      <img loading="lazy" decoding="async" id="mole-emoji-img" class="mole-board-layer" alt="">
       <canvas id="mole-reveal-canvas" class="mole-board-layer"></canvas>
       <div id="mole-sky" aria-hidden="true"></div>
       <!-- 챕터별 날씨(사용자 지정: 챕터6=비, 챕터9=눈) — game.js applyWeather() 가 챕터에 맞춰 채운다. -->
@@ -378,11 +380,11 @@
       </div>
       <!-- 게임 중 상단 상태판(V1315 C, 사용자 지정): 리듬팡 비치 상태판 박스 — SCORE·COMBO | 홈버튼(카메라 구멍 아래) | TIME·HEART -->
       <div id="mole-status" class="ms-status" aria-hidden="true">
-        <div class="ms-box ms-score"><img class="ms-ic" src="assets/quest/ic-trophy.png" alt=""><span class="ms-label">SCORE</span><b id="hud-score" class="ms-val">0</b></div>
-        <div class="ms-box ms-combo"><img class="ms-ic" src="assets/quest/ic-fire.png" alt=""><span class="ms-label">COMBO</span><b id="hud-combo" class="ms-val">0</b></div>
+        <div class="ms-box ms-score"><img loading="lazy" decoding="async" class="ms-ic" src="assets/quest/ic-trophy.png" alt=""><span class="ms-label">SCORE</span><b id="hud-score" class="ms-val">0</b></div>
+        <div class="ms-box ms-combo"><img loading="lazy" decoding="async" class="ms-ic" src="assets/quest/ic-fire.png" alt=""><span class="ms-label">COMBO</span><b id="hud-combo" class="ms-val">0</b></div>
         <i></i>
         <div id="hud-time" class="ms-box ms-time"><svg class="ms-clock" viewBox="0 0 369 426" aria-hidden="true"><image href="assets/rhythm/ui-status-v1232/clock.png" width="369" height="426"/><g stroke="#14651c" stroke-width="8" stroke-linecap="round"><path d="M187 237L187 181"/><path class="ms-clock-hand" d="M187 237L187 140"/></g><circle cx="187" cy="237" r="12" fill="#31b838" stroke="#14651c" stroke-width="5"/></svg><span class="ms-label">TIME</span><b id="hud-time-val" class="ms-val">0:00</b></div>
-        <div class="ms-box ms-heart"><img class="ms-ic" src="assets/quest/ic-heart.png" alt=""><span class="ms-label">HEART</span><b id="hud-hearts" class="ms-val">0</b></div>
+        <div class="ms-box ms-heart"><img loading="lazy" decoding="async" class="ms-ic" src="assets/quest/ic-heart.png" alt=""><span class="ms-label">HEART</span><b id="hud-hearts" class="ms-val">0</b></div>
       </div>
       <div id="skl-passive-hud" class="skl-passive-hud" aria-hidden="true"></div>
       <div id="fever-badge" class="fever-badge" aria-hidden="true" data-i18n="mole.hud.fever" hidden>피버타임!</div>
@@ -398,7 +400,7 @@
              하늘은 직접 제작(sky.jpg), 광산·로고·두더지는 바탕화면 "홈화면 개편 UI 및 에셋". -->
         <div id="home-mine" aria-hidden="true">
           <div class="hm-stage">
-            <img class="hm-mine" src="assets/home2/mine-hd.webp" alt="">
+            <img loading="lazy" decoding="async" class="hm-mine" src="assets/home2/mine-hd.webp" alt="">
             <i class="hm-glow" style="left:3.1%;top:42.3%;--d:0s;--t:2.3s"></i>
             <i class="hm-glow" style="left:10.8%;top:43.5%;--d:0.7s;--t:2.9s"></i>
             <i class="hm-glow" style="left:21.5%;top:35.4%;--d:1.3s;--t:2.1s"></i>
@@ -410,11 +412,11 @@
             <i class="hm-glow" style="left:89.6%;top:31.0%;--d:0.9s;--t:2.4s"></i>
             <i class="hm-glow" style="left:97.6%;top:55.4%;--d:1.4s;--t:3.0s"></i>
             <i class="hm-glow" style="left:21.5%;top:82.9%;--d:0.5s;--t:2.5s"></i>
-            <div class="hm-piece hm-mole hm-pink"><div class="hm-pop"><img class="hm-body" src="assets/home2/mole-pink-x-hd.webp" alt=""><i class="hm-lid" style="left:32.12%;top:41.67%;width:11.16%;height:18.23%;--fur:#cf6a35;animation-delay:0.3s"></i><i class="hm-lid" style="left:59.71%;top:41.67%;width:12.22%;height:18.23%;--fur:#cf6a35;animation-delay:0.3s"></i></div></div>
-            <div class="hm-piece hm-mole hm-braid"><div class="hm-pop"><img class="hm-body" src="assets/home2/wave-braid-base-hd.webp" alt=""><img class="hm-hand" src="assets/home2/wave-braid-part-hd.webp" alt=""><i class="hm-lid" style="left:28.17%;top:32.3%;width:11.54%;height:14.26%;--fur:#cd6734;animation-delay:2.1s"></i><i class="hm-lid" style="left:52.08%;top:34.87%;width:9.48%;height:14.79%;--fur:#cd6734;animation-delay:2.1s"></i></div></div>
-            <div class="hm-piece hm-mole hm-sun"><div class="hm-pop"><img class="hm-body" src="assets/home2/wave-sun-base-hd.webp" alt=""><img class="hm-hand" src="assets/home2/wave-sun-part-hd.webp" alt=""></div></div>
-            <div class="hm-piece hm-mole hm-punk"><div class="hm-pop"><img class="hm-body" src="assets/home2/mole-punk-x-hd.webp" alt=""><i class="hm-lid" style="left:25.13%;top:44.15%;width:13.34%;height:16.37%;--fur:#f08542;animation-delay:1.2s"></i><i class="hm-lid" style="left:63.31%;top:48.07%;width:14.20%;height:15.56%;--fur:#f08542;animation-delay:1.2s"></i></div></div>
-            <div class="hm-piece hm-mole hm-cap"><div class="hm-pop"><img class="hm-body" src="assets/home2/wave-cap-base-hd.webp" alt=""><img class="hm-hand" src="assets/home2/wave-cap-part-hd.webp" alt=""><i class="hm-lid" style="left:34.80%;top:32.93%;width:19.48%;height:20.88%;--fur:#e6773a;animation-delay:3.0s"></i></div></div>
+            <div class="hm-piece hm-mole hm-pink"><div class="hm-pop"><img loading="lazy" decoding="async" class="hm-body" src="assets/home2/mole-pink-x-hd.webp" alt=""><i class="hm-lid" style="left:32.12%;top:41.67%;width:11.16%;height:18.23%;--fur:#cf6a35;animation-delay:0.3s"></i><i class="hm-lid" style="left:59.71%;top:41.67%;width:12.22%;height:18.23%;--fur:#cf6a35;animation-delay:0.3s"></i></div></div>
+            <div class="hm-piece hm-mole hm-braid"><div class="hm-pop"><img loading="lazy" decoding="async" class="hm-body" src="assets/home2/wave-braid-base-hd.webp" alt=""><img loading="lazy" decoding="async" class="hm-hand" src="assets/home2/wave-braid-part-hd.webp" alt=""><i class="hm-lid" style="left:28.17%;top:32.3%;width:11.54%;height:14.26%;--fur:#cd6734;animation-delay:2.1s"></i><i class="hm-lid" style="left:52.08%;top:34.87%;width:9.48%;height:14.79%;--fur:#cd6734;animation-delay:2.1s"></i></div></div>
+            <div class="hm-piece hm-mole hm-sun"><div class="hm-pop"><img loading="lazy" decoding="async" class="hm-body" src="assets/home2/wave-sun-base-hd.webp" alt=""><img loading="lazy" decoding="async" class="hm-hand" src="assets/home2/wave-sun-part-hd.webp" alt=""></div></div>
+            <div class="hm-piece hm-mole hm-punk"><div class="hm-pop"><img loading="lazy" decoding="async" class="hm-body" src="assets/home2/mole-punk-x-hd.webp" alt=""><i class="hm-lid" style="left:25.13%;top:44.15%;width:13.34%;height:16.37%;--fur:#f08542;animation-delay:1.2s"></i><i class="hm-lid" style="left:63.31%;top:48.07%;width:14.20%;height:15.56%;--fur:#f08542;animation-delay:1.2s"></i></div></div>
+            <div class="hm-piece hm-mole hm-cap"><div class="hm-pop"><img loading="lazy" decoding="async" class="hm-body" src="assets/home2/wave-cap-base-hd.webp" alt=""><img loading="lazy" decoding="async" class="hm-hand" src="assets/home2/wave-cap-part-hd.webp" alt=""><i class="hm-lid" style="left:34.80%;top:32.93%;width:19.48%;height:20.88%;--fur:#e6773a;animation-delay:3.0s"></i></div></div>
             <i class="hm-spk" style="left:4.2%;top:78.6%;--d:0s"></i>
             <i class="hm-spk" style="left:8.6%;top:80.4%;--d:0.6s"></i>
             <i class="hm-spk" style="left:6.0%;top:83.0%;--d:1.2s"></i>
@@ -425,72 +427,72 @@
         <div id="home-grid" aria-hidden="true">
         <div class="hg-track">
           <div class="hg-page">
-            <div class="hg-cell"><img src="assets/home-showcase/arcade-1.jpg" alt=""><i class="hg-spark hg-spark--a" aria-hidden="true"></i><i class="hg-spark hg-spark--b" aria-hidden="true"></i><i class="hg-spark hg-spark--c" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img src="assets/home-showcase/arcade-2.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/arcade-3.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/arcade-4.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/arcade-5.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/arcade-6.jpg" alt=""><i class="hg-note hg-note--a" aria-hidden="true">♪</i><i class="hg-note hg-note--b" aria-hidden="true">♫</i><i class="hg-note hg-note--c" aria-hidden="true">♪</i></div>
-            <div class="hg-cell"><img src="assets/home-showcase/arcade-7.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/arcade-8.jpg" alt=""><i class="hg-conf hg-conf--1" aria-hidden="true"></i><i class="hg-conf hg-conf--2" aria-hidden="true"></i><i class="hg-conf hg-conf--3" aria-hidden="true"></i><i class="hg-conf hg-conf--4" aria-hidden="true"></i><i class="hg-conf hg-conf--5" aria-hidden="true"></i><i class="hg-conf hg-conf--6" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img src="assets/home-showcase/arcade-9.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-1.jpg" alt=""><i class="hg-spark hg-spark--a" aria-hidden="true"></i><i class="hg-spark hg-spark--b" aria-hidden="true"></i><i class="hg-spark hg-spark--c" aria-hidden="true"></i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-2.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-3.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-4.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-5.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-6.jpg" alt=""><i class="hg-note hg-note--a" aria-hidden="true">♪</i><i class="hg-note hg-note--b" aria-hidden="true">♫</i><i class="hg-note hg-note--c" aria-hidden="true">♪</i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-7.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-8.jpg" alt=""><i class="hg-conf hg-conf--1" aria-hidden="true"></i><i class="hg-conf hg-conf--2" aria-hidden="true"></i><i class="hg-conf hg-conf--3" aria-hidden="true"></i><i class="hg-conf hg-conf--4" aria-hidden="true"></i><i class="hg-conf hg-conf--5" aria-hidden="true"></i><i class="hg-conf hg-conf--6" aria-hidden="true"></i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-9.jpg" alt=""></div>
           </div>
           <div class="hg-page">
-            <div class="hg-cell"><img src="assets/home-showcase/spring-1.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/spring-2.jpg" alt=""><i class="hg-bfly hg-bfly--p" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img src="assets/home-showcase/spring-3.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/spring-4.jpg" alt=""><i class="hg-bfly hg-bfly--y" aria-hidden="true"></i><i class="hg-bfly hg-bfly--b hg-bfly--late" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img src="assets/home-showcase/spring-5.jpg" alt=""><i class="hg-bfly hg-bfly--b" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img src="assets/home-showcase/spring-6.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/spring-7.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/spring-8.jpg" alt=""><i class="hg-bfly hg-bfly--p hg-bfly--late" aria-hidden="true"></i><i class="hg-bfly hg-bfly--y" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img src="assets/home-showcase/spring-9.jpg" alt=""><i class="hg-bfly hg-bfly--y hg-bfly--late" aria-hidden="true"></i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/spring-1.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/spring-2.jpg" alt=""><i class="hg-bfly hg-bfly--p" aria-hidden="true"></i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/spring-3.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/spring-4.jpg" alt=""><i class="hg-bfly hg-bfly--y" aria-hidden="true"></i><i class="hg-bfly hg-bfly--b hg-bfly--late" aria-hidden="true"></i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/spring-5.jpg" alt=""><i class="hg-bfly hg-bfly--b" aria-hidden="true"></i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/spring-6.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/spring-7.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/spring-8.jpg" alt=""><i class="hg-bfly hg-bfly--p hg-bfly--late" aria-hidden="true"></i><i class="hg-bfly hg-bfly--y" aria-hidden="true"></i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/spring-9.jpg" alt=""><i class="hg-bfly hg-bfly--y hg-bfly--late" aria-hidden="true"></i></div>
           </div>
           <div class="hg-page">
-            <div class="hg-cell"><img src="assets/home-showcase/summer-1.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/summer-2.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/summer-3.jpg" alt=""><i class="hg-bub" aria-hidden="true"></i><i class="hg-bub" aria-hidden="true"></i><i class="hg-bub" aria-hidden="true"></i><i class="hg-spark" aria-hidden="true"></i><i class="hg-spark" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img src="assets/home-showcase/summer-4.jpg" alt=""><i class="hg-bub" aria-hidden="true"></i><i class="hg-bub" aria-hidden="true"></i><i class="hg-bub" aria-hidden="true"></i><i class="hg-spark" aria-hidden="true"></i><i class="hg-spark" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img src="assets/home-showcase/summer-5.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/summer-6.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/summer-7.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/summer-8.jpg" alt=""><i class="hg-bub" aria-hidden="true"></i><i class="hg-bub" aria-hidden="true"></i><i class="hg-bub" aria-hidden="true"></i><i class="hg-spark" aria-hidden="true"></i><i class="hg-spark" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img src="assets/home-showcase/summer-9.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/summer-1.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/summer-2.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/summer-3.jpg" alt=""><i class="hg-bub" aria-hidden="true"></i><i class="hg-bub" aria-hidden="true"></i><i class="hg-bub" aria-hidden="true"></i><i class="hg-spark" aria-hidden="true"></i><i class="hg-spark" aria-hidden="true"></i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/summer-4.jpg" alt=""><i class="hg-bub" aria-hidden="true"></i><i class="hg-bub" aria-hidden="true"></i><i class="hg-bub" aria-hidden="true"></i><i class="hg-spark" aria-hidden="true"></i><i class="hg-spark" aria-hidden="true"></i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/summer-5.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/summer-6.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/summer-7.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/summer-8.jpg" alt=""><i class="hg-bub" aria-hidden="true"></i><i class="hg-bub" aria-hidden="true"></i><i class="hg-bub" aria-hidden="true"></i><i class="hg-spark" aria-hidden="true"></i><i class="hg-spark" aria-hidden="true"></i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/summer-9.jpg" alt=""></div>
           </div>
           <div class="hg-page">
-            <div class="hg-cell"><img src="assets/home-showcase/autumn-1.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/autumn-2.jpg" alt=""><i class="hg-leaf hg-leaf--o" aria-hidden="true"></i><i class="hg-leaf hg-leaf--r" aria-hidden="true"></i><i class="hg-leaf hg-leaf--y" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img src="assets/home-showcase/autumn-3.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/autumn-4.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/autumn-5.jpg" alt=""><i class="hg-leaf hg-leaf--y" aria-hidden="true"></i><i class="hg-leaf hg-leaf--r" aria-hidden="true"></i><i class="hg-leaf hg-leaf--o" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img src="assets/home-showcase/autumn-6.jpg" alt=""><i class="hg-leaf hg-leaf--r" aria-hidden="true"></i><i class="hg-leaf hg-leaf--o" aria-hidden="true"></i><i class="hg-leaf hg-leaf--y" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img src="assets/home-showcase/autumn-7.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/autumn-8.jpg" alt=""><i class="hg-leaf hg-leaf--o" aria-hidden="true"></i><i class="hg-leaf hg-leaf--y" aria-hidden="true"></i><i class="hg-leaf hg-leaf--r" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img src="assets/home-showcase/autumn-9.jpg" alt=""><i class="hg-leaf hg-leaf--y" aria-hidden="true"></i><i class="hg-leaf hg-leaf--o" aria-hidden="true"></i><i class="hg-leaf hg-leaf--r" aria-hidden="true"></i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/autumn-1.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/autumn-2.jpg" alt=""><i class="hg-leaf hg-leaf--o" aria-hidden="true"></i><i class="hg-leaf hg-leaf--r" aria-hidden="true"></i><i class="hg-leaf hg-leaf--y" aria-hidden="true"></i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/autumn-3.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/autumn-4.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/autumn-5.jpg" alt=""><i class="hg-leaf hg-leaf--y" aria-hidden="true"></i><i class="hg-leaf hg-leaf--r" aria-hidden="true"></i><i class="hg-leaf hg-leaf--o" aria-hidden="true"></i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/autumn-6.jpg" alt=""><i class="hg-leaf hg-leaf--r" aria-hidden="true"></i><i class="hg-leaf hg-leaf--o" aria-hidden="true"></i><i class="hg-leaf hg-leaf--y" aria-hidden="true"></i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/autumn-7.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/autumn-8.jpg" alt=""><i class="hg-leaf hg-leaf--o" aria-hidden="true"></i><i class="hg-leaf hg-leaf--y" aria-hidden="true"></i><i class="hg-leaf hg-leaf--r" aria-hidden="true"></i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/autumn-9.jpg" alt=""><i class="hg-leaf hg-leaf--y" aria-hidden="true"></i><i class="hg-leaf hg-leaf--o" aria-hidden="true"></i><i class="hg-leaf hg-leaf--r" aria-hidden="true"></i></div>
           </div>
           <div class="hg-page">
-            <div class="hg-cell"><img src="assets/home-showcase/winter-1.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/winter-2.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/winter-3.jpg" alt=""><i class="hg-snow" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img src="assets/home-showcase/winter-4.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/winter-5.jpg" alt=""><i class="hg-snow" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img src="assets/home-showcase/winter-6.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/winter-7.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/winter-8.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/winter-9.jpg" alt=""><i class="hg-snow" aria-hidden="true"></i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/winter-1.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/winter-2.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/winter-3.jpg" alt=""><i class="hg-snow" aria-hidden="true"></i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/winter-4.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/winter-5.jpg" alt=""><i class="hg-snow" aria-hidden="true"></i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/winter-6.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/winter-7.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/winter-8.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/winter-9.jpg" alt=""><i class="hg-snow" aria-hidden="true"></i></div>
           </div>
           <!-- 이음매 없는 루프용 복제(맨 앞 아케이드 재사용) — 스크롤이 여기 도달하면 진짜 1페이지와
                똑같이 보여서, 애니메이션이 0%로 순간복귀해도 티가 안 남(사용자 지정: 계속 위로). -->
           <div class="hg-page" aria-hidden="true">
-            <div class="hg-cell"><img src="assets/home-showcase/arcade-1.jpg" alt=""><i class="hg-spark hg-spark--a" aria-hidden="true"></i><i class="hg-spark hg-spark--b" aria-hidden="true"></i><i class="hg-spark hg-spark--c" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img src="assets/home-showcase/arcade-2.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/arcade-3.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/arcade-4.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/arcade-5.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/arcade-6.jpg" alt=""><i class="hg-note hg-note--a" aria-hidden="true">♪</i><i class="hg-note hg-note--b" aria-hidden="true">♫</i><i class="hg-note hg-note--c" aria-hidden="true">♪</i></div>
-            <div class="hg-cell"><img src="assets/home-showcase/arcade-7.jpg" alt=""></div>
-            <div class="hg-cell"><img src="assets/home-showcase/arcade-8.jpg" alt=""><i class="hg-conf hg-conf--1" aria-hidden="true"></i><i class="hg-conf hg-conf--2" aria-hidden="true"></i><i class="hg-conf hg-conf--3" aria-hidden="true"></i><i class="hg-conf hg-conf--4" aria-hidden="true"></i><i class="hg-conf hg-conf--5" aria-hidden="true"></i><i class="hg-conf hg-conf--6" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img src="assets/home-showcase/arcade-9.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-1.jpg" alt=""><i class="hg-spark hg-spark--a" aria-hidden="true"></i><i class="hg-spark hg-spark--b" aria-hidden="true"></i><i class="hg-spark hg-spark--c" aria-hidden="true"></i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-2.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-3.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-4.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-5.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-6.jpg" alt=""><i class="hg-note hg-note--a" aria-hidden="true">♪</i><i class="hg-note hg-note--b" aria-hidden="true">♫</i><i class="hg-note hg-note--c" aria-hidden="true">♪</i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-7.jpg" alt=""></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-8.jpg" alt=""><i class="hg-conf hg-conf--1" aria-hidden="true"></i><i class="hg-conf hg-conf--2" aria-hidden="true"></i><i class="hg-conf hg-conf--3" aria-hidden="true"></i><i class="hg-conf hg-conf--4" aria-hidden="true"></i><i class="hg-conf hg-conf--5" aria-hidden="true"></i><i class="hg-conf hg-conf--6" aria-hidden="true"></i></div>
+            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-9.jpg" alt=""></div>
           </div>
         </div>
         </div>
@@ -505,7 +507,7 @@
         <div class="go-starpop" aria-hidden="true"></div>
         <div class="go-confetti" aria-hidden="true"></div>
         <p id="gameover-reason" class="go-word">성공</p>
-        <div class="go-hippo-wrap"><img id="gameover-hippo" class="go-hippo" alt="" draggable="false"></div>
+        <div class="go-hippo-wrap"><img loading="lazy" decoding="async" id="gameover-hippo" class="go-hippo" alt="" draggable="false"></div>
         <p id="gameover-score" class="gameover-score">0점</p>
         <!-- 불꽃놀이 전용 레이어 — 색종이(.go-confetti)와 달리 하마 위로 겹쳐도 됨(사용자 지정). -->
         <div class="go-fireworks" aria-hidden="true"></div>
@@ -551,7 +553,7 @@
         <div class="ri-curtain ri-curtain--l"></div>
         <div class="ri-curtain ri-curtain--r"></div>
         <div id="round-intro-title" class="round-intro-title">라운드 1</div>
-        <img id="round-intro-mole" class="round-intro-mole" alt="" hidden>
+        <img loading="lazy" decoding="async" id="round-intro-mole" class="round-intro-mole" alt="" hidden>
         <div id="round-intro-count" class="round-intro-count">3</div>
         <!-- 종료(exitApp) 시 커튼 닫힌 뒤: window.close() 가 안 먹히는 브라우저/홈화면 PWA 에서
              정체불명 화면 대신 안내. 탭하면 다시 열림. 진짜 종료는 Phase 2 네이티브 래퍼. -->
@@ -569,9 +571,9 @@
          "입체감을 주려고 한다" — 보드 경계 아래로 살짝 넘치는 3D 느낌, 잘리면 안 됨) —
          #mole-board 형제로 두어 board의 overflow:hidden에 안 잘리게 함. 홈(is-start)에서만 노출. -->
     <!-- v915(사용자 지정): MOLE PANG 로고가 ROUND 판보다 앞에 — 게임판 밖(ROUND 판과 같은 층)으로 옮겨 그 위에 그림. 광산 화면일 때만 보임 -->
-    <div class="hm-piece hm-logo" id="hm-logo-front" aria-hidden="true"><img src="assets/home2/logo.png" alt=""></div>
+    <div class="hm-piece hm-logo" id="hm-logo-front" aria-hidden="true"><img loading="lazy" decoding="async" src="assets/home2/logo.png" alt=""></div>
     <div id="round-strip" class="round-strip" aria-hidden="true">
-      <img class="rs-head" src="assets/home2/round-head-2.png" alt=""><img class="rs-bar" src="assets/home2/round-bar.png" alt="">
+      <img loading="lazy" decoding="async" class="rs-head" src="assets/home2/round-head-2.png" alt=""><img loading="lazy" decoding="async" class="rs-bar" src="assets/home2/round-bar.png" alt="">
       <button type="button" class="rs-tri rs-tri--prev" data-rs-round-prev aria-label="이전 라운드"></button>
       <div class="rs-circles">
         <button type="button" class="rs-circle" data-rs-round="1"><span data-rs-label></span></button>
@@ -598,42 +600,42 @@
       <!-- 라운드 선택 광산 맵(v763) — 명세 "MOLE PANG 라운드 선택 화면". js/round-map.js -->
       <div class="board-screen rm-screen rm-window-map" id="roundmap-screen" data-light="easy" hidden>
         <div class="rm-stage">
-          <img class="rm-bg" data-rm-bg alt="">
+          <img loading="lazy" decoding="async" class="rm-bg" data-rm-bg alt="">
           <div class="rm-parallax-scene" aria-hidden="true">
             <div class="rm-parallax-rear">
-              <img class="rm-rear-bg rm-mode-easy" src="assets/roundmap/hd-v1330/easy-rear.webp" alt=""><img class="rm-glow-layer rm-glow-gem rm-mode-easy" src="assets/roundmap/hd-v1330/easy-rear-gem.webp" alt="" style="left:4.707%;top:6.700%;width:91.829%;height:72.600%"><img class="rm-glow-layer rm-glow-lan rm-mode-easy" src="assets/roundmap/hd-v1330/easy-rear-lan.webp" alt="" style="left:0.000%;top:6.050%;width:97.158%;height:39.050%">
-              <img class="rm-rear-bg rm-mode-mid" src="assets/roundmap/hd-v1330/mid-rear.webp" alt=""><img class="rm-glow-layer rm-glow-gem rm-mode-mid" src="assets/roundmap/hd-v1330/mid-rear-gem.webp" alt="" style="left:0.000%;top:0.400%;width:100.000%;height:99.600%"><img class="rm-glow-layer rm-glow-lan rm-mode-mid" src="assets/roundmap/hd-v1330/mid-rear-lan.webp" alt="" style="left:48.135%;top:2.700%;width:49.822%;height:36.900%">
-              <img class="rm-rear-bg rm-mode-legend" src="assets/roundmap/hd-v1330/legend-rear.webp" alt=""><img class="rm-glow-layer rm-glow-gem rm-mode-legend" src="assets/roundmap/hd-v1330/legend-rear-gem.webp" alt="" style="left:0.000%;top:7.150%;width:100.000%;height:91.450%"><img class="rm-glow-layer rm-glow-lan rm-mode-legend" src="assets/roundmap/hd-v1330/legend-rear-lan.webp" alt="" style="left:8.171%;top:3.500%;width:90.586%;height:19.200%">
+              <img loading="lazy" decoding="async" class="rm-rear-bg rm-mode-easy" src="assets/roundmap/hd-v1330/easy-rear.webp" alt=""><img loading="lazy" decoding="async" class="rm-glow-layer rm-glow-gem rm-mode-easy" src="assets/roundmap/hd-v1330/easy-rear-gem.webp" alt="" style="left:4.707%;top:6.700%;width:91.829%;height:72.600%"><img loading="lazy" decoding="async" class="rm-glow-layer rm-glow-lan rm-mode-easy" src="assets/roundmap/hd-v1330/easy-rear-lan.webp" alt="" style="left:0.000%;top:6.050%;width:97.158%;height:39.050%">
+              <img loading="lazy" decoding="async" class="rm-rear-bg rm-mode-mid" src="assets/roundmap/hd-v1330/mid-rear.webp" alt=""><img loading="lazy" decoding="async" class="rm-glow-layer rm-glow-gem rm-mode-mid" src="assets/roundmap/hd-v1330/mid-rear-gem.webp" alt="" style="left:0.000%;top:0.400%;width:100.000%;height:99.600%"><img loading="lazy" decoding="async" class="rm-glow-layer rm-glow-lan rm-mode-mid" src="assets/roundmap/hd-v1330/mid-rear-lan.webp" alt="" style="left:48.135%;top:2.700%;width:49.822%;height:36.900%">
+              <img loading="lazy" decoding="async" class="rm-rear-bg rm-mode-legend" src="assets/roundmap/hd-v1330/legend-rear.webp" alt=""><img loading="lazy" decoding="async" class="rm-glow-layer rm-glow-gem rm-mode-legend" src="assets/roundmap/hd-v1330/legend-rear-gem.webp" alt="" style="left:0.000%;top:7.150%;width:100.000%;height:91.450%"><img loading="lazy" decoding="async" class="rm-glow-layer rm-glow-lan rm-mode-legend" src="assets/roundmap/hd-v1330/legend-rear-lan.webp" alt="" style="left:8.171%;top:3.500%;width:90.586%;height:19.200%">
               <canvas class="rm-fluid-canvas" data-rm-rear-fluid hidden></canvas>
-              <div class="rm-cloud-window"><img class="rm-window-cloud" src="assets/roundmap/window-v1263/cloud.webp" alt=""><img class="rm-window-cloud rm-window-cloud--second" src="assets/roundmap/window-v1263/cloud.webp" alt=""></div>
+              <div class="rm-cloud-window"><img loading="lazy" decoding="async" class="rm-window-cloud" src="assets/roundmap/window-v1263/cloud.webp" alt=""><img loading="lazy" decoding="async" class="rm-window-cloud rm-window-cloud--second" src="assets/roundmap/window-v1263/cloud.webp" alt=""></div>
               <div class="rm-rear-gems rm-mode-easy"><span class="rm-spark" style="left:85.0159%;top:17.7033%;animation-delay:-0.4s"></span><span class="rm-spark" style="left:83.7407%;top:39.5933%;animation-delay:-0.87s"></span><span class="rm-spark" style="left:90.3294%;top:52.6316%;animation-delay:-1.34s"></span><span class="rm-spark" style="left:87.1413%;top:76.555%;animation-delay:-1.81s"></span></div>
               <div class="rm-rear-gems rm-mode-easy" data-rm-gem-layer="easy"></div>
               <div class="rm-rear-gems rm-mode-mid" data-rm-gem-layer="mid"></div>
               <div class="rm-rear-gems rm-mode-legend" data-rm-gem-layer="legend"></div>
             </div>
-            <img class="rm-route-art" src="assets/roundmap/hd-v1330/easy-route.webp" alt="">
-            <img class="rm-front-art" src="assets/roundmap/hd-v1330/easy-front.webp" alt=""><img class="rm-glow-layer rm-glow-gem rm-mode-easy" src="assets/roundmap/hd-v1330/easy-front-gem.webp" alt="" style="left:0.000%;top:55.500%;width:24.334%;height:14.350%"><img class="rm-glow-layer rm-glow-lan rm-mode-easy" src="assets/roundmap/hd-v1330/easy-front-lan.webp" alt="" style="left:5.684%;top:14.800%;width:93.694%;height:15.050%"><!-- V1320 C 아마추어 보석·랜턴 빛: 그림에서 뽑은 실제 모양(원근 밝기 포함) -->
-            <img class="rm-selected-front rm-mode-mid" src="assets/roundmap/hd-v1330/mid-front.webp" alt=""><img class="rm-glow-layer rm-glow-gem rm-mode-mid" src="assets/roundmap/hd-v1330/mid-front-gem.webp" alt="" style="left:0.000%;top:4.150%;width:80.018%;height:91.700%"><img class="rm-glow-layer rm-glow-lan rm-mode-mid" src="assets/roundmap/hd-v1330/mid-front-lan.webp" alt="" style="left:4.085%;top:12.750%;width:95.560%;height:71.050%"><!-- V1321 C 노말 보석·랜턴 빛 -->
-            <img class="rm-selected-front rm-mode-legend" src="assets/roundmap/hd-v1330/legend-front.webp" alt=""><img class="rm-glow-layer rm-glow-gem rm-mode-legend" src="assets/roundmap/hd-v1330/legend-front-gem.webp" alt="" style="left:0.000%;top:7.600%;width:100.000%;height:90.850%"><img class="rm-glow-layer rm-glow-lan rm-mode-legend" src="assets/roundmap/hd-v1330/legend-front-lan.webp" alt="" style="left:33.925%;top:12.850%;width:32.682%;height:65.150%"><!-- V1324 C 프로 보석·랜턴 빛 --><!-- V1330 C 원근 그림자는 앞 그림(hd-v1330)에 구워 넣음 -->
+            <img loading="lazy" decoding="async" class="rm-route-art" src="assets/roundmap/hd-v1330/easy-route.webp" alt="">
+            <img loading="lazy" decoding="async" class="rm-front-art" src="assets/roundmap/hd-v1330/easy-front.webp" alt=""><img loading="lazy" decoding="async" class="rm-glow-layer rm-glow-gem rm-mode-easy" src="assets/roundmap/hd-v1330/easy-front-gem.webp" alt="" style="left:0.000%;top:55.500%;width:24.334%;height:14.350%"><img loading="lazy" decoding="async" class="rm-glow-layer rm-glow-lan rm-mode-easy" src="assets/roundmap/hd-v1330/easy-front-lan.webp" alt="" style="left:5.684%;top:14.800%;width:93.694%;height:15.050%"><!-- V1320 C 아마추어 보석·랜턴 빛: 그림에서 뽑은 실제 모양(원근 밝기 포함) -->
+            <img loading="lazy" decoding="async" class="rm-selected-front rm-mode-mid" src="assets/roundmap/hd-v1330/mid-front.webp" alt=""><img loading="lazy" decoding="async" class="rm-glow-layer rm-glow-gem rm-mode-mid" src="assets/roundmap/hd-v1330/mid-front-gem.webp" alt="" style="left:0.000%;top:4.150%;width:80.018%;height:91.700%"><img loading="lazy" decoding="async" class="rm-glow-layer rm-glow-lan rm-mode-mid" src="assets/roundmap/hd-v1330/mid-front-lan.webp" alt="" style="left:4.085%;top:12.750%;width:95.560%;height:71.050%"><!-- V1321 C 노말 보석·랜턴 빛 -->
+            <img loading="lazy" decoding="async" class="rm-selected-front rm-mode-legend" src="assets/roundmap/hd-v1330/legend-front.webp" alt=""><img loading="lazy" decoding="async" class="rm-glow-layer rm-glow-gem rm-mode-legend" src="assets/roundmap/hd-v1330/legend-front-gem.webp" alt="" style="left:0.000%;top:7.600%;width:100.000%;height:90.850%"><img loading="lazy" decoding="async" class="rm-glow-layer rm-glow-lan rm-mode-legend" src="assets/roundmap/hd-v1330/legend-front-lan.webp" alt="" style="left:33.925%;top:12.850%;width:32.682%;height:65.150%"><!-- V1324 C 프로 보석·랜턴 빛 --><!-- V1330 C 원근 그림자는 앞 그림(hd-v1330)에 구워 넣음 -->
             <canvas class="rm-fluid-canvas rm-front-fluid" data-rm-front-fluid hidden></canvas>
-            <img class="rm-round2-rock-front rm-mode-legend" src="assets/roundmap/hd-v1330/legend-front.webp" alt="" aria-hidden="true">
+            <img loading="lazy" decoding="async" class="rm-round2-rock-front rm-mode-legend" src="assets/roundmap/hd-v1330/legend-front.webp" alt="" aria-hidden="true">
           </div>
           <div class="rm-fx" data-rm-fx></div>
           <div class="rm-headlamp-beam" aria-hidden="true"><svg viewBox="0 0 100 160" preserveAspectRatio="none"><defs><linearGradient id="rm-headlamp-cone" x1="40" y1="84" x2="17" y2="39" gradientUnits="userSpaceOnUse"><stop stop-color="#fff1ae" stop-opacity=".22"/><stop offset=".48" stop-color="#ffd56b" stop-opacity=".11"/><stop offset="1" stop-color="#ffc858" stop-opacity="0"/></linearGradient><radialGradient id="rm-headlamp-pool"><stop stop-color="#fffbd0" stop-opacity=".58"/><stop offset=".38" stop-color="#ffe49a" stop-opacity=".28"/><stop offset="1" stop-color="#ffc65a" stop-opacity="0"/></radialGradient><radialGradient id="rm-headlamp-source"><stop stop-color="#fff7c2" stop-opacity=".78"/><stop offset="1" stop-color="#ffbb43" stop-opacity="0"/></radialGradient></defs><path d="M40 85 C37 70 25 55 13 43 C10 39 14 36 20 39 C34 49 43 67 44 85 Z" fill="url(#rm-headlamp-cone)"/><ellipse cx="17" cy="42" rx="17" ry="10" fill="url(#rm-headlamp-pool)"/><ellipse cx="40" cy="85" rx="5.5" ry="4" fill="url(#rm-headlamp-source)"/></svg></div>
           <div class="rm-rounds" data-rm-rounds></div>
         </div>
         
-        <div class="rm-top-cap rm-mode-easy" aria-hidden="true"><img src="assets/roundmap/frame-v1298/amateur-top-cap.webp" alt="" draggable="false"></div>
-        <div class="rm-top-cap rm-mode-mid" aria-hidden="true"><img src="assets/roundmap/frame-v1298/normal-top-cap.webp" alt="" draggable="false"></div>
-        <div class="rm-top-cap rm-mode-legend" aria-hidden="true"><img src="assets/roundmap/frame-v1298/pro-top-cap.webp" alt="" draggable="false"></div>
+        <div class="rm-top-cap rm-mode-easy" aria-hidden="true"><img loading="lazy" decoding="async" src="assets/roundmap/frame-v1298/amateur-top-cap.webp" alt="" draggable="false"></div>
+        <div class="rm-top-cap rm-mode-mid" aria-hidden="true"><img loading="lazy" decoding="async" src="assets/roundmap/frame-v1298/normal-top-cap.webp" alt="" draggable="false"></div>
+        <div class="rm-top-cap rm-mode-legend" aria-hidden="true"><img loading="lazy" decoding="async" src="assets/roundmap/frame-v1298/pro-top-cap.webp" alt="" draggable="false"></div>
         <i class="rm-bottom-line" aria-hidden="true"></i><!-- V1327 C 버튼판 위 모드색 선(움직임 없음) -->
-        <div class="rm-wallet" aria-hidden="true"><div class="ms-box ms-combo"><img class="ms-ic" src="assets/home2/ic-coin.png" alt=""><b class="ms-val" data-rm-wallet="coins">0</b></div><div class="ms-box ms-heart"><img class="ms-ic" src="assets/home2/ic-heart.png" alt=""><b class="ms-val" data-rm-wallet="hearts">0</b></div><div class="ms-box ms-score"><img class="ms-ic" src="assets/ui-approved-v1476/ticket-single.webp" alt=""><b class="ms-val" data-rm-wallet="tickets">0</b></div></div><!-- V1323 C 코인·하트·티켓 잔량 -->
+        <div class="rm-wallet" aria-hidden="true"><div class="ms-box ms-combo"><img loading="lazy" decoding="async" class="ms-ic" src="assets/home2/ic-coin.png" alt=""><b class="ms-val" data-rm-wallet="coins">0</b></div><div class="ms-box ms-heart"><img loading="lazy" decoding="async" class="ms-ic" src="assets/home2/ic-heart.png" alt=""><b class="ms-val" data-rm-wallet="hearts">0</b></div><div class="ms-box ms-score"><img loading="lazy" decoding="async" class="ms-ic" src="assets/ui-approved-v1476/ticket-single.webp" alt=""><b class="ms-val" data-rm-wallet="tickets">0</b></div></div><!-- V1323 C 코인·하트·티켓 잔량 -->
         <div class="rm-top-ticker" data-rm-ticker>
           <span class="rm-top-ticker-sr" data-rm-ticker-label role="status" aria-live="polite"></span>
           <div class="rm-top-ticker-viewport" aria-hidden="true"><div class="rm-top-ticker-track" data-rm-ticker-track><span class="rm-top-ticker-copy" data-rm-ticker-copy></span><span class="rm-top-ticker-copy" data-rm-ticker-copy></span></div></div>
         </div>
         <div class="rm-ui">
-          <div class="rm-viewer" aria-hidden="true"><img class="rm-viewer-art" src="assets/roundmap/window-v1263/hippo-viewer.webp" alt="" draggable="false"><button type="button" class="rm-tipbtn rm-tipbtn--back" data-rm-tipbtn aria-pressed="true"><span></span></button></div>
+          <div class="rm-viewer" aria-hidden="true"><img loading="lazy" decoding="async" class="rm-viewer-art" src="assets/roundmap/window-v1263/hippo-viewer.webp" alt="" draggable="false"><button type="button" class="rm-tipbtn rm-tipbtn--back" data-rm-tipbtn aria-pressed="true"><span></span></button></div>
             <div class="rm-bottom">
               <div class="rm-lights">
                 <button type="button" class="rm-light rm-light--easy" data-rm-light="easy"><span data-i18n="mole.rm.mode.easy">Amateur</span><small data-i18n="mole.rm.light.easy">라이트 ON</small></button>
@@ -641,8 +643,8 @@
                 <button type="button" class="rm-light rm-light--legend" data-rm-light="legend"><span data-i18n="mole.rm.mode.legend">Pro</span><small data-i18n="mole.rm.light.legend">라이트 OFF</small></button>
               </div>
             </div>
-            <button type="button" class="rm-start" data-rm-start aria-label="시작" data-i18n-aria-label="mole.start.btn"><!-- V1318 C: 홈 초록 시작 버튼과 같은 그림·연출·꾹 눌러 종료(사용자 지정) --><span class="h2-start"><img src="assets/home2/ic-start.png" alt=""><img class="h2-play" src="assets/home2/start-play.png" alt=""></span><span class="lane-call-idle" aria-hidden="true"></span><span class="rm-start-label" data-rm-start-label>시작</span></button>
-            <button type="button" class="dr-back rm-back is-x" data-back="roundmap" aria-label="뒤로" data-i18n-aria-label="common.back"><img src="assets/workshop/pick/x.png" alt=""></button><!-- v940: 뒤로가기 → 오른쪽 빨간 X -->
+            <button type="button" class="rm-start" data-rm-start aria-label="시작" data-i18n-aria-label="mole.start.btn"><!-- V1318 C: 홈 초록 시작 버튼과 같은 그림·연출·꾹 눌러 종료(사용자 지정) --><span class="h2-start"><img loading="lazy" decoding="async" src="assets/home2/ic-start.png" alt=""><img loading="lazy" decoding="async" class="h2-play" src="assets/home2/start-play.png" alt=""></span><span class="lane-call-idle" aria-hidden="true"></span><span class="rm-start-label" data-rm-start-label>시작</span></button>
+            <button type="button" class="dr-back rm-back is-x" data-back="roundmap" aria-label="뒤로" data-i18n-aria-label="common.back"><img loading="lazy" decoding="async" src="assets/workshop/pick/x.png" alt=""></button><!-- v940: 뒤로가기 → 오른쪽 빨간 X -->
         </div>
       </div>
       <!-- 리듬팡(RHYTHM PANG) 1차 — js/rhythm.js. 바탕화면 "리듬팡 UI 및 에셋/명세서.txt" -->
@@ -655,13 +657,13 @@
           <button type="button" class="rx-btn rx-btn--y rp-type-button" data-rp-type="A"><span data-i18n="mole.rp.type.a">리듬팡 비치</span></button>
           <button type="button" class="rx-btn rx-btn--b rp-type-button" data-rp-type="B"><span data-i18n="mole.rp.type.b">리듬팡 네온</span></button>
           <button type="button" class="rx-btn rx-btn--home" data-rp-types-home><span data-i18n="mole.rp.home">홈으로</span></button>
-          <div class="rp-ticket-badge rp-ticket-badge--types" data-rp-ticket-count><img src="assets/ui-approved-v1476/ticket-single.webp" alt="Tickets"><b>0</b></div></div>
+          <div class="rp-ticket-badge rp-ticket-badge--types" data-rp-ticket-count><img loading="lazy" decoding="async" src="assets/ui-approved-v1476/ticket-single.webp" alt="Tickets"><b>0</b></div></div>
         </section>
         <section class="rb-screen" data-rp-b hidden aria-label="리듬팡 B타입 게임" data-i18n-aria-label="mole.rp.bGame">
           <div class="rb-board"></div>
         </section>
         <div class="rp-stage" data-rp-stage>
-          <div class="rp-a-cloud-boss"><div class="rp-hippo"><div class="rp-cloud-body"><img class="rp-cloud-happy" src="assets/rhythm/beach-v1172/hippo-happy.webp" alt="웃는 구름하마"><img class="rp-cloud-hurt" src="assets/rhythm/beach-v1172/hippo-hurt.webp" alt=""><i class="rp-cloud-tint"></i></div><div class="rp-cloud-skirt"><span class="rp-cloud-clump rp-cloud-clump-1"><img src="assets/rhythm/beach-v1172/hippo-cloud-clump-1-v2.png" alt=""><i class="rp-cloud-tint"></i></span><span class="rp-cloud-clump rp-cloud-clump-2"><img src="assets/rhythm/beach-v1172/hippo-cloud-clump-2-v2.png" alt=""><i class="rp-cloud-tint"></i></span><span class="rp-cloud-clump rp-cloud-clump-3"><img src="assets/rhythm/beach-v1172/hippo-cloud-clump-3-v2.png" alt=""><i class="rp-cloud-tint"></i></span></div><div class="rp-cloud-arm"><img src="assets/rhythm/beach-v1172/hippo-hand-mallet-v2.png" alt=""><i class="rp-cloud-tint"></i></div></div></div>
+          <div class="rp-a-cloud-boss"><div class="rp-hippo"><div class="rp-cloud-body"><img loading="lazy" decoding="async" class="rp-cloud-happy" src="assets/rhythm/beach-v1172/hippo-happy.webp" alt="웃는 구름하마"><img loading="lazy" decoding="async" class="rp-cloud-hurt" src="assets/rhythm/beach-v1172/hippo-hurt.webp" alt=""><i class="rp-cloud-tint"></i></div><div class="rp-cloud-skirt"><span class="rp-cloud-clump rp-cloud-clump-1"><img loading="lazy" decoding="async" src="assets/rhythm/beach-v1172/hippo-cloud-clump-1-v2.png" alt=""><i class="rp-cloud-tint"></i></span><span class="rp-cloud-clump rp-cloud-clump-2"><img loading="lazy" decoding="async" src="assets/rhythm/beach-v1172/hippo-cloud-clump-2-v2.png" alt=""><i class="rp-cloud-tint"></i></span><span class="rp-cloud-clump rp-cloud-clump-3"><img loading="lazy" decoding="async" src="assets/rhythm/beach-v1172/hippo-cloud-clump-3-v2.png" alt=""><i class="rp-cloud-tint"></i></span></div><div class="rp-cloud-arm"><img loading="lazy" decoding="async" src="assets/rhythm/beach-v1172/hippo-hand-mallet-v2.png" alt=""><i class="rp-cloud-tint"></i></div></div></div>
           <div class="rp-deco" aria-hidden="true"><i class="rp-twk" style="left:8%;top:41%;animation-delay:-0.3s"></i><i class="rp-twk" style="left:23%;top:47%;animation-delay:-1.4s"></i><i class="rp-twk" style="left:37%;top:43%;animation-delay:-2.2s"></i><i class="rp-twk" style="left:52%;top:50%;animation-delay:-0.8s"></i><i class="rp-twk" style="left:66%;top:44%;animation-delay:-1.9s"></i><i class="rp-twk" style="left:81%;top:48%;animation-delay:-0.1s"></i><i class="rp-twk" style="left:93%;top:42%;animation-delay:-2.6s"></i><i class="rp-twk" style="left:15%;top:55%;animation-delay:-1.1s"></i><i class="rp-twk" style="left:45%;top:57%;animation-delay:-2.9s"></i><i class="rp-twk" style="left:74%;top:56%;animation-delay:-0.6s"></i><span class="rp-gull"><span class="rp-gull-b"><svg viewBox="0 0 40 16"><path d="M2 11 Q11 1 20 9 Q29 1 38 11" fill="none" stroke="#3a4a5e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span><span class="rp-gull"><span class="rp-gull-b"><svg viewBox="0 0 40 16"><path d="M2 11 Q11 1 20 9 Q29 1 38 11" fill="none" stroke="#3a4a5e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span><span class="rp-gull"><span class="rp-gull-b"><svg viewBox="0 0 40 16"><path d="M2 11 Q11 1 20 9 Q29 1 38 11" fill="none" stroke="#3a4a5e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span></div>
           <div class="rp-lanes" data-rp-lanes></div>
           <div class="rp-weapons" data-rp-weapons></div>
@@ -677,13 +679,13 @@
         </div>
         <!-- v826: 리듬팡 창 3종 = 바탕화면 "리듬팡 UI 및 에셋/2차" 시안·에셋(부품 잘라 조립, 숫자·글자만 코드) -->
         <div class="rp-modal" data-rp-pause hidden><div class="rx-card rx-card--pause">
-          <div class="rx-plaque"><img src="assets/rhythm/ui/p-plaque.png" alt=""><svg class="rx-ptxt" viewBox="0 0 500 135" aria-hidden="true"><defs><path id="rxarc1" d="M 18 126 Q 250 40 482 126"/><linearGradient id="rxg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff58a"/><stop offset="0.45" stop-color="#ffcf1f"/><stop offset="1" stop-color="#ff7a00"/></linearGradient></defs><text class="rx-pt-sh" transform="translate(0 6)" text-anchor="middle" font-family="Jua, 'Lilita One', sans-serif" font-size="94" data-rx-pause-t><textPath href="#rxarc1" startOffset="50%">일시정지</textPath></text><text class="rx-pt-st" text-anchor="middle" font-family="Jua, 'Lilita One', sans-serif" font-size="94" data-rx-pause-t><textPath href="#rxarc1" startOffset="50%">일시정지</textPath></text><text class="rx-pt-fill" fill="url(#rxg1)" text-anchor="middle" font-family="Jua, 'Lilita One', sans-serif" font-size="94" data-rx-pause-t><textPath href="#rxarc1" startOffset="50%">일시정지</textPath></text></svg><span class="rx-shine" style="-webkit-mask-image:url(assets/rhythm/ui/p-plaque.png);mask-image:url(assets/rhythm/ui/p-plaque.png)"><i></i></span></div>
-          <button type="button" class="rx-btn rx-btn--y" data-rp-resume><img class="rx-ic rx-ic--play" src="assets/rhythm/ui/ic-play.png" alt=""><span data-i18n="mole.rp.resume">계속하기</span></button>
-          <button type="button" class="rx-btn rx-btn--b" data-rp-quit><img class="rx-ic rx-ic--heart rx-ic--ticket" src="assets/ui-approved-v1476/ticket-single.webp" alt=""><span data-i18n="mole.rp.quit">그만하기</span><em class="rx-cost" data-rp-quit-cost>-1</em></button>
+          <div class="rx-plaque"><img loading="lazy" decoding="async" src="assets/rhythm/ui/p-plaque.png" alt=""><svg class="rx-ptxt" viewBox="0 0 500 135" aria-hidden="true"><defs><path id="rxarc1" d="M 18 126 Q 250 40 482 126"/><linearGradient id="rxg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff58a"/><stop offset="0.45" stop-color="#ffcf1f"/><stop offset="1" stop-color="#ff7a00"/></linearGradient></defs><text class="rx-pt-sh" transform="translate(0 6)" text-anchor="middle" font-family="Jua, 'Lilita One', sans-serif" font-size="94" data-rx-pause-t><textPath href="#rxarc1" startOffset="50%">일시정지</textPath></text><text class="rx-pt-st" text-anchor="middle" font-family="Jua, 'Lilita One', sans-serif" font-size="94" data-rx-pause-t><textPath href="#rxarc1" startOffset="50%">일시정지</textPath></text><text class="rx-pt-fill" fill="url(#rxg1)" text-anchor="middle" font-family="Jua, 'Lilita One', sans-serif" font-size="94" data-rx-pause-t><textPath href="#rxarc1" startOffset="50%">일시정지</textPath></text></svg><span class="rx-shine" style="-webkit-mask-image:url(assets/rhythm/ui/p-plaque.png);mask-image:url(assets/rhythm/ui/p-plaque.png)"><i></i></span></div>
+          <button type="button" class="rx-btn rx-btn--y" data-rp-resume><img loading="lazy" decoding="async" class="rx-ic rx-ic--play" src="assets/rhythm/ui/ic-play.png" alt=""><span data-i18n="mole.rp.resume">계속하기</span></button>
+          <button type="button" class="rx-btn rx-btn--b" data-rp-quit><img loading="lazy" decoding="async" class="rx-ic rx-ic--heart rx-ic--ticket" src="assets/ui-approved-v1476/ticket-single.webp" alt=""><span data-i18n="mole.rp.quit">그만하기</span><em class="rx-cost" data-rp-quit-cost>-1</em></button>
         </div></div>
         <div class="rp-modal" data-rp-result hidden><div class="rx-card rx-card--res">
-          <div class="rx-title rx-go-title"><img src="assets/rhythm/ui/go-title.png" alt="GAME OVER"><span class="rx-shine" style="-webkit-mask-image:url(assets/rhythm/ui/go-title.png);mask-image:url(assets/rhythm/ui/go-title.png)"><i></i></span></div>
-          <div class="rx-plaque rx-clear-title"><img src="assets/rhythm/ui/p-plaque.png" alt=""><svg class="rx-ptxt" viewBox="0 0 500 135" aria-hidden="true"><defs><path id="rxarc2" d="M 18 126 Q 250 40 482 126"/><linearGradient id="rxg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff58a"/><stop offset="0.45" stop-color="#ffcf1f"/><stop offset="1" stop-color="#ff7a00"/></linearGradient></defs><text class="rx-pt-sh" transform="translate(0 6)" text-anchor="middle" font-family="'Lilita One', Jua, sans-serif" font-size="94"><textPath href="#rxarc2" startOffset="50%">COMPLETE</textPath></text><text class="rx-pt-st" text-anchor="middle" font-family="'Lilita One', Jua, sans-serif" font-size="94"><textPath href="#rxarc2" startOffset="50%">COMPLETE</textPath></text><text class="rx-pt-fill" fill="url(#rxg2)" text-anchor="middle" font-family="'Lilita One', Jua, sans-serif" font-size="94"><textPath href="#rxarc2" startOffset="50%">COMPLETE</textPath></text></svg><span class="rx-shine" style="-webkit-mask-image:url(assets/rhythm/ui/p-plaque.png);mask-image:url(assets/rhythm/ui/p-plaque.png)"><i></i></span></div>
+          <div class="rx-title rx-go-title"><img loading="lazy" decoding="async" src="assets/rhythm/ui/go-title.png" alt="GAME OVER"><span class="rx-shine" style="-webkit-mask-image:url(assets/rhythm/ui/go-title.png);mask-image:url(assets/rhythm/ui/go-title.png)"><i></i></span></div>
+          <div class="rx-plaque rx-clear-title"><img loading="lazy" decoding="async" src="assets/rhythm/ui/p-plaque.png" alt=""><svg class="rx-ptxt" viewBox="0 0 500 135" aria-hidden="true"><defs><path id="rxarc2" d="M 18 126 Q 250 40 482 126"/><linearGradient id="rxg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff58a"/><stop offset="0.45" stop-color="#ffcf1f"/><stop offset="1" stop-color="#ff7a00"/></linearGradient></defs><text class="rx-pt-sh" transform="translate(0 6)" text-anchor="middle" font-family="'Lilita One', Jua, sans-serif" font-size="94"><textPath href="#rxarc2" startOffset="50%">COMPLETE</textPath></text><text class="rx-pt-st" text-anchor="middle" font-family="'Lilita One', Jua, sans-serif" font-size="94"><textPath href="#rxarc2" startOffset="50%">COMPLETE</textPath></text><text class="rx-pt-fill" fill="url(#rxg2)" text-anchor="middle" font-family="'Lilita One', Jua, sans-serif" font-size="94"><textPath href="#rxarc2" startOffset="50%">COMPLETE</textPath></text></svg><span class="rx-shine" style="-webkit-mask-image:url(assets/rhythm/ui/p-plaque.png);mask-image:url(assets/rhythm/ui/p-plaque.png)"><i></i></span></div>
           <div class="rx-result-body"><p class="rx-score-l">SCORE</p>
           <div class="rx-score"><b data-rp-res-score>0</b><em class="rx-new" data-rx-new>NEW!</em></div>
           <div class="rx-best" data-rp-res-best></div><div class="rp-a-ticket-reward" data-rp-ticket-reward hidden></div><div class="rx-rating"><b class="rx-rank-stamp" data-rp-res-rank aria-label="Final grade">F</b><div class="rx-rating-detail"><small>ACCURACY</small><b data-rp-res-accuracy>0.00%</b><strong class="rx-achievement-stamp" data-rp-res-achievement hidden></strong></div></div>
@@ -693,17 +695,17 @@
           <button type="button" class="rx-btn rx-btn--b rx-btn--songs" data-rp-home><i aria-hidden="true">♫</i><span data-i18n="mole.rp.songs">곡 선택</span></button></div>
         </div></div>
         <div class="rp-modal rb-song-modal" data-rp-songs hidden role="dialog" aria-modal="true" aria-labelledby="rb-song-title"><div class="rx-card rx-card--sel rb-song-card">
-          <div class="rx-title rp-mode-sign" aria-label="RhythmPang Beach"><img src="assets/rhythm/ui/p-plaque.png" alt=""><svg viewBox="0 0 645 259" aria-hidden="true"><defs><path id="rp-mode-arc-songs" d="M105 177 Q322 92 540 177"/></defs><text class="rp-mode-sign-shadow" text-anchor="middle" font-size="96" font-family="Lilita One, Jua, sans-serif"><textPath data-rp-mode-name href="#rp-mode-arc-songs" startOffset="50%">BEACH</textPath></text><text class="rp-mode-sign-fill" text-anchor="middle" font-size="96" font-family="Lilita One, Jua, sans-serif"><textPath data-rp-mode-name href="#rp-mode-arc-songs" startOffset="50%">BEACH</textPath></text></svg></div>
+          <div class="rx-title rp-mode-sign" aria-label="RhythmPang Beach"><img loading="lazy" decoding="async" src="assets/rhythm/ui/p-plaque.png" alt=""><svg viewBox="0 0 645 259" aria-hidden="true"><defs><path id="rp-mode-arc-songs" d="M105 177 Q322 92 540 177"/></defs><text class="rp-mode-sign-shadow" text-anchor="middle" font-size="96" font-family="Lilita One, Jua, sans-serif"><textPath data-rp-mode-name href="#rp-mode-arc-songs" startOffset="50%">BEACH</textPath></text><text class="rp-mode-sign-fill" text-anchor="middle" font-size="96" font-family="Lilita One, Jua, sans-serif"><textPath data-rp-mode-name href="#rp-mode-arc-songs" startOffset="50%">BEACH</textPath></text></svg></div>
           <h2 id="rb-song-title" data-i18n="mole.rp.songs.pick">곡을 고르세요</h2>
           <div class="rb-song-viewport"><div class="rb-song-list" data-rp-song-list></div><i class="rb-scroll-bar rb-scroll-bar--top" aria-hidden="true"></i><i class="rb-scroll-bar rb-scroll-bar--bottom" aria-hidden="true"></i></div>
           <p class="rb-song-message" data-rp-song-message role="status"></p>
           <div class="rb-song-footer"><button type="button" class="rx-btn rx-btn--diff rb-song-nav" data-rp-songs-back><svg class="rb-song-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2h6l.7 3 2.6 1.5 3-.8 3 5.2-2.3 2.2v3l2.3 2.2-3 5.2-3-.8-2.6 1.5-.7 3H9l-.7-3L5.7 22l-3 .8-3-5.2L2 15.4v-3L-.3 10.2l3-5.2 3 .8L8.3 4.3Z" transform="translate(2 0) scale(.83)"/><circle cx="12" cy="12" r="3.4" fill="#237cda"/></svg><span data-i18n="mole.rp.songs.type">타입 선택</span></button>
           <button type="button" class="rx-btn rx-btn--home rb-song-nav" data-rp-songs-home><svg class="rb-song-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 11 12 2 22 11 20 13V22H14V15H10V22H4V13Z"/></svg><span data-i18n="mole.rp.home">홈으로</span></button></div>
-          <div class="rp-ticket-badge rp-ticket-badge--songs" data-rp-ticket-count><img src="assets/ui-approved-v1476/ticket-single.webp" alt="Tickets"><b>0</b></div>
+          <div class="rp-ticket-badge rp-ticket-badge--songs" data-rp-ticket-count><img loading="lazy" decoding="async" src="assets/ui-approved-v1476/ticket-single.webp" alt="Tickets"><b>0</b></div>
         </div></div>
-        <div class="rp-modal rp-preloader" data-rp-preloader hidden role="status" aria-live="polite"><div class="rx-card"><img class="rp-preload-album" data-rp-preload-album alt=""><h2 data-rp-preload-title></h2><p data-i18n="mole.rp.preload.title">게임 준비 중</p><progress data-rp-preload-progress max="4" value="0"></progress><small data-rp-preload-detail data-i18n="mole.rp.preload.detail">음악과 화면을 불러옵니다</small><button type="button" class="rx-btn rx-btn--b rx-btn--songs" data-rp-preload-cancel><i aria-hidden="true">♫</i><span data-i18n="mole.rp.songs">곡 선택</span></button></div></div>
+        <div class="rp-modal rp-preloader" data-rp-preloader hidden role="status" aria-live="polite"><div class="rx-card"><img loading="lazy" decoding="async" class="rp-preload-album" data-rp-preload-album alt=""><h2 data-rp-preload-title></h2><p data-i18n="mole.rp.preload.title">게임 준비 중</p><progress data-rp-preload-progress max="4" value="0"></progress><small data-rp-preload-detail data-i18n="mole.rp.preload.detail">음악과 화면을 불러옵니다</small><button type="button" class="rx-btn rx-btn--b rx-btn--songs" data-rp-preload-cancel><i aria-hidden="true">♫</i><span data-i18n="mole.rp.songs">곡 선택</span></button></div></div>
         <div class="rp-modal rp-select" data-rp-select hidden><div class="rx-card rx-card--sel">
-          <div class="rx-title rp-mode-sign" aria-label="RhythmPang Beach"><img src="assets/rhythm/ui/p-plaque.png" alt=""><svg viewBox="0 0 645 259" aria-hidden="true"><defs><path id="rp-mode-arc-difficulty" d="M105 177 Q322 92 540 177"/></defs><text class="rp-mode-sign-shadow" text-anchor="middle" font-size="96" font-family="Lilita One, Jua, sans-serif"><textPath data-rp-mode-name href="#rp-mode-arc-difficulty" startOffset="50%">BEACH</textPath></text><text class="rp-mode-sign-fill" text-anchor="middle" font-size="96" font-family="Lilita One, Jua, sans-serif"><textPath data-rp-mode-name href="#rp-mode-arc-difficulty" startOffset="50%">BEACH</textPath></text></svg></div>
+          <div class="rx-title rp-mode-sign" aria-label="RhythmPang Beach"><img loading="lazy" decoding="async" src="assets/rhythm/ui/p-plaque.png" alt=""><svg viewBox="0 0 645 259" aria-hidden="true"><defs><path id="rp-mode-arc-difficulty" d="M105 177 Q322 92 540 177"/></defs><text class="rp-mode-sign-shadow" text-anchor="middle" font-size="96" font-family="Lilita One, Jua, sans-serif"><textPath data-rp-mode-name href="#rp-mode-arc-difficulty" startOffset="50%">BEACH</textPath></text><text class="rp-mode-sign-fill" text-anchor="middle" font-size="96" font-family="Lilita One, Jua, sans-serif"><textPath data-rp-mode-name href="#rp-mode-arc-difficulty" startOffset="50%">BEACH</textPath></text></svg></div>
           <p class="rb-selected-song" data-rp-selected-song hidden></p>
           <div class="rx-sub"><span data-i18n="mole.rp.pick">난이도를 고르세요</span></div>
           <button type="button" class="rx-btn rx-dbtn rx-dbtn--easy" data-rp-diff="EASY"><small></small></button>
@@ -711,7 +713,7 @@
           <button type="button" class="rx-btn rx-dbtn rx-dbtn--hard" data-rp-diff="HARD"><small></small></button>
           <button type="button" class="rx-btn rx-btn--b rx-btn--songs rb-song-nav" data-rp-song-back hidden><i aria-hidden="true">♫</i><span data-i18n="mole.rp.songs">곡 선택</span></button>
           <button type="button" class="rx-btn rx-btn--home rx-btn--selhome" data-rp-sel-close><span data-i18n="mole.rp.home">홈으로</span></button>
-          <div class="rp-ticket-badge rp-ticket-badge--select" data-rp-ticket-count><img src="assets/ui-approved-v1476/ticket-single.webp" alt="Tickets"><b>0</b></div>
+          <div class="rp-ticket-badge rp-ticket-badge--select" data-rp-ticket-count><img loading="lazy" decoding="async" src="assets/ui-approved-v1476/ticket-single.webp" alt="Tickets"><b>0</b></div>
         </div></div>
       </div>
     <div class="board-screen" id="light-popup" hidden>
@@ -775,7 +777,7 @@
         <div class="fm-stage" data-fm-stage="crop" hidden>
           <p class="fm-hint" data-i18n="mole.fm.cropHint">얼굴을 원 안에 맞춰주세요</p>
           <div class="fm-crop" data-fm-crop>
-            <img class="fm-crop-img" data-fm-img alt="">
+            <img loading="lazy" decoding="async" class="fm-crop-img" data-fm-img alt="">
             <div class="fm-crop-ring" aria-hidden="true"></div>
           </div>
           <button type="button" class="fm-next" data-fm-next data-i18n="mole.fm.next">다음</button>
@@ -797,8 +799,8 @@
         <div class="sr-carpet" aria-hidden="true"></div>
         <div class="sr-fx" data-sr-fx aria-hidden="true"></div>
         <div class="sr-ui">
-          <button type="button" class="sr-back is-x" data-back="score" aria-label="뒤로" data-i18n-aria-label="common.back"><img src="assets/workshop/pick/x.png" alt=""></button>
-          <span class="sr-title-wrap"><img class="sr-title" src="assets/score/title.png" alt="SCORE RANKING"><i class="sr-tw" style="left:14%;top:30%"></i><i class="sr-tw" style="left:84%;top:26%"></i><i class="sr-tw" style="left:30%;top:88%"></i><i class="sr-tw" style="left:72%;top:86%"></i></span>
+          <button type="button" class="sr-back is-x" data-back="score" aria-label="뒤로" data-i18n-aria-label="common.back"><img loading="lazy" decoding="async" src="assets/workshop/pick/x.png" alt=""></button>
+          <span class="sr-title-wrap"><img loading="lazy" decoding="async" class="sr-title" src="assets/score/title.png" alt="SCORE RANKING"><i class="sr-tw" style="left:14%;top:30%"></i><i class="sr-tw" style="left:84%;top:26%"></i><i class="sr-tw" style="left:30%;top:88%"></i><i class="sr-tw" style="left:72%;top:86%"></i></span>
           <div class="sr-tabs">
             <button type="button" class="sr-tab sr-tab--on" data-sr-game="mole"><span data-i18n="mole.pad.gameMole">두더지팡</span></button>
             <button type="button" class="sr-tab sr-tab--off" data-sr-game="rhythm">
@@ -807,7 +809,7 @@
             </button>
           </div>
           <div class="sr-albums" data-sr-albums hidden></div>
-          <div class="sr-rp" data-sr-rp hidden><button type="button" class="sr-rp-back" data-sr-rp-back aria-label="albums"><img src="assets/score/btn-undo-matte-v1405.png" alt=""></button><img class="sr-rp-album" data-sr-album alt=""><b class="sr-rp-title" data-sr-title></b><span class="sr-rp-tag" data-sr-tag></span></div>
+          <div class="sr-rp" data-sr-rp hidden><button type="button" class="sr-rp-back" data-sr-rp-back aria-label="albums"><img loading="lazy" decoding="async" src="assets/score/btn-undo-matte-v1405.png" alt=""></button><img loading="lazy" decoding="async" class="sr-rp-album" data-sr-album alt=""><b class="sr-rp-title" data-sr-title></b><span class="sr-rp-tag" data-sr-tag></span></div>
           <div class="sr-top3" data-sr-top3></div>
           <div class="sr-rows" data-sr-rows></div>
           <div class="sr-mine" data-sr-mine></div>
@@ -823,7 +825,7 @@
           <svg class="shop-cloud shop-cloud--three" viewBox="0 0 160 60"><path d="M27 50C8 50 7 29 25 26C27 8 53 5 63 19C74 0 108 5 112 26C137 18 153 32 145 44C142 49 135 50 125 50Z"/></svg>
         </div>
         <div class="shop-frame" aria-hidden="true"></div>
-        <button type="button" class="shop-back" data-shop-back aria-label="뒤로" data-i18n-aria-label="common.back"><img src="assets/score/btn-undo-matte-v1405.png" alt=""></button>
+        <button type="button" class="shop-back" data-shop-back aria-label="뒤로" data-i18n-aria-label="common.back"><img loading="lazy" decoding="async" src="assets/score/btn-undo-matte-v1405.png" alt=""></button>
         <!-- 하트/코인/티켓 캡슐 = 상점 안이 아니라 두더지팡(다이얼패드 1/2/3 키) 쪽으로 이동
              (사용자 지정: "일단 두더지팡으로 이동") — shop.js 가 오버레이로 애니메이션 처리.
              배너가 최상단으로(사용자 지정: "아래 인사 박스를 제일 위로 이동"). -->
@@ -844,27 +846,27 @@
       <div class="board-screen ws-screen" id="workshop-screen" hidden>
         <div class="ws-dust" aria-hidden="true"><i class="ws-dust--hay" style="left:15%;top:57%;animation-delay:-3.6s;animation-duration:7.6s"></i><i class="ws-dust--hay" style="left:7%;top:39%;animation-delay:-6.4s;animation-duration:6.4s"></i><i class="ws-dust--hay" style="left:6%;top:34%;animation-delay:-3.6s;animation-duration:5.4s"></i><i class="ws-dust--hay" style="left:18%;top:30%;animation-delay:-4.8s;animation-duration:6.2s"></i><i class="ws-dust--hay" style="left:15%;top:38%;animation-delay:-5.0s;animation-duration:7.5s"></i><i class="ws-dust--hay" style="left:3%;top:31%;animation-delay:-0.3s;animation-duration:7.6s"></i><i class="ws-dust--hay" style="left:1%;top:57%;animation-delay:-2.6s;animation-duration:6.8s"></i><i class="ws-dust--hay" style="left:7%;top:61%;animation-delay:-1.9s;animation-duration:5.9s"></i><i class="ws-dust--hay" style="left:1%;top:33%;animation-delay:-3.7s;animation-duration:5.8s"></i><i class="ws-dust--hay" style="left:18%;top:33%;animation-delay:-5.7s;animation-duration:5.9s"></i><i class="ws-dust--hay" style="left:8%;top:60%;animation-delay:-2.3s;animation-duration:5.2s"></i><i class="ws-dust--hay" style="left:4%;top:53%;animation-delay:-0.9s;animation-duration:5.9s"></i><i class="ws-dust--hay" style="left:84%;top:29%;animation-delay:-6.8s;animation-duration:5.0s"></i><i class="ws-dust--hay" style="left:88%;top:31%;animation-delay:-3.8s;animation-duration:7.9s"></i><i class="ws-dust--hay" style="left:94%;top:54%;animation-delay:-0.6s;animation-duration:6.9s"></i><i class="ws-dust--hay" style="left:90%;top:49%;animation-delay:-0.7s;animation-duration:6.0s"></i><i class="ws-dust--hay" style="left:95%;top:35%;animation-delay:-1.1s;animation-duration:7.1s"></i><i class="ws-dust--hay" style="left:82%;top:31%;animation-delay:-3.7s;animation-duration:6.5s"></i><i class="ws-dust--hay" style="left:99%;top:40%;animation-delay:-3.6s;animation-duration:5.6s"></i><i class="ws-dust--hay" style="left:86%;top:54%;animation-delay:-5.1s;animation-duration:5.3s"></i><i class="ws-dust--hay" style="left:95%;top:41%;animation-delay:-0.0s;animation-duration:7.6s"></i><i class="ws-dust--hay" style="left:91%;top:29%;animation-delay:-1.7s;animation-duration:6.2s"></i><i class="ws-dust--hay" style="left:85%;top:30%;animation-delay:-7.9s;animation-duration:5.6s"></i><i class="ws-dust--hay" style="left:90%;top:28%;animation-delay:-6.2s;animation-duration:6.0s"></i><i style="left:46%;top:29%;animation-delay:-3.6s;animation-duration:7.2s"></i><i style="left:73%;top:22%;animation-delay:-3.3s;animation-duration:7.2s"></i><i style="left:69%;top:37%;animation-delay:-0.3s;animation-duration:8.7s"></i><i style="left:13%;top:40%;animation-delay:-0.8s;animation-duration:8.7s"></i><i style="left:77%;top:25%;animation-delay:-8.5s;animation-duration:9.5s"></i><i style="left:79%;top:17%;animation-delay:-5.2s;animation-duration:8.6s"></i><i style="left:33%;top:15%;animation-delay:-5.0s;animation-duration:7.5s"></i><i style="left:58%;top:28%;animation-delay:-4.9s;animation-duration:9.3s"></i><i style="left:76%;top:33%;animation-delay:-0.9s;animation-duration:9.3s"></i><i style="left:29%;top:57%;animation-delay:-0.9s;animation-duration:9.8s"></i><i style="left:77%;top:17%;animation-delay:-5.6s;animation-duration:9.0s"></i><i style="left:73%;top:64%;animation-delay:-7.0s;animation-duration:8.9s"></i><i style="left:63%;top:56%;animation-delay:-2.7s;animation-duration:10.2s"></i><i style="left:94%;top:41%;animation-delay:-0.7s;animation-duration:8.2s"></i></div>
         <div class="ws-ui">
-          <button type="button" class="ws-close" data-ws-close aria-label="닫기"><img src="assets/workshop/close.png" alt=""></button>
-          <div class="ws-sign"><img src="assets/workshop/sign.png" alt=""><b data-i18n="mole.ws.title">제작소</b><small>MOLE PANG</small></div>
+          <button type="button" class="ws-close" data-ws-close aria-label="닫기"><img loading="lazy" decoding="async" src="assets/workshop/close.png" alt=""></button>
+          <div class="ws-sign"><img loading="lazy" decoding="async" src="assets/workshop/sign.png" alt=""><b data-i18n="mole.ws.title">제작소</b><small>MOLE PANG</small></div>
           <div class="ws-tabs ws-tabs--3">
             <button type="button" class="ws-tab is-on" data-ws-tab="weapon"><span data-i18n="mole.ws.tabWeapon">무기 강화</span></button>
             <button type="button" class="ws-tab" data-ws-tab="costume"><span data-i18n="mole.ws.tabCostume">코스튬 강화</span></button>
             <button type="button" class="ws-tab" data-ws-photo><span data-i18n="mole.fs.tabPhoto">사진 합성</span></button>
           </div>
           <div class="ws-stage">
-            <img class="ws-stage-img" src="assets/workshop/clarity-v1434/stage.png" alt="">
-            <img class="ws-stage-banner" src="assets/workshop/stage-banner.png" alt="">
+            <img loading="lazy" decoding="async" class="ws-stage-img" src="assets/workshop/clarity-v1434/stage.png" alt="">
+            <img loading="lazy" decoding="async" class="ws-stage-banner" src="assets/workshop/stage-banner.png" alt="">
             <svg class="ws-arc" viewBox="0 0 700 414" aria-hidden="true"><path id="wsArcL" d="M 10 232 A 106 34 0 0 0 222 232" fill="none"/><path id="wsArcR" d="M 484 232 A 106 34 0 0 0 696 232" fill="none"/><text><textPath href="#wsArcL" startOffset="50%" text-anchor="middle" data-i18n="mole.ws.target">강화 대상</textPath></text><text><textPath href="#wsArcR" startOffset="50%" text-anchor="middle" data-i18n="mole.ws.material">강화 재료</textPath></text></svg>
             <span class="ws-lbl ws-lbl--l" data-i18n="mole.ws.target">강화 대상</span>
             <span class="ws-lbl ws-lbl--r" data-i18n="mole.ws.material">강화 재료</span>
             <span class="ws-dots" data-ws-dots></span>
             <button type="button" class="ws-arrow ws-arrow--prev" data-ws-arrow="prev" aria-label="이전"></button>
             <button type="button" class="ws-arrow ws-arrow--next" data-ws-arrow="next" aria-label="다음"></button>
-            <div class="ws-item ws-item--l" data-ws-target><img alt="" data-ws-target-img><b data-ws-target-lv></b></div>
+            <div class="ws-item ws-item--l" data-ws-target><img loading="lazy" decoding="async" alt="" data-ws-target-img><b data-ws-target-lv></b></div>
             <span class="ws-name" data-ws-target-name></span>
-            <div class="ws-item ws-item--r" data-ws-mat><img alt="" data-ws-mat-img><b data-ws-mat-lv></b></div>
+            <div class="ws-item ws-item--r" data-ws-mat><img loading="lazy" decoding="async" alt="" data-ws-mat-img><b data-ws-mat-lv></b></div>
             <span class="ws-matn" data-ws-mat-n></span>
-            <img class="ws-goose" src="assets/workshop/goose-1.png" alt="">
+            <img loading="lazy" decoding="async" class="ws-goose" src="assets/workshop/goose-1.png" alt="">
           </div>
           <div class="ws-panel">
             <div class="ws-row"><span data-i18n="mole.ws.rate">성공 확률</span><b data-ws-rate></b></div>
@@ -876,8 +878,8 @@
         </div>
         <div class="ws-pick" data-ws-pick hidden>
           <div class="ws-pick-box ws-pick-box--v2"><!-- v845: 사용자 시안(바탕화면 합성재료화면.png) — 제목판=제작소 간판, 색 카드 5종 -->
-            <div class="ws-pick-sign"><img src="assets/workshop/sign.png" alt=""><b data-i18n="mole.ws.pickTitle">강화 재료 선택</b></div>
-            <button type="button" class="ws-pick-x" data-ws-pick-close aria-label="close"><img src="assets/workshop/pick/x.png" alt=""></button>
+            <div class="ws-pick-sign"><img loading="lazy" decoding="async" src="assets/workshop/sign.png" alt=""><b data-i18n="mole.ws.pickTitle">강화 재료 선택</b></div>
+            <button type="button" class="ws-pick-x" data-ws-pick-close aria-label="close"><img loading="lazy" decoding="async" src="assets/workshop/pick/x.png" alt=""></button>
             <div class="ws-pick-list" data-ws-pick-list></div>
             <p class="ws-pick-note" data-ws-pick-note hidden><b data-i18n="mole.ws.pickNo">같은 종류만 가능</b></p><!-- v846: 안내는 한 번만 -->
             <button type="button" class="ws-pick-ok" data-ws-pick-close><span data-i18n="mole.ws.pickClose">닫기</span></button>
@@ -885,13 +887,13 @@
         </div>
         <div class="ws-fx" data-ws-fx hidden>
           <div class="ws-rise" data-ws-rise><i class="ws-puff"></i><i class="ws-fth"></i><i class="ws-fth"></i><i class="ws-fth"></i><i class="ws-fth"></i><i class="ws-fth"></i></div>
-          <img class="ws-fx-goose ws-ghost ws-ghost--2" data-ws-ghost alt="" hidden>
-          <img class="ws-fx-goose ws-ghost ws-ghost--1" data-ws-ghost alt="" hidden>
-          <img class="ws-fx-goose" data-ws-goose alt="">
+          <img loading="lazy" decoding="async" class="ws-fx-goose ws-ghost ws-ghost--2" data-ws-ghost alt="" hidden>
+          <img loading="lazy" decoding="async" class="ws-fx-goose ws-ghost ws-ghost--1" data-ws-ghost alt="" hidden>
+          <img loading="lazy" decoding="async" class="ws-fx-goose" data-ws-goose alt="">
           <p class="ws-egg-hint" data-ws-egghint data-i18n="mole.ws.eggTap" hidden>알을 터치하세요!</p>
           <div class="ws-notice ws-fx-notice" data-ws-fx-info hidden><span class="ws-info-icon" aria-hidden="true"></span><span data-i18n="mole.ws.blackEggChance">강화 실패 시 10% 확률로 반전 성공!</span></div>
           <div class="ws-result" data-ws-result hidden>
-            <div class="ws-res-glow" data-ws-res-glow><img alt="" data-ws-res-img></div>
+            <div class="ws-res-glow" data-ws-res-glow><img loading="lazy" decoding="async" alt="" data-ws-res-img></div>
             <p class="ws-res-title" data-ws-res-title></p>
             <p class="ws-res-sub" data-ws-res-sub></p>
             <button type="button" class="ws-res-ok" data-ws-ok data-i18n="mole.daily.ok">확인</button>
@@ -901,7 +903,7 @@
 
       <!-- 제작소 "사진 합성" 전체화면(7단계) — 바탕화면 "제작소 UI 및 에셋(얼굴합성)" 명세·에셋 기준(v751). js/face-studio.js -->
       <div class="fs-root" id="face-studio" hidden>
-        <button type="button" class="fs-back" data-fs-back aria-label="뒤로" data-i18n-aria-label="common.back"><img src="assets/score/btn-undo-matte-v1405.png" alt=""></button><!-- Score 화면과 같은 원본 복귀 아이콘 -->
+        <button type="button" class="fs-back" data-fs-back aria-label="뒤로" data-i18n-aria-label="common.back"><img loading="lazy" decoding="async" src="assets/score/btn-undo-matte-v1405.png" alt=""></button><!-- Score 화면과 같은 원본 복귀 아이콘 -->
         <!-- SCREEN_01 사진 촬영 안내 -->
         <section class="fs-scr fs-scr--intro" data-fs-screen="1">
           <div class="fs-intro-card">
@@ -937,21 +939,21 @@
         <!-- SCREEN_03 코스튬 선택 -->
         <section class="fs-scr fs-scr--costume" data-fs-screen="3" hidden>
           <div class="fs-embs">
-            <button type="button" data-fs-emb="blue_bears"><img src="assets/facestudio/emb-blue_bears.png" alt="Blue Bears"></button>
-            <button type="button" data-fs-emb="red_wings"><img src="assets/facestudio/emb-red_wings.png" alt="Red Wings"></button>
-            <button type="button" data-fs-emb="mount_stars"><img src="assets/facestudio/emb-mount_stars.png" alt="Mount Stars"></button>
-            <button type="button" data-fs-emb="sun_giants"><img src="assets/facestudio/emb-sun_giants.png" alt="Sun Giants"></button>
-            <button type="button" data-fs-emb="cloud_cups"><img src="assets/facestudio/emb-cloud_cups.png" alt="Cloud Cups"></button>
+            <button type="button" data-fs-emb="blue_bears"><img loading="lazy" decoding="async" src="assets/facestudio/emb-blue_bears.png" alt="Blue Bears"></button>
+            <button type="button" data-fs-emb="red_wings"><img loading="lazy" decoding="async" src="assets/facestudio/emb-red_wings.png" alt="Red Wings"></button>
+            <button type="button" data-fs-emb="mount_stars"><img loading="lazy" decoding="async" src="assets/facestudio/emb-mount_stars.png" alt="Mount Stars"></button>
+            <button type="button" data-fs-emb="sun_giants"><img loading="lazy" decoding="async" src="assets/facestudio/emb-sun_giants.png" alt="Sun Giants"></button>
+            <button type="button" data-fs-emb="cloud_cups"><img loading="lazy" decoding="async" src="assets/facestudio/emb-cloud_cups.png" alt="Cloud Cups"></button>
           </div>
           <p class="fs-cname" data-fs-cname></p>
           <div class="fs-cstage">
-            <button type="button" class="fs-carrow fs-carrow--l" data-fs-carrow="prev" aria-label="이전"><img src="assets/facestudio/arrow-l.png" alt=""></button>
-            <button type="button" class="fs-carrow fs-carrow--r" data-fs-carrow="next" aria-label="다음"><img src="assets/facestudio/arrow-r.png" alt=""></button>
+            <button type="button" class="fs-carrow fs-carrow--l" data-fs-carrow="prev" aria-label="이전"><img loading="lazy" decoding="async" src="assets/facestudio/arrow-l.png" alt=""></button>
+            <button type="button" class="fs-carrow fs-carrow--r" data-fs-carrow="next" aria-label="다음"><img loading="lazy" decoding="async" src="assets/facestudio/arrow-r.png" alt=""></button>
             <div class="fs-ccards">
               <!-- v887(사용자 지정): 팀 하나 = 카드 3장 묶음(동글/듬직/날렵), 발판 원 삭제, 화살표 = 팀 단위 -->
-              <div class="fs-ccard" data-fs-ccard><b class="fs-ctag" data-i18n="mole.fs.round">동글형</b><img alt=""></div>
-              <div class="fs-ccard" data-fs-ccard><b class="fs-ctag" data-i18n="mole.fs.sturdy">듬직형</b><img alt=""></div>
-              <div class="fs-ccard" data-fs-ccard><b class="fs-ctag" data-i18n="mole.fs.sharp">날렵형</b><img alt=""></div>
+              <div class="fs-ccard" data-fs-ccard><b class="fs-ctag" data-i18n="mole.fs.round">동글형</b><img loading="lazy" decoding="async" alt=""></div>
+              <div class="fs-ccard" data-fs-ccard><b class="fs-ctag" data-i18n="mole.fs.sturdy">듬직형</b><img loading="lazy" decoding="async" alt=""></div>
+              <div class="fs-ccard" data-fs-ccard><b class="fs-ctag" data-i18n="mole.fs.sharp">날렵형</b><img loading="lazy" decoding="async" alt=""></div>
             </div>
           </div>
           <button type="button" class="fs-btn" data-fs-costume-ok><span data-i18n="mole.fs.costumeOk">이 코스튬으로 결정하기</span></button>
@@ -960,7 +962,7 @@
         <section class="fs-scr fs-scr--prog" data-fs-screen="4" hidden>
           <h2 class="fs-title" data-i18n="mole.fs.progTitle">캐릭터를 만들어주세요!</h2>
           <p class="fs-sub" data-i18n="mole.fs.progSub">잠시만 기다려주세요.</p>
-          <div class="fs-ring"><canvas class="fs-ring-face" data-fs-ringface></canvas><img src="assets/facestudio/ring.png" alt=""></div>
+          <div class="fs-ring"><canvas class="fs-ring-face" data-fs-ringface></canvas><img loading="lazy" decoding="async" src="assets/facestudio/ring.png" alt=""></div>
           <ul class="fs-steps">
             <li data-fs-step><i></i><span data-i18n="mole.fs.s1">얼굴 분석 중...</span></li>
             <li data-fs-step><i></i><span data-i18n="mole.fs.s2">얼굴형 맞춤 조정 중...</span></li>
@@ -974,11 +976,11 @@
           <h2 class="fs-title" data-fs-face-title></h2>
           <p class="fs-sub" data-i18n="mole.fs.faceSub">내 얼굴에 가장 잘 어울리는 얼굴형을 선택해보세요.</p>
           <div class="fs-fcards">
-            <button type="button" class="fs-fcard" data-fs-fcard="round"><img class="fs-fcard-q" src="assets/facestudio/qcard.png" alt=""><img class="fs-fcard-char" alt=""><b data-i18n="mole.fs.round">동글형</b><small data-i18n="mole.fs.roundDesc">둥근 얼굴로 귀엽고 친근한 느낌</small></button>
-            <button type="button" class="fs-fcard" data-fs-fcard="sturdy"><img class="fs-fcard-q" src="assets/facestudio/qcard.png" alt=""><img class="fs-fcard-char" alt=""><b data-i18n="mole.fs.sturdy">듬직형</b><small data-i18n="mole.fs.sturdyDesc">넓은 얼굴로 강하고 듬직한 느낌</small></button>
-            <button type="button" class="fs-fcard" data-fs-fcard="sharp"><img class="fs-fcard-q" src="assets/facestudio/qcard.png" alt=""><img class="fs-fcard-char" alt=""><b data-i18n="mole.fs.sharp">날렵형</b><small data-i18n="mole.fs.sharpDesc">슬림한 얼굴로 날렵하고 세련된 느낌</small></button>
+            <button type="button" class="fs-fcard" data-fs-fcard="round"><img loading="lazy" decoding="async" class="fs-fcard-q" src="assets/facestudio/qcard.png" alt=""><img loading="lazy" decoding="async" class="fs-fcard-char" alt=""><b data-i18n="mole.fs.round">동글형</b><small data-i18n="mole.fs.roundDesc">둥근 얼굴로 귀엽고 친근한 느낌</small></button>
+            <button type="button" class="fs-fcard" data-fs-fcard="sturdy"><img loading="lazy" decoding="async" class="fs-fcard-q" src="assets/facestudio/qcard.png" alt=""><img loading="lazy" decoding="async" class="fs-fcard-char" alt=""><b data-i18n="mole.fs.sturdy">듬직형</b><small data-i18n="mole.fs.sturdyDesc">넓은 얼굴로 강하고 듬직한 느낌</small></button>
+            <button type="button" class="fs-fcard" data-fs-fcard="sharp"><img loading="lazy" decoding="async" class="fs-fcard-q" src="assets/facestudio/qcard.png" alt=""><img loading="lazy" decoding="async" class="fs-fcard-char" alt=""><b data-i18n="mole.fs.sharp">날렵형</b><small data-i18n="mole.fs.sharpDesc">슬림한 얼굴로 날렵하고 세련된 느낌</small></button>
           </div>
-          <div class="fs-mascot"><img src="assets/facestudio/mascot.png" alt=""><p class="fs-bubble" data-fs-bubble></p></div>
+          <div class="fs-mascot"><img loading="lazy" decoding="async" src="assets/facestudio/mascot.png" alt=""><p class="fs-bubble" data-fs-bubble></p></div>
           <button type="button" class="fs-btn" data-fs-face-ok><span data-i18n="mole.fs.faceOk">이 얼굴형으로 만들기</span></button>
         </section>
         <!-- SCREEN_07 완성 -->
@@ -986,8 +988,8 @@
           <h2 class="fs-title fs-title--big" data-i18n="mole.fs.doneTitle">완성된 캐릭터!</h2>
           <div class="fs-done-stage">
             <i class="fs-confetti" aria-hidden="true"></i>
-            <img class="fs-final" data-fs-final alt="">
-            <div class="fs-polaroid"><img data-fs-polaroid alt=""><b>Nice!</b></div>
+            <img loading="lazy" decoding="async" class="fs-final" data-fs-final alt="">
+            <div class="fs-polaroid"><img loading="lazy" decoding="async" data-fs-polaroid alt=""><b>Nice!</b></div>
           </div>
           <p class="fs-done-msg" data-i18n="mole.fs.doneMsg">와! 나만의 캐릭터가 완성됐어요!</p>
           <button type="button" class="fs-btn" data-fs-use><span data-i18n="mole.fs.use">게임에서 사용하기</span></button>
@@ -1002,29 +1004,29 @@
 
       <!-- 일일출석(DAILY REWARD) 전체화면 — 바탕화면 "일일출석 UI 및 에셋" 명세·에셋 기준(v748). 카드 글자·수량·상태는 js/daily.js 가 그린다. -->
       <div class="board-screen dr-screen" id="daily-screen" hidden>
-        <button type="button" class="dr-back is-x" data-back="daily" aria-label="뒤로" data-i18n-aria-label="common.back"><img src="assets/workshop/pick/x.png" alt=""></button>
+        <button type="button" class="dr-back is-x" data-back="daily" aria-label="뒤로" data-i18n-aria-label="common.back"><img loading="lazy" decoding="async" src="assets/workshop/pick/x.png" alt=""></button>
         <div class="dr-stage">
           <div class="dr-top">
-            <img class="dr-mole dr-mole--l" src="assets/daily/mole-left.png" alt="">
-            <img class="dr-sign" src="assets/daily/sign.png" alt="MOLE PANG DAILY REWARD">
-            <img class="dr-mole dr-mole--r" src="assets/daily/mole-right.png" alt="">
+            <img loading="lazy" decoding="async" class="dr-mole dr-mole--l" src="assets/daily/mole-left.png" alt="">
+            <img loading="lazy" decoding="async" class="dr-sign" src="assets/daily/sign.png" alt="MOLE PANG DAILY REWARD">
+            <img loading="lazy" decoding="async" class="dr-mole dr-mole--r" src="assets/daily/mole-right.png" alt="">
           </div>
           <div class="dr-board">
             <span class="dr-plate" data-i18n="mole.daily.sub">매일 출석하고 특별한 선물을 받아가세요!</span>
             <div class="dr-cards" data-daily-grid></div>
           </div>
           <div class="dr-btns">
-            <button type="button" class="dr-btn dr-btn--claim" data-daily-claim><img class="dr-btn-ico" src="assets/daily/ico-calendar.png" alt=""><span></span></button>
-            <button type="button" class="dr-btn dr-btn--ad" data-daily-2x><div class="dr-btn-ico dr-ad-art" aria-hidden="true"><img src="assets/ui-approved-v1476/ad-icon.webp" alt=""><strong>×2</strong></div><span></span></button>
+            <button type="button" class="dr-btn dr-btn--claim" data-daily-claim><img loading="lazy" decoding="async" class="dr-btn-ico" src="assets/daily/ico-calendar.png" alt=""><span></span></button>
+            <button type="button" class="dr-btn dr-btn--ad" data-daily-2x><div class="dr-btn-ico dr-ad-art" aria-hidden="true"><img loading="lazy" decoding="async" src="assets/ui-approved-v1476/ad-icon.webp" alt=""><strong>×2</strong></div><span></span></button>
           </div>
         </div>
         <div class="dr-gift" data-daily-gift hidden>
           <div class="dr-gift-stage">
-            <img class="dr-gift-rays" src="assets/daily/gift-rays.png" alt="">
-            <img class="dr-gift-box" src="assets/daily/gift-closed.png" alt="">
-            <img class="dr-gift-spark dr-gift-spark--a" src="assets/daily/gift-sparkle.png" alt="">
-            <img class="dr-gift-spark dr-gift-spark--b" src="assets/daily/gift-sparkle.png" alt="">
-            <img class="dr-gift-item" alt="">
+            <img loading="lazy" decoding="async" class="dr-gift-rays" src="assets/daily/gift-rays.png" alt="">
+            <img loading="lazy" decoding="async" class="dr-gift-box" src="assets/daily/gift-closed.png" alt="">
+            <img loading="lazy" decoding="async" class="dr-gift-spark dr-gift-spark--a" src="assets/daily/gift-sparkle.png" alt="">
+            <img loading="lazy" decoding="async" class="dr-gift-spark dr-gift-spark--b" src="assets/daily/gift-sparkle.png" alt="">
+            <img loading="lazy" decoding="async" class="dr-gift-item" alt="">
           </div>
           <p class="dr-gift-txt"></p>
           <button type="button" class="dr-gift-ok" hidden data-i18n="mole.daily.ok">확인</button>
@@ -1069,11 +1071,11 @@
         <!-- 몰리그 전광판(사용자 지정: "전체파란박스 안에 있으면 안됨, 최대한 게임화면 상단에
              위치, 전체파란박스는 전광판 아래에 위치") — 코스튬 탭 전용이라 다른 탭에서는
              hidden, paint()가 탭 전환마다 토글. -->
-        <img class="inv-cos-logo" alt="" src="assets/costume/logo.png" hidden>
+        <img loading="lazy" decoding="async" class="inv-cos-logo" alt="" src="assets/costume/logo.png" hidden>
         <!-- 사진관 전체컬렉션 돋보기(사용자 지정: "게임화면 모서리로 아예 옮겨라, 티커
              바로 밑") — 전체파란박스 밖, 화면 최상단 코너에 고정. 사진관 탭 전용. -->
         <div class="inv-banner">
-          <img alt="" class="inv-banner-pic" src="assets/avatar-mole.png">
+          <img loading="lazy" decoding="async" alt="" class="inv-banner-pic" src="assets/avatar-mole.png">
           <span class="inv-banner-txt" data-inv-banner-txt>어떤 무기를 고르시겠어요?</span>
           <button type="button" class="inv-arrow inv-arrow--prev" data-inv-prev aria-label="이전">◀</button>
           <button type="button" class="inv-arrow inv-arrow--next" data-inv-next aria-label="다음">▶</button>
@@ -1104,12 +1106,12 @@
          평소 게임 중엔 hidden, game.js 가 라운드1 카운트다운에서만 잠깐 사용. -->
     <div id="cannon-intro" aria-hidden="true" hidden>
       <div class="ci-rig">
-        <img class="ci-body" src="assets/weapons/cannon-intro-body-nol-v1392.png" alt="">
-        <img class="ci-wheel ci-wheel--1" src="assets/weapons/cannon-intro-wheel-nol-v1392.png" alt="">
-        <img class="ci-wheel ci-wheel--2" src="assets/weapons/cannon-intro-wheel-nol-v1392.png" alt="">
-        <img class="ci-spark" src="assets/weapons/cannon-fx1.png" alt="">
-        <img class="ci-burn" src="assets/weapons/cannon-fx4.png" alt="">
-        <img class="ci-smoke" src="assets/weapons/cannon-fx5.png" alt="">
+        <img loading="lazy" decoding="async" class="ci-body" src="assets/weapons/cannon-intro-body-nol-v1392.png" alt="">
+        <img loading="lazy" decoding="async" class="ci-wheel ci-wheel--1" src="assets/weapons/cannon-intro-wheel-nol-v1392.png" alt="">
+        <img loading="lazy" decoding="async" class="ci-wheel ci-wheel--2" src="assets/weapons/cannon-intro-wheel-nol-v1392.png" alt="">
+        <img loading="lazy" decoding="async" class="ci-spark" src="assets/weapons/cannon-fx1.png" alt="">
+        <img loading="lazy" decoding="async" class="ci-burn" src="assets/weapons/cannon-fx4.png" alt="">
+        <img loading="lazy" decoding="async" class="ci-smoke" src="assets/weapons/cannon-fx5.png" alt="">
       </div>
     </div>
     <div id="fold-hinge" aria-hidden="true"></div>
@@ -1128,7 +1130,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1476 G</div>
+        <div id="build-tag" aria-hidden="true">V 1477 GG</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1222,7 +1224,7 @@ window.FGH.rollOut = function (el, done) {
 <script src="js/sky.js"></script>
 <script src="js/game.js"></script>
 <script>window.FGH.I18N.applyStatic(document);</script>
-<script src="js/asset-preparation.js"></script>
+<script src="js/asset-loader-v1477.js"></script>
 <script>
   // 로딩 스플래시 — 로딩이 끝나면 "화면을 눌러 시작". 그 탭(제스처)에서 game.js 의 window
   // pointerdown 리스너가 BGM 재생을 시작한다 → 브라우저 자동재생 차단 우회 = "로딩부터 브금".
@@ -1254,15 +1256,14 @@ window.FGH.rollOut = function (el, done) {
     function ready() {
       if (armed || readyRequested) return;
       readyRequested = true;
-      Promise.all([cacheReady, artReady]).then(function () {
+      artReady.then(function () {
         if (!armed) readyTimer = setTimeout(arm, Math.max(0, 700 - (performance.now() - start)));
       }).catch(function () {
         var label = document.querySelector('#splash .splash-loading-label');
         if (label) label.textContent = '에셋 준비 실패 — 연결을 확인하고 다시 열어 주세요';
       });
     }
-    if (document.readyState === 'complete') ready();
-    else window.addEventListener('load', ready, { once: true });
+    ready(); // Only the small visible-art set gates launch, never window.load.
 
     // GET NOW 탭음(더보기 화면과 같은 UI 탭음, ui-tap2) — 버튼이 뜨자마자(is-ready 전) 미리 로드해둬야
     // 이 첫 탭(세션 첫 제스처라 오디오 버퍼가 아직 없음)에서도 바로 소리가 난다.
@@ -1374,54 +1375,41 @@ window.FGH.rollOut = function (el, done) {
     // v768(사용자 지정: 화면 전환 시 그림이 따로따로 뜨는 문제) — 숨겨진 화면들의 CSS 배경·테두리 그림은
     // 그 화면이 처음 보일 때에서야 받기 시작해 조각조각 나타났음. 홈이 뜬 뒤 여유 시간에 전부 미리 받아 둔다.
     function preloadAllArt() {
-      var label = document.querySelector('#splash .splash-loading-label');
-      var fill = document.querySelector('#splash .splash-loading-fill');
-      var done = 0, total = 0, bytes = 0;
-      var extra = Array.prototype.map.call(document.querySelectorAll('img[src]'), function (im) { return im.getAttribute('src'); })
-        .filter(function (url) { return url && url.indexOf('data:') !== 0 && url.indexOf('blob:') !== 0; });
-      extra.push('js/asset-preparation.js');
-      var backgrounds = [];
-      Array.prototype.forEach.call(document.styleSheets, function (sheet) {
-        try { Array.prototype.forEach.call(sheet.cssRules || [], function (rule) {
-          var match, pattern = /url\(["']?([^"')]+\.(?:png|jpe?g|webp|gif|svg))(?:\?[^"')]*)?["']?\)/gi;
-          while ((match = pattern.exec(rule.cssText || ''))) backgrounds.push(match[1]);
-        }); } catch (e) { /* inaccessible cross-origin stylesheet */ }
+      var label = s.querySelector('.splash-loading-label');
+      var fill = s.querySelector('.splash-loading-fill');
+      var required = ['assets/home2/splash-art.webp', 'assets/loading-stage-v1162/stage-cool-v1248.png',
+        'assets/loading-cyber-v1153/characters.webp', 'assets/home2/wide-purple.png', 'assets/home2/mine-hd.webp'];
+      required = required.concat(window.MoleAssetLoader.collect(document.body));
+      window.__moleStartupAssets = required;
+      window.addEventListener('mole-assets-updated', function () {
+        if (s.dataset.assetState === 'partial' && window.MoleAssetLoader.isReady(required)) s.dataset.assetState = 'ready';
       });
-      var priority = ['assets/home2/splash-art.webp', 'assets/loading-stage-v1162/stage-cool-v1248.png',
-        'assets/loading-cyber-v1153/characters.webp', 'assets/home2/wide-purple.png'].concat(backgrounds);
-      return window.prepareMoleAssets({ extra: extra, priority: priority, report: function (state) {
-        if (typeof state.done === 'number') done = state.done;
-        if (typeof state.total === 'number') total = state.total;
-        bytes += state.bytes || 0;
-        if (label) label.textContent = (state.phase === 'retry' ? '연결 대기 · 자동 재시도 중 ' : '게임 에셋 저장 중 ') + done + '/' + total + ' · 수신 ' + Math.round(bytes / 1024) + 'KB';
-        if (fill) { fill.style.animation = 'none'; fill.style.width = (total ? Math.floor(done * 100 / total) : 0) + '%'; }
-        if (state.phase === 'complete') {
+      return window.prepareMoleAssets({ required: required, deadlineMs: 12000, report: function (state) {
+        if (label) label.textContent = state.phase === 'partial' ? '일부 그림 복구 중 · 다운로드는 계속됩니다' :
+          '시작 화면 준비 중 ' + state.done + '/' + state.total;
+        if (fill) { fill.style.animation = 'none'; fill.style.width = (state.total ? Math.floor(state.done * 100 / state.total) : 100) + '%'; }
+        if (state.phase === 'partial' || state.phase === 'complete' || state.phase === 'recovered') {
+          s.dataset.assetState = state.phase === 'partial' ? 'partial' : 'ready';
           s.classList.add('is-art');
-          // Reapply local stylesheets after their background images have been cached.
-          var links = Array.prototype.filter.call(document.querySelectorAll('link[rel="stylesheet"][href]'), function (link) {
-            try { return new URL(link.href).origin === location.origin; } catch (e) { return false; }
-          });
-          Promise.all(links.map(function (link) { return new Promise(function (resolve) {
-            var url = new URL(link.href); url.searchParams.set('_asset_ready', Date.now());
-            link.addEventListener('load', resolve, { once: true });
-            link.addEventListener('error', resolve, { once: true });
-            link.href = url.href;
-          }); })).then(function () { resolveArtReady(); });
-          // Refresh broken DOM images now that their responses are stored locally.
-          document.querySelectorAll('img[src]').forEach(function (im) {
-            if (!im.complete || !im.naturalWidth) { var src = im.getAttribute('src'); im.src = src; }
-          });
+          resolveArtReady();
         }
-      } });
+      } }).then(function (result) {
+        window.__moleStartupResult = result;
+        window.MoleAssetLoader.watchScreens();
+      });
     }
-    cacheReady.then(preloadAllArt).catch(function (error) {
-      var label = document.querySelector('#splash .splash-loading-label');
-      if (label) label.textContent = '에셋 저장을 완료하지 못했습니다. 저장 공간과 연결을 확인하고 다시 열어 주세요.';
-      console.error('Game asset preparation failed', error);
+    preloadAllArt().catch(function (error) {
+      s.dataset.assetState = 'partial'; s.classList.add('is-art');
+      var label = s.querySelector('.splash-loading-label');
+      if (label) label.textContent = '일부 그림 복구 중 · 다시 연결하면 재시도합니다';
+      resolveArtReady();
+      window.MoleAssetLoader.watchScreens();
+      console.warn('Visible art preparation incomplete', error);
     });
     function go() {
       if (!armed) return;
       armed=false;
+      window.MoleAssetLoader.startBackground();
       startButton.removeEventListener('pointerdown', go);
       try { window.MoleGame && window.MoleGame.HitFx && window.MoleGame.HitFx.uiTap(1); } catch (e) { /* 무시 */ }
       cta.classList.add('is-pressed'); // 눌리는 연출 잠깐 보여주고 사라짐
@@ -1453,7 +1441,7 @@ window.FGH.rollOut = function (el, done) {
         var gate = window.__moleAssetGate;
         function waitForCurrentWorker(registration) {
           return new Promise(function (resolve, reject) {
-            var latest = 'v=1476-G';
+            var latest = 'v=1477-GG';
             var done = false;
             var timer = setTimeout(function () { finish(); }, 25000);
             function finish(error) {
@@ -1480,7 +1468,7 @@ window.FGH.rollOut = function (el, done) {
           console.warn('Starting while service worker registration continues in background');
           if (gate) gate.resolveCache();
         }, 30000);
-        navigator.serviceWorker.register('sw.js?v=1476-G').then(waitForCurrentWorker).then(function () {
+        navigator.serviceWorker.register('sw.js?v=1477-GG').then(waitForCurrentWorker).then(function () {
           clearTimeout(registrationTimer);
           if (gate) gate.resolveCache();
         }).catch(function (error) {
