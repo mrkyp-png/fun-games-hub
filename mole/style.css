@@ -9249,8 +9249,8 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-coin-small-art>b { display:block!important; color:#6b3b0c!important; font:900 3.7cqw/1 'Jua',sans-serif!important; white-space:nowrap!important; }
 #shop-screen .shop-card--coin-bulk .shop-card-name { font-size:4.5cqw!important; }
 #shop-screen .shop-card--coin-small .shop-card-name,#shop-screen .shop-card--coin-bulk .shop-card-name { font-size:5cqw!important; }
-#shop-screen .shop-card--coin-bulk { grid-template-rows:16% minmax(0,1fr) 25.2%!important; }
-#shop-screen .shop-card--coin-bulk .shop-card-btn { display:flex!important; gap:5.5%!important; width:49.2cqw!important; height:13.44cqw!important; justify-self:center!important; }
+#shop-screen .shop-card--coin-bulk { grid-template-rows:16% minmax(0,1fr) 21.1%!important; }
+#shop-screen .shop-card--coin-bulk .shop-card-btn { display:flex!important; gap:5.5%!important; width:49.2cqw!important; height:11.2cqw!important; justify-self:center!important; }
 #shop-screen .shop-card--coin-bulk .shop-card-btn::before { border-radius:5.6cqw!important; overflow:hidden!important; }
 #shop-screen .shop-card--coin-bulk .shop-card-btn del { font-size:.7em!important; opacity:.72!important; }
 #shop-screen .shop-card--ticket-small .shop-card-btn,#shop-screen .shop-card--ticket-bulk .shop-card-btn { gap:1%!important; font-size:3.1cqw!important; }
