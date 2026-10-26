@@ -3,6 +3,8 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
+// V1467 reuses the V1466 cache so updating the worker does not discard the user's
+// already-downloaded screen assets or force the entire shell to be downloaded again.
 const CACHE = 'mole-game-v1466-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
@@ -839,7 +841,17 @@ const SHELL = [
 // 그 순간 화면의 다른 그림 요청까지 실패 → 시작·X·재화 아이콘이 깨진 그림으로 뜸. 6개씩 나눠 차례로 받는다.
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then(async (c) => {
-    for (let i = 0; i < SHELL.length; i += 6) await c.addAll(SHELL.slice(i, i + 6));
+    const cached = new Set((await c.keys()).map((request) => request.url));
+    const missing = SHELL.filter((path) => !cached.has(new URL(path, self.registration.scope).href));
+    for (let i = 0; i < missing.length; i += 6) await c.addAll(missing.slice(i, i + 6));
+    // Refresh the small entry document explicitly; the rest of the existing
+    // shell and runtime image cache stays intact across this worker update.
+    const indexUrl = new URL('./index.html', self.registration.scope);
+    const freshIndexUrl = new URL(indexUrl);
+    freshIndexUrl.searchParams.set('_sw', Date.now());
+    const indexResponse = await fetch(freshIndexUrl, { cache: 'no-store' });
+    if (!indexResponse.ok) throw new Error('Unable to refresh index.html');
+    await c.put(indexUrl, indexResponse);
   }).then(() => self.skipWaiting()));
 });
 
@@ -871,13 +883,17 @@ self.addEventListener('fetch', (e) => {
         const u = new URL(e.request.url); u.searchParams.set('_fresh', Date.now());
         req = new Request(u.toString(), { credentials: 'same-origin' });
       }
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
+      // Keep UI images alive on slow mobile links. The 5s bound remains on
+      // navigation/script/style requests so app startup can still fall back.
+      const isImage = e.request.destination === 'image';
+      const controller = isImage ? null : new AbortController();
+      const timeout = controller ? setTimeout(() => controller.abort(), 5000) : 0;
       let res;
       try {
-        res = await fetch(new Request(req, { signal: controller.signal }), revalidate ? { cache: 'no-store' } : undefined);
+        const fetchRequest = controller ? new Request(req, { signal: controller.signal }) : req;
+        res = await fetch(fetchRequest, revalidate ? { cache: 'no-store' } : undefined);
       } finally {
-        clearTimeout(timeout);
+        if (timeout) clearTimeout(timeout);
       }
       if (res && res.ok && (res.type === 'basic' || res.type === 'cors')) {
         const copy = res.clone();
