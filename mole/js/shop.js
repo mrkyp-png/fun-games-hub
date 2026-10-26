@@ -23,6 +23,7 @@
   var SHOP_ART = 'assets/shop-ui-v1450/';
   var CURRENCY_ART = 'assets/shop-ui-v1452/';
   function coinOption(n) { return '<img class="shop-coins-stack" src="' + CURRENCY_ART + 'coin-option-' + n + '-bright20.png" alt="">'; }
+  function coinPurchaseIcon(n) { return '<img class="shop-purchase-coin" src="' + CURRENCY_ART + 'coin-option-' + n + '-bright20.png" alt="">'; }
   var HEART_ART = {
     heart: SHOP_ART + '11-heart.webp',
     minis: ['assets/shop/mini-1.png', 'assets/shop/mini-2.png', 'assets/shop/mini-3.png',
@@ -40,6 +41,10 @@
       return '<img alt="" class="hero-mini hero-mini--' + i + '" src="' + src + '">';
     }).join('');
     return '<div class="hero-pile"><img alt="" class="hero-pile-main" src="' + HEART_ART.heart + '">' + minis + '</div>';
+  }
+  function coinAdArt() {
+    return '<div class="hero-ad hero-coin-ad"><img class="hero-coin-ad-coin" alt="" src="' + CURRENCY_ART + 'coin-option-05-bright20.png">' +
+      '<img class="hero-ad-icon" alt="" src="assets/shop/ad-icon-complete.png"></div>';
   }
 
   // 무기 카드 이미지(하트 카드와 같은 리치 카드용) — 알리 판취만 좌/우 글러브 한 쌍(오른쪽은
@@ -61,7 +66,7 @@
     { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/inventory/ui-v1379/approved-mallet-redend-v1405.webp', price: null, coinPrice: null },
     { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1-nol-v1392.png', price: 10000, coinPrice: 100000 },
     { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldpaw-v1382.webp', price: 50000, coinPrice: 500000 },
-    { id: 'alipunch', name: '킹 판취', nameEn: 'King Punch', thumb: 'assets/weapons/kingfist-jab-mirror-v1390.webp', price: 100000, coinPrice: 1000000 }
+    { id: 'alipunch', name: '킹판취', nameEn: 'King Punch', thumb: 'assets/weapons/kingfist-jab-mirror-v1390.webp', price: 100000, coinPrice: 1000000 }
   ];
 
   function create(opts) {
@@ -148,6 +153,7 @@
     ];
     var activeTab = 'currency';
     var currencyFilter = null; // null=전체, 'heart'/'coin'/'ticket'=다이얼패드 캡슐 클릭으로 필터
+    var selectedCoinBonusWeapon = null;
 
     var alphaBoundsBySrc = Object.create(null);
     function centerVisibleImage(img) {
@@ -187,6 +193,42 @@
 
     function done() { render(); refreshHudFlyNumbers(); if (opts.onChange) opts.onChange(); }
 
+    function showFinalConfirm(message, imageSrc, onConfirm) {
+      var english = I18N().lang === 'en';
+      var previous = el.querySelector('.shop-coin-choice-dialog');
+      if (previous) previous.remove();
+      var dialog = document.createElement('div');
+      dialog.className = 'shop-coin-choice-dialog';
+      dialog.setAttribute('role', 'dialog');
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.innerHTML = '<div class="shop-coin-choice-card">' + (imageSrc ? '<img class="shop-coin-choice-art" src="' + imageSrc + '" alt="">' : '') +
+        '<b class="shop-coin-choice-message"></b><div class="shop-coin-choice-actions">' +
+        '<button type="button" class="shop-card-btn shop-coin-choice-action" data-choice-action="confirm">' + (english ? 'Yes' : '예') + '</button>' +
+        '<button type="button" class="shop-card-btn shop-coin-choice-action" data-choice-action="cancel">' + (english ? 'No' : '아니요') + '</button></div></div>';
+      dialog.querySelector('.shop-coin-choice-message').textContent = message;
+      el.appendChild(dialog);
+      dialog.addEventListener('click', function (event) {
+        if (event.target === dialog || event.target.closest('[data-choice-action="cancel"]')) { dialog.remove(); return; }
+        if (event.target.closest('[data-choice-action="confirm"]')) { dialog.remove(); onConfirm(); }
+      });
+    }
+
+    function defaultPurchasePrompt(name) {
+      var english = I18N().lang === 'en';
+      if (english) return 'Purchase ' + name + '?';
+      var last = name.charCodeAt(name.length - 1);
+      var hasFinalConsonant = last < 0xAC00 || last > 0xD7A3 || (last - 0xAC00) % 28 !== 0;
+      return name + (hasFinalConsonant ? '을' : '를') + ' 구매하시겠습니까?';
+    }
+
+    function defaultSelectionPrompt(name) {
+      var english = I18N().lang === 'en';
+      if (english) return 'Select ' + name + '?';
+      var last = name.charCodeAt(name.length - 1);
+      var hasFinalConsonant = last < 0xAC00 || last > 0xD7A3 || (last - 0xAC00) % 28 !== 0;
+      return name + (hasFinalConsonant ? '을' : '를') + ' 선택하시겠습니까?';
+    }
+
     function card(opts2) {
       // opts2: { badge(html), name, price(text)|priceHtml(html, 코인아이콘+숫자용), btnText,
       // btnDisabled, onClick, equipped, btnPlain }
@@ -212,7 +254,9 @@
       var btn = c.querySelector('.shop-card-btn');
       if (opts2.priceAmount) btn.innerHTML = ICONS.coins + '<b>' + opts2.priceAmount + '</b>';
       else btn.textContent = opts2.btnText;
-      if (!opts2.btnDisabled) btn.addEventListener('click', opts2.onClick);
+      if (!opts2.btnDisabled && opts2.onClick) btn.addEventListener('click', function () {
+        showFinalConfirm(opts2.confirmMessage || defaultPurchasePrompt(opts2.name), null, opts2.onClick);
+      });
       return c;
     }
 
@@ -239,7 +283,9 @@
       c.querySelector('.shop-card-pill span').textContent = o.pillText;
       var btn = c.querySelector('.shop-card-btn');
       btn.innerHTML = o.btnHtml;
-      if (!o.btnDisabled) btn.addEventListener('click', o.onClick);
+      if (!o.btnDisabled && o.onClick) btn.addEventListener('click', function () {
+        showFinalConfirm(o.confirmMessage || defaultPurchasePrompt(o.name), null, o.onClick);
+      });
       return c;
     }
 
@@ -257,6 +303,7 @@
           btnHtml: coinOption('09') + '<b>100</b>', btnDisabled: MG.Economy.getCoins() < 100,
           onClick: function () { if (MG.Economy.spendCoins(100)) { MG.Economy.addHearts(30); done(); } else alert(T('mole.shop.noCoin')); } },
         { kind: 'heart', rich: true, theme: 'blue', art: heroArt('ad'), name: english ? 'Watch ad: +1 heart' : '광고 보고 하트 +1', desc: english ? 'Get 1 heart after watching an ad.' : '광고 시청 후 하트 1개 획득.', pillText: '+1',
+          confirmMessage: english ? 'Watch an ad to get 1 heart?' : '광고를 시청하고 하트 1개를 받으시겠습니까?',
           btnHtml: '<span class="scb-play-box">' + ICONS.play + '</span><b>' + T('mole.shop.watchAdBtn') + '</b>', btnDisabled: false,
           onClick: function () { MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addHearts(1); done(); } }); } }
       ];
@@ -291,6 +338,7 @@
             btnText: T('mole.shop.default'),
             btnDisabled: locked,
             btnPlain: true,
+            confirmMessage: defaultSelectionPrompt(name),
             onClick: function () {
               localStorage.setItem('mole.weapon', w.id);
               var diff = localStorage.getItem('mole.difficulty');
@@ -304,6 +352,7 @@
           theme: 'blue',
           art: weaponArt(w),
           name: name,
+          confirmMessage: defaultSelectionPrompt(name),
           pillIcon: ICONS.coins,
           pillClass: 'shop-card-pill--coin', // 사용자 지정: "코인 이미지는 1.5배 크게, 노란색으로"
           pillText: w.coinPrice.toLocaleString(),
@@ -353,40 +402,81 @@
     function renderCoinCards() {
       cardsEl.innerHTML = '';
       var english = I18N().lang === 'en';
-      var bulkRewards = [
-        { step: english ? '1st purchase' : '1회차', name: english ? 'Cannon' : '캐논', src: WEAPONS[1].thumb },
-        { step: english ? '2nd purchase' : '2회차', name: english ? 'Gold Mjolnir' : '골드 묠니르', src: WEAPONS[2].thumb },
-        { step: english ? '3rd purchase' : '3회차', name: english ? 'King Punch' : '킹판취', src: WEAPONS[3].thumb }
-      ];
+      var bulkRounds = [1, 2, 3].map(function (round) {
+        var label = english ? (round + (round === 1 ? 'st' : round === 2 ? 'nd' : 'rd') + ' purchase') : round + '회차';
+        return '<div class="shop-coin-bulk-reward"><span class="shop-coin-bulk-step">' + label + '</span></div>';
+      }).join('');
+      var weaponChoices = WEAPONS.filter(function (weapon) { return weapon.id !== 'hammer'; }).map(function (weapon) {
+        var label = english ? weapon.nameEn : ({ cannon: '팡팡 캐논', goldhammer: '골드 묠니르', alipunch: '킹판취' }[weapon.id] || weapon.name);
+        return '<button type="button" class="shop-coin-weapon-choice' + (selectedCoinBonusWeapon === weapon.id ? ' is-selected' : '') +
+          '" data-coin-weapon="' + weapon.id + '" aria-pressed="' + (selectedCoinBonusWeapon === weapon.id) + '" title="' +
+          label + '"><img src="' + weapon.thumb + '" alt=""><span>' + label + '</span></button>';
+      }).join('');
       var bulkArt = '<div class="shop-coin-bulk-art">' +
         '<img class="shop-coin-bulk-pile" src="' + CURRENCY_ART + 'coin-option-09-bright20.png" alt="">' +
         '<div class="shop-coin-bulk-details"><b class="shop-coin-bulk-summary">' +
         (english ? '100,000 coins · 20% off' : '100,000 코인 · 20% 할인') +
-        '</b><div class="shop-coin-bulk-rewards">' + bulkRewards.map(function (reward) {
-          return '<div class="shop-coin-bulk-reward"><span class="shop-coin-bulk-step">' + reward.step +
-            '</span><img src="' + reward.src + '" alt=""><b>' + reward.name + '</b></div>';
-        }).join('') + '</div></div></div>';
+        '</b><div class="shop-coin-bulk-rewards">' + bulkRounds + '</div><div class="shop-coin-bulk-choice">' +
+        '<div class="shop-coin-weapon-choices">' + weaponChoices + '</div><b class="shop-coin-bulk-choice-title">' +
+        (english ? 'Weapon selection available from 4th purchase' : '4회차부터 무기 선택 가능') +
+        '</b></div></div></div>';
       cardsEl.appendChild(heartCard({
         theme: 'pink', productClass: 'shop-card--sale shop-card--coin-small',
         art: '<div class="shop-coin-small-art"><img src="' + CURRENCY_ART + 'coin-option-01-bright20.png" alt=""><b>' +
           (english ? '8,000 coins' : '8,000 코인') + '</b></div>',
-        name: english ? 'Small coin pack' : '소량구매', pillText: '8,000',
-        btnHtml: '<b>₩10,000</b>', btnDisabled: true
+        name: english ? 'Starter pack' : '스타터 팩', pillText: '8,000',
+        btnHtml: coinPurchaseIcon('01') + '<b>₩10,000</b>', btnDisabled: true
       }));
       cardsEl.appendChild(heartCard({
-        theme: 'blue', productClass: 'shop-card--coin-ad', art: heroArt('ad'),
+        theme: 'blue', productClass: 'shop-card--coin-ad', art: coinAdArt(),
         name: english ? 'Ad · +1 heart' : '광고 · 하트 +1', pillText: '+1',
-        btnHtml: '<span class="scb-play-box">' + ICONS.play + '</span><b>' + T('mole.shop.watchAdBtn') + '</b>',
+        btnHtml: '<img class="shop-ad-cta-icon" src="assets/shop/ad-icon-complete.png" alt=""><b>' + T('mole.shop.watchAdBtn') + '</b>',
         btnDisabled: false,
+        confirmMessage: english ? 'Watch an ad to get 1 heart?' : '광고를 시청하고 하트 1개를 받으시겠습니까?',
         onClick: function () {
           MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addHearts(1); done(); } });
         }
       }));
-      cardsEl.appendChild(heartCard({
+      var bulkCard = heartCard({
         theme: 'pink', productClass: 'shop-card--sale shop-card--coin-bulk', art: bulkArt,
-        name: english ? 'Bulk coin pack' : '대량구매', pillText: '100,000',
-        btnHtml: '<del>₩125,000</del><b>₩100,000</b>', btnDisabled: true
-      }));
+        name: english ? 'Reserve pack' : '리저브 팩', pillText: '100,000',
+        btnHtml: coinPurchaseIcon('09') + '<del>₩125,000</del><b>₩100,000</b>', btnDisabled: true
+      });
+      cardsEl.appendChild(bulkCard);
+      bulkCard.querySelectorAll('.shop-coin-weapon-choice').forEach(function (choice) {
+        choice.addEventListener('click', function () {
+          var weapon = WEAPONS.find(function (item) { return item.id === choice.dataset.coinWeapon; });
+          if (!weapon) return;
+          var oldDialog = el.querySelector('.shop-coin-choice-dialog');
+          if (oldDialog) oldDialog.remove();
+          var dialog = document.createElement('div');
+          dialog.className = 'shop-coin-choice-dialog';
+          dialog.setAttribute('role', 'dialog');
+          dialog.setAttribute('aria-modal', 'true');
+          dialog.setAttribute('aria-label', english ? 'Confirm enhancement material' : '강화 재료 선택 확인');
+          var label = english ? weapon.nameEn : ({ cannon: '팡팡 캐논', goldhammer: '골드 묠니르', alipunch: '킹판취' }[weapon.id] || weapon.name);
+          var lastChar = label.charCodeAt(label.length - 1);
+          var hasFinalConsonant = lastChar >= 0xAC00 && lastChar <= 0xD7A3 && (lastChar - 0xAC00) % 28 !== 0;
+          dialog.innerHTML = '<div class="shop-coin-choice-card"><img class="shop-coin-choice-art" src="' + weapon.thumb + '" alt="">' +
+            '<b class="shop-coin-choice-message">' + (english ? 'Select ' + label + '?' : label + (hasFinalConsonant ? '을' : '를') + ' 선택하시겠습니까?') + '</b>' +
+            '<div class="shop-coin-choice-actions"><button type="button" class="shop-card-btn shop-coin-choice-action" data-choice-action="confirm">' + (english ? 'Yes' : '예') + '</button>' +
+            '<button type="button" class="shop-card-btn shop-coin-choice-action" data-choice-action="cancel">' + (english ? 'No' : '아니요') + '</button></div></div>';
+          el.appendChild(dialog);
+          function closeDialog() { dialog.remove(); }
+          dialog.addEventListener('click', function (event) {
+            if (event.target === dialog || event.target.closest('[data-choice-action="cancel"]')) { closeDialog(); return; }
+            if (event.target.closest('[data-choice-action="confirm"]')) {
+              selectedCoinBonusWeapon = weapon.id;
+              bulkCard.querySelectorAll('.shop-coin-weapon-choice').forEach(function (other) {
+                var selected = other.dataset.coinWeapon === selectedCoinBonusWeapon;
+                other.classList.toggle('is-selected', selected);
+                other.setAttribute('aria-pressed', String(selected));
+              });
+              closeDialog();
+            }
+          });
+        });
+      });
     }
 
     function renderEmptyCategory() { cardsEl.innerHTML = '<p class="shop-soon">' + T('mole.inv.soon') + '</p>'; }
