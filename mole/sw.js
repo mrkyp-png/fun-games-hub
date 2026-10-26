@@ -3,8 +3,8 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-// V1467 reuses the V1466 cache so updating the worker does not discard the user's
-// already-downloaded screen assets or force the entire shell to be downloaded again.
+// V1469 reuses the existing cache and serves cached images immediately. This avoids
+// making every rendered icon wait for a network-first image request on slow mobile links.
 const CACHE = 'mole-game-v1466-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
@@ -866,6 +866,21 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
 
+  // Images are immutable or versioned assets in this game. Return the local copy
+  // immediately when available; waiting for the network made cached icons appear late.
+  if (e.request.destination === 'image') {
+    e.respondWith((async () => {
+      const cached = await caches.match(e.request, { ignoreSearch: true });
+      if (cached) return cached;
+      const response = await fetch(e.request);
+      if (response && response.ok && (response.type === 'basic' || response.type === 'cors')) {
+        caches.open(CACHE).then((cache) => cache.put(e.request, response.clone()));
+      }
+      return response;
+    })());
+    return;
+  }
+
   // 네트워크 우선: 온라인이면 항상 최신본을 바로 받는다(캐시는 오프라인 폴백용으로만 갱신).
   // 예전엔 stale-while-revalidate(캐시본 먼저)라 "항상 한 번 밀려서 반영"됐음 — 사용자가
   // 폰에서 대기가 길다고 느껴 네트워크 우선으로 변경.
@@ -885,12 +900,11 @@ self.addEventListener('fetch', (e) => {
       }
       // Keep UI images alive on slow mobile links. The 5s bound remains on
       // navigation/script/style requests so app startup can still fall back.
-      const isImage = e.request.destination === 'image';
-      const controller = isImage ? null : new AbortController();
-      const timeout = controller ? setTimeout(() => controller.abort(), 5000) : 0;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
       let res;
       try {
-        const fetchRequest = controller ? new Request(req, { signal: controller.signal }) : req;
+        const fetchRequest = new Request(req, { signal: controller.signal });
         res = await fetch(fetchRequest, revalidate ? { cache: 'no-store' } : undefined);
       } finally {
         if (timeout) clearTimeout(timeout);
