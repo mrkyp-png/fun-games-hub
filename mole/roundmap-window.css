@@ -184,6 +184,7 @@
 @media(max-height:700px) { .rm-window-map .rm-wallet { bottom:calc(env(safe-area-inset-bottom,0px) + 1% + max(72px,18vw) + 10px); } }
 .rm-window-map .rm-wallet .ms-box { width:64px; height:30px; overflow:hidden; } /* 숫자는 최대 5자(9999K)까지 박스 안 */
 .rm-window-map .rm-wallet .ms-val { top:50%; transform:translateY(-50%); font-size:15px; }
+.rm-window-map .rm-wallet .ms-ic[src$="/ticket-single.webp"] { height:84%; left:-2%; top:50%; transform:translateY(-50%) rotate(-6deg); }
 /* V1324 C 노말 보석·랜턴 빛 한 단계 더 밝게(사용자 지정) */
 .rm-window-map .rm-glow-gem.rm-mode-mid { animation-name:rm-gem-shine-mid; z-index:3; }
 @keyframes rm-gem-shine-mid { from { opacity:.5; } to { opacity:1; } }

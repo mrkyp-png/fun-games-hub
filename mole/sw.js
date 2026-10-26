@@ -3,7 +3,7 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-// V1475 updates the ticket shop; preserve the existing downloaded asset cache.
+// V1476 refreshes ticket and ad artwork and ticket packs; preserve downloaded assets.
 const CACHE = 'mole-game-v1466-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
@@ -11,6 +11,11 @@ const CACHE = 'mole-game-v1466-G';
 // vendor/face_mesh/*(약 10MB, 얼굴인식)는 SHELL 제외 — 사람두더지 메이커 처음 열 때만 필요.
 // 처음 요청될 때 아래 fetch 핸들러가 알아서 캐시한다.
 const SHELL = [
+  './assets/ui-approved-v1476/ticket-stack-08.webp',
+  './assets/ui-approved-v1476/ticket-stack-02.webp',
+  './assets/ui-approved-v1476/ticket-stack-11.webp',
+  './assets/ui-approved-v1476/ticket-stack-14.webp',
+
   './assets/shop-ticket-options/ticket-option-01.png',
   './assets/shop-ticket-options/ticket-option-09.png',
   './assets/game-image-manifest-v1470.json',
@@ -24,7 +29,7 @@ const SHELL = [
   './assets/shop-ui-v1452/coin-option-06-bright20.png',
   './assets/shop-ui-v1452/coin-option-09-bright20.png',
   './assets/shop-ui-v1452/ticket-single.png',
-  './assets/rhythm/ui/ic-ticket-note-complete.webp',
+  './assets/ui-approved-v1476/ticket-single.webp',
   './assets/workshop/notice-clean-v2.png',
   './assets/workshop/exclamation-blue-v1.png',
   './assets/inventory/ui-v1379/help-round-transparent.webp',
@@ -502,7 +507,7 @@ const SHELL = [
   './assets/shop-ui-v1450/costume-icon.png',
   './assets/shop-ui-v1450/skill-icon.png',
   './assets/shop-ui-v1450/ticket-icon.webp',
-  './assets/shop/ad-icon-complete.png',
+  './assets/ui-approved-v1476/ad-icon.webp',
   './assets/inventory/ui-v1379/nameplate.webp',
   './assets/shop-ui-v1450/heart-jar-full.png',
   './assets/shop/mini-1.png',

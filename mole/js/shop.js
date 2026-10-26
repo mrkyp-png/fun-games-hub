@@ -12,7 +12,7 @@
   var ICONS = {
     hearts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg>',
     coins: '<img class="shop-coins-stack" src="assets/shop-ui-v1452/coin4-button-left.png" alt="">',
-    tickets: '<img class="ticket-note-icon" src="assets/rhythm/ui/ic-ticket-note-complete.webp" alt="">',
+    tickets: '<img class="ticket-note-icon" src="assets/ui-approved-v1476/ticket-single.webp" alt="">',
     play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'
   };
 
@@ -33,7 +33,7 @@
     if (kind === 'solo') return '<img alt="" class="hero-solo" src="' + HEART_ART.heart + '">';
     if (kind === 'ad') {
       return '<div class="hero-ad"><svg class="hero-ad-heart" viewBox="0 0 1254 1254" aria-hidden="true"><defs><clipPath id="shop-ad-heart-contour"><rect x="0" y="200" width="1254" height="1054"></rect></clipPath></defs><image href="' + HEART_ART.heart + '" width="1254" height="1254" clip-path="url(#shop-ad-heart-contour)"></image></svg>' +
-        '<img class="hero-ad-icon" alt="" src="assets/shop/ad-icon-complete.png"></div>';
+        '<img class="hero-ad-icon" alt="" src="assets/ui-approved-v1476/ad-icon.webp"></div>';
     }
     if (kind === 'jar') return '<img class="hero-jar-full" alt="" src="' + SHOP_ART + 'heart-jar-full.png">';
     // 하트 묶음은 분리한 원본 하트를 개별 배치한다.
@@ -44,7 +44,7 @@
   }
   function coinAdArt() {
     return '<div class="hero-ad hero-coin-ad"><img class="hero-coin-ad-coin" alt="" src="' + CURRENCY_ART + 'coin-option-05-bright20.png">' +
-      '<img class="hero-ad-icon" alt="" src="assets/shop/ad-icon-complete.png"></div>';
+      '<img class="hero-ad-icon" alt="" src="assets/ui-approved-v1476/ad-icon.webp"></div>';
   }
 
   // 무기 카드 이미지(하트 카드와 같은 리치 카드용) — 알리 판취만 좌/우 글러브 한 쌍(오른쪽은
@@ -146,7 +146,7 @@
     var TABS = [
       { id: 'currency', i18n: 'mole.shop.tabHeart', icon: '<img src="' + SHOP_ART + '11-heart.webp" alt="">' },
       { id: 'coin', i18n: 'mole.shop.tabCoin', icon: '<img class="shop-coin-option" src="' + CURRENCY_ART + 'coin-option-05-bright20.png" alt="">' },
-      { id: 'ticket', i18n: 'mole.shop.tabTicket', icon: '<img class="ticket-note-icon" src="assets/rhythm/ui/ic-ticket-note-complete.webp" alt="">' },
+      { id: 'ticket', i18n: 'mole.shop.tabTicket', icon: '<img class="ticket-note-icon" src="assets/ui-approved-v1476/ticket-stack-14.webp" alt="">' },
       { id: 'weapon', i18n: 'mole.shop.tabWeapon', icon: WEAPON_TAB_ICON },
       { id: 'skill', i18n: 'mole.shop.tabSkill', icon: '<img src="' + SHOP_ART + 'skill-icon.png" alt="">' },
       { id: 'costume', i18n: 'mole.shop.tabCostume', icon: '<img src="' + SHOP_ART + 'costume-icon.png" alt="">' }
@@ -388,7 +388,7 @@
           onClick: function () { if (MG.Economy.spendCoins(100)) { MG.Economy.addHearts(30); done(); } else alert(T('mole.shop.noCoin')); } },
         { kind: 'heart', rich: true, theme: 'blue', art: heroArt('ad'), name: english ? 'Watch ad: +1 heart' : '광고 보고 하트 +1', desc: english ? 'Get 1 heart after watching an ad.' : '광고 시청 후 하트 1개 획득.', pillText: '+1',
           confirmMessage: english ? 'Watch an ad to get 1 heart?' : '광고를 시청하고 하트 1개를 받으시겠습니까?',
-          btnHtml: '<img class="shop-ad-cta-icon" src="assets/shop/ad-icon-complete.png" alt=""><b>' + T('mole.shop.watchAdBtn') + '</b>', btnDisabled: false,
+          btnHtml: '<b>' + T('mole.shop.watchAdBtn') + '</b>', btnDisabled: false,
           onClick: function () { MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addHearts(1); done(); } }); } }
       ];
       // 다이얼패드 착지 캡슐 클릭 시 그 재화만(사용자 지정: "각 버튼을 누르면 상품이 각 재화별로").
@@ -514,7 +514,7 @@
       cardsEl.appendChild(heartCard({
         theme: 'blue', productClass: 'shop-card--coin-ad', art: coinAdArt(),
         name: english ? 'Ad · 100 coins' : '광고 · 100 코인', pillText: '100',
-        btnHtml: '<img class="shop-ad-cta-icon" src="assets/shop/ad-icon-complete.png" alt=""><b>' + T('mole.shop.watchAdBtn') + '</b>',
+        btnHtml: '<b>' + T('mole.shop.watchAdBtn') + '</b>',
         btnDisabled: false,
         confirmMessage: english ? 'Watch an ad to get 100 coins?' : '광고를 시청하고 코인 100개를 받으시겠습니까?',
         onClick: function () {
@@ -534,37 +534,32 @@
     function renderTicketCards() {
       cardsEl.innerHTML = '';
       var english = I18N().lang === 'en';
-      var artPath = 'assets/shop-ticket-options/';
-      function packArt(option, count) {
-        return '<div class="shop-coin-small-art shop-ticket-pack-art"><img src="' + artPath + 'ticket-option-' + option + '.png" alt=""><b>' +
-          (english ? count + ' tickets' : '티켓 ' + count + '장') + '</b></div>';
+      var artPath = 'assets/ui-approved-v1476/';
+      function packArt(option, bonus) {
+        return '<div class="shop-coin-small-art shop-ticket-pack-art"><img src="' + artPath + 'ticket-stack-' + option + '.webp" alt=""><b>' +
+          (bonus ? (english ? '+' + bonus + ' bonus tickets' : '+' + bonus + '장 추가 지급') : '') + '</b></div>';
       }
       function buyTickets(cost, count) {
         if (MG.Economy.spendCoins(cost)) { MG.Economy.addTickets(count, true); done(); }
         else alert(T('mole.shop.noCoin'));
       }
-      cardsEl.appendChild(heartCard({
-        theme: 'pink', productClass: 'shop-card--sale shop-card--coin-small shop-card--ticket-small',
-        art: packArt('01', 10), name: english ? 'Starter pack' : '스타터 팩', pillText: '10',
-        btnHtml: coinPurchaseIcon('01') + '<b>' + (english ? '10,000 coins' : '10,000 코인') + '</b>', btnDisabled: false,
-        confirmMessage: english ? 'Purchase 10 tickets for 10,000 coins?' : '10,000코인으로 티켓 10장을 구매하시겠습니까?',
-        onClick: function () { buyTickets(10000, 10); }
-      }));
-      cardsEl.appendChild(heartCard({
-        theme: 'blue', productClass: 'shop-card--coin-ad shop-card--ticket-ad',
-        art: '<div class="hero-ad hero-coin-ad"><img class="hero-coin-ad-coin" src="assets/rhythm/ui/ic-ticket-note-complete.webp" alt=""><img class="hero-ad-icon" src="assets/shop/ad-icon-complete.png" alt=""></div>',
-        name: english ? 'Ad · +1 ticket' : '광고 · 티켓 +1', pillText: '+1',
-        btnHtml: '<img class="shop-ad-cta-icon" src="assets/shop/ad-icon-complete.png" alt=""><b>' + T('mole.shop.watchAdBtn') + '</b>', btnDisabled: false,
-        confirmMessage: english ? 'Watch an ad to get 1 ticket?' : '광고를 시청하고 티켓 1장을 받으시겠습니까?',
-        onClick: function () { MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addTickets(1, true); done(); } }); }
-      }));
-      cardsEl.appendChild(heartCard({
-        theme: 'pink', productClass: 'shop-card--sale shop-card--coin-small shop-card--ticket-bulk',
-        art: packArt('09', 100), name: english ? 'Reserve pack' : '리저브 팩', pillText: '100',
-        btnHtml: coinPurchaseIcon('09') + '<b>' + (english ? '100,000 coins' : '100,000 코인') + '</b>', btnDisabled: false,
-        confirmMessage: english ? 'Purchase 100 tickets for 100,000 coins?' : '100,000코인으로 티켓 100장을 구매하시겠습니까?',
-        onClick: function () { buyTickets(100000, 100); }
-      }));
+      [
+        { count: 10, bonus: 0, cost: 10000, art: '02', coin: '01' },
+        { count: 30, bonus: 2, cost: 30000, art: '08', coin: '06' },
+        { count: 100, bonus: 10, cost: 100000, art: '11', coin: '09' }
+      ].forEach(function (pack) {
+        var total = pack.count + pack.bonus;
+        var costLabel = pack.cost.toLocaleString('en-US');
+        var quantity = pack.count + (pack.bonus ? ' + ' + pack.bonus : '');
+        cardsEl.appendChild(heartCard({
+          theme: 'pink', productClass: 'shop-card--sale shop-card--coin-small shop-card--ticket-small',
+          art: packArt(pack.art, pack.bonus), name: english ? pack.count + ' tickets' : '티켓 ' + pack.count + '장', pillText: String(total),
+          btnHtml: coinPurchaseIcon(pack.coin) + '<b>' + costLabel + (english ? ' coins' : ' 코인') + '</b>', btnDisabled: false,
+          confirmMessage: english ? 'Purchase ' + quantity + ' tickets for ' + costLabel + ' coins?' :
+            costLabel + ' 코인으로 티켓 ' + pack.count + '장' + (pack.bonus ? ' + 보너스 ' + pack.bonus + '장' : '') + '을 구매하시겠습니까?',
+          onClick: function () { buyTickets(pack.cost, total); }
+        }));
+      });
     }
     var RENDERERS = { currency: renderCurrencyCards, coin: renderCoinCards, ticket: renderTicketCards,
       weapon: renderWeaponCards, skill: renderSkillCards, costume: renderCostumeCards };

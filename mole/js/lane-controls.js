@@ -26,7 +26,7 @@
     // 옆으로 뉘어진 동전(두께+테두리선, 사용자 지정 — 후보 D).
     coins: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="9" rx="8.5" ry="4.3"/><path d="M3.5 9v3.5c0 2.4 3.8 4.3 8.5 4.3s8.5-1.9 8.5-4.3V9"/><path d="M6.5 9c1.3 1.2 3.4 2 5.5 2s4.2-.8 5.5-2"/></svg>',
     // 양쪽 노치 티켓 + 구멍/점선(사용자 지정).
-    tickets: '<img class="ticket-note-icon" src="assets/rhythm/ui/ic-ticket-note-complete.webp" alt="">',
+    tickets: '<img class="ticket-note-icon" src="assets/ui-approved-v1476/ticket-single.webp" alt="">',
     score: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M7 4h10v4a5 5 0 01-10 0zM7 5.5H4V8a3 3 0 003 3M17 5.5h3V8a3 3 0 01-3 3M12 13v4M8.5 20.5h7l-1-3h-5z"/></svg>',
     daily: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M8.5 3v4M15.5 3v4"/></svg>',
     quest: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 4h9l4 4v12H6zM15 4v4h4M9 12h6M9 16h6"/></svg>',
@@ -143,7 +143,7 @@
       var lblTxt2 = lblKey2 && I2 ? I2.t(lblKey2) : '';
       // v902: 하트/코인/티켓 = 어두운 알약(그림 아이콘 + 수량 + 파란 +), 나머지 = 색 버튼 + 그림 아이콘 + 글자
       var frontHtml = HUD_COUNTS[hud]
-        ? '<span class="lane-face lane-face--front lane-face--pill"><span class="h2-pill"><img class="h2-pill-ic" src="' + (hud === 'tickets' ? 'assets/rhythm/ui/ic-ticket-note-complete.webp' : H2 + PILL_IC[hud] + '.png') + '" alt="">' +
+        ? '<span class="lane-face lane-face--front lane-face--pill"><span class="h2-pill"><img class="h2-pill-ic" src="' + (hud === 'tickets' ? 'assets/ui-approved-v1476/ticket-single.webp' : H2 + PILL_IC[hud] + '.png') + '" alt="">' +
             '<b class="lane-hud-n" data-hud="' + hud + '">0</b><img class="h2-plus" src="' + H2 + 'plus.png" alt=""></span></span>'
         : h2Face(HOME2[hud][0], HOME2[hud][1], lblKey2, lblTxt2);
       btn.innerHTML =

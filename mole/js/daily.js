@@ -33,7 +33,7 @@
   };
   var ICON_BY_TYPE = { coin: 'item-coin-m.png', heart: 'item-heart.png', ticket: 'item-ticket.png', skill: 'item-skill.png' };
   var ASSET = 'assets/daily/';
-  var TICKET_ICON = 'assets/rhythm/ui/ic-ticket-note-complete.webp';
+  var TICKET_ICON = 'assets/ui-approved-v1476/ticket-single.webp';
 
   function dstr(ms) { var d = new Date(ms); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
   function today() { return dstr(Date.now()); }

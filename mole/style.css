@@ -3300,6 +3300,9 @@ body { background: var(--lm-page); }
 .dr-btn span { padding-left: 26%; display: flex; flex-direction: column; align-items: center; line-height: 1.05; }
 .dr-btn--claim span { font-size: calc(var(--w) * 0.044); font-weight: 900; color: #fff; -webkit-text-stroke: 3px #0f5a28; paint-order: stroke fill; }
 .dr-btn--ad .dr-btn-ico { height: 92%; left: -1%; }
+.dr-btn--ad .dr-ad-art { width:51%; }
+.dr-ad-art img { position:absolute; left:0; top:0; width:67%; height:100%; object-fit:contain; }
+.dr-ad-art strong { position:absolute; right:0; bottom:0; color:#fff43a; font:900 calc(var(--w) * .065)/1 'Jua',sans-serif; -webkit-text-stroke:2px #a62a00; paint-order:stroke fill; text-shadow:0 2px #641b00; }
 .dr-btn--ad span { padding-left: 42%; color: #4a2c00; font-weight: 900; }
 .dr-btn--ad span small { font-size: calc(var(--w) * 0.03); font-weight: 800; }
 .dr-btn--ad span b { font-size: calc(var(--w) * 0.04); }
@@ -7948,12 +7951,12 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .h2w-mole .h2w-heart { top: 26%; }
 
 /* V1366 C 리듬팡 티켓 보유 수(숫자만): 타입·난이도 = 홈 버튼 아래, 곡 선택 = 타입 선택과 홈으로 사이 */
-#rhythm-screen .rp-ticket-badge { display: none; position: absolute; top: calc(env(safe-area-inset-top, 0px) + 2px); right: 4px; z-index: 31; width: 118px; height: 52px; box-sizing: border-box; padding: 0 14px; align-items: center; justify-content: center; white-space: nowrap; font: 700 22px/1 'Lilita One', 'Jua', sans-serif; color: #fff; -webkit-text-stroke: 1px #15244f; paint-order: stroke fill; text-shadow: 0 1px 1px #10152b; pointer-events: none; }
-#rhythm-screen .rp-ticket-badge img { height: 26px; width: auto; margin-right: 8px; }
+#rhythm-screen .rp-ticket-badge { display: none; position: absolute; top: calc(env(safe-area-inset-top, 0px) + 2px); right: 4px; z-index: 31; width: max-content; min-width:118px; height: 52px; box-sizing: border-box; padding: 0 14px; align-items: center; justify-content: center; white-space: nowrap; font: 700 22px/1 'Lilita One', 'Jua', sans-serif; color: #fff; -webkit-text-stroke: 1px #15244f; paint-order: stroke fill; text-shadow: 0 1px 1px #10152b; pointer-events: none; }
+#rhythm-screen .rp-ticket-badge img { height: 39px; width: auto; margin-right: 8px; flex:none; }
 #rhythm-screen .rp-ticket-badge::before { content: ""; position: absolute; inset: 0; z-index: -1; background: url('assets/rhythm/ui-status-v1230/combo-box.png') center/118% 118% no-repeat; filter: hue-rotate(14deg) saturate(1.2) brightness(1.15); } /* 비치 상태 박스 그림, 진한 황금(사용자 선택 A) */
 #rhythm-screen .rp-ticket-badge--select, #rhythm-screen .rp-ticket-badge--types { display: flex; position: relative; top: auto; right: auto; align-self: center; margin-top: 6px; } /* 난이도·타입 선택 = 홈 버튼 아래 */
 #rhythm-screen .rp-ticket-badge--songs { display: flex; position: relative; top: auto; right: auto; height: 40px; align-self: center; margin-top: 6px; } /* 곡 선택 = 버튼 줄 아래 좌우 가운데(위아래 낮게) */
-#rhythm-screen .rp-ticket-badge--songs img { height: 22px; }
+#rhythm-screen .rp-ticket-badge--songs img { height: 33px; }
 
 /* V1367 C 스코어 리듬팡 탭: 진입하면 해금, 비치·네온 × 곡별 순위(난이도 P>N>A → 등급 → 점수) */
 .sr-tab--off > span:not(.sr-tab-txt) { font-size: calc(var(--w) * 0.044); font-weight: 900; color: #c9d4ee; margin-right: 6%; }
@@ -8846,7 +8849,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #shop-screen .shop-tab + .shop-tab { margin-left: -1.5px !important; }
 #shop-screen .shop-tab + .shop-tab:last-child { margin-left: -1px !important; }
 #game-screen .dialpad { background-color: #a6dcf5 !important; } /* V1423 C 사용자: 버튼 오른쪽 끝·줄 사이 틈으로 비치던 갈색 바탕(rgb 90,46,16) → 하늘색 */
-#rhythm-screen .rx-card .rx-btn > .rx-ic--ticket { width: auto !important; height: 30px !important; object-fit: contain; filter: drop-shadow(1px 0 0 #fff4d6) drop-shadow(-1px 0 0 #fff4d6) drop-shadow(0 1px 0 #fff4d6) drop-shadow(0 -1px 0 #fff4d6); } /* V1424 C: 파란 음표 티켓 — 30×30 정사각에 눌려 찌그러지던 것, 원래 비율 유지 */
+#rhythm-screen .rx-card .rx-btn > .rx-ic--ticket { width: auto !important; height: 45px !important; flex:none; object-fit: contain; filter: drop-shadow(1px 0 0 #fff4d6) drop-shadow(-1px 0 0 #fff4d6) drop-shadow(0 1px 0 #fff4d6) drop-shadow(0 -1px 0 #fff4d6); } /* Preserve the ticket proportions at the requested 1.5x size. */
 /* V1424 C 사용자: 사진관 캐릭터 잘림·떠 있음 — 그림을 여백 없이 잘라 둬서 1.12배 확대·넘침 잘라내기 없앰. 진열장은 발이 바닥선에, 카드는 칸 안에 통째로 */
 .ph3-stage .cs-hero { inset: 9% 12% 11% !important; align-items: flex-end !important; }
 .ph3-stage .cs-hero-img { height: 100% !important; margin-bottom: 0 !important; transform: none !important; }
@@ -9094,17 +9097,17 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 }
 
 /* One complete music-ticket asset, always fitted without stretching or cropping. */
-img[src$="/ic-ticket-note-complete.webp"] { object-fit: contain !important; object-position: center !important; }
+img[src$="/ticket-single.webp"] { object-fit: contain !important; object-position: center !important; }
 .shop-card-badge > .ticket-note-icon { width: 62%; height: 62%; }
 .shop-tab-ico > .ticket-note-icon { width: 22px; height: 22px; }
 .shop-card-price--icon > .ticket-note-icon { width: 24px; height: 16px; }
 .shop-card-btn--rich > .ticket-note-icon { width: 33px; height: 22px; }
 
 /* Home and quest/achievement ticket artwork: 1.3x, with original proportions. */
-#game-screen.is-start .h2-pill-ic[src$="/ic-ticket-note-complete.webp"] {
+#game-screen.is-start .h2-pill-ic[src$="/ticket-single.webp"] {
   height: 145.6%; max-width: 52%; left: -18%;
 }
-#quest-screen .qs-rwline img[src$="/ic-ticket-note-complete.webp"] { width: calc(var(--w) * 0.104); height: auto; }
+#quest-screen .qs-rwline img[src$="/ticket-single.webp"] { width: calc(var(--w) * 0.1352); height: auto; flex:none; }
 #quest-screen[data-mode="ach"] .qs-tabs button.is-on { box-shadow: inset 0 2px 0 rgba(255,255,255,0.45); }
 
 /* AI hits temporarily replace labels, without rebuilding or measuring button content. */
@@ -9249,6 +9252,7 @@ img[src$="/ic-ticket-note-complete.webp"] { object-fit: contain !important; obje
 #shop-screen .shop-card--coin-bulk .shop-card-btn { display:flex!important; gap:2%!important; width:41cqw!important; justify-self:center!important; }
 #shop-screen .shop-card--coin-bulk .shop-card-btn del { font-size:.7em!important; opacity:.72!important; }
 #shop-screen .shop-card--ticket-small .shop-card-btn,#shop-screen .shop-card--ticket-bulk .shop-card-btn { gap:1%!important; font-size:3.1cqw!important; }
+#shop-screen .shop-card.shop-card--ticket-small .shop-card-name { font-size:5cqw!important; }
 #shop-screen .shop-coin-bulk-art { position:absolute!important; inset:0!important; display:flex!important; align-items:center!important; justify-content:center!important; gap:1%!important; }
 #shop-screen .shop-coin-bulk-pile { display:block!important; flex:0 0 29%!important; width:29%!important; height:88%!important; max-width:29%!important; max-height:88%!important; object-fit:contain!important; }
 #shop-screen .shop-coin-bulk-pile { transform:none!important; }
@@ -9274,7 +9278,7 @@ img[src$="/ic-ticket-note-complete.webp"] { object-fit: contain !important; obje
 #shop-screen .shop-coin-weapon-choice--dialog { flex:1 1 0!important; height:38cqw!important; min-height:120px!important; max-height:160px!important; padding:2cqw!important; }
 #shop-screen .shop-coin-weapon-choice--dialog span { font-size:3.2cqw!important; }
 #shop-screen .shop-coin-choice-art { display:block!important; width:24cqw!important; height:24cqw!important; max-width:100px!important; max-height:100px!important; margin:0 0 3cqw!important; object-fit:contain!important; }
-#shop-screen .shop-coin-choice-message { display:block!important; width:100%!important; color:#54290b!important; font:900 4.2cqw/1.25 'Jua',sans-serif!important; text-align:center!important; overflow-wrap:anywhere!important; }
+#shop-screen .shop-coin-choice-message { display:block!important; width:100%!important; color:#54290b!important; font:900 4.2cqw/1.25 'Jua',sans-serif!important; text-align:center!important; word-break:keep-all!important; overflow-wrap:normal!important; white-space:normal!important; }
 #shop-screen .shop-coin-choice-actions { display:flex!important; justify-content:center!important; gap:3cqw!important; width:100%!important; margin-top:5cqw!important; }
 #shop-screen .shop-coin-choice-actions .shop-card-btn { flex:1 1 0!important; width:auto!important; height:12cqw!important; min-width:0!important; min-height:0!important; margin:0!important; padding:2cqw!important; border:0!important; border-radius:999px!important; color:#fff!important; font:900 3.7cqw/1 'Jua',sans-serif!important; text-align:center!important; text-shadow:0 1px 1px rgba(30,80,10,.35)!important; box-shadow:0 4px 0 #1c8340,0 4px 1px rgba(0,0,0,.18),0 8px 10px rgba(0,0,0,.24),inset 0 2px 2px rgba(255,255,255,.8),inset 0 -3px 4px rgba(0,80,35,.4)!important; }
 #shop-screen .shop-coin-choice-actions button[data-choice-action="confirm"],#shop-screen .shop-coin-choice-actions button[data-choice-action="ok"] { background:linear-gradient(180deg,#74e389 0%,#47cc6a 46%,#2ea951 100%)!important; }

@@ -225,7 +225,7 @@
         var play = document.createElement('button'); play.type='button'; play.className='rx-btn rx-btn--y rb-song-play'; play.dataset.rpSong=choice.id; play.innerHTML=buttonTriangle(0,'-song-'+choice.id)+'<span>'+root.FGH.I18N.t('mole.rp.songs.play')+'</span>'; play.setAttribute('aria-label',root.FGH.I18N.t('mole.rp.songs.playAria',{title:choice.title}));
         play.querySelector('svg').setAttribute('viewBox','45 43 133 105');play.querySelector('svg').setAttribute('preserveAspectRatio','xMidYMid meet');
         play.addEventListener('click',function(){selectSong(choice);adRequired=false;adReady=false;showSelect();});
-        var ad = document.createElement('button'); ad.type='button'; ad.className='rx-btn rx-btn--b rb-song-ad'; ad.innerHTML='<img src="assets/shop/ad-icon-complete.png" alt="">'; ad.setAttribute('aria-label',root.FGH.I18N.t('mole.rp.songs.adAria',{title:choice.title}));
+        var ad = document.createElement('button'); ad.type='button'; ad.className='rx-btn rx-btn--b rb-song-ad'; ad.innerHTML='<img src="assets/ui-approved-v1476/ad-icon.webp" alt="">'; ad.setAttribute('aria-label',root.FGH.I18N.t('mole.rp.songs.adAria',{title:choice.title}));
         ad.addEventListener('click',function(){watchSongAd(function(){MG.Economy.addTickets(1);paintTickets();$('[data-rp-song-message]').textContent=root.FGH.I18N.t('mole.rp.ticket.got');});}); // V1365 C: 광고 = 티켓 1장
         var lock = sharedRules.songLock(index); // V1368 C: 잠긴 곡 = 어둡게 + 조건 문구, 실행·광고 버튼 막음
         if (lock) { card.classList.add('is-locked'); play.disabled = ad.disabled = true; record.textContent = root.FGH.I18N.t('mole.rp.lock.need', { title: lock.needTitle }); }

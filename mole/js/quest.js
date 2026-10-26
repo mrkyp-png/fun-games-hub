@@ -107,7 +107,7 @@
   }
 
   function fmt(n) { return (n | 0).toLocaleString('en-US'); }
-  function rwIcon(rw) { if (rw[0] === 'ticket') return 'assets/rhythm/ui/ic-ticket-note-complete.webp'; return A + (rw[0] === 'coin' ? 'ic-coin' : rw[0] === 'heart' ? 'ic-heart' : 'ic-ticket') + '.png'; }
+  function rwIcon(rw) { if (rw[0] === 'ticket') return 'assets/ui-approved-v1476/ticket-single.webp'; return A + (rw[0] === 'coin' ? 'ic-coin' : rw[0] === 'heart' ? 'ic-heart' : 'ic-ticket') + '.png'; }
 
   function create(opts) {
     var el = opts.root, mode = 'daily', achTab = 'round';
