@@ -11,7 +11,7 @@
   // 새 이미지 없이 앱 기존 아이콘 언어를 그대로 상점 카드 배지에 씀(사용자 지정).
   var ICONS = {
     hearts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg>',
-    coins: '<img class="shop-coins-stack" src="assets/shop-ui-v1450/27-coins-three.webp" alt="">',
+    coins: '<img class="shop-coins-stack" src="assets/shop-ui-v1452/coin4-button-left.png" alt="">',
     tickets: '<img class="ticket-note-icon" src="assets/rhythm/ui/ic-ticket-note-complete.webp" alt="">',
     play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'
   };
@@ -21,6 +21,8 @@
   // 원본 파일에서 하트 하나·작은 하트 6개·광고아이콘을 각각 낱개로 잘라(배경 없음, 알파
   // 그대로) 카드별로 조합. 광고아이콘도 낱개(사용자 지정: "하트위에 일부 유튜브가 겹치게").
   var SHOP_ART = 'assets/shop-ui-v1450/';
+  var CURRENCY_ART = 'assets/shop-ui-v1452/';
+  function coinOption(n) { return '<img class="shop-coins-stack" src="' + CURRENCY_ART + 'coin-option-' + n + '-bright20.png" alt="">'; }
   var HEART_ART = {
     heart: SHOP_ART + '11-heart.webp',
     minis: ['assets/shop/mini-1.png', 'assets/shop/mini-2.png', 'assets/shop/mini-3.png',
@@ -138,14 +140,50 @@
     // 하단 탭 아이콘 — 이모지(사용자 지정: "이모지나 이미지 넣어야함", 참고 이미지의 하트/망치/별/옷 자리).
     var TABS = [
       { id: 'currency', i18n: 'mole.shop.tabHeart', icon: '<img src="' + SHOP_ART + '11-heart.webp" alt="">' },
-      { id: 'coin', i18n: 'mole.shop.tabCoin', icon: '<img src="' + SHOP_ART + '27-coins-three.webp" alt="">' },
-      { id: 'ticket', i18n: 'mole.shop.tabTicket', icon: '<img src="' + SHOP_ART + 'ticket-icon.webp" alt="">' },
+      { id: 'coin', i18n: 'mole.shop.tabCoin', icon: '<img class="shop-coin-option" src="' + CURRENCY_ART + 'coin-option-05-bright20.png" alt="">' },
+      { id: 'ticket', i18n: 'mole.shop.tabTicket', icon: '<img src="' + CURRENCY_ART + 'ticket-single.png" alt="">' },
       { id: 'weapon', i18n: 'mole.shop.tabWeapon', icon: WEAPON_TAB_ICON },
       { id: 'skill', i18n: 'mole.shop.tabSkill', icon: '<img src="' + SHOP_ART + 'skill-icon.png" alt="">' },
       { id: 'costume', i18n: 'mole.shop.tabCostume', icon: '<img src="' + SHOP_ART + 'costume-icon.png" alt="">' }
     ];
     var activeTab = 'currency';
     var currencyFilter = null; // null=전체, 'heart'/'coin'/'ticket'=다이얼패드 캡슐 클릭으로 필터
+
+    var alphaBoundsBySrc = Object.create(null);
+    function centerVisibleImage(img) {
+      if (!img.complete || !img.naturalWidth) {
+        img.addEventListener('load', function () { centerVisibleImage(img); }, { once: true });
+        return;
+      }
+      var src = img.currentSrc || img.src;
+      var bounds = alphaBoundsBySrc[src];
+      if (!bounds) {
+        try {
+          var canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+          var context = canvas.getContext('2d', { willReadFrequently: true });
+          context.drawImage(img, 0, 0);
+          var pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+          var left = canvas.width, top = canvas.height, right = -1, bottom = -1;
+          for (var y = 0; y < canvas.height; y++) for (var x = 0; x < canvas.width; x++) {
+            if (pixels[(y * canvas.width + x) * 4 + 3] > 8) {
+              if (x < left) left = x; if (x > right) right = x;
+              if (y < top) top = y; if (y > bottom) bottom = y;
+            }
+          }
+          bounds = right < left ? [0, 0, canvas.width, canvas.height] : [left, top, right + 1, bottom + 1];
+          alphaBoundsBySrc[src] = bounds;
+        } catch (e) { return; }
+      }
+      var rect = img.getBoundingClientRect();
+      var scale = Math.min(rect.width / img.naturalWidth, rect.height / img.naturalHeight);
+      var dx = (img.naturalWidth / 2 - (bounds[0] + bounds[2]) / 2) * scale;
+      var dy = (img.naturalHeight / 2 - (bounds[1] + bounds[3]) / 2) * scale;
+      img.style.setProperty('translate', dx.toFixed(2) + 'px ' + dy.toFixed(2) + 'px', 'important');
+    }
+    function centerShopTabArt() {
+      el.querySelectorAll('.shop-tab-ico img, .shop-card-badge--weapon > img, .hero-weapon, .hero-weapon-pair img, .shop-sale-currency, .shop-sale-item, .shop-sale-set img').forEach(centerVisibleImage);
+    }
 
     function done() { render(); refreshHudFlyNumbers(); if (opts.onChange) opts.onChange(); }
 
@@ -185,7 +223,7 @@
     // 지정: "무기카드는 광고 보고 하트+1 카드 타입으로"), pillIcon 은 기본 하트, 무기는 코인.
     function heartCard(o) {
       var c = document.createElement('div');
-      c.className = 'shop-card shop-card--rich shop-card--' + o.theme;
+      c.className = 'shop-card shop-card--rich shop-card--' + o.theme + (o.productClass ? ' ' + o.productClass : '');
       var btnClass = 'shop-card-btn shop-card-btn--rich' + (o.theme === 'blue' ? ' shop-card-btn--ad' : '');
       var hasDesc = o.desc != null;
       c.innerHTML =
@@ -210,13 +248,13 @@
       var english = I18N().lang === 'en';
       var defs = [
         { kind: 'heart', rich: true, theme: 'pink', art: heroArt('solo'), name: english ? '+1 heart' : '하트 +1', desc: english ? 'Get 1 heart.' : '하트를 1개 획득합니다.', pillText: '+1',
-          btnHtml: ICONS.coins + '<b>5</b>', btnDisabled: MG.Economy.getCoins() < 5,
+          btnHtml: coinOption('01') + '<b>5</b>', btnDisabled: MG.Economy.getCoins() < 5,
           onClick: function () { if (MG.Economy.spendCoins(5)) { MG.Economy.addHearts(1); done(); } else alert(T('mole.shop.noCoin')); } },
-        { kind: 'heart', rich: true, theme: 'pink', art: heroArt('pile'), name: english ? '10 hearts' : '하트 ×10', desc: english ? 'Get 10 hearts.' : '하트를 10개 획득합니다.', pillText: '×10',
-          btnHtml: ICONS.coins + '<b>40</b>', btnDisabled: MG.Economy.getCoins() < 40,
+        { kind: 'heart', rich: true, theme: 'pink', art: heroArt('pile'), productClass: 'shop-card--heart-pile', name: english ? '10 hearts' : '하트 ×10', desc: english ? 'Get 10 hearts.' : '하트를 10개 획득합니다.', pillText: '×10',
+          btnHtml: coinOption('06') + '<b>40</b>', btnDisabled: MG.Economy.getCoins() < 40,
           onClick: function () { if (MG.Economy.spendCoins(40)) { MG.Economy.addHearts(10); done(); } else alert(T('mole.shop.noCoin')); } },
         { kind: 'heart', rich: true, theme: 'pink', art: heroArt('jar'), name: english ? '30 hearts' : '하트 ×30', desc: english ? 'Get 30 hearts.' : '하트를 30개 획득합니다.', pillText: '×30',
-          btnHtml: ICONS.coins + '<b>100</b>', btnDisabled: MG.Economy.getCoins() < 100,
+          btnHtml: coinOption('09') + '<b>100</b>', btnDisabled: MG.Economy.getCoins() < 100,
           onClick: function () { if (MG.Economy.spendCoins(100)) { MG.Economy.addHearts(30); done(); } else alert(T('mole.shop.noCoin')); } },
         { kind: 'heart', rich: true, theme: 'blue', art: heroArt('ad'), name: english ? 'Watch ad: +1 heart' : '광고 보고 하트 +1', desc: english ? 'Get 1 heart after watching an ad.' : '광고 시청 후 하트 1개 획득.', pillText: '+1',
           btnHtml: '<span class="scb-play-box">' + ICONS.play + '</span><b>' + T('mole.shop.watchAdBtn') + '</b>', btnDisabled: false,
@@ -276,18 +314,83 @@
       });
     }
 
-    // 코스튬 상점 카드는 신규 야구팀 코스튬 시스템에 맞춰 재구현 예정 — 그 전까지 준비중 표시.
-    function renderCostumeCards() {
-      cardsEl.innerHTML = '<p class="shop-soon">' + T('mole.inv.soon') + '</p>';
+    function renderPendingProducts(items) {
+      cardsEl.innerHTML = '';
+      var english = I18N().lang === 'en';
+      items.forEach(function (item) {
+        cardsEl.appendChild(heartCard({
+          theme: 'pink', productClass: 'shop-card--sale', art: item.art,
+          name: english ? item.nameEn : item.nameKo, desc: null, pillText: '',
+          btnHtml: '<b>' + (english ? 'Offer setup pending' : '상품·가격 확정 후 판매') + '</b>', btnDisabled: true
+        }));
+      });
     }
 
-    // 스킬 탭 — 아직 게임에 없는 카테고리(사용자 지정: "스킬(만들어야지)") — 뼈대만, 준비중 표시.
     function renderSkillCards() {
-      cardsEl.innerHTML = '<p class="shop-soon">' + T('mole.inv.soon') + '</p>';
+      var allSkills = '<div class="shop-sale-set">' +
+        '<img alt="" src="assets/skills/shield.png"><img alt="" src="assets/skills/targeting-v1403.png"><img alt="" src="assets/skills/ai.png"></div>';
+      renderPendingProducts([
+        { nameKo: '실드 묶음', nameEn: 'Shield pack', art: '<img class="shop-sale-item" alt="" src="assets/skills/shield.png">' },
+        { nameKo: '타겟팅 묶음', nameEn: 'Targeting pack', art: '<img class="shop-sale-item" alt="" src="assets/skills/targeting-v1403.png">' },
+        { nameKo: 'AI 스킬 묶음', nameEn: 'AI skill pack', art: '<img class="shop-sale-item" alt="" src="assets/skills/ai.png">' },
+        { nameKo: '스킬 세트', nameEn: 'Skill set', art: allSkills }
+      ]);
+    }
+
+    function renderCostumeCards() {
+      var teams = MG.CostumeTeams.teams();
+      var allCostumes = '<div class="shop-sale-set">' + teams.map(function (team) {
+        return '<img alt="" src="assets/costume/char-' + team.id + '-v1406.webp">';
+      }).join('') + '</div>';
+      renderPendingProducts([
+        { nameKo: '블루 베어스 코스튬', nameEn: 'Blue Bears costume', art: '<img class="shop-sale-item" alt="" src="assets/costume/char-blue_bears-v1406.webp">' },
+        { nameKo: '마운트 스타즈 코스튬', nameEn: 'Mount Stars costume', art: '<img class="shop-sale-item" alt="" src="assets/costume/char-mount_stars-v1406.webp">' },
+        { nameKo: '클라우드 컵스 코스튬', nameEn: 'Cloud Cups costume', art: '<img class="shop-sale-item" alt="" src="assets/costume/char-cloud_cups-v1406.webp">' },
+        { nameKo: '코스튬 세트', nameEn: 'Costume set', art: allCostumes }
+      ]);
+    }
+
+    function renderCoinCards() {
+      cardsEl.innerHTML = '';
+      var english = I18N().lang === 'en';
+      var bulkRewards = [
+        { step: english ? '1st purchase' : '1회차', name: english ? 'Cannon' : '캐논', src: WEAPONS[1].thumb },
+        { step: english ? '2nd purchase' : '2회차', name: english ? 'Gold Mjolnir' : '골드 묠니르', src: WEAPONS[2].thumb },
+        { step: english ? '3rd purchase' : '3회차', name: english ? 'King Punch' : '킹판취', src: WEAPONS[3].thumb }
+      ];
+      var bulkArt = '<div class="shop-coin-bulk-art">' +
+        '<img class="shop-coin-bulk-pile" src="' + CURRENCY_ART + 'coin-option-09-bright20.png" alt="">' +
+        '<div class="shop-coin-bulk-details"><b class="shop-coin-bulk-summary">' +
+        (english ? '100,000 coins · 20% off' : '100,000 코인 · 20% 할인') +
+        '</b><div class="shop-coin-bulk-rewards">' + bulkRewards.map(function (reward) {
+          return '<div class="shop-coin-bulk-reward"><span class="shop-coin-bulk-step">' + reward.step +
+            '</span><img src="' + reward.src + '" alt=""><b>' + reward.name + '</b></div>';
+        }).join('') + '</div></div></div>';
+      cardsEl.appendChild(heartCard({
+        theme: 'pink', productClass: 'shop-card--sale shop-card--coin-small',
+        art: '<div class="shop-coin-small-art"><img src="' + CURRENCY_ART + 'coin-option-01-bright20.png" alt=""><b>' +
+          (english ? '8,000 coins' : '8,000 코인') + '</b></div>',
+        name: english ? 'Small coin pack' : '소량구매', pillText: '8,000',
+        btnHtml: '<b>₩10,000</b>', btnDisabled: true
+      }));
+      cardsEl.appendChild(heartCard({
+        theme: 'blue', productClass: 'shop-card--coin-ad', art: heroArt('ad'),
+        name: english ? 'Ad · +1 heart' : '광고 · 하트 +1', pillText: '+1',
+        btnHtml: '<span class="scb-play-box">' + ICONS.play + '</span><b>' + T('mole.shop.watchAdBtn') + '</b>',
+        btnDisabled: false,
+        onClick: function () {
+          MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addHearts(1); done(); } });
+        }
+      }));
+      cardsEl.appendChild(heartCard({
+        theme: 'pink', productClass: 'shop-card--sale shop-card--coin-bulk', art: bulkArt,
+        name: english ? 'Bulk coin pack' : '대량구매', pillText: '100,000',
+        btnHtml: '<del>₩125,000</del><b>₩100,000</b>', btnDisabled: true
+      }));
     }
 
     function renderEmptyCategory() { cardsEl.innerHTML = '<p class="shop-soon">' + T('mole.inv.soon') + '</p>'; }
-    var RENDERERS = { currency: renderCurrencyCards, coin: renderEmptyCategory, ticket: renderEmptyCategory,
+    var RENDERERS = { currency: renderCurrencyCards, coin: renderCoinCards, ticket: renderEmptyCategory,
       weapon: renderWeaponCards, skill: renderSkillCards, costume: renderCostumeCards };
 
     // 배너 우측 메일 아이콘은 다이얼패드 "#"(시크릿 폐기) 자리로 이동함(사용자 지정) — 배너에는
@@ -374,6 +477,7 @@
         var b = document.createElement('button');
         b.type = 'button';
         b.className = 'shop-tab' + (t.id === activeTab ? ' shop-tab--on' : '');
+        b.dataset.shopTab = t.id;
         b.innerHTML = '<span class="shop-tab-ico">' + t.icon + '</span><span class="shop-tab-lbl"></span>';
         b.querySelector('.shop-tab-lbl').textContent = T(t.i18n);
         (function (lb) { requestAnimationFrame(function () { lb.style.transform = ''; var room = b.clientWidth * 0.86, w = lb.scrollWidth; // v890: 긴 영어 탭 글자 가로로만 좁힘
@@ -390,6 +494,7 @@
         tabsEl.appendChild(b);
       });
       tabsEl.scrollLeft = previousScroll;
+      requestAnimationFrame(centerShopTabArt);
     }
 
     function render() {
@@ -402,6 +507,7 @@
       cardsBoxEl.classList.remove('shop-cards-box--heart', 'shop-cards-box--coin', 'shop-cards-box--ticket');
       if (activeTab === 'currency') cardsBoxEl.classList.add('shop-cards-box--' + (currencyFilter || 'heart'));
       requestAnimationFrame(alignCoinPrices);
+      requestAnimationFrame(centerShopTabArt);
     }
 
     // Center the visible coin artwork and number ink, keeping their current sizes.
@@ -419,10 +525,9 @@
           group.style.setProperty('--price-icon-height', size.height + 'px');
           btn.appendChild(group); group.appendChild(icon); group.appendChild(number);
         }
-        var ir = icon.getBoundingClientRect(), nr = number.getBoundingClientRect();
-        var scale = Math.min(ir.width / 1254, ir.height / 1254);
-        // Unchanged source alpha bounds: [25,93,1224,1216] within 1254 square.
-        icon.style.transform = 'translate(' + (2.5 * scale) + 'px,' + (-27.5 * scale) + 'px)';
+        var nr = number.getBoundingClientRect();
+        icon.style.transform = 'none';
+        centerVisibleImage(icon);
         ctx.font = getComputedStyle(number).font;
         var m = ctx.measureText(number.textContent);
         var ascent = m.fontBoundingBoxAscent, descent = m.fontBoundingBoxDescent;
@@ -431,9 +536,6 @@
         var inkCenterX = (m.actualBoundingBoxRight - m.actualBoundingBoxLeft) / 2;
         var inkCenterY = baseline + (m.actualBoundingBoxDescent - m.actualBoundingBoxAscent) / 2;
         number.style.transform = 'translate(' + (nr.width / 2 - inkCenterX) + 'px,' + (nr.height / 2 - inkCenterY) + 'px)';
-        var coinPadding = (ir.width - 1199 * scale) / 2;
-        var numberPadding = (nr.width - inkWidth) / 2;
-        group.style.transform = 'translateX(' + ((numberPadding - coinPadding) / 2) + 'px)';
       });
       cardsEl.querySelectorAll('.shop-card-pill>span').forEach(function (label) {
         var rect = label.getBoundingClientRect();
@@ -484,7 +586,7 @@
         el.style.setProperty('--shop-dots-right', (el.getBoundingClientRect().right - shellRect.right + 10) + 'px');
       }
     }
-    root.addEventListener('resize', function () { if (!el.hidden) requestAnimationFrame(alignCoinPrices); });
+    root.addEventListener('resize', function () { if (!el.hidden) { requestAnimationFrame(alignCoinPrices); requestAnimationFrame(centerShopTabArt); } });
 
     function show() {
       renderBanner();
