@@ -2216,9 +2216,9 @@
     state.laneHammer.strike(targetX, targetY, () => onHammerImpact(targetX, targetY, results, { regionId }), frameKey, regionId);
     recordInputTrace('strike-queued', { regionId });
 
-    // 대포 연사: 이번 첫 타에 burst 가 떴으면 — 그 두더지 흙더미에 "BURST!" 띄우고(발동 즉시 인지),
-    // 남은 타격을 자동 연속 발사 → 1마리 클리어.
-    if (primary && primary.type === 'mole' && primary.burst && primary.done === false && primary.hitsTaken === 1) {
+    // 대포 연사: 이번 첫 타에 burst 가 떴으면 — 라운드6처럼 동물이 실제 타겟인 경우도 포함해
+    // 남은 타격을 자동 연속 발사한다. 원본 타입이 아니라 유효 타겟 타입으로 판정한다.
+    if (primary && effectiveHitType(state.config, primary.type) === 'mole' && primary.burst && primary.done === false && primary.hitsTaken === 1) {
       MG.HitFx.burstWord(document.getElementById('mole-board'), primary.xFrac, primary.yFrac);
       if (sharedLaneControls) sharedLaneControls.flashBurst(regionId); // 이번(유저) 샷 = 골드 링
       burstAutoFire(regionId, primary.hitsRequired - 1);
