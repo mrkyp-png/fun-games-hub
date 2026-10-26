@@ -1128,7 +1128,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1472 G</div>
+        <div id="build-tag" aria-hidden="true">V 1473 G</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1222,6 +1222,7 @@ window.FGH.rollOut = function (el, done) {
 <script src="js/sky.js"></script>
 <script src="js/game.js"></script>
 <script>window.FGH.I18N.applyStatic(document);</script>
+<script src="js/asset-preparation.js"></script>
 <script>
   // 로딩 스플래시 — 로딩이 끝나면 "화면을 눌러 시작". 그 탭(제스처)에서 game.js 의 window
   // pointerdown 리스너가 BGM 재생을 시작한다 → 브라우저 자동재생 차단 우회 = "로딩부터 브금".
@@ -1373,86 +1374,31 @@ window.FGH.rollOut = function (el, done) {
     // v768(사용자 지정: 화면 전환 시 그림이 따로따로 뜨는 문제) — 숨겨진 화면들의 CSS 배경·테두리 그림은
     // 그 화면이 처음 보일 때에서야 받기 시작해 조각조각 나타났음. 홈이 뜬 뒤 여유 시간에 전부 미리 받아 둔다.
     function preloadAllArt() {
-      var deadline = Date.now() + 60000;
-      var controller = window.AbortController ? new AbortController() : null;
-      var manifestTimer = setTimeout(function () { if (controller) controller.abort(); }, 10000);
-      return fetch('assets/game-image-manifest-v1470.json', controller ? { signal: controller.signal } : {}).then(function (response) {
-        if (!response.ok) throw new Error('Unable to read the game image manifest');
-        return response.json();
-      }).then(function (manifest) {
-        clearTimeout(manifestTimer);
-        var urls = {};
-        try {
-          Array.prototype.forEach.call(document.styleSheets, function (sh) {
-            var rules; try { rules = sh.cssRules; } catch (e) { return; }
-            Array.prototype.forEach.call(rules || [], function (r) {
-              var t = r.cssText || '', m, re = /url\(["']?([^"')]+\.(?:png|jpe?g|webp|gif|svg))["']?\)/gi;
-              while ((m = re.exec(t))) urls[m[1]] = 1;
-            });
-          });
-        } catch (e) { /* ignore inaccessible stylesheets */ }
-        Array.prototype.forEach.call(document.querySelectorAll('img[src]'), function (im) { urls[im.getAttribute('src')] = 1; });
-        manifest.forEach(function (u) { urls[u] = 1; });
-        var list = Object.keys(urls).filter(function (u) {
-          if (!u || u.indexOf('data:') === 0) return false;
-          try { return new URL(u, location.href).origin === location.origin; } catch (e) { return false; }
-        }), complete = 0;
-        list.sort(function (a, b) { return (b.indexOf('assets/score/') >= 0) - (a.indexOf('assets/score/') >= 0); });
-        var pending = list.slice(), attempts = Object.create(null), failedTotal = 0, timedOut = false;
-        var label = document.querySelector('#splash .splash-loading-label');
-        var fill = document.querySelector('#splash .splash-loading-fill');
-        if (fill) { fill.style.animation = 'none'; fill.style.width = '0%'; }
-        function updateProgress() {
-          var percent = list.length ? Math.floor(complete * 100 / list.length) : 100;
-          if (label) label.textContent = '게임 에셋 준비 중 ' + complete + '/' + list.length;
-          if (fill) fill.style.width = percent + '%';
-        }
-        function loadImage(url) {
-          return new Promise(function (resolve) {
-            var image = new Image(), settled = false;
-            var timer = setTimeout(function () { finish(false); }, 8000);
-            function finish(ok) { if (!settled) { settled = true; clearTimeout(timer); resolve(ok); } }
-            image.onload = function () {
-              if (image.decode) image.decode().then(function () { finish(true); }, function () { finish(false); });
-              else finish(true);
-            };
-            image.onerror = function () { finish(false); };
-            image.src = url;
-          });
-        }
-        return new Promise(function (resolve) {
-          function nextBatch() {
-            var batch = pending.splice(0, 6);
-            if (!batch.length || Date.now() >= deadline) {
-              timedOut = timedOut || Date.now() >= deadline;
-              updateProgress();
-              if ((failedTotal || timedOut) && label) label.textContent = '일부 에셋 로딩 지연 — 준비된 에셋으로 시작합니다';
-                resolve(); return;
-              }
-            Promise.all(batch.map(loadImage)).then(function (results) {
-              var failed = [];
-              results.forEach(function (ok, index) {
-                var url = batch[index];
-                if (ok) complete++;
-                else if ((attempts[url] = (attempts[url] || 0) + 1) < 2) failed.push(url);
-                else failedTotal++;
-              });
-              pending = failed.concat(pending);
-              updateProgress();
-              if (Date.now() >= deadline) { timedOut = true; pending = []; }
-              setTimeout(nextBatch, failed.length ? 1200 : 0);
-            });
-          }
-          updateProgress();
-          nextBatch();
-        });
-      });
-    }
-    cacheReady.then(function () { return preloadAllArt(); }).then(resolveArtReady).catch(function (error) {
       var label = document.querySelector('#splash .splash-loading-label');
-      if (label) label.textContent = '에셋 일부 로딩 지연 — 준비된 에셋으로 시작합니다';
+      var fill = document.querySelector('#splash .splash-loading-fill');
+      var done = 0, total = 0, bytes = 0;
+      var extra = Array.prototype.map.call(document.querySelectorAll('img[src]'), function (im) { return im.getAttribute('src'); })
+        .filter(function (url) { return url && url.indexOf('data:') !== 0 && url.indexOf('blob:') !== 0; });
+      extra.push('js/asset-preparation.js');
+      return window.prepareMoleAssets({ extra: extra, report: function (state) {
+        if (typeof state.done === 'number') done = state.done;
+        if (typeof state.total === 'number') total = state.total;
+        bytes += state.bytes || 0;
+        if (label) label.textContent = (state.phase === 'retry' ? '연결 대기 · 자동 재시도 중 ' : '게임 에셋 저장 중 ') + done + '/' + total + ' · 수신 ' + Math.round(bytes / 1024) + 'KB';
+        if (fill) { fill.style.animation = 'none'; fill.style.width = (total ? Math.floor(done * 100 / total) : 0) + '%'; }
+        if (state.phase === 'complete') {
+          s.classList.add('is-art');
+          // Refresh broken DOM images now that their responses are stored locally.
+          document.querySelectorAll('img[src]').forEach(function (im) {
+            if (!im.complete || !im.naturalWidth) { var src = im.getAttribute('src'); im.src = src; }
+          });
+        }
+      } });
+    }
+    cacheReady.then(preloadAllArt).then(resolveArtReady).catch(function (error) {
+      var label = document.querySelector('#splash .splash-loading-label');
+      if (label) label.textContent = '에셋 저장을 완료하지 못했습니다. 저장 공간과 연결을 확인하고 다시 열어 주세요.';
       console.error('Game asset preparation failed', error);
-      resolveArtReady();
     });
     function go() {
       if (!armed) return;
@@ -1481,25 +1427,14 @@ window.FGH.rollOut = function (el, done) {
       /^192\.168\./.test(location.hostname);
     window.addEventListener('DOMContentLoaded', function () {
       if (local) {
-        var localCleanupTimer = setTimeout(function () { if (window.__moleAssetGate) window.__moleAssetGate.resolveCache(); }, 15000);
-        Promise.all([
-          navigator.serviceWorker.getRegistrations().then(function (rs) { return Promise.all(rs.map(function (r) { return r.unregister(); })); }),
-          window.caches ? caches.keys().then(function (ks) { return Promise.all(ks.map(function (k) { return caches.delete(k); })); }) : Promise.resolve()
-        ]).then(function () {
-          clearTimeout(localCleanupTimer);
-          if (window.__moleAssetGate) window.__moleAssetGate.resolveCache();
-        }, function (error) {
-          clearTimeout(localCleanupTimer);
-          console.warn('Starting without waiting for local cache cleanup', error);
-          if (window.__moleAssetGate) window.__moleAssetGate.resolveCache();
-        });
+        if (window.__moleAssetGate) window.__moleAssetGate.resolveCache();
       } else {
         // ?v= 로 매 배포마다 URL을 바꿔서 GitHub Pages의 sw.js 캐시(max-age=600)를 무조건 우회 —
         // 안 그러면 배포 직후에도 최대 10분간 옛 서비스워커가 안 갈리는 경우가 있었음(사용자 보고).
         var gate = window.__moleAssetGate;
         function waitForCurrentWorker(registration) {
           return new Promise(function (resolve, reject) {
-            var latest = 'v=1472-G';
+            var latest = 'v=1473-G';
             var done = false;
             var timer = setTimeout(function () { finish(); }, 25000);
             function finish(error) {
@@ -1522,20 +1457,11 @@ window.FGH.rollOut = function (el, done) {
             registration.update().then(check).catch(function (error) { check(); if (!done) finish(error); });
           });
         }
-        navigator.serviceWorker.addEventListener('message', function (event) {
-          var data = event.data || {};
-          if (data.type !== 'MOLE_ASSET_CACHE_PROGRESS') return;
-          var label = document.querySelector('#splash .splash-loading-label');
-          var fill = document.querySelector('#splash .splash-loading-fill');
-          var total = Number(data.total) || 0, done = Number(data.done) || 0;
-          if (label) label.textContent = '전체 에셋 캐시 준비 중 ' + done + '/' + total;
-          if (fill) { fill.style.animation = 'none'; fill.style.width = (total ? Math.floor(done * 100 / total) : 100) + '%'; }
-        });
         var registrationTimer = setTimeout(function () {
           console.warn('Starting while service worker registration continues in background');
           if (gate) gate.resolveCache();
         }, 30000);
-        navigator.serviceWorker.register('sw.js?v=1472-G').then(waitForCurrentWorker).then(function () {
+        navigator.serviceWorker.register('sw.js?v=1473-G').then(waitForCurrentWorker).then(function () {
           clearTimeout(registrationTimer);
           if (gate) gate.resolveCache();
         }).catch(function (error) {

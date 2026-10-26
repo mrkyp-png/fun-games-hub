@@ -3,7 +3,7 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-// V1472 bounds foreground waits; the cache can finish in the background without trapping startup.
+// Foreground preparation persists each image independently; install does not bulk-fetch assets.
 const CACHE = 'mole-game-v1466-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
@@ -839,33 +839,10 @@ const SHELL = [
 
 // V1333 C: 662개 파일을 addAll 로 한꺼번에 요청하면 폰 크롬이 동시 요청 한도를 넘겨(ERR_INSUFFICIENT_RESOURCES)
 // 그 순간 화면의 다른 그림 요청까지 실패 → 시작·X·재화 아이콘이 깨진 그림으로 뜸. 6개씩 나눠 차례로 받는다.
-self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then(async (c) => {
-    const manifestUrl = new URL('./assets/game-image-manifest-v1470.json', self.registration.scope);
-    const manifestResponse = await fetch(manifestUrl, { cache: 'no-store' });
-    if (!manifestResponse.ok) throw new Error('Unable to fetch the game image manifest');
-    const imagePaths = await manifestResponse.json();
-    const required = Array.from(new Set(SHELL.concat(imagePaths.map((path) => './' + path))));
-    const cached = new Set((await c.keys()).map((request) => request.url));
-    const missing = required.filter((path) => !cached.has(new URL(path, self.registration.scope).href));
-    const notifyProgress = async (done) => {
-      const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-      clients.forEach((client) => client.postMessage({ type: 'MOLE_ASSET_CACHE_PROGRESS', done, total: missing.length }));
-    };
-    await notifyProgress(0);
-    for (let i = 0; i < missing.length; i += 6) {
-      await c.addAll(missing.slice(i, i + 6));
-      await notifyProgress(Math.min(i + 6, missing.length));
-    }
-    // Refresh the small entry document explicitly; the rest of the existing
-    // shell and runtime image cache stays intact across this worker update.
-    const indexUrl = new URL('./index.html', self.registration.scope);
-    const freshIndexUrl = new URL(indexUrl);
-    freshIndexUrl.searchParams.set('_sw', Date.now());
-    const indexResponse = await fetch(freshIndexUrl, { cache: 'no-store' });
-    if (!indexResponse.ok) throw new Error('Unable to refresh index.html');
-    await c.put(indexUrl, indexResponse);
-  }).then(() => self.skipWaiting()));
+// Activate quickly. The page owns durable per-file preparation and its start gate.
+// A large/offline asset must never hold service-worker installation open.
+self.addEventListener('install', (event) => {
+  event.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener('activate', (e) => {
@@ -881,20 +858,16 @@ self.addEventListener('fetch', (e) => {
 
   // Images are immutable or versioned assets in this game. Return the local copy
   // immediately when available; waiting for the network made cached icons appear late.
-  if (e.request.destination === 'image') {
+  if (e.request.destination === 'image' || e.request.headers.get('X-Mole-Asset-Preparation') === '1' || /\.(png|jpe?g|webp|gif|svg)(?:$|\?)/i.test(e.request.url)) {
     e.respondWith((async () => {
       const cached = await caches.match(e.request, { ignoreSearch: true });
       if (cached) return cached;
-      const controller = self.AbortController ? new AbortController() : null;
-      const timer = setTimeout(() => controller && controller.abort(), 10000);
-      let response;
-      try {
-        response = await fetch(e.request, controller ? { signal: controller.signal } : {});
-      } finally {
-        clearTimeout(timer);
-      }
+      // The foreground queue watches byte progress and retries stalled transfers.
+      // Do not abort a slow but healthy image response after a fixed duration.
+      const response = await fetch(e.request);
       if (response && response.ok && (response.type === 'basic' || response.type === 'cors')) {
-        await caches.open(CACHE).then((cache) => cache.put(e.request, response.clone()));
+        const copy = response.clone();
+        e.waitUntil(caches.open(CACHE).then((cache) => cache.put(e.request, copy)).catch(() => {}));
       }
       return response;
     })());
