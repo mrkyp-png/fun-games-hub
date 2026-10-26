@@ -1128,7 +1128,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1473 G</div>
+        <div id="build-tag" aria-hidden="true">V 1474 G</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1380,7 +1380,16 @@ window.FGH.rollOut = function (el, done) {
       var extra = Array.prototype.map.call(document.querySelectorAll('img[src]'), function (im) { return im.getAttribute('src'); })
         .filter(function (url) { return url && url.indexOf('data:') !== 0 && url.indexOf('blob:') !== 0; });
       extra.push('js/asset-preparation.js');
-      return window.prepareMoleAssets({ extra: extra, report: function (state) {
+      var backgrounds = [];
+      Array.prototype.forEach.call(document.styleSheets, function (sheet) {
+        try { Array.prototype.forEach.call(sheet.cssRules || [], function (rule) {
+          var match, pattern = /url\(["']?([^"')]+\.(?:png|jpe?g|webp|gif|svg))(?:\?[^"')]*)?["']?\)/gi;
+          while ((match = pattern.exec(rule.cssText || ''))) backgrounds.push(match[1]);
+        }); } catch (e) { /* inaccessible cross-origin stylesheet */ }
+      });
+      var priority = ['assets/home2/splash-art.webp', 'assets/loading-stage-v1162/stage-cool-v1248.png',
+        'assets/loading-cyber-v1153/characters.webp', 'assets/home2/wide-purple.png'].concat(backgrounds);
+      return window.prepareMoleAssets({ extra: extra, priority: priority, report: function (state) {
         if (typeof state.done === 'number') done = state.done;
         if (typeof state.total === 'number') total = state.total;
         bytes += state.bytes || 0;
@@ -1388,6 +1397,16 @@ window.FGH.rollOut = function (el, done) {
         if (fill) { fill.style.animation = 'none'; fill.style.width = (total ? Math.floor(done * 100 / total) : 0) + '%'; }
         if (state.phase === 'complete') {
           s.classList.add('is-art');
+          // Reapply local stylesheets after their background images have been cached.
+          var links = Array.prototype.filter.call(document.querySelectorAll('link[rel="stylesheet"][href]'), function (link) {
+            try { return new URL(link.href).origin === location.origin; } catch (e) { return false; }
+          });
+          Promise.all(links.map(function (link) { return new Promise(function (resolve) {
+            var url = new URL(link.href); url.searchParams.set('_asset_ready', Date.now());
+            link.addEventListener('load', resolve, { once: true });
+            link.addEventListener('error', resolve, { once: true });
+            link.href = url.href;
+          }); })).then(function () { resolveArtReady(); });
           // Refresh broken DOM images now that their responses are stored locally.
           document.querySelectorAll('img[src]').forEach(function (im) {
             if (!im.complete || !im.naturalWidth) { var src = im.getAttribute('src'); im.src = src; }
@@ -1395,7 +1414,7 @@ window.FGH.rollOut = function (el, done) {
         }
       } });
     }
-    cacheReady.then(preloadAllArt).then(resolveArtReady).catch(function (error) {
+    cacheReady.then(preloadAllArt).catch(function (error) {
       var label = document.querySelector('#splash .splash-loading-label');
       if (label) label.textContent = '에셋 저장을 완료하지 못했습니다. 저장 공간과 연결을 확인하고 다시 열어 주세요.';
       console.error('Game asset preparation failed', error);
@@ -1434,7 +1453,7 @@ window.FGH.rollOut = function (el, done) {
         var gate = window.__moleAssetGate;
         function waitForCurrentWorker(registration) {
           return new Promise(function (resolve, reject) {
-            var latest = 'v=1473-G';
+            var latest = 'v=1474-G';
             var done = false;
             var timer = setTimeout(function () { finish(); }, 25000);
             function finish(error) {
@@ -1461,7 +1480,7 @@ window.FGH.rollOut = function (el, done) {
           console.warn('Starting while service worker registration continues in background');
           if (gate) gate.resolveCache();
         }, 30000);
-        navigator.serviceWorker.register('sw.js?v=1473-G').then(waitForCurrentWorker).then(function () {
+        navigator.serviceWorker.register('sw.js?v=1474-G').then(waitForCurrentWorker).then(function () {
           clearTimeout(registrationTimer);
           if (gate) gate.resolveCache();
         }).catch(function (error) {

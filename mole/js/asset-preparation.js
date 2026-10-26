@@ -56,39 +56,51 @@
     var urls = Array.from(new Set(manifest.concat(options.extra || []).map(function (path) {
       return new URL(path, location.href).href;
     }))).filter(function (url) { return new URL(url).origin === location.origin; });
+    var priority = (options.priority || []).map(function (path) { return new URL(path, location.href).href; });
+    var rank = new Map(priority.map(function (url, index) { return [url, index]; }));
+    urls.sort(function (a, b) {
+      var ar = rank.has(a) ? rank.get(a) : Number.MAX_SAFE_INTEGER;
+      var br = rank.has(b) ? rank.get(b) : Number.MAX_SAFE_INTEGER;
+      return ar - br;
+    });
     var pending = [], done = 0;
     for (var url of urls) {
       if (cache && await cache.match(url, { ignoreSearch: true })) done++;
       else pending.push(url);
     }
     report({ phase: 'progress', done: done, total: urls.length });
-    // Each successful file is committed independently. Failed files go to the tail.
-    var failures = 0;
-    while (pending.length) {
-      var current = pending.shift();
-      try {
-        var response = await download(current);
-        if (/\.(png|jpe?g|webp|gif|svg)(?:$|\?)/i.test(current)) {
-          var blob = await response.clone().blob();
-          var objectUrl = URL.createObjectURL(blob);
-          try {
-            await new Promise(function (resolve, reject) {
-              var image = new Image();
-              image.onload = function () { resolve(); };
-              image.onerror = function () { reject(new Error('Invalid image: ' + current)); };
-              image.src = objectUrl;
-            });
-          } finally { URL.revokeObjectURL(objectUrl); }
+    // Save each completed file. A small bounded pool keeps a throttled link busy;
+    // failed files return to the tail while successful files never download twice.
+    var failureCounts = Object.create(null);
+    async function worker() {
+      while (pending.length) {
+        var current = pending.shift();
+        try {
+          var response = await download(current);
+          if (/\.(png|jpe?g|webp|gif|svg)(?:$|\?)/i.test(current)) {
+            var blob = await response.clone().blob();
+            var objectUrl = URL.createObjectURL(blob);
+            try {
+              await new Promise(function (resolve, reject) {
+                var image = new Image();
+                image.onload = function () { resolve(); };
+                image.onerror = function () { reject(new Error('Invalid image: ' + current)); };
+                image.src = objectUrl;
+              });
+            } finally { URL.revokeObjectURL(objectUrl); }
+          }
+          if (cache) await cache.put(current, response);
+          done++;
+          report({ phase: 'progress', done: done, total: urls.length });
+        } catch (error) {
+          var failures = failureCounts[current] = (failureCounts[current] || 0) + 1;
+          report({ phase: 'retry', done: done, total: urls.length, url: current, error: String(error) });
+          await sleep(Math.min(30000, 1000 * Math.pow(2, Math.min(failures - 1, 5))));
+          pending.push(current);
         }
-        if (cache) await cache.put(current, response);
-        done++; failures = 0;
-        report({ phase: 'progress', done: done, total: urls.length });
-      } catch (error) {
-        pending.push(current); failures++;
-        report({ phase: 'retry', done: done, total: urls.length, url: current, error: String(error) });
-        await sleep(Math.min(30000, 1000 * Math.pow(2, Math.min(failures - 1, 5))));
       }
     }
+    await Promise.all(Array.from({ length: Math.min(4, pending.length) }, worker));
     report({ phase: 'complete', done: done, total: urls.length });
   };
 })(window);
