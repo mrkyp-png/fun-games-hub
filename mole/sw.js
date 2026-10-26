@@ -3,7 +3,7 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-// V1470 reuses the existing cache, completes the visual asset manifest before activation,
+// V1471 reuses the existing cache, completes the visual asset manifest before activation,
 // and serves cached images immediately so the game never opens with a partial asset cache.
 const CACHE = 'mole-game-v1466-G';
 
