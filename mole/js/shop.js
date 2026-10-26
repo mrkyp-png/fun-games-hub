@@ -213,6 +213,56 @@
       });
     }
 
+    function showCoinWeaponSelection(bulkCard, english) {
+      var previous = el.querySelector('.shop-coin-choice-dialog');
+      if (previous) previous.remove();
+      var dialog = document.createElement('div');
+      dialog.className = 'shop-coin-choice-dialog';
+      dialog.setAttribute('role', 'dialog');
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.setAttribute('aria-label', english ? 'Choose a bonus weapon' : '보너스 무기 선택');
+      dialog.innerHTML = '<div class="shop-coin-choice-card shop-coin-choice-card--weapon-select"></div>';
+      el.appendChild(dialog);
+      var card = dialog.querySelector('.shop-coin-choice-card');
+
+      function renderChoices() {
+        var choices = WEAPONS.filter(function (weapon) { return weapon.id !== 'hammer'; }).map(function (weapon) {
+          var label = english ? weapon.nameEn : ({ cannon: '팡팡 캐논', goldhammer: '골드 묠니르', alipunch: '킹판취' }[weapon.id] || weapon.name);
+          return '<button type="button" class="shop-coin-weapon-choice shop-coin-weapon-choice--dialog" data-coin-weapon="' + weapon.id + '"><img src="' + weapon.thumb + '" alt=""><span>' + label + '</span></button>';
+        }).join('');
+        card.innerHTML = '<b class="shop-coin-choice-message">' + (english ? 'Choose a bonus weapon' : '보너스 무기를 선택하세요') + '</b>' +
+          '<div class="shop-coin-weapon-choices shop-coin-weapon-choices--dialog">' + choices + '</div>';
+        card.querySelectorAll('[data-coin-weapon]').forEach(function (choice) {
+          choice.addEventListener('click', function () {
+            var weapon = WEAPONS.find(function (item) { return item.id === choice.dataset.coinWeapon; });
+            if (weapon) renderWeaponConfirm(weapon);
+          });
+        });
+      }
+
+      function renderWeaponConfirm(weapon) {
+        var label = english ? weapon.nameEn : ({ cannon: '팡팡 캐논', goldhammer: '골드 묠니르', alipunch: '킹판취' }[weapon.id] || weapon.name);
+        var lastChar = label.charCodeAt(label.length - 1);
+        var hasFinalConsonant = lastChar >= 0xAC00 && lastChar <= 0xD7A3 && (lastChar - 0xAC00) % 28 !== 0;
+        var prompt = english ? 'Select ' + label + '?' : label + (hasFinalConsonant ? '을' : '를') + ' 선택하시겠습니까?';
+        card.innerHTML = '<img class="shop-coin-choice-art" src="' + weapon.thumb + '" alt="">' +
+          '<b class="shop-coin-choice-message">' + prompt + '</b>' +
+          '<div class="shop-coin-choice-actions"><button type="button" class="shop-card-btn shop-coin-choice-action" data-choice-action="confirm">' + (english ? 'Yes' : '예') + '</button>' +
+          '<button type="button" class="shop-card-btn shop-coin-choice-action" data-choice-action="cancel">' + (english ? 'No' : '아니요') + '</button></div>';
+        card.querySelector('[data-choice-action="confirm"]').addEventListener('click', function () {
+          selectedCoinBonusWeapon = weapon.id;
+          bulkCard.dataset.selectedCoinWeapon = weapon.id;
+          dialog.remove();
+        });
+        card.querySelector('[data-choice-action="cancel"]').addEventListener('click', renderChoices);
+      }
+
+      dialog.addEventListener('click', function (event) {
+        if (event.target === dialog) dialog.remove();
+      });
+      renderChoices();
+    }
+
     function defaultPurchasePrompt(name) {
       var english = I18N().lang === 'en';
       if (english) return 'Purchase ' + name + '?';
@@ -406,18 +456,12 @@
         var label = english ? (round + (round === 1 ? 'st' : round === 2 ? 'nd' : 'rd') + ' purchase') : round + '회차';
         return '<div class="shop-coin-bulk-reward"><span class="shop-coin-bulk-step">' + label + '</span></div>';
       }).join('');
-      var weaponChoices = WEAPONS.filter(function (weapon) { return weapon.id !== 'hammer'; }).map(function (weapon) {
-        var label = english ? weapon.nameEn : ({ cannon: '팡팡 캐논', goldhammer: '골드 묠니르', alipunch: '킹판취' }[weapon.id] || weapon.name);
-        return '<button type="button" class="shop-coin-weapon-choice' + (selectedCoinBonusWeapon === weapon.id ? ' is-selected' : '') +
-          '" data-coin-weapon="' + weapon.id + '" aria-pressed="' + (selectedCoinBonusWeapon === weapon.id) + '" title="' +
-          label + '"><img src="' + weapon.thumb + '" alt=""><span>' + label + '</span></button>';
-      }).join('');
       var bulkArt = '<div class="shop-coin-bulk-art">' +
         '<img class="shop-coin-bulk-pile" src="' + CURRENCY_ART + 'coin-option-09-bright20.png" alt="">' +
         '<div class="shop-coin-bulk-details"><b class="shop-coin-bulk-summary">' +
         (english ? '100,000 coins · 20% off' : '100,000 코인 · 20% 할인') +
         '</b><div class="shop-coin-bulk-rewards">' + bulkRounds + '</div><div class="shop-coin-bulk-choice">' +
-        '<div class="shop-coin-weapon-choices">' + weaponChoices + '</div><b class="shop-coin-bulk-choice-title">' +
+        '<b class="shop-coin-bulk-choice-title">' +
         (english ? 'Weapon selection available from 4th purchase' : '4회차부터 무기 선택 가능') +
         '</b></div></div></div>';
       cardsEl.appendChild(heartCard({
@@ -440,43 +484,11 @@
       var bulkCard = heartCard({
         theme: 'pink', productClass: 'shop-card--sale shop-card--coin-bulk', art: bulkArt,
         name: english ? 'Reserve pack' : '리저브 팩', pillText: '100,000',
-        btnHtml: coinPurchaseIcon('09') + '<del>₩125,000</del><b>₩100,000</b>', btnDisabled: true
+        btnHtml: coinPurchaseIcon('09') + '<del>₩125,000</del><b>₩100,000</b>', btnDisabled: false,
+        confirmMessage: english ? 'Purchase the Reserve Pack for ₩100,000?' : '리저브 팩을 100,000원에 구매하시겠습니까?',
+        onClick: function () { showCoinWeaponSelection(bulkCard, english); }
       });
       cardsEl.appendChild(bulkCard);
-      bulkCard.querySelectorAll('.shop-coin-weapon-choice').forEach(function (choice) {
-        choice.addEventListener('click', function () {
-          var weapon = WEAPONS.find(function (item) { return item.id === choice.dataset.coinWeapon; });
-          if (!weapon) return;
-          var oldDialog = el.querySelector('.shop-coin-choice-dialog');
-          if (oldDialog) oldDialog.remove();
-          var dialog = document.createElement('div');
-          dialog.className = 'shop-coin-choice-dialog';
-          dialog.setAttribute('role', 'dialog');
-          dialog.setAttribute('aria-modal', 'true');
-          dialog.setAttribute('aria-label', english ? 'Confirm enhancement material' : '강화 재료 선택 확인');
-          var label = english ? weapon.nameEn : ({ cannon: '팡팡 캐논', goldhammer: '골드 묠니르', alipunch: '킹판취' }[weapon.id] || weapon.name);
-          var lastChar = label.charCodeAt(label.length - 1);
-          var hasFinalConsonant = lastChar >= 0xAC00 && lastChar <= 0xD7A3 && (lastChar - 0xAC00) % 28 !== 0;
-          dialog.innerHTML = '<div class="shop-coin-choice-card"><img class="shop-coin-choice-art" src="' + weapon.thumb + '" alt="">' +
-            '<b class="shop-coin-choice-message">' + (english ? 'Select ' + label + '?' : label + (hasFinalConsonant ? '을' : '를') + ' 선택하시겠습니까?') + '</b>' +
-            '<div class="shop-coin-choice-actions"><button type="button" class="shop-card-btn shop-coin-choice-action" data-choice-action="confirm">' + (english ? 'Yes' : '예') + '</button>' +
-            '<button type="button" class="shop-card-btn shop-coin-choice-action" data-choice-action="cancel">' + (english ? 'No' : '아니요') + '</button></div></div>';
-          el.appendChild(dialog);
-          function closeDialog() { dialog.remove(); }
-          dialog.addEventListener('click', function (event) {
-            if (event.target === dialog || event.target.closest('[data-choice-action="cancel"]')) { closeDialog(); return; }
-            if (event.target.closest('[data-choice-action="confirm"]')) {
-              selectedCoinBonusWeapon = weapon.id;
-              bulkCard.querySelectorAll('.shop-coin-weapon-choice').forEach(function (other) {
-                var selected = other.dataset.coinWeapon === selectedCoinBonusWeapon;
-                other.classList.toggle('is-selected', selected);
-                other.setAttribute('aria-pressed', String(selected));
-              });
-              closeDialog();
-            }
-          });
-        });
-      });
     }
 
     function renderEmptyCategory() { cardsEl.innerHTML = '<p class="shop-soon">' + T('mole.inv.soon') + '</p>'; }
