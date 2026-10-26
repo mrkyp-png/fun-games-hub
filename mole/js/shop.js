@@ -146,7 +146,7 @@
     var TABS = [
       { id: 'currency', i18n: 'mole.shop.tabHeart', icon: '<img src="' + SHOP_ART + '11-heart.webp" alt="">' },
       { id: 'coin', i18n: 'mole.shop.tabCoin', icon: '<img class="shop-coin-option" src="' + CURRENCY_ART + 'coin-option-05-bright20.png" alt="">' },
-      { id: 'ticket', i18n: 'mole.shop.tabTicket', icon: '<img src="' + CURRENCY_ART + 'ticket-single.png" alt="">' },
+      { id: 'ticket', i18n: 'mole.shop.tabTicket', icon: '<img class="ticket-note-icon" src="assets/rhythm/ui/ic-ticket-note-complete.webp" alt="">' },
       { id: 'weapon', i18n: 'mole.shop.tabWeapon', icon: WEAPON_TAB_ICON },
       { id: 'skill', i18n: 'mole.shop.tabSkill', icon: '<img src="' + SHOP_ART + 'skill-icon.png" alt="">' },
       { id: 'costume', i18n: 'mole.shop.tabCostume', icon: '<img src="' + SHOP_ART + 'costume-icon.png" alt="">' }
@@ -156,6 +156,7 @@
     var selectedCoinBonusWeapon = null;
 
     var alphaBoundsBySrc = Object.create(null);
+    var alphaMassCentersBySrc = Object.create(null);
     function centerVisibleImage(img) {
       if (!img.complete || !img.naturalWidth) {
         img.addEventListener('load', function () { centerVisibleImage(img); }, { once: true });
@@ -187,8 +188,42 @@
       var dy = (img.naturalHeight / 2 - (bounds[1] + bounds[3]) / 2) * scale;
       img.style.setProperty('translate', dx.toFixed(2) + 'px ' + dy.toFixed(2) + 'px', 'important');
     }
+    function centerIconVisualMass(img) {
+      if (!img.complete || !img.naturalWidth) {
+        img.addEventListener('load', function () { centerIconVisualMass(img); }, { once: true });
+        return;
+      }
+      var src = img.currentSrc || img.src;
+      var center = alphaMassCentersBySrc[src];
+      if (!center) {
+        try {
+          var canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+          var context = canvas.getContext('2d', { willReadFrequently: true });
+          context.drawImage(img, 0, 0);
+          var pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+          var sumX = 0, sumY = 0, total = 0;
+          for (var y = 0; y < canvas.height; y++) for (var x = 0; x < canvas.width; x++) {
+            var alpha = pixels[(y * canvas.width + x) * 4 + 3];
+            if (alpha > 8) { sumX += (x + 0.5) * alpha; sumY += (y + 0.5) * alpha; total += alpha; }
+          }
+          center = total ? [sumX / total, sumY / total] : [canvas.width / 2, canvas.height / 2];
+          alphaMassCentersBySrc[src] = center;
+        } catch (e) { return; }
+      }
+      var rect = img.getBoundingClientRect();
+      var scale = Math.min(rect.width / img.naturalWidth, rect.height / img.naturalHeight);
+      var dx = (img.naturalWidth / 2 - center[0]) * scale;
+      var bounds = alphaBoundsBySrc[src] || [0, 0, img.naturalWidth, img.naturalHeight];
+      var dy = (img.naturalHeight / 2 - (bounds[1] + bounds[3]) / 2) * scale;
+      img.style.setProperty('translate', dx.toFixed(2) + 'px ' + dy.toFixed(2) + 'px', 'important');
+    }
     function centerShopTabArt() {
-      el.querySelectorAll('.shop-tab-ico img, .shop-card-badge--weapon > img, .hero-weapon, .hero-weapon-pair img, .shop-sale-currency, .shop-sale-item, .shop-sale-set img').forEach(centerVisibleImage);
+      el.querySelectorAll('.shop-tab-ico img').forEach(function (img) {
+        centerVisibleImage(img);
+        centerIconVisualMass(img);
+      });
+      el.querySelectorAll('.shop-card-badge--weapon > img, .hero-weapon, .hero-weapon-pair img, .shop-sale-currency, .shop-sale-item, .shop-sale-set img').forEach(centerVisibleImage);
     }
 
     function done() { render(); refreshHudFlyNumbers(); if (opts.onChange) opts.onChange(); }
@@ -354,7 +389,7 @@
           onClick: function () { if (MG.Economy.spendCoins(100)) { MG.Economy.addHearts(30); done(); } else alert(T('mole.shop.noCoin')); } },
         { kind: 'heart', rich: true, theme: 'blue', art: heroArt('ad'), name: english ? 'Watch ad: +1 heart' : '광고 보고 하트 +1', desc: english ? 'Get 1 heart after watching an ad.' : '광고 시청 후 하트 1개 획득.', pillText: '+1',
           confirmMessage: english ? 'Watch an ad to get 1 heart?' : '광고를 시청하고 하트 1개를 받으시겠습니까?',
-          btnHtml: '<span class="scb-play-box">' + ICONS.play + '</span><b>' + T('mole.shop.watchAdBtn') + '</b>', btnDisabled: false,
+          btnHtml: '<img class="shop-ad-cta-icon" src="assets/shop/ad-icon-complete.png" alt=""><b>' + T('mole.shop.watchAdBtn') + '</b>', btnDisabled: false,
           onClick: function () { MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addHearts(1); done(); } }); } }
       ];
       // 다이얼패드 착지 캡슐 클릭 시 그 재화만(사용자 지정: "각 버튼을 누르면 상품이 각 재화별로").
@@ -452,9 +487,13 @@
     function renderCoinCards() {
       cardsEl.innerHTML = '';
       var english = I18N().lang === 'en';
-      var bulkRounds = [1, 2, 3].map(function (round) {
+      var bulkRounds = ['cannon', 'goldhammer', 'alipunch'].map(function (weaponId, index) {
+        var round = index + 1;
+        var weapon = WEAPONS.find(function (item) { return item.id === weaponId; });
         var label = english ? (round + (round === 1 ? 'st' : round === 2 ? 'nd' : 'rd') + ' purchase') : round + '회차';
-        return '<div class="shop-coin-bulk-reward"><span class="shop-coin-bulk-step">' + label + '</span></div>';
+        var weaponLabel = english ? weapon.nameEn : ({ cannon: '팡팡 캐논', goldhammer: '골드 묠니르', alipunch: '킹판취' }[weaponId] || weapon.name);
+        return '<div class="shop-coin-bulk-reward"><span class="shop-coin-bulk-step">' + label + '</span>' +
+          '<img src="' + weapon.thumb + '" alt=""><span class="shop-coin-bulk-reward-name">' + weaponLabel + '</span></div>';
       }).join('');
       var bulkArt = '<div class="shop-coin-bulk-art">' +
         '<img class="shop-coin-bulk-pile" src="' + CURRENCY_ART + 'coin-option-09-bright20.png" alt="">' +
@@ -469,7 +508,9 @@
         art: '<div class="shop-coin-small-art"><img src="' + CURRENCY_ART + 'coin-option-01-bright20.png" alt=""><b>' +
           (english ? '8,000 coins' : '8,000 코인') + '</b></div>',
         name: english ? 'Starter pack' : '스타터 팩', pillText: '8,000',
-        btnHtml: coinPurchaseIcon('01') + '<b>₩10,000</b>', btnDisabled: true
+        btnHtml: coinPurchaseIcon('01') + '<b>₩10,000</b>', btnDisabled: false,
+        confirmMessage: english ? 'Purchase the Starter Pack for ₩10,000?' : '스타터 팩을 10,000원에 구매하시겠습니까?',
+        onClick: function () {}
       }));
       cardsEl.appendChild(heartCard({
         theme: 'blue', productClass: 'shop-card--coin-ad', art: coinAdArt(),

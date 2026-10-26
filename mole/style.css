@@ -9224,6 +9224,7 @@ img[src$="/ic-ticket-note-complete.webp"] { object-fit: contain !important; obje
 #shop-screen .shop-card--sale .shop-card-pill { display:none!important; }
 #shop-screen .shop-card--sale .shop-card-btn { font-size:3.7cqw!important; -webkit-text-stroke:0!important; color:#fff9dd!important; }
 #shop-screen .shop-card--sale .shop-card-btn:disabled { opacity:.72!important; }
+#shop-screen .shop-card--coin-small .shop-card-btn,#shop-screen .shop-card--coin-bulk .shop-card-btn { height:11.2cqw!important; }
 #shop-screen .shop-card--sale .shop-card-badge--hero .shop-sale-currency,
 #shop-screen .shop-card--sale .shop-card-badge--hero .shop-sale-item { position:absolute!important; inset:0!important; display:block!important; width:78%!important; height:78%!important; max-width:78%!important; max-height:78%!important; margin:auto!important; object-fit:contain!important; transform:none!important; }
 #shop-screen .shop-card--sale .shop-card-badge--hero .shop-sale-item { width:72%!important; height:84%!important; max-width:72%!important; max-height:84%!important; }
@@ -9252,13 +9253,12 @@ img[src$="/ic-ticket-note-complete.webp"] { object-fit: contain !important; obje
 #shop-screen .shop-coin-bulk-pile { transform:none!important; }
 #shop-screen .shop-coin-bulk-details { display:flex!important; flex:1 1 auto!important; flex-direction:column!important; justify-content:center!important; align-items:stretch!important; min-width:0!important; height:94%!important; }
 #shop-screen .shop-coin-bulk-summary { display:block!important; margin:0 0 1%!important; color:#6b3b0c!important; font:900 3.7cqw/1.15 'Jua',sans-serif!important; text-align:center!important; white-space:nowrap!important; }
-#shop-screen .shop-coin-bulk-rewards { display:flex!important; flex:0 0 22%!important; justify-content:space-around!important; align-items:stretch!important; min-height:0!important; }
-#shop-screen .shop-coin-bulk-reward { display:flex!important; flex:1 1 0!important; flex-direction:row!important; justify-content:center!important; align-items:center!important; gap:2%!important; min-width:0!important; border-left:1px solid #efcf8e!important; }
-#shop-screen .shop-coin-bulk-reward:first-child { border-left:0!important; }
-#shop-screen .shop-coin-bulk-step { color:#986018!important; font:800 2.6cqw/1 'Jua',sans-serif!important; white-space:nowrap!important; }
-#shop-screen .shop-coin-bulk-reward img { display:block!important; flex:0 0 32%!important; width:32%!important; height:82%!important; max-width:32%!important; max-height:82%!important; object-fit:contain!important; }
+#shop-screen .shop-coin-bulk-rewards { display:flex!important; flex:0 0 58%!important; justify-content:space-around!important; align-items:stretch!important; gap:1.4%!important; min-height:0!important; }
+#shop-screen .shop-coin-bulk-reward { display:flex!important; flex:1 1 0!important; flex-direction:column!important; justify-content:center!important; align-items:center!important; gap:1cqw!important; min-width:0!important; box-sizing:border-box!important; padding:1.8cqw .8cqw!important; border:1px solid #d6bd8a!important; border-radius:5px!important; background:#fff9e9!important; }
+#shop-screen .shop-coin-bulk-step { color:#986018!important; font:800 2.8cqw/1 'Jua',sans-serif!important; white-space:nowrap!important; }
+#shop-screen .shop-coin-bulk-reward img { display:block!important; flex:0 1 50%!important; width:78%!important; height:50%!important; max-width:78%!important; max-height:50%!important; object-fit:contain!important; }
 #shop-screen .shop-coin-bulk-reward-copy { display:none!important; }
-#shop-screen .shop-coin-bulk-reward img { display:none!important; }
+#shop-screen .shop-coin-bulk-reward-name { display:block!important; width:100%!important; color:#795012!important; font:800 2.5cqw/1 'Jua',sans-serif!important; text-align:center!important; white-space:nowrap!important; }
 #shop-screen .shop-coin-bulk-choice { display:flex!important; flex:1 1 auto!important; flex-direction:column!important; justify-content:center!important; align-items:center!important; min-width:0!important; min-height:0!important; }
 #shop-screen .shop-coin-bulk-choice-title { display:block!important; flex:0 0 auto!important; margin-top:1%!important; color:#795012!important; font:900 2.7cqw/1 'Jua',sans-serif!important; text-align:center!important; white-space:nowrap!important; }
 #shop-screen .shop-coin-weapon-choices { display:flex!important; flex:1 1 auto!important; gap:1%!important; min-width:0!important; min-height:0!important; }
@@ -9276,7 +9276,7 @@ img[src$="/ic-ticket-note-complete.webp"] { object-fit: contain !important; obje
 #shop-screen .shop-coin-choice-message { display:block!important; width:100%!important; color:#54290b!important; font:900 4.2cqw/1.25 'Jua',sans-serif!important; text-align:center!important; overflow-wrap:anywhere!important; }
 #shop-screen .shop-coin-choice-actions { display:flex!important; justify-content:center!important; gap:3cqw!important; width:100%!important; margin-top:5cqw!important; }
 #shop-screen .shop-coin-choice-actions .shop-card-btn { flex:1 1 0!important; width:auto!important; height:12cqw!important; min-width:0!important; min-height:0!important; margin:0!important; padding:2cqw!important; border:0!important; border-radius:999px!important; color:#fff!important; font:900 3.7cqw/1 'Jua',sans-serif!important; text-align:center!important; text-shadow:0 1px 1px rgba(30,80,10,.35)!important; box-shadow:0 4px 0 #1c8340,0 4px 1px rgba(0,0,0,.18),0 8px 10px rgba(0,0,0,.24),inset 0 2px 2px rgba(255,255,255,.8),inset 0 -3px 4px rgba(0,80,35,.4)!important; }
-#shop-screen .shop-coin-choice-actions button[data-choice-action="confirm"] { background:linear-gradient(180deg,#74e389 0%,#47cc6a 46%,#2ea951 100%)!important; }
+#shop-screen .shop-coin-choice-actions button[data-choice-action="confirm"],#shop-screen .shop-coin-choice-actions button[data-choice-action="ok"] { background:linear-gradient(180deg,#74e389 0%,#47cc6a 46%,#2ea951 100%)!important; }
 #shop-screen .shop-coin-choice-actions button[data-choice-action="cancel"] { background:linear-gradient(180deg,#ff8181 0%,#f04b4b 46%,#d83232 100%)!important; text-shadow:0 1px 1px rgba(100,15,15,.45)!important; box-shadow:0 4px 0 #9e2222,0 4px 1px rgba(0,0,0,.18),0 8px 10px rgba(0,0,0,.24),inset 0 2px 2px rgba(255,255,255,.72),inset 0 -3px 4px rgba(90,0,0,.36)!important; }
 /* User-requested content offset; the back button has its own independent position. */
 #shop-screen>.shop-banner,#shop-screen>.shop-cards-box,#shop-screen>.shop-tab-shell { top:-0.3cm!important; }
