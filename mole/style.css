@@ -6465,7 +6465,7 @@ html, body, .cosmic-bg { background: #0a1230; }
 #inventory-screen[data-tab="skill"] .skl-pnum { min-width: 30px; height: 18px; line-height: 18px; font-size: 0.56rem; color: #fff; background: url('assets/skin2/sk-pnum.png') center / 100% 100% no-repeat; }
 /* 카드 칸: 나뭇잎 나무 틀 안에 갈색 액자 4칸 */
 #inventory-screen[data-tab="skill"] .skl-grid { grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 1px 0;
-  border: 14px solid transparent; border-width: 14px 18px 13px 18px; border-image: url('assets/skin2/sk-frame.png') 76 52 78 52 / 26px 18px 27px 18px stretch; overflow: visible; } /* 기둥 둥근 머리가 늘어나지 않게 조각선을 머리 밖으로 */
+  border: 14px solid transparent; border-width: 14px 18px 13px 18px; overflow: visible; } /* 기둥 둥근 머리가 늘어나지 않게 조각선을 머리 밖으로 */
 #inventory-screen[data-tab="skill"] .skl-card { border: 6px solid transparent; border-image: url('assets/skin2/sk-cell.png') 24 / 6px stretch; /* 모서리 볼트가 찌그러지지 않게 가로세로 같은 배율 */
   border-radius: 0; background-color: #3b2212; background-origin: padding-box; background-clip: padding-box; }
 #inventory-screen[data-tab="skill"] .skl-card.skl-rcard { padding-top: 22%; }
