@@ -221,7 +221,6 @@
     function centerShopTabArt() {
       el.querySelectorAll('.shop-tab-ico img').forEach(function (img) {
         centerVisibleImage(img);
-        centerIconVisualMass(img);
       });
       el.querySelectorAll('.shop-card-badge--weapon > img, .hero-weapon, .hero-weapon-pair img, .shop-sale-currency, .shop-sale-item, .shop-sale-set img').forEach(centerVisibleImage);
     }
@@ -508,32 +507,66 @@
         art: '<div class="shop-coin-small-art"><img src="' + CURRENCY_ART + 'coin-option-01-bright20.png" alt=""><b>' +
           (english ? '8,000 coins' : '8,000 코인') + '</b></div>',
         name: english ? 'Starter pack' : '스타터 팩', pillText: '8,000',
-        btnHtml: coinPurchaseIcon('01') + '<b>₩10,000</b>', btnDisabled: false,
+        btnHtml: '<b>₩10,000</b>', btnDisabled: false,
         confirmMessage: english ? 'Purchase the Starter Pack for ₩10,000?' : '스타터 팩을 10,000원에 구매하시겠습니까?',
         onClick: function () {}
       }));
       cardsEl.appendChild(heartCard({
         theme: 'blue', productClass: 'shop-card--coin-ad', art: coinAdArt(),
-        name: english ? 'Ad · +1 heart' : '광고 · 하트 +1', pillText: '+1',
+        name: english ? 'Ad · 100 coins' : '광고 · 100 코인', pillText: '100',
         btnHtml: '<img class="shop-ad-cta-icon" src="assets/shop/ad-icon-complete.png" alt=""><b>' + T('mole.shop.watchAdBtn') + '</b>',
         btnDisabled: false,
-        confirmMessage: english ? 'Watch an ad to get 1 heart?' : '광고를 시청하고 하트 1개를 받으시겠습니까?',
+        confirmMessage: english ? 'Watch an ad to get 100 coins?' : '광고를 시청하고 코인 100개를 받으시겠습니까?',
         onClick: function () {
-          MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addHearts(1); done(); } });
+          MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addCoins(100); done(); } });
         }
       }));
       var bulkCard = heartCard({
         theme: 'pink', productClass: 'shop-card--sale shop-card--coin-bulk', art: bulkArt,
         name: english ? 'Reserve pack' : '리저브 팩', pillText: '100,000',
-        btnHtml: coinPurchaseIcon('09') + '<del>₩125,000</del><b>₩100,000</b>', btnDisabled: false,
+        btnHtml: '<del>₩125,000</del><b>₩100,000</b>', btnDisabled: false,
         confirmMessage: english ? 'Purchase the Reserve Pack for ₩100,000?' : '리저브 팩을 100,000원에 구매하시겠습니까?',
         onClick: function () { showCoinWeaponSelection(bulkCard, english); }
       });
       cardsEl.appendChild(bulkCard);
     }
 
-    function renderEmptyCategory() { cardsEl.innerHTML = '<p class="shop-soon">' + T('mole.inv.soon') + '</p>'; }
-    var RENDERERS = { currency: renderCurrencyCards, coin: renderCoinCards, ticket: renderEmptyCategory,
+    function renderTicketCards() {
+      cardsEl.innerHTML = '';
+      var english = I18N().lang === 'en';
+      var artPath = 'assets/shop-ticket-options/';
+      function packArt(option, count) {
+        return '<div class="shop-coin-small-art shop-ticket-pack-art"><img src="' + artPath + 'ticket-option-' + option + '.png" alt=""><b>' +
+          (english ? count + ' tickets' : '티켓 ' + count + '장') + '</b></div>';
+      }
+      function buyTickets(cost, count) {
+        if (MG.Economy.spendCoins(cost)) { MG.Economy.addTickets(count, true); done(); }
+        else alert(T('mole.shop.noCoin'));
+      }
+      cardsEl.appendChild(heartCard({
+        theme: 'pink', productClass: 'shop-card--sale shop-card--coin-small shop-card--ticket-small',
+        art: packArt('01', 10), name: english ? 'Starter pack' : '스타터 팩', pillText: '10',
+        btnHtml: coinPurchaseIcon('01') + '<b>' + (english ? '10,000 coins' : '10,000 코인') + '</b>', btnDisabled: false,
+        confirmMessage: english ? 'Purchase 10 tickets for 10,000 coins?' : '10,000코인으로 티켓 10장을 구매하시겠습니까?',
+        onClick: function () { buyTickets(10000, 10); }
+      }));
+      cardsEl.appendChild(heartCard({
+        theme: 'blue', productClass: 'shop-card--coin-ad shop-card--ticket-ad',
+        art: '<div class="hero-ad hero-coin-ad"><img class="hero-coin-ad-coin" src="assets/rhythm/ui/ic-ticket-note-complete.webp" alt=""><img class="hero-ad-icon" src="assets/shop/ad-icon-complete.png" alt=""></div>',
+        name: english ? 'Ad · +1 ticket' : '광고 · 티켓 +1', pillText: '+1',
+        btnHtml: '<img class="shop-ad-cta-icon" src="assets/shop/ad-icon-complete.png" alt=""><b>' + T('mole.shop.watchAdBtn') + '</b>', btnDisabled: false,
+        confirmMessage: english ? 'Watch an ad to get 1 ticket?' : '광고를 시청하고 티켓 1장을 받으시겠습니까?',
+        onClick: function () { MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addTickets(1, true); done(); } }); }
+      }));
+      cardsEl.appendChild(heartCard({
+        theme: 'pink', productClass: 'shop-card--sale shop-card--coin-small shop-card--ticket-bulk',
+        art: packArt('09', 100), name: english ? 'Reserve pack' : '리저브 팩', pillText: '100',
+        btnHtml: coinPurchaseIcon('09') + '<b>' + (english ? '100,000 coins' : '100,000 코인') + '</b>', btnDisabled: false,
+        confirmMessage: english ? 'Purchase 100 tickets for 100,000 coins?' : '100,000코인으로 티켓 100장을 구매하시겠습니까?',
+        onClick: function () { buyTickets(100000, 100); }
+      }));
+    }
+    var RENDERERS = { currency: renderCurrencyCards, coin: renderCoinCards, ticket: renderTicketCards,
       weapon: renderWeaponCards, skill: renderSkillCards, costume: renderCostumeCards };
 
     // 배너 우측 메일 아이콘은 다이얼패드 "#"(시크릿 폐기) 자리로 이동함(사용자 지정) — 배너에는

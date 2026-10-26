@@ -86,8 +86,10 @@
     if (ls()) { ls().setItem(K.tickets, String(cur - 1)); ls().setItem(K.ticketsAt, String(at)); }
     return true;
   }
-  function addTickets(n) {
-    var v = Math.min(TICKET_MAX, _syncTickets() + Math.max(0, n | 0));
+  function addTickets(n, allowOverflow) {
+    var current = _syncTickets();
+    var total = current + Math.max(0, n | 0);
+    var v = allowOverflow ? total : Math.min(Math.max(TICKET_MAX, current), total);
     var at = (v >= TICKET_MAX) ? Date.now() : readInt(K.ticketsAt, Date.now());
     if (ls()) { ls().setItem(K.tickets, String(v)); ls().setItem(K.ticketsAt, String(at)); }
     return v;
