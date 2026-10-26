@@ -146,7 +146,11 @@
       timer = 0;
       document.querySelectorAll('.screen:not([hidden])').forEach(function (screen) {
         var urls = collect(screen);
-        if (urls.length) Promise.all(urls.map(function (u) { return ensure(u, 1, false); })).then(function () { refreshCSS(screen); });
+        if (urls.length) Promise.all(urls.map(function (u) { return ensure(u, 1, false); })).then(function () {
+          // Shop cards are rebuilt while switching tabs. Rewriting their CSS URLs
+          // with a retry query forces the same borders and frames to reload and flash.
+          if (screen.id !== 'shop-screen') refreshCSS(screen);
+        });
       });
     }
     function schedule() { if (!timer) timer = setTimeout(scan, 150); }
