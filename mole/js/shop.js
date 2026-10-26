@@ -507,7 +507,7 @@
         art: '<div class="shop-coin-small-art"><img src="' + CURRENCY_ART + 'coin-option-01-bright20.png" alt=""><b>' +
           (english ? '8,000 coins' : '8,000 코인') + '</b></div>',
         name: english ? 'Starter pack' : '스타터 팩', pillText: '8,000',
-        btnHtml: '<b>₩10,000</b>', btnDisabled: false,
+        btnHtml: '<b>₩&nbsp;10,000</b>', btnDisabled: false,
         confirmMessage: english ? 'Purchase the Starter Pack for ₩10,000?' : '스타터 팩을 10,000원에 구매하시겠습니까?',
         onClick: function () {}
       }));
@@ -524,7 +524,7 @@
       var bulkCard = heartCard({
         theme: 'pink', productClass: 'shop-card--sale shop-card--coin-bulk', art: bulkArt,
         name: english ? 'Reserve pack' : '리저브 팩', pillText: '100,000',
-        btnHtml: '<del>₩125,000</del><b>₩100,000</b>', btnDisabled: false,
+        btnHtml: '<del>₩&nbsp;125,000</del><b>₩&nbsp;100,000</b>', btnDisabled: false,
         confirmMessage: english ? 'Purchase the Reserve Pack for ₩100,000?' : '리저브 팩을 100,000원에 구매하시겠습니까?',
         onClick: function () { showCoinWeaponSelection(bulkCard, english); }
       });
