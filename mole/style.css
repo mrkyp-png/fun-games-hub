@@ -9247,11 +9247,12 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-coin-small-art { position:absolute!important; inset:4% 2%!important; display:flex!important; flex-direction:column!important; justify-content:center!important; align-items:center!important; gap:2%!important; }
 #shop-screen .shop-coin-small-art img { display:block!important; width:74%!important; height:72%!important; max-width:74%!important; max-height:72%!important; object-fit:contain!important; }
 #shop-screen .shop-coin-small-art>b { display:block!important; color:#6b3b0c!important; font:900 3.7cqw/1 'Jua',sans-serif!important; white-space:nowrap!important; }
-#shop-screen .shop-card--coin-bulk .shop-card-name { font-size:4.5cqw!important; }
-#shop-screen .shop-card--coin-small .shop-card-name,#shop-screen .shop-card--coin-bulk .shop-card-name { font-size:5cqw!important; }
-#shop-screen .shop-card--coin-bulk { grid-template-rows:16% minmax(0,1fr) 21.1%!important; }
+#shop-screen .shop-card.shop-card--coin-small .shop-card-name,#shop-screen .shop-card.shop-card--coin-bulk .shop-card-name { font-size:5cqw!important; }
+/* Compensate for the reserve card's two 10px borders in its 20% price row. */
+#shop-screen .shop-card--coin-bulk { grid-template-rows:16% minmax(0,1fr) calc(20% + 4px)!important; }
 #shop-screen .shop-card--coin-bulk .shop-card-btn { display:flex!important; gap:5.5%!important; width:49.2cqw!important; height:11.2cqw!important; justify-self:center!important; }
-#shop-screen .shop-card--coin-bulk .shop-card-btn::before { border-radius:5.6cqw!important; overflow:hidden!important; }
+/* Keep the starter's 128px end caps; stretch only the middle of the 512px art. */
+#shop-screen .shop-card--coin-small .shop-card-btn::before,#shop-screen .shop-card--coin-bulk .shop-card-btn::before { background:none!important; border:0 solid transparent!important; border-image:url('assets/inventory/ui-v1379/equip-pill-transparent.webp') 0 128 fill / 0 9.3cqw / 0 stretch!important; border-radius:0!important; overflow:visible!important; }
 #shop-screen .shop-card--coin-bulk .shop-card-btn del { font-size:.7em!important; opacity:.72!important; }
 #shop-screen .shop-card--ticket-small .shop-card-btn,#shop-screen .shop-card--ticket-bulk .shop-card-btn { gap:1%!important; font-size:3.1cqw!important; }
 #shop-screen .shop-card.shop-card--ticket-small .shop-card-name { font-size:5cqw!important; }
