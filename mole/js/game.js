@@ -176,6 +176,16 @@
     // V1350 C 사용자: FPS·오류만 — 터치 기록(TAP·RB)과 네온 효과 끄기 버튼(#rb-fx-toggles) 삭제.
     let diag = [];
     try { diag = JSON.parse(localStorage.getItem('mole.diag') || '[]').filter((l) => / ERR /.test(l)); } catch (e) { diag = []; } // V1350 C: 오류만(예전 TAP·RB 기록 버림)
+    // The contact keyboard event without a key is guarded in lane-controls.js.
+    try {
+      if (!localStorage.getItem('mole.diag.contactKeyGuard.v1')) {
+        const oldDiag = diag.slice();
+        diag = diag.filter((line) => !(/toLowerCase/.test(line) && /@lane-controls\.js:273\b/.test(line)));
+        localStorage.setItem('mole.diag.beforeContactKeyGuard.v1', JSON.stringify(oldDiag));
+        localStorage.setItem('mole.diag', JSON.stringify(diag));
+        localStorage.setItem('mole.diag.contactKeyGuard.v1', '1');
+      }
+    } catch (e) { /* Storage may be unavailable. */ }
     // Clear only the historical null-combo record once for this fix. New errors remain visible.
     try {
       if (!localStorage.getItem('mole.diag.comboGuard1379G')) {
@@ -1536,7 +1546,7 @@
     setCallLabel('game'); // 게임 중: 초록 버튼은 "통화"(위장) — 15번 구멍 타격 담당
     // 캐논·특수망치 = 우하단 코너가 무기존(캐논 본체 or 스킬 슬롯 2개) → 구멍 15 빼고 15구멍. 뿅망치 = 16구멍.
     // (spinChannelsIn 이 gs-laneskill 을 보고 통화 버튼도 같이 돌리므로 그 호출 전에 세팅해야 한다.)
-    const wRaw = localStorage.getItem('mole.weapon');
+    const wRaw = MG.ItemInventory.equippedWeapon();
     // 챕터1~3(9홀 튜토리얼)은 뿅망치만 사용(사용자 지정) — 보관창 장착값과 무관하게 강제.
     const weapon = isSmallBoardChapter() ? 'hammer'
       : (wRaw === 'cannon' ? 'cannon' : (wRaw === 'goldhammer' ? 'goldhammer'

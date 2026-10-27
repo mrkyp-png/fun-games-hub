@@ -9,40 +9,11 @@
   var MG = root.MoleGame;
   var T = function (k, p) { return root.FGH.I18N.t(k, p); };
   var A = 'assets/workshop/';
-  var COST = 7777, MAX = 5;
-  var RATE = [50, 45, 40, 35, 30];
+  var COST = MG.ItemInventory.COST, MAX = 5;
+  var RATE = MG.ItemInventory.RATE.slice();
   var GLOW = ['', '#ffe24a', '#4aa8ff', '#b35cff', '#ff9a2e', '#ff3b3b']; // 단계별 강화 Glow(별도 VFX 레이어)
 
-  // ⚠️ 개발용 기본 재료 수량 — 아직 재료 획득 경로(상점·보상)가 없어 테스트용으로 50개씩.
-  //    획득 경로가 생기면 DEV_MATERIALS = 0 으로.
-  var DEV_MATERIALS = 50;
-  // ⚠️ 개발용: 재료 10개씩 1회 재지급(사용자 요청 v758) — 저장된 재료 수를 지워 기본값(10)으로. 출시 전 삭제
-  try {
-    if (!localStorage.getItem('mole.devMatGrant1')) {
-      Object.keys(localStorage).filter(function (k) { return k.indexOf('mole.ws.mat.') === 0; }).forEach(function (k) { localStorage.removeItem(k); });
-      localStorage.setItem('mole.devMatGrant1', '1');
-    }
-  } catch (e) { /* 무시 */ }
-
-  // ⚠️ 개발용(사용자 요청 v761): 코인 1,000,000 · 재료 50개씩 · 무기/코스튬 강화 단계 +0 초기화 — 1회. 출시 전 삭제
-  try {
-    if (!localStorage.getItem('mole.devGrant2')) {
-      localStorage.setItem('mole.coins', '1000000');
-      Object.keys(localStorage).filter(function (k) { return k.indexOf('mole.ws.mat.') === 0 || k.indexOf('mole.weapon.level.') === 0; })
-        .forEach(function (k) { localStorage.removeItem(k); });
-      if (root.MoleGame && root.MoleGame.CostumeTeams) root.MoleGame.CostumeTeams.teams().forEach(function (t) { root.MoleGame.CostumeTeams.setEnhanceLevel(t.id, 0); });
-      localStorage.setItem('mole.devGrant2', '1');
-    }
-  } catch (e) { /* 무시 */ }
-
-  // ⚠️ 개발용(사용자 요청 v955): 무기·코스튬 강화 단계만 +0 으로 1회 초기화(코인·재료는 그대로). 출시 전 삭제
-  try {
-    if (!localStorage.getItem('mole.devResetLv3')) {
-      Object.keys(localStorage).filter(function (k) { return k.indexOf('mole.weapon.level.') === 0; }).forEach(function (k) { localStorage.removeItem(k); });
-      if (root.MoleGame && root.MoleGame.CostumeTeams) root.MoleGame.CostumeTeams.teams().forEach(function (t) { root.MoleGame.CostumeTeams.setEnhanceLevel(t.id, 0); });
-      localStorage.setItem('mole.devResetLv3', '1');
-    }
-  } catch (e) { /* 무시 */ }
+  // Acquisition and enhancement use the shared persistent inventory.
 
   var WEAPONS = [
     { id: 'cannon', ko: '팡팡 캐논', en: 'Pang Pang Cannon', img: A + 'w-cannon-front-v1435.png', done: A + 'w-cannon-front-v1435.png' }, // V1398 C: 새 무기 그림(검은 테두리 없음). V1405 C 사용자: 캐논은 정면 그림
@@ -55,9 +26,7 @@
   function setWeaponLevel(id, n) { localStorage.setItem('mole.weapon.level.' + id, String(Math.max(0, Math.min(MAX, n)))); }
   function matKey(kind, id) { return 'mole.ws.mat.' + kind + '.' + id; }
   function materials(kind, id) {
-    var v = localStorage.getItem(matKey(kind, id));
-    var n = v == null ? DEV_MATERIALS : parseInt(v, 10);
-    return n > 0 ? n : 0;
+    return MG.ItemInventory.materials(kind, id);
   }
   function setMaterials(kind, id, n) { localStorage.setItem(matKey(kind, id), String(Math.max(0, n | 0))); }
   function levelOf(kind, id) { return kind === 'weapon' ? weaponLevel(id) : MG.CostumeTeams.enhanceLevel(id); }
@@ -67,7 +36,9 @@
   function weaponAttackBonus(id) { return weaponLevel(id) * 0.01; }
 
   function items(kind) {
-    if (kind === 'weapon') return WEAPONS;
+    if (kind === 'weapon') return WEAPONS.map(function (w) {
+      return Object.assign({}, w, { owned: MG.ItemInventory.owns('weapon', w.id) });
+    });
     // v784(사용자 지정): 5팀 전부 표시(미보유 = 클라우드 컵스 등도 목록에 — 합성은 보유해야 가능)
     return MG.CostumeTeams.teams().map(function (t) {
       return { id: t.id, ko: t.nameKo, en: t.nameEn, owned: MG.CostumeTeams.owns(t.id), img: 'assets/costume/char-' + t.id + '-v1406.webp', done: 'assets/costume/char-' + t.id + '-v1406.webp' }; // V1406 C 사용자: 확대 그림
@@ -83,9 +54,16 @@
     var enhancement = MG.WorkshopEnhance.create(el);
     var workshopHammer = null, hammerRaf = 0, hammerZapTimer = null, hammerFlightAudio = null, hammerHitAudios = null, lastHammerHitIndex = -1;
     var gooseShockAudio = null, gooseWingsAudio = null;
+    var gooseFlightMotion = null;
+    var gooseFrames = [];
     var hammerShadow = null, shadowHammerEl = null;
     function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
-    function clearTimers() { timers.forEach(clearTimeout); timers = []; stopGooseWingsSound(); }
+    function clearTimers() { timers.forEach(clearTimeout); timers = []; stopGooseWingsSound(); resetGooseFlight(); }
+    function resetGooseFlight() {
+      if (gooseFlightMotion) { gooseFlightMotion.cancel(); gooseFlightMotion = null; }
+      var flight = $('[data-ws-goose-flight]');
+      if (flight) { flight.hidden = true; flight.style.transform = 'translateX(-50%)'; }
+    }
 
     function preloadGooseSounds() {
       if (!gooseShockAudio) { gooseShockAudio = new Audio('audio/goose-surprise.mp3'); gooseShockAudio.preload = 'auto'; }
@@ -311,59 +289,64 @@
       if (running) return;
       var it = cur(); if (!it) return;
       var kind = tab, lv = levelOf(kind, it.id), mats = materials(kind, it.id);
-      if (lv >= MAX || mats < 1 || MG.Economy.getCoins() < COST) { render(); return; }
+      if (it.owned === false || selMat !== it.id || lv >= MAX || mats < 1 || MG.Economy.getCoins() < COST) { render(); return; }
       running = true;
       // 판정 + 저장을 한 번에(코인·재료·단계) — 이후는 연출만
-      if (!MG.Economy.spendCoins(COST)) { running = false; render(); return; }
-      setMaterials(kind, it.id, mats - 1);
+      var result = MG.ItemInventory.enhance(kind, it.id);
+      if (!result.ok) { running = false; render(); return; }
       selMat = null;
-      var success = Math.random() * 100 < RATE[lv];
-      var blackEggRescue = !success && Math.random() < 0.1;
-      if (blackEggRescue) success = true;
-      if (success) setLevel(kind, it.id, lv + 1);
+      var success = result.success, blackEggRescue = result.rescue;
       if (opts.onChange) opts.onChange();
       preloadFrames().then(function () { play(it, lv, success, blackEggRescue); }); // 첫 강화도 연출 프레임이 다 준비된 뒤 시작(v772)
     });
 
     // New artwork and continuous shell animation; transaction logic above remains unchanged.
     function play(it, lv, success, blackEggRescue) {
-      var fx = $('[data-ws-fx]'), goose = $('[data-ws-goose]');
-      var ghosts = el.querySelectorAll('[data-ws-ghost]'), rise = $('[data-ws-rise]');
+      var fx = $('[data-ws-fx]'), goose = $('[data-ws-goose]'), flight = $('[data-ws-goose-flight]');
+      var rise = $('[data-ws-rise]');
       // 원본 프레임 얼굴 폭을 5번 프레임(153px)에 맞춘 배율.
       var gooseFaceWidths = [0, 200, 153, 160, 154, 153, 137, 133, 133, 131, 182];
-      var firstFrameScale = gooseFaceWidths[5] / gooseFaceWidths[1];
+      function showGooseFrame(frameNumber) {
+        // Reuse already decoded nodes so a new scale never paints an old sprite.
+        var frame = gooseFrames[frameNumber];
+        frame.style.transform = 'scale(' + (gooseFaceWidths[5] / gooseFaceWidths[frameNumber]) + ')';
+        frame.hidden = false;
+        if (goose !== frame) { goose.replaceWith(frame); goose = frame; }
+      }
       el.classList.add('is-fx'); fx.hidden = false;
       $('[data-ws-result]').hidden = true; $('[data-ws-egghint]').hidden = true;
       $('[data-ws-fx-info]').hidden = true;
       clearWorkshopHammer();
       preloadGooseSounds();
-      // 첫 프레임은 1배 원본 크기로 잠깐 보이지 않도록 정확한 이미지와 크기를 먼저 지정한다.
-      goose.hidden = true; goose.style.transition = 'none';
-      goose.src = A + 'goose-1.png';
-      goose.style.transform = 'translate(-50%, 0) scale(' + firstFrameScale + ')';
-      goose.hidden = false; void goose.offsetWidth; goose.style.transition = '';
+      // Image and scale change together. Only the fixed outer anchor moves.
+      resetGooseFlight();
+      showGooseFrame(1); flight.hidden = false;
       preloadHammerSounds();
-      ghosts.forEach(function (gh) { gh.hidden = true; gh.style.transform = ''; }); rise.className = 'ws-rise';
+      rise.className = 'ws-rise';
       pending = { it: it, lv: lv, success: success };
       enhancement.prepare(function () { strike(it, lv, success, blackEggRescue); }, success ? it.done : it.img);
       var t = 0;
       for (var g = 1; g <= 10; g++) {
         (function (g) { later(function () {
-          goose.src = A + 'goose-' + g + '.png';
-          var up = g <= 5 ? 0 : (g - 5) * (g - 5) * 22;
-          var frameScale = gooseFaceWidths[5] / gooseFaceWidths[g];
-          goose.style.transform = 'translate(-50%, ' + (-up) + '%) scale(' + frameScale + ')';
+          showGooseFrame(g);
           if (g === 2) playHammerSound(gooseWingsAudio, 0.825);
           if (g === 3) playHammerSound(gooseShockAudio, 0.75);
-          if (g >= 6) ghosts.forEach(function (gh) { gh.hidden = false; gh.src = goose.src; gh.style.transform = goose.style.transform; });
-          if (g === 6) { rise.className = 'ws-rise'; void rise.offsetWidth; rise.className = 'ws-rise is-on'; }
+          if (g === 6) {
+            // Stable distance, independent of each PNG's height and wing pose.
+            var referenceHeight = flight.offsetWidth * 401 / 300;
+            var exitDistance = Math.max(referenceHeight * 7, fx.clientHeight + referenceHeight);
+            gooseFlightMotion = flight.animate([
+              { transform: 'translate(-50%, 0)' },
+              { transform: 'translate(-50%, ' + (-exitDistance) + 'px)' }
+            ], { duration: 650, easing: 'cubic-bezier(.55,0,.8,.55)', fill: 'forwards' });
+            rise.className = 'ws-rise'; void rise.offsetWidth; rise.className = 'ws-rise is-on';
+          }
           if (g === 7) enhancement.drop();
         }, t); })(g);
         t += g <= 5 ? 170 : 130;
       }
-      later(function () { goose.style.transform = 'translate(-50%, -700%)'; ghosts.forEach(function (gh) { gh.style.transform = goose.style.transform; }); }, t);
       later(function () {
-        goose.hidden = true; ghosts.forEach(function (gh) { gh.hidden = true; });
+        resetGooseFlight();
         createWorkshopHammer(fx, function () {
           enhancement.wait(); $('[data-ws-egghint]').hidden = false; $('[data-ws-fx-info]').hidden = false;
         });
@@ -420,7 +403,13 @@
       list.push(A + 'ham-gold-v1407.webp');
       for (var z = 1; z <= 6; z++) list.push(A + 'ham-gold-zap' + z + '-v1409.webp');
       framesReady = Promise.all([MG.WorkshopEnhance.preload()].concat(list.map(function (u) {
-        var im = new Image(); im.src = u;
+        var im = new Image();
+        var match = /\/goose-(\d+)\.png$/.exec(u);
+        if (match) {
+          im.className = 'ws-fx-goose'; im.alt = ''; im.decoding = 'sync';
+          im.setAttribute('data-ws-goose', ''); gooseFrames[Number(match[1])] = im;
+        }
+        im.src = u;
         return im.decode ? im.decode().catch(function () {}) : new Promise(function (r) { im.onload = im.onerror = r; });
       })));
       return framesReady;

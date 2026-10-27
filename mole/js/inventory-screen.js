@@ -147,8 +147,9 @@
           value.setAttribute('aria-label', stat[0] === '-' ? (I18N.lang === 'en' ? 'Basic: no additional effect' : '기본: 추가 효과 없음') : stat[I18N.lang === 'en' ? 1 : 0].replace(/\u00a0/g, ' '));
         });
         var btn = layer.querySelector('.iw-equip');
-        btn.querySelector('.iw-equip-label').textContent = T(w.id === equipped() ? 'mole.inv.equipped' : 'mole.inv.equip');
-        btn.disabled = w.id === equipped() || !!(opts.gameInProgress && opts.gameInProgress());
+        var owned = MG.ItemInventory.owns('weapon', w.id);
+        btn.querySelector('.iw-equip-label').textContent = owned ? T(w.id === equipped() ? 'mole.inv.equipped' : 'mole.inv.equip') : (I18N.lang === 'en' ? 'Not owned' : '미보유');
+        btn.disabled = !owned || w.id === equipped() || !!(opts.gameInProgress && opts.gameInProgress());
         layer.classList.remove('is-fading'); layer.inert = false;
         requestAnimationFrame(fitLefts);
       }
@@ -197,8 +198,7 @@
     // 사용자: 무기·스킬 탭은 다른 탭에서 들어와도 항상 장착된 무기부터 보여줌
     function equippedIdx() { var id = equipped(); for (var i = 0; i < WEAPONS.length; i++) if (WEAPONS[i].id === id) return i; return 0; }
     function equipped() {
-      var w = localStorage.getItem('mole.weapon');
-      return w === 'cannon' ? 'cannon' : (w === 'goldhammer' ? 'goldhammer' : (w === 'alipunch' ? 'alipunch' : 'hammer'));
+      return MG.ItemInventory.equippedWeapon();
     }
     function nameOf(w) {
       return I18N.lang === 'en' ? w.nameEn : w.name;
@@ -273,7 +273,7 @@
       copy.querySelector('.iw-help').addEventListener('click', function () { openWeaponHelp(WEAPONS[pageIdx], this); });
       copy.querySelector('.iw-equip').addEventListener('click', function () {
         if (copy.inert || (opts.gameInProgress && opts.gameInProgress())) return;
-        localStorage.setItem('mole.weapon', WEAPONS[pageIdx].id); renderWeapons();
+        if (MG.ItemInventory.equipWeapon(WEAPONS[pageIdx].id, false)) renderWeapons();
       });
       updateDots();
       requestAnimationFrame(function () { fitLefts(); fitRights(); });
@@ -501,7 +501,10 @@
         c.querySelector('.ks-card-name').textContent = en ? sk.nameEn : sk.nameKo;
         c.querySelector('.ks-card-desc').textContent = en ? sk.descEn : sk.descKo;
         c.querySelector('.ks-count i').textContent = en ? 'Own' : '보유';
-        c.querySelector('.ks-equip span').textContent = T(lo.indexOf(sk.id) > -1 ? 'mole.inv.equipped' : 'mole.inv.equip');
+        var button = c.querySelector('.ks-equip');
+        var pending = !MG.Skills.available(sk.id);
+        button.disabled = pending || locked || !nSlots || !MG.ItemInventory.owns('weapon', weaponId) || MG.Skills.getQuantity(sk.id) <= 0;
+        button.querySelector('span').textContent = pending ? (en ? 'Coming soon' : '설정 대기') : T(lo.indexOf(sk.id) > -1 ? 'mole.inv.equipped' : 'mole.inv.equip');
       });
       function toggle(id) {
         if (!id || locked || !nSlots) return;

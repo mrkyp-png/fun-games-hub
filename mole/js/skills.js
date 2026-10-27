@@ -21,10 +21,10 @@
     alipunch: { active: 2, passive: 0 }
   };
 
-  // 데모 기본 수량 — 아직 상점/보물상자 지급 경로가 없어(§46~49) 사용자 지정으로 테스트용
-  // 1000개씩 시드(2026-09-26, "테스트용으로 할려면 필요합니다. 패시브 스킬도").
-  // 실제 지급 경로가 생기면 이 기본값만 {}(전부 0)로 바꾸면 됨 — 구조는 이미 확장 가능.
-  var DEFAULT_INVENTORY = { shield: 1000, targeting: 1000, ai: 1000 };
+  // Real acquisition starts at zero; existing demo quantities migrate in ItemInventory.
+  var DEFAULT_INVENTORY = {};
+  function available(id) { return id === 'targeting' || id === 'ai'; } // Shield setup deferred by user.
+  function ownsWeapon(id) { return !!(root && root.MoleGame.ItemInventory.owns('weapon', id)); }
 
   function skillById(id) {
     for (var i = 0; i < SKILLS.length; i++) if (SKILLS[i].id === id) return SKILLS[i];
@@ -47,7 +47,7 @@
     return out;
   }
   function saveInventory(inv) {
-    try { localStorage.setItem(K_INVENTORY, JSON.stringify(inv)); } catch (e) { /* 저장 실패 무시 */ }
+    try { localStorage.setItem(K_INVENTORY, JSON.stringify(inv)); return true; } catch (e) { return false; }
   }
   function getQuantity(id) { return loadInventory()[id] || 0; }
   // 모든 지급 경로(상점 구매/보물상자/일일 보상/퀘스트)가 공통으로 쓰는 단일 증가 함수(§46).
@@ -55,16 +55,16 @@
     if (!skillById(id) || !(n > 0)) return getQuantity(id);
     var inv = loadInventory();
     inv[id] = Math.max(0, (inv[id] || 0) + Math.floor(n));
-    saveInventory(inv);
-    return inv[id];
+    return saveInventory(inv) ? inv[id] : getQuantity(id);
   }
   // 액티브 사용/패시브 적용 시 -1. 수량 0이면 실패(음수 방지, §81). 0이 되면 현재 Loadout에서 자동 해제.
   function consumeOne(id) {
+    if (!available(id)) return false;
     var inv = loadInventory();
     var cur = inv[id] || 0;
     if (cur <= 0) return false;
     inv[id] = cur - 1;
-    saveInventory(inv);
+    if (!saveInventory(inv)) return false;
     if (inv[id] === 0) unequipEverywhere(id);
     return true;
   }
@@ -96,16 +96,17 @@
     var out = [];
     arr.forEach(function (id) {
       var s = skillById(id);
-      if (!s || s.type !== type || seen[id] || out.length >= maxSlots) return;
+      if (!s || !available(id) || getQuantity(id) <= 0 || s.type !== type || seen[id] || out.length >= maxSlots) return;
       seen[id] = true;
       out.push(id);
     });
     return out;
   }
   function saveLoadouts(all) {
-    try { localStorage.setItem(K_LOADOUTS, JSON.stringify(all)); } catch (e) { /* 저장 실패 무시 */ }
+    try { localStorage.setItem(K_LOADOUTS, JSON.stringify(all)); return true; } catch (e) { return false; }
   }
   function loadoutFor(weaponId) {
+    if (!ownsWeapon(weaponId)) return { activeSkills: [], passiveSkills: [] };
     var all = loadLoadouts();
     return all[weaponId] || { activeSkills: [], passiveSkills: [] };
   }
@@ -116,6 +117,8 @@
   // 장착/해제 토글. locked(게임 중)면 거부. 중복·슬롯초과·수량0이면 장착 거부(§43).
   function toggleEquip(weaponId, skillId, locked) {
     if (locked) return { ok: false, reason: 'locked' };
+    if (!available(skillId)) return { ok: false, reason: 'pending' };
+    if (!ownsWeapon(weaponId)) return { ok: false, reason: 'not-owned' };
     var skill = skillById(skillId);
     if (!skill) return { ok: false, reason: 'invalid-skill' };
     var slots = slotsFor(weaponId);
@@ -126,14 +129,12 @@
     var idx = lo[field].indexOf(skillId);
     if (idx > -1) {
       lo[field].splice(idx, 1);
-      saveLoadouts(all);
-      return { ok: true, equipped: false };
+      return { ok: saveLoadouts(all), equipped: false };
     }
     if (getQuantity(skillId) <= 0) return { ok: false, reason: 'no-quantity' };
     if (lo[field].length >= slots[maxFieldFor(skill.type)]) return { ok: false, reason: 'slots-full' };
     lo[field].push(skillId);
-    saveLoadouts(all);
-    return { ok: true, equipped: true };
+    return { ok: saveLoadouts(all), equipped: true };
   }
   // 수량이 0이 된 스킬은 모든 무기의 Loadout에서 자동 해제(§33, §62).
   function unequipEverywhere(skillId) {
@@ -174,7 +175,7 @@
 
   var api = {
     SKILLS: SKILLS, WEAPON_SLOTS: WEAPON_SLOTS,
-    skillById: skillById, activeSkills: activeSkills, passiveSkills: passiveSkills, slotsFor: slotsFor,
+    skillById: skillById, activeSkills: activeSkills, passiveSkills: passiveSkills, slotsFor: slotsFor, available: available,
     getQuantity: getQuantity, addQuantity: addQuantity, consumeOne: consumeOne,
     loadoutFor: loadoutFor, toggleEquip: toggleEquip, restore: restore,
     snapshotForGameStart: snapshotForGameStart

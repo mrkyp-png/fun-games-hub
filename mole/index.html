@@ -353,7 +353,7 @@
 
   <!-- 화면은 하나 = 폴더폰. 시작 UI·카운트다운·라운드완료·결과 모두 게임 박스(#mole-board) 안에서 뜬다
        (게임 화면이 휴대폰 컨셉이라 — 사용자 요청). is-start 클래스가 붙어있으면 시작 상태. -->
-  <section id="game-screen" class="screen cosmic-content is-start">
+  <section id="game-screen" class="screen cosmic-content is-start home-mine">
     <!-- 테두리 띠 4개 — 여기서만 작은 별이 반짝이며 흐름(전체 우주는 정지 그림) — style.css #gs-edge -->
     <div id="gs-edge" aria-hidden="true"><i class="gse-t"></i><i class="gse-b"></i><i class="gse-l"></i><i class="gse-r"></i></div>
     <div class="game-hud">
@@ -396,8 +396,7 @@
            사용자 지정) 가 20~30초마다 다음 페이지로 넘어가고, 그 동안 각 칸이 홈 BGM 비트에 맞춰
            개별적으로 사라졌다/나타났다·회전·확대축소. -->
       <div id="board-start" class="board-panel board-start">
-        <!-- v906(사용자 지정): 홈 광산 화면 — 광산 15초 → 페이드 → 아래 아케이드~겨울 스크롤(75초) → 끝나면 다시 광산으로 페이드, 반복.
-             하늘은 직접 제작(sky.jpg), 광산·로고·두더지는 바탕화면 "홈화면 개편 UI 및 에셋". -->
+        <!-- Home mine scene; the five retired showcase grids no longer rotate in. -->
         <div id="home-mine" aria-hidden="true">
           <div class="hm-stage">
             <img loading="lazy" decoding="async" class="hm-mine" src="assets/home2/mine-hd.webp" alt="">
@@ -424,78 +423,7 @@
             <i class="hm-spk" style="left:96.5%;top:84.5%;--d:1.0s"></i>
           </div>
         </div>
-        <div id="home-grid" aria-hidden="true">
-        <div class="hg-track">
-          <div class="hg-page">
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-1.jpg" alt=""><i class="hg-spark hg-spark--a" aria-hidden="true"></i><i class="hg-spark hg-spark--b" aria-hidden="true"></i><i class="hg-spark hg-spark--c" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-2.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-3.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-4.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-5.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-6.jpg" alt=""><i class="hg-note hg-note--a" aria-hidden="true">♪</i><i class="hg-note hg-note--b" aria-hidden="true">♫</i><i class="hg-note hg-note--c" aria-hidden="true">♪</i></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-7.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-8.jpg" alt=""><i class="hg-conf hg-conf--1" aria-hidden="true"></i><i class="hg-conf hg-conf--2" aria-hidden="true"></i><i class="hg-conf hg-conf--3" aria-hidden="true"></i><i class="hg-conf hg-conf--4" aria-hidden="true"></i><i class="hg-conf hg-conf--5" aria-hidden="true"></i><i class="hg-conf hg-conf--6" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-9.jpg" alt=""></div>
-          </div>
-          <div class="hg-page">
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/spring-1.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/spring-2.jpg" alt=""><i class="hg-bfly hg-bfly--p" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/spring-3.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/spring-4.jpg" alt=""><i class="hg-bfly hg-bfly--y" aria-hidden="true"></i><i class="hg-bfly hg-bfly--b hg-bfly--late" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/spring-5.jpg" alt=""><i class="hg-bfly hg-bfly--b" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/spring-6.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/spring-7.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/spring-8.jpg" alt=""><i class="hg-bfly hg-bfly--p hg-bfly--late" aria-hidden="true"></i><i class="hg-bfly hg-bfly--y" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/spring-9.jpg" alt=""><i class="hg-bfly hg-bfly--y hg-bfly--late" aria-hidden="true"></i></div>
-          </div>
-          <div class="hg-page">
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/summer-1.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/summer-2.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/summer-3.jpg" alt=""><i class="hg-bub" aria-hidden="true"></i><i class="hg-bub" aria-hidden="true"></i><i class="hg-bub" aria-hidden="true"></i><i class="hg-spark" aria-hidden="true"></i><i class="hg-spark" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/summer-4.jpg" alt=""><i class="hg-bub" aria-hidden="true"></i><i class="hg-bub" aria-hidden="true"></i><i class="hg-bub" aria-hidden="true"></i><i class="hg-spark" aria-hidden="true"></i><i class="hg-spark" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/summer-5.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/summer-6.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/summer-7.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/summer-8.jpg" alt=""><i class="hg-bub" aria-hidden="true"></i><i class="hg-bub" aria-hidden="true"></i><i class="hg-bub" aria-hidden="true"></i><i class="hg-spark" aria-hidden="true"></i><i class="hg-spark" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/summer-9.jpg" alt=""></div>
-          </div>
-          <div class="hg-page">
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/autumn-1.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/autumn-2.jpg" alt=""><i class="hg-leaf hg-leaf--o" aria-hidden="true"></i><i class="hg-leaf hg-leaf--r" aria-hidden="true"></i><i class="hg-leaf hg-leaf--y" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/autumn-3.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/autumn-4.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/autumn-5.jpg" alt=""><i class="hg-leaf hg-leaf--y" aria-hidden="true"></i><i class="hg-leaf hg-leaf--r" aria-hidden="true"></i><i class="hg-leaf hg-leaf--o" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/autumn-6.jpg" alt=""><i class="hg-leaf hg-leaf--r" aria-hidden="true"></i><i class="hg-leaf hg-leaf--o" aria-hidden="true"></i><i class="hg-leaf hg-leaf--y" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/autumn-7.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/autumn-8.jpg" alt=""><i class="hg-leaf hg-leaf--o" aria-hidden="true"></i><i class="hg-leaf hg-leaf--y" aria-hidden="true"></i><i class="hg-leaf hg-leaf--r" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/autumn-9.jpg" alt=""><i class="hg-leaf hg-leaf--y" aria-hidden="true"></i><i class="hg-leaf hg-leaf--o" aria-hidden="true"></i><i class="hg-leaf hg-leaf--r" aria-hidden="true"></i></div>
-          </div>
-          <div class="hg-page">
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/winter-1.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/winter-2.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/winter-3.jpg" alt=""><i class="hg-snow" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/winter-4.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/winter-5.jpg" alt=""><i class="hg-snow" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/winter-6.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/winter-7.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/winter-8.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/winter-9.jpg" alt=""><i class="hg-snow" aria-hidden="true"></i></div>
-          </div>
-          <!-- 이음매 없는 루프용 복제(맨 앞 아케이드 재사용) — 스크롤이 여기 도달하면 진짜 1페이지와
-               똑같이 보여서, 애니메이션이 0%로 순간복귀해도 티가 안 남(사용자 지정: 계속 위로). -->
-          <div class="hg-page" aria-hidden="true">
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-1.jpg" alt=""><i class="hg-spark hg-spark--a" aria-hidden="true"></i><i class="hg-spark hg-spark--b" aria-hidden="true"></i><i class="hg-spark hg-spark--c" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-2.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-3.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-4.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-5.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-6.jpg" alt=""><i class="hg-note hg-note--a" aria-hidden="true">♪</i><i class="hg-note hg-note--b" aria-hidden="true">♫</i><i class="hg-note hg-note--c" aria-hidden="true">♪</i></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-7.jpg" alt=""></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-8.jpg" alt=""><i class="hg-conf hg-conf--1" aria-hidden="true"></i><i class="hg-conf hg-conf--2" aria-hidden="true"></i><i class="hg-conf hg-conf--3" aria-hidden="true"></i><i class="hg-conf hg-conf--4" aria-hidden="true"></i><i class="hg-conf hg-conf--5" aria-hidden="true"></i><i class="hg-conf hg-conf--6" aria-hidden="true"></i></div>
-            <div class="hg-cell"><img loading="lazy" decoding="async" src="assets/home-showcase/arcade-9.jpg" alt=""></div>
-          </div>
-        </div>
-        </div>
+
       </div>
 
       <!-- 최종 결과 (10라운드 완주 또는 목숨 소진). 박스 없이 전체화면 연출 위에 직접.
@@ -884,9 +812,9 @@
         </div>
         <div class="ws-fx" data-ws-fx hidden>
           <div class="ws-rise" data-ws-rise><i class="ws-puff"></i><i class="ws-fth"></i><i class="ws-fth"></i><i class="ws-fth"></i><i class="ws-fth"></i><i class="ws-fth"></i></div>
-          <img loading="lazy" decoding="async" class="ws-fx-goose ws-ghost ws-ghost--2" data-ws-ghost alt="" hidden>
-          <img loading="lazy" decoding="async" class="ws-fx-goose ws-ghost ws-ghost--1" data-ws-ghost alt="" hidden>
-          <img loading="lazy" decoding="async" class="ws-fx-goose" data-ws-goose alt="">
+          <div class="ws-goose-flight" data-ws-goose-flight hidden>
+            <img loading="lazy" decoding="async" class="ws-fx-goose" data-ws-goose alt="">
+          </div>
           <p class="ws-egg-hint" data-ws-egghint data-i18n="mole.ws.eggTap" hidden>알을 터치하세요!</p>
           <div class="ws-notice ws-fx-notice" data-ws-fx-info hidden><span class="ws-info-icon" aria-hidden="true"></span><span data-i18n="mole.ws.blackEggChance">강화 실패 시 10% 확률로 반전 성공!</span></div>
           <div class="ws-result" data-ws-result hidden>
@@ -1127,7 +1055,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1486 G</div>
+        <div id="build-tag" aria-hidden="true">V 1488 G</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1147,6 +1075,7 @@
 <script src="../common/i18n.js"></script>
 <script src="js/i18n-strings.js"></script>
 <script src="js/screen-nav.js"></script>
+<script src="js/item-inventory.js"></script>
 <script src="js/economy.js"></script>
 <script src="js/ads.js"></script>
 <script src="js/levels.js"></script>
@@ -1267,45 +1196,16 @@ window.FGH.rollOut = function (el, done) {
     // 이 첫 탭(세션 첫 제스처라 오디오 버퍼가 아직 없음)에서도 바로 소리가 난다.
     try { window.MoleGame && window.MoleGame.HitFx && window.MoleGame.HitFx.warmup(); } catch (e) { /* 무시 */ }
 
-    // GET NOW 탭 이후(인트로 있으면 인트로까지 끝난 뒤) 홈화면 조각(그리드 9칸+다이얼패드
+    // GET NOW 탭 이후(인트로 있으면 인트로까지 끝난 뒤) 홈화면 조각(광산+다이얼패드
     // 버튼+상단바)들이 사방에서 흩뿌려졌다 모여들며 등장(사용자 지정 — 슬라이드업 대체). 인트로를
     // 스킵/재생 여부와 무관하게 딱 한 번만 트리거.
     var homeRevealed = false;
     function revealHomeScatter() {
       if (homeRevealed) return;
       homeRevealed = true;
-      // 홈 배경 스크롤(사용자 지정: "첫화면 나온두 15초 대기후부터는 계속 올라가야지") —
-      // 홈이 다 열린 시점(검은 화면 2초 + 확장 10초 끝)부터 15초 뒤에 스크롤 시작(v768: 전엔 확장 중에도 시간이
-      // 흘러 화면이 다 열리자마자 봄 그림이 올라오고 있었음 — 첫 화면은 아케이드 9장이어야 함, 사용자 지정).
-      // v906(사용자 지정): 광산 화면(15초) → 1.2초 페이드 → 아케이드~겨울 스크롤(75초) → 겨울이 끝나면 광산으로 페이드, 계속 반복.
-      // 프로필 사진은 광산일 땐 오른쪽, 아케이드로 바뀔 때 원래 자리(왼쪽 위)로 서서히 이동(CSS .home-mine).
-      // 시간은 홈이 다 열린 시점(검은 화면 2초 + 확장 10초 = 12초 뒤)부터 잰다. 다른 화면 갔다 와도 흐른 시간 그대로 이어짐.
-      (function () {
-        var MINE = 15000, FADE = 1200, SCROLL = 75000, CYCLE = MINE + FADE + SCROLL;
-        var gs = document.getElementById('game-screen'), track = document.querySelector('.hg-track');
-        var bs = document.getElementById('board-start'), t0 = performance.now() + 6040, timer = 0;
-        if (!gs || !track) return;
-        // v969(사용자 지정): 폰에서 가끔 칸이 하얗게 비던 것 — 홈 그림 전부 미리 풀어(decode) 붙잡아 둠
-        var keepImgs = Array.prototype.map.call(track.querySelectorAll('.hg-cell img'), function (im) {
-          var k = new Image(); k.src = im.src; if (k.decode) k.decode().catch(function () {}); return k;
-        });
-        track._keepImgs = keepImgs;
-        function apply() {
-          var p = performance.now() - t0, wait;
-          if (p < 0) { p = 0; wait = -(performance.now() - t0); } else { p = p % CYCLE; }
-          var mine = p < MINE, scrolling = p >= MINE + FADE;
-          gs.classList.toggle('home-mine', mine);
-          if (scrolling) { track.style.animationDelay = (-(p - MINE - FADE) / 1000).toFixed(2) + 's'; track.classList.add('hg-scrolling'); }
-          else track.classList.remove('hg-scrolling'); // 스크롤 끝(아케이드 복제 페이지) = 첫 페이지와 같은 그림이라 되돌려도 이음매 없음
-          clearTimeout(timer);
-          timer = setTimeout(apply, wait != null ? wait : (mine ? MINE - p : scrolling ? CYCLE - p : MINE + FADE - p) + 20);
-        }
-        gs.classList.add('home-mine');
-        apply();
-        if (bs && window.MutationObserver) new MutationObserver(function () { if (!bs.hidden) apply(); }).observe(bs, { attributes: true, attributeFilter: ['hidden'] });
-      })(); // v788(사용자 지정): 검은 원 막이 사라지는 순간(검은 화면 2초 + 확장 10초)부터 바로 스크롤
-      // 흩뿌려 등장 = 첫 페이지(아케이드 9칸)만 — 다른 페이지 칸까지 흩뿌리면 봄 그림이 화면 안으로 날아듦(v768)
-      var pieces = Array.prototype.slice.call(document.querySelectorAll('.hg-page:first-child .hg-cell, .lane-button, #home-mine .hm-piece, #hm-logo-front')); // v906: 광산 화면 조각도 흩뿌려 등장
+      // Only the mine view remains behind the home controls.
+      document.getElementById('game-screen').classList.add('home-mine');
+      var pieces = Array.prototype.slice.call(document.querySelectorAll('.lane-button, #home-mine .hm-piece, #hm-logo-front')); // v906: 광산 화면 조각도 흩뿌려 등장
       var hud = document.querySelector('.game-hud');
       if (hud) pieces.push(hud);
       function doScatter() {
@@ -1439,7 +1339,7 @@ window.FGH.rollOut = function (el, done) {
         var gate = window.__moleAssetGate;
         function waitForCurrentWorker(registration) {
           return new Promise(function (resolve, reject) {
-            var latest = 'v=1486-G';
+            var latest = 'v=1488-G';
             var done = false;
             var timer = setTimeout(function () { finish(); }, 25000);
             function finish(error) {
@@ -1466,7 +1366,7 @@ window.FGH.rollOut = function (el, done) {
           console.warn('Starting while service worker registration continues in background');
           if (gate) gate.resolveCache();
         }, 30000);
-        navigator.serviceWorker.register('sw.js?v=1486-G').then(waitForCurrentWorker).then(function () {
+        navigator.serviceWorker.register('sw.js?v=1488-G').then(waitForCurrentWorker).then(function () {
           clearTimeout(registrationTimer);
           if (gate) gate.resolveCache();
         }).catch(function (error) {

@@ -84,7 +84,7 @@
     locker: ['pink', 'ic-workshop'], mail: ['teal', 'ic-mail'], settings: ['blue2', 'ic-settings'],
     shop: ['none', 'ic-shop'], home: ['none', 'ic-home'], inventory: ['green', 'ic-items'] // V1358 C 사용자: 홈도 상점처럼 테두리(박스) 없이
   };
-  const PILL_IC = { hearts: 'ic-heart', coins: 'ic-coin', tickets: 'ic-ticket' };
+  const PILL_ART = { hearts: H2 + 'ic-heart.png', coins: 'assets/shop-ui-v1452/coin-option-06-bright20.png', tickets: 'assets/ui-approved-v1476/ticket-single.webp' };
   function h2Face(color, ic, lblKey, lblTxt) {
     return '<span class="lane-face lane-face--front lane-face--h2 h2-' + color + '">' +
       '<img class="h2-ic" src="' + H2 + ic + '.png" alt="">' +
@@ -141,10 +141,10 @@
       var I2 = root.FGH && root.FGH.I18N;
       var lblKey2 = HUD_LABEL[hud];
       var lblTxt2 = lblKey2 && I2 ? I2.t(lblKey2) : '';
-      // v902: 하트/코인/티켓 = 어두운 알약(그림 아이콘 + 수량 + 파란 +), 나머지 = 색 버튼 + 그림 아이콘 + 글자
+      // Home balances use an icon and number; the pill itself opens its shop category.
       var frontHtml = HUD_COUNTS[hud]
-        ? '<span class="lane-face lane-face--front lane-face--pill"><span class="h2-pill"><img class="h2-pill-ic" src="' + (hud === 'tickets' ? 'assets/ui-approved-v1476/ticket-single.webp' : H2 + PILL_IC[hud] + '.png') + '" alt="">' +
-            '<b class="lane-hud-n" data-hud="' + hud + '">0</b><img class="h2-plus" src="' + H2 + 'plus.png" alt=""></span></span>'
+        ? '<span class="lane-face lane-face--front lane-face--pill"><span class="h2-pill h2-pill--no-plus"><img class="h2-pill-ic" src="' + PILL_ART[hud] + '" alt="">' +
+            '<b class="lane-hud-n" data-hud="' + hud + '">0</b></span></span>'
         : h2Face(HOME2[hud][0], HOME2[hud][1], lblKey2, lblTxt2);
       btn.innerHTML =
         '<span class="lane-flip">' +
@@ -250,8 +250,8 @@
         // 홈 화면 전용 내비(하트·코인·티켓·스코어·상점·홈·… — FACES 의 action 필드) — 탭하면 그
         // 화면으로 이동. 실제 플레이 중(isHome() false)엔 평범한 숫자 타격 버튼일 뿐이라 무시.
         if (faces[id].action && onHomeAction && (!isHome || isHome())) onHomeAction(faces[id].action);
-        // v904(사용자 선택 C안): 홈에서 하트·코인·티켓 알약의 + → 상점 재화 탭의 그 재화 상품으로(상점 안에선 shop.js 가 처리)
-        if (onHomeAction && (!isHome || isHome()) && e.target && e.target.closest && e.target.closest('.h2-plus') && !b.querySelector('.h2-pill.is-shop')) {
+        // Keep the balance shortcut after removing the separate plus artwork.
+        if (onHomeAction && (!isHome || isHome()) && e.target && e.target.closest && e.target.closest('.h2-pill') && !b.querySelector('.h2-pill.is-shop')) {
           root.MoleGame.shopPick = { hearts: 'heart', coins: 'coin', tickets: 'ticket' }[faces[id].hud] || null;
           onHomeAction('shop');
         }
@@ -269,7 +269,9 @@
     }
 
     function onKey(e) {
-      if (e.repeat) return;
+      if (e.repeat || e.isComposing || typeof e.key !== 'string') return;
+      const target = e.target;
+      if (target && (target.isContentEditable || target.closest && target.closest('input,textarea,select,[role="textbox"]'))) return;
       const id = keyMap[e.key.toLowerCase()];
       if (id !== undefined) onCell(id);
     }

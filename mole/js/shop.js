@@ -29,18 +29,37 @@
     minis: ['assets/shop/mini-1.png', 'assets/shop/mini-2.png', 'assets/shop/mini-3.png',
       'assets/shop/mini-4.png', 'assets/shop/mini-5.png', 'assets/shop/mini-6.png']
   };
+  function heartGlints(kind) {
+    return '<span class="shop-heart-glints shop-heart-glints--' + kind + '" aria-hidden="true"><i></i><i></i></span>';
+  }
+  function jarHeartMotion() {
+    // Native 1382 x 1138 artwork coordinates; each patch stays clipped to red heart pixels.
+    var hearts = [[430,450,155,85],[230,525,30,48],[180,690,50,83],[390,655,105,125],
+      [630,760,100,120],[850,730,110,135],[916,503,55,45],[1140,630,65,95],
+      [1230,752,35,45],[426,907,145,95],[790,975,100,60],[1080,902,100,88],[170,843,30,45]];
+    return '<svg class="shop-jar-heart-motion" viewBox="0 0 1382 1138" aria-hidden="true"><defs>' +
+      '<image id="shop-jar-source" href="' + SHOP_ART + 'heart-jar-full.png" width="1382" height="1138"/>' +
+      '<filter id="shop-jar-red" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1 -1 0 0 -0.2"/><feComponentTransfer><feFuncA type="linear" slope="8"/></feComponentTransfer></filter>' +
+      '<mask id="shop-jar-red-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="1382" height="1138" style="mask-type:alpha"><use href="#shop-jar-source" filter="url(#shop-jar-red)"/></mask>' +
+      hearts.map(function (h, i) { return '<clipPath id="shop-jar-heart-' + i + '"><ellipse cx="' + h[0] + '" cy="' + h[1] + '" rx="' + h[2] + '" ry="' + h[3] + '"/></clipPath>'; }).join('') +
+      '<radialGradient id="shop-jar-gem"><stop stop-color="#fff2ef" stop-opacity=".5"/><stop offset=".5" stop-color="#ff91bd" stop-opacity=".28"/><stop offset="1" stop-color="#ff73a6" stop-opacity="0"/></radialGradient></defs>' +
+      '<g mask="url(#shop-jar-red-mask)">' + hearts.map(function (h, i) {
+        return '<g clip-path="url(#shop-jar-heart-' + i + ')"><g class="shop-jar-heart-beat" style="transform-origin:' + h[0] + 'px ' + h[1] + 'px;--beat-delay:-' + (i * .39).toFixed(2) + 's"><use href="#shop-jar-source"/><ellipse cx="' + h[0] + '" cy="' + h[1] + '" rx="' + h[2] + '" ry="' + h[3] + '" fill="url(#shop-jar-gem)"/></g></g>';
+      }).join('') + '</g><path class="shop-jar-glint" style="transform-origin:315px 885px" d="M315 853L321 879L347 885L321 891L315 917L309 891L283 885L309 879Z"/>' +
+      '<path class="shop-jar-glint" style="transform-origin:1080px 850px;animation-delay:-2.4s" d="M1080 824L1085 845L1106 850L1085 855L1080 876L1075 855L1054 850L1075 845Z"/></svg>';
+  }
   function heroArt(kind) {
-    if (kind === 'solo') return '<img alt="" class="hero-solo" src="' + HEART_ART.heart + '">';
+    if (kind === 'solo') return '<div class="hero-single-gem"><img alt="" class="hero-solo shop-heart-beat" src="' + HEART_ART.heart + '">' + heartGlints('solo') + '</div>';
     if (kind === 'ad') {
       return '<div class="hero-ad"><svg class="hero-ad-heart" viewBox="0 0 1254 1254" aria-hidden="true"><defs><clipPath id="shop-ad-heart-contour"><rect x="0" y="200" width="1254" height="1054"></rect></clipPath></defs><image href="' + HEART_ART.heart + '" width="1254" height="1254" clip-path="url(#shop-ad-heart-contour)"></image></svg>' +
-        '<img class="hero-ad-icon" alt="" src="assets/ui-approved-v1476/ad-icon.webp"></div>';
+        '<img class="hero-ad-icon" alt="" src="assets/ui-approved-v1476/ad-icon.webp">' + heartGlints('ad') + '</div>';
     }
-    if (kind === 'jar') return '<img class="hero-jar-full" alt="" src="' + SHOP_ART + 'heart-jar-full.png">';
+    if (kind === 'jar') return '<div class="hero-jar-gem"><img class="hero-jar-full" alt="" src="' + SHOP_ART + 'heart-jar-full.png">' + jarHeartMotion() + '</div>';
     // 하트 묶음은 분리한 원본 하트를 개별 배치한다.
     var minis = HEART_ART.minis.map(function (src, i) {
-      return '<img alt="" class="hero-mini hero-mini--' + i + '" src="' + src + '">';
+      return '<img alt="" class="hero-mini hero-mini--' + i + ' shop-heart-beat" style="--beat-delay:-' + ((i + 1) * .75).toFixed(2) + 's" src="' + src + '">';
     }).join('');
-    return '<div class="hero-pile"><img alt="" class="hero-pile-main" src="' + HEART_ART.heart + '">' + minis + '</div>';
+    return '<div class="hero-pile"><img alt="" class="hero-pile-main shop-heart-beat" src="' + HEART_ART.heart + '">' + minis + heartGlints('pile') + '</div>';
   }
   function coinAdArt() {
     return '<div class="hero-ad hero-coin-ad"><img class="hero-coin-ad-coin" alt="" src="' + CURRENCY_ART + 'coin-option-05-bright20.png">' +
@@ -51,10 +70,15 @@
   // 왼쪽 이미지 거울상, 기존 무기 카드와 동일), 나머지는 이미지 1장.
   function weaponArt(w) {
     if (w.id === 'alipunch') {
-      return '<div class="hero-weapon-pair"><img alt="" src="' + w.thumb + '">' +
-        '<img alt="" class="shop-thumb-mirror" src="' + w.thumb + '"></div>';
+      return '<div class="shop-weapon-motion" data-shop-motion="alipunch"><div class="inv-thumb inv-thumb--pair"><img alt="" src="' + w.thumb + '">' +
+        '<img alt="" class="inv-thumb-mirror" src="' + w.thumb + '"><span class="inv-bump-spark">✨</span><span class="inv-bump-word">POWER UP</span></div></div>';
     }
-    return '<img alt="" class="hero-weapon" src="' + w.thumb + '">';
+    if (w.id === 'cannon') {
+      return '<div class="shop-weapon-motion" data-shop-motion="cannon"><div class="inv-thumb inv-thumb--cannon"><img alt="" src="' + w.thumb + '">' +
+        '<img class="inv-cannon-burn" alt="" src="assets/weapons/cannon-fx4.png"><img class="inv-cannon-smoke" alt="" src="assets/weapons/cannon-fx5.png">' +
+        '<span class="inv-cannon-word">BOOM!</span></div></div>';
+    }
+    return '<img alt="" class="hero-weapon' + (w.id === 'goldhammer' ? ' hero-weapon--gold' : '') + '" src="' + w.thumb + '">';
   }
 
   // 상점 "무기" 탭 = 아이템보관창(inventory-screen.js) 무기탭과 같은 4종(사용자 지정: "지금 있는
@@ -74,6 +98,8 @@
     var scenery = MG.ShopScenery ? MG.ShopScenery.create(el) : null;
     var cardsEl = el.querySelector('[data-shop-cards]');
     var cardsBoxEl = el.querySelector('.shop-cards-box');
+    var productsViewport = document.createElement('div'); productsViewport.className = 'shop-product-viewport';
+    cardsEl.parentNode.insertBefore(productsViewport, cardsEl); productsViewport.appendChild(cardsEl);
     var tabsEl = el.querySelector('[data-shop-tabs]');
     var backEl = el.querySelector('[data-shop-back]');
     if (backEl) backEl.addEventListener('click', function () { if (opts.onClose) opts.onClose(); });
@@ -225,13 +251,50 @@
       img.style.setProperty('translate', dx.toFixed(2) + 'px ' + dy.toFixed(2) + 'px', 'important');
     }
     function centerShopTabArt() {
+      alignCoinReflections();
+      el.querySelectorAll('[data-shop-motion]').forEach(function (unit) {
+        var rect = unit.parentElement.getBoundingClientRect();
+        var size = unit.dataset.shopMotion === 'cannon' ? [105.5, 88] : [112, 88];
+        unit.style.setProperty('--shop-weapon-scale', Math.min(rect.width * .82 / size[0], rect.height * .76 / size[1]));
+      });
       el.querySelectorAll('.shop-tab-ico img').forEach(function (img) {
         centerVisibleImage(img);
       });
       el.querySelectorAll('.shop-card-badge--weapon > img, .hero-weapon, .hero-weapon-pair img, .shop-sale-currency, .shop-sale-item, .shop-sale-set img').forEach(centerVisibleImage);
+      el.querySelectorAll('.shop-tab-ring').forEach(function (ring) {
+        var img = ring.parentElement.querySelector('img'), rect = img.getBoundingClientRect(), box = ring.parentElement.getBoundingClientRect();
+        var size = Math.min(rect.width, rect.height);
+        ring.style.left = (rect.left - box.left + (rect.width - size) / 2) + 'px';
+        ring.style.top = (rect.top - box.top + (rect.height - size) / 2) + 'px';
+        ring.style.width = ring.style.height = size + 'px';
+      });
     }
 
     function done() { render(); refreshHudFlyNumbers(); if (opts.onChange) opts.onChange(); }
+
+    function alignCoinReflections() {
+      el.querySelectorAll('.shop-card--coin-small .shop-coin-small-art>img,.shop-coin-bulk-pile,.hero-coin-ad-coin').forEach(function (img) {
+        var parent = img.parentElement, overlay = parent.querySelector(':scope > .shop-coin-reflection');
+        if (!overlay) {
+          var ticket = img.classList.contains('shop-ticket-arrive');
+          overlay = document.createElement('span'); overlay.className = 'shop-coin-reflection' + (ticket ? ' shop-ticket-reflection' : ''); overlay.setAttribute('aria-hidden', 'true');
+          overlay.innerHTML = '<i class="shop-coin-sweep"></i>' + (ticket ? '' : '<i class="shop-coin-glint"></i>') + (img.classList.contains('shop-coin-bulk-pile') ? '<i class="shop-coin-glint shop-coin-glint--second"></i>' : '');
+          parent.appendChild(overlay);
+          if (!img.complete) img.addEventListener('load', function () { if (img.isConnected) alignCoinReflections(); }, { once: true });
+        }
+        overlay.style.left = img.offsetLeft + 'px'; overlay.style.top = img.offsetTop + 'px';
+        overlay.style.width = img.offsetWidth + 'px'; overlay.style.height = img.offsetHeight + 'px';
+        overlay.style.maskImage = overlay.style.webkitMaskImage = 'url("' + img.getAttribute('src') + '")';
+      });
+      tabsEl.querySelectorAll('[data-shop-tab="coin"] .shop-tab-ico,[data-shop-tab="ticket"] .shop-tab-ico').forEach(function (icon) {
+        var img = icon.querySelector('img'), overlay = icon.querySelector('.shop-tab-reflection');
+        if (!overlay) { overlay = document.createElement('span'); overlay.className = 'shop-coin-reflection shop-tab-reflection'; overlay.innerHTML = '<i class="shop-coin-sweep"></i>'; overlay.setAttribute('aria-hidden', 'true'); icon.appendChild(overlay); }
+        var rect = img.getBoundingClientRect(), box = icon.getBoundingClientRect();
+        overlay.style.left = (rect.left - box.left) + 'px'; overlay.style.top = (rect.top - box.top) + 'px';
+        overlay.style.width = rect.width + 'px'; overlay.style.height = rect.height + 'px';
+        overlay.style.maskImage = overlay.style.webkitMaskImage = 'url("' + img.getAttribute('src') + '")';
+      });
+    }
 
     function showFinalConfirm(message, imageSrc, onConfirm) {
       var english = I18N().lang === 'en';
@@ -247,43 +310,41 @@
         '<button type="button" class="shop-card-btn shop-coin-choice-action" data-choice-action="cancel">' + (english ? 'No' : '아니요') + '</button></div></div>';
       dialog.querySelector('.shop-coin-choice-message').textContent = message;
       el.appendChild(dialog);
+      var settled = false;
+      function close() { settled = true; dialog.remove(); }
       dialog.addEventListener('click', function (event) {
-        if (event.target === dialog || event.target.closest('[data-choice-action="cancel"]')) { dialog.remove(); return; }
-        if (event.target.closest('[data-choice-action="confirm"]')) { dialog.remove(); onConfirm(); }
-      });
-    }
-
-    function showCostumePopup(item) {
-      var english = I18N().lang === 'en';
-      var previous = el.querySelector('.shop-coin-choice-dialog');
-      if (previous) previous.remove();
-      var returnFocus = document.activeElement;
-      var dialog = document.createElement('div');
-      dialog.className = 'shop-coin-choice-dialog shop-costume-dialog';
-      dialog.setAttribute('role', 'dialog');
-      dialog.setAttribute('aria-modal', 'true');
-      dialog.setAttribute('aria-labelledby', 'shop-costume-dialog-title');
-      var pictures = item.previewImages.map(function (src, index) {
-        return '<img class="' + (item.previewImages.length > 1 ? 'shop-costume-set-piece shop-costume-set-piece--' + index : 'shop-costume-dialog-outfit') + '" src="' + src + '" alt="">';
-      }).join('');
-      dialog.innerHTML = '<div class="shop-coin-choice-card shop-costume-dialog-card">' +
-        '<b id="shop-costume-dialog-title" class="shop-coin-choice-message"></b>' +
-        '<div class="shop-costume-dialog-art">' + (item.previewImages.length > 1 ? '<div class="shop-costume-set-art">' + pictures + '</div>' : pictures) + '</div>' +
-        '<p class="shop-costume-dialog-effect"></p>' +
-        '<div class="shop-costume-dialog-price">' + coinOption('06') + '<b>' + item.coinPrice.toLocaleString('en-US') + '</b></div>' +
-        '<div class="shop-coin-choice-actions"><button type="button" class="shop-card-btn shop-coin-choice-action" data-choice-action="ok">' + (english ? 'OK' : '확인') + '</button></div></div>';
-      dialog.querySelector('#shop-costume-dialog-title').textContent = english ? item.nameEn : item.nameKo;
-      dialog.querySelector('.shop-costume-dialog-effect').textContent = (english ? 'Mole retreat delay +' : '두더지 하강 지연 +') + MG.CostumeTeams.BASE_EFFECT_VALUE.toFixed(1) + (english ? 's' : '초');
-      function close() { dialog.remove(); if (returnFocus && returnFocus.isConnected) returnFocus.focus(); }
-      dialog.addEventListener('click', function (event) {
-        if (event.target === dialog || event.target.closest('[data-choice-action="ok"]')) close();
+        if (settled) return;
+        if (event.target === dialog || event.target.closest('[data-choice-action="cancel"]')) { close(); return; }
+        if (event.target.closest('[data-choice-action="confirm"]')) { close(); onConfirm(); }
       });
       dialog.addEventListener('keydown', function (event) {
         if (event.key === 'Escape') { event.preventDefault(); close(); }
-        if (event.key === 'Tab') { event.preventDefault(); dialog.querySelector('button').focus(); }
+        if (event.key === 'Tab') {
+          var buttons = dialog.querySelectorAll('button');
+          if (event.shiftKey && document.activeElement === buttons[0]) { event.preventDefault(); buttons[1].focus(); }
+          else if (!event.shiftKey && document.activeElement === buttons[1]) { event.preventDefault(); buttons[0].focus(); }
+        }
       });
-      el.appendChild(dialog);
-      dialog.querySelector('button').focus();
+      dialog.querySelector('[data-choice-action="cancel"]').focus();
+    }
+
+    function buyProduct(sku) {
+      var result = MG.ItemInventory.purchase(sku);
+      if (result.ok) { done(); return; }
+      if (result.reason === 'coins') alert(T('mole.shop.noCoin'));
+      else alert(I18N().lang === 'en' ? 'Could not save. Please try again.' : '저장하지 못했습니다. 다시 시도해 주세요.');
+    }
+    function showProductPurchase(item) {
+      var english = I18N().lang === 'en';
+      var name = english ? item.nameEn : item.nameKo;
+      var offer = MG.ItemInventory.offer(item.sku);
+      if (!offer) return;
+      var last = name.charCodeAt(name.length - 1);
+      var objectMarker = last >= 0xAC00 && last <= 0xD7A3 && (last - 0xAC00) % 28 ? '을' : '를';
+      var prompt = english ? 'Purchase ' + name + ' for ' + offer.price.toLocaleString('en-US') + ' coins?' :
+        offer.price.toLocaleString('en-US') + '코인으로 ' + name + objectMarker + ' 구매하시겠습니까?';
+      if (offer.grants.shield) prompt += english ? '\nShield is stored for use after setup.' : '\n실드는 보관하며 설정 완료 후 사용할 수 있습니다.';
+      showFinalConfirm(prompt, null, function () { buyProduct(item.sku); });
     }
 
     function showCoinWeaponSelection(bulkCard, english) {
@@ -406,6 +467,7 @@
       c.querySelector('.shop-card-pill span').textContent = o.pillText;
       var btn = c.querySelector('.shop-card-btn');
       btn.innerHTML = o.btnHtml;
+      if (o.disabledReason) { btn.title = o.disabledReason; btn.setAttribute('aria-label', o.disabledReason); }
       if (!o.btnDisabled && o.onPreview) btn.addEventListener('click', o.onPreview);
       else if (!o.btnDisabled && o.onClick) btn.addEventListener('click', function () {
         showFinalConfirm(o.confirmMessage || defaultPurchasePrompt(o.name), null, o.onClick);
@@ -469,16 +531,15 @@
           return;
         }
         cardsEl.appendChild(heartCard({
-          theme: 'blue', productClass: productClass,
+          theme: 'pink', productClass: productClass,
           art: weaponArt(w),
           name: name,
-          confirmMessage: defaultSelectionPrompt(name),
           pillIcon: ICONS.coins,
           pillClass: 'shop-card-pill--coin', // 사용자 지정: "코인 이미지는 1.5배 크게, 노란색으로"
           pillText: w.coinPrice.toLocaleString(),
-          btnHtml: w.price.toLocaleString() + '원',
+          btnHtml: coinOption('06') + '<b>' + w.coinPrice.toLocaleString('en-US') + '</b>',
           btnDisabled: locked,
-          onClick: function () { localStorage.setItem('mole.weapon', w.id); done(); }
+          onPreview: function () { showProductPurchase({ sku: 'weapon.' + w.id, nameKo: w.name, nameEn: w.nameEn }); }
         }));
       });
     }
@@ -541,19 +602,19 @@
           return '<span>' + descriptions[id][english ? 'setEn' : 'setKo'] + '</span>';
         }).join('') + '</p></div>';
       renderPendingProducts([
-        { nameKo: '실드 묶음', nameEn: 'Shield pack', art: skillArt('shield'), coinPrice: 10000 },
-        { nameKo: '타겟팅 묶음', nameEn: 'Targeting pack', art: skillArt('targeting'), coinPrice: 50000 },
-        { nameKo: 'AI 묶음', nameEn: 'AI pack', art: skillArt('ai'), coinPrice: 100000 },
-        { nameKo: '스킬 세트', nameEn: 'Skill set', art: allSkills, coinPrice: 150000 }
-      ], 'shop-card--skill' + (english ? ' shop-card--skill-en' : ''));
+        { sku: 'skill.shield', nameKo: '실드 묶음', nameEn: 'Shield pack', art: skillArt('shield'), coinPrice: 10000 },
+        { sku: 'skill.targeting', nameKo: '타겟팅 묶음', nameEn: 'Targeting pack', art: skillArt('targeting'), coinPrice: 50000 },
+        { sku: 'skill.ai', nameKo: 'AI 묶음', nameEn: 'AI pack', art: skillArt('ai'), coinPrice: 100000 },
+        { sku: 'skill.set', nameKo: '스킬 세트', nameEn: 'Skill set', art: allSkills, coinPrice: 150000 }
+      ], 'shop-card--skill' + (english ? ' shop-card--skill-en' : ''), { hideCoinLabel: true, onPreview: showProductPurchase });
     }
 
     function renderCostumeCards() {
       var teams = MG.CostumeTeams.teams();
       var english = I18N().lang === 'en';
       function outfit(id) { return 'assets/costume/outfit-' + id + '.png'; }
-      function costumeArt(art, isSet) {
-        return '<div class="shop-costume-product"><div class="shop-costume-visual' + (isSet ? ' shop-costume-visual--set' : '') + '">' + art + '</div>' +
+      function costumeArt(art, isSet, team) {
+        return '<div class="shop-costume-product" data-shop-team="' + (team || 'set') + '"><div class="shop-costume-visual' + (isSet ? ' shop-costume-visual--set' : '') + '">' + art + '</div>' +
           '<p class="shop-costume-effect"><span>' + (english ? 'Mole retreat delay' : '두더지 하강 지연') + '</span> <b>+' +
           MG.CostumeTeams.BASE_EFFECT_VALUE.toFixed(1) + (english ? 's' : '초') + '</b></p></div>';
       }
@@ -561,11 +622,11 @@
         return '<img class="shop-costume-set-piece shop-costume-set-piece--' + index + '" alt="" src="' + outfit(team.id) + '">';
       }).join('') + '</div>';
       renderPendingProducts([
-        { nameKo: '블루 베어스', nameEn: 'Blue Bears', art: costumeArt('<img class="shop-sale-item shop-costume-outfit" alt="" src="' + outfit('blue_bears') + '">'), coinPrice: 100000, previewImages: [outfit('blue_bears')] },
-        { nameKo: '마운트 스타즈', nameEn: 'Mount Stars', art: costumeArt('<img class="shop-sale-item shop-costume-outfit" alt="" src="' + outfit('mount_stars') + '">'), coinPrice: 100000, previewImages: [outfit('mount_stars')] },
-        { nameKo: '클라우드 컵스', nameEn: 'Cloud Cups', art: costumeArt('<img class="shop-sale-item shop-costume-outfit" alt="" src="' + outfit('cloud_cups') + '">'), coinPrice: 100000, previewImages: [outfit('cloud_cups')] },
-        { nameKo: '코스튬 세트', nameEn: 'Costume set', art: costumeArt(allCostumes, true), coinPrice: 250000, previewImages: teams.map(function (team) { return outfit(team.id); }) }
-      ], 'shop-card--costume', { hideCoinLabel: true, onPreview: showCostumePopup });
+        { sku: 'costume.blue_bears', nameKo: '블루 베어스', nameEn: 'Blue Bears', art: costumeArt('<img class="shop-sale-item shop-costume-outfit" alt="" src="' + outfit('blue_bears') + '">', false, 'blue_bears'), coinPrice: 100000, previewImages: [outfit('blue_bears')] },
+        { sku: 'costume.mount_stars', nameKo: '마운트 스타즈', nameEn: 'Mount Stars', art: costumeArt('<img class="shop-sale-item shop-costume-outfit" alt="" src="' + outfit('mount_stars') + '">', false, 'mount_stars'), coinPrice: 100000, previewImages: [outfit('mount_stars')] },
+        { sku: 'costume.cloud_cups', nameKo: '클라우드 컵스', nameEn: 'Cloud Cups', art: costumeArt('<img class="shop-sale-item shop-costume-outfit" alt="" src="' + outfit('cloud_cups') + '">', false, 'cloud_cups'), coinPrice: 100000, previewImages: [outfit('cloud_cups')] },
+        { sku: 'costume.set', nameKo: '코스튬 세트', nameEn: 'Costume set', art: costumeArt(allCostumes, true), coinPrice: 250000, previewImages: teams.map(function (team) { return outfit(team.id); }) }
+      ], 'shop-card--costume', { hideCoinLabel: true, onPreview: showProductPurchase });
     }
 
     function renderCoinCards() {
@@ -577,12 +638,12 @@
         var label = english ? (round + (round === 1 ? 'st' : round === 2 ? 'nd' : 'rd') + ' purchase') : round + '회차';
         var weaponLabel = english ? weapon.nameEn : ({ cannon: '팡팡 캐논', goldhammer: '골드 묠니르', alipunch: '킹판취' }[weaponId] || weapon.name);
         return '<div class="shop-coin-bulk-reward"><span class="shop-coin-bulk-step">' + label + '</span>' +
-          '<img src="' + weapon.thumb + '" alt=""><span class="shop-coin-bulk-reward-name">' + weaponLabel + '</span></div>';
+          '<img' + (weaponId === 'goldhammer' ? ' class="shop-coin-bonus-gold"' : '') + ' src="' + weapon.thumb + '" alt=""><span class="shop-coin-bulk-reward-name">' + weaponLabel + '</span></div>';
       }).join('');
       var bulkArt = '<div class="shop-coin-bulk-art">' +
         '<img class="shop-coin-bulk-pile" src="' + CURRENCY_ART + 'coin-option-09-bright20.png" alt="">' +
         '<div class="shop-coin-bulk-details"><b class="shop-coin-bulk-summary">' +
-        (english ? '100,000 coins · 20% off' : '100,000 코인 · 20% 할인') +
+        (english ? '6,250,000 coins<br>20% off + 1 weapon' : '6,250,000 코인<br>20% 할인 + 무기 1종') +
         '</b><div class="shop-coin-bulk-rewards">' + bulkRounds + '</div><div class="shop-coin-bulk-choice">' +
         '<b class="shop-coin-bulk-choice-title">' +
         (english ? 'Weapon selection available from 4th purchase' : '4회차부터 무기 선택 가능') +
@@ -590,9 +651,10 @@
       cardsEl.appendChild(heartCard({
         theme: 'pink', productClass: 'shop-card--sale shop-card--coin-small',
         art: '<div class="shop-coin-small-art"><img src="' + CURRENCY_ART + 'coin-option-01-bright20.png" alt=""><b>' +
-          (english ? '8,000 coins' : '8,000 코인') + '</b></div>',
-        name: english ? 'Starter pack' : '스타터 팩', pillText: '8,000',
-        btnHtml: '<b>₩&nbsp;10,000</b>', btnDisabled: false,
+          (english ? '500,000 coins' : '500,000 코인') + '</b></div>',
+        name: english ? 'Starter pack' : '스타터 팩', pillText: '500,000',
+        btnHtml: '<b>₩&nbsp;10,000</b>', btnDisabled: true,
+        disabledReason: english ? 'Cash payments coming soon' : '원화 결제 준비 중',
         confirmMessage: english ? 'Purchase the Starter Pack for ₩10,000?' : '스타터 팩을 10,000원에 구매하시겠습니까?',
         onClick: function () {}
       }));
@@ -601,15 +663,16 @@
         name: english ? 'Ad · 100 coins' : '광고 · 100 코인', pillText: '100',
         btnHtml: '<b>' + T('mole.shop.watchAdBtn') + '</b>',
         btnDisabled: false,
-        confirmMessage: english ? 'Watch an ad to get 100 coins?' : '광고를 시청하고 코인 100개를 받으시겠습니까?',
+        confirmMessage: english ? 'Watch an ad to get 100 coins?' : '광고를 시청하고 100코인을 받으시겠습니까?',
         onClick: function () {
           MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addCoins(100); done(); } });
         }
       }));
       var bulkCard = heartCard({
         theme: 'pink', productClass: 'shop-card--sale shop-card--coin-bulk', art: bulkArt,
-        name: english ? 'Reserve pack' : '리저브 팩', pillText: '100,000',
-        btnHtml: '<del>₩&nbsp;125,000</del><b>₩&nbsp;100,000</b>', btnDisabled: false,
+        name: english ? 'Reserve pack' : '리저브 팩', pillText: '6,250,000',
+        btnHtml: '<del>₩&nbsp;125,000</del><b>₩&nbsp;100,000</b>', btnDisabled: true,
+        disabledReason: english ? 'Cash payments coming soon' : '원화 결제 준비 중',
         confirmMessage: english ? 'Purchase the Reserve Pack for ₩100,000?' : '리저브 팩을 100,000원에 구매하시겠습니까?',
         onClick: function () { showCoinWeaponSelection(bulkCard, english); }
       });
@@ -621,7 +684,7 @@
       var english = I18N().lang === 'en';
       var artPath = 'assets/ui-approved-v1476/';
       function packArt(option, bonus) {
-        return '<div class="shop-coin-small-art shop-ticket-pack-art"><img src="' + artPath + 'ticket-stack-' + option + '.webp" alt=""><b>' +
+        return '<div class="shop-coin-small-art shop-ticket-pack-art"><img class="shop-ticket-arrive" src="' + artPath + 'ticket-stack-' + option + '.webp" alt=""><b>' +
           (bonus ? (english ? '+' + bonus + ' bonus tickets' : '+' + bonus + '장 추가 지급') : '') + '</b></div>';
       }
       function buyTickets(cost, count) {
@@ -639,7 +702,7 @@
         cardsEl.appendChild(heartCard({
           theme: 'pink', productClass: 'shop-card--sale shop-card--coin-small shop-card--ticket-small',
           art: packArt(pack.art, pack.bonus), name: english ? pack.count + ' tickets' : '티켓 ' + pack.count + '장', pillText: String(total),
-          btnHtml: coinPurchaseIcon(pack.coin) + '<b>' + costLabel + (english ? ' coins' : ' 코인') + '</b>', btnDisabled: false,
+          btnHtml: coinPurchaseIcon(pack.coin) + '<b>' + costLabel + '</b>', btnDisabled: false,
           confirmMessage: english ? 'Purchase ' + quantity + ' tickets for ' + costLabel + ' coins?' :
             costLabel + ' 코인으로 티켓 ' + pack.count + '장' + (pack.bonus ? ' + 보너스 ' + pack.bonus + '장' : '') + '을 구매하시겠습니까?',
           onClick: function () { buyTickets(pack.cost, total); }
@@ -735,6 +798,12 @@
         b.className = 'shop-tab' + (t.id === activeTab ? ' shop-tab--on' : '');
         b.dataset.shopTab = t.id;
         b.innerHTML = '<span class="shop-tab-ico">' + t.icon + '</span><span class="shop-tab-lbl"></span>';
+        if (t.id === 'weapon') {
+          var motion = document.createElement('span'); motion.className = 'shop-tab-hammer-motion';
+          var hammerIcon = b.querySelector('.shop-tab-ico img'); hammerIcon.replaceWith(motion); motion.appendChild(hammerIcon);
+        }
+        if (t.id === 'currency') b.querySelector('.shop-tab-ico').insertAdjacentHTML('beforeend', '<i class="shop-tab-heart-glint" aria-hidden="true"></i>');
+        if (t.id === 'skill') b.querySelector('.shop-tab-ico').insertAdjacentHTML('beforeend', '<svg class="shop-tab-ring" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="none" stroke="#fff5b4" stroke-width="3.3" stroke-linecap="round" stroke-dasharray="18 271"/></svg>');
         b.querySelector('.shop-tab-lbl').textContent = T(t.i18n);
         (function (lb) { requestAnimationFrame(function () { lb.style.transform = ''; var room = b.clientWidth * 0.86, w = lb.scrollWidth; // v890: 긴 영어 탭 글자 가로로만 좁힘
           if (w > room) { lb.style.display = 'inline-block'; lb.style.transform = 'scaleX(' + (room / w).toFixed(3) + ')'; } }); })(b.querySelector('.shop-tab-lbl'));
@@ -743,9 +812,7 @@
           // "재화 버튼시에만 나타나라고 했는데 실수야 — 상점에 있을때는 항시 존재, 다른
           // 버튼일때 왼쪽으로 사라지게") — 탭을 바꿔도 롤아웃/재진입 안 함. 상점을 완전히
           // 벗어날 때만(el.hidden 감시, 파일 하단) 롤아웃.
-          activeTab = t.id; currencyFilter = null; cardsEl.scrollLeft = 0; render();
-          var selected = tabsEl.querySelector('.shop-tab--on');
-          if (selected) selected.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+          selectProductTab(t.id);
         });
         tabsEl.appendChild(b);
       });
@@ -765,6 +832,67 @@
       requestAnimationFrame(alignCoinPrices);
       requestAnimationFrame(centerShopTabArt);
     }
+
+    var productNavGeneration = 0, productPreview = null, productSlideAnimations = [], drag = null, suppressProductClickUntil = 0;
+    function clearProductSlide() {
+      productSlideAnimations.forEach(function (a) { a.cancel(); }); productSlideAnimations = [];
+      if (productPreview) productPreview.remove(); productPreview = null;
+      cardsEl.style.transform = ''; productsViewport.classList.remove('is-dragging');
+    }
+    function selectProductTab(id, swipeDirection) {
+      if (id === activeTab && !currencyFilter) { cardsEl.style.transform = ''; return; }
+      var oldIndex = TABS.findIndex(function (tab) { return tab.id === activeTab; });
+      var newIndex = TABS.findIndex(function (tab) { return tab.id === id; });
+      if (newIndex < 0) return;
+      clearProductSlide(); var generation = ++productNavGeneration;
+      var preview = cardsEl.cloneNode(true); preview.removeAttribute('data-shop-cards'); preview.classList.add('shop-product-preview');
+      preview.setAttribute('aria-hidden', 'true'); preview.inert = true;
+      productsViewport.appendChild(preview); productPreview = preview;
+      activeTab = id; currencyFilter = null; cardsEl.scrollLeft = 0; render();
+      var selected = tabsEl.querySelector('.shop-tab--on');
+      if (selected) selected.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+      // Keep the complete old panel visible while the next panel's artwork decodes.
+      Promise.all(Array.prototype.map.call(cardsEl.querySelectorAll('img'), function (img) { return img.decode ? img.decode().catch(function () {}) : Promise.resolve(); })).then(function () {
+        if (generation !== productNavGeneration || el.hidden) return;
+        centerShopTabArt(); alignCoinPrices();
+        if (root.matchMedia('(prefers-reduced-motion:reduce)').matches) { clearProductSlide(); return; }
+        var direction = swipeDirection || (newIndex > oldIndex ? 1 : -1), width = productsViewport.clientWidth;
+        var incoming = cardsEl.animate([{ transform: 'translateX(' + (direction * width) + 'px)' }, { transform: 'translateX(0)' }], { duration: 230, easing: 'cubic-bezier(.2,.7,.3,1)' });
+        var outgoing = preview.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(' + (-direction * width) + 'px)' }], { duration: 230, easing: 'cubic-bezier(.2,.7,.3,1)' });
+        productSlideAnimations = [incoming, outgoing];
+        incoming.finished.then(function () { if (generation === productNavGeneration) clearProductSlide(); }, function () {});
+      });
+    }
+    productsViewport.addEventListener('pointerdown', function (event) {
+      if (event.isPrimary === false || event.button !== 0 || el.querySelector('.shop-coin-choice-dialog')) return;
+      drag = { id: event.pointerId, x: event.clientX, y: event.clientY, dx: 0, horizontal: false };
+    });
+    productsViewport.addEventListener('pointermove', function (event) {
+      if (!drag || drag.id !== event.pointerId) return;
+      var dx = event.clientX - drag.x, dy = event.clientY - drag.y;
+      if (!drag.horizontal && Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.3) {
+        drag.horizontal = true; productNavGeneration++; clearProductSlide(); productsViewport.setPointerCapture(event.pointerId); productsViewport.classList.add('is-dragging');
+      }
+      if (!drag.horizontal) return;
+      event.preventDefault(); drag.dx = dx;
+      cardsEl.style.transform = 'translateX(' + Math.max(-productsViewport.clientWidth * .3, Math.min(productsViewport.clientWidth * .3, dx)) + 'px)';
+    });
+    function endProductDrag(event) {
+      if (!drag || drag.id !== event.pointerId) return;
+      var current = drag; drag = null; cardsEl.style.transform = ''; productsViewport.classList.remove('is-dragging');
+      if (!current.horizontal) return;
+      suppressProductClickUntil = Date.now() + 400;
+      if (event.type === 'pointercancel' || Math.abs(current.dx) < Math.min(55, productsViewport.clientWidth * .15)) return;
+      var direction = current.dx < 0 ? 1 : -1;
+      var index = TABS.findIndex(function (tab) { return tab.id === activeTab; }) + direction;
+      if (index >= 0 && index < TABS.length) selectProductTab(TABS[index].id, direction);
+    }
+    productsViewport.addEventListener('pointerup', endProductDrag);
+    productsViewport.addEventListener('pointercancel', endProductDrag);
+    productsViewport.addEventListener('click', function (event) {
+      if (Date.now() < suppressProductClickUntil) { event.preventDefault(); event.stopImmediatePropagation(); }
+    }, true);
+    new MutationObserver(function () { if (el.hidden) { productNavGeneration++; drag = null; clearProductSlide(); } }).observe(el, { attributes: true, attributeFilter: ['hidden'] });
 
     // Center the visible coin artwork and number ink, keeping their current sizes.
     function alignCoinPrices() {
@@ -845,6 +973,7 @@
     root.addEventListener('resize', function () { if (!el.hidden) { requestAnimationFrame(alignCoinPrices); requestAnimationFrame(centerShopTabArt); } });
 
     function show() {
+      productNavGeneration++; clearProductSlide();
       if (scenery) scenery.show();
       renderBanner();
       var shopPick = (MG && MG.shopPick) || null;
@@ -863,7 +992,7 @@
       clearInterval(zapTimer);
       zapTimer = setInterval(function () {
         if (el.hidden) { clearInterval(zapTimer); return; }
-        el.querySelectorAll('img[src*="goldpaw-v1382"]').forEach(function (img) {
+        el.querySelectorAll('.hero-weapon--gold[src*="goldpaw-v1382"]').forEach(function (img) {
           if (img._zap) return;
           var orig = img.getAttribute('src'), k = 0; img._zap = true;
           (function step() {

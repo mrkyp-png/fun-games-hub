@@ -2900,7 +2900,9 @@ body { background: var(--lm-page); }
 #workshop-screen .ws-enhance-hammer img { filter: none; }
 #workshop-screen .ws-enhance-hammer.is-fading { opacity: 0 !important; transition: opacity 0.12s ease-out; }
 @keyframes ws-shake { 0%, 100% { transform: none; } 20% { transform: translate(-6px, 3px); } 40% { transform: translate(5px, -4px); } 60% { transform: translate(-3px, 2px); } 80% { transform: translate(2px, -1px); } }
-.ws-fx-goose { z-index: 1; /* 받침대 앞(사용자 지정) + 날기 전 대기 = 받침대 위(발 기준 아래 정렬, 사용자 지정 v760) */ position: absolute; left: 50%; bottom: calc(70% - var(--dy) - var(--w) * 0.52); width: calc(var(--w) * 0.5); transform: translate(-50%, 0); transform-origin: 50% 100%; transition: transform 0.13s linear; }
+/* Move a fixed anchor; normalize each sprite immediately inside it. */
+.ws-goose-flight { z-index:6; position:absolute; left:50%; bottom:calc(70% - var(--dy) - var(--w) * 0.52); width:calc(var(--w) * 0.5); height:0; transform:translateX(-50%); pointer-events:none; }
+.ws-fx-goose { position:absolute; left:0; bottom:0; width:100%; height:auto; transform-origin:50% 100%; transition:none; }
 /* 알 프레임은 받침대 아래 기준으로 정렬(프레임마다 높이가 달라도 받침대 자리 고정), 아래 22%(받침대 다리)는 잘라 고정 받침대(.ws-pedfront)만 보이게(v759) */
 .ws-egg { position: absolute; left: 50%; bottom: calc(70% - var(--dy) - var(--w) * 0.52 * 363 / 298); width: calc(var(--w) * 0.52); transform: translate(-50%, 0); clip-path: inset(-20% -20% 22% -20%); }
 .ws-egg.is-drop { animation: ws-drop 0.7s cubic-bezier(.3, 0, .5, 1) both; }
@@ -2909,10 +2911,7 @@ body { background: var(--lm-page); }
 /* 알 낳기(v758): 날아오르는 거위 밑에서 작게 떨어져 커지며 대기 위치로 → 대기 중 살짝 숨쉬기 + 탭 */
 .ws-egg { transform-origin: 50% 100%; }
 /* 알만(egg-solo) 거위 발밑에서 작게 떨어져 받침대(egg-ped)에 안착 → 통통 → 확대(사용자 지정 v758). 두 장 모두 알 1번 이미지와 같은 틀·좌표 */
-/* 거위 날아오르기 효과(사용자 지정 v758): 잔상 2겹(느린 transition 으로 뒤따라옴) + 이륙 먼지 바람 + 황금 깃털 */
-.ws-ghost { pointer-events: none; }
-.ws-ghost--1 { opacity: 0.4; transition: transform 0.26s linear; }
-.ws-ghost--2 { opacity: 0.18; transition: transform 0.42s linear; }
+/* Single goose takeoff: retain the existing dust and golden feathers. */
 .ws-rise { position: absolute; left: 50%; top: calc(30% + var(--dy) + var(--w) * 0.48); width: calc(var(--w) * 0.5); height: 0; transform: translateX(-50%); pointer-events: none; }
 .ws-rise i { position: absolute; opacity: 0; }
 .ws-puff { left: 50%; top: 0; width: 90%; height: calc(var(--w) * 0.14); margin-left: -45%; margin-top: calc(var(--w) * -0.07); border-radius: 50%;
@@ -5958,6 +5957,7 @@ html, body, .cosmic-bg { background: #0a1230; }
 #game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call { background: url('assets/home2/btn-start.png') center / contain no-repeat; }
 #game-screen:not(.is-start):not(.gs-laneskill) .lane-button--call:active { background: url('assets/home2/btn-start.png') center / contain no-repeat; }
 .h2-pill .lane-hud-n { margin-right: 27%; letter-spacing: -0.04em; }
+#game-screen.is-start .h2-pill--no-plus .lane-hud-n { margin-left:30%; margin-right:6%; }
 .h2w-mole .h2w-char { height: 82%; max-width: 72%; bottom: 7%; }
 /* v902(사용자 지정): 홈에서 버튼 간격 줄이고 상점 줄을 낮춰 아래 버튼들을 위로 — 게임 중 16칸은 그대로 같은 크기 */
 #game-screen.is-start #lane-button-bar { grid-template-rows: 0.6fr 1fr 1fr 1fr; gap: 0; }
@@ -7451,6 +7451,12 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .ct-send-wrap { position:relative; flex:0 0 auto; height:38px; margin:0 22px 14px; }
 .ct-send-wrap > .ct-send { width:100%; height:100%; margin:0; }
 .ct-send-wrap > .ct-leaf { pointer-events:auto; z-index:1; }
+/* Keep the contact action above the frame; compact screens scroll the fields only. */
+#contact-screen .ct-frame { flex-direction:column; }
+#contact-screen .ct-panel { overflow-y:auto; padding-bottom:8px; }
+#contact-screen .ct-sec--grow { flex:1 1 auto; min-height:78px; }
+#contact-screen .ct-area { min-height:44px; }
+#contact-screen .ct-send-wrap { flex:none; margin:4px 22px 24px; z-index:6; }
 
 /* V1156: only the egg rocks; the existing blue pedestal stays fixed. */
 .ws-egg.is-wait { transform-origin:50% 75.2%; clip-path:none; }
@@ -9152,6 +9158,10 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-card::before,#shop-screen .shop-card::after { display:none!important; }
 #shop-screen .shop-card-name-box,#shop-screen .shop-card-name { position:relative!important; inset:auto!important; display:grid!important; place-items:center!important; align-self:stretch!important; grid-row:1!important; width:100%!important; height:100%!important; min-height:0!important; max-height:none!important; margin:0!important; padding:0!important; background:none!important; border:0!important; border-radius:0!important; box-shadow:none!important; clip-path:none!important; animation:none!important; color:#491d06!important; font:900 6.3cqw/1.1 'Jua',sans-serif!important; white-space:nowrap!important; text-shadow:none!important; -webkit-text-stroke:0!important; }
 #shop-screen .shop-card:last-child .shop-card-name { font-size:4.5cqw!important; }
+#shop-screen .shop-product-viewport { position:relative; width:100%; height:100%; min-height:0; overflow:hidden; touch-action:pan-y; }
+#shop-screen .shop-product-preview { position:absolute!important; inset:0!important; z-index:5; pointer-events:none!important; }
+#shop-screen .shop-product-preview * { animation-play-state:paused!important; }
+#shop-screen .shop-product-viewport.is-dragging { cursor:grabbing; user-select:none; }
 #shop-screen .shop-card-img-box { position:relative!important; grid-row:2!important; inset:auto!important; width:100%!important; height:100%!important; min-height:0!important; margin:0!important; padding:0!important; background:none!important; border:0!important; border-radius:0!important; overflow:visible!important; }
 #shop-screen .shop-card-badge--hero { position:absolute!important; inset:0!important; width:100%!important; height:100%!important; margin:0!important; background:none!important; }
 #shop-screen .shop-card-badge--hero img { object-fit:contain!important; max-width:100%!important; max-height:100%!important; }
@@ -9193,6 +9203,19 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-tab-ico { position:relative!important; display:grid!important; place-items:center!important; justify-self:center!important; width:107px!important; height:84px!important; max-width:none!important; align-self:center!important; overflow:visible!important; flex:none!important; min-height:0!important; margin:0!important; transform:none!important; }
 #shop-screen .shop-tab-ico img { position:absolute!important; inset:50% auto auto 50%!important; width:92%!important; height:92%!important; min-width:0!important; min-height:0!important; max-width:92%!important; max-height:92%!important; object-fit:contain!important; transform:translate(-50%,-50%)!important; }
 #shop-screen .shop-tab-ico img { translate:0 0!important; }
+#shop-screen [data-shop-tab="currency"] .shop-tab-ico img { animation:shop-tab-heart-beat 7s ease-in-out infinite; }
+#shop-screen .shop-tab-heart-glint { position:absolute; left:36%; top:34%; z-index:2; width:7px; height:7px; background:#fff4f8; clip-path:polygon(50% 0,60% 38%,100% 50%,60% 62%,50% 100%,40% 62%,0 50%,40% 38%); animation:shop-heart-glint 7s ease-in-out infinite; pointer-events:none; }
+#shop-screen .shop-tab-reflection .shop-coin-sweep { animation-duration:7s; opacity:.3; }
+#shop-screen .shop-tab-hammer-motion { position:absolute; inset:0; transform-origin:50% 75%; animation:shop-tab-hammer-idle 6.4s ease-in-out infinite; }
+#shop-screen .shop-tab-ring { position:absolute; z-index:2; overflow:visible; pointer-events:none; }
+#shop-screen .shop-tab-ring circle { transform-origin:50px 50px; animation:shop-tab-ring-light 8s linear infinite; }
+#shop-screen [data-shop-tab="costume"] .shop-tab-ico img { animation:shop-tab-costume-colors 9s linear infinite; }
+#shop-screen[hidden] .shop-tab-ico * { animation-play-state:paused; }
+@keyframes shop-tab-heart-beat { 0%,22%,100% { scale:1; } 11% { scale:1.03; } }
+@keyframes shop-tab-hammer-idle { 0%,39%,47%,100% { rotate:0deg; translate:0 0; } 41%,45% { translate:0 -2px; } 41% { rotate:4deg; } 45% { rotate:-4deg; } }
+@keyframes shop-tab-ring-light { to { transform:rotate(360deg); } }
+@keyframes shop-tab-costume-colors { 0%,28%,100% { filter:hue-rotate(0deg); } 33%,61% { filter:hue-rotate(-90deg); } 66%,94% { filter:hue-rotate(70deg); } }
+@media (prefers-reduced-motion:reduce) { #shop-screen .shop-tab-ico * { animation:none!important; } #shop-screen .shop-tab-heart-glint,#shop-screen .shop-tab-ring { display:none; } }
 #shop-screen .shop-tab-lbl { position:relative!important; display:grid!important; width:100%!important; height:100%!important; margin:0!important; padding:0!important; flex:none!important; transform:none!important; font:900 5.8cqw/1.2 'Jua',sans-serif!important; color:#491d06!important; text-align:center!important; place-items:center!important; white-space:nowrap!important; text-shadow:none!important; -webkit-text-stroke:0!important; }
 #shop-screen .shop-tab--on .shop-tab-lbl { color:white!important; text-shadow:0 1px #b65d03!important; }
 #shop-screen .shop-tab + .shop-tab { margin:0!important; }
@@ -9218,6 +9241,26 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-price-group>.shop-coins-stack { display:block!important; flex:none!important; width:var(--price-icon-width)!important; height:var(--price-icon-height)!important; margin:0!important; max-width:none!important; max-height:none!important; object-fit:contain!important; }
 #shop-screen .shop-price-group>b { display:block!important; flex:none!important; margin:0!important; padding:0!important; font:inherit!important; line-height:1!important; }
 #shop-screen .hero-jar-full { position:absolute!important; inset:0!important; width:100%!important; height:100%!important; object-fit:contain!important; margin:0!important; transform:none!important; }
+#shop-screen .hero-single-gem,#shop-screen .hero-jar-gem { position:absolute; inset:0; }
+#shop-screen .shop-heart-beat,#shop-screen .hero-ad-heart { animation:shop-heart-beat 6s ease-in-out infinite; animation-delay:var(--beat-delay,0s); transform-origin:center; }
+#shop-screen .shop-heart-glints { position:absolute; inset:0; pointer-events:none; z-index:3; }
+#shop-screen .shop-heart-glints i { position:absolute; left:35%; top:38%; width:2cqw; height:2cqw; background:radial-gradient(circle,#fff 0 16%,#ffe7f1 55%,#ffabc9); clip-path:polygon(50% 0,59% 39%,100% 50%,59% 61%,50% 100%,41% 61%,0 50%,41% 39%); animation:shop-heart-glint 5.6s ease-in-out infinite; }
+#shop-screen .shop-heart-glints i+i { left:64%; top:60%; width:1.5cqw; height:1.5cqw; animation-delay:-2.8s; }
+#shop-screen .shop-heart-glints--pile i { left:40%; top:50%; }
+#shop-screen .shop-heart-glints--pile i+i { left:64%; top:70%; }
+#shop-screen .shop-heart-glints--ad i { left:26%; top:40%; }
+#shop-screen .shop-heart-glints--ad i+i { left:35%; top:60%; }
+#shop-screen .shop-jar-heart-motion { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+#shop-screen .shop-jar-heart-beat { animation:shop-jar-heart-beat 6s ease-in-out infinite; animation-delay:var(--beat-delay,0s); }
+#shop-screen .shop-jar-glint { fill:#fff1f7; animation:shop-heart-glint 5.6s ease-in-out infinite; }
+#shop-screen[hidden] :is(.shop-heart-beat,.hero-ad-heart,.shop-heart-glints i,.shop-jar-heart-beat,.shop-jar-glint) { animation-play-state:paused; }
+@keyframes shop-heart-beat { 0%,25%,100% { scale:1; } 12% { scale:1.05; } }
+@keyframes shop-jar-heart-beat { 0%,25%,100% { opacity:0; transform:scale(1); } 12% { opacity:.7; transform:scale(1.045); } }
+@keyframes shop-heart-glint { 0%,34%,62%,100% { opacity:0; scale:.35; } 46% { opacity:.85; scale:1; } }
+@media (prefers-reduced-motion:reduce) {
+  #shop-screen :is(.shop-heart-beat,.hero-ad-heart,.shop-heart-glints i,.shop-jar-heart-beat,.shop-jar-glint) { animation:none!important; }
+  #shop-screen :is(.shop-heart-glints,.shop-jar-heart-motion) { display:none; }
+}
 #shop-screen .shop-card--heart-pile .hero-pile { transform:translateX(-3.5%)!important; }
 /* Keep weapon art in one shared centered slot while preserving each source image's proportions. */
 #shop-screen .shop-card-badge--hero .hero-weapon { height:76%!important; max-width:88%!important; width:auto!important; left:50%!important; top:50%!important; transform:translate(-50%,-50%)!important; object-fit:contain!important; }
@@ -9227,10 +9270,39 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-card-badge--default-weapon > img { width:88%!important; height:88%!important; max-width:88%!important; max-height:88%!important; object-fit:contain!important; }
 #shop-screen .shop-card.shop-card--weapon-product .shop-card-name { font-size:6.3cqw!important; }
 #shop-screen .shop-card.shop-card--weapon-product.shop-card--weapon-en .shop-card-name { font-size:3.8cqw!important; }
+/* Match the skill price coin: +20% brightness, including older coin artwork.
+   The -bright20 files already contain that adjustment; do not brighten them twice. */
+#shop-screen img[src*="/coin4-"],
+#shop-screen img[src*="/coin-option-"]:not([src*="-bright20."]),
+#game-screen:has(#shop-screen:not([hidden])) .h2-pill-ic[src$="/ic-coin.png"] { filter:brightness(1.2)!important; }
+#shop-screen .shop-card--weapon-product .shop-card-btn { font-size:3.7cqw!important; -webkit-text-stroke:0!important; }
+#shop-screen .shop-card--weapon-product .shop-card-pill { display:none!important; }
+#shop-screen .shop-card-badge--hero .hero-weapon--gold { transform:translate(-50%,-50%) rotate(45deg)!important; }
+#shop-screen .shop-coin-bulk-reward .shop-coin-bonus-gold { transform:rotate(45deg); }
+#shop-screen .shop-coin-reflection { position:absolute; z-index:1; pointer-events:none; mask-size:contain; mask-position:center; mask-repeat:no-repeat; -webkit-mask-size:contain; -webkit-mask-position:center; -webkit-mask-repeat:no-repeat; }
+#shop-screen .shop-coin-sweep { position:absolute; inset:0; background:linear-gradient(110deg,transparent 30%,rgba(255,251,207,.1) 42%,rgba(255,255,231,.75) 50%,rgba(255,251,207,.1) 58%,transparent 70%); animation:shop-coin-sweep 5s ease-in-out infinite; }
+#shop-screen .shop-coin-glint { position:absolute; left:37%; top:24%; width:12%; aspect-ratio:1; background:radial-gradient(circle,#fff 0 18%,#fff8c0 52%,#ffd255); clip-path:polygon(50% 0,59% 39%,100% 50%,59% 61%,50% 100%,41% 61%,0 50%,41% 39%); animation:shop-heart-glint 5.6s ease-in-out infinite; }
+#shop-screen .shop-coin-glint--second { left:68%; top:54%; width:9%; animation-delay:-2.8s; }
+#shop-screen .shop-ticket-arrive,#shop-screen .shop-ticket-reflection { animation:shop-ticket-arrive .65s cubic-bezier(.2,.7,.3,1) both; }
+#shop-screen .shop-ticket-reflection .shop-coin-sweep { animation-delay:.65s; background:linear-gradient(110deg,transparent 33%,rgba(216,247,255,.12) 43%,rgba(244,253,255,.65) 50%,rgba(216,247,255,.12) 57%,transparent 67%); }
+@keyframes shop-ticket-arrive { from { opacity:0; translate:0 12px; } to { opacity:1; translate:0 0; } }
+#shop-screen[hidden] .shop-coin-reflection i { animation-play-state:paused; }
+@keyframes shop-coin-sweep { 0%,18% { opacity:0; transform:translateX(-120%); } 24% { opacity:.55; } 46% { opacity:.55; transform:translateX(120%); } 47%,100% { opacity:0; transform:translateX(120%); } }
+@media (prefers-reduced-motion:reduce) { #shop-screen .shop-coin-reflection { display:none; } #shop-screen .shop-ticket-arrive { animation:none; } }
+/* Reuse the inventory weapon motion in its original 120 x 88 coordinate system. */
+#shop-screen .shop-weapon-motion { position:absolute; left:50%; top:50%; width:120px; height:88px; transform:translate(-50%,-50%) scale(var(--shop-weapon-scale,1)); pointer-events:none; }
+#shop-screen .shop-weapon-motion .inv-thumb { position:relative; width:120px; height:88px; }
+#shop-screen .shop-weapon-motion .inv-thumb--pair { gap:8px; --kp-tilt:15deg; }
+#shop-screen .shop-weapon-motion .inv-thumb--pair > img { flex:none; width:52px; height:88px; max-width:52px!important; }
+#shop-screen .shop-weapon-motion .inv-cannon-burn,#shop-screen .shop-weapon-motion .inv-cannon-smoke { left:calc(50% - 38.2px); top:19.9px; }
+#shop-screen .shop-weapon-motion .inv-cannon-word { left:44px; top:12px; }
+#shop-screen[hidden] .shop-weapon-motion * { animation-play-state:paused; }
 #shop-screen .shop-card--sale .shop-card-badge--hero { position:relative!important; }
 #shop-screen .shop-card--sale .shop-card-pill { display:none!important; }
 #shop-screen .shop-card--sale .shop-card-btn { font-size:3.7cqw!important; -webkit-text-stroke:0!important; color:#fff9dd!important; }
 #shop-screen .shop-card--sale .shop-card-btn:disabled { opacity:.72!important; }
+#shop-screen .shop-card--skill .shop-card-btn,#shop-screen .shop-card--skill .shop-card-btn:disabled { opacity:1!important; }
+#shop-screen .shop-card--skill .shop-card-btn::before { filter:hue-rotate(260deg)!important; }
 #shop-screen .shop-card--coin-small .shop-card-btn,#shop-screen .shop-card--coin-bulk .shop-card-btn { height:11.2cqw!important; }
 #shop-screen .shop-card--sale .shop-card-badge--hero .shop-sale-currency,
 #shop-screen .shop-card--sale .shop-card-badge--hero .shop-sale-item { position:absolute!important; inset:0!important; display:block!important; width:78%!important; height:78%!important; max-width:78%!important; max-height:78%!important; margin:auto!important; object-fit:contain!important; transform:none!important; }
@@ -9258,6 +9330,20 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-costume-product { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.4em; font-size:2.8cqw; container-type:size; }
 #shop-screen .shop-costume-visual { position:relative; flex:none; width:82%; height:calc(100cqh - 2.2em); }
 #shop-screen .shop-costume-visual--set { width:94%; }
+#shop-screen .shop-costume-product { --team-light:#7db6ff; isolation:isolate; }
+#shop-screen .shop-costume-product[data-shop-team="mount_stars"] { --team-light:#ff9b86; }
+#shop-screen .shop-costume-product[data-shop-team="cloud_cups"] { --team-light:#a9edb3; }
+#shop-screen .shop-costume-product[data-shop-team="set"] { --team-light:#ffdc86; }
+#shop-screen .shop-costume-visual::before { content:''; position:absolute; inset:8% 0; z-index:-1; border-radius:50%; background:radial-gradient(ellipse,var(--team-light),transparent 69%); opacity:.16; animation:shop-costume-light 5s ease-in-out infinite; pointer-events:none; }
+#shop-screen .shop-costume-visual:not(.shop-costume-visual--set),#shop-screen .shop-costume-set-piece { animation:shop-costume-arrive .65s cubic-bezier(.2,.7,.3,1) both; }
+#shop-screen .shop-costume-set-piece--1 { animation-delay:.12s; }
+#shop-screen .shop-costume-set-piece--2 { animation-delay:.24s; }
+#shop-screen[hidden] .shop-costume-visual::before { animation-play-state:paused; }
+@keyframes shop-costume-arrive { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+@keyframes shop-costume-light { 0%,100% { opacity:.16; transform:scale(.9); } 50% { opacity:.32; transform:scale(1); } }
+@media (prefers-reduced-motion:reduce) {
+  #shop-screen .shop-weapon-motion *,#shop-screen .shop-costume-visual,#shop-screen .shop-costume-set-piece,#shop-screen .shop-costume-visual::before { animation:none!important; }
+}
 #shop-screen .shop-card--sale .shop-card-badge--hero .shop-costume-visual .shop-costume-outfit { position:relative!important; inset:auto!important; width:100%!important; height:100%!important; max-width:100%!important; max-height:100%!important; margin:0!important; }
 #shop-screen .shop-costume-effect { display:block; flex:none; width:100%; min-height:1.2em; margin:0; color:#5a2e10; font-size:1em; font-weight:700; line-height:1.2; text-align:center; white-space:nowrap; }
 #shop-screen .shop-costume-effect b { font:inherit; font-weight:900; }

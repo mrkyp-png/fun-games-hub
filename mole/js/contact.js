@@ -22,9 +22,9 @@
           '<section class="ct-sec"><b class="ct-lbl" data-k="mole.ct.email"></b>' +
             '<input class="ct-field ct-mail" data-ct-mail type="email" inputmode="email" autocomplete="email" maxlength="80"></section>' +
           '<p class="ct-err" data-ct-err></p>' +
+        '</div>' +
           '<div class="ct-send-wrap"><img class="ct-leaf ct-leaf--l" src="' + A + 'leaf.png" alt=""><img class="ct-leaf ct-leaf--r" src="' + A + 'leaf.png" alt="">' +
             '<button type="button" class="ct-send" data-ct-send><img class="ct-trail" src="' + A + 'trail.png" alt=""><img class="ct-plane" src="' + A + 'plane.png" alt=""><span data-k="mole.ct.send"></span></button></div>' +
-        '</div>' +
       '</div>';
     var $ = function (s) { return el.querySelector(s); };
     var menu = $('[data-ct-menu]'), err = $('[data-ct-err]'), body = $('[data-ct-body]'), mail = $('[data-ct-mail]');
