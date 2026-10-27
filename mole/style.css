@@ -9233,6 +9233,27 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-card--sale .shop-card-badge--hero .shop-sale-item { width:72%!important; height:84%!important; max-width:72%!important; max-height:84%!important; }
 #shop-screen .shop-card--sale .shop-sale-set { position:absolute!important; inset:8% 1%!important; display:flex!important; align-items:center!important; justify-content:center!important; gap:1%!important; }
 #shop-screen .shop-card--sale .shop-sale-set img { position:relative!important; display:block!important; flex:0 1 31%!important; width:31%!important; height:82%!important; max-width:31%!important; max-height:82%!important; object-fit:contain!important; }
+/* Shop skill files share the same centered rim diameter; use equal square slots. */
+#shop-screen .shop-card--sale .shop-card-badge--hero .shop-sale-item.shop-skill-icon { width:72%!important; height:auto!important; aspect-ratio:1!important; max-width:72%!important; max-height:none!important; }
+#shop-screen .shop-card--sale .shop-sale-set img.shop-skill-icon { flex:0 0 31%!important; width:31%!important; height:auto!important; aspect-ratio:1!important; max-width:31%!important; max-height:none!important; transform:none!important; }
+#shop-screen .shop-skill-product { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.322581em; font-size:3.1cqw; container-type:size; }
+#shop-screen .shop-card--skill { min-width:0!important; }
+#shop-screen .shop-card--skill.shop-card--skill-en .shop-card-name { font-size:3.8cqw!important; }
+#shop-screen .shop-skill-visual { position:relative; flex:none; width:min(72%,calc(100cqh - 4.5em)); aspect-ratio:1; }
+#shop-screen .shop-card--sale .shop-card-badge--hero .shop-skill-visual .shop-skill-icon { position:relative!important; inset:auto!important; width:100%!important; height:100%!important; max-width:100%!important; max-height:100%!important; margin:0!important; transform:translate(var(--skill-rim-x),var(--skill-rim-y)) scale(var(--skill-rim-scale-x),var(--skill-rim-scale-y))!important; }
+#shop-screen .shop-skill-caption { box-sizing:border-box; display:flex; align-items:center; justify-content:center; width:96%; min-height:2.5em; margin:0; padding:0; font-size:3.1cqw; font-weight:700; line-height:1.25; color:#5a2e10; text-align:center; text-wrap:balance; word-break:keep-all; text-shadow:none; -webkit-text-stroke:0; }
+#shop-screen .shop-skill-product .shop-skill-caption { flex-direction:column; flex:none; font-size:1em; }
+#shop-screen .shop-skill-quantity { display:block; font-weight:900; }
+#shop-screen .shop-skill-visual--bundle { width:min(88%,calc(100cqh - 4.5em)); }
+#shop-screen .shop-skill-product--bundle .shop-skill-bundle-image { display:block; width:100%!important; height:100%!important; max-width:100%!important; max-height:100%!important; aspect-ratio:1; object-fit:contain!important; margin:0; transform:none!important; }
+#shop-screen .shop-skill-product .shop-skill-caption--bundle { font-size:.74em; min-height:3.75em; }
+#shop-screen .shop-skill-caption--bundle span { display:block; white-space:nowrap; }
+#shop-screen .shop-skill-sparkle { position:absolute; z-index:2; left:var(--spark-x); top:var(--spark-y); width:var(--spark-size); aspect-ratio:1; pointer-events:none; opacity:0; transform:translate(-50%,-50%) scale(.2); animation:shop-skill-twinkle 3.8s ease-in-out infinite; animation-delay:var(--spark-delay); }
+#shop-screen .shop-skill-sparkle::before { content:''; position:absolute; inset:-18%; background:radial-gradient(circle,var(--spark-color,#ffe998) 0,transparent 64%); opacity:.65; }
+#shop-screen .shop-skill-sparkle::after { content:''; position:absolute; inset:0; background:radial-gradient(circle,#fff 0 18%,var(--spark-color,#ffe998) 64%,#ffc535 100%); clip-path:polygon(50% 0,59% 37%,100% 50%,59% 63%,50% 100%,41% 63%,0 50%,41% 37%); }
+#shop-screen .shop-skill-visual--ai { --spark-color:#75f2ff; }
+@keyframes shop-skill-twinkle { 0%,28%,100% { opacity:0; transform:translate(-50%,-50%) scale(.2) rotate(-10deg); } 10% { opacity:1; transform:translate(-50%,-50%) scale(1) rotate(0deg); } 20% { opacity:.4; transform:translate(-50%,-50%) scale(.7) rotate(8deg); } }
+@media (prefers-reduced-motion:reduce) { #shop-screen .shop-skill-sparkle { animation:none; opacity:0; } }
 #shop-screen .shop-card-name-box { transform:translateY(4px)!important; }
 #shop-screen .shop-card-pill>span { display:block!important; width:max-content!important; height:auto!important; margin:0!important; padding:0!important; line-height:1!important; transform-origin:50% 50%!important; }
 #shop-screen .shop-card-btn>.shop-coins-stack[src$="coin-option-01.png"] { width:29%!important; height:92%!important; }

@@ -163,6 +163,11 @@
         return;
       }
       var src = img.currentSrc || img.src;
+      if (img.classList.contains('shop-skill-icon')) {
+        // Shop art uses a measured rim transform instead of alpha-mass centering.
+        img.style.setProperty('translate', '0px 0px', 'important');
+        return;
+      }
       var bounds = alphaBoundsBySrc[src];
       if (!bounds) {
         try {
@@ -447,12 +452,12 @@
       });
     }
 
-    function renderPendingProducts(items) {
+    function renderPendingProducts(items, productClass) {
       cardsEl.innerHTML = '';
       var english = I18N().lang === 'en';
       items.forEach(function (item) {
         cardsEl.appendChild(heartCard({
-          theme: 'pink', productClass: 'shop-card--sale', art: item.art,
+          theme: 'pink', productClass: 'shop-card--sale' + (productClass ? ' ' + productClass : ''), art: item.art,
           name: english ? item.nameEn : item.nameKo, desc: null, pillText: '',
           btnHtml: '<b>' + (english ? 'Offer setup pending' : '상품·가격 확정 후 판매') + '</b>', btnDisabled: true
         }));
@@ -460,14 +465,53 @@
     }
 
     function renderSkillCards() {
-      var allSkills = '<div class="shop-sale-set">' +
-        '<img alt="" src="assets/skills/shield.png"><img alt="" src="assets/skills/targeting-v1403.png"><img alt="" src="assets/skills/ai.png"></div>';
+      var english = I18N().lang === 'en';
+      var descriptions = {
+        shield: { quantity: 10, ko: '폭탄 1회 방어', en: 'Blocks one bomb', setKo: '실드 x15 · 폭탄 1회 방어', setEn: 'Shield x15 · Blocks one bomb' },
+        targeting: { quantity: 30, ko: '목표 자동 조준', en: 'Auto-aims a target', setKo: '타겟팅 x35 · 목표 자동 조준', setEn: 'Targeting x35 · Auto-aims' },
+        ai: { quantity: 10, ko: '10초간 자동 타격', en: 'Auto-hits for 10 seconds', setKo: 'AI x12 · 10초간 자동 타격', setEn: 'AI x12 · Auto-hits for 10 sec' }
+      };
+      var sparklePoints = {
+        shield: [[30.4,25.9,12,0],[67.6,24.8,12,.7],[77.4,61.2,12,1.4],[26.2,68.9,13,2.1],[35.5,78.1,9,2.8]],
+        targeting: [[35.5,29.4,8,.25],[33.6,66.3,8,1.9]],
+        ai: [[51,19.5,7,.1],[25.9,32.5,8,.7],[20,43.6,7,1.5],[75.8,33.4,7,2.3],[48.6,81.7,6,2.9]],
+        set: [[15.8,17.4,8,0],[40,17.8,6,.7],[13.4,44.2,8,1.4],[45,39.7,7,2.1],[43.8,12,7,2.8],[85.5,20.1,7,.4],[84.5,48,8,1.1],[21,61.3,8,1.8],[79,61.3,8,2.5],[34.5,56.4,7,.2],[50,47.5,5,1],[66.5,54,5,2],[49.6,88.4,5,3]]
+      };
+      function sparkleLayer(id) {
+        return sparklePoints[id].map(function (point) {
+          return '<i class="shop-skill-sparkle" aria-hidden="true" style="--spark-x:' + point[0] + '%;--spark-y:' + point[1] + '%;--spark-size:' + point[2] + '%;--spark-delay:-' + point[3] + 's"></i>';
+        }).join('');
+      }
+      function skillImage(id, single) {
+        var rims = {
+          shield: [627.3446314019238, 627.5717925387673, 987.6406185656668, 988.1715000589937],
+          targeting: [626.5608097147342, 625.3258760885784, 977.8968851682131, 979.427370722971],
+          ai: [626.9983455919864, 627.305248952077, 985.4905202182282, 986.2705867459962]
+        };
+        var rim = rims[id], size = 1254, diameter = size * 360.63 / 460;
+        var sx = diameter / rim[2], sy = diameter / rim[3];
+        var tx = (size / 2 - rim[0]) * sx / size * 100;
+        var ty = (size / 2 - rim[1]) * sy / size * 100;
+        return '<img class="shop-skill-icon' + (single ? ' shop-sale-item' : '') + '" data-shop-skill="' + id + '" data-skill-rim="' + rim.join(',') + '" style="--skill-rim-scale-x:' + sx + ';--skill-rim-scale-y:' + sy + ';--skill-rim-x:' + tx + '%;--skill-rim-y:' + ty + '%" alt="" src="assets/skills/shop-hd-v1484/' + id + '-clean.webp">';
+      }
+      function skillArt(id) {
+        return '<div class="shop-skill-product"><div class="shop-skill-visual shop-skill-visual--' + id + '">' + skillImage(id, true) + sparkleLayer(id) + '</div>' +
+          '<p class="shop-skill-caption"><b class="shop-skill-quantity">x' + descriptions[id].quantity + '</b><span>' + descriptions[id][english ? 'en' : 'ko'] + '</span></p></div>';
+      }
+      var allSkills = '<div class="shop-skill-product shop-skill-product--bundle">' +
+        '<div class="shop-skill-visual shop-skill-visual--bundle">' +
+        '<img class="shop-skill-bundle-image" alt="' + (english ? 'Shield, targeting and AI skill set' : '실드·타겟팅·AI 스킬 세트') + '" src="assets/skills/shop-hd-v1484/set-triangle-clean.webp">' +
+        sparkleLayer('set') + '</div>' +
+        '<p class="shop-skill-caption shop-skill-caption--bundle">' +
+        ['shield', 'targeting', 'ai'].map(function (id) {
+          return '<span>' + descriptions[id][english ? 'setEn' : 'setKo'] + '</span>';
+        }).join('') + '</p></div>';
       renderPendingProducts([
-        { nameKo: '실드 묶음', nameEn: 'Shield pack', art: '<img class="shop-sale-item" alt="" src="assets/skills/shield.png">' },
-        { nameKo: '타겟팅 묶음', nameEn: 'Targeting pack', art: '<img class="shop-sale-item" alt="" src="assets/skills/targeting-v1403.png">' },
-        { nameKo: 'AI 스킬 묶음', nameEn: 'AI skill pack', art: '<img class="shop-sale-item" alt="" src="assets/skills/ai.png">' },
+        { nameKo: '실드 묶음', nameEn: 'Shield pack', art: skillArt('shield') },
+        { nameKo: '타겟팅 묶음', nameEn: 'Targeting pack', art: skillArt('targeting') },
+        { nameKo: 'ai 묶음', nameEn: 'AI pack', art: skillArt('ai') },
         { nameKo: '스킬 세트', nameEn: 'Skill set', art: allSkills }
-      ]);
+      ], 'shop-card--skill' + (english ? ' shop-card--skill-en' : ''));
     }
 
     function renderCostumeCards() {
