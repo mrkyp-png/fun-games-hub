@@ -2665,7 +2665,8 @@ body { background: var(--lm-page); }
 #score-screen.sr-screen {
   position: fixed; inset: 0; top: 0; left: 0; transform: none; width: 100%; height: 100%;
   border-radius: 0; box-shadow: none; z-index: 300; overflow: hidden; display: block;
-  background: #2098f7 url('assets/score/bg-palace-clear-v1491.jpg') center top / max(100%, calc((100dvh + 56px) * 0.5628)) auto no-repeat; color: #1f2a4a; /* 위쪽 빈틈 없이 궁전 배경의 지붕·깃발을 양탄자 뒤로 내림 */
+  background: #2098f7 url('assets/score/bg-palace-sides-kept-v1493.jpg') center top / cover no-repeat;
+  color: #1f2a4a; /* 배경 이미지 자체에서 상단 하늘을 확보. 위치 이동·단색 덧칠 없음. */
   --w: min(100vw - 20px, 440px, (100dvh - 40px) * 0.47);
 }
 .sr-sky { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; clip-path: inset(0 0 70% 0);
