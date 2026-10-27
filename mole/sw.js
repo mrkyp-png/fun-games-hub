@@ -3,7 +3,7 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-// V1485 G refines shop prices, targeting glints, default weapon and costume cards.
+// V1486 G adds costume previews, four-hour shop scenery and soft popup backdrops.
 const CACHE = 'mole-game-v1466-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
@@ -11,6 +11,9 @@ const CACHE = 'mole-game-v1466-G';
 // vendor/face_mesh/*(약 10MB, 얼굴인식)는 SHELL 제외 — 사람두더지 메이커 처음 열 때만 필요.
 // 처음 요청될 때 아래 fetch 핸들러가 알아서 캐시한다.
 const SHELL = [
+  './js/shop-scenery-v1486.js',
+  './assets/shop-background-v1486/day.jpg',
+  './assets/shop-background-v1486/night.jpg',
   './assets/skills/shop-hd-v1484/shield-clean.webp',
   './assets/skills/shop-hd-v1484/targeting-clean.webp',
   './assets/skills/shop-hd-v1484/ai-clean.webp',

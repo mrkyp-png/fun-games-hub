@@ -71,6 +71,7 @@
 
   function create(opts) {
     var el = opts.root;
+    var scenery = MG.ShopScenery ? MG.ShopScenery.create(el) : null;
     var cardsEl = el.querySelector('[data-shop-cards]');
     var cardsBoxEl = el.querySelector('.shop-cards-box');
     var tabsEl = el.querySelector('[data-shop-tabs]');
@@ -252,6 +253,39 @@
       });
     }
 
+    function showCostumePopup(item) {
+      var english = I18N().lang === 'en';
+      var previous = el.querySelector('.shop-coin-choice-dialog');
+      if (previous) previous.remove();
+      var returnFocus = document.activeElement;
+      var dialog = document.createElement('div');
+      dialog.className = 'shop-coin-choice-dialog shop-costume-dialog';
+      dialog.setAttribute('role', 'dialog');
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.setAttribute('aria-labelledby', 'shop-costume-dialog-title');
+      var pictures = item.previewImages.map(function (src, index) {
+        return '<img class="' + (item.previewImages.length > 1 ? 'shop-costume-set-piece shop-costume-set-piece--' + index : 'shop-costume-dialog-outfit') + '" src="' + src + '" alt="">';
+      }).join('');
+      dialog.innerHTML = '<div class="shop-coin-choice-card shop-costume-dialog-card">' +
+        '<b id="shop-costume-dialog-title" class="shop-coin-choice-message"></b>' +
+        '<div class="shop-costume-dialog-art">' + (item.previewImages.length > 1 ? '<div class="shop-costume-set-art">' + pictures + '</div>' : pictures) + '</div>' +
+        '<p class="shop-costume-dialog-effect"></p>' +
+        '<div class="shop-costume-dialog-price">' + coinOption('06') + '<b>' + item.coinPrice.toLocaleString('en-US') + '</b></div>' +
+        '<div class="shop-coin-choice-actions"><button type="button" class="shop-card-btn shop-coin-choice-action" data-choice-action="ok">' + (english ? 'OK' : '확인') + '</button></div></div>';
+      dialog.querySelector('#shop-costume-dialog-title').textContent = english ? item.nameEn : item.nameKo;
+      dialog.querySelector('.shop-costume-dialog-effect').textContent = (english ? 'Mole retreat delay +' : '두더지 하강 지연 +') + MG.CostumeTeams.BASE_EFFECT_VALUE.toFixed(1) + (english ? 's' : '초');
+      function close() { dialog.remove(); if (returnFocus && returnFocus.isConnected) returnFocus.focus(); }
+      dialog.addEventListener('click', function (event) {
+        if (event.target === dialog || event.target.closest('[data-choice-action="ok"]')) close();
+      });
+      dialog.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') { event.preventDefault(); close(); }
+        if (event.key === 'Tab') { event.preventDefault(); dialog.querySelector('button').focus(); }
+      });
+      el.appendChild(dialog);
+      dialog.querySelector('button').focus();
+    }
+
     function showCoinWeaponSelection(bulkCard, english) {
       var previous = el.querySelector('.shop-coin-choice-dialog');
       if (previous) previous.remove();
@@ -372,7 +406,8 @@
       c.querySelector('.shop-card-pill span').textContent = o.pillText;
       var btn = c.querySelector('.shop-card-btn');
       btn.innerHTML = o.btnHtml;
-      if (!o.btnDisabled && o.onClick) btn.addEventListener('click', function () {
+      if (!o.btnDisabled && o.onPreview) btn.addEventListener('click', o.onPreview);
+      else if (!o.btnDisabled && o.onClick) btn.addEventListener('click', function () {
         showFinalConfirm(o.confirmMessage || defaultPurchasePrompt(o.name), null, o.onClick);
       });
       return c;
@@ -448,15 +483,17 @@
       });
     }
 
-    function renderPendingProducts(items, productClass) {
+    function renderPendingProducts(items, productClass, options) {
       cardsEl.innerHTML = '';
       var english = I18N().lang === 'en';
+      options = options || {};
       items.forEach(function (item) {
         cardsEl.appendChild(heartCard({
           theme: 'pink', productClass: 'shop-card--sale' + (productClass ? ' ' + productClass : ''), art: item.art,
           name: english ? item.nameEn : item.nameKo, desc: null, pillText: '',
-          btnHtml: item.coinPrice ? coinOption('06') + '<b>' + item.coinPrice.toLocaleString('en-US') + (english ? ' coins' : ' 코인') + '</b>' :
-            '<b>' + (english ? 'Offer setup pending' : '상품·가격 확정 후 판매') + '</b>', btnDisabled: true
+          btnHtml: item.coinPrice ? coinOption('06') + '<b>' + item.coinPrice.toLocaleString('en-US') + (options.hideCoinLabel ? '' : english ? ' coins' : ' 코인') + '</b>' :
+            '<b>' + (english ? 'Offer setup pending' : '상품·가격 확정 후 판매') + '</b>', btnDisabled: !options.onPreview,
+          onPreview: options.onPreview ? function () { options.onPreview(item); } : null
         }));
       });
     }
@@ -513,16 +550,22 @@
 
     function renderCostumeCards() {
       var teams = MG.CostumeTeams.teams();
+      var english = I18N().lang === 'en';
       function outfit(id) { return 'assets/costume/outfit-' + id + '.png'; }
+      function costumeArt(art, isSet) {
+        return '<div class="shop-costume-product"><div class="shop-costume-visual' + (isSet ? ' shop-costume-visual--set' : '') + '">' + art + '</div>' +
+          '<p class="shop-costume-effect"><span>' + (english ? 'Mole retreat delay' : '두더지 하강 지연') + '</span> <b>+' +
+          MG.CostumeTeams.BASE_EFFECT_VALUE.toFixed(1) + (english ? 's' : '초') + '</b></p></div>';
+      }
       var allCostumes = '<div class="shop-costume-set-art">' + teams.map(function (team, index) {
         return '<img class="shop-costume-set-piece shop-costume-set-piece--' + index + '" alt="" src="' + outfit(team.id) + '">';
       }).join('') + '</div>';
       renderPendingProducts([
-        { nameKo: '블루 베어스\n코스튬', nameEn: 'Blue Bears\ncostume', art: '<img class="shop-sale-item shop-costume-outfit" alt="" src="' + outfit('blue_bears') + '">', coinPrice: 100000 },
-        { nameKo: '마운트 스타즈\n코스튬', nameEn: 'Mount Stars\ncostume', art: '<img class="shop-sale-item shop-costume-outfit" alt="" src="' + outfit('mount_stars') + '">', coinPrice: 100000 },
-        { nameKo: '클라우드 컵스\n코스튬', nameEn: 'Cloud Cups\ncostume', art: '<img class="shop-sale-item shop-costume-outfit" alt="" src="' + outfit('cloud_cups') + '">', coinPrice: 100000 },
-        { nameKo: '코스튬 세트', nameEn: 'Costume set', art: allCostumes, coinPrice: 250000 }
-      ], 'shop-card--costume');
+        { nameKo: '블루 베어스', nameEn: 'Blue Bears', art: costumeArt('<img class="shop-sale-item shop-costume-outfit" alt="" src="' + outfit('blue_bears') + '">'), coinPrice: 100000, previewImages: [outfit('blue_bears')] },
+        { nameKo: '마운트 스타즈', nameEn: 'Mount Stars', art: costumeArt('<img class="shop-sale-item shop-costume-outfit" alt="" src="' + outfit('mount_stars') + '">'), coinPrice: 100000, previewImages: [outfit('mount_stars')] },
+        { nameKo: '클라우드 컵스', nameEn: 'Cloud Cups', art: costumeArt('<img class="shop-sale-item shop-costume-outfit" alt="" src="' + outfit('cloud_cups') + '">'), coinPrice: 100000, previewImages: [outfit('cloud_cups')] },
+        { nameKo: '코스튬 세트', nameEn: 'Costume set', art: costumeArt(allCostumes, true), coinPrice: 250000, previewImages: teams.map(function (team) { return outfit(team.id); }) }
+      ], 'shop-card--costume', { hideCoinLabel: true, onPreview: showCostumePopup });
     }
 
     function renderCoinCards() {
@@ -802,6 +845,7 @@
     root.addEventListener('resize', function () { if (!el.hidden) { requestAnimationFrame(alignCoinPrices); requestAnimationFrame(centerShopTabArt); } });
 
     function show() {
+      if (scenery) scenery.show();
       renderBanner();
       var shopPick = (MG && MG.shopPick) || null;
       activeTab = shopPick === 'heart' ? 'currency' : (shopPick || 'currency');
@@ -833,7 +877,10 @@
     // 어느 경로로 나가도(홈 아이콘, 메일함 등 — 뒤로가기 버튼이 없어 경로가 다양함) 탭 전환과
     // 동일하게 롤아웃(사용자 지정: "재화버튼 외 다른 버튼을 누르면 전부 적용, 홈화면도 동일").
     new MutationObserver(function () {
-      if (el.hidden) removeHudFlys(); // v802(사용자 지정: 다른 화면 갈 때 원 잔상) — 상점을 떠날 땐 즉시 제거(탭 전환 롤아웃은 그대로)
+      if (el.hidden) {
+        removeHudFlys(); // Remove HUD remnants when leaving the shop.
+        if (scenery) scenery.hide();
+      } else if (scenery) scenery.show();
     }).observe(el, { attributes: true, attributeFilter: ['hidden'] });
     return { show: show };
   }

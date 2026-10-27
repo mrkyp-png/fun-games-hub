@@ -9253,10 +9253,16 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-skill-product--bundle .shop-skill-bundle-image { display:block; width:100%!important; height:100%!important; max-width:100%!important; max-height:100%!important; aspect-ratio:1; object-fit:contain!important; margin:0; transform:none!important; }
 #shop-screen .shop-skill-product .shop-skill-caption--bundle { font-size:1.13em; min-height:3.75em; font-weight:900; }
 #shop-screen .shop-skill-caption--bundle span { display:block; white-space:nowrap; }
-#shop-screen .shop-card--costume .shop-card-name-box { container-type:size; font-size:4.2cqw!important; }
-#shop-screen .shop-card.shop-card--costume .shop-card-name { font-size:min(1em,42cqh)!important; line-height:1.05!important; white-space:pre-line!important; }
-#shop-screen .shop-card--sale .shop-card-badge--hero .shop-costume-outfit { width:82%!important; height:94%!important; max-width:82%!important; max-height:94%!important; }
+#shop-screen .shop-card--costume .shop-card-name-box { font-size:5cqw!important; }
+#shop-screen .shop-card.shop-card--costume .shop-card-name { font-size:inherit!important; line-height:1.1!important; white-space:nowrap!important; }
+#shop-screen .shop-costume-product { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.4em; font-size:2.8cqw; container-type:size; }
+#shop-screen .shop-costume-visual { position:relative; flex:none; width:82%; height:calc(100cqh - 2.2em); }
+#shop-screen .shop-costume-visual--set { width:94%; }
+#shop-screen .shop-card--sale .shop-card-badge--hero .shop-costume-visual .shop-costume-outfit { position:relative!important; inset:auto!important; width:100%!important; height:100%!important; max-width:100%!important; max-height:100%!important; margin:0!important; }
+#shop-screen .shop-costume-effect { display:block; flex:none; width:100%; min-height:1.2em; margin:0; color:#5a2e10; font-size:1em; font-weight:700; line-height:1.2; text-align:center; white-space:nowrap; }
+#shop-screen .shop-costume-effect b { font:inherit; font-weight:900; }
 #shop-screen .shop-costume-set-art { position:absolute; left:50%; top:50%; width:94%; height:92%; transform:translate(-50%,-50%); }
+#shop-screen .shop-costume-visual--set .shop-costume-set-art { width:100%; height:100%; }
 #shop-screen .shop-costume-set-art .shop-costume-set-piece { position:absolute; width:53%; height:72%; object-fit:contain!important; }
 #shop-screen .shop-costume-set-piece--0 { left:0; top:0; z-index:1; }
 #shop-screen .shop-costume-set-piece--1 { right:0; top:0; z-index:1; }
@@ -9313,13 +9319,20 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-coin-weapon-choice.is-selected { border:2px solid #e3a327!important; background:#fff0bd!important; box-shadow:inset 0 0 0 1px #fff7d7!important; }
 #shop-screen .shop-coin-weapon-choice img { display:block!important; flex:0 1 64%!important; width:82%!important; height:64%!important; max-width:82%!important; max-height:64%!important; margin:0!important; object-fit:contain!important; }
 #shop-screen .shop-coin-weapon-choice span { display:block!important; flex:0 0 auto!important; width:100%!important; padding-top:1px!important; transform:translateY(2px)!important; overflow:hidden!important; color:#54290b!important; font:900 2.3cqw/1.2 'Jua',sans-serif!important; text-align:center!important; text-overflow:ellipsis!important; white-space:nowrap!important; }
-#shop-screen .shop-coin-choice-dialog { position:absolute!important; inset:0!important; z-index:10000!important; display:flex!important; align-items:center!important; justify-content:center!important; box-sizing:border-box!important; padding:6cqw!important; background:#665238!important; }
+#shop-screen .shop-coin-choice-dialog { position:absolute!important; inset:0!important; z-index:10000!important; display:flex!important; align-items:center!important; justify-content:center!important; box-sizing:border-box!important; padding:6cqw!important; background:rgba(16,24,40,.42)!important; -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); }
 #shop-screen .shop-coin-choice-card { display:flex!important; flex-direction:column!important; align-items:center!important; box-sizing:border-box!important; width:88cqw!important; max-width:380px!important; padding:6cqw 5cqw 4cqw!important; border:7px solid #d6ad63!important; border-radius:22px!important; background:#fff5d9!important; box-shadow:inset 0 0 0 3px #f6dfaa,0 7px 18px rgba(55,30,5,.3)!important; }
 #shop-screen .shop-coin-choice-card--weapon-select { width:94cqw!important; max-width:460px!important; padding:5cqw 4cqw!important; }
 #shop-screen .shop-coin-weapon-choices--dialog { display:flex!important; gap:2cqw!important; width:100%!important; margin:5cqw 0 0!important; }
 #shop-screen .shop-coin-weapon-choice--dialog { flex:1 1 0!important; height:38cqw!important; min-height:120px!important; max-height:160px!important; padding:2cqw!important; }
 #shop-screen .shop-coin-weapon-choice--dialog span { font-size:3.2cqw!important; }
 #shop-screen .shop-coin-choice-art { display:block!important; width:24cqw!important; height:24cqw!important; max-width:100px!important; max-height:100px!important; margin:0 0 3cqw!important; object-fit:contain!important; }
+#shop-screen .shop-costume-dialog-card { max-height:90dvh!important; gap:2cqw; overflow:auto; }
+#shop-screen .shop-costume-dialog-art { position:relative; flex:none; width:54cqw; height:50cqw; max-width:230px; max-height:220px; }
+#shop-screen .shop-costume-dialog-outfit { width:100%; height:100%; object-fit:contain; }
+#shop-screen .shop-costume-dialog-art .shop-costume-set-art { width:100%; height:100%; }
+#shop-screen .shop-costume-dialog-effect { margin:0; font-size:3.2cqw; font-weight:700; line-height:1.2; color:#5a2e10; white-space:nowrap; }
+#shop-screen .shop-costume-dialog-price { display:flex; align-items:center; justify-content:center; gap:2cqw; color:#54290b; font:900 5cqw/1 'Jua',sans-serif; }
+#shop-screen .shop-costume-dialog-price img { width:15cqw; height:11cqw; object-fit:contain; }
 #shop-screen .shop-coin-choice-message { display:block!important; width:100%!important; color:#54290b!important; font:900 4.2cqw/1.25 'Jua',sans-serif!important; text-align:center!important; word-break:keep-all!important; overflow-wrap:normal!important; white-space:normal!important; }
 #shop-screen .shop-coin-choice-actions { display:flex!important; justify-content:center!important; gap:3cqw!important; width:100%!important; margin-top:5cqw!important; }
 #shop-screen .shop-coin-choice-actions .shop-card-btn { flex:1 1 0!important; width:auto!important; height:12cqw!important; min-width:0!important; min-height:0!important; margin:0!important; padding:2cqw!important; border:0!important; border-radius:999px!important; color:#fff!important; font:900 3.7cqw/1 'Jua',sans-serif!important; text-align:center!important; text-shadow:0 1px 1px rgba(30,80,10,.35)!important; box-shadow:0 4px 0 #1c8340,0 4px 1px rgba(0,0,0,.18),0 8px 10px rgba(0,0,0,.24),inset 0 2px 2px rgba(255,255,255,.8),inset 0 -3px 4px rgba(0,80,35,.4)!important; }
@@ -9327,14 +9340,21 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-coin-choice-actions button[data-choice-action="cancel"] { background:linear-gradient(180deg,#ff8181 0%,#f04b4b 46%,#d83232 100%)!important; text-shadow:0 1px 1px rgba(100,15,15,.45)!important; box-shadow:0 4px 0 #9e2222,0 4px 1px rgba(0,0,0,.18),0 8px 10px rgba(0,0,0,.24),inset 0 2px 2px rgba(255,255,255,.72),inset 0 -3px 4px rgba(90,0,0,.36)!important; }
 /* User-requested content offset; the back button has its own independent position. */
 #shop-screen>.shop-banner,#shop-screen>.shop-cards-box,#shop-screen>.shop-tab-shell { top:-0.3cm!important; }
-/* Background decoration is independent of the shop artwork and future sky colors. */
-#shop-screen>.shop-sky { position:absolute!important; inset:0!important; z-index:0!important; pointer-events:none!important; overflow:hidden!important; }
-#shop-screen .shop-cloud { position:absolute; left:0; width:110px; height:42px; fill:#f5fbff; opacity:.16; animation:shop-cloud-drift 80s linear infinite; will-change:transform; pointer-events:none; }
-#shop-screen .shop-cloud--one { top:0; animation-delay:-21s; }
-#shop-screen .shop-cloud--two { top:43%; width:85px; height:32px; opacity:.12; animation-duration:105s; animation-delay:-67s; }
-#shop-screen .shop-cloud--three { bottom:-5px; width:125px; height:46px; opacity:.14; animation-duration:120s; animation-delay:-85s; }
-@keyframes shop-cloud-drift { from { transform:translateX(-150px); } to { transform:translateX(calc(100vw + 150px)); } }
-@media (prefers-reduced-motion:reduce) { #shop-screen .shop-cloud { animation-duration:240s; } }
+/* Four-hour shop scenery; cards, controls and popup stacking stay independent. */
+#shop-screen[data-shop-theme="night"] { background-color:#071436!important; }
+#shop-screen>.shop-scenery,#shop-screen>.shop-sky { position:absolute!important; inset:0!important; z-index:0!important; pointer-events:none!important; overflow:hidden!important; }
+#shop-screen>.shop-scenery { background-position:center!important; background-size:cover!important; background-repeat:no-repeat!important; }
+#shop-screen .shop-cloud-field,#shop-screen .shop-star-field { position:absolute; inset:0 0 auto; overflow:hidden; }
+#shop-screen .shop-cloud-field { height:28%; mask-image:linear-gradient(#000 0 83%,transparent); }
+#shop-screen .shop-star-field { height:32%; mask-image:linear-gradient(#000 0 76%,transparent); }
+#shop-screen[data-shop-theme="night"] .shop-cloud-field,#shop-screen:not([data-shop-theme="night"]) .shop-star-field { display:none; }
+#shop-screen .shop-cloud { position:absolute; left:0; top:var(--cloud-top); width:var(--cloud-size); height:auto; fill:#f5fbff; opacity:.72; filter:drop-shadow(0 1px 2px #d8efff66); animation:shop-cloud-drift var(--cloud-time) linear infinite; animation-delay:var(--cloud-delay); pointer-events:none; }
+@keyframes shop-cloud-drift { from { transform:translateX(-40cqw); } to { transform:translateX(140cqw); } }
+#shop-screen .shop-night-star { position:absolute; width:var(--star-size); height:var(--star-size); border-radius:50%; background:#fff8d7; box-shadow:0 0 4px #fff6bf99; opacity:.2; animation:shop-night-twinkle var(--star-time) ease-in-out infinite; animation-delay:var(--star-delay); }
+#shop-screen .shop-night-star--glint { width:calc(var(--star-size) * 2); height:calc(var(--star-size) * 2); border-radius:0; clip-path:polygon(50% 0,60% 39%,100% 50%,60% 61%,50% 100%,40% 61%,0 50%,40% 39%); }
+@keyframes shop-night-twinkle { 0%,100% { opacity:.16; transform:scale(.6); } 45% { opacity:1; transform:scale(1.12); } 68% { opacity:.45; transform:scale(.85); } }
+#shop-screen[hidden] .shop-cloud,#shop-screen[hidden] .shop-night-star { animation-play-state:paused; }
+@media (prefers-reduced-motion:reduce) { #shop-screen .shop-cloud { animation:none; transform:translateX(var(--cloud-rest)); } #shop-screen .shop-night-star { animation:none; opacity:.65; transform:none; } }
 /* Normal DIM on the yellow 3rd/4th round buttons: keep the hint subdued but distinct from the button face. */
 #game-screen.diff-mid[data-button-palette="yellow"] .lane-button--hot :is(.lane-num,.lane-sub,.lane-kr,.lane-en,.lane-lbl) { color: #9b8750; }
 #game-screen.diff-mid[data-button-palette="yellow"] .lane-button--hot .lane-ico svg { stroke: #9b8750; fill: #9b8750; }
