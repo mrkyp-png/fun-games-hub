@@ -2669,6 +2669,8 @@ body { background: var(--lm-page); }
   color: #1f2a4a; /* 배경 이미지 자체에서 상단 하늘을 확보. 위치 이동·단색 덧칠 없음. */
   --w: min(100vw - 20px, 440px, (100dvh - 40px) * 0.47);
 }
+#score-screen.sr-screen::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: inherit; filter: blur(6px); opacity: 0.6; } /* 궁전 배경만 더 흐리게 혼합. 양탄자·UI 선명도 유지. */
 .sr-sky { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; clip-path: inset(0 0 70% 0);
   mask-image: linear-gradient(90deg, transparent 6%, #000 19%, #000 81%, transparent 94%); }
 .sr-cloud { position: absolute; left: var(--sc-x); top: 25vh; width: var(--sc-size); height: auto; fill: #f4faff; opacity: 0; pointer-events: none;
