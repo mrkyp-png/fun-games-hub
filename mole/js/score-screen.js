@@ -9,6 +9,12 @@
   var MODE_CODE = { easy: 'A', mid: 'N', legend: 'P' }; // 라이트 ON/DIM/OFF = 아마추어/일반/프로 — 홈 라운드 표시(A1·N1·P1)와 통일(v780, 사용자 지정)
   var MODE_ORDER = ['easy', 'mid', 'legend'];
   var UNROLL_MS = 550, ROLLUP_MS = 370; // v790: 화면 전체 말림 0.5s 에 맞춤(+150)
+  // Content-addressed artwork: new bytes must get a new URL, including in installed-app caches.
+  var CARD_ART = {
+    1: { src: 'assets/score/card-1-clean-75c39b75eb.svg', width: 310, height: 461 },
+    2: { src: 'assets/score/card-2-clean-6cf5c67ce5.svg', width: 305, height: 448 },
+    3: { src: 'assets/score/card-3-clean-aa5a6fdc34.svg', width: 301, height: 453 }
+  };
 
   // 랭킹 데이터 출처 — gameId 별로 분리(mole_pang / rhythm_pang). 항목: {playerName, avatar, mode, highestRound, highestScore}
   var RankingSource = {
@@ -170,7 +176,8 @@
     function cardHtml(entry, place) {
       var c = document.createElement('div');
       c.className = 'sr-card sr-card--' + place + (entry ? '' : ' is-empty');
-      c.innerHTML = '<img class="sr-card-bg" alt="" src="assets/score/card-' + place + '-clean.svg">' +
+      var art = CARD_ART[place];
+      c.innerHTML = '<img class="sr-card-bg" alt="" src="' + art.src + '" width="' + art.width + '" height="' + art.height + '">' +
         '<div class="sr-card-body"><span class="sr-ava"><img alt=""></span><b class="sr-name"></b><span class="sr-pill"></span><strong class="sr-score"></strong></div>';
       c.querySelector('.sr-ava img').src = entry ? (entry.avatar || 'assets/moles/mole1.png') : 'assets/moles/mole1.png';
       c.querySelector('.sr-name').textContent = entry ? entry.playerName : '—';
@@ -277,6 +284,8 @@
     }
     var fitObs = new ResizeObserver(function () { if (!el.hidden) fitRows(); }); // 카드 그림이 늦게 뜨면 위쪽 높이가 바뀜 → 다시 맞춤
     fitObs.observe(el); fitObs.observe(top3); fitObs.observe(rp);
+    var titleWrap = el.querySelector('.sr-title-wrap');
+    if (titleWrap) fitObs.observe(titleWrap);
     function show() {
       view.game = 'mole';
       paintTabs(); render();

@@ -2665,7 +2665,7 @@ body { background: var(--lm-page); }
 #score-screen.sr-screen {
   position: fixed; inset: 0; top: 0; left: 0; transform: none; width: 100%; height: 100%;
   border-radius: 0; box-shadow: none; z-index: 300; overflow: hidden; display: block;
-  background: #1a0306 url('assets/score/bg-palace-clear-v1491.jpg') center / cover no-repeat; color: #1f2a4a; /* 고정 구름 제거, 구름은 별도 레이어 */
+  background: #2098f7 url('assets/score/bg-palace-clear-v1491.jpg') center top / max(100%, calc((100dvh + 56px) * 0.5628)) auto no-repeat; color: #1f2a4a; /* 위쪽 빈틈 없이 궁전 배경의 지붕·깃발을 양탄자 뒤로 내림 */
   --w: min(100vw - 20px, 440px, (100dvh - 40px) * 0.47);
 }
 .sr-sky { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; clip-path: inset(0 0 70% 0);
@@ -2693,7 +2693,7 @@ body { background: var(--lm-page); }
   width: 46px; height: 46px; padding: 0; border: none; background: none; cursor: pointer; transition: transform 0.08s; }
 .sr-back img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .sr-back:active { transform: scale(0.9); }
-.sr-title { width: calc(var(--w) * 0.56); flex: 0 0 auto; }
+.sr-title { width: calc(var(--w) * 0.56); height: auto; aspect-ratio: 620 / 359; flex: 0 0 auto; }
 /* ===== v778 스코어 4위 이하 = 두툼한 카드(사용자 참고 이미지 구성) ===== */
 #score-screen .sr-rows { gap: calc(var(--w) * 0.02); }
 /* v779(사용자 지정): 내 순위 칸·안내는 화면 아래 고정, 4~10위 목록만 스크롤 */
@@ -2778,7 +2778,7 @@ body { background: var(--lm-page); }
 .sr-top3 { width: var(--w); display: flex; justify-content: center; align-items: flex-end; gap: 1.5%; flex: 0 0 auto; }
 .sr-card { position: relative; width: 31%; container-type: inline-size; }
 .sr-card--1 { width: 34%; transform: translateY(-5%); z-index: 1; }
-.sr-card-bg { display: block; width: 100%; }
+.sr-card-bg { display: block; width: 100%; height: auto; }
 .sr-card-body { position: absolute; inset: 22% 8% 10%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
 .sr-card .sr-ava { width: 52cqw; height: 52cqw; margin-top: 4%; }
 .sr-card .sr-name { margin-top: 3%; font-size: 10.5cqw; font-weight: 900; color: #fff; -webkit-text-stroke: 3px rgba(0, 0, 40, 0.55); paint-order: stroke fill;
