@@ -2,7 +2,7 @@
   'use strict';
   var MG = root.MoleGame = root.MoleGame || {};
   var PICTURES = { day: 'assets/shop-background-v1486/day.jpg', night: 'assets/shop-background-v1486/night.jpg' };
-  var CLOUD = 'M27 50C8 50 7 29 25 26C27 8 53 5 63 19C74 0 108 5 112 26C137 18 153 32 145 44C142 49 135 50 125 50Z';
+  var CLOUD = 'M12 38C8 27 17 19 30 21C29 8 48 5 60 16C73 1 100 6 110 23C129 15 149 23 146 39C157 48 144 62 128 55C116 65 93 63 82 55C68 66 45 63 36 53C21 61 10 51 12 38Z';
 
   function themeAt(date) { return Math.floor(date.getHours() / 4) % 2 === 0 ? 'day' : 'night'; }
   function nextChangeAt(date) {
@@ -20,7 +20,7 @@
     sky.textContent = ''; sky.appendChild(clouds); sky.appendChild(stars);
     [[4,29,54,-6,5],[18,21,67,-31,28],[32,35,83,-49,52],[47,19,61,-17,76],[63,28,93,-70,15],[78,23,77,-40,65]].forEach(function (p) {
       var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      svg.setAttribute('viewBox', '0 0 160 60'); svg.setAttribute('class', 'shop-cloud');
+      svg.setAttribute('viewBox', '0 0 160 64'); svg.setAttribute('class', 'shop-cloud');
       svg.style.cssText = '--cloud-top:' + p[0] + '%;--cloud-size:' + p[1] + 'cqw;--cloud-time:' + p[2] + 's;--cloud-delay:' + p[3] + 's;--cloud-rest:' + p[4] + 'cqw';
       var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.setAttribute('d', CLOUD); svg.appendChild(path); clouds.appendChild(svg);

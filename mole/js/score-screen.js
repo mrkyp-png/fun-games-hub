@@ -65,7 +65,20 @@
     var rows = el.querySelector('[data-sr-rows]');
     var mine = el.querySelector('[data-sr-mine]');
     var toastEl = el.querySelector('[data-sr-toast]');
-    var closing = false, timers = [];
+    var closing = false, timers = [], rankContext = null;
+    // Rising clouds stay behind the carpet; each expands and leaves above the viewport.
+    (function () {
+      var sky = el.querySelector('[data-sr-sky]');
+      if (!sky) return;
+      var shape = 'M12 38C8 27 17 19 30 21C29 8 48 5 60 16C73 1 100 6 110 23C129 15 149 23 146 39C157 48 144 62 128 55C116 65 93 63 82 55C68 66 45 63 36 53C21 61 10 51 12 38Z';
+      [[24,25,24,-3,-3],[46,30,29,-12,2],[68,26,34,-24,-2],[80,31,38,-31,3]].forEach(function (p) {
+        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 160 64'); svg.setAttribute('class', 'sr-cloud');
+        svg.style.cssText = '--sc-x:' + p[0] + '%;--sc-size:' + p[1] + 'vw;--sc-time:' + p[2] + 's;--sc-delay:' + p[3] + 's;--sc-drift:' + p[4] + 'vw';
+        var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', shape); svg.appendChild(path); sky.appendChild(svg);
+      });
+    })();
     // 배경 꽃잎·금빛 반짝이 흩날림(사용자 지정 v765) — 1회 생성, CSS 로 무한 반복
     (function () {
       var fx = el.querySelector('[data-sr-fx]'), html = '';
@@ -198,7 +211,13 @@
         // 4위 이하 = 두툼한 흰 카드(사용자 참고 이미지 구성, v778): 순위 · 아바타 · 이름/라운드 뱃지 · 오른쪽 점수 박스
         row.innerHTML = '<b class="sr-rank"></b><span class="sr-ava"><img alt=""></span><span class="sr-who"><span class="sr-name"></span><span class="sr-pill"></span></span>' +
           '<span class="sr-sbox"><i>SCORE</i><strong class="sr-score"></strong></span>';
-        row.querySelector('.sr-rank').textContent = String(r);
+        var rankLabel = row.querySelector('.sr-rank');
+        rankLabel.textContent = String(r);
+        rankLabel.style.whiteSpace = 'nowrap';
+        var rankBaseline = document.createElement('span');
+        rankBaseline.className = 'sr-rank-baseline'; rankBaseline.setAttribute('aria-hidden', 'true');
+        rankBaseline.style.cssText = 'display:inline-block;width:0;height:0;padding:0;margin:0;border:0;vertical-align:baseline;font-size:0;line-height:0';
+        rankLabel.appendChild(rankBaseline);
         row.querySelector('.sr-ava img').src = e ? (e.avatar || 'assets/moles/mole1.png') : 'assets/moles/mole1.png';
         row.querySelector('.sr-name').textContent = e ? e.playerName : '—';
         row.querySelector('.sr-pill').textContent = e ? e.pill : '—';
@@ -224,6 +243,29 @@
       mine.querySelector('.sr-score').textContent = me ? fmt(me.score) : '0';
       fitRows();
     }
+    // Align the visible digit strokes, using this device's actual font metrics.
+    function alignRankDigits() {
+      if (el.hidden || !rows.clientHeight) return;
+      if (!rankContext) rankContext = document.createElement('canvas').getContext('2d');
+      if (!rankContext) return;
+      var labels = Array.prototype.slice.call(rows.querySelectorAll('.sr-rank'));
+      labels.forEach(function (label) { label.style.setProperty('--sr-rank-y', '0px'); });
+      var corrections = labels.map(function (label) {
+        var marker = label.querySelector('.sr-rank-baseline'); if (!marker) return null;
+        var style = getComputedStyle(label);
+        rankContext.font = style.font || (style.fontWeight + ' ' + style.fontSize + ' ' + style.fontFamily);
+        var metrics = rankContext.measureText(label.textContent);
+        if (!Number.isFinite(metrics.actualBoundingBoxAscent) || !Number.isFinite(metrics.actualBoundingBoxDescent)) return null;
+        var box = label.parentElement.getBoundingClientRect();
+        var inkCenter = marker.getBoundingClientRect().top + (metrics.actualBoundingBoxDescent - metrics.actualBoundingBoxAscent) / 2;
+        var delta = box.top + box.height / 2 - inkCenter;
+        if (Math.abs(delta) > parseFloat(style.fontSize) * 0.25) return null;
+        var scale = root.devicePixelRatio || 1;
+        return { label: label, y: Math.round(delta * scale) / scale };
+      });
+      corrections.forEach(function (c) { if (c) c.label.style.setProperty('--sr-rank-y', c.y + 'px'); });
+    }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { alignRankDigits(); }, function () {});
     // V1367 C(사용자 지정): 스크롤 목록이 반쯤 잘린 줄로 끝나지 않게 — 보이는 높이를 줄 간격의 배수로 맞춤(나머지는 아래 여백)
     function fitRows() {
       rows.style.flex = ''; rows.style.height = '';
@@ -231,6 +273,7 @@
       var cs = getComputedStyle(rows), gap = parseFloat(cs.rowGap) || 0, padTop = parseFloat(cs.paddingTop) || 0;
       var pitch = first.offsetHeight + gap, n = Math.max(1, Math.floor((rows.clientHeight - padTop - 4 + gap) / pitch));
       rows.style.flex = '0 0 auto'; rows.style.height = (padTop + n * pitch - gap + Math.min(4, gap - 1)) + 'px'; // 다음 줄은 간격 안쪽에서 끝나 안 보임
+      alignRankDigits();
     }
     var fitObs = new ResizeObserver(function () { if (!el.hidden) fitRows(); }); // 카드 그림이 늦게 뜨면 위쪽 높이가 바뀜 → 다시 맞춤
     fitObs.observe(el); fitObs.observe(top3); fitObs.observe(rp);
