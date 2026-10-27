@@ -2734,7 +2734,7 @@ body { background: var(--lm-page); }
 .sr-screen.is-in .sr-row:nth-child(7) { animation-delay: 0.97s; }
 @keyframes sr-row-in { from { opacity: 0; transform: translateX(-40%); } to { opacity: 1; transform: none; } }
 .sr-mine { animation: sr-mine 2s ease-in-out infinite; }
-@keyframes sr-mine { 0%, 100% { filter: drop-shadow(0 0 2px rgba(255, 220, 80, 0.4)); } 50% { filter: drop-shadow(0 0 10px rgba(255, 230, 110, 1)); } }
+@keyframes sr-mine { 0%, 100% { filter: drop-shadow(0 0 1px rgba(235, 172, 32, 0.12)); } 50% { filter: drop-shadow(0 0 3px rgba(235, 172, 32, 0.25)); } }
 .sr-tabs { width: var(--w); display: flex; justify-content: space-between; flex: 0 0 auto; }
 .sr-tab { position: relative; width: 49%; aspect-ratio: 426 / 141; border: none; padding: 0; cursor: pointer; background: center / 100% 100% no-repeat;
   display: flex; align-items: center; justify-content: center; }
@@ -2801,7 +2801,8 @@ body { background: var(--lm-page); }
   background: rgba(20, 30, 70, 0.85); color: #fff; font-weight: 800; font-size: calc(var(--w) * 0.038); white-space: nowrap; }
 /* 내 순위 — 기존 비율·내부 배치를 유지하고 노란 배경과 테두리만 CSS로 표시 */
 .sr-mine { position: relative; width: var(--w); aspect-ratio: 905 / 138; flex: 0 0 auto; display: grid; grid-template-columns: 16% 13% 1fr 20% 25%; align-items: center;
-  --sr-face: linear-gradient(180deg, #fff59a 0%, #ffec73 24%, #ffe967 72%, #ffed78 100%);
+  --sr-face: linear-gradient(180deg, #ffda59 0%, #ffd13d 26%, #ffd13d 74%, #f4bf2e 100%);
+  --sr-rim: linear-gradient(180deg, #efc652 0%, #d9a421 24%, #bd8412 75%, #9f650c 100%); --sr-highlight: #ffe08a; --sr-outline: #986008;
   font-weight: 900; color: #3a2400; font-size: calc(var(--w) * 0.042); }
 .sr-mine-lbl { display: flex; flex-direction: column; align-items: center; line-height: 1.05; }
 .sr-mine-lbl small { font-size: calc(var(--w) * 0.03); font-weight: 800; }
