@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+  <title>Blue circular information icon</title>
+  <defs>
+    <linearGradient id="rim" x1="128" y1="4" x2="128" y2="252" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8D99FF"/>
+      <stop offset=".15" stop-color="#555DF4"/>
+      <stop offset=".5" stop-color="#3439D9"/>
+      <stop offset="1" stop-color="#171D92"/>
+    </linearGradient>
+    <radialGradient id="face" cx="0" cy="0" r="1" gradientTransform="translate(91 73) rotate(58) scale(190)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3158FF"/>
+      <stop offset=".55" stop-color="#1034E3"/>
+      <stop offset="1" stop-color="#1420B9"/>
+    </radialGradient>
+    <linearGradient id="inner-edge" x1="128" y1="19" x2="128" y2="237" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#101CA0"/>
+      <stop offset=".6" stop-color="#1F2BBE"/>
+      <stop offset="1" stop-color="#6877FF"/>
+    </linearGradient>
+  </defs>
+  <circle cx="128" cy="128" r="124" fill="url(#rim)" stroke="#121B86" stroke-width="2"/>
+  <circle cx="128" cy="128" r="120" stroke="#BCC5FF" stroke-opacity=".55" stroke-width="2"/>
+  <circle cx="128" cy="128" r="108" fill="url(#face)" stroke="url(#inner-edge)" stroke-width="4"/>
+  <path d="M114 61C112 46 144 46 142 61L137 145C136 157 120 157 119 145L114 61Z" fill="#FFFDF5"/>
+  <circle cx="128" cy="182" r="16" fill="#FFFDF5"/>
+</svg>

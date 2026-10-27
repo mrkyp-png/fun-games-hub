@@ -2704,7 +2704,7 @@ body { background: var(--lm-page); }
 .sr-sbox i { font-style: normal; font-size: calc(var(--w) * 0.026); font-weight: 900; color: #7a869f; letter-spacing: 0.08em; }
 #score-screen .sr-row .sr-sbox .sr-score { padding: 0; text-align: center; font-size: calc(var(--w) * 0.048); color: #2a3558; }
 /* ===== 스코어 화면 애니메이션(사용자 지정 v765): ①꽃잎·금빛 흩날림 ②제목 광택+별 반짝 ③1위 카드 빛+왕관 반짝 ④4~10위 차례 등장 ⑤내 순위 반짝 ===== */
-.sr-fx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+.sr-fx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 2; }
 .sr-fx i { position: absolute; top: -4%; opacity: 0; animation: sr-fall linear infinite; }
 .sr-petal { width: 11px; height: 8px; border-radius: 80% 0 80% 0; background: linear-gradient(135deg, #ffd1e6, #ff7ab8); box-shadow: 0 0 3px rgba(255, 120, 180, 0.5); }
 .sr-glint { width: 7px; height: 7px; background: radial-gradient(circle, #fff 0 20%, #ffd84a 40%, transparent 70%); }
@@ -2721,10 +2721,11 @@ body { background: var(--lm-page); }
 .sr-tw:nth-of-type(2) { animation-delay: -0.7s; } .sr-tw:nth-of-type(3) { animation-delay: -1.4s; } .sr-tw:nth-of-type(4) { animation-delay: -2s; }
 @keyframes sr-twinkle { 0%, 65%, 100% { opacity: 0; transform: scale(0.3) rotate(0); } 80% { opacity: 1; transform: scale(1) rotate(45deg); } }
 .sr-card--1 .sr-card-bg { animation: sr-gold 2.2s ease-in-out infinite; }
-@keyframes sr-gold { 0%, 100% { filter: drop-shadow(0 0 4px rgba(255, 210, 60, 0.5)); } 50% { filter: drop-shadow(0 0 14px rgba(255, 220, 80, 0.95)) brightness(1.08); } }
+@keyframes sr-gold { 0%, 100% { filter: drop-shadow(0 0 0 rgba(255, 210, 60, 0)); } 50% { filter: drop-shadow(0 0 2px rgba(255, 220, 80, 0.2)) brightness(1.01); } }
 .sr-card::after { content: ''; position: absolute; left: 50%; top: 3%; width: 22%; aspect-ratio: 1; margin-left: -11%; pointer-events: none; opacity: 0;
   background: radial-gradient(circle, #fff 0 12%, transparent 16%), linear-gradient(90deg, transparent 45%, #fff 50%, transparent 55%), linear-gradient(0deg, transparent 45%, #fff 50%, transparent 55%);
-  animation: sr-twinkle 3s ease-in-out infinite; }
+  animation: sr-card-twinkle 3s ease-in-out infinite; }
+@keyframes sr-card-twinkle { 0%, 65%, 100% { opacity: 0; transform: scale(0.3) rotate(0); } 80% { opacity: 0.18; transform: scale(0.65) rotate(45deg); } }
 .sr-card--2::after { animation-delay: -1s; } .sr-card--3::after { animation-delay: -2s; }
 .sr-screen.is-in .sr-row { animation: sr-row-in 0.4s cubic-bezier(.2, .9, .3, 1.15) both; }
 .sr-screen.is-in .sr-row:nth-child(1) { animation-delay: 0.55s; } .sr-screen.is-in .sr-row:nth-child(2) { animation-delay: 0.62s; }
@@ -2737,9 +2738,28 @@ body { background: var(--lm-page); }
 .sr-tabs { width: var(--w); display: flex; justify-content: space-between; flex: 0 0 auto; }
 .sr-tab { position: relative; width: 49%; aspect-ratio: 426 / 141; border: none; padding: 0; cursor: pointer; background: center / 100% 100% no-repeat;
   display: flex; align-items: center; justify-content: center; }
-.sr-tab--on { background-image: url('assets/score/tab-on.png'); }
+/* Score frames: draw only the artwork in a separate layer, keeping the existing content geometry. */
+.sr-tab, .sr-mine { isolation: isolate; --sr-edge: calc(var(--w) * 0.014); --sr-radius: calc(var(--w) * 0.04);
+  --sr-rim: linear-gradient(180deg, #fff6ad 0%, #ffe443 18%, #f4b900 52%, #cd8000 100%);
+  --sr-highlight: rgba(255, 252, 190, 0.85); --sr-outline: #aa6700; }
+.sr-tab::before, .sr-mine::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  box-sizing: border-box; border: var(--sr-edge) solid transparent; border-radius: var(--sr-radius);
+  background: var(--sr-face) padding-box, var(--sr-rim) border-box;
+  box-shadow: inset 0 0 0 1px var(--sr-highlight); }
+.sr-tab::after, .sr-mine::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  box-sizing: border-box; border: 1px solid var(--sr-outline); border-radius: var(--sr-radius);
+  box-shadow: inset 0 0 0 1px var(--sr-highlight); }
+.sr-tab { --sr-edge: calc(var(--w) * 0.021); --sr-radius: calc(var(--w) * 0.045); }
+.sr-tab--on { --sr-face: linear-gradient(180deg, #fff9ad 0%, #ffe85a 16%, #ffd318 36%, #ffca05 76%, #ffd62c 100%); }
 .sr-tab--on span { font-size: calc(var(--w) * 0.05); font-weight: 900; color: #fff; -webkit-text-stroke: 3px #b25a00; paint-order: stroke fill; }
-.sr-tab--off { background-image: url('assets/score/tab-off.png'); aspect-ratio: 382 / 125; }
+.sr-tab--off { aspect-ratio: 382 / 125; --sr-face: linear-gradient(180deg, #354d78, #2e436b);
+  --sr-rim: linear-gradient(180deg, #839fc2 0%, #59779f 32%, #365680 70%, #253f67 100%);
+  --sr-highlight: rgba(174, 200, 230, 0.55); --sr-outline: #172c50; }
+/* Continuous inner outlines keep all four edges equally visible without inset shading. */
+.sr-tab--on, .sr-mine { --sr-rim: linear-gradient(180deg, #fff3a3 0%, #fbd73c 24%, #e9ae10 75%, #bc7605 100%); --sr-highlight: #fff0a2; }
+.sr-tab--off { --sr-rim: linear-gradient(180deg, #7c96b9, #516c96); --sr-highlight: #9db2d1; }
+.sr-tab::before, .sr-mine::before { outline: 1px solid var(--sr-outline); outline-offset: -1px; box-shadow: none; }
+.sr-tab::after, .sr-mine::after { inset: var(--sr-edge); border-color: var(--sr-highlight); border-radius: calc(var(--sr-radius) - var(--sr-edge)); box-shadow: none; }
 .sr-tab-txt { display: flex; flex-direction: column; align-items: center; line-height: 1.1; margin-right: 14%; }
 .sr-tab-txt b { font-size: calc(var(--w) * 0.044); color: #c9d4ee; font-weight: 900; }
 .sr-tab-txt small { font-size: calc(var(--w) * 0.028); color: #93a3c6; font-weight: 700; }
@@ -2779,9 +2799,10 @@ body { background: var(--lm-page); }
 .sr-row.is-empty .sr-ava img { filter: brightness(0) opacity(0.2); }
 .sr-empty { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); margin: 0; padding: 8px 18px; border-radius: 99px;
   background: rgba(20, 30, 70, 0.85); color: #fff; font-weight: 800; font-size: calc(var(--w) * 0.038); white-space: nowrap; }
-/* 내 순위 — 노란 박스(제공 에셋 비율 그대로) */
-.sr-mine { width: var(--w); aspect-ratio: 905 / 138; flex: 0 0 auto; display: grid; grid-template-columns: 16% 13% 1fr 20% 25%; align-items: center;
-  background: url('assets/score/mine.png') center / 100% 100% no-repeat; font-weight: 900; color: #3a2400; font-size: calc(var(--w) * 0.042); }
+/* 내 순위 — 기존 비율·내부 배치를 유지하고 노란 배경과 테두리만 CSS로 표시 */
+.sr-mine { position: relative; width: var(--w); aspect-ratio: 905 / 138; flex: 0 0 auto; display: grid; grid-template-columns: 16% 13% 1fr 20% 25%; align-items: center;
+  --sr-face: linear-gradient(180deg, #fff59a 0%, #ffec73 24%, #ffe967 72%, #ffed78 100%);
+  font-weight: 900; color: #3a2400; font-size: calc(var(--w) * 0.042); }
 .sr-mine-lbl { display: flex; flex-direction: column; align-items: center; line-height: 1.05; }
 .sr-mine-lbl small { font-size: calc(var(--w) * 0.03); font-weight: 800; }
 .sr-mine-lbl b { font-size: calc(var(--w) * 0.05); color: #1a2f6e; }
@@ -2789,11 +2810,16 @@ body { background: var(--lm-page); }
 .sr-mine .sr-name { padding-left: 6%; }
 .sr-mine .sr-pill { font-size: calc(var(--w) * 0.036); padding: 3px 0; }
 .sr-mine .sr-score { text-align: right; padding-right: 17%; font-size: calc(var(--w) * 0.044); color: #1a2f6e; white-space: nowrap; } /* V1367 C: 큰 점수가 오른쪽 테두리에 닿아 잘리던 것(사용자 보고) */
-/* 랭킹 안내 — 파란 ! + 네이비 박스(9분할: 왼쪽 아이콘 부분 고정) */
-.sr-info { width: var(--w); height: calc(var(--w) * 0.11); flex: 0 0 auto; box-sizing: border-box; display: flex; align-items: center;
-  border-style: solid; border-width: calc(var(--w) * 0.012) calc(var(--w) * 0.03) calc(var(--w) * 0.012) calc(var(--w) * 0.11);
-  border-image: url('assets/score/info.png') 14 34 14 118 fill stretch;
+/* 랭킹 안내 — 독립 원형 SVG와 CSS 막대. 투명 border로 기존 문구 배치 보존. */
+.sr-info { position: relative; isolation: isolate; width: var(--w); height: calc(var(--w) * 0.11); flex: 0 0 auto; box-sizing: border-box; display: flex; align-items: center;
+  border-style: solid; border-color: transparent; border-width: calc(var(--w) * 0.012) calc(var(--w) * 0.03) calc(var(--w) * 0.012) calc(var(--w) * 0.11);
   color: #fff; font-weight: 800; font-size: calc(var(--w) * 0.03); line-height: 1.2; }
+.sr-info::before { content: ''; position: absolute; inset: calc(var(--w) * -0.0054) calc(var(--w) * -0.03) calc(var(--w) * -0.0054) calc(var(--w) * -0.065); z-index: -1; pointer-events: none;
+  box-sizing: border-box; border: calc(var(--w) * 0.006) solid transparent; border-radius: 999px;
+  background: linear-gradient(180deg, #1b2b4d, #182747) padding-box, linear-gradient(180deg, #6c89b8, #28456f) border-box;
+  box-shadow: inset 0 0 0 1px rgba(117, 152, 206, 0.5); }
+.sr-info::after { content: ''; position: absolute; top: 50%; left: calc(var(--w) * -0.11); transform: translateY(-50%); width: calc(var(--w) * 0.11); height: calc(var(--w) * 0.11); z-index: -1; pointer-events: none;
+  background: url('assets/score/icon-info-blue.svg') center / contain no-repeat; }
 .sr-info span { padding-left: 3%; }
 .sr-toast { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 12%); transform: translateX(-50%); z-index: 11;
   padding: 10px 22px; border-radius: 99px; background: rgba(15, 10, 40, 0.9); color: #fff; font-weight: 800; font-size: 0.95rem; white-space: nowrap;
@@ -5815,6 +5841,8 @@ html, body, .cosmic-bg { background: #0a1230; }
 /* v898: 스코어·일일 화면 뒤로가기 → 퀘스트 빨간 X(오른쪽), 높이는 기존 뒤로가기와 같게(46px) */
 .sr-back.is-x, .dr-back.is-x { left: auto; right: 10px; width: auto; height: 46px; }
 .sr-back.is-x img, .dr-back.is-x img { width: auto; height: 100%; }
+/* Preserve the score close button's original footprint; contain keeps the new SVG circular. */
+.sr-back.is-x img { width: calc(46px * 136 / 138); }
 /* v899: 퀘스트/업적 전환 버튼 — 트로피 빼고 글자를 버튼 가운데에 크게 */
 .qs-achbtn span { left: 18%; right: 18%; top: 50%; bottom: auto; transform: translateY(-50%); font-size: calc(var(--w) * 0.062); }
 .qs-screen[data-lang="ko"] .qs-achbtn span { font-size: calc(var(--w) * 0.07); }

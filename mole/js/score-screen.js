@@ -157,7 +157,7 @@
     function cardHtml(entry, place) {
       var c = document.createElement('div');
       c.className = 'sr-card sr-card--' + place + (entry ? '' : ' is-empty');
-      c.innerHTML = '<img class="sr-card-bg" alt="" src="assets/score/card-' + place + '.png">' +
+      c.innerHTML = '<img class="sr-card-bg" alt="" src="assets/score/card-' + place + '-clean.svg">' +
         '<div class="sr-card-body"><span class="sr-ava"><img alt=""></span><b class="sr-name"></b><span class="sr-pill"></span><strong class="sr-score"></strong></div>';
       c.querySelector('.sr-ava img').src = entry ? (entry.avatar || 'assets/moles/mole1.png') : 'assets/moles/mole1.png';
       c.querySelector('.sr-name').textContent = entry ? entry.playerName : '—';

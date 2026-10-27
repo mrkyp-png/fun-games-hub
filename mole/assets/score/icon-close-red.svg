@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+  <title>Red circular close icon</title>
+  <defs>
+    <linearGradient id="rim" x1="128" y1="4" x2="128" y2="252" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF765F"/>
+      <stop offset=".2" stop-color="#FF5841"/>
+      <stop offset=".65" stop-color="#DA2118"/>
+      <stop offset="1" stop-color="#8C100B"/>
+    </linearGradient>
+    <radialGradient id="face" cx="0" cy="0" r="1" gradientTransform="translate(83 66) rotate(58) scale(200)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FA4136"/>
+      <stop offset=".55" stop-color="#F6241C"/>
+      <stop offset="1" stop-color="#CB100F"/>
+    </radialGradient>
+    <linearGradient id="inner-edge" x1="128" y1="18" x2="128" y2="238" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#AF1410"/>
+      <stop offset=".6" stop-color="#CD1712"/>
+      <stop offset="1" stop-color="#FF6B54"/>
+    </linearGradient>
+  </defs>
+  <circle cx="128" cy="128" r="124" fill="url(#rim)" stroke="#710F0B" stroke-width="2"/>
+  <circle cx="128" cy="128" r="120" stroke="#FFD0B7" stroke-opacity=".28" stroke-width="2"/>
+  <circle cx="128" cy="128" r="108" fill="url(#face)" stroke="url(#inner-edge)" stroke-width="4"/>
+  <path d="M90 90L166 166M166 90L90 166" stroke="#7E1410" stroke-width="40" stroke-linecap="round"/>
+  <path d="M90 90L166 166M166 90L90 166" stroke="#FFFDF5" stroke-width="28" stroke-linecap="round"/>
+</svg>
