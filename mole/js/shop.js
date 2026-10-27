@@ -325,7 +325,7 @@
       // 아이콘+숫자 HTML 로(사용자 지정: "무기 코인 표기는 앞 재화의 코인에 뒤에 숫자형태로"),
       // 없으면 price 를 그냥 텍스트로.
       var c = document.createElement('div');
-      c.className = 'shop-card' + (opts2.equipped ? ' shop-card--equipped' : '');
+      c.className = 'shop-card' + (opts2.productClass ? ' ' + opts2.productClass : '') + (opts2.equipped ? ' shop-card--equipped' : '');
       var showPriceLine = !!(opts2.price || opts2.priceHtml);
       var btnClass = 'shop-card-btn' + (opts2.btnPlain ? ' shop-card-btn--plain' : '');
       c.innerHTML =
@@ -413,32 +413,28 @@
     function renderWeaponCards() {
       cardsEl.innerHTML = '';
       var locked = !!(opts.gameInProgress && opts.gameInProgress());
+      var productClass = 'shop-card--weapon-product' + (I18N().lang === 'en' ? ' shop-card--weapon-en' : '');
       WEAPONS.forEach(function (w) {
         var name = I18N().lang === 'en' ? w.nameEn : w.name;
         // 이미 장착 중이어도 버튼은 계속 눌러 "구매" 가능(사용자 지정: "최대한 계속 구매할 수
         // 있게, 누르면 복귀") — 잠금(라운드 진행 중)만 비활성화 사유로 남김. 장착 표시(테두리)는
         // 아이템보관창 전용(사용자 지정: "상점하고 아이템은 유사하지만 엄연히 다른거다").
         if (w.id === 'hammer') {
+          // The default weapon is informational; this card has no purchase/equip action.
           cardsEl.appendChild(card({
+            productClass: productClass,
             badge: '<img alt="" src="' + w.thumb + '">',
-            badgeClass: 'shop-card-badge--weapon',
+            badgeClass: 'shop-card-badge--weapon shop-card-badge--default-weapon',
             name: name,
             priceHtml: null,
             btnText: T('mole.shop.default'),
-            btnDisabled: locked,
-            btnPlain: true,
-            confirmMessage: defaultSelectionPrompt(name),
-            onClick: function () {
-              localStorage.setItem('mole.weapon', w.id);
-              var diff = localStorage.getItem('mole.difficulty');
-              if (diff === 'mid' || diff === 'legend') localStorage.setItem('mole.difficulty', 'easy');
-              done();
-            }
+            btnDisabled: true,
+            btnPlain: true
           }));
           return;
         }
         cardsEl.appendChild(heartCard({
-          theme: 'blue',
+          theme: 'blue', productClass: productClass,
           art: weaponArt(w),
           name: name,
           confirmMessage: defaultSelectionPrompt(name),
@@ -459,7 +455,8 @@
         cardsEl.appendChild(heartCard({
           theme: 'pink', productClass: 'shop-card--sale' + (productClass ? ' ' + productClass : ''), art: item.art,
           name: english ? item.nameEn : item.nameKo, desc: null, pillText: '',
-          btnHtml: '<b>' + (english ? 'Offer setup pending' : '상품·가격 확정 후 판매') + '</b>', btnDisabled: true
+          btnHtml: item.coinPrice ? coinOption('06') + '<b>' + item.coinPrice.toLocaleString('en-US') + (english ? ' coins' : ' 코인') + '</b>' :
+            '<b>' + (english ? 'Offer setup pending' : '상품·가격 확정 후 판매') + '</b>', btnDisabled: true
         }));
       });
     }
@@ -467,13 +464,13 @@
     function renderSkillCards() {
       var english = I18N().lang === 'en';
       var descriptions = {
-        shield: { quantity: 10, ko: '폭탄 1회 방어', en: 'Blocks one bomb', setKo: '실드 x15 · 폭탄 1회 방어', setEn: 'Shield x15 · Blocks one bomb' },
-        targeting: { quantity: 30, ko: '목표 자동 조준', en: 'Auto-aims a target', setKo: '타겟팅 x35 · 목표 자동 조준', setEn: 'Targeting x35 · Auto-aims' },
-        ai: { quantity: 10, ko: '10초간 자동 타격', en: 'Auto-hits for 10 seconds', setKo: 'AI x12 · 10초간 자동 타격', setEn: 'AI x12 · Auto-hits for 10 sec' }
+        shield: { quantity: 10, ko: '폭탄 1회 방어', en: 'Blocks one bomb', setKo: '실드 x15', setEn: 'Shield x15' },
+        targeting: { quantity: 30, ko: '목표 자동 조준', en: 'Auto-aims a target', setKo: '타겟팅 x35', setEn: 'Targeting x35' },
+        ai: { quantity: 10, ko: '10초간 자동 타격', en: 'Auto-hits for 10 seconds', setKo: 'AI x12', setEn: 'AI x12' }
       };
       var sparklePoints = {
         shield: [[30.4,25.9,12,0],[67.6,24.8,12,.7],[77.4,61.2,12,1.4],[26.2,68.9,13,2.1],[35.5,78.1,9,2.8]],
-        targeting: [[35.5,29.4,8,.25],[33.6,66.3,8,1.9]],
+        targeting: [[35.5,29.4,12,.25],[33.6,66.3,12,1.1],[74,70,11,1.8]],
         ai: [[51,19.5,7,.1],[25.9,32.5,8,.7],[20,43.6,7,1.5],[75.8,33.4,7,2.3],[48.6,81.7,6,2.9]],
         set: [[15.8,17.4,8,0],[40,17.8,6,.7],[13.4,44.2,8,1.4],[45,39.7,7,2.1],[43.8,12,7,2.8],[85.5,20.1,7,.4],[84.5,48,8,1.1],[21,61.3,8,1.8],[79,61.3,8,2.5],[34.5,56.4,7,.2],[50,47.5,5,1],[66.5,54,5,2],[49.6,88.4,5,3]]
       };
@@ -507,24 +504,25 @@
           return '<span>' + descriptions[id][english ? 'setEn' : 'setKo'] + '</span>';
         }).join('') + '</p></div>';
       renderPendingProducts([
-        { nameKo: '실드 묶음', nameEn: 'Shield pack', art: skillArt('shield') },
-        { nameKo: '타겟팅 묶음', nameEn: 'Targeting pack', art: skillArt('targeting') },
-        { nameKo: 'ai 묶음', nameEn: 'AI pack', art: skillArt('ai') },
-        { nameKo: '스킬 세트', nameEn: 'Skill set', art: allSkills }
+        { nameKo: '실드 묶음', nameEn: 'Shield pack', art: skillArt('shield'), coinPrice: 10000 },
+        { nameKo: '타겟팅 묶음', nameEn: 'Targeting pack', art: skillArt('targeting'), coinPrice: 50000 },
+        { nameKo: 'AI 묶음', nameEn: 'AI pack', art: skillArt('ai'), coinPrice: 100000 },
+        { nameKo: '스킬 세트', nameEn: 'Skill set', art: allSkills, coinPrice: 150000 }
       ], 'shop-card--skill' + (english ? ' shop-card--skill-en' : ''));
     }
 
     function renderCostumeCards() {
       var teams = MG.CostumeTeams.teams();
-      var allCostumes = '<div class="shop-sale-set">' + teams.map(function (team) {
-        return '<img alt="" src="assets/costume/char-' + team.id + '-v1406.webp">';
+      function outfit(id) { return 'assets/costume/outfit-' + id + '.png'; }
+      var allCostumes = '<div class="shop-costume-set-art">' + teams.map(function (team, index) {
+        return '<img class="shop-costume-set-piece shop-costume-set-piece--' + index + '" alt="" src="' + outfit(team.id) + '">';
       }).join('') + '</div>';
       renderPendingProducts([
-        { nameKo: '블루 베어스 코스튬', nameEn: 'Blue Bears costume', art: '<img class="shop-sale-item" alt="" src="assets/costume/char-blue_bears-v1406.webp">' },
-        { nameKo: '마운트 스타즈 코스튬', nameEn: 'Mount Stars costume', art: '<img class="shop-sale-item" alt="" src="assets/costume/char-mount_stars-v1406.webp">' },
-        { nameKo: '클라우드 컵스 코스튬', nameEn: 'Cloud Cups costume', art: '<img class="shop-sale-item" alt="" src="assets/costume/char-cloud_cups-v1406.webp">' },
-        { nameKo: '코스튬 세트', nameEn: 'Costume set', art: allCostumes }
-      ]);
+        { nameKo: '블루 베어스\n코스튬', nameEn: 'Blue Bears\ncostume', art: '<img class="shop-sale-item shop-costume-outfit" alt="" src="' + outfit('blue_bears') + '">', coinPrice: 100000 },
+        { nameKo: '마운트 스타즈\n코스튬', nameEn: 'Mount Stars\ncostume', art: '<img class="shop-sale-item shop-costume-outfit" alt="" src="' + outfit('mount_stars') + '">', coinPrice: 100000 },
+        { nameKo: '클라우드 컵스\n코스튬', nameEn: 'Cloud Cups\ncostume', art: '<img class="shop-sale-item shop-costume-outfit" alt="" src="' + outfit('cloud_cups') + '">', coinPrice: 100000 },
+        { nameKo: '코스튬 세트', nameEn: 'Costume set', art: allCostumes, coinPrice: 250000 }
+      ], 'shop-card--costume');
     }
 
     function renderCoinCards() {

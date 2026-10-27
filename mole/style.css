@@ -9223,6 +9223,10 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-card-badge--hero .hero-weapon { height:76%!important; max-width:88%!important; width:auto!important; left:50%!important; top:50%!important; transform:translate(-50%,-50%)!important; object-fit:contain!important; }
 #shop-screen .shop-card-badge--hero .hero-weapon-pair { position:absolute!important; left:50%!important; top:50%!important; display:flex!important; align-items:center!important; justify-content:center!important; gap:1%!important; width:88%!important; height:76%!important; transform:translate(-50%,-50%)!important; }
 #shop-screen .shop-card-badge--hero .hero-weapon-pair img { height:100%!important; max-height:100%!important; max-width:49%!important; width:auto!important; object-fit:contain!important; }
+#shop-screen .shop-card-badge--default-weapon { position:relative!important; grid-row:2!important; display:grid!important; place-items:center!important; width:100%!important; height:100%!important; min-height:0!important; margin:0!important; padding:0!important; }
+#shop-screen .shop-card-badge--default-weapon > img { width:88%!important; height:88%!important; max-width:88%!important; max-height:88%!important; object-fit:contain!important; }
+#shop-screen .shop-card.shop-card--weapon-product .shop-card-name { font-size:6.3cqw!important; }
+#shop-screen .shop-card.shop-card--weapon-product.shop-card--weapon-en .shop-card-name { font-size:3.8cqw!important; }
 #shop-screen .shop-card--sale .shop-card-badge--hero { position:relative!important; }
 #shop-screen .shop-card--sale .shop-card-pill { display:none!important; }
 #shop-screen .shop-card--sale .shop-card-btn { font-size:3.7cqw!important; -webkit-text-stroke:0!important; color:#fff9dd!important; }
@@ -9238,22 +9242,36 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-card--sale .shop-sale-set img.shop-skill-icon { flex:0 0 31%!important; width:31%!important; height:auto!important; aspect-ratio:1!important; max-width:31%!important; max-height:none!important; transform:none!important; }
 #shop-screen .shop-skill-product { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.322581em; font-size:3.1cqw; container-type:size; }
 #shop-screen .shop-card--skill { min-width:0!important; }
-#shop-screen .shop-card--skill.shop-card--skill-en .shop-card-name { font-size:3.8cqw!important; }
+#shop-screen .shop-card.shop-card--skill .shop-card-name { font-size:6.3cqw!important; }
+#shop-screen .shop-card.shop-card--skill.shop-card--skill-en .shop-card-name { font-size:3.8cqw!important; }
 #shop-screen .shop-skill-visual { position:relative; flex:none; width:min(72%,calc(100cqh - 4.5em)); aspect-ratio:1; }
 #shop-screen .shop-card--sale .shop-card-badge--hero .shop-skill-visual .shop-skill-icon { position:relative!important; inset:auto!important; width:100%!important; height:100%!important; max-width:100%!important; max-height:100%!important; margin:0!important; transform:translate(var(--skill-rim-x),var(--skill-rim-y)) scale(var(--skill-rim-scale-x),var(--skill-rim-scale-y))!important; }
 #shop-screen .shop-skill-caption { box-sizing:border-box; display:flex; align-items:center; justify-content:center; width:96%; min-height:2.5em; margin:0; padding:0; font-size:3.1cqw; font-weight:700; line-height:1.25; color:#5a2e10; text-align:center; text-wrap:balance; word-break:keep-all; text-shadow:none; -webkit-text-stroke:0; }
 #shop-screen .shop-skill-product .shop-skill-caption { flex-direction:column; flex:none; font-size:1em; }
 #shop-screen .shop-skill-quantity { display:block; font-weight:900; }
-#shop-screen .shop-skill-visual--bundle { width:min(88%,calc(100cqh - 4.5em)); }
+#shop-screen .shop-skill-visual--bundle { width:min(88%,calc(100cqh - 4.8em)); }
 #shop-screen .shop-skill-product--bundle .shop-skill-bundle-image { display:block; width:100%!important; height:100%!important; max-width:100%!important; max-height:100%!important; aspect-ratio:1; object-fit:contain!important; margin:0; transform:none!important; }
-#shop-screen .shop-skill-product .shop-skill-caption--bundle { font-size:.74em; min-height:3.75em; }
+#shop-screen .shop-skill-product .shop-skill-caption--bundle { font-size:1.13em; min-height:3.75em; font-weight:900; }
 #shop-screen .shop-skill-caption--bundle span { display:block; white-space:nowrap; }
+#shop-screen .shop-card--costume .shop-card-name-box { container-type:size; font-size:4.2cqw!important; }
+#shop-screen .shop-card.shop-card--costume .shop-card-name { font-size:min(1em,42cqh)!important; line-height:1.05!important; white-space:pre-line!important; }
+#shop-screen .shop-card--sale .shop-card-badge--hero .shop-costume-outfit { width:82%!important; height:94%!important; max-width:82%!important; max-height:94%!important; }
+#shop-screen .shop-costume-set-art { position:absolute; left:50%; top:50%; width:94%; height:92%; transform:translate(-50%,-50%); }
+#shop-screen .shop-costume-set-art .shop-costume-set-piece { position:absolute; width:53%; height:72%; object-fit:contain!important; }
+#shop-screen .shop-costume-set-piece--0 { left:0; top:0; z-index:1; }
+#shop-screen .shop-costume-set-piece--1 { right:0; top:0; z-index:1; }
+#shop-screen .shop-costume-set-piece--2 { left:23.5%; bottom:0; z-index:2; }
+#shop-screen .shop-card--costume .shop-card-btn,#shop-screen .shop-card--skill .shop-card-btn { container-type:size; }
+#shop-screen .shop-card--costume .shop-price-group,#shop-screen .shop-card--skill .shop-price-group { --price-icon-width:32cqw!important; --price-icon-height:100cqh!important; }
+#shop-screen .shop-card--costume .shop-card-btn::before { background:none!important; border:0 solid transparent!important; border-image:url('assets/inventory/ui-v1379/equip-pill-transparent.webp') 0 128 fill / 0 calc(100cqh * 128 / 134) / 0 stretch!important; border-radius:0!important; overflow:visible!important; }
 #shop-screen .shop-skill-sparkle { position:absolute; z-index:2; left:var(--spark-x); top:var(--spark-y); width:var(--spark-size); aspect-ratio:1; pointer-events:none; opacity:0; transform:translate(-50%,-50%) scale(.2); animation:shop-skill-twinkle 3.8s ease-in-out infinite; animation-delay:var(--spark-delay); }
 #shop-screen .shop-skill-sparkle::before { content:''; position:absolute; inset:-18%; background:radial-gradient(circle,var(--spark-color,#ffe998) 0,transparent 64%); opacity:.65; }
 #shop-screen .shop-skill-sparkle::after { content:''; position:absolute; inset:0; background:radial-gradient(circle,#fff 0 18%,var(--spark-color,#ffe998) 64%,#ffc535 100%); clip-path:polygon(50% 0,59% 37%,100% 50%,59% 63%,50% 100%,41% 63%,0 50%,41% 37%); }
 #shop-screen .shop-skill-visual--ai { --spark-color:#75f2ff; }
+#shop-screen .shop-skill-visual--targeting .shop-skill-sparkle { animation-name:shop-skill-targeting-twinkle; animation-duration:2.6s; }
 @keyframes shop-skill-twinkle { 0%,28%,100% { opacity:0; transform:translate(-50%,-50%) scale(.2) rotate(-10deg); } 10% { opacity:1; transform:translate(-50%,-50%) scale(1) rotate(0deg); } 20% { opacity:.4; transform:translate(-50%,-50%) scale(.7) rotate(8deg); } }
-@media (prefers-reduced-motion:reduce) { #shop-screen .shop-skill-sparkle { animation:none; opacity:0; } }
+@keyframes shop-skill-targeting-twinkle { 0%,55%,100% { opacity:0; transform:translate(-50%,-50%) scale(.2) rotate(-10deg); } 14% { opacity:1; transform:translate(-50%,-50%) scale(1.15) rotate(0deg); } 32% { opacity:.8; transform:translate(-50%,-50%) scale(.85) rotate(8deg); } 46% { opacity:.15; transform:translate(-50%,-50%) scale(.35) rotate(12deg); } }
+@media (prefers-reduced-motion:reduce) { #shop-screen .shop-skill-visual .shop-skill-sparkle { animation:none; opacity:0; } }
 #shop-screen .shop-card-name-box { transform:translateY(4px)!important; }
 #shop-screen .shop-card-pill>span { display:block!important; width:max-content!important; height:auto!important; margin:0!important; padding:0!important; line-height:1!important; transform-origin:50% 50%!important; }
 #shop-screen .shop-card-btn>.shop-coins-stack[src$="coin-option-01.png"] { width:29%!important; height:92%!important; }
