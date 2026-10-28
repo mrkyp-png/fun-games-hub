@@ -1,5 +1,5 @@
 // 제작소 합성(무기/코스튬) 전체화면 — 바탕화면 "제작소 UI 및 에셋/명세서" 기준(v750).
-// 규칙: 같은 종류끼리만(대상 +N + 재료 +0), 비용 7,777 코인 고정, 최대 +5,
+// 규칙: 같은 종류끼리만(대상 +N + 재료 +0), 비용 10,000 코인 고정, 최대 +5,
 // 확률 +0→1 50 / +1→2 45 / +2→3 40 / +3→4 35 / +4→5 30%. 실패해도 비용·재료 소비, 단계 유지.
 // 결과는 합성 실행 순간 판정·저장(코인·재료·단계 한 번에) 후 연출만 재생 — 연출 중 앱이 꺼져도 중복·손실 없음.
 // 연출: 황금거위(10포즈) 날갯짓·상승·퇴장 → 황금알 낙하·안착 → 균열 → 3번째 알에서 골드 묠니르+녹색 번개 타격
@@ -56,6 +56,32 @@
     var gooseShockAudio = null, gooseWingsAudio = null;
     var gooseFlightMotion = null;
     var gooseFrames = [];
+    var idleGooseReady = null;
+    function preloadIdleGoose() {
+      if (idleGooseReady) return idleGooseReady;
+      idleGooseReady = new Promise(function (resolve) {
+        var image = new Image(), settled = false;
+        var timeout = setTimeout(function () { finish(false); }, 12000);
+        function finish(ok) {
+          if (settled) return;
+          settled = true; clearTimeout(timeout); image.onload = image.onerror = null;
+          if (ok) {
+            var idle = $('.ws-goose');
+            idle.querySelectorAll('span').forEach(function (frame) { frame.style.backgroundImage = 'url("' + image.src + '")'; });
+            idle.classList.add('is-ready');
+          }
+          resolve(ok);
+        }
+        image.onload = function () {
+          if (image.decode) image.decode().then(function () { finish(true); }, function () { finish(false); });
+          else finish(true);
+        };
+        image.onerror = function () { finish(false); };
+        image.fetchPriority = 'high';
+        image.src = A + 'goose-idle-original-aligned-v1499.webp';
+      });
+      return idleGooseReady;
+    }
     var hammerShadow = null, shadowHammerEl = null;
     function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
     function clearTimers() { timers.forEach(clearTimeout); timers = []; stopGooseWingsSound(); resetGooseFlight(); }
@@ -416,6 +442,7 @@
     }
 
     function show() {
+      preloadIdleGoose();
       preloadFrames();
       clearTimers(); clearWorkshopHammer(); enhancement.reset();
       running = false; pending = null; selMat = null; pick.hidden = true;

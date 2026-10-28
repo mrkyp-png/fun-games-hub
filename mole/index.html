@@ -780,26 +780,27 @@
             <button type="button" class="ws-tab" data-ws-photo><span data-i18n="mole.fs.tabPhoto">사진 합성</span></button>
           </div>
           <div class="ws-stage">
-            <img loading="lazy" decoding="async" class="ws-stage-img" src="assets/workshop/clarity-v1434/stage.png" alt="">
+            <div class="ws-stage-img" aria-hidden="true"></div>
             <img loading="lazy" decoding="async" class="ws-stage-banner" src="assets/workshop/stage-banner.png" alt="">
-            <svg class="ws-arc" viewBox="0 0 700 414" aria-hidden="true"><path id="wsArcL" d="M 10 232 A 106 34 0 0 0 222 232" fill="none"/><path id="wsArcR" d="M 484 232 A 106 34 0 0 0 696 232" fill="none"/><text><textPath href="#wsArcL" startOffset="50%" text-anchor="middle" data-i18n="mole.ws.target">강화 대상</textPath></text><text><textPath href="#wsArcR" startOffset="50%" text-anchor="middle" data-i18n="mole.ws.material">강화 재료</textPath></text></svg>
+            <svg class="ws-arc" viewBox="0 0 700 414" aria-hidden="true"><path id="wsArcL" d="M 10 226 A 106 48 0 0 0 222 226" fill="none"/><path id="wsArcR" d="M 484 226 A 106 48 0 0 0 696 226" fill="none"/><text><textPath href="#wsArcL" startOffset="50%" text-anchor="middle" data-i18n="mole.ws.target">강화 대상</textPath></text><text><textPath href="#wsArcR" startOffset="50%" text-anchor="middle" data-i18n="mole.ws.material">강화 재료</textPath></text></svg>
             <span class="ws-lbl ws-lbl--l" data-i18n="mole.ws.target">강화 대상</span>
             <span class="ws-lbl ws-lbl--r" data-i18n="mole.ws.material">강화 재료</span>
-            <span class="ws-dots" data-ws-dots></span>
+            <div class="ws-case-heading"><span class="ws-dots" data-ws-dots></span><span class="ws-name" data-ws-target-name></span></div>
             <button type="button" class="ws-arrow ws-arrow--prev" data-ws-arrow="prev" aria-label="이전"></button>
             <button type="button" class="ws-arrow ws-arrow--next" data-ws-arrow="next" aria-label="다음"></button>
             <div class="ws-item ws-item--l" data-ws-target><img loading="lazy" decoding="async" alt="" data-ws-target-img><b data-ws-target-lv></b></div>
-            <span class="ws-name" data-ws-target-name></span>
             <div class="ws-item ws-item--r" data-ws-mat><img loading="lazy" decoding="async" alt="" data-ws-mat-img><b data-ws-mat-lv></b></div>
             <span class="ws-matn" data-ws-mat-n></span>
-            <img loading="lazy" decoding="async" class="ws-goose" src="assets/workshop/goose-1.png" alt="">
+            <div class="ws-goose" aria-hidden="true"><img loading="lazy" decoding="async" src="assets/workshop/goose-1.png" alt=""><span class="ws-goose-face"></span></div>
           </div>
           <div class="ws-panel">
+            <div class="ws-panel-content">
             <div class="ws-row"><span data-i18n="mole.ws.rate">성공 확률</span><b data-ws-rate></b></div>
             <div class="ws-row"><span data-i18n="mole.ws.cost">강화 비용</span><b><i class="ws-coin"></i><span data-ws-cost></span></b></div>
+            </div>
           </div>
-          <div class="ws-coins"><span data-i18n="mole.ws.coins">보유 코인</span><i class="ws-coin"></i><b data-ws-coins></b></div>
-          <button type="button" class="ws-go" data-ws-go><span data-i18n="mole.ws.go">강화하기</span></button>
+          <div class="ws-coins"><div class="ws-coins-content"><span data-i18n="mole.ws.coins">보유 코인</span><i class="ws-coin"></i><b data-ws-coins></b></div></div>
+          <button type="button" class="ws-go ws-action-frame" data-ws-go><span data-i18n="mole.ws.go">강화하기</span></button>
           <div class="ws-notice"><img class="ws-info-icon" src="assets/score/icon-info-blue.svg" width="256" height="256" alt="" aria-hidden="true"><span data-ws-notice></span></div>
         </div>
         <div class="ws-pick" data-ws-pick hidden>
@@ -807,7 +808,7 @@
             <div class="ws-pick-sign"><img loading="lazy" decoding="async" src="assets/workshop/sign.png" alt=""><b data-i18n="mole.ws.pickTitle">강화 재료 선택</b></div>
             <div class="ws-pick-list" data-ws-pick-list></div>
             <div class="ws-notice ws-pick-note" data-ws-pick-note hidden><img class="ws-info-icon" src="assets/score/icon-info-blue.svg" width="256" height="256" alt="" aria-hidden="true"><span data-i18n="mole.ws.pickNo">같은 종류만 가능</span></div>
-            <button type="button" class="ws-pick-ok" data-ws-pick-close><span data-i18n="mole.ws.pickClose">닫기</span></button>
+            <button type="button" class="ws-pick-ok ws-action-frame" data-ws-pick-close><span data-i18n="mole.ws.pickClose">닫기</span></button>
           </div>
         </div>
         <div class="ws-fx" data-ws-fx hidden>
@@ -821,7 +822,7 @@
             <div class="ws-res-glow" data-ws-res-glow><img loading="lazy" decoding="async" alt="" data-ws-res-img></div>
             <p class="ws-res-title" data-ws-res-title></p>
             <p class="ws-res-sub" data-ws-res-sub></p>
-            <button type="button" class="ws-res-ok" data-ws-ok data-i18n="mole.daily.ok">확인</button>
+            <button type="button" class="ws-res-ok ws-action-frame" data-ws-ok><span data-i18n="mole.daily.ok">확인</span></button>
           </div>
         </div>
       </div>
@@ -843,7 +844,7 @@
               <li><i>🙋</i><span data-i18n="mole.fs.n5">본인만 촬영해주세요. 다른 사람의 사진은 사용하지 마세요.</span></li>
             </ul>
           </div>
-          <button type="button" class="fs-btn" data-fs-agree><span data-i18n="mole.fs.agree">동의하고 촬영하기</span></button>
+          <button type="button" class="fs-btn ws-action-frame" data-fs-agree><span data-i18n="mole.fs.agree">동의하고 촬영하기</span></button>
         </section>
         <!-- SCREEN_02 카메라 촬영 -->
         <section class="fs-scr fs-scr--cam" data-fs-screen="2" hidden>
@@ -859,7 +860,7 @@
           </svg>
           <p class="fs-cam-ready" data-fs-ready hidden data-i18n="mole.fs.ready">촬영 준비 완료!</p>
           <button type="button" class="fs-shutter" data-fs-shutter disabled aria-label="촬영"></button>
-          <div class="fs-camerr" data-fs-camerr hidden><p data-i18n="mole.fs.camDenied">카메라를 사용할 수 없어요. 카메라 권한을 허용해 주세요.</p><button type="button" class="fs-btn fs-btn--sm" data-fs-retry><span data-i18n="mole.fs.retry">다시 시도</span></button></div>
+          <div class="fs-camerr" data-fs-camerr hidden><p data-i18n="mole.fs.camDenied">카메라를 사용할 수 없어요. 카메라 권한을 허용해 주세요.</p><button type="button" class="fs-btn fs-btn--sm ws-action-frame" data-fs-retry><span data-i18n="mole.fs.retry">다시 시도</span></button></div>
         </section>
         <!-- SCREEN_03 코스튬 선택 -->
         <section class="fs-scr fs-scr--costume" data-fs-screen="3" hidden>
@@ -881,7 +882,7 @@
               <div class="fs-ccard" data-fs-ccard><b class="fs-ctag" data-i18n="mole.fs.sharp">날렵형</b><img loading="lazy" decoding="async" alt=""></div>
             </div>
           </div>
-          <button type="button" class="fs-btn" data-fs-costume-ok><span data-i18n="mole.fs.costumeOk">이 코스튬으로 결정하기</span></button>
+          <button type="button" class="fs-btn ws-action-frame" data-fs-costume-ok><span data-i18n="mole.fs.costumeOk">이 코스튬으로 결정하기</span></button>
         </section>
         <!-- SCREEN_04 합성 진행 -->
         <section class="fs-scr fs-scr--prog" data-fs-screen="4" hidden>
@@ -906,7 +907,7 @@
             <button type="button" class="fs-fcard" data-fs-fcard="sharp"><img loading="lazy" decoding="async" class="fs-fcard-q" src="assets/facestudio/qcard.png" alt=""><img loading="lazy" decoding="async" class="fs-fcard-char" alt=""><b data-i18n="mole.fs.sharp">날렵형</b><small data-i18n="mole.fs.sharpDesc">슬림한 얼굴로 날렵하고 세련된 느낌</small></button>
           </div>
           <div class="fs-mascot"><img loading="lazy" decoding="async" src="assets/facestudio/mascot.png" alt=""><p class="fs-bubble" data-fs-bubble></p></div>
-          <button type="button" class="fs-btn" data-fs-face-ok><span data-i18n="mole.fs.faceOk">이 얼굴형으로 만들기</span></button>
+          <button type="button" class="fs-btn ws-action-frame" data-fs-face-ok><span data-i18n="mole.fs.faceOk">이 얼굴형으로 만들기</span></button>
         </section>
         <!-- SCREEN_07 완성 -->
         <section class="fs-scr fs-scr--done" data-fs-screen="7" hidden>
@@ -917,7 +918,7 @@
             <div class="fs-polaroid"><img loading="lazy" decoding="async" data-fs-polaroid alt=""><b>Nice!</b></div>
           </div>
           <p class="fs-done-msg" data-i18n="mole.fs.doneMsg">와! 나만의 캐릭터가 완성됐어요!</p>
-          <button type="button" class="fs-btn" data-fs-use><span data-i18n="mole.fs.use">게임에서 사용하기</span></button>
+          <button type="button" class="fs-btn ws-action-frame" data-fs-use><span data-i18n="mole.fs.use">게임에서 사용하기</span></button>
           <p class="fs-applied" data-fs-applied></p>
           <div class="fs-done-sub">
             <button type="button" class="fs-sbtn" data-fs-other data-i18n="mole.fs.other">다른 얼굴형 보기</button>
@@ -1055,7 +1056,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1498 G</div>
+        <div id="build-tag" aria-hidden="true">V 1499 G</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1339,7 +1340,7 @@ window.FGH.rollOut = function (el, done) {
         var gate = window.__moleAssetGate;
         function waitForCurrentWorker(registration) {
           return new Promise(function (resolve, reject) {
-            var latest = 'v=1498-G';
+            var latest = 'v=1499-G';
             var done = false;
             var timer = setTimeout(function () { finish(); }, 25000);
             function finish(error) {
@@ -1366,7 +1367,7 @@ window.FGH.rollOut = function (el, done) {
           console.warn('Starting while service worker registration continues in background');
           if (gate) gate.resolveCache();
         }, 30000);
-        navigator.serviceWorker.register('sw.js?v=1498-G').then(waitForCurrentWorker).then(function () {
+        navigator.serviceWorker.register('sw.js?v=1499-G').then(waitForCurrentWorker).then(function () {
           clearTimeout(registrationTimer);
           if (gate) gate.resolveCache();
         }).catch(function (error) {

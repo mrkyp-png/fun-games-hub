@@ -116,7 +116,7 @@
     if (!ready || locked || !owns('weapon', id)) return false;
     return commit({ 'mole.weapon': id });
   }
-  var RATE = [50, 45, 40, 35, 30], COST = 7777;
+  var RATE = [50, 45, 40, 35, 30], COST = 10000;
   function enhance(kind, id) {
     if (!ready) return { ok: false, reason: 'storage' };
     if (ids(kind).indexOf(id) === -1 || !owns(kind, id)) return { ok: false, reason: 'owned' };
