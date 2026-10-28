@@ -161,6 +161,7 @@
         el.querySelector('[data-sr-tag]').textContent = T(view.type === 'B' ? 'mole.score.neon' : 'mole.score.beach');
         el.querySelector('[data-sr-tag]').className = 'sr-rp-tag sr-rp-tag--' + view.type.toLowerCase();
       }
+      alignInfoText();
     }
     // 사용자 지정: 두더지팡·리듬팡 탭 누름 효과 — 폰에서 :active 가 잘 안 먹어 직접 클래스 토글(리듬팡 창 버튼과 같은 방식)
     [moleTab, rhythmTab].forEach(function (t) {
@@ -272,9 +273,31 @@
       });
       corrections.forEach(function (c) { if (c) c.label.style.setProperty('--sr-rank-y', c.y + 'px'); });
     }
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { alignRankDigits(); }, function () {});
+    function alignInfoText() {
+      if (el.hidden) return;
+      var box = el.querySelector('.sr-info'), label = box && box.querySelector('span');
+      if (!label || !box.clientHeight) return;
+      label.style.setProperty('--sr-info-y', '0px');
+      if (!rankContext) rankContext = document.createElement('canvas').getContext('2d');
+      if (!rankContext) return;
+      var style = getComputedStyle(label);
+      rankContext.font = style.font || (style.fontWeight + ' ' + style.fontSize + ' ' + style.fontFamily);
+      var metrics = rankContext.measureText(label.textContent);
+      if (!Number.isFinite(metrics.actualBoundingBoxAscent) || !Number.isFinite(metrics.actualBoundingBoxDescent)) return;
+      var marker = document.createElement('i');
+      marker.style.cssText = 'display:inline-block;width:0;height:0;padding:0;margin:0;border:0;vertical-align:baseline';
+      label.appendChild(marker);
+      var baseline = marker.getBoundingClientRect().top; marker.remove();
+      var rect = box.getBoundingClientRect();
+      var delta = rect.top + rect.height / 2 - baseline - (metrics.actualBoundingBoxDescent - metrics.actualBoundingBoxAscent) / 2;
+      if (Math.abs(delta) > parseFloat(style.fontSize) * 0.25) return;
+      var scale = root.devicePixelRatio || 1;
+      label.style.setProperty('--sr-info-y', (Math.round(delta * scale) / scale) + 'px');
+    }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { alignRankDigits(); alignInfoText(); }, function () {});
     // V1367 C(사용자 지정): 스크롤 목록이 반쯤 잘린 줄로 끝나지 않게 — 보이는 높이를 줄 간격의 배수로 맞춤(나머지는 아래 여백)
     function fitRows() {
+      alignInfoText();
       rows.style.flex = ''; rows.style.height = '';
       var first = rows.querySelector('.sr-row'); if (!first || !rows.clientHeight) return;
       var cs = getComputedStyle(rows), gap = parseFloat(cs.rowGap) || 0, padTop = parseFloat(cs.paddingTop) || 0;

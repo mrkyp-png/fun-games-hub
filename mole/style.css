@@ -2772,7 +2772,7 @@ body { background: var(--lm-page); }
 .sr-tab--off { --sr-rim: linear-gradient(180deg, #7c96b9, #516c96); --sr-highlight: #9db2d1; }
 .sr-tab::before, .sr-mine::before { outline: 1px solid var(--sr-outline); outline-offset: -1px; box-shadow: none; }
 .sr-tab::after, .sr-mine::after { inset: var(--sr-edge); border-color: var(--sr-highlight); border-radius: calc(var(--sr-radius) - var(--sr-edge)); box-shadow: none; }
-.sr-tab-txt { display: flex; flex-direction: column; align-items: center; line-height: 1.1; margin-right: 14%; }
+.sr-tab-txt { display: flex; flex-direction: column; align-items: center; line-height: 1.1; margin-right: 0; }
 .sr-tab-txt b { font-size: calc(var(--w) * 0.044); color: #c9d4ee; font-weight: 900; }
 .sr-tab-txt small { font-size: calc(var(--w) * 0.028); color: #93a3c6; font-weight: 700; }
 .sr-lock { position: absolute; right: 8%; top: 50%; width: 15%; transform: translateY(-50%); color: #a9b5d1; }
@@ -2832,7 +2832,7 @@ body { background: var(--lm-page); }
   border-image: url('assets/score/notice-frame-9slice-v1496.svg') 40 fill / 1 / 0 stretch; }
 .sr-info::after { content: ''; position: absolute; top: 50%; left: calc(var(--w) * -0.11); transform: translateY(-50%); width: calc(var(--w) * 0.11); height: calc(var(--w) * 0.11); z-index: -1; pointer-events: none;
   background: url('assets/score/icon-info-blue.svg') center / contain no-repeat; }
-.sr-info span { padding-left: 3%; }
+.sr-info span { padding-left: 3%; transform: translateY(var(--sr-info-y, 0px)); }
 .sr-toast { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 12%); transform: translateX(-50%); z-index: 11;
   padding: 10px 22px; border-radius: 99px; background: rgba(15, 10, 40, 0.9); color: #fff; font-weight: 800; font-size: 0.95rem; white-space: nowrap;
   box-shadow: 0 0 0 2px #ffd24a; }
@@ -8005,7 +8005,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen .rp-ticket-badge--songs img { height: 33px; }
 
 /* V1367 C 스코어 리듬팡 탭: 진입하면 해금, 비치·네온 × 곡별 순위(난이도 P>N>A → 등급 → 점수) */
-.sr-tab--off > span:not(.sr-tab-txt) { font-size: calc(var(--w) * 0.044); font-weight: 900; color: #c9d4ee; margin-right: 6%; }
+.sr-tab--off > span:not(.sr-tab-txt) { font-size: calc(var(--w) * 0.044); font-weight: 900; color: #c9d4ee; margin-right: 0; }
 .sr-rp { width: var(--w); display: flex; align-items: center; gap: 8px; flex: 0 0 auto; padding: 4px 8px; box-sizing: border-box; border-radius: 14px; background: rgba(20, 30, 70, 0.6); }
 .sr-rp[hidden], .sr-albums[hidden] { display: none; }
 .sr-rp-back { flex: 0 0 auto; border: 0; background: none; color: #ffe461; font-size: calc(var(--w) * 0.05); padding: 0 4px; cursor: pointer; }
