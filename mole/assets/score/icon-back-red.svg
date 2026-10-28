@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+  <title>Red circular back icon</title>
+  <defs>
+    <linearGradient id="rim" x1="128" y1="4" x2="128" y2="252" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF765F"/>
+      <stop offset=".2" stop-color="#FF5841"/>
+      <stop offset=".65" stop-color="#DA2118"/>
+      <stop offset="1" stop-color="#8C100B"/>
+    </linearGradient>
+    <radialGradient id="face" cx="0" cy="0" r="1" gradientTransform="translate(83 66) rotate(58) scale(200)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FA4136"/>
+      <stop offset=".55" stop-color="#F6241C"/>
+      <stop offset="1" stop-color="#CB100F"/>
+    </radialGradient>
+    <linearGradient id="inner-edge" x1="128" y1="18" x2="128" y2="238" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#AF1410"/>
+      <stop offset=".6" stop-color="#CD1712"/>
+      <stop offset="1" stop-color="#FF6B54"/>
+    </linearGradient>
+  </defs>
+  <circle cx="128" cy="128" r="124" fill="url(#rim)" stroke="#710F0B" stroke-width="2"/>
+  <circle cx="128" cy="128" r="120" stroke="#FFD0B7" stroke-opacity=".28" stroke-width="2"/>
+  <circle cx="128" cy="128" r="108" fill="url(#face)" stroke="url(#inner-edge)" stroke-width="4"/>
+  <path d="M130 86L88 128L130 170M90 128H170" stroke="#7E1410" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M130 86L88 128L130 170M90 128H170" stroke="#FFFDF5" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

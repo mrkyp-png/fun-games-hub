@@ -627,7 +627,7 @@
           <h2 id="rb-song-title" data-i18n="mole.rp.songs.pick">곡을 고르세요</h2>
           <div class="rb-song-viewport"><div class="rb-song-list" data-rp-song-list></div><i class="rb-scroll-bar rb-scroll-bar--top" aria-hidden="true"></i><i class="rb-scroll-bar rb-scroll-bar--bottom" aria-hidden="true"></i></div>
           <p class="rb-song-message" data-rp-song-message role="status"></p>
-          <div class="rb-song-footer"><button type="button" class="rx-btn rx-btn--diff rb-song-nav" data-rp-songs-back><svg class="rb-song-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2h6l.7 3 2.6 1.5 3-.8 3 5.2-2.3 2.2v3l2.3 2.2-3 5.2-3-.8-2.6 1.5-.7 3H9l-.7-3L5.7 22l-3 .8-3-5.2L2 15.4v-3L-.3 10.2l3-5.2 3 .8L8.3 4.3Z" transform="translate(2 0) scale(.83)"/><circle cx="12" cy="12" r="3.4" fill="#237cda"/></svg><span data-i18n="mole.rp.songs.type">타입 선택</span></button>
+          <div class="rb-song-footer"><button type="button" class="rx-btn rx-btn--diff rb-song-nav game-back" data-rp-songs-back aria-label="타입 선택으로 돌아가기" data-i18n-aria-label="mole.rp.songs.type"><img loading="lazy" decoding="async" src="assets/score/icon-back-red.svg" alt=""></button>
           <button type="button" class="rx-btn rx-btn--home rb-song-nav" data-rp-songs-home><svg class="rb-song-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 11 12 2 22 11 20 13V22H14V15H10V22H4V13Z"/></svg><span data-i18n="mole.rp.home">홈으로</span></button></div>
           <div class="rp-ticket-badge rp-ticket-badge--songs" data-rp-ticket-count><img loading="lazy" decoding="async" src="assets/ui-approved-v1476/ticket-single.webp" alt="Tickets"><b>0</b></div>
         </div></div>
@@ -639,7 +639,7 @@
           <button type="button" class="rx-btn rx-dbtn rx-dbtn--easy" data-rp-diff="EASY"><small></small></button>
           <button type="button" class="rx-btn rx-dbtn rx-dbtn--normal" data-rp-diff="NORMAL"><small></small></button>
           <button type="button" class="rx-btn rx-dbtn rx-dbtn--hard" data-rp-diff="HARD"><small></small></button>
-          <button type="button" class="rx-btn rx-btn--b rx-btn--songs rb-song-nav" data-rp-song-back hidden><i aria-hidden="true">♫</i><span data-i18n="mole.rp.songs">곡 선택</span></button>
+          <button type="button" class="rx-btn rx-btn--b rx-btn--songs rb-song-nav game-back" data-rp-song-back hidden aria-label="곡 선택으로 돌아가기" data-i18n-aria-label="mole.rp.songs"><img loading="lazy" decoding="async" src="assets/score/icon-back-red.svg" alt=""></button>
           <button type="button" class="rx-btn rx-btn--home rx-btn--selhome" data-rp-sel-close><span data-i18n="mole.rp.home">홈으로</span></button>
           <div class="rp-ticket-badge rp-ticket-badge--select" data-rp-ticket-count><img loading="lazy" decoding="async" src="assets/ui-approved-v1476/ticket-single.webp" alt="Tickets"><b>0</b></div>
         </div></div>
@@ -694,7 +694,7 @@
          0x0 렌더링돼 "아이콘 눌러도 안 먹힘"(클릭 자체는 됐지만 화면이 안 보임)으로 보였음. -->
     <div class="board-screen face-maker" id="face-maker" hidden>
         <div class="board-screen-bar">
-          <button type="button" class="bs-back" data-fm-cancel aria-label="뒤로">‹</button>
+          <button type="button" class="bs-back game-back" data-fm-cancel aria-label="뒤로"><img loading="lazy" decoding="async" src="assets/score/icon-back-red.svg" alt=""></button>
           <span class="bs-title" data-i18n="mole.fm.title">사람두더지 만들기</span>
         </div>
         <div class="fm-stage" data-fm-stage="pick">
@@ -738,7 +738,7 @@
             </button>
           </div>
           <div class="sr-albums" data-sr-albums hidden></div>
-          <div class="sr-rp" data-sr-rp hidden><button type="button" class="sr-rp-back" data-sr-rp-back aria-label="albums"><img loading="lazy" decoding="async" src="assets/score/btn-undo-matte-v1405.png" alt=""></button><img loading="lazy" decoding="async" class="sr-rp-album" data-sr-album alt=""><b class="sr-rp-title" data-sr-title></b><span class="sr-rp-tag" data-sr-tag></span></div>
+          <div class="sr-rp" data-sr-rp hidden><button type="button" class="sr-rp-back game-back" data-sr-rp-back aria-label="albums"><img loading="lazy" decoding="async" src="assets/score/icon-back-red.svg" alt=""></button><img loading="lazy" decoding="async" class="sr-rp-album" data-sr-album alt=""><b class="sr-rp-title" data-sr-title></b><span class="sr-rp-tag" data-sr-tag></span></div>
           <div class="sr-top3" data-sr-top3></div>
           <div class="sr-rows" data-sr-rows></div>
           <div class="sr-mine" data-sr-mine></div>
@@ -786,6 +786,7 @@
             <span class="ws-lbl ws-lbl--l" data-i18n="mole.ws.target">강화 대상</span>
             <span class="ws-lbl ws-lbl--r" data-i18n="mole.ws.material">강화 재료</span>
             <div class="ws-case-heading"><span class="ws-dots" data-ws-dots></span><span class="ws-name" data-ws-target-name></span></div>
+            <div class="ws-material-effect" data-ws-material-effect hidden><span data-ws-material-effect-label></span><span data-ws-material-effect-value></span></div>
             <button type="button" class="ws-arrow ws-arrow--prev" data-ws-arrow="prev" aria-label="이전"></button>
             <button type="button" class="ws-arrow ws-arrow--next" data-ws-arrow="next" aria-label="다음"></button>
             <div class="ws-item ws-item--l" data-ws-target><img loading="lazy" decoding="async" alt="" data-ws-target-img><b data-ws-target-lv></b></div>
@@ -830,7 +831,7 @@
 
       <!-- 제작소 "사진 합성" 전체화면(7단계) — 바탕화면 "제작소 UI 및 에셋(얼굴합성)" 명세·에셋 기준(v751). js/face-studio.js -->
       <div class="fs-root" id="face-studio" hidden>
-        <button type="button" class="fs-back" data-fs-back aria-label="뒤로" data-i18n-aria-label="common.back"><img loading="lazy" decoding="async" src="assets/score/btn-undo-matte-v1405.png" alt=""></button><!-- Score 화면과 같은 원본 복귀 아이콘 -->
+        <button type="button" class="fs-back game-back" data-fs-back aria-label="뒤로" data-i18n-aria-label="common.back"><img loading="lazy" decoding="async" src="assets/score/icon-back-red.svg" alt=""></button><!-- X 버튼과 동일한 원형 SVG 프레임의 뒤로가기 아이콘 -->
         <!-- SCREEN_01 사진 촬영 안내 -->
         <section class="fs-scr fs-scr--intro" data-fs-screen="1">
           <div class="fs-intro-card">
@@ -963,7 +964,7 @@
 
       <div class="board-screen info-screen" id="help-screen" hidden>
         <div class="board-screen-bar">
-          <button type="button" class="bs-back" data-back="help" aria-label="뒤로">‹</button>
+          <button type="button" class="bs-back game-back" data-back="help" aria-label="뒤로"><img loading="lazy" decoding="async" src="assets/score/icon-back-red.svg" alt=""></button>
           <span class="bs-title" data-i18n="mole.more.help">게임설명서</span>
         </div>
         <div class="info-body">
@@ -982,7 +983,7 @@
 
       <div class="board-screen info-screen" id="privacy-screen" hidden>
         <div class="board-screen-bar">
-          <button type="button" class="bs-back" data-back="privacy" aria-label="뒤로">‹</button>
+          <button type="button" class="bs-back game-back" data-back="privacy" aria-label="뒤로"><img loading="lazy" decoding="async" src="assets/score/icon-back-red.svg" alt=""></button>
           <span class="bs-title" data-i18n="mole.more.privacy">개인정보·라이센스</span>
         </div>
         <div class="info-body">
@@ -1021,7 +1022,7 @@
 
       <div class="board-screen" id="friends-screen" hidden>
         <div class="board-screen-bar">
-          <button type="button" class="bs-back" data-back="friends" aria-label="뒤로">‹</button>
+          <button type="button" class="bs-back game-back" data-back="friends" aria-label="뒤로"><img loading="lazy" decoding="async" src="assets/score/icon-back-red.svg" alt=""></button>
           <span class="bs-title" data-i18n="mole.more.friends">친구</span>
         </div>
         <p class="bs-soon" data-i18n="mole.soon">준비 중이에요</p>
@@ -1057,7 +1058,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1502 G</div>
+        <div id="build-tag" aria-hidden="true">V 1503 G</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1341,7 +1342,7 @@ window.FGH.rollOut = function (el, done) {
         var gate = window.__moleAssetGate;
         function waitForCurrentWorker(registration) {
           return new Promise(function (resolve, reject) {
-            var latest = 'v=1502-G';
+            var latest = 'v=1503-G';
             var done = false;
             var timer = setTimeout(function () { finish(); }, 25000);
             function finish(error) {
@@ -1368,7 +1369,7 @@ window.FGH.rollOut = function (el, done) {
           console.warn('Starting while service worker registration continues in background');
           if (gate) gate.resolveCache();
         }, 30000);
-        navigator.serviceWorker.register('sw.js?v=1502-G').then(waitForCurrentWorker).then(function () {
+        navigator.serviceWorker.register('sw.js?v=1503-G').then(waitForCurrentWorker).then(function () {
           clearTimeout(registrationTimer);
           if (gate) gate.resolveCache();
         }).catch(function (error) {

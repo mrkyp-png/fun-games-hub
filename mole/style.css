@@ -2901,7 +2901,6 @@ body { background: var(--lm-page); }
 #workshop-screen img[src*="char-mount_stars-v1406"] { --foot-x:0.5209466811751904; --foot-y:0.9833333333333333; }
 #workshop-screen img[src*="char-cloud_cups-v1406"] { --foot-x:0.5414521112255407; --foot-y:0.9840277777777777; }
 
-.ws-item.is-empty img { filter: grayscale(1) brightness(0.45); }
 /* 재료 칸 = 버튼(탭 → 재료 선택 팝업). 선택 전엔 빈 칸 + ＋ 표시(v758) */
 .ws-item--r { cursor: pointer; }
 .ws-item--r.is-unsel::after { content: '+'; position: absolute; font-size: 14cqw; font-weight: 900; color: rgba(255, 255, 255, 0.85); animation: ws-plus 1.2s ease-in-out infinite; }
@@ -5210,9 +5209,11 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .rp-modal { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; background: rgba(0, 10, 40, 0.6); }
 .rp-modal[hidden] { display: none; }
 .ws-dots { left: 4.5%; top: 3.5%; transform: none; gap: 1cqw; } /* v808(사용자 지정): 위치 점 = 합성 대상 이름 왼쪽 위(글자와 안 겹치게) */
-.ws-case-heading { position: absolute; left: 0; top: calc(var(--w) * -0.012); width: 34%; height: calc(var(--w) * 0.09); z-index: 4; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2cqw; }
+.ws-case-heading { position: absolute; left: 0; top: calc(var(--w) * -0.012); width: calc(556 / 1632 * 100%); height: calc(var(--w) * 0.09); z-index: 4; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2cqw; }
 .ws-case-heading .ws-dots { position: static; transform: none; align-self: stretch; justify-content: flex-start; padding-inline-start: 4.5cqw; box-sizing: border-box; }
 .ws-case-heading .ws-name { position: static; width: 100%; display: flex; align-items: center; justify-content: center; line-height: 1.15; margin: 0; padding: 0; }
+.ws-material-effect { position: absolute; inset: calc(var(--w) * -0.025) 0 auto auto; width: calc(518 / 1632 * 100%); height: calc(var(--w) * 0.09); z-index: 4; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 3cqw; line-height: 1.2; font-weight: 800; color: #c7ffad; white-space: nowrap; text-shadow: 0 1px 3px #14220b; pointer-events: none; }
+.ws-material-effect > span { display: flex; justify-content: center; align-items: center; }
 /* v809: 카메라 축소 시 빈 곳 = 같은 영상 흐리게(검은 띠 대신) + 줌 안내 */
 .fs-video-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); filter: blur(18px) brightness(0.7); }
 .fs-zoom-tip { position: absolute; left: 0; right: 0; bottom: 150px; margin: 0; text-align: center; font-size: 0.8rem; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); pointer-events: none; }
@@ -9553,6 +9554,11 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 .game-close > img { display: block; width: 100% !important; height: 100% !important; object-fit: contain !important; }
 .game-close:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
 .game-close.game-close--dialog { position: absolute !important; }
+.game-back { display: flex; justify-content: center; align-items: center; flex: 0 0 46px !important; width: 46px !important; height: 46px !important; min-width: 46px; min-height: 46px; max-width: none; max-height: none; aspect-ratio: 1 !important; box-sizing: border-box; padding: 0 !important; border: 0 !important; border-radius: 50% !important; background: none !important; box-shadow: none !important; line-height: 0; cursor: pointer; }
+.game-back > img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.game-back::before, .game-back::after { content: none !important; }
+.game-back:active { transform: scale(.9); }
+.game-back:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
 #roundmap-screen .rm-back.game-close { top: calc(max(2px, calc(env(safe-area-inset-top, 0px) - 4.6cqw)) + 5.8cqw + 8px) !important; }
 /* The 40px source corners scale equally on all sides; only straight spans stretch. */
 .ws-notice { position: relative; isolation: isolate; aspect-ratio: auto; min-height: calc(var(--w) * 0.11); height: auto;

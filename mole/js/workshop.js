@@ -254,7 +254,9 @@
       setItemImg($('[data-ws-target-img]'), $('[data-ws-target]'), it ? it.img : '', lv);
       // 재료 칸: 재료 선택 팝업에서 고른 뒤에만 올라감(사용자 지정 v758)
       if (!it || selMat !== it.id || !mats) selMat = null;
-      $('[data-ws-mat-img]').src = it && (selMat || !mats) ? it.img : '';
+      var matImg = $('[data-ws-mat-img]');
+      matImg.hidden = !(it && selMat && mats > 0);
+      if (matImg.hidden) matImg.removeAttribute('src'); else matImg.src = it.img;
       $('[data-ws-mat]').classList.toggle('is-empty', !mats);
       $('[data-ws-mat]').classList.toggle('is-unsel', !!mats && !selMat);
       $('[data-ws-mat-lv]').textContent = ''; // 재료는 +0 표기 안 함(사용자 지정 v758)
@@ -264,6 +266,16 @@
       $('[data-ws-coins]').textContent = coins.toLocaleString('en-US');
       $('[data-ws-coins]').classList.toggle('is-short', coins < COST);
       var notOwned = !!it && it.owned === false;
+      var effect = $('[data-ws-material-effect]');
+      effect.hidden = !it || notOwned || matImg.hidden;
+      $('[data-ws-material-effect-label]').textContent = '';
+      $('[data-ws-material-effect-value]').textContent = '';
+      if (!effect.hidden) {
+        var value = skillValue(tab, it.id), weapon = tab === 'weapon';
+        var format = function (v) { return weapon ? Math.round(v * 100) + '%' : v.toFixed(2) + T('mole.ws.seconds'); };
+        $('[data-ws-material-effect-label]').textContent = T('mole.ws.skill.' + (weapon ? it.id : 'costume'));
+        $('[data-ws-material-effect-value]').textContent = format(value) + (lv >= MAX ? ' (MAX)' : ' → ' + format(value + (weapon ? 0.01 : 0.05)));
+      }
       $('[data-ws-target]').classList.toggle('is-notowned', notOwned);
       var ok = !!it && !notOwned && lv < MAX && mats > 0 && !!selMat && coins >= COST && !running;
       $('[data-ws-go]').disabled = !ok;
