@@ -62,7 +62,13 @@
     return best;
   }
   function rpPill(e) { return DIFF_CODE[e.diff] + (e.grade ? ' · ' + e.grade : ''); }
-  function myAvatar() { return localStorage.getItem('mole.profilePic') || 'assets/moles/mole1.png'; }
+  function myAvatar() { return localStorage.getItem('mole.profilePic') || ''; }
+  function paintAvatar(img, source) {
+    var hasProfile = typeof source === 'string' && source.trim().length > 0;
+    img.hidden = !hasProfile;
+    if (hasProfile) img.src = source;
+    else img.removeAttribute('src');
+  }
   function fmt(n) { return (n || 0).toLocaleString('en-US'); }
 
   function create(opts) {
@@ -180,7 +186,7 @@
       var art = CARD_ART[place];
       c.innerHTML = '<img class="sr-card-bg" alt="" src="' + art.src + '" width="' + art.width + '" height="' + art.height + '">' +
         '<div class="sr-card-body"><span class="sr-ava"><img alt=""></span><b class="sr-name"></b><span class="sr-pill"></span><strong class="sr-score"></strong></div>';
-      c.querySelector('.sr-ava img').src = entry ? (entry.avatar || 'assets/moles/mole1.png') : 'assets/moles/mole1.png';
+      paintAvatar(c.querySelector('.sr-ava img'), entry && entry.avatar);
       c.querySelector('.sr-name').textContent = entry ? entry.playerName : '—';
       c.querySelector('.sr-pill').textContent = entry ? entry.pill : '—';
       if (entry) c.querySelector('.sr-pill').classList.add('sr-pill--' + entry.cls);
@@ -226,7 +232,7 @@
         rankBaseline.className = 'sr-rank-baseline'; rankBaseline.setAttribute('aria-hidden', 'true');
         rankBaseline.style.cssText = 'display:inline-block;width:0;height:0;padding:0;margin:0;border:0;vertical-align:baseline;font-size:0;line-height:0';
         rankLabel.appendChild(rankBaseline);
-        row.querySelector('.sr-ava img').src = e ? (e.avatar || 'assets/moles/mole1.png') : 'assets/moles/mole1.png';
+        paintAvatar(row.querySelector('.sr-ava img'), e && e.avatar);
         row.querySelector('.sr-name').textContent = e ? e.playerName : '—';
         row.querySelector('.sr-pill').textContent = e ? e.pill : '—';
         if (e) row.querySelector('.sr-pill').classList.add('sr-pill--' + e.cls);
@@ -244,7 +250,7 @@
         '<span class="sr-name"></span><span class="sr-pill"></span><strong class="sr-score"></strong>';
       mine.querySelector('small').textContent = T('mole.score.mine');
       mine.querySelector('.sr-mine-lbl b').textContent = myRank ? String(myRank) : '—';
-      mine.querySelector('.sr-ava img').src = myAvatar();
+      paintAvatar(mine.querySelector('.sr-ava img'), myAvatar());
       mine.querySelector('.sr-name').textContent = board.mineName;
       mine.querySelector('.sr-pill').textContent = me ? me.pill : '—';
       if (me) mine.querySelector('.sr-pill').classList.add('sr-pill--' + me.cls);

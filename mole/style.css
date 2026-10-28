@@ -2792,7 +2792,7 @@ body { background: var(--lm-page); }
 /* 공통 아바타(원) + 라운드 코드 알약 */
 .sr-ava { display: block; border-radius: 50%; overflow: hidden; background: rgba(255, 255, 255, 0.55); box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9); flex: 0 0 auto; }
 .sr-ava img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.sr-ava img[src$="mole1.png"] { transform: scale(1.7) translateY(12%); } /* 기본 두더지 스프라이트는 여백이 많아 원 안에서 작게 보임 */
+.sr-ava img[hidden] { display: none; }
 .sr-pill { display: inline-block; text-align: center; border-radius: 99px; font-weight: 900; color: #fff; background: rgba(40, 30, 10, 0.45); white-space: nowrap; }
 .sr-pill--easy { background: #7fdca0; color: #0e5a2c; }
 .sr-pill--mid { background: #9cc6ff; color: #103a7a; }
