@@ -117,7 +117,7 @@
         '<div class="qs-head"><img class="qs-head-img" alt=""><div class="qs-mole"><img alt=""><i class="qs-lid"></i><i class="qs-lid"></i></div>' +
           '<svg class="qs-title" viewBox="0 0 500 110" aria-hidden="true"><defs><linearGradient id="qsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff58a"/><stop offset="0.45" stop-color="#ffcf1f"/><stop offset="1" stop-color="#ff8a00"/></linearGradient></defs>' +
             '<text class="qs-t-sh" x="0" y="86" transform="translate(0 6)"></text><text class="qs-t-st" x="0" y="86"></text><text class="qs-t-fill" x="0" y="86" fill="url(#qsg)"></text></svg>' +
-          '<button type="button" class="qs-x" data-qs-close aria-label="close"><img src="assets/workshop/pick/x.png" alt=""></button>' +
+          '<button type="button" class="qs-x game-close" data-qs-close aria-label="close"><img src="assets/score/icon-close-red.svg" alt=""></button>' +
           '<div class="qs-tabs" data-qs-tabs></div>' +
           '<img class="qs-paws" alt="">' + // v901: 두더지 손은 탭 상자보다 앞
         '</div>' +

@@ -20,7 +20,7 @@
         '<div class="ad-overlay-tag">광고</div>' +
         (hint ? '<div class="ad-overlay-hint">' + hint + '</div>' : '') +
         '<div class="ad-overlay-bar"><i></i></div>' +
-        '<button type="button" class="ad-overlay-x" aria-label="닫기">✕</button></div>';
+        '<button type="button" class="ad-overlay-x game-close game-close--dialog" aria-label="닫기"><img src="assets/score/icon-close-red.svg" alt=""></button></div>';
       document.body.appendChild(v);
       var done = false;
       function finish(val) {

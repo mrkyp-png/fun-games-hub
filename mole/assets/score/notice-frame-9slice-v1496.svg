@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="100" viewBox="0 0 160 100" fill="none">
+  <title>Score notice frame: 40 pixel corner slices</title>
+  <defs>
+    <linearGradient id="face" x1="80" y1="0" x2="80" y2="100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1b2b4d"/><stop offset="1" stop-color="#182747"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="80" y1="0" x2="80" y2="100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6c89b8"/><stop offset="1" stop-color="#28456f"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="156" height="96" rx="38" fill="url(#face)" stroke="url(#edge)" stroke-width="4"/>
+  <rect x="5" y="5" width="150" height="90" rx="35" stroke="#7598ce" stroke-opacity=".5" stroke-width="2"/>
+</svg>

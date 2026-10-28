@@ -3,7 +3,7 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-// V1495 G places shop and score close buttons 8px from the upper-right corner.
+// V1496 G shares circular close/info artwork and nine-sliced notice frames across screens.
 const CACHE = 'mole-game-v1466-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
@@ -17,6 +17,7 @@ const SHELL = [
   './assets/score/card-2-clean-6cf5c67ce5.svg',
   './assets/score/card-3-clean-aa5a6fdc34.svg',
   './assets/score/icon-info-blue.svg',
+  './assets/score/notice-frame-9slice-v1496.svg',
   './js/item-inventory.js',
   './js/shop-scenery-v1486.js',
   './assets/shop-background-v1486/day.jpg',

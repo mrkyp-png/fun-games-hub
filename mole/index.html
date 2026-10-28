@@ -572,7 +572,7 @@
               </div>
             </div>
             <button type="button" class="rm-start" data-rm-start aria-label="시작" data-i18n-aria-label="mole.start.btn"><!-- V1318 C: 홈 초록 시작 버튼과 같은 그림·연출·꾹 눌러 종료(사용자 지정) --><span class="h2-start"><img loading="lazy" decoding="async" src="assets/home2/ic-start.png" alt=""><img loading="lazy" decoding="async" class="h2-play" src="assets/home2/start-play.png" alt=""></span><span class="lane-call-idle" aria-hidden="true"></span><span class="rm-start-label" data-rm-start-label>시작</span></button>
-            <button type="button" class="dr-back rm-back is-x" data-back="roundmap" aria-label="뒤로" data-i18n-aria-label="common.back"><img loading="lazy" decoding="async" src="assets/workshop/pick/x.png" alt=""></button><!-- v940: 뒤로가기 → 오른쪽 빨간 X -->
+            <button type="button" class="dr-back rm-back is-x game-close" data-back="roundmap" aria-label="뒤로" data-i18n-aria-label="common.back"><img loading="lazy" decoding="async" src="assets/score/icon-close-red.svg" alt=""></button>
         </div>
       </div>
       <!-- 리듬팡(RHYTHM PANG) 1차 — js/rhythm.js. 바탕화면 "리듬팡 UI 및 에셋/명세서.txt" -->
@@ -728,7 +728,7 @@
         <div class="sr-carpet" aria-hidden="true"></div>
         <div class="sr-fx" data-sr-fx aria-hidden="true"></div>
         <div class="sr-ui">
-          <button type="button" class="sr-back is-x" data-back="score" aria-label="뒤로" data-i18n-aria-label="common.back"><img loading="lazy" decoding="async" src="assets/score/icon-close-red.svg" alt=""></button>
+          <button type="button" class="sr-back is-x game-close" data-back="score" aria-label="뒤로" data-i18n-aria-label="common.back"><img loading="lazy" decoding="async" src="assets/score/icon-close-red.svg" alt=""></button>
           <span class="sr-title-wrap"><img loading="lazy" decoding="async" class="sr-title" src="assets/score/title.png" width="620" height="359" alt="SCORE RANKING"><i class="sr-tw" style="left:14%;top:30%"></i><i class="sr-tw" style="left:84%;top:26%"></i><i class="sr-tw" style="left:30%;top:88%"></i><i class="sr-tw" style="left:72%;top:86%"></i></span>
           <div class="sr-tabs">
             <button type="button" class="sr-tab sr-tab--on" data-sr-game="mole"><span data-i18n="mole.pad.gameMole">두더지팡</span></button>
@@ -751,7 +751,7 @@
         <div class="shop-scenery" aria-hidden="true"></div>
         <div class="shop-sky" aria-hidden="true"></div>
         <div class="shop-frame" aria-hidden="true"></div>
-        <button type="button" class="shop-back" data-shop-back aria-label="닫기" data-i18n-aria-label="mole.common.close"><img loading="lazy" decoding="async" src="assets/score/icon-close-red.svg" alt=""></button>
+        <button type="button" class="shop-back game-close" data-shop-back aria-label="닫기" data-i18n-aria-label="mole.common.close"><img loading="lazy" decoding="async" src="assets/score/icon-close-red.svg" alt=""></button>
         <!-- 하트/코인/티켓 캡슐 = 상점 안이 아니라 두더지팡(다이얼패드 1/2/3 키) 쪽으로 이동
              (사용자 지정: "일단 두더지팡으로 이동") — shop.js 가 오버레이로 애니메이션 처리.
              배너가 최상단으로(사용자 지정: "아래 인사 박스를 제일 위로 이동"). -->
@@ -772,7 +772,7 @@
       <div class="board-screen ws-screen" id="workshop-screen" hidden>
         <div class="ws-dust" aria-hidden="true"><i class="ws-dust--hay" style="left:15%;top:57%;animation-delay:-3.6s;animation-duration:7.6s"></i><i class="ws-dust--hay" style="left:7%;top:39%;animation-delay:-6.4s;animation-duration:6.4s"></i><i class="ws-dust--hay" style="left:6%;top:34%;animation-delay:-3.6s;animation-duration:5.4s"></i><i class="ws-dust--hay" style="left:18%;top:30%;animation-delay:-4.8s;animation-duration:6.2s"></i><i class="ws-dust--hay" style="left:15%;top:38%;animation-delay:-5.0s;animation-duration:7.5s"></i><i class="ws-dust--hay" style="left:3%;top:31%;animation-delay:-0.3s;animation-duration:7.6s"></i><i class="ws-dust--hay" style="left:1%;top:57%;animation-delay:-2.6s;animation-duration:6.8s"></i><i class="ws-dust--hay" style="left:7%;top:61%;animation-delay:-1.9s;animation-duration:5.9s"></i><i class="ws-dust--hay" style="left:1%;top:33%;animation-delay:-3.7s;animation-duration:5.8s"></i><i class="ws-dust--hay" style="left:18%;top:33%;animation-delay:-5.7s;animation-duration:5.9s"></i><i class="ws-dust--hay" style="left:8%;top:60%;animation-delay:-2.3s;animation-duration:5.2s"></i><i class="ws-dust--hay" style="left:4%;top:53%;animation-delay:-0.9s;animation-duration:5.9s"></i><i class="ws-dust--hay" style="left:84%;top:29%;animation-delay:-6.8s;animation-duration:5.0s"></i><i class="ws-dust--hay" style="left:88%;top:31%;animation-delay:-3.8s;animation-duration:7.9s"></i><i class="ws-dust--hay" style="left:94%;top:54%;animation-delay:-0.6s;animation-duration:6.9s"></i><i class="ws-dust--hay" style="left:90%;top:49%;animation-delay:-0.7s;animation-duration:6.0s"></i><i class="ws-dust--hay" style="left:95%;top:35%;animation-delay:-1.1s;animation-duration:7.1s"></i><i class="ws-dust--hay" style="left:82%;top:31%;animation-delay:-3.7s;animation-duration:6.5s"></i><i class="ws-dust--hay" style="left:99%;top:40%;animation-delay:-3.6s;animation-duration:5.6s"></i><i class="ws-dust--hay" style="left:86%;top:54%;animation-delay:-5.1s;animation-duration:5.3s"></i><i class="ws-dust--hay" style="left:95%;top:41%;animation-delay:-0.0s;animation-duration:7.6s"></i><i class="ws-dust--hay" style="left:91%;top:29%;animation-delay:-1.7s;animation-duration:6.2s"></i><i class="ws-dust--hay" style="left:85%;top:30%;animation-delay:-7.9s;animation-duration:5.6s"></i><i class="ws-dust--hay" style="left:90%;top:28%;animation-delay:-6.2s;animation-duration:6.0s"></i><i style="left:46%;top:29%;animation-delay:-3.6s;animation-duration:7.2s"></i><i style="left:73%;top:22%;animation-delay:-3.3s;animation-duration:7.2s"></i><i style="left:69%;top:37%;animation-delay:-0.3s;animation-duration:8.7s"></i><i style="left:13%;top:40%;animation-delay:-0.8s;animation-duration:8.7s"></i><i style="left:77%;top:25%;animation-delay:-8.5s;animation-duration:9.5s"></i><i style="left:79%;top:17%;animation-delay:-5.2s;animation-duration:8.6s"></i><i style="left:33%;top:15%;animation-delay:-5.0s;animation-duration:7.5s"></i><i style="left:58%;top:28%;animation-delay:-4.9s;animation-duration:9.3s"></i><i style="left:76%;top:33%;animation-delay:-0.9s;animation-duration:9.3s"></i><i style="left:29%;top:57%;animation-delay:-0.9s;animation-duration:9.8s"></i><i style="left:77%;top:17%;animation-delay:-5.6s;animation-duration:9.0s"></i><i style="left:73%;top:64%;animation-delay:-7.0s;animation-duration:8.9s"></i><i style="left:63%;top:56%;animation-delay:-2.7s;animation-duration:10.2s"></i><i style="left:94%;top:41%;animation-delay:-0.7s;animation-duration:8.2s"></i></div>
         <div class="ws-ui">
-          <button type="button" class="ws-close" data-ws-close aria-label="닫기"><img loading="lazy" decoding="async" src="assets/workshop/close.png" alt=""></button>
+          <button type="button" class="ws-close game-close" data-ws-close aria-label="닫기"><img loading="lazy" decoding="async" src="assets/score/icon-close-red.svg" alt=""></button>
           <div class="ws-sign"><img loading="lazy" decoding="async" src="assets/workshop/sign.png" alt=""><b data-i18n="mole.ws.title">제작소</b><small>MOLE PANG</small></div>
           <div class="ws-tabs ws-tabs--3">
             <button type="button" class="ws-tab is-on" data-ws-tab="weapon"><span data-i18n="mole.ws.tabWeapon">무기 강화</span></button>
@@ -800,14 +800,13 @@
           </div>
           <div class="ws-coins"><span data-i18n="mole.ws.coins">보유 코인</span><i class="ws-coin"></i><b data-ws-coins></b></div>
           <button type="button" class="ws-go" data-ws-go><span data-i18n="mole.ws.go">강화하기</span></button>
-          <div class="ws-notice"><span class="ws-info-icon" aria-hidden="true"></span><span data-ws-notice></span></div>
+          <div class="ws-notice"><img class="ws-info-icon" src="assets/score/icon-info-blue.svg" width="256" height="256" alt="" aria-hidden="true"><span data-ws-notice></span></div>
         </div>
         <div class="ws-pick" data-ws-pick hidden>
           <div class="ws-pick-box ws-pick-box--v2"><!-- v845: 사용자 시안(바탕화면 합성재료화면.png) — 제목판=제작소 간판, 색 카드 5종 -->
             <div class="ws-pick-sign"><img loading="lazy" decoding="async" src="assets/workshop/sign.png" alt=""><b data-i18n="mole.ws.pickTitle">강화 재료 선택</b></div>
-            <button type="button" class="ws-pick-x" data-ws-pick-close aria-label="close"><img loading="lazy" decoding="async" src="assets/workshop/pick/x.png" alt=""></button>
             <div class="ws-pick-list" data-ws-pick-list></div>
-            <p class="ws-pick-note" data-ws-pick-note hidden><b data-i18n="mole.ws.pickNo">같은 종류만 가능</b></p><!-- v846: 안내는 한 번만 -->
+            <div class="ws-notice ws-pick-note" data-ws-pick-note hidden><img class="ws-info-icon" src="assets/score/icon-info-blue.svg" width="256" height="256" alt="" aria-hidden="true"><span data-i18n="mole.ws.pickNo">같은 종류만 가능</span></div>
             <button type="button" class="ws-pick-ok" data-ws-pick-close><span data-i18n="mole.ws.pickClose">닫기</span></button>
           </div>
         </div>
@@ -817,7 +816,7 @@
             <img loading="lazy" decoding="async" class="ws-fx-goose" data-ws-goose alt="">
           </div>
           <p class="ws-egg-hint" data-ws-egghint data-i18n="mole.ws.eggTap" hidden>알을 터치하세요!</p>
-          <div class="ws-notice ws-fx-notice" data-ws-fx-info hidden><span class="ws-info-icon" aria-hidden="true"></span><span data-i18n="mole.ws.blackEggChance">강화 실패 시 10% 확률로 반전 성공!</span></div>
+          <div class="ws-notice ws-fx-notice" data-ws-fx-info hidden><img class="ws-info-icon" src="assets/score/icon-info-blue.svg" width="256" height="256" alt="" aria-hidden="true"><span data-i18n="mole.ws.blackEggChance">강화 실패 시 10% 확률로 반전 성공!</span></div>
           <div class="ws-result" data-ws-result hidden>
             <div class="ws-res-glow" data-ws-res-glow><img loading="lazy" decoding="async" alt="" data-ws-res-img></div>
             <p class="ws-res-title" data-ws-res-title></p>
@@ -930,7 +929,7 @@
 
       <!-- 일일출석(DAILY REWARD) 전체화면 — 바탕화면 "일일출석 UI 및 에셋" 명세·에셋 기준(v748). 카드 글자·수량·상태는 js/daily.js 가 그린다. -->
       <div class="board-screen dr-screen" id="daily-screen" hidden>
-        <button type="button" class="dr-back is-x" data-back="daily" aria-label="뒤로" data-i18n-aria-label="common.back"><img loading="lazy" decoding="async" src="assets/workshop/pick/x.png" alt=""></button>
+        <button type="button" class="dr-back is-x game-close" data-back="daily" aria-label="뒤로" data-i18n-aria-label="common.back"><img loading="lazy" decoding="async" src="assets/score/icon-close-red.svg" alt=""></button>
         <div class="dr-stage">
           <div class="dr-top">
             <img loading="lazy" decoding="async" class="dr-mole dr-mole--l" src="assets/daily/mole-left.png" alt="">
@@ -1056,7 +1055,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1495 G</div>
+        <div id="build-tag" aria-hidden="true">V 1496 G</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1340,7 +1339,7 @@ window.FGH.rollOut = function (el, done) {
         var gate = window.__moleAssetGate;
         function waitForCurrentWorker(registration) {
           return new Promise(function (resolve, reject) {
-            var latest = 'v=1495-G';
+            var latest = 'v=1496-G';
             var done = false;
             var timer = setTimeout(function () { finish(); }, 25000);
             function finish(error) {
@@ -1367,7 +1366,7 @@ window.FGH.rollOut = function (el, done) {
           console.warn('Starting while service worker registration continues in background');
           if (gate) gate.resolveCache();
         }, 30000);
-        navigator.serviceWorker.register('sw.js?v=1495-G').then(waitForCurrentWorker).then(function () {
+        navigator.serviceWorker.register('sw.js?v=1496-G').then(waitForCurrentWorker).then(function () {
           clearTimeout(registrationTimer);
           if (gate) gate.resolveCache();
         }).catch(function (error) {

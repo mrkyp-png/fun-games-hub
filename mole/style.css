@@ -2828,9 +2828,8 @@ body { background: var(--lm-page); }
   border-style: solid; border-color: transparent; border-width: calc(var(--w) * 0.012) calc(var(--w) * 0.03) calc(var(--w) * 0.012) calc(var(--w) * 0.11);
   color: #fff; font-weight: 800; font-size: calc(var(--w) * 0.03); line-height: 1.2; }
 .sr-info::before { content: ''; position: absolute; inset: calc(var(--w) * -0.0054) calc(var(--w) * -0.03) calc(var(--w) * -0.0054) calc(var(--w) * -0.065); z-index: -1; pointer-events: none;
-  box-sizing: border-box; border: calc(var(--w) * 0.006) solid transparent; border-radius: 999px;
-  background: linear-gradient(180deg, #1b2b4d, #182747) padding-box, linear-gradient(180deg, #6c89b8, #28456f) border-box;
-  box-shadow: inset 0 0 0 1px rgba(117, 152, 206, 0.5); }
+  box-sizing: border-box; border: calc(var(--w) * 0.055) solid transparent;
+  border-image: url('assets/score/notice-frame-9slice-v1496.svg') 40 fill / 1 / 0 stretch; }
 .sr-info::after { content: ''; position: absolute; top: 50%; left: calc(var(--w) * -0.11); transform: translateY(-50%); width: calc(var(--w) * 0.11); height: calc(var(--w) * 0.11); z-index: -1; pointer-events: none;
   background: url('assets/score/icon-info-blue.svg') center / contain no-repeat; }
 .sr-info span { padding-left: 3%; }
@@ -2924,9 +2923,9 @@ body { background: var(--lm-page); }
 .ws-go:active:not(:disabled) { transform: translateY(3px) scale(0.98); }
 .ws-go:disabled { filter: grayscale(0.8) brightness(0.8); cursor: default; }
 .ws-notice { width: calc(var(--w) * 0.84); aspect-ratio: 648 / 90; flex: 0 0 auto; margin-bottom: auto; display: flex; align-items: center; gap: 3%; padding: 0 5%; box-sizing: border-box;
-  background: url('assets/workshop/notice-clean-v2.png') center / 100% 100% no-repeat; font-weight: 800; font-size: calc(var(--w) * 0.03); color: #fff3dc; letter-spacing: -0.02em; }
+  background: none; font-weight: 800; font-size: calc(var(--w) * 0.03); color: #fff3dc; letter-spacing: -0.02em; }
 .ws-info-icon { flex: 0 0 auto; width: calc(var(--w) * 0.07); height: calc(var(--w) * 0.07);
-  background: url('assets/workshop/exclamation-blue-v1.png') center / contain no-repeat; }
+  background: url('assets/score/icon-info-blue.svg') center / contain no-repeat; }
 .ws-fx-notice { position: absolute; left: 50%; bottom: max(2vh, calc(env(safe-area-inset-bottom, 0px) + 10px)); z-index: 9; margin: 0; transform: translateX(-50%); }
 /* ---- 합성 연출 ---- */
 .ws-fx { --dy: 10dvh; /* 알·받침대를 바닥 쪽으로(사용자 지정 v759) */ position: absolute; inset: 0; z-index: 10; background: rgba(20, 10, 0, 0.35); overflow: hidden; }
@@ -5438,9 +5437,8 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .ws-pick:has(.ws-pick-box--v2) { background: rgba(0, 0, 0, 0.75); }
 /* v846: 제목 글자 = 간판 판자 세로 가운데(판자 52~218px/219 → 61.6%), '같은 종류만 가능' = 카드 아래 한 번만 */
 .ws-pick-sign b { top: 61.6%; }
-.ws-pick-note { position: relative; margin: 0; width: calc(var(--w) * 0.5); aspect-ratio: 248 / 80; background: url('assets/workshop/pick/tag-no.png') center / 100% 100% no-repeat; }
+.ws-pick-note { position: relative; margin: 0; width: calc(var(--w) * 0.5); }
 .ws-pick-note[hidden] { display: none; }
-.ws-pick-note b { position: absolute; left: 26%; right: 5%; top: 50%; transform: translateY(-50%); text-align: center; white-space: nowrap; font-size: calc(var(--w) * 0.036); color: #fff; }
 
 /* ===== v847: 아이템 > 무기 카드 새 디자인(바탕화면 "무기보관 에셋 변경" 시안) ===== */
 .inv-card.inv-card--basic, .inv-card.inv-card--rare, .inv-card.inv-card--epic, .inv-card.inv-card--legend {
@@ -9486,3 +9484,27 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* Normal DIM on the yellow 3rd/4th round buttons: keep the hint subdued but distinct from the button face. */
 #game-screen.diff-mid[data-button-palette="yellow"] .lane-button--hot :is(.lane-num,.lane-sub,.lane-kr,.lane-en,.lane-lbl) { color: #9b8750; }
 #game-screen.diff-mid[data-button-palette="yellow"] .lane-button--hot .lane-ico svg { stroke: #9b8750; fill: #9b8750; }
+
+/* V1496: shared score artwork, fixed screen-corner placement and circular sizing. */
+.game-close {
+  position: fixed !important; top: 8px !important; right: 8px !important; bottom: auto !important; left: auto !important;
+  width: 46px !important; height: 46px !important; min-width: 46px !important; min-height: 46px !important;
+  max-width: none !important; max-height: none !important; aspect-ratio: 1; box-sizing: border-box;
+  margin: 0 !important; padding: 0 !important; border: 0 !important; border-radius: 50%;
+  background: none !important; box-shadow: none; line-height: 0; cursor: pointer; z-index: 5;
+}
+.game-close > img { display: block; width: 100% !important; height: 100% !important; object-fit: contain !important; }
+.game-close:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.game-close.game-close--dialog { position: absolute !important; }
+#roundmap-screen .rm-back.game-close { top: calc(max(2px, calc(env(safe-area-inset-top, 0px) - 4.6cqw)) + 5.8cqw + 8px) !important; }
+/* The 40px source corners scale equally on all sides; only straight spans stretch. */
+.ws-notice { position: relative; isolation: isolate; aspect-ratio: auto; min-height: calc(var(--w) * 0.11); height: auto;
+  max-width: calc(100% - 16px); padding: 6px 12px 6px calc(var(--w) * 0.13); gap: 0;
+  background: none; color: #fff; line-height: 1.25; white-space: normal; }
+.ws-notice::before { content: ''; position: absolute; inset: 0 0 0 calc(var(--w) * 0.045); z-index: -1; pointer-events: none;
+  box-sizing: border-box; border: calc(var(--w) * 0.055) solid transparent;
+  border-image: url('assets/score/notice-frame-9slice-v1496.svg') 40 fill / 1 / 0 stretch; }
+.ws-notice .ws-info-icon { position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: calc(var(--w) * 0.11); height: calc(var(--w) * 0.11); aspect-ratio: 1;
+  background: none; object-fit: contain; display: block; overflow: visible; }
+.ws-notice span:not(.ws-info-icon) { min-width: 0; overflow: visible; text-overflow: clip; white-space: normal; }
