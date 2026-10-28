@@ -49,6 +49,10 @@
   function create(opts) {
     var el = opts.root;
     var $ = function (s) { return el.querySelector(s); };
+    var noticeSlot = $('[data-ws-notice-slot]'), mainNotice = $('.ws-main-notice');
+    function fitNoticeSlot() { var height = mainNotice.getBoundingClientRect().height; if (height) noticeSlot.style.height = height + 'px'; }
+    var noticeObserver = new ResizeObserver(fitNoticeSlot);
+    noticeObserver.observe(mainNotice);
     var tab = 'weapon', idx = { weapon: 0, costume: 0 };
     var running = false, timers = [], selMat = null, pending = null;
     var enhancement = MG.WorkshopEnhance.create(el);
@@ -225,6 +229,13 @@
 
     function render() {
       el.querySelectorAll('[data-ws-tab]').forEach(function (b) { b.classList.toggle('is-on', b.dataset.wsTab === tab); });
+      var photo = $('[data-ws-photo]');
+      var photoLocked = !MG.CostumeTeams.teams().some(function (team) { return MG.CostumeTeams.owns(team.id); });
+      photo.disabled = photoLocked;
+      photo.classList.toggle('is-locked', photoLocked);
+      photo.setAttribute('aria-disabled', String(photoLocked));
+      photo.title = photoLocked ? T('mole.fs.needCostume') : '';
+      photo.querySelector('span').textContent = (photoLocked ? '🔒 ' : '') + T('mole.fs.tabPhoto');
       var it = cur();
       var lv = it ? levelOf(tab, it.id) : 0;
       var mats = it ? materials(tab, it.id) : 0;
@@ -254,6 +265,7 @@
         : coins < COST ? T('mole.ws.noCoin')
         : !selMat ? T('mole.ws.pickHint')
         : T(tab === 'weapon' ? 'mole.ws.ruleWeapon' : 'mole.ws.ruleCostume');
+      fitNoticeSlot();
       el.querySelectorAll('[data-ws-arrow]').forEach(function (b) { b.hidden = true; }); // v800: 화살표 대신 밀어서 넘기기(사용자 지정)
       var dots = $('[data-ws-dots]'), n = items(tab).length;
       dots.innerHTML = ''; dots.hidden = n < 2;

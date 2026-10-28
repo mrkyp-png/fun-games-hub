@@ -3328,7 +3328,7 @@
       onClose: () => { faceStudioEl.hidden = true; if (workshop) workshop.show(); },
       onChange: () => { if (moreMenu) moreMenu.refresh(); }
     });
-    document.querySelector('[data-ws-photo]').addEventListener('click', () => { faceStudioEl.hidden = false; faceStudio.open(); });
+    document.querySelector('[data-ws-photo]').addEventListener('click', () => { if (faceStudio.open()) faceStudioEl.hidden = false; });
     workshop = MG.Workshop.create({
       root: document.getElementById('workshop-screen'),
       onClose: () => closeMore(),

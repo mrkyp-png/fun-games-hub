@@ -12,6 +12,7 @@
   var FACE_ORDER = ['round', 'sturdy', 'sharp'];
   var COSTUME_ORDER = ['blue_bears', 'mount_stars', 'cloud_cups']; // V1405 C: 윙스·자이언츠 삭제
   var NCARD = COSTUME_ORDER.length * 3;
+  function ownsCostume(id) { return MG.CostumeTeams.owns(id); }
 
   var imgCache = {};
   function loadImg(src) {
@@ -166,7 +167,7 @@
     function close() { stopCamera(); timers.forEach(clearTimeout); timers = []; st.photo = null; st.det = null; st.results = {}; st.busy = false; opts.onClose(); }
 
     // ---- SCREEN_01 안내 ----
-    $('[data-fs-agree]').addEventListener('click', function () { go(2); });
+    $('[data-fs-agree]').addEventListener('click', function () { if (!COSTUME_ORDER.some(ownsCostume)) { close(); return; } go(2); });
 
     // ---- SCREEN_02 카메라 ----
     var video = $('[data-fs-video]');
@@ -339,10 +340,15 @@
     function renderCostume() {
       st.costume = Math.floor(((cpos % NCARD) + NCARD) % NCARD / 3);
       var cid = COSTUME_ORDER[st.costume];
-      el.querySelectorAll('[data-fs-emb]').forEach(function (b) { b.classList.toggle('is-on', b.dataset.fsEmb === cid); });
+      el.querySelectorAll('[data-fs-emb]').forEach(function (b) {
+        b.classList.toggle('is-on', b.dataset.fsEmb === cid);
+        b.disabled = !ownsCostume(b.dataset.fsEmb);
+        b.title = b.disabled ? T('mole.fs.needCostume') : '';
+      });
       var cards = el.querySelectorAll('[data-fs-ccard] > img');
       [0, 1, 2].forEach(function (d, i) { cards[i].src = cardSrc(st.costume * 3 + d); }); // v887: 선택 팀의 3얼굴형
       $('[data-fs-cname]').textContent = costumeName(cid);
+      $('[data-fs-costume-ok]').disabled = !ownsCostume(cid);
     }
     function costumeName(cid) {
       var c = MG.PhotoStudio.costumes().filter(function (x) { return x.id === cid; })[0];
@@ -350,27 +356,35 @@
     }
     var sliding = false;
     function slide(dir) {
-      if (sliding) return; sliding = true;
+      if (sliding) return;
+      var nextTeam = st.costume;
+      for (var step = 1; step <= COSTUME_ORDER.length; step++) {
+        var candidate = (st.costume + dir * step + COSTUME_ORDER.length * 2) % COSTUME_ORDER.length;
+        if (ownsCostume(COSTUME_ORDER[candidate])) { nextTeam = candidate; break; }
+      }
+      if (nextTeam === st.costume) return;
+      sliding = true;
       var box = $('.fs-ccards');
       box.classList.remove('is-slide-next', 'is-slide-prev'); void box.offsetWidth;
       box.classList.add(dir > 0 ? 'is-slide-next' : 'is-slide-prev');
       setTimeout(function () {
-        cpos = (cpos + dir * 3 + NCARD) % NCARD; st.results = {}; renderCostume(); // v887: 화살표 = 팀 단위(3장씩)
+        cpos = nextTeam * 3 + 1; st.results = {}; renderCostume(); // Owned teams only.
         box.classList.remove('is-slide-next', 'is-slide-prev');
         box.classList.add(dir > 0 ? 'is-in-next' : 'is-in-prev');
         setTimeout(function () { box.classList.remove('is-in-next', 'is-in-prev'); sliding = false; }, 180);
       }, 160);
     }
     el.querySelectorAll('[data-fs-emb]').forEach(function (b) {
-      b.addEventListener('click', function () { cpos = COSTUME_ORDER.indexOf(b.dataset.fsEmb) * 3 + 1; st.results = {}; renderCostume(); });
+      b.addEventListener('click', function () { if (!ownsCostume(b.dataset.fsEmb)) return; cpos = COSTUME_ORDER.indexOf(b.dataset.fsEmb) * 3 + 1; st.results = {}; renderCostume(); });
     });
     el.querySelectorAll('[data-fs-carrow]').forEach(function (b) {
       b.addEventListener('click', function () { slide(b.dataset.fsCarrow === 'next' ? 1 : -1); });
     });
-    $('[data-fs-costume-ok]').addEventListener('click', function () { if (!st.photo) { go(2); return; } runComposite(); });
+    $('[data-fs-costume-ok]').addEventListener('click', function () { if (!ownsCostume(COSTUME_ORDER[st.costume])) { toast(T('mole.fs.needCostume')); renderCostume(); return; } if (!st.photo) { go(2); return; } runComposite(); });
 
     // ---- SCREEN_04 합성 진행(실제 합성과 단계 표시 동기화) ----
     function runComposite() {
+      if (!ownsCostume(COSTUME_ORDER[st.costume])) { toast(T('mole.fs.needCostume')); go(3); return; }
       go(4);
       st.busy = true;
       var cid = COSTUME_ORDER[st.costume];
@@ -427,6 +441,7 @@
       $('[data-fs-applied]').textContent = T('mole.fs.appliedCount', { n: MG.PhotoStudio.appliedIds().length, max: MG.PhotoStudio.MAX_APPLIED });
     }
     function saveCharacter() {
+      if (!ownsCostume(COSTUME_ORDER[st.costume])) { toast(T('mole.fs.needCostume')); return false; }
       var id = charId();
       var ok = MG.PhotoStudio.saveComposite(id, st.results[st.face], { costumeId: COSTUME_ORDER[st.costume], faceType: st.face });
       if (!ok) { toast(T('mole.fs.saveErr')); return false; }
@@ -446,7 +461,11 @@
     $('[data-fs-other]').addEventListener('click', function () { go(6); });
     $('[data-fs-home]').addEventListener('click', function () { if (saveCharacter()) close(); });
 
-    function open() { st.costume = 0; cpos = 1; st.face = null; st.results = {}; st.photo = null; st.det = null; go(1); meta(); }
+    function open() {
+      var first = COSTUME_ORDER.findIndex(ownsCostume);
+      if (first < 0) { el.hidden = true; return false; }
+      st.costume = first; cpos = first * 3 + 1; st.face = null; st.results = {}; st.photo = null; st.det = null; go(1); meta(); return true;
+    }
     return { open: open, close: close };
   }
 
