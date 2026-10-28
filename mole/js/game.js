@@ -1113,8 +1113,8 @@
     if (!live.length) return;
     const sp = live[Math.floor(state.rng.next() * live.length)];
     state.aiNextAt = now + AI_HIT_GAP_MS;
-    handleCell(sp.regionId);
-    if (sharedLaneControls && sharedLaneControls.flashAi) sharedLaneControls.flashAi(sp.regionId);
+    const bad = handleCell(sp.regionId);
+    if (sharedLaneControls && sharedLaneControls.flashAi) sharedLaneControls.flashAi(sp.regionId, bad);
   }
   function runSkillEffect(id) {
     if (id === 'targeting') { activateTargeting(); return; }
@@ -1537,8 +1537,9 @@
           f.id = id; f.setAttribute('color-interpolation-filters', 'sRGB');
           f.innerHTML = '<feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ' + mask + '" result="mask"/>' +
             (gold ? '<feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -4 -4 -4 0 1" result="dark"/><feComposite in="mask" in2="dark" operator="arithmetic" k2="1" k3="1" result="mask"/>' : '') +
+            (id.indexOf('glove') >= 0 ? '<feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.5 3 3 0 -.8" result="white"/><feMorphology in="white" operator="dilate" radius="1.2" result="white"/><feComposite in="mask" in2="white" operator="out" result="mask"/>' : '') +
             '<feColorMatrix in="SourceGraphic" type="matrix" values="' + tint + '" result="tint"/>' +
-            (gold ? '<feComponentTransfer in="tint" result="tint"><feFuncR type="table" tableValues=".30 .55 .80 1 1"/><feFuncG type="table" tableValues=".12 .30 .52 .76 .97"/><feFuncB type="table" tableValues=".025 .035 .08 .24 .68"/></feComponentTransfer>' : '') +
+            (gold ? '<feComponentTransfer in="tint" result="tint"><feFuncR type="table" tableValues=".16 .70 .95 1 1"/><feFuncG type="table" tableValues=".07 .43 .72 .91 .98"/><feFuncB type="table" tableValues=".01 .05 .18 .50 .85"/></feComponentTransfer>' : '') +
             '<feComposite in="tint" in2="mask" operator="in" result="colored"/><feComposite in="SourceGraphic" in2="mask" operator="out" result="original"/><feComposite in="colored" in2="original" operator="arithmetic" k2="1" k3="1"/>';
           defs.appendChild(f);
         }
@@ -1546,7 +1547,7 @@
         const blueTint = rgb.map(c => [0, 0, c, 0, 0].join(' ')).join(' ') + ' 0 0 0 1 0';
         selective('game-enhance-glove-' + (index + 1), '6 -3 -3 0 -.06', redTint);
         selective('game-enhance-lightning-' + (index + 1), '-2 -2 4 0 -.06', blueTint);
-        if (index === 0) selective('game-enhance-glove-gold', '6 -3 -3 0 -.06', '1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 1 0', true);
+        if (index === 0) selective('game-enhance-glove-gold', '6 -3 -3 0 -.06', '.2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 0 0 0 1 0', true);
       });
       document.body.appendChild(svg);
     }
@@ -2444,7 +2445,7 @@
           extendQuakeHud();
           onHammerImpact(p.x, p.y, res, { noHitstop: true });
           MG.HitFx.quakeDust(board, p.x, p.y);
-          if (res.some((r) => r.type === 'mole' && r.done)) { killed.push(id); paintPad(); }
+          if (res.some((r) => effectiveHitType(quakeState.config, r.type) === 'mole' && r.done)) { killed.push(id); paintPad(); }
           if (!forceQuakeNext && state.rng.next() < QUAKE_CHANCE + (MG.Workshop ? MG.Workshop.weaponChanceBonus('goldhammer') : 0)) quakeRipple(id, depth + 1);
         }, fk);
       }, k * QUAKE_CLONE_GAP);

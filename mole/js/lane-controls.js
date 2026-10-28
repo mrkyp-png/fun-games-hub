@@ -244,9 +244,7 @@
         // 애니메이션 길이만큼 지나면 클래스 자체를 확실히 떼서 재사용(재생성)돼도 안 남게 한다.
         setTimeout(() => b.classList.remove('lane-button--flash', 'lane-button--miss'), 800);
         // v953: 버튼 색(맞힘 분홍 0.3초·실패 빨강 0.4초)은 짧게 따로 — 숫자·글자는 그대로 보이게 버튼 그림만 바꿈
-        clearTimeout(b._tintT); b.classList.remove('is-tint-hit', 'is-tint-miss');
-        b.classList.add(bad ? 'is-tint-miss' : 'is-tint-hit');
-        b._tintT = setTimeout(() => b.classList.remove('is-tint-hit', 'is-tint-miss'), bad ? 400 : 300);
+        tintCell(id, bad);
         // 홈 화면 전용 내비(하트·코인·티켓·스코어·상점·홈·… — FACES 의 action 필드) — 탭하면 그
         // 화면으로 이동. 실제 플레이 중(isHome() false)엔 평범한 숫자 타격 버튼일 뿐이라 무시.
         if (faces[id].action && onHomeAction && (!isHome || isHome())) onHomeAction(faces[id].action);
@@ -290,7 +288,19 @@
       });
       if (aiActive.size) aiRaf = requestAnimationFrame(animateAiButtons);
     }
-    function flashAi(id) {
+    function tintCell(id, bad) {
+      const b = buttons[id];
+      if (!b) return;
+      clearTimeout(b._tintT);
+      b.classList.remove('is-tint-hit', 'is-tint-miss');
+      b.classList.add(bad ? 'is-tint-miss' : 'is-tint-hit');
+      const shade = b.querySelector('.lane-quake-shade');
+      if (shade && !bad) shade.classList.add('is-kill');
+      b._tintT = setTimeout(() => b.classList.remove('is-tint-hit', 'is-tint-miss'), bad ? 400 : 300);
+    }
+
+    function flashAi(id, bad) {
+      tintCell(id, bad);
       const entry = aiButtons[id];
       if (!entry) return;
       try {
@@ -400,10 +410,12 @@
         if (!b) return;
         let sh = b.querySelector('.lane-quake-shade');
         if (!sh) { sh = document.createElement('span'); sh.className = 'lane-quake-shade'; b.appendChild(sh); }
-        sh.classList.toggle('is-kill', kill.has(id));
+        sh.classList.toggle('is-kill', kill.has(id) || sh.classList.contains('is-kill') || b.classList.contains('is-tint-hit'));
         // v975(사용자 지정): 처치 칸 = 흰 덮개 대신 다른 무기처럼 분홍 버튼(맞힘 0.3초)
-        if (kill.has(id)) { clearTimeout(b._tintT); b.classList.remove('is-tint-miss'); b.classList.add('is-tint-hit'); b._tintT = setTimeout(() => b.classList.remove('is-tint-hit'), 300); }
+        if (kill.has(id)) tintCell(id, false);
         sh.classList.remove('is-on'); void sh.offsetWidth; sh.classList.add('is-on');
+        clearTimeout(sh._removeT);
+        sh._removeT = setTimeout(() => sh.remove(), 640);
       });
       if (buttonBar) {
         buttonBar.classList.remove('lane-bar--quake-shake');
@@ -412,10 +424,6 @@
       }
       clearTimeout(flashQuakeArea._t);
       flashQuakeArea._t = setTimeout(() => {
-        (areaIds || []).forEach((id) => {
-          const sh = buttons[id] && buttons[id].querySelector('.lane-quake-shade');
-          if (sh) sh.remove();
-        });
         if (buttonBar) buttonBar.classList.remove('lane-bar--quake-shake');
       }, 640);
     }
@@ -424,7 +432,8 @@
       cancelAnimationFrame(aiRaf); aiRaf = 0; aiActive.clear();
       aiButtons.forEach((entry) => { if (entry.animations) entry.animations.forEach((animation) => animation.cancel()); });
       window.removeEventListener('keydown', onKey);
-      buttons.forEach((b) => b.remove());
+      clearTimeout(flashQuakeArea._t);
+      buttons.forEach((b) => { clearTimeout(b._tintT); const shade = b.querySelector('.lane-quake-shade'); if (shade) clearTimeout(shade._removeT); b.remove(); });
       buttons.length = 0;
     }
 
