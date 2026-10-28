@@ -34,6 +34,15 @@
   // 게임 연동: 무기 스킬 발동 확률 +단계×1%p
   function weaponChanceBonus(id) { return weaponLevel(id) * 0.01; }
   function weaponAttackBonus(id) { return weaponLevel(id) * 0.01; }
+  function skillValue(kind, id) {
+    return kind === 'weapon' ? ({ cannon: 0.10, goldhammer: 0.15, alipunch: 0.20 }[id] + weaponChanceBonus(id)) : MG.CostumeTeams.effectValue(id);
+  }
+  function skillChange(kind, id, before, after) {
+    return T('mole.ws.effect.' + (kind === 'weapon' ? id : 'costume'), {
+      before: kind === 'weapon' ? Math.round(before * 100) : before.toFixed(2),
+      after: kind === 'weapon' ? Math.round(after * 100) : after.toFixed(2)
+    });
+  }
 
   function items(kind) {
     if (kind === 'weapon') return WEAPONS.map(function (w) {
@@ -54,7 +63,7 @@
     var noticeObserver = new ResizeObserver(fitNoticeSlot);
     noticeObserver.observe(mainNotice);
     var tab = 'weapon', idx = { weapon: 0, costume: 0 };
-    var running = false, timers = [], selMat = null, pending = null;
+    var running = false, timers = [], selMat = null, pending = null, resultEffect = '';
     var enhancement = MG.WorkshopEnhance.create(el);
     var workshopHammer = null, hammerRaf = 0, hammerZapTimer = null, hammerFlightAudio = null, hammerHitAudios = null, lastHammerHitIndex = -1;
     var gooseShockAudio = null, gooseWingsAudio = null;
@@ -329,9 +338,11 @@
       var kind = tab, lv = levelOf(kind, it.id), mats = materials(kind, it.id);
       if (it.owned === false || selMat !== it.id || lv >= MAX || mats < 1 || MG.Economy.getCoins() < COST) { render(); return; }
       running = true;
+      var beforeEffect = skillValue(kind, it.id);
       // 판정 + 저장을 한 번에(코인·재료·단계) — 이후는 연출만
       var result = MG.ItemInventory.enhance(kind, it.id);
       if (!result.ok) { running = false; render(); return; }
+      resultEffect = result.success ? skillChange(kind, it.id, beforeEffect, skillValue(kind, it.id)) : '';
       selMat = null;
       var success = result.success, blackEggRescue = result.rescue;
       if (opts.onChange) opts.onChange();
@@ -417,6 +428,8 @@
           setItemImg($('[data-ws-res-img]'), $('[data-ws-res-glow]'), success ? it.done : it.img, nlv);
           $('[data-ws-res-title]').textContent = T(success ? 'mole.ws.success' : 'mole.ws.fail');
           $('[data-ws-res-sub]').textContent = nameOf(it) + '  ' + (success ? '+' + lv + ' → +' + nlv : T('mole.ws.keep', { n: lv }));
+          $('[data-ws-res-effect]').textContent = resultEffect;
+          $('[data-ws-res-effect]').hidden = !success;
           enhancement.result(success, nlv);
         }, blackEggRescue);
       });
