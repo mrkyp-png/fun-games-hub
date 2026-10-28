@@ -259,7 +259,7 @@
       var ok = !!it && !notOwned && lv < MAX && mats > 0 && !!selMat && coins >= COST && !running;
       $('[data-ws-go]').disabled = !ok;
       $('[data-ws-notice]').textContent = !it ? T('mole.ws.noItem')
-        : notOwned ? T('mole.ws.notOwned')
+        : notOwned ? T(tab === 'weapon' ? 'mole.ws.notOwnedWeapon' : 'mole.ws.notOwnedCostume')
         : lv >= MAX ? T('mole.ws.maxed')
         : !mats ? T('mole.ws.noMat')
         : coins < COST ? T('mole.ws.noCoin')

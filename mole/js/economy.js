@@ -5,6 +5,10 @@
   // 챕터 입장권: 챕터 입장 1회 = 1장 차감. 2시간마다 +1, 상한까지 자동 충전.
   var TICKET_MAX = 10000;               // ⚠️ 개발용 값 — 출시 목표 = 10 (하루 정액)
   var TICKET_REGEN_MS = 2 * 60 * 60 * 1000;
+  // Pre-service test credit. Set false before the public service launch.
+  var PRE_RELEASE_TEST_COINS = true;
+  var TEST_STARTING_COINS = 10000000;
+  var TEST_COINS_KEY = 'mole.dev.preReleaseCoins.v1';
   // 생명은 허브 공유 — 어떤 게임이든 이 생명으로 플레이한다.
   var K = { hearts: 'fgh.lives', heartsAt: 'fgh.livesAt', coins: 'mole.coins',
             tickets: 'mole.tickets', ticketsAt: 'mole.ticketsAt' };
@@ -30,6 +34,21 @@
     var v = parseInt(s, 10);
     return Number.isFinite(v) ? v : dflt;
   }
+
+  function initializeTestCoins() {
+    if (!PRE_RELEASE_TEST_COINS || !ls()) return;
+    try {
+      var saved = ls().getItem(TEST_COINS_KEY);
+      if (saved === 'done') return;
+      // Save a fixed target first so an interrupted write cannot add credit twice.
+      var target = saved == null ? Math.max(0, readInt(K.coins, 0)) + TEST_STARTING_COINS : Number(saved);
+      if (!Number.isSafeInteger(target) || target < 0) return;
+      if (saved == null) ls().setItem(TEST_COINS_KEY, String(target));
+      ls().setItem(K.coins, String(target));
+      ls().setItem(TEST_COINS_KEY, 'done');
+    } catch (e) { /* Unavailable storage must not prevent the game from starting. */ }
+  }
+  initializeTestCoins();
 
   function _syncHearts() {
     var now = Date.now();
