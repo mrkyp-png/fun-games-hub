@@ -1506,6 +1506,38 @@
   // ---------- 라운드 시작 ----------
   // opts.fresh: true면 콤보·점수·목숨을 리셋 (시작 버튼/다시하기).
   //             없으면 자동 다음 라운드로 보고 그대로 이어간다.
+  function syncEnhancementVisuals(weapon) {
+    const ws = MG.Workshop, screen = document.getElementById('game-screen');
+    if (!ws || !screen) return;
+    const weaponLevel = weapon === 'hammer' ? 0 : ws.weaponLevel(weapon);
+    const costume = MG.CostumeTeams.equippedId();
+    const costumeLevel = costume ? ws.levelOf('costume', costume) : 0;
+    screen.classList.toggle('gs-weapon-enhanced', weaponLevel > 0);
+    screen.classList.toggle('gs-costume-enhanced', costumeLevel > 0);
+    screen.dataset.weaponLevel = String(weaponLevel);
+    screen.dataset.costumeLevel = String(costumeLevel);
+    screen.style.setProperty('--weapon-enh', ws.GLOW[weaponLevel] || 'transparent');
+    screen.style.setProperty('--costume-enh', ws.GLOW[costumeLevel] || 'transparent');
+    // Alpha-preserving tint keeps the original shading and animation frames.
+    if (!document.getElementById('game-enhance-filters')) {
+      const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg');
+      svg.id = 'game-enhance-filters'; svg.setAttribute('aria-hidden', 'true');
+      svg.style.cssText = 'position:absolute;width:0;height:0;pointer-events:none';
+      const defs = document.createElementNS(ns, 'defs'); svg.appendChild(defs);
+      ws.GLOW.slice(1).forEach((hex, index) => {
+        const filter = document.createElementNS(ns, 'filter'), matrix = document.createElementNS(ns, 'feColorMatrix');
+        filter.id = 'game-enhance-tint-' + (index + 1);
+        filter.setAttribute('color-interpolation-filters', 'sRGB');
+        matrix.setAttribute('type', 'matrix');
+        const rgb = [1, 3, 5].map(offset => parseInt(hex.slice(offset, offset + 2), 16) / 255);
+        matrix.setAttribute('values', rgb.map(c => [.2126 * .75 * c, .7152 * .75 * c, .0722 * .75 * c, 0, .25 * c].join(' ')).join(' ') + ' 0 0 0 1 0');
+        filter.appendChild(matrix); defs.appendChild(filter);
+      });
+      document.body.appendChild(svg);
+    }
+    screen.style.setProperty('--weapon-tint', weaponLevel > 0 ? 'url("#game-enhance-tint-' + weaponLevel + '")' : 'none');
+  }
+
   function startRound(opts) {
     sessionGen++;
     gameStarting = false; // 라운드 진입 성공 — 이후 재진입은 state 존재로 차단됨
@@ -1553,6 +1585,7 @@
         : (wRaw === 'alipunch' ? 'alipunch' : 'hammer')));
     const laneSkillZone = weapon !== 'hammer'; // 캐논·골드해머·알리펀치 = 통화버튼 스킬존(§8 포함)
     MG.roundWeapon = weapon; // v949: 타격·처치 연출이 장착값 대신 이번 라운드 실제 무기를 보게(hit-fx·pop-elements)
+    syncEnhancementVisuals(weapon);
     document.getElementById('game-screen').classList.toggle('gs-laneskill', laneSkillZone);
     document.getElementById('game-screen').classList.toggle('gs-alipunch', weapon === 'alipunch');
     // 게임 세션 시작(fresh)에만 스킬 Loadout 스냅샷 확정 — 패시브 소비도 여기서 1회만(§64, §30).
@@ -1691,7 +1724,7 @@
       hammerOpts.idle = 'spin';                  // 대기 애니메이션 — 제자리 360도 회전(사용자 지정)
       // 지진 분신 포즈 미리 로드 (첫 지진 때 이미지가 늦게 떠서 안 보이는 것 방지)
       ['goldpaw-90-v1385.webp'].forEach((n) => { const i = new Image(); i.src = 'assets/weapons/' + n; }); // V1385 C
-      if (!GOLD_ZAP_KEEP.length) GOLD_ZAP.concat(GOLD_ZAP90).forEach((u) => { const i = new Image(); i.src = u; if (i.decode) i.decode().catch(() => {}); GOLD_ZAP_KEEP.push(i); }); // V1409 C: 지진 번개 그림(디코드해 붙잡아 둠)
+      if (MG.Workshop && MG.Workshop.weaponLevel('goldhammer') > 0 && !GOLD_ZAP_KEEP.length) GOLD_ZAP.concat(GOLD_ZAP90).forEach((u) => { const i = new Image(); i.src = u; if (i.decode) i.decode().catch(() => {}); GOLD_ZAP_KEEP.push(i); }); // V1409 C: 지진 번개 그림(디코드해 붙잡아 둠)
     }
     // 동시타격 오버플로(분신) — 랜덤 배정에서 "진짜"를 못 받은 나머지 타격들이 여기로 온다.
     // 무기별로 다른 분신 연출(quakeClone/cannonClone 재사용, 사용자 지정 — "황금묠니르처럼
@@ -2275,7 +2308,7 @@
   let goldZapActive = 0;
   const GOLD_ZAP90 = [1, 2].map((n) => 'assets/weapons/goldpaw-90-zap' + n + '-v1409.webp'); // 맨 오른쪽 줄 정면 분신용
   function goldZap(img, ms = 720, frames = GOLD_ZAP) {
-    if (!img || (!img.dataset.zapOrig && goldZapActive >= 4)) return;
+    if (!img || !MG.Workshop || MG.Workshop.weaponLevel('goldhammer') <= 0 || (!img.dataset.zapOrig && goldZapActive >= 4)) return;
     if (!img.dataset.zapOrig) goldZapActive++;
     if (!img.dataset.zapOrig) img.dataset.zapOrig = img.getAttribute('src');
     clearInterval(img._zapT);
@@ -3332,7 +3365,7 @@
     workshop = MG.Workshop.create({
       root: document.getElementById('workshop-screen'),
       onClose: () => closeMore(),
-      onChange: () => { refreshBoardStats(); if (moreMenu) moreMenu.refresh(); }
+      onChange: () => { refreshBoardStats(); syncEnhancementVisuals(MG.roundWeapon || MG.ItemInventory.equippedWeapon()); if (moreMenu) moreMenu.refresh(); }
     });
     // v894: 퀘스트·업적 화면
     const questScreen = MG.Quest.create({

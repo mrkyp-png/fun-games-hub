@@ -739,6 +739,7 @@
     var zapKeep = [];
     setInterval(function () {
       if (el.hidden || (active !== 'weapon' && active !== 'skill')) return;
+      if (!MG.Workshop || MG.Workshop.weaponLevel('goldhammer') <= 0) return;
       if (!zapKeep.length) ZAP.forEach(function (u) { var i = new Image(); i.src = u; zapKeep.push(i); });
       el.querySelectorAll('.iw-page[data-weapon="goldhammer"] img[src*="goldpaw-v1382"]').forEach(function (img) {
         if (img._zap) return;
