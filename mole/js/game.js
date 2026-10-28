@@ -1537,10 +1537,11 @@
           f.id = id; f.setAttribute('color-interpolation-filters', 'sRGB');
           f.innerHTML = '<feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ' + mask + '" result="mask"/>' +
             (gold ? '<feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -4 -4 -4 0 1" result="dark"/><feComposite in="mask" in2="dark" operator="arithmetic" k2="1" k3="1" result="mask"/>' : '') +
-            (id.indexOf('glove') >= 0 ? '<feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.5 3 3 0 -.8" result="white"/><feMorphology in="white" operator="dilate" radius="1.2" result="white"/><feComposite in="mask" in2="white" operator="out" result="mask"/>' : '') +
+            (id.indexOf('glove') >= 0 ? '<feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.5 3 3 0 -.8" result="white"/><feComposite in="mask" in2="white" operator="out" result="mask"/>' : '') +
             '<feColorMatrix in="SourceGraphic" type="matrix" values="' + tint + '" result="tint"/>' +
             (gold ? '<feComponentTransfer in="tint" result="tint"><feFuncR type="table" tableValues=".16 .70 .95 1 1"/><feFuncG type="table" tableValues=".07 .43 .72 .91 .98"/><feFuncB type="table" tableValues=".01 .05 .18 .50 .85"/></feComponentTransfer>' : '') +
-            '<feComposite in="tint" in2="mask" operator="in" result="colored"/><feComposite in="SourceGraphic" in2="mask" operator="out" result="original"/><feComposite in="colored" in2="original" operator="arithmetic" k2="1" k3="1"/>';
+            (id.indexOf('glove') >= 0 ? '<feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 6 -3 -3 0 -.06" result="red-edge"/><feComponentTransfer in="red-edge" result="red-edge"><feFuncA type="linear" slope="100" intercept="-2"/></feComponentTransfer><feColorMatrix in="SourceGraphic" type="saturate" values="0" result="neutral"/><feComposite in="neutral" in2="red-edge" operator="in" result="neutral-red"/><feComposite in="SourceGraphic" in2="red-edge" operator="out" result="non-red"/><feComposite in="neutral-red" in2="non-red" operator="arithmetic" k2="1" k3="1" result="base"/>' : '') +
+            '<feComposite in="tint" in2="mask" operator="in" result="colored"/><feComposite in="' + (id.indexOf('glove') >= 0 ? 'base' : 'SourceGraphic') + '" in2="mask" operator="out" result="original"/><feComposite in="colored" in2="original" operator="arithmetic" k2="1" k3="1"/>';
           defs.appendChild(f);
         }
         const redTint = rgb.map(c => [c, 0, 0, 0, 0].join(' ')).join(' ') + ' 0 0 0 1 0';
