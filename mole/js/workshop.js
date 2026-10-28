@@ -258,7 +258,7 @@
       matImg.hidden = !(it && selMat && mats > 0);
       if (matImg.hidden) matImg.removeAttribute('src'); else matImg.src = it.img;
       $('[data-ws-mat]').classList.toggle('is-empty', !mats);
-      $('[data-ws-mat]').classList.toggle('is-unsel', !!mats && !selMat);
+      $('[data-ws-mat]').classList.toggle('is-unsel', !selMat);
       $('[data-ws-mat-lv]').textContent = ''; // 재료는 +0 표기 안 함(사용자 지정 v758)
       $('[data-ws-mat-n]').textContent = T('mole.ws.have', { n: mats });
       $('[data-ws-rate]').textContent = lv >= MAX ? 'MAX' : RATE[lv] + '%';

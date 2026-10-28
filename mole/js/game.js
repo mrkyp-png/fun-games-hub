@@ -1532,10 +1532,27 @@
         const rgb = [1, 3, 5].map(offset => parseInt(hex.slice(offset, offset + 2), 16) / 255);
         matrix.setAttribute('values', rgb.map(c => [.2126 * .75 * c, .7152 * .75 * c, .0722 * .75 * c, 0, .25 * c].join(' ')).join(' ') + ' 0 0 0 1 0');
         filter.appendChild(matrix); defs.appendChild(filter);
+        function selective(id, mask, tint, gold) {
+          const f = document.createElementNS(ns, 'filter');
+          f.id = id; f.setAttribute('color-interpolation-filters', 'sRGB');
+          f.innerHTML = '<feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ' + mask + '" result="mask"/>' +
+            (gold ? '<feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -4 -4 -4 0 1" result="dark"/><feComposite in="mask" in2="dark" operator="arithmetic" k2="1" k3="1" result="mask"/>' : '') +
+            '<feColorMatrix in="SourceGraphic" type="matrix" values="' + tint + '" result="tint"/>' +
+            (gold ? '<feComponentTransfer in="tint" result="tint"><feFuncR type="table" tableValues=".30 .55 .80 1 1"/><feFuncG type="table" tableValues=".12 .30 .52 .76 .97"/><feFuncB type="table" tableValues=".025 .035 .08 .24 .68"/></feComponentTransfer>' : '') +
+            '<feComposite in="tint" in2="mask" operator="in" result="colored"/><feComposite in="SourceGraphic" in2="mask" operator="out" result="original"/><feComposite in="colored" in2="original" operator="arithmetic" k2="1" k3="1"/>';
+          defs.appendChild(f);
+        }
+        const redTint = rgb.map(c => [c, 0, 0, 0, 0].join(' ')).join(' ') + ' 0 0 0 1 0';
+        const blueTint = rgb.map(c => [0, 0, c, 0, 0].join(' ')).join(' ') + ' 0 0 0 1 0';
+        selective('game-enhance-glove-' + (index + 1), '6 -3 -3 0 -.06', redTint);
+        selective('game-enhance-lightning-' + (index + 1), '-2 -2 4 0 -.06', blueTint);
+        if (index === 0) selective('game-enhance-glove-gold', '6 -3 -3 0 -.06', '1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 1 0', true);
       });
       document.body.appendChild(svg);
     }
     screen.style.setProperty('--weapon-tint', weaponLevel > 0 ? 'url("#game-enhance-tint-' + weaponLevel + '")' : 'none');
+    screen.style.setProperty('--glove-tint', weaponLevel > 0 ? 'url("#game-enhance-glove-' + weaponLevel + '")' : 'none');
+    screen.style.setProperty('--lightning-tint', weaponLevel > 0 ? 'url("#game-enhance-lightning-' + weaponLevel + '")' : 'none');
   }
 
   function startRound(opts) {
@@ -2311,12 +2328,13 @@
     if (!img || !MG.Workshop || MG.Workshop.weaponLevel('goldhammer') <= 0 || (!img.dataset.zapOrig && goldZapActive >= 4)) return;
     if (!img.dataset.zapOrig) goldZapActive++;
     if (!img.dataset.zapOrig) img.dataset.zapOrig = img.getAttribute('src');
+    img.classList.add('is-enhance-zap');
     clearInterval(img._zapT);
     let i = 0;
     img.src = frames[0];
     img._zapT = setInterval(() => {
       i++;
-      if (i * 80 >= ms || !img.isConnected) { clearInterval(img._zapT); img.src = img.dataset.zapOrig; delete img.dataset.zapOrig; goldZapActive = Math.max(0, goldZapActive - 1); return; }
+      if (i * 80 >= ms || !img.isConnected) { clearInterval(img._zapT); img.src = img.dataset.zapOrig; delete img.dataset.zapOrig; img.classList.remove('is-enhance-zap'); goldZapActive = Math.max(0, goldZapActive - 1); return; }
       img.src = frames[i % frames.length];
     }, 80);
   }

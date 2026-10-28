@@ -837,7 +837,7 @@
     function clearProductSlide() {
       productSlideAnimations.forEach(function (a) { a.cancel(); }); productSlideAnimations = [];
       if (productPreview) productPreview.remove(); productPreview = null;
-      cardsEl.style.transform = ''; productsViewport.classList.remove('is-dragging');
+      cardsEl.style.transform = ''; cardsEl.style.visibility = ''; productsViewport.classList.remove('is-dragging');
     }
     function selectProductTab(id, swipeDirection) {
       if (id === activeTab && !currencyFilter) { cardsEl.style.transform = ''; return; }
@@ -845,19 +845,26 @@
       var newIndex = TABS.findIndex(function (tab) { return tab.id === id; });
       if (newIndex < 0) return;
       clearProductSlide(); var generation = ++productNavGeneration;
+      var previousCardScroll = cardsEl.scrollLeft;
       var preview = cardsEl.cloneNode(true); preview.removeAttribute('data-shop-cards'); preview.classList.add('shop-product-preview');
       preview.setAttribute('aria-hidden', 'true'); preview.inert = true;
       productsViewport.appendChild(preview); productPreview = preview;
+      preview.scrollLeft = previousCardScroll;
+      cardsEl.style.visibility = 'hidden';
       activeTab = id; currencyFilter = null; cardsEl.scrollLeft = 0; render();
-      var selected = tabsEl.querySelector('.shop-tab--on');
-      if (selected) selected.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+      // The toggle strip snaps by groups of three; target the matching group explicitly.
+      var group = tabsEl.children[Math.floor(newIndex / 3) * 3];
+      requestAnimationFrame(function () {
+        if (group && generation === productNavGeneration) tabsEl.scrollTo({ left: group.offsetLeft, behavior: 'instant' });
+      });
       // Keep the complete old panel visible while the next panel's artwork decodes.
       Promise.all(Array.prototype.map.call(cardsEl.querySelectorAll('img'), function (img) { return img.decode ? img.decode().catch(function () {}) : Promise.resolve(); })).then(function () {
         if (generation !== productNavGeneration || el.hidden) return;
         centerShopTabArt(); alignCoinPrices();
         if (root.matchMedia('(prefers-reduced-motion:reduce)').matches) { clearProductSlide(); return; }
         var direction = swipeDirection || (newIndex > oldIndex ? 1 : -1), width = productsViewport.clientWidth;
-        var incoming = cardsEl.animate([{ transform: 'translateX(' + (direction * width) + 'px)' }, { transform: 'translateX(0)' }], { duration: 230, easing: 'cubic-bezier(.2,.7,.3,1)' });
+        var incoming = cardsEl.animate([{ transform: 'translateX(' + (direction * width) + 'px)' }, { transform: 'translateX(0)' }], { duration: 230, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'both' });
+        cardsEl.style.visibility = '';
         var outgoing = preview.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(' + (-direction * width) + 'px)' }], { duration: 230, easing: 'cubic-bezier(.2,.7,.3,1)' });
         productSlideAnimations = [incoming, outgoing];
         incoming.finished.then(function () { if (generation === productNavGeneration) clearProductSlide(); }, function () {});

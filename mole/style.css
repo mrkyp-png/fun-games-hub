@@ -2824,15 +2824,15 @@ body { background: var(--lm-page); }
 .sr-mine .sr-pill { font-size: calc(var(--w) * 0.036); padding: 3px 0; }
 .sr-mine .sr-score { text-align: right; padding-right: 17%; font-size: calc(var(--w) * 0.044); color: #1a2f6e; white-space: nowrap; } /* V1367 C: 큰 점수가 오른쪽 테두리에 닿아 잘리던 것(사용자 보고) */
 /* 랭킹 안내 — 독립 원형 SVG와 CSS 막대. 투명 border로 기존 문구 배치 보존. */
-.sr-info { position: relative; isolation: isolate; width: var(--w); height: calc(var(--w) * 0.11); flex: 0 0 auto; box-sizing: border-box; display: flex; align-items: center;
+.sr-info { position: relative; isolation: isolate; width: var(--w); min-height: calc(var(--w) * 0.11); height: auto; flex: 0 0 auto; box-sizing: border-box; display: flex; justify-content: center; align-items: center;
   border-style: solid; border-color: transparent; border-width: calc(var(--w) * 0.012) calc(var(--w) * 0.03) calc(var(--w) * 0.012) calc(var(--w) * 0.11);
-  color: #fff; font-weight: 800; font-size: calc(var(--w) * 0.03); line-height: 1.2; }
+  color: #fff; font-weight: 800; font-size: max(12px, calc(var(--w) * 0.042)); line-height: 1.2; }
 .sr-info::before { content: ''; position: absolute; inset: calc(var(--w) * -0.0054) calc(var(--w) * -0.03) calc(var(--w) * -0.0054) calc(var(--w) * -0.065); z-index: -1; pointer-events: none;
   box-sizing: border-box; border: calc(var(--w) * 0.055) solid transparent;
   border-image: url('assets/score/notice-frame-9slice-v1496.svg') 40 fill / 1 / 0 stretch; }
 .sr-info::after { content: ''; position: absolute; top: 50%; left: calc(var(--w) * -0.11); transform: translateY(-50%); width: calc(var(--w) * 0.11); height: calc(var(--w) * 0.11); z-index: -1; pointer-events: none;
   background: url('assets/score/icon-info-blue.svg') center / contain no-repeat; }
-.sr-info span { padding-left: 3%; transform: translateY(var(--sr-info-y, 0px)); }
+.sr-info span { display: flex; justify-content: center; align-items: center; width: 100%; min-width: 0; padding: 0; text-align: center; word-break: keep-all; }
 .sr-toast { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 12%); transform: translateX(-50%); z-index: 11;
   padding: 10px 22px; border-radius: 99px; background: rgba(15, 10, 40, 0.9); color: #fff; font-weight: 800; font-size: 0.95rem; white-space: nowrap;
   box-shadow: 0 0 0 2px #ffd24a; }
@@ -5047,7 +5047,7 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .ws-stage .ws-arrow--next { left: 29%; }
 /* v795(사용자 지정): 사진관 얼굴형 리본(동글형 등) 끝이 줄어든 카드 모서리와 만나게 — 카드 위가 0.3cm 내려간 만큼 리본도 내림 */
 .photo-slot-ribbon { translate: 0 0; }
-.ws-item--r.is-unsel::after { top: 50%; left: 50%; margin: -17.5cqw 0 0 -4cqw; } /* v795(사용자 지정): 재료 + 표시를 빈 칸 가운데로(위로) */
+.ws-item--r.is-unsel::after { inset: 0; margin: 0; display: flex; justify-content: center; align-items: center; }
 .cos-detail { translate: 0 -0.1cm; } /* v797(사용자 지정): 코스튬 세부정보 박스만 위로 0.1cm(크기·카드 그대로) */
 /* ===== v798(사용자 지정): 광산 맵 입체감 — 어둡게 하지 않고 요소만 떠 보이게(짧고 옅은 그림자 + 윗광택) ===== */
 /* 1) 요소별 그림자 */
@@ -8935,13 +8935,14 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* V1415 C 사용자: 제작소 강화 수치·Glow (무기·스킬·코스튬, 사진관은 Glow 만) */
 .has-enh { filter: drop-shadow(0 0 2px var(--enh)) drop-shadow(0 0 2px var(--enh)) drop-shadow(0 0 1px var(--enh)); } /* 사용자: 테두리 삭제, 강화 색 빛 2px, 진하게(겹쳐 칠함) */ /* 사용자: 무기·스킬·코스튬은 Glow 말고 같은 색 테두리만 */
 #game-screen.gs-weapon-enhanced { --weapon-glow: drop-shadow(0 0 2px var(--weapon-enh)) drop-shadow(0 0 2px var(--weapon-enh)) drop-shadow(0 0 1px var(--weapon-enh)); }
-#game-screen.gs-weapon-enhanced .lane-hammer--gold > img { filter: drop-shadow(0 4px 4px #0006) var(--weapon-glow) !important; }
+#game-screen.gs-weapon-enhanced .is-enhance-zap { --gold-zap-tint: var(--lightning-tint); }
+#game-screen.gs-weapon-enhanced .lane-hammer--gold > img { filter: var(--gold-zap-tint, brightness(1)) drop-shadow(0 4px 4px #0006) var(--weapon-glow) !important; }
 #game-screen.gs-weapon-enhanced .quake-clone,
-#game-screen.gs-weapon-enhanced .lc-body { filter: drop-shadow(0 4px 4px #0006) var(--weapon-glow); }
+#game-screen.gs-weapon-enhanced .lc-body { filter: var(--gold-zap-tint, brightness(1)) drop-shadow(0 4px 4px #0006) var(--weapon-glow); }
 #game-screen.gs-weapon-enhanced .lc-ball { filter: var(--weapon-tint) var(--weapon-glow); }
-#game-screen.gs-weapon-enhanced .lane-boxing-glove img { filter: opacity(var(--glove-opacity, 1)) var(--weapon-tint) drop-shadow(0 4px 4px #0006) var(--weapon-glow); }
+#game-screen.gs-weapon-enhanced .lane-boxing-glove img { filter: opacity(var(--glove-opacity, 1)) var(--glove-tint) drop-shadow(0 4px 4px #0006) var(--weapon-glow); }
 #game-screen .lane-boxing-glove--clone { --glove-opacity: .5; }
-#game-screen.gs-invincible.gs-weapon-enhanced .lane-boxing-glove img { filter: opacity(var(--glove-opacity, 1)) sepia(1) saturate(3) brightness(.95) drop-shadow(0 4px 4px #0006) var(--weapon-glow); }
+#game-screen.gs-invincible .lane-boxing-glove img { filter: opacity(var(--glove-opacity, 1)) url("#game-enhance-glove-gold") drop-shadow(0 4px 4px #0006) var(--weapon-glow, brightness(1)); }
 #game-screen.gs-costume-enhanced .mole-pop--mole .mole-pop-img { filter: drop-shadow(0 0 2px var(--costume-enh)) drop-shadow(0 0 2px var(--costume-enh)) drop-shadow(0 0 1px var(--costume-enh)); }
 .ph3-stage .has-enh { filter: drop-shadow(0 0 6px var(--enh)) drop-shadow(0 0 16px var(--enh)); } /* 사진관은 Glow 그대로 */
 .enh-lv { position: absolute; right: 6%; top: 4%; z-index: 6; font-family: 'Jua', sans-serif; font-weight: 400; font-size: 64px; line-height: 1; color: #fff; -webkit-text-stroke: 10px #2a0b55; paint-order: stroke fill; pointer-events: none; }
@@ -9386,6 +9387,10 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-card--weapon-product .shop-card-pill { display:none!important; }
 #shop-screen .shop-card-badge--hero .hero-weapon--gold { transform:translate(-50%,-50%) rotate(45deg)!important; }
 #shop-screen .shop-coin-bulk-reward .shop-coin-bonus-gold { transform:rotate(45deg); }
+#shop-screen .hero-weapon--gold, #shop-screen .shop-coin-bonus-gold { animation: shop-gold-bounce 2.4s ease-in-out infinite; }
+@keyframes shop-gold-bounce { 0%, 60%, 82%, 100% { translate: 0 0; } 71% { translate: 0 -8%; } 91% { translate: 0 -4%; } }
+#shop-screen[hidden] .hero-weapon--gold, #shop-screen[hidden] .shop-coin-bonus-gold { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { #shop-screen .hero-weapon--gold, #shop-screen .shop-coin-bonus-gold { animation: none; } }
 #shop-screen .shop-coin-reflection { position:absolute; z-index:1; pointer-events:none; mask-size:contain; mask-position:center; mask-repeat:no-repeat; -webkit-mask-size:contain; -webkit-mask-position:center; -webkit-mask-repeat:no-repeat; }
 #shop-screen .shop-coin-sweep { position:absolute; inset:0; background:linear-gradient(110deg,transparent 30%,rgba(255,251,207,.1) 42%,rgba(255,255,231,.75) 50%,rgba(255,251,207,.1) 58%,transparent 70%); animation:shop-coin-sweep 5s ease-in-out infinite; }
 #shop-screen .shop-coin-glint { position:absolute; left:37%; top:24%; width:12%; aspect-ratio:1; background:radial-gradient(circle,#fff 0 18%,#fff8c0 52%,#ffd255); clip-path:polygon(50% 0,59% 39%,100% 50%,59% 61%,50% 100%,41% 61%,0 50%,41% 39%); animation:shop-heart-glint 5.6s ease-in-out infinite; }
@@ -9568,6 +9573,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 .game-back::before, .game-back::after { content: none !important; }
 .game-back:active { transform: scale(.9); }
 .game-back:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+#face-studio .fs-back.game-back { top: 8px; left: 8px; }
 #roundmap-screen .rm-back.game-close { top: calc(max(2px, calc(env(safe-area-inset-top, 0px) - 4.6cqw)) + 5.8cqw + 8px) !important; }
 /* The 40px source corners scale equally on all sides; only straight spans stretch. */
 .ws-notice { position: relative; isolation: isolate; aspect-ratio: auto; min-height: calc(var(--w) * 0.11); height: auto;
@@ -9583,7 +9589,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* Keep enhancement hints anchored below the scene, independent of the shared notice layout. */
 .ws-notice-slot { width: calc(var(--w) * .98); flex: 0 0 auto; min-height: calc(var(--w) * .11); margin-bottom: auto; }
 .ws-notice.ws-fx-notice, .ws-notice.ws-main-notice { position: absolute; top: auto; left: 50%; bottom: max(2vh, calc(env(safe-area-inset-bottom, 0px) + 10px)); margin: 0; transform: translateX(-50%); }
-.ws-notice span:not(.ws-info-icon) { display: flex; justify-content: center; align-items: center; flex: 1; text-align: center; font-size: calc(var(--w) * .042); word-break: keep-all; }
+.ws-notice span:not(.ws-info-icon) { display: flex; justify-content: flex-start; align-items: center; flex: 1; text-align: left; font-size: calc(var(--w) * .042); word-break: keep-all; }
 /* Photo face labels also avoid legacy raster backgrounds restored by asset retries. */
 .fs-fcard b { position: relative; isolation: isolate; display: flex; justify-content: center; align-items: center; padding: 0; background: none !important; min-height: calc(var(--w) * 0.1); line-height: 1.1;
   --sr-edge: calc(var(--w) * 0.021); --sr-radius: calc(var(--w) * 0.045); --sr-face: linear-gradient(180deg, #0b2038, #08172b);
