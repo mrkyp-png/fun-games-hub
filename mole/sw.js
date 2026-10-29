@@ -3,14 +3,25 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-// V1508 G applies team effects and refreshed shop, inventory and photo controls.
-const CACHE = 'mole-game-v1508-G';
+// V1509 G: shared batched 3D previews and cannon, retained UI fixes, device performance comparison.
+const CACHE = 'mole-game-v1509-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
 // vendor/face_mesh/*(약 10MB, 얼굴인식)는 SHELL 제외 — 사람두더지 메이커 처음 열 때만 필요.
 // 처음 요청될 때 아래 fetch 핸들러가 알아서 캐시한다.
 const SHELL = [
+  './js/shop-models-v1509.js',
+  './js/game-cannon-model-v1509.js',
+  './assets/ui-approved-v1509/shop-tab-sword.png',
+  './assets/ui-approved-v1509/shop-tab-costume.png',
+  './assets/shop-models-v1509/hammer-v5-batched-v1509.glb',
+  './assets/shop-models-v1509/goldhammer-v16-batched-v1509.glb',
+  './assets/shop-models-v1509/cannon-v1-batched-v1509.glb',
+  './assets/weapon-stills-v1509/cannon-hero.png',
+  './assets/weapon-stills-v1509/cannon-front.png',
+  './assets/weapon-stills-v1509/goldhammer-front.png',
+  './assets/weapon-stills-v1509/goldhammer-15.png',
   './assets/workshop/goose-idle-original-aligned-v1499.webp',
   './assets/shop-ui-v1452/coin-option-01.png',
   './assets/score/bg-palace-sides-kept-v1493.jpg',

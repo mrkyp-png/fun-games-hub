@@ -34,10 +34,10 @@
   }
   function owns(id) { return root.MoleGame.ItemInventory.owns('costume', id); }
 
-  // 기본 착용 = 블루베어스(참고 이미지 기준). 한 번도 착용 안 바꿨으면 이 기본값을 쓴다.
+  // Purchasing unlocks the team; only an explicit equip action activates its effect.
   function equippedId() {
-    var id = localStorage.getItem(K_EQUIPPED) || TEAMS[0].id;
-    if (!teamById(id)) id = TEAMS[0].id; // 삭제된 팀(윙스·자이언츠) 착용 중이었으면 베어스로
+    var id = localStorage.getItem(K_EQUIPPED);
+    if (!teamById(id)) return null;
     return owns(id) ? id : null;
   }
   function equip(id) {

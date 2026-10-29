@@ -1719,15 +1719,8 @@
     const WeaponMod = (weapon === 'cannon' && MG.LaneCannon) ? MG.LaneCannon
       : (weapon === 'alipunch' && MG.LaneBoxing) ? MG.LaneBoxing : MG.LaneHammer;
     const hammerOpts = { layer: document.getElementById('mole-hammer-layer') };
+    if(weapon!=='cannon'&&MG.GameCannonModel)MG.GameCannonModel.releaseGPU();
     if (weapon === 'hammer') hammerOpts.idle = 'bounce'; // 대기 애니메이션(사용자 지정, 잠깐 자리 비웠을 때)
-    if (weapon === 'cannon') {
-      // 캐논 인트로 전용 이미지들(body-flip/a3-mirror/a4-mirror) — HTML에 없고 JS가 실행
-      // 시점에 처음 .src 를 주기 때문에, 캐시 없는 첫 플레이에서 네트워크 로딩 중 작은
-      // 깨진 이미지 아이콘이 잠깐 보였다(사용자 리포트, 두 번째부턴 캐시로 정상). 미리 로드.
-      ['cannon-intro-body-flip', 'cannon-a3-mirror', 'cannon-a4-mirror'].forEach((n) => {
-        const i = new Image(); i.src = 'assets/weapons/' + n + '-nol-v1392.png'; // V1392 C: 검은 테두리 없는 그림
-      });
-    }
     if (weapon === 'goldhammer') {
       hammerOpts.sprite = 'assets/weapons/goldpaw-v1382.webp'; // V1382 C: 두더지 발바닥 네모 망치(사용자 확정, ESRGAN x4)
       // 스프라이트가 이미 뿅망치 축각도(~21°)로 잘려있어 degOffset 불필요 → 스윙 궤적·타격점이 뿅망치와 동일.
@@ -1881,6 +1874,13 @@
     // 숨겨뒀다가 끝나면 교체. fast 인자는 항상 false(모든 라운드 동일 타이밍으로 통일).
     function playCannonIntro(fast) {
       const ci = document.getElementById('cannon-intro');
+      if(state.laneHammer && state.laneHammer.intro3D){
+        if(ci)ci.hidden=true;
+        setHammerLayerVisible(true);
+        MG.HitFx.cannonWheelRoll();
+        state.laneHammer.intro3D(900,360,function(){if(myGen===sessionGen)MG.HitFx.cannonRotateClick();});
+        return;
+      }
       if (!ci) return;
       setHammerLayerVisible(false); // 실제 대포는 인트로 끝날 때까지 숨김(사용자 지적)
       const rig = ci.querySelector('.ci-rig');
@@ -2878,6 +2878,8 @@
     sessionGen++; // 직전 카운트다운 정리 타이머 무효화
     if (rafId) cancelAnimationFrame(rafId);
     if (state.laneHammer) state.laneHammer.home(); // 루프 멈추기 전 망치 대기위치로 스냅
+    if(MG.GameCannonModel)MG.GameCannonModel.releaseGPU();
+    if(MG.WeaponModels)MG.WeaponModels.setActiveScreen('result-screen');
     sharedPopElements.clear();
     resetHot();
     clearInvincibleFx(); // 라운드 종료 시 무적 잔류 연출 정리(사용자 지정)
@@ -2917,6 +2919,8 @@
     sessionGen++; // 직전 카운트다운 정리 타이머 무효화
     if (rafId) cancelAnimationFrame(rafId);
     if (state.laneHammer) state.laneHammer.home(); // 망치 대기위치로 스냅
+    if(MG.GameCannonModel)MG.GameCannonModel.releaseGPU();
+    if(MG.WeaponModels)MG.WeaponModels.setActiveScreen('result-screen');
     sharedPopElements.clear();
     resetHot();
     clearInvincibleFx(); // 실패 화면도 무적 잔류 연출 정리(사용자 지정)

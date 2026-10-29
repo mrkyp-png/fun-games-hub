@@ -33,11 +33,15 @@
     }
 
     function toggleCard(icon, labelKey, settingName) {
-      var c = card(icon, labelKey, '<img class="st2-tog" alt="">');
-      var img = c.querySelector('.st2-tog'), b = c.querySelector('.st2-bottom');
+      var c = card(icon, labelKey, '<span class="st2-switch-label"></span><span class="st2-switch-knob" aria-hidden="true"></span>');
+      var b = c.querySelector('.st2-bottom');
+      b.classList.add('ws-action-frame', 'st2-switch');
+      b.dataset.setting = settingName;
+      b.setAttribute('aria-label', T(labelKey));
       function paint() {
         var on = S.get(settingName);
-        img.src = A + (on ? 'tog-on.png' : 'tog-off.png');
+        b.classList.toggle('is-on', !!on);
+        b.querySelector('.st2-switch-label').textContent = on ? 'ON' : 'OFF';
         b.setAttribute('role', 'switch'); b.setAttribute('aria-checked', on ? 'true' : 'false');
       }
       b.addEventListener('click', function () {

@@ -116,10 +116,11 @@
     const ball = el.querySelector('.lc-ball');
     const bodies = {};
     POSES.forEach((p) => { bodies[p.key] = el.querySelector('.lc-body[data-pose="' + p.key + '"]'); });
+    const model = root.MoleGame.GameCannonModel ? root.MoleGame.GameCannonModel.create(el) : null;
 
     // 포즈별 유효 포구 고정점 (dx/dy 반영)
-    function ax(p) { return MZX + (p && p.dx || 0); }
-    function ay(p) { return MZY + (p && p.dy || 0); }
+    function ax(p) { return p && p.muzzle ? p.muzzle.x : MZX + (p && p.dx || 0); }
+    function ay(p) { return p && p.muzzle ? p.muzzle.y : MZY + (p && p.dy || 0); }
 
     // 회전축 = 포구 고정점. 미세 조준·반동 모두 rig 통째로.
     rig.style.transformOrigin = (MZX * 100).toFixed(2) + '% ' + (MZY * 100).toFixed(2) + '%';
@@ -137,14 +138,16 @@
     // 앵커보다 앞으로만 펼쳐져서 포신에 안 넘치고, 포구에서 살짝 떨어져 나온다.
     function placeOverlay(im, w, mu, mv, p, nudge) {
       const rad = p.aim * Math.PI / 180;
-      const nx = (nudge && nudge.dx) || 0, ny = (nudge && nudge.dy) || 0, nrot = (nudge && nudge.rot) || 0;
+      const nx = p.muzzle ? 0 : (nudge && nudge.dx) || 0, ny = p.muzzle ? 0 : (nudge && nudge.dy) || 0, nrot = p.muzzle ? 0 : (nudge && nudge.rot) || 0;
       const fx0 = ax(p) + Math.cos(rad) * FX_ADVANCE + nx;
-      const fy0 = ay(p) + Math.sin(rad) * FX_ADVANCE + ny;
+      const yScale = p.muzzle ? p.muzzle.yScale : 1;
+      const fy0 = ay(p) + Math.sin(rad) * FX_ADVANCE * yScale + ny;
       im.style.width = (w * 100).toFixed(2) + '%';
       im.style.left = ((fx0 - mu * w) * 100).toFixed(2) + '%';
-      im.style.top = ((fy0 - mv * w) * 100).toFixed(2) + '%';
+      im.style.top = ((fy0 - mv * w * yScale) * 100).toFixed(2) + '%';
       im.style.transformOrigin = (mu * 100).toFixed(2) + '% ' + (mv * 100).toFixed(2) + '%';
-      im.style.setProperty('--rot', (p.aim - FX_BASE_AIM + nrot).toFixed(1) + 'deg');
+      const baseAim = p.muzzle ? (im === spark ? -146.6 : im === smoke ? -155.5 : -163) : FX_BASE_AIM;
+      im.style.setProperty('--rot', (p.aim - baseAim + nrot).toFixed(1) + 'deg');
     }
     function placeFx(p) {
       placeOverlay(spark, SPARK_W, SPARK_MU, SPARK_MV, p, fxn(p.key, 'spark'));
@@ -157,10 +160,14 @@
     let phase = 'home', t = 0;
     let residual = 0, resFrom = 0, resTo = 0, resT = 0, curAimMs = AIM_MS;
     let recoilAmt = 0;
+    let currentAim = restPose.aim, aimFrom = currentAim, aimTo = currentAim;
+    let lastModelVisual = null;
     let idleT = 0, idleKick = 0; // 대기 애니메이션(사용자 지정) — 잠깐 조용하면 가장 센 반동으로 훅 밀렸다 복귀
     let timers = [];
-    function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+    let flightTimers = [];
+    function clearTimers(keepFlights) { timers.forEach(clearTimeout); timers = []; if(!keepFlights){flightTimers.forEach(clearTimeout);flightTimers=[];el.querySelectorAll('.lc-flight').forEach(function(projectile){projectile.remove();});} }
     function after(ms, fn) { timers.push(setTimeout(fn, ms)); }
+    function afterFlight(ms, fn) { const timer=setTimeout(function(){flightTimers=flightTimers.filter(function(id){return id!==timer;});fn();},ms);flightTimers.push(timer); }
 
     function showPose(p) {
       if (pose !== p) {
@@ -184,10 +191,11 @@
       const ty = (typeof targetYFrac === 'number') ? targetYFrac : 0.3;
 
       idleT = 0; idleKick = 0; // 대기 반동 중이었으면 리셋 — residual 은 곧바로 아래서 aim 값으로 덮어씀
-      clearTimers();
+      clearTimers(true);
 
       // 포구 → 목표 방향
-      const want = Math.atan2(ty - MZY, tx - MZX) * 180 / Math.PI;
+      const want = model && model.ready ? model.aimAt(tx,ty) : Math.atan2(ty - MZY, tx - MZX) * 180 / Math.PI;
+      aimFrom = currentAim; aimTo = currentAim + angDiff(want,currentAim);
       let best = POSES[0], bestD = 1e9;
       POSES.forEach((p) => { const d = Math.abs(angDiff(want, p.aim)); if (d < bestD) { bestD = d; best = p; } });
       showPose(best);
@@ -201,21 +209,25 @@
 
       after(curAimMs, () => {
         phase = 'kick'; t = 0;
+        currentAim = aimTo;
+        const visual = model && model.render(currentAim,0,{phase:'kick',force:true});
+        if (visual) placeFx({aim:visual.aim,muzzle:visual});
         playFx();
 
         // 포탄 발사시작점. blx/bly = 이 포즈만 추가 미세이동 (스프라이트는 그대로).
-        const muzzle = { x: ax(best) + (best.blx || 0), y: ay(best) + (best.bly || 0) };
-        ball.style.transition = 'none';
-        ball.style.left = (muzzle.x * 100).toFixed(2) + '%';
-        ball.style.top = (muzzle.y * 100).toFixed(2) + '%';
-        ball.style.opacity = '1';
-        ball.style.transform = 'translate(-50%,-50%) scale(1.15) rotate(0deg)';
-        void ball.offsetWidth;
-        ball.style.transition = 'left ' + BALL_MS + 'ms cubic-bezier(.2,.5,.6,1), top ' + BALL_MS + 'ms cubic-bezier(.2,.5,.6,1), transform ' + BALL_MS + 'ms linear';
-        ball.style.left = (tx * 100).toFixed(2) + '%';
-        ball.style.top = (ty * 100).toFixed(2) + '%';
-        ball.style.transform = 'translate(-50%,-50%) scale(0.8) rotate(220deg)';
-        after(BALL_MS, () => { ball.style.opacity = '0'; if (onImpact) onImpact(); });
+        const muzzle = visual ? {x:visual.x+Math.cos(visual.aim*Math.PI/180)*.012,y:visual.y+Math.sin(visual.aim*Math.PI/180)*.012*visual.yScale} : { x: ax(best) + (best.blx || 0), y: ay(best) + (best.bly || 0) };
+        const projectile = ball.cloneNode(false); projectile.classList.add('lc-flight'); el.appendChild(projectile);
+        projectile.style.transition = 'none';
+        projectile.style.left = (muzzle.x * 100).toFixed(2) + '%';
+        projectile.style.top = (muzzle.y * 100).toFixed(2) + '%';
+        projectile.style.opacity = '1';
+        projectile.style.transform = 'translate(-50%,-50%) scale(1.15) rotate(0deg)';
+        void projectile.offsetWidth;
+        projectile.style.transition = 'left ' + BALL_MS + 'ms cubic-bezier(.2,.5,.6,1), top ' + BALL_MS + 'ms cubic-bezier(.2,.5,.6,1), transform ' + BALL_MS + 'ms linear';
+        projectile.style.left = (tx * 100).toFixed(2) + '%';
+        projectile.style.top = (ty * 100).toFixed(2) + '%';
+        projectile.style.transform = 'translate(-50%,-50%) scale(0.8) rotate(220deg)';
+        afterFlight(BALL_MS, () => { projectile.remove(); if (onImpact) onImpact(); });
       });
       paint();
     }
@@ -225,12 +237,14 @@
         resT += dt;
         const k = easeOut(clamp01(resT / (curAimMs / 1000)));
         residual = resFrom + (resTo - resFrom) * k;
+        currentAim = aimFrom + (aimTo-aimFrom)*k;
       } else if (phase === 'kick') {
         t += dt;
         if (t >= KICK_SEC) { phase = 'settle'; t = 0; }
       } else if (phase === 'settle') {
         t += dt;
         const k = easeOut(clamp01(t / SETTLE_SEC));
+        currentAim = aimTo + angDiff(restPose.aim,aimTo)*k;
         residual = resTo * (1 - k);
         if (t >= SETTLE_SEC) { phase = 'home'; t = 0; residual = 0; showPose(restPose); }
       } else if (phase === 'home') {
@@ -257,6 +271,10 @@
       // 값을 써야 몸통 각도와 밀리는 방향이 항상 일치한다(사용자 피드백).
       const rdir = ((pose ? pose.aim : AIM_DEG_FALLBACK) + residual + 180) * Math.PI / 180;
       const dx = Math.cos(rdir) * amt, dy = Math.sin(rdir) * amt;
+      if (model) {
+        const visual = model.render(currentAim,amt/.040,{phase,progress:phase==='aim'?clamp01(resT/(curAimMs/1000)):phase==='settle'?clamp01(t/SETTLE_SEC):0});
+        if (visual) { if(rig.style.transform!=='none')rig.style.transform='none';if(visual!==lastModelVisual){placeFx({aim:visual.aim,muzzle:visual});lastModelVisual=visual;}return; }
+      }
       rig.style.transform =
         'translate(' + (dx * 100).toFixed(3) + '%, ' + (dy * 100).toFixed(3) + '%) ' +
         'rotate(' + residual.toFixed(2) + 'deg)';
@@ -268,17 +286,19 @@
       clearTimers();
       phase = 'home'; t = 0; resT = 0; idleT = 0; idleKick = 0;
       residual = resFrom = resTo = 0;
+      currentAim = aimFrom = aimTo = restPose.aim;
       resetFx();
       ball.style.opacity = '0';
       showPose(restPose);
+      if(model)model.render(restPose.aim,0,{phase:'home',force:true});
       paint();
     }
 
-    function clear() { clearTimers(); el.remove(); }
+    function clear() { clearTimers(); if(model)model.clear(); el.remove(); }
 
     showPose(restPose);
     paint();
-    return { strike, update, isBusy, home, clear };
+    return { strike, update, isBusy, home, clear, intro3D:model?function(travelMs,turnMs,onDone){model.intro(travelMs,turnMs,onDone);}:null };
   }
 
   const api = { create };

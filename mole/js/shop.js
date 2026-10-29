@@ -164,7 +164,7 @@
 
     // 무기 탭 아이콘 — 후보 시트(뿅망치 만화 소프트해머, #7) 사용자 선택, 시계방향 45도 회전 +
     // 그라디언트/하이라이트로 입체감(사용자 지정: "7번으로 해서 시계방향 45도 회전, 입체감").
-    var WEAPON_TAB_ICON = '<img src="assets/inventory/ui-v1379/approved-mallet-redend-v1405.webp" alt="">'; // 무기 화면 전시용 원본
+    var WEAPON_TAB_ICON = '<span class="shop-tab-swords"><span class="shop-tab-sword-arm shop-tab-sword--left"><img class="shop-tab-sword" src="assets/ui-approved-v1509/shop-tab-sword.png" alt=""></span><span class="shop-tab-sword-arm shop-tab-sword--right"><img class="shop-tab-sword" src="assets/ui-approved-v1509/shop-tab-sword.png" alt=""></span><i class="shop-tab-sword-spark" aria-hidden="true"></i></span>';
 
     // 스킬 탭 아이콘 — 후보 시트 #7(음양) 사용자 최종 선택, 그라디언트+하이라이트로 입체감.
     var SKILL_TAB_ICON = '<img src="assets/tabs/skill.png" alt="">'; // 사용자 제공 이미지(v755)
@@ -176,7 +176,7 @@
       { id: 'ticket', i18n: 'mole.shop.tabTicket', icon: '<img class="ticket-note-icon" src="assets/ui-approved-v1476/ticket-stack-14.webp" alt="">' },
       { id: 'weapon', i18n: 'mole.shop.tabWeapon', icon: WEAPON_TAB_ICON },
       { id: 'skill', i18n: 'mole.shop.tabSkill', icon: '<img src="' + SHOP_ART + 'skill-icon.png" alt="">' },
-      { id: 'costume', i18n: 'mole.shop.tabCostume', icon: '<img src="' + SHOP_ART + 'costume-icon.png" alt="">' }
+      { id: 'costume', i18n: 'mole.shop.tabCostume', icon: '<img src="assets/ui-approved-v1509/shop-tab-costume.png" alt="">' }
     ];
     var activeTab = 'currency';
     var currencyFilter = null; // null=전체, 'heart'/'coin'/'ticket'=다이얼패드 캡슐 클릭으로 필터
@@ -250,12 +250,36 @@
       var dy = (img.naturalHeight / 2 - (bounds[1] + bounds[3]) / 2) * scale;
       img.style.setProperty('translate', dx.toFixed(2) + 'px ' + dy.toFixed(2) + 'px', 'important');
     }
+    var kingMotionBounds = null;
+    function measureKingMotion(unit) {
+      if (kingMotionBounds) return kingMotionBounds;
+      var images = unit.querySelectorAll('.inv-thumb--pair > img');
+      if (images.length !== 2 || Array.from(images).some(function (img) { return !img.complete || !img.naturalWidth; })) {
+        images.forEach(function (img) { if (!img._kingFit) { img._kingFit = true; img.addEventListener('load', function () { requestAnimationFrame(centerShopTabArt); }, { once:true }); } });
+        return null;
+      }
+      var canvas = document.createElement('canvas'), dpr = 4, pad = 30; canvas.width = 180 * dpr; canvas.height = 150 * dpr;
+      var ctx = canvas.getContext('2d'); ctx.scale(dpr,dpr);
+      [[0,0],[5,-6],[10,0]].forEach(function (move) { images.forEach(function (img,index) {
+        var w = img.clientWidth, h = img.clientHeight, fit = Math.min(w/img.naturalWidth,h/img.naturalHeight);
+        ctx.save(); ctx.translate(pad+img.offsetLeft+w/2,pad+img.offsetTop+h/2); ctx.rotate((index?-15:15)*Math.PI/180); if(index)ctx.scale(-1,1);ctx.translate(move[0],move[1]);ctx.drawImage(img,-img.naturalWidth*fit/2,-img.naturalHeight*fit/2,img.naturalWidth*fit,img.naturalHeight*fit);ctx.restore();
+      }); });
+      var pixels=ctx.getImageData(0,0,canvas.width,canvas.height).data,x0=canvas.width,y0=canvas.height,x1=0,y1=0;
+      for(var y=0;y<canvas.height;y++)for(var x=0;x<canvas.width;x++)if(pixels[(y*canvas.width+x)*4+3]>64){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);}
+      kingMotionBounds={w:(x1-x0+1)/dpr,h:(y1-y0+1)/dpr,x:(x0+x1+1)/dpr/2-pad,y:(y0+y1+1)/dpr/2-pad};return kingMotionBounds;
+    }
     function centerShopTabArt() {
       alignCoinReflections();
       el.querySelectorAll('[data-shop-motion]').forEach(function (unit) {
         var rect = unit.parentElement.getBoundingClientRect();
         var size = unit.dataset.shopMotion === 'cannon' ? [105.5, 88] : [112, 88];
-        unit.style.setProperty('--shop-weapon-scale', Math.min(rect.width * .82 / size[0], rect.height * .76 / size[1]));
+        if (unit.dataset.shopMotion === 'alipunch') {
+          var card = unit.closest('.shop-card').getBoundingClientRect(), bounds = measureKingMotion(unit);
+          var scale = Math.min((card.width * 530 / 600 - 4) / (bounds?bounds.w:125.4),(rect.height-8)/(bounds?bounds.h:76));
+          unit.style.setProperty('--shop-weapon-scale',scale);
+          unit.style.setProperty('--shop-weapon-shift-x',bounds?(60-bounds.x)*scale+'px':'0px');
+          unit.style.setProperty('--shop-weapon-shift-y',bounds?(44-bounds.y)*scale+'px':'0px');
+        } else unit.style.setProperty('--shop-weapon-scale', Math.min(rect.width * .82 / size[0], rect.height * .76 / size[1]));
       });
       el.querySelectorAll('.shop-tab-ico img').forEach(function (img) {
         centerVisibleImage(img);
@@ -651,7 +675,7 @@
         var label = english ? (round + (round === 1 ? 'st' : round === 2 ? 'nd' : 'rd') + ' purchase') : round + '회차';
         var weaponLabel = english ? weapon.nameEn : ({ cannon: '팡팡 캐논', goldhammer: '골드 묠니르', alipunch: '킹판취' }[weaponId] || weapon.name);
         return '<div class="shop-coin-bulk-reward"><span class="shop-coin-bulk-step">' + label + '</span>' +
-          '<img' + (weaponId === 'goldhammer' ? ' class="shop-coin-bonus-gold"' : '') + ' src="' + weapon.thumb + '" alt=""><span class="shop-coin-bulk-reward-name">' + weaponLabel + '</span></div>';
+          '<img src="' + (weaponId === 'cannon' ? 'assets/weapon-stills-v1509/cannon-hero.png' : weaponId === 'goldhammer' ? 'assets/weapon-stills-v1509/goldhammer-15.png' : weapon.thumb) + '" alt=""><span class="shop-coin-bulk-reward-name">' + weaponLabel + '</span></div>';
       }).join('');
       var bulkArt = '<div class="shop-coin-bulk-art">' +
         '<img class="shop-coin-bulk-pile" src="' + CURRENCY_ART + 'coin-option-09-bright20.png" alt="">' +
@@ -811,10 +835,6 @@
         b.className = 'shop-tab' + (t.id === activeTab ? ' shop-tab--on' : '');
         b.dataset.shopTab = t.id;
         b.innerHTML = '<span class="shop-tab-ico">' + t.icon + '</span><span class="shop-tab-lbl"></span>';
-        if (t.id === 'weapon') {
-          var motion = document.createElement('span'); motion.className = 'shop-tab-hammer-motion';
-          var hammerIcon = b.querySelector('.shop-tab-ico img'); hammerIcon.replaceWith(motion); motion.appendChild(hammerIcon);
-        }
         if (t.id === 'currency') b.querySelector('.shop-tab-ico').insertAdjacentHTML('beforeend', '<i class="shop-tab-heart-glint" aria-hidden="true"></i>');
         if (t.id === 'skill') b.querySelector('.shop-tab-ico').insertAdjacentHTML('beforeend', '<svg class="shop-tab-ring" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="none" stroke="#fff5b4" stroke-width="3.3" stroke-linecap="round" stroke-dasharray="18 271"/></svg>');
         b.querySelector('.shop-tab-lbl').textContent = T(t.i18n);
@@ -835,8 +855,16 @@
     }
 
     function render() {
+      if (MG.ShopModels) MG.ShopModels.clear();
       renderTabs();
       RENDERERS[activeTab]();
+      if (activeTab === 'weapon') cardsEl.querySelectorAll('.shop-card--weapon-product').forEach(function (card) {
+        var host = card.querySelector('.shop-card-img-box,.shop-card-badge--default-weapon');
+        if (!host) return;
+        host.classList.add('shop-weapon-shadow-host');
+        if (host.querySelector('[data-shop-motion="alipunch"]')) host.classList.add('shop-weapon-shadow-host--king');
+        var shadow = document.createElement('span'); shadow.className = 'shop-weapon-shadow'; shadow.setAttribute('aria-hidden','true'); host.appendChild(shadow);
+      });
       updateDots();
       // 재화탭 카드박스 색 = 하트/코인/티켓 캡슐 필터에 맞춰 빨강/노랑/파랑(사용자 지정:
       // "하트선택시 빨강, 코인선택시 노랑, 티켓선택시 파랑") — 필터 없음(전체)은 하트 기본.
@@ -845,6 +873,7 @@
       if (activeTab === 'currency') cardsBoxEl.classList.add('shop-cards-box--' + (currencyFilter || 'heart'));
       requestAnimationFrame(alignCoinPrices);
       requestAnimationFrame(centerShopTabArt);
+      if (activeTab === 'weapon' && MG.ShopModels) MG.ShopModels.attach(cardsEl, WEAPONS);
     }
 
     var productNavGeneration = 0, productPreview = null, productSlideAnimations = [], drag = null, suppressProductClickUntil = 0;
@@ -861,6 +890,7 @@
       clearProductSlide(); var generation = ++productNavGeneration;
       var previousCardScroll = cardsEl.scrollLeft;
       var preview = cardsEl.cloneNode(true); preview.removeAttribute('data-shop-cards'); preview.classList.add('shop-product-preview');
+      if (MG.ShopModels) MG.ShopModels.snapshot(preview);
       preview.setAttribute('aria-hidden', 'true'); preview.inert = true;
       productsViewport.appendChild(preview); productPreview = preview;
       preview.scrollLeft = previousCardScroll;
@@ -913,7 +943,7 @@
     productsViewport.addEventListener('click', function (event) {
       if (Date.now() < suppressProductClickUntil) { event.preventDefault(); event.stopImmediatePropagation(); }
     }, true);
-    new MutationObserver(function () { if (el.hidden) { productNavGeneration++; drag = null; clearProductSlide(); } }).observe(el, { attributes: true, attributeFilter: ['hidden'] });
+    new MutationObserver(function () { if (el.hidden) { productNavGeneration++; drag = null; clearProductSlide(); if (MG.ShopModels) MG.ShopModels.clear(); } }).observe(el, { attributes: true, attributeFilter: ['hidden'] });
 
     // Center the visible coin artwork and number ink, keeping their current sizes.
     function alignCoinPrices() {
@@ -1053,6 +1083,7 @@
       zapTimer = setInterval(function () {
         if (el.hidden) { clearInterval(zapTimer); return; }
         el.querySelectorAll('.hero-weapon--gold[src*="goldpaw-v1382"]').forEach(function (img) {
+          if (img.closest('.shop-model-ready')) return;
           if (img._zap) return;
           var orig = img.getAttribute('src'), k = 0; img._zap = true;
           (function step() {

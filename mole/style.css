@@ -9411,7 +9411,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 @keyframes shop-coin-sweep { 0%,18% { opacity:0; transform:translateX(-120%); } 24% { opacity:.55; } 46% { opacity:.55; transform:translateX(120%); } 47%,100% { opacity:0; transform:translateX(120%); } }
 @media (prefers-reduced-motion:reduce) { #shop-screen .shop-coin-reflection { display:none; } #shop-screen .shop-ticket-arrive { animation:none; } }
 /* Reuse the inventory weapon motion in its original 120 x 88 coordinate system. */
-#shop-screen .shop-weapon-motion { position:absolute; left:50%; top:50%; width:120px; height:88px; transform:translate(-50%,-50%) scale(var(--shop-weapon-scale,1)); pointer-events:none; }
+#shop-screen .shop-weapon-motion { position:absolute; left:50%; top:50%; width:120px; height:88px; transform:translate(calc(-50% + var(--shop-weapon-shift-x,0px)),calc(-50% + var(--shop-weapon-shift-y,0px))) scale(var(--shop-weapon-scale,1)); pointer-events:none; }
 #shop-screen .shop-weapon-motion .inv-thumb { position:relative; width:120px; height:88px; }
 #shop-screen .shop-weapon-motion .inv-thumb--pair { gap:8px; --kp-tilt:15deg; }
 #shop-screen .shop-weapon-motion .inv-thumb--pair > img { flex:none; width:52px; height:88px; max-width:52px!important; }
@@ -9687,5 +9687,66 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #inventory-screen .ph3-team.inv-title-frame.is-on[data-ph3-team="mount_stars"] { --sr-face:linear-gradient(180deg,#52db77,#20b950 46%,#0b8831); --sr-rim:linear-gradient(180deg,#d5ffd9,#74e99a 24%,#188740 75%,#0e5928); --sr-highlight:#d2ffdb; --sr-outline:#0e5928; }
 #inventory-screen .ph3-team.inv-title-frame.is-on[data-ph3-team="cloud_cups"] { --sr-face:linear-gradient(180deg,#be8bff,#8c46e7 46%,#5e1dad); --sr-rim:linear-gradient(180deg,#f2ddff,#c596ff 24%,#7137aa 75%,#44206b); --sr-highlight:#f0deff; --sr-outline:#44206b; }
 #inventory-screen .ph3-btn.inv-action-frame.is-on { filter:hue-rotate(95deg) saturate(1.1); }
+#inventory-screen .iw-equip.inv-action-frame.is-on { filter:hue-rotate(95deg) saturate(1.1); }
 #inventory-screen .ks-slot-pill.inv-title-frame::before { border:0 solid transparent; border-image:url('assets/inventory/ui-v1379/title-blue-9slice-v1508.svg') 54 fill / 54px / 0 stretch; border-radius:0; background:none; outline:none; box-shadow:none; }
 #inventory-screen .ks-slot-pill.inv-title-frame::after { display:none; }
+#settings-screen .st2-switch { position:relative; width:94%; height:auto; min-height:28px; aspect-ratio:2.4; flex:none; padding:0; border:0; border-radius:999px; background:none; color:#fff; font:clamp(9px,3vw,13px)/1 'Jua',sans-serif; --sr-edge:3px; --sr-radius:999px; --sr-face:linear-gradient(180deg,#56e374,#26c34b 46%,#129533); --sr-rim:linear-gradient(180deg,#d4ffbf,#62e983 24%,#16873c 75%,#0d5e29); --sr-highlight:#d5ffdc; --sr-outline:#0c5a26; }
+#settings-screen .st2-switch:not(.is-on) { filter:grayscale(1); }
+#settings-screen .st2-switch { container-type:size; }
+#settings-screen .st2-switch > .st2-switch-label { position:absolute; inset:0 3px 0 calc(100cqh - 3px); display:flex; justify-content:center; align-items:center; margin:0; padding:0; font:inherit; line-height:1; }
+#settings-screen .st2-switch.is-on > .st2-switch-label { inset:0 calc(100cqh - 3px) 0 3px; }
+#settings-screen .st2-switch > .st2-switch-knob { position:absolute; top:3px; bottom:3px; left:3px; right:auto; width:auto; aspect-ratio:1; border-radius:50%; margin:0; padding:0; background:linear-gradient(#fff,#e5f5e8); box-shadow:0 1px 2px #0a542777; }
+#settings-screen .st2-switch.is-on > .st2-switch-knob { left:auto; right:3px; }
+#game-screen.is-start:has(#lane-button-bar[data-nav="inventory"]) { overflow:visible; }
+#game-screen.is-start .dialpad:has(#lane-button-bar[data-nav="inventory"]) { position:relative; z-index:20; contain:layout; }
+#game-screen.is-start #lane-button-bar[data-nav="inventory"] .lane-button--nav-active { z-index:1000; }
+/* Empty material display: map the glass bounds (1150..1590, 30..430) through stage nine-slicing. */
+#workshop-screen .ws-item--r.is-unsel { left:calc(1150 / 1632 * 100%); right:calc(42 / 1632 * 100%); top:calc(var(--w) * -0.035 + var(--w) * 507 / 857 * 30 / 964); width:auto; height:calc(var(--w) * 507 / 857 * 400 / 964 + var(--w) * 0.035); aspect-ratio:auto; }
+#workshop-screen .ws-item--r.is-unsel::after { position:absolute; inset:0; display:flex; justify-content:center; align-items:center; line-height:1; }
+#shop-screen .shop-model-ready { overflow:hidden!important; isolation:isolate; }
+#shop-screen .shop-model-ready > .shop-card-badge,#shop-screen .shop-model-ready > img:not(.shop-model-snapshot) { visibility:hidden; }
+#shop-screen .shop-model-canvas { position:absolute; inset:0; display:block; width:100%; height:100%; pointer-events:none; }
+#shop-screen .shop-model-canvas { z-index:1; }
+#shop-screen .shop-weapon-shadow { position:absolute; left:50%; bottom:6%; width:62%; height:10%; pointer-events:none; z-index:0; border-radius:50%; background:radial-gradient(ellipse,rgba(43,24,12,.9),rgba(43,24,12,.45) 45%,transparent 73%); opacity:var(--shop-shadow-opacity,.32); transform:translateX(-50%) scale(var(--shop-shadow-scale,1)); filter:blur(2px); }
+#shop-screen .shop-weapon-shadow-host--king .shop-card-badge { z-index:1; }
+#shop-screen .shop-weapon-shadow-host--king .shop-weapon-shadow { width:76%; animation:shop-king-shadow 4s ease-in-out infinite; }
+@keyframes shop-king-shadow { 0%,16%,32%,48%,74%,100% { transform:translateX(-50%) scaleX(1); } 8%,24%,40%,56%,62% { transform:translateX(-50%) scaleX(.86); } }
+@media(prefers-reduced-motion:reduce) { #shop-screen .shop-weapon-shadow { animation:none!important; } }
+#shop-screen img.shop-model-snapshot { width:100%!important; height:100%!important; max-width:none!important; max-height:none!important; object-fit:fill!important; margin:0!important; transform:none!important; }
+
+/* Shared sharp model previews; use the same geometry and pixel density on item screens. */
+.inv-weapon-model { position:relative; width:120px; height:110px; }
+.inv-weapon-model > img { width:100%; height:100%; object-fit:contain; }
+.inv-weapon-model.shop-model-ready > img { visibility:hidden; }
+.inv-weapon-model > .shop-model-canvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+.iw-model-page .iw-float { animation:none; }
+.iw-model-page:not(.ks-wpage)[data-weapon="goldhammer"] .iw-weapon { transform:translateY(80px); }
+.ks-wpage.iw-model-page .iw-weapon {transform:none;}
+.iw-model-page.has-enh .shop-model-canvas { filter:var(--weapon-glow,none); }
+.ws-item img[src*="weapon-stills-v1509"] { position:absolute; left:var(--disc-x); top:var(--disc-y); height:85%; width:auto; max-width:94%; max-height:85%; translate:-50% -100%; transform-origin:50% 95%; }
+.ws-item img[src*="weapon-stills-v1509/cannon-front"] { animation:ws-cannon-recoil 1.4s ease-out infinite; }
+.ws-item img[src*="weapon-stills-v1509/goldhammer-15"] { animation:ws-model-gold-bounce 2.4s ease-in-out infinite; }
+@keyframes ws-model-gold-bounce { 0%,62%,82%,100% {transform:translateY(0)} 72% {transform:translateY(-8%)} 90% {transform:translateY(-4%)} }
+.ws-enhance-hammer .ws-touch-model {position:absolute;inset:0;}
+.ws-touch-model > .shop-model-canvas {position:absolute;inset:0;width:100%;height:100%;}
+.ws-enhance-hammer.is-model-ready > img {visibility:hidden;}
+#workshop-screen .ws-enhance-hammer.is-model-touch:not(.is-striking):not(.is-entering) {pointer-events:auto;touch-action:none;cursor:grab;}
+@media(prefers-reduced-motion:reduce){.ws-item img[src*="weapon-stills-v1509"]{animation:none;}}
+.lc-render-source {position:absolute;left:0;top:0;width:256px;height:256px;pointer-events:none;visibility:hidden;}
+.lc-render-source > canvas {position:absolute;inset:0;width:100%;height:100%;}
+.lc-model-host {position:absolute;left:74%;top:66%;width:34%;height:34%;pointer-events:none;}
+.lc-model-image {display:block;width:100%;height:100%;filter:drop-shadow(0 4px 5px #0006);}
+.lc-model-fallback {position:absolute;inset:0;width:100%;height:100%;object-fit:contain;}
+.lc-model-fallback[hidden] {display:none;}
+#shop-screen .shop-tab-swords {position:absolute;inset:0;display:block;}
+#shop-screen .shop-tab-sword-arm {position:absolute;inset:0;transform-origin:50% 75%;}
+#shop-screen .shop-tab-swords .shop-tab-sword {position:absolute;inset:0;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain;transform-origin:50% 75%;}
+#shop-screen .shop-tab-sword--left {animation:shop-sword-left 4s ease-in-out infinite;}
+#shop-screen .shop-tab-sword--right {animation:shop-sword-right 4s ease-in-out infinite;}
+@keyframes shop-sword-left {0%,43%,55%,67%,100%{transform:rotate(-36deg)}49%,61%{transform:rotate(-8deg)}}
+@keyframes shop-sword-right {0%,43%,55%,67%,100%{transform:rotate(36deg)}49%,61%{transform:rotate(8deg)}}
+#shop-screen .shop-tab-sword-spark {position:absolute;left:50%;top:28%;width:7px;height:7px;border:2px solid #fff6af;transform:translate(-50%,-50%) rotate(45deg);opacity:0;animation:shop-sword-spark 4s linear infinite;}
+@keyframes shop-sword-spark {0%,47%,53%,59%,65%,100%{opacity:0}49%,61%{opacity:1}}
+@media(prefers-reduced-motion:reduce){#shop-screen .shop-tab-sword-arm,#shop-screen .shop-tab-swords .shop-tab-sword,#shop-screen .shop-tab-sword-spark{animation:none}#shop-screen .shop-tab-sword--left{transform:rotate(-36deg)}#shop-screen .shop-tab-sword--right{transform:rotate(36deg)}}
+.has-cannon-model .lc-body {visibility:hidden;}
+#game-screen.gs-weapon-enhanced .lc-model-image {filter:drop-shadow(0 4px 4px #0006) var(--weapon-glow);}

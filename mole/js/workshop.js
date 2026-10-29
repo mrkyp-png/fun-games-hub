@@ -16,8 +16,8 @@
   // Acquisition and enhancement use the shared persistent inventory.
 
   var WEAPONS = [
-    { id: 'cannon', ko: '팡팡 캐논', en: 'Pang Pang Cannon', img: A + 'w-cannon-front-v1435.png', done: A + 'w-cannon-front-v1435.png' }, // V1398 C: 새 무기 그림(검은 테두리 없음). V1405 C 사용자: 캐논은 정면 그림
-    { id: 'goldhammer', ko: '골드 묠니르', en: 'Gold Mjolnir', img: A + 'w-goldhammer-v1398.png', done: A + 'w-goldhammer-v1398.png' },
+    { id: 'cannon', ko: '팡팡 캐논', en: 'Pang Pang Cannon', img: 'assets/weapon-stills-v1509/cannon-front.png', done: 'assets/weapon-stills-v1509/cannon-front.png' },
+    { id: 'goldhammer', ko: '골드 묠니르', en: 'Gold Mjolnir', img: 'assets/weapon-stills-v1509/goldhammer-15.png', done: 'assets/weapon-stills-v1509/goldhammer-15.png' },
     { id: 'alipunch', ko: '킹 판취', en: 'King Punch', img: A + 'w-alipunch-idle-v1406.png', done: A + 'w-alipunch-idle-v1406.png' } // V1405 C 사용자: 게임 대기 그림(kingfist-idle). V1406 C: 게임과 같게 왼쪽=원본·오른쪽=거울 // 글러브 두 짝 — v891: 여백 잘라 캐논과 비슷한 크기(사용자 지정)
   ];
 
@@ -112,7 +112,7 @@
       });
       return idleGooseReady;
     }
-    var hammerShadow = null, shadowHammerEl = null;
+    var hammerShadow = null, shadowHammerEl = null, workshopModelView = null;
     function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
     function clearTimers() { timers.forEach(clearTimeout); timers = []; stopGooseWingsSound(); resetGooseFlight(); }
     function resetGooseFlight() {
@@ -160,6 +160,8 @@
       lastHammerHitIndex = next; playHammerSound(hammerHitAudios[next], 0.55);
     }
     function clearWorkshopHammer() {
+      if (workshopModelView) workshopModelView.dispose();
+      workshopModelView = null;
       if (hammerRaf) cancelAnimationFrame(hammerRaf);
       hammerRaf = 0;
       stopHammerZapAnimation(false);
@@ -169,6 +171,7 @@
       hammerShadow = null; shadowHammerEl = null;
     }
     function stopHammerZapAnimation(showBase) {
+      if (workshopModelView) workshopModelView.setPose({zap:false});
       if (hammerZapTimer) clearInterval(hammerZapTimer);
       hammerZapTimer = null;
       if (showBase && workshopHammer) {
@@ -182,6 +185,7 @@
     }
     function startHammerZapAnimation() {
       stopHammerZapAnimation(false);
+      if (workshopModelView) { workshopModelView.setPose({yaw:Math.PI,cameraPitch:0,zap:true}); return; }
       var frame = 0;
       function showFrame() {
         var img = workshopHammerImage();
@@ -211,6 +215,24 @@
         strikeFlyDurationScale: 2 / 0.7
       });
       var hammerEl = layer.querySelector('.ws-enhance-hammer');
+      if (hammerEl && MG.WeaponModels) {
+        var touchHost = document.createElement('div'); touchHost.className = 'ws-touch-model'; hammerEl.appendChild(touchHost);
+        MG.WeaponModels.create(touchHost, 'goldhammer', {manual:true}).then(function (view) {
+          if (!view || !hammerEl.isConnected) { if (view) view.dispose(); return; }
+          workshopModelView = view; view.setPose({yaw:Math.PI,cameraPitch:0}); hammerEl.classList.add('is-model-ready');
+          var pointer = null, lastX = 0;
+          hammerEl.addEventListener('pointerdown', function (e) {
+            if (hammerEl.classList.contains('is-striking') || hammerEl.classList.contains('is-entering')) return;
+            pointer = e.pointerId; lastX = e.clientX; hammerEl.setPointerCapture(pointer); e.preventDefault(); e.stopPropagation();
+          });
+          hammerEl.addEventListener('pointermove', function (e) {
+            if (pointer !== e.pointerId || hammerEl.classList.contains('is-striking')) return;
+            view.setPose({yaw:view.pose.yaw-(e.clientX-lastX)*.012}); lastX=e.clientX; e.preventDefault();
+          });
+          function release(e) { if (pointer === e.pointerId) pointer = null; }
+          hammerEl.addEventListener('pointerup',release); hammerEl.addEventListener('pointercancel',release);
+        });
+      }
       shadowHammerEl = hammerEl;
       hammerShadow = document.createElement('div'); hammerShadow.className = 'ws-hammer-shadow'; hammerShadow.setAttribute('aria-hidden', 'true'); layer.appendChild(hammerShadow);
       if (hammerEl) hammerEl.classList.add('is-entering');
@@ -219,6 +241,8 @@
       workshopHammer.spinIn(0.08, 0.9, 1260, 4, 0.04, function () {
         hammerEl = layer.querySelector('.ws-enhance-hammer');
         if (hammerEl) hammerEl.classList.remove('is-entering');
+        if (hammerEl) hammerEl.classList.add('is-model-touch');
+        if (workshopModelView) workshopModelView.resize();
         animateWorkshopHammer();
         if (onLanded) onLanded();
       });
@@ -445,6 +469,7 @@
       var targetY = (eggRect.top + eggRect.height * 0.16 + 94.5 - fxRect.top) / fxRect.height;
       var hammerEl = fx.querySelector('.ws-enhance-hammer');
       if (hammerEl) hammerEl.classList.add('is-striking');
+      if (workshopModelView) workshopModelView.setPose({yaw:Math.PI,cameraPitch:0});
       startHammerZapAnimation();
       workshopHammer.strike(targetX, targetY, function () {
         playRandomHammerHit();

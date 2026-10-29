@@ -10,6 +10,7 @@
 
     function render() {
       var top = stack[stack.length - 1] || null;
+      if(root.MoleGame.WeaponModels)root.MoleGame.WeaponModels.setActiveScreen(top||'game-screen');
       ids.forEach(function (id) {
         var el = document.getElementById(id);
         if (el) el.hidden = (id !== top);

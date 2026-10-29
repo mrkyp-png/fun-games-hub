@@ -149,6 +149,7 @@
         var btn = layer.querySelector('.iw-equip');
         var owned = MG.ItemInventory.owns('weapon', w.id);
         btn.querySelector('.iw-equip-label').textContent = owned ? T(w.id === equipped() ? 'mole.inv.equipped' : 'mole.inv.equip') : (I18N.lang === 'en' ? 'Not owned' : '미보유');
+        btn.classList.toggle('is-on', owned && w.id === equipped());
         btn.disabled = !owned || w.id === equipped() || !!(opts.gameInProgress && opts.gameInProgress());
         layer.classList.remove('is-fading'); layer.inert = false;
         requestAnimationFrame(fitLefts);
@@ -219,8 +220,10 @@
         (r === 'epic' || r === 'legend' ? '<span class="inv-glow"></span><i class="inv-crown-tw"></i>' : '');
     }
     // V1403 C: 무기 화면·스킬 탭이 같은 무기 연출(애니메이션) 공유
-    var WEAPON_ART = {hammer:[83.44,83.58,-1.09,0.04],cannon:[89.7,74.2,0,0],goldhammer:[63.1,88,0,0],alipunch:[88,63,0,0]};
+    // Union of actual opaque model bounds over yaw, bounce, recoil and strike poses.
+    var WEAPON_ART = {hammer:[89,84.5,-4.5,4.75],cannon:[81,84,0,-.5],goldhammer:[86,95,-4.5,4.5],alipunch:[88,63,0,0]};
     function weaponThumbHtml(w) {
+      if (MG.WeaponModels && w.id !== 'alipunch') return '<div class="inv-weapon-model" data-model-weapon="' + w.id + '"><img alt="" src="' + w.thumb + '"></div>';
         // 알리 펀치 = 좌/우 글러브 한 쌍(오른쪽은 왼쪽 이미지 거울상 — 실제 게임과 동일, §1).
         // 강조 애니메이션(사용자 지시): 두 글러브가 2번 맞부딪히고, 2번째에 스파크+"POWER UP" 표시.
       return w.id === 'alipunch'
@@ -388,10 +391,13 @@
       body.querySelectorAll('.iw-page').forEach(function (page) {
         var a = art[page.dataset.weapon];
         var unit = page.querySelector('.iw-preview-unit');
-        var sc = Math.min(440/a[0], 490/a[1]) * (page.dataset.weapon === 'cannon' ? 0.96 : 1); // V1429 C 사용자: 캐논 96%
+        var sc = Math.min(440/a[0], 490/a[1]) * ({hammer:.9,cannon:1.15*.9,goldhammer:.9}[page.dataset.weapon]||1);
         unit.style.setProperty('--iw-weapon-scale', sc);
         page.style.setProperty('--iw-weapon-scale', sc); // 뒤 빛이 무기와 같은 거리로 움직이게
-        page.querySelector('.inv-thumb').style.transform = 'translate(' + a[2] + 'px,' + a[3] + 'px)';
+        var legacyThumb = page.querySelector('.inv-thumb');
+        if (legacyThumb) legacyThumb.style.transform = 'translate(' + a[2] + 'px,' + a[3] + 'px)';
+        var modelHost = page.querySelector('.inv-weapon-model');
+        if(modelHost)modelHost.style.transform='translate('+a[2]+'px,'+a[3]+'px)';
       });
       body.querySelectorAll('.iw-stat-title,.iw-stat-label,.iw-stat-value,.iw-equip,.iw-grade').forEach(function (label) {
         var grade=label.classList.contains('iw-grade');
@@ -512,7 +518,8 @@
       var en = I18N.lang === 'en';
       // 사용자: 스킬 탭 무기 = 무기 화면 무기와 세트(같은 연출·빛·바닥 그림자), 조금 작게.
       var a = weapon ? WEAPON_ART[weapon.id] : null;
-      var thumb = weapon ? '<div class="iw-page ks-wpage" data-weapon="' + weapon.id + '" data-grade="' + weapon.rarity + '" style="--iw-weapon-scale:' + (Math.min(440 / a[0], 490 / a[1]) * 0.62).toFixed(3) + '"><div class="iw-weapon"><div class="iw-preview-unit" style="--iw-weapon-scale:' + (Math.min(440 / a[0], 490 / a[1]) * 0.62).toFixed(3) + '"><div class="iw-float">' + weaponThumbHtml(weapon) + '</div></div></div></div>' : '';
+      var skillScale = weapon ? (weapon.id==='alipunch'?Math.min(440/a[0],490/a[1])*.62:Math.min(440/a[0],360/a[1])*(weapon.id==='cannon'?1.05:1)) : 1;
+      var thumb = weapon ? '<div class="iw-page ks-wpage" data-weapon="' + weapon.id + '" data-grade="' + weapon.rarity + '" style="--iw-weapon-scale:' + skillScale.toFixed(3) + '"><div class="iw-weapon"><div class="iw-preview-unit" style="--iw-weapon-scale:' + skillScale.toFixed(3) + '"><div class="iw-float">' + weaponThumbHtml(weapon) + '</div></div></div></div>' : '';
       var slotsHtml = '';
       for (var i = 0; i < Math.max(nSlots, 1); i++) {
         var sid = lo[i], sk = sid ? MG.Skills.skillById(sid) : null;
@@ -789,6 +796,17 @@
       if (hero) put(hero.closest('.ks-case'), hero, WS.levelOf('costume', hero.getAttribute('data-team')), !photo);
     }
     new MutationObserver(function () { requestAnimationFrame(decorateEnh); }).observe(body, { childList: true });
+    function attachWeaponModels() {
+      if (!MG.WeaponModels) return;
+      body.querySelectorAll('[data-model-weapon]:not([data-model-mounted])').forEach(function (host) {
+        host.dataset.modelMounted = 'true';
+        host.closest('.iw-page').classList.add('iw-model-page');
+        var art=WEAPON_ART[host.dataset.modelWeapon];
+        host.style.transform='translate('+art[2]+'px,'+art[3]+'px)';
+        MG.WeaponModels.create(host, host.dataset.modelWeapon, {motion:'inventory'});
+      });
+    }
+    new MutationObserver(attachWeaponModels).observe(body, {childList:true,subtree:true});
 
     // V1409 C 사용자: 무기·스킬 화면 골드 묠니르도 5초마다 파란 번개(GPT 6장, 0.72초) + 그동안 뒤 색 그림자도 파란색(사용자).
     var ZAP = [1, 2, 3, 4, 5, 6].map(function (n) { return 'assets/workshop/ham-gold-zap' + n + '-v1409.webp'; });

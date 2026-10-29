@@ -37,7 +37,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@700&family=Jua&family=Lilita+One&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../cosmic-theme.css">
 <link rel="stylesheet" href="../common/settings.css">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=1509-opt1">
 <link rel="stylesheet" href="roundmap-window.css">
 <style>
   /* 로딩 스플래시 — style.css 로딩 전에도 바로 뜨게 인라인. */
@@ -868,9 +868,7 @@
         <section class="fs-scr fs-scr--costume" data-fs-screen="3" hidden>
           <div class="fs-embs">
             <button type="button" data-fs-emb="blue_bears"><img loading="lazy" decoding="async" src="assets/facestudio/emb-blue_bears.png" alt="Blue Bears"></button>
-            <button type="button" data-fs-emb="red_wings"><img loading="lazy" decoding="async" src="assets/facestudio/emb-red_wings.png" alt="Red Wings"></button>
             <button type="button" data-fs-emb="mount_stars"><img loading="lazy" decoding="async" src="assets/facestudio/emb-mount_stars.png" alt="Mount Stars"></button>
-            <button type="button" data-fs-emb="sun_giants"><img loading="lazy" decoding="async" src="assets/facestudio/emb-sun_giants.png" alt="Sun Giants"></button>
             <button type="button" data-fs-emb="cloud_cups"><img loading="lazy" decoding="async" src="assets/facestudio/emb-cloud_cups.png" alt="Cloud Cups"></button>
           </div>
           <p class="fs-cname" data-fs-cname></p>
@@ -1029,19 +1027,7 @@
       </div>
     <!-- 뽕망치 = 보드 밖(클리핑 없음) — 우측 끝 스윙이 베젤까지 다 보이게 -->
     <div id="mole-hammer-layer"></div>
-    <!-- 캐논 라운드1 인트로 전용 등장 연출(사용자 지정) — 옆면이 좌측에서 우측 대기위치로
-         이동(바퀴 회전) → 중간에 12시 방향 발사 → 기존 5포즈(a1~a5) 순환하며 정착.
-         평소 게임 중엔 hidden, game.js 가 라운드1 카운트다운에서만 잠깐 사용. -->
-    <div id="cannon-intro" aria-hidden="true" hidden>
-      <div class="ci-rig">
-        <img loading="lazy" decoding="async" class="ci-body" src="assets/weapons/cannon-intro-body-nol-v1392.png" alt="">
-        <img loading="lazy" decoding="async" class="ci-wheel ci-wheel--1" src="assets/weapons/cannon-intro-wheel-nol-v1392.png" alt="">
-        <img loading="lazy" decoding="async" class="ci-wheel ci-wheel--2" src="assets/weapons/cannon-intro-wheel-nol-v1392.png" alt="">
-        <img loading="lazy" decoding="async" class="ci-spark" src="assets/weapons/cannon-fx1.png" alt="">
-        <img loading="lazy" decoding="async" class="ci-burn" src="assets/weapons/cannon-fx4.png" alt="">
-        <img loading="lazy" decoding="async" class="ci-smoke" src="assets/weapons/cannon-fx5.png" alt="">
-      </div>
-    </div>
+    <!-- Cannon entrance uses the same live 3D actor that remains in the game. -->
     <div id="fold-hinge" aria-hidden="true"></div>
     <div class="dialpad">
       <div class="start-coach" data-start-coach>
@@ -1058,7 +1044,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1508 G</div>
+        <div id="build-tag" aria-hidden="true">V 1509 G</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1094,6 +1080,7 @@
 <script src="js/face-detect.js"></script>
 <script src="js/face-maker.js"></script>
 <script src="js/shop-scenery-v1486.js"></script>
+<script src="js/shop-models-v1509.js?v=1509-opt1"></script>
 <script src="js/shop.js"></script>
 <script src="js/daily.js"></script>
 <script src="js/quest.js"></script>
@@ -1122,7 +1109,7 @@ window.FGH.rollOut = function (el, done) {
 };
 </script>
 <script src="js/workshop-enhance.js"></script>
-<script src="js/workshop.js"></script>
+<script src="js/workshop.js?v=1509-opt1"></script>
 <script src="js/round-map-fluids.js"></script>
 <script src="js/round-map-fluid-scenes.js"></script>
 <script src="js/round-map.js"></script>
@@ -1138,14 +1125,15 @@ window.FGH.rollOut = function (el, done) {
 <script src="js/face-studio.js"></script>
 <script src="js/score-screen.js"></script>
 <script src="js/settings-screen.js"></script>
-<script src="js/inventory-screen.js"></script>
+<script src="js/inventory-screen.js?v=1509-opt1"></script>
 <script src="js/mailbox.js"></script>
 <script src="js/contact.js"></script>
 <script src="js/pop-elements.js"></script>
 <script src="js/hole-layer.js"></script>
 <script src="js/hit-fx.js"></script>
 <script src="js/lane-hammer.js"></script>
-<script src="js/lane-cannon.js"></script>
+<script src="js/lane-cannon.js?v=1509-opt1"></script>
+<script src="js/game-cannon-model-v1509.js?v=1509-opt1"></script>
 <script src="js/lane-boxing.js"></script>
 <script src="js/weapon-pool.js"></script>
 <script src="js/lane-controls.js"></script>
@@ -1342,7 +1330,7 @@ window.FGH.rollOut = function (el, done) {
         var gate = window.__moleAssetGate;
         function waitForCurrentWorker(registration) {
           return new Promise(function (resolve, reject) {
-            var latest = 'v=1508-G';
+            var latest = 'v=1509-G';
             var done = false;
             var timer = setTimeout(function () { finish(); }, 25000);
             function finish(error) {
@@ -1369,7 +1357,7 @@ window.FGH.rollOut = function (el, done) {
           console.warn('Starting while service worker registration continues in background');
           if (gate) gate.resolveCache();
         }, 30000);
-        navigator.serviceWorker.register('sw.js?v=1508-G').then(waitForCurrentWorker).then(function () {
+        navigator.serviceWorker.register('sw.js?v=1509-G').then(waitForCurrentWorker).then(function () {
           clearTimeout(registrationTimer);
           if (gate) gate.resolveCache();
         }).catch(function (error) {
