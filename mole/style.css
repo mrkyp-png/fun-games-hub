@@ -8420,17 +8420,31 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
   line-height: 1.35;
   padding-bottom: 3px;
 }
-/* Inventory tabs use the shop's weapon, skill, and costume icons without labels. */
-#inventory-screen .inv-tab:not(:last-child) .inv-tab-lbl { display:none!important; }
-#inventory-screen .inv-tab:not(:last-child) .inv-tab-ico { width:100%!important; height:100%!important; min-height:0!important; margin:0!important; }
-#inventory-screen .inv-tab:not(:last-child) .inv-tab-ico > img { width:88%!important; height:88%!important; max-width:88%!important; max-height:88%!important; }
-#inventory-screen .inv-tab:not(:last-child) .inv-tab-ico > .shop-tab-swords,
-#inventory-screen .inv-tab:not(:last-child) .inv-tab-ico > .skill-orb-icon { position:absolute!important; inset:0!important; width:100%!important; height:100%!important; }
-#inventory-screen .inv-tab:not(:last-child) .inv-tab-ico .shop-tab-sword-arm { width:80%!important; }
-#inventory-screen .inv-tab:not(:last-child) .inv-tab-ico .shop-tab-sword { width:100%!important; height:100%!important; max-width:none!important; max-height:none!important; }
-#inventory-screen .inv-tab:not(:last-child) .inv-tab-ico .shop-tab-sword-spark { width:16px; height:16px; }
-#inventory-screen .inv-tab:last-child .inv-tab-ico { width:100%!important; height:100%!important; min-height:0!important; margin:0!important; }
-#inventory-screen .inv-tab:last-child .inv-tab-ico > svg { width:88%!important; height:88%!important; max-width:88%!important; max-height:88%!important; }
+/* Icon-only inventory tabs: center each artwork within the same safe box. */
+#inventory-screen .inv-tab .inv-tab-lbl { display:none!important; }
+#inventory-screen .inv-tab .inv-tab-ico { position:relative!important; display:flex!important; flex:0 0 100%!important; align-self:stretch!important; justify-content:center!important; align-items:center!important; width:100%!important; height:100%!important; min-height:0!important; margin:0!important; overflow:hidden!important; }
+#inventory-screen .inv-tab .inv-tab-ico > img,
+#inventory-screen .inv-tab .inv-tab-ico > svg { position:relative!important; display:block!important; flex:none!important; width:92%!important; height:92%!important; max-width:92%!important; max-height:92%!important; object-fit:contain!important; }
+#inventory-screen .inv-tab .inv-tab-ico > .skill-orb-icon { position:absolute!important; inset:4%!important; display:block!important; width:auto!important; height:auto!important; }
+#inventory-screen .inv-tab .inv-tab-ico > .shop-tab-swords { position:absolute!important; inset:4%!important; display:block!important; overflow:hidden!important; transform:none!important; }
+#inventory-screen .inv-tab .shop-tab-sword-arm { position:absolute!important; top:0!important; bottom:0!important; width:88%!important; transform-origin:50% 82%!important; }
+#inventory-screen .inv-tab .shop-tab-sword--left { right:-12%!important; animation:shop-sword-left 4s ease-in-out infinite!important; }
+#inventory-screen .inv-tab .shop-tab-sword--right { left:-12%!important; animation:shop-sword-right 4s ease-in-out infinite!important; }
+#inventory-screen .inv-tab .shop-tab-swords .shop-tab-sword { position:absolute!important; inset:0!important; display:block!important; width:100%!important; height:100%!important; max-width:none!important; max-height:none!important; object-fit:contain!important; transform:none!important; }
+#inventory-screen .inv-tab .shop-tab-sword-spark { position:absolute!important; left:50%!important; top:45%!important; z-index:3!important; width:16px!important; height:16px!important; transform:translate(-50%,-50%)!important; animation:shop-sword-spark 4s linear infinite!important; }
+#inventory-screen .inv-tab .shop-tab-sword-spark::before { content:''; position:absolute; inset:-3px; background:#fff6bf; clip-path:polygon(50% 0,59% 38%,100% 50%,59% 62%,50% 100%,41% 62%,0 50%,41% 38%); }
+#inventory-screen .inv-tab:nth-child(3) .inv-tab-ico > img { animation:shop-tab-costume-colors 9s linear infinite!important; }
+#inventory-screen .inv-tab .skill-orb-icon .skill-orb-hand,
+#inventory-screen .inv-tab .skill-orb-icon .skill-orb-ring { width:100%!important; height:100%!important; }
+#inventory-screen .inv-tab:last-child .inv-tab-ico > svg { animation:photo-camera-ready 3.6s ease-in-out infinite!important; }
+#inventory-screen .inv-tab:last-child .inv-tab-ico > svg circle { transform-box:fill-box; transform-origin:center; animation:photo-shutter-click 3.6s ease-in-out infinite; }
+#inventory-screen .inv-tab:last-child .inv-tab-ico::after { content:''; position:absolute; inset:4%; pointer-events:none; opacity:0; background:radial-gradient(circle at 50% 56%,#fff 0 8%,rgba(255,248,205,.95) 14%,rgba(255,255,255,0) 44%); animation:photo-shutter-flash 3.6s linear infinite; }
+#inventory-screen[hidden] .inv-tab:last-child .inv-tab-ico * { animation-play-state:paused!important; }
+@keyframes photo-camera-ready { 0%,42%,51%,100% {transform:rotate(0) scale(1)} 46% {transform:rotate(-3deg) scale(1.04)} }
+@keyframes photo-shutter-click { 0%,43%,51%,100% {transform:scale(1);fill:#dfe8ff} 46% {transform:scale(.58);fill:#fff7c9} }
+@keyframes photo-shutter-flash { 0%,43%,49%,100% {opacity:0;transform:scale(.35)} 45% {opacity:1;transform:scale(1)} 47% {opacity:.35;transform:scale(1.12)} }
+#inventory-screen[hidden] .inv-tab-ico * { animation-play-state:paused!important; }
+@media(prefers-reduced-motion:reduce) { #inventory-screen .inv-tab .shop-tab-sword-arm,#inventory-screen .inv-tab .shop-tab-sword-spark,#inventory-screen .inv-tab:nth-child(3) .inv-tab-ico > img,#inventory-screen .inv-tab .skill-orb-icon * { animation:none!important; } }
 /* 탭 높이 증가에 맞춰 무기 간판은 6px, 큰 박스 시작점은 10px 위로. */
 #inventory-screen[data-tab="weapon"] > .inv-wsign {
   top: max(4px, calc(2.9% - 6px));
@@ -9809,12 +9823,16 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 :is(#shop-screen,#inventory-screen) .skill-orb-icon .skill-orb-hand,
 :is(#shop-screen,#inventory-screen) .skill-orb-icon .skill-orb-ring { position:absolute!important; inset:0!important; display:block!important; width:100%!important; height:100%!important; min-width:0!important; min-height:0!important; max-width:none!important; max-height:none!important; object-fit:contain!important; transform:none!important; translate:none!important; animation:none!important; filter:none!important; box-shadow:none!important; }
 :is(#shop-screen,#inventory-screen) .skill-orb-float { position:absolute; left:12.5%; top:-4.75%; width:75%; height:75%; animation:skill-orb-hover 6s ease-in-out infinite; }
-:is(#shop-screen,#inventory-screen) .skill-orb-icon .skill-orb-lightning { position:absolute; inset:0; width:100%; height:100%; fill:none; stroke:#b1eaff; stroke-width:13; stroke-linecap:round; stroke-linejoin:round; clip-path:circle(26% at 50% 45.7%); filter:drop-shadow(0 0 2px #368eff); }
-.skill-orb-bolt-a { animation:skill-orb-bolt-a 6s linear infinite; }
-.skill-orb-bolt-b { animation:skill-orb-bolt-b 6s linear infinite; }
+:is(#shop-screen,#inventory-screen) .skill-orb-rim-light { position:absolute; inset:0; z-index:2; pointer-events:none; border-radius:50%; background:conic-gradient(from 0deg,transparent 0 58%,rgba(255,255,255,.08) 64%,#fff8c7 68%,#ffe06a 71%,rgba(255,183,38,.12) 76%,transparent 82%); -webkit-mask:radial-gradient(ellipse,transparent 69%,#000 73%,#000 77%,transparent 81%); mask:radial-gradient(ellipse,transparent 69%,#000 73%,#000 77%,transparent 81%); animation:skill-orb-rim-spin 1.8s linear infinite; filter:drop-shadow(0 0 3px #ffd45e); }
+:is(#shop-screen,#inventory-screen) .skill-orb-icon .skill-orb-lightning { position:absolute; inset:0; z-index:3; width:100%; height:100%; fill:none; stroke:#b1eaff; stroke-width:13; stroke-linecap:round; stroke-linejoin:round; clip-path:circle(26% at 50% 45.7%); filter:drop-shadow(0 0 2px #368eff); }
+.skill-orb-bolt-a { animation:skill-orb-bolt-a .82s linear -0.08s infinite; }
+.skill-orb-bolt-b { animation:skill-orb-bolt-b .76s linear -0.23s infinite; }
+.skill-orb-bolt-c { animation:skill-orb-bolt-a .91s linear -0.37s infinite; }
+.skill-orb-bolt-d { animation:skill-orb-bolt-b .79s linear -0.49s infinite; }
+.skill-orb-bolt-e { animation:skill-orb-bolt-a .87s linear -0.63s infinite; }
 @keyframes skill-orb-hover { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-4%);} }
-@keyframes skill-orb-bolt-a { 0%,17%,22%,38%,43%,72%,77%,100%{opacity:0;} 18%,20%,39%,41%,73%,75%{opacity:1;} }
-@keyframes skill-orb-bolt-b { 0%,19%,24%,40%,45%,74%,79%,100%{opacity:0;} 20%,22%,41%,43%,75%,77%{opacity:.85;} }
+@keyframes skill-orb-bolt-a { 0%,100%{opacity:.12} 8%,24%{opacity:1} 38%{opacity:.75} 52%,72%{opacity:1} 86%{opacity:.55} }
+@keyframes skill-orb-bolt-b { 0%,100%{opacity:.18} 5%,19%{opacity:1} 34%{opacity:.62} 49%,69%{opacity:1} 84%{opacity:.7} }
 #inventory-screen[hidden] .skill-orb-icon * { animation-play-state:paused; }
 @media(prefers-reduced-motion:reduce){:is(#shop-screen,#inventory-screen) .skill-orb-float{animation:none;}:is(#shop-screen,#inventory-screen) .skill-orb-lightning{display:none;}}
 #game-screen.gs-weapon-enhanced .lc-model-image {filter:drop-shadow(0 4px 4px #0006) var(--weapon-glow);}
