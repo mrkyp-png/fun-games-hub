@@ -32,10 +32,10 @@
   // 하단 탭 아이콘 — 상점(shop.js)과 같은 그라디언트 입체 아이콘 재사용(사용자 지정: "동일한
   // 스타일로"). 사진 탭은 다이얼패드 "사진보관" 카메라 아이콘(lane-controls.js SVG.locker)
   // 재사용 + 같은 톤의 그라디언트만 추가.
-  var WEAPON_TAB_ICON = '<img src="assets/inventory/ui-v1379/approved-mallet-redend-v1405.webp" alt="">'; // 무기 화면 전시용 원본
+  var WEAPON_TAB_ICON = '<span class="shop-tab-swords"><span class="shop-tab-sword-arm shop-tab-sword--left"><img class="shop-tab-sword" src="assets/ui-approved-v1509/shop-tab-sword.png" alt=""></span><span class="shop-tab-sword-arm shop-tab-sword--right"><img class="shop-tab-sword" src="assets/ui-approved-v1509/shop-tab-sword.png" alt=""></span><i class="shop-tab-sword-spark" aria-hidden="true"></i></span>';
   var SKILL_TAB_ICON = '<span class="skill-orb-icon" aria-hidden="true"><img class="skill-orb-hand" src="assets/skill-tab-layers-20261030/hand-2x.png" alt=""><span class="skill-orb-float"><img class="skill-orb-ring" src="assets/skill-tab-layers-20261030/ring-matte-gold-2x.png" alt=""><svg class="skill-orb-lightning" viewBox="0 0 1254 1254"><path class="skill-orb-bolt-a" d="M408 430 550 520 485 550 675 665 627 545 710 515 580 400"/><path class="skill-orb-bolt-b" d="M830 430 730 550 780 590 610 745"/></svg></span></span>';
   // 코스튬 아이콘 = 상점과 동일한 이모지로 통일(사용자 지정: "아이템에서도 코스튬 이모지 변경").
-  var COSTUME_TAB_ICON = '<img src="assets/tabs/costume.png" alt="">';
+  var COSTUME_TAB_ICON = '<img src="assets/ui-approved-v1509/shop-tab-costume.png" alt="">';
   var PHOTO_TAB_ICON =
     '<svg viewBox="0 0 24 24">' +
     '<defs><linearGradient id="ivPhBody" x1="0" y1="0" x2="0" y2="1">' +

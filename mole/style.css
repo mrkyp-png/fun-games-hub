@@ -126,7 +126,7 @@ body { background: var(--lm-page); }
 /* Keep an empty area for the home redesign; game-round backgrounds are separate. */
 #game-screen.is-start #board-start { background:none; }
 #game-screen.is-start #mole-board { background:none!important; }
-#game-screen.is-start #mole-board { box-shadow:none!important; }
+#game-screen.is-start #mole-board { box-shadow:0 0 0 3px #ffffff,0 0 0 5px #7cc3e6,0 0 0 7px #f4fbff!important; }
 #game-screen.is-start #mole-board::before,
 #game-screen.is-start #mole-board::after { display:none!important; }
 #game-screen.is-start :is(#mole-sky,#mole-weather,#mole-emoji-img,#mole-reveal-canvas,.mole-play-stack) { display:none!important; }
@@ -8420,6 +8420,17 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
   line-height: 1.35;
   padding-bottom: 3px;
 }
+/* Inventory tabs use the shop's weapon, skill, and costume icons without labels. */
+#inventory-screen .inv-tab:not(:last-child) .inv-tab-lbl { display:none!important; }
+#inventory-screen .inv-tab:not(:last-child) .inv-tab-ico { width:100%!important; height:100%!important; min-height:0!important; margin:0!important; }
+#inventory-screen .inv-tab:not(:last-child) .inv-tab-ico > img { width:88%!important; height:88%!important; max-width:88%!important; max-height:88%!important; }
+#inventory-screen .inv-tab:not(:last-child) .inv-tab-ico > .shop-tab-swords,
+#inventory-screen .inv-tab:not(:last-child) .inv-tab-ico > .skill-orb-icon { position:absolute!important; inset:0!important; width:100%!important; height:100%!important; }
+#inventory-screen .inv-tab:not(:last-child) .inv-tab-ico .shop-tab-sword-arm { width:80%!important; }
+#inventory-screen .inv-tab:not(:last-child) .inv-tab-ico .shop-tab-sword { width:100%!important; height:100%!important; max-width:none!important; max-height:none!important; }
+#inventory-screen .inv-tab:not(:last-child) .inv-tab-ico .shop-tab-sword-spark { width:16px; height:16px; }
+#inventory-screen .inv-tab:last-child .inv-tab-ico { width:100%!important; height:100%!important; min-height:0!important; margin:0!important; }
+#inventory-screen .inv-tab:last-child .inv-tab-ico > svg { width:88%!important; height:88%!important; max-width:88%!important; max-height:88%!important; }
 /* 탭 높이 증가에 맞춰 무기 간판은 6px, 큰 박스 시작점은 10px 위로. */
 #inventory-screen[data-tab="weapon"] > .inv-wsign {
   top: max(4px, calc(2.9% - 6px));
@@ -9757,9 +9768,9 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > .inv-thumb-mirror { left:var(--kp-right,53px); margin-left:0; }
 #inventory-screen .iw-page:not(.ks-wpage)[data-weapon="alipunch"] .iw-float { animation:none; }
 #inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > img:not(.inv-thumb-mirror) { animation:iw-jab-left 2.8s ease-out infinite; }
-#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > .inv-thumb-mirror { animation:iw-jab-right 2.8s ease-out infinite; }
+#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > .inv-thumb-mirror { animation:iw-jab-right 2.8s linear infinite; }
 @keyframes iw-jab-left { 0%,6%,20%,100% {transform:rotate(var(--kp-tilt,19deg));} 10%,12% {transform:translateY(-14px) rotate(var(--kp-tilt,19deg)) scale(1.08);} }
-@keyframes iw-jab-right { 0%,22%,58%,100% {transform:rotate(calc(-1 * var(--kp-tilt,19deg))) scaleX(-1);} 30%,34%,48% {transform:rotate(0deg) scaleX(-1);} 38%,40% {transform:translateY(calc(-1 * var(--kp-straight-distance,24px))) rotate(0deg) scaleX(-1) scale(1.12);} }
+@keyframes iw-jab-right { 0%,22%,58%,100% {transform:rotate(calc(-1 * var(--kp-tilt,19deg))) scaleX(-1);} 25%,34%,48% {transform:rotate(0deg) scaleX(-1);} 28%,31% {transform:translateY(calc(-1 * var(--kp-straight-distance,24px))) rotate(0deg) scaleX(-1) scale(1.12);} }
 #inventory-screen .iw-stage[data-display-weapon="alipunch"]::after { animation:iw-jab-floor 2.8s ease-out infinite; }
 @keyframes iw-jab-floor { 0%,6%,20%,34%,48%,100% {transform:translateX(-50%) scaleX(1);opacity:.5;} 10%,12% {transform:translateX(-50%) scaleX(.96);opacity:.47;} 38%,40% {transform:translateX(-50%) scaleX(.82);opacity:.38;} }
 @media(prefers-reduced-motion:reduce){#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > img,#inventory-screen .iw-stage[data-display-weapon="alipunch"]::after{animation:none;}#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > img:not(.inv-thumb-mirror){transform:rotate(var(--kp-tilt,19deg));}#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > .inv-thumb-mirror{transform:rotate(calc(-1 * var(--kp-tilt,19deg))) scaleX(-1);}}
@@ -9792,6 +9803,9 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 .has-cannon-model .lc-body {visibility:hidden;}
 /* Fixed mole palm, slowly floating plain gold ring, lightning confined to its hole. */
 :is(#shop-screen,#inventory-screen) .skill-orb-icon { position:relative; display:block; width:100%; height:100%; overflow:visible; }
+/* The layered icon has no in-flow image to size a grid track. Anchor it to the
+   shop's existing icon slot so its percentage-sized layers cannot collapse. */
+#shop-screen .shop-tab-ico > .skill-orb-icon { position:absolute; inset:0; width:100%; height:100%; isolation:isolate; }
 :is(#shop-screen,#inventory-screen) .skill-orb-icon .skill-orb-hand,
 :is(#shop-screen,#inventory-screen) .skill-orb-icon .skill-orb-ring { position:absolute!important; inset:0!important; display:block!important; width:100%!important; height:100%!important; min-width:0!important; min-height:0!important; max-width:none!important; max-height:none!important; object-fit:contain!important; transform:none!important; translate:none!important; animation:none!important; filter:none!important; box-shadow:none!important; }
 :is(#shop-screen,#inventory-screen) .skill-orb-float { position:absolute; left:12.5%; top:-4.75%; width:75%; height:75%; animation:skill-orb-hover 6s ease-in-out infinite; }
