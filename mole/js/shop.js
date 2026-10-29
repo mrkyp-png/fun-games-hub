@@ -167,7 +167,7 @@
     var WEAPON_TAB_ICON = '<span class="shop-tab-swords"><span class="shop-tab-sword-arm shop-tab-sword--left"><img class="shop-tab-sword" src="assets/ui-approved-v1509/shop-tab-sword.png" alt=""></span><span class="shop-tab-sword-arm shop-tab-sword--right"><img class="shop-tab-sword" src="assets/ui-approved-v1509/shop-tab-sword.png" alt=""></span><i class="shop-tab-sword-spark" aria-hidden="true"></i></span>';
 
     // 스킬 탭 아이콘 — 후보 시트 #7(음양) 사용자 최종 선택, 그라디언트+하이라이트로 입체감.
-    var SKILL_TAB_ICON = '<img src="assets/tabs/skill.png" alt="">'; // 사용자 제공 이미지(v755)
+    var SKILL_TAB_ICON = '<img src="assets/ui-approved-v1509/shop-tab-skill-orb.png" alt="">';
 
     // 하단 탭 아이콘 — 이모지(사용자 지정: "이모지나 이미지 넣어야함", 참고 이미지의 하트/망치/별/옷 자리).
     var TABS = [
@@ -366,7 +366,7 @@
       var last = name.charCodeAt(name.length - 1);
       var objectMarker = last >= 0xAC00 && last <= 0xD7A3 && (last - 0xAC00) % 28 ? '을' : '를';
       var prompt = english ? 'Purchase ' + name + ' for ' + offer.price.toLocaleString('en-US') + ' coins?' :
-        offer.price.toLocaleString('en-US') + '코인으로 ' + name + objectMarker + ' 구매하시겠습니까?';
+        offer.price.toLocaleString('en-US') + ' 코인으로 ' + name + objectMarker + ' 구매하시겠습니까?';
       showFinalConfirm(prompt, null, function () { buyProduct(item.sku); });
     }
 
@@ -700,7 +700,7 @@
         name: english ? 'Ad · 100 coins' : '광고 · 100 코인', pillText: '100',
         btnHtml: '<b>' + T('mole.shop.watchAdBtn') + '</b>',
         btnDisabled: false,
-        confirmMessage: english ? 'Watch an ad to get 100 coins?' : '광고를 시청하고 100코인을 받으시겠습니까?',
+        confirmMessage: english ? 'Watch an ad to get 100 coins?' : '광고를 시청하고 100 코인을 받으시겠습니까?',
         onClick: function () {
           MG.Ads.rewarded().then(function (ok) { if (ok) { MG.Economy.addCoins(100); done(); } });
         }

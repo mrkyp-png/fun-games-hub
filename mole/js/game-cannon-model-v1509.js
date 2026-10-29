@@ -2,10 +2,10 @@
 (function(root){
 'use strict';
 let shared=null;
-const HOME={x:.87,y:.84,size:.306},CAMERA={yaw:.7,pitch:.3};
-// Projected muzzle direction is exactly 10:30 (-135deg), while retaining a diagonal 3D body.
-const REST_YAW=-.4,REST_DELTA=REST_YAW-CAMERA.yaw;
-const REST={bodyYaw:REST_YAW,pitch:Math.atan((-Math.sin(REST_DELTA)+Math.sin(CAMERA.pitch)*Math.cos(REST_DELTA))/Math.cos(CAMERA.pitch))*180/Math.PI};
+const HOME={x:.87,y:.845,size:.306},CAMERA={yaw:.7,pitch:.3};
+// Rest line follows the centers of holes 1→5→9 on the 3×3 board. Set it with world-Y rotation;
+// leave the barrel at neutral X pitch so its bore, shot origin, and muzzle effects share that line.
+const REST={bodyYaw:-1.6474,pitch:25};
 const delta=(a,b)=>Math.atan2(Math.sin(a-b),Math.cos(a-b));
 const mix=(a,b,k)=>({bodyYaw:a.bodyYaw+delta(b.bodyYaw,a.bodyYaw)*k,pitch:a.pitch+(b.pitch-a.pitch)*k});
 function acquire(screen){

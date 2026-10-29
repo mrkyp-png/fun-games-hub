@@ -9440,15 +9440,15 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-skill-visual { position:relative; flex:none; width:min(72%,calc(100cqh - 4.5em)); aspect-ratio:1; }
 #shop-screen .shop-card--sale .shop-card-badge--hero .shop-skill-visual .shop-skill-icon { position:relative!important; inset:auto!important; width:100%!important; height:100%!important; max-width:100%!important; max-height:100%!important; margin:0!important; transform:translate(var(--skill-rim-x),var(--skill-rim-y)) scale(var(--skill-rim-scale-x),var(--skill-rim-scale-y))!important; }
 #shop-screen .shop-skill-caption { box-sizing:border-box; display:flex; align-items:center; justify-content:center; width:96%; min-height:2.5em; margin:0; padding:0; font-size:3.1cqw; font-weight:700; line-height:1.25; color:#5a2e10; text-align:center; text-wrap:balance; word-break:keep-all; text-shadow:none; -webkit-text-stroke:0; }
-#shop-screen .shop-skill-product .shop-skill-caption { flex-direction:column; flex:none; font-size:1em; }
-#shop-screen .shop-skill-quantity { display:block; font-weight:900; }
+#shop-screen .shop-skill-product .shop-skill-caption { flex-direction:column; flex:none; font-size:1.08em; }
+#shop-screen .shop-skill-quantity { display:block; font-size:1.1em; font-weight:900; }
 #shop-screen .shop-skill-count-slot { position:absolute; right:0; bottom:0; width:40%; height:25%; z-index:2; }
 #shop-screen .shop-skill-count-slot .shop-skill-quantity { position:absolute; inset:0; display:flex; justify-content:center; align-items:center; }
 #shop-screen .shop-skill-caption:not(.shop-skill-caption--bundle) > span { display: flex; justify-content: center; align-items: center; white-space: nowrap; }
 #shop-screen .shop-skill-bundle-counts { display:flex!important; flex-direction:row; align-items:center; justify-content:center; gap:.3em; width:100%; white-space:nowrap; }
 #shop-screen .shop-skill-visual--bundle { width:min(88%,calc(100cqh - 4.8em)); }
 #shop-screen .shop-skill-product--bundle .shop-skill-bundle-image { display:block; width:100%!important; height:100%!important; max-width:100%!important; max-height:100%!important; aspect-ratio:1; object-fit:contain!important; margin:0; transform:none!important; }
-#shop-screen .shop-skill-product .shop-skill-caption--bundle { font-size:1.13em; min-height:3.75em; font-weight:900; }
+#shop-screen .shop-skill-product .shop-skill-caption--bundle { font-size:1em; min-height:3.75em; font-weight:900; }
 #shop-screen .shop-skill-caption--bundle span { display:block; white-space:nowrap; }
 #shop-screen .shop-card--costume .shop-card-name-box { font-size:5cqw!important; }
 #shop-screen .shop-card.shop-card--costume .shop-card-name { font-size:inherit!important; line-height:1.1!important; white-space:nowrap!important; }
@@ -9518,6 +9518,14 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-coin-bulk-art { position:absolute!important; inset:0!important; display:flex!important; align-items:center!important; justify-content:center!important; gap:1%!important; }
 #shop-screen .shop-coin-bulk-pile { display:block!important; flex:0 0 29%!important; width:29%!important; height:88%!important; max-width:29%!important; max-height:88%!important; object-fit:contain!important; }
 #shop-screen .shop-coin-bulk-pile { transform:none!important; }
+
+/* Keep the shop sign text centered in its nameplate artwork. */
+#shop-screen .shop-banner-nameplate { top:2%!important; display:flex!important; justify-content:center!important; align-items:center!important; }
+#shop-screen .shop-banner-txt { position:absolute!important; inset:0!important; display:flex!important; justify-content:center!important; align-items:center!important; width:100%!important; height:100%!important; line-height:1!important; }
+
+/* Weapon names share one title row; remove the rich-card-only vertical nudge. */
+#shop-screen .shop-card--weapon-product .shop-card-name-box,
+#shop-screen .shop-card--weapon-product .shop-card-name { transform:none!important; display:flex!important; justify-content:center!important; align-items:center!important; }
 #shop-screen .shop-coin-bulk-details { display:flex!important; flex:1 1 auto!important; flex-direction:column!important; justify-content:center!important; align-items:stretch!important; min-width:0!important; height:100%!important; }
 #shop-screen .shop-coin-bulk-summary { display:block!important; margin:0 0 1%!important; color:#6b3b0c!important; font:900 3.7cqw/1.15 'Jua',sans-serif!important; text-align:center!important; white-space:nowrap!important; }
 #shop-screen .shop-coin-bulk-rewards { display:flex!important; flex:1 1 auto!important; justify-content:space-around!important; align-items:stretch!important; gap:1.4%!important; min-height:0!important; }
@@ -9738,15 +9746,15 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 .lc-model-image {display:block;width:100%;height:100%;filter:drop-shadow(0 4px 5px #0006);}
 .lc-model-fallback {position:absolute;inset:0;width:100%;height:100%;object-fit:contain;}
 .lc-model-fallback[hidden] {display:none;}
-#shop-screen .shop-tab-swords {position:absolute;inset:0;display:block;}
-#shop-screen .shop-tab-sword-arm {position:absolute;inset:0;transform-origin:50% 75%;}
-#shop-screen .shop-tab-swords .shop-tab-sword {position:absolute;inset:0;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain;transform-origin:50% 75%;}
-#shop-screen .shop-tab-sword--left {animation:shop-sword-left 4s ease-in-out infinite;}
-#shop-screen .shop-tab-sword--right {animation:shop-sword-right 4s ease-in-out infinite;}
-@keyframes shop-sword-left {0%,43%,55%,67%,100%{transform:rotate(-36deg)}49%,61%{transform:rotate(-8deg)}}
-@keyframes shop-sword-right {0%,43%,55%,67%,100%{transform:rotate(36deg)}49%,61%{transform:rotate(8deg)}}
-#shop-screen .shop-tab-sword-spark {position:absolute;left:50%;top:28%;width:7px;height:7px;border:2px solid #fff6af;transform:translate(-50%,-50%) rotate(45deg);opacity:0;animation:shop-sword-spark 4s linear infinite;}
-@keyframes shop-sword-spark {0%,47%,53%,59%,65%,100%{opacity:0}49%,61%{opacity:1}}
-@media(prefers-reduced-motion:reduce){#shop-screen .shop-tab-sword-arm,#shop-screen .shop-tab-swords .shop-tab-sword,#shop-screen .shop-tab-sword-spark{animation:none}#shop-screen .shop-tab-sword--left{transform:rotate(-36deg)}#shop-screen .shop-tab-sword--right{transform:rotate(36deg)}}
+#shop-screen .shop-tab-swords {position:absolute;inset:0;display:block;transform:translateY(-5px);}
+#shop-screen .shop-tab-sword-arm {position:absolute;top:0;bottom:0;width:88%;transform-origin:50% 82%;}
+#shop-screen .shop-tab-sword--left {right:-12%;animation:shop-sword-left 4s ease-in-out infinite;}
+#shop-screen .shop-tab-sword--right {left:-12%;animation:shop-sword-right 4s ease-in-out infinite;}
+#shop-screen .shop-tab-swords .shop-tab-sword {position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain;transform:none!important;}
+#shop-screen .shop-tab-sword-spark {position:absolute;left:50%;top:45%;width:8px;height:8px;border:2px solid #fff6af;transform:translate(-50%,-50%) rotate(45deg) scale(.4);opacity:0;animation:shop-sword-spark 4s linear infinite;}
+@keyframes shop-sword-left {0%,38%,68%,100%{transform:rotate(-45deg)}45%,49%{transform:rotate(0)}53%,55%{transform:rotate(-52deg)}57%{transform:rotate(-30deg)}62%,68%{transform:rotate(-45deg)}}
+@keyframes shop-sword-right {0%,38%,68%,100%{transform:rotate(45deg)}45%,49%{transform:rotate(0)}53%,55%{transform:rotate(52deg)}57%{transform:rotate(30deg)}62%,68%{transform:rotate(45deg)}}
+@keyframes shop-sword-spark {0%,51%,57%,100%{opacity:0;scale:.4}53%,55%{opacity:1;scale:1.15}56%{opacity:.35;scale:.8}}
+@media(prefers-reduced-motion:reduce){#shop-screen .shop-tab-sword-arm,#shop-screen .shop-tab-sword-spark{animation:none}#shop-screen .shop-tab-sword--left{transform:rotate(-45deg)}#shop-screen .shop-tab-sword--right{transform:rotate(45deg)}}
 .has-cannon-model .lc-body {visibility:hidden;}
 #game-screen.gs-weapon-enhanced .lc-model-image {filter:drop-shadow(0 4px 4px #0006) var(--weapon-glow);}
