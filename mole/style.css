@@ -123,6 +123,14 @@ body { background: var(--lm-page); }
   background: var(--lm-chat);   /* 대화 홈 = 연한 웜그레이 (잔디는 플레이 중에만) — 이미지 로드 전 폴백 */
   overflow: hidden;
 }
+/* Keep an empty area for the home redesign; game-round backgrounds are separate. */
+#game-screen.is-start #board-start { background:none; }
+#game-screen.is-start #mole-board { background:none!important; }
+#game-screen.is-start #mole-board { box-shadow:none!important; }
+#game-screen.is-start #mole-board::before,
+#game-screen.is-start #mole-board::after { display:none!important; }
+#game-screen.is-start :is(#mole-sky,#mole-weather,#mole-emoji-img,#mole-reveal-canvas,.mole-play-stack) { display:none!important; }
+#game-screen.is-start #mole-sky * { animation:none!important; }
 /* 홈 화면 홍보 이미지 — 원본 3x3 콜라주 구도 그대로 9칸 그리드 페이지 5장(아케이드→봄→여름→
    가을→겨울)이 첫 화면 15초 대기 후부터 계속 위로 스크롤(사용자 지정, 2026-09-27). 맨 끝에
    아케이드 복제 페이지를 하나 더 붙여, 스크롤이 거기 닿는 순간 0%로 순간복귀해도 이음매가 안 보임
@@ -9274,7 +9282,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-card--coin-small,#shop-screen .shop-card--coin-ad { width:calc(100% - 1.5cqw)!important; justify-self:start!important; }
 #shop-screen .shop-card::before,#shop-screen .shop-card::after { display:none!important; }
 #shop-screen .shop-card-name-box,#shop-screen .shop-card-name { position:relative!important; inset:auto!important; display:grid!important; place-items:center!important; align-self:stretch!important; grid-row:1!important; width:100%!important; height:100%!important; min-height:0!important; max-height:none!important; margin:0!important; padding:0!important; background:none!important; border:0!important; border-radius:0!important; box-shadow:none!important; clip-path:none!important; animation:none!important; color:#491d06!important; font:900 6.3cqw/1.1 'Jua',sans-serif!important; white-space:nowrap!important; text-shadow:none!important; -webkit-text-stroke:0!important; }
-#shop-screen .shop-card:last-child .shop-card-name { font-size:4.5cqw!important; }
+#shop-screen .shop-card--blue:last-child .shop-card-name { font-size:4.5cqw!important; }
 #shop-screen .shop-product-viewport { position:relative; width:100%; height:100%; min-height:0; overflow:hidden; touch-action:pan-y; }
 #shop-screen .shop-product-preview { position:absolute!important; inset:0!important; z-index:5; pointer-events:none!important; }
 #shop-screen .shop-product-preview * { animation-play-state:paused!important; }
@@ -9320,6 +9328,8 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-tab-ico { position:relative!important; display:grid!important; place-items:center!important; justify-self:center!important; width:107px!important; height:84px!important; max-width:none!important; align-self:center!important; overflow:visible!important; flex:none!important; min-height:0!important; margin:0!important; transform:none!important; }
 #shop-screen .shop-tab-ico img { position:absolute!important; inset:50% auto auto 50%!important; width:92%!important; height:92%!important; min-width:0!important; min-height:0!important; max-width:92%!important; max-height:92%!important; object-fit:contain!important; transform:translate(-50%,-50%)!important; }
 #shop-screen .shop-tab-ico img { translate:0 0!important; }
+#shop-screen [data-shop-tab="ticket"] .shop-tab-ico { width:100%!important; max-width:107px!important; }
+#shop-screen [data-shop-tab="ticket"] .shop-tab-ico img { width:88%!important; height:88%!important; max-width:88%!important; max-height:88%!important; }
 #shop-screen [data-shop-tab="currency"] .shop-tab-ico img { animation:shop-tab-heart-beat 7s ease-in-out infinite; }
 #shop-screen .shop-tab-heart-glint { position:absolute; left:36%; top:34%; z-index:2; width:7px; height:7px; background:#fff4f8; clip-path:polygon(50% 0,60% 38%,100% 50%,60% 62%,50% 100%,40% 62%,0 50%,40% 38%); animation:shop-heart-glint 7s ease-in-out infinite; pointer-events:none; }
 #shop-screen .shop-tab-reflection .shop-coin-sweep { animation-duration:7s; opacity:.3; }
@@ -9385,8 +9395,6 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-card-badge--hero .hero-weapon-pair img { height:100%!important; max-height:100%!important; max-width:49%!important; width:auto!important; object-fit:contain!important; }
 #shop-screen .shop-card-badge--default-weapon { position:relative!important; grid-row:2!important; display:grid!important; place-items:center!important; width:100%!important; height:100%!important; min-height:0!important; margin:0!important; padding:0!important; }
 #shop-screen .shop-card-badge--default-weapon > img { width:88%!important; height:88%!important; max-width:88%!important; max-height:88%!important; object-fit:contain!important; }
-#shop-screen .shop-card.shop-card--weapon-product .shop-card-name { font-size:6.3cqw!important; }
-#shop-screen .shop-card.shop-card--weapon-product.shop-card--weapon-en .shop-card-name { font-size:3.8cqw!important; }
 /* Match the skill price coin: +20% brightness, including older coin artwork.
    The -bright20 files already contain that adjustment; do not brighten them twice. */
 #shop-screen img[src*="/coin4-"],
@@ -9435,8 +9443,6 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-card--sale .shop-sale-set img.shop-skill-icon { flex:0 0 31%!important; width:31%!important; height:auto!important; aspect-ratio:1!important; max-width:31%!important; max-height:none!important; transform:none!important; }
 #shop-screen .shop-skill-product { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.322581em; font-size:3.1cqw; container-type:size; }
 #shop-screen .shop-card--skill { min-width:0!important; }
-#shop-screen .shop-card.shop-card--skill .shop-card-name { font-size:6.3cqw!important; }
-#shop-screen .shop-card.shop-card--skill.shop-card--skill-en .shop-card-name { font-size:3.8cqw!important; }
 #shop-screen .shop-skill-visual { position:relative; flex:none; width:min(72%,calc(100cqh - 4.5em)); aspect-ratio:1; }
 #shop-screen .shop-card--sale .shop-card-badge--hero .shop-skill-visual .shop-skill-icon { position:relative!important; inset:auto!important; width:100%!important; height:100%!important; max-width:100%!important; max-height:100%!important; margin:0!important; transform:translate(var(--skill-rim-x),var(--skill-rim-y)) scale(var(--skill-rim-scale-x),var(--skill-rim-scale-y))!important; }
 #shop-screen .shop-skill-caption { box-sizing:border-box; display:flex; align-items:center; justify-content:center; width:96%; min-height:2.5em; margin:0; padding:0; font-size:3.1cqw; font-weight:700; line-height:1.25; color:#5a2e10; text-align:center; text-wrap:balance; word-break:keep-all; text-shadow:none; -webkit-text-stroke:0; }
@@ -9448,11 +9454,15 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-skill-bundle-counts { display:flex!important; flex-direction:row; align-items:center; justify-content:center; gap:.3em; width:100%; white-space:nowrap; }
 #shop-screen .shop-skill-visual--bundle { width:min(88%,calc(100cqh - 4.8em)); }
 #shop-screen .shop-skill-product--bundle .shop-skill-bundle-image { display:block; width:100%!important; height:100%!important; max-width:100%!important; max-height:100%!important; aspect-ratio:1; object-fit:contain!important; margin:0; transform:none!important; }
-#shop-screen .shop-skill-product .shop-skill-caption--bundle { font-size:1em; min-height:3.75em; font-weight:900; }
+#shop-screen .shop-skill-product .shop-skill-caption--bundle { font-size:1em; min-height:3.75em; font-weight:700; }
 #shop-screen .shop-skill-caption--bundle span { display:block; white-space:nowrap; }
-#shop-screen .shop-card--costume .shop-card-name-box { font-size:5cqw!important; }
-#shop-screen .shop-card.shop-card--costume .shop-card-name { font-size:inherit!important; line-height:1.1!important; white-space:nowrap!important; }
-#shop-screen .shop-costume-product { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.4em; font-size:2.8cqw; container-type:size; }
+/* Product headings share the costume title's size and title row. */
+#shop-screen .shop-card:not(.shop-card--blue):not(.shop-card--coin-ad) .shop-card-name-box,
+#shop-screen .shop-card:not(.shop-card--blue):not(.shop-card--coin-ad) .shop-card-name {
+  display:flex!important; justify-content:center!important; align-items:center!important;
+  font-size:5cqw!important; line-height:1.1!important; transform:none!important;
+}
+#shop-screen .shop-costume-product { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.4em; font-size:3.1cqw; container-type:size; }
 #shop-screen .shop-costume-visual { position:relative; flex:none; width:82%; height:calc(100cqh - 2.2em); }
 #shop-screen .shop-costume-visual--set { width:94%; }
 #shop-screen .shop-costume-product { --team-light:#7db6ff; isolation:isolate; }
@@ -9473,7 +9483,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
   #shop-screen .shop-weapon-motion *,#shop-screen .shop-card--weapon-product .shop-card-img-box,#shop-screen .shop-card-badge--default-weapon,#shop-screen .shop-skill-visual,#shop-screen .shop-costume-visual,#shop-screen .shop-costume-set-piece,#shop-screen .shop-costume-visual::before { animation:none!important; }
 }
 #shop-screen .shop-card--sale .shop-card-badge--hero .shop-costume-visual .shop-costume-outfit { position:relative!important; inset:auto!important; width:100%!important; height:100%!important; max-width:100%!important; max-height:100%!important; margin:0!important; }
-#shop-screen .shop-costume-effect { display:block; flex:none; width:100%; min-height:1.2em; margin:0; color:#5a2e10; font-size:1em; font-weight:700; line-height:1.2; text-align:center; white-space:nowrap; }
+#shop-screen .shop-costume-effect { display:flex; justify-content:center; align-items:center; gap:.25em; flex:none; width:100%; min-height:1.2em; margin:0; color:#5a2e10; font-size:1.08em; font-weight:700; line-height:1.2; text-align:center; white-space:nowrap; }
 #shop-screen .shop-costume-effect b { font:inherit; font-weight:900; }
 #shop-screen .shop-costume-set-art { position:absolute; left:50%; top:50%; width:94%; height:92%; transform:translate(-50%,-50%); }
 #shop-screen .shop-costume-visual--set .shop-costume-set-art { width:100%; height:100%; }
@@ -9492,29 +9502,27 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 @keyframes shop-skill-twinkle { 0%,28%,100% { opacity:0; transform:translate(-50%,-50%) scale(.2) rotate(-10deg); } 10% { opacity:1; transform:translate(-50%,-50%) scale(1) rotate(0deg); } 20% { opacity:.4; transform:translate(-50%,-50%) scale(.7) rotate(8deg); } }
 @keyframes shop-skill-targeting-twinkle { 0%,55%,100% { opacity:0; transform:translate(-50%,-50%) scale(.2) rotate(-10deg); } 14% { opacity:1; transform:translate(-50%,-50%) scale(1.15) rotate(0deg); } 32% { opacity:.8; transform:translate(-50%,-50%) scale(.85) rotate(8deg); } 46% { opacity:.15; transform:translate(-50%,-50%) scale(.35) rotate(12deg); } }
 @media (prefers-reduced-motion:reduce) { #shop-screen .shop-skill-visual .shop-skill-sparkle { animation:none; opacity:0; } }
-#shop-screen .shop-card-name-box { transform:translateY(4px)!important; }
 #shop-screen .shop-card-pill>span { display:block!important; width:max-content!important; height:auto!important; margin:0!important; padding:0!important; line-height:1!important; transform-origin:50% 50%!important; }
 #shop-screen .shop-card-btn>.shop-coins-stack[src$="coin-option-01.png"] { width:29%!important; height:92%!important; }
 #shop-screen .shop-price-group>.shop-coins-stack[src$="coin-option-01.png"] { width:calc(var(--price-icon-width) * 0.91)!important; height:calc(var(--price-icon-height) * 0.92)!important; }
 #shop-screen .shop-card--coin-bulk { grid-column:1 / -1!important; }
-#shop-screen .shop-card--coin-bulk { box-sizing:border-box!important; background:none!important; border:10px solid transparent!important; border-image:url('assets/inventory/skill-v1403/card.webp') 70 fill / 10px stretch!important; }
+#shop-screen .shop-card--coin-bulk { box-sizing:border-box!important; background:none!important; border:0!important; border-image:none!important; isolation:isolate; }
+/* Draw the reserve frame without adding a different inset to its title row. */
+#shop-screen .shop-card--coin-bulk::before { content:''; display:block!important; position:absolute; inset:0; z-index:-1; pointer-events:none; border:10px solid transparent; border-image:url('assets/inventory/skill-v1403/card.webp') 70 fill / 10px stretch; }
 #shop-screen .shop-card-btn>.shop-purchase-coin { display:block!important; flex:none!important; width:19%!important; height:66%!important; max-width:19%!important; max-height:66%!important; margin:0!important; object-fit:contain!important; }
 #shop-screen .shop-card-btn>.shop-ad-cta-icon { display:block!important; flex:none!important; width:19%!important; height:68%!important; max-width:19%!important; max-height:68%!important; margin:0!important; object-fit:contain!important; }
 #shop-screen .shop-card--coin-ad { min-width:0!important; }
 #shop-screen .shop-card--coin-ad .shop-card-name-box,
 #shop-screen .shop-card--coin-ad .shop-card-name { min-width:0!important; width:100%!important; font-size:4.1cqw!important; }
+#shop-screen .shop-card--blue .shop-card-name-box { transform:translateY(4px)!important; }
 #shop-screen .shop-coin-small-art { position:absolute!important; inset:4% 2%!important; display:flex!important; flex-direction:column!important; justify-content:center!important; align-items:center!important; gap:2%!important; }
 #shop-screen .shop-coin-small-art img { display:block!important; width:74%!important; height:72%!important; max-width:74%!important; max-height:72%!important; object-fit:contain!important; }
 #shop-screen .shop-coin-small-art>b { display:block!important; color:#6b3b0c!important; font:900 3.7cqw/1 'Jua',sans-serif!important; white-space:nowrap!important; }
-#shop-screen .shop-card.shop-card--coin-small .shop-card-name,#shop-screen .shop-card.shop-card--coin-bulk .shop-card-name { font-size:5cqw!important; }
-/* Compensate for the reserve card's two 10px borders in its 20% price row. */
-#shop-screen .shop-card--coin-bulk { grid-template-rows:16% minmax(0,1fr) calc(20% + 4px)!important; }
 #shop-screen .shop-card--coin-bulk .shop-card-btn { display:flex!important; gap:5.5%!important; width:49.2cqw!important; height:11.2cqw!important; justify-self:center!important; }
 /* Keep the starter's 128px end caps; stretch only the middle of the 512px art. */
 #shop-screen .shop-card--coin-small .shop-card-btn::before,#shop-screen .shop-card--coin-bulk .shop-card-btn::before { background:none!important; border:0 solid transparent!important; border-image:url('assets/inventory/ui-v1379/equip-pill-transparent.webp') 0 128 fill / 0 9.3cqw / 0 stretch!important; border-radius:0!important; overflow:visible!important; }
 #shop-screen .shop-card--coin-bulk .shop-card-btn del { font-size:.7em!important; opacity:.72!important; }
 #shop-screen .shop-card--ticket-small .shop-card-btn,#shop-screen .shop-card--ticket-bulk .shop-card-btn { gap:1%!important; font-size:3.1cqw!important; }
-#shop-screen .shop-card.shop-card--ticket-small .shop-card-name { font-size:5cqw!important; }
 #shop-screen .shop-coin-bulk-art { position:absolute!important; inset:0!important; display:flex!important; align-items:center!important; justify-content:center!important; gap:1%!important; }
 #shop-screen .shop-coin-bulk-pile { display:block!important; flex:0 0 29%!important; width:29%!important; height:88%!important; max-width:29%!important; max-height:88%!important; object-fit:contain!important; }
 #shop-screen .shop-coin-bulk-pile { transform:none!important; }
@@ -9522,6 +9530,8 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* Keep the shop sign text centered in its nameplate artwork. */
 #shop-screen .shop-banner-nameplate { top:2%!important; display:flex!important; justify-content:center!important; align-items:center!important; }
 #shop-screen .shop-banner-txt { position:absolute!important; inset:0!important; display:flex!important; justify-content:center!important; align-items:center!important; width:100%!important; height:100%!important; line-height:1!important; }
+#shop-screen .shop-sign-label { display:block; flex:none; overflow:visible; font:inherit; }
+#shop-screen .shop-sign-label text { font:inherit; fill:currentColor; }
 
 /* Weapon names share one title row; remove the rich-card-only vertical nudge. */
 #shop-screen .shop-card--weapon-product .shop-card-name-box,
@@ -9725,12 +9735,34 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* Shared sharp model previews; use the same geometry and pixel density on item screens. */
 .inv-weapon-model { position:relative; width:120px; height:110px; }
 .inv-weapon-model > img { width:100%; height:100%; object-fit:contain; }
+.inv-weapon-model > img { visibility:hidden; }
+.inv-weapon-model[data-model-error]:not(.shop-model-ready) > img { visibility:visible; }
 .inv-weapon-model.shop-model-ready > img { visibility:hidden; }
 .inv-weapon-model > .shop-model-canvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
 .iw-model-page .iw-float { animation:none; }
 .iw-model-page:not(.ks-wpage)[data-weapon="goldhammer"] .iw-weapon { transform:translateY(80px); }
 .ks-wpage.iw-model-page .iw-weapon {transform:none;}
 .iw-model-page.has-enh .shop-model-canvas { filter:var(--weapon-glow,none); }
+/* Inventory shadows follow the current model silhouette and projected footprint. */
+#inventory-screen .iw-model-page::before,
+#inventory-screen .iw-page:not(.ks-wpage)[data-weapon="alipunch"]::before { display:none; }
+#inventory-screen .iw-model-page .shop-model-canvas { filter:drop-shadow(0 0 4px rgba(var(--iw-glow),.38)) drop-shadow(0 0 8px rgba(var(--iw-glow),.2)); }
+#inventory-screen .iw-stage::after { left:calc(134px + var(--iw-floor-x,250px)); width:var(--iw-floor-width,300px); opacity:var(--iw-floor-opacity,.5); transform:translateX(-50%); animation:none; }
+#inventory-screen .ks-case:has(.iw-model-page)::after { left:var(--iw-floor-x,50%); width:var(--iw-floor-width,240px); margin-left:0; opacity:var(--iw-floor-opacity,.5); transform:translateX(-50%); animation:none; }
+/* Forward jabs keep each glove on its own side instead of bumping together. */
+#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > img { transform-origin:50% 70%; filter:drop-shadow(0 0 4px rgba(var(--iw-glow),.4)); }
+#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair { display:block; gap:0; }
+#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > img { position:absolute; top:0; margin:0; }
+#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > img:not(.inv-thumb-mirror) { left:var(--kp-left,6px); }
+#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > .inv-thumb-mirror { left:var(--kp-right,53px); margin-left:0; }
+#inventory-screen .iw-page:not(.ks-wpage)[data-weapon="alipunch"] .iw-float { animation:none; }
+#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > img:not(.inv-thumb-mirror) { animation:iw-jab-left 2.8s ease-out infinite; }
+#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > .inv-thumb-mirror { animation:iw-jab-right 2.8s ease-out infinite; }
+@keyframes iw-jab-left { 0%,6%,20%,100% {transform:rotate(var(--kp-tilt,19deg));} 10%,12% {transform:translateY(-14px) rotate(var(--kp-tilt,19deg)) scale(1.08);} }
+@keyframes iw-jab-right { 0%,22%,58%,100% {transform:rotate(calc(-1 * var(--kp-tilt,19deg))) scaleX(-1);} 30%,34%,48% {transform:rotate(0deg) scaleX(-1);} 38%,40% {transform:translateY(calc(-1 * var(--kp-straight-distance,24px))) rotate(0deg) scaleX(-1) scale(1.12);} }
+#inventory-screen .iw-stage[data-display-weapon="alipunch"]::after { animation:iw-jab-floor 2.8s ease-out infinite; }
+@keyframes iw-jab-floor { 0%,6%,20%,34%,48%,100% {transform:translateX(-50%) scaleX(1);opacity:.5;} 10%,12% {transform:translateX(-50%) scaleX(.96);opacity:.47;} 38%,40% {transform:translateX(-50%) scaleX(.82);opacity:.38;} }
+@media(prefers-reduced-motion:reduce){#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > img,#inventory-screen .iw-stage[data-display-weapon="alipunch"]::after{animation:none;}#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > img:not(.inv-thumb-mirror){transform:rotate(var(--kp-tilt,19deg));}#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > .inv-thumb-mirror{transform:rotate(calc(-1 * var(--kp-tilt,19deg))) scaleX(-1);}}
 .ws-item img[src*="weapon-stills-v1509"] { position:absolute; left:var(--disc-x); top:var(--disc-y); height:85%; width:auto; max-width:94%; max-height:85%; translate:-50% -100%; transform-origin:50% 95%; }
 .ws-item img[src*="weapon-stills-v1509/cannon-front"] { animation:ws-cannon-recoil 1.4s ease-out infinite; }
 .ws-item img[src*="weapon-stills-v1509/goldhammer-15"] { animation:ws-model-gold-bounce 2.4s ease-in-out infinite; }
@@ -9751,10 +9783,24 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-tab-sword--left {right:-12%;animation:shop-sword-left 4s ease-in-out infinite;}
 #shop-screen .shop-tab-sword--right {left:-12%;animation:shop-sword-right 4s ease-in-out infinite;}
 #shop-screen .shop-tab-swords .shop-tab-sword {position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain;transform:none!important;}
-#shop-screen .shop-tab-sword-spark {position:absolute;left:50%;top:45%;width:8px;height:8px;border:2px solid #fff6af;transform:translate(-50%,-50%) rotate(45deg) scale(.4);opacity:0;animation:shop-sword-spark 4s linear infinite;}
+#shop-screen .shop-tab-sword-spark {position:absolute;left:50%;top:45%;z-index:3;width:16px;height:16px;border:0;pointer-events:none;background:radial-gradient(circle,#fff 0 18%,#fff6af 30%,#ffd04a 58%,transparent 72%);transform:translate(-50%,-50%);opacity:0;filter:drop-shadow(0 0 3px #ffe473);animation:shop-sword-spark 4s linear infinite;}
+#shop-screen .shop-tab-sword-spark::before {content:'';position:absolute;inset:-3px;background:#fff6bf;clip-path:polygon(50% 0,59% 38%,100% 50%,59% 62%,50% 100%,41% 62%,0 50%,41% 38%);}
 @keyframes shop-sword-left {0%,38%,68%,100%{transform:rotate(-45deg)}45%,49%{transform:rotate(0)}53%,55%{transform:rotate(-52deg)}57%{transform:rotate(-30deg)}62%,68%{transform:rotate(-45deg)}}
 @keyframes shop-sword-right {0%,38%,68%,100%{transform:rotate(45deg)}45%,49%{transform:rotate(0)}53%,55%{transform:rotate(52deg)}57%{transform:rotate(30deg)}62%,68%{transform:rotate(45deg)}}
-@keyframes shop-sword-spark {0%,51%,57%,100%{opacity:0;scale:.4}53%,55%{opacity:1;scale:1.15}56%{opacity:.35;scale:.8}}
+@keyframes shop-sword-spark {0%,49%,58%,100%{opacity:0;scale:.2}50%,53%{opacity:1;scale:1.15}55%{opacity:.65;scale:.9}57%{opacity:0;scale:.4}}
 @media(prefers-reduced-motion:reduce){#shop-screen .shop-tab-sword-arm,#shop-screen .shop-tab-sword-spark{animation:none}#shop-screen .shop-tab-sword--left{transform:rotate(-45deg)}#shop-screen .shop-tab-sword--right{transform:rotate(45deg)}}
 .has-cannon-model .lc-body {visibility:hidden;}
+/* Fixed mole palm, slowly floating plain gold ring, lightning confined to its hole. */
+:is(#shop-screen,#inventory-screen) .skill-orb-icon { position:relative; display:block; width:100%; height:100%; overflow:visible; }
+:is(#shop-screen,#inventory-screen) .skill-orb-icon .skill-orb-hand,
+:is(#shop-screen,#inventory-screen) .skill-orb-icon .skill-orb-ring { position:absolute!important; inset:0!important; display:block!important; width:100%!important; height:100%!important; min-width:0!important; min-height:0!important; max-width:none!important; max-height:none!important; object-fit:contain!important; transform:none!important; translate:none!important; animation:none!important; filter:none!important; box-shadow:none!important; }
+:is(#shop-screen,#inventory-screen) .skill-orb-float { position:absolute; left:12.5%; top:-4.75%; width:75%; height:75%; animation:skill-orb-hover 6s ease-in-out infinite; }
+:is(#shop-screen,#inventory-screen) .skill-orb-icon .skill-orb-lightning { position:absolute; inset:0; width:100%; height:100%; fill:none; stroke:#b1eaff; stroke-width:13; stroke-linecap:round; stroke-linejoin:round; clip-path:circle(26% at 50% 45.7%); filter:drop-shadow(0 0 2px #368eff); }
+.skill-orb-bolt-a { animation:skill-orb-bolt-a 6s linear infinite; }
+.skill-orb-bolt-b { animation:skill-orb-bolt-b 6s linear infinite; }
+@keyframes skill-orb-hover { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-4%);} }
+@keyframes skill-orb-bolt-a { 0%,17%,22%,38%,43%,72%,77%,100%{opacity:0;} 18%,20%,39%,41%,73%,75%{opacity:1;} }
+@keyframes skill-orb-bolt-b { 0%,19%,24%,40%,45%,74%,79%,100%{opacity:0;} 20%,22%,41%,43%,75%,77%{opacity:.85;} }
+#inventory-screen[hidden] .skill-orb-icon * { animation-play-state:paused; }
+@media(prefers-reduced-motion:reduce){:is(#shop-screen,#inventory-screen) .skill-orb-float{animation:none;}:is(#shop-screen,#inventory-screen) .skill-orb-lightning{display:none;}}
 #game-screen.gs-weapon-enhanced .lc-model-image {filter:drop-shadow(0 4px 4px #0006) var(--weapon-glow);}

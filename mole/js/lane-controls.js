@@ -388,19 +388,21 @@
     function setHudStat(kind, value) {
       const b = faces.findIndex((f) => f && f.hud === kind);
       const el = b > -1 && buttons[b] && buttons[b].querySelector('.lane-hud-n');
-      if (el) { el.textContent = String(value); fitHomeBalance(el); }
+      if (el) { el.textContent = String(value); fitHomeBalances(); }
     }
 
     const balanceMeasure = document.createElement('canvas').getContext('2d');
-    function fitHomeBalance(label) {
-      const host = label.closest('.h2-balance-text');
+    function fitHomeBalances() {
+      const labels = Array.from(buttons).flatMap(button => Array.from(button.querySelectorAll('.h2-balance-text .lane-hud-n')));
+      const ticket = labels.find(label => label.dataset.hud === 'tickets');
+      const host = ticket && ticket.closest('.h2-balance-text');
       if (!host || !host.clientWidth || !host.clientHeight || !balanceMeasure) return;
-      const style = getComputedStyle(label), size = Math.min(26, host.clientHeight * .85);
+      const style = getComputedStyle(ticket), size = Math.min(26, host.clientHeight * .85);
       balanceMeasure.font = style.fontWeight + ' ' + size + 'px ' + style.fontFamily;
-      const width = balanceMeasure.measureText(label.textContent).width;
-      label.style.fontSize = Math.floor(Math.min(size, width ? size * host.clientWidth / width : size) * 10) / 10 + 'px';
+      const width = balanceMeasure.measureText(ticket.textContent).width;
+      const fontSize = Math.floor(Math.min(size, width ? size * host.clientWidth / width : size) * 10) / 10 + 'px';
+      labels.forEach(label => { label.style.fontSize = fontSize; });
     }
-    function fitHomeBalances() { buttons.forEach(b => b.querySelectorAll('.h2-balance-text .lane-hud-n').forEach(fitHomeBalance)); }
     root.addEventListener('resize', fitHomeBalances);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitHomeBalances);
 

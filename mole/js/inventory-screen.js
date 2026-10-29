@@ -33,7 +33,7 @@
   // 스타일로"). 사진 탭은 다이얼패드 "사진보관" 카메라 아이콘(lane-controls.js SVG.locker)
   // 재사용 + 같은 톤의 그라디언트만 추가.
   var WEAPON_TAB_ICON = '<img src="assets/inventory/ui-v1379/approved-mallet-redend-v1405.webp" alt="">'; // 무기 화면 전시용 원본
-  var SKILL_TAB_ICON = '<img src="assets/tabs/skill.png" alt="">'; // 사용자 제공 이미지(v755)
+  var SKILL_TAB_ICON = '<span class="skill-orb-icon" aria-hidden="true"><img class="skill-orb-hand" src="assets/skill-tab-layers-20261030/hand-2x.png" alt=""><span class="skill-orb-float"><img class="skill-orb-ring" src="assets/skill-tab-layers-20261030/ring-matte-gold-2x.png" alt=""><svg class="skill-orb-lightning" viewBox="0 0 1254 1254"><path class="skill-orb-bolt-a" d="M408 430 550 520 485 550 675 665 627 545 710 515 580 400"/><path class="skill-orb-bolt-b" d="M830 430 730 550 780 590 610 745"/></svg></span></span>';
   // 코스튬 아이콘 = 상점과 동일한 이모지로 통일(사용자 지정: "아이템에서도 코스튬 이모지 변경").
   var COSTUME_TAB_ICON = '<img src="assets/tabs/costume.png" alt="">';
   var PHOTO_TAB_ICON =
@@ -127,12 +127,12 @@
         }
       }
     }
-    function syncWeaponCopy() {
+    function syncWeaponCopy(force) {
       var layer = body.querySelector('.iw-copy-layer');
       if (!layer || active !== 'weapon') return;
       var w = WEAPONS[pageIdx];
       clearTimeout(copyTimer);
-      if (layer.dataset.weapon === w.id) { layer.classList.remove('is-fading'); layer.inert = false; return; }
+      if (!force && layer.dataset.weapon === w.id) { layer.classList.remove('is-fading'); layer.inert = false; return; }
       function apply() {
         if (!layer.isConnected || active !== 'weapon') return;
         layer.dataset.weapon = w.id; layer.dataset.grade = w.rarity;
@@ -154,13 +154,10 @@
         layer.classList.remove('is-fading'); layer.inert = false;
         requestAnimationFrame(fitLefts);
       }
-      if (!layer.dataset.weapon || root.matchMedia('(prefers-reduced-motion: reduce)').matches) apply();
+      if (force || !layer.dataset.weapon || root.matchMedia('(prefers-reduced-motion: reduce)').matches) apply();
       else { layer.classList.add('is-fading'); layer.inert = true; copyTimer = setTimeout(apply, 120); }
     }
-    // renderWeapons() 가 매번 grid 를 통째로 새로 만들기 때문에(body.innerHTML), 장착 버튼을
-    // 눌러 재렌더될 때도 새 grid 는 항상 scrollLeft=0 에서 시작 — pageIdx 는 그대로 두고
-    // 즉시(비-스무스) 그 위치로 복원해야 "장착 누르면 뿅망치 화면으로 튕김" 버그가 안 생긴다
-    // (사용자 보고: "장착 버튼 누르면 뿅망치 화면나오고 장착이 안됨"). 탭 전환일 때만 0으로.
+    // Fresh renders restore the current page. Equipping only changes state, preserving preview nodes.
     function fitStatLines() {
       body.querySelectorAll('.inv-stat-line').forEach(function (ln) {
         ln.style.transform = ''; // V1379 G: 설명 값은 가로로 찌그러뜨리지 않고 줄바꿈.
@@ -194,6 +191,7 @@
         pageIdx = idx;
         syncDots();
       }
+      queueWeaponRefresh();
     }, true);
 
     // 사용자: 무기·스킬 탭은 다른 탭에서 들어와도 항상 장착된 무기부터 보여줌
@@ -222,14 +220,13 @@
     // V1403 C: 무기 화면·스킬 탭이 같은 무기 연출(애니메이션) 공유
     // Union of actual opaque model bounds over yaw, bounce, recoil and strike poses.
     var WEAPON_ART = {hammer:[89,84.5,-4.5,4.75],cannon:[81,84,0,-.5],goldhammer:[86,95,-4.5,4.5],alipunch:[88,63,0,0]};
-    function weaponThumbHtml(w) {
+    function weaponThumbHtml(w, skillPreview) {
       if (MG.WeaponModels && w.id !== 'alipunch') return '<div class="inv-weapon-model" data-model-weapon="' + w.id + '"><img alt="" src="' + w.thumb + '"></div>';
-        // 알리 펀치 = 좌/우 글러브 한 쌍(오른쪽은 왼쪽 이미지 거울상 — 실제 게임과 동일, §1).
-        // 강조 애니메이션(사용자 지시): 두 글러브가 2번 맞부딪히고, 2번째에 스파크+"POWER UP" 표시.
+        // King Punch keeps the original gloves; inventory uses alternating forward jabs.
       return w.id === 'alipunch'
           ? '<div class="inv-thumb inv-thumb--pair"><img alt="" src="' + w.thumb + '">' +
             '<img alt="" class="inv-thumb-mirror" src="' + w.thumb + '">' +
-            '<span class="inv-bump-spark">✨</span><span class="inv-bump-word">POWER UP</span></div>'
+            (skillPreview ? '<span class="inv-bump-spark">✨</span><span class="inv-bump-word">POWER UP</span>' : '') + '</div>'
           // 캐논 강조 애니메이션(사용자 지시): 포신 반동 + 실제 게임 화염·연기 스프라이트 재사용.
           : w.id === 'cannon'
           ? '<div class="inv-thumb inv-thumb--cannon"><img alt="" src="' + w.thumb + '">' +
@@ -250,6 +247,16 @@
               '</svg>' +
               '<span class="inv-hammer-word">QUAKE!</span>'
             : '') + '</div>';
+    }
+    function equipSelectedWeapon() {
+      if (opts.gameInProgress && opts.gameInProgress()) return false;
+      var weapon = WEAPONS[pageIdx];
+      if (!weapon || !MG.ItemInventory.equipWeapon(weapon.id, false)) return false;
+      body.querySelectorAll('.iw-pages > .iw-page').forEach(function (page) {
+        page.classList.toggle('iw-page--on', page.dataset.weapon === weapon.id);
+      });
+      syncWeaponCopy(true);
+      return true;
     }
     function renderWeapons() {
       var cur = equipped();
@@ -276,7 +283,7 @@
       copy.querySelector('.iw-help').addEventListener('click', function () { openWeaponHelp(WEAPONS[pageIdx], this); });
       copy.querySelector('.iw-equip').addEventListener('click', function () {
         if (copy.inert || (opts.gameInProgress && opts.gameInProgress())) return;
-        if (MG.ItemInventory.equipWeapon(WEAPONS[pageIdx].id, false)) renderWeapons();
+        equipSelectedWeapon();
       });
       updateDots();
       requestAnimationFrame(function () { fitLefts(); fitRights(); });
@@ -373,6 +380,24 @@
       el.appendChild(dialog); weaponHelp = dialog; trigger.setAttribute('aria-expanded','true'); dialog.showModal(); close.focus();
     }
     function fitRights() { fitLefts(); }
+    function fitKingWeapon(page, stageScale) {
+      if (page.classList.contains('ks-wpage')) return;
+      var unit = page.querySelector('.iw-preview-unit'), right = page.querySelector('.inv-thumb-mirror');
+      if (!unit || !right) return;
+      var weaponScale = parseFloat(unit.style.getPropertyValue('--iw-weapon-scale')) || 1;
+      var inset = Math.max(8, 2 / Math.max(stageScale, .01));
+      // Measured from this glove's actual alpha over every turn and punch pose.
+      page.style.setProperty('--kp-left', (60 - (page.clientWidth / 2 - inset) / weaponScale - 6.084886) + 'px');
+      page.style.setProperty('--kp-right', (60 + (page.clientWidth / 2 - inset) / weaponScale - 55.12) + 'px');
+      var grade = body.querySelector('.iw-grade');
+      var rect = unit.getBoundingClientRect(), displayScale = rect.height / Math.max(1, unit.clientHeight);
+      if (!grade || !displayScale) return;
+      var gradeRect = grade.getBoundingClientRect(), decoration = getComputedStyle(grade, '::before');
+      var gradeBottom = Math.max(gradeRect.bottom, gradeRect.top + ((parseFloat(decoration.top) || 0) + (parseFloat(decoration.height) || 0)) * stageScale);
+      var strikeTop = rect.top + (right.offsetTop + 9.73952) * displayScale;
+      var clearance = 3 + 4 * displayScale;
+      page.style.setProperty('--kp-straight-distance', Math.max(0, (strikeTop - gradeBottom - clearance) / displayScale).toFixed(2) + 'px');
+    }
     function fitLefts() {
       if (active !== 'weapon') return;
       var mount = body.querySelector('.iw-mount');
@@ -388,9 +413,10 @@
       fitWeaponName();
       // Visible alpha bounds in the canonical 120 x 88 animation coordinate system.
       var art = WEAPON_ART;
-      body.querySelectorAll('.iw-page').forEach(function (page) {
+      body.querySelectorAll('.iw-pages > .iw-page[data-weapon]').forEach(function (page) {
         var a = art[page.dataset.weapon];
         var unit = page.querySelector('.iw-preview-unit');
+        if (!a || !unit || !page.isConnected) return;
         var sc = Math.min(440/a[0], 490/a[1]) * ({hammer:.9,cannon:1.15*.9,goldhammer:.9}[page.dataset.weapon]||1);
         unit.style.setProperty('--iw-weapon-scale', sc);
         page.style.setProperty('--iw-weapon-scale', sc); // 뒤 빛이 무기와 같은 거리로 움직이게
@@ -398,7 +424,9 @@
         if (legacyThumb) legacyThumb.style.transform = 'translate(' + a[2] + 'px,' + a[3] + 'px)';
         var modelHost = page.querySelector('.inv-weapon-model');
         if(modelHost)modelHost.style.transform='translate('+a[2]+'px,'+a[3]+'px)';
+        if (page.dataset.weapon === 'alipunch') fitKingWeapon(page, scale);
       });
+      queueWeaponRefresh();
       body.querySelectorAll('.iw-stat-title,.iw-stat-label,.iw-stat-value,.iw-equip,.iw-grade').forEach(function (label) {
         var grade=label.classList.contains('iw-grade');
         var statLabel=label.classList.contains('iw-stat-label');
@@ -518,8 +546,8 @@
       var en = I18N.lang === 'en';
       // 사용자: 스킬 탭 무기 = 무기 화면 무기와 세트(같은 연출·빛·바닥 그림자), 조금 작게.
       var a = weapon ? WEAPON_ART[weapon.id] : null;
-      var skillScale = weapon ? (weapon.id==='alipunch'?Math.min(440/a[0],490/a[1])*.62:Math.min(440/a[0],360/a[1])*(weapon.id==='cannon'?1.05:1)) : 1;
-      var thumb = weapon ? '<div class="iw-page ks-wpage" data-weapon="' + weapon.id + '" data-grade="' + weapon.rarity + '" style="--iw-weapon-scale:' + skillScale.toFixed(3) + '"><div class="iw-weapon"><div class="iw-preview-unit" style="--iw-weapon-scale:' + skillScale.toFixed(3) + '"><div class="iw-float">' + weaponThumbHtml(weapon) + '</div></div></div></div>' : '';
+      var skillScale = weapon ? (weapon.id==='alipunch'?Math.min(440/a[0],490/a[1])*.62:Math.min(440/a[0],360/a[1])*(weapon.id==='cannon'?1.05:1)*.9) : 1;
+      var thumb = weapon ? '<div class="iw-page ks-wpage" data-weapon="' + weapon.id + '" data-grade="' + weapon.rarity + '" style="--iw-weapon-scale:' + skillScale.toFixed(3) + '"><div class="iw-weapon"><div class="iw-preview-unit" style="--iw-weapon-scale:' + skillScale.toFixed(3) + '"><div class="iw-float">' + weaponThumbHtml(weapon, true) + '</div></div></div></div>' : '';
       var slotsHtml = '';
       for (var i = 0; i < Math.max(nSlots, 1); i++) {
         var sid = lo[i], sk = sid ? MG.Skills.skillById(sid) : null;
@@ -796,15 +824,58 @@
       if (hero) put(hero.closest('.ks-case'), hero, WS.levelOf('costume', hero.getAttribute('data-team')), !photo);
     }
     new MutationObserver(function () { requestAnimationFrame(decorateEnh); }).observe(body, { childList: true });
+    var weaponRefreshFrame = 0;
+    function queueWeaponRefresh() {
+      if (weaponRefreshFrame) return;
+      weaponRefreshFrame = requestAnimationFrame(function () {
+        weaponRefreshFrame = 0;
+        if (el.hidden) return;
+        if (MG.WeaponModels && MG.WeaponModels.refreshWithin) MG.WeaponModels.refreshWithin(body);
+        var page = body.querySelector('.iw-pages > .iw-page[data-weapon="' + ((WEAPONS[pageIdx] || {}).id || '') + '"]');
+        var stage = body.querySelector('.iw-stage');
+        if (stage && page) {
+          stage.dataset.displayWeapon = page.dataset.weapon;
+          ['--iw-floor-x','--iw-floor-width','--iw-floor-opacity'].forEach(function (key) {
+            var value = page.style.getPropertyValue(key);
+            if (value) stage.style.setProperty(key, value); else stage.style.removeProperty(key);
+          });
+        }
+      });
+    }
+    function updateModelShadow(host, frame) {
+      var page = host.closest('.iw-page');
+      if (!page || !host.isConnected) return;
+      var unit = page.querySelector('.iw-preview-unit');
+      if (!unit) return;
+      var scale = parseFloat(unit.style.getPropertyValue('--iw-weapon-scale')) || 1;
+      var art = WEAPON_ART[host.dataset.modelWeapon];
+      var center = page.clientWidth / 2 + (art[2] + ((frame.left + frame.right) / 2 - .5) * 120) * scale;
+      var width = Math.max(70, Math.min(page.clientWidth * .8, (frame.right - frame.left) * 120 * scale * .75));
+      var opacity = Math.max(.25, Math.min(.65, .5 - frame.hop * 4 + frame.recoil * .1));
+      page.style.setProperty('--iw-floor-x', center + 'px');
+      page.style.setProperty('--iw-floor-width', width + 'px');
+      page.style.setProperty('--iw-floor-opacity', opacity);
+      var target = page.classList.contains('ks-wpage') ? page.closest('.ks-case') :
+        (WEAPONS[pageIdx] || {}).id === page.dataset.weapon ? page.closest('.iw-stage') : null;
+      if (!target) return;
+      target.style.setProperty('--iw-floor-x', (page.classList.contains('ks-wpage') ? page.offsetLeft + center : center) + 'px');
+      target.style.setProperty('--iw-floor-width', width + 'px');
+      target.style.setProperty('--iw-floor-opacity', opacity);
+      if (!page.classList.contains('ks-wpage')) target.dataset.displayWeapon = page.dataset.weapon;
+    }
     function attachWeaponModels() {
       if (!MG.WeaponModels) return;
       body.querySelectorAll('[data-model-weapon]:not([data-model-mounted])').forEach(function (host) {
+        var page = host.closest('.iw-page'), art=WEAPON_ART[host.dataset.modelWeapon];
+        if (!page || !art || !host.isConnected) return;
         host.dataset.modelMounted = 'true';
-        host.closest('.iw-page').classList.add('iw-model-page');
-        var art=WEAPON_ART[host.dataset.modelWeapon];
+        page.classList.add('iw-model-page');
         host.style.transform='translate('+art[2]+'px,'+art[3]+'px)';
-        MG.WeaponModels.create(host, host.dataset.modelWeapon, {motion:'inventory'});
+        MG.WeaponModels.create(host, host.dataset.modelWeapon, {
+          motion:'inventory', onFrame:function (frame) { updateModelShadow(host, frame); }
+        });
       });
+      queueWeaponRefresh();
     }
     new MutationObserver(attachWeaponModels).observe(body, {childList:true,subtree:true});
 
@@ -814,8 +885,11 @@
     setInterval(function () {
       if (el.hidden || (active !== 'weapon' && active !== 'skill')) return;
       if (!MG.Workshop || MG.Workshop.weaponLevel('goldhammer') <= 0) return;
+      var sprites = Array.from(el.querySelectorAll('.iw-page[data-weapon="goldhammer"] img[src*="goldpaw-v1382"]')).filter(function (img) { return !img.closest('.inv-weapon-model'); });
+      if (!sprites.length) return;
       if (!zapKeep.length) ZAP.forEach(function (u) { var i = new Image(); i.src = u; zapKeep.push(i); });
-      el.querySelectorAll('.iw-page[data-weapon="goldhammer"] img[src*="goldpaw-v1382"]').forEach(function (img) {
+      // The WebGL preview owns its own lightning; never pulse its hidden sprite/backlight.
+      sprites.forEach(function (img) {
         if (img._zap) return;
         var page = img.closest('.iw-page'), orig = img.getAttribute('src'), k = 0; img._zap = true; page.classList.add('is-zap');
         (function step() {

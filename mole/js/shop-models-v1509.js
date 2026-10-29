@@ -27,6 +27,8 @@ function projectPoint(m,p){const q=m[3]*p[0]+m[7]*p[1]+m[11]*p[2]+m[15];return {
 function orthographic(half,aspect,near,far){const m=identity();m[0]=1/(half*aspect);m[5]=1/half;m[10]=-2/(far-near);m[14]=-(far+near)/(far-near);return m;}
 // Same idle cadence as lane-hammer.js: 2.5s wait, two hops in 0.5s, every 3.2s.
 const HAMMER_IDLE={delay:2500,cycle:3200,duration:500};
+const INVENTORY_CANNON={wait:600,recoil:200,turn:300};
+function inventoryCannonPose(elapsed){const {wait,recoil,turn}=INVENTORY_CANNON,step=wait*2+recoil+turn,half=Math.floor(elapsed/step),age=elapsed-half*step,k=Math.max(0,Math.min(1,(age-wait*2-recoil)/turn));return {yaw:(half+k*k*(3-2*k))*Math.PI,step,first:wait};}
 function strikeLightning(gl){
  const vs=gl.createShader(gl.VERTEX_SHADER);gl.shaderSource(vs,'attribute vec3 aPosition;void main(){gl_Position=vec4(aPosition,1.0);}');gl.compileShader(vs);
  const fs=gl.createShader(gl.FRAGMENT_SHADER);gl.shaderSource(fs,'precision highp float;uniform vec4 uColor;void main(){gl_FragColor=uColor;}');gl.compileShader(fs);
@@ -51,7 +53,7 @@ function drawable(v){const screen=v.host.closest('#shop-screen,#inventory-screen
 function tick(time){frameId=0;lastTick=time;for(const v of [...views]){if(!v.host.isConnected){v.dispose();continue;}if(!v.animated||!drawable(v)){v.lastSeen=time;continue;}if(time-v.lastFrame<1000/24)continue;v.elapsed+=Math.max(0,time-v.lastSeen);v.lastSeen=time;v.lastFrame=time;v.draw(time);}if([...views].some(v=>v.animated&&drawable(v)))frameId=requestAnimationFrame(tick);else lastTick=0;}
 document.addEventListener('visibilitychange',()=>{const now=performance.now();for(const v of views)v.lastSeen=now;if(!document.hidden)start();});
 function start(){if(!frameId&&[...views].some(v=>v.animated&&drawable(v)))frameId=requestAnimationFrame(tick);}
-function measureCanvas(view,canvas){let factor=1;if(!view.options.external)for(let node=canvas.parentElement;node&&node!==document.body;node=node.parentElement){const value=getComputedStyle(node).transform;if(value&&value!=='none'){const m=new DOMMatrixReadOnly(value);factor*=Math.max(Math.hypot(m.a,m.b),Math.hypot(m.c,m.d));}}view.width=canvas.clientWidth*factor;view.height=canvas.clientHeight*factor;}
+function measureCanvas(view,canvas){if(view.options.motion==='inventory'){const rect=canvas.getBoundingClientRect();if(rect.width>0&&rect.height>0){view.width=rect.width;view.height=rect.height;}view.aspect=canvas.clientWidth/Math.max(1,canvas.clientHeight);return;}let factor=1;if(!view.options.external)for(let node=canvas.parentElement;node&&node!==document.body;node=node.parentElement){const value=getComputedStyle(node).transform;if(value&&value!=='none'){const m=new DOMMatrixReadOnly(value);factor*=Math.max(Math.hypot(m.a,m.b),Math.hypot(m.c,m.d));}}view.width=canvas.clientWidth*factor;view.height=canvas.clientHeight*factor;}
 root.addEventListener('resize',()=>{requestAnimationFrame(()=>{for(const v of views)v.resize?.();});});
 async function create(host,id,index,options={}){
  const canvas=document.createElement('canvas');canvas.className='shop-model-canvas';canvas.setAttribute('aria-label',id==='hammer'?'뿅망치 3D':id==='cannon'?'팡팡 캐논 3D':'골드 묠니르 3D');
@@ -112,14 +114,16 @@ async function create(host,id,index,options={}){
   view.resize=function(){if(!disposed){measureCanvas(view,canvas);if(!options.external&&drawable(view))view.draw(performance.now());}};
   view.draw=function(time){
    if(disposed)return;
-   const dpr=Math.min(Math.max(devicePixelRatio||1,2),2.5),cap=options.maxPixels||512,w=Math.max(1,Math.min(cap,Math.round(view.width*dpr))),h=Math.max(1,Math.min(cap,Math.round(view.height*dpr)));
+   const dpr=Math.min(Math.max(devicePixelRatio||1,2),2.5),cap=options.maxPixels||512;
+   const inventory=options.motion==='inventory',pixelScale=inventory?Math.min(dpr,cap/Math.max(1,view.width,view.height)):dpr;
+   const w=Math.max(1,Math.min(cap,Math.round(view.width*pixelScale))),h=Math.max(1,Math.min(cap,Math.round(view.height*pixelScale)));
    if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
    gl.viewport(0,0,w,h);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
    const elapsed=view.elapsed;
-   const inventory=options.motion==='inventory',automatic=!options.manual&&!options.external;
+   const automatic=!options.manual&&!options.external;
    if(!reduced&&automatic&&id==='cannon'){
-    const step=inventory?2000:5000,first=inventory?250:0,quarter=Math.floor((elapsed-first)/step);
-    if(quarter>=0&&quarter>lastQuarter){lastQuarter=quarter;actionStart=first+quarter*step;lastAction=time;shots++;host.dataset.modelActions=String(shots);host.dataset.modelCardinal=String(inventory?((quarter+1)*180)%360:(90+quarter*90)%360);}
+    const cadence=inventory?inventoryCannonPose(elapsed):null,step=cadence?cadence.step:5000,first=cadence?cadence.first:0,quarter=Math.floor((elapsed-first)/step);
+    if(quarter>=0&&quarter>lastQuarter){lastQuarter=quarter;actionStart=first+quarter*step;lastAction=time;shots++;host.dataset.modelActions=String(shots);host.dataset.modelCardinal=String(inventory?(quarter*180)%360:(90+quarter*90)%360);}
    }else if(!reduced&&automatic&&id==='goldhammer'){
     const first=inventory?(Math.PI*2-.7)/(Math.PI*2)*20000:2500,step=inventory?20000:5000,quarter=Math.floor((elapsed-first)/step);
     if(quarter>=0&&quarter>lastGoldQuarter){lastGoldQuarter=quarter;actionStart=first+quarter*step;lastAction=time;shots++;host.dataset.modelActions=String(shots);host.dataset.modelCardinal=String(inventory?0:(45+quarter*90)%360);}
@@ -134,7 +138,7 @@ async function create(host,id,index,options={}){
     phase=(quarter+Math.max(0,age-200)/4800)*Math.PI/2;
    }
    let yaw=(id==='cannon'?Math.PI/2:.7)+phase,pitch=id==='cannon'?0:.22;
-   if(inventory&&id==='cannon'){const half=Math.floor(elapsed/2000),age=elapsed-half*2000,k=Math.min(1,age/250);yaw=(half+k*k*(3-2*k))*Math.PI;}
+   if(inventory&&id==='cannon')yaw=inventoryCannonPose(elapsed).yaw;
    if(options.manual||options.external){yaw=view.pose.yaw;pitch=view.pose.cameraPitch??(options.external?0:.1);}
    let motion=identity();
    if(id==='cannon')motion=options.external?multiply(rotate([0,1,0],view.pose.bodyYaw||0),translation(0,0,-radius*.23*amount)):translation(0,0,-radius*.23*amount);
@@ -156,7 +160,7 @@ async function create(host,id,index,options={}){
    let barrelMotion=null;
    if(barrelPivot){const angle=(25-view.pose.pitch)*Math.PI/180;barrelMotion=multiply(motion,multiply(multiply(translation(...barrelPivot),rotate([1,0,0],angle)),translation(...barrelPivot.map(v=>-v))));}
    if(id!=='hammer'){host.style.setProperty('--shop-shadow-scale',String(1+amount*.06));host.style.setProperty('--shop-shadow-opacity',String(.32+amount*.08));}
-   const aspect=w/h,fov=Math.PI/5,limit=2*Math.atan(Math.tan(fov/2)*Math.min(1,aspect));
+   const aspect=inventory?(view.aspect||120/110):w/h,fov=Math.PI/5,limit=2*Math.atan(Math.tan(fov/2)*Math.min(1,aspect));
    const distance=radius/Math.sin(limit/2)*.9,target=turnCenter,eye=[target[0]+Math.sin(yaw)*Math.cos(pitch)*distance,target[1]+Math.sin(pitch)*distance,target[2]+Math.cos(yaw)*Math.cos(pitch)*distance];
    const vp=multiply(options.external?orthographic(radius*.8,aspect,Math.max(radius*.1,distance-radius*2),distance+radius*2):perspective(fov,aspect,Math.max(radius*.1,distance-radius*2),distance+radius*2),lookAt(eye,target));
    if(options.external){const forward=unit(target.map((n,i)=>n-eye[i])),right=unit(cross(forward,[0,1,0])),up=cross(right,forward);view.camera={eye,forward,right,up,half:radius*.8,aspect};}
@@ -183,6 +187,7 @@ async function create(host,id,index,options={}){
    const effect=!!lightning&&(view.pose.zap||progress>=.12&&progress<.9);
    if(effect)lightning(multiply(vp,motion),headBox,Math.floor(progress*12)+shots*17,w,h,dpr,program);
    host.dataset.modelFx=String(effect);
+   if(inventory&&options.onFrame){const matrix=multiply(vp,motion),points=[];for(const x of [box.low[0],box.high[0]])for(const y of [box.low[1],box.high[1]])for(const z of [box.low[2],box.high[2]])points.push(projectPoint(matrix,[x,y,z]));options.onFrame({left:Math.min(...points.map(p=>p.x)),right:Math.max(...points.map(p=>p.x)),hop:+host.dataset.modelHop||0,recoil:amount});}
   };
   host.classList.add('shop-model-ready');host.dataset.model=id;view.elapsed=0;view.lastSeen=performance.now();measureCanvas(view,canvas);view.draw(view.lastSeen);
   observer=new ResizeObserver(()=>{if(!disposed)view.resize();});observer.observe(host);
@@ -197,6 +202,6 @@ function clear(){for(const v of [...views])if(v.host.closest('#shop-screen'))v.d
 function activateScreen(id){activeScreen=id;const now=performance.now();for(const v of [...views]){v.lastSeen=now;const screen=v.host.closest('#shop-screen,#inventory-screen,#workshop-screen,#game-screen');if(screen&&screen.id!==id&&!v.options.external&&!v.options.manual){dormant.set(v.host,{id:v.id,index:v.index,options:v.options,elapsed:v.elapsed});v.dispose();}}for(const [host,record] of [...dormant]){if(!host.isConnected){dormant.delete(host);continue;}if(host.closest('#shop-screen,#inventory-screen,#workshop-screen,#game-screen')?.id===id){dormant.delete(host);create(host,record.id,record.index,record.options).then(view=>{if(view){view.elapsed=record.elapsed;view.draw(performance.now());}});}}if(frameId){cancelAnimationFrame(frameId);frameId=0;}start();}
 function attach(cards,weapons){clear();const cardsList=cards.querySelectorAll('.shop-card--weapon-product');cardsList.forEach((card,index)=>{const id=weapons[index]?.id;if(!paths[id])return;const host=card.querySelector('.shop-card-img-box,.shop-card-badge--default-weapon');if(host)create(host,id,index);});}
 root.MoleGame=root.MoleGame||{};root.MoleGame.ShopModels={attach,clear,snapshot};
-root.MoleGame.WeaponModels={create:(host,id,options={})=>createVisible(host,id,options),setActiveScreen:activateScreen,stats:()=>[...views].map(v=>({screen:v.host.closest('#shop-screen,#inventory-screen,#workshop-screen,#game-screen')?.id,animated:v.animated,drawable:!!drawable(v),frames:+v.host.dataset.modelFrame||0})),clearWithin:host=>{for(const v of [...views])if(host.contains(v.host))v.dispose();for(const element of dormant.keys())if(host.contains(element))dormant.delete(element);for(const [element,record] of waiting)if(host.contains(element)){record.observer.disconnect();record.resolve();waiting.delete(element);}}};
+root.MoleGame.WeaponModels={create:(host,id,options={})=>createVisible(host,id,options),refreshWithin:host=>{for(const v of views)if(host.contains(v.host)&&v.options.motion==='inventory'){const wasVisible=v.inView,rect=v.host.getBoundingClientRect(),clip=v.host.closest('.iw-pages,.ks-case')?.getBoundingClientRect();if(clip)v.inView=rect.right>clip.left&&rect.left<clip.right&&rect.bottom>clip.top&&rect.top<clip.bottom;if(v.inView!==wasVisible)v.lastSeen=performance.now();v.resize?.();}start();},setActiveScreen:activateScreen,stats:()=>[...views].map(v=>({screen:v.host.closest('#shop-screen,#inventory-screen,#workshop-screen,#game-screen')?.id,animated:v.animated,drawable:!!drawable(v),frames:+v.host.dataset.modelFrame||0})),clearWithin:host=>{for(const v of [...views])if(host.contains(v.host))v.dispose();for(const element of dormant.keys())if(host.contains(element))dormant.delete(element);for(const [element,record] of waiting)if(host.contains(element)){record.observer.disconnect();record.resolve();waiting.delete(element);}}};
 new MutationObserver(()=>{for(const v of [...views])if(!v.host.isConnected)v.dispose();for(const host of dormant.keys())if(!host.isConnected)dormant.delete(host);for(const [host,record] of waiting)if(!host.isConnected){record.observer.disconnect();record.resolve();waiting.delete(host);}}).observe(document.body,{childList:true,subtree:true});
 })(window);

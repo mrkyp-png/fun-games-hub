@@ -3,8 +3,8 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-// V1510 G: shop weapon clash, skill icon, and alignment updates.
-const CACHE = 'mole-game-v1510-G';
+// V1511 G: shop titles, layered skill icon, inventory motion/equip fixes, and home redesign preparation.
+const CACHE = 'mole-game-v1511-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -15,6 +15,8 @@ const SHELL = [
   './js/game-cannon-model-v1509.js',
   './assets/ui-approved-v1509/shop-tab-sword.png',
   './assets/ui-approved-v1509/shop-tab-skill-orb.png',
+  './assets/skill-tab-layers-20261030/hand-2x.png',
+  './assets/skill-tab-layers-20261030/ring-matte-gold-2x.png',
   './assets/ui-approved-v1509/shop-tab-costume.png',
   './assets/shop-models-v1509/hammer-v5-batched-v1509.glb',
   './assets/shop-models-v1509/goldhammer-v16-batched-v1509.glb',

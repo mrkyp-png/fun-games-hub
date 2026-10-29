@@ -203,6 +203,17 @@
       }
     } catch (e) { /* Storage may be unavailable. */ }
     // V1399 C 사용자: '에러 메세지 확인 후 조치하고 메세지 지워' — ResizeObserver 오류(무기화면 크기 맞춤)는 V1398 C 에서 고침 → 남은 기록 1회 전부 지움.
+    // V1511: fitLefts now ignores incomplete/detached preview pages. Archive only this resolved error once.
+    try {
+      if (!localStorage.getItem('mole.diag.inventoryPreviewGuard1511G')) {
+        const resolved = line => /Cannot read properties of null.*reading ['"]style['"]/.test(line) && /@inventory-screen\.js:39\d\b/.test(line);
+        const removed = diag.filter(resolved);
+        if (removed.length) localStorage.setItem('mole.diag.beforeInventoryPreviewGuard1511G', JSON.stringify(removed));
+        diag = diag.filter(line => !resolved(line));
+        localStorage.setItem('mole.diag', JSON.stringify(diag));
+        localStorage.setItem('mole.diag.inventoryPreviewGuard1511G', '1');
+      }
+    } catch (e) { /* Storage may be unavailable. */ }
     try { if (!localStorage.getItem('mole.diag.clear1399C')) { diag = []; localStorage.setItem('mole.diag', '[]'); localStorage.setItem('mole.diag.clear1399C', '1'); } } catch (e) { /* 무시 */ }
     const saveDiag = (line) => {
       const d = new Date(); diag.push(String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ' ' + line);

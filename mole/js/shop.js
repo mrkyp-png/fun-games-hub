@@ -166,8 +166,8 @@
     // 그라디언트/하이라이트로 입체감(사용자 지정: "7번으로 해서 시계방향 45도 회전, 입체감").
     var WEAPON_TAB_ICON = '<span class="shop-tab-swords"><span class="shop-tab-sword-arm shop-tab-sword--left"><img class="shop-tab-sword" src="assets/ui-approved-v1509/shop-tab-sword.png" alt=""></span><span class="shop-tab-sword-arm shop-tab-sword--right"><img class="shop-tab-sword" src="assets/ui-approved-v1509/shop-tab-sword.png" alt=""></span><i class="shop-tab-sword-spark" aria-hidden="true"></i></span>';
 
-    // 스킬 탭 아이콘 — 후보 시트 #7(음양) 사용자 최종 선택, 그라디언트+하이라이트로 입체감.
-    var SKILL_TAB_ICON = '<img src="assets/ui-approved-v1509/shop-tab-skill-orb.png" alt="">';
+    // Independent, actual 2508px hand/ring layers; the ring itself has no glow.
+    var SKILL_TAB_ICON = '<span class="skill-orb-icon" aria-hidden="true"><img class="skill-orb-hand" src="assets/skill-tab-layers-20261030/hand-2x.png" alt=""><span class="skill-orb-float"><img class="skill-orb-ring" src="assets/skill-tab-layers-20261030/ring-matte-gold-2x.png" alt=""><svg class="skill-orb-lightning" viewBox="0 0 1254 1254"><path class="skill-orb-bolt-a" d="M408 430 550 520 485 550 675 665 627 545 710 515 580 400"/><path class="skill-orb-bolt-b" d="M830 430 730 550 780 590 610 745"/></svg></span></span>';
 
     // 하단 탭 아이콘 — 이모지(사용자 지정: "이모지나 이미지 넣어야함", 참고 이미지의 하트/망치/별/옷 자리).
     var TABS = [
@@ -175,7 +175,7 @@
       { id: 'coin', i18n: 'mole.shop.tabCoin', icon: '<img class="shop-coin-option" src="' + CURRENCY_ART + 'coin-option-05-bright20.png" alt="">' },
       { id: 'ticket', i18n: 'mole.shop.tabTicket', icon: '<img class="ticket-note-icon" src="assets/ui-approved-v1476/ticket-stack-14.webp" alt="">' },
       { id: 'weapon', i18n: 'mole.shop.tabWeapon', icon: WEAPON_TAB_ICON },
-      { id: 'skill', i18n: 'mole.shop.tabSkill', icon: '<img src="' + SHOP_ART + 'skill-icon.png" alt="">' },
+      { id: 'skill', i18n: 'mole.shop.tabSkill', icon: SKILL_TAB_ICON },
       { id: 'costume', i18n: 'mole.shop.tabCostume', icon: '<img src="assets/ui-approved-v1509/shop-tab-costume.png" alt="">' }
     ];
     var activeTab = 'currency';
@@ -190,7 +190,7 @@
         return;
       }
       var src = img.currentSrc || img.src;
-      if (img.classList.contains('shop-skill-icon')) {
+      if (img.classList.contains('shop-skill-icon') || img.closest('.skill-orb-icon')) {
         // Shop art uses a measured rim transform instead of alpha-mass centering.
         img.style.setProperty('translate', '0px 0px', 'important');
         return;
@@ -250,6 +250,39 @@
       var dy = (img.naturalHeight / 2 - (bounds[1] + bounds[3]) / 2) * scale;
       img.style.setProperty('translate', dx.toFixed(2) + 'px ' + dy.toFixed(2) + 'px', 'important');
     }
+    function centerCoinAdArt() {
+      var art = cardsEl.querySelector('.hero-coin-ad');
+      if (!art) return;
+      var images = Array.from(art.querySelectorAll(':scope > img'));
+      if (images.some(function (img) { return !img.complete || !img.naturalWidth; })) {
+        images.forEach(function (img) {
+          if (!img.complete && !img._coinAdAlign) {
+            img._coinAdAlign = true;
+            img.addEventListener('load', function () { if (art.isConnected) centerCoinAdArt(); }, { once: true });
+          }
+        });
+        return;
+      }
+      art.style.translate = 'none'; art.style.scale = 'none';
+      var box = art.getBoundingClientRect(), left = Infinity, right = -Infinity;
+      if (!box.width) return;
+      images.forEach(function (img) {
+        // Reuse the cached alpha bounds, but keep the original overlapping composition.
+        centerVisibleImage(img);
+        img.style.setProperty('translate', 'none', 'important');
+        var bounds = alphaBoundsBySrc[img.currentSrc || img.src];
+        if (!bounds) return;
+        var rect = img.getBoundingClientRect();
+        var fit = Math.min(rect.width / img.naturalWidth, rect.height / img.naturalHeight);
+        var origin = rect.left - box.left + (rect.width - img.naturalWidth * fit) / 2;
+        left = Math.min(left, origin + bounds[0] * fit);
+        right = Math.max(right, origin + bounds[2] * fit);
+      });
+      if (!(right > left)) return;
+      var scale = Math.min(1, Math.max(0, box.width - 8) / (right - left));
+      art.style.translate = ((box.width / 2 - (left + right) / 2) * scale).toFixed(3) + 'px 0';
+      art.style.scale = String(scale);
+    }
     var kingMotionBounds = null;
     function measureKingMotion(unit) {
       if (kingMotionBounds) return kingMotionBounds;
@@ -269,7 +302,10 @@
       kingMotionBounds={w:(x1-x0+1)/dpr,h:(y1-y0+1)/dpr,x:(x0+x1+1)/dpr/2-pad,y:(y0+y1+1)/dpr/2-pad};return kingMotionBounds;
     }
     function centerShopTabArt() {
-      alignCoinReflections();
+      centerCoinAdArt();
+      var sign = bannerEl.querySelector('.shop-weapon-sign');
+      if (sign) centerVisibleImage(sign);
+      centerShopSignText();
       el.querySelectorAll('[data-shop-motion]').forEach(function (unit) {
         var rect = unit.parentElement.getBoundingClientRect();
         var size = unit.dataset.shopMotion === 'cannon' ? [105.5, 88] : [112, 88];
@@ -292,6 +328,7 @@
         ring.style.top = (rect.top - box.top + (rect.height - size) / 2) + 'px';
         ring.style.width = ring.style.height = size + 'px';
       });
+      alignCoinReflections();
     }
 
     function done() { render(); refreshHudFlyNumbers(); if (opts.onChange) opts.onChange(); }
@@ -751,6 +788,17 @@
 
     // 배너 우측 메일 아이콘은 다이얼패드 "#"(시크릿 폐기) 자리로 이동함(사용자 지정) — 배너에는
     // 그 자리에 화살표(‹›)를 대신 넣는다(아이템 화면과 동일 패턴).
+    function centerShopSignText() {
+      var label = bannerEl.querySelector('.shop-sign-label');
+      if (!label || el.hidden) return;
+      // Center the visible glyphs, including Jua's unequal ascent/descent space.
+      var bounds = label.querySelector('text').getBBox();
+      if (!bounds.width || !bounds.height) return;
+      label.setAttribute('viewBox', [bounds.x, bounds.y, bounds.width, bounds.height].join(' '));
+      label.style.width = bounds.width + 'px';
+      label.style.height = bounds.height + 'px';
+    }
+
     function renderBanner() {
       var english = I18N().lang === 'en';
       bannerEl.innerHTML = '<img alt="" class="shop-banner-awning" src="' + SHOP_ART + '01-awning.webp">' +
@@ -762,8 +810,11 @@
         '<feComposite in="SourceGraphic" in2="blue" operator="out" result="body"></feComposite>' +
         '<feMerge><feMergeNode in="body"></feMergeNode><feMergeNode in="rim"></feMergeNode></feMerge></filter></defs></svg>' +
         '<img class="shop-weapon-sign" src="assets/inventory/ui-v1379/nameplate.webp" alt="">' +
-        '<b class="shop-banner-txt"></b></span>';
-      bannerEl.querySelector('.shop-banner-txt').textContent = english ? 'SHOP' : '상점';
+        '<b class="shop-banner-txt"><svg class="shop-sign-label" role="img"><text aria-hidden="true"></text></svg></b></span>';
+      var label = bannerEl.querySelector('.shop-sign-label'), title = english ? 'SHOP' : '상점';
+      label.setAttribute('aria-label', title);
+      label.querySelector('text').textContent = title;
+      if (document.fonts) document.fonts.ready.then(function () { centerShopSignText(); });
     }
 
     // 하트/코인/티켓 캡슐 = 상점 안이 아니라 다이얼패드(1/2/3 키) 위로 애니메이션 착지(사용자
@@ -836,7 +887,6 @@
         b.dataset.shopTab = t.id;
         b.innerHTML = '<span class="shop-tab-ico">' + t.icon + '</span><span class="shop-tab-lbl"></span>';
         if (t.id === 'currency') b.querySelector('.shop-tab-ico').insertAdjacentHTML('beforeend', '<i class="shop-tab-heart-glint" aria-hidden="true"></i>');
-        if (t.id === 'skill') b.querySelector('.shop-tab-ico').insertAdjacentHTML('beforeend', '<svg class="shop-tab-ring" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="none" stroke="#fff5b4" stroke-width="3.3" stroke-linecap="round" stroke-dasharray="18 271"/></svg>');
         b.querySelector('.shop-tab-lbl').textContent = T(t.i18n);
         (function (lb) { requestAnimationFrame(function () { lb.style.transform = ''; var room = b.clientWidth * 0.86, w = lb.scrollWidth; // v890: 긴 영어 탭 글자 가로로만 좁힘
           if (w > room) { lb.style.display = 'inline-block'; lb.style.transform = 'scaleX(' + (room / w).toFixed(3) + ')'; } }); })(b.querySelector('.shop-tab-lbl'));
