@@ -8425,6 +8425,9 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #inventory-screen .inv-tab .inv-tab-ico { position:relative!important; display:flex!important; flex:0 0 100%!important; align-self:stretch!important; justify-content:center!important; align-items:center!important; width:100%!important; height:100%!important; min-height:0!important; margin:0!important; overflow:hidden!important; }
 #inventory-screen .inv-tab .inv-tab-ico > img,
 #inventory-screen .inv-tab .inv-tab-ico > svg { position:relative!important; display:block!important; flex:none!important; width:92%!important; height:92%!important; max-width:92%!important; max-height:92%!important; object-fit:contain!important; }
+#inventory-screen .inv-tab .inv-tab-ico > img,
+#inventory-screen .inv-tab .inv-tab-ico > svg,
+#inventory-screen .inv-tab .shop-tab-sword { filter:drop-shadow(1px 0 0 #42d8c3) drop-shadow(-1px 0 0 #42d8c3) drop-shadow(0 1px 0 #42d8c3) drop-shadow(0 -1px 0 #42d8c3)!important; }
 #inventory-screen .inv-tab .inv-tab-ico > .skill-orb-icon { position:absolute!important; inset:4%!important; display:block!important; width:auto!important; height:auto!important; }
 #inventory-screen .inv-tab .inv-tab-ico > .shop-tab-swords { position:absolute!important; inset:4%!important; display:block!important; overflow:hidden!important; transform:none!important; }
 #inventory-screen .inv-tab .shop-tab-sword-arm { position:absolute!important; top:0!important; bottom:0!important; width:88%!important; transform-origin:50% 82%!important; }
@@ -8435,7 +8438,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #inventory-screen .inv-tab .shop-tab-sword-spark::before { content:''; position:absolute; inset:-3px; background:#fff6bf; clip-path:polygon(50% 0,59% 38%,100% 50%,59% 62%,50% 100%,41% 62%,0 50%,41% 38%); }
 #inventory-screen .inv-tab:nth-child(3) .inv-tab-ico > img { animation:shop-tab-costume-colors 9s linear infinite!important; }
 #inventory-screen .inv-tab .skill-orb-icon .skill-orb-hand,
-#inventory-screen .inv-tab .skill-orb-icon .skill-orb-ring { width:100%!important; height:100%!important; }
+#inventory-screen .inv-tab .skill-orb-icon .skill-orb-ring { width:100%!important; height:100%!important; filter:drop-shadow(1px 0 0 #42d8c3) drop-shadow(-1px 0 0 #42d8c3) drop-shadow(0 1px 0 #42d8c3) drop-shadow(0 -1px 0 #42d8c3)!important; }
 #inventory-screen .inv-tab:last-child .inv-tab-ico > svg { animation:photo-camera-ready 3.6s ease-in-out infinite!important; }
 #inventory-screen .inv-tab:last-child .inv-tab-ico > svg circle { transform-box:fill-box; transform-origin:center; animation:photo-shutter-click 3.6s ease-in-out infinite; }
 #inventory-screen .inv-tab:last-child .inv-tab-ico::after { content:''; position:absolute; inset:4%; pointer-events:none; opacity:0; background:radial-gradient(circle at 50% 56%,#fff 0 8%,rgba(255,248,205,.95) 14%,rgba(255,255,255,0) 44%); animation:photo-shutter-flash 3.6s linear infinite; }
