@@ -9,9 +9,9 @@
   // V1403 C 사용자: 스킬은 실드·타겟팅·AI 3개만, 전부 장착형(액티브). 패시브 없음.
   // (빙결·골드2배·융단폭격·피버타임 증가는 목록에서 제외 — 그림 파일은 남겨 둠)
   var SKILLS = [
-    { id: 'shield', type: 'ACTIVE', nameKo: '실드', nameEn: 'Shield', icon: 'assets/skills/shield.png', descKo: '폭탄 1번 막아요', descEn: 'Blocks one bomb' },
-    { id: 'targeting', type: 'ACTIVE', nameKo: '타겟팅', nameEn: 'Targeting', icon: 'assets/skills/targeting-v1403.png', descKo: '두더지 자동 조준', descEn: 'Auto-aims a mole' },
-    { id: 'ai', type: 'ACTIVE', nameKo: 'AI', nameEn: 'AI', icon: 'assets/skills/ai.png', descKo: '자동으로 공격', descEn: 'Attacks for you' }
+    { id: 'shield', type: 'ACTIVE', nameKo: '실드', nameEn: 'Shield', icon: 'assets/skills/shield.png', descKo: '폭탄 어택 클리어 1회', descEn: 'Clears one bomb attack' },
+    { id: 'targeting', type: 'ACTIVE', nameKo: '타겟팅', nameEn: 'Targeting', icon: 'assets/skills/targeting-v1403.png', descKo: '타겟팅 샷 1회', descEn: 'Targeting shot once' },
+    { id: 'ai', type: 'ACTIVE', nameKo: 'AI', nameEn: 'AI', icon: 'assets/skills/ai.png', descKo: 'AI 히트 러시 10초', descEn: 'AI hit rush for 10s' }
   ];
 
   // 무기별 슬롯 — hammer(뿅망치)는 명세서에 없음(스킬 미지원 무기, laneSkillZone=false).

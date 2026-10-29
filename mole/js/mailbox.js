@@ -73,7 +73,7 @@
       '<div class="mb-frame">' +
         '<div class="mb-head">' +
           '<div class="mb-plank"><img class="mb-plank-img" src="assets/mailbox/plank.png" alt=""><img class="mb-plank-env" src="assets/mailbox/env-heart.png" alt=""></div>' +
-          '<button type="button" class="mb-all" data-mb-all aria-label="claim all"><img src="assets/mailbox/ic-mail.png" alt=""><img src="assets/mailbox/ic-check.png" alt=""></button>' +
+          '<button type="button" class="mb-all ws-action-frame mail-action-frame mail-all-frame" data-mb-all aria-label="claim all"><span class="mb-all-icons"><img src="assets/mailbox/ic-mail.png" alt=""><img src="assets/mailbox/ic-check.png" alt=""></span></button>' +
         '</div>' +
         '<div class="mb-list" data-mb-list></div>' +
       '</div>';
@@ -98,13 +98,13 @@
           '<div class="mb-env"><img src="assets/mailbox/' + (m.isClaimed ? 'env-read' : 'env-' + (SEALS[m.rewardType] || 'red')) + '.png" alt="">' + (m.isRead ? '' : '<i class="mb-dot"></i>') + '</div>' +
           '<div class="mb-txt"><b class="mb-title"></b><span class="mb-desc"></span><span class="mb-date"></span></div>' +
           '<div class="mb-reward"><img src="' + (m.rewardType === 'ticket' ? 'assets/ui-approved-v1476/ticket-single.webp' : 'assets/mailbox/rw-' + m.rewardType + '.png') + '" alt=""><span class="mb-amt"></span></div>' +
-          '<button type="button" class="mb-claim' + (m.isClaimed ? ' is-done' : '') + '"></button>';
+          '<button type="button" class="mb-claim ws-action-frame mail-action-frame' + (m.isClaimed ? ' is-done' : '') + '"><span></span></button>';
         c.querySelector('.mb-title').textContent = tx(m.title);
         c.querySelector('.mb-desc').textContent = tx(m.description);
         c.querySelector('.mb-date').textContent = fmtDate(m.createdAt);
         c.querySelector('.mb-amt').textContent = fmtN(m.rewardAmount || 1);
         var b = c.querySelector('.mb-claim');
-        b.textContent = m.isClaimed ? '✓ ' + T('mole.mail.claimed') : T('mole.mail.claim');
+        b.querySelector('span').textContent = m.isClaimed ? '✓ ' + T('mole.mail.claimed') : T('mole.mail.claim');
         b.disabled = m.isClaimed;
         c.addEventListener('click', function () { if (!m.isRead) { markRead(m.id); var d = c.querySelector('.mb-dot'); if (d) d.remove(); } });
         b.addEventListener('click', function (e) {

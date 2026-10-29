@@ -219,6 +219,12 @@
     }
 
     function resolveOne(pop, opts) {
+      if (opts && opts.doubleHit) {
+        var inRepeatWindow = pop.sinkIn > 0 || (pop.dying && pop.remaining > RETREAT_SEC * JUGGLE_VISIBLE_FRAC);
+        if (pop.type !== 'mole' || pop.bombKind || pop.hitsRequired !== 1 || !pop.killed || !inRepeatWindow || pop.doubleHitUsed) return null;
+        pop.doubleHitUsed = true;
+        return { type: 'mole', regionId: pop.regionId, popId: pop.id, juggle: true, doubleHit: true, source: 'costume-double-hit', xFrac: pop.x, yFrac: pop.y };
+      }
       var isBurstShot = !!(opts && opts.burst);            // 대포 연사 자동샷
       var isAuto = isBurstShot || !!(opts && opts.quake);  // 자동타격(연사/지진) — 쿨다운·무패널티게이트 통과
       if (opts && opts.quake) pop.quakeAt = performance.now();
@@ -276,7 +282,9 @@
 
     function resolveHit(popId, opts) {
       const pop = active.get(popId);
-      return pop ? resolveOne(pop, opts) : null;
+      const result = pop ? resolveOne(pop, opts) : null;
+      if (result) result.popId = pop.id;
+      return result;
     }
 
     // 구멍(영역) 타격: 그 영역의 활성 pop 을 판정한다 (기획서 v1.5 — 구멍별 버튼).
@@ -286,7 +294,7 @@
       active.forEach((pop) => {
         if (pop.regionId !== regionId) return;
         const r = resolveOne(pop, opts);
-        if (r) out.push(r);
+        if (r) { r.popId = pop.id; out.push(r); }
       });
       // v991(사용자 지정): 지진 진행 중(0.64초 잠금) 그 범위의 빈 칸이 같이 깜빡여 누르면 헛방으로 콤보가 끊기던 것 — 무시
       if (!out.length && !(opts && (opts.quake || opts.burst)) && lockedMoleRegionCounts.has(regionId)) {

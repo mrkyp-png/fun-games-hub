@@ -160,6 +160,7 @@
         if (note) note.hidden = !lock;
       });
       el.querySelector('[data-sr-rule]').textContent = T(r ? 'mole.score.ruleRp' : 'mole.score.rule');
+      fitInfoLine();
       if (r && !list) {
         var song = rpSongs()[view.song];
         el.querySelector('[data-sr-album]').src = albumSrc(song.id);
@@ -279,9 +280,20 @@
       });
       corrections.forEach(function (c) { if (c) c.label.style.setProperty('--sr-rank-y', c.y + 'px'); });
     }
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { alignRankDigits();  }, function () {});
+    var infoMeasure = document.createElement('canvas').getContext('2d');
+    function fitInfoLine() {
+      var label = el.querySelector('[data-sr-rule]');
+      if (!label || el.hidden || !label.clientWidth || !infoMeasure) return;
+      label.style.fontSize = '';
+      var style = getComputedStyle(label), size = parseFloat(style.fontSize);
+      infoMeasure.font = style.fontWeight + ' ' + size + 'px ' + style.fontFamily;
+      var width = infoMeasure.measureText(label.textContent).width;
+      if (width > label.clientWidth) label.style.fontSize = Math.floor(size * label.clientWidth / width * 10) / 10 + 'px';
+    }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { alignRankDigits(); fitInfoLine(); }, function () {});
     // V1367 C(사용자 지정): 스크롤 목록이 반쯤 잘린 줄로 끝나지 않게 — 보이는 높이를 줄 간격의 배수로 맞춤(나머지는 아래 여백)
     function fitRows() {
+      fitInfoLine();
 
       rows.style.flex = ''; rows.style.height = '';
       var first = rows.querySelector('.sr-row'); if (!first || !rows.clientHeight) return;

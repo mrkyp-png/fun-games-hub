@@ -306,8 +306,8 @@
       dialog.setAttribute('aria-modal', 'true');
       dialog.innerHTML = '<div class="shop-coin-choice-card">' + (imageSrc ? '<img class="shop-coin-choice-art" src="' + imageSrc + '" alt="">' : '') +
         '<b class="shop-coin-choice-message"></b><div class="shop-coin-choice-actions">' +
-        '<button type="button" class="shop-card-btn shop-coin-choice-action" data-choice-action="confirm">' + (english ? 'Yes' : '예') + '</button>' +
-        '<button type="button" class="shop-card-btn shop-coin-choice-action" data-choice-action="cancel">' + (english ? 'No' : '아니요') + '</button></div></div>';
+        '<button type="button" class="shop-card-btn shop-coin-choice-action ws-action-frame shop-buy-frame" data-choice-action="confirm">' + (english ? 'Yes' : '예') + '</button>' +
+        '<button type="button" class="shop-card-btn shop-coin-choice-action ws-action-frame shop-buy-frame shop-buy-frame--cancel" data-choice-action="cancel">' + (english ? 'No' : '아니요') + '</button></div></div>';
       dialog.querySelector('.shop-coin-choice-message').textContent = message;
       el.appendChild(dialog);
       var settled = false;
@@ -343,7 +343,6 @@
       var objectMarker = last >= 0xAC00 && last <= 0xD7A3 && (last - 0xAC00) % 28 ? '을' : '를';
       var prompt = english ? 'Purchase ' + name + ' for ' + offer.price.toLocaleString('en-US') + ' coins?' :
         offer.price.toLocaleString('en-US') + '코인으로 ' + name + objectMarker + ' 구매하시겠습니까?';
-      if (offer.grants.shield) prompt += english ? '\nShield is stored for use after setup.' : '\n실드는 보관하며 설정 완료 후 사용할 수 있습니다.';
       showFinalConfirm(prompt, null, function () { buyProduct(item.sku); });
     }
 
@@ -381,8 +380,8 @@
         var prompt = english ? 'Select ' + label + '?' : label + (hasFinalConsonant ? '을' : '를') + ' 선택하시겠습니까?';
         card.innerHTML = '<img class="shop-coin-choice-art" src="' + weapon.thumb + '" alt="">' +
           '<b class="shop-coin-choice-message">' + prompt + '</b>' +
-          '<div class="shop-coin-choice-actions"><button type="button" class="shop-card-btn shop-coin-choice-action" data-choice-action="confirm">' + (english ? 'Yes' : '예') + '</button>' +
-          '<button type="button" class="shop-card-btn shop-coin-choice-action" data-choice-action="cancel">' + (english ? 'No' : '아니요') + '</button></div>';
+          '<div class="shop-coin-choice-actions"><button type="button" class="shop-card-btn shop-coin-choice-action ws-action-frame shop-buy-frame" data-choice-action="confirm">' + (english ? 'Yes' : '예') + '</button>' +
+          '<button type="button" class="shop-card-btn shop-coin-choice-action ws-action-frame shop-buy-frame shop-buy-frame--cancel" data-choice-action="cancel">' + (english ? 'No' : '아니요') + '</button></div>';
         card.querySelector('[data-choice-action="confirm"]').addEventListener('click', function () {
           selectedCoinBonusWeapon = weapon.id;
           bulkCard.dataset.selectedCoinWeapon = weapon.id;
@@ -422,7 +421,7 @@
       var c = document.createElement('div');
       c.className = 'shop-card' + (opts2.productClass ? ' ' + opts2.productClass : '') + (opts2.equipped ? ' shop-card--equipped' : '');
       var showPriceLine = !!(opts2.price || opts2.priceHtml);
-      var btnClass = 'shop-card-btn' + (opts2.btnPlain ? ' shop-card-btn--plain' : '');
+      var btnClass = 'shop-card-btn' + (opts2.btnPlain ? ' shop-card-btn--plain' : ' ws-action-frame shop-buy-frame');
       c.innerHTML =
         '<div class="shop-card-badge' + (opts2.badgeClass ? ' ' + opts2.badgeClass : '') + '"></div>' +
         '<div class="shop-card-name"></div>' +
@@ -452,7 +451,7 @@
     function heartCard(o) {
       var c = document.createElement('div');
       c.className = 'shop-card shop-card--rich shop-card--' + o.theme + (o.productClass ? ' ' + o.productClass : '');
-      var btnClass = 'shop-card-btn shop-card-btn--rich' + (o.theme === 'blue' ? ' shop-card-btn--ad' : '');
+      var btnClass = 'shop-card-btn shop-card-btn--rich ws-action-frame shop-buy-frame' + (o.theme === 'blue' ? ' shop-card-btn--ad' : '');
       var hasDesc = o.desc != null;
       c.innerHTML =
         '<div class="shop-card-name-box"><div class="shop-card-name"></div></div>' +
@@ -525,8 +524,7 @@
             name: name,
             priceHtml: null,
             btnText: T('mole.shop.default'),
-            btnDisabled: true,
-            btnPlain: true
+            btnDisabled: true
           }));
           return;
         }
@@ -562,9 +560,9 @@
     function renderSkillCards() {
       var english = I18N().lang === 'en';
       var descriptions = {
-        shield: { quantity: 10, ko: '폭탄 1회 방어', en: 'Blocks one bomb', setKo: '실드 x15', setEn: 'Shield x15' },
-        targeting: { quantity: 30, ko: '목표 자동 조준', en: 'Auto-aims a target', setKo: '타겟팅 x35', setEn: 'Targeting x35' },
-        ai: { quantity: 10, ko: '10초간 자동 타격', en: 'Auto-hits for 10 seconds', setKo: 'AI x12', setEn: 'AI x12' }
+        shield: { quantity: 10, ko: '폭탄 어택 클리어 1회', en: 'Clears one bomb attack', setKo: '실드 x15', setEn: 'Shield x15' },
+        targeting: { quantity: 30, ko: '타겟팅 샷 1회', en: 'Targeting shot once', setKo: '타겟팅 x35', setEn: 'Targeting x35' },
+        ai: { quantity: 10, ko: 'AI 히트 러시 10초', en: 'AI hit rush for 10s', setKo: 'AI x12', setEn: 'AI x12' }
       };
       var sparklePoints = {
         shield: [[30.4,25.9,12,0],[67.6,24.8,12,.7],[77.4,61.2,12,1.4],[26.2,68.9,13,2.1],[35.5,78.1,9,2.8]],
@@ -590,23 +588,38 @@
         return '<img class="shop-skill-icon' + (single ? ' shop-sale-item' : '') + '" data-shop-skill="' + id + '" data-skill-rim="' + rim.join(',') + '" style="--skill-rim-scale-x:' + sx + ';--skill-rim-scale-y:' + sy + ';--skill-rim-x:' + tx + '%;--skill-rim-y:' + ty + '%" alt="" src="assets/skills/shop-hd-v1484/' + id + '-clean.webp">';
       }
       function skillArt(id) {
-        return '<div class="shop-skill-product"><div class="shop-skill-visual shop-skill-visual--' + id + '">' + skillImage(id, true) + sparkleLayer(id) + '</div>' +
-          '<p class="shop-skill-caption"><b class="shop-skill-quantity">x' + descriptions[id].quantity + '</b><span>' + descriptions[id][english ? 'en' : 'ko'] + '</span></p></div>';
+        return '<div class="shop-skill-product"><div class="shop-skill-visual shop-skill-visual--' + id + '">' + skillImage(id, true) + sparkleLayer(id) + '<span class="shop-skill-count-slot"><b class="shop-skill-quantity">x' + descriptions[id].quantity + '</b></span></div>' +
+          '<p class="shop-skill-caption"><span>' + descriptions[id][english ? 'en' : 'ko'] + '</span></p></div>';
       }
       var allSkills = '<div class="shop-skill-product shop-skill-product--bundle">' +
         '<div class="shop-skill-visual shop-skill-visual--bundle">' +
         '<img class="shop-skill-bundle-image" alt="' + (english ? 'Shield, targeting and AI skill set' : '실드·타겟팅·AI 스킬 세트') + '" src="assets/skills/shop-hd-v1484/set-triangle-clean.webp">' +
         sparkleLayer('set') + '</div>' +
-        '<p class="shop-skill-caption shop-skill-caption--bundle">' +
+        '<p class="shop-skill-caption shop-skill-caption--bundle"><span class="shop-skill-bundle-counts">' +
         ['shield', 'targeting', 'ai'].map(function (id) {
           return '<span>' + descriptions[id][english ? 'setEn' : 'setKo'] + '</span>';
-        }).join('') + '</p></div>';
+        }).join('') + '</span></p></div>';
       renderPendingProducts([
         { sku: 'skill.shield', nameKo: '실드 묶음', nameEn: 'Shield pack', art: skillArt('shield'), coinPrice: 10000 },
         { sku: 'skill.targeting', nameKo: '타겟팅 묶음', nameEn: 'Targeting pack', art: skillArt('targeting'), coinPrice: 50000 },
         { sku: 'skill.ai', nameKo: 'AI 묶음', nameEn: 'AI pack', art: skillArt('ai'), coinPrice: 100000 },
         { sku: 'skill.set', nameKo: '스킬 세트', nameEn: 'Skill set', art: allSkills, coinPrice: 150000 }
       ], 'shop-card--skill' + (english ? ' shop-card--skill-en' : ''), { hideCoinLabel: true, onPreview: showProductPurchase });
+      requestAnimationFrame(fitSkillCaptions);
+    }
+
+    function fitSkillCaptions() {
+      cardsEl.querySelectorAll('.shop-skill-caption:not(.shop-skill-caption--bundle)>span,.shop-skill-bundle-counts,.shop-costume-effect').forEach(function (label) {
+        label.style.fontSize = '';
+        var style = getComputedStyle(label), size = parseFloat(style.fontSize), width;
+        if (label.classList.contains('shop-skill-bundle-counts')) {
+          width = Array.from(label.children).reduce(function (total, child) { return total + child.getBoundingClientRect().width; }, 0) + (parseFloat(style.columnGap) || 0) * Math.max(0, label.children.length - 1);
+        } else {
+          var ctx = document.createElement('canvas').getContext('2d'); ctx.font = style.fontWeight + ' ' + size + 'px ' + style.fontFamily; width = ctx.measureText(label.textContent).width;
+        }
+        var available = label.parentElement.clientWidth;
+        if (width > available && available > 0) label.style.fontSize = Math.floor(size * available / width * 10) / 10 + 'px';
+      });
     }
 
     function renderCostumeCards() {
@@ -615,8 +628,8 @@
       function outfit(id) { return 'assets/costume/outfit-' + id + '.png'; }
       function costumeArt(art, isSet, team) {
         return '<div class="shop-costume-product" data-shop-team="' + (team || 'set') + '"><div class="shop-costume-visual' + (isSet ? ' shop-costume-visual--set' : '') + '">' + art + '</div>' +
-          '<p class="shop-costume-effect"><span>' + (english ? 'Mole retreat delay' : '두더지 하강 지연') + '</span> <b>+' +
-          MG.CostumeTeams.BASE_EFFECT_VALUE.toFixed(1) + (english ? 's' : '초') + '</b></p></div>';
+          '<p class="shop-costume-effect"><span>' + (isSet ? T('mole.cos.setEffects') : MG.CostumeTeams.effectLabel(team)) + '</span> <b>' +
+          (isSet ? '' : MG.CostumeTeams.formatEffectValue(team, 0)) + '</b></p></div>';
       }
       var allCostumes = '<div class="shop-costume-set-art">' + teams.map(function (team, index) {
         return '<img class="shop-costume-set-piece shop-costume-set-piece--' + index + '" alt="" src="' + outfit(team.id) + '">';
@@ -818,6 +831,7 @@
       });
       tabsEl.scrollLeft = previousScroll;
       requestAnimationFrame(centerShopTabArt);
+      requestAnimationFrame(fitSkillCaptions);
     }
 
     function render() {
@@ -905,6 +919,7 @@
     function alignCoinPrices() {
       var ctx = document.createElement('canvas').getContext('2d');
       cardsEl.querySelectorAll('.shop-card-btn').forEach(function (btn) {
+        if (btn.classList.contains('shop-buy-frame')) { fitBuyContent(btn, ctx); return; }
         var icon = btn.querySelector('.shop-coins-stack'), number = btn.querySelector('b');
         if (!icon || !number) return;
         var group = btn.querySelector('.shop-price-group');
@@ -977,7 +992,45 @@
         el.style.setProperty('--shop-dots-right', (el.getBoundingClientRect().right - shellRect.right + 10) + 'px');
       }
     }
-    root.addEventListener('resize', function () { if (!el.hidden) { requestAnimationFrame(alignCoinPrices); requestAnimationFrame(centerShopTabArt); } });
+
+    function fitBuyContent(btn, ctx) {
+      var card = btn.parentElement;
+      if (card.classList.contains('shop-card')) {
+        var cr = card.getBoundingClientRect(), cs = getComputedStyle(card);
+        if (!cr.width || !cr.height) return;
+        var x = Math.max(8, cr.width * .07), y = Math.max(8, cr.height * .06);
+        btn.style.setProperty('--buy-left', Math.max(0, x - parseFloat(cs.borderLeftWidth)) + 'px');
+        btn.style.setProperty('--buy-bottom', Math.max(0, y - parseFloat(cs.borderBottomWidth)) + 'px');
+        btn.style.setProperty('--buy-width', (cr.width - x * 2) + 'px');
+        btn.style.setProperty('--buy-height', Math.max(24, Math.min(44, cr.height * .17)) + 'px');
+      }
+      var content = btn.querySelector(':scope > .shop-buy-content');
+      if (!content) {
+        content = document.createElement('span'); content.className = 'shop-buy-content';
+        var old = btn.querySelector(':scope > .shop-price-group');
+        if (old) { while (old.firstChild) btn.appendChild(old.firstChild); old.remove(); }
+        while (btn.firstChild) content.appendChild(btn.firstChild);
+        btn.appendChild(content);
+      }
+      var height = Math.max(1, btn.clientHeight - 10), width = Math.max(1, btn.clientWidth - Math.max(10, btn.clientHeight * .3) * 2);
+      var base = getComputedStyle(btn), font = Math.min(parseFloat(base.fontSize), height * .78);
+      var images = Array.from(content.querySelectorAll('img,svg')), imageWidth = 0;
+      images.forEach(function (image) {
+        var aspect = image.naturalWidth && image.naturalHeight ? image.naturalWidth / image.naturalHeight : image.viewBox && image.viewBox.baseVal.height ? image.viewBox.baseVal.width / image.viewBox.baseVal.height : 1;
+        image._buyAspect = aspect; imageWidth += height * aspect;
+        if (image.tagName === 'IMG' && !image.complete && !image._buyLoad) { image._buyLoad = true; image.addEventListener('load', function () { requestAnimationFrame(alignCoinPrices); }, { once: true }); }
+      });
+      ctx.font = base.fontWeight + ' ' + font + 'px ' + base.fontFamily;
+      var textWidth = ctx.measureText(content.textContent.trim()).width;
+      var gap = content.querySelector('del') ? Math.max(12, btn.clientHeight * .35) : images.length ? 5 : 0;
+      var scale = Math.min(1, width / Math.max(1, imageWidth + textWidth + gap));
+      content.style.setProperty('--buy-content-height', height + 'px');
+      content.style.setProperty('--buy-content-width', width + 'px');
+      content.style.setProperty('--buy-content-font', (font * scale) + 'px');
+      content.style.setProperty('--buy-content-gap', (gap * scale) + 'px');
+      images.forEach(function (image) { image.style.setProperty('width', (height * image._buyAspect * scale) + 'px', 'important'); image.style.setProperty('height', (height * scale) + 'px', 'important'); image.style.setProperty('max-width', 'none', 'important'); image.style.setProperty('max-height', 'none', 'important'); image.style.transform = 'none'; });
+    }
+    root.addEventListener('resize', function () { if (!el.hidden) { requestAnimationFrame(alignCoinPrices); requestAnimationFrame(centerShopTabArt); requestAnimationFrame(fitSkillCaptions); } });
 
     function show() {
       productNavGeneration++; clearProductSlide();

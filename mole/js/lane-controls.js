@@ -144,7 +144,7 @@
       // Home balances use an icon and number; the pill itself opens its shop category.
       var frontHtml = HUD_COUNTS[hud]
         ? '<span class="lane-face lane-face--front lane-face--pill"><span class="h2-pill h2-pill--no-plus"><img class="h2-pill-ic" src="' + PILL_ART[hud] + '" alt="">' +
-            '<b class="lane-hud-n" data-hud="' + hud + '">0</b></span></span>'
+            '<span class="h2-balance-text"><b class="lane-hud-n" data-hud="' + hud + '">0</b></span></span></span>'
         : h2Face(HOME2[hud][0], HOME2[hud][1], lblKey2, lblTxt2);
       btn.innerHTML =
         '<span class="lane-flip">' +
@@ -388,8 +388,21 @@
     function setHudStat(kind, value) {
       const b = faces.findIndex((f) => f && f.hud === kind);
       const el = b > -1 && buttons[b] && buttons[b].querySelector('.lane-hud-n');
-      if (el) el.textContent = String(value);
+      if (el) { el.textContent = String(value); fitHomeBalance(el); }
     }
+
+    const balanceMeasure = document.createElement('canvas').getContext('2d');
+    function fitHomeBalance(label) {
+      const host = label.closest('.h2-balance-text');
+      if (!host || !host.clientWidth || !host.clientHeight || !balanceMeasure) return;
+      const style = getComputedStyle(label), size = Math.min(26, host.clientHeight * .85);
+      balanceMeasure.font = style.fontWeight + ' ' + size + 'px ' + style.fontFamily;
+      const width = balanceMeasure.measureText(label.textContent).width;
+      label.style.fontSize = Math.floor(Math.min(size, width ? size * host.clientWidth / width : size) * 10) / 10 + 'px';
+    }
+    function fitHomeBalances() { buttons.forEach(b => b.querySelectorAll('.h2-balance-text .lane-hud-n').forEach(fitHomeBalance)); }
+    root.addEventListener('resize', fitHomeBalances);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitHomeBalances);
 
     // 대포 연사: 그 버튼 링 플래시를 골드로 재발동 (자동샷마다 호출 → 3연속 펄스).
     function flashBurst(id) {
@@ -432,6 +445,7 @@
       cancelAnimationFrame(aiRaf); aiRaf = 0; aiActive.clear();
       aiButtons.forEach((entry) => { if (entry.animations) entry.animations.forEach((animation) => animation.cancel()); });
       window.removeEventListener('keydown', onKey);
+      root.removeEventListener('resize', fitHomeBalances);
       clearTimeout(flashQuakeArea._t);
       buttons.forEach((b) => { clearTimeout(b._tintT); const shade = b.querySelector('.lane-quake-shade'); if (shade) clearTimeout(shade._removeT); b.remove(); });
       buttons.length = 0;

@@ -13,7 +13,7 @@
       desc: ['기본 무기.\n간단하지만 강력한 타격감으로\n두더지를 시원하게!', 'The basic weapon.\nSimple but punchy —\nbonk those moles!'],
       stats: [['-', '-'], ['-', '-'], ['-', '-']] },
     { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1-nol-v1392.png', rarity: 'rare', skillSlots: 1,
-      desc: ['강력한 포탄으로\n더 많은 두더지를 한 번에!\n넓은 범위를 커버하는 든든한 무기!', 'Powerful cannonballs\nhit more moles at once —\na sturdy weapon with wide reach!'],
+      desc: ['2·3타 두더지를 상대로\n연타가 발동하는 포탄 무기!', 'A cannon with a chance to\nfire extra hits at two- and three-hit moles!'],
       stats: [['Hole 16 → 15', 'Holes 16 → 15'],
               ['2·3타 두더지 연타 확률 10%', '10% burst on 2·3-hit moles'],
               ['-', '-']] },
@@ -23,10 +23,10 @@
               ['주변 두더지 지진 연타 15% (2·3타 두더지 소탕 포함)', '15% quake — chain-hits nearby moles (clears 2·3-hit moles too)'],
               ['-', '-']] },
     { id: 'alipunch', name: '킹 판취', nameEn: 'King Punch', thumb: 'assets/weapons/kingfist-jab-mirror-v1390.webp', rarity: 'legend', skillSlots: 2,
-      desc: ['전설적인 복서의 힘을 담은\n강력한 글러브! 빠르고 강한\n연타로 모든 두더지를 한 번에\n날려버린다!', 'Gloves holding the power of\na legendary boxer! Fast, heavy\ncombos blast every mole away!'],
+      desc: ['전설적인 복서의 강력한 글러브!\n고유 효과 발동 시 5초 동안 무적이 되어\n동물도 안전하게 타격할 수 있습니다.', 'A legendary boxer’s powerful gloves!\nThe special effect grants 5 seconds of\ninvincibility, allowing safe animal hits.'],
       stats: [['Hole 16 → 14', 'Holes 16 → 14'],
               ['무적 5초 확률 20% (모든 동물 타격 가능), 2·3타 두더지 소탕 포함', '20% chance — 5s invincibility (any animal is safe to hit), clears 2·3-hit moles'],
-              ['하강 딜레이 +0.1초(무적 중 +0.3초 추가)', '+0.1s before mole retreats (+0.3s more while invincible)']] }
+              ['홀드 타임 +0.1초(무적 중 +0.3초 추가)', 'HOLD TIME +0.1s (+0.3s more while invincible)']] }
   ];
 
   // 하단 탭 아이콘 — 상점(shop.js)과 같은 그라디언트 입체 아이콘 재사용(사용자 지정: "동일한
@@ -268,7 +268,7 @@
       });
       var copy = document.createElement('div');
       copy.className = 'iw-copy-layer';
-      copy.innerHTML = '<div class="iw-grade"><span class="iw-grade-text"></span></div><button type="button" class="inv-equip iw-equip"><span class="iw-equip-label"></span></button><span class="iw-stat-title"></span><button type="button" class="iw-help" aria-expanded="false" aria-haspopup="dialog"></button><div class="iw-stats">' + [0,1,2].map(function () { return '<div class="iw-stat-row"><span class="iw-stat-label"></span><span class="iw-stat-value"></span></div>'; }).join('') + '</div>';
+      copy.innerHTML = '<div class="iw-grade"><span class="iw-grade-text"></span></div><button type="button" class="inv-equip iw-equip ws-action-frame inv-action-frame"><span class="iw-equip-label"></span></button><span class="iw-stat-title ws-action-frame inv-title-frame"></span><button type="button" class="iw-help" aria-expanded="false" aria-haspopup="dialog"></button><div class="iw-stats">' + [0,1,2].map(function () { return '<div class="iw-stat-row"><span class="iw-stat-label"></span><span class="iw-stat-value"></span></div>'; }).join('') + '</div>';
       stage.appendChild(copy);
       copy.querySelector('.iw-help').addEventListener('click', function () { openWeaponHelp(WEAPONS[pageIdx], this); });
       copy.querySelector('.iw-equip').addEventListener('click', function () {
@@ -326,7 +326,8 @@
         effect.textContent = stat[0] === '-' ? (en ? 'Basic · No additional effect' : '기본 · 추가 효과 없음') : stat[en ? 1 : 0].replace(/\u00a0/g, ' ');
         if (i === 1 && w.id !== 'hammer') {
           var attackTotal = (w.id === 'cannon' ? 10 : (w.id === 'goldhammer' ? 15 : 20)) + (MG.Workshop ? MG.Workshop.weaponLevel(w.id) : 0);
-          effect.textContent += en ? ' Attack power: ' + attackTotal + '%.' : ' \uACF5\uACA9\uB825: ' + attackTotal + '%.';
+          effect.textContent = effect.textContent.replace(/\d+%/, attackTotal + '%');
+          effect.textContent += ' ' + T('mole.guide.weaponEnhance');
         }
         section.append(heading, meaning, effect); sections.appendChild(section);
       });
@@ -334,6 +335,38 @@
       dialog.addEventListener('close', finish, {once:true});
       close.addEventListener('click', function () { dialog.close(); });
       dialog.addEventListener('click', function (event) { if (event.target === dialog) { var r=dialog.getBoundingClientRect(); if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom) dialog.close(); } });
+      el.appendChild(dialog); weaponHelp = dialog; trigger.setAttribute('aria-expanded','true'); dialog.showModal(); close.focus();
+    }
+    function addEffectGuide(stage, kind) {
+      stage.querySelector('.ks-slot-pill').classList.add('ws-action-frame', 'inv-title-frame');
+      var button = document.createElement('button');
+      button.type = 'button'; button.className = 'iw-help inv-effect-help';
+      button.setAttribute('aria-label', T('mole.guide.' + kind + 'Title'));
+      button.setAttribute('aria-expanded', 'false'); button.setAttribute('aria-haspopup', 'dialog');
+      button.addEventListener('click', function () { openEffectGuide(kind, button); });
+      stage.querySelector('.ks-slotpanel').appendChild(button);
+    }
+    function openEffectGuide(kind, trigger) {
+      closeWeaponHelp();
+      var dialog = document.createElement('dialog'); dialog.className = 'inv-weapon-guide';
+      dialog.setAttribute('aria-labelledby', 'inv-guide-title');
+      dialog.innerHTML = '<div class="inv-guide-header"><h2 id="inv-guide-title"></h2><button type="button" class="inv-guide-close"></button></div><div class="inv-guide-scroll"><p class="inv-guide-intro"></p><div class="inv-guide-sections"></div></div>';
+      dialog.querySelector('h2').textContent = T('mole.guide.' + kind + 'Title');
+      dialog.querySelector('.inv-guide-intro').textContent = T('mole.guide.' + kind + 'Intro');
+      var rows = kind === 'skill' ? MG.Skills.SKILLS.map(function (sk) {
+        return [I18N.lang === 'en' ? sk.nameEn : sk.nameKo, T('mole.guide.' + sk.id), I18N.lang === 'en' ? sk.descEn : sk.descKo];
+      }) : MG.CostumeTeams.teams().map(function (team) {
+        var CT = MG.CostumeTeams;
+        return [(I18N.lang === 'en' ? team.nameEn : team.nameKo) + ' · ' + CT.effectLabel(team.id), T('mole.guide.' + team.id), T('mole.guide.current') + ' +' + CT.enhanceLevel(team.id) + ' · ' + CT.formatEffectValue(team.id)];
+      });
+      rows.forEach(function (row) {
+        var section = document.createElement('section'), title = document.createElement('h3'), text = document.createElement('p'), effect = document.createElement('p');
+        title.textContent = row[0]; text.textContent = row[1]; effect.textContent = row[2]; effect.className = 'inv-guide-effect';
+        section.append(title, text, effect); dialog.querySelector('.inv-guide-sections').appendChild(section);
+      });
+      var close = dialog.querySelector('button'); close.textContent = I18N.lang === 'en' ? 'Close' : '닫기';
+      close.addEventListener('click', function () { dialog.close(); });
+      dialog.addEventListener('close', function () { trigger.setAttribute('aria-expanded','false'); if (weaponHelp === dialog) weaponHelp = null; dialog.remove(); if (trigger.isConnected) trigger.focus(); }, {once:true});
       el.appendChild(dialog); weaponHelp = dialog; trigger.setAttribute('aria-expanded','true'); dialog.showModal(); close.focus();
     }
     function fitRights() { fitLefts(); }
@@ -382,6 +415,16 @@
     // V1405 C 사용자: 코스튬 탭 개편(시안 A) — 스킬 탭과 같은 큰 테두리·판 구성.
     // 위 = 고른 팀 진열장(캐릭터 크게, 위아래 둥실) + 팀 이름·효과·획득, 아래 = 팀 카드 3장(착용 버튼).
     var costumeDrop = false; // 팀을 바꿨을 때만 천장에서 떨어지는 연출
+    function costumeEffectIcon(id) {
+      var type = MG.CostumeTeams.effectInfo(id).type;
+      if (type === 'HOLD_TIME') return '<img class="cs-effect-icon" alt="" src="assets/costume/clock.png">';
+      var safe = type === 'SAFE_CHANCE', key = safe ? 'cs-safe' : 'cs-double';
+      return '<span class="cs-effect-icon"><svg aria-hidden="true" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<defs><linearGradient id="' + key + '-face" x2="0" y2="1"><stop stop-color="' + (safe ? '#67dc9b' : '#ffc56b') + '"></stop><stop offset="1" stop-color="' + (safe ? '#16804c' : '#d16a13') + '"></stop></linearGradient></defs>' +
+        '<circle cx="50" cy="52" r="45" fill="' + (safe ? '#155d3c' : '#91400e') + '"></circle><circle cx="50" cy="48" r="44" fill="url(#' + key + '-face)" stroke="' + (safe ? '#c5ffe3' : '#fff0bb') + '" stroke-width="3"></circle>' +
+        (safe ? '<path d="M50 19 75 30v22c0 15-11 25-25 33-14-8-25-18-25-33V30Z" fill="#f3fff7" stroke="#17663f" stroke-width="3"></path><path d="m36 49 10 11 20-24" fill="none" stroke="#229958" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"></path>' :
+          '<path d="m28 54 5 9 10 2-8 7 1 11-9-5-10 4 2-11-7-8 11-1Z" fill="#fff4b5"></path><path d="m67 57 5 8 11 2-8 7 1 11-10-5-9 4 2-11-8-7 11-2Z" fill="#fff4b5"></path><g fill="#fff7e6" stroke="#9b4d13" stroke-width="3" stroke-linejoin="round"><path d="m28 31 7 3-9 29-7-3Z"></path><path d="m64 31 7 3-9 29-7-3Z"></path><path d="m19 18 30 10-5 15-30-10Z"></path><path d="m55 18 30 10-5 15-30-10Z"></path></g>') + '</svg></span>';
+    }
     function renderCostumes() {
       var locked = !!(opts.gameInProgress && opts.gameInProgress());
       var equippedId = MG.CostumeTeams.equippedId();
@@ -398,24 +441,24 @@
         var owned = MG.CostumeTeams.owns(t.id);
         return '<div class="ks-card cs-card' + (t.id === costumeSelectedId ? ' is-sel' : '') + (owned ? '' : ' is-locked') + '" data-cs-pick="' + t.id + '" data-team="' + t.id + '">' +
           '<span class="cs-card-char"><img class="cs-outfit" alt="" src="' + OUTFIT[t.id] + '"></span>' +
-          '<button type="button" class="ks-equip ks-press' + (owned && t.id === equippedId ? ' is-on' : '') + '" data-cs-equip="' + t.id + '"><span></span></button></div>';
+          '<button type="button" class="ks-equip ks-press ws-action-frame inv-action-frame' + (owned && t.id === equippedId ? ' is-on' : '') + '" data-cs-equip="' + t.id + '"><span></span></button></div>';
       }).join('');
       body.innerHTML = '<div class="ks-mount"><div class="ks-stage cs-stage">' +
         '<div class="ks-name"></div>' +
         '<div class="ks-case' + (costumeDrop ? ' is-drop' : '') + '"><div class="cs-ceil"></div><div class="cs-clip"><div class="cs-hero"><span class="cs-hero-img" data-team="' + sel.id + '" style="--feet:' + (FEET[sel.id] || 0) + '%">' + CHB(sel.id) + '</span></div></div></div>' +
         '<div class="ks-slotpanel cs-info"><div class="ks-slot-pill"><span class="cs-team"></span></div>' +
-          '<div class="cs-effect"><img alt="" src="assets/costume/clock.png"><span class="cs-effect-txt"></span></div>' +
+          '<div class="cs-effect">' + costumeEffectIcon(sel.id) + '<span class="cs-effect-txt"></span></div>' +
           '<div class="cs-acquire"></div></div>' +
         '<div class="ks-cards">' + cards + '</div></div></div>';
       costumeDrop = false;
       var stage = body.querySelector('.ks-stage');
       stage.querySelector('.ks-name').textContent = en ? 'Costume' : '코스튬';
       stage.querySelector('.cs-team').textContent = en ? sel.nameEn : sel.nameKo;
-      var effectVal = MG.CostumeTeams.effectValue(sel.id).toFixed(2).replace(/0$/, '');
       stage.querySelector('.cs-effect-txt').innerHTML = '';
-      stage.querySelector('.cs-effect-txt').appendChild(document.createTextNode(T('mole.cos.effectName')));
-      var v = document.createElement('b'); v.textContent = '+' + effectVal + (en ? 's' : '초'); stage.querySelector('.cs-effect-txt').appendChild(v);
+      stage.querySelector('.cs-effect-txt').appendChild(document.createTextNode(MG.CostumeTeams.effectLabel(sel.id)));
+      var v = document.createElement('b'); v.textContent = MG.CostumeTeams.formatEffectValue(sel.id); stage.querySelector('.cs-effect-txt').appendChild(v);
       stage.querySelector('.cs-acquire').textContent = T('mole.cos.acquireLine');
+      addEffectGuide(stage, 'costume');
       stage.querySelectorAll('.cs-card').forEach(function (c) {
         var t = MG.CostumeTeams.teamById(c.getAttribute('data-cs-pick'));
         var owned = MG.CostumeTeams.owns(t.id), isOn = owned && t.id === equippedId;
@@ -480,8 +523,8 @@
         var on = lo.indexOf(sk.id) > -1;
         return '<div class="ks-card"><img class="ks-card-ico" alt="" src="' + sk.icon + '">' +
           '<b class="ks-card-name"></b><span class="ks-card-desc"></span>' +
-          '<span class="ks-count"><i></i><b>' + MG.Skills.getQuantity(sk.id) + '</b></span>' +
-          '<button type="button" class="ks-equip ks-press' + (on ? ' is-on' : '') + '" data-ks-equip="' + sk.id + '"><span></span></button></div>';
+          '<span class="ks-count ws-action-frame inv-count-frame"><span class="inv-count-content"><i></i><b>' + MG.Skills.getQuantity(sk.id) + '</b></span></span>' +
+          '<button type="button" class="ks-equip ks-press ws-action-frame inv-action-frame' + (on ? ' is-on' : '') + '" data-ks-equip="' + sk.id + '"><span></span></button></div>';
       }).join('');
       body.innerHTML = '<div class="ks-mount"><div class="ks-stage" data-slots="' + nSlots + '">' +
         '<div class="ks-name"></div>' +
@@ -490,12 +533,8 @@
         '<div class="ks-cards">' + cards + '</div></div></div>';
       var stage = body.querySelector('.ks-stage');
       stage.querySelector('.ks-name').textContent = weapon ? nameOf(weapon) : '';
-      stage.querySelector('.ks-slot-pill span').textContent = nSlots ? (en ? 'Skill slots ' : '스킬 슬롯 ') + nSlots : (en ? 'No skills' : '스킬 장착 불가');
-      if (weapon && weapon.id !== 'hammer') {
-        var attackLabel = document.createElement('b'); attackLabel.className = 'ks-atk-bonus';
-        attackLabel.textContent = (en ? 'Attack ' : '\uACF5\uACA9\uB825 ') + compactWeaponStat(weapon, 1);
-        stage.querySelector('.ks-slot-pill').appendChild(attackLabel);
-      }
+      stage.querySelector('.ks-slot-pill span').textContent = T('mole.guide.skillSlots');
+      addEffectGuide(stage, 'skill');
       stage.querySelectorAll('.ks-card').forEach(function (c, k) {
         var sk = MG.Skills.SKILLS[k];
         c.querySelector('.ks-card-name').textContent = en ? sk.nameEn : sk.nameKo;
@@ -504,7 +543,7 @@
         var button = c.querySelector('.ks-equip');
         var pending = !MG.Skills.available(sk.id);
         button.disabled = pending || locked || !nSlots || !MG.ItemInventory.owns('weapon', weaponId) || MG.Skills.getQuantity(sk.id) <= 0;
-        button.querySelector('span').textContent = pending ? (en ? 'Coming soon' : '설정 대기') : T(lo.indexOf(sk.id) > -1 ? 'mole.inv.equipped' : 'mole.inv.equip');
+        button.querySelector('span').textContent = T(lo.indexOf(sk.id) > -1 ? 'mole.inv.equipped' : 'mole.inv.equip');
       });
       function toggle(id) {
         if (!id || locked || !nSlots) return;
@@ -526,6 +565,22 @@
       mount.style.width = (1278 * scale) + 'px'; mount.style.height = (1230 * scale) + 'px';
       mount.style.marginLeft = ((639 - (2 + 1274) / 2) * scale) + 'px'; mount.style.marginTop = ((615 - (8 + 1210) / 2) * scale) + 'px';
       mount.style.setProperty('--ks-scale', scale);
+      var ctx = document.createElement('canvas').getContext('2d');
+      mount.querySelectorAll('.ks-card-desc').forEach(function (label) {
+        label.style.fontSize = '30px'; ctx.font = getComputedStyle(label).font;
+        var textWidth = ctx.measureText(label.textContent).width;
+        label.style.fontSize = Math.min(30, 30 * label.clientWidth / Math.max(1, textWidth)) + 'px';
+      });
+      mount.querySelectorAll('.cs-stage:not(.ph3-stage) .cs-effect-txt').forEach(function (label) {
+        label.style.fontSize = '37px'; ctx.font = getComputedStyle(label).font;
+        var textWidth = ctx.measureText(label.textContent).width;
+        label.style.fontSize = Math.min(37, 37 * Math.max(1, label.clientWidth - 10) / Math.max(1, textWidth)) + 'px';
+      });
+      mount.querySelectorAll('.ks-slot-pill.inv-title-frame,.ph3-team.inv-title-frame').forEach(function (label) {
+        var max = label.classList.contains('ph3-team') ? 38 : 50;
+        label.style.fontSize = max + 'px'; ctx.font = getComputedStyle(label).font;
+        label.style.fontSize = Math.min(max, max * Math.max(1, label.clientWidth - 24) / Math.max(1, ctx.measureText(label.textContent).width)) + 'px';
+      });
     }
     root.addEventListener('resize', function () { if (active === 'skill' || active === 'costume' || active === 'photo') fitSkillStage(); });
 
@@ -543,7 +598,7 @@
       var selId = photoFace + '_' + team;
       var nDone = PS.completedCount(); // 사용자: 완성 = 전체 기준 n/9
       var teams = PS.costumes().map(function (c) {
-        return '<button type="button" class="ph3-team ks-press' + (c.id === team ? ' is-on' : '') + '" data-ph3-team="' + c.id + '"><span></span></button>';
+        return '<button type="button" class="ph3-team ks-press ws-action-frame inv-title-frame' + (c.id === team ? ' is-on' : '') + '" data-ph3-team="' + c.id + '"><span></span></button>';
       }).join('');
       var cards = PS.faceTypes().map(function (f) {
         var id = f.id + '_' + team, done = PS.isCompleted(id), on = PS.isApplied(id);
@@ -551,15 +606,16 @@
           '<span class="ph3-own' + (done ? ' is-own' : '') + '"></span>' +
           '<span class="cs-card-char"><img class="' + (done ? '' : 'photo-slot-img--locked') + '" alt="" src="' + PS.imageFor(id) + '"></span>' +
           '<b class="ks-card-name"></b>' +
-          '<span class="ks-equip ph3-btn' + (on ? ' is-on' : '') + (done ? ' is-live ks-press' : '') + '"><span></span></span></div>';
+          '<span class="ks-equip ph3-btn ws-action-frame inv-action-frame' + (on ? ' is-on' : '') + (done ? ' is-live ks-press' : '') + '"><span></span></span></div>';
       }).join('');
       body.innerHTML = '<div class="ks-mount"><div class="ks-stage cs-stage ph3-stage">' +
         '<div class="ks-name"></div>' +
         '<div class="ks-case"><div class="cs-clip"><div class="cs-hero"><span class="cs-hero-img" data-team="' + team + '"><img class="' + (PS.isCompleted(selId) ? '' : 'photo-slot-img--locked') + '" alt="" src="' + PS.imageFor(selId) + '"></span></div></div></div>' +
-        '<div class="ks-slotpanel ph3-info"><div class="ph3-teams">' + teams + '</div>' +
+        '<div class="ks-slotpanel ph3-info"><div class="ph3-top"><div class="ph3-teams">' + teams + '</div><div class="ph3-side">' +
+          '<button type="button" class="ph3-search iw-help ks-press" aria-label="' + (en ? 'Photo effect guide' : '사진관 효과 설명') + '"></button>' +
+          '<div class="ph3-done"><span class="ph3-done-lbl"></span><b>' + nDone + '/' + PS.TOTAL + '</b></div></div></div>' +
           '<div class="cs-effect ph3-effect"><img alt="" src="assets/costume/clock.png"><span class="cs-effect-txt"></span></div>' +
-          '<div class="ph3-done"><span class="ph3-done-lbl"></span><b>' + nDone + '/' + PS.TOTAL + '</b></div>' +
-          '<button type="button" class="ph3-search ks-press" aria-label="search"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg></button></div>' +
+          '</div>' +
         '<div class="ks-cards">' + cards + '</div></div></div>';
       var stage = body.querySelector('.ks-stage');
       stage.querySelector('.ks-name').textContent = en ? 'Photo Studio' : '사진관';
@@ -620,12 +676,12 @@
         ? 'Take a face photo to complete team costume characters. Apply completed characters to the game to slow the moles going down.'
         : '얼굴을 찍어 팀 코스튬 캐릭터를 완성하고, 완성한 캐릭터를 게임에 적용하면 두더지가 내려가는 속도가 느려집니다.';
       var rows = en ? [
-        ['Team set effect', 'Complete and apply all 3 face types (Round · Sturdy · Sharp) of one team.', 'Mole descent delay ' + sec(PS.TEAM_EFFECT_VALUE)],
-        ['Full set effect', 'Complete and apply all 9 characters of the 3 teams.', 'Mole descent delay ' + sec(PS.GLOBAL_EFFECT_VALUE)],
+        ['Team set effect', 'Complete and apply all 3 face types (Round · Sturdy · Sharp) of one team.', 'HOLD TIME ' + sec(PS.TEAM_EFFECT_VALUE)],
+        ['Full set effect', 'Complete and apply all 9 characters of the 3 teams.', 'HOLD TIME ' + sec(PS.GLOBAL_EFFECT_VALUE)],
         ['Apply to game', 'Tap the button on a completed card to apply it to the game or remove it. Up to ' + PS.MAX_APPLIED + ' can be applied.', '']
       ] : [
-        ['팀세트 적용시 효과', '한 팀의 동글형·듬직형·날렵형 3개를 모두 완성해 게임에 적용합니다.', '두더지 하강 딜레이 ' + sec(PS.TEAM_EFFECT_VALUE)],
-        ['풀세트 적용시 효과', '3팀 9개 캐릭터를 모두 완성해 게임에 적용합니다.', '두더지 하강 딜레이 ' + sec(PS.GLOBAL_EFFECT_VALUE)],
+        ['팀세트 적용시 효과', '한 팀의 동글형·듬직형·날렵형 3개를 모두 완성해 게임에 적용합니다.', '홀드 타임 ' + sec(PS.TEAM_EFFECT_VALUE)],
+        ['풀세트 적용시 효과', '3팀 9개 캐릭터를 모두 완성해 게임에 적용합니다.', '홀드 타임 ' + sec(PS.GLOBAL_EFFECT_VALUE)],
         ['게임 적용', '완성한 카드의 버튼을 누르면 게임 적용 / 게임 미적용이 바뀝니다. 최대 ' + PS.MAX_APPLIED + '개까지 적용됩니다.', '']
       ];
       var sections = dialog.querySelector('.inv-guide-sections');

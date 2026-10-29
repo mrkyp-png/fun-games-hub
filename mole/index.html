@@ -552,7 +552,7 @@
           <div class="rm-headlamp-beam" aria-hidden="true"><svg viewBox="0 0 100 160" preserveAspectRatio="none"><defs><linearGradient id="rm-headlamp-cone" x1="40" y1="84" x2="17" y2="39" gradientUnits="userSpaceOnUse"><stop stop-color="#fff1ae" stop-opacity=".22"/><stop offset=".48" stop-color="#ffd56b" stop-opacity=".11"/><stop offset="1" stop-color="#ffc858" stop-opacity="0"/></linearGradient><radialGradient id="rm-headlamp-pool"><stop stop-color="#fffbd0" stop-opacity=".58"/><stop offset=".38" stop-color="#ffe49a" stop-opacity=".28"/><stop offset="1" stop-color="#ffc65a" stop-opacity="0"/></radialGradient><radialGradient id="rm-headlamp-source"><stop stop-color="#fff7c2" stop-opacity=".78"/><stop offset="1" stop-color="#ffbb43" stop-opacity="0"/></radialGradient></defs><path d="M40 85 C37 70 25 55 13 43 C10 39 14 36 20 39 C34 49 43 67 44 85 Z" fill="url(#rm-headlamp-cone)"/><ellipse cx="17" cy="42" rx="17" ry="10" fill="url(#rm-headlamp-pool)"/><ellipse cx="40" cy="85" rx="5.5" ry="4" fill="url(#rm-headlamp-source)"/></svg></div>
           <div class="rm-rounds" data-rm-rounds></div>
         </div>
-        
+
         <div class="rm-top-cap rm-mode-easy" aria-hidden="true"><img loading="lazy" decoding="async" src="assets/roundmap/frame-v1298/amateur-top-cap.webp" alt="" draggable="false"></div>
         <div class="rm-top-cap rm-mode-mid" aria-hidden="true"><img loading="lazy" decoding="async" src="assets/roundmap/frame-v1298/normal-top-cap.webp" alt="" draggable="false"></div>
         <div class="rm-top-cap rm-mode-legend" aria-hidden="true"><img loading="lazy" decoding="async" src="assets/roundmap/frame-v1298/pro-top-cap.webp" alt="" draggable="false"></div>
@@ -622,24 +622,24 @@
           <button type="button" class="rx-btn rx-btn--diff" data-rp-other><span data-i18n="mole.rp.other">난이도 선택</span></button>
           <button type="button" class="rx-btn rx-btn--b rx-btn--songs" data-rp-home><i aria-hidden="true">♫</i><span data-i18n="mole.rp.songs">곡 선택</span></button></div>
         </div></div>
-        <div class="rp-modal rb-song-modal" data-rp-songs hidden role="dialog" aria-modal="true" aria-labelledby="rb-song-title"><div class="rx-card rx-card--sel rb-song-card">
+        <div class="rp-modal rb-song-modal" data-rp-songs hidden role="dialog" aria-modal="true" aria-labelledby="rb-song-title"><button type="button" class="rx-btn rx-btn--diff rb-song-nav game-back" data-rp-songs-back aria-label="타입 선택으로 돌아가기" data-i18n-aria-label="mole.rp.songs.type"><img loading="lazy" decoding="async" src="assets/score/icon-back-red.svg" alt=""></button><div class="rx-card rx-card--sel rb-song-card">
           <div class="rx-title rp-mode-sign" aria-label="RhythmPang Beach"><img loading="lazy" decoding="async" src="assets/rhythm/ui/p-plaque.png" alt=""><svg viewBox="0 0 645 259" aria-hidden="true"><defs><path id="rp-mode-arc-songs" d="M105 177 Q322 92 540 177"/></defs><text class="rp-mode-sign-shadow" text-anchor="middle" font-size="96" font-family="Lilita One, Jua, sans-serif"><textPath data-rp-mode-name href="#rp-mode-arc-songs" startOffset="50%">BEACH</textPath></text><text class="rp-mode-sign-fill" text-anchor="middle" font-size="96" font-family="Lilita One, Jua, sans-serif"><textPath data-rp-mode-name href="#rp-mode-arc-songs" startOffset="50%">BEACH</textPath></text></svg></div>
           <h2 id="rb-song-title" data-i18n="mole.rp.songs.pick">곡을 고르세요</h2>
           <div class="rb-song-viewport"><div class="rb-song-list" data-rp-song-list></div><i class="rb-scroll-bar rb-scroll-bar--top" aria-hidden="true"></i><i class="rb-scroll-bar rb-scroll-bar--bottom" aria-hidden="true"></i></div>
           <p class="rb-song-message" data-rp-song-message role="status"></p>
-          <div class="rb-song-footer"><button type="button" class="rx-btn rx-btn--diff rb-song-nav game-back" data-rp-songs-back aria-label="타입 선택으로 돌아가기" data-i18n-aria-label="mole.rp.songs.type"><img loading="lazy" decoding="async" src="assets/score/icon-back-red.svg" alt=""></button>
+          <div class="rb-song-footer">
           <button type="button" class="rx-btn rx-btn--home rb-song-nav" data-rp-songs-home><svg class="rb-song-nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 11 12 2 22 11 20 13V22H14V15H10V22H4V13Z"/></svg><span data-i18n="mole.rp.home">홈으로</span></button></div>
           <div class="rp-ticket-badge rp-ticket-badge--songs" data-rp-ticket-count><img loading="lazy" decoding="async" src="assets/ui-approved-v1476/ticket-single.webp" alt="Tickets"><b>0</b></div>
         </div></div>
         <div class="rp-modal rp-preloader" data-rp-preloader hidden role="status" aria-live="polite"><div class="rx-card"><img loading="lazy" decoding="async" class="rp-preload-album" data-rp-preload-album alt=""><h2 data-rp-preload-title></h2><p data-i18n="mole.rp.preload.title">게임 준비 중</p><progress data-rp-preload-progress max="4" value="0"></progress><small data-rp-preload-detail data-i18n="mole.rp.preload.detail">음악과 화면을 불러옵니다</small><button type="button" class="rx-btn rx-btn--b rx-btn--songs" data-rp-preload-cancel><i aria-hidden="true">♫</i><span data-i18n="mole.rp.songs">곡 선택</span></button></div></div>
-        <div class="rp-modal rp-select" data-rp-select hidden><div class="rx-card rx-card--sel">
+        <div class="rp-modal rp-select" data-rp-select hidden><button type="button" class="rx-btn rx-btn--b rx-btn--songs rb-song-nav game-back" data-rp-song-back hidden aria-label="곡 선택으로 돌아가기" data-i18n-aria-label="mole.rp.songs"><img loading="lazy" decoding="async" src="assets/score/icon-back-red.svg" alt=""></button><div class="rx-card rx-card--sel">
           <div class="rx-title rp-mode-sign" aria-label="RhythmPang Beach"><img loading="lazy" decoding="async" src="assets/rhythm/ui/p-plaque.png" alt=""><svg viewBox="0 0 645 259" aria-hidden="true"><defs><path id="rp-mode-arc-difficulty" d="M105 177 Q322 92 540 177"/></defs><text class="rp-mode-sign-shadow" text-anchor="middle" font-size="96" font-family="Lilita One, Jua, sans-serif"><textPath data-rp-mode-name href="#rp-mode-arc-difficulty" startOffset="50%">BEACH</textPath></text><text class="rp-mode-sign-fill" text-anchor="middle" font-size="96" font-family="Lilita One, Jua, sans-serif"><textPath data-rp-mode-name href="#rp-mode-arc-difficulty" startOffset="50%">BEACH</textPath></text></svg></div>
           <p class="rb-selected-song" data-rp-selected-song hidden></p>
           <div class="rx-sub"><span data-i18n="mole.rp.pick">난이도를 고르세요</span></div>
           <button type="button" class="rx-btn rx-dbtn rx-dbtn--easy" data-rp-diff="EASY"><small></small></button>
           <button type="button" class="rx-btn rx-dbtn rx-dbtn--normal" data-rp-diff="NORMAL"><small></small></button>
           <button type="button" class="rx-btn rx-dbtn rx-dbtn--hard" data-rp-diff="HARD"><small></small></button>
-          <button type="button" class="rx-btn rx-btn--b rx-btn--songs rb-song-nav game-back" data-rp-song-back hidden aria-label="곡 선택으로 돌아가기" data-i18n-aria-label="mole.rp.songs"><img loading="lazy" decoding="async" src="assets/score/icon-back-red.svg" alt=""></button>
+
           <button type="button" class="rx-btn rx-btn--home rx-btn--selhome" data-rp-sel-close><span data-i18n="mole.rp.home">홈으로</span></button>
           <div class="rp-ticket-badge rp-ticket-badge--select" data-rp-ticket-count><img loading="lazy" decoding="async" src="assets/ui-approved-v1476/ticket-single.webp" alt="Tickets"><b>0</b></div>
         </div></div>
@@ -908,7 +908,7 @@
             <button type="button" class="fs-fcard" data-fs-fcard="sturdy"><img loading="lazy" decoding="async" class="fs-fcard-q" src="assets/facestudio/qcard.png" alt=""><img loading="lazy" decoding="async" class="fs-fcard-char" alt=""><b data-i18n="mole.fs.sturdy">듬직형</b><small data-i18n="mole.fs.sturdyDesc">넓은 얼굴로 강하고 듬직한 느낌</small></button>
             <button type="button" class="fs-fcard" data-fs-fcard="sharp"><img loading="lazy" decoding="async" class="fs-fcard-q" src="assets/facestudio/qcard.png" alt=""><img loading="lazy" decoding="async" class="fs-fcard-char" alt=""><b data-i18n="mole.fs.sharp">날렵형</b><small data-i18n="mole.fs.sharpDesc">슬림한 얼굴로 날렵하고 세련된 느낌</small></button>
           </div>
-          <div class="fs-mascot"><img loading="lazy" decoding="async" src="assets/facestudio/mascot.png" alt=""><p class="fs-bubble" data-fs-bubble></p></div>
+          <div class="fs-mascot"><img loading="lazy" decoding="async" src="assets/costume/char-blue_bears-v1406.webp" alt=""><p class="fs-bubble" data-fs-bubble></p></div>
           <button type="button" class="fs-btn ws-action-frame" data-fs-face-ok><span data-i18n="mole.fs.faceOk">이 얼굴형으로 만들기</span></button>
         </section>
         <!-- SCREEN_07 완성 -->
@@ -1058,7 +1058,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1507 G</div>
+        <div id="build-tag" aria-hidden="true">V 1508 G</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1342,7 +1342,7 @@ window.FGH.rollOut = function (el, done) {
         var gate = window.__moleAssetGate;
         function waitForCurrentWorker(registration) {
           return new Promise(function (resolve, reject) {
-            var latest = 'v=1507-G';
+            var latest = 'v=1508-G';
             var done = false;
             var timer = setTimeout(function () { finish(); }, 25000);
             function finish(error) {
@@ -1369,7 +1369,7 @@ window.FGH.rollOut = function (el, done) {
           console.warn('Starting while service worker registration continues in background');
           if (gate) gate.resolveCache();
         }, 30000);
-        navigator.serviceWorker.register('sw.js?v=1507-G').then(waitForCurrentWorker).then(function () {
+        navigator.serviceWorker.register('sw.js?v=1508-G').then(waitForCurrentWorker).then(function () {
           clearTimeout(registrationTimer);
           if (gate) gate.resolveCache();
         }).catch(function (error) {

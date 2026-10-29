@@ -20,8 +20,8 @@
     // 배율은 §12 점수표 위에 곱해진다 (사용자 요청: 라이트 DIM ×1.2 / OFF ×2.0, 피버 ×1.5 / ×3.0).
     function setMult(m) { mult = (typeof m === 'number' && m > 0) ? m : 1; }
 
-    function onMoleHit() {
-      combo += 1; kills += 1; if (combo > maxCombo) maxCombo = combo;
+    function onMoleHit(countKill) {
+      combo += 1; if (countKill !== false) kills += 1; if (combo > maxCombo) maxCombo = combo;
       score += Math.round(comboToPoints(combo) * mult);
     }
 

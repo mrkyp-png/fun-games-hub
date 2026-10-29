@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+  <title>Blue circular help icon</title>
+  <defs>
+    <linearGradient id="rim" x1="128" y1="4" x2="128" y2="252" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#70DFFF"/><stop offset=".2" stop-color="#47BFFF"/><stop offset=".65" stop-color="#1778D8"/><stop offset="1" stop-color="#103F89"/>
+    </linearGradient>
+    <radialGradient id="face" cx="0" cy="0" r="1" gradientTransform="translate(83 66) rotate(58) scale(200)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#35BFFF"/><stop offset=".55" stop-color="#168EF4"/><stop offset="1" stop-color="#0C58C2"/>
+    </radialGradient>
+    <linearGradient id="inner-edge" x1="128" y1="18" x2="128" y2="238" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#124888"/><stop offset=".6" stop-color="#1462BB"/><stop offset="1" stop-color="#6EDAFF"/>
+    </linearGradient>
+  </defs>
+  <circle cx="128" cy="128" r="124" fill="url(#rim)" stroke="#10396F" stroke-width="2"/>
+  <circle cx="128" cy="128" r="120" stroke="#C6F2FF" stroke-opacity=".28" stroke-width="2"/>
+  <circle cx="128" cy="128" r="108" fill="url(#face)" stroke="url(#inner-edge)" stroke-width="4"/>
+  <g id="help-glyph" transform="translate(-2.125 7.375)">
+  <path d="M96 89C96 54 160 52 164 86C168 112 128 116 128 143" stroke="#123F82" stroke-width="30" stroke-linecap="round"/>
+  <path d="M96 89C96 54 160 52 164 86C168 112 128 116 128 143" stroke="#FFFDF5" stroke-width="20" stroke-linecap="round"/>
+  <circle cx="128" cy="179" r="13" fill="#FFFDF5" stroke="#123F82" stroke-width="5"/>
+  </g>
+</svg>

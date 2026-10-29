@@ -1113,7 +1113,7 @@
     if (!live.length) return;
     const sp = live[Math.floor(state.rng.next() * live.length)];
     state.aiNextAt = now + AI_HIT_GAP_MS;
-    const bad = handleCell(sp.regionId);
+    const bad = handleCell(sp.regionId, { source: 'ai' });
     if (sharedLaneControls && sharedLaneControls.flashAi) sharedLaneControls.flashAi(sp.regionId, bad);
   }
   function runSkillEffect(id) {
@@ -1673,7 +1673,8 @@
       cannonBurst: weapon === 'cannon',   // 대포 연사 스킬 (2·3타 두더지 연타 확률 10%)
       burstBonus: (MG.Workshop ? MG.Workshop.weaponChanceBonus('cannon') : 0), // 제작소 강화 +단계×1%p(v750)
       moleUpBonus: weapon === 'alipunch' ? 0.1 : 0,   // 알리 펀치 [방어]: 내려가기 전 0.1초 더 여유(§7)
-      costumeUpBonus: MG.CostumeTeams.activeEffectValue() + (MG.PhotoStudio ? MG.PhotoStudio.gameSetEffectValue() : 0)  // 착용중인 코스튬 효과: 두더지 하강 딜레이
+      costumeEffects: MG.CostumeTeams.activeEffects(),
+      costumeUpBonus: MG.CostumeTeams.activeEffectValue() + (MG.PhotoStudio ? MG.PhotoStudio.gameSetEffectValue() : 0) // Equipped HOLD TIME plus unchanged photo-set rewards.
     };
 
     if (isWarmupRound()) { // v949: 노말·프로 1라운드(16구멍) 시작값 — 이후 updateLiveDifficulty 가 60초 동안 이어 올림
@@ -1802,6 +1803,7 @@
     const goldCloneOpts = (weapon === 'goldhammer' || weapon === 'hammer') ? Object.assign({}, hammerOpts, { idle: undefined, cssClass: (hammerOpts.cssClass ? hammerOpts.cssClass + ' ' : '') + 'lane-hammer--clone' }) : null;
 
     state = {
+      costumeStats: { safeRolls: 0, safeProcs: 0, doubleRolls: 0, doubleProcs: 0, doubleHits: 0 },
       regions, spawnPoints, scheduler, holeLayer, laneHammer, weapon, rng, config, goldCloneOpts,
       timeRemaining: roundSeconds(),
       aliClones: [], // 알리펀치 동시타격 분신 글러브들 — 메인 루프가 매 프레임 update() 돌려줘야 실제로 스윙한다.
@@ -2249,7 +2251,8 @@
   }
 
   // ---------- 구멍 버튼 입력 → 그 구멍 타격 ----------
-  function handleCell(regionId) {
+  function handleCell(regionId, hitOptions) {
+    const source = hitOptions && hitOptions.source || 'player';
     recordInputTrace('handler', { regionId });
     if (!state || state.ended || state.introActive || state.paused) {
       recordInputTrace('skip', { regionId, reason: !state ? 'no-state' : state.ended ? 'ended' : state.introActive ? 'intro' : 'paused' });
@@ -2269,13 +2272,23 @@
     recordInputTrace('resolved', { regionId });
 
     const primary = results[0] || null;
+    const struck = primary && regionPops.find((p) => p.id === primary.popId);
+    const doubleChance = state.config.costumeEffects && state.config.costumeEffects.doubleHitChance || 0;
+    if (source === 'player' && doubleChance > 0 && primary && !primary.ignored && !primary.juggle && primary.done &&
+        primary.type === 'mole' && effectiveHitType(state.config, primary.type) === 'mole' && !primary.bombKind && struck && struck.hitsRequired === 1) {
+      state.costumeStats.doubleRolls++;
+      if (state.rng.next() < doubleChance) {
+        const extra = state.scheduler.resolveHit(primary.popId, { doubleHit: true });
+        if (extra) { results.push(extra); state.costumeStats.doubleProcs++; state.costumeStats.doubleHits++; recordInputTrace('costume-double-hit', { popId: primary.popId, regionId }); }
+      }
+    }
     const targetX = primary ? primary.xFrac : sp.x;
     const targetY = primary ? primary.yFrac : sp.y;
 
     // 두더지 현재 프레임(전신/빠끔1/빠끔2/모자)에 따라 망치 타격점 높이가 달라진다 — 헬멧을 때린다.
     const frameKey = sharedPopElements.frameKeyAt ? sharedPopElements.frameKeyAt(regionId) : null;
     // regionId 는 알리 펀치가 어느 글러브·펀치스타일로 때릴지 구역 판정에 쓴다(다른 무기는 무시).
-    state.laneHammer.strike(targetX, targetY, () => onHammerImpact(targetX, targetY, results, { regionId }), frameKey, regionId);
+    state.laneHammer.strike(targetX, targetY, () => onHammerImpact(targetX, targetY, results, { regionId, source }), frameKey, regionId);
     recordInputTrace('strike-queued', { regionId });
 
     // 대포 연사: 이번 첫 타에 burst 가 떴으면 — 라운드6처럼 동물이 실제 타겟인 경우도 포함해
@@ -2503,12 +2516,24 @@
       if (effType === 'mole' || r.bombKind) {
         if (r.juggle) {
           const before = run.combo.score;
-          run.combo.onJuggle(JUGGLE_BONUS); // 콤보 +1 + 작은 고정 보너스 (점수표 안 씀)
+          if (r.doubleHit) run.combo.onMoleHit(false); // Normal combo scoring, one extra hit and no second kill.
+          else run.combo.onJuggle(JUGGLE_BONUS); // Existing manual repeat bonus stays unchanged.
           MG.HitFx.scorePop(board, r.xFrac, r.yFrac, run.combo.score - before);
           checkComboLifeBonus();
           MG.HitFx.juggle(board, r.xFrac, r.yFrac);
           moleHits += 1;
         } else if (r.done && r.bombKind) {
+          // SAFE CHANCE covers both normal/strong carried bombs; never consumes a shield.
+          const safeChance = cfg.costumeEffects && cfg.costumeEffects.safeChance || 0;
+          if (safeChance > 0 && (!opts || !opts.source || opts.source === 'player')) {
+            state.costumeStats.safeRolls++;
+            if (state.rng.next() < safeChance) {
+              state.costumeStats.safeProcs++;
+              MG.HitFx.juggle(board, r.xFrac, r.yFrac);
+              recordInputTrace('costume-safe-chance', { kind: r.bombKind, regionId: r.regionId });
+              return;
+            }
+          }
           // 폭탄 든 두더지(2026-09-14 확정) — 점수 없이 페널티만. 일반 하트-1, 강력 하트-2.
           // 챕터8(reverseTarget)은 두더지 자체가 장애물이라 기본 장애물 페널티(-1)가 폭탄
           // 페널티에 합산됨(사용자 지정: "두더지 -1 + 폭탄 -1/강력-2, 합산") — 일반 -1→-2,

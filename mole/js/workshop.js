@@ -38,6 +38,11 @@
     return kind === 'weapon' ? ({ cannon: 0.10, goldhammer: 0.15, alipunch: 0.20 }[id] + weaponChanceBonus(id)) : MG.CostumeTeams.effectValue(id);
   }
   function skillChange(kind, id, before, after) {
+    if (kind === 'costume') {
+      var info = MG.CostumeTeams.effectInfo(id);
+      var format = function (value) { return info.unit === 'percent' ? Math.round(value * 100) + '%' : '+' + value.toFixed(2).replace(/0$/, '') + T('mole.ws.seconds'); };
+      return MG.CostumeTeams.effectLabel(id) + ' ' + format(before) + ' → ' + format(after);
+    }
     return T('mole.ws.effect.' + (kind === 'weapon' ? id : 'costume'), {
       before: kind === 'weapon' ? Math.round(before * 100) : before.toFixed(2),
       after: kind === 'weapon' ? Math.round(after * 100) : after.toFixed(2)
@@ -59,7 +64,19 @@
     var el = opts.root;
     var $ = function (s) { return el.querySelector(s); };
     var noticeSlot = $('[data-ws-notice-slot]'), mainNotice = $('.ws-main-notice');
-    function fitNoticeSlot() { var height = mainNotice.getBoundingClientRect().height; if (height) noticeSlot.style.height = height + 'px'; }
+    var noticeMeasure = document.createElement('canvas').getContext('2d');
+    function fitNoticeSlot() {
+      var label = $('[data-ws-notice]');
+      label.style.fontSize = '';
+      if (label.classList.contains('is-single-line') && noticeMeasure && label.clientWidth) {
+        var style = getComputedStyle(label), size = parseFloat(style.fontSize);
+        noticeMeasure.font = style.fontWeight + ' ' + size + 'px ' + style.fontFamily;
+        var width = noticeMeasure.measureText(label.textContent).width;
+        if (width > label.clientWidth) label.style.fontSize = Math.floor(size * label.clientWidth / width * 10) / 10 + 'px';
+      }
+      var height = mainNotice.getBoundingClientRect().height; if (height) noticeSlot.style.height = height + 'px';
+    }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitNoticeSlot);
     var noticeObserver = new ResizeObserver(fitNoticeSlot);
     noticeObserver.observe(mainNotice);
     var tab = 'weapon', idx = { weapon: 0, costume: 0 };
@@ -266,6 +283,7 @@
       $('[data-ws-coins]').textContent = coins.toLocaleString('en-US');
       $('[data-ws-coins]').classList.toggle('is-short', coins < COST);
       var notOwned = !!it && it.owned === false;
+      $('[data-ws-notice]').classList.toggle('is-single-line', notOwned);
       var effect = $('[data-ws-material-effect]');
       effect.hidden = !it || notOwned || matImg.hidden;
       $('[data-ws-material-effect-label]').textContent = '';
@@ -273,8 +291,8 @@
       if (!effect.hidden) {
         var value = skillValue(tab, it.id), weapon = tab === 'weapon';
         var format = function (v) { return weapon ? Math.round(v * 100) + '%' : v.toFixed(2) + T('mole.ws.seconds'); };
-        $('[data-ws-material-effect-label]').textContent = T('mole.ws.skill.' + (weapon ? it.id : 'costume'));
-        $('[data-ws-material-effect-value]').textContent = format(value) + (lv >= MAX ? ' (MAX)' : ' → ' + format(value + (weapon ? 0.01 : 0.05)));
+        $('[data-ws-material-effect-label]').textContent = weapon ? T('mole.ws.skill.' + it.id) : MG.CostumeTeams.effectLabel(it.id);
+        $('[data-ws-material-effect-value]').textContent = weapon ? format(value) + (lv >= MAX ? ' (MAX)' : ' → ' + format(value + 0.01)) : MG.CostumeTeams.formatEffectValue(it.id, lv) + (lv >= MAX ? ' (MAX)' : ' → ' + MG.CostumeTeams.formatEffectValue(it.id, lv + 1));
       }
       $('[data-ws-target]').classList.toggle('is-notowned', notOwned);
       var ok = !!it && !notOwned && lv < MAX && mats > 0 && !!selMat && coins >= COST && !running;

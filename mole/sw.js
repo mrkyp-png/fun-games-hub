@@ -3,8 +3,8 @@
 // 폴백 전용으로만 갱신한다. (예전엔 stale-while-revalidate라 배포해도 "다음 실행"에야
 // 반영돼 사용자 체감 대기가 길었음 — 온라인=항상 최신, 오프라인=마지막 캐시로 변경.)
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
-// V1507 G removes red glove edge remnants without expanding the recolored region.
-const CACHE = 'mole-game-v1503-G';
+// V1508 G applies team effects and refreshed shop, inventory and photo controls.
+const CACHE = 'mole-game-v1508-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -16,6 +16,8 @@ const SHELL = [
   './assets/score/bg-palace-sides-kept-v1493.jpg',
   './assets/score/icon-close-red.svg',
   './assets/score/icon-back-red.svg',
+  './assets/score/icon-help-blue.svg',
+  './assets/inventory/ui-v1379/title-blue-9slice-v1508.svg',
   './assets/score/card-1-clean-75c39b75eb.svg',
   './assets/score/card-2-clean-6cf5c67ce5.svg',
   './assets/score/card-3-clean-aa5a6fdc34.svg',
