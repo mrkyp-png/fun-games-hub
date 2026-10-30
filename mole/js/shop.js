@@ -331,7 +331,11 @@
       alignCoinReflections();
     }
 
-    function done() { render(); refreshHudFlyNumbers(); if (opts.onChange) opts.onChange(); }
+    function done(keepWeaponPreview) {
+      // Weapon purchases change balances/ownership, not the cards or their live models.
+      if (!keepWeaponPreview || activeTab !== 'weapon') render();
+      refreshHudFlyNumbers(); if (opts.onChange) opts.onChange();
+    }
 
     function alignCoinReflections() {
       el.querySelectorAll('.shop-card--coin-small .shop-coin-small-art>img,.shop-coin-bulk-pile,.hero-coin-ad-coin').forEach(function (img) {
@@ -392,7 +396,7 @@
 
     function buyProduct(sku) {
       var result = MG.ItemInventory.purchase(sku);
-      if (result.ok) { done(); return; }
+      if (result.ok) { done(sku.indexOf('weapon.') === 0); return; }
       if (result.reason === 'coins') alert(T('mole.shop.noCoin'));
       else alert(I18N().lang === 'en' ? 'Could not save. Please try again.' : '저장하지 못했습니다. 다시 시도해 주세요.');
     }

@@ -19,6 +19,22 @@
     save(list);
   }
   function list() { var now = Date.now(); return load().filter(function (m) { return !m.expireAt || m.expireAt > now; }); }
+  // User-requested scroll samples: local browser only, once, preserving other mail.
+  function seedLocalScrollSamples() {
+    var loc = root.location || {}, store = ls(), marker = 'mole.mailbox.local-scroll-ten.v1';
+    if (loc.protocol !== 'file:' && !/^(localhost|127\.0\.0\.1|\[?::1\]?)$/.test(loc.hostname || '')) return;
+    if (!store || store.getItem(marker)) return;
+    var existing = load(), batch = [], used = {}, now = Date.now();
+    var welcome = existing.find(function (m) { return m.id === 'welcome1'; });
+    for (var i = 1; i <= 10; i++) {
+      var id = 'local-welcome-scroll-' + i;
+      var m = (i === 1 && welcome) || existing.find(function (item) { return item.id === id; });
+      if (!m) m = { id: id, title: '환영선물 도착' + (i === 1 ? '' : ' ' + i), description: '팡팡 우체국에서 보내드리는 환영 선물입니다.', mailType: 'preview', rewardType: 'coin', rewardAmount: 1000, isRead: false, isClaimed: false, createdAt: now - i, expireAt: 0 };
+      batch.push(m); used[m.id] = true;
+    }
+    save(batch.concat(existing.filter(function (m) { return !used[m.id]; })));
+    store.setItem(marker, '1');
+  }
   function unreadCount() { return list().filter(function (m) { return !m.isRead; }).length; }
   function markRead(id) { var l = load(); l.forEach(function (m) { if (m.id === id) m.isRead = true; }); save(l); }
 
@@ -70,15 +86,37 @@
     var tx = function (s) { var v = T(s); return v === s || !v ? s : v; };
     el.classList.add('mb-screen');
     el.innerHTML =
+      '<svg class="mb-color-defs" width="0" height="0" aria-hidden="true"><defs>' +
+        '<filter id="mb-wood-sky-color" color-interpolation-filters="sRGB" x="0" y="0" width="100%" height="100%">' +
+          '<feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 32 0 -32 0 -0.8" result="woodMask"/>' +
+          '<feColorMatrix in="SourceGraphic" type="matrix" values=".09771372 .32871520 .03318406 0 0 .18032622 .60662896 .06123967 0 0 .22474155 .75604496 .07632333 0 0 0 0 0 1 0" result="skyWood"/>' +
+          '<feComposite in="skyWood" in2="woodMask" operator="in" result="coloredWood"/>' +
+          '<feComposite in="SourceGraphic" in2="woodMask" operator="out" result="originalRest"/>' +
+          '<feComposite in="coloredWood" in2="originalRest" operator="arithmetic" k2="1" k3="1"/>' +
+        '</filter></defs></svg>' +
       '<div class="mb-frame">' +
-        '<span class="mb-top-grain" aria-hidden="true"></span>' +
-        '<div class="mb-head">' +
-          '<div class="mb-plank"><img class="mb-plank-img" src="assets/mailbox/plank.png" alt=""><img class="mb-plank-env" src="assets/mailbox/env-heart.png" alt=""></div>' +
+        '<div class="mb-list" data-mb-list></div>' +
+        '<div class="mb-foot" hidden>' +
           '<button type="button" class="mb-all ws-action-frame mail-action-frame mail-all-frame" data-mb-all aria-label="claim all"><span class="mb-all-icons"><img src="assets/mailbox/ic-mail.png" alt=""><img src="assets/mailbox/ic-check.png" alt=""></span></button>' +
         '</div>' +
-        '<div class="mb-list" data-mb-list></div>' +
       '</div>';
     var listEl = el.querySelector('[data-mb-list]');
+    var frameEl = el.querySelector('.mb-frame');
+    var footEl = el.querySelector('.mb-foot');
+    function syncMailboxColumns() {
+      if (!frameEl || !frameEl.style) return;
+      // The floating button adds 56px of end clearance, never a reserved footer row.
+      // Exclude that clearance so it cannot make the button keep itself visible.
+      var fullListHeight = Math.max(0, frameEl.clientHeight - 28);
+      var endClearance = frameEl.classList.contains('mb-show-claim-all') ? 56 : 0;
+      var mailContentHeight = listEl.scrollHeight - endClearance;
+      var showAll = fullListHeight > 0 && mailContentHeight > fullListHeight + 1 && list().some(function (m) { return !m.isClaimed; });
+      footEl.hidden = !showAll;
+      frameEl.classList.toggle('mb-show-claim-all', showAll);
+      frameEl.style.setProperty('--mb-scrollbar-width', Math.max(0, listEl.offsetWidth - listEl.clientWidth) + 'px');
+    }
+    if (root.ResizeObserver) new root.ResizeObserver(syncMailboxColumns).observe(listEl);
+    else if (root.addEventListener) root.addEventListener('resize', syncMailboxColumns);
     el.querySelector('[data-mb-all]').addEventListener('click', function () {
       var got = claimAll(); if (!got.length) return;
       render(false); if (opts.onClaim) opts.onClaim();
@@ -88,6 +126,7 @@
     function fmtN(n) { return 'x' + String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
 
     function render(enter) {
+      requestAnimationFrame(syncMailboxColumns);
       var mails = list();
       if (!mails.length) { listEl.innerHTML = '<p class="mb-empty"></p>'; listEl.firstChild.textContent = T('mole.shop.mailboxEmpty'); return; }
       listEl.innerHTML = '';
@@ -125,7 +164,7 @@
         });
       });
     }
-    return { show: function () { listEl.scrollTop = 0; render(true); syncRemote(function (n) { if (n) render(false); }); } };
+    return { show: function () { seedLocalScrollSamples(); listEl.scrollTop = 0; render(true); syncRemote(function (n) { if (n) render(false); }); } };
   }
 
   var api = { syncRemote: syncRemote, send: send, list: list, unreadCount: unreadCount, markRead: markRead, claim: claim, claimAll: claimAll, createScreen: createScreen };

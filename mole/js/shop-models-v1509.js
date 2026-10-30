@@ -216,12 +216,31 @@ async function create(host,id,index,options={}){
   return view;
  }catch(error){view.dispose();host.dataset.modelError=error.message;}finally{if(releaseInit)releaseInit();}
 }
-function createVisible(host,id,options){if(options.motion!=='inventory'||!('IntersectionObserver' in root))return create(host,id,0,options);return new Promise(resolve=>{const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting&&e.intersectionRatio>0)){observer.disconnect();waiting.delete(host);if(host.isConnected)create(host,id,0,options).then(resolve);else resolve();}},{threshold:0});waiting.set(host,{observer,resolve});observer.observe(host);});}
+function inventoryVisible(host){
+ const screen=host.closest('#inventory-screen');
+ if(!host.isConnected||document.hidden||!screen||screen.hidden||(activeScreen&&screen.id!==activeScreen))return false;
+ const rect=host.getBoundingClientRect(),clip=host.closest('.iw-pages,.ks-case')?.getBoundingClientRect();
+ return !!(clip&&rect.width>0&&rect.height>0&&clip.width>0&&clip.height>0&&rect.right>clip.left&&rect.left<clip.right&&rect.bottom>clip.top&&rect.top<clip.bottom);
+}
+function createVisible(host,id,options){
+ if(options.motion!=='inventory'||!('IntersectionObserver' in root))return create(host,id,0,options);
+ return new Promise(resolve=>{
+  const observer=new IntersectionObserver(()=>{if(inventoryVisible(host))begin();},{threshold:0});
+  const record={observer,resolve,start:begin};
+  function begin(){if(waiting.get(host)!==record)return;observer.disconnect();waiting.delete(host);if(host.isConnected)create(host,id,0,options).then(resolve);else resolve();}
+  waiting.set(host,record);observer.observe(host);if(inventoryVisible(host))begin();
+ });
+}
+function refreshInventory(host){
+ for(const [element,record] of [...waiting])if(host.contains(element)&&inventoryVisible(element))record.start();
+ for(const v of views)if(host.contains(v.host)&&v.options.motion==='inventory'){const wasVisible=v.inView;v.inView=inventoryVisible(v.host);if(v.inView!==wasVisible)v.lastSeen=performance.now();v.resize?.();}
+ start();
+}
 function snapshot(preview){for(const v of views){const target=preview.querySelector('.shop-model-ready[data-model="'+v.host.dataset.model+'"] canvas');if(!target||!v.host.classList.contains('shop-model-ready'))continue;try{v.draw(performance.now());const img=document.createElement('img');img.className='shop-model-canvas shop-model-snapshot';img.alt='';img.src=v.host.querySelector('canvas').toDataURL('image/png');target.replaceWith(img);}catch(error){target.remove();preview.querySelector('[data-model="'+v.host.dataset.model+'"]')?.classList.remove('shop-model-ready');}}}
 function clear(){for(const v of [...views])if(v.host.closest('#shop-screen'))v.dispose();for(const host of dormant.keys())if(host.closest('#shop-screen'))dormant.delete(host);if(!views.size){if(frameId)cancelAnimationFrame(frameId);frameId=0;lastTick=0;}}
 function activateScreen(id){activeScreen=id;const now=performance.now();for(const v of [...views]){v.lastSeen=now;const screen=v.host.closest('#shop-screen,#inventory-screen,#workshop-screen,#game-screen');if(screen&&screen.id!==id&&!v.options.external&&!v.options.manual){dormant.set(v.host,{id:v.id,index:v.index,options:v.options,elapsed:v.elapsed});v.dispose();}}for(const [host,record] of [...dormant]){if(!host.isConnected){dormant.delete(host);continue;}if(host.closest('#shop-screen,#inventory-screen,#workshop-screen,#game-screen')?.id===id){dormant.delete(host);create(host,record.id,record.index,record.options).then(view=>{if(view){view.elapsed=record.elapsed;view.draw(performance.now());}});}}if(frameId){cancelAnimationFrame(frameId);frameId=0;}start();}
 function attach(cards,weapons){clear();const cardsList=cards.querySelectorAll('.shop-card--weapon-product');cardsList.forEach((card,index)=>{const id=weapons[index]?.id;if(!paths[id])return;const host=card.querySelector('.shop-card-img-box,.shop-card-badge--default-weapon');if(host)create(host,id,index);});}
 root.MoleGame=root.MoleGame||{};root.MoleGame.ShopModels={attach,clear,snapshot};
-root.MoleGame.WeaponModels={create:(host,id,options={})=>createVisible(host,id,options),refreshWithin:host=>{for(const v of views)if(host.contains(v.host)&&v.options.motion==='inventory'){const wasVisible=v.inView,rect=v.host.getBoundingClientRect(),clip=v.host.closest('.iw-pages,.ks-case')?.getBoundingClientRect();if(clip)v.inView=rect.right>clip.left&&rect.left<clip.right&&rect.bottom>clip.top&&rect.top<clip.bottom;if(v.inView!==wasVisible)v.lastSeen=performance.now();v.resize?.();}start();},setActiveScreen:activateScreen,stats:()=>[...views].map(v=>({screen:v.host.closest('#shop-screen,#inventory-screen,#workshop-screen,#game-screen')?.id,animated:v.animated,drawable:!!drawable(v),frames:+v.host.dataset.modelFrame||0})),clearWithin:host=>{for(const v of [...views])if(host.contains(v.host))v.dispose();for(const element of dormant.keys())if(host.contains(element))dormant.delete(element);for(const [element,record] of waiting)if(host.contains(element)){record.observer.disconnect();record.resolve();waiting.delete(element);}}};
+root.MoleGame.WeaponModels={create:(host,id,options={})=>createVisible(host,id,options),refreshWithin:refreshInventory,setActiveScreen:activateScreen,stats:()=>[...views].map(v=>({screen:v.host.closest('#shop-screen,#inventory-screen,#workshop-screen,#game-screen')?.id,animated:v.animated,drawable:!!drawable(v),frames:+v.host.dataset.modelFrame||0})),clearWithin:host=>{for(const v of [...views])if(host.contains(v.host))v.dispose();for(const element of dormant.keys())if(host.contains(element))dormant.delete(element);for(const [element,record] of waiting)if(host.contains(element)){record.observer.disconnect();record.resolve();waiting.delete(element);}}};
 new MutationObserver(()=>{for(const v of [...views])if(!v.host.isConnected)v.dispose();for(const host of dormant.keys())if(!host.isConnected)dormant.delete(host);for(const [host,record] of waiting)if(!host.isConnected){record.observer.disconnect();record.resolve();waiting.delete(host);}}).observe(document.body,{childList:true,subtree:true});
 })(window);
