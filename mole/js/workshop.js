@@ -60,6 +60,46 @@
   }
   function nameOf(it) { return root.FGH.I18N.lang === 'en' ? it.en : it.ko; }
 
+  // Keep the waiting 3D image; aim 10 degrees clockwise from 5 o'clock.
+  // All lengths are layout pixels; ancestor screen scale cancels out in the fractions.
+  function solveHammerContact(contact, width, height, layerWidth, layerHeight, target) {
+    var hx = (contact.handleEnd.x - contact.handleTop.x) * width;
+    var hy = (contact.handleEnd.y - contact.handleTop.y) * height;
+    var degrees = 70 - Math.atan2(hy, hx) * 180 / Math.PI;
+    var angle = degrees * Math.PI / 180;
+    var dx = (contact.point.x - .49) * width, dy = (contact.point.y - .72) * height;
+    return { degrees: degrees, x: target.x - (dx * Math.cos(angle) - dy * Math.sin(angle)) / layerWidth,
+      y: target.y - (dx * Math.sin(angle) + dy * Math.cos(angle)) / layerHeight };
+  }
+
+  function workshopSwingPose(swing, hit, age) {
+    function curve(a, control, b, t) {
+      var u = 1 - t;
+      return { x:u*u*a.x + 2*u*t*control.x + t*t*b.x, y:u*u*a.y + 2*u*t*control.y + t*t*b.y };
+    }
+    var raised = { x:Math.min(.86, hit.x + .04), y:Math.max(.18, hit.y - .25) };
+    var ready = hit.degrees - 32, lift = .38, hold = .08, down = .11, p, k;
+    if (swing.fired) {
+      k = Math.min(1, Math.max(0, (age - swing.impactAge) / .09));
+      return {x:hit.x + .006*k, y:hit.y - .025*k, degrees:hit.degrees - 5*k, impact:false};
+    }
+    if (age < lift) {
+      k = 1 - Math.pow(1 - Math.max(0, age / lift), 3);
+      p = curve(swing, {x:Math.min(.94, Math.max(swing.x, raised.x) + .14), y:Math.max(.18, swing.y - .14)}, raised, k);
+      p.degrees = swing.degrees + (ready - swing.degrees)*k;
+    } else if (age < lift + hold) {
+      p = {x:raised.x, y:raised.y, degrees:ready};
+    } else if (age < lift + hold + down) {
+      // Accelerate into the egg from above along a curved, clockwise downswing.
+      k = Math.pow((age - lift - hold) / down, 2);
+      p = curve(raised, {x:hit.x + .12, y:raised.y + .04}, hit, k);
+      p.degrees = ready + (hit.degrees - ready)*k;
+    } else {
+      return {x:hit.x, y:hit.y, degrees:hit.degrees, impact:true};
+    }
+    p.impact = false; return p;
+  }
+
   function create(opts) {
     var el = opts.root;
     var $ = function (s) { return el.querySelector(s); };
@@ -113,7 +153,7 @@
       return idleGooseReady;
     }
     var hammerShadow = null, shadowHammerEl = null, workshopModelView = null;
-    var workshopFootprint = null;
+    var workshopFootprint = null, workshopStrike = null;
     var WORKSHOP_IDLE_YAW = Math.PI - Math.PI / 6;
     // Transparent layout carrier only; the visible hammer is always the 3D canvas.
     var WORKSHOP_MODEL_CARRIER = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="487" height="680"/%3E';
@@ -164,6 +204,7 @@
       lastHammerHitIndex = next; playHammerSound(hammerHitAudios[next], 0.55);
     }
     function clearWorkshopHammer() {
+      workshopStrike = null;
       if (workshopModelView) workshopModelView.dispose();
       workshopModelView = null;
       workshopFootprint = null;
@@ -180,7 +221,9 @@
     }
     function startHammerZapAnimation() {
       stopHammerZapAnimation(false);
-      if (workshopModelView) workshopModelView.setPose({yaw:Math.PI,cameraPitch:0,zap:true});
+      // Keep the exact resting 3D view (including a user's manual rotation).
+      // The same visible hammer flies and swings; a strike never switches its camera/face.
+      if (workshopModelView) workshopModelView.setPose({zap:true});
     }
     function createWorkshopHammer(layer, onLanded) {
       clearWorkshopHammer();
@@ -244,7 +287,8 @@
         if (!workshopHammer) { hammerRaf = 0; return; }
         var dt = Math.min(0.05, Math.max(0, (now - previous) / 1000));
         previous = now;
-        workshopHammer.update(dt);
+        if (workshopStrike) updateWorkshopStrike(now);
+        else workshopHammer.update(dt);
         if (hammerShadow && shadowHammerEl) {
           var x = parseFloat(shadowHammerEl.style.left) || 66;
           var y = parseFloat(shadowHammerEl.style.top) || 85;
@@ -266,6 +310,24 @@
         hammerRaf = requestAnimationFrame(tick);
       }
       hammerRaf = requestAnimationFrame(tick);
+    }
+
+    function updateWorkshopStrike(now) {
+      var swing = workshopStrike, hammer = shadowHammerEl;
+      if (!swing || !hammer || !workshopModelView || !workshopModelView.strikeContact) return;
+      var rect = swing.layer.getBoundingClientRect(), anchor = swing.anchor;
+      var target = { x: (anchor.x - rect.left) / rect.width, y: (anchor.y - rect.top) / rect.height };
+      var hit = solveHammerContact(workshopModelView.strikeContact, hammer.offsetWidth, hammer.offsetHeight,
+        swing.layer.clientWidth, swing.layer.clientHeight, target);
+      var age = Math.max(0, (now - swing.start) / 1000), pose = workshopSwingPose(swing, hit, age);
+      hammer.style.left = (pose.x * 100).toFixed(6) + '%'; hammer.style.top = (pose.y * 100).toFixed(6) + '%';
+      hammer.style.marginTop = '0'; hammer.style.marginLeft = '0';
+      hammer.style.transformOrigin = '49% 72%';
+      hammer.style.transform = 'translate(-49%, -72%) rotate(' + pose.degrees.toFixed(6) + 'deg) scale(1, 1)';
+      if (pose.impact && !swing.fired) {
+        // Paint the exact contact pose before the impact callback starts its fade/effects.
+        swing.fired = true; swing.impactAge = age; swing.impact();
+      }
     }
 
     function cur() { var list = items(tab); if (!list.length) return null; idx[tab] = (idx[tab] + list.length) % list.length; return list[idx[tab]]; }
@@ -460,15 +522,15 @@
       $('[data-ws-egghint]').hidden = true;
       $('[data-ws-fx-info]').hidden = true;
       if (!workshopHammer) createWorkshopHammer(fx);
-      var fxRect = fx.getBoundingClientRect();
-      // 새 알 프레임의 실제 위치를 기준으로 알 윗부분 안쪽을 게임 타격 목표로 삼는다.
-      var eggRect = fx.querySelector('.ws-new-egg').getBoundingClientRect();
-      var targetX = (eggRect.left + eggRect.width * 0.5 - fxRect.left) / fxRect.width;
-      var targetY = (eggRect.top + eggRect.height * 0.32 - fxRect.top) / fxRect.height;
       var hammerEl = fx.querySelector('.ws-enhance-hammer');
+      if (!hammerEl || !workshopModelView) return;
+      var anchor = enhancement.prepareStrike();
       if (hammerEl) hammerEl.classList.add('is-striking');
       startHammerZapAnimation();
-      workshopHammer.strike(targetX, targetY, function () {
+      var angle = /rotate\(([-\d.]+)deg\)/.exec(hammerEl.style.transform);
+      workshopStrike = { layer: fx, anchor: anchor, start: performance.now(),
+        x: (parseFloat(hammerEl.style.left) || 66) / 100, y: (parseFloat(hammerEl.style.top) || 85) / 100,
+        degrees: angle ? Number(angle[1]) : 18, fired: false, impact: function () {
         playRandomHammerHit();
         stopHammerZapAnimation(true);
         hammerEl = fx.querySelector('.ws-enhance-hammer');
@@ -484,7 +546,7 @@
           $('[data-ws-res-effect]').hidden = !success;
           enhancement.result(success, nlv);
         }, blackEggRescue);
-      });
+      } };
       playHammerSound(hammerFlightAudio, 0.45);
       animateWorkshopHammer();
     }

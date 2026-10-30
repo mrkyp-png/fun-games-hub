@@ -24,6 +24,21 @@ function translation(x,y,z){const m=identity();m[12]=x;m[13]=y;m[14]=z;return m;
 function rotate(axis,angle){const [x,y,z]=unit(axis),c=Math.cos(angle),s=Math.sin(angle),t=1-c;return new Float32Array([t*x*x+c,t*x*y+s*z,t*x*z-s*y,0,t*x*y-s*z,t*y*y+c,t*y*z+s*x,0,t*x*z+s*y,t*y*z-s*x,t*z*z+c,0,0,0,0,1]);}
 function scaleMatrix(x,y,z){const m=identity();m[0]=x;m[5]=y;m[10]=z;return m;}
 function projectPoint(m,p){const q=m[3]*p[0]+m[7]*p[1]+m[11]*p[2]+m[15];return {x:((m[0]*p[0]+m[4]*p[1]+m[8]*p[2]+m[12])/q+1)/2,y:(1-(m[1]*p[0]+m[5]*p[1]+m[9]*p[2]+m[13])/q)/2};}
+// Read the central striking pad from the actual batched vertices.
+// User: its hidden +Z face center meets the egg while the resting camera stays fixed.
+function workshopStrikeFace(model,list,head,sign=1){
+ const vertices=[];let depth=-Infinity;
+ for(const d of list){if(/handle|grip|neck|pommel/i.test(d.name))continue;const p=accessor(model,d.primitive.attributes.POSITION);
+  for(let i=0;i<p.length;i+=3){const v=point(d.world,[p[i],p[i+1],p[i+2]]);
+   if(Math.abs(v[0]-head.center[0])>(head.high[0]-head.low[0])*.12||Math.abs(v[1]-head.center[1])>(head.high[1]-head.low[1])*.12)continue;
+   depth=Math.max(depth,v[2]*sign);vertices.push(v);
+  }
+ }
+ const surface=vertices.filter(v=>v[2]*sign>=depth-1e-5);if(!surface.length)return null;
+ // The target is the square face's center, not the lower central paw-pad centroid.
+ const center=[head.center[0],head.center[1],depth*sign];
+ return {point:center,normal:[0,0,sign]};
+}
 function orthographic(half,aspect,near,far){const m=identity();m[0]=1/(half*aspect);m[5]=1/half;m[10]=-2/(far-near);m[14]=-(far+near)/(far-near);return m;}
 // Same idle cadence as lane-hammer.js: 2.5s wait, two hops in 0.5s, every 3.2s.
 const HAMMER_IDLE={delay:2500,cycle:3200,duration:500};
@@ -101,6 +116,8 @@ async function create(host,id,index,options={}){
    view.solveTarget=function(u,v){const c=view.camera;if(!c)return null;const origin=c.eye.map((n,i)=>n+c.right[i]*(u*2-1)*c.half*c.aspect+c.up[i]*(1-v*2)*c.half),t=-origin[1]/c.forward[1],target=origin.map((n,i)=>n+c.forward[i]*t),delta=target.map((n,i)=>n-barrelPivot[i]);return {bodyYaw:Math.atan2(delta[0],delta[2]),pitch:Math.atan2(delta[1],Math.hypot(delta[0],delta[2]))*180/Math.PI};};
   }
   const headBox=id==='goldhammer'?(model._headBounds||(model._headBounds=bounds(model,list.filter(d=>!/handle|grip|neck|pommel/i.test(d.name))))):null;
+  const workshopFace=id==='goldhammer'&&options.manual?workshopStrikeFace(model,list,headBox,1):null;
+  const workshopHandle=workshopFace?bounds(model,list.filter(d=>/handle|grip|pommel/i.test(d.name))):null;
   const lightning=id==='goldhammer'?strikeLightning(gl):null;
   // Reuse the model's five raised front paw pieces; never redraw or alter the GLB.
   const pawParts=id==='goldhammer'?list.filter(d=>/^Front raised (central paw pad|toe [1-4])$/.test(d.name)):[];
@@ -163,6 +180,9 @@ async function create(host,id,index,options={}){
    const aspect=inventory?(view.aspect||120/110):view.width/Math.max(1,view.height),fov=Math.PI/5,limit=2*Math.atan(Math.tan(fov/2)*Math.min(1,aspect));
    const distance=radius/Math.sin(limit/2)*.9,target=turnCenter,eye=[target[0]+Math.sin(yaw)*Math.cos(pitch)*distance,target[1]+Math.sin(pitch)*distance,target[2]+Math.cos(yaw)*Math.cos(pitch)*distance];
    const vp=multiply(options.external?orthographic(radius*.8,aspect,Math.max(radius*.1,distance-radius*2),distance+radius*2):perspective(fov,aspect,Math.max(radius*.1,distance-radius*2),distance+radius*2),lookAt(eye,target));
+   if(workshopFace){const matrix=multiply(vp,motion),p=workshopFace.point,c=workshopHandle.center;
+    view.strikeContact={point:projectPoint(matrix,p),world:p,
+     handleTop:projectPoint(matrix,[c[0],workshopHandle.high[1],c[2]]),handleEnd:projectPoint(matrix,[c[0],workshopHandle.low[1],c[2]])};}
    if(options.external){const forward=unit(target.map((n,i)=>n-eye[i])),right=unit(cross(forward,[0,1,0])),up=cross(right,forward);view.camera={eye,forward,right,up,half:radius*.8,aspect};}
    gl.uniformMatrix4fv(loc.uVP,false,vp);gl.uniform3fv(loc.uEye,eye);
    const slotLight=.8+.2*Math.sin(elapsed*Math.PI*2/1800);

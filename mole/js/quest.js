@@ -127,10 +127,11 @@
     $('[data-qs-ach]').addEventListener('click', function () { mode = mode === 'ach' ? 'daily' : 'ach'; render(true); });
 
     function setTitle(txt) { el.querySelectorAll('.qs-title text').forEach(function (t) { t.textContent = txt; t.setAttribute('x', '250'); t.setAttribute('text-anchor', 'middle'); }); }
+    function statusHtml(content) { return '<div class="qs-status">' + content + '</div>'; }
     function btnHtml(state) {
-      if (state === 'done') return '<img class="qs-check" src="' + A + 'ic-check.png" alt="">';
-      if (state === 'claim') return '<button type="button" class="qs-btn qs-btn--claim" data-qs-claim>' + (EN() ? 'Claim' : '받기') + '</button>';
-      return '<button type="button" class="qs-btn qs-btn--go" data-qs-go>' + (EN() ? 'Go' : '바로가기') + '</button>';
+      if (state === 'done') return statusHtml('<img class="qs-check" src="' + A + 'ic-check.png" alt="">');
+      if (state === 'claim') return statusHtml('<button type="button" class="qs-btn qs-btn--claim" data-qs-claim>' + (EN() ? 'Claim' : '받기') + '</button>');
+      return statusHtml('<button type="button" class="qs-btn qs-btn--go" data-qs-go>' + (EN() ? 'Go' : '바로가기') + '</button>');
     }
     function card(o) {
       return '<div class="qs-card qs-card--' + o.tone + (o.state === 'done' ? ' is-done' : '') + '">' +
@@ -166,7 +167,7 @@
           (allSt === 'claim' ? '<i class="qs-spk"></i><i class="qs-spk"></i><i class="qs-spk"></i><i class="qs-spk"></i><i class="qs-spk"></i><i class="qs-spk"></i>' : '') + '</span>' +
           '<div class="qs-all-txt"><b>' + (en ? (mode === 'daily' ? 'DAILY' : 'WEEKLY') + ' ALL CLEAR' : (mode === 'daily' ? '일일' : '주간') + ' 올클리어') + '</b><span>' + (mode === 'daily' ? (en ? 'Finish all daily quests for a bonus!' : '모든 일일 퀘스트를 완료하고 추가 보상을 받아요!') : (en ? 'Finish all weekly quests for a bonus!' : '모든 주간 퀘스트를 완료하고 추가 보상을 받아요!')) + '</span></div>' +
           '<div class="qs-all-rw"><div class="qs-rwline"><img src="' + rwIcon(rw) + '" alt=""><b>× ' + fmt(rw[1]) + '</b></div>' +
-          (allSt === 'done' ? '<img class="qs-check" src="' + A + 'ic-check.png" alt="">' : allSt === 'claim' ? '<button type="button" class="qs-btn qs-btn--claim" data-qs-all>' + (en ? 'Claim' : '받기') + '</button>' : '<span class="qs-btn qs-btn--lock">' + (en ? 'Locked' : '미완료') + '</span>') + '</div></div>';
+          statusHtml(allSt === 'done' ? '<img class="qs-check" src="' + A + 'ic-check.png" alt="">' : allSt === 'claim' ? '<button type="button" class="qs-btn qs-btn--claim" data-qs-all>' + (en ? 'Claim' : '받기') + '</button>' : '<span class="qs-btn qs-btn--lock">' + (en ? 'Locked' : '미완료') + '</span>') + '</div></div>';
       } else {
         tabs.innerHTML = ['round', 'score', 'combo', 'mole', 'rhythm'].map(function (t) { return '<button type="button" data-qs-ach-tab="' + t + '" class="' + (achTab === t ? 'is-on' : '') + '">' + (en ? t.toUpperCase() : { round: '라운드', score: '점수', combo: '콤보', mole: '두더지', rhythm: '리듬팡' }[t]) + '</button>'; }).join(''); // v900: 한글 모드 한글
         if (achTab === 'round') html += '<div class="qs-lv">' + LV.map(function (lv) {

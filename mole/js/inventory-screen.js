@@ -33,7 +33,7 @@
   // 스타일로"). 사진 탭은 다이얼패드 "사진보관" 카메라 아이콘(lane-controls.js SVG.locker)
   // 재사용 + 같은 톤의 그라디언트만 추가.
   var WEAPON_TAB_ICON = '<span class="shop-tab-swords"><span class="shop-tab-sword-arm shop-tab-sword--left"><img class="shop-tab-sword" src="assets/ui-approved-v1509/shop-tab-sword.png" alt=""></span><span class="shop-tab-sword-arm shop-tab-sword--right"><img class="shop-tab-sword" src="assets/ui-approved-v1509/shop-tab-sword.png" alt=""></span><i class="shop-tab-sword-spark" aria-hidden="true"></i></span>';
-  var SKILL_TAB_ICON = '<span class="skill-orb-icon" aria-hidden="true"><img class="skill-orb-hand" src="assets/skill-tab-layers-20261030/hand-2x.png" alt=""><span class="skill-orb-float"><img class="skill-orb-ring" src="assets/skill-tab-v1519/ring-repaired-2x.png" alt=""><i class="skill-orb-rim-light"></i><span class="skill-orb-sprite"></span></span></span>';
+  var SKILL_TAB_ICON = '<span class="skill-orb-icon" aria-hidden="true"><span class="skill-orb-art"><span class="skill-orb-hand-align"><img class="skill-orb-hand" src="assets/skill-tab-layers-20261030/hand-2x.png" alt=""></span><span class="skill-orb-float"><span class="skill-orb-turn"><img class="skill-orb-ring" src="assets/skill-tab-v1519/ring-repaired-2x.png" alt=""><i class="skill-orb-rim-light"></i></span><span class="skill-orb-sprite"></span></span></span></span>';
   // 코스튬 아이콘 = 상점과 동일한 이모지로 통일(사용자 지정: "아이템에서도 코스튬 이모지 변경").
   var COSTUME_TAB_ICON = '<img src="assets/ui-approved-v1509/shop-tab-costume.png" alt="">';
   var PHOTO_TAB_ICON =

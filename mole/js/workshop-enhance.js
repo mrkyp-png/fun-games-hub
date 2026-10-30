@@ -29,6 +29,12 @@
     var eggShadow = document.createElement('div'); eggShadow.className = 'ws-egg-shadow'; eggShadow.setAttribute('aria-hidden', 'true'); scene.appendChild(eggShadow);
     fx.appendChild(scene);
     var egg = scene.querySelector('.ws-new-egg'), phases = scene.querySelectorAll('.ws-new-phase');
+    // The crown is at (627,138) in the unchanged 1254px egg artwork.
+    // User adjustment: move the target right by 3% and down slightly, by 1.5% of its box.
+    // A zero-size child follows the real egg/ancestor transforms, including its idle tilt.
+    var strikeAnchor = document.createElement('span'); strikeAnchor.setAttribute('aria-hidden', 'true');
+    strikeAnchor.style.cssText = 'position:absolute;left:53%;top:' + (138 / 1254 * 100 + 1.5) + '%;width:0;height:0;pointer-events:none';
+    egg.appendChild(strikeAnchor);
     var shards = scene.querySelectorAll('.ws-new-shard'), subjectWindow = scene.querySelector('.ws-new-subject-window');
     var subject = scene.querySelector('.ws-new-subject');
     var subjectAnchorX = 50;
@@ -45,11 +51,18 @@
     var stars = starsLayer.querySelectorAll('img'), smoke = effects.querySelectorAll('.ws-result-smoke img');
     var smokeLayer = effects.querySelector('.ws-result-smoke');
     var raf = 0, dropAnimation, clickAction, ready = false, angle = 0, serial = 0;
+    function syncEggShadow(rotation, sx, sy, visibility) {
+      // Follow the same tilt as the egg: project its leaning body onto the blue plate.
+      var shift = Math.sin(rotation * Math.PI / 180) * egg.offsetWidth * .34 * sx;
+      var spread = sx * (1 - Math.abs(rotation) * .012);
+      eggShadow.style.transform = 'translate(-50%,-50%) translateX(' + shift.toFixed(3) + 'px) scale(' + spread + ',' + ((2 - sy) * (1 + Math.abs(rotation) * .018)) + ')';
+      eggShadow.style.opacity = String((.55 - Math.abs(rotation) * .008) * visibility);
+    }
     egg.addEventListener('click', function () { if (ready && clickAction) { ready = false; egg.disabled = true; clickAction(); } });
     function stop() { cancelAnimationFrame(raf); raf = 0; if (dropAnimation) { dropAnimation.cancel(); dropAnimation = null; } }
     function reset() {
       eggShadow.getAnimations().forEach(function (animation) { animation.cancel(); });
-      serial++; stop(); clickAction = null; ready = false; scene.hidden = true; scene.classList.remove('is-exiting'); scene.style.opacity = ''; egg.disabled = true;
+      serial++; stop(); clickAction = null; ready = false; angle = 0; scene.hidden = true; scene.classList.remove('is-exiting'); scene.style.opacity = ''; egg.disabled = true;
       effects.className = 'ws-result-vfx'; effects.hidden = true; starsLayer.hidden = true; badge.hidden = true;
       host.querySelectorAll('.ws-result-vfx img').forEach(function (im) { im.style.opacity = ''; });
       if (item === subject) {
@@ -59,7 +72,7 @@
         subject.className = 'ws-new-subject'; subject.removeAttribute('data-ws-res-img'); subject.style.cssText = '';
         item = placeholder;
       }
-      eggShadow.style.opacity = '0'; eggShadow.style.transform = '';
+      eggShadow.style.opacity = '0'; eggShadow.style.transform = ''; host.style.clipPath = '';
       item.style.opacity = ''; item.style.transition = '';
     }
     function prepare(onClick, source) {
@@ -77,8 +90,8 @@
     }
     function drop() {
       egg.hidden = false;
-      eggShadow.animate([{ opacity: 0, transform: 'translateX(-50%) scale(.4)' }, { opacity: .2, transform: 'translateX(-50%) scale(1)' }], { duration: 1600 });
-      eggShadow.style.opacity = '.2';
+      eggShadow.animate([{ opacity: 0, transform: 'translate(-50%,-50%) scale(.4)' }, { opacity: .55, transform: 'translate(-50%,-50%) scale(1)' }], { duration: 1600 });
+      eggShadow.style.opacity = '.55';
       dropAnimation = egg.animate([
         { transform: 'translateY(-165%) scale(.25)', opacity: 0, offset: 0 },
         { transform: 'translateY(0) scale(.35)', opacity: .7, offset: .4 },
@@ -92,12 +105,16 @@
       var start = performance.now();
       function tick(now) {
         angle = Math.sin((now - start) / 1000 * 4.8) * 2.7;
-        eggShadow.style.transform = 'translateX(' + (-50 + angle * .35) + '%) scale(' + (1 - Math.abs(angle) * .006) + ',1)';
-        eggShadow.style.opacity = String(.2 - Math.abs(angle) * .005);
+        syncEggShadow(angle, 1, 1, 1);
         var transform = 'rotate(' + angle + 'deg)'; egg.style.transform = transform; subjectWindow.style.transform = transform;
         raf = requestAnimationFrame(tick);
       }
       raf = requestAnimationFrame(tick);
+    }
+    function prepareStrike() {
+      stop(); ready = false; egg.disabled = true;
+      var rect = strikeAnchor.getBoundingClientRect();
+      return { x: rect.left, y: rect.top };
     }
     function impact(success, reveal, blackEggRescue) {
       stop(); var start = performance.now(), initialAngle = angle, token = serial;
@@ -110,8 +127,7 @@
         if (t > 1.4 && t < 2.25) rotation = Math.sin(t * 28) * .7;
         var eggTransform = 'rotate(' + rotation + 'deg) scale(' + sx + ',' + sy + ')';
         egg.style.transform = eggTransform; subjectWindow.style.transform = eggTransform;
-        eggShadow.style.transform = 'translateX(' + (-50 + rotation * .35) + '%) scale(' + sx + ',' + (2 - sy) + ')';
-        eggShadow.style.opacity = String(.2 * (1 - q));
+        syncEggShadow(rotation, sx, sy, 1 - q);
         var dark = blackEggRescue ? ease((effectT - .56) / .36) : (success ? 0 : ease((t - 1.65) / .9));
         egg.style.filter = blackEggRescue
           ? 'grayscale(' + dark + ') brightness(' + (1 - .85 * dark) + ')'
@@ -132,9 +148,9 @@
         subject.style.opacity = innerVisibility + .32 * growth;
         subject.style.transform = 'translate(-' + subjectAnchorX + '%, -50%) scale(' + (.595 + .405 * growth) + ')';
         if (effectT >= 3.5) subjectWindow.classList.add('is-open');
-        var brightness = 1 + 1.05 * (1 - verdict) - (success ? 0 : .37 * verdict), glowCore = (14 + 24 * (1 - verdict));
+        var brightness = 1 + 1.05 * (1 - verdict) - (success ? 0 : .37 * verdict), glowCore = (2 + 4 * (1 - verdict));
         var glowColor = 'rgba(255,248,213,' + (.98 * (1 - verdict)) + ')';
-        var glowFilter = 'drop-shadow(0 0 ' + glowCore + 'px ' + glowColor + ') drop-shadow(0 0 ' + (glowCore * 1.7) + 'px rgba(255,214,105,' + (.8 * (1 - verdict)) + '))';
+        var glowFilter = 'drop-shadow(0 0 ' + glowCore + 'px ' + glowColor + ') drop-shadow(0 0 ' + (glowCore * 1.2) + 'px rgba(255,214,105,' + (.8 * (1 - verdict)) + '))';
         var subjectFilter = success
           ? 'brightness(' + brightness + ') ' + glowFilter
           : 'brightness(' + brightness + ') grayscale(' + (.9 * verdict) + ') ' + glowFilter;
@@ -181,6 +197,19 @@
       stop(); effects.hidden = false; effects.className = 'ws-result-vfx ' + (success ? 'is-success' : 'is-failure');
       promoteSubject(); item.style.opacity = '1'; item.style.transition = '';
       badge.hidden = level <= 0; badge.textContent = '+' + level; starsLayer.hidden = !success; starsLayer.style.opacity = '0';
+      function protectSuccessGlyph() {
+        host.style.clipPath = '';
+        var title = el.querySelector('.ws-res-title'), text = title && title.textContent, index = text ? text.indexOf('공') : -1;
+        if (!success || !/goldhammer-/.test(item.currentSrc || item.src || '') || index < 0 || !title.firstChild || title.firstChild.nodeType !== 3) return;
+        // Only suppress light behind this glyph; keep the text and the other success VFX.
+        var range = document.createRange(); range.setStart(title.firstChild, index); range.setEnd(title.firstChild, index + 1);
+        var glyph = range.getBoundingClientRect(), rect = host.getBoundingClientRect();
+        if (!glyph.width || !rect.width || !rect.height) return;
+        var sx = host.offsetWidth / rect.width, sy = host.offsetHeight / rect.height;
+        var left = (glyph.left - rect.left) * sx - 1, right = (glyph.right - rect.left) * sx + 1;
+        var top = (glyph.top - rect.top) * sy - 1, bottom = (glyph.bottom - rect.top) * sy + 1;
+        host.style.clipPath = 'path(evenodd, "M -10000 -10000 H 10000 V 10000 H -10000 Z M ' + left.toFixed(2) + ' ' + top.toFixed(2) + ' H ' + right.toFixed(2) + ' V ' + bottom.toFixed(2) + ' H ' + left.toFixed(2) + ' Z")';
+      }
       // Center effects on each displayed item's visible bounds, excluding file margins.
       var token = serial;
       function align() {
@@ -196,9 +225,12 @@
         host.style.setProperty('--item-size', Math.max(w * bw, h * bh) + 'px');
         host.style.setProperty('--fx-x', (item.offsetLeft + w * cx) + 'px');
         host.style.setProperty('--fx-y', (item.offsetTop + h * cy) + 'px');
+        protectSuccessGlyph();
       }
       if (item.decode) item.decode().then(align).catch(align); else align();
       align();
+      requestAnimationFrame(align);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(align);
       var start = performance.now();
       function tick(now) {
         if (token !== serial) return;
@@ -219,7 +251,7 @@
       raf = requestAnimationFrame(tick);
     }
     reset();
-    return { prepare: prepare, drop: drop, wait: wait, impact: impact, result: result, reset: reset };
+    return { prepare: prepare, drop: drop, wait: wait, prepareStrike: prepareStrike, impact: impact, result: result, reset: reset };
   }
   root.MoleGame = root.MoleGame || {};
   root.MoleGame.WorkshopEnhance = { create: create, preload: preload };

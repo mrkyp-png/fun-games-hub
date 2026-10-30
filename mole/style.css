@@ -2674,12 +2674,12 @@ body { background: var(--lm-page); }
 #score-screen.sr-screen {
   position: fixed; inset: 0; top: 0; left: 0; transform: none; width: 100%; height: 100%;
   border-radius: 0; box-shadow: none; z-index: 300; overflow: hidden; display: block;
-  background: #2098f7 url('assets/score/bg-palace-sides-kept-v1493.jpg') center top / cover no-repeat;
+  background: #2098f7;
   color: #1f2a4a; /* 배경 이미지 자체에서 상단 하늘을 확보. 위치 이동·단색 덧칠 없음. */
   --w: min(100vw - 20px, 440px, (100dvh - 40px) * 0.47);
 }
 #score-screen.sr-screen::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background: inherit; filter: blur(6px); opacity: 0.6; } /* 궁전 배경만 더 흐리게 혼합. 양탄자·UI 선명도 유지. */
+  background: url('assets/score/bg-palace-sides-kept-v1493.jpg') center top / cover no-repeat; filter:none; opacity:.6; } /* Opacity belongs only to the palace layer, below the untouched carpet. */
 .sr-sky { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; clip-path: inset(0 0 70% 0);
   mask-image: linear-gradient(90deg, transparent 6%, #000 19%, #000 81%, transparent 94%); }
 .sr-cloud { position: absolute; left: var(--sc-x); top: 25vh; width: var(--sc-size); height: auto; fill: #f4faff; opacity: 0; pointer-events: none;
@@ -2897,7 +2897,7 @@ body { background: var(--lm-page); }
 .ws-item { position: absolute; top: 14%; width: 24%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
 .ws-item--l { left: 4.5%; } .ws-item--r { right: 3.5%; }
 .ws-item img { max-width: 100%; max-height: 100%; object-fit: contain; }
-.ws-item.has-glow img { filter: drop-shadow(0 0 0.6cqw var(--glow)) drop-shadow(0 0 1.6cqw var(--glow)); } /* 강화 Glow — 원본 이미지는 그대로, 필터 VFX */
+.ws-item.has-glow img { filter: drop-shadow(0 0 1px var(--glow)) drop-shadow(0 0 1px var(--glow)) drop-shadow(0 0 .5px var(--glow)); } /* Compact enhancement light, following the item silhouette. */
 .ws-item b { position: absolute; right: 2%; bottom: 0; font-size: 7cqw; font-weight: 900; color: #fff; -webkit-text-stroke: 1.1cqw #2a0b55; paint-order: stroke fill; }
 .ws-item--r b { -webkit-text-stroke-color: #0b2a55; }
 .ws-item--l b { right: auto; left: 2%; } /* V1409 C 사용자: 강화 수치(+0)는 왼쪽 표기 */
@@ -3056,7 +3056,7 @@ body { background: var(--lm-page); }
 .ws-res-glow { width: calc(var(--w) * 0.5); aspect-ratio: 1; display: flex; align-items: center; justify-content: center; animation: ws-pop 0.55s cubic-bezier(.2,1.4,.4,1) both; }
 @keyframes ws-pop { from { transform: scale(0); } to { transform: scale(1); } }
 .ws-res-glow img { max-width: 100%; max-height: 100%; object-fit: contain; }
-.ws-res-glow.has-glow img { filter: drop-shadow(0 0 4px var(--glow)) drop-shadow(0 0 14px var(--glow)); }
+.ws-res-glow.has-glow img { filter: drop-shadow(0 0 1px var(--glow)) drop-shadow(0 0 1px var(--glow)) drop-shadow(0 0 .5px var(--glow)); }
 .ws-result.is-ng .ws-res-glow img { filter: grayscale(0.6) brightness(0.7); }
 .ws-res-title { margin: 0; font-size: calc(var(--w) * 0.09); font-weight: 900; color: #ffe45a; -webkit-text-stroke: 5px #5a2c0a; paint-order: stroke fill; }
 .ws-result.is-ng .ws-res-title { color: #c9c9d1; -webkit-text-stroke-color: #2a2a33; }
@@ -8040,6 +8040,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #game-screen.is-start #lane-button-bar:is([data-nav="mail"],[data-nav="settings"],[data-nav="shop"],[data-nav="inventory"]) .lane-button--call { opacity: .5; }
 /* V1358 C 사용자: 홈 아이콘 원본(200x140)이 납작해 보여 세로로 살짝(12%) 늘림 */
 .lane-button--home .h2-ic { transform: scaleY(1.12); }
+#game-screen.is-start .lane-button--home.lane-button--nav-active .h2-ic { scale:.95; }
 /* V1359 C 사용자: 메일함 등 다른 화면에선 홈 아이콘이 옆 아이콘 크기로(상점식 88%% 대신 다른 버튼과 같은 78%%) */
 #game-screen.is-start .lane-button--home:not(.lane-button--nav-active) .h2-ic { max-width: 78%; }
 /* V1359 C 사용자: 커진 홈 버튼의 '홈' 글자를 위로(아래 아이템 박스에 걸쳐 보임) */
@@ -8439,7 +8440,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #inventory-screen .inv-tab .inv-tab-ico > svg { position:relative!important; display:block!important; flex:none!important; width:92%!important; height:92%!important; max-width:92%!important; max-height:92%!important; object-fit:contain!important; }
 #inventory-screen .inv-tab .inv-tab-ico > img,
 #inventory-screen .inv-tab .inv-tab-ico > svg,
-#inventory-screen .inv-tab .shop-tab-sword { filter:drop-shadow(1px 0 0 #42d8c3) drop-shadow(-1px 0 0 #42d8c3) drop-shadow(0 1px 0 #42d8c3) drop-shadow(0 -1px 0 #42d8c3)!important; }
+#inventory-screen .inv-tab .shop-tab-sword { filter:drop-shadow(1px 0 0 #3b3f46) drop-shadow(-1px 0 0 #3b3f46) drop-shadow(0 1px 0 #3b3f46) drop-shadow(0 -1px 0 #3b3f46)!important; }
 #inventory-screen .inv-tab .inv-tab-ico > .skill-orb-icon { position:absolute!important; inset:4%!important; display:block!important; width:auto!important; height:auto!important; }
 #inventory-screen .inv-tab .inv-tab-ico > .shop-tab-swords { position:absolute!important; inset:4%!important; display:block!important; overflow:hidden!important; transform:none!important; }
 #inventory-screen .inv-tab .shop-tab-sword-arm { position:absolute!important; top:0!important; bottom:0!important; width:88%!important; transform-origin:50% 82%!important; }
@@ -8450,7 +8451,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #inventory-screen .inv-tab .shop-tab-sword-spark::before { content:''; position:absolute; inset:-3px; background:#fff6bf; clip-path:polygon(50% 0,59% 38%,100% 50%,59% 62%,50% 100%,41% 62%,0 50%,41% 38%); }
 #inventory-screen .inv-tab:nth-child(3) .inv-tab-ico > img { animation:shop-tab-costume-colors 9s linear infinite!important; }
 #inventory-screen .inv-tab .skill-orb-icon .skill-orb-hand,
-#inventory-screen .inv-tab .skill-orb-icon .skill-orb-ring { width:100%!important; height:100%!important; filter:drop-shadow(1px 0 0 #42d8c3) drop-shadow(-1px 0 0 #42d8c3) drop-shadow(0 1px 0 #42d8c3) drop-shadow(0 -1px 0 #42d8c3)!important; }
+#inventory-screen .inv-tab .skill-orb-icon .skill-orb-ring { width:100%!important; height:100%!important; filter:drop-shadow(1px 0 0 #3b3f46) drop-shadow(-1px 0 0 #3b3f46) drop-shadow(0 1px 0 #3b3f46) drop-shadow(0 -1px 0 #3b3f46)!important; }
 #inventory-screen .inv-tab:last-child .inv-tab-ico > svg { animation:photo-camera-ready 3.6s ease-in-out infinite!important; }
 #inventory-screen .inv-tab:last-child .inv-tab-ico > svg circle { transform-box:fill-box; transform-origin:center; animation:photo-shutter-click 3.6s ease-in-out infinite; }
 #inventory-screen .inv-tab:last-child .inv-tab-ico::after { content:''; position:absolute; inset:4%; pointer-events:none; opacity:0; background:radial-gradient(circle at 50% 56%,#fff 0 8%,rgba(255,248,205,.95) 14%,rgba(255,255,255,0) 44%); animation:photo-shutter-flash 3.6s linear infinite; }
@@ -8804,8 +8805,9 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
   background: radial-gradient(circle at 38% 30%, #ffffff 0%, #cfe6ff 14%, #5aa8ff 42%, #1a5fd0 72%, #0b3a8c 100%);
   box-shadow: inset 0 -5px 8px rgba(0, 25, 80, 0.55), inset 0 4px 6px rgba(255, 255, 255, 0.55), 0 4px 0 #0a2f73, 0 6px 8px rgba(0, 0, 0, 0.35); }
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-item:not(.lane-item--empty)[data-slot="0"]:active, #game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-item:not(.lane-item--empty)[data-slot="0"]:active { transform: translate(-50%, calc(-50% + 3px)); box-shadow: inset 0 -4px 7px rgba(0, 25, 80, 0.55), inset 0 4px 6px rgba(255, 255, 255, 0.5), 0 1px 0 #0a2f73, 0 2px 4px rgba(0, 0, 0, 0.3); }
-/* V1402 C 사용자: 스킬 장착 시 최대한 크게 — 장착 원을 안쪽 파란 칸(테두리 안 9%)에 꽉(80%), 아이콘도 원 가득(96%). 빈 칸 입체 원은 64% 그대로. */
-#game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-item:not(.lane-item--empty)[data-slot="0"], #game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-item:not(.lane-item--empty)[data-slot="0"] { width: 86%; background: none; box-shadow: none; } /* 사용자 '꽉 차지 않는데' → 남색 바탕·고리 없애고 아이콘이 원 자체 */
+/* Equipped skills fit inside the square cap's outline, including its 13px depth.
+   Reserve 6px on each side for the outline and the 3px press travel. */
+#game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-item:not(.lane-item--empty)[data-slot="0"], #game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-item:not(.lane-item--empty)[data-slot="0"] { width: min(72%, calc(86cqh - 25px)); background: none; box-shadow: none; }
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-item:not(.lane-item--empty)[data-slot="0"] .lane-item-icon, #game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-item:not(.lane-item--empty)[data-slot="0"] .lane-item-icon { width: 100%; height: 100%; }
 /* 스킬 아이콘 그림(460px)은 둘레 투명 여백이 약 21% → 그만큼 키워 그림 원이 칸을 꽉 채우게 */
 #game-screen.gs-laneskill:not(.is-start) .lane-button--call .lane-item:not(.lane-item--empty)[data-slot="0"] .lane-item-icon img, #game-screen.gs-alipunch:not(.is-start) [data-region="12"] .lane-item:not(.lane-item--empty)[data-slot="0"] .lane-item-icon img { transform: scale(1.27); }
@@ -8990,8 +8992,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .iw-stat-title { top: 215px; } .iw-help { top: 215px; } /* V1412 C 사용자: 능력치·? 를 파란 판(y207~336) 위아래 가운데로 */
 .cs-card.is-locked { cursor: default; }
 /* V1415 C 사용자: 제작소 강화 수치·Glow (무기·스킬·코스튬, 사진관은 Glow 만) */
-.has-enh { filter: drop-shadow(0 0 2px var(--enh)) drop-shadow(0 0 2px var(--enh)) drop-shadow(0 0 1px var(--enh)); } /* 사용자: 테두리 삭제, 강화 색 빛 2px, 진하게(겹쳐 칠함) */ /* 사용자: 무기·스킬·코스튬은 Glow 말고 같은 색 테두리만 */
-#game-screen.gs-weapon-enhanced { --weapon-glow: drop-shadow(0 0 2px var(--weapon-enh)) drop-shadow(0 0 2px var(--weapon-enh)) drop-shadow(0 0 1px var(--weapon-enh)); }
+.has-enh { filter: drop-shadow(0 0 1px var(--enh)) drop-shadow(0 0 1px var(--enh)) drop-shadow(0 0 .5px var(--enh)); }
+#game-screen.gs-weapon-enhanced { --weapon-glow: drop-shadow(0 0 1px var(--weapon-enh)) drop-shadow(0 0 1px var(--weapon-enh)) drop-shadow(0 0 .5px var(--weapon-enh)); }
 #game-screen.gs-weapon-enhanced .is-enhance-zap { --gold-zap-tint: var(--lightning-tint); }
 #game-screen.gs-weapon-enhanced .lane-hammer--gold > img { filter: var(--gold-zap-tint, brightness(1)) drop-shadow(0 4px 4px #0006) var(--weapon-glow) !important; }
 #game-screen.gs-weapon-enhanced .quake-clone,
@@ -9000,7 +9002,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #game-screen.gs-weapon-enhanced .lane-boxing-glove img { filter: opacity(var(--glove-opacity, 1)) var(--glove-tint) drop-shadow(0 4px 4px #0006) var(--weapon-glow); }
 #game-screen .lane-boxing-glove--clone { --glove-opacity: .5; }
 #game-screen.gs-invincible .lane-boxing-glove img { filter: opacity(var(--glove-opacity, 1)) url("#game-enhance-glove-gold") drop-shadow(0 4px 4px #0006) var(--weapon-glow, brightness(1)); }
-#game-screen.gs-costume-enhanced .mole-pop--mole .mole-pop-img { filter: drop-shadow(0 0 2px var(--costume-enh)) drop-shadow(0 0 2px var(--costume-enh)) drop-shadow(0 0 1px var(--costume-enh)); }
+#game-screen.gs-costume-enhanced .mole-pop--mole .mole-pop-img { filter: drop-shadow(0 0 1px var(--costume-enh)) drop-shadow(0 0 1px var(--costume-enh)) drop-shadow(0 0 .5px var(--costume-enh)); }
 .ph3-stage .has-enh { filter: drop-shadow(0 0 6px var(--enh)) drop-shadow(0 0 16px var(--enh)); } /* 사진관은 Glow 그대로 */
 .enh-lv { position: absolute; right: 6%; top: 4%; z-index: 6; font-family: 'Jua', sans-serif; font-weight: 400; font-size: 64px; line-height: 1; color: #fff; -webkit-text-stroke: 10px #2a0b55; paint-order: stroke fill; pointer-events: none; }
 .cs-card > .enh-lv { right: 42px; top: 34px; font-size: 44px; -webkit-text-stroke: 8px #2a0b55; }
@@ -9622,7 +9624,8 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* Four-hour shop scenery; cards, controls and popup stacking stay independent. */
 #shop-screen[data-shop-theme="night"] { background-color:#071436!important; }
 #shop-screen>.shop-scenery,#shop-screen>.shop-sky { position:absolute!important; inset:0!important; z-index:0!important; pointer-events:none!important; overflow:hidden!important; }
-#shop-screen>.shop-scenery { background-position:center!important; background-size:cover!important; background-repeat:no-repeat!important; }
+#shop-screen>.shop-scenery { background-position:center!important; background-size:cover!important; background-repeat:no-repeat!important; opacity:.6; }
+#shop-screen[data-shop-theme="night"]>.shop-scenery { opacity:.7; }
 #shop-screen .shop-cloud-field,#shop-screen .shop-star-field { position:absolute; inset:0 0 auto; overflow:hidden; }
 #shop-screen .shop-cloud-field { height:28%; mask-image:linear-gradient(#000 0 83%,transparent); }
 #shop-screen .shop-star-field { height:32%; mask-image:linear-gradient(#000 0 76%,transparent); }
@@ -9696,11 +9699,34 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 .ws-action-frame:active:not(:disabled)::after { background-color: rgba(255, 255, 220, .18);
   box-shadow: inset 0 0 calc(var(--w) * .025) rgba(255, 252, 205, .9), inset 0 0 calc(var(--w) * .06) rgba(255, 229, 125, .38); }
 /* Quest header keeps space for the replacement character, without baked-in tabs or paws. */
+#quest-screen .qs-stage { height:min(100%,calc(var(--w) * 1.962)); min-height:0; }
+#quest-screen .qs-list { flex:1 1 0; min-height:0; container-type:inline-size; }
+#quest-screen :is(.qs-card,.qs-all,.qs-lv,.qs-achbtn) { flex-shrink:0; }
+#quest-screen .qs-card { width:100%; max-width:100%; min-width:0; box-sizing:border-box; }
+/* Daily/weekly share the original calendar row's height; tall icons cannot size rows. */
+#quest-screen:is([data-mode="daily"],[data-mode="weekly"]) .qs-card { height:calc((100cqw - 16px) * .17 * 162 / 148 + 14px); }
+#quest-screen:is([data-mode="daily"],[data-mode="weekly"]) .qs-card .qs-ico { height:100%; min-height:0; min-width:0; }
+#quest-screen:is([data-mode="daily"],[data-mode="weekly"]) .qs-card .qs-ico img { display:block; width:100%; height:100%; object-fit:contain; }
+#quest-screen .qs-rw { min-width:0; }
 #quest-screen .qs-head { aspect-ratio:480/253; }
-#quest-screen[data-mode="weekly"] .qs-head { aspect-ratio:447/254; }
+#quest-screen[data-mode="weekly"] .qs-head { aspect-ratio:480/253; }
 #quest-screen[data-mode="ach"] .qs-head { aspect-ratio:533/271; }
+#quest-screen:not([data-mode="ach"]) .qs-title { top:calc(11% + .4cm); }
+#quest-screen[data-mode="ach"] .qs-title { top:calc(39% - .5cm - .4cm); }
 #quest-screen .qs-head::before { content:''; position:absolute; inset:58% 0 0; border:3px solid #74401d; border-radius:12px; box-sizing:border-box; background:linear-gradient(180deg,#c28a4e,#a36833 46%,#875027); box-shadow:inset 0 0 0 2px #e6ad6d; }
 #quest-screen .qs-character-slot { position:absolute; inset:0 0 42%; pointer-events:none; }
+/* Completion replaces the button inside a fixed slot. A check never adds row height. */
+#quest-screen .qs-status { position:relative; flex:none; width:96%; aspect-ratio:426/141; display:flex; justify-content:center; align-items:center; }
+#quest-screen .qs-status .qs-btn { width:100%; height:100%; min-height:0; aspect-ratio:auto; }
+#quest-screen .qs-status .qs-check { position:absolute; inset:0; width:100%; height:100%; max-width:calc(var(--w) * .11); margin:0 auto; object-fit:contain; object-position:center top; }
+/* Fix the entire bonus card to the original daily gift + 8px top/bottom padding.
+   The weekly ticket/reward column must not increase that height. */
+#quest-screen .qs-all { width:100%; max-width:100%; min-width:0; height:calc((100cqw - 20px) * .17 * 150 / 137 + 16px); min-height:0; box-sizing:border-box; }
+#quest-screen .qs-all-giftw { aspect-ratio:137/150; height:100%; display:flex; justify-content:center; align-items:center; }
+#quest-screen .qs-all-giftw .qs-all-gift { flex:none; width:auto; height:100%; max-width:none; object-fit:contain; }
+#quest-screen .qs-all-rw { height:100%; min-height:0; min-width:0; display:grid; grid-template-rows:minmax(0,1fr) auto; justify-items:center; align-items:center; }
+#quest-screen .qs-all-rw .qs-rwline { height:100%; min-height:0; }
+#quest-screen .qs-all-rw .qs-rwline img { max-height:100%; object-fit:contain; }
 #quest-screen .qs-action-frame { background:none!important; background-image:none!important; box-shadow:none; padding:0; border:0; display:flex; justify-content:center; align-items:center; border-radius:var(--sr-radius); color:#3a2400; text-shadow:none; -webkit-text-stroke:0!important; animation:none; overflow:visible; --sr-outline:#9b6204; }
 #quest-screen .qs-action-frame > span { position:absolute; inset:0; display:flex; justify-content:center; align-items:center; margin:0; padding:0; line-height:1.1; text-align:center; white-space:nowrap; pointer-events:none; }
 #quest-screen .qs-btn.qs-action-frame { --sr-radius:clamp(4px,calc(var(--w) * .016),7px); --sr-edge:1px; }
@@ -9866,26 +9892,36 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 @keyframes shop-sword-spark {0%,49%,58%,100%{opacity:0;scale:.2}50%,53%{opacity:1;scale:1.15}55%{opacity:.65;scale:.9}57%{opacity:0;scale:.4}}
 @media(prefers-reduced-motion:reduce){#shop-screen .shop-tab-sword-arm,#shop-screen .shop-tab-sword-spark{animation:none}#shop-screen .shop-tab-sword--left{transform:rotate(-45deg)}#shop-screen .shop-tab-sword--right{transform:rotate(45deg)}}
 .has-cannon-model .lc-body {visibility:hidden;}
-/* Fixed mole palm, slowly floating plain gold ring, lightning confined to its hole. */
-:is(#shop-screen,#inventory-screen) .skill-orb-icon { position:relative; display:block; width:100%; height:100%; overflow:visible; }
+/* Shared artwork geometry: fixed palm, floating clockwise ring, central lightning. */
+:is(#shop-screen,#inventory-screen) .skill-orb-icon { position:relative; display:block; width:100%; height:100%; overflow:visible; container-type:size; }
+:is(#shop-screen,#inventory-screen) .skill-orb-art { position:absolute; left:50%; top:50%; width:min(100cqw,127.380952cqh); aspect-ratio:107/84; transform:translate(-50%,-50%); }
+/* Independent alpha-bound centers, measured at alpha>64 on the unchanged 2508px art.
+   Hand x=(346+2286)/2; ring x=(366+2139)/2. Never shift them as one group. */
+:is(#shop-screen,#inventory-screen) .skill-orb-hand-align { position:absolute; inset:0; translate:-1.94070563% 0; }
 /* The layered icon has no in-flow image to size a grid track. Anchor it to the
    shop's existing icon slot so its percentage-sized layers cannot collapse. */
 #shop-screen .shop-tab-ico > .skill-orb-icon { position:absolute; inset:0; width:100%; height:100%; isolation:isolate; }
 :is(#shop-screen,#inventory-screen) .skill-orb-icon .skill-orb-hand,
 :is(#shop-screen,#inventory-screen) .skill-orb-icon .skill-orb-ring { position:absolute!important; inset:0!important; display:block!important; width:100%!important; height:100%!important; min-width:0!important; min-height:0!important; max-width:none!important; max-height:none!important; object-fit:contain!important; transform:none!important; translate:none!important; animation:none!important; filter:none!important; box-shadow:none!important; }
-:is(#shop-screen,#inventory-screen) .skill-orb-float { position:absolute; left:50%; top:-4.75%; width:58.8785%; height:auto; aspect-ratio:1; translate:-50% 0; isolation:isolate; animation:skill-orb-hover 6s ease-in-out infinite; }
+:is(#shop-screen,#inventory-screen) .skill-orb-float { position:absolute; left:50%; top:-4.75%; width:58.8785%; height:auto; aspect-ratio:1; translate:-49.94019139% 0; isolation:isolate; animation:skill-orb-hover 6s ease-in-out infinite; }
 @keyframes skill-orb-hover { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-4%);} }
+:is(#shop-screen,#inventory-screen) .skill-orb-turn { position:absolute; inset:0; transform-origin:49.94019139% 46.29%; animation:skill-orb-turn 8s linear infinite; }
+@keyframes skill-orb-turn { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
 /* Both tabs share the repaired ring, with a broad, faint reflection on its surface. */
 :is(#shop-screen,#inventory-screen) .skill-orb-icon .skill-orb-ring,
 :is(#shop-screen,#inventory-screen) .skill-orb-rim-light { clip-path:ellipse(35.3% 34.8% at 49.92% 46.29%); }
 :is(#shop-screen,#inventory-screen) .skill-orb-rim-light { position:absolute; inset:0; z-index:2; pointer-events:none; border-radius:0; background:none; -webkit-mask:url('assets/skill-tab-v1519/ring-repaired-2x.png') center/contain no-repeat; mask:url('assets/skill-tab-v1519/ring-repaired-2x.png') center/contain no-repeat; mix-blend-mode:screen; opacity:.65; transform:none; filter:none; }
 :is(#shop-screen,#inventory-screen) .skill-orb-rim-light::before { content:''; position:absolute; left:49.9%; top:46.3%; width:220%; height:220%; translate:-50% -50%; transform-origin:50% 50%; background:conic-gradient(from 0deg,transparent 0 52%,rgba(255,226,150,.03) 60%,rgba(255,239,192,.14) 69%,rgba(255,247,221,.35) 75%,rgba(255,239,192,.14) 81%,rgba(255,226,150,.03) 90%,transparent 98% 100%); animation:skill-orb-rim-sweep 8s linear infinite; }
+:is(#shop-screen,#inventory-screen) .skill-orb-turn .skill-orb-rim-light::before { animation:none; }
 @keyframes skill-orb-rim-sweep { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
 :is(#shop-screen,#inventory-screen) .skill-orb-sprite { position:absolute; left:50%; top:46.3%; width:76%; height:76%; transform:translate(-50%,-50%); z-index:3; pointer-events:none; clip-path:circle(33.5% at 50% 50%); background:url('assets/skill-tab-v1519/lightning-atlas.png') 0 0/500% 100% no-repeat; animation:skill-orb-lightning-frames .55s step-end infinite; }
 @keyframes skill-orb-lightning-frames { 0% {background-position:0 0;} 20% {background-position:25% 0;} 40% {background-position:50% 0;} 60% {background-position:75% 0;} 80%,100% {background-position:100% 0;} }
 :is(#shop-screen,#inventory-screen)[hidden] .skill-orb-icon * { animation-play-state:paused; }
-@media(prefers-reduced-motion:reduce){:is(#shop-screen,#inventory-screen) :is(.skill-orb-float,.skill-orb-sprite,.skill-orb-rim-light),:is(#shop-screen,#inventory-screen) .skill-orb-rim-light::before{animation:none;}:is(#shop-screen,#inventory-screen) .skill-orb-sprite{display:none;}}
+@media(prefers-reduced-motion:reduce){:is(#shop-screen,#inventory-screen) :is(.skill-orb-float,.skill-orb-turn,.skill-orb-sprite,.skill-orb-rim-light),:is(#shop-screen,#inventory-screen) .skill-orb-rim-light::before{animation:none;}:is(#shop-screen,#inventory-screen) .skill-orb-sprite{display:none;}}
 #game-screen.gs-weapon-enhanced .lc-model-image {filter:drop-shadow(0 4px 4px #0006) var(--weapon-glow);}
 
 /* Gold keeps its 3D surface lighting; enhancement glow belongs to the level-aware parent. */
 #inventory-screen .iw-model-page[data-weapon="goldhammer"] .shop-model-canvas { filter:none; }
+/* The level-aware parent supplies the compact glow; do not stack a wider base halo. */
+#inventory-screen .iw-preview-unit.has-enh .shop-model-canvas,
+#inventory-screen .iw-preview-unit.has-enh .inv-thumb--pair > img { filter:none; }

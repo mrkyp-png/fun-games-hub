@@ -167,7 +167,7 @@
     var WEAPON_TAB_ICON = '<span class="shop-tab-swords"><span class="shop-tab-sword-arm shop-tab-sword--left"><img class="shop-tab-sword" src="assets/ui-approved-v1509/shop-tab-sword.png" alt=""></span><span class="shop-tab-sword-arm shop-tab-sword--right"><img class="shop-tab-sword" src="assets/ui-approved-v1509/shop-tab-sword.png" alt=""></span><i class="shop-tab-sword-spark" aria-hidden="true"></i></span>';
 
     // Independent, actual 2508px hand/ring layers; the ring itself has no glow.
-    var SKILL_TAB_ICON = '<span class="skill-orb-icon" aria-hidden="true"><img class="skill-orb-hand" src="assets/skill-tab-layers-20261030/hand-2x.png" alt=""><span class="skill-orb-float"><img class="skill-orb-ring" src="assets/skill-tab-v1519/ring-repaired-2x.png" alt=""><i class="skill-orb-rim-light"></i><span class="skill-orb-sprite"></span></span></span>';
+    var SKILL_TAB_ICON = '<span class="skill-orb-icon" aria-hidden="true"><span class="skill-orb-art"><span class="skill-orb-hand-align"><img class="skill-orb-hand" src="assets/skill-tab-layers-20261030/hand-2x.png" alt=""></span><span class="skill-orb-float"><span class="skill-orb-turn"><img class="skill-orb-ring" src="assets/skill-tab-v1519/ring-repaired-2x.png" alt=""><i class="skill-orb-rim-light"></i></span><span class="skill-orb-sprite"></span></span></span></span>';
 
     // 하단 탭 아이콘 — 이모지(사용자 지정: "이모지나 이미지 넣어야함", 참고 이미지의 하트/망치/별/옷 자리).
     var TABS = [
