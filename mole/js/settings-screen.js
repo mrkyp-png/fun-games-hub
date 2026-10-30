@@ -59,17 +59,9 @@
     function langCard() {
       var flag = function () { return S.get('lang') === 'en' ? '🇺🇸' : '🇰🇷'; };
       var c = card('globe', 'mole.set.lang', DROP + '<span class="st2-flag"></span>', function () {
-        var v = document.createElement('div');
-        v.className = 'ad-overlay';
-        v.innerHTML = '<div class="ad-overlay-card quit-card"><img class="quit-ico" src="' + A + 'ic-globe.png" alt=""><div class="quit-title"></div><div class="quit-btns">' +
-          '<button type="button" class="quit-yes" data-lang="ko">🇰🇷 한국어</button><button type="button" class="quit-yes" data-lang="en">🇺🇸 English</button></div></div>';
-        v.querySelector('.quit-title').textContent = T('mole.set.lang');
-        v.addEventListener('click', function (e) {
-          var l = e.target.closest('[data-lang]');
-          if (l) { S.set('lang', l.getAttribute('data-lang')); v.remove(); rebuild(); }
-          else if (e.target === v) v.remove();
-        });
-        document.body.appendChild(v);
+        choiceDialog(T('mole.set.lang'), A + 'ic-globe-2x.png', [
+          { label: '🇰🇷 한국어', action: 'confirm', pick: function () { S.set('lang', 'ko'); rebuild(); } },
+          { label: '🇺🇸 English', action: 'confirm', pick: function () { S.set('lang', 'en'); rebuild(); } }]);
       }, GO);
       c.querySelector('.st2-flag').textContent = flag();
     }
@@ -84,22 +76,39 @@
       setTimeout(function () { t.remove(); }, 1500);
     }
 
+    // V1526 C 이후: 설정 팝업 = 상점 구매 확인 팝업(shop.js showFinalConfirm)과 같은 마크업·CSS
+    function choiceDialog(message, art, buttons) {
+      var old = el.querySelector('.shop-coin-choice-dialog'); if (old) old.remove();
+      var d = document.createElement('div');
+      d.className = 'shop-coin-choice-dialog';
+      d.setAttribute('role', 'dialog'); d.setAttribute('aria-modal', 'true');
+      d.innerHTML = '<div class="shop-coin-choice-card"><img class="shop-coin-choice-art" src="' + art + '" alt=""><b class="shop-coin-choice-message"></b><div class="shop-coin-choice-actions"></div></div>';
+      d.querySelector('.shop-coin-choice-message').textContent = message;
+      var row = d.querySelector('.shop-coin-choice-actions');
+      buttons.forEach(function (b) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'shop-card-btn shop-coin-choice-action ws-action-frame shop-buy-frame' + (b.action === 'cancel' ? ' shop-buy-frame--cancel' : '');
+        btn.dataset.choiceAction = b.action; btn.textContent = b.label;
+        btn.addEventListener('click', function () { d.remove(); if (b.pick) b.pick(); });
+        row.appendChild(btn);
+      });
+      d.addEventListener('click', function (e) { if (e.target === d) d.remove(); });
+      d.addEventListener('keydown', function (e) { if (e.key === 'Escape') { e.preventDefault(); d.remove(); } });
+      el.appendChild(d);
+      row.lastChild.focus();
+    }
+
     // 데이터 초기화 — 바로 지우지 않고 확인 팝업(명세 §6⑨)
     function confirmReset() {
-      var v = document.createElement('div');
-      v.className = 'ad-overlay';
-      v.innerHTML = '<div class="ad-overlay-card quit-card"><img class="quit-ico" src="' + A + 'ic-trash.png" alt=""><div class="quit-title"></div>' +
-        '<div class="quit-btns"><button type="button" data-q="no"></button><button type="button" class="quit-yes quit-danger" data-q="yes"></button></div></div>';
-      v.querySelector('.quit-title').textContent = T('mole.set.resetConfirm');
-      v.querySelector('[data-q="no"]').textContent = T('mole.skl.restoreCancel');
-      v.querySelector('[data-q="yes"]').textContent = T('mole.set.reset');
-      v.querySelector('[data-q="no"]').addEventListener('click', function () { v.remove(); });
-      v.querySelector('[data-q="yes"]').addEventListener('click', function () {
-        try { localStorage.clear(); } catch (e) {}
-        if (root.indexedDB && root.indexedDB.deleteDatabase) root.indexedDB.deleteDatabase('moleFaces');
-        location.reload();
-      });
-      document.body.appendChild(v);
+      var en = S.get('lang') === 'en';
+      choiceDialog(T('mole.set.resetConfirm'), A + 'ic-trash-2x.png', [
+        { label: en ? 'Yes' : '예', action: 'confirm', pick: function () {
+          try { localStorage.clear(); } catch (e) {}
+          if (root.indexedDB && root.indexedDB.deleteDatabase) root.indexedDB.deleteDatabase('moleFaces');
+          location.reload();
+        } },
+        { label: en ? 'No' : '아니요', action: 'cancel' }]);
     }
 
     function rebuild() {

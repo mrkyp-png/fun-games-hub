@@ -6,7 +6,8 @@
 // V1524 G: mailbox layout, floating claim-all, inventory loading and shop preview fixes.
 // V1525 C: shop day/night and score backgrounds use brightness instead of opacity.
 // V1526 C: settings screen redesign (ivory frame, shop cards, unified buttons, new plank, 2x icons), mailbox frame back to ivory.
-const CACHE = 'mole-game-v1526-C';
+// V1527 C: settings popups use the shop confirm dialog, reset text, workshop gold hammer game-style chop with 3D tilt.
+const CACHE = 'mole-game-v1527-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.

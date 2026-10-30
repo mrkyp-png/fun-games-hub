@@ -77,25 +77,25 @@
       var u = 1 - t;
       return { x:u*u*a.x + 2*u*t*control.x + t*t*b.x, y:u*u*a.y + 2*u*t*control.y + t*t*b.y };
     }
-    var raised = { x:Math.min(.86, hit.x + .04), y:Math.max(.18, hit.y - .25) };
-    var ready = hit.degrees - 32, lift = .38, hold = .08, down = .11, p, k;
+    // V1527 C 사용자: 게임 망치(lane-hammer.js)와 같은 방식 — 손(그립)이 알 옆 타격 위치로 바로 날아가며 머리를 들고(타격 각도 +52도),
+    // 손은 그대로 둔 채 머리만 손을 축으로 반시계 52도 빠르게 스냅해 위에서 내리찍는다. 3D 젖힘 없음.
+    // + 3D 입체 회전: 들어 올리는 동안 망치가 가로축으로 뒤로 젖혀지고(윗면이 보임, 최대 60도), 찍으면서 바로 선다(타격 순간 0도).
+    var ready = hit.degrees + 52, BACK = 60 * Math.PI / 180, fly = .2, hold = .06, chop = .09, p, k, t;
     if (swing.fired) {
       k = Math.min(1, Math.max(0, (age - swing.impactAge) / .09));
-      return {x:hit.x + .006*k, y:hit.y - .025*k, degrees:hit.degrees - 5*k, impact:false};
+      return {x:hit.x + .006*k, y:hit.y - .025*k, degrees:hit.degrees - 5*k, pitch:0, impact:false};
     }
-    if (age < lift) {
-      k = 1 - Math.pow(1 - Math.max(0, age / lift), 3);
-      p = curve(swing, {x:Math.min(.94, Math.max(swing.x, raised.x) + .14), y:Math.max(.18, swing.y - .14)}, raised, k);
-      p.degrees = swing.degrees + (ready - swing.degrees)*k;
-    } else if (age < lift + hold) {
-      p = {x:raised.x, y:raised.y, degrees:ready};
-    } else if (age < lift + hold + down) {
-      // Accelerate into the egg from above along a curved, clockwise downswing.
-      k = Math.pow((age - lift - hold) / down, 2);
-      p = curve(raised, {x:hit.x + .12, y:raised.y + .04}, hit, k);
-      p.degrees = ready + (hit.degrees - ready)*k;
+    if (age < fly) {
+      k = 1 - Math.pow(1 - Math.max(0, age / fly), 2);
+      p = curve(swing, {x:(swing.x + hit.x) / 2 + .04, y:Math.min(swing.y, hit.y) - .08}, hit, k);
+      p.degrees = swing.degrees + (ready - swing.degrees)*k; p.pitch = BACK*k;
+    } else if (age < fly + hold) {
+      p = {x:hit.x, y:hit.y, degrees:ready, pitch:BACK};
+    } else if (age < fly + hold + chop) {
+      t = (age - fly - hold) / chop;
+      p = {x:hit.x, y:hit.y, degrees:ready + (hit.degrees - ready)*t*t, pitch:BACK*(1 - t*t)};
     } else {
-      return {x:hit.x, y:hit.y, degrees:hit.degrees, impact:true};
+      return {x:hit.x, y:hit.y, degrees:hit.degrees, pitch:0, impact:true};
     }
     p.impact = false; return p;
   }
@@ -317,13 +317,15 @@
       if (!swing || !hammer || !workshopModelView || !workshopModelView.strikeContact) return;
       var rect = swing.layer.getBoundingClientRect(), anchor = swing.anchor;
       var target = { x: (anchor.x - rect.left) / rect.width, y: (anchor.y - rect.top) / rect.height };
-      var hit = solveHammerContact(workshopModelView.strikeContact, hammer.offsetWidth, hammer.offsetHeight,
-        swing.layer.clientWidth, swing.layer.clientHeight, target);
+      // 젖힘(cameraPitch) 중에는 투영된 접점이 바뀌므로, 바로 선 자세에서 구한 타격 해를 고정해 쓴다.
+      var hit = swing.hit || (swing.hit = solveHammerContact(workshopModelView.strikeContact, hammer.offsetWidth, hammer.offsetHeight,
+        swing.layer.clientWidth, swing.layer.clientHeight, target));
       var age = Math.max(0, (now - swing.start) / 1000), pose = workshopSwingPose(swing, hit, age);
       hammer.style.left = (pose.x * 100).toFixed(6) + '%'; hammer.style.top = (pose.y * 100).toFixed(6) + '%';
       hammer.style.marginTop = '0'; hammer.style.marginLeft = '0';
       hammer.style.transformOrigin = '49% 72%';
       hammer.style.transform = 'translate(-49%, -72%) rotate(' + pose.degrees.toFixed(6) + 'deg) scale(1, 1)';
+      if (swing.pitch !== pose.pitch) { swing.pitch = pose.pitch; workshopModelView.setPose({cameraPitch:pose.pitch}); }
       if (pose.impact && !swing.fired) {
         // Paint the exact contact pose before the impact callback starts its fade/effects.
         swing.fired = true; swing.impactAge = age; swing.impact();

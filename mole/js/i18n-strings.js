@@ -373,7 +373,7 @@
       'mole.set.lang': '언어',
       'mole.set.adfree': '광고 제거',
       'mole.set.reset': '데이터 초기화',
-      'mole.set.resetConfirm': '점수·사람두더지·설정을 모두 지울까요?',
+      'mole.set.resetConfirm': '데이터를 초기화 하시겠습니까?',
       'mole.set.on': 'ON',
       'mole.set.off': 'OFF',
 
@@ -757,7 +757,7 @@
       'mole.set.lang': 'Language',
       'mole.set.adfree': 'Remove Ads',
       'mole.set.reset': 'Reset data',
-      'mole.set.resetConfirm': 'Erase all scores, face moles and settings?',
+      'mole.set.resetConfirm': 'Reset all data?',
       'mole.set.on': 'ON',
       'mole.set.off': 'OFF',
 
