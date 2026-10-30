@@ -112,9 +112,7 @@
       });
       return idleGooseReady;
     }
-    var hammerShadow = null, shadowHammerEl = null, workshopModelView = null;
-    var workshopFootprint = null;
-    var WORKSHOP_IDLE_YAW = Math.PI - Math.PI / 6;
+    var hammerShadow = null, shadowHammerEl = null;
     function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
     function clearTimers() { timers.forEach(clearTimeout); timers = []; stopGooseWingsSound(); resetGooseFlight(); }
     function resetGooseFlight() {
@@ -162,9 +160,6 @@
       lastHammerHitIndex = next; playHammerSound(hammerHitAudios[next], 0.55);
     }
     function clearWorkshopHammer() {
-      if (workshopModelView) workshopModelView.dispose();
-      workshopModelView = null;
-      workshopFootprint = null;
       if (hammerRaf) cancelAnimationFrame(hammerRaf);
       hammerRaf = 0;
       stopHammerZapAnimation(false);
@@ -174,12 +169,11 @@
       hammerShadow = null; shadowHammerEl = null;
     }
     function stopHammerZapAnimation(showBase) {
-      if (workshopModelView) workshopModelView.setPose({zap:false});
       if (hammerZapTimer) clearInterval(hammerZapTimer);
       hammerZapTimer = null;
       if (showBase && workshopHammer) {
         var img = workshopHammerImage();
-        if (img) img.src = A + 'ham-gold-v1407.webp';
+        if (img) img.src = A + 'weapons/goldpaw-v1382.webp';
       }
     }
     function workshopHammerImage() {
@@ -188,12 +182,11 @@
     }
     function startHammerZapAnimation() {
       stopHammerZapAnimation(false);
-      if (workshopModelView) { workshopModelView.setPose({yaw:Math.PI,cameraPitch:0,zap:true}); return; }
       var frame = 0;
       function showFrame() {
         var img = workshopHammerImage();
         if (!img || !img.isConnected) return;
-        img.src = A + 'ham-gold-zap' + ((frame++ % 6) + 1) + '-v1409.webp';
+        img.src = A + 'weapons/goldpaw-zap' + ((frame++ % 6) + 1) + '-v1409.webp';
       }
       showFrame();
       hammerZapTimer = setInterval(showFrame, 80);
@@ -202,40 +195,20 @@
       clearWorkshopHammer();
       workshopHammer = MG.LaneHammer.create({
         layer: layer,
-        sprite: A + 'ham-gold-v1407.webp',
-        introSprite: A + 'ham-gold-v1407.webp',
+        sprite: A + 'weapons/goldpaw-v1382.webp',
+        introSprite: A + 'weapons/goldpaw-v1382.webp',
         grip: { x: 49, y: 72 },
         cssClass: 'lane-hammer--gold ws-enhance-hammer',
-        // 기존 제작소 폭(화면의 약 40%)에 맞춰 게임용 골드 망치 오프셋도 약 2배 보정.
-        gripOff: { x: 0.321, y: -0.216 },
-        emptyDy: -0.05,
+        // 강화 화면에서도 게임 골드 묠니르와 같은 손잡이·타격면 위치 보정과 크기를 사용한다.
+        gripOff: { x: 0.107, y: -0.072 },
         homeMarginTop: '-0.15cm',
         homeDegOffset: 0,
         homeXFrac: 0.66,
         homeYFrac: 0.85,
-        idle: 'bounce',
-        strikeDurationScale: 2,
-        strikeFlyDurationScale: 2 / 0.7
+        idle: 'bounce'
       });
       var hammerEl = layer.querySelector('.ws-enhance-hammer');
-      if (hammerEl && MG.WeaponModels) {
-        var touchHost = document.createElement('div'); touchHost.className = 'ws-touch-model'; hammerEl.appendChild(touchHost);
-        MG.WeaponModels.create(touchHost, 'goldhammer', {manual:true, onFrame:function (frame) { workshopFootprint = frame; }}).then(function (view) {
-          if (!view || !hammerEl.isConnected) { if (view) view.dispose(); return; }
-          workshopModelView = view; view.setPose({yaw:WORKSHOP_IDLE_YAW,cameraPitch:0}); hammerEl.classList.add('is-model-ready');
-          var pointer = null, lastX = 0;
-          hammerEl.addEventListener('pointerdown', function (e) {
-            if (hammerEl.classList.contains('is-striking') || hammerEl.classList.contains('is-entering')) return;
-            pointer = e.pointerId; lastX = e.clientX; hammerEl.setPointerCapture(pointer); e.preventDefault(); e.stopPropagation();
-          });
-          hammerEl.addEventListener('pointermove', function (e) {
-            if (pointer !== e.pointerId || hammerEl.classList.contains('is-striking')) return;
-            view.setPose({yaw:view.pose.yaw-(e.clientX-lastX)*.012}); lastX=e.clientX; e.preventDefault();
-          });
-          function release(e) { if (pointer === e.pointerId) pointer = null; }
-          hammerEl.addEventListener('pointerup',release); hammerEl.addEventListener('pointercancel',release);
-        });
-      }
+      if (hammerEl) hammerEl.style.width = '19.25%';
       shadowHammerEl = hammerEl;
       hammerShadow = document.createElement('div'); hammerShadow.className = 'ws-hammer-shadow'; hammerShadow.setAttribute('aria-hidden', 'true'); layer.appendChild(hammerShadow);
       if (hammerEl) hammerEl.classList.add('is-entering');
@@ -244,8 +217,6 @@
       workshopHammer.spinIn(0.08, 0.9, 1260, 4, 0.04, function () {
         hammerEl = layer.querySelector('.ws-enhance-hammer');
         if (hammerEl) hammerEl.classList.remove('is-entering');
-        if (hammerEl) hammerEl.classList.add('is-model-touch');
-        if (workshopModelView) workshopModelView.resize();
         animateWorkshopHammer();
         if (onLanded) onLanded();
       });
@@ -264,7 +235,7 @@
           var lift = Math.min(1, Math.abs(85 - y) / 12);
           var angleMatch = /rotate\(([-\d.]+)deg\)/.exec(shadowHammerEl.style.transform);
           var angle = (angleMatch ? Number(angleMatch[1]) : 18) * Math.PI / 180;
-          var footprint = workshopFootprint || {left:0,right:1,top:0,bottom:1};
+          var footprint = {left:0,right:1,top:0,bottom:1};
           var width = shadowHammerEl.offsetWidth, height = shadowHammerEl.offsetHeight;
           var dx = ((footprint.left + footprint.right) / 2 - .49) * width;
           var dy = ((footprint.top + footprint.bottom) / 2 - .72) * height;
@@ -474,14 +445,12 @@
       $('[data-ws-fx-info]').hidden = true;
       if (!workshopHammer) createWorkshopHammer(fx);
       var fxRect = fx.getBoundingClientRect();
-      // 사용자가 표시한 알 윗부분 안쪽 타격점에 맞춰 새 알 프레임의 실제 위치로 계산한다.
+      // 새 알 프레임의 실제 위치를 기준으로 알 윗부분 안쪽을 게임 타격 목표로 삼는다.
       var eggRect = fx.querySelector('.ws-new-egg').getBoundingClientRect();
-      // 요청 조정 누적: 오른쪽 0.3cm, 아래쪽 2.5cm (CSS 96px/in 기준).
-      var targetX = (eggRect.left + eggRect.width * 0.5 + 11.34 - fxRect.left) / fxRect.width;
-      var targetY = (eggRect.top + eggRect.height * 0.16 + 94.5 - fxRect.top) / fxRect.height;
+      var targetX = (eggRect.left + eggRect.width * 0.5 - fxRect.left) / fxRect.width;
+      var targetY = (eggRect.top + eggRect.height * 0.32 - fxRect.top) / fxRect.height;
       var hammerEl = fx.querySelector('.ws-enhance-hammer');
       if (hammerEl) hammerEl.classList.add('is-striking');
-      if (workshopModelView) workshopModelView.setPose({yaw:Math.PI,cameraPitch:0});
       startHammerZapAnimation();
       workshopHammer.strike(targetX, targetY, function () {
         playRandomHammerHit();
@@ -518,8 +487,8 @@
       if (framesReady) return framesReady;
       var list = [];
       for (var i = 1; i <= 10; i++) list.push(A + 'goose-' + i + '.png');
-      list.push(A + 'ham-gold-v1407.webp');
-      for (var z = 1; z <= 6; z++) list.push(A + 'ham-gold-zap' + z + '-v1409.webp');
+      list.push(A + 'weapons/goldpaw-v1382.webp');
+      for (var z = 1; z <= 6; z++) list.push(A + 'weapons/goldpaw-zap' + z + '-v1409.webp');
       framesReady = Promise.all([MG.WorkshopEnhance.preload()].concat(list.map(function (u) {
         var im = new Image();
         var match = /\/goose-(\d+)\.png$/.exec(u);
