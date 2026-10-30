@@ -16,7 +16,7 @@ function lookAt(eye,target){const z=unit(eye.map((v,i)=>v-target[i])),x=unit(cro
 
 const accessorCaches=new WeakMap();function accessor(model,index){let cache=accessorCaches.get(model);if(!cache){cache=new Map();accessorCaches.set(model,cache);}if(!cache.has(index))cache.set(index,decodeAccessor(model,index));return cache.get(index);}
 
-const paths={hammer:'hammer-v5-batched-v1509.glb',cannon:'cannon-v1-batched-v1509.glb',goldhammer:'goldhammer-v17-batched-v1519.glb'};
+const paths={hammer:'hammer-v5-batched-v1509.glb',cannon:'cannon-v1-batched-v1509.glb',goldhammer:'goldhammer-v18-batched-v1520.glb'};
 const assets=new Map(),views=new Set(),dormant=new Map(),waiting=new Map();let frameId=0,lastTick=0,lastAction=-Infinity,activeScreen=null,initQueue=Promise.resolve();
 function reserveInit(){let unlock;const previous=initQueue;initQueue=new Promise(resolve=>{unlock=resolve;});return previous.then(()=>new Promise(resolve=>requestAnimationFrame(()=>resolve(unlock))));}
 function load(id){if(!assets.has(id))assets.set(id,fetch('assets/shop-models-v1509/'+paths[id]).then(r=>{if(!r.ok)throw Error('Model '+r.status);return r.arrayBuffer();}).then(parseGLB).catch(e=>{assets.delete(id);throw e;}));return assets.get(id);}
@@ -115,7 +115,7 @@ async function create(host,id,index,options={}){
   view.draw=function(time){
    if(disposed)return;
    const dpr=Math.min(Math.max(devicePixelRatio||1,2),2.5),cap=options.maxPixels||512;
-   const inventory=options.motion==='inventory',pixelScale=inventory?Math.min(dpr,cap/Math.max(1,view.width,view.height)):dpr;
+   const inventory=options.motion==='inventory',pixelScale=Math.min(dpr,cap/Math.max(1,view.width,view.height));
    const w=Math.max(1,Math.min(cap,Math.round(view.width*pixelScale))),h=Math.max(1,Math.min(cap,Math.round(view.height*pixelScale)));
    if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
    gl.viewport(0,0,w,h);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
@@ -160,7 +160,7 @@ async function create(host,id,index,options={}){
    let barrelMotion=null;
    if(barrelPivot){const angle=(25-view.pose.pitch)*Math.PI/180;barrelMotion=multiply(motion,multiply(multiply(translation(...barrelPivot),rotate([1,0,0],angle)),translation(...barrelPivot.map(v=>-v))));}
    if(id!=='hammer'){host.style.setProperty('--shop-shadow-scale',String(1+amount*.06));host.style.setProperty('--shop-shadow-opacity',String(.32+amount*.08));}
-   const aspect=inventory?(view.aspect||120/110):w/h,fov=Math.PI/5,limit=2*Math.atan(Math.tan(fov/2)*Math.min(1,aspect));
+   const aspect=inventory?(view.aspect||120/110):view.width/Math.max(1,view.height),fov=Math.PI/5,limit=2*Math.atan(Math.tan(fov/2)*Math.min(1,aspect));
    const distance=radius/Math.sin(limit/2)*.9,target=turnCenter,eye=[target[0]+Math.sin(yaw)*Math.cos(pitch)*distance,target[1]+Math.sin(pitch)*distance,target[2]+Math.cos(yaw)*Math.cos(pitch)*distance];
    const vp=multiply(options.external?orthographic(radius*.8,aspect,Math.max(radius*.1,distance-radius*2),distance+radius*2):perspective(fov,aspect,Math.max(radius*.1,distance-radius*2),distance+radius*2),lookAt(eye,target));
    if(options.external){const forward=unit(target.map((n,i)=>n-eye[i])),right=unit(cross(forward,[0,1,0])),up=cross(right,forward);view.camera={eye,forward,right,up,half:radius*.8,aspect};}

@@ -720,7 +720,7 @@
         var label = english ? (round + (round === 1 ? 'st' : round === 2 ? 'nd' : 'rd') + ' purchase') : round + '회차';
         var weaponLabel = english ? weapon.nameEn : ({ cannon: '팡팡 캐논', goldhammer: '골드 묠니르', alipunch: '킹판취' }[weaponId] || weapon.name);
         return '<div class="shop-coin-bulk-reward"><span class="shop-coin-bulk-step">' + label + '</span>' +
-          '<img src="' + (weaponId === 'cannon' ? 'assets/weapon-stills-v1509/cannon-hero.png' : weaponId === 'goldhammer' ? 'assets/weapon-stills-v1519/goldhammer-15.png' : weapon.thumb) + '" alt=""><span class="shop-coin-bulk-reward-name">' + weaponLabel + '</span></div>';
+          '<img src="' + (weaponId === 'cannon' ? 'assets/weapon-stills-v1509/cannon-hero.png' : weaponId === 'goldhammer' ? 'assets/weapon-stills-v1509/goldhammer-15.png' : weapon.thumb) + '" alt=""><span class="shop-coin-bulk-reward-name">' + weaponLabel + '</span></div>';
       }).join('');
       var bulkArt = '<div class="shop-coin-bulk-art">' +
         '<img class="shop-coin-bulk-pile" src="' + CURRENCY_ART + 'coin-option-09-bright20.png" alt="">' +

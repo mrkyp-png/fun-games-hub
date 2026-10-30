@@ -13,6 +13,7 @@
     el.classList.add('st2-screen');
     el.innerHTML =
       '<div class="mb-frame st2-frame">' +
+        '<span class="mb-top-grain" aria-hidden="true"></span>' +
         '<div class="mb-head"><div class="st2-head"><img src="' + A + 'head.png" alt=""></div></div>' +
         '<div class="st2-grid" data-set-list></div>' +
       '</div>';

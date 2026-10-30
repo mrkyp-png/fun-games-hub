@@ -71,6 +71,7 @@
     el.classList.add('mb-screen');
     el.innerHTML =
       '<div class="mb-frame">' +
+        '<span class="mb-top-grain" aria-hidden="true"></span>' +
         '<div class="mb-head">' +
           '<div class="mb-plank"><img class="mb-plank-img" src="assets/mailbox/plank.png" alt=""><img class="mb-plank-env" src="assets/mailbox/env-heart.png" alt=""></div>' +
           '<button type="button" class="mb-all ws-action-frame mail-action-frame mail-all-frame" data-mb-all aria-label="claim all"><span class="mb-all-icons"><img src="assets/mailbox/ic-mail.png" alt=""><img src="assets/mailbox/ic-check.png" alt=""></span></button>' +

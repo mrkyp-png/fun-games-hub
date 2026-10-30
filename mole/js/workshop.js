@@ -17,7 +17,7 @@
 
   var WEAPONS = [
     { id: 'cannon', ko: '팡팡 캐논', en: 'Pang Pang Cannon', img: 'assets/weapon-stills-v1509/cannon-front.png', done: 'assets/weapon-stills-v1509/cannon-front.png' },
-    { id: 'goldhammer', ko: '골드 묠니르', en: 'Gold Mjolnir', img: 'assets/weapon-stills-v1519/goldhammer-15.png', done: 'assets/weapon-stills-v1519/goldhammer-15.png' },
+    { id: 'goldhammer', ko: '골드 묠니르', en: 'Gold Mjolnir', img: 'assets/weapon-stills-v1509/goldhammer-15.png', done: 'assets/weapon-stills-v1509/goldhammer-15.png' },
     { id: 'alipunch', ko: '킹 판취', en: 'King Punch', img: A + 'w-alipunch-idle-v1406.png', done: A + 'w-alipunch-idle-v1406.png' } // V1405 C 사용자: 게임 대기 그림(kingfist-idle). V1406 C: 게임과 같게 왼쪽=원본·오른쪽=거울 // 글러브 두 짝 — v891: 여백 잘라 캐논과 비슷한 크기(사용자 지정)
   ];
 
