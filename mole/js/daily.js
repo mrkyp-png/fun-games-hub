@@ -8,18 +8,20 @@
   var MG = root.MoleGame;
   var T = function (k, p) { return root.FGH.I18N.t(k, p); };
   var KEY = 'mole.dailyV2';
+  var QUEST_GIFT = 'assets/quest/gift-red.png';
+  var SHOP_COIN = 'assets/shop-ui-v1452/', SHOP_HEART = 'assets/shop-ui-v1450/11-heart.webp', SHOP_SKILL = 'assets/skills/shop-hd-v1484/set-triangle-clean.webp';
 
   // ---- 보상 설정(데이터) — 수량·확률은 여기만 바꾸면 된다(명세 §3, §4, §20) ----
   var CONFIG = {
     cycle: 7,
     rewards: [
-      { type: 'coin', n: 500, icon: 'item-coin-s.png' },
-      { type: 'heart', n: 3, icon: 'item-heart.png' },
+      { type: 'coin', n: 500, icon: 'item-coin-s.png', src: SHOP_COIN + 'coin-option-01-bright20.png' }, // V1529 C 사용자: 상점 아이콘
+      { type: 'heart', n: 3, icon: 'item-heart.png', src: SHOP_HEART },
       { type: 'ticket', n: 5, icon: 'item-ticket.png' },
-      { type: 'coin', n: 1000, icon: 'item-coin-m.png' },
-      { type: 'skill', n: 1, icon: 'item-skill.png' },
-      { type: 'coin', n: 1500, icon: 'item-coin-l.png' },
-      { type: 'random', icon: 'item-gift.png' }
+      { type: 'coin', n: 1000, icon: 'item-coin-m.png', src: SHOP_COIN + 'coin-option-05-bright20.png' },
+      { type: 'skill', n: 1, icon: 'item-skill.png', src: SHOP_SKILL },
+      { type: 'coin', n: 1500, icon: 'item-coin-l.png', src: SHOP_COIN + 'coin-option-09-bright20.png' },
+      { type: 'random', icon: 'item-gift.png', src: QUEST_GIFT } // V1529 C 사용자: 퀘스트(일일) 선물상자와 통일
     ],
     day7: {
       normalWeight: 80, skillWeight: 20,
@@ -96,6 +98,9 @@
   function rewardIcon(res) {
     if (res.type === 'ticket') return TICKET_ICON;
     if (res.type === 'skill') { var sk = MG.Skills.skillById(res.skillId); if (sk) return sk.icon; }
+    if (res.type === 'coin') return SHOP_COIN + 'coin-option-05-bright20.png';
+    if (res.type === 'heart') return SHOP_HEART;
+    if (res.type === 'skill') return SHOP_SKILL;
     return ASSET + ICON_BY_TYPE[res.type];
   }
 
@@ -146,12 +151,13 @@
         card.dataset.stamp = T('mole.daily.stamp'); // 받은 날 도장 글자(v766)
         card.innerHTML =
           '<span class="dr-day"></span>' +
-          '<img class="dr-ico" alt="" src="' + (rw.type === 'ticket' ? TICKET_ICON : ASSET + rw.icon) + '">' +
+          '<img class="dr-ico' + (rw.type === 'coin' ? ' dr-ico--coin' : '') + '" alt="" src="' + (rw.type === 'ticket' ? TICKET_ICON : rw.src || ASSET + rw.icon) + '">' +
           '<b class="dr-qty"></b>' +
-          '<span class="dr-status"></span>';
+          '<span class="dr-status dr-pill"></span>';
         card.querySelector('.dr-day').textContent = T('mole.daily.day', { n: i });
         card.querySelector('.dr-qty').textContent = rw.type === 'random' ? T('mole.daily.random') : '× ' + rw.n.toLocaleString();
-        card.querySelector('.dr-status').textContent =
+        card.querySelector('.dr-status').innerHTML = '<span></span>'; // V1529 C: 글자를 따로 감싸 실제 글자 모양 기준 위아래 가운데
+        card.querySelector('.dr-status > span').textContent =
           s === 'claimed' ? '✓ ' + T('mole.daily.claimedTag')
           : s === 'available' ? T('mole.daily.get')
           : s === 'next' ? T('mole.daily.tomorrow') : T('mole.daily.locked');
@@ -245,14 +251,14 @@
       var ok = gift.querySelector('.dr-gift-ok');
       gift.hidden = false;
       gift.className = 'dr-gift';
-      box.src = ASSET + 'gift-closed.png';
+      box.src = QUEST_GIFT; // V1529 C 사용자: 퀘스트 선물상자와 같은 그림(열림 그림이 따로 없어 열림 단계도 같은 그림 + 빛·아이템 연출)
       item.src = rewardIcon(res);
       txt.textContent = '';
       ok.hidden = true;
       void gift.offsetWidth;
       gift.classList.add('is-shake');
-      later(function () { gift.classList.remove('is-shake'); box.src = ASSET + 'gift-opening.png'; gift.classList.add('is-spark'); }, 1100);
-      later(function () { box.src = ASSET + 'gift-open.png'; gift.classList.add('is-open'); }, 1450);
+      later(function () { gift.classList.remove('is-shake'); box.src = QUEST_GIFT; gift.classList.add('is-spark'); }, 1100);
+      later(function () { box.src = QUEST_GIFT; gift.classList.add('is-open'); }, 1450);
       later(function () {
         var granted = onReveal();
         if (!granted) { gift.hidden = true; return; }

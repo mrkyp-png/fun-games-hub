@@ -9959,3 +9959,35 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* The level-aware parent supplies the compact glow; do not stack a wider base halo. */
 #inventory-screen .iw-preview-unit.has-enh .shop-model-canvas,
 #inventory-screen .iw-preview-unit.has-enh .inv-thumb--pair > img { filter:none; }
+
+/* V1529 C 사용자: 일일 화면 — 두더지 2마리 삭제, 아래 버튼 = 제작소 강화하기 버튼 틀(색 유지), 카드 상태 = 설정 알약 틀(색 유지),
+   안내 문구 = 명판 안쪽 면(원본 y13~43) 위아래 가운데, 빛 테두리 = 전구 사이에서 잘라 이음매 없이 반복. */
+#daily-screen .dr-board { border-image-source:url('assets/daily/panel-2x-v1529.png'); border-image-slice:212 116 228 fill; border-image-width:calc(var(--w) * 106 / 758) calc(var(--w) * 58 / 758) calc(var(--w) * 114 / 758); border-image-repeat:stretch round; }
+#daily-screen .dr-plate { top:calc(var(--w) * -67 / 758); height:calc(var(--w) * 30 / 758); transform:translateX(-50%); display:flex; justify-content:center; align-items:center; line-height:normal; text-box:trim-both cap alphabetic; }
+#daily-screen .dr-btn-frame { background-image:none !important; --sr-edge:calc(var(--w) * 0.021); --sr-radius:calc(var(--w) * 0.045); }
+#daily-screen .dr-btn-frame::after { left:0; right:0; top:0; height:auto; inset:var(--sr-edge); background:none; border-radius:calc(var(--sr-radius) - var(--sr-edge)); }
+#daily-screen .dr-btn--claim.dr-btn-frame { --sr-face:linear-gradient(180deg,#6be47b 0%,#36c457 46%,#1d9a3f 100%); --sr-rim:linear-gradient(180deg,#d4ffbf,#62e983 24%,#16873c 75%,#0d5e29); --sr-highlight:#d5ffdc; --sr-outline:#0c5a26; }
+#daily-screen .dr-btn--ad.dr-btn-frame { --sr-face:linear-gradient(180deg,#fff3cf 0%,#f1dca6 46%,#dcbd7a 100%); --sr-rim:linear-gradient(180deg,#fff6dc,#e9cf8f 24%,#b88d45 75%,#8a6428); --sr-highlight:#fff8e6; --sr-outline:#7a5520; }
+#daily-screen .dr-status.dr-pill { background:none !important; border:0 !important; box-shadow:none !important; border-radius:999px; isolation:isolate; overflow:visible;
+  --pf:linear-gradient(180deg,#9aa0ad,#6b7080 60%,#555a68); --pr:linear-gradient(180deg,#d9dce4,#9aa0ad 24%,#555a68 75%,#3a3e4a); --ph:#e6e8ee; --po:#3a3e4a; }
+#daily-screen .dr-status.dr-pill::before { left:0; right:0; top:0; height:auto; inset:0; z-index:-1; box-sizing:border-box; border:3px solid transparent; border-radius:999px; background:var(--pf) padding-box, var(--pr) border-box; outline:1px solid var(--po); outline-offset:-1px; }
+#daily-screen .dr-status.dr-pill::after { content:''; position:absolute; inset:3px; z-index:-1; border:1px solid var(--ph); border-radius:999px; pointer-events:none; }
+#daily-screen .dr-card--claimed .dr-status.dr-pill { --pf:linear-gradient(180deg,#4fd97c,#1f9a4a 60%,#177a3b); --pr:linear-gradient(180deg,#c9f7d6,#4fd97c 24%,#177a3b 75%,#0f5a2a); --ph:#d8ffe2; --po:#0f5a2a; }
+#daily-screen .dr-card--available .dr-status.dr-pill { --pf:linear-gradient(180deg,#fff07a,#ffcb1f 55%,#f09a00); --pr:linear-gradient(180deg,#fff7c2,#ffd84a 24%,#c97800 75%,#8f5200); --ph:#fff6b8; --po:#8f5200; }
+#daily-screen .dr-card--next .dr-status.dr-pill { --pf:linear-gradient(180deg,#7fa6ff,#4a72d6 60%,#3558b5); --pr:linear-gradient(180deg,#d6e2ff,#7fa6ff 24%,#3558b5 75%,#22397a); --ph:#dfe8ff; --po:#22397a; }
+#daily-screen .dr-btn--claim.dr-btn-frame > span { flex-direction:column; padding-left:26%; line-height:1.05; color:#fff; font-size:calc(var(--w) * 0.054); }
+#daily-screen .dr-btn--ad.dr-btn-frame > span { flex-direction:column; padding-left:42%; line-height:1.05; color:#4a2c00; font-size:inherit; }
+/* V1529 C 사용자: 아래 버튼 글자는 안쪽 테두리 안 영역에만(겹침 없음), 광고 ×2 는 위로 올려 글자와 안 겹치게. */
+#daily-screen .dr-btn-frame > span { position:absolute; top:var(--sr-edge); bottom:var(--sr-edge); right:calc(var(--sr-edge) + 4px); padding-left:0; justify-content:center; align-items:center; white-space:nowrap; }
+#daily-screen .dr-btn--claim.dr-btn-frame > span { left:26%; padding-left:0; }
+#daily-screen .dr-btn--ad.dr-btn-frame > span { left:52%; padding-left:0; }
+#daily-screen .dr-btn--ad.dr-btn-frame > span small { font-size:calc(var(--w) * 0.03); }
+#daily-screen .dr-btn--ad.dr-btn-frame > span b { font-size:calc(var(--w) * 0.042); }
+#daily-screen .dr-btn--ad .dr-ad-art strong { top:0; bottom:auto; }
+/* V1529 C 사용자: 코인 아이콘 밝기 = 상점 코인 그대로(잠김·내일 상태의 채도 낮춤 제외). 받은 날은 기존처럼 어둡게. */
+#daily-screen .dr-card:not(.dr-card--claimed) .dr-ico--coin { filter: drop-shadow(0 3px 3px rgba(80, 40, 0, 0.3)); }
+/* V1529 C 사용자: 1·2일차 그림(코인 큰 더미·하트)이 커 보여 80% 로. */
+#daily-screen .dr-card:nth-child(1) .dr-ico, #daily-screen .dr-card:nth-child(2) .dr-ico { width:80%; height:80%; }
+/* V1529 C 사용자: 일일 화면 내용 전체를 위로 0.5cm(배경 고정). */
+#daily-screen .dr-stage { top:-0.5cm; }
+#daily-screen .dr-status.dr-pill > span { display:block; line-height:normal; margin:0; padding:0; text-box:trim-both cap alphabetic; }

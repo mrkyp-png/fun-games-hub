@@ -8,7 +8,8 @@
 // V1526 C: settings screen redesign (ivory frame, shop cards, unified buttons, new plank, 2x icons), mailbox frame back to ivory.
 // V1527 C: settings popups use the shop confirm dialog, reset text, workshop gold hammer game-style chop with 3D tilt.
 // V1528 C: cannon faces each hole, barrel pitch aligns its center line to the target, straight recoil, no return to rest.
-const CACHE = 'mole-game-v1528-C';
+// V1529 C: daily screen redesign (no moles, workshop/pill buttons, shop icons, seamless 2x marquee border, quest gift box).
+const CACHE = 'mole-game-v1529-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.

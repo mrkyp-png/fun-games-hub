@@ -36,7 +36,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@700&family=Jua&family=Lilita+One&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../cosmic-theme.css">
 <link rel="stylesheet" href="../common/settings.css">
-<link rel="stylesheet" href="style.css?v=1527-C">
+<link rel="stylesheet" href="style.css?v=1529-C">
 <link rel="stylesheet" href="roundmap-window.css">
 <style>
   /* 로딩 스플래시 — style.css 로딩 전에도 바로 뜨게 인라인. */
@@ -894,23 +894,21 @@
         <button type="button" class="dr-back is-x game-close" data-back="daily" aria-label="뒤로" data-i18n-aria-label="common.back"><img loading="lazy" decoding="async" src="assets/score/icon-close-red.svg" alt=""></button>
         <div class="dr-stage">
           <div class="dr-top">
-            <img loading="lazy" decoding="async" class="dr-mole dr-mole--l" src="assets/daily/mole-left.png" alt="">
             <img loading="lazy" decoding="async" class="dr-sign" src="assets/daily/sign.png" alt="MOLE PANG DAILY REWARD">
-            <img loading="lazy" decoding="async" class="dr-mole dr-mole--r" src="assets/daily/mole-right.png" alt="">
           </div>
           <div class="dr-board">
             <span class="dr-plate" data-i18n="mole.daily.sub">매일 출석하고 특별한 선물을 받아가세요!</span>
             <div class="dr-cards" data-daily-grid></div>
           </div>
           <div class="dr-btns">
-            <button type="button" class="dr-btn dr-btn--claim" data-daily-claim><img loading="lazy" decoding="async" class="dr-btn-ico" src="assets/daily/ico-calendar.png" alt=""><span></span></button>
-            <button type="button" class="dr-btn dr-btn--ad" data-daily-2x><div class="dr-btn-ico dr-ad-art" aria-hidden="true"><img loading="lazy" decoding="async" src="assets/ui-approved-v1476/ad-icon.webp" alt=""><strong>×2</strong></div><span></span></button>
+            <button type="button" class="dr-btn dr-btn--claim ws-action-frame dr-btn-frame" data-daily-claim><img loading="lazy" decoding="async" class="dr-btn-ico" src="assets/daily/ico-calendar.png" alt=""><span></span></button>
+            <button type="button" class="dr-btn dr-btn--ad ws-action-frame dr-btn-frame" data-daily-2x><div class="dr-btn-ico dr-ad-art" aria-hidden="true"><img loading="lazy" decoding="async" src="assets/ui-approved-v1476/ad-icon.webp" alt=""><strong>×2</strong></div><span></span></button>
           </div>
         </div>
         <div class="dr-gift" data-daily-gift hidden>
           <div class="dr-gift-stage">
             <img loading="lazy" decoding="async" class="dr-gift-rays" src="assets/daily/gift-rays.png" alt="">
-            <img loading="lazy" decoding="async" class="dr-gift-box" src="assets/daily/gift-closed.png" alt="">
+            <img loading="lazy" decoding="async" class="dr-gift-box" src="assets/quest/gift-red.png" alt="">
             <img loading="lazy" decoding="async" class="dr-gift-spark dr-gift-spark--a" src="assets/daily/gift-sparkle.png" alt="">
             <img loading="lazy" decoding="async" class="dr-gift-spark dr-gift-spark--b" src="assets/daily/gift-sparkle.png" alt="">
             <img loading="lazy" decoding="async" class="dr-gift-item" alt="">
@@ -1005,7 +1003,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1528 C</div>
+        <div id="build-tag" aria-hidden="true">V 1529 C</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1043,7 +1041,7 @@
 <script src="js/shop-scenery-v1486.js"></script>
 <script src="js/shop-models-v1509.js?v=1524-opt1"></script>
 <script src="js/shop.js?v=1524-opt1"></script>
-<script src="js/daily.js"></script>
+<script src="js/daily.js?v=1529-C"></script>
 <script src="js/quest.js?v=1524-opt1"></script>
 <script>
 /* v796(사용자 지정): 뒤로가기 말림 중 흰 화면이 비치던 문제 — 화면을 복제해 맨 위에서 말아 올리고, 원본은 즉시 닫아
@@ -1291,7 +1289,7 @@ window.FGH.rollOut = function (el, done) {
         var gate = window.__moleAssetGate;
         function waitForCurrentWorker(registration) {
           return new Promise(function (resolve, reject) {
-            var latest = 'v=1528-C';
+            var latest = 'v=1529-C';
             var done = false;
             var timer = setTimeout(function () { finish(); }, 25000);
             function finish(error) {
@@ -1318,7 +1316,7 @@ window.FGH.rollOut = function (el, done) {
           console.warn('Starting while service worker registration continues in background');
           if (gate) gate.resolveCache();
         }, 30000);
-        navigator.serviceWorker.register('sw.js?v=1528-C').then(waitForCurrentWorker).then(function () {
+        navigator.serviceWorker.register('sw.js?v=1529-C').then(waitForCurrentWorker).then(function () {
           clearTimeout(registrationTimer);
           if (gate) gate.resolveCache();
         }).catch(function (error) {
