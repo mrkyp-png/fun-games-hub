@@ -244,9 +244,9 @@
       } else if (phase === 'settle') {
         t += dt;
         const k = easeOut(clamp01(t / SETTLE_SEC));
-        currentAim = aimTo + angDiff(restPose.aim,aimTo)*k;
-        residual = resTo * (1 - k);
-        if (t >= SETTLE_SEC) { phase = 'home'; t = 0; residual = 0; showPose(restPose); }
+        // V1528 C 사용자: 쏜 뒤 대기 위치로 돌아가지 않고 마지막 조준 방향 유지(반동만 풀림).
+        if (!model) { currentAim = aimTo + angDiff(restPose.aim,aimTo)*k; residual = resTo * (1 - k); }
+        if (t >= SETTLE_SEC) { phase = 'home'; t = 0; if (!model) { residual = 0; showPose(restPose); } }
       } else if (phase === 'home') {
         idleT += dt;
         const cyclePos = idleT > IDLE_DELAY ? (idleT - IDLE_DELAY) % IDLE_KICK_CYCLE : -1;
