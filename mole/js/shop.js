@@ -688,6 +688,10 @@
       var english = I18N().lang === 'en';
       function outfit(id) { return 'assets/costume/outfit-' + id + '.png'; }
       function costumeArt(art, isSet, team) {
+        if (team === 'blue_bears' || team === 'mount_stars') {
+          art = art.replace('shop-costume-outfit"', 'shop-costume-outfit shop-costume-outfit--split"') +
+            '<img class="shop-costume-hat shop-costume-hat--' + team + '" alt="" src="' + outfit(team) + '">';
+        }
         return '<div class="shop-costume-product" data-shop-team="' + (team || 'set') + '"><div class="shop-costume-visual' + (isSet ? ' shop-costume-visual--set' : '') + '">' + art + '</div>' +
           '<p class="shop-costume-effect"><span>' + (isSet ? T('mole.cos.setEffects') : MG.CostumeTeams.effectLabel(team)) + '</span> <b>' +
           (isSet ? '' : MG.CostumeTeams.formatEffectValue(team, 0)) + '</b></p></div>';
