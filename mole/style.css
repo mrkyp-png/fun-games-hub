@@ -2679,7 +2679,7 @@ body { background: var(--lm-page); }
   --w: min(100vw - 20px, 440px, (100dvh - 40px) * 0.47);
 }
 #score-screen.sr-screen::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background: url('assets/score/bg-palace-sides-kept-v1493.jpg') center top / cover no-repeat; filter:none; opacity:.6; } /* Opacity belongs only to the palace layer, below the untouched carpet. */
+  background: url('assets/score/bg-palace-sides-kept-v1493.jpg') center top / cover no-repeat; filter:brightness(.8); } /* Brightness belongs only to the palace layer, below the untouched carpet. */
 .sr-sky { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; clip-path: inset(0 0 70% 0);
   mask-image: linear-gradient(90deg, transparent 6%, #000 19%, #000 81%, transparent 94%); }
 .sr-cloud { position: absolute; left: var(--sc-x); top: 25vh; width: var(--sc-size); height: auto; fill: #f4faff; opacity: 0; pointer-events: none;
@@ -9644,8 +9644,8 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* Four-hour shop scenery; cards, controls and popup stacking stay independent. */
 #shop-screen[data-shop-theme="night"] { background-color:#071436!important; }
 #shop-screen>.shop-scenery,#shop-screen>.shop-sky { position:absolute!important; inset:0!important; z-index:0!important; pointer-events:none!important; overflow:hidden!important; }
-#shop-screen>.shop-scenery { background-position:center!important; background-size:cover!important; background-repeat:no-repeat!important; opacity:.6; }
-#shop-screen[data-shop-theme="night"]>.shop-scenery { opacity:.7; }
+#shop-screen>.shop-scenery { background-position:center!important; background-size:cover!important; background-repeat:no-repeat!important; filter:brightness(.8); }
+#shop-screen[data-shop-theme="night"]>.shop-scenery { filter:brightness(.7); }
 #shop-screen .shop-cloud-field,#shop-screen .shop-star-field { position:absolute; inset:0 0 auto; overflow:hidden; }
 #shop-screen .shop-cloud-field { height:28%; mask-image:linear-gradient(#000 0 83%,transparent); }
 #shop-screen .shop-star-field { height:32%; mask-image:linear-gradient(#000 0 76%,transparent); }
