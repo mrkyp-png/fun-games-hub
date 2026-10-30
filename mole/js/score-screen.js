@@ -62,6 +62,7 @@
     return best;
   }
   function rpPill(e) { return DIFF_CODE[e.diff] + (e.grade ? ' · ' + e.grade : ''); }
+  function myName() { return localStorage.getItem('mole.profileName') || root.FGH.I18N.t('mole.score.me'); }
   function myAvatar() { return localStorage.getItem('mole.profilePic') || ''; }
   function paintAvatar(img, source) {
     var hasProfile = typeof source === 'string' && source.trim().length > 0;
@@ -134,7 +135,7 @@
     })(el.querySelector('[data-sr-rp-back]'));
     function rhythmTop(type, id) {
       var me = rpMyBest(type, id), all = RankingSource.top('rhythm_pang:' + type + ':' + id).slice(); // 항목: {playerName, avatar, diff, grade, score}
-      if (me) all.push({ playerName: T('mole.score.me'), avatar: myAvatar(), diff: me.diff, grade: me.grade, score: me.score, isMe: true });
+      if (me) all.push({ playerName: myName(), avatar: myAvatar(), diff: me.diff, grade: me.grade, score: me.score, isMe: true });
       return { all: all.sort(rpCmp), me: me };
     }
     // V1372 C 사용자: 앨범은 한 화면에 4개(2줄)만 — 3번째 줄이 반쯤 보이지 않게 높이를 2줄에 맞추고, 아래 안내 줄은 그 바로 아래로
@@ -200,7 +201,7 @@
       // v785(사용자 지정): 내 최고 기록도 랭킹에 넣어 순위대로 표시(서버 전엔 나 혼자라 1위)
       var me = myBest();
       var all = RankingSource.top('mole_pang').slice();
-      if (me) all.push({ playerName: T('mole.score.me'), avatar: myAvatar(), mode: me.mode, highestRound: me.round, highestScore: me.score, isMe: true });
+      if (me) all.push({ playerName: myName(), avatar: myAvatar(), mode: me.mode, highestRound: me.round, highestScore: me.score, isMe: true });
       var norm = function (e) { return { playerName: e.playerName, avatar: e.avatar, pill: code(e.mode, e.highestRound), cls: e.mode, score: e.highestScore, isMe: e.isMe }; };
       return { sorted: sortRanking(all).map(norm), mine: me ? norm({ mode: me.mode, highestRound: me.round, highestScore: me.score }) : null, mineName: T('mole.pad.gameMole') };
     }
@@ -252,7 +253,7 @@
       mine.querySelector('small').textContent = T('mole.score.mine');
       mine.querySelector('.sr-mine-lbl b').textContent = myRank ? String(myRank) : '—';
       paintAvatar(mine.querySelector('.sr-ava img'), myAvatar());
-      mine.querySelector('.sr-name').textContent = board.mineName;
+      mine.querySelector('.sr-name').textContent = myName();
       mine.querySelector('.sr-pill').textContent = me ? me.pill : '—';
       if (me) mine.querySelector('.sr-pill').classList.add('sr-pill--' + me.cls);
       mine.querySelector('.sr-score').textContent = me ? fmt(me.score) : '0';
@@ -314,7 +315,7 @@
       closing = false;
       el.classList.remove('is-out', 'is-in'); void el.offsetWidth; el.classList.add('is-in');
     }
-    return { show: show };
+    return { show: show, refresh: render };
   }
   var api = { create: create, RankingSource: RankingSource, myBest: myBest, sortRanking: sortRanking, rpMyBest: rpMyBest, rpCmp: rpCmp };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.ScoreScreen = api; }

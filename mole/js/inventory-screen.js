@@ -222,11 +222,11 @@
     var WEAPON_ART = {hammer:[89,84.5,-4.5,4.75],cannon:[81,84,0,-.5],goldhammer:[86,95,-4.5,4.5],alipunch:[88,63,0,0]};
     function weaponThumbHtml(w, skillPreview) {
       if (MG.WeaponModels && w.id !== 'alipunch') return '<div class="inv-weapon-model" data-model-weapon="' + w.id + '"><img alt="" src="' + w.thumb + '"></div>';
-        // King Punch keeps the original gloves; inventory uses alternating forward jabs.
+        // Weapon preview: two left jabs then a right cross. Skill effects remain separate.
       return w.id === 'alipunch'
           ? '<div class="inv-thumb inv-thumb--pair"><img alt="" src="' + w.thumb + '">' +
             '<img alt="" class="inv-thumb-mirror" src="' + w.thumb + '">' +
-            (skillPreview ? '<span class="inv-bump-spark">✨</span><span class="inv-bump-word">POWER UP</span>' : '') + '</div>'
+            (skillPreview ? '<span class="inv-bump-spark">✨</span><span class="inv-bump-word">POWER UP</span>' : '<span class="inv-combo-word inv-combo-word--jab" aria-hidden="true">JAB!</span><span class="inv-combo-word inv-combo-word--cross" aria-hidden="true">CROSS!</span>') + '</div>'
           // 캐논 강조 애니메이션(사용자 지시): 포신 반동 + 실제 게임 화염·연기 스프라이트 재사용.
           : w.id === 'cannon'
           ? '<div class="inv-thumb inv-thumb--cannon"><img alt="" src="' + w.thumb + '">' +
@@ -396,7 +396,8 @@
       var gradeBottom = Math.max(gradeRect.bottom, gradeRect.top + ((parseFloat(decoration.top) || 0) + (parseFloat(decoration.height) || 0)) * stageScale);
       var strikeTop = rect.top + (right.offsetTop + 9.73952) * displayScale;
       var clearance = 3 + 4 * displayScale;
-      page.style.setProperty('--kp-straight-distance', Math.max(0, (strikeTop - gradeBottom - clearance) / displayScale).toFixed(2) + 'px');
+      // Latest motion request doubles the previous upward stroke.
+      page.style.setProperty('--kp-straight-distance', (2 * Math.max(0, (strikeTop - gradeBottom - clearance) / displayScale)).toFixed(2) + 'px');
     }
     function fitLefts() {
       if (active !== 'weapon') return;

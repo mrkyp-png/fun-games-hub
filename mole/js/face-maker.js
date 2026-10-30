@@ -32,14 +32,15 @@
       session = o || {};
       var forced = !!session.forced;
       el.querySelectorAll('[data-fm-cancel]').forEach(function (b) { b.hidden = forced; });
-      // 프로필 모드: 이름칸 숨김, 제목 문구 바꿈
+      // 프로필은 사진과 아이디를 각각 변경할 수 있다.
       var isProfile = !!session.profile;
-      if (nameInput) nameInput.hidden = isProfile;
+      nameInput.hidden = false;
+      el.querySelector('[data-fm-save-profile]').hidden = !isProfile;
       var titleEl = el.querySelector('.bs-title');
       if (titleEl) titleEl.textContent = root.FGH.I18N.t(isProfile ? 'mole.fm.titleProfile' : 'mole.fm.title');
       fileInput.value = '';
-      nameInput.value = '';
-      lastCropDataUrl = null;
+      nameInput.value = localStorage.getItem('mole.profileName') || '';
+      lastCropDataUrl = isProfile ? localStorage.getItem('mole.profilePic') : null;
       detected = null;
       stage('pick');
     }
@@ -52,6 +53,8 @@
         cropImg.onload = function () {
           natural.w = cropImg.naturalWidth;
           natural.h = cropImg.naturalHeight;
+          cropImg.style.width = natural.w + 'px';
+          cropImg.style.height = natural.h + 'px';
           stage('crop');
           resetView();
           applyView();
@@ -66,7 +69,7 @@
     // 못 찾으면 detected=null → renderCrop 이 기존 원형 크롭으로 폴백.
     function autoFitFace() {
       if (!MG.FaceDetect) { detected = null; return; }
-      var hint = el.querySelector('.fm-hint');
+      var hint = el.querySelector('[data-fm-stage="crop"] .fm-hint');
       var idle = root.FGH.I18N.t('mole.fm.cropHint');
       if (hint) hint.textContent = root.FGH.I18N.t('mole.fm.detecting');
       MG.FaceDetect.detect(cropImg).then(function (res) {
@@ -185,9 +188,11 @@
       stage('preview');
     });
     el.querySelector('[data-fm-redo]').addEventListener('click', function () { stage('crop'); });
-    el.querySelector('[data-fm-save]').addEventListener('click', function () {
-      (session.onDone || onDone)(lastCropDataUrl);
-    });
+    function saveProfile() {
+      (session.onDone || onDone)(lastCropDataUrl, nameInput.value.trim());
+    }
+    el.querySelector('[data-fm-save]').addEventListener('click', saveProfile);
+    el.querySelector('[data-fm-save-profile]').addEventListener('click', saveProfile);
     el.querySelectorAll('[data-fm-cancel]').forEach(function (b) {
       b.addEventListener('click', function () { onCancel(); });
     });

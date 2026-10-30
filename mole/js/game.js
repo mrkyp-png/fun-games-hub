@@ -417,22 +417,26 @@
     }
   }
 
-  // 홈 화면 좌상단(게임 중 홈버튼 자리) — 프로필 사진(사용자 지정, 더보기의 mm-avatar와 같은 소스).
+  // 스코어 화면 좌상단 프로필 사진 — 기존 저장 사진과 같은 소스.
   function refreshHubAvatar() {
     const av = document.getElementById('hub-avatar');
     if (!av) return;
     const pic = localStorage.getItem('mole.profilePic');
     av.style.backgroundImage = pic ? 'url("' + pic + '")' : 'url("assets/moles/mole1.png")';
   }
-  // 프로필 사진 변경 — 홈 화면 좌상단 사진 / 다이얼패드 7번 "프로필" 버튼(사용자 지정, 더보기의 editAvatar와 동일 로직).
+  // 프로필 사진 변경 — 스코어 화면에서 열고 완료/취소하면 해당 화면으로 복귀.
   function editProfileAvatar() {
     screenNav.show('face-maker');
     faceMaker.open({
       profile: true,
-      onDone: (dataUrl) => {
-        try { localStorage.setItem('mole.profilePic', dataUrl); } catch (e) { alert(I18N.t('mole.fm.priv')); }
+      onDone: (dataUrl, userId) => {
+        try {
+          if (dataUrl) localStorage.setItem('mole.profilePic', dataUrl);
+          localStorage.setItem('mole.profileName', userId);
+        } catch (e) { alert(I18N.t('mole.fm.priv')); return; }
         screenNav.back();
         refreshHubAvatar();
+        if (scoreScreen) scoreScreen.refresh();
         if (moreMenu) moreMenu.refresh();
       }
     });
@@ -3229,8 +3233,8 @@
 
     // ⚠️ 핵심 리스너 배선을 showStartScreen() 보다 먼저 — showStartScreen 안에서 예외가 나도
     // (예: 스테일 캐시로 모듈 하나 누락) ⊞ 홈버튼·일시정지 등이 죽지 않도록.
-    // 좌상단 아이콘 — 홈: 프로필 사진(탭하면 사진 변경). 실제 플레이 중: 홈 아이콘(탭하면
-    // 라운드 나가고 홈으로, 사용자 지정 — 더보기 화면이 다이얼패드로 흡수돼 필요 없어짐).
+    document.getElementById('btn-score-profile').addEventListener('click', editProfileAvatar);
+    // 플레이 중 홈 아이콘 — 라운드를 나가고 홈으로 복귀.
     document.getElementById('btn-back-to-hub').addEventListener('click', (e) => {
       if (navLocked) return; // 인트로/카운트다운/라운드 전환 중엔 안 먹힘 (회색 음영)
       // 피버타임 중 홈으로 나가면 보드/버튼보드가 교차된 채로 남아 위=전광판/아래=홈화면처럼
@@ -3238,7 +3242,7 @@
       if (state && state.feverEventActive) return;
       // 결과 화면에선 = 곧장 홈으로 (다시하기 버튼 없앰 — 중복).
       if (!document.getElementById('gameover-overlay').hidden) { showStartScreen({ retry: true, originEl: e.currentTarget }); return; }
-      if (document.getElementById('game-screen').classList.contains('is-start')) { editProfileAvatar(); return; }
+      if (document.getElementById('game-screen').classList.contains('is-start')) return;
       showStartScreen();
     });
     // 앱 전체 버튼 탭음(버튼소리2 고정) — 게임 키패드(#lane-button-bar, 다이얼패드일 땐 버튼소리1을

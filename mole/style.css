@@ -461,12 +461,12 @@ body { background: var(--lm-page); }
 /* 인트로/카운트다운/라운드 전환 중 = 잠금(회색 음영). 클릭도 무시(JS navLocked). */
 #btn-back-to-hub.nav-locked { opacity: 0.4; filter: grayscale(0.8); pointer-events: none; }
 #btn-back-to-hub.nav-locked::after { display: none; }
-/* 홈 화면 프로필(기존 그대로) — 노란 원테두리 + PLAY/이어가기와 같은 쉬머 */
-#game-screen.is-start #btn-back-to-hub::before {
+/* 스코어 프로필 — 기존 노란 원테두리와 쉬머. */
+#btn-score-profile::before {
   content: ''; position: absolute; inset: 0; border-radius: 50%;
   box-shadow: inset 0 0 0 2px #ffe08a, 0 0 6px 1px rgba(255, 207, 74, 0.7); pointer-events: none; z-index: 1;
 }
-#game-screen.is-start #btn-back-to-hub::after {
+#btn-score-profile::after {
   content: ''; position: absolute; inset: -60%;
   background: linear-gradient(115deg, transparent 42%, rgba(255, 240, 190, 0.9) 50%, transparent 58%);
   animation: idle-crown-sweep 2.8s ease-in-out infinite; pointer-events: none;
@@ -474,7 +474,8 @@ body { background: var(--lm-page); }
 .hub-menu-ic, .hub-avatar { display: block; width: 100%; height: 100%; border-radius: 50%; }
 .hub-avatar { display: none; background: center/cover no-repeat; }
 /* 버튼(34px 원) 안을 꽉 채운 정원 — 플렉스 안 %크기로는 버튼 패딩 때문에 22x32 타원이 됐음. */
-#btn-back-to-hub .hub-avatar { position: absolute; inset: 0; width: auto; height: auto; }
+#btn-score-profile .hub-avatar { position: absolute; inset: 0; width: auto; height: auto; display: block; }
+#game-screen.is-start #btn-back-to-hub { display: none; }
 #game-screen.is-start .hub-menu-ic { display: none; }
 #game-screen.is-start .hub-avatar { display: block; }
 
@@ -3627,9 +3628,12 @@ body { background: var(--lm-page); }
 .fm-redo { background: #e6e6ea; color: #3a3a41; }
 .fm-preview-btns { display: flex; gap: 10px; }
 .fm-name { width: 70%; padding: 8px 10px; border-radius: 8px; border: 1px solid #e6e6ea; background: #f2f2f4; color: #1f1f24; text-align: center; }
+.fm-name-label { display:flex; flex-direction:column; justify-content:center; align-items:center; gap:8px; width:100%; flex:none; font-size:.9rem; color:#55555c; }
 .fm-preview-mole { width: 46%; margin: 0 auto; aspect-ratio: 470/548; }
 .fm-preview-mole img { width: 100%; display: block; }
 .fm-preview-face-only { width: 46%; margin: 0 auto; }
+.fm-preview { width:100%; display:flex; justify-content:center; align-items:center; }
+.fm-preview-face-only { flex:0 0 46%; }
 .fm-preview-face-only img { width: 100%; aspect-ratio: 1; border-radius: 50%; object-fit: cover; display: block; }
 .fm-priv { margin-top: auto; padding: 8px 14px 12px; font-size: 0.72rem; color: #9a9aa0; text-align: center; }
 
@@ -9635,6 +9639,9 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 }
 .game-close > img { display: block; width: 100% !important; height: 100% !important; object-fit: contain !important; }
 .game-close:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+#score-screen .sr-profile { position:fixed; top:8px; left:8px; right:auto; width:46px; height:46px; min-width:46px; min-height:46px; box-sizing:border-box; margin:0; padding:0; border:0; border-radius:50%; overflow:hidden; background:none; cursor:pointer; z-index:5; display:flex; justify-content:center; align-items:center; }
+#score-screen .sr-profile:focus-visible { outline:3px solid #fff; outline-offset:2px; }
+#score-screen .sr-profile:active { transform:scale(.9); }
 .game-close.game-close--dialog { position: absolute !important; }
 .game-back { display: flex; justify-content: center; align-items: center; flex: 0 0 46px !important; width: 46px !important; height: 46px !important; min-width: 46px; min-height: 46px; max-width: none; max-height: none; aspect-ratio: 1 !important; box-sizing: border-box; padding: 0 !important; border: 0 !important; border-radius: 50% !important; background: none !important; box-shadow: none !important; line-height: 0; cursor: pointer; }
 .game-back > img { display: block; width: 100%; height: 100%; object-fit: contain; }
@@ -9792,10 +9799,17 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #inventory-screen .iw-page:not(.ks-wpage)[data-weapon="alipunch"] .iw-float { animation:none; }
 #inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > img:not(.inv-thumb-mirror) { animation:iw-jab-left 2.8s ease-out infinite; }
 #inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > .inv-thumb-mirror { animation:iw-jab-right 2.8s linear infinite; }
-@keyframes iw-jab-left { 0%,6%,20%,100% {transform:rotate(var(--kp-tilt,19deg));} 10%,12% {transform:translateY(-14px) rotate(var(--kp-tilt,19deg)) scale(1.08);} }
-@keyframes iw-jab-right { 0%,22%,58%,100% {transform:rotate(calc(-1 * var(--kp-tilt,19deg))) scaleX(-1);} 25%,34%,48% {transform:rotate(0deg) scaleX(-1);} 28%,31% {transform:translateY(calc(-1 * var(--kp-straight-distance,24px))) rotate(0deg) scaleX(-1) scale(1.12);} }
+@keyframes iw-jab-left { 0%,6%,20%,24%,38%,100% {transform:rotate(var(--kp-tilt,19deg));} 10%,12%,28%,30% {transform:translateY(-14px) rotate(var(--kp-tilt,19deg)) scale(1.08);} }
+/* Snap the angles; retract in 28ms and restore the resting angle without a pause. */
+@keyframes iw-jab-right { 0%,49%,100% {transform:rotate(calc(-1 * var(--kp-tilt,19deg))) scaleX(-1);} 40% {transform:rotate(calc(-1 * var(--kp-tilt,19deg))) scaleX(-1);animation-timing-function:steps(1,start);} 41% {transform:rotate(0deg) scaleX(-1);} 44%,47% {transform:translateY(calc(-1 * var(--kp-straight-distance,48px))) rotate(0deg) scaleX(-1) scale(1.12);} 48% {transform:rotate(0deg) scaleX(-1);animation-timing-function:steps(1,start);} }
+#inventory-screen .iw-page:not(.ks-wpage) .inv-combo-word { position:absolute; left:60px; top:30px; width:100px; margin-left:-50px; display:flex; justify-content:center; align-items:center; color:#f0fdff; font:900 12px/1.1 'Jua',sans-serif; -webkit-text-stroke:.4px #17495b; text-shadow:0 1px 1px #17495b; opacity:0; pointer-events:none; z-index:3; }
+#inventory-screen .iw-page:not(.ks-wpage) .inv-combo-word--jab { animation:iw-combo-jab 2.8s linear infinite; }
+#inventory-screen .iw-page:not(.ks-wpage) .inv-combo-word--cross { animation:iw-combo-cross 2.8s linear infinite; }
+@keyframes iw-combo-jab { 0%,6%,18%,24%,36%,100% {opacity:0;} 8%,15%,26%,33% {opacity:1;} }
+@keyframes iw-combo-cross { 0%,41%,53%,100% {opacity:0;} 43%,50% {opacity:1;} }
 #inventory-screen .iw-stage[data-display-weapon="alipunch"]::after { animation:iw-jab-floor 2.8s ease-out infinite; }
-@keyframes iw-jab-floor { 0%,6%,20%,34%,48%,100% {transform:translateX(-50%) scaleX(1);opacity:.5;} 10%,12% {transform:translateX(-50%) scaleX(.96);opacity:.47;} 38%,40% {transform:translateX(-50%) scaleX(.82);opacity:.38;} }
+@keyframes iw-jab-floor { 0%,6%,20%,24%,38%,41%,48%,100% {transform:translateX(-50%) scaleX(1);opacity:.5;} 10%,12%,28%,30% {transform:translateX(-50%) scaleX(.96);opacity:.47;} 44%,47% {transform:translateX(-50%) scaleX(.82);opacity:.38;} }
+@media(prefers-reduced-motion:reduce){#inventory-screen .iw-page:not(.ks-wpage) .inv-combo-word{animation:none;opacity:0;}}
 @media(prefers-reduced-motion:reduce){#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > img,#inventory-screen .iw-stage[data-display-weapon="alipunch"]::after{animation:none;}#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > img:not(.inv-thumb-mirror){transform:rotate(var(--kp-tilt,19deg));}#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > .inv-thumb-mirror{transform:rotate(calc(-1 * var(--kp-tilt,19deg))) scaleX(-1);}}
 .ws-item img[src*="weapon-stills-v1509"] { position:absolute; left:var(--disc-x); top:var(--disc-y); height:85%; width:auto; max-width:94%; max-height:85%; translate:-50% -100%; transform-origin:50% 95%; }
 .ws-item img[src*="weapon-stills-v1509/cannon-front"] { animation:ws-cannon-recoil 1.4s ease-out infinite; }
