@@ -107,19 +107,18 @@
   }
 
   function fmt(n) { return (n | 0).toLocaleString('en-US'); }
-  function rwIcon(rw) { if (rw[0] === 'ticket') return 'assets/ui-approved-v1476/ticket-single.webp'; return A + (rw[0] === 'coin' ? 'ic-coin' : rw[0] === 'heart' ? 'ic-heart' : 'ic-ticket') + '.png'; }
+  function rwIcon(rw) { if (rw[0] === 'ticket') return 'assets/ui-approved-v1476/ticket-single.webp'; if (rw[0] === 'coin') return 'assets/shop-ui-v1452/coin-option-05-bright20.png'; if (rw[0] === 'heart') return 'assets/shop-ui-v1450/11-heart.webp'; return A + 'ic-ticket.png'; }
 
   function create(opts) {
     var el = opts.root, mode = 'daily', achTab = 'round';
     var $ = function (q) { return el.querySelector(q); };
     el.innerHTML =
       '<div class="qs-stage">' +
-        '<div class="qs-head"><img class="qs-head-img" alt=""><div class="qs-mole"><img alt=""><i class="qs-lid"></i><i class="qs-lid"></i></div>' +
+        '<div class="qs-head"><div class="qs-character-slot" aria-hidden="true"></div>' +
           '<svg class="qs-title" viewBox="0 0 500 110" aria-hidden="true"><defs><linearGradient id="qsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff58a"/><stop offset="0.45" stop-color="#ffcf1f"/><stop offset="1" stop-color="#ff8a00"/></linearGradient></defs>' +
             '<text class="qs-t-sh" x="0" y="86" transform="translate(0 6)"></text><text class="qs-t-st" x="0" y="86"></text><text class="qs-t-fill" x="0" y="86" fill="url(#qsg)"></text></svg>' +
           '<button type="button" class="qs-x game-close" data-qs-close aria-label="close"><img src="assets/score/icon-close-red.svg" alt=""></button>' +
           '<div class="qs-tabs" data-qs-tabs></div>' +
-          '<img class="qs-paws" alt="">' + // v901: 두더지 손은 탭 상자보다 앞
         '</div>' +
         '<div class="qs-list" data-qs-list></div>' +
         '<button type="button" class="qs-achbtn" data-qs-ach><img src="' + A + 'ach-btn-blank.png" alt=""><span></span></button>' +
@@ -145,9 +144,6 @@
     function render(fill) {
       var s = read(), en = EN(), list = $('[data-qs-list]'), tabs = $('[data-qs-tabs]');
       el.setAttribute('data-mode', mode); el.setAttribute('data-lang', en ? 'en' : 'ko');
-      $('.qs-head-img').src = A + (mode === 'ach' ? 'head-ach.png' : mode === 'weekly' ? 'head-weekly.png' : 'head-daily.png');
-      placeMole();
-      $('.qs-paws').src = A + (mode === 'ach' ? 'paws-ach.png' : mode === 'weekly' ? 'paws-weekly.png' : 'paws-daily.png');
       setTitle(mode === 'ach' ? (en ? 'ACHIEVEMENT' : '업적') : (en ? 'QUEST' : '퀘스트')); // v896: 한글 모드는 한글
       $('[data-qs-ach] span').textContent = mode === 'ach' ? (en ? 'QUEST' : '퀘스트') : (en ? 'ACHIEVEMENT' : '업적');
       var html = '';
@@ -203,6 +199,11 @@
         });
       }
       list.innerHTML = html;
+      list.querySelectorAll('.qs-btn, .qs-lv button').forEach(function (b) {
+        b.classList.add('ws-action-frame', 'qs-action-frame');
+        var label = document.createElement('span'); label.textContent = b.textContent;
+        b.textContent = ''; b.appendChild(label);
+      });
       // v989(사용자 지정): 설명이 끝 몇 글자("요." 등) 때문에 두 줄 되면 글자 폭을 가로로 줄여 한 줄로(최소 75%, 그래도 넘치면 두 줄 그대로)
       requestAnimationFrame(function () {
         el.querySelectorAll('.qs-mid .qs-desc, .qs-all-txt > span').forEach(function (d) {
@@ -245,24 +246,6 @@
       el.querySelectorAll('.qs-btn, .qs-x, .qs-achbtn, .qs-tabs button').forEach(function (b) {
         b.addEventListener('pointerdown', function () { b.classList.add('is-press'); });
         ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { b.addEventListener(ev, function () { b.classList.remove('is-press'); }); });
-      });
-    }
-    // v900: 위쪽 두더지 — 머리판 그림의 두더지 부분만 잘라 겹치고(아랫선 기준으로 살짝 커졌다 작아짐) 가끔 눈 깜빡임.
-    // 눈 위치·털 색은 각 머리판 그림에서 잰 값(원본 px). ach 두더지는 오른눈이 이미 윙크라 왼눈만.
-    var MOLE = {
-      daily: { w: 480, h: 253, cut: 150, right: 300, fur: '#de8047', eyes: [[132, 157, 79, 105], [202, 226, 80, 104]] },
-      weekly: { w: 447, h: 254, cut: 150, right: 300, fur: '#da7d48', eyes: [[126, 153, 77, 102], [196, 220, 78, 102]] },
-      ach: { w: 533, h: 271, cut: 158, right: 300, fur: '#f19154', eyes: [[120, 146, 82, 106]] }
-    };
-    function placeMole() {
-      var g = MOLE[mode], m = $('.qs-mole'), pc = function (v, t) { return (v / t * 100) + '%'; };
-      m.querySelector('img').src = $('.qs-head-img').src;
-      m.style.clipPath = 'inset(0 ' + pc(g.w - g.right, g.w) + ' ' + pc(g.h - g.cut, g.h) + ' 0)';
-      m.style.transformOrigin = pc(g.right * 0.5, g.w) + ' ' + pc(g.cut, g.h);
-      m.querySelectorAll('.qs-lid').forEach(function (l, k) {
-        var e = g.eyes[k]; l.style.display = e ? '' : 'none'; if (!e) return;
-        l.style.left = pc(e[0] - 6, g.w); l.style.width = pc(e[1] - e[0] + 12, g.w);
-        l.style.top = pc(e[2] - 6, g.h); l.style.height = pc(e[3] - e[2] + 12, g.h); l.style.backgroundColor = g.fur;
       });
     }
     // v900: 받기 → 보상 아이콘 6개가 위쪽(제목)으로 날아가며 사라짐 + "+수량" 글자

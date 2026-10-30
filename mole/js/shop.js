@@ -167,7 +167,7 @@
     var WEAPON_TAB_ICON = '<span class="shop-tab-swords"><span class="shop-tab-sword-arm shop-tab-sword--left"><img class="shop-tab-sword" src="assets/ui-approved-v1509/shop-tab-sword.png" alt=""></span><span class="shop-tab-sword-arm shop-tab-sword--right"><img class="shop-tab-sword" src="assets/ui-approved-v1509/shop-tab-sword.png" alt=""></span><i class="shop-tab-sword-spark" aria-hidden="true"></i></span>';
 
     // Independent, actual 2508px hand/ring layers; the ring itself has no glow.
-    var SKILL_TAB_ICON = '<span class="skill-orb-icon" aria-hidden="true"><img class="skill-orb-hand" src="assets/skill-tab-layers-20261030/hand-2x.png" alt=""><span class="skill-orb-float"><img class="skill-orb-ring" src="assets/skill-tab-layers-20261030/ring-matte-gold-2x.png" alt=""><i class="skill-orb-rim-light"></i><svg class="skill-orb-lightning" viewBox="0 0 1254 1254"><path class="skill-orb-bolt-a" d="M408 430 550 520 485 550 675 665 627 545 710 515 580 400"/><path class="skill-orb-bolt-b" d="M830 430 730 550 780 590 610 745"/><path class="skill-orb-bolt-c" d="M355 520 455 485 418 555 530 520 492 650"/><path class="skill-orb-bolt-d" d="M895 650 800 610 845 555 735 520 775 405"/><path class="skill-orb-bolt-e" d="M520 790 570 700 545 660 630 625 600 555"/></svg></span></span>';
+    var SKILL_TAB_ICON = '<span class="skill-orb-icon" aria-hidden="true"><img class="skill-orb-hand" src="assets/skill-tab-layers-20261030/hand-2x.png" alt=""><span class="skill-orb-float"><img class="skill-orb-ring" src="assets/skill-tab-v1519/ring-repaired-2x.png" alt=""><i class="skill-orb-rim-light"></i><span class="skill-orb-sprite"></span></span></span>';
 
     // 하단 탭 아이콘 — 이모지(사용자 지정: "이모지나 이미지 넣어야함", 참고 이미지의 하트/망치/별/옷 자리).
     var TABS = [
@@ -720,7 +720,7 @@
         var label = english ? (round + (round === 1 ? 'st' : round === 2 ? 'nd' : 'rd') + ' purchase') : round + '회차';
         var weaponLabel = english ? weapon.nameEn : ({ cannon: '팡팡 캐논', goldhammer: '골드 묠니르', alipunch: '킹판취' }[weaponId] || weapon.name);
         return '<div class="shop-coin-bulk-reward"><span class="shop-coin-bulk-step">' + label + '</span>' +
-          '<img src="' + (weaponId === 'cannon' ? 'assets/weapon-stills-v1509/cannon-hero.png' : weaponId === 'goldhammer' ? 'assets/weapon-stills-v1509/goldhammer-15.png' : weapon.thumb) + '" alt=""><span class="shop-coin-bulk-reward-name">' + weaponLabel + '</span></div>';
+          '<img src="' + (weaponId === 'cannon' ? 'assets/weapon-stills-v1509/cannon-hero.png' : weaponId === 'goldhammer' ? 'assets/weapon-stills-v1519/goldhammer-15.png' : weapon.thumb) + '" alt=""><span class="shop-coin-bulk-reward-name">' + weaponLabel + '</span></div>';
       }).join('');
       var bulkArt = '<div class="shop-coin-bulk-art">' +
         '<img class="shop-coin-bulk-pile" src="' + CURRENCY_ART + 'coin-option-09-bright20.png" alt="">' +

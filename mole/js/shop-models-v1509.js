@@ -16,7 +16,7 @@ function lookAt(eye,target){const z=unit(eye.map((v,i)=>v-target[i])),x=unit(cro
 
 const accessorCaches=new WeakMap();function accessor(model,index){let cache=accessorCaches.get(model);if(!cache){cache=new Map();accessorCaches.set(model,cache);}if(!cache.has(index))cache.set(index,decodeAccessor(model,index));return cache.get(index);}
 
-const paths={hammer:'hammer-v5-batched-v1509.glb',cannon:'cannon-v1-batched-v1509.glb',goldhammer:'goldhammer-v16-batched-v1509.glb'};
+const paths={hammer:'hammer-v5-batched-v1509.glb',cannon:'cannon-v1-batched-v1509.glb',goldhammer:'goldhammer-v17-batched-v1519.glb'};
 const assets=new Map(),views=new Set(),dormant=new Map(),waiting=new Map();let frameId=0,lastTick=0,lastAction=-Infinity,activeScreen=null,initQueue=Promise.resolve();
 function reserveInit(){let unlock;const previous=initQueue;initQueue=new Promise(resolve=>{unlock=resolve;});return previous.then(()=>new Promise(resolve=>requestAnimationFrame(()=>resolve(unlock))));}
 function load(id){if(!assets.has(id))assets.set(id,fetch('assets/shop-models-v1509/'+paths[id]).then(r=>{if(!r.ok)throw Error('Model '+r.status);return r.arrayBuffer();}).then(parseGLB).catch(e=>{assets.delete(id);throw e;}));return assets.get(id);}
@@ -187,7 +187,7 @@ async function create(host,id,index,options={}){
    const effect=!!lightning&&(view.pose.zap||progress>=.12&&progress<.9);
    if(effect)lightning(multiply(vp,motion),headBox,Math.floor(progress*12)+shots*17,w,h,dpr,program);
    host.dataset.modelFx=String(effect);
-   if(inventory&&options.onFrame){const matrix=multiply(vp,motion),points=[];for(const x of [box.low[0],box.high[0]])for(const y of [box.low[1],box.high[1]])for(const z of [box.low[2],box.high[2]])points.push(projectPoint(matrix,[x,y,z]));options.onFrame({left:Math.min(...points.map(p=>p.x)),right:Math.max(...points.map(p=>p.x)),hop:+host.dataset.modelHop||0,recoil:amount});}
+   if((inventory||options.manual)&&options.onFrame){const matrix=multiply(vp,motion),points=[];for(const x of [box.low[0],box.high[0]])for(const y of [box.low[1],box.high[1]])for(const z of [box.low[2],box.high[2]])points.push(projectPoint(matrix,[x,y,z]));options.onFrame({left:Math.min(...points.map(p=>p.x)),right:Math.max(...points.map(p=>p.x)),top:Math.min(...points.map(p=>p.y)),bottom:Math.max(...points.map(p=>p.y)),hop:+host.dataset.modelHop||0,recoil:amount});}
   };
   host.classList.add('shop-model-ready');host.dataset.model=id;view.elapsed=0;view.lastSeen=performance.now();measureCanvas(view,canvas);view.draw(view.lastSeen);
   observer=new ResizeObserver(()=>{if(!disposed)view.resize();});observer.observe(host);

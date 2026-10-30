@@ -97,7 +97,7 @@
         c.innerHTML =
           '<div class="mb-env"><img src="assets/mailbox/' + (m.isClaimed ? 'env-read' : 'env-' + (SEALS[m.rewardType] || 'red')) + '.png" alt="">' + (m.isRead ? '' : '<i class="mb-dot"></i>') + '</div>' +
           '<div class="mb-txt"><b class="mb-title"></b><span class="mb-desc"></span><span class="mb-date"></span></div>' +
-          '<div class="mb-reward"><img src="' + (m.rewardType === 'ticket' ? 'assets/ui-approved-v1476/ticket-single.webp' : 'assets/mailbox/rw-' + m.rewardType + '.png') + '" alt=""><span class="mb-amt"></span></div>' +
+          '<div class="mb-reward"><img src="' + (m.rewardType === 'coin' ? 'assets/shop-ui-v1452/coin-option-05-bright20.png' : m.rewardType === 'ticket' ? 'assets/ui-approved-v1476/ticket-single.webp' : 'assets/mailbox/rw-' + m.rewardType + '.png') + '" alt=""><span class="mb-amt"></span></div>' +
           '<button type="button" class="mb-claim ws-action-frame mail-action-frame' + (m.isClaimed ? ' is-done' : '') + '"><span></span></button>';
         c.querySelector('.mb-title').textContent = tx(m.title);
         c.querySelector('.mb-desc').textContent = tx(m.description);

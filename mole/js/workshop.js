@@ -17,7 +17,7 @@
 
   var WEAPONS = [
     { id: 'cannon', ko: '팡팡 캐논', en: 'Pang Pang Cannon', img: 'assets/weapon-stills-v1509/cannon-front.png', done: 'assets/weapon-stills-v1509/cannon-front.png' },
-    { id: 'goldhammer', ko: '골드 묠니르', en: 'Gold Mjolnir', img: 'assets/weapon-stills-v1509/goldhammer-15.png', done: 'assets/weapon-stills-v1509/goldhammer-15.png' },
+    { id: 'goldhammer', ko: '골드 묠니르', en: 'Gold Mjolnir', img: 'assets/weapon-stills-v1519/goldhammer-15.png', done: 'assets/weapon-stills-v1519/goldhammer-15.png' },
     { id: 'alipunch', ko: '킹 판취', en: 'King Punch', img: A + 'w-alipunch-idle-v1406.png', done: A + 'w-alipunch-idle-v1406.png' } // V1405 C 사용자: 게임 대기 그림(kingfist-idle). V1406 C: 게임과 같게 왼쪽=원본·오른쪽=거울 // 글러브 두 짝 — v891: 여백 잘라 캐논과 비슷한 크기(사용자 지정)
   ];
 
@@ -113,6 +113,8 @@
       return idleGooseReady;
     }
     var hammerShadow = null, shadowHammerEl = null, workshopModelView = null;
+    var workshopFootprint = null;
+    var WORKSHOP_IDLE_YAW = Math.PI - Math.PI / 6;
     function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
     function clearTimers() { timers.forEach(clearTimeout); timers = []; stopGooseWingsSound(); resetGooseFlight(); }
     function resetGooseFlight() {
@@ -162,6 +164,7 @@
     function clearWorkshopHammer() {
       if (workshopModelView) workshopModelView.dispose();
       workshopModelView = null;
+      workshopFootprint = null;
       if (hammerRaf) cancelAnimationFrame(hammerRaf);
       hammerRaf = 0;
       stopHammerZapAnimation(false);
@@ -204,7 +207,7 @@
         grip: { x: 49, y: 72 },
         cssClass: 'lane-hammer--gold ws-enhance-hammer',
         // 기존 제작소 폭(화면의 약 40%)에 맞춰 게임용 골드 망치 오프셋도 약 2배 보정.
-        gripOff: { x: 0.214, y: -0.144 },
+        gripOff: { x: 0.321, y: -0.216 },
         emptyDy: -0.05,
         homeMarginTop: '-0.15cm',
         homeDegOffset: 0,
@@ -217,9 +220,9 @@
       var hammerEl = layer.querySelector('.ws-enhance-hammer');
       if (hammerEl && MG.WeaponModels) {
         var touchHost = document.createElement('div'); touchHost.className = 'ws-touch-model'; hammerEl.appendChild(touchHost);
-        MG.WeaponModels.create(touchHost, 'goldhammer', {manual:true}).then(function (view) {
+        MG.WeaponModels.create(touchHost, 'goldhammer', {manual:true, onFrame:function (frame) { workshopFootprint = frame; }}).then(function (view) {
           if (!view || !hammerEl.isConnected) { if (view) view.dispose(); return; }
-          workshopModelView = view; view.setPose({yaw:Math.PI,cameraPitch:0}); hammerEl.classList.add('is-model-ready');
+          workshopModelView = view; view.setPose({yaw:WORKSHOP_IDLE_YAW,cameraPitch:0}); hammerEl.classList.add('is-model-ready');
           var pointer = null, lastX = 0;
           hammerEl.addEventListener('pointerdown', function (e) {
             if (hammerEl.classList.contains('is-striking') || hammerEl.classList.contains('is-entering')) return;
@@ -259,7 +262,16 @@
           var x = parseFloat(shadowHammerEl.style.left) || 66;
           var y = parseFloat(shadowHammerEl.style.top) || 85;
           var lift = Math.min(1, Math.abs(85 - y) / 12);
-          hammerShadow.style.left = x + '%';
+          var angleMatch = /rotate\(([-\d.]+)deg\)/.exec(shadowHammerEl.style.transform);
+          var angle = (angleMatch ? Number(angleMatch[1]) : 18) * Math.PI / 180;
+          var footprint = workshopFootprint || {left:0,right:1,top:0,bottom:1};
+          var width = shadowHammerEl.offsetWidth, height = shadowHammerEl.offsetHeight;
+          var dx = ((footprint.left + footprint.right) / 2 - .49) * width;
+          var dy = ((footprint.top + footprint.bottom) / 2 - .72) * height;
+          var shadowWidth = .8 * (Math.abs(Math.cos(angle)) * (footprint.right - footprint.left) * width + Math.abs(Math.sin(angle)) * (footprint.bottom - footprint.top) * height * .35);
+          hammerShadow.style.left = 'calc(' + x + '% + ' + (dx * Math.cos(angle) - dy * Math.sin(angle)) + 'px)';
+          hammerShadow.style.width = Math.max(12, shadowWidth) + 'px';
+          hammerShadow.style.height = Math.max(3, shadowWidth * .17) + 'px';
           hammerShadow.style.top = (93 + (y - 85) * .55) + '%';
           hammerShadow.style.transform = 'translate(-50%,-50%) scale(' + (1 - lift * .38) + ')';
           hammerShadow.style.opacity = shadowHammerEl.classList.contains('is-fading') ? '0' : String(.32 - lift * .2);
