@@ -698,6 +698,9 @@
           (isSet ? '' : MG.CostumeTeams.formatEffectValue(team, 0)) + '</b></p></div>';
       }
       var allCostumes = '<div class="shop-costume-set-art">' + teams.map(function (team, index) {
+        if (team.id === 'blue_bears') return '<span class="shop-costume-set-piece shop-costume-set-piece--' + index + '">' +
+          '<img class="shop-costume-set-body shop-costume-outfit--split" alt="" src="' + outfit(team.id) + '">' +
+          '<img class="shop-costume-hat shop-costume-hat--blue_bears" alt="" src="' + outfit(team.id) + '"></span>';
         return '<img class="shop-costume-set-piece shop-costume-set-piece--' + index + '" alt="" src="' + outfit(team.id) + '">';
       }).join('') + '</div>';
       renderPendingProducts([

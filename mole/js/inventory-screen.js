@@ -396,8 +396,8 @@
       var gradeBottom = Math.max(gradeRect.bottom, gradeRect.top + ((parseFloat(decoration.top) || 0) + (parseFloat(decoration.height) || 0)) * stageScale);
       var strikeTop = rect.top + (right.offsetTop + 9.73952) * displayScale;
       var clearance = 3 + 4 * displayScale;
-      // Latest motion request doubles the previous upward stroke.
-      page.style.setProperty('--kp-straight-distance', (2 * Math.max(0, (strikeTop - gradeBottom - clearance) / displayScale)).toFixed(2) + 'px');
+      // Lower the fully extended cross slightly: 95% of the doubled upward stroke.
+      page.style.setProperty('--kp-straight-distance', (1.9 * Math.max(0, (strikeTop - gradeBottom - clearance) / displayScale)).toFixed(2) + 'px');
     }
     function fitLefts() {
       if (active !== 'weapon') return;
