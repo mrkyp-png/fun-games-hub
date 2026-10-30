@@ -108,6 +108,14 @@
     var coins = count(read('mole.coins'));
     if (coins < offer.price) return { ok: false, reason: 'coins' };
     var changes = { 'mole.coins': String(coins - offer.price) };
+    // A newly purchased costume must wait for the user's explicit equip action.
+    // Clear a matching legacy equipped value so it cannot appear equipped on acquisition.
+    if (offer.kind === 'costume') {
+      var equippedCostume = read('mole.costume.equipped');
+      if (equippedCostume && Object.keys(offer.grants).some(function (id) {
+        return id === equippedCostume && !owns('costume', id);
+      })) changes['mole.costume.equipped'] = '';
+    }
     addGrants(changes, offer.kind, offer.grants);
     return { ok: commit(changes), reason: 'storage' };
   }

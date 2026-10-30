@@ -357,12 +357,13 @@
       });
     }
 
-    function showFinalConfirm(message, imageSrc, onConfirm) {
+    function showFinalConfirm(message, imageSrc, onConfirm, dialogKind) {
       var english = I18N().lang === 'en';
       var previous = el.querySelector('.shop-coin-choice-dialog');
       if (previous) previous.remove();
       var dialog = document.createElement('div');
       dialog.className = 'shop-coin-choice-dialog';
+      if (dialogKind) dialog.classList.add('shop-coin-choice-dialog--' + dialogKind);
       dialog.setAttribute('role', 'dialog');
       dialog.setAttribute('aria-modal', 'true');
       dialog.innerHTML = '<div class="shop-coin-choice-card">' + (imageSrc ? '<img class="shop-coin-choice-art" src="' + imageSrc + '" alt="">' : '') +
@@ -404,7 +405,7 @@
       var objectMarker = last >= 0xAC00 && last <= 0xD7A3 && (last - 0xAC00) % 28 ? '을' : '를';
       var prompt = english ? 'Purchase ' + name + ' for ' + offer.price.toLocaleString('en-US') + ' coins?' :
         offer.price.toLocaleString('en-US') + ' 코인으로 ' + name + objectMarker + ' 구매하시겠습니까?';
-      showFinalConfirm(prompt, null, function () { buyProduct(item.sku); });
+      showFinalConfirm(prompt, null, function () { buyProduct(item.sku); }, item.sku.indexOf('weapon.') === 0 ? 'weapon-purchase' : '');
     }
 
     function showCoinWeaponSelection(bulkCard, english) {

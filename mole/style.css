@@ -9562,6 +9562,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* Keep the shop sign text centered in its nameplate artwork. */
 #shop-screen .shop-banner-nameplate { top:2%!important; display:flex!important; justify-content:center!important; align-items:center!important; }
 #shop-screen .shop-banner-txt { position:absolute!important; inset:0!important; display:flex!important; justify-content:center!important; align-items:center!important; width:100%!important; height:100%!important; line-height:1!important; }
+#shop-screen .shop-banner-nameplate .shop-banner-txt { transform:translateY(2.5%)!important; }
 #shop-screen .shop-sign-label { display:block; flex:none; overflow:visible; font:inherit; }
 #shop-screen .shop-sign-label text { font:inherit; fill:currentColor; }
 
@@ -9584,6 +9585,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-coin-weapon-choice img { display:block!important; flex:0 1 64%!important; width:82%!important; height:64%!important; max-width:82%!important; max-height:64%!important; margin:0!important; object-fit:contain!important; }
 #shop-screen .shop-coin-weapon-choice span { display:block!important; flex:0 0 auto!important; width:100%!important; padding-top:1px!important; transform:translateY(2px)!important; overflow:hidden!important; color:#54290b!important; font:900 2.3cqw/1.2 'Jua',sans-serif!important; text-align:center!important; text-overflow:ellipsis!important; white-space:nowrap!important; }
 #shop-screen .shop-coin-choice-dialog { position:absolute!important; inset:0!important; z-index:10000!important; display:flex!important; align-items:center!important; justify-content:center!important; box-sizing:border-box!important; padding:6cqw!important; background:rgba(16,24,40,.42)!important; -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); }
+#shop-screen:has(.shop-coin-choice-dialog--weapon-purchase) .shop-card--weapon-product .shop-card-badge--hero { visibility:hidden!important; }
 #shop-screen .shop-coin-choice-card { display:flex!important; flex-direction:column!important; align-items:center!important; box-sizing:border-box!important; width:88cqw!important; max-width:380px!important; padding:6cqw 5cqw 4cqw!important; border:7px solid #d6ad63!important; border-radius:22px!important; background:#fff5d9!important; box-shadow:inset 0 0 0 3px #f6dfaa,0 7px 18px rgba(55,30,5,.3)!important; }
 #shop-screen .shop-coin-choice-card--weapon-select { width:94cqw!important; max-width:460px!important; padding:5cqw 4cqw!important; }
 #shop-screen .shop-coin-weapon-choices--dialog { display:flex!important; gap:2cqw!important; width:100%!important; margin:5cqw 0 0!important; }
