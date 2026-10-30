@@ -13,20 +13,20 @@
     el.classList.add('st2-screen');
     el.innerHTML =
       '<div class="mb-frame st2-frame">' +
-        '<div class="mb-head"><div class="st2-head"><img src="' + A + 'head.png" alt=""></div></div>' +
         '<div class="st2-grid" data-set-list></div>' +
       '</div>';
     var list = el.querySelector('[data-set-list]');
 
-    function card(icon, labelKey, bottomHtml, onClick) {
+    function card(icon, labelKey, bottomHtml, onClick, bottomClass) {
       var c = document.createElement('div');
       c.className = 'st2-card';
       c.innerHTML =
         '<img class="st2-card-bg" src="' + A + 'card.png" alt="">' +
-        '<div class="st2-art"><img class="st2-wood" src="' + A + 'wood.png" alt=""><img class="st2-ic" src="' + A + 'ic-' + icon + '.png" alt=""></div>' +
+        '<div class="st2-art"><img class="st2-wood" src="' + A + 'wood.png" alt=""><img class="st2-ic" src="' + A + 'ic-' + icon + '-2x.png" alt=""></div>' +
         '<div class="st2-plank"><img src="' + A + 'plank.png" alt=""><span class="st2-lbl"></span></div>' +
         '<button type="button" class="st2-bottom">' + bottomHtml + '</button>';
       c.querySelector('.st2-lbl').textContent = T(labelKey);
+      if (bottomClass) c.querySelector('.st2-bottom').className += ' ' + bottomClass;
       if (onClick) c.querySelector('.st2-bottom').addEventListener('click', onClick);
       list.appendChild(c);
       return c;
@@ -51,11 +51,14 @@
       paint();
     }
 
-    function slot(kind, inner) { return '<img class="st2-slot" src="' + A + 'slot-' + kind + '.png" alt="">' + (inner || ''); }
+    // 아래 박스: ON/OFF 버튼과 같은 프레임(그림 대신 CSS 프레임 + 기호)
+    var DROP = '<svg class="st2-glyph" viewBox="0 0 16 10" aria-hidden="true"><path d="M1 1h14L8 9z"/></svg>';
+    var ARROW = '<svg class="st2-glyph" viewBox="0 0 10 16" aria-hidden="true"><path d="M2 2l6 6-6 6"/></svg>';
+    var GO = 'ws-action-frame st2-nav-frame';
 
     function langCard() {
       var flag = function () { return S.get('lang') === 'en' ? '🇺🇸' : '🇰🇷'; };
-      var c = card('globe', 'mole.set.lang', slot('drop', '<span class="st2-flag"></span>'), function () {
+      var c = card('globe', 'mole.set.lang', DROP + '<span class="st2-flag"></span>', function () {
         var v = document.createElement('div');
         v.className = 'ad-overlay';
         v.innerHTML = '<div class="ad-overlay-card quit-card"><img class="quit-ico" src="' + A + 'ic-globe.png" alt=""><div class="quit-title"></div><div class="quit-btns">' +
@@ -67,7 +70,7 @@
           else if (e.target === v) v.remove();
         });
         document.body.appendChild(v);
-      });
+      }, GO);
       c.querySelector('.st2-flag').textContent = flag();
     }
 
@@ -105,17 +108,17 @@
       toggleCard('sound', 'mole.set.sfx', 'sound');
       toggleCard('vib', 'mole.set.vib', 'vibration');
       langCard();
-      card('guide', 'mole.more.help', slot('arrow'), opts.onHelp || soon);
-      card('contact', 'mole.more.contact', slot('arrow'), opts.onContact || soon);
-      var noad = card('noad', 'mole.set.adfree', slot('arrow')); noad.classList.add('is-off'); // v1011(사용자 지정): 광고 제거 = 회색만, 누름 없음
+      card('guide', 'mole.more.help', ARROW, opts.onHelp || soon, GO);
+      card('contact', 'mole.more.contact', ARROW, opts.onContact || soon, GO);
+      var noad = card('noad', 'mole.set.adfree', ARROW, null, GO); noad.classList.add('is-off'); // v1011(사용자 지정): 광고 제거 = 회색만, 누름 없음
       noad.dataset.soon = T('mole.inv.soon'); // V1369 C: 회색만이면 고장처럼 보여 '🔒 준비 중' 리본
-      card('shield', 'mole.more.privacy', slot('arrow'), opts.onPrivacy || soon);
-      card('trash', 'mole.set.reset', slot('arrow'), confirmReset);
+      card('shield', 'mole.more.privacy', ARROW, opts.onPrivacy || soon, GO);
+      card('trash', 'mole.set.reset', ARROW, confirmReset, GO);
       // 이름판 글자 "…" 없이 판 안에 한 줄
       requestAnimationFrame(function () {
         list.querySelectorAll('.st2-lbl').forEach(function (t) {
           var room = t.parentNode.clientWidth * 0.82; if (!room || t.scrollWidth <= room) return;
-          t.style.transform = 'translate(-50%, -50%) scaleX(' + Math.max(room / t.scrollWidth, 0.5).toFixed(3) + ')';
+          t.style.transform = 'scaleX(' + Math.max(room / t.scrollWidth, 0.5).toFixed(3) + ')';
         });
       });
     }

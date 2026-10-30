@@ -5,7 +5,8 @@
 // SHELL 목록 자체가 바뀔 때만 CACHE 를 올린다.
 // V1524 G: mailbox layout, floating claim-all, inventory loading and shop preview fixes.
 // V1525 C: shop day/night and score backgrounds use brightness instead of opacity.
-const CACHE = 'mole-game-v1525-C';
+// V1526 C: settings screen redesign (ivory frame, shop cards, unified buttons, new plank, 2x icons), mailbox frame back to ivory.
+const CACHE = 'mole-game-v1526-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -435,6 +436,16 @@ const SHELL = [
   './assets/settings2/ic-sound.png',
   './assets/settings2/ic-trash.png',
   './assets/settings2/ic-vib.png',
+  './assets/settings2/ic-contact-2x.png',
+  './assets/settings2/ic-globe-2x.png',
+  './assets/settings2/ic-guide-2x.png',
+  './assets/settings2/ic-music-2x.png',
+  './assets/settings2/ic-noad-2x.png',
+  './assets/settings2/ic-shield-2x.png',
+  './assets/settings2/ic-sound-2x.png',
+  './assets/settings2/ic-trash-2x.png',
+  './assets/settings2/ic-vib-2x.png',
+  './assets/settings2/plank-A-v1526.png',
   './assets/settings2/plank.png',
   './assets/settings2/slot-arrow.png',
   './assets/settings2/slot-drop.png',
