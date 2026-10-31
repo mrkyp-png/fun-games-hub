@@ -22,7 +22,8 @@
 // V1540 C: home 리듬팡·두더지팡 new girl/boy mole characters (pop out of box), GO 30% smaller and right; round map pan effects removed, scenery brightness fixed 85%.
 // V1541 C: new in-game mole (rise 6 + hit faces 5, no peek frames, multi-hit stays in place), bomb mole uses new rise1, hammer aim for new mole.
 // V1542 C: no glow/shadow filter on moles const CACHE = 'mole-game-v1541-C'; animals, mole sprite natural aspect + crisper edges, killed mole holds hit face 0.15s.
-const CACHE = 'mole-game-v1542-C';
+// V1543 C: mole sprites sharpened (unsharp mask r1.8 200%).
+const CACHE = 'mole-game-v1543-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
