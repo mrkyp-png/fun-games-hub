@@ -618,7 +618,7 @@
   // 점수가 카운팅되는 모든 타격). game.js 가 콤보·라이트·피버 배율이 이미 반영된 실제 증가분을 넘긴다.
   function scorePop(boardEl, xFrac, yFrac, points) {
     if (!points || points <= 0) return;
-    spawnAt(boardEl, 'rp-pang', xFrac, yFrac, 'PANG!'); // 비치게임 PANG! 과 같은 클래스(크기·색·연출 동일, 사용자 지정)
+    spawnAt(boardEl, 'rp-pang', xFrac, yFrac + 0.03, 'PANG!'); // 비치게임 PANG! 과 같은 클래스(크기·색·연출 동일, 사용자 지정) / V1545 C 사용자: 얼굴 안 가리게 보드 3% 아래
     return spawnAt(boardEl, 'hit-fx-score', xFrac, yFrac, '+' + points);
   }
 
