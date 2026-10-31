@@ -1766,7 +1766,10 @@
     // 분신 개념"). 실제 타격 판정(onImpact)은 그대로 호출하므로 콤보/점수는 정상 반영된다.
     function weaponCloneOverflow(targetXFrac, targetYFrac, onImpact, frameKey, regionId) {
       const fxLayer = document.getElementById('mole-hammer-layer'); // overflow:visible
-      if (weapon === 'cannon') {
+      if (weapon === 'cannon' && state && state.laneHammer && state.laneHammer.enqueue) {
+        // V1534 C 사용자(A안): 3D 캐논은 분신(겹쳐 보임) 대신 본체가 차례로 쏜다(lane-cannon enqueue).
+        state.laneHammer.enqueue(targetXFrac, targetYFrac, onImpact);
+      } else if (weapon === 'cannon') {
         // V1396 C 사용자: 캐논도 뿅망치와 똑같이 — 못 따라갈 때만 메인과 같은 대포(70%)가 같은 자리에서 조준·발사 후 사라짐.
         const clone = MG.LaneCannon.create({ layer: fxLayer });
         const cel = fxLayer.lastElementChild;

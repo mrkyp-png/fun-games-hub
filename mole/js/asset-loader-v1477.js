@@ -160,7 +160,8 @@
       // Gameplay sprite/class churn must not trigger a whole-screen style scan.
       if (records.some(function (r) {
         var el = r.target, screen = el.closest && el.closest('.screen');
-        if (r.type === 'attributes' && r.attributeName === 'src' && el.tagName === 'IMG') return true;
+        // V1534 C: 플레이 중(game-screen 이 홈 상태가 아닐 때) 두더지·효과 그림 교체는 제외 — 매번 화면 전체 훑기 → 버벅임.
+        if (r.type === 'attributes' && r.attributeName === 'src' && el.tagName === 'IMG') return !(screen && screen.id === 'game-screen' && !screen.classList.contains('is-start'));
         return el.classList && el.classList.contains('screen') || (screen && screen.id !== 'game-screen');
       })) schedule();
     }).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['hidden', 'src', 'class'] });

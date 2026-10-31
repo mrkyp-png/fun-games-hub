@@ -481,10 +481,11 @@
     return d;
   }
 
+  // V1534 C: offsetWidth 강제 배치 계산 대신 다음 프레임에 클래스를 다시 붙여 애니메이션 재시작(버벅임 감소).
   function shake(boardEl) {
     boardEl.classList.remove('mole-board--shake');
-    void boardEl.offsetWidth; // reflow 로 애니메이션 재시작
-    boardEl.classList.add('mole-board--shake');
+    cancelAnimationFrame(boardEl._shakeRaf);
+    boardEl._shakeRaf = requestAnimationFrame(() => boardEl.classList.add('mole-board--shake'));
   }
 
   function sfxOff() {

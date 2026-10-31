@@ -97,6 +97,12 @@
       '<span class="h2-lbl h2w-lbl"' + (lblKey ? ' data-i18n="' + lblKey + '"' : '') + '>' + lblTxt + '</span></span>';
   }
 
+  // V1534 C: 애니메이션 클래스 재시작 — offsetWidth 강제 배치 계산 없이 지금 떼고 다음 프레임에 다시 붙인다.
+  function restartClass(el, add, removeOnly) {
+    el.classList.remove.apply(el.classList, add.concat(removeOnly));
+    cancelAnimationFrame(el._restartRaf);
+    el._restartRaf = requestAnimationFrame(() => el.classList.add.apply(el.classList, add));
+  }
   function fillFace(btn, f, id, simple) {
     btn.classList.remove('lane-button--flippable', 'is-flipped');
     var faceHtml;
@@ -212,9 +218,7 @@
       b.addEventListener('pointerdown', (e) => {
         if (e.target.closest('.lane-item') && (!isHome || !isHome())) {
           clearTimeout(b._capReboundT);
-          b.classList.remove('is-cap-rebound');
-          void b.offsetWidth;
-          b.classList.add('is-cap-rebound');
+          restartClass(b, ['is-cap-rebound'], []);
           b._capReboundT = setTimeout(() => b.classList.remove('is-cap-rebound'), 240);
         }
       }, true);
@@ -222,9 +226,7 @@
         e.preventDefault();
         if (!isHome || !isHome()) {
           clearTimeout(b._capReboundT);
-          b.classList.remove('is-cap-rebound');
-          void b.offsetWidth;
-          b.classList.add('is-cap-rebound');
+          restartClass(b, ['is-cap-rebound'], []);
           b._capReboundT = setTimeout(() => b.classList.remove('is-cap-rebound'), 240);
         }
         if (!isHome || !isHome()) {
@@ -233,10 +235,7 @@
         }
         if (onTap) onTap(); // 다이얼패드(홈 화면) 전용 탭음 — game.js 가 상황(is-start) 판단
         const bad = onCell(id); // 헛방/폭탄이면 true — 링 색을 빨갛게
-        b.classList.remove('lane-button--flash', 'lane-button--miss');
-        void b.offsetWidth;
-        b.classList.toggle('lane-button--miss', !!bad);
-        b.classList.add('lane-button--flash');
+        restartClass(b, bad ? ['lane-button--flash', 'lane-button--miss'] : ['lane-button--flash'], ['lane-button--miss']);
         // ⚠️ 이 클래스를 계속 안 지우고 CSS 애니메이션(0.8s)이 끝나는 것만 믿고 있었더니,
         // 홈에서 아이템/홈 버튼 누른 직후 라운드를 시작하면(라운드 전환 때 버튼보드가 다시
         // 지어지는 타이밍과 겹쳐) 그 버튼에 녹색/빨간 링이 남아있는 것처럼 보였다(사용자 지적:
@@ -393,6 +392,7 @@
 
     const balanceMeasure = document.createElement('canvas').getContext('2d');
     function fitHomeBalances() {
+      if (isHome && !isHome()) return; // V1534 C: 게임 중엔 홈 재화 숫자가 안 보이므로 크기 맞춤 생략(버벅임 감소)
       const labels = Array.from(buttons).flatMap(button => Array.from(button.querySelectorAll('.h2-balance-text .lane-hud-n')));
       const ticket = labels.find(label => label.dataset.hud === 'tickets');
       const host = ticket && ticket.closest('.h2-balance-text');

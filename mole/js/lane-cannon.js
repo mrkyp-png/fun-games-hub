@@ -87,6 +87,7 @@
   const RECOIL = [0.012, 0.024, 0.040];    // 살짝/보통/강 (보드 분수)
   const KICK_SEC = 0.06, SETTLE_SEC = 0.34;
   const BALL_MS = 105;
+  const AIM_FAST_MS = 40, QUEUE_MAX = 3; // V1534 C: 밀린 발 조준 시간·최대 대기 발 수
   const BALL_START_ADVANCE_PX = 0.3 * 96 / 2.54; // V1533 C 사용자: 0.3cm(CSS) = 11.34px
   const IDLE_DELAY = 2.5;                  // 대기 애니메이션(사용자 지정) — 이만큼 조용해야 시작
   const IDLE_KICK_CYCLE = 3;               // 이 주기로 반복 반동
@@ -145,7 +146,7 @@
       let fy0 = ay(p) + Math.sin(rad) * FX_ADVANCE * yScale + ny;
       // V1533 C 사용자: 화염·연기도 포탄과 같이 포구→구멍 직선을 따라 구멍 쪽으로 0.3cm.
       if (p.muzzle && fxTarget) {
-        const W = el.clientWidth || 1, H = el.clientHeight || 1, dx = (fxTarget.x - ax(p)) * W, dy = (fxTarget.y - ay(p)) * H, len = Math.hypot(dx, dy) || 1, step = Math.min(BALL_START_ADVANCE_PX, len);
+        const W = layerW, H = layerH, dx = (fxTarget.x - ax(p)) * W, dy = (fxTarget.y - ay(p)) * H, len = Math.hypot(dx, dy) || 1, step = Math.min(BALL_START_ADVANCE_PX, len);
         fx0 += dx / len * step / W; fy0 += dy / len * step / H;
       }
       im.style.width = (w * 100).toFixed(2) + '%';
@@ -168,7 +169,12 @@
     let recoilAmt = 0;
     let currentAim = restPose.aim, aimFrom = currentAim, aimTo = currentAim;
     let lastModelVisual = null;
-    let fxTarget = null; // V1533 C: 마지막 포격점(화염·연기 0.3cm 앞당김 방향)
+    let fxTarget = null;
+    const queue = [];
+    // V1534 C: 레이어 크기는 바뀔 때만 읽어 둔다(화염·연기 위치 계산마다 읽으면 매 프레임 강제 배치 계산 → 버벅임).
+    let layerW = el.clientWidth || 1, layerH = el.clientHeight || 1;
+    const sizeWatch = typeof ResizeObserver === 'function' ? new ResizeObserver(() => { layerW = el.clientWidth || 1; layerH = el.clientHeight || 1; }) : null;
+    if (sizeWatch) sizeWatch.observe(el); // V1533 C: 마지막 포격점(화염·연기 0.3cm 앞당김 방향)
     let idleT = 0, idleKick = 0; // 대기 애니메이션(사용자 지정) — 잠깐 조용하면 가장 센 반동으로 훅 밀렸다 복귀
     let timers = [];
     let flightTimers = [];
@@ -193,7 +199,29 @@
     }
     function resetFx() { spark.classList.remove('is-on'); burn.classList.remove('is-on'); smoke.classList.remove('is-on'); }
 
-    function strike(targetXFrac, targetYFrac, onImpact) {
+    function launchBall(visual, best, tx, ty, onImpact) {
+      // 포탄 발사시작점. blx/bly = 이 포즈만 추가 미세이동 (스프라이트는 그대로).
+      const muzzle = visual ? {x:visual.x+Math.cos(visual.aim*Math.PI/180)*.012,y:visual.y+Math.sin(visual.aim*Math.PI/180)*.012*visual.yScale} : { x: ax(best) + (best.blx || 0), y: ay(best) + (best.bly || 0) };
+      // V1533 C 사용자: 포탄 출발점을 포구→구멍 직선을 따라 구멍 쪽으로 0.3cm 앞으로(포격점은 그대로).
+      {
+        const W = layerW, H = layerH, dx = (tx - muzzle.x) * W, dy = (ty - muzzle.y) * H, len = Math.hypot(dx, dy) || 1, step = Math.min(BALL_START_ADVANCE_PX, len);
+        muzzle.x += dx / len * step / W; muzzle.y += dy / len * step / H;
+      }
+      const projectile = ball.cloneNode(false); projectile.classList.add('lc-flight'); el.appendChild(projectile);
+      projectile.style.transition = 'none';
+      projectile.style.left = (muzzle.x * 100).toFixed(2) + '%';
+      projectile.style.top = (muzzle.y * 100).toFixed(2) + '%';
+      projectile.style.opacity = '1';
+      projectile.style.transform = 'translate(-50%,-50%) scale(1.15) rotate(0deg)';
+      void projectile.offsetWidth;
+      projectile.style.transition = 'left ' + BALL_MS + 'ms cubic-bezier(.2,.5,.6,1), top ' + BALL_MS + 'ms cubic-bezier(.2,.5,.6,1), transform ' + BALL_MS + 'ms linear';
+      projectile.style.left = (tx * 100).toFixed(2) + '%';
+      projectile.style.top = (ty * 100).toFixed(2) + '%';
+      projectile.style.transform = 'translate(-50%,-50%) scale(0.8) rotate(220deg)';
+      afterFlight(BALL_MS, () => { projectile.remove(); if (onImpact) onImpact(); });
+    }
+
+    function strike(targetXFrac, targetYFrac, onImpact, fast) {
       const tx = (typeof targetXFrac === 'number') ? targetXFrac : 0.5;
       const ty = (typeof targetYFrac === 'number') ? targetYFrac : 0.3;
       fxTarget = { x: tx, y: ty };
@@ -211,7 +239,7 @@
       resFrom = residual;
       resTo = clamp(angDiff(want, best.aim), -best.tweak, best.tweak);
       resT = 0;
-      curAimMs = AIM_MS;
+      curAimMs = fast ? AIM_FAST_MS : AIM_MS;
       phase = 'aim'; t = 0;
       recoilAmt = RECOIL[Math.floor(Math.random() * RECOIL.length)];
 
@@ -222,25 +250,7 @@
         if (visual) placeFx({aim:visual.aim,muzzle:visual});
         playFx();
 
-        // 포탄 발사시작점. blx/bly = 이 포즈만 추가 미세이동 (스프라이트는 그대로).
-        const muzzle = visual ? {x:visual.x+Math.cos(visual.aim*Math.PI/180)*.012,y:visual.y+Math.sin(visual.aim*Math.PI/180)*.012*visual.yScale} : { x: ax(best) + (best.blx || 0), y: ay(best) + (best.bly || 0) };
-        // V1533 C 사용자: 포탄 출발점을 포구→구멍 직선을 따라 구멍 쪽으로 0.3cm 앞으로(포격점은 그대로).
-        {
-          const W = el.clientWidth || 1, H = el.clientHeight || 1, dx = (tx - muzzle.x) * W, dy = (ty - muzzle.y) * H, len = Math.hypot(dx, dy) || 1, step = Math.min(BALL_START_ADVANCE_PX, len);
-          muzzle.x += dx / len * step / W; muzzle.y += dy / len * step / H;
-        }
-        const projectile = ball.cloneNode(false); projectile.classList.add('lc-flight'); el.appendChild(projectile);
-        projectile.style.transition = 'none';
-        projectile.style.left = (muzzle.x * 100).toFixed(2) + '%';
-        projectile.style.top = (muzzle.y * 100).toFixed(2) + '%';
-        projectile.style.opacity = '1';
-        projectile.style.transform = 'translate(-50%,-50%) scale(1.15) rotate(0deg)';
-        void projectile.offsetWidth;
-        projectile.style.transition = 'left ' + BALL_MS + 'ms cubic-bezier(.2,.5,.6,1), top ' + BALL_MS + 'ms cubic-bezier(.2,.5,.6,1), transform ' + BALL_MS + 'ms linear';
-        projectile.style.left = (tx * 100).toFixed(2) + '%';
-        projectile.style.top = (ty * 100).toFixed(2) + '%';
-        projectile.style.transform = 'translate(-50%,-50%) scale(0.8) rotate(220deg)';
-        afterFlight(BALL_MS, () => { projectile.remove(); if (onImpact) onImpact(); });
+        launchBall(visual, best, tx, ty, onImpact);
       });
       paint();
     }
@@ -253,7 +263,7 @@
         currentAim = aimFrom + (aimTo-aimFrom)*k;
       } else if (phase === 'kick') {
         t += dt;
-        if (t >= KICK_SEC) { phase = 'settle'; t = 0; }
+        if (t >= KICK_SEC) { phase = 'settle'; t = 0; if (queue.length) { const n = queue.shift(); strike(n.x, n.y, n.onImpact, true); } }
       } else if (phase === 'settle') {
         t += dt;
         const k = easeOut(clamp01(t / SETTLE_SEC));
@@ -293,9 +303,18 @@
         'rotate(' + residual.toFixed(2) + 'deg)';
     }
 
-    function isBusy() { return phase === 'aim' || phase === 'kick'; }
+    function isBusy() { return phase === 'aim' || phase === 'kick' || queue.length > 0; }
+    // V1534 C 사용자(A안): 분신 없이 캐논 하나가 차례로 쏜다. 밀린 발은 조준을 빠르게(0.04초),
+    // 3발 넘게 밀리면 넘친 발은 캐논 동작 없이 지금 포구에서 포탄만 바로 쏜다(판정은 누를 때 이미 끝남).
+    function enqueue(targetXFrac, targetYFrac, onImpact) {
+      if (phase !== 'aim' && phase !== 'kick' && !queue.length) { strike(targetXFrac, targetYFrac, onImpact); return; }
+      if (queue.length < QUEUE_MAX) { queue.push({ x: targetXFrac, y: targetYFrac, onImpact }); return; }
+      launchBall(lastModelVisual, pose || restPose, targetXFrac, targetYFrac, onImpact);
+    }
+    function flushQueue() { const q = queue.splice(0); q.forEach((n) => { if (n.onImpact) n.onImpact(); }); }
 
     function home() {
+      flushQueue();
       clearTimers();
       phase = 'home'; t = 0; resT = 0; idleT = 0; idleKick = 0;
       residual = resFrom = resTo = 0;
@@ -307,11 +326,11 @@
       paint();
     }
 
-    function clear() { clearTimers(); if(model)model.clear(); el.remove(); }
+    function clear() { flushQueue(); if (sizeWatch) sizeWatch.disconnect(); clearTimers(); if(model)model.clear(); el.remove(); }
 
     showPose(restPose);
     paint();
-    return { strike, update, isBusy, home, clear, intro3D:model?function(travelMs,turnMs,onDone){model.intro(travelMs,turnMs,onDone);}:null, prewarm:model?function(points){model.prewarm(points);}:null };
+    return { strike, enqueue, update, isBusy, home, clear, intro3D:model?function(travelMs,turnMs,onDone){model.intro(travelMs,turnMs,onDone);}:null, prewarm:model?function(points){model.prewarm(points);}:null };
   }
 
   const api = { create };
