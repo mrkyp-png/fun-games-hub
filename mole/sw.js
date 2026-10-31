@@ -15,7 +15,8 @@
 // V1533 C: cannon side view max rotation, yaw-only aim, recoil only, shell/flame/smoke start 0.3cm toward hole; home background restored.
 // V1534 C: cannon fires in sequence (no clone ghosts), fewer forced layouts (fx size cache, asset scan, shake, button press).
 // V1535 C: restore hit shake and button bounce (two-frame class restart, per-class rAF).
-const CACHE = 'mole-game-v1535-C';
+// V1536 C: no costume glow on in-game moles, no 2D fallback while inventory 3D loads.
+const CACHE = 'mole-game-v1536-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.

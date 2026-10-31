@@ -1532,14 +1532,10 @@
     const ws = MG.Workshop, screen = document.getElementById('game-screen');
     if (!ws || !screen) return;
     const weaponLevel = weapon === 'hammer' ? 0 : ws.weaponLevel(weapon);
-    const costume = MG.CostumeTeams.equippedId();
-    const costumeLevel = costume ? ws.levelOf('costume', costume) : 0;
+    // V1536 C 사용자: 코스튬 강화는 게임 두더지와 무관 — 게임 화면에는 무기 강화만 반영.
     screen.classList.toggle('gs-weapon-enhanced', weaponLevel > 0);
-    screen.classList.toggle('gs-costume-enhanced', costumeLevel > 0);
     screen.dataset.weaponLevel = String(weaponLevel);
-    screen.dataset.costumeLevel = String(costumeLevel);
     screen.style.setProperty('--weapon-enh', ws.GLOW[weaponLevel] || 'transparent');
-    screen.style.setProperty('--costume-enh', ws.GLOW[costumeLevel] || 'transparent');
     // Alpha-preserving tint keeps the original shading and animation frames.
     if (!document.getElementById('game-enhance-filters')) {
       const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg');
