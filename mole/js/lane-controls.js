@@ -97,11 +97,14 @@
       '<span class="h2-lbl h2w-lbl"' + (lblKey ? ' data-i18n="' + lblKey + '"' : '') + '>' + lblTxt + '</span></span>';
   }
 
-  // V1534 C: 애니메이션 클래스 재시작 — offsetWidth 강제 배치 계산 없이 지금 떼고 다음 프레임에 다시 붙인다.
+  // V1535 C: 애니메이션 클래스 재시작 — offsetWidth 강제 배치 계산 없이 지금 떼고 두 프레임 뒤에 다시 붙인다
+  // (한 프레임 뒤면 브라우저가 뗀 상태를 못 봐 재시작이 안 됨).
   function restartClass(el, add, removeOnly) {
+    // 클래스 묶음마다 따로 예약(누름 튕김과 반짝임이 같은 예약을 써서 서로 취소하던 문제).
+    const key = '_restartRaf_' + add.join('_');
     el.classList.remove.apply(el.classList, add.concat(removeOnly));
-    cancelAnimationFrame(el._restartRaf);
-    el._restartRaf = requestAnimationFrame(() => el.classList.add.apply(el.classList, add));
+    cancelAnimationFrame(el[key]);
+    el[key] = requestAnimationFrame(() => { el[key] = requestAnimationFrame(() => el.classList.add.apply(el.classList, add)); });
   }
   function fillFace(btn, f, id, simple) {
     btn.classList.remove('lane-button--flippable', 'is-flipped');

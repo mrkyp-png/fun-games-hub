@@ -14,7 +14,8 @@
 // V1532 C: score profile photo/ID edit opens as a popup over the score screen.
 // V1533 C: cannon side view max rotation, yaw-only aim, recoil only, shell/flame/smoke start 0.3cm toward hole; home background restored.
 // V1534 C: cannon fires in sequence (no clone ghosts), fewer forced layouts (fx size cache, asset scan, shake, button press).
-const CACHE = 'mole-game-v1534-C';
+// V1535 C: restore hit shake and button bounce (two-frame class restart, per-class rAF).
+const CACHE = 'mole-game-v1535-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
