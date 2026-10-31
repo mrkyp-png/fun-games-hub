@@ -23,7 +23,9 @@
     var detected = null;   // FaceDetect 결과 {oval(자연 px), box} — 못 찾으면 null (원형 폴백)
     var session = {};  // 이번 open() 옵션 (profile 모드 / done 오버라이드)
 
+    var curStage = 'pick';
     function stage(name) {
+      curStage = name;
       el.querySelectorAll('[data-fm-stage]').forEach(function (s) {
         s.hidden = (s.getAttribute('data-fm-stage') !== name);
       });
@@ -34,6 +36,7 @@
       el.querySelectorAll('[data-fm-cancel]').forEach(function (b) { b.hidden = forced; });
       // 프로필은 사진과 아이디를 각각 변경할 수 있다.
       var isProfile = !!session.profile;
+      el.classList.toggle('fm-popup', !!session.popup); // V1532 C: 스코어에서 열면 팝업 창
       nameInput.hidden = false;
       el.querySelector('[data-fm-save-profile]').hidden = !isProfile;
       var titleEl = el.querySelector('.bs-title');
@@ -194,7 +197,12 @@
     el.querySelector('[data-fm-save]').addEventListener('click', saveProfile);
     el.querySelector('[data-fm-save-profile]').addEventListener('click', saveProfile);
     el.querySelectorAll('[data-fm-cancel]').forEach(function (b) {
-      b.addEventListener('click', function () { onCancel(); });
+      b.addEventListener('click', function () { (session.onCancel || onCancel)(); });
+    });
+    // V1532 C: 팝업 [저장] — 자르기 단계면 지금 원 안 모양으로 잘라서 저장.
+    el.querySelector('[data-fm-pop-save]').addEventListener('click', function () {
+      if (curStage === 'crop') lastCropDataUrl = renderCrop();
+      saveProfile();
     });
 
     return { open: open };

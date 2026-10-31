@@ -9996,3 +9996,22 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* V1531 C 사용자: 홈 배경만 15% 더 어둡게(색 ×0.85). 버튼·그림은 그대로. */
 #game-screen.is-start { background: linear-gradient(180deg, #b6ccd5 0%, #90bbcf 55%, #7aaeca 100%); }
 #game-screen.is-start .dialpad { background-color: #8dbbd0 !important; }
+/* V1532 C 사용자: 스코어 프로필 = 상점 확인 팝업과 같은 창(크림 바탕·금색 테두리·뒤 어둡게). 화면 이동 없음. */
+.fm-pop-btns { display:none; }
+#face-maker.fm-popup { position:fixed !important; left:50% !important; top:50% !important; right:auto !important; bottom:auto !important; transform:translate(-50%,-50%) !important;
+  width:min(88vw,380px) !important; height:auto !important; max-height:86dvh; overflow-y:auto; z-index:10000 !important; box-sizing:border-box; padding:4px 0 14px;
+  display:flex; flex-direction:column; align-items:center; border:7px solid #e2a63a; border-radius:22px; background:linear-gradient(180deg,#fff8e7,#fdeccb) !important;
+  box-shadow:0 0 0 100vmax rgba(0,0,0,.55), 0 8px 24px rgba(0,0,0,.35) !important; color:#54290b; }
+#face-maker.fm-popup .board-screen-bar { width:100%; justify-content:center; border:0; background:none; }
+#face-maker.fm-popup .board-screen-bar .bs-back { display:none !important; }
+#face-maker.fm-popup .bs-title { color:#54290b; font:900 1.1rem/1.2 'Jua',sans-serif; }
+#face-maker.fm-popup .fm-hint, #face-maker.fm-popup .fm-name-label { color:#6a3d12; }
+#face-maker.fm-popup :is([data-fm-save],[data-fm-save-profile]) { display:none !important; }
+#face-maker.fm-popup .fm-stage { padding:8px 14px; }
+#face-maker.fm-popup .fm-crop { width:62%; }
+#face-maker.fm-popup .fm-priv { margin-top:4px; padding:4px 14px 8px; color:#9a7a55; }
+#face-maker.fm-popup .fm-pop-btns { display:flex; justify-content:center; gap:12px; width:86%; }
+#face-maker.fm-popup .fm-pop-btns > button { position:relative; flex:1 1 0; height:46px; border:0; background:none; padding:0; display:flex; justify-content:center; align-items:center; color:#fff; font:900 1.05rem/1 'Jua',sans-serif; cursor:pointer; --sr-edge:3px; --sr-radius:999px; }
+#face-maker.fm-popup .fm-pop-save { --sr-face:linear-gradient(180deg,#74e389 0%,#47cc6a 46%,#2ea951 100%); --sr-rim:linear-gradient(180deg,#d4ffbf,#62e983 24%,#16873c 75%,#0d5e29); --sr-highlight:#d5ffdc; --sr-outline:#0c5a26; }
+#face-maker.fm-popup .fm-pop-cancel { --sr-face:linear-gradient(180deg,#ff8181 0%,#f04b4b 46%,#d83232 100%); --sr-rim:linear-gradient(180deg,#ffd2d2,#ff9696 24%,#b72c2c 75%,#8f2020); --sr-highlight:#ffd8d8; --sr-outline:#8f2020; }
+#face-maker.fm-popup .fm-pop-btns > button:active { transform:translateY(2px); }

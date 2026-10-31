@@ -36,7 +36,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@700&family=Jua&family=Lilita+One&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../cosmic-theme.css">
 <link rel="stylesheet" href="../common/settings.css">
-<link rel="stylesheet" href="style.css?v=1531-C">
+<link rel="stylesheet" href="style.css?v=1532-C">
 <link rel="stylesheet" href="roundmap-window.css">
 <style>
   /* 로딩 스플래시 — style.css 로딩 전에도 바로 뜨게 인라인. */
@@ -678,6 +678,11 @@
             <button type="button" class="fm-save" data-fm-save data-i18n="mole.fm.save">저장</button>
           </div>
         </div>
+        <!-- V1532 C: 스코어 프로필 팝업 전용 [저장][취소] — 상점 확인 팝업과 같은 버튼 -->
+        <div class="fm-pop-btns">
+          <button type="button" class="ws-action-frame fm-pop-save" data-fm-pop-save><span data-i18n="mole.fm.save">저장</span></button>
+          <button type="button" class="ws-action-frame fm-pop-cancel" data-fm-cancel><span data-i18n="mole.skl.restoreCancel">취소</span></button>
+        </div>
         <p class="fm-priv" data-i18n="mole.fm.priv">사진은 이 기기에서만 처리돼요. 업로드하지 않아요.</p>
       </div>
 
@@ -1003,7 +1008,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1531 C</div>
+        <div id="build-tag" aria-hidden="true">V 1532 C</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1037,7 +1042,7 @@
 <script src="js/skills.js"></script>
 <script src="js/photo-studio.js"></script>
 <script src="js/face-detect.js"></script>
-<script src="js/face-maker.js"></script>
+<script src="js/face-maker.js?v=1532-C"></script>
 <script src="js/shop-scenery-v1486.js"></script>
 <script src="js/shop-models-v1509.js?v=1524-opt1"></script>
 <script src="js/shop.js?v=1531-C"></script>
@@ -1099,7 +1104,7 @@ window.FGH.rollOut = function (el, done) {
 <script src="js/region-reveal.js"></script>
 <script src="js/hud.js"></script>
 <script src="js/sky.js"></script>
-<script src="js/game.js?v=1531-C"></script>
+<script src="js/game.js?v=1532-C"></script>
 <script>window.FGH.I18N.applyStatic(document);</script>
 <script src="js/asset-loader-v1477.js"></script>
 <script>
@@ -1289,7 +1294,7 @@ window.FGH.rollOut = function (el, done) {
         var gate = window.__moleAssetGate;
         function waitForCurrentWorker(registration) {
           return new Promise(function (resolve, reject) {
-            var latest = 'v=1531-C';
+            var latest = 'v=1532-C';
             var done = false;
             var timer = setTimeout(function () { finish(); }, 25000);
             function finish(error) {
@@ -1316,7 +1321,7 @@ window.FGH.rollOut = function (el, done) {
           console.warn('Starting while service worker registration continues in background');
           if (gate) gate.resolveCache();
         }, 30000);
-        navigator.serviceWorker.register('sw.js?v=1531-C').then(waitForCurrentWorker).then(function () {
+        navigator.serviceWorker.register('sw.js?v=1532-C').then(waitForCurrentWorker).then(function () {
           clearTimeout(registrationTimer);
           if (gate) gate.resolveCache();
         }).catch(function (error) {

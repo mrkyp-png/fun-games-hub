@@ -425,21 +425,26 @@
     av.style.backgroundImage = pic ? 'url("' + pic + '")' : 'url("assets/moles/mole1.png")';
   }
   // 프로필 사진 변경 — 스코어 화면에서 열고 완료/취소하면 해당 화면으로 복귀.
+  // V1532 C 사용자: 스코어 화면 위에 팝업 창으로 열어 아이디·사진 입력(화면 이동 없음).
   function editProfileAvatar() {
-    screenNav.show('face-maker');
+    const fm = document.getElementById('face-maker');
+    const close = () => { fm.hidden = true; fm.classList.remove('fm-popup'); };
     faceMaker.open({
       profile: true,
+      popup: true,
+      onCancel: close,
       onDone: (dataUrl, userId) => {
         try {
           if (dataUrl) localStorage.setItem('mole.profilePic', dataUrl);
           localStorage.setItem('mole.profileName', userId);
         } catch (e) { alert(I18N.t('mole.fm.priv')); return; }
-        screenNav.back();
+        close();
         refreshHubAvatar();
         if (scoreScreen) scoreScreen.refresh();
         if (moreMenu) moreMenu.refresh();
       }
     });
+    fm.hidden = false;
   }
 
   // 라이트 ON/DIM/OFF — 더보기 알약(mm-pill)과 다이얼패드 ✱("두더지팡") 팝업(light-popup)이
