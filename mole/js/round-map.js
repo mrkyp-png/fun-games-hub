@@ -284,7 +284,13 @@
     var panByLight = { easy: 0, mid: 0, legend: 0 };
     var panGesture = null, panSuppressClickUntil = 0, panRaf = 0;
     var pageOrder = ['easy', 'mid', 'legend'];
-    function panLimit() { return Math.max(36, el.clientWidth * .2); }
+    // V1538 C 사용자: 끝까지 끌어도 지도 밖 빈 곳(검은색)이 보이지 않게 — 그림이 화면 밖으로 남는 폭까지만 끌림.
+    // 바위·지도(1.0배)와 앞 액자틀(4% 확대, 1.2배 이동) 중 남는 폭이 더 작은 쪽 기준.
+    function panLimit() {
+      var stage = el.querySelector('.rm-stage'), sw = stage ? stage.getBoundingClientRect().width : 0, w = el.clientWidth;
+      if (!sw || !w) return 0;
+      return Math.max(0, Math.min((sw - w) / 2, (sw * 1.04 - w) / 2 / 1.2));
+    }
     function clampPan(value) { var limit = panLimit(); return Math.max(-limit, Math.min(limit, value)); }
     function applyPan(light) {
       el.style.setProperty('--rm-pan-x', (panByLight[light || view] || 0).toFixed(1) + 'px');
