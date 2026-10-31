@@ -20,7 +20,8 @@
 // V1538 C: round map 15% see-through, drag parallax (frame 1.2x, rear 0.8x), pan limited to image overhang (no black edge).
 // V1539 C: round map scenery not see-through, stronger pan brightness (65-100%) and edge shadows on all three maps, top glow removed.
 // V1540 C: home 리듬팡·두더지팡 new girl/boy mole characters (pop out of box), GO 30% smaller and right; round map pan effects removed, scenery brightness fixed 85%.
-const CACHE = 'mole-game-v1540-C';
+// V1541 C: new in-game mole (rise 6 + hit faces 5, no peek frames, multi-hit stays in place), bomb mole uses new rise1, hammer aim for new mole.
+const CACHE = 'mole-game-v1541-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -590,6 +591,17 @@ const SHELL = [
   './assets/hippo/sad1.png',
   './assets/hippo/sad2.png',
   './assets/hippo/sad3.png',
+  './assets/moles/mole2-rise1.png',
+  './assets/moles/mole2-rise2.png',
+  './assets/moles/mole2-rise3.png',
+  './assets/moles/mole2-rise4.png',
+  './assets/moles/mole2-rise5.png',
+  './assets/moles/mole2-rise6.png',
+  './assets/moles/mole2-hit1.png',
+  './assets/moles/mole2-hit2.png',
+  './assets/moles/mole2-hit3.png',
+  './assets/moles/mole2-hit4.png',
+  './assets/moles/mole2-hit5.png',
   './assets/moles/mole1.png',
   './assets/moles/mole-head1.png',
   './assets/moles/mole-peek1.png',

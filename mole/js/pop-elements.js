@@ -27,6 +27,7 @@
       return !!(b && b.classList.contains('mole-board--invincible'));
     } catch (e) { return false; }
   }
+  const HIT_FACE_DELAY_MS = 170; // V1541 C: 맞은 표정은 망치가 닿는 순간에 — spawn-scheduler SINK_DELAY(0.17s)와 같게
   const STEP_SEC = 0.055;       // 등장/빠끔 이동: 깊이 한 칸이 화면에 머무는 시간 — 빠르게
   const DYING_STEP_SEC = 0.144; // 타격 후: 전신 그대로 구멍 아래로 "천천히" 미끄러진다 (0→4 ≈ 0.58s)
 
@@ -128,6 +129,8 @@
         // 3→2→1→0 을 그냥 지나치기만 해도 빠끔 프레임을 스치며 "커졌다 작아지는" 것처럼
         // 보이는 버그가 있었음(사용자 보고, 챕터4).
         multiHitAnimal: pop.type === 'animal' && pop.hitsRequired > 1,
+        // V1541 C: 두더지 맞은 표정 — hitsSeen(판정된 타수) → hitAt 뒤 hits(보이는 타수)로 반영, face = 1타 표정(1~3 무작위)
+        bomb: !!pop.bombKind, hits: 0, hitsSeen: 0, hitAt: 0, face: 1 + Math.floor(Math.random() * 3),
         emergePlayed: false // 전신으로 다 올라온 순간(사용자 지정) 스쿼시&스트레치 1회용 플래그
       };
       render(m);
@@ -138,9 +141,10 @@
     function fileFor(m, depth) {
       if (depth >= GONE_DEPTH) return null;
       if (m.kind === 'item') return 'shield';   // 실드 아이템 — 고정 스프라이트
-      // 타격 후(dying)엔 빠끔 프레임으로 안 바꾸고 전신 그대로 구멍 아래로 내려보낸다.
+      // V1541 C: 두더지는 깊이와 상관없이 상승 그림, 맞으면 표정 그림(침몰 중에도 그대로).
       if (m.kind === 'mole') {
-        return m.dying ? 'mole' + (m.poseIndex + 1) : MS.fileForDepth(Math.round(depth), m.poseIndex);
+        if (m.bomb) return MS.riseFile(0); // 폭탄 든 두더지 = 새 상승 1번, 폭탄 위치는 그대로
+        return m.hits > 0 ? MS.hitFile(m.hits, m.face) : MS.riseFile(m.poseIndex);
       }
       const base = MS.obstacleFile(m.kind, m.poseIndex);
       // 동물 다타(챕터8, multiHitAnimal 인 것만) — 침몰 중엔 두더지처럼 전신 그대로, 아니면
@@ -223,7 +227,7 @@
 
     function targetFor(pop) {
       if (pop.dying) return GONE_DEPTH;
-      if (pop.type === 'mole') return MS.restingDepth(pop.hitsRequired, pop.hitsTaken);
+      if (pop.type === 'mole') return 0; // V1541 C: 다타 두더지도 제자리(빼꼼 단계 없음)
       // 동물 다타(챕터8 전용, 사용자 지정) — hitsRequired>1 일 때만 두더지처럼 빠끔 단계를 밟는다.
       if (pop.type === 'animal' && pop.hitsRequired > 1) return MS.animalRestingDepth(pop.hitsRequired, pop.hitsTaken);
       return 0;
@@ -268,6 +272,12 @@
         }
         m.dying = !!pop.dying;
         m.targetDepth = targetFor(pop);
+        if (m.kind === 'mole' && !m.bomb) {
+          // 단타는 hitsTaken 이 0 인 채 killed 로 끝나서 1타로 센다.
+          const seen = pop.killed ? Math.max(1, pop.hitsTaken) : pop.hitsTaken;
+          if (seen > m.hitsSeen) { m.hitsSeen = seen; m.hitAt = now + HIT_FACE_DELAY_MS; }
+          if (m.hits < m.hitsSeen && now >= m.hitAt) { m.hits = m.hitsSeen; render(m); }
+        }
       });
 
       pops.forEach((m) => advance(m, dt));
@@ -298,8 +308,7 @@
       pops.forEach((m) => {
         if (key || m.regionId !== regionId || m.dying) return;
         if (m.kind === 'mole') {
-          const d = Math.round(m.shownDepth);
-          key = d <= 0 ? 'full' : d === 1 ? 'peek1' : d === 2 ? 'peek2' : 'helmet';
+          key = 'mole2'; // V1541 C: 다타도 제자리 — 늘 새 두더지 타격점
         } else if (m.kind === 'animal') {
           const d = Math.round(m.shownDepth);
           key = d <= 0 ? 'full' : d === 1 ? 'peek1' : 'peek2';

@@ -1,35 +1,23 @@
 const assert = require('assert');
 const S = require('../js/mole-sprites.js');
 
-// 깊이 사다리: 0 전신 → 1 빠끔(눈) → 2 빠끔(코) → 3 모자 → (4 사라짐)
+// V1541 C: 빼꼼·머리 단계 폐지 — 상승 6포즈 + 맞은 표정
 
-// 1) 단타 두더지는 항상 깊이 0(전신)에서 대기
+// 1) 상승 그림: poseIndex 0~5 → mole2-rise1~6
 {
-  assert.strictEqual(S.restingDepth(1, 0), 0);
+  assert.strictEqual(S.riseFile(0), 'mole2-rise1');
+  assert.strictEqual(S.riseFile(5), 'mole2-rise6');
 }
 
-// 2) 2히트 두더지: 등장은 전신, 한 대 맞으면 빠끔(코) 깊이에서 멈춤
+// 2) 맞은 표정: 1타 = 고른 표정, 2타 = 눈물(1타가 눈물이면 O입), 3타 = 골뱅이, 4타 = 기절
 {
-  assert.strictEqual(S.restingDepth(2, 0), 0);
-  assert.strictEqual(S.restingDepth(2, 1), 2);
-}
-
-// 3) 3히트 두더지: 전신 → 빠끔(눈) → 빠끔(코) 로 한 칸씩
-{
-  assert.strictEqual(S.restingDepth(3, 0), 0);
-  assert.strictEqual(S.restingDepth(3, 1), 1);
-  assert.strictEqual(S.restingDepth(3, 2), 2);
-  assert.strictEqual(S.restingDepth(3, 3), 2, '3타(처치)째 = 깊이 3(모자만) 아님, 2로 클램프');
-}
-
-// 4) 깊이 → 스프라이트 파일
-{
-  assert.strictEqual(S.fileForDepth(0, 0), 'mole1', 'poseIndex 0 → mole1');
-  assert.strictEqual(S.fileForDepth(0, 7), 'mole8', 'poseIndex 7 → mole8');
-  assert.strictEqual(S.fileForDepth(1, 3), 'mole-head4'); // v1018 새 그림: 깊이1 = 같은 포즈 머리
-  assert.strictEqual(S.fileForDepth(2, 3), 'mole-peek4'); // 깊이2 = 같은 포즈 빼꼼
-  assert.strictEqual(S.fileForDepth(3, 3), 'helmet');
-  assert.strictEqual(S.fileForDepth(4, 3), null, '깊이 4 이상은 사라진 상태(그림 없음)');
+  assert.strictEqual(S.hitFile(0, 1), null);
+  assert.strictEqual(S.hitFile(1, 1), 'mole2-hit1');
+  assert.strictEqual(S.hitFile(1, 3), 'mole2-hit3');
+  assert.strictEqual(S.hitFile(2, 1), 'mole2-hit2');
+  assert.strictEqual(S.hitFile(2, 2), 'mole2-hit3', '1타 눈물이면 2타는 O입');
+  assert.strictEqual(S.hitFile(3, 1), 'mole2-hit4');
+  assert.strictEqual(S.hitFile(4, 1), 'mole2-hit5');
 }
 
 // 5) 스프라이트 URL 규칙
@@ -38,9 +26,9 @@ const S = require('../js/mole-sprites.js');
   assert.strictEqual(S.spriteUrl('hole'), 'assets/moles/hole.png');
 }
 
-// 6) 포즈 개수 (파란 모자·팔벌린 포즈 제외 → 8종)
+// 6) 포즈 개수 (V1541 C 상승 6종)
 {
-  assert.strictEqual(S.POSE_COUNT, 15);
+  assert.strictEqual(S.POSE_COUNT, 6);
 }
 
 // 7) sink 보간: 깊이 0 = 안 내려감, 깊이 4 = 클립 밖(>100%), 중간값은 단조 증가

@@ -10,9 +10,10 @@
   // 모든 프레임(전신 9종 + 빠끔 2종 + 모자)은 slice-mole-sprites.py 가 헬멧 폭 기준으로
   // 스케일을 맞춰 같은 400x428 캔버스에 얹어 두므로, 게임은 한 박스에 그대로 그리면 된다.
 
-  // v1018(사용자 지정): 새 3D 두더지(바탕화면 "케릭 UI 및 에셋", 파란 B 헬멧) 15포즈 — 포즈마다 짝 맞는 머리·빼꼼.
-  //   깊이 사다리: 0 전신(moleN) → 1 머리(mole-headN) → 2 빼꼼(mole-peekN) → 3 모자(helmet) → 4 사라짐
-  const POSE_COUNT = 15;
+  // V1541 C 사용자: 새 두더지 — 빼꼼·머리 단계 폐지. 상승 6포즈(mole2-rise1~6) + 맞은 표정.
+  //   1타 = 3종 무작위(hit1 아야·hit2 눈물·hit3 O입), 2타 = 눈물(1타가 눈물이면 O입), 3타 = 골뱅이(hit4), 4타 = 기절(hit5).
+  //   다타 두더지도 제자리(전신 높이)에서 표정만 바뀐다. 폭탄 든 두더지는 상승 1번 + 폭탄(위치 그대로).
+  const POSE_COUNT = 6;
   // 깊이별 translateY (프레임 높이 대비 %). 프레임 교체가 "숨는" 연출의 대부분을 하고,
   // translateY 는 내려가는 "움직임"만 살짝 더한다. 4는 클립 밖으로 완전히 내려보냄.
   const DEPTH_SINK = [0, 6, 11, 15, 120];
@@ -38,24 +39,16 @@
     return HEAD_ANCHOR[spriteFile] || HEAD_ANCHOR.mole1;
   }
 
-  function restingDepth(hitsRequired, hitsTaken) {
-    if (hitsRequired === 2) return hitsTaken === 0 ? 0 : 2;
-    // 3타: 0/1/2타는 깊이 0/1/2 에서 쉰다. 3타(처치)째엔 pop.killed 로 넘어가 SINK_DELAY 동안
-    // targetFor 가 여전히 이 함수를 부르는데, 그때 hitsTaken=3 이라 예전엔 깊이 3(모자만)로
-    // 잠깐 가라앉는 버그가 있었음 — 2 로 클램프해 다른 다타 두더지와 똑같이 빠끔에서 침몰 시작.
-    if (hitsRequired === 3) return Math.min(hitsTaken, 2);
-    // 4타(챕터 5 전용): 전신 → 빠끔1 → 빠끔2 → 모자만. 처치째엔 3 으로 클램프(3타와 같은 패턴).
-    if (hitsRequired === 4) return Math.min(hitsTaken, 3);
-    return 0;
+  function riseFile(poseIndex) {
+    return 'mole2-rise' + ((poseIndex || 0) % POSE_COUNT + 1);
   }
 
-  function fileForDepth(depth, poseIndex) {
-    const n = (poseIndex || 0) + 1;
-    if (depth <= 0) return 'mole' + n;
-    if (depth === 1) return 'mole-head' + n;
-    if (depth === 2) return 'mole-peek' + n;
-    if (depth === 3) return 'helmet';
-    return null; // depth >= 4
+  // hits = 지금까지 맞은 횟수(1~), face = 1타 때 고른 표정(1 아야 · 2 눈물 · 3 O입).
+  function hitFile(hits, face) {
+    if (hits <= 0) return null;
+    if (hits === 1) return 'mole2-hit' + face;
+    if (hits === 2) return face === 2 ? 'mole2-hit3' : 'mole2-hit2'; // 같은 얼굴 연속 방지
+    return hits === 3 ? 'mole2-hit4' : 'mole2-hit5';
   }
 
   // 연속 깊이값(애니 중간 상태)에 대한 부드러운 sink 보간.
@@ -108,8 +101,9 @@
   function preloadAll() {
     if (preloadRefs) return preloadRefs;
     const files = [];
-    for (let i = 1; i <= POSE_COUNT; i++) files.push('mole' + i, 'mole-head' + i, 'mole-peek' + i);
-    files.push('helmet', 'hole', 'hole-front', 'shield');
+    for (let i = 1; i <= POSE_COUNT; i++) files.push('mole2-rise' + i);
+    for (let i = 1; i <= 5; i++) files.push('mole2-hit' + i);
+    files.push('hole', 'hole-front', 'shield');
     ['spring', 'summer', 'autumn', 'winter', 'night'].forEach(function (s) {
       files.push('hole-' + s, 'hole-front-' + s);
     });
@@ -138,7 +132,7 @@
 
   const api = {
     POSE_COUNT, OBSTACLE_COUNT, HEAD_ANCHOR,
-    restingDepth, fileForDepth, sinkForDepth, obstacleFile, spriteUrl, preloadAll, headAnchor,
+    riseFile, hitFile, sinkForDepth, obstacleFile, spriteUrl, preloadAll, headAnchor,
     animalRestingDepth, animalFileForDepth
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
