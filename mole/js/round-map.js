@@ -284,18 +284,15 @@
     var panByLight = { easy: 0, mid: 0, legend: 0 };
     var panGesture = null, panSuppressClickUntil = 0, panRaf = 0;
     var pageOrder = ['easy', 'mid', 'legend'];
-    // V1538 C 사용자: 끝까지 끌어도 지도 밖 빈 곳(검은색)이 보이지 않게 — 그림이 화면 밖으로 남는 폭까지만 끌림.
-    // 바위·지도(1.0배)와 앞 액자틀(4% 확대, 1.2배 이동) 중 남는 폭이 더 작은 쪽 기준.
+    // V1538 C 사용자: 끝까지 끌어도 지도 밖 빈 곳(검은색)이 보이지 않게 — 그림이 화면 밖으로 남는 폭까지만 끌림(V1540 C: 시차 제거로 지도 기준만).
     function panLimit() {
       var stage = el.querySelector('.rm-stage'), sw = stage ? stage.getBoundingClientRect().width : 0, w = el.clientWidth;
       if (!sw || !w) return 0;
-      return Math.max(0, Math.min((sw - w) / 2, (sw * 1.04 - w) / 2 / 1.2));
+      return Math.max(0, (sw - w) / 2);
     }
     function clampPan(value) { var limit = panLimit(); return Math.max(-limit, Math.min(limit, value)); }
     function applyPan(light) {
       el.style.setProperty('--rm-pan-x', (panByLight[light || view] || 0).toFixed(1) + 'px');
-      // V1537 C: 좌우 이동 비율(-1~1) — 뒷 배경 빛에 따른 밝기·그림자 변화용
-      el.style.setProperty('--rm-pan-k', ((panByLight[light || view] || 0) / panLimit()).toFixed(3));
     }
     function stopPanMomentum() {
       if (panRaf) { root.cancelAnimationFrame(panRaf); panRaf = 0; }
