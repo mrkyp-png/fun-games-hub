@@ -36,7 +36,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@700&family=Jua&family=Lilita+One&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../cosmic-theme.css">
 <link rel="stylesheet" href="../common/settings.css">
-<link rel="stylesheet" href="style.css?v=1529-C">
+<link rel="stylesheet" href="style.css?v=1531-C">
 <link rel="stylesheet" href="roundmap-window.css">
 <style>
   /* 로딩 스플래시 — style.css 로딩 전에도 바로 뜨게 인라인. */
@@ -921,7 +921,7 @@
 
       <div class="board-screen info-screen" id="help-screen" hidden>
         <div class="board-screen-bar">
-          <button type="button" class="bs-back game-back" data-back="help" aria-label="뒤로"><img loading="lazy" decoding="async" src="assets/score/icon-back-red.svg" alt=""></button>
+          <button type="button" class="bs-back game-close" data-back="help" aria-label="닫기" data-i18n-aria-label="common.back"><img loading="lazy" decoding="async" src="assets/score/icon-close-red.svg" alt=""></button>
           <span class="bs-title" data-i18n="mole.more.help">게임설명서</span>
         </div>
         <div class="info-body">
@@ -940,7 +940,7 @@
 
       <div class="board-screen info-screen" id="privacy-screen" hidden>
         <div class="board-screen-bar">
-          <button type="button" class="bs-back game-back" data-back="privacy" aria-label="뒤로"><img loading="lazy" decoding="async" src="assets/score/icon-back-red.svg" alt=""></button>
+          <button type="button" class="bs-back game-close" data-back="privacy" aria-label="닫기" data-i18n-aria-label="common.back"><img loading="lazy" decoding="async" src="assets/score/icon-close-red.svg" alt=""></button>
           <span class="bs-title" data-i18n="mole.more.privacy">개인정보·라이센스</span>
         </div>
         <div class="info-body">
@@ -1003,7 +1003,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1530 C</div>
+        <div id="build-tag" aria-hidden="true">V 1531 C</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1040,7 +1040,7 @@
 <script src="js/face-maker.js"></script>
 <script src="js/shop-scenery-v1486.js"></script>
 <script src="js/shop-models-v1509.js?v=1524-opt1"></script>
-<script src="js/shop.js?v=1524-opt1"></script>
+<script src="js/shop.js?v=1531-C"></script>
 <script src="js/daily.js?v=1529-C"></script>
 <script src="js/quest.js?v=1524-opt1"></script>
 <script>
@@ -1068,7 +1068,7 @@ window.FGH.rollOut = function (el, done) {
 };
 </script>
 <script src="js/workshop-enhance.js?v=1524-opt1"></script>
-<script src="js/workshop.js?v=1527-C"></script>
+<script src="js/workshop.js?v=1531-C"></script>
 <script src="js/round-map-fluids.js"></script>
 <script src="js/round-map-fluid-scenes.js"></script>
 <script src="js/round-map.js"></script>
@@ -1086,7 +1086,7 @@ window.FGH.rollOut = function (el, done) {
 <script src="js/settings-screen.js?v=1527-C"></script>
 <script src="js/inventory-screen.js?v=1524-opt1"></script>
 <script src="js/mailbox.js?v=1524-opt1"></script>
-<script src="js/contact.js"></script>
+<script src="js/contact.js?v=1531-C"></script>
 <script src="js/pop-elements.js"></script>
 <script src="js/hole-layer.js"></script>
 <script src="js/hit-fx.js"></script>
@@ -1099,7 +1099,7 @@ window.FGH.rollOut = function (el, done) {
 <script src="js/region-reveal.js"></script>
 <script src="js/hud.js"></script>
 <script src="js/sky.js"></script>
-<script src="js/game.js?v=1530-C"></script>
+<script src="js/game.js?v=1531-C"></script>
 <script>window.FGH.I18N.applyStatic(document);</script>
 <script src="js/asset-loader-v1477.js"></script>
 <script>
@@ -1289,7 +1289,7 @@ window.FGH.rollOut = function (el, done) {
         var gate = window.__moleAssetGate;
         function waitForCurrentWorker(registration) {
           return new Promise(function (resolve, reject) {
-            var latest = 'v=1530-C';
+            var latest = 'v=1531-C';
             var done = false;
             var timer = setTimeout(function () { finish(); }, 25000);
             function finish(error) {
@@ -1316,7 +1316,7 @@ window.FGH.rollOut = function (el, done) {
           console.warn('Starting while service worker registration continues in background');
           if (gate) gate.resolveCache();
         }, 30000);
-        navigator.serviceWorker.register('sw.js?v=1530-C').then(waitForCurrentWorker).then(function () {
+        navigator.serviceWorker.register('sw.js?v=1531-C').then(waitForCurrentWorker).then(function () {
           clearTimeout(registrationTimer);
           if (gate) gate.resolveCache();
         }).catch(function (error) {

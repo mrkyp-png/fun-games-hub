@@ -1129,9 +1129,12 @@
       if (scenery) scenery.show();
       renderBanner();
       var shopPick = (MG && MG.shopPick) || null;
-      activeTab = shopPick === 'heart' ? 'currency' : (shopPick || 'currency');
-      currencyFilter = shopPick === 'heart' ? 'heart' : null; MG.shopPick = null;
+      // V1531 C 사용자: 홈 3번(티켓) 버튼으로 들어오면 티켓 화면, 그 외(코인 버튼 포함)는 항상 하트 화면.
+      activeTab = shopPick === 'ticket' ? 'ticket' : 'currency';
+      currencyFilter = null; MG.shopPick = null;
       cardsEl.scrollLeft = 0;
+      // V1531 C 사용자: 다시 들어올 때 아래 토글은 항상 첫 줄(하트/코인/티켓)부터. 재화 알약으로 들어온 탭(코인·티켓)도 이 줄에 있다.
+      tabsEl.scrollLeft = 0;
       render();
       animateHudEntrance();
       startGoldZap();

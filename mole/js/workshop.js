@@ -585,6 +585,8 @@
       preloadFrames();
       clearTimers(); clearWorkshopHammer(); enhancement.reset();
       running = false; pending = null; selMat = null; pick.hidden = true;
+      // V1531 C 사용자: 들어올 때마다 무기 탭의 팡팡 캐논(WEAPONS 첫 번째)부터.
+      tab = 'weapon'; idx.weapon = 0;
       el.classList.remove('is-fx', 'is-shake');
       $('[data-ws-fx]').hidden = true;
       render();

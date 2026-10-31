@@ -11,7 +11,9 @@
     var el = opts.root, T = function (k) { return root.FGH.I18N.t(k); };
     var type = 0;
     el.classList.add('ct-screen');
+    // V1531 C 사용자: 오른쪽 위 8px 에 X(닫기) 버튼 — 점수·일일 화면과 같은 공용 game-close.
     el.innerHTML =
+      '<button type="button" class="game-close" data-ct-close aria-label="닫기"><img src="assets/score/icon-close-red.svg" alt=""></button>' +
       '<div class="ct-frame">' +
         '<div class="ct-panel">' +
           '<section class="ct-sec"><b class="ct-lbl" data-k="mole.ct.type"></b>' +
@@ -27,6 +29,7 @@
             '<button type="button" class="ct-send" data-ct-send><img class="ct-trail" src="' + A + 'trail.png" alt=""><img class="ct-plane" src="' + A + 'plane.png" alt=""><span data-k="mole.ct.send"></span></button></div>' +
       '</div>';
     var $ = function (s) { return el.querySelector(s); };
+    $('[data-ct-close]').addEventListener('click', function () { if (opts.onBack) opts.onBack(); });
     var menu = $('[data-ct-menu]'), err = $('[data-ct-err]'), body = $('[data-ct-body]'), mail = $('[data-ct-mail]');
 
     function paint() {

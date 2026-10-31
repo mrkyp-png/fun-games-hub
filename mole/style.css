@@ -2679,7 +2679,7 @@ body { background: var(--lm-page); }
   --w: min(100vw - 20px, 440px, (100dvh - 40px) * 0.47);
 }
 #score-screen.sr-screen::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background: url('assets/score/bg-palace-sides-kept-v1493.jpg') center top / cover no-repeat; filter:brightness(.8); } /* Brightness belongs only to the palace layer, below the untouched carpet. */
+  background: url('assets/score/bg-palace-sides-kept-v1493.jpg') center top / cover no-repeat; filter:brightness(.68); } /* V1531 C: 15% 더 어둡게(.8×.85). Brightness belongs only to the palace layer, below the untouched carpet. */
 .sr-sky { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; clip-path: inset(0 0 70% 0);
   mask-image: linear-gradient(90deg, transparent 6%, #000 19%, #000 81%, transparent 94%); }
 .sr-cloud { position: absolute; left: var(--sc-x); top: 25vh; width: var(--sc-size); height: auto; fill: #f4faff; opacity: 0; pointer-events: none;
@@ -9991,3 +9991,8 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* V1529 C 사용자: 일일 화면 내용 전체를 위로 0.5cm(배경 고정). */
 #daily-screen .dr-stage { top:-0.5cm; }
 #daily-screen .dr-status.dr-pill > span { display:block; line-height:normal; margin:0; padding:0; text-box:trim-both cap alphabetic; }
+/* V1531 C 사용자: 게임설명서·문의하기·개인정보 화면 X = 그 화면 박스의 오른쪽 위 8px. */
+:is(#help-screen,#privacy-screen,#contact-screen) > .game-close, :is(#help-screen,#privacy-screen) .board-screen-bar > .game-close { position:absolute !important; top:8px !important; right:8px !important; }
+/* V1531 C 사용자: 홈 배경만 15% 더 어둡게(색 ×0.85). 버튼·그림은 그대로. */
+#game-screen.is-start { background: linear-gradient(180deg, #b6ccd5 0%, #90bbcf 55%, #7aaeca 100%); }
+#game-screen.is-start .dialpad { background-color: #8dbbd0 !important; }

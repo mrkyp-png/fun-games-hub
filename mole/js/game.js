@@ -927,6 +927,8 @@
         if (action === 'home') { showStartScreen(); return; }
         if (action === 'profile') { editProfileAvatar(); return; }
         if (action === 'rhythm') { openRhythm(); return; } // 리듬팡(v807)
+        // V1531 C 사용자: 두더지팡 그림은 GO 와 같이 홈일 때만 진입(메일함·설정·아이템이 위에 열려 있으면 무시).
+        if (action === 'lightMode' && screenNav && screenNav.current()) return;
         // V1372 C 사용자: 두더지팡 박스도 GO 버튼과 같은 기능(두더지팡 라운드 지도 진입) — 아래 sub 맵 lightMode → roundmap-screen
         const sub = { shop: 'shop-screen', score: 'score-screen', daily: 'daily-screen',
           quest: 'quest-screen', locker: 'workshop-screen',
