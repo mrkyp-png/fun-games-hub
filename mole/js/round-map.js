@@ -288,6 +288,8 @@
     function clampPan(value) { var limit = panLimit(); return Math.max(-limit, Math.min(limit, value)); }
     function applyPan(light) {
       el.style.setProperty('--rm-pan-x', (panByLight[light || view] || 0).toFixed(1) + 'px');
+      // V1537 C: 좌우 이동 비율(-1~1) — 뒷 배경 빛에 따른 밝기·그림자 변화용
+      el.style.setProperty('--rm-pan-k', ((panByLight[light || view] || 0) / panLimit()).toFixed(3));
     }
     function stopPanMomentum() {
       if (panRaf) { root.cancelAnimationFrame(panRaf); panRaf = 0; }
@@ -416,7 +418,7 @@
       }, true);
     }
 
-    // V1370 C 사용자 지정: 아마추어 지도에서 현재 라운드 두더지가 말풍선으로 라운드 설명("존경하는 대표님, … 즐거운 라운딩 되세요!")
+    // V1370 C 사용자 지정: 아마추어 지도에서 현재 라운드 두더지가 말풍선으로 라운드 설명(V1537 C 사용자: 앞뒤 인사말 삭제, 설명만)
     // 옛 시작 설명 화면(타이핑) 대신. 설명 끄기 = localStorage 'mole.rm.tipOff'(끄기 버튼 위치는 사용자가 지정 예정).
     function paintTipBubble(cur) {
       var old = el.querySelector('.rm-tip'); if (old) old.remove();
