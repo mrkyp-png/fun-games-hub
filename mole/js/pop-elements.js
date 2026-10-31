@@ -46,51 +46,17 @@
     }
 
     // 폭탄 든 두더지(2026-09-14 확정, [[mole-bomb-holding-mechanic]]) — mole8.png(보석 든 포즈)
-    // 위에 💣 + 반짝이 60개 + 글로우(일반=빨강/강력=초록) 오버레이. 좌표는 목업(mole8-bomb.html)에서
+    // 위에 💣 + 글로우(일반=빨강/강력=초록) 오버레이(V1544 C: 반짝이 삭제). 좌표는 목업(mole8-bomb.html)에서
     // 실측한 값 — mole-pop-img 를 cqw 컨테이너로 삼아 %로 따라간다.
     const BOMB_CENTER = { x: 26.8, y: 70.9 }; // mole-pop-img 기준 %
     const BOMB_SIZE_CQW = 28.3;               // font-size = 이미지 폭의 %
-    const SPARK_OFFSET = { x: -8.3, y: -8.1 }; // 폭탄 중심 대비 반짝이 클립 중심(%, 폭 기준)
-    const SPARK_SIZE_CQW = 8.1;
-    function mulberry32(seed) {
-      return function () {
-        seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
-        let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-      };
-    }
-    function buildSparkCluster(container, seedBase, offX, offY, count, radiusCqw) {
-      const rnd = mulberry32(seedBase);
-      for (let i = 0; i < count; i++) {
-        const el = document.createElement('div');
-        el.className = 'bomb-spark';
-        const ang = rnd() * Math.PI * 2;
-        const r = rnd() * radiusCqw;
-        const size = (0.3 + rnd() * 0.7).toFixed(2);
-        el.style.left = 'calc(50% + ' + (offX + Math.cos(ang) * r).toFixed(2) + 'cqw)';
-        el.style.top = 'calc(50% + ' + (offY + Math.sin(ang) * r).toFixed(2) + 'cqw)';
-        el.style.width = size + 'cqw';
-        el.style.height = size + 'cqw';
-        el.style.animationDuration = (0.8 + rnd() * 0.8).toFixed(2) + 's';
-        el.style.animationDelay = (-rnd() * 1.6).toFixed(2) + 's';
-        container.appendChild(el);
-      }
-    }
     function buildBombOverlay(kind) {
       const box = document.createElement('div');
       box.className = 'mole-bomb-box';
       box.innerHTML =
         '<div class="mole-bomb-group">' +
         '  <div class="mole-bomb-emoji mole-bomb-emoji--' + kind + '">\u{1F4A3}</div>' +
-        '  <div class="mole-bomb-sparks"></div>' +
         '</div>';
-      const sparkWrap = box.querySelector('.mole-bomb-sparks');
-      const seed = Math.floor(Math.random() * 1e6);
-      buildSparkCluster(sparkWrap, seed, 0, 0, 22, 2.4);
-      buildSparkCluster(sparkWrap, seed + 1, -0.9, 0.9, 15, 2.4);
-      buildSparkCluster(sparkWrap, seed + 2, -0.9, -0.9, 15, 2.4);
-      buildSparkCluster(sparkWrap, seed + 3, 0.9, 0, 8, 2.4);
       return box;
     }
 
@@ -179,9 +145,9 @@
         const k = span > 0 ? Math.min(1, Math.max(0, (m.shownDepth - m.dyingFrom) / span)) : 1;
         const wob = Math.sin(k * Math.PI * 6) * (1 - k) * 9;       // 감쇠하는 좌우 흔들림
         const grow = 1 + k * 0.12;
-        const blur = k > 0.55 ? (k - 0.55) * 9 : 0;
         m.img.style.opacity = k < 0.5 ? '1' : String(Math.max(0, 1 - (k - 0.5) / 0.5));
-        m.img.style.filter = 'brightness(0.14) sepia(1) contrast(1.4)' + (blur ? ' blur(' + blur.toFixed(1) + 'px)' : '');
+        // V1544 C: 매 프레임 바뀌던 blur 필터 삭제(그을림 색은 한 번만 — 다시 그리지 않음), 흐려지는 건 투명도로
+        if (!m.charred) { m.charred = true; m.img.style.filter = 'brightness(0.14) sepia(1) contrast(1.4)'; }
         m.img.style.transform = 'translate(-50%, -2%) rotate(' + wob.toFixed(1) + 'deg) scale(' + grow.toFixed(3) + ')';
         return;
       }

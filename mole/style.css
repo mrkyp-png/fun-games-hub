@@ -920,17 +920,14 @@ body { background: var(--lm-page); }
   line-height: 1;
   transform: translate(-50%, -50%) scaleX(-1);
 }
-.mole-bomb-emoji--normal {
-  filter:
-    drop-shadow(0 0 0.7cqw #ff2a1a) drop-shadow(0 0 1.4cqw #ff2a1a)
-    drop-shadow(0 0 2.3cqw #ff2a1a) drop-shadow(0 0 3.7cqw #ff3020);
+.mole-bomb-emoji--normal, .mole-bomb-emoji--strong { /* V1544 C 사용자: 글로우 삭제 → 외곽선 녹색 한 줄 + 커졌다 작아졌다만 */
+  filter: drop-shadow(0 0 0.3cqw #00ff3c) drop-shadow(0 0 0.3cqw #00ff3c) drop-shadow(0 0 0.8cqw #1fe03a);
+  animation: bomb-pulse 0.9s ease-in-out infinite;
 }
-.mole-bomb-emoji--strong {
-  filter:
-    drop-shadow(0 0 1cqw #baffb0) drop-shadow(0 0 2cqw #2adf3a)
-    drop-shadow(0 0 3.4cqw #2adf3a) drop-shadow(0 0 5.2cqw #30e030)
-    drop-shadow(0 0 7.5cqw #30e030);
-  animation: bomb-strong-glow-pulse 0.9s ease-in-out infinite;
+.mole-bomb-emoji--strong { filter: brightness(2) sepia(1) saturate(30) hue-rotate(-25deg) saturate(3) contrast(1.4) drop-shadow(0 0 0.3cqw #00ff3c) drop-shadow(0 0 0.3cqw #00ff3c) drop-shadow(0 0 0.8cqw #1fe03a); } /* 강력 = 빨간 폭탄 */
+@keyframes bomb-pulse {
+  0%, 100% { transform: translate(-50%, -50%) scaleX(-1) scale(1); }
+  50% { transform: translate(-50%, -50%) scaleX(-1) scale(1.15); }
 }
 
 /* 강아지(-x, 시간 페널티 방해물) 오른쪽 앞발 위에 폭탄 오버레이(사용자 지정 — 기존 폭탄
@@ -944,35 +941,7 @@ body { background: var(--lm-page); }
   transform: translate(-50%, -50%) scaleX(-1);
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
 }
-@keyframes bomb-strong-glow-pulse {
-  0%, 100% { filter:
-    drop-shadow(0 0 1cqw #baffb0) drop-shadow(0 0 2cqw #2adf3a)
-    drop-shadow(0 0 3.4cqw #2adf3a) drop-shadow(0 0 5.2cqw #30e030)
-    drop-shadow(0 0 7.5cqw #30e030); }
-  50% { filter:
-    drop-shadow(0 0 1.4cqw #d8ffd0) drop-shadow(0 0 2.8cqw #45ff55)
-    drop-shadow(0 0 4.6cqw #45ff55) drop-shadow(0 0 7cqw #45ff40)
-    drop-shadow(0 0 10cqw #45ff40); }
-}
-.mole-bomb-sparks {
-  position: absolute;
-  left: -8.3cqw; top: -8.1cqw;
-  width: 8.1cqw; height: 8.1cqw;
-  transform: translate(-50%, -50%);
-  overflow: hidden;
-  border-radius: 50%;
-}
-.bomb-spark {
-  position: absolute;
-  border-radius: 50%;
-  background: radial-gradient(circle, #fff8dc 0%, #ffce33 55%, transparent 75%);
-  filter: drop-shadow(0 0 0.5cqw rgba(255, 206, 51, 0.9));
-  animation: bomb-spark-twinkle 1s infinite ease-in-out;
-}
-@keyframes bomb-spark-twinkle {
-  0%, 100% { opacity: 0; transform: scale(0.3); }
-  50%      { opacity: 1; transform: scale(1); }
-}
+/* V1544 C 사용자: 폭탄 심지 반짝이(.mole-bomb-sparks/.bomb-spark) 삭제 */
 
 /* 기획서 §14: 마지막 영역 완성 시 일반 영역 완성보다 강한 연출 (반짝임 플래시). */
 .mole-board.sparkle::after {
