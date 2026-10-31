@@ -10011,18 +10011,20 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #face-maker.fm-popup .fm-pop-save { --sr-face:linear-gradient(180deg,#74e389 0%,#47cc6a 46%,#2ea951 100%); --sr-rim:linear-gradient(180deg,#d4ffbf,#62e983 24%,#16873c 75%,#0d5e29); --sr-highlight:#d5ffdc; --sr-outline:#0c5a26; }
 #face-maker.fm-popup .fm-pop-cancel { --sr-face:linear-gradient(180deg,#ff8181 0%,#f04b4b 46%,#d83232 100%); --sr-rim:linear-gradient(180deg,#ffd2d2,#ff9696 24%,#b72c2c 75%,#8f2020); --sr-highlight:#ffd8d8; --sr-outline:#8f2020; }
 #face-maker.fm-popup .fm-pop-btns > button:active { transform:translateY(2px); }
-/* V1537 C 사용자: 라운드 화면 — 맨 뒤 흐린 전체 배경 50% 비침, 지도의 뒷 풍경·바위 발판(계단) 15% 비침+밝기 85%.
+/* V1537 C 사용자: 라운드 화면 — 맨 뒤 흐린 전체 배경 50% 비침, 지도의 뒷 풍경·바위 발판(계단) 밝기 85%(비침 없음, V1539 C).
    캐릭터·ROUND 표지판·설명박스·앞쪽 액자틀·반짝임 효과는 비치지 않음. */
 #roundmap-screen.rm-screen::before { opacity:.5; }
-#roundmap-screen :is(.rm-bg, .rm-rear-bg, .rm-cloud-window, .rm-route-art, [data-rm-rear-fluid]) { opacity:.85; filter:brightness(calc(.85 + .1 * var(--rm-pan-k, 0))); } /* 사용자: 15% 비침(V1538 C) + 밝기 85%. 보석 빛(.rm-glow-layer)·반짝이(.rm-rear-gems)는 그대로 */
+#roundmap-screen :is(.rm-bg, .rm-rear-bg, .rm-cloud-window, .rm-route-art, [data-rm-rear-fluid]) { filter:brightness(calc(.825 + .175 * var(--rm-pan-k, 0))); }
+/* V1539 C 사용자 제안안: 밝기 폭 65~100%. 노말·프로는 앞 그림(바위+액자틀 한 장)도 같이 변함 */
+#roundmap-screen:is([data-light="mid"],[data-light="legend"]) .rm-selected-front { filter:brightness(calc(.825 + .175 * var(--rm-pan-k, 0))); } /* V1539 C 사용자: 비침 없앰, 밝기 85%만. 보석 빛(.rm-glow-layer)·반짝이(.rm-rear-gems)는 그대로 */
 /* V1537 C 사용자: 뒷 배경(위쪽 가운데 하늘·폭포)에서 들어오는 빛 — 좌우로 끌면 빛 자리가 덜 움직여(멀리 있는 빛) 바위에 비친 밝은 곳이 옮겨 가고,
    앞쪽 액자틀이 드리운 옅은 그림자는 반대쪽으로 밀린다. 바위 위·액자틀 아래 한 겹(transform 만 바뀌어 가벼움). 캐릭·표지판·말풍선·반짝이 영향 없음. */
-#roundmap-screen .rm-light-shade { position:absolute; inset:-10% -30%; z-index:1; pointer-events:none;
+#roundmap-screen .rm-light-shade { /* V1539 C 사용자: 위쪽 빛 번짐(뿌옇게 보임) 삭제 — 가장자리 그림자만 */ position:absolute; inset:-10% -30%; z-index:1; pointer-events:none;
   background:
-    radial-gradient(ellipse 34% 30% at calc(50% - var(--rm-pan-k, 0) * 9%) 18%, rgba(255,240,200,.22), rgba(255,240,200,0) 70%),
-    linear-gradient(90deg, rgba(20,10,0,calc(.22 + .14 * var(--rm-pan-k, 0))) 0%, rgba(20,10,0,0) 22%, rgba(20,10,0,0) 78%, rgba(20,10,0,calc(.22 - .14 * var(--rm-pan-k, 0))) 100%);
+    linear-gradient(90deg, rgba(20,10,0,calc(.45 + .25 * var(--rm-pan-k, 0))) 0%, rgba(20,10,0,0) 22%, rgba(20,10,0,0) 78%, rgba(20,10,0,calc(.45 - .25 * var(--rm-pan-k, 0))) 100%);
   transform:translateX(calc(var(--rm-pan-x, 0px) * -.35)); }
 /* V1538 C 사용자(추천안): 좌우로 끌 때 시차 — 앞 액자틀은 바위보다 1.2배 더, 뒷 풍경은 0.8배만 움직여 창 너머를 보는 입체감.
    끌 때만 움직이고 손을 떼면 멈춘다. 가장자리 빈틈이 안 보이게 액자틀만 살짝(4%) 키움. translate 속성이라 기존 drift 애니메이션(transform)과 겹치지 않음. */
 #roundmap-screen.rm-window-map .rm-front-art { translate:calc(var(--rm-pan-x, 0px) * .2) 0; scale:1.04; }
 #roundmap-screen.rm-window-map .rm-parallax-rear { translate:calc(var(--rm-pan-x, 0px) * -.2) 0; }
+#roundmap-screen:is([data-light="mid"],[data-light="legend"]) .rm-light-shade { z-index:3; } /* V1539 C: 노말·프로는 앞 그림이 한 장이라 빛·그림자 겹을 그 위에 */

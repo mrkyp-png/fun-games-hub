@@ -18,7 +18,8 @@
 // V1536 C: no costume glow on in-game moles, no 2D fallback while inventory 3D loads.
 // V1537 C: round map tip greeting removed, rear/route 20% see-through + brightness with pan-linked light/shadow, cosmic layers off.
 // V1538 C: round map 15% see-through, drag parallax (frame 1.2x, rear 0.8x), pan limited to image overhang (no black edge).
-const CACHE = 'mole-game-v1538-C';
+// V1539 C: round map scenery not see-through, stronger pan brightness (65-100%) and edge shadows on all three maps, top glow removed.
+const CACHE = 'mole-game-v1539-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
