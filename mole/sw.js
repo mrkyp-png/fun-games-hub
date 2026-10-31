@@ -12,7 +12,8 @@
 // V1530 C: cannon render fix (comment had swallowed return paint), no 3D redraw on recoil, aim solutions prewarmed.
 // V1531 C: shop/workshop entry screens, mole tap only on home, X buttons on help/contact/privacy, darker home/score backgrounds.
 // V1532 C: score profile photo/ID edit opens as a popup over the score screen.
-const CACHE = 'mole-game-v1532-C';
+// V1533 C: cannon side view max rotation, yaw-only aim, recoil only, shell/flame/smoke start 0.3cm toward hole; home background restored.
+const CACHE = 'mole-game-v1533-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.

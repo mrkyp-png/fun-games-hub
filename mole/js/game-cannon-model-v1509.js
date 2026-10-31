@@ -6,7 +6,7 @@ const HOME={x:.87,y:.845,size:.306},CAMERA={yaw:.7,pitch:.3};
 // Rest line follows the centers of holes 1→5→9 on the 3×3 board. Set it with world-Y rotation;
 // leave the barrel at neutral X pitch so its bore, shot origin, and muzzle effects share that line.
 const REST={bodyYaw:-1.6474,pitch:8}; // V1528 C: 포신 8도 고정 — 15구멍 모두 포신 중심선이 목표를 지남(25도는 아래·왼쪽 구멍 불가)
-const RECOIL_PX=.07; // 최대 반동 = 캐논 표시 크기의 7%
+const RECOIL_PX=.07,SIDE_ROW=.05; // 최대 반동 = 캐논 표시 크기의 7%
 const delta=(a,b)=>Math.atan2(Math.sin(a-b),Math.cos(a-b));
 const mix=(a,b,k)=>({bodyYaw:a.bodyYaw+delta(b.bodyYaw,a.bodyYaw)*k,pitch:a.pitch+(b.pitch-a.pitch)*k});
 function acquire(screen){
@@ -42,15 +42,27 @@ function create(el){
   recoil(kick);
   if(!api.ready&&lastMuzzle){api.ready=true;fallback.hidden=true;}return lastMuzzle;
  }
- // V1528 C 사용자: 몸통은 구멍을 실제로 마주 보는 방향(야오)까지만 돌리고, 포신 위아래 각도로 중심선이 피타격물 중심을 지나게 맞춘다.
+ // V1533 C 사용자: 포신 각도(pitch)는 고정하고 몸통 회전(야오)만으로 포신 중심선이 피타격물 중심을 지나게(구멍을 정면으로 겨눔).
+ // 단 캐논과 같은 줄(맨 아래 줄, 캐논 높이 근처) 목표는 캐논 옆면만 보이는 각도(카메라와 직각)로 두고 포신 각도로만 맞춘다.
  const yawCache=new Map();
  function solveYaw(view,x,y){
   const key=x.toFixed(3)+','+y.toFixed(3)+','+layerWidth+'x'+layerHeight;if(yawCache.has(key))return {...yawCache.get(key)};
-  const guess=view.solveTarget((x-box.x)/box.w,(y-box.y)/box.h),yaw=guess?guess.bodyYaw:REST.bodyYaw;
-  const err=pitch=>{view.setPose({yaw:CAMERA.yaw,cameraPitch:CAMERA.pitch,bodyYaw:yaw,pitch,kick:0});if(!view.muzzle)return 0;const m=toLayer(view.muzzle),want=Math.atan2((y-m.y)*layerHeight,(x-m.x)*layerWidth);return delta(want,view.projectedAim*Math.PI/180);};
-  let a=REST.pitch,b=a+6,fa=err(a),fb=err(b);
-  for(let i=0;i<10&&Math.abs(fb)>1e-4&&fb!==fa;i++){const c=Math.max(-40,Math.min(70,b-fb*(b-a)/(fb-fa)));a=b;fa=fb;b=c;fb=err(b);}
-  const out={bodyYaw:yaw,pitch:b};yawCache.set(key,out);lastKey='';return {...out};
+  const aimErr=(yaw,pitch)=>{view.setPose({yaw:CAMERA.yaw,cameraPitch:CAMERA.pitch,bodyYaw:yaw,pitch,kick:0});if(!view.muzzle)return 0;const m=toLayer(view.muzzle),want=Math.atan2((y-m.y)*layerHeight,(x-m.x)*layerWidth);return delta(want,view.projectedAim*Math.PI/180);};
+  const secant=(f,a)=>{let b=a+.05,fa=f(a),fb=f(b);for(let i=0;i<12&&Math.abs(fb)>1e-4&&fb!==fa;i++){const c=b-fb*(b-a)/(fb-fa);a=b;fa=fb;b=c;fb=f(b);}return b;};
+  view.setPose({yaw:CAMERA.yaw,cameraPitch:CAMERA.pitch,bodyYaw:REST.bodyYaw,pitch:REST.pitch,kick:0});
+  const m0=view.muzzle?toLayer(view.muzzle):{x:box.x+box.w/2,y:box.y+box.h/2},screenDeg=Math.atan2((y-m0.y)*layerHeight,(x-m0.x)*layerWidth)*180/Math.PI;
+  let out;
+  // 옆면 각도(카메라와 직각, 포신이 화면 왼쪽)가 최대 회전 — 그보다 아래쪽(왼쪽 아래) 목표는 옆면에서 멈추고 포신 각도로만 맞춘다.
+  let side=CAMERA.yaw+Math.PI/2,bestD=Infinity,sideAim=180;
+  for(const s of [CAMERA.yaw+Math.PI/2,CAMERA.yaw-Math.PI/2]){view.setPose({yaw:CAMERA.yaw,cameraPitch:CAMERA.pitch,bodyYaw:s,pitch:REST.pitch,kick:0});const d=Math.abs(delta(Math.PI,view.projectedAim*Math.PI/180));if(d<bestD){bestD=d;side=s;sideAim=view.projectedAim;}}
+  const norm=a=>((a%360)+360)%360,beyondSide=norm(screenDeg)>=90&&norm(screenDeg)<norm(sideAim);
+  if(y>=HOME.y-SIDE_ROW||beyondSide){
+   out={bodyYaw:side,pitch:Math.max(-40,Math.min(70,secant(p=>aimErr(side,p)*180/Math.PI,REST.pitch)))};
+  }else{
+   let best=REST.bodyYaw,bestErr=Infinity;for(let i=0;i<24;i++){const yaw=-Math.PI+i*Math.PI/12,e=Math.abs(aimErr(yaw,REST.pitch));if(e<bestErr){bestErr=e;best=yaw;}}
+   out={bodyYaw:secant(yaw=>aimErr(yaw,REST.pitch),best),pitch:REST.pitch};
+  }
+  yawCache.set(key,out);lastKey='';return {...out};
  }
  // V1530 C: 구멍별 첫 조준 계산(3D 약 12회)을 사격 순간이 아니라 등장 연출 중에 한 프레임 한 구멍씩 미리 해 둔다.
  let warmRaf=0;
@@ -60,8 +72,8 @@ function create(el){
   state.promise.then(()=>{if(!disposed)warmRaf=requestAnimationFrame(next);});
  }
  const api={ready:false,prewarm,aimAt(x,y){const view=state.view,pivot=view?.breech?toLayer(view.breech):{x:.870,y:.801};from={...pose};desired=view?solveYaw(view,x,y):{...REST};return Math.atan2((y-pivot.y)*layerHeight,(x-pivot.x)*layerWidth)*180/Math.PI;},render(aim,kick,animation){
-  // V1528 C: 쏜 뒤 몸통 방향은 유지, 포신만 기본 각도로 복귀(settle 동안).
-  if(introRaf)return lastMuzzle;const phase=animation?.phase||(desired?'kick':'home'),k=Math.max(0,Math.min(1,animation?.progress||0)),ease=k*(2-k),aimed=desired||REST,raised={bodyYaw:aimed.bodyYaw,pitch:REST.pitch},next=phase==='aim'?mix(from,aimed,ease):phase==='kick'?aimed:phase==='settle'?mix(aimed,raised,ease):raised;return paint(next,kick,animation?.force);
+  // V1533 C 사용자: 쏜 뒤에는 반동만 — 몸통 방향·포신 각도 모두 그대로 유지.
+  if(introRaf)return lastMuzzle;const phase=animation?.phase||(desired?'kick':'home'),k=Math.max(0,Math.min(1,animation?.progress||0)),ease=k*(2-k),aimed=desired||REST,next=phase==='aim'?mix(from,aimed,ease):aimed;return paint(next,kick,animation?.force);
  },intro(travelMs,turnMs,onDone){
   cancelAnimationFrame(introRaf);const start=performance.now(),width=el.clientWidth,side={bodyYaw:CAMERA.yaw+Math.PI/2,pitch:12};
   function step(now){if(disposed)return;const age=now-start,k=Math.min(1,age/travelMs),move=1-Math.pow(1-k,3),turn=Math.max(0,Math.min(1,(age-travelMs)/turnMs));host.style.transform='translateX('+((-0.2+(HOME.x+.2)*move-HOME.x)*width)+'px)';paint(mix(side,REST,turn*turn*(3-2*turn)),0);if(age<travelMs+turnMs)introRaf=requestAnimationFrame(step);else{introRaf=0;host.style.transform='';paint(REST,0,true);if(onDone)onDone();}}

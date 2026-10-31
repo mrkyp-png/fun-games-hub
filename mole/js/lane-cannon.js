@@ -87,6 +87,7 @@
   const RECOIL = [0.012, 0.024, 0.040];    // 살짝/보통/강 (보드 분수)
   const KICK_SEC = 0.06, SETTLE_SEC = 0.34;
   const BALL_MS = 105;
+  const BALL_START_ADVANCE_PX = 0.3 * 96 / 2.54; // V1533 C 사용자: 0.3cm(CSS) = 11.34px
   const IDLE_DELAY = 2.5;                  // 대기 애니메이션(사용자 지정) — 이만큼 조용해야 시작
   const IDLE_KICK_CYCLE = 3;               // 이 주기로 반복 반동
   const IDLE_RECOIL = 0.040;               // 대기 반동 = 가장 강한 반동(RECOIL 중 최대, 사용자 지정 "가장 크게")
@@ -139,9 +140,14 @@
     function placeOverlay(im, w, mu, mv, p, nudge) {
       const rad = p.aim * Math.PI / 180;
       const nx = p.muzzle ? 0 : (nudge && nudge.dx) || 0, ny = p.muzzle ? 0 : (nudge && nudge.dy) || 0, nrot = p.muzzle ? 0 : (nudge && nudge.rot) || 0;
-      const fx0 = ax(p) + Math.cos(rad) * FX_ADVANCE + nx;
+      let fx0 = ax(p) + Math.cos(rad) * FX_ADVANCE + nx;
       const yScale = p.muzzle ? p.muzzle.yScale : 1;
-      const fy0 = ay(p) + Math.sin(rad) * FX_ADVANCE * yScale + ny;
+      let fy0 = ay(p) + Math.sin(rad) * FX_ADVANCE * yScale + ny;
+      // V1533 C 사용자: 화염·연기도 포탄과 같이 포구→구멍 직선을 따라 구멍 쪽으로 0.3cm.
+      if (p.muzzle && fxTarget) {
+        const W = el.clientWidth || 1, H = el.clientHeight || 1, dx = (fxTarget.x - ax(p)) * W, dy = (fxTarget.y - ay(p)) * H, len = Math.hypot(dx, dy) || 1, step = Math.min(BALL_START_ADVANCE_PX, len);
+        fx0 += dx / len * step / W; fy0 += dy / len * step / H;
+      }
       im.style.width = (w * 100).toFixed(2) + '%';
       im.style.left = ((fx0 - mu * w) * 100).toFixed(2) + '%';
       im.style.top = ((fy0 - mv * w * yScale) * 100).toFixed(2) + '%';
@@ -162,6 +168,7 @@
     let recoilAmt = 0;
     let currentAim = restPose.aim, aimFrom = currentAim, aimTo = currentAim;
     let lastModelVisual = null;
+    let fxTarget = null; // V1533 C: 마지막 포격점(화염·연기 0.3cm 앞당김 방향)
     let idleT = 0, idleKick = 0; // 대기 애니메이션(사용자 지정) — 잠깐 조용하면 가장 센 반동으로 훅 밀렸다 복귀
     let timers = [];
     let flightTimers = [];
@@ -189,6 +196,7 @@
     function strike(targetXFrac, targetYFrac, onImpact) {
       const tx = (typeof targetXFrac === 'number') ? targetXFrac : 0.5;
       const ty = (typeof targetYFrac === 'number') ? targetYFrac : 0.3;
+      fxTarget = { x: tx, y: ty };
 
       idleT = 0; idleKick = 0; // 대기 반동 중이었으면 리셋 — residual 은 곧바로 아래서 aim 값으로 덮어씀
       clearTimers(true);
@@ -216,6 +224,11 @@
 
         // 포탄 발사시작점. blx/bly = 이 포즈만 추가 미세이동 (스프라이트는 그대로).
         const muzzle = visual ? {x:visual.x+Math.cos(visual.aim*Math.PI/180)*.012,y:visual.y+Math.sin(visual.aim*Math.PI/180)*.012*visual.yScale} : { x: ax(best) + (best.blx || 0), y: ay(best) + (best.bly || 0) };
+        // V1533 C 사용자: 포탄 출발점을 포구→구멍 직선을 따라 구멍 쪽으로 0.3cm 앞으로(포격점은 그대로).
+        {
+          const W = el.clientWidth || 1, H = el.clientHeight || 1, dx = (tx - muzzle.x) * W, dy = (ty - muzzle.y) * H, len = Math.hypot(dx, dy) || 1, step = Math.min(BALL_START_ADVANCE_PX, len);
+          muzzle.x += dx / len * step / W; muzzle.y += dy / len * step / H;
+        }
         const projectile = ball.cloneNode(false); projectile.classList.add('lc-flight'); el.appendChild(projectile);
         projectile.style.transition = 'none';
         projectile.style.left = (muzzle.x * 100).toFixed(2) + '%';
