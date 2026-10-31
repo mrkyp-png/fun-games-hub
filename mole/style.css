@@ -875,30 +875,22 @@ body { background: var(--lm-page); }
    이 한 규칙이 셋 다 덮는다. 폭탄은 고글 낀 동물 스프라이트라 동물과 같은 시안.
    item(실드)은 대상 아님 — 손대지 않음. */
 .mole-pop--mole .mole-pop-img {
-  filter:
-    drop-shadow(0 0 6px #e0a400)
-    drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+  filter: none; /* V1542 C 사용자: 글로우·그림자 삭제(모자로 구분, 필터 비용 제거) */
 }
 .mole-pop--animal .mole-pop-img,
 .mole-pop--bomb .mole-pop-img {
-  filter:
-    drop-shadow(0 0 6px #15c2d6)
-    drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+  filter: none; /* V1542 C 사용자: 글로우·그림자 삭제(모자로 구분, 필터 비용 제거) */
 }
 /* 챕터4~6(가을 배경, 갈색 계열) 전용 — 기존 글로우 색이 배경과 비슷해 두더지 구분이 잘 안 됨(사용자 지정).
    두더지=하늘색, 동물=마젠타로 갈색 배경과 뚜렷하게 대비. 2026-09-18: 라운드2~4에서 배경과 섞여
    안 보인다는 지적 — 레이어 수(2장)는 그대로 두고 번짐 반경만 3px→6px 로 키워 더 진하게(사용자 지정,
    동물만 원복은 두더지와 통일성이 없어서 기각).*/
 #mole-board.mole-board--autumn .mole-pop--mole .mole-pop-img {
-  filter:
-    drop-shadow(0 0 6px #29b6ff)
-    drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+  filter: none; /* V1542 C 사용자: 글로우·그림자 삭제(모자로 구분, 필터 비용 제거) */
 }
 #mole-board.mole-board--autumn .mole-pop--animal .mole-pop-img,
 #mole-board.mole-board--autumn .mole-pop--bomb .mole-pop-img {
-  filter:
-    drop-shadow(0 0 6px #ff4fd8)
-    drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+  filter: none; /* V1542 C 사용자: 글로우·그림자 삭제(모자로 구분, 필터 비용 제거) */
 }
 
 /* ---- 폭탄 든 두더지(2026-09-14 확정, mole-bomb-holding-mechanic 메모) ----
@@ -7138,7 +7130,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .mole-pop-img[src*="/lion"] { width: 118%; }
 .mole-pop-img[src*="/tiger"] { width: 95%; }
 /* v1018(사용자 지정): 두더지 조금 위로 + 살짝 홀쭉하게(가로만 92%) */
-.mole-pop--mole .mole-pop-img { bottom: -2.5%; width: 104%; height: 112.9%; object-fit: fill; } /* v1020: 홀쭉(가로 92%)을 scale 대신 크기로 — scale 은 등장 애니메이션과 겹쳐 올라온 뒤 오른쪽으로 밀렸음 */
+.mole-pop--mole .mole-pop-img { bottom: -2.5%; width: 104%; height: 103.9%; object-fit: fill; } /* V1542 C: 새 두더지는 원래 비율(세로 늘림 삭제 — 흐려 보임) / v1020: 홀쭉(가로 92%)을 scale 대신 크기로 — scale 은 등장 애니메이션과 겹쳐 올라온 뒤 오른쪽으로 밀렸음 */
 /* v1018(사용자 지정): 토끼만 몸 단면 안 보이게 위치 조정(사자·호랑이·하마는 전신 보이게 원래 높이) */
 .mole-pop--animal .mole-pop-img[src*="/rabbit"], .mole-pop--bomb .mole-pop-img[src*="/rabbit"] { bottom: -3.5%; } /* 몸 단면 안 보이게 — 헬멧은 두더지보다 조금 낮음 */
 

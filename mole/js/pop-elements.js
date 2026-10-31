@@ -30,6 +30,8 @@
   const HIT_FACE_DELAY_MS = 170; // V1541 C: 맞은 표정은 망치가 닿는 순간에 — spawn-scheduler SINK_DELAY(0.17s)와 같게
   const STEP_SEC = 0.055;       // 등장/빠끔 이동: 깊이 한 칸이 화면에 머무는 시간 — 빠르게
   const DYING_STEP_SEC = 0.144; // 타격 후: 전신 그대로 구멍 아래로 "천천히" 미끄러진다 (0→4 ≈ 0.58s)
+  const FACE_HOLD_MS = 150;       // V1542 C 사용자: 처치된 두더지는 맞은 표정을 0.15초 보여준 뒤
+  const FACE_HOLD_STEP_SEC = 0.1125; // 남은 0.45초에 내려간다(전체 0.6초 그대로)
 
   function create({ container, onEmerge, faceMap }) {
     const pops = new Map();  // popId -> { el, img, kind, poseIndex, shownDepth, targetDepth, shownFile }
@@ -233,10 +235,11 @@
       return 0;
     }
 
-    function advance(m, dt) {
+    function advance(m, dt, now) {
       if (m.shownDepth === m.targetDepth) return;
+      if (m.dying && m.holdUntil && now < m.holdUntil) return;
       const dir = Math.sign(m.targetDepth - m.shownDepth);
-      const next = m.shownDepth + dir * (dt / (m.dying ? DYING_STEP_SEC : STEP_SEC));
+      const next = m.shownDepth + dir * (dt / (m.dying ? (m.holdUntil ? FACE_HOLD_STEP_SEC : DYING_STEP_SEC) : STEP_SEC));
       m.shownDepth = dir > 0 ? Math.min(next, m.targetDepth) : Math.max(next, m.targetDepth);
       // 두더지/동물이 구멍에서 다 올라와 전신(depth 0)이 되는 순간 — 스쿼시&스트레치 1회
       // (사용자 지정 — 동물도 두더지와 동일하게 적용).
@@ -269,6 +272,7 @@
           // 무적 중엔 동물도 두더지와 동일한 펀치 연출(넉백·축소) — 무적 아닐 때 동물은 페널티라 제외.
           m.punch = pop.killed && isAlipunchEquipped() &&
             (pop.type === 'mole' || (pop.type === 'animal' && (isAlipunchInvincible() || pop.safeAlways)));
+          if (pop.type === 'mole' && pop.killed && !m.blast && !m.punch) m.holdUntil = now + FACE_HOLD_MS;
         }
         m.dying = !!pop.dying;
         m.targetDepth = targetFor(pop);
@@ -280,7 +284,7 @@
         }
       });
 
-      pops.forEach((m) => advance(m, dt));
+      pops.forEach((m) => advance(m, dt, now));
     }
 
     function clear() {
