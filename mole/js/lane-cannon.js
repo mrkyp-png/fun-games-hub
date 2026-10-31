@@ -298,7 +298,7 @@
 
     showPose(restPose);
     paint();
-    return { strike, update, isBusy, home, clear, intro3D:model?function(travelMs,turnMs,onDone){model.intro(travelMs,turnMs,onDone);}:null };
+    return { strike, update, isBusy, home, clear, intro3D:model?function(travelMs,turnMs,onDone){model.intro(travelMs,turnMs,onDone);}:null, prewarm:model?function(points){model.prewarm(points);}:null };
   }
 
   const api = { create };

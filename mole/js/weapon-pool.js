@@ -59,7 +59,7 @@
     }
 
     const result = { strike, update, isBusy, home, clear };
-    ['meet', 'demo', 'spinIn', 'popIn'].forEach((name) => {
+    ['meet', 'demo', 'spinIn', 'popIn', 'prewarm'].forEach((name) => {
       if (typeof inst[name] === 'function') result[name] = delegateToPrimary(name);
     });
     return result;

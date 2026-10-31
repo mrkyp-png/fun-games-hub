@@ -1807,6 +1807,8 @@
       }
     }
     const laneHammer = MG.WeaponPool.create(WeaponMod, hammerOpts, { onOverflow: weaponCloneOverflow });
+    // V1530 C: 캐논 구멍별 조준 해를 사격 전에 한 프레임 한 구멍씩 미리 계산(첫 사격 때 멈칫 방지).
+    if (weapon === 'cannon' && laneHammer.prewarm) laneHammer.prewarm(spawnPoints);
     // V1385 C: 골드 분신 = 메인과 같은 망치 설정으로 하나 더 만들어 같은 모션으로 휘두름(goldStrikeClone).
     const goldCloneOpts = (weapon === 'goldhammer' || weapon === 'hammer') ? Object.assign({}, hammerOpts, { idle: undefined, cssClass: (hammerOpts.cssClass ? hammerOpts.cssClass + ' ' : '') + 'lane-hammer--clone' }) : null;
 

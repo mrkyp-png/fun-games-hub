@@ -22,15 +22,25 @@ function create(el){
  function resize(){const w=el.clientWidth,h=el.clientHeight;if(!w||!h)return;const display=Math.ceil(el.getBoundingClientRect().width*HOME.size);if(layerWidth===w&&layerHeight===h&&state.display===display)return;layerWidth=w;layerHeight=h;const size=HOME.size*w;box={x:HOME.x-HOME.size/2,y:HOME.y-size/h/2,w:HOME.size,h:size/h};host.style.cssText='left:'+box.x*100+'%;top:'+box.y*100+'%;width:'+size+'px;height:'+size+'px;';if(state.display!==display){state.display=display;state.source.style.width=display+'px';state.source.style.height=display+'px';state.view?.resize();}lastKey='';}
  resize();const sizing=new ResizeObserver(resize);sizing.observe(el);
  function toLayer(p){return {x:box.x+p.x*box.w,y:box.y+p.y*box.h,yScale:layerWidth/layerHeight};}
+ // V1530 C: 반동은 화면 이동(CSS translate)만 바꾸므로 3D 를 다시 그리지 않는다. 3D 는 몸통 방향·포신 각도가 바뀔 때만 그린다.
+ function recoil(kick){
+  if(!lastMuzzle)return;
+  const back=(lastMuzzle.aim+180)*Math.PI/180,dist=kick*RECOIL_PX*layerWidth*box.w,value=kick?(Math.cos(back)*dist).toFixed(2)+'px '+(Math.sin(back)*dist).toFixed(2)+'px':'';
+  if(host.style.translate!==value)host.style.translate=value;
+ }
  function paint(next,kick,force){
   const view=state.view;if(disposed||!view)return null;
-  const now=performance.now();if(!force&&lastMuzzle&&now-lastRender<1000/30-.5)return lastMuzzle;
-  pose=next;const key=pose.bodyYaw.toFixed(4)+':'+pose.pitch.toFixed(3)+':'+kick.toFixed(4);
-  if(key===lastKey)return lastMuzzle;
-  if(key!==lastKey){view.setPose({yaw:CAMERA.yaw,cameraPitch:CAMERA.pitch,bodyYaw:pose.bodyYaw,pitch:pose.pitch,kick:0});const image=state.source.querySelector('canvas');if(!image||!view.muzzle)return null;if(canvas.width!==image.width||canvas.height!==image.height){canvas.width=image.width;canvas.height=image.height;}ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(image,0,0);lastMuzzle={...toLayer(view.muzzle),aim:view.projectedAim};lastKey=key;lastRender=now;
-   // V1528 C 사용자: 반동 = 포신이 향한 직선의 정반대로 그대로 밀림(화면 기준).
-   const back=(view.projectedAim+180)*Math.PI/180,dist=kick*RECOIL_PX*layerWidth*box.w;host.style.translate=kick?(Math.cos(back)*dist).toFixed(2)+'px '+(Math.sin(back)*dist).toFixed(2)+'px':'';}
-  if(!api.ready){api.ready=true;fallback.hidden=true;}return lastMuzzle;
+  const now=performance.now();
+  pose=next;const key=pose.bodyYaw.toFixed(4)+':'+pose.pitch.toFixed(3);
+  if(key!==lastKey&&(force||!lastMuzzle||now-lastRender>=1000/30-.5)){
+   view.setPose({yaw:CAMERA.yaw,cameraPitch:CAMERA.pitch,bodyYaw:pose.bodyYaw,pitch:pose.pitch,kick:0});
+   const image=state.source.querySelector('canvas');if(!image||!view.muzzle)return null;
+   if(canvas.width!==image.width||canvas.height!==image.height){canvas.width=image.width;canvas.height=image.height;}
+   ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(image,0,0);
+   lastMuzzle={...toLayer(view.muzzle),aim:view.projectedAim};lastKey=key;lastRender=now;
+  }
+  recoil(kick);
+  if(!api.ready&&lastMuzzle){api.ready=true;fallback.hidden=true;}return lastMuzzle;
  }
  // V1528 C 사용자: 몸통은 구멍을 실제로 마주 보는 방향(야오)까지만 돌리고, 포신 위아래 각도로 중심선이 피타격물 중심을 지나게 맞춘다.
  const yawCache=new Map();
@@ -42,13 +52,21 @@ function create(el){
   for(let i=0;i<10&&Math.abs(fb)>1e-4&&fb!==fa;i++){const c=Math.max(-40,Math.min(70,b-fb*(b-a)/(fb-fa)));a=b;fa=fb;b=c;fb=err(b);}
   const out={bodyYaw:yaw,pitch:b};yawCache.set(key,out);lastKey='';return {...out};
  }
- const api={ready:false,aimAt(x,y){const view=state.view,pivot=view?.breech?toLayer(view.breech):{x:.870,y:.801};from={...pose};desired=view?solveYaw(view,x,y):{...REST};return Math.atan2((y-pivot.y)*layerHeight,(x-pivot.x)*layerWidth)*180/Math.PI;},render(aim,kick,animation){
-  if(introRaf)return lastMuzzle;const phase=animation?.phase||(desired?'kick':'home'),k=Math.max(0,Math.min(1,animation?.progress||0)),ease=k*(2-k),aimed=desired||REST,raised={bodyYaw:aimed.bodyYaw,pitch:REST.pitch},next=phase==='aim'?mix(from,aimed,ease):phase==='kick'?aimed:phase==='settle'?mix(aimed,raised,ease):raised; // V1528 C: 쏜 뒤 몸통 방향은 유지, 포신만 기본 각도로 복귀return paint(next,kick,animation?.force);
+ // V1530 C: 구멍별 첫 조준 계산(3D 약 12회)을 사격 순간이 아니라 등장 연출 중에 한 프레임 한 구멍씩 미리 해 둔다.
+ let warmRaf=0;
+ function prewarm(points){
+  cancelAnimationFrame(warmRaf);const list=(points||[]).slice();
+  function next(){if(disposed||!list.length){warmRaf=0;return;}const view=state.view;if(view){const p=list.shift();solveYaw(view,p.x,p.y);}warmRaf=requestAnimationFrame(next);}
+  state.promise.then(()=>{if(!disposed)warmRaf=requestAnimationFrame(next);});
+ }
+ const api={ready:false,prewarm,aimAt(x,y){const view=state.view,pivot=view?.breech?toLayer(view.breech):{x:.870,y:.801};from={...pose};desired=view?solveYaw(view,x,y):{...REST};return Math.atan2((y-pivot.y)*layerHeight,(x-pivot.x)*layerWidth)*180/Math.PI;},render(aim,kick,animation){
+  // V1528 C: 쏜 뒤 몸통 방향은 유지, 포신만 기본 각도로 복귀(settle 동안).
+  if(introRaf)return lastMuzzle;const phase=animation?.phase||(desired?'kick':'home'),k=Math.max(0,Math.min(1,animation?.progress||0)),ease=k*(2-k),aimed=desired||REST,raised={bodyYaw:aimed.bodyYaw,pitch:REST.pitch},next=phase==='aim'?mix(from,aimed,ease):phase==='kick'?aimed:phase==='settle'?mix(aimed,raised,ease):raised;return paint(next,kick,animation?.force);
  },intro(travelMs,turnMs,onDone){
   cancelAnimationFrame(introRaf);const start=performance.now(),width=el.clientWidth,side={bodyYaw:CAMERA.yaw+Math.PI/2,pitch:12};
   function step(now){if(disposed)return;const age=now-start,k=Math.min(1,age/travelMs),move=1-Math.pow(1-k,3),turn=Math.max(0,Math.min(1,(age-travelMs)/turnMs));host.style.transform='translateX('+((-0.2+(HOME.x+.2)*move-HOME.x)*width)+'px)';paint(mix(side,REST,turn*turn*(3-2*turn)),0);if(age<travelMs+turnMs)introRaf=requestAnimationFrame(step);else{introRaf=0;host.style.transform='';paint(REST,0,true);if(onDone)onDone();}}
   introRaf=requestAnimationFrame(step);
- },clear(){if(disposed)return;disposed=true;cancelAnimationFrame(introRaf);sizing.disconnect();host.remove();el.classList.remove('has-cannon-model');state.refs--;if(!state.refs){state.promise.then(view=>{if(view)view.dispose();state.source.remove();});if(shared===state)shared=null;}}};
+ },clear(){if(disposed)return;disposed=true;cancelAnimationFrame(introRaf);cancelAnimationFrame(warmRaf);sizing.disconnect();host.remove();el.classList.remove('has-cannon-model');state.refs--;if(!state.refs){state.promise.then(view=>{if(view)view.dispose();state.source.remove();});if(shared===state)shared=null;}}};
  state.promise.then(()=>{if(!disposed&&!introRaf)paint(REST,0);});return api;
 }
 function releaseGPU(){const state=shared;if(!state)return;shared=null;state.dead=true;if(state.view)state.view.dispose();state.view=null;state.promise.then(view=>{if(view)view.dispose();});state.source.remove();}
