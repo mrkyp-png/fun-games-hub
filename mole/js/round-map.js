@@ -114,7 +114,7 @@
         if (isReady && !isReady() && now - t0 < 1600) { root.requestAnimationFrame(function () { wait(); }); return; }
         firstSwap = now; onCovered();
       }
-      if (holdOpen && holdOpen() && now - firstSwap < 1200) { root.requestAnimationFrame(function () { wait(); }); return; } // 교체된 화면이 아직 준비 중이면 덮은 채 대기(최대 1.2초)
+      if (holdOpen && holdOpen() && now - firstSwap < 2500) { root.requestAnimationFrame(function () { wait(); }); return; } // 교체된 화면이 아직 준비 중이면 덮은 채 대기(최대 2.5초, V1565 C)
       var last = run(0, span, 315, 0).pop();
       last.onfinish = function () { bandHost.style.visibility = 'hidden'; if (onDone) onDone(); };
     }, 310);
@@ -329,6 +329,8 @@
       el.querySelectorAll(sel).forEach(function (n) {
         if (n.tagName === 'IMG') imgs.push(n); else n.querySelectorAll('img').forEach(function (i) { imgs.push(i); });
       });
+      // V1565 C 사용자: 라운드 표시의 손 흔드는 두더지(모드별 그림)도 같이 준비 — 모드 바꿀 때 늦게 뜨던 것
+      var wave = new Image(); wave.src = A + 'mole-cur-wave-' + light + '.webp'; imgs.push(wave);
       var scenes = MG.RoundMapFluidScenes || {};
       (light === 'mid' ? [scenes['normal-rear']] : light === 'legend' ? [scenes['pro-rear'], scenes['pro-front']] : []).forEach(function (sc) {
         if (sc) [sc.atlas, sc.mask].forEach(function (src) { var i = new Image(); i.src = src; imgs.push(i); });
@@ -359,6 +361,8 @@
     // V1325 C 모드 전환 = Motion Prompt #018 "Shape transition"(MIT, (c) 2026 Shohei Ohtaki, showheyohtaki.github.io/motion-prompt/#018).
     // 원본 그대로: 가로 띠 4개(끝 80px 기울기, 539px 폭 기준 비율), 덮기 0.62초 → 다 덮이면 다음 화면으로 교체 → 0.12초 뒤 걷기 0.63초,
     // 띠마다 14% 지연·구간 58% 동안 cubic ease-in-out. 색만 노랑·초록·빨강·보라(사용자 지정). 앞 모드로 가면 좌→우, 뒤로 가면 거울.
+    // V1565 C 사용자: 라운드 지도도 다른 화면처럼 보이는 그림 전부(라운드 명판·두더지·하마·버튼·재화·티커) 받은 뒤 한 번에
+    function revealAll() { if (root.MoleAssetLoader && root.MoleAssetLoader.revealWhenReady) root.MoleAssetLoader.revealWhenReady(el); }
     var transitioning = false;
     function modeTransition(next, swap) {
       if (transitioning) return;
@@ -366,7 +370,7 @@
       var ready = false;
       whenModeReady(next, function () { ready = true; });
       shapeTransition(pageOrder.indexOf(next) >= pageOrder.indexOf(view) ? 1 : -1,
-        function () { view = next; swap(); }, function () { return ready; }, function () { transitioning = false; });
+        function () { view = next; swap(); revealAll(); }, function () { return ready; }, function () { transitioning = false; }, function () { return el.classList.contains('asset-preparing'); });
     }
     if (el.classList.contains('rm-window-map')) {
       el.addEventListener('pointerdown', function (event) {
@@ -543,6 +547,7 @@
         }, 1200);
       }
       el.classList.add('rm-preparing');
+      revealAll();
       whenModeReady(view, function () { el.classList.remove('rm-preparing'); });
       root.setTimeout(function () { el.classList.remove('rm-preparing'); }, 900); // 그 사이 탭 전환으로 콜백이 취소돼도 반드시 표시
     }

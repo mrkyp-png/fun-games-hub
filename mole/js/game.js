@@ -1387,7 +1387,7 @@
     // V1325 C 홈 → 광산지도 진입 = 띠 전환(Motion Prompt #018) — 다 덮였을 때 실제로 연다.
     if (sub === 'roundmap-screen' && !openMoreNow.viaBands && MG.RoundMap && MG.RoundMap.shapeTransition && screenNav.current() !== 'roundmap-screen') {
       const rm = document.getElementById('roundmap-screen');
-      MG.RoundMap.shapeTransition(1, () => { openMoreNow.viaBands = true; openMoreNow(sub); openMoreNow.viaBands = false; }, null, null, () => rm.classList.contains('rm-preparing'));
+      MG.RoundMap.shapeTransition(1, () => { openMoreNow.viaBands = true; openMoreNow(sub); openMoreNow.viaBands = false; }, null, null, () => rm.classList.contains('rm-preparing') || rm.classList.contains('asset-preparing'));
       return;
     }
     // 백스톱: 시작 인트로(챕터 타이핑) 도중 어떻게든 메뉴가 열리면 대기 중이던 라운드 시작을
