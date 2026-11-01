@@ -7577,7 +7577,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* V1161: same readable bomb size/glow; lowered toward the hole lip. */
 .mole-bomb-group { top:86%; }
 .mole-bomb-emoji { font-size:22.64cqw; }
-.animal-bomb-emoji { top:82.24%; font-size:28.3cqw; transform:translate(-50%,-50%) rotate(30deg) scaleX(-1); filter:drop-shadow(0 0 .7cqw #ff2a1a) drop-shadow(0 0 1.4cqw #ff2a1a) drop-shadow(0 0 2.3cqw #ff2a1a) drop-shadow(0 0 3.7cqw #ff3020); }
+.animal-bomb-emoji { top:82.24%; font-size:28.3cqw; transform:translate(-50%,-50%) rotate(30deg) scaleX(-1); filter:drop-shadow(0 0 .3cqw #00ff3c) drop-shadow(0 0 .3cqw #00ff3c) drop-shadow(0 0 .8cqw #1fe03a); animation:animal-bomb-pulse .9s ease-in-out infinite; } /* V1548 C 사용자: 빨간 글로우(옛 폭탄) → 두더지 폭탄과 같은 녹색 외곽선+커졌다 작아짐 */
+@keyframes animal-bomb-pulse { 0%, 100% { transform:translate(-50%,-50%) rotate(30deg) scaleX(-1) scale(1); } 50% { transform:translate(-50%,-50%) rotate(30deg) scaleX(-1) scale(1.15); } }
 /* Remove the gold egg fringe from the fixed pedestal's upper edge. */
 .ws-ped { clip-path:polygon(0% 72.73%,10% 70.74%,20% 69.19%,30% 68.09%,40% 67.43%,50% 67.22%,60% 67.43%,70% 68.09%,80% 69.19%,90% 70.74%,100% 72.73%,100% 100%,0% 100%); }
 
@@ -9985,3 +9986,8 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
    캐릭터·ROUND 표지판·설명박스·앞쪽 액자틀·반짝임 효과는 비치지 않음. */
 #roundmap-screen.rm-screen::before { opacity:.5; }
 #roundmap-screen :is(.rm-bg, .rm-rear-bg, .rm-cloud-window, .rm-route-art, [data-rm-rear-fluid]) { filter:brightness(.85); } /* V1540 C 사용자: 밀기 효과 제거, 밝기 85% 고정 */ /* V1539 C 사용자: 비침 없앰, 밝기 85%만. 보석 빛(.rm-glow-layer)·반짝이(.rm-rear-gems)는 그대로 */
+
+/* V1548 C 사용자: 토끼 얼굴 비대 → 92%, 머리가 오른쪽으로 기울어 몸이 왼쪽 → 몸이 구멍 가운데 오게 오른쪽으로. 하마도 몸 기준 오른쪽 2% */
+.mole-pop-img[src*="/rabbit"] { width: 92%; margin-left: 3%; }
+.mole-pop-img[src*="/rabbit6"] { margin-left: 5%; }
+.mole-pop-img[src*="/hippo"] { margin-left: 2%; }
