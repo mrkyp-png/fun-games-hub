@@ -286,3 +286,22 @@ body.rm-open :not(#roundmap-screen):not(#roundmap-screen *)::after { animation-p
 /* V1547 C 사용자(시안 A): 노말 위는 어둡게 → 아래로 밝게(라운드 표시·빛 효과는 위층이라 안 어두워짐) */
 .rm-window-map .rm-depth-shade { position:absolute; inset:0; z-index:2; pointer-events:none;
   background:linear-gradient(180deg, rgba(0,0,20,.62) 0%, rgba(0,0,20,.25) 40%, rgba(0,0,20,0) 70%, rgba(255,220,160,.06) 100%); }
+
+/* V1550 C 사용자: 전체화면 지도 — 그림이 화면 전체(아래 검은 띠·노란 선 없음), 아마추어 새 라운드 그림은 변형 없이 */
+.rm-window-map .rm-stage { width:max(100vw,calc(100dvh * 941 / 1672)); }
+#roundmap-screen.rm-window-map::before { clip-path:none; }
+.rm-window-map .rm-ui::before,.rm-window-map .rm-bottom-line { display:none; }
+.rm-window-map .rm-route-art { transform:none; }
+/* 액자: 화면을 꽉 채우느라 좌우가 잘림 → 왼쪽·오른쪽 반쪽을 각각 화면 끝에 붙임(100cqw = 지도 폭) */
+.rm-window-map .rm-front-art--l { clip-path:inset(0 50% 0 0); transform:translateX(calc((100cqw - 100vw) / 2 - 8.5cqw)); } /* 사용자: 액자 테두리는 조금만 보이게(바깥으로 밀어냄) */
+.rm-window-map .rm-front-art--r { clip-path:inset(0 0 0 50%); transform:translateX(calc((100vw - 100cqw) / 2 + 8.5cqw)); }
+/* 하마: 맨 아래 왼쪽 */
+.rm-window-map .rm-viewer,.rm-window-map[data-light="mid"] .rm-viewer,.rm-window-map[data-light="legend"] .rm-viewer { bottom:calc(env(safe-area-inset-bottom,0px) - 4cqw); }
+/* 난이도 버튼 = 위 빈 하늘(X 왼쪽), 재화 = 아래 시작 버튼 왼쪽(하마와 안 겹침) */
+.rm-window-map .rm-bottom { top:calc(env(safe-area-inset-top,0px) + 8cqw); bottom:auto; left:2%; right:19%; height:max(64px,16cqw); }
+.rm-window-map .rm-wallet { left:auto; right:calc(1.5% + 17cqw + 10px); bottom:calc(env(safe-area-inset-bottom,0px) + 1.5% + 8.5cqw - 15px); }
+/* 화면 터치 = 나타남/사라짐(round-map.js rm-ui-on). 티커·X·하마는 항상 보임 */
+.rm-window-map .rm-bottom,.rm-window-map .rm-start,.rm-window-map .rm-wallet { transition:translate .25s ease,opacity .25s ease; }
+.rm-window-map:not(.rm-ui-on) .rm-bottom { opacity:0; translate:0 -160%; pointer-events:none; }
+.rm-window-map:not(.rm-ui-on) .rm-start,.rm-window-map:not(.rm-ui-on) .rm-wallet { opacity:0; translate:0 140%; pointer-events:none; }
+.rm-window-map:not(.rm-ui-on) .rm-bottom *,.rm-window-map:not(.rm-ui-on) .rm-start * { pointer-events:none; }

@@ -20,8 +20,9 @@
   };
   // 고정 지형의 실제 구멍 중심(941×1672). 모드별 외형만 다르고 진행 로직은 같다.
   // 뒤 동굴의 이동과 무관하게 구멍, 두더지, 잠금 및 터치 기준점은 함께 고정된다.
-  var ROUTE = [[674.5, 1448.5], [337.5, 1278.2], [678, 1108.8], [370.5, 930.8],
-    [663.5, 776.5], [339.5, 608.1], [639.5, 467.5], [334.5, 325.9]];
+  // V1550 C 사용자: 아마추어 새 라운드 그림(hd-v1550/easy-route) 구멍 중심
+  var ROUTE = [[624.8, 1422], [309.5, 1259], [628.7, 1109], [308.5, 942],
+    [626.6, 791], [314.6, 638], [607.9, 499], [311.2, 354]];
   var HOLES = {
     easy: ROUTE,
     mid: [[692.4,1266.6],[345,1073.3],[609.8,913],[302.5,721],[579.6,611.2],[288,447.9],[527,354.6],[284,180]], // V1545 C: 새 노말 앞그림 구멍 중심
@@ -425,6 +426,12 @@
       el.addEventListener('click', function (event) {
         if (Date.now() < panSuppressClickUntil) { event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation(); }
       }, true);
+      // V1550 C 사용자: 전체화면 지도 — 빈 곳 터치 = 버튼(난이도·시작·재화) 나타남/사라짐, 라운드 터치 = 나타남
+      el.addEventListener('click', function (event) {
+        var t = event.target;
+        if (t.closest('.rm-bottom,.rm-start,.rm-back,.rm-tipbtn,.rm-wallet')) return;
+        el.classList.toggle('rm-ui-on', t.closest('.rm-round') ? true : !el.classList.contains('rm-ui-on'));
+      });
     }
 
     // V1370 C 사용자 지정: 아마추어 지도에서 현재 라운드 두더지가 말풍선으로 라운드 설명(V1537 C 사용자: 앞뒤 인사말 삭제, 설명만)
@@ -525,6 +532,7 @@
       if (moreMenuEl) openObs.observe(moreMenuEl, { attributes: true, attributeFilter: ['hidden'] });
     }
     function show() {
+      el.classList.remove('rm-ui-on'); // V1550 C: 들어올 때는 그림만
       view = opts.currentLight(); render(); setTimeout(flyDragonflies, 50);
       // V1329 C: 광산지도가 안정된 뒤 쉬는 틈에 세 모드의 유체 그림·마스크와 모드 그림을 미리 준비(전환 직후 끊김 방지)
       if (!show.warmed) {
