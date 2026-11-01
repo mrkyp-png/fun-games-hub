@@ -9991,3 +9991,11 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 .mole-pop-img[src*="/rabbit"] { width: 92%; margin-left: 3%; }
 .mole-pop-img[src*="/rabbit6"] { margin-left: 5%; }
 .mole-pop-img[src*="/hippo"] { margin-left: 2%; }
+
+/* V1549 C 사용자: 두더지·동물 올라올 때 튀는 흙 — 계절별 색·모양(요소 수·움직임 그대로, 필터 없음 → 성능 영향 없음) */
+#mole-board.mole-board--spring .hit-fx-clod { background: #c9a06a; border-color: #7a5430; }
+#mole-board.mole-board--spring .hit-fx-clod:nth-child(odd) { background: #9ad94f; border-color: #4f8a22; border-radius: 0 100% 0 100%; box-shadow: inset -2px -2px 0 rgba(40, 90, 10, .35); }
+#mole-board.mole-board--summer .hit-fx-clod { background: #ecd29a; border-color: #b8935a; box-shadow: inset -3px -3px 0 rgba(150, 110, 50, .3); }
+#mole-board.mole-board--autumn .hit-fx-clod { background: #f28a24; border-color: #a24e0e; border-radius: 0 85% 0 85%; box-shadow: inset -2px -2px 0 rgba(120, 40, 0, .3); }
+#mole-board.mole-board--autumn .hit-fx-clod:nth-child(3n) { background: #d9481c; border-color: #86280a; }
+#mole-board.mole-board--winter .hit-fx-clod { background: radial-gradient(circle at 35% 30%, #fff 0 40%, #cfeaff 75%); border-color: #8fc0e6; border-radius: 50%; box-shadow: none; }

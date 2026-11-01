@@ -28,7 +28,8 @@
 // V1546 C: Normal map frame back to 100%, crystal glow pulse + twinkle on 14 crystals.
 // V1547 C: round map frames 120% brighter (amateur/normal frame, pro side walls), normal top-dark depth shade.
 // V1548 C: Normal frame 144% bright, 105% size, time-bomb animals use new bomb style, rabbit 92% + body-centered, hippo centered.
-const CACHE = 'mole-game-v1548-C';
+// V1549 C: emerge clods per season (spring leaf+light dirt, summer sand, autumn orange leaves, winter snowballs).
+const CACHE = 'mole-game-v1549-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
