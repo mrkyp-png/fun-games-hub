@@ -282,3 +282,7 @@ body.rm-open :not(#roundmap-screen):not(#roundmap-screen *)::after { animation-p
 .rm-tip--down { top: 112%; bottom: auto; transform: translateX(calc(-50% + var(--tip-dx, 0px))) scaleY(-1); }
 /* V1378 G: 부모 반전이 글자 영역 위치도 뒤집으므로 원래 여백 유지, 글자 방향만 재반전. */
 .rm-tip--down > span { transform: scaleY(-1); top: 9%; bottom: 25%; }
+
+/* V1547 C 사용자(시안 A): 노말 위는 어둡게 → 아래로 밝게(라운드 표시·빛 효과는 위층이라 안 어두워짐) */
+.rm-window-map .rm-depth-shade { position:absolute; inset:0; z-index:2; pointer-events:none;
+  background:linear-gradient(180deg, rgba(0,0,20,.62) 0%, rgba(0,0,20,.25) 40%, rgba(0,0,20,0) 70%, rgba(255,220,160,.06) 100%); }

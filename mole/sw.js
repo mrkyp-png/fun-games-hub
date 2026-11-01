@@ -26,7 +26,8 @@
 // V1544 C: bomb mole perf — no fuse sparks, no glow; green outline + pulse, strong bomb red; blast death no per-frame blur.
 // V1545 C: Normal round map new front art + frame (crystal cave, rope ladders), new hole coords; PANG word 3% lower.
 // V1546 C: Normal map frame back to 100%, crystal glow pulse + twinkle on 14 crystals.
-const CACHE = 'mole-game-v1546-C';
+// V1547 C: round map frames 120% brighter (amateur/normal frame, pro side walls), normal top-dark depth shade.
+const CACHE = 'mole-game-v1547-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -186,18 +187,18 @@ const SHELL = [
   './assets/roundmap/window-v1263/foreground-frame.webp',
   './assets/roundmap/hd-v1330/easy-front-gem.webp',
   './assets/roundmap/hd-v1330/easy-front-lan.webp',
-  './assets/roundmap/hd-v1330/easy-front.webp',
+  './assets/roundmap/hd-v1547/easy-front.webp',
   './assets/roundmap/hd-v1330/easy-rear-gem.webp',
   './assets/roundmap/hd-v1330/easy-rear-lan.webp',
   './assets/roundmap/hd-v1330/easy-rear.webp',
   './assets/roundmap/hd-v1330/easy-route.webp',
   './assets/roundmap/hd-v1330/legend-front-gem.webp',
   './assets/roundmap/hd-v1330/legend-front-lan.webp',
-  './assets/roundmap/hd-v1330/legend-front.webp',
+  './assets/roundmap/hd-v1547/legend-front.webp',
   './assets/roundmap/hd-v1330/legend-rear-gem.webp',
   './assets/roundmap/hd-v1330/legend-rear-lan.webp',
   './assets/roundmap/hd-v1330/legend-rear.webp',
-  './assets/roundmap/hd-v1545/mid-front.webp',
+  './assets/roundmap/hd-v1547/mid-front.webp',
   './assets/roundmap/hd-v1330/mid-rear-gem.webp',
   './assets/roundmap/hd-v1330/mid-rear-lan.webp',
   './assets/roundmap/hd-v1330/mid-rear.webp',
