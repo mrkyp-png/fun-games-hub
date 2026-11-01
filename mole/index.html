@@ -36,8 +36,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@700&family=Jua&family=Lilita+One&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../cosmic-theme.css">
 <link rel="stylesheet" href="../common/settings.css">
-<link rel="stylesheet" href="style.css?v=1551-C">
-<link rel="stylesheet" href="roundmap-window.css?v=1551-C">
+<link rel="stylesheet" href="style.css?v=1552-C">
+<link rel="stylesheet" href="roundmap-window.css?v=1552-C">
 <style>
   /* 로딩 스플래시 — style.css 로딩 전에도 바로 뜨게 인라인. */
   #splash {
@@ -489,7 +489,7 @@
           <img loading="lazy" decoding="async" class="rm-bg" data-rm-bg alt="">
           <div class="rm-parallax-scene" aria-hidden="true">
             <div class="rm-parallax-rear">
-              <img loading="lazy" decoding="async" class="rm-rear-bg rm-mode-easy" src="assets/roundmap/hd-v1330/easy-rear.webp" alt=""><!-- V1551 C 사용자: 아마추어 뒷배경 밝기 원래대로(뿌옇게 취소). V1550 C 옛 보석·랜턴 빛 층 삭제 -->
+              <img loading="lazy" decoding="async" class="rm-rear-bg rm-mode-easy" src="assets/roundmap/hd-v1550/easy-rear.webp" alt=""><!-- V1550 C 사용자: 아마추어 뒷배경 = 기존 그림 30% 뿌옇게(하늘색 막), 옛 보석·랜턴 빛 층 삭제 -->
               <img loading="lazy" decoding="async" class="rm-rear-bg rm-mode-mid" src="assets/roundmap/hd-v1330/mid-rear.webp" alt=""><img loading="lazy" decoding="async" class="rm-glow-layer rm-glow-gem rm-mode-mid" src="assets/roundmap/hd-v1330/mid-rear-gem.webp" alt="" style="left:0.000%;top:0.400%;width:100.000%;height:99.600%"><img loading="lazy" decoding="async" class="rm-glow-layer rm-glow-lan rm-mode-mid" src="assets/roundmap/hd-v1330/mid-rear-lan.webp" alt="" style="left:48.135%;top:2.700%;width:49.822%;height:36.900%">
               <img loading="lazy" decoding="async" class="rm-rear-bg rm-mode-legend" src="assets/roundmap/hd-v1330/legend-rear.webp" alt=""><img loading="lazy" decoding="async" class="rm-glow-layer rm-glow-gem rm-mode-legend" src="assets/roundmap/hd-v1330/legend-rear-gem.webp" alt="" style="left:0.000%;top:7.150%;width:100.000%;height:91.450%"><img loading="lazy" decoding="async" class="rm-glow-layer rm-glow-lan rm-mode-legend" src="assets/roundmap/hd-v1330/legend-rear-lan.webp" alt="" style="left:8.171%;top:3.500%;width:90.586%;height:19.200%">
               <canvas class="rm-fluid-canvas" data-rm-rear-fluid hidden></canvas>
@@ -1008,7 +1008,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1551 C</div>
+        <div id="build-tag" aria-hidden="true">V 1552 C</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1294,7 +1294,7 @@ window.FGH.rollOut = function (el, done) {
         var gate = window.__moleAssetGate;
         function waitForCurrentWorker(registration) {
           return new Promise(function (resolve, reject) {
-            var latest = 'v=1551-C';
+            var latest = 'v=1552-C';
             var done = false;
             var timer = setTimeout(function () { finish(); }, 25000);
             function finish(error) {
@@ -1321,7 +1321,7 @@ window.FGH.rollOut = function (el, done) {
           console.warn('Starting while service worker registration continues in background');
           if (gate) gate.resolveCache();
         }, 30000);
-        navigator.serviceWorker.register('sw.js?v=1551-C').then(waitForCurrentWorker).then(function () {
+        navigator.serviceWorker.register('sw.js?v=1552-C').then(waitForCurrentWorker).then(function () {
           clearTimeout(registrationTimer);
           if (gate) gate.resolveCache();
         }).catch(function (error) {
