@@ -10054,3 +10054,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 @keyframes dr-sun-pm { 0%, 50% { opacity: 0; } 100% { opacity: 1; } }
 #daily-screen[hidden] .dr-sun i { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) { .dr-sun i { animation: none; } }
+/* V1559 C 사용자: 상점 카드 바깥 판 = 탭마다 상품과 반대되는 파스텔(하트·무기 하늘, 코인·스킬 민트, 티켓·코스튬 분홍) */
+#shop-screen>.shop-cards-box:is([data-pane="heart"],[data-pane="weapon"])::after { background: linear-gradient(90deg,#bfe6ff,#e3f5ff 50%,#bfe6ff); }
+#shop-screen>.shop-cards-box:is([data-pane="coin"],[data-pane="skill"])::after { background: linear-gradient(90deg,#c4f0dc,#e6fbf1 50%,#c4f0dc); }
+#shop-screen>.shop-cards-box:is([data-pane="ticket"],[data-pane="costume"])::after { background: linear-gradient(90deg,#ffd3dc,#ffeef2 50%,#ffd3dc); }

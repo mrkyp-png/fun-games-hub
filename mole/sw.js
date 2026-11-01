@@ -38,7 +38,8 @@
 // V1556 C: Quest screen bright day bg (CSS sky + drifting clouds + front art), 1-4 random butterflies/dragonflies, ach button = workshop yellow button + new arrows.
 // V1557 C: Quest ach button brown + original size (panel height restored), max 2 bugs, bugs fly head-first, dragonfly wing flap.
 // V1558 C: Daily bright arcade bg (sky + drifting clouds + front art) + slow sunlight sweep/tint; shop = bright market street bg (always day, no dim).
-const CACHE = 'mole-game-v1558-C';
+// V1559 C: Shop card panel color per tab (heart/weapon sky, coin/skill mint, ticket/costume pink).
+const CACHE = 'mole-game-v1559-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.

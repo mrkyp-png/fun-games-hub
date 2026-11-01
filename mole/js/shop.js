@@ -933,6 +933,7 @@
       // 무기/스킬/코스튬탭은 기존 파란색 유지.
       cardsBoxEl.classList.remove('shop-cards-box--heart', 'shop-cards-box--coin', 'shop-cards-box--ticket');
       if (activeTab === 'currency') cardsBoxEl.classList.add('shop-cards-box--' + (currencyFilter || 'heart'));
+      cardsBoxEl.dataset.pane = activeTab === 'currency' ? (currencyFilter || 'heart') : activeTab; // V1559 C 사용자: 탭별 판 색(상품과 반대색)
       requestAnimationFrame(alignCoinPrices);
       requestAnimationFrame(centerShopTabArt);
       if (activeTab === 'weapon' && MG.ShopModels) MG.ShopModels.attach(cardsEl, WEAPONS);
