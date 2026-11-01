@@ -27,7 +27,7 @@
 // V1545 C: Normal round map new front art + frame (crystal cave, rope ladders), new hole coords; PANG word 3% lower.
 // V1546 C: Normal map frame back to 100%, crystal glow pulse + twinkle on 14 crystals.
 // V1547 C: round map frames 120% brighter (amateur/normal frame, pro side walls), normal top-dark depth shade.
-// V1548 C: Normal frame 144% bright const CACHE = 'mole-game-v1547-C'; 105% size, time-bomb animals use new bomb style, rabbit 92% + body-centered, hippo centered.
+// V1548 C: Normal frame 144% bright, 105% size, time-bomb animals use new bomb style, rabbit 92% + body-centered, hippo centered.
 const CACHE = 'mole-game-v1548-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
