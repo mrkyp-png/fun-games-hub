@@ -42,7 +42,8 @@
 // V1560 C: Round map rear brightness: normal 170%, pro 130% (incl. rear fluid).
 // V1561 C: Screen transitions — hammer strike + tinted clouds cover, screens revealed only when all art is loaded (incl. visible 3D weapons), idle warm-up of screen art.
 // V1562 C: Transition cover sized by target screen (full vs top panel), hammer hits exact center, min cloud hold 0.5s, pre-colored clouds (item blue), pop uses scale (no slide).
-const CACHE = 'mole-game-v1562-C';
+// V1563 C: Top-panel cover spans full screen width (mailbox right strip), full cover when leaving a full-screen screen.
+const CACHE = 'mole-game-v1563-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.

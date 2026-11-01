@@ -1347,7 +1347,9 @@
       // 위쪽 판 = 아이템·메일함·설정
       const FULL = ['shop-screen', 'daily-screen', 'quest-screen', 'workshop-screen', 'score-screen'];
       let rect = null;
-      if (FULL.indexOf(sub) < 0) {
+      // 지금 전체화면을 보고 있으면 화면 전체가 바뀌므로 전체를 덮음(위쪽만 덮으면 아래에 옛 화면이 남아 보였음)
+      const curFull = FULL.concat(['rhythm-screen']).some((id) => { const e = document.getElementById(id); return e && !e.hidden; });
+      if (FULL.indexOf(sub) < 0 && !curFull) {
         const isStart0 = document.getElementById('game-screen').classList.contains('is-start');
         // 위쪽 판 자리 = 아이템·메일함·설정 화면이 놓이는 자리(.board-screen 위치). 홈이면 홈 판, 아니면 더보기 판
         const mm = document.getElementById('more-menu');
@@ -1355,6 +1357,8 @@
         const box = cands.find((e) => e && !e.hidden && e.getClientRects().length && e.getBoundingClientRect().height < innerHeight * 0.8);
         rect = box && box.getBoundingClientRect();
         if (!rect || !rect.height) { const mr = mm && mm.getBoundingClientRect(); rect = mr && mr.height && mr.height < innerHeight * 0.8 ? mr : { left: 0, top: 0, width: innerWidth, height: innerHeight * 0.49 }; }
+        // V1563 C 사용자: 메일함 등 위쪽 판 덮개 오른쪽 줄 깨짐 — 판 폭(367)이 아니라 화면 폭 전체 × 판 아래끝까지 덮음
+        rect = { left: 0, top: 0, width: innerWidth, height: Math.min(innerHeight, rect.top + rect.height + 2) };
       }
       if (!rect || !rect.width || !rect.height) rect = { left: 0, top: 0, width: innerWidth, height: innerHeight };
       coverOpen(document.getElementById(sub), rect, COVER_TINT[sub], () => { openMore.covering = true; try { openMore(sub, originEl); } finally { openMore.covering = false; } });
