@@ -147,6 +147,10 @@
     }
     function paintTabs() {
       if (rhythmOpen() && !rhythmTab.dataset.open) { rhythmTab.dataset.open = '1'; rhythmTab.innerHTML = '<span></span>'; rhythmTab.firstChild.textContent = T('mole.pad.gameRhythm'); }
+      // V1566 C 사용자: 한글인데 영어로 보임 — 탭·비치/네온 글자를 화면 만들 때 한 번만 넣어서, 언어를 나중에 정하면 옛 언어로 남았음 → 열 때마다 현재 언어로
+      if (rhythmTab.dataset.open) rhythmTab.firstChild.textContent = T('mole.pad.gameRhythm');
+      moleTab.querySelector('span').textContent = T('mole.pad.gameMole');
+      albums.querySelectorAll('.sr-album-btn').forEach(function (b) { b.textContent = T(b.dataset.type === 'B' ? 'mole.score.neon' : 'mole.score.beach'); });
       var r = view.game === 'rhythm', list = r && view.song < 0;
       moleTab.classList.toggle('sr-tab--on', !r); moleTab.classList.toggle('sr-tab--off', r);
       rhythmTab.classList.toggle('sr-tab--on', r); rhythmTab.classList.toggle('sr-tab--off', !r);

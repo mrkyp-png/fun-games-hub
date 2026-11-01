@@ -45,7 +45,8 @@
 // V1563 C: Top-panel cover spans full screen width (mailbox right strip), full cover when leaving a full-screen screen.
 // V1564 C: Upscaled transition clouds/burst (ESRGAN, 1024px), nav taps ignored while a transition runs (rapid-tap glitch).
 // V1565 C: Round map bands wait for all visible art (round plates, wave mole, hippo, buttons), max 2.5s.
-const CACHE = 'mole-game-v1565-C';
+// V1566 C: Score screen tab / beach-neon labels re-applied in current language on open.
+const CACHE = 'mole-game-v1566-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
