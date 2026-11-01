@@ -3288,7 +3288,7 @@ body { background: var(--lm-page); }
   border-radius: 0; box-shadow: none; z-index: 300; overflow: hidden;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
-  background: #1b1245 url('assets/daily/bg.jpg') center top / cover no-repeat; color: #fff;
+  background: linear-gradient(180deg, #5fb8f5 0%, #a9dcfb 40%, #d6f0ff 100%); color: #fff; /* V1558 C 사용자: 하늘(CSS) — 창 안 구름·앞 그림은 .dr-scene */
   --w: min(100vw - 16px, 480px, (100dvh - 40px) * 0.54); /* v766: 세로 공간을 더 씀 */
 }
 .dr-back { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); left: 10px; z-index: 5;
@@ -9615,7 +9615,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* Four-hour shop scenery; cards, controls and popup stacking stay independent. */
 #shop-screen[data-shop-theme="night"] { background-color:#071436!important; }
 #shop-screen>.shop-scenery,#shop-screen>.shop-sky { position:absolute!important; inset:0!important; z-index:0!important; pointer-events:none!important; overflow:hidden!important; }
-#shop-screen>.shop-scenery { background-position:center!important; background-size:cover!important; background-repeat:no-repeat!important; filter:brightness(.8); }
+#shop-screen>.shop-scenery { background-position:center!important; background-size:cover!important; background-repeat:no-repeat!important; } /* V1558 C: 어둡게 누르던 brightness(.8) 제거 */
 #shop-screen[data-shop-theme="night"]>.shop-scenery { filter:brightness(.7); }
 #shop-screen .shop-cloud-field,#shop-screen .shop-star-field { position:absolute; inset:0 0 auto; overflow:hidden; }
 #shop-screen .shop-cloud-field { height:28%; mask-image:linear-gradient(#000 0 83%,transparent); }
@@ -10030,3 +10030,27 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
   --sr-face: linear-gradient(180deg, #a8693a 0%, #95592d 30%, #7f4822 75%, #6e3c1a 100%);
   --sr-rim: linear-gradient(180deg, #e2b07a 0%, #b97a44 30%, #8a5228 75%, #5e3414 100%); --sr-highlight: #d9a06a; }
 .qs-achbtn.ws-action-frame span { color: #ffd84a; -webkit-text-stroke: 2px #3a1a04; paint-order: stroke fill; }
+/* V1558 C 사용자: 일일 화면 밝은 낮 오락실 — 하늘 + 흐르는 구름(창 안으로 보임) + 앞 그림(하늘 뺀 bg-v1558-front) */
+.dr-scene { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.dr-clouds { position: absolute; inset: 0 0 60% 0; }
+.dr-clouds img { position: absolute; left: 0; opacity: .95; animation: qs-cloud var(--d, 80s) linear var(--dl, 0s) infinite; will-change: transform; }
+.dr-front { position: absolute; inset: 0; background: url('assets/daily/bg-v1558-front.webp') center top / cover no-repeat; }
+.dr-stage { z-index: 1; }
+#daily-screen[hidden] .dr-clouds img { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .dr-clouds img { animation: none; } }
+/* V1558 C 사용자(가): 햇빛 — 위 창에서 들어오는 빛줄기가 90초에 걸쳐 각도가 천천히 바뀌고(아침→오후),
+   색감은 아침 따뜻함 → 한낮 → 오후 주황으로 은은하게. transform·opacity 만 움직여 폰 부담 적음 */
+.dr-sun { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.dr-sun i { position: absolute; display: block; }
+.dr-sun-rays { left: -40%; top: -30%; width: 180%; height: 170%; transform-origin: 50% 0; opacity: .85;
+  background: repeating-linear-gradient(90deg, rgba(255,250,220,0) 0 7%, rgba(255,248,215,.32) 9% 12%, rgba(255,250,220,0) 15% 22%);
+  -webkit-mask: linear-gradient(180deg, #000 0%, rgba(0,0,0,.6) 35%, transparent 75%); mask: linear-gradient(180deg, #000 0%, rgba(0,0,0,.6) 35%, transparent 75%);
+  animation: dr-sun-sweep 90s ease-in-out infinite alternate; will-change: transform; }
+@keyframes dr-sun-sweep { from { transform: rotate(-22deg); } to { transform: rotate(22deg); } }
+.dr-sun-warm, .dr-sun-eve { inset: 0; }
+.dr-sun-warm { background: radial-gradient(120% 70% at 15% 0%, rgba(255,214,140,.42), transparent 60%); animation: dr-sun-am 90s ease-in-out infinite alternate; }
+.dr-sun-eve { background: radial-gradient(120% 70% at 90% 0%, rgba(255,150,70,.36), transparent 60%); animation: dr-sun-pm 90s ease-in-out infinite alternate; }
+@keyframes dr-sun-am { 0% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes dr-sun-pm { 0%, 50% { opacity: 0; } 100% { opacity: 1; } }
+#daily-screen[hidden] .dr-sun i { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .dr-sun i { animation: none; } }

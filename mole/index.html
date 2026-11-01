@@ -36,7 +36,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@700&family=Jua&family=Lilita+One&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../cosmic-theme.css">
 <link rel="stylesheet" href="../common/settings.css">
-<link rel="stylesheet" href="style.css?v=1557-C">
+<link rel="stylesheet" href="style.css?v=1558-C">
 <link rel="stylesheet" href="roundmap-window.css?v=1554-C">
 <style>
   /* 로딩 스플래시 — style.css 로딩 전에도 바로 뜨게 인라인. */
@@ -896,6 +896,7 @@
 
       <!-- 일일출석(DAILY REWARD) 전체화면 — 바탕화면 "일일출석 UI 및 에셋" 명세·에셋 기준(v748). 카드 글자·수량·상태는 js/daily.js 가 그린다. -->
       <div class="board-screen dr-screen" id="daily-screen" hidden>
+        <div class="dr-scene" aria-hidden="true"><div class="dr-clouds"><img src="assets/quest/fx-cloud-v1556.webp" alt="" style="top:2%;width:30%;--d:75s;--dl:-10s"><img src="assets/quest/fx-cloud-v1556.webp" alt="" style="top:9%;width:22%;--d:95s;--dl:-55s"><img src="assets/quest/fx-cloud-v1556.webp" alt="" style="top:4%;width:18%;--d:115s;--dl:-85s"></div><div class="dr-front"></div><div class="dr-sun"><i class="dr-sun-rays"></i><i class="dr-sun-warm"></i><i class="dr-sun-eve"></i></div></div><!-- V1558 C 사용자: 밝은 낮 오락실(라운드 스타일), 창밖 구름 흐름. 햇빛(가) = 빛줄기 각도·색감이 천천히 변함 -->
         <button type="button" class="dr-back is-x game-close" data-back="daily" aria-label="뒤로" data-i18n-aria-label="common.back"><img loading="lazy" decoding="async" src="assets/score/icon-close-red.svg" alt=""></button>
         <div class="dr-stage">
           <div class="dr-top">
@@ -1008,7 +1009,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1557 C</div>
+        <div id="build-tag" aria-hidden="true">V 1558 C</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1043,7 +1044,7 @@
 <script src="js/photo-studio.js"></script>
 <script src="js/face-detect.js"></script>
 <script src="js/face-maker.js?v=1532-C"></script>
-<script src="js/shop-scenery-v1486.js"></script>
+<script src="js/shop-scenery-v1486.js?v=1558-C"></script>
 <script src="js/shop-models-v1509.js?v=1524-opt1"></script>
 <script src="js/shop.js?v=1531-C"></script>
 <script src="js/daily.js?v=1529-C"></script>
@@ -1294,7 +1295,7 @@ window.FGH.rollOut = function (el, done) {
         var gate = window.__moleAssetGate;
         function waitForCurrentWorker(registration) {
           return new Promise(function (resolve, reject) {
-            var latest = 'v=1557-C';
+            var latest = 'v=1558-C';
             var done = false;
             var timer = setTimeout(function () { finish(); }, 25000);
             function finish(error) {
@@ -1321,7 +1322,7 @@ window.FGH.rollOut = function (el, done) {
           console.warn('Starting while service worker registration continues in background');
           if (gate) gate.resolveCache();
         }, 30000);
-        navigator.serviceWorker.register('sw.js?v=1557-C').then(waitForCurrentWorker).then(function () {
+        navigator.serviceWorker.register('sw.js?v=1558-C').then(waitForCurrentWorker).then(function () {
           clearTimeout(registrationTimer);
           if (gate) gate.resolveCache();
         }).catch(function (error) {

@@ -1,10 +1,11 @@
 (function (root) {
   'use strict';
   var MG = root.MoleGame = root.MoleGame || {};
-  var PICTURES = { day: 'assets/shop-background-v1486/day.jpg', night: 'assets/shop-background-v1486/night.jpg' };
+  // V1558 C: 밝은 낮 장터 배경(라운드 스타일) 하나로 — 낮/밤 교대 없음
+  var PICTURES = { day: 'assets/shop-background-v1486/market-v1558.jpg', night: 'assets/shop-background-v1486/market-v1558.jpg' };
   var CLOUD = 'M12 38C8 27 17 19 30 21C29 8 48 5 60 16C73 1 100 6 110 23C129 15 149 23 146 39C157 48 144 62 128 55C116 65 93 63 82 55C68 66 45 63 36 53C21 61 10 51 12 38Z';
 
-  function themeAt(date) { return Math.floor(date.getHours() / 4) % 2 === 0 ? 'day' : 'night'; }
+  function themeAt() { return 'day'; }
   function nextChangeAt(date) {
     var next = new Date(date.getTime());
     next.setHours((Math.floor(date.getHours() / 4) + 1) * 4, 0, 0, 0);
