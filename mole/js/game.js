@@ -1284,7 +1284,71 @@
   }
 
   // V1156: immediate navigation keeps selection and panel in sync.
+  // V1561 C 사용자: 화면 전환 — 뿅망치가 가운데를 게임처럼 쾅 → 구름이 퍼져 덮고, 덮인 동안 화면 열기·그림 준비,
+  // 준비되면 구름이 흩어지며 창이 통 튀어나옴. 그림이 따로따로 뜨거나 빈 판이 보이지 않게.
+  const COVER_TINT = { 'shop-screen': ['#ff7a9a', '#e8365f'], 'inventory-screen': ['#5fdc7e', '#1fa64a'], 'daily-screen': ['#6fb6ff', '#2a6fe0'],
+    'quest-screen': ['#ffc04d', '#f08a00'], 'workshop-screen': ['#f07acb', '#c23d9a'], 'score-screen': ['#ff7a6a', '#d8281c'],
+    'mailbox-screen': ['#5fe0cf', '#11a596'], 'settings-screen': ['#6fa8ff', '#2a5fe0'], 'rhythm-screen': ['#b07aff', '#6a2ee0'] };
+  let lastTap = null;
+  document.addEventListener('pointerdown', (e) => { lastTap = { x: e.clientX, y: e.clientY }; }, true);
+  // V1561 C 사용자: 화면별 구름 색(구름 그림 하나에 색만 입힘)
+  const CLOUD_TINT = { 'shop-screen': 'sepia(.55) saturate(2.4) hue-rotate(295deg) brightness(1.04)', 'inventory-screen': 'sepia(.5) saturate(2.2) hue-rotate(55deg) brightness(1.05)',
+    'quest-screen': 'sepia(.65) saturate(2.6) hue-rotate(-12deg) brightness(1.04)', 'daily-screen': 'sepia(.45) saturate(2.6) hue-rotate(185deg) brightness(1.04)',
+    'rhythm-screen': 'saturate(1.9) hue-rotate(10deg)' };
+  function coverOpen(scr, rect, tint, open) {
+    if (!scr || !Element.prototype.animate) { open(); return; }
+    const R = rect && rect.width && rect.height ? rect : { left: 0, top: 0, width: innerWidth, height: innerHeight };
+    const host = document.createElement('div'); host.className = 'screen-cover';
+    host.style.cssText = 'left:' + R.left + 'px;top:' + R.top + 'px;width:' + R.width + 'px;height:' + R.height + 'px';
+    document.body.appendChild(host);
+    const S = R.width / 390, tx = R.width / 2, ty = R.height * 0.5;
+    const T = (x, y, s, r) => ({ transform: 'translate(' + x + 'px,' + y + 'px) rotate(' + (r || 0) + 'deg) scale(' + s + ')' });
+    const sprite = (src, w) => { const i = document.createElement('img'); i.src = src; i.alt = ''; i.style.width = w + 'px'; i.style.marginLeft = (-w / 2) + 'px'; i.style.marginTop = (-w / 2) + 'px'; host.appendChild(i); return i; };
+    // 뿅망치 = 게임 타격 동작 그대로(lane-hammer.js: 대기 → 조준 0.09초 -30도 → 내려찍기 0.045초 -82도), 크기 2배(사용자)
+    const h = document.createElement('img'); h.className = 'screen-cover-hammer'; h.alt = ''; h.src = 'assets/weapons/mallet-yaw10-rest15-v1379.png';
+    h.style.width = (R.width * 0.272 * 2) + 'px'; host.appendChild(h);
+    const k3 = 2, aimX = tx + R.width * 0.134 * k3 * 0.5, aimY = ty + R.height * 0.042 * k3 * 0.5, homeX = R.width * 0.9, homeY = R.height * 0.965;
+    const put = (x, y, d, o) => { h.style.left = x + 'px'; h.style.top = y + 'px'; h.style.transform = 'translate(-33%,-83%) rotate(' + (d - 15) + 'deg)'; h.style.opacity = o; };
+    const FLY = 90, CHOP = 45, RISE = 100, t0 = performance.now();
+    let hit = false, puffs = [];
+    (function swing() {
+      const t = performance.now() - t0; let x = aimX, y = aimY, d, o = 1;
+      if (t < FLY) { const k = (t / FLY) ** 2; x = homeX + (aimX - homeX) * k; y = homeY + (aimY - homeY) * k; d = 18 - 48 * k; }
+      else if (t < FLY + CHOP) { const k = ((t - FLY) / CHOP) ** 2; d = -30 - 52 * k; }
+      else { if (!hit) { hit = true; boom(); } const k = Math.min(1, (t - FLY - CHOP) / RISE); d = -82 + 52 * k; o = 1 - k; }
+      put(x, y, d, o);
+      if (t < FLY + CHOP + RISE) requestAnimationFrame(swing); else h.remove();
+    })();
+    const P = [[0, 0], [-140, -160], [140, -150], [-150, 170], [150, 190], [0, -320], [0, 330], [-170, 0], [170, 10], [-60, 420], [80, -420], [-120, 300], [130, -300]];
+    function boom() {
+      const b = sprite('assets/ui-transition-v1561/burst.webp', 130 * S); b.style.opacity = 0;
+      b.animate([Object.assign(T(tx, ty, .2, 0), { opacity: 1 }), Object.assign(T(tx, ty, 1.2, 20), { opacity: 1, offset: .5 }), Object.assign(T(tx, ty, 1.5, 30), { opacity: 0 })], { duration: 220, fill: 'forwards', easing: 'ease-out' });
+      puffs = P.map((d, i) => {
+        const p = sprite('assets/ui-transition-v1561/cloud.webp', 300 * S); p.style.opacity = 0; if (CLOUD_TINT[scr.id]) p.style.filter = CLOUD_TINT[scr.id];
+        const x = tx + d[0] * S, y = ty + d[1] * S, sc = 1.8 + (i % 3) * .2;
+        p.animate([Object.assign(T(tx, ty, .1), { opacity: 1 }), Object.assign(T(x, y, sc), { opacity: 1 })], { duration: 260, delay: i * 10, fill: 'forwards', easing: 'cubic-bezier(.2,.8,.3,1)' });
+        return { p, x, y, d };
+      });
+      setTimeout(() => {
+        open();
+        const t1 = performance.now();
+        (function wait() {
+          const now = performance.now();
+          if (now - t1 < 60 || (scr.classList.contains('asset-preparing') && now - t1 < 2500)) { requestAnimationFrame(wait); return; }
+          puffs.forEach(({ p, x, y, d }) => p.animate([Object.assign(T(x, y, 2), { opacity: 1 }), Object.assign(T(tx + d[0] * 3.2 * S, ty + d[1] * 3.2 * S, 2.5), { opacity: 0 })], { duration: 300, fill: 'forwards', easing: 'ease-in' }));
+          setTimeout(() => host.remove(), 320);
+        })();
+      }, 140); // 구름이 거의 덮는 순간 바로 화면 열기 시작
+    }
+  }
   function openMore(sub, originEl) {
+    if (COVER_TINT[sub] && !openMore.covering) {
+      const isStart0 = document.getElementById('game-screen').classList.contains('is-start');
+      const box = document.getElementById(isStart0 ? 'board-start' : 'mole-board');
+      const rect = box && box.getBoundingClientRect();
+      coverOpen(document.getElementById(sub), rect, COVER_TINT[sub], () => { openMore.covering = true; try { openMore(sub, originEl); } finally { openMore.covering = false; } });
+      return;
+    }
     var isStart = document.getElementById('game-screen').classList.contains('is-start');
     var outEl = document.getElementById(isStart ? 'board-start' : 'mole-board');
     // V1357 C: 버튼판 말고 다른 곳(알림 팝업 등)에서 열어도 화면 상태(시작버튼 투명 등)가 맞게
@@ -1338,8 +1402,10 @@
       if (sub === 'roundmap-screen' && roundMap) roundMap.show();
       if (sub === 'quest-screen' && window.__questScreen) window.__questScreen.show();
       if (sub === 'mailbox-screen' && window.__mailbox) window.__mailbox.show();
-      // v836(사용자 지정): 뒤로가기와 같은 글리치로 진입 — 스코어·출석·제작소·광산지도
-      if (sub !== 'roundmap-screen' && ['score-screen', 'daily-screen', 'workshop-screen', 'roundmap-screen', 'shop-screen', 'inventory-screen', 'quest-screen', 'mailbox-screen', 'settings-screen'].indexOf(sub) >= 0) { // v862: 상점·아이템도
+      // V1561 C 사용자: 화면 그림이 따로따로 뜨지 않게 — 다 준비되면 한 번에 보여줌(광산지도는 자체 준비 장치)
+      if (sub !== 'roundmap-screen') revealOrBands(document.getElementById(sub), openMore.covering);
+      // v836(사용자 지정): 뒤로가기와 같은 글리치로 진입 — 스코어·출석·제작소·광산지도 (V1561 C: 상점은 팝업 등장으로 대체)
+      if (!openMore.covering && sub !== 'roundmap-screen' && sub !== 'shop-screen' && ['score-screen', 'daily-screen', 'workshop-screen', 'roundmap-screen', 'shop-screen', 'inventory-screen', 'quest-screen', 'mailbox-screen', 'settings-screen'].indexOf(sub) >= 0) { // v862: 상점·아이템도
         const gs = document.getElementById(sub);
         gs.classList.remove('glitch-in'); void gs.offsetWidth; gs.classList.add('glitch-in');
         setTimeout(() => gs.classList.remove('glitch-in'), 260);
@@ -1368,7 +1434,20 @@
   // ---------- 시작 화면 ----------
   // 리듬팡(v807) — 전체화면, 홈 BGM 멈추고 리듬팡 곡 재생. 닫으면 홈 BGM 복귀.
   let rhythm = null;
+  // V1561 C 사용자: 화면 그림이 다 준비되면 한 번에. 준비가 0.12초 넘게 걸리면 광산지도처럼 띠 전환 화면으로 덮고 기다렸다가 걷음
+  function revealOrBands(scr, covered) {
+    if (!scr || !window.MoleAssetLoader || !window.MoleAssetLoader.revealWhenReady) return;
+    window.MoleAssetLoader.revealWhenReady(scr);
+    if (covered) return; // 원 덮개가 이미 덮고 기다림
+    setTimeout(() => {
+      if (scr.classList.contains('asset-preparing') && MG.RoundMap && MG.RoundMap.shapeTransition) MG.RoundMap.shapeTransition(1, () => {}, null, null, () => scr.classList.contains('asset-preparing'));
+    }, 120);
+  }
   function openRhythm() {
+    if (!openRhythm.covering) {
+      coverOpen(document.getElementById('rhythm-screen'), { left: 0, top: 0, width: innerWidth, height: innerHeight }, COVER_TINT['rhythm-screen'], () => { openRhythm.covering = true; try { openRhythm(); } finally { openRhythm.covering = false; } });
+      return;
+    }
     const el = document.getElementById('rhythm-screen');
     const gameScreen = document.getElementById('game-screen');
     const hinge = document.getElementById('fold-hinge');
@@ -1378,8 +1457,8 @@
     if (!rhythm) rhythm = window.__rhythm = MG.Rhythm.create({ root: el, onEntryMusic: setRhythmEntryBgm, onClose: (why) => { window.FGH.rollOut(el, () => { el.hidden = true; if (gameScreen) gameScreen.classList.remove('hinge-hidden-by-nav'); if (hinge) hinge.style.visibility = gameScreen && gameScreen.classList.contains('is-start') ? 'visible' : 'hidden'; playScreenBgm('home'); refreshBoardStats(); }); } }); // v841: 일시정지→그만하기 = 탄성 밀어내기
     stopBgm();
     rhythm.open();
-    el.classList.remove('glitch-in'); void el.offsetWidth; el.classList.add('glitch-in');
-    setTimeout(() => el.classList.remove('glitch-in'), 260);
+    // V1561 C 사용자: 리듬팡도 그림이 다 준비되면 한 번에
+    revealOrBands(el, true);
   }
   function showStartScreen(opts) {
     // v862(사용자 지정): 상점·아이템 화면에서 홈으로 갈 때도 글리치로 사라짐

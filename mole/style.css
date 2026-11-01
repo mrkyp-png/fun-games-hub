@@ -10058,3 +10058,13 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen>.shop-cards-box:is([data-pane="heart"],[data-pane="weapon"])::after { background: linear-gradient(90deg,#bfe6ff,#e3f5ff 50%,#bfe6ff); }
 #shop-screen>.shop-cards-box:is([data-pane="coin"],[data-pane="skill"])::after { background: linear-gradient(90deg,#c4f0dc,#e6fbf1 50%,#c4f0dc); }
 #shop-screen>.shop-cards-box:is([data-pane="ticket"],[data-pane="costume"])::after { background: linear-gradient(90deg,#ffd3dc,#ffeef2 50%,#ffd3dc); }
+/* V1561 C 사용자: 화면 전환 — 그림이 다 준비될 때까지 가렸다가 한 번에(asset-loader revealWhenReady) */
+.asset-preparing, .asset-preparing * { visibility: hidden !important; }
+/* V1561 C 사용자: 팝업 등장 — 창이 통 튀어나오듯(0.28초), 뒤는 살짝 어둡게 시작 */
+.asset-pop { animation: asset-pop .28s cubic-bezier(.2,.9,.3,1.25) both; transform-origin: 50% 55%; }
+@keyframes asset-pop { 0% { transform: scale(.82); opacity: 0; filter: brightness(.7); } 60% { opacity: 1; filter: none; } 100% { transform: scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .asset-pop { animation: none; } }
+/* V1561 C 사용자: 화면 전환 = 뿅망치 쾅 + 구름(game.js coverOpen). 덮개 영역 밖은 잘라 다이얼 패드는 그대로 */
+.screen-cover { position: fixed; z-index: 2147482000; pointer-events: auto; overflow: hidden; }
+.screen-cover img { position: absolute; left: 0; top: 0; pointer-events: none; }
+.screen-cover-hammer { transform-origin: 33% 83%; z-index: 2; filter: drop-shadow(0 6px 6px rgba(0,0,0,.25)); }

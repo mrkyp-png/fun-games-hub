@@ -40,7 +40,8 @@
 // V1558 C: Daily bright arcade bg (sky + drifting clouds + front art) + slow sunlight sweep/tint; shop = bright market street bg (always day, no dim).
 // V1559 C: Shop card panel color per tab (heart/weapon sky, coin/skill mint, ticket/costume pink).
 // V1560 C: Round map rear brightness: normal 170%, pro 130% (incl. rear fluid).
-const CACHE = 'mole-game-v1560-C';
+// V1561 C: Screen transitions — hammer strike + tinted clouds cover, screens revealed only when all art is loaded (incl. visible 3D weapons), idle warm-up of screen art.
+const CACHE = 'mole-game-v1561-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -83,6 +84,8 @@ const SHELL = [
   './js/item-inventory.js',
   './js/shop-scenery-v1486.js',
   './assets/shop-background-v1486/market-v1558.jpg',
+  './assets/ui-transition-v1561/cloud.webp',
+  './assets/ui-transition-v1561/burst.webp',
   './assets/shop-background-v1486/night.jpg',
   './assets/skills/shop-hd-v1484/shield-clean.webp',
   './assets/skills/shop-hd-v1484/targeting-clean.webp',

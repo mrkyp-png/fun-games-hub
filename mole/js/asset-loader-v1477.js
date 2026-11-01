@@ -181,8 +181,92 @@
       if (Array.isArray(list)) list.forEach(function (path) { ensure(path, 0, false); });
     } catch (e) { /* Optional manifest failure cannot hold launch or screen entry. */ }
   }
+  // V1561 C 사용자: 화면 전환 때 그림이 따로따로 뜨는 문제 — 화면을 가려 둔 채 그 화면의 모든 그림(img·CSS 배경·::before/::after·border-image)을
+  // 받아 디코드한 뒤 한 번에 보여준다. 늦어도 maxMs 안에는 보여줘서 화면이 멈추지 않게.
+  var revealTicket = new WeakMap();
+  function screenUrls(container) {
+    var urls = new Set(), imgs = [];
+    [container].concat(Array.from(container.querySelectorAll('*'))).forEach(function (el) {
+      if (!el.getClientRects().length) return;
+      if (el.tagName === 'IMG') { if (el.loading === 'lazy') el.loading = 'eager'; imgs.push(el); return; }
+      [null, '::before', '::after'].forEach(function (pseudo) {
+        var st = getComputedStyle(el, pseudo);
+        [st.backgroundImage, st.borderImageSource, st.maskImage, st.webkitMaskImage].forEach(function (v) {
+          var m, re = /url\(["']?([^"')]+)["']?\)/g;
+          while ((m = re.exec(v || ''))) { if (!/^data:/.test(m[1])) urls.add(m[1]); }
+        });
+      });
+    });
+    return { urls: Array.from(urls), imgs: imgs };
+  }
+  function decodeImg(im) { return im.decode ? im.decode().catch(function () {}) : Promise.resolve(); }
+  // 한 번 디코드한 그림은 기억해 두고 다시 기다리지 않음(미리 데워 둔 그림 포함)
+  var decodedSet = new Set();
+  function absUrl(u) { try { return new URL(u, location.href).href; } catch (e) { return u; } }
+  function decodeUrl(u) { var a = absUrl(u); if (decodedSet.has(a)) return Promise.resolve(); var im = new Image(); im.decoding = 'async'; im.src = u; return decodeImg(im).then(function () { decodedSet.add(a); }); }
+  // 화면 열 때 기다리는 것 = 그림 받기(load)까지만. 디코드까지 기다리면 큰 그림마다 0.5초씩 걸려 덮개가 오래 머묾(V1561 C 실측)
+  function loadedImg(im) { return im.complete ? Promise.resolve() : new Promise(function (r) { im.addEventListener('load', r, { once: true }); im.addEventListener('error', r, { once: true }); }); }
+  function loadedUrl(u) { var a = absUrl(u); if (decodedSet.has(a)) return Promise.resolve(); var im = new Image(); im.src = u; warmRefs.push(im); return loadedImg(im); }
+  function revealWhenReady(el, maxMs) {
+    if (!el) return Promise.resolve();
+    var ticket = {}; revealTicket.set(el, ticket);
+    el.classList.add('asset-preparing');
+    var done = function () {
+      if (revealTicket.get(el) !== ticket) return;
+      el.classList.remove('asset-preparing');
+      // V1561 C 사용자: 팝업 등장(창이 통 튀어나오듯) — data-reveal-pop 가 있는 화면만
+      if (el.hasAttribute('data-reveal-pop')) { el.classList.remove('asset-pop'); void el.offsetWidth; el.classList.add('asset-pop'); setTimeout(function () { el.classList.remove('asset-pop'); }, 320); }
+    };
+    return new Promise(function (r) { requestAnimationFrame(function () { requestAnimationFrame(r); }); }).then(function () {
+      var found = screenUrls(el);
+      rememberScreen(el.id, found);
+      var work = found.imgs.map(loadedImg).concat(found.urls.map(loadedUrl));
+      // 3D 무기 그림(아이템·상점)도 그려질 때까지 — 늦게 혼자 뜨지 않게
+      var models = Array.from(el.querySelectorAll('[data-model-weapon]')).filter(function (m) { var b = m.getBoundingClientRect(); return b.width && b.right > 0 && b.left < innerWidth && b.bottom > 0 && b.top < innerHeight; }); // 화면 안에 보이는 것만(옆 페이지 제외)
+      if (models.length) work.push(bounded(new Promise(function (r) { (function chk() { if (models.every(function (m) { return m.classList.contains('shop-model-ready') || m.hasAttribute('data-model-error'); })) r(); else requestAnimationFrame(chk); })(); }), 1200, null)); // 3D 준비는 최대 1.2초만 기다림
+      return bounded(Promise.all(work), maxMs || 2500, null);
+    }).then(done, done);
+  }
+  // V1561 C 사용자: 미리 데워 두기 — 홈에서 쉬는 동안 각 화면 그림을 미리 받아 디코드해 붙잡아 둠 → 처음 열어도 바로 한 번에.
+  // 그림 목록 = 지난번 그 화면을 열었을 때 기록한 목록(localStorage) + 숨은 화면의 HTML·CSS 에서 읽은 것.
+  var WARM_KEY = 'mole.warmUrls.v1', warmRefs = [], warmed = false;
+  function readWarm() { try { return JSON.parse(localStorage.getItem(WARM_KEY) || '{}') || {}; } catch (e) { return {}; } }
+  function rememberScreen(id, found) {
+    if (!id) return;
+    var list = found.urls.concat(found.imgs.map(function (im) { return im.currentSrc || im.src; })).filter(function (u) { return u && !/^(data|blob):/.test(u); });
+    var all = readWarm(); all[id] = Array.from(new Set(list)).slice(0, 300);
+    try { localStorage.setItem(WARM_KEY, JSON.stringify(all)); } catch (e) {}
+  }
+  function staticUrls(container) {
+    var urls = [];
+    [container].concat(Array.from(container.querySelectorAll('*'))).forEach(function (el) {
+      if (el.tagName === 'IMG') { var a = el.getAttribute('src'); if (a && !/^data:/.test(a)) urls.push(a); return; }
+      [null, '::before', '::after'].forEach(function (pseudo) {
+        var st = getComputedStyle(el, pseudo), m, re = /url\(["']?([^"')]+)["']?\)/g;
+        while ((m = re.exec(st.backgroundImage || ''))) { if (!/^data:/.test(m[1])) urls.push(m[1]); }
+      });
+    });
+    return urls;
+  }
+  function warmScreens(ids) {
+    if (warmed) return; warmed = true;
+    var saved = readWarm(), urls = new Set();
+    ids.forEach(function (id) {
+      (saved[id] || []).forEach(function (u) { urls.add(u); });
+      var el = document.getElementById(id); if (el) staticUrls(el).forEach(function (u) { urls.add(u); });
+    });
+    var list = Array.from(urls), i = 0;
+    // 한 번에 4장씩, 쉬는 틈에 — 홈 화면 터치·애니메이션 방해 안 하게
+    (function step() {
+      if (i >= list.length) return;
+      var batch = list.slice(i, i + 4); i += 4;
+      Promise.all(batch.map(function (u) { var im = new Image(); im.decoding = 'async'; im.src = u; warmRefs.push(im); return decodeImg(im).then(function () { decodedSet.add(absUrl(u)); }); })).then(function () {
+        (root.requestIdleCallback || function (f) { setTimeout(f, 60); })(step, { timeout: 400 });
+      });
+    })();
+  }
   root.prepareMoleAssets = prepare;
-  root.MoleAssetLoader = { collect: collect, ensure: ensure, watchScreens: watchScreens, startBackground: startBackground,
+  root.MoleAssetLoader = { collect: collect, ensure: ensure, watchScreens: watchScreens, startBackground: startBackground, revealWhenReady: revealWhenReady, warmScreens: warmScreens,
     isReady: function (paths) { return paths.map(absolute).filter(Boolean).every(function (u) { return tasks.get(u) && tasks.get(u).state === 'ready'; }); }
   };
 })(window);

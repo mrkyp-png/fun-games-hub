@@ -58,6 +58,8 @@
       var now = new Date(), theme = themeAt(now), token = ++request;
       if (!el.dataset.shopTheme) el.dataset.shopTheme = theme;
       if (theme === 'night') createStars();
+      // V1561 C: 그림 주소를 바로 넣어 화면 '한 번에 보여주기'(asset-loader revealWhenReady)가 이 배경까지 기다리게
+      if (!picture.style.backgroundImage) picture.style.backgroundImage = 'url("' + PICTURES[theme] + '")';
       load(theme).then(function (url) {
         if (token !== request || !active || el.hidden || document.hidden) return;
         // Decode first, then replace the background and weather together.
