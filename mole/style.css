@@ -10007,10 +10007,11 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 @keyframes qs-cloud { from { transform: translateX(-45vw); } to { transform: translateX(110vw); } }
 .qs-front { position: absolute; inset: 0; background: url('assets/quest/bg-v1556-front.webp') center / cover no-repeat; }
 .qs-bugs { position: absolute; inset: 0; }
-.qs-bug { position: absolute; width: 9vmin; max-width: 44px; transform: translate(-50%, -50%) scaleX(var(--flip, 1)); transition: left var(--t, 2s) ease-in-out, top var(--t, 2s) ease-in-out; }
+.qs-bug { position: absolute; width: 9vmin; max-width: 44px; transform: translate(-50%, -50%) rotate(var(--rot, 0deg)); transition: left var(--t, 2s) ease-in-out, top var(--t, 2s) ease-in-out, transform .35s ease-out; }
 .qs-bug img { display: block; width: 100%; animation: qs-flap .16s ease-in-out infinite alternate; transform-origin: 50% 50%; }
 .qs-bug--dragonfly { width: 10vmin; max-width: 48px; }
-.qs-bug--dragonfly img { animation: qs-hover .5s ease-in-out infinite alternate; }
+.qs-bug--dragonfly img { animation: qs-dfly-flap .05s linear infinite alternate; } /* V1557 C 사용자: 잠자리도 날갯짓(빠르게) */
+@keyframes qs-dfly-flap { from { transform: scaleX(1); } to { transform: scaleX(.72); } }
 @keyframes qs-flap { from { transform: scaleX(1); } to { transform: scaleX(.35); } }
 @keyframes qs-hover { from { transform: translateY(-1px) rotate(-3deg); } to { transform: translateY(1px) rotate(3deg); } }
 .qs-stage { z-index: 1; }
@@ -10024,3 +10025,8 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 .qs-achbtn .qs-arr--r { right: 6%; }
 /* 나비·잠자리는 UI 위로 날아다님(터치는 통과) */
 .qs-scene { z-index: auto; } .qs-clouds, .qs-front { z-index: 0; } .qs-bugs { z-index: 2; }
+/* V1557 C 사용자: 업적 버튼 = 같은 모양, 색은 갈색. 크기는 예전 그림 버튼(343×109)과 같게 — 위 퀘스트 판 높이가 바뀌지 않게 */
+.qs-achbtn.ws-action-frame { aspect-ratio: 343 / 109;
+  --sr-face: linear-gradient(180deg, #a8693a 0%, #95592d 30%, #7f4822 75%, #6e3c1a 100%);
+  --sr-rim: linear-gradient(180deg, #e2b07a 0%, #b97a44 30%, #8a5228 75%, #5e3414 100%); --sr-highlight: #d9a06a; }
+.qs-achbtn.ws-action-frame span { color: #ffd84a; -webkit-text-stroke: 2px #3a1a04; paint-order: stroke fill; }

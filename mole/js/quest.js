@@ -129,11 +129,11 @@
       '</div>';
     $('[data-qs-close]').addEventListener('click', function () { if (mode === 'ach') { mode = 'daily'; render(true); return; } if (root.FGH && root.FGH.rollOut) root.FGH.rollOut(el, opts.onClose); else opts.onClose(); }); // v898: 나갈 때 글리치
     $('[data-qs-ach]').addEventListener('click', function () { mode = mode === 'ach' ? 'daily' : 'ach'; render(true); });
-    // V1556 C 사용자: 나비·잠자리 1~4마리가 무작위로 날아다님(화면이 보일 때만)
+    // V1556 C 사용자: 나비·잠자리(V1557 C 최대 2마리)가 무작위로 날아다님(화면이 보일 때만)
     var bugBox = $('[data-qs-bugs]'), bugTimer = null;
     function spawnBugs() {
       bugBox.innerHTML = '';
-      var n = 1 + Math.floor(Math.random() * 4);
+      var n = 1 + Math.floor(Math.random() * 2); // V1557 C 사용자: 한 화면 최대 2마리
       for (var i = 0; i < n; i++) {
         var kind = Math.random() < 0.5 ? 'butterfly' : 'dragonfly';
         var b = document.createElement('i'); b.className = 'qs-bug qs-bug--' + kind;
@@ -147,8 +147,10 @@
       if (el.hidden || document.hidden) return;
       bugBox.querySelectorAll('.qs-bug').forEach(function (b) {
         var x = 3 + Math.random() * 88, y = 3 + Math.random() * 88;
-        var dx = x - parseFloat(b.style.left), t = (1.6 + Math.random() * 2.2).toFixed(2);
-        b.style.setProperty('--t', t + 's'); b.style.setProperty('--flip', dx < 0 ? -1 : 1);
+        var box = bugBox.getBoundingClientRect(), t = (1.6 + Math.random() * 2.2).toFixed(2);
+        var dx = (x - parseFloat(b.style.left)) * box.width, dy = (y - parseFloat(b.style.top)) * box.height;
+        b.style.setProperty('--t', t + 's');
+        b.style.setProperty('--rot', (Math.atan2(dy, dx) * 180 / Math.PI + 90).toFixed(0) + 'deg'); // V1557 C 사용자: 머리(그림 위쪽)가 나는 방향
         b.style.left = x.toFixed(1) + '%'; b.style.top = y.toFixed(1) + '%';
       });
       bugTimer = setTimeout(moveBugs, 1800 + Math.random() * 2200);
