@@ -35,7 +35,8 @@
 // V1553 C: Normal round map new bright 3D cartoon art (same layout, 8% lower), new edge frame, old depth shade + crystal glow off; amateur round 7 tip below.
 // V1554 C: Pro round map new bright 3D cartoon art (mirrored layout + stairs to round 1), edge frame, lava flow re-aligned (8 streaks, new mask); mode buttons centered on X with X's formula.
 // V1555 C: Pro lava flow zones start at each streak's top rim (8 streaks re-measured), new mask.
-const CACHE = 'mole-game-v1555-C';
+// V1556 C: Quest screen bright day bg (CSS sky + drifting clouds + front art), 1-4 random butterflies/dragonflies, ach button = workshop yellow button + new arrows.
+const CACHE = 'mole-game-v1556-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.

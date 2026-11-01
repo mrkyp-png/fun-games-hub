@@ -112,7 +112,11 @@
   function create(opts) {
     var el = opts.root, mode = 'daily', achTab = 'round';
     var $ = function (q) { return el.querySelector(q); };
+    // V1556 C 사용자: 밝은 낮 배경 = 하늘(CSS) + 흐르는 구름 + 앞 그림(하늘 뺀 배경) + 나비·잠자리 1~4마리
     el.innerHTML =
+      '<div class="qs-scene" aria-hidden="true"><div class="qs-clouds">' +
+        [[6, 34, 70, -10], [17, 26, 92, -55], [3, 22, 110, -80]].map(function (c) { return '<img src="' + A + 'fx-cloud-v1556.webp" alt="" style="top:' + c[0] + '%;width:' + c[1] + '%;--d:' + c[2] + 's;--dl:' + c[3] + 's">'; }).join('') +
+        '</div><div class="qs-front"></div><div class="qs-bugs" data-qs-bugs></div></div>' +
       '<div class="qs-stage">' +
         '<div class="qs-head"><div class="qs-character-slot" aria-hidden="true"></div>' +
           '<svg class="qs-title" viewBox="0 0 500 110" aria-hidden="true"><defs><linearGradient id="qsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff58a"/><stop offset="0.45" stop-color="#ffcf1f"/><stop offset="1" stop-color="#ff8a00"/></linearGradient></defs>' +
@@ -121,10 +125,36 @@
           '<div class="qs-tabs" data-qs-tabs></div>' +
         '</div>' +
         '<div class="qs-list" data-qs-list></div>' +
-        '<button type="button" class="qs-achbtn" data-qs-ach><img src="' + A + 'ach-btn-blank.png" alt=""><span></span></button>' +
+        '<button type="button" class="qs-achbtn ws-action-frame" data-qs-ach><img class="qs-arr qs-arr--l" src="' + A + 'fx-arrow-v1556.webp" alt=""><span></span><img class="qs-arr qs-arr--r" src="' + A + 'fx-arrow-v1556.webp" alt=""></button>' + // V1556 C 사용자: 업적 = 제작소 강화하기 버튼 모양 + 새 화살표
       '</div>';
     $('[data-qs-close]').addEventListener('click', function () { if (mode === 'ach') { mode = 'daily'; render(true); return; } if (root.FGH && root.FGH.rollOut) root.FGH.rollOut(el, opts.onClose); else opts.onClose(); }); // v898: 나갈 때 글리치
     $('[data-qs-ach]').addEventListener('click', function () { mode = mode === 'ach' ? 'daily' : 'ach'; render(true); });
+    // V1556 C 사용자: 나비·잠자리 1~4마리가 무작위로 날아다님(화면이 보일 때만)
+    var bugBox = $('[data-qs-bugs]'), bugTimer = null;
+    function spawnBugs() {
+      bugBox.innerHTML = '';
+      var n = 1 + Math.floor(Math.random() * 4);
+      for (var i = 0; i < n; i++) {
+        var kind = Math.random() < 0.5 ? 'butterfly' : 'dragonfly';
+        var b = document.createElement('i'); b.className = 'qs-bug qs-bug--' + kind;
+        b.innerHTML = '<img src="' + A + 'fx-' + kind + '-v1556.webp" alt="">';
+        b.style.left = (5 + Math.random() * 85) + '%'; b.style.top = (5 + Math.random() * 85) + '%';
+        bugBox.appendChild(b);
+      }
+    }
+    function moveBugs() {
+      clearTimeout(bugTimer); bugTimer = null;
+      if (el.hidden || document.hidden) return;
+      bugBox.querySelectorAll('.qs-bug').forEach(function (b) {
+        var x = 3 + Math.random() * 88, y = 3 + Math.random() * 88;
+        var dx = x - parseFloat(b.style.left), t = (1.6 + Math.random() * 2.2).toFixed(2);
+        b.style.setProperty('--t', t + 's'); b.style.setProperty('--flip', dx < 0 ? -1 : 1);
+        b.style.left = x.toFixed(1) + '%'; b.style.top = y.toFixed(1) + '%';
+      });
+      bugTimer = setTimeout(moveBugs, 1800 + Math.random() * 2200);
+    }
+    if (root.MutationObserver) new MutationObserver(function () { if (!el.hidden) { spawnBugs(); setTimeout(moveBugs, 60); } else { clearTimeout(bugTimer); bugTimer = null; } }).observe(el, { attributes: true, attributeFilter: ['hidden'] });
+
 
     function setTitle(txt) { el.querySelectorAll('.qs-title text').forEach(function (t) { t.textContent = txt; t.setAttribute('x', '250'); t.setAttribute('text-anchor', 'middle'); }); }
     function statusHtml(content) { return '<div class="qs-status">' + content + '</div>'; }
