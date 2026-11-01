@@ -36,8 +36,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@700&family=Jua&family=Lilita+One&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../cosmic-theme.css">
 <link rel="stylesheet" href="../common/settings.css">
-<link rel="stylesheet" href="style.css?v=1553-C">
-<link rel="stylesheet" href="roundmap-window.css?v=1553-C">
+<link rel="stylesheet" href="style.css?v=1554-C">
+<link rel="stylesheet" href="roundmap-window.css?v=1554-C">
 <style>
   /* 로딩 스플래시 — style.css 로딩 전에도 바로 뜨게 인라인. */
   #splash {
@@ -502,9 +502,9 @@
             <img loading="lazy" decoding="async" class="rm-route-art" src="assets/roundmap/hd-v1550/easy-route.webp" alt=""><!-- V1550 C 사용자: 밝은 3D 카툰 새 라운드 그림(게임색채.jpg 기준) -->
             <img loading="lazy" decoding="async" class="rm-front-art rm-front-art--l" src="assets/roundmap/hd-v1550/easy-front.webp" alt=""><img loading="lazy" decoding="async" class="rm-front-art rm-front-art--r" src="assets/roundmap/hd-v1550/easy-front.webp" alt=""><!-- V1550 C 사용자: 새 액자(바위·나무). 좌우 반쪽을 각각 화면 끝에 붙임 -->
             <img loading="lazy" decoding="async" class="rm-selected-front rm-mode-mid rm-mid-route" src="assets/roundmap/hd-v1553/mid-route.webp" alt=""><img loading="lazy" decoding="async" class="rm-selected-front rm-mode-mid rm-front-art--l" src="assets/roundmap/hd-v1553/mid-frame.webp" alt=""><img loading="lazy" decoding="async" class="rm-selected-front rm-mode-mid rm-front-art--r" src="assets/roundmap/hd-v1553/mid-frame.webp" alt=""><!-- V1553 C 사용자: 노말 = 현재 구도 그대로 밝은 3D 카툰(Codex), 라운드 그림 8% 아래로, 액자 좌우 끝에 조금만. 위 어둡게(depth-shade) 삭제 --><!-- V1545 C 사용자: 노말 앞그림·액자 새 그림(수정 동굴, 줄사다리) — 예전 보석·랜턴 빛 층 삭제 --><!-- V1321 C 노말 보석·랜턴 빛 -->
-            <img loading="lazy" decoding="async" class="rm-selected-front rm-mode-legend" src="assets/roundmap/hd-v1547/legend-front.webp" alt=""><img loading="lazy" decoding="async" class="rm-glow-layer rm-glow-gem rm-mode-legend" src="assets/roundmap/hd-v1330/legend-front-gem.webp" alt="" style="left:0.000%;top:7.600%;width:100.000%;height:90.850%"><img loading="lazy" decoding="async" class="rm-glow-layer rm-glow-lan rm-mode-legend" src="assets/roundmap/hd-v1330/legend-front-lan.webp" alt="" style="left:33.925%;top:12.850%;width:32.682%;height:65.150%"><!-- V1324 C 프로 보석·랜턴 빛 --><!-- V1330 C 원근 그림자는 앞 그림(hd-v1330)에 구워 넣음 -->
+            <img loading="lazy" decoding="async" class="rm-selected-front rm-mode-legend" src="assets/roundmap/hd-v1554/pro-route.webp" alt=""><!-- V1554 C 사용자: 프로 = 기존 구도 좌우 거울 + 1층 계단, 밝은 3D 카툰(Codex). 옛 보석·랜턴 빛 층 삭제 -->
             <canvas class="rm-fluid-canvas rm-front-fluid" data-rm-front-fluid hidden></canvas>
-            <img loading="lazy" decoding="async" class="rm-round2-rock-front rm-mode-legend" src="assets/roundmap/hd-v1547/legend-front.webp" alt="" aria-hidden="true">
+            <img loading="lazy" decoding="async" class="rm-selected-front rm-mode-legend rm-front-art--l rm-pro-frame" src="assets/roundmap/hd-v1554/pro-frame.webp" alt=""><img loading="lazy" decoding="async" class="rm-selected-front rm-mode-legend rm-front-art--r rm-pro-frame" src="assets/roundmap/hd-v1554/pro-frame.webp" alt=""><!-- V1554 C: 프로 액자(가장자리 조금만), 옛 라운드2 앞 바위 층 삭제 -->
           </div>
           <div class="rm-fx" data-rm-fx></div>
           <div class="rm-headlamp-beam" aria-hidden="true"><svg viewBox="0 0 100 160" preserveAspectRatio="none"><defs><linearGradient id="rm-headlamp-cone" x1="40" y1="84" x2="17" y2="39" gradientUnits="userSpaceOnUse"><stop stop-color="#fff1ae" stop-opacity=".22"/><stop offset=".48" stop-color="#ffd56b" stop-opacity=".11"/><stop offset="1" stop-color="#ffc858" stop-opacity="0"/></linearGradient><radialGradient id="rm-headlamp-pool"><stop stop-color="#fffbd0" stop-opacity=".58"/><stop offset=".38" stop-color="#ffe49a" stop-opacity=".28"/><stop offset="1" stop-color="#ffc65a" stop-opacity="0"/></radialGradient><radialGradient id="rm-headlamp-source"><stop stop-color="#fff7c2" stop-opacity=".78"/><stop offset="1" stop-color="#ffbb43" stop-opacity="0"/></radialGradient></defs><path d="M40 85 C37 70 25 55 13 43 C10 39 14 36 20 39 C34 49 43 67 44 85 Z" fill="url(#rm-headlamp-cone)"/><ellipse cx="17" cy="42" rx="17" ry="10" fill="url(#rm-headlamp-pool)"/><ellipse cx="40" cy="85" rx="5.5" ry="4" fill="url(#rm-headlamp-source)"/></svg></div>
@@ -1008,7 +1008,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1553 C</div>
+        <div id="build-tag" aria-hidden="true">V 1554 C</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1075,8 +1075,8 @@ window.FGH.rollOut = function (el, done) {
 <script src="js/workshop-enhance.js?v=1524-opt1"></script>
 <script src="js/workshop.js?v=1531-C"></script>
 <script src="js/round-map-fluids.js"></script>
-<script src="js/round-map-fluid-scenes.js"></script>
-<script src="js/round-map.js?v=1553-C"></script>
+<script src="js/round-map-fluid-scenes.js?v=1554-C"></script>
+<script src="js/round-map.js?v=1554-C"></script>
 <script src="js/rhythm-b-routes.js"></script>
 <script src="js/rhythm-b-flow.js"></script>
 <script src="js/rhythm-b-play.js"></script>
@@ -1294,7 +1294,7 @@ window.FGH.rollOut = function (el, done) {
         var gate = window.__moleAssetGate;
         function waitForCurrentWorker(registration) {
           return new Promise(function (resolve, reject) {
-            var latest = 'v=1553-C';
+            var latest = 'v=1554-C';
             var done = false;
             var timer = setTimeout(function () { finish(); }, 25000);
             function finish(error) {
@@ -1321,7 +1321,7 @@ window.FGH.rollOut = function (el, done) {
           console.warn('Starting while service worker registration continues in background');
           if (gate) gate.resolveCache();
         }, 30000);
-        navigator.serviceWorker.register('sw.js?v=1553-C').then(waitForCurrentWorker).then(function () {
+        navigator.serviceWorker.register('sw.js?v=1554-C').then(waitForCurrentWorker).then(function () {
           clearTimeout(registrationTimer);
           if (gate) gate.resolveCache();
         }).catch(function (error) {

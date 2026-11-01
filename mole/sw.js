@@ -33,7 +33,8 @@
 // V1551 C: Amateur rear back to original brightness, mode buttons aligned with X row, round art regenerated in high resolution (Codex).
 // V1552 C: Amateur rear back to hazed 30% (V1550), round art shown at original brightness (no 85% filter).
 // V1553 C: Normal round map new bright 3D cartoon art (same layout, 8% lower), new edge frame, old depth shade + crystal glow off; amateur round 7 tip below.
-const CACHE = 'mole-game-v1553-C';
+// V1554 C: Pro round map new bright 3D cartoon art (mirrored layout + stairs to round 1), edge frame, lava flow re-aligned (8 streaks, new mask); mode buttons centered on X with X's formula.
+const CACHE = 'mole-game-v1554-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -194,9 +195,9 @@ const SHELL = [
   './assets/roundmap/hd-v1550/easy-front.webp',
   './assets/roundmap/hd-v1550/easy-rear.webp',
   './assets/roundmap/hd-v1550/easy-route.webp',
-  './assets/roundmap/hd-v1330/legend-front-gem.webp',
-  './assets/roundmap/hd-v1330/legend-front-lan.webp',
-  './assets/roundmap/hd-v1547/legend-front.webp',
+  './assets/roundmap/hd-v1554/pro-route.webp',
+  './assets/roundmap/hd-v1554/pro-frame.webp',
+  './assets/roundmap/hd-v1554/pro-front-lava-mask.png',
   './assets/roundmap/hd-v1330/legend-rear-gem.webp',
   './assets/roundmap/hd-v1330/legend-rear-lan.webp',
   './assets/roundmap/hd-v1330/legend-rear.webp',
