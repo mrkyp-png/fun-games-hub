@@ -311,3 +311,7 @@ body.rm-open :not(#roundmap-screen):not(#roundmap-screen *)::after { animation-p
 .rm-window-map .rm-mid-route { transform:translateY(8%); }
 /* V1554 C 사용자: 프로 액자는 용암 흐름(캔버스)보다 위, 가장자리 조금만(아마추어·노말과 같은 반쪽 배치) */
 .rm-window-map .rm-pro-frame { z-index:4; }
+/* V1560 C 사용자: 노말 뒷배경 밝기 올림(85% → 170%), 뒤 폭포 흐름도 같게 */
+#roundmap-screen.rm-window-map[data-light="mid"] :is(.rm-rear-bg.rm-mode-mid, [data-rm-rear-fluid]) { filter: brightness(1.7); }
+/* V1560 C 사용자: 프로 뒷배경 밝기 85% → 130%, 뒤 용암 흐름도 같게 */
+#roundmap-screen.rm-window-map[data-light="legend"] :is(.rm-rear-bg.rm-mode-legend, [data-rm-rear-fluid]) { filter: brightness(1.3); }
