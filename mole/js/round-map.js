@@ -25,7 +25,7 @@
     [626.5, 760], [313.7, 607], [608.4, 468], [310.8, 317]]; // V1551 C: Codex 고해상도 새로 그림
   var HOLES = {
     easy: ROUTE,
-    mid: [[692.4,1266.6],[345,1073.3],[609.8,913],[302.5,721],[579.6,611.2],[288,447.9],[527,354.6],[284,180]], // V1545 C: 새 노말 앞그림 구멍 중심
+    mid: [[692.4,1400.4],[345,1207.1],[609.8,1046.8],[302.5,854.8],[579.6,745],[288,581.7],[527,488.4],[284,313.8]], // V1553 C: 새 노말 그림(구도 동일) 8% 아래로 → 구멍 중심 +133.8
     legend: [[682,1317.5],[356.5,1112],[679,960.5],[351,789.5],[654,654],[339,502],[614,388.5],[297.5,217]]
   };
   var BW = 941, BH = 1672;
@@ -45,7 +45,7 @@
     // V1321 C: 노말도 그림에서 뽑은 빛 층으로 대체 — 좌표 점 끔
     mid: { glow:[], spark:[], bubble:[], gem:[], rearGem:[], lantern:[], rearLantern:[],
       // V1546 C 사용자: 새 노말 앞그림 수정 빛남 — [가운데x, y, 끝x, 끝y, 색] (941×1672). 가운데=은은한 빛 맥동, 끝=반짝
-      crystal: [[245,136,237,72,'violet'],[176,327,200,281,'cyan'],[506,307,516,254,'cyan'],[562,561,562,507,'cyan'],[116,615,130,567,'violet'],[689,849,704,781,'violet'],[147,942,109,889,'violet'],[249,1063,259,1015,'violet'],[665,1202,668,1132,'violet'],[79,1384,87,1355,'cyan'],[96,1502,120,1442,'violet'],[247,1400,187,1356,'violet'],[849,1406,877,1337,'violet'],[893,1535,893,1488,'cyan']] },
+      crystal: [] }, // V1553 C: 새 노말 그림 — 옛 수정 빛 끔
     // V1324 C: 프로도 그림에서 뽑은 빛 층으로 대체 — 좌표 점 끔
     legend: { glow:[], spark:[], bubble:[], gem:[], rearGem:[], lantern:[], rearLantern:[] }
   };
@@ -443,8 +443,7 @@
       if (off || view !== 'easy' || cur < 1) return;
       var r = el.querySelector('.rm-round[data-n="' + cur + '"]'); if (!r) return;
       var desc = T('mole.chapter.desc.' + cur); if (!desc || desc === 'mole.chapter.desc.' + cur) desc = T('mole.startintro.tip');
-      // V1378 G 사용자: 7라운드까지 위쪽 말풍선 유지, 8라운드만 아래쪽.
-      var b = document.createElement('div'); b.className = 'rm-tip' + (cur >= 8 ? ' rm-tip--down' : '');
+      var b = document.createElement('div'); b.className = 'rm-tip' + (cur >= 7 ? ' rm-tip--down' : ''); // V1553 C 사용자: 7라운드도 아래(위 버튼에 걸림)
       b.innerHTML = '<span></span>'; b.firstChild.textContent = T('mole.rm.tip', { desc: desc });
       r.appendChild(b); r.classList.add('has-tip'); // 사용자: 말풍선이 다른 라운드 뒤로 가지 않게(앞으로)
       // V1374 C 사용자: 말풍선 = 원본 그림 그대로(늘리지 않음), 글자만 얹음 → 글자가 넘치면 글자 크기만 줄임

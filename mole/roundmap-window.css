@@ -307,3 +307,5 @@ body.rm-open :not(#roundmap-screen):not(#roundmap-screen *)::after { animation-p
 .rm-window-map:not(.rm-ui-on) .rm-bottom *,.rm-window-map:not(.rm-ui-on) .rm-start * { pointer-events:none; }
 /* V1552 C 사용자: 라운드 그림(구멍·계단)은 원래 밝기 — style.css 의 밝기 85%(V1540 C)에서 라운드 그림만 제외 */
 #roundmap-screen .rm-route-art { filter:none; }
+/* V1553 C 사용자: 노말 라운드 그림은 위 난이도 버튼과 안 겹치게 8% 아래로(구멍 좌표도 같이 내림) */
+.rm-window-map .rm-mid-route { transform:translateY(8%); }
