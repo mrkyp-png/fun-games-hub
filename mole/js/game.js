@@ -939,7 +939,7 @@
           quest: 'quest-screen', locker: 'workshop-screen',
           inventory: 'inventory-screen', settings: 'settings-screen', lightMode: 'roundmap-screen',
           mail: 'mailbox-screen' }[action];
-        if (sub) { openMore(sub); if (sharedLaneControls) sharedLaneControls.setActiveNav(action); }
+        if (sub) { if (openMore(sub) !== false && sharedLaneControls) sharedLaneControls.setActiveNav(action); }
       }
     });
     laneControlsIsSmall = small;
@@ -1293,8 +1293,13 @@
   document.addEventListener('pointerdown', (e) => { lastTap = { x: e.clientX, y: e.clientY }; }, true);
   // V1561 C 사용자: 화면별 구름 색(구름 그림 하나에 색만 입힘)
   const CLOUD_TINT = { 'shop-screen': 'pink', 'inventory-screen': 'blue', 'quest-screen': 'orange', 'daily-screen': 'sky', 'rhythm-screen': 'purple' }; // V1562 C: 색을 입힌 구름 그림(필터는 칙칙해서 그림으로)
+  // V1564 C 사용자: 메일함·설정·아이템을 빠르게 연타하면 전환이 겹쳐 화면이 깨짐 → 전환 중엔 다른 화면 버튼 무시(잠금), 최대 4초 뒤 자동 해제
+  let coverBusy = 0;
   function coverOpen(scr, rect, tint, open) {
     if (!scr || !Element.prototype.animate) { open(); return; }
+    const busyId = ++coverBusy; window.__coverBusy = true;
+    const unlock = () => { if (coverBusy === busyId) window.__coverBusy = false; };
+    setTimeout(unlock, 4000);
     const R = rect && rect.width && rect.height ? rect : { left: 0, top: 0, width: innerWidth, height: innerHeight };
     const host = document.createElement('div'); host.className = 'screen-cover';
     host.style.cssText = 'left:' + R.left + 'px;top:' + R.top + 'px;width:' + R.width + 'px;height:' + R.height + 'px';
@@ -1336,13 +1341,14 @@
           // V1562 C 사용자: 그림이 이미 준비돼도 구름은 최소 0.5초(터진 뒤부터) 머묾(사용자 지정) — 너무 빨리 걷히면 뒤 그림과 섞여 보였음
           if (now - tBoom < 500 || (scr.classList.contains('asset-preparing') && now - t1 < 2500)) { requestAnimationFrame(wait); return; }
           puffs.forEach(({ p, x, y, d }) => p.animate([Object.assign(T(x, y, 2), { opacity: 1 }), Object.assign(T(tx + d[0] * 3.2 * S, ty + d[1] * 3.2 * S, 2.5), { opacity: 0 })], { duration: 300, fill: 'forwards', easing: 'ease-in' }));
-          setTimeout(() => host.remove(), 320);
+          setTimeout(() => { host.remove(); unlock(); }, 320);
         })();
       }, 140); // 구름이 거의 덮는 순간 바로 화면 열기 시작
     }
   }
   function openMore(sub, originEl) {
     if (COVER_TINT[sub] && !openMore.covering) {
+      if (window.__coverBusy) return false; // 전환 중 연타 무시
       // V1562 C 사용자: 덮개 크기 = 들어가는 화면 기준으로 항상 같게(어디서 들어가든). 전체화면 = 상점·일일·퀘스트·제작소·스코어,
       // 위쪽 판 = 아이템·메일함·설정
       const FULL = ['shop-screen', 'daily-screen', 'quest-screen', 'workshop-screen', 'score-screen'];
@@ -1460,6 +1466,7 @@
   }
   function openRhythm() {
     if (!openRhythm.covering) {
+      if (window.__coverBusy) return;
       coverOpen(document.getElementById('rhythm-screen'), { left: 0, top: 0, width: innerWidth, height: innerHeight }, COVER_TINT['rhythm-screen'], () => { openRhythm.covering = true; try { openRhythm(); } finally { openRhythm.covering = false; } });
       return;
     }
