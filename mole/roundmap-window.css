@@ -298,7 +298,7 @@ body.rm-open :not(#roundmap-screen):not(#roundmap-screen *)::after { animation-p
 /* 하마: 맨 아래 왼쪽 */
 .rm-window-map .rm-viewer,.rm-window-map[data-light="mid"] .rm-viewer,.rm-window-map[data-light="legend"] .rm-viewer { bottom:calc(env(safe-area-inset-bottom,0px) - 4cqw); }
 /* 난이도 버튼 = 위 빈 하늘(X 왼쪽), 재화 = 아래 시작 버튼 왼쪽(하마와 안 겹침) */
-.rm-window-map .rm-bottom { top:calc(env(safe-area-inset-top,0px) + 8cqw); bottom:auto; left:2%; right:19%; height:max(64px,16cqw); }
+.rm-window-map .rm-bottom { top:calc(env(safe-area-inset-top,0px) + 2% + 14px); bottom:auto; left:2%; right:19%; height:max(64px,16cqw); } /* V1551 C 사용자: X 버튼 줄에 맞춤 */
 .rm-window-map .rm-wallet { left:auto; right:calc(1.5% + 17cqw + 10px); bottom:calc(env(safe-area-inset-bottom,0px) + 1.5% + 8.5cqw - 15px); }
 /* 화면 터치 = 나타남/사라짐(round-map.js rm-ui-on). 티커·X·하마는 항상 보임 */
 .rm-window-map .rm-bottom,.rm-window-map .rm-start,.rm-window-map .rm-wallet { transition:translate .25s ease,opacity .25s ease; }
