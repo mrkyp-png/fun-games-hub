@@ -1292,9 +1292,7 @@
   let lastTap = null;
   document.addEventListener('pointerdown', (e) => { lastTap = { x: e.clientX, y: e.clientY }; }, true);
   // V1561 C 사용자: 화면별 구름 색(구름 그림 하나에 색만 입힘)
-  const CLOUD_TINT = { 'shop-screen': 'sepia(.55) saturate(2.4) hue-rotate(295deg) brightness(1.04)', 'inventory-screen': 'sepia(.5) saturate(2.2) hue-rotate(55deg) brightness(1.05)',
-    'quest-screen': 'sepia(.65) saturate(2.6) hue-rotate(-12deg) brightness(1.04)', 'daily-screen': 'sepia(.45) saturate(2.6) hue-rotate(185deg) brightness(1.04)',
-    'rhythm-screen': 'saturate(1.9) hue-rotate(10deg)' };
+  const CLOUD_TINT = { 'shop-screen': 'pink', 'inventory-screen': 'blue', 'quest-screen': 'orange', 'daily-screen': 'sky', 'rhythm-screen': 'purple' }; // V1562 C: 색을 입힌 구름 그림(필터는 칙칙해서 그림으로)
   function coverOpen(scr, rect, tint, open) {
     if (!scr || !Element.prototype.animate) { open(); return; }
     const R = rect && rect.width && rect.height ? rect : { left: 0, top: 0, width: innerWidth, height: innerHeight };
@@ -1307,7 +1305,7 @@
     // 뿅망치 = 게임 타격 동작 그대로(lane-hammer.js: 대기 → 조준 0.09초 -30도 → 내려찍기 0.045초 -82도), 크기 2배(사용자)
     const h = document.createElement('img'); h.className = 'screen-cover-hammer'; h.alt = ''; h.src = 'assets/weapons/mallet-yaw10-rest15-v1379.png';
     h.style.width = (R.width * 0.272 * 2) + 'px'; host.appendChild(h);
-    const k3 = 2, aimX = tx + R.width * 0.134 * k3 * 0.5, aimY = ty + R.height * 0.042 * k3 * 0.5, homeX = R.width * 0.9, homeY = R.height * 0.965;
+    const Hw = R.width * 0.272 * 2, aimX = tx + Hw * 0.49, aimY = ty + Hw * 0.125, homeX = R.width * 0.9, homeY = R.height * 0.965 /* V1562 C 사용자: 망치 머리가 덮개 정중앙(전체=폰 정중앙, 위쪽 판=판 정중앙)을 때리게 — 타격 각도에서 머리는 그립 기준 (-0.49, -0.125)×망치폭 */;
     const put = (x, y, d, o) => { h.style.left = x + 'px'; h.style.top = y + 'px'; h.style.transform = 'translate(-33%,-83%) rotate(' + (d - 15) + 'deg)'; h.style.opacity = o; };
     const FLY = 90, CHOP = 45, RISE = 100, t0 = performance.now();
     let hit = false, puffs = [];
@@ -1321,10 +1319,11 @@
     })();
     const P = [[0, 0], [-140, -160], [140, -150], [-150, 170], [150, 190], [0, -320], [0, 330], [-170, 0], [170, 10], [-60, 420], [80, -420], [-120, 300], [130, -300]];
     function boom() {
+      const tBoom = performance.now();
       const b = sprite('assets/ui-transition-v1561/burst.webp', 130 * S); b.style.opacity = 0;
       b.animate([Object.assign(T(tx, ty, .2, 0), { opacity: 1 }), Object.assign(T(tx, ty, 1.2, 20), { opacity: 1, offset: .5 }), Object.assign(T(tx, ty, 1.5, 30), { opacity: 0 })], { duration: 220, fill: 'forwards', easing: 'ease-out' });
       puffs = P.map((d, i) => {
-        const p = sprite('assets/ui-transition-v1561/cloud.webp', 300 * S); p.style.opacity = 0; if (CLOUD_TINT[scr.id]) p.style.filter = CLOUD_TINT[scr.id];
+        const p = sprite('assets/ui-transition-v1561/cloud' + (CLOUD_TINT[scr.id] ? '-' + CLOUD_TINT[scr.id] : '') + '.webp', 300 * S); p.style.opacity = 0;
         const x = tx + d[0] * S, y = ty + d[1] * S, sc = 1.8 + (i % 3) * .2;
         p.animate([Object.assign(T(tx, ty, .1), { opacity: 1 }), Object.assign(T(x, y, sc), { opacity: 1 })], { duration: 260, delay: i * 10, fill: 'forwards', easing: 'cubic-bezier(.2,.8,.3,1)' });
         return { p, x, y, d };
@@ -1334,7 +1333,8 @@
         const t1 = performance.now();
         (function wait() {
           const now = performance.now();
-          if (now - t1 < 60 || (scr.classList.contains('asset-preparing') && now - t1 < 2500)) { requestAnimationFrame(wait); return; }
+          // V1562 C 사용자: 그림이 이미 준비돼도 구름은 최소 0.5초(터진 뒤부터) 머묾(사용자 지정) — 너무 빨리 걷히면 뒤 그림과 섞여 보였음
+          if (now - tBoom < 500 || (scr.classList.contains('asset-preparing') && now - t1 < 2500)) { requestAnimationFrame(wait); return; }
           puffs.forEach(({ p, x, y, d }) => p.animate([Object.assign(T(x, y, 2), { opacity: 1 }), Object.assign(T(tx + d[0] * 3.2 * S, ty + d[1] * 3.2 * S, 2.5), { opacity: 0 })], { duration: 300, fill: 'forwards', easing: 'ease-in' }));
           setTimeout(() => host.remove(), 320);
         })();
@@ -1343,9 +1343,20 @@
   }
   function openMore(sub, originEl) {
     if (COVER_TINT[sub] && !openMore.covering) {
-      const isStart0 = document.getElementById('game-screen').classList.contains('is-start');
-      const box = document.getElementById(isStart0 ? 'board-start' : 'mole-board');
-      const rect = box && box.getBoundingClientRect();
+      // V1562 C 사용자: 덮개 크기 = 들어가는 화면 기준으로 항상 같게(어디서 들어가든). 전체화면 = 상점·일일·퀘스트·제작소·스코어,
+      // 위쪽 판 = 아이템·메일함·설정
+      const FULL = ['shop-screen', 'daily-screen', 'quest-screen', 'workshop-screen', 'score-screen'];
+      let rect = null;
+      if (FULL.indexOf(sub) < 0) {
+        const isStart0 = document.getElementById('game-screen').classList.contains('is-start');
+        // 위쪽 판 자리 = 아이템·메일함·설정 화면이 놓이는 자리(.board-screen 위치). 홈이면 홈 판, 아니면 더보기 판
+        const mm = document.getElementById('more-menu');
+        const cands = [document.getElementById(isStart0 ? 'board-start' : 'mole-board'), mm, document.getElementById('inventory-screen'), document.getElementById('settings-screen'), document.getElementById('mailbox-screen')];
+        const box = cands.find((e) => e && !e.hidden && e.getClientRects().length && e.getBoundingClientRect().height < innerHeight * 0.8);
+        rect = box && box.getBoundingClientRect();
+        if (!rect || !rect.height) { const mr = mm && mm.getBoundingClientRect(); rect = mr && mr.height && mr.height < innerHeight * 0.8 ? mr : { left: 0, top: 0, width: innerWidth, height: innerHeight * 0.49 }; }
+      }
+      if (!rect || !rect.width || !rect.height) rect = { left: 0, top: 0, width: innerWidth, height: innerHeight };
       coverOpen(document.getElementById(sub), rect, COVER_TINT[sub], () => { openMore.covering = true; try { openMore(sub, originEl); } finally { openMore.covering = false; } });
       return;
     }

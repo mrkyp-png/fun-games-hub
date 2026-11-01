@@ -10062,7 +10062,8 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 .asset-preparing, .asset-preparing * { visibility: hidden !important; }
 /* V1561 C 사용자: 팝업 등장 — 창이 통 튀어나오듯(0.28초), 뒤는 살짝 어둡게 시작 */
 .asset-pop { animation: asset-pop .28s cubic-bezier(.2,.9,.3,1.25) both; transform-origin: 50% 55%; }
-@keyframes asset-pop { 0% { transform: scale(.82); opacity: 0; filter: brightness(.7); } 60% { opacity: 1; filter: none; } 100% { transform: scale(1); opacity: 1; } }
+/* V1562 C: transform 대신 scale 속성 — 위쪽 판 화면(아이템·메일함·설정)은 transform:translateX(-50%) 로 가운데 정렬이라 transform 을 덮으면 오른쪽에서 밀려 들어오듯 보였음 */
+@keyframes asset-pop { 0% { scale: .82; opacity: 0; filter: brightness(.7); } 60% { opacity: 1; filter: none; } 100% { scale: 1; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .asset-pop { animation: none; } }
 /* V1561 C 사용자: 화면 전환 = 뿅망치 쾅 + 구름(game.js coverOpen). 덮개 영역 밖은 잘라 다이얼 패드는 그대로 */
 .screen-cover { position: fixed; z-index: 2147482000; pointer-events: auto; overflow: hidden; }
