@@ -3179,6 +3179,11 @@ body { background: var(--lm-page); }
   animation: rm-twinkle 3s ease-in-out infinite; }
 .rm-spark:nth-of-type(2n) { animation-delay: -1.3s; } .rm-spark:nth-of-type(3n) { animation-delay: -2.1s; }
 @keyframes rm-twinkle { 0%, 70%, 100% { opacity: 0; transform: scale(0.3) rotate(0); } 82% { opacity: 1; transform: scale(1) rotate(45deg); } }
+/* V1546 C 사용자: 노말 수정 빛남 — 수정 가운데 은은한 빛이 커졌다 작아짐(합성만) */
+.rm-cglow { position: absolute; width: 16cqw; aspect-ratio: 1; margin: -8cqw 0 0 -8cqw; border-radius: 50%; pointer-events: none; z-index: 1; mix-blend-mode: screen;
+  background: radial-gradient(circle, rgba(170, 225, 255, .7) 0%, rgba(70, 160, 255, .32) 35%, transparent 70%); animation: rm-cglow 2.6s ease-in-out infinite; }
+.rm-cglow--violet { background: radial-gradient(circle, rgba(225, 190, 255, .7) 0%, rgba(150, 80, 255, .32) 35%, transparent 70%); }
+@keyframes rm-cglow { 0%, 100% { opacity: .35; transform: scale(.85); } 50% { opacity: 1; transform: scale(1.1); } }
 /* Normal 물방울(v767): 폭포 아래 물웅덩이에서만 보글보글 올라옴 */
 .rm-bub { position: absolute; width: 1.8cqw; height: 1.8cqw; margin-left: -0.9cqw; border-radius: 50%; pointer-events: none; z-index: 1; opacity: 0;
   background: radial-gradient(circle at 32% 30%, #fff 0 16%, rgba(210, 245, 255, 0.35) 24% 58%, rgba(120, 215, 255, 0.95) 66% 72%, transparent 76%);

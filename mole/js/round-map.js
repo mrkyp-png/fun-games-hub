@@ -42,7 +42,9 @@
     // V1320 C: 아마추어 보석·랜턴 빛은 그림에서 뽑은 층(assets/roundmap/glow-v1320)으로 대체 — 좌표 점 끔
     easy: { glow:[], spark:[], bubble:[], gem:[], rearGem:[], lantern:[], rearLantern:[] },
     // V1321 C: 노말도 그림에서 뽑은 빛 층으로 대체 — 좌표 점 끔
-    mid: { glow:[], spark:[], bubble:[], gem:[], rearGem:[], lantern:[], rearLantern:[] },
+    mid: { glow:[], spark:[], bubble:[], gem:[], rearGem:[], lantern:[], rearLantern:[],
+      // V1546 C 사용자: 새 노말 앞그림 수정 빛남 — [가운데x, y, 끝x, 끝y, 색] (941×1672). 가운데=은은한 빛 맥동, 끝=반짝
+      crystal: [[245,136,237,72,'violet'],[176,327,200,281,'cyan'],[506,307,516,254,'cyan'],[562,561,562,507,'cyan'],[116,615,130,567,'violet'],[689,849,704,781,'violet'],[147,942,109,889,'violet'],[249,1063,259,1015,'violet'],[665,1202,668,1132,'violet'],[79,1384,87,1355,'cyan'],[96,1502,120,1442,'violet'],[247,1400,187,1356,'violet'],[849,1406,877,1337,'violet'],[893,1535,893,1488,'cyan']] },
     // V1324 C: 프로도 그림에서 뽑은 빛 층으로 대체 — 좌표 점 끔
     legend: { glow:[], spark:[], bubble:[], gem:[], rearGem:[], lantern:[], rearLantern:[] }
   };
@@ -247,6 +249,10 @@
       }
       f.glow.forEach(function (p) { html += '<span class="rm-glow" style="left:' + (p[0] / BW * 100) + '%;top:' + (p[1] / BH * 100) + '%;' + (p[2] ? '--rm-glow-size:' + (p[2] / BW * 100) + 'cqw;' : '') + '"></span>'; });
       f.spark.forEach(function (p) { for (var k = 0; k < (layered ? 1 : 5); k++) { var ox = k ? (Math.random() * 60 - 30) : 0, oy = k ? (Math.random() * 50 - 25) : 0; html += '<span class="rm-spark" style="left:' + ((p[0] + ox) / BW * 100) + '%;top:' + ((p[1] + oy) / BH * 100) + '%;animation-delay:' + (-Math.random() * 3).toFixed(2) + 's;animation-duration:' + (2.2 + Math.random() * 1.6).toFixed(2) + 's;scale:' + (0.6 + Math.random() * 0.6).toFixed(2) + '"></span>'; } }); // Amateur: exact crystal anchors; retain legacy five-spark clusters on other maps.
+      (f.crystal || []).forEach(function (p, i) {
+        html += '<span class="rm-cglow rm-cglow--' + p[4] + '" style="left:' + (p[0] / BW * 100).toFixed(2) + '%;top:' + (p[1] / BH * 100).toFixed(2) + '%;animation-delay:-' + ((i * .61) % 2.6).toFixed(2) + 's"></span>' +
+          '<span class="rm-spark" style="left:' + (p[2] / BW * 100).toFixed(2) + '%;top:' + (p[3] / BH * 100).toFixed(2) + '%;animation-delay:-' + ((i * .83) % 3).toFixed(2) + 's"></span>';
+      });
       // Amateur(지상 광산): 나비 3마리 + 잠자리 2마리가 하늘·풀밭 위를 날아다님(사용자 지정 v763)
       if (view === 'easy' && !el.classList.contains('rm-window-map')) {
         html += '<span class="hg-bfly hg-bfly--p rm-bfly rm-bfly--1"></span><span class="hg-bfly hg-bfly--y rm-bfly rm-bfly--2"></span><span class="hg-bfly hg-bfly--b rm-bfly rm-bfly--3"></span>';
