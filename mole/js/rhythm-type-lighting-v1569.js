@@ -6,7 +6,6 @@
   var panel = root && root.querySelector('[data-rp-types]');
   if (!panel) return;
   var selections = [panel, root.querySelector('[data-rp-songs]'), root.querySelector('[data-rp-select]')].filter(Boolean);
-  var activePanel = panel;
   // Preserve the original ::after flowers/leaves; the rim sweep sits below them.
   selections.forEach(function (selection) {
     var card = selection.querySelector('.rx-card');
@@ -14,6 +13,13 @@
     var rim = document.createElement('i');
     rim.className = 'rp-selection-frame-light';
     rim.setAttribute('aria-hidden', 'true');
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('focusable', 'false');
+    var edge = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    edge.setAttribute('x', '7'); edge.setAttribute('y', '7');
+    edge.setAttribute('rx', '14'); edge.setAttribute('fill', 'none');
+    edge.setAttribute('pathLength', '100');
+    svg.appendChild(edge); rim.appendChild(svg);
     card.appendChild(rim);
   });
 
@@ -62,13 +68,14 @@
   ];
 
   function visible() {
-    return ready && !root.hidden && selections.some(function (p) { return !p.hidden; }) && !document.hidden;
+    return ready && !root.hidden && !panel.hidden &&
+      selections.every(function (p) { return p === panel || p.hidden; }) && !document.hidden;
   }
   function setDesignTransform(c) { c.setTransform(scale, 0, 0, scale, ox, oy); }
   function clear(c) { c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, canvas.width, canvas.height); }
 
   function resize() {
-    var bounds = activePanel.getBoundingClientRect();
+    var bounds = panel.getBoundingClientRect();
     if (!bounds.width || !bounds.height) return;
     // A bounded backing store and 30 fps keep the decorative scene cheap on phones.
     var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -213,9 +220,11 @@
   function sync() {
     if (frame) cancelAnimationFrame(frame);
     frame = 0; previous = 0;
-    if (!visible()) return;
-    activePanel = selections.find(function (p) { return !p.hidden; });
-    if (front.parentNode !== activePanel) activePanel.appendChild(front);
+    canvas.hidden = front.hidden = !visible();
+    if (!visible()) {
+      clear(ctx); clear(frontCtx);
+      return;
+    }
     resize(); render(elapsed);
     if (!reduced.matches) frame = requestAnimationFrame(tick);
   }
@@ -241,14 +250,14 @@
         });
       };
       img.onerror = reject;
-      img.src = new URL(key + '.webp?v=1569-G', base).href;
+      img.src = new URL(key + '.webp?v=1570-G', base).href;
     });
   })).then(function () {
     ready = true;
     // Geometry is initialized only after the hidden type-selection panel becomes visible.
     canvas.width = canvas.height = 0;
     panel.classList.add('has-type-lighting');
-    panel.style.setProperty('--rp-type-dark-stage', 'url("' + new URL('stage-dark.webp?v=1569-G', base).href + '")');
+    panel.style.setProperty('--rp-type-dark-stage', 'url("' + new URL('stage-dark.webp?v=1570-G', base).href + '")');
     sync();
   }).catch(function (error) {
     canvas.remove(); front.remove(); observer.disconnect();

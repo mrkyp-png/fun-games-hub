@@ -74,6 +74,10 @@
   --rp-radius: 12px;
   --rp-edge: 4px;
 }
+#rhythm-screen .rb-song-footer .rx-btn[data-rp-songs-home] {
+  --rp-radius: 999px;
+  --rp-edge: 3px;
+}
 #rhythm-screen .rx-btn:not(.game-back):not(.rx-dbtn)::before,
 #rhythm-screen .rx-btn:not(.game-back)::after {
   content: none !important;

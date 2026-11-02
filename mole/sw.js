@@ -48,8 +48,8 @@
 // V1566 C: Score screen tab / beach-neon labels re-applied in current language on open.
 // V1567 G: Bright cloudless score palace background; carpet, rising clouds and score UI unchanged.
 // V1568 G: Shared albums, full-screen transitions, Beach gulls, workshop-style Rhythm buttons and clipped press waves.
-// V1569 G: Dark type stage, independently turning lamp heads and beams, sky twinkles; selection frame lights; Beach pause behind weapons.
-const CACHE = 'mole-game-v1569-G';
+// V1570 G: Brighter stroke-only frame sweep; spotlights only on type selection; pill song-home button.
+const CACHE = 'mole-game-v1570-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
