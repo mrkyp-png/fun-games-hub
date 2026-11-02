@@ -2640,7 +2640,7 @@ body { background: var(--lm-page); }
   --w: min(100vw - 20px, 440px, (100dvh - 40px) * 0.47);
 }
 #score-screen.sr-screen::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background: url('assets/score/bg-palace-sides-kept-v1493.jpg') center top / cover no-repeat; filter:brightness(.68); } /* V1531 C: 15% 더 어둡게(.8×.85). Brightness belongs only to the palace layer, below the untouched carpet. */
+  background: url('assets/score/bg-palace-bright-v1567.webp') center top / cover no-repeat; filter:none; } /* V1567 G: bright cloudless palace background; carpet and animated clouds remain separate and unchanged. */
 .sr-sky { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; clip-path: inset(0 0 70% 0);
   mask-image: linear-gradient(90deg, transparent 6%, #000 19%, #000 81%, transparent 94%); }
 .sr-cloud { position: absolute; left: var(--sc-x); top: 25vh; width: var(--sc-size); height: auto; fill: #f4faff; opacity: 0; pointer-events: none;
