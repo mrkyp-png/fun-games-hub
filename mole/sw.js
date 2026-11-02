@@ -50,7 +50,8 @@
 // V1568 G: Shared albums, full-screen transitions, Beach gulls, workshop-style Rhythm buttons and clipped press waves.
 // V1570 G: Brighter stroke-only frame sweep; spotlights only on type selection; pill song-home button.
 // V1571 G: Soft frame-only sweep in deeper matching colors, 30 percent opacity.
-const CACHE = 'mole-game-v1571-G';
+// V1572 G: visible build tag and resource/SW versions aligned to 1572.
+const CACHE = 'mole-game-v1572-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
