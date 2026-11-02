@@ -1,0 +1,213 @@
+/* 리듬팡 버튼 시안: 기존 외곽 크기·배치는 유지한다. */
+/* 알약 = 제작소 무기 강화 탭, 네모 = 제작소 강화하기의 CSS 면/테두리 구조. */
+#rhythm-screen .rx-btn:not(.game-back) {
+  --rp-face-top: #39b5f3;
+  --rp-face-bottom: #167bc3;
+  --rp-rim-top: #8cddfb;
+  --rp-rim-bottom: #12528b;
+  --rp-inner-line: #a5e5fa;
+  --rp-outer-line: #164879;
+  --rp-text-outline: #0c2c86;
+  --rp-edge: 3px;
+  --rp-radius: 999px;
+}
+#rhythm-screen .rx-btn:is(.rx-btn--y, .rx-btn--retry, .rx-dbtn--easy) {
+  --rp-face-top: #fdd512;
+  --rp-face-bottom: #fcad02;
+  --rp-rim-top: #e7bf46;
+  --rp-rim-bottom: #8c530b;
+  --rp-inner-line: #e8c75c;
+  --rp-outer-line: #84500e;
+  --rp-text-outline: #8a3a06;
+}
+#rhythm-screen .rx-btn[data-rp-type="B"] {
+  --rp-face-top: #ad67e5;
+  --rp-face-bottom: #773bb5;
+  --rp-rim-top: #d0a6ed;
+  --rp-rim-bottom: #4d247b;
+  --rp-inner-line: #d7b3ee;
+  --rp-outer-line: #47236f;
+  --rp-text-outline: #442071;
+}
+#rhythm-screen .rx-btn.rx-dbtn--normal {
+  --rp-face-top: #65d23e;
+  --rp-face-bottom: #2b972b;
+  --rp-rim-top: #a6e76d;
+  --rp-rim-bottom: #216321;
+  --rp-inner-line: #bae68c;
+  --rp-outer-line: #205c23;
+  --rp-text-outline: #0b4a18;
+}
+#rhythm-screen .rx-btn.rx-dbtn--hard {
+  --rp-face-top: #f65b50;
+  --rp-face-bottom: #ce262d;
+  --rp-rim-top: #ffaea0;
+  --rp-rim-bottom: #8d2025;
+  --rp-inner-line: #ffb4a4;
+  --rp-outer-line: #7d1d23;
+  --rp-text-outline: #6a0710;
+}
+#rhythm-screen .rx-card .rx-btn:not(.game-back):not(.rb-song-footer > .rx-btn):not(.rb-song-actions > .rx-btn),
+#rhythm-screen .rx-card .rb-song-footer .rx-btn:not(.game-back),
+#rhythm-screen .rx-card .rb-song-actions .rx-btn {
+  position: relative;
+  box-sizing: border-box;
+  isolation: isolate;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: var(--rp-edge) solid transparent !important;
+  border-image: none !important;
+  border-radius: var(--rp-radius) !important;
+  background: linear-gradient(180deg, var(--rp-face-top), var(--rp-face-bottom)) padding-box,
+              linear-gradient(180deg, var(--rp-rim-top), var(--rp-rim-bottom)) border-box !important;
+  outline: 1px solid var(--rp-outer-line);
+  outline-offset: -1px;
+  box-shadow: inset 0 0 0 1px var(--rp-inner-line) !important;
+  overflow: visible;
+  transition: transform .08s ease-out;
+}
+#rhythm-screen .rx-card :is(.rb-song-actions, .rb-song-footer) .rx-btn,
+#rhythm-screen .rx-btn.rx-dbtn {
+  --rp-radius: 12px;
+  --rp-edge: 4px;
+}
+#rhythm-screen .rx-btn:not(.game-back):not(.rx-dbtn)::before,
+#rhythm-screen .rx-btn:not(.game-back)::after {
+  content: none !important;
+  display: none !important;
+}
+#rhythm-screen .rx-btn:not(.game-back) > span {
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
+  width: auto !important;
+  margin: 0;
+  padding: 0;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  line-height: 1;
+  -webkit-text-stroke-color: var(--rp-text-outline);
+  text-shadow: none;
+}
+#rhythm-screen .rx-btn:not(.game-back) > :is(.rx-ic, .rx-cost, i),
+#rhythm-screen .rb-song-footer .rb-song-nav-icon {
+  position: static;
+  inset: auto;
+  transform: none;
+  flex: 0 0 auto;
+}
+#rhythm-screen .rb-song-footer .rx-btn span { font-size: clamp(17px, 5.5cqw, 23px); }
+#rhythm-screen .rb-song-play .rp-a-triangle {
+  position: static;
+  inset: auto;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  transform: rotate(90deg);
+}
+#rhythm-screen .rb-song-play span {
+  flex: 0 0 auto;
+  max-width: none;
+  font-size: clamp(19px, 5.7cqw, 27px);
+}
+#rhythm-screen .rb-song-ad img {
+  flex: 0 0 auto;
+  margin: 0;
+  object-fit: contain;
+}
+/* 난이도 문구와 기존 BEST 숫자는 내부 영역에서 중앙 정렬. */
+#rhythm-screen .rx-dbtn::before {
+  left: var(--rp-edge);
+  right: 34%;
+  top: var(--rp-edge);
+  bottom: var(--rp-edge);
+  transform: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  -webkit-text-stroke-width: 2px;
+  text-shadow: none;
+}
+#rhythm-screen .rx-dbtn small {
+  left: 66%;
+  right: var(--rp-edge);
+  top: var(--rp-edge);
+  bottom: var(--rp-edge);
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border-left: 1px solid var(--rp-inner-line);
+  border-radius: 0 7px 7px 0;
+  background: rgba(255, 249, 225, .88);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  line-height: 1;
+  font-size: 6.6cqw;
+}
+#rhythm-screen .rx-dbtn small::before {
+  content: 'BEST';
+  font: 400 clamp(11px, 3.4cqw, 15px)/1 'Lilita One', sans-serif;
+  color: #4a1c00;
+}
+#rhythm-screen .rx-btn:not(.game-back):is(:active, .is-press):not(:disabled) {
+  transform: translateY(3px) scale(.98);
+  filter: none;
+}
+#rhythm-screen .rx-btn:not(.game-back):focus-visible {
+  outline: 3px solid #fff39c !important;
+  outline-offset: 2px !important;
+}
+#rhythm-screen .rp-ticket-badge::before {
+  box-sizing: border-box;
+  border: 3px solid #f3c52e;
+  border-radius: 12px;
+  background: #ffe3ed;
+  filter: none;
+  box-shadow: none;
+}
+/* 누를 때만 중앙에서 바깥으로 한 번 퍼지는 빛. 내부선 바깥으로 번지지 않는다. */
+#rhythm-screen .rx-btn:not(.game-back) > i.rp-button-wave {
+  position: absolute !important;
+  inset: 1px !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  border-radius: max(0px, calc(var(--rp-radius) - var(--rp-edge) - 1px)) !important;
+  overflow: hidden !important;
+  transform: none !important;
+  background: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+  pointer-events: none;
+  z-index: 2;
+  font-size: 0 !important;
+  line-height: 0 !important;
+}
+#rhythm-screen .rx-btn:not(.game-back) > i.rp-button-wave > b {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  display: block;
+  pointer-events: none;
+  background: radial-gradient(ellipse closest-side at center, transparent 40%, rgba(255, 253, 221, .78) 58%, transparent 79%);
+  transform: scale(.06);
+  transform-origin: center;
+  opacity: 0;
+}
+/* 원래 결과 화면처럼 우측 스크롤바를 표시하지 않는다. 크기/배치는 그대로 둔다. */
+#rhythm-screen .rx-result-body { scrollbar-width: none; }
+#rhythm-screen .rx-result-body::-webkit-scrollbar { display: none; width: 0; height: 0; }
