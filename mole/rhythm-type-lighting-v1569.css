@@ -1,0 +1,21 @@
+/* Type selection only: same portrait composition, dark stage, independently moving lamps. */
+#rhythm-screen .rp-type-panel.has-type-lighting {
+  background-color: #030a28;
+  background-image: var(--rp-type-dark-stage);
+  background-position: center;
+  background-size: cover;
+}
+#rhythm-screen .rp-type-lighting {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+#rhythm-screen .has-type-lighting > .rp-type-scene-fx { opacity: .28; }
+#rhythm-screen .rp-type-lighting-front {
+  z-index: 4;
+  pointer-events: none;
+}
+

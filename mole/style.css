@@ -10067,6 +10067,38 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* V1562 C: transform 대신 scale 속성 — 위쪽 판 화면(아이템·메일함·설정)은 transform:translateX(-50%) 로 가운데 정렬이라 transform 을 덮으면 오른쪽에서 밀려 들어오듯 보였음 */
 @keyframes asset-pop { 0% { scale: .82; opacity: 0; filter: brightness(.7); } 60% { opacity: 1; filter: none; } 100% { scale: 1; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .asset-pop { animation: none; } }
+/* V1569 G 사용자: Beach 무기는 일시정지 버튼보다 앞에서 지나가게 한다. */
+#rhythm-screen .rp-pausebtn { z-index: 0; }
+
+/* V1569 G 정정: 꽃·잎 장식은 원래대로 유지. 테두리 회전광만 장식 뒤에서 가려진다. */
+@property --rp-frame-light-angle { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@keyframes rp-frame-light-turn { to { --rp-frame-light-angle: 360deg; } }
+#rhythm-screen .rx-card > .rp-selection-frame-light {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  border: 0 !important;
+  border-image: none !important;
+  box-sizing: border-box;
+  border-radius: 20px;
+  filter: none !important;
+  padding: 22px;
+  background: conic-gradient(from var(--rp-frame-light-angle), transparent 0deg 300deg, rgba(255,255,255,.025) 314deg, rgba(255,248,213,.18) 330deg, rgba(255,255,255,.055) 342deg, transparent 360deg) !important;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: rp-frame-light-turn 9s linear infinite;
+}
+#rhythm-screen[hidden] .rp-selection-frame-light,
+#rhythm-screen .rp-type-panel[hidden] .rp-selection-frame-light,
+#rhythm-screen .rb-song-modal[hidden] .rp-selection-frame-light,
+#rhythm-screen .rp-select[hidden] .rp-selection-frame-light { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  #rhythm-screen .rx-card > .rp-selection-frame-light { animation: none; }
+}
+
 /* 화면 전환 = 전체 화면 정중앙 뿅망치 + 전체 화면 구름(game.js coverOpen). */
 .screen-cover { position: fixed; z-index: 2147482000; pointer-events: auto; overflow: hidden; }
 .screen-cover img { position: absolute; left: 0; top: 0; pointer-events: none; }
