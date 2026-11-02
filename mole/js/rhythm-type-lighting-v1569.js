@@ -7,7 +7,7 @@
   if (!panel) return;
   var selections = [panel, root.querySelector('[data-rp-songs]'), root.querySelector('[data-rp-select]')].filter(Boolean);
   // Preserve the original ::after flowers/leaves; the rim sweep sits below them.
-  selections.forEach(function (selection) {
+  selections.forEach(function (selection, index) {
     var card = selection.querySelector('.rx-card');
     if (!card || card.querySelector('.rp-selection-frame-light')) return;
     var rim = document.createElement('i');
@@ -15,11 +15,31 @@
     rim.setAttribute('aria-hidden', 'true');
     var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('focusable', 'false');
+    var defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    var clip = document.createElementNS('http://www.w3.org/2000/svg', 'mask');
+    var clipId = 'rp-frame-light-mask-' + index;
+    clip.setAttribute('id', clipId);
+    clip.setAttribute('maskUnits', 'userSpaceOnUse');
+    clip.style.maskType = 'luminance';
+    var outside = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    outside.setAttribute('width', '100%'); outside.setAttribute('height', '100%');
+    outside.setAttribute('fill', 'white');
+    var inside = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    inside.setAttribute('class', 'rp-frame-light-cutout');
+    inside.setAttribute('x', '13'); inside.setAttribute('y', '13');
+    inside.setAttribute('rx', '8'); inside.setAttribute('fill', 'black');
+    clip.appendChild(outside); clip.appendChild(inside); defs.appendChild(clip);
+    var light = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    light.setAttribute('mask', 'url(#' + clipId + ')');
     var edge = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    edge.setAttribute('class', 'rp-frame-light-core');
     edge.setAttribute('x', '7'); edge.setAttribute('y', '7');
     edge.setAttribute('rx', '14'); edge.setAttribute('fill', 'none');
     edge.setAttribute('pathLength', '100');
-    svg.appendChild(edge); rim.appendChild(svg);
+    var halo = edge.cloneNode(false);
+    halo.setAttribute('class', 'rp-frame-light-halo');
+    light.appendChild(halo); light.appendChild(edge);
+    svg.appendChild(defs); svg.appendChild(light); rim.appendChild(svg);
     card.appendChild(rim);
   });
 

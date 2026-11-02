@@ -10070,9 +10070,12 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* V1569 G 사용자: Beach 무기는 일시정지 버튼보다 앞에서 지나가게 한다. */
 #rhythm-screen .rp-pausebtn { z-index: 0; }
 
-/* V1570 G: Only a narrow SVG stroke travels on the frame; its interior has no fill. */
+/* V1571 G: A soft highlight and halo travel within the frame; the inner face is masked out. */
 @keyframes rp-frame-light-turn { to { stroke-dashoffset: -100; } }
 #rhythm-screen .rx-card > .rp-selection-frame-light {
+  opacity: .30;
+  --rp-sweep-core: rgba(0,73,166,.82);
+  --rp-sweep-halo: rgba(0,50,121,.48);
   position: absolute;
   inset: 0;
   z-index: 2;
@@ -10081,23 +10084,27 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
   background: none;
 }
 #rhythm-screen .rp-selection-frame-light > svg { display: block; width: 100%; height: 100%; overflow: hidden; }
-#rhythm-screen .rp-selection-frame-light rect {
+#rhythm-screen .rp-frame-light-cutout { width: calc(100% - 26px); height: calc(100% - 26px); }
+#rhythm-screen .rp-selection-frame-light :is(.rp-frame-light-core,.rp-frame-light-halo) {
   width: calc(100% - 14px);
   height: calc(100% - 14px);
   fill: none;
-  stroke: rgba(255,248,213,.62);
-  stroke-width: 5px;
+  stroke: var(--rp-sweep-core);
+  stroke-width: 3px;
+  filter: blur(.8px);
   stroke-linecap: round;
-  stroke-dasharray: 12 88;
+  stroke-dasharray: 10 90;
   stroke-dashoffset: 0;
   animation: rp-frame-light-turn 9s linear infinite;
 }
-#rhythm-screen[hidden] .rp-selection-frame-light rect,
-#rhythm-screen .rp-type-panel[hidden] .rp-selection-frame-light rect,
-#rhythm-screen .rb-song-modal[hidden] .rp-selection-frame-light rect,
-#rhythm-screen .rp-select[hidden] .rp-selection-frame-light rect { animation-play-state: paused; }
+#rhythm-screen .rp-selection-frame-light .rp-frame-light-halo { stroke: var(--rp-sweep-halo); stroke-width: 8px; filter: blur(2.2px); }
+#rhythm-screen.is-type-b .rx-card:not(.rp-type-card) > .rp-selection-frame-light { --rp-sweep-core: rgba(85,25,137,.85); --rp-sweep-halo: rgba(56,14,100,.50); }
+#rhythm-screen[hidden] .rp-selection-frame-light :is(.rp-frame-light-core,.rp-frame-light-halo),
+#rhythm-screen .rp-type-panel[hidden] .rp-selection-frame-light :is(.rp-frame-light-core,.rp-frame-light-halo),
+#rhythm-screen .rb-song-modal[hidden] .rp-selection-frame-light :is(.rp-frame-light-core,.rp-frame-light-halo),
+#rhythm-screen .rp-select[hidden] .rp-selection-frame-light :is(.rp-frame-light-core,.rp-frame-light-halo) { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) {
-  #rhythm-screen .rp-selection-frame-light rect { animation: none; }
+  #rhythm-screen .rp-selection-frame-light :is(.rp-frame-light-core,.rp-frame-light-halo) { animation: none; }
 }
 
 /* 화면 전환 = 전체 화면 정중앙 뿅망치 + 전체 화면 구름(game.js coverOpen). */

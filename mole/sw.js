@@ -49,7 +49,8 @@
 // V1567 G: Bright cloudless score palace background; carpet, rising clouds and score UI unchanged.
 // V1568 G: Shared albums, full-screen transitions, Beach gulls, workshop-style Rhythm buttons and clipped press waves.
 // V1570 G: Brighter stroke-only frame sweep; spotlights only on type selection; pill song-home button.
-const CACHE = 'mole-game-v1570-G';
+// V1571 G: Soft frame-only sweep in deeper matching colors, 30 percent opacity.
+const CACHE = 'mole-game-v1571-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
