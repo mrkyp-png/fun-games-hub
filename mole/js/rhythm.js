@@ -114,7 +114,7 @@
       rhythmArtReady=Promise.all(waits);
       return rhythmArtReady;
     }
-    function albumOf(choice) { return choice.id==='fever2' ? 'assets/home2/mole-cap.png' : A+'albums-v1170/'+choice.id+'.webp?v=1376'; } // V1376 C: 같은 파일명 교체 → 폰 캐시 무효화
+    function albumOf(choice) { return choice.id==='fever2' ? 'assets/home2/mole-cap.png' : A+'albums-v1568/'+choice.id+'.webp?v=1568'; } // V1568 G: 스코어와 공통 768×768 앨범, 새 경로로 캐시 갱신
     function selectSong(choice){if(activeB)selectedBSong=choice;else selectedASong=choice;}
     // V1366 C: 리듬팡 티켓 — 시작할 때 1장(하루 첫 판 무료), 로딩 실패·취소면 돌려줌
     function paintTickets(){var E=MG.Economy;if(!E||!E.getTickets)return;var n=E.formatK(E.getTickets()); // V1372 C: 홈 티켓과 같은 수
@@ -663,20 +663,7 @@
     }
     // ---- v831 연출 ----
     var hippo = el.querySelector('.rp-hippo'), sparks = [], sparkI = 0, pangPool=[], pangIndex=0;
-    // v834: 갈매기 = 날개 위아래 날갯짓 + 매번 랜덤 높이·방향·속도·크기로 날아감(사용자 지정)
-    el.querySelectorAll('.rp-gull').forEach(function (g) {
-      function fly() {
-        var ltr = Math.random() < 0.5, W = el.clientWidth || 400;
-        g.style.setProperty('--x0', (ltr ? -50 : W + 50) + 'px'); g.style.setProperty('--x1', (ltr ? W + 50 : -50) + 'px');
-        g.style.setProperty('--dy', ((Math.random() - 0.5) * 60).toFixed(0) + 'px');
-        g.style.top = (18 + Math.random() * 16).toFixed(1) + '%'; g.style.width = (16 + Math.random() * 14).toFixed(0) + 'px';
-        g.style.animationDuration = (9 + Math.random() * 9).toFixed(1) + 's'; g.style.animationDelay = (Math.random() * 5).toFixed(1) + 's';
-        g.firstChild.style.animationDuration = (0.32 + Math.random() * 0.2).toFixed(2) + 's';
-        replay(g,'is-fly');
-      }
-      g.addEventListener('animationend', function (e) { if (e.target === g) fly(); });
-      fly();
-    });
+    // 갈매기 비행은 비치 시작/정지/일시정지와 함께 rhythm-beach.js에서 관리한다.
     function burst(x, y, k) { // 명중 자리에서 반짝이 조각이 사방으로
       for (var i = 0; i < k; i++) {
         var a = (i / k) * Math.PI * 2 + Math.random() * 0.5, d = L.laneW * (0.45 + Math.random() * 0.35);

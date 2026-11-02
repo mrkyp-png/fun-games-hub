@@ -3,6 +3,7 @@
  function create(screen){
   const hippo=screen.querySelector('.rp-hippo'),boss=screen.querySelector('.rp-a-cloud-boss'),sea=screen.querySelector('.rp-a-sea'),layers=sea.querySelectorAll('i');
   const cloudClumps=Array.from(screen.querySelectorAll('.rp-cloud-clump')),cloudMotions=new Map();
+  const gulls=Array.from(screen.querySelectorAll('.rp-gull')),gullMotions=new Map();
   const reduced=root.matchMedia('(prefers-reduced-motion: reduce)');
   let running=false,paused=false,frame=-1,nextFrame=-1,transitionStart=0,transitionDuration=0,hurtUntil=-Infinity,lastOpacity=-1,comboTimer=0,comboFrame=0;
   function layout(){
@@ -21,11 +22,25 @@
    stopCloudMotion();if(reduced.matches)return;
    cloudClumps.forEach(clump=>{const startY=Math.round((Math.random()*16-8)*10)/10;clump.style.transform=`translateY(${startY}%)`;animateCloud(clump,startY);});
   }
+  function stopGulls(){gullMotions.forEach(animation=>animation.cancel());gullMotions.clear();gulls.forEach(gull=>{gull.style.opacity='0';gull.style.transform='';});}
+  function flyGull(gull,index,first){
+   if(!running||paused)return;
+   const w=screen.clientWidth||400,ltr=Math.random()<.5,x0=ltr?-50:w+50,x1=ltr?w+50:-50,dy=(Math.random()-.5)*60,duration=9000+Math.random()*9000;
+   gull.style.top=(18+Math.random()*16).toFixed(1)+'%';gull.style.width=(16+Math.random()*14).toFixed(0)+'px';
+   gull.firstElementChild.style.animationDuration=(.32+Math.random()*.2).toFixed(2)+'s';
+   if(reduced.matches){gull.style.opacity='1';gull.style.transform=`translateX(${w*[.18,.5,.78][index%3]}px)`;return;}
+   const animation=gull.animate([{transform:`translate(${x0}px,0)`,opacity:1},{transform:`translate(${x1}px,${dy}px)`,opacity:1}],{duration,delay:first?0:Math.random()*2000,easing:'linear',fill:'both'});
+   gullMotions.set(gull,animation);
+   // 비치 진입 즉시 세 마리를 서로 다른 화면 안 위치에서 시작한다.
+   if(first)animation.currentTime=duration*[.18,.5,.78][index%3];
+   animation.onfinish=()=>{if(!running)return;animation.cancel();flyGull(gull,index,false);};
+  }
+  function startGulls(){stopGulls();gulls.forEach((gull,index)=>flyGull(gull,index,true));}
   function randomFrame(except){const pick=Math.floor(Math.random()*7);return pick>=except?pick+1:pick;}
   function setSeaFrames(){for(let i=0;i<2;i++){const tile=i===0?frame:nextFrame;layers[i].style.backgroundPosition=((tile%4)*100/3)+'% '+(tile<4?0:100)+'%';}}
-  function stop(){running=false;paused=false;stopCloudMotion();clearTimeout(comboTimer);cancelAnimationFrame(comboFrame);comboTimer=comboFrame=0;frame=-1;nextFrame=-1;transitionStart=0;transitionDuration=0;hurtUntil=-Infinity;lastOpacity=-1;screen.classList.remove('rp-beach-running','rp-beach-paused');hippo.classList.remove('is-cloud-hurt','is-no','is-cheer');boss.classList.remove('is-combo-pop');sea.hidden=true;}
-  function start(bpm){stop();running=true;screen.style.setProperty('--rp-cloud-beat',Math.max(.65,Math.min(1.8,120/(bpm||83)))+'s');screen.classList.add('rp-beach-running');sea.hidden=false;layout();startCloudMotion();update(0);}
-  function pause(on){paused=on;screen.classList.toggle('rp-beach-paused',on);cloudMotions.forEach(animation=>on?animation.pause():animation.play());}
+  function stop(){running=false;paused=false;stopCloudMotion();stopGulls();clearTimeout(comboTimer);cancelAnimationFrame(comboFrame);comboTimer=comboFrame=0;frame=-1;nextFrame=-1;transitionStart=0;transitionDuration=0;hurtUntil=-Infinity;lastOpacity=-1;screen.classList.remove('rp-beach-running','rp-beach-paused');hippo.classList.remove('is-cloud-hurt','is-no','is-cheer');boss.classList.remove('is-combo-pop');sea.hidden=true;}
+  function start(bpm){stop();running=true;screen.style.setProperty('--rp-cloud-beat',Math.max(.65,Math.min(1.8,120/(bpm||83)))+'s');screen.classList.add('rp-beach-running');sea.hidden=false;layout();startCloudMotion();startGulls();update(0);}
+  function pause(on){paused=on;screen.classList.toggle('rp-beach-paused',on);cloudMotions.forEach(animation=>on?animation.pause():animation.play());gullMotions.forEach(animation=>on?animation.pause():animation.play());}
   function hurt(time){if(!running)return;hurtUntil=time+.65;hippo.classList.add('is-cloud-hurt');}
   function combo(){if(!running||reduced.matches)return;clearTimeout(comboTimer);cancelAnimationFrame(comboFrame);boss.classList.remove('is-combo-pop');comboFrame=requestAnimationFrame(()=>{comboFrame=0;if(running)boss.classList.add('is-combo-pop');});comboTimer=setTimeout(()=>boss.classList.remove('is-combo-pop'),650);}
   function update(time){

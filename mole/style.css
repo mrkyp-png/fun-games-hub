@@ -5406,6 +5406,8 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 .rp-gull-b { display: block; animation: rp-bob 0.42s ease-in-out infinite alternate; }
 .rp-gull svg { display: block; width: 100%; overflow: visible; }
 .rp-gull path { animation: rp-wing 0.42s ease-in-out infinite alternate; }
+.rp-beach-paused .rp-gull-b,.rp-beach-paused .rp-gull path { animation-play-state:paused; }
+@media(prefers-reduced-motion:reduce){.rp-gull-b,.rp-gull path{animation:none;}}
 @keyframes rp-wing { from { d: path('M2 11 Q11 1 20 9 Q29 1 38 11'); } to { d: path('M2 5 Q11 15 20 9 Q29 15 38 5'); } }
 @keyframes rp-bob { from { transform: translateY(1px); } to { transform: translateY(-2px); } }
 /* v834: 눈덩이 굴림 — 원래 공의 가장자리 음영은 살리고(가장자리로 갈수록 무늬 흐리게) 가운데 뭉치 무늬만 흐름 */
@@ -10065,7 +10067,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* V1562 C: transform 대신 scale 속성 — 위쪽 판 화면(아이템·메일함·설정)은 transform:translateX(-50%) 로 가운데 정렬이라 transform 을 덮으면 오른쪽에서 밀려 들어오듯 보였음 */
 @keyframes asset-pop { 0% { scale: .82; opacity: 0; filter: brightness(.7); } 60% { opacity: 1; filter: none; } 100% { scale: 1; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .asset-pop { animation: none; } }
-/* V1561 C 사용자: 화면 전환 = 뿅망치 쾅 + 구름(game.js coverOpen). 덮개 영역 밖은 잘라 다이얼 패드는 그대로 */
+/* 화면 전환 = 전체 화면 정중앙 뿅망치 + 전체 화면 구름(game.js coverOpen). */
 .screen-cover { position: fixed; z-index: 2147482000; pointer-events: auto; overflow: hidden; }
 .screen-cover img { position: absolute; left: 0; top: 0; pointer-events: none; }
 .screen-cover-hammer { transform-origin: 33% 83%; z-index: 2; filter: drop-shadow(0 6px 6px rgba(0,0,0,.25)); }

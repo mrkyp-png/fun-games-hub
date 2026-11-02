@@ -2,10 +2,20 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MOLE PANG">
 <meta property="og:title" content="MOLE PANG">
 <meta property="og:description" content="귀여운 동물들과 함께 즐기는 MOLE PANG 리듬 액션 게임입니다.">
-<meta property="og:image" content="https://mrkyp-png.github.io/fun-games-hub/mole/assets/home2/splash-art.webp">
+<meta property="og:image" content="https://mrkyp-png.github.io/fun-games-hub/mole/assets/share/loading-characters-df184361dcde.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="600">
+<meta property="og:image:alt" content="MOLE PANG 현재 로딩 화면의 무대와 네 캐릭터">
 <meta property="og:url" content="https://mrkyp-png.github.io/fun-games-hub/mole/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MOLE PANG">
+<meta name="twitter:description" content="귀여운 동물들과 함께 즐기는 MOLE PANG 리듬 액션 게임입니다.">
+<meta name="twitter:image" content="https://mrkyp-png.github.io/fun-games-hub/mole/assets/share/loading-characters-df184361dcde.png">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style id="loading-first-paint">
   /* Keep the initial canvas black before external styles and artwork arrive. */
@@ -36,7 +46,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@700&family=Jua&family=Lilita+One&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../cosmic-theme.css">
 <link rel="stylesheet" href="../common/settings.css">
-<link rel="stylesheet" href="style.css?v=1567-G">
+<link rel="stylesheet" href="style.css?v=1568-G">
 <link rel="stylesheet" href="roundmap-window.css?v=1560-C">
 <style>
   /* 로딩 스플래시 — style.css 로딩 전에도 바로 뜨게 인라인. */
@@ -1009,7 +1019,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1567 G</div>
+        <div id="build-tag" aria-hidden="true">V 1568 G</div>
         <!-- 피버타임(터치캐치 보너스타임) 전광판 — 버튼보드 자리를 통째로 덮는 오버레이,
              평소엔 hidden, 피버 중에만 콤보/잔여시간 표시(사용자 지정: "전광판처럼"). -->
         <div id="fever-scoreboard" class="fever-scoreboard" hidden>
@@ -1297,7 +1307,7 @@ window.FGH.rollOut = function (el, done) {
         var gate = window.__moleAssetGate;
         function waitForCurrentWorker(registration) {
           return new Promise(function (resolve, reject) {
-            var latest = 'v=1567-G';
+            var latest = 'v=1568-G';
             var done = false;
             var timer = setTimeout(function () { finish(); }, 25000);
             function finish(error) {
@@ -1324,7 +1334,7 @@ window.FGH.rollOut = function (el, done) {
           console.warn('Starting while service worker registration continues in background');
           if (gate) gate.resolveCache();
         }, 30000);
-        navigator.serviceWorker.register('sw.js?v=1567-G').then(waitForCurrentWorker).then(function () {
+        navigator.serviceWorker.register('sw.js?v=1568-G').then(waitForCurrentWorker).then(function () {
           clearTimeout(registrationTimer);
           if (gate) gate.resolveCache();
         }).catch(function (error) {

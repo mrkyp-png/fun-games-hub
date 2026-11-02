@@ -47,7 +47,8 @@
 // V1565 C: Round map bands wait for all visible art (round plates, wave mole, hippo, buttons), max 2.5s.
 // V1566 C: Score screen tab / beach-neon labels re-applied in current language on open.
 // V1567 G: Bright cloudless score palace background; carpet, rising clouds and score UI unchanged.
-const CACHE = 'mole-game-v1567-G';
+// V1568 G: Shared approved albums at original dimensions, full-screen cloud transitions and Beach gull lifecycle.
+const CACHE = 'mole-game-v1568-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -96,6 +97,9 @@ const SHELL = [
   './assets/ui-transition-v1561/cloud-pink.webp',
   './assets/ui-transition-v1561/cloud-orange.webp',
   './assets/ui-transition-v1561/cloud-purple.webp',
+  './assets/ui-transition-v1568/cloud-green.webp',
+  './assets/ui-transition-v1568/cloud-teal.webp',
+  './assets/ui-transition-v1568/cloud-red.webp',
   './assets/ui-transition-v1561/burst.webp',
   './assets/shop-background-v1486/night.jpg',
   './assets/skills/shop-hd-v1484/shield-clean.webp',
@@ -278,12 +282,12 @@ const SHELL = [
   './assets/rhythm/beach-target-v1250/target-3.svg',
   './assets/rhythm/beach-target-v1250/target-4.svg',
   './assets/rhythm/type-cyber-bg-clean-v1213.webp',
-  './assets/rhythm/albums-v1170/le-monde-attendra-demain.webp',
-  './assets/rhythm/albums-v1170/meet-me-halfway.webp',
-  './assets/rhythm/albums-v1170/paper-engine-ride.webp',
-  './assets/rhythm/albums-v1170/the-world-is-wide.webp',
-  './assets/rhythm/albums-v1170/be-my-destiny.webp',
-  './assets/rhythm/albums-v1170/take-this-night-around.webp',
+  './assets/rhythm/albums-v1568/le-monde-attendra-demain.webp',
+  './assets/rhythm/albums-v1568/meet-me-halfway.webp',
+  './assets/rhythm/albums-v1568/paper-engine-ride.webp',
+  './assets/rhythm/albums-v1568/the-world-is-wide.webp',
+  './assets/rhythm/albums-v1568/be-my-destiny.webp',
+  './assets/rhythm/albums-v1568/take-this-night-around.webp',
 
   './js/rhythm-lyrics.js',
   './audio/rp/le-monde-attendra-demain-lyrics.json',

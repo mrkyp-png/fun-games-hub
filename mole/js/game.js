@@ -1292,25 +1292,37 @@
   let lastTap = null;
   document.addEventListener('pointerdown', (e) => { lastTap = { x: e.clientX, y: e.clientY }; }, true);
   // V1561 C 사용자: 화면별 구름 색(구름 그림 하나에 색만 입힘)
-  const CLOUD_TINT = { 'shop-screen': 'pink', 'inventory-screen': 'blue', 'quest-screen': 'orange', 'daily-screen': 'sky', 'rhythm-screen': 'purple' }; // V1562 C: 색을 입힌 구름 그림(필터는 칙칙해서 그림으로)
-  // V1564 C 사용자: 메일함·설정·아이템을 빠르게 연타하면 전환이 겹쳐 화면이 깨짐 → 전환 중엔 다른 화면 버튼 무시(잠금), 최대 4초 뒤 자동 해제
+  const CLOUD_TINT = { 'shop-screen': 'pink', 'inventory-screen': 'green', 'quest-screen': 'orange', 'daily-screen': 'sky', 'rhythm-screen': 'purple',
+    'workshop-screen': 'pink', 'score-screen': 'red', 'mailbox-screen': 'teal', 'settings-screen': 'blue' };
+  // 전환 중 연타 잠금. 이미지 준비가 끝나면 해제하고, 예외 시에도 최대 5초 뒤 덮개와 잠금을 정리한다.
   let coverBusy = 0;
-  function coverOpen(scr, rect, tint, open) {
+  function coverOpen(scr, tint, open) {
     if (!scr || !Element.prototype.animate) { open(); return; }
     const busyId = ++coverBusy; window.__coverBusy = true;
     const unlock = () => { if (coverBusy === busyId) window.__coverBusy = false; };
-    setTimeout(unlock, 4000);
-    const R = rect && rect.width && rect.height ? rect : { left: 0, top: 0, width: innerWidth, height: innerHeight };
+    // 모든 구름 전환은 화면 전체와 화면 정중앙을 기준으로 한다.
+    const R = { left: 0, top: 0, width: innerWidth, height: innerHeight };
     const host = document.createElement('div'); host.className = 'screen-cover';
     host.style.cssText = 'left:' + R.left + 'px;top:' + R.top + 'px;width:' + R.width + 'px;height:' + R.height + 'px';
     document.body.appendChild(host);
+    let opened = false, disposed = false;
+    const cleanup = () => { disposed = true; host.remove(); unlock(); };
+    const openOnce = () => { if (!opened) { opened = true; open(); } };
+    const watchdog = setTimeout(() => { try { openOnce(); } finally { cleanup(); } }, 5000);
+    // 구름 이미지의 투명한 틈으로 다음 화면이 먼저 보이지 않게, 덮인 순간에만 바탕을 켠다.
+    const veil = document.createElement('div');
+    veil.style.cssText = 'position:absolute;inset:0;opacity:0;pointer-events:none;background:' + tint[0];
+    host.appendChild(veil);
     const S = R.width / 390, tx = R.width / 2, ty = R.height * 0.5;
+    const cloudColor = CLOUD_TINT[scr.id];
+    const cloudDir = ['green', 'red', 'teal'].includes(cloudColor) ? 'assets/ui-transition-v1568/' : 'assets/ui-transition-v1561/';
+    const cloudSrc = cloudDir + 'cloud' + (cloudColor ? '-' + cloudColor : '') + '.webp';
     const T = (x, y, s, r) => ({ transform: 'translate(' + x + 'px,' + y + 'px) rotate(' + (r || 0) + 'deg) scale(' + s + ')' });
     const sprite = (src, w) => { const i = document.createElement('img'); i.src = src; i.alt = ''; i.style.width = w + 'px'; i.style.marginLeft = (-w / 2) + 'px'; i.style.marginTop = (-w / 2) + 'px'; host.appendChild(i); return i; };
     // 뿅망치 = 게임 타격 동작 그대로(lane-hammer.js: 대기 → 조준 0.09초 -30도 → 내려찍기 0.045초 -82도), 크기 2배(사용자)
     const h = document.createElement('img'); h.className = 'screen-cover-hammer'; h.alt = ''; h.src = 'assets/weapons/mallet-yaw10-rest15-v1379.png';
     h.style.width = (R.width * 0.272 * 2) + 'px'; host.appendChild(h);
-    const Hw = R.width * 0.272 * 2, aimX = tx + Hw * 0.49, aimY = ty + Hw * 0.125, homeX = R.width * 0.9, homeY = R.height * 0.965 /* V1562 C 사용자: 망치 머리가 덮개 정중앙(전체=폰 정중앙, 위쪽 판=판 정중앙)을 때리게 — 타격 각도에서 머리는 그립 기준 (-0.49, -0.125)×망치폭 */;
+    const Hw = R.width * 0.272 * 2, aimX = tx + Hw * 0.49, aimY = ty + Hw * 0.125, homeX = R.width * 0.9, homeY = R.height * 0.965 /* 망치 머리 = 전체 화면 정중앙. 타격 각도에서 머리는 그립 기준 (-0.49, -0.125)×망치폭 */;
     const put = (x, y, d, o) => { h.style.left = x + 'px'; h.style.top = y + 'px'; h.style.transform = 'translate(-33%,-83%) rotate(' + (d - 15) + 'deg)'; h.style.opacity = o; };
     const FLY = 90, CHOP = 45, RISE = 100, t0 = performance.now();
     let hit = false, puffs = [];
@@ -1328,46 +1340,40 @@
       const b = sprite('assets/ui-transition-v1561/burst.webp', 130 * S); b.style.opacity = 0;
       b.animate([Object.assign(T(tx, ty, .2, 0), { opacity: 1 }), Object.assign(T(tx, ty, 1.2, 20), { opacity: 1, offset: .5 }), Object.assign(T(tx, ty, 1.5, 30), { opacity: 0 })], { duration: 220, fill: 'forwards', easing: 'ease-out' });
       puffs = P.map((d, i) => {
-        const p = sprite('assets/ui-transition-v1561/cloud' + (CLOUD_TINT[scr.id] ? '-' + CLOUD_TINT[scr.id] : '') + '.webp', 300 * S); p.style.opacity = 0;
+        const p = sprite(cloudSrc, 300 * S); p.style.opacity = 0;
         const x = tx + d[0] * S, y = ty + d[1] * S, sc = 1.8 + (i % 3) * .2;
         p.animate([Object.assign(T(tx, ty, .1), { opacity: 1 }), Object.assign(T(x, y, sc), { opacity: 1 })], { duration: 260, delay: i * 10, fill: 'forwards', easing: 'cubic-bezier(.2,.8,.3,1)' });
         return { p, x, y, d };
       });
-      setTimeout(() => {
-        open();
+      const growthMs = 260 + (P.length - 1) * 10;
+      const cloudDecoded = puffs[0].p.decode ? puffs[0].p.decode().catch(() => {}) : Promise.resolve();
+      const growthDone = new Promise((resolve) => setTimeout(resolve, growthMs));
+      const decodeBound = new Promise((resolve) => setTimeout(resolve, 800));
+      Promise.all([growthDone, Promise.race([cloudDecoded, decodeBound])]).then(() => {
+        if (disposed) return;
+        veil.style.opacity = '1';
+        // 불투명 덮개를 실제 프레임에 그린 뒤에 화면을 연다(리듬팡 타입 선택 선노출 방지).
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (disposed) return;
+        try { openOnce(); } catch (error) { clearTimeout(watchdog); cleanup(); throw error; }
         const t1 = performance.now();
         (function wait() {
+          if (disposed) return;
           const now = performance.now();
           // V1562 C 사용자: 그림이 이미 준비돼도 구름은 최소 0.5초(터진 뒤부터) 머묾(사용자 지정) — 너무 빨리 걷히면 뒤 그림과 섞여 보였음
           if (now - tBoom < 500 || (scr.classList.contains('asset-preparing') && now - t1 < 2500)) { requestAnimationFrame(wait); return; }
           puffs.forEach(({ p, x, y, d }) => p.animate([Object.assign(T(x, y, 2), { opacity: 1 }), Object.assign(T(tx + d[0] * 3.2 * S, ty + d[1] * 3.2 * S, 2.5), { opacity: 0 })], { duration: 300, fill: 'forwards', easing: 'ease-in' }));
-          setTimeout(() => { host.remove(); unlock(); }, 320);
+          veil.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards', easing: 'ease-in' });
+          setTimeout(() => { clearTimeout(watchdog); cleanup(); }, 320);
         })();
-      }, 140); // 구름이 거의 덮는 순간 바로 화면 열기 시작
+        }));
+      });
     }
   }
   function openMore(sub, originEl) {
     if (COVER_TINT[sub] && !openMore.covering) {
       if (window.__coverBusy) return false; // 전환 중 연타 무시
-      // V1562 C 사용자: 덮개 크기 = 들어가는 화면 기준으로 항상 같게(어디서 들어가든). 전체화면 = 상점·일일·퀘스트·제작소·스코어,
-      // 위쪽 판 = 아이템·메일함·설정
-      const FULL = ['shop-screen', 'daily-screen', 'quest-screen', 'workshop-screen', 'score-screen'];
-      let rect = null;
-      // 지금 전체화면을 보고 있으면 화면 전체가 바뀌므로 전체를 덮음(위쪽만 덮으면 아래에 옛 화면이 남아 보였음)
-      const curFull = FULL.concat(['rhythm-screen']).some((id) => { const e = document.getElementById(id); return e && !e.hidden; });
-      if (FULL.indexOf(sub) < 0 && !curFull) {
-        const isStart0 = document.getElementById('game-screen').classList.contains('is-start');
-        // 위쪽 판 자리 = 아이템·메일함·설정 화면이 놓이는 자리(.board-screen 위치). 홈이면 홈 판, 아니면 더보기 판
-        const mm = document.getElementById('more-menu');
-        const cands = [document.getElementById(isStart0 ? 'board-start' : 'mole-board'), mm, document.getElementById('inventory-screen'), document.getElementById('settings-screen'), document.getElementById('mailbox-screen')];
-        const box = cands.find((e) => e && !e.hidden && e.getClientRects().length && e.getBoundingClientRect().height < innerHeight * 0.8);
-        rect = box && box.getBoundingClientRect();
-        if (!rect || !rect.height) { const mr = mm && mm.getBoundingClientRect(); rect = mr && mr.height && mr.height < innerHeight * 0.8 ? mr : { left: 0, top: 0, width: innerWidth, height: innerHeight * 0.49 }; }
-        // V1563 C 사용자: 메일함 등 위쪽 판 덮개 오른쪽 줄 깨짐 — 판 폭(367)이 아니라 화면 폭 전체 × 판 아래끝까지 덮음
-        rect = { left: 0, top: 0, width: innerWidth, height: Math.min(innerHeight, rect.top + rect.height + 2) };
-      }
-      if (!rect || !rect.width || !rect.height) rect = { left: 0, top: 0, width: innerWidth, height: innerHeight };
-      coverOpen(document.getElementById(sub), rect, COVER_TINT[sub], () => { openMore.covering = true; try { openMore(sub, originEl); } finally { openMore.covering = false; } });
+      coverOpen(document.getElementById(sub), COVER_TINT[sub], () => { openMore.covering = true; try { openMore(sub, originEl); } finally { openMore.covering = false; } });
       return;
     }
     var isStart = document.getElementById('game-screen').classList.contains('is-start');
@@ -1467,7 +1473,7 @@
   function openRhythm() {
     if (!openRhythm.covering) {
       if (window.__coverBusy) return;
-      coverOpen(document.getElementById('rhythm-screen'), { left: 0, top: 0, width: innerWidth, height: innerHeight }, COVER_TINT['rhythm-screen'], () => { openRhythm.covering = true; try { openRhythm(); } finally { openRhythm.covering = false; } });
+      coverOpen(document.getElementById('rhythm-screen'), COVER_TINT['rhythm-screen'], () => { openRhythm.covering = true; try { openRhythm(); } finally { openRhythm.covering = false; } });
       return;
     }
     const el = document.getElementById('rhythm-screen');
