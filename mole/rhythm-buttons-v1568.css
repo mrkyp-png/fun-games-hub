@@ -106,6 +106,8 @@
   flex: 0 0 auto;
 }
 #rhythm-screen .rb-song-footer .rx-btn span { font-size: clamp(17px, 5.5cqw, 23px); }
+#rhythm-screen .rb-song-footer [data-rp-songs-home] > span { font-size: 9cqw; }
+#rhythm-screen .rb-song-footer [data-rp-songs-home] > .rb-song-nav-icon { width: 32px; height: 31px; }
 #rhythm-screen .rb-song-play .rp-a-triangle {
   position: static;
   inset: auto;
