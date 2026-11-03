@@ -1,4 +1,4 @@
-/* Bounded foreground preparation; optional art never gates launch. */
+/* Decode visible artwork before reveal; bounded failures offer an explicit retry. */
 (function (root) {
   'use strict';
   var tasks = new Map(), pending = [], active = 0, backgroundActive = 0;
@@ -63,7 +63,7 @@
           current.state = 'ready'; current.resolve(true);
           if (root.dispatchEvent) root.dispatchEvent(new Event('mole-assets-updated'));
           document.querySelectorAll('img[src]').forEach(function (im) {
-            if (absolute(im.getAttribute('src')) === current.url && (!im.complete || !im.naturalWidth)) {
+            if (absolute(im.getAttribute('src')) === current.url && im.complete && !im.naturalWidth) {
               var u = new URL(current.url); u.searchParams.set('_asset_retry', Date.now()); im.src = u.href;
             }
           });
@@ -138,12 +138,19 @@
         if (!el.getClientRects().length) return;
         var bg = getComputedStyle(el).backgroundImage;
         if (!bg || bg === 'none' || refreshed.get(el) === bg) return;
+        var replacements = [];
         var changed = bg.replace(/url\(["']?([^"')]+)["']?\)/g, function (full, path) {
           var url = absolute(path), task = url && tasks.get(url);
-          if (!task || task.state !== 'ready') return full;
-          var fresh = new URL(url); fresh.searchParams.set('_asset_retry', '1477'); return 'url("' + fresh.href + '")';
+          if (!task || task.state !== 'ready' || task.attempts < 2) return full;
+          var fresh = new URL(url); fresh.searchParams.set('_asset_retry', '1582'); replacements.push(fresh.href); return 'url("' + fresh.href + '")';
         });
-        if (changed !== bg) { el.style.setProperty('background-image', changed, 'important'); refreshed.set(el, changed); }
+        if (changed !== bg) {
+          refreshed.set(el, bg);
+          Promise.all(replacements.map(readyUrl)).then(function () {
+            if (!el.isConnected || getComputedStyle(el).backgroundImage !== bg) return;
+            el.style.setProperty('background-image', changed, 'important'); refreshed.set(el, changed);
+          }).catch(function () { refreshed.delete(el); });
+        }
       });
     }
     function scan() {
@@ -188,12 +195,14 @@
     var urls = new Set(), imgs = [];
     [container].concat(Array.from(container.querySelectorAll('*'))).forEach(function (el) {
       if (!el.getClientRects().length) return;
+      if (!container.classList.contains('shop-pane-staged') && el.closest('.shop-pane-staged')) return;
       if (el.tagName === 'IMG') { if (el.loading === 'lazy') el.loading = 'eager'; imgs.push(el); return; }
       [null, '::before', '::after'].forEach(function (pseudo) {
         var st = getComputedStyle(el, pseudo);
+        if (pseudo && (st.content === 'none' || st.content === 'normal' || st.display === 'none')) return;
         [st.backgroundImage, st.borderImageSource, st.maskImage, st.webkitMaskImage].forEach(function (v) {
           var m, re = /url\(["']?([^"')]+)["']?\)/g;
-          while ((m = re.exec(v || ''))) { if (!/^data:/.test(m[1])) urls.add(m[1]); }
+          while ((m = re.exec(v || ''))) { if (!/^(data:|#)/.test(m[1])) urls.add(m[1]); }
         });
       });
     });
@@ -207,25 +216,75 @@
   // 화면 열 때 기다리는 것 = 그림 받기(load)까지만. 디코드까지 기다리면 큰 그림마다 0.5초씩 걸려 덮개가 오래 머묾(V1561 C 실측)
   function loadedImg(im) { return im.complete ? Promise.resolve() : new Promise(function (r) { im.addEventListener('load', r, { once: true }); im.addEventListener('error', r, { once: true }); }); }
   function loadedUrl(u) { var a = absUrl(u); if (decodedSet.has(a)) return Promise.resolve(); var im = new Image(); im.src = u; warmRefs.push(im); return loadedImg(im); }
+  var decodedWork = new Map();
+  function readyImage(img) {
+    if (!img.currentSrc && !img.getAttribute('src')) return Promise.resolve();
+    img.loading = 'eager';
+    var work = img.decode ? Promise.resolve().then(function () { return img.decode(); }) : new Promise(function (resolve, reject) {
+      if (img.complete) { if (img.naturalWidth) resolve(); else reject(new Error('Image unavailable')); return; }
+      img.addEventListener('load', resolve, {once:true}); img.addEventListener('error', reject, {once:true});
+    });
+    return work.then(function () { if (!img.naturalWidth) throw new Error('Image unavailable'); });
+  }
+  function readyUrl(url) {
+    var key = absUrl(url);
+    if (!decodedWork.has(key)) {
+      var image = new Image(); image.src = url; warmRefs.push(image);
+      decodedWork.set(key, readyImage(image).catch(function (error) { decodedWork.delete(key); throw error; }));
+    }
+    return decodedWork.get(key);
+  }
+  function prepareContent(el) {
+    var found = screenUrls(el);
+    return bounded(Promise.all(found.imgs.map(readyImage).concat(found.urls.map(readyUrl))), 10000, false).then(function (result) {
+      if (result === false) throw new Error('Artwork preparation timed out');
+    });
+  }
   function revealWhenReady(el, maxMs) {
     if (!el) return Promise.resolve();
     var ticket = {}; revealTicket.set(el, ticket);
+    var oldError = el.querySelector(':scope > .screen-asset-error'); if (oldError) oldError.remove();
+    el.classList.remove('asset-failed', 'glitch-in', 'asset-pop');
     el.classList.add('asset-preparing');
-    var done = function () {
+    var done = function (error) {
       if (revealTicket.get(el) !== ticket) return;
+      if (error && !el.hidden) {
+        el.classList.add('asset-failed');
+        var layer = document.createElement('div'); layer.className = 'screen-asset-error'; layer.setAttribute('role', 'alert');
+        var english = root.FGH && root.FGH.I18N && root.FGH.I18N.lang === 'en';
+        var message = document.createElement('p'); message.textContent = english ? 'Unable to prepare this screen.' : '화면을 준비하지 못했습니다.';
+        var retry = document.createElement('button'); retry.type = 'button'; retry.textContent = english ? 'Retry' : '다시 시도';
+        retry.addEventListener('click', function () { if (el._moleRetry) el._moleRetry(); revealWhenReady(el, maxMs); });
+        var close = document.createElement('button'); close.type = 'button'; close.textContent = english ? 'Close' : '닫기';
+        close.addEventListener('click', function () { var back = el.querySelector('.game-close,[data-shop-back],[data-ws-close],[data-sr-close]'); if (back) back.click(); });
+        layer.append(message, retry, close); el.appendChild(layer);
+      }
       el.classList.remove('asset-preparing');
+      if (el.hidden) return;
       // V1561 C 사용자: 팝업 등장(창이 통 튀어나오듯) — data-reveal-pop 가 있는 화면만
-      if (el.hasAttribute('data-reveal-pop')) { el.classList.remove('asset-pop'); void el.offsetWidth; el.classList.add('asset-pop'); setTimeout(function () { el.classList.remove('asset-pop'); }, 320); }
+      if (!error && el.hasAttribute('data-reveal-pop')) { el.classList.add('asset-pop'); setTimeout(function () { el.classList.remove('asset-pop'); }, 320); }
     };
     return new Promise(function (r) { requestAnimationFrame(function () { requestAnimationFrame(r); }); }).then(function () {
       var found = screenUrls(el);
       rememberScreen(el.id, found);
-      var work = found.imgs.map(loadedImg).concat(found.urls.map(loadedUrl));
+      var work = [prepareContent(el)];
+      if (el._moleReady) work.push(el._moleReady);
+      if (document.fonts && document.fonts.ready) work.push(document.fonts.ready);
       // 3D 무기 그림(아이템·상점)도 그려질 때까지 — 늦게 혼자 뜨지 않게
-      var models = Array.from(el.querySelectorAll('[data-model-weapon]')).filter(function (m) { var b = m.getBoundingClientRect(); return b.width && b.right > 0 && b.left < innerWidth && b.bottom > 0 && b.top < innerHeight; }); // 화면 안에 보이는 것만(옆 페이지 제외)
-      if (models.length) work.push(bounded(new Promise(function (r) { (function chk() { if (models.every(function (m) { return m.classList.contains('shop-model-ready') || m.hasAttribute('data-model-error'); })) r(); else requestAnimationFrame(chk); })(); }), 1200, null)); // 3D 준비는 최대 1.2초만 기다림
-      return bounded(Promise.all(work), maxMs || 2500, null);
-    }).then(done, done);
+      var models = Array.from(el.querySelectorAll('[data-model-weapon]')).filter(function (m) { var b = m.getBoundingClientRect(); return !m.closest('.shop-pane-staged') && b.width && b.right > 0 && b.left < innerWidth && b.bottom > 0 && b.top < innerHeight; });
+      if (models.length) work.push(new Promise(function (resolve, reject) {
+        var frame = 0, timer = setTimeout(function () { cancelAnimationFrame(frame); reject(new Error('3D preparation timed out')); }, 10000);
+        function finish(error) { clearTimeout(timer); cancelAnimationFrame(frame); if (error) reject(error); else resolve(); }
+        function check() {
+          if (el.hidden || revealTicket.get(el) !== ticket) { finish(new Error('Screen cancelled')); return; }
+          if (models.some(function (m) { return m.hasAttribute('data-model-error'); })) { finish(new Error('3D preparation failed')); return; }
+          if (models.every(function (m) { return m.classList.contains('shop-model-ready'); })) { finish(); return; }
+          frame = requestAnimationFrame(check);
+        }
+        check();
+      }));
+      return bounded(Promise.all(work), maxMs || 10500, false).then(function (result) { if (result === false) throw new Error('Screen preparation timed out'); });
+    }).then(function () { return new Promise(function (resolve) { requestAnimationFrame(function () { requestAnimationFrame(resolve); }); }); }).then(function () { done(); }, done);
   }
   // V1561 C 사용자: 미리 데워 두기 — 홈에서 쉬는 동안 각 화면 그림을 미리 받아 디코드해 붙잡아 둠 → 처음 열어도 바로 한 번에.
   // 그림 목록 = 지난번 그 화면을 열었을 때 기록한 목록(localStorage) + 숨은 화면의 HTML·CSS 에서 읽은 것.
@@ -250,6 +309,7 @@
   }
   function warmScreens(ids) {
     if (warmed) return; warmed = true;
+    if (root.MoleGame && root.MoleGame.WeaponModels && root.MoleGame.WeaponModels.preload) root.MoleGame.WeaponModels.preload().catch(function () {});
     var saved = readWarm(), urls = new Set();
     ids.forEach(function (id) {
       (saved[id] || []).forEach(function (u) { urls.add(u); });
@@ -266,7 +326,7 @@
     })();
   }
   root.prepareMoleAssets = prepare;
-  root.MoleAssetLoader = { collect: collect, ensure: ensure, watchScreens: watchScreens, startBackground: startBackground, revealWhenReady: revealWhenReady, warmScreens: warmScreens,
+  root.MoleAssetLoader = { collect: collect, ensure: ensure, watchScreens: watchScreens, startBackground: startBackground, prepareContent:prepareContent, revealWhenReady: revealWhenReady, warmScreens: warmScreens,
     isReady: function (paths) { return paths.map(absolute).filter(Boolean).every(function (u) { return tasks.get(u) && tasks.get(u).state === 'ready'; }); }
   };
 })(window);

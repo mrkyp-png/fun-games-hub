@@ -1308,7 +1308,7 @@
     let opened = false, disposed = false;
     const cleanup = () => { disposed = true; host.remove(); unlock(); };
     const openOnce = () => { if (!opened) { opened = true; open(); } };
-    const watchdog = setTimeout(() => { try { openOnce(); } finally { cleanup(); } }, 5000);
+    const watchdog = setTimeout(() => { try { openOnce(); } finally { cleanup(); } }, 12000);
     // 구름 이미지의 투명한 틈으로 다음 화면이 먼저 보이지 않게, 덮인 순간에만 바탕을 켠다.
     const veil = document.createElement('div');
     veil.style.cssText = 'position:absolute;inset:0;opacity:0;pointer-events:none;background:' + tint[0];
@@ -1324,7 +1324,7 @@
     h.style.width = (R.width * 0.272 * 2) + 'px'; host.appendChild(h);
     const Hw = R.width * 0.272 * 2, aimX = tx + Hw * 0.49, aimY = ty + Hw * 0.125, homeX = R.width * 0.9, homeY = R.height * 0.965 /* 망치 머리 = 전체 화면 정중앙. 타격 각도에서 머리는 그립 기준 (-0.49, -0.125)×망치폭 */;
     const put = (x, y, d, o) => { h.style.left = x + 'px'; h.style.top = y + 'px'; h.style.transform = 'translate(-33%,-83%) rotate(' + (d - 15) + 'deg)'; h.style.opacity = o; };
-    const FLY = 90, CHOP = 45, RISE = 100, t0 = performance.now();
+    const FLY = 120, CHOP = 60, RISE = 140, t0 = performance.now();
     let hit = false, puffs = [];
     (function swing() {
       const t = performance.now() - t0; let x = aimX, y = aimY, d, o = 1;
@@ -1342,10 +1342,10 @@
       puffs = P.map((d, i) => {
         const p = sprite(cloudSrc, 300 * S); p.style.opacity = 0;
         const x = tx + d[0] * S, y = ty + d[1] * S, sc = 1.8 + (i % 3) * .2;
-        p.animate([Object.assign(T(tx, ty, .1), { opacity: 1 }), Object.assign(T(x, y, sc), { opacity: 1 })], { duration: 260, delay: i * 10, fill: 'forwards', easing: 'cubic-bezier(.2,.8,.3,1)' });
+        p.animate([Object.assign(T(tx, ty, .1), { opacity: 1 }), Object.assign(T(x, y, sc), { opacity: 1 })], { duration: 320, delay: i * 10, fill: 'forwards', easing: 'cubic-bezier(.2,.8,.3,1)' });
         return { p, x, y, d };
       });
-      const growthMs = 260 + (P.length - 1) * 10;
+      const growthMs = 320 + (P.length - 1) * 10;
       const cloudDecoded = puffs[0].p.decode ? puffs[0].p.decode().catch(() => {}) : Promise.resolve();
       const growthDone = new Promise((resolve) => setTimeout(resolve, growthMs));
       const decodeBound = new Promise((resolve) => setTimeout(resolve, 800));
@@ -1356,15 +1356,14 @@
         requestAnimationFrame(() => requestAnimationFrame(() => {
         if (disposed) return;
         try { openOnce(); } catch (error) { clearTimeout(watchdog); cleanup(); throw error; }
-        const t1 = performance.now();
         (function wait() {
           if (disposed) return;
           const now = performance.now();
           // V1562 C 사용자: 그림이 이미 준비돼도 구름은 최소 0.5초(터진 뒤부터) 머묾(사용자 지정) — 너무 빨리 걷히면 뒤 그림과 섞여 보였음
-          if (now - tBoom < 500 || (scr.classList.contains('asset-preparing') && now - t1 < 2500)) { requestAnimationFrame(wait); return; }
-          puffs.forEach(({ p, x, y, d }) => p.animate([Object.assign(T(x, y, 2), { opacity: 1 }), Object.assign(T(tx + d[0] * 3.2 * S, ty + d[1] * 3.2 * S, 2.5), { opacity: 0 })], { duration: 300, fill: 'forwards', easing: 'ease-in' }));
-          veil.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards', easing: 'ease-in' });
-          setTimeout(() => { clearTimeout(watchdog); cleanup(); }, 320);
+          if (now - tBoom < 500 || scr.classList.contains('asset-preparing')) { requestAnimationFrame(wait); return; }
+          puffs.forEach(({ p, x, y, d }) => p.animate([Object.assign(T(x, y, 2), { opacity: 1 }), Object.assign(T(tx + d[0] * 3.2 * S, ty + d[1] * 3.2 * S, 2.5), { opacity: 0 })], { duration: 360, fill: 'forwards', easing: 'ease-in-out' }));
+          veil.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 360, fill: 'forwards', easing: 'ease-in-out' });
+          setTimeout(() => { clearTimeout(watchdog); cleanup(); }, 380);
         })();
         }));
       });
@@ -1432,7 +1431,7 @@
       // V1561 C 사용자: 화면 그림이 따로따로 뜨지 않게 — 다 준비되면 한 번에 보여줌(광산지도는 자체 준비 장치)
       if (sub !== 'roundmap-screen') revealOrBands(document.getElementById(sub), openMore.covering);
       // v836(사용자 지정): 뒤로가기와 같은 글리치로 진입 — 스코어·출석·제작소·광산지도 (V1561 C: 상점은 팝업 등장으로 대체)
-      if (!openMore.covering && sub !== 'roundmap-screen' && sub !== 'shop-screen' && ['score-screen', 'daily-screen', 'workshop-screen', 'roundmap-screen', 'shop-screen', 'inventory-screen', 'quest-screen', 'mailbox-screen', 'settings-screen'].indexOf(sub) >= 0) { // v862: 상점·아이템도
+      if (!openMore.covering && !document.getElementById(sub).hasAttribute('data-reveal-pop') && sub !== 'roundmap-screen' && sub !== 'shop-screen' && ['score-screen', 'daily-screen', 'workshop-screen', 'roundmap-screen', 'shop-screen', 'inventory-screen', 'quest-screen', 'mailbox-screen', 'settings-screen'].indexOf(sub) >= 0) {
         const gs = document.getElementById(sub);
         gs.classList.remove('glitch-in'); void gs.offsetWidth; gs.classList.add('glitch-in');
         setTimeout(() => gs.classList.remove('glitch-in'), 260);

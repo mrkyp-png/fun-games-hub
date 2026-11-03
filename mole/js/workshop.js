@@ -618,7 +618,9 @@
     }
 
     function show() {
-      preloadIdleGoose();
+      el._moleReady = preloadIdleGoose().then(function (ok) { if (!ok) throw new Error('Workshop idle art unavailable'); });
+      el._moleReady.catch(function () {});
+      el._moleRetry = function () { idleGooseReady = null; el._moleReady = preloadIdleGoose().then(function (ok) { if (!ok) throw new Error('Workshop idle art unavailable'); }); el._moleReady.catch(function () {}); };
       preloadFrames();
       clearTimers(); clearWorkshopHammer(); enhancement.reset();
       running = false; pending = null; selMat = null; pick.hidden = true;

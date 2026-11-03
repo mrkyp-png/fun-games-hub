@@ -92,6 +92,7 @@
     var el = opts.root;
     var scenery = MG.ShopScenery ? MG.ShopScenery.create(el) : null;
     var cardsEl = el.querySelector('[data-shop-cards]');
+    var paneTemplate = cardsEl.cloneNode(false), paneCache = new Map(), paneEpoch = 0, paneWarmEpoch = -1;
     var cardsBoxEl = el.querySelector('.shop-cards-box');
     var productsViewport = document.createElement('div'); productsViewport.className = 'shop-product-viewport';
     cardsEl.parentNode.insertBefore(productsViewport, cardsEl); productsViewport.appendChild(cardsEl);
@@ -855,6 +856,62 @@
     var RENDERERS = { currency: renderCurrencyCards, coin: renderCoinCards, ticket: renderTicketCards,
       weapon: renderWeaponCards, skill: renderSkillCards, costume: renderCostumeCards };
 
+    function clearPaneCache() {
+      paneEpoch++;
+      if (MG.ShopModels) MG.ShopModels.clear();
+      paneCache.forEach(function (pane) { pane.element.remove(); }); paneCache.clear();
+      if (cardsEl.isConnected) cardsEl.remove();
+    }
+    function prepareShopPane(id) {
+      var signature = I18N().lang + '|' + !!(opts.gameInProgress && opts.gameInProgress());
+      if (id !== 'weapon') signature += '|' + [MG.Economy.getCoins(), MG.Economy.getHearts(), MG.Economy.getTickets()].join('|');
+      if (paneCache.has(id)) {
+        var cached = paneCache.get(id);
+        if (cached.signature === signature) return cached;
+        cached.element.remove(); paneCache.delete(id);
+      }
+      var element = paneTemplate.cloneNode(false);
+      element.removeAttribute('data-shop-cards'); element.classList.add('shop-pane-staged');
+      element.setAttribute('aria-hidden', 'true'); element.inert = true;
+      productsViewport.appendChild(element);
+      var pane = {element:element, signature:signature, ready:null, error:null}; paneCache.set(id, pane);
+      var previousCards = cardsEl, previousTab = activeTab;
+      try { cardsEl = element; activeTab = id; RENDERERS[id](); }
+      finally { cardsEl = previousCards; activeTab = previousTab; }
+      if (id === 'weapon') element.querySelectorAll('.shop-card--weapon-product').forEach(function (card) {
+        var host = card.querySelector('.shop-card-img-box,.shop-card-badge--default-weapon');
+        if (!host) return;
+        host.classList.add('shop-weapon-shadow-host');
+        if (host.querySelector('[data-shop-motion="alipunch"]')) host.classList.add('shop-weapon-shadow-host--king');
+        var shadow = document.createElement('span'); shadow.className = 'shop-weapon-shadow'; shadow.setAttribute('aria-hidden','true'); host.appendChild(shadow);
+      });
+      var models = id === 'weapon' && MG.ShopModels ? MG.ShopModels.attach(element, WEAPONS, function (host, frame) {
+        if (host.closest('[data-shop-cards]') === cardsEl) alignWeaponDisplay(host, frame);
+      }, true) : Promise.resolve();
+      var ready = Promise.all([root.MoleAssetLoader ? root.MoleAssetLoader.prepareContent(element) : Promise.resolve(), models]);
+      pane.ready = new Promise(function (resolve, reject) {
+        var timeout = setTimeout(function () { reject(new Error('Product preparation timed out')); }, 10000);
+        ready.then(function (value) { clearTimeout(timeout); resolve(value); }, function (error) { clearTimeout(timeout); reject(error); });
+      }).then(function () {
+        if (!element.isConnected) throw new Error('Pane cancelled');
+        if (element.querySelector('[data-model-error]')) throw new Error('Weapon preparation failed');
+        element.dataset.paneReady = 'true';
+      }).catch(function (error) { pane.error = error; throw error; });
+      pane.ready.catch(function () {});
+      return pane;
+    }
+    function warmShopPanes() {
+      if (paneWarmEpoch === paneEpoch) return;
+      paneWarmEpoch = paneEpoch;
+      var epoch = paneEpoch, ids = ['weapon'].concat(TABS.map(function (tab) { return tab.id; }).filter(function (id) { return id !== 'weapon'; }));
+      function step() {
+        if (epoch !== paneEpoch || el.hidden || !ids.length) return;
+        prepareShopPane(ids.shift());
+        (root.requestIdleCallback || function (fn) { setTimeout(fn, 30); })(step, {timeout:150});
+      }
+      (root.requestIdleCallback || function (fn) { setTimeout(fn, 0); })(step, {timeout:100});
+    }
+
     // 배너 우측 메일 아이콘은 다이얼패드 "#"(시크릿 폐기) 자리로 이동함(사용자 지정) — 배너에는
     // 그 자리에 화살표(‹›)를 대신 넣는다(아이템 화면과 동일 패턴).
     function centerShopSignText() {
@@ -974,18 +1031,20 @@
       requestAnimationFrame(fitSkillCaptions);
     }
 
-    function render() {
+    function render(reuse) {
       refreshShopBalances();
-      if (MG.ShopModels) MG.ShopModels.clear();
+      if (!reuse) { productNavGeneration++; clearProductSlide(); clearPaneCache(); }
       renderTabs();
-      RENDERERS[activeTab]();
-      if (activeTab === 'weapon') cardsEl.querySelectorAll('.shop-card--weapon-product').forEach(function (card) {
-        var host = card.querySelector('.shop-card-img-box,.shop-card-badge--default-weapon');
-        if (!host) return;
-        host.classList.add('shop-weapon-shadow-host');
-        if (host.querySelector('[data-shop-motion="alipunch"]')) host.classList.add('shop-weapon-shadow-host--king');
-        var shadow = document.createElement('span'); shadow.className = 'shop-weapon-shadow'; shadow.setAttribute('aria-hidden','true'); host.appendChild(shadow);
+      var pane = prepareShopPane(activeTab); cardsEl = pane.element;
+      paneCache.forEach(function (record) {
+        var selected = record === pane;
+        record.element.classList.toggle('shop-pane-staged', !selected);
+        record.element.inert = !selected; record.element.setAttribute('aria-hidden', selected ? 'false' : 'true');
+        if (selected) record.element.setAttribute('data-shop-cards', ''); else record.element.removeAttribute('data-shop-cards');
       });
+      el._moleReady = pane.ready;
+      el._moleRetry = function () { render(); };
+      if (MG.ShopModels && MG.ShopModels.activate) MG.ShopModels.activate(cardsEl);
       updateDots();
       // 재화탭 카드박스 색 = 하트/코인/티켓 캡슐 필터에 맞춰 빨강/노랑/파랑(사용자 지정:
       // "하트선택시 빨강, 코인선택시 노랑, 티켓선택시 파랑") — 필터 없음(전체)은 하트 기본.
@@ -997,14 +1056,11 @@
       requestAnimationFrame(centerShopTabArt);
       if (activeTab === 'weapon' && MG.ShopModels) {
         weaponArrivalPending = true;
-        var models = MG.ShopModels.attach(cardsEl, WEAPONS, alignWeaponDisplay);
-        Promise.resolve(models).then(scheduleShopLayout, scheduleShopLayout);
-        weaponModelsReady = new Promise(function (resolve) {
-          var timeout = setTimeout(resolve, 1500);
-          Promise.resolve(models).then(function () { clearTimeout(timeout); resolve(); }, function () { clearTimeout(timeout); resolve(); });
-        });
+        weaponModelsReady = pane.ready;
+        pane.ready.then(scheduleShopLayout, scheduleShopLayout);
       } else { weaponModelsReady = Promise.resolve(); weaponArrivalPending = false; }
       scheduleShopLayout();
+      warmShopPanes();
     }
 
     function shopTextInk(element) {
@@ -1108,34 +1164,43 @@
       });
     }
 
-    var productNavGeneration = 0, productPreview = null, productSlideAnimations = [], drag = null, suppressProductClickUntil = 0;
+    var productNavGeneration = 0, productPreview = null, productStatus = null, productSlideAnimations = [], drag = null, suppressProductClickUntil = 0;
     function clearProductSlide() {
       productSlideAnimations.forEach(function (a) { a.cancel(); }); productSlideAnimations = [];
       if (productPreview) productPreview.remove(); productPreview = null;
+      if (productStatus) productStatus.remove(); productStatus = null;
       cardsEl.style.transform = ''; cardsEl.style.visibility = ''; productsViewport.classList.remove('is-dragging');
     }
     function selectProductTab(id, swipeDirection) {
-      if (id === activeTab && !currencyFilter) { cardsEl.style.transform = ''; return; }
+      if (id === activeTab && !currencyFilter && !productPreview) { cardsEl.style.transform = ''; return; }
       var oldIndex = TABS.findIndex(function (tab) { return tab.id === activeTab; });
       var newIndex = TABS.findIndex(function (tab) { return tab.id === id; });
       if (newIndex < 0) return;
-      clearProductSlide(); var generation = ++productNavGeneration;
+      var previewSource = productPreview || cardsEl;
       var previousCardScroll = cardsEl.scrollLeft;
-      var preview = cardsEl.cloneNode(true); preview.removeAttribute('data-shop-cards'); preview.classList.add('shop-product-preview');
+      var preview = previewSource.cloneNode(true); preview.removeAttribute('data-shop-cards'); preview.classList.add('shop-product-preview');
       if (MG.ShopModels) MG.ShopModels.snapshot(preview);
+      clearProductSlide(); var generation = ++productNavGeneration;
       preview.setAttribute('aria-hidden', 'true'); preview.inert = true;
       productsViewport.appendChild(preview); productPreview = preview;
       preview.scrollLeft = previousCardScroll;
       cardsEl.style.visibility = 'hidden';
-      activeTab = id; currencyFilter = null; cardsEl.scrollLeft = 0; render();
+      activeTab = id; currencyFilter = null; render(true); cardsEl.scrollLeft = 0; cardsEl.style.visibility = 'hidden';
+      var pane = paneCache.get(id);
+      if (pane.element.dataset.paneReady !== 'true') {
+        productStatus = document.createElement('div'); productStatus.className = 'shop-product-status';
+        productStatus.setAttribute('role', 'status'); productStatus.textContent = I18N().lang === 'en' ? 'Preparing products…' : '상품 준비 중…';
+        productsViewport.appendChild(productStatus);
+      }
       // The toggle strip snaps by groups of three; target the matching group explicitly.
       var group = tabsEl.children[Math.floor(newIndex / 3) * 3];
       requestAnimationFrame(function () {
         if (group && generation === productNavGeneration) tabsEl.scrollTo({ left: group.offsetLeft, behavior: 'instant' });
       });
       // Keep the complete old panel visible while the next panel's artwork decodes.
-      Promise.all(Array.prototype.map.call(cardsEl.querySelectorAll('img'), function (img) { return img.decode ? img.decode().catch(function () {}) : Promise.resolve(); }).concat([weaponModelsReady])).then(function () {
+      pane.ready.then(function () {
         if (generation !== productNavGeneration || el.hidden) return;
+        if (productStatus) productStatus.remove(); productStatus = null;
         centerShopTabArt(); alignCoinPrices();
         if (root.matchMedia('(prefers-reduced-motion:reduce)').matches) { clearProductSlide(); return; }
         var direction = swipeDirection || (newIndex > oldIndex ? 1 : -1), width = productsViewport.clientWidth;
@@ -1144,6 +1209,13 @@
         var outgoing = preview.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(' + (-direction * width) + 'px)' }], { duration: 230, easing: 'cubic-bezier(.2,.7,.3,1)' });
         productSlideAnimations = [incoming, outgoing];
         incoming.finished.then(function () { if (generation === productNavGeneration) clearProductSlide(); }, function () {});
+      }).catch(function () {
+        if (generation !== productNavGeneration || el.hidden) return;
+        if (!productStatus) { productStatus = document.createElement('div'); productStatus.className = 'shop-product-status'; productsViewport.appendChild(productStatus); }
+        productStatus.textContent = I18N().lang === 'en' ? 'Unable to prepare products. ' : '상품을 준비하지 못했습니다. ';
+        var retry = document.createElement('button'); retry.type = 'button'; retry.textContent = I18N().lang === 'en' ? 'Retry' : '다시 시도';
+        retry.addEventListener('click', function () { var failed = paneCache.get(id); if (failed) failed.element.remove(); paneCache.delete(id); selectProductTab(id, swipeDirection); });
+        productStatus.appendChild(retry);
       });
     }
     productsViewport.addEventListener('pointerdown', function (event) {
@@ -1175,7 +1247,7 @@
     productsViewport.addEventListener('click', function (event) {
       if (Date.now() < suppressProductClickUntil) { event.preventDefault(); event.stopImmediatePropagation(); }
     }, true);
-    new MutationObserver(function () { if (el.hidden) { productNavGeneration++; drag = null; clearProductSlide(); if (MG.ShopModels) MG.ShopModels.clear(); } }).observe(el, { attributes: true, attributeFilter: ['hidden'] });
+    new MutationObserver(function () { if (el.hidden) { productNavGeneration++; drag = null; clearProductSlide(); clearPaneCache(); } }).observe(el, { attributes: true, attributeFilter: ['hidden'] });
 
     // Center the visible coin artwork and number ink, keeping their current sizes.
     function alignCoinPrices() {

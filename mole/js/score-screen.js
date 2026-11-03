@@ -317,7 +317,8 @@
       // 진입 — 양탄자가 위에서 아래로 펼쳐진 뒤 UI 등장
       timers.forEach(clearTimeout); timers = [];
       closing = false;
-      el.classList.remove('is-out', 'is-in'); void el.offsetWidth; el.classList.add('is-in');
+      // The common readiness reveal owns entry; do not replay a second carpet/row reveal.
+      el.classList.remove('is-out', 'is-in');
     }
     return { show: show, refresh: render };
   }
