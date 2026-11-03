@@ -1488,7 +1488,7 @@
     if (gameScreen) gameScreen.classList.add('hinge-hidden-by-nav');
     if (hinge) hinge.style.visibility = 'hidden';
     // v840(사용자 지정): 리듬팡 진입·홈 복귀도 글리치
-    if (!rhythm) rhythm = window.__rhythm = MG.Rhythm.create({ root: el, onEntryMusic: setRhythmEntryBgm, onClose: (why) => { window.FGH.rollOut(el, () => { el.hidden = true; if (gameScreen) gameScreen.classList.remove('hinge-hidden-by-nav'); if (hinge) hinge.style.visibility = gameScreen && gameScreen.classList.contains('is-start') ? 'visible' : 'hidden'; playScreenBgm('home'); refreshBoardStats(); }); } }); // v841: 일시정지→그만하기 = 탄성 밀어내기
+    if (!rhythm) rhythm = window.__rhythm = MG.Rhythm.create({ root: el, onEntryMusic: setRhythmEntryBgm, onClose: (why, cleanup) => { window.FGH.rollOut(el, () => { el.hidden = true; if (cleanup) cleanup(); if (gameScreen) gameScreen.classList.remove('hinge-hidden-by-nav'); if (hinge) hinge.style.visibility = gameScreen && gameScreen.classList.contains('is-start') ? 'visible' : 'hidden'; playScreenBgm('home'); refreshBoardStats(); }); } });
     stopBgm();
     rhythm.open();
     // V1561 C 사용자: 리듬팡도 그림이 다 준비되면 한 번에

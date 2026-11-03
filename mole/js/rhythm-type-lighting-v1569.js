@@ -238,6 +238,11 @@
     frame = requestAnimationFrame(tick);
   }
   function sync() {
+    selections.forEach(function (selection) {
+      if (selection.hidden || root.hidden) return;
+      var card = selection.querySelector('.rx-card'); if (card) card.getBoundingClientRect();
+      selection.querySelectorAll('.rp-a-triangle,.rp-selection-frame-light').forEach(function (shape) { shape.getBoundingClientRect(); });
+    });
     if (frame) cancelAnimationFrame(frame);
     frame = 0; previous = 0;
     canvas.hidden = front.hidden = !visible();
@@ -248,6 +253,8 @@
     resize(); render(elapsed);
     if (!reduced.matches) frame = requestAnimationFrame(tick);
   }
+
+  root._rpRefreshSelection = sync;
 
   var observer = new MutationObserver(sync);
   observer.observe(root, { attributes: true, attributeFilter: ['hidden'] });
@@ -261,7 +268,7 @@
   if (reduced.addEventListener) reduced.addEventListener('change', sync);
   else reduced.addListener(sync);
 
-  Promise.all(keys.map(function (key) {
+  root._rpSelectionLightingReady = Promise.all(keys.map(function (key) {
     return new Promise(function (resolve, reject) {
       var img = new Image();
       img.onload = function () {

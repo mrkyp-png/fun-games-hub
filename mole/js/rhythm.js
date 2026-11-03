@@ -94,7 +94,14 @@
     var st = null, raf = 0;
     var countEl = $('[data-rp-count]'), frameHeads = [0,1,2,3].map(function(){return {h:{x:0,y:0,r:0},jumping:false};}), frameCues=[0,0,0,0];
     var imgs = {}, diff = 'EASY';
-    var bGame = null, activeB = false, resultSerial = 0;
+    var bGame = null, activeB = false, resultSerial = 0, closing = false;
+    var selectionDecor = ['frame.png','frame-purple.png','ctop.png','ctop-r.png','cbot.png','cbot-r.png'].map(function (name) { return 'assets/rhythm/ui/v1372/' + name; });
+    function prepareSelectionDecor() {
+      el._moleReady = Promise.all([root.MoleAssetLoader ? root.MoleAssetLoader.preparePaths(selectionDecor) : Promise.resolve(), el._rpSelectionLightingReady || Promise.resolve()]);
+      el._moleReady.catch(function () {});
+      return el._moleReady;
+    }
+    el._moleRetry = prepareSelectionDecor;
     var selectedASong = CONFIG.bSongs[0], selectedBSong = CONFIG.bSongs[0], bSongCache = {}, bSongPending = {};
     var adRequired=false, adReady=false, adBusy=false, entryPaid=null, entryBusy=false, entryGeneration=0, entryLoadingTimer=0;
     var rhythmArtReady=null;
@@ -235,6 +242,7 @@
       $('[data-rp-songs]').hidden = false; paintTickets();
       layoutSongRows();
       list.scrollTop = 0;
+      if (el._rpRefreshSelection) el._rpRefreshSelection();
     }
     // Fit whole cards to the visible list and let native scrolling snap by card.
     // Resize-only work; no game render loop or scroll animation listener.
@@ -879,20 +887,20 @@
     $('[data-rp-other]').addEventListener('click', function () { if (activeB) { bGame.stop(); showSelect(); return; } cancelAnimationFrame(raf); try { src && src.stop(); } catch (e) { /* 무시 */ } st = null; showSelect(); });
 
     function close(why) {
-      statusFx.stop(); clearButtonWaves();
-      setEntryBgm(false);
-      cancelEntry();
-      beachVisual.stop();
-      updateACombo(0,true);
-      lyricTicker.clear();
-      clearAGauge();
-      resultSerial++;
-      if (bGame) bGame.stop(); activeB = false;
-      cancelAnimationFrame(raf);
-      try { src && src.stop(); } catch (e) { /* 무시 */ }
-      if (ctx && ctx.state === 'suspended') ctx.resume();
-      st = null; $('[data-rp-pause]').hidden = true;
-      opts.onClose(why);
+      if (closing) return;
+      closing = true;
+      var cleaned = false;
+      function cleanup() {
+        if (cleaned) return; cleaned = true;
+        statusFx.stop(); clearButtonWaves(); setEntryBgm(false); cancelEntry(); beachVisual.stop();
+        updateACombo(0,true); lyricTicker.clear(); clearAGauge(); resultSerial++;
+        if (bGame) bGame.stop(); activeB = false; cancelAnimationFrame(raf);
+        try { src && src.stop(); } catch (e) { /* optional audio */ }
+        if (ctx && ctx.state === 'suspended') ctx.resume();
+        st = null; $('[data-rp-pause]').hidden = true;
+      }
+      // The owner freezes the current selection first, then hides and cleans it.
+      opts.onClose(why, cleanup);
     }
     function showSelect() {
       setEntryBgm(false, 900);
@@ -908,6 +916,7 @@
         b.querySelector('small').textContent = best.toLocaleString('en-US');
       });
       $('[data-rp-select]').hidden = false;
+      if (el._rpRefreshSelection) el._rpRefreshSelection();
     }
     function updateModeSign(){
       el.querySelectorAll('[data-rp-mode-name]').forEach(function(t){t.textContent=activeB?'NEON':'BEACH';});
@@ -949,6 +958,7 @@
       $('[data-rp-types]').hidden = false;
       stage.hidden = true;
       el.classList.remove('is-type-b');
+      if (el._rpRefreshSelection) el._rpRefreshSelection();
     }
     $('[data-rp-type="A"]').addEventListener('click', function () {
       $('[data-rp-types]').hidden = true;
@@ -980,7 +990,7 @@
     $('[data-rp-songs-home]').addEventListener('click', function () { close(); });
     $('[data-rp-types-home]').addEventListener('click', function () { close(); });
     // V1367 C: 진입 = 스코어 리듬팡 탭 해금(mole.rp.entered). V1369 C: 이 주석이 한 줄 함수 안에 들어가 아래 el.hidden=false 까지 막았던 것 수정
-    function open() { try { localStorage.setItem('mole.rp.entered', '1'); } catch (e) {} setEntryBgm(true); resetBoss(); clearAGauge(); el.hidden = false; $('[data-rp-pause]').hidden = true; $('[data-rp-result]').hidden = true; wlayer.innerHTML = '';
+    function open() { closing = false; prepareSelectionDecor(); try { localStorage.setItem('mole.rp.entered', '1'); } catch (e) {} setEntryBgm(true); resetBoss(); clearAGauge(); el.hidden = false; $('[data-rp-pause]').hidden = true; $('[data-rp-result]').hidden = true; wlayer.innerHTML = '';
       // v974(사용자 지정): 진입 시 배경은 항상 첫 화면 — 지난 판의 두더지·구멍·버튼·점수·HP 잔상 비움(시작하면 start() 가 다시 만듦)
       $('[data-rp-lanes]').innerHTML = ''; $('[data-rp-btns]').innerHTML = ''; moleEls = null; btnEls = null;
       $('[data-rp-score]').textContent = '0'; $('[data-rp-combo]').textContent = '0'; statusJudge.textContent = 'READY'; statusTime.textContent = '0:00'; statusSeconds = -1; $('[data-rp-hp]').style.width = ''; $('[data-rp-hpbar]').classList.remove('is-low');
