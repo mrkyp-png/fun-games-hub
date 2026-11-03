@@ -100,7 +100,7 @@
     if (backEl) backEl.addEventListener('click', function () { if (opts.onClose) opts.onClose(); });
     var bannerEl = el.querySelector('[data-shop-banner]');
     var dotsEl = el.querySelector('[data-shop-dots]');
-    var shopLayoutFrame = 0, weaponModelsReady = Promise.resolve();
+    var shopLayoutFrame = 0, weaponModelsReady = Promise.resolve(), weaponArrivalPending = false;
     function shopLayoutBlocked() { return el.hidden || !el.clientWidth || el.classList.contains('asset-pop'); }
     function scheduleShopLayout() {
       if (shopLayoutFrame) return;
@@ -108,6 +108,16 @@
         shopLayoutFrame = 0;
         if (shopLayoutBlocked()) return;
         fitSkillCaptions(); centerShopTabArt(); alignCoinPrices();
+        if (weaponArrivalPending && activeTab === 'weapon' && !el.classList.contains('asset-preparing')) {
+          var slots = cardsEl.querySelectorAll('[data-model-weapon]');
+          if (Array.prototype.every.call(slots, function (host) { return host.classList.contains('shop-model-ready') || host.hasAttribute('data-model-error'); })) {
+            weaponArrivalPending = false;
+            var art = cardsEl.querySelectorAll('.shop-card-img-box,.shop-card-badge--default-weapon');
+            art.forEach(function (host) { host.classList.remove('shop-weapon-arrival'); });
+            void cardsEl.offsetWidth;
+            art.forEach(function (host) { host.classList.add('shop-weapon-arrival'); });
+          }
+        }
       });
     }
     new MutationObserver(scheduleShopLayout).observe(el, { attributes: true, attributeFilter: ['hidden', 'class'] });
@@ -986,13 +996,26 @@
       requestAnimationFrame(alignCoinPrices);
       requestAnimationFrame(centerShopTabArt);
       if (activeTab === 'weapon' && MG.ShopModels) {
+        weaponArrivalPending = true;
         var models = MG.ShopModels.attach(cardsEl, WEAPONS, alignWeaponDisplay);
+        Promise.resolve(models).then(scheduleShopLayout, scheduleShopLayout);
         weaponModelsReady = new Promise(function (resolve) {
           var timeout = setTimeout(resolve, 1500);
           Promise.resolve(models).then(function () { clearTimeout(timeout); resolve(); }, function () { clearTimeout(timeout); resolve(); });
         });
-      } else weaponModelsReady = Promise.resolve();
+      } else { weaponModelsReady = Promise.resolve(); weaponArrivalPending = false; }
       scheduleShopLayout();
+    }
+
+    function shopTextInk(element) {
+      var rect = element.getBoundingClientRect(), style = getComputedStyle(element);
+      var context = document.createElement('canvas').getContext('2d'); context.font = style.font || (style.fontWeight + ' ' + style.fontSize + ' ' + style.fontFamily);
+      var metrics = context.measureText(element.textContent), size = parseFloat(style.fontSize) || 14;
+      var ascent = metrics.fontBoundingBoxAscent == null ? size * .8 : metrics.fontBoundingBoxAscent;
+      var descent = metrics.fontBoundingBoxDescent == null ? size * .2 : metrics.fontBoundingBoxDescent;
+      var baseline = rect.top + (rect.height - ascent - descent) / 2 + ascent;
+      return { top: baseline - (metrics.actualBoundingBoxAscent == null ? ascent : metrics.actualBoundingBoxAscent),
+        bottom: baseline + (metrics.actualBoundingBoxDescent == null ? descent : metrics.actualBoundingBoxDescent) };
     }
 
     function alignWeaponDisplay(host, bounds, force) {
@@ -1000,6 +1023,7 @@
       if (!caption || !bounds) return;
       if (shopLayoutBlocked()) { host._shopPendingBounds = bounds; return; }
       var gold = host.dataset.model === 'goldhammer';
+      var king = host.classList.contains('shop-weapon-shadow-host--king');
       if (gold && host.classList.contains('shop-model-ready') && !force) {
         bounds = { top: .5 + (bounds.top - .5) * .95, bottom: .5 + (bounds.bottom - .5) * .95,
           left: .5 + ((bounds.left == null ? 0 : bounds.left) - .5) * .95,
@@ -1017,20 +1041,22 @@
       if (!changed && !force) return;
       var rect = host.getBoundingClientRect();
       var title = host.closest('.shop-card').querySelector('.shop-card-name');
-      var titleBottom = title.getBoundingClientRect().bottom;
-      var captionTop = caption.getBoundingClientRect().top;
+      var titleBottom = king ? shopTextInk(title).bottom : title.getBoundingClientRect().bottom;
+      var captionTop = king ? shopTextInk(caption.querySelector('span')).top : caption.getBoundingClientRect().top;
       var shadow = host.querySelector('.shop-weapon-shadow');
       var shadowBottom = rect.top;
       if (shadow) shadowBottom = rect.bottom - (parseFloat(getComputedStyle(shadow).bottom) || 0) + 2;
       var artTop = rect.top + envelope.top * rect.height;
       var artBottom = rect.top + envelope.bottom * rect.height;
-      var needed = Math.max(4, artBottom - captionTop + 2);
+      var needed = Math.max(king ? 8 : 4, artBottom - captionTop + 2);
       var allowed = Math.max(0, artTop - titleBottom - 2);
       var lift = Math.min(needed, allowed);
       host.style.setProperty('--shop-weapon-lift', -lift + 'px');
+      if (king) host.style.setProperty('--shop-king-offset-y', -lift + 'px');
       host.style.setProperty('--shop-shadow-lift', -Math.max(lift, shadowBottom - captionTop + 2, 0) + 'px');
-      if (gold && shadow) {
+      if ((gold || king) && shadow) {
         var shadowHeight = shadow.getBoundingClientRect().height;
+        if (king && force) envelope.shadowAnchor = null;
         if (!envelope.shadowAnchor) {
           var centerX = ((bounds.left == null ? 0 : bounds.left) + (bounds.right == null ? 1 : bounds.right)) / 2;
           var centerY = Math.min(artBottom - rect.top - lift + 2, captionTop - rect.top - shadowHeight / 2 - 2);
@@ -1048,6 +1074,16 @@
         if (host.classList.contains('shop-model-ready')) {
           if (host._shopPendingBounds) { var pending = host._shopPendingBounds; host._shopPendingBounds = null; alignWeaponDisplay(host, pending); }
           else if (host._shopWeaponBounds) alignWeaponDisplay(host, host._shopWeaponBounds, true);
+          return;
+        }
+        var kingUnit = host.querySelector('[data-shop-motion="alipunch"]');
+        if (kingUnit) {
+          var motionBounds = measureKingMotion(kingUnit);
+          if (!motionBounds || !host.offsetHeight || !host.offsetWidth) return;
+          var scale = parseFloat(kingUnit.style.getPropertyValue('--shop-weapon-scale')) || 1;
+          var halfHeight = motionBounds.h * scale / (2 * host.offsetHeight);
+          var halfWidth = motionBounds.w * scale / (2 * host.offsetWidth);
+          alignWeaponDisplay(host, { top: .5 - halfHeight, bottom: .5 + halfHeight, left: .5 - halfWidth, right: .5 + halfWidth }, true);
           return;
         }
         var images = host.querySelectorAll('.shop-weapon-motion[data-shop-motion="alipunch"] .inv-thumb>img');

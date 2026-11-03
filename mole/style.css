@@ -9454,7 +9454,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 @keyframes shop-coin-sweep { 0%,18% { opacity:0; transform:translateX(-120%); } 24% { opacity:.55; } 46% { opacity:.55; transform:translateX(120%); } 47%,100% { opacity:0; transform:translateX(120%); } }
 @media (prefers-reduced-motion:reduce) { #shop-screen .shop-coin-reflection { display:none; } #shop-screen .shop-ticket-arrive { animation:none; } }
 /* Reuse the inventory weapon motion in its original 120 x 88 coordinate system. */
-#shop-screen .shop-weapon-motion { position:absolute; left:50%; top:50%; width:120px; height:88px; transform:translate(calc(-50% + var(--shop-weapon-shift-x,0px)),calc(-50% + var(--shop-weapon-shift-y,0px))) scale(var(--shop-weapon-scale,1)); pointer-events:none; }
+#shop-screen .shop-weapon-motion { position:absolute; left:50%; top:50%; width:120px; height:88px; transform:translate(calc(-50% + var(--shop-weapon-shift-x,0px)),calc(-50% + var(--shop-weapon-shift-y,0px) + var(--shop-king-offset-y,0px))) scale(var(--shop-weapon-scale,1)); pointer-events:none; }
 #shop-screen .shop-weapon-motion .inv-thumb { position:relative; width:120px; height:88px; }
 #shop-screen .shop-weapon-motion .inv-thumb--pair { gap:8px; --kp-tilt:15deg; }
 #shop-screen .shop-weapon-motion .inv-thumb--pair > img { flex:none; width:52px; height:88px; max-width:52px!important; }
@@ -9505,10 +9505,9 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-costume-product[data-shop-team="cloud_cups"] { --team-light:#a9edb3; }
 #shop-screen .shop-costume-product[data-shop-team="set"] { --team-light:#ffdc86; }
 #shop-screen .shop-costume-visual::before { content:''; position:absolute; inset:8% 0; z-index:-1; border-radius:50%; background:radial-gradient(ellipse,var(--team-light),transparent 69%); opacity:.16; animation:shop-costume-light 5s ease-in-out infinite; pointer-events:none; }
-#shop-screen .shop-card--weapon-product .shop-card-img-box,
-#shop-screen .shop-card--weapon-product .shop-card-badge--default-weapon,
 #shop-screen .shop-skill-visual,
 #shop-screen .shop-costume-visual:not(.shop-costume-visual--set),#shop-screen .shop-costume-set-piece { animation:shop-costume-arrive .65s cubic-bezier(.2,.7,.3,1) both; }
+#shop-screen .shop-card--weapon-product .shop-weapon-arrival { animation:shop-costume-arrive .65s cubic-bezier(.2,.7,.3,1) both; }
 #shop-screen .shop-costume-set-piece--1 { animation-delay:.12s; }
 #shop-screen .shop-costume-set-piece--2 { animation-delay:.24s; }
 #shop-screen[hidden] .shop-costume-visual::before { animation-play-state:paused; }
@@ -9530,6 +9529,8 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-card--weapon-product .shop-card-img-box>.shop-card-badge--hero,
 #shop-screen .shop-card--weapon-product .shop-card-img-box>.shop-model-canvas { translate:0 var(--shop-weapon-lift,0px); }
 #shop-screen .shop-card--weapon-product .shop-card-img-box>.shop-weapon-shadow { translate:0 var(--shop-shadow-lift,0px); }
+#shop-screen .shop-weapon-shadow-host--king { --shop-king-offset-y:-8px; }
+#shop-screen .shop-card--weapon-product .shop-weapon-shadow-host--king>.shop-card-badge--hero { translate:none; }
 #shop-screen .shop-card--weapon-product .shop-card-img-box[data-model="goldhammer"]>.shop-model-canvas { scale:.95; transform-origin:50% 50%; }
 #shop-screen .shop-costume-set-art { position:absolute; left:50%; top:50%; width:94%; height:92%; transform:translate(-50%,-50%); }
 #shop-screen .shop-costume-visual--set .shop-costume-set-art { width:100%; height:100%; }
