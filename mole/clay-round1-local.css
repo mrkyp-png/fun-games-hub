@@ -40,6 +40,9 @@
 @media(prefers-reduced-motion:reduce) { .clay-hole-shadow { animation:none; } }
 
 /* A continuous CSS rim replaces the remaining sky-blue screw artwork. */
+#game-screen.clay-round-one:not(.is-start) #lane-button-bar {
+  background-color:#f4e3bd !important;
+}
 #game-screen.clay-round-one:not(.is-start) .lane-button--simple::after,
 #game-screen.clay-round-one:not(.is-start) .lane-face--key::after,
 #game-screen.clay-round-one:not(.is-start):not(.gs-laneskill) .lane-button--call::after {
