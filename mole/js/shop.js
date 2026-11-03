@@ -1054,9 +1054,8 @@
       host.style.setProperty('--shop-weapon-lift', -lift + 'px');
       if (king) host.style.setProperty('--shop-king-offset-y', -lift + 'px');
       host.style.setProperty('--shop-shadow-lift', -Math.max(lift, shadowBottom - captionTop + 2, 0) + 'px');
-      if ((gold || king) && shadow) {
+      if (gold && shadow) {
         var shadowHeight = shadow.getBoundingClientRect().height;
-        if (king && force) envelope.shadowAnchor = null;
         if (!envelope.shadowAnchor) {
           var centerX = ((bounds.left == null ? 0 : bounds.left) + (bounds.right == null ? 1 : bounds.right)) / 2;
           var centerY = Math.min(artBottom - rect.top - lift + 2, captionTop - rect.top - shadowHeight / 2 - 2);
@@ -1064,6 +1063,13 @@
         }
         shadow.style.left = envelope.shadowAnchor.x + '%';
         shadow.style.top = envelope.shadowAnchor.y + 'px';
+        shadow.style.bottom = 'auto';
+        host.style.setProperty('--shop-shadow-lift', '0px');
+        cardsEl.style.setProperty('--shop-shadow-ground-center', (envelope.shadowAnchor.y + shadowHeight / 2) / rect.height * 100 + '%');
+      } else if (king && shadow) {
+        // King Punch shares Mjolnir's fixed ground line; glove lifting is independent.
+        shadow.style.left = '50%';
+        shadow.style.top = 'calc(var(--shop-shadow-ground-center,89%) - 5%)';
         shadow.style.bottom = 'auto';
         host.style.setProperty('--shop-shadow-lift', '0px');
       }

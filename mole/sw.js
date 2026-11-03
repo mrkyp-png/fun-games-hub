@@ -55,7 +55,8 @@
 // V1575 G: lens-only alternating middle/outer paired sunglass reflections.
 // V1576 G: tab dots inside the shop toggle shell; choices shifted slightly down.
 // V1577 G: visible King Punch bounds and fixed shadow; weapon arrival waits for visible, ready models.
-const CACHE = 'mole-game-v1577-G';
+// V1578 G: King Punch shadow shares Mjolnir's fixed ground line, independently of lifted gloves.
+const CACHE = 'mole-game-v1578-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
