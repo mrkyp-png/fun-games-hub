@@ -62,7 +62,9 @@
 // V1581 G: compact gameplay glow, CSS contact popup and equal mailbox actions.
 // V1581 G: KST daily heart/ticket delivery with 3-day catch-up and one test mail.
 // V1582 G: retained shop panes, decoded first frames and unified smooth screen entry.
-const CACHE = 'mole-game-v1582-G';
+// V1583 G: gate startup on core art only; ignore document fragments as CSS images.
+// V1583 G: replay weapon/skill/costume art and captions together on every pane entry.
+const CACHE = 'mole-game-v1583-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.

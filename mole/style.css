@@ -9510,11 +9510,9 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-costume-product[data-shop-team="cloud_cups"] { --team-light:#a9edb3; }
 #shop-screen .shop-costume-product[data-shop-team="set"] { --team-light:#ffdc86; }
 #shop-screen .shop-costume-visual::before { content:''; position:absolute; inset:8% 0; z-index:-1; border-radius:50%; background:radial-gradient(ellipse,var(--team-light),transparent 69%); opacity:.16; animation:shop-costume-light 5s ease-in-out infinite; pointer-events:none; }
-#shop-screen .shop-skill-visual,
-#shop-screen .shop-costume-visual:not(.shop-costume-visual--set),#shop-screen .shop-costume-set-piece { animation:shop-costume-arrive .65s cubic-bezier(.2,.7,.3,1) both; }
-#shop-screen .shop-card--weapon-product .shop-weapon-arrival { animation:shop-costume-arrive .65s cubic-bezier(.2,.7,.3,1) both; }
-#shop-screen .shop-costume-set-piece--1 { animation-delay:.12s; }
-#shop-screen .shop-costume-set-piece--2 { animation-delay:.24s; }
+#shop-screen .shop-pane-arrival .shop-skill-visual,
+#shop-screen .shop-pane-arrival .shop-costume-visual:not(.shop-costume-visual--set),#shop-screen .shop-pane-arrival .shop-costume-set-piece,
+#shop-screen .shop-pane-arrival .shop-card--weapon-product :is(.shop-card-img-box,.shop-card-badge--default-weapon) { animation:shop-costume-arrive .65s cubic-bezier(.2,.7,.3,1) both; }
 #shop-screen[hidden] .shop-costume-visual::before { animation-play-state:paused; }
 @keyframes shop-costume-arrive { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
 @keyframes shop-costume-light { 0%,100% { opacity:.16; transform:scale(.9); } 50% { opacity:.32; transform:scale(1); } }
@@ -10173,7 +10171,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen [data-model-weapon]>.shop-card-badge,
 #shop-screen [data-model-weapon]>img:not(.shop-model-snapshot) { visibility:hidden; }
 #shop-screen [data-model-weapon]:not(.shop-model-ready)>.shop-weapon-shadow { visibility:hidden; }
-#shop-screen .shop-skill-caption,#shop-screen .shop-costume-effect { animation:shop-caption-arrive .65s cubic-bezier(.2,.7,.3,1) both; }
+#shop-screen .shop-pane-arrival .shop-skill-caption,#shop-screen .shop-pane-arrival .shop-costume-effect { animation:shop-caption-arrive .65s cubic-bezier(.2,.7,.3,1) both; }
 @keyframes shop-caption-arrive { from { opacity:0; translate:0 12px; } to { opacity:1; translate:0 0; } }
 #shop-screen[hidden] .shop-skill-caption,#shop-screen[hidden] .shop-costume-effect { animation-play-state:paused; }
 @media(prefers-reduced-motion:reduce) { #shop-screen .shop-skill-caption,#shop-screen .shop-costume-effect { animation:none!important; } }

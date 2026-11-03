@@ -103,22 +103,22 @@
     var dotsEl = el.querySelector('[data-shop-dots]');
     var shopLayoutFrame = 0, weaponModelsReady = Promise.resolve(), weaponArrivalPending = false;
     function shopLayoutBlocked() { return el.hidden || !el.clientWidth || el.classList.contains('asset-pop'); }
+    function replayProductArrival() {
+      if (!weaponArrivalPending || shopLayoutBlocked() || el.classList.contains('asset-preparing') || cardsEl.style.visibility === 'hidden' || cardsEl.dataset.paneReady !== 'true') return;
+      weaponArrivalPending = false;
+      cardsEl.classList.remove('shop-pane-arrival');
+      var art = cardsEl.querySelectorAll('.shop-weapon-arrival');
+      art.forEach(function (host) { host.classList.remove('shop-weapon-arrival'); });
+      void cardsEl.offsetWidth;
+      cardsEl.classList.add('shop-pane-arrival');
+    }
     function scheduleShopLayout() {
       if (shopLayoutFrame) return;
       shopLayoutFrame = requestAnimationFrame(function () {
         shopLayoutFrame = 0;
         if (shopLayoutBlocked()) return;
         fitSkillCaptions(); centerShopTabArt(); alignCoinPrices();
-        if (weaponArrivalPending && activeTab === 'weapon' && !el.classList.contains('asset-preparing')) {
-          var slots = cardsEl.querySelectorAll('[data-model-weapon]');
-          if (Array.prototype.every.call(slots, function (host) { return host.classList.contains('shop-model-ready') || host.hasAttribute('data-model-error'); })) {
-            weaponArrivalPending = false;
-            var art = cardsEl.querySelectorAll('.shop-card-img-box,.shop-card-badge--default-weapon');
-            art.forEach(function (host) { host.classList.remove('shop-weapon-arrival'); });
-            void cardsEl.offsetWidth;
-            art.forEach(function (host) { host.classList.add('shop-weapon-arrival'); });
-          }
-        }
+        replayProductArrival();
       });
     }
     new MutationObserver(scheduleShopLayout).observe(el, { attributes: true, attributeFilter: ['hidden', 'class'] });
@@ -1036,6 +1036,8 @@
       if (!reuse) { productNavGeneration++; clearProductSlide(); clearPaneCache(); }
       renderTabs();
       var pane = prepareShopPane(activeTab); cardsEl = pane.element;
+      weaponArrivalPending = activeTab === 'weapon' || activeTab === 'skill' || activeTab === 'costume';
+      cardsEl.classList.remove('shop-pane-arrival');
       paneCache.forEach(function (record) {
         var selected = record === pane;
         record.element.classList.toggle('shop-pane-staged', !selected);
@@ -1044,6 +1046,7 @@
       });
       el._moleReady = pane.ready;
       el._moleRetry = function () { render(); };
+      el._moleOnReveal = replayProductArrival;
       if (MG.ShopModels && MG.ShopModels.activate) MG.ShopModels.activate(cardsEl);
       updateDots();
       // 재화탭 카드박스 색 = 하트/코인/티켓 캡슐 필터에 맞춰 빨강/노랑/파랑(사용자 지정:
@@ -1055,10 +1058,9 @@
       requestAnimationFrame(alignCoinPrices);
       requestAnimationFrame(centerShopTabArt);
       if (activeTab === 'weapon' && MG.ShopModels) {
-        weaponArrivalPending = true;
         weaponModelsReady = pane.ready;
         pane.ready.then(scheduleShopLayout, scheduleShopLayout);
-      } else { weaponModelsReady = Promise.resolve(); weaponArrivalPending = false; }
+      } else { weaponModelsReady = Promise.resolve(); pane.ready.then(scheduleShopLayout, scheduleShopLayout); }
       scheduleShopLayout();
       warmShopPanes();
     }
@@ -1206,6 +1208,7 @@
         var direction = swipeDirection || (newIndex > oldIndex ? 1 : -1), width = productsViewport.clientWidth;
         var incoming = cardsEl.animate([{ transform: 'translateX(' + (direction * width) + 'px)' }, { transform: 'translateX(0)' }], { duration: 230, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'both' });
         cardsEl.style.visibility = '';
+        replayProductArrival();
         var outgoing = preview.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(' + (-direction * width) + 'px)' }], { duration: 230, easing: 'cubic-bezier(.2,.7,.3,1)' });
         productSlideAnimations = [incoming, outgoing];
         incoming.finished.then(function () { if (generation === productNavGeneration) clearProductSlide(); }, function () {});

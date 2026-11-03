@@ -202,7 +202,7 @@
         if (pseudo && (st.content === 'none' || st.content === 'normal' || st.display === 'none')) return;
         [st.backgroundImage, st.borderImageSource, st.maskImage, st.webkitMaskImage].forEach(function (v) {
           var m, re = /url\(["']?([^"')]+)["']?\)/g;
-          while ((m = re.exec(v || ''))) { if (!/^(data:|#)/.test(m[1])) urls.add(m[1]); }
+          while ((m = re.exec(v || ''))) { if (absolute(m[1])) urls.add(m[1]); }
         });
       });
     });
@@ -224,7 +224,7 @@
       if (img.complete) { if (img.naturalWidth) resolve(); else reject(new Error('Image unavailable')); return; }
       img.addEventListener('load', resolve, {once:true}); img.addEventListener('error', reject, {once:true});
     });
-    return work.then(function () { if (!img.naturalWidth) throw new Error('Image unavailable'); });
+    return work.catch(function (error) { if (!img.complete || !img.naturalWidth) throw error; }).then(function () { if (!img.naturalWidth) throw new Error('Image unavailable'); });
   }
   function readyUrl(url) {
     var key = absUrl(url);
@@ -238,6 +238,11 @@
     var found = screenUrls(el);
     return bounded(Promise.all(found.imgs.map(readyImage).concat(found.urls.map(readyUrl))), 10000, false).then(function (result) {
       if (result === false) throw new Error('Artwork preparation timed out');
+    });
+  }
+  function preparePaths(paths) {
+    return bounded(Promise.all(paths.map(readyUrl)), 10000, false).then(function (result) {
+      if (result === false) throw new Error('Core artwork preparation timed out');
     });
   }
   function revealWhenReady(el, maxMs) {
@@ -261,6 +266,7 @@
       }
       el.classList.remove('asset-preparing');
       if (el.hidden) return;
+      if (!error && el._moleOnReveal) el._moleOnReveal();
       // V1561 C 사용자: 팝업 등장(창이 통 튀어나오듯) — data-reveal-pop 가 있는 화면만
       if (!error && el.hasAttribute('data-reveal-pop')) { el.classList.add('asset-pop'); setTimeout(function () { el.classList.remove('asset-pop'); }, 320); }
     };
@@ -326,7 +332,7 @@
     })();
   }
   root.prepareMoleAssets = prepare;
-  root.MoleAssetLoader = { collect: collect, ensure: ensure, watchScreens: watchScreens, startBackground: startBackground, prepareContent:prepareContent, revealWhenReady: revealWhenReady, warmScreens: warmScreens,
+  root.MoleAssetLoader = { collect: collect, ensure: ensure, watchScreens: watchScreens, startBackground: startBackground, preparePaths:preparePaths, prepareContent:prepareContent, revealWhenReady: revealWhenReady, warmScreens: warmScreens,
     isReady: function (paths) { return paths.map(absolute).filter(Boolean).every(function (u) { return tasks.get(u) && tasks.get(u).state === 'ready'; }); }
   };
 })(window);
