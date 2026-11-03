@@ -1522,6 +1522,7 @@
     showStartScreenNow(opts);
   }
   function showStartScreenNow(opts) {
+    if (MG.ClayRoundOne) MG.ClayRoundOne.setActive(false);
     clearTimeout(nextRoundTimer); nextRoundTimer = 0;
     document.getElementById('game-screen').classList.remove('gs-intro');
     sessionGen++; // 진행 중이던 카운트다운/자동진행 타이머 무효화
@@ -1711,6 +1712,9 @@
   }
 
   function startRound(opts) {
+    const clayRoundOne = currentChapter() === 1 && isSmallBoardChapter();
+    if (clayRoundOne && MG.ClayRoundOne && MG.ClayRoundOne.wait(() => startRound(opts))) return;
+    if (MG.ClayRoundOne) MG.ClayRoundOne.setActive(clayRoundOne);
     sessionGen++;
     gameStarting = false; // 라운드 진입 성공 — 이후 재진입은 state 존재로 차단됨
     setNavLock(true); // 카운트다운 동안 ⊞ 잠금 (playRoundIntro onDone 에서 해제)

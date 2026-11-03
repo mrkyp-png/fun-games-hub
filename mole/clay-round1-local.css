@@ -1,0 +1,49 @@
+/* The existing square board and keypad geometry remain the layout authority. */
+#game-screen.clay-round-one:not(.is-start) #mole-board {
+  background:#a5ce49 url('assets/clay-round1-local/field.webp') center/cover no-repeat;
+}
+#game-screen.clay-round-one:not(.is-start) :is(#mole-emoji-img,#mole-reveal-canvas,#mole-sky,#mole-weather) { visibility:hidden; }
+.clay-round-one .mole-hole,.clay-round-one .mole-hole-front {
+  width:32%; aspect-ratio:1; object-fit:contain; transform:translate(-50%,-50%); margin:0; filter:saturate(.94) contrast(.97);
+}
+.clay-round-one .mole-play-stack { z-index:8; }
+#game-screen.clay-round-one:not(.is-start) :is(#mole-status,#btn-back-to-hub) { z-index:1; }
+#game-screen.clay-round-one:not(.is-start) #mole-board:has(#gameover-overlay:not([hidden])) #btn-back-to-hub { z-index:50; }
+#game-screen.clay-round-one:not(.is-start) #mole-board:has(#round-intro-overlay:not([hidden])) #btn-back-to-hub { z-index:50; }
+/* Board-level effects must stay above the raised actor stacking context. */
+#game-screen.clay-round-one #mole-board > :is(.rp-pang,.hit-fx-score,.hit-fx-burst,.hit-fx-clang,.hit-fx-clod,.hit-fx-dust,.hit-fx-ring,.hit-fx-star,.hit-fx-helmet,.hit-fx-blast-flash,.hit-fx-ash,.hit-fx-burstword,.hit-fx-powerup,.hit-fx-punch-star) { z-index:20; }
+#game-screen.clay-round-one #mole-board:has(:is(#round-intro-overlay,#gameover-overlay):not([hidden])) > :is(.rp-pang,[class^="hit-fx-"]) { visibility:hidden; }
+.clay-mole-canvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:512; }
+.clay-mole-canvas[hidden] { display:none; }
+.clay-hole-shadow { position:absolute; width:25%; height:5%; margin-top:10.5%; border-radius:50%; background:#586d25; opacity:.17; filter:blur(2px); transform:translate(-48%,-40%); animation:clay-shadow-drift 70s ease-in-out infinite alternate; pointer-events:none; z-index:0; }
+@keyframes clay-shadow-drift { from { transform:translate(-49%,-42%) scaleX(.98) rotate(-2deg); opacity:.15; } to { transform:translate(-45%,-35%) scaleX(1.03) rotate(2deg); opacity:.19; } }
+/* Clay HUD: CSS surfaces retain the existing icons, values and home interaction. */
+.clay-round-one:not(.is-start) .ms-status { top:6px; left:5px; right:5px; gap:3px; }
+.clay-round-one .ms-box::before {
+  inset:0; opacity:1; border:1px solid #d4b478; border-radius:10px;
+  background:linear-gradient(145deg,#fffef2,#f5dfaf);
+  box-shadow:inset 1px 2px 2px #fffef7,inset -1px -2px 2px #dbbf89,0 3px 0 #aa8654,0 5px 5px #4b421b26;
+}
+.clay-round-one .ms-score::before { background:linear-gradient(145deg,#e6f8ff,#b7e0ed); }
+.clay-round-one .ms-combo::before { background:linear-gradient(145deg,#fff7c8,#f2d981); }
+.clay-round-one .ms-time::before { background:linear-gradient(145deg,#e9fad1,#bdda94); }
+.clay-round-one .ms-heart::before { background:linear-gradient(145deg,#fff0ef,#eebcc4); }
+.clay-round-one .ms-label { color:#5f4b28; -webkit-text-stroke:0; text-shadow:none; font-size:10px; }
+.clay-round-one .ms-val { color:#45351f; -webkit-text-stroke:0; text-shadow:0 1px #fff9; font-size:17px; }
+#game-screen.clay-round-one:not(.is-start) #btn-back-to-hub {
+  display:flex; align-items:center; justify-content:center; border:1px solid #77aaca; border-radius:14px;
+  background:linear-gradient(145deg,#ebf8ff,#add7e9); color:#35667c;
+  box-shadow:inset 1px 2px 2px #fff,inset -1px -2px 2px #90bfd2,0 3px 0 #638f9f,0 5px 5px #4b421b26;
+}
+#game-screen.clay-round-one:not(.is-start) #btn-back-to-hub .hub-menu-ic { display:block; width:24px; height:24px; }
+#game-screen.clay-round-one:not(.is-start) #btn-back-to-hub:active { translate:0 2px; box-shadow:inset 0 1px 3px #90bfd2,0 1px 0 #638f9f; }
+@media(prefers-reduced-motion:reduce) { .clay-hole-shadow { animation:none; } }
+
+/* A continuous CSS rim replaces the remaining sky-blue screw artwork. */
+#game-screen.clay-round-one:not(.is-start) .lane-button--simple::after,
+#game-screen.clay-round-one:not(.is-start) .lane-face--key::after,
+#game-screen.clay-round-one:not(.is-start):not(.gs-laneskill) .lane-button--call::after {
+  inset:1px; border:5px solid #f4e3bd; border-image:none; border-radius:17px;
+  background:transparent; opacity:1; filter:none;
+  box-shadow:inset 1px 1px 1px #fffdf1,inset -1px -1px 1px #d5bc88,0 1px 0 #c9ad78;
+}

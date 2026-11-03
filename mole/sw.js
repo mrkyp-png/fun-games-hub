@@ -68,13 +68,22 @@
 // V1585 G: diagonal wipes replace glitch transitions, including mail/settings to home.
 // V1586 G: prepare rhythm selection frames and freeze the exact song screen before returning home.
 // V1587 G: automatic next-round waiting and clone-free rhythm home wipe.
-const CACHE = 'mole-game-v1588-G';
+// V1589 G: amateur round-one clay rig, independent hole rim, colored obstacles and restored effects.
+const CACHE = 'mole-game-v1589-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
 // vendor/face_mesh/*(약 10MB, 얼굴인식)는 SHELL 제외 — 사람두더지 메이커 처음 열 때만 필요.
 // 처음 요청될 때 아래 fetch 핸들러가 알아서 캐시한다.
 const SHELL = [
+  './clay-round1-local.css',
+  './js/clay-rig-math.js',
+  './js/clay-rig-runtime.js',
+  './js/clay-round1-local.js',
+  './assets/clay-round1-local/field.webp',
+  './assets/clay-round1-local/hole-back.webp',
+  './assets/clay-round1-local/hole-front.webp',
+  './assets/clay-round1-local/mole-belly-v15.glb',
   './rhythm-type-lighting-v1569.css',
   './js/rhythm-type-lighting-v1569.js',
   './assets/rhythm/type-lights-v1569/stage-dark.webp',

@@ -9,14 +9,16 @@
   const MS = root.MoleGame.MoleSprites;
 
   function create({ container, frontContainer, spawnPoints, season }) {
+    const clay = root.MoleGame.ClayRoundOne && root.MoleGame.ClayRoundOne.isActive();
     const backImgs = [];
     const frontImgs = [];
+    const shadows = [];
 
     function place(parent, cls, sprite, sp, list) {
       const img = document.createElement('img');
       img.className = cls;
       img.alt = '';
-      img.src = MS.spriteUrl(sprite);
+      img.src = clay ? 'assets/clay-round1-local/' + (cls === 'mole-hole-front' ? 'hole-front.webp' : 'hole-back.webp') : MS.spriteUrl(sprite);
       img.style.left = (sp.x * 100) + '%';
       img.style.top = (sp.y * 100) + '%';
       if (cls === 'mole-hole-front') img.style.zIndex = 3 + Math.round(sp.y * 100) * 2; // 자기 줄 캐릭터 바로 앞(v1018)
@@ -25,19 +27,28 @@
     }
 
     function applySeason(s) {
+      if (clay) return;
       const suffix = s ? '-' + s : '';
       backImgs.forEach((img) => { img.src = MS.spriteUrl('hole' + suffix); });
       frontImgs.forEach((img) => { img.src = MS.spriteUrl('hole-front' + suffix); });
     }
 
     spawnPoints.forEach((sp) => {
+      if (clay) {
+        const shadow = document.createElement('i');
+        shadow.className = 'clay-hole-shadow';
+        shadow.style.left = (sp.x * 100) + '%';
+        shadow.style.top = (sp.y * 100) + '%';
+        shadow.setAttribute('aria-hidden', 'true');
+        container.appendChild(shadow); shadows.push(shadow);
+      }
       place(container, 'mole-hole', 'hole', sp, backImgs);
       place(frontContainer, 'mole-hole-front', 'hole-front', sp, frontImgs);
     });
     applySeason(season);
 
     function clear() {
-      backImgs.concat(frontImgs).forEach((img) => img.remove());
+      backImgs.concat(frontImgs, shadows).forEach((img) => img.remove());
       backImgs.length = 0;
       frontImgs.length = 0;
     }

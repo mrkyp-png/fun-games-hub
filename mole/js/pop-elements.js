@@ -130,6 +130,7 @@
     }
 
     function render(m) {
+      if (root.MoleGame.ClayRoundOne && root.MoleGame.ClayRoundOne.renderPop(m)) return;
       const file = fileFor(m, m.shownDepth);
       if (file && file !== m.shownFile) {
         m.img.setAttribute('src', urlFor(m, file));
@@ -220,6 +221,7 @@
 
     function sync(activePops) {
       const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+      if (root.MoleGame.ClayRoundOne) root.MoleGame.ClayRoundOne.clock(now);
       const dt = lastNow ? Math.min(0.05, (now - lastNow) / 1000) : 0;
       lastNow = now;
 
@@ -240,8 +242,13 @@
             (pop.type === 'mole' || (pop.type === 'animal' && (isAlipunchInvincible() || pop.safeAlways)));
           if (pop.type === 'mole' && pop.killed && !m.blast && !m.punch) m.holdUntil = now + FACE_HOLD_MS;
         }
+        m.killed = !!pop.killed; // Visual exit selection; scheduler/scoring remain unchanged.
         m.dying = !!pop.dying;
         m.targetDepth = targetFor(pop);
+        if (m.kind === 'animal' && root.MoleGame.ClayRoundOne && root.MoleGame.ClayRoundOne.isActive()) {
+          const clayHits = pop.killed ? Math.max(1, pop.hitsTaken || 0) : (pop.hitsTaken || 0);
+          if (clayHits !== m.hits) { m.hits = clayHits; render(m); }
+        }
         if (m.kind === 'mole' && !m.bomb) {
           // 단타는 hitsTaken 이 0 인 채 killed 로 끝나서 1타로 센다.
           const seen = pop.killed ? Math.max(1, pop.hitsTaken) : pop.hitsTaken;
@@ -254,6 +261,7 @@
     }
 
     function clear() {
+      if (root.MoleGame.ClayRoundOne) root.MoleGame.ClayRoundOne.clear();
       pops.forEach((m) => m.el.remove());
       pops.clear();
       lastNow = 0;
@@ -263,6 +271,7 @@
     function flash(popId) {
       const m = pops.get(popId);
       if (m) {
+        if (root.MoleGame.ClayRoundOne) root.MoleGame.ClayRoundOne.flash(m);
         m.img.classList.remove('mole-pop-img--hit');
         void m.img.offsetWidth;
         m.img.classList.add('mole-pop-img--hit');
@@ -278,8 +287,9 @@
       pops.forEach((m) => {
         if (key || m.regionId !== regionId || m.dying) return;
         if (m.kind === 'mole') {
-          key = 'mole2'; // V1541 C: 다타도 제자리 — 늘 새 두더지 타격점
+          key = root.MoleGame.ClayRoundOne && root.MoleGame.ClayRoundOne.isActive() && !m.bomb ? 'clay-mole' : 'mole2'; // Local 3D helmet uses its own contact point.
         } else if (m.kind === 'animal') {
+          if (root.MoleGame.ClayRoundOne && root.MoleGame.ClayRoundOne.isActive()) { key = 'clay-mole'; return; }
           const d = Math.round(m.shownDepth);
           key = d <= 0 ? 'full' : d === 1 ? 'peek1' : 'peek2';
         }
