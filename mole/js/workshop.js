@@ -145,7 +145,8 @@
       // No second timer that can drift after a tab switch or enhancement.
       var progress = animation.effect.getComputedTiming().progress;
       var open = progress !== null && progress >= .3 && progress < .4;
-      if (open && !idleGooseMouthOpen) playHammerSound(idleGooseAudio, .75);
+      // The supplied MP3's quack starts at ~0.449s; skip its quiet lead-in.
+      if (open && !idleGooseMouthOpen) playHammerSound(idleGooseAudio, .75, .44);
       idleGooseMouthOpen = open;
       if (root.FGH && root.FGH.Settings && !root.FGH.Settings.sfxEnabled() && idleGooseAudio && !idleGooseAudio.paused) {
         idleGooseAudio.pause(); idleGooseAudio.currentTime = 0;
@@ -222,10 +223,10 @@
         ].map(function (src) { var audio = new Audio(src); audio.preload = 'auto'; return audio; });
       }
     }
-    function playHammerSound(audio, volume) {
+    function playHammerSound(audio, volume, startAt) {
       if (!audio || (root.FGH && root.FGH.Settings && !root.FGH.Settings.sfxEnabled())) return;
       try {
-        audio.pause(); audio.currentTime = 0; audio.volume = volume;
+        audio.pause(); audio.currentTime = startAt || 0; audio.volume = volume;
         var playback = audio.play(); if (playback && playback.catch) playback.catch(function () {});
       } catch (e) { /* sound is optional */ }
     }

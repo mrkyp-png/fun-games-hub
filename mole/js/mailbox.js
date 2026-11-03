@@ -9,7 +9,31 @@
 
   function ls() { try { return root.localStorage; } catch (e) { return null; } }
   function load() { try { return JSON.parse((ls() && ls().getItem(KEY)) || '[]') || []; } catch (e) { return []; } }
-  function save(list) { try { ls() && ls().setItem(KEY, JSON.stringify(list)); } catch (e) { /* 무시 */ } }
+  function save(list) { try { var store = ls(); if (!store) return false; store.setItem(KEY, JSON.stringify(list)); return true; } catch (e) { return false; } }
+
+  var DAILY_KEY = 'mole.mailbox.daily.v1', DAILY_KEEP_DAYS = 3, dailyTimer = 0;
+  function syncDailyRewards(now) {
+    var daily = root.MoleGame && root.MoleGame.DailyMail, store = ls();
+    if (!daily || !store) return 0;
+    now = Number.isFinite(now) ? now : Date.now();
+    var state = {};
+    try { state = JSON.parse(store.getItem(DAILY_KEY) || '{}') || {}; } catch (e) { /* start today */ }
+    var all = load(), existing = new Set(all.map(function (m) { return m.id; }));
+    var fresh = daily.due(now, state.lastAt, DAILY_KEEP_DAYS).filter(function (m) { return !existing.has(m.id); });
+    var kept = all.filter(function (m) { return m.mailType !== 'daily' || !m.expireAt || m.expireAt > now; });
+    var next = fresh.concat(kept).sort(function (a, b) { return b.createdAt - a.createdAt; });
+    if (!save(next)) return 0;
+    try { store.setItem(DAILY_KEY, JSON.stringify({lastAt:Math.max(now, state.lastAt || 0)})); } catch (e) { /* existing IDs prevent duplicate insertion */ }
+    if (fresh.length && root.dispatchEvent && root.CustomEvent) root.dispatchEvent(new root.CustomEvent('mole-mailbox-change'));
+    return fresh.length;
+  }
+  function scheduleDailyRewards() {
+    if (dailyTimer && root.clearTimeout) root.clearTimeout(dailyTimer);
+    dailyTimer = 0;
+    syncDailyRewards();
+    var daily = root.MoleGame && root.MoleGame.DailyMail;
+    if (daily && root.setTimeout) dailyTimer = root.setTimeout(scheduleDailyRewards, Math.max(1000, daily.nextAt(Date.now()) - Date.now() + 30));
+  }
 
   function send(m) {
     var list = load(), now = Date.now();
@@ -48,10 +72,18 @@
   }
   function claim(id) {
     var l = load(), got = null;
-    l.forEach(function (m) { if (m.id === id && !m.isClaimed) { grant(m); m.isClaimed = true; m.isRead = true; got = m; } });
+    l.forEach(function (m) { if (m.id === id && !m.isClaimed && (!m.expireAt || m.expireAt > Date.now())) { grant(m); m.isClaimed = true; m.isRead = true; got = m; } });
     save(l); return got;
   }
   function claimAll() { var got = []; list().forEach(function (m) { if (!m.isClaimed) { var g = claim(m.id); if (g) got.push(g); } }); return got; }
+  function canDeleteRead(m) {
+    return !!m.isRead && (!!m.isClaimed || !m.rewardType || m.rewardType === 'none');
+  }
+  function deleteRead() {
+    var ids = new Set(list().filter(canDeleteRead).map(function (m) { return m.id; }));
+    var all = load(), kept = all.filter(function (m) { return !ids.has(m.id); });
+    save(kept); return all.length - kept.length;
+  }
 
   // v1007(사용자 지정: "메일은 내가 보낼 수도 있고, 타이머에 맞춰 보낸다") — 운영자 메일 = mail.json.
   // 각 항목 { id, title, description, rewardType, rewardAmount, sendAt, expireAt } (sendAt/expireAt = "2026-10-11T09:00" 형식).
@@ -96,8 +128,9 @@
         '</filter></defs></svg>' +
       '<div class="mb-frame">' +
         '<div class="mb-list" data-mb-list></div>' +
-        '<div class="mb-foot" hidden>' +
-          '<button type="button" class="mb-all ws-action-frame mail-action-frame mail-all-frame" data-mb-all aria-label="claim all"><span class="mb-all-icons"><img src="assets/mailbox/ic-mail.png" alt=""><img src="assets/mailbox/ic-check.png" alt=""></span></button>' +
+        '<div class="mb-foot">' +
+          '<button type="button" class="mb-all ws-action-frame mail-action-frame mail-all-frame" data-mb-all><span></span></button>' +
+          '<button type="button" class="mb-delete ws-action-frame mail-action-frame" data-mb-delete><span></span></button>' +
         '</div>' +
       '</div>';
     var listEl = el.querySelector('[data-mb-list]');
@@ -105,14 +138,13 @@
     var footEl = el.querySelector('.mb-foot');
     function syncMailboxColumns() {
       if (!frameEl || !frameEl.style) return;
-      // The floating button adds 56px of end clearance, never a reserved footer row.
-      // Exclude that clearance so it cannot make the button keep itself visible.
-      var fullListHeight = Math.max(0, frameEl.clientHeight - 28);
-      var endClearance = frameEl.classList.contains('mb-show-claim-all') ? 56 : 0;
-      var mailContentHeight = listEl.scrollHeight - endClearance;
-      var showAll = fullListHeight > 0 && mailContentHeight > fullListHeight + 1 && list().some(function (m) { return !m.isClaimed; });
-      footEl.hidden = !showAll;
-      frameEl.classList.toggle('mb-show-claim-all', showAll);
+      footEl.hidden = false;
+      frameEl.classList.add('mb-show-claim-all');
+      var mails = list(), allButton = el.querySelector('[data-mb-all]'), deleteButton = el.querySelector('[data-mb-delete]');
+      allButton.querySelector('span').textContent = T('mole.mail.claimAll');
+      deleteButton.querySelector('span').textContent = T('mole.mail.deleteRead');
+      allButton.disabled = !mails.some(function (m) { return !m.isClaimed; });
+      deleteButton.disabled = !mails.some(canDeleteRead);
       frameEl.style.setProperty('--mb-scrollbar-width', Math.max(0, listEl.offsetWidth - listEl.clientWidth) + 'px');
     }
     if (root.ResizeObserver) new root.ResizeObserver(syncMailboxColumns).observe(listEl);
@@ -120,6 +152,32 @@
     el.querySelector('[data-mb-all]').addEventListener('click', function () {
       var got = claimAll(); if (!got.length) return;
       render(false); if (opts.onClaim) opts.onClaim();
+    });
+    function confirmDeleteRead(count) {
+      if (el.querySelector('.mb-delete-dialog')) return;
+      var previousFocus = document.activeElement, dialog = document.createElement('div');
+      dialog.className = 'shop-coin-choice-dialog mb-delete-dialog';
+      dialog.setAttribute('role', 'dialog'); dialog.setAttribute('aria-modal', 'true');
+      dialog.setAttribute('aria-labelledby', 'mb-delete-title');
+      dialog.innerHTML = '<div class="shop-coin-choice-card"><img class="shop-coin-choice-art" src="assets/mailbox/ic-mail.png" alt=""><b class="shop-coin-choice-message" id="mb-delete-title"></b><div class="shop-coin-choice-actions"><button type="button" class="shop-card-btn shop-coin-choice-action ws-action-frame shop-buy-frame shop-buy-frame--cancel" data-choice-action="cancel"></button><button type="button" class="shop-card-btn shop-coin-choice-action ws-action-frame shop-buy-frame" data-choice-action="confirm"></button></div></div>';
+      dialog.querySelector('.shop-coin-choice-message').textContent = T('mole.mail.deleteConfirm').replace('{count}', count);
+      var cancel = dialog.querySelector('[data-choice-action="cancel"]'), confirm = dialog.querySelector('[data-choice-action="confirm"]');
+      cancel.textContent = T('mole.mail.cancelDelete'); confirm.textContent = T('mole.mail.confirmDelete');
+      function close() { dialog.remove(); if (previousFocus && previousFocus.isConnected) previousFocus.focus(); }
+      cancel.addEventListener('click', close);
+      confirm.addEventListener('click', function () { close(); deleteRead(); render(false); if (opts.onClaim) opts.onClaim(); });
+      dialog.addEventListener('click', function (event) { if (event.target === dialog) close(); });
+      dialog.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(); }
+        if (event.key === 'Tab' && ((event.shiftKey && document.activeElement === cancel) || (!event.shiftKey && document.activeElement === confirm))) {
+          event.preventDefault(); (event.shiftKey ? confirm : cancel).focus();
+        }
+      });
+      el.appendChild(dialog); cancel.focus();
+    }
+    el.querySelector('[data-mb-delete]').addEventListener('click', function () {
+      var count = list().filter(canDeleteRead).length;
+      if (count) confirmDeleteRead(count);
     });
 
     function fmtDate(t) { var d = new Date(t); return d.getFullYear() + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' + ('0' + d.getDate()).slice(-2); }
@@ -146,7 +204,7 @@
         var b = c.querySelector('.mb-claim');
         b.querySelector('span').textContent = m.isClaimed ? '✓ ' + T('mole.mail.claimed') : T('mole.mail.claim');
         b.disabled = m.isClaimed;
-        c.addEventListener('click', function () { if (!m.isRead) { markRead(m.id); var d = c.querySelector('.mb-dot'); if (d) d.remove(); } });
+        c.addEventListener('click', function () { if (!m.isRead) { markRead(m.id); var d = c.querySelector('.mb-dot'); if (d) d.remove(); syncMailboxColumns(); } });
         b.addEventListener('click', function (e) {
           e.stopPropagation();
           if (!claim(m.id)) return;
@@ -164,9 +222,15 @@
         });
       });
     }
-    return { show: function () { seedLocalScrollSamples(); listEl.scrollTop = 0; render(true); syncRemote(function (n) { if (n) render(false); }); } };
+    if (root.addEventListener) root.addEventListener('mole-mailbox-change', function () { if (!el.hidden) render(false); });
+    return { show: function () { var dialog = el.querySelector('.mb-delete-dialog'); if (dialog) dialog.remove(); syncDailyRewards(); seedLocalScrollSamples(); listEl.scrollTop = 0; render(true); syncRemote(function (n) { if (n) render(false); }); } };
   }
 
-  var api = { syncRemote: syncRemote, send: send, list: list, unreadCount: unreadCount, markRead: markRead, claim: claim, claimAll: claimAll, createScreen: createScreen };
+  var api = { syncRemote: syncRemote, syncDailyRewards:syncDailyRewards, send: send, list: list, unreadCount: unreadCount, markRead: markRead, claim: claim, claimAll: claimAll, deleteRead: deleteRead, createScreen: createScreen };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.Mailbox = api; }
+  if (root.MoleGame.DailyMail) {
+    scheduleDailyRewards();
+    if (root.document && root.document.addEventListener) root.document.addEventListener('visibilitychange', function () { if (!root.document.hidden) scheduleDailyRewards(); });
+    if (root.addEventListener) root.addEventListener('pageshow', scheduleDailyRewards);
+  }
 })(typeof window !== 'undefined' ? window : null);

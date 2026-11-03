@@ -3586,7 +3586,7 @@
       onClose: () => closeMore(),
       onPrivacy: () => screenNav.show('privacy-screen'),
       onHelp: () => screenNav.show('help-screen'),
-      onContact: () => { screenNav.show('contact-screen'); window.__contact.show(); const c = document.getElementById('contact-screen'); c.classList.remove('glitch-in'); void c.offsetWidth; c.classList.add('glitch-in'); setTimeout(() => c.classList.remove('glitch-in'), 260); } // v1013: 문의하기 화면
+      onContact: () => { window.__contact.show(); } // Settings stays visible behind its contact popup.
     });
     inventoryScreen = MG.InventoryScreen.create({
       root: document.getElementById('inventory-screen'),

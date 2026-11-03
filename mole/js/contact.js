@@ -10,11 +10,15 @@
   function create(opts) {
     var el = opts.root, T = function (k) { return root.FGH.I18N.t(k); };
     var type = 0;
-    el.classList.add('ct-screen');
+    el.classList.add('ct-screen', 'shop-coin-choice-dialog');
+    el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
+    el.setAttribute('aria-labelledby', 'ct-popup-title');
     // V1531 C 사용자: 오른쪽 위 8px 에 X(닫기) 버튼 — 점수·일일 화면과 같은 공용 game-close.
     el.innerHTML =
-      '<button type="button" class="game-close" data-ct-close aria-label="닫기"><img src="assets/score/icon-close-red.svg" alt=""></button>' +
-      '<div class="ct-frame">' +
+      '<div class="shop-coin-choice-card ct-popup-card">' +
+        '<button type="button" class="game-close" data-ct-close aria-label="닫기"><img src="assets/score/icon-close-red.svg" alt=""></button>' +
+        '<img class="shop-coin-choice-art" src="' + A + 'plane.png" alt="">' +
+        '<b class="ct-popup-title" id="ct-popup-title" data-k="mole.more.contact"></b>' +
         '<div class="ct-panel">' +
           '<section class="ct-sec"><b class="ct-lbl" data-k="mole.ct.type"></b>' +
             '<button type="button" class="ct-drop" data-ct-drop><span data-ct-type></span><i>▼</i></button>' +
@@ -25,16 +29,31 @@
             '<input class="ct-field ct-mail" data-ct-mail type="email" inputmode="email" autocomplete="email" maxlength="80"></section>' +
           '<p class="ct-err" data-ct-err></p>' +
         '</div>' +
-          '<div class="ct-send-wrap"><img class="ct-leaf ct-leaf--l" src="' + A + 'leaf.png" alt=""><img class="ct-leaf ct-leaf--r" src="' + A + 'leaf.png" alt="">' +
-            '<button type="button" class="ct-send" data-ct-send><img class="ct-trail" src="' + A + 'trail.png" alt=""><img class="ct-plane" src="' + A + 'plane.png" alt=""><span data-k="mole.ct.send"></span></button></div>' +
+          '<div class="shop-coin-choice-actions"><button type="button" class="shop-card-btn shop-coin-choice-action ws-action-frame shop-buy-frame" data-choice-action="confirm" data-ct-send><span data-k="mole.ct.send"></span></button></div>' +
       '</div>';
     var $ = function (s) { return el.querySelector(s); };
-    $('[data-ct-close]').addEventListener('click', function () { if (opts.onBack) opts.onBack(); });
+    var previousFocus = null;
+    function close() {
+      el.hidden = true;
+      if (previousFocus && previousFocus.isConnected) previousFocus.focus();
+    }
+    $('[data-ct-close]').addEventListener('click', close);
+    el.addEventListener('click', function (event) { if (event.target === el) close(); });
+    el.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(); }
+      if (event.key === 'Tab') {
+        var items = Array.from(el.querySelectorAll('button,input,textarea')).filter(function (item) { return !item.closest('[hidden]'); });
+        var first = items[0], last = items[items.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+    });
     var menu = $('[data-ct-menu]'), err = $('[data-ct-err]'), body = $('[data-ct-body]'), mail = $('[data-ct-mail]');
 
     function paint() {
       el.querySelectorAll('[data-k]').forEach(function (n) { n.textContent = T(n.getAttribute('data-k')); });
       body.placeholder = T('mole.ct.bodyHint'); mail.placeholder = T('mole.ct.emailHint');
+      $('[data-ct-close]').setAttribute('aria-label', root.FGH.Settings.get('lang') === 'en' ? 'Close' : '닫기');
       $('[data-ct-type]').textContent = T(TYPES[type]);
       menu.innerHTML = TYPES.map(function (k, i) { return '<button type="button" data-i="' + i + '"' + (i === type ? ' class="is-on"' : '') + '>' + T(k) + '</button>'; }).join('');
     }
@@ -52,7 +71,13 @@
       var t = document.createElement('div'); t.className = 'st2-toast ct-toast'; t.textContent = T('mole.ct.done');
       t.style.left = '50%'; t.style.top = '45%'; document.body.appendChild(t); setTimeout(function () { t.remove(); }, 1500);
     });
-    return { show: function () { type = 0; body.value = ''; mail.value = ''; err.textContent = ''; menu.hidden = true; paint(); } };
+    return { show: function () {
+      previousFocus = document.activeElement;
+      var settings = document.getElementById('settings-screen');
+      if (el.parentNode !== settings) settings.appendChild(el);
+      type = 0; body.value = ''; mail.value = ''; err.textContent = ''; menu.hidden = true;
+      paint(); el.hidden = false; $('[data-ct-close]').focus();
+    } };
   }
 
   var api = { create: create };

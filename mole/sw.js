@@ -57,7 +57,11 @@
 // V1577 G: visible King Punch bounds and fixed shadow; weapon arrival waits for visible, ready models.
 // V1578 G: King Punch shadow shares Mjolnir's fixed ground line, independently of lifted gloves.
 // V1579 G: per-screen inventory shadows and idle goose mouth-synced sound.
-const CACHE = 'mole-game-v1579-G';
+// V1580 G: skip the idle quack MP3 quiet lead-in at mouth opening.
+// V1580 G: keep King Punch's current glove transforms in the shop exit clone.
+// V1581 G: compact gameplay glow, CSS contact popup and equal mailbox actions.
+// V1581 G: KST daily heart/ticket delivery with 3-day catch-up and one test mail.
+const CACHE = 'mole-game-v1581-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -925,6 +929,7 @@ const SHELL = [
   './js/settings-screen.js',
   './js/inventory-screen.js',
   './js/mailbox.js',
+  './js/mailbox-daily.js',
   './js/contact.js',
   './js/game.js',
   './assets/workshop/clarity-v1434/panel.png',
