@@ -68,7 +68,7 @@
 // V1585 G: diagonal wipes replace glitch transitions, including mail/settings to home.
 // V1586 G: prepare rhythm selection frames and freeze the exact song screen before returning home.
 // V1587 G: automatic next-round waiting and clone-free rhythm home wipe.
-const CACHE = 'mole-game-v1587-G';
+const CACHE = 'mole-game-v1588-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.

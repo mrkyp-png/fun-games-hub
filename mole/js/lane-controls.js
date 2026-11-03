@@ -515,8 +515,19 @@
           if (!f.num || !buttons[id]) return;
           // V1405 C 버그: 언어 다시 그리기가 ✱ 버튼(킹 판취 왼쪽 스킬 칸)을 통째로 다시 써서 스킬 칸이 사라졌다 — 스킬 칸 노드는 살려서 다시 붙임
           const keep = buttons[id].querySelector('.lane-items');
+          // Language redraw replaces the face DOM. Keep the live AI overlay and
+          // retarget its animation; otherwise a hit hides the label while its
+          // replacement digit is rendered into a detached span.
+          const entry = aiButtons[id];
+          if (entry.animations) entry.animations.forEach((animation) => animation.cancel());
+          entry.animations = null;
+          aiActive.delete(entry);
+          entry.bit.hidden = true;
+          buttons[id].classList.remove('is-ai-bit');
           fillFace(buttons[id], f, id, simple);
           if (keep) buttons[id].appendChild(keep);
+          buttons[id].appendChild(entry.bit);
+          entry.face = buttons[id].querySelector('.lane-face--key') || buttons[id];
         });
       });
     }

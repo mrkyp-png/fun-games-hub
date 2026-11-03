@@ -8124,7 +8124,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #game-screen.is-start .h2w-mole .h2w-char { width: 46.5%; max-width: 46.5%; }
 #game-screen.is-start .h2w-rhythm .h2w-note { right: 6.75%; }
 /* 두더지팡: 오른쪽 절반은 시작 버튼 자리 → 글자·하트는 캐릭터와 시작 버튼 사이로 */
-#game-screen.is-start .h2w-mole .h2w-lbl { position: absolute; left: 2%; right: 48%; bottom: 5%; margin: 0; text-align: center; white-space: nowrap; }
+#game-screen.is-start .h2w-mole .h2w-lbl { position: absolute; left: 2%; right: 48%; bottom: 11%; margin: 0; text-align: center; white-space: nowrap; line-height: 1.25; }
 #game-screen.is-start .h2w-mole .h2w-heart { right: auto; left: 38%; top: 8%; height: 28%; }
 /* 하트는 이제 왼쪽(리듬팡)으로 날아감 */
 #game-screen.is-start .lane-face--wide.h2w-mole { clip-path: inset(-80% -10% 7% -260%); }
