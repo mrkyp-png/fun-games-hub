@@ -5418,24 +5418,17 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 /* v835: 눈덩이 전체 흰색(사용자 지정) — 파란 테두리 음영 빼고 흰 무늬가 공 대부분을 덮게 */
 .rp-snow-roll { -webkit-mask-image: radial-gradient(circle, #000 62%, transparent 76%); mask-image: radial-gradient(circle, #000 62%, transparent 76%); }
 .rp-snow-shade { background: radial-gradient(circle at 34% 28%, rgba(255,255,255,0.4), rgba(255,255,255,0) 32%); }
-/* v836: 뒤로가기 화면 전환 = 글리치(사용자 지정 — 비교표 17번). 위치·투명도만 바뀌어 폰 부담 가벼움 */
-@keyframes screen-glitch-out {
-  0% { translate: 0 0; opacity: 1; }
-  15% { translate: -6% 1.5%; }
-  30% { translate: 5% -1%; opacity: 0.75; }
-  45% { translate: -3% 0; opacity: 1; }
-  60% { translate: 4% 0.5%; opacity: 0.6; }
-  75%, 100% { translate: 0 0; opacity: 0; }
+/* V1585: diagonal reveal from upper left to lower right, without flashes/jitter. */
+.diagonal-wipe-in { animation:screen-diagonal-wipe-in .36s cubic-bezier(.4,0,.2,1) both; }
+@keyframes screen-diagonal-wipe-out {
+  from { clip-path:polygon(-100% 100%,100% -100%,100% 100%); }
+  to { clip-path:polygon(101% 100%,301% -100%,301% 100%); }
 }
-/* v836: 진입 글리치(뒤로가기 글리치와 짝) */
-.glitch-in { animation: screen-glitch-in 0.2s steps(1, end) both; } /* v839: 0.42→0.2초 */
-@keyframes screen-glitch-in {
-  0% { translate: 6% 0; opacity: 0.6; }
-  20% { translate: -4% 1%; opacity: 1; }
-  40% { translate: 3% -1%; opacity: 0.75; }
-  60% { translate: -2% 0; opacity: 1; }
-  80%, 100% { translate: 0 0; opacity: 1; }
+@keyframes screen-diagonal-wipe-in {
+  from { clip-path:polygon(0 0,0 0,0 0); }
+  to { clip-path:polygon(0 0,200% 0,0 200%); }
 }
+@media(prefers-reduced-motion:reduce){.diagonal-wipe-in,.roll-clone{animation-duration:1ms!important;}}
 /* v837: 홈 두더지팡·리듬팡 글자 = 버튼 폭에 맞춰 최대한 크게(사용자 지정) */
 .lane-face--secret { container-type: inline-size; }
 .lane-num--secret { font-size: 24cqw; line-height: 1; white-space: nowrap; letter-spacing: -0.02em; }
@@ -10106,9 +10099,6 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen>.shop-cards-box:is([data-pane="ticket"],[data-pane="costume"])::after { background: linear-gradient(90deg,#ffd3dc,#ffeef2 50%,#ffd3dc); }
 /* V1561 C 사용자: 화면 전환 — 그림이 다 준비될 때까지 가렸다가 한 번에(asset-loader revealWhenReady) */
 .asset-preparing, .asset-preparing * { visibility: hidden !important; animation-play-state:paused!important; }
-.asset-failed > :not(.screen-asset-error) { visibility:hidden!important; }
-.screen-asset-error { position:absolute; inset:0; z-index:10001; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:24px; background:#9fd6ef; color:#123c60; font:18px/1.4 'Jua',sans-serif; text-align:center; }
-.screen-asset-error button { min-width:140px; min-height:44px; padding:8px 20px; border:2px solid #d6ad63; border-radius:14px; background:#fff5d9; color:#54290b; font:inherit; cursor:pointer; }
 /* V1561 C 사용자: 팝업 등장 — 창이 통 튀어나오듯(0.28초), 뒤는 살짝 어둡게 시작 */
 .asset-pop { animation: asset-pop .28s cubic-bezier(.2,.9,.3,1.25) both; transform-origin: 50% 55%; }
 /* V1562 C: transform 대신 scale 속성 — 위쪽 판 화면(아이템·메일함·설정)은 transform:translateX(-50%) 로 가운데 정렬이라 transform 을 덮으면 오른쪽에서 밀려 들어오듯 보였음 */

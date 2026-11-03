@@ -64,7 +64,9 @@
 // V1582 G: retained shop panes, decoded first frames and unified smooth screen entry.
 // V1583 G: gate startup on core art only; ignore document fragments as CSS images.
 // V1583 G: replay weapon/skill/costume art and captions together on every pane entry.
-const CACHE = 'mole-game-v1583-G';
+// V1584 G: retain the original cover until ready; auto-retry without an asset error page.
+// V1585 G: diagonal wipes replace glitch transitions, including mail/settings to home.
+const CACHE = 'mole-game-v1585-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -996,7 +998,8 @@ self.addEventListener('fetch', (e) => {
       // Keep UI images alive on slow mobile links. The 5s bound remains on
       // navigation/script/style requests so app startup can still fall back.
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
+      const visual = e.request.destination === 'image' || /\.(?:png|jpe?g|webp|gif|svg|glb)(?:$|\?)/i.test(e.request.url);
+      const timeout = revalidate || !visual ? setTimeout(() => controller.abort(), 5000) : null;
       let res;
       try {
         const fetchRequest = new Request(req, { signal: controller.signal });

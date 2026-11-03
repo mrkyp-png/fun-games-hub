@@ -1,4 +1,4 @@
-/* Decode visible artwork before reveal; bounded failures offer an explicit retry. */
+/* Keep the transition cover until artwork is ready; recover failed requests underneath. */
 (function (root) {
   'use strict';
   var tasks = new Map(), pending = [], active = 0, backgroundActive = 0;
@@ -220,11 +220,23 @@
   function readyImage(img) {
     if (!img.currentSrc && !img.getAttribute('src')) return Promise.resolve();
     img.loading = 'eager';
-    var work = img.decode ? Promise.resolve().then(function () { return img.decode(); }) : new Promise(function (resolve, reject) {
-      if (img.complete) { if (img.naturalWidth) resolve(); else reject(new Error('Image unavailable')); return; }
-      img.addEventListener('load', resolve, {once:true}); img.addEventListener('error', reject, {once:true});
+    function unavailable() {
+      var error = new Error('Image unavailable'), source = img.currentSrc || img.getAttribute('src') || '';
+      error.asset = /^data:/.test(source) ? '[inline image]' : source;
+      return error;
+    }
+    // Wait for the actual load first. decode() may reject while lazy loading
+    // switches requests even though the valid image is still arriving.
+    var work = new Promise(function (resolve, reject) {
+      if (img.complete) { if (img.naturalWidth) resolve(); else reject(unavailable()); return; }
+      function cleanup() { img.removeEventListener('load', loaded); img.removeEventListener('error', failed); }
+      function loaded() { cleanup(); if (img.naturalWidth) resolve(); else reject(unavailable()); }
+      function failed() { cleanup(); reject(unavailable()); }
+      img.addEventListener('load', loaded, {once:true}); img.addEventListener('error', failed, {once:true});
     });
-    return work.catch(function (error) { if (!img.complete || !img.naturalWidth) throw error; }).then(function () { if (!img.naturalWidth) throw new Error('Image unavailable'); });
+    return work.then(function () { return img.decode ? Promise.resolve().then(function () { return img.decode(); }).catch(function () {}) : null; }).then(function () {
+      if (!img.naturalWidth) { if (!img.complete) return readyImage(img); throw unavailable(); }
+    });
   }
   function readyUrl(url) {
     var key = absUrl(url);
@@ -249,51 +261,68 @@
     if (!el) return Promise.resolve();
     var ticket = {}; revealTicket.set(el, ticket);
     var oldError = el.querySelector(':scope > .screen-asset-error'); if (oldError) oldError.remove();
-    el.classList.remove('asset-failed', 'glitch-in', 'asset-pop');
+    el.classList.remove('asset-failed', 'glitch-in', 'diagonal-wipe-in', 'asset-pop');
     el.classList.add('asset-preparing');
-    var done = function (error) {
-      if (revealTicket.get(el) !== ticket) return;
-      if (error && !el.hidden) {
-        el.classList.add('asset-failed');
-        var layer = document.createElement('div'); layer.className = 'screen-asset-error'; layer.setAttribute('role', 'alert');
-        var english = root.FGH && root.FGH.I18N && root.FGH.I18N.lang === 'en';
-        var message = document.createElement('p'); message.textContent = english ? 'Unable to prepare this screen.' : '화면을 준비하지 못했습니다.';
-        var retry = document.createElement('button'); retry.type = 'button'; retry.textContent = english ? 'Retry' : '다시 시도';
-        retry.addEventListener('click', function () { if (el._moleRetry) el._moleRetry(); revealWhenReady(el, maxMs); });
-        var close = document.createElement('button'); close.type = 'button'; close.textContent = english ? 'Close' : '닫기';
-        close.addEventListener('click', function () { var back = el.querySelector('.game-close,[data-shop-back],[data-ws-close],[data-sr-close]'); if (back) back.click(); });
-        layer.append(message, retry, close); el.appendChild(layer);
+    return new Promise(function (resolve) {
+      var retryTimer = 0, stopPolling = function () {};
+      function cancelled() { return el.hidden || revealTicket.get(el) !== ticket; }
+      function finish() {
+        clearTimeout(retryTimer); stopPolling();
+        if (revealTicket.get(el) === ticket) el.classList.remove('asset-preparing');
+        resolve();
       }
-      el.classList.remove('asset-preparing');
-      if (el.hidden) return;
-      if (!error && el._moleOnReveal) el._moleOnReveal();
-      // V1561 C 사용자: 팝업 등장(창이 통 튀어나오듯) — data-reveal-pop 가 있는 화면만
-      if (!error && el.hasAttribute('data-reveal-pop')) { el.classList.add('asset-pop'); setTimeout(function () { el.classList.remove('asset-pop'); }, 320); }
-    };
-    return new Promise(function (r) { requestAnimationFrame(function () { requestAnimationFrame(r); }); }).then(function () {
-      var found = screenUrls(el);
-      rememberScreen(el.id, found);
-      var work = [prepareContent(el)];
-      if (el._moleReady) work.push(el._moleReady);
-      if (document.fonts && document.fonts.ready) work.push(document.fonts.ready);
-      // 3D 무기 그림(아이템·상점)도 그려질 때까지 — 늦게 혼자 뜨지 않게
-      var models = Array.from(el.querySelectorAll('[data-model-weapon]')).filter(function (m) { var b = m.getBoundingClientRect(); return !m.closest('.shop-pane-staged') && b.width && b.right > 0 && b.left < innerWidth && b.bottom > 0 && b.top < innerHeight; });
-      if (models.length) work.push(new Promise(function (resolve, reject) {
-        var frame = 0, timer = setTimeout(function () { cancelAnimationFrame(frame); reject(new Error('3D preparation timed out')); }, 10000);
-        function finish(error) { clearTimeout(timer); cancelAnimationFrame(frame); if (error) reject(error); else resolve(); }
-        function check() {
-          if (el.hidden || revealTicket.get(el) !== ticket) { finish(new Error('Screen cancelled')); return; }
-          if (models.some(function (m) { return m.hasAttribute('data-model-error'); })) { finish(new Error('3D preparation failed')); return; }
-          if (models.every(function (m) { return m.classList.contains('shop-model-ready'); })) { finish(); return; }
-          frame = requestAnimationFrame(check);
-        }
-        check();
-      }));
-      return bounded(Promise.all(work), maxMs || 10500, false).then(function (result) { if (result === false) throw new Error('Screen preparation timed out'); });
-    }).then(function () { return new Promise(function (resolve) { requestAnimationFrame(function () { requestAnimationFrame(resolve); }); }); }).then(function () { done(); }, done);
+      function attempt() {
+        if (cancelled()) { finish(); return; }
+        var found = screenUrls(el), hookFailed = false;
+        rememberScreen(el.id, found);
+        var work = [prepareContent(el)];
+        if (el._moleReady) work.push(Promise.resolve(el._moleReady).catch(function (error) { hookFailed = true; throw error; }));
+        if (document.fonts && document.fonts.ready) work.push(document.fonts.ready);
+        var models = Array.from(el.querySelectorAll('[data-model-weapon]')).filter(function (host) {
+          var box = host.getBoundingClientRect();
+          return !host.closest('.shop-pane-staged') && box.width && box.right > 0 && box.left < innerWidth && box.bottom > 0 && box.top < innerHeight;
+        });
+        if (models.length) work.push(new Promise(function (ready, reject) {
+          var frame = 0, timer = setTimeout(function () { end(new Error('Model still preparing')); }, 10000);
+          function end(error) { clearTimeout(timer); cancelAnimationFrame(frame); stopPolling = function () {}; if (error) reject(error); else ready(); }
+          stopPolling = function () { end(); };
+          function check() {
+            if (cancelled()) { end(); return; }
+            if (models.some(function (host) { return host.hasAttribute('data-model-error'); })) { end(new Error('Model retry needed')); return; }
+            if (models.every(function (host) { return host.classList.contains('shop-model-ready'); })) { end(); return; }
+            frame = requestAnimationFrame(check);
+          }
+          check();
+        }));
+        bounded(Promise.all(work), maxMs || 10500, false).then(function (result) {
+          if (result === false) throw new Error('Preparation pending');
+          return new Promise(function (paint) { requestAnimationFrame(function () { requestAnimationFrame(paint); }); });
+        }).then(function () {
+          if (cancelled()) { finish(); return; }
+          el.classList.remove('asset-preparing');
+          if (el._moleOnReveal) el._moleOnReveal();
+          if (el.hasAttribute('data-reveal-pop')) { el.classList.add('asset-pop'); setTimeout(function () { el.classList.remove('asset-pop'); }, 320); }
+          finish();
+        }).catch(function (error) {
+          stopPolling();
+          if (cancelled()) { finish(); return; }
+          el._molePreparationFailure = {message:error && error.message, asset:error && error.asset, at:Date.now()};
+          // Keep the original cloud cover. Retry failed resources underneath it;
+          // neither an error page nor a timeout is a successful screen reveal.
+          found.imgs.forEach(function (image) {
+            var url = absolute(image.getAttribute('src'));
+            if (!url || !image.complete || image.naturalWidth) return;
+            var fresh = new URL(url); fresh.searchParams.set('_asset_retry', Date.now()); image.src = fresh.href;
+          });
+          if ((hookFailed || models.some(function (host) { return host.hasAttribute('data-model-error'); })) && el._moleRetry) el._moleRetry();
+          else if (models.some(function (host) { return host.hasAttribute('data-model-error'); }) && root.MoleGame && root.MoleGame.WeaponModels && root.MoleGame.WeaponModels.retryWithin) root.MoleGame.WeaponModels.retryWithin(el);
+          retryTimer = setTimeout(attempt, 400);
+        });
+      }
+      requestAnimationFrame(function () { requestAnimationFrame(attempt); });
+    });
   }
-  // V1561 C 사용자: 미리 데워 두기 — 홈에서 쉬는 동안 각 화면 그림을 미리 받아 디코드해 붙잡아 둠 → 처음 열어도 바로 한 번에.
-  // 그림 목록 = 지난번 그 화면을 열었을 때 기록한 목록(localStorage) + 숨은 화면의 HTML·CSS 에서 읽은 것.
+
   var WARM_KEY = 'mole.warmUrls.v1', warmRefs = [], warmed = false;
   function readWarm() { try { return JSON.parse(localStorage.getItem(WARM_KEY) || '{}') || {}; } catch (e) { return {}; } }
   function rememberScreen(id, found) {

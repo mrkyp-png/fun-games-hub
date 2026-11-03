@@ -915,13 +915,13 @@
     }
     // v841: 탄성 밀어내기로 게임 화면 진입(난이도 선택 → 게임, 결과창 다시하기 → 게임)
     function pushInGame(modal) {
-      // v878(사용자 지정): 탄성 밀어내기 → 글리치(다른 화면과 통일)
+      // V1585: diagonal wipe entry, matching the other former glitch routes.
       modal.hidden = true;
       // V 1113 G: keep B's opaque screen fixed while only its board enters.
       var entryTarget = activeB ? $('[data-rp-b] .rb-board') : el;
-      if (activeB) el.classList.remove('glitch-in');
-      replay(entryTarget,'glitch-in');
-      setTimeout(function () { entryTarget.classList.remove('glitch-in'); }, 260);
+      if (activeB) el.classList.remove('diagonal-wipe-in');
+      replay(entryTarget,'diagonal-wipe-in');
+      setTimeout(function () { entryTarget.classList.remove('diagonal-wipe-in'); }, 420);
     }
     el.querySelectorAll('[data-rp-diff]').forEach(function (b) {
       b.addEventListener('click', function () {

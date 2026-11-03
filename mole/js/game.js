@@ -1308,7 +1308,14 @@
     let opened = false, disposed = false;
     const cleanup = () => { disposed = true; host.remove(); unlock(); };
     const openOnce = () => { if (!opened) { opened = true; open(); } };
-    const watchdog = setTimeout(() => { try { openOnce(); } finally { cleanup(); } }, 12000);
+    let watchdog;
+    function checkCover() {
+      if (disposed) return;
+      openOnce();
+      if (scr.classList.contains('asset-preparing')) { watchdog = setTimeout(checkCover, 1000); return; }
+      cleanup();
+    }
+    watchdog = setTimeout(checkCover, 12000);
     // 구름 이미지의 투명한 틈으로 다음 화면이 먼저 보이지 않게, 덮인 순간에만 바탕을 켠다.
     const veil = document.createElement('div');
     veil.style.cssText = 'position:absolute;inset:0;opacity:0;pointer-events:none;background:' + tint[0];
@@ -1430,11 +1437,11 @@
       if (sub === 'mailbox-screen' && window.__mailbox) window.__mailbox.show();
       // V1561 C 사용자: 화면 그림이 따로따로 뜨지 않게 — 다 준비되면 한 번에 보여줌(광산지도는 자체 준비 장치)
       if (sub !== 'roundmap-screen') revealOrBands(document.getElementById(sub), openMore.covering);
-      // v836(사용자 지정): 뒤로가기와 같은 글리치로 진입 — 스코어·출석·제작소·광산지도 (V1561 C: 상점은 팝업 등장으로 대체)
+      // Legacy glitch-entry routes now use a diagonal wipe; covered/popup entries keep their own reveal.
       if (!openMore.covering && !document.getElementById(sub).hasAttribute('data-reveal-pop') && sub !== 'roundmap-screen' && sub !== 'shop-screen' && ['score-screen', 'daily-screen', 'workshop-screen', 'roundmap-screen', 'shop-screen', 'inventory-screen', 'quest-screen', 'mailbox-screen', 'settings-screen'].indexOf(sub) >= 0) {
         const gs = document.getElementById(sub);
-        gs.classList.remove('glitch-in'); void gs.offsetWidth; gs.classList.add('glitch-in');
-        setTimeout(() => gs.classList.remove('glitch-in'), 260);
+        gs.classList.remove('diagonal-wipe-in'); void gs.offsetWidth; gs.classList.add('diagonal-wipe-in');
+        setTimeout(() => gs.classList.remove('diagonal-wipe-in'), 420);
       }
     }
   }
@@ -1488,8 +1495,8 @@
     revealOrBands(el, true);
   }
   function showStartScreen(opts) {
-    // v862(사용자 지정): 상점·아이템 화면에서 홈으로 갈 때도 글리치로 사라짐
-    const out = ['shop-screen', 'inventory-screen'].map((id) => document.getElementById(id)).find((x) => x && !x.hidden);
+    // Preserve the outgoing screen during the diagonal wipe back to home.
+    const out = ['shop-screen', 'inventory-screen', 'mailbox-screen', 'settings-screen'].map((id) => document.getElementById(id)).find((x) => x && !x.hidden);
     if (out && window.FGH && window.FGH.rollOut) { window.FGH.rollOut(out, () => showStartScreenNow(opts)); return; }
     showStartScreenNow(opts);
   }

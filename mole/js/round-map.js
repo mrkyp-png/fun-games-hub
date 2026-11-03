@@ -114,7 +114,7 @@
         if (isReady && !isReady() && now - t0 < 1600) { root.requestAnimationFrame(function () { wait(); }); return; }
         firstSwap = now; onCovered();
       }
-      if (holdOpen && holdOpen() && now - firstSwap < 2500) { root.requestAnimationFrame(function () { wait(); }); return; } // 교체된 화면이 아직 준비 중이면 덮은 채 대기(최대 2.5초, V1565 C)
+      if (holdOpen && holdOpen()) { root.requestAnimationFrame(function () { wait(); }); return; } // Keep the cover until the replacement screen is actually ready.
       var last = run(0, span, 315, 0).pop();
       last.onfinish = function () { bandHost.style.visibility = 'hidden'; if (onDone) onDone(); };
     }, 310);
