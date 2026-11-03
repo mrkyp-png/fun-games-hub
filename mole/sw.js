@@ -52,7 +52,8 @@
 // V1571 G: Soft frame-only sweep in deeper matching colors, 30 percent opacity.
 // V1572 G: visible build tag and resource/SW versions aligned to 1572.
 // V1574 G: new loading stage/performers and source-aligned lamp, eight-bar equalizer and pad effects.
-const CACHE = 'mole-game-v1574-G';
+// V1575 G: lens-only alternating middle/outer paired sunglass reflections.
+const CACHE = 'mole-game-v1575-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
