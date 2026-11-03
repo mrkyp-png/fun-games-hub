@@ -9318,7 +9318,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-card::before,#shop-screen .shop-card::after { display:none!important; }
 #shop-screen .shop-card-name-box,#shop-screen .shop-card-name { position:relative!important; inset:auto!important; display:grid!important; place-items:center!important; align-self:stretch!important; grid-row:1!important; width:100%!important; height:100%!important; min-height:0!important; max-height:none!important; margin:0!important; padding:0!important; background:none!important; border:0!important; border-radius:0!important; box-shadow:none!important; clip-path:none!important; animation:none!important; color:#491d06!important; font:900 6.3cqw/1.1 'Jua',sans-serif!important; white-space:nowrap!important; text-shadow:none!important; -webkit-text-stroke:0!important; }
 #shop-screen .shop-card--blue:last-child .shop-card-name { font-size:4.5cqw!important; }
-#shop-screen .shop-product-viewport { position:relative; width:100%; height:100%; min-height:0; overflow:hidden; touch-action:pan-y; }
+#shop-screen .shop-product-viewport { position:relative; top:-4px; width:100%; height:100%; min-height:0; overflow:hidden; touch-action:pan-y; }
 #shop-screen .shop-product-preview { position:absolute!important; inset:0!important; z-index:5; pointer-events:none!important; }
 #shop-screen .shop-product-preview * { animation-play-state:paused!important; }
 #shop-screen .shop-product-viewport.is-dragging { cursor:grabbing; user-select:none; }
@@ -9351,12 +9351,12 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-card-btn--ad { background:none!important; box-shadow:none!important; font-size:4.7cqw!important; -webkit-text-stroke:0!important; }
 #shop-screen .shop-card-btn>.shop-coins-stack { width:32%!important; height:100%!important; max-width:none!important; max-height:none!important; margin:0!important; flex:none!important; object-fit:contain!important; }
 #shop-screen .scb-play-box { display:grid!important; place-items:center!important; width:17%!important; height:70%!important; background:none!important; } #shop-screen .scb-play-box svg { width:100%!important; height:100%!important; }
-#shop-screen .shop-cards-head { position:fixed!important; right:var(--shop-dots-right,18px)!important; bottom:auto!important; top:var(--shop-dots-y,75vh)!important; width:auto!important; height:2.5cqw!important; padding:0!important; z-index:3!important; }
+#shop-screen .shop-cards-head { position:absolute!important; left:auto!important; right:14px!important; bottom:auto!important; top:var(--shop-dots-top,11px)!important; width:auto!important; height:2.7cqw!important; min-height:0!important; margin:0!important; padding:0!important; z-index:3!important; pointer-events:none; }
 #shop-screen .shop-dots { display:flex!important; gap:1.4cqw!important; align-items:center!important; height:100%!important; } #shop-screen .shop-dot { width:2.7cqw!important; height:2.7cqw!important; border:1px solid #d6aa60!important; border-radius:50%!important; background:#ead3a2!important; } #shop-screen .shop-dot--on { background:#ffae00!important; }
 #shop-screen>.shop-tab-shell { position:relative!important; z-index:2!important; width:calc(100% - 16px)!important; min-width:0!important; height:45cqw!important; min-height:0!important; margin:0 8px 8px!important; padding:10px!important; box-sizing:border-box!important; isolation:isolate!important; border-radius:18px!important; background:none!important; box-shadow:none!important; filter:drop-shadow(0 3px 0 #af8d58)!important; overflow:visible!important; }
 #shop-screen .shop-tab-shell::before { content:''; position:absolute; inset:0; z-index:-1; pointer-events:none; border:10px solid transparent; border-image:url('assets/inventory/skill-v1403/card.webp') 70 / 10px stretch; clip-path:var(--shop-frame-ring,none); filter:brightness(.94) saturate(1.1); }
 #shop-screen .shop-tab-shell::after { content:''; position:absolute; inset:0; z-index:-2; pointer-events:none; background:#03c5b1; -webkit-mask-box-image:none; clip-path:var(--shop-sky-contour,inset(10px round 8px)); }
-#shop-screen .shop-tabbar { position:relative!important; display:flex!important; flex-flow:row nowrap!important; align-items:stretch!important; width:100%!important; height:100%!important; min-width:0!important; min-height:0!important; margin:0!important; padding:4.5px 0!important; gap:0!important; border:0!important; border-radius:10px!important; background:none!important; box-shadow:none!important; overflow-x:auto!important; overflow-y:hidden!important; scroll-snap-type:x mandatory!important; scrollbar-width:none!important; touch-action:pan-x!important; box-sizing:border-box!important; }
+#shop-screen .shop-tabbar { position:relative!important; display:flex!important; flex-flow:row nowrap!important; align-items:stretch!important; width:100%!important; height:100%!important; min-width:0!important; min-height:0!important; margin:0!important; padding:11px 0 0!important; gap:0!important; border:0!important; border-radius:10px!important; background:none!important; box-shadow:none!important; overflow-x:auto!important; overflow-y:hidden!important; scroll-snap-type:x mandatory!important; scrollbar-width:none!important; touch-action:pan-x!important; box-sizing:border-box!important; }
 
 #shop-screen .shop-tab { position:relative!important; display:grid!important; grid-template-columns:minmax(0,1fr)!important; grid-template-rows:minmax(0,1fr) 7.8cqw!important; justify-items:center!important; align-items:center!important; flex:0 0 33.333333%!important; width:33.333333%!important; height:100%!important; min-width:0!important; margin:0!important; padding:2.5cqw 1.5cqw 2cqw!important; gap:.8cqw!important; box-sizing:border-box!important; border:0!important; border-radius:3cqw!important; background:none!important; border-image:none!important; box-shadow:none!important; isolation:isolate!important; transform:none!important; translate:none!important; rotate:none!important; scale:none!important; inset:auto!important; scroll-snap-align:none!important; }
 #shop-screen .shop-tab--on { background:none!important; }
@@ -9383,8 +9383,8 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-tab + .shop-tab { margin:0!important; }
 #shop-screen .shop-tab:nth-child(1),#shop-screen .shop-tab:nth-child(4) { scroll-snap-align:start!important; }
 :is(#shop-screen,#settings-screen) .shop-tab::after,:is(#shop-screen,#settings-screen) .shop-card-btn::after { display:none!important; }
-#shop-screen>.shop-cards-box::before { content:''; position:absolute; top:-12cqw; bottom:0; left:-3cqw; right:-3cqw; z-index:0; pointer-events:none; border:10px solid transparent; border-image:url('assets/inventory/skill-v1403/card.webp') 70 / 10px stretch; clip-path:var(--shop-product-frame-ring,none); background:none; box-shadow:none; filter:none; }
-#shop-screen>.shop-cards-box::after { content:''; position:absolute; top:-12cqw; bottom:0; left:-3cqw; right:-3cqw; z-index:-1; pointer-events:none; background:linear-gradient(90deg,#fff1d0,#fff9e9 50%,#fff1d0); clip-path:var(--shop-product-fill,inset(10px round 8px)); box-shadow:none; filter:none; }
+#shop-screen>.shop-cards-box::before { content:''; position:absolute; top:-12cqw; bottom:var(--shop-product-frame-bottom,0px); left:-3cqw; right:-3cqw; z-index:0; pointer-events:none; border:10px solid transparent; border-image:url('assets/inventory/skill-v1403/card.webp') 70 / 10px stretch; clip-path:var(--shop-product-frame-ring,none); background:none; box-shadow:none; filter:none; }
+#shop-screen>.shop-cards-box::after { content:''; position:absolute; top:-12cqw; bottom:var(--shop-product-frame-bottom,0px); left:-3cqw; right:-3cqw; z-index:-1; pointer-events:none; background:linear-gradient(90deg,#fff1d0,#fff9e9 50%,#fff1d0); clip-path:var(--shop-product-fill,inset(10px round 8px)); box-shadow:none; filter:none; }
 
 #shop-screen .shop-cards { z-index:1!important; }
 #shop-screen .shop-card-btn:not(.shop-coin-choice-action)::before { content:''!important; display:block!important; position:absolute!important; inset:0!important; width:100%!important; height:100%!important; border-radius:0!important; z-index:-1!important; background:url('assets/inventory/ui-v1379/equip-pill-transparent.webp') center/100% 100% no-repeat!important; filter:hue-rotate(260deg)!important; opacity:1!important; }
@@ -9478,18 +9478,18 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-card--sale .shop-sale-set img.shop-skill-icon { flex:0 0 31%!important; width:31%!important; height:auto!important; aspect-ratio:1!important; max-width:31%!important; max-height:none!important; transform:none!important; }
 #shop-screen .shop-skill-product { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.322581em; font-size:3.1cqw; container-type:size; }
 #shop-screen .shop-card--skill { min-width:0!important; }
-#shop-screen .shop-skill-visual { position:relative; flex:none; width:min(72%,calc(100cqh - 4.5em)); aspect-ratio:1; }
+#shop-screen .shop-skill-visual { position:absolute; left:50%; top:calc(50% - .774em); translate:-50% -50%; flex:none; width:min(72%,calc(100cqh - 4.5em)); aspect-ratio:1; }
 #shop-screen .shop-card--sale .shop-card-badge--hero .shop-skill-visual .shop-skill-icon { position:relative!important; inset:auto!important; width:100%!important; height:100%!important; max-width:100%!important; max-height:100%!important; margin:0!important; transform:translate(var(--skill-rim-x),var(--skill-rim-y)) scale(var(--skill-rim-scale-x),var(--skill-rim-scale-y))!important; }
-#shop-screen .shop-skill-caption { box-sizing:border-box; display:flex; align-items:center; justify-content:center; width:96%; min-height:2.5em; margin:0; padding:0; font-size:3.1cqw; font-weight:700; line-height:1.25; color:#5a2e10; text-align:center; text-wrap:balance; word-break:keep-all; text-shadow:none; -webkit-text-stroke:0; }
+#shop-screen .shop-skill-caption { position:absolute; left:2%; top:calc(100% - .8333333333em); transform:translateY(-50%); box-sizing:border-box; display:flex; align-items:center; justify-content:center; width:96%; height:1.2em; min-height:0; margin:0; padding:0; font-size:3.1cqw; font-weight:700; line-height:1.2; color:#5a2e10; text-align:center; text-wrap:balance; word-break:keep-all; text-shadow:none; -webkit-text-stroke:0; }
 #shop-screen .shop-skill-product .shop-skill-caption { flex-direction:column; flex:none; font-size:1.08em; }
 #shop-screen .shop-skill-quantity { display:block; font-size:1.1em; font-weight:900; }
 #shop-screen .shop-skill-count-slot { position:absolute; right:0; bottom:0; width:40%; height:25%; z-index:2; }
 #shop-screen .shop-skill-count-slot .shop-skill-quantity { position:absolute; inset:0; display:flex; justify-content:center; align-items:center; }
 #shop-screen .shop-skill-caption:not(.shop-skill-caption--bundle) > span { display: flex; justify-content: center; align-items: center; white-space: nowrap; }
 #shop-screen .shop-skill-bundle-counts { display:flex!important; flex-direction:row; align-items:center; justify-content:center; gap:.3em; width:100%; white-space:nowrap; }
-#shop-screen .shop-skill-visual--bundle { width:min(88%,calc(100cqh - 4.8em)); }
+#shop-screen .shop-skill-visual--bundle { top:calc(50% - .75em); width:min(88%,calc(100cqh - 4.8em)); }
 #shop-screen .shop-skill-product--bundle .shop-skill-bundle-image { display:block; width:100%!important; height:100%!important; max-width:100%!important; max-height:100%!important; aspect-ratio:1; object-fit:contain!important; margin:0; transform:none!important; }
-#shop-screen .shop-skill-product .shop-skill-caption--bundle { font-size:1em; min-height:3.75em; font-weight:700; }
+#shop-screen .shop-skill-product .shop-skill-caption--bundle { top:calc(100% - .9em); font-size:1em; min-height:0; font-weight:700; }
 #shop-screen .shop-skill-caption--bundle span { display:block; white-space:nowrap; }
 /* Product headings share the costume title's size and title row. */
 #shop-screen .shop-card:not(.shop-card--blue):not(.shop-card--coin-ad) .shop-card-name-box,
@@ -9524,6 +9524,13 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-card--sale .shop-costume-visual .shop-costume-hat--mount_stars { translate:0.51% 0; }
 #shop-screen .shop-costume-effect { display:flex; justify-content:center; align-items:center; gap:.25em; flex:none; width:100%; min-height:1.2em; margin:0; color:#5a2e10; font-size:1.08em; font-weight:700; line-height:1.2; text-align:center; white-space:nowrap; }
 #shop-screen .shop-costume-effect b { font:inherit; font-weight:900; }
+/* Weapon summaries share the costume text line without resizing the art host. */
+#shop-screen .shop-weapon-caption { position:absolute; left:2%; top:calc(100% - .8333333333em); transform:translateY(-50%); z-index:8; display:flex; align-items:center; justify-content:center; width:96%; height:1.2em; min-height:0; margin:0; padding:0; color:#5a2e10; font-size:3.348cqw; font-weight:700; line-height:1.2; text-align:center; white-space:nowrap; pointer-events:none; }
+#shop-screen .shop-weapon-caption>span { display:block; white-space:nowrap; }
+#shop-screen .shop-card--weapon-product .shop-card-img-box>.shop-card-badge--hero,
+#shop-screen .shop-card--weapon-product .shop-card-img-box>.shop-model-canvas { translate:0 var(--shop-weapon-lift,0px); }
+#shop-screen .shop-card--weapon-product .shop-card-img-box>.shop-weapon-shadow { translate:0 var(--shop-shadow-lift,0px); }
+#shop-screen .shop-card--weapon-product .shop-card-img-box[data-model="goldhammer"]>.shop-model-canvas { scale:.95; transform-origin:50% 50%; }
 #shop-screen .shop-costume-set-art { position:absolute; left:50%; top:50%; width:94%; height:92%; transform:translate(-50%,-50%); }
 #shop-screen .shop-costume-visual--set .shop-costume-set-art { width:100%; height:100%; }
 #shop-screen .shop-costume-set-art .shop-costume-set-piece { position:absolute; width:53%; height:72%; object-fit:contain!important; }
@@ -10111,3 +10118,20 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 .screen-cover { position: fixed; z-index: 2147482000; pointer-events: auto; overflow: hidden; }
 .screen-cover img { position: absolute; left: 0; top: 0; pointer-events: none; }
 .screen-cover-hammer { transform-origin: 33% 83%; z-index: 2; filter: drop-shadow(0 6px 6px rgba(0,0,0,.25)); }
+
+/* V1576 G: balances occupy only the newly extended enclosure space. */
+#shop-screen .shop-owned-balances { position:absolute; z-index:2; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1.5cqw; min-height:0; pointer-events:none; }
+#shop-screen .shop-owned-balance { display:flex; align-items:center; justify-content:center; gap:1cqw; min-width:0; height:100%; padding:0 1cqw; border:2px solid #d6aa60; border-radius:2cqw; background:linear-gradient(#fffdf2,#fce9bd); box-shadow:0 2px 0 #ad854a; overflow:hidden; }
+#shop-screen .shop-owned-balance--heart { background:linear-gradient(#fff2f3,#ffd3da); }
+#shop-screen .shop-owned-balance--ticket { background:linear-gradient(#eefaff,#c5e9fa); }
+#shop-screen .shop-owned-balance > img { position:static; display:block; width:auto; height:75%; max-width:26%; max-height:26px; object-fit:contain; flex:0 0 auto; }
+#shop-screen .shop-owned-balance > span { display:block; min-width:0; color:#492713; font:900 clamp(10px,3.3cqw,15px)/1 'Jua',sans-serif; white-space:nowrap; font-variant-numeric:tabular-nums; }
+
+/* Stable model preparation: never expose the legacy sprite behind a 3D slot. */
+#shop-screen [data-model-weapon]>.shop-card-badge,
+#shop-screen [data-model-weapon]>img:not(.shop-model-snapshot) { visibility:hidden; }
+#shop-screen [data-model-weapon]:not(.shop-model-ready)>.shop-weapon-shadow { visibility:hidden; }
+#shop-screen .shop-skill-caption,#shop-screen .shop-costume-effect { animation:shop-caption-arrive .65s cubic-bezier(.2,.7,.3,1) both; }
+@keyframes shop-caption-arrive { from { opacity:0; translate:0 12px; } to { opacity:1; translate:0 0; } }
+#shop-screen[hidden] .shop-skill-caption,#shop-screen[hidden] .shop-costume-effect { animation-play-state:paused; }
+@media(prefers-reduced-motion:reduce) { #shop-screen .shop-skill-caption,#shop-screen .shop-costume-effect { animation:none!important; } }

@@ -73,12 +73,7 @@
       return '<div class="shop-weapon-motion" data-shop-motion="alipunch"><div class="inv-thumb inv-thumb--pair"><img alt="" src="' + w.thumb + '">' +
         '<img alt="" class="inv-thumb-mirror" src="' + w.thumb + '"><span class="inv-bump-spark">✨</span><span class="inv-bump-word">POWER UP</span></div></div>';
     }
-    if (w.id === 'cannon') {
-      return '<div class="shop-weapon-motion" data-shop-motion="cannon"><div class="inv-thumb inv-thumb--cannon"><img alt="" src="' + w.thumb + '">' +
-        '<img class="inv-cannon-burn" alt="" src="assets/weapons/cannon-fx4.png"><img class="inv-cannon-smoke" alt="" src="assets/weapons/cannon-fx5.png">' +
-        '<span class="inv-cannon-word">BOOM!</span></div></div>';
-    }
-    return '<img alt="" class="hero-weapon' + (w.id === 'goldhammer' ? ' hero-weapon--gold' : '') + '" src="' + w.thumb + '">';
+    return ''; // The other three weapons are rendered only by the 3D engine.
   }
 
   // 상점 "무기" 탭 = 아이템보관창(inventory-screen.js) 무기탭과 같은 4종(사용자 지정: "지금 있는
@@ -105,6 +100,47 @@
     if (backEl) backEl.addEventListener('click', function () { if (opts.onClose) opts.onClose(); });
     var bannerEl = el.querySelector('[data-shop-banner]');
     var dotsEl = el.querySelector('[data-shop-dots]');
+    var shopLayoutFrame = 0, weaponModelsReady = Promise.resolve();
+    function shopLayoutBlocked() { return el.hidden || !el.clientWidth || el.classList.contains('asset-pop'); }
+    function scheduleShopLayout() {
+      if (shopLayoutFrame) return;
+      shopLayoutFrame = requestAnimationFrame(function () {
+        shopLayoutFrame = 0;
+        if (shopLayoutBlocked()) return;
+        fitSkillCaptions(); centerShopTabArt(); alignCoinPrices();
+      });
+    }
+    new MutationObserver(scheduleShopLayout).observe(el, { attributes: true, attributeFilter: ['hidden', 'class'] });
+    if (root.ResizeObserver) {
+      var layoutObserver = new ResizeObserver(scheduleShopLayout);
+      layoutObserver.observe(el); layoutObserver.observe(cardsBoxEl); layoutObserver.observe(productsViewport);
+      layoutObserver.observe(el.querySelector('.shop-tab-shell'));
+    }
+    el.addEventListener('load', scheduleShopLayout, true);
+    el.addEventListener('animationend', function (event) {
+      if (event.animationName === 'asset-pop' || event.animationName === 'shop-costume-arrive' || event.animationName === 'shop-caption-arrive') scheduleShopLayout();
+    });
+    if (document.fonts) { document.fonts.ready.then(scheduleShopLayout); document.fonts.addEventListener('loadingdone', scheduleShopLayout); }
+    var balancesEl = document.createElement('div');
+    balancesEl.className = 'shop-owned-balances';
+    balancesEl.setAttribute('role', 'group');
+    balancesEl.innerHTML = '<div class="shop-owned-balance shop-owned-balance--coin" data-shop-owned="coin">' + ICONS.coins + '<span></span></div>' +
+      '<div class="shop-owned-balance shop-owned-balance--heart" data-shop-owned="heart"><img src="' + HEART_ART.heart + '" alt=""><span></span></div>' +
+      '<div class="shop-owned-balance shop-owned-balance--ticket" data-shop-owned="ticket">' + ICONS.tickets + '<span></span></div>';
+    cardsBoxEl.appendChild(balancesEl);
+    var balanceTimer = null;
+    function refreshShopBalances() {
+      var english = I18N().lang === 'en';
+      balancesEl.setAttribute('aria-label', english ? 'Your balances' : '보유 재화');
+      balancesEl.querySelectorAll('[data-shop-owned]').forEach(function (box) {
+        var kind = box.dataset.shopOwned;
+        var value = kind === 'coin' ? MG.Economy.getCoins() : kind === 'heart' ? MG.Economy.getHearts() : MG.Economy.getTickets();
+        var text = Math.max(0, value).toLocaleString(english ? 'en-US' : 'ko-KR');
+        var number = box.querySelector('span');
+        if (number.textContent !== text) number.textContent = text;
+        box.setAttribute('aria-label', (english ? {coin:'Coins',heart:'Hearts',ticket:'Tickets'} : {coin:'코인',heart:'하트',ticket:'티켓'})[kind] + ' ' + text);
+      });
+    }
     // 제목 바는 생략하고, 상단 좌측 복귀는 Score 화면의 원본 아이콘으로 처리.
 
     // 카드 줄 좌우 화살표+점 페이지 표시(사용자 지정: "상점UI 파일처럼 화살표, 페이지 점들도").
@@ -302,6 +338,7 @@
       kingMotionBounds={w:(x1-x0+1)/dpr,h:(y1-y0+1)/dpr,x:(x0+x1+1)/dpr/2-pad,y:(y0+y1+1)/dpr/2-pad};return kingMotionBounds;
     }
     function centerShopTabArt() {
+      if (shopLayoutBlocked()) return;
       centerCoinAdArt();
       var sign = bannerEl.querySelector('.shop-weapon-sign');
       if (sign) centerVisibleImage(sign);
@@ -585,7 +622,7 @@
           // The default weapon is informational; this card has no purchase/equip action.
           cardsEl.appendChild(card({
             productClass: productClass,
-            badge: '<img alt="" src="' + w.thumb + '">',
+            badge: '',
             badgeClass: 'shop-card-badge--weapon shop-card-badge--default-weapon',
             name: name,
             priceHtml: null,
@@ -605,7 +642,16 @@
           btnDisabled: locked,
           onPreview: function () { showProductPurchase({ sku: 'weapon.' + w.id, nameKo: w.name, nameEn: w.nameEn }); }
         }));
+        var summaries = {
+          cannon: ['연타 확률 10%', '10% burst chance'],
+          goldhammer: ['지진 연타 확률 15%', '15% quake burst chance'],
+          alipunch: ['무적 확률 20%', '20% invincibility chance']
+        };
+        var caption = document.createElement('p'); caption.className = 'shop-weapon-caption';
+        var text = document.createElement('span'); text.textContent = summaries[w.id][I18N().lang === 'en' ? 1 : 0]; caption.appendChild(text);
+        cardsEl.lastElementChild.querySelector('.shop-card-img-box').appendChild(caption);
       });
+      requestAnimationFrame(fitSkillCaptions);
     }
 
     function renderPendingProducts(items, productClass, options) {
@@ -675,7 +721,8 @@
     }
 
     function fitSkillCaptions() {
-      cardsEl.querySelectorAll('.shop-skill-caption:not(.shop-skill-caption--bundle)>span,.shop-skill-bundle-counts,.shop-costume-effect').forEach(function (label) {
+      if (shopLayoutBlocked()) return;
+      cardsEl.querySelectorAll('.shop-skill-caption:not(.shop-skill-caption--bundle)>span,.shop-skill-bundle-counts,.shop-costume-effect,.shop-weapon-caption>span').forEach(function (label) {
         label.style.fontSize = '';
         var style = getComputedStyle(label), size = parseFloat(style.fontSize), width;
         if (label.classList.contains('shop-skill-bundle-counts')) {
@@ -845,6 +892,7 @@
     // (사용자 지정: "상점에서 구매시, 바로 버튼보드에 있는 하트, 코인, 티켓 수량 바로
     // 적용되도록") — 캡슐은 생성 시점 숫자로 고정돼있어 그 이후 변동은 반영이 안 됐었음.
     function refreshHudFlyNumbers() {
+      refreshShopBalances();
       ['heart', 'coin', 'ticket'].forEach(function (kind) {
         var n = document.querySelector('#lane-button-bar [data-region="' + DIALPAD_REGION[kind] + '"] .lane-hud-n'); // v904: 알약 숫자 직접 갱신
         if (!n) return;
@@ -917,6 +965,7 @@
     }
 
     function render() {
+      refreshShopBalances();
       if (MG.ShopModels) MG.ShopModels.clear();
       renderTabs();
       RENDERERS[activeTab]();
@@ -936,7 +985,85 @@
       cardsBoxEl.dataset.pane = activeTab === 'currency' ? (currencyFilter || 'heart') : activeTab; // V1559 C 사용자: 탭별 판 색(상품과 반대색)
       requestAnimationFrame(alignCoinPrices);
       requestAnimationFrame(centerShopTabArt);
-      if (activeTab === 'weapon' && MG.ShopModels) MG.ShopModels.attach(cardsEl, WEAPONS);
+      if (activeTab === 'weapon' && MG.ShopModels) {
+        var models = MG.ShopModels.attach(cardsEl, WEAPONS, alignWeaponDisplay);
+        weaponModelsReady = new Promise(function (resolve) {
+          var timeout = setTimeout(resolve, 1500);
+          Promise.resolve(models).then(function () { clearTimeout(timeout); resolve(); }, function () { clearTimeout(timeout); resolve(); });
+        });
+      } else weaponModelsReady = Promise.resolve();
+      scheduleShopLayout();
+    }
+
+    function alignWeaponDisplay(host, bounds, force) {
+      var caption = host.querySelector('.shop-weapon-caption');
+      if (!caption || !bounds) return;
+      if (shopLayoutBlocked()) { host._shopPendingBounds = bounds; return; }
+      var gold = host.dataset.model === 'goldhammer';
+      if (gold && host.classList.contains('shop-model-ready') && !force) {
+        bounds = { top: .5 + (bounds.top - .5) * .95, bottom: .5 + (bounds.bottom - .5) * .95,
+          left: .5 + ((bounds.left == null ? 0 : bounds.left) - .5) * .95,
+          right: .5 + ((bounds.right == null ? 1 : bounds.right) - .5) * .95 };
+      }
+      var sizeKey = (host.classList.contains('shop-model-ready') ? 'model:' : 'image:') + host.offsetWidth + ':' + host.offsetHeight;
+      var old = host._shopWeaponBounds;
+      var envelope = old && old.key === sizeKey ? old : { key: sizeKey, top: bounds.top, bottom: bounds.bottom,
+        left: bounds.left == null ? 0 : bounds.left, right: bounds.right == null ? 1 : bounds.right };
+      var changed = !old || old.key !== sizeKey || bounds.top < envelope.top || bounds.bottom > envelope.bottom;
+      envelope.top = Math.min(envelope.top, bounds.top); envelope.bottom = Math.max(envelope.bottom, bounds.bottom);
+      if (bounds.left != null) envelope.left = Math.min(envelope.left, bounds.left);
+      if (bounds.right != null) envelope.right = Math.max(envelope.right, bounds.right);
+      host._shopWeaponBounds = envelope;
+      if (!changed && !force) return;
+      var rect = host.getBoundingClientRect();
+      var title = host.closest('.shop-card').querySelector('.shop-card-name');
+      var titleBottom = title.getBoundingClientRect().bottom;
+      var captionTop = caption.getBoundingClientRect().top;
+      var shadow = host.querySelector('.shop-weapon-shadow');
+      var shadowBottom = rect.top;
+      if (shadow) shadowBottom = rect.bottom - (parseFloat(getComputedStyle(shadow).bottom) || 0) + 2;
+      var artTop = rect.top + envelope.top * rect.height;
+      var artBottom = rect.top + envelope.bottom * rect.height;
+      var needed = Math.max(4, artBottom - captionTop + 2);
+      var allowed = Math.max(0, artTop - titleBottom - 2);
+      var lift = Math.min(needed, allowed);
+      host.style.setProperty('--shop-weapon-lift', -lift + 'px');
+      host.style.setProperty('--shop-shadow-lift', -Math.max(lift, shadowBottom - captionTop + 2, 0) + 'px');
+      if (gold && shadow) {
+        var shadowHeight = shadow.getBoundingClientRect().height;
+        if (!envelope.shadowAnchor) {
+          var centerX = ((bounds.left == null ? 0 : bounds.left) + (bounds.right == null ? 1 : bounds.right)) / 2;
+          var centerY = Math.min(artBottom - rect.top - lift + 2, captionTop - rect.top - shadowHeight / 2 - 2);
+          envelope.shadowAnchor = { x: centerX * 100, y: centerY - shadowHeight / 2 };
+        }
+        shadow.style.left = envelope.shadowAnchor.x + '%';
+        shadow.style.top = envelope.shadowAnchor.y + 'px';
+        shadow.style.bottom = 'auto';
+        host.style.setProperty('--shop-shadow-lift', '0px');
+      }
+    }
+
+    function alignWeaponDisplays() {
+      cardsEl.querySelectorAll('.shop-card-img-box:has(.shop-weapon-caption)').forEach(function (host) {
+        if (host.classList.contains('shop-model-ready')) {
+          if (host._shopPendingBounds) { var pending = host._shopPendingBounds; host._shopPendingBounds = null; alignWeaponDisplay(host, pending); }
+          else if (host._shopWeaponBounds) alignWeaponDisplay(host, host._shopWeaponBounds, true);
+          return;
+        }
+        var images = host.querySelectorAll('.shop-weapon-motion[data-shop-motion="alipunch"] .inv-thumb>img');
+        var rect = host.getBoundingClientRect(), top = Infinity, bottom = -Infinity, left = Infinity, right = -Infinity;
+        var lift = -(parseFloat(host.style.getPropertyValue('--shop-weapon-lift')) || 0);
+        images.forEach(function (image) {
+          if (!image.complete || !image.naturalWidth) {
+            if (!image._shopCaptionLoad) { image._shopCaptionLoad = true; image.addEventListener('load', alignWeaponDisplays, { once: true }); }
+            return;
+          }
+          var r = image.getBoundingClientRect(); top = Math.min(top, r.top + lift); bottom = Math.max(bottom, r.bottom + lift);
+          left = Math.min(left, r.left); right = Math.max(right, r.right);
+        });
+        if (isFinite(top) && rect.height) alignWeaponDisplay(host, { top: (top - rect.top) / rect.height, bottom: (bottom - rect.top) / rect.height,
+          left: (left - rect.left) / rect.width, right: (right - rect.left) / rect.width }, true);
+      });
     }
 
     var productNavGeneration = 0, productPreview = null, productSlideAnimations = [], drag = null, suppressProductClickUntil = 0;
@@ -965,7 +1092,7 @@
         if (group && generation === productNavGeneration) tabsEl.scrollTo({ left: group.offsetLeft, behavior: 'instant' });
       });
       // Keep the complete old panel visible while the next panel's artwork decodes.
-      Promise.all(Array.prototype.map.call(cardsEl.querySelectorAll('img'), function (img) { return img.decode ? img.decode().catch(function () {}) : Promise.resolve(); })).then(function () {
+      Promise.all(Array.prototype.map.call(cardsEl.querySelectorAll('img'), function (img) { return img.decode ? img.decode().catch(function () {}) : Promise.resolve(); }).concat([weaponModelsReady])).then(function () {
         if (generation !== productNavGeneration || el.hidden) return;
         centerShopTabArt(); alignCoinPrices();
         if (root.matchMedia('(prefers-reduced-motion:reduce)').matches) { clearProductSlide(); return; }
@@ -1010,6 +1137,7 @@
 
     // Center the visible coin artwork and number ink, keeping their current sizes.
     function alignCoinPrices() {
+      if (shopLayoutBlocked()) return;
       var ctx = document.createElement('canvas').getContext('2d');
       cardsEl.querySelectorAll('.shop-card-btn').forEach(function (btn) {
         if (btn.classList.contains('shop-buy-frame')) { fitBuyContent(btn, ctx); return; }
@@ -1048,8 +1176,8 @@
       var shell = el.querySelector('.shop-tab-shell');
       var header = el.querySelector('.shop-cards-head');
       if (shell && header && cardsEl.children.length) {
-        var enclosureBottom = cardsBoxEl.getBoundingClientRect().bottom + 1;
         var shellRect = shell.getBoundingClientRect();
+        if (!shellRect.width || !shellRect.height || !productsViewport.offsetHeight) return;
         // Map the original inner contour through the SAME 70px/10px nine-slice
         // geometry as the unchanged card frame. A 2px source underlap hides AA seams.
         function sliceCoord(value, sourceSize, targetSize) {
@@ -1077,13 +1205,44 @@
         }
         applyFrameContour(shell, shellRect.width, shellRect.height, '--shop-sky-contour', '--shop-frame-ring');
         var productBox = cardsBoxEl.getBoundingClientRect();
+        // Extend only the painted enclosure; the card grid keeps its existing layout.
+        var frameBottom = shellRect.top - 0.2 * 96 / 2.54;
+        cardsBoxEl.style.setProperty('--shop-product-frame-bottom', (productBox.bottom - frameBottom) + 'px');
+        var firstTab = tabsEl.firstElementChild;
+        if (firstTab) {
+          var tabTop = firstTab.getBoundingClientRect().top + parseFloat(getComputedStyle(firstTab, '::before').top);
+          var dotsHeight = header.getBoundingClientRect().height;
+          var innerFrameTop = shellRect.top + sliceCoord(35, 864, shellRect.height);
+          header.style.setProperty('--shop-dots-top', ((innerFrameTop + tabTop - dotsHeight) / 2 - shellRect.top) + 'px');
+        }
+        var awning = bannerEl.querySelector('.shop-banner-awning');
+        if (awning) {
+          var awningRect = awning.getBoundingClientRect();
+          // The solid scalloped hem ends at row 547 of the 724px source;
+          // the remaining transparent canvas is not part of the visible roof.
+          var roofBottom = awningRect.top + awningRect.height * 547 / 724;
+          var productsHeight = productsViewport.offsetHeight;
+          var innerBottom = frameBottom - 5; // unchanged nine-slice inner edge
+          var width = el.clientWidth;
+          var balanceHeight = Math.max(24, Math.min(34, width * .082));
+          var space = innerBottom - roofBottom - productsHeight;
+          balanceHeight = Math.min(balanceHeight, Math.max(0, space - 6));
+          var gap = (space - balanceHeight) / 3;
+          var normalTop = parseFloat(getComputedStyle(cardsBoxEl).paddingTop) || 0;
+          productsViewport.style.top = (roofBottom + gap - productBox.top - normalTop) + 'px';
+          // The fixed product viewport, not individual cards or their transforms,
+          // anchors this row identically on heart, coin, ticket and other panes.
+          balancesEl.style.left = (productsViewport.offsetLeft + cardsEl.offsetLeft) + 'px';
+          balancesEl.style.width = cardsEl.offsetWidth + 'px';
+          balancesEl.style.top = (roofBottom + productsHeight + gap * 2 - productBox.top) + 'px';
+          balancesEl.style.height = balanceHeight + 'px';
+        }
         var productFrame = getComputedStyle(cardsBoxEl, '::before');
         var frameWidth = productBox.width - parseFloat(productFrame.left) - parseFloat(productFrame.right);
         var frameHeight = productBox.height - parseFloat(productFrame.top) - parseFloat(productFrame.bottom);
         applyFrameContour(cardsBoxEl, frameWidth, frameHeight, '--shop-product-fill', '--shop-product-frame-ring');
-        el.style.setProperty('--shop-dots-y', ((enclosureBottom + shellRect.top - header.getBoundingClientRect().height) / 2) + 'px');
-        el.style.setProperty('--shop-dots-right', (el.getBoundingClientRect().right - shellRect.right + 10) + 'px');
       }
+      alignWeaponDisplays();
     }
 
     function fitBuyContent(btn, ctx) {
@@ -1130,40 +1289,21 @@
       if (scenery) scenery.show();
       renderBanner();
       var shopPick = (MG && MG.shopPick) || null;
-      // V1531 C 사용자: 홈 3번(티켓) 버튼으로 들어오면 티켓 화면, 그 외(코인 버튼 포함)는 항상 하트 화면.
-      activeTab = shopPick === 'ticket' ? 'ticket' : 'currency';
+      // The home currency buttons open the corresponding product category.
+      activeTab = shopPick === 'ticket' || shopPick === 'coin' ? shopPick : 'currency';
       currencyFilter = null; MG.shopPick = null;
       cardsEl.scrollLeft = 0;
       // V1531 C 사용자: 다시 들어올 때 아래 토글은 항상 첫 줄(하트/코인/티켓)부터. 재화 알약으로 들어온 탭(코인·티켓)도 이 줄에 있다.
       tabsEl.scrollLeft = 0;
       render();
+      clearInterval(balanceTimer);
+      balanceTimer = setInterval(function () { if (!el.hidden) refreshShopBalances(); }, 1000);
       animateHudEntrance();
-      startGoldZap();
     }
     // V1409 C 사용자: 상점 골드 묠니르에도 5초마다 파란 번개(제작소 황금알 망치와 같은 그림 6장, 0.72초). 상점이 닫히면 멈춤.
-    var ZAP = [1, 2, 3, 4, 5, 6].map(function (n) { return 'assets/workshop/ham-gold-zap' + n + '-v1409.webp'; });
-    var zapTimer = null, zapKeep = [];
-    function startGoldZap() {
-      if (!zapKeep.length) ZAP.forEach(function (u) { var i = new Image(); i.src = u; zapKeep.push(i); });
-      clearInterval(zapTimer);
-      zapTimer = setInterval(function () {
-        if (el.hidden) { clearInterval(zapTimer); return; }
-        el.querySelectorAll('.hero-weapon--gold[src*="goldpaw-v1382"]').forEach(function (img) {
-          if (img.closest('.shop-model-ready')) return;
-          if (img._zap) return;
-          var orig = img.getAttribute('src'), k = 0; img._zap = true;
-          (function step() {
-            if (k >= 9 || !img.isConnected) { img.src = orig; img._zap = false; return; }
-            img.src = ZAP[k % ZAP.length]; k++; setTimeout(step, 80);
-          })();
-        });
-      }, 5000);
-    }
-    // 상점 화면이 닫히면(hidden 속성) 다이얼패드에 착지해있던 캡슐도 같이 정리 — 사용자가
-    // 어느 경로로 나가도(홈 아이콘, 메일함 등 — 뒤로가기 버튼이 없어 경로가 다양함) 탭 전환과
-    // 동일하게 롤아웃(사용자 지정: "재화버튼 외 다른 버튼을 누르면 전부 적용, 홈화면도 동일").
     new MutationObserver(function () {
       if (el.hidden) {
+        clearInterval(balanceTimer); balanceTimer = null;
         removeHudFlys(); // Remove HUD remnants when leaving the shop.
         if (scenery) scenery.hide();
       } else if (scenery) scenery.show();
