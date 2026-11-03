@@ -9875,6 +9875,11 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 @keyframes iw-combo-cross { 0%,41%,53%,100% {opacity:0;} 43%,50% {opacity:1;} }
 #inventory-screen .iw-stage[data-display-weapon="alipunch"]::after { animation:iw-jab-floor 2.8s ease-out infinite; }
 @keyframes iw-jab-floor { 0%,6%,20%,24%,38%,41%,48%,100% {transform:translateX(-50%) scaleX(1);opacity:.5;} 10%,12%,28%,30% {transform:translateX(-50%) scaleX(.96);opacity:.47;} 44%,47% {transform:translateX(-50%) scaleX(.82);opacity:.38;} }
+/* V1579: each glove casts its own shadow; its screen's actual motion drives it. */
+#inventory-screen .inv-king-floor-host::after { display:none; }
+#inventory-screen .inv-king-floor { position:absolute; left:0; right:0; top:922px; height:44px; pointer-events:none; z-index:0; }
+#inventory-screen .ks-case > .inv-king-floor { top:auto; bottom:40px; height:46px; z-index:2; }
+#inventory-screen .inv-king-floor > i { position:absolute; top:0; height:100%; border-radius:50%; transform:translateX(-50%); background:radial-gradient(ellipse,rgba(15,40,75,.7) 0%,rgba(15,40,75,.32) 45%,rgba(15,40,75,0) 72%); }
 @media(prefers-reduced-motion:reduce){#inventory-screen .iw-page:not(.ks-wpage) .inv-combo-word{animation:none;opacity:0;}}
 @media(prefers-reduced-motion:reduce){#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > img,#inventory-screen .iw-stage[data-display-weapon="alipunch"]::after{animation:none;}#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > img:not(.inv-thumb-mirror){transform:rotate(var(--kp-tilt,19deg));}#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > .inv-thumb-mirror{transform:rotate(calc(-1 * var(--kp-tilt,19deg))) scaleX(-1);}}
 .ws-item img[src*="weapon-stills-"] { position:absolute; left:var(--disc-x); top:var(--disc-y); height:85%; width:auto; max-width:94%; max-height:85%; translate:-50% -100%; transform-origin:50% 95%; }

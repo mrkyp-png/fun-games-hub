@@ -56,7 +56,8 @@
 // V1576 G: tab dots inside the shop toggle shell; choices shifted slightly down.
 // V1577 G: visible King Punch bounds and fixed shadow; weapon arrival waits for visible, ready models.
 // V1578 G: King Punch shadow shares Mjolnir's fixed ground line, independently of lifted gloves.
-const CACHE = 'mole-game-v1578-G';
+// V1579 G: per-screen inventory shadows and idle goose mouth-synced sound.
+const CACHE = 'mole-game-v1579-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -811,6 +812,7 @@ const SHELL = [
   './audio/goldhammer-sfx-12.mp3',
   './audio/goldhammer-sfx-15.mp3',
   './audio/goose-surprise.mp3',
+  './audio/goose-idle-quack-v1579.mp3',
   './audio/goose-wings.mp3',
   './audio/mole-emerge.mp3',
   './audio/punch-jab.mp3',

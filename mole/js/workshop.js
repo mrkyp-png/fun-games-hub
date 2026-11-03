@@ -127,7 +127,42 @@
     var gooseFlightMotion = null;
     var gooseFrames = [];
     var idleGooseReady = null;
+    var idleGooseAudio = null, idleGooseSoundFrame = 0, idleGooseMouthOpen = false;
+    function stopIdleGooseSound() {
+      if (idleGooseSoundFrame) cancelAnimationFrame(idleGooseSoundFrame);
+      idleGooseSoundFrame = 0; idleGooseMouthOpen = false;
+      if (idleGooseAudio) {
+        try { idleGooseAudio.pause(); idleGooseAudio.currentTime = 0; } catch (e) { /* optional sound */ }
+      }
+    }
+    function syncIdleGooseSound() {
+      idleGooseSoundFrame = 0;
+      if (el.hidden || el.classList.contains('is-fx') || document.hidden) { stopIdleGooseSound(); return; }
+      var face = $('.ws-goose-face');
+      var animation = face.getAnimations().find(function (a) { return a.animationName === 'ws-goose-expression'; });
+      if (!animation) { stopIdleGooseSound(); return; }
+      // Read the sprite's own animation clock: the open-beak cell is 30..40%.
+      // No second timer that can drift after a tab switch or enhancement.
+      var progress = animation.effect.getComputedTiming().progress;
+      var open = progress !== null && progress >= .3 && progress < .4;
+      if (open && !idleGooseMouthOpen) playHammerSound(idleGooseAudio, .75);
+      idleGooseMouthOpen = open;
+      if (root.FGH && root.FGH.Settings && !root.FGH.Settings.sfxEnabled() && idleGooseAudio && !idleGooseAudio.paused) {
+        idleGooseAudio.pause(); idleGooseAudio.currentTime = 0;
+      }
+      idleGooseSoundFrame = requestAnimationFrame(syncIdleGooseSound);
+    }
+    function queueIdleGooseSound() {
+      if (el.hidden || el.classList.contains('is-fx') || document.hidden) { stopIdleGooseSound(); return; }
+      if (!idleGooseSoundFrame) idleGooseSoundFrame = requestAnimationFrame(syncIdleGooseSound);
+    }
+    new MutationObserver(queueIdleGooseSound).observe(el, {attributes:true,attributeFilter:['hidden','class']});
+    document.addEventListener('visibilitychange', queueIdleGooseSound);
+    $('.ws-goose-face').addEventListener('animationstart', function (event) {
+      if (event.animationName === 'ws-goose-expression') queueIdleGooseSound();
+    });
     function preloadIdleGoose() {
+      if (!idleGooseAudio) { idleGooseAudio = new Audio('audio/goose-idle-quack-v1579.mp3'); idleGooseAudio.preload = 'auto'; }
       if (idleGooseReady) return idleGooseReady;
       idleGooseReady = new Promise(function (resolve) {
         var image = new Image(), settled = false;
@@ -139,6 +174,7 @@
             var idle = $('.ws-goose');
             idle.querySelectorAll('span').forEach(function (frame) { frame.style.backgroundImage = 'url("' + image.src + '")'; });
             idle.classList.add('is-ready');
+            queueIdleGooseSound();
           }
           resolve(ok);
         }

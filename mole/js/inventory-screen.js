@@ -841,6 +841,7 @@
             if (value) stage.style.setProperty(key, value); else stage.style.removeProperty(key);
           });
         }
+        queueKingShadows();
       });
     }
     function updateModelShadow(host, frame) {
@@ -853,6 +854,14 @@
       var center = page.clientWidth / 2 + (art[2] + ((frame.left + frame.right) / 2 - .5) * 120) * scale;
       var width = Math.max(70, Math.min(page.clientWidth * .8, (frame.right - frame.left) * 120 * scale * .75));
       var opacity = Math.max(.25, Math.min(.65, .5 - frame.hop * 4 + frame.recoil * .1));
+      // A turning hammer must not drag its floor shadow with the enclosing 3D box.
+      // Keep the cannon and the weapon-tab hammer's existing projection unchanged.
+      if (host.dataset.modelWeapon === 'goldhammer' ||
+          (host.dataset.modelWeapon === 'hammer' && page.classList.contains('ks-wpage'))) {
+        center = page.clientWidth / 2 + art[2] * scale;
+        width = art[0] * scale * .75 * (1 - frame.hop * 8);
+        opacity = .5 - frame.hop * 5;
+      }
       page.style.setProperty('--iw-floor-x', center + 'px');
       page.style.setProperty('--iw-floor-width', width + 'px');
       page.style.setProperty('--iw-floor-opacity', opacity);
@@ -863,6 +872,46 @@
       target.style.setProperty('--iw-floor-width', width + 'px');
       target.style.setProperty('--iw-floor-opacity', opacity);
       if (!page.classList.contains('ks-wpage')) target.dataset.displayWeapon = page.dataset.weapon;
+    }
+    var kingShadowFrame = 0, kingShadowLast = 0;
+    function syncKingShadows(time) {
+      kingShadowFrame = 0;
+      var page = active === 'skill' ? body.querySelector('.ks-wpage[data-weapon="alipunch"]') :
+        active === 'weapon' && (WEAPONS[pageIdx] || {}).id === 'alipunch' ? body.querySelector('.iw-pages > .iw-page[data-weapon="alipunch"]') : null;
+      var target = page && page.closest('.ks-case,.iw-stage');
+      body.querySelectorAll('.inv-king-floor-host').forEach(function (old) {
+        if (old === target && !el.hidden) return;
+        old.classList.remove('inv-king-floor-host');
+        var floor = old.querySelector(':scope > .inv-king-floor');
+        if (floor) floor.remove();
+      });
+      if (!target || el.hidden) return;
+      kingShadowFrame = requestAnimationFrame(syncKingShadows);
+      if (time - kingShadowLast < 1000 / 24) return;
+      kingShadowLast = time;
+      var rect = target.getBoundingClientRect(), displayScale = rect.width / target.offsetWidth;
+      var unit = page.querySelector('.iw-preview-unit'), unitRect = unit.getBoundingClientRect();
+      if (!displayScale || !unitRect.width) return;
+      var floor = target.querySelector(':scope > .inv-king-floor');
+      if (!floor) {
+        floor = document.createElement('div'); floor.className = 'inv-king-floor';
+        floor.setAttribute('aria-hidden', 'true'); floor.innerHTML = '<i></i><i></i>';
+        target.appendChild(floor); target.classList.add('inv-king-floor-host');
+      }
+      // Sample the rendered gloves: weapon jabs (2.8s) and skill bumps (4s)
+      // retain their own clocks, easing, rotation, mirroring and floating motion.
+      page.querySelectorAll('.inv-thumb--pair > img').forEach(function (glove, index) {
+        var bounds = glove.getBoundingClientRect(), shadow = floor.children[index];
+        var unitScale = unitRect.width / unit.offsetWidth;
+        var baseline = unitRect.top + unitRect.height / 2;
+        var lift = Math.max(0, (baseline - (bounds.top + bounds.height / 2)) / Math.max(unitScale, .01));
+        shadow.style.left = ((bounds.left + bounds.width / 2 - rect.left) / displayScale) + 'px';
+        shadow.style.width = (bounds.width / displayScale * .72 * Math.max(.65, 1 - lift / 140)) + 'px';
+        shadow.style.opacity = Math.max(.25, .5 - lift / 180);
+      });
+    }
+    function queueKingShadows() {
+      if (!kingShadowFrame) kingShadowFrame = requestAnimationFrame(syncKingShadows);
     }
     function attachWeaponModels() {
       if (!MG.WeaponModels) return;
@@ -877,6 +926,7 @@
         });
       });
       queueWeaponRefresh();
+      queueKingShadows();
     }
     new MutationObserver(attachWeaponModels).observe(body, {childList:true,subtree:true});
 
