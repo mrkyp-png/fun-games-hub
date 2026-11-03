@@ -75,6 +75,14 @@
     return n;
   }
 
+  // Called after recording a successful round. Move exactly one step, including
+  // Amateur 8 -> Normal 1 and Normal 8 -> Pro 1; never skip locked progression.
+  function nextRound(ch, light) {
+    if (ch < MAX_CHAPTER) return isUnlocked(ch + 1, light) ? { chapter:ch + 1, light:light } : null;
+    var index = LIGHTS.indexOf(light), next = LIGHTS[index + 1];
+    return ch === MAX_CHAPTER && next && isUnlocked(1, next) ? {chapter:1, light:next} : null;
+  }
+
   function target(ch) { return CLEAR_TARGET[ch] || CLEAR_TARGET[1]; }
 
   // 한 판 끝났을 때 호출. best 갱신 + 목표 달성 시 cleared. 반환: 이번 판 결과 요약.
@@ -100,7 +108,7 @@
   var api = {
     LIGHTS: LIGHTS, MAX_CHAPTER: MAX_CHAPTER, CLEAR_TARGET: CLEAR_TARGET,
     key: key, get: get, isUnlocked: isUnlocked, isLightUnlocked: isLightUnlocked, maxChapterFor: maxChapterFor,
-    target: target, record: record
+    target: target, record: record, nextRound:nextRound
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = { Progress: api };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.Progress = api; }

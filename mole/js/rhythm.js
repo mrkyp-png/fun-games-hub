@@ -202,6 +202,7 @@
       return bSongPending[cacheKey];
     }
     function showSongs() {
+      if (closing) return;
       statusFx.stop(); clearButtonWaves();
       setEntryBgm(true);
       cancelEntry();
@@ -816,6 +817,7 @@
       showResult(st, clear, false);
     }
     function showResult(result, clear, isB) {
+      if (closing) return;
       var token = ++resultSerial, resultDiff = isB ? result.diff : diff;
       var r = $('[data-rp-result]');
       var rating=sharedRules.resultRating(result.cnt,isB?result.totalNotes:result.notes.length,clear);
@@ -889,6 +891,7 @@
     function close(why) {
       if (closing) return;
       closing = true;
+      entryGeneration++; resultSerial++; clearTimeout(entryLoadingTimer); cancelAnimationFrame(raf);
       var cleaned = false;
       function cleanup() {
         if (cleaned) return; cleaned = true;
@@ -903,6 +906,7 @@
       opts.onClose(why, cleanup);
     }
     function showSelect() {
+      if (closing) return;
       setEntryBgm(false, 900);
       updateModeSign();
       resultSerial++;
@@ -942,6 +946,7 @@
     $('[data-rp-sel-close]').addEventListener('click', function () { close(); });
     // V 1023 G: 홈 → 타입 선택 → A 기존 난이도 / B 제작 중.
     function showTypes() {
+      if (closing) return;
       paintTickets();
       setEntryBgm(true);
       cancelEntry();

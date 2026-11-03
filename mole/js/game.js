@@ -768,6 +768,27 @@
   // reversed=true(10라운드 완주 결과화면 전환용) — 색 역할이 뒤바뀜: 분홍이 천천히 먼저
   // 보이고, 노랑이 빠르게 따라잡아 앞질러서 최종 단색이 노랑이 된다.
   let winFxTimer = null; // 승리 화면 불꽃놀이 반복 스폰 — 화면 전환(닫힘) 시 clearInterval
+  let nextRoundTimer = 0;
+  function queueNextRoundWaiting(destination, generation) {
+    clearTimeout(nextRoundTimer); nextRoundTimer = 0;
+    if (!destination) return;
+    nextRoundTimer = setTimeout(() => {
+      nextRoundTimer = 0;
+      const result = document.getElementById('gameover-overlay');
+      if (generation !== sessionGen || result.hidden || !result.classList.contains('is-win') || (screenNav && screenNav.current()) || window.__coverBusy) return;
+      const enter = () => {
+        if (generation !== sessionGen || result.hidden || (screenNav && screenNav.current()) || window.__coverBusy) return;
+        showStartScreenNow({skipFlash:true});
+        openMoreNow.viaBands = true;
+        try { openMore('roundmap-screen'); } finally { openMoreNow.viaBands = false; }
+        if (sharedLaneControls) sharedLaneControls.setActiveNav('lightMode');
+      };
+      const map = document.getElementById('roundmap-screen');
+      if (MG.RoundMap && MG.RoundMap.shapeTransition) MG.RoundMap.shapeTransition(1, enter, null, null,
+        () => map.classList.contains('rm-preparing') || map.classList.contains('asset-preparing'));
+      else enter();
+    }, 1200);
+  }
   let curtainPatternGen = 0;
   function restartCurtainPattern(overlay, reversed, duration) {
     const curtains = overlay.querySelectorAll('.ri-curtain');
@@ -1488,7 +1509,7 @@
     if (gameScreen) gameScreen.classList.add('hinge-hidden-by-nav');
     if (hinge) hinge.style.visibility = 'hidden';
     // v840(사용자 지정): 리듬팡 진입·홈 복귀도 글리치
-    if (!rhythm) rhythm = window.__rhythm = MG.Rhythm.create({ root: el, onEntryMusic: setRhythmEntryBgm, onClose: (why, cleanup) => { window.FGH.rollOut(el, () => { el.hidden = true; if (cleanup) cleanup(); if (gameScreen) gameScreen.classList.remove('hinge-hidden-by-nav'); if (hinge) hinge.style.visibility = gameScreen && gameScreen.classList.contains('is-start') ? 'visible' : 'hidden'; playScreenBgm('home'); refreshBoardStats(); }); } });
+    if (!rhythm) rhythm = window.__rhythm = MG.Rhythm.create({ root: el, onEntryMusic: setRhythmEntryBgm, onClose: (why, cleanup) => { (window.FGH.wipeOriginal || window.FGH.rollOut)(el, () => { el.hidden = true; if (cleanup) cleanup(); if (gameScreen) gameScreen.classList.remove('hinge-hidden-by-nav'); if (hinge) hinge.style.visibility = gameScreen && gameScreen.classList.contains('is-start') ? 'visible' : 'hidden'; playScreenBgm('home'); refreshBoardStats(); }); } });
     stopBgm();
     rhythm.open();
     // V1561 C 사용자: 리듬팡도 그림이 다 준비되면 한 번에
@@ -1501,6 +1522,7 @@
     showStartScreenNow(opts);
   }
   function showStartScreenNow(opts) {
+    clearTimeout(nextRoundTimer); nextRoundTimer = 0;
     document.getElementById('game-screen').classList.remove('gs-intro');
     sessionGen++; // 진행 중이던 카운트다운/자동진행 타이머 무효화
     gameStarting = false;
@@ -3124,10 +3146,14 @@
       I18N.t('mole.result.scoreVs', { n: total.toLocaleString(), t: prog.target.toLocaleString() });
     // 버튼 없음 — 성공/실패 둘 다 좌상단 ⊞ 로 홈. (광고는 유저 피로도 때문에 뺌.)
 
-    // 승리 + 다음 라운드가 열렸으면: 홈 화면 다이얼패드 선택값을 그 다음 라운드로 미리 넘겨둔다
-    // (사용자가 홈에서 직접 골라 시작하는 흐름 — 화면 전환은 없음, §7).
-    const nextCh = win ? chapter + 1 : 0;
-    if (nextCh && MG.Progress.isUnlocked(nextCh, light)) setChapter(nextCh);
+    // Save the next unlocked position; after the success celebration, show its
+    // round-map waiting screen automatically without starting another game.
+    const next = win ? MG.Progress.nextRound(chapter, light) : null;
+    if (next) {
+      // Persist the next waiting position without changing the completed result UI.
+      localStorage.setItem('mole.difficulty', next.light);
+      setChapter(next.chapter);
+    }
 
     // 커튼 오버레이는 결과 카드로 교체 (둘 다 z-index 10, ri 가 DOM 상 뒤라 안 치우면 위를 덮음).
     document.getElementById('round-intro-overlay').hidden = true;
@@ -3245,7 +3271,7 @@
         }
       }
     }, 400); // 글자·하마 fly-in(0.4s) 끝난 뒤
-
+    queueNextRoundWaiting(next, sessionGen);
   }
 
   // 동시에 여러 버튼(멀티터치)을 누르면 화면이 핀치줌처럼 커지는 문제(사용자 리포트) — CSS
