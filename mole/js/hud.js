@@ -36,9 +36,19 @@
       rails.homes.slice().reverse().forEach(function (home) {
         home.parent.insertBefore(home.el, home.next && home.next.parentNode === home.parent ? home.next : null);
       });
+      rails.captionHomes.forEach(function (home) {
+        home.parent.insertBefore(home.el, home.next && home.next.parentNode === home.parent ? home.next : null);
+      });
+      rails.valueGroups.forEach(function (group) {
+        while (group.firstChild) group.parentNode.insertBefore(group.firstChild, group);
+        group.remove();
+      });
       rails.copies.forEach(function (copy) {
         while (copy.firstChild) copy.parentNode.insertBefore(copy.firstChild, copy);
         copy.remove();
+      });
+      rails.iconHomes.forEach(function (home) {
+        home.parent.insertBefore(home.el, home.next && home.next.parentNode === home.parent ? home.next : null);
       });
       rails.fittable.forEach(function (el) { el.style.fontSize = ''; el.style.transform = ''; });
       rails.leading.remove(); rails.trailing.remove(); rails = null;
@@ -62,20 +72,37 @@
     var label = document.createElement('span'); label.className = 'ms-label'; label.textContent = 'ROUND';
     var number = document.createElement('b'); number.id = 'hud-round-val'; number.className = 'ms-val'; number.textContent = '01';
     round.appendChild(label); round.appendChild(number);
-    var copies = [], values = [], fittable = [];
+    var copies = [], values = [], fittable = [], valueGroups = [], iconHomes = [], captionHomes = [];
     [time, heart, score, round, combo].forEach(function (box) {
       box.classList.remove('is-hud-popup');
+      var icon = box.querySelector('.ms-clock') || box.querySelector('.ms-ic');
+      var iconHome = icon && {el:icon,parent:icon.parentNode,next:icon.nextSibling};
       var copy = document.createElement('span'); copy.className = 'hud-copy';
       ['.ms-label', '.ms-val'].forEach(function (selector) {
         var el = box.querySelector(selector);
         if (el) { copy.appendChild(el); fittable.push(el); if (selector === '.ms-val') values.push(el); }
       });
+      var number = copy.querySelector('.ms-val');
+      if (icon && number) {
+        var group = document.createElement('span'); group.className = 'hud-value';
+        group.appendChild(icon); group.appendChild(number); copy.appendChild(group);
+        valueGroups.push(group); iconHomes.push(iconHome);
+      }
       box.appendChild(copy); copies.push(copy);
     });
+    function caption(box) {
+      var heading = document.createElement('div'); heading.className = 'ms-box hud-stat-caption';
+      ['.ms-ic', '.ms-label'].forEach(function (selector) {
+        var el = box.querySelector(selector);
+        if (el) { captionHomes.push({el:el,parent:el.parentNode,next:el.nextSibling}); heading.appendChild(el); }
+      });
+      return heading;
+    }
+    var scoreCaption = caption(score), comboCaption = caption(combo);
     [home, round, time, heart].forEach(function (el) { leading.appendChild(el); });
-    [score, combo].forEach(function (el) { trailing.appendChild(el); });
+    [scoreCaption, score, comboCaption, combo].forEach(function (el) { trailing.appendChild(el); });
     screen.appendChild(leading); screen.appendChild(trailing);
-    rails = {leading:leading, trailing:trailing, homes:homes, copies:copies, values:values, fittable:fittable, comboBucket:0, comboSwapped:false};
+    rails = {leading:leading, trailing:trailing, homes:homes, copies:copies, values:values, fittable:fittable, valueGroups:valueGroups, iconHomes:iconHomes, captionHomes:captionHomes, comboBucket:0, comboSwapped:false};
     trailing.dataset.comboSwapped='false';
     screen.classList.add('game-status-rails');
     if (root.ResizeObserver) {

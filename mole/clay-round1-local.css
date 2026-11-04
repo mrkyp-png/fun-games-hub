@@ -381,15 +381,23 @@
   background:var(--hud-cell-bg); color:var(--hud-cell-ink);
   border:0; box-shadow:none; gap:4px;
 }
-#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--leading > :nth-child(odd),
-#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--trailing > .ms-score {
+#game-screen#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--leading > :nth-child(odd),
+#game-screen#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--trailing > :nth-child(odd) {
   --hud-cell-bg:#303237; --hud-cell-ink:#f3f3f3;
+  background:#303237; color:#f3f3f3;
 }
-#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--trailing[data-combo-swapped="true"] > .ms-score {
+#game-screen#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--leading > :nth-child(even),
+#game-screen#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--trailing > :nth-child(even) {
   --hud-cell-bg:#f3f3f3; --hud-cell-ink:#303237;
+  background:#f3f3f3; color:#303237;
 }
-#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--trailing[data-combo-swapped="true"] > .ms-combo {
+#game-screen#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--trailing[data-combo-swapped="true"] > :nth-child(odd) {
+  --hud-cell-bg:#f3f3f3; --hud-cell-ink:#303237;
+  background:#f3f3f3; color:#303237;
+}
+#game-screen#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--trailing[data-combo-swapped="true"] > :nth-child(even) {
   --hud-cell-bg:#303237; --hud-cell-ink:#f3f3f3;
+  background:#303237; color:#f3f3f3;
 }
 #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail > :is(.ms-box,#btn-back-to-hub) + :is(.ms-box,#btn-back-to-hub) { border-left:1px solid #777a80; }
 #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail :is(.ms-label,.ms-val,.ms-clock) { color:var(--hud-cell-ink); }
@@ -414,10 +422,37 @@
 /* Jumping actors can rise above the first row without changing the board/HUD fit. */
 .clay-mole-canvas--world {
   inset:auto; left:var(--board-left); top:calc(var(--layout-top) - var(--sq) * .16);
-  width:var(--sq); height:calc(var(--sq) * 1.16); z-index:9;
+  width:var(--sq); height:calc(var(--sq) * 1.16); z-index:16;
 }
 .clay-mole-canvas--world.clay-mole-canvas--field { width:var(--field-width); height:calc(var(--field-height) + var(--sq) * .16); }
 #game-screen:has(:is(#round-intro-overlay,#gameover-overlay,#fever-result-overlay):not([hidden])) .clay-mole-canvas--world { visibility:hidden; }
+
+/* Icons stay attached to their values; the pair is centered as one unit. */
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-value {
+  display:flex; align-items:center; justify-content:center; gap:3px;
+  flex:0 1 auto; min-width:0; max-width:100%; width:auto;
+}
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-value .ms-val {
+  flex:0 1 auto; min-width:0; width:auto; max-width:100%;
+}
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-value :is(.ms-ic,.ms-clock) {
+  display:block; flex:0 0 auto; width:auto; height:clamp(7px,calc(var(--rail-depth) * .4),22px); max-width:22px;
+}
+#game-screen.clay-round-one.game-status-rails:not(.is-start) :is(.ms-time,.ms-heart) .hud-value .ms-val {
+  font-size:clamp(10px,calc(var(--rail-depth) - 8px),34px);
+}
+@media(orientation:landscape) {
+  #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-value { flex-direction:column; gap:2px; }
+}
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail > .hud-stat-caption { flex-direction:column; gap:2px; }
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-stat-caption .ms-ic { display:block; width:auto; height:clamp(8px,calc(var(--rail-depth) * .48),26px); max-width:26px; }
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--trailing .hud-value .ms-val { font-size:clamp(12px,calc(var(--rail-depth) - 6px),38px); }
+
+/* King Punch's active skill is the intentional exception to DIM/Pro cap lighting. */
+#game-screen#game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend).gs-alipunch.gs-invincible .lane-button:is(.lane-button--hot,.lane-button--hot-safe) {
+  --cap-top:#ffab20 !important; --cap-side:#b85b08 !important;
+  --cap-edge:#753605 !important; --cap-rim:#ffb83d !important;
+}
 #game-screen:has(#fever-result-overlay:not([hidden])) #fever-weapon-layer { visibility:hidden; }
 @media(orientation:landscape) {
   #game-screen.clay-round-one:not(.is-start) #fever-weapon-layer { left:calc(var(--board-left) + var(--sq)); top:var(--layout-top); }

@@ -73,8 +73,8 @@
 // V1591 G: full viewport paired squares without notch or fixed HUD reservation.
 // V1592 G: PANG on the matching keypad button; paired boards at95% viewport fit.
 // V1593 G: joined 18-cell field, inverse control tiles and responsive six-slot HUD rails.
-// V1596 G: v41 bomb-carry pose and two small 3D bomb tosses.
-const CACHE = 'mole-game-v1596-G';
+// V1597 G: upward supporting palms, bomb outline and corrected four-cell status panels.
+const CACHE = 'mole-game-v1597-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -95,7 +95,7 @@ const SHELL = [
   './assets/checkerboard-v1590/cell-7.webp',
   './assets/checkerboard-v1590/cell-8.webp',
   './assets/checkerboard-v1590/floor-mask.webp',
-  './assets/checkerboard-v1590/mole-v41-carry-v1596.glb',
+  './assets/checkerboard-v1590/mole-v41-support-v1597.glb',
   './assets/clay-round1-local/field.webp',
   './assets/clay-round1-local/hole-back.webp',
   './assets/clay-round1-local/hole-front.webp',
