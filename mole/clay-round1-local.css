@@ -39,18 +39,6 @@
 #game-screen.clay-round-one:not(.is-start) #btn-back-to-hub:active { translate:0 2px; box-shadow:inset 0 1px 3px #90bfd2,0 1px 0 #638f9f; }
 @media(prefers-reduced-motion:reduce) { .clay-hole-shadow { animation:none; } }
 
-/* A continuous CSS rim replaces the remaining sky-blue screw artwork. */
-#game-screen.clay-round-one:not(.is-start) #lane-button-bar {
-  background-color:#f4e3bd !important;
-}
-#game-screen.clay-round-one:not(.is-start) .lane-button--simple::after,
-#game-screen.clay-round-one:not(.is-start) .lane-face--key::after,
-#game-screen.clay-round-one:not(.is-start):not(.gs-laneskill) .lane-button--call::after {
-  inset:1px; border:5px solid #f4e3bd; border-image:none; border-radius:17px;
-  background:transparent; opacity:1; filter:none;
-  box-shadow:inset 1px 1px 1px #fffdf1,inset -1px -1px 1px #d5bc88,0 1px 0 #c9ad78;
-}
-
 /* V1592: paired squares at 95% of their viewport fit; floating HUD. */
 #game-screen.clay-round-one:not(.is-start) {
   --edge:2px; --info-h:0px; --hinge-h:0px; --fit-gap:6px;
@@ -453,6 +441,10 @@
   --cap-top:#ffab20 !important; --cap-side:#b85b08 !important;
   --cap-edge:#753605 !important; --cap-rim:#ffb83d !important;
 }
+
+/* V1598: distinguish home and normal time while retaining the low-time warning. */
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail #btn-back-to-hub .hub-menu-ic { color:#7ed3fa; stroke:currentColor; }
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail .ms-time:not(.is-low) .ms-val { color:#ffcf4a; }
 #game-screen:has(#fever-result-overlay:not([hidden])) #fever-weapon-layer { visibility:hidden; }
 @media(orientation:landscape) {
   #game-screen.clay-round-one:not(.is-start) #fever-weapon-layer { left:calc(var(--board-left) + var(--sq)); top:var(--layout-top); }
