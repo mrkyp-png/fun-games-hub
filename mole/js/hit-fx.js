@@ -614,11 +614,18 @@
     }
   }
 
-  // 타격으로 얻은 점수 — 히트 지점에 "PANG!" 이 터지고, 바로 뒤 "+N" 이 빠르게 떠오른다(사용자 지정 V1316 C:
+  // 타격 점수: PANG은 대응 버튼, +N은 게임판의 타격 지점에서 표시한다.
   // 점수가 카운팅되는 모든 타격). game.js 가 콤보·라이트·피버 배율이 이미 반영된 실제 증가분을 넘긴다.
-  function scorePop(boardEl, xFrac, yFrac, points) {
+  function scorePop(boardEl, xFrac, yFrac, points, regionId) {
     if (!points || points <= 0) return;
-    spawnAt(boardEl, 'rp-pang', xFrac, yFrac + 0.03, 'PANG!'); // 비치게임 PANG! 과 같은 클래스(크기·색·연출 동일, 사용자 지정) / V1545 C 사용자: 얼굴 안 가리게 보드 3% 아래
+    if (Number.isInteger(regionId) && regionId >= 0 && regionId < 16) {
+      const button = document.querySelector('#lane-button-bar .lane-button[data-region="' + regionId + '"]');
+      if (button) {
+        const previous = button.querySelector('.lane-pang');
+        if (previous) previous.remove();
+        spawnAt(button, 'rp-pang lane-pang', 0.5, 0.5, 'PANG!');
+      }
+    }
     return spawnAt(boardEl, 'hit-fx-score', xFrac, yFrac, '+' + points);
   }
 

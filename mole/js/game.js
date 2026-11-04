@@ -2686,7 +2686,7 @@
           const before = run.combo.score;
           if (r.doubleHit) run.combo.onMoleHit(false); // Normal combo scoring, one extra hit and no second kill.
           else run.combo.onJuggle(JUGGLE_BONUS); // Existing manual repeat bonus stays unchanged.
-          MG.HitFx.scorePop(board, r.xFrac, r.yFrac, run.combo.score - before);
+          MG.HitFx.scorePop(board, r.xFrac, r.yFrac, run.combo.score - before, r.regionId);
           checkComboLifeBonus();
           MG.HitFx.juggle(board, r.xFrac, r.yFrac);
           moleHits += 1;
@@ -2717,7 +2717,7 @@
         } else if (r.done) {
           const before = run.combo.score;
           run.combo.onMoleHit();   // 스펙 §12 — 마리당 1콤보 (콤보·라이트·피버 배율은 setMult 로 이미 반영)
-          MG.HitFx.scorePop(board, r.xFrac, r.yFrac, run.combo.score - before);
+          MG.HitFx.scorePop(board, r.xFrac, r.yFrac, run.combo.score - before, r.regionId);
           checkComboLifeBonus();   // 콤보 100단위 넘기면 목숨 +1
           // 처치(마지막) 타격에만: 대포면 폭발 흩뿌림, 알리 펀치면 별 이펙트(피격연출은 pop-elements.js
           // m.punch 가 담당), 아니면 기존 타격. 중간타(빼꼼/모자)는 손 안 댐.
@@ -2748,7 +2748,7 @@
         if (alipunchInvincible() || r.safe) {      // 무적 중(또는 무적 중 스폰돼 낙인찍힌 개체) — 페널티 무효, 안전 타격 취급(점수·콤보도 반영)
           const before = run.combo.score;
           run.combo.onJuggle(JUGGLE_BONUS);
-          MG.HitFx.scorePop(board, r.xFrac, r.yFrac, run.combo.score - before);
+          MG.HitFx.scorePop(board, r.xFrac, r.yFrac, run.combo.score - before, r.regionId);
           checkComboLifeBonus();
           MG.HitFx.shake(board);
           MG.HitFx.punch(); // 랜덤 타격음 — 두더지 처치와 동일한 연출
@@ -2764,7 +2764,7 @@
         if (alipunchInvincible() || r.safe) {      // 무적 중(또는 무적 중 스폰돼 낙인찍힌 개체) — 페널티 무효, 안전 타격 취급(점수·콤보도 반영)
           const before = run.combo.score;
           run.combo.onJuggle(JUGGLE_BONUS);
-          MG.HitFx.scorePop(board, r.xFrac, r.yFrac, run.combo.score - before);
+          MG.HitFx.scorePop(board, r.xFrac, r.yFrac, run.combo.score - before, r.regionId);
           checkComboLifeBonus();
           MG.HitFx.juggle(board, r.xFrac, r.yFrac);
           moleHits += 1;

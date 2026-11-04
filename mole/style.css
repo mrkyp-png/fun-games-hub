@@ -5164,6 +5164,8 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 #rhythm-screen:not(.is-type-b) .rp-judge.is-miss.is-on { animation:rp-beach-miss 160ms ease-out both; }
 @keyframes rp-beach-miss { 0% { opacity:0; transform:scale(.5); } 20% { opacity:.8; transform:scale(1.15); } 100% { opacity:0; transform:translateY(-16px); } }
 .rp-pang { position: absolute; transform: translate(-50%, -50%); font-weight: 900; font-size: 1.4rem; color: #fff; -webkit-text-stroke: 5px #ff4fb3; paint-order: stroke fill; pointer-events: none; animation: rp-pang 0.6s ease-out both; }
+#lane-button-bar .lane-pang { z-index:10; white-space:nowrap; }
+#game-screen.is-start #lane-button-bar .lane-pang { display:none; }
 @keyframes rp-pang { 0% { transform: translate(-50%, -50%) scale(0.4); opacity: 0; } 30% { transform: translate(-50%, -50%) scale(1.25); opacity: 1; } 100% { transform: translate(-50%, -90%) scale(1); opacity: 0; } }
 .rp-hud { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); left: 0; right: 0; display: flex; flex-direction: column; align-items: center; pointer-events: none; color: #fff; }
 .rp-hud b { font-size: 1.6rem; font-weight: 900; -webkit-text-stroke: 5px rgba(0, 40, 90, 0.7); paint-order: stroke fill; }

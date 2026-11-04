@@ -71,7 +71,8 @@
 // V1589 G: amateur round-one clay rig, independent hole rim, colored obstacles and restored effects.
 // V1590 G: lower-hole checkerboard, selected v41, equal paired board cells and compact popup HUD.
 // V1591 G: full viewport paired squares without notch or fixed HUD reservation.
-const CACHE = 'mole-game-v1591-G';
+// V1592 G: PANG on the matching keypad button; paired boards at95% viewport fit.
+const CACHE = 'mole-game-v1592-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.

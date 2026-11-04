@@ -51,11 +51,13 @@
   box-shadow:inset 1px 1px 1px #fffdf1,inset -1px -1px 1px #d5bc88,0 1px 0 #c9ad78;
 }
 
-/* V1591: maximize the paired squares; HUD floats without reserving a row. */
+/* V1592: paired squares at 95% of their viewport fit; floating HUD. */
 #game-screen.clay-round-one:not(.is-start) {
   --edge:2px; --info-h:0px; --hinge-h:6px;
   --cell-radius:6px; --cell-line:1px; --cell-bezel:2px; --cell-stroke:#565960;
-  --sq:min(calc(100dvw - 2 * var(--edge)),calc((100dvh - 2 * var(--edge) - var(--info-h) - var(--hinge-h)) / 2));
+  --board-scale:.95;
+  --max-sq:min(calc(100dvw - 2 * var(--edge)),calc((100dvh - 2 * var(--edge) - var(--info-h) - var(--hinge-h)) / 2));
+  --sq:calc(var(--max-sq) * var(--board-scale));
   --sqh:var(--sq);
   --layout-top:calc((100dvh - 2 * var(--sq) - var(--hinge-h) - var(--info-h)) / 2);
   --hud-h:calc(var(--layout-top) + var(--info-h));
@@ -167,7 +169,7 @@
 @keyframes checker-hud-pop { from { opacity:0; transform:translateY(3px) scale(.97); } to { opacity:1; transform:none; } }
 @media(orientation:landscape) {
   #game-screen.clay-round-one:not(.is-start) {
-    --sq:min(calc((100dvw - 2 * var(--edge) - var(--hinge-h)) / 2),calc(100dvh - 2 * var(--edge) - var(--info-h)));
+    --max-sq:min(calc((100dvw - 2 * var(--edge) - var(--hinge-h)) / 2),calc(100dvh - 2 * var(--edge) - var(--info-h)));
     --layout-top:calc((100dvh - var(--sq) - var(--info-h)) / 2);
     --board-left:calc((100dvw - 2 * var(--sq) - var(--hinge-h)) / 2);
     grid-template-areas:'play gap keys';
