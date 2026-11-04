@@ -51,23 +51,24 @@
   box-shadow:inset 1px 1px 1px #fffdf1,inset -1px -1px 1px #d5bc88,0 1px 0 #c9ad78;
 }
 
-/* V1590: equal square boards, independent cells and a separate information row. */
+/* V1591: maximize the paired squares; HUD floats without reserving a row. */
 #game-screen.clay-round-one:not(.is-start) {
-  --edge:max(8px,env(safe-area-inset-left,0px),env(safe-area-inset-right,0px),env(safe-area-inset-top,0px),env(safe-area-inset-bottom,0px));
-  --info-h:40px; --hinge-h:12px;
+  --edge:2px; --info-h:0px; --hinge-h:6px;
   --cell-radius:6px; --cell-line:1px; --cell-bezel:2px; --cell-stroke:#565960;
   --sq:min(calc(100dvw - 2 * var(--edge)),calc((100dvh - 2 * var(--edge) - var(--info-h) - var(--hinge-h)) / 2));
   --sqh:var(--sq);
   --layout-top:calc((100dvh - 2 * var(--sq) - var(--hinge-h) - var(--info-h)) / 2);
   --hud-h:calc(var(--layout-top) + var(--info-h));
-  display:grid; grid-template-areas:'info' 'play' 'gap' 'keys';
-  grid-template-columns:var(--sq); grid-template-rows:var(--info-h) var(--sq) var(--hinge-h) var(--sq);
+  --board-left:calc((100dvw - var(--sq)) / 2);
+  display:grid; grid-template-areas:'play' 'gap' 'keys';
+  grid-template-columns:var(--sq); grid-template-rows:var(--sq) var(--hinge-h) var(--sq);
   align-content:center; justify-content:center; background:#f3f3f3;
 }
 #game-screen.clay-round-one:not(.is-start) #gs-edge { display:none; }
 #game-screen.clay-round-one:not(.is-start) .game-hud {
-  grid-area:info; position:relative; width:100%; height:var(--info-h); margin:0;
-  border-bottom:1px solid #303237; box-sizing:border-box; background:#f3f3f3;
+  grid-area:auto; position:absolute; left:var(--board-left); top:max(2px,calc(var(--layout-top) - 36px));
+  width:var(--sq); height:36px; margin:0; pointer-events:none;
+  border:0; box-sizing:border-box; background:transparent;
 }
 #game-screen.clay-round-one:not(.is-start) #mole-board { grid-area:play; margin:0; }
 #game-screen.clay-round-one:not(.is-start) .dialpad { grid-area:keys; margin:0; background:#303237 !important; }
@@ -161,19 +162,21 @@
   background:#fff; color:#303237; box-shadow:none;
 }
 #game-screen.clay-round-one:not(.is-start) #btn-back-to-hub .hub-menu-ic { width:20px; height:20px; }
-#game-screen.clay-round-one:not(.is-start) #mole-hammer-layer { top:var(--hud-h); }
+#game-screen.clay-round-one:not(.is-start) #btn-back-to-hub:not(.nav-locked) { pointer-events:auto; }
+#game-screen.clay-round-one:not(.is-start) #mole-hammer-layer { top:var(--hud-h); left:calc(var(--board-left) + var(--sq) / 2); }
 @keyframes checker-hud-pop { from { opacity:0; transform:translateY(3px) scale(.97); } to { opacity:1; transform:none; } }
 @media(orientation:landscape) {
   #game-screen.clay-round-one:not(.is-start) {
     --sq:min(calc((100dvw - 2 * var(--edge) - var(--hinge-h)) / 2),calc(100dvh - 2 * var(--edge) - var(--info-h)));
     --layout-top:calc((100dvh - var(--sq) - var(--info-h)) / 2);
-    grid-template-areas:'info info info' 'play gap keys';
+    --board-left:calc((100dvw - 2 * var(--sq) - var(--hinge-h)) / 2);
+    grid-template-areas:'play gap keys';
     grid-template-columns:var(--sq) var(--hinge-h) var(--sq);
-    grid-template-rows:var(--info-h) var(--sq);
+    grid-template-rows:var(--sq);
   }
   #game-screen.clay-round-one:not(.is-start) #fold-hinge { width:var(--hinge-h); height:var(--sq); }
-  #game-screen.clay-round-one:not(.is-start) #mole-hammer-layer {
-    left:calc((100dvw - 2 * var(--sq) - var(--hinge-h)) / 2 + var(--sq) / 2);
+  #game-screen.clay-round-one:not(.is-start) .game-hud {
+    left:calc(var(--board-left) + var(--sq) + var(--hinge-h));
   }
   #game-screen.clay-round-one:not(.is-start) .ms-status { grid-template-columns:minmax(0,1fr) 76px 60px; }
 }
