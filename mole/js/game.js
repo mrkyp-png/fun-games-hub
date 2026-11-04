@@ -1743,6 +1743,7 @@
     // 자동 다음 라운드면 그대로 이어간다.
     if (opts && opts.fresh) {
       run = { combo: MG.ComboScore.create(), lives: MG.Economy.getHearts(), comboMilestone: 0, shield: false };
+      if(MG.HUD.resetComboColors)MG.HUD.resetComboColors();
     }
     updateShieldHud();
     if (rafId) cancelAnimationFrame(rafId);
@@ -1905,11 +1906,12 @@
     // 동시타격 오버플로(분신) — 랜덤 배정에서 "진짜"를 못 받은 나머지 타격들이 여기로 온다.
     // 무기별로 다른 분신 연출(quakeClone/cannonClone 재사용, 사용자 지정 — "황금묠니르처럼
     // 분신 개념"). 실제 타격 판정(onImpact)은 그대로 호출하므로 콤보/점수는 정상 반영된다.
-    function weaponCloneOverflow(targetXFrac, targetYFrac, onImpact, frameKey, regionId) {
-      const fxLayer = document.getElementById('mole-hammer-layer'); // overflow:visible
-      if (weapon === 'cannon' && state && state.laneHammer && state.laneHammer.enqueue) {
+    function weaponCloneOverflow(targetXFrac, targetYFrac, onImpact, frameKey, regionId, boardWeapon) {
+      const fxLayer = boardWeapon ? boardWeapon.layer : document.getElementById('mole-hammer-layer'); // overflow:visible
+      const primaryWeapon = boardWeapon ? boardWeapon.weapon : state && state.laneHammer;
+      if (weapon === 'cannon' && primaryWeapon && primaryWeapon.enqueue) {
         // V1534 C 사용자(A안): 3D 캐논은 분신(겹쳐 보임) 대신 본체가 차례로 쏜다(lane-cannon enqueue).
-        state.laneHammer.enqueue(targetXFrac, targetYFrac, onImpact);
+        primaryWeapon.enqueue(targetXFrac, targetYFrac, onImpact);
       } else if (weapon === 'cannon') {
         // V1396 C 사용자: 캐논도 뿅망치와 똑같이 — 못 따라갈 때만 메인과 같은 대포(70%)가 같은 자리에서 조준·발사 후 사라짐.
         const clone = MG.LaneCannon.create({ layer: fxLayer });
@@ -1958,6 +1960,13 @@
       }
     }
     const laneHammer = MG.WeaponPool.create(WeaponMod, hammerOpts, { onOverflow: weaponCloneOverflow });
+    function createFeverWeapon(layer) {
+      let primary;
+      primary=MG.WeaponPool.create(WeaponMod,Object.assign({},hammerOpts,{layer}),{
+        onOverflow:(...args)=>weaponCloneOverflow(...args,{layer,weapon:primary})
+      });
+      return primary;
+    }
     // V1530 C: 캐논 구멍별 조준 해를 사격 전에 한 프레임 한 구멍씩 미리 계산(첫 사격 때 멈칫 방지).
     if (weapon === 'cannon' && laneHammer.prewarm) laneHammer.prewarm(spawnPoints);
     // V1385 C: 골드 분신 = 메인과 같은 망치 설정으로 하나 더 만들어 같은 모션으로 휘두름(goldStrikeClone).
@@ -1965,7 +1974,7 @@
 
     state = {
       costumeStats: { safeRolls: 0, safeProcs: 0, doubleRolls: 0, doubleProcs: 0, doubleHits: 0 },
-      regions, spawnPoints, scheduler, holeLayer, laneHammer, weapon, rng, config, goldCloneOpts,
+      regions, spawnPoints, scheduler, holeLayer, laneHammer, weapon, rng, config, goldCloneOpts, createFeverWeapon,
       timeRemaining: roundSeconds(),
       aliClones: [], // 알리펀치 동시타격 분신 글러브들 — 메인 루프가 매 프레임 update() 돌려줘야 실제로 스윙한다.
       hitstopUntil: 0,
@@ -2286,6 +2295,7 @@
       });
     }
     state.laneHammer.update(rawDt); // 망치는 히트스톱과 무관하게 부드럽게
+    if(state.feverWeapon)state.feverWeapon.update(rawDt);
     if (state.aliClones.length) state.aliClones.forEach((g) => g.update(rawDt)); // 알리펀치 분신 글러브
     // 방금 그 타격(예: 폭탄으로 하트 0)이 laneHammer 의 impact 콜백을 통해 동기적으로
     // finish()/roundComplete() 를 이미 불렀을 수 있다 — 그러면 이 프레임의 나머지(재렌더·
@@ -2433,9 +2443,14 @@
       const point=state.spawnPoints.find(p=>p.regionId===regionId);
       if (!point) return false;
       const results=state.scheduler.resolveRegion(regionId);
-      // Fingers hit immediately; the parked hammer does not chase touch targets.
-      onHammerImpact(point.x,point.y,results,{regionId,source:'player',noHitstop:true,
-        board:document.getElementById(regionId>=16?'fever-hole-board':'mole-board')});
+      const lower=regionId>=16,field=state.feverField,token=sessionGen;
+      const weapon=lower?state.feverWeapon:state.laneHammer;
+      const frameKey=sharedPopElements.frameKeyAt?sharedPopElements.frameKeyAt(regionId):null;
+      weapon.strike(point.x,point.y,()=>{
+        if(token!==sessionGen||!state||state.ended||state.feverField!==field||state.feverResultShown)return;
+        onHammerImpact(point.x,point.y,results,{regionId,source:'player',noHitstop:true,
+          board:document.getElementById(lower?'fever-hole-board':'mole-board')});
+      },frameKey,regionId%16);
       return false;
     }
     if (!state || state.ended || state.introActive || state.paused) {
@@ -2905,12 +2920,15 @@
     state.holeLayer.clear();
     state.holeLayer=MG.HoleLayer.create({container:document.getElementById('mole-hole-layer'),
       frontContainer:document.getElementById('mole-hole-front-layer'),spawnPoints:field.upper,gridSize:4});
-    animateFeverWeaponCells('checker-cell--returning');
     const board=document.createElement('div');board.id='fever-hole-board';
     const holes=document.createElement('div');holes.className='mole-board-layer';board.appendChild(holes);
     const pops=document.createElement('div');pops.id='fever-pop-layer';pops.className='mole-board-layer';board.appendChild(pops);
     document.getElementById('lane-button-bar').appendChild(board);
     state.feverHoles=MG.HoleLayer.create({container:holes,spawnPoints:field.lower.map(p=>({...p,regionId:p.regionId-16})),gridSize:4,tileOffset:16,control:true});
+    const weaponLayer=document.createElement('div');weaponLayer.id='fever-weapon-layer';weaponLayer.style.visibility='hidden';
+    document.getElementById('game-screen').appendChild(weaponLayer);
+    state.feverWeapon=state.createFeverWeapon(weaponLayer);
+    if(state.feverWeapon.prewarm)state.feverWeapon.prewarm(field.lower.map(p=>({...p,regionId:p.regionId-16})));
     board.addEventListener('pointerdown',ev=>{
       ev.preventDefault();ev.stopPropagation();const rect=board.getBoundingClientRect();
       const fx=(ev.clientX-rect.left)/rect.width,fy=(ev.clientY-rect.top)/rect.height;
@@ -2923,26 +2941,16 @@
   function unmountFeverField() {
     if(!state||!state.feverSaved)return;
     sharedPopElements.clear();
+    if(state.feverWeapon){state.feverWeapon.clear();state.feverWeapon=null}
+    document.getElementById('fever-weapon-layer')?.remove();
+    if(state.laneHammer)state.laneHammer.home();
     state.holeLayer.clear();if(state.feverHoles)state.feverHoles.clear();
     document.getElementById('fever-hole-board')?.remove();
-    const weaponCells=state.feverSaved.spawnPoints;
     Object.assign(state,state.feverSaved);state.feverSaved=null;state.feverField=null;state.feverHoles=null;
     state.holeLayer=MG.HoleLayer.create({container:document.getElementById('mole-hole-layer'),
       frontContainer:document.getElementById('mole-hole-front-layer'),spawnPoints:state.spawnPoints,gridSize:roundGridSize(),season:roundSeason()});
-    document.getElementById('mole-hole-layer').querySelectorAll('.checkerboard-cell').forEach(cell=>{
-      if(!weaponCells.some(p=>p.regionId===Number(cell.dataset.region)))cell.classList.add('checker-cell--returning');
-    });
     document.getElementById('game-screen').classList.remove('fever-field-active');
     MG.ClayRoundOne.setFeverField(false);
-  }
-  function animateFeverWeaponCells(className) {
-    if(!state)return;
-    const points=state.feverSaved?state.feverSaved.spawnPoints:state.spawnPoints;
-    document.getElementById('mole-hole-layer').querySelectorAll('.checkerboard-cell').forEach(cell=>{
-      if(!points.some(p=>p.regionId===Number(cell.dataset.region))){
-        cell.classList.remove('checker-cell--leaving','checker-cell--returning');cell.classList.add(className);
-      }
-    });
   }
   function startFeverEvent() {
     state.feverEventActive=true;state.pausedByFever=true;state.feverTransitioning=true;
@@ -2957,10 +2965,9 @@
         const bgm=document.getElementById('bgm-fever');
         // The former fourteen-second board exchange is gone; start at the fast section.
         if(bgm){bgm.currentTime=14;bgm.volume=BGM_VOL;bgm.play().catch(()=>{})}
-        document.getElementById('game-screen').classList.add('fever-hammer-parked');
-        animateFeverWeaponCells('checker-cell--leaving');
         sharedLaneControls.spinBoardBlank(true,()=>{
           if(token!==sessionGen||!state||state.ended)return;
+          document.getElementById('fever-weapon-layer').style.visibility='';
           state.feverTransitioning=false;state.feverEventUntil=performance.now()+20000;
           feverLater(showFeverResult,20000,token);
         },{spinDeg:360,durationMs:900,isCurrent:()=>token===sessionGen&&!!state&&!state.ended,onMidpoint:()=>{
@@ -2975,6 +2982,8 @@
   function showFeverResult() {
     if (!state || !run || !run.combo) return; // V1379 G: home/ended session has no combo state.
     state.feverResultShown = true;
+    if(state.laneHammer)state.laneHammer.home();
+    if(state.feverWeapon)state.feverWeapon.home();
     if (state.scheduler.forceRetreatAll) state.scheduler.forceRetreatAll(); // 떠 있던 두더지 정리
     const overlay = document.getElementById('fever-result-overlay');
     const scoreEl = document.getElementById('fever-result-score');
@@ -2987,10 +2996,9 @@
   function endFeverEvent() {
     if(!state||!run||!run.combo||state.feverReturning)return;
     state.feverReturning=true;state.feverTransitioning=true;
+    const lowerWeaponLayer=document.getElementById('fever-weapon-layer');if(lowerWeaponLayer)lowerWeaponLayer.style.visibility='hidden';
     document.getElementById('fever-result-overlay').hidden=true;
     const token=sessionGen;
-    document.getElementById('game-screen').classList.remove('fever-hammer-parked');
-    animateFeverWeaponCells('checker-cell--leaving');
     sharedLaneControls.spinBoardBlank(false,()=>{
       if(token!==sessionGen||!state||state.ended)return;
       state.feverResultShown=false;state.feverReturning=false;state.feverTransitioning=false;

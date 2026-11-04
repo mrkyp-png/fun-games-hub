@@ -6,11 +6,12 @@
     const count=gridSize*gridSize;
     const upper=MG.GridPartition.partition({gridSize,checkerboard:true});
     const reserved=weapon==='hammer'?[]:weapon==='alipunch'?[count-gridSize,count-1]:[count-1];
-    const lower=upper.spawnPoints.filter(sp=>!reserved.includes(sp.regionId)).map(sp=>({...sp,id:sp.id+count,regionId:sp.regionId+count}));
+    const upperPoints=upper.spawnPoints.filter(sp=>!reserved.includes(sp.regionId));
+    const lower=upperPoints.map(sp=>({...sp,id:sp.id+count,regionId:sp.regionId+count}));
     const settings={...config,multiHit:false,fourHit:false,animalMultiHit:false,reverseTarget:false,dualTarget:false,
       maxConcurrentMoles:8,maxConcurrentAnimals:0,maxConcurrentBombs:0,maxConcurrentItems:0,
       bombChance:0,strongBombChance:0,obstacles:false,shieldItems:false,cannonBurst:false};
-    const schedulers=[upper.spawnPoints,lower].map(spawnPoints=>MG.SpawnScheduler.create({
+    const schedulers=[upperPoints,lower].map(spawnPoints=>MG.SpawnScheduler.create({
       regions:spawnPoints.map(sp=>({id:sp.regionId})),spawnPoints,config:settings,rng
     }));
     // Scheduler-local IDs overlap. Prefix only the lower render IDs; region IDs are globally unique.
@@ -25,7 +26,7 @@
       lockMoleRegions(ids){schedulers.forEach(s=>s.lockMoleRegions(ids))},
       unlockMoleRegions(ids){schedulers.forEach(s=>s.unlockMoleRegions(ids))}
     };
-    return {scheduler,config:settings,spawnPoints:upper.spawnPoints.concat(lower),upper:upper.spawnPoints,lower,count};
+    return {scheduler,config:settings,spawnPoints:upperPoints.concat(lower),upper:upperPoints,lower,count};
   }
   MG.FeverField={create};
 })(window);

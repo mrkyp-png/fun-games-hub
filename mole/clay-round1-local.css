@@ -308,7 +308,6 @@
 .clay-mole-canvas--field { inset:auto; left:var(--board-left); top:var(--layout-top); width:var(--field-width); height:var(--field-height); z-index:9; }
 #game-screen:has(#fever-result-overlay:not([hidden])) .clay-mole-canvas--field { visibility:hidden; }
 #game-screen.clay-round-one:not(.is-start) #mole-hammer-layer { transition:transform 900ms cubic-bezier(.4,0,.2,1); }
-#game-screen.clay-round-one.fever-hammer-parked #mole-hammer-layer { transform:translateX(-50%) translateY(var(--sq)); pointer-events:none; }
 @media(orientation:landscape) {
   #game-screen.clay-round-one:not(.is-start) .checkerboard-cell[data-tile-role="target"][data-edge-bottom="true"]::after { bottom:0; }
   #game-screen.clay-round-one:not(.is-start) [data-tile-role="control"][data-edge-top="true"]::after { top:0; bottom:calc(var(--cell-line) / -2); }
@@ -316,7 +315,6 @@
   #game-screen.clay-round-one:not(.is-start) [data-tile-role="control"][data-edge-bottom="true"]::after { bottom:0; }
   #game-screen.clay-round-one:not(.is-start) .checkerboard-cell[data-tile-role="target"][data-edge-right="true"]::after { right:calc(var(--cell-line) / -2); }
   #game-screen.clay-round-one:not(.is-start) [data-tile-role="control"][data-edge-left="true"]::after { left:calc(var(--cell-line) / -2); }
-  #game-screen.clay-round-one.fever-hammer-parked #mole-hammer-layer { transform:translateX(-50%) translateX(var(--sq)); }
 }
 
 /* The weapon controls share the same matte surface and outer cell frame. */
@@ -331,4 +329,96 @@
 }
 @media(prefers-reduced-motion:reduce) {
   .checker-cell--leaving,.checker-cell--returning { animation:none; }
+}
+
+/* V1596: DIM changes digits only. Pro has no button lighting or color feedback. */
+#game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend) {
+  --fixed-cap-top:#218bfa; --fixed-cap-side:#073f9d; --fixed-cap-edge:#072b70; --fixed-cap-rim:#399bfc;
+}
+#game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend)[data-button-palette="red"] {
+  --fixed-cap-top:#de887e; --fixed-cap-side:#ad645f; --fixed-cap-edge:#754640; --fixed-cap-rim:#eaa399;
+}
+#game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend)[data-button-palette="yellow"] {
+  --fixed-cap-top:#ffd833; --fixed-cap-side:#cc8e00; --fixed-cap-edge:#805300; --fixed-cap-rim:#ffe253;
+}
+#game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend)[data-button-palette="green"] {
+  --fixed-cap-top:#2fcf5c; --fixed-cap-side:#08752a; --fixed-cap-edge:#064a20; --fixed-cap-rim:#45d86c;
+}
+#game-screen#game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend) .lane-button {
+  --cap-top:var(--fixed-cap-top) !important; --cap-side:var(--fixed-cap-side) !important;
+  --cap-edge:var(--fixed-cap-edge) !important; --cap-rim:var(--fixed-cap-rim) !important;
+  background:var(--checker-rim) !important; box-shadow:none !important; filter:none !important;
+}
+#game-screen#game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend) :is(.lane-button,.lane-face--key,.lane-items)::before { filter:none !important; }
+#game-screen#game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend) .lane-button::after {
+  border-color:var(--cell-stroke) !important; background:none !important;
+  box-shadow:inset 0 0 0 var(--cell-bezel) var(--checker-rim) !important;
+  filter:none !important; opacity:1 !important; animation:none !important;
+}
+#game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend) :is(.lane-hotfx,.lane-quake-shade) { display:none !important; }
+#game-screen#game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend) :is(.lane-num,.lane-ai-bit,.lane-lbl,.lane-ico,.lane-sub,.lane-kr,.lane-en) { color:#fff !important; }
+#game-screen#game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend) .lane-ico svg { stroke:currentColor !important; fill:currentColor !important; }
+#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid .lane-button--hot :is(.lane-num,.lane-ai-bit) { color:#ffcf4a !important; }
+#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid[data-button-palette="yellow"] .lane-button--hot :is(.lane-num,.lane-ai-bit) { color:#9b8750 !important; }
+#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid .lane-button--hot-safe :is(.lane-num,.lane-ai-bit) { color:#ffd84a !important; }
+#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid .is-tint-hit :is(.lane-num,.lane-ai-bit) { color:#fa499e !important; }
+#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid .is-tint-miss :is(.lane-num,.lane-ai-bit) { color:#ed3028 !important; }
+#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid[data-button-fail="black"] .is-tint-miss :is(.lane-num,.lane-ai-bit) { color:#303237 !important; }
+
+/* Each fever weapon keeps the exact square-local coordinate system of its own board. */
+#game-screen.clay-round-one:not(.is-start) #fever-weapon-layer {
+  position:absolute; left:var(--board-left); top:calc(var(--layout-top) + var(--sq));
+  width:var(--sq); height:var(--sq); pointer-events:none; overflow:visible; z-index:20;
+}
+
+/* A divided checker-colored information panel, with one shared outside frame. */
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail {
+  gap:0; padding:2px; overflow:hidden; background:#303237;
+  box-shadow:inset 0 0 0 2px #303237;
+}
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail > :is(.ms-box,#btn-back-to-hub) {
+  --hud-cell-bg:#f3f3f3; --hud-cell-ink:#303237;
+  background:var(--hud-cell-bg); color:var(--hud-cell-ink);
+  border:0; box-shadow:none; gap:4px;
+}
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--leading > :nth-child(odd),
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--trailing > .ms-score {
+  --hud-cell-bg:#303237; --hud-cell-ink:#f3f3f3;
+}
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--trailing[data-combo-swapped="true"] > .ms-score {
+  --hud-cell-bg:#f3f3f3; --hud-cell-ink:#303237;
+}
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--trailing[data-combo-swapped="true"] > .ms-combo {
+  --hud-cell-bg:#303237; --hud-cell-ink:#f3f3f3;
+}
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail > :is(.ms-box,#btn-back-to-hub) + :is(.ms-box,#btn-back-to-hub) { border-left:1px solid #777a80; }
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail :is(.ms-label,.ms-val,.ms-clock) { color:var(--hud-cell-ink); }
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail :is(.ms-time,.ms-heart) .ms-label { display:none; }
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail > #btn-back-to-hub { gap:0; }
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail > #btn-back-to-hub:active { translate:none; box-shadow:none; }
+#game-screen.clay-round-one.game-status-rails.hud-compact:not(.is-start) .hud-rail :is(.ms-time .ms-clock,.ms-heart .ms-ic) {
+  display:block; width:auto; height:clamp(8px,calc(var(--rail-depth) - 8px),17px); max-width:17px;
+}
+@media(orientation:landscape) {
+  #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail > :is(.ms-box,#btn-back-to-hub) + :is(.ms-box,#btn-back-to-hub) { border-left:0; border-top:1px solid #777a80; }
+  #game-screen.clay-round-one:not(.is-start) .round-intro-count { font-size:clamp(40px,calc(var(--sq) * .22),88px); }
+  #game-screen.clay-round-one:not(.is-start) .round-intro-count.pop { animation-name:round-intro-pop-landscape; }
+}
+@keyframes round-intro-pop-landscape {
+  0% { transform:scale(1.45); opacity:0; }
+  35% { opacity:1; }
+  62% { transform:scale(.95); opacity:1; }
+  100% { transform:scale(1); opacity:1; }
+}
+
+/* Jumping actors can rise above the first row without changing the board/HUD fit. */
+.clay-mole-canvas--world {
+  inset:auto; left:var(--board-left); top:calc(var(--layout-top) - var(--sq) * .16);
+  width:var(--sq); height:calc(var(--sq) * 1.16); z-index:9;
+}
+.clay-mole-canvas--world.clay-mole-canvas--field { width:var(--field-width); height:calc(var(--field-height) + var(--sq) * .16); }
+#game-screen:has(:is(#round-intro-overlay,#gameover-overlay,#fever-result-overlay):not([hidden])) .clay-mole-canvas--world { visibility:hidden; }
+#game-screen:has(#fever-result-overlay:not([hidden])) #fever-weapon-layer { visibility:hidden; }
+@media(orientation:landscape) {
+  #game-screen.clay-round-one:not(.is-start) #fever-weapon-layer { left:calc(var(--board-left) + var(--sq)); top:var(--layout-top); }
 }

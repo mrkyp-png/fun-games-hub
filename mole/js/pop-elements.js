@@ -93,14 +93,14 @@
       if (onEmerge) onEmerge(pop.x, pop.y, pop.type, pop.regionId); // 구멍에서 올라오는 순간 연출 (흙먼지·링·글로우)
       const m = {
         el, img, bombEl, kind: pop.type, poseIndex: pop.poseIndex || 0, regionId: pop.regionId,
-        shownDepth: GONE_DEPTH, targetDepth: 0, shownFile: null, dying: false,
+        shownDepth: GONE_DEPTH, targetDepth: 0, shownFile: null, dying: false, remaining: pop.remaining,
         blast: false, punch: false, dyingFrom: 0,
         // 다타 동물(챕터8)만 빠끔 프레임 사용 — 아니면 등장(emerge) 애니메이션이 깊이값
         // 3→2→1→0 을 그냥 지나치기만 해도 빠끔 프레임을 스치며 "커졌다 작아지는" 것처럼
         // 보이는 버그가 있었음(사용자 보고, 챕터4).
         multiHitAnimal: pop.type === 'animal' && pop.hitsRequired > 1,
         // V1541 C: 두더지 맞은 표정 — hitsSeen(판정된 타수) → hitAt 뒤 hits(보이는 타수)로 반영, face = 1타 표정(1~3 무작위)
-        bomb: !!pop.bombKind, hits: 0, hitsSeen: 0, hitAt: 0, face: 1 + Math.floor(Math.random() * 3),
+        bomb: !!pop.bombKind, bombKind: pop.bombKind || null, hits: 0, hitsSeen: 0, hitAt: 0, face: 1 + Math.floor(Math.random() * 3),
         emergePlayed: false // 전신으로 다 올라온 순간(사용자 지정) 스쿼시&스트레치 1회용 플래그
       };
       render(m);
@@ -232,6 +232,7 @@
 
       activePops.forEach((pop) => {
         const m = pops.get(pop.id) || makePop(pop);
+        m.remaining = pop.remaining;
         if (pop.burstActive && !m.burst) { m.burst = true; m.el.classList.add('mole-pop--burst'); } // 연사 발동 — 맥동 오라
         if (pop.dying && !m.dying) {          // 침몰 시작 순간 — 대포 여부·시작 깊이 고정
           m.dyingFrom = m.shownDepth;
@@ -289,8 +290,8 @@
       pops.forEach((m) => {
         if (key || m.regionId !== regionId || m.dying) return;
         if (m.kind === 'mole') {
-          key = root.MoleGame.ClayRoundOne && root.MoleGame.ClayRoundOne.isActive() && !m.bomb ? 'clay-mole' : 'mole2'; // Local 3D helmet uses its own contact point.
-        } else if (m.kind === 'animal') {
+          key = root.MoleGame.ClayRoundOne && root.MoleGame.ClayRoundOne.isActive() ? 'clay-mole' : 'mole2'; // Bomb carriers use the same v41 head contact point.
+        } else if (m.kind === 'animal' || m.kind === 'bomb') {
           if (root.MoleGame.ClayRoundOne && root.MoleGame.ClayRoundOne.isActive()) { key = 'clay-mole'; return; }
           const d = Math.round(m.shownDepth);
           key = d <= 0 ? 'full' : d === 1 ? 'peek1' : 'peek2';

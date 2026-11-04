@@ -41,8 +41,6 @@
         copy.remove();
       });
       rails.fittable.forEach(function (el) { el.style.fontSize = ''; el.style.transform = ''; });
-      if (rails.homeIcon) homeIconRestore(rails);
-      rails.homeIconSlot.remove(); rails.homeLabel.remove();
       rails.leading.remove(); rails.trailing.remove(); rails = null;
       screen.classList.remove('game-status-rails');
       screen.classList.remove('hud-compact');
@@ -64,13 +62,7 @@
     var label = document.createElement('span'); label.className = 'ms-label'; label.textContent = 'ROUND';
     var number = document.createElement('b'); number.id = 'hud-round-val'; number.className = 'ms-val'; number.textContent = '01';
     round.appendChild(label); round.appendChild(number);
-    var homeIcon = home.querySelector('.hub-menu-ic');
-    var homeIconSlot = document.createElement('span'); homeIconSlot.className = 'hud-home-slot hud-home-icon';
-    var homeLabel = document.createElement('span'); homeLabel.className = 'hud-home-slot hud-home-label'; homeLabel.textContent = '홈';
-    if (homeIcon) { home.insertBefore(homeIconSlot, homeIcon); homeIconSlot.appendChild(homeIcon); }
-    else home.appendChild(homeIconSlot);
-    home.appendChild(homeLabel);
-    var copies = [], values = [], fittable = [homeLabel];
+    var copies = [], values = [], fittable = [];
     [time, heart, score, round, combo].forEach(function (box) {
       box.classList.remove('is-hud-popup');
       var copy = document.createElement('span'); copy.className = 'hud-copy';
@@ -80,10 +72,11 @@
       });
       box.appendChild(copy); copies.push(copy);
     });
-    [time, home, heart].forEach(function (el) { leading.appendChild(el); });
-    [score, round, combo].forEach(function (el) { trailing.appendChild(el); });
+    [home, round, time, heart].forEach(function (el) { leading.appendChild(el); });
+    [score, combo].forEach(function (el) { trailing.appendChild(el); });
     screen.appendChild(leading); screen.appendChild(trailing);
-    rails = {leading:leading, trailing:trailing, homes:homes, copies:copies, values:values, fittable:fittable, home:home, homeIcon:homeIcon, homeIconSlot:homeIconSlot, homeLabel:homeLabel};
+    rails = {leading:leading, trailing:trailing, homes:homes, copies:copies, values:values, fittable:fittable, comboBucket:0, comboSwapped:false};
+    trailing.dataset.comboSwapped='false';
     screen.classList.add('game-status-rails');
     if (root.ResizeObserver) {
       rails.observer = new root.ResizeObserver(scheduleFit);
@@ -93,8 +86,18 @@
     scheduleFit();
   }
 
-  function homeIconRestore(state) {
-    state.home.insertBefore(state.homeIcon, state.homeIconSlot);
+  function syncComboColors(combo) {
+    if (!rails) return;
+    var bucket = Math.floor(combo / 10);
+    var crossed = Math.max(0, bucket - rails.comboBucket);
+    if (crossed % 2) rails.comboSwapped = !rails.comboSwapped;
+    rails.comboBucket = bucket;
+    rails.trailing.dataset.comboSwapped = String(rails.comboSwapped);
+  }
+  function resetComboColors() {
+    if (!rails) return;
+    rails.comboBucket = 0; rails.comboSwapped = false;
+    rails.trailing.dataset.comboSwapped = 'false';
   }
 
   function setAll(cls, text) {
@@ -133,11 +136,13 @@
     }
 
     var combo = document.getElementById('hud-combo');
-    setText(combo, String(state.combo || 0));
+    var comboValue = Math.max(0, Math.trunc(Number(state.combo) || 0));
+    setText(combo, String(comboValue));
+    syncComboColors(comboValue);
     setText(document.getElementById('hud-round-val'), String(Math.max(1, Math.trunc(Number(state.round) || 1))).padStart(2, '0'));
   }
 
-  var api = { update: update, setPopupMode: setPopupMode };
+  var api = { update: update, setPopupMode: setPopupMode, resetComboColors: resetComboColors };
   if (root && root.addEventListener) root.addEventListener('resize', scheduleFit);
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HUD = api; }
 })(typeof window !== 'undefined' ? window : null);
