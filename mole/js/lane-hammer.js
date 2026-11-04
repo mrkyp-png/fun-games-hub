@@ -92,7 +92,9 @@
       idleT = 0; lastSpinCycleIdx = -1;
       const tx = (typeof targetXFrac === 'number') ? targetXFrac : 0.5;
       const ty = (typeof targetYFrac === 'number') ? targetYFrac : 0.5;
-      const aimDy = (frameKey && AIM_DY_BY_FRAME[frameKey] != null) ? AIM_DY_BY_FRAME[frameKey] : eDy;
+      const baseAimDy = (frameKey && AIM_DY_BY_FRAME[frameKey] != null) ? AIM_DY_BY_FRAME[frameKey] : eDy;
+      const clayGrid = root.MoleGame && root.MoleGame.ClayRoundOne && root.MoleGame.ClayRoundOne.getGridSize ? root.MoleGame.ClayRoundOne.getGridSize() : 3;
+      const aimDy = frameKey === 'clay-mole' ? baseAimDy * 3 / clayGrid : baseAimDy;
       fromX = gx; fromY = gy; fromDeg = deg;
       aimX = Math.max(CLAMP, Math.min(1 - CLAMP, tx + goX + AIM_DX + ((frameKey && AIM_DX_BY_FRAME[frameKey]) || 0)));
       aimY = Math.max(CLAMP, Math.min(1 - CLAMP, ty + goY + aimDy));

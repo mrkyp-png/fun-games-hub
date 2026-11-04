@@ -87,8 +87,10 @@
         bombEl = buildAnimalBombOverlay();
         el.appendChild(bombEl);
       }
-      container.appendChild(el);
-      if (onEmerge) onEmerge(pop.x, pop.y, pop.type); // 구멍에서 올라오는 순간 연출 (흙먼지·링·글로우)
+      const feverContainer = document.getElementById('fever-pop-layer');
+      const lower = feverContainer && pop.regionId >= 16;
+      (lower ? feverContainer : container).appendChild(el);
+      if (onEmerge) onEmerge(pop.x, pop.y, pop.type, pop.regionId); // 구멍에서 올라오는 순간 연출 (흙먼지·링·글로우)
       const m = {
         el, img, bombEl, kind: pop.type, poseIndex: pop.poseIndex || 0, regionId: pop.regionId,
         shownDepth: GONE_DEPTH, targetDepth: 0, shownFile: null, dying: false,

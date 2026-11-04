@@ -8,7 +8,7 @@
 
   const MS = root.MoleGame.MoleSprites;
 
-  function create({ container, frontContainer, spawnPoints, season }) {
+  function create({ container, frontContainer, spawnPoints, season, gridSize = 3, tileOffset = 0, control = false }) {
     const clay = root.MoleGame.ClayRoundOne && root.MoleGame.ClayRoundOne.isActive();
     const backImgs = [];
     const frontImgs = [];
@@ -34,19 +34,27 @@
     }
 
     // Nine independent assets/DOM cells, paired with the existing nine input buttons.
-    if (clay) spawnPoints.forEach((sp) => {
+    const available = new Set(spawnPoints.map(sp => sp.regionId));
+    const cells = clay ? Array.from({length:gridSize*gridSize}, (_,id) => ({regionId:id,row:Math.floor(id/gridSize),col:id%gridSize})) : [];
+    if (clay) cells.forEach((sp) => {
       const cell = document.createElement('div');
       cell.className = 'checkerboard-cell';
       cell.dataset.region = String(sp.regionId);
-      cell.dataset.boardTile = String(sp.regionId);
-      cell.dataset.tileRole = 'target';
+      cell.dataset.boardTile = String(tileOffset + sp.regionId);
+      cell.dataset.tileRole = control ? 'control' : 'target';
+      cell.dataset.holeReserved = String(!available.has(sp.regionId));
+      cell.dataset.checkerTone = (sp.row + sp.col + (control ? gridSize : 0)) % 2 ? 'dark' : 'light';
+      cell.dataset.edgeTop = String(sp.row === 0);
+      cell.dataset.edgeBottom = String(sp.row === gridSize - 1);
+      cell.dataset.edgeLeft = String(sp.col === 0);
+      cell.dataset.edgeRight = String(sp.col === gridSize - 1);
       const art = document.createElement('img');
       art.className = 'checkerboard-cell-art';
       art.alt = '';
-      art.src = 'assets/checkerboard-v1590/cell-' + sp.regionId + '.webp';
-      cell.appendChild(art);
-      cell.style.left = (sp.col * 100 / 3) + '%';
-      cell.style.top = (sp.row * 100 / 3) + '%';
+      art.src = 'assets/checkerboard-v1590/cell-' + (gridSize === 3 && !control ? sp.regionId : (cell.dataset.checkerTone === 'dark' ? 1 : 0)) + '.webp';
+      if (available.has(sp.regionId)) cell.appendChild(art);
+      cell.style.left = (sp.col * 100 / gridSize) + '%';
+      cell.style.top = (sp.row * 100 / gridSize) + '%';
       container.appendChild(cell);
       backImgs.push(cell);
     });

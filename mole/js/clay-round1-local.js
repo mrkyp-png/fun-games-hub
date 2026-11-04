@@ -3,6 +3,9 @@
 const MG=root.MoleGame,R=root.StudioRig,base='assets/checkerboard-v1590/';
 let active=false,ready=false,loading=null,pending=false,generation=0,clockTime=0,lastClock=0,canvas,paint,queued=false;
 const entries=new Map();
+let gridSize=3,feverField=false;
+function setGridSize(n){gridSize=n===4?4:3;document.getElementById('game-screen').style.setProperty('--checker-grid',gridSize)}
+function setFeverField(value){feverField=!!value;if(!canvas)return;canvas.classList.toggle('clay-mole-canvas--field',feverField);(document.getElementById(feverField?'game-screen':'mole-pop-layer')).appendChild(canvas)}
 // Species index is poseIndex %4 in the unchanged spawn scheduler.
 const animalVariants=[['rabbit','yellow','#FFCA52'],['tiger','green','#66C884'],['hippo','pink','#EF96B8'],['lion','charcoal','#50545C']].map(([species,id,hex])=>({species,id,hex,color:[1,3,5].map(i=>Math.pow(parseInt(hex.slice(i,i+2),16)/255,2.2)).concat(1)}));
 function animalVariant(index){const n=Number.isFinite(index)?Math.trunc(index):0;return animalVariants[((n%4)+4)%4]}
@@ -62,24 +65,32 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
  const rimResponse=await fetch(base+'floor-mask.webp');if(!rimResponse.ok)throw Error('Hole rim load failed');const rimBitmap=await createImageBitmap(await rimResponse.blob(),{colorSpaceConversion:'none',premultiplyAlpha:'none'}),rimTexture=gl.createTexture();gl.activeTexture(gl.TEXTURE0+2);gl.bindTexture(gl.TEXTURE_2D,rimTexture);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,rimBitmap);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);rimBitmap.close();gl.uniform1i(loc.uRim,2);
  const rimFlags=runtime.skins.map(skeleton=>new Float32Array(skeleton.joints.map(j=>/^(UpperArm|Hand|Finger[123]|Thumb)\./.test(model.json.nodes[j].name||'')?1:0)));
  function bind(b,id,size){gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.enableVertexAttribArray(id);gl.vertexAttribPointer(id,size,gl.FLOAT,false,0,0)}
- const span=10.2,angle=Math.PI/6,eye=[0,1+10*Math.sin(angle),10*Math.cos(angle)];
- const projection=new Float32Array([2/span,0,0,0,0,2/span,0,0,0,0,-2/50,0,0,0,-1,1]);
- const vp=R.multiply(projection,R.lookAt(eye,[0,1,0]));gl.uniformMatrix4fv(loc.uVP,false,vp);gl.uniform3fv(loc.uEye,eye);
+ const angle=Math.PI/6,eye=[0,1+10*Math.sin(angle),10*Math.cos(angle)];
+ gl.uniform3fv(loc.uEye,eye);
  paint=()=>{
-  const dpr=Math.min(devicePixelRatio||1,1.5),size=Math.max(1,Math.round(board.clientWidth*dpr));if(canvas.width!==size||canvas.height!==size){canvas.width=canvas.height=size}
-  gl.viewport(0,0,size,size);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  const dpr=Math.min(devicePixelRatio||1,1.5),size=Math.max(1,Math.round(board.clientWidth*dpr));
+  const horizontal=feverField&&root.matchMedia('(orientation:landscape)').matches;
+  const width=size*(horizontal?2:1),height=size*(feverField&&!horizontal?2:1);
+  if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height}
+  gl.disable(gl.SCISSOR_TEST);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  const span=10.2*gridSize/3;
+  const projection=new Float32Array([2/span,0,0,0,0,2/span,0,0,0,0,-2/50,0,0,0,-1,1]);
+  gl.uniformMatrix4fv(loc.uVP,false,R.multiply(projection,R.lookAt(eye,[0,1,0])));
   const boardAspect=board.clientWidth/Math.max(1,board.clientHeight);
-  gl.activeTexture(gl.TEXTURE0+2);gl.bindTexture(gl.TEXTURE_2D,rimTexture);gl.uniform1f(loc.uRimWidth,size/3);gl.uniform1f(loc.uRimHeight,494/1254*size*boardAspect);
+  gl.activeTexture(gl.TEXTURE0+2);gl.bindTexture(gl.TEXTURE_2D,rimTexture);gl.uniform1f(loc.uRimWidth,size/gridSize);gl.uniform1f(loc.uRimHeight,494/418/gridSize*size*boardAspect);
   if(!active)return;
   entries.forEach((m,el)=>{
    if(!el.isConnected){entries.delete(el);return}if(m.shownDepth>=3.999)return;
    if(m.dying&&m.killed&&m._clayKilledAt==null)m._clayKilledAt=clockTime;
    const x=parseFloat(el.style.left)/100,y=parseFloat(el.style.top)/100;
+   const lower=feverField&&m.regionId>=gridSize*gridSize;
+   const ox=horizontal&&lower?size:0,oy=feverField&&!horizontal&&!lower?size:0;
+   gl.viewport(ox,oy,size,size);gl.enable(gl.SCISSOR_TEST);gl.scissor(ox,oy,size,size);
    const motion=clipFor(m);
    const depth=sinkDepth(m);
    const worlds=poseFor(runtime,m,motion),palettes=new Map(),instance=R.transform({translation:[0,-3.4*depth/4,0]});
    // The approved inside-hole anchor stays fixed across all poses and clips.
-   gl.uniform2f(loc.uOffset,(x-.5)*2,(.5-y-Math.cos(angle)*.2/span)*2);gl.uniform4f(loc.uHole,x*size,(1-y)*size,135/1254*size,58/1254*size*boardAspect);
+   gl.uniform2f(loc.uOffset,(x-.5)*2,(.5-y-Math.cos(angle)*.2/span)*2);gl.uniform4f(loc.uHole,ox+x*size,oy+(1-y)*size,135/418/gridSize*size,58/418/gridSize*size*boardAspect);
    gl.uniform1f(loc.uFlash,Math.max(0,Math.min(1,((m._clayFlashUntil||0)-clockTime)/.09))*.8);
    for(const d of draws){
     if(!palettes.has(d.node))palettes.set(d.node,R.palette(runtime,worlds,d.node));const skin=palettes.get(d.node);
@@ -105,7 +116,7 @@ function renderPop(m){if(!active||!canRender(m))return false;if(!entries.has(m.e
 function clock(now){if(lastClock)clockTime+=Math.min(.05,Math.max(0,(now-lastClock)/1000));lastClock=now}
 function clear(){entries.clear();lastClock=0;if(paint)paint()}
 function flash(m){if(active&&canRender(m))m._clayFlashUntil=clockTime+.09}
-MG.ClayRoundOne={prepare,wait,setActive,renderPop,clock,clear,flash,animalVariant,canRender,clipFor,poseFor,sinkDepth,isActive:()=>active};
+MG.ClayRoundOne={prepare,wait,setActive,setGridSize,setFeverField,getGridSize:()=>gridSize,renderPop,clock,clear,flash,animalVariant,canRender,clipFor,poseFor,sinkDepth,isActive:()=>active};
 // Warm the actual model before the user starts round one; does not gate unrelated screens.
 setTimeout(()=>prepare().catch(e=>console.warn('Local clay prewarm',e)),0);
 })(window);

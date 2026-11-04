@@ -73,8 +73,8 @@
 // V1591 G: full viewport paired squares without notch or fixed HUD reservation.
 // V1592 G: PANG on the matching keypad button; paired boards at95% viewport fit.
 // V1593 G: joined 18-cell field, inverse control tiles and responsive six-slot HUD rails.
-// V1594 G: home icon and Korean label straddle a centered camera clearance.
-const CACHE = 'mole-game-v1594-G';
+// V1595 G: shared 9/16-hole checker field and stationary two-board touch fever.
+const CACHE = 'mole-game-v1595-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -963,6 +963,7 @@ const SHELL = [
   './js/mailbox.js',
   './js/mailbox-daily.js',
   './js/contact.js',
+  './js/fever-field.js',
   './js/game.js',
   './assets/workshop/clarity-v1434/panel.png',
   './assets/workshop/clarity-v1434/stage.png',

@@ -1522,6 +1522,10 @@
     showStartScreenNow(opts);
   }
   function showStartScreenNow(opts) {
+    unmountFeverField();
+    document.getElementById('game-screen').classList.remove('fever-hammer-parked','fever-field-active');
+    const feverBar=document.getElementById('lane-button-bar');
+    if(feverBar){feverBar.style.transform='';feverBar.style.transition='';feverBar.querySelectorAll('.lane-button').forEach(b=>b.style.visibility='')}
     if (MG.ClayRoundOne) MG.ClayRoundOne.setActive(false);
     clearTimeout(nextRoundTimer); nextRoundTimer = 0;
     document.getElementById('game-screen').classList.remove('gs-intro');
@@ -1712,9 +1716,11 @@
   }
 
   function startRound(opts) {
-    const clayRoundOne = currentChapter() === 1 && isSmallBoardChapter();
+    unmountFeverField();
+    const clayRoundOne = true;
     if (clayRoundOne && MG.ClayRoundOne && MG.ClayRoundOne.wait(() => startRound(opts))) return;
     if (MG.ClayRoundOne) MG.ClayRoundOne.setActive(clayRoundOne);
+    if (MG.ClayRoundOne) MG.ClayRoundOne.setGridSize(roundGridSize());
     sessionGen++;
     gameStarting = false; // 라운드 진입 성공 — 이후 재진입은 state 존재로 차단됨
     setNavLock(true); // 카운트다운 동안 ⊞ 잠금 (playRoundIntro onDone 에서 해제)
@@ -1845,8 +1851,8 @@
     if (!sharedPopElements) {
       sharedPopElements = MG.PopElements.create({
         container: document.getElementById('mole-pop-layer'),
-        onEmerge: (x, y, type) => {
-          const bd = document.getElementById('mole-board');
+        onEmerge: (x, y, type, regionId) => {
+          const bd = document.getElementById(regionId >= 16 && state && state.feverField ? 'fever-hole-board' : 'mole-board');
           // 등장 소리(사용자 지정, 2026-09-17): 라운드6(reverseTarget, 동물이 타겟)은 동물 등장에만,
           // 그 외 라운드는 두더지 등장에만 — "타겟 생물"이 올라올 때 울리게.
           const reverseTarget = !!(state && state.config && state.config.reverseTarget);
@@ -1867,7 +1873,7 @@
     const holeLayer = MG.HoleLayer.create({
       container: document.getElementById('mole-hole-layer'),
       frontContainer: document.getElementById('mole-hole-front-layer'),
-      spawnPoints,
+      spawnPoints, gridSize: roundGridSize(),
       season: roundSeason()
     });
 
@@ -2241,13 +2247,13 @@
     }
 
     tickAiSkill(now);
-    updateLiveDifficulty();
+    if (!state.feverEventActive) updateLiveDifficulty();
     // 피버타임은 라운드 진행의 연장이 아니라 독립된 미니게임(사용자 지정: "기존 게임진행의
     // 연장이 아니라, 피버타임용 게임이라고 생각하면됨") — updateLiveDifficulty() 가 매프레임
     // 재계산해버리는 라운드 커브를 덮어써서, 항상 전신(1타)만 최대 8마리 동시 출현시킨다
     // (사용자 지정: "두더지 전신만... 2,3,4타 두저지 등장 NO... 구멍 8개에서 동시 출현").
     if (state.feverTransitioning || state.feverResultShown) {
-      // 전환(14초) 동안, 그리고 20초 종료 후 결과창이 떠 있는 동안은 완전히 정지 — 새
+      // 제자리 회전 전환 동안, 그리고 20초 종료 후 결과창이 떠 있는 동안은 완전히 정지 — 새
       // 두더지/동물/폭탄 스폰 자체를 막는다(사용자 지정: "전환타임에는 두더지가 안나오는거야",
       // "카운트가 끝나도 두더지가 올라오는 소리 계속 들린다. 게임복귀 화면있는곳에서").
       // 이미 떠 있던 건 forceRetreatAll() 로 이미 퇴장 처리됐으므로 tick() 은 그 퇴장
@@ -2353,8 +2359,8 @@
     MG.HUD.update({
       round: currentChapter(),
       lives: run.lives,
-      timeRemaining: state.timeRemaining,
-      timeTotal: roundSeconds(),
+      timeRemaining: state.feverEventActive && state.feverEventUntil > 0 ? Math.max(0,(state.feverEventUntil-performance.now())/1000) : state.timeRemaining,
+      timeTotal: state.feverEventActive ? 20 : roundSeconds(),
       combo: run.combo.combo,
       score: run.combo.score, // 1라운드부터 누적 (콤보·점수 한 통)
       modeLabel: chapterLabel(currentChapter()), // 게임화면 티커 맨 앞 = 현재 챕터 이름 ("두더지팡" 대체)
@@ -2403,8 +2409,8 @@
   const FEVER_GRID_V_BOTTOM = 0.88;
   function regionIdFromBoardPoint(fx, fy) {
     if (MG.ClayRoundOne && MG.ClayRoundOne.isActive()) {
-      const col = Math.max(0, Math.min(2, Math.floor(fx * 3)));
-      const row = Math.max(0, Math.min(2, Math.floor(fy * 3)));
+      const col = Math.max(0, Math.min(roundGridSize()-1, Math.floor(fx * roundGridSize())));
+      const row = Math.max(0, Math.min(roundGridSize()-1, Math.floor(fy * roundGridSize())));
       const point = state.spawnPoints.find(s => s.col === col && s.row === row);
       return point ? point.regionId : null;
     }
@@ -2422,6 +2428,16 @@
   function handleCell(regionId, hitOptions) {
     const source = hitOptions && hitOptions.source || 'player';
     recordInputTrace('handler', { regionId });
+    if (state && state.feverField) {
+      if (state.ended || state.paused || state.feverTransitioning || state.feverResultShown || performance.now() >= state.feverEventUntil) return false;
+      const point=state.spawnPoints.find(p=>p.regionId===regionId);
+      if (!point) return false;
+      const results=state.scheduler.resolveRegion(regionId);
+      // Fingers hit immediately; the parked hammer does not chase touch targets.
+      onHammerImpact(point.x,point.y,results,{regionId,source:'player',noHitstop:true,
+        board:document.getElementById(regionId>=16?'fever-hole-board':'mole-board')});
+      return false;
+    }
     if (!state || state.ended || state.introActive || state.paused) {
       recordInputTrace('skip', { regionId, reason: !state ? 'no-state' : state.ended ? 'ended' : state.introActive ? 'intro' : 'paused' });
       return false;
@@ -2672,7 +2688,7 @@
   function onHammerImpact(hitXFrac, hitYFrac, results, opts) {
     recordInputTrace('impact', { regionId: opts && opts.regionId });
     if (!state || state.ended || !run || !run.combo) return;
-    const board = document.getElementById('mole-board');
+    const board = opts && opts.board || document.getElementById('mole-board');
     const cfg = state.config || {};
     let moleHits = 0;
     run.combo.setMult(currentScoreMult()); // 라이트·피버 배율 (이번 타격에 적용)
@@ -2872,68 +2888,86 @@
     }, 80);
   });
 
-  // spinBoardBlank(회전)와 swapBoardPositions(이동)는 둘 다 결국 같은 요소(#lane-button-bar)의
-  // 인라인 transform 을 건드리는데, 동시에 실행하면 나중에 끝나는 쪽의 cleanup(transform
-  // 초기화)이 먼저 것을 지워버려 스왑이 도로 풀려버렸다(사용자 보고: "전광판이... 아래에
-  // 나옴", "게임이 안됨") — 순차 실행으로 완전히 분리한다: 진입은 회전이 끝난 뒤 이동 시작,
-  // 퇴장은 이동이 끝난 뒤 회전 시작. 각 단계 7초씩, 총 14초(사용자 지정: 피버 브금이
-  // 14초부터 본격적으로 빨라지는데 그 시점에 무기(터치) 사용이 가능해야 함 — 화면전환을
-  // 그 타이밍에 맞춤). 20초 보너스타임 카운트다운은 이 진입 연출(14초)이 완전히 끝난 뒤에
-  // 시작한다.
+  // Legacy manual swap duration; fever itself keeps both boards stationary.
   const FEVER_TRANSITION_MS = 7000;
-  // "게임복귀" 눌렀을 때만 빠르게(사용자 지정: "화면이 위아래 전환속도를 지금보다 빠르게...
-  // 버튼보드 회전은 3회전만 시키고 재시작") — 진입은 위 7초/10바퀴 그대로.
-  const FEVER_EXIT_SWAP_MS = 1500;
-  const FEVER_EXIT_SPIN_MS = 900;
-  const FEVER_EXIT_SPIN_DEG = 1080; // 3바퀴
-  // 화면 정지 전 정리 단계(사용자 지정: "두더지, 동물들이 다 구멍으로 들어간후, 화면이
-  // 정지되고, 아래로 내려가야함") — 떠 있는 두더지/동물을 전부 자연 퇴장(땅속으로 내려가는
-  // 연출)시키고, 그 연출(spawn-scheduler.js RETREAT_SEC=0.6s)이 끝날 때까지 기다린 뒤에야
-  // "도파민 업!" 문구를 띄우고, 그 문구 연출(hit-fx-powerup, 1.1s)이 끝난 뒤에야 회전+스왑
-  // 연출을 시작한다(사용자 지정: "두더지가 다 내려가고, 중앙에 도파민 업! 글자가 나오고
-  // 사라진뒤. 화면전환 진행").
+  // Retire existing actors, show the announcement, then flip the button board in place.
   const FEVER_RETREAT_WAIT_MS = 650;
   const FEVER_DOPAMINE_WORD_MS = 1100;
+  function feverLater(callback,ms,token=sessionGen) {
+    return setTimeout(()=>{if(token===sessionGen&&state&&state.feverEventActive&&!state.ended)callback()},ms);
+  }
+  function mountFeverField() {
+    sharedPopElements.clear();
+    const field=MG.FeverField.create({config:state.config,rng:state.rng,gridSize:4,weapon:state.weapon});
+    state.feverSaved={scheduler:state.scheduler,spawnPoints:state.spawnPoints,config:state.config};
+    state.feverField=field;
+    state.scheduler=field.scheduler;state.spawnPoints=field.spawnPoints;state.config=field.config;
+    state.holeLayer.clear();
+    state.holeLayer=MG.HoleLayer.create({container:document.getElementById('mole-hole-layer'),
+      frontContainer:document.getElementById('mole-hole-front-layer'),spawnPoints:field.upper,gridSize:4});
+    animateFeverWeaponCells('checker-cell--returning');
+    const board=document.createElement('div');board.id='fever-hole-board';
+    const holes=document.createElement('div');holes.className='mole-board-layer';board.appendChild(holes);
+    const pops=document.createElement('div');pops.id='fever-pop-layer';pops.className='mole-board-layer';board.appendChild(pops);
+    document.getElementById('lane-button-bar').appendChild(board);
+    state.feverHoles=MG.HoleLayer.create({container:holes,spawnPoints:field.lower.map(p=>({...p,regionId:p.regionId-16})),gridSize:4,tileOffset:16,control:true});
+    board.addEventListener('pointerdown',ev=>{
+      ev.preventDefault();ev.stopPropagation();const rect=board.getBoundingClientRect();
+      const fx=(ev.clientX-rect.left)/rect.width,fy=(ev.clientY-rect.top)/rect.height;
+      if(fx<0||fy<0||fx>=1||fy>=1)return;
+      handleCell(16+Math.floor(fy*4)*4+Math.floor(fx*4));
+    });
+    document.getElementById('game-screen').classList.add('fever-field-active');
+    MG.ClayRoundOne.setFeverField(true);
+  }
+  function unmountFeverField() {
+    if(!state||!state.feverSaved)return;
+    sharedPopElements.clear();
+    state.holeLayer.clear();if(state.feverHoles)state.feverHoles.clear();
+    document.getElementById('fever-hole-board')?.remove();
+    const weaponCells=state.feverSaved.spawnPoints;
+    Object.assign(state,state.feverSaved);state.feverSaved=null;state.feverField=null;state.feverHoles=null;
+    state.holeLayer=MG.HoleLayer.create({container:document.getElementById('mole-hole-layer'),
+      frontContainer:document.getElementById('mole-hole-front-layer'),spawnPoints:state.spawnPoints,gridSize:roundGridSize(),season:roundSeason()});
+    document.getElementById('mole-hole-layer').querySelectorAll('.checkerboard-cell').forEach(cell=>{
+      if(!weaponCells.some(p=>p.regionId===Number(cell.dataset.region)))cell.classList.add('checker-cell--returning');
+    });
+    document.getElementById('game-screen').classList.remove('fever-field-active');
+    MG.ClayRoundOne.setFeverField(false);
+  }
+  function animateFeverWeaponCells(className) {
+    if(!state)return;
+    const points=state.feverSaved?state.feverSaved.spawnPoints:state.spawnPoints;
+    document.getElementById('mole-hole-layer').querySelectorAll('.checkerboard-cell').forEach(cell=>{
+      if(!points.some(p=>p.regionId===Number(cell.dataset.region))){
+        cell.classList.remove('checker-cell--leaving','checker-cell--returning');cell.classList.add(className);
+      }
+    });
+  }
   function startFeverEvent() {
-    state.feverEventActive = true;
-    state.pausedByFever = true;
-    // 전환(14초) 동안엔 새 두더지가 아예 안 나와야 한다(사용자 지정: "전환타임에는 두더지가
-    // 안나오는거야") — 터치캐치가 실제로 시작되는 순간(feverEventUntil 설정 시점)에 해제.
-    state.feverTransitioning = true;
-    if (state.scheduler.forceRetreatAll) state.scheduler.forceRetreatAll();
-    setTimeout(() => {
-      const feverBoardEl = document.getElementById('mole-board');
-      if (feverBoardEl && MG.HitFx.dopamineUpWord) MG.HitFx.dopamineUpWord(feverBoardEl);
-      setTimeout(() => {
-        // 브금은 이 14초 전환 시작과 정확히 같은 순간부터 재생 — 브금이 14초째부터
-        // 본격적으로 빨라지는 지점(사용자 지정)과 전환 완료(무기 사용 가능) 시점이 맞아
-        // 떨어진다. 홈/평소 진행 브금은 건드리지 않고 여기서만 잠깐 멈췄다 되돌린다
-        // (사용자 지정: "홈이나, 기존 게임진행은 기존거").
-        // bgmActiveEl() 하나만 멈추면, 크로스페이드 도중(둘 다 잠깐 같이 들리는 구간)이면
-        // 나머지 하나가 계속 재생돼 피버 브금과 겹쳐 들렸다(사용자 보고: "피버타임 브금과
-        // 게임브금 같이나온다") — bgm-a/bgm-b 둘 다 멈춘다.
-        feverBgmOverride = true;
-        if (bgmEls) bgmEls.forEach((el) => { if (el && !el.paused) el.pause(); });
-        const feverBgm = document.getElementById('bgm-fever');
-        if (feverBgm) { feverBgm.currentTime = 0; feverBgm.volume = BGM_VOL; feverBgm.play().catch(() => {}); }
-        // ⚠️ 이전엔 spinBoardBlank(true) 를 부르고 "따로" setTimeout(FEVER_TRANSITION_MS) 로
-        // swapBoardPositions 를 예약했는데, spinBoardBlank 내부의 cleanup 도 거의 같은
-        // 시각(SPIN_BLANK_MS+50)에 buttonBar.style.transform 을 지워버려서, swap 이 막
-        // 세팅한 translateY 를 그 직후 지워버리는 경합이 실기기에서 실제로 재현됐다(사용자
-        // 스크린샷: 전광판이 원래 자리에 그대로 남고 보드만 내려가 겹쳐 보임). 콜백으로
-        // 완전히 순서를 보장한다 — spinBoardBlank 가 "진짜 끝난 뒤"에만 swap 시작.
-        if (sharedLaneControls) {
-          sharedLaneControls.spinBoardBlank(true, () => {
-            swapBoardPositions(true);
-            setTimeout(() => {
-              state.feverTransitioning = false;
-              state.feverEventUntil = performance.now() + 20000;
-              setTimeout(showFeverResult, 20000);
-            }, FEVER_TRANSITION_MS);
-          });
-        }
-      }, FEVER_DOPAMINE_WORD_MS);
-    }, FEVER_RETREAT_WAIT_MS);
+    state.feverEventActive=true;state.pausedByFever=true;state.feverTransitioning=true;
+    if(state.scheduler.forceRetreatAll)state.scheduler.forceRetreatAll();
+    const token=sessionGen;
+    feverLater(()=>{
+      const board=document.getElementById('mole-board');
+      if(MG.HitFx.dopamineUpWord)MG.HitFx.dopamineUpWord(board);
+      feverLater(()=>{
+        feverBgmOverride=true;
+        if(bgmEls)bgmEls.forEach(el=>{if(el&&!el.paused)el.pause()});
+        const bgm=document.getElementById('bgm-fever');
+        // The former fourteen-second board exchange is gone; start at the fast section.
+        if(bgm){bgm.currentTime=14;bgm.volume=BGM_VOL;bgm.play().catch(()=>{})}
+        document.getElementById('game-screen').classList.add('fever-hammer-parked');
+        animateFeverWeaponCells('checker-cell--leaving');
+        sharedLaneControls.spinBoardBlank(true,()=>{
+          if(token!==sessionGen||!state||state.ended)return;
+          state.feverTransitioning=false;state.feverEventUntil=performance.now()+20000;
+          feverLater(showFeverResult,20000,token);
+        },{spinDeg:360,durationMs:900,isCurrent:()=>token===sessionGen&&!!state&&!state.ended,onMidpoint:()=>{
+          if(token===sessionGen&&state&&!state.ended)mountFeverField();
+        }});
+      },FEVER_DOPAMINE_WORD_MS,token);
+    },FEVER_RETREAT_WAIT_MS,token);
   }
   // 20초가 다 차면 바로 원위치로 안 돌아가고, 점수 확인 창을 띄운다(사용자 지정: "타임
   // 끝나면, 창하나 띠워줘 게임복귀 문구 나오게 하고") — "게임복귀" 버튼을 눌러야 실제 복귀
@@ -2951,39 +2985,21 @@
   // 때까지는 게임이 재개되면 안 된다(사용자 지정: "버튼보드 회전이 종료되면, 진행되던
   // 게임이 진행되어야함") — pausedByFever/feverEventActive 해제를 연출 종료 콜백으로 미룬다.
   function endFeverEvent() {
-    if (!state || !run || !run.combo) return; // V1379 G: home/ended session has no combo state.
-    state.feverResultShown = false;
-    const overlay = document.getElementById('fever-result-overlay');
-    if (overlay) overlay.hidden = true;
-    const feverBgm = document.getElementById('bgm-fever');
-    if (feverBgm) { feverBgm.pause(); feverBgm.currentTime = 0; }
-    // applyBgm() 이 브금 재생여부를 결정하는 유일한 지점 — bgmActiveEl() 를 직접 .play() 하면
-    // bgmWantPlay/설정/화면가시성 체크를 건너뛰어 재생이 안 붙는 경우가 있었다(사용자 보고:
-    // "게임복귀 버튼을 누르면 게임브금이 나오게" — 지금은 안 나옴). feverBgmOverride 를
-    // 풀고 bgmWantPlay 를 확실히 true 로 되돌린 뒤 applyBgm() 에 맡긴다.
-    feverBgmOverride = false;
-    bgmWantPlay = true;
-    applyBgm();
-    // 버튼보드 회전이 완전히 끝나기 전에는 두더지/동물이 다시 올라오면 안 된다(사용자 지정:
-    // "버튼보드가 회전이 끝나기전에는 두더지, 동물 올라오면 안됨. 회전이 완전히 끝난뒤,
-    // 게임 재시작") — 진입 때와 같은 feverTransitioning 스폰정지를 퇴장 연출 전체에도 건다.
-    state.feverTransitioning = true;
-    swapBoardPositions(false, FEVER_EXIT_SWAP_MS);
-    setTimeout(() => {
-      if (sharedLaneControls) {
-        sharedLaneControls.spinBoardBlank(false, () => {
-          state.feverTransitioning = false;
-          state.pausedByFever = false;
-          state.feverEventActive = false;
-          state.feverEventUntil = 0;
-        }, { spinDeg: FEVER_EXIT_SPIN_DEG, durationMs: FEVER_EXIT_SPIN_MS });
-      } else {
-        state.feverTransitioning = false;
-        state.pausedByFever = false;
-        state.feverEventActive = false;
-        state.feverEventUntil = 0;
-      }
-    }, FEVER_EXIT_SWAP_MS + 50);
+    if(!state||!run||!run.combo||state.feverReturning)return;
+    state.feverReturning=true;state.feverTransitioning=true;
+    document.getElementById('fever-result-overlay').hidden=true;
+    const token=sessionGen;
+    document.getElementById('game-screen').classList.remove('fever-hammer-parked');
+    animateFeverWeaponCells('checker-cell--leaving');
+    sharedLaneControls.spinBoardBlank(false,()=>{
+      if(token!==sessionGen||!state||state.ended)return;
+      state.feverResultShown=false;state.feverReturning=false;state.feverTransitioning=false;
+      state.pausedByFever=false;state.feverEventActive=false;state.feverEventUntil=0;
+      const bgm=document.getElementById('bgm-fever');if(bgm){bgm.pause();bgm.currentTime=0}
+      feverBgmOverride=false;bgmWantPlay=true;applyBgm();
+    },{spinDeg:360,durationMs:900,isCurrent:()=>token===sessionGen&&!!state&&!state.ended,onMidpoint:()=>{
+      if(token===sessionGen&&state&&!state.ended)unmountFeverField();
+    }});
   }
 
   // 콤보가 100·200·300… 을 새로 넘겼으면 공유 생명 보상 (풀에 영구 반영).

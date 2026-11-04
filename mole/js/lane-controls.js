@@ -215,7 +215,10 @@
       b.className = 'lane-button' + (simple ? ' lane-button--simple' : '');
       b.type = 'button';
       b.dataset.region = String(id);
-      if (simple && gridSize === 3) { b.dataset.boardTile = String(9 + id); b.dataset.tileRole = 'control'; }
+      b.dataset.boardTile = String(cellCount + id); b.dataset.tileRole = 'control';
+      b.dataset.checkerTone = (row + col + gridSize) % 2 ? 'dark' : 'light';
+      b.dataset.edgeTop = String(row === 0); b.dataset.edgeBottom = String(row === gridSize - 1);
+      b.dataset.edgeLeft = String(col === 0); b.dataset.edgeRight = String(col === gridSize - 1);
       fillFace(b, faces[id], id, simple);
       if (faces[id].call) b.insertAdjacentHTML('beforeend', '<span class="lane-call-idle" aria-hidden="true"></span>');
       b.addEventListener('contextmenu', (e) => e.preventDefault()); // 길게 눌러도 브라우저 메뉴 안 뜨게
@@ -533,17 +536,8 @@
       });
     }
 
-    // 피버타임(터치캐치 보너스타임) 전용 — 버튼보드 전체를 10바퀴 회전시켜 숫자판↔전광판을
-    // 전환한다. spinChannelsIn()의 simple 분기와 같은 "버튼보드 통째로 rotateY" 기법을 재사용
-    // (일반 모드의 spinChannelsIn()은 버튼 개별 플립이라 이 용도엔 안 맞음).
-    // 7초에 걸쳐 천천히 10바퀴(사용자 지정: 피버 브금이 14초부터 빨라지는 지점에 맞춰
-    // 회전 7s + 이후 game.js 의 자리교차 스왑 7s = 총 14초). game.js 의 FEVER_TRANSITION_MS
-    // 와 반드시 같은 값이어야 한다(둘이 따로 놀면 회전은 끝났는데 스왑 시작을 더 기다리는
-    // 식으로 어긋남).
-    var SPIN_BLANK_MS = 7000;
-    // opts.spinDeg/opts.durationMs 로 회전 바퀴수·속도를 호출부에서 오버라이드 가능(사용자
-    // 지정: "게임복귀 버튼 누르면... 버튼보드 회전은 3회전만 시키고 재시작" — 진입은 기존
-    // 10바퀴 그대로, 퇴장(게임복귀)만 짧게).
+    // Flip only the button board. The midpoint swaps its button/hole faces.
+    var SPIN_BLANK_MS = 900;
     function spinBoardBlank(toBlank, onComplete, opts) {
       if (!buttonBar) { if (onComplete) onComplete(); return; }
       var spinDeg = (opts && opts.spinDeg) || 3600;
@@ -555,12 +549,15 @@
       buttonBar.style.transition = 'transform ' + (durationMs / 1000) + 's cubic-bezier(.2, .7, .3, 1)';
       buttonBar.style.transform = 'perspective(1200px) rotateY(' + spinDeg + 'deg)';
       setTimeout(function () {
-        if (scoreboard) scoreboard.hidden = !toBlank;
+        if (opts && opts.isCurrent && !opts.isCurrent()) return;
+        if (scoreboard) scoreboard.hidden = true;
         Array.prototype.forEach.call(buttonBar.querySelectorAll('.lane-button'), function (b) {
           b.style.visibility = toBlank ? 'hidden' : '';
         });
+        if (opts && opts.onMidpoint) opts.onMidpoint();
       }, durationMs / 2); // 회전 절반(뒤집힌 순간) 시점에 얼굴 전환 — 정면에서 전환이 안 보이게
       setTimeout(function () {
+        if (opts && opts.isCurrent && !opts.isCurrent()) return;
         buttonBar.style.transition = '';
         buttonBar.style.transform = '';
         if (onComplete) onComplete();
