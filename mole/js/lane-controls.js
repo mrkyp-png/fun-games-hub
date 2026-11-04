@@ -215,6 +215,7 @@
       b.className = 'lane-button' + (simple ? ' lane-button--simple' : '');
       b.type = 'button';
       b.dataset.region = String(id);
+      if (simple && gridSize === 3) { b.dataset.boardTile = String(9 + id); b.dataset.tileRole = 'control'; }
       fillFace(b, faces[id], id, simple);
       if (faces[id].call) b.insertAdjacentHTML('beforeend', '<span class="lane-call-idle" aria-hidden="true"></span>');
       b.addEventListener('contextmenu', (e) => e.preventDefault()); // 길게 눌러도 브라우저 메뉴 안 뜨게

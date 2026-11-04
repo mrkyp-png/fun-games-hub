@@ -38,6 +38,8 @@
       const cell = document.createElement('div');
       cell.className = 'checkerboard-cell';
       cell.dataset.region = String(sp.regionId);
+      cell.dataset.boardTile = String(sp.regionId);
+      cell.dataset.tileRole = 'target';
       const art = document.createElement('img');
       art.className = 'checkerboard-cell-art';
       art.alt = '';
