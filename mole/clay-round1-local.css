@@ -1,6 +1,6 @@
 /* The existing square board and keypad geometry remain the layout authority. */
 #game-screen.clay-round-one:not(.is-start) #mole-board {
-  background:#a5ce49 url('assets/clay-round1-local/field.webp') center/cover no-repeat;
+  background:#303237;
 }
 #game-screen.clay-round-one:not(.is-start) :is(#mole-emoji-img,#mole-reveal-canvas,#mole-sky,#mole-weather) { visibility:hidden; }
 .clay-round-one .mole-hole,.clay-round-one .mole-hole-front {
@@ -49,4 +49,135 @@
   inset:1px; border:5px solid #f4e3bd; border-image:none; border-radius:17px;
   background:transparent; opacity:1; filter:none;
   box-shadow:inset 1px 1px 1px #fffdf1,inset -1px -1px 1px #d5bc88,0 1px 0 #c9ad78;
+}
+
+/* V1590: equal square boards, independent cells and a separate information row. */
+#game-screen.clay-round-one:not(.is-start) {
+  --edge:max(8px,env(safe-area-inset-left,0px),env(safe-area-inset-right,0px),env(safe-area-inset-top,0px),env(safe-area-inset-bottom,0px));
+  --info-h:40px; --hinge-h:12px;
+  --cell-radius:6px; --cell-line:1px; --cell-bezel:2px; --cell-stroke:#565960;
+  --sq:min(calc(100dvw - 2 * var(--edge)),calc((100dvh - 2 * var(--edge) - var(--info-h) - var(--hinge-h)) / 2));
+  --sqh:var(--sq);
+  --layout-top:calc((100dvh - 2 * var(--sq) - var(--hinge-h) - var(--info-h)) / 2);
+  --hud-h:calc(var(--layout-top) + var(--info-h));
+  display:grid; grid-template-areas:'info' 'play' 'gap' 'keys';
+  grid-template-columns:var(--sq); grid-template-rows:var(--info-h) var(--sq) var(--hinge-h) var(--sq);
+  align-content:center; justify-content:center; background:#f3f3f3;
+}
+#game-screen.clay-round-one:not(.is-start) #gs-edge { display:none; }
+#game-screen.clay-round-one:not(.is-start) .game-hud {
+  grid-area:info; position:relative; width:100%; height:var(--info-h); margin:0;
+  border-bottom:1px solid #303237; box-sizing:border-box; background:#f3f3f3;
+}
+#game-screen.clay-round-one:not(.is-start) #mole-board { grid-area:play; margin:0; }
+#game-screen.clay-round-one:not(.is-start) .dialpad { grid-area:keys; margin:0; background:#303237 !important; }
+#game-screen.clay-round-one:not(.is-start) :is(#mole-board,.dialpad) {
+  width:var(--sq); height:var(--sq); border-radius:var(--cell-radius);
+  box-shadow:0 0 0 2px #303237,0 3px 5px #00000018;
+}
+#game-screen.clay-round-one:not(.is-start) #mole-board::before { display:none; }
+#game-screen.clay-round-one:not(.is-start) #fold-hinge {
+  grid-area:gap; width:var(--sq); height:var(--hinge-h); margin:0; background:none; box-shadow:none;
+}
+#game-screen.clay-round-one:not(.is-start) #fold-hinge::before,
+#game-screen.clay-round-one:not(.is-start) #fold-hinge::after { display:none; }
+#game-screen.clay-round-one:not(.is-start) #lane-button-bar {
+  width:100%; height:100%; box-sizing:border-box; border:0; border-image:none;
+  padding:0; gap:0; background-color:#303237 !important;
+}
+.clay-round-one .checkerboard-cell {
+  position:absolute; width:calc(100% / 3); height:calc(100% / 3);
+  margin:0; padding:0; border:0; pointer-events:none; overflow:visible;
+  border-radius:var(--cell-radius); background:var(--checker-rim);
+}
+.clay-round-one .checkerboard-cell-art { display:block; width:100%; height:100%; object-fit:fill; border-radius:var(--cell-radius); }
+/* Keep existing cap artwork, palette and feedback. Only each cell frame matches the board. */
+#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button--simple) { --checker-rim:#f3f3f3; border-radius:var(--cell-radius); }
+#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button--simple):is([data-region="1"],[data-region="3"],[data-region="5"],[data-region="7"]) { --checker-rim:#303237; }
+#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button--simple)::after {
+  content:''; position:absolute; display:block; inset:calc(var(--cell-line) / -2); pointer-events:none;
+  border:var(--cell-line) solid var(--cell-stroke); border-image:none; border-radius:var(--cell-radius);
+  background:none; box-shadow:inset 0 0 0 var(--cell-bezel) var(--checker-rim); box-sizing:border-box;
+  opacity:1; z-index:1;
+}
+/* Internal strokes share one boundary; exterior strokes stay fully inside the board. */
+#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button--simple):is([data-region="0"],[data-region="1"],[data-region="2"])::after { top:0; }
+#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button--simple):is([data-region="6"],[data-region="7"],[data-region="8"])::after { bottom:0; }
+#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button--simple):is([data-region="0"],[data-region="3"],[data-region="6"])::after { left:0; }
+#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button--simple):is([data-region="2"],[data-region="5"],[data-region="8"])::after { right:0; }
+/* Match the board's diffuse finish while retaining every existing button palette/state. */
+#game-screen.clay-round-one:not(.is-start) .lane-button--simple {
+  --matte-light:color-mix(in srgb,var(--cap-top) 94%,white);
+  --matte-side:color-mix(in srgb,var(--cap-top) 86%,black);
+  --matte-edge:color-mix(in srgb,var(--cap-top) 78%,black);
+  --matte-bevel:inset 1px 2px 3px var(--matte-light),inset -1px -2px 3px color-mix(in srgb,var(--cap-top) 94%,black);
+}
+#game-screen#game-screen.clay-round-one:not(.is-start) .lane-button--simple::before {
+  border-color:var(--cap-top); border-top-color:var(--matte-light);
+  background-color:var(--cap-top);
+  background-image:linear-gradient(145deg,var(--matte-light),var(--cap-top) 50%,color-mix(in srgb,var(--cap-top) 97%,black));
+  background-size:100% 100%; background-position:center;
+  box-shadow:var(--matte-bevel),0 13px 0 var(--matte-side),0 14px 0 var(--matte-edge);
+}
+#game-screen#game-screen.clay-round-one:not(.is-start) .lane-button--simple.is-cap-rebound::before {
+  animation:lane-cap-spring 220ms linear,checker-cap-depth 220ms linear !important;
+}
+@keyframes checker-cap-depth {
+  0%,100% { box-shadow:var(--matte-bevel),0 13px 0 var(--matte-side),0 14px 0 var(--matte-edge); }
+  20%,30% { box-shadow:var(--matte-bevel),0 3px 0 var(--matte-side),0 4px 0 var(--matte-edge); }
+  60% { box-shadow:var(--matte-bevel),0 15px 0 var(--matte-side),0 16px 0 var(--matte-edge); }
+}
+#game-screen.clay-round-one:not(.is-start) .ms-status {
+  inset:4px 4px 4px 40px; height:auto; gap:4px;
+  display:grid; grid-template-columns:minmax(0,1fr) 64px 52px;
+}
+#game-screen.clay-round-one:not(.is-start) .ms-status > i { display:none; }
+#game-screen.clay-round-one:not(.is-start) .ms-box {
+  display:flex; align-items:center; justify-content:center; gap:3px; min-width:0;
+  border:1px solid #303237; border-radius:6px; background:#fff; padding:0 3px;
+}
+#game-screen.clay-round-one:not(.is-start) .ms-box::before { display:none; }
+#game-screen.clay-round-one:not(.is-start) :is(.ms-score,.ms-combo) {
+  grid-area:1/1; opacity:0; visibility:hidden; pointer-events:none;
+}
+#game-screen.clay-round-one:not(.is-start) :is(.ms-score,.ms-combo) .ms-ic { display:none; }
+#game-screen.clay-round-one:not(.is-start) .ms-score.is-hud-popup,
+#game-screen.clay-round-one:not(.is-start) .ms-combo.is-hud-popup {
+  opacity:1; visibility:visible; animation:checker-hud-pop 160ms ease-out;
+}
+#game-screen.clay-round-one:not(.is-start) .ms-time { grid-area:1/2; }
+#game-screen.clay-round-one:not(.is-start) .ms-heart { grid-area:1/3; }
+#game-screen.clay-round-one:not(.is-start) .ms-box :is(.ms-label,.ms-val,.ms-ic,.ms-clock) {
+  position:static; inset:auto; transform:none; min-width:0; max-width:100%; width:auto;
+  text-shadow:none; -webkit-text-stroke:0; color:#303237; margin:0;
+}
+#game-screen.clay-round-one:not(.is-start) .ms-label { font-size:8px; }
+#game-screen.clay-round-one:not(.is-start) .ms-val { font-size:13px; }
+#game-screen.clay-round-one:not(.is-start) :is(.ms-time,.ms-heart) .ms-label { display:none; }
+#game-screen.clay-round-one:not(.is-start) .ms-box :is(.ms-ic,.ms-clock) { height:17px; max-width:19px; }
+#game-screen.clay-round-one:not(.is-start) .ms-time.is-low .ms-val { color:#c52626; }
+#game-screen.clay-round-one:not(.is-start) #btn-back-to-hub {
+  top:4px; left:4px; width:30px; height:30px; border:1px solid #303237; border-radius:6px;
+  background:#fff; color:#303237; box-shadow:none;
+}
+#game-screen.clay-round-one:not(.is-start) #btn-back-to-hub .hub-menu-ic { width:20px; height:20px; }
+#game-screen.clay-round-one:not(.is-start) #mole-hammer-layer { top:var(--hud-h); }
+@keyframes checker-hud-pop { from { opacity:0; transform:translateY(3px) scale(.97); } to { opacity:1; transform:none; } }
+@media(orientation:landscape) {
+  #game-screen.clay-round-one:not(.is-start) {
+    --sq:min(calc((100dvw - 2 * var(--edge) - var(--hinge-h)) / 2),calc(100dvh - 2 * var(--edge) - var(--info-h)));
+    --layout-top:calc((100dvh - var(--sq) - var(--info-h)) / 2);
+    grid-template-areas:'info info info' 'play gap keys';
+    grid-template-columns:var(--sq) var(--hinge-h) var(--sq);
+    grid-template-rows:var(--info-h) var(--sq);
+  }
+  #game-screen.clay-round-one:not(.is-start) #fold-hinge { width:var(--hinge-h); height:var(--sq); }
+  #game-screen.clay-round-one:not(.is-start) #mole-hammer-layer {
+    left:calc((100dvw - 2 * var(--sq) - var(--hinge-h)) / 2 + var(--sq) / 2);
+  }
+  #game-screen.clay-round-one:not(.is-start) .ms-status { grid-template-columns:minmax(0,1fr) 76px 60px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  #game-screen.clay-round-one:not(.is-start) .ms-box.is-hud-popup { animation:none; }
+  #game-screen#game-screen.clay-round-one:not(.is-start) .lane-button--simple.is-cap-rebound::before { animation:none !important; }
 }

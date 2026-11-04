@@ -33,7 +33,22 @@
       frontImgs.forEach((img) => { img.src = MS.spriteUrl('hole-front' + suffix); });
     }
 
-    spawnPoints.forEach((sp) => {
+    // Nine independent assets/DOM cells, paired with the existing nine input buttons.
+    if (clay) spawnPoints.forEach((sp) => {
+      const cell = document.createElement('div');
+      cell.className = 'checkerboard-cell';
+      cell.dataset.region = String(sp.regionId);
+      const art = document.createElement('img');
+      art.className = 'checkerboard-cell-art';
+      art.alt = '';
+      art.src = 'assets/checkerboard-v1590/cell-' + sp.regionId + '.webp';
+      cell.appendChild(art);
+      cell.style.left = (sp.col * 100 / 3) + '%';
+      cell.style.top = (sp.row * 100 / 3) + '%';
+      container.appendChild(cell);
+      backImgs.push(cell);
+    });
+    (clay ? [] : spawnPoints).forEach((sp) => {
       if (clay) {
         const shadow = document.createElement('i');
         shadow.className = 'clay-hole-shadow';

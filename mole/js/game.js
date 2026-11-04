@@ -1787,7 +1787,7 @@
     MG.HitFx.warmup(); // 오디오 컨텍스트 + 타격음 파일 프리로드 (카운트다운 동안)
 
     const rng = { next: MG.RNG.mulberry32(MG.RNG.hashSeed('mole-r' + currentChapter() + '-' + Date.now())) };
-    let { regions, spawnPoints } = MG.GridPartition.partition({ gridSize: roundGridSize() });
+    let { regions, spawnPoints } = MG.GridPartition.partition({ gridSize: roundGridSize(), checkerboard: clayRoundOne });
     // 캐논·골드해머 = 우하단 구멍 1개(15) 제외 → 15구멍. 알리 펀치 = 좌·우하단 2개(12·15) 제외 →
     // 14구멍 + 그 자리에 글러브(§1). 뿅망치는 그대로 16구멍.
     const excludedHoles = weapon === 'alipunch' ? ALIPUNCH_HOLES : (laneSkillZone ? [CANNON_HOLE] : []);
@@ -2402,6 +2402,12 @@
   const FEVER_GRID_V_TOP = 0.27;
   const FEVER_GRID_V_BOTTOM = 0.88;
   function regionIdFromBoardPoint(fx, fy) {
+    if (MG.ClayRoundOne && MG.ClayRoundOne.isActive()) {
+      const col = Math.max(0, Math.min(2, Math.floor(fx * 3)));
+      const row = Math.max(0, Math.min(2, Math.floor(fy * 3)));
+      const point = state.spawnPoints.find(s => s.col === col && s.row === row);
+      return point ? point.regionId : null;
+    }
     const gridSize = Math.round(Math.sqrt(state.spawnPoints.length));
     const vStep = gridSize > 1 ? (FEVER_GRID_V_BOTTOM - FEVER_GRID_V_TOP) / (gridSize - 1) : 0;
     let col = Math.round(fx * gridSize - 0.5);
@@ -2830,23 +2836,41 @@
     if (!board || !bar || !dialpad) return;
     const boardRect = board.getBoundingClientRect();
     const barRect = bar.getBoundingClientRect();
-    const delta = barRect.top - boardRect.top; // 보드가 버튼보드 자리로 가려면 +delta 만큼 아래로
+    const horizontal = MG.ClayRoundOne && MG.ClayRoundOne.isActive() && window.matchMedia('(orientation:landscape)').matches;
+    const deltaX = horizontal ? barRect.left - boardRect.left : 0;
+    const delta = horizontal ? 0 : barRect.top - boardRect.top;
     const ease = 'cubic-bezier(.4, 0, .2, 1)';
-    board.style.transition = `top ${ms / 1000}s ${ease}`;
+    board.style.transition = `top ${ms / 1000}s ${ease}, left ${ms / 1000}s ${ease}`;
     [dialpad, hammerLayer].forEach((el) => { if (el) el.style.transition = `transform ${ms / 1000}s ${ease}`; });
     // 피버타임 나이트 배경/구멍(사용자 지정) — 보드가 버튼보드 자리로 슬라이딩을 시작하는
     // 순간부터 나이트, 복귀 슬라이딩 시작 순간부터 라운드 시즌으로.
     board.classList.toggle('mole-board--night', toSwapped);
     if (state && state.holeLayer) state.holeLayer.setSeason(toSwapped ? 'night' : roundSeason());
     board.style.top = toSwapped ? `${delta}px` : '0';
-    dialpad.style.transform = toSwapped ? `translateY(${-delta}px)` : '';
-    if (hammerLayer) hammerLayer.style.transform = toSwapped ? `translateX(-50%) translateY(${delta}px)` : 'translateX(-50%)';
+    board.style.left = toSwapped ? `${deltaX}px` : '0';
+    dialpad.style.transform = toSwapped ? `translate(${-deltaX}px, ${-delta}px)` : '';
+    if (hammerLayer) hammerLayer.style.transform = toSwapped ? `translateX(-50%) translate(${deltaX}px, ${delta}px)` : 'translateX(-50%)';
     setTimeout(() => {
       board.style.transition = '';
       [dialpad, hammerLayer].forEach((el) => { if (el) el.style.transition = ''; });
     }, ms + 50);
     boardSwapped = toSwapped;
   }
+
+  // Recalculate the swapped board positions after portrait/landscape geometry changes.
+  let checkerResizeTimer = 0;
+  window.addEventListener('resize', () => {
+    clearTimeout(checkerResizeTimer);
+    checkerResizeTimer = setTimeout(() => {
+      if (!MG.ClayRoundOne || !MG.ClayRoundOne.isActive() || !boardSwapped) return;
+      const board = document.getElementById('mole-board'), pad = document.querySelector('.dialpad'), hammer = document.getElementById('mole-hammer-layer');
+      board.style.transition = ''; board.style.top = '0'; board.style.left = '0';
+      pad.style.transition = ''; pad.style.transform = '';
+      if (hammer) { hammer.style.transition = ''; hammer.style.transform = 'translateX(-50%)'; }
+      boardSwapped = false;
+      swapBoardPositions(true, 1);
+    }, 80);
+  });
 
   // spinBoardBlank(회전)와 swapBoardPositions(이동)는 둘 다 결국 같은 요소(#lane-button-bar)의
   // 인라인 transform 을 건드리는데, 동시에 실행하면 나중에 끝나는 쪽의 cleanup(transform

@@ -69,7 +69,8 @@
 // V1586 G: prepare rhythm selection frames and freeze the exact song screen before returning home.
 // V1587 G: automatic next-round waiting and clone-free rhythm home wipe.
 // V1589 G: amateur round-one clay rig, independent hole rim, colored obstacles and restored effects.
-const CACHE = 'mole-game-v1589-G';
+// V1590 G: lower-hole checkerboard, selected v41, equal paired board cells and compact popup HUD.
+const CACHE = 'mole-game-v1590-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -80,6 +81,17 @@ const SHELL = [
   './js/clay-rig-math.js',
   './js/clay-rig-runtime.js',
   './js/clay-round1-local.js',
+  './assets/checkerboard-v1590/cell-0.webp',
+  './assets/checkerboard-v1590/cell-1.webp',
+  './assets/checkerboard-v1590/cell-2.webp',
+  './assets/checkerboard-v1590/cell-3.webp',
+  './assets/checkerboard-v1590/cell-4.webp',
+  './assets/checkerboard-v1590/cell-5.webp',
+  './assets/checkerboard-v1590/cell-6.webp',
+  './assets/checkerboard-v1590/cell-7.webp',
+  './assets/checkerboard-v1590/cell-8.webp',
+  './assets/checkerboard-v1590/floor-mask.webp',
+  './assets/checkerboard-v1590/mole-v41.glb',
   './assets/clay-round1-local/field.webp',
   './assets/clay-round1-local/hole-back.webp',
   './assets/clay-round1-local/hole-front.webp',

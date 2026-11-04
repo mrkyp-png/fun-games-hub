@@ -1,6 +1,45 @@
 (function (root) {
   'use strict';
 
+  var popupMode = false, previous = null, popupTimer = 0, showing = '', pending = [], homes = [];
+  function showNextPopup() {
+    if (!popupMode || showing || !pending.length) return;
+    showing = pending.shift();
+    var box = document.querySelector('#mole-status .ms-' + showing);
+    if (box) box.classList.add('is-hud-popup');
+    popupTimer = setTimeout(function () {
+      if (box) box.classList.remove('is-hud-popup');
+      showing = ''; popupTimer = 0; showNextPopup();
+    }, 800);
+  }
+  function setPopupMode(value) {
+    clearTimeout(popupTimer); popupTimer = 0; showing = ''; pending = []; previous = null;
+    popupMode = !!value;
+    if (popupMode && !homes.length) {
+      var bar = document.querySelector('#game-screen .game-hud');
+      if (bar) ['mole-status', 'btn-back-to-hub'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) homes.push({el:el, parent:el.parentNode, next:el.nextSibling});
+      });
+      homes.forEach(function (home) { bar.appendChild(home.el); });
+    } else if (!popupMode) {
+      homes.forEach(function (home) { home.parent.insertBefore(home.el, home.next && home.next.parentNode === home.parent ? home.next : null); });
+      homes = [];
+    }
+    ['score', 'combo'].forEach(function (key) {
+      var box = document.querySelector('#mole-status .ms-' + key);
+      if (box) box.classList.remove('is-hud-popup');
+    });
+  }
+  function updatePopups(state) {
+    if (!popupMode) return;
+    var values = {score: state.score || 0, combo: state.combo || 0};
+    if (previous) ['score', 'combo'].forEach(function (key) {
+      if (values[key] !== previous[key] && key !== showing && pending.indexOf(key) < 0) pending.push(key);
+    });
+    previous = values; showNextPopup();
+  }
+
   function setAll(cls, text) {
     var els = document.querySelectorAll('#hud-ticker .' + cls);
     for (var i = 0; i < els.length; i++) els[i].textContent = text;
@@ -38,8 +77,9 @@
 
     var combo = document.getElementById('hud-combo');
     if (combo) combo.textContent = String(state.combo || 0);
+    updatePopups(state);
   }
 
-  var api = { update: update };
+  var api = { update: update, setPopupMode: setPopupMode };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HUD = api; }
 })(typeof window !== 'undefined' ? window : null);

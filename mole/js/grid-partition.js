@@ -12,7 +12,7 @@
   const V_TOP = 0.27;
   const V_BOTTOM = 0.88;
 
-  function partition({ gridSize }) {
+  function partition({ gridSize, checkerboard = false }) {
     const regions = [];
     const spawnPoints = [];
     const vStep = gridSize > 1 ? (V_BOTTOM - V_TOP) / (gridSize - 1) : 0;
@@ -26,7 +26,7 @@
           col,
           row,
           x: (col + 0.5) / gridSize,
-          y: V_TOP + row * vStep
+          y: checkerboard ? row / gridSize + (278 / 418) / gridSize : V_TOP + row * vStep
         });
         id++;
       }

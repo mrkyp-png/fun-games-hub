@@ -27,7 +27,7 @@
   const AIM_DX = 0.022;                // 타격점 미세보정: + = 오른쪽 (보드 폭 분수, 0.5mm ≈ 0.005 / 1cm ≈ 0.1)
   const AIM_DY = -0.055;               // 프레임 미상(빈 구멍 헛스윙 등) 시 폴백
   // 두더지 프레임별 타격점 세로보정 (사용자 지정, 스폰점 대비 보드 높이 분수) — 망치가 그 프레임의 헬멧을 때린다.
-  const AIM_DY_BY_FRAME = { full: -0.142, peek1: -0.076, peek2: -0.051, helmet: -0.031, mole2: -0.142, 'clay-mole': -0.163 }; // Clay: helmet crown at30deg, approved inside-hole anchor.
+  const AIM_DY_BY_FRAME = { full: -0.142, peek1: -0.076, peek2: -0.051, helmet: -0.031, mole2: -0.142, 'clay-mole': -0.158 }; // Clay: helmet crown at30deg, approved inside-hole anchor.
   const AIM_DX_BY_FRAME = { mole2: 0.0046, 'clay-mole': -0.022 }; // Clay helmet is centered; cancel the legacy +0.022 bias.
 
   // 대기 애니메이션(사용자 지정) — 유저가 잠깐 자리 비웠을 때(화장실 등) 심심하지 않게.
