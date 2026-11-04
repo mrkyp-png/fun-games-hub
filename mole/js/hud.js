@@ -41,6 +41,8 @@
         copy.remove();
       });
       rails.fittable.forEach(function (el) { el.style.fontSize = ''; el.style.transform = ''; });
+      if (rails.homeIcon) homeIconRestore(rails);
+      rails.homeIconSlot.remove(); rails.homeLabel.remove();
       rails.leading.remove(); rails.trailing.remove(); rails = null;
       screen.classList.remove('game-status-rails');
       screen.classList.remove('hud-compact');
@@ -62,7 +64,13 @@
     var label = document.createElement('span'); label.className = 'ms-label'; label.textContent = 'ROUND';
     var number = document.createElement('b'); number.id = 'hud-round-val'; number.className = 'ms-val'; number.textContent = '01';
     round.appendChild(label); round.appendChild(number);
-    var copies = [], values = [], fittable = [];
+    var homeIcon = home.querySelector('.hub-menu-ic');
+    var homeIconSlot = document.createElement('span'); homeIconSlot.className = 'hud-home-slot hud-home-icon';
+    var homeLabel = document.createElement('span'); homeLabel.className = 'hud-home-slot hud-home-label'; homeLabel.textContent = '홈';
+    if (homeIcon) { home.insertBefore(homeIconSlot, homeIcon); homeIconSlot.appendChild(homeIcon); }
+    else home.appendChild(homeIconSlot);
+    home.appendChild(homeLabel);
+    var copies = [], values = [], fittable = [homeLabel];
     [time, heart, score, round, combo].forEach(function (box) {
       box.classList.remove('is-hud-popup');
       var copy = document.createElement('span'); copy.className = 'hud-copy';
@@ -75,7 +83,7 @@
     [time, home, heart].forEach(function (el) { leading.appendChild(el); });
     [score, round, combo].forEach(function (el) { trailing.appendChild(el); });
     screen.appendChild(leading); screen.appendChild(trailing);
-    rails = {leading:leading, trailing:trailing, homes:homes, copies:copies, values:values, fittable:fittable};
+    rails = {leading:leading, trailing:trailing, homes:homes, copies:copies, values:values, fittable:fittable, home:home, homeIcon:homeIcon, homeIconSlot:homeIconSlot, homeLabel:homeLabel};
     screen.classList.add('game-status-rails');
     if (root.ResizeObserver) {
       rails.observer = new root.ResizeObserver(scheduleFit);
@@ -83,6 +91,10 @@
     }
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(scheduleFit);
     scheduleFit();
+  }
+
+  function homeIconRestore(state) {
+    state.home.insertBefore(state.homeIcon, state.homeIconSlot);
   }
 
   function setAll(cls, text) {

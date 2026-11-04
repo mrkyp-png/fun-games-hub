@@ -224,6 +224,9 @@
 #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail {
   position:absolute; display:flex; align-items:stretch; justify-content:space-between;
   gap:clamp(4px,var(--rail-gap),10px); z-index:25; pointer-events:none;
+  box-sizing:border-box; padding:2px; border:0; border-radius:var(--cell-radius);
+  background:linear-gradient(145deg,#fff,#f1f1ee);
+  box-shadow:inset 0 0 0 2px #303237,inset 0 3px 2px #ffffffb3,inset 0 -4px 0 #d0d2ce;
 }
 #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--leading {
   left:var(--board-left); top:calc(var(--layout-top) - var(--rail-gap) - var(--rail-depth));
@@ -236,9 +239,8 @@
 #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail > :is(.ms-box,#btn-back-to-hub) {
   position:relative; inset:auto; flex:1 1 0; width:0; min-width:0; height:100%;
   box-sizing:border-box; display:flex; align-items:center; justify-content:center; gap:4px;
-  padding:3px 5px; border:1px solid var(--cell-stroke); border-radius:var(--cell-radius);
-  background:linear-gradient(145deg,#fff,#f1f1ef); color:#303237;
-  box-shadow:inset 0 1px 1px #fff,0 1px 2px #00000012;
+  padding:2px 4px; border:0; border-radius:0;
+  background:transparent; color:#303237; box-shadow:none;
   opacity:1; visibility:visible;
 }
 #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail .ms-box::before { display:none; }
@@ -263,7 +265,16 @@
 #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail .ms-time.is-low .ms-val { color:#c52626; }
 #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail #btn-back-to-hub.nav-locked { opacity:.35; pointer-events:none; }
 #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail #btn-back-to-hub .hub-menu-ic { display:block; width:min(28px,max(8px,calc(var(--rail-depth) - 4px))); height:min(28px,max(8px,calc(var(--rail-depth) - 4px))); }
-#game-screen.clay-round-one.game-status-rails.hud-compact:not(.is-start) .hud-rail > :is(.ms-box,#btn-back-to-hub) { padding:2px 3px; }
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail > #btn-back-to-hub { gap:28px; }
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-home-slot {
+  flex:1 1 0; min-width:0; width:0; height:100%; display:flex; align-items:center; justify-content:center;
+}
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-home-icon .hub-menu-ic { max-width:100%; max-height:100%; }
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-home-label {
+  font-family:'Jua',sans-serif; font-weight:700; font-size:clamp(8px,calc(var(--rail-depth) - 8px),28px);
+  line-height:1; white-space:nowrap; writing-mode:horizontal-tb; transform-origin:center;
+}
+#game-screen.clay-round-one.game-status-rails.hud-compact:not(.is-start) .hud-rail > :is(.ms-box,#btn-back-to-hub) { padding:1px 2px; }
 #game-screen.clay-round-one.game-status-rails.hud-compact:not(.is-start) .hud-copy { flex-direction:row; gap:3px; }
 #game-screen.clay-round-one.game-status-rails.hud-compact:not(.is-start) .hud-rail :is(.ms-ic,.ms-clock) { display:none; }
 #game-screen.clay-round-one.game-status-rails.hud-compact:not(.is-start) .hud-rail .ms-label { font-size:8px; flex:0 0 auto; }
@@ -279,9 +290,11 @@
   }
   #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail { flex-direction:column; }
   #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail > :is(.ms-box,#btn-back-to-hub) {
-    flex-direction:column; width:100%; height:0; padding:5px 3px; gap:5px;
+    flex-direction:column; width:100%; height:0; padding:4px 2px; gap:5px;
   }
   #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-copy { width:100%; flex:0 0 auto; gap:4px; }
+  #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail > #btn-back-to-hub { gap:28px; }
+  #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-home-slot { width:100%; height:0; }
   #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail .ms-label { font-size:14px; }
   #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail .ms-val { font-size:44px; }
   #game-screen.clay-round-one.game-status-rails.hud-compact:not(.is-start) .hud-copy { flex-direction:column; }
