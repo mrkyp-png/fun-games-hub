@@ -7,7 +7,7 @@
   // body = 막히는 몸체 반지름, enter = 진입 지점에서 진입이 잡히는 반지름
   const B = { kind: 'building', body: 1.8, enter: 0.6 }, P = { kind: 'prop', body: 0.5, enter: 0.55 }; // enter: 몸체 가장자리에서 이 거리 안 = 건물에 닿음
   const SITES = [
-    { id: 'mole', action: 'lightMode', labelKey: 'mole.pad.gameMole', x: 0, z: -9, ...B, body: 2.0 },
+    { id: 'mole', action: 'lightMode', labelKey: 'mole.pad.gameMole', x: 0, z: -9, ...B, body: 2.4 },
     { id: 'rhythm', action: 'rhythm', labelKey: 'mole.pad.gameRhythm', x: 0, z: 9, ...B, body: 2.8 }, // 해변 오두막+클럽 폭 5.6
     { id: 'shop', action: 'shop', labelKey: 'mole.more.shop', x: -7, z: -5, ...B },
     { id: 'workshop', action: 'locker', labelKey: 'mole.pad.lblLocker', x: -9, z: 0, ...B },

@@ -21,7 +21,7 @@ for (const s of L.SITES) {
   assert.ok(L.allowed(e.x, e.z), s.action + ' 진입 지점이 걸을 수 있어야 함');
   assert.strictEqual(L.nearest(e.x, e.z) && L.nearest(e.x, e.z).action, s.action, s.action + ' 진입 지점 nearest');
 }
-assert.strictEqual(L.nearest(0, -6.6).action, 'lightMode', '건물에 닿으면 진입');
+assert.strictEqual(L.nearest(0, -6.4).action, 'lightMode', '건물에 닿으면 진입(게임기 body 2.4)');
 assert.strictEqual(L.nearest(0, -5.5), null, '건물에서 떨어져 있으면 안 들어감');
 assert.strictEqual(L.nearest(0, 0), null, '가운데 집 구멍에서는 아무 진입도 안 잡힘');
 
@@ -38,6 +38,7 @@ console.log('verify-home3d-layout: ok (' + L.SITES.length + ' sites)');
   const buf = fs.readFileSync(path.join(__dirname, '../mole/assets/home3d/plaza.glb'));
   const glb = RM.parseGLB(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.length));
   for (const s of L.SITES) {
+    if (s.action === 'lightMode') { const g = glb.json.nodes.find((x) => x.name === 'Sign_lightMode'); assert.ok(g && Math.hypot(g.translation[0] - s.x, g.translation[2] - s.z) < 0.3, '두더지팡 글자 = 기계 위 간판 상자'); continue; }
     const n = glb.json.nodes.find((x) => x.name === 'Sign_' + s.action);
     assert.ok(n && n.translation, s.action + ' 간판 노드');
     const [x, , z] = n.translation;

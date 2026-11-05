@@ -79,6 +79,8 @@
       } else if (route) route = null; // 막혀서 못 가면 멈춤
       view.x = next.x; view.z = next.z;
     }
+    // 시작 카메라: 구멍 안에서는 아래에서 올려다봄(큰 두더지팡 게임기 간판까지 보이게), 점프해 나오면 보통 각도로(사용자 지시 2026-11-06)
+    const INTRO_PITCH = -0.1, CAM_T = 0.9; let camK = 0;
     function jumping() { return jumpAt >= 0 && time - jumpAt < IN.jump.T; }
     function jump() {
       if (jumping()) return;
@@ -123,7 +125,9 @@
       } else if (riding) { const se = rd.seat(riding); if (se) { view.x = se.x; view.z = se.z; view.heading = se.heading; seatY = se.y; } walking = false; }
       else if (st.inputEnabled()) move(dt);
       if (!api.renderAllowed()) return; // move 안에서 기능 화면이 열렸으면 멈춤
-      rd.render(view, pose());
+      camK = st.state === 'INTRO' && !hop ? 0 : Math.min(1, camK + dt / CAM_T);
+      const ck = camK * camK * (3 - 2 * camK);
+      rd.render(camK >= 1 ? view : Object.assign({}, view, { pitch: INTRO_PITCH + (view.pitch - INTRO_PITCH) * ck }), pose());
       if (time - badgeAt > 1) { badgeAt = time; badges = claimables(MG); } // 1초마다 확인
       ui.setBadges(badges.map((a) => { const s = L.SITES.find((x) => x.action === a), q = s && MG.Home3DRenderer.project(rd.vp(), [s.x, s.kind === 'building' ? 3.4 : 1.9, s.z]), z = rd.size(); return q && z && { action: a, x: (q[0] + 1) / 2 * z.cw, y: (1 - q[1]) / 2 * z.ch, on: Math.abs(q[0]) < 1.1 && Math.abs(q[1]) < 1.1 }; }).filter(Boolean));
       near = L.nearest(view.x, view.z);

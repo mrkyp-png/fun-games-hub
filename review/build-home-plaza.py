@@ -118,19 +118,22 @@ for i in range(88):
     box('Fence rail', (math.cos(a) * 11.65, math.sin(a) * 11.65, .55), (.07, .86, .08), M['fence'], .02, a)
 
 # ---------- 건물 ----------
-def mole_booth():   # 두더지팡: 게임 부스(줄무늬 차양·전구 간판틀·경품 선반)
-    p = [box('Booth back', (0, .9, 1.5), (3.6, .3, 3.0), M['cream']),
-         box('Booth counter', (0, -.6, .55), (3.6, .9, 1.1), M['sky']),
-         box('Counter top', (0, -.6, 1.13), (3.8, 1.0, .1), M['cream'], .03),
-         box('Prize shelf', (0, .6, 1.9), (3.0, .5, .1), M['wood'], .03)]
-    for i, m in enumerate([M['coral'], M['yellow'], M['mint'], M['sky'], M['coral']]):
-        p.append(ball('Prize', (-1.2 + i * .6, .6, 2.2), .22, m))
-    for sx in (-1.7, 1.7): p.append(cyl('Booth post', (sx, -.9, 1.6), .1, 3.2, M['cream'], 12, .02))
-    for i in range(8):  # 줄무늬 차양
-        p.append(box('Awning stripe', (-1.575 + i * .45, -.55, 3.25), (.45, 1.5, .1), M['coral'] if i % 2 == 0 else M['cream'], .02, 0))
-    for o in p[-8:]: o.rotation_euler = (math.radians(14), 0, 0)
-    for i in range(11): p.append(ball('Bulb', (-1.5 + i * .3, -1.05, 3.85), .07, M['bulb']))
-    return p + sign('lightMode', 4.25, 2.6, .75, -1.05)
+ARCADE_K = 2.84   # 사용자 '지금보다 2배 더 키워'(1.42 → 2.84)
+def mole_booth():   # 두더지팡: 아케이드 게임기(review/build-arcade-mole.py, 사용자 승인 2026-11-06). 간판·화면은 비워 둠(사용자 지시)
+    before = set(bpy.context.scene.objects)
+    bpy.ops.import_scene.gltf(filepath=str(ROOT / 'review/home3d-src/arcade-mole.glb'))
+    p = [o for o in bpy.context.scene.objects if o not in before and o.type == 'MESH']
+    for o in list(bpy.context.scene.objects):
+        if o not in before and o.type != 'MESH': bpy.data.objects.remove(o)
+    for o in p:
+        o.parent = None; o.scale = (ARCADE_K,) * 3; o.location = tuple(v * ARCADE_K for v in o.location)
+    # 나무 이름판은 삭제(사용자 지시). 글자는 기계 위 간판 상자 앞면에(Sign_lightMode, 간판 판 크기 0.9×0.22 × K)
+    k = ARCADE_K
+    bpy.ops.mesh.primitive_plane_add(size=1, location=(0, (0.6 - 0.53 - 0.015) * k - .006, 2.52 * k), rotation=(math.pi / 2, 0, 0))
+    face = bpy.context.object; face.name = 'Sign_lightMode'; face.scale = (0.86 * k, 0.2 * k, 1)
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    face.data.materials.append(M['sign'])
+    return p + [face]
 
 def rhythm_house():  # 리듬팡: 왼쪽 해변 오두막 / 오른쪽 미래형 클럽(늘 둘 다 보임)
     p = [box('Beach hut', (-1.3, .2, 1.2), (2.4, 2.2, 2.4), M['wood']),
@@ -206,6 +209,25 @@ bpy.context.view_layer.objects.active = next(o for o in bpy.context.scene.object
 bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 # 재질 색 → 정점 색(COLOR_0)으로 옮기고 한 재질로 병합: 바닥(체크)·바다(물결 작업 8)·간판판만 따로 → 그리기 횟수 최소
 CLAY = mat('Home clay', (1, 1, 1))
+_avg = {}
+def mat_rgb(m):
+    if m is None: return (1, 1, 1, 1)
+    p = m.node_tree.nodes.get('Principled BSDF') if m.use_nodes and m.node_tree else None
+    if p:
+        bc = p.inputs['Base Color']
+        if bc.is_linked:
+            img = next((n.image for n in m.node_tree.nodes if n.type == 'TEX_IMAGE' and n.image), None)
+            if img:
+                if img.name not in _avg:
+                    px = list(img.pixels); n = len(px) // 4
+                    _avg[img.name] = tuple(sum(px[i::4]) / n for i in range(3)) + (1,)
+                return _avg[img.name]
+        c = tuple(bc.default_value)
+        # 광장 재질(Home*/Hub*)은 숫자 = 화면 색. 불러온 모델(게임기·뿅망치)은 선형 색이라 화면 색으로 되돌림
+        if not (m.name.startswith('Home') or m.name.startswith('Hub')):
+            c = tuple((12.92 * x) if x <= .0031308 else (1.055 * x ** (1 / 2.4) - .055) for x in c[:3]) + (1,)
+        return c
+    return tuple(m.diffuse_color)
 SEPARATE = {'Hub checker floor', 'Home sea'}
 groups = {}
 for o in list(bpy.context.scene.objects):
@@ -213,9 +235,11 @@ for o in list(bpy.context.scene.objects):
     mname = o.data.materials[0].name
     if mname in SEPARATE:
         groups.setdefault(mname, []).append(o); continue
-    rgb = tuple(o.data.materials[0].diffuse_color)
-    ca = o.data.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
-    for d in ca.data: d.color = rgb
+    cols = [mat_rgb(m) for m in o.data.materials]
+    ca = o.data.color_attributes.new('Col', 'FLOAT_COLOR', 'CORNER')
+    for poly in o.data.polygons:
+        c = cols[poly.material_index] if poly.material_index < len(cols) else cols[0]
+        for li in poly.loop_indices: ca.data[li].color = c
     o.data.color_attributes.active_color = ca
     o.data.materials.clear(); o.data.materials.append(CLAY)
     groups.setdefault('Home clay', []).append(o)
