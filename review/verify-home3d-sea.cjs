@@ -15,8 +15,8 @@ for (let i = 0; i < 200; i++) {
   maxA = Math.max(maxA, Math.abs(a)); maxStep = Math.max(maxStep, Math.abs(b - a));
   moved += Math.abs(RD.seaHeight(x, z, t + 1.5) - a);
 }
-assert.ok(maxA <= 0.08 && maxA > 0.01, '잔잔한 진폭 ' + maxA);
-assert.ok(maxStep < 0.01, '끊김 없이 연속 ' + maxStep);
+assert.ok(maxA <= 0.13 && maxA > 0.05, '눈에 보이되 잔잔한 진폭 ' + maxA);
+assert.ok(maxStep < 0.015, '끊김 없이 연속 ' + maxStep);
 assert.ok(moved > 0.5, '물결이 실제로 움직임');
 // 바다 격자: 한 번에 그리는 판 1장(정점 수 제한 — 저사양 폰)
 const g = RD.seaGrid(48, 60);

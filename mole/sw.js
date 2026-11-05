@@ -75,7 +75,8 @@
 // V1593 G: joined 18-cell field, inverse control tiles and responsive six-slot HUD rails.
 // V1605 G: clay character, enlarged pain-eye expression, RGB vertex colors and bomb shell centering.
 // V1609 C: 3D 홈(?home3d=1 검토 전용) 바다 물결·빨간 점 알림, 화면 버전 표시를 커밋 번호와 맞춤(V1606~1608 C 는 home3d 가지 커밋).
-const CACHE = 'mole-game-v1609-C';
+// V1610 C: 3D 홈 바다를 실제 물결 모양으로(6겹 방향 물결 법선·하늘 반사·햇빛 반짝임·얕은 해안색·해안 거품).
+const CACHE = 'mole-game-v1610-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.

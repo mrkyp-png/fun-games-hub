@@ -37,7 +37,7 @@
 
   // 바다 물결 높이(셰이더 SEA_H 와 같은 식) — 잔잔하게, 진폭 ≤ 0.075
   function seaHeight(x, z, t) {
-    return 0.035 * Math.sin(0.55 * x + 1.1 * t) + 0.025 * Math.sin(0.8 * z - 0.9 * t + 1.3) + 0.015 * Math.sin(0.37 * (x + z) + 1.7 * t);
+    return 0.06 * Math.sin(0.55 * x + 1.1 * t) + 0.04 * Math.sin(0.8 * z - 0.9 * t + 1.3) + 0.02 * Math.sin(0.37 * (x + z) + 1.7 * t);
   }
   // 바다 판: n×n 칸 격자(한 번에 그리는 판 1장), 반지름 R
   function seaGrid(n, R) {
@@ -53,13 +53,13 @@ precision highp float;
 in vec3 aPosition;in vec3 aNormal;in vec4 aColor;in vec4 aJoints;in vec4 aWeights;in vec2 aUV;
 uniform mat4 uVP,uModel,uBones[44];uniform mat3 uNormal;uniform bool uSkin,uSea;uniform float uTime;
 out vec3 vWorld,vNormal;out vec4 vColor;out vec2 vUV;
-float seaH(vec2 p,float t){return .035*sin(.55*p.x+1.1*t)+.025*sin(.8*p.y-.9*t+1.3)+.015*sin(.37*(p.x+p.y)+1.7*t);}
+float seaH(vec2 p,float t){return .06*sin(.55*p.x+1.1*t)+.04*sin(.8*p.y-.9*t+1.3)+.02*sin(.37*(p.x+p.y)+1.7*t);}
 void main(){mat4 skin=mat4(1.);if(uSkin)skin=uBones[int(aJoints.x)]*aWeights.x+uBones[int(aJoints.y)]*aWeights.y+uBones[int(aJoints.z)]*aWeights.z+uBones[int(aJoints.w)]*aWeights.w;vec4 p=uModel*skin*vec4(aPosition,1.);vWorld=p.xyz;vNormal=normalize(uNormal*mat3(skin)*aNormal);if(uSea){float e=.2;p.y+=seaH(p.xz,uTime);float hx=seaH(p.xz+vec2(e,0.),uTime)-seaH(p.xz-vec2(e,0.),uTime),hz=seaH(p.xz+vec2(0.,e),uTime)-seaH(p.xz-vec2(0.,e),uTime);vNormal=normalize(vec3(-hx/(2.*e),1.,-hz/(2.*e)));vWorld=p.xyz;}vColor=aColor;vUV=aUV;gl_Position=uVP*p;}`;
   const FS = `#version 300 es
 precision highp float;
 in vec3 vWorld,vNormal;in vec4 vColor;in vec2 vUV;uniform vec4 uColor;uniform bool uFloor,uSign,uSea;uniform float uTime;uniform sampler2D uTex;uniform vec3 uEye;uniform vec2 uPlayer;out vec4 frag;
 void main(){vec3 n=normalize(vNormal),base=uColor.rgb*vColor.rgb;float shadow=1.;
-if(uSea){float d=min(length(vWorld.xz)-12.,length(vWorld.xz-vec2(0.,3.2))-13.6);float foam=smoothstep(1.,0.,d)*(.55+.45*sin(7.*d-2.2*uTime));vec3 V=normalize(uEye-vWorld),Ls=normalize(vec3(-.6,1.,.7));float spark=pow(max(0.,dot(reflect(-Ls,normalize(vNormal)),V)),60.);vec3 c=mix(vec3(.30,.66,.78),vec3(.52,.82,.88),.5+.5*normalize(vNormal).x*3.);c=mix(c,vec3(1.),clamp(foam,0.,1.)*.75)+spark*.6;float fog=smoothstep(22.,60.,length(uEye-vWorld));frag=vec4(mix(pow(clamp(c,0.,1.),vec3(1./1.1)),vec3(.73,.82,.88),fog),1.);return;}
+if(uSea){vec2 p=vWorld.xz;float t=uTime;vec2 g=vec2(0.);const vec3 W[6]=vec3[6](vec3(.90,.42,.45),vec3(-.55,.83,.62),vec3(.20,-.98,.85),vec3(-.94,-.33,1.4),vec3(.70,.71,2.1),vec3(-.15,.99,3.0));for(int i=0;i<6;i++){vec2 dir=normalize(W[i].xy);float k=W[i].z,amp=.09/k;float ph=dot(dir,p)*k*1.3+t*sqrt(9.8*k)*.55+float(i)*1.7;g+=dir*cos(ph)*amp*k*1.3;}vec3 n=normalize(vec3(-g.x,1.,-g.y));vec3 V=normalize(uEye-vWorld),Ls=normalize(vec3(-.6,1.,.7));float d=min(length(p)-12.,length(p-vec2(0.,3.2))-13.6);vec3 deep=vec3(.06,.30,.52),shallow=vec3(.20,.66,.70),body=mix(shallow,deep,smoothstep(.5,9.,d));vec3 sky=mix(vec3(.70,.84,.94),vec3(.45,.66,.86),clamp(reflect(-V,n).y,0.,1.));float fres=.06+.94*pow(1.-max(0.,dot(n,V)),5.);vec3 c=mix(body,sky,fres);c+=vec3(1.,.97,.9)*pow(max(0.,dot(reflect(-Ls,n),V)),180.)*1.6;float foam=smoothstep(.9,0.,d)*(.6+.4*sin(d*6.-t*1.8+g.x*8.));c=mix(c,vec3(.96,.98,1.),clamp(foam,0.,1.)*.7);float fog=smoothstep(26.,62.,length(uEye-vWorld));frag=vec4(mix(clamp(c,0.,1.),vec3(.73,.82,.88),fog),1.);return;}
 if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=max(0.,(dot(n,normalize(vec3(-.6,1.,.7)))+.4)/1.4);frag=vec4(c*(.86+.14*k),1.);return;}if(uFloor){float tile=mod(floor(vWorld.x/1.5)+floor(vWorld.z/1.5),2.);base=mix(vec3(.78,.72,.61),vec3(.31,.30,.28),tile);vec2 d=(vWorld.xz-uPlayer)/vec2(.67,.48);shadow=1.-.34*exp(-dot(d,d)*1.8);}float key=max(0.,(dot(n,normalize(vec3(-.6,1.,.7)))+.4)/1.4);float fill=max(0.,dot(n,normalize(vec3(.8,.4,-.5))));vec3 lit=base*(vec3(.39,.40,.43)+key*.62+fill*vec3(.08,.10,.13));vec3 h=normalize(normalize(uEye-vWorld)+normalize(vec3(-.6,1.,.7)));lit+=vec3(.04)*pow(max(0.,dot(n,h)),14.);lit*=shadow;float fog=smoothstep(20.,46.,length(uEye-vWorld));frag=vec4(mix(pow(clamp(lit,0.,1.),vec3(1./2.2)),vec3(.73,.82,.88),fog),uColor.a*vColor.a);}`;
 
   function create(canvas) {
