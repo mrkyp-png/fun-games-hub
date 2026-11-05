@@ -41,6 +41,18 @@ def slab(name, loc, size, m, R, bev=0.03):
     md = o.modifiers.new('bev', 'BEVEL'); md.width = bev; md.segments = 4; md.limit_method = 'ANGLE'
     o.data.materials.append(m); bpy.ops.object.shade_smooth(); return o
 
+# 사용자 '게임기 높이를 40% 줄여 → 아래 몸통을 줄여야'(2026-11-06): 받침 위~구멍판 아래(0.14~1.10)만 × 0.6, 그 위는 줄어든 만큼 내림
+# + '화면과 구멍 사이 분홍색 부위만 줄여'(맨 위 간판 상자·화면은 유지): 구멍판 윗면 1.22 ~ 화면 틀 아래 1.65 만 × 0.5
+LB0, LB1, LK = 0.14, 1.10, 0.6
+GB0, GB1, GK = 1.22, 1.65, 0.5
+def mz(z):
+    d1 = (LB1 - LB0) * (1 - LK)
+    if z <= LB0: return z
+    if z <= LB1: return LB0 + (z - LB0) * LK
+    if z <= GB0: return z - d1
+    if z <= GB1: return GB0 - d1 + (z - GB0) * GK
+    return z - d1 - (GB1 - GB0) * (1 - GK)
+KEEP = {'coin'}   # 모양 유지하고 위치만 내림(동전 구멍판)
 W, DP = 1.0, 1.2          # 몸통 폭(x)·깊이(y), 앞면 = -y
 # 받침·아래 몸통
 box('base', (0, 0, 0.07), (W + 0.08, DP + 0.08, 0.14), GREY, 0.03)
@@ -78,12 +90,25 @@ for k, m in ((0, CREAM), (1, BLUE)):
     s.rotation_euler = (math.radians(28), 0, 0)
     md = s.modifiers.new('cut', 'BOOLEAN'); md.object = clip; md.operation = 'INTERSECT'
 # 오른쪽 걸이 + 줄 판
-box('hook_plate', (W / 2 + 0.06, 0.0, 1.5), (0.14, 0.08, 0.05), BLUE, 0.02)
+box('hook_plate', (W / 2 + 0.1, 0.0, 1.2), (0.2, 0.05, 0.04), BLUE, 0.015)  # 망치 머리 아래 손잡이 목을 받침(머리를 뚫지 않게)
 box('cord_plate', (W / 2 + 0.03, -0.25, 0.92), (0.05, 0.12, 0.12), BLUE, 0.02)
 
 # 게임 뿅망치(원본 GLB) — 걸이에 머리를 걸고 손잡이는 아래로
 bpy.ops.import_scene.gltf(filepath=os.path.join(D, 'mallet-game.glb'))
 imp = [o for o in bpy.context.selected_objects]
+# 가볍게(사용자: 뿅망치 무겁다 → 가볍게): 부품마다 면 수 줄이기. 야구공 무늬는 그림을 입히려고 Tex_ 이름으로 따로 둠
+for o in imp:
+    if o.type != 'MESH': continue
+    if 'baseball badge' in o.name:
+        o.name = 'Tex_badge' + ('_a' if o.name.endswith('-1') else '_b'); ratio = 1.0
+    elif 'center sleeve' in o.name:
+        ratio = 1.0    # 야구공 뒤 몸통: 줄이면 야구공 앞으로 하늘색 줄이 비집고 나옴(사용자 지적)
+    elif 'striking bell' in o.name:
+        ratio = 0.15   # 큰 빨간 머리만 많이 줄임
+    else:
+        ratio = 0.45   # 작은 둥근 부품(손잡이 끝·띠·연결부)은 덜 줄여 울퉁불퉁 노이즈 없게
+    md = o.modifiers.new('light', 'DECIMATE'); md.ratio = ratio
+MALLET = set(o.name for o in imp)
 root = [o for o in imp if o.parent is None]
 xs = []
 for o in imp:
@@ -104,7 +129,7 @@ face_d = ext[2]  # 타격면 = 원 지름(가장 큰 두 변이 같은 지름)
 HOLE_D = 0.24
 s = HOLE_D / ext[1]; grp.scale = (s, s, s)
 print('BELL ext', ext, 'scale', s, 'face ->', ext[1] * s)
-grp.rotation_euler = (0, 0, math.radians(90)); grp.location = (W / 2 + 0.2, 0.0, 1.38)
+grp.rotation_euler = (0, 0, math.radians(90)); grp.location = (W / 2 + 0.2, 0.0, mz(1.2) + 0.18)   # 걸이(1.2)와 같은 만큼 내려 걸이 위 자리 유지
 bpy.context.view_layer.update()
 bpy.context.view_layer.update()
 pm = [o for o in imp if o.name.startswith('Ivory rounded pommel')][0]
@@ -112,9 +137,9 @@ pp = [pm.matrix_world @ mathutils.Vector(v) for v in pm.bound_box]
 ax, ay = sum(p[0] for p in pp) / 8, sum(p[1] for p in pp) / 8
 az = min(p[2] for p in pp) + 0.006   # 마개 바닥 안쪽에서 시작 → 틈 없음
 print('POMMEL', ax, ay, az)
-bx, by, bz = W / 2 + 0.05, -0.25, 0.92
-cu = bpy.data.curves.new('cord', 'CURVE'); cu.dimensions = '3D'; cu.bevel_depth = 0.008; cu.bevel_resolution = 2
-sp = cu.splines.new('POLY'); N = 260; sp.points.add(N - 1)
+bx, by, bz = W / 2 + 0.05, -0.25, mz(0.92)
+cu = bpy.data.curves.new('cord', 'CURVE'); cu.dimensions = '3D'; cu.bevel_depth = 0.008; cu.bevel_resolution = 1
+sp = cu.splines.new('POLY'); N = 180; sp.points.add(N - 1)
 for k in range(N):
     t = k / (N - 1); sag = -0.18 * math.sin(math.pi * t)
     cx, cy, cz = ax + (bx - ax) * t, ay + (by - ay) * t, az + (bz - az) * t + sag
@@ -140,6 +165,13 @@ for o in list(sc.objects):
     if o.type == 'EMPTY': bpy.data.objects.remove(o)
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+for o in sc.objects:   # 아래 몸통만 낮춤(뿅망치·줄은 이미 낮춘 자리에 놓음)
+    if o.type != 'MESH' or o.name in MALLET or o.name == 'cord': continue
+    if o.name in KEEP:
+        zs = [v.co.z for v in o.data.vertices]; c = (min(zs) + max(zs)) / 2; d = mz(c) - c
+        for v in o.data.vertices: v.co.z += d
+    else:
+        for v in o.data.vertices: v.co.z = mz(v.co.z)
 bpy.ops.export_scene.gltf(filepath=os.path.join(D, 'arcade-mole.glb'), export_format='GLB', export_animations=False, export_apply=True)
 tris = sum(sum(len(p.vertices) - 2 for p in o.data.polygons) for o in sc.objects if o.type == 'MESH')
 print('ARCADE_READY tris=%d' % tris)

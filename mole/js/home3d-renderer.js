@@ -231,10 +231,22 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
       gl.uniformMatrix4fv(U.Model, false, world); gl.uniformMatrix3fv(U.Normal, false, R.normals(world));
       gl.uniform1i(U.Skin, !!bones); gl.uniform1i(U.Actor, !!bones); if (bones) gl.uniformMatrix4fv(U.Bones, false, bones);
       gl.uniform1i(U.Floor, m.floor); gl.uniform1i(U.Sea, !!m.sea); gl.uniform4fv(U.Color, m.color);
-      const st = m.sign && signs && signs.get(m.sign);
+      const st = (m.sign && signs && signs.get(m.sign)) || m.tex || null;
       gl.uniform1i(U.Sign, !!st);
       if (st) { gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, st); gl.uniform1i(U.Tex, 0); }
       if (m.indexed) gl.drawElements(gl.TRIANGLES, m.count, gl.UNSIGNED_INT, 0); else gl.drawArrays(gl.TRIANGLES, 0, m.count);
+    }
+    async function glbTexture(model, prim) {
+      const g = model.json, mt = g.materials && g.materials[prim.material], ti = mt && mt.pbrMetallicRoughness && mt.pbrMetallicRoughness.baseColorTexture;
+      const img = ti && g.images[g.textures[ti.index].source], bv = img && g.bufferViews[img.bufferView];
+      if (!bv) throw Error('no texture');
+      const bytes = model.bin.subarray(bv.byteOffset || 0, (bv.byteOffset || 0) + bv.byteLength);
+      const bmp = await createImageBitmap(new Blob([bytes], { type: img.mimeType || 'image/png' }));
+      const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bmp); gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      return t;
     }
     async function load(url) {
       const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 15000);
@@ -246,7 +258,9 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
         setup();
         const [plaza, mole] = await Promise.all([load(plazaUrl), load(moleUrl)]);
         // Sign_<action> 판 = 간판 글자 텍스처 자리
-        environment = R.instances(plaza).map((i) => Object.assign(mesh(plaza, i.primitive), { world: i.world, sign: i.name.startsWith('Sign_') ? i.name.slice(5) : null }));
+        environment = R.instances(plaza).map((i) => Object.assign(mesh(plaza, i.primitive), { world: i.world, sign: i.name.startsWith('Sign_') ? i.name.slice(5) : null, tex: null, texPrim: i.name.startsWith('Tex_') ? i.primitive : null }));
+        // Tex_* = GLB 안 그림을 입힌 부품(뿅망치 야구공). 그림이 준비되면 입힘(그 전엔 정점색)
+        for (const m of environment) if (m.texPrim) glbTexture(plaza, m.texPrim).then((t) => { m.tex = t; }).catch(() => {});
         signs = root.MoleGame.Home3DSigns.create(gl);
         environment = environment.filter((m) => !m.sea); // GLB 의 평평한 바다 판 대신 움직이는 격자
         { const sg = seaGrid(48, 60), vao = gl.createVertexArray(); gl.bindVertexArray(vao);
@@ -294,7 +308,7 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
         if (now - staticAt > 1 || !staticVP) {
           staticAt = now;
           staticVP = R.multiply(ortho(-17, 17, -17, 17, 1, 80), R.lookAt([sun[0] * 40, sun[1] * 40, sun[2] * 40], [0, 0, 0]));
-          shadowPass(shadowS, staticVP, () => { for (const m of environment) if (!m.sign) draw(m, m.world, null); for (const rd of rides) draw(rd.base, rd.world, null); });
+          shadowPass(shadowS, staticVP, () => { for (const m of environment) if (!m.sign && !m.texPrim) draw(m, m.world, null); for (const rd of rides) draw(rd.base, rd.world, null); });
         }
         const mc = [view.x, (pose.y || 0) + 0.8, view.z];
         const moleVP = R.multiply(ortho(-2.6, 2.6, -2.6, 2.6, 1, 60), R.lookAt([mc[0] + sun[0] * 30, mc[1] + sun[1] * 30, mc[2] + sun[2] * 30], mc));

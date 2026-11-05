@@ -45,7 +45,7 @@
     };
     if (qs.get('h3debug') === '1') { // 검토용 훅(공개 주소엔 없음)
       root.__home3d = api;
-      api.warp = (x, z) => { if (st.state === 'EXPLORE' && !riding) { view.x = x; view.z = z; } };
+      api.warp = (x, z, yaw) => { if (st.state === 'EXPLORE' && !riding) { view.x = x; view.z = z; if (yaw !== undefined) view.yaw = yaw; } };
     }
 
     function show(on) { if (ui) ui.show(on); }

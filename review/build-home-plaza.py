@@ -126,11 +126,14 @@ def mole_booth():   # 두더지팡: 아케이드 게임기(review/build-arcade-m
     for o in list(bpy.context.scene.objects):
         if o not in before and o.type != 'MESH': bpy.data.objects.remove(o)
     for o in p:
+        for mm in o.data.materials:   # 그림은 256 으로 줄여 담음(가볍게)
+            img = next((n.image for n in mm.node_tree.nodes if n.type == 'TEX_IMAGE' and n.image), None) if mm and mm.use_nodes else None
+            if img and img.size[0] > 256: img.scale(256, 256)
         o.parent = None; o.scale = (ARCADE_K,) * 3; o.location = tuple(v * ARCADE_K for v in o.location)
     # 나무 이름판은 삭제(사용자 지시). 글자는 기계 위 간판 상자 앞면에(Sign_lightMode, 간판 판 크기 0.9×0.22 × K)
     k = ARCADE_K
-    bpy.ops.mesh.primitive_plane_add(size=1, location=(0, (0.6 - 0.53 - 0.015) * k - .006, 2.52 * k), rotation=(math.pi / 2, 0, 0))
-    face = bpy.context.object; face.name = 'Sign_lightMode'; face.scale = (0.86 * k, 0.2 * k, 1)
+    bpy.ops.mesh.primitive_plane_add(size=1, location=(0, (0.6 - 0.53 - 0.015) * k - .006, (2.52 - .384 - .215) * k), rotation=(math.pi / 2, 0, 0))
+    face = bpy.context.object; face.name = 'Sign_lightMode'; face.scale = (0.86 * k, 0.2 * k, 1)   # 간판 상자는 그대로, 아래 몸통(0.384)·화면 아래 분홍 틈(0.215)이 줄어든 만큼 내려감(build-arcade-mole.py mz)
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     face.data.materials.append(M['sign'])
     return p + [face]
@@ -231,7 +234,7 @@ def mat_rgb(m):
 SEPARATE = {'Hub checker floor', 'Home sea'}
 groups = {}
 for o in list(bpy.context.scene.objects):
-    if o.type != 'MESH' or o.name.startswith('Sign_'): continue
+    if o.type != 'MESH' or o.name.startswith('Sign_') or o.name.startswith('Tex_'): continue  # Tex_ = 그림 입힌 부품(뿅망치 야구공), 그림 재질 유지
     mname = o.data.materials[0].name
     if mname in SEPARATE:
         groups.setdefault(mname, []).append(o); continue
