@@ -484,6 +484,8 @@
   // V1535 C: 떼고 두 프레임 뒤에 다시 붙여 매번 처음부터 재생(한 프레임 뒤면 브라우저가 뗀 상태를 못 봐 가끔만 흔들렸음).
   // offsetWidth 강제 배치 계산은 쓰지 않는다(V1534 C 성능 개선 유지).
   function shake(boardEl) {
+    const clay = root.MoleGame && root.MoleGame.ClayRoundOne;
+    if (clay && clay.shakeBoard && clay.shakeBoard(boardEl)) return;
     boardEl.classList.remove('mole-board--shake');
     cancelAnimationFrame(boardEl._shakeRaf);
     boardEl._shakeRaf = requestAnimationFrame(() => { boardEl._shakeRaf = requestAnimationFrame(() => boardEl.classList.add('mole-board--shake')); });

@@ -3,6 +3,32 @@
 const MG=root.MoleGame,R=root.StudioRig,base='assets/checkerboard-v1590/';
 let active=false,ready=false,loading=null,pending=false,generation=0,clockTime=0,lastClock=0,canvas,paint,queued=false;
 const entries=new Map();
+let boardShake=null,boardShakeRequest=null;
+function shakeNow(){return root.performance?root.performance.now():Date.now()}
+function stopBoardShake(){boardShakeRequest=null;if(boardShake){boardShake.animation.cancel();boardShake=null}}
+function shakeBoard(board){
+ if(!active||!ready||board!==document.getElementById('mole-board')||!board.animate)return false;
+ cancelAnimationFrame(board._shakeRaf);
+ // A hit can arrive after this frame's canvas draw. Queue the restart too.
+ boardShakeRequest={board,startedAt:shakeNow()};return true;
+}
+function syncBoardShake(){
+ if(boardShakeRequest){
+  const {board,startedAt}=boardShakeRequest;stopBoardShake();
+  board.classList.remove('mole-board--shake');
+  const animation=board.animate([
+   {transform:'translate(0, 0)'},{transform:'translate(-4px, 3px)'},
+   {transform:'translate(3px, -2px)'},{transform:'translate(-2px, 2px)'},
+   {transform:'translate(0, 0)'}
+  ],{duration:200,easing:'ease-out',fill:'both'});
+  // Never let the compositor advance the tiles beyond the canvas frame.
+  animation.pause();animation.currentTime=0;boardShake={board,animation,startedAt};
+ }
+ if(!boardShake)return;
+ const elapsed=Math.max(0,shakeNow()-boardShake.startedAt);
+ if(elapsed>=200){stopBoardShake();return}
+ boardShake.animation.currentTime=elapsed;
+}
 let gridSize=3,feverField=false;
 function setGridSize(n){gridSize=n===4?4:3;document.getElementById('game-screen').style.setProperty('--checker-grid',gridSize)}
 function setFeverField(value){feverField=!!value;if(!canvas)return;canvas.classList.toggle('clay-mole-canvas--field',feverField);document.getElementById('game-screen').appendChild(canvas)}
@@ -127,6 +153,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
  const angle=Math.PI/6,eye=[0,1+10*Math.sin(angle),10*Math.cos(angle)];
  gl.uniform3fv(loc.uEye,eye);
  paint=()=>{
+  syncBoardShake();
   const dpr=Math.min(devicePixelRatio||1,1.5),size=Math.max(1,Math.round(board.clientWidth*dpr));
   const horizontal=feverField&&root.matchMedia('(orientation:landscape)').matches;
   const headroom=Math.round(size*.16),viewportHeight=size+headroom;
@@ -200,7 +227,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
 function prepare(){if(ready)return Promise.resolve(true);if(!loading)loading=initialize().catch(e=>{canvas?.remove();loading=null;throw e});return loading}
 function frame(){queued=false;if(!active)return;if(!document.hidden)paint();queued=true;requestAnimationFrame(frame)}
 function applyOrientation(){try{const orientation=root.screen?.orientation;if(orientation?.lock)orientation.lock(active?'any':'portrait').catch(()=>{});}catch(e){/* Keep responsive layout when orientation locking is unavailable. */}}
-function setActive(value){if(MG.HUD&&MG.HUD.setPopupMode)MG.HUD.setPopupMode(!!value);active=!!value;applyOrientation();document.getElementById('game-screen').classList.toggle('clay-round-one',active);if(canvas)canvas.hidden=!active;if(!active){generation++;pending=false;entries.clear();lastClock=0;if(paint)paint()}else if(!queued){queued=true;requestAnimationFrame(frame)}}
+function setActive(value){if(MG.HUD&&MG.HUD.setPopupMode)MG.HUD.setPopupMode(!!value);active=!!value;applyOrientation();document.getElementById('game-screen').classList.toggle('clay-round-one',active);if(canvas)canvas.hidden=!active;if(!active){stopBoardShake();generation++;pending=false;entries.clear();lastClock=0;if(paint)paint()}else if(!queued){queued=true;requestAnimationFrame(frame)}}
 function wait(callback){if(ready)return false;if(pending)return true;pending=true;const token=generation;const attempt=()=>prepare().then(()=>{if(token!==generation)return;pending=false;callback()}).catch(e=>{console.error('Local clay preparation',e);if(token===generation)setTimeout(attempt,1000)});attempt();return true}
 function renderPop(m){
  if(!active||!canRender(m))return false;
@@ -214,9 +241,9 @@ function renderPop(m){
 }
 
 function clock(now){if(lastClock)clockTime+=Math.min(.05,Math.max(0,(now-lastClock)/1000));lastClock=now}
-function clear(){entries.clear();lastClock=0;if(paint)paint()}
+function clear(){stopBoardShake();entries.clear();lastClock=0;if(paint)paint()}
 function flash(m){if(active&&canRender(m))m._clayFlashUntil=clockTime+.09}
-MG.ClayRoundOne={prepare,wait,setActive,setGridSize,setFeverField,getGridSize:()=>gridSize,renderPop,clock,clear,flash,animalVariant,canRender,clipFor,poseFor,sinkDepth,boardShakeOffset,withdrawProgress,isActive:()=>active};
+MG.ClayRoundOne={prepare,wait,setActive,setGridSize,setFeverField,getGridSize:()=>gridSize,renderPop,clock,clear,flash,animalVariant,canRender,clipFor,poseFor,sinkDepth,boardShakeOffset,shakeBoard,withdrawProgress,isActive:()=>active};
 // Warm the actual model before the user starts round one; does not gate unrelated screens.
 setTimeout(()=>prepare().catch(e=>console.warn('Local clay prewarm',e)),0);
 })(window);

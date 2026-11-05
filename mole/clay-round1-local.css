@@ -637,3 +637,33 @@
   #game-screen#game-screen.clay-round-one:not(.is-start) .lane-button--simple.is-cap-rebound:not(:active) > .lane-num,
   #game-screen#game-screen.clay-round-one:not(.is-start):not(.gs-laneskill) .lane-button--call.is-cap-rebound:not(:active) > :is(.lane-ico,.lane-lbl) { animation:none !important; transition:none; }
 }
+
+/* Center both weapon skill mounts in the current circular caps. */
+#game-screen#game-screen.clay-round-one.gs-laneskill:not(.is-start) .lane-button--call .lane-items,
+#game-screen#game-screen.clay-round-one.gs-alipunch:not(.is-start) [data-region="12"] .lane-items {
+  display:flex; align-items:center; justify-content:center;
+}
+#game-screen#game-screen.clay-round-one.gs-laneskill:not(.is-start) .lane-button--call .lane-item[data-slot="0"],
+#game-screen#game-screen.clay-round-one.gs-alipunch:not(.is-start) [data-region="12"] .lane-item[data-slot="0"] {
+  position:relative; left:auto; top:auto; right:auto; bottom:auto;
+  margin:0; translate:0 0; transform:none; transform-origin:center;
+}
+#game-screen#game-screen.clay-round-one.gs-laneskill:not(.is-start) .lane-button--call .lane-item:not(.lane-item--empty)[data-slot="0"]:is(:active,.is-press),
+#game-screen#game-screen.clay-round-one.gs-alipunch:not(.is-start) [data-region="12"] .lane-item:not(.lane-item--empty)[data-slot="0"]:is(:active,.is-press) {
+  transform:translateY(3px) scale(.92);
+}
+#game-screen#game-screen.clay-round-one.gs-laneskill:not(.is-start) .lane-button--call .lane-item:not(.lane-item--empty)[data-slot="0"]:active,
+#game-screen#game-screen.clay-round-one.gs-alipunch:not(.is-start) [data-region="12"] .lane-item:not(.lane-item--empty)[data-slot="0"]:active {
+  transform:translateY(3px);
+}
+/* Keep the original return motion, relative to the corrected center. */
+#game-screen#game-screen.clay-round-one.gs-laneskill:not(.is-start) .lane-button--call.is-cap-rebound .lane-item[data-slot="0"],
+#game-screen#game-screen.clay-round-one.gs-alipunch:not(.is-start) [data-region="12"].is-cap-rebound .lane-item[data-slot="0"] {
+  animation:checker-skill-cap-spring 220ms linear;
+}
+@keyframes checker-skill-cap-spring {
+  0%, 100% { translate:0 0; }
+  20%, 30% { translate:0 10px; }
+  60% { translate:0 -2.5px; }
+  80% { translate:0 1px; }
+}
