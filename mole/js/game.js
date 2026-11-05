@@ -220,6 +220,7 @@
       diag = diag.slice(-6);
       try { localStorage.setItem('mole.diag', JSON.stringify(diag)); } catch (e) { /* 무시 */ }
     };
+    window.__saveDiag = saveDiag; // V1617 C: 시작 준비 진단(일일출석 파일 없음)용
     reportInputStall = function (phase, regionId) {
       const labels = {
         surface: '\uBC84\uD2BC \uC804\uB2EC \uC804', handler: '\uBC84\uD2BC \uCC98\uB9AC',
@@ -3664,11 +3665,23 @@
       onChange: () => { refreshBoardStats(); if (moreMenu) moreMenu.refresh(); }
     });
     window.__questScreen = questScreen;
-    daily = MG.Daily.create({
+    const makeDaily = () => MG.Daily.create({
       root: document.getElementById('daily-screen'),
       onClose: () => closeMore(),
       onChange: () => { if (moreMenu) moreMenu.refresh(); }
     });
+    if (MG.Daily) daily = makeDaily();
+    else {
+      // V1617 C 폰 진단(사용자 승인): 시작 때 daily.js 가 없으면(폰에서만 'reading create' 오류) 받은 상태를 오류 칸에 남기고
+      // 한 번 더 불러와 만든다. 실패해도 나머지 시작 준비(라운드 지도 등)는 계속한다.
+      const say = (t) => { if (window.__saveDiag) window.__saveDiag(t); };
+      const ent = performance.getEntriesByType('resource').find((x) => x.name.indexOf('/daily.js') >= 0);
+      say('ERR DAILY 없음 ' + (ent ? 'st=' + (ent.responseStatus || '?') + ' ' + Math.round(ent.duration) + 'ms ' + ent.transferSize + '/' + ent.decodedBodySize + 'B' : 'no-entry') + ' sw=' + (navigator.serviceWorker && navigator.serviceWorker.controller ? 1 : 0));
+      const sc = document.createElement('script'); sc.src = 'js/daily.js?v=1529-C&retry=' + Date.now();
+      sc.onload = () => { if (MG.Daily) { daily = makeDaily(); say('DAILY 다시 불러와 성공'); } else say('ERR DAILY 다시 불러와도 없음'); };
+      sc.onerror = () => say('ERR DAILY 다시 불러오기 실패');
+      document.head.appendChild(sc);
+    }
     roundMap = MG.RoundMap.create({
       root: document.getElementById('roundmap-screen'),
       onStart: () => {
