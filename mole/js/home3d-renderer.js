@@ -49,7 +49,9 @@ void main(){vec3 n=normalize(vNormal),base=uColor.rgb*vColor.rgb;float shadow=1.
 if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=max(0.,(dot(n,normalize(vec3(-.6,1.,.7)))+.4)/1.4);frag=vec4(c*(.86+.14*k),1.);return;}if(uFloor){float tile=mod(floor(vWorld.x/1.5)+floor(vWorld.z/1.5),2.);base=mix(vec3(.78,.72,.61),vec3(.31,.30,.28),tile);vec2 d=(vWorld.xz-uPlayer)/vec2(.67,.48);shadow=1.-.34*exp(-dot(d,d)*1.8);}float key=max(0.,(dot(n,normalize(vec3(-.6,1.,.7)))+.4)/1.4);float fill=max(0.,dot(n,normalize(vec3(.8,.4,-.5))));vec3 lit=base*(vec3(.39,.40,.43)+key*.62+fill*vec3(.08,.10,.13));vec3 h=normalize(normalize(uEye-vWorld)+normalize(vec3(-.6,1.,.7)));lit+=vec3(.04)*pow(max(0.,dot(n,h)),14.);lit*=shadow;float fog=smoothstep(20.,46.,length(uEye-vWorld));frag=vec4(mix(pow(clamp(lit,0.,1.),vec3(1./2.2)),vec3(.73,.82,.88),fog),uColor.a*vColor.a);}`;
 
   function create(canvas) {
-    let gl, program, U, A, environment = [], actor = [], rig = null, vp = null, signs = null;
+    let gl, program, U, A, environment = [], actor = [], rig = null, vp = null, signs = null, size = null;
+    const resetSize = () => { size = null; };
+    if (root.ResizeObserver) new ResizeObserver(resetSize).observe(canvas); else root.addEventListener('resize', resetSize);
     function shader(type, src) {
       const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
       if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw Error(gl.getShaderInfoLog(s));
@@ -115,8 +117,9 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
       },
       // 한 프레임 그리기. view={x,z,heading,yaw,pitch}, pose={clip, t, loop, y}(y=두더지 높이)
       render(view, pose) {
-        const b = canvas.getBoundingClientRect(), dpr = Math.min(root.devicePixelRatio || 1, 1.5);
-        const w = Math.max(1, Math.round(b.width * dpr)), h = Math.max(1, Math.round(b.height * dpr));
+        // 화면 크기는 바뀔 때만 읽음(매 프레임 배치 계산 방지), 해상도는 1.25배까지(저사양 폰)
+        if (!size) { const b = canvas.getBoundingClientRect(), dpr = Math.min(root.devicePixelRatio || 1, 1.25); size = { cw: b.width, ch: b.height, w: Math.max(1, Math.round(b.width * dpr)), h: Math.max(1, Math.round(b.height * dpr)) }; }
+        const w = size.w, h = size.h;
         if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
         gl.viewport(0, 0, w, h);
         const cam = camera(view, w, h); vp = cam.vp;
@@ -130,6 +133,7 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
       // 언어 변경 때만 호출(렌더 루프에서 부르지 않음)
       buildSigns(lang, sites, t) { if (signs) signs.build(lang, sites, t); },
       vp: () => vp,
+      size: () => size, // {cw,ch} = CSS 픽셀 크기(터치·버튼 위치 계산용)
       lost(cb) { canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); cb(); }); }
     };
   }

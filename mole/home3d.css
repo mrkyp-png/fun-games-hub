@@ -29,3 +29,6 @@
 #home3d .h3-jump.is-enter{background:#ffcf6e;border-color:#fff;box-shadow:0 4px 0 #b69770,0 0 0 4px #ffffff80}
 #home3d .h3-jump.is-enter .h3-paw{display:none}
 #home3d .h3-jump.is-enter .h3-enter-lbl{display:flex}
+/* 3D 홈이 보이는 동안 뒤에 가려진 구형 홈 버튼판·홈 그림의 애니메이션·그리기 중지(버벅임 원인) */
+#game-screen.home3d-on.is-start #lane-button-bar,#game-screen.home3d-on.is-start #board-start{visibility:hidden}
+#game-screen.home3d-on.is-start #lane-button-bar *,#game-screen.home3d-on.is-start #lane-button-bar,#game-screen.home3d-on.is-start #board-start *{animation-play-state:paused!important}

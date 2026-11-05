@@ -82,6 +82,8 @@
       setHud(v) { for (const k in vals) vals[k].textContent = v[k]; },
       // 작은 지도: 위 = 앞(-z). 섬·건물/사물 점·두더지 화살표
       drawMinimap(view, layout) {
+        const key = view.x.toFixed(2) + ',' + view.z.toFixed(2) + ',' + view.heading.toFixed(2) + ',' + (this._dots || '');
+        if (key === this._mmKey) return; this._mmKey = key; // 움직였을 때만 다시 그림
         const c = mini.getContext('2d'), S = mini.width, k = (S / 2 - 6) / layout.ISLAND_R;
         c.clearRect(0, 0, S, S);
         c.fillStyle = '#e9e3d6'; c.beginPath(); c.arc(S / 2, S / 2, S / 2 - 4, 0, Math.PI * 2); c.fill();

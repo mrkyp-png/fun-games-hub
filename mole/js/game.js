@@ -315,6 +315,7 @@
   function initHomeShowcaseBeat() {
     function tick() {
       requestAnimationFrame(tick);
+      if (home3d && document.getElementById('game-screen').classList.contains('home3d-on')) return; // 3D 홈 중엔 가려진 구형 홈 박자 효과 계산 생략(버벅임)
       if (!bgmAnalysers) { ensureBgmAnalysers(); return; }
       // bgm-a/b 핑퐁 중 실제 소리가 나는 채널만 채택 — 무음 채널을 같이 더하면 그 채널의
       // 0값이 매 프레임 "감소"로 잡혀 플럭스 계산에 노이즈가 낌.
