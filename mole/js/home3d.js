@@ -15,7 +15,7 @@
     const IN = MG.Home3DIntro, HOLE_Y = -0.3, RISE_T = 0.8; // 구멍 안 높이, 등장 뛰어오르기 시간
     const view = { x: 0, z: 0, heading: 0, yaw: 0, pitch: 0.62 }; // 구멍 가운데, 정면(화면 쪽) — 뒤로 두더지팡 게임장
     let ui = null, rd = null, ready = false, raf = 0, last = 0, time = 0, walking = false, route = null, near = null;
-    let rise = 0, hop = null, jumpAt = -1; // rise: 등장 경과 / hop: 구멍 밖 착지 {from,to,t} / jumpAt: 점프 시작 time
+    let rise = 0, hop = null, jumpAt = -1, readyAt = Infinity; // rise: 등장 경과 / hop: 구멍 밖 착지 {from,to,t} / jumpAt: 점프 시작 time
 
     const api = {
       state: () => st.state,
@@ -39,7 +39,7 @@
       inputEnabled: () => st.inputEnabled(),
       saveView: (v) => st.saveView(v),
       view: () => st.view(),
-      debug: () => ({ state: st.state, x: +view.x.toFixed(2), z: +view.z.toFixed(2), heading: +view.heading.toFixed(2), near: near && near.action, rise: +rise.toFixed(2), hop: !!hop }) // 검토용(?home3d=1 에서만 존재)
+      debug: () => ({ state: st.state, x: +view.x.toFixed(2), z: +view.z.toFixed(2), heading: +view.heading.toFixed(2), near: near && near.action, rise: +rise.toFixed(2), hop: !!hop, walking, clip: pose().clip, raf: !!raf }) // 검토용(?home3d=1 에서만 존재)
     };
     root.__home3d = api;
 
@@ -104,8 +104,9 @@
       const dt = Math.min(0.04, last ? (stamp - last) / 1000 : 0); last = stamp; time += dt;
       if (st.state === 'INTRO') {
         // 첫 로딩 화면(GET NOW → 검은 화면)이 걷히고 가운데부터 열릴 때 등장 시작
-        // (화면 가운데 = 집 구멍 자리에 실제로 광장 캔버스가 보일 때부터. 다 나온 뒤엔 확인 안 함)
-        const covered = rise <= 0 && document.elementFromPoint(innerWidth / 2, innerHeight / 2) !== ui.canvas;
+        // 첫 로딩 화면(#splash)·검은 원 덮개(power-on-overlay, 열리기 전)가 있을 때만 대기. 준비 후 6초 지나면 무조건 시작(안전장치)
+        const sp = document.getElementById('splash'), ov = document.getElementById('power-on-overlay');
+        const covered = rise <= 0 && time - readyAt < 6 && ((sp && !sp.hidden) || (ov && !ov.hidden && !ov.classList.contains('is-expand')));
         rise = covered ? 0 : rise + dt; walking = false;
         if (hop) { // 구멍 밖으로 뛰어나오는 중
           const k = Math.min(1, (time - jumpAt) / IN.jump.T);
@@ -150,7 +151,7 @@
       document.addEventListener('visibilitychange', wake);
       rd.lost(() => { ready = false; stop(); ui.setLoading(ko() ? '3D 화면을 다시 불러와 주세요.' : 'Please reload the 3D plaza.'); });
       rd.boot(PLAZA_GLB, MOLE_GLB).then(() => {
-        ready = true; ui.setLoading(null); signsNow();
+        ready = true; readyAt = time; ui.setLoading(null); signsNow();
         wake();
       }).catch((err) => { console.error('3D home:', err); ui.setLoading((ko() ? '3D 공간을 불러오지 못했습니다.' : 'Could not load the 3D plaza.') + ' (' + String(err && err.message || err).slice(0, 160) + ')'); });
     }
