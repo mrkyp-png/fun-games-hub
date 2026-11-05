@@ -384,7 +384,10 @@
       if (!ind) {
         ind = document.createElement('span');
         ind.className = 'lane-bomb-indicator';
-        ind.textContent = '💣';
+        const symbol = document.createElement('span');
+        symbol.className = 'lane-bomb-symbol';
+        symbol.textContent = '💣';
+        ind.appendChild(symbol);
         ind.setAttribute('aria-hidden', 'true');
         b.appendChild(ind);
       }

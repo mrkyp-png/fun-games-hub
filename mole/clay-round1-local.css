@@ -537,7 +537,7 @@
 /* Board tones and button signals are independent. The shared idle color is
    the approved mole caramel material converted by the runtime's gamma2.2. */
 #game-screen.clay-round-one:not(.is-start) {
-  --round-cap-base:#c8884d; --round-cap-side:#966439; --round-cap-edge:#62452a; --round-cap-rim:#d9a270;
+  --mole-clay-base:#d99a56; --round-cap-base:var(--mole-clay-base); --round-cap-side:color-mix(in srgb,var(--mole-clay-base) 75%,black); --round-cap-edge:color-mix(in srgb,var(--mole-clay-base) 49%,black); --round-cap-rim:color-mix(in srgb,var(--mole-clay-base) 80%,white);
   --board-key-ink:#fff; --error-cap:#303237;
   --king-cap:#ffab20; --king-side:#b85b08; --king-edge:#753605; --king-rim:#ffb83d;
 }
@@ -662,7 +662,21 @@
 #game-screen.clay-round-one:not(.is-start) .lane-bomb-indicator {
   inset:0; width:auto; height:auto;
   display:flex; align-items:center; justify-content:center;
-  transform:rotate(30deg) scaleX(-1);
+  transform:none;
+}
+/* Keep the original glyph's shell-center correction separate from the full
+   button wrapper. The fuse is not part of the visual centering reference. */
+#game-screen.clay-round-one:not(.is-start) .lane-bomb-symbol {
+  display:block; line-height:1;
+  transform:translate(-.06em,-.14em) rotate(30deg) scaleX(-1);
+  transform-origin:center;
+}
+#game-screen.clay-round-one:not(.is-start) .lane-bomb-indicator--strong {
+  animation-name:checker-bomb-strong;
+}
+@keyframes checker-bomb-strong {
+  0%,100% { transform:scale(1); }
+  50% { transform:scale(1.22); }
 }
 
 #game-screen#game-screen.clay-round-one.gs-laneskill:not(.is-start) .lane-button--call .lane-items,
