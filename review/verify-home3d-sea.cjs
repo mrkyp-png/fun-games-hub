@@ -28,17 +28,17 @@ const MG = { Daily: { claimable: () => true }, Quest: { claimable: () => 0 }, Ma
 assert.deepStrictEqual(H.claimables(MG).sort(), ['daily', 'mail']);
 assert.deepStrictEqual(H.claimables({}), [], '모듈 없으면 빈 목록');
 console.log('verify-home3d-sea: ok (amp ' + maxA.toFixed(3) + ')');
-// 해: 10분에 한 바퀴, 항상 낮(높이 25~45°), 천천히
+// 해: 1시간에 한 바퀴, 항상 낮(높이 25~45°), 천천히
 {
-  assert.strictEqual(RD.SUN_PERIOD, 600);
+  assert.strictEqual(RD.SUN_PERIOD, 3600);
   let lo = 90, hi = 0;
-  for (let t = 0; t < 600; t += 3) { const d = RD.sunDir(t), el = Math.asin(d[1]) * 180 / Math.PI; lo = Math.min(lo, el); hi = Math.max(hi, el); }
+  for (let t = 0; t < 3600; t += 15) { const d = RD.sunDir(t), el = Math.asin(d[1]) * 180 / Math.PI; lo = Math.min(lo, el); hi = Math.max(hi, el); }
   assert.ok(lo >= 24.9 && hi <= 45.1, '항상 낮 ' + lo.toFixed(1) + '~' + hi.toFixed(1));
-  const a = RD.sunDir(0), b = RD.sunDir(600);
-  assert.ok(Math.hypot(a[0] - b[0], a[2] - b[2]) < 1e-6, '600초 후 제자리');
-  // 구름: 5개, 천천히 흘러감(초당 0.25), 섬 둘레 하늘
-  const c0 = RD.cloudPos(0, 0), c1 = RD.cloudPos(0, 4);
-  assert.ok(Math.abs(c1[0] - c0[0] - 1) < 1e-9 && c0[1] > 6, '천천히 이동');
+  const a = RD.sunDir(0), b = RD.sunDir(3600);
+  assert.ok(Math.hypot(a[0] - b[0], a[2] - b[2]) < 1e-6, '1시간 후 제자리');
+  // 구름: 5개, 아주 천천히(초당 0.06), 섬 둘레 하늘
+  const c0 = RD.cloudPos(0, 0), c1 = RD.cloudPos(0, 10);
+  assert.ok(Math.abs(c1[0] - c0[0] - 0.6) < 1e-9 && c0[1] > 6, '천천히 이동');
   assert.ok(RD.cloudMesh(1).indices.length > 0);
   console.log('verify-home3d-sea: sun/cloud ok');
 }

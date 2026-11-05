@@ -47,8 +47,8 @@
     return { positions: new Float32Array(positions), indices: new Uint32Array(indices) };
   }
 
-  // 해: 10분(600초)에 하늘을 한 바퀴, 높이 25~45° — 항상 낮(노을·밤 없음)
-  const SUN_PERIOD = 600;
+  // 해: 1시간(3600초)에 하늘을 한 바퀴, 높이 25~45° — 항상 낮(노을·밤 없음)
+  const SUN_PERIOD = 3600; // 1시간에 한 바퀴(사용자: 아주 천천히)
   function sunDir(t) {
     const a = (t % SUN_PERIOD) / SUN_PERIOD * 2 * Math.PI, el = (35 + 10 * Math.sin(a * 2)) * Math.PI / 180; // 25~45°: 그림자가 길게 보이게
     return [Math.cos(a) * Math.cos(el), Math.sin(el), Math.sin(a) * Math.cos(el)];
@@ -73,10 +73,10 @@
     }
     return { positions: new Float32Array(pos), normals: new Float32Array(nor), indices: new Uint32Array(idx) };
   }
-  // 구름 위치: 천천히 한쪽으로 흘러가고(초당 0.25) 섬 너머로 가면 반대편에서 다시
+  // 구름 위치: 아주 천천히 한쪽으로 흘러가고(초당 0.06) 섬 너머로 가면 반대편에서 다시
   const CLOUDS = [[-22, 8, -24, 1.6], [10, 9, -27, 1.3], [26, 7.5, -6, 1.45], [-24, 8.5, 14, 1.2], [8, 9.5, 26, 1.5]]; // 섬 둘레 하늘(수평선 위로 보이게)
   function cloudPos(i, t) {
-    const c = CLOUDS[i], span = 64, x = ((c[0] + t * 0.25 + span / 2) % span + span) % span - span / 2;
+    const c = CLOUDS[i], span = 64, x = ((c[0] + t * 0.06 + span / 2) % span + span) % span - span / 2;
     return [x, c[1] + Math.sin(t * 0.2 + i) * 0.25, c[2], c[3]];
   }
 
@@ -90,11 +90,14 @@ float seaH(vec2 p,float t){return .06*sin(.55*p.x+1.1*t)+.04*sin(.8*p.y-.9*t+1.3
 void main(){mat4 skin=mat4(1.);if(uSkin)skin=uBones[int(aJoints.x)]*aWeights.x+uBones[int(aJoints.y)]*aWeights.y+uBones[int(aJoints.z)]*aWeights.z+uBones[int(aJoints.w)]*aWeights.w;vec4 p=uModel*skin*vec4(aPosition,1.);vWorld=p.xyz;vNormal=normalize(uNormal*mat3(skin)*aNormal);if(uSea){float e=.2;p.y+=seaH(p.xz,uTime);float hx=seaH(p.xz+vec2(e,0.),uTime)-seaH(p.xz-vec2(e,0.),uTime),hz=seaH(p.xz+vec2(0.,e),uTime)-seaH(p.xz-vec2(0.,e),uTime);vNormal=normalize(vec3(-hx/(2.*e),1.,-hz/(2.*e)));vWorld=p.xyz;}vColor=aColor;vUV=aUV;gl_Position=uVP*p;}`;
   const FS = `#version 300 es
 precision highp float;
-in vec3 vWorld,vNormal;in vec4 vColor;in vec2 vUV;uniform vec4 uColor;uniform bool uFloor,uSign,uSea,uShadowPass,uSunDisc,uCloud,uActor;uniform float uTime;uniform vec3 uSun;uniform mat4 uShadowVP;uniform sampler2D uShadowS,uShadowM;uniform sampler2D uTex;uniform vec3 uEye;uniform vec2 uPlayer;out vec4 frag;
-float vis(sampler2D m,vec3 q){float v=0.;for(int i=-1;i<=1;i+=2)for(int j=-1;j<=1;j+=2){float d=texture(m,q.xy+vec2(i,j)*.0009).r;v+=q.z-.005>d?0.:1.;}return v*.25;}
+in vec3 vWorld,vNormal;in vec4 vColor;in vec2 vUV;uniform vec4 uColor;uniform bool uFloor,uSign,uSea,uShadowPass,uSunDisc,uCloud,uActor;uniform float uTime;uniform vec3 uSun;uniform mat4 uShadowVP,uShadowVPM;uniform highp sampler2DShadow uShadowS,uShadowM;uniform vec4 uClouds[5];uniform sampler2D uTex;uniform vec3 uEye;uniform vec2 uPlayer;out vec4 frag;
+float vis(highp sampler2DShadow m,vec3 q,float px){float v=0.;for(int i=-1;i<=1;i++)for(int j=-1;j<=1;j++)v+=texture(m,vec3(q.xy+vec2(i,j)*px,q.z-.004));return v/9.;}
+vec3 lproj(mat4 M,vec3 p){vec4 sp=M*vec4(p,1.);return sp.xyz/sp.w*.5+.5;}
+bool inside(vec3 q){return q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z<1.;}
+float cloudVis(vec3 p){float v=1.;for(int i=0;i<5;i++){vec4 c=uClouds[i];float t=(c.y-p.y)/max(uSun.y,.2);vec2 q=p.xz+uSun.xz*t;float d=length((q-c.xz)/vec2(4.8,3.2))/c.w;v*=mix(.72,1.,smoothstep(.55,1.05,d));}return v;}
 void main(){if(uShadowPass){frag=vec4(1.);return;}if(uSunDisc){float rr=length(vUV-.5)*2.;if(rr>1.)discard;frag=vec4(mix(vec3(1.,.98,.88),vec3(1.,.92,.66),rr*rr),1.);return;}if(uCloud){vec3 cn=normalize(vNormal);float k=dot(cn,uSun)*.5+.5;vec3 c=mix(vec3(.80,.86,.94),vec3(1.,1.,.99),k)*mix(.9,1.,cn.y*.5+.5);float fog=smoothstep(40.,80.,length(uEye-vWorld));frag=vec4(mix(c,vec3(.73,.82,.88),fog*.6),1.);return;}vec3 n=normalize(vNormal),base=uColor.rgb*vColor.rgb;float shadow=1.;
 if(uSea){vec2 p=vWorld.xz;float t=uTime;vec2 g=vec2(0.);const vec3 W[6]=vec3[6](vec3(.90,.42,.45),vec3(-.55,.83,.62),vec3(.20,-.98,.85),vec3(-.94,-.33,1.4),vec3(.70,.71,2.1),vec3(-.15,.99,3.0));for(int i=0;i<6;i++){vec2 dir=normalize(W[i].xy);float k=W[i].z,amp=.09/k;float ph=dot(dir,p)*k*1.3+t*sqrt(9.8*k)*.55+float(i)*1.7;g+=dir*cos(ph)*amp*k*1.3;}vec3 n=normalize(vec3(-g.x,1.,-g.y));vec3 V=normalize(uEye-vWorld),Ls=uSun;float d=min(length(p)-12.,length(p-vec2(0.,3.2))-13.6);vec3 deep=vec3(.06,.30,.52),shallow=vec3(.20,.66,.70),body=mix(shallow,deep,smoothstep(.5,9.,d));vec3 sky=mix(vec3(.70,.84,.94),vec3(.45,.66,.86),clamp(reflect(-V,n).y,0.,1.));float fres=.06+.94*pow(1.-max(0.,dot(n,V)),5.);vec3 c=mix(body,sky,fres);c+=vec3(1.,.97,.9)*pow(max(0.,dot(reflect(-Ls,n),V)),180.)*1.6;float foam=smoothstep(.9,0.,d)*(.6+.4*sin(d*6.-t*1.8+g.x*8.));c=mix(c,vec3(.96,.98,1.),clamp(foam,0.,1.)*.7);float fog=smoothstep(26.,62.,length(uEye-vWorld));frag=vec4(mix(clamp(c,0.,1.),vec3(.73,.82,.88),fog),1.);return;}
-if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=max(0.,(dot(n,uSun)+.4)/1.4);frag=vec4(c*(.86+.14*k),1.);return;}if(uFloor){float tile=mod(floor(vWorld.x/1.5)+floor(vWorld.z/1.5),2.);base=mix(vec3(.78,.72,.61),vec3(.31,.30,.28),tile);}float key=max(0.,(dot(n,uSun)+.4)/1.4);float fill=max(0.,dot(n,normalize(vec3(.8,.4,-.5))));vec3 lit=base*(vec3(.39,.40,.43)+key*.62+fill*vec3(.08,.10,.13));vec3 h=normalize(normalize(uEye-vWorld)+uSun);lit+=vec3(.04)*pow(max(0.,dot(n,h)),14.);vec4 sp=uShadowVP*vec4(vWorld+n*.08,1.);vec3 q=sp.xyz/sp.w*.5+.5;if(q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z<1.)shadow=uActor?vis(uShadowS,q):min(vis(uShadowS,q),vis(uShadowM,q));lit*=mix(.62,1.,shadow);float fog=smoothstep(20.,46.,length(uEye-vWorld));frag=vec4(mix(pow(clamp(lit,0.,1.),vec3(1./2.2)),vec3(.73,.82,.88),fog),uColor.a*vColor.a);}`;
+if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=max(0.,(dot(n,uSun)+.4)/1.4);frag=vec4(c*(.86+.14*k),1.);return;}if(uFloor){float tile=mod(floor(vWorld.x/1.5)+floor(vWorld.z/1.5),2.);base=mix(vec3(.78,.72,.61),vec3(.31,.30,.28),tile);}float key=max(0.,(dot(n,uSun)+.4)/1.4);float fill=max(0.,dot(n,normalize(vec3(.8,.4,-.5))));vec3 lit=base*(vec3(.39,.40,.43)+key*.62+fill*vec3(.08,.10,.13));vec3 h=normalize(normalize(uEye-vWorld)+uSun);lit+=vec3(.04)*pow(max(0.,dot(n,h)),14.);vec3 pw=vWorld+n*.06;vec3 q=lproj(uShadowVP,pw);if(inside(q))shadow=vis(uShadowS,q,1./1024.);if(!uActor){vec3 qm=lproj(uShadowVPM,pw);if(inside(qm))shadow=min(shadow,vis(uShadowM,qm,1./512.));}lit*=mix(.62,1.,shadow)*cloudVis(vWorld);float fog=smoothstep(20.,46.,length(uEye-vWorld));frag=vec4(mix(pow(clamp(lit,0.,1.),vec3(1./2.2)),vec3(.73,.82,.88),fog),uColor.a*vColor.a);}`;
 
   function create(canvas) {
     let gl, program, U, A, environment = [], actor = [], rig = null, vp = null, signs = null, size = null, seaMesh = null, shadowS = null, shadowM = null, sunQuad = null, clouds = [], staticAt = -9, staticVP = null;
@@ -113,14 +116,14 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
       gl.linkProgram(program);
       if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw Error(gl.getProgramInfoLog(program));
       gl.useProgram(program);
-      U = {}; for (const k of ['VP', 'Model', 'Bones', 'Normal', 'Skin', 'Color', 'Floor', 'Sign', 'Tex', 'Eye', 'Player', 'Sea', 'Time', 'Sun', 'ShadowVP', 'ShadowS', 'ShadowM', 'ShadowPass', 'SunDisc', 'Cloud', 'Actor']) U[k] = gl.getUniformLocation(program, 'u' + k);
+      U = {}; for (const k of ['VP', 'Model', 'Bones', 'Normal', 'Skin', 'Color', 'Floor', 'Sign', 'Tex', 'Eye', 'Player', 'Sea', 'Time', 'Sun', 'ShadowVP', 'ShadowS', 'ShadowM', 'ShadowPass', 'SunDisc', 'Cloud', 'Actor', 'ShadowVPM', 'Clouds']) U[k] = gl.getUniformLocation(program, 'u' + k);
       A = {}; for (const k of ['Position', 'Normal', 'Color', 'Joints', 'Weights', 'UV']) A[k] = gl.getAttribLocation(program, 'a' + k);
       gl.enable(gl.DEPTH_TEST);
       // 해 쪽에서 본 깊이 지도: 섬·건물(1초마다 1024) / 두더지·구름(매 프레임 512) — 저사양 대비
       const depthMap = (n) => {
         const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT24, n, n, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
-        for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.NEAREST], [gl.TEXTURE_MAG_FILTER, gl.NEAREST], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, v);
+        for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE], [gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE], [gl.TEXTURE_COMPARE_FUNC, gl.LEQUAL]]) gl.texParameteri(gl.TEXTURE_2D, k, v);
         const fb = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, tex, 0);
         gl.drawBuffers([gl.NONE]); gl.readBuffer(gl.NONE); gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -231,8 +234,11 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
           staticVP = R.multiply(ortho(-17, 17, -17, 17, 1, 80), R.lookAt([sun[0] * 40, sun[1] * 40, sun[2] * 40], [0, 0, 0]));
           shadowPass(shadowS, staticVP, () => { for (const m of environment) if (!m.sign) draw(m, m.world, null); });
         }
-        shadowPass(shadowM, staticVP, () => { drawMole(); drawClouds(); });
-        gl.viewport(0, 0, w, h); gl.uniformMatrix4fv(U.VP, false, vp); gl.uniformMatrix4fv(U.ShadowVP, false, staticVP);
+        const mc = [view.x, (pose.y || 0) + 0.8, view.z];
+        const moleVP = R.multiply(ortho(-2.6, 2.6, -2.6, 2.6, 1, 60), R.lookAt([mc[0] + sun[0] * 30, mc[1] + sun[1] * 30, mc[2] + sun[2] * 30], mc));
+        shadowPass(shadowM, moleVP, drawMole);
+        gl.viewport(0, 0, w, h); gl.uniformMatrix4fv(U.VP, false, vp); gl.uniformMatrix4fv(U.ShadowVP, false, staticVP); gl.uniformMatrix4fv(U.ShadowVPM, false, moleVP);
+        gl.uniform4fv(U.Clouds, new Float32Array(CLOUDS.map((_, i) => cloudPos(i, now)).flat()));
         gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, shadowS.tex); gl.uniform1i(U.ShadowS, 1);
         gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, shadowM.tex); gl.uniform1i(U.ShadowM, 2);
         gl.activeTexture(gl.TEXTURE0);
