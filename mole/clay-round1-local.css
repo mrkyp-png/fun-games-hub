@@ -100,7 +100,7 @@
 }
 /* Internal strokes share one boundary; exterior strokes stay fully inside the board. */
 #game-screen#game-screen.clay-round-one:not(.is-start) .lane-button {
-  background:var(--checker-rim) !important; border:0 !important; border-image:none !important;
+  background:transparent !important; border:0 !important; border-image:none !important;
   box-shadow:none !important; filter:none !important;
 }
 #game-screen#game-screen.clay-round-one:not(.is-start) .lane-button::after {
@@ -346,7 +346,7 @@
 #game-screen#game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend) .lane-button {
   --cap-top:var(--fixed-cap-top) !important; --cap-side:var(--fixed-cap-side) !important;
   --cap-edge:var(--fixed-cap-edge) !important; --cap-rim:var(--fixed-cap-rim) !important;
-  background:var(--checker-rim) !important; box-shadow:none !important; filter:none !important;
+  background:transparent !important; box-shadow:none !important; filter:none !important;
 }
 #game-screen#game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend) :is(.lane-button,.lane-face--key,.lane-items)::before { filter:none !important; }
 #game-screen#game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend) .lane-button::after {
@@ -357,12 +357,12 @@
 #game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend) :is(.lane-hotfx,.lane-quake-shade) { display:none !important; }
 #game-screen#game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend) :is(.lane-num,.lane-ai-bit,.lane-lbl,.lane-ico,.lane-sub,.lane-kr,.lane-en) { color:#fff !important; }
 #game-screen#game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend) .lane-ico svg { stroke:currentColor !important; fill:currentColor !important; }
-#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid .lane-button--hot :is(.lane-num,.lane-ai-bit) { color:#ff9b35 !important; }
-#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid[data-button-palette="yellow"] .lane-button--hot :is(.lane-num,.lane-ai-bit) { color:#9b8750 !important; }
-#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid .lane-button--hot-safe :is(.lane-num,.lane-ai-bit) { color:#ffab20 !important; }
-#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid .is-tint-hit :is(.lane-num,.lane-ai-bit) { color:#ff9b35 !important; }
-#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid .is-tint-miss :is(.lane-num,.lane-ai-bit) { color:#d84b47 !important; }
-#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid[data-button-fail="black"] .is-tint-miss :is(.lane-num,.lane-ai-bit) { color:#303237 !important; }
+#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid .lane-button--hot :is(.lane-num,.lane-ai-bit,.lane-ico) { color:#ff9b35 !important; }
+#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid[data-button-palette="yellow"] .lane-button--hot :is(.lane-num,.lane-ai-bit,.lane-ico) { color:#9b8750 !important; }
+#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid .lane-button--hot-safe :is(.lane-num,.lane-ai-bit,.lane-ico) { color:#ffab20 !important; }
+#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid .is-tint-hit :is(.lane-num,.lane-ai-bit,.lane-ico) { color:#ff9b35 !important; }
+#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid .is-tint-miss :is(.lane-num,.lane-ai-bit,.lane-ico) { color:#d84b47 !important; }
+#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid[data-button-fail="black"] .is-tint-miss :is(.lane-num,.lane-ai-bit,.lane-ico) { color:#303237 !important; }
 
 /* Each fever weapon keeps the exact square-local coordinate system of its own board. */
 #game-screen.clay-round-one:not(.is-start) #fever-weapon-layer {
@@ -512,6 +512,17 @@
 #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-panel .ms-time.is-low .ms-clock--clean { color:#c52626; }
 .ms-clock--clean .ms-clock-hand { transform-origin:12px 12px; }
 
+/* All checker rounds use the former winter round's round fragments, matching
+   the exact white or colored tile that produced them rather than the season. */
+#game-screen.clay-round-one:not(.is-start) :is(#mole-board,#fever-hole-board) .hit-fx-clod--board {
+  background:radial-gradient(circle at 35% 30%,var(--emerge-color) 0 40%,color-mix(in srgb,var(--emerge-color) 85%,#303237) 75%);
+  border-color:color-mix(in srgb,var(--emerge-color) 75%,#303237);
+  border-radius:50%; box-shadow:none;
+}
+#game-screen.clay-round-one:not(.is-start) :is(#mole-board,#fever-hole-board) .hit-fx-dust--board {
+  background:radial-gradient(ellipse,color-mix(in srgb,var(--emerge-color) 65%,transparent),transparent 72%);
+}
+
 /* Board tones and button signals are independent. The shared idle color is
    the approved mole caramel material converted by the runtime's gamma2.2. */
 #game-screen.clay-round-one:not(.is-start) {
@@ -545,10 +556,14 @@
 }
 #game-screen#game-screen.clay-round-one:not(.is-start).gs-alipunch.gs-invincible .lane-button:is(.lane-button--hot,.lane-button--hot-safe):not(.is-tint-miss) :is(.lane-num,.lane-ai-bit,.lane-ico) { color:#17324d !important; }
 /* The square button owns input; its stationary circular well contains the cap. */
-.lane-cap-well { display:none; }
+.lane-cell-surface,.lane-cap-well { display:none; }
 #game-screen#game-screen.clay-round-one:not(.is-start) .lane-button { --cap-drop:3px; border-radius:0; isolation:isolate; }
+#game-screen#game-screen.clay-round-one:not(.is-start) .lane-cell-surface {
+  position:absolute; display:block; inset:0; border-radius:var(--cell-radius);
+  background:var(--checker-rim); pointer-events:none; z-index:-1; visibility:visible;
+}
 #game-screen#game-screen.clay-round-one:not(.is-start) .lane-cap-well {
-  position:absolute; display:block; inset:14%; border:0;
+  position:absolute; display:block; inset:5%; border:0;
   border-radius:50%; box-sizing:border-box; overflow:hidden; pointer-events:none; z-index:0; visibility:visible;
   background:color-mix(in srgb,var(--round-cap-base) 80%,black);
   box-shadow:0 1px 2px #0000000c;

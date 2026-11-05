@@ -1865,14 +1865,18 @@
         container: document.getElementById('mole-pop-layer'),
         onEmerge: (x, y, type, regionId) => {
           const bd = document.getElementById(regionId >= 16 && state && state.feverField ? 'fever-hole-board' : 'mole-board');
+          const cell = bd.querySelector('.checkerboard-cell[data-region="' + (regionId % (roundGridSize() ** 2)) + '"]');
+          const boardColor = cell ? (cell.dataset.checkerTone === 'dark'
+            ? document.getElementById('game-screen').style.getPropertyValue('--board-accent').trim() || '#303237'
+            : '#f3f3f3') : undefined;
           // 등장 소리(사용자 지정, 2026-09-17): 라운드6(reverseTarget, 동물이 타겟)은 동물 등장에만,
           // 그 외 라운드는 두더지 등장에만 — "타겟 생물"이 올라올 때 울리게.
           const reverseTarget = !!(state && state.config && state.config.reverseTarget);
           if (type === 'mole') {
-            MG.HitFx.emerge(bd, x, y);
+            MG.HitFx.emerge(bd, x, y, { boardColor });
             if (!reverseTarget) MG.HitFx.emergeSound();
           } else if (type === 'animal' || type === 'bomb') {
-            MG.HitFx.emerge(bd, x, y, { weak: true }); // 동물/폭탄도 흙 폭발(약하게)
+            MG.HitFx.emerge(bd, x, y, { weak: true, boardColor });
             if (type === 'animal' && reverseTarget) MG.HitFx.emergeSound();
           } else if (type === 'item') {
             MG.HitFx.starBurst(bd, x, y); // 실드 아이템 = 반짝이

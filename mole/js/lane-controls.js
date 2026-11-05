@@ -184,6 +184,7 @@
     // v902: 두더지 칸 표시(hot) — 버튼 그림이 버튼 배경을 덮으므로 맨 위 별도 층에 그린다
     btn.insertAdjacentHTML('beforeend', '<span class="lane-hotfx" aria-hidden="true"></span>');
     // Decorative surface only. Input stays on the full square button element.
+    btn.insertAdjacentHTML('beforeend', '<span class="lane-cell-surface" aria-hidden="true"></span>');
     btn.insertAdjacentHTML('beforeend', '<span class="lane-cap-well" aria-hidden="true"></span>');
   }
 

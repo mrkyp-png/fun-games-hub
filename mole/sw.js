@@ -73,8 +73,8 @@
 // V1591 G: full viewport paired squares without notch or fixed HUD reservation.
 // V1592 G: PANG on the matching keypad button; paired boards at95% viewport fit.
 // V1593 G: joined 18-cell field, inverse control tiles and responsive six-slot HUD rails.
-// V1599 G: joined leading information panel, clean status icons and circular matte caps.
-const CACHE = 'mole-game-v1599-G';
+// V1600 G: match checker junction corners and enlarge centered circular controls.
+const CACHE = 'mole-game-v1600-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.

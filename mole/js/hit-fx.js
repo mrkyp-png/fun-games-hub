@@ -737,9 +737,11 @@
   // opts.weak = 동물/폭탄용 (파편 적고 작게, 링 생략) — 타겟인 두더지와 구분.
   function emerge(boardEl, xFrac, yFrac, opts) {
     const weak = !!(opts && opts.weak);
+    const boardColor = opts && opts.boardColor;
     const N = weak ? 5 : 8;
     for (let i = 0; i < N; i++) {
-      const c = spawnAt(boardEl, 'hit-fx-clod' + (weak ? ' hit-fx-clod--weak' : ''), xFrac, yFrac + 0.02);
+      const c = spawnAt(boardEl, 'hit-fx-clod' + (weak ? ' hit-fx-clod--weak' : '') + (boardColor ? ' hit-fx-clod--board' : ''), xFrac, yFrac + 0.02);
+      if (boardColor) c.style.setProperty('--emerge-color', boardColor);
       const ang = -155 + (i / (N - 1)) * 130 + (Math.random() * 20 - 10); // 위쪽 부채꼴
       const dist = (weak ? 26 : 40) + Math.random() * (weak ? 26 : 40);
       c.style.setProperty('--cx', (Math.cos(ang * Math.PI / 180) * dist).toFixed(1) + 'px');
@@ -749,10 +751,11 @@
       c.style.animationDelay = Math.round(Math.random() * 45) + 'ms';
     }
     for (let i = 0; i < (weak ? 3 : 4); i++) {
-      const p = spawnAt(boardEl, 'hit-fx-dust', xFrac, yFrac + 0.02);
+      const p = spawnAt(boardEl, 'hit-fx-dust' + (boardColor ? ' hit-fx-dust--board' : ''), xFrac, yFrac + 0.02);
+      if (boardColor) p.style.setProperty('--emerge-color', boardColor);
       p.style.setProperty('--dx', (Math.round((Math.random() - 0.5) * 46)) + 'px');
     }
-    if (!weak) spawnAt(boardEl, 'hit-fx-ring', xFrac, yFrac).style.setProperty('--ring', '#d9b382');
+    if (!weak) spawnAt(boardEl, 'hit-fx-ring', xFrac, yFrac).style.setProperty('--ring', boardColor || '#d9b382');
   }
 
   // 스킬 사용 플레이스홀더 연출 — 실제 게임 효과가 아직 정의되지 않은 스킬(빙결/골드2배/
