@@ -661,10 +661,21 @@
   }
   function applyRoundButtonPalette() {
     const round = currentChapter();
-    const palette = round <= 2 ? 'red' : round <= 4 ? 'yellow' : round <= 6 ? 'blue' : 'green';
+    const palette = 'red'; // One shared idle-button palette; board tones vary by round.
+    const tones = [
+      ['black', '#303237'], ['red', '#8a3e40'], ['orange', '#9f6735'], ['yellow', '#ab9337'],
+      ['green', '#428257'], ['blue', '#3d6ca1'], ['indigo', '#4a4b82'], ['purple', '#774c94']
+    ];
+    const tone = tones[Math.max(0, Math.min(tones.length - 1, round - 1))];
     const gameScreen = document.getElementById('game-screen');
     gameScreen.dataset.buttonPalette = palette;
-    gameScreen.dataset.buttonFail = round <= 2 ? 'black' : 'normal';
+    gameScreen.dataset.boardTone = tone[0];
+    gameScreen.dataset.buttonFail = round === 1 ? 'red' : 'black';
+    gameScreen.style.setProperty('--board-accent', tone[1]);
+    const rgb = [1, 3, 5].map(i => parseInt(tone[1].slice(i, i + 2), 16));
+    const scale = rgb.map((value, i) => (value / [48, 50, 55][i]).toFixed(6));
+    document.getElementById('checkerboard-round-matrix').setAttribute('values',
+      `${scale[0]} 0 0 0 0  0 ${scale[1]} 0 0 0  0 0 ${scale[2]} 0 0  0 0 0 1 0`);
   }
   // mole.chapter 를 쓰는 모든 곳에서 이걸로 — 라운드1(뿅망치 전용)으로 들어가면 장착 무기도
   // 뿅망치로 같이 저장해, 보관창 "장착됨" 표시가 실제 플레이 무기와 어긋나지 않게 한다(사용자 지정).

@@ -51,7 +51,7 @@
         home.parent.insertBefore(home.el, home.next && home.next.parentNode === home.parent ? home.next : null);
       });
       rails.fittable.forEach(function (el) { el.style.fontSize = ''; el.style.transform = ''; });
-      rails.leading.remove(); rails.trailing.remove(); rails = null;
+      rails.leading.remove(); rails.trailing.remove(); rails.panel.remove(); rails = null;
       screen.classList.remove('game-status-rails');
       screen.classList.remove('hud-compact');
       return;
@@ -101,8 +101,9 @@
     var scoreCaption = caption(score), comboCaption = caption(combo);
     [home, round, time, heart].forEach(function (el) { leading.appendChild(el); });
     [scoreCaption, score, comboCaption, combo].forEach(function (el) { trailing.appendChild(el); });
-    screen.appendChild(leading); screen.appendChild(trailing);
-    rails = {leading:leading, trailing:trailing, homes:homes, copies:copies, values:values, fittable:fittable, valueGroups:valueGroups, iconHomes:iconHomes, captionHomes:captionHomes, comboBucket:0, comboSwapped:false};
+    var panel = document.createElement('div'); panel.id = 'hud-panel'; panel.className = 'hud-panel';
+    panel.appendChild(leading); panel.appendChild(trailing); screen.appendChild(panel);
+    rails = {panel:panel, leading:leading, trailing:trailing, homes:homes, copies:copies, values:values, fittable:fittable, valueGroups:valueGroups, iconHomes:iconHomes, captionHomes:captionHomes, comboBucket:0, comboSwapped:false};
     trailing.dataset.comboSwapped='false';
     screen.classList.add('game-status-rails');
     if (root.ResizeObserver) {

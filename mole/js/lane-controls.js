@@ -183,6 +183,8 @@
     btn.insertAdjacentHTML('beforeend', '<span class="lane-cell-line" aria-hidden="true"></span>');
     // v902: 두더지 칸 표시(hot) — 버튼 그림이 버튼 배경을 덮으므로 맨 위 별도 층에 그린다
     btn.insertAdjacentHTML('beforeend', '<span class="lane-hotfx" aria-hidden="true"></span>');
+    // Decorative surface only. Input stays on the full square button element.
+    btn.insertAdjacentHTML('beforeend', '<span class="lane-cap-well" aria-hidden="true"></span>');
   }
 
   // 동전 뒤집기 — 10바퀴 휙 돌고 반 바퀴 더 돌아 반대 면에 착지 (누적 각도). spinChannelsIn() 이 씀.

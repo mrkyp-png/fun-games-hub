@@ -91,15 +91,23 @@
 }
 .clay-round-one .checkerboard-cell-art { display:block; width:100%; height:100%; object-fit:fill; border-radius:var(--cell-radius); }
 /* Keep existing cap artwork, palette and feedback. Only each cell frame matches the board. */
-#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button) { --checker-rim:#f3f3f3; border-radius:var(--cell-radius); }
-#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button)::after {
+#game-screen#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button) { --checker-rim:#f3f3f3; border-radius:var(--cell-radius); }
+#game-screen#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button)::after {
   content:''; position:absolute; display:block; inset:calc(var(--cell-line) / -2); pointer-events:none;
   border:var(--cell-line) solid var(--cell-stroke); border-image:none; border-radius:var(--cell-radius);
   background:none; box-shadow:inset 0 0 0 var(--cell-bezel) var(--checker-rim); box-sizing:border-box;
   opacity:1; z-index:1;
 }
 /* Internal strokes share one boundary; exterior strokes stay fully inside the board. */
-#game-screen.clay-round-one:not(.is-start) .lane-button { background:var(--checker-rim) !important; }
+#game-screen#game-screen.clay-round-one:not(.is-start) .lane-button {
+  background:var(--checker-rim) !important; border:0 !important; border-image:none !important;
+  box-shadow:none !important; filter:none !important;
+}
+#game-screen#game-screen.clay-round-one:not(.is-start) .lane-button::after {
+  border-color:var(--cell-stroke) !important; border-image:none !important;
+  background:none !important; box-shadow:inset 0 0 0 var(--cell-bezel) var(--checker-rim) !important;
+  filter:none !important; opacity:1 !important; animation:none !important;
+}
 /* Match the board's diffuse finish while retaining every existing button palette/state. */
 #game-screen.clay-round-one:not(.is-start) .lane-button--simple {
   --matte-light:color-mix(in srgb,var(--cap-top) 94%,white);
@@ -265,19 +273,23 @@
 }
 
 /* V1595: common independent tile geometry for the 18- and 32-cell fields. */
-#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button) {
+#game-screen#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button) {
   --checker-rim:#f3f3f3; --matte-light:color-mix(in srgb,var(--cap-top) 94%,white);
   --matte-side:color-mix(in srgb,var(--cap-top) 86%,black);
   --matte-edge:color-mix(in srgb,var(--cap-top) 78%,black);
   --matte-bevel:inset 1px 2px 3px var(--matte-light),inset -1px -2px 3px color-mix(in srgb,var(--cap-top) 94%,black);
 }
-#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button)[data-checker-tone="dark"] { --checker-rim:#303237; }
-#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button)[data-edge-top="true"]::after { top:0; }
-#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button)[data-edge-bottom="true"]::after { bottom:0; }
-#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button)[data-edge-left="true"]::after { left:0; }
-#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button)[data-edge-right="true"]::after { right:0; }
-#game-screen.clay-round-one:not(.is-start) .checkerboard-cell[data-tile-role="target"][data-edge-bottom="true"]::after { bottom:calc(var(--cell-line) / -2); }
-#game-screen.clay-round-one:not(.is-start) [data-tile-role="control"][data-edge-top="true"]::after { top:calc(var(--cell-line) / -2); }
+#game-screen#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button)[data-checker-tone="dark"] { --checker-rim:var(--board-accent,#303237); }
+#game-screen.clay-round-one:not(.is-start) .checkerboard-cell[data-checker-tone="dark"] .checkerboard-cell-art {
+  filter:url('#checkerboard-round-tint');
+}
+#game-screen.clay-round-one:not(.is-start)[data-board-tone="black"] .checkerboard-cell[data-checker-tone="dark"] .checkerboard-cell-art { filter:none; }
+#game-screen#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button)[data-edge-top="true"]::after { top:0; }
+#game-screen#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button)[data-edge-bottom="true"]::after { bottom:0; }
+#game-screen#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button)[data-edge-left="true"]::after { left:0; }
+#game-screen#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button)[data-edge-right="true"]::after { right:0; }
+#game-screen#game-screen.clay-round-one:not(.is-start) .checkerboard-cell[data-tile-role="target"][data-edge-bottom="true"]::after { bottom:calc(var(--cell-line) / -2); }
+#game-screen#game-screen.clay-round-one:not(.is-start) [data-tile-role="control"][data-edge-top="true"]::after { top:calc(var(--cell-line) / -2); }
 #game-screen.clay-round-one:not(.is-start) .lane-face--key::after { display:none; }
 #game-screen#game-screen.clay-round-one:not(.is-start) .lane-face--key::before {
   border-color:var(--cap-top); border-top-color:var(--matte-light);
@@ -286,7 +298,6 @@
   box-shadow:var(--matte-bevel),0 13px 0 var(--matte-side),0 14px 0 var(--matte-edge);
 }
 #game-screen#game-screen.clay-round-one:not(.is-start) .lane-button.is-cap-rebound .lane-face--key::before { animation:lane-cap-spring 220ms linear,checker-cap-depth 220ms linear !important; }
-#game-screen.clay-round-one:not(.is-start)[data-button-palette="red"] .lane-button:not(.lane-button--hot):not(.is-tint-hit):not(.is-tint-miss) { --cap-top:#de887e; --cap-side:#ad645f; --cap-edge:#754640; --cap-rim:#eaa399; }
 #fever-hole-board { position:absolute; inset:0; z-index:6; touch-action:none; background:#303237; }
 #fever-pop-layer { pointer-events:none; }
 .checker-cell--leaving { animation:checker-tile-out 450ms ease-in forwards; }
@@ -297,12 +308,12 @@
 #game-screen:has(#fever-result-overlay:not([hidden])) .clay-mole-canvas--field { visibility:hidden; }
 #game-screen.clay-round-one:not(.is-start) #mole-hammer-layer { transition:transform 900ms cubic-bezier(.4,0,.2,1); }
 @media(orientation:landscape) {
-  #game-screen.clay-round-one:not(.is-start) .checkerboard-cell[data-tile-role="target"][data-edge-bottom="true"]::after { bottom:0; }
-  #game-screen.clay-round-one:not(.is-start) [data-tile-role="control"][data-edge-top="true"]::after { top:0; bottom:calc(var(--cell-line) / -2); }
-  #game-screen.clay-round-one:not(.is-start) [data-tile-role="control"][data-edge-top="true"][data-edge-bottom="true"]::after { bottom:0; }
-  #game-screen.clay-round-one:not(.is-start) [data-tile-role="control"][data-edge-bottom="true"]::after { bottom:0; }
-  #game-screen.clay-round-one:not(.is-start) .checkerboard-cell[data-tile-role="target"][data-edge-right="true"]::after { right:calc(var(--cell-line) / -2); }
-  #game-screen.clay-round-one:not(.is-start) [data-tile-role="control"][data-edge-left="true"]::after { left:calc(var(--cell-line) / -2); }
+  #game-screen#game-screen.clay-round-one:not(.is-start) .checkerboard-cell[data-tile-role="target"][data-edge-bottom="true"]::after { bottom:0; }
+  #game-screen#game-screen.clay-round-one:not(.is-start) [data-tile-role="control"][data-edge-top="true"]::after { top:0; bottom:calc(var(--cell-line) / -2); }
+  #game-screen#game-screen.clay-round-one:not(.is-start) [data-tile-role="control"][data-edge-top="true"][data-edge-bottom="true"]::after { bottom:0; }
+  #game-screen#game-screen.clay-round-one:not(.is-start) [data-tile-role="control"][data-edge-bottom="true"]::after { bottom:0; }
+  #game-screen#game-screen.clay-round-one:not(.is-start) .checkerboard-cell[data-tile-role="target"][data-edge-right="true"]::after { right:calc(var(--cell-line) / -2); }
+  #game-screen#game-screen.clay-round-one:not(.is-start) [data-tile-role="control"][data-edge-left="true"]::after { left:calc(var(--cell-line) / -2); }
 }
 
 /* The weapon controls share the same matte surface and outer cell frame. */
@@ -324,7 +335,7 @@
   --fixed-cap-top:#218bfa; --fixed-cap-side:#073f9d; --fixed-cap-edge:#072b70; --fixed-cap-rim:#399bfc;
 }
 #game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend)[data-button-palette="red"] {
-  --fixed-cap-top:#de887e; --fixed-cap-side:#ad645f; --fixed-cap-edge:#754640; --fixed-cap-rim:#eaa399;
+  --fixed-cap-top:#ba8984; --fixed-cap-side:#87635f; --fixed-cap-edge:#503f3e; --fixed-cap-rim:#c99c97;
 }
 #game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend)[data-button-palette="yellow"] {
   --fixed-cap-top:#ffd833; --fixed-cap-side:#cc8e00; --fixed-cap-edge:#805300; --fixed-cap-rim:#ffe253;
@@ -346,11 +357,11 @@
 #game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend) :is(.lane-hotfx,.lane-quake-shade) { display:none !important; }
 #game-screen#game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend) :is(.lane-num,.lane-ai-bit,.lane-lbl,.lane-ico,.lane-sub,.lane-kr,.lane-en) { color:#fff !important; }
 #game-screen#game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend) .lane-ico svg { stroke:currentColor !important; fill:currentColor !important; }
-#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid .lane-button--hot :is(.lane-num,.lane-ai-bit) { color:#ffcf4a !important; }
+#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid .lane-button--hot :is(.lane-num,.lane-ai-bit) { color:#ff9b35 !important; }
 #game-screen#game-screen.clay-round-one:not(.is-start).diff-mid[data-button-palette="yellow"] .lane-button--hot :is(.lane-num,.lane-ai-bit) { color:#9b8750 !important; }
-#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid .lane-button--hot-safe :is(.lane-num,.lane-ai-bit) { color:#ffd84a !important; }
-#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid .is-tint-hit :is(.lane-num,.lane-ai-bit) { color:#fa499e !important; }
-#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid .is-tint-miss :is(.lane-num,.lane-ai-bit) { color:#ed3028 !important; }
+#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid .lane-button--hot-safe :is(.lane-num,.lane-ai-bit) { color:#ffab20 !important; }
+#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid .is-tint-hit :is(.lane-num,.lane-ai-bit) { color:#ff9b35 !important; }
+#game-screen#game-screen.clay-round-one:not(.is-start).diff-mid .is-tint-miss :is(.lane-num,.lane-ai-bit) { color:#d84b47 !important; }
 #game-screen#game-screen.clay-round-one:not(.is-start).diff-mid[data-button-fail="black"] .is-tint-miss :is(.lane-num,.lane-ai-bit) { color:#303237 !important; }
 
 /* Each fever weapon keeps the exact square-local coordinate system of its own board. */
@@ -436,16 +447,178 @@
 #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-stat-caption .ms-ic { display:block; width:auto; height:clamp(8px,calc(var(--rail-depth) * .48),26px); max-width:26px; }
 #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--trailing .hud-value .ms-val { font-size:clamp(12px,calc(var(--rail-depth) - 6px),38px); }
 
-/* King Punch's active skill is the intentional exception to DIM/Pro cap lighting. */
-#game-screen#game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend).gs-alipunch.gs-invincible .lane-button:is(.lane-button--hot,.lane-button--hot-safe) {
-  --cap-top:#ffab20 !important; --cap-side:#b85b08 !important;
-  --cap-edge:#753605 !important; --cap-rim:#ffb83d !important;
-}
-
 /* V1598: distinguish home and normal time while retaining the low-time warning. */
 #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail #btn-back-to-hub .hub-menu-ic { color:#7ed3fa; stroke:currentColor; }
 #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail .ms-time:not(.is-low) .ms-val { color:#ffcf4a; }
 #game-screen:has(#fever-result-overlay:not([hidden])) #fever-weapon-layer { visibility:hidden; }
 @media(orientation:landscape) {
   #game-screen.clay-round-one:not(.is-start) #fever-weapon-layer { left:calc(var(--board-left) + var(--sq)); top:var(--layout-top); }
+}
+
+/* V1599 / approved B: retain the 95% squares and join both information rows. */
+#game-screen.clay-round-one:not(.is-start) {
+  --cross-margin:calc((100dvw - var(--sq)) / 2);
+  --main-spare:calc(100dvh - 2 * var(--sq));
+  /* Short screens retain board size; reserve a compact, readable information panel. */
+  --field-end-gap:min(var(--cross-margin),max(2px,calc(var(--main-spare) - 40px)));
+  --rail-free:calc(var(--main-spare) - var(--field-end-gap));
+  --layout-top:var(--rail-free); --board-left:var(--cross-margin);
+  --rail-gap:max(4px,min(var(--cross-margin),calc(var(--rail-free) - 36px)));
+  --rail-depth:max(0px,min(44px,calc((var(--rail-free) - var(--rail-gap) - 4px) / 2)));
+  --hud-icon-size:clamp(8px,calc(var(--rail-depth) - 4px),33.6px);
+  box-sizing:border-box; align-content:start; justify-content:start;
+  padding:var(--layout-top) var(--board-left) var(--field-end-gap);
+}
+.hud-panel { display:none; }
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-panel {
+  position:absolute; display:grid; grid-template-columns:minmax(0,1fr);
+  grid-template-rows:repeat(2,minmax(0,1fr)); gap:0;
+  left:calc(var(--board-left) - 2px); top:calc(var(--layout-top) - var(--rail-gap) - 2 * var(--rail-depth));
+  width:calc(var(--field-width) + 4px); height:calc(2 * var(--rail-depth));
+  box-sizing:border-box; border:2px solid #303237; border-radius:var(--cell-radius);
+  overflow:hidden; background:#303237; z-index:25; pointer-events:none;
+}
+#game-screen#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail {
+  position:static; inset:auto; width:100%; height:100%; min-width:0; min-height:0;
+  gap:0; padding:0; border:0; border-radius:0; box-shadow:none;
+}
+#game-screen#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--trailing { border-top:1px solid #777a80; }
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-panel :is(.ms-label,.ms-val) {
+  font-family:system-ui,'Jua',sans-serif; font-weight:800;
+}
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-panel .hud-copy,
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-panel .hud-stat-caption {
+  flex-direction:row; gap:3px;
+}
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-panel .ms-round .ms-val {
+  width:auto; flex:0 1 auto; font-size:clamp(5px,calc((var(--rail-depth) - 6px) * .65),23px);
+}
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-panel .ms-round .hud-copy { flex-direction:column; gap:0; }
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-panel :is(.ms-score,.ms-heart,.ms-combo) .ms-val {
+  font-size:clamp(10px,calc(var(--rail-depth) - 6px),38px);
+}
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-panel .ms-label {
+  font-size:clamp(8px,calc(var(--rail-depth) * .36),16px);
+}
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-panel .ms-round .ms-label {
+  font-size:clamp(3px,calc((var(--rail-depth) - 6px) * .35),12px);
+}
+#game-screen#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-panel :is(.hub-menu-ic,.ms-clock,.ms-heart-icon,.ms-trophy) {
+  width:var(--hud-icon-size); height:var(--hud-icon-size); max-width:var(--hud-icon-size); flex:0 0 auto;
+}
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-panel .ms-clock--clean {
+  aspect-ratio:1; color:#ffcf4a;
+}
+#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-panel .ms-time.is-low .ms-clock--clean { color:#c52626; }
+.ms-clock--clean .ms-clock-hand { transform-origin:12px 12px; }
+
+/* Board tones and button signals are independent. The shared idle color is
+   the approved mole caramel material converted by the runtime's gamma2.2. */
+#game-screen.clay-round-one:not(.is-start) {
+  --round-cap-base:#c8884d; --round-cap-side:#966439; --round-cap-edge:#62452a; --round-cap-rim:#d9a270;
+  --board-key-ink:#fff; --error-cap:#303237;
+  --king-cap:#ffab20; --king-side:#b85b08; --king-edge:#753605; --king-rim:#ffb83d;
+}
+#game-screen.clay-round-one:not(.is-start)[data-board-tone="yellow"] { --board-key-ink:#303237; }
+#game-screen.clay-round-one:not(.is-start)[data-button-fail="red"] { --error-cap:#d84b47; }
+#game-screen.clay-round-one:not(.is-start)[data-board-tone="orange"] {
+  --king-cap:#5cdbf5; --king-side:#2b91ad; --king-edge:#1f657b; --king-rim:#9cecff;
+}
+#game-screen.clay-round-one:not(.is-start) .lane-button:where(:not(.lane-button--hot):not(.lane-button--hot-safe):not(.is-tint-hit):not(.is-tint-miss)) {
+  --cap-top:var(--round-cap-base); --cap-side:var(--round-cap-side); --cap-edge:var(--round-cap-edge); --cap-rim:var(--round-cap-rim);
+}
+#game-screen.clay-round-one:not(.is-start):is(.diff-mid,.diff-legend)[data-button-palette] {
+  --fixed-cap-top:var(--round-cap-base); --fixed-cap-side:var(--round-cap-side);
+  --fixed-cap-edge:var(--round-cap-edge); --fixed-cap-rim:var(--round-cap-rim);
+}
+#game-screen#game-screen.clay-round-one:not(.is-start):where(:not(.diff-mid):not(.diff-legend)) .lane-button.is-tint-hit {
+  --cap-top:var(--board-accent); --cap-side:var(--board-accent); --cap-edge:var(--board-accent); --cap-rim:var(--board-accent);
+}
+#game-screen#game-screen.clay-round-one:not(.is-start):where(:not(.diff-mid):not(.diff-legend)) .lane-button.is-tint-hit :is(.lane-num,.lane-ai-bit,.lane-ico) { color:var(--board-key-ink); }
+#game-screen#game-screen.clay-round-one:not(.is-start):where(:not(.diff-mid):not(.diff-legend)) .lane-button.is-tint-miss {
+  --cap-top:var(--error-cap); --cap-side:var(--error-cap); --cap-edge:var(--error-cap); --cap-rim:var(--error-cap);
+}
+#game-screen#game-screen.clay-round-one:not(.is-start):where(:not(.diff-mid):not(.diff-legend)) .lane-button.is-tint-miss :is(.lane-num,.lane-ai-bit,.lane-ico) { color:#fff; }
+#game-screen#game-screen.clay-round-one:not(.is-start).gs-alipunch.gs-invincible .lane-button:is(.lane-button--hot,.lane-button--hot-safe):not(.is-tint-miss) {
+  --cap-top:var(--king-cap) !important; --cap-side:var(--king-side) !important;
+  --cap-edge:var(--king-edge) !important; --cap-rim:var(--king-rim) !important;
+}
+#game-screen#game-screen.clay-round-one:not(.is-start).gs-alipunch.gs-invincible .lane-button:is(.lane-button--hot,.lane-button--hot-safe):not(.is-tint-miss) :is(.lane-num,.lane-ai-bit,.lane-ico) { color:#17324d !important; }
+/* The square button owns input; its stationary circular well contains the cap. */
+.lane-cap-well { display:none; }
+#game-screen#game-screen.clay-round-one:not(.is-start) .lane-button { --cap-drop:3px; border-radius:0; isolation:isolate; }
+#game-screen#game-screen.clay-round-one:not(.is-start) .lane-cap-well {
+  position:absolute; display:block; inset:14%; border:0;
+  border-radius:50%; box-sizing:border-box; overflow:hidden; pointer-events:none; z-index:0; visibility:visible;
+  background:color-mix(in srgb,var(--round-cap-base) 80%,black);
+  box-shadow:0 1px 2px #0000000c;
+}
+#game-screen.clay-round-one:not(.is-start) .lane-cap-well::before {
+  content:''; position:absolute; inset:1px; border-radius:50%;
+  background:radial-gradient(circle at 35% 25%,color-mix(in srgb,var(--cap-top) 82%,white),var(--cap-top) 54%,color-mix(in srgb,var(--cap-top) 85%,black));
+  box-shadow:inset 0 2px 3px #ffffff50,inset 0 -3px 5px #00000025;
+  transform:scale(1); transform-origin:center;
+  transition:transform 220ms cubic-bezier(.18,1.5,.3,1),box-shadow 120ms ease,filter 120ms ease;
+}
+#game-screen.clay-round-one:not(.is-start) :is(.lane-flip,.lane-face--key,.lane-items) { z-index:1; }
+#game-screen#game-screen.clay-round-one:not(.is-start) .lane-cell-line {
+  border-color:transparent; border-image:none; box-shadow:none; mask:none; transition:none;
+}
+#game-screen#game-screen.clay-round-one:not(.is-start) .lane-face--key::before,
+#game-screen#game-screen.clay-round-one:not(.is-start) .lane-button--simple::before,
+#game-screen#game-screen.clay-round-one:not(.is-start):not(.gs-laneskill) .lane-button--call::before,
+#game-screen#game-screen.clay-round-one.gs-laneskill:not(.is-start) .lane-button--call .lane-items::after,
+#game-screen#game-screen.clay-round-one.gs-alipunch:not(.is-start) [data-region="12"] .lane-items::after {
+  display:none; animation:none !important; box-shadow:none;
+}
+#game-screen#game-screen.clay-round-one:not(.is-start) .lane-button .lane-face--key > *,
+#game-screen#game-screen.clay-round-one:not(.is-start) .lane-button--simple > .lane-num,
+#game-screen#game-screen.clay-round-one:not(.is-start):not(.gs-laneskill) .lane-button--call > :is(.lane-ico,.lane-lbl) {
+  translate:0 0 !important; text-shadow:none; transform-origin:center;
+  transition:transform 220ms cubic-bezier(.18,1.5,.3,1);
+}
+#game-screen#game-screen.clay-round-one:not(.is-start) .lane-button.is-cap-rebound:not(:active) .lane-cap-well::before,
+#game-screen#game-screen.clay-round-one:not(.is-start) .lane-button.is-cap-rebound:not(:active) .lane-face--key > *,
+#game-screen#game-screen.clay-round-one:not(.is-start) .lane-button--simple.is-cap-rebound:not(:active) > .lane-num,
+#game-screen#game-screen.clay-round-one:not(.is-start):not(.gs-laneskill) .lane-button--call.is-cap-rebound:not(:active) > :is(.lane-ico,.lane-lbl) {
+  animation:checker-cap-release 200ms ease-out !important;
+}
+#game-screen#game-screen.clay-round-one:not(.is-start) .lane-button:active .lane-cap-well::before,
+#game-screen#game-screen.clay-round-one:not(.is-start) .lane-button:active .lane-face--key > *,
+#game-screen#game-screen.clay-round-one:not(.is-start) .lane-button--simple:active > .lane-num,
+#game-screen#game-screen.clay-round-one:not(.is-start):not(.gs-laneskill) .lane-button--call:active > :is(.lane-ico,.lane-lbl) {
+  animation:none !important; transform:scale(.86); transition-duration:35ms;
+}
+#game-screen.clay-round-one:not(.is-start) .lane-button:active .lane-cap-well::before {
+  box-shadow:inset 0 0 8px #00000040,inset 0 0 2px #ffffff20; filter:brightness(.92);
+}
+@keyframes checker-cap-release {
+  0% { transform:scale(.86); }
+  58% { transform:scale(1.035); }
+  82% { transform:scale(.98); }
+  100% { transform:scale(1); }
+}
+@media(orientation:landscape) {
+  #game-screen.clay-round-one:not(.is-start) {
+    --cross-margin:calc((100dvh - var(--sq)) / 2);
+    --main-spare:calc(100dvw - 2 * var(--sq));
+    --board-left:var(--rail-free); --layout-top:var(--cross-margin);
+    padding:var(--layout-top) var(--field-end-gap) var(--layout-top) var(--board-left);
+  }
+  #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-panel {
+    left:calc(var(--board-left) - var(--rail-gap) - 2 * var(--rail-depth)); top:calc(var(--layout-top) - 2px);
+    width:calc(2 * var(--rail-depth)); height:calc(var(--field-height) + 4px);
+    grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:minmax(0,1fr);
+  }
+  #game-screen#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--trailing {
+    border-top:0; border-left:1px solid #777a80;
+  }
+  #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-panel .hud-copy,
+  #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-panel .hud-stat-caption { flex-direction:column; gap:3px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  #game-screen#game-screen.clay-round-one:not(.is-start) .lane-button.is-cap-rebound:not(:active) .lane-cap-well::before,
+  #game-screen#game-screen.clay-round-one:not(.is-start) .lane-button.is-cap-rebound:not(:active) .lane-face--key > *,
+  #game-screen#game-screen.clay-round-one:not(.is-start) .lane-button--simple.is-cap-rebound:not(:active) > .lane-num,
+  #game-screen#game-screen.clay-round-one:not(.is-start):not(.gs-laneskill) .lane-button--call.is-cap-rebound:not(:active) > :is(.lane-ico,.lane-lbl) { animation:none !important; transition:none; }
 }
