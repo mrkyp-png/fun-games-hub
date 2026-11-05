@@ -74,7 +74,8 @@
 // V1592 G: PANG on the matching keypad button; paired boards at95% viewport fit.
 // V1593 G: joined 18-cell field, inverse control tiles and responsive six-slot HUD rails.
 // V1605 G: clay character, enlarged pain-eye expression, RGB vertex colors and bomb shell centering.
-const CACHE = 'mole-game-v1605-G';
+// V1609 C: 3D 홈(?home3d=1 검토 전용) 바다 물결·빨간 점 알림, 화면 버전 표시를 커밋 번호와 맞춤(V1606~1608 C 는 home3d 가지 커밋).
+const CACHE = 'mole-game-v1609-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.

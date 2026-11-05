@@ -15,7 +15,7 @@
     const IN = MG.Home3DIntro, HOLE_Y = -0.3, RISE_T = 0.8; // 구멍 안 높이, 등장 뛰어오르기 시간
     const view = { x: 0, z: 0, heading: 0, yaw: 0, pitch: 0.62 }; // 구멍 가운데, 정면(화면 쪽) — 뒤로 두더지팡 게임장
     let ui = null, rd = null, ready = false, raf = 0, last = 0, time = 0, walking = false, route = null, near = null;
-    let rise = 0, hop = null, jumpAt = -1, readyAt = Infinity; // rise: 등장 경과 / hop: 구멍 밖 착지 {from,to,t} / jumpAt: 점프 시작 time
+    let rise = 0, hop = null, jumpAt = -1, readyAt = Infinity, badges = [], badgeAt = -9; // rise: 등장 경과 / hop: 구멍 밖 착지 {from,to,t} / jumpAt: 점프 시작 time
 
     const api = {
       state: () => st.state,
@@ -116,7 +116,9 @@
       } else if (st.inputEnabled()) move(dt);
       if (!api.renderAllowed()) return; // move 안에서 기능 화면이 열렸으면 멈춤
       rd.render(view, pose());
-      ui.drawMinimap(view, L);
+      if (time - badgeAt > 1) { badgeAt = time; badges = claimables(MG); } // 1초마다 확인
+      ui.drawMinimap(view, L, badges);
+      ui.setBadges(badges.map((a) => { const s = L.SITES.find((x) => x.action === a), q = s && MG.Home3DRenderer.project(rd.vp(), [s.x, s.kind === 'building' ? 3.4 : 1.9, s.z]), z = rd.size(); return q && z && { action: a, x: (q[0] + 1) / 2 * z.cw, y: (1 - q[1]) / 2 * z.ch, on: Math.abs(q[0]) < 1.1 && Math.abs(q[1]) < 1.1 }; }).filter(Boolean));
       // 진입 박스에 닿으면 바로 들어감(들어가기 버튼 없음). 나왔을 때 박스 안이면 한 번 벗어나야 다시 들어감
       near = L.nearest(view.x, view.z);
       // 건물에 닿아 있으면 그 건물 옆에 진입 버튼(누르거나 건물을 터치하면 들어감, 스쳐 지나가도 자동 진입 없음)
@@ -157,7 +159,15 @@
     }
     return api;
   }
-  const api = { create };
+  // 받을 것이 있는 곳(빨간 점): 기존 홈 뱃지와 같은 판단 함수(game.js refreshHomeBadges)
+  function claimables(MG) {
+    const out = [];
+    if (MG.Daily && MG.Daily.claimable && MG.Daily.claimable()) out.push('daily');
+    if (MG.Quest && MG.Quest.claimable && MG.Quest.claimable() > 0) out.push('quest');
+    if (MG.Mail && MG.Mail.claimable && MG.Mail.claimable()) out.push('mail');
+    return out;
+  }
+  const api = { create, claimables };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.MoleGame = root.MoleGame || {};
   root.MoleGame.Home3D = api;

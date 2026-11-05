@@ -35,21 +35,35 @@
     return best;
   }
 
+  // 바다 물결 높이(셰이더 SEA_H 와 같은 식) — 잔잔하게, 진폭 ≤ 0.075
+  function seaHeight(x, z, t) {
+    return 0.035 * Math.sin(0.55 * x + 1.1 * t) + 0.025 * Math.sin(0.8 * z - 0.9 * t + 1.3) + 0.015 * Math.sin(0.37 * (x + z) + 1.7 * t);
+  }
+  // 바다 판: n×n 칸 격자(한 번에 그리는 판 1장), 반지름 R
+  function seaGrid(n, R) {
+    const positions = [], indices = [];
+    for (let j = 0; j <= n; j++) for (let i = 0; i <= n; i++) positions.push(-R + 2 * R * i / n, -0.62, -R + 2 * R * j / n);
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) { const a = j * (n + 1) + i, b = a + 1, c = a + n + 1, d = c + 1; indices.push(a, c, b, b, c, d); }
+    return { positions: new Float32Array(positions), indices: new Uint32Array(indices) };
+  }
+
   // ---------- WebGL ----------
   const VS = `#version 300 es
 precision highp float;
 in vec3 aPosition;in vec3 aNormal;in vec4 aColor;in vec4 aJoints;in vec4 aWeights;in vec2 aUV;
-uniform mat4 uVP,uModel,uBones[44];uniform mat3 uNormal;uniform bool uSkin;
+uniform mat4 uVP,uModel,uBones[44];uniform mat3 uNormal;uniform bool uSkin,uSea;uniform float uTime;
 out vec3 vWorld,vNormal;out vec4 vColor;out vec2 vUV;
-void main(){mat4 skin=mat4(1.);if(uSkin)skin=uBones[int(aJoints.x)]*aWeights.x+uBones[int(aJoints.y)]*aWeights.y+uBones[int(aJoints.z)]*aWeights.z+uBones[int(aJoints.w)]*aWeights.w;vec4 p=uModel*skin*vec4(aPosition,1.);vWorld=p.xyz;vNormal=normalize(uNormal*mat3(skin)*aNormal);vColor=aColor;vUV=aUV;gl_Position=uVP*p;}`;
+float seaH(vec2 p,float t){return .035*sin(.55*p.x+1.1*t)+.025*sin(.8*p.y-.9*t+1.3)+.015*sin(.37*(p.x+p.y)+1.7*t);}
+void main(){mat4 skin=mat4(1.);if(uSkin)skin=uBones[int(aJoints.x)]*aWeights.x+uBones[int(aJoints.y)]*aWeights.y+uBones[int(aJoints.z)]*aWeights.z+uBones[int(aJoints.w)]*aWeights.w;vec4 p=uModel*skin*vec4(aPosition,1.);vWorld=p.xyz;vNormal=normalize(uNormal*mat3(skin)*aNormal);if(uSea){float e=.2;p.y+=seaH(p.xz,uTime);float hx=seaH(p.xz+vec2(e,0.),uTime)-seaH(p.xz-vec2(e,0.),uTime),hz=seaH(p.xz+vec2(0.,e),uTime)-seaH(p.xz-vec2(0.,e),uTime);vNormal=normalize(vec3(-hx/(2.*e),1.,-hz/(2.*e)));vWorld=p.xyz;}vColor=aColor;vUV=aUV;gl_Position=uVP*p;}`;
   const FS = `#version 300 es
 precision highp float;
-in vec3 vWorld,vNormal;in vec4 vColor;in vec2 vUV;uniform vec4 uColor;uniform bool uFloor,uSign;uniform sampler2D uTex;uniform vec3 uEye;uniform vec2 uPlayer;out vec4 frag;
+in vec3 vWorld,vNormal;in vec4 vColor;in vec2 vUV;uniform vec4 uColor;uniform bool uFloor,uSign,uSea;uniform float uTime;uniform sampler2D uTex;uniform vec3 uEye;uniform vec2 uPlayer;out vec4 frag;
 void main(){vec3 n=normalize(vNormal),base=uColor.rgb*vColor.rgb;float shadow=1.;
+if(uSea){float d=min(length(vWorld.xz)-12.,length(vWorld.xz-vec2(0.,3.2))-13.6);float foam=smoothstep(1.,0.,d)*(.55+.45*sin(7.*d-2.2*uTime));vec3 V=normalize(uEye-vWorld),Ls=normalize(vec3(-.6,1.,.7));float spark=pow(max(0.,dot(reflect(-Ls,normalize(vNormal)),V)),60.);vec3 c=mix(vec3(.30,.66,.78),vec3(.52,.82,.88),.5+.5*normalize(vNormal).x*3.);c=mix(c,vec3(1.),clamp(foam,0.,1.)*.75)+spark*.6;float fog=smoothstep(22.,60.,length(uEye-vWorld));frag=vec4(mix(pow(clamp(c,0.,1.),vec3(1./1.1)),vec3(.73,.82,.88),fog),1.);return;}
 if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=max(0.,(dot(n,normalize(vec3(-.6,1.,.7)))+.4)/1.4);frag=vec4(c*(.86+.14*k),1.);return;}if(uFloor){float tile=mod(floor(vWorld.x/1.5)+floor(vWorld.z/1.5),2.);base=mix(vec3(.78,.72,.61),vec3(.31,.30,.28),tile);vec2 d=(vWorld.xz-uPlayer)/vec2(.67,.48);shadow=1.-.34*exp(-dot(d,d)*1.8);}float key=max(0.,(dot(n,normalize(vec3(-.6,1.,.7)))+.4)/1.4);float fill=max(0.,dot(n,normalize(vec3(.8,.4,-.5))));vec3 lit=base*(vec3(.39,.40,.43)+key*.62+fill*vec3(.08,.10,.13));vec3 h=normalize(normalize(uEye-vWorld)+normalize(vec3(-.6,1.,.7)));lit+=vec3(.04)*pow(max(0.,dot(n,h)),14.);lit*=shadow;float fog=smoothstep(20.,46.,length(uEye-vWorld));frag=vec4(mix(pow(clamp(lit,0.,1.),vec3(1./2.2)),vec3(.73,.82,.88),fog),uColor.a*vColor.a);}`;
 
   function create(canvas) {
-    let gl, program, U, A, environment = [], actor = [], rig = null, vp = null, signs = null, size = null;
+    let gl, program, U, A, environment = [], actor = [], rig = null, vp = null, signs = null, size = null, seaMesh = null;
     const resetSize = () => { size = null; };
     if (root.ResizeObserver) new ResizeObserver(resetSize).observe(canvas); else root.addEventListener('resize', resetSize);
     function shader(type, src) {
@@ -65,7 +79,7 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
       gl.linkProgram(program);
       if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw Error(gl.getProgramInfoLog(program));
       gl.useProgram(program);
-      U = {}; for (const k of ['VP', 'Model', 'Bones', 'Normal', 'Skin', 'Color', 'Floor', 'Sign', 'Tex', 'Eye', 'Player']) U[k] = gl.getUniformLocation(program, 'u' + k);
+      U = {}; for (const k of ['VP', 'Model', 'Bones', 'Normal', 'Skin', 'Color', 'Floor', 'Sign', 'Tex', 'Eye', 'Player', 'Sea', 'Time']) U[k] = gl.getUniformLocation(program, 'u' + k);
       A = {}; for (const k of ['Position', 'Normal', 'Color', 'Joints', 'Weights', 'UV']) A[k] = gl.getAttribLocation(program, 'a' + k);
       gl.enable(gl.DEPTH_TEST);
     }
@@ -84,13 +98,13 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
       if (indexed) { const a = R.accessor(model, p.indices), b = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, b); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(a), gl.STATIC_DRAW); count = a.length; }
       const material = (model.json.materials && model.json.materials[p.material]) || {};
       const color = (material.pbrMetallicRoughness && material.pbrMetallicRoughness.baseColorFactor) || [1, 1, 1, 1];
-      return { vao, count, indexed, color, floor: material.name === 'Hub checker floor' };
+      return { vao, count, indexed, color, floor: material.name === 'Hub checker floor', sea: material.name === 'Home sea' };
     }
     function draw(m, world, bones) {
       gl.bindVertexArray(m.vao);
       gl.uniformMatrix4fv(U.Model, false, world); gl.uniformMatrix3fv(U.Normal, false, R.normals(world));
       gl.uniform1i(U.Skin, !!bones); if (bones) gl.uniformMatrix4fv(U.Bones, false, bones);
-      gl.uniform1i(U.Floor, m.floor); gl.uniform4fv(U.Color, m.color);
+      gl.uniform1i(U.Floor, m.floor); gl.uniform1i(U.Sea, !!m.sea); gl.uniform4fv(U.Color, m.color);
       const st = m.sign && signs && signs.get(m.sign);
       gl.uniform1i(U.Sign, !!st);
       if (st) { gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, st); gl.uniform1i(U.Tex, 0); }
@@ -108,6 +122,13 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
         // Sign_<action> 판 = 간판 글자 텍스처 자리
         environment = R.instances(plaza).map((i) => Object.assign(mesh(plaza, i.primitive), { world: i.world, sign: i.name.startsWith('Sign_') ? i.name.slice(5) : null }));
         signs = root.MoleGame.Home3DSigns.create(gl);
+        environment = environment.filter((m) => !m.sea); // GLB 의 평평한 바다 판 대신 움직이는 격자
+        { const sg = seaGrid(48, 60), vao = gl.createVertexArray(); gl.bindVertexArray(vao);
+          const pb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, pb); gl.bufferData(gl.ARRAY_BUFFER, sg.positions, gl.STATIC_DRAW);
+          gl.enableVertexAttribArray(A.Position); gl.vertexAttribPointer(A.Position, 3, gl.FLOAT, false, 0, 0);
+          for (const [k, v] of [['Normal', [0, 1, 0, 0]], ['Color', [1, 1, 1, 1]], ['Joints', [0, 0, 0, 0]], ['Weights', [0, 0, 0, 0]], ['UV', [0, 0, 0, 0]]]) if (A[k] >= 0) { gl.disableVertexAttribArray(A[k]); gl.vertexAttrib4f(A[k], ...v); }
+          const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, sg.indices, gl.STATIC_DRAW);
+          seaMesh = { vao, count: sg.indices.length, indexed: true, color: [1, 1, 1, 1], floor: false, sign: null, sea: true }; }
         rig = R.prepare(mole); actor = [];
         mole.json.nodes.forEach((n, node) => { // 일반 홈 = Mole_Clay_Skin 만(Carrier/CarryBomb 렌더 금지)
           if (n.name !== 'Mole_Clay_Skin' || n.mesh === undefined) return;
@@ -125,7 +146,9 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
         const cam = camera(view, w, h); vp = cam.vp;
         gl.clearColor(0.73, 0.82, 0.88, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.useProgram(program); gl.uniformMatrix4fv(U.VP, false, vp); gl.uniform3fv(U.Eye, cam.eye); gl.uniform2f(U.Player, view.x, view.z);
+        gl.uniform1f(U.Time, performance.now() / 1000 % 10000);
         for (const m of environment) draw(m, m.world, null);
+        if (seaMesh) draw(seaMesh, R.identity(), null);
         const worlds = R.pose(rig, pose.clip, pose.t, pose.loop);
         const inst = R.transform({ translation: [view.x, pose.y || 0, view.z], rotation: [0, Math.sin(view.heading / 2), 0, Math.cos(view.heading / 2)], scale: [0.65, 0.65, 0.65] });
         for (const m of actor) draw(m, R.multiply(inst, worlds[m.node]), R.palette(rig, worlds, m.node));
@@ -138,7 +161,7 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
     };
   }
 
-  const api = { create, camera, project, rayFloor, pickSite };
+  const api = { create, camera, project, rayFloor, pickSite, seaHeight, seaGrid };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.MoleGame = root.MoleGame || {};
   root.MoleGame.Home3DRenderer = api;
