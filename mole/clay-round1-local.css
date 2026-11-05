@@ -659,6 +659,12 @@
 }
 
 /* Center both weapon skill mounts in the current circular caps. */
+#game-screen.clay-round-one:not(.is-start) .lane-bomb-indicator {
+  inset:0; width:auto; height:auto;
+  display:flex; align-items:center; justify-content:center;
+  transform:rotate(30deg) scaleX(-1);
+}
+
 #game-screen#game-screen.clay-round-one.gs-laneskill:not(.is-start) .lane-button--call .lane-items,
 #game-screen#game-screen.clay-round-one.gs-alipunch:not(.is-start) [data-region="12"] .lane-items {
   display:flex; align-items:center; justify-content:center;

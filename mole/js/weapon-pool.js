@@ -15,6 +15,7 @@
 
     const inst = WeaponMod.create(opts);
     let pending = null; // 이번 배치(한 틱) 동안 모인 요청들
+    let generation = 0, disposed = false;
 
     function shuffle(arr) {
       for (let i = arr.length - 1; i > 0; i--) {
@@ -24,10 +25,12 @@
       return arr;
     }
 
-    function flush() {
-      const items = shuffle(pending);
+    function flush(batch, token) {
+      if (disposed || token !== generation || pending !== batch) return;
+      const items = shuffle(batch);
       pending = null;
       items.forEach((item) => {
+        if (disposed || token !== generation) return;
         // isBusyForRegion(선택적) — 알리펀치처럼 무기 하나가 독립된 "부위"를 여러 개
         // 가지고 있으면(좌/우 글러브), 전체가 아니라 이 구역이 실제로 비었는지 따로
         // 물어본다(사용자 지정 — 왼쪽이 나가있어도 오른쪽 구역은 동시에 실제 타격돼야
@@ -42,17 +45,21 @@
     }
 
     function strike(targetXFrac, targetYFrac, onImpact, frameKey, regionId) {
+      if (disposed) return;
+      const token = generation;
       if (!pending) {
         pending = [];
-        schedule(flush);
+        const batch = pending;
+        schedule(() => flush(batch, token));
       }
-      pending.push({ targetXFrac, targetYFrac, onImpact, frameKey, regionId });
+      const impact = onImpact && function () { if (!disposed && token === generation) onImpact(); };
+      pending.push({ targetXFrac, targetYFrac, onImpact: impact, frameKey, regionId });
     }
 
     function update(dt) { inst.update(dt); }
     function isBusy() { return inst.isBusy(); }
-    function home() { inst.home(); }
-    function clear() { inst.clear(); }
+    function home() { generation++; pending = null; inst.home(); }
+    function clear() { disposed = true; generation++; pending = null; inst.clear(); }
 
     function delegateToPrimary(name) {
       return function () { return inst[name].apply(inst, arguments); };
