@@ -89,7 +89,15 @@
   margin:0; padding:0; border:0; pointer-events:none; overflow:visible;
   border-radius:var(--cell-radius); background:var(--checker-rim);
 }
-.clay-round-one .checkerboard-cell-art { display:block; width:100%; height:100%; object-fit:fill; border-radius:var(--cell-radius); }
+.clay-round-one .checkerboard-cell-art {
+  display:block; width:100%; height:100%; object-fit:fill; border-radius:var(--cell-radius);
+  /* Keep the opening, sculpted rim and contact shadow; expose the shared flat
+     checker color outside them instead of the artwork's shaded tile floor. */
+  -webkit-mask-image:radial-gradient(ellipse 49% 31% at 50% 69%,#000 92%,transparent 100%);
+  mask-image:radial-gradient(ellipse 49% 31% at 50% 69%,#000 92%,transparent 100%);
+  -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
+  -webkit-mask-size:100% 100%; mask-size:100% 100%;
+}
 /* Keep existing cap artwork, palette and feedback. Only each cell frame matches the board. */
 #game-screen#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button) { --checker-rim:#f3f3f3; border-radius:var(--cell-radius); }
 #game-screen#game-screen.clay-round-one:not(.is-start) :is(.checkerboard-cell,.lane-button)::after {
@@ -382,8 +390,8 @@
 }
 #game-screen#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--leading > :nth-child(odd),
 #game-screen#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--trailing > :nth-child(odd) {
-  --hud-cell-bg:#303237; --hud-cell-ink:#f3f3f3;
-  background:#303237; color:#f3f3f3;
+  --hud-cell-bg:var(--board-accent,#303237); --hud-cell-ink:var(--hud-accent-ink,#f3f3f3);
+  background:var(--hud-cell-bg); color:var(--hud-cell-ink);
 }
 #game-screen#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--leading > :nth-child(even),
 #game-screen#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--trailing > :nth-child(even) {
@@ -395,8 +403,8 @@
   background:#f3f3f3; color:#303237;
 }
 #game-screen#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail--trailing[data-combo-swapped="true"] > :nth-child(even) {
-  --hud-cell-bg:#303237; --hud-cell-ink:#f3f3f3;
-  background:#303237; color:#f3f3f3;
+  --hud-cell-bg:var(--board-accent,#303237); --hud-cell-ink:var(--hud-accent-ink,#f3f3f3);
+  background:var(--hud-cell-bg); color:var(--hud-cell-ink);
 }
 #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail > :is(.ms-box,#btn-back-to-hub) + :is(.ms-box,#btn-back-to-hub) { border-left:1px solid #777a80; }
 #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail :is(.ms-label,.ms-val,.ms-clock) { color:var(--hud-cell-ink); }
@@ -450,6 +458,9 @@
 /* V1598: distinguish home and normal time while retaining the low-time warning. */
 #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail #btn-back-to-hub .hub-menu-ic { color:#7ed3fa; stroke:currentColor; }
 #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail .ms-time:not(.is-low) .ms-val { color:#ffcf4a; }
+/* Yellow round boxes need dark ink; keep the final-five-second red warning. */
+#game-screen.clay-round-one.game-status-rails[data-board-tone="yellow"] { --hud-accent-ink:#303237; }
+#game-screen#game-screen.clay-round-one.game-status-rails[data-board-tone="yellow"] .hud-rail .ms-time:not(.is-low) :is(.ms-val,.ms-clock) { color:#303237; }
 #game-screen:has(#fever-result-overlay:not([hidden])) #fever-weapon-layer { visibility:hidden; }
 @media(orientation:landscape) {
   #game-screen.clay-round-one:not(.is-start) #fever-weapon-layer { left:calc(var(--board-left) + var(--sq)); top:var(--layout-top); }
@@ -636,6 +647,15 @@
   #game-screen#game-screen.clay-round-one:not(.is-start) .lane-button.is-cap-rebound:not(:active) .lane-face--key > *,
   #game-screen#game-screen.clay-round-one:not(.is-start) .lane-button--simple.is-cap-rebound:not(:active) > .lane-num,
   #game-screen#game-screen.clay-round-one:not(.is-start):not(.gs-laneskill) .lane-button--call.is-cap-rebound:not(:active) > :is(.lane-ico,.lane-lbl) { animation:none !important; transition:none; }
+}
+
+/* King Punch: keep the upper hole board's round checker colors, without its
+   black backing or per-cell frame. The keypad frame remains unchanged. */
+#game-screen.clay-round-one.gs-alipunch:not(.is-start) #mole-board {
+  background:transparent;
+}
+#game-screen#game-screen.clay-round-one.gs-alipunch:not(.is-start) #mole-board .checkerboard-cell::after {
+  display:none;
 }
 
 /* Center both weapon skill mounts in the current circular caps. */

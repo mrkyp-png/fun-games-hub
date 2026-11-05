@@ -657,7 +657,6 @@
   function moleHit(boardEl, xFrac, yFrac, noWord) {
     shake(boardEl);
     if (!noWord) spawnAt(boardEl, 'hit-fx-burst', xFrac, yFrac, '<span>' + window.FGH.I18N.t('mole.fx.bam') + '</span>'); // 처치 땐 scorePop 의 PANG! 이 대신
-    spawnAt(boardEl, 'hit-fx-helmet', xFrac, yFrac);
     starBurst(boardEl, xFrac, yFrac);
     for (let i = 0; i < 5; i++) {
       const p = spawnAt(boardEl, 'hit-fx-dust', xFrac, yFrac);

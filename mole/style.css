@@ -2177,19 +2177,19 @@ body { background: var(--lm-page); }
 /* 알리 펀치 전용 "별표" — 실제 다이얼패드 '✱' 키(구멍12, 알리펀치가 삭제하는 좌하단 자리)를
    재사용해 통화버튼과 똑같이 스킬 슬롯 2개로 바꾼다(기획서 §8). 다른 무기·홈 화면에선 원래 숫자키.
    .lane-items/.lane-item 스타일은 통화버튼과 완전히 공유(style.css 위쪽 참고). */
-#game-screen.gs-alipunch:not(.is-start) [data-region="12"] {
+#game-screen.gs-alipunch:not(.is-start) .lane-button[data-region="12"] {
   background: transparent;
   border-radius: 10%;
   box-shadow: none;
   overflow: visible;
 }
-#game-screen.gs-alipunch:not(.is-start) [data-region="12"]:active { transform: none; background: transparent; }
+#game-screen.gs-alipunch:not(.is-start) .lane-button[data-region="12"]:active { transform: none; background: transparent; }
 /* 스킬 원 2개만 보이게 — ✱ 키의 숫자·글자·앞뒷면 카드 전부 숨김(v740: 예전 알약 카드가 가리던 ✱ 가 원 뒤로 비쳤음) */
-#game-screen.gs-alipunch:not(.is-start) [data-region="12"] > :not(.lane-items):not(.lane-cell-line) {
+#game-screen.gs-alipunch:not(.is-start) .lane-button[data-region="12"] > :not(.lane-items):not(.lane-cell-line) {
   visibility: hidden;
 }
-#game-screen.gs-alipunch:not(.is-start) [data-region="12"]::before,
-#game-screen.gs-alipunch:not(.is-start) [data-region="12"]::after { display: none; }
+#game-screen.gs-alipunch:not(.is-start) .lane-button[data-region="12"]::before,
+#game-screen.gs-alipunch:not(.is-start) .lane-button[data-region="12"]::after { display: none; }
 
 /* ---- 무기 스킨: 대포 ---- 위치·transform 은 lane-cannon.js 가 넣는다 ---- */
 .lane-cannon { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
