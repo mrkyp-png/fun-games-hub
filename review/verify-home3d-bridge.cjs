@@ -14,11 +14,16 @@ const H = require('../mole/js/home3d.js');
 global.MoleGame.Home3DState = require('../mole/js/home3d-state.js');
 global.MoleGame.Home3DLayout = require('../mole/js/home3d-layout.js');
 
-// 1) 플래그 없으면 꺼짐(기존 홈 무변경)
+// 1) 정식 교체(작업 9): ?home3d=0 이면 구형 홈(비교용), 그 외엔 3D 홈
+global.location.search = '?home3d=0';
 assert.strictEqual(H.create({ homeAction: () => {} }), null);
+// 검토용 훅은 ?h3debug=1 일 때만
+global.location.search = '';
+H.create({ homeAction: () => {} });
+assert.strictEqual(global.__home3d, undefined, '공개 주소엔 검토 훅 없음');
 
-// 2) ?home3d=1 이면 켜짐
-global.location.search = '?home3d=1';
+// 2) 기본 = 켜짐
+global.location.search = '';
 const calls = [];
 let result = undefined;
 const h = H.create({ homeAction: (a) => { calls.push(a); return result; } });

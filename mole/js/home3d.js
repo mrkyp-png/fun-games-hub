@@ -1,4 +1,4 @@
-/* 3D 홈 묶음 — 기존 게임(game.js)과 연결. 정식 교체 전까지 ?home3d=1 일 때만 켜짐.
+/* 3D 홈 묶음 — 기존 게임(game.js)과 연결. 기본으로 켜짐(?home3d=0 = 구형 홈).
    기능 열기는 기존 홈 버튼과 같은 homeAction(action) 을 그대로 부른다.
    화면은 #game-screen 안 z-index 30(기존 홈 버튼판 위, 기능 화면 아래)에 깔린다. */
 (function (root) {
@@ -8,7 +8,8 @@
   const SPEED = 2.8;
 
   function create(opts) {
-    if (new URLSearchParams(root.location.search).get('home3d') !== '1') return null;
+    const qs = new URLSearchParams(root.location.search);
+    if (qs.get('home3d') === '0') return null; // 정식 교체(V1614 C): 기본 = 3D 홈, ?home3d=0 = 구형 홈(비교용)
     const MG = root.MoleGame, L = MG.Home3DLayout;
     const st = MG.Home3DState.create({});
     st.boot(); // 앱 켤 때마다 첫 장면(INTRO = 구멍에서 뛰어올라 구멍 안에 안착, 점프로만 나옴)
@@ -40,10 +41,12 @@
       inputEnabled: () => st.inputEnabled(),
       saveView: (v) => st.saveView(v),
       view: () => st.view(),
-      debug: () => ({ state: st.state, x: +view.x.toFixed(2), z: +view.z.toFixed(2), heading: +view.heading.toFixed(2), near: near && near.action, rise: +rise.toFixed(2), hop: !!hop, walking, riding, nearRide: nearRide && nearRide.id, clip: pose().clip, raf: !!raf }) // 검토용(?home3d=1 에서만 존재)
+      debug: () => ({ state: st.state, x: +view.x.toFixed(2), z: +view.z.toFixed(2), heading: +view.heading.toFixed(2), near: near && near.action, rise: +rise.toFixed(2), hop: !!hop, walking, riding, nearRide: nearRide && nearRide.id, clip: pose().clip, raf: !!raf }) // 검토용(?h3debug=1)
     };
-    root.__home3d = api;
-    api.warp = (x, z) => { if (st.state === 'EXPLORE' && !riding) { view.x = x; view.z = z; } }; // 검토용(?home3d=1 에서만)
+    if (qs.get('h3debug') === '1') { // 검토용 훅(공개 주소엔 없음)
+      root.__home3d = api;
+      api.warp = (x, z) => { if (st.state === 'EXPLORE' && !riding) { view.x = x; view.z = z; } };
+    }
 
     function show(on) { if (ui) ui.show(on); }
     function stop() { if (raf) cancelAnimationFrame(raf); raf = 0; route = null; if (ui) ui.setEnabled(false); }

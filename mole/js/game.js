@@ -944,7 +944,7 @@
   // ⚠️ 홈 화면은 항상 기존 16버튼 다이얼러로 불변(사용자 지정) — 9홀/숫자패드는 실제
   // 라운드 진행(startRound) 중에만 적용. wantSmall 을 호출부가 명시적으로 넘긴다.
   let laneControlsIsSmall = null;
-  let home3d = null; // MG.Home3D 인스턴스(?home3d=1 일 때만)
+  let home3d = null; // MG.Home3D 인스턴스(?home3d=0 이면 null)
   // 홈 화면 다이얼패드에 흡수된 더보기 기능(하트·코인·티켓·스코어·상점·홈·일일·퀘스트·친구·
   // 사진보관·아이템보관·설정·라이트모드) — 탭하면 그 화면/팝업으로. 인트로/카운트다운
   // 중(navLocked)엔 무시. 3D 홈(home3d.js)도 같은 함수로 연다. 무시/거절 = false.
@@ -3612,7 +3612,7 @@
       refreshBoardStats();
     };
     window.__debugExitApp = () => exitApp();
-    // 3D 홈 광장(정식 교체 전까지 ?home3d=1 일 때만) — 기능 열기는 기존 homeAction 그대로.
+    // 3D 홈 광장(기본, ?home3d=0 = 구형 홈) — 기능 열기는 기존 homeAction 그대로.
     if (MG.Home3D) home3d = MG.Home3D.create({
       homeAction,
       host: document.getElementById('game-screen'),
