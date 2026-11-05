@@ -1,0 +1,31 @@
+/* 3D 홈 광장 — #game-screen 안, 기존 홈 버튼판(z≤7) 위 · 기능 화면(z≥40) 아래 */
+#home3d{position:fixed;inset:0;z-index:30;background:#bad5f2;overflow:hidden;touch-action:none}
+#home3d[hidden],#home3d [hidden]{display:none!important}
+#home3d .h3-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#home3d .h3-hud{position:absolute;top:max(12px,env(safe-area-inset-top));left:16px;right:16px;display:flex;align-items:center;gap:6px;pointer-events:none}
+#home3d .h3-pill{display:flex;align-items:center;justify-content:center;gap:4px;min-width:64px;height:34px;padding:0 10px 0 4px;border-radius:17px;background:#fffaf0e6;box-shadow:0 2px 0 #c9b79a}
+#home3d .h3-pill img{width:26px;height:26px;object-fit:contain}
+#home3d .h3-pill b{display:flex;align-items:center;justify-content:center;font:700 14px system-ui,sans-serif;color:#4f3d2e}
+#home3d .h3-gear{margin-left:auto;pointer-events:auto;display:flex;align-items:center;justify-content:center;width:42px;height:42px;padding:0;border:0;border-radius:50%;background:#fffaf0e6;box-shadow:0 2px 0 #c9b79a}
+#home3d .h3-gear img{width:30px;height:30px;object-fit:contain}
+#home3d .h3-minimap{position:absolute;top:calc(max(12px,env(safe-area-inset-top)) + 50px);right:16px;width:96px;height:96px;pointer-events:none}
+#home3d .h3-stick{position:absolute;left:max(22px,env(safe-area-inset-left));bottom:max(26px,env(safe-area-inset-bottom));width:112px;height:112px;border-radius:50%;border:2px solid #fff8;background:#e6e0d550;box-shadow:inset 0 1px 10px #1e171b22;touch-action:none}
+#home3d .h3-stick span{position:absolute;width:49px;height:49px;left:calc(50% - 24.5px);top:calc(50% - 24.5px);border-radius:50%;background:#f7eddc;box-shadow:0 3px 6px #30281955;pointer-events:none}
+#home3d .h3-loading{position:absolute;left:50%;top:44%;translate:-50% -50%;width:min(80%,380px);display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;background:#f7ebd9ee;border-radius:18px;font:600 15px system-ui,sans-serif;color:#4f3d2e}
+@media (orientation:landscape){#home3d .h3-stick{width:94px;height:94px;bottom:18px}#home3d .h3-jump{width:94px;height:94px;bottom:18px}#home3d .h3-minimap{width:80px;height:80px}}
+#game-screen.home3d-on #fold-hinge{display:none!important}
+#home3d .h3-close{position:absolute;left:50%;bottom:max(36px,env(safe-area-inset-bottom));translate:-50% 0;display:flex;align-items:center;justify-content:center;min-width:140px;min-height:52px;padding:0 22px;border:1px solid #ffffff80;border-radius:18px;background:#fffaf0;color:#4f3d2e;font:700 18px system-ui,sans-serif;box-shadow:0 3px 0 #b69770}
+/* 점프 버튼 = 스틱과 같은 크기·같은 줄(오른쪽), 안에 CSS 발바닥 */
+#home3d .h3-jump{position:absolute;right:max(22px,env(safe-area-inset-right));bottom:max(26px,env(safe-area-inset-bottom));width:112px;height:112px;display:flex;align-items:center;justify-content:center;padding:0;border:2px solid #fff8;border-radius:50%;background:#e6e0d550;box-shadow:inset 0 1px 10px #1e171b22;touch-action:none}
+#home3d .h3-jump:active{background:#e6e0d590}
+#home3d .h3-paw{position:relative;width:50%;height:50%}
+#home3d .h3-paw b{position:absolute;left:21%;right:21%;bottom:6%;height:46%;border-radius:50% 50% 42% 42%/58% 58% 42% 42%;background:#f7eddc;box-shadow:0 3px 6px #30281955}
+#home3d .h3-paw i{position:absolute;width:19%;height:25%;border-radius:50%;background:#f7eddc;box-shadow:0 2px 4px #30281955}
+#home3d .h3-paw i:nth-child(1){left:4%;top:30%;transform:rotate(-30deg)}
+#home3d .h3-paw i:nth-child(2){left:25%;top:6%;transform:rotate(-12deg)}
+#home3d .h3-paw i:nth-child(3){right:25%;top:6%;transform:rotate(12deg)}
+#home3d .h3-paw i:nth-child(4){right:4%;top:30%;transform:rotate(30deg)}
+#home3d .h3-enter-lbl{display:none;align-items:center;justify-content:center;width:84%;font:800 17px system-ui,sans-serif;color:#4f3d2e;text-align:center;line-height:1.15;word-break:keep-all}
+#home3d .h3-jump.is-enter{background:#ffcf6e;border-color:#fff;box-shadow:0 4px 0 #b69770,0 0 0 4px #ffffff80}
+#home3d .h3-jump.is-enter .h3-paw{display:none}
+#home3d .h3-jump.is-enter .h3-enter-lbl{display:flex}

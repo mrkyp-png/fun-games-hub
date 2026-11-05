@@ -741,6 +741,7 @@
     }
     refreshChapterNav();
     gameStarting = true;
+    if (home3d) home3d.gameStarted();
     setNavLock(true); // 인트로~카운트다운 동안 ⊞ 잠금
     // ⚠️ 다이얼패드·게임판 전환은 전부 startRound() 에서 한 번에(원래대로) — beginGame() 에서
     // 미리 건드리는 시도를 여러 번 했다가("숫자만 먼저", "무기 구획선만 먼저" 등) 회전 애니메이션이
@@ -942,6 +943,25 @@
   // ⚠️ 홈 화면은 항상 기존 16버튼 다이얼러로 불변(사용자 지정) — 9홀/숫자패드는 실제
   // 라운드 진행(startRound) 중에만 적용. wantSmall 을 호출부가 명시적으로 넘긴다.
   let laneControlsIsSmall = null;
+  let home3d = null; // MG.Home3D 인스턴스(?home3d=1 일 때만)
+  // 홈 화면 다이얼패드에 흡수된 더보기 기능(하트·코인·티켓·스코어·상점·홈·일일·퀘스트·친구·
+  // 사진보관·아이템보관·설정·라이트모드) — 탭하면 그 화면/팝업으로. 인트로/카운트다운
+  // 중(navLocked)엔 무시. 3D 홈(home3d.js)도 같은 함수로 연다. 무시/거절 = false.
+  function homeAction(action) {
+    if (navLocked) return false;
+    if (state && state.feverEventActive) return false; // 피버타임 중엔 홈/상점 등 화면이동 전부 비활성화
+    if (action === 'home') { showStartScreen(); return; }
+    if (action === 'profile') { editProfileAvatar(); return; }
+    if (action === 'rhythm') { openRhythm(); return; } // 리듬팡(v807)
+    // V1531 C 사용자: 두더지팡 그림은 GO 와 같이 홈일 때만 진입(메일함·설정·아이템이 위에 열려 있으면 무시).
+    if (action === 'lightMode' && screenNav && screenNav.current()) return false;
+    // V1372 C 사용자: 두더지팡 박스도 GO 버튼과 같은 기능(두더지팡 라운드 지도 진입) — 아래 sub 맵 lightMode → roundmap-screen
+    const sub = { shop: 'shop-screen', score: 'score-screen', daily: 'daily-screen',
+      quest: 'quest-screen', locker: 'workshop-screen',
+      inventory: 'inventory-screen', settings: 'settings-screen', lightMode: 'roundmap-screen',
+      mail: 'mailbox-screen' }[action];
+    if (sub) { const r = openMore(sub); if (r !== false && sharedLaneControls) sharedLaneControls.setActiveNav(action); return r; }
+  }
   function ensureLaneControlsForChapter(wantSmall, force) {
     const small = !!wantSmall;
     if (!force && laneControlsIsSmall === small) return false; // 이미 그 상태 — 다시 안 지음
@@ -955,24 +975,7 @@
       // 홈 화면(전화 다이얼러로 위장 중)일 때만 탭음(버튼소리1 고정) — 플레이 중엔 연타가 잦아
       // 타격음과 겹치므로 안 씀.
       onTap: () => { if (document.getElementById('game-screen').classList.contains('is-start')) MG.HitFx.uiTap(0); },
-      // 홈 화면 다이얼패드에 흡수된 더보기 기능(하트·코인·티켓·스코어·상점·홈·일일·퀘스트·친구·
-      // 사진보관·아이템보관·설정·라이트모드) — 탭하면 그 화면/팝업으로. 인트로/카운트다운
-      // 중(navLocked)엔 무시.
-      onHomeAction: (action) => {
-        if (navLocked) return;
-        if (state && state.feverEventActive) return; // 피버타임 중엔 홈/상점 등 화면이동 전부 비활성화
-        if (action === 'home') { showStartScreen(); return; }
-        if (action === 'profile') { editProfileAvatar(); return; }
-        if (action === 'rhythm') { openRhythm(); return; } // 리듬팡(v807)
-        // V1531 C 사용자: 두더지팡 그림은 GO 와 같이 홈일 때만 진입(메일함·설정·아이템이 위에 열려 있으면 무시).
-        if (action === 'lightMode' && screenNav && screenNav.current()) return;
-        // V1372 C 사용자: 두더지팡 박스도 GO 버튼과 같은 기능(두더지팡 라운드 지도 진입) — 아래 sub 맵 lightMode → roundmap-screen
-        const sub = { shop: 'shop-screen', score: 'score-screen', daily: 'daily-screen',
-          quest: 'quest-screen', locker: 'workshop-screen',
-          inventory: 'inventory-screen', settings: 'settings-screen', lightMode: 'roundmap-screen',
-          mail: 'mailbox-screen' }[action];
-        if (sub) { if (openMore(sub) !== false && sharedLaneControls) sharedLaneControls.setActiveNav(action); }
-      }
+      onHomeAction: homeAction
     });
     laneControlsIsSmall = small;
     wireStartButton(); // 다이얼러 초록 버튼: 홈에서 탭=시작 / 꾹=종료 대기 (재생성된 새 버튼에 다시 배선)
@@ -1520,7 +1523,7 @@
     if (gameScreen) gameScreen.classList.add('hinge-hidden-by-nav');
     if (hinge) hinge.style.visibility = 'hidden';
     // v840(사용자 지정): 리듬팡 진입·홈 복귀도 글리치
-    if (!rhythm) rhythm = window.__rhythm = MG.Rhythm.create({ root: el, onEntryMusic: setRhythmEntryBgm, onClose: (why, cleanup) => { (window.FGH.wipeOriginal || window.FGH.rollOut)(el, () => { el.hidden = true; if (cleanup) cleanup(); if (gameScreen) gameScreen.classList.remove('hinge-hidden-by-nav'); if (hinge) hinge.style.visibility = gameScreen && gameScreen.classList.contains('is-start') ? 'visible' : 'hidden'; playScreenBgm('home'); refreshBoardStats(); }); } });
+    if (!rhythm) rhythm = window.__rhythm = MG.Rhythm.create({ root: el, onEntryMusic: setRhythmEntryBgm, onClose: (why, cleanup) => { (window.FGH.wipeOriginal || window.FGH.rollOut)(el, () => { el.hidden = true; if (cleanup) cleanup(); if (gameScreen) gameScreen.classList.remove('hinge-hidden-by-nav'); if (hinge) hinge.style.visibility = gameScreen && gameScreen.classList.contains('is-start') ? 'visible' : 'hidden'; playScreenBgm('home'); refreshBoardStats(); if (home3d) home3d.homeShown(); }); } });
     stopBgm();
     rhythm.open();
     // V1561 C 사용자: 리듬팡도 그림이 다 준비되면 한 번에
@@ -1603,6 +1606,7 @@
     refreshChapterNav();
     refreshBoardStats();
     maybeShowStartCoach();
+    if (home3d) home3d.homeShown();
   }
 
   // 라운드 표시(홈화면, 2026-09-27) — 원 8개(현재 라이트의 A/N/P 접두사 + 라운드번호),
@@ -3607,6 +3611,12 @@
       refreshBoardStats();
     };
     window.__debugExitApp = () => exitApp();
+    // 3D 홈 광장(정식 교체 전까지 ?home3d=1 일 때만) — 기능 열기는 기존 homeAction 그대로.
+    if (MG.Home3D) home3d = MG.Home3D.create({
+      homeAction,
+      host: document.getElementById('game-screen'),
+      hud: () => ({ coins: MG.Economy.formatK(MG.Economy.getCoins()), hearts: MG.Economy.formatK(MG.Economy.getHearts()), tickets: MG.Economy.formatK(MG.Economy.getTickets()) })
+    });
   });
 
   // 더보기 메뉴 + 하위 화면 모듈 인스턴스 생성·배선.

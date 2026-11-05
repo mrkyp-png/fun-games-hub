@@ -310,6 +310,7 @@
 /* Extend only the original rope strips above the unchanged sign. */
 </style>
 <link rel="stylesheet" href="workshop-enhance.css?v=1524-opt1">
+<link rel="stylesheet" href="home3d.css">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true"><defs><filter id="checkerboard-round-tint" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feColorMatrix id="checkerboard-round-matrix" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0"/></filter></defs></svg>
@@ -1197,6 +1198,13 @@ window.FGH.rollOut = function (el, done) {
 <script src="js/hud.js?v=1605-G"></script>
 <script src="js/sky.js"></script>
 <script src="js/fever-field.js?v=1605-G"></script>
+<script src="js/home3d-layout.js"></script>
+<script src="js/home3d-state.js"></script>
+<script src="js/home3d-renderer.js"></script>
+<script src="js/home3d-ui.js"></script>
+<script src="js/home3d-signs.js"></script>
+<script src="js/home3d-intro.js"></script>
+<script src="js/home3d.js"></script>
 <script src="js/game.js?v=1605-G"></script>
 <script>window.FGH.I18N.applyStatic(document);</script>
 <script src="js/asset-loader-v1477.js?v=1605-G"></script>
@@ -1472,7 +1480,8 @@ window.FGH.rollOut = function (el, done) {
       el.requestFullscreen({ navigationUI: 'hide' }).then(function () {
         if (screen.orientation && screen.orientation.lock) {
           var clay = window.MoleGame && window.MoleGame.ClayRoundOne;
-          screen.orientation.lock(clay && clay.isActive() ? 'any' : 'portrait').catch(function () {});
+          var home3dReview = new URLSearchParams(location.search).get('home3d') === '1';
+          screen.orientation.lock(home3dReview || (clay && clay.isActive()) ? 'any' : 'portrait').catch(function () {});
         }
       }).catch(function () {});
     }, true);
