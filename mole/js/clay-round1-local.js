@@ -181,13 +181,16 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
    const sx=lower?0:shake[0],sy=lower?0:shake[1];
    function bindActor(){
     gl.viewport(ox,oy,size,viewportHeight);gl.enable(gl.SCISSOR_TEST);gl.scissor(ox,oy,size,viewportHeight);
-    gl.uniform1i(loc.uEntering,!!motion.appearing&&!!isBombCarrier(m));gl.uniform1i(loc.uForegroundProp,false);gl.uniform1i(loc.uJump,!!motion.appearing);gl.uniform1i(loc.uCarrying,!!isBombCarrier(m));
+    gl.uniform1i(loc.uEntering,false);gl.uniform1i(loc.uForegroundProp,false);gl.uniform1i(loc.uJump,!!motion.appearing);gl.uniform1i(loc.uCarrying,!!isBombCarrier(m));
     // The same pixel anchor is restored for the final foreground prop pass.
     gl.uniform2f(loc.uOffset,(x-.5)*2+sx/board.clientWidth*2,(.5-y-Math.cos(angle)*.2/span)*2-sy/board.clientWidth*2);gl.uniform4f(loc.uHole,ox+x*size+sx*pixelScale,oy+(1-y)*size-sy*pixelScale,135/418/gridSize*size,58/418/gridSize*size*boardAspect);
     gl.uniform1f(loc.uFlash,Math.max(0,Math.min(1,((m._clayFlashUntil||0)-clockTime)/.09))*.8);
    }
    function drawMesh(d,outline=false){
     const carriedObject=d.materialName.startsWith('Carry bomb ');
+    // Only the bomb needs the stricter entrance mask. Keep the jumping body's
+    // original above-rim visibility during takeoff and landing.
+    gl.uniform1i(loc.uEntering,carriedObject&&!!motion.appearing);
     if(!palettes.has(d.node))palettes.set(d.node,R.palette(runtime,worlds,d.node));const skin=palettes.get(d.node);
     gl.uniformMatrix4fv(loc.uModel,false,R.multiply(instance,worlds[d.node]));gl.uniform1i(loc.uSkinned,!!skin);if(skin)gl.uniformMatrix4fv(loc.uJoints,false,skin);
     if(skin)gl.uniform1fv(loc.uRimJoint,rimFlags[model.json.nodes[d.node].skin]);
