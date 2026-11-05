@@ -62,3 +62,24 @@ console.log('verify-home3d-layout: ok (' + L.SITES.length + ' sites)');
   assert.strictEqual(L.nearest(g.x, g.z + g.body + 0.3).action, 'daily', '뒤/옆에서 닿아도');
   console.log('verify-home3d-layout: touch-any-side ok');
 }
+// 놀이기구 2개(장식): 통과 못 하고, 진입 대상(nearest)은 아님
+{
+  assert.deepStrictEqual(L.RIDES.map((r) => r.id).sort(), ['disco', 'viking']);
+  for (const r of L.RIDES) {
+    assert.ok(!L.allowed(r.x, r.z), r.id + ' 몸체는 막힘');
+    assert.ok(Math.hypot(r.x, r.z) + r.body <= L.ISLAND_R, r.id + ' 섬 안');
+    for (const s of L.SITES) assert.ok(Math.hypot(r.x - s.x, r.z - s.z) > r.body + s.body, r.id + ' 와 ' + s.action + ' 겹치지 않음');
+    assert.strictEqual(L.nearest(r.x + r.body + 0.2, r.z), null, r.id + ' 옆에서 진입 버튼 안 뜸');
+  }
+  console.log('verify-home3d-layout: rides ok');
+}
+// 놀이기구 타기: 닿으면 nearestRide, 내릴 곳은 걸을 수 있는 곳
+{
+  for (const rd of L.RIDES) {
+    const e = L.rideExit(rd);
+    assert.ok(L.allowed(e.x, e.z), rd.id + ' 내리는 곳은 걸을 수 있음');
+    assert.strictEqual(L.nearestRide(e.x, e.z) && L.nearestRide(e.x, e.z).id, rd.id, rd.id + ' 내리는 곳에서 다시 탈 수 있음');
+  }
+  assert.strictEqual(L.nearestRide(0, 0), null);
+  console.log('verify-home3d-layout: ride-touch ok');
+}

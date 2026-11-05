@@ -18,6 +18,9 @@
     { id: 'board', action: 'quest', labelKey: 'mole.more.quest', x: 2.5, z: 3.2, ...P }
   ].map((s) => Object.assign(s, { faceYaw: Math.atan2(-s.x, -s.z) })); // 섬 중심을 바라봄
 
+  // 놀이기구(장식, 들어갈 수 없음 — 나중에 미니게임 입구로 바꿀 수 있게 자리만): 디스코 팡팡·바이킹
+  const RIDES = [{ id: 'disco', x: 8, z: 2.5, body: 2.1 }, { id: 'viking', x: 5.6, z: 7.6, body: 2.2 }];
+
   // 건물 앞(섬 중심 쪽) 진입 지점
   function entryPoint(s) {
     const d = Math.hypot(s.x, s.z), k = (s.body + 0.45) / d; // 건물 몸체 바로 앞(몸이 닿는 곳)
@@ -25,7 +28,7 @@
   }
   function allowed(x, z) {
     if (Math.hypot(x, z) > WALK_R || Math.hypot(x, z) < HOLE_R) return false;
-    return !SITES.some((s) => Math.hypot(x - s.x, z - s.z) < s.body);
+    return !SITES.some((s) => Math.hypot(x - s.x, z - s.z) < s.body) && !RIDES.some((s) => Math.hypot(x - s.x, z - s.z) < s.body);
   }
   function slide(p, dx, dz) {
     let x = p.x, z = p.z;
@@ -42,6 +45,10 @@
     return best;
   }
 
+  // 놀이기구 타기: 몸체 가장자리에서 0.6 안이면 닿음 / 내리는 곳 = 섬 중심 쪽 앞
+  function rideExit(rd) { const d = Math.hypot(rd.x, rd.z), k = (rd.body + 0.45) / d; return { x: rd.x - rd.x * k, z: rd.z - rd.z * k }; }
+  function nearestRide(x, z) { return RIDES.find((rd) => Math.hypot(x - rd.x, z - rd.z) - rd.body <= 0.6) || null; }
+
   // 자동 걷기: 곧은 길이 가운데 구멍을 지나면 구멍 옆(출발한 쪽)으로 돌아갈 중간 지점 1개
   function pathVia(from, to) {
     const dx = to.x - from.x, dz = to.z - from.z, len2 = dx * dx + dz * dz || 1;
@@ -53,7 +60,7 @@
     return [{ x: px * R, z: pz * R }];
   }
 
-  const api = { ISLAND_R, WALK_R, HOLE_R, SPAWN, SITES, entryPoint, allowed, slide, nearest, pathVia };
+  const api = { ISLAND_R, WALK_R, HOLE_R, SPAWN, SITES, RIDES, rideExit, nearestRide, entryPoint, allowed, slide, nearest, pathVia };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else { root.MoleGame = root.MoleGame || {}; root.MoleGame.Home3DLayout = api; }
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -15,7 +15,8 @@
     const IN = MG.Home3DIntro, HOLE_Y = -0.3, RISE_T = 0.8; // 구멍 안 높이, 등장 뛰어오르기 시간
     const view = { x: 0, z: 0, heading: 0, yaw: 0, pitch: 0.62 }; // 구멍 가운데, 정면(화면 쪽) — 뒤로 두더지팡 게임장
     let ui = null, rd = null, ready = false, raf = 0, last = 0, time = 0, walking = false, route = null, near = null;
-    let rise = 0, hop = null, jumpAt = -1, readyAt = Infinity, badges = [], badgeAt = -9; // rise: 등장 경과 / hop: 구멍 밖 착지 {from,to,t} / jumpAt: 점프 시작 time
+    let rise = 0, hop = null, jumpAt = -1, readyAt = Infinity, badges = [], badgeAt = -9;
+    let riding = null, seatY = 0, nearRide = null; // 놀이기구에 탄 동안: 타는 놀이기구 id // rise: 등장 경과 / hop: 구멍 밖 착지 {from,to,t} / jumpAt: 점프 시작 time
 
     const api = {
       state: () => st.state,
@@ -39,9 +40,10 @@
       inputEnabled: () => st.inputEnabled(),
       saveView: (v) => st.saveView(v),
       view: () => st.view(),
-      debug: () => ({ state: st.state, x: +view.x.toFixed(2), z: +view.z.toFixed(2), heading: +view.heading.toFixed(2), near: near && near.action, rise: +rise.toFixed(2), hop: !!hop, walking, clip: pose().clip, raf: !!raf }) // 검토용(?home3d=1 에서만 존재)
+      debug: () => ({ state: st.state, x: +view.x.toFixed(2), z: +view.z.toFixed(2), heading: +view.heading.toFixed(2), near: near && near.action, rise: +rise.toFixed(2), hop: !!hop, walking, riding, nearRide: nearRide && nearRide.id, clip: pose().clip, raf: !!raf }) // 검토용(?home3d=1 에서만 존재)
     };
     root.__home3d = api;
+    api.warp = (x, z) => { if (st.state === 'EXPLORE' && !riding) { view.x = x; view.z = z; } }; // 검토용(?home3d=1 에서만)
 
     function show(on) { if (ui) ui.show(on); }
     function stop() { if (raf) cancelAnimationFrame(raf); raf = 0; route = null; if (ui) ui.setEnabled(false); }
@@ -93,6 +95,7 @@
         const k = rise / RISE_T;
         return { clip: 'Jump', t: k * IN.jump.T, loop: false, y: -1.4 + (HOLE_Y + 1.4) * k + 1.1 * Math.sin(Math.PI * k) };
       }
+      if (riding) return { clip: 'ArmsUp', t: time, loop: true, y: seatY }; // 놀이기구에서 신나게
       if (jumping()) {
         const jt = time - jumpAt, base = hop ? HOLE_Y * (1 - jt / IN.jump.T) : 0;
         return { clip: 'Jump', t: jt, loop: false, y: base + IN.jump.height(jt) };
@@ -114,18 +117,19 @@
           view.x = hop.from.x + (hop.to.x - hop.from.x) * k; view.z = hop.from.z + (hop.to.z - hop.from.z) * k;
           if (k >= 1) { hop = null; st.introDone(); wake(); }
         }
-      } else if (st.inputEnabled()) move(dt);
+      } else if (riding) { const se = rd.seat(riding); if (se) { view.x = se.x; view.z = se.z; view.heading = se.heading; seatY = se.y; } walking = false; }
+      else if (st.inputEnabled()) move(dt);
       if (!api.renderAllowed()) return; // move 안에서 기능 화면이 열렸으면 멈춤
       rd.render(view, pose());
       if (time - badgeAt > 1) { badgeAt = time; badges = claimables(MG); } // 1초마다 확인
-      ui.drawMinimap(view, L, badges);
       ui.setBadges(badges.map((a) => { const s = L.SITES.find((x) => x.action === a), q = s && MG.Home3DRenderer.project(rd.vp(), [s.x, s.kind === 'building' ? 3.4 : 1.9, s.z]), z = rd.size(); return q && z && { action: a, x: (q[0] + 1) / 2 * z.cw, y: (1 - q[1]) / 2 * z.ch, on: Math.abs(q[0]) < 1.1 && Math.abs(q[1]) < 1.1 }; }).filter(Boolean));
-      // 진입 박스에 닿으면 바로 들어감(들어가기 버튼 없음). 나왔을 때 박스 안이면 한 번 벗어나야 다시 들어감
       near = L.nearest(view.x, view.z);
-      // 건물에 닿아 있으면 그 건물 옆에 진입 버튼(누르거나 건물을 터치하면 들어감, 스쳐 지나가도 자동 진입 없음)
+      if (riding) near = null;
       if (near && route && route.site === near && st.inputEnabled()) { route = null; api.open(near.action); return; } // 건물을 터치해 걸어온 경우 = 도착하면 진입
       // 건물에 닿아 있으면 점프 버튼이 그 건물 터치 버튼으로(누르면 그 건물 화면). 스쳐 지나가도 자동 진입 없음
-      ui.setJumpMode(near && st.inputEnabled() && !jumping() ? MG.Home3DSigns.labelFor(near, root.FGH.I18N.lang, t) : null);
+      nearRide = !riding && !near && st.inputEnabled() ? L.nearestRide(view.x, view.z) : null;
+      const ko = root.FGH.I18N.lang === 'ko';
+      ui.setJumpMode(riding ? (ko ? '내리기' : 'Get off') : jumping() ? null : nearRide ? (ko ? '타기' : 'Ride') : near && st.inputEnabled() ? MG.Home3DSigns.labelFor(near, root.FGH.I18N.lang, t) : null);
       if (!raf) raf = requestAnimationFrame(frame); // 프레임 안에서 wake() 가 이미 예약했으면 두 번째 반복을 만들지 않음(겹치면 걷기 동작이 멈춤)
     }
 
@@ -133,7 +137,7 @@
       ui = MG.Home3DUI.create(opts.host, {
         onLook(d) { view.yaw += d.dyaw; view.pitch = Math.max(0.25, Math.min(0.95, view.pitch + d.dpitch)); },
         onTap(px, py, w, h) {
-          if (!st.inputEnabled() || !rd.vp()) return;
+          if (!st.inputEnabled() || !rd.vp() || riding) return;
           const site = MG.Home3DRenderer.pickSite(rd.vp(), L.SITES, px, py, w, h);
           if (site && site === near) { api.open(site.action); return; } // 닿아 있는 건물을 터치 = 진입
           if (site) { const e = L.entryPoint(site); route = { x: e.x, z: e.z, site, via: L.pathVia(view, e) }; return; }
@@ -142,7 +146,10 @@
         },
         onSettings() { if (st.inputEnabled()) api.open('settings'); },
         onClose() { if (st.state === 'FEATURE') opts.homeAction('home'); },
-        onJump() { if (near && st.inputEnabled() && !jumping()) { api.open(near.action); return; } if (st.state === 'INTRO' || st.inputEnabled()) jump(); }
+        onJump() {
+          if (riding) { const rdd = L.RIDES.find((x) => x.id === riding), e = L.rideExit(rdd); riding = null; view.x = e.x; view.z = e.z; view.heading = Math.atan2(-e.x, -e.z); jumpAt = time; return; } // 앞으로 뛰어내림
+          if (nearRide && st.inputEnabled() && !jumping()) { riding = nearRide.id; route = null; ui.input.reset(); return; } // 뛰어올라 탐
+          if (near && st.inputEnabled() && !jumping()) { api.open(near.action); return; } if (st.state === 'INTRO' || st.inputEnabled()) jump(); }
       });
       rd = MG.Home3DRenderer.create(ui.canvas);
       const ko = () => root.FGH.I18N.lang === 'ko';

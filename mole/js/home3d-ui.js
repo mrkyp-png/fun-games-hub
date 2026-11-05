@@ -43,7 +43,6 @@
     }
     const gear = el('button', 'h3-gear', hud); gear.type = 'button'; gear.setAttribute('aria-label', 'settings');
     const gimg = el('img', '', gear); gimg.src = ICON.gear; gimg.alt = '';
-    const mini = el('canvas', 'h3-minimap', wrap); mini.width = mini.height = 120;
     const dots = {}; // 건물·사물 위 빨간 점(받을 것 있음)
     const stick = el('div', 'h3-stick', wrap), knob = el('span', '', stick);
     // 점프 버튼: 스틱과 같은 크기·같은 줄, 안에 CSS 발바닥(이미지 없이)
@@ -75,7 +74,7 @@
     return {
       canvas, input,
       show(on) { wrap.hidden = !on; host.classList.toggle('home3d-on', !!on); if (!on) resetAll(); },
-      setFeature(on, label) { close.hidden = !on; close.textContent = label || ''; for (const e of [hud, mini, stick, jumpBtn]) e.hidden = !!on; if (on) for (const k in dots) dots[k].hidden = true; },
+      setFeature(on, label) { close.hidden = !on; close.textContent = label || ''; for (const e of [hud, stick, jumpBtn]) e.hidden = !!on; if (on) for (const k in dots) dots[k].hidden = true; },
       setJumpMode(label) { jumpBtn.classList.toggle('is-enter', !!label); if (enterLbl.textContent !== (label || '')) enterLbl.textContent = label || ''; },
       setEnabled(on) { input.setEnabled(on); drawKnob(); },
       setLoading(text) { loading.hidden = !text; loading.textContent = text || ''; },
@@ -86,22 +85,6 @@
         const seen = {};
         for (const b of list) { seen[b.action] = 1; const d = dots[b.action] || (dots[b.action] = el('i', 'h3-dot', wrap)); d.hidden = !b.on; d.style.left = b.x + 'px'; d.style.top = b.y + 'px'; }
         for (const k in dots) if (!seen[k]) dots[k].hidden = true;
-      },
-      drawMinimap(view, layout, badges) {
-        const key = view.x.toFixed(2) + ',' + view.z.toFixed(2) + ',' + view.heading.toFixed(2) + ',' + (badges || []).join();
-        if (key === this._mmKey) return; this._mmKey = key; // 움직였을 때만 다시 그림
-        const c = mini.getContext('2d'), S = mini.width, k = (S / 2 - 6) / layout.ISLAND_R;
-        c.clearRect(0, 0, S, S);
-        c.fillStyle = '#e9e3d6'; c.beginPath(); c.arc(S / 2, S / 2, S / 2 - 4, 0, Math.PI * 2); c.fill();
-        c.lineWidth = 3; c.strokeStyle = '#ffffff'; c.stroke();
-        for (const s of layout.SITES) {
-          c.fillStyle = s.kind === 'building' ? '#6a8fb8' : '#c99a5b';
-          c.beginPath(); c.arc(S / 2 + s.x * k, S / 2 + s.z * k, s.kind === 'building' ? 6 : 4, 0, Math.PI * 2); c.fill();
-          if ((badges || []).includes(s.action)) { c.fillStyle = '#ff3b3b'; c.beginPath(); c.arc(S / 2 + s.x * k + 5, S / 2 + s.z * k - 5, 4, 0, Math.PI * 2); c.fill(); }
-        }
-        c.save(); c.translate(S / 2 + view.x * k, S / 2 + view.z * k); c.rotate(-view.heading + Math.PI);
-        c.fillStyle = '#8a5a2b'; c.beginPath(); c.moveTo(0, -8); c.lineTo(6, 6); c.lineTo(-6, 6); c.closePath(); c.fill();
-        c.restore();
       }
     };
   }

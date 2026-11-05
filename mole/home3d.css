@@ -8,11 +8,10 @@
 #home3d .h3-pill b{display:flex;align-items:center;justify-content:center;font:700 14px system-ui,sans-serif;color:#4f3d2e}
 #home3d .h3-gear{margin-left:auto;pointer-events:auto;display:flex;align-items:center;justify-content:center;width:42px;height:42px;padding:0;border:0;border-radius:50%;background:#fffaf0e6;box-shadow:0 2px 0 #c9b79a}
 #home3d .h3-gear img{width:30px;height:30px;object-fit:contain}
-#home3d .h3-minimap{position:absolute;top:calc(max(12px,env(safe-area-inset-top)) + 50px);right:16px;width:96px;height:96px;pointer-events:none}
 #home3d .h3-stick{position:absolute;left:max(22px,env(safe-area-inset-left));bottom:max(26px,env(safe-area-inset-bottom));width:112px;height:112px;border-radius:50%;border:2px solid #fff8;background:#e6e0d550;box-shadow:inset 0 1px 10px #1e171b22;touch-action:none}
 #home3d .h3-stick span{position:absolute;width:49px;height:49px;left:calc(50% - 24.5px);top:calc(50% - 24.5px);border-radius:50%;background:#f7eddc;box-shadow:0 3px 6px #30281955;pointer-events:none}
 #home3d .h3-loading{position:absolute;left:50%;top:44%;translate:-50% -50%;width:min(80%,380px);display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;background:#f7ebd9ee;border-radius:18px;font:600 15px system-ui,sans-serif;color:#4f3d2e}
-@media (orientation:landscape){#home3d .h3-stick{width:94px;height:94px;bottom:18px}#home3d .h3-jump{width:94px;height:94px;bottom:18px}#home3d .h3-minimap{width:80px;height:80px}}
+@media (orientation:landscape){#home3d .h3-stick{width:94px;height:94px;bottom:18px}#home3d .h3-jump{width:94px;height:94px;bottom:18px}}
 #game-screen.home3d-on #fold-hinge{display:none!important}
 #home3d .h3-close{position:absolute;left:50%;bottom:max(36px,env(safe-area-inset-bottom));translate:-50% 0;display:flex;align-items:center;justify-content:center;min-width:140px;min-height:52px;padding:0 22px;border:1px solid #ffffff80;border-radius:18px;background:#fffaf0;color:#4f3d2e;font:700 18px system-ui,sans-serif;box-shadow:0 3px 0 #b69770}
 /* 점프 버튼 = 스틱과 같은 크기·같은 줄(오른쪽), 안에 CSS 발바닥 */

@@ -80,6 +80,60 @@
     return [x, c[1] + Math.sin(t * 0.2 + i) * 0.25, c[2], c[3]];
   }
 
+  // 색 있는 도형 묶음(위치·법선·색·인덱스). 놀이기구 임시 형태용
+  function Geo() { this.p = []; this.n = []; this.c = []; this.i = []; }
+  Geo.prototype.add = function (pts, nors, col, idx) { const b = this.p.length / 3; this.p.push(...pts); this.n.push(...nors); for (let k = 0; k < pts.length / 3; k++) this.c.push(...col); this.i.push(...idx.map((v) => v + b)); return this; };
+  Geo.prototype.cyl = function (cx, cy, cz, rad, h, col, seg, axis, sy) { // axis 'y'(기본) 또는 'x', sy=단면 세로 비율
+    seg = seg || 24; sy = sy || 1; const P = [], N = [], I = [];
+    const put = (u, v, w, nu, nv, nw) => { if (axis === 'x') { P.push(cx + w, cy + v, cz + u); N.push(nw, nv, nu); } else { P.push(cx + u, cy + w, cz + v); N.push(nu, nw, nv); } };
+    for (let k = 0; k <= seg; k++) { const a = 2 * Math.PI * k / seg, u = Math.cos(a) * rad, v = Math.sin(a) * rad * sy; put(u, v, -h / 2, Math.cos(a), Math.sin(a), 0); put(u, v, h / 2, Math.cos(a), Math.sin(a), 0); }
+    for (let k = 0; k < seg; k++) I.push(2 * k, 2 * k + 1, 2 * k + 2, 2 * k + 1, 2 * k + 3, 2 * k + 2);
+    for (const sgn of [-1, 1]) { const c0 = P.length / 3; put(0, 0, sgn * h / 2, 0, 0, sgn); for (let k = 0; k <= seg; k++) { const a = 2 * Math.PI * k / seg; put(Math.cos(a) * rad, Math.sin(a) * rad * sy, sgn * h / 2, 0, 0, sgn); } for (let k = 0; k < seg; k++) I.push(c0, c0 + 1 + k, c0 + 2 + k); }
+    return this.add(P, N, col, I);
+  };
+  Geo.prototype.box = function (cx, cy, cz, w, h, d, col, rz) { // rz: z축 기울기
+    const P = [], N = [], I = [], cr = Math.cos(rz || 0), sr = Math.sin(rz || 0), rot = (x, y) => [x * cr - y * sr, x * sr + y * cr];
+    const F = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
+    for (const [nx, ny, nz] of F) {
+      const b = P.length / 3, ax = nx ? [0, 1, 0] : [1, 0, 0], ay = nz ? [0, 1, 0] : [0, 0, 1];
+      for (const [u, v] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+        const lx = (nx + ax[0] * u + ay[0] * v) * w / 2, ly = (ny + ax[1] * u + ay[1] * v) * h / 2, lz = (nz + ax[2] * u + ay[2] * v) * d / 2, [qx, qy] = rot(lx, ly), [mx, my] = rot(nx, ny);
+        P.push(cx + qx, cy + qy, cz + lz); N.push(mx, my, nz);
+      }
+      I.push(b, b + 1, b + 2, b, b + 2, b + 3, b, b + 2, b + 1, b, b + 3, b + 2); // 양면(감기 방향 무관)
+    }
+    return this.add(P, N, col, I);
+  };
+  Geo.prototype.ball = function (cx, cy, cz, rad, col) {
+    const P = [], N = [], I = [], S = 14, Rg = 8;
+    for (let i = 0; i <= Rg; i++) for (let j = 0; j <= S; j++) { const th = Math.PI * i / Rg, ph = 2 * Math.PI * j / S, x = Math.sin(th) * Math.cos(ph), y = Math.cos(th), z = Math.sin(th) * Math.sin(ph); P.push(cx + x * rad, cy + y * rad, cz + z * rad); N.push(x, y, z); }
+    for (let i = 0; i < Rg; i++) for (let j = 0; j < S; j++) { const a = i * (S + 1) + j, b = a + S + 1; I.push(a, b, a + 1, a + 1, b, b + 1); }
+    return this.add(P, N, col, I);
+  };
+  const C = { coral: [0.95, 0.52, 0.45, 1], yellow: [0.99, 0.84, 0.40, 1], sky: [0.50, 0.74, 0.92, 1], mint: [0.55, 0.84, 0.72, 1], cream: [0.97, 0.91, 0.80, 1], wood: [0.76, 0.52, 0.32, 1], violet: [0.55, 0.45, 0.78, 1] };
+  // 부품: static(고정) / moving(움직이는 부분, 원점 = 회전 중심)
+  function rideParts(id) {
+    if (id === 'disco') {
+      const base = new Geo().cyl(0, 0.25, 0, 2.05, 0.5, C.coral).cyl(0, 0.53, 0, 1.15, 0.08, C.cream);
+      const mov = new Geo().cyl(0, 0, 0, 1.85, 0.26, C.yellow).cyl(0, 0.17, 0, 1.55, 0.06, C.cream).cyl(0, 0.75, 0, 0.18, 1.3, C.cream).ball(0, 1.5, 0, 0.32, C.coral);
+      for (let k = 0; k < 10; k++) { const a = 2 * Math.PI * k / 10; mov.box(Math.cos(a) * 1.55, 0.36, Math.sin(a) * 1.55, 0.5, 0.42, 0.5, k % 2 ? C.sky : C.mint); }
+      return { base, mov, pivot: [0, 0.78, 0] };
+    }
+    // 바이킹: A자 지지대 2개 + 꼭대기 축, 배(길이 x축)가 축에 매달려 좌우로 흔들림
+    const base = new Geo();
+    for (const z of [-1.15, 1.15]) for (const sx of [-1, 1]) base.box(sx * 1.05, 2.1, z, 0.22, 4.5, 0.22, C.cream, -sx * 0.45);
+    base.cyl(0, 4.15, 0, 0.16, 2.6, C.wood, 12, 'x').box(0, 0.08, 0, 4.8, 0.16, 3.0, C.wood);
+    // 배: 원점 = 축(위 4.15), 배는 축 아래 3.0
+    const mov = new Geo().cyl(0, -3.0, 0, 0.95, 3.8, C.violet, 24, 'x', 0.62).box(0, -2.55, 0, 3.6, 0.12, 1.5, C.cream).ball(2.05, -2.5, 0, 0.36, C.yellow).ball(-2.05, -2.5, 0, 0.32, C.coral);
+    for (const z of [-0.55, 0.55]) mov.box(0, -1.5, z, 0.14, 3.0, 0.14, C.cream);
+    return { base, mov, pivot: [0, 4.15, 0] };
+  }
+  // 움직임(아주 천천히가 아닌 놀이기구다운 속도): 디스코 = 빙글 돌며 들썩, 바이킹 = 좌우로 크게
+  function rideMotion(id, t) {
+    if (id === 'disco') return { yaw: t * 0.9, lift: 0.14 * Math.abs(Math.sin(t * 2.4)), tilt: 0.06 * Math.sin(t * 1.3) };
+    return { swing: 0.8 * Math.sin(t * 0.9) };
+  }
+
   // ---------- WebGL ----------
   const VS = `#version 300 es
 precision highp float;
@@ -100,7 +154,7 @@ if(uSea){vec2 p=vWorld.xz;float t=uTime;vec2 g=vec2(0.);const vec3 W[6]=vec3[6](
 if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=max(0.,(dot(n,uSun)+.4)/1.4);frag=vec4(c*(.86+.14*k),1.);return;}if(uFloor){float tile=mod(floor(vWorld.x/1.5)+floor(vWorld.z/1.5),2.);base=mix(vec3(.78,.72,.61),vec3(.31,.30,.28),tile);}float key=max(0.,(dot(n,uSun)+.4)/1.4);float fill=max(0.,dot(n,normalize(vec3(.8,.4,-.5))));vec3 lit=base*(vec3(.39,.40,.43)+key*.62+fill*vec3(.08,.10,.13));vec3 h=normalize(normalize(uEye-vWorld)+uSun);lit+=vec3(.04)*pow(max(0.,dot(n,h)),14.);vec3 pw=vWorld+n*.06;vec3 q=lproj(uShadowVP,pw);if(inside(q))shadow=vis(uShadowS,q,1./1024.);if(!uActor){vec3 qm=lproj(uShadowVPM,pw);if(inside(qm))shadow=min(shadow,vis(uShadowM,qm,1./512.));}lit*=mix(.62,1.,shadow)*cloudVis(vWorld);float fog=smoothstep(20.,46.,length(uEye-vWorld));frag=vec4(mix(pow(clamp(lit,0.,1.),vec3(1./2.2)),vec3(.73,.82,.88),fog),uColor.a*vColor.a);}`;
 
   function create(canvas) {
-    let gl, program, U, A, environment = [], actor = [], rig = null, vp = null, signs = null, size = null, seaMesh = null, shadowS = null, shadowM = null, sunQuad = null, clouds = [], staticAt = -9, staticVP = null;
+    let gl, program, U, A, environment = [], actor = [], rig = null, vp = null, signs = null, size = null, seaMesh = null, shadowS = null, shadowM = null, sunQuad = null, clouds = [], rides = [], staticAt = -9, staticVP = null;
     const resetSize = () => { size = null; };
     if (root.ResizeObserver) new ResizeObserver(resetSize).observe(canvas); else root.addEventListener('resize', resetSize);
     function shader(type, src) {
@@ -138,14 +192,20 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
       gl.uniformMatrix4fv(U.VP, false, lvp); gl.uniform1i(U.ShadowPass, 1); draws(); gl.uniform1i(U.ShadowPass, 0);
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
+    // 놀이기구 움직이는 부분의 월드 행렬(그리기·탄 두더지 자리 공용)
+    function rideMatrix(rd, t) {
+      const mo = rideMotion(rd.id, t), q = rd.id === 'disco' ? [Math.sin(mo.tilt / 2), Math.sin(mo.yaw / 2) * Math.cos(mo.tilt / 2), 0, Math.cos(mo.yaw / 2) * Math.cos(mo.tilt / 2)] : [0, 0, Math.sin(mo.swing / 2), Math.cos(mo.swing / 2)];
+      return R.multiply(rd.world, R.transform({ translation: [rd.pivot[0], rd.pivot[1] + (mo.lift || 0), rd.pivot[2]], rotation: q }));
+    }
     // 위치·법선만 있는 메시(구름 등)
-    function rawMesh(positions, normals, indices, extra) {
+    function rawMesh(positions, normals, indices, extra, colors) {
       const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
       const pb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, pb); gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
       gl.enableVertexAttribArray(A.Position); gl.vertexAttribPointer(A.Position, 3, gl.FLOAT, false, 0, 0);
       const nb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, nb); gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
       gl.enableVertexAttribArray(A.Normal); gl.vertexAttribPointer(A.Normal, 3, gl.FLOAT, false, 0, 0);
-      for (const [k, v] of [['Color', [1, 1, 1, 1]], ['Joints', [0, 0, 0, 0]], ['Weights', [0, 0, 0, 0]], ['UV', [0, 0, 0, 0]]]) if (A[k] >= 0) { gl.disableVertexAttribArray(A[k]); gl.vertexAttrib4f(A[k], ...v); }
+      if (colors) { const cb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, cb); gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW); gl.enableVertexAttribArray(A.Color); gl.vertexAttribPointer(A.Color, 4, gl.FLOAT, false, 0, 0); }
+      for (const [k, v] of [['Color', [1, 1, 1, 1]], ['Joints', [0, 0, 0, 0]], ['Weights', [0, 0, 0, 0]], ['UV', [0, 0, 0, 0]]]) if (A[k] >= 0 && !(k === 'Color' && colors)) { gl.disableVertexAttribArray(A[k]); gl.vertexAttrib4f(A[k], ...v); }
       const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
       return Object.assign({ vao, count: indices.length, indexed: true, color: [1, 1, 1, 1], floor: false, sign: null, sea: false }, extra);
     }
@@ -205,6 +265,8 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
           sunQuad = { vao, pb, count: 6, indexed: false, color: [1, 1, 1, 1], floor: false, sign: null, sea: false };
         }
         clouds = CLOUDS.map((_, i) => { const c = cloudMesh(i + 1); return rawMesh(c.positions, c.normals, c.indices, { cloud: true }); });
+        const mk = (g) => rawMesh(new Float32Array(g.p), new Float32Array(g.n), new Uint32Array(g.i), {}, new Float32Array(g.c));
+        rides = root.MoleGame.Home3DLayout.RIDES.map((rd) => { const pr = rideParts(rd.id), yaw = Math.atan2(-rd.x, -rd.z); return { id: rd.id, base: mk(pr.base), mov: mk(pr.mov), pivot: pr.pivot, world: R.transform({ translation: [rd.x, 0, rd.z], rotation: [0, Math.sin(yaw / 2), 0, Math.cos(yaw / 2)] }) }; });
         rig = R.prepare(mole); actor = [];
         mole.json.nodes.forEach((n, node) => { // 일반 홈 = Mole_Clay_Skin 만(Carrier/CarryBomb 렌더 금지)
           if (n.name !== 'Mole_Clay_Skin' || n.mesh === undefined) return;
@@ -232,7 +294,7 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
         if (now - staticAt > 1 || !staticVP) {
           staticAt = now;
           staticVP = R.multiply(ortho(-17, 17, -17, 17, 1, 80), R.lookAt([sun[0] * 40, sun[1] * 40, sun[2] * 40], [0, 0, 0]));
-          shadowPass(shadowS, staticVP, () => { for (const m of environment) if (!m.sign) draw(m, m.world, null); });
+          shadowPass(shadowS, staticVP, () => { for (const m of environment) if (!m.sign) draw(m, m.world, null); for (const rd of rides) draw(rd.base, rd.world, null); });
         }
         const mc = [view.x, (pose.y || 0) + 0.8, view.z];
         const moleVP = R.multiply(ortho(-2.6, 2.6, -2.6, 2.6, 1, 60), R.lookAt([mc[0] + sun[0] * 30, mc[1] + sun[1] * 30, mc[2] + sun[2] * 30], mc));
@@ -245,6 +307,10 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
         for (const m of environment) draw(m, m.world, null);
         if (seaMesh) draw(seaMesh, R.identity(), null);
         drawMole(); drawClouds();
+        for (const rd of rides) {
+          draw(rd.base, rd.world, null);
+          draw(rd.mov, rideMatrix(rd, now), null);
+        }
         // 하늘의 해: 카메라를 향한 사각형(원 밖은 버림), 카메라에서 해 방향 60 거리
         if (sunQuad) {
           const c = [cam.eye[0] + sun[0] * 60, cam.eye[1] + sun[1] * 60, cam.eye[2] + sun[2] * 60];
@@ -257,13 +323,20 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
       },
       // 언어 변경 때만 호출(렌더 루프에서 부르지 않음)
       buildSigns(lang, sites, t) { if (signs) signs.build(lang, sites, t); },
+      // 탄 두더지 자리: 디스코 = 원판 가장자리(바깥을 봄), 바이킹 = 배 갑판(옆을 봄)
+      seat(id) {
+        const rd = rides.find((x) => x.id === id); if (!rd) return null;
+        const M = rideMatrix(rd, performance.now() / 1000), loc = id === 'disco' ? [1.35, 0.2, 0] : [0.9, -2.5, 0], dir = id === 'disco' ? [1, 0, 0] : [0, 0, 1];
+        const p = R.point(M, loc), q = R.point(M, [loc[0] + dir[0], loc[1] + dir[1], loc[2] + dir[2]]);
+        return { x: p[0], y: p[1], z: p[2], heading: Math.atan2(q[0] - p[0], q[2] - p[2]) };
+      },
       vp: () => vp,
       size: () => size, // {cw,ch} = CSS 픽셀 크기(터치·버튼 위치 계산용)
       lost(cb) { canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); cb(); }); }
     };
   }
 
-  const api = { create, camera, project, rayFloor, pickSite, seaHeight, seaGrid, sunDir, SUN_PERIOD, cloudMesh, cloudPos };
+  const api = { create, camera, project, rayFloor, pickSite, seaHeight, seaGrid, sunDir, SUN_PERIOD, cloudMesh, cloudPos, rideParts, rideMotion };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.MoleGame = root.MoleGame || {};
   root.MoleGame.Home3DRenderer = api;

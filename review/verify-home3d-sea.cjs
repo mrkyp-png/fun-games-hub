@@ -42,3 +42,14 @@ console.log('verify-home3d-sea: ok (amp ' + maxA.toFixed(3) + ')');
   assert.ok(RD.cloudMesh(1).indices.length > 0);
   console.log('verify-home3d-sea: sun/cloud ok');
 }
+// 놀이기구: 부품이 실제로 만들어지고, 움직임이 시간에 따라 바뀜
+{
+  for (const id of ['disco', 'viking']) {
+    const p = RD.rideParts(id);
+    assert.ok(p.base.i.length > 0 && p.mov.i.length > 0 && p.base.p.length === p.base.c.length * 3 / 4, id + ' 부품');
+    const a = RD.rideMotion(id, 0), b = RD.rideMotion(id, 1);
+    assert.notDeepStrictEqual(a, b, id + ' 움직임');
+  }
+  assert.ok(Math.abs(RD.rideMotion('viking', Math.PI / 1.8).swing) <= 0.8 + 1e-9, '바이킹 흔들림 ±0.8');
+  console.log('verify-home3d-sea: rides ok');
+}
