@@ -76,7 +76,8 @@
 // V1605 G: clay character, enlarged pain-eye expression, RGB vertex colors and bomb shell centering.
 // V1609 C: 3D 홈(?home3d=1 검토 전용) 바다 물결·빨간 점 알림, 화면 버전 표시를 커밋 번호와 맞춤(V1606~1608 C 는 home3d 가지 커밋).
 // V1610 C: 3D 홈 바다를 실제 물결 모양으로(6겹 방향 물결 법선·하늘 반사·햇빛 반짝임·얕은 해안색·해안 거품).
-const CACHE = 'mole-game-v1610-C';
+// V1611 C: 3D 홈 해 이동(10분 한 바퀴·항상 낮)·그림자(섬 1초마다·두더지·구름 매 프레임)·입체 구름 5개, 그리기 반복 중복으로 걷기 동작이 멈추던 문제 수정.
+const CACHE = 'mole-game-v1611-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.

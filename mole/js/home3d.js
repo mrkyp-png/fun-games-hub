@@ -65,6 +65,7 @@
         if (d < 0.12) { if (route.via.length) route.via.shift(); else route = null; } // 건물 터치 경로는 진입 박스에 닿는 순간 들어감
         else v = { x: dx / d, z: dz / d };
       }
+      if (dt <= 0) return; // 흐른 시간 0인 프레임은 걷기 판단을 바꾸지 않음
       const len = Math.hypot(v.x, v.z), s = SPEED * dt / Math.max(1, len), next = L.slide(view, v.x * s, v.z * s);
       walking = Math.hypot(next.x - view.x, next.z - view.z) > 0.0001;
       if (walking) {
@@ -125,7 +126,7 @@
       if (near && route && route.site === near && st.inputEnabled()) { route = null; api.open(near.action); return; } // 건물을 터치해 걸어온 경우 = 도착하면 진입
       // 건물에 닿아 있으면 점프 버튼이 그 건물 터치 버튼으로(누르면 그 건물 화면). 스쳐 지나가도 자동 진입 없음
       ui.setJumpMode(near && st.inputEnabled() && !jumping() ? MG.Home3DSigns.labelFor(near, root.FGH.I18N.lang, t) : null);
-      raf = requestAnimationFrame(frame);
+      if (!raf) raf = requestAnimationFrame(frame); // 프레임 안에서 wake() 가 이미 예약했으면 두 번째 반복을 만들지 않음(겹치면 걷기 동작이 멈춤)
     }
 
     if (opts.host && typeof document !== 'undefined') {
