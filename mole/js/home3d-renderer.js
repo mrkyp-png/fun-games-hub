@@ -183,7 +183,7 @@ if(uSea){vec2 p=vWorld.xz;float t=uTime;vec2 g=vec2(0.);const vec3 W[6]=vec3[6](
 if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=max(0.,(dot(n,uSun)+.4)/1.4);frag=vec4(c*(.86+.14*k),1.);return;}if(uFloor){float tile=mod(floor(vWorld.x/1.5)+floor(vWorld.z/1.5),2.);base=mix(vec3(.78,.72,.61),vec3(.31,.30,.28),tile);}float key=max(0.,(dot(n,uSun)+.4)/1.4);float fill=max(0.,dot(n,normalize(vec3(.8,.4,-.5))));vec3 lit=base*(vec3(.39,.40,.43)+key*.62+fill*vec3(.08,.10,.13));vec3 h=normalize(normalize(uEye-vWorld)+uSun);lit+=vec3(.04)*pow(max(0.,dot(n,h)),14.);vec3 pw=vWorld+n*.06;vec3 q=lproj(uShadowVP,pw);if(inside(q))shadow=vis(uShadowS,q,1./1024.);if(!uActor){vec3 qm=lproj(uShadowVPM,pw);if(inside(qm))shadow=min(shadow,vis(uShadowM,qm,1./512.));}lit*=mix(.62,1.,shadow)*cloudVis(vWorld);float fog=smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(pow(clamp(lit,0.,1.),vec3(1./2.2)),vec3(.73,.82,.88),fog),uColor.a*vColor.a);}`;
 
   function create(canvas) {
-    let props = [], boat = [], smoke = [], smokeBall = null, arcade = null, boss = null, modeBtn = [], glowDisc = [], glowHalo = [], screenTex = null, screenCanvas = null; // 두더지팡 게임기: 구멍 빛·구멍 두더지·화면 글자
+    let boardPanels = [], boardTex = {}, props = [], boat = [], smoke = [], smokeBall = null, arcade = null, boss = null, modeBtn = [], glowDisc = [], glowHalo = [], screenTex = null, screenCanvas = null; // 두더지팡 게임기: 구멍 빛·구멍 두더지·화면 글자
     let gl, program, U, A, environment = [], actor = [], rig = null, vp = null, signs = null, size = null, seaMesh = null, shadowS = null, shadowM = null, sunQuad = null, clouds = [], rides = [], staticAt = -9, staticVP = null;
     const resetSize = () => { size = null; };
     if (root.ResizeObserver) new ResizeObserver(resetSize).observe(canvas); else root.addEventListener('resize', resetSize);
@@ -378,6 +378,7 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
           const sk = Math.max(1, Math.pow(2, Math.ceil(Math.log2(1 + (cam.eye[1] - 1.35) / 25)))), cell = 2.5 * sk;
           draw(seaMesh, R.transform({ translation: [Math.round(cam.focus[0] / cell) * cell, 0, Math.round(cam.focus[2] / cell) * cell], scale: [sk, 1, sk] }), null); }
         for (const pm of props) if (pm.texBase) draw(pm, pm.world, null); /* 고정 소품 */
+        for (const bp of boardPanels) if (boardTex[bp.kind]) { bp.mesh.tex = boardTex[bp.kind]; draw(bp.mesh, bp.world, null); } /* 게시판 칸(V1650 C) */
         if (boat.length) { const bm = boatMatrix(now); for (const b of boat) if (b.texBase) draw(b, R.multiply(bm, b.world), null); } /* 바다 배 */
         if (arcade) {
           gl.uniform1i(U.Glow, 1);
@@ -439,6 +440,24 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
       setArcade(a) { arcade = a; },
       setSmoke(list) { smoke = list || []; },
       // 게임기 화면 글자(두 줄). 바뀔 때만 호출
+      /* V1650 C: 게시판 칸 6개(앞뒤) — panels = [{ kind, world, w, h }], 칸 그림은 drawBoard 로 */
+      setBoard(panels) {
+        if (!gl) return;
+        boardPanels = panels.map((p) => { const hw = p.w / 2, hh = p.h / 2, vao = gl.createVertexArray(); gl.bindVertexArray(vao);
+          const buf = (data, loc, n) => { const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, n, gl.FLOAT, false, 0, 0); };
+          buf([-hw, hh, 0, hw, hh, 0, hw, -hh, 0, -hw, -hh, 0], A.Position, 3); buf([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1], A.Normal, 3); buf([0, 0, 1, 0, 1, 1, 0, 1], A.UV, 2);
+          for (const [k, v] of [['Color', [1, 1, 1, 1]], ['Joints', [0, 0, 0, 0]], ['Weights', [0, 0, 0, 0]]]) if (A[k] >= 0) { gl.disableVertexAttribArray(A[k]); gl.vertexAttrib4f(A[k], ...v); }
+          const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array([0, 3, 1, 1, 3, 2]), gl.STATIC_DRAW);
+          return { kind: p.kind, world: p.world, mesh: { vao, count: 6, indexed: true, color: [1, 1, 1, 1], floor: false, sign: null, sea: false, tex: null } }; });
+      },
+      drawBoard(data, page, ko) {
+        if (!gl || !root.MoleGame.Home3DBoard) return;
+        const B = root.MoleGame.Home3DBoard;
+        for (const kind of B.KINDS) { const c = document.createElement('canvas'); c.width = 512; c.height = 402;
+          B.drawPanel(c.getContext('2d'), c.width, c.height, kind, Object.assign({}, data[kind], { at: page, bare: true }));
+          const t = boardTex[kind] || (boardTex[kind] = gl.createTexture()); gl.bindTexture(gl.TEXTURE_2D, t); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c); gl.generateMipmap(gl.TEXTURE_2D); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); }
+      },
       setScreen(line1, line2) {
         if (!gl) return;
         if (!screenCanvas) screenCanvas = document.createElement('canvas');

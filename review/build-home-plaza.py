@@ -12,7 +12,7 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 # home3d-layout.js SITES 와 같은 값(검사: verify-home3d-layout.cjs 가 GLB 노드 좌표를 대조)
 SITES = [('lightMode', 0, -9), ('rhythm', 0, 9), ('shop', -7, -5), ('locker', -9, 0),
-         ('inventory', -7, 5), ('score', 7, -5), ('daily', 3.5, 1), ('quest', 2.5, 3.2)]
+         ('inventory', -7, 5)]  # V1650 C: 스코어 탑·선물상자·퀘스트 판 삭제 → 게시판(board.glb, 웹에서 따로)
 ISLAND_R = 16   # V1632 C 사용자: 광장 좁음 → 12에서 16(건물 자리는 그대로)
 
 def mat(name, rgb, rough=.85):

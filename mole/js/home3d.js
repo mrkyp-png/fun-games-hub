@@ -60,6 +60,17 @@
       if (!inside || inside.phase !== 'in') return; inside = { phase: 'out', at: time }; view.x = COIN.x; view.z = COIN.z; view.yaw = 0; /* 사용자: 오른쪽 동전 구멍에서 화면 가운데로 나오며 커짐, 카메라는 뒤로만 물러남 */ if (ui) ui.setExit(null); if (rd) rd.setSmoke([]); // 사용자: 나올 때도 동전 구멍에서 스윽
       view.heading = 0; route = null; wasNearArcade = false; wasFront = true; // 나온 자리에서 바로 다시 빨려 들지 않게(한 번 떨어졌다 와야 함)
     } // press = {k, at, light, done} 모드 버튼 누르는 중
+    /* V1650 C 사용자: 게시판(스코어·일일·퀘스트) — 모델 자리·칸 6개(앞뒤)·내용 새로 그림(바뀔 때만), 스코어 칸은 4초마다 다음 장 */
+    function boardWorld() { const s = L.SITES.find((x) => x.id === 'board'), S = L.BOARD.S, y = s.faceYaw;
+      return root.StudioRig.transform({ translation: [s.x, 0, s.z], rotation: [0, Math.sin(y / 2), 0, Math.cos(y / 2)], scale: [S, S, S] }); }
+    function boardPanels() { const B = L.BOARD, bw = boardWorld(), out = [];
+      for (const kind of ['score', 'daily', 'quest']) for (const back of [false, true]) {
+        const local = root.StudioRig.transform({ translation: [back ? -B.X[kind] : B.X[kind], B.Y, back ? -B.FACE : B.FACE], rotation: back ? [0, 1, 0, 0] : [0, 0, 0, 1] });
+        out.push({ kind, back, world: root.StudioRig.multiply(bw, local), w: B.PANEL_W, h: B.PANEL_H }); }
+      return out; }
+    let boardKey = '';
+    function refreshBoard(force) { if (!rd || !MG.Home3DBoard) return; const k = root.FGH.I18N.lang === 'ko', data = MG.Home3DBoard.panelData(MG, k), n = data.score.pages.length, page = Math.floor(time / 4) % Math.max(1, n);
+      const key = JSON.stringify(data) + page + k; if (!force && key === boardKey) return; boardKey = key; rd.drawBoard(data, page, k); }
     function refreshArcade(force) {
       if (!rd || !opts.rounds) return;
       const R0 = opts.rounds(), ko = root.FGH.I18N.lang === 'ko';
@@ -251,7 +262,7 @@
       camLift += ((air ? air.y : 0) - camLift) * Math.min(1, dt * 4); ui.setHeight(air ? air.y : 0); /* V1635 C 사용자: 높이 오를수록 카메라도 올라가고 멀어져 아래 건물이 작게 보임 */
       if (camLift > 0.05) cv = Object.assign({}, cv, { fy: (cv.fy || 1.35) + camLift, dist: (cv.dist || 7.5) + camLift * 0.9, pitch: Math.min(1.3, cv.pitch + camLift * 0.015), far: 80 + camLift * 4 });
       rd.render(cv, pose());
-      if (time - badgeAt > 1) { badgeAt = time; badges = claimables(MG); refreshArcade(); ui.setMailDot(badges.includes('mail')); } // 1초마다 확인(뱃지·게임기 진행)
+      if (time - badgeAt > 1) { badgeAt = time; badges = claimables(MG); refreshArcade(); if (ready) refreshBoard(); ui.setMailDot(badges.includes('mail')); } // 1초마다 확인(뱃지·게임기 진행)
       ui.setBadges(badges.map((a) => { const s = L.SITES.find((x) => x.action === a), q = s && MG.Home3DRenderer.project(rd.vp(), [s.x, s.kind === 'building' ? 3.4 : 1.9, s.z]), z = rd.size(); return q && z && { action: a, x: (q[0] + 1) / 2 * z.cw, y: (1 - q[1]) / 2 * z.ch, on: Math.abs(q[0]) < 1.1 && Math.abs(q[1]) < 1.1 }; }).filter(Boolean));
       near = L.nearest(view.x, view.z);
       const nearArcade = !!(near && near.action === 'lightMode');
@@ -302,6 +313,11 @@
             if (hole) { if (hole.n && opts.selectRound(hole.n)) refreshArcade(true); return; } // 파이널(0)·안 열린 구멍 = 무시
             return; // 게임기 안: 바닥 걷기 없음
           }
+          { /* V1650 C: 게시판 칸 누르면 그 화면(스코어·일일·퀘스트) */ const vp = rd.vp(), B = L.BOARD;
+            for (const p of boardPanels()) { const c = [[-1, 1], [1, 1], [1, -1], [-1, -1]].map(([a, b]) => MG.Home3DRenderer.project(vp, root.StudioRig.point(p.world, [a * B.PANEL_W / 2, b * B.PANEL_H / 2, 0])));
+              if (c.some((q) => !q)) continue; const xs = c.map((q) => (q[0] + 1) / 2 * w), ys = c.map((q) => (1 - q[1]) / 2 * h);
+              const facing = (xs[1] - xs[0]) > 0; /* 앞면이 카메라 쪽일 때만 */
+              if (facing && px >= Math.min(...xs) && px <= Math.max(...xs) && py >= Math.min(...ys) && py <= Math.max(...ys)) { api.open(p.kind); return; } } }
           const site = MG.Home3DRenderer.pickSite(rd.vp(), L.SITES, px, py, w, h);
           if (site && site === near) { if (site.action !== 'lightMode' || !opts.startGame) api.open(site.action); return; } // 게임기 몸통 터치 = 아무 일 없음(라운드 지도 안 씀) // 닿아 있는 건물을 터치 = 진입
           if (site) { const e = L.entryPoint(site); route = { x: e.x, z: e.z, site, via: L.pathVia(view, e) }; return; }
@@ -330,8 +346,9 @@
       rd.lost(() => { ready = false; stop(); ui.setLoading(ko() ? '3D 화면을 다시 불러와 주세요.' : 'Please reload the 3D plaza.'); });
       rd.boot(PLAZA_GLB, MOLE_GLB, 'assets/home3d/boat.glb', [ /* V1633 C: 디스코 팡팡(배치만) */
         { url: 'assets/home3d/disco-base.glb', world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
-        { url: 'assets/home3d/disco-top.glb', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) }]).then(() => {
-        ready = true; readyAt = time; ui.setLoading(null); signsNow(); refreshArcade(true);
+        { url: 'assets/home3d/disco-top.glb', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },
+        { url: 'assets/home3d/board.glb', world: boardWorld() }]).then(() => { /* V1650 C: 게시판 */
+        ready = true; readyAt = time; ui.setLoading(null); signsNow(); refreshArcade(true); rd.setBoard(boardPanels()); refreshBoard(true);
         wake();
       }).catch((err) => { console.error('3D home:', err); ui.setLoading((ko() ? '3D 공간을 불러오지 못했습니다.' : 'Could not load the 3D plaza.') + ' (' + String(err && err.message || err).slice(0, 160) + ')'); });
     }

@@ -3,7 +3,7 @@ const assert = require('assert');
 const L = require('../mole/js/home3d-layout.js');
 
 const actions = L.SITES.map((s) => s.action).sort();
-assert.deepStrictEqual(actions, ['daily', 'inventory', 'lightMode', 'locker', 'quest', 'rhythm', 'score', 'shop']);
+assert.deepStrictEqual(actions, ['inventory', 'lightMode', 'locker', 'rhythm', 'score', 'shop']); // V1650 C: score = 게시판(일일·퀘스트는 게시판 칸)
 assert.strictEqual(L.ISLAND_R, 16); // V1632 C
 assert.deepStrictEqual(L.SPAWN, { x: 0, z: 0 });
 assert.ok(!L.allowed(0, 0), '집 구멍 안으로는 걸어 들어갈 수 없음(점프로만 나옴)');
@@ -39,6 +39,7 @@ console.log('verify-home3d-layout: ok (' + L.SITES.length + ' sites)');
   const glb = RM.parseGLB(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.length));
   for (const s of L.SITES) {
     if (s.action === 'lightMode') { const g = glb.json.nodes.find((x) => x.name === 'Sign_lightMode'); assert.ok(g && Math.hypot(g.translation[0] - s.x, g.translation[2] - s.z) < 0.3, '두더지팡 글자 = 기계 위 간판 상자'); continue; }
+    if (s.noSign) continue; // 게시판 = 간판 없음
     const n = glb.json.nodes.find((x) => x.name === 'Sign_' + s.action);
     assert.ok(n && n.translation, s.action + ' 간판 노드');
     const [x, , z] = n.translation;
@@ -59,8 +60,8 @@ console.log('verify-home3d-layout: ok (' + L.SITES.length + ' sites)');
   console.log('verify-home3d-layout: path ok');
 }
 { // 옆면에 닿아도 그 건물
-  const g = L.SITES.find((s) => s.action === 'daily');
-  assert.strictEqual(L.nearest(g.x, g.z + g.body + 0.3).action, 'daily', '뒤/옆에서 닿아도');
+  const g = L.SITES.find((s) => s.id === 'board');
+  assert.strictEqual(L.nearest(g.x, g.z + g.body + 0.3).action, 'score', '뒤/옆에서 닿아도');
   console.log('verify-home3d-layout: touch-any-side ok');
 }
 // 놀이기구 2개(장식): 통과 못 하고, 진입 대상(nearest)은 아님
