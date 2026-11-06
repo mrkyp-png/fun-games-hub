@@ -80,8 +80,8 @@ box('screen', (0, DP / 2 - 0.33, 1.95), (0.66, 0.03, 0.48), GLOW, 0.02)
 box('marq', (0, DP / 2 - 0.25, 2.52), (W + 0.06, 0.55, 0.32), BLUE, 0.05)
 box('marq_panel', (0, DP / 2 - 0.53, 2.52), (W - 0.1, 0.03, 0.22), GLOW, 0.02)
 # 동전 구멍(앞면 오른쪽)
-coin = box('coin', (0.28, -DP / 2 - 0.02, 0.72), (0.14, 0.04, 0.22), CREAM, 0.02)
-slot = box('slot', (0.28, -DP / 2 - 0.04, 0.72), (0.025, 0.05, 0.13), HOLE, 0)  # 10차 확정(사용자): 판 안에만 파 넣음
+coin = box('coin', (0.30, -1.0 - 0.012, 1.06), (0.1, 0.03, 0.13), CREAM, 0.015)   # V1623 C 사용자: 동전 구멍 판 = 하늘색 테두리 앞면 오른쪽(두더지가 들어가는 게 보이게)
+slot = box('slot', (0.30, -1.0 - 0.03, 1.06), (0.022, 0.05, 0.085), HOLE, 0)  # 동전 구멍(세로 틈, 사용자), 판 안에만 파 넣음
 md = coin.modifiers.new('slot', 'BOOLEAN'); md.object = slot; md.operation = 'DIFFERENCE'; md.material_mode = 'TRANSFER'
 coin.modifiers.move(coin.modifiers.find('slot'), 0); slot.hide_render = True; slot.hide_viewport = True
 # 옆면 줄무늬(오른쪽, 사선)

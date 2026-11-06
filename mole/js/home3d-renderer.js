@@ -176,7 +176,7 @@ if(uSea){vec2 p=vWorld.xz;float t=uTime;vec2 g=vec2(0.);const vec3 W[6]=vec3[6](
 if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=max(0.,(dot(n,uSun)+.4)/1.4);frag=vec4(c*(.86+.14*k),1.);return;}if(uFloor){float tile=mod(floor(vWorld.x/1.5)+floor(vWorld.z/1.5),2.);base=mix(vec3(.78,.72,.61),vec3(.31,.30,.28),tile);}float key=max(0.,(dot(n,uSun)+.4)/1.4);float fill=max(0.,dot(n,normalize(vec3(.8,.4,-.5))));vec3 lit=base*(vec3(.39,.40,.43)+key*.62+fill*vec3(.08,.10,.13));vec3 h=normalize(normalize(uEye-vWorld)+uSun);lit+=vec3(.04)*pow(max(0.,dot(n,h)),14.);vec3 pw=vWorld+n*.06;vec3 q=lproj(uShadowVP,pw);if(inside(q))shadow=vis(uShadowS,q,1./1024.);if(!uActor){vec3 qm=lproj(uShadowVPM,pw);if(inside(qm))shadow=min(shadow,vis(uShadowM,qm,1./512.));}lit*=mix(.62,1.,shadow)*cloudVis(vWorld);float fog=smoothstep(20.,46.,length(uEye-vWorld));frag=vec4(mix(pow(clamp(lit,0.,1.),vec3(1./2.2)),vec3(.73,.82,.88),fog),uColor.a*vColor.a);}`;
 
   function create(canvas) {
-    let arcade = null, boss = null, modeBtn = [], glowDisc = [], glowHalo = [], screenTex = null, screenCanvas = null; // 두더지팡 게임기: 구멍 빛·구멍 두더지·화면 글자
+    let smoke = [], smokeBall = null, arcade = null, boss = null, modeBtn = [], glowDisc = [], glowHalo = [], screenTex = null, screenCanvas = null; // 두더지팡 게임기: 구멍 빛·구멍 두더지·화면 글자
     let gl, program, U, A, environment = [], actor = [], rig = null, vp = null, signs = null, size = null, seaMesh = null, shadowS = null, shadowM = null, sunQuad = null, clouds = [], rides = [], staticAt = -9, staticVP = null;
     const resetSize = () => { size = null; };
     if (root.ResizeObserver) new ResizeObserver(resetSize).observe(canvas); else root.addEventListener('resize', resetSize);
@@ -292,6 +292,7 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
           const mk = (q) => rawMesh(new Float32Array(q.p), new Float32Array(q.n), new Uint32Array(q.i), {}, new Float32Array(q.c));
           return { cap: mk(g), base: mk(h) };
         });
+        { const sb = new Geo().ball(0, 0, 0, 1, [0.93, 0.92, 0.9, 1]); smokeBall = rawMesh(new Float32Array(sb.p), new Float32Array(sb.n), new Uint32Array(sb.i), {}, new Float32Array(sb.c)); }
         { const bp = bossPiece(); boss = rawMesh(new Float32Array(bp.p), new Float32Array(bp.n), new Uint32Array(bp.i), {}, new Float32Array(bp.c)); }
         glowDisc = root.MoleGame.Home3DLayout.ROUND_COLORS.concat(['#f2d27a']).map((hex) => {
           const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255), hi = c.map((v) => v + (1 - v) * .85), N = 28, P = [0, 0, 0], Nn = [0, 1, 0], C = [...hi, 1], I = []; // 사용자: 아주 밝게
@@ -344,7 +345,7 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
         gl.uniform1f(U.Time, now % 10000); gl.uniform3fv(U.Sun, sun);
         const worlds = R.pose(rig, pose.clip, pose.t, pose.loop);
         const inst = R.transform({ translation: [view.x, pose.y || 0, view.z], rotation: [0, Math.sin(view.heading / 2), 0, Math.cos(view.heading / 2)], scale: [0.65 * (pose.s ?? 1), 0.65 * (pose.s ?? 1), 0.65 * (pose.s ?? 1)] }); // pose.s = 크기(동전 구멍으로 빨려 듦)
-        const drawMole = () => { if (pose.s === 0) return; for (const m of actor) draw(m, R.multiply(inst, worlds[m.node]), R.palette(rig, worlds, m.node)); };
+        const drawMole = () => { if (pose.s === 0) return; if (pose.fade) { gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); for (const m of actor) { m.color0 = m.color0 || m.color; m.color = [m.color0[0], m.color0[1], m.color0[2], m.color0[3] * (1 - pose.fade * 0.85)]; } } for (const m of actor) draw(m, R.multiply(inst, worlds[m.node]), R.palette(rig, worlds, m.node)); if (pose.fade) { for (const m of actor) m.color = m.color0; gl.disable(gl.BLEND); } };
         const drawClouds = () => { clouds.forEach((m, i) => { const c = cloudPos(i, now); gl.uniform1i(U.Cloud, 1); draw(m, R.transform({ translation: [c[0], c[1], c[2]], scale: [c[3], c[3], c[3]] }), null); gl.uniform1i(U.Cloud, 0); }); };
         // 그림자: 해 쪽에서 섬 전체(반지름 16)를 내려다보는 직교 카메라. 섬·건물은 1초마다, 두더지·구름은 매 프레임
         if (now - staticAt > 1 || !staticVP) {
@@ -392,6 +393,11 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
           draw(rd.base, rd.world, null);
           draw(rd.mov, rideMatrix(rd, now), null);
         }
+        if (smokeBall && smoke.length) { // 동전 구멍으로 빨려 드는 연기
+          gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
+          for (const p of smoke) { smokeBall.color = [1, 1, 1, p.a]; draw(smokeBall, R.transform({ translation: [p.x, p.y, p.z], scale: [p.r, p.r, p.r] }), null); }
+          smokeBall.color = [1, 1, 1, 1]; gl.depthMask(true); gl.disable(gl.BLEND);
+        }
         const fin = arcade && arcade.holes.find((h) => h.n === 0);
         if (boss && fin) {
           const yaw = now * 0.8, sc = 0.62; // 높이만 0.65배(사용자: 보스 말 낮춰 뒤 구멍 보이게)
@@ -411,6 +417,7 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
       },
       // 두더지팡 게임기 상태: holes=[{x,y,z,r,glow(라운드 색 번호, -1=빛 없음)}], mole={x,y,z}|null, buttons=[{x,y,z,r,unlocked,active,pressed}], flash=[구멍 번호…]
       setArcade(a) { arcade = a; },
+      setSmoke(list) { smoke = list || []; },
       // 게임기 화면 글자(두 줄). 바뀔 때만 호출
       setScreen(line1, line2) {
         if (!gl) return;

@@ -4988,7 +4988,7 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 /* v795(사용자 지정): 사진관 얼굴형 리본(동글형 등) 끝이 줄어든 카드 모서리와 만나게 — 카드 위가 0.3cm 내려간 만큼 리본도 내림 */
 .photo-slot-ribbon { translate: 0 0; }
 .ws-item--r.is-unsel::after { inset: 0; margin: 0; display: flex; justify-content: center; align-items: center; }
-.cos-detail { translate: 0 -0.1cm; }
+.cos-detail { translate: 0 -0.1cm; } /* v797(사용자 지정): 코스튬 세부정보 박스만 위로 0.1cm(크기·카드 그대로) */
 
 
 
@@ -10116,3 +10116,5 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* 띠 화면 전환(js/shape-transition.js) — V1621 C: 라운드 지도 삭제로 roundmap-window.css 에서 옮김 */
 .rm-shape-transition { position:fixed; inset:0; z-index:2147483000; pointer-events:none; overflow:hidden; visibility:hidden; }
 .rm-shape-transition > i { position:absolute; display:block; will-change:transform; }
+/* V1623 C: FPS 표시 위치(왼쪽 위 고정) — V1621 C 에서 roundmap-window.css 와 함께 지워졌던 것 되살림 */
+#fps-meter { position:fixed; left:4px; top:calc(env(safe-area-inset-top,0px) + 4px); z-index:2147483600; padding:2px 6px; border-radius:6px; background:rgba(0,0,0,.7); color:#7f7; font:700 12px/1.2 monospace; pointer-events:none; max-width:92vw; word-break:break-all; white-space:pre-line; } /* V1335 C 기록은 FPS 밑 줄 */

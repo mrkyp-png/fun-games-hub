@@ -54,9 +54,9 @@
 
     // 두더지팡 게임기: 구멍 = 라운드(깬 구멍 = 라운드 색 빛, 지금 라운드 = 두더지), 화면 = 'OO N라운드' / 'BEST 점수'
     let arcadeKey = '', arcadeState = null, press = null, seqAt = -9, wasNearArcade = false, popAt = -9, arcCam = 0, inside = null, wasFront = false; // inside = 게임기 안 {phase:'suck'|'in', at, from}(V1621 C 사용자: 동전 구멍으로 빨려 들어가 라운드 구멍 두더지로 나옴)
-    const COIN = { x: 0.28 * L.ARCADE_K, y: 0.488 * L.ARCADE_K, z: -(9 - 0.62 * L.ARCADE_K) }, SUCK_T = 0.7; // 동전 구멍(review/build-arcade-mole.py coin, 아래 몸통 줄임 반영)
+    const COIN = { x: 0.30 * L.ARCADE_K, y: 0.692 * L.ARCADE_K, z: -(9 - 1.03 * L.ARCADE_K) }, SUCK_T = 0.8; // 동전 구멍 = 하늘색 테두리 앞면 오른쪽(review/build-arcade-mole.py coin, 높이 1.06 → 아래 몸통 줄임 0.692)
     function exitArcade() { // 나가기: 게임기 앞에 서고 카메라가 물러남
-      if (!inside) return; inside = null; if (ui) ui.setExit(null);
+      if (!inside) return; inside = null; if (ui) ui.setExit(null); if (rd) rd.setSmoke([]);
       view.x = 0; view.z = -9 + 3.2 + 0.95; view.heading = 0; jumpAt = time; route = null; wasNearArcade = false; wasFront = true; // 나온 자리에서 바로 다시 빨려 들지 않게(한 번 떨어졌다 와야 함)
     } // press = {k, at, light, done} 모드 버튼 누르는 중
     function refreshArcade(force) {
@@ -127,8 +127,8 @@
       }
       if (inside) {
         if (inside.phase === 'in') return { clip: 'Idle', t: time, loop: true, y: COIN.y, s: 0 };
-        const k = Math.min(1, (time - inside.at) / SUCK_T), e = k * k; // 점점 빨리
-        return { clip: 'Jump', t: Math.min(0.2, k * 0.3), loop: false, y: COIN.y * Math.min(1, k * 1.6) + 0.5 * Math.sin(Math.PI * k), s: 1 - e };
+        const k = Math.min(1, (time - inside.at) / SUCK_T), e = Math.pow(k, 2.2), sc = Math.max(0, 1 - e); // 사용자: 두더지가 쏙 빨려 들어감(처음 천천히 → 끝에 빨리, 작아짐)
+        return { clip: 'Jump', t: 0.15, loop: false, y: (COIN.y - 0.6 * sc) * e, s: k >= 1 ? 0 : sc };
       }
       if (riding) return { clip: 'ArmsUp', t: time, loop: true, y: seatY }; // 놀이기구에서 신나게
       if (jumping()) {
@@ -156,20 +156,26 @@
       else if (inside) {
         walking = false;
         if (inside.phase === 'suck') {
-          const k = Math.min(1, (time - inside.at) / SUCK_T), e = k * k;
-          view.x = inside.from.x + (COIN.x - inside.from.x) * e; view.z = inside.from.z + (COIN.z - inside.from.z) * e; view.heading = inside.from.heading + k * 4 * Math.PI; // 돌면서 빨려 듦
-          if (k >= 1) { inside.phase = 'in'; popAt = time; seqAt = time; } // 라운드 구멍에서 튀어나옴 + 차례 빛
+          const k = Math.min(1, (time - inside.at) / SUCK_T), f = inside.from, puffs = [], e0 = Math.pow(k, 2.2);
+          view.x = f.x + (COIN.x - f.x) * e0; view.z = f.z + (COIN.z - f.z) * e0; view.heading = Math.atan2(COIN.x - f.x, COIN.z - f.z) + Math.PI; // 구멍 쪽으로 끌려감(등이 구멍 쪽)
+          for (let i = 0; i < 8; i++) { // 옅은 연기 꼬리: 두더지 뒤를 따라 동전 구멍으로
+            const u = Math.max(0, Math.min(1, e0 - i * 0.06)); if (u <= 0.02 || u >= 1) continue;
+            const e = u * u * (3 - 2 * u), sw = Math.sin(i * 2.3) * 0.25 * (1 - e);
+            puffs.push({ x: f.x + (COIN.x - f.x) * e + sw, y: 0.9 + Math.sin(i * 1.7) * 0.25 * (1 - e) + (COIN.y - 0.9) * e, z: f.z + (COIN.z - f.z) * e, r: 0.22 * (1 - e) + 0.04, a: 0.35 * Math.sin(Math.PI * u) });
+          }
+          rd.setSmoke(puffs);
+          if (k >= 1) { inside.phase = 'in'; popAt = time; seqAt = time; rd.setSmoke([]); view.x = COIN.x; view.z = COIN.z; } // 다 들어감 → 라운드 구멍에서 튀어나옴 + 차례 빛
         }
       }
       else if (st.inputEnabled()) move(dt);
       if (!api.renderAllowed()) return; // move 안에서 기능 화면이 열렸으면 멈춤
       camK = st.state === 'INTRO' && !hop ? 0 : Math.min(1, camK + dt / CAM_T);
       const ck = camK * camK * (3 - 2 * camK);
-      const aim = st.state === 'EXPLORE' && inside ? 1 : 0; // 빨려 드는 순간부터 게임기를 화면 가운데로
+      const aim = st.state === 'EXPLORE' && inside && inside.phase === 'in' ? 1 : 0; // 연기가 다 들어간 뒤 게임기로(사용자)
       arcCam += (aim - arcCam) * Math.min(1, dt / 0.6 * 3);
       let cv = camK >= 1 ? view : Object.assign({}, view, { pitch: INTRO_PITCH + (view.pitch - INTRO_PITCH) * ck });
       if (arcCam > 0.001) { const a = arcCam * arcCam * (3 - 2 * arcCam), dy = Math.atan2(Math.sin(0 - cv.yaw), Math.cos(0 - cv.yaw));
-        cv = Object.assign({}, cv, { x: cv.x + (0 - cv.x) * a, z: cv.z + (-7.6 - cv.z) * a, yaw: cv.yaw + dy * a, pitch: cv.pitch + (0.95 - cv.pitch) * a }); }
+        cv = Object.assign({}, cv, { x: cv.x + (0 - cv.x) * a, z: cv.z + (-8.3 - cv.z) * a, yaw: cv.yaw + dy * a, pitch: cv.pitch + (0.95 - cv.pitch) * a }); }
       rd.render(cv, pose());
       if (time - badgeAt > 1) { badgeAt = time; badges = claimables(MG); refreshArcade(); } // 1초마다 확인(뱃지·게임기 진행)
       ui.setBadges(badges.map((a) => { const s = L.SITES.find((x) => x.action === a), q = s && MG.Home3DRenderer.project(rd.vp(), [s.x, s.kind === 'building' ? 3.4 : 1.9, s.z]), z = rd.size(); return q && z && { action: a, x: (q[0] + 1) / 2 * z.cw, y: (1 - q[1]) / 2 * z.ch, on: Math.abs(q[0]) < 1.1 && Math.abs(q[1]) < 1.1 }; }).filter(Boolean));

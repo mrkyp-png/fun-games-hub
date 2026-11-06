@@ -729,7 +729,7 @@
   // 시작 시 생명을 미리 깎지 않는다 — 현재 공유 풀 그대로 플레이하고, 동물 맞을 때만 -1.
   // 단 풀이 0이면 플레이 자체가 불가(즉시 게임오버) → "생명 없음" 모달.
   let gameStarting = false; // 시작 버튼 연타 방지 — 한 번 누르면 홈으로 돌아올 때까지 재진입 차단
-  function beginGame() {
+  function beginGame(direct) { // direct = 광장 게임기 시작(구형 홈 시작 연출 없이 바로, V1623 C — 예전 라운드 지도 시작과 같음)
     if (gameStarting || state) return;   // 이미 시작 진행 중이거나 게임 중 — 짧게 연타해도 무시 (길게=arm은 별개)
     // 다이얼패드가 항상 노출돼있어 상점/아이템 등 화면이 열린 채로도 시작 버튼이 눌리는데,
     // 홈 화면일 때만 게임 진입을 허용한다(사용자 지정) — 다른 화면이 열려있으면 무시.
@@ -754,7 +754,8 @@
     currentDiff = currentDifficulty();
     applyDiffClass(currentDiff);
     preloadRoundMoles(); // 라운드1 플레이하는 동안 미리 받아둬야 라운드2 전환 때 안 늦음
-    playStartIntro(() => startRound({ fresh: true }));
+    if (direct) startRound({ fresh: true, direct: true });
+    else playStartIntro(() => startRound({ fresh: true }));
   }
 
   // 라운드 전환 두더지 이미지 6장(텍스트 콜아웃 있던 2장 제외) — 늦게 로드되면 "라운드N" 글자만 먼저 뜨고 이미지가
@@ -1782,7 +1783,7 @@
     // 홈→게임 첫 진입(fresh)에만 — 채널(유튜브 아이콘) 버튼을 10바퀴 돌려 숫자 버튼으로 전환.
     // 회전 전까지는 기존 홈 다이얼패드 그대로 있다가, 인트로가 끝나 실제 게임판이 드러나는
     // 지금 이 순간에만 돈다(사용자 지정).
-    if (opts && opts.fresh && sharedLaneControls) sharedLaneControls.spinChannelsIn();
+    if (opts && opts.fresh && !opts.direct && sharedLaneControls) sharedLaneControls.spinChannelsIn();
     // 새 게임 시작(fresh)일 때만 더보기 메뉴를 닫는다. 자동 다음 라운드는 메뉴를 건드리지 않음
     // (플레이 중 메뉴 열어둔 채 라운드가 넘어가도 화면이 안 튀게).
     if (opts && opts.fresh) {
@@ -2003,7 +2004,7 @@
       setNavLock(false); // 라운드 실제 진행 → ⊞ 다시 활성
       lastTime = performance.now();
       rafId = requestAnimationFrame(loop);
-    }, { homeEntry: !!(opts && opts.fresh) });
+    }, { homeEntry: !!(opts && opts.fresh && !opts.direct) });
   }
 
   // 모든 라운드(1~8): "라운드 N" 타이틀·음성 없이 바로 Ready → GO! 카운트다운(줌인 + 색상,
@@ -3602,8 +3603,8 @@
       // V1619 C 사용자: 광장 두더지팡 게임기 = 라운드 지도 없이 바로 시작(하트 없으면 기존 안내창). 구멍 = 라운드 선택·진행 표시
       startGame: () => {
         if (navLocked || gameStarting || state) return false;
-        if (MG.Economy.getHearts() <= 0) { beginGame(); return true; }
-        MG.ShapeTransition.run(1, () => beginGame());
+        if (MG.Economy.getHearts() <= 0) { beginGame(true); return true; }
+        MG.ShapeTransition.run(1, () => beginGame(true));
         return true;
       },
       rounds: () => { const l = currentLight(); return { light: l, chapter: currentChapter(), get: (n) => MG.Progress.get(n, l), unlocked: (x) => MG.Progress.isLightUnlocked(x) }; },
