@@ -36,3 +36,9 @@
 #game-screen.home3d-on.is-start #lane-button-bar *,#game-screen.home3d-on.is-start #lane-button-bar,#game-screen.home3d-on.is-start #board-start *{animation-play-state:paused!important}
 #home3d .h3-dot{position:absolute;translate:-50% -50%;width:18px;height:18px;border-radius:50%;background:#ff3b3b;border:2px solid #fff;box-shadow:0 2px 4px #0004;pointer-events:none}
 #game-screen:not(.home3d-on) #home3d .h3-dot{display:none}
+
+/* V1621 C: 게임기 안 나가기 버튼(조이스틱 자리, 같은 크기) */
+#home3d .h3-exit{position:absolute;left:max(22px,env(safe-area-inset-left));bottom:max(26px,env(safe-area-inset-bottom));width:112px;height:112px;border:0;border-radius:50%;font:800 19px system-ui,sans-serif;color:#fff;text-shadow:0 2px 0 rgba(40,60,90,.5);background:radial-gradient(circle at 34% 26%,#cfe2f6 0,#8fb3d9 30%,#5f86b3 70%,#4a6f99 100%);box-shadow:0 6px 0 #3a5778,0 10px 14px rgba(0,0,0,.28),inset 0 3px 4px rgba(255,255,255,.55),inset 0 -6px 10px rgba(20,40,70,.35);touch-action:none}
+#home3d .h3-exit:active{transform:translateY(4px);box-shadow:0 2px 0 #3a5778,0 4px 8px rgba(0,0,0,.25),inset 0 3px 4px rgba(255,255,255,.5)}
+#home3d .h3-exit[hidden]{display:none!important}
+@media (orientation:landscape){#home3d .h3-exit{width:94px;height:94px;bottom:18px}}

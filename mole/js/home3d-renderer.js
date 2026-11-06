@@ -343,8 +343,8 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
         const now = performance.now() / 1000, sun = sunDir(now);
         gl.uniform1f(U.Time, now % 10000); gl.uniform3fv(U.Sun, sun);
         const worlds = R.pose(rig, pose.clip, pose.t, pose.loop);
-        const inst = R.transform({ translation: [view.x, pose.y || 0, view.z], rotation: [0, Math.sin(view.heading / 2), 0, Math.cos(view.heading / 2)], scale: [0.65, 0.65, 0.65] });
-        const drawMole = () => { for (const m of actor) draw(m, R.multiply(inst, worlds[m.node]), R.palette(rig, worlds, m.node)); };
+        const inst = R.transform({ translation: [view.x, pose.y || 0, view.z], rotation: [0, Math.sin(view.heading / 2), 0, Math.cos(view.heading / 2)], scale: [0.65 * (pose.s ?? 1), 0.65 * (pose.s ?? 1), 0.65 * (pose.s ?? 1)] }); // pose.s = 크기(동전 구멍으로 빨려 듦)
+        const drawMole = () => { if (pose.s === 0) return; for (const m of actor) draw(m, R.multiply(inst, worlds[m.node]), R.palette(rig, worlds, m.node)); };
         const drawClouds = () => { clouds.forEach((m, i) => { const c = cloudPos(i, now); gl.uniform1i(U.Cloud, 1); draw(m, R.transform({ translation: [c[0], c[1], c[2]], scale: [c[3], c[3], c[3]] }), null); gl.uniform1i(U.Cloud, 0); }); };
         // 그림자: 해 쪽에서 섬 전체(반지름 16)를 내려다보는 직교 카메라. 섬·건물은 1초마다, 두더지·구름은 매 프레임
         if (now - staticAt > 1 || !staticVP) {
@@ -379,7 +379,7 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
             draw(m, R.transform({ translation: [b.x, b.y - 0.22 * b.r * (b.pressed || 0), b.z], scale: [b.r, b.r, b.r] }), null); // 색 버튼만 쑥 들어감
             m.color = keep;
           });
-          const mh = arcade.mole;
+          const mh = arcade.moleOn ? arcade.mole : null;
           if (mh) { // 지금 라운드 구멍: 두더지가 고개를 내밂(정면 = 섬 가운데 쪽 +z), 살짝 들썩
             const mp = mh.pose || { clip: 'RimIdle', t: now, loop: true }, w2 = R.pose(rig, mp.clip, mp.t, mp.loop), sc = 0.31; // 게임과 같은 구멍 동작. 손 간격 2.16 × 0.31 ≈ 구멍 지름
             const jumpUp = mp.clip === 'Appear' ? 1.1 * Math.sin(Math.PI * Math.min(1, mp.t / 0.8)) : 0; // 게임: 튀어오를 때 1.1 위로

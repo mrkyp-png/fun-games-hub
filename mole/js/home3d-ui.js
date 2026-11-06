@@ -52,6 +52,8 @@
     const loading = el('div', 'h3-loading', wrap); loading.setAttribute('role', 'status');
     // 설정·아이템·메일함은 자체 닫기 없이 아래 다이얼패드로 닫던 화면 — 광장이 그 자리를 덮으므로 대신 닫기
     const close = el('button', 'h3-close', wrap); close.type = 'button'; close.hidden = true;
+    // 게임기 안(구멍판 화면)에서 조이스틱 자리 = 나가기(V1621 C 사용자)
+    const exitBtn = el('button', 'h3-exit', wrap); exitBtn.type = 'button'; exitBtn.hidden = true;
 
     function stickXY(e) { const b = stick.getBoundingClientRect(); return [e.clientX - b.left - b.width / 2, e.clientY - b.top - b.height / 2, b.width * 0.32]; }
     function drawKnob() { const r = stick.getBoundingClientRect().width * 0.32; knob.style.transform = 'translate(' + input.joy.x * r + 'px,' + input.joy.y * r + 'px)'; }
@@ -68,6 +70,7 @@
     document.addEventListener('visibilitychange', resetAll);
     gear.addEventListener('click', () => opts.onSettings());
     close.addEventListener('click', () => opts.onClose());
+    exitBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); if (opts.onExit) opts.onExit(); });
     // 점프: 누르는 순간 바로(스틱과 동시에 누를 수 있게 pointerdown)
     jumpBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); opts.onJump(); });
 
@@ -79,6 +82,7 @@
       setEnabled(on) { input.setEnabled(on); drawKnob(); },
       setLoading(text) { loading.hidden = !text; loading.textContent = text || ''; },
       setJumpLabel(text) { jumpBtn.setAttribute('aria-label', text); },
+      setExit(label) { exitBtn.hidden = !label; exitBtn.textContent = label || ''; stick.hidden = !!label; if (label) resetAll(); },
       setHud(v) { for (const k in vals) vals[k].textContent = v[k]; },
       // 작은 지도: 위 = 앞(-z). 섬·건물/사물 점·두더지 화살표
       setBadges(list) {

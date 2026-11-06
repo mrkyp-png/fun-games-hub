@@ -32,8 +32,12 @@
         return true;
       },
       homeShown() {
+        const fromGame = st.state === 'GAMEPLAY';
         const ok = st.homeShown();
-        if (ok) { const v = st.view(); if (v) Object.assign(view, v); if (ui) ui.setFeature(false); refreshHud(); show(true); wake(); }
+        if (ok && fromGame) { // V1621 C 사용자: 게임이 끝나면 처음 시작 구멍으로 나옴
+          st.boot(); Object.assign(view, { x: 0, z: 0, heading: 0, yaw: 0, pitch: 0.62 }); rise = 0; hop = null; jumpAt = -1; camK = 0; arcCam = 0; inside = null; wasNearArcade = false; walking = false; route = null; if (ui) ui.setExit(null);
+        } else if (ok) { const v = st.view(); if (v) Object.assign(view, v); }
+        if (ok) { if (ui) ui.setFeature(false); refreshHud(); show(true); wake(); }
         return ok;
       },
       gameStarted() { const ok = st.gameStarted(); if (ok) { stop(); if (ui) ui.setFeature(false); show(false); } return ok; },
@@ -41,7 +45,7 @@
       inputEnabled: () => st.inputEnabled(),
       saveView: (v) => st.saveView(v),
       view: () => st.view(),
-      debug: () => ({ state: st.state, x: +view.x.toFixed(2), z: +view.z.toFixed(2), heading: +view.heading.toFixed(2), near: near && near.action, rise: +rise.toFixed(2), hop: !!hop, walking, riding, nearRide: nearRide && nearRide.id, clip: pose().clip, raf: !!raf }) // 검토용(?h3debug=1)
+      debug: () => ({ state: st.state, x: +view.x.toFixed(2), z: +view.z.toFixed(2), heading: +view.heading.toFixed(2), near: near && near.action, rise: +rise.toFixed(2), hop: !!hop, walking, riding, nearRide: nearRide && nearRide.id, clip: pose().clip, raf: !!raf, inside: inside && inside.phase }) // 검토용(?h3debug=1)
     };
     if (qs.get('h3debug') === '1') { // 검토용 훅(공개 주소엔 없음)
       root.__home3d = api;
@@ -49,7 +53,12 @@
     }
 
     // 두더지팡 게임기: 구멍 = 라운드(깬 구멍 = 라운드 색 빛, 지금 라운드 = 두더지), 화면 = 'OO N라운드' / 'BEST 점수'
-    let arcadeKey = '', arcadeState = null, press = null, seqAt = -9, wasNearArcade = false, popAt = -9, arcCam = 0; // press = {k, at, light, done} 모드 버튼 누르는 중
+    let arcadeKey = '', arcadeState = null, press = null, seqAt = -9, wasNearArcade = false, popAt = -9, arcCam = 0, inside = null, wasFront = false; // inside = 게임기 안 {phase:'suck'|'in', at, from}(V1621 C 사용자: 동전 구멍으로 빨려 들어가 라운드 구멍 두더지로 나옴)
+    const COIN = { x: 0.28 * L.ARCADE_K, y: 0.488 * L.ARCADE_K, z: -(9 - 0.62 * L.ARCADE_K) }, SUCK_T = 0.7; // 동전 구멍(review/build-arcade-mole.py coin, 아래 몸통 줄임 반영)
+    function exitArcade() { // 나가기: 게임기 앞에 서고 카메라가 물러남
+      if (!inside) return; inside = null; if (ui) ui.setExit(null);
+      view.x = 0; view.z = -9 + 3.2 + 0.95; view.heading = 0; jumpAt = time; route = null; wasNearArcade = false; wasFront = true; // 나온 자리에서 바로 다시 빨려 들지 않게(한 번 떨어졌다 와야 함)
+    } // press = {k, at, light, done} 모드 버튼 누르는 중
     function refreshArcade(force) {
       if (!rd || !opts.rounds) return;
       const R0 = opts.rounds(), ko = root.FGH.I18N.lang === 'ko';
@@ -116,6 +125,11 @@
         const k = rise / RISE_T;
         return { clip: 'Jump', t: k * IN.jump.T, loop: false, y: -1.4 + (HOLE_Y + 1.4) * k + 1.1 * Math.sin(Math.PI * k) };
       }
+      if (inside) {
+        if (inside.phase === 'in') return { clip: 'Idle', t: time, loop: true, y: COIN.y, s: 0 };
+        const k = Math.min(1, (time - inside.at) / SUCK_T), e = k * k; // 점점 빨리
+        return { clip: 'Jump', t: Math.min(0.2, k * 0.3), loop: false, y: COIN.y * Math.min(1, k * 1.6) + 0.5 * Math.sin(Math.PI * k), s: 1 - e };
+      }
       if (riding) return { clip: 'ArmsUp', t: time, loop: true, y: seatY }; // 놀이기구에서 신나게
       if (jumping()) {
         const jt = time - jumpAt, base = hop ? HOLE_Y * (1 - jt / IN.jump.T) : 0;
@@ -139,28 +153,41 @@
           if (k >= 1) { hop = null; st.introDone(); wake(); }
         }
       } else if (riding) { const se = rd.seat(riding); if (se) { view.x = se.x; view.z = se.z; view.heading = se.heading; seatY = se.y; } walking = false; }
+      else if (inside) {
+        walking = false;
+        if (inside.phase === 'suck') {
+          const k = Math.min(1, (time - inside.at) / SUCK_T), e = k * k;
+          view.x = inside.from.x + (COIN.x - inside.from.x) * e; view.z = inside.from.z + (COIN.z - inside.from.z) * e; view.heading = inside.from.heading + k * 4 * Math.PI; // 돌면서 빨려 듦
+          if (k >= 1) { inside.phase = 'in'; popAt = time; seqAt = time; } // 라운드 구멍에서 튀어나옴 + 차례 빛
+        }
+      }
       else if (st.inputEnabled()) move(dt);
       if (!api.renderAllowed()) return; // move 안에서 기능 화면이 열렸으면 멈춤
       camK = st.state === 'INTRO' && !hop ? 0 : Math.min(1, camK + dt / CAM_T);
       const ck = camK * camK * (3 - 2 * camK);
-      const aim = st.state === 'EXPLORE' && near && near.action === 'lightMode' ? 1 : 0;
+      const aim = st.state === 'EXPLORE' && inside ? 1 : 0; // 빨려 드는 순간부터 게임기를 화면 가운데로
       arcCam += (aim - arcCam) * Math.min(1, dt / 0.6 * 3);
       let cv = camK >= 1 ? view : Object.assign({}, view, { pitch: INTRO_PITCH + (view.pitch - INTRO_PITCH) * ck });
       if (arcCam > 0.001) { const a = arcCam * arcCam * (3 - 2 * arcCam), dy = Math.atan2(Math.sin(0 - cv.yaw), Math.cos(0 - cv.yaw));
-        cv = Object.assign({}, cv, { x: cv.x + (0 - cv.x) * a, z: cv.z + (-7.3 - cv.z) * a, yaw: cv.yaw + dy * a, pitch: cv.pitch + (0.95 - cv.pitch) * a }); }
+        cv = Object.assign({}, cv, { x: cv.x + (0 - cv.x) * a, z: cv.z + (-7.6 - cv.z) * a, yaw: cv.yaw + dy * a, pitch: cv.pitch + (0.95 - cv.pitch) * a }); }
       rd.render(cv, pose());
       if (time - badgeAt > 1) { badgeAt = time; badges = claimables(MG); refreshArcade(); } // 1초마다 확인(뱃지·게임기 진행)
       ui.setBadges(badges.map((a) => { const s = L.SITES.find((x) => x.action === a), q = s && MG.Home3DRenderer.project(rd.vp(), [s.x, s.kind === 'building' ? 3.4 : 1.9, s.z]), z = rd.size(); return q && z && { action: a, x: (q[0] + 1) / 2 * z.cw, y: (1 - q[1]) / 2 * z.ch, on: Math.abs(q[0]) < 1.1 && Math.abs(q[1]) < 1.1 }; }).filter(Boolean));
       near = L.nearest(view.x, view.z);
       const nearArcade = !!(near && near.action === 'lightMode');
-      if (nearArcade && !wasNearArcade) seqAt = time; // 다가가면 구멍이 1→8→보스 차례로 빛남(사용자: 라운드 순서 알려 주기)
-      wasNearArcade = nearArcade;
+      const frontArc = nearArcade && Math.abs(view.x) < 1.4 && view.z > -9 + 2.2; // 게임기 정면(좌우 제외)
+      if (frontArc && !wasFront && !inside && st.inputEnabled() && !riding && opts.startGame) { // 정면에서 닿을 때만 동전 구멍으로 빨려 들어감(사용자: 좌우에서는 안 됨)
+        inside = { phase: 'suck', at: time, from: { x: view.x, z: view.z, heading: view.heading } }; route = null; ui.input.reset();
+        ui.setExit(root.FGH.I18N.lang === 'ko' ? '나가기' : 'Exit');
+      }
+      wasNearArcade = nearArcade; wasFront = frontArc;
       if (arcadeState) {
         const st0 = time - seqAt, STEP = 0.2;
         arcadeState.flash = st0 >= 0 && st0 < STEP * 9 + 0.35 ? [1, 2, 3, 4, 5, 6, 7, 8, 0].filter((n, i) => st0 >= i * STEP && st0 < i * STEP + 0.35) : [];
         arcadeState.buttons.forEach((b, k) => { const pt = press && press.k === k ? time - press.at : -1; b.pressed = pt >= 0.14 && pt < 0.45 ? 1 : 0; });
         if (press && !press.done && time - press.at >= 0.26) { press.done = true; if (opts.setMode && opts.setMode(press.light)) { refreshArcade(true); seqAt = time; } }
         if (press && time - press.at > 0.65) press = null;
+        arcadeState.moleOn = !!(inside && inside.phase === 'in'); // 라운드 구멍 두더지 = 게임기 안에 들어왔을 때만
         if (arcadeState.mole) { // 게임과 같은 순서(clay-round1-local clipFor): Appear 0.4초 → RimSettle 0.22초 → RimIdle
           const age = time - popAt;
           arcadeState.mole.pose = age < 0.4 ? { clip: 'Appear', t: age / 0.4 * 0.8, loop: false } : age < 0.62 ? { clip: 'RimSettle', t: (age - 0.4) / 0.22 * 0.6, loop: false } : { clip: 'RimIdle', t: age - 0.62, loop: true };
@@ -171,7 +198,7 @@
       // 건물에 닿아 있으면 점프 버튼이 그 건물 터치 버튼으로(누르면 그 건물 화면). 스쳐 지나가도 자동 진입 없음
       nearRide = !riding && !near && st.inputEnabled() ? L.nearestRide(view.x, view.z) : null;
       const ko = root.FGH.I18N.lang === 'ko';
-      ui.setJumpMode(riding ? (ko ? '내리기' : 'Get off') : jumping() ? null : nearRide ? (ko ? '타기' : 'Ride') : near && st.inputEnabled() ? ((near.action === 'lightMode' && opts.startGame) || near.action === 'rhythm' ? (ko ? '시작' : 'Start') /* V1621 C 사용자: 리듬팡도 시작 버튼 */ : MG.Home3DSigns.labelFor(near, root.FGH.I18N.lang, t)) : null);
+      ui.setJumpMode(inside ? (inside.phase === 'in' ? (ko ? '시작' : 'Start') : null) : riding ? (ko ? '내리기' : 'Get off') : jumping() ? null : nearRide ? (ko ? '타기' : 'Ride') : near && st.inputEnabled() && near.action !== 'lightMode' ? (near.action === 'rhythm' ? (ko ? '시작' : 'Start') /* V1621 C 사용자: 리듬팡도 시작 버튼 */ : MG.Home3DSigns.labelFor(near, root.FGH.I18N.lang, t)) : null);
       if (!raf) raf = requestAnimationFrame(frame); // 프레임 안에서 wake() 가 이미 예약했으면 두 번째 반복을 만들지 않음(겹치면 걷기 동작이 멈춤)
     }
 
@@ -180,7 +207,9 @@
         onLook(d) { view.yaw += d.dyaw; view.pitch = Math.max(0.25, Math.min(0.95, view.pitch + d.dpitch)); },
         onTap(px, py, w, h) {
           if (!st.inputEnabled() || !rd.vp() || riding) return;
-          if (near && near.action === 'lightMode' && arcadeState && opts.setMode && !press) {
+          const inArc = inside && inside.phase === 'in';
+          if (inside && !inArc) return; // 빨려 드는 중
+          if (inArc && arcadeState && opts.setMode && !press) {
             const z0 = rd.size(); let bk = -1, bd = 1e9;
             arcadeState.buttons.forEach((b, k) => { const q = MG.Home3DRenderer.project(rd.vp(), [b.x, b.y, b.z]); if (!q) return; const d = Math.hypot((q[0] + 1) / 2 * w - px, (1 - q[1]) / 2 * h - py); if (d < bd) { bd = d; bk = k; } });
             if (bk >= 0 && bd < Math.max(26, w * 0.07)) { // 버튼 누르면 쑥 들어가고 모드 바뀜(안 열린 모드는 눌리기만 하고 그대로)
@@ -188,9 +217,10 @@
               return; // 사용자: 두더지 팔이 구멍판까지 안 닿음 → 누르기 동작 없이 버튼만 쑥 들어감
             }
           }
-          if (near && near.action === 'lightMode' && opts.selectRound) {
+          if (inArc && opts.selectRound) {
             const hp = MG.Home3DRenderer.rayPlane(root.StudioRig.inverse(rd.vp()), px / w * 2 - 1, 1 - py / h * 2, L.ARCADE_HOLES[0].y), hole = hp && L.pickHole(hp.x, hp.z);
             if (hole) { if (hole.n && opts.selectRound(hole.n)) refreshArcade(true); return; } // 파이널(0)·안 열린 구멍 = 무시
+            return; // 게임기 안: 바닥 걷기 없음
           }
           const site = MG.Home3DRenderer.pickSite(rd.vp(), L.SITES, px, py, w, h);
           if (site && site === near) { if (site.action !== 'lightMode' || !opts.startGame) api.open(site.action); return; } // 게임기 몸통 터치 = 아무 일 없음(라운드 지도 안 씀) // 닿아 있는 건물을 터치 = 진입
@@ -200,10 +230,11 @@
         },
         onSettings() { if (st.inputEnabled()) api.open('settings'); },
         onClose() { if (st.state === 'FEATURE') opts.homeAction('home'); },
+        onExit() { exitArcade(); },
         onJump() {
           if (riding) { const rdd = L.RIDES.find((x) => x.id === riding), e = L.rideExit(rdd); riding = null; view.x = e.x; view.z = e.z; view.heading = Math.atan2(-e.x, -e.z); jumpAt = time; return; } // 앞으로 뛰어내림
           if (nearRide && st.inputEnabled() && !jumping()) { riding = nearRide.id; route = null; ui.input.reset(); return; } // 뛰어올라 탐
-          if (near && near.action === 'lightMode' && opts.startGame && st.inputEnabled() && !jumping()) { st.saveView(view); opts.startGame(); return; } // 사용자: 라운드 지도 없이 바로 시작
+          if (inside) { if (inside.phase === 'in' && st.inputEnabled()) opts.startGame(); return; } // 게임기 안 = 시작 // 사용자: 라운드 지도 없이 바로 시작
           if (near && st.inputEnabled() && !jumping()) { api.open(near.action); return; } if (st.state === 'INTRO' || st.inputEnabled()) jump(); }
       });
       rd = MG.Home3DRenderer.create(ui.canvas);

@@ -73,7 +73,7 @@
     return [{ x: px * R, z: pz * R }];
   }
 
-  const api = { ISLAND_R, WALK_R, HOLE_R, SPAWN, SITES, RIDES, ARCADE_HOLES, ARCADE_BUTTONS, ROUND_COLORS, pickHole, rideExit, nearestRide, entryPoint, allowed, slide, nearest, pathVia };
+  const api = { ISLAND_R, WALK_R, HOLE_R, SPAWN, SITES, RIDES, ARCADE_K, ARCADE_HOLES, ARCADE_BUTTONS, ROUND_COLORS, pickHole, rideExit, nearestRide, entryPoint, allowed, slide, nearest, pathVia };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else { root.MoleGame = root.MoleGame || {}; root.MoleGame.Home3DLayout = api; }
 })(typeof window !== 'undefined' ? window : globalThis);
