@@ -56,7 +56,7 @@
     let arcadeKey = '', arcadeState = null, press = null, seqAt = -9, wasNearArcade = false, popAt = -9, arcCam = 0, inside = null, wasFront = false; // inside = 게임기 안 {phase:'suck'|'in', at, from}(V1621 C 사용자: 동전 구멍으로 빨려 들어가 라운드 구멍 두더지로 나옴)
     const COIN = { x: 0.30 * L.ARCADE_K, y: 0.704 * L.ARCADE_K, z: -(9 - 1.03 * L.ARCADE_K) }, SUCK_T = 0.8; // 동전 구멍 = 하늘색 테두리 앞면 오른쪽(review/build-arcade-mole.py coin, 높이 1.06 → 아래 몸통 줄임 0.692)
     function exitArcade() { // 나가기: 게임기 앞에 서고 카메라가 물러남
-      if (!inside || inside.phase !== 'in') return; inside = { phase: 'out', at: time }; if (ui) ui.setExit(null); if (rd) rd.setSmoke([]); // 사용자: 나올 때도 동전 구멍에서 스윽
+      if (!inside || inside.phase !== 'in') return; inside = { phase: 'out', at: time + 0.5 }; view.x = COIN.x; view.z = COIN.z; /* 0.5초 동안 카메라가 동전 구멍 앞으로 돌아온 뒤 나옴(사용자: 구멍에서 나오게) */ if (ui) ui.setExit(null); if (rd) rd.setSmoke([]); // 사용자: 나올 때도 동전 구멍에서 스윽
       view.heading = 0; route = null; wasNearArcade = false; wasFront = true; // 나온 자리에서 바로 다시 빨려 들지 않게(한 번 떨어졌다 와야 함)
     } // press = {k, at, light, done} 모드 버튼 누르는 중
     function refreshArcade(force) {
@@ -127,7 +127,11 @@
       }
       if (inside) {
         if (inside.phase === 'in') return { clip: 'Idle', t: time, loop: true, y: COIN.y, s: 0 };
-        if (inside.phase === 'out') { const k = Math.min(1, (time - inside.at) / SUCK_T), e = 1 - Math.pow(1 - k, 2.2), sc = Math.max(0.02, e); return { clip: 'Idle', t: time, loop: true, y: (COIN.y - 0.6 * sc) * (1 - e), s: sc }; } // 동전 구멍에서 커지며 나옴
+        if (inside.phase === 'out') { // 동전 구멍에서 아주 작게 나와, 앞으로 나오는 동안 천천히 원래 크기로(사용자: 너무 크게 나옴)
+          if (time < inside.at) return { clip: 'Idle', t: time, loop: true, y: COIN.y, s: 0 };
+          const k = Math.min(1, (time - inside.at) / (SUCK_T * 1.4)), g = k, sc = Math.max(0.03, g * g * (3 - 2 * g)), m0 = Math.max(0, Math.min(1, (k - 0.1) / 0.9)), e = m0 * m0 * (3 - 2 * m0);
+          return { clip: 'Idle', t: time, loop: true, y: (COIN.y - 0.6 * sc) * (1 - e), s: sc };
+        }
         const k = Math.min(1, (time - inside.at) / SUCK_T), e = Math.pow(k, 2.2), sc = Math.max(0, 1 - e); // 사용자: 두더지가 쏙 빨려 들어감(처음 천천히 → 끝에 빨리, 작아짐)
         return { clip: 'Idle', t: inside.at, loop: true, y: (COIN.y - 0.6 * sc) * e, s: k >= 1 ? 0 : sc }; // 서 있던 자세 그대로(사용자)
       }
@@ -157,7 +161,7 @@
       else if (inside) {
         walking = false;
         if (inside.phase === 'out') { // 동전 구멍 → 게임기 앞(처음 빨리 → 끝에 천천히)
-          const k = Math.min(1, (time - inside.at) / SUCK_T), e = 1 - Math.pow(1 - k, 2.2), FX = 0, FZ = -9 + 3.2 + 0.95;
+          const k = Math.max(0, Math.min(1, (time - inside.at) / (SUCK_T * 1.4))), m0 = Math.max(0, Math.min(1, (k - 0.1) / 0.9)), e = m0 * m0 * (3 - 2 * m0), FX = 0, FZ = -9 + 3.2 + 0.95;
           view.x = COIN.x + (FX - COIN.x) * e; view.z = COIN.z + (FZ - COIN.z) * e;
           if (k >= 1) inside = null;
         }
@@ -182,7 +186,7 @@
       let cv = camK >= 1 ? view : Object.assign({}, view, { pitch: INTRO_PITCH + (view.pitch - INTRO_PITCH) * ck });
       if (arcCam > 0.001) { const a = arcCam * arcCam * (3 - 2 * arcCam), dy = Math.atan2(Math.sin(0 - cv.yaw), Math.cos(0 - cv.yaw));
         const arc = Math.sin(Math.PI * a) * Math.min(1, Math.abs(dy) / 0.8); // 옮겨 가는 도중엔 높이 올라 게임기 위로 넘어감(사용자: 화면이 가려지며 지나감 — 카메라가 게임기 몸통을 뚫고 지나가던 것)
-        cv = Object.assign({}, cv, { x: cv.x + (0 - cv.x) * a, z: cv.z + (-8.6 - cv.z) * a, yaw: cv.yaw + dy * a, pitch: Math.min(1.35, cv.pitch + (0.82 - cv.pitch) * a + 0.55 * arc), dist: 7.5 + 2.6 * a + 3 * arc, fy: 1.35 + 1.6 * a + 1.5 * arc }); } // 게임기 더 아래로, 위 간판까지 보이게(사용자)
+        cv = Object.assign({}, cv, { x: cv.x + (0 - cv.x) * a, z: cv.z + (-8.4 - cv.z) * a, yaw: cv.yaw + dy * a, pitch: Math.min(1.35, cv.pitch + (0.8 - cv.pitch) * a + 0.55 * arc), dist: 7.5 - 0.3 * a + 3 * arc, fy: 1.35 + 0.9 * a + 1.5 * arc }); } // 게임기 더 아래로, 위 간판까지 보이게(사용자)
       rd.render(cv, pose());
       if (time - badgeAt > 1) { badgeAt = time; badges = claimables(MG); refreshArcade(); } // 1초마다 확인(뱃지·게임기 진행)
       ui.setBadges(badges.map((a) => { const s = L.SITES.find((x) => x.action === a), q = s && MG.Home3DRenderer.project(rd.vp(), [s.x, s.kind === 'building' ? 3.4 : 1.9, s.z]), z = rd.size(); return q && z && { action: a, x: (q[0] + 1) / 2 * z.cw, y: (1 - q[1]) / 2 * z.ch, on: Math.abs(q[0]) < 1.1 && Math.abs(q[1]) < 1.1 }; }).filter(Boolean));

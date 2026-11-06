@@ -366,9 +366,13 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
         if (arcade) {
           gl.uniform1i(U.Glow, 1);
           for (const h of arcade.holes) if (h.glow >= 0 && glowDisc[h.glow]) draw(glowDisc[h.glow], R.transform({ translation: [h.x, h.y - 0.05, h.z], scale: [h.r * 0.97, 1, h.r * 0.97] }), null);
+          { const cu = arcade.mole; if (cu && cu.n && glowDisc[8] && Math.sin(now * 7) > 0) draw(glowDisc[8], R.transform({ translation: [cu.x, cu.y - 0.05, cu.z], scale: [cu.r * 0.97, 1, cu.r * 0.97] }), null); }
           gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false); gl.disable(gl.CULL_FACE); // 색 그대로 반투명
           const pulse = 1 + 0.08 * Math.sin(now * 3);
           for (const h of arcade.holes) if (h.glow >= 0 && glowHalo[h.glow]) draw(glowHalo[h.glow], R.transform({ translation: [h.x, h.y - 0.02, h.z], scale: [h.r, 0.9 * pulse, h.r] }), null);
+          const cu = arcade.mole; /* 지금 라운드 구멍 = 깜빡깜빡(사용자: 안 깬 구멍과 구별) */
+          const blinkOn = cu && cu.n && glowHalo[8] && Math.sin(now * 7) > 0; /* 밝은 금빛(라운드 색이 짙으면 안 보여서) */
+          if (blinkOn) draw(glowHalo[8], R.transform({ translation: [cu.x, cu.y - 0.02, cu.z], scale: [cu.r, 1.1, cu.r] }), null);
           gl.depthMask(true); gl.disable(gl.BLEND);
           for (const fl of arcade.flash || []) { const h = arcade.holes.find((x) => x.n === fl), gi = fl === 0 ? 8 : fl - 1; if (h && glowDisc[gi]) draw(glowDisc[gi], R.transform({ translation: [h.x, h.y - 0.03, h.z], scale: [h.r * 0.97, 1, h.r * 0.97] }), null); }
           gl.uniform1i(U.Glow, 0);
