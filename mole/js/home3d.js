@@ -129,8 +129,9 @@
         if (inside.phase === 'in') return { clip: 'Idle', t: time, loop: true, y: COIN.y, s: 0 };
         if (inside.phase === 'out') { // 동전 구멍에서 아주 작게 나와, 앞으로 나오는 동안 천천히 원래 크기로(사용자: 너무 크게 나옴)
           if (time < inside.at) return { clip: 'Idle', t: time, loop: true, y: COIN.y, s: 0 };
-          const k = Math.min(1, (time - inside.at) / (SUCK_T * 1.4)), g = k, sc = Math.max(0.03, g * g * (3 - 2 * g)), m0 = Math.max(0, Math.min(1, (k - 0.1) / 0.9)), e = m0 * m0 * (3 - 2 * m0);
-          return { clip: 'Idle', t: time, loop: true, y: (COIN.y - 0.6 * sc) * (1 - e), s: sc };
+          /* 사선 한 줄: 몸 가운데가 동전 구멍(COIN) → 최종 자리(바닥, 몸 가운데 높이 0.95(두더지 키 약 1.9))로, 같은 비율로 커짐 */
+          const k = Math.min(1, (time - inside.at) / (SUCK_T * 1.4)), e = k * k * (3 - 2 * k), sc = 0.15 + 0.85 * e, cy = COIN.y + (0.95 - COIN.y) * e;
+          return { clip: 'Idle', t: time, loop: true, y: cy - 0.95 * sc, s: sc };
         }
         const k = Math.min(1, (time - inside.at) / SUCK_T), e = Math.pow(k, 2.2), sc = Math.max(0, 1 - e); // 사용자: 두더지가 쏙 빨려 들어감(처음 천천히 → 끝에 빨리, 작아짐)
         return { clip: 'Idle', t: inside.at, loop: true, y: (COIN.y - 0.6 * sc) * e, s: k >= 1 ? 0 : sc }; // 서 있던 자세 그대로(사용자)
@@ -161,7 +162,7 @@
       else if (inside) {
         walking = false;
         if (inside.phase === 'out') { // 동전 구멍 → 게임기 앞(처음 빨리 → 끝에 천천히)
-          const k = Math.max(0, Math.min(1, (time - inside.at) / (SUCK_T * 1.4))), m0 = Math.max(0, Math.min(1, (k - 0.1) / 0.9)), e = m0 * m0 * (3 - 2 * m0), FX = 0, FZ = -9 + 3.2 + 0.95;
+          const k = Math.max(0, Math.min(1, (time - inside.at) / (SUCK_T * 1.4))), e = k * k * (3 - 2 * k), FX = 0, FZ = -9 + 3.2 + 0.95; /* 위 몸 높이와 같은 e = 사선 한 줄 */
           view.x = COIN.x + (FX - COIN.x) * e; view.z = COIN.z + (FZ - COIN.z) * e;
           if (k >= 1) inside = null;
         }
@@ -184,10 +185,10 @@
       const aim = st.state === 'EXPLORE' && inside && inside.phase === 'in' ? 1 : 0; // 연기가 다 들어간 뒤 게임기로(사용자)
       arcCam += (aim - arcCam) * Math.min(1, dt / 0.6 * 3);
       let cv = camK >= 1 ? view : Object.assign({}, view, { pitch: INTRO_PITCH + (view.pitch - INTRO_PITCH) * ck });
-      if (inside && inside.phase === 'out') cv = Object.assign({}, cv, { x: 0, yaw: 0 }); /* 나오는 동안 게임기 좌우로 안 움직임(가운데 고정) */
+      if (inside && inside.phase === 'out') cv = Object.assign({}, cv, { cx: 0, yaw: 0 }); /* 나오는 동안 게임기 좌우로 안 움직임(가운데 고정) */
       if (arcCam > 0.001) { const a = arcCam * arcCam * (3 - 2 * arcCam), dy = Math.atan2(Math.sin(0 - cv.yaw), Math.cos(0 - cv.yaw));
         const arc = Math.sin(Math.PI * a) * Math.min(1, Math.abs(dy) / 0.8); // 옮겨 가는 도중엔 높이 올라 게임기 위로 넘어감(사용자: 화면이 가려지며 지나감 — 카메라가 게임기 몸통을 뚫고 지나가던 것)
-        cv = Object.assign({}, cv, { x: cv.x + (0 - cv.x) * a, z: cv.z + (-8.4 - cv.z) * a, yaw: cv.yaw + dy * a, pitch: Math.min(1.35, cv.pitch + (0.8 - cv.pitch) * a + 0.55 * arc), dist: 7.5 - 0.3 * a + 3 * arc, fy: 1.35 + 0.9 * a + 1.5 * arc }); } // 게임기 더 아래로, 위 간판까지 보이게(사용자)
+        const fx0 = cv.cx ?? cv.x; cv = Object.assign({}, cv, { cx: fx0 + (0 - fx0) * a, cz: cv.z + (-8.4 - cv.z) * a, yaw: cv.yaw + dy * a, pitch: Math.min(1.35, cv.pitch + (0.8 - cv.pitch) * a + 0.55 * arc), dist: 7.5 - 0.3 * a + 3 * arc, fy: 1.35 + 0.9 * a + 1.5 * arc }); } // 게임기 더 아래로, 위 간판까지 보이게(사용자)
       rd.render(cv, pose());
       if (time - badgeAt > 1) { badgeAt = time; badges = claimables(MG); refreshArcade(); } // 1초마다 확인(뱃지·게임기 진행)
       ui.setBadges(badges.map((a) => { const s = L.SITES.find((x) => x.action === a), q = s && MG.Home3DRenderer.project(rd.vp(), [s.x, s.kind === 'building' ? 3.4 : 1.9, s.z]), z = rd.size(); return q && z && { action: a, x: (q[0] + 1) / 2 * z.cw, y: (1 - q[1]) / 2 * z.ch, on: Math.abs(q[0]) < 1.1 && Math.abs(q[1]) < 1.1 }; }).filter(Boolean));
