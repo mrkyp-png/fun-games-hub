@@ -10209,3 +10209,10 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #quest-screen:not([data-mode="ach"]) .qs-title, #quest-screen[data-mode="ach"] .qs-title { top:calc(20% + .1cm); }
 /* V1648 C 사용자: 퀘스트 배경 = 놀이공원 광장(사용자 ChatGPT) — 옛 나무 간판·숲길 앞 그림 대신 */
 #quest-screen .qs-front { background-image:url('assets/quest/bg-v1648.webp'); }
+/* V1649 C 사용자: 퀘스트 간판 조금 내림(스코어처럼) + 흐르는 구름을 새 배경 위로(하늘에 보이게) */
+#quest-screen .qs-character-slot { transform:translateY(.2cm); } /* 박스에 안 닿게 스코어처럼 살짝 틈 */
+#quest-screen:not([data-mode="ach"]) .qs-title, #quest-screen[data-mode="ach"] .qs-title { top:calc(20% + .3cm); }
+#quest-screen .qs-clouds { z-index:1; inset:0 0 70% 0; }
+/* 퀘스트 구름 = 스코어 구름(.sr-cloud) 그대로, 하늘 위쪽만 + 양쪽 깃발(가장자리 22%) 가림 */
+#quest-screen .qs-clouds { inset:0 0 62% 0; overflow:hidden; mask-image:linear-gradient(90deg, transparent 20%, #000 30%, #000 52%, transparent 61%); -webkit-mask-image:linear-gradient(90deg, transparent 20%, #000 30%, #000 52%, transparent 61%); /* 오른쪽 관람차(62~90%)도 안 겹치게 */ }
+#quest-screen[hidden] .sr-cloud { animation-play-state:paused; }

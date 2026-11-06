@@ -115,7 +115,7 @@
     // V1556 C 사용자: 밝은 낮 배경 = 하늘(CSS) + 흐르는 구름 + 앞 그림(하늘 뺀 배경) + 나비·잠자리 1~4마리
     el.innerHTML =
       '<div class="qs-scene" aria-hidden="true"><div class="qs-clouds">' +
-        [[6, 34, 70, -10], [17, 26, 92, -55], [3, 22, 110, -80]].map(function (c) { return '<img src="' + A + 'fx-cloud-v1556.webp" alt="" style="top:' + c[0] + '%;width:' + c[1] + '%;--d:' + c[2] + 's;--dl:' + c[3] + 's">'; }).join('') +
+        /* V1649 C 사용자: 스코어처럼 뒤에서 앞으로(커지며 화면 위로) 오는 구름, 양쪽 깃발 안 겹치게 가운데만 */ [[36, 20, 24, -3, -2], [44, 24, 29, -12, 2], [40, 20, 34, -24, -2], [46, 24, 38, -31, 1]].map(function (p) { return '<svg class="sr-cloud" viewBox="0 0 160 64" style="--sc-x:' + p[0] + '%;--sc-size:' + p[1] + 'vw;--sc-time:' + p[2] + 's;--sc-delay:' + p[3] + 's;--sc-drift:' + p[4] + 'vw"><path d="M12 38C8 27 17 19 30 21C29 8 48 5 60 16C73 1 100 6 110 23C129 15 149 23 146 39C157 48 144 62 128 55C116 65 93 63 82 55C68 66 45 63 36 53C21 61 10 51 12 38Z"/></svg>'; }).join('') +
         '</div><div class="qs-front"></div><div class="qs-bugs" data-qs-bugs></div></div>' +
       '<div class="qs-stage">' +
         '<div class="qs-head"><div class="qs-character-slot" aria-hidden="true"></div>' +
