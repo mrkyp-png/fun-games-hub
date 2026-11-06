@@ -214,6 +214,14 @@
         localStorage.setItem('mole.diag.inventoryPreviewGuard1511G', '1');
       }
     } catch (e) { /* Storage may be unavailable. */ }
+    // V1618 C 사용자: 08:01 'reading create'(game.js?v=1615-C:3667, 일일출석 파일 없음) 기록은 V1617 C 진단·복구로 처리 → 저장된 그 기록만 1회 지움
+    try {
+      if (!localStorage.getItem('mole.diag.clearDailyCreate1618C')) {
+        diag = diag.filter((line) => !(line.indexOf("(reading 'create')") >= 0 && line.indexOf("@game.js?v=1615-C:3667") >= 0));
+        localStorage.setItem('mole.diag', JSON.stringify(diag));
+        localStorage.setItem('mole.diag.clearDailyCreate1618C', '1');
+      }
+    } catch (e) { /* Storage may be unavailable. */ }
     try { if (!localStorage.getItem('mole.diag.clear1399C')) { diag = []; localStorage.setItem('mole.diag', '[]'); localStorage.setItem('mole.diag.clear1399C', '1'); } } catch (e) { /* 무시 */ }
     const saveDiag = (line) => {
       const d = new Date(); diag.push(String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ' ' + line);
