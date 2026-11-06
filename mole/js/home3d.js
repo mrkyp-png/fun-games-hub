@@ -56,7 +56,7 @@
     let arcadeKey = '', arcadeState = null, press = null, seqAt = -9, wasNearArcade = false, popAt = -9, arcCam = 0, inside = null, wasFront = false; // inside = 게임기 안 {phase:'suck'|'in', at, from}(V1621 C 사용자: 동전 구멍으로 빨려 들어가 라운드 구멍 두더지로 나옴)
     const COIN = { x: 0.30 * L.ARCADE_K, y: 0.704 * L.ARCADE_K, z: -(9 - 1.03 * L.ARCADE_K) }, SUCK_T = 0.8; // 동전 구멍 = 하늘색 테두리 앞면 오른쪽(review/build-arcade-mole.py coin, 높이 1.06 → 아래 몸통 줄임 0.692)
     function exitArcade() { // 나가기: 게임기 앞에 서고 카메라가 물러남
-      if (!inside || inside.phase !== 'in') return; inside = { phase: 'out', at: time + 0.5 }; view.x = COIN.x; view.z = COIN.z; /* 0.5초 동안 카메라가 동전 구멍 앞으로 돌아온 뒤 나옴(사용자: 구멍에서 나오게) */ if (ui) ui.setExit(null); if (rd) rd.setSmoke([]); // 사용자: 나올 때도 동전 구멍에서 스윽
+      if (!inside || inside.phase !== 'in') return; inside = { phase: 'out', at: time }; view.x = COIN.x; view.z = COIN.z; view.yaw = 0; /* 사용자: 오른쪽 동전 구멍에서 화면 가운데로 나오며 커짐, 카메라는 뒤로만 물러남 */ if (ui) ui.setExit(null); if (rd) rd.setSmoke([]); // 사용자: 나올 때도 동전 구멍에서 스윽
       view.heading = 0; route = null; wasNearArcade = false; wasFront = true; // 나온 자리에서 바로 다시 빨려 들지 않게(한 번 떨어졌다 와야 함)
     } // press = {k, at, light, done} 모드 버튼 누르는 중
     function refreshArcade(force) {
@@ -184,6 +184,7 @@
       const aim = st.state === 'EXPLORE' && inside && inside.phase === 'in' ? 1 : 0; // 연기가 다 들어간 뒤 게임기로(사용자)
       arcCam += (aim - arcCam) * Math.min(1, dt / 0.6 * 3);
       let cv = camK >= 1 ? view : Object.assign({}, view, { pitch: INTRO_PITCH + (view.pitch - INTRO_PITCH) * ck });
+      if (inside && inside.phase === 'out') cv = Object.assign({}, cv, { x: 0, yaw: 0 }); /* 나오는 동안 게임기 좌우로 안 움직임(가운데 고정) */
       if (arcCam > 0.001) { const a = arcCam * arcCam * (3 - 2 * arcCam), dy = Math.atan2(Math.sin(0 - cv.yaw), Math.cos(0 - cv.yaw));
         const arc = Math.sin(Math.PI * a) * Math.min(1, Math.abs(dy) / 0.8); // 옮겨 가는 도중엔 높이 올라 게임기 위로 넘어감(사용자: 화면이 가려지며 지나감 — 카메라가 게임기 몸통을 뚫고 지나가던 것)
         cv = Object.assign({}, cv, { x: cv.x + (0 - cv.x) * a, z: cv.z + (-8.4 - cv.z) * a, yaw: cv.yaw + dy * a, pitch: Math.min(1.35, cv.pitch + (0.8 - cv.pitch) * a + 0.55 * arc), dist: 7.5 - 0.3 * a + 3 * arc, fy: 1.35 + 0.9 * a + 1.5 * arc }); } // 게임기 더 아래로, 위 간판까지 보이게(사용자)
