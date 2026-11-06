@@ -10126,3 +10126,27 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #settings-screen .st2-lbl { color:#7a4a2e; -webkit-text-stroke:0; text-shadow:none; }
 #settings-screen .st2-switch, #settings-screen .st2-nav-frame { --sr-face:linear-gradient(180deg,#a6d8f7,#74b9ec 46%,#4f9bd8); --sr-rim:linear-gradient(180deg,#e6f5ff,#acd9f7 24%,#4488c6 75%,#2f6ca5); --sr-highlight:#eef8ff; --sr-outline:#2f6ca5; }
 #settings-screen .st2-switch > .st2-switch-knob { background:linear-gradient(#fff,#e8f4fc); box-shadow:0 1px 2px #2f6ca577; }
+/* V1637 C 사용자: 설정 창 아이보리 나무 테두리 삭제(CSS 판만), 준비 중 띠 = 새 톤 */
+#settings-screen.st2-screen::before { border:3px solid #a8d6f2; border-image:none; border-radius:22px; background:#fffaf0; box-shadow:0 4px 0 #7fb7dc; }
+#settings-screen .mb-frame::before { background:none; }
+#settings-screen .st2-card.is-off::after { background:linear-gradient(#fff6e8,#f8e2c8); color:#7a4a2e; border:2px solid #eba5a5; -webkit-text-stroke:0; box-shadow:0 3px 0 #dc9393; }
+/* V1637 C 사용자: 하늘색 테두리 싫음 → 바깥 하늘색 판 없앰, 창 = 크림 + 카드와 같은 금색 테두리 */
+#settings-screen.st2-screen { background:none; }
+#settings-screen.st2-screen::before { border:3px solid #e7c77a; box-shadow:0 4px 0 #d9b25e; }
+/* V1637 C 사용자: 바깥 흰·하늘색 고리(.board-screen 공통)도 금색으로 통일 — 설정 창 */
+#settings-screen.board-screen { box-shadow:0 0 0 3px #e7c77a, 0 6px 10px 2px rgba(120, 90, 30, 0.18); border-radius:22px; }
+/* V1637 C 사용자: 설정 창 테두리 = 메일함 팝업(shop-coin-choice-card)과 통일, 폰 가운데 */
+#settings-screen.board-screen { top:calc(50% - var(--sqh) / 2); box-shadow:none; border-radius:22px; }
+#settings-screen.st2-screen::before { border:7px solid #d6ad63; border-radius:22px; background:#fff5d9; box-shadow:inset 0 0 0 3px #f6dfaa, 0 7px 18px rgba(55,30,5,.3); }
+#game-screen:has(#settings-screen:not([hidden])) #more-menu { visibility:hidden; } /* 설정 창을 가운데로 옮기니 뒤의 더보기 판이 드러남 → 설정 열려 있을 때만 숨김 */
+/* V1637 C 사용자: 문의하기 창 = 설정 창과 같은 좌우·위아래 폭(설정 창 자리를 그대로 덮음) */
+#settings-screen .shop-coin-choice-dialog:has(.ct-popup-card) { padding:0!important; background:none!important; backdrop-filter:none!important; }
+#settings-screen .ct-popup-card { width:100%!important; max-width:none!important; height:100%!important; max-height:none!important; margin:0!important; }
+/* V1637 C 사용자: 광장 팝업(메일함·배 보상) 좌우 폭 = 설정 창(--sq) 기준 통일 */
+#home3d .shop-coin-choice-card { width:var(--sq)!important; max-width:none!important; flex:none!important; } /* 바깥 창 여백 때문에 줄어들던 것(flex) 막음 */
+/* V1637 C 사용자: 테두리 색 통일 = 메일함·설정 바깥과 같은 #d6ad63 / 문의하기 내용 넘치면 안에서 스크롤 */
+#settings-screen .st2-card::before { border-color:#d6ad63; }
+#settings-screen .ct-popup-card { overflow-y:auto!important; justify-content:flex-start!important; }
+/* V1637 C 사용자: 설정 안 팝업(언어·초기화 등) 좌우 폭 = 설정 창 */
+#settings-screen .shop-coin-choice-dialog { padding-left:0!important; padding-right:0!important; }
+#settings-screen .shop-coin-choice-card { width:100%!important; max-width:none!important; flex:none!important; }

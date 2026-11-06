@@ -47,7 +47,7 @@
     /* V1635 C 사용자: 올라갈 때 오른쪽에 높이 표시 */
     const altBox = el('div', 'h3-alt', wrap), altNum = el('b', '', altBox); el('i', '', altBox).textContent = '▲'; altBox.hidden = true;
     const mailBtn = el('button', 'h3-mail', wrap); mailBtn.type = 'button'; mailBtn.setAttribute('aria-label', 'mail');
-    const mimg = el('img', '', mailBtn); mimg.src = 'assets/mailbox/ic-mail.png'; mimg.alt = ''; const mailDot = el('i', 'h3-mail-dot', mailBtn); mailDot.hidden = true;
+    const mimg = el('img', '', mailBtn); mimg.src = 'assets/mailbox/ic-mail-hud.png'; /* 광장 버튼 = 기존 편지 그림(V1637 C 사용자) */ mimg.alt = ''; const mailDot = el('i', 'h3-mail-dot', mailBtn); mailDot.hidden = true;
     mailBtn.addEventListener('click', () => { if (opts.onMail) opts.onMail(); });
     /* CSS 메일 팝업 */
     const mailPop = el('div', 'shop-coin-choice-dialog h3-mailpop', wrap); mailPop.hidden = true;

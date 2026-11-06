@@ -1316,7 +1316,7 @@
   // 준비되면 구름이 흩어지며 창이 통 튀어나옴. 그림이 따로따로 뜨거나 빈 판이 보이지 않게.
   const COVER_TINT = { 'shop-screen': ['#ff7a9a', '#e8365f'], 'inventory-screen': ['#5fdc7e', '#1fa64a'], 'daily-screen': ['#6fb6ff', '#2a6fe0'],
     'quest-screen': ['#ffc04d', '#f08a00'], 'workshop-screen': ['#f07acb', '#c23d9a'], 'score-screen': ['#ff7a6a', '#d8281c'],
-    'mailbox-screen': ['#5fe0cf', '#11a596'], 'settings-screen': ['#6fa8ff', '#2a5fe0'], 'rhythm-screen': ['#b07aff', '#6a2ee0'] };
+    'mailbox-screen': ['#5fe0cf', '#11a596'], /* V1637 C 사용자: 설정은 뿅망치·구름 전환 없음 */ 'rhythm-screen': ['#b07aff', '#6a2ee0'] };
   let lastTap = null;
   document.addEventListener('pointerdown', (e) => { lastTap = { x: e.clientX, y: e.clientY }; }, true);
   // V1561 C 사용자: 화면별 구름 색(구름 그림 하나에 색만 입힘)
@@ -1493,6 +1493,7 @@
     if (!scr || !window.MoleAssetLoader || !window.MoleAssetLoader.revealWhenReady) return;
     window.MoleAssetLoader.revealWhenReady(scr);
     if (covered) return; // 원 덮개가 이미 덮고 기다림
+    if (scr.id === 'settings-screen') return; /* V1637 C 사용자: 설정은 화면 전환 효과 없음(띠도) */
     setTimeout(() => {
       if (scr.classList.contains('asset-preparing') && MG.ShapeTransition) MG.ShapeTransition.run(1, () => {}, null, null, () => scr.classList.contains('asset-preparing'));
     }, 120);

@@ -75,3 +75,7 @@
 #home3d .h3-alt{position:absolute;right:14px;top:42%;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 10px;border-radius:16px;background:#fffaf0e6;box-shadow:0 3px 0 #c9b79a;color:#5b3d26;font:900 18px system-ui,sans-serif;pointer-events:none}
 #home3d .h3-alt[hidden]{display:none!important}
 #home3d .h3-alt i{font-style:normal;font-size:12px;color:#f0821c;order:-1}
+/* V1637 C 사용자: 설정 창 닫기 버튼 = 팝업 바로 아래 */
+#game-screen:has(#settings-screen:not([hidden])) #home3d .h3-close{bottom:auto;top:calc(50% + var(--sqh) / 2 + 18px)}
+/* V1637 C 사용자: 전체화면이 아닌 창(설정) = 메일함 팝업처럼 뒤 광장 어둡게 + 흐리게 */
+#game-screen:has(#settings-screen:not([hidden])) #home3d .h3-canvas{filter:brightness(.58) saturate(.85) blur(3px)}
