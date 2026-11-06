@@ -10165,7 +10165,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* V1639 C: 새 간판(사용자 ChatGPT, 1000×528) 비율 — 높이는 예전과 비슷하게 */
 .sr-title { width:calc(var(--w) * 0.64); aspect-ratio:1000 / 528; }
 /* V1640 C 사용자: 스코어 배경 = 놀이공원 무대(사용자 ChatGPT), 빨간 양탄자 삭제 */
-#score-screen.sr-screen::before { background:url('assets/score/bg-park-v1640.webp') center top / cover no-repeat; }
+/* V1642 C 사용자: 배경은 기존(궁전) 그대로 — 놀이공원 배경 안 씀 */
 #score-screen .sr-carpet { display:none; }
 /* V1640 C 사용자: 새 양탄자(보라·노랑, 사용자 ChatGPT) 다시 켬 — 위에서 펼쳐지는 동작 그대로 */
 #score-screen .sr-carpet { display:block; background-image:url('assets/score/carpet-v1640.png'); }
