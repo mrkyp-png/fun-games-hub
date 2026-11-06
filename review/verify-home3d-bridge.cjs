@@ -51,12 +51,12 @@ assert.strictEqual(h.open('daily'), false);
 assert.strictEqual(h.state(), 'EXPLORE');
 result = undefined;
 
-// 게임 시작 → GAMEPLAY, 홈 복귀 → 첫 장면 없이 광장
+// 게임 시작 → GAMEPLAY, 게임 끝나 홈 복귀 → 처음 시작 구멍(INTRO)에서 다시(V1622 C 사용자)
 h.open('lightMode');
 h.gameStarted();
 assert.strictEqual(h.state(), 'GAMEPLAY');
 h.homeShown();
-assert.strictEqual(h.state(), 'EXPLORE');
+assert.strictEqual(h.state(), 'INTRO');
 
 // 3) game.js 연결 지점(정적 확인)
 const src = fs.readFileSync(path.join(__dirname, '../mole/js/game.js'), 'utf8');
