@@ -6,7 +6,7 @@
 
   // ---------- 순수 계산(검사 가능) ----------
   function camera(view, w, h) {
-    const dist = w < h ? 7.5 : 6.5, focus = [view.x, 1.35, view.z];
+    const dist = (view.dist || 7.5) * (w < h ? 1 : 6.5 / 7.5), focus = [view.x, view.fy || 1.35, view.z]; // dist·fy = 게임기 화면용(없으면 기본)
     const eye = [focus[0] + Math.sin(view.yaw) * Math.cos(view.pitch) * dist, focus[1] + Math.sin(view.pitch) * dist,
       focus[2] + Math.cos(view.yaw) * Math.cos(view.pitch) * dist];
     return { eye, focus, vp: R.multiply(R.perspective(Math.PI / 3, w / h, 0.15, 80), R.lookAt(eye, focus)) };
