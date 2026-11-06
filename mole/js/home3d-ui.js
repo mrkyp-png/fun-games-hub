@@ -44,6 +44,8 @@
     const gear = el('button', 'h3-gear', hud); gear.type = 'button'; gear.setAttribute('aria-label', 'settings');
     const gimg = el('img', '', gear); gimg.src = ICON.gear; gimg.alt = '';
     /* 메일 아이콘: 설정 버튼 밑(V1631 C 사용자), 받을 메일 있으면 빨간 점 */
+    /* V1635 C 사용자: 올라갈 때 오른쪽에 높이 표시 */
+    const altBox = el('div', 'h3-alt', wrap), altNum = el('b', '', altBox); el('i', '', altBox).textContent = '▲'; altBox.hidden = true;
     const mailBtn = el('button', 'h3-mail', wrap); mailBtn.type = 'button'; mailBtn.setAttribute('aria-label', 'mail');
     const mimg = el('img', '', mailBtn); mimg.src = 'assets/mailbox/ic-mail.png'; mimg.alt = ''; const mailDot = el('i', 'h3-mail-dot', mailBtn); mailDot.hidden = true;
     mailBtn.addEventListener('click', () => { if (opts.onMail) opts.onMail(); });
@@ -124,6 +126,7 @@
       setEnabled(on) { input.setEnabled(on); drawKnob(); },
       setLoading(text) { loading.hidden = !text; loading.textContent = text || ''; },
       setMailDot(on) { mailDot.hidden = !on; },
+      setHeight(m) { altBox.hidden = !(m >= 1); if (m >= 1) altNum.textContent = Math.round(m) + 'm'; }, /* 날기 높이(V1635 C) */
       showMail() { mailRender(); mailPop.hidden = false; },
       mailOpen: () => !mailPop.hidden,
       setJumpLabel(text) { jumpBtn.setAttribute('aria-label', text); },

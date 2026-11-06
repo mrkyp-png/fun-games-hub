@@ -49,6 +49,7 @@
     };
     if (qs.get('h3debug') === '1') { // 검토용 훅(공개 주소엔 없음)
       root.__home3d = api;
+      api.fly = (y) => { air = { y, vy: 0, flapAt: -9 }; camLift = y; }; /* 검사용: 그 높이에 띄움 */
       api.warp = (x, z, yaw) => { if (st.state === 'EXPLORE' && !riding) { view.x = x; view.z = z; if (yaw !== undefined) view.yaw = yaw; } };
     }
 
@@ -117,7 +118,7 @@
       if (dt <= 0) return; // 흐른 시간 0인 프레임은 걷기 판단을 바꾸지 않음
       const len = Math.hypot(v.x, v.z), s = SPEED * dt / Math.max(1, len);
       if (air) { /* 공중: 막힘 없이 이동(섬 둘레 30 안), 떨어지다 땅·갑판·바다에 닿음 */
-        let nx = view.x + v.x * s, nz = view.z + v.z * s; const rr = Math.hypot(nx, nz); if (rr > 30) { nx *= 30 / rr; nz *= 30 / rr; }
+        const nx = view.x + v.x * s, nz = view.z + v.z * s; /* V1635 C 사용자: 지구 끝까지 — 거리 제한 없음 */
         if (v.x || v.z) view.heading = Math.atan2(v.x, v.z); view.x = nx; view.z = nz; walking = false;
         air.vy -= G * dt; air.y += air.vy * dt;
         if (air.vy < 0) {
@@ -143,7 +144,7 @@
       view.x = next.x; view.z = next.z;
     }
     // 시작 카메라: 구멍 안에서는 아래에서 올려다봄(큰 두더지팡 게임기 간판까지 보이게), 점프해 나오면 보통 각도로(사용자 지시 2026-11-06)
-    const INTRO_PITCH = -0.1, CAM_T = 0.9; let camK = 0;
+    const INTRO_PITCH = -0.1, CAM_T = 0.9; let camK = 0, camLift = 0; /* camLift = 날기 높이 따라 카메라 올림(V1635 C) */
     function jumping() { return !!air || (jumpAt >= 0 && time - jumpAt < IN.jump.T); }
     function jump() {
       if (st.state === 'EXPLORE' && !riding && !inside) { /* 날기: 첫 누름 = 뛰어오름, 공중에서 누를 때마다 짧은 팔 파닥 → 위로 */
@@ -246,6 +247,8 @@
       if (arcCam > 0.001) { const a = arcCam * arcCam * (3 - 2 * arcCam), dy = Math.atan2(Math.sin(0 - cv.yaw), Math.cos(0 - cv.yaw));
         const arc = Math.sin(Math.PI * a) * Math.min(1, Math.abs(dy) / 0.8); // 옮겨 가는 도중엔 높이 올라 게임기 위로 넘어감(사용자: 화면이 가려지며 지나감 — 카메라가 게임기 몸통을 뚫고 지나가던 것)
         const fx0 = cv.cx ?? cv.x; cv = Object.assign({}, cv, { cx: fx0 + (0 - fx0) * a, cz: cv.z + (-8.4 - cv.z) * a, yaw: cv.yaw + dy * a, pitch: Math.min(1.35, cv.pitch + (0.8 - cv.pitch) * a + 0.55 * arc), dist: 7.5 - 0.3 * a + 3 * arc, fy: 1.35 + 0.9 * a + 1.5 * arc }); } // 게임기 더 아래로, 위 간판까지 보이게(사용자)
+      camLift += ((air ? air.y : 0) - camLift) * Math.min(1, dt * 4); ui.setHeight(air ? air.y : 0); /* V1635 C 사용자: 높이 오를수록 카메라도 올라가고 멀어져 아래 건물이 작게 보임 */
+      if (camLift > 0.05) cv = Object.assign({}, cv, { fy: (cv.fy || 1.35) + camLift, dist: (cv.dist || 7.5) + camLift * 0.9, pitch: Math.min(1.3, cv.pitch + camLift * 0.015), far: 80 + camLift * 4 });
       rd.render(cv, pose());
       if (time - badgeAt > 1) { badgeAt = time; badges = claimables(MG); refreshArcade(); ui.setMailDot(badges.includes('mail')); } // 1초마다 확인(뱃지·게임기 진행)
       ui.setBadges(badges.map((a) => { const s = L.SITES.find((x) => x.action === a), q = s && MG.Home3DRenderer.project(rd.vp(), [s.x, s.kind === 'building' ? 3.4 : 1.9, s.z]), z = rd.size(); return q && z && { action: a, x: (q[0] + 1) / 2 * z.cw, y: (1 - q[1]) / 2 * z.ch, on: Math.abs(q[0]) < 1.1 && Math.abs(q[1]) < 1.1 }; }).filter(Boolean));
