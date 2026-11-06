@@ -43,6 +43,39 @@
     }
     const gear = el('button', 'h3-gear', hud); gear.type = 'button'; gear.setAttribute('aria-label', 'settings');
     const gimg = el('img', '', gear); gimg.src = ICON.gear; gimg.alt = '';
+    /* 메일 아이콘: 설정 버튼 밑(V1631 C 사용자), 받을 메일 있으면 빨간 점 */
+    const mailBtn = el('button', 'h3-mail', wrap); mailBtn.type = 'button'; mailBtn.setAttribute('aria-label', 'mail');
+    const mimg = el('img', '', mailBtn); mimg.src = 'assets/mailbox/ic-mail.png'; mimg.alt = ''; const mailDot = el('i', 'h3-mail-dot', mailBtn); mailDot.hidden = true;
+    mailBtn.addEventListener('click', () => { if (opts.onMail) opts.onMail(); });
+    /* CSS 메일 팝업 */
+    const mailPop = el('div', 'shop-coin-choice-dialog h3-mailpop', wrap); mailPop.hidden = true;
+    const mailBox = el('div', 'shop-coin-choice-card h3-mailbox', mailPop), mailArt = el('img', 'shop-coin-choice-art', mailBox); mailArt.src = 'assets/mailbox/ic-mail.png'; mailArt.alt = '';
+    const mailHead = el('b', 'shop-coin-choice-message', mailBox), mailList = el('div', 'h3-maillist', mailBox), mailFoot = el('div', 'shop-coin-choice-actions', mailBox);
+    const mailAll = el('button', 'shop-card-btn shop-coin-choice-action ws-action-frame shop-buy-frame', mailFoot), mailClose = el('button', 'shop-card-btn shop-coin-choice-action ws-action-frame shop-buy-frame shop-buy-frame--cancel', mailFoot); mailAll.type = 'button'; mailClose.type = 'button';
+    mailAll.dataset.choiceAction = 'confirm'; mailClose.dataset.choiceAction = 'cancel';
+    const REWARD_ICON = { coin: ICON.coins, heart: ICON.hearts, ticket: ICON.tickets };
+    function mailRender() {
+      const MB = root.MoleGame && root.MoleGame.Mailbox, ko = root.FGH && root.FGH.I18N.lang === 'ko', items = MB ? MB.list() : [];
+      mailHead.textContent = ko ? '메일함' : 'Mailbox'; mailAll.textContent = ko ? '모두 받기' : 'Claim all'; mailClose.textContent = ko ? '닫기' : 'Close';
+      mailList.textContent = '';
+      if (!items.length) { const e = el('p', 'h3-mail-empty', mailList); e.textContent = ko ? '받은 메일이 없어요' : 'No mail'; }
+      for (const m of items) {
+        const row = el('div', 'h3-mailrow' + (m.isClaimed ? ' is-done' : ''), mailList), txt = el('div', 'h3-mailtxt', row);
+        const tx = (v) => { const k = String(v || ''); const o = /^mole./.test(k) && root.FGH ? root.FGH.I18N.t(k) : k; return o === k && /^mole./.test(k) ? '' : o; }; /* 메일 제목·내용 = 번역 키(메일함 화면과 같게) */
+        el('b', '', txt).textContent = tx(m.title); el('span', '', txt).textContent = tx(m.description);
+        const rw = el('div', 'h3-mailrw', row);
+        if (REWARD_ICON[m.rewardType]) { const im = el('img', '', rw); im.src = REWARD_ICON[m.rewardType]; im.alt = ''; } else if (m.rewardType === 'gift') el('i', 'h3-mail-gift', rw);
+        if (m.rewardType && m.rewardType !== 'none') el('em', '', rw).textContent = '×' + (m.rewardAmount || 1);
+        const bt = el('button', 'h3-mail-get', row); bt.type = 'button';
+        bt.textContent = m.isClaimed ? (ko ? '받음' : 'Done') : (ko ? '받기' : 'Claim'); bt.disabled = !!m.isClaimed || !m.rewardType || m.rewardType === 'none';
+        bt.addEventListener('click', () => { if (MB.claim(m.id)) { mailRender(); if (opts.onMailChanged) opts.onMailChanged(); } });
+        if (!m.isRead && MB.markRead) MB.markRead(m.id);
+      }
+      mailAll.disabled = !items.some((m) => !m.isClaimed && m.rewardType && m.rewardType !== 'none');
+    }
+    mailAll.addEventListener('click', () => { const MB = root.MoleGame.Mailbox; if (MB && MB.claimAll().length) { mailRender(); if (opts.onMailChanged) opts.onMailChanged(); } });
+    mailClose.addEventListener('click', () => { mailPop.hidden = true; if (opts.onMailChanged) opts.onMailChanged(); });
+    mailPop.addEventListener('pointerdown', (e) => { if (e.target === mailPop) { mailPop.hidden = true; if (opts.onMailChanged) opts.onMailChanged(); } });
     const dots = {}; // 건물·사물 위 빨간 점(받을 것 있음)
     const stick = el('div', 'h3-stick', wrap), knob = el('span', '', stick);
     // 점프 버튼: 스틱과 같은 크기·같은 줄, 안에 CSS 발바닥(이미지 없이)
@@ -71,8 +104,11 @@
     gear.addEventListener('click', () => opts.onSettings());
     close.addEventListener('click', () => opts.onClose());
     /* 보상 창(배 5분 → 광고 보고 하트 2) */
-    const offer = el('div', 'h3-offer', wrap); offer.hidden = true;
-    const offerTxt = el('p', '', offer), offerRow = el('div', 'h3-offer-row', offer), offerYes = el('button', 'h3-offer-yes', offerRow), offerNo = el('button', 'h3-offer-no', offerRow);
+    const offer = el('div', 'shop-coin-choice-dialog h3-offer', wrap); offer.hidden = true;
+    const offerCard = el('div', 'shop-coin-choice-card', offer), offerArt = el('img', 'shop-coin-choice-art', offerCard); offerArt.src = ICON.hearts; offerArt.alt = '';
+    const offerTxt = el('b', 'shop-coin-choice-message', offerCard), offerRow = el('div', 'shop-coin-choice-actions', offerCard);
+    const offerYes = el('button', 'shop-card-btn shop-coin-choice-action ws-action-frame shop-buy-frame', offerRow), offerNo = el('button', 'shop-card-btn shop-coin-choice-action ws-action-frame shop-buy-frame shop-buy-frame--cancel', offerRow);
+    offerYes.dataset.choiceAction = 'confirm'; offerNo.dataset.choiceAction = 'cancel';
     offerYes.type = 'button'; offerNo.type = 'button'; let offerCb = null;
     offerYes.addEventListener('click', () => { const c = offerCb; offer.hidden = true; offerCb = null; if (c) c(true); });
     offerNo.addEventListener('click', () => { const c = offerCb; offer.hidden = true; offerCb = null; if (c) c(false); });
@@ -83,10 +119,13 @@
     return {
       canvas, input,
       show(on) { wrap.hidden = !on; host.classList.toggle('home3d-on', !!on); if (!on) resetAll(); },
-      setFeature(on, label) { close.hidden = !on; close.textContent = label || ''; for (const e of [hud, stick, jumpBtn]) e.hidden = !!on; if (on) for (const k in dots) dots[k].hidden = true; },
+      setFeature(on, label) { close.hidden = !on; close.textContent = label || ''; for (const e of [hud, stick, jumpBtn, mailBtn]) e.hidden = !!on; if (on) for (const k in dots) dots[k].hidden = true; },
       setJumpMode(label) { jumpBtn.classList.toggle('is-enter', !!label); if (enterLbl.textContent !== (label || '')) enterLbl.textContent = label || ''; },
       setEnabled(on) { input.setEnabled(on); drawKnob(); },
       setLoading(text) { loading.hidden = !text; loading.textContent = text || ''; },
+      setMailDot(on) { mailDot.hidden = !on; },
+      showMail() { mailRender(); mailPop.hidden = false; },
+      mailOpen: () => !mailPop.hidden,
       setJumpLabel(text) { jumpBtn.setAttribute('aria-label', text); },
       showOffer(text, yes, no, cb) { offerTxt.textContent = text; offerYes.textContent = yes; offerNo.textContent = no; offerCb = cb; offer.hidden = false; },
       hideOffer() { offer.hidden = true; offerCb = null; },

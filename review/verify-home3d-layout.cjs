@@ -3,7 +3,7 @@ const assert = require('assert');
 const L = require('../mole/js/home3d-layout.js');
 
 const actions = L.SITES.map((s) => s.action).sort();
-assert.deepStrictEqual(actions, ['daily', 'inventory', 'lightMode', 'locker', 'mail', 'quest', 'rhythm', 'score', 'shop']);
+assert.deepStrictEqual(actions, ['daily', 'inventory', 'lightMode', 'locker', 'quest', 'rhythm', 'score', 'shop']);
 assert.strictEqual(L.ISLAND_R, 12);
 assert.deepStrictEqual(L.SPAWN, { x: 0, z: 0 });
 assert.ok(!L.allowed(0, 0), '집 구멍 안으로는 걸어 들어갈 수 없음(점프로만 나옴)');

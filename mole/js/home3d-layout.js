@@ -13,7 +13,6 @@
     { id: 'workshop', action: 'locker', labelKey: 'mole.pad.lblLocker', x: -9, z: 0, ...B },
     { id: 'items', action: 'inventory', labelKey: 'mole.pad.lblInventory', x: -7, z: 5, ...B },
     { id: 'score', action: 'score', labelKey: 'mole.pad.lblScore', x: 7, z: -5, ...B },
-    { id: 'mailbox', action: 'mail', labelKey: 'mole.shop.mailbox', x: 3, z: -1.5, ...P },
     { id: 'gift', action: 'daily', labelKey: 'mole.more.daily', x: 3.5, z: 1, ...P },
     { id: 'board', action: 'quest', labelKey: 'mole.more.quest', x: 2.5, z: 3.2, ...P }
   ].map((s) => Object.assign(s, { faceYaw: Math.atan2(-s.x, -s.z) })); // 섬 중심을 바라봄

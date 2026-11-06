@@ -26,11 +26,11 @@ assert.strictEqual(Sg.labelFor(L.SITES.find((s) => s.action === 'lightMode'), 'e
 
 const signs = Sg.create(gl, { makeCanvas });
 const m1 = signs.build('ko', L.SITES, t('ko'));
-assert.strictEqual(m1.size, 9); assert.strictEqual(live, 9);
+assert.strictEqual(m1.size, 8); assert.strictEqual(live, 8); // V1631 C: 우체통 삭제(메일 = 설정 밑 아이콘)
 assert.ok(drawn.includes('두더지팡'));
 signs.build('en', L.SITES, t('en'));
 signs.build('ko', L.SITES, t('ko'));
-assert.strictEqual(live, 9, '한→영→한 후에도 살아 있는 텍스처 = 9');
+assert.strictEqual(live, 8, '한→영→한 후에도 살아 있는 텍스처 = 8');
 assert.ok(drawn.includes('Workshop') && drawn.includes('Mole Pang'));
 signs.dispose();
 assert.strictEqual(live, 0, 'dispose 후 0');

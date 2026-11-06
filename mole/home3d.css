@@ -43,11 +43,30 @@
 #home3d .h3-exit[hidden]{display:none!important}
 @media (orientation:landscape){#home3d .h3-exit{width:94px;height:94px;bottom:18px}}
 
-/* V1630 C: 배 보상 창 */
-#home3d .h3-offer{position:absolute;left:50%;top:38%;translate:-50% -50%;width:min(84%,340px);padding:18px 16px 16px;border-radius:22px;background:#fffaf0;box-shadow:0 8px 0 #d9c4a0,0 14px 24px rgba(0,0,0,.25);text-align:center;font:800 17px system-ui,sans-serif;color:#5b3d26}
-#home3d .h3-offer[hidden]{display:none!important}
-#home3d .h3-offer p{margin:0 0 14px;line-height:1.35;word-break:keep-all}
-#home3d .h3-offer-row{display:flex;gap:10px;justify-content:center}
-#home3d .h3-offer-row button{flex:1;border:0;border-radius:16px;padding:12px 6px;font:800 16px system-ui,sans-serif;color:#fff}
-#home3d .h3-offer-yes{background:linear-gradient(#ffad52,#f0821c);box-shadow:0 4px 0 #a8520c}
-#home3d .h3-offer-no{background:linear-gradient(#b9c4d2,#8f9cad);box-shadow:0 4px 0 #66717f}
+/* V1631 C: 설정 버튼 밑 메일 아이콘 */
+#home3d .h3-mail{position:absolute;top:calc(max(12px,env(safe-area-inset-top)) + 50px);right:16px;width:42px;height:42px;padding:0;border:0;border-radius:50%;background:#fffaf0e6;box-shadow:0 2px 0 #c9b79a;display:flex;align-items:center;justify-content:center}
+#home3d .h3-mail[hidden]{display:none!important}
+#home3d .h3-mail img{width:28px;height:28px;object-fit:contain}
+#home3d .h3-mail-dot{position:absolute;top:1px;right:1px;width:12px;height:12px;border-radius:50%;background:#ff4b4b;box-shadow:0 0 0 2px #fff}
+#home3d .h3-mail-dot[hidden]{display:none!important}
+
+/* V1631 C: CSS 메일 팝업 */
+#home3d .h3-mailpop[hidden]{display:none!important}
+#home3d .h3-maillist{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:2px}
+#home3d .h3-mail-empty{text-align:center;opacity:.6;font-weight:700;margin:24px 0}
+#home3d .h3-mailrow{display:flex;align-items:center;gap:8px;padding:10px;border-radius:16px;background:#f6ead6;box-shadow:inset 0 -2px 0 #e6d4b4}
+#home3d .h3-mailrow.is-done{opacity:.55}
+#home3d .h3-mailtxt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+#home3d .h3-mailtxt b{font-size:15px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#home3d .h3-mailtxt span{font-size:12px;font-weight:600;opacity:.75;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:keep-all}
+#home3d .h3-mailrw{display:flex;align-items:center;gap:2px;font-weight:900;font-size:13px}
+#home3d .h3-mailrw img{width:22px;height:22px;object-fit:contain}
+#home3d .h3-mailrw em{font-style:normal}
+#home3d .h3-mail-gift{width:18px;height:18px;border-radius:4px;background:linear-gradient(90deg,transparent 40%,#ffd45a 40% 60%,transparent 60%),#e8707a}
+#home3d .h3-mail-get{border:0;border-radius:12px;padding:8px 10px;font:800 13px system-ui,sans-serif;color:#fff;background:linear-gradient(#ffad52,#f0821c);box-shadow:0 3px 0 #a8520c}
+#home3d .h3-mail-get:disabled{background:#c9bfb2;box-shadow:0 3px 0 #a69b8d}
+
+/* 상점 팝업 모양을 쓰는 창: 숨김 + 메일 목록 칸 크기 */
+#home3d .h3-offer[hidden],#home3d .h3-mailpop[hidden]{display:none!important}
+#home3d .h3-maillist{align-self:stretch;max-height:46vh;overflow-y:auto;margin:6px 0 4px}
+#home3d .h3-mailtxt b,#home3d .h3-mailtxt span,#home3d .h3-mailrw em{color:#5b3d26!important;-webkit-text-stroke:0!important;text-shadow:none!important}

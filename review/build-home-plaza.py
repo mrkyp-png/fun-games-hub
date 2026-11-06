@@ -12,7 +12,7 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 # home3d-layout.js SITES 와 같은 값(검사: verify-home3d-layout.cjs 가 GLB 노드 좌표를 대조)
 SITES = [('lightMode', 0, -9), ('rhythm', 0, 9), ('shop', -7, -5), ('locker', -9, 0),
-         ('inventory', -7, 5), ('score', 7, -5), ('mail', 3, -1.5), ('daily', 3.5, 1), ('quest', 2.5, 3.2)]
+         ('inventory', -7, 5), ('score', 7, -5), ('daily', 3.5, 1), ('quest', 2.5, 3.2)]
 ISLAND_R = 12
 
 def mat(name, rgb, rough=.85):
@@ -201,7 +201,7 @@ def board():
     return p + sign('quest', 1.65, .9, .3, -.1)
 
 BUILD = {'lightMode': mole_booth, 'rhythm': rhythm_house, 'shop': shop_house, 'locker': workshop_house,
-         'inventory': locker_house, 'score': score_tower, 'mail': mailbox, 'daily': giftbox, 'quest': board}
+         'inventory': locker_house, 'score': score_tower, 'daily': giftbox, 'quest': board}
 for action, gx, gz in SITES: group(action, BUILD[action](), gx, gz)
 
 bpy.ops.wm.save_as_mainfile(filepath=str(OUT / 'plaza.blend'))
