@@ -13,7 +13,7 @@ OUT.mkdir(parents=True, exist_ok=True)
 # home3d-layout.js SITES 와 같은 값(검사: verify-home3d-layout.cjs 가 GLB 노드 좌표를 대조)
 SITES = [('lightMode', 0, -9), ('rhythm', 0, 9), ('shop', -7, -5), ('locker', -9, 0),
          ('inventory', -7, 5), ('score', 7, -5), ('daily', 3.5, 1), ('quest', 2.5, 3.2)]
-ISLAND_R = 12
+ISLAND_R = 16   # V1632 C 사용자: 광장 좁음 → 12에서 16(건물 자리는 그대로)
 
 def mat(name, rgb, rough=.85):
     m = bpy.data.materials.new(name)
@@ -97,7 +97,7 @@ def sign(action, z, w=2.2, h=.7, y=-1.0):
 # ---------- 섬 · 바다 · 해변 ----------
 cyl('Island floor', (0, 0, -.05), ISLAND_R, .1, M['floor'], 96, .02)
 cyl('Island soil side', (0, 0, -.75), ISLAND_R, 1.3, M['soil'], 96, .2)
-cyl('Beach sand', (0, -3.2, -.55), 13.6, .5, M['sand'], 96, .2)            # 뒤쪽(게임 +z)으로 삐져나온 모래사장
+cyl('Beach sand', (0, -4.3, -.55), 18.1, .5, M['sand'], 96, .2)            # 뒤쪽(게임 +z)으로 삐져나온 모래사장
 bpy.ops.mesh.primitive_plane_add(size=160, location=(0, 0, -.7)); sea = bpy.context.object
 sea.name = 'Home sea plane'; sea.data.materials.append(M['sea'])
 # 가운데 집 구멍(올라오는 곳)
@@ -105,17 +105,17 @@ torus('Home hole rim', (0, 0, .02), 1.05, .22, M['soil'])
 cyl('Home hole dark', (0, 0, -.02), 1.0, .06, M['soilDark'], 40, 0)
 
 # 가장자리: 둥근 덤불 + 낮은 울타리(뒤쪽 해변 방향은 울타리만 낮게)
-for i in range(44):
-    a = 2 * math.pi * i / 44
-    x, y = math.cos(a) * 11.65, math.sin(a) * 11.65
-    back = y < -6  # 해변 쪽
+for i in range(58):
+    a = 2 * math.pi * i / 58
+    x, y = math.cos(a) * 15.65, math.sin(a) * 15.65
+    back = y < -8  # 해변 쪽
     if back or i % 2:
         cyl('Fence post', (x, y, .35), .09, .7, M['fence'], 10, .02)
     if not back:
         ball('Hedge', (x, y, .45), .62, M['hedge'], (1, 1, .85))
-for i in range(88):
-    a = 2 * math.pi * (i + .5) / 88
-    box('Fence rail', (math.cos(a) * 11.65, math.sin(a) * 11.65, .55), (.07, .86, .08), M['fence'], .02, a)
+for i in range(116):
+    a = 2 * math.pi * (i + .5) / 116
+    box('Fence rail', (math.cos(a) * 15.65, math.sin(a) * 15.65, .55), (.07, .86, .08), M['fence'], .02, a)
 
 # ---------- 건물 ----------
 ARCADE_K = 2.84   # 사용자 '지금보다 2배 더 키워'(1.42 → 2.84)

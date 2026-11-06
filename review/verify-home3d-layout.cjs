@@ -4,13 +4,13 @@ const L = require('../mole/js/home3d-layout.js');
 
 const actions = L.SITES.map((s) => s.action).sort();
 assert.deepStrictEqual(actions, ['daily', 'inventory', 'lightMode', 'locker', 'quest', 'rhythm', 'score', 'shop']);
-assert.strictEqual(L.ISLAND_R, 12);
+assert.strictEqual(L.ISLAND_R, 16); // V1632 C
 assert.deepStrictEqual(L.SPAWN, { x: 0, z: 0 });
 assert.ok(!L.allowed(0, 0), '집 구멍 안으로는 걸어 들어갈 수 없음(점프로만 나옴)');
 assert.ok(!L.allowed(1.2, 0), '구멍 테두리 안쪽도 막힘');
 assert.ok(L.allowed(1.6, 0), '구멍 바로 밖은 걸을 수 있음');
 assert.ok(L.HOLE_R > 1.2 && L.HOLE_R < 1.6);
-assert.ok(!L.allowed(11.5, 0), '걷기 반지름(11) 밖은 막힘');
+assert.ok(!L.allowed(15.5, 0), '걷기 반지름(15) 밖은 막힘');
 assert.ok(!L.allowed(0, -9), '건물 몸체 안은 막힘');
 
 for (const s of L.SITES) {

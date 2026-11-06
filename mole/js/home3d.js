@@ -90,7 +90,7 @@
       refreshHud(); splashAt = nowS(); air = null; onBoat = null; boardAt = -1;
       const sp = []; for (let i = 0; i < 10; i++) { const a = i * 0.63; sp.push({ x: x + Math.cos(a) * 0.5, y: 0.2 + (i % 3) * 0.25, z: z + Math.sin(a) * 0.5, r: 0.25, a: 0.7 }); } rd.setSmoke(sp);
       setTimeout(() => { if (rd) rd.setSmoke([]); }, 700);
-      view.x = 0; view.z = 15.6; view.heading = Math.PI; route = null;
+      view.x = 0; view.z = 20.8; view.heading = Math.PI; route = null;
     }
     function show(on) { if (ui) ui.show(on); }
     function stop() { if (raf) cancelAnimationFrame(raf); raf = 0; route = null; if (ui) ui.setEnabled(false); }

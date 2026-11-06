@@ -2,7 +2,7 @@
    좌표: 세로 화면 기본 시선 = -z(앞). 원형 섬 중심 = 가운데 집 구멍. */
 (function (root) {
   'use strict';
-  const ISLAND_R = 12, WALK_R = 11, HOLE_R = 1.35; // HOLE_R: 집 구멍(테두리 포함) — 걸어서 드나들 수 없음
+  const ISLAND_R = 16, WALK_R = 15, HOLE_R = 1.35; // HOLE_R: 집 구멍(테두리 포함) — 걸어서 드나들 수 없음
   const SPAWN = { x: 0, z: 0 };
   // body = 막히는 몸체 반지름, enter = 진입 지점에서 진입이 잡히는 반지름
   const B = { kind: 'building', body: 1.8, enter: 0.6 }, P = { kind: 'prop', body: 0.5, enter: 0.55 }; // enter: 몸체 가장자리에서 이 거리 안 = 건물에 닿음
@@ -20,9 +20,9 @@
   // 놀이기구(장식, 들어갈 수 없음 — 나중에 미니게임 입구로 바꿀 수 있게 자리만): 디스코 팡팡·바이킹
   const RIDES = [{ id: 'disco', x: 8, z: 2.5, body: 2.1 }]; /* 바이킹 놀이기구는 바다 배(BOAT)로 바뀜(V1630 C) */
   /* 바다 배: 뒤쪽 해변 앞바다. S = 모델 배율(Tripo 배 길이 0.98 → 약 4.9), DECK = 모델 갑판 높이, 갑판 반폭 U(길이)·W(폭) */
-  const BOAT = { x: 0, z: 19.4, S: 5, DECK: 0.185, U: 1.25, W: 0.72, DRAFT: 0.55 };
-  /* 해변(모래사장): 섬 스크립트 Beach sand 중심 (0, z 3.2) 반지름 13.6 → 걸을 수 있는 곳 = 반지름 13.0, 뒤쪽(z > 10.5)만 */
-  const BEACH = { cz: 3.2, r: 13.0, zmin: 10.5 };
+  const BOAT = { x: 0, z: 25.6, S: 5, DECK: 0.185, U: 1.25, W: 0.72, DRAFT: 0.55 };
+  /* 해변(모래사장): 섬 스크립트 Beach sand 중심 (0, z 4.3) 반지름 18.1 → 걸을 수 있는 곳 = 반지름 17.5, 뒤쪽(z > 14)만 */
+  const BEACH = { cz: 4.3, r: 17.5, zmin: 14 };
   function onBeach(x, z) { return z > BEACH.zmin && Math.hypot(x, z - BEACH.cz) < BEACH.r; }
 
   // 건물 앞(섬 중심 쪽) 진입 지점

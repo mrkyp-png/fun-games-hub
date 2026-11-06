@@ -359,7 +359,7 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
         // 그림자: 해 쪽에서 섬 전체(반지름 16)를 내려다보는 직교 카메라. 섬·건물은 1초마다, 두더지·구름은 매 프레임
         if (now - staticAt > 1 || !staticVP) {
           staticAt = now;
-          staticVP = R.multiply(ortho(-17, 17, -17, 17, 1, 80), R.lookAt([sun[0] * 40, sun[1] * 40, sun[2] * 40], [0, 0, 0]));
+          staticVP = R.multiply(ortho(-21, 21, -21, 21, 1, 80), R.lookAt([sun[0] * 40, sun[1] * 40, sun[2] * 40], [0, 0, 0]));
           shadowPass(shadowS, staticVP, () => { for (const m of environment) if (!m.sign && !m.texPrim && !m.screen) draw(m, m.world, null); for (const rd of rides) draw(rd.base, rd.world, null); });
         }
         const mc = [view.x, (pose.y || 0) + 0.8, view.z];
