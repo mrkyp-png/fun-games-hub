@@ -4903,7 +4903,7 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 #daily-screen .dr-plate { z-index: 4; }
 /* v790(사용자 지정): 광고판(MOLE PANG DAILY REWARD) 위로 빛줄기가 지나감 — 광고판 그림 모양 마스크 */
 #daily-screen .dr-top::after { content: ''; position: absolute; left: 50%; top: 0; width: 60%; aspect-ratio: 614 / 367; transform: translateX(-50%); z-index: 1; pointer-events: none;
-  -webkit-mask: url('assets/daily/sign.png') center / 100% 100% no-repeat; mask: url('assets/daily/sign.png') center / 100% 100% no-repeat;
+  -webkit-mask: url('assets/daily/sign.png?v=1644') center / 100% 100% no-repeat; mask: url('assets/daily/sign.png?v=1644') center / 100% 100% no-repeat;
   background: linear-gradient(110deg, transparent 38%, rgba(255, 255, 255, 0.75) 48%, rgba(255, 255, 230, 0.35) 52%, transparent 62%) no-repeat; background-size: 55% 100%;
   animation: dr-sign-shine 3.2s ease-in-out infinite; }
 @keyframes dr-sign-shine { 0%, 35% { background-position: -70% 0; } 100% { background-position: 180% 0; } }
@@ -10175,3 +10175,9 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #score-screen .sr-album-title { color:#6b4426; }
 /* V1641 C 사용자: 양탄자 = 기존 크기(cover)의 95% */
 #score-screen .sr-carpet { transform:scale(.95); transform-origin:center top; }
+/* V1644 C 사용자: 일일 큰 틀 = 새 그림(분홍+노랑, 별·하트·구슬, 사용자 ChatGPT) — 9조각(모서리 별 그대로, 변만 늘어남, 늘어나는 양은 폰 비율 차이만큼 작음) */
+#daily-screen .dr-board { border-image:url('assets/daily/frame-v1644.png') 145 fill / calc(var(--w) * 0.135) stretch; border-color:transparent; }
+/* 일일 카드 크림+금색 테두리, 미수령 알약 크림 회색 */
+#daily-screen .dr-card { background:linear-gradient(180deg,#fffaf0,#fff2da); border:3px solid #d6ad63; box-shadow:inset 0 0 0 2px #f6dfaa, 0 3px 0 #c89a4f, 0 5px 8px rgba(55,30,5,.25); }
+#daily-screen .dr-card--locked .dr-status.dr-pill { --pf:linear-gradient(180deg,#f5ecdc,#e2d3b8 60%,#d1bf9e); --pr:linear-gradient(180deg,#fff8ea,#e8d8ba 24%,#b39a72 75%,#8f7650); --ph:#fffaf0; --po:#8f7650; color:#7a5a3a; }
+#daily-screen .dr-sign { width:66%; } /* V1644 C: 새 간판(1000×499, 가로로 더 긴 비율) */
