@@ -86,7 +86,8 @@
 // V1618 C: 폰에 저장된 08:01 일일출석 'reading create' 예전 오류 기록 1회 삭제.
 // V1619 C: 두더지팡 게임기 = 바로 시작(라운드 지도 없이)·구멍 = 1~8라운드(깬 구멍 빛, 지금 라운드 두더지, 가운데 보스 말)·모드 버튼 3개·화면 'OO N라운드 / BEST'.
 // V1620 C: 깬 구멍 빛 = 구멍 위로 은은하게 퍼지는 빛(구멍과 같은 라운드 색).
-const CACHE = 'mole-game-v1620-C';
+// V1621 C: 라운드 지도 화면 완전 삭제(round-map*.js·roundmap-window.css·assets/roundmap), 띠 전환 = js/shape-transition.js, 라운드 깨면 광장으로, 리듬팡 버튼 = 시작.
+const CACHE = 'mole-game-v1621-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -253,50 +254,7 @@ const SHELL = [
   './assets/inventory/ui-v1379/grade-legend.webp',
   './assets/inventory/ui-v1379/approved-mallet.webp',
   './assets/weapons/mallet-yaw10-rest15-v1379.png',
-  './roundmap-window.css',
-  './assets/roundmap/ic-coin.png',
-  './assets/roundmap/ic-fire.png',
-  './assets/roundmap/ic-heart.png',
-  './js/round-map-fluids.js',
-  './js/round-map-fluid-scenes.js',
-  './assets/roundmap/frame-v1298/amateur-top-cap.webp',
-  './assets/roundmap/frame-v1298/normal-top-cap.webp',
-  './assets/roundmap/frame-v1298/pro-top-cap.webp',
-  './assets/roundmap/fluids-v1281/water-atlas.webp',
-  './assets/roundmap/fluids-v1285/lava-atlas.webp',
-  './assets/roundmap/selected-v1281/normal-rear.webp',
-  './assets/roundmap/frame-v1282/normal-front-supported.webp',
-  './assets/roundmap/selected-v1281/pro-rear.webp',
-  './assets/roundmap/frame-v1282/pro-front-supported.webp',
-  './assets/roundmap/selected-v1281/normal-rear-liquid-mask.svg',
-  './assets/roundmap/selected-v1281/pro-rear-liquid-mask.svg',
-  './assets/roundmap/selected-v1281/pro-front-liquid-mask.svg',
 
-  './assets/roundmap/caves-v1271/normal-rear.webp',
-  './assets/roundmap/caves-v1271/pro-rear.webp',
-  './assets/roundmap/window-v1263/scene.webp',
-  './assets/roundmap/window-v1263/cloud.webp',
-  './assets/roundmap/window-v1263/hippo-viewer.webp',
-  './assets/roundmap/window-v1263/mode-tab.webp',
-  './assets/roundmap/window-v1263/mode-tab-clean.svg',
-  './assets/roundmap/window-v1263/rear-mine.webp',
-  './assets/roundmap/window-v1263/route-grounded.webp',
-  './assets/roundmap/window-v1263/foreground-frame.webp',
-  './assets/roundmap/hd-v1550/easy-front.webp',
-  './assets/roundmap/hd-v1550/easy-rear.webp',
-  './assets/roundmap/hd-v1550/easy-route.webp',
-  './assets/roundmap/hd-v1554/pro-route.webp',
-  './assets/roundmap/hd-v1554/pro-frame.webp',
-  './assets/roundmap/hd-v1554/pro-front-lava-mask.png',
-  './assets/roundmap/hd-v1330/legend-rear-gem.webp',
-  './assets/roundmap/hd-v1330/legend-rear-lan.webp',
-  './assets/roundmap/hd-v1330/legend-rear.webp',
-  './assets/roundmap/hd-v1553/mid-route.webp',
-  './assets/roundmap/hd-v1553/mid-frame.webp',
-  './assets/roundmap/hd-v1330/mid-rear-gem.webp',
-  './assets/roundmap/hd-v1330/mid-rear-lan.webp',
-  './assets/roundmap/hd-v1330/mid-rear.webp',
-  './assets/roundmap/window-v1263/sky-mask.svg',
 
 
   './js/rhythm-status-art.js',
@@ -932,7 +890,6 @@ const SHELL = [
   './assets/workshop/enhance-v1433/sparkle-3.png',
   './assets/workshop/enhance-v1433/sparkle-4.png',
   './js/workshop.js',
-  './js/round-map.js',
   './js/quest.js',
   './js/rhythm.js',
   './js/rhythm-b-routes.js',
@@ -976,6 +933,7 @@ const SHELL = [
   './js/mailbox-daily.js',
   './js/contact.js',
   './js/fever-field.js',
+  './js/shape-transition.js',
   './js/game.js',
   './assets/workshop/clarity-v1434/panel.png',
   './assets/workshop/clarity-v1434/stage.png',

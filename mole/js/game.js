@@ -653,7 +653,6 @@
 
   // ---------- 더보기 메뉴 / 난이도 / 사람두더지 (독립앱 Phase 1) ----------
   let screenNav = null, moreMenu = null, faceMaker = null;
-  let roundMap = null;
   let shop = null, daily = null, workshop = null, scoreScreen = null, settingsScreen = null, inventoryScreen = null;
   let currentDiff = 'easy';        // 현재 판 난이도
 
@@ -730,25 +729,17 @@
   // 시작 시 생명을 미리 깎지 않는다 — 현재 공유 풀 그대로 플레이하고, 동물 맞을 때만 -1.
   // 단 풀이 0이면 플레이 자체가 불가(즉시 게임오버) → "생명 없음" 모달.
   let gameStarting = false; // 시작 버튼 연타 방지 — 한 번 누르면 홈으로 돌아올 때까지 재진입 차단
-  function beginGame(fromRoundMap) {
+  function beginGame() {
     if (gameStarting || state) return;   // 이미 시작 진행 중이거나 게임 중 — 짧게 연타해도 무시 (길게=arm은 별개)
     // 다이얼패드가 항상 노출돼있어 상점/아이템 등 화면이 열린 채로도 시작 버튼이 눌리는데,
     // 홈 화면일 때만 게임 진입을 허용한다(사용자 지정) — 다른 화면이 열려있으면 무시.
     var mm = document.getElementById('more-menu');
-    const mapStart = fromRoundMap === true && screenNav && screenNav.current() === 'roundmap-screen';
-    if (mm && !mm.hidden && !mapStart) return;
+    if (mm && !mm.hidden) return;
     // 프로필 사진 화면(editProfileAvatar)은 openMoreNow()를 거치지 않고 screenNav 로 직접 열려
     // #more-menu 는 계속 hidden 인 채로 남는다 — screenNav 스택으로 별도 확인.
-    if (screenNav && screenNav.current() && !mapStart) return;
+    if (screenNav && screenNav.current()) return;
     if (MG.Economy.getHearts() <= 0) { showNoHeartModal(); return; }
     // V1372 C 사용자: 두더지팡은 티켓 개념 없음 — 하트로만 진입(티켓은 리듬팡 전용)
-    if (mapStart) {
-      screenNav.reset();
-      mm.hidden = true;
-      document.getElementById('mole-board').hidden = false;
-      document.getElementById('board-start').hidden = false;
-      if (sharedLaneControls) sharedLaneControls.setActiveNav(null);
-    }
     refreshChapterNav();
     gameStarting = true;
     if (home3d) home3d.gameStarted();
@@ -763,11 +754,7 @@
     currentDiff = currentDifficulty();
     applyDiffClass(currentDiff);
     preloadRoundMoles(); // 라운드1 플레이하는 동안 미리 받아둬야 라운드2 전환 때 안 늦음
-    if (fromRoundMap) {
-      startRound({ fresh: true, fromRoundMap: true });
-    } else {
-      playStartIntro(() => startRound({ fresh: true }));
-    }
+    playStartIntro(() => startRound({ fresh: true }));
   }
 
   // 라운드 전환 두더지 이미지 6장(텍스트 콜아웃 있던 2장 제외) — 늦게 로드되면 "라운드N" 글자만 먼저 뜨고 이미지가
@@ -800,14 +787,9 @@
       if (generation !== sessionGen || result.hidden || !result.classList.contains('is-win') || (screenNav && screenNav.current()) || window.__coverBusy) return;
       const enter = () => {
         if (generation !== sessionGen || result.hidden || (screenNav && screenNav.current()) || window.__coverBusy) return;
-        showStartScreenNow({skipFlash:true});
-        openMoreNow.viaBands = true;
-        try { openMore('roundmap-screen'); } finally { openMoreNow.viaBands = false; }
-        if (sharedLaneControls) sharedLaneControls.setActiveNav('lightMode');
+        showStartScreenNow({skipFlash:true}); // V1621 C: 라운드 지도 삭제 → 광장(게임기 앞)으로 돌아와 깬 구멍을 봄
       };
-      const map = document.getElementById('roundmap-screen');
-      if (MG.RoundMap && MG.RoundMap.shapeTransition) MG.RoundMap.shapeTransition(1, enter, null, null,
-        () => map.classList.contains('rm-preparing') || map.classList.contains('asset-preparing'));
+      if (MG.ShapeTransition) MG.ShapeTransition.run(1, enter);
       else enter();
     }, 1200);
   }
@@ -965,10 +947,10 @@
     if (action === 'rhythm') { openRhythm(); return; } // 리듬팡(v807)
     // V1531 C 사용자: 두더지팡 그림은 GO 와 같이 홈일 때만 진입(메일함·설정·아이템이 위에 열려 있으면 무시).
     if (action === 'lightMode' && screenNav && screenNav.current()) return false;
-    // V1372 C 사용자: 두더지팡 박스도 GO 버튼과 같은 기능(두더지팡 라운드 지도 진입) — 아래 sub 맵 lightMode → roundmap-screen
+    if (action === 'lightMode') { beginGame(); return; } // V1621 C: 라운드 지도 삭제 → 바로 시작
     const sub = { shop: 'shop-screen', score: 'score-screen', daily: 'daily-screen',
       quest: 'quest-screen', locker: 'workshop-screen',
-      inventory: 'inventory-screen', settings: 'settings-screen', lightMode: 'roundmap-screen',
+      inventory: 'inventory-screen', settings: 'settings-screen',
       mail: 'mailbox-screen' }[action];
     if (sub) { const r = openMore(sub); if (r !== false && sharedLaneControls) sharedLaneControls.setActiveNav(action); return r; }
   }
@@ -1041,7 +1023,7 @@
       if (longFired) { longFired = false; return; } // 방금 꾹 눌러 무장 → 이 up 은 무시
       if (armState.armed) { setArmed(false); showQuitDialog(); }
       // V1370 C 사용자 지정: 홈 시작 = 바로 게임이 아니라 두더지팡 안(라운드 지도)으로 — 옛 타이핑 설명 화면은 안 거침(지도의 시작은 원래 바로 시작)
-      else { const mm = document.getElementById('more-menu'); if ((mm && !mm.hidden) || (screenNav && screenNav.current())) return; openMore('roundmap-screen'); if (sharedLaneControls) sharedLaneControls.setActiveNav('lightMode'); }
+      else beginGame(); // V1621 C: 라운드 지도 삭제 → 바로 시작
     });
 
     // 게임 중엔 이 코너(구멍 15 자리)가 "스킬 슬롯 2개"로 바뀐다 (캐논·특수망치, gs-laneskill). 홈에선 "시작" 버튼.
@@ -1441,12 +1423,6 @@
     if (isStart) document.getElementById('mole-board').hidden = true;
   }
   function openMoreNow(sub) {
-    // V1325 C 홈 → 광산지도 진입 = 띠 전환(Motion Prompt #018) — 다 덮였을 때 실제로 연다.
-    if (sub === 'roundmap-screen' && !openMoreNow.viaBands && MG.RoundMap && MG.RoundMap.shapeTransition && screenNav.current() !== 'roundmap-screen') {
-      const rm = document.getElementById('roundmap-screen');
-      MG.RoundMap.shapeTransition(1, () => { openMoreNow.viaBands = true; openMoreNow(sub); openMoreNow.viaBands = false; }, null, null, () => rm.classList.contains('rm-preparing') || rm.classList.contains('asset-preparing'));
-      return;
-    }
     // 백스톱: 시작 인트로(챕터 타이핑) 도중 어떻게든 메뉴가 열리면 대기 중이던 라운드 시작을
     // 취소하고 깨끗한 "더보기"만 연다. (평소엔 아래 navLock 으로 ⊞ 자체가 이 시간엔 안 먹힘.)
     var si = document.getElementById('start-intro-overlay');
@@ -1477,13 +1453,12 @@
       if (sub === 'settings-screen' && settingsScreen) settingsScreen.show();
       if (sub === 'inventory-screen' && inventoryScreen) inventoryScreen.show();
       if (sub === 'light-popup') refreshLightPopup();
-      if (sub === 'roundmap-screen' && roundMap) roundMap.show();
       if (sub === 'quest-screen' && window.__questScreen) window.__questScreen.show();
       if (sub === 'mailbox-screen' && window.__mailbox) window.__mailbox.show();
       // V1561 C 사용자: 화면 그림이 따로따로 뜨지 않게 — 다 준비되면 한 번에 보여줌(광산지도는 자체 준비 장치)
-      if (sub !== 'roundmap-screen') revealOrBands(document.getElementById(sub), openMore.covering);
+      revealOrBands(document.getElementById(sub), openMore.covering);
       // Legacy glitch-entry routes now use a diagonal wipe; covered/popup entries keep their own reveal.
-      if (!openMore.covering && !document.getElementById(sub).hasAttribute('data-reveal-pop') && sub !== 'roundmap-screen' && sub !== 'shop-screen' && ['score-screen', 'daily-screen', 'workshop-screen', 'roundmap-screen', 'shop-screen', 'inventory-screen', 'quest-screen', 'mailbox-screen', 'settings-screen'].indexOf(sub) >= 0) {
+      if (!openMore.covering && !document.getElementById(sub).hasAttribute('data-reveal-pop') && sub !== 'shop-screen' && ['score-screen', 'daily-screen', 'workshop-screen', 'shop-screen', 'inventory-screen', 'quest-screen', 'mailbox-screen', 'settings-screen'].indexOf(sub) >= 0) {
         const gs = document.getElementById(sub);
         gs.classList.remove('diagonal-wipe-in'); void gs.offsetWidth; gs.classList.add('diagonal-wipe-in');
         setTimeout(() => gs.classList.remove('diagonal-wipe-in'), 420);
@@ -1518,7 +1493,7 @@
     window.MoleAssetLoader.revealWhenReady(scr);
     if (covered) return; // 원 덮개가 이미 덮고 기다림
     setTimeout(() => {
-      if (scr.classList.contains('asset-preparing') && MG.RoundMap && MG.RoundMap.shapeTransition) MG.RoundMap.shapeTransition(1, () => {}, null, null, () => scr.classList.contains('asset-preparing'));
+      if (scr.classList.contains('asset-preparing') && MG.ShapeTransition) MG.ShapeTransition.run(1, () => {}, null, null, () => scr.classList.contains('asset-preparing'));
     }, 120);
   }
   function openRhythm() {
@@ -1807,7 +1782,7 @@
     // 홈→게임 첫 진입(fresh)에만 — 채널(유튜브 아이콘) 버튼을 10바퀴 돌려 숫자 버튼으로 전환.
     // 회전 전까지는 기존 홈 다이얼패드 그대로 있다가, 인트로가 끝나 실제 게임판이 드러나는
     // 지금 이 순간에만 돈다(사용자 지정).
-    if (opts && opts.fresh && !opts.fromRoundMap && sharedLaneControls) sharedLaneControls.spinChannelsIn();
+    if (opts && opts.fresh && sharedLaneControls) sharedLaneControls.spinChannelsIn();
     // 새 게임 시작(fresh)일 때만 더보기 메뉴를 닫는다. 자동 다음 라운드는 메뉴를 건드리지 않음
     // (플레이 중 메뉴 열어둔 채 라운드가 넘어가도 화면이 안 튀게).
     if (opts && opts.fresh) {
@@ -2028,7 +2003,7 @@
       setNavLock(false); // 라운드 실제 진행 → ⊞ 다시 활성
       lastTime = performance.now();
       rafId = requestAnimationFrame(loop);
-    }, { homeEntry: !!(opts && opts.fresh && !opts.fromRoundMap) });
+    }, { homeEntry: !!(opts && opts.fresh) });
   }
 
   // 모든 라운드(1~8): "라운드 N" 타이틀·음성 없이 바로 Ready → GO! 카운트다운(줌인 + 색상,
@@ -3227,8 +3202,8 @@
       I18N.t('mole.result.scoreVs', { n: total.toLocaleString(), t: prog.target.toLocaleString() });
     // 버튼 없음 — 성공/실패 둘 다 좌상단 ⊞ 로 홈. (광고는 유저 피로도 때문에 뺌.)
 
-    // Save the next unlocked position; after the success celebration, show its
-    // round-map waiting screen automatically without starting another game.
+    // Save the next unlocked position; after the success celebration, return to
+    // the plaza arcade machine automatically (V1621 C: round map removed) without starting another game.
     const next = win ? MG.Progress.nextRound(chapter, light) : null;
     if (next) {
       // Persist the next waiting position without changing the completed result UI.
@@ -3627,8 +3602,8 @@
       // V1619 C 사용자: 광장 두더지팡 게임기 = 라운드 지도 없이 바로 시작(하트 없으면 기존 안내창). 구멍 = 라운드 선택·진행 표시
       startGame: () => {
         if (navLocked || gameStarting || state) return false;
-        if (MG.Economy.getHearts() <= 0) { beginGame(false); return true; }
-        MG.RoundMap.shapeTransition(1, () => beginGame(false));
+        if (MG.Economy.getHearts() <= 0) { beginGame(); return true; }
+        MG.ShapeTransition.run(1, () => beginGame());
         return true;
       },
       rounds: () => { const l = currentLight(); return { light: l, chapter: currentChapter(), get: (n) => MG.Progress.get(n, l), unlocked: (x) => MG.Progress.isLightUnlocked(x) }; },
@@ -3643,7 +3618,7 @@
   // 더보기 메뉴 + 하위 화면 모듈 인스턴스 생성·배선.
   function wireMoreMenu() {
     screenNav = MG.ScreenNav.create({
-      screens: ['face-maker', 'shop-screen', 'mailbox-screen', 'daily-screen', 'workshop-screen', 'score-screen', 'settings-screen', 'inventory-screen', 'help-screen', 'privacy-screen', 'quest-screen', 'friends-screen', 'light-popup', 'roundmap-screen', 'contact-screen']
+      screens: ['face-maker', 'shop-screen', 'mailbox-screen', 'daily-screen', 'workshop-screen', 'score-screen', 'settings-screen', 'inventory-screen', 'help-screen', 'privacy-screen', 'quest-screen', 'friends-screen', 'light-popup', 'contact-screen']
     });
     // 메일함(사용자 지정: "구매→메일함 도착→수령" 흐름 예정) — 지금은 아이콘+빈 화면 스캐폴드만,
     // 실제 수령 로직 없음. 상점 안에서 열리므로(더보기 경유 X) 뒤로가기는 screenNav.back()만.
@@ -3701,24 +3676,6 @@
       sc.onerror = () => say('ERR DAILY 다시 불러오기 실패');
       document.head.appendChild(sc);
     }
-    roundMap = MG.RoundMap.create({
-      root: document.getElementById('roundmap-screen'),
-      onStart: () => {
-        if (navLocked) return;
-        // V1326 C 광산지도 시작 → 게임 = 띠 전환(하트·티켓 부족이면 전환 없이 바로 안내창)
-        if (MG.Economy.getHearts() <= 0 || gameStarting) { beginGame(true); return; }
-        MG.RoundMap.shapeTransition(1, () => beginGame(true));
-      },
-      onQuit: () => showQuitDialog(), // 시작 버튼 꾹 → 다시 탭 = 종료창(홈 시작 버튼과 동일)
-      onClose: () => closeMore(),
-      currentLight: () => currentLight(),
-      currentChapter: () => currentChapter(),
-      // 난이도 이동: 그 난이도로 바꾸고, 그 난이도에서 열린 가장 높은 라운드로(처음 진입 = 라운드1).
-      setLight: (l) => { setDifficulty(l); setChapter(MG.Progress.maxChapterFor(l)); refreshChapterNav(); },
-      // 라운드 선택 = 홈 현재 라운드와 같은 저장값(mole.chapter) — 시작하면 이 라운드부터.
-      select: (n) => { setChapter(n); refreshChapterNav(); },
-      rules: (l) => ({ base: SCORE_MULT[l].base, fever: SCORE_MULT[l].fever, heart: COMBO_LIFE_BONUS[l] })
-    });
     scoreScreen = MG.ScoreScreen.create({
       root: document.getElementById('score-screen'),
       onClose: () => closeMore()

@@ -471,7 +471,7 @@
         b.className = 'ws-pick-item ws-pcard ws-pcard--' + COLORS[i % 5] + (m.id === selMat ? ' is-on' : '');
         b.disabled = !same || !n;
         b.innerHTML = '<span class="ws-pick-img"><img alt=""></span><span class="ws-pick-name"></span><span class="ws-pick-n"></span>' +
-          '<img class="ws-pcard-chk" src="assets/roundmap/check.png" alt="">';
+          '<img class="ws-pcard-chk" src="assets/common/check.png" alt="">';
         b.querySelector('img').src = m.img;
         b.querySelector('.ws-pick-name').textContent = nameOf(m);
         b.querySelector('.ws-pick-n').textContent = T('mole.ws.have', { n: n });

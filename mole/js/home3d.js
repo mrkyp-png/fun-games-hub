@@ -171,7 +171,7 @@
       // 건물에 닿아 있으면 점프 버튼이 그 건물 터치 버튼으로(누르면 그 건물 화면). 스쳐 지나가도 자동 진입 없음
       nearRide = !riding && !near && st.inputEnabled() ? L.nearestRide(view.x, view.z) : null;
       const ko = root.FGH.I18N.lang === 'ko';
-      ui.setJumpMode(riding ? (ko ? '내리기' : 'Get off') : jumping() ? null : nearRide ? (ko ? '타기' : 'Ride') : near && st.inputEnabled() ? (near.action === 'lightMode' && opts.startGame ? (ko ? '시작' : 'Start') : MG.Home3DSigns.labelFor(near, root.FGH.I18N.lang, t)) : null);
+      ui.setJumpMode(riding ? (ko ? '내리기' : 'Get off') : jumping() ? null : nearRide ? (ko ? '타기' : 'Ride') : near && st.inputEnabled() ? ((near.action === 'lightMode' && opts.startGame) || near.action === 'rhythm' ? (ko ? '시작' : 'Start') /* V1621 C 사용자: 리듬팡도 시작 버튼 */ : MG.Home3DSigns.labelFor(near, root.FGH.I18N.lang, t)) : null);
       if (!raf) raf = requestAnimationFrame(frame); // 프레임 안에서 wake() 가 이미 예약했으면 두 번째 반복을 만들지 않음(겹치면 걷기 동작이 멈춤)
     }
 
