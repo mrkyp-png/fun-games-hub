@@ -81,7 +81,8 @@
     function boatM() { return MG.Home3DRenderer.boatMatrix(nowS()); }
     function deckWorld(u, w) { const B = L.BOAT; return root.StudioRig.point(boatM(), [u / B.S, B.DECK, w / B.S]); }
     function toDeck(x, z) { const B = L.BOAT, p = root.StudioRig.point(root.StudioRig.inverse(boatM()), [x, 0, z]); return { u: p[0] * B.S, w: p[2] * B.S }; }
-    function overDeck(x, z) { const d = toDeck(x, z), B = L.BOAT; return Math.abs(d.u) <= B.U && Math.abs(d.w) <= B.W ? d : null; }
+    function inDeck(u, w) { const B = L.BOAT; return (u / B.U) ** 2 + (w / B.W) ** 2 <= 1; } /* 갑판 = 타원(V1636 C: 배 그림 밖에 서던 것) */
+    function overDeck(x, z) { const d = toDeck(x, z); return inDeck(d.u, d.w) ? d : null; }
     function resetToStart() { /* 처음 시작 구멍(인트로)으로 */
       st.boot(); Object.assign(view, { x: 0, z: 0, heading: 0, yaw: 0, pitch: 0.62 }); rise = 0; hop = null; jumpAt = -1; camK = 0; arcCam = 0; inside = null; wasNearArcade = false; walking = false; route = null;
       air = null; onBoat = null; boardAt = -1; offer = null; if (ui) { ui.setExit(null); ui.hideOffer(); } if (rd) rd.setSmoke([]);
@@ -124,15 +125,15 @@
         if (air.vy < 0) {
           const dk = overDeck(view.x, view.z), deckY = dk ? deckWorld(dk.u, dk.w)[1] : -9;
           if (dk && air.y <= deckY && air.y > deckY - 0.6) { air = null; onBoat = dk; boardAt = time; return; } /* 갑판에 착지 */
-          const land = L.allowed(view.x, view.z) || Math.hypot(view.x, view.z) <= L.WALK_R;
-          if (land && air.y <= 0) { air = null; if (!L.allowed(view.x, view.z)) { const p = L.slide({ x: 0, z: 0 }, view.x, view.z); view.x = p.x; view.z = p.z; } return; } /* 땅에 착지 */
+          const rr = Math.hypot(view.x, view.z), land = L.allowed(view.x, view.z) || rr <= L.FENCE_OUT;
+          if (land && air.y <= 0) { air = null; if (!L.allowed(view.x, view.z)) { if (rr > L.WALK_R) { const k = (L.WALK_R - 0.1) / rr; view.x *= k; view.z *= k; } if (!L.allowed(view.x, view.z)) { const p = L.slide({ x: 0, z: 0 }, view.x, view.z); view.x = p.x; view.z = p.z; } } return; } /* 땅에 착지(울타리 위면 섬 안쪽으로) */
           if (!land && air.y <= -0.3) { splash(view.x, view.z); return; } /* 바다에 빠짐 */
         }
         return;
       }
       if (onBoat) { /* 갑판 위 걷기: 화면 방향 → 배 기준, 난간 안에서만 */
         const B = L.BOAT, a = deckWorld(onBoat.u, onBoat.w), d = toDeck(a[0] + v.x * s, a[2] + v.z * s);
-        const nu = Math.max(-B.U, Math.min(B.U, d.u)), nw = Math.max(-B.W, Math.min(B.W, d.w)); walking = Math.hypot(nu - onBoat.u, nw - onBoat.w) > 0.0001;
+        let nu = d.u, nw = d.w; if (!inDeck(nu, nw)) { const k = 1 / Math.sqrt((nu / B.U) ** 2 + (nw / B.W) ** 2); nu *= k; nw *= k; } walking = Math.hypot(nu - onBoat.u, nw - onBoat.w) > 0.0001;
         if (walking) view.heading = Math.atan2(v.x, v.z); onBoat.u = nu; onBoat.w = nw; return;
       }
       const next = L.slide(view, v.x * s, v.z * s);

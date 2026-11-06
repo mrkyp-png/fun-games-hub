@@ -84,3 +84,7 @@ console.log('verify-home3d-layout: ok (' + L.SITES.length + ' sites)');
   assert.strictEqual(L.nearestRide(0, 0), null);
   console.log('verify-home3d-layout: ride-touch ok');
 }
+// V1636 C 사용자: 울타리는 걸어서 못 지나감(해변 ↔ 섬은 날아서)
+{ let p = { x: 0, z: 10 }; for (let i = 0; i < 200; i++) p = L.slide(p, 0, 0.1); assert.ok(p.z <= L.WALK_R, '섬 → 해변 걸어서 못 감');
+  let q = { x: 0, z: 18 }; for (let i = 0; i < 100; i++) q = L.slide(q, 0, -0.1); assert.ok(q.z >= L.FENCE_OUT, '해변 → 섬 걸어서 못 감');
+  assert.ok(L.allowed(0, 18), '해변은 걸을 수 있음'); }

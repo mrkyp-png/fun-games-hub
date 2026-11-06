@@ -40,7 +40,7 @@
   // 바다 물결 높이(셰이더 SEA_H 와 같은 식) — 잔잔하게, 진폭 ≤ 0.075
   /* 바다 배 변환: 물결 높이에 맞춰 출렁이고 앞뒤·좌우로 천천히 기우뚱(home3d-layout BOAT) */
   function boatMatrix(t) {
-    const B = root.MoleGame.Home3DLayout.BOAT, y = seaHeight(B.x, B.z, t) - B.DRAFT * 0.4, roll = 0.07 * Math.sin(t * 0.9), pitch = 0.045 * Math.sin(t * 0.7 + 1);
+    const B = root.MoleGame.Home3DLayout.BOAT, y = -0.62 + seaHeight(B.x, B.z, t) - B.DRAFT, /* V1636 C: 수면(-0.62) 빠뜨려 배가 떠 있던 것 → 배 밑 DRAFT 만큼 물에 잠김 */ roll = 0.07 * Math.sin(t * 0.9), pitch = 0.045 * Math.sin(t * 0.7 + 1);
     const qx = [Math.sin(roll / 2), 0, 0, Math.cos(roll / 2)], qz = [0, 0, Math.sin(pitch / 2), Math.cos(pitch / 2)];
     const q = [qx[3] * qz[0] + qx[0] * qz[3] + qx[1] * qz[2] - qx[2] * qz[1], qx[3] * qz[1] - qx[0] * qz[2] + qx[1] * qz[3] + qx[2] * qz[0], qx[3] * qz[2] + qx[0] * qz[1] - qx[1] * qz[0] + qx[2] * qz[3], qx[3] * qz[3] - qx[0] * qz[0] - qx[1] * qz[1] - qx[2] * qz[2]];
     return R.transform({ translation: [B.x, y, B.z], rotation: q, scale: [B.S, B.S, B.S] });

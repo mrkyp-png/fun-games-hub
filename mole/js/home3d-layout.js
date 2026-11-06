@@ -21,10 +21,11 @@
   const RIDES = []; /* V1633 C: 코드로 만든 디스코 팡팡도 삭제 → Tripo 디스코 팡팡(DISCO, 배치만) / 바이킹 = 바다 배(BOAT) */
   const DISCO = { x: 8, z: 2.5, body: 2.1, baseS: 4.6, topS: 3.6, topY: 1.15 }; /* 받침 배율·상판 배율·상판 높이 */
   /* 바다 배: 뒤쪽 해변 앞바다. S = 모델 배율(Tripo 배 길이 0.98 → 약 4.9), DECK = 모델 갑판 높이, 갑판 반폭 U(길이)·W(폭) */
-  const BOAT = { x: 0, z: 25.6, S: 5, DECK: 0.185, U: 1.25, W: 0.72, DRAFT: 0.55 };
+  const BOAT = { x: 0, z: 25.6, S: 5, DECK: 0.185, U: 1.05, W: 0.48, DRAFT: 0.45 }; /* U·W = 갑판 타원 반지름(배 그림 안, 두더지 몸 여유 뺌, V1636 C) */ /* DRAFT = 물에 잠기는 깊이(갑판까지 0.93 중) */
   /* 해변(모래사장): 섬 스크립트 Beach sand 중심 (0, z 4.3) 반지름 18.1 → 걸을 수 있는 곳 = 반지름 17.5, 뒤쪽(z > 14)만 */
   const BEACH = { cz: 4.3, r: 17.5, zmin: 14 };
-  function onBeach(x, z) { return z > BEACH.zmin && Math.hypot(x, z - BEACH.cz) < BEACH.r; }
+  const FENCE_OUT = 16.2; /* V1636 C 사용자: 울타리(15.65) 걸어서 못 지나감 — 해변은 울타리 바깥만, 해변↔섬은 날아서 */
+  function onBeach(x, z) { return z > BEACH.zmin && Math.hypot(x, z) > FENCE_OUT && Math.hypot(x, z - BEACH.cz) < BEACH.r; }
 
   // 건물 앞(섬 중심 쪽) 진입 지점
   function entryPoint(s) {
@@ -78,7 +79,7 @@
     return [{ x: px * R, z: pz * R }];
   }
 
-  const api = { ISLAND_R, WALK_R, HOLE_R, SPAWN, SITES, RIDES, BOAT, DISCO, onBeach, ARCADE_K, ARCADE_HOLES, ARCADE_BUTTONS, ROUND_COLORS, pickHole, rideExit, nearestRide, entryPoint, allowed, slide, nearest, pathVia };
+  const api = { ISLAND_R, WALK_R, FENCE_OUT, HOLE_R, SPAWN, SITES, RIDES, BOAT, DISCO, onBeach, ARCADE_K, ARCADE_HOLES, ARCADE_BUTTONS, ROUND_COLORS, pickHole, rideExit, nearestRide, entryPoint, allowed, slide, nearest, pathVia };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else { root.MoleGame = root.MoleGame || {}; root.MoleGame.Home3DLayout = api; }
 })(typeof window !== 'undefined' ? window : globalThis);
