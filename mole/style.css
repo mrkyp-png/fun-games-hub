@@ -10192,3 +10192,14 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #daily-screen .dr-plate { display:none; } /* V1644 C 사용자: "매일 출석하고…" 글 삭제 */
 /* V1646 C 사용자: 일일 배경 = 새 그림(선물 방, 사용자 ChatGPT) 한 장 — 옛 앞 그림(두더지 포함)·구름·해 효과는 가려짐 */
 #daily-screen .dr-front { background-image:url('assets/daily/bg-v1646.webp'); }
+/* V1647 C 사용자: 퀘스트 CSS 새 톤 — 나무 갈색 → 크림+금색(#d6ad63), 올클리어 연보라, 업적 버튼 크림 */
+#quest-screen .qs-head::before { border:3px solid #d6ad63; background:linear-gradient(180deg,#fffaf0,#fff0d4); box-shadow:inset 0 0 0 2px #f6dfaa, 0 3px 0 #c89a4f; }
+#quest-screen .qs-tabs button:not(.is-on) { color:#8a6040; background:linear-gradient(180deg,#f8ecd6,#ead6b2); -webkit-text-stroke:0; box-shadow:inset 0 2px 0 rgba(255,255,255,.7), 0 0 0 2px #e2c78c; }
+#quest-screen .qs-list { background:linear-gradient(180deg,#fff7e2,#fdebc8); box-shadow:inset 0 0 0 3px #d6ad63, inset 0 0 0 5px #f6dfaa; }
+#quest-screen .qs-card { box-shadow:inset 0 0 0 2px #d6ad63, 0 3px 0 #c89a4f; }
+#quest-screen .qs-bar { background:#e6d6b8; box-shadow:inset 0 2px 2px rgba(120,80,30,.25); }
+#quest-screen .qs-all:not(.qs-all--weekly) { background:linear-gradient(180deg,#c6a2f6,#9d72e2); box-shadow:inset 0 0 0 3px #d6ad63, 0 3px 0 #6f4bb0; }
+#quest-screen .qs-achbtn.ws-action-frame { --sr-face:linear-gradient(180deg,#fff8e8 0%,#fbe9c6 50%,#f1d7a2 100%); --sr-rim:linear-gradient(180deg,#fff3cf 0%,#e8c67c 30%,#c89a4f 75%,#a77a35 100%); --sr-highlight:#fffaf0; --sr-outline:#a77a35; }
+#quest-screen .qs-achbtn.ws-action-frame span { color:#b8812f; -webkit-text-stroke:0; }
+#quest-screen .qs-all:not(.qs-all--weekly) .qs-all-txt b { color:#fff; -webkit-text-stroke:2px #6a3fae; } /* 연보라 위 글자 잘 보이게 */
+#quest-screen .qs-all:not(.qs-all--weekly) .qs-all-txt span { color:#fff; }
