@@ -35,7 +35,7 @@
         const fromGame = st.state === 'GAMEPLAY';
         const ok = st.homeShown();
         if (ok && fromGame) { // V1621 C 사용자: 게임이 끝나면 처음 시작 구멍으로 나옴
-          st.boot(); Object.assign(view, { x: 0, z: 0, heading: 0, yaw: 0, pitch: 0.62 }); rise = 0; hop = null; jumpAt = -1; camK = 0; arcCam = 0; inside = null; wasNearArcade = false; walking = false; route = null; if (ui) ui.setExit(null);
+          resetToStart();
         } else if (ok) { const v = st.view(); if (v) Object.assign(view, v); }
         if (ok) { if (ui) ui.setFeature(false); refreshHud(); show(true); wake(); }
         return ok;
@@ -45,7 +45,7 @@
       inputEnabled: () => st.inputEnabled(),
       saveView: (v) => st.saveView(v),
       view: () => st.view(),
-      debug: () => ({ state: st.state, x: +view.x.toFixed(2), z: +view.z.toFixed(2), heading: +view.heading.toFixed(2), near: near && near.action, rise: +rise.toFixed(2), hop: !!hop, walking, riding, nearRide: nearRide && nearRide.id, clip: pose().clip, raf: !!raf, inside: inside && inside.phase }) // 검토용(?h3debug=1)
+      debug: () => ({ state: st.state, x: +view.x.toFixed(2), z: +view.z.toFixed(2), heading: +view.heading.toFixed(2), near: near && near.action, rise: +rise.toFixed(2), hop: !!hop, walking, riding, nearRide: nearRide && nearRide.id, clip: pose().clip, raf: !!raf, inside: inside && inside.phase, air: air ? +air.y.toFixed(2) : null, onBoat: !!onBoat }) // 검토용(?h3debug=1)
     };
     if (qs.get('h3debug') === '1') { // 검토용 훅(공개 주소엔 없음)
       root.__home3d = api;
@@ -73,6 +73,25 @@
       arcadeKey = key + '|' + buttons.map((b) => +b.unlocked).join('');
       arcadeState = { holes, mole: cur || null, buttons, flash: [] }; rd.setArcade(arcadeState); rd.setScreen(l1, l2);
     }
+    /* 날기·배: air = 공중 {y, vy, flapAt} / onBoat = 갑판 위 {u, w}(배 기준 좌표) / boardAt = 배에 오른 시각 / offer = 보상 창 */
+    let air = null, onBoat = null, boardAt = -1, offer = null, splashAt = -9;
+    const G = 9.5, JUMP_V = 4.4, FLAP_V = 3.6, BOAT_STAY = 300, REWARD_GAP = 3600 * 1000, OFFER_T = 60, REWARD_KEY = 'mole.boatRewardAt';
+    const nowS = () => performance.now() / 1000;
+    function boatM() { return MG.Home3DRenderer.boatMatrix(nowS()); }
+    function deckWorld(u, w) { const B = L.BOAT; return root.StudioRig.point(boatM(), [u / B.S, B.DECK, w / B.S]); }
+    function toDeck(x, z) { const B = L.BOAT, p = root.StudioRig.point(root.StudioRig.inverse(boatM()), [x, 0, z]); return { u: p[0] * B.S, w: p[2] * B.S }; }
+    function overDeck(x, z) { const d = toDeck(x, z), B = L.BOAT; return Math.abs(d.u) <= B.U && Math.abs(d.w) <= B.W ? d : null; }
+    function resetToStart() { /* 처음 시작 구멍(인트로)으로 */
+      st.boot(); Object.assign(view, { x: 0, z: 0, heading: 0, yaw: 0, pitch: 0.62 }); rise = 0; hop = null; jumpAt = -1; camK = 0; arcCam = 0; inside = null; wasNearArcade = false; walking = false; route = null;
+      air = null; onBoat = null; boardAt = -1; offer = null; if (ui) { ui.setExit(null); ui.hideOffer(); } if (rd) rd.setSmoke([]);
+    }
+    function splash(x, z) { /* 바다에 빠짐: 하트 -1(0이면 그대로), 첨벙, 해변으로 */
+      if (MG.Economy && MG.Economy.getHearts() > 0) MG.Economy.addHearts(-1);
+      refreshHud(); splashAt = nowS(); air = null; onBoat = null; boardAt = -1;
+      const sp = []; for (let i = 0; i < 10; i++) { const a = i * 0.63; sp.push({ x: x + Math.cos(a) * 0.5, y: 0.2 + (i % 3) * 0.25, z: z + Math.sin(a) * 0.5, r: 0.25, a: 0.7 }); } rd.setSmoke(sp);
+      setTimeout(() => { if (rd) rd.setSmoke([]); }, 700);
+      view.x = 0; view.z = 15.6; view.heading = Math.PI; route = null;
+    }
     function show(on) { if (ui) ui.show(on); }
     function stop() { if (raf) cancelAnimationFrame(raf); raf = 0; route = null; if (ui) ui.setEnabled(false); }
     function wake() {
@@ -96,7 +115,26 @@
         else v = { x: dx / d, z: dz / d };
       }
       if (dt <= 0) return; // 흐른 시간 0인 프레임은 걷기 판단을 바꾸지 않음
-      const len = Math.hypot(v.x, v.z), s = SPEED * dt / Math.max(1, len), next = L.slide(view, v.x * s, v.z * s);
+      const len = Math.hypot(v.x, v.z), s = SPEED * dt / Math.max(1, len);
+      if (air) { /* 공중: 막힘 없이 이동(섬 둘레 30 안), 떨어지다 땅·갑판·바다에 닿음 */
+        let nx = view.x + v.x * s, nz = view.z + v.z * s; const rr = Math.hypot(nx, nz); if (rr > 30) { nx *= 30 / rr; nz *= 30 / rr; }
+        if (v.x || v.z) view.heading = Math.atan2(v.x, v.z); view.x = nx; view.z = nz; walking = false;
+        air.vy -= G * dt; air.y += air.vy * dt;
+        if (air.vy < 0) {
+          const dk = overDeck(view.x, view.z), deckY = dk ? deckWorld(dk.u, dk.w)[1] : -9;
+          if (dk && air.y <= deckY && air.y > deckY - 0.6) { air = null; onBoat = dk; boardAt = time; return; } /* 갑판에 착지 */
+          const land = L.allowed(view.x, view.z) || Math.hypot(view.x, view.z) <= L.WALK_R;
+          if (land && air.y <= 0) { air = null; if (!L.allowed(view.x, view.z)) { const p = L.slide({ x: 0, z: 0 }, view.x, view.z); view.x = p.x; view.z = p.z; } return; } /* 땅에 착지 */
+          if (!land && air.y <= -0.3) { splash(view.x, view.z); return; } /* 바다에 빠짐 */
+        }
+        return;
+      }
+      if (onBoat) { /* 갑판 위 걷기: 화면 방향 → 배 기준, 난간 안에서만 */
+        const B = L.BOAT, a = deckWorld(onBoat.u, onBoat.w), d = toDeck(a[0] + v.x * s, a[2] + v.z * s);
+        const nu = Math.max(-B.U, Math.min(B.U, d.u)), nw = Math.max(-B.W, Math.min(B.W, d.w)); walking = Math.hypot(nu - onBoat.u, nw - onBoat.w) > 0.0001;
+        if (walking) view.heading = Math.atan2(v.x, v.z); onBoat.u = nu; onBoat.w = nw; return;
+      }
+      const next = L.slide(view, v.x * s, v.z * s);
       walking = Math.hypot(next.x - view.x, next.z - view.z) > 0.0001;
       if (walking) {
         const hd = Math.atan2(next.x - view.x, next.z - view.z), diff = Math.atan2(Math.sin(hd - view.heading), Math.cos(hd - view.heading));
@@ -106,8 +144,13 @@
     }
     // 시작 카메라: 구멍 안에서는 아래에서 올려다봄(큰 두더지팡 게임기 간판까지 보이게), 점프해 나오면 보통 각도로(사용자 지시 2026-11-06)
     const INTRO_PITCH = -0.1, CAM_T = 0.9; let camK = 0;
-    function jumping() { return jumpAt >= 0 && time - jumpAt < IN.jump.T; }
+    function jumping() { return !!air || (jumpAt >= 0 && time - jumpAt < IN.jump.T); }
     function jump() {
+      if (st.state === 'EXPLORE' && !riding && !inside) { /* 날기: 첫 누름 = 뛰어오름, 공중에서 누를 때마다 짧은 팔 파닥 → 위로 */
+        if (air) { air.vy = Math.max(air.vy, FLAP_V); air.flapAt = time; return; }
+        const y0 = onBoat ? deckWorld(onBoat.u, onBoat.w)[1] : 0; onBoat = null; boardAt = -1;
+        air = { y: y0, vy: JUMP_V, flapAt: time }; return;
+      }
       if (jumping()) return;
       if (st.state === 'INTRO') {
         if (rise < RISE_T) return; // 등장 중엔 무시
@@ -136,6 +179,8 @@
         const k = Math.min(1, (time - inside.at) / SUCK_T), e = Math.pow(k, 2.2), sc = Math.max(0, 1 - e); // 사용자: 두더지가 쏙 빨려 들어감(처음 천천히 → 끝에 빨리, 작아짐)
         return { clip: 'Idle', t: inside.at, loop: true, y: (COIN.y - 0.6 * sc) * e, s: k >= 1 ? 0 : sc }; // 서 있던 자세 그대로(사용자)
       }
+      if (air) return time - air.flapAt < 0.3 ? { clip: 'ArmsUp', t: (time - air.flapAt) * 2, loop: false, y: air.y } : { clip: 'Jump', t: 0.3, loop: false, y: air.y }; /* 날기: 파닥 = 팔 들기 */
+      if (onBoat) return { clip: walking ? 'WalkFwd' : 'Idle', t: time, loop: true, y: deckWorld(onBoat.u, onBoat.w)[1] }; /* 갑판 */
       if (riding) return { clip: 'ArmsUp', t: time, loop: true, y: seatY }; // 놀이기구에서 신나게
       if (jumping()) {
         const jt = time - jumpAt, base = hop ? HOLE_Y * (1 - jt / IN.jump.T) : 0;
@@ -179,6 +224,18 @@
         }
       }
       else if (st.inputEnabled()) move(dt);
+      if (onBoat && !air) { const a = deckWorld(onBoat.u, onBoat.w); view.x = a[0]; view.z = a[2]; }
+      if (onBoat && !air && boardAt >= 0 && !offer && time - boardAt >= BOAT_STAY) { /* 배 5분 → 1시간 1번, 1분 안에 광고 보면 하트 2 → 처음 시작 구멍 */
+        let last = 0; try { last = +localStorage.getItem(REWARD_KEY) || 0; } catch (e) { last = 0; }
+        if (Date.now() - last >= REWARD_GAP) {
+          const ko = root.FGH.I18N.lang === 'ko'; offer = { at: time };
+          ui.showOffer(ko ? '배에서 5분을 버텼어요! 1분 안에 광고를 보면 하트 2개를 드려요.' : 'You stayed 5 minutes! Watch an ad within 1 minute for 2 hearts.', ko ? '광고 보기' : 'Watch ad', ko ? '안 받기' : 'No thanks', (yes) => {
+            if (!yes || !MG.Ads || !MG.Ads.rewarded) { offer = null; boardAt = -1; return; }
+            MG.Ads.rewarded().then((ok) => { offer = null; boardAt = -1; if (!ok) return; MG.Economy.addHearts(2); try { localStorage.setItem(REWARD_KEY, String(Date.now())); } catch (e) { /* 저장 불가 */ } refreshHud(); resetToStart(); wake(); });
+          });
+        } else boardAt = -1;
+      }
+      if (offer && time - offer.at > OFFER_T) { ui.hideOffer(); offer = null; boardAt = -1; } /* 1분 지나면 사라짐 = 보상 없음 */
       if (!api.renderAllowed()) return; // move 안에서 기능 화면이 열렸으면 멈춤
       camK = st.state === 'INTRO' && !hop ? 0 : Math.min(1, camK + dt / CAM_T);
       const ck = camK * camK * (3 - 2 * camK);
@@ -254,7 +311,7 @@
           if (riding) { const rdd = L.RIDES.find((x) => x.id === riding), e = L.rideExit(rdd); riding = null; view.x = e.x; view.z = e.z; view.heading = Math.atan2(-e.x, -e.z); jumpAt = time; return; } // 앞으로 뛰어내림
           if (nearRide && st.inputEnabled() && !jumping()) { riding = nearRide.id; route = null; ui.input.reset(); return; } // 뛰어올라 탐
           if (inside) { if (inside.phase === 'in' && st.inputEnabled()) opts.startGame(); return; } // 게임기 안 = 시작 // 사용자: 라운드 지도 없이 바로 시작
-          if (near && st.inputEnabled() && !jumping()) { api.open(near.action); return; } if (st.state === 'INTRO' || st.inputEnabled()) jump(); }
+          if (near && near.action !== 'lightMode' && st.inputEnabled() && !jumping()) { api.open(near.action); return; } if (st.state === 'INTRO' || st.inputEnabled()) jump(); }
       });
       rd = MG.Home3DRenderer.create(ui.canvas);
       const ko = () => root.FGH.I18N.lang === 'ko';
@@ -265,7 +322,7 @@
       root.FGH.I18N.onChange(() => { jumpLabel(); if (ready) { signsNow(); refreshArcade(true); if (!raf && api.renderAllowed()) wake(); } });
       document.addEventListener('visibilitychange', wake);
       rd.lost(() => { ready = false; stop(); ui.setLoading(ko() ? '3D 화면을 다시 불러와 주세요.' : 'Please reload the 3D plaza.'); });
-      rd.boot(PLAZA_GLB, MOLE_GLB).then(() => {
+      rd.boot(PLAZA_GLB, MOLE_GLB, 'assets/home3d/boat.glb').then(() => {
         ready = true; readyAt = time; ui.setLoading(null); signsNow(); refreshArcade(true);
         wake();
       }).catch((err) => { console.error('3D home:', err); ui.setLoading((ko() ? '3D 공간을 불러오지 못했습니다.' : 'Could not load the 3D plaza.') + ' (' + String(err && err.message || err).slice(0, 160) + ')'); });

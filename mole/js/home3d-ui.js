@@ -70,6 +70,12 @@
     document.addEventListener('visibilitychange', resetAll);
     gear.addEventListener('click', () => opts.onSettings());
     close.addEventListener('click', () => opts.onClose());
+    /* 보상 창(배 5분 → 광고 보고 하트 2) */
+    const offer = el('div', 'h3-offer', wrap); offer.hidden = true;
+    const offerTxt = el('p', '', offer), offerRow = el('div', 'h3-offer-row', offer), offerYes = el('button', 'h3-offer-yes', offerRow), offerNo = el('button', 'h3-offer-no', offerRow);
+    offerYes.type = 'button'; offerNo.type = 'button'; let offerCb = null;
+    offerYes.addEventListener('click', () => { const c = offerCb; offer.hidden = true; offerCb = null; if (c) c(true); });
+    offerNo.addEventListener('click', () => { const c = offerCb; offer.hidden = true; offerCb = null; if (c) c(false); });
     exitBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); if (opts.onExit) opts.onExit(); });
     // 점프: 누르는 순간 바로(스틱과 동시에 누를 수 있게 pointerdown)
     jumpBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); opts.onJump(); });
@@ -82,6 +88,8 @@
       setEnabled(on) { input.setEnabled(on); drawKnob(); },
       setLoading(text) { loading.hidden = !text; loading.textContent = text || ''; },
       setJumpLabel(text) { jumpBtn.setAttribute('aria-label', text); },
+      showOffer(text, yes, no, cb) { offerTxt.textContent = text; offerYes.textContent = yes; offerNo.textContent = no; offerCb = cb; offer.hidden = false; },
+      hideOffer() { offer.hidden = true; offerCb = null; },
       setExit(label) { exitBtn.hidden = !label; exitBtn.textContent = label || ''; stick.hidden = !!label; if (label) resetAll(); },
       setHud(v) { for (const k in vals) vals[k].textContent = v[k]; },
       // 작은 지도: 위 = 앞(-z). 섬·건물/사물 점·두더지 화살표

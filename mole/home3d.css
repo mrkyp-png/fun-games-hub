@@ -42,3 +42,12 @@
 #home3d .h3-exit:active{transform:translateY(4px);box-shadow:0 2px 0 #3a5778,0 4px 8px rgba(0,0,0,.25),inset 0 3px 4px rgba(255,255,255,.5)}
 #home3d .h3-exit[hidden]{display:none!important}
 @media (orientation:landscape){#home3d .h3-exit{width:94px;height:94px;bottom:18px}}
+
+/* V1630 C: 배 보상 창 */
+#home3d .h3-offer{position:absolute;left:50%;top:38%;translate:-50% -50%;width:min(84%,340px);padding:18px 16px 16px;border-radius:22px;background:#fffaf0;box-shadow:0 8px 0 #d9c4a0,0 14px 24px rgba(0,0,0,.25);text-align:center;font:800 17px system-ui,sans-serif;color:#5b3d26}
+#home3d .h3-offer[hidden]{display:none!important}
+#home3d .h3-offer p{margin:0 0 14px;line-height:1.35;word-break:keep-all}
+#home3d .h3-offer-row{display:flex;gap:10px;justify-content:center}
+#home3d .h3-offer-row button{flex:1;border:0;border-radius:16px;padding:12px 6px;font:800 16px system-ui,sans-serif;color:#fff}
+#home3d .h3-offer-yes{background:linear-gradient(#ffad52,#f0821c);box-shadow:0 4px 0 #a8520c}
+#home3d .h3-offer-no{background:linear-gradient(#b9c4d2,#8f9cad);box-shadow:0 4px 0 #66717f}

@@ -19,7 +19,12 @@
   ].map((s) => Object.assign(s, { faceYaw: Math.atan2(-s.x, -s.z) })); // 섬 중심을 바라봄
 
   // 놀이기구(장식, 들어갈 수 없음 — 나중에 미니게임 입구로 바꿀 수 있게 자리만): 디스코 팡팡·바이킹
-  const RIDES = [{ id: 'disco', x: 8, z: 2.5, body: 2.1 }, { id: 'viking', x: 5.6, z: 7.6, body: 2.2 }];
+  const RIDES = [{ id: 'disco', x: 8, z: 2.5, body: 2.1 }]; /* 바이킹 놀이기구는 바다 배(BOAT)로 바뀜(V1630 C) */
+  /* 바다 배: 뒤쪽 해변 앞바다. S = 모델 배율(Tripo 배 길이 0.98 → 약 4.9), DECK = 모델 갑판 높이, 갑판 반폭 U(길이)·W(폭) */
+  const BOAT = { x: 0, z: 19.4, S: 5, DECK: 0.185, U: 1.25, W: 0.72, DRAFT: 0.55 };
+  /* 해변(모래사장): 섬 스크립트 Beach sand 중심 (0, z 3.2) 반지름 13.6 → 걸을 수 있는 곳 = 반지름 13.0, 뒤쪽(z > 10.5)만 */
+  const BEACH = { cz: 3.2, r: 13.0, zmin: 10.5 };
+  function onBeach(x, z) { return z > BEACH.zmin && Math.hypot(x, z - BEACH.cz) < BEACH.r; }
 
   // 건물 앞(섬 중심 쪽) 진입 지점
   function entryPoint(s) {
@@ -27,7 +32,7 @@
     return { x: s.x - s.x * k, z: s.z - s.z * k };
   }
   function allowed(x, z) {
-    if (Math.hypot(x, z) > WALK_R || Math.hypot(x, z) < HOLE_R) return false;
+    if ((Math.hypot(x, z) > WALK_R && !onBeach(x, z)) || Math.hypot(x, z) < HOLE_R) return false;
     return !SITES.some((s) => Math.hypot(x - s.x, z - s.z) < s.body) && !RIDES.some((s) => Math.hypot(x - s.x, z - s.z) < s.body);
   }
   function slide(p, dx, dz) {
@@ -73,7 +78,7 @@
     return [{ x: px * R, z: pz * R }];
   }
 
-  const api = { ISLAND_R, WALK_R, HOLE_R, SPAWN, SITES, RIDES, ARCADE_K, ARCADE_HOLES, ARCADE_BUTTONS, ROUND_COLORS, pickHole, rideExit, nearestRide, entryPoint, allowed, slide, nearest, pathVia };
+  const api = { ISLAND_R, WALK_R, HOLE_R, SPAWN, SITES, RIDES, BOAT, onBeach, ARCADE_K, ARCADE_HOLES, ARCADE_BUTTONS, ROUND_COLORS, pickHole, rideExit, nearestRide, entryPoint, allowed, slide, nearest, pathVia };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else { root.MoleGame = root.MoleGame || {}; root.MoleGame.Home3DLayout = api; }
 })(typeof window !== 'undefined' ? window : globalThis);
