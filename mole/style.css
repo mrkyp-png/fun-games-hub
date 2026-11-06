@@ -2690,7 +2690,7 @@ body { background: var(--lm-page); }
 .sr-ui { z-index: 2; }
 .sr-title-wrap { position: relative; display: block; flex: 0 0 auto; line-height: 0; }
 .sr-title-wrap::after { content: ''; position: absolute; inset: 0; pointer-events: none;
-  -webkit-mask: url('assets/score/title.png') center / 100% 100% no-repeat; mask: url('assets/score/title.png') center / 100% 100% no-repeat;
+  -webkit-mask: url('assets/score/title.png?v=1639') center / 100% 100% no-repeat; mask: url('assets/score/title.png?v=1639') center / 100% 100% no-repeat;
   background: linear-gradient(110deg, transparent 38%, rgba(255, 255, 255, 0.85) 50%, transparent 62%) no-repeat; background-size: 250% 100%; animation: sr-shine 3.4s ease-in-out infinite; }
 @keyframes sr-shine { 0%, 55% { background-position: 130% 0; } 100% { background-position: -30% 0; } }
 .sr-tw { position: absolute; width: calc(var(--w) * 0.05); height: calc(var(--w) * 0.05); margin: calc(var(--w) * -0.025) 0 0 calc(var(--w) * -0.025); pointer-events: none; opacity: 0;
@@ -10150,3 +10150,17 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* V1637 C 사용자: 설정 안 팝업(언어·초기화 등) 좌우 폭 = 설정 창 */
 #settings-screen .shop-coin-choice-dialog { padding-left:0!important; padding-right:0!important; }
 #settings-screen .shop-coin-choice-card { width:100%!important; max-width:none!important; flex:none!important; }
+/* V1639 C 사용자: 스코어 CSS 부분 = 지금 게임 톤(크림·금색 테두리·파스텔). 배경 양탄자·간판·1~3위 방패는 그림이라 그대로 */
+#score-screen .sr-tab--off { --sr-face:linear-gradient(180deg,#d9ebfb,#b3d3f1); --sr-rim:linear-gradient(180deg,#f2f9ff,#a8c9ea 24%,#6f9ccc 75%,#557fae); --sr-highlight:#f4faff; --sr-outline:#557fae; }
+#score-screen .sr-tab--off .sr-tab-txt b, #score-screen .sr-tab--off span { color:#4d6f9c; }
+#score-screen .sr-tab--off .sr-tab-txt small { color:#7393bd; }
+#score-screen .sr-row { background:linear-gradient(180deg,#fffaf0,#fff2da); box-shadow:inset 0 0 0 3px #d6ad63, inset 0 0 0 5px #f6dfaa, 0 4px 0 #c89a4f, 0 6px 10px rgba(55,30,5,.25); }
+#score-screen .sr-row .sr-rank { color:#b8812f; }
+#score-screen .sr-row .sr-name, #score-screen .sr-row .sr-sbox .sr-score { color:#6b4426; }
+#score-screen .sr-row .sr-ava { background:linear-gradient(180deg,#a9dcf7,#79bde9); }
+#score-screen .sr-sbox { background:linear-gradient(180deg,#fdf1d8,#f5e1bb); box-shadow:inset 0 0 0 2px #e8cc8e; }
+#score-screen .sr-empty { background:rgba(107,68,38,.85); }
+#score-screen .sr-info { color:#6b4426; }
+#score-screen .sr-info::before { border:3px solid #d6ad63; border-image:none; border-radius:999px; background:#fff5d9; box-shadow:inset 0 0 0 2px #f6dfaa, 0 3px 0 #c89a4f; }
+/* V1639 C: 새 간판(사용자 ChatGPT, 1000×528) 비율 — 높이는 예전과 비슷하게 */
+.sr-title { width:calc(var(--w) * 0.64); aspect-ratio:1000 / 528; }
