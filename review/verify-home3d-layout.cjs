@@ -65,7 +65,7 @@ console.log('verify-home3d-layout: ok (' + L.SITES.length + ' sites)');
 }
 // 놀이기구 2개(장식): 통과 못 하고, 진입 대상(nearest)은 아님
 {
-  assert.deepStrictEqual(L.RIDES.map((r) => r.id).sort(), ['disco']); // V1630 C: 바이킹 놀이기구 → 바다 배(L.BOAT)
+  assert.deepStrictEqual(L.RIDES.map((r) => r.id).sort(), []); // V1633 C: 놀이기구 = 바다 배(L.BOAT)·Tripo 디스코 팡팡(L.DISCO, 배치만)
   for (const r of L.RIDES) {
     assert.ok(!L.allowed(r.x, r.z), r.id + ' 몸체는 막힘');
     assert.ok(Math.hypot(r.x, r.z) + r.body <= L.ISLAND_R, r.id + ' 섬 안');

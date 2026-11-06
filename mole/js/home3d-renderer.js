@@ -183,7 +183,7 @@ if(uSea){vec2 p=vWorld.xz;float t=uTime;vec2 g=vec2(0.);const vec3 W[6]=vec3[6](
 if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=max(0.,(dot(n,uSun)+.4)/1.4);frag=vec4(c*(.86+.14*k),1.);return;}if(uFloor){float tile=mod(floor(vWorld.x/1.5)+floor(vWorld.z/1.5),2.);base=mix(vec3(.78,.72,.61),vec3(.31,.30,.28),tile);}float key=max(0.,(dot(n,uSun)+.4)/1.4);float fill=max(0.,dot(n,normalize(vec3(.8,.4,-.5))));vec3 lit=base*(vec3(.39,.40,.43)+key*.62+fill*vec3(.08,.10,.13));vec3 h=normalize(normalize(uEye-vWorld)+uSun);lit+=vec3(.04)*pow(max(0.,dot(n,h)),14.);vec3 pw=vWorld+n*.06;vec3 q=lproj(uShadowVP,pw);if(inside(q))shadow=vis(uShadowS,q,1./1024.);if(!uActor){vec3 qm=lproj(uShadowVPM,pw);if(inside(qm))shadow=min(shadow,vis(uShadowM,qm,1./512.));}lit*=mix(.62,1.,shadow)*cloudVis(vWorld);float fog=smoothstep(20.,46.,length(uEye-vWorld));frag=vec4(mix(pow(clamp(lit,0.,1.),vec3(1./2.2)),vec3(.73,.82,.88),fog),uColor.a*vColor.a);}`;
 
   function create(canvas) {
-    let boat = [], smoke = [], smokeBall = null, arcade = null, boss = null, modeBtn = [], glowDisc = [], glowHalo = [], screenTex = null, screenCanvas = null; // 두더지팡 게임기: 구멍 빛·구멍 두더지·화면 글자
+    let props = [], boat = [], smoke = [], smokeBall = null, arcade = null, boss = null, modeBtn = [], glowDisc = [], glowHalo = [], screenTex = null, screenCanvas = null; // 두더지팡 게임기: 구멍 빛·구멍 두더지·화면 글자
     let gl, program, U, A, environment = [], actor = [], rig = null, vp = null, signs = null, size = null, seaMesh = null, shadowS = null, shadowM = null, sunQuad = null, clouds = [], rides = [], staticAt = -9, staticVP = null;
     const resetSize = () => { size = null; };
     if (root.ResizeObserver) new ResizeObserver(resetSize).observe(canvas); else root.addEventListener('resize', resetSize);
@@ -285,9 +285,11 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
       finally { clearTimeout(timer); }
     }
     return {
-      async boot(plazaUrl, moleUrl, boatUrl) {
+      async boot(plazaUrl, moleUrl, boatUrl, propList) {
         setup();
         const [plaza, mole, boatModel] = await Promise.all([load(plazaUrl), load(moleUrl), boatUrl ? load(boatUrl).catch(() => null) : null]);
+        /* 고정 소품(Tripo, 그림 질감): [{url, world}] — 디스코 팡팡 상판·받침 */
+        for (const pr of propList || []) load(pr.url).then((mdl) => { const ins = R.instances(mdl); for (const i of ins) { const m = Object.assign(mesh(mdl, i.primitive), { world: R.multiply(pr.world, i.world), texBase: null }); glbTexture(mdl, i.primitive).then((t) => { m.texBase = t; }).catch(() => {}); props.push(m); } }).catch(() => {});
         if (boatModel) { boat = R.instances(boatModel).map((i) => Object.assign(mesh(boatModel, i.primitive), { world: i.world, texBase: null })); for (const b of boat) glbTexture(boatModel, R.instances(boatModel)[0].primitive).then((t) => { b.texBase = t; }).catch(() => {}); }
         // Sign_<action> 판 = 간판 글자 텍스처 자리
         environment = R.instances(plaza).map((i) => Object.assign(mesh(plaza, i.primitive), { world: i.world, sign: i.name.startsWith('Sign_') ? i.name.slice(5) : null, screen: i.name.startsWith('Screen_'), tex: null, texPrim: i.name.startsWith('Tex_') ? i.primitive : null }));
@@ -372,6 +374,7 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
         gl.activeTexture(gl.TEXTURE0);
         for (const m of environment) draw(m, m.world, null);
         if (seaMesh) draw(seaMesh, R.identity(), null);
+        for (const pm of props) if (pm.texBase) draw(pm, pm.world, null); /* 고정 소품 */
         if (boat.length) { const bm = boatMatrix(now); for (const b of boat) if (b.texBase) draw(b, R.multiply(bm, b.world), null); } /* 바다 배 */
         if (arcade) {
           gl.uniform1i(U.Glow, 1);

@@ -324,7 +324,9 @@
       root.FGH.I18N.onChange(() => { jumpLabel(); if (ready) { signsNow(); refreshArcade(true); if (!raf && api.renderAllowed()) wake(); } });
       document.addEventListener('visibilitychange', wake);
       rd.lost(() => { ready = false; stop(); ui.setLoading(ko() ? '3D 화면을 다시 불러와 주세요.' : 'Please reload the 3D plaza.'); });
-      rd.boot(PLAZA_GLB, MOLE_GLB, 'assets/home3d/boat.glb').then(() => {
+      rd.boot(PLAZA_GLB, MOLE_GLB, 'assets/home3d/boat.glb', [ /* V1633 C: 디스코 팡팡(배치만) */
+        { url: 'assets/home3d/disco-base.glb', world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
+        { url: 'assets/home3d/disco-top.glb', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) }]).then(() => {
         ready = true; readyAt = time; ui.setLoading(null); signsNow(); refreshArcade(true);
         wake();
       }).catch((err) => { console.error('3D home:', err); ui.setLoading((ko() ? '3D 공간을 불러오지 못했습니다.' : 'Could not load the 3D plaza.') + ' (' + String(err && err.message || err).slice(0, 160) + ')'); });
