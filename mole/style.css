@@ -10203,3 +10203,9 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #quest-screen .qs-achbtn.ws-action-frame span { color:#b8812f; -webkit-text-stroke:0; }
 #quest-screen .qs-all:not(.qs-all--weekly) .qs-all-txt b { color:#fff; -webkit-text-stroke:2px #6a3fae; } /* 연보라 위 글자 잘 보이게 */
 #quest-screen .qs-all:not(.qs-all--weekly) .qs-all-txt span { color:#fff; }
+/* V1648 C 사용자: 퀘스트·업적 간판 = 새 빈 간판(사용자 ChatGPT), 제목 글자는 간판 가운데 */
+#quest-screen .qs-character-slot { background:url('assets/quest/sign-v1648.png') center bottom / contain no-repeat; }
+#quest-screen .qs-title, #quest-screen[data-mode="ach"] .qs-title { left:20%; right:auto; width:60%; }
+#quest-screen:not([data-mode="ach"]) .qs-title, #quest-screen[data-mode="ach"] .qs-title { top:calc(20% + .1cm); }
+/* V1648 C 사용자: 퀘스트 배경 = 놀이공원 광장(사용자 ChatGPT) — 옛 나무 간판·숲길 앞 그림 대신 */
+#quest-screen .qs-front { background-image:url('assets/quest/bg-v1648.webp'); }
