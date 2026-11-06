@@ -181,7 +181,8 @@
       arcCam += (aim - arcCam) * Math.min(1, dt / 0.6 * 3);
       let cv = camK >= 1 ? view : Object.assign({}, view, { pitch: INTRO_PITCH + (view.pitch - INTRO_PITCH) * ck });
       if (arcCam > 0.001) { const a = arcCam * arcCam * (3 - 2 * arcCam), dy = Math.atan2(Math.sin(0 - cv.yaw), Math.cos(0 - cv.yaw));
-        cv = Object.assign({}, cv, { x: cv.x + (0 - cv.x) * a, z: cv.z + (-8.6 - cv.z) * a, yaw: cv.yaw + dy * a, pitch: cv.pitch + (0.82 - cv.pitch) * a, dist: 7.5 + 2.6 * a, fy: 1.35 + 1.6 * a }); } // 게임기 더 아래로, 위 간판까지 보이게(사용자)
+        const arc = Math.sin(Math.PI * a) * Math.min(1, Math.abs(dy) / 0.8); // 옮겨 가는 도중엔 높이 올라 게임기 위로 넘어감(사용자: 화면이 가려지며 지나감 — 카메라가 게임기 몸통을 뚫고 지나가던 것)
+        cv = Object.assign({}, cv, { x: cv.x + (0 - cv.x) * a, z: cv.z + (-8.6 - cv.z) * a, yaw: cv.yaw + dy * a, pitch: Math.min(1.35, cv.pitch + (0.82 - cv.pitch) * a + 0.55 * arc), dist: 7.5 + 2.6 * a + 3 * arc, fy: 1.35 + 1.6 * a + 1.5 * arc }); } // 게임기 더 아래로, 위 간판까지 보이게(사용자)
       rd.render(cv, pose());
       if (time - badgeAt > 1) { badgeAt = time; badges = claimables(MG); refreshArcade(); } // 1초마다 확인(뱃지·게임기 진행)
       ui.setBadges(badges.map((a) => { const s = L.SITES.find((x) => x.action === a), q = s && MG.Home3DRenderer.project(rd.vp(), [s.x, s.kind === 'building' ? 3.4 : 1.9, s.z]), z = rd.size(); return q && z && { action: a, x: (q[0] + 1) / 2 * z.cw, y: (1 - q[1]) / 2 * z.ch, on: Math.abs(q[0]) < 1.1 && Math.abs(q[1]) < 1.1 }; }).filter(Boolean));
