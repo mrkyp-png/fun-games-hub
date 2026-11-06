@@ -298,10 +298,10 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
           for (let k = 0; k <= N; k++) { const a = 2 * Math.PI * k / N; P.push(Math.cos(a), 0, Math.sin(a)); Nn.push(0, 1, 0); C.push(...c.map((v) => Math.min(1, v * 1.35)), 1); if (k < N) I.push(0, k + 1, k + 2); }
           return rawMesh(new Float32Array(P), new Float32Array(Nn), new Uint32Array(I), {}, new Float32Array(C));
         });
-        // 구멍 밖으로 번지는 빛(반지름 1 → 2.1, 밝은 라운드 색 → 투명)
+        // 구멍 위로 은은하게 퍼지는 빛(사용자: 판에 퍼지지 말고 구멍 위로, 색 = 구멍과 같은 라운드 색). 아래 반지름 1 → 위 1.4, 위로 갈수록 투명
         glowHalo = root.MoleGame.Home3DLayout.ROUND_COLORS.concat(['#f2d27a']).map((hex) => {
-          const c = [1, 3, 5].map((i) => Math.min(1, parseInt(hex.slice(i, i + 2), 16) / 255 * .55 + .45)), N = 36, P = [], Nn = [], C = [], I = [];
-          for (let k = 0; k <= N; k++) { const a = 2 * Math.PI * k / N; for (const [rr, al] of [[0.98, 0.9], [1.35, 0.45], [2.1, 0]]) { P.push(Math.cos(a) * rr, 0, Math.sin(a) * rr); Nn.push(0, 1, 0); C.push(...c, al); } if (k < N) { const b = k * 3; I.push(b, b + 3, b + 1, b + 1, b + 3, b + 4, b + 1, b + 4, b + 2, b + 2, b + 4, b + 5); } }
+          const c = [1, 3, 5].map((i) => Math.min(1, parseInt(hex.slice(i, i + 2), 16) / 255 * 1.25)), N = 36, P = [], Nn = [], C = [], I = [];
+          for (let k = 0; k <= N; k++) { const a = 2 * Math.PI * k / N; for (const [rr, y, al] of [[0.96, 0, 0.6], [1.12, 0.35, 0.28], [1.4, 1, 0]]) /* 위로 넓게 퍼지며 은은하게 사라짐(사용자) */ { P.push(Math.cos(a) * rr, y, Math.sin(a) * rr); Nn.push(0, 1, 0); C.push(...c, al); } if (k < N) { const b = k * 3; I.push(b, b + 3, b + 1, b + 1, b + 3, b + 4, b + 1, b + 4, b + 2, b + 2, b + 4, b + 5); } }
           return rawMesh(new Float32Array(P), new Float32Array(Nn), new Uint32Array(I), {}, new Float32Array(C));
         });
         environment = environment.filter((m) => !m.sea); // GLB 의 평평한 바다 판 대신 움직이는 격자
@@ -365,9 +365,9 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
         if (arcade) {
           gl.uniform1i(U.Glow, 1);
           for (const h of arcade.holes) if (h.glow >= 0 && glowDisc[h.glow]) draw(glowDisc[h.glow], R.transform({ translation: [h.x, h.y - 0.05, h.z], scale: [h.r * 0.97, 1, h.r * 0.97] }), null);
-          gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE); gl.depthMask(false); gl.disable(gl.CULL_FACE);
+          gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false); gl.disable(gl.CULL_FACE); // 색 그대로 반투명
           const pulse = 1 + 0.08 * Math.sin(now * 3);
-          for (const h of arcade.holes) if (h.glow >= 0 && glowHalo[h.glow]) draw(glowHalo[h.glow], R.transform({ translation: [h.x, h.y + 0.012, h.z], scale: [h.r * pulse, 1, h.r * pulse] }), null);
+          for (const h of arcade.holes) if (h.glow >= 0 && glowHalo[h.glow]) draw(glowHalo[h.glow], R.transform({ translation: [h.x, h.y - 0.02, h.z], scale: [h.r, 0.9 * pulse, h.r] }), null);
           gl.depthMask(true); gl.disable(gl.BLEND);
           for (const fl of arcade.flash || []) { const h = arcade.holes.find((x) => x.n === fl), gi = fl === 0 ? 8 : fl - 1; if (h && glowDisc[gi]) draw(glowDisc[gi], R.transform({ translation: [h.x, h.y - 0.03, h.z], scale: [h.r * 0.97, 1, h.r * 0.97] }), null); }
           gl.uniform1i(U.Glow, 0);
