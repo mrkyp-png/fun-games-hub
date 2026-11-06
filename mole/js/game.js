@@ -3624,6 +3624,17 @@
     // 3D 홈 광장(기본, ?home3d=0 = 구형 홈) — 기능 열기는 기존 homeAction 그대로.
     if (MG.Home3D) home3d = MG.Home3D.create({
       homeAction,
+      // V1619 C 사용자: 광장 두더지팡 게임기 = 라운드 지도 없이 바로 시작(하트 없으면 기존 안내창). 구멍 = 라운드 선택·진행 표시
+      startGame: () => {
+        if (navLocked || gameStarting || state) return false;
+        if (MG.Economy.getHearts() <= 0) { beginGame(false); return true; }
+        MG.RoundMap.shapeTransition(1, () => beginGame(false));
+        return true;
+      },
+      rounds: () => { const l = currentLight(); return { light: l, chapter: currentChapter(), get: (n) => MG.Progress.get(n, l), unlocked: (x) => MG.Progress.isLightUnlocked(x) }; },
+      // 게임기 모드 버튼: 라운드 지도와 같은 규칙(그 모드에서 열린 가장 높은 라운드로)
+      setMode: (l) => { if (!l || !MG.Progress.isLightUnlocked(l)) return false; setDifficulty(l); setChapter(MG.Progress.maxChapterFor(l)); refreshChapterNav(); return true; },
+      selectRound: (n) => { if (n < 1 || n > MG.Progress.maxChapterFor(currentLight())) return false; setChapter(n); refreshChapterNav(); return true; },
       host: document.getElementById('game-screen'),
       hud: () => ({ coins: MG.Economy.formatK(MG.Economy.getCoins()), hearts: MG.Economy.formatK(MG.Economy.getHearts()), tickets: MG.Economy.formatK(MG.Economy.getTickets()) })
     });

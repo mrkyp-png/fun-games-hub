@@ -7,7 +7,7 @@
   // body = 막히는 몸체 반지름, enter = 진입 지점에서 진입이 잡히는 반지름
   const B = { kind: 'building', body: 1.8, enter: 0.6 }, P = { kind: 'prop', body: 0.5, enter: 0.55 }; // enter: 몸체 가장자리에서 이 거리 안 = 건물에 닿음
   const SITES = [
-    { id: 'mole', action: 'lightMode', labelKey: 'mole.pad.gameMole', x: 0, z: -9, ...B, body: 2.4 },
+    { id: 'mole', action: 'lightMode', labelKey: 'mole.pad.gameMole', x: 0, z: -9, ...B, body: 3.2 },
     { id: 'rhythm', action: 'rhythm', labelKey: 'mole.pad.gameRhythm', x: 0, z: 9, ...B, body: 2.8 }, // 해변 오두막+클럽 폭 5.6
     { id: 'shop', action: 'shop', labelKey: 'mole.more.shop', x: -7, z: -5, ...B },
     { id: 'workshop', action: 'locker', labelKey: 'mole.pad.lblLocker', x: -9, z: 0, ...B },
@@ -47,6 +47,19 @@
 
   // 놀이기구 타기: 몸체 가장자리에서 0.6 안이면 닿음 / 내리는 곳 = 섬 중심 쪽 앞
   function rideExit(rd) { const d = Math.hypot(rd.x, rd.z), k = (rd.body + 0.45) / d; return { x: rd.x - rd.x * k, z: rd.z - rd.z * k }; }
+  // 두더지팡 게임기 구멍 = 라운드(사용자 2026-11-06). 자리 = review/build-arcade-mole.py 구멍(가로 0.31·세로 0.27 간격, 가운데 줄 -0.18)
+  // × 광장 배율 2.84(review/build-home-plaza.py ARCADE_K), 게임기 자리 (0,-9), 정면 = 섬 가운데(+z). 구멍판 윗면 높이 = (1.22 - 0.384) × 2.84
+  // 순서: 정면에서 볼 때 앞줄 오른쪽 = 1라운드 → 앞줄 왼쪽으로 → 왼쪽 가운데 → 뒷줄 왼→오 → 오른쪽 가운데 = 8, 가운데 = 파이널(0)
+  const ARCADE_K = 2.84, DECK_Y = (1.22 - 0.384) * ARCADE_K, HOLE_RADIUS = 0.12 * ARCADE_K;
+  const HOLE_ORDER = [[2, 0], [1, 0], [0, 0], [0, 1], [0, 2], [1, 2], [2, 2], [2, 1]];
+  const holeAt = (i, j, n) => ({ n, x: (i - 1) * 0.31 * ARCADE_K, y: DECK_Y, z: -(9 + (-0.18 + (j - 1) * 0.27) * ARCADE_K), r: HOLE_RADIUS });
+  const ARCADE_HOLES = HOLE_ORDER.map(([i, j], k) => holeAt(i, j, k + 1)).concat([holeAt(1, 1, 0)]);
+  // 라운드별 게임 화면 색(실제 게임 화면 1~8라운드에서 뽑음, 2026-11-06)
+  const ROUND_COLORS = ['#303237', '#8a3e40', '#9f6735', '#ab9337', '#428257', '#3d6ca1', '#4a4b82', '#774c94'];
+  // 모드 버튼 3개(아마추어·노말·프로). 사용자: 아이보리 판을 앞으로 빼서(앞 끝 -0.96) 생긴 앞쪽 공간(-0.78)에 간격 넓혀 크게(사용자: 작으면 못 누름), 위를 봄
+  const MODE_COLORS = { easy: '#d99a3e', mid: '#6f8aa6', legend: '#8e6a8c' };
+  const ARCADE_BUTTONS = ['easy', 'mid', 'legend'].map((light, k) => ({ light, x: (-0.32 + k * 0.32) * ARCADE_K, y: DECK_Y + 0.005, z: -(9 - 0.78 * ARCADE_K), r: 0.09 * ARCADE_K, color: MODE_COLORS[light] }));
+  function pickHole(x, z) { return ARCADE_HOLES.find((h) => Math.hypot(x - h.x, z - h.z) <= h.r * 1.25) || null; }
   function nearestRide(x, z) { return RIDES.find((rd) => Math.hypot(x - rd.x, z - rd.z) - rd.body <= 0.6) || null; }
 
   // 자동 걷기: 곧은 길이 가운데 구멍을 지나면 구멍 옆(출발한 쪽)으로 돌아갈 중간 지점 1개
@@ -60,7 +73,7 @@
     return [{ x: px * R, z: pz * R }];
   }
 
-  const api = { ISLAND_R, WALK_R, HOLE_R, SPAWN, SITES, RIDES, rideExit, nearestRide, entryPoint, allowed, slide, nearest, pathVia };
+  const api = { ISLAND_R, WALK_R, HOLE_R, SPAWN, SITES, RIDES, ARCADE_HOLES, ARCADE_BUTTONS, ROUND_COLORS, pickHole, rideExit, nearestRide, entryPoint, allowed, slide, nearest, pathVia };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else { root.MoleGame = root.MoleGame || {}; root.MoleGame.Home3DLayout = api; }
 })(typeof window !== 'undefined' ? window : globalThis);

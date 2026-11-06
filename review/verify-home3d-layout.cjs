@@ -21,8 +21,8 @@ for (const s of L.SITES) {
   assert.ok(L.allowed(e.x, e.z), s.action + ' 진입 지점이 걸을 수 있어야 함');
   assert.strictEqual(L.nearest(e.x, e.z) && L.nearest(e.x, e.z).action, s.action, s.action + ' 진입 지점 nearest');
 }
-assert.strictEqual(L.nearest(0, -6.4).action, 'lightMode', '건물에 닿으면 진입(게임기 body 2.4)');
-assert.strictEqual(L.nearest(0, -5.5), null, '건물에서 떨어져 있으면 안 들어감');
+assert.strictEqual(L.nearest(0, -6.4).action, 'lightMode', '건물에 닿으면 진입(게임기 body 3.2)');
+assert.strictEqual(L.nearest(0, -4.8), null, '건물에서 떨어져 있으면 안 들어감');
 assert.strictEqual(L.nearest(0, 0), null, '가운데 집 구멍에서는 아무 진입도 안 잡힘');
 
 // slide: 막히면 그 축만 멈춤

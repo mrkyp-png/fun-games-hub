@@ -132,11 +132,16 @@ def mole_booth():   # 두더지팡: 아케이드 게임기(review/build-arcade-m
         o.parent = None; o.scale = (ARCADE_K,) * 3; o.location = tuple(v * ARCADE_K for v in o.location)
     # 나무 이름판은 삭제(사용자 지시). 글자는 기계 위 간판 상자 앞면에(Sign_lightMode, 간판 판 크기 0.9×0.22 × K)
     k = ARCADE_K
-    bpy.ops.mesh.primitive_plane_add(size=1, location=(0, (0.6 - 0.53 - 0.015) * k - .006, (2.52 - .384 - .215) * k), rotation=(math.pi / 2, 0, 0))
+    bpy.ops.mesh.primitive_plane_add(size=1, location=(0, (0.6 - 0.53 - 0.015) * k - .006, (2.52 - .384 - .387) * k), rotation=(math.pi / 2, 0, 0))
     face = bpy.context.object; face.name = 'Sign_lightMode'; face.scale = (0.86 * k, 0.2 * k, 1)   # 간판 상자는 그대로, 아래 몸통(0.384)·화면 아래 분홍 틈(0.215)이 줄어든 만큼 내려감(build-arcade-mole.py mz)
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     face.data.materials.append(M['sign'])
-    return p + [face]
+    # 게임기 화면 = Screen_lightMode 판(글자: 'OO 1라운드' / 'BEST 점수', 렌더러가 그림). 화면 중심 높이 1.95 → 아래 몸통·분홍 틈 줄어든 만큼(0.384+0.215) 내려감
+    bpy.ops.mesh.primitive_plane_add(size=1, location=(0, (0.6 - 0.33 - 0.015) * k - .006, (1.95 - .384 - .387) * k), rotation=(math.pi / 2, 0, 0))
+    scr = bpy.context.object; scr.name = 'Screen_lightMode'; scr.scale = (0.64 * k, 0.46 * k, 1)
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    scr.data.materials.append(M['sign'])
+    return p + [face, scr]
 
 def rhythm_house():  # 리듬팡: 왼쪽 해변 오두막 / 오른쪽 미래형 클럽(늘 둘 다 보임)
     p = [box('Beach hut', (-1.3, .2, 1.2), (2.4, 2.2, 2.4), M['wood']),
@@ -234,7 +239,7 @@ def mat_rgb(m):
 SEPARATE = {'Hub checker floor', 'Home sea'}
 groups = {}
 for o in list(bpy.context.scene.objects):
-    if o.type != 'MESH' or o.name.startswith('Sign_') or o.name.startswith('Tex_'): continue  # Tex_ = 그림 입힌 부품(뿅망치 야구공), 그림 재질 유지
+    if o.type != 'MESH' or o.name.startswith('Sign_') or o.name.startswith('Tex_') or o.name.startswith('Screen_'): continue  # Tex_ = 그림 입힌 부품(뿅망치 야구공), 그림 재질 유지
     mname = o.data.materials[0].name
     if mname in SEPARATE:
         groups.setdefault(mname, []).append(o); continue
@@ -253,7 +258,7 @@ for name, objs in groups.items():
     bpy.ops.object.join(); bpy.context.object.name = name + ' batch'
 # 간판 글자판은 위치 정보를 노드 원점으로 남김(검사·간판 작업용)
 for o in bpy.context.scene.objects:
-    if o.name.startswith('Sign_'):
+    if o.name.startswith('Sign_') or o.name.startswith('Screen_'):
         bpy.context.view_layer.objects.active = o
         bpy.ops.object.select_all(action='DESELECT'); o.select_set(True)
         bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')

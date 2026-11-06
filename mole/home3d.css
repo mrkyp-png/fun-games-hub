@@ -25,7 +25,10 @@
 #home3d .h3-paw i:nth-child(3){right:25%;top:6%;transform:rotate(12deg)}
 #home3d .h3-paw i:nth-child(4){right:4%;top:30%;transform:rotate(30deg)}
 #home3d .h3-enter-lbl{display:none;align-items:center;justify-content:center;width:84%;font:800 17px system-ui,sans-serif;color:#4f3d2e;text-align:center;line-height:1.15;word-break:keep-all}
-#home3d .h3-jump.is-enter{background:#ffcf6e;border-color:#fff;box-shadow:0 4px 0 #b69770,0 0 0 4px #ffffff80}
+/* V1619 C 사용자: 시작(진입) 버튼 = 게임 화면 주황 버튼처럼 입체 */
+#home3d .h3-jump.is-enter{border:0;background:radial-gradient(circle at 34% 26%,#ffd9a3 0,#ffad52 26%,#f58a1f 62%,#d96d10 100%);box-shadow:0 6px 0 #a8520c,0 10px 14px rgba(0,0,0,.28),inset 0 3px 4px rgba(255,255,255,.55),inset 0 -6px 10px rgba(120,50,0,.35)}
+#home3d .h3-jump.is-enter:active{transform:translateY(4px);box-shadow:0 2px 0 #a8520c,0 4px 8px rgba(0,0,0,.25),inset 0 3px 4px rgba(255,255,255,.5),inset 0 -4px 8px rgba(120,50,0,.35)}
+#home3d .h3-jump.is-enter .h3-enter-lbl{color:#fff;text-shadow:0 2px 0 rgba(150,70,0,.6)}
 #home3d .h3-jump.is-enter .h3-paw{display:none}
 #home3d .h3-jump.is-enter .h3-enter-lbl{display:flex}
 /* 3D 홈이 보이는 동안 뒤에 가려진 구형 홈 버튼판·홈 그림의 애니메이션·그리기 중지(버벅임 원인) */
