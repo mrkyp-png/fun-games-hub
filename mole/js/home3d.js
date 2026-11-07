@@ -396,8 +396,8 @@
       document.addEventListener('visibilitychange', wake);
       rd.lost(() => { ready = false; stop(); ui.setLoading(ko() ? '3D 화면을 다시 불러와 주세요.' : 'Please reload the 3D plaza.'); });
       rd.boot(PLAZA_GLB, MOLE_GLB, 'assets/home3d/boat.glb', [ /* V1633 C: 디스코 팡팡(배치만) */
-        { url: 'assets/home3d/disco-base.glb?v=1663', /* 내용 바뀐 모델 = 버전 붙여 폰이 새로 받게 */ world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
-        { url: 'assets/home3d/disco-top.glb?v=1663', dyn: 'discoTop', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },
+        { url: 'assets/home3d/disco-base.glb?v=1664b', /* 내용 바뀐 모델 = 버전 붙여 폰이 새로 받게 */ world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
+        { url: 'assets/home3d/disco-top.glb?v=1664b', dyn: 'discoTop', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },
         { url: 'assets/home3d/board.glb?v=1662', world: boardWorld() }]).then(() => { /* V1650 C: 게시판 */
         ready = true; readyAt = time; ui.setLoading(null); signsNow(); refreshArcade(true); rd.setBoard(boardPanels()); refreshBoard(true); if (MG.Home3DText) MG.Home3DText.ready().then(() => { signsNow(); refreshArcade(true); refreshBoard(true); wake(); }); /* V1653 C: 둥근 글씨체 준비되면 글자 다시 그림 */
         wake();
