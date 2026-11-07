@@ -252,6 +252,7 @@
         { /* V1660 C 사용자: 디스코 팡팡 — 기본으로 천천히 돌고, 회전 버튼 = 더 빨리(서서히 줄어듦), 출렁이며 기울기, 점프 버튼 = 통 튐 */
           const D = L.DISCO; discoSpin *= Math.exp(-dt * 0.5); D.yaw += (0.6 + discoSpin) * dt;
           D.tiltDir = time * 1.1; D.tilt = (0.05 + 0.025 * Math.min(1, discoSpin / 3)) * (0.7 + 0.3 * Math.sin(time * 2.3));
+          if (riding === 'disco') { const se = rd.seat('disco'); view.x = se.x; view.z = se.z; view.heading = se.heading; seatY = se.y + 0.02; } /* V1665 C 사용자: 튈 때 발이 바닥에 박히지 않게 — 상판을 옮긴 뒤 같은 프레임에 자리 다시 잡음 */
           let landed = false; if (D.lift > 0 || discoLiftV > 0) { discoLiftV -= 9.5 * dt; D.lift = Math.max(0, D.lift + discoLiftV * dt); if (D.lift === 0) { discoLiftV = 0; landed = true; } }
           /* V1661 C 사용자: 떨어뜨리기 놀이 — 아주 빨리 돌면(원심력) 또는 돌면서 튀었다 내려앉으면 두더지가 밖으로 튕겨 나감 */
           if (riding === 'disco' && discoT0 < 0) discoT0 = time; if (riding !== 'disco' && !air) discoT0 = -1;

@@ -369,11 +369,12 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
         if (now - staticAt > 1 || !staticVP) {
           staticAt = now;
           staticVP = R.multiply(ortho(-21, 21, -21, 21, 1, 80), R.lookAt([sun[0] * 40, sun[1] * 40, sun[2] * 40], [0, 0, 0]));
-          shadowPass(shadowS, staticVP, () => { for (const m of environment) if (!m.sign && !m.texPrim && !m.screen) draw(m, m.world, null); for (const rd of rides) draw(rd.base, rd.world, null); });
+          shadowPass(shadowS, staticVP, () => { for (const m of environment) if (!m.sign && !m.texPrim && !m.screen) draw(m, m.world, null); for (const rd of rides) draw(rd.base, rd.world, null); for (const pm of props) if ((pm.texBase || pm.plain) && pm.dyn !== 'discoTop') draw(pm, pm.world, null); }); /* V1665 C 사용자: 소품 그림자(움직이는 디스코 상판은 아래 두더지 그림자에서) */
         }
         const mc = [view.x, (pose.y || 0) + 0.8, view.z];
-        const moleVP = R.multiply(ortho(-2.6, 2.6, -2.6, 2.6, 1, 60), R.lookAt([mc[0] + sun[0] * 30, mc[1] + sun[1] * 30, mc[2] + sun[2] * 30], mc));
-        shadowPass(shadowM, moleVP, drawMole);
+        const moleVP = R.multiply(ortho(-3.4, 3.4, -3.4, 3.4, 1, 60), R.lookAt([mc[0] + sun[0] * 30, mc[1] + sun[1] * 30, mc[2] + sun[2] * 30], mc));
+        { const D = root.MoleGame.Home3DLayout.DISCO, nearD = Math.hypot(mc[0] - D.x, mc[2] - D.z) < 5;
+          shadowPass(shadowM, moleVP, () => { drawMole(); if (nearD) for (const pm of props) if (pm.dyn === 'discoTop' && (pm.texBase || pm.plain)) draw(pm, R.multiply(discoTopMatrix(), pm.local), null); }); } /* 디스코 상판 그림자 = 매 프레임(돌고 튐) */
         gl.viewport(0, 0, w, h); gl.uniformMatrix4fv(U.VP, false, vp); gl.uniformMatrix4fv(U.ShadowVP, false, staticVP); gl.uniformMatrix4fv(U.ShadowVPM, false, moleVP);
         gl.uniform4fv(U.Clouds, new Float32Array(CLOUDS.map((_, i) => cloudPos(i, now)).flat()));
         gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, shadowS.tex); gl.uniform1i(U.ShadowS, 1);
@@ -485,7 +486,7 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
       buildSigns(lang, sites, t) { if (signs) signs.build(lang, sites, t); },
       // 탄 두더지 자리: 디스코 = 원판 가장자리(바깥을 봄), 바이킹 = 배 갑판(옆을 봄)
       seat(id) {
-        if (id === 'disco') { const M = discoTopMatrix(), p = R.point(M, [0.3, 0.07, 0]), c = R.point(M, [0, 0.07, 0]); return { x: p[0], y: p[1], z: p[2], heading: Math.atan2(c[0] - p[0], c[2] - p[2]) }; } /* V1660 C: 상판 안쪽 가장자리, 가운데를 봄 */
+        if (id === 'disco') { const M = discoTopMatrix(), p = R.point(M, [0.14, 0.07, 0]), c = R.point(M, [-0.2, 0.07, 0]); /* V1665 C 사용자: 꼬리·몸이 그릇 밖으로 안 나오게 안쪽(0.3 → 0.14) */ return { x: p[0], y: p[1], z: p[2], heading: Math.atan2(c[0] - p[0], c[2] - p[2]) }; } /* V1660 C: 상판 안쪽 가장자리, 가운데를 봄 */
         const rd = rides.find((x) => x.id === id); if (!rd) return null;
         const M = rideMatrix(rd, performance.now() / 1000), loc = id === 'disco' ? [1.35, 0.2, 0] : [0.9, -2.5, 0], dir = id === 'disco' ? [1, 0, 0] : [0, 0, 1];
         const p = R.point(M, loc), q = R.point(M, [loc[0] + dir[0], loc[1] + dir[1], loc[2] + dir[2]]);
