@@ -51,6 +51,8 @@
     /* 메일 아이콘: 설정 버튼 밑(V1631 C 사용자), 받을 메일 있으면 빨간 점 */
     /* V1635 C 사용자: 올라갈 때 오른쪽에 높이 표시 */
     const altBox = el('div', 'h3-alt', wrap), altNum = el('b', '', altBox); el('i', '', altBox).textContent = '▲'; altBox.hidden = true;
+    /* V1662 C: 팡팡 20초 도전 시계 + 짧은 알림(하트 +1) */
+    const timerBox = el('div', 'h3-timer', wrap); timerBox.hidden = true; const toastEl = el('div', 'h3-toast', wrap); toastEl.hidden = true; let toastT = 0;
     const mailBtn = el('button', 'h3-mail', wrap); mailBtn.type = 'button'; mailBtn.setAttribute('aria-label', 'mail');
     const mimg = el('img', '', mailBtn); mimg.src = 'assets/mailbox/ic-mail-hud.png'; /* 광장 버튼 = 기존 편지 그림(V1637 C 사용자) */ mimg.alt = ''; const mailDot = el('i', 'h3-mail-dot', mailBtn); mailDot.hidden = true;
     mailBtn.addEventListener('click', () => { if (opts.onMail) opts.onMail(); });
@@ -143,6 +145,8 @@
       setBoardHand(p) { if (!p) { boardHand.hidden = true; return; } boardHand.hidden = false; if (!boardHand.classList.contains('is-press')) { boardHand.style.left = p.x + 'px'; boardHand.style.top = p.y + 'px'; } },
       pressBoardHand(p, done) { boardHand.hidden = false; boardHand.classList.add('is-press'); boardHand.style.left = p.x + 'px'; boardHand.style.top = p.y + 'px';
         setTimeout(() => { boardHand.classList.remove('is-press'); done(); }, 520); },
+      setTimer(t) { timerBox.hidden = !t; if (t && timerBox.textContent !== t) timerBox.textContent = t; },
+      toast(t) { toastEl.textContent = t; toastEl.hidden = false; toastEl.classList.remove('is-on'); void toastEl.offsetWidth; toastEl.classList.add('is-on'); clearTimeout(toastT); toastT = setTimeout(() => { toastEl.hidden = true; }, 1800); },
       setHeight(m) { altBox.hidden = !(m >= 1); if (m >= 1) altNum.textContent = Math.round(m) + 'm'; }, /* 날기 높이(V1635 C) */
       showMail() { mailRender(); mailPop.hidden = false; },
       mailOpen: () => !mailPop.hidden,

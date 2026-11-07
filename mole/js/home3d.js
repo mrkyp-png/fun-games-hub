@@ -45,7 +45,7 @@
       inputEnabled: () => st.inputEnabled(),
       saveView: (v) => st.saveView(v),
       view: () => st.view(),
-      debug: () => ({ state: st.state, x: +view.x.toFixed(2), z: +view.z.toFixed(2), heading: +view.heading.toFixed(2), near: near && near.action, rise: +rise.toFixed(2), hop: !!hop, walking, riding, nearRide: nearRide && nearRide.id, clip: pose().clip, raf: !!raf, inside: inside && inside.phase, air: air ? +air.y.toFixed(2) : null, onBoat: !!onBoat }) // 검토용(?h3debug=1)
+      debug: () => ({ state: st.state, x: +view.x.toFixed(2), z: +view.z.toFixed(2), heading: +view.heading.toFixed(2), near: near && near.action, rise: +rise.toFixed(2), hop: !!hop, walking, riding, nearRide: nearRide && nearRide.id, clip: pose().clip, raf: !!raf, inside: inside && inside.phase, air: air ? +air.y.toFixed(2) : null, onBoat: !!onBoat, spin: +discoSpin.toFixed(2) }) // 검토용(?h3debug=1)
     };
     if (qs.get('h3debug') === '1') { // 검토용 훅(공개 주소엔 없음)
       root.__home3d = api;
@@ -87,7 +87,7 @@
     }
     /* 날기·배: air = 공중 {y, vy, flapAt} / onBoat = 갑판 위 {u, w}(배 기준 좌표) / boardAt = 배에 오른 시각 / offer = 보상 창 */
     const deepLast = {}, deepRun = {}; /* 고래·메갈로돈: 마지막으로 다 돈 시각, 도는 중 시작 시각 */
-    let discoSpin = 0, discoLiftV = 0; /* 디스코 팡팡: 더 도는 속도·튀는 속도 */
+    let discoSpin = 0, discoLiftV = 0, discoT0 = -1; /* discoT0 = 이번에 탄 시각(20초 도전) */ /* 디스코 팡팡: 더 도는 속도·튀는 속도 */
     let boatV = 0, rowSide = 1, wakeFx = [], wakeAt = 0; /* 배 속도(섬 둘레, 초당 거리)·물결 */
     let air = null, onBoat = null, boardAt = -1, offer = null, splashAt = -9;
     const G = 9.5, JUMP_V = 4.4, FLAP_V = 3.6, BOAT_STAY = 300, REWARD_GAP = 3600 * 1000, OFFER_T = 60, REWARD_KEY = 'mole.boatRewardAt';
@@ -133,19 +133,20 @@
       if (dt <= 0) return; // 흐른 시간 0인 프레임은 걷기 판단을 바꾸지 않음
       const len = Math.hypot(v.x, v.z), s = SPEED * dt / Math.max(1, len);
       if (air) { /* 공중: 막힘 없이 이동(섬 둘레 30 안), 떨어지다 땅·갑판·바다에 닿음 */
-        const nx = view.x + v.x * s, nz = view.z + v.z * s; /* V1635 C 사용자: 지구 끝까지 — 거리 제한 없음 */
+        const nx = view.x + v.x * s + (air.vx || 0) * dt, nz = view.z + v.z * s + (air.vz || 0) * dt; /* vx·vz = 팡팡에서 튕겨 나갈 때(V1661 C) */ /* V1635 C 사용자: 지구 끝까지 — 거리 제한 없음 */
         if (v.x || v.z) view.heading = Math.atan2(v.x, v.z); view.x = nx; view.z = nz; walking = false;
         air.vy -= G * dt; air.y += air.vy * dt;
         if (air.vy < 0) {
           const dk = overDeck(view.x, view.z), deckY = dk ? deckWorld(dk.u, dk.w)[1] : -9;
-          if (dk && air.y <= deckY && air.y > deckY - 0.6) { air = null; onBoat = dk; boardAt = time; return; } /* 갑판에 착지 */
+          if (dk && air.y <= deckY && air.y > deckY - 0.6) { air = null; onBoat = { u: 0, w: 0 }; boardAt = time; return; } /* 갑판에 착지 → 가운데에 섬(V1661 C) */
           const rr = Math.hypot(view.x, view.z), land = L.allowed(view.x, view.z) || rr <= L.FENCE_OUT;
           if (land && air.y <= 0) { air = null; if (!L.allowed(view.x, view.z)) { if (rr > L.WALK_R) { const k = (L.WALK_R - 0.1) / rr; view.x *= k; view.z *= k; } if (!L.allowed(view.x, view.z)) { const p = L.slide({ x: 0, z: 0 }, view.x, view.z); view.x = p.x; view.z = p.z; } } return; } /* 땅에 착지(울타리 위면 섬 안쪽으로) */
           if (!land && air.y <= -0.3) { splash(view.x, view.z); return; } /* 바다에 빠짐 */
         }
         return;
       }
-      if (onBoat) { /* 갑판 위 걷기: 화면 방향 → 배 기준, 난간 안에서만 */
+      if (onBoat) { walking = false; return; } /* V1661 C 사용자: 배에 타면 두더지는 가만히(갑판 가운데, 걷기 없음, 바다에 안 떨어짐) */
+      if (onBoat) { /* (옛) 갑판 위 걷기 */
         const B = L.BOAT, a = deckWorld(onBoat.u, onBoat.w), d = toDeck(a[0] + v.x * s, a[2] + v.z * s);
         let nu = d.u, nw = d.w; if (!inDeck(nu, nw)) { const k = 1 / Math.sqrt((nu / B.U) ** 2 + (nw / B.W) ** 2); nu *= k; nw *= k; } walking = Math.hypot(nu - onBoat.u, nw - onBoat.w) > 0.0001;
         if (walking) view.heading = Math.atan2(v.x, v.z); onBoat.u = nu; onBoat.w = nw; return;
@@ -196,8 +197,8 @@
         return { clip: 'Idle', t: inside.at, loop: true, y: (COIN.y - 0.6 * sc) * e, s: k >= 1 ? 0 : sc }; // 서 있던 자세 그대로(사용자)
       }
       if (air) return time - air.flapAt < 0.3 ? { clip: 'ArmsUp', t: (time - air.flapAt) * 2, loop: false, y: air.y } : { clip: 'Jump', t: 0.3, loop: false, y: air.y }; /* 날기: 파닥 = 팔 들기 */
-      if (onBoat) return { clip: walking ? 'WalkFwd' : 'Idle', t: time, loop: true, y: deckWorld(onBoat.u, onBoat.w)[1] }; /* 갑판 */
-      if (riding) return { clip: 'ArmsUp', t: time, loop: true, y: seatY }; // 놀이기구에서 신나게
+      if (onBoat) return { clip: 'Idle', t: time, loop: true, y: deckWorld(onBoat.u, onBoat.w)[1] }; /* 갑판(가만히) */
+      if (riding) return { clip: 'Idle', t: time, loop: true, y: seatY }; /* V1661 C 사용자: 팡팡에서도 가만히(원심력·튀기로 떨어지는 놀이) */
       if (jumping()) {
         const jt = time - jumpAt, base = hop ? HOLE_Y * (1 - jt / IN.jump.T) : 0;
         return { clip: 'Jump', t: jt, loop: false, y: base + IN.jump.height(jt) };
@@ -244,29 +245,36 @@
         const B = L.BOAT, RR = Math.hypot(0, 25.6);
         boatV *= Math.exp(-dt * 0.55); if (boatV < 0.02) boatV = 0; B.kick *= Math.exp(-dt * 2.5);
         B.theta -= boatV / RR * dt; B.x = RR * Math.sin(B.theta); B.z = RR * Math.cos(B.theta); B.yaw = B.theta;
-        if (boatV > 0.3 && time - wakeAt > 0.42 - Math.min(0.3, boatV * 0.06)) { wakeAt = time; const bm = boatM(); for (const [u, w] of [[B.U * 0.9, 0], [0.2, B.W * 1.1], [0.2, -B.W * 1.1]]) { const p = root.StudioRig.point(bm, [u / B.S, 0, w / B.S]); wakeFx.push({ x: p[0], z: p[2], at: time, s: Math.min(1, boatV / 3) }); } }
+        if (boatV > 0.3 && time - wakeAt > 0.42 - Math.min(0.3, boatV * 0.06)) { wakeAt = time; const bm = boatM(); for (const [u, w] of [[2.9, 0], [0.6, 1.6], [0.6, -1.6], [-1.2, 1.5], [-1.2, -1.5]]) { /* V1663 C 사용자: 물결은 배 밖 옆·뒤만(선체 반폭 1.19·반길이 2.45 바깥, 뒤 = 배 기준 +x) */ const p = root.StudioRig.point(bm, [u / B.S, 0, w / B.S]); wakeFx.push({ x: p[0], z: p[2], at: time, s: Math.min(1, boatV / 3) }); } }
         wakeFx = wakeFx.filter((q) => time - q.at < 1.8);
-        if (rd && (wakeFx.length || boatV)) rd.setSmoke(wakeFx.map((q) => { const k = (time - q.at) / 1.8; return { x: q.x, y: -0.55, z: q.z, r: 0.25 + k * 0.9 * (0.6 + q.s), a: 0.55 * (1 - k) }; }));
+        if (rd && (wakeFx.length || boatV)) rd.setSmoke(wakeFx.map((q) => { const k = (time - q.at) / 1.8; return { x: q.x, y: -0.55, z: q.z, r: 0.15 + k * 0.35 * (0.6 + q.s), a: 0.5 * (1 - k) }; /* 물결 작게(사용자: 배 안에 안 보이게) */ }));
         if (ui) ui.setRowing(!!(onBoat && !air));
         { /* V1660 C 사용자: 디스코 팡팡 — 기본으로 천천히 돌고, 회전 버튼 = 더 빨리(서서히 줄어듦), 출렁이며 기울기, 점프 버튼 = 통 튐 */
           const D = L.DISCO; discoSpin *= Math.exp(-dt * 0.5); D.yaw += (0.6 + discoSpin) * dt;
           D.tiltDir = time * 1.1; D.tilt = (0.05 + 0.025 * Math.min(1, discoSpin / 3)) * (0.7 + 0.3 * Math.sin(time * 2.3));
-          if (D.lift > 0 || discoLiftV > 0) { discoLiftV -= 9.5 * dt; D.lift = Math.max(0, D.lift + discoLiftV * dt); if (D.lift === 0) discoLiftV = 0; }
+          let landed = false; if (D.lift > 0 || discoLiftV > 0) { discoLiftV -= 9.5 * dt; D.lift = Math.max(0, D.lift + discoLiftV * dt); if (D.lift === 0) { discoLiftV = 0; landed = true; } }
+          /* V1661 C 사용자: 떨어뜨리기 놀이 — 아주 빨리 돌면(원심력) 또는 돌면서 튀었다 내려앉으면 두더지가 밖으로 튕겨 나감 */
+          if (riding === 'disco' && discoT0 < 0) discoT0 = time; if (riding !== 'disco' && !air) discoT0 = -1;
+          const left = riding === 'disco' ? Math.max(0, 20 - (time - discoT0)) : 0; if (ui && ui.setTimer) ui.setTimer(riding === 'disco' && left > 0 ? '⏱ ' + Math.ceil(left) : null);
+          /* V1662 C 사용자: 잘 안 떨어지게 — 거의 최고 속도로 돌거나, 빠르게 돌면서 튀었다 내려앉을 때 가끔 */
+          if (riding === 'disco' && (discoSpin > 5.4 || (landed && discoSpin > 3 && Math.random() < 0.25))) { if (left > 0 && MG.Economy) { MG.Economy.addHearts(1); refreshHud(); if (ui.toast) ui.toast(root.FGH.I18N.lang === 'ko' ? '하트 +1!' : 'Heart +1!'); } /* 20초 안에 떨어뜨리면 하트 +1 */
+            const se = rd.seat('disco'), ox = se.x - D.x, oz = se.z - D.z, ol = Math.hypot(ox, oz) || 1, sp = 3.2 + discoSpin * 0.6;
+            riding = null; view.x = se.x; view.z = se.z; air = { y: se.y, vy: 3.5, vx: ox / ol * sp, vz: oz / ol * sp, flapAt: -9 }; discoSpin *= 0.4; ui.input.reset(); }
           if (ui && ui.setDiscoRide) ui.setDiscoRide(riding === 'disco'); }
         if (ui && ui.setDeep && rd && rd.vp()) { /* V1660 C 사용자: 1000m 고래·2000m 메갈로돈 — 아주 천천히 나타나 섬 둘레를 10분에 한 바퀴(시계 방향) 돌고 사라짐, 둘은 다른 둘레(겹침 없음) */
           const alt = air ? air.y : 0, c = document.querySelector('#home3d .h3-canvas'), cr = c && c.getBoundingClientRect();
-          for (const [k, need, R0, ph] of [['whale', 1000, 32, 0], ['megalodon', 2000, 48, Math.PI]]) {
+          const qi = MG.Home3DRenderer.project(rd.vp(), [0, -0.8, 0]); /* 섬 가운데 화면 자리 — 높이 날면 섬이 점이라 화면 기준 원(사용자: 섬과 겹치지 않게) */
+          for (const [k, need, R0, ph] of [['whale', 1000, 120, 0], ['megalodon', 2000, 175, Math.PI]]) {
             if (!deepRun[k] && alt >= need && time - (deepLast[k] ?? -1e9) >= 600) deepRun[k] = time;
             const run = deepRun[k], u = run == null ? 2 : (time - run) / 600;
             if (u > 1) { if (run != null) { deepRun[k] = null; deepLast[k] = time; } ui.setDeep(k, null); continue; }
             if (alt < need || !cr) { ui.setDeep(k, null); continue; }
-            const a = ph - u * Math.PI * 2, P = [R0 * Math.sin(a), -0.8, R0 * Math.cos(a)], Q = [R0 * Math.sin(a - 0.05), -0.8, R0 * Math.cos(a - 0.05)];
-            const q0 = MG.Home3DRenderer.project(rd.vp(), P), q1 = MG.Home3DRenderer.project(rd.vp(), Q);
-            if (!q0 || !q1) { ui.setDeep(k, null); continue; }
-            const x0 = (q0[0] + 1) / 2 * cr.width, y0 = (1 - q0[1]) / 2 * cr.height, x1 = (q1[0] + 1) / 2 * cr.width, y1 = (1 - q1[1]) / 2 * cr.height;
+            if (!qi) { ui.setDeep(k, null); continue; }
+            const a = ph + u * Math.PI * 2, cx = (qi[0] + 1) / 2 * cr.width, cy = (1 - qi[1]) / 2 * cr.height; /* 화면에서 시계 방향 */
+            const x0 = cx + R0 * Math.cos(a), y0 = cy + R0 * Math.sin(a), x1 = cx + R0 * Math.cos(a + 0.05), y1 = cy + R0 * Math.sin(a + 0.05);
             const fade = Math.min(1, u * 20, (1 - u) * 20); /* 처음·끝 30초 동안 아주 천천히 나타나고 사라짐 */
             ui.setDeep(k, { x: x0, y: y0, rot: Math.atan2(y1 - y0, x1 - x0), op: 0.32 * fade }); } } }
-      if (onBoat && !air) { const a = deckWorld(onBoat.u, onBoat.w); view.x = a[0]; view.z = a[2]; }
+      if (onBoat && !air) { const a = deckWorld(onBoat.u, onBoat.w), f = deckWorld(onBoat.u - 1, onBoat.w); /* V1663 C 사용자: 배 타면 늘 정면(가는 쪽 = 배 기준 -x) */ view.x = a[0]; view.z = a[2]; view.heading = Math.atan2(f[0] - a[0], f[2] - a[2]); } /* 배와 같이 돌며 뱃머리를 봄 */
       if (onBoat && !air && boardAt >= 0 && !offer && time - boardAt >= BOAT_STAY) { /* 배 5분 → 1시간 1번, 1분 안에 광고 보면 하트 2 → 처음 시작 구멍 */
         let last = 0; try { last = +localStorage.getItem(REWARD_KEY) || 0; } catch (e) { last = 0; }
         if (Date.now() - last >= REWARD_GAP) {
@@ -369,7 +377,7 @@
         onMailChanged() { refreshHud(); badges = claimables(MG); ui.setMailDot(badges.includes('mail')); },
         onClose() { if (st.state === 'FEATURE') opts.homeAction('home'); },
         onExit() { exitArcade(); },
-        onSpin() { if (riding === 'disco') discoSpin = Math.min(6, discoSpin + 0.9); }, /* V1660 C: 팡팡 회전 버튼 = 누를수록 빨리 */
+        onSpin() { if (riding === 'disco') discoSpin = Math.min(6, discoSpin + 0.6); }, /* V1662 C: 잘 안 떨어지게 0.9 → 0.6 */ /* V1660 C: 팡팡 회전 버튼 = 누를수록 빨리 */
         onBounce() { if (riding === 'disco' && L.DISCO.lift <= 0.01) discoLiftV = 4.2; }, /* 팡팡 점프 버튼 = 통 튀어 오름(땅에 있을 때) */
         onRow() { if (onBoat && !air) { boatV = Math.min(4.2, boatV + 0.7); MG.Home3DLayout.BOAT.kick = (rowSide = -rowSide) * 0.08; } }, /* V1657 C: 노 한 번 = 속도 +0.7(최대 4.2), 좌우로 번갈아 기울기 */
         onJump() {

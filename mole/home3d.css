@@ -126,3 +126,9 @@
 #home3d .h3-deep{display:block}
 #home3d .h3-deep img{animation:none!important;width:168px;transform-origin:0 0}
 #home3d .h3-deep img[hidden]{display:none!important}
+/* V1662 C 사용자: 디스코 팡팡 20초 안에 떨어뜨리면 하트 +1 — 위 가운데 시계, 알림 */
+#home3d .h3-timer{position:absolute;left:50%;top:calc(max(12px,env(safe-area-inset-top)) + 58px);translate:-50% 0;padding:8px 16px;border-radius:16px;background:#fffaf0e6;box-shadow:0 3px 0 #c9b79a;color:#5b3d26;font:900 22px Jua,system-ui,sans-serif;pointer-events:none}
+#home3d .h3-timer[hidden],#home3d .h3-toast[hidden]{display:none!important}
+#home3d .h3-toast{position:absolute;left:50%;top:38%;translate:-50% 0;padding:12px 22px;border-radius:18px;background:#fffaf0;box-shadow:0 4px 0 #dc9393,0 8px 16px #0003;color:#e2536f;font:900 26px Jua,system-ui,sans-serif;pointer-events:none}
+#home3d .h3-toast.is-on{animation:h3-toast-pop 1.8s ease-out both}
+@keyframes h3-toast-pop{0%{opacity:0;transform:scale(.6)}12%{opacity:1;transform:scale(1.1)}22%{transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:translateY(-20px)}}
