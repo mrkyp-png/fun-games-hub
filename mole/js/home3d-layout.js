@@ -20,7 +20,7 @@
   const RIDES = []; /* V1633 C: 코드로 만든 디스코 팡팡도 삭제 → Tripo 디스코 팡팡(DISCO, 배치만) / 바이킹 = 바다 배(BOAT) */
   /* 게시판 모델(Tripo, board.glb) 배율과 칸 3개 자리(모델 좌표: 가로 x, 높이 y, 앞 z = 칸 면). 앞뒤 같은 내용 */
   const BOARD = { S: 4.4, PANEL_W: 0.206, PANEL_H: 0.206, Y: 0.54, FACE: 0.071, X: { score: -0.27, daily: 0, quest: 0.27 } }; /* V1653 C: Blender 심플 게시판(review/build-board.py), 1배 + 앞에 가면 카메라가 칸 정면으로(사용자 1번) */
-  const DISCO = { x: 8, z: 2.5, body: 2.1, baseS: 4.6, topS: 3.6, topY: 1.15 }; /* 받침 배율·상판 배율·상판 높이 */
+  const DISCO = { id: 'disco', x: 8, z: 2.5, body: 2.1, baseS: 4.0, topS: 4.6, topY: 2.55, yaw: 0, tilt: 0, tiltDir: 0, lift: 0 }; /* V1660 C: 타면 yaw(회전)·tilt(기울기)·lift(튀기)는 home3d.js 가 바꿈 */ /* 받침 배율·상판 배율·상판 높이(V1660 C: 새 상판·받침 — 받침 기둥 끝 0.65 × 4.0) */
   /* 바다 배: 뒤쪽 해변 앞바다. S = 모델 배율(Tripo 배 길이 0.98 → 약 4.9), DECK = 모델 갑판 높이, 갑판 반폭 U(길이)·W(폭) */
   const BOAT = { x: 0, z: 25.6, S: 5, DECK: 0.185, U: 1.05, W: 0.48, DRAFT: 0.45, theta: 0, yaw: 0, kick: 0 }; /* V1657 C: 노 젓기 — theta(섬 둘레 각도, 시계 방향 = 줄어듦)·yaw·kick(저을 때 기울기)은 home3d.js 가 바꿈 */ /* U·W = 갑판 타원 반지름(배 그림 안, 두더지 몸 여유 뺌, V1636 C) */ /* DRAFT = 물에 잠기는 깊이(갑판까지 0.93 중) */
   /* 해변(모래사장): 섬 스크립트 Beach sand 중심 (0, z 4.3) 반지름 18.1 → 걸을 수 있는 곳 = 반지름 17.5, 뒤쪽(z > 14)만 */
@@ -67,7 +67,7 @@
   const MODE_COLORS = { easy: '#d99a3e', mid: '#6f8aa6', legend: '#8e6a8c' };
   const ARCADE_BUTTONS = ['easy', 'mid', 'legend'].map((light, k) => ({ light, x: (-0.32 + k * 0.32) * ARCADE_K, y: DECK_Y + 0.005, z: -(9 - 0.78 * ARCADE_K), r: 0.09 * ARCADE_K, color: MODE_COLORS[light] }));
   function pickHole(x, z) { return ARCADE_HOLES.find((h) => Math.hypot(x - h.x, z - h.z) <= h.r * 1.25) || null; }
-  function nearestRide(x, z) { return RIDES.find((rd) => Math.hypot(x - rd.x, z - rd.z) - rd.body <= 0.6) || null; }
+  function nearestRide(x, z) { return RIDES.find((rd) => Math.hypot(x - rd.x, z - rd.z) - rd.body <= 0.6) || (Math.hypot(x - DISCO.x, z - DISCO.z) - DISCO.body <= 0.6 ? DISCO : null); } /* V1660 C: 디스코 팡팡 타기 */
 
   // 자동 걷기: 곧은 길이 가운데 구멍을 지나면 구멍 옆(출발한 쪽)으로 돌아갈 중간 지점 1개
   function pathVia(from, to) {

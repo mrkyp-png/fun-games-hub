@@ -37,7 +37,9 @@
     const wrap = el('section', 'h3-home', host); wrap.id = 'home3d'; wrap.hidden = true;
     const canvas = el('canvas', 'h3-canvas', wrap);
     /* V1658 C 사용자: 1000m 고래·2000m 메갈로돈 — 바다 아래 실루엣이 화면 모서리에서 헤엄쳐 지나감 */
-    const deep = el('div', 'h3-deep', wrap); deep.hidden = true; const deepImg = el('img', '', deep); deepImg.alt = ''; let deepKind = null; deepImg.addEventListener('animationend', () => { deep.hidden = true; deepKind = null; });
+    /* V1660 C 사용자: 섬 둘레를 10분에 한 바퀴 — 화면 자리는 home3d.js 가 매 프레임 계산 */
+    const deep = el('div', 'h3-deep', wrap); const deepImg = {};
+    for (const k of ['whale', 'megalodon']) { const im = el('img', 'h3-deep-' + k, deep); im.alt = ''; im.src = 'assets/home3d/deep-' + k + '.png'; im.hidden = true; deepImg[k] = im; }
     const boardHand = el('div', 'h3-boardhand', wrap); boardHand.textContent = '👆'; boardHand.hidden = true; boardHand.setAttribute('aria-hidden', 'true');
     const hud = el('div', 'h3-hud', wrap), vals = {};
     for (const k of ['coins', 'hearts', 'tickets']) {
@@ -90,6 +92,11 @@
     /* V1657 C 사용자: 배에 타면 왼쪽 조이스틱 자리 = 노 버튼(오른쪽 버튼과 같은 아이보리, 💨) — 누를수록 빨라짐 */
     const oarBtn = el('button', 'h3-jump h3-oar', wrap); oarBtn.type = 'button'; oarBtn.hidden = true; oarBtn.setAttribute('aria-label', 'row'); el('span', 'h3-oar-ico', oarBtn).textContent = '💨';
     oarBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); if (opts.onRow) opts.onRow(); });
+    /* V1660 C 사용자: 디스코 팡팡 타면 왼쪽 = 회전(💫)·점프(💨 위로) 버튼, 오른쪽 발바닥은 그대로(내리기) */
+    const spinBtn = el('button', 'h3-jump h3-oar h3-spin', wrap); spinBtn.type = 'button'; spinBtn.hidden = true; spinBtn.setAttribute('aria-label', 'spin'); el('span', 'h3-oar-ico', spinBtn).textContent = '💫';
+    const bounceBtn = el('button', 'h3-jump h3-oar h3-bounce', wrap); bounceBtn.type = 'button'; bounceBtn.hidden = true; bounceBtn.setAttribute('aria-label', 'bounce'); el('span', 'h3-oar-ico h3-up', bounceBtn).textContent = '💨';
+    spinBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); if (opts.onSpin) opts.onSpin(); });
+    bounceBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); if (opts.onBounce) opts.onBounce(); });
     const loading = el('div', 'h3-loading', wrap); loading.setAttribute('role', 'status');
     // 설정·아이템·메일함은 자체 닫기 없이 아래 다이얼패드로 닫던 화면 — 광장이 그 자리를 덮으므로 대신 닫기
     const close = el('button', 'h3-close', wrap); close.type = 'button'; close.hidden = true;
@@ -140,8 +147,9 @@
       showMail() { mailRender(); mailPop.hidden = false; },
       mailOpen: () => !mailPop.hidden,
       /* 한 번 지나가고 사라짐(V1659 C 사용자: 각각 10분에 한 번) */
-      playDeep(kind) { deepKind = kind; deepImg.src = 'assets/home3d/deep-' + kind + '.png'; deep.className = 'h3-deep'; void deep.offsetWidth; deep.className = 'h3-deep is-' + kind; deep.hidden = false; },
-      setRowing(on) { oarBtn.hidden = !on; stick.hidden = !!on; },
+      setDeep(kind, p) { const im = deepImg[kind]; if (!p) { im.hidden = true; return; } im.hidden = false; im.style.transform = 'translate(' + p.x + 'px,' + p.y + 'px) translate(-50%,-50%) rotate(' + p.rot + 'rad)'; im.style.opacity = p.op; },
+      setRowing(on) { oarBtn.hidden = !on; stick.hidden = !!on || !spinBtn.hidden; },
+      setDiscoRide(on) { spinBtn.hidden = !on; bounceBtn.hidden = !on; stick.hidden = !!on || !oarBtn.hidden; },
       setJumpLabel(text) { jumpBtn.setAttribute('aria-label', text); },
       showOffer(text, yes, no, cb) { offerTxt.textContent = text; offerYes.textContent = yes; offerNo.textContent = no; offerCb = cb; offer.hidden = false; },
       hideOffer() { offer.hidden = true; offerCb = null; },

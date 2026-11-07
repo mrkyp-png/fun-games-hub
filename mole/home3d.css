@@ -117,3 +117,12 @@
 #home3d .h3-deep.is-megalodon img{animation:h3-swim-meg 12s linear 1 forwards}
 /* 사용자: 메갈로돈은 화면 오른쪽 위에서 나와 왼쪽 아래로(머리가 가는 쪽 = 좌우 뒤집기) */
 @keyframes h3-swim-meg{0%{transform:translate(110vw,6vh) rotate(-24deg) scaleX(-1) skewY(0deg)}25%{transform:translate(70vw,20vh) rotate(-24deg) scaleX(-1) skewY(3deg)}50%{transform:translate(38vw,34vh) rotate(-24deg) scaleX(-1) skewY(-3deg)}75%{transform:translate(6vw,48vh) rotate(-24deg) scaleX(-1) skewY(3deg)}100%{transform:translate(-200px,62vh) rotate(-24deg) scaleX(-1) skewY(0deg)}}
+/* 사용자: 고래가 섬과 겹치면 안 됨(섬 = 화면 높이 약 62%) → 왼쪽 아래 모서리에서 화면 아래쪽(96%→76%)으로만 지나감 */
+@keyframes h3-swim-whale{0%{transform:translate(-200px,96vh) rotate(-6deg) skewY(0deg)}25%{transform:translate(14vw,91vh) rotate(-6deg) skewY(2deg)}50%{transform:translate(40vw,86vh) rotate(-6deg) skewY(-2deg)}75%{transform:translate(66vw,81vh) rotate(-6deg) skewY(2deg)}100%{transform:translate(110vw,76vh) rotate(-6deg) skewY(0deg)}}
+/* V1660 C: 디스코 팡팡 버튼 — 회전 = 왼쪽 아래(조이스틱 자리), 점프 = 그 위, 💨 을 위로 돌림 */
+#home3d .h3-bounce{bottom:calc(max(26px,env(safe-area-inset-bottom)) + 128px)}
+#home3d .h3-up{display:inline-block;transform:rotate(-90deg)}
+/* V1660 C: 고래·메갈로돈 = 섬 둘레를 도는 그림(자리·각도는 매 프레임 계산), 크기는 발바닥 버튼 1.5배 그대로 */
+#home3d .h3-deep{display:block}
+#home3d .h3-deep img{animation:none!important;width:168px;transform-origin:0 0}
+#home3d .h3-deep img[hidden]{display:none!important}

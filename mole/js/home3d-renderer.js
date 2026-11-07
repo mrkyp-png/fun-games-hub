@@ -159,6 +159,11 @@
     return { base, mov, pivot: [0, 4.15, 0] };
   }
   // 움직임(아주 천천히가 아닌 놀이기구다운 속도): 디스코 = 빙글 돌며 들썩, 바이킹 = 좌우로 크게
+  /* V1660 C: 디스코 팡팡 상판 자리(회전·기울기·튀기) — 받침 기둥 위 */
+  function discoTopMatrix() { const D = root.MoleGame.Home3DLayout.DISCO, s = D.topS, h = D.tilt || 0, a = D.tiltDir || 0, y = D.yaw || 0;
+    const ax = [Math.cos(a), 0, Math.sin(a)], qt = [ax[0] * Math.sin(h / 2), 0, ax[2] * Math.sin(h / 2), Math.cos(h / 2)], qy = [0, Math.sin(y / 2), 0, Math.cos(y / 2)];
+    const q = [qt[3] * qy[0] + qt[0] * qy[3] + qt[1] * qy[2] - qt[2] * qy[1], qt[3] * qy[1] - qt[0] * qy[2] + qt[1] * qy[3] + qt[2] * qy[0], qt[3] * qy[2] + qt[0] * qy[1] - qt[1] * qy[0] + qt[2] * qy[3], qt[3] * qy[3] - qt[0] * qy[0] - qt[1] * qy[1] - qt[2] * qy[2]];
+    return R.transform({ translation: [D.x, D.topY + (D.lift || 0), D.z], rotation: q, scale: [s, s, s] }); }
   function rideMotion(id, t) {
     if (id === 'disco') return { yaw: t * 0.9, lift: 0.14 * Math.abs(Math.sin(t * 2.4)), tilt: 0.06 * Math.sin(t * 1.3) };
     return { swing: 0.8 * Math.sin(t * 0.9) };
@@ -290,7 +295,7 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
         setup();
         const [plaza, mole, boatModel] = await Promise.all([load(plazaUrl), load(moleUrl), boatUrl ? load(boatUrl).catch(() => null) : null]);
         /* 고정 소품(Tripo, 그림 질감): [{url, world}] — 디스코 팡팡 상판·받침 */
-        for (const pr of propList || []) load(pr.url).then((mdl) => { const ins = R.instances(mdl); for (const i of ins) { const m = Object.assign(mesh(mdl, i.primitive), { world: R.multiply(pr.world, i.world), texBase: null }); glbTexture(mdl, i.primitive).then((t) => { m.texBase = t; }).catch(() => { m.plain = true; }); props.push(m); } }).catch(() => {}); /* plain = 그림 없는 모델(재질 색) */
+        for (const pr of propList || []) load(pr.url).then((mdl) => { const ins = R.instances(mdl); for (const i of ins) { const m = Object.assign(mesh(mdl, i.primitive), { world: R.multiply(pr.world, i.world), local: i.world, dyn: pr.dyn, texBase: null }); glbTexture(mdl, i.primitive).then((t) => { m.texBase = t; }).catch(() => { m.plain = true; }); props.push(m); } }).catch(() => {}); /* plain = 그림 없는 모델(재질 색) */
         if (boatModel) { boat = R.instances(boatModel).map((i) => Object.assign(mesh(boatModel, i.primitive), { world: i.world, texBase: null })); for (const b of boat) glbTexture(boatModel, R.instances(boatModel)[0].primitive).then((t) => { b.texBase = t; }).catch(() => {}); }
         // Sign_<action> 판 = 간판 글자 텍스처 자리
         environment = R.instances(plaza).map((i) => Object.assign(mesh(plaza, i.primitive), { world: i.world, sign: i.name.startsWith('Sign_') ? i.name.slice(5) : null, screen: i.name.startsWith('Screen_'), tex: null, texPrim: i.name.startsWith('Tex_') ? i.primitive : null }));
@@ -378,7 +383,7 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
         if (seaMesh) { /* V1635 C: 바다가 카메라를 따라감(끝없는 바다), 높이 오를수록 넓게 — 격자 칸(2.5) 단위로 옮겨 물결 안 흔들림 */
           const sk = Math.max(1, Math.pow(2, Math.ceil(Math.log2(1 + (cam.eye[1] - 1.35) / 25)))), cell = 2.5 * sk;
           draw(seaMesh, R.transform({ translation: [Math.round(cam.focus[0] / cell) * cell, 0, Math.round(cam.focus[2] / cell) * cell], scale: [sk, 1, sk] }), null); }
-        for (const pm of props) if (pm.texBase || pm.plain) draw(pm, pm.world, null); /* 고정 소품 */
+        for (const pm of props) if (pm.texBase || pm.plain) draw(pm, pm.dyn === 'discoTop' ? R.multiply(discoTopMatrix(), pm.local) : pm.world, null); /* 고정 소품(디스코 상판은 움직임) */
         for (const bp of boardPanels) if (boardTex[bp.kind]) { bp.mesh.tex = boardTex[bp.kind]; draw(bp.mesh, bp.world, null); } /* 게시판 칸(V1650 C) */
         if (boat.length) { const bm = boatMatrix(now); for (const b of boat) if (b.texBase) draw(b, R.multiply(bm, b.world), null); } /* 바다 배 */
         if (arcade) {
@@ -480,6 +485,7 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
       buildSigns(lang, sites, t) { if (signs) signs.build(lang, sites, t); },
       // 탄 두더지 자리: 디스코 = 원판 가장자리(바깥을 봄), 바이킹 = 배 갑판(옆을 봄)
       seat(id) {
+        if (id === 'disco') { const M = discoTopMatrix(), p = R.point(M, [0.3, 0.07, 0]), c = R.point(M, [0, 0.07, 0]); return { x: p[0], y: p[1], z: p[2], heading: Math.atan2(c[0] - p[0], c[2] - p[2]) }; } /* V1660 C: 상판 안쪽 가장자리, 가운데를 봄 */
         const rd = rides.find((x) => x.id === id); if (!rd) return null;
         const M = rideMatrix(rd, performance.now() / 1000), loc = id === 'disco' ? [1.35, 0.2, 0] : [0.9, -2.5, 0], dir = id === 'disco' ? [1, 0, 0] : [0, 0, 1];
         const p = R.point(M, loc), q = R.point(M, [loc[0] + dir[0], loc[1] + dir[1], loc[2] + dir[2]]);

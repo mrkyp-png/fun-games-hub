@@ -86,7 +86,8 @@
       arcadeState = { holes, mole: cur || null, buttons, flash: [] }; rd.setArcade(arcadeState); rd.setScreen(l1, l2);
     }
     /* 날기·배: air = 공중 {y, vy, flapAt} / onBoat = 갑판 위 {u, w}(배 기준 좌표) / boardAt = 배에 오른 시각 / offer = 보상 창 */
-    const deepLast = {}; /* 고래·메갈로돈 마지막으로 지나간 시각 */
+    const deepLast = {}, deepRun = {}; /* 고래·메갈로돈: 마지막으로 다 돈 시각, 도는 중 시작 시각 */
+    let discoSpin = 0, discoLiftV = 0; /* 디스코 팡팡: 더 도는 속도·튀는 속도 */
     let boatV = 0, rowSide = 1, wakeFx = [], wakeAt = 0; /* 배 속도(섬 둘레, 초당 거리)·물결 */
     let air = null, onBoat = null, boardAt = -1, offer = null, splashAt = -9;
     const G = 9.5, JUMP_V = 4.4, FLAP_V = 3.6, BOAT_STAY = 300, REWARD_GAP = 3600 * 1000, OFFER_T = 60, REWARD_KEY = 'mole.boatRewardAt';
@@ -247,9 +248,24 @@
         wakeFx = wakeFx.filter((q) => time - q.at < 1.8);
         if (rd && (wakeFx.length || boatV)) rd.setSmoke(wakeFx.map((q) => { const k = (time - q.at) / 1.8; return { x: q.x, y: -0.55, z: q.z, r: 0.25 + k * 0.9 * (0.6 + q.s), a: 0.55 * (1 - k) }; }));
         if (ui) ui.setRowing(!!(onBoat && !air));
-        if (ui && ui.playDeep && air) { /* V1659 C 사용자: 1000m 고래·2000m 메갈로돈, 각각 10분에 한 번 지나감 */
-          const k = air.y >= 2000 ? 'megalodon' : air.y >= 1000 ? 'whale' : null;
-          if (k && time - (deepLast[k] ?? -1e9) >= 600) { deepLast[k] = time; ui.playDeep(k); } } }
+        { /* V1660 C 사용자: 디스코 팡팡 — 기본으로 천천히 돌고, 회전 버튼 = 더 빨리(서서히 줄어듦), 출렁이며 기울기, 점프 버튼 = 통 튐 */
+          const D = L.DISCO; discoSpin *= Math.exp(-dt * 0.5); D.yaw += (0.6 + discoSpin) * dt;
+          D.tiltDir = time * 1.1; D.tilt = (0.05 + 0.025 * Math.min(1, discoSpin / 3)) * (0.7 + 0.3 * Math.sin(time * 2.3));
+          if (D.lift > 0 || discoLiftV > 0) { discoLiftV -= 9.5 * dt; D.lift = Math.max(0, D.lift + discoLiftV * dt); if (D.lift === 0) discoLiftV = 0; }
+          if (ui && ui.setDiscoRide) ui.setDiscoRide(riding === 'disco'); }
+        if (ui && ui.setDeep && rd && rd.vp()) { /* V1660 C 사용자: 1000m 고래·2000m 메갈로돈 — 아주 천천히 나타나 섬 둘레를 10분에 한 바퀴(시계 방향) 돌고 사라짐, 둘은 다른 둘레(겹침 없음) */
+          const alt = air ? air.y : 0, c = document.querySelector('#home3d .h3-canvas'), cr = c && c.getBoundingClientRect();
+          for (const [k, need, R0, ph] of [['whale', 1000, 32, 0], ['megalodon', 2000, 48, Math.PI]]) {
+            if (!deepRun[k] && alt >= need && time - (deepLast[k] ?? -1e9) >= 600) deepRun[k] = time;
+            const run = deepRun[k], u = run == null ? 2 : (time - run) / 600;
+            if (u > 1) { if (run != null) { deepRun[k] = null; deepLast[k] = time; } ui.setDeep(k, null); continue; }
+            if (alt < need || !cr) { ui.setDeep(k, null); continue; }
+            const a = ph - u * Math.PI * 2, P = [R0 * Math.sin(a), -0.8, R0 * Math.cos(a)], Q = [R0 * Math.sin(a - 0.05), -0.8, R0 * Math.cos(a - 0.05)];
+            const q0 = MG.Home3DRenderer.project(rd.vp(), P), q1 = MG.Home3DRenderer.project(rd.vp(), Q);
+            if (!q0 || !q1) { ui.setDeep(k, null); continue; }
+            const x0 = (q0[0] + 1) / 2 * cr.width, y0 = (1 - q0[1]) / 2 * cr.height, x1 = (q1[0] + 1) / 2 * cr.width, y1 = (1 - q1[1]) / 2 * cr.height;
+            const fade = Math.min(1, u * 20, (1 - u) * 20); /* 처음·끝 30초 동안 아주 천천히 나타나고 사라짐 */
+            ui.setDeep(k, { x: x0, y: y0, rot: Math.atan2(y1 - y0, x1 - x0), op: 0.32 * fade }); } } }
       if (onBoat && !air) { const a = deckWorld(onBoat.u, onBoat.w); view.x = a[0]; view.z = a[2]; }
       if (onBoat && !air && boardAt >= 0 && !offer && time - boardAt >= BOAT_STAY) { /* 배 5분 → 1시간 1번, 1분 안에 광고 보면 하트 2 → 처음 시작 구멍 */
         let last = 0; try { last = +localStorage.getItem(REWARD_KEY) || 0; } catch (e) { last = 0; }
@@ -353,9 +369,11 @@
         onMailChanged() { refreshHud(); badges = claimables(MG); ui.setMailDot(badges.includes('mail')); },
         onClose() { if (st.state === 'FEATURE') opts.homeAction('home'); },
         onExit() { exitArcade(); },
+        onSpin() { if (riding === 'disco') discoSpin = Math.min(6, discoSpin + 0.9); }, /* V1660 C: 팡팡 회전 버튼 = 누를수록 빨리 */
+        onBounce() { if (riding === 'disco' && L.DISCO.lift <= 0.01) discoLiftV = 4.2; }, /* 팡팡 점프 버튼 = 통 튀어 오름(땅에 있을 때) */
         onRow() { if (onBoat && !air) { boatV = Math.min(4.2, boatV + 0.7); MG.Home3DLayout.BOAT.kick = (rowSide = -rowSide) * 0.08; } }, /* V1657 C: 노 한 번 = 속도 +0.7(최대 4.2), 좌우로 번갈아 기울기 */
         onJump() {
-          if (riding) { const rdd = L.RIDES.find((x) => x.id === riding), e = L.rideExit(rdd); riding = null; view.x = e.x; view.z = e.z; view.heading = Math.atan2(-e.x, -e.z); jumpAt = time; return; } // 앞으로 뛰어내림
+          if (riding) { const rdd = riding === 'disco' ? L.DISCO : L.RIDES.find((x) => x.id === riding), e = L.rideExit(rdd); riding = null; view.x = e.x; view.z = e.z; view.heading = Math.atan2(-e.x, -e.z); jumpAt = time; return; } // 앞으로 뛰어내림
           if (nearRide && st.inputEnabled() && !jumping()) { riding = nearRide.id; route = null; ui.input.reset(); return; } // 뛰어올라 탐
           if (inside) { if (inside.phase === 'in' && st.inputEnabled()) opts.startGame(); return; } // 게임기 안 = 시작 // 사용자: 라운드 지도 없이 바로 시작
           if (near && near.action !== 'lightMode' && st.inputEnabled() && !jumping()) { api.open(near.action); return; } if (st.state === 'INTRO' || st.inputEnabled()) jump(); }
@@ -371,7 +389,7 @@
       rd.lost(() => { ready = false; stop(); ui.setLoading(ko() ? '3D 화면을 다시 불러와 주세요.' : 'Please reload the 3D plaza.'); });
       rd.boot(PLAZA_GLB, MOLE_GLB, 'assets/home3d/boat.glb', [ /* V1633 C: 디스코 팡팡(배치만) */
         { url: 'assets/home3d/disco-base.glb', world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
-        { url: 'assets/home3d/disco-top.glb', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },
+        { url: 'assets/home3d/disco-top.glb', dyn: 'discoTop', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },
         { url: 'assets/home3d/board.glb', world: boardWorld() }]).then(() => { /* V1650 C: 게시판 */
         ready = true; readyAt = time; ui.setLoading(null); signsNow(); refreshArcade(true); rd.setBoard(boardPanels()); refreshBoard(true); if (MG.Home3DText) MG.Home3DText.ready().then(() => { signsNow(); refreshArcade(true); refreshBoard(true); wake(); }); /* V1653 C: 둥근 글씨체 준비되면 글자 다시 그림 */
         wake();
