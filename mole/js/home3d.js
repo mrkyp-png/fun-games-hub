@@ -86,6 +86,7 @@
       arcadeState = { holes, mole: cur || null, buttons, flash: [] }; rd.setArcade(arcadeState); rd.setScreen(l1, l2);
     }
     /* 날기·배: air = 공중 {y, vy, flapAt} / onBoat = 갑판 위 {u, w}(배 기준 좌표) / boardAt = 배에 오른 시각 / offer = 보상 창 */
+    const deepLast = {}; /* 고래·메갈로돈 마지막으로 지나간 시각 */
     let boatV = 0, rowSide = 1, wakeFx = [], wakeAt = 0; /* 배 속도(섬 둘레, 초당 거리)·물결 */
     let air = null, onBoat = null, boardAt = -1, offer = null, splashAt = -9;
     const G = 9.5, JUMP_V = 4.4, FLAP_V = 3.6, BOAT_STAY = 300, REWARD_GAP = 3600 * 1000, OFFER_T = 60, REWARD_KEY = 'mole.boatRewardAt';
@@ -246,7 +247,9 @@
         wakeFx = wakeFx.filter((q) => time - q.at < 1.8);
         if (rd && (wakeFx.length || boatV)) rd.setSmoke(wakeFx.map((q) => { const k = (time - q.at) / 1.8; return { x: q.x, y: -0.55, z: q.z, r: 0.25 + k * 0.9 * (0.6 + q.s), a: 0.55 * (1 - k) }; }));
         if (ui) ui.setRowing(!!(onBoat && !air));
-        if (ui && ui.setDeep) ui.setDeep(air && air.y >= 2000 ? 'megalodon' : air && air.y >= 1000 ? 'whale' : null); } /* V1658 C 사용자: 1000m 고래, 2000m 메갈로돈 */
+        if (ui && ui.playDeep && air) { /* V1659 C 사용자: 1000m 고래·2000m 메갈로돈, 각각 10분에 한 번 지나감 */
+          const k = air.y >= 2000 ? 'megalodon' : air.y >= 1000 ? 'whale' : null;
+          if (k && time - (deepLast[k] ?? -1e9) >= 600) { deepLast[k] = time; ui.playDeep(k); } } }
       if (onBoat && !air) { const a = deckWorld(onBoat.u, onBoat.w); view.x = a[0]; view.z = a[2]; }
       if (onBoat && !air && boardAt >= 0 && !offer && time - boardAt >= BOAT_STAY) { /* 배 5분 → 1시간 1번, 1분 안에 광고 보면 하트 2 → 처음 시작 구멍 */
         let last = 0; try { last = +localStorage.getItem(REWARD_KEY) || 0; } catch (e) { last = 0; }
