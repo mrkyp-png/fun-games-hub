@@ -46,18 +46,17 @@
     if (p.bare) { ctx.fillStyle = '#fff8ea'; ctx.fillRect(0, 0, w, h); } /* 게시판 모델에 칸 테두리가 있음 → 크림만 */
     else { round(0, 0, w, h, r); ctx.fillStyle = RIM[kind]; ctx.fill(); round(pad, pad, w - pad * 2, h - pad * 2, r * 0.7); ctx.fillStyle = '#fff8ea'; ctx.fill(); }
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#6b4426';
-    if (p.pages) { /* 스코어 칸: 지금 장(p.at) 제목 + 1~5위 + 내 순위·점수 */
-      const pg = p.pages[(p.at || 0) % p.pages.length], MED = ['#f2b705', '#a9b4c2', '#d08a4a', '#c9b79a', '#c9b79a'], fs = (k) => Math.round(h * k) + 'px Jua, system-ui, sans-serif';
-      ctx.font = '900 ' + fs(0.12); ctx.fillText(pg.title, w / 2, h * 0.15, w - pad * 4);
-      pg.rows.forEach((row, i) => { const y = h * (0.3 + i * 0.105);
-        ctx.beginPath(); ctx.arc(pad * 3, y, h * 0.04, 0, Math.PI * 2); ctx.fillStyle = MED[i]; ctx.fill();
-        ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = '900 ' + fs(0.055); ctx.fillText(String(row.rank), pad * 3, y + h * 0.004);
-        ctx.fillStyle = row.me ? '#d2556a' : '#6b4426'; ctx.textAlign = 'left'; ctx.font = '700 ' + fs(0.075); ctx.fillText(row.name, pad * 4.6, y, w * 0.42);
-        ctx.textAlign = 'right'; ctx.fillText(row.score, w - pad * 2.4, y, w * 0.34); });
-      ctx.textAlign = 'center'; ctx.fillStyle = '#d2556a'; ctx.font = '900 ' + fs(0.08);
-      ctx.fillText(pg.mine ? (ko(pg) ? '내 순위 ' + pg.mine.rank + '위 · ' + pg.mine.score + '점' : 'My rank #' + pg.mine.rank + ' · ' + pg.mine.score) : (ko(pg) ? '내 기록 없음' : 'No record yet'), w / 2, h * 0.86, w - pad * 4);
+    const T = root.MoleGame && root.MoleGame.Home3DText, lang = p.lang || 'ko', CC = { score: ['#ff9db0', '#e2536f'], daily: ['#9ad6ff', '#3f8fd6'], quest: ['#9fe6b0', '#2fa35a'] }[kind];
+    const title = (txt, y, s) => { if (T) T.candy(ctx, txt, w / 2, y, s, lang, w - pad * 4, CC[0], CC[1]); else ctx.fillText(txt, w / 2, y, w - pad * 4); };
+    if (p.pages) { /* 스코어 칸: 지금 장(p.at) 제목 + 1위 + 내 순위(사용자 V1653 C: 1~5위 대신 2줄만 크게) */
+      const pg = p.pages[(p.at || 0) % p.pages.length], k = ko(pg), fs = (q) => Math.round(h * q) + 'px Jua, system-ui, sans-serif', top = pg.rows[0];
+      title(pg.title, h * 0.2, h * 0.17);
+      ctx.textAlign = 'center'; ctx.fillStyle = '#6b4426'; ctx.font = '900 ' + fs(0.13);
+      ctx.fillText(top && top.name !== '—' ? (k ? '1위 ' : '#1 ') + top.name + ' ' + top.score : (k ? '1위 —' : '#1 —'), w / 2, h * 0.5, w - pad * 4);
+      ctx.fillStyle = '#d2556a'; ctx.font = '900 ' + fs(0.13);
+      ctx.fillText(pg.mine ? (k ? '내 순위 ' + pg.mine.rank + '위 · ' + pg.mine.score : 'Me #' + pg.mine.rank + ' · ' + pg.mine.score) : (k ? '내 기록 없음' : 'No record'), w / 2, h * 0.76, w - pad * 4);
     } else {
-    ctx.font = '900 ' + Math.round(h * 0.2) + 'px Jua, system-ui, sans-serif'; ctx.fillText(p.title, w / 2, h * 0.36, w - pad * 4);
+    ctx.font = '900 ' + Math.round(h * 0.2) + 'px Jua, system-ui, sans-serif'; title(p.title, h * 0.36, h * 0.2);
     ctx.font = '700 ' + Math.round(h * 0.13) + 'px Jua, system-ui, sans-serif'; ctx.fillStyle = '#9a6b3f'; ctx.fillText(p.line, w / 2, h * 0.66, w - pad * 4);
     }
     if (p.dot) { ctx.beginPath(); ctx.arc(w - pad * 2.2, pad * 2.2, h * 0.075, 0, Math.PI * 2); ctx.fillStyle = '#ff4b4b'; ctx.fill(); ctx.lineWidth = h * 0.02; ctx.strokeStyle = '#fff'; ctx.stroke(); }

@@ -12,9 +12,18 @@
   function create(gl, opts) {
     const makeCanvas = (opts && opts.makeCanvas) || (() => document.createElement('canvas'));
     let tex = new Map();
-    function draw(text) {
+    /* V1653 C 사용자: 건물마다 색(사탕 글씨), 리듬팡 = 어두운 판 + 네온 */
+    const COL = { shop: ['#ff9db0', '#e2536f'], locker: ['#9fe6b0', '#2fa35a'], inventory: ['#ffe27a', '#ff9f1c'], lightMode: ['#ffd86b', '#f28a0f'], score: ['#ff9db0', '#e2536f'] };
+    function draw(text, action, lang) {
       const c = makeCanvas(); c.width = W; c.height = H;
-      const g = c.getContext('2d');
+      const g = c.getContext('2d'), T = root.MoleGame && root.MoleGame.Home3DText;
+      if (T && g.createLinearGradient) {
+        const dark = action === 'rhythm';
+        g.fillStyle = dark ? '#2b2f45' : '#fffaf0'; g.fillRect(0, 0, W, H);
+        g.strokeStyle = dark ? '#4a5275' : '#e8c98f'; g.lineWidth = 10; g.beginPath(); g.roundRect(8, 8, W - 16, H - 16, 26); g.stroke();
+        if (dark) T.neon(g, text, W / 2, H / 2 + 4, 92, lang, W - 80, 0); else { const cl = COL[action] || ['#ffd86b', '#f28a0f']; T.candy(g, text, W / 2, H / 2 + 6, 96, lang, W - 80, cl[0], cl[1]); }
+        return c;
+      }
       g.clearRect(0, 0, W, H);
       g.fillStyle = '#fffaf0'; g.fillRect(0, 0, W, H);
       g.strokeStyle = '#e8c98f'; g.lineWidth = 10; g.beginPath(); g.roundRect(8, 8, W - 16, H - 16, 26); g.stroke();
@@ -32,7 +41,7 @@
       for (const s of sites) {
         const texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, draw(labelFor(s, lang, t)));
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, draw(labelFor(s, lang, t), s.action, lang));
         gl.generateMipmap(gl.TEXTURE_2D);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);

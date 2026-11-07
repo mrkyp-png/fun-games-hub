@@ -36,6 +36,7 @@
     const input = createInput();
     const wrap = el('section', 'h3-home', host); wrap.id = 'home3d'; wrap.hidden = true;
     const canvas = el('canvas', 'h3-canvas', wrap);
+    const boardHand = el('div', 'h3-boardhand', wrap); boardHand.textContent = '👆'; boardHand.hidden = true; boardHand.setAttribute('aria-hidden', 'true');
     const hud = el('div', 'h3-hud', wrap), vals = {};
     for (const k of ['coins', 'hearts', 'tickets']) {
       const pill = el('div', 'h3-pill', hud), img = el('img', '', pill); img.src = ICON[k]; img.alt = '';
@@ -126,6 +127,10 @@
       setEnabled(on) { input.setEnabled(on); drawKnob(); },
       setLoading(text) { loading.hidden = !text; loading.textContent = text || ''; },
       setMailDot(on) { mailDot.hidden = !on; },
+      /* V1653 C 사용자: 게시판 아래 손(로딩 화면 손과 같은 👆) — 눌러라 느낌, 칸 누르면 손이 그 칸을 누름 */
+      setBoardHand(p) { if (!p) { boardHand.hidden = true; return; } boardHand.hidden = false; if (!boardHand.classList.contains('is-press')) { boardHand.style.left = p.x + 'px'; boardHand.style.top = p.y + 'px'; } },
+      pressBoardHand(p, done) { boardHand.hidden = false; boardHand.classList.add('is-press'); boardHand.style.left = p.x + 'px'; boardHand.style.top = p.y + 'px';
+        setTimeout(() => { boardHand.classList.remove('is-press'); done(); }, 520); },
       setHeight(m) { altBox.hidden = !(m >= 1); if (m >= 1) altNum.textContent = Math.round(m) + 'm'; }, /* 날기 높이(V1635 C) */
       showMail() { mailRender(); mailPop.hidden = false; },
       mailOpen: () => !mailPop.hidden,

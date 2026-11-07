@@ -79,3 +79,17 @@
 #game-screen:has(#settings-screen:not([hidden])) #home3d .h3-close{bottom:auto;top:calc(50% + var(--sqh) / 2 + 18px)}
 /* V1637 C 사용자: 전체화면이 아닌 창(설정) = 메일함 팝업처럼 뒤 광장 어둡게 + 흐리게 */
 #game-screen:has(#settings-screen:not([hidden])) #home3d .h3-canvas{filter:brightness(.58) saturate(.85) blur(3px)}
+
+/* V1653 C 사용자: 광장 글자 둥근 글씨체(캔버스용) — 한국어 Cafe24 써라운드, 영어·일본어 Mochiy Pop One(OFL) */
+@font-face { font-family: 'Cafe24Ssurround'; src: url('assets/fonts/Cafe24Ssurround.woff') format('woff'); font-display: swap; }
+@font-face { font-family: 'Mochiy Pop One'; src: url('assets/fonts/MochiyPopOne-sub.woff2') format('woff2'); font-display: swap; }
+/* V1653 C 사용자: 게시판 아래 손(로딩 화면 손 👆과 같은 동작) */
+#home3d .h3-boardhand{position:absolute;z-index:3;font-size:clamp(45px,13.5vw,69px);transform-origin:50% 0;translate:-50% 0;filter:drop-shadow(0 3px 4px rgba(0,0,0,.35));pointer-events:none;animation:h3-hand-tap 1.2s ease-in-out infinite;transition:left .28s ease-out,top .28s ease-out}
+#home3d .h3-boardhand[hidden]{display:none!important}
+#home3d .h3-boardhand.is-press{animation:h3-hand-press .52s ease-in-out}
+@keyframes h3-hand-tap{0%,100%{transform:rotate(-22deg) translate(7px,9px) scale(1)}50%{transform:rotate(-22deg) translate(0,0) scale(.88)}}
+@keyframes h3-hand-press{0%,50%{transform:rotate(-22deg) translate(7px,9px) scale(1)}70%{transform:rotate(-22deg) translate(0,-4px) scale(.8)}100%{transform:rotate(-22deg) translate(7px,9px) scale(1)}}
+/* 사용자: 손은 반투명 + 둥실둥실 떠 있는 느낌 */
+#home3d .h3-boardhand{opacity:.7;animation:h3-hand-float 2.2s ease-in-out infinite}
+#home3d .h3-boardhand.is-press{opacity:.9}
+@keyframes h3-hand-float{0%,100%{transform:rotate(-14deg) translateY(0)}50%{transform:rotate(-8deg) translateY(-12px)}}

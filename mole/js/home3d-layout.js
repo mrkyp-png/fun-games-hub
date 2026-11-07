@@ -19,7 +19,7 @@
   // 놀이기구(장식, 들어갈 수 없음 — 나중에 미니게임 입구로 바꿀 수 있게 자리만): 디스코 팡팡·바이킹
   const RIDES = []; /* V1633 C: 코드로 만든 디스코 팡팡도 삭제 → Tripo 디스코 팡팡(DISCO, 배치만) / 바이킹 = 바다 배(BOAT) */
   /* 게시판 모델(Tripo, board.glb) 배율과 칸 3개 자리(모델 좌표: 가로 x, 높이 y, 앞 z = 칸 면). 앞뒤 같은 내용 */
-  const BOARD = { S: 4.4, PANEL_W: 0.21, PANEL_H: 0.165, Y: 0.495, FACE: 0.0505, X: { score: -0.275, daily: 0.004, quest: 0.285 } };
+  const BOARD = { S: 4.4, PANEL_W: 0.206, PANEL_H: 0.206, Y: 0.54, FACE: 0.071, X: { score: -0.27, daily: 0, quest: 0.27 } }; /* V1653 C: Blender 심플 게시판(review/build-board.py), 1배 + 앞에 가면 카메라가 칸 정면으로(사용자 1번) */
   const DISCO = { x: 8, z: 2.5, body: 2.1, baseS: 4.6, topS: 3.6, topY: 1.15 }; /* 받침 배율·상판 배율·상판 높이 */
   /* 바다 배: 뒤쪽 해변 앞바다. S = 모델 배율(Tripo 배 길이 0.98 → 약 4.9), DECK = 모델 갑판 높이, 갑판 반폭 U(길이)·W(폭) */
   const BOAT = { x: 0, z: 25.6, S: 5, DECK: 0.185, U: 1.05, W: 0.48, DRAFT: 0.45 }; /* U·W = 갑판 타원 반지름(배 그림 안, 두더지 몸 여유 뺌, V1636 C) */ /* DRAFT = 물에 잠기는 깊이(갑판까지 0.93 중) */

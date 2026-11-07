@@ -156,7 +156,7 @@
       view.x = next.x; view.z = next.z;
     }
     // 시작 카메라: 구멍 안에서는 아래에서 올려다봄(큰 두더지팡 게임기 간판까지 보이게), 점프해 나오면 보통 각도로(사용자 지시 2026-11-06)
-    const INTRO_PITCH = -0.1, CAM_T = 0.9; let camK = 0, camLift = 0; /* camLift = 날기 높이 따라 카메라 올림(V1635 C) */
+    const INTRO_PITCH = -0.1, CAM_T = 0.9; let camK = 0, camLift = 0, boardCam = 0, boardAim = 0; /* boardCam = 게시판 앞 카메라(V1653 C) */ /* camLift = 날기 높이 따라 카메라 올림(V1635 C) */
     function jumping() { return !!air || (jumpAt >= 0 && time - jumpAt < IN.jump.T); }
     function jump() {
       if (st.state === 'EXPLORE' && !riding && !inside) { /* 날기: 첫 누름 = 뛰어오름, 공중에서 누를 때마다 짧은 팔 파닥 → 위로 */
@@ -259,9 +259,19 @@
       if (arcCam > 0.001) { const a = arcCam * arcCam * (3 - 2 * arcCam), dy = Math.atan2(Math.sin(0 - cv.yaw), Math.cos(0 - cv.yaw));
         const arc = Math.sin(Math.PI * a) * Math.min(1, Math.abs(dy) / 0.8); // 옮겨 가는 도중엔 높이 올라 게임기 위로 넘어감(사용자: 화면이 가려지며 지나감 — 카메라가 게임기 몸통을 뚫고 지나가던 것)
         const fx0 = cv.cx ?? cv.x; cv = Object.assign({}, cv, { cx: fx0 + (0 - fx0) * a, cz: cv.z + (-8.4 - cv.z) * a, yaw: cv.yaw + dy * a, pitch: Math.min(1.35, cv.pitch + (0.8 - cv.pitch) * a + 0.55 * arc), dist: 7.5 - 0.3 * a + 3 * arc, fy: 1.35 + 0.9 * a + 1.5 * arc }); } // 게임기 더 아래로, 위 간판까지 보이게(사용자)
+      { /* V1653 C 사용자: 게시판 앞(정면 4.5 안)에 가면 카메라가 칸 3개 정면으로 붙음 */
+        const bs = L.SITES.find((x) => x.id === 'board'), fx = Math.sin(bs.faceYaw), fz = Math.cos(bs.faceYaw), rx = view.x - bs.x, rz = view.z - bs.z;
+        const aimB = st.state === 'EXPLORE' && !inside && !air && !onBoat && Math.hypot(rx, rz) < 3.2 && rx * fx + rz * fz > 0.5 ? 1 : 0; /* 사용자: 좀 더 다가갔을 때 커지게(4.5 → 3.2) */
+        boardAim = aimB; boardCam += (aimB - boardCam) * Math.min(1, dt * 3);
+        if (boardCam > 0.001) { const a = boardCam * boardCam * (3 - 2 * boardCam), dyw = Math.atan2(Math.sin(bs.faceYaw - cv.yaw), Math.cos(bs.faceYaw - cv.yaw)), d0 = cv.dist || 7.5, f0 = cv.fy || 1.35, x0 = cv.cx ?? cv.x, z0 = cv.cz ?? cv.z;
+          cv = Object.assign({}, cv, { cx: x0 + (bs.x - x0) * a, cz: z0 + (bs.z - z0) * a, yaw: cv.yaw + dyw * a, pitch: cv.pitch + (0.1 - cv.pitch) * a, dist: d0 + (7.0 - d0) * a, fy: f0 + (L.BOARD.Y * L.BOARD.S - f0) * a }); } }
       camLift += ((air ? air.y : 0) - camLift) * Math.min(1, dt * 4); ui.setHeight(air ? air.y : 0); /* V1635 C 사용자: 높이 오를수록 카메라도 올라가고 멀어져 아래 건물이 작게 보임 */
       if (camLift > 0.05) cv = Object.assign({}, cv, { fy: (cv.fy || 1.35) + camLift, dist: (cv.dist || 7.5) + camLift * 0.9, pitch: Math.min(1.3, cv.pitch + camLift * 0.015), far: 80 + camLift * 4 });
       rd.render(cv, pose());
+      if (ui && ui.setBoardHand) { /* 게시판 손: 카메라가 다 붙었을 때 가운데 칸 아래 */
+        let hp = null; if (boardAim && boardCam > 0.3 && rd.vp()) { const c = document.querySelector('#home3d .h3-canvas'), B = L.BOARD, pm = boardPanels().find((p) => p.kind === 'daily' && !p.back), q = c && pm && MG.Home3DRenderer.project(rd.vp(), root.StudioRig.point(pm.world, [0, -B.PANEL_H * 0.62, 0]));
+          if (q) { const r = c.getBoundingClientRect(); hp = { x: (q[0] + 1) / 2 * r.width, y: (1 - q[1]) / 2 * r.height }; } }
+        ui.setBoardHand(hp); }
       if (time - badgeAt > 1) { badgeAt = time; badges = claimables(MG); refreshArcade(); if (ready) refreshBoard(); ui.setMailDot(badges.includes('mail')); } // 1초마다 확인(뱃지·게임기 진행)
       ui.setBadges(badges.map((a) => { const s = L.SITES.find((x) => x.action === a), q = s && MG.Home3DRenderer.project(rd.vp(), [s.x, s.kind === 'building' ? 3.4 : 1.9, s.z]), z = rd.size(); return q && z && { action: a, x: (q[0] + 1) / 2 * z.cw, y: (1 - q[1]) / 2 * z.ch, on: Math.abs(q[0]) < 1.1 && Math.abs(q[1]) < 1.1 }; }).filter(Boolean));
       near = L.nearest(view.x, view.z);
@@ -317,7 +327,8 @@
             for (const p of boardPanels()) { const c = [[-1, 1], [1, 1], [1, -1], [-1, -1]].map(([a, b]) => MG.Home3DRenderer.project(vp, root.StudioRig.point(p.world, [a * B.PANEL_W / 2, b * B.PANEL_H / 2, 0])));
               if (c.some((q) => !q)) continue; const xs = c.map((q) => (q[0] + 1) / 2 * w), ys = c.map((q) => (1 - q[1]) / 2 * h);
               const facing = (xs[1] - xs[0]) > 0; /* 앞면이 카메라 쪽일 때만 */
-              if (facing && px >= Math.min(...xs) && px <= Math.max(...xs) && py >= Math.min(...ys) && py <= Math.max(...ys)) { api.open(p.kind); return; } } }
+              if (facing && px >= Math.min(...xs) && px <= Math.max(...xs) && py >= Math.min(...ys) && py <= Math.max(...ys)) { /* 손이 그 칸으로 가서 누른 뒤 열림 */
+                const cx = xs.reduce((a, b) => a + b) / 4, cy = ys.reduce((a, b) => a + b) / 4; if (ui.pressBoardHand) ui.pressBoardHand({ x: cx, y: cy + (Math.max(...ys) - Math.min(...ys)) * 0.15 }, () => api.open(p.kind)); else api.open(p.kind); return; } } }
           const site = MG.Home3DRenderer.pickSite(rd.vp(), L.SITES, px, py, w, h);
           if (site && site === near) { if (site.action !== 'lightMode' || !opts.startGame) api.open(site.action); return; } // 게임기 몸통 터치 = 아무 일 없음(라운드 지도 안 씀) // 닿아 있는 건물을 터치 = 진입
           if (site) { const e = L.entryPoint(site); route = { x: e.x, z: e.z, site, via: L.pathVia(view, e) }; return; }
@@ -348,7 +359,7 @@
         { url: 'assets/home3d/disco-base.glb', world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
         { url: 'assets/home3d/disco-top.glb', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },
         { url: 'assets/home3d/board.glb', world: boardWorld() }]).then(() => { /* V1650 C: 게시판 */
-        ready = true; readyAt = time; ui.setLoading(null); signsNow(); refreshArcade(true); rd.setBoard(boardPanels()); refreshBoard(true);
+        ready = true; readyAt = time; ui.setLoading(null); signsNow(); refreshArcade(true); rd.setBoard(boardPanels()); refreshBoard(true); if (MG.Home3DText) MG.Home3DText.ready().then(() => { signsNow(); refreshArcade(true); refreshBoard(true); wake(); }); /* V1653 C: 둥근 글씨체 준비되면 글자 다시 그림 */
         wake();
       }).catch((err) => { console.error('3D home:', err); ui.setLoading((ko() ? '3D 공간을 불러오지 못했습니다.' : 'Could not load the 3D plaza.') + ' (' + String(err && err.message || err).slice(0, 160) + ')'); });
     }

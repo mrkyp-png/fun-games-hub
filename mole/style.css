@@ -10216,3 +10216,5 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* 퀘스트 구름 = 스코어 구름(.sr-cloud) 그대로, 하늘 위쪽만 + 양쪽 깃발(가장자리 22%) 가림 */
 #quest-screen .qs-clouds { inset:0 0 62% 0; overflow:hidden; mask-image:linear-gradient(90deg, transparent 20%, #000 30%, #000 52%, transparent 61%); -webkit-mask-image:linear-gradient(90deg, transparent 20%, #000 30%, #000 52%, transparent 61%); /* 오른쪽 관람차(62~90%)도 안 겹치게 */ }
 #quest-screen[hidden] .sr-cloud { animation-play-state:paused; }
+/* V1653 C 사용자: 퀘스트 간판·박스가 아래로 내려와 있음 → 화면 가운데 정렬 대신 위에 붙임(스코어처럼) */
+#quest-screen.qs-screen { align-items:flex-start; padding-top:max(6px, env(safe-area-inset-top, 0px)); }

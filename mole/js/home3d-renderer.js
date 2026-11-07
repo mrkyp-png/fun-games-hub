@@ -289,7 +289,7 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
         setup();
         const [plaza, mole, boatModel] = await Promise.all([load(plazaUrl), load(moleUrl), boatUrl ? load(boatUrl).catch(() => null) : null]);
         /* 고정 소품(Tripo, 그림 질감): [{url, world}] — 디스코 팡팡 상판·받침 */
-        for (const pr of propList || []) load(pr.url).then((mdl) => { const ins = R.instances(mdl); for (const i of ins) { const m = Object.assign(mesh(mdl, i.primitive), { world: R.multiply(pr.world, i.world), texBase: null }); glbTexture(mdl, i.primitive).then((t) => { m.texBase = t; }).catch(() => {}); props.push(m); } }).catch(() => {});
+        for (const pr of propList || []) load(pr.url).then((mdl) => { const ins = R.instances(mdl); for (const i of ins) { const m = Object.assign(mesh(mdl, i.primitive), { world: R.multiply(pr.world, i.world), texBase: null }); glbTexture(mdl, i.primitive).then((t) => { m.texBase = t; }).catch(() => { m.plain = true; }); props.push(m); } }).catch(() => {}); /* plain = 그림 없는 모델(재질 색) */
         if (boatModel) { boat = R.instances(boatModel).map((i) => Object.assign(mesh(boatModel, i.primitive), { world: i.world, texBase: null })); for (const b of boat) glbTexture(boatModel, R.instances(boatModel)[0].primitive).then((t) => { b.texBase = t; }).catch(() => {}); }
         // Sign_<action> 판 = 간판 글자 텍스처 자리
         environment = R.instances(plaza).map((i) => Object.assign(mesh(plaza, i.primitive), { world: i.world, sign: i.name.startsWith('Sign_') ? i.name.slice(5) : null, screen: i.name.startsWith('Screen_'), tex: null, texPrim: i.name.startsWith('Tex_') ? i.primitive : null }));
@@ -377,7 +377,7 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
         if (seaMesh) { /* V1635 C: 바다가 카메라를 따라감(끝없는 바다), 높이 오를수록 넓게 — 격자 칸(2.5) 단위로 옮겨 물결 안 흔들림 */
           const sk = Math.max(1, Math.pow(2, Math.ceil(Math.log2(1 + (cam.eye[1] - 1.35) / 25)))), cell = 2.5 * sk;
           draw(seaMesh, R.transform({ translation: [Math.round(cam.focus[0] / cell) * cell, 0, Math.round(cam.focus[2] / cell) * cell], scale: [sk, 1, sk] }), null); }
-        for (const pm of props) if (pm.texBase) draw(pm, pm.world, null); /* 고정 소품 */
+        for (const pm of props) if (pm.texBase || pm.plain) draw(pm, pm.world, null); /* 고정 소품 */
         for (const bp of boardPanels) if (boardTex[bp.kind]) { bp.mesh.tex = boardTex[bp.kind]; draw(bp.mesh, bp.world, null); } /* 게시판 칸(V1650 C) */
         if (boat.length) { const bm = boatMatrix(now); for (const b of boat) if (b.texBase) draw(b, R.multiply(bm, b.world), null); } /* 바다 배 */
         if (arcade) {
@@ -453,8 +453,8 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
       drawBoard(data, page, ko) {
         if (!gl || !root.MoleGame.Home3DBoard) return;
         const B = root.MoleGame.Home3DBoard;
-        for (const kind of B.KINDS) { const c = document.createElement('canvas'); c.width = 512; c.height = 402;
-          B.drawPanel(c.getContext('2d'), c.width, c.height, kind, Object.assign({}, data[kind], { at: page, bare: true }));
+        for (const kind of B.KINDS) { const c = document.createElement('canvas'); c.width = 512; c.height = Math.round(512 * root.MoleGame.Home3DLayout.BOARD.PANEL_H / root.MoleGame.Home3DLayout.BOARD.PANEL_W); /* 칸 비율 그대로(글자 안 찌그러짐) */
+          B.drawPanel(c.getContext('2d'), c.width, c.height, kind, Object.assign({}, data[kind], { at: page, bare: true, lang: ko ? 'ko' : (root.FGH.I18N.lang || 'en') }));
           const t = boardTex[kind] || (boardTex[kind] = gl.createTexture()); gl.bindTexture(gl.TEXTURE_2D, t); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
           gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c); gl.generateMipmap(gl.TEXTURE_2D); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); }
       },
@@ -466,8 +466,10 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
         g.strokeStyle = '#4a5275'; g.lineWidth = 10; g.strokeRect(10, 10, W - 20, H - 20);
         g.textAlign = 'center'; g.textBaseline = 'middle';
         const fit = (txt, size, wt) => { g.font = wt + ' ' + size + 'px system-ui,sans-serif'; while (g.measureText(txt).width > W - 60 && size > 20) { size -= 3; g.font = wt + ' ' + size + 'px system-ui,sans-serif'; } };
-        fit(line1, 76, '800'); g.fillStyle = '#ffe9a8'; g.fillText(line1, W / 2, H * 0.36);
-        fit(line2, 58, '700'); g.fillStyle = '#9fe0ff'; g.fillText(line2, W / 2, H * 0.7);
+        const TX = root.MoleGame.Home3DText, lang = (root.FGH && root.FGH.I18N && root.FGH.I18N.lang) || 'ko';
+        if (TX) { TX.neon(g, line1, W / 2, H * 0.36, 70, lang, W - 70, 0); TX.candy(g, line2, W / 2, H * 0.72, 56, lang, W - 80, '#fff3a0', '#ffb21f'); } /* V1653 C 사용자: 제목 = 네온(단어마다 색), 점수 = 노란 사탕 */
+        else { fit(line1, 76, '800'); g.fillStyle = '#ffe9a8'; g.fillText(line1, W / 2, H * 0.36);
+        fit(line2, 58, '700'); g.fillStyle = '#9fe0ff'; g.fillText(line2, W / 2, H * 0.7); }
         if (!screenTex) screenTex = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, screenTex); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c); gl.generateMipmap(gl.TEXTURE_2D);
