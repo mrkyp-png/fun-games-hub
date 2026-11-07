@@ -259,7 +259,7 @@
           if (riding === 'disco' && discoT0 < 0) { discoT0 = time; grip = 100; spinLeft = 12; bounceLeft = 3; } if (riding !== 'disco' && !air) discoT0 = -1; /* V1667 C 사용자: 버티는 힘 100, 20초 동안 회전 12번·점프 3번 */
           const left = riding === 'disco' ? Math.max(0, 20 - (time - discoT0)) : 0;
           if (riding === 'disco') { grip -= Math.max(0, discoSpin - 2) ** 2 * 3 * dt; if (discoSpin < 1) grip = Math.min(100, grip + 15 * dt); if (landed) grip -= discoSpin * 5; } /* 빨리 돌수록 힘 빠짐, 천천히면 다시 참, 돌며 튀었다 내려앉으면 크게 빠짐 */
-          if (ui && ui.setTimer) ui.setTimer(riding === 'disco' && left > 0 ? '⏱ ' + Math.ceil(left) + '   💪 ' + Math.max(0, Math.round(grip)) + '   💫 ' + spinLeft + '   💨 ' + bounceLeft : null);
+          if (ui && ui.setTimer) ui.setTimer(riding === 'disco' && left > 0 ? [Math.ceil(left), Math.max(0, Math.round(grip)), spinLeft, bounceLeft] : null);
           /* V1662 C 사용자: 잘 안 떨어지게 — 거의 최고 속도로 돌거나, 빠르게 돌면서 튀었다 내려앉을 때 가끔 */
           if (riding === 'disco' && grip <= 0) { if (left > 0 && MG.Economy) { MG.Economy.addHearts(1); refreshHud(); if (ui.toast) ui.toast(root.FGH.I18N.lang === 'ko' ? '하트 +1!' : 'Heart +1!'); } /* V1667 C: 버티는 힘 0 = 떨어짐(운 없음), 20초 안이면 하트 +1 */
             const se = rd.seat('disco'), ox = se.x - D.x, oz = se.z - D.z, ol = Math.hypot(ox, oz) || 1, sp = 3.2 + discoSpin * 0.6;

@@ -134,3 +134,7 @@
 @keyframes h3-toast-pop{0%{opacity:0;transform:scale(.6)}12%{opacity:1;transform:scale(1.1)}22%{transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:translateY(-20px)}}
 /* V1665 C 사용자: 회전 아이콘(💫)은 안쪽 틈(선)이 보이게 — 통째 칠하지 않고 흑백·밝게 해서 발바닥 색 느낌 */
 #home3d .h3-spin .h3-oar-ico{color:initial;text-shadow:none;filter:grayscale(1) sepia(.35) brightness(1.55) contrast(.9) drop-shadow(0 3px 4px #30281955)}
+/* V1668 C 사용자: 남은 점프 아이콘 = 버튼과 같은 방향(💨 위로), 회전 아이콘 = 버튼과 같은 색 */
+#home3d .h3-timer{display:flex;gap:14px;white-space:nowrap}
+#home3d .h3-timer i{font-style:normal;display:inline-block}
+#home3d .h3-timer .h3-t-spin{filter:grayscale(1) sepia(.35) brightness(1.1) contrast(.9)}

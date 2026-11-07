@@ -145,7 +145,9 @@
       setBoardHand(p) { if (!p) { boardHand.hidden = true; return; } boardHand.hidden = false; if (!boardHand.classList.contains('is-press')) { boardHand.style.left = p.x + 'px'; boardHand.style.top = p.y + 'px'; } },
       pressBoardHand(p, done) { boardHand.hidden = false; boardHand.classList.add('is-press'); boardHand.style.left = p.x + 'px'; boardHand.style.top = p.y + 'px';
         setTimeout(() => { boardHand.classList.remove('is-press'); done(); }, 520); },
-      setTimer(t) { timerBox.hidden = !t; if (t && timerBox.textContent !== t) timerBox.textContent = t; },
+      /* t = [남은 초, 버티는 힘, 남은 회전, 남은 점프] — 아이콘 = 버튼과 같은 모양·방향(점프 💨 위로) */
+      setTimer(t) { timerBox.hidden = !t; if (!t) return; const k = t.join(','); if (timerBox.dataset.k === k) return; timerBox.dataset.k = k;
+        timerBox.innerHTML = '<span>⏱ ' + t[0] + '</span><span>💪 ' + t[1] + '</span><span><i class="h3-t-spin">💫</i> ' + t[2] + '</span><span><i class="h3-up">💨</i> ' + t[3] + '</span>'; },
       toast(t) { toastEl.textContent = t; toastEl.hidden = false; toastEl.classList.remove('is-on'); void toastEl.offsetWidth; toastEl.classList.add('is-on'); clearTimeout(toastT); toastT = setTimeout(() => { toastEl.hidden = true; }, 1800); },
       setHeight(m) { altBox.hidden = !(m >= 1); if (m >= 1) altNum.textContent = Math.round(m) + 'm'; }, /* 날기 높이(V1635 C) */
       showMail() { mailRender(); mailPop.hidden = false; },
