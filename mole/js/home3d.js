@@ -245,7 +245,8 @@
         if (boatV > 0.3 && time - wakeAt > 0.42 - Math.min(0.3, boatV * 0.06)) { wakeAt = time; const bm = boatM(); for (const [u, w] of [[B.U * 0.9, 0], [0.2, B.W * 1.1], [0.2, -B.W * 1.1]]) { const p = root.StudioRig.point(bm, [u / B.S, 0, w / B.S]); wakeFx.push({ x: p[0], z: p[2], at: time, s: Math.min(1, boatV / 3) }); } }
         wakeFx = wakeFx.filter((q) => time - q.at < 1.8);
         if (rd && (wakeFx.length || boatV)) rd.setSmoke(wakeFx.map((q) => { const k = (time - q.at) / 1.8; return { x: q.x, y: -0.55, z: q.z, r: 0.25 + k * 0.9 * (0.6 + q.s), a: 0.55 * (1 - k) }; }));
-        if (ui) ui.setRowing(!!(onBoat && !air)); }
+        if (ui) ui.setRowing(!!(onBoat && !air));
+        if (ui && ui.setDeep) ui.setDeep(air && air.y >= 2000 ? 'megalodon' : air && air.y >= 1000 ? 'whale' : null); } /* V1658 C 사용자: 1000m 고래, 2000m 메갈로돈 */
       if (onBoat && !air) { const a = deckWorld(onBoat.u, onBoat.w); view.x = a[0]; view.z = a[2]; }
       if (onBoat && !air && boardAt >= 0 && !offer && time - boardAt >= BOAT_STAY) { /* 배 5분 → 1시간 1번, 1분 안에 광고 보면 하트 2 → 처음 시작 구멍 */
         let last = 0; try { last = +localStorage.getItem(REWARD_KEY) || 0; } catch (e) { last = 0; }

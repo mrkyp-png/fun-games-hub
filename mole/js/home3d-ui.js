@@ -36,6 +36,8 @@
     const input = createInput();
     const wrap = el('section', 'h3-home', host); wrap.id = 'home3d'; wrap.hidden = true;
     const canvas = el('canvas', 'h3-canvas', wrap);
+    /* V1658 C 사용자: 1000m 고래·2000m 메갈로돈 — 바다 아래 실루엣이 화면 모서리에서 헤엄쳐 지나감 */
+    const deep = el('div', 'h3-deep', wrap); deep.hidden = true; const deepImg = el('img', '', deep); deepImg.alt = ''; let deepKind = null;
     const boardHand = el('div', 'h3-boardhand', wrap); boardHand.textContent = '👆'; boardHand.hidden = true; boardHand.setAttribute('aria-hidden', 'true');
     const hud = el('div', 'h3-hud', wrap), vals = {};
     for (const k of ['coins', 'hearts', 'tickets']) {
@@ -137,6 +139,7 @@
       setHeight(m) { altBox.hidden = !(m >= 1); if (m >= 1) altNum.textContent = Math.round(m) + 'm'; }, /* 날기 높이(V1635 C) */
       showMail() { mailRender(); mailPop.hidden = false; },
       mailOpen: () => !mailPop.hidden,
+      setDeep(kind) { if (kind === deepKind) return; deepKind = kind; deep.hidden = !kind; deep.className = 'h3-deep' + (kind ? ' is-' + kind : ''); if (kind) deepImg.src = 'assets/home3d/deep-' + kind + '.png'; },
       setRowing(on) { oarBtn.hidden = !on; stick.hidden = !!on; },
       setJumpLabel(text) { jumpBtn.setAttribute('aria-label', text); },
       showOffer(text, yes, no, cb) { offerTxt.textContent = text; offerYes.textContent = yes; offerNo.textContent = no; offerCb = cb; offer.hidden = false; },

@@ -99,3 +99,16 @@
 #home3d .h3-oar-ico{font-size:54px;line-height:1}
 #home3d .h3-oar:active{transform:scale(.92)}
 #home3d .h3-oar-ico{color:transparent;text-shadow:0 0 0 #f7eddc;filter:drop-shadow(0 3px 4px #30281955)} /* 사용자: 아이콘 색 = 두더지 발바닥과 동일(아이보리 #f7eddc + 같은 그림자) */
+/* V1658 C 사용자: 바다 아래 실루엣(1000m 고래, 2000m 메갈로돈) — 왼쪽 아래 모서리에서 오른쪽 위로 헤엄쳐 지나감, 반투명·흐릿 */
+#home3d .h3-deep{position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none}
+#home3d .h3-deep[hidden]{display:none!important}
+#home3d .h3-deep img{position:absolute;left:0;top:0;opacity:.32;filter:blur(2px);mix-blend-mode:multiply;transform-origin:50% 50%}
+#home3d .h3-deep.is-whale img{width:150vw;animation:h3-swim-whale 26s linear infinite}
+#home3d .h3-deep.is-megalodon img{width:110vw;animation:h3-swim-meg 12s linear infinite}
+@keyframes h3-swim-whale{0%{transform:translate(-160vw,78vh) rotate(-14deg) skewY(0deg)}25%{transform:translate(-90vw,68vh) rotate(-14deg) skewY(2deg)}50%{transform:translate(-20vw,58vh) rotate(-14deg) skewY(-2deg)}75%{transform:translate(50vw,48vh) rotate(-14deg) skewY(2deg)}100%{transform:translate(120vw,38vh) rotate(-14deg) skewY(0deg)}}
+@keyframes h3-swim-meg{0%{transform:translate(-120vw,72vh) rotate(-18deg) skewY(0deg)}25%{transform:translate(-62vw,62vh) rotate(-18deg) skewY(3deg)}50%{transform:translate(-5vw,52vh) rotate(-18deg) skewY(-3deg)}75%{transform:translate(52vw,42vh) rotate(-18deg) skewY(3deg)}100%{transform:translate(110vw,32vh) rotate(-18deg) skewY(0deg)}}
+@media (prefers-reduced-motion:reduce){#home3d .h3-deep img{animation-duration:60s}}
+/* 사용자: 크기 = 발바닥 버튼(지름 112px)의 1.5배 정도(몸 길이 168px) — 1000m 위에서 섬보다 크고 너무 크지 않게 */
+#home3d .h3-deep.is-whale img,#home3d .h3-deep.is-megalodon img{width:168px}
+@keyframes h3-swim-whale{0%{transform:translate(-200px,80vh) rotate(-14deg) skewY(0deg)}25%{transform:translate(12vw,70vh) rotate(-14deg) skewY(2deg)}50%{transform:translate(38vw,60vh) rotate(-14deg) skewY(-2deg)}75%{transform:translate(64vw,50vh) rotate(-14deg) skewY(2deg)}100%{transform:translate(110vw,40vh) rotate(-14deg) skewY(0deg)}}
+@keyframes h3-swim-meg{0%{transform:translate(-200px,74vh) rotate(-18deg) skewY(0deg)}25%{transform:translate(14vw,64vh) rotate(-18deg) skewY(3deg)}50%{transform:translate(40vw,54vh) rotate(-18deg) skewY(-3deg)}75%{transform:translate(66vw,44vh) rotate(-18deg) skewY(3deg)}100%{transform:translate(110vw,34vh) rotate(-18deg) skewY(0deg)}}
