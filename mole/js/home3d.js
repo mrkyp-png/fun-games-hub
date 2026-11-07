@@ -87,7 +87,7 @@
     }
     /* 날기·배: air = 공중 {y, vy, flapAt} / onBoat = 갑판 위 {u, w}(배 기준 좌표) / boardAt = 배에 오른 시각 / offer = 보상 창 */
     const deepLast = {}, deepRun = {}; /* 고래·메갈로돈: 마지막으로 다 돈 시각, 도는 중 시작 시각 */
-    let discoSpin = 0, discoLiftV = 0, discoT0 = -1; /* discoT0 = 이번에 탄 시각(20초 도전) */ /* 디스코 팡팡: 더 도는 속도·튀는 속도 */
+    let discoSpin = 0, discoLiftV = 0, discoT0 = -1, grip = 100, spinLeft = 12, bounceLeft = 3; /* discoT0 = 이번에 탄 시각(20초 도전) */ /* 디스코 팡팡: 더 도는 속도·튀는 속도 */
     let boatV = 0, rowSide = 1, wakeFx = [], wakeAt = 0; /* 배 속도(섬 둘레, 초당 거리)·물결 */
     let air = null, onBoat = null, boardAt = -1, offer = null, splashAt = -9;
     const G = 9.5, JUMP_V = 4.4, FLAP_V = 3.6, BOAT_STAY = 300, REWARD_GAP = 3600 * 1000, OFFER_T = 60, REWARD_KEY = 'mole.boatRewardAt';
@@ -256,10 +256,12 @@
           if (riding === 'disco') { const se = rd.seat('disco'); view.x = se.x; view.z = se.z; view.heading = se.heading; seatY = se.y + 0.02; } /* V1665 C 사용자: 튈 때 발이 바닥에 박히지 않게 — 상판을 옮긴 뒤 같은 프레임에 자리 다시 잡음 */
           let landed = false; if (D.lift > 0 || discoLiftV > 0) { discoLiftV -= 9.5 * dt; D.lift = Math.max(0, D.lift + discoLiftV * dt); if (D.lift === 0) { discoLiftV = 0; landed = true; } }
           /* V1661 C 사용자: 떨어뜨리기 놀이 — 아주 빨리 돌면(원심력) 또는 돌면서 튀었다 내려앉으면 두더지가 밖으로 튕겨 나감 */
-          if (riding === 'disco' && discoT0 < 0) discoT0 = time; if (riding !== 'disco' && !air) discoT0 = -1;
-          const left = riding === 'disco' ? Math.max(0, 20 - (time - discoT0)) : 0; if (ui && ui.setTimer) ui.setTimer(riding === 'disco' && left > 0 ? '⏱ ' + Math.ceil(left) : null);
+          if (riding === 'disco' && discoT0 < 0) { discoT0 = time; grip = 100; spinLeft = 12; bounceLeft = 3; } if (riding !== 'disco' && !air) discoT0 = -1; /* V1667 C 사용자: 버티는 힘 100, 20초 동안 회전 12번·점프 3번 */
+          const left = riding === 'disco' ? Math.max(0, 20 - (time - discoT0)) : 0;
+          if (riding === 'disco') { grip -= Math.max(0, discoSpin - 2) ** 2 * 3 * dt; if (discoSpin < 1) grip = Math.min(100, grip + 15 * dt); if (landed) grip -= discoSpin * 5; } /* 빨리 돌수록 힘 빠짐, 천천히면 다시 참, 돌며 튀었다 내려앉으면 크게 빠짐 */
+          if (ui && ui.setTimer) ui.setTimer(riding === 'disco' && left > 0 ? '⏱ ' + Math.ceil(left) + '   💪 ' + Math.max(0, Math.round(grip)) + '   💫 ' + spinLeft + '   💨 ' + bounceLeft : null);
           /* V1662 C 사용자: 잘 안 떨어지게 — 거의 최고 속도로 돌거나, 빠르게 돌면서 튀었다 내려앉을 때 가끔 */
-          if (riding === 'disco' && (discoSpin > 5.4 || (landed && discoSpin > 3 && Math.random() < 0.25))) { if (left > 0 && MG.Economy) { MG.Economy.addHearts(1); refreshHud(); if (ui.toast) ui.toast(root.FGH.I18N.lang === 'ko' ? '하트 +1!' : 'Heart +1!'); } /* 20초 안에 떨어뜨리면 하트 +1 */
+          if (riding === 'disco' && grip <= 0) { if (left > 0 && MG.Economy) { MG.Economy.addHearts(1); refreshHud(); if (ui.toast) ui.toast(root.FGH.I18N.lang === 'ko' ? '하트 +1!' : 'Heart +1!'); } /* V1667 C: 버티는 힘 0 = 떨어짐(운 없음), 20초 안이면 하트 +1 */
             const se = rd.seat('disco'), ox = se.x - D.x, oz = se.z - D.z, ol = Math.hypot(ox, oz) || 1, sp = 3.2 + discoSpin * 0.6;
             riding = null; view.x = se.x; view.z = se.z; air = { y: se.y, vy: 3.5, vx: ox / ol * sp, vz: oz / ol * sp, flapAt: -9 }; discoSpin *= 0.4; ui.input.reset(); }
           if (ui && ui.setDiscoRide) ui.setDiscoRide(riding === 'disco'); }
@@ -379,8 +381,8 @@
         onMailChanged() { refreshHud(); badges = claimables(MG); ui.setMailDot(badges.includes('mail')); },
         onClose() { if (st.state === 'FEATURE') opts.homeAction('home'); },
         onExit() { exitArcade(); },
-        onSpin() { if (riding === 'disco') discoSpin = Math.min(6, discoSpin + 0.6); }, /* V1662 C: 잘 안 떨어지게 0.9 → 0.6 */ /* V1660 C: 팡팡 회전 버튼 = 누를수록 빨리 */
-        onBounce() { if (riding === 'disco' && L.DISCO.lift <= 0.01) { discoLiftV = 4.2; L.DISCO.glowBounce = 1.4; } }, /* 팡팡 점프 버튼 = 통 튀어 오름(땅에 있을 때) */
+        onSpin() { if (riding === 'disco' && spinLeft > 0) { spinLeft--; discoSpin = Math.min(6, discoSpin + 0.6); grip -= 2; } }, /* V1667 C: 20초에 12번까지, 한 번 = 버티는 힘 -2 */ /* V1662 C: 잘 안 떨어지게 0.9 → 0.6 */ /* V1660 C: 팡팡 회전 버튼 = 누를수록 빨리 */
+        onBounce() { if (riding === 'disco' && bounceLeft > 0 && L.DISCO.lift <= 0.01) { bounceLeft--; discoLiftV = 4.2; L.DISCO.glowBounce = 1.4; grip -= 6; } }, /* 20초에 3번까지, 한 번 = -6 */ /* 팡팡 점프 버튼 = 통 튀어 오름(땅에 있을 때) */
         onRow() { if (onBoat && !air) { boatV = Math.min(4.2, boatV + 0.7); MG.Home3DLayout.BOAT.kick = (rowSide = -rowSide) * 0.08; } }, /* V1657 C: 노 한 번 = 속도 +0.7(최대 4.2), 좌우로 번갈아 기울기 */
         onJump() {
           if (riding) { const rdd = riding === 'disco' ? L.DISCO : L.RIDES.find((x) => x.id === riding), e = L.rideExit(rdd); riding = null; view.x = e.x; view.z = e.z; view.heading = Math.atan2(-e.x, -e.z); jumpAt = time; return; } // 앞으로 뛰어내림
