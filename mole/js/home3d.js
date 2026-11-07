@@ -245,7 +245,7 @@
         const B = L.BOAT, RR = Math.hypot(0, 25.6);
         boatV *= Math.exp(-dt * 0.55); if (boatV < 0.02) boatV = 0; B.kick *= Math.exp(-dt * 2.5);
         B.theta -= boatV / RR * dt; B.x = RR * Math.sin(B.theta); B.z = RR * Math.cos(B.theta); B.yaw = B.theta;
-        if (boatV > 0.3 && time - wakeAt > 0.42 - Math.min(0.3, boatV * 0.06)) { wakeAt = time; const bm = boatM(); for (const [u, w, big] of [[3.5, 0, 1], [1.3, 1.6, 0], [1.3, -1.6, 0]]) { /* V1663 C 사용자: 뒤 = 예전처럼 크게(배 밖으로 더 뒤), 좌우 = 가운데보다 조금 뒤 */ /* V1663 C 사용자: 물결은 배 밖 옆·뒤만(선체 반폭 1.19·반길이 2.45 바깥, 뒤 = 배 기준 +x) */ const p = root.StudioRig.point(bm, [u / B.S, 0, w / B.S]); wakeFx.push({ x: p[0], z: p[2], at: time, s: Math.min(1, boatV / 3), big }); } }
+        if (boatV > 0.3 && time - wakeAt > 0.42 - Math.min(0.3, boatV * 0.06)) { wakeAt = time; const bm = boatM(); for (const [u, w, big] of [[2.65, 0, 1], [1.3, 1.45, 0], [1.3, -1.45, 0]]) { /* V1669 C 사용자: 뒤에서 보면 물보라가 너무 떨어짐 → 배 꼬리(2.45) 바로 뒤, 옆도 붙임 */ /* V1663 C 사용자: 뒤 = 예전처럼 크게(배 밖으로 더 뒤), 좌우 = 가운데보다 조금 뒤 */ /* V1663 C 사용자: 물결은 배 밖 옆·뒤만(선체 반폭 1.19·반길이 2.45 바깥, 뒤 = 배 기준 +x) */ const p = root.StudioRig.point(bm, [u / B.S, 0, w / B.S]); wakeFx.push({ x: p[0], z: p[2], at: time, s: Math.min(1, boatV / 3), big }); } }
         wakeFx = wakeFx.filter((q) => time - q.at < 1.8);
         if (rd && (wakeFx.length || boatV)) rd.setSmoke(wakeFx.map((q) => { const k = (time - q.at) / 1.8; return { x: q.x, y: -0.55, z: q.z, r: q.big ? 0.25 + k * 0.9 * (0.6 + q.s) : 0.15 + k * 0.35 * (0.6 + q.s), a: (q.big ? 0.55 : 0.5) * (1 - k) }; /* 물결 작게(사용자: 배 안에 안 보이게) */ }));
         if (ui) ui.setRowing(!!(onBoat && !air));
