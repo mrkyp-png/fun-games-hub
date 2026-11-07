@@ -4,7 +4,7 @@
 (function (root) {
   'use strict';
   const PLAZA_GLB = 'assets/home3d/plaza.glb'; // review/build-home-plaza.py
-  const MOLE_GLB = 'assets/home3d/mole-new-v1655.glb'; /* V1655 C 사용자: 신규 두더지(Tripo) + 기존 뼈대·동작 19(review/build-new-mole.py). 옛것 = assets/checkerboard-v1590/mole-clay-v44.glb */
+  const MOLE_GLB = 'assets/checkerboard-v1590/mole-clay-v44.glb'; /* V1656 C 사용자: 기존 두더지로 되돌림(신규 Tripo 두더지는 노이즈·배 없음) — 기존 두더지를 다듬기로 */
   const SPEED = 2.8;
 
   function create(opts) {
