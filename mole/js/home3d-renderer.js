@@ -40,10 +40,11 @@
   // 바다 물결 높이(셰이더 SEA_H 와 같은 식) — 잔잔하게, 진폭 ≤ 0.075
   /* 바다 배 변환: 물결 높이에 맞춰 출렁이고 앞뒤·좌우로 천천히 기우뚱(home3d-layout BOAT) */
   function boatMatrix(t) {
-    const B = root.MoleGame.Home3DLayout.BOAT, y = -0.62 + seaHeight(B.x, B.z, t) - B.DRAFT, /* V1636 C: 수면(-0.62) 빠뜨려 배가 떠 있던 것 → 배 밑 DRAFT 만큼 물에 잠김 */ roll = 0.07 * Math.sin(t * 0.9), pitch = 0.045 * Math.sin(t * 0.7 + 1);
+    const B = root.MoleGame.Home3DLayout.BOAT, y = -0.62 + seaHeight(B.x, B.z, t) - B.DRAFT, /* V1657 C: 노 저을 때 좌우로 한 번 더 기울기(kick) */ /* V1636 C: 수면(-0.62) 빠뜨려 배가 떠 있던 것 → 배 밑 DRAFT 만큼 물에 잠김 */ roll = 0.07 * Math.sin(t * 0.9) + (B.kick || 0), pitch = 0.045 * Math.sin(t * 0.7 + 1);
     const qx = [Math.sin(roll / 2), 0, 0, Math.cos(roll / 2)], qz = [0, 0, Math.sin(pitch / 2), Math.cos(pitch / 2)];
     const q = [qx[3] * qz[0] + qx[0] * qz[3] + qx[1] * qz[2] - qx[2] * qz[1], qx[3] * qz[1] - qx[0] * qz[2] + qx[1] * qz[3] + qx[2] * qz[0], qx[3] * qz[2] + qx[0] * qz[1] - qx[1] * qz[0] + qx[2] * qz[3], qx[3] * qz[3] - qx[0] * qz[0] - qx[1] * qz[1] - qx[2] * qz[2]];
-    return R.transform({ translation: [B.x, y, B.z], rotation: q, scale: [B.S, B.S, B.S] });
+    const yw = B.yaw || 0, qy = [0, Math.sin(yw / 2), 0, Math.cos(yw / 2)], qq = [qy[3] * q[0] + qy[1] * q[2], qy[3] * q[1] + qy[1] * q[3], qy[3] * q[2] - qy[1] * q[0], qy[3] * q[3] - qy[1] * q[1]]; /* 배 방향(섬 둘레 접선) */
+    return R.transform({ translation: [B.x, y, B.z], rotation: qq, scale: [B.S, B.S, B.S] });
   }
   function seaHeight(x, z, t) {
     return 0.06 * Math.sin(0.55 * x + 1.1 * t) + 0.04 * Math.sin(0.8 * z - 0.9 * t + 1.3) + 0.02 * Math.sin(0.37 * (x + z) + 1.7 * t);

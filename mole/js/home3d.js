@@ -86,6 +86,7 @@
       arcadeState = { holes, mole: cur || null, buttons, flash: [] }; rd.setArcade(arcadeState); rd.setScreen(l1, l2);
     }
     /* 날기·배: air = 공중 {y, vy, flapAt} / onBoat = 갑판 위 {u, w}(배 기준 좌표) / boardAt = 배에 오른 시각 / offer = 보상 창 */
+    let boatV = 0, rowSide = 1, wakeFx = [], wakeAt = 0; /* 배 속도(섬 둘레, 초당 거리)·물결 */
     let air = null, onBoat = null, boardAt = -1, offer = null, splashAt = -9;
     const G = 9.5, JUMP_V = 4.4, FLAP_V = 3.6, BOAT_STAY = 300, REWARD_GAP = 3600 * 1000, OFFER_T = 60, REWARD_KEY = 'mole.boatRewardAt';
     const nowS = () => performance.now() / 1000;
@@ -237,6 +238,14 @@
         }
       }
       else if (st.inputEnabled()) move(dt);
+      { /* V1657 C 사용자: 노 젓기 — 섬 둘레 시계 방향, 손 떼면 서서히 멈춤, 속도 따라 배 뒤·옆 물결 */
+        const B = L.BOAT, RR = Math.hypot(0, 25.6);
+        boatV *= Math.exp(-dt * 0.55); if (boatV < 0.02) boatV = 0; B.kick *= Math.exp(-dt * 2.5);
+        B.theta -= boatV / RR * dt; B.x = RR * Math.sin(B.theta); B.z = RR * Math.cos(B.theta); B.yaw = B.theta;
+        if (boatV > 0.3 && time - wakeAt > 0.42 - Math.min(0.3, boatV * 0.06)) { wakeAt = time; const bm = boatM(); for (const [u, w] of [[B.U * 0.9, 0], [0.2, B.W * 1.1], [0.2, -B.W * 1.1]]) { const p = root.StudioRig.point(bm, [u / B.S, 0, w / B.S]); wakeFx.push({ x: p[0], z: p[2], at: time, s: Math.min(1, boatV / 3) }); } }
+        wakeFx = wakeFx.filter((q) => time - q.at < 1.8);
+        if (rd && (wakeFx.length || boatV)) rd.setSmoke(wakeFx.map((q) => { const k = (time - q.at) / 1.8; return { x: q.x, y: -0.55, z: q.z, r: 0.25 + k * 0.9 * (0.6 + q.s), a: 0.55 * (1 - k) }; }));
+        if (ui) ui.setRowing(!!(onBoat && !air)); }
       if (onBoat && !air) { const a = deckWorld(onBoat.u, onBoat.w); view.x = a[0]; view.z = a[2]; }
       if (onBoat && !air && boardAt >= 0 && !offer && time - boardAt >= BOAT_STAY) { /* 배 5분 → 1시간 1번, 1분 안에 광고 보면 하트 2 → 처음 시작 구멍 */
         let last = 0; try { last = +localStorage.getItem(REWARD_KEY) || 0; } catch (e) { last = 0; }
@@ -340,6 +349,7 @@
         onMailChanged() { refreshHud(); badges = claimables(MG); ui.setMailDot(badges.includes('mail')); },
         onClose() { if (st.state === 'FEATURE') opts.homeAction('home'); },
         onExit() { exitArcade(); },
+        onRow() { if (onBoat && !air) { boatV = Math.min(4.2, boatV + 0.7); MG.Home3DLayout.BOAT.kick = (rowSide = -rowSide) * 0.08; } }, /* V1657 C: 노 한 번 = 속도 +0.7(최대 4.2), 좌우로 번갈아 기울기 */
         onJump() {
           if (riding) { const rdd = L.RIDES.find((x) => x.id === riding), e = L.rideExit(rdd); riding = null; view.x = e.x; view.z = e.z; view.heading = Math.atan2(-e.x, -e.z); jumpAt = time; return; } // 앞으로 뛰어내림
           if (nearRide && st.inputEnabled() && !jumping()) { riding = nearRide.id; route = null; ui.input.reset(); return; } // 뛰어올라 탐

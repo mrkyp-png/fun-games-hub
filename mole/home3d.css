@@ -93,3 +93,9 @@
 #home3d .h3-boardhand{opacity:.7;animation:h3-hand-float 2.2s ease-in-out infinite}
 #home3d .h3-boardhand.is-press{opacity:.9}
 @keyframes h3-hand-float{0%,100%{transform:rotate(-14deg) translateY(0)}50%{transform:rotate(-8deg) translateY(-12px)}}
+/* V1657 C 사용자: 배 노 버튼 = 오른쪽 버튼과 같은 아이보리, 왼쪽 조이스틱 자리 */
+#home3d .h3-oar{right:auto;left:max(22px,env(safe-area-inset-left))}
+#home3d .h3-oar[hidden]{display:none!important}
+#home3d .h3-oar-ico{font-size:54px;line-height:1}
+#home3d .h3-oar:active{transform:scale(.92)}
+#home3d .h3-oar-ico{color:transparent;text-shadow:0 0 0 #f7eddc;filter:drop-shadow(0 3px 4px #30281955)} /* 사용자: 아이콘 색 = 두더지 발바닥과 동일(아이보리 #f7eddc + 같은 그림자) */

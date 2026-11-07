@@ -85,6 +85,9 @@
     const jumpBtn = el('button', 'h3-jump', wrap); jumpBtn.type = 'button';
     const enterLbl = el('span', 'h3-enter-lbl', jumpBtn); // 건물 가까이: 점프 버튼 → 그 건물 터치 버튼
     const paw = el('span', 'h3-paw', jumpBtn); for (let i = 0; i < 4; i++) el('i', '', paw); el('b', '', paw);
+    /* V1657 C 사용자: 배에 타면 왼쪽 조이스틱 자리 = 노 버튼(오른쪽 버튼과 같은 아이보리, 💨) — 누를수록 빨라짐 */
+    const oarBtn = el('button', 'h3-jump h3-oar', wrap); oarBtn.type = 'button'; oarBtn.hidden = true; oarBtn.setAttribute('aria-label', 'row'); el('span', 'h3-oar-ico', oarBtn).textContent = '💨';
+    oarBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); if (opts.onRow) opts.onRow(); });
     const loading = el('div', 'h3-loading', wrap); loading.setAttribute('role', 'status');
     // 설정·아이템·메일함은 자체 닫기 없이 아래 다이얼패드로 닫던 화면 — 광장이 그 자리를 덮으므로 대신 닫기
     const close = el('button', 'h3-close', wrap); close.type = 'button'; close.hidden = true;
@@ -134,6 +137,7 @@
       setHeight(m) { altBox.hidden = !(m >= 1); if (m >= 1) altNum.textContent = Math.round(m) + 'm'; }, /* 날기 높이(V1635 C) */
       showMail() { mailRender(); mailPop.hidden = false; },
       mailOpen: () => !mailPop.hidden,
+      setRowing(on) { oarBtn.hidden = !on; stick.hidden = !!on; },
       setJumpLabel(text) { jumpBtn.setAttribute('aria-label', text); },
       showOffer(text, yes, no, cb) { offerTxt.textContent = text; offerYes.textContent = yes; offerNo.textContent = no; offerCb = cb; offer.hidden = false; },
       hideOffer() { offer.hidden = true; offerCb = null; },
