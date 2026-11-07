@@ -251,6 +251,7 @@
         if (ui) ui.setRowing(!!(onBoat && !air));
         { /* V1660 C 사용자: 디스코 팡팡 — 기본으로 천천히 돌고, 회전 버튼 = 더 빨리(서서히 줄어듦), 출렁이며 기울기, 점프 버튼 = 통 튐 */
           const D = L.DISCO; discoSpin *= Math.exp(-dt * 0.5); D.yaw += (0.6 + discoSpin) * dt;
+          D.glowSpin = riding === 'disco' ? Math.max(0, (discoSpin - 0.3) / 1.5) : 0; D.glowBounce = Math.max(0, (D.glowBounce || 0) - dt * 1.6); /* V1666 C: 불빛 세기(돌기·튀기) */
           D.tiltDir = time * 1.1; D.tilt = (0.05 + 0.025 * Math.min(1, discoSpin / 3)) * (0.7 + 0.3 * Math.sin(time * 2.3));
           if (riding === 'disco') { const se = rd.seat('disco'); view.x = se.x; view.z = se.z; view.heading = se.heading; seatY = se.y + 0.02; } /* V1665 C 사용자: 튈 때 발이 바닥에 박히지 않게 — 상판을 옮긴 뒤 같은 프레임에 자리 다시 잡음 */
           let landed = false; if (D.lift > 0 || discoLiftV > 0) { discoLiftV -= 9.5 * dt; D.lift = Math.max(0, D.lift + discoLiftV * dt); if (D.lift === 0) { discoLiftV = 0; landed = true; } }
@@ -379,7 +380,7 @@
         onClose() { if (st.state === 'FEATURE') opts.homeAction('home'); },
         onExit() { exitArcade(); },
         onSpin() { if (riding === 'disco') discoSpin = Math.min(6, discoSpin + 0.6); }, /* V1662 C: 잘 안 떨어지게 0.9 → 0.6 */ /* V1660 C: 팡팡 회전 버튼 = 누를수록 빨리 */
-        onBounce() { if (riding === 'disco' && L.DISCO.lift <= 0.01) discoLiftV = 4.2; }, /* 팡팡 점프 버튼 = 통 튀어 오름(땅에 있을 때) */
+        onBounce() { if (riding === 'disco' && L.DISCO.lift <= 0.01) { discoLiftV = 4.2; L.DISCO.glowBounce = 1.4; } }, /* 팡팡 점프 버튼 = 통 튀어 오름(땅에 있을 때) */
         onRow() { if (onBoat && !air) { boatV = Math.min(4.2, boatV + 0.7); MG.Home3DLayout.BOAT.kick = (rowSide = -rowSide) * 0.08; } }, /* V1657 C: 노 한 번 = 속도 +0.7(최대 4.2), 좌우로 번갈아 기울기 */
         onJump() {
           if (riding) { const rdd = riding === 'disco' ? L.DISCO : L.RIDES.find((x) => x.id === riding), e = L.rideExit(rdd); riding = null; view.x = e.x; view.z = e.z; view.heading = Math.atan2(-e.x, -e.z); jumpAt = time; return; } // 앞으로 뛰어내림
@@ -397,8 +398,8 @@
       document.addEventListener('visibilitychange', wake);
       rd.lost(() => { ready = false; stop(); ui.setLoading(ko() ? '3D 화면을 다시 불러와 주세요.' : 'Please reload the 3D plaza.'); });
       rd.boot(PLAZA_GLB, MOLE_GLB, 'assets/home3d/boat.glb', [ /* V1633 C: 디스코 팡팡(배치만) */
-        { url: 'assets/home3d/disco-base.glb?v=1664b', /* 내용 바뀐 모델 = 버전 붙여 폰이 새로 받게 */ world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
-        { url: 'assets/home3d/disco-top.glb?v=1664b', dyn: 'discoTop', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },
+        { url: 'assets/home3d/disco-base.glb?v=1666', /* 내용 바뀐 모델 = 버전 붙여 폰이 새로 받게 */ world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
+        { url: 'assets/home3d/disco-top.glb?v=1666', dyn: 'discoTop', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },
         { url: 'assets/home3d/board.glb?v=1662', world: boardWorld() }]).then(() => { /* V1650 C: 게시판 */
         ready = true; readyAt = time; ui.setLoading(null); signsNow(); refreshArcade(true); rd.setBoard(boardPanels()); refreshBoard(true); if (MG.Home3DText) MG.Home3DText.ready().then(() => { signsNow(); refreshArcade(true); refreshBoard(true); wake(); }); /* V1653 C: 둥근 글씨체 준비되면 글자 다시 그림 */
         wake();

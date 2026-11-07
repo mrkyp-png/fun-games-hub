@@ -59,7 +59,7 @@ cyl('DomeBase', 0.07, 0.085, 0.03, B, bev=0.008)
 cyl('Dome', 0.1, 0.07, 0.045, P, bev=0.02)
 ball('DomeCap', (0, 0, 0.145), 0.045, C)
 for k in range(12):
-    a = 2 * math.pi * k / 12; ball('Stud', (0.466 * math.cos(a), 0.466 * math.sin(a), 0.18), 0.03, G)
+    a = 2 * math.pi * k / 12; ball('Stud', (0.466 * math.cos(a), 0.466 * math.sin(a), 0.18), 0.03, mat('stud%d' % k, GOLD, 0.35))  # 공마다 재질 따로 = 게임에서 하나씩 다른 색 불빛(V1666 C)
 for k in range(8):
     a = 2 * math.pi * k / 8; ball('DomeStud', (0.08 * math.cos(a), 0.08 * math.sin(a), 0.125), 0.011, G)
 t1 = finish(os.path.join(OUT, 'disco-top.glb'))
@@ -72,7 +72,7 @@ cyl('Lower', 0.0, 0.43, 0.2, P, bev=0.03)
 cyl('Band', 0.2, 0.39, 0.07, B, bev=0.012)
 cyl('Top', 0.27, 0.38, 0.14, C, bev=0.03)
 for k in range(8):
-    a = 2 * math.pi * (k + 0.5) / 8; ball('Bulb', (0.43 * math.cos(a), 0.43 * math.sin(a), 0.11), 0.048, Y)
+    a = 2 * math.pi * (k + 0.5) / 8; ball('Bulb', (0.43 * math.cos(a), 0.43 * math.sin(a), 0.11), 0.048, mat('bulb%d' % k, YEL, 0.3))
 cyl('Post', 0.41, 0.075, 0.227, P, bev=0.04)
 torus('PostRing', 0.43, 0.105, 0.03, GR)
 bpy.ops.mesh.primitive_cube_add(location=(0, -0.47, 0.06)); st = bpy.context.object; st.name = 'Step'; st.scale = (0.2, 0.1, 0.06)

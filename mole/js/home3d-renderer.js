@@ -260,7 +260,7 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
       if (indexed) { const a = R.accessor(model, p.indices), b = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, b); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(a), gl.STATIC_DRAW); count = a.length; }
       const material = (model.json.materials && model.json.materials[p.material]) || {};
       const color = (material.pbrMetallicRoughness && material.pbrMetallicRoughness.baseColorFactor) || [1, 1, 1, 1];
-      return { vao, count, indexed, color, floor: material.name === 'Hub checker floor', sea: material.name === 'Home sea' };
+      return { vao, count, indexed, color, matName: material.name || '', floor: material.name === 'Hub checker floor', sea: material.name === 'Home sea' };
     }
     function draw(m, world, bones) {
       gl.bindVertexArray(m.vao);
@@ -384,7 +384,13 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
         if (seaMesh) { /* V1635 C: 바다가 카메라를 따라감(끝없는 바다), 높이 오를수록 넓게 — 격자 칸(2.5) 단위로 옮겨 물결 안 흔들림 */
           const sk = Math.max(1, Math.pow(2, Math.ceil(Math.log2(1 + (cam.eye[1] - 1.35) / 25)))), cell = 2.5 * sk;
           draw(seaMesh, R.transform({ translation: [Math.round(cam.focus[0] / cell) * cell, 0, Math.round(cam.focus[2] / cell) * cell], scale: [sk, 1, sk] }), null); }
-        for (const pm of props) if (pm.texBase || pm.plain) draw(pm, pm.dyn === 'discoTop' ? R.multiply(discoTopMatrix(), pm.local) : pm.world, null); /* 고정 소품(디스코 상판은 움직임) */
+        { /* V1666 C 사용자: 디스코 팡팡 불빛 — 돌 때 위 금색 공, 튈 때 아래 노란 전구가 색색으로 빛남 */
+          const D = root.MoleGame.Home3DLayout.DISCO, gs = Math.min(1, D.glowSpin || 0), gb = Math.min(1, D.glowBounce || 0), RB = [[1, .35, .5], [1, .7, .2], [1, .95, .3], [.4, 1, .5], [.35, .8, 1], [.75, .5, 1]];
+          for (const pm of props) { if (!(pm.texBase || pm.plain)) continue; const W = pm.dyn === 'discoTop' ? R.multiply(discoTopMatrix(), pm.local) : pm.world;
+            const st = /^(stud|bulb)([0-9]+)/.exec(pm.matName || ''), g = st ? (st[1] === 'stud' ? gs : gb) : 0;
+            if (g > 0.02) { const n = +st[2], c = RB[(n + Math.floor(now * 6)) % RB.length], b = pm.color0 || (pm.color0 = pm.color.slice());
+              gl.vertexAttrib4f(A.Color, b[0] + (c[0] - b[0]) * g, b[1] + (c[1] - b[1]) * g, b[2] + (c[2] - b[2]) * g, 1); gl.uniform1i(U.Glow, 1); draw(pm, W, null); gl.uniform1i(U.Glow, 0); gl.vertexAttrib4f(A.Color, 1, 1, 1, 1); }
+            else draw(pm, W, null); } }
         for (const bp of boardPanels) if (boardTex[bp.kind]) { bp.mesh.tex = boardTex[bp.kind]; draw(bp.mesh, bp.world, null); } /* 게시판 칸(V1650 C) */
         if (boat.length) { const bm = boatMatrix(now); for (const b of boat) if (b.texBase) draw(b, R.multiply(bm, b.world), null); } /* 바다 배 */
         if (arcade) {
