@@ -4,7 +4,7 @@
 (function (root) {
   'use strict';
   const PLAZA_GLB = 'assets/home3d/plaza.glb'; // review/build-home-plaza.py
-  const MOLE_GLB = 'assets/checkerboard-v1590/mole-clay-v44.glb'; // v43 + Jump·WalkFwd(review/merge-mole-actions.cjs)
+  const MOLE_GLB = 'assets/home3d/mole-new-v1655.glb'; /* V1655 C 사용자: 신규 두더지(Tripo) + 기존 뼈대·동작 19(review/build-new-mole.py). 옛것 = assets/checkerboard-v1590/mole-clay-v44.glb */
   const SPEED = 2.8;
 
   function create(opts) {
