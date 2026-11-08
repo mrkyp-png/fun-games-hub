@@ -20,11 +20,11 @@ for n in ('Mole_Clay_Skin', 'Mole_Carrier_Skin'):
         if not side: continue
         c = sum((mw @ sk.data.vertices[i].co for i in side), mathutils.Vector()) / len(side)
         sh = arm.matrix_world @ arm.data.bones['UpperArm' + ('.R' if s > 0 else '.L')].head_local
-        tgt = mathutils.Vector((s * 0.835, sh.y + 0.02, sh.z - 0.2))   # V1673 C: 몸통 겉면(0.842)에 붙임 — 0.53 은 몸속에 파묻혀 안 보였음
+        tgt = mathutils.Vector((s * 0.835, sh.y + 0.02, sh.z - 0.1))   # V1676 C 사용자: 몸에 붙은 그대로(0.835), 조금 위로(-0.2 → -0.1)
         R = mathutils.Matrix.Rotation(s * math.radians(80), 4, 'Z')          # 앞을 보던 털 → 옆을 보게
         for i in side:
             v = sk.data.vertices[i]; p = mw @ v.co
-            v.co = inv @ (tgt + (R @ (p - c).to_4d()).to_3d() * 3.0)  # V1673 C 사용자: 겨털 3배(재미 포인트)
+            q = (R @ (p - c).to_4d()).to_3d(); q.x *= 3.0; q.y *= 3.0; q.z *= 2.0; v.co = inv @ (tgt + q)  # V1676 C: 폭 3배·길이 2배(너무 아래로 내려오던 것)
         print('ARMPIT', n, s, [round(x, 2) for x in c], '->', [round(x, 2) for x in tgt])
     sk.data.update()
 
@@ -32,7 +32,7 @@ for n in ('Mole_Clay_Skin', 'Mole_Carrier_Skin'):
 bpy.context.view_layer.objects.active = arm; bpy.ops.object.mode_set(mode='EDIT')
 for sfx, s in (('.L', -1), ('.R', 1)):
     eb = arm.data.edit_bones['Armpit' + sfx]; inv_a = arm.matrix_world.inverted()
-    eb.head = inv_a @ mathutils.Vector((s * 0.835, 0.02, 1.36)); eb.tail = inv_a @ mathutils.Vector((s * 0.835, 0.02, 1.56)); eb.roll = 0
+    eb.head = inv_a @ mathutils.Vector((s * 0.835, 0.02, 1.42)); eb.tail = inv_a @ mathutils.Vector((s * 0.835, 0.02, 1.62)); eb.roll = 0
 bpy.ops.object.mode_set(mode='OBJECT')
 for n in ('Mole_Clay_Skin', 'Mole_Carrier_Skin'):
     sk = sc.objects.get(n)
@@ -58,8 +58,9 @@ for f in range(FR + 1):
         pb.matrix = Rw @ rest
         bpy.context.view_layer.update()
         pb.keyframe_insert('rotation_quaternion', frame=f)
+        # V1676 C: 겨털은 바깥쪽으로만(0~32도) — 안쪽으로 흔들려 몸에 파묻히던 것
         ap = arm.pose.bones['Armpit' + sfx]; ra = ap.bone.matrix_local; ha = ra.to_translation()  # 겨털: 팔보다 살짝 늦게 ±25도 파닥
-        ap.matrix = mathutils.Matrix.Translation(ha) @ mathutils.Matrix.Rotation(s * math.radians(12 + 25 * math.sin(2 * math.pi * f / FR - 0.9)), 4, 'Y') @ mathutils.Matrix.Translation(-ha) @ ra
+        ap.matrix = mathutils.Matrix.Translation(ha) @ mathutils.Matrix.Rotation(s * math.radians(16 + 16 * math.sin(2 * math.pi * f / FR - 0.9)), 4, 'Y') @ mathutils.Matrix.Translation(-ha) @ ra
         bpy.context.view_layer.update(); ap.keyframe_insert('rotation_quaternion', frame=f)
         fa = arm.pose.bones['Forearm' + sfx]; fa.rotation_quaternion = mathutils.Quaternion((1, 0, 0), 0); fa.keyframe_insert('rotation_quaternion', frame=f)
         # V1672 C 사용자: 파닥일 때 손가락 모으기 — 손가락 3개를 가운데 손가락 쪽으로 오므림(Finger1·3 을 손 축 둘레로 ±18도), 엄지는 손바닥 쪽으로
