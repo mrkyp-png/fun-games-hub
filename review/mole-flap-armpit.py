@@ -28,6 +28,31 @@ for n in ('Mole_Clay_Skin', 'Mole_Carrier_Skin'):
         print('ARMPIT', n, s, [round(x, 2) for x in c], '->', [round(x, 2) for x in tgt])
     sk.data.update()
 
+# (2a) V1678 C 사용자: 겨털 맨 아래 한 가닥 없앰 — 쪽마다 겨털 조각(이어진 덩어리) 중 가장 낮은 것 삭제
+import bmesh
+for n in ('Mole_Clay_Skin', 'Mole_Carrier_Skin'):
+    sk = sc.objects.get(n)
+    if not sk: continue
+    fi = next(i for i, m in enumerate(sk.data.materials) if 'armpit' in m.name.lower()); mw = sk.matrix_world
+    bm = bmesh.new(); bm.from_mesh(sk.data); bm.faces.ensure_lookup_table()
+    left = set(f for f in bm.faces if f.material_index == fi); islands = []
+    while left:
+        st = [left.pop()]; isl = set(st)
+        while st:
+            f0 = st.pop()
+            for e in f0.edges:
+                for f1 in e.link_faces:
+                    if f1 in left: left.discard(f1); isl.add(f1); st.append(f1)
+        islands.append(isl)
+    kill = []
+    for sgn in (-1, 1):
+        side = [i for i in islands if (mw @ next(iter(i)).calc_center_median()).x * sgn > 0]
+        cz = lambda i: sum((mw @ f.calc_center_median()).z for f in i) / len(i)
+        zs = sorted(round(cz(i), 3) for i in side); print('FUR_Z', sgn, zs)
+        if len(side) > 1:
+            zlo = min(cz(i) for i in side); kill += [f for i in side if cz(i) < zlo + float(__import__('os').environ.get('FUR_CUT', '0.016')) for f in i]  # 맨 아래 줄 = 가장 낮은 조각에서 FUR_CUT 안
+    bmesh.ops.delete(bm, geom=kill, context='FACES'); bm.to_mesh(sk.data); bm.free()
+    print('FUR_STRANDS', n, 'islands', len(islands), 'removed faces', len(kill))
 # (2b) V1674 C 사용자: 파닥일 때 겨털도 파닥 — 겨털 = 겨드랑이 뼈(Armpit.L/R)에만 묶고, 그 뼈를 겨털 위쪽(어깨 밑)으로 옮김
 bpy.context.view_layer.objects.active = arm; bpy.ops.object.mode_set(mode='EDIT')
 for sfx, s in (('.L', -1), ('.R', 1)):

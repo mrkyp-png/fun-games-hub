@@ -1,6 +1,6 @@
 # 두더지 엄지만 가늘게(V1671 C 사용자: 엄지 통통한 부분 없게) — 다른 곳은 그대로, 다시 짜기 없음
 # 실행: blender -b -P review/slim-mole-thumb.py -- <v44 glb> <출력 glb> [렌더 앞부분]
-import bpy, sys, mathutils
+import bpy, sys, mathutils, math
 a = sys.argv[sys.argv.index('--') + 1:]; src, out = a[0], a[1]; rend = a[2] if len(a) > 2 else None
 bpy.ops.wm.read_factory_settings(use_empty=True); sc = bpy.context.scene
 bpy.ops.import_scene.gltf(filepath=src)
@@ -122,6 +122,22 @@ for n in ('Mole_Clay_Skin', 'Mole_Carrier_Skin'):
                 w = next((e.weight for e in v.groups if e.group == g.index), 0)
                 if w < 0.05: continue
                 u = min(1, w / 0.7); u = u * u * (3 - 2 * u); v.co = inv @ ((mw @ v.co) + mathutils.Vector((0, 0, -td * u)))
+    # V1678 C 사용자: 엄지를 손등 쪽으로 밀어 넣어 짧게(THUMB_SHORT 배, 엄지 뼈 뿌리 기준) + 검지 쪽으로 THUMB_TOWARD 도 돌림
+    tsh = float(__import__('os').environ.get('THUMB_SHORT', '1')); ttw = math.radians(float(__import__('os').environ.get('THUMB_TOWARD', '0')))
+    if tsh != 1 or ttw:
+        for sfx in ('.L', '.R'):
+            g = sk.vertex_groups.get('Thumb' + sfx); tb = arm.data.bones['Thumb' + sfx]
+            root = arm.matrix_world @ tb.head_local; tdir = ((arm.matrix_world @ tb.tail_local) - root).normalized()
+            idx = min(('Finger1', 'Finger2', 'Finger3'), key=lambda b: ((arm.matrix_world @ arm.data.bones[b + sfx].head_local) - root).length)  # 검지 = 엄지에 가장 가까운 손가락
+            ip = arm.matrix_world @ arm.data.bones[idx + sfx].tail_local; to = (ip - root); to = (to - tdir * to.dot(tdir)).normalized()
+            ax = tdir.cross(to).normalized(); Rm = mathutils.Matrix.Rotation(ttw, 4, ax)
+            for v in sk.data.vertices:
+                w = next((e.weight for e in v.groups if e.group == g.index), 0)
+                if w < 0.05: continue
+                u = min(1, w / 0.7); u = u * u * (3 - 2 * u); d = (mw @ v.co) - root
+                d2 = (mathutils.Matrix.Rotation(ttw * u, 4, ax) @ d.to_4d()).to_3d() - tdir * float(__import__('os').environ.get('THUMB_PUSH', '0')) * u  # 크기 그대로, 손등 쪽으로 밀어 넣어 밖으로 나온 길이만 짧게
+                v.co = inv @ (root + d2)
+            print('THUMB_ADJ', sfx, 'index =', idx)
     sk.data.update(); print('THUMB', n)
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.export_scene.gltf(filepath=out, export_format='GLB', export_animations=True, export_apply=False, export_skins=True)
