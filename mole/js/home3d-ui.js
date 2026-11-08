@@ -153,7 +153,7 @@
       showMail() { mailRender(); mailPop.hidden = false; },
       mailOpen: () => !mailPop.hidden,
       /* 한 번 지나가고 사라짐(V1659 C 사용자: 각각 10분에 한 번) */
-      setDeep(kind, p) { const im = deepImg[kind]; if (!p) { im.hidden = true; return; } im.hidden = false; im.style.transform = 'translate(' + p.x + 'px,' + p.y + 'px) translate(-50%,-50%) rotate(' + p.rot + 'rad)'; im.style.opacity = p.op; },
+      setDeep(kind, p) { const im = deepImg[kind]; if (!p) { im.hidden = true; return; } im.hidden = false; im.style.transform = 'translate(' + p.x + 'px,' + p.y + 'px) translate(-50%,-50%) rotate(' + p.rot + 'rad)'; im.style.opacity = p.op; if (p.w) im.style.width = p.w.toFixed(1) + 'px'; },
       setRowing(on) { oarBtn.hidden = !on; stick.hidden = !!on || !spinBtn.hidden; },
       setDiscoRide(on) { spinBtn.hidden = !on; bounceBtn.hidden = !on; stick.hidden = !!on || !oarBtn.hidden; },
       setJumpLabel(text) { jumpBtn.setAttribute('aria-label', text); },

@@ -268,16 +268,22 @@
         if (ui && ui.setDeep && rd && rd.vp()) { /* V1660 C 사용자: 1000m 고래·2000m 메갈로돈 — 아주 천천히 나타나 섬 둘레를 10분에 한 바퀴(시계 방향) 돌고 사라짐, 둘은 다른 둘레(겹침 없음) */
           const alt = air ? air.y : 0, c = document.querySelector('#home3d .h3-canvas'), cr = c && c.getBoundingClientRect();
           const qi = MG.Home3DRenderer.project(rd.vp(), [0, -0.8, 0]); /* 섬 가운데 화면 자리 — 높이 날면 섬이 점이라 화면 기준 원(사용자: 섬과 겹치지 않게) */
-          for (const [k, need, R0, ph] of [['whale', 1000, 120, 0], ['megalodon', 2000, 175, Math.PI]]) {
+          /* V1680 C 사용자: 높이 따라 크기 — 카메라 높이(약 8.6 + 1.87×높이)에 반비례, 1000m 기준. 고래 168px·둘레 120, 메갈로돈 = 실제 고래의 2배(2000m 에서 168px)·둘레 350 */
+          const eye = (h) => 8.6 + 1.87 * h, k1000 = eye(1000) / eye(Math.max(1, camLift));
+          for (const [k, need, R1, ph, len] of [['whale', 1000, 120, 0, 168], ['megalodon', 2000, 350, Math.PI, 336]]) { const R0 = R1 * k1000;
             if (!deepRun[k] && alt >= need && time - (deepLast[k] ?? -1e9) >= 600) deepRun[k] = time;
             const run = deepRun[k], u = run == null ? 2 : (time - run) / 600;
             if (u > 1) { if (run != null) { deepRun[k] = null; deepLast[k] = time; } ui.setDeep(k, null); continue; }
-            if (alt < need || !cr) { ui.setDeep(k, null); continue; }
+            if (!cr || len * k1000 > 4000) { ui.setDeep(k, null); continue; } /* V1680 C 사용자: 나타난 뒤엔 내려와도 10분 동안 그대로(가까워질수록 커짐), 너무 커지면(낮은 곳) 화면 밖이라 안 그림 */
             if (!qi) { ui.setDeep(k, null); continue; }
             const a = ph + u * Math.PI * 2, cx = (qi[0] + 1) / 2 * cr.width, cy = (1 - qi[1]) / 2 * cr.height; /* 화면에서 시계 방향 */
             const x0 = cx + R0 * Math.cos(a), y0 = cy + R0 * Math.sin(a), x1 = cx + R0 * Math.cos(a + 0.05), y1 = cy + R0 * Math.sin(a + 0.05);
-            const fade = Math.min(1, u * 20, (1 - u) * 20); /* 처음·끝 30초 동안 아주 천천히 나타나고 사라짐 */
-            ui.setDeep(k, { x: x0, y: y0, rot: Math.atan2(y1 - y0, x1 - x0), op: 0.32 * fade }); } } }
+            /* V1680 C 사용자: 처음 30초 = 화면 가장자리(고래 왼쪽 아래, 메갈로돈 오른쪽 위)에서 헤엄쳐 들어와 둘레에 합류 */
+            const W = cr.width, H = cr.height, cxs = k === 'whale' ? -len * k1000 * 0.6 : W + len * k1000 * 0.6, cys = k === 'whale' ? H + 40 : -40;
+            let e = Math.min(1, u * 20); e = e * e * (3 - 2 * e);
+            const px = cxs + (x0 - cxs) * e, py = cys + (y0 - cys) * e, rot = e < 1 ? Math.atan2(y0 - cys, x0 - cxs) * (1 - e) + Math.atan2(y1 - y0, x1 - x0) * e : Math.atan2(y1 - y0, x1 - x0);
+            const fade = Math.min(1, u * 200, (1 - u) * 20); /* 들어올 땐 3초 만에 보임, 끝 30초 동안 천천히 사라짐 */
+            ui.setDeep(k, { x: px, y: py, rot, op: 0.32 * fade, w: len * k1000 }); } } }
       if (onBoat && !air) { const a = deckWorld(onBoat.u, onBoat.w), f = deckWorld(onBoat.u - 1, onBoat.w); /* V1663 C 사용자: 배 타면 늘 정면(가는 쪽 = 배 기준 -x) */ view.x = a[0]; view.z = a[2]; view.heading = Math.atan2(f[0] - a[0], f[2] - a[2]); } /* 배와 같이 돌며 뱃머리를 봄 */
       if (onBoat && !air && boardAt >= 0 && !offer && time - boardAt >= BOAT_STAY) { /* 배 5분 → 1시간 1번, 1분 안에 광고 보면 하트 2 → 처음 시작 구멍 */
         let last = 0; try { last = +localStorage.getItem(REWARD_KEY) || 0; } catch (e) { last = 0; }
