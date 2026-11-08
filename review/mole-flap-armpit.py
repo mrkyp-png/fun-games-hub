@@ -20,11 +20,11 @@ for n in ('Mole_Clay_Skin', 'Mole_Carrier_Skin'):
         if not side: continue
         c = sum((mw @ sk.data.vertices[i].co for i in side), mathutils.Vector()) / len(side)
         sh = arm.matrix_world @ arm.data.bones['UpperArm' + ('.R' if s > 0 else '.L')].head_local
-        tgt = mathutils.Vector((sh.x - s * 0.05, sh.y + 0.02, sh.z - 0.2))   # 어깨 바로 아래 옆구리(팔에 가려지고 팔 들면 보임)
+        tgt = mathutils.Vector((s * 0.835, sh.y + 0.02, sh.z - 0.2))   # V1673 C: 몸통 겉면(0.842)에 붙임 — 0.53 은 몸속에 파묻혀 안 보였음
         R = mathutils.Matrix.Rotation(s * math.radians(80), 4, 'Z')          # 앞을 보던 털 → 옆을 보게
         for i in side:
             v = sk.data.vertices[i]; p = mw @ v.co
-            v.co = inv @ (tgt + (R @ (p - c).to_4d()).to_3d())
+            v.co = inv @ (tgt + (R @ (p - c).to_4d()).to_3d() * 3.0)  # V1673 C 사용자: 겨털 3배(재미 포인트)
         print('ARMPIT', n, s, [round(x, 2) for x in c], '->', [round(x, 2) for x in tgt])
     sk.data.update()
 
@@ -44,7 +44,7 @@ for f in range(FR + 1):
         fa = arm.pose.bones['Forearm' + sfx]; fa.rotation_quaternion = mathutils.Quaternion((1, 0, 0), 0); fa.keyframe_insert('rotation_quaternion', frame=f)
         # V1672 C 사용자: 파닥일 때 손가락 모으기 — 손가락 3개를 가운데 손가락 쪽으로 오므림(Finger1·3 을 손 축 둘레로 ±18도), 엄지는 손바닥 쪽으로
         # 축 = 뼈 Z(재어 봄: Y 는 효과 없음). 손가락 1·3 = 가운데로(양손 같음), 엄지 = 왼손 -, 오른손 +
-        for fn, ang2 in (('Finger1', -28), ('Finger3', 28), ('Thumb', -40 if sfx == '.L' else 40)):
+        for fn, ang2 in (('Finger1', -14), ('Finger3', 14), ('Thumb', -20 if sfx == '.L' else 20)):  # V1673 C 사용자: 너무 붙임 → 절반
             fb = arm.pose.bones[fn + sfx]; fb.rotation_quaternion = mathutils.Quaternion((0, 0, 1), math.radians(ang2)); fb.keyframe_insert('rotation_quaternion', frame=f)
 bpy.ops.object.mode_set(mode='OBJECT')
 print('FLAP keys', len(act.fcurves) if hasattr(act, 'fcurves') else 'slotted')
