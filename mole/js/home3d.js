@@ -318,7 +318,7 @@
       near = L.nearest(view.x, view.z);
       const nearArcade = !!(near && near.action === 'lightMode');
       const frontArc = nearArcade && Math.abs(view.x) < 1.4 && view.z > -9 + 2.2; // 게임기 정면(좌우 제외)
-      if (frontArc && !wasFront && !inside && st.inputEnabled() && !riding && opts.startGame) { // 정면에서 닿을 때만 동전 구멍으로 빨려 들어감(사용자: 좌우에서는 안 됨)
+      if (frontArc && !wasFront && !inside && !air && !onBoat && st.inputEnabled() && !riding && opts.startGame) /* V1679 C: 날거나 배 위면 안 빨려 들어감(공중에 뜬 채 카메라가 하늘을 보던 것) */ { // 정면에서 닿을 때만 동전 구멍으로 빨려 들어감(사용자: 좌우에서는 안 됨)
         inside = { phase: 'suck', at: time, from: { x: view.x, z: view.z, heading: view.heading } }; route = null; ui.input.reset();
         ui.setExit(root.FGH.I18N.lang === 'ko' ? '나가기' : 'Exit');
       }
