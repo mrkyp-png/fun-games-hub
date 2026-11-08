@@ -20,7 +20,7 @@ for n in ('Mole_Clay_Skin', 'Mole_Carrier_Skin'):
         if not side: continue
         c = sum((mw @ sk.data.vertices[i].co for i in side), mathutils.Vector()) / len(side)
         sh = arm.matrix_world @ arm.data.bones['UpperArm' + ('.R' if s > 0 else '.L')].head_local
-        tgt = mathutils.Vector((s * 0.835, sh.y + 0.02, sh.z - 0.1))   # V1676 C 사용자: 몸에 붙은 그대로(0.835), 조금 위로(-0.2 → -0.1)
+        tgt = mathutils.Vector((s * 0.835, sh.y + 0.02, sh.z + 0.02))   # V1681 C 사용자: 팔 밑까지 틈 없이(-0.04 → +0.02), 몸에 붙은 그대로
         R = mathutils.Matrix.Rotation(s * math.radians(80), 4, 'Z')          # 앞을 보던 털 → 옆을 보게
         for i in side:
             v = sk.data.vertices[i]; p = mw @ v.co
@@ -53,11 +53,27 @@ for n in ('Mole_Clay_Skin', 'Mole_Carrier_Skin'):
             zlo = min(cz(i) for i in side); kill += [f for i in side if cz(i) < zlo + float(__import__('os').environ.get('FUR_CUT', '0.016')) for f in i]  # 맨 아래 줄 = 가장 낮은 조각에서 FUR_CUT 안
     bmesh.ops.delete(bm, geom=kill, context='FACES'); bm.to_mesh(sk.data); bm.free()
     print('FUR_STRANDS', n, 'islands', len(islands), 'removed faces', len(kill))
+# (2c) V1681 C 사용자: 겨털 풍성하게 — 남은 털 가닥을 2벌 더 복사해 앞뒤·위아래로 살짝 엇갈려 빈틈 메움
+for n in ('Mole_Clay_Skin', 'Mole_Carrier_Skin'):
+    sk = sc.objects.get(n)
+    if not sk: continue
+    fi = next(i for i, m in enumerate(sk.data.materials) if 'armpit' in m.name.lower()); mwi = sk.matrix_world.inverted()
+    bm = bmesh.new(); bm.from_mesh(sk.data)
+    src = [f for f in bm.faces if f.material_index == fi]
+    for dy, dz, ang in ((0.035, 0.018, 9), (-0.035, -0.012, -9), (0.0, 0.05, 4), (0.018, -0.03, -5)):  # V1681 C: 빈틈없이 꽉(복사 4벌)
+        dup = bmesh.ops.duplicate(bm, geom=src)
+        vs = [g for g in dup['geom'] if isinstance(g, bmesh.types.BMVert)]
+        for v in vs:
+            sgn = 1 if v.co.x > 0 else -1
+            c = mathutils.Vector((sgn * 0.835, 0.02, v.co.z)); d = v.co - c
+            d = (mathutils.Matrix.Rotation(math.radians(ang), 3, 'X') @ d)
+            v.co = c + d + mwi.to_3x3() @ mathutils.Vector((0, dy, dz))
+    bm.to_mesh(sk.data); bm.free(); print('FUR_FULL', n, 'faces', sum(1 for p in sk.data.polygons if p.material_index == fi))
 # (2b) V1674 C 사용자: 파닥일 때 겨털도 파닥 — 겨털 = 겨드랑이 뼈(Armpit.L/R)에만 묶고, 그 뼈를 겨털 위쪽(어깨 밑)으로 옮김
 bpy.context.view_layer.objects.active = arm; bpy.ops.object.mode_set(mode='EDIT')
 for sfx, s in (('.L', -1), ('.R', 1)):
     eb = arm.data.edit_bones['Armpit' + sfx]; inv_a = arm.matrix_world.inverted()
-    eb.head = inv_a @ mathutils.Vector((s * 0.835, 0.02, 1.42)); eb.tail = inv_a @ mathutils.Vector((s * 0.835, 0.02, 1.62)); eb.roll = 0
+    eb.head = inv_a @ mathutils.Vector((s * 0.835, 0.02, 1.54)); eb.tail = inv_a @ mathutils.Vector((s * 0.835, 0.02, 1.74)); eb.roll = 0
 bpy.ops.object.mode_set(mode='OBJECT')
 for n in ('Mole_Clay_Skin', 'Mole_Carrier_Skin'):
     sk = sc.objects.get(n)
