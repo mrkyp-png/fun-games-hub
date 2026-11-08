@@ -28,6 +28,23 @@ for n in ('Mole_Clay_Skin', 'Mole_Carrier_Skin'):
         print('ARMPIT', n, s, [round(x, 2) for x in c], '->', [round(x, 2) for x in tgt])
     sk.data.update()
 
+# (2b) V1674 C 사용자: 파닥일 때 겨털도 파닥 — 겨털 = 겨드랑이 뼈(Armpit.L/R)에만 묶고, 그 뼈를 겨털 위쪽(어깨 밑)으로 옮김
+bpy.context.view_layer.objects.active = arm; bpy.ops.object.mode_set(mode='EDIT')
+for sfx, s in (('.L', -1), ('.R', 1)):
+    eb = arm.data.edit_bones['Armpit' + sfx]; inv_a = arm.matrix_world.inverted()
+    eb.head = inv_a @ mathutils.Vector((s * 0.835, 0.02, 1.36)); eb.tail = inv_a @ mathutils.Vector((s * 0.835, 0.02, 1.56)); eb.roll = 0
+bpy.ops.object.mode_set(mode='OBJECT')
+for n in ('Mole_Clay_Skin', 'Mole_Carrier_Skin'):
+    sk = sc.objects.get(n)
+    if not sk: continue
+    fi = next(i for i, m in enumerate(sk.data.materials) if 'armpit' in m.name.lower()); mw = sk.matrix_world
+    vs = set(); [vs.update(p.vertices) for p in sk.data.polygons if p.material_index == fi]
+    for i in vs:
+        v = sk.data.vertices[i]; sfx = '.R' if (mw @ v.co).x > 0 else '.L'
+        for g in sk.vertex_groups:
+            try: g.remove([i])
+            except RuntimeError: pass
+        sk.vertex_groups['Armpit' + sfx].add([i], 1.0, 'REPLACE')
 # (3) 'Flap': 팔을 옆으로 75도 벌리고 ±22도로 파닥(0.5초, 12프레임 반복)
 bpy.context.view_layer.objects.active = arm; bpy.ops.object.mode_set(mode='POSE')
 act = bpy.data.actions.new('Flap'); arm.animation_data_create(); arm.animation_data.action = act
@@ -41,6 +58,9 @@ for f in range(FR + 1):
         pb.matrix = Rw @ rest
         bpy.context.view_layer.update()
         pb.keyframe_insert('rotation_quaternion', frame=f)
+        ap = arm.pose.bones['Armpit' + sfx]; ra = ap.bone.matrix_local; ha = ra.to_translation()  # 겨털: 팔보다 살짝 늦게 ±25도 파닥
+        ap.matrix = mathutils.Matrix.Translation(ha) @ mathutils.Matrix.Rotation(s * math.radians(12 + 25 * math.sin(2 * math.pi * f / FR - 0.9)), 4, 'Y') @ mathutils.Matrix.Translation(-ha) @ ra
+        bpy.context.view_layer.update(); ap.keyframe_insert('rotation_quaternion', frame=f)
         fa = arm.pose.bones['Forearm' + sfx]; fa.rotation_quaternion = mathutils.Quaternion((1, 0, 0), 0); fa.keyframe_insert('rotation_quaternion', frame=f)
         # V1672 C 사용자: 파닥일 때 손가락 모으기 — 손가락 3개를 가운데 손가락 쪽으로 오므림(Finger1·3 을 손 축 둘레로 ±18도), 엄지는 손바닥 쪽으로
         # 축 = 뼈 Z(재어 봄: Y 는 효과 없음). 손가락 1·3 = 가운데로(양손 같음), 엄지 = 왼손 -, 오른손 +
