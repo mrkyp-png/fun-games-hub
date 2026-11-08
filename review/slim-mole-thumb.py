@@ -113,6 +113,15 @@ for n in ('Mole_Clay_Skin', 'Mole_Carrier_Skin'):
                 if w < 0.05: continue
                 u = min(1, w / 0.7); u = u * u * (3 - 2 * u); p = mw @ v.co
                 v.co = inv @ (root + (p - root) * (1 + (fs_ - 1) * u))
+    # V1676 C 사용자: 엄지를 아래쪽으로 조금(THUMB_DOWN 만큼, 뿌리는 덜)
+    td = float(__import__('os').environ.get('THUMB_DOWN', '0'))
+    if td:
+        for sfx in ('.L', '.R'):
+            g = sk.vertex_groups.get('Thumb' + sfx)
+            for v in sk.data.vertices:
+                w = next((e.weight for e in v.groups if e.group == g.index), 0)
+                if w < 0.05: continue
+                u = min(1, w / 0.7); u = u * u * (3 - 2 * u); v.co = inv @ ((mw @ v.co) + mathutils.Vector((0, 0, -td * u)))
     sk.data.update(); print('THUMB', n)
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.export_scene.gltf(filepath=out, export_format='GLB', export_animations=True, export_apply=False, export_skins=True)
