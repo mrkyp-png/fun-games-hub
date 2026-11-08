@@ -42,6 +42,10 @@ for f in range(FR + 1):
         bpy.context.view_layer.update()
         pb.keyframe_insert('rotation_quaternion', frame=f)
         fa = arm.pose.bones['Forearm' + sfx]; fa.rotation_quaternion = mathutils.Quaternion((1, 0, 0), 0); fa.keyframe_insert('rotation_quaternion', frame=f)
+        # V1672 C 사용자: 파닥일 때 손가락 모으기 — 손가락 3개를 가운데 손가락 쪽으로 오므림(Finger1·3 을 손 축 둘레로 ±18도), 엄지는 손바닥 쪽으로
+        # 축 = 뼈 Z(재어 봄: Y 는 효과 없음). 손가락 1·3 = 가운데로(양손 같음), 엄지 = 왼손 -, 오른손 +
+        for fn, ang2 in (('Finger1', -28), ('Finger3', 28), ('Thumb', -40 if sfx == '.L' else 40)):
+            fb = arm.pose.bones[fn + sfx]; fb.rotation_quaternion = mathutils.Quaternion((0, 0, 1), math.radians(ang2)); fb.keyframe_insert('rotation_quaternion', frame=f)
 bpy.ops.object.mode_set(mode='OBJECT')
 print('FLAP keys', len(act.fcurves) if hasattr(act, 'fcurves') else 'slotted')
 # 다른 동작도 내보내지게 NLA 에 올림
@@ -62,5 +66,7 @@ if rend:
     cam.location = (0, -10, 1.5); cam.rotation_euler = (math.radians(90), 0, 0)
     for f in (0, 3, 9):
         sc.frame_set(f); sc.render.filepath = rend + '_flap%d.png' % f; bpy.ops.render.render(write_still=True)
+    sc.frame_set(3); hp = arm.matrix_world @ arm.pose.bones['Hand.L'].head; cam.data.ortho_scale = 0.9; cam.location = (hp.x, -9, hp.z - 0.15); sc.render.filepath = rend + '_hand.png'; bpy.ops.render.render(write_still=True)  # 파닥 중 손 가까이
+    cam.location = (0, -10, 1.5)
     for tr in arm.animation_data.nla_tracks: tr.mute = True
     sc.frame_set(0); cam.data.ortho_scale = 1.8; cam.location = (-1.6, -9, 1.3); sc.render.filepath = rend + '_pit.png'; bpy.ops.render.render(write_still=True)

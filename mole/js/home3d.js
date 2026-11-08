@@ -4,7 +4,7 @@
 (function (root) {
   'use strict';
   const PLAZA_GLB = 'assets/home3d/plaza.glb'; // review/build-home-plaza.py
-  const MOLE_GLB = 'assets/home3d/mole-clay-v46.glb'; /* V1671 C: + Flap 동작·겨털 위치 */ /* V1670 C 사용자 확정: v44 손 다듬기(손가락 가늘게·손등 90%·손 133%·손가락 바깥으로·가운데 120%·앞 손가락 107%, review/slim-mole-thumb.py) */ // /* V1656 C 사용자: 기존 두더지로 되돌림(신규 Tripo 두더지는 노이즈·배 없음) — 기존 두더지를 다듬기로 */
+  const MOLE_GLB = 'assets/home3d/mole-clay-v46.glb?v=1672'; /* V1671 C: + Flap 동작·겨털 위치 */ /* V1670 C 사용자 확정: v44 손 다듬기(손가락 가늘게·손등 90%·손 133%·손가락 바깥으로·가운데 120%·앞 손가락 107%, review/slim-mole-thumb.py) */ // /* V1656 C 사용자: 기존 두더지로 되돌림(신규 Tripo 두더지는 노이즈·배 없음) — 기존 두더지를 다듬기로 */
   const SPEED = 2.8;
 
   function create(opts) {
@@ -166,7 +166,7 @@
       if (st.state === 'EXPLORE' && !riding && !inside) { /* 날기: 첫 누름 = 뛰어오름, 공중에서 누를 때마다 짧은 팔 파닥 → 위로 */
         if (air) { air.vy = Math.max(air.vy, FLAP_V); air.flapAt = time; return; }
         const y0 = onBoat ? deckWorld(onBoat.u, onBoat.w)[1] : 0; onBoat = null; boardAt = -1;
-        air = { y: y0, vy: JUMP_V, flapAt: time }; return;
+        air = { y: y0, vy: JUMP_V, flapAt: -9, jumpAt: time } /* 첫 점프 = 기존 Jump 동작(V1672 C) */; return;
       }
       if (jumping()) return;
       if (st.state === 'INTRO') {
@@ -196,7 +196,7 @@
         const k = Math.min(1, (time - inside.at) / SUCK_T), e = Math.pow(k, 2.2), sc = Math.max(0, 1 - e); // 사용자: 두더지가 쏙 빨려 들어감(처음 천천히 → 끝에 빨리, 작아짐)
         return { clip: 'Idle', t: inside.at, loop: true, y: (COIN.y - 0.6 * sc) * e, s: k >= 1 ? 0 : sc }; // 서 있던 자세 그대로(사용자)
       }
-      if (air) return time - air.flapAt < 1.2 ? { clip: 'Flap', t: time - air.flapAt, loop: true, y: air.y } : { clip: 'Jump', t: 0.3, loop: false, y: air.y }; /* V1671 C 사용자: 날기 = 팔을 옆으로 벌려 파닥(Flap) */
+      if (air) return time - air.flapAt < 1.2 ? { clip: 'Flap', t: time - air.flapAt, loop: true, y: air.y } : air.jumpAt != null ? { clip: 'Jump', t: Math.min(time - air.jumpAt, 0.6), loop: false, y: air.y } : { clip: 'Jump', t: 0.3, loop: false, y: air.y }; /* V1672 C 사용자: 첫 점프 = 기존, 공중 연타 = Flap */ /* V1671 C 사용자: 날기 = 팔을 옆으로 벌려 파닥(Flap) */
       if (onBoat) return { clip: 'Idle', t: time, loop: true, y: deckWorld(onBoat.u, onBoat.w)[1] }; /* 갑판(가만히) */
       if (riding) return { clip: 'Idle', t: time, loop: true, y: seatY }; /* V1661 C 사용자: 팡팡에서도 가만히(원심력·튀기로 떨어지는 놀이) */
       if (jumping()) {
