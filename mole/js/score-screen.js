@@ -84,7 +84,8 @@
       var sky = el.querySelector('[data-sr-sky]');
       if (!sky) return;
       var shape = 'M12 38C8 27 17 19 30 21C29 8 48 5 60 16C73 1 100 6 110 23C129 15 149 23 146 39C157 48 144 62 128 55C116 65 93 63 82 55C68 66 45 63 36 53C21 61 10 51 12 38Z';
-      [[24,25,24,-3,-3],[46,30,29,-12,2],[68,26,34,-24,-2],[80,31,38,-31,3]].forEach(function (p) {
+      // Keep the growing clouds in the open sky between the palace decorations.
+      [[36,15,24,-3,-1],[45,17,29,-12,1],[55,15,34,-24,-1],[64,17,38,-31,1]].forEach(function (p) {
         var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         svg.setAttribute('viewBox', '0 0 160 64'); svg.setAttribute('class', 'sr-cloud');
         svg.style.cssText = '--sc-x:' + p[0] + '%;--sc-size:' + p[1] + 'vw;--sc-time:' + p[2] + 's;--sc-delay:' + p[3] + 's;--sc-drift:' + p[4] + 'vw';
