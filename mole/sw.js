@@ -147,7 +147,8 @@
 // V1679 C: 구름이 카메라를 가려 화면이 하얗던 것 → 구름을 섬·배·카메라 길 밖·더 높이로, 날거나 배 위에서는 게임기에 안 빨려 들어감.
 // V1680 C: 고래·메갈로돈 높이 따라 크기(메갈로돈 = 고래 2배), 나타난 뒤 내려와도 10분 유지, 화면 모서리에서 헤엄쳐 들어옴.
 // V1681 C: 겨털 풍성하게(가닥 4벌 더), 팔 밑까지 틈 없이, 아래 끝 둥글게.
-const CACHE = 'mole-game-v1681-C';
+// V1682 G: Score carpet fits within the screen and sits lower; plaza mole smiles periodically while idle.
+const CACHE = 'mole-game-v1682-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
