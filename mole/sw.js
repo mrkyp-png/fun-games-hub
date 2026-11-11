@@ -148,8 +148,8 @@
 // V1680 C: 고래·메갈로돈 높이 따라 크기(메갈로돈 = 고래 2배), 나타난 뒤 내려와도 10분 유지, 화면 모서리에서 헤엄쳐 들어옴.
 // V1681 C: 겨털 풍성하게(가닥 4벌 더), 팔 밑까지 틈 없이, 아래 끝 둥글게.
 // V1682 G: Score carpet fits within the screen and sits lower; plaza mole smiles periodically while idle.
-// V1687 G: Rhythm selection 3D entrance, shrinking walk, full turn, shared spotlight response and synchronized stage ring.
-const CACHE = 'mole-game-v1687-G';
+// V1688 G: Continuous full-body dance, slow head-first sea creatures, musical-note meshes and shimmering rhythm sign.
+const CACHE = 'mole-game-v1688-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -157,6 +157,8 @@ const CACHE = 'mole-game-v1687-G';
 // 처음 요청될 때 아래 fetch 핸들러가 알아서 캐시한다.
 const SHELL = [
   './js/rhythm-type-mole.js',
+  './js/rhythm-dance-beats.js',
+  './assets/home3d/mole-rhythm-dance-v2.glb',
   './clay-round1-local.css',
   './js/clay-rig-math.js',
   './js/clay-rig-runtime.js',

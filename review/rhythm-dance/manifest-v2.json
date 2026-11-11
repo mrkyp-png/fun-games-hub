@@ -1,0 +1,33 @@
+{
+  "source": "Approved v47, v1 preserved separately",
+  "clip": "DanceFreestyle",
+  "beats": 32,
+  "authoredDuration": 16,
+  "fullSpins": 4,
+  "jumps": 4,
+  "eyeRule": "Both eyes open or close together; no one-eye winks",
+  "furRule": "Visible only while raised above shoulder",
+  "checks": [
+    "verify-rhythm-dance.cjs",
+    "verify-rhythm-type-mole.cjs"
+  ],
+  "actualBrowserVerified": false,
+  "files": {
+    "mole/assets/home3d/mole-clay-v47-smile.glb": {
+      "sha256": "24def130ab08598bb835cb91b5f9693a7f12dfde7f680c78668cb9726b82b758",
+      "bytes": 6570256
+    },
+    "mole/assets/home3d/mole-rhythm-dance-v2.glb": {
+      "sha256": "64bea7d60bda65972cb1f06c2c79405b48f0db651da050ddc8f16c3ee53182bd",
+      "bytes": 6074712
+    },
+    "review/rhythm-dance/mole-rhythm-dance-v2.blend": {
+      "sha256": "e20dd470f90f61e7dfa88a58e557b78a01f3985682bd9431fe30ee9619ff8275",
+      "bytes": 4969246
+    },
+    "mole/js/rhythm-dance-beats.js": {
+      "sha256": "9428073112b339db2fd63a7c88c86b94f5db903e704672eae798e08864b7e9e1",
+      "bytes": 1631
+    }
+  }
+}

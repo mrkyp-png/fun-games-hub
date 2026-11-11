@@ -118,7 +118,29 @@
     return [{ x: px * R, z: pz * R }];
   }
 
-  const api = { ISLAND_R, WALK_R, FENCE_OUT, HOLE_R, SPAWN, SITES, RIDES, BOAT, BOARD, DISCO, onBeach, ARCADE_K, ARCADE_HOLES, ARCADE_BUTTONS, ROUND_COLORS, pickHole, rideExit, nearestRide, entryPoint, doorPoint, doorApproach, doorCoordinates, crossedDoor, allowed, slide, nearest, pathVia };
+  function deepSwimPose(kind,age,scene){
+    const {cx,cy,radius,width,height,length}=scene;
+    const start={x:kind==='whale'?-length*.6:width+length*.6,y:kind==='whale'?height+40:-40};
+    const angle=Math.atan2(start.y-cy,start.x-cx),tangent={x:-Math.sin(angle),y:Math.cos(angle)};
+    const end={x:cx+radius*Math.cos(angle),y:cy+radius*Math.sin(angle)},distance=Math.hypot(end.x-start.x,end.y-start.y);
+    const control1={x:start.x+(end.x-start.x)/3,y:start.y+(end.y-start.y)/3};
+    const control2={x:end.x-tangent.x*distance*.25,y:end.y-tangent.y*distance*.25};
+    const point=t=>{const s=1-t;return {x:s*s*s*start.x+3*s*s*t*control1.x+3*s*t*t*control2.x+t*t*t*end.x,
+      y:s*s*s*start.y+3*s*s*t*control1.y+3*s*t*t*control2.y+t*t*t*end.y};};
+    const table=[0];let previous=start;
+    for(let i=1;i<=64;i++){const p=point(i/64);table.push(table[i-1]+Math.hypot(p.x-previous.x,p.y-previous.y));previous=p;}
+    const entryLength=table[64],speed=(entryLength+2*Math.PI*radius)/600,travel=Math.max(0,Math.min(600,age))*speed;
+    if(travel<entryLength){
+      let i=1;while(table[i]<travel)i++;
+      const t=(i-1+(travel-table[i-1])/Math.max(.00001,table[i]-table[i-1]))/64,s=1-t,p=point(t);
+      const dx=3*s*s*(control1.x-start.x)+6*s*t*(control2.x-control1.x)+3*t*t*(end.x-control2.x);
+      const dy=3*s*s*(control1.y-start.y)+6*s*t*(control2.y-control1.y)+3*t*t*(end.y-control2.y);
+      return {...p,rot:Math.atan2(dy,dx),speed,entrySeconds:entryLength/speed};
+    }
+    const a=angle+(travel-entryLength)/radius;
+    return {x:cx+radius*Math.cos(a),y:cy+radius*Math.sin(a),rot:Math.atan2(Math.cos(a),-Math.sin(a)),speed,entrySeconds:entryLength/speed};
+  }
+  const api = { ISLAND_R, WALK_R, FENCE_OUT, HOLE_R, SPAWN, SITES, RIDES, BOAT, BOARD, DISCO, onBeach, ARCADE_K, ARCADE_HOLES, ARCADE_BUTTONS, ROUND_COLORS, pickHole, rideExit, nearestRide, entryPoint, doorPoint, doorApproach, doorCoordinates, crossedDoor, allowed, slide, nearest, pathVia, deepSwimPose };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else { root.MoleGame = root.MoleGame || {}; root.MoleGame.Home3DLayout = api; }
 })(typeof window !== 'undefined' ? window : globalThis);

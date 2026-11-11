@@ -197,6 +197,14 @@ def rhythm_house():  # 보라색 클럽만 남기고 실제 입구를 중앙에 
           box('Club strip cyan', (0,-.92,2.6), (2.4,.06,.14), M['neonC'], .02),
           box('Club strip pink', (0,-.92,2.2), (2.4,.06,.14), M['neonM'], .02)]
     for sx in (-.95, .95): p.append(cyl('Club speaker', (sx,-1.0,.45), .32,.9,M['violet'],20,.05))
+    # Real extruded musical notes mounted on the wall, with the doorway kept clear.
+    for x,z in [(-1.12,1.29),(-.91,1.34)]:
+        head=ball('GateGlow music note head',(x,-.98,z),.09,GATE_CYAN,(1,.4,.68));head.rotation_euler[1]=-.25;p.append(head)
+        p.append(box('GateGlow music note stem',(x+.055,-.98,z+.27),(.045,.055,.52),GATE_CYAN,.015))
+    beam=box('GateGlow music note beam',(-.96,-.98,1.85),(.25,.06,.065),GATE_CYAN,.015);beam.rotation_euler[1]=-.22;p.append(beam)
+    p.append(ball('GateGlow music note head R',(.98,-.98,1.29),.09,GATE_PINK,(1,.4,.68)))
+    p.append(box('GateGlow music note stem R',(1.035,-.98,1.56),(.045,.055,.54),GATE_PINK,.015))
+    flag=box('GateGlow music note flag R',(1.11,-.98,1.79),(.20,.06,.06),GATE_PINK,.02);flag.rotation_euler[1]=.6;p.append(flag)
     # Thick rounded portal surrounds the existing opening; no panel across the walk path.
     for sx in (-.58,.58):
         p.append(box('Club gate pillar',(sx,-.99,.85),(.20,.30,1.70),M['violet'],.075))

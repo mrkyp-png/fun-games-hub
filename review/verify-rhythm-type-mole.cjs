@@ -5,6 +5,7 @@ const scriptOrder=Array.from(html.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g),m=>
 const entry=scriptOrder.indexOf('js/rhythm-type-mole.js');
 assert(entry>scriptOrder.indexOf('js/clay-rig-math.js'),'Mole starts after rig math');
 assert(entry>scriptOrder.indexOf('js/clay-rig-runtime.js'),'Mole starts after 3D engine');
+assert(entry>scriptOrder.indexOf('js/rhythm-dance-beats.js'),'Analyzed music beats load before dance controller');
 assert.equal(scriptOrder.filter(s=>s==='js/rhythm-type-mole.js').length,1,'One actor initializer');
 const lightSource=fs.readFileSync('mole/js/rhythm-type-lighting-v1569.js','utf8');
 const lampDefinition=lightSource.slice(lightSource.indexOf('  function lampState('),lightSource.indexOf('  function drawBeam('));
@@ -51,7 +52,7 @@ for(const [w,h] of [[320,740],[360,800],[390,844],[430,932]]){
   assert.equal(p.x,w/2);assert(Math.abs(p.y-((h-1672*scale)/2+1460*scale))<.001,'Feet track the original cover-image stage');
   assert(p.y<h&&p.y>h*.8);
 }
-const binary=fs.readFileSync('mole/assets/home3d/mole-clay-v47-smile.glb');
+const binary=fs.readFileSync('mole/assets/home3d/mole-rhythm-dance-v2.glb');
 const model=R.parseGLB(binary.buffer.slice(binary.byteOffset,binary.byteOffset+binary.length)),rig=R.prepare(model);
 for(const clip of ['WalkFwd','Idle','Smile'])assert(rig.animations.some(c=>c.name===clip));
 const skinNode=model.json.nodes.findIndex(n=>n.name==='Mole_Clay_Skin');
@@ -68,9 +69,10 @@ const canvas={hidden:true,setAttribute(){},addEventListener(name,fn){events[name
 const ring={style:{removeProperty(name){delete this[name];}}};
 const panel={hidden:true,querySelector:()=>ring,appendChild(){},getBoundingClientRect:()=>({width:390,height:844})};
 const screen={hidden:true,querySelector:()=>panel};
-const doc={hidden:false,currentScript:{src:'https://example.test/mole/js/rhythm-type-mole.js'},getElementById:()=>screen,
+const audio={paused:false,currentTime:0};
+const doc={hidden:false,currentScript:{src:'https://example.test/mole/js/rhythm-type-mole.js'},getElementById:id=>id==='rhythm-entry-bgm'?audio:screen,
   createElement:()=>canvas,addEventListener(name,fn){events[name]=fn;}};
-const win={document:doc,StudioRig:R,MoleGame:{},devicePixelRatio:1,matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}};
+const win={document:doc,StudioRig:R,MoleGame:{RhythmDanceBeats:require('../mole/js/rhythm-dance-beats.js')},devicePixelRatio:1,matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}};
 const atlas={width:768,height:768};
 win.MG={rhythmTypeLighting:{lightFrame:()=>({states:lamps.map((lamp,i)=>lampState(lamp,2,i)),calibration:fixture.calibration,atlas})}};
 const context={window:win,document:doc,URL,console,Float32Array,Uint32Array,Math,Promise,
@@ -90,6 +92,11 @@ const flush=async()=>{for(let i=0;i<8;i++)await Promise.resolve();};
   assert.equal(uploads,1,'Selection return reuses the spotlight atlas');
   doc.hidden=true;events.visibilitychange();assert.equal(raf.size,0,'Background tab pauses actor');
   doc.hidden=false;events.visibilitychange();assert.equal(raf.size,1);
+  for(let frame=0;frame<90;frame++){
+    audio.currentTime=frame*.1;
+    const [id,callback]=raf.entries().next().value;raf.delete(id);callback(1000+frame*100);
+  }
+  assert.equal(win.MoleGame.RhythmTypeMole.state().phase,'dance','Real controller enters music-clock dance after arrival and spin');
   screen.hidden=true;observers[0]();assert.equal(raf.size,0,'Leaving rhythm cancels animation loop');
   console.log('PASS: 2D/3D beam mask alignment, cached atlas, shrink/full turn, GLB poses and panel lifecycle');
 })().catch(error=>{console.error(error);process.exitCode=1;});

@@ -202,7 +202,7 @@ float seaH(vec2 p,float t){return .06*sin(.55*p.x+1.1*t)+.04*sin(.8*p.y-.9*t+1.3
 void main(){mat4 skin=mat4(1.);if(uSkin)skin=uBones[int(aJoints.x)]*aWeights.x+uBones[int(aJoints.y)]*aWeights.y+uBones[int(aJoints.z)]*aWeights.z+uBones[int(aJoints.w)]*aWeights.w;vec4 p=uModel*skin*vec4(aPosition,1.);if(uRhythmBars){float h=.68+.27*sin(uTime*.6981317008+aUV.x*4.*.9);p.y=uBarBase+(p.y-uBarBase)*h;}vWorld=p.xyz;vNormal=normalize(uNormal*mat3(skin)*aNormal);if(uSea){float e=.2;p.y+=seaH(p.xz,uTime);float hx=seaH(p.xz+vec2(e,0.),uTime)-seaH(p.xz-vec2(e,0.),uTime),hz=seaH(p.xz+vec2(0.,e),uTime)-seaH(p.xz-vec2(0.,e),uTime);vNormal=normalize(vec3(-hx/(2.*e),1.,-hz/(2.*e)));vWorld=p.xyz;}vColor=aColor;vUV=aUV;gl_Position=uVP*p;}`;
   const FS = `#version 300 es
 precision highp float;
-uniform bool uEnergy;uniform vec4 uArcEvent;
+uniform bool uEnergy,uRhythmSign;uniform vec4 uArcEvent;
 float portalHash(float p){return fract(sin(p*127.1)*43758.5453);}
 vec2 portalPoint(vec2 a,vec2 b,float along,float seed){
   if(along<=0.)return a;if(along>=1.)return b;
@@ -246,7 +246,11 @@ bool inside(vec3 q){return q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z<1.;}
 float cloudVis(vec3 p){float v=1.;for(int i=0;i<5;i++){vec4 c=uClouds[i];float t=(c.y-p.y)/max(uSun.y,.2);vec2 q=p.xz+uSun.xz*t;float d=length((q-c.xz)/vec2(4.8,3.2))/c.w;v*=mix(.72,1.,smoothstep(.55,1.05,d));}return v;}
 void main(){if(uEnergy){frag=portalColor(vUV,uTime);return;}if(uShadowPass){frag=vec4(1.);return;}if(uGlow){frag=vec4(vColor.rgb,vColor.a);return;}if(uSunDisc){float rr=length(vUV-.5)*2.;if(rr>1.)discard;frag=vec4(mix(vec3(1.,.98,.88),vec3(1.,.92,.66),rr*rr),1.);return;}if(uCloud){vec3 cn=normalize(vNormal);float k=dot(cn,uSun)*.5+.5;vec3 c=mix(vec3(.82,.89,.98),vec3(1.,.99,.96),k)*mix(.9,1.,cn.y*.5+.5);float fog=smoothstep(40.,80.,length(uEye-vWorld)/uFogK);frag=vec4(mix(c,vec3(.45,.72,.94),fog*.6),1.);return;}vec3 n=normalize(vNormal),base=uTexBase?pow(texture(uTex,vUV).rgb,vec3(1.35)):uColor.rgb*vColor.rgb;float shadow=1.;
 if(uSea){vec2 p=vWorld.xz;float t=uTime;vec2 g=vec2(0.);const vec3 W[6]=vec3[6](vec3(.90,.42,.45),vec3(-.55,.83,.62),vec3(.20,-.98,.85),vec3(-.94,-.33,1.4),vec3(.70,.71,2.1),vec3(-.15,.99,3.0));for(int i=0;i<6;i++){vec2 dir=normalize(W[i].xy);float k=W[i].z,amp=.09/k;float ph=dot(dir,p)*k*1.3+t*sqrt(9.8*k)*.55+float(i)*1.7;g+=dir*cos(ph)*amp*k*1.3;}vec3 n=normalize(vec3(-g.x,1.,-g.y));vec3 V=normalize(uEye-vWorld),Ls=uSun;float d=min(length(p)-12.,length(p-vec2(0.,3.2))-13.6);vec3 deep=vec3(.05,.34,.64),shallow=vec3(.18,.69,.78),body=mix(shallow,deep,smoothstep(.5,9.,d));vec3 sky=mix(vec3(.65,.83,.98),vec3(.36,.66,.94),clamp(reflect(-V,n).y,0.,1.));float fres=.06+.94*pow(1.-max(0.,dot(n,V)),5.);vec3 c=mix(body,sky,fres);c+=vec3(1.,.97,.9)*pow(max(0.,dot(reflect(-Ls,n),V)),180.)*1.6;float foam=smoothstep(.9,0.,d)*(.6+.4*sin(d*6.-t*1.8+g.x*8.));c=mix(c,vec3(.96,.98,1.),clamp(foam,0.,1.)*.7);float fog=smoothstep(26.,62.,length(uEye-vWorld)/uFogK);frag=vec4(mix(clamp(c,0.,1.),vec3(.45,.72,.94),fog),1.);return;}
-if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=max(0.,(dot(n,uSun)+.4)/1.4);frag=vec4(c*(.86+.14*k),1.);return;}if(uFloor){float tile=mod(floor(vWorld.x/1.5)+floor(vWorld.z/1.5),2.);base=mix(vec3(.99,.83,.56),vec3(.17,.23,.36),tile);}float key=max(0.,(dot(n,uSun)+.4)/1.4);float fill=max(0.,dot(n,normalize(vec3(.8,.4,-.5))));vec3 lit=base*(vec3(.39,.40,.43)+key*.62+fill*vec3(.08,.10,.13));vec3 h=normalize(normalize(uEye-vWorld)+uSun);lit+=vec3(.04)*pow(max(0.,dot(n,h)),14.);vec3 pw=vWorld+n*.06;vec3 q=lproj(uShadowVP,pw);if(inside(q))shadow=vis(uShadowS,q,1./1024.);if(!uActor){vec3 qm=lproj(uShadowVPM,pw);if(inside(qm))shadow=min(shadow,vis(uShadowM,qm,1./512.));}lit*=mix(.62,1.,shadow)*cloudVis(vWorld);vec3 displayColor=pow(clamp(lit,0.,1.),vec3(1./2.2));
+if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;
+if(uRhythmSign){float mask=smoothstep(.32,.65,max(c.r,max(c.g,c.b)))*step(.08,vUV.x)*step(vUV.x,.92)*step(.18,vUV.y)*step(vUV.y,.82);
+vec3 rainbow=.65+.35*cos(vec3(0.,2.1,4.2)+uTime*2.6+vUV.x*7.);float pulse=.85+.15*sin(uTime*4.+vUV.x*12.);
+float shimmer=pow(max(0.,1.-abs(fract(vUV.x-uTime*.45)*2.-1.)),14.);c=mix(c,clamp(rainbow*pulse+shimmer*.22,0.,1.),mask*.9);}
+float k=max(0.,(dot(n,uSun)+.4)/1.4);frag=vec4(c*(.86+.14*k),1.);return;}if(uFloor){float tile=mod(floor(vWorld.x/1.5)+floor(vWorld.z/1.5),2.);base=mix(vec3(.99,.83,.56),vec3(.17,.23,.36),tile);}float key=max(0.,(dot(n,uSun)+.4)/1.4);float fill=max(0.,dot(n,normalize(vec3(.8,.4,-.5))));vec3 lit=base*(vec3(.39,.40,.43)+key*.62+fill*vec3(.08,.10,.13));vec3 h=normalize(normalize(uEye-vWorld)+uSun);lit+=vec3(.04)*pow(max(0.,dot(n,h)),14.);vec3 pw=vWorld+n*.06;vec3 q=lproj(uShadowVP,pw);if(inside(q))shadow=vis(uShadowS,q,1./1024.);if(!uActor){vec3 qm=lproj(uShadowVPM,pw);if(inside(qm))shadow=min(shadow,vis(uShadowM,qm,1./512.));}lit*=mix(.62,1.,shadow)*cloudVis(vWorld);vec3 displayColor=pow(clamp(lit,0.,1.),vec3(1./2.2));
 if(!uActor&&!uFloor&&!uTexBase){
   // Score palette: clearer accent colors and warm cream in the highlights.
   float luminance=dot(displayColor,vec3(.2126,.7152,.0722));
@@ -274,7 +278,7 @@ float fog=smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(displayCol
       gl.linkProgram(program);
       if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw Error(gl.getProgramInfoLog(program));
       gl.useProgram(program);
-      U = {}; for (const k of ['VP', 'Model', 'Bones', 'Normal', 'Skin', 'Color', 'Floor', 'Sign', 'Tex', 'Eye', 'Player', 'Sea', 'Time', 'Sun', 'ShadowVP', 'ShadowS', 'ShadowM', 'ShadowPass', 'SunDisc', 'Cloud', 'Actor', 'ShadowVPM', 'Clouds', 'FogK', 'Glow', 'TexBase', 'Energy', 'ArcEvent', 'RhythmBars', 'BarBase']) U[k] = gl.getUniformLocation(program, 'u' + k);
+      U = {}; for (const k of ['VP', 'Model', 'Bones', 'Normal', 'Skin', 'Color', 'Floor', 'Sign', 'Tex', 'Eye', 'Player', 'Sea', 'Time', 'Sun', 'ShadowVP', 'ShadowS', 'ShadowM', 'ShadowPass', 'SunDisc', 'Cloud', 'Actor', 'ShadowVPM', 'Clouds', 'FogK', 'Glow', 'TexBase', 'Energy', 'ArcEvent', 'RhythmBars', 'BarBase', 'RhythmSign']) U[k] = gl.getUniformLocation(program, 'u' + k);
       A = {}; for (const k of ['Position', 'Normal', 'Color', 'Joints', 'Weights', 'UV']) A[k] = gl.getAttribLocation(program, 'a' + k);
       gl.enable(gl.DEPTH_TEST);
       // 해 쪽에서 본 깊이 지도: 섬·건물(1초마다 1024) / 두더지·구름(매 프레임 512) — 저사양 대비
@@ -334,6 +338,7 @@ float fog=smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(displayCol
       gl.bindVertexArray(m.vao);
       gl.uniformMatrix4fv(U.Model, false, world); gl.uniformMatrix3fv(U.Normal, false, R.normals(world));
       gl.uniform1i(U.Skin, !!bones); gl.uniform1i(U.Actor, !!bones); if (bones) gl.uniformMatrix4fv(U.Bones, false, bones);
+      gl.uniform1i(U.RhythmSign,m.sign==='rhythm');
       gl.uniform1i(U.Floor, m.floor); gl.uniform1i(U.Sea, !!m.sea); gl.uniform4fv(U.Color, m.color);
       if (m.texBase) { gl.uniform1i(U.TexBase, 1); gl.uniform1i(U.Sign, 0); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, m.texBase); gl.uniform1i(U.Tex, 0); if (m.indexed) gl.drawElements(gl.TRIANGLES, m.count, gl.UNSIGNED_INT, 0); else gl.drawArrays(gl.TRIANGLES, 0, m.count); gl.uniform1i(U.TexBase, 0); return; } /* 그림 질감 + 보통 조명(Tripo 배) */
       const st = (m.sign && signs && signs.get(m.sign)) || m.tex || (m.screen && screenTex) || null;

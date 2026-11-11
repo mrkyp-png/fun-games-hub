@@ -127,7 +127,7 @@
 #home3d .h3-up{display:inline-block;transform:rotate(-90deg)}
 /* V1660 C: 고래·메갈로돈 = 섬 둘레를 도는 그림(자리·각도는 매 프레임 계산), 크기는 발바닥 버튼 1.5배 그대로 */
 #home3d .h3-deep{display:block}
-#home3d .h3-deep img{animation:none!important;width:168px;transform-origin:0 0}
+#home3d .h3-deep img{animation:none!important;width:168px;transform-origin:50% 50%}
 #home3d .h3-deep img[hidden]{display:none!important}
 /* V1662 C 사용자: 디스코 팡팡 20초 안에 떨어뜨리면 하트 +1 — 위 가운데 시계, 알림 */
 #home3d .h3-timer{position:absolute;left:50%;top:calc(max(12px,env(safe-area-inset-top)) + 58px);translate:-50% 0;padding:8px 16px;border-radius:16px;background:#fffaf0e6;box-shadow:0 3px 0 #c9b79a;color:#5b3d26;font:900 22px Jua,system-ui,sans-serif;pointer-events:none}

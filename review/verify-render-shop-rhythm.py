@@ -16,6 +16,9 @@ for name in ['shop','rhythm']:
     assert abs(site.location.x-expected[0])<.0001 and abs(site.location.y-expected[1])<.0001
     report[name]={'scale':list(site.scale),'position':list(site.location)}
 assert not any(o.name.startswith(('Beach hut','Hut straw roof','Hut door','Surfboard')) for o in bpy.data.objects)
+notes=[o for o in bpy.data.objects if o.name.startswith('GateGlow music note')]
+assert len(notes)==8 and all(o.type=='MESH' and o.parent.name=='Site_rhythm' for o in notes),'Musical notes are actual attached 3D meshes'
+report['rhythmMusicNotes']={'meshParts':len(notes),'placement':'Front side walls, clear of doorway'}
 for name in ['Shop closed shell','Shop sealed roof','Club closed shell','Shop curved striped canopy']:
     o=bpy.data.objects[name];bm=bmesh.new();bm.from_mesh(o.data)
     bad=sum(not e.is_manifold for e in bm.edges);bm.free()

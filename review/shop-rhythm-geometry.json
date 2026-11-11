@@ -23,6 +23,10 @@
       0.0
     ]
   },
+  "rhythmMusicNotes": {
+    "meshParts": 8,
+    "placement": "Front side walls, clear of doorway"
+  },
   "Shop closed shell": {
     "nonManifoldEdges": 0,
     "faces": 795

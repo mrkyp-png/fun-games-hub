@@ -3,8 +3,8 @@
    화면은 #game-screen 안 z-index 30(기존 홈 버튼판 위, 기능 화면 아래)에 깔린다. */
 (function (root) {
   'use strict';
-  const PLAZA_GLB = 'assets/home3d/plaza.glb?v=1687-G'; // review/build-home-plaza.py
-  const MOLE_GLB = 'assets/home3d/mole-clay-v47-smile.glb?v=1687-G'; /* V1671 C: + Flap 동작·겨털 위치 */ /* V1670 C 사용자 확정: v44 손 다듬기(손가락 가늘게·손등 90%·손 133%·손가락 바깥으로·가운데 120%·앞 손가락 107%, review/slim-mole-thumb.py) */ // /* V1656 C 사용자: 기존 두더지로 되돌림(신규 Tripo 두더지는 노이즈·배 없음) — 기존 두더지를 다듬기로 */
+  const PLAZA_GLB = 'assets/home3d/plaza.glb?v=1688-G'; // review/build-home-plaza.py
+  const MOLE_GLB = 'assets/home3d/mole-clay-v47-smile.glb?v=1688-G'; /* V1671 C: + Flap 동작·겨털 위치 */ /* V1670 C 사용자 확정: v44 손 다듬기(손가락 가늘게·손등 90%·손 133%·손가락 바깥으로·가운데 120%·앞 손가락 107%, review/slim-mole-thumb.py) */ // /* V1656 C 사용자: 기존 두더지로 되돌림(신규 Tripo 두더지는 노이즈·배 없음) — 기존 두더지를 다듬기로 */
   const SPEED = 2.8;
 
   function create(opts) {
@@ -304,20 +304,16 @@
           const qi = MG.Home3DRenderer.project(rd.vp(), [0, -0.8, 0]); /* 섬 가운데 화면 자리 — 높이 날면 섬이 점이라 화면 기준 원(사용자: 섬과 겹치지 않게) */
           /* V1680 C 사용자: 높이 따라 크기 — 카메라 높이(약 8.6 + 1.87×높이)에 반비례, 1000m 기준. 고래 168px·둘레 120, 메갈로돈 = 실제 고래의 2배(2000m 에서 168px)·둘레 350 */
           const eye = (h) => 8.6 + 1.87 * h, k1000 = eye(1000) / eye(Math.max(1, camLift));
-          for (const [k, need, R1, ph, len] of [['whale', 1000, 120, 0, 168], ['megalodon', 2000, 350, Math.PI, 336]]) { const R0 = R1 * k1000;
-            if (!deepRun[k] && alt >= need && time - (deepLast[k] ?? -1e9) >= 600) deepRun[k] = time;
+          for (const [k, need, R1, len] of [['whale', 1000, 120, 168], ['megalodon', 2000, 350, 336]]) { const R0 = R1 * k1000;
+            if (deepRun[k] == null && alt >= need && time - (deepLast[k] ?? -1e9) >= 600) deepRun[k] = time;
             const run = deepRun[k], u = run == null ? 2 : (time - run) / 600;
             if (u > 1) { if (run != null) { deepRun[k] = null; deepLast[k] = time; } ui.setDeep(k, null); continue; }
             if (!cr || len * k1000 > 4000) { ui.setDeep(k, null); continue; } /* V1680 C 사용자: 나타난 뒤엔 내려와도 10분 동안 그대로(가까워질수록 커짐), 너무 커지면(낮은 곳) 화면 밖이라 안 그림 */
             if (!qi) { ui.setDeep(k, null); continue; }
-            const a = ph + u * Math.PI * 2, cx = (qi[0] + 1) / 2 * cr.width, cy = (1 - qi[1]) / 2 * cr.height; /* 화면에서 시계 방향 */
-            const x0 = cx + R0 * Math.cos(a), y0 = cy + R0 * Math.sin(a), x1 = cx + R0 * Math.cos(a + 0.05), y1 = cy + R0 * Math.sin(a + 0.05);
-            /* V1680 C 사용자: 처음 30초 = 화면 가장자리(고래 왼쪽 아래, 메갈로돈 오른쪽 위)에서 헤엄쳐 들어와 둘레에 합류 */
-            const W = cr.width, H = cr.height, cxs = k === 'whale' ? -len * k1000 * 0.6 : W + len * k1000 * 0.6, cys = k === 'whale' ? H + 40 : -40;
-            let e = Math.min(1, u * 20); e = e * e * (3 - 2 * e);
-            const px = cxs + (x0 - cxs) * e, py = cys + (y0 - cys) * e, rot = e < 1 ? Math.atan2(y0 - cys, x0 - cxs) * (1 - e) + Math.atan2(y1 - y0, x1 - x0) * e : Math.atan2(y1 - y0, x1 - x0);
-            const fade = Math.min(1, u * 200, (1 - u) * 20); /* 들어올 땐 3초 만에 보임, 끝 30초 동안 천천히 사라짐 */
-            ui.setDeep(k, { x: px, y: py, rot, op: 0.32 * fade, w: len * k1000 }); } } }
+            const cx=(qi[0]+1)/2*cr.width,cy=(1-qi[1])/2*cr.height;
+            const swim=L.deepSwimPose(k,time-run,{cx,cy,radius:R0,width:cr.width,height:cr.height,length:len*k1000});
+            const fade=Math.min(1,(time-run)/12,(600-(time-run))/30);
+            ui.setDeep(k, { x:swim.x,y:swim.y,rot:swim.rot,op:.32*fade,w:len*k1000 }); } } }
       if (onBoat && !air) { const a = deckWorld(onBoat.u, onBoat.w), f = deckWorld(onBoat.u - 1, onBoat.w); /* V1663 C 사용자: 배 타면 늘 정면(가는 쪽 = 배 기준 -x) */ view.x = a[0]; view.z = a[2]; view.heading = Math.atan2(f[0] - a[0], f[2] - a[2]); } /* 배와 같이 돌며 뱃머리를 봄 */
       if (onBoat && !air && boardAt >= 0 && !offer && time - boardAt >= BOAT_STAY) { /* 배 5분 → 1시간 1번, 1분 안에 광고 보면 하트 2 → 처음 시작 구멍 */
         let last = 0; try { last = +localStorage.getItem(REWARD_KEY) || 0; } catch (e) { last = 0; }
@@ -444,9 +440,9 @@
       document.addEventListener('visibilitychange', wake);
       rd.lost(() => { ready = false; stop(); ui.setLoading(ko() ? '3D 화면을 다시 불러와 주세요.' : 'Please reload the 3D plaza.'); });
       rd.boot(PLAZA_GLB, MOLE_GLB, 'assets/home3d/boat.glb', [ /* V1633 C: 디스코 팡팡(배치만) */
-        { url: 'assets/home3d/disco-base.glb?v=1687-G', /* 내용 바뀐 모델 = 버전 붙여 폰이 새로 받게 */ world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
-        { url: 'assets/home3d/disco-top.glb?v=1687-G', dyn: 'discoTop', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },
-        { url: 'assets/home3d/board.glb?v=1687-G', world: boardWorld() }]).then(() => { /* V1650 C: 게시판 */
+        { url: 'assets/home3d/disco-base.glb?v=1688-G', /* 내용 바뀐 모델 = 버전 붙여 폰이 새로 받게 */ world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
+        { url: 'assets/home3d/disco-top.glb?v=1688-G', dyn: 'discoTop', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },
+        { url: 'assets/home3d/board.glb?v=1688-G', world: boardWorld() }]).then(() => { /* V1650 C: 게시판 */
         ready = true; readyAt = time; ui.setLoading(null); signsNow(); refreshArcade(true); rd.setBoard(boardPanels()); refreshBoard(true); if (MG.Home3DText) MG.Home3DText.ready().then(() => { signsNow(); refreshArcade(true); refreshBoard(true); wake(); }); /* V1653 C: 둥근 글씨체 준비되면 글자 다시 그림 */
         wake();
       }).catch((err) => { console.error('3D home:', err); ui.setLoading((ko() ? '3D 공간을 불러오지 못했습니다.' : 'Could not load the 3D plaza.') + ' (' + String(err && err.message || err).slice(0, 160) + ')'); });

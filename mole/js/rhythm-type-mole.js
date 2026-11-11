@@ -20,6 +20,20 @@
     if(time<end)return base-100*smooth((time-start)/TURN);
     return base-100-100*(time-end)/12;
   }
+  function beatAt(time,map){
+    const beats=map.beats,bps=map.bpm/60;
+    if(!beats.length)return time*bps;
+    if(time<=beats[0])return (time-beats[0])*bps;
+    let low=0,high=beats.length-1;
+    while(high-low>1){const middle=(low+high)>>1;if(beats[middle]<=time)low=middle;else high=middle;}
+    if(time>=beats[high])return high+(time-beats[high])*bps;
+    return low+(time-beats[low])/(beats[high]-beats[low]);
+  }
+  function dancePose(beat,start,reduced){
+    if(reduced||start===null||beat<start)return null;
+    const age=Math.max(0,beat-start);
+    return {phase:'dance',z:0,scale:.78,heading:0,clip:'DanceFreestyle',clipTime:(age%32)/2};
+  }
   function placement(width,height){
     const scale=Math.max(width/DESIGN.width,height/DESIGN.height);
     return {scale,x:(width-DESIGN.width*scale)/2+DESIGN.stageX*scale,
@@ -38,18 +52,29 @@
     const [px,py,width,height]=beam.rect,[ux,uy,ax,ay]=beam.axes,dx=x-px,dy=y-py;
     return [(dx*uy-dy*ux)/width+ax,(dx*ux+dy*uy)/height+ay];
   }
-  const api={sequence,ringOffset,placement,beamUniforms,beamUV,DESIGN,duration:WALK+ALIGN+TURN};
+  const api={sequence,ringOffset,beatAt,dancePose,placement,beamUniforms,beamUV,DESIGN,duration:WALK+ALIGN+TURN};
   if(typeof module!=='undefined'&&module.exports){module.exports=api;return;}
   const screen=root.document.getElementById('rhythm-screen'),panel=screen&&screen.querySelector('[data-rp-types]');
   if(!panel||!root.StudioRig)return;
   const R=root.StudioRig;
   const ring=panel.querySelector('.rp-type-floor-light');
   function releaseRing(){if(ring){ring.style.removeProperty('animation');ring.style.removeProperty('stroke-dashoffset');}}
-  const modelURL=new URL('../assets/home3d/mole-clay-v47-smile.glb?v=1687-G',document.currentScript.src);
+  const modelURL=new URL('../assets/home3d/mole-rhythm-dance-v2.glb?v=1688-G',document.currentScript.src);
+  const beatMap=root.MoleGame.RhythmDanceBeats||{bpm:165.56,beats:[],duration:51.96};
   const canvas=document.createElement('canvas');canvas.className='rp-type-mole';canvas.hidden=true;canvas.setAttribute('aria-hidden','true');
   panel.appendChild(canvas);
   let modelPromise=null,loading=null,renderer=null,frame=0,previous=0,elapsed=0,panelWasVisible=false,contextLost=false;
   let size={width:0,height:0};
+  let danceStart=null,lastSongTime=0,musicLoops=0,displayedPose=sequence(0,false),lastDanceYaw=null,danceRingTurns=0;
+  function danceBeat(time){
+    const audio=document.getElementById('rhythm-entry-bgm');
+    if(audio&&!audio.paused&&Number.isFinite(audio.currentTime)){
+      if(audio.currentTime<lastSongTime-1)musicLoops++;
+      lastSongTime=audio.currentTime;
+      return beatAt(audio.currentTime,beatMap)+musicLoops*Math.ceil(beatAt(beatMap.duration,beatMap));
+    }
+    return time*beatMap.bpm/60;
+  }
   const reduced=root.matchMedia('(prefers-reduced-motion: reduce)');
   function loadModel(){
     if(!modelPromise)modelPromise=fetch(modelURL).then(response=>{if(!response.ok)throw Error('Rhythm mole model '+response.status);return response.arrayBuffer();}).then(R.parseGLB).catch(error=>{modelPromise=null;throw error;});
@@ -58,7 +83,7 @@
   function makeRenderer(model){
     const gl=canvas.getContext('webgl2',{alpha:true,antialias:true,premultipliedAlpha:true});
     if(!gl)throw Error('WebGL2 unavailable for rhythm stage mole');
-    const rig=R.prepare(model),skin=rig.skins[0],jointCount=skin.joints.length;
+    const rig=R.prepare(model),skin=rig.skins[0],jointCount=skin.joints.length,rootNode=model.json.nodes.findIndex(n=>n.name==='Root');
     const smile=rig.animations.find(clip=>clip.name==='Smile');
     const face=smile&&smile.tracks.filter(track=>{const name=model.json.nodes[track.node].name;return name==='Jaw'||/^(Brow|MouthCorner|HappyEye)\.[LR]$/.test(name)||(track.path==='scale'&&/^(Eye|PainEye)\.[LR]$/.test(name));});
     const vertex=`#version 300 es
@@ -149,8 +174,19 @@ frag=vec4(pow(clamp(color,0.,1.),vec3(1./2.2)),1.);}`;
         projection[0]=2*pixels/w;projection[5]=2*pixels/h;projection[10]=-2/50;
         projection[12]=2*fit.x/w-1;projection[13]=1-2*fit.y/h;
         gl.uniformMatrix4fv(U.VP,false,R.multiply(projection,camera));
-        const state=sequence(time,reduce),worlds=R.pose(rig,state.clip,state.clipTime,true,face);
-        if(ring){ring.style.animation='none';ring.style.strokeDashoffset=String(ringOffset(time,reduce));}
+        let state=sequence(time,reduce);
+        if(state.phase==='idle'&&!reduce){
+          const beat=danceBeat(time);if(danceStart===null)danceStart=Math.ceil(beat);
+          state=dancePose(beat,danceStart,reduce)||state;
+        }
+        displayedPose=state;
+        const worlds=R.pose(rig,state.clip,state.clipTime,true,state.phase==='dance'?null:face);
+        if(state.phase==='dance'){
+          const yaw=Math.atan2(worlds[rootNode][8],worlds[rootNode][10]);
+          if(lastDanceYaw!==null)danceRingTurns+=Math.atan2(Math.sin(yaw-lastDanceYaw),Math.cos(yaw-lastDanceYaw))/(2*Math.PI);
+          lastDanceYaw=yaw;
+        }else{lastDanceYaw=null;if(reduce)danceRingTurns=0;}
+        if(ring){ring.style.animation='none';ring.style.strokeDashoffset=String(ringOffset(time,reduce)-100*danceRingTurns);}
         const instance=R.transform({translation:[0,.105*state.scale,state.z],rotation:[0,Math.sin(state.heading/2),0,Math.cos(state.heading/2)],scale:[state.scale,state.scale,state.scale]});
         gl.bindVertexArray(shadow);gl.uniform1i(U.Shadow,1);gl.uniform1i(U.Skin,0);
         const floor=R.transform({translation:[0,0,state.z],scale:[state.scale,1,state.scale]});
@@ -176,7 +212,7 @@ frag=vec4(pow(clamp(color,0.,1.),vec3(1./2.2)),1.);}`;
   }
   function sync(){
     const panelVisible=!screen.hidden&&!panel.hidden;
-    if(panelVisible&&!panelWasVisible)elapsed=0;
+    if(panelVisible&&!panelWasVisible){elapsed=0;danceStart=null;lastSongTime=0;musicLoops=0;lastDanceYaw=null;danceRingTurns=0;}
     panelWasVisible=panelVisible;stop();canvas.hidden=!visible();
     if(!visible())return;
     if(!renderer){
@@ -193,6 +229,6 @@ frag=vec4(pow(clamp(color,0.,1.),vec3(1./2.2)),1.);}`;
   if(screen._rpSelectionLightingReady)screen._rpSelectionLightingReady.then(()=>{if(renderer&&visible())resize();});
   canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();contextLost=true;stop();renderer=null;canvas.hidden=true;releaseRing();});
   canvas.addEventListener('webglcontextrestored',()=>{contextLost=false;sync();});
-  root.MoleGame.RhythmTypeMole={...api,state:()=>({...sequence(elapsed,reduced.matches),running:!!frame,ready:!!renderer}),prepare:loadModel};
+  root.MoleGame.RhythmTypeMole={...api,state:()=>({...displayedPose,running:!!frame,ready:!!renderer}),prepare:loadModel};
   sync();
 })(typeof window!=='undefined'?window:globalThis);
