@@ -148,8 +148,8 @@
 // V1680 C: 고래·메갈로돈 높이 따라 크기(메갈로돈 = 고래 2배), 나타난 뒤 내려와도 10분 유지, 화면 모서리에서 헤엄쳐 들어옴.
 // V1681 C: 겨털 풍성하게(가닥 4벌 더), 팔 밑까지 틈 없이, 아래 끝 둥글게.
 // V1682 G: Score carpet fits within the screen and sits lower; plaza mole smiles periodically while idle.
-// V1684 G: Unified inventory, workshop artwork and direct entry; home settings/mail access.
-const CACHE = 'mole-game-v1684-G';
+// V1685 G: Inventory popup, shared yellow controls, original yellow goose and slow perspective clouds.
+const CACHE = 'mole-game-v1685-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -1002,7 +1002,8 @@ const SHELL = [
   './js/game.js',
   './assets/workshop/clarity-v1434/panel.png',
   './assets/workshop/clarity-v1434/stage.png',
-  './assets/workshop/tone-v1684/unified-bg.webp',
+  './assets/workshop/tone-v1684/sky-architecture.webp',
+  './assets/quest/fx-cloud-v1556.webp',
   './assets/workshop/tone-v1684/notice-frame.svg',
   './assets/workshop/tone-v1684/unified-stage.webp',
   './assets/workshop/tone-v1684/unified-panel.webp',

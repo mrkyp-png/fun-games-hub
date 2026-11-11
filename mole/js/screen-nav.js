@@ -17,7 +17,7 @@
       });
       var gameScreen = document.getElementById('game-screen');
       var hinge = document.getElementById('fold-hinge');
-      var hingeScreens = ['mailbox-screen', 'settings-screen', 'shop-screen'];
+      var hingeScreens = ['mailbox-screen', 'settings-screen', 'inventory-screen', 'shop-screen'];
       var hingeAllowed = hingeScreens.indexOf(top) >= 0;
       if (gameScreen) {
         gameScreen.classList.toggle('hinge-allowed-screen', hingeAllowed);

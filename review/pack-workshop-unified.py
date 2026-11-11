@@ -13,6 +13,7 @@ JOBS = [
     ('unified-sign', '29e7f97e-31c9-4ebf-84e8-c780d579c2a5', 'sign.png'),
     ('unified-card', '4be19202-ee8d-485d-93cd-b2eaac561437', 'pick/card-blue.png'),
     ('unified-panel', '56190219-7fe7-4130-94bf-a5f6c59e5399', 'clarity-v1434/panel.png'),
+    ('sky-architecture', '6f48287e-44d9-4d09-9ea5-8c6cee753334', 'tone-v1684/unified-bg.webp'),
 ]
 OUT.mkdir(exist_ok=True)
 report = []

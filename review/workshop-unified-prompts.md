@@ -1,5 +1,13 @@
 # 강화 화면 공통 그림체 재작업 — 현재 적용본
 
+## V1684 G 이후 로컬 수정 (미배포)
+
+- 배경은 `sky-architecture.webp`로 분리. ImageGen 참조 원본 unified-bg.webp, 생성 `exec-6f48287e-44d9-4d09-9ea5-8c6cee753334.png`.
+- 최종 레이어 분리 프롬프트: Preserve entire original canvas and all architecture, banners, tools, garden, benches and floor positions. Remove both white clouds. Make ONLY cyan blue sky areas, including sky through rear arches, genuinely transparent. Blue banners/chest/cup stay opaque. No redraw, recolor, restyle or crop. Architectural foreground layer for separate moving sky. No clouds remain.
+- 원래 그려진 구름 대신 기존 퀘스트 구름을 건축 레이어 뒤에 배치. 아래→위 이동 + scale .25→1.8, 360/450/510초(최초 대비10배 느리게). 알 연출도 동일 배경 공유. 하늘 샘플 알파0, 바닥/깃발 알파252 이상 검사.
+- **오리 민트 제안은 사용자 거부로 폐기. 최종은 원래 노란색, filter:none. 원본 대기/비행 이미지 경로와 파일 그대로 유지.** 아래 과거 색상행렬 설명 중 오리에 관한 부분은 더 이상 적용되지 않음. 알/받침대만 별도 색상행렬 유지.
+- 버튼 노란색은 실제 스코어 선택 탭 색상과 같은 --score-yellow-* 공통 변수 사용.
+
 2026-11-11. 도구: built-in ImageGen. 출력: `mole/assets/workshop/tone-v1684/unified-*.webp`.
 원본은 보존. 생성 경로/크기/용량은 `workshop-unified-assets.json`, 포장은 `pack-workshop-unified.py`.
 

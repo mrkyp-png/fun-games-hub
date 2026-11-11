@@ -150,6 +150,15 @@
       }
       requestAnimationFrame(fitOwnedLabels);
     }
+    function syncPopupScale() {
+      if (!el.clientWidth) return 1;
+      var popupStyle = getComputedStyle(el);
+      var contentWidth = el.clientWidth - parseFloat(popupStyle.paddingLeft) - parseFloat(popupStyle.paddingRight);
+      var scale = Math.max(.65, Math.min(1, contentWidth / Math.max(1, root.innerWidth - 6)));
+      var value = scale.toFixed(4);
+      if (el.style.getPropertyValue('--inventory-ui-scale') !== value) el.style.setProperty('--inventory-ui-scale', value);
+      return scale;
+    }
     function fitOwnedLabels() {
       var names = Array.from(ownedGrid.querySelectorAll('.inventory-item-name'));
       var sample = names.find(function (label) { return label.clientWidth > 0; });
@@ -157,7 +166,8 @@
       var style = getComputedStyle(sample);
       var context = document.createElement('canvas').getContext('2d');
       var reference = nameOf(WEAPONS.find(function (weapon) { return weapon.id === 'goldhammer'; }));
-      var fontSize = 20, room = sample.clientWidth - 4;
+      var uiScale = syncPopupScale();
+      var fontSize = Math.round(20 * uiScale), room = sample.clientWidth - 4;
       context.font = style.fontWeight + ' ' + fontSize + 'px ' + style.fontFamily;
       while (fontSize > 10 && context.measureText(reference).width > room) {
         context.font = style.fontWeight + ' ' + (--fontSize) + 'px ' + style.fontFamily;
@@ -165,7 +175,7 @@
       names.forEach(function (label) { label.style.fontSize = fontSize + 'px'; });
       ownedGrid.querySelectorAll('.inventory-cell small').forEach(function (label) {
         if (!label.clientWidth) return;
-        var size = 23;
+        var size = Math.round(23 * uiScale);
         label.style.fontSize = size + 'px';
         while (size > 10 && label.scrollWidth > label.clientWidth) label.style.fontSize = (--size) + 'px';
       });
@@ -706,6 +716,7 @@
       });
     }
     function resizeStage() {
+      syncPopupScale();
       requestAnimationFrame(function () { if (active === 'weapon') fitLefts(); else fitSkillStage(); fitOwnedLabels(); });
     }
     if (root.ResizeObserver) new root.ResizeObserver(resizeStage).observe(body);
@@ -732,6 +743,7 @@
     }
 
     function paint() {
+      syncPopupScale();
       el.querySelector('.inventory-owned-head').appendChild(upgrade);
       closeWeaponHelp();
       el.setAttribute('data-tab', active); // v991: 코스튬 UI 2차 — 탭별 배경(CSS)
