@@ -10520,6 +10520,13 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #workshop-screen .ws-result.is-ng .ws-res-title { color:#9c6861; }
 #workshop-screen .ws-item--r.is-unsel::after { color:#b8812f; }
 
+/* Transparent 3D actor shares the type-background cover geometry, beneath its front lights. */
+#rhythm-screen .rp-type-mole {
+  position:absolute;inset:0;width:100%;height:100%;display:block;
+  z-index:3;pointer-events:none;
+}
+#rhythm-screen .rp-type-mole[hidden] { display:none; }
+
 /* Shop keeps its six product tabs and art, using the shared game palette. */
 #shop-screen .shop-card {
   background:none!important;

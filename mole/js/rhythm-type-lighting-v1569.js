@@ -62,7 +62,7 @@
   var W = 941, H = 1672, scale = 1, ox = 0, oy = 0;
   var ready = false, frame = 0, lastDraw = -100, elapsed = 0, previous = 0;
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-  var images = {};
+  var images = {}, renderedLights = null;
   var keys = ['stage-dark', 'mount', 'heads-six-poses', 'beams-four', 'stars-eight'];
   var lamps = [
     { x: 98, y: 98, phase: 0, speed: .27, beam: 0, star: 1 },
@@ -203,6 +203,7 @@
     if (!ready || !canvas.width || !canvas.height) return;
     clear(ctx); clear(maskCtx); clear(frontCtx);
     var states = lamps.map(function (lamp, index) { return lampState(lamp, t, index); });
+    renderedLights = states;
     setDesignTransform(maskCtx);
     // The beam alpha reveals a brighter copy of this SAME backdrop. Only hit areas brighten.
     states.forEach(function (state) { drawBeam(maskCtx, state, .8); });
@@ -294,6 +295,7 @@
   // Review tools use the actual renderer; no gameplay state is changed.
   window.MG = window.MG || {};
   window.MG.rhythmTypeLighting = {
+    lightFrame: function () { return ready && renderedLights ? { states: renderedLights, atlas: images['beams-four'], calibration: calibration } : null; },
     ready: function () { return ready; },
     snapshot: function (seconds) { if (frame) cancelAnimationFrame(frame); frame = 0; resize(); render(seconds); },
     resume: sync,
