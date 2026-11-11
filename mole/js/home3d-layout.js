@@ -8,8 +8,8 @@
   const B = { kind: 'building', body: 1.8, enter: 0.6 }, P = { kind: 'prop', body: 0.5, enter: 0.55 }; // enter: 몸체 가장자리에서 이 거리 안 = 건물에 닿음
   const SITES = [
     { id: 'mole', action: 'lightMode', labelKey: 'mole.pad.gameMole', x: 0, z: -9, ...B, body: 3.2 },
-    { id: 'rhythm', action: 'rhythm', labelKey: 'mole.pad.gameRhythm', x: 0, z: 9, ...B, body: 2.8 }, // 해변 오두막+클럽 폭 5.6
-    { id: 'shop', action: 'shop', labelKey: 'mole.more.shop', x: -7, z: -5, ...B },
+    { id: 'rhythm', action: 'rhythm', labelKey: 'mole.pad.gameRhythm', x: -8, z: 2.5, ...B, body:2.32, scale:1.6, depthScale:.8, doorDepth:.72, halfWidth:2.08,halfDepth:.88 },
+    { id: 'shop', action: 'shop', labelKey: 'mole.more.shop', x: -7, z: -5, ...B, body:2.4, scale:1.6, depthScale:.8, doorDepth:.88, halfWidth:2.08,halfDepth:.88 },
     /* V1650 C 사용자: 스코어 탑·선물상자·퀘스트 판 → 게시판 하나(스코어 탑 자리). 칸을 누르면 그 화면, 닿아서 발바닥 = 스코어 */
     { id: 'board', action: 'score', labelKey: 'mole.pad.lblScore', x: 7, z: -5, ...B, body: 2.0, noSign: true }
   ].map((s) => Object.assign(s, { faceYaw: Math.atan2(-s.x, -s.z) })); // 섬 중심을 바라봄
@@ -31,9 +31,49 @@
     const d = Math.hypot(s.x, s.z), k = (s.body + 0.45) / d; // 건물 몸체 바로 앞(몸이 닿는 곳)
     return { x: s.x - s.x * k, z: s.z - s.z * k };
   }
+  function doorPoint(s) {
+    if (!s.doorDepth) return null;
+    const d = Math.hypot(s.x,s.z), depth = s.doorDepth - .7;
+    return {x:s.x-s.x/d*depth,z:s.z-s.z/d*depth};
+  }
+  function doorCoordinates(s,x,z) {
+    const d=Math.hypot(s.x,s.z),ux=-s.x/d,uz=-s.z/d,dx=x-s.x,dz=z-s.z;
+    return {along:dx*ux+dz*uz,side:dx*-uz+dz*ux};
+  }
+  function doorCorridor(s,x,z) {
+    if(!s.doorDepth) return false;
+    const p=doorCoordinates(s,x,z);
+    return Math.abs(p.side)<.28 && p.along>=s.doorDepth-.35;
+  }
+  function crossedDoor(s,x,z) {
+    if(!doorCorridor(s,x,z)) return false;
+    return doorCoordinates(s,x,z).along<s.doorDepth-.08;
+  }
+  function doorApproach(s, from) {
+    if (!s.doorDepth) return null;
+    const current=doorCoordinates(s,from.x,from.z);
+    // Already aligned with the doorway: continue inward instead of stepping back to entryPoint.
+    if(Math.abs(current.side)<.28 && current.along>=s.doorDepth-.35) return [];
+    const end = entryPoint(s), startRadius = Math.max(s.body+.08,Math.hypot((s.halfWidth||0)+.4,(s.halfDepth||0)+.4)+.08,Math.hypot(from.x-s.x,from.z-s.z));
+    const a0 = Math.atan2(from.x-s.x,from.z-s.z), a1 = Math.atan2(end.x-s.x,end.z-s.z);
+    const delta = Math.atan2(Math.sin(a1-a0),Math.cos(a1-a0));
+    for (const turn of [delta,delta+(delta>=0?-2:2)*Math.PI]) {
+      const count = Math.max(1,Math.ceil(Math.abs(turn)/.1)), points = [];
+      for(let i=1;i<=count;i++) {
+        const k=i/count,r=startRadius+(s.body+.45-startRadius)*k,a=a0+turn*k;
+        points.push({x:s.x+Math.sin(a)*r,z:s.z+Math.cos(a)*r});
+      }
+      if(points.every(p=>allowed(p.x,p.z))) return points;
+    }
+    return null;
+  }
   function allowed(x, z) {
     if ((Math.hypot(x, z) > WALK_R && !onBeach(x, z)) || Math.hypot(x, z) < HOLE_R) return false;
-    return !SITES.some((s) => Math.hypot(x - s.x, z - s.z) < s.body) && !RIDES.some((s) => Math.hypot(x - s.x, z - s.z) < s.body) && Math.hypot(x - DISCO.x, z - DISCO.z) >= DISCO.body;
+    return !SITES.some((s) => {
+      if(!s.halfWidth) return Math.hypot(x-s.x,z-s.z)<s.body;
+      const p=doorCoordinates(s,x,z);
+      return Math.abs(p.side)<s.halfWidth+.4 && Math.abs(p.along)<s.halfDepth+.4 && !doorCorridor(s,x,z);
+    }) && !RIDES.some((s) => Math.hypot(x - s.x, z - s.z) < s.body) && Math.hypot(x - DISCO.x, z - DISCO.z) >= DISCO.body;
   }
   function slide(p, dx, dz) {
     let x = p.x, z = p.z;
@@ -78,7 +118,7 @@
     return [{ x: px * R, z: pz * R }];
   }
 
-  const api = { ISLAND_R, WALK_R, FENCE_OUT, HOLE_R, SPAWN, SITES, RIDES, BOAT, BOARD, DISCO, onBeach, ARCADE_K, ARCADE_HOLES, ARCADE_BUTTONS, ROUND_COLORS, pickHole, rideExit, nearestRide, entryPoint, allowed, slide, nearest, pathVia };
+  const api = { ISLAND_R, WALK_R, FENCE_OUT, HOLE_R, SPAWN, SITES, RIDES, BOAT, BOARD, DISCO, onBeach, ARCADE_K, ARCADE_HOLES, ARCADE_BUTTONS, ROUND_COLORS, pickHole, rideExit, nearestRide, entryPoint, doorPoint, doorApproach, doorCoordinates, crossedDoor, allowed, slide, nearest, pathVia };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else { root.MoleGame = root.MoleGame || {}; root.MoleGame.Home3DLayout = api; }
 })(typeof window !== 'undefined' ? window : globalThis);

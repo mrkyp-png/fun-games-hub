@@ -12,7 +12,8 @@ assert.ok(L.allowed(1.6, 0), '구멍 바로 밖은 걸을 수 있음');
 assert.ok(L.HOLE_R > 1.2 && L.HOLE_R < 1.6);
 assert.ok(!L.allowed(15.5, 0), '걷기 반지름(15) 밖은 막힘');
 assert.ok(!L.allowed(0, -9), '건물 몸체 안은 막힘');
-assert.ok(L.allowed(-9, 0) && L.allowed(-7, 5), '철거한 제작소와 아이템 건물 자리 통과 가능');
+assert.ok(!L.SITES.some(s=>['locker','inventory'].includes(s.action)), '철거한 제작소/아이템 건물은 없음');
+assert.ok(L.allowed(-7,5), '새 건물과 겹치지 않는 이전 아이템 자리 통과 가능');
 
 for (const s of L.SITES) {
   assert.ok(['building', 'prop'].includes(s.kind), s.action + ' kind');
@@ -45,7 +46,7 @@ console.log('verify-home3d-layout: ok (' + L.SITES.length + ' sites)');
     const n = glb.json.nodes.find((x) => x.name === 'Sign_' + s.action);
     assert.ok(n && n.translation, s.action + ' 간판 노드');
     const [x, , z] = n.translation;
-    assert.ok(Math.hypot(x - s.x, z - s.z) < 1.3, s.action + ' 간판이 건물 가까이');
+    assert.ok(Math.hypot(x - s.x, z - s.z) < 1.3 * (s.scale || 1), s.action + ' 간판이 건물 가까이');
     assert.ok(Math.hypot(x, z) < Math.hypot(s.x, s.z), s.action + ' 간판이 섬 중심 쪽(정면)');
   }
   const prims = glb.json.meshes.reduce((a, m) => a + m.primitives.length, 0);

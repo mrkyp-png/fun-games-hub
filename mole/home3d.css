@@ -79,7 +79,7 @@
 #home3d .h3-alt i{font-style:normal;font-size:12px;color:#f0821c;order:-1}
 /* V1637 C 사용자: 설정 창 닫기 버튼 = 팝업 바로 아래 */
 #game-screen:has(#settings-screen:not([hidden])) #home3d .h3-close{bottom:auto;top:calc(50% + var(--sqh) / 2 + 18px)}
-#game-screen:has(:is(#inventory-screen,#score-screen,#daily-screen,#quest-screen):not([hidden])) #home3d .h3-close{display:none}
+#game-screen:has(:is(#inventory-screen,#score-screen,#daily-screen,#quest-screen,#shop-screen,#rhythm-screen):not([hidden])) #home3d .h3-close{display:none}
 /* V1637 C 사용자: 전체화면이 아닌 창(설정) = 메일함 팝업처럼 뒤 광장 어둡게 + 흐리게 */
 #game-screen:has(:is(#settings-screen,#inventory-screen):not([hidden])) #home3d .h3-canvas{filter:brightness(.58) saturate(.85) blur(3px)}
 

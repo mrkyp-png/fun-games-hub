@@ -143,7 +143,15 @@
     return {
       canvas, input,
       show(on) { wrap.hidden = !on; host.classList.toggle('home3d-on', !!on); if (!on) resetAll(); },
-      setFeature(on, label) { close.hidden = !on; close.textContent = label || ''; for (const e of [hud, stick, jumpBtn, mailBtn, inventoryBtn]) e.hidden = !!on; if (on) for (const k in dots) dots[k].hidden = true; },
+      setFeature(on, label, feature) {
+        const hasOwnClose = ['score', 'daily', 'quest', 'inventory', 'shop', 'rhythm'].includes(feature);
+        if (on && hasOwnClose) close.remove();
+        else if (close.parentNode !== wrap) wrap.appendChild(close);
+        close.hidden = !on || hasOwnClose;
+        close.textContent = label || '';
+        for (const e of [hud, stick, jumpBtn, mailBtn, inventoryBtn]) e.hidden = !!on;
+        if (on) for (const k in dots) dots[k].hidden = true;
+      },
       setJumpMode(label) { jumpBtn.classList.toggle('is-enter', !!label); if (enterLbl.textContent !== (label || '')) enterLbl.textContent = label || ''; },
       setEnabled(on) { input.setEnabled(on); drawKnob(); },
       setLoading(text) { loading.hidden = !text; loading.textContent = text || ''; },

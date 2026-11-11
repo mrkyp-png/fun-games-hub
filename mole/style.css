@@ -10519,6 +10519,31 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #workshop-screen :is(.ws-res-title,.ws-res-sub,.ws-res-effect) { color:#6b4426; -webkit-text-stroke:0; text-shadow:0 1px 0 #fffaf0; }
 #workshop-screen .ws-result.is-ng .ws-res-title { color:#9c6861; }
 #workshop-screen .ws-item--r.is-unsel::after { color:#b8812f; }
+
+/* Shop keeps its six product tabs and art, using the shared game palette. */
+#shop-screen .shop-card {
+  background:none!important;
+  border:0 solid transparent!important;
+  border-image:url('assets/inventory/skill-v1403/card.webp') 100 fill / 5cqw stretch!important;
+}
+#shop-screen .shop-tab::before {
+  border-color:#d6ad63!important;
+  background:linear-gradient(#fffaf0,#fff2da)!important;
+  box-shadow:0 3px 0 #c89a4f,inset 0 0 0 1px #f6dfaa!important;
+}
+#shop-screen .shop-tab--on::before {
+  border-color:#e9ae10!important;
+  background:var(--score-yellow-face)!important;
+  box-shadow:0 3px 0 #bc7605,inset 0 0 0 1px var(--score-yellow-highlight)!important;
+}
+#shop-screen .shop-tab--on:active::before { box-shadow:0 1px 0 #bc7605,inset 0 0 0 1px var(--score-yellow-highlight)!important; }
+#shop-screen :is(.shop-card-name,.shop-tab-lbl,.shop-banner-txt,.shop-skill-caption,.shop-costume-effect) { color:#6b4426!important; }
+#shop-screen .shop-card > .shop-card-btn.shop-buy-frame {
+  --sr-face:linear-gradient(180deg,#74e389,#47cc6a 46%,#2ea951);
+  --sr-rim:linear-gradient(180deg,#d4ffbf,#62e983 24%,#16873c 75%,#0d5e29);
+  --sr-highlight:#d5ffdc;
+  --sr-outline:#0c5a26;
+}
 @media (orientation: landscape) and (min-width: 560px) {
   .inventory-cell { min-height: calc(clamp(44px, 15dvh, 65px) * var(--inventory-ui-scale)); }
 }

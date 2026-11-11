@@ -3,8 +3,8 @@
    화면은 #game-screen 안 z-index 30(기존 홈 버튼판 위, 기능 화면 아래)에 깔린다. */
 (function (root) {
   'use strict';
-  const PLAZA_GLB = 'assets/home3d/plaza.glb?v=1685-G'; // review/build-home-plaza.py
-  const MOLE_GLB = 'assets/home3d/mole-clay-v47-smile.glb?v=1685-G'; /* V1671 C: + Flap 동작·겨털 위치 */ /* V1670 C 사용자 확정: v44 손 다듬기(손가락 가늘게·손등 90%·손 133%·손가락 바깥으로·가운데 120%·앞 손가락 107%, review/slim-mole-thumb.py) */ // /* V1656 C 사용자: 기존 두더지로 되돌림(신규 Tripo 두더지는 노이즈·배 없음) — 기존 두더지를 다듬기로 */
+  const PLAZA_GLB = 'assets/home3d/plaza.glb?v=1686-G'; // review/build-home-plaza.py
+  const MOLE_GLB = 'assets/home3d/mole-clay-v47-smile.glb?v=1686-G'; /* V1671 C: + Flap 동작·겨털 위치 */ /* V1670 C 사용자 확정: v44 손 다듬기(손가락 가늘게·손등 90%·손 133%·손가락 바깥으로·가운데 120%·앞 손가락 107%, review/slim-mole-thumb.py) */ // /* V1656 C 사용자: 기존 두더지로 되돌림(신규 Tripo 두더지는 노이즈·배 없음) — 기존 두더지를 다듬기로 */
   const SPEED = 2.8;
 
   function create(opts) {
@@ -17,16 +17,18 @@
     const view = { x: 0, z: 0, heading: 0, yaw: 0, pitch: 0.62 }; // 구멍 가운데, 정면(화면 쪽) — 뒤로 두더지팡 게임장
     let ui = null, rd = null, ready = false, raf = 0, last = 0, time = 0, walking = false, route = null, near = null;
     let rise = 0, hop = null, jumpAt = -1, readyAt = Infinity, badges = [], badgeAt = -9;
+    let doorEntry = null;
     let riding = null, seatY = 0, nearRide = null; // 놀이기구에 탄 동안: 타는 놀이기구 id // rise: 등장 경과 / hop: 구멍 밖 착지 {from,to,t} / jumpAt: 점프 시작 time
 
     const api = {
       state: () => st.state,
       introDone() { const ok = st.introDone(); if (ok) wake(); return ok; },
-      open(action) {
-        st.saveView(view);
+      open(action, returnView) {
+        if (doorEntry) return false;
+        st.saveView(returnView || view);
         if (!st.openFeature(action)) return false;
         stop();
-        if (ui) ui.setFeature(true, root.FGH.I18N.lang === 'ko' ? '닫기' : 'Close');
+        if (ui) ui.setFeature(true, root.FGH.I18N.lang === 'ko' ? '닫기' : 'Close', action);
         // 기존 경로가 거절하면(전환 중 연타 등) 광장으로 되돌림
         if (opts.homeAction(action) === false) { st.homeShown(); if (ui) ui.setFeature(false); wake(); return false; }
         return true;
@@ -120,6 +122,37 @@
     function refreshHud() {
       if (!ui || !opts.hud) return;
       ui.setHud(opts.hud());
+    }
+    function enterDoor(site, committed = false) {
+      if (doorEntry || !site.doorDepth || !st.inputEnabled() || air || riding || inside || jumping()) return false;
+      const approach = committed ? [] : L.doorApproach(site,view), target = L.doorPoint(site), entry = L.entryPoint(site);
+      if (!approach || !target) return false;
+      doorEntry = {site,committed,points:approach.concat([target]),index:0,returnView:Object.assign({},view,entry,{heading:Math.atan2(-site.x,-site.z)})};
+      route = null; walking = true;
+      return true;
+    }
+    function walkThroughDoor(dt) {
+      const entering = doorEntry;
+      if (!entering) return false;
+      const joy=ui.input.joy;
+      if(joy.x || joy.y) {
+        const mx=Math.cos(view.yaw)*joy.x+Math.sin(view.yaw)*joy.y,mz=-Math.sin(view.yaw)*joy.x+Math.cos(view.yaw)*joy.y;
+        const site=entering.site,d=Math.hypot(site.x,site.z),forward=(mx*site.x+mz*site.z)/(d*Math.hypot(mx,mz));
+        if(!entering.committed || forward<.65) { doorEntry=null;walking=false;return false; }
+      }
+      let distance = SPEED * dt;
+      while (entering.index < entering.points.length) {
+        const target=entering.points[entering.index],dx=target.x-view.x,dz=target.z-view.z,d=Math.hypot(dx,dz);
+        if (d > .001) view.heading=Math.atan2(dx,dz);
+        if (d > distance) { view.x+=dx/d*distance; view.z+=dz/d*distance; break; }
+        view.x=target.x;view.z=target.z;distance-=d;entering.index++;
+      }
+      walking = true;
+      if(!entering.committed && L.crossedDoor(entering.site,view.x,view.z)) entering.committed=true;
+      if (entering.index < entering.points.length) return false;
+      doorEntry = null; walking = false;
+      if (!api.open(entering.site.action,entering.returnView)) { Object.assign(view,entering.returnView); wake(); }
+      return true;
     }
     function move(dt) {
       let v = { x: 0, z: 0 };
@@ -220,7 +253,8 @@
           view.x = hop.from.x + (hop.to.x - hop.from.x) * k; view.z = hop.from.z + (hop.to.z - hop.from.z) * k;
           if (k >= 1) { hop = null; st.introDone(); wake(); }
         }
-      } else if (riding) { const se = rd.seat(riding); if (se) { view.x = se.x; view.z = se.z; view.heading = se.heading; seatY = se.y; } walking = false; }
+      } else if (doorEntry) { if (walkThroughDoor(dt)) return; }
+      else if (riding) { const se = rd.seat(riding); if (se) { view.x = se.x; view.z = se.z; view.heading = se.heading; seatY = se.y; } walking = false; }
       else if (inside) {
         walking = false;
         if (inside.phase === 'out') { // 동전 구멍 → 게임기 앞(처음 빨리 → 끝에 천천히)
@@ -342,7 +376,8 @@
         }
       }
       if (riding) near = null;
-      if (near && route && route.site === near && st.inputEnabled()) { route = null; if (near.action === 'lightMode' && opts.startGame) return; api.open(near.action); return; } // 게임기는 도착만(시작 버튼으로 진입) // 건물을 터치해 걸어온 경우 = 도착하면 진입
+      if (!doorEntry && near && route && route.site === near && st.inputEnabled()) { route = null; if (near.action === 'lightMode' && opts.startGame) return; if (near.doorDepth) enterDoor(near); else { api.open(near.action); return; } }
+      if (!doorEntry && near && near.doorDepth && walking && st.inputEnabled() && !air && !jumping() && L.crossedDoor(near,view.x,view.z)) enterDoor(near,true);
       // 건물에 닿아 있으면 점프 버튼이 그 건물 터치 버튼으로(누르면 그 건물 화면). 스쳐 지나가도 자동 진입 없음
       nearRide = !riding && !near && st.inputEnabled() ? L.nearestRide(view.x, view.z) : null;
       const ko = root.FGH.I18N.lang === 'ko';
@@ -354,6 +389,7 @@
       ui = MG.Home3DUI.create(opts.host, {
         onLook(d) { view.yaw += d.dyaw; view.pitch = Math.max(0.25, Math.min(0.95, view.pitch + d.dpitch)); },
         onTap(px, py, w, h) {
+          if (doorEntry) { doorEntry=null;walking=false; }
           if (!st.inputEnabled() || !rd.vp() || riding) return;
           const inArc = inside && inside.phase === 'in';
           if (inside && !inArc) return; // 빨려 드는 중
@@ -384,7 +420,7 @@
         },
         onSettings() { if (!ui.mailOpen()) api.open('settings'); },
         onInventory() { if (!ui.mailOpen()) api.open('inventory'); },
-        onMail() { if (st.state === 'INTRO' || st.inputEnabled()) { ui.input.reset(); ui.showMail(); } }, /* 대기 화면에서도 기존 CSS 메일 팝업 열기 */
+        onMail() { if (!doorEntry && (st.state === 'INTRO' || st.inputEnabled())) { ui.input.reset(); ui.showMail(); } }, /* 대기 화면에서도 기존 CSS 메일 팝업 열기 */
         onMailChanged() { refreshHud(); badges = claimables(MG); ui.setMailDot(badges.includes('mail')); },
         onClose() { if (st.state === 'FEATURE') opts.homeAction('home'); },
         onExit() { exitArcade(); },
@@ -392,10 +428,11 @@
         onBounce() { if (riding === 'disco' && bounceLeft > 0 && L.DISCO.lift <= 0.01) { bounceLeft--; discoLiftV = 4.2; L.DISCO.glowBounce = 1.4; grip -= 6; } }, /* 20초에 3번까지, 한 번 = -6 */ /* 팡팡 점프 버튼 = 통 튀어 오름(땅에 있을 때) */
         onRow() { if (onBoat && !air) { boatV = Math.min(4.2, boatV + 0.7); MG.Home3DLayout.BOAT.kick = (rowSide = -rowSide) * 0.08; } }, /* V1657 C: 노 한 번 = 속도 +0.7(최대 4.2), 좌우로 번갈아 기울기 */
         onJump() {
+          if (doorEntry) return;
           if (riding) { const rdd = riding === 'disco' ? L.DISCO : L.RIDES.find((x) => x.id === riding), e = L.rideExit(rdd); riding = null; view.x = e.x; view.z = e.z; view.heading = Math.atan2(-e.x, -e.z); jumpAt = time; return; } // 앞으로 뛰어내림
           if (nearRide && st.inputEnabled() && !jumping()) { riding = nearRide.id; route = null; ui.input.reset(); return; } // 뛰어올라 탐
           if (inside) { if (inside.phase === 'in' && st.inputEnabled()) opts.startGame(); return; } // 게임기 안 = 시작 // 사용자: 라운드 지도 없이 바로 시작
-          if (near && near.action !== 'lightMode' && st.inputEnabled() && !jumping()) { api.open(near.action); return; } if (st.state === 'INTRO' || st.inputEnabled()) jump(); }
+          if (near && near.action !== 'lightMode' && st.inputEnabled() && !jumping()) { if(near.doorDepth) enterDoor(near); else api.open(near.action); return; } if (st.state === 'INTRO' || st.inputEnabled()) jump(); }
       });
       rd = MG.Home3DRenderer.create(ui.canvas);
       const ko = () => root.FGH.I18N.lang === 'ko';
@@ -407,9 +444,9 @@
       document.addEventListener('visibilitychange', wake);
       rd.lost(() => { ready = false; stop(); ui.setLoading(ko() ? '3D 화면을 다시 불러와 주세요.' : 'Please reload the 3D plaza.'); });
       rd.boot(PLAZA_GLB, MOLE_GLB, 'assets/home3d/boat.glb', [ /* V1633 C: 디스코 팡팡(배치만) */
-        { url: 'assets/home3d/disco-base.glb?v=1685-G', /* 내용 바뀐 모델 = 버전 붙여 폰이 새로 받게 */ world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
-        { url: 'assets/home3d/disco-top.glb?v=1685-G', dyn: 'discoTop', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },
-        { url: 'assets/home3d/board.glb?v=1685-G', world: boardWorld() }]).then(() => { /* V1650 C: 게시판 */
+        { url: 'assets/home3d/disco-base.glb?v=1686-G', /* 내용 바뀐 모델 = 버전 붙여 폰이 새로 받게 */ world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
+        { url: 'assets/home3d/disco-top.glb?v=1686-G', dyn: 'discoTop', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },
+        { url: 'assets/home3d/board.glb?v=1686-G', world: boardWorld() }]).then(() => { /* V1650 C: 게시판 */
         ready = true; readyAt = time; ui.setLoading(null); signsNow(); refreshArcade(true); rd.setBoard(boardPanels()); refreshBoard(true); if (MG.Home3DText) MG.Home3DText.ready().then(() => { signsNow(); refreshArcade(true); refreshBoard(true); wake(); }); /* V1653 C: 둥근 글씨체 준비되면 글자 다시 그림 */
         wake();
       }).catch((err) => { console.error('3D home:', err); ui.setLoading((ko() ? '3D 공간을 불러오지 못했습니다.' : 'Could not load the 3D plaza.') + ' (' + String(err && err.message || err).slice(0, 160) + ')'); });

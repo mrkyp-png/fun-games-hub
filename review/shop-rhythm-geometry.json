@@ -1,0 +1,45 @@
+{
+  "shop": {
+    "scale": [
+      1.600000023841858,
+      0.800000011920929,
+      1.600000023841858
+    ],
+    "position": [
+      -7.0,
+      5.0,
+      0.0
+    ]
+  },
+  "rhythm": {
+    "scale": [
+      1.600000023841858,
+      0.800000011920929,
+      1.600000023841858
+    ],
+    "position": [
+      -8.0,
+      -2.5,
+      0.0
+    ]
+  },
+  "Shop closed shell": {
+    "nonManifoldEdges": 0,
+    "faces": 795
+  },
+  "Shop sealed roof": {
+    "nonManifoldEdges": 0,
+    "faces": 146
+  },
+  "Club closed shell": {
+    "nonManifoldEdges": 0,
+    "faces": 581
+  },
+  "Shop curved striped canopy": {
+    "nonManifoldEdges": 0,
+    "faces": 180
+  },
+  "shopDoor": "Closed conceals interior; inward-open clears nine passage rays",
+  "energyGate": "Non-solid visual plane, walk-through aperture unchanged",
+  "roofRays": 15
+}

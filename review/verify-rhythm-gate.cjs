@@ -1,0 +1,42 @@
+﻿const assert=require('node:assert/strict'),fs=require('node:fs');
+const R=require('../mole/js/clay-rig-math.js'),L=require('../mole/js/home3d-layout.js');
+globalThis.StudioRig=R;globalThis.MoleGame={Home3DLayout:L};
+const H=require('../mole/js/home3d-renderer.js');
+const buffer=fs.readFileSync('mole/assets/home3d/plaza.glb');
+const model=R.parseGLB(buffer.buffer.slice(buffer.byteOffset,buffer.byteOffset+buffer.length));
+const energy=model.json.nodes.find(n=>n.name==='Energy_rhythm');
+const door=model.json.nodes.find(n=>n.name==='Door_shop');
+assert(energy&&door);assert(!door.rotation&&!door.scale,'Hinge uses world-up rotation');
+assert(model.json.nodes.some(n=>n.name==='GateGlow batch'));
+assert(!model.json.nodes.some(n=>n.name.startsWith('Preview_')),'Reference bolts are not web meshes');
+const primitive=model.json.meshes[energy.mesh].primitives[0];
+assert(primitive.attributes.TEXCOORD_0!==undefined,'Energy shader has doorway UV coordinates');
+const bars=model.json.nodes.find(n=>n.name==='RhythmBars batch');assert(bars);
+const barPrimitive=model.json.meshes[bars.mesh].primitives[0];
+const uv=R.accessor(model,barPrimitive.attributes.TEXCOORD_0);
+assert.equal(new Set(Array.from(uv).filter((_,i)=>i%2===0).map(v=>v.toFixed(3))).size,5,'Five rhythm bar indices retained in one draw');
+for(let i=0;i<5;i++)for(let time=0;time<9;time+=.1){const h=H.gateBarHeight(i,time);assert(h>=.4&&h<=.96);}
+const patterns=new Set(),counts=new Set(),starts=new Set();
+for(let cycle=0;cycle<300;cycle++){
+  const event=H.gateEvent(cycle*.85+.01,23.45);
+  patterns.add(event.pattern);counts.add(event.count);starts.add(event.start.toFixed(3));
+  assert(event.duration>=.12&&event.duration<=.22);
+  assert.equal(H.gateEvent(cycle*.85,23.45).pulse,0);
+  assert.equal(H.gateEvent(cycle*.85+.84,23.45).pulse,0,'No pulse discontinuity at event boundary');
+  assert(H.gateEvent(cycle*.85+event.start+.05,23.45).pulse>.99,'Every short interval contains a visible flash');
+}
+assert.equal(patterns.size,5);assert.equal(counts.size,3);assert(starts.size>100,'Timing varies between events');
+assert.notDeepEqual(H.gateEvent(5,23.45),H.gateEvent(5,93.1),'Session seed changes lightning');
+const site=L.SITES.find(s=>s.action==='shop'),d=Math.hypot(site.x,site.z),ux=-site.x/d,uz=-site.z/d;
+const at=(along,side=0)=>({x:site.x+ux*along-uz*side,z:site.z+uz*along+ux*side});
+assert.equal(H.shopDoorTarget(at(3),0),1);
+for(const point of [at(3,2),at(5),at(-2)])assert.equal(H.shopDoorTarget(point,0),0);
+assert.equal(H.shopDoorTarget(at(3),2),0,'Flying overhead does not trigger door');
+let open=0;
+for(let t=0;t<.65;t+=1/60)open=H.shopDoorStep(open,1,1/60);
+assert.equal(open,1,'Door opens before walking to threshold');
+for(let t=0;t<.9;t+=1/60)open=H.shopDoorStep(open,0,1/60);
+assert.equal(open,0,'Door closes smoothly after leaving');
+const world=R.transform({translation:door.translation}),matrix=H.shopDoorMatrix(world,1);
+assert.deepEqual(Array.from(R.point(matrix,[0,0,0])),Array.from(R.point(world,[0,0,0])),'Hinge stays fixed');
+console.log('PASS: shop door fixed hinge, front-only approach, opening/closing, UV energy gate');
