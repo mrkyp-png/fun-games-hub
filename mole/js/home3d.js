@@ -3,10 +3,9 @@
    화면은 #game-screen 안 z-index 30(기존 홈 버튼판 위, 기능 화면 아래)에 깔린다. */
 (function (root) {
   'use strict';
-  const PLAZA_GLB = 'assets/home3d/plaza.glb'; // review/build-home-plaza.py
-  const MOLE_GLB = 'assets/home3d/mole-clay-v47-smile.glb?v=1682-G'; /* V1671 C: + Flap 동작·겨털 위치 */ /* V1670 C 사용자 확정: v44 손 다듬기(손가락 가늘게·손등 90%·손 133%·손가락 바깥으로·가운데 120%·앞 손가락 107%, review/slim-mole-thumb.py) */ // /* V1656 C 사용자: 기존 두더지로 되돌림(신규 Tripo 두더지는 노이즈·배 없음) — 기존 두더지를 다듬기로 */
+  const PLAZA_GLB = 'assets/home3d/plaza.glb?v=1683-G'; // review/build-home-plaza.py
+  const MOLE_GLB = 'assets/home3d/mole-clay-v47-smile.glb?v=1683-G'; /* V1671 C: + Flap 동작·겨털 위치 */ /* V1670 C 사용자 확정: v44 손 다듬기(손가락 가늘게·손등 90%·손 133%·손가락 바깥으로·가운데 120%·앞 손가락 107%, review/slim-mole-thumb.py) */ // /* V1656 C 사용자: 기존 두더지로 되돌림(신규 Tripo 두더지는 노이즈·배 없음) — 기존 두더지를 다듬기로 */
   const SPEED = 2.8;
-  const SMILE_INTERVAL = 8, SMILE_DURATION = 1;
 
   function create(opts) {
     const qs = new URLSearchParams(root.location.search);
@@ -18,7 +17,6 @@
     const view = { x: 0, z: 0, heading: 0, yaw: 0, pitch: 0.62 }; // 구멍 가운데, 정면(화면 쪽) — 뒤로 두더지팡 게임장
     let ui = null, rd = null, ready = false, raf = 0, last = 0, time = 0, walking = false, route = null, near = null;
     let rise = 0, hop = null, jumpAt = -1, readyAt = Infinity, badges = [], badgeAt = -9;
-    let idleSince = time;
     let riding = null, seatY = 0, nearRide = null; // 놀이기구에 탄 동안: 타는 놀이기구 id // rise: 등장 경과 / hop: 구멍 밖 착지 {from,to,t} / jumpAt: 점프 시작 time
 
     const api = {
@@ -111,7 +109,7 @@
       view.x = 0; view.z = 20.8; view.heading = Math.PI; route = null;
     }
     function show(on) { if (ui) ui.show(on); }
-    function stop() { if (raf) cancelAnimationFrame(raf); raf = 0; route = null; idleSince = time; if (ui) ui.setEnabled(false); }
+    function stop() { if (raf) cancelAnimationFrame(raf); raf = 0; route = null; if (ui) ui.setEnabled(false); }
     function wake() {
       if (!ui) return;
       ui.setEnabled(st.state === 'INTRO' || st.inputEnabled()); // 구멍 안: 시점 회전·점프만(이동은 move 에서 막음)
@@ -205,12 +203,7 @@
         const jt = time - jumpAt, base = hop ? HOLE_Y * (1 - jt / IN.jump.T) : 0;
         return { clip: 'Jump', t: jt, loop: false, y: base + IN.jump.height(jt) };
       }
-      const y = st.state === 'INTRO' ? HOLE_Y : 0;
-      const idleFor = time - idleSince;
-      if (!walking && idleFor >= SMILE_INTERVAL && idleFor % SMILE_INTERVAL < SMILE_DURATION) {
-        return { clip: 'Smile', t: idleFor % SMILE_INTERVAL, loop: false, y };
-      }
-      return { clip: walking ? 'WalkFwd' : 'Idle', t: time, loop: true, y };
+      return { clip: walking ? 'WalkFwd' : 'Idle', t: time, loop: true, y: st.state === 'INTRO' ? HOLE_Y : 0 };
     }
     function frame(stamp) {
       raf = 0;
@@ -321,7 +314,6 @@
           cv = Object.assign({}, cv, { cx: x0 + (bs.x - x0) * a, cz: z0 + (bs.z - z0) * a, yaw: cv.yaw + dyw * a, pitch: cv.pitch + (0.1 - cv.pitch) * a, dist: d0 + (7.0 - d0) * a, fy: f0 + (L.BOARD.Y * L.BOARD.S - f0) * a }); } }
       camLift += ((air ? air.y : 0) - camLift) * Math.min(1, dt * 4); ui.setHeight(air ? air.y : 0); /* V1635 C 사용자: 높이 오를수록 카메라도 올라가고 멀어져 아래 건물이 작게 보임 */
       if (camLift > 0.05) cv = Object.assign({}, cv, { fy: (cv.fy || 1.35) + camLift, dist: (cv.dist || 7.5) + camLift * 0.9, pitch: Math.min(1.3, cv.pitch + camLift * 0.015), far: 80 + camLift * 4 });
-      if (walking || route || inside || air || onBoat || riding || jumping() || (st.state === 'INTRO' && rise < RISE_T)) idleSince = time;
       rd.render(cv, pose());
       if (ui && ui.setBoardHand) { /* 게시판 손: 카메라가 다 붙었을 때 가운데 칸 아래 */
         let hp = null; if (boardAim && boardCam > 0.3 && rd.vp()) { const c = document.querySelector('#home3d .h3-canvas'), B = L.BOARD, pm = boardPanels().find((p) => p.kind === 'daily' && !p.back), q = c && pm && MG.Home3DRenderer.project(rd.vp(), root.StudioRig.point(pm.world, [0, -B.PANEL_H * 0.62, 0]));
@@ -414,9 +406,9 @@
       document.addEventListener('visibilitychange', wake);
       rd.lost(() => { ready = false; stop(); ui.setLoading(ko() ? '3D 화면을 다시 불러와 주세요.' : 'Please reload the 3D plaza.'); });
       rd.boot(PLAZA_GLB, MOLE_GLB, 'assets/home3d/boat.glb', [ /* V1633 C: 디스코 팡팡(배치만) */
-        { url: 'assets/home3d/disco-base.glb?v=1666', /* 내용 바뀐 모델 = 버전 붙여 폰이 새로 받게 */ world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
-        { url: 'assets/home3d/disco-top.glb?v=1666', dyn: 'discoTop', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },
-        { url: 'assets/home3d/board.glb?v=1662', world: boardWorld() }]).then(() => { /* V1650 C: 게시판 */
+        { url: 'assets/home3d/disco-base.glb?v=1683-G', /* 내용 바뀐 모델 = 버전 붙여 폰이 새로 받게 */ world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
+        { url: 'assets/home3d/disco-top.glb?v=1683-G', dyn: 'discoTop', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },
+        { url: 'assets/home3d/board.glb?v=1683-G', world: boardWorld() }]).then(() => { /* V1650 C: 게시판 */
         ready = true; readyAt = time; ui.setLoading(null); signsNow(); refreshArcade(true); rd.setBoard(boardPanels()); refreshBoard(true); if (MG.Home3DText) MG.Home3DText.ready().then(() => { signsNow(); refreshArcade(true); refreshBoard(true); wake(); }); /* V1653 C: 둥근 글씨체 준비되면 글자 다시 그림 */
         wake();
       }).catch((err) => { console.error('3D home:', err); ui.setLoading((ko() ? '3D 공간을 불러오지 못했습니다.' : 'Could not load the 3D plaza.') + ' (' + String(err && err.message || err).slice(0, 160) + ')'); });

@@ -140,7 +140,7 @@
     for (let i = 0; i < Rg; i++) for (let j = 0; j < S; j++) { const a = i * (S + 1) + j, b = a + S + 1; I.push(a, b, a + 1, a + 1, b, b + 1); }
     return this.add(P, N, col, I);
   };
-  const C = { coral: [0.95, 0.52, 0.45, 1], yellow: [0.99, 0.84, 0.40, 1], sky: [0.50, 0.74, 0.92, 1], mint: [0.55, 0.84, 0.72, 1], cream: [0.97, 0.91, 0.80, 1], wood: [0.76, 0.52, 0.32, 1], violet: [0.55, 0.45, 0.78, 1] };
+  const C = { coral: [0.95, 0.52, 0.45, 1], yellow: [0.99, 0.84, 0.40, 1], sky: [0.50, 0.74, 0.92, 1], mint: [0.55, 0.84, 0.72, 1], cream: [0.97, 0.91, 0.80, 1] };
   // 부품: static(고정) / moving(움직이는 부분, 원점 = 회전 중심)
   function rideParts(id) {
     if (id === 'disco') {
@@ -151,11 +151,12 @@
     }
     // 바이킹: A자 지지대 2개 + 꼭대기 축, 배(길이 x축)가 축에 매달려 좌우로 흔들림
     const base = new Geo();
-    for (const z of [-1.15, 1.15]) for (const sx of [-1, 1]) base.box(sx * 1.05, 2.1, z, 0.22, 4.5, 0.22, C.cream, -sx * 0.45);
-    base.cyl(0, 4.15, 0, 0.16, 2.6, C.wood, 12, 'x').box(0, 0.08, 0, 4.8, 0.16, 3.0, C.wood);
+    const cream = [1, .9, .72, 1], gold = [.87, .62, .23, 1], violet = [.59, .29, .77, 1], blue = [.22, .44, .76, 1];
+    for (const z of [-1.15, 1.15]) for (const sx of [-1, 1]) base.box(sx * 1.05, 2.1, z, 0.22, 4.5, 0.22, cream, -sx * 0.45);
+    base.cyl(0, 4.15, 0, 0.16, 2.6, gold, 12, 'x').box(0, 0.08, 0, 4.8, 0.16, 3.0, blue);
     // 배: 원점 = 축(위 4.15), 배는 축 아래 3.0
-    const mov = new Geo().cyl(0, -3.0, 0, 0.95, 3.8, C.violet, 24, 'x', 0.62).box(0, -2.55, 0, 3.6, 0.12, 1.5, C.cream).ball(2.05, -2.5, 0, 0.36, C.yellow).ball(-2.05, -2.5, 0, 0.32, C.coral);
-    for (const z of [-0.55, 0.55]) mov.box(0, -1.5, z, 0.14, 3.0, 0.14, C.cream);
+    const mov = new Geo().cyl(0, -3.0, 0, 0.95, 3.8, violet, 24, 'x', 0.62).box(0, -2.55, 0, 3.6, 0.12, 1.5, cream).ball(2.05, -2.5, 0, 0.36, gold).ball(-2.05, -2.5, 0, 0.32, gold);
+    for (const z of [-0.55, 0.55]) mov.box(0, -1.5, z, 0.14, 3.0, 0.14, cream);
     return { base, mov, pivot: [0, 4.15, 0] };
   }
   // 움직임(아주 천천히가 아닌 놀이기구다운 속도): 디스코 = 빙글 돌며 들썩, 바이킹 = 좌우로 크게
@@ -184,13 +185,21 @@ float vis(highp sampler2DShadow m,vec3 q,float px){float v=0.;for(int i=-1;i<=1;
 vec3 lproj(mat4 M,vec3 p){vec4 sp=M*vec4(p,1.);return sp.xyz/sp.w*.5+.5;}
 bool inside(vec3 q){return q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z<1.;}
 float cloudVis(vec3 p){float v=1.;for(int i=0;i<5;i++){vec4 c=uClouds[i];float t=(c.y-p.y)/max(uSun.y,.2);vec2 q=p.xz+uSun.xz*t;float d=length((q-c.xz)/vec2(4.8,3.2))/c.w;v*=mix(.72,1.,smoothstep(.55,1.05,d));}return v;}
-void main(){if(uShadowPass){frag=vec4(1.);return;}if(uGlow){frag=vec4(vColor.rgb,vColor.a);return;}if(uSunDisc){float rr=length(vUV-.5)*2.;if(rr>1.)discard;frag=vec4(mix(vec3(1.,.98,.88),vec3(1.,.92,.66),rr*rr),1.);return;}if(uCloud){vec3 cn=normalize(vNormal);float k=dot(cn,uSun)*.5+.5;vec3 c=mix(vec3(.80,.86,.94),vec3(1.,1.,.99),k)*mix(.9,1.,cn.y*.5+.5);float fog=smoothstep(40.,80.,length(uEye-vWorld)/uFogK);frag=vec4(mix(c,vec3(.73,.82,.88),fog*.6),1.);return;}vec3 n=normalize(vNormal),base=uTexBase?pow(texture(uTex,vUV).rgb,vec3(1.35)):uColor.rgb*vColor.rgb;float shadow=1.;
-if(uSea){vec2 p=vWorld.xz;float t=uTime;vec2 g=vec2(0.);const vec3 W[6]=vec3[6](vec3(.90,.42,.45),vec3(-.55,.83,.62),vec3(.20,-.98,.85),vec3(-.94,-.33,1.4),vec3(.70,.71,2.1),vec3(-.15,.99,3.0));for(int i=0;i<6;i++){vec2 dir=normalize(W[i].xy);float k=W[i].z,amp=.09/k;float ph=dot(dir,p)*k*1.3+t*sqrt(9.8*k)*.55+float(i)*1.7;g+=dir*cos(ph)*amp*k*1.3;}vec3 n=normalize(vec3(-g.x,1.,-g.y));vec3 V=normalize(uEye-vWorld),Ls=uSun;float d=min(length(p)-12.,length(p-vec2(0.,3.2))-13.6);vec3 deep=vec3(.06,.30,.52),shallow=vec3(.20,.66,.70),body=mix(shallow,deep,smoothstep(.5,9.,d));vec3 sky=mix(vec3(.70,.84,.94),vec3(.45,.66,.86),clamp(reflect(-V,n).y,0.,1.));float fres=.06+.94*pow(1.-max(0.,dot(n,V)),5.);vec3 c=mix(body,sky,fres);c+=vec3(1.,.97,.9)*pow(max(0.,dot(reflect(-Ls,n),V)),180.)*1.6;float foam=smoothstep(.9,0.,d)*(.6+.4*sin(d*6.-t*1.8+g.x*8.));c=mix(c,vec3(.96,.98,1.),clamp(foam,0.,1.)*.7);float fog=smoothstep(26.,62.,length(uEye-vWorld)/uFogK);frag=vec4(mix(clamp(c,0.,1.),vec3(.73,.82,.88),fog),1.);return;}
-if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=max(0.,(dot(n,uSun)+.4)/1.4);frag=vec4(c*(.86+.14*k),1.);return;}if(uFloor){float tile=mod(floor(vWorld.x/1.5)+floor(vWorld.z/1.5),2.);base=mix(vec3(.78,.72,.61),vec3(.31,.30,.28),tile);}float key=max(0.,(dot(n,uSun)+.4)/1.4);float fill=max(0.,dot(n,normalize(vec3(.8,.4,-.5))));vec3 lit=base*(vec3(.39,.40,.43)+key*.62+fill*vec3(.08,.10,.13));vec3 h=normalize(normalize(uEye-vWorld)+uSun);lit+=vec3(.04)*pow(max(0.,dot(n,h)),14.);vec3 pw=vWorld+n*.06;vec3 q=lproj(uShadowVP,pw);if(inside(q))shadow=vis(uShadowS,q,1./1024.);if(!uActor){vec3 qm=lproj(uShadowVPM,pw);if(inside(qm))shadow=min(shadow,vis(uShadowM,qm,1./512.));}lit*=mix(.62,1.,shadow)*cloudVis(vWorld);float fog=smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(pow(clamp(lit,0.,1.),vec3(1./2.2)),vec3(.73,.82,.88),fog),uColor.a*vColor.a);}`;
+void main(){if(uShadowPass){frag=vec4(1.);return;}if(uGlow){frag=vec4(vColor.rgb,vColor.a);return;}if(uSunDisc){float rr=length(vUV-.5)*2.;if(rr>1.)discard;frag=vec4(mix(vec3(1.,.98,.88),vec3(1.,.92,.66),rr*rr),1.);return;}if(uCloud){vec3 cn=normalize(vNormal);float k=dot(cn,uSun)*.5+.5;vec3 c=mix(vec3(.82,.89,.98),vec3(1.,.99,.96),k)*mix(.9,1.,cn.y*.5+.5);float fog=smoothstep(40.,80.,length(uEye-vWorld)/uFogK);frag=vec4(mix(c,vec3(.45,.72,.94),fog*.6),1.);return;}vec3 n=normalize(vNormal),base=uTexBase?pow(texture(uTex,vUV).rgb,vec3(1.35)):uColor.rgb*vColor.rgb;float shadow=1.;
+if(uSea){vec2 p=vWorld.xz;float t=uTime;vec2 g=vec2(0.);const vec3 W[6]=vec3[6](vec3(.90,.42,.45),vec3(-.55,.83,.62),vec3(.20,-.98,.85),vec3(-.94,-.33,1.4),vec3(.70,.71,2.1),vec3(-.15,.99,3.0));for(int i=0;i<6;i++){vec2 dir=normalize(W[i].xy);float k=W[i].z,amp=.09/k;float ph=dot(dir,p)*k*1.3+t*sqrt(9.8*k)*.55+float(i)*1.7;g+=dir*cos(ph)*amp*k*1.3;}vec3 n=normalize(vec3(-g.x,1.,-g.y));vec3 V=normalize(uEye-vWorld),Ls=uSun;float d=min(length(p)-12.,length(p-vec2(0.,3.2))-13.6);vec3 deep=vec3(.05,.34,.64),shallow=vec3(.18,.69,.78),body=mix(shallow,deep,smoothstep(.5,9.,d));vec3 sky=mix(vec3(.65,.83,.98),vec3(.36,.66,.94),clamp(reflect(-V,n).y,0.,1.));float fres=.06+.94*pow(1.-max(0.,dot(n,V)),5.);vec3 c=mix(body,sky,fres);c+=vec3(1.,.97,.9)*pow(max(0.,dot(reflect(-Ls,n),V)),180.)*1.6;float foam=smoothstep(.9,0.,d)*(.6+.4*sin(d*6.-t*1.8+g.x*8.));c=mix(c,vec3(.96,.98,1.),clamp(foam,0.,1.)*.7);float fog=smoothstep(26.,62.,length(uEye-vWorld)/uFogK);frag=vec4(mix(clamp(c,0.,1.),vec3(.45,.72,.94),fog),1.);return;}
+if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=max(0.,(dot(n,uSun)+.4)/1.4);frag=vec4(c*(.86+.14*k),1.);return;}if(uFloor){float tile=mod(floor(vWorld.x/1.5)+floor(vWorld.z/1.5),2.);base=mix(vec3(.99,.83,.56),vec3(.17,.23,.36),tile);}float key=max(0.,(dot(n,uSun)+.4)/1.4);float fill=max(0.,dot(n,normalize(vec3(.8,.4,-.5))));vec3 lit=base*(vec3(.39,.40,.43)+key*.62+fill*vec3(.08,.10,.13));vec3 h=normalize(normalize(uEye-vWorld)+uSun);lit+=vec3(.04)*pow(max(0.,dot(n,h)),14.);vec3 pw=vWorld+n*.06;vec3 q=lproj(uShadowVP,pw);if(inside(q))shadow=vis(uShadowS,q,1./1024.);if(!uActor){vec3 qm=lproj(uShadowVPM,pw);if(inside(qm))shadow=min(shadow,vis(uShadowM,qm,1./512.));}lit*=mix(.62,1.,shadow)*cloudVis(vWorld);vec3 displayColor=pow(clamp(lit,0.,1.),vec3(1./2.2));
+if(!uActor&&!uFloor&&!uTexBase){
+  // Score palette: clearer accent colors and warm cream in the highlights.
+  float luminance=dot(displayColor,vec3(.2126,.7152,.0722));
+  float warmth=smoothstep(.32,.82,luminance);
+  vec3 accents=mix(vec3(luminance),displayColor,1.27);
+  displayColor=clamp(accents+vec3(.10,.067,.018)*warmth,0.,1.);
+}
+float fog=smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(displayColor,vec3(.45,.72,.94),fog),uColor.a*vColor.a);}`;
 
   function create(canvas) {
     let boardPanels = [], boardTex = {}, props = [], boat = [], smoke = [], smokeBall = null, arcade = null, boss = null, modeBtn = [], glowDisc = [], glowHalo = [], screenTex = null, screenCanvas = null; // 두더지팡 게임기: 구멍 빛·구멍 두더지·화면 글자
-    let gl, program, U, A, environment = [], actor = [], rig = null, vp = null, signs = null, size = null, seaMesh = null, shadowS = null, shadowM = null, sunQuad = null, clouds = [], rides = [], staticAt = -9, staticVP = null;
+    let gl, program, U, A, environment = [], actor = [], rig = null, smileFace = null, vp = null, signs = null, size = null, seaMesh = null, shadowS = null, shadowM = null, sunQuad = null, clouds = [], rides = [], staticAt = -9, staticVP = null;
     const resetSize = () => { size = null; };
     if (root.ResizeObserver) new ResizeObserver(resetSize).observe(canvas); else root.addEventListener('resize', resetSize);
     function shader(type, src) {
@@ -342,6 +351,12 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
         const mk = (g) => rawMesh(new Float32Array(g.p), new Float32Array(g.n), new Uint32Array(g.i), {}, new Float32Array(g.c));
         rides = root.MoleGame.Home3DLayout.RIDES.map((rd) => { const pr = rideParts(rd.id), yaw = Math.atan2(-rd.x, -rd.z); return { id: rd.id, base: mk(pr.base), mov: mk(pr.mov), pivot: pr.pivot, world: R.transform({ translation: [rd.x, 0, rd.z], rotation: [0, Math.sin(yaw / 2), 0, Math.cos(yaw / 2)] }) }; });
         rig = R.prepare(mole); actor = [];
+        const smile = rig.animations.find((clip) => clip.name === 'Smile');
+        smileFace = smile?.tracks.filter((track) => {
+          const name = rig.model.json.nodes[track.node].name;
+          return name === 'Jaw' || /^(Brow|MouthCorner|HappyEye)\.[LR]$/.test(name)
+            || (track.path === 'scale' && /^(Eye|PainEye)\.[LR]$/.test(name));
+        });
         mole.json.nodes.forEach((n, node) => { // 일반 홈 = Mole_Clay_Skin 만(Carrier/CarryBomb 렌더 금지)
           if (n.name !== 'Mole_Clay_Skin' || n.mesh === undefined) return;
           for (const p of mole.json.meshes[n.mesh].primitives) { const m = Object.assign(mesh(mole, p), { node }); actor.push(m); glbTexture(mole, p).then((t) => { m.texBase = t; }).catch(() => {}); } /* V1655 C: 신규 두더지 = 그림(텍스처) 색 */
@@ -356,12 +371,12 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
         if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
         gl.viewport(0, 0, w, h);
         const cam = camera(view, w, h); vp = cam.vp;
-        gl.clearColor(0.73, 0.82, 0.88, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.clearColor(0.45, 0.72, 0.94, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.useProgram(program); gl.uniformMatrix4fv(U.VP, false, vp); gl.uniform3fv(U.Eye, cam.eye); gl.uniform2f(U.Player, view.x, view.z);
         const now = performance.now() / 1000, sun = sunDir(now);
         gl.uniform1f(U.FogK, Math.max(1, (view.far || 80) / 80)); /* 높이 날면 안개 거리도 멀리(V1635 C) */
         gl.uniform1f(U.Time, now % 10000); gl.uniform3fv(U.Sun, sun);
-        const worlds = R.pose(rig, pose.clip, pose.t, pose.loop);
+        const worlds = R.pose(rig, pose.clip, pose.t, pose.loop, smileFace);
         const inst = R.transform({ translation: [view.x, pose.y || 0, view.z], rotation: [0, Math.sin(view.heading / 2), 0, Math.cos(view.heading / 2)], scale: [0.65 * (pose.s ?? 1), 0.65 * (pose.s ?? 1), 0.65 * (pose.s ?? 1)] }); // pose.s = 크기(동전 구멍으로 빨려 듦)
         const drawMole = () => { if (pose.s === 0) return; if (pose.fade) { gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); for (const m of actor) { m.color0 = m.color0 || m.color; m.color = [m.color0[0], m.color0[1], m.color0[2], m.color0[3] * (1 - pose.fade * 0.85)]; } } for (const m of actor) draw(m, R.multiply(inst, worlds[m.node]), R.palette(rig, worlds, m.node)); if (pose.fade) { for (const m of actor) m.color = m.color0; gl.disable(gl.BLEND); } };
         const drawClouds = () => { clouds.forEach((m, i) => { const c = cloudPos(i, now); gl.uniform1i(U.Cloud, 1); draw(m, R.transform({ translation: [c[0], c[1], c[2]], scale: [c[3], c[3], c[3]] }), null); gl.uniform1i(U.Cloud, 0); }); };
@@ -416,7 +431,7 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;float k=
           });
           const mh = arcade.moleOn ? arcade.mole : null;
           if (mh) { // 지금 라운드 구멍: 두더지가 고개를 내밂(정면 = 섬 가운데 쪽 +z), 살짝 들썩
-            const mp = mh.pose || { clip: 'RimIdle', t: now, loop: true }, w2 = R.pose(rig, mp.clip, mp.t, mp.loop), sc = 0.31; // 게임과 같은 구멍 동작. 손 간격 2.16 × 0.31 ≈ 구멍 지름
+            const mp = mh.pose || { clip: 'RimIdle', t: now, loop: true }, w2 = R.pose(rig, mp.clip, mp.t, mp.loop, smileFace), sc = 0.31; // 게임과 같은 구멍 동작. 손 간격 2.16 × 0.31 ≈ 구멍 지름
             const jumpUp = mp.clip === 'Appear' ? 1.1 * Math.sin(Math.PI * Math.min(1, mp.t / 0.8)) : 0; // 게임: 튀어오를 때 1.1 위로
             const i2 = R.transform({ translation: [mh.x, mh.y - 1.2 * sc + jumpUp * sc, mh.z], scale: [sc, sc, sc] }); // 사용자: 대기 = 두 손이 구멍 턱에 얹힘(RimIdle 손 높이 1.2)
             for (const m of actor) draw(m, R.multiply(i2, w2[m.node]), R.palette(rig, w2, m.node));
