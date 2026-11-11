@@ -3,7 +3,7 @@ const assert = require('assert');
 const L = require('../mole/js/home3d-layout.js');
 
 const actions = L.SITES.map((s) => s.action).sort();
-assert.deepStrictEqual(actions, ['inventory', 'lightMode', 'locker', 'rhythm', 'score', 'shop']); // V1650 C: score = 게시판(일일·퀘스트는 게시판 칸)
+assert.deepStrictEqual(actions, ['lightMode', 'rhythm', 'score', 'shop']);
 assert.strictEqual(L.ISLAND_R, 16); // V1632 C
 assert.deepStrictEqual(L.SPAWN, { x: 0, z: 0 });
 assert.ok(!L.allowed(0, 0), '집 구멍 안으로는 걸어 들어갈 수 없음(점프로만 나옴)');
@@ -12,6 +12,7 @@ assert.ok(L.allowed(1.6, 0), '구멍 바로 밖은 걸을 수 있음');
 assert.ok(L.HOLE_R > 1.2 && L.HOLE_R < 1.6);
 assert.ok(!L.allowed(15.5, 0), '걷기 반지름(15) 밖은 막힘');
 assert.ok(!L.allowed(0, -9), '건물 몸체 안은 막힘');
+assert.ok(L.allowed(-9, 0) && L.allowed(-7, 5), '철거한 제작소와 아이템 건물 자리 통과 가능');
 
 for (const s of L.SITES) {
   assert.ok(['building', 'prop'].includes(s.kind), s.action + ' kind');
@@ -37,6 +38,7 @@ console.log('verify-home3d-layout: ok (' + L.SITES.length + ' sites)');
   const RM = require('../mole/js/clay-rig-math.js');
   const buf = fs.readFileSync(path.join(__dirname, '../mole/assets/home3d/plaza.glb'));
   const glb = RM.parseGLB(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.length));
+  assert.ok(!glb.json.nodes.some((n) => ['Sign_locker', 'Sign_inventory'].includes(n.name)));
   for (const s of L.SITES) {
     if (s.action === 'lightMode') { const g = glb.json.nodes.find((x) => x.name === 'Sign_lightMode'); assert.ok(g && Math.hypot(g.translation[0] - s.x, g.translation[2] - s.z) < 0.3, '두더지팡 글자 = 기계 위 간판 상자'); continue; }
     if (s.noSign) continue; // 게시판 = 간판 없음

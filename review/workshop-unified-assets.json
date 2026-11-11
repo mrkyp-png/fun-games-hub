@@ -1,0 +1,52 @@
+[
+  {
+    "name": "unified-bg",
+    "generated": "C:\\Users\\master\\.codex\\generated_images\\01a1c7c9-988b-7c81-bb61-6412c87356b4\\exec-0f812282-ebbb-4bbf-bab5-be1e8059f487.png",
+    "original": null,
+    "size": [
+      941,
+      1671
+    ],
+    "bytes": 114674
+  },
+  {
+    "name": "unified-stage",
+    "generated": "C:\\Users\\master\\.codex\\generated_images\\01a1c7c9-988b-7c81-bb61-6412c87356b4\\exec-de0bf2ce-bda9-44bc-a1c0-48876faf47b6.png",
+    "original": "clarity-v1434/stage.png",
+    "size": [
+      1632,
+      964
+    ],
+    "bytes": 188620
+  },
+  {
+    "name": "unified-sign",
+    "generated": "C:\\Users\\master\\.codex\\generated_images\\01a1c7c9-988b-7c81-bb61-6412c87356b4\\exec-29e7f97e-31c9-4ebf-84e8-c780d579c2a5.png",
+    "original": "sign.png",
+    "size": [
+      421,
+      219
+    ],
+    "bytes": 16248
+  },
+  {
+    "name": "unified-card",
+    "generated": "C:\\Users\\master\\.codex\\generated_images\\01a1c7c9-988b-7c81-bb61-6412c87356b4\\exec-4be19202-ee8d-485d-93cd-b2eaac561437.png",
+    "original": "pick/card-blue.png",
+    "size": [
+      330,
+      430
+    ],
+    "bytes": 36546
+  },
+  {
+    "name": "unified-panel",
+    "generated": "C:\\Users\\master\\.codex\\generated_images\\01a1c7c9-988b-7c81-bb61-6412c87356b4\\exec-56190219-7fe7-4130-94bf-a5f6c59e5399.png",
+    "original": "clarity-v1434/panel.png",
+    "size": [
+      2170,
+      725
+    ],
+    "bytes": 96256
+  }
+]

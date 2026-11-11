@@ -148,8 +148,8 @@
 // V1680 C: 고래·메갈로돈 높이 따라 크기(메갈로돈 = 고래 2배), 나타난 뒤 내려와도 10분 유지, 화면 모서리에서 헤엄쳐 들어옴.
 // V1681 C: 겨털 풍성하게(가닥 4벌 더), 팔 밑까지 틈 없이, 아래 끝 둥글게.
 // V1682 G: Score carpet fits within the screen and sits lower; plaza mole smiles periodically while idle.
-// V1683 G: Match the plaza palette to the score screen and use a smiling face by default.
-const CACHE = 'mole-game-v1683-G';
+// V1684 G: Unified inventory, workshop artwork and direct entry; home settings/mail access.
+const CACHE = 'mole-game-v1684-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -262,6 +262,10 @@ const SHELL = [
   './assets/inventory/ui-v1379/equip-pill-transparent.webp',
   './assets/inventory/ui-v1379/cabinet-frame-clean-v1413.webp',
   './assets/inventory/ui-v1379/grade-basic.webp',
+  './assets/inventory/bag-heart-30.png',
+  './assets/inventory/ui-v1379/icon-eye-original.webp',
+  './assets/inventory/ui-v1379/icon-impact-original.webp',
+  './assets/inventory/ui-v1379/icon-shield-original.webp',
   './assets/rhythm/ui/ic-ticket-note-v1424.webp',
   './assets/home2/btn-frame-sky-v1423.png',
   './assets/inventory/ui-v1379/pill-blue-w42-v1412.webp',
@@ -987,7 +991,6 @@ const SHELL = [
   './assets/rhythm-b/combo-background-mask.svg',
   './assets/rhythm-b/mini-user.png',
   './assets/rhythm-b/pause-options.png',
-  './js/face-studio.js',
   './js/score-screen.js',
   './js/settings-screen.js',
   './js/inventory-screen.js',
@@ -999,6 +1002,12 @@ const SHELL = [
   './js/game.js',
   './assets/workshop/clarity-v1434/panel.png',
   './assets/workshop/clarity-v1434/stage.png',
+  './assets/workshop/tone-v1684/unified-bg.webp',
+  './assets/workshop/tone-v1684/notice-frame.svg',
+  './assets/workshop/tone-v1684/unified-stage.webp',
+  './assets/workshop/tone-v1684/unified-panel.webp',
+  './assets/workshop/tone-v1684/unified-sign.webp',
+  './assets/workshop/tone-v1684/unified-card.webp',
 ];
 
 // V1333 C: 662개 파일을 addAll 로 한꺼번에 요청하면 폰 크롬이 동시 요청 한도를 넘겨(ERR_INSUFFICIENT_RESOURCES)

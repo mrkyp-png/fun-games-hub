@@ -7,7 +7,7 @@
 
   function create(opts) {
     const o = opts || {};
-    let saved = null;
+    let saved = null, featureReturn = 'EXPLORE';
     const h = { state: null, feature: null };
     function go(next) {
       if (h.state) o.onLeave && o.onLeave(h.state);
@@ -18,15 +18,17 @@
     h.boot = () => { h.feature = null; return go('INTRO'); };
     h.introDone = () => h.state === 'INTRO' && go('EXPLORE');
     h.openFeature = (action) => {
-      if (h.state !== 'EXPLORE' || !ACTIONS.includes(action)) return false;
+      if ((h.state !== 'EXPLORE' && !(h.state === 'INTRO' && ['inventory', 'settings', 'mail'].includes(action))) || !ACTIONS.includes(action)) return false;
+      featureReturn = h.state;
       h.feature = action;
       return go('FEATURE');
     };
     h.gameStarted = () => h.state !== 'GAMEPLAY' && (h.feature = null, go('GAMEPLAY'));
     h.homeShown = () => {
       if (h.state !== 'FEATURE' && h.state !== 'GAMEPLAY') return false;
+      const next = h.state === 'FEATURE' ? featureReturn : 'EXPLORE';
       h.feature = null;
-      return go('EXPLORE');
+      return go(next);
     };
     h.inputEnabled = () => h.state === 'EXPLORE';
     h.saveView = (v) => { saved = Object.assign({}, v); };

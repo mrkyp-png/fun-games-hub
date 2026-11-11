@@ -58,6 +58,9 @@
       return { id: t.id, ko: t.nameKo, en: t.nameEn, owned: MG.CostumeTeams.owns(t.id), img: 'assets/costume/char-' + t.id + '-v1406.webp', done: 'assets/costume/char-' + t.id + '-v1406.webp' }; // V1406 C 사용자: 확대 그림
     });
   }
+  function canEnhance(kind, id) {
+    return (kind === 'weapon' || kind === 'costume') && items(kind).some(function (item) { return item.id === id && item.owned; });
+  }
   function nameOf(it) { return root.FGH.I18N.lang === 'en' ? it.en : it.ko; }
 
   // Keep the waiting 3D image; aim 10 degrees clockwise from 5 o'clock.
@@ -379,13 +382,6 @@
 
     function render() {
       el.querySelectorAll('[data-ws-tab]').forEach(function (b) { b.classList.toggle('is-on', b.dataset.wsTab === tab); });
-      var photo = $('[data-ws-photo]');
-      var photoLocked = !MG.CostumeTeams.teams().some(function (team) { return MG.CostumeTeams.owns(team.id); });
-      photo.disabled = photoLocked;
-      photo.classList.toggle('is-locked', photoLocked);
-      photo.setAttribute('aria-disabled', String(photoLocked));
-      photo.title = photoLocked ? T('mole.fs.needCostume') : '';
-      photo.querySelector('span').textContent = (photoLocked ? '🔒 ' : '') + T('mole.fs.tabPhoto');
       var it = cur();
       var lv = it ? levelOf(tab, it.id) : 0;
       var mats = it ? materials(tab, it.id) : 0;
@@ -617,7 +613,7 @@
       return framesReady;
     }
 
-    function show() {
+    function show(targetKind, targetId) {
       el._moleReady = preloadIdleGoose().then(function (ok) { if (!ok) throw new Error('Workshop idle art unavailable'); });
       el._moleReady.catch(function () {});
       el._moleRetry = function () { idleGooseReady = null; el._moleReady = preloadIdleGoose().then(function (ok) { if (!ok) throw new Error('Workshop idle art unavailable'); }); el._moleReady.catch(function () {}); };
@@ -626,6 +622,10 @@
       running = false; pending = null; selMat = null; pick.hidden = true;
       // V1531 C 사용자: 들어올 때마다 무기 탭의 팡팡 캐논(WEAPONS 첫 번째)부터.
       tab = 'weapon'; idx.weapon = 0;
+      if (canEnhance(targetKind, targetId)) {
+        tab = targetKind;
+        idx[tab] = items(tab).findIndex(function (item) { return item.id === targetId; });
+      }
       el.classList.remove('is-fx', 'is-shake');
       $('[data-ws-fx]').hidden = true;
       render();
@@ -633,6 +633,6 @@
     return { show: show };
   }
 
-  var api = { create: create, levelOf: levelOf, GLOW: GLOW, weaponLevel: weaponLevel, weaponChanceBonus: weaponChanceBonus, weaponAttackBonus: weaponAttackBonus, materials: materials, setMaterials: setMaterials, COST: COST, RATE: RATE };
+  var api = { create: create, canEnhance: canEnhance, levelOf: levelOf, GLOW: GLOW, weaponLevel: weaponLevel, weaponChanceBonus: weaponChanceBonus, weaponAttackBonus: weaponAttackBonus, materials: materials, setMaterials: setMaterials, COST: COST, RATE: RATE };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.Workshop = api; }
 })(typeof window !== 'undefined' ? window : null);

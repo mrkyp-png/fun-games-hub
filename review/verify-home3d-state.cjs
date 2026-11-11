@@ -13,6 +13,18 @@ assert.strictEqual(h.inputEnabled(), false);
 assert.strictEqual(h.openFeature('shop'), false, '첫 장면 중 기능 열기 무시');
 assert.strictEqual(h.state, 'INTRO');
 
+// 대기 화면의 상시 버튼은 열리고, 닫으면 점프 전 상태를 보존한다.
+for (const action of ['settings', 'mail', 'inventory']) {
+  const initial = S.create({});
+  initial.boot();
+  assert.strictEqual(initial.openFeature(action), true, action + ' opens from INTRO');
+  assert.strictEqual(initial.state, 'FEATURE');
+  assert.strictEqual(initial.openFeature('settings'), false, '열린 기능 위 중복 진입 차단');
+  assert.strictEqual(initial.homeShown(), true);
+  assert.strictEqual(initial.state, 'INTRO', action + ' returns to INTRO');
+  assert.strictEqual(initial.inputEnabled(), false, '기능을 닫아도 광장 이동 해제 안 됨');
+}
+
 assert.strictEqual(h.introDone(), true);
 assert.strictEqual(h.state, 'EXPLORE');
 assert.strictEqual(h.inputEnabled(), true);

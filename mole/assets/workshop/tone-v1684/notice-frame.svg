@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="100" viewBox="0 0 160 100" fill="none">
+  <title>Workshop notice frame: original 40 pixel corner slices</title>
+  <defs>
+    <linearGradient id="face" x1="80" y1="0" x2="80" y2="100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fffaf0"/><stop offset="1" stop-color="#fff5d9"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="80" y1="0" x2="80" y2="100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#e8cc8e"/><stop offset="1" stop-color="#d6ad63"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="156" height="96" rx="38" fill="url(#face)" stroke="url(#edge)" stroke-width="4"/>
+  <rect x="5" y="5" width="150" height="90" rx="35" stroke="#f6dfaa" stroke-opacity=".5" stroke-width="2"/>
+</svg>

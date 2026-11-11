@@ -5,7 +5,6 @@
   const W = 512, H = 160;
 
   function labelFor(site, lang, t) {
-    if (site.action === 'locker' && lang !== 'ko') return 'Workshop'; // 사용자 지정(간판 전용, 기존 번역 'Photos' 유지)
     return t(site.labelKey).replace(/\n/g, ' ');
   }
 

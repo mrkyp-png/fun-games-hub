@@ -47,6 +47,8 @@
 #home3d .h3-mail{position:absolute;top:calc(max(12px,env(safe-area-inset-top)) + 50px);right:16px;width:42px;height:42px;padding:0;border:0;border-radius:50%;background:#fffaf0e6;box-shadow:0 2px 0 #c9b79a;display:flex;align-items:center;justify-content:center}
 #home3d .h3-mail[hidden]{display:none!important}
 #home3d .h3-mail img{width:28px;height:28px;object-fit:contain}
+#home3d .h3-inventory{top:calc(max(12px,env(safe-area-inset-top)) + 100px);overflow:hidden}
+#home3d .h3-inventory img{width:38px;height:38px;flex:none}
 #home3d .h3-mail-dot{position:absolute;top:1px;right:1px;width:12px;height:12px;border-radius:50%;background:#ff4b4b;box-shadow:0 0 0 2px #fff}
 #home3d .h3-mail-dot[hidden]{display:none!important}
 

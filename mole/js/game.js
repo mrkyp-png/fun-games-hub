@@ -950,7 +950,7 @@
     if (action === 'lightMode' && screenNav && screenNav.current()) return false;
     if (action === 'lightMode') { beginGame(); return; } // V1621 C: 라운드 지도 삭제 → 바로 시작
     const sub = { shop: 'shop-screen', score: 'score-screen', daily: 'daily-screen',
-      quest: 'quest-screen', locker: 'workshop-screen',
+      quest: 'quest-screen', locker: 'inventory-screen',
       inventory: 'inventory-screen', settings: 'settings-screen',
       mail: 'mailbox-screen' }[action];
     if (sub) { const r = openMore(sub); if (r !== false && sharedLaneControls) sharedLaneControls.setActiveNav(action); return r; }
@@ -3641,16 +3641,13 @@
       // 무기 탭 구매 잠금 — 게임 진행 중(라운드1~클리어)에만 비활성화.
       gameInProgress: () => !!(state && !state.ended)
     });
-    const faceStudioEl = document.getElementById('face-studio');
-    const faceStudio = MG.FaceStudio.create({
-      root: faceStudioEl,
-      onClose: () => { faceStudioEl.hidden = true; if (workshop) workshop.show(); },
-      onChange: () => { if (moreMenu) moreMenu.refresh(); }
-    });
-    document.querySelector('[data-ws-photo]').addEventListener('click', () => { if (faceStudio.open()) faceStudioEl.hidden = false; });
     workshop = MG.Workshop.create({
       root: document.getElementById('workshop-screen'),
-      onClose: () => closeMore(),
+      onClose: () => {
+        if (screenNav.current() !== 'workshop-screen' || screenNav.depth() < 2) return closeMore();
+        screenNav.back();
+        if (screenNav.current() === 'inventory-screen') inventoryScreen.refresh();
+      },
       onChange: () => { refreshBoardStats(); syncEnhancementVisuals(MG.roundWeapon || MG.ItemInventory.equippedWeapon()); if (moreMenu) moreMenu.refresh(); }
     });
     // v894: 퀘스트·업적 화면
@@ -3693,6 +3690,13 @@
       root: document.getElementById('inventory-screen'),
       // 다이얼패드에서 바로 들어오는 진입점(사용자 지정) — 나갈 땐 더보기가 아니라 홈/게임으로.
       onClose: () => closeMore(),
+      onUpgrade: (kind, id) => {
+        if (screenNav.current() !== 'inventory-screen' || (state && !state.ended) || !MG.Workshop.canEnhance(kind, id)) return;
+        workshop.show(kind, id);
+        const workshopRoot = document.getElementById('workshop-screen');
+        workshopRoot.classList.remove('asset-preparing', 'asset-failed', 'asset-pop', 'glitch-in', 'diagonal-wipe-in', 'is-in', 'is-out', 'is-rollup');
+        screenNav.show('workshop-screen');
+      },
       // 게임 진행 중(라운드1~클리어)엔 무기 변경 잠금. 홈·게임오버 후엔 허용.
       gameInProgress: () => !!(state && !state.ended)
     });

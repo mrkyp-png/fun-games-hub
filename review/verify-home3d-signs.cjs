@@ -16,22 +16,20 @@ const makeCanvas = () => ({ width: 0, height: 0, getContext: () => ({
   clearRect() {}, fillRect() {}, beginPath() {}, roundRect() {}, fill() {}, stroke() {},
   measureText: (s) => ({ width: s.length * 10 }), fillText: (s) => drawn.push(s), strokeText() {}
 }) });
-const dict = { ko: { 'mole.pad.gameMole': '두더지팡', 'mole.pad.lblLocker': '제작소' }, en: { 'mole.pad.gameMole': 'Mole\nPang', 'mole.pad.lblLocker': 'Photos' } };
+const dict = { ko: { 'mole.pad.gameMole': '두더지팡' }, en: { 'mole.pad.gameMole': 'Mole\nPang' } };
 const t = (lang) => (k) => (dict[lang][k] || k);
 
 // 글자 규칙
-assert.strictEqual(Sg.labelFor(L.SITES.find((s) => s.action === 'locker'), 'en', t('en')), 'Workshop', '제작소 영어 간판 = Workshop');
-assert.strictEqual(Sg.labelFor(L.SITES.find((s) => s.action === 'locker'), 'ko', t('ko')), '제작소');
 assert.strictEqual(Sg.labelFor(L.SITES.find((s) => s.action === 'lightMode'), 'en', t('en')), 'Mole Pang', '줄바꿈 → 한 줄');
 
 const signs = Sg.create(gl, { makeCanvas });
 const m1 = signs.build('ko', L.SITES, t('ko'));
-assert.strictEqual(m1.size, 6); assert.strictEqual(live, 6); // V1650 C: 스코어 탑·선물상자·퀘스트 판 → 게시판 1개
+assert.strictEqual(m1.size, 4); assert.strictEqual(live, 4);
 assert.ok(drawn.includes('두더지팡'));
 signs.build('en', L.SITES, t('en'));
 signs.build('ko', L.SITES, t('ko'));
-assert.strictEqual(live, 6, '한→영→한 후에도 살아 있는 텍스처 = 6');
-assert.ok(drawn.includes('Workshop') && drawn.includes('Mole Pang'));
+assert.strictEqual(live, 4, '한→영→한 후에도 살아 있는 텍스처 = 4');
+assert.ok(drawn.includes('Mole Pang'));
 signs.dispose();
 assert.strictEqual(live, 0, 'dispose 후 0');
 console.log('verify-home3d-signs: ok');

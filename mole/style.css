@@ -26,6 +26,9 @@ html, body { touch-action: manipulation; }
 /* ── 밝은 모드 팔레트 — 삼성 기본 다이얼러(밝은) 레퍼런스: 깔끔한 흰색.
    Desktop/밝은모드.jpg 참고. 게임 플레이 보드(잔디밭)와 강조색은 그대로. ── */
 :root {
+  --popup-gold-border: 7px solid #d6ad63;
+  --popup-gold-radius: 22px;
+  --popup-gold-shadow: inset 0 0 0 3px #f6dfaa, 0 7px 18px rgba(55,30,5,.3);
   --lm-page:    #ffffff;   /* 페이지 배경 (폰 몸체) */
   --lm-bezel:   #f4f4f5;   /* 폰 베젤/힌지 (아주 옅은 회색) */
   --lm-surface: #ffffff;   /* 대화 홈·오버레이·메뉴 면 */
@@ -8374,23 +8377,22 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
   padding-bottom: 3px;
 }
 /* Icon-only inventory tabs: center each artwork within the same safe box. */
-#inventory-screen .inv-tab .inv-tab-lbl { display:none!important; }
-#inventory-screen .inv-tab .inv-tab-ico { position:relative!important; display:flex!important; flex:0 0 100%!important; align-self:stretch!important; justify-content:center!important; align-items:center!important; width:100%!important; height:100%!important; min-height:0!important; margin:0!important; overflow:hidden!important; }
-#inventory-screen .inv-tab .inv-tab-ico > img,
-#inventory-screen .inv-tab .inv-tab-ico > svg { position:relative!important; display:block!important; flex:none!important; width:92%!important; height:92%!important; max-width:92%!important; max-height:92%!important; object-fit:contain!important; }
-#inventory-screen .inv-tab .inv-tab-ico > img,
-#inventory-screen .inv-tab .inv-tab-ico > svg,
-#inventory-screen .inv-tab .shop-tab-sword { filter:drop-shadow(1px 0 0 #3b3f46) drop-shadow(-1px 0 0 #3b3f46) drop-shadow(0 1px 0 #3b3f46) drop-shadow(0 -1px 0 #3b3f46)!important; }
-#inventory-screen .inv-tab .inv-tab-ico > .skill-orb-icon { position:absolute!important; inset:4%!important; display:block!important; width:auto!important; height:auto!important; }
-#inventory-screen .inv-tab .inv-tab-ico > .shop-tab-swords { position:absolute!important; inset:4%!important; display:block!important; overflow:hidden!important; transform:none!important; }
-#inventory-screen .inv-tab .shop-tab-sword-arm { position:absolute!important; top:0!important; bottom:0!important; width:88%!important; transform-origin:50% 82%!important; }
-#inventory-screen .inv-tab .shop-tab-sword--left { right:-12%!important; animation:shop-sword-left 4s ease-in-out infinite!important; }
-#inventory-screen .inv-tab .shop-tab-sword--right { left:-12%!important; animation:shop-sword-right 4s ease-in-out infinite!important; }
-#inventory-screen .inv-tab .shop-tab-swords .shop-tab-sword { position:absolute!important; inset:0!important; display:block!important; width:100%!important; height:100%!important; max-width:none!important; max-height:none!important; object-fit:contain!important; transform:none!important; }
-#inventory-screen .inv-tab .shop-tab-sword-spark { position:absolute!important; left:50%!important; top:45%!important; z-index:3!important; width:16px!important; height:16px!important; transform:translate(-50%,-50%)!important; animation:shop-sword-spark 4s linear infinite!important; }
-#inventory-screen .inv-tab .shop-tab-sword-spark::before { content:''; position:absolute; inset:-3px; background:#fff6bf; clip-path:polygon(50% 0,59% 38%,100% 50%,59% 62%,50% 100%,41% 62%,0 50%,41% 38%); }
-#inventory-screen .inv-tab:nth-child(3) .inv-tab-ico > img { animation:shop-tab-costume-colors 9s linear infinite!important; }
-#inventory-screen .inv-tab .skill-orb-icon .skill-orb-hand { width:100%!important; height:100%!important; filter:drop-shadow(1px 0 0 #3b3f46) drop-shadow(-1px 0 0 #3b3f46) drop-shadow(0 1px 0 #3b3f46) drop-shadow(0 -1px 0 #3b3f46)!important; }
+#inventory-screen .inventory-tabs button .inventory-tab-icon { position:relative!important; display:flex!important; flex:none!important; justify-content:center!important; align-items:center!important; width:40px!important; height:38px!important; min-height:0!important; margin:0!important; overflow:hidden!important; }
+#inventory-screen .inventory-tabs button .inventory-tab-icon > img,
+#inventory-screen .inventory-tabs button .inventory-tab-icon > svg { position:relative!important; display:block!important; flex:none!important; width:92%!important; height:92%!important; max-width:92%!important; max-height:92%!important; object-fit:contain!important; }
+#inventory-screen .inventory-tabs button .inventory-tab-icon > img,
+#inventory-screen .inventory-tabs button .inventory-tab-icon > svg,
+#inventory-screen .inventory-tabs button .shop-tab-sword { filter:drop-shadow(1px 0 0 #3b3f46) drop-shadow(-1px 0 0 #3b3f46) drop-shadow(0 1px 0 #3b3f46) drop-shadow(0 -1px 0 #3b3f46)!important; }
+#inventory-screen .inventory-tabs button .inventory-tab-icon > .skill-orb-icon { position:absolute!important; inset:4%!important; display:block!important; width:auto!important; height:auto!important; }
+#inventory-screen .inventory-tabs button .inventory-tab-icon > .shop-tab-swords { position:absolute!important; inset:4%!important; display:block!important; overflow:hidden!important; transform:translateY(-3.7px)!important; }
+#inventory-screen .inventory-tabs button .shop-tab-sword-arm { position:absolute!important; top:0!important; bottom:0!important; width:88%!important; transform-origin:50% 82%!important; }
+#inventory-screen .inventory-tabs button .shop-tab-sword--left { right:-12%!important; animation:shop-sword-left 4s ease-in-out infinite!important; }
+#inventory-screen .inventory-tabs button .shop-tab-sword--right { left:-12%!important; animation:shop-sword-right 4s ease-in-out infinite!important; }
+#inventory-screen .inventory-tabs button .shop-tab-swords .shop-tab-sword { position:absolute!important; inset:0!important; display:block!important; width:100%!important; height:100%!important; max-width:none!important; max-height:none!important; object-fit:contain!important; transform:none!important; }
+#inventory-screen .inventory-tabs button .shop-tab-sword-spark { position:absolute!important; left:50%!important; top:45%!important; z-index:3!important; width:16px!important; height:16px!important; transform:translate(-50%,-50%)!important; animation:shop-sword-spark 4s linear infinite!important; }
+#inventory-screen .inventory-tabs button .shop-tab-sword-spark::before { content:''; position:absolute; inset:-3px; background:#fff6bf; clip-path:polygon(50% 0,59% 38%,100% 50%,59% 62%,50% 100%,41% 62%,0 50%,41% 38%); }
+#inventory-screen .inventory-tabs button:nth-child(3) .inventory-tab-icon > img { animation:shop-tab-costume-colors 9s linear infinite!important; }
+#inventory-screen .inventory-tabs button .skill-orb-icon .skill-orb-hand { width:100%!important; height:100%!important; filter:drop-shadow(1px 0 0 #3b3f46) drop-shadow(-1px 0 0 #3b3f46) drop-shadow(0 1px 0 #3b3f46) drop-shadow(0 -1px 0 #3b3f46)!important; }
 #inventory-screen .inv-tab:last-child .inv-tab-ico > svg { animation:photo-camera-ready 3.6s ease-in-out infinite!important; }
 #inventory-screen .inv-tab:last-child .inv-tab-ico > svg circle { transform-box:fill-box; transform-origin:center; animation:photo-shutter-click 3.6s ease-in-out infinite; }
 #inventory-screen .inv-tab:last-child .inv-tab-ico::after { content:''; position:absolute; inset:4%; pointer-events:none; opacity:0; background:radial-gradient(circle at 50% 56%,#fff 0 8%,rgba(255,248,205,.95) 14%,rgba(255,255,255,0) 44%); animation:photo-shutter-flash 3.6s linear infinite; }
@@ -8399,7 +8401,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 @keyframes photo-shutter-click { 0%,43%,51%,100% {transform:scale(1);fill:#dfe8ff} 46% {transform:scale(.58);fill:#fff7c9} }
 @keyframes photo-shutter-flash { 0%,43%,49%,100% {opacity:0;transform:scale(.35)} 45% {opacity:1;transform:scale(1)} 47% {opacity:.35;transform:scale(1.12)} }
 #inventory-screen[hidden] .inv-tab-ico * { animation-play-state:paused!important; }
-@media(prefers-reduced-motion:reduce) { #inventory-screen .inv-tab .shop-tab-sword-arm,#inventory-screen .inv-tab .shop-tab-sword-spark,#inventory-screen .inv-tab:nth-child(3) .inv-tab-ico > img,#inventory-screen .inv-tab .skill-orb-icon * { animation:none!important; } }
+@media(prefers-reduced-motion:reduce) { #inventory-screen .inventory-tabs button .shop-tab-sword-arm,#inventory-screen .inventory-tabs button .shop-tab-sword-spark,#inventory-screen .inventory-tabs button:nth-child(3) .inventory-tab-icon > img,#inventory-screen .inventory-tabs button .skill-orb-icon * { animation:none!important; } #inventory-screen .inventory-tabs button .shop-tab-sword--left {transform:rotate(-45deg)} #inventory-screen .inventory-tabs button .shop-tab-sword--right {transform:rotate(45deg)} }
 /* 탭 높이 증가에 맞춰 무기 간판은 6px, 큰 박스 시작점은 10px 위로. */
 #inventory-screen[data-tab="weapon"] > .inv-wsign {
   top: max(4px, calc(2.9% - 6px));
@@ -8579,7 +8581,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .iw-mount { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); }
 .iw-stage {
   position: relative; width: 1278px; height: 1230px; transform: scale(var(--iw-scale,0)); transform-origin: 0 0;
-  background: url('assets/inventory/ui-v1379/cabinet-frame-clean-v1413.webp') 0 0 / 1278px 1230px no-repeat; /* V1387 C: 액자 바깥 하늘색 배경 투명 처리본 */
+  background: none;
   font-family: 'Jua',sans-serif; color: #07264c; isolation: isolate;
 }
 .iw-pages { position: absolute; left: 134px; top: 263px; width: 500px; height: 654px; display: flex; gap: 0; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; touch-action: pan-x; }
@@ -8758,7 +8760,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #inventory-screen[data-tab="skill"] .inv-body { position: relative; min-width: 0; min-height: 0; overflow: hidden; padding: 0 !important; margin: 0 !important; }
 .ks-mount { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); }
 .ks-stage { position: relative; width: 1278px; height: 1230px; transform: scale(var(--ks-scale,0)); transform-origin: 0 0;
-  background: url('assets/inventory/skill-v1403/frame-clean-v1413.webp') 0 0 / 1278px 1230px no-repeat; font-family: 'Jua', sans-serif; color: #07264c; }
+  background: none; font-family: 'Jua', sans-serif; color: #07264c; }
 .ks-name { position: absolute; left: 330px; top: 35px; width: 620px; height: 90px; display: flex; align-items: center; justify-content: center; font-size: 80px; /* 사용자: 무기 화면 이름과 같은 크기 */ line-height: 1; color: #073b7b; text-shadow: 0 3px #fff; white-space: nowrap; }
 .ks-case { position: absolute; left: 118px; top: 166px; width: 520px; height: 474px; background: url('assets/inventory/skill-v1403/case.webp') center / 100% 100% no-repeat; overflow: hidden; }
 /* 사용자: 스킬 탭 무기 = 무기 화면과 같은 무기 연출·뒤 색 빛·바닥 그림자(세트), 조금 작게 */
@@ -9550,7 +9552,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-coin-weapon-choice span { display:block!important; flex:0 0 auto!important; width:100%!important; padding-top:1px!important; transform:translateY(2px)!important; overflow:hidden!important; color:#54290b!important; font:900 2.3cqw/1.2 'Jua',sans-serif!important; text-align:center!important; text-overflow:ellipsis!important; white-space:nowrap!important; }
 :is(#shop-screen,#settings-screen,#mailbox-screen,#home3d) .shop-coin-choice-dialog { position:absolute!important; inset:0!important; z-index:10000!important; display:flex!important; align-items:center!important; justify-content:center!important; box-sizing:border-box!important; padding:6cqw!important; background:rgba(16,24,40,.42)!important; -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); }
 #shop-screen:has(.shop-coin-choice-dialog--weapon-purchase) .shop-card--weapon-product .shop-card-badge--hero { visibility:hidden!important; }
-:is(#shop-screen,#settings-screen,#mailbox-screen,#home3d) .shop-coin-choice-card { display:flex!important; flex-direction:column!important; align-items:center!important; box-sizing:border-box!important; width:88cqw!important; max-width:380px!important; padding:6cqw 5cqw 4cqw!important; border:7px solid #d6ad63!important; border-radius:22px!important; background:#fff5d9!important; box-shadow:inset 0 0 0 3px #f6dfaa,0 7px 18px rgba(55,30,5,.3)!important; }
+:is(#shop-screen,#settings-screen,#mailbox-screen,#home3d) .shop-coin-choice-card { display:flex!important; flex-direction:column!important; align-items:center!important; box-sizing:border-box!important; width:88cqw!important; max-width:380px!important; padding:6cqw 5cqw 4cqw!important; border:var(--popup-gold-border)!important; border-radius:var(--popup-gold-radius)!important; background:#fff5d9!important; box-shadow:var(--popup-gold-shadow)!important; }
 #shop-screen .shop-coin-choice-card--weapon-select { width:94cqw!important; max-width:460px!important; padding:5cqw 4cqw!important; }
 #shop-screen .shop-coin-weapon-choices--dialog { display:flex!important; gap:2cqw!important; width:100%!important; margin:5cqw 0 0!important; }
 #shop-screen .shop-coin-weapon-choice--dialog { flex:1 1 0!important; height:38cqw!important; min-height:120px!important; max-height:160px!important; padding:2cqw!important; }
@@ -9845,17 +9847,17 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 .lc-model-image {display:block;width:100%;height:100%;filter:drop-shadow(0 4px 5px #0006);}
 .lc-model-fallback {position:absolute;inset:0;width:100%;height:100%;object-fit:contain;}
 .lc-model-fallback[hidden] {display:none;}
-#shop-screen .shop-tab-swords {position:absolute;inset:0;display:block;transform:translateY(-5px);}
-#shop-screen .shop-tab-sword-arm {position:absolute;top:0;bottom:0;width:88%;transform-origin:50% 82%;}
-#shop-screen .shop-tab-sword--left {right:-12%;animation:shop-sword-left 4s ease-in-out infinite;}
-#shop-screen .shop-tab-sword--right {left:-12%;animation:shop-sword-right 4s ease-in-out infinite;}
-#shop-screen .shop-tab-swords .shop-tab-sword {position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain;transform:none!important;}
-#shop-screen .shop-tab-sword-spark {position:absolute;left:50%;top:45%;z-index:3;width:16px;height:16px;border:0;pointer-events:none;background:radial-gradient(circle,#fff 0 18%,#fff6af 30%,#ffd04a 58%,transparent 72%);transform:translate(-50%,-50%);opacity:0;filter:drop-shadow(0 0 3px #ffe473);animation:shop-sword-spark 4s linear infinite;}
-#shop-screen .shop-tab-sword-spark::before {content:'';position:absolute;inset:-3px;background:#fff6bf;clip-path:polygon(50% 0,59% 38%,100% 50%,59% 62%,50% 100%,41% 62%,0 50%,41% 38%);}
+:is(#shop-screen,#inventory-screen) .shop-tab-swords {position:absolute;inset:0;display:block;transform:translateY(-5px);}
+:is(#shop-screen,#inventory-screen) .shop-tab-sword-arm {position:absolute;top:0;bottom:0;width:88%;transform-origin:50% 82%;}
+:is(#shop-screen,#inventory-screen) .shop-tab-sword--left {right:-12%;animation:shop-sword-left 4s ease-in-out infinite;}
+:is(#shop-screen,#inventory-screen) .shop-tab-sword--right {left:-12%;animation:shop-sword-right 4s ease-in-out infinite;}
+:is(#shop-screen,#inventory-screen) .shop-tab-swords .shop-tab-sword {position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain;transform:none!important;}
+:is(#shop-screen,#inventory-screen) .shop-tab-sword-spark {position:absolute;left:50%;top:45%;z-index:3;width:16px;height:16px;border:0;pointer-events:none;background:radial-gradient(circle,#fff 0 18%,#fff6af 30%,#ffd04a 58%,transparent 72%);transform:translate(-50%,-50%);opacity:0;filter:drop-shadow(0 0 3px #ffe473);animation:shop-sword-spark 4s linear infinite;}
+:is(#shop-screen,#inventory-screen) .shop-tab-sword-spark::before {content:'';position:absolute;inset:-3px;background:#fff6bf;clip-path:polygon(50% 0,59% 38%,100% 50%,59% 62%,50% 100%,41% 62%,0 50%,41% 38%);}
 @keyframes shop-sword-left {0%,38%,68%,100%{transform:rotate(-45deg)}45%,49%{transform:rotate(0)}53%,55%{transform:rotate(-52deg)}57%{transform:rotate(-30deg)}62%,68%{transform:rotate(-45deg)}}
 @keyframes shop-sword-right {0%,38%,68%,100%{transform:rotate(45deg)}45%,49%{transform:rotate(0)}53%,55%{transform:rotate(52deg)}57%{transform:rotate(30deg)}62%,68%{transform:rotate(45deg)}}
 @keyframes shop-sword-spark {0%,49%,58%,100%{opacity:0;scale:.2}50%,53%{opacity:1;scale:1.15}55%{opacity:.65;scale:.9}57%{opacity:0;scale:.4}}
-@media(prefers-reduced-motion:reduce){#shop-screen .shop-tab-sword-arm,#shop-screen .shop-tab-sword-spark{animation:none}#shop-screen .shop-tab-sword--left{transform:rotate(-45deg)}#shop-screen .shop-tab-sword--right{transform:rotate(45deg)}}
+@media(prefers-reduced-motion:reduce){:is(#shop-screen,#inventory-screen) .shop-tab-sword-arm,:is(#shop-screen,#inventory-screen) .shop-tab-sword-spark{animation:none}:is(#shop-screen,#inventory-screen) .shop-tab-sword--left{transform:rotate(-45deg)}:is(#shop-screen,#inventory-screen) .shop-tab-sword--right{transform:rotate(45deg)}}
 .has-cannon-model .lc-body {visibility:hidden;}
 /* Shared artwork geometry: fixed palm, floating clockwise ring, central lightning. */
 :is(#shop-screen,#inventory-screen) .skill-orb-icon { position:relative; display:block; width:100%; height:100%; overflow:visible; container-type:size; }
@@ -9876,7 +9878,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 :is(#shop-screen,#inventory-screen) .skill-orb-icon .skill-orb-ring,
 :is(#shop-screen,#inventory-screen) .skill-orb-rim-light { clip-path:ellipse(35.3% 34.8% at 49.92% 46.29%); }
 /* Inventory: a separate outer contour leaves the ring's inner opening untouched. */
-#inventory-screen .inv-tab .skill-orb-turn::before { content:''; position:absolute; left:calc(14.62% - 1px); top:calc(11.49% - 1px); width:70.6%; height:69.6%; box-sizing:content-box; border:1px solid #3b3f46; border-radius:50%; background:none; z-index:1; pointer-events:none; }
+#inventory-screen :is(.inv-tab,.inventory-tab-icon) .skill-orb-turn::before { content:''; position:absolute; left:calc(14.62% - 1px); top:calc(11.49% - 1px); width:70.6%; height:69.6%; box-sizing:content-box; border:1px solid #3b3f46; border-radius:50%; background:none; z-index:1; pointer-events:none; }
 :is(#shop-screen,#inventory-screen) .skill-orb-rim-light { position:absolute; inset:0; z-index:2; pointer-events:none; border-radius:0; background:none; -webkit-mask:url('assets/skill-tab-v1519/ring-repaired-2x.png') center/contain no-repeat; mask:url('assets/skill-tab-v1519/ring-repaired-2x.png') center/contain no-repeat; mix-blend-mode:screen; opacity:.65; transform:none; filter:none; }
 :is(#shop-screen,#inventory-screen) .skill-orb-rim-light::before { content:''; position:absolute; left:49.9%; top:46.3%; width:220%; height:220%; translate:-50% -50%; transform-origin:50% 50%; background:conic-gradient(from 0deg,transparent 0 52%,rgba(255,226,150,.03) 60%,rgba(255,239,192,.14) 69%,rgba(255,247,221,.35) 75%,rgba(255,239,192,.14) 81%,rgba(255,226,150,.03) 90%,transparent 98% 100%); animation:skill-orb-rim-sweep 8s linear infinite; }
 :is(#shop-screen,#inventory-screen) .skill-orb-turn .skill-orb-rim-light::before { animation:none; }
@@ -10137,7 +10139,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #settings-screen.board-screen { box-shadow:0 0 0 3px #e7c77a, 0 6px 10px 2px rgba(120, 90, 30, 0.18); border-radius:22px; }
 /* V1637 C 사용자: 설정 창 테두리 = 메일함 팝업(shop-coin-choice-card)과 통일, 폰 가운데 */
 #settings-screen.board-screen { top:calc(50% - var(--sqh) / 2); box-shadow:none; border-radius:22px; }
-#settings-screen.st2-screen::before { border:7px solid #d6ad63; border-radius:22px; background:#fff5d9; box-shadow:inset 0 0 0 3px #f6dfaa, 0 7px 18px rgba(55,30,5,.3); }
+#settings-screen.st2-screen::before { border:var(--popup-gold-border); border-radius:var(--popup-gold-radius); background:#fff5d9; box-shadow:var(--popup-gold-shadow); }
 #game-screen:has(#settings-screen:not([hidden])) #more-menu { visibility:hidden; } /* 설정 창을 가운데로 옮기니 뒤의 더보기 판이 드러남 → 설정 열려 있을 때만 숨김 */
 /* V1637 C 사용자: 문의하기 창 = 설정 창과 같은 좌우·위아래 폭(설정 창 자리를 그대로 덮음) */
 #settings-screen .shop-coin-choice-dialog:has(.ct-popup-card) { padding:0!important; background:none!important; backdrop-filter:none!important; }
@@ -10218,3 +10220,276 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #quest-screen[hidden] .sr-cloud { animation-play-state:paused; }
 /* V1653 C 사용자: 퀘스트 간판·박스가 아래로 내려와 있음 → 화면 가운데 정렬 대신 위에 붙임(스코어처럼) */
 #quest-screen.qs-screen { align-items:center; justify-content:flex-start; padding-top:max(6px, env(safe-area-inset-top, 0px)); } /* 세로 배치 화면 — 좌우 가운데 유지, 위에 붙임(노치 없는 폰 기준 6px) */
+
+/* Inventory layout based on the approved desktop reference. */
+
+#inventory-screen.inventory-panel {
+  --inventory-edge: 3px;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: none;
+  z-index: 300;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 0;
+  background: #fffaf0;
+  display: grid;
+  grid-template: 48px minmax(0, min(56%, calc(91vw - var(--inventory-edge) * 1.82))) minmax(0, 1fr) / minmax(0, 1fr);
+  gap: 0;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  padding: var(--inventory-edge);
+}
+#inventory-screen.inventory-panel[hidden] { display: none; }
+#inventory-screen.inventory-panel::before,
+#inventory-screen.inventory-panel::after { content: none; }
+#inventory-screen.inventory-panel :is(.iw-stage, .ks-stage) { background: none; isolation: isolate; }
+#inventory-screen[data-tab="skill"] .ks-card-ico { position: relative; top: 8px; }
+#inventory-screen[data-tab="skill"] .ks-card-name { margin-top: 34px; }
+#inventory-screen[data-tab="skill"] .ks-card-desc { margin-top: 12px; }
+
+#inventory-screen.inventory-panel .iw-stage::before {
+  content: '';
+  position: absolute;
+  left: 101px;
+  top: 157px;
+  width: 564px;
+  height: 790px;
+  z-index: -1;
+  pointer-events: none;
+  border: 0 solid transparent;
+  border-image: url('assets/inventory/skill-v1403/case.webp') 112 fill / 80px stretch;
+}
+#inventory-screen.inventory-panel .iw-grade { top: 190px; transform: scale(.8); transform-origin: center top; }
+#inventory-screen.inventory-panel .iw-stage::after,
+#inventory-screen.inventory-panel .iw-stage > .inv-king-floor { top: 855px; height: 36px; }
+#inventory-screen.inventory-panel .iw-stage::after { left: 383px; }
+#inventory-screen.inventory-panel .iw-stage .iw-equip.inv-action-frame { left:167px; top:961.3px; width:432px; height:113.4px; --sr-edge:7.2px; }
+#inventory-screen.inventory-panel .iw-stat-title { left: 710px; }
+#inventory-screen.inventory-panel .iw-help { left: 1053px; }
+#inventory-screen.inventory-panel .iw-stage > .inventory-upgrade {
+  position: absolute;
+  left: 717px;
+  top: 961.3px;
+  width: 432px;
+  height: 113.4px;
+  min-height: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  --sr-edge: 7.2px;
+  --sr-radius: 999px;
+  font: 72px/1 'Jua', sans-serif;
+}
+#inventory-screen.inventory-panel .iw-stats {
+  left: 675px;
+  top: 355px;
+  width: 516px;
+  height: 592px;
+  display: grid;
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+#inventory-screen.inventory-panel .iw-stat-row:nth-child(n) {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  height: auto;
+  box-sizing: border-box;
+  background: none;
+  border: 0 solid transparent;
+  border-image: url('assets/inventory/skill-v1403/slotpanel.webp') 96 fill / 62px stretch;
+}
+#inventory-screen.inventory-panel .iw-stat-label,
+#inventory-screen.inventory-panel .iw-stat-value {
+  top: 50%;
+  transform: translateY(-50%);
+  height: 95px;
+}
+#inventory-screen.inventory-panel .iw-stat-label { left: 118px; width: 175px; }
+#inventory-screen.inventory-panel .iw-stat-value { left: 318px; width: 163px; }
+#inventory-screen.inventory-panel .iw-stat-value::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border: 0 solid transparent;
+  border-image: url('assets/inventory/skill-v1403/countbox.webp') 80 fill / 40px stretch;
+}
+#inventory-screen.inventory-panel .iw-stat-value { isolation: isolate; }
+#inventory-screen.inventory-panel .iw-stat-row::before {
+  content: '';
+  position: absolute;
+  left: 23px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 92px;
+  height: 92px;
+  background: var(--inventory-stat-icon) center / contain no-repeat;
+}
+#inventory-screen .iw-stat-row:nth-child(1) { --inventory-stat-icon: url('assets/inventory/ui-v1379/icon-eye-original.webp'); }
+#inventory-screen .iw-stat-row:nth-child(2) { --inventory-stat-icon: url('assets/inventory/ui-v1379/icon-impact-original.webp'); }
+#inventory-screen .iw-stat-row:nth-child(3) { --inventory-stat-icon: url('assets/inventory/ui-v1379/icon-shield-original.webp'); }
+#inventory-screen.inventory-panel :is(.ks-case, .ks-slotpanel, .ks-card) {
+  background: none;
+  border: 0 solid transparent;
+  border-image: var(--inventory-card-image) var(--inventory-card-slice) fill / var(--inventory-card-corner) stretch;
+}
+#inventory-screen.inventory-panel .ks-case { --inventory-card-image: url('assets/inventory/skill-v1403/case.webp'); --inventory-card-slice: 112; --inventory-card-corner: 80px; }
+#inventory-screen.inventory-panel .ks-slotpanel { --inventory-card-image: url('assets/inventory/skill-v1403/slotpanel.webp'); --inventory-card-slice: 96; --inventory-card-corner: 62px; }
+#inventory-screen.inventory-panel .ks-slotpanel .ks-slot-pill { left:32px; top:36px; width:310px; height:112px; transform:none; }
+#inventory-screen.inventory-panel .ks-slotpanel > .inv-effect-help { left:auto; right:32px; top:36px; width:112px; height:112px; }
+#inventory-screen[data-tab="skill"] .ks-slots { top:148px; bottom:36px; }
+#inventory-screen.inventory-panel .ks-card { --inventory-card-image: url('assets/inventory/skill-v1403/card.webp'); --inventory-card-slice: 100; --inventory-card-corner: 55px; }
+#inventory-screen.inventory-panel :is(.iw-name, .ks-name) { display: none; }
+#inventory-screen.inventory-panel .iw-stage .iw-name:not([hidden]) {
+  display: flex;
+  z-index: 0;
+  left: 181px;
+  top: 306px;
+  width: 404px;
+  height: 68px;
+  color: #65482f;
+  text-shadow: 0 2px 1px #fff3d6;
+}
+#inventory-screen.inventory-panel .iw-pages { z-index: 1; }
+#inventory-screen.inventory-panel .inv-cards-box {
+  grid-area: 2 / 1;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+}
+#inventory-screen .inventory-close {
+  position: static !important;
+  justify-self: center;
+}
+.inventory-topbar { grid-area: 1 / 1; display: grid; grid-template-columns: minmax(0, 1fr) 50px; align-items: center; gap: 6px; }
+.inventory-tabs { min-width: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.inventory-tabs button {
+  display: flex; justify-content: center; align-items: center;
+  box-sizing: border-box; min-width: 0; height: 44px; padding: 3px 4px;
+  --sr-edge: 4px; --sr-radius: 10px;
+  color: #102a5a;
+  font: inherit; font-size: clamp(11px, 3.4vw, 16px); font-weight: 800;
+}
+.inventory-tabs button[aria-pressed="false"] { --sr-face:linear-gradient(180deg,#e3f4ff,#aed7f6); --sr-rim:linear-gradient(180deg,#f4faff,#b6d8f4 24%,#75a7da 75%,#4279b3); --sr-highlight:#f4faff; --sr-outline:#4279b3; }
+#inventory-screen[hidden] .inventory-tab-icon * { animation-play-state: paused; }
+.inventory-owned {
+  grid-area: 3 / 1;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0;
+  background: #fff5d9;
+  color: #254269;
+}
+.inventory-owned-head { flex: none; display: flex; align-items: center; gap: 6px; padding: 0 8px; margin-bottom: 7px; }
+.inventory-owned-head h2 { flex: 1; display: flex; align-items: center; gap: 5px; margin: 0; font-size: clamp(13px, 4vw, 19px); }
+.inventory-owned-head h2 img { width: 23px; height: 23px; object-fit: contain; }
+.inventory-owned-head output { min-width: 27px; padding: 3px 5px; text-align: center; border-radius: 10px; background: #e0eafa; font-weight: 800; }
+.inventory-upgrade { min-height: 36px; padding: 4px 10px; --sr-edge:4px; --sr-radius:10px; font: inherit; font-weight: 800; }
+.inventory-upgrade[hidden] { display: none; }
+.inventory-upgrade:disabled { opacity: .55; }
+.inventory-grid { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); grid-auto-rows: minmax(48px, 1fr); gap: 5px; }
+.inventory-cell {
+  position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center;
+  min-width: 0; min-height: clamp(48px, 15vw, 78px); padding: 4px 2px; gap: 2px;
+  border: 1px solid #afbdd2; border-radius: 9px; color: #102a5a; background: linear-gradient(#f8fbff,#e2e9f3);
+  font: inherit; font-size: clamp(9px,2.6vw,13px); font-weight: 800; line-height: 1.15; text-align: center; overflow-wrap: anywhere;
+}
+.inventory-cell[aria-pressed="true"] { border: 2px solid #ecad24; background: #fff1b9; padding: 3px 1px; }
+.inventory-cell.is-equipped { background: linear-gradient(#e6ffe9, #aee2bc); border-color: #3e9c5d; }
+.inventory-cell.is-equipped[aria-pressed="true"] { border-color: #ecad24; }
+.inventory-cell img { flex: 1 1 0; min-height: 0; width: 80%; height: 80%; max-height: 80%; object-fit: contain; }
+#inventory-screen[data-tab="weapon"] .inventory-cell img { width:72%; height:72%; max-height:72%; }
+.inventory-item-name { flex: none; box-sizing: border-box; max-width: 100%; width: 100%; padding: 0 2px; font-size: 20px; line-height: 1.05; white-space: normal; overflow-wrap: anywhere; }
+.inventory-cell small { position: absolute; top: 2px; right: 2px; box-sizing: border-box; max-width: calc(100% - 4px); padding: 0; color: #5b2ca0; font-size: 23px; font-weight: 900; line-height: 1; white-space: nowrap; overflow: hidden; }
+.inventory-slot { color: #8291aa; font-size: clamp(21px,6vw,32px); }
+
+/* Inventory palette follows the score screen's cream, gold and pastel colors. */
+#inventory-screen.inventory-panel .iw-page::before { display:none; }
+#inventory-screen.inventory-panel .iw-model-page .shop-model-canvas,
+#inventory-screen.inventory-panel .iw-page:not(.ks-wpage) .inv-thumb--pair > img { filter:none; }
+#inventory-screen.inventory-panel { color:#6b4426; }
+#inventory-screen .inventory-owned { background:#fff5d9; color:#6b4426; }
+#inventory-screen :is(.ks-card-name,.ks-card-desc,.cs-effect-txt,.cs-acquire,.iw-stat-label,.iw-stat-value) { color:#6b4426; }
+#inventory-screen .iw-stage .iw-name:not([hidden]) { color:#6b4426; }
+#inventory-screen .iw-stat-value::before { filter:saturate(.65) brightness(1.06); }
+#inventory-screen .inv-action-frame {
+  color:#fffaf0;
+  --sr-face:linear-gradient(180deg,#a6d8f7,#74b9ec 46%,#4f9bd8);
+  --sr-rim:linear-gradient(180deg,#e6f5ff,#acd9f7 24%,#4488c6 75%,#2f6ca5);
+  --sr-highlight:#eef8ff;
+  --sr-outline:#2f6ca5;
+}
+#inventory-screen :is(.iw-equip-label,.ks-equip span) { color:inherit; text-shadow:0 2px 1px #4d6f9c; }
+#inventory-screen .inv-title-frame::before { filter:saturate(.65) brightness(1.12); }
+#inventory-screen :is(.iw-help,.inv-effect-help) { filter:saturate(.65) brightness(1.08); }
+#inventory-screen .inventory-tabs button[aria-pressed="false"] {
+  --sr-face:linear-gradient(180deg,#d9ebfb,#b3d3f1);
+  --sr-rim:linear-gradient(180deg,#f2f9ff,#a8c9ea 24%,#6f9ccc 75%,#557fae);
+  --sr-highlight:#f4faff;
+  --sr-outline:#557fae;
+}
+#inventory-screen :is(.inventory-upgrade,.inventory-tabs button[aria-pressed="true"]) {
+  color:#6b4426;
+  --sr-face:linear-gradient(180deg,#fff3cf,#f1dca6 46%,#dcbd7a);
+  --sr-rim:linear-gradient(180deg,#fff6dc,#e9cf8f 24%,#b88d45 75%,#8a6428);
+  --sr-highlight:#fff8e6;
+  --sr-outline:#7a5520;
+}
+#inventory-screen.inventory-panel .inv-action-frame.is-on {
+  filter:none;
+  --sr-face:linear-gradient(180deg,#bfe4ba,#91c998 46%,#68aa79);
+  --sr-rim:linear-gradient(180deg,#e8f5dd,#c5e5b8 24%,#60966b 75%,#47764f);
+  --sr-highlight:#f0f8e7;
+  --sr-outline:#47764f;
+}
+#inventory-screen .inventory-cell { color:#6b4426; border-color:#d6ad63; background:linear-gradient(180deg,#fffaf0,#fff2da); }
+#inventory-screen .inventory-cell[aria-pressed="true"] { border-color:#b8812f; background:linear-gradient(180deg,#fff3cf,#f5e1bb); }
+#inventory-screen .inventory-cell.is-equipped { border-color:#719d70; background:linear-gradient(180deg,#eaf4db,#c5dfb8); }
+#inventory-screen .inventory-cell.is-equipped[aria-pressed="true"] { border-color:#b8812f; }
+#inventory-screen .inventory-cell small { color:#8a6428; }
+#inventory-screen .inventory-slot { color:#c6ad82; }
+
+/* Workshop palette: edited raster art, original layout and animation geometry. */
+#workshop-screen.ws-screen {
+  background:#fff5d9 url('assets/workshop/tone-v1684/unified-bg.webp') center / cover no-repeat;
+  color:#6b4426;
+}
+#workshop-screen .ws-stage-img { border-image-source:url('assets/workshop/tone-v1684/unified-stage.webp'); }
+#workshop-screen .ws-panel::before { border-image-source:url('assets/workshop/tone-v1684/unified-panel.webp'); }
+#workshop-screen .ws-pcard { background-image:url('assets/workshop/tone-v1684/unified-card.webp'); }
+#workshop-screen :is(.ws-sign b,.ws-sign small,.ws-pick-sign b,.ws-lbl,.ws-name,.ws-matn,.ws-row,.ws-row b,.ws-pick-name,.ws-pick-n) { color:#6b4426; -webkit-text-stroke:0; text-shadow:none; }
+#workshop-screen .ws-coins { background:linear-gradient(#fffaf0,#f5e1bb); border-radius:999px; box-shadow:inset 0 0 0 1px #d6ad63; color:#6b4426; }
+#workshop-screen .ws-tab {
+  color:#4d6f9c; -webkit-text-stroke:0;
+  --sr-face:linear-gradient(#d9ebfb,#b3d3f1);
+  --sr-rim:linear-gradient(#f2f9ff,#a8c9ea 24%,#6f9ccc 75%,#557fae);
+  --sr-highlight:#f4faff; --sr-outline:#557fae;
+  box-shadow:0 2px 0 #7393bd;
+}
+#workshop-screen :is(.ws-tab.is-on,.ws-action-frame) {
+  color:#6b4426;
+  --sr-face:linear-gradient(#fff0b8,#ffe18b 46%,#f4cb62);
+  --sr-rim:linear-gradient(#fff8da,#ffe493 24%,#dcaf4e 75%,#b8812f);
+  --sr-highlight:#fffaf0; --sr-outline:#b8812f;
+}
+#workshop-screen .ws-tab.is-on { box-shadow:0 2px 0 #c89a4f; }
+#workshop-screen .ws-pcard.is-on { box-shadow:0 0 0 3px #b8812f; }
+#workshop-screen .ws-notice { color:#6b4426; }
+#workshop-screen .ws-notice::before { border-image-source:url('assets/workshop/tone-v1684/notice-frame.svg'); }
+#workshop-screen .ws-material-effect { color:#6b4426; text-shadow:0 1px 0 #fffaf0; }
+#workshop-screen :is(.ws-goose,.ws-fx-goose) { filter:url('#workshop-pastel-gold'); }
+#workshop-screen :is(.ws-new-base,.ws-new-front,.ws-new-gem) { filter:url('#workshop-pastel-stand'); }
+#workshop-screen :is(.ws-new-egg img,.ws-new-shard) { filter:url('#workshop-pastel-gold'); }
+#workshop-screen .ws-fx { background:transparent; }
+#workshop-screen :is(.ws-res-title,.ws-res-sub,.ws-res-effect) { color:#6b4426; -webkit-text-stroke:0; text-shadow:0 1px 0 #fffaf0; }
+#workshop-screen .ws-result.is-ng .ws-res-title { color:#9c6861; }
+#workshop-screen .ws-item--r.is-unsel::after { color:#b8812f; }
+@media (orientation: landscape) and (min-width: 560px) {
+  .inventory-cell { min-height: clamp(44px, 15dvh, 65px); }
+}

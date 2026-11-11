@@ -10,8 +10,6 @@
     { id: 'mole', action: 'lightMode', labelKey: 'mole.pad.gameMole', x: 0, z: -9, ...B, body: 3.2 },
     { id: 'rhythm', action: 'rhythm', labelKey: 'mole.pad.gameRhythm', x: 0, z: 9, ...B, body: 2.8 }, // 해변 오두막+클럽 폭 5.6
     { id: 'shop', action: 'shop', labelKey: 'mole.more.shop', x: -7, z: -5, ...B },
-    { id: 'workshop', action: 'locker', labelKey: 'mole.pad.lblLocker', x: -9, z: 0, ...B },
-    { id: 'items', action: 'inventory', labelKey: 'mole.pad.lblInventory', x: -7, z: 5, ...B },
     /* V1650 C 사용자: 스코어 탑·선물상자·퀘스트 판 → 게시판 하나(스코어 탑 자리). 칸을 누르면 그 화면, 닿아서 발바닥 = 스코어 */
     { id: 'board', action: 'score', labelKey: 'mole.pad.lblScore', x: 7, z: -5, ...B, body: 2.0, noSign: true }
   ].map((s) => Object.assign(s, { faceYaw: Math.atan2(-s.x, -s.z) })); // 섬 중심을 바라봄

@@ -56,6 +56,13 @@
     const mailBtn = el('button', 'h3-mail', wrap); mailBtn.type = 'button'; mailBtn.setAttribute('aria-label', 'mail');
     const mimg = el('img', '', mailBtn); mimg.src = 'assets/mailbox/ic-mail-hud.png'; /* 광장 버튼 = 기존 편지 그림(V1637 C 사용자) */ mimg.alt = ''; const mailDot = el('i', 'h3-mail-dot', mailBtn); mailDot.hidden = true;
     mailBtn.addEventListener('click', () => { if (opts.onMail) opts.onMail(); });
+    const inventoryBtn = el('button', 'h3-mail h3-inventory', wrap);
+    inventoryBtn.type = 'button';
+    inventoryBtn.setAttribute('aria-label', 'Inventory');
+    inventoryBtn.setAttribute('data-i18n-aria-label', 'mole.inv.title');
+    const inventoryIcon = el('img', '', inventoryBtn);
+    inventoryIcon.src = 'assets/inventory/bag-heart-30.png'; inventoryIcon.alt = '';
+    inventoryBtn.addEventListener('click', () => opts.onInventory());
     /* CSS 메일 팝업 */
     const mailPop = el('div', 'shop-coin-choice-dialog h3-mailpop', wrap); mailPop.hidden = true;
     const mailBox = el('div', 'shop-coin-choice-card h3-mailbox', mailPop), mailArt = el('img', 'shop-coin-choice-art', mailBox); mailArt.src = 'assets/mailbox/ic-mail.png'; mailArt.alt = '';
@@ -136,7 +143,7 @@
     return {
       canvas, input,
       show(on) { wrap.hidden = !on; host.classList.toggle('home3d-on', !!on); if (!on) resetAll(); },
-      setFeature(on, label) { close.hidden = !on; close.textContent = label || ''; for (const e of [hud, stick, jumpBtn, mailBtn]) e.hidden = !!on; if (on) for (const k in dots) dots[k].hidden = true; },
+      setFeature(on, label) { close.hidden = !on; close.textContent = label || ''; for (const e of [hud, stick, jumpBtn, mailBtn, inventoryBtn]) e.hidden = !!on; if (on) for (const k in dots) dots[k].hidden = true; },
       setJumpMode(label) { jumpBtn.classList.toggle('is-enter', !!label); if (enterLbl.textContent !== (label || '')) enterLbl.textContent = label || ''; },
       setEnabled(on) { input.setEnabled(on); drawKnob(); },
       setLoading(text) { loading.hidden = !text; loading.textContent = text || ''; },

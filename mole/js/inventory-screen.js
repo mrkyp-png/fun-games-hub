@@ -36,28 +36,20 @@
   var SKILL_TAB_ICON = '<span class="skill-orb-icon" aria-hidden="true"><span class="skill-orb-art"><span class="skill-orb-hand-align"><img class="skill-orb-hand" src="assets/skill-tab-layers-20261030/hand-2x.png" alt=""></span><span class="skill-orb-float"><span class="skill-orb-turn"><img class="skill-orb-ring" src="assets/skill-tab-v1519/ring-repaired-2x.png" alt=""><i class="skill-orb-rim-light"></i></span><span class="skill-orb-sprite"></span></span></span></span>';
   // 코스튬 아이콘 = 상점과 동일한 이모지로 통일(사용자 지정: "아이템에서도 코스튬 이모지 변경").
   var COSTUME_TAB_ICON = '<img src="assets/ui-approved-v1509/shop-tab-costume.png" alt="">';
-  var PHOTO_TAB_ICON =
-    '<svg viewBox="0 0 24 24">' +
-    '<defs><linearGradient id="ivPhBody" x1="0" y1="0" x2="0" y2="1">' +
-      '<stop offset="0" stop-color="#8a8a92"/><stop offset="1" stop-color="#4a4a52"/>' +
-    '</linearGradient></defs>' +
-    '<rect x="3" y="7" width="18" height="13" rx="2" fill="url(#ivPhBody)"/>' +
-    '<circle cx="12" cy="13.5" r="3.4" fill="#dfe8ff" stroke="#2f6fed" stroke-width="1.2"/>' +
-    '<path d="M8.5 7 10 4.5h4L15.5 7" fill="#6a6a72"/>' +
-    '</svg>';
   // banner = 탭마다 다른 안내문구(사용자 지정: "각 선택창마다 글자가 바뀌어야 할듯" — "어떤
   // 무기를..."가 무기 탭에만 맞는 문구였던 것 지적받음).
   var TABS = [
     { id: 'weapon', i18n: 'mole.inv.weapon', icon: WEAPON_TAB_ICON, banner: 'mole.inv.bannerWeapon' },
     { id: 'skill', i18n: 'mole.shop.tabSkill', icon: SKILL_TAB_ICON, banner: 'mole.inv.bannerSkill' },
-    { id: 'costume', i18n: 'mole.shop.tabCostume', icon: COSTUME_TAB_ICON, banner: 'mole.inv.bannerCostume' },
-    { id: 'photo', i18n: 'mole.inv.tabPhoto', icon: PHOTO_TAB_ICON, banner: 'mole.inv.bannerPhoto' }
+    { id: 'costume', i18n: 'mole.shop.tabCostume', icon: COSTUME_TAB_ICON, banner: 'mole.inv.bannerCostume' }
   ];
 
   function create(opts) {
     var el = opts.root;
     var body = el.querySelector('[data-inv-body]');
     var tabsEl = el.querySelector('[data-inv-tabs]');
+    var ownedGrid = el.querySelector('[data-inventory-grid]');
+    var upgrade = el.querySelector('[data-inventory-upgrade]');
     var bannerTxtEl = el.querySelector('[data-inv-banner-txt]');
     var bannerEl = el.querySelector('.inv-banner');
     var cosLogoEl = el.querySelector('.inv-cos-logo');
@@ -77,10 +69,6 @@
     // 페이지(◀ N/M ▶)는 독립적으로 유지.
     var activePage = 0;
     var passivePage = 0;
-    // 사진관 탭 상태 — 현재 보고 있는 코스튬/얼굴형, 전체 컬렉션·상세 오버레이 열림 여부(§20).
-    var photoCostumeId = 'blue_bears';
-    var photoFace = 'round';
-
     // 상점 카드줄과 동일한 점+화살표 페이징(사용자 지정: "상점 구조와 동일하되 한페이지 한장씩").
     // ⚠️ 처음엔 scrollBy(상대량) 방식이었는데, 카드 실측폭(getBoundingClientRect)과 grid의
     // 실제 clientWidth 가 서브픽셀 단위로 살짝 달라 페이지를 넘길 때마다 오차가 누적되어(사용자
@@ -90,10 +78,105 @@
     var nameTimer = null;
     var copyTimer = null;
     var weaponHelp = null;
+    var ownedGridKey = '';
+    function enhancementTarget() {
+      if (active === 'weapon') return WEAPONS[pageIdx] && WEAPONS[pageIdx].id;
+      if (active === 'costume') return costumeSelectedId;
+    }
+    function selectOwned(item) {
+      if (active === 'weapon') {
+        goTo(WEAPONS.findIndex(function (w) { return w.id === item.id; }));
+      } else if (active === 'costume') {
+        costumeDrop = costumeSelectedId !== item.id;
+        costumeSelectedId = item.id;
+        renderCostumes();
+      } else {
+        var card = body.querySelector('[data-ks-equip="' + item.id + '"]');
+        var slot = body.querySelector('[data-ks-slot="' + item.id + '"]');
+        if (slot && !slot.disabled) slot.focus();
+        else if (card && !card.disabled) card.focus();
+      }
+    }
+    function renderOwnedGrid() {
+      var target = enhancementTarget();
+      upgrade.hidden = active === 'skill';
+      upgrade.disabled = !target || !MG.Workshop.canEnhance(active, target) || !!opts.gameInProgress?.();
+      var entries;
+      if (active === 'weapon') {
+        var stills = { cannon: 'assets/weapon-stills-v1509/cannon-front.png', goldhammer: 'assets/weapon-stills-v1509/goldhammer-15.png' };
+        entries = WEAPONS.filter(function (w) { return MG.ItemInventory.owns('weapon', w.id); }).map(function (w) {
+          return { id: w.id, name: nameOf(w), art: stills[w.id] || w.thumb, level: MG.Workshop.weaponLevel(w.id), equipped: equipped() === w.id };
+        });
+      } else if (active === 'costume') {
+        entries = MG.CostumeTeams.teams().filter(function (team) { return MG.CostumeTeams.owns(team.id); }).map(function (team) {
+          return { id: team.id, name: I18N.lang === 'en' ? team.nameEn : team.nameKo, art: 'assets/costume/outfit-' + team.id + '.png', level: MG.CostumeTeams.enhanceLevel(team.id), equipped: MG.CostumeTeams.equippedId() === team.id };
+        });
+      } else {
+        var weapon = WEAPONS[pageIdx] && WEAPONS[pageIdx].id;
+        var equippedSkills = MG.Skills.loadoutFor(weapon).activeSkills;
+        entries = MG.Skills.SKILLS.map(function (skill) {
+          return { id: skill.id, name: I18N.lang === 'en' ? skill.nameEn : skill.nameKo, art: skill.icon, quantity: MG.Skills.getQuantity(skill.id), equipped: equippedSkills.includes(skill.id) };
+        }).filter(function (skill) { return skill.quantity || skill.equipped; });
+      }
+      var key = JSON.stringify([active, target, entries]);
+      if (key === ownedGridKey) return;
+      ownedGridKey = key;
+      ownedGrid.replaceChildren();
+      entries.forEach(function (item) {
+        var cell = document.createElement('button');
+        cell.type = 'button'; cell.className = 'inventory-cell';
+        cell.classList.toggle('is-equipped', item.equipped);
+        cell.setAttribute('aria-label', item.name + (item.equipped ? ' · ' + T('mole.inv.equipped') : ''));
+        if (active !== 'skill') cell.setAttribute('aria-pressed', String(target === item.id));
+        var art = document.createElement('img'); art.src = item.art; art.alt = '';
+        if (active === 'weapon' && item.level > 0) {
+          art.classList.add('has-enh');
+          art.style.setProperty('--enh', MG.Workshop.GLOW[item.level]);
+        }
+        var title = document.createElement('span'); title.className = 'inventory-item-name'; title.textContent = item.name;
+        cell.append(art, title);
+        if (item.level > 0) {
+          var tag = document.createElement('small'); tag.className = 'inventory-enhance-level'; tag.textContent = '+' + item.level; cell.appendChild(tag);
+        }
+        if (item.quantity != null) {
+          var quantity = document.createElement('small'); quantity.className = 'inventory-quantity'; quantity.textContent = '×' + item.quantity; cell.appendChild(quantity);
+        }
+        cell.addEventListener('click', function () { selectOwned(item); });
+        ownedGrid.appendChild(cell);
+      });
+      for (var i = entries.length; i < 12; i++) {
+        var empty = document.createElement('span'); empty.className = 'inventory-cell inventory-slot'; empty.textContent = '+';
+        empty.setAttribute('aria-hidden', 'true'); ownedGrid.appendChild(empty);
+      }
+      requestAnimationFrame(fitOwnedLabels);
+    }
+    function fitOwnedLabels() {
+      var names = Array.from(ownedGrid.querySelectorAll('.inventory-item-name'));
+      var sample = names.find(function (label) { return label.clientWidth > 0; });
+      if (!sample) return;
+      var style = getComputedStyle(sample);
+      var context = document.createElement('canvas').getContext('2d');
+      var reference = nameOf(WEAPONS.find(function (weapon) { return weapon.id === 'goldhammer'; }));
+      var fontSize = 20, room = sample.clientWidth - 4;
+      context.font = style.fontWeight + ' ' + fontSize + 'px ' + style.fontFamily;
+      while (fontSize > 10 && context.measureText(reference).width > room) {
+        context.font = style.fontWeight + ' ' + (--fontSize) + 'px ' + style.fontFamily;
+      }
+      names.forEach(function (label) { label.style.fontSize = fontSize + 'px'; });
+      ownedGrid.querySelectorAll('.inventory-cell small').forEach(function (label) {
+        if (!label.clientWidth) return;
+        var size = 23;
+        label.style.fontSize = size + 'px';
+        while (size > 10 && label.scrollWidth > label.clientWidth) label.style.fontSize = (--size) + 'px';
+      });
+    }
+    upgrade.addEventListener('click', function () {
+      if (!upgrade.disabled) opts.onUpgrade(active, enhancementTarget());
+    });
     function closeWeaponHelp() { if (weaponHelp) { weaponHelp.close(); weaponHelp.remove(); weaponHelp = null; } }
     function fitWeaponName() {
-      wSignEl.style.fontSize = '80px';
-      for (var size = 80; size > 32 && (wSignEl.scrollWidth > wSignEl.clientWidth || wSignEl.scrollHeight > wSignEl.clientHeight); size--) wSignEl.style.fontSize = (size - 1) + 'px';
+      wSignEl.style.fontSize = '56px';
+      for (var size = 56; size > 32 && (wSignEl.scrollWidth > wSignEl.clientWidth || wSignEl.scrollHeight > wSignEl.clientHeight); size--) wSignEl.style.fontSize = (size - 1) + 'px';
     }
     function grid() { return body.querySelector('.iw-pages, .inv-grid'); }
     function goTo(idx) {
@@ -101,7 +184,10 @@
       var n = g.children.length;
       pageIdx = Math.max(0, Math.min(idx, n - 1));
       var target = g.children[pageIdx];
-      if (target) g.scrollTo({ left: target.offsetLeft, behavior: 'smooth' });
+      if (target) {
+        g.scrollTo({ left: target.offsetLeft, behavior: 'smooth' });
+        syncDots();
+      }
     }
     prevBtn.addEventListener('click', function () { goTo(pageIdx - 1); });
     nextBtn.addEventListener('click', function () { goTo(pageIdx + 1); });
@@ -110,6 +196,7 @@
         d.classList.toggle('inv-dot--on', i === pageIdx);
       });
       syncWeaponCopy();
+      renderOwnedGrid();
       // v855(사용자 지정): 바깥 창 색 = 보고 있는 무기 등급 색
       var box = el.querySelector('.inv-cards-box');
       if (box) box.setAttribute('data-rar', active === 'weapon' && WEAPONS[pageIdx] ? WEAPONS[pageIdx].rarity : '');
@@ -256,6 +343,7 @@
         page.classList.toggle('iw-page--on', page.dataset.weapon === weapon.id);
       });
       syncWeaponCopy(true);
+      renderOwnedGrid();
       return true;
     }
     function renderWeapons() {
@@ -280,6 +368,7 @@
       copy.className = 'iw-copy-layer';
       copy.innerHTML = '<div class="iw-grade"><span class="iw-grade-text"></span></div><button type="button" class="inv-equip iw-equip ws-action-frame inv-action-frame"><span class="iw-equip-label"></span></button><span class="iw-stat-title ws-action-frame inv-title-frame"></span><button type="button" class="iw-help" aria-expanded="false" aria-haspopup="dialog"></button><div class="iw-stats">' + [0,1,2].map(function () { return '<div class="iw-stat-row"><span class="iw-stat-label"></span><span class="iw-stat-value"></span></div>'; }).join('') + '</div>';
       stage.appendChild(copy);
+      stage.appendChild(upgrade);
       copy.querySelector('.iw-help').addEventListener('click', function () { openWeaponHelp(WEAPONS[pageIdx], this); });
       copy.querySelector('.iw-equip').addEventListener('click', function () {
         if (copy.inert || (opts.gameInProgress && opts.gameInProgress())) return;
@@ -294,7 +383,7 @@
     function compactWeaponStat(w, row) {
       var en = I18N.lang === 'en';
       if (w.stats[row][0] === '-') return en ? 'Basic' : '기본';
-      if (row === 0) return w.id === 'alipunch' ? '16 → 14' : '16 → 15';
+      if (row === 0) return w.id === 'alipunch' ? '16→14' : '16→15';
       if (row === 1) {
         var base = w.id === 'cannon' ? 10 : (w.id === 'goldhammer' ? 15 : (w.id === 'alipunch' ? 20 : 0));
         var level = MG.Workshop ? MG.Workshop.weaponLevel(w.id) : 0;
@@ -386,9 +475,10 @@
       if (!unit || !right) return;
       var weaponScale = parseFloat(unit.style.getPropertyValue('--iw-weapon-scale')) || 1;
       var inset = Math.max(8, 2 / Math.max(stageScale, .01));
-      // Measured from this glove's actual alpha over every turn and punch pose.
-      page.style.setProperty('--kp-left', (60 - (page.clientWidth / 2 - inset) / weaponScale - 6.084886) + 'px');
-      page.style.setProperty('--kp-right', (60 + (page.clientWidth / 2 - inset) / weaponScale - 55.12) + 'px');
+      // Mirror the two idle gloves around the display center and retain room for the cross.
+      var halfGap = Math.max(0, (page.clientWidth / 2 - inset) / (weaponScale / .9) - 29.12);
+      page.style.setProperty('--kp-left', (34 - halfGap) + 'px');
+      page.style.setProperty('--kp-right', (34 + halfGap) + 'px');
       var grade = body.querySelector('.iw-grade');
       var rect = unit.getBoundingClientRect(), displayScale = rect.height / Math.max(1, unit.clientHeight);
       if (!grade || !displayScale) return;
@@ -399,18 +489,22 @@
       // Lower the fully extended cross slightly: 95% of the doubled upward stroke.
       page.style.setProperty('--kp-straight-distance', (1.9 * Math.max(0, (strikeTop - gradeBottom - clearance) / displayScale)).toFixed(2) + 'px');
     }
-    function fitLefts() {
-      if (active !== 'weapon') return;
-      var mount = body.querySelector('.iw-mount');
-      if (!mount || !body.clientWidth || !body.clientHeight) return;
-      // One complete 1278 × 1230 image. Never repeat or stretch its interior.
-      // V1387 C 사용자: 액자(그림 안 x2~1274, y8~1210, 바깥 하늘색은 투명)를 칸 안에 전부 들어가게 맞춤.
-      var scale = Math.min(body.clientWidth / (1274 - 2), body.clientHeight / (1210 - 8)); // 사용자: 큰 테두리 안에 액자 전체가 들어가게(안 잘림)
+    function fitStage(mount, scaleProperty, bounds) {
+      if (!mount || !body.clientWidth || !body.clientHeight) return 0;
+      // Fit the visible cards and controls, excluding the removed frame and title.
+      var [left, right, top, bottom] = bounds;
+      var scale = Math.min(body.clientWidth / (right - left), body.clientHeight / (bottom - top));
       mount.style.width = (1278 * scale) + 'px';
       mount.style.height = (1230 * scale) + 'px';
-      mount.style.marginLeft = ((639 - (2 + 1274) / 2) * scale) + 'px';
-      mount.style.marginTop = ((615 - (8 + 1210) / 2) * scale) + 'px';
-      mount.style.setProperty('--iw-scale', scale);
+      mount.style.marginLeft = ((639 - (left + right) / 2) * scale) + 'px';
+      mount.style.marginTop = (body.clientHeight / 2 + (615 - bottom) * scale) + 'px';
+      mount.style.setProperty(scaleProperty, scale);
+      return scale;
+    }
+    function fitLefts() {
+      if (active !== 'weapon') return;
+      var scale = fitStage(body.querySelector('.iw-mount'), '--iw-scale', [101, 1191, 149, 1114]);
+      if (!scale) return;
       fitWeaponName();
       // Visible alpha bounds in the canonical 120 x 88 animation coordinate system.
       var art = WEAPON_ART;
@@ -418,7 +512,7 @@
         var a = art[page.dataset.weapon];
         var unit = page.querySelector('.iw-preview-unit');
         if (!a || !unit || !page.isConnected) return;
-        var sc = Math.min(440/a[0], 490/a[1]) * ({hammer:.9,cannon:1.15*.9,goldhammer:.9}[page.dataset.weapon]||1);
+        var sc = .9 * Math.min(440/a[0], 490/a[1]) * ({hammer:.9,cannon:1.15*.9,goldhammer:.9}[page.dataset.weapon]||1);
         unit.style.setProperty('--iw-weapon-scale', sc);
         page.style.setProperty('--iw-weapon-scale', sc); // 뒤 빛이 무기와 같은 거리로 움직이게
         var legacyThumb = page.querySelector('.inv-thumb');
@@ -431,7 +525,7 @@
       body.querySelectorAll('.iw-stat-title,.iw-stat-label,.iw-stat-value,.iw-equip,.iw-grade').forEach(function (label) {
         var grade=label.classList.contains('iw-grade');
         var statLabel=label.classList.contains('iw-stat-label');
-        var size = label.classList.contains('iw-equip') ? 80 : (label.classList.contains('iw-stat-title') ? 64 : (grade ? 120 : (statLabel ? 44 : 50)));
+        var size = label.classList.contains('iw-equip') ? 72 : (label.classList.contains('iw-stat-title') ? 64 : (grade ? 120 : (statLabel ? 44 : 50)));
         label.style.fontSize = size + 'px';
         if (grade) {
           // V1397 C: 명판 장식(::before)이 칸 밖으로 나가 scrollWidth 로 재면 글자가 최소까지 줄던 문제 — 글자 자체를 판 안쪽 칸(--tw/--th)에 맞춤.
@@ -441,9 +535,6 @@
         while (size > 30 && (label.scrollWidth > label.clientWidth || label.scrollHeight > label.clientHeight)) label.style.fontSize = (--size) + 'px';
       });
     }
-    root.addEventListener('resize', function () { if (active === 'weapon') fitLefts(); });
-    // V1398 C: 폰 오류창 'ResizeObserver loop completed' — 크기 맞춤을 다음 프레임으로 미뤄 관찰 중 레이아웃 변경을 피함
-    if (root.ResizeObserver) new root.ResizeObserver(function () { if (active === 'weapon') requestAnimationFrame(fitLefts); }).observe(body);
 
     // 코스튬 탭 — 5개 팀 카드(가로 스크롤) + 선택 코스튬 상세 + 획득 방법(§1~§58).
     // 무기 탭과 달리 페이지네이션(점/화살표) 없이 카드 줄만 가로 스크롤한다.
@@ -513,6 +604,7 @@
       });
       startCostumeBlink();
       fitSkillStage();
+      renderOwnedGrid();
     }
     // 2~4초마다 무작위 캐릭터 하나가 0.1초 깜빡(가끔 두 번 연속). 코스튬 탭을 떠나면 멈춤.
     var blinkTimer = null;
@@ -559,7 +651,6 @@
         var on = lo.indexOf(sk.id) > -1;
         return '<div class="ks-card"><img class="ks-card-ico" alt="" src="' + sk.icon + '">' +
           '<b class="ks-card-name"></b><span class="ks-card-desc"></span>' +
-          '<span class="ks-count ws-action-frame inv-count-frame"><span class="inv-count-content"><i></i><b>' + MG.Skills.getQuantity(sk.id) + '</b></span></span>' +
           '<button type="button" class="ks-equip ks-press ws-action-frame inv-action-frame' + (on ? ' is-on' : '') + '" data-ks-equip="' + sk.id + '"><span></span></button></div>';
       }).join('');
       body.innerHTML = '<div class="ks-mount"><div class="ks-stage" data-slots="' + nSlots + '">' +
@@ -575,7 +666,6 @@
         var sk = MG.Skills.SKILLS[k];
         c.querySelector('.ks-card-name').textContent = en ? sk.nameEn : sk.nameKo;
         c.querySelector('.ks-card-desc').textContent = en ? sk.descEn : sk.descKo;
-        c.querySelector('.ks-count i').textContent = en ? 'Own' : '보유';
         var button = c.querySelector('.ks-equip');
         var pending = !MG.Skills.available(sk.id);
         button.disabled = pending || locked || !nSlots || !MG.ItemInventory.owns('weapon', weaponId) || MG.Skills.getQuantity(sk.id) <= 0;
@@ -593,177 +683,56 @@
         ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { b.addEventListener(ev, function () { b.classList.remove('is-down'); }); });
       });
       fitSkillStage();
+      renderOwnedGrid();
     }
     function fitSkillStage() {
       var mount = body.querySelector('.ks-mount');
-      if (!mount || !body.clientWidth || !body.clientHeight) return;
-      var scale = Math.min(body.clientWidth / (1274 - 2), body.clientHeight / (1210 - 8)); // 무기 화면과 같은 배율·위치
-      mount.style.width = (1278 * scale) + 'px'; mount.style.height = (1230 * scale) + 'px';
-      mount.style.marginLeft = ((639 - (2 + 1274) / 2) * scale) + 'px'; mount.style.marginTop = ((615 - (8 + 1210) / 2) * scale) + 'px';
-      mount.style.setProperty('--ks-scale', scale);
+      if (!fitStage(mount, '--ks-scale', [118, 1160, 166, 1108])) return;
       var ctx = document.createElement('canvas').getContext('2d');
       mount.querySelectorAll('.ks-card-desc').forEach(function (label) {
         label.style.fontSize = '30px'; ctx.font = getComputedStyle(label).font;
         var textWidth = ctx.measureText(label.textContent).width;
         label.style.fontSize = Math.min(30, 30 * label.clientWidth / Math.max(1, textWidth)) + 'px';
       });
-      mount.querySelectorAll('.cs-stage:not(.ph3-stage) .cs-effect-txt').forEach(function (label) {
+      mount.querySelectorAll('.cs-stage .cs-effect-txt').forEach(function (label) {
         label.style.fontSize = '37px'; ctx.font = getComputedStyle(label).font;
         var textWidth = ctx.measureText(label.textContent).width;
         label.style.fontSize = Math.min(37, 37 * Math.max(1, label.clientWidth - 10) / Math.max(1, textWidth)) + 'px';
       });
-      mount.querySelectorAll('.ks-slot-pill.inv-title-frame,.ph3-team.inv-title-frame').forEach(function (label) {
-        var max = label.classList.contains('ph3-team') ? 38 : 50;
+      mount.querySelectorAll('.ks-slot-pill.inv-title-frame').forEach(function (label) {
+        var max = 50;
         label.style.fontSize = max + 'px'; ctx.font = getComputedStyle(label).font;
         label.style.fontSize = Math.min(max, max * Math.max(1, label.clientWidth - 24) / Math.max(1, ctx.measureText(label.textContent).width)) + 'px';
       });
     }
-    root.addEventListener('resize', function () { if (active === 'skill' || active === 'costume' || active === 'photo') fitSkillStage(); });
-
-    var PHOTO_FACE_I18N = { round: 'mole.photo.faceRound', sturdy: 'mole.photo.faceSturdy', sharp: 'mole.photo.faceSharp' };
-
-    // 사진관 메인 화면 — 기존 정사각형 영역 안에서만 표시(§8, §35). 명세서: 바탕화면
-    // "사진관 UI 및 에셋/명세서.txt". 상단 코스튬 5개 엠블럼 + 얼굴형 3슬롯(현재 코스튬 기준) +
-    // 이름/효과/게임적용 + 우측 상단 돋보기(전체 컬렉션 진입).
-    // V1410 C 사용자: 사진관도 무기·스킬·코스튬과 같은 틀(스킬 탭 판 .ks-* 재사용, 시안 A).
-    // 위 = 고른 얼굴형 진열장 + 팀 버튼 3개·완성 n/3·돋보기, 아래 = 얼굴형 카드 3장(보유 배지 좌측 상단, 게임적용/미적용).
-    function renderPhoto() {
-      var PS = MG.PhotoStudio;
-      var en = I18N.lang === 'en';
-      var team = photoCostumeId;
-      var selId = photoFace + '_' + team;
-      var nDone = PS.completedCount(); // 사용자: 완성 = 전체 기준 n/9
-      var teams = PS.costumes().map(function (c) {
-        return '<button type="button" class="ph3-team ks-press ws-action-frame inv-title-frame' + (c.id === team ? ' is-on' : '') + '" data-ph3-team="' + c.id + '"><span></span></button>';
-      }).join('');
-      var cards = PS.faceTypes().map(function (f) {
-        var id = f.id + '_' + team, done = PS.isCompleted(id), on = PS.isApplied(id);
-        return '<div class="ks-card cs-card ph3-card' + (f.id === photoFace ? ' is-sel' : '') + '" data-ph3-face="' + f.id + '" data-team="' + team + '">' +
-          '<span class="ph3-own' + (done ? ' is-own' : '') + '"></span>' +
-          '<span class="cs-card-char"><img class="' + (done ? '' : 'photo-slot-img--locked') + '" alt="" src="' + PS.imageFor(id) + '"></span>' +
-          '<b class="ks-card-name"></b>' +
-          '<span class="ks-equip ph3-btn ws-action-frame inv-action-frame' + (on ? ' is-on' : '') + (done ? ' is-live ks-press' : '') + '"><span></span></span></div>';
-      }).join('');
-      body.innerHTML = '<div class="ks-mount"><div class="ks-stage cs-stage ph3-stage">' +
-        '<div class="ks-name"></div>' +
-        '<div class="ks-case"><div class="cs-clip"><div class="cs-hero"><span class="cs-hero-img" data-team="' + team + '"><img class="' + (PS.isCompleted(selId) ? '' : 'photo-slot-img--locked') + '" alt="" src="' + PS.imageFor(selId) + '"></span></div></div></div>' +
-        '<div class="ks-slotpanel ph3-info"><div class="ph3-top"><div class="ph3-teams">' + teams + '</div><div class="ph3-side">' +
-          '<button type="button" class="ph3-search iw-help ks-press" aria-label="' + (en ? 'Photo effect guide' : '사진관 효과 설명') + '"></button>' +
-          '<div class="ph3-done"><span class="ph3-done-lbl"></span><b>' + nDone + '/' + PS.TOTAL + '</b></div></div></div>' +
-          '<div class="cs-effect ph3-effect"><img alt="" src="assets/costume/clock.png"><span class="cs-effect-txt"></span></div>' +
-          '</div>' +
-        '<div class="ks-cards">' + cards + '</div></div></div>';
-      var stage = body.querySelector('.ks-stage');
-      stage.querySelector('.ks-name').textContent = en ? 'Photo Studio' : '사진관';
-      // Feet coordinates follow the same cropped character art as the photo preview.
-      var photoShadowPositions = {"round_blue_bears":[255.0493,39.5485],"round_cloud_cups":[266.6236,38.2439],"round_mount_stars":[250.007,37.14],"sharp_blue_bears":[253.5123,39.2584],"sharp_cloud_cups":[269.0286,38.218],"sharp_mount_stars":[249.2874,37.14],"sturdy_blue_bears":[250.4999,39.5485],"sturdy_cloud_cups":[268.5333,38.2067],"sturdy_mount_stars":[249.2076,37.14]};
-      var photoShadow = photoShadowPositions[selId] || [260, 40];
-      var photoCase = stage.querySelector('.ks-case');
-      photoCase.style.setProperty('--photo-shadow-x', photoShadow[0] + 'px');
-      photoCase.style.setProperty('--photo-shadow-bottom', photoShadow[1] + 'px');
-      stage.querySelector('.ph3-done-lbl').textContent = en ? 'Done' : '완성';
-      // 사용자: 사진관 설명박스 — 코스튬 화면과 같은 효과 박스
-      // 사용자: 팀별 3개(얼굴형 3) 모아 적용 +0.1초, 전체(풀) 적용 +0.5초 — 효과 설명(게임 연동은 아직 API만, photo-studio.js 주석)
-      var efx = stage.querySelector('.ph3-effect .cs-effect-txt');
-      efx.innerHTML = '<span class="ph3-ef-row"><i></i><b></b></span><span class="ph3-ef-row"><i></i><b></b></span>';
-      var rows = efx.querySelectorAll('.ph3-ef-row');
-      rows[0].querySelector('i').textContent = en ? 'Team set effect' : '팀세트 적용시 효과'; rows[0].querySelector('b').textContent = '+' + PS.TEAM_EFFECT_VALUE.toFixed(1) + (en ? 's' : '초');
-      rows[1].querySelector('i').textContent = en ? 'Full set effect' : '풀세트 적용시 효과'; rows[1].querySelector('b').textContent = '+' + PS.GLOBAL_EFFECT_VALUE.toFixed(1) + (en ? 's' : '초');
-      stage.querySelectorAll('[data-ph3-team]').forEach(function (b) {
-        var c = PS.costumes().filter(function (x) { return x.id === b.getAttribute('data-ph3-team'); })[0];
-        b.querySelector('span').textContent = en ? c.nameEn : c.nameKo;
-        b.addEventListener('click', function () { photoCostumeId = c.id; renderPhoto(); });
-      });
-      stage.querySelectorAll('[data-ph3-face]').forEach(function (cd) {
-        var f = cd.getAttribute('data-ph3-face'), id = f + '_' + team;
-        cd.querySelector('.ks-card-name').textContent = T(PHOTO_FACE_I18N[f]);
-        cd.querySelector('.ph3-own').textContent = PS.isCompleted(id) ? (en ? 'Owned' : '보유') : (en ? 'Not owned' : '미보유');
-        cd.querySelector('.ph3-btn span').textContent = T(PS.isApplied(id) ? 'mole.photo.slotApplied' : 'mole.photo.slotNotApplied');
-        // 사용자: 전체 컬렉션 삭제 — 카드 누르면 고르기만, 완성 캐릭터는 버튼으로 게임 적용/미적용 바로 바꿈(최대 개수 넘으면 안내)
-        cd.addEventListener('click', function (e) {
-          if (e.target.closest('.ph3-btn') && PS.isCompleted(id)) {
-            var res = PS.toggleApply(id);
-            if (!res.ok && res.reason === 'max-applied') { var bs = cd.querySelector('.ph3-btn span'); bs.textContent = T('mole.photo.maxAppliedReached'); setTimeout(renderPhoto, 1400); return; } // 최대 개수 안내는 버튼 글자로 잠깐
-            photoFace = f; renderPhoto(); return;
-          }
-          if (photoFace !== f) { photoFace = f; renderPhoto(); }
-        });
-      });
-      stage.querySelector('.ph3-search').addEventListener('click', function () { openPhotoHelp(this); }); // 사용자: 돋보기 = 효과 설명
-      stage.querySelectorAll('.ks-press').forEach(function (b) {
-        b.addEventListener('pointerdown', function () { b.classList.add('is-down'); });
-        ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { b.addEventListener(ev, function () { b.classList.remove('is-down'); }); });
-      });
-      fitSkillStage();
+    function resizeStage() {
+      requestAnimationFrame(function () { if (active === 'weapon') fitLefts(); else fitSkillStage(); fitOwnedLabels(); });
     }
+    if (root.ResizeObserver) new root.ResizeObserver(resizeStage).observe(body);
+    else root.addEventListener('resize', resizeStage);
 
-    // V1411 C 사용자: 사진관 돋보기 = 효과 설명 창(무기 설명 창 .inv-weapon-guide 재사용)
-    function openPhotoHelp(trigger) {
-      closeWeaponHelp();
-      var en = I18N.lang === 'en', PS = MG.PhotoStudio;
-      var sec = function (v) { return '+' + v.toFixed(1) + (en ? 's' : '초'); };
-      var dialog = document.createElement('dialog');
-      dialog.className = 'inv-weapon-guide';
-      dialog.innerHTML = '<div class="inv-guide-header"><h2></h2><button type="button" class="inv-guide-close"></button></div><div class="inv-guide-scroll"><p class="inv-guide-intro"></p><div class="inv-guide-sections"></div></div>';
-      dialog.querySelector('h2').textContent = en ? 'Photo Studio Effects' : '사진관 효과';
-      var close = dialog.querySelector('button');
-      close.textContent = en ? 'Close' : '닫기';
-      dialog.querySelector('.inv-guide-intro').textContent = en
-        ? 'Take a face photo to complete team costume characters. Apply completed characters to the game to slow the moles going down.'
-        : '얼굴을 찍어 팀 코스튬 캐릭터를 완성하고, 완성한 캐릭터를 게임에 적용하면 두더지가 내려가는 속도가 느려집니다.';
-      var rows = en ? [
-        ['Team set effect', 'Complete and apply all 3 face types (Round · Sturdy · Sharp) of one team.', 'HOLD TIME ' + sec(PS.TEAM_EFFECT_VALUE)],
-        ['Full set effect', 'Complete and apply all 9 characters of the 3 teams.', 'HOLD TIME ' + sec(PS.GLOBAL_EFFECT_VALUE)],
-        ['Apply to game', 'Tap the button on a completed card to apply it to the game or remove it. Up to ' + PS.MAX_APPLIED + ' can be applied.', '']
-      ] : [
-        ['팀세트 적용시 효과', '한 팀의 동글형·듬직형·날렵형 3개를 모두 완성해 게임에 적용합니다.', '홀드 타임 ' + sec(PS.TEAM_EFFECT_VALUE)],
-        ['풀세트 적용시 효과', '3팀 9개 캐릭터를 모두 완성해 게임에 적용합니다.', '홀드 타임 ' + sec(PS.GLOBAL_EFFECT_VALUE)],
-        ['게임 적용', '완성한 카드의 버튼을 누르면 게임 적용 / 게임 미적용이 바뀝니다. 최대 ' + PS.MAX_APPLIED + '개까지 적용됩니다.', '']
-      ];
-      var sections = dialog.querySelector('.inv-guide-sections');
-      rows.forEach(function (row) {
-        var section = document.createElement('section');
-        var h = document.createElement('h3'); h.textContent = row[0];
-        var m = document.createElement('p'); m.textContent = row[1];
-        section.append(h, m);
-        if (row[2]) { var e = document.createElement('p'); e.className = 'inv-guide-effect'; e.textContent = row[2]; section.appendChild(e); }
-        sections.appendChild(section);
-      });
-      function finish() { if (weaponHelp === dialog) weaponHelp = null; dialog.remove(); if (trigger && trigger.isConnected) trigger.focus(); }
-      dialog.addEventListener('close', finish, { once: true });
-      close.addEventListener('click', function () { dialog.close(); });
-      dialog.addEventListener('click', function (event) { if (event.target === dialog) dialog.close(); });
-      el.appendChild(dialog); weaponHelp = dialog; dialog.showModal(); close.focus();
-    }
-
-    // v890(사용자: 영어 'Costumes' 가 탭 박스 모서리와 겹침) — 글자가 탭 폭의 86%를 넘으면 가로로만 좁힘
-    function fitTabLabel(lb) {
-      requestAnimationFrame(function () {
-        lb.style.transform = ''; var tab = lb.closest('button'); if (!tab) return;
-        var room = tab.clientWidth * 0.86, w = lb.scrollWidth;
-        if (w > room) { lb.style.display = 'inline-block'; lb.style.transform = 'scaleX(' + (room / w).toFixed(3) + ')'; }
-      });
-    }
     function renderTabs() {
       tabsEl.innerHTML = '';
       TABS.forEach(function (t) {
         var b = document.createElement('button');
         b.type = 'button';
-        b.className = 'inv-tab' + (t.id === active ? ' inv-tab--on' : '');
-        b.innerHTML = '<span class="inv-tab-ico">' + t.icon + '</span><span class="inv-tab-lbl"></span>';
-        b.querySelector('.inv-tab-lbl').textContent = T(t.i18n);
-        fitTabLabel(b.querySelector('.inv-tab-lbl'));
+        b.className = 'ws-action-frame';
+        b.setAttribute('aria-label', T(t.i18n));
+        b.setAttribute('aria-pressed', String(t.id === active));
+        b.innerHTML = '<span class="inventory-tab-icon" aria-hidden="true">' + t.icon + '</span>';
         b.addEventListener('click', function () {
           // 사용자: 무기↔스킬 탭은 같은 무기로 세트 — 그 사이 전환은 보던 무기(pageIdx) 유지
           var keepWeapon = (active === 'weapon' || active === 'skill') && (t.id === 'weapon' || t.id === 'skill');
           active = t.id; if (!keepWeapon) pageIdx = equippedIdx(); activePage = 0; passivePage = 0;
           paint();
+          tabsEl.querySelector('[aria-pressed="true"]')?.focus({ preventScroll: true });
         });
         tabsEl.appendChild(b);
       });
     }
 
     function paint() {
+      el.querySelector('.inventory-owned-head').appendChild(upgrade);
       closeWeaponHelp();
       el.setAttribute('data-tab', active); // v991: 코스튬 UI 2차 — 탭별 배경(CSS)
       renderTabs();
@@ -775,11 +744,7 @@
       // 코스튬 탭은 상단 안내 박스를 통째로 없앤다(사용자 지정, 2026-09-25).
       // 사용자 지정(2026-09-26): 스킬 탭도 코스튬 탭처럼 상단 안내 배너 삭제 —
       // "어떤 스킬을 장착할까요? 박스 삭제해 필요없네" + 그만큼 전체파란박스가 위로 올라옴.
-      // 사진관 탭도 동일 처리(사용자 지정): "어느 사진을 고르시겠어요? 박스 삭제하고
-      // 파란전체박스를 스킬화면과 같은 크기로" — 배너 숨기면 flex 구조상 자동으로 커짐.
-      if (bannerEl) bannerEl.style.display = (active === 'costume' || active === 'skill' || active === 'photo') ? 'none' : '';
-      prevBtn.style.display = active === 'photo' ? 'none' : '';
-      nextBtn.style.display = active === 'photo' ? 'none' : '';
+      if (bannerEl) bannerEl.style.display = (active === 'costume' || active === 'skill') ? 'none' : '';
       // 몰리그 전광판은 코스튬 탭에서만, 전체파란박스 밖(화면 최상단)에 표시.
       if (cosLogoEl) cosLogoEl.hidden = true; // V1405 C: 코스튬 탭 개편 — MOLE LEAGUE 간판 안 씀
       wSignEl.hidden = active !== 'weapon';
@@ -791,9 +756,6 @@
       } else if (active === 'skill') {
         dotsEl.innerHTML = '';
         renderSkills();
-      } else if (active === 'photo') {
-        dotsEl.innerHTML = '';
-        renderPhoto();
       } else {
         dotsEl.innerHTML = '';
         body.innerHTML = '<p class="inv-soon">' + T('mole.inv.soon') + '</p>';
@@ -817,12 +779,11 @@
         var wid = pg.getAttribute('data-weapon'); if (wid === 'hammer') return; // 사용자: 뿅망치는 강화 없음(수치·Glow 안 붙임)
         var u = pg.querySelector('.iw-preview-unit'); if (u) put(pg, u, WS.levelOf('weapon', wid), true);
       });
-      var photo = !!body.querySelector('.ph3-stage');
       body.querySelectorAll('.cs-card[data-team]').forEach(function (cd) {
-        var ch = cd.querySelector('.cs-card-char'); if (ch) put(cd, ch, WS.levelOf('costume', cd.getAttribute('data-team')), !photo);
+        var ch = cd.querySelector('.cs-card-char'); if (ch) put(cd, ch, WS.levelOf('costume', cd.getAttribute('data-team')), true);
       });
       var hero = body.querySelector('.cs-hero-img[data-team]');
-      if (hero) put(hero.closest('.ks-case'), hero, WS.levelOf('costume', hero.getAttribute('data-team')), !photo);
+      if (hero) put(hero.closest('.ks-case'), hero, WS.levelOf('costume', hero.getAttribute('data-team')), true);
     }
     new MutationObserver(function () { requestAnimationFrame(decorateEnh); }).observe(body, { childList: true });
     var weaponRefreshFrame = 0;
@@ -900,12 +861,21 @@
       }
       // Sample the rendered gloves: weapon jabs (2.8s) and skill bumps (4s)
       // retain their own clocks, easing, rotation, mirroring and floating motion.
-      page.querySelectorAll('.inv-thumb--pair > img').forEach(function (glove, index) {
+      var gloves = Array.from(page.querySelectorAll('.inv-thumb--pair > img'));
+      var floorOffset = 0;
+      if (!page.classList.contains('ks-wpage') && gloves.length) {
+        var gloveCenter = gloves.reduce(function (sum, glove) {
+          var bounds = glove.getBoundingClientRect();
+          return sum + (bounds.left + bounds.width / 2 - rect.left) / displayScale;
+        }, 0) / gloves.length;
+        floorOffset = 383 - gloveCenter;
+      }
+      gloves.forEach(function (glove, index) {
         var bounds = glove.getBoundingClientRect(), shadow = floor.children[index];
         var unitScale = unitRect.width / unit.offsetWidth;
         var baseline = unitRect.top + unitRect.height / 2;
         var lift = Math.max(0, (baseline - (bounds.top + bounds.height / 2)) / Math.max(unitScale, .01));
-        shadow.style.left = ((bounds.left + bounds.width / 2 - rect.left) / displayScale) + 'px';
+        shadow.style.left = ((bounds.left + bounds.width / 2 - rect.left) / displayScale + floorOffset) + 'px';
         shadow.style.width = (bounds.width / displayScale * .72 * Math.max(.65, 1 - lift / 140)) + 'px';
         shadow.style.opacity = Math.max(.25, .5 - lift / 180);
       });
@@ -951,9 +921,8 @@
     }, 5000);
     return { show: function () {
       active = 'weapon'; pageIdx = equippedIdx(); costumeSelectedId = null; activePage = 0; passivePage = 0;
-      photoCostumeId = 'blue_bears'; photoFace = 'round';
       paint();
-    } };
+    }, refresh: paint };
   }
 
   var api = { create: create };

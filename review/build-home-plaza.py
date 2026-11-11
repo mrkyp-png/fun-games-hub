@@ -11,8 +11,7 @@ OUT = ROOT / 'mole/assets/home3d'
 OUT.mkdir(parents=True, exist_ok=True)
 
 # home3d-layout.js SITES 와 같은 값(검사: verify-home3d-layout.cjs 가 GLB 노드 좌표를 대조)
-SITES = [('lightMode', 0, -9), ('rhythm', 0, 9), ('shop', -7, -5), ('locker', -9, 0),
-         ('inventory', -7, 5)]  # V1650 C: 스코어 탑·선물상자·퀘스트 판 삭제 → 게시판(board.glb, 웹에서 따로)
+SITES = [('lightMode', 0, -9), ('rhythm', 0, 9), ('shop', -7, -5)]  # V1650 C: 스코어 탑·선물상자·퀘스트 판 삭제 → 게시판(board.glb, 웹에서 따로)
 ISLAND_R = 16   # V1632 C 사용자: 광장 좁음 → 12에서 16(건물 자리는 그대로)
 
 def mat(name, rgb, rough=.85):
@@ -128,7 +127,9 @@ def mole_booth():   # 두더지팡: 아케이드 게임기(review/build-arcade-m
     for o in p:
         for mm in o.data.materials:   # 그림은 256 으로 줄여 담음(가볍게)
             img = next((n.image for n in mm.node_tree.nodes if n.type == 'TEX_IMAGE' and n.image), None) if mm and mm.use_nodes else None
-            if img and img.size[0] > 256: img.scale(256, 256)
+            if img and img.size[0] > 256:
+                img.scale(256, 256)
+                img.pack()
         o.parent = None; o.scale = (ARCADE_K,) * 3; o.location = tuple(v * ARCADE_K for v in o.location)
     # 나무 이름판은 삭제(사용자 지시). 글자는 기계 위 간판 상자 앞면에(Sign_lightMode, 간판 판 크기 0.9×0.22 × K)
     k = ARCADE_K
@@ -166,20 +167,6 @@ def shop_house():   # 기념품 가게
     for i in range(6): p.append(box('Shop awning', (-1.0 + i * .4, -1.35, 1.85), (.4, .6, .07), M['yellow'] if i % 2 else M['cream'], .02))
     return p + sign('shop', 3.25, 1.9, .55, -1.2)
 
-def workshop_house():  # 공방
-    p = [box('Workshop walls', (0, 0, 1.15), (2.8, 2.2, 2.3), M['wood']),
-         box('Workshop roof', (0, 0, 2.4), (3.0, 2.4, .25), M['cream']),
-         cyl('Chimney', (.9, .4, 2.9), .22, 1.0, M['coral'], 16),
-         box('Workshop door', (-.5, -1.12, .75), (.9, .06, 1.4), M['cream'], .02),
-         cyl('Gear', (.75, -1.14, 1.3), .45, .1, M['yellow'], 12, .03, (math.pi / 2, 0, 0))]
-    return p + sign('locker', 2.95, 1.9, .55, -1.2)
-
-def locker_house():  # 사물함(물품 보관소)
-    p = [box('Locker frame', (0, 0, 1.2), (2.8, 1.2, 2.4), M['cream'])]
-    for i, m in enumerate([M['sky'], M['mint'], M['coral']]):
-        for j in range(2): p.append(box('Locker door', (-.9 + i * .9, -.62, .7 + j * 1.0), (.8, .06, .9), m, .02))
-    return p + sign('inventory', 2.75, 1.9, .55, -.7)
-
 def score_tower():   # 전광판 / 명예의 전당
     p = [box('Tower base', (0, 0, 1.4), (1.4, 1.4, 2.8), M['cream']),
          box('Score board', (0, -.2, 3.6), (2.8, .3, 1.6), M['sky']),
@@ -200,8 +187,7 @@ def board():
     for dx, m in ((-.3, M['cream']), (.25, M['yellow'])): p.append(box('Note', (dx, -.07, 1.0), (.4, .02, .45), m, .01))
     return p + sign('quest', 1.65, .9, .3, -.1)
 
-BUILD = {'lightMode': mole_booth, 'rhythm': rhythm_house, 'shop': shop_house, 'locker': workshop_house,
-         'inventory': locker_house, 'score': score_tower, 'daily': giftbox, 'quest': board}
+BUILD = {'lightMode': mole_booth, 'rhythm': rhythm_house, 'shop': shop_house, 'score': score_tower, 'daily': giftbox, 'quest': board}
 for action, gx, gz in SITES: group(action, BUILD[action](), gx, gz)
 
 bpy.ops.wm.save_as_mainfile(filepath=str(OUT / 'plaza.blend'))
