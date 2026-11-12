@@ -150,19 +150,21 @@
 // V1682 G: Score carpet fits within the screen and sits lower; plaza mole smiles periodically while idle.
 // V1689 G: Four independent hair/color appearances; 3D beach actors and ImageGen rim; corrected RGB color layout.
 // V1688 G: Continuous full-body dance, slow head-first sea creatures, musical-note meshes and shimmering rhythm sign.
-const CACHE = 'mole-game-v1689-G';
+// V1690 G: Sand beach, continuous ocean, combo turns and reactive hair; clear text-only signs, gentle warm entrance flow and corrected beach/water landing.
+const CACHE = 'mole-game-v1690-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
 // vendor/face_mesh/*(약 10MB, 얼굴인식)는 SHELL 제외 — 사람두더지 메이커 처음 열 때만 필요.
 // 처음 요청될 때 아래 fetch 핸들러가 알아서 캐시한다.
 const SHELL = [
-  './assets/rhythm/beach-hole-v1689/hole-back.png',
-  './assets/rhythm/beach-hole-v1689/hole-front.png',
-  './assets/rhythm/beach-hole-v1689/hole-occlusion.png',
-  './assets/rhythm/beach-hole-v1689/geometry.json',
+  './assets/rhythm/beach-sand-hole-v1690/hole-back.png',
+  './assets/rhythm/beach-sand-hole-v1690/hole-front.png',
+  './assets/rhythm/beach-sand-hole-v1690/hole-occlusion.png',
+  './assets/rhythm/beach-sand-hole-v1690/geometry.json',
   './js/mole-appearances.js',
   './js/rhythm-beach-moles.js',
+  './js/rhythm-beach-stunts.js',
   './assets/characters-v1689/mole-game-smile.glb',
   './assets/characters-v1689/hair-mohawk.glb',
   './assets/characters-v1689/hair-spiky.glb',
@@ -369,6 +371,7 @@ const SHELL = [
   './assets/rhythm/ui/btn-neon-type-v1211.png',
   './assets/rhythm/ui/d-frame-type-clean-v1210.png',
   './js/rhythm-beach.js',
+  './js/rhythm-beach-ocean.js',
   './assets/rhythm/beach-v1172/hippo-happy.webp',
   './assets/rhythm/beach-v1172/hippo-hurt.webp',
   './assets/rhythm/beach-v1172/hippo-arm.webp',

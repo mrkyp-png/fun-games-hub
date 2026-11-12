@@ -7838,7 +7838,10 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 @keyframes rp-cloud-tap { 0%,100% { transform:rotate(0); } 30% { transform:rotate(7deg) translate(.7%,.7%); } 58% { transform:rotate(-2deg); } 82% { transform:rotate(1.2deg); } }
 @keyframes rp-cloud-breathe { 0%,100% { transform:translateY(0) scaleY(1); } 50% { transform:translateY(-1.5%) scaleY(1.012); } }
 .rp-a-sea { position:absolute; left:0; width:100%; z-index:0; pointer-events:none; overflow:hidden; contain:paint; isolation:isolate; }
-.rp-a-sea i { position:absolute; inset:0; background:url('assets/rhythm/beach-v1172/sea-atlas.webp') 0 0/400% 200% no-repeat; mask-image:linear-gradient(transparent,#000 18px,#000 calc(100% - 40px),transparent); will-change:opacity; }
+.rp-a-sky { position:absolute; inset:0 0 auto; height:37%; z-index:0; pointer-events:none; background:radial-gradient(circle at 90% 0,rgba(255,253,233,.85),transparent 18%),linear-gradient(#5ca5ed,#a6ceeF); }
+#rhythm-screen.is-type-b .rp-a-sky { display:none; }
+.rp-a-sea { background:linear-gradient(#a6ceef,#0d57a3 30%,#2eb0c7 80%,rgba(255,247,217,0)); }
+.rp-beach-ocean { display:block; width:100%; height:100%; pointer-events:none; }
 .rp-a-sea[hidden],#rhythm-screen.is-type-b .rp-a-sea { display:none; }
 .rp-a-combo-atmosphere { z-index:1; }
 .rp-target-orbit { position:absolute; left:50%; transform:translateX(-50%); pointer-events:none; }

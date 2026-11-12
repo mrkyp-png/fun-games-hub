@@ -5,7 +5,8 @@
   const W = 512, H = 160;
 
   function labelFor(site, lang, t) {
-    return t(site.labelKey).replace(/\n/g, ' ');
+    const text=t(site.labelKey).replace(/\n/g, ' ');
+    return site.action==='shop' && lang==='ko' ? text.replace('상점','상 점') : text;
   }
 
   function create(gl, opts) {
@@ -16,6 +17,15 @@
     function draw(text, action, lang) {
       const c = makeCanvas(); c.width = W; c.height = H;
       const g = c.getContext('2d'), T = root.MoleGame && root.MoleGame.Home3DText;
+      if(action==='shop'||action==='rhythm'){
+        c.width=1024;c.height=Math.round(1024*(action==='shop'?.22/1.04:.28/1.92));
+        g.clearRect(0,0,c.width,c.height);g.shadowBlur=0;g.textAlign='center';g.textBaseline='middle';
+        let size=c.height*.72;
+        const font=s=>T?T.fontOf(lang,s):'800 '+s+'px system-ui,sans-serif';g.font=font(size);
+        if(g.measureText(text).width>c.width-40){size*=(c.width-40)/g.measureText(text).width;g.font=font(size);}
+        g.fillStyle=action==='rhythm'?'#fff3b0':'#fff3d4';g.fillText(text,c.width/2,c.height/2);
+        return c;
+      }
       if (T && g.createLinearGradient) {
         const dark = action === 'rhythm';
         g.fillStyle = dark ? '#2b2f45' : '#fffaf0'; g.fillRect(0, 0, W, H);

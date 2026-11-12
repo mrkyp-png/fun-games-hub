@@ -3,8 +3,8 @@
    화면은 #game-screen 안 z-index 30(기존 홈 버튼판 위, 기능 화면 아래)에 깔린다. */
 (function (root) {
   'use strict';
-  const PLAZA_GLB = 'assets/home3d/plaza.glb?v=1689-G'; // review/build-home-plaza.py
-  const MOLE_GLB = 'assets/home3d/mole-clay-v47-smile.glb?v=1689-G'; /* V1671 C: + Flap 동작·겨털 위치 */ /* V1670 C 사용자 확정: v44 손 다듬기(손가락 가늘게·손등 90%·손 133%·손가락 바깥으로·가운데 120%·앞 손가락 107%, review/slim-mole-thumb.py) */ // /* V1656 C 사용자: 기존 두더지로 되돌림(신규 Tripo 두더지는 노이즈·배 없음) — 기존 두더지를 다듬기로 */
+  const PLAZA_GLB = 'assets/home3d/plaza.glb?v=1690-G'; // review/build-home-plaza.py
+  const MOLE_GLB = 'assets/home3d/mole-clay-v47-smile.glb?v=1690-G'; /* V1671 C: + Flap 동작·겨털 위치 */ /* V1670 C 사용자 확정: v44 손 다듬기(손가락 가늘게·손등 90%·손 133%·손가락 바깥으로·가운데 120%·앞 손가락 107%, review/slim-mole-thumb.py) */ // /* V1656 C 사용자: 기존 두더지로 되돌림(신규 Tripo 두더지는 노이즈·배 없음) — 기존 두더지를 다듬기로 */
   const SPEED = 2.8;
 
   function create(opts) {
@@ -91,7 +91,7 @@
     const deepLast = {}, deepRun = {}; /* 고래·메갈로돈: 마지막으로 다 돈 시각, 도는 중 시작 시각 */
     let discoSpin = 0, discoLiftV = 0, discoT0 = -1, grip = 100, spinLeft = 12, bounceLeft = 3; /* discoT0 = 이번에 탄 시각(20초 도전) */ /* 디스코 팡팡: 더 도는 속도·튀는 속도 */
     let boatV = 0, rowSide = 1, wakeFx = [], wakeAt = 0; /* 배 속도(섬 둘레, 초당 거리)·물결 */
-    let air = null, onBoat = null, boardAt = -1, offer = null, splashAt = -9;
+    let air = null, onBoat = null, boardAt = -1, offer = null, splashAt = -9, drowning = null;
     const G = 9.5, JUMP_V = 4.4, FLAP_V = 3.6, BOAT_STAY = 300, REWARD_GAP = 3600 * 1000, OFFER_T = 60, REWARD_KEY = 'mole.boatRewardAt';
     const nowS = () => performance.now() / 1000;
     function boatM() { return MG.Home3DRenderer.boatMatrix(nowS()); }
@@ -101,15 +101,17 @@
     function overDeck(x, z) { const d = toDeck(x, z); return inDeck(d.u, d.w) ? d : null; }
     function resetToStart() { /* 처음 시작 구멍(인트로)으로 */
       st.boot(); Object.assign(view, { x: 0, z: 0, heading: 0, yaw: 0, pitch: 0.62 }); rise = 0; hop = null; jumpAt = -1; camK = 0; arcCam = 0; inside = null; wasNearArcade = false; walking = false; route = null;
-      air = null; onBoat = null; boardAt = -1; offer = null; if (ui) { ui.setExit(null); ui.hideOffer(); } if (rd) rd.setSmoke([]);
+      air = null; drowning = null; onBoat = null; boardAt = -1; offer = null; if (ui) { ui.input.reset(); ui.setExit(null); ui.hideOffer(); } if (rd) rd.setSmoke([]);
     }
-    function splash(x, z) { /* 바다에 빠짐: 하트 -1(0이면 그대로), 첨벙, 해변으로 */
+    function splash(x, z) { /* 수면 아래로 잠긴 뒤 광장 중앙으로 복귀. 기존 하트 -1 유지. */
+      if (drowning) return;
       if (MG.Economy && MG.Economy.getHearts() > 0) MG.Economy.addHearts(-1);
-      refreshHud(); splashAt = nowS(); air = null; onBoat = null; boardAt = -1;
+      refreshHud(); splashAt = nowS(); drowning={at:time,y:-.62+MG.Home3DRenderer.seaHeight(x,z,splashAt)}; air = null; onBoat = null; boardAt = -1;
       const sp = []; for (let i = 0; i < 10; i++) { const a = i * 0.63; sp.push({ x: x + Math.cos(a) * 0.5, y: 0.2 + (i % 3) * 0.25, z: z + Math.sin(a) * 0.5, r: 0.25, a: 0.7 }); } rd.setSmoke(sp);
       setTimeout(() => { if (rd) rd.setSmoke([]); }, 700);
-      view.x = 0; view.z = 20.8; view.heading = Math.PI; route = null;
+      route = null; walking = false; if (ui) ui.input.reset();
     }
+    function updateDrowning() { if(drowning && time-drowning.at>=1.4) resetToStart(); }
     function show(on) { if (ui) ui.show(on); }
     function stop() { if (raf) cancelAnimationFrame(raf); raf = 0; route = null; if (ui) ui.setEnabled(false); }
     function wake() {
@@ -173,8 +175,8 @@
           const dk = overDeck(view.x, view.z), deckY = dk ? deckWorld(dk.u, dk.w)[1] : -9;
           if (dk && air.y <= deckY && air.y > deckY - 0.6) { air = null; onBoat = { u: 0, w: 0 }; boardAt = time; return; } /* 갑판에 착지 → 가운데에 섬(V1661 C) */
           const rr = Math.hypot(view.x, view.z), land = L.allowed(view.x, view.z) || rr <= L.FENCE_OUT;
-          if (land && air.y <= 0) { air = null; if (!L.allowed(view.x, view.z)) { if (rr > L.WALK_R) { const k = (L.WALK_R - 0.1) / rr; view.x *= k; view.z *= k; } if (!L.allowed(view.x, view.z)) { const p = L.slide({ x: 0, z: 0 }, view.x, view.z); view.x = p.x; view.z = p.z; } } return; } /* 땅에 착지(울타리 위면 섬 안쪽으로) */
-          if (!land && air.y <= -0.3) { splash(view.x, view.z); return; } /* 바다에 빠짐 */
+          if (land && air.y <= L.groundHeight(view.x,view.z)) { air = null; if (!L.allowed(view.x, view.z)) { if (rr > L.WALK_R) { const k = (L.WALK_R - 0.1) / rr; view.x *= k; view.z *= k; } if (!L.allowed(view.x, view.z)) { const p = L.slide({ x: 0, z: 0 }, view.x, view.z); view.x = p.x; view.z = p.z; } } return; } /* 땅에 착지(울타리 위면 섬 안쪽으로) */
+          if (!land && air.y <= -.62+MG.Home3DRenderer.seaHeight(view.x,view.z,nowS())) { splash(view.x, view.z); return; } /* 실제 수면에 닿은 뒤 잠김 */
         }
         return;
       }
@@ -196,9 +198,10 @@
     const INTRO_PITCH = -0.1, CAM_T = 0.9; let camK = 0, camLift = 0, boardCam = 0, boardAim = 0; /* boardCam = 게시판 앞 카메라(V1653 C) */ /* camLift = 날기 높이 따라 카메라 올림(V1635 C) */
     function jumping() { return !!air || (jumpAt >= 0 && time - jumpAt < IN.jump.T); }
     function jump() {
+      if (drowning) return;
       if (st.state === 'EXPLORE' && !riding && !inside) { /* 날기: 첫 누름 = 뛰어오름, 공중에서 누를 때마다 짧은 팔 파닥 → 위로 */
         if (air) { air.vy = Math.max(air.vy, FLAP_V); air.flapAt = time; return; }
-        const y0 = onBoat ? deckWorld(onBoat.u, onBoat.w)[1] : 0; onBoat = null; boardAt = -1;
+        const y0 = onBoat ? deckWorld(onBoat.u, onBoat.w)[1] : L.groundHeight(view.x,view.z); onBoat = null; boardAt = -1;
         air = { y: y0, vy: JUMP_V, flapAt: -9, jumpAt: time } /* 첫 점프 = 기존 Jump 동작(V1672 C) */; return;
       }
       if (jumping()) return;
@@ -214,6 +217,7 @@
     }
     // 두더지 높이·동작
     function pose() {
+      if(drowning) return {clip:'Jump',t:.3,loop:false,y:drowning.y-2.8*Math.min(1,Math.max(0,(time-drowning.at)/1.15))};
       if (st.state === 'INTRO' && rise < RISE_T) { // 구멍 아래(-1.4)에서 뛰어올라 구멍 안(HOLE_Y)에 안착
         const k = rise / RISE_T;
         return { clip: 'Jump', t: k * IN.jump.T, loop: false, y: -1.4 + (HOLE_Y + 1.4) * k + 1.1 * Math.sin(Math.PI * k) };
@@ -233,15 +237,16 @@
       if (onBoat) return { clip: 'Idle', t: time, loop: true, y: deckWorld(onBoat.u, onBoat.w)[1] }; /* 갑판(가만히) */
       if (riding) return { clip: 'Idle', t: time, loop: true, y: seatY }; /* V1661 C 사용자: 팡팡에서도 가만히(원심력·튀기로 떨어지는 놀이) */
       if (jumping()) {
-        const jt = time - jumpAt, base = hop ? HOLE_Y * (1 - jt / IN.jump.T) : 0;
+        const jt = time - jumpAt, base = hop ? HOLE_Y * (1 - jt / IN.jump.T) : L.groundHeight(view.x,view.z);
         return { clip: 'Jump', t: jt, loop: false, y: base + IN.jump.height(jt) };
       }
-      return { clip: walking ? 'WalkFwd' : 'Idle', t: time, loop: true, y: st.state === 'INTRO' ? HOLE_Y : 0 };
+      return { clip: walking ? 'WalkFwd' : 'Idle', t: time, loop: true, y: st.state === 'INTRO' ? HOLE_Y : L.groundHeight(view.x,view.z) };
     }
     function frame(stamp) {
       raf = 0;
       if (!ready || !api.renderAllowed() || document.hidden) return;
       const dt = Math.min(0.04, last ? (stamp - last) / 1000 : 0); last = stamp; time += dt;
+      updateDrowning();
       if (st.state === 'INTRO') {
         // 첫 로딩 화면(GET NOW → 검은 화면)이 걷히고 가운데부터 열릴 때 등장 시작
         // 첫 로딩 화면(#splash)·검은 원 덮개(power-on-overlay, 열리기 전)가 있을 때만 대기. 준비 후 6초 지나면 무조건 시작(안전장치)
@@ -253,7 +258,8 @@
           view.x = hop.from.x + (hop.to.x - hop.from.x) * k; view.z = hop.from.z + (hop.to.z - hop.from.z) * k;
           if (k >= 1) { hop = null; st.introDone(); wake(); }
         }
-      } else if (doorEntry) { if (walkThroughDoor(dt)) return; }
+      } else if (drowning) { walking=false; }
+      else if (doorEntry) { if (walkThroughDoor(dt)) return; }
       else if (riding) { const se = rd.seat(riding); if (se) { view.x = se.x; view.z = se.z; view.heading = se.heading; seatY = se.y; } walking = false; }
       else if (inside) {
         walking = false;
@@ -440,9 +446,9 @@
       document.addEventListener('visibilitychange', wake);
       rd.lost(() => { ready = false; stop(); ui.setLoading(ko() ? '3D 화면을 다시 불러와 주세요.' : 'Please reload the 3D plaza.'); });
       rd.boot(PLAZA_GLB, MOLE_GLB, 'assets/home3d/boat.glb', [ /* V1633 C: 디스코 팡팡(배치만) */
-        { url: 'assets/home3d/disco-base.glb?v=1689-G', /* 내용 바뀐 모델 = 버전 붙여 폰이 새로 받게 */ world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
-        { url: 'assets/home3d/disco-top.glb?v=1689-G', dyn: 'discoTop', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },
-        { url: 'assets/home3d/board.glb?v=1689-G', world: boardWorld() }]).then(() => { /* V1650 C: 게시판 */
+        { url: 'assets/home3d/disco-base.glb?v=1690-G', /* 내용 바뀐 모델 = 버전 붙여 폰이 새로 받게 */ world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
+        { url: 'assets/home3d/disco-top.glb?v=1690-G', dyn: 'discoTop', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },
+        { url: 'assets/home3d/board.glb?v=1690-G', world: boardWorld() }]).then(() => { /* V1650 C: 게시판 */
         ready = true; readyAt = time; ui.setLoading(null); signsNow(); refreshArcade(true); rd.setBoard(boardPanels()); refreshBoard(true); if (MG.Home3DText) MG.Home3DText.ready().then(() => { signsNow(); refreshArcade(true); refreshBoard(true); wake(); }); /* V1653 C: 둥근 글씨체 준비되면 글자 다시 그림 */
         wake();
       }).catch((err) => { console.error('3D home:', err); ui.setLoading((ko() ? '3D 공간을 불러오지 못했습니다.' : 'Could not load the 3D plaza.') + ' (' + String(err && err.message || err).slice(0, 160) + ')'); });

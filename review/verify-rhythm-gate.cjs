@@ -1,4 +1,4 @@
-﻿const assert=require('node:assert/strict'),fs=require('node:fs');
+const assert=require('node:assert/strict'),fs=require('node:fs');
 const R=require('../mole/js/clay-rig-math.js'),L=require('../mole/js/home3d-layout.js');
 globalThis.StudioRig=R;globalThis.MoleGame={Home3DLayout:L};
 const H=require('../mole/js/home3d-renderer.js');
@@ -16,17 +16,10 @@ const barPrimitive=model.json.meshes[bars.mesh].primitives[0];
 const uv=R.accessor(model,barPrimitive.attributes.TEXCOORD_0);
 assert.equal(new Set(Array.from(uv).filter((_,i)=>i%2===0).map(v=>v.toFixed(3))).size,5,'Five rhythm bar indices retained in one draw');
 for(let i=0;i<5;i++)for(let time=0;time<9;time+=.1){const h=H.gateBarHeight(i,time);assert(h>=.4&&h<=.96);}
-const patterns=new Set(),counts=new Set(),starts=new Set();
-for(let cycle=0;cycle<300;cycle++){
-  const event=H.gateEvent(cycle*.85+.01,23.45);
-  patterns.add(event.pattern);counts.add(event.count);starts.add(event.start.toFixed(3));
-  assert(event.duration>=.12&&event.duration<=.22);
-  assert.equal(H.gateEvent(cycle*.85,23.45).pulse,0);
-  assert.equal(H.gateEvent(cycle*.85+.84,23.45).pulse,0,'No pulse discontinuity at event boundary');
-  assert(H.gateEvent(cycle*.85+event.start+.05,23.45).pulse>.99,'Every short interval contains a visible flash');
-}
-assert.equal(patterns.size,5);assert.equal(counts.size,3);assert(starts.size>100,'Timing varies between events');
-assert.notDeepEqual(H.gateEvent(5,23.45),H.gateEvent(5,93.1),'Session seed changes lightning');
+const rendererSource=fs.readFileSync('mole/js/home3d-renderer.js','utf8');
+assert(!rendererSource.includes('portalBolt')&&!rendererSource.includes('uArcEvent')&&!rendererSource.includes('gateEvent('),'Lightning generator and shader removed');
+assert(rendererSource.includes('vec3(1.,.88,.63)')&&rendererSource.includes('vec3(1.,.97,.87)'),'Warm gold and ivory flow contrasts with purple doorway');
+assert(rendererSource.includes('t*.42')&&rendererSource.includes('t*.20'),'Slow continuous flow rather than flashes');
 const site=L.SITES.find(s=>s.action==='shop'),d=Math.hypot(site.x,site.z),ux=-site.x/d,uz=-site.z/d;
 const at=(along,side=0)=>({x:site.x+ux*along-uz*side,z:site.z+uz*along+ux*side});
 assert.equal(H.shopDoorTarget(at(3),0),1);

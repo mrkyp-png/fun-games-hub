@@ -62,15 +62,6 @@
     return R.multiply(world,R.transform({rotation:[0,Math.sin(angle/2),0,Math.cos(angle/2)]}));
   }
   function gateBarHeight(index,time) { return .68+.27*Math.sin(time*(2*Math.PI/9)+index*.9); }
-  function gateEvent(time,seed) {
-    const hash=n=>{const v=Math.sin(n*127.1)*43758.5453;return v-Math.floor(v);};
-    const cycle=Math.floor(time/.85),key=cycle*29+seed,phase=time-cycle*.85;
-    const start=.06+hash(key+1)*.12,duration=.12+hash(key+2)*.10;
-    const smooth=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);};
-    return {pattern:Math.floor(hash(key+3)*5),seed:hash(key+4)*97,
-      pulse:smooth((phase-start)/.025)*(1-smooth((phase-start-duration)/.035)),
-      count:1+Math.floor(hash(key+5)*3),start,duration};
-  }
   // 바다 판: n×n 칸 격자(한 번에 그리는 판 1장), 반지름 R
   function seaGrid(n, R) {
     const positions = [], indices = [];
@@ -202,42 +193,16 @@ float seaH(vec2 p,float t){return .06*sin(.55*p.x+1.1*t)+.04*sin(.8*p.y-.9*t+1.3
 void main(){mat4 skin=mat4(1.);if(uSkin)skin=uBones[int(aJoints.x)]*aWeights.x+uBones[int(aJoints.y)]*aWeights.y+uBones[int(aJoints.z)]*aWeights.z+uBones[int(aJoints.w)]*aWeights.w;vec4 p=uModel*skin*vec4(aPosition,1.);if(uRhythmBars){float h=.68+.27*sin(uTime*.6981317008+aUV.x*4.*.9);p.y=uBarBase+(p.y-uBarBase)*h;}vWorld=p.xyz;vNormal=normalize(uNormal*mat3(skin)*aNormal);if(uSea){float e=.2;p.y+=seaH(p.xz,uTime);float hx=seaH(p.xz+vec2(e,0.),uTime)-seaH(p.xz-vec2(e,0.),uTime),hz=seaH(p.xz+vec2(0.,e),uTime)-seaH(p.xz-vec2(0.,e),uTime);vNormal=normalize(vec3(-hx/(2.*e),1.,-hz/(2.*e)));vWorld=p.xyz;}vColor=aColor;vUV=aUV;gl_Position=uVP*p;}`;
   const FS = `#version 300 es
 precision highp float;
-uniform bool uEnergy,uRhythmSign;uniform vec4 uArcEvent;
-float portalHash(float p){return fract(sin(p*127.1)*43758.5453);}
-vec2 portalPoint(vec2 a,vec2 b,float along,float seed){
-  if(along<=0.)return a;if(along>=1.)return b;
-  vec2 v=b-a,n=normalize(vec2(-v.y,v.x));
-  float segment=along*13.,cell=floor(segment);
-  float jitter=(mix(portalHash(cell+seed),portalHash(cell+seed+1.),fract(segment))-.5)*.14*sin(along*3.14159265);
-  return mix(a,b,along)+n*jitter;
-}
-float portalBolt(vec2 p,vec2 a,vec2 b,float seed){
-  vec2 v=b-a;float along=clamp(dot(p-a,v)/dot(v,v),0.,1.);
-  float d=length(p-portalPoint(a,b,along,seed));
-  float aa=max(.002,fwidth(d)),width=max(.0035+portalHash(seed+4.)*.002,aa*.75);
-  return 1.-smoothstep(width,width+aa,d);
-}
+uniform bool uEnergy,uRhythmSign;
 vec4 portalColor(vec2 uv,float t){
-  float ripple=sin(uv.y*24.-t*.9+sin(uv.x*12.+t*.5));
-  float haze=.5+.5*sin(uv.x*14.+uv.y*9.-t*.7+ripple);
-  vec3 body=mix(vec3(.28,.21,.58),vec3(.36,.56,.85),haze*.6);
-  float arc=0.;
-  for(int i=0;i<3;i++){
-    if(float(i)>=uArcEvent.w)break;
-    float seed=uArcEvent.y+float(i)*11.,offset=.18+portalHash(seed)*.64;
-    vec2 a,b;
-    if(uArcEvent.x<.5){a=vec2(0.,offset);b=vec2(1.,offset+.12*(portalHash(seed+1.)-.5));}
-    else if(uArcEvent.x<1.5){a=vec2(offset,0.);b=vec2(offset+.1,1.);}
-    else if(uArcEvent.x<2.5){a=vec2(0.,.12);b=vec2(1.,.88);if(portalHash(seed+2.)>.5){a.y=.88;b.y=.12;}}
-    else if(uArcEvent.x<3.5){a=vec2(offset,1.);b=vec2(1.-offset,0.);}
-    else{a=vec2(0.,offset);b=vec2(1.,1.-offset);}
-    arc=max(arc,portalBolt(uv,a,b,seed));
-    if(uArcEvent.x>2.5){vec2 joint=portalPoint(a,b,.6,seed);float side=portalHash(seed+5.)>.5?1.:0.;arc=max(arc,portalBolt(uv,joint,vec2(side,.1+portalHash(seed+3.)*.8),seed+7.));}
-  }
-  arc*=uArcEvent.z;
-  float edge=pow(abs(uv.x-.5)*2.,8.)*.25;
-  vec3 light=mix(vec3(.64,.93,1.),vec3(.85,.65,1.),portalHash(uArcEvent.y+3.));
-  return vec4(mix(body,light,arc),clamp(.20+haze*.08+edge+arc*.58,0.,.94));
+  float ripple=.5+.5*sin(uv.x*8.+uv.y*5.+t*.42+sin(uv.y*7.+t*.22)*.9);
+  float second=.5+.5*sin(uv.x*13.-uv.y*4.-t*.28);
+  float flow=pow(ripple,5.)*.65+pow(second,8.)*.35;
+  float haze=.5+.5*sin(uv.x*3.+uv.y*6.+t*.20);
+  vec3 body=mix(vec3(.24,.12,.41),vec3(.42,.27,.60),haze*.7);
+  vec3 pearl=mix(vec3(1.,.88,.63),vec3(1.,.97,.87),second);
+  float edge=pow(abs(uv.x-.5)*2.,8.)*.06;
+  return vec4(mix(body,pearl,flow*.82),clamp(.30+flow*.42+edge,0.,.80));
 }
 in vec3 vWorld,vNormal;in vec4 vColor;in vec2 vUV;uniform vec4 uColor;uniform bool uFloor,uSign,uSea,uShadowPass,uSunDisc,uCloud,uActor,uGlow,uTexBase;uniform float uTime;uniform vec3 uSun;uniform mat4 uShadowVP,uShadowVPM;uniform highp sampler2DShadow uShadowS,uShadowM;uniform vec4 uClouds[5];uniform sampler2D uTex;uniform vec3 uEye;uniform vec2 uPlayer;uniform float uFogK;out vec4 frag;
 float vis(highp sampler2DShadow m,vec3 q,float px){float v=0.;for(int i=-1;i<=1;i++)for(int j=-1;j<=1;j++)v+=texture(m,vec3(q.xy+vec2(i,j)*px,q.z-.004));return v/9.;}
@@ -246,8 +211,8 @@ bool inside(vec3 q){return q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z<1.;}
 float cloudVis(vec3 p){float v=1.;for(int i=0;i<5;i++){vec4 c=uClouds[i];float t=(c.y-p.y)/max(uSun.y,.2);vec2 q=p.xz+uSun.xz*t;float d=length((q-c.xz)/vec2(4.8,3.2))/c.w;v*=mix(.72,1.,smoothstep(.55,1.05,d));}return v;}
 void main(){if(uEnergy){frag=portalColor(vUV,uTime);return;}if(uShadowPass){frag=vec4(1.);return;}if(uGlow){frag=vec4(vColor.rgb,vColor.a);return;}if(uSunDisc){float rr=length(vUV-.5)*2.;if(rr>1.)discard;frag=vec4(mix(vec3(1.,.98,.88),vec3(1.,.92,.66),rr*rr),1.);return;}if(uCloud){vec3 cn=normalize(vNormal);float k=dot(cn,uSun)*.5+.5;vec3 c=mix(vec3(.82,.89,.98),vec3(1.,.99,.96),k)*mix(.9,1.,cn.y*.5+.5);float fog=smoothstep(40.,80.,length(uEye-vWorld)/uFogK);frag=vec4(mix(c,vec3(.45,.72,.94),fog*.6),1.);return;}vec3 n=normalize(vNormal),base=uTexBase?pow(texture(uTex,vUV).rgb,vec3(1.35)):uColor.rgb*vColor.rgb;float shadow=1.;
 if(uSea){vec2 p=vWorld.xz;float t=uTime;vec2 g=vec2(0.);const vec3 W[6]=vec3[6](vec3(.90,.42,.45),vec3(-.55,.83,.62),vec3(.20,-.98,.85),vec3(-.94,-.33,1.4),vec3(.70,.71,2.1),vec3(-.15,.99,3.0));for(int i=0;i<6;i++){vec2 dir=normalize(W[i].xy);float k=W[i].z,amp=.09/k;float ph=dot(dir,p)*k*1.3+t*sqrt(9.8*k)*.55+float(i)*1.7;g+=dir*cos(ph)*amp*k*1.3;}vec3 n=normalize(vec3(-g.x,1.,-g.y));vec3 V=normalize(uEye-vWorld),Ls=uSun;float d=min(length(p)-12.,length(p-vec2(0.,3.2))-13.6);vec3 deep=vec3(.05,.34,.64),shallow=vec3(.18,.69,.78),body=mix(shallow,deep,smoothstep(.5,9.,d));vec3 sky=mix(vec3(.65,.83,.98),vec3(.36,.66,.94),clamp(reflect(-V,n).y,0.,1.));float fres=.06+.94*pow(1.-max(0.,dot(n,V)),5.);vec3 c=mix(body,sky,fres);c+=vec3(1.,.97,.9)*pow(max(0.,dot(reflect(-Ls,n),V)),180.)*1.6;float foam=smoothstep(.9,0.,d)*(.6+.4*sin(d*6.-t*1.8+g.x*8.));c=mix(c,vec3(.96,.98,1.),clamp(foam,0.,1.)*.7);float fog=smoothstep(26.,62.,length(uEye-vWorld)/uFogK);frag=vec4(mix(clamp(c,0.,1.),vec3(.45,.72,.94),fog),1.);return;}
-if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec3 c=texture(uTex,vUV).rgb;
-if(uRhythmSign){float mask=smoothstep(.32,.65,max(c.r,max(c.g,c.b)))*step(.08,vUV.x)*step(vUV.x,.92)*step(.18,vUV.y)*step(vUV.y,.82);
+if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec4 signPixel=texture(uTex,vUV);if(signPixel.a<.5)discard;vec3 c=signPixel.rgb;
+if(uRhythmSign){float mask=1.;
 vec3 rainbow=.65+.35*cos(vec3(0.,2.1,4.2)+uTime*2.6+vUV.x*7.);float pulse=.85+.15*sin(uTime*4.+vUV.x*12.);
 float shimmer=pow(max(0.,1.-abs(fract(vUV.x-uTime*.45)*2.-1.)),14.);c=mix(c,clamp(rainbow*pulse+shimmer*.22,0.,1.),mask*.9);}
 float k=max(0.,(dot(n,uSun)+.4)/1.4);frag=vec4(c*(.86+.14*k),1.);return;}if(uFloor){float tile=mod(floor(vWorld.x/1.5)+floor(vWorld.z/1.5),2.);base=mix(vec3(.99,.83,.56),vec3(.17,.23,.36),tile);}float key=max(0.,(dot(n,uSun)+.4)/1.4);float fill=max(0.,dot(n,normalize(vec3(.8,.4,-.5))));vec3 lit=base*(vec3(.39,.40,.43)+key*.62+fill*vec3(.08,.10,.13));vec3 h=normalize(normalize(uEye-vWorld)+uSun);lit+=vec3(.04)*pow(max(0.,dot(n,h)),14.);vec3 pw=vWorld+n*.06;vec3 q=lproj(uShadowVP,pw);if(inside(q))shadow=vis(uShadowS,q,1./1024.);if(!uActor){vec3 qm=lproj(uShadowVPM,pw);if(inside(qm))shadow=min(shadow,vis(uShadowM,qm,1./512.));}lit*=mix(.62,1.,shadow)*cloudVis(vWorld);vec3 displayColor=pow(clamp(lit,0.,1.),vec3(1./2.2));
@@ -262,7 +227,7 @@ float fog=smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(displayCol
 
   function create(canvas) {
     let boardPanels = [], boardTex = {}, props = [], boat = [], smoke = [], smokeBall = null, arcade = null, boss = null, modeBtn = [], glowDisc = [], glowHalo = [], screenTex = null, screenCanvas = null; // 두더지팡 게임기: 구멍 빛·구멍 두더지·화면 글자
-    let gl, program, U, A, environment = [], actor = [], rig = null, smileFace = null, vp = null, signs = null, size = null, seaMesh = null, shadowS = null, shadowM = null, sunQuad = null, clouds = [], rides = [], staticAt = -9, staticVP = null, doorOpen = 0, doorAt = null, portalSeed = Math.random()*4096;
+    let gl, program, U, A, environment = [], actor = [], rig = null, smileFace = null, vp = null, signs = null, size = null, seaMesh = null, shadowS = null, shadowM = null, sunQuad = null, clouds = [], rides = [], staticAt = -9, staticVP = null, doorOpen = 0, doorAt = null;
     const resetSize = () => { size = null; };
     if (root.ResizeObserver) new ResizeObserver(resetSize).observe(canvas); else root.addEventListener('resize', resetSize);
     function shader(type, src) {
@@ -278,7 +243,7 @@ float fog=smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(displayCol
       gl.linkProgram(program);
       if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw Error(gl.getProgramInfoLog(program));
       gl.useProgram(program);
-      U = {}; for (const k of ['VP', 'Model', 'Bones', 'Normal', 'Skin', 'Color', 'Floor', 'Sign', 'Tex', 'Eye', 'Player', 'Sea', 'Time', 'Sun', 'ShadowVP', 'ShadowS', 'ShadowM', 'ShadowPass', 'SunDisc', 'Cloud', 'Actor', 'ShadowVPM', 'Clouds', 'FogK', 'Glow', 'TexBase', 'Energy', 'ArcEvent', 'RhythmBars', 'BarBase', 'RhythmSign']) U[k] = gl.getUniformLocation(program, 'u' + k);
+      U = {}; for (const k of ['VP', 'Model', 'Bones', 'Normal', 'Skin', 'Color', 'Floor', 'Sign', 'Tex', 'Eye', 'Player', 'Sea', 'Time', 'Sun', 'ShadowVP', 'ShadowS', 'ShadowM', 'ShadowPass', 'SunDisc', 'Cloud', 'Actor', 'ShadowVPM', 'Clouds', 'FogK', 'Glow', 'TexBase', 'Energy', 'RhythmBars', 'BarBase', 'RhythmSign']) U[k] = gl.getUniformLocation(program, 'u' + k);
       A = {}; for (const k of ['Position', 'Normal', 'Color', 'Joints', 'Weights', 'UV']) A[k] = gl.getAttribLocation(program, 'a' + k);
       gl.enable(gl.DEPTH_TEST);
       // 해 쪽에서 본 깊이 지도: 섬·건물(1초마다 1024) / 두더지·구름(매 프레임 512) — 저사양 대비
@@ -514,7 +479,7 @@ float fog=smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(displayCol
         drawMole(); drawClouds();
         // Transparent gate overlays only geometry behind the doorway; foreground actors occlude it.
         gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);gl.disable(gl.CULL_FACE);
-        const arc=gateEvent(now,portalSeed);gl.uniform4f(U.ArcEvent,arc.pattern,arc.seed,arc.pulse,arc.count);
+
         gl.uniform1i(U.Energy,1);
         for(const m of environment) if(m.energy) draw(m,m.world,null);
         gl.uniform1i(U.Energy,0);gl.depthMask(true);gl.disable(gl.BLEND);
@@ -599,7 +564,7 @@ float fog=smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(displayCol
     };
   }
 
-  const api = { create, boatMatrix, camera, project, rayFloor, rayPlane, pickSite, seaHeight, seaGrid, sunDir, SUN_PERIOD, cloudMesh, cloudPos, rideParts, rideMotion, shopDoorTarget, shopDoorStep, shopDoorMatrix, gateBarHeight, gateEvent };
+  const api = { create, boatMatrix, camera, project, rayFloor, rayPlane, pickSite, seaHeight, seaGrid, sunDir, SUN_PERIOD, cloudMesh, cloudPos, rideParts, rideMotion, shopDoorTarget, shopDoorStep, shopDoorMatrix, gateBarHeight };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.MoleGame = root.MoleGame || {};
   root.MoleGame.Home3DRenderer = api;

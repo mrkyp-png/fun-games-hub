@@ -87,12 +87,12 @@ def group(name, parts, gx, gz):
 
 def sign(action, z, w=2.2, h=.7, y=-1.0):
     """간판: 나무판 + 앞면 글자판(Sign_<action>, UV 0~1, 정면 -Y). 글자는 작업 6에서 텍스처로."""
-    board = box('Sign board ' + action, (0, y + .06, z), (w + .16, .12, h + .16), M['wood'], .04)
+    board = None if action in ('rhythm', 'shop') else box('Sign board ' + action, (0, y + .06, z), (w + .16, .12, h + .16), M['wood'], .04)
     bpy.ops.mesh.primitive_plane_add(size=1, location=(0, y - .005, z), rotation=(math.pi / 2, 0, 0))
     face = bpy.context.object; face.name = 'Sign_' + action; face.scale = (w, h, 1)
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     face.data.materials.append(M['sign'])
-    return [board, face]
+    return ([board] if board else []) + [face]
 
 # ---------- 섬 · 바다 · 해변 ----------
 cyl('Island floor', (0, 0, -.05), ISLAND_R, .1, M['floor'], 96, .02)

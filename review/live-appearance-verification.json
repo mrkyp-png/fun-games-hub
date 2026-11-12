@@ -13,7 +13,7 @@
     "startup script dependencies",
     "all service-worker shell assets exist"
   ],
-  "shellAssets": 857,
+  "shellAssets": 859,
   "realBrowser": false,
   "phonePerformance": false
 }

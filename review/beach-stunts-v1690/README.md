@@ -1,0 +1,10 @@
+# Beach stunt/hair and entrance-flow verification
+
+- Runtime module: mole/js/rhythm-beach-stunts.js, loaded after StudioRig/MoleAppearances and before the beach renderer.
+- Trigger occurs only in the successful `hit` path. Turns start after collision and the jump midpoint, end by the original jump end, and cancel on miss/new jump. Rotation uses the body's centre; collider trajectories remain untouched.
+- Hair roots remain fixed for Mohawk/spiky/forelock, with exaggerated bend and stretch of mid/tip joints. Curly wig lift intentionally translates the whole hair rig and mesh, reseating at landing. Forelock uses a separate forward-fold/straighten/restore profile.
+- verify-beach-stunts-v1690.cjs samples all four actual GLB rigs and finite skin palettes, checks roots and forelock local head coordinates, turn pivots/timing and reset.
+- `node review/export-beach-stunt-proof.cjs`, followed by Blender CLI `-b -P review/render-beach-stunt-proof.py`, produces eight baked runtime snapshots (runtime-poses.png). The `--forelock` flags produce four forelock states (forelock-poses.png). These Blender renders were visually inspected; they are not browser screenshots. Large baked GLBs and rendered proof images remain local review artifacts.
+- Both side fringes: foreground ImageBitmap is premultiplied before GPU upload; sample RGB is normalized by alpha after interpolation, so transparent dark texels do not darken the entire curved contact band. Existing masks, hand exceptions and source image are preserved. WebGL ImageBitmap upload behaviour reference: https://registry.khronos.org/webgl/specs/latest/1.0/#PIXEL_STORAGE_PARAMETERS
+- Entrance: randomized lightning generator, shader and uniforms removed. Slow continuous purple-backed ivory/gold flow increases contrast; physical portal geometry, rhythm bars, collision and shop door remain intact. render-gate-flow-reference.py creates a calculated colour reference only.
+- Seven targeted checks passed before release. Actual browser animation, remaining side-fringe appearance and phone performance remain unverified.

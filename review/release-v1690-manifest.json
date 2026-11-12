@@ -1,0 +1,31 @@
+{
+  "version": "V1690 G",
+  "baseCommit": "87400a40c1876df2655d8b97eb980426322d77fe",
+  "hashFormat": "SHA256; LF-normalized text, unchanged binary bytes",
+  "production": {
+    "mole/index.html": "4cc859e8b97bf9197856f0d8bed7c0f3b043f2aae9de2c91beb8e518a1980648",
+    "mole/style.css": "309ba4687f4b647ba2cc4e41b127d09ae505f75e68c5457724472a43c1d99536",
+    "mole/sw.js": "43655de433e5317793d258d4c5ed4408011988bfdaa759256686b43b2bc8ebd9",
+    "mole/js/home3d.js": "adb753aff702880c75e3616c544a53eef3786f20a9635dbb2932dfb884c31ae4",
+    "mole/js/home3d-layout.js": "9a81614e10bc2fd0b7d30fc83e23d43febb4a75832ef26fc62198e1d60b9fb19",
+    "mole/js/home3d-renderer.js": "e77ec4b8561bbe99453ab7b90d021d7ba1e89ead0abe973b374f5923913de350",
+    "mole/js/home3d-signs.js": "318f9ec2fd61f8ffb2e33e8b5af9d266f1d2d63ddc6e2d8cdc2f514ccf2dd122",
+    "mole/js/rhythm-type-mole.js": "462f83902a9de36edd11036995d2d13d9b57ec06b702b8d7eafd82fcc81fb214",
+    "mole/js/rhythm.js": "6872b5c18cb4e835c066e0d706084f614a0f5c3463b33de730c202d7c9669342",
+    "mole/js/rhythm-beach.js": "309c44f4557dd0310f6c20f4306cda431885b564488aea8d83fea997d438da13",
+    "mole/js/rhythm-beach-ocean.js": "bbd8d055668a247e1139e94b9f7857f55653a406acc6c5040e91596c5bef50ee",
+    "mole/js/rhythm-beach-moles.js": "1d91903386630e8f0d1b2b20a9540dd8912c1006f298c41d1aa8834797bfd878",
+    "mole/js/rhythm-beach-stunts.js": "0db69a87f8ecf8b6f283f8871097a0b7a2a1bfd57bcdd8f05c3852d288365958",
+    "mole/assets/home3d/plaza.glb": "d8a1193e8831d4ebac5b930cb847e26ed57313c318b22f3c5883a5908223f6ef",
+    "mole/assets/home3d/plaza.blend": "c227db2a49a89d75546b5f54e89474f026fb4291e099e82b7e7d481bc9c5f7ed",
+    "mole/assets/rhythm/beach-sand-hole-v1690/geometry.json": "a106eb1769414ec0f46e444b36f270a6420a55b02167b581a351bdf08903a5b0",
+    "mole/assets/rhythm/beach-sand-hole-v1690/hole-back.png": "28cc0f93600ac012eed6f09d36045f3643389d2b34cc811f0c76802cb62c2a0f",
+    "mole/assets/rhythm/beach-sand-hole-v1690/hole-front.png": "33a13112880b0aafdbc8cc988706fc4edba11ad390077aaf02b32b581d293bd4",
+    "mole/assets/rhythm/beach-sand-hole-v1690/hole-occlusion.png": "9d6997656b7cceaa1bd0f895f22cfa03b436330af12ede3f1c9a46990ddb87c1",
+    "mole/assets/rhythm/beach-sand-hole-v1690/hole-source.png": "0fa543a2e32fbaef3d8fb9f83866dbe45d4f0ad743d16087101d708539cbd868",
+    "mole/assets/rhythm/beach-sand-hole-v1690/IMAGEGEN_PROMPT.md": "275ba83d517b1b8722a06a49c4e1398a760c59cb70752065fd024fade18978ad"
+  },
+  "realBrowserVerified": false,
+  "phonePerformanceVerified": false,
+  "deploymentStatusAtPreparation": "pending; record remote SHA and Pages success separately after push"
+}

@@ -1,10 +1,10 @@
 /* Four real 3D actors share one WebGL canvas and the existing beach audio clock. */
 (function(root){'use strict';
-const MG=root.MoleGame,R=root.StudioRig,AP=MG.MoleAppearances;let modelPromise;
-function load(){if(!modelPromise)modelPromise=fetch('assets/home3d/mole-clay-v47-smile.glb?v=1689-G').then(r=>{if(!r.ok)throw Error('Beach mole model '+r.status);return r.arrayBuffer()}).then(R.parseGLB).then(m=>AP.prepare(m)).catch(e=>{modelPromise=null;throw e});return modelPromise}
+const MG=root.MoleGame,R=root.StudioRig,AP=MG.MoleAppearances,FX=MG.RhythmBeachStunts;let modelPromise;
+function load(){if(!modelPromise)modelPromise=fetch('assets/home3d/mole-clay-v47-smile.glb?v=1690-G').then(r=>{if(!r.ok)throw Error('Beach mole model '+r.status);return r.arrayBuffer()}).then(R.parseGLB).then(m=>AP.prepare(m)).catch(e=>{modelPromise=null;throw e});return modelPromise}
 function create(stage){
  let canvas,gl,rig,parts=[],program,U,A,ready=false,loading=null,lost=false,geometry=null,lastHandError=0;
- const holeBase='assets/rhythm/beach-hole-v1689/';
+ const holeBase='assets/rhythm/beach-sand-hole-v1690/';
  function prepare(){if(ready&&!lost)return Promise.resolve(true);if(!loading)loading=Promise.all([load(),fetch(holeBase+'geometry.json').then(r=>{if(!r.ok)throw Error('Hole geometry '+r.status);return r.json()})]).then(([model,data])=>{geometry=data;return initialize(model)}).catch(e=>{loading=null;canvas?.remove();canvas=null;throw e});return loading}
  async function initialize(model){
   if(canvas)canvas.remove();parts=[];
@@ -15,10 +15,10 @@ function create(stage){
   const vs=`#version 300 es
 precision highp float;in vec3 aPosition,aNormal;in vec4 aColor,aJoints,aWeights;in float aHand;uniform mat4 uModel,uVP,uBones[${joints}];out vec3 vNormal;out vec4 vColor;out float vHand;void main(){mat4 s=aWeights.x*uBones[int(aJoints.x)]+aWeights.y*uBones[int(aJoints.y)]+aWeights.z*uBones[int(aJoints.z)]+aWeights.w*uBones[int(aJoints.w)];vec4 p=uModel*s*vec4(aPosition,1.);vNormal=normalize(mat3(uModel)*mat3(s)*aNormal);vColor=aColor;vHand=aHand;gl_Position=uVP*p;}`;
   const fs=`#version 300 es
-precision highp float;in vec3 vNormal;in vec4 vColor;in float vHand;uniform vec4 uColor,uHoleRect;uniform sampler2D uHoleMask;uniform float uFlash,uHandsOnRim;out vec4 frag;void main(){vec2 uv=vec2((gl_FragCoord.x-uHoleRect.x)/uHoleRect.z,(uHoleRect.y-gl_FragCoord.y)/uHoleRect.w);if(uv.y>1.)discard;float cover=uv.y<0.?0.:texture(uHoleMask,clamp(uv,vec2(0.),vec2(1.))).a;float visibility=1.-cover*(1.-uHandsOnRim*step(.5,vHand));if(visibility<.001)discard;float d=max(dot(normalize(vNormal),normalize(vec3(-.4,.85,1.))),0.);vec3 base=uColor.rgb*vColor.rgb;base=mix(base,vec3(1.),uFlash);frag=vec4(pow(max(base*(.42+.58*d),vec3(0.)),vec3(1./2.2)),uColor.a*vColor.a*visibility);}`;
+precision highp float;in vec3 vNormal;in vec4 vColor;in float vHand;uniform vec4 uColor,uHoleRect;uniform sampler2D uHoleMask,uHoleFront;uniform float uFlash,uHandsOnRim;out vec4 frag;void main(){vec2 uv=vec2((gl_FragCoord.x-uHoleRect.x)/uHoleRect.z,(uHoleRect.y-gl_FragCoord.y)/uHoleRect.w);if(uv.y>1.)discard;float cover=uv.y<0.?0.:texture(uHoleMask,clamp(uv,vec2(0.),vec2(1.))).a;float visibility=1.-cover*(1.-uHandsOnRim*step(.5,vHand));if(visibility<.001)discard;float d=max(dot(normalize(vNormal),normalize(vec3(-.4,.85,1.))),0.);vec3 base=uColor.rgb*vColor.rgb;base=mix(base,vec3(1.),uFlash);vec3 body=pow(max(base*(.42+.58*d),vec3(0.)),vec3(1./2.2));vec4 front=texture(uHoleFront,clamp(uv,vec2(0.),vec2(1.)));vec3 sand=front.rgb/max(front.a,.00001);frag=vec4(mix(body,sand,1.-visibility),uColor.a*vColor.a);}`;
   function shader(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s}
   program=gl.createProgram();const shaders=[shader(gl.VERTEX_SHADER,vs),shader(gl.FRAGMENT_SHADER,fs)];for(const s of shaders)gl.attachShader(program,s);gl.linkProgram(program);for(const s of shaders)gl.deleteShader(s);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));
-  U=Object.fromEntries(['Model','VP','Bones','Color','HoleRect','HoleMask','Flash','HandsOnRim'].map(n=>[n,gl.getUniformLocation(program,'u'+(n==='Bones'?'Bones[0]':n))]));A=Object.fromEntries(['Position','Normal','Color','Joints','Weights','Hand'].map(n=>[n,gl.getAttribLocation(program,'a'+n)]));
+  U=Object.fromEntries(['Model','VP','Bones','Color','HoleRect','HoleMask','HoleFront','Flash','HandsOnRim'].map(n=>[n,gl.getUniformLocation(program,'u'+(n==='Bones'?'Bones[0]':n))]));A=Object.fromEntries(['Position','Normal','Color','Joints','Weights','Hand'].map(n=>[n,gl.getAttribLocation(program,'a'+n)]));
   function attribute(name,data,width){const loc=A[name];if(loc<0)return null;const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,width,gl.FLOAT,false,0,0);return b}
   model.json.nodes.forEach((node,index)=>{
    if(node.mesh===undefined||(node.name!=='Mole_Clay_Skin'&&!AP.hairStyle(node)))return;
@@ -33,7 +33,13 @@ precision highp float;in vec3 vNormal;in vec4 vColor;in float vHand;uniform vec4
     parts.push({vao,node:index,count:indices.length,style:AP.hairStyle(node),material,colorBuffer,variants,colorSize});
    }
   });
-  const response=await fetch(holeBase+'hole-occlusion.png');if(!response.ok)throw Error('Hole mask '+response.status);const bitmap=await createImageBitmap(await response.blob(),{colorSpaceConversion:'none',premultiplyAlpha:'none'}),mask=gl.createTexture();gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,mask);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,bitmap);bitmap.close();gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.useProgram(program);gl.uniform1i(U.HoleMask,0);
+  for(const [slot,file] of [[0,'hole-occlusion.png'],[1,'hole-front.png']]){
+   const response=await fetch(holeBase+file);if(!response.ok)throw Error('Hole layer '+response.status);
+   const bitmap=await createImageBitmap(await response.blob(),{colorSpaceConversion:'none',premultiplyAlpha:slot===1?'premultiply':'none'}),texture=gl.createTexture();
+   gl.activeTexture(gl.TEXTURE0+slot);gl.bindTexture(gl.TEXTURE_2D,texture);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,bitmap);bitmap.close();
+   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  }
+  gl.useProgram(program);gl.uniform1i(U.HoleMask,0);gl.uniform1i(U.HoleFront,1);
   gl.enable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);stage.classList.add('rp-use-3d');ready=true;return true;
  }
  function render(time,layout,heads,moles,jumpDuration=.42){
@@ -48,11 +54,13 @@ precision highp float;in vec3 vNormal;in vec4 vColor;in float vHand;uniform vec4
    const id=AP.styles[i],state=moles[i],dt=time-state.jumpAt,hurt=time-state.hurtAt,jumping=dt>=0&&dt<jumpDuration;
    const clip=hurt>=0&&hurt<.45?'PainHit':jumping?'Jump':'Idle',duration=rig.animations.find(a=>a.name===clip)?.duration||1,clipTime=clip==='Jump'?dt/jumpDuration*duration:clip==='PainHit'?hurt+.22:Math.max(0,time);
    const worlds=AP.pose(rig,clip,clipTime,clip==='Idle',AP.face(rig,clip==='PainHit'),Math.max(0,time),id),head=heads[i].h||heads[i],scale=head.r/.80,anchor=R.point(worlds[headNode],[0,.57,0]),rect=layout.holeRects[i],bodyDelta=R.multiply(worlds[bodyNode],rimBodyInverse);
-   const smooth=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)},rest=jumping?1-smooth(Math.min(dt,jumpDuration-dt)/(jumpDuration/7)):1,armRest=clip==='PainHit'?0:rest,offsets={};
+   FX.hair(rig,worlds,id,FX.hairMotion(time,state.jumpAt,jumpDuration,id));
+   const stunt=clip==='PainHit'?{active:false}:FX.sample(state,time);
+   const smooth=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)},rest=stunt.active?0:jumping?1-smooth(Math.min(dt,jumpDuration-dt)/(jumpDuration/7)):1,armRest=clip==='PainHit'?0:rest,offsets={};
    for(const side of ['L','R']){const hand=R.multiply(bodyDelta,rimWorlds[nodes.findIndex(n=>n.name==='Hand.'+side)]),x=head.x+scale*(hand[12]-anchor[0]),u=Math.max(0,Math.min(geometry.width-1,(x-rect.x)/rect.w*(geometry.width-1))),lo=Math.floor(u),hi=Math.min(geometry.width-1,lo+1),f=u-lo,edge=geometry.frontCurvePixels[lo]*(1-f)+geometry.frontCurvePixels[hi]*f,target=rect.y+edge/geometry.height*rect.h-scale*.04;offsets[side]=target-(head.y+scale*(anchor[1]-hand[13]));}
    const offset=(offsets.L+offsets.R)/2;
    nodes.forEach((n,k)=>{const match=/^(UpperArm|Forearm|Hand|Finger[123]|Thumb)\.([LR])$/.exec(n.name||'');if(!match||armRest<=0)return;const rim=R.multiply(bodyDelta,rimWorlds[k]);rim[13]-=(offsets[match[2]]-offset)/scale;worlds[k]=new Float32Array(worlds[k].map((v,c)=>v+(rim[c]-v)*armRest));});
-   const instance=R.transform({translation:[head.x-scale*anchor[0],h-head.y-scale*anchor[1]-offset*rest,-scale*anchor[2]],scale:[scale,scale,scale]});
+   const baseInstance=R.transform({translation:[head.x-scale*anchor[0],h-head.y-scale*anchor[1]-offset*rest,-scale*anchor[2]],scale:[scale,scale,scale]}),instance=FX.turn(baseInstance,R.point(worlds[bodyNode],[0,.2,0]),stunt);
    if(armRest>.999)for(const side of ['L','R']){const hand=worlds[nodes.findIndex(n=>n.name==='Hand.'+side)],point=R.point(instance,Array.from(hand.slice(12,15))),u=Math.max(0,Math.min(geometry.width-1,(point[0]-rect.x)/rect.w*(geometry.width-1))),lo=Math.floor(u),hi=Math.min(geometry.width-1,lo+1),f=u-lo,target=rect.y+(geometry.frontCurvePixels[lo]*(1-f)+geometry.frontCurvePixels[hi]*f)/geometry.height*rect.h-scale*.04;lastHandError=Math.max(lastHandError,Math.abs((h-point[1])-target));}
    gl.enable(gl.SCISSOR_TEST);gl.scissor(Math.round(i*pw/4),0,Math.ceil(pw/4),ph);gl.uniform4fv(U.HoleRect,[rect.x*pw/layout.W,(layout.H-rect.y)*ph/layout.H,rect.w*pw/layout.W,rect.h*ph/layout.H]);gl.uniform1f(U.HandsOnRim,armRest);gl.uniform1f(U.Flash,clip==='PainHit'?Math.max(0,1-hurt/.15)*.25:0);
    for(const part of parts){if(part.style&&part.style!==id)continue;gl.bindVertexArray(part.vao);const b=part.variants[id]||part.colorBuffer;gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.vertexAttribPointer(A.Color,part.colorSize,gl.FLOAT,false,0,0);

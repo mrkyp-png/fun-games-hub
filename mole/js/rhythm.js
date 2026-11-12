@@ -171,9 +171,9 @@
     function preload() {
       var list = [];
       // The legacy dimensions still define judgement geometry; actors use real GLB meshes.
-      list.push(A+'beach-hole-v1689/hole-back.png',A+'beach-hole-v1689/hole-front.png');
+      list.push(A+'beach-sand-hole-v1690/hole-back.png',A+'beach-sand-hole-v1690/hole-front.png');
       WEAPONS.forEach(function (w) { list.push(A + 'w-' + w + '.png'); }); list.push(A + 'w-disc-face.png');
-      ['hippo-happy.webp','hippo-hurt.webp','hippo-arm.webp','sea-atlas.webp'].forEach(function(name){list.push(A+'beach-v1172/'+name);});
+
       return Promise.all(list.map(function (u) { if(imgs[u]&&imgs[u].complete&&imgs[u].naturalWidth)return null;var im = new Image(); im.src = u; imgs[u] = im; return im.decode ? im.decode().catch(function () {}) : null; }));
     }
     function loadMeta() { return meta ? Promise.resolve(meta) : fetch(A + 'jump-meta.json').then(function (r) { return r.json(); }).then(function (m) { meta = m; return m; }); }
@@ -270,7 +270,6 @@
     // ---- 레이아웃(px) ----
     var L = {};
     function layout() {
-      beachVisual.layout();
       el.style.setProperty('--rp-a-lyric-bottom', ($('.rp-bottom').offsetHeight + 2) + 'px');
       var W = stage.clientWidth, H = stage.clientHeight;
       L.W = W; L.H = H; L.laneW = W / 4;
@@ -278,7 +277,8 @@
       L.moleW = L.laneW * 0.92 * 0.95;
       L.moleBottom = H * 0.80;                    // 두더지 발바닥(구멍 중심) y
       L.p1 = H * 0.24; L.p2 = H * 0.40;
-      L.horizonY = H * 0.37; // 해변 배경 바다 수평선 근처
+      L.horizonY = H * 0.37; // 무기 발사선과 움직이는 바다 지평선의 공통 기준
+      beachVisual.layout((stage.offsetTop||0)+L.horizonY);
       // 타겟창 = 두더지 최고점 머리 위치(가장 높이 오르는 캐릭터 기준 평균)
       // v812: 타겟창 높이 고정(무대의 71% — 사용자가 확인한 기존 위치). 최고점 머리가 여기 닿도록 기준 바닥을 역산.
       L.lift = undefined; L.moleBottom = 0;
@@ -417,9 +417,9 @@
         ln.style.setProperty('--target-color',(beachPalette ? ['#ffc400','#009cff','#ee16a6','#10c848'] : ['#ffc94c','#5bd8ff','#ff8dce','#66e5b2'])[colorIndex]);
         var holeSize = HOLE_SIZE[i];
         ln.innerHTML = (beachPalette ? '<img class="rp-target-glow" src="' + A + 'beach-target-glow-v1352/glow-' + (colorIndex + 1) + '.webp" alt="">' : '') + '<img class="rp-target" src="' + A + (beachPalette ? 'beach-target-v1250/target-' : 'beach-v1172/target-') + (colorIndex + 1) + '.svg" alt=""><svg class="rp-target-inner-accent" viewBox="0 0 250 250" aria-hidden="true"><circle cx="125" cy="125" r="84" fill="none" stroke="var(--target-color)" stroke-width="3.75"/><path d="M125 23V62M125 188V227M23 125H62M188 125H227" fill="none" stroke="var(--target-color)" stroke-width="6" stroke-linecap="round"/></svg><span class="rp-target-orbit" aria-hidden="true"><i><b></b></i></span>' +
-          '<img class="rp-hole" src="' + A + (beachPalette ? 'beach-hole-v1689/hole-back.png' : 'hole-' + (i + 1) + '.png') + '" alt="">' +
+          '<img class="rp-hole" src="' + A + (beachPalette ? 'beach-sand-hole-v1690/hole-back.png' : 'hole-' + (i + 1) + '.png') + '" alt="">' +
           '<span class="rp-mole" aria-hidden="true"></span>' +
-          (beachPalette ? '<img class="rp-hole-front" src="'+A+'beach-hole-v1689/hole-front.png" alt="">' : '<svg class="rp-hole-front" viewBox="0 0 ' + holeSize[0] + ' ' + holeSize[1] + '" aria-hidden="true"><defs><clipPath id="rp-hole-front-' + i + '" clipPathUnits="objectBoundingBox"><path d="' + holeFrontPath(i) + '"/></clipPath></defs><image href="' + A + 'hole-' + (i + 1) + '.png" width="' + holeSize[0] + '" height="' + holeSize[1] + '" clip-path="url(#rp-hole-front-' + i + ')"/></svg>') +
+          (beachPalette ? '<img class="rp-hole-front" src="'+A+'beach-sand-hole-v1690/hole-front.png" alt="">' : '<svg class="rp-hole-front" viewBox="0 0 ' + holeSize[0] + ' ' + holeSize[1] + '" aria-hidden="true"><defs><clipPath id="rp-hole-front-' + i + '" clipPathUnits="objectBoundingBox"><path d="' + holeFrontPath(i) + '"/></clipPath></defs><image href="' + A + 'hole-' + (i + 1) + '.png" width="' + holeSize[0] + '" height="' + holeSize[1] + '" clip-path="url(#rp-hole-front-' + i + ')"/></svg>') +
           '<span class="rp-judge"></span>';
         lanesEl.appendChild(ln);
       }
@@ -625,7 +625,7 @@
       var t = now() - (lag || 0), m = st.moles[lane];
       // v843(사용자: 연속 무기 두 번째가 안 뜀) — 올라가는 중엔 무시, 최고점 지나 내려오는 중이면 바로 다시 점프
       if (t - m.jumpAt < (CONFIG.apexFrame + 1) * CONFIG.jumpFrameMs / 1000) return;
-      m.jumpAt = t; sfx('jump');
+      m.jumpAt = t; m.beachStunt=null; sfx('jump');
       var apexT = t + (CONFIG.apexFrame + 0.5) * CONFIG.jumpFrameMs / 1000;
       // 이 레인에서 판정 대상 노트(아직 처리 안 된 가장 가까운 것)
       var best = null;
@@ -648,6 +648,7 @@
       n.state = 'hit'; n.hitAt = now(); if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); if (n.wind) n.wind.style.opacity = '0';
       melody(true);
       var g = n.press.grade; st.cnt[g]++; st.combo++; st.maxCombo = Math.max(st.maxCombo, st.combo);
+      MG.RhythmBeachStunts.cue(st.moles[lane],st.combo,n.hitAt,7*CONFIG.jumpFrameMs/1000);
       st.score += sharedRules.points(g, st.combo);
       n.vx = (Math.random() < 0.5 ? -1 : 1) * (L.laneW * (1.5 + Math.random())); n.vy = -L.H * 1.1; n.bx = n.cx; n.by = n.cy;
       n.perfectFlight = null;
@@ -673,12 +674,12 @@
       if (n) { n.state = 'miss'; if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); if (n.wind) n.wind.style.opacity = '0'; }
       melody(false);
       st.cnt.MISS++; st.combo = 0; updateACombo(0,false); st.hp = Math.max(0, st.hp - 1);
-      st.moles[lane].hurtAt = now();
+      st.moles[lane].hurtAt = now(); st.moles[lane].beachStunt=null;
       showJudge(lane, 'MISS', 'miss'); hud();
       // V1170: normal A/B rounds always continue to the end of the song.
     }
     // ---- v831 연출 ----
-    var hippo = el.querySelector('.rp-hippo'), sparks = [], sparkI = 0, pangPool=[], pangIndex=0;
+    var sparks = [], sparkI = 0, pangPool=[], pangIndex=0;
     // 갈매기 비행은 비치 시작/정지/일시정지와 함께 rhythm-beach.js에서 관리한다.
     function burst(x, y, k) { // 명중 자리에서 반짝이 조각이 사방으로
       for (var i = 0; i < k; i++) {
@@ -688,7 +689,7 @@
         sp.style.color = ['#fff36b', '#ffffff', '#ffb3e6', '#8ff0ff'][i % 4]; replay(sp, 'is-on');
       }
     }
-    var boss = el.querySelector('.rp-a-cloud-boss');
+
     var bossColors = ['#20bfff','#ff43d7','#ffda00','#56f52d'];
     var comboBackdrop=document.createElement('div');comboBackdrop.className='rp-a-combo-atmosphere';el.insertBefore(comboBackdrop,el.firstChild);
     var comboTones=bossColors.map(function(color){var node=document.createElement('i');node.className='rp-a-combo-tone';node.style.backgroundColor=color;comboBackdrop.appendChild(node);return node;});
@@ -698,13 +699,13 @@
     function updateACombo(combo,immediate){
       var theme=Math.floor(combo/10);if(theme===aComboStage&&!immediate)return;lyricTicker.color(theme?bossColors[(theme-1)%bossColors.length]:bossColors[0]);aComboStage=theme;clearComboSweeps();
       comboTones.forEach(function(node,i){node.style.transitionDuration=immediate?'0ms':'500ms';node.style.opacity=theme&&i===(theme-1)%bossColors.length?'.05':'0';});
-      boss.style.setProperty('--rp-boss-opacity',String(Math.max(0,1-theme*.1)));
+
       if(!theme||immediate)return;
-      var color=bossColors[(theme-1)%bossColors.length];boss.style.setProperty('--rp-boss-color',color);
+      var color=bossColors[(theme-1)%bossColors.length];
       if(root.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
       comboSweeps.forEach(function(node,i){node.style.setProperty('--combo-color',color);comboAnimations.push(node.firstElementChild.animate([{transform:'translateY('+(i?'-100%':'800%')+')',opacity:0,offset:0},{opacity:.65,offset:.12},{transform:'translateY('+(i?'800%':'-100%')+')',opacity:0,offset:1}],{duration:500,easing:'linear'}));});
     }
-    function resetBoss() { updateACombo(0,true); boss.style.setProperty('--rp-boss-scale','1'); boss.style.setProperty('--rp-boss-color','transparent'); boss.style.setProperty('--rp-boss-opacity','1'); boss.style.opacity='1'; }
+    function resetBoss() { updateACombo(0,true); }
     function comboFx() {
       var c = $('[data-rp-combo]'); replay(c, 'is-bump');
       if (st.combo > 0 && st.combo <= 100 && st.combo % 10 === 0) updateACombo(st.combo,false);
@@ -817,7 +818,7 @@
 
     function gameOver(clear) {
       statusFx.stop(); clearButtonWaves();
-      beachVisual.stop(); beachMoles.stop();
+      beachVisual.pause(true); beachMoles.stop();
       lyricTicker.clear();
       if (st.ended) return; st.ended = true; st.over = true; el.querySelectorAll('.rp-btn').forEach(function (b) { b.classList.remove('is-cue'); }); // 결과창 뒤 버튼 반짝임 정지
       try { src.stop(ctx.currentTime + (clear ? 0.8 : 0.05)); } catch (e) { /* 무시 */ }
@@ -847,13 +848,10 @@
       var sEl = $('[data-rp-res-score]'), fin = result.score; sEl.textContent = '0';
       $('[data-rp-res-combo]').textContent = result.maxCombo;
       ['PERFECT', 'GREAT', 'GOOD', 'MISS'].forEach(function (g) { $('[data-rp-res-' + g.toLowerCase() + ']').textContent = result.cnt[g]; });
-      setTimeout(function () {
-        if (token !== resultSerial) return;
-        r.hidden = false;
-        var t0 = performance.now(); // v831: 점수 0 → 최종 카운트업(0.9초) 뒤 신기록이면 NEW! 도장
-        (function up(now) { if (token !== resultSerial) return; var k = Math.min(1, (now - t0) / 900), e = 1 - Math.pow(1 - k, 3); sEl.textContent = Math.round(fin * e).toLocaleString('en-US');
-          if (k < 1) requestAnimationFrame(up); else {if(isNew&&fin>0)stamp.classList.add('is-on');rankEl.classList.add('is-stamped');if(!badgeEl.hidden)badgeEl.classList.add('is-stamped');} })(t0);
-      }, clear ? 700 : 300);
+      r.hidden = false; // 같은 프레임에 결과 표시: 이전 배경이 보이던 300/700ms 대기 제거
+      var t0 = performance.now(); // v831: 점수 0 → 최종 카운트업(0.9초) 뒤 신기록이면 NEW! 도장
+      (function up(now) { if (token !== resultSerial) return; var k = Math.min(1, (now - t0) / 900), e = 1 - Math.pow(1 - k, 3); sEl.textContent = Math.round(fin * e).toLocaleString('en-US');
+        if (k < 1) requestAnimationFrame(up); else {if(isNew&&fin>0)stamp.classList.add('is-on');rankEl.classList.add('is-stamped');if(!badgeEl.hidden)badgeEl.classList.add('is-stamped');} })(t0);
     }
 
     function pause(on) {

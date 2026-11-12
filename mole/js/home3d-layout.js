@@ -22,9 +22,10 @@
   /* 바다 배: 뒤쪽 해변 앞바다. S = 모델 배율(Tripo 배 길이 0.98 → 약 4.9), DECK = 모델 갑판 높이, 갑판 반폭 U(길이)·W(폭) */
   const BOAT = { x: 0, z: 25.6, S: 5, DECK: 0.185, U: 1.05, W: 0.48, DRAFT: 0.45, theta: 0, yaw: 0, kick: 0 }; /* V1657 C: 노 젓기 — theta(섬 둘레 각도, 시계 방향 = 줄어듦)·yaw·kick(저을 때 기울기)은 home3d.js 가 바꿈 */ /* U·W = 갑판 타원 반지름(배 그림 안, 두더지 몸 여유 뺌, V1636 C) */ /* DRAFT = 물에 잠기는 깊이(갑판까지 0.93 중) */
   /* 해변(모래사장): 섬 스크립트 Beach sand 중심 (0, z 4.3) 반지름 18.1 → 걸을 수 있는 곳 = 반지름 17.5, 뒤쪽(z > 14)만 */
-  const BEACH = { cz: 4.3, r: 17.5, zmin: 14 };
+  const BEACH = { cz: 4.3, r: 17.5, zmin: 14, surfaceY: -.3 };
   const FENCE_OUT = 16.2; /* V1636 C 사용자: 울타리(15.65) 걸어서 못 지나감 — 해변은 울타리 바깥만, 해변↔섬은 날아서 */
   function onBeach(x, z) { return z > BEACH.zmin && Math.hypot(x, z) > FENCE_OUT && Math.hypot(x, z - BEACH.cz) < BEACH.r; }
+  function groundHeight(x,z) { return onBeach(x,z) ? BEACH.surfaceY : 0; }
 
   // 건물 앞(섬 중심 쪽) 진입 지점
   function entryPoint(s) {
@@ -140,7 +141,7 @@
     const a=angle+(travel-entryLength)/radius;
     return {x:cx+radius*Math.cos(a),y:cy+radius*Math.sin(a),rot:Math.atan2(Math.cos(a),-Math.sin(a)),speed,entrySeconds:entryLength/speed};
   }
-  const api = { ISLAND_R, WALK_R, FENCE_OUT, HOLE_R, SPAWN, SITES, RIDES, BOAT, BOARD, DISCO, onBeach, ARCADE_K, ARCADE_HOLES, ARCADE_BUTTONS, ROUND_COLORS, pickHole, rideExit, nearestRide, entryPoint, doorPoint, doorApproach, doorCoordinates, crossedDoor, allowed, slide, nearest, pathVia, deepSwimPose };
+  const api = { ISLAND_R, WALK_R, FENCE_OUT, HOLE_R, SPAWN, SITES, RIDES, BOAT, BOARD, DISCO, BEACH, onBeach, groundHeight, ARCADE_K, ARCADE_HOLES, ARCADE_BUTTONS, ROUND_COLORS, pickHole, rideExit, nearestRide, entryPoint, doorPoint, doorApproach, doorCoordinates, crossedDoor, allowed, slide, nearest, pathVia, deepSwimPose };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else { root.MoleGame = root.MoleGame || {}; root.MoleGame.Home3DLayout = api; }
 })(typeof window !== 'undefined' ? window : globalThis);
