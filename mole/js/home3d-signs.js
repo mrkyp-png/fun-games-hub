@@ -3,6 +3,11 @@
 (function (root) {
   'use strict';
   const W = 512, H = 160;
+  function metrics(action){
+    const layout=root.MoleGame?.Home3DLayout,scale=layout?.SITES.find(s=>s.action===action)?.scale||1.6;
+    const fontHeight=.2*(layout?.ARCADE_K||2.84)*(96/160);
+    return {width:(action==='shop'?1.04:1.92)*scale,height:fontHeight/.72,fontHeight};
+  }
 
   function labelFor(site, lang, t) {
     const text=t(site.labelKey).replace(/\n/g, ' ');
@@ -18,12 +23,13 @@
       const c = makeCanvas(); c.width = W; c.height = H;
       const g = c.getContext('2d'), T = root.MoleGame && root.MoleGame.Home3DText;
       if(action==='shop'||action==='rhythm'){
-        c.width=1024;c.height=Math.round(1024*(action==='shop'?.22/1.04:.28/1.92));
+        const dimensions=metrics(action);c.width=1024;c.height=Math.round(1024*dimensions.height/dimensions.width);
         g.clearRect(0,0,c.width,c.height);g.shadowBlur=0;g.textAlign='center';g.textBaseline='middle';
         let size=c.height*.72;
         const font=s=>T?T.fontOf(lang,s):'800 '+s+'px system-ui,sans-serif';g.font=font(size);
         if(g.measureText(text).width>c.width-40){size*=(c.width-40)/g.measureText(text).width;g.font=font(size);}
-        g.fillStyle=action==='rhythm'?'#fff3b0':'#fff3d4';g.fillText(text,c.width/2,c.height/2);
+        if(action==='shop'&&T&&g.createLinearGradient)T.candy(g,text,c.width/2,c.height/2,size,lang,c.width-40,COL.lightMode[0],COL.lightMode[1]);
+        else{g.fillStyle=action==='rhythm'?'#fff3b0':'#fff3d4';g.fillText(text,c.width/2,c.height/2);}
         return c;
       }
       if (T && g.createLinearGradient) {
@@ -64,7 +70,7 @@
     return { build, dispose, get: (action) => tex.get(action) };
   }
 
-  const api = { create, labelFor };
+  const api = { create, labelFor, metrics };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.MoleGame = root.MoleGame || {};
   root.MoleGame.Home3DSigns = api;

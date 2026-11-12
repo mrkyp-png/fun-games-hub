@@ -151,7 +151,8 @@
 // V1689 G: Four independent hair/color appearances; 3D beach actors and ImageGen rim; corrected RGB color layout.
 // V1688 G: Continuous full-body dance, slow head-first sea creatures, musical-note meshes and shimmering rhythm sign.
 // V1690 G: Sand beach, continuous ocean, combo turns and reactive hair; clear text-only signs, gentle warm entrance flow and corrected beach/water landing.
-const CACHE = 'mole-game-v1690-G';
+// V1691 G: gold3D in original sprite boxes; hammer2D preserved; weapons in front of HUD; matched plaza label sizes.
+const CACHE = 'mole-game-v1691-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -203,6 +204,8 @@ const SHELL = [
   './js/rhythm-button-feedback-v1568.js',
   './js/shop-models-v1509.js',
   './js/game-cannon-model-v1509.js',
+  './js/game-hammer-models.js',
+  './assets/weapons-3d-v1691/goldhammer-clone.glb',
   './assets/ui-approved-v1509/shop-tab-sword.png',
   './assets/ui-approved-v1509/shop-tab-skill-orb.png',
   './assets/skill-tab-layers-20261030/hand-2x.png',

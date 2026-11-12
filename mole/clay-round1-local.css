@@ -707,3 +707,8 @@
   60% { translate:0 -2.5px; }
   80% { translate:0 1px; }
 }
+
+/* Active weapons must remain in front of the status rails (z-index25) on top-row hits. */
+#game-screen.clay-round-one:not(.is-start) :is(#mole-hammer-layer,#fever-weapon-layer,.game-hammer-models) {
+  z-index:30;
+}

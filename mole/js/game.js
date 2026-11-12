@@ -1888,8 +1888,9 @@
     // (strike/update/home/clear/isBusy).
     const WeaponMod = (weapon === 'cannon' && MG.LaneCannon) ? MG.LaneCannon
       : (weapon === 'alipunch' && MG.LaneBoxing) ? MG.LaneBoxing : MG.LaneHammer;
-    const hammerOpts = { layer: document.getElementById('mole-hammer-layer') };
+    const hammerOpts = { layer: document.getElementById('mole-hammer-layer'), weaponId:weapon };
     if(weapon!=='cannon'&&MG.GameCannonModel)MG.GameCannonModel.releaseGPU();
+    if(MG.GameHammerModels)MG.GameHammerModels.releaseGPU();
     if (weapon === 'hammer') hammerOpts.idle = 'bounce'; // 대기 애니메이션(사용자 지정, 잠깐 자리 비웠을 때)
     if (weapon === 'goldhammer') {
       hammerOpts.sprite = 'assets/weapons/goldpaw-v1382.webp'; // V1382 C: 두더지 발바닥 네모 망치(사용자 확정, ESRGAN x4)
@@ -2572,15 +2573,18 @@
     // V1386 C 사용자: 뿅망치는 맨 오른쪽 줄도 메인 동작(정면 찌르기는 골드만).
     if (!state || !state.goldCloneOpts || (quakeCloneKind(regionId) === '90' && state.weapon === 'goldhammer')) {
       MG.HitFx.quakeClone(fxLayer, quakeClonePose(regionId), x, y, quakeCloneKind(regionId), onHit);
+      if(state?.weapon==='goldhammer')MG.GameHammerModels?.create({el:fxLayer.lastElementChild,layer:fxLayer,img:fxLayer.lastElementChild,id:'goldhammer',clone:true,selfImage:true});
       if (state && state.weapon === 'goldhammer' && quakeCloneKind(regionId) === '90') goldZap(fxLayer.lastElementChild, 400, GOLD_ZAP90); // V1409 C 사용자: 오른쪽 줄 분신도 번개(2장)
       return;
     }
     const clone = MG.LaneHammer.create(Object.assign({}, state.goldCloneOpts, { layer: fxLayer }));
+    const owner=state,generation=sessionGen;
     const el = fxLayer.lastElementChild;
     if (state.weapon === 'goldhammer') goldZap(el.querySelector('img'));
     clone.strike(x, y, onHit, frameKey);
     let last = performance.now();
     (function tick(now) {
+      if(state!==owner||sessionGen!==generation||owner.ended){clone.clear();return;}
       clone.update(Math.min(0.05, Math.max(0, (now - last) / 1000))); last = now;
       if (clone.isBusy()) { requestAnimationFrame(tick); return; }
       el.classList.add('is-fading');
@@ -2649,7 +2653,7 @@
 
     targets.forEach((id, k) => {
       setTimeout(() => {
-        if (!state || state.ended) return;
+        if (state !== quakeState || quakeState.ended) return;
         const p = liveTargetAt(id);
         if (!p) return;
         const res = state.scheduler.resolveRegion(id, { quake: true });
@@ -2659,8 +2663,8 @@
         extendQuakeHud();
         const fk = sharedPopElements.frameKeyAt ? sharedPopElements.frameKeyAt(id) : null;
         goldStrikeClone(fxLayer, id, p.x, p.y, () => {
-          if (state && state.quakePending) state.quakePending.delete(id);
-          if (!state || state.ended) return;
+          if (state !== quakeState || quakeState.ended) return;
+          if (quakeState.quakePending) quakeState.quakePending.delete(id);
           extendQuakeHud();
           onHammerImpact(p.x, p.y, res, { noHitstop: true });
           MG.HitFx.quakeDust(board, p.x, p.y);
@@ -3095,6 +3099,7 @@
     if (rafId) cancelAnimationFrame(rafId);
     if (state.laneHammer) state.laneHammer.home(); // 루프 멈추기 전 망치 대기위치로 스냅
     if(MG.GameCannonModel)MG.GameCannonModel.releaseGPU();
+    if(MG.GameHammerModels)MG.GameHammerModels.releaseGPU();
     if(MG.WeaponModels)MG.WeaponModels.setActiveScreen('result-screen');
     sharedPopElements.clear();
     resetHot();
@@ -3136,6 +3141,7 @@
     if (rafId) cancelAnimationFrame(rafId);
     if (state.laneHammer) state.laneHammer.home(); // 망치 대기위치로 스냅
     if(MG.GameCannonModel)MG.GameCannonModel.releaseGPU();
+    if(MG.GameHammerModels)MG.GameHammerModels.releaseGPU();
     if(MG.WeaponModels)MG.WeaponModels.setActiveScreen('result-screen');
     sharedPopElements.clear();
     resetHot();

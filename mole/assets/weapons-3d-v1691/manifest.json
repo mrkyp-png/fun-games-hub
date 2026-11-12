@@ -1,0 +1,7 @@
+{
+  "source": "mole\\assets\\shop-models-v1509\\goldhammer-v18-batched-v1520.glb",
+  "sourceSHA256": "f4fe52b61751f423b9efeb4a0fa6da6c03b3e000c9ea044584d5c9ac2e467d0b",
+  "sourceTriangles": 184392,
+  "cloneTriangles": 38628,
+  "usage": "clone only; main retains original; same coordinate frame and material identities"
+}

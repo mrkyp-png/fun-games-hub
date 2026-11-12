@@ -33,3 +33,12 @@ assert.ok(drawn.includes('Mole Pang'));
 signs.dispose();
 assert.strictEqual(live, 0, 'dispose 후 0');
 console.log('verify-home3d-signs: ok');
+// Compare actual rendered letter heights, rather than texture pixel sizes.
+const fs=require('fs'),vm=require('vm'),R=require('../mole/js/clay-rig-math.js');
+const bytes=fs.readFileSync('mole/assets/home3d/plaza.glb'),model=R.parseGLB(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.length)),instances=R.instances(model);
+globalThis.MoleGame.Home3DLayout=L;
+const renderer=fs.readFileSync('mole/js/home3d-renderer.js','utf8'),begin=renderer.indexOf('  function labelWorld('),brace=renderer.indexOf('{',begin);let depth=1,end=brace+1;for(;depth;end++){if(renderer[end]==='{')depth++;if(renderer[end]==='}')depth--;}
+const context={root:{MoleGame:{Home3DSigns:Sg}},R};vm.createContext(context);vm.runInContext(renderer.slice(begin,end),context);
+const mole=instances.find(i=>i.name==='Sign_lightMode'),moleBounds=R.bounds(model,[mole]),moleFont=(moleBounds.high[1]-moleBounds.low[1])*96/160;
+for(const action of ['shop','rhythm']){const original=instances.find(i=>i.name==='Sign_'+action),world=context.labelWorld(model,original),box=R.bounds(model,[{...original,world}]);assert(Math.abs((box.high[1]-box.low[1])*.72-moleFont)<1e-5,'Same physical letter height as Mole Pang');assert.deepStrictEqual(Array.from(world.slice(12,15)),Array.from(original.world.slice(12,15)),'Label stays centred at its building');}
+console.log('verify-home3d-signs: matching world letter height, existing label centres retained');

@@ -184,6 +184,11 @@
   }
 
   // ---------- WebGL ----------
+  function labelWorld(model,item){
+    if(!/^Sign_(shop|rhythm)$/.test(item.name))return item.world;
+    const metrics=root.MoleGame.Home3DSigns.metrics(item.name.slice(5)),box=R.bounds(model,[item]);
+    return R.multiply(item.world,R.transform({scale:[1,metrics.height/Math.max(.001,box.high[1]-box.low[1]),1]}));
+  }
   const VS = `#version 300 es
 precision highp float;
 in vec3 aPosition;in vec3 aNormal;in vec4 aColor;in vec4 aJoints;in vec4 aWeights;in vec2 aUV;
@@ -337,7 +342,7 @@ float fog=smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(displayCol
         for (const pr of propList || []) load(pr.url).then((mdl) => { const ins = R.instances(mdl); for (const i of ins) { const m = Object.assign(mesh(mdl, i.primitive), { world: R.multiply(pr.world, i.world), local: i.world, dyn: pr.dyn, texBase: null }); glbTexture(mdl, i.primitive).then((t) => { m.texBase = t; }).catch(() => { m.plain = true; }); props.push(m); } }).catch(() => {}); /* plain = 그림 없는 모델(재질 색) */
         if (boatModel) { boat = R.instances(boatModel).map((i) => Object.assign(mesh(boatModel, i.primitive), { world: i.world, texBase: null })); for (const b of boat) glbTexture(boatModel, R.instances(boatModel)[0].primitive).then((t) => { b.texBase = t; }).catch(() => {}); }
         // Sign_<action> 판 = 간판 글자 텍스처 자리
-        environment = R.instances(plaza).map((i) => Object.assign(mesh(plaza, i.primitive), { world: i.world, gateGlow: i.name.startsWith('GateGlow') || i.name === 'RhythmBars batch', rhythmBars: i.name === 'RhythmBars batch', energy: i.name === 'Energy_rhythm', shopDoor: i.name === 'Door_shop', sign: i.name.startsWith('Sign_') ? i.name.slice(5) : null, screen: i.name.startsWith('Screen_'), tex: null, texPrim: i.name.startsWith('Tex_') ? i.primitive : null }));
+        environment = R.instances(plaza).map((i) => Object.assign(mesh(plaza, i.primitive), { world: labelWorld(plaza,i), gateGlow: i.name.startsWith('GateGlow') || i.name === 'RhythmBars batch', rhythmBars: i.name === 'RhythmBars batch', energy: i.name === 'Energy_rhythm', shopDoor: i.name === 'Door_shop', sign: i.name.startsWith('Sign_') ? i.name.slice(5) : null, screen: i.name.startsWith('Screen_'), tex: null, texPrim: i.name.startsWith('Tex_') ? i.primitive : null }));
         // Tex_* = GLB 안 그림을 입힌 부품(뿅망치 야구공). 그림이 준비되면 입힘(그 전엔 정점색)
         for (const m of environment) if (m.texPrim) glbTexture(plaza, m.texPrim).then((t) => { m.tex = t; }).catch(() => {});
         signs = root.MoleGame.Home3DSigns.create(gl);

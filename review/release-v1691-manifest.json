@@ -1,0 +1,55 @@
+{
+  "version": "V1691 G",
+  "base": "6259895abe9662a96a087283e6d3c53a3375a74a",
+  "files": {
+    "mole/index.html": {
+      "sha256": "25c15fb7d6fa38fff635fa865eed1a3967899430f7ba80e1e140a03b1b9ad3f0",
+      "bytes": 134653
+    },
+    "mole/style.css": {
+      "sha256": "fb22c01e25ea25daa22de636000ec074252f55e8e02df50724b9ef9a1721297c",
+      "bytes": 974631
+    },
+    "mole/sw.js": {
+      "sha256": "c678996ad9f4e8aac98e5daaddf25a919dce0f7776160467327725f947b8e911",
+      "bytes": 60504
+    },
+    "mole/clay-round1-local.css": {
+      "sha256": "88e7002d94bccd54cebe79e71ea6693be5d9a464ca84303e56777f26de8372e9",
+      "bytes": 51101
+    },
+    "mole/js/game.js": {
+      "sha256": "2c9537e740a18708fa2724d76dce1078fb71593232c27e4eef802f12b23eed31",
+      "bytes": 234899
+    },
+    "mole/js/lane-hammer.js": {
+      "sha256": "b874ad10b723e11ea04c0a512d1b92d9213480c12074569869d0341fed7ecd20",
+      "bytes": 18140
+    },
+    "mole/js/shop-models-v1509.js": {
+      "sha256": "be59c8dd7b3039960c4d216d930498df1a5f815fbd7a3cb2307d0556e42b556d",
+      "bytes": 37672
+    },
+    "mole/js/home3d-renderer.js": {
+      "sha256": "78c4391eb2f4171106f68253aaef4fb84692d05a5d66d0b656c6fb20af63bde5",
+      "bytes": 57120
+    },
+    "mole/js/home3d-signs.js": {
+      "sha256": "e1fd95235ac24ca178852cd13fac3b3f33ed568425c0e79cd870ca4813f207e2",
+      "bytes": 4509
+    },
+    "mole/js/game-hammer-models.js": {
+      "sha256": "d8d5ee381c905631f9827d2e9865a6fb06df69752ef50ac35ca026fee47b783a",
+      "bytes": 15665
+    },
+    "mole/assets/weapons-3d-v1691/goldhammer-clone.glb": {
+      "sha256": "17f81d134962bbc10aa699164b7548db0500d4ca9c021e2163541a0cac90ae20",
+      "bytes": 3631496
+    },
+    "mole/assets/weapons-3d-v1691/manifest.json": {
+      "sha256": "4bf419595f984284afc7e6cfb84fa0d8fad73b7ae2f54d65345a01004d2f2dd8",
+      "bytes": 321
+    }
+  },
+  "hashBasis": "git index blobs (published bytes)"
+}

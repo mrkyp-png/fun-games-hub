@@ -40,7 +40,7 @@
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
   function ease(k) { return k * k; }
 
-  function create({ layer, sprite, introSprite, grip, cssClass, degOffset, homeMarginTop, gripOff, homeDegOffset, emptyDy, idle, homeXFrac, homeYFrac, strikeDurationScale, strikeFlyDurationScale }) {
+  function create({ layer, sprite, introSprite, grip, cssClass, degOffset, homeMarginTop, gripOff, homeDegOffset, emptyDy, idle, homeXFrac, homeYFrac, strikeDurationScale, strikeFlyDurationScale, weaponId }) {
     // grip = 스프라이트 안 손잡이 잡는 점(%) — 스킨마다 다르면 넘긴다. 없으면 뿅망치 기본값.
     // degOffset = 스킨 스프라이트가 기준 포즈에서 이미 돌아가 있으면 그만큼 상쇄(모든 회전상태에 더함).
     // homeMarginTop = 대기 위치 세로 미세보정 (기본 '0.2cm' 아래로).
@@ -76,6 +76,8 @@
 
     let phase = 'home';   // 'home' | 'fly' | 'chop' | 'rise' | 'return'
     let t = 0;
+    const model3D=weaponId==='goldhammer'?root.MoleGame.GameHammerModels?.create({el,layer,img,id:'goldhammer',clone:(cssClass||'').includes('lane-hammer--clone')}):null;
+
     let fromX = homeX, fromY = homeY, fromDeg = hDeg;
     let aimX = homeX, aimY = homeY, gx = homeX, gy = homeY, deg = hDeg;
     let impactCb = null;
@@ -174,6 +176,7 @@
       el.style.transform = 'translate(-' + anchorX + '%, -' + anchorY + '%) rotate(' + (deg + dOff).toFixed(1) + 'deg) scale(' + scaleXVal.toFixed(3) + ', ' + scaleYVal.toFixed(3) + ')';
       el.style.marginTop = phase === 'home' ? homeMT : '0'; // 대기 위치 세로 보정 (기본 0.2cm 아래)
       el.style.marginLeft = phase === 'home' ? '-0.2cm' : '0'; // V1408 C 사용자: 대기 위치만 폰 화면 기준 왼쪽 0.2cm(타격점 그대로)
+      model3D?.update({phase,age:t});
       el.style.opacity = !sprite && phase === 'home' ? '0.7' : '1'; // 대기 뿅망치만30% 투명, 공격/등장은 불투명.
     }
 
@@ -280,6 +283,7 @@
 
     // 레벨/화면 전환 시 DOM 에서 완전히 제거 (안 하면 startLevel 마다 망치가 쌓인다).
     function clear() {
+      model3D?.clear();
       impactCb = null;
       el.remove();
     }
