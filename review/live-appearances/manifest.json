@@ -1,0 +1,83 @@
+{
+  "status": "local implementation, not deployed",
+  "default": "mohawk",
+  "gameplay": {
+    "normalSpawns": [
+      "mohawk",
+      "spiky",
+      "curly",
+      "forelock"
+    ],
+    "selection": "once per spawn, uniform random",
+    "bombCarrier": "mohawk",
+    "animalRules": "unchanged"
+  },
+  "beach": {
+    "lanes": [
+      "mohawk",
+      "spiky",
+      "curly",
+      "forelock"
+    ],
+    "renderer": "one shared WebGL2 canvas, real skinning",
+    "clock": "existing audio clock",
+    "judgement": "existing headAt/liftAt/score rules unchanged"
+  },
+  "costumes": "reserved for glasses/accessories; untouched",
+  "verified": [
+    "actual GLB motions/skins and Head parents",
+    "smiling and hurt eye isolation",
+    "finite skin palettes",
+    "four palettes and single-context draw flow",
+    "persistent spawn appearance",
+    "startup dependency order",
+    "853 SW shell files",
+    "selection lighting/dance/exit/prewarm/wipe/state/input regression tests"
+  ],
+  "unverified": [
+    "real browser GPU execution",
+    "phone visuals and FPS"
+  ],
+  "noNewBrowserOpened": true,
+  "originals": [
+    {
+      "path": "mole/assets/checkerboard-v1590/mole-clay-v43.glb",
+      "sha256": "89465f72d8ce5fcd22b9d4b1f603bab63e0025570451df96b18f206bec0a067a"
+    },
+    {
+      "path": "mole/assets/home3d/mole-clay-v47-smile.glb",
+      "sha256": "24def130ab08598bb835cb91b5f9693a7f12dfde7f680c78668cb9726b82b758"
+    },
+    {
+      "path": "mole/assets/home3d/mole-rhythm-dance-v2.glb",
+      "sha256": "64bea7d60bda65972cb1f06c2c79405b48f0db651da050ddc8f16c3ee53182bd"
+    }
+  ],
+  "assets": [
+    {
+      "path": "mole\\assets\\characters-v1689\\hair-curly.glb",
+      "bytes": 6521116,
+      "sha256": "d51e0c42c8c099cfafff405f4555e08123fb9cba56ee8fc00084defd5d9824ad"
+    },
+    {
+      "path": "mole\\assets\\characters-v1689\\hair-forelock.glb",
+      "bytes": 83196,
+      "sha256": "360c69b34573c68ebfbe6d362d5d4d957353b3863f2c1dc40a02fa76c4084159"
+    },
+    {
+      "path": "mole\\assets\\characters-v1689\\hair-mohawk.glb",
+      "bytes": 220748,
+      "sha256": "12da16482ae0560a061c1c51347709cd967435bf695c5ebd6fb276c2b6be7450"
+    },
+    {
+      "path": "mole\\assets\\characters-v1689\\hair-spiky.glb",
+      "bytes": 1806860,
+      "sha256": "5b1d632ce4798e8f30655a5952a2156dacc9f0b689fc4a105c0c707fbe6f724e"
+    },
+    {
+      "path": "mole\\assets\\characters-v1689\\mole-game-smile.glb",
+      "bytes": 11141680,
+      "sha256": "626cedfc18174ab23c29fcff77ecb297f742f52f499259dc814d1cb958e5541f"
+    }
+  ]
+}

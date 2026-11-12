@@ -5178,6 +5178,9 @@ img[src$="assets/score/btn-back.png"] { filter: hue-rotate(170deg) saturate(1.35
 
 /* v816: 두더지 = 7프레임 스트립 한 장(깜빡임 제거), 무기 잔상 */
 .rp-mole { background-repeat: no-repeat; background-size: 700% 100%; background-position: 0 0; }
+.rp-beach-moles-3d { position:absolute; inset:0; width:100%; height:100%; z-index:3; pointer-events:none; }
+.rp-stage.rp-use-3d .rp-mole { visibility:hidden; }
+#rhythm-screen:not(.is-type-b) .rp-weapons { z-index:4; }
 .rp-mole img { display: none; }
 .rp-trail { filter: blur(1.5px) brightness(1.15); }
 

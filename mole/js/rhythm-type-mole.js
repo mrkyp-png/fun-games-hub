@@ -59,7 +59,7 @@
   const R=root.StudioRig;
   const ring=panel.querySelector('.rp-type-floor-light');
   function releaseRing(){if(ring){ring.style.removeProperty('animation');ring.style.removeProperty('stroke-dashoffset');}}
-  const modelURL=new URL('../assets/home3d/mole-rhythm-dance-v2.glb?v=1688-G',document.currentScript.src);
+  const modelURL=new URL('../assets/home3d/mole-rhythm-dance-v2.glb?v=1689-G',document.currentScript.src);
   const beatMap=root.MoleGame.RhythmDanceBeats||{bpm:165.56,beats:[],duration:51.96};
   const canvas=document.createElement('canvas');canvas.className='rp-type-mole';canvas.hidden=true;canvas.setAttribute('aria-hidden','true');
   panel.appendChild(canvas);
@@ -77,7 +77,7 @@
   }
   const reduced=root.matchMedia('(prefers-reduced-motion: reduce)');
   function loadModel(){
-    if(!modelPromise)modelPromise=fetch(modelURL).then(response=>{if(!response.ok)throw Error('Rhythm mole model '+response.status);return response.arrayBuffer();}).then(R.parseGLB).catch(error=>{modelPromise=null;throw error;});
+    if(!modelPromise)modelPromise=fetch(modelURL).then(response=>{if(!response.ok)throw Error('Rhythm mole model '+response.status);return response.arrayBuffer();}).then(R.parseGLB).then(model=>root.MoleGame.MoleAppearances.prepare(model,['mohawk'])).then(model=>root.MoleGame.MoleAppearances.paint(model,'mohawk')).catch(error=>{modelPromise=null;throw error;});
     return modelPromise;
   }
   function makeRenderer(model){
@@ -128,7 +128,7 @@ frag=vec4(pow(clamp(color,0.,1.),vec3(1./2.2)),1.);}`;
     }
     const parts=[];
     model.json.nodes.forEach((node,index)=>{
-      if(node.name!=='Mole_Clay_Skin'||node.mesh===undefined)return;
+      if((node.name!=='Mole_Clay_Skin'&&root.MoleGame.MoleAppearances.hairStyle(node)!=='mohawk')||node.mesh===undefined)return;
       for(const primitive of model.json.meshes[node.mesh].primitives){
         const vao=gl.createVertexArray();vaos.push(vao);gl.bindVertexArray(vao);
         for(const [name,key,width] of [['Position','POSITION',3],['Normal','NORMAL',3],['Color','COLOR_0',4],['Joints','JOINTS_0',4],['Weights','WEIGHTS_0',4]]){
@@ -180,7 +180,7 @@ frag=vec4(pow(clamp(color,0.,1.),vec3(1./2.2)),1.);}`;
           state=dancePose(beat,danceStart,reduce)||state;
         }
         displayedPose=state;
-        const worlds=R.pose(rig,state.clip,state.clipTime,true,state.phase==='dance'?null:face);
+        const worlds=root.MoleGame.MoleAppearances.pose(rig,state.clip,state.clipTime,true,state.phase==='dance'?null:face,time);
         if(state.phase==='dance'){
           const yaw=Math.atan2(worlds[rootNode][8],worlds[rootNode][10]);
           if(lastDanceYaw!==null)danceRingTurns+=Math.atan2(Math.sin(yaw-lastDanceYaw),Math.cos(yaw-lastDanceYaw))/(2*Math.PI);

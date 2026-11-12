@@ -78,17 +78,18 @@ win.MG={rhythmTypeLighting:{lightFrame:()=>({states:lamps.map((lamp,i)=>lampStat
 const context={window:win,document:doc,URL,console,Float32Array,Uint32Array,Math,Promise,
   MutationObserver:class {constructor(fn){observers.push(fn);}observe(){}},
   requestAnimationFrame:fn=>{const id=++serial;raf.set(id,fn);return id;},cancelAnimationFrame:id=>raf.delete(id),
-  fetch:async()=>{fetches++;return {ok:true,arrayBuffer:async()=>binary.buffer.slice(binary.byteOffset,binary.byteOffset+binary.length)};}};
+  fetch:async url=>{fetches++;const b=String(url).includes('hair-mohawk')?fs.readFileSync('mole/assets/characters-v1689/hair-mohawk.glb'):binary;return {ok:true,arrayBuffer:async()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.length)};}};
+vm.runInNewContext(fs.readFileSync('mole/js/mole-appearances.js','utf8'),context);
 vm.runInNewContext(fs.readFileSync('mole/js/rhythm-type-mole.js','utf8'),context);
-const flush=async()=>{for(let i=0;i<8;i++)await Promise.resolve();};
+const flush=async()=>{for(let i=0;i<30;i++)await Promise.resolve();};
 (async()=>{
   assert.equal(fetches,0,'Hidden selection does not load or animate');
   screen.hidden=panel.hidden=false;observers[0]();await flush();
-  assert(win.MoleGame.RhythmTypeMole.state().ready);assert.equal(fetches,1);assert.equal(raf.size,1);
+  assert(win.MoleGame.RhythmTypeMole.state().ready);assert.equal(fetches,2);assert.equal(raf.size,1);
   assert.equal(ring.style.animation,'none');assert.equal(Number(ring.style.strokeDashoffset),0,'Original floor path controlled by actor timeline');
   assert.equal(uploads,1,'Beam atlas uploaded once, not every frame');
   panel.hidden=true;observers[0]();assert.equal(raf.size,0);assert(canvas.hidden,'Song/game selection stops the actor');
-  panel.hidden=false;observers[0]();await flush();assert.equal(fetches,1,'Reuse model and GPU resources on return');assert.equal(raf.size,1);
+  panel.hidden=false;observers[0]();await flush();assert.equal(fetches,2,'Reuse model and GPU resources on return');assert.equal(raf.size,1);
   assert.equal(uploads,1,'Selection return reuses the spotlight atlas');
   doc.hidden=true;events.visibilitychange();assert.equal(raf.size,0,'Background tab pauses actor');
   doc.hidden=false;events.visibilitychange();assert.equal(raf.size,1);

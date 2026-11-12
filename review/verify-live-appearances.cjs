@@ -1,0 +1,47 @@
+const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('node:assert/strict'),R=require('../mole/js/clay-rig-runtime.js');
+const root=path.resolve(__dirname,'..'),read=p=>fs.readFileSync(path.join(root,'mole',p.split('?')[0]));
+const fetch=async p=>{const b=read(String(p));return {ok:true,arrayBuffer:async()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.length),blob:async()=>new Blob([b]),json:async()=>JSON.parse(b.toString())}};
+function model(file){const b=read(file);return R.parseGLB(b.buffer.slice(b.byteOffset,b.byteOffset+b.length))}
+function install(win,more={}){const sandbox={window:win,fetch,console,Float32Array,Uint8Array,Uint32Array,Map,WeakMap,Promise,Math,...more};vm.runInNewContext(fs.readFileSync(path.join(root,'mole/js/mole-appearances.js'),'utf8'),sandbox);return sandbox}
+function glMock(){const values={matrices:[],colors:[],sources:[],draws:0};const gl=new Proxy({getParameter:()=>256,getShaderParameter:()=>true,getProgramParameter:()=>true,getUniformLocation:(_,n)=>n,getAttribLocation:(_,n)=>['aPosition','aNormal','aColor','aJoints','aWeights','aUV'].indexOf(n),shaderSource:(_,s)=>values.sources.push(s),uniformMatrix4fv:(n,_,a)=>{assert(Array.from(a).every(Number.isFinite),n);values.matrices.push(n);if(n==='uVP')values.lastVP=Array.from(a)},uniform4fv:(n,a)=>{assert(Array.from(a).every(Number.isFinite),n);if(n==='uColor')values.colors.push(Array.from(a))},drawElements:()=>values.draws++,drawArrays:()=>values.draws++},{get:(o,k)=>k in o?o[k]:()=>({})});return {gl,values}}
+(async()=>{
+ const win={StudioRig:R,MoleGame:{}},sandbox=install(win),AP=win.MoleGame.MoleAppearances;
+ assert.deepEqual(Array.from([0,.25,.5,.75].map(x=>AP.random(()=>x))),['mohawk','spiky','curly','forelock']);
+ for(const file of ['assets/home3d/mole-clay-v47-smile.glb','assets/home3d/mole-rhythm-dance-v2.glb','assets/characters-v1689/mole-game-smile.glb']){
+  const original=model(file),merged=await AP.prepare(original),rig=R.prepare(merged);assert(Math.max(...rig.skins.map(s=>s.joints.length))<=48);
+  const painted=AP.paint(await AP.prepare(model(file),['mohawk']),'mohawk');
+  for(const mesh of painted.json.meshes)for(const p of mesh.primitives){if(p.attributes.COLOR_0===undefined)continue;const a=painted.json.accessors[p.attributes.COLOR_0],count=painted.json.accessors[p.attributes.POSITION].count;assert.equal(a.count,count,'Colors have exactly one RGB/RGBA value per vertex');const color=R.accessor(painted,p.attributes.COLOR_0);if(a.type==='VEC4')for(let k=3;k<color.length;k+=4)assert.equal(color[k],1,'Opaque skin never takes an RGB channel as alpha');}
+  const head=merged.json.nodes.findIndex(n=>n.name==='Head');
+  for(const id of AP.styles){
+   const mesh=merged.json.nodes.findIndex(n=>n.mesh!==undefined&&n.extras?.appearanceStyle===id),container=merged.json.nodes.findIndex(n=>n.name==='HairAsset_'+({mohawk:'Mohawk',spiky:'Spiky',curly:'Curly',forelock:'Forelock'})[id]);assert.equal(rig.parents[container],head);
+   for(const clip of rig.animations.filter(a=>!a.name.startsWith('HairWind_'))){
+    const posed=AP.pose(rig,clip.name,Math.min(.3,clip.duration),false,AP.face(rig),.8,id),palette=R.palette(rig,posed,mesh);assert(palette.every(Number.isFinite));
+    const expected=R.multiply(posed[head],R.transform(merged.json.nodes[container]));assert(posed[container].every((x,k)=>Math.abs(x-expected[k])<1e-6));
+    for(const suffix of ['L','R'])assert(Math.hypot(...posed[merged.json.nodes.findIndex(n=>n.name==='Eye.'+suffix)].slice(0,3))<1e-5,'Smile hides normal pupil');
+   }
+  }
+  if(file.includes('mole-game'))for(const clip of ['Appear','PainHit','CarryBounce','CarryIdle','RimIdle','RimRelease','RimSettle'])assert(rig.animations.some(a=>a.name===clip));
+  if(rig.animations.some(a=>a.name==='PainHit')){const hurt=AP.pose(rig,'PainHit',.3,false,AP.face(rig,true),.3,'mohawk');for(const side of ['L','R'])assert(Math.hypot(...hurt[merged.json.nodes.findIndex(n=>n.name==='HappyEye.'+side)].slice(0,3))<1e-5,'Hurt never overlays a smiling arc');}
+ }
+ const classes=new Set(),host={prepend(c){c.parentNode=this;c.isConnected=true}},stage={querySelector:()=>host,classList:{add:x=>classes.add(x),remove:x=>classes.delete(x)}},events={},beachGL=glMock();let canvases=0;
+ const doc={hidden:false,createElement(){canvases++;return {hidden:true,setAttribute(){},addEventListener:(n,f)=>events[n]=f,getContext:()=>beachGL.gl,remove(){this.isConnected=false;this.parentNode=null}}}};sandbox.createImageBitmap=async()=>({width:1024,height:521,close(){}});
+ sandbox.document=doc;win.devicePixelRatio=1;vm.runInNewContext(fs.readFileSync(path.join(root,'mole/js/rhythm-beach-moles.js'),'utf8'),sandbox);
+ const beach=win.MoleGame.RhythmBeachMoles.create(stage);await beach.prepare();await beach.prepare();assert.equal(canvases,1);
+ const layout={W:390,H:620,laneW:97.5,moleBottom:540,sink:24,holeRects:AP.styles.map((_,i)=>({x:i*97.5,y:490,w:97.5,h:50}))},heads=AP.styles.map((_,i)=>({h:{x:(i+.5)*97.5,y:430,r:30}})),moles=AP.styles.map((_,i)=>({jumpAt:i===1?0:-9,hurtAt:i===2?0:-9}));
+ beach.render(.15,layout,heads,moles);assert(beachGL.values.draws>40);assert(classes.has('rp-use-3d'));assert.equal(beach.dbg().contexts,1);
+ assert(beach.dbg().maxRestingHandError<.01,'Resting palms align to the generated rim contour');
+ beach.render(.5,layout,heads,moles);assert(beach.dbg().maxRestingHandError<.01,'All four resting actors place both palms on the same foreground edge');
+ assert(Math.abs(beachGL.values.lastVP[10]*100)<1,'Pixel-scaled noses and hair fit inside the orthographic depth range');
+ for(const id of AP.styles)assert(beachGL.values.colors.some(c=>c.every((v,k)=>Math.abs(v-AP.palettes[id].body[k])<1e-6)),'All four bodies drawn');
+ assert(beachGL.values.matrices.includes('uBones[0]'));beach.stop();assert(!classes.has('rp-3d-ready'));assert(classes.has('rp-use-3d'),'Old sprites stay hidden after results');
+ const gameGL=glMock(),raf=[],timers=[],gameScreen={style:{setProperty(){}},classList:{toggle(){}},appendChild(){}},board={clientWidth:390,clientHeight:420},gameDoc={hidden:false,getElementById:id=>id==='game-screen'?gameScreen:id==='mole-board'?board:{appendChild(){},append(){}},createElement:()=>({getContext:()=>gameGL.gl,classList:{toggle(){}},remove(){}})};
+ const gameWin={StudioRig:R,MoleGame:{},matchMedia:()=>({matches:false})},gameSandbox=install(gameWin,{document:gameDoc,devicePixelRatio:1,requestAnimationFrame:f=>raf.push(f),cancelAnimationFrame(){},setTimeout:f=>timers.push(f),Image:class{decode(){return Promise.resolve()}},Blob,createImageBitmap:async()=>({width:400,height:400,close(){}})});
+ vm.runInNewContext(fs.readFileSync(path.join(root,'mole/js/clay-round1-local.js'),'utf8'),gameSandbox);const game=gameWin.MoleGame.ClayRoundOne;await game.prepare();game.setActive(true);let pick=0;gameWin.MoleGame.MoleAppearances.random=()=>AP.styles[pick++%4];const subjects=[];
+ for(let i=0;i<4;i++){const m={el:{isConnected:true,style:{left:(20+i*20)+'%',top:'50%'}},img:{style:{}},kind:'mole',hits:0,shownDepth:0,remaining:2};game.renderPop(m);subjects.push(m)}
+ assert.deepEqual(subjects.map(m=>m._appearance),['mohawk','spiky','curly','forelock']);game.clock(100);raf.shift()();assert(gameGL.values.draws>0);game.renderPop(subjects[0]);assert.equal(subjects[0]._appearance,'mohawk','Appearance fixed for entire spawn');
+ const carrier={el:{isConnected:true,style:{left:'50%',top:'50%'}},img:{style:{}},kind:'mole',bomb:true,hits:0,shownDepth:0};game.renderPop(carrier);assert.equal(carrier._appearance,'mohawk');raf.shift()();assert(gameGL.values.sources[0].includes('uniform vec4 uRimJoint[12]'),'48-joint actor fits minimum uniform budget');game.setActive(false);
+ const html=fs.readFileSync(path.join(root,'mole/index.html'),'utf8'),order=Array.from(html.matchAll(/<script[^>]+src="([^"]+)/g),m=>m[1].split('?')[0]);assert(order.indexOf('js/mole-appearances.js')>order.indexOf('js/clay-rig-runtime.js'));assert(order.indexOf('js/rhythm-beach-moles.js')>order.indexOf('js/mole-appearances.js'));
+ const sw=fs.readFileSync(path.join(root,'mole/sw.js'),'utf8'),shell=vm.runInNewContext(sw.slice(sw.indexOf('const SHELL = ['),sw.indexOf('];',sw.indexOf('const SHELL = ['))+2)+';SHELL');for(const file of shell)assert(fs.existsSync(path.join(root,'mole',file.split('?')[0])),file);
+ fs.writeFileSync(path.join(root,'review/live-appearance-verification.json'),JSON.stringify({passed:true,tests:['all original gameplay and bomb carrier motions','Head attachment throughout each model animation','finite skinned hair palettes','smiling default and hurt-eye isolation','four body and hair palettes','four live beach actors share one WebGL canvas','stable appearance per spawn','minimum uniform budget packed rim flags','old sprites remain hidden at results','startup script dependencies','all service-worker shell assets exist'],shellAssets:shell.length,realBrowser:false,phonePerformance:false},null,2));
+ console.log('PASS live appearances: original game clips/carrier, Head attachment in every clip, four palettes, four real skinned beach actors in one context, stable random spawns, original sprites hidden; '+shell.length+' shell assets');
+})().catch(e=>{console.error(e);process.exitCode=1});

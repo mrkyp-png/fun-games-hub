@@ -43,10 +43,11 @@ function prepare(model){
  const skins=(g.skins||[]).map(s=>({joints:s.joints,inverseBind:s.inverseBindMatrices===undefined?new Float32Array(s.joints.flatMap(()=>Array.from(M.identity()))):M.accessor(model,s.inverseBindMatrices)}));
  return {model,parents,animations,skins};
 }
-function pose(runtime,animation,time,loop=true,face){
+function pose(runtime,animation,time,loop=true,face,overlay){
  const g=runtime.model.json,local=g.nodes.map(n=>({...n,translation:[...(n.translation||[0,0,0])],rotation:[...(n.rotation||[0,0,0,1])],scale:[...(n.scale||[1,1,1])]}));
  const clip=runtime.animations.find(a=>a.name===animation);
  if(clip){const t=loop&&clip.duration>0?time%clip.duration:Math.min(time,clip.duration);for(const tr of clip.tracks)local[tr.node][tr.path]=sample(tr,t)}
+ if(overlay){const extra=runtime.animations.find(a=>a.name===overlay.animation);if(extra){const t=extra.duration>0?Math.max(0,overlay.time)%extra.duration:0;for(const tr of extra.tracks)local[tr.node][tr.path]=sample(tr,t)}}
  if(face)for(const tr of face)local[tr.node][tr.path]=sample(tr,0);
  const worlds=new Array(local.length),visiting=new Set();
  function world(i){if(worlds[i])return worlds[i];if(visiting.has(i))throw Error('Cyclic nodes');visiting.add(i);const parent=runtime.parents[i];worlds[i]=parent<0?M.transform(local[i]):M.multiply(world(parent),M.transform(local[i]));visiting.delete(i);return worlds[i]}

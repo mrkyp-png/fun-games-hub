@@ -90,6 +90,7 @@
     var lyricTicker = MG.RhythmLyrics.create(el);
     var statusFx = MG.RhythmStatusFx.create(el), buttonWaves=[];
     var beachVisual = MG.RhythmBeach.create(el), targetLanes=[], targetCue=[0,0,0,0], perfectWords=[];
+    var beachMoles = MG.RhythmBeachMoles.create(stage);
     var meta = null, buffer = null, ctx = null, src = null;
     var st = null, raf = 0;
     var countEl = $('[data-rp-count]'), frameHeads = [0,1,2,3].map(function(){return {h:{x:0,y:0,r:0},jumping:false};}), frameCues=[0,0,0,0];
@@ -138,13 +139,13 @@
       if(entryBusy||adBusy)return;
       if(adRequired&&!adReady){watchSongAd(function(){adReady=true;launchSong(modal);});return;}
       var paid=MG.Economy&&MG.Economy.spendRhythmPlay?MG.Economy.spendRhythmPlay():'free';if(!paid){showSelect();$('[data-rp-selected-song]').textContent=(activeB?selectedBSong:selectedASong).title+' · '+root.FGH.I18N.t('mole.rp.ticket.none');return;}entryPaid=paid;paintTickets();
-      var token=++entryGeneration,choice=activeB?selectedBSong:selectedASong,wasB=activeB,completed=0,total=wasB?3:5,loader=$('[data-rp-preloader]'),loaderShownAt=0;entryBusy=true;
+      var token=++entryGeneration,choice=activeB?selectedBSong:selectedASong,wasB=activeB,completed=0,total=wasB?3:6,loader=$('[data-rp-preloader]'),loaderShownAt=0;entryBusy=true;
       if(!ctx)ctx=new(root.AudioContext||root.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume();
       $('[data-rp-preload-album]').src=albumOf(choice);$('[data-rp-preload-title]').textContent=choice.title;
       $('[data-rp-preload-progress]').max=total;$('[data-rp-preload-progress]').value=0;$('[data-rp-preload-detail]').textContent=root.FGH.I18N.t('mole.rp.preload.count',{n:0,total:total});loader.hidden=true;
       clearTimeout(entryLoadingTimer);entryLoadingTimer=setTimeout(function(){if(token===entryGeneration&&entryBusy&&!el.hidden){loaderShownAt=Date.now();loader.hidden=false;}},1000);
       function track(p){return Promise.resolve(p).then(function(v){if(token===entryGeneration){completed++;$('[data-rp-preload-progress]').value=completed;$('[data-rp-preload-detail]').textContent=root.FGH.I18N.t('mole.rp.preload.count',{n:completed,total:total});}return v;});}
-      var tasks=wasB?[loadBSong(),bGame.prepare(),preloadRhythmArt()]:[loadSong(),preload(),loadMeta(),loadSfx(),preloadRhythmArt()];
+      var tasks=wasB?[loadBSong(),bGame.prepare(),preloadRhythmArt()]:[loadSong(),preload(),loadMeta(),loadSfx(),preloadRhythmArt(),beachMoles.prepare()];
       Promise.all(tasks.map(track)).then(function(){if(token!==entryGeneration||el.hidden||activeB!==wasB)return false;clearTimeout(entryLoadingTimer);return new Promise(function(resolve,reject){var hold=loaderShownAt?Math.max(0,280-(Date.now()-loaderShownAt)):0;setTimeout(function(){if(token!==entryGeneration||el.hidden||activeB!==wasB){resolve(false);return;}loader.hidden=true;pushInGame(modal);Promise.resolve(wasB?bGame.open(diff,{practice:false}):start()).then(resolve,reject);},hold);});}).then(function(ok){if(token!==entryGeneration)return;clearTimeout(entryLoadingTimer);loader.hidden=true;entryBusy=false;if(ok){adReady=false;entryPaid=null;}else{refundEntry();showSelect();}}).catch(function(){if(token!==entryGeneration)return;clearTimeout(entryLoadingTimer);loader.hidden=true;entryBusy=false;refundEntry();showSelect();$('[data-rp-selected-song]').textContent=choice.title+' · '+root.FGH.I18N.t('mole.rp.err.retry');});
     }
     $('[data-rp-preload-cancel]').addEventListener('click',function(){cancelEntry();showSongs();});
@@ -169,7 +170,8 @@
 
     function preload() {
       var list = [];
-      CHARS.forEach(function (c) { list.push(A + 'jump-' + c + '-strip.png'); });
+      // The legacy dimensions still define judgement geometry; actors use real GLB meshes.
+      list.push(A+'beach-hole-v1689/hole-back.png',A+'beach-hole-v1689/hole-front.png');
       WEAPONS.forEach(function (w) { list.push(A + 'w-' + w + '.png'); }); list.push(A + 'w-disc-face.png');
       ['hippo-happy.webp','hippo-hurt.webp','hippo-arm.webp','sea-atlas.webp'].forEach(function(name){list.push(A+'beach-v1172/'+name);});
       return Promise.all(list.map(function (u) { if(imgs[u]&&imgs[u].complete&&imgs[u].naturalWidth)return null;var im = new Image(); im.src = u; imgs[u] = im; return im.decode ? im.decode().catch(function () {}) : null; }));
@@ -206,7 +208,7 @@
       statusFx.stop(); clearButtonWaves();
       setEntryBgm(true);
       cancelEntry();
-      beachVisual.stop();
+      beachVisual.stop(); beachMoles.stop();
       updateModeSign();
       updateACombo(0,true);
       lyricTicker.clear();
@@ -298,6 +300,10 @@
       var beachDrop = Math.min(28, H * 0.035);
       L.targetY = L.targetY - groupShift + beachDrop;
       L.moleBottom = L.moleBottom - groupShift + beachDrop;
+      // Lower only the hole/resting actor; recompute apex compensation below.
+      var rimGeometry=beachMoles.holeGeometry(),rimHeight=L.laneW*.98*(rimGeometry?rimGeometry.height/rimGeometry.width:521/1024),rimFront=rimGeometry?rimGeometry.frontCenterY:.62;
+      var holeBottom=L.moleBottom-L.sink+L.laneW*.04+rimHeight*(1-rimFront);
+      L.holeDrop=Math.max(0,Math.min(18,L.laneW*.18,H-3-holeBottom));L.moleBottom+=L.holeDrop;
       // Align each measured sprite apex head top with the target upper edge.
       var targetTop = L.targetY - L.targetR * 3.05 / 2;
       L.apexLift = CHARS.map(function (c) {
@@ -411,9 +417,9 @@
         ln.style.setProperty('--target-color',(beachPalette ? ['#ffc400','#009cff','#ee16a6','#10c848'] : ['#ffc94c','#5bd8ff','#ff8dce','#66e5b2'])[colorIndex]);
         var holeSize = HOLE_SIZE[i];
         ln.innerHTML = (beachPalette ? '<img class="rp-target-glow" src="' + A + 'beach-target-glow-v1352/glow-' + (colorIndex + 1) + '.webp" alt="">' : '') + '<img class="rp-target" src="' + A + (beachPalette ? 'beach-target-v1250/target-' : 'beach-v1172/target-') + (colorIndex + 1) + '.svg" alt=""><svg class="rp-target-inner-accent" viewBox="0 0 250 250" aria-hidden="true"><circle cx="125" cy="125" r="84" fill="none" stroke="var(--target-color)" stroke-width="3.75"/><path d="M125 23V62M125 188V227M23 125H62M188 125H227" fill="none" stroke="var(--target-color)" stroke-width="6" stroke-linecap="round"/></svg><span class="rp-target-orbit" aria-hidden="true"><i><b></b></i></span>' +
-          '<img class="rp-hole" src="' + A + 'hole-' + (i + 1) + '.png" alt="">' +
-          '<span class="rp-mole" style="background-image:url(' + A + 'jump-' + CHARS[i] + '-strip.png)"></span>' +
-          '<svg class="rp-hole-front" viewBox="0 0 ' + holeSize[0] + ' ' + holeSize[1] + '" aria-hidden="true"><defs><clipPath id="rp-hole-front-' + i + '" clipPathUnits="objectBoundingBox"><path d="' + holeFrontPath(i) + '"/></clipPath></defs><image href="' + A + 'hole-' + (i + 1) + '.png" width="' + holeSize[0] + '" height="' + holeSize[1] + '" clip-path="url(#rp-hole-front-' + i + ')"/></svg>' +
+          '<img class="rp-hole" src="' + A + (beachPalette ? 'beach-hole-v1689/hole-back.png' : 'hole-' + (i + 1) + '.png') + '" alt="">' +
+          '<span class="rp-mole" aria-hidden="true"></span>' +
+          (beachPalette ? '<img class="rp-hole-front" src="'+A+'beach-hole-v1689/hole-front.png" alt="">' : '<svg class="rp-hole-front" viewBox="0 0 ' + holeSize[0] + ' ' + holeSize[1] + '" aria-hidden="true"><defs><clipPath id="rp-hole-front-' + i + '" clipPathUnits="objectBoundingBox"><path d="' + holeFrontPath(i) + '"/></clipPath></defs><image href="' + A + 'hole-' + (i + 1) + '.png" width="' + holeSize[0] + '" height="' + holeSize[1] + '" clip-path="url(#rp-hole-front-' + i + ')"/></svg>') +
           '<span class="rp-judge"></span>';
         lanesEl.appendChild(ln);
       }
@@ -450,12 +456,13 @@
     }
     function placeStatic() {
       var lanes = el.querySelectorAll('.rp-lane');
+      L.holeRects=[];var holeGeometry=beachMoles.holeGeometry();
       lanes.forEach(function (ln, i) {
         var size=L.targetR*3.05;
         var t = ln.querySelector('.rp-target'),orbit=ln.querySelector('.rp-target-orbit'),innerAccent=ln.querySelector('.rp-target-inner-accent'),glow=ln.querySelector('.rp-target-glow');
         if(glow){glow.style.width=(size*1.5)+'px';glow.style.top=(L.targetY-size*0.75)+'px';} // V1352 C 타이밍 글로우: 타겟 1.5배, 중심 같게
         t.style.width=orbit.style.width=innerAccent.style.width=size+'px';orbit.style.height=innerAccent.style.height=size+'px';t.style.top=orbit.style.top=innerAccent.style.top=(L.targetY-size/2)+'px';
-        var h = ln.querySelector('.rp-hole'), holeTop = L.moleBottom - L.sink - L.laneW * 0.32 + (i === 0 ? L.laneW * 0.05 : 0); h.style.width = (L.laneW * 0.98) + 'px'; h.style.top = holeTop + 'px';
+        var h = ln.querySelector('.rp-hole'),holeWidth=L.laneW*.98,holeHeight=holeGeometry?holeWidth*holeGeometry.height/holeGeometry.width:holeWidth*HOLE_SIZE[i][1]/HOLE_SIZE[i][0],holeTop=holeGeometry?L.moleBottom-L.sink+L.laneW*.04-holeHeight*holeGeometry.frontCenterY:L.moleBottom-L.sink-L.laneW*.32+(i===0?L.laneW*.05:0);h.style.width=holeWidth+'px';h.style.top=holeTop+'px';L.holeRects.push({x:L.laneX[i]-holeWidth/2,y:holeTop,w:holeWidth,h:holeHeight});
         var hf = ln.querySelector('.rp-hole-front'); hf.style.width = h.style.width; hf.style.top = holeTop + 'px';
         var m = ln.querySelector('.rp-mole'); var md = meta[CHARS[i]];
         m.style.width = L.moleW + 'px'; m.style.height = (md.h * (L.moleW / md.w)) + 'px'; m.style.aspectRatio = 'auto'; m.style.top = (L.moleBottom - md.h * (L.moleW / md.w)) + 'px';
@@ -541,7 +548,7 @@
       lyricTicker.clear();
       var token = ++resultSerial, practice = false;
       try { src && src.stop(); } catch (e) {} cancelAnimationFrame(raf); st = null;
-      return Promise.all([loadMeta(), loadSong(), preload()]).then(function (data) {
+      return Promise.all([loadMeta(), loadSong(), preload(),beachMoles.prepare()]).then(function (data) {
         return loadSfx().then(function () { return data[1]; });
       }).then(function (data) {
         if (token !== resultSerial || activeB || el.hidden) return;
@@ -725,7 +732,7 @@
       var ci = countEl, countdownElapsed = ctx.currentTime - st.countdownAt;
       if (ctx.currentTime < st.playAt) { ci.textContent = countdownElapsed < 0.85 ? '3' : countdownElapsed < 1.70 ? '2' : countdownElapsed < 2.55 ? '1' : 'JUMP'; ci.hidden = false; }
       else ci.hidden = true;
-      if (ctx.currentTime < st.playAt) return;
+      if (ctx.currentTime < st.playAt) { for(var lane=0;lane<4;lane++)headAt(lane,0,frameHeads[lane].h);beachMoles.render(t,L,frameHeads,st.moles,7*CONFIG.jumpFrameMs/1000);return; }
       // 두더지 프레임 + 머리 원
       var heads = frameHeads;
       for (var i = 0; i < 4; i++) {
@@ -739,6 +746,7 @@
         dizzyEls[i].classList.toggle('is-on', t - m.hurtAt < 1.0);
         headAt(i,f,heads[i].h);heads[i].jumping=f>0&&f<6;
       }
+      beachMoles.render(t,L,heads,st.moles,7*CONFIG.jumpFrameMs/1000);
       // V1170: activate in spawn order; keep waiting/retired sprites out of rendering.
       while(st.spawnCursor<st.renderQueue.length&&t>=st.renderQueue[st.spawnCursor].spawnTime-LAUNCH)st.activeNotes.push(st.renderQueue[st.spawnCursor++]);
       // 무기
@@ -809,7 +817,7 @@
 
     function gameOver(clear) {
       statusFx.stop(); clearButtonWaves();
-      beachVisual.stop();
+      beachVisual.stop(); beachMoles.stop();
       lyricTicker.clear();
       if (st.ended) return; st.ended = true; st.over = true; el.querySelectorAll('.rp-btn').forEach(function (b) { b.classList.remove('is-cue'); }); // 결과창 뒤 버튼 반짝임 정지
       try { src.stop(ctx.currentTime + (clear ? 0.8 : 0.05)); } catch (e) { /* 무시 */ }
@@ -895,7 +903,7 @@
       var cleaned = false;
       function cleanup() {
         if (cleaned) return; cleaned = true;
-        statusFx.stop(); clearButtonWaves(); setEntryBgm(false); cancelEntry(); beachVisual.stop();
+        statusFx.stop(); clearButtonWaves(); setEntryBgm(false); cancelEntry(); beachVisual.stop(); beachMoles.stop();
         updateACombo(0,true); lyricTicker.clear(); clearAGauge(); resultSerial++;
         if (bGame) bGame.stop(); activeB = false; cancelAnimationFrame(raf);
         try { src && src.stop(); } catch (e) { /* optional audio */ }
@@ -950,7 +958,7 @@
       paintTickets();
       setEntryBgm(true);
       cancelEntry();
-      beachVisual.stop();
+      beachVisual.stop(); beachMoles.stop();
       updateACombo(0,true);
       lyricTicker.clear();
       resultSerial++;

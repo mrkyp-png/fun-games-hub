@@ -1,0 +1,64 @@
+{
+  "status": "local, not deployed",
+  "imageTool": "built-in image_gen, true transparent background",
+  "sourceReferences": [
+    "hole-1.png",
+    "hole-2.png",
+    "hole-3.png",
+    "hole-4.png"
+  ],
+  "maskPacking": "same source crop and dimensions; foreground and occlusion alpha correspondence max error 1/255",
+  "plazaFaceFix": "preserve native COLOR_0 VEC3 or VEC4 layout and original vertex count; no RGB channel is used as alpha",
+  "beachLoweringPixels": {
+    "360x500": 11.45,
+    "390x620": 9.57,
+    "430x720": 9.18,
+    "844x320": 18
+  },
+  "hands": "RimIdle arm layer, both palms matched to real foreground contour; release on takeoff, return on landing; hands render in front of rim",
+  "result": "stop and hide 3D canvas when result opens; legacy placeholders stay hidden",
+  "verified": [
+    "RGB/RGBA count and opacity regression",
+    "four palms contact rim <0.01 CSS pixel",
+    "same target and jump apex at four dimensions",
+    "857 service worker files",
+    "actual model skinning and appearance tests",
+    "rhythm stage/dance/exit/prewarm regressions"
+  ],
+  "notVerified": [
+    "live browser screenshot after fix",
+    "phone visuals and FPS"
+  ],
+  "assets": [
+    {
+      "path": "mole\\assets\\rhythm\\beach-hole-v1689\\geometry.json",
+      "bytes": 22810,
+      "sha256": "1f18aef550a19a274d89b9ee76458590597dda39ec9c9418e2f74b20e8837edf"
+    },
+    {
+      "path": "mole\\assets\\rhythm\\beach-hole-v1689\\hole-back.png",
+      "bytes": 759550,
+      "sha256": "865be6f4968db7b0d4ab909cdb69b9f713025c4f923153db81fa2103ad394e7c"
+    },
+    {
+      "path": "mole\\assets\\rhythm\\beach-hole-v1689\\hole-front.png",
+      "bytes": 743574,
+      "sha256": "dab032787f92381ab2e94e89e0043afd28c9c23e8d92cf49ed08632aab1189c1"
+    },
+    {
+      "path": "mole\\assets\\rhythm\\beach-hole-v1689\\hole-occlusion.png",
+      "bytes": 5201,
+      "sha256": "9bafec8e1702d5e3b8f241d7f8ca55cda9c81c0c496a81529b81018a7d68c739"
+    },
+    {
+      "path": "mole\\assets\\rhythm\\beach-hole-v1689\\hole-source.png",
+      "bytes": 1578787,
+      "sha256": "aca1df89831133a37693407949da0e5eb4ee10ebe3bbc0a097a7d62a0effebe0"
+    },
+    {
+      "path": "mole\\assets\\rhythm\\beach-hole-v1689\\IMAGEGEN_PROMPT.md",
+      "bytes": 1919,
+      "sha256": "948edfdbd230d7121f057b2f1de9742ad95fa3604a34e01d9a8a8d9271abb923"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "tests": [
+    "all original gameplay and bomb carrier motions",
+    "Head attachment throughout each model animation",
+    "finite skinned hair palettes",
+    "smiling default and hurt-eye isolation",
+    "four body and hair palettes",
+    "four live beach actors share one WebGL canvas",
+    "stable appearance per spawn",
+    "minimum uniform budget packed rim flags",
+    "old sprites remain hidden at results",
+    "startup script dependencies",
+    "all service-worker shell assets exist"
+  ],
+  "shellAssets": 857,
+  "realBrowser": false,
+  "phonePerformance": false
+}
