@@ -1,0 +1,26 @@
+{
+  "version": "V1693 G",
+  "hash_basis": "exact staged Git blob bytes",
+  "files": [
+    {
+      "path": "mole/index.html",
+      "bytes": 134713,
+      "sha256": "01738c7ea14a302005a0f583b4c5e3131d11f89ed38b96a71fc98dbf4529ea73"
+    },
+    {
+      "path": "mole/sw.js",
+      "bytes": 60838,
+      "sha256": "d4a1b47fd67cd5e6b9f1edc3321d50adbedbee680c39671373610e1601aa8623"
+    },
+    {
+      "path": "mole/js/home3d-renderer.js",
+      "bytes": 62478,
+      "sha256": "f016c2f8e5439af55a812ff63d47e1826b9422d80b8316f036d40fa311f55788"
+    },
+    {
+      "path": "mole/js/home3d-rhythm-tunnel.js",
+      "bytes": 5883,
+      "sha256": "ccbd2dbf472dacd3c11dd885874651bf8f0d91132dc770e168cc94b0acfc3d76"
+    }
+  ]
+}

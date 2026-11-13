@@ -192,13 +192,30 @@
   const VS = `#version 300 es
 precision highp float;
 in vec3 aPosition;in vec3 aNormal;in vec4 aColor;in vec4 aJoints;in vec4 aWeights;in vec2 aUV;
-uniform mat4 uVP,uModel,uBones[48];uniform mat3 uNormal;uniform bool uSkin,uSea,uRhythmBars;uniform float uTime,uBarBase;
+uniform mat4 uVP,uModel,uBones[48];uniform mat3 uNormal;uniform bool uSkin,uSea,uRhythmBars;uniform float uTime,uBarBase;uniform bool uNotes,uGlass;uniform float uGlassOpen;uniform vec4 uNoteGate;
 out vec3 vWorld,vNormal;out vec4 vColor;out vec2 vUV;
 float seaH(vec2 p,float t){return .06*sin(.55*p.x+1.1*t)+.04*sin(.8*p.y-.9*t+1.3)+.02*sin(.37*(p.x+p.y)+1.7*t);}
-void main(){mat4 skin=mat4(1.);if(uSkin)skin=uBones[int(aJoints.x)]*aWeights.x+uBones[int(aJoints.y)]*aWeights.y+uBones[int(aJoints.z)]*aWeights.z+uBones[int(aJoints.w)]*aWeights.w;vec4 p=uModel*skin*vec4(aPosition,1.);if(uRhythmBars){float h=.68+.27*sin(uTime*.6981317008+aUV.x*4.*.9);p.y=uBarBase+(p.y-uBarBase)*h;}vWorld=p.xyz;vNormal=normalize(uNormal*mat3(skin)*aNormal);if(uSea){float e=.2;p.y+=seaH(p.xz,uTime);float hx=seaH(p.xz+vec2(e,0.),uTime)-seaH(p.xz-vec2(e,0.),uTime),hz=seaH(p.xz+vec2(0.,e),uTime)-seaH(p.xz-vec2(0.,e),uTime);vNormal=normalize(vec3(-hx/(2.*e),1.,-hz/(2.*e)));vWorld=p.xyz;}vColor=aColor;vUV=aUV;gl_Position=uVP*p;}`;
+void main(){mat4 skin=mat4(1.);if(uSkin)skin=uBones[int(aJoints.x)]*aWeights.x+uBones[int(aJoints.y)]*aWeights.y+uBones[int(aJoints.z)]*aWeights.z+uBones[int(aJoints.w)]*aWeights.w;vec4 p=uModel*skin*vec4(aPosition,1.);if(uRhythmBars){float h=.68+.27*sin(uTime*.6981317008+aUV.x*4.*.9);p.y=uBarBase+(p.y-uBarBase)*h;}if(uGlass){float opened=clamp(uGlassOpen*1.6-aColor.b*.6,0.,1.);opened=opened*opened*(3.-2.*opened);p.xz+=uNoteGate.zw*(aColor.r*2.-1.)*aColor.g*1.06*opened;}
+vec4 animatedColor=aColor;
+if(uNotes){float side=dot(p.xz-uNoteGate.xy,uNoteGate.zw);if(abs(side)>1.25&&p.y>1.85){
+ float phase=uTime*3.4+(side>0.?1.25:0.);
+ float pulse=.5*(1.+.16*sin(phase)+.035*sin(phase*2.));
+ float centre=sign(side)*1.664;
+ p.xz+=uNoteGate.zw*(side-centre)*(pulse-1.);p.y=2.51+(p.y-2.51)*pulse;
+ vec3 mint=vec3(.45,1.,.82),pink=vec3(1.,.56,.77),yellow=vec3(1.,.91,.45);
+ float hue=mod(uTime/2.8+(side>0.?1.:0.),3.);float blend=smoothstep(0.,1.,fract(hue));
+ animatedColor.rgb=hue<1.?mix(mint,pink,blend):(hue<2.?mix(pink,yellow,blend):mix(yellow,mint,blend));
+}}
+vWorld=p.xyz;vNormal=normalize(uNormal*mat3(skin)*aNormal);if(uSea){float e=.2;p.y+=seaH(p.xz,uTime);float hx=seaH(p.xz+vec2(e,0.),uTime)-seaH(p.xz-vec2(e,0.),uTime),hz=seaH(p.xz+vec2(0.,e),uTime)-seaH(p.xz-vec2(0.,e),uTime);vNormal=normalize(vec3(-hx/(2.*e),1.,-hz/(2.*e)));vWorld=p.xyz;}vColor=animatedColor;vUV=aUV;gl_Position=uVP*p;}`;
   const FS = `#version 300 es
 precision highp float;
-uniform bool uEnergy,uRhythmSign,uTunnel;uniform float uGateAge;
+uniform bool uEnergy,uRhythmSign,uTunnel,uGlass,uExtraNote;uniform vec3 uExtraNoteColor;uniform float uGateAge,uGlassOpen;
+vec3 doorTint(float layer,float time){
+ float phase=mod(layer+time/3.,3.);
+ vec3 red=vec3(.98,.34,.30),orange=vec3(1.,.61,.23),yellow=vec3(1.,.88,.36);
+ float blend=smoothstep(.75,1.,fract(phase));
+ return phase<1.?mix(red,orange,blend):(phase<2.?mix(orange,yellow,blend):mix(yellow,red,blend));
+}
 vec4 portalColor(vec2 uv,float t){
   // Narrow physical guide lights: one slow inward pulse, with a front-to-back entry response.
   float travel=fract(t/5.5)*1.5-.25;
@@ -213,7 +230,22 @@ float vis(highp sampler2DShadow m,vec3 q,float px){float v=0.;for(int i=-1;i<=1;
 vec3 lproj(mat4 M,vec3 p){vec4 sp=M*vec4(p,1.);return sp.xyz/sp.w*.5+.5;}
 bool inside(vec3 q){return q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z<1.;}
 float cloudVis(vec3 p){float v=1.;for(int i=0;i<5;i++){vec4 c=uClouds[i];float t=(c.y-p.y)/max(uSun.y,.2);vec2 q=p.xz+uSun.xz*t;float d=length((q-c.xz)/vec2(4.8,3.2))/c.w;v*=mix(.72,1.,smoothstep(.55,1.05,d));}return v;}
-void main(){if(uTunnel){vec4 guide=portalColor(vUV,uTime);frag=vec4(guide.rgb,guide.a*vColor.a);return;}if(uEnergy){frag=portalColor(vUV,uTime);return;}if(uShadowPass){frag=vec4(1.);return;}if(uGlow){frag=vec4(vColor.rgb,vColor.a);return;}if(uSunDisc){float rr=length(vUV-.5)*2.;if(rr>1.)discard;frag=vec4(mix(vec3(1.,.98,.88),vec3(1.,.92,.66),rr*rr),1.);return;}if(uCloud){vec3 cn=normalize(vNormal);float k=dot(cn,uSun)*.5+.5;vec3 c=mix(vec3(.82,.89,.98),vec3(1.,.99,.96),k)*mix(.9,1.,cn.y*.5+.5);float fog=smoothstep(40.,80.,length(uEye-vWorld)/uFogK);frag=vec4(mix(c,vec3(.45,.72,.94),fog*.6),1.);return;}vec3 n=normalize(vNormal),base=uTexBase?pow(texture(uTex,vUV).rgb,vec3(1.35)):uColor.rgb*vColor.rgb;float shadow=1.;
+void main(){if(uGlass){
+ float opened=clamp(uGlassOpen*1.6-vColor.b*.6,0.,1.);opened=opened*opened*(3.-2.*opened);
+ float slide=(vColor.r*2.-1.)*.53*opened;
+ if(vUV.x+slide<0.||vUV.x+slide>1.)discard;
+ vec3 normal=normalize(vNormal),eye=normalize(uEye-vWorld);
+ float fresnel=pow(1.-abs(dot(normal,eye)),4.);
+ float trim=step(1.5,vColor.a),edge=min(vColor.a,1.);
+ float daylight=.65+.25*abs(dot(normal,uSun));
+ float reflection=pow(max(0.,dot(reflect(-uSun,normal),eye)),48.);
+ vec3 tint=doorTint(vColor.b*2.,uTime);
+ vec3 glass=tint*mix(1.,.72,edge)*daylight;
+ glass=mix(glass,mix(tint,vec3(1.),.40),fresnel*.4)+vec3(.07)*reflection;
+ vec3 frameBase=doorTint(vColor.b*2.,uTime);
+ vec3 frame=frameBase*(.60+.35*max(0.,dot(normal,uSun)))+vec3(.06)*reflection;
+ frag=vec4(mix(glass,frame,trim),mix(mix(.085+fresnel*.18,.48,edge),1.,trim));return;
+}if(uTunnel){float daylight=.65+.30*abs(dot(normalize(vNormal),uSun));vec3 frameBase=doorTint(vUV.x<.23?0.:(vUV.x<.69?1.:2.),uTime);frag=vec4(frameBase*daylight,.85);return;}if(uEnergy){frag=portalColor(vUV,uTime);return;}if(uShadowPass){frag=vec4(1.);return;}if(uGlow){frag=vec4(uExtraNote?uExtraNoteColor:vColor.rgb,vColor.a);return;}if(uSunDisc){float rr=length(vUV-.5)*2.;if(rr>1.)discard;frag=vec4(mix(vec3(1.,.98,.88),vec3(1.,.92,.66),rr*rr),1.);return;}if(uCloud){vec3 cn=normalize(vNormal);float k=dot(cn,uSun)*.5+.5;vec3 c=mix(vec3(.82,.89,.98),vec3(1.,.99,.96),k)*mix(.9,1.,cn.y*.5+.5);float fog=smoothstep(40.,80.,length(uEye-vWorld)/uFogK);frag=vec4(mix(c,vec3(.45,.72,.94),fog*.6),1.);return;}vec3 n=normalize(vNormal),base=uTexBase?pow(texture(uTex,vUV).rgb,vec3(1.35)):uColor.rgb*vColor.rgb;float shadow=1.;
 if(uSea){vec2 p=vWorld.xz;float t=uTime;vec2 g=vec2(0.);const vec3 W[6]=vec3[6](vec3(.90,.42,.45),vec3(-.55,.83,.62),vec3(.20,-.98,.85),vec3(-.94,-.33,1.4),vec3(.70,.71,2.1),vec3(-.15,.99,3.0));for(int i=0;i<6;i++){vec2 dir=normalize(W[i].xy);float k=W[i].z,amp=.09/k;float ph=dot(dir,p)*k*1.3+t*sqrt(9.8*k)*.55+float(i)*1.7;g+=dir*cos(ph)*amp*k*1.3;}vec3 n=normalize(vec3(-g.x,1.,-g.y));vec3 V=normalize(uEye-vWorld),Ls=uSun;float d=min(length(p)-12.,length(p-vec2(0.,3.2))-13.6);vec3 deep=vec3(.05,.34,.64),shallow=vec3(.18,.69,.78),body=mix(shallow,deep,smoothstep(.5,9.,d));vec3 sky=mix(vec3(.65,.83,.98),vec3(.36,.66,.94),clamp(reflect(-V,n).y,0.,1.));float fres=.06+.94*pow(1.-max(0.,dot(n,V)),5.);vec3 c=mix(body,sky,fres);c+=vec3(1.,.97,.9)*pow(max(0.,dot(reflect(-Ls,n),V)),180.)*1.6;float foam=smoothstep(.9,0.,d)*(.6+.4*sin(d*6.-t*1.8+g.x*8.));c=mix(c,vec3(.96,.98,1.),clamp(foam,0.,1.)*.7);float fog=smoothstep(26.,62.,length(uEye-vWorld)/uFogK);frag=vec4(mix(clamp(c,0.,1.),vec3(.45,.72,.94),fog),1.);return;}
 if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec4 signPixel=texture(uTex,vUV);if(signPixel.a<.5)discard;vec3 c=signPixel.rgb;
 if(uRhythmSign){float mask=1.;
@@ -231,7 +263,7 @@ float fog=smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(displayCol
 
   function create(canvas) {
     let boardPanels = [], boardTex = {}, props = [], boat = [], smoke = [], smokeBall = null, arcade = null, boss = null, modeBtn = [], glowDisc = [], glowHalo = [], screenTex = null, screenCanvas = null; // 두더지팡 게임기: 구멍 빛·구멍 두더지·화면 글자
-    let gl, program, U, A, environment = [], actor = [], rig = null, smileFace = null, vp = null, signs = null, size = null, seaMesh = null, shadowS = null, shadowM = null, sunQuad = null, clouds = [], rides = [], staticAt = -9, staticVP = null, doorOpen = 0, doorAt = null, rhythmTunnel = null, gateEntryAt = -Infinity, gateNear = false;
+    let gl, program, U, A, environment = [], actor = [], rig = null, smileFace = null, vp = null, signs = null, size = null, seaMesh = null, shadowS = null, shadowM = null, sunQuad = null, clouds = [], rides = [], staticAt = -9, staticVP = null, doorOpen = 0, doorAt = null, rhythmTunnel = null, rhythmField = null, extraNotes = null, gateEntryAt = -Infinity, gateNear = false, glassOpen = 0, glassAt = null;
     const resetSize = () => { size = null; };
     if (root.ResizeObserver) new ResizeObserver(resetSize).observe(canvas); else root.addEventListener('resize', resetSize);
     function shader(type, src) {
@@ -247,7 +279,7 @@ float fog=smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(displayCol
       gl.linkProgram(program);
       if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw Error(gl.getProgramInfoLog(program));
       gl.useProgram(program);
-      U = {}; for (const k of ['VP', 'Model', 'Bones', 'Normal', 'Skin', 'Color', 'Floor', 'Sign', 'Tex', 'Eye', 'Player', 'Sea', 'Time', 'Sun', 'ShadowVP', 'ShadowS', 'ShadowM', 'ShadowPass', 'SunDisc', 'Cloud', 'Actor', 'ShadowVPM', 'Clouds', 'FogK', 'Glow', 'TexBase', 'Energy', 'RhythmBars', 'BarBase', 'RhythmSign', 'Tunnel', 'GateAge']) U[k] = gl.getUniformLocation(program, 'u' + k);
+      U = {}; for (const k of ['VP', 'Model', 'Bones', 'Normal', 'Skin', 'Color', 'Floor', 'Sign', 'Tex', 'Eye', 'Player', 'Sea', 'Time', 'Sun', 'ShadowVP', 'ShadowS', 'ShadowM', 'ShadowPass', 'SunDisc', 'Cloud', 'Actor', 'ShadowVPM', 'Clouds', 'FogK', 'Glow', 'TexBase', 'Energy', 'RhythmBars', 'BarBase', 'RhythmSign', 'Tunnel', 'Glass', 'GlassOpen', 'GateAge', 'Notes', 'NoteGate', 'ExtraNote', 'ExtraNoteColor']) U[k] = gl.getUniformLocation(program, 'u' + k);
       A = {}; for (const k of ['Position', 'Normal', 'Color', 'Joints', 'Weights', 'UV']) A[k] = gl.getAttribLocation(program, 'a' + k);
       gl.enable(gl.DEPTH_TEST);
       // 해 쪽에서 본 깊이 지도: 섬·건물(1초마다 1024) / 두더지·구름(매 프레임 512) — 저사양 대비
@@ -343,7 +375,7 @@ float fog=smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(displayCol
         if (boatModel) { boat = R.instances(boatModel).map((i) => Object.assign(mesh(boatModel, i.primitive), { world: i.world, texBase: null })); for (const b of boat) glbTexture(boatModel, R.instances(boatModel)[0].primitive).then((t) => { b.texBase = t; }).catch(() => {}); }
         // Sign_<action> 판 = 간판 글자 텍스처 자리
         environment = R.instances(plaza).map((i) => Object.assign(mesh(plaza, i.primitive), { world: labelWorld(plaza,i), gateGlow: i.name.startsWith('GateGlow') || i.name === 'RhythmBars batch', rhythmBars: i.name === 'RhythmBars batch', energy: i.name === 'Energy_rhythm', shopDoor: i.name === 'Door_shop', sign: i.name.startsWith('Sign_') ? i.name.slice(5) : null, screen: i.name.startsWith('Screen_'), tex: null, texPrim: i.name.startsWith('Tex_') ? i.primitive : null }));
-        {const tunnel=root.MoleGame.RhythmTunnel.geometry();rhythmTunnel=rawMesh(tunnel.positions,tunnel.normals,tunnel.indices,{},tunnel.colors,tunnel.uvs);gateEntryAt=-Infinity;gateNear=false;const site=root.MoleGame.Home3DLayout.SITES.find(s=>s.id==='rhythm'),d=Math.hypot(site.x,site.z);for(const m of environment)if(m.rhythmBars)m.world=R.multiply(R.transform({translation:[-site.x/d*.30,0,-site.z/d*.30]}),m.world);}
+        {const tunnel=root.MoleGame.RhythmTunnel.geometry();rhythmTunnel=rawMesh(tunnel.positions,tunnel.normals,tunnel.indices,{},tunnel.colors,tunnel.uvs);rhythmField=rawMesh(tunnel.field.positions,tunnel.field.normals,tunnel.field.indices,{},tunnel.field.colors,tunnel.field.uvs);const ng=root.MoleGame.RhythmTunnel.noteGeometry();extraNotes=rawMesh(ng.positions,ng.normals,ng.indices,{});gateEntryAt=-Infinity;gateNear=false;glassOpen=0;glassAt=null;const site=root.MoleGame.Home3DLayout.SITES.find(s=>s.id==='rhythm'),d=Math.hypot(site.x,site.z);for(const m of environment)if(m.rhythmBars)m.world=R.multiply(R.transform({translation:[-site.x/d*.30,0,-site.z/d*.30]}),m.world);}
         // Tex_* = GLB 안 그림을 입힌 부품(뿅망치 야구공). 그림이 준비되면 입힘(그 전엔 정점색)
         for (const m of environment) if (m.texPrim) glbTexture(plaza, m.texPrim).then((t) => { m.tex = t; }).catch(() => {});
         signs = root.MoleGame.Home3DSigns.create(gl);
@@ -435,11 +467,21 @@ float fog=smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(displayCol
         for (const m of environment) {
           if(m.energy) continue;
           const world = m.shopDoor ? shopDoorMatrix(m.world,doorOpen) : m.world;
-          if (m.gateGlow) gl.uniform1i(U.Glow, 1);
+          if (m.gateGlow) {gl.uniform1i(U.Glow, 1);gl.uniform1i(U.Notes,!m.rhythmBars);
+            const site=root.MoleGame.Home3DLayout.SITES.find(s=>s.id==='rhythm'),d=Math.hypot(site.x,site.z);gl.uniform4f(U.NoteGate,site.x,site.z,site.z/d,-site.x/d);}
           if(m.rhythmBars){gl.uniform1i(U.RhythmBars,1);gl.uniform1f(U.BarBase,m.world[13]);}
           draw(m, world, null);
           if(m.rhythmBars)gl.uniform1i(U.RhythmBars,0);
-          if (m.gateGlow) gl.uniform1i(U.Glow, 0);
+          if (m.gateGlow) {gl.uniform1i(U.Glow, 0);gl.uniform1i(U.Notes,0);}
+        }
+        if(extraNotes){
+          const site=root.MoleGame.Home3DLayout.SITES.find(s=>s.id==='rhythm'),d=Math.hypot(site.x,site.z),front=[-site.x/d,-site.z/d],right=[-front[1],front[0]],palette=[[.45,1.,.82],[1.,.56,.77],[1.,.91,.45]];
+          gl.uniform1i(U.Glow,1);gl.uniform1i(U.ExtraNote,1);
+          for(const [side,y]of [[-1.40,3.16],[1.40,3.16],[-1.70,1.85],[1.70,1.85]]){
+            const phase=now*3.4+(side>0?1.25:0),pulse=1.+.16*Math.sin(phase)+.035*Math.sin(phase*2.),hue=((now/2.8+(side>0?1:0))%3+3)%3,i=Math.floor(hue),f=hue-i,blend=f*f*(3-2*f),a=palette[i],b=palette[(i+1)%3];
+            gl.uniform3f(U.ExtraNoteColor,...a.map((v,k)=>v+(b[k]-v)*blend));
+            draw(extraNotes,R.transform({translation:[site.x+front[0]*.82+right[0]*side,y,site.z+front[1]*.82+right[1]*side],rotation:[0,Math.sin(Math.atan2(front[0],front[1])/2),0,Math.cos(Math.atan2(front[0],front[1])/2)],scale:[pulse,pulse,pulse]}),null);
+          }gl.uniform1i(U.ExtraNote,0);gl.uniform1i(U.Glow,0);
         }
         if (seaMesh) { /* V1635 C: 바다가 카메라를 따라감(끝없는 바다), 높이 오를수록 넓게 — 격자 칸(2.5) 단위로 옮겨 물결 안 흔들림 */
           const sk = Math.max(1, Math.pow(2, Math.ceil(Math.log2(1 + (cam.eye[1] - 1.35) / 25)))), cell = 2.5 * sk;
@@ -488,7 +530,13 @@ float fog=smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(displayCol
         const nearGate=root.MoleGame.RhythmTunnel.approach(view,pose.y||0)>.78;if(nearGate&&!gateNear)gateEntryAt=now;gateNear=nearGate;
         gl.uniform1f(U.GateAge,now-gateEntryAt<1.7?now-gateEntryAt:-1);gl.uniform1i(U.Tunnel,1);
         if(rhythmTunnel)draw(rhythmTunnel,R.identity(),null);
-        gl.uniform1i(U.Tunnel,0);gl.depthMask(true);gl.disable(gl.BLEND);
+        gl.uniform1i(U.Tunnel,0);
+        const glassTarget=root.MoleGame.RhythmTunnel.approach(view,pose.y||0)>.22?1:0,glassDt=glassAt===null?0:Math.max(0,Math.min(.1,now-glassAt));glassAt=now;
+        glassOpen+=(glassTarget-glassOpen)*(1-Math.exp(-glassDt*5));
+        const gs=root.MoleGame.Home3DLayout.SITES.find(s=>s.id==='rhythm'),gd=Math.hypot(gs.x,gs.z);
+        gl.uniform4f(U.NoteGate,gs.x,gs.z,gs.z/gd,-gs.x/gd);gl.uniform1f(U.GlassOpen,glassOpen);gl.uniform1i(U.Glass,1);
+        if(rhythmField)draw(rhythmField,R.identity(),null);
+        gl.uniform1i(U.Glass,0);gl.depthMask(true);gl.disable(gl.BLEND);
         for (const rd of rides) {
           draw(rd.base, rd.world, null);
           draw(rd.mov, rideMatrix(rd, now), null);
