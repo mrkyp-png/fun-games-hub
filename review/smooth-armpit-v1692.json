@@ -1,0 +1,29 @@
+[
+  {
+    "source": "mole/assets/home3d/mole-clay-v47-smile.glb",
+    "output": "mole/assets/characters-v1692/mole-clay-v47-smile.glb",
+    "strands": 190,
+    "lengthFactor": 1.1,
+    "oldTriangles": 4560,
+    "newTriangles": 28500,
+    "rigAndAnimationsUnchanged": true
+  },
+  {
+    "source": "mole/assets/home3d/mole-rhythm-dance-v2.glb",
+    "output": "mole/assets/characters-v1692/mole-rhythm-dance-v2.glb",
+    "strands": 190,
+    "lengthFactor": 1.1,
+    "oldTriangles": 4560,
+    "newTriangles": 28500,
+    "rigAndAnimationsUnchanged": true
+  },
+  {
+    "source": "mole/assets/characters-v1689/mole-game-smile.glb",
+    "output": "mole/assets/characters-v1692/mole-game-smile.glb",
+    "strands": 96,
+    "lengthFactor": 1.1,
+    "oldTriangles": 2304,
+    "newTriangles": 14400,
+    "rigAndAnimationsUnchanged": true
+  }
+]

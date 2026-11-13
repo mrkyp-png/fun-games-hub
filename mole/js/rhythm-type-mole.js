@@ -59,7 +59,7 @@
   const R=root.StudioRig;
   const ring=panel.querySelector('.rp-type-floor-light');
   function releaseRing(){if(ring){ring.style.removeProperty('animation');ring.style.removeProperty('stroke-dashoffset');}}
-  const modelURL=new URL('../assets/home3d/mole-rhythm-dance-v2.glb?v=1690-G',document.currentScript.src);
+  const modelURL=new URL('../assets/characters-v1692/mole-rhythm-dance-v2.glb',document.currentScript.src);
   const beatMap=root.MoleGame.RhythmDanceBeats||{bpm:165.56,beats:[],duration:51.96};
   const canvas=document.createElement('canvas');canvas.className='rp-type-mole';canvas.hidden=true;canvas.setAttribute('aria-hidden','true');
   panel.appendChild(canvas);

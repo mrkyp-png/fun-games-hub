@@ -1,0 +1,5 @@
+Mode: built-in image_gen, transparent_background=true
+Asset: mole/assets/weapon-vfx-v1692/lightning-imagegen.png
+Original generated alpha preserved; runtime enhancement tint only.
+
+Create a production-ready 1024x1024 RGBA game VFX texture: branching magical lightning ONLY on a genuinely transparent background. This is a neutral tintable electricity overlay to be sampled across the surface of a small golden 3D hammer. Several connected energetic zigzag paths of differing lengths distributed across the square, thin sharply defined white-hot cores, fine silver-white branches, restrained soft white glow that fades cleanly into alpha. Pure neutral grayscale / white light only, no baked blue or yellow, because the game will tint the same artwork according to weapon enhancement level. Crisp readable at small gameplay size, sparse enough to keep the underlying gold model clearly visible, roughly 20-30 percent lightning coverage. Paths remain continuous within each connected bolt. No weapon, no hammer, no objects, no black backdrop, no gray backdrop, no checkerboard, no border, no text, no watermark, no fog or smoke. Output just the transparent lightning artwork.

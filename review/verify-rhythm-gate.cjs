@@ -18,8 +18,9 @@ assert.equal(new Set(Array.from(uv).filter((_,i)=>i%2===0).map(v=>v.toFixed(3)))
 for(let i=0;i<5;i++)for(let time=0;time<9;time+=.1){const h=H.gateBarHeight(i,time);assert(h>=.4&&h<=.96);}
 const rendererSource=fs.readFileSync('mole/js/home3d-renderer.js','utf8');
 assert(!rendererSource.includes('portalBolt')&&!rendererSource.includes('uArcEvent')&&!rendererSource.includes('gateEvent('),'Lightning generator and shader removed');
-assert(rendererSource.includes('vec3(1.,.88,.63)')&&rendererSource.includes('vec3(1.,.97,.87)'),'Warm gold and ivory flow contrasts with purple doorway');
-assert(rendererSource.includes('t*.42')&&rendererSource.includes('t*.20'),'Slow continuous flow rather than flashes');
+assert(rendererSource.includes('vec3(.53,.96,.85)')&&rendererSource.includes('vec3(.94,1.,.97)'),'Mint and ivory physical light guides contrast with purple doorway');
+assert(rendererSource.includes('t/5.5')&&rendererSource.includes('uGateAge*.95'),'Slow inward pulse and sequential entry response');
+assert(!rendererSource.includes('if(m.energy) draw('),'Original flat membrane no longer obscures the interior');
 const site=L.SITES.find(s=>s.action==='shop'),d=Math.hypot(site.x,site.z),ux=-site.x/d,uz=-site.z/d;
 const at=(along,side=0)=>({x:site.x+ux*along-uz*side,z:site.z+uz*along+ux*side});
 assert.equal(H.shopDoorTarget(at(3),0),1);

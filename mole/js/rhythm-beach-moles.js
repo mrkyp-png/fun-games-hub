@@ -1,7 +1,7 @@
 /* Four real 3D actors share one WebGL canvas and the existing beach audio clock. */
 (function(root){'use strict';
 const MG=root.MoleGame,R=root.StudioRig,AP=MG.MoleAppearances,FX=MG.RhythmBeachStunts;let modelPromise;
-function load(){if(!modelPromise)modelPromise=fetch('assets/home3d/mole-clay-v47-smile.glb?v=1690-G').then(r=>{if(!r.ok)throw Error('Beach mole model '+r.status);return r.arrayBuffer()}).then(R.parseGLB).then(m=>AP.prepare(m)).catch(e=>{modelPromise=null;throw e});return modelPromise}
+function load(){if(!modelPromise)modelPromise=fetch('assets/characters-v1692/mole-clay-v47-smile.glb').then(r=>{if(!r.ok)throw Error('Beach mole model '+r.status);return r.arrayBuffer()}).then(R.parseGLB).then(m=>AP.prepare(m)).catch(e=>{modelPromise=null;throw e});return modelPromise}
 function create(stage){
  let canvas,gl,rig,parts=[],program,U,A,ready=false,loading=null,lost=false,geometry=null,lastHandError=0;
  const holeBase='assets/rhythm/beach-sand-hole-v1690/';

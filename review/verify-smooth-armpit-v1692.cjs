@@ -1,0 +1,13 @@
+const fs=require('fs'),assert=require('node:assert/strict'),R=require('../mole/js/clay-rig-runtime.js'),reports=JSON.parse(fs.readFileSync('review/smooth-armpit-v1692.json'));
+const load=file=>{const b=fs.readFileSync(file);return R.parseGLB(b.buffer.slice(b.byteOffset,b.byteOffset+b.length))};
+for(const entry of reports){const old=load(entry.source),next=load(entry.output);assert.deepEqual(old.json.nodes,next.json.nodes);assert.deepEqual(old.json.skins,next.json.skins);assert.deepEqual(old.json.animations,next.json.animations);assert.deepEqual(old.json.materials,next.json.materials);assert.deepEqual(Buffer.from(next.bin.subarray(0,old.bin.length)),Buffer.from(old.bin),'All original animation/skin/mesh bytes preserved');let strands=0;
+ for(let mi=0;mi<old.json.meshes.length;mi++)for(let pi=0;pi<old.json.meshes[mi].primitives.length;pi++){const a=old.json.meshes[mi].primitives[pi],b=next.json.meshes[mi].primitives[pi];if(!/armpit/i.test(old.json.materials[a.material].name)){assert.deepEqual(a,b,'Every non-fur primitive unchanged');continue;}
+  const op=R.accessor(old,a.attributes.POSITION),np=R.accessor(next,b.attributes.POSITION),normals=R.accessor(next,b.attributes.NORMAL),joints=R.accessor(next,b.attributes.JOINTS_0),oldJoints=R.accessor(old,a.attributes.JOINTS_0),weights=R.accessor(next,b.attributes.WEIGHTS_0);assert(np.every(Number.isFinite));strands+=op.length/63;
+  for(let s=0;s<op.length/63;s++){const oldCentre=r=>[0,1,2].map(k=>[0,2,3,4,5,6].reduce((v,i)=>v+op[(s*21+r*7+i)*3+k],0)/6),root=oldCentre(0),tip=oldCentre(2),newRoot=[0,1,2].map(k=>Array.from({length:10},(_,i)=>np[(s*81+i)*3+k]).reduce((a,b)=>a+b)/10),newTip=Array.from(np.slice((s*81+80)*3,(s*81+81)*3));for(let k=0;k<3;k++){assert(Math.abs(root[k]-newRoot[k])<1e-6,'Roots remain attached');assert(Math.abs(newTip[k]-(root[k]+(tip[k]-root[k])*1.1))<1e-6,'10 percent longer, no shortening');}
+   for(let i=0;i<81;i++){const v=s*81+i;assert(Math.abs(Math.hypot(...normals.slice(v*3,v*3+3))-1)<1e-5,'Smooth finite unit normals');assert(Math.abs(weights.slice(v*4,v*4+4).reduce((a,b)=>a+b)-1)<1e-5);for(let k=0;k<4;k++)assert.equal(joints[v*4+k],oldJoints[s*21*4+k],'Original armpit bone binding retained');}
+  }
+ }
+ assert.equal(strands,entry.strands);
+ const a=R.prepare(old),b=R.prepare(next);for(const clip of a.animations)for(const time of [0,.13,.5,1]){const x=R.pose(a,clip.name,time,false),y=R.pose(b,clip.name,time,false);assert.deepEqual(x,y,'All expressions and movement joint matrices unchanged');}
+}
+console.log('PASS all 3 live mole sources: attached roots, 10% longer tapered smooth strands, original fur bindings, all non-fur geometry/rig/materials/animations untouched. Actual game GPU/phone pixels unverified.');

@@ -7,7 +7,7 @@ function glMock(){const values={matrices:[],colors:[],sources:[],draws:0};const 
 (async()=>{
  const win={StudioRig:R,MoleGame:{}},sandbox=install(win),AP=win.MoleGame.MoleAppearances;
  assert.deepEqual(Array.from([0,.25,.5,.75].map(x=>AP.random(()=>x))),['mohawk','spiky','curly','forelock']);
- for(const file of ['assets/home3d/mole-clay-v47-smile.glb','assets/home3d/mole-rhythm-dance-v2.glb','assets/characters-v1689/mole-game-smile.glb']){
+ for(const file of ['assets/characters-v1692/mole-clay-v47-smile.glb','assets/characters-v1692/mole-rhythm-dance-v2.glb','assets/characters-v1692/mole-game-smile.glb']){
   const original=model(file),merged=await AP.prepare(original),rig=R.prepare(merged);assert(Math.max(...rig.skins.map(s=>s.joints.length))<=48);
   const painted=AP.paint(await AP.prepare(model(file),['mohawk']),'mohawk');
   for(const mesh of painted.json.meshes)for(const p of mesh.primitives){if(p.attributes.COLOR_0===undefined)continue;const a=painted.json.accessors[p.attributes.COLOR_0],count=painted.json.accessors[p.attributes.POSITION].count;assert.equal(a.count,count,'Colors have exactly one RGB/RGBA value per vertex');const color=R.accessor(painted,p.attributes.COLOR_0);if(a.type==='VEC4')for(let k=3;k<color.length;k+=4)assert.equal(color[k],1,'Opaque skin never takes an RGB channel as alpha');}

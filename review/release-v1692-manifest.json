@@ -1,0 +1,74 @@
+{
+  "version": "V1692 G",
+  "base": "b18abb1f56f843168929771e012b6a5f3fcb8270",
+  "productionFiles": [
+    {
+      "path": "mole/index.html",
+      "bytes": 134713,
+      "sha256": "fa62bbefe040bb5efa88679cb8736ebdaa0cc29d70362ff9a07cac7032a0a591"
+    },
+    {
+      "path": "mole/sw.js",
+      "bytes": 60838,
+      "sha256": "8a4494d98d03fe6f62dd0290fec3f9f85e05f19c5919930efa176ea8240cd9ab"
+    },
+    {
+      "path": "mole/js/game-hammer-models.js",
+      "bytes": 18493,
+      "sha256": "c2bce9a3a99241fd739c852219d4d2abc922cb9617978dc1e3b5da4ea3c8436c"
+    },
+    {
+      "path": "mole/js/home3d-renderer.js",
+      "bytes": 58167,
+      "sha256": "c0eebe91af6be240451b9e74cfb16078ed94128a9ae3bf2882c8c4d51b31c171"
+    },
+    {
+      "path": "mole/js/home3d-rhythm-tunnel.js",
+      "bytes": 2787,
+      "sha256": "7d560a23b159d5a2a80417ceb64d8c92fb69f27ca0ec5eea0a949dbea1e2cc48"
+    },
+    {
+      "path": "mole/js/home3d.js",
+      "bytes": 47304,
+      "sha256": "d6f6affe23a13f69ee6ac38125c5ad2ec604e8984d7e7eeae6f57e69557017d2"
+    },
+    {
+      "path": "mole/js/clay-round1-local.js",
+      "bytes": 27302,
+      "sha256": "95ce844196872779fe71f8d83c842c5c1562799280dbd7f1a605b44d6abe61fd"
+    },
+    {
+      "path": "mole/js/rhythm-beach-moles.js",
+      "bytes": 11556,
+      "sha256": "eb0f3b9dc54380eca997779105484afebea27665baab577a6886bd62ee802544"
+    },
+    {
+      "path": "mole/js/rhythm-type-mole.js",
+      "bytes": 17386,
+      "sha256": "76e6395b3f643ff90a7372aa2113e44d9f4a17030ff4970fd9f55b2a0a1d0783"
+    },
+    {
+      "path": "mole/assets/weapon-vfx-v1692/lightning-imagegen.png",
+      "bytes": 1064578,
+      "sha256": "cb16b13b08f3268bb799a3cb8e0735445556db6528a6cc705503274269e6c4b9"
+    },
+    {
+      "path": "mole/assets/characters-v1692/mole-clay-v47-smile.glb",
+      "bytes": 8083124,
+      "sha256": "8fdfdbc0f6bd87293d3ebb48a0a0e4c484506da00a57ed726609b5c2ba605933"
+    },
+    {
+      "path": "mole/assets/characters-v1692/mole-rhythm-dance-v2.glb",
+      "bytes": 7587560,
+      "sha256": "d8b835542b3e03b1298513e8e0280ed97952660afaf6927bd9e542dacd89f8ac"
+    },
+    {
+      "path": "mole/assets/characters-v1692/mole-game-smile.glb",
+      "bytes": 11907936,
+      "sha256": "b72aa7c9520f296819c3825d10eed39e409fd170ec8ae605948f74436dc799af"
+    }
+  ],
+  "excluded": "All smoking/drunk/phone3D review prototypes and unrelated dirty work",
+  "validation": "Targeted gold legacy/affine/GPU mock/clone/fur/tunnel/layout/fever/live appearance tests passed. Actual browser GPU/phone visual testing not performed.",
+  "hashBasis": "Exact committed git blob bytes, after line-ending normalization"
+}

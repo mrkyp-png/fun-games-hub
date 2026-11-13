@@ -152,13 +152,16 @@
 // V1688 G: Continuous full-body dance, slow head-first sea creatures, musical-note meshes and shimmering rhythm sign.
 // V1690 G: Sand beach, continuous ocean, combo turns and reactive hair; clear text-only signs, gentle warm entrance flow and corrected beach/water landing.
 // V1691 G: gold3D in original sprite boxes; hammer2D preserved; weapons in front of HUD; matched plaza label sizes.
-const CACHE = 'mole-game-v1691-G';
+// V1692 G: matching gold clones, ImageGen enhancement lightning, smooth fur and physical rhythm entrance.
+const CACHE = 'mole-game-v1692-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
 // vendor/face_mesh/*(약 10MB, 얼굴인식)는 SHELL 제외 — 사람두더지 메이커 처음 열 때만 필요.
 // 처음 요청될 때 아래 fetch 핸들러가 알아서 캐시한다.
 const SHELL = [
+  './js/home3d-rhythm-tunnel.js',
+  './js/home3d-renderer.js',
   './assets/rhythm/beach-sand-hole-v1690/hole-back.png',
   './assets/rhythm/beach-sand-hole-v1690/hole-front.png',
   './assets/rhythm/beach-sand-hole-v1690/hole-occlusion.png',
@@ -205,7 +208,10 @@ const SHELL = [
   './js/shop-models-v1509.js',
   './js/game-cannon-model-v1509.js',
   './js/game-hammer-models.js',
-  './assets/weapons-3d-v1691/goldhammer-clone.glb',
+  './assets/weapon-vfx-v1692/lightning-imagegen.png',
+  './assets/characters-v1692/mole-clay-v47-smile.glb',
+  './assets/characters-v1692/mole-rhythm-dance-v2.glb',
+  './assets/characters-v1692/mole-game-smile.glb',
   './assets/ui-approved-v1509/shop-tab-sword.png',
   './assets/ui-approved-v1509/shop-tab-skill-orb.png',
   './assets/skill-tab-layers-20261030/hand-2x.png',
