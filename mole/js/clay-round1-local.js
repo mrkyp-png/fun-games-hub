@@ -8,8 +8,8 @@ const BEHAVIORS=['drink','smoke','phone','thief'],behaviorActors=new Map();
 function pickBehavior(){const i=Math.floor(Math.random()*5);return i<4?BEHAVIORS[i]:null}
 // 올라와 자리 잡은 뒤, 맞기 전·들어가기 전까지만 나쁜 두더지 동작. 맞으면 일반 두더지와 같음.
 function behaviorActor(m,now){
- // 맞거나(killed) 맞은 적 있으면 일반 두더지. 시간 끝나 들어갈 때(dying, 안 맞음)는 나쁜 두더지 그대로 내려감.
- if(!m._behavior||m.killed||m.hits>0||m._clayRestTime==null||now<m._clayRestTime)return null;
+ // 맞았거나 들어가는 중이면 일반 두더지 몸(팔 접고 구멍으로). 들어갈 때 소품은 따로 구멍 안으로 그림.
+ if(!m._behavior||m.dying||m.hits>0||m._clayRestTime==null||now<m._clayRestTime)return null;
  const b=behaviorActors.get(m._behavior)||null;
  if(b&&m._behRate==null){
   // 뒤 라운드일수록 머무는 시간이 짧음 → 머무는 동안 동작 한 바퀴가 다 나오게 빠르게(원래보다 느려지진 않음)
@@ -229,11 +229,11 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
     gl.uniform2f(loc.uOffset,(x-.5)*2+sx/board.clientWidth*2,(.5-y-Math.cos(angle)*.2/span)*2-sy/board.clientWidth*2);gl.uniform4f(loc.uHole,ox+x*size+sx*pixelScale,oy+(1-y)*size-sy*pixelScale,135/418/gridSize*size,58/418/gridSize*size*boardAspect);
     gl.uniform1f(loc.uFlash,Math.max(0,Math.min(1,((m._clayFlashUntil||0)-clockTime)/.09))*.8);
    }
-   function drawMesh(d,outline=false,matrix=null){
+   function drawMesh(d,outline=false,matrix=null,holeOnly=false){
     const carriedObject=d.materialName.startsWith('Carry bomb ');
     // Only the bomb needs the stricter entrance mask. Keep the jumping body's
     // original above-rim visibility during takeoff and landing.
-    gl.uniform1i(loc.uEntering,carriedObject&&!!motion.appearing);
+    gl.uniform1i(loc.uEntering,holeOnly||carriedObject&&!!motion.appearing);
     if(!matrix&&!palettes.has(d.node))palettes.set(d.node,R.palette(runtime,worlds,d.node));const skin=matrix?null:palettes.get(d.node);
     gl.uniformMatrix4fv(loc.uModel,false,matrix||R.multiply(instance,worlds[d.node]));gl.uniform1i(loc.uSkinned,!!skin);if(skin)gl.uniformMatrix4fv(loc.uJoints,false,skin);
     if(skin)gl.uniform4fv(loc.uRimJoint,rimFlags[model.json.nodes[d.node].skin]);
@@ -283,6 +283,16 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
       drawMesh(d,false,R.multiply(R.multiply(move,at),R.multiply(rot,w)));
      }
      gl.uniform1i(loc.uForegroundProp,false);
+    }
+    // 시간 끝나 들어갈 때: 마지막 동작 자세의 소품을 몸 쪽 뒤·아래로 뺀 뒤 두더지와 함께 내려가며 구멍 안쪽만 보임
+    if(m.dying&&!m.killed&&!fly&&m.hits===0&&m._clayRestTime!=null&&(m._clayExitAt??clockTime)>=m._clayRestTime){
+     if(!m._exitWorlds)m._exitWorlds=AP.pose(bActor.runtime,bActor.clip,behaviorTime(m,m._clayExitAt??clockTime),true,null,clockTime,m._appearance||'mohawk');
+     const w=smooth((clockTime-(m._clayExitAt??clockTime))/.18),pull=R.transform({translation:[0,-.4*w,-.9*w]});
+     for(const d of bActor.draws){
+      if(!PROP_RE.test(bActor.model.json.nodes[d.node].name||''))continue;
+      drawMesh(d,false,R.multiply(instance,R.multiply(pull,m._exitWorlds[d.node])),true);
+     }
+     gl.uniform1i(loc.uEntering,false);
     }
    }
    if(props.length)foregroundBombs.push(()=>{

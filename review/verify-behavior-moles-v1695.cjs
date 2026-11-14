@@ -36,6 +36,11 @@ function glMock(){const v={draws:0,maxJointUpload:0,sources:[],finite:true};cons
  }
  for(let f=0;f<20;f++){t+=50;game.clock(t);raf.shift()()}
  assert(v.finite);
+ // 시간 끝나 들어갈 때(안 맞음): 일반 몸 + 소품 구멍 안으로
+ const exiter=animals.find(a=>a._behavior==='drink')||moles.find(m=>m._behavior==='drink'&&!m.hits);
+ exiter.hits=0;exiter.dying=true;exiter.killed=false;game.renderPop(exiter);
+ const d0=v.draws;for(let f=0;f<6;f++){t+=50;exiter.shownDepth=Math.min(3.9,f*.7);game.clock(t);raf.shift()()}
+ assert(v.finite&&v.draws>d0&&exiter._exitWorlds,'exit props drawn into hole');
  const sw=fs.readFileSync(path.join(root,'mole/sw.js'),'utf8');
  console.log('PASS behavior moles: kinds',JSON.stringify(seen),'joints upload',v.maxJointUpload,'draws',v.draws,'sw lists v1694 assets:',sw.includes('characters-v1694'));
 })().catch(e=>{console.error(e);process.exitCode=1});
