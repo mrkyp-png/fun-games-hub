@@ -237,10 +237,10 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
     if(!matrix&&!palettes.has(d.node))palettes.set(d.node,R.palette(runtime,worlds,d.node));const skin=matrix?null:palettes.get(d.node);
     gl.uniformMatrix4fv(loc.uModel,false,matrix||R.multiply(instance,worlds[d.node]));gl.uniform1i(loc.uSkinned,!!skin);if(skin)gl.uniformMatrix4fv(loc.uJoints,false,skin);
     if(skin)gl.uniform4fv(loc.uRimJoint,rimFlags[model.json.nodes[d.node].skin]);
-    const color=carriedObject&&d.materialName==='Carry bomb shell'&&m.bombKind==='strong'?[.68,.055,.04,1]:isColored(m)&&coloredMaterial(m,d.materialName)?coloredMaterial(m,d.materialName):m.kind==='mole'?AP.materialColor(d.material,m._appearance||'mohawk'):d.color;
+    const color=carriedObject&&d.materialName==='Carry bomb shell'&&m.bombKind==='strong'?[.68,.055,.04,1]:isColored(m)&&coloredMaterial(m,d.materialName)?coloredMaterial(m,d.materialName):m.kind==='mole'?AP.materialColor(d.material,'mohawk'):d.color;
     gl.uniform4fv(loc.uColor,color);gl.uniform1f(loc.uRoughness,d.roughness);gl.uniform1i(loc.uHasBase,d.hasBase);gl.uniform1i(loc.uHasNormal,d.hasNormal);gl.uniform1f(loc.uNormalScale,d.normalScale);
     d.double?gl.disable(gl.CULL_FACE):gl.enable(gl.CULL_FACE);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,d.base);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,d.normal);
-    bind(d.positions,attr.aPosition,3);bind(m.kind==='mole'&&d.colorVariants?d.colorVariants[m._appearance||'mohawk']:isColored(m)&&d.animalHead?d.animalHead[animalIndex(m.poseIndex)]:d.vertexColors,attr.aColor,d.colorSize);bind(d.normals,attr.aNormal,3);bind(d.uv,attr.aUV,2);bind(d.joints,attr.aJoints,4);bind(d.weights,attr.aWeights,4);
+    bind(d.positions,attr.aPosition,3);bind(m.kind==='mole'&&d.colorVariants?d.colorVariants.mohawk:isColored(m)&&d.animalHead?d.animalHead[animalIndex(m.poseIndex)]:d.vertexColors,attr.aColor,d.colorSize);bind(d.normals,attr.aNormal,3);bind(d.uv,attr.aUV,2);bind(d.joints,attr.aJoints,4);bind(d.weights,attr.aWeights,4);
     gl.uniform1f(loc.uOutline,outline?span/Math.max(1,board.clientWidth)*1.4:0);gl.uniform1i(loc.uOutlinePass,outline);
     if(outline){gl.enable(gl.CULL_FACE);gl.cullFace(gl.FRONT)}else gl.cullFace(gl.BACK);
     if(d.indices){gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,d.indices);gl.drawElements(gl.TRIANGLES,d.indexCount,gl.UNSIGNED_INT,0)}else gl.drawArrays(gl.TRIANGLES,0,d.count);
@@ -322,7 +322,8 @@ function renderPop(m){
  if(!active||!canRender(m))return false;
  if(!entries.has(m.el)){
   m._appearance=m.kind==='mole'?AP.random():null;
-  m._behavior=(m.kind==='mole'||m.kind==='animal')&&!isBombCarrier(m)?pickBehavior():null;m._lifeAtSpawn=m.remaining;m._behRate=null;
+  // V1703 C: 두더지는 게임 규칙이 정한 종류 그대로(일반=good 은 소품 없음, 나쁜=behavior). 색깔 두더지는 모양만 무작위.
+  m._behavior=isBombCarrier(m)?null:m.kind==='mole'?(m.good?null:(m.behavior||pickBehavior())):m.kind==='animal'?pickBehavior():null;m._lifeAtSpawn=m.remaining;m._behRate=null;
   m._clayBorn=clockTime;m._clayHits=0;m._clayHit=-10;
   m._clayAppearDuration=Math.max(.18,Math.min(.45,(m.remaining??2)*.28));entries.set(m.el,m);
  }

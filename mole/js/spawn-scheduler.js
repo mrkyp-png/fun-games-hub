@@ -143,6 +143,11 @@
         } else {
           pop.hitsRequired = rollMoleKind();
           pop.poseIndex = Math.floor(rng.next() * (config.molePoseCount || 8));
+          // V1703 C: 5마리 중 1마리는 '일반 두더지'(때리면 안 됨). 나머지 4는 나쁜 두더지(술·담배·휴대폰·도둑)=타겟.
+          // 기존 rng 순서를 바꾸지 않도록 별도 난수(Math.random) 사용. 다타 두더지는 항상 나쁜 두더지(일반은 1방짜리만).
+          const roll = Math.random();
+          pop.good = pop.hitsRequired === 1 && roll < 0.2;
+          if (!pop.good) pop.behavior = ['drink', 'smoke', 'phone', 'thief'][Math.min(3, Math.floor(Math.max(0, roll - 0.2) / 0.2))];
         }
         pop.hitsTaken = 0;
         // 알리 펀치 [방어]: 내려가기(자연 만료) 전 0.1초 더 여유(기획서 §7, config.moleUpBonus).
@@ -193,7 +198,7 @@
           pop.timedOut = true; // 처치 못 하고 시간초과로 내려감 (콤보 리셋 판정용 — game.js)
           pop.remaining = RETREAT_SEC;
         } else {
-          expired.push({ id, type: pop.type, timedOut: !!pop.timedOut, bomb: !!pop.bombKind });
+          expired.push({ id, type: pop.type, timedOut: !!pop.timedOut, bomb: !!pop.bombKind, good: !!pop.good });
         }
       });
       expired.forEach((e) => {
@@ -221,7 +226,7 @@
     function resolveOne(pop, opts) {
       if (opts && opts.doubleHit) {
         var inRepeatWindow = pop.sinkIn > 0 || (pop.dying && pop.remaining > RETREAT_SEC * JUGGLE_VISIBLE_FRAC);
-        if (pop.type !== 'mole' || pop.bombKind || pop.hitsRequired !== 1 || !pop.killed || !inRepeatWindow || pop.doubleHitUsed) return null;
+        if (pop.type !== 'mole' || pop.good || pop.bombKind || pop.hitsRequired !== 1 || !pop.killed || !inRepeatWindow || pop.doubleHitUsed) return null;
         pop.doubleHitUsed = true;
         return { type: 'mole', regionId: pop.regionId, popId: pop.id, juggle: true, doubleHit: true, source: 'costume-double-hit', xFrac: pop.x, yFrac: pop.y };
       }
@@ -245,7 +250,7 @@
       // 콤보 +1 보너스. 두더지당 1회. 못 맞혀도 페널티 없음. 2·3방 다타는 제외.
       // 단 두더지가 "시각적으로 보일 때"만 — 다 사라진 뒤 때리면 명백한 헛방(콤보 리셋). (사용자 지정)
       var moleVisible = pop.sinkIn > 0 || (pop.dying && pop.remaining > RETREAT_SEC * JUGGLE_VISIBLE_FRAC);
-      if (pop.killed && moleVisible && pop.type === 'mole' && pop.hitsRequired === 1 && !pop.juggled) {
+      if (pop.killed && moleVisible && pop.type === 'mole' && !pop.good && pop.hitsRequired === 1 && !pop.juggled) {
         pop.juggled = true;
         return { type: 'mole', regionId: pop.regionId, juggle: true, xFrac: pop.x, yFrac: pop.y };
       }
@@ -269,7 +274,7 @@
 
       // 최종 타격 — 영역 완성/점수는 지금 확정하되, 실제 "내려가는" 연출은 SINK_DELAY 뒤
       // (망치가 화면에서 두더지에 닿는 순간). tick() 이 sinkIn 을 세다가 dying 으로 넘긴다.
-      if (pop.type === 'mole') completedRegions.add(pop.regionId);
+      if (pop.type === 'mole' && !pop.good) completedRegions.add(pop.regionId);
       // killed = 시간초과가 아니라 실제 타격으로 처리됨. 알리 펀치 무적 중엔 동물도 "처치"로 쳐서
       // pop-elements.js 가 두더지와 같은 펀치 연출(넉백·축소)을 태울 수 있게(game.js 쪽에서 게이팅).
       if (pop.type === 'mole' || pop.type === 'animal') pop.killed = true;
@@ -277,7 +282,7 @@
       // safeAlways = 이 동물/폭탄이 "무적 중에 올라온" 것이면, 무적이 그 사이 끝나서
       // 타격 시점엔 무적이 아니어도 계속 안전(사용자 지정 — "의문사 방지". game.js 가
       // 스폰 순간에 낙인찍음, spawn-scheduler 는 무적 여부를 모르니 그대로 전달만).
-      return { type: pop.type, regionId: pop.regionId, done: true, xFrac: pop.x, yFrac: pop.y, safe: !!pop.safeAlways, bombKind: pop.bombKind || null };
+      return { type: pop.type, regionId: pop.regionId, done: true, xFrac: pop.x, yFrac: pop.y, safe: !!pop.safeAlways, bombKind: pop.bombKind || null, good: !!pop.good };
     }
 
     function resolveHit(popId, opts) {

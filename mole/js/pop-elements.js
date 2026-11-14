@@ -94,7 +94,7 @@
       const m = {
         el, img, bombEl, kind: pop.type, poseIndex: pop.poseIndex || 0, regionId: pop.regionId,
         shownDepth: GONE_DEPTH, targetDepth: 0, shownFile: null, dying: false, remaining: pop.remaining,
-        blast: false, punch: false, dyingFrom: 0,
+        blast: false, punch: false, dyingFrom: 0, good: !!pop.good, behavior: pop.behavior || null,
         // 다타 동물(챕터8)만 빠끔 프레임 사용 — 아니면 등장(emerge) 애니메이션이 깊이값
         // 3→2→1→0 을 그냥 지나치기만 해도 빠끔 프레임을 스치며 "커졌다 작아지는" 것처럼
         // 보이는 버그가 있었음(사용자 보고, 챕터4).

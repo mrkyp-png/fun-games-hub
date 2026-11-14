@@ -2293,7 +2293,7 @@
     // 아직 손 쓸 수 없는 상태라 이 시간초과로 콤보가 깎이면 안 된다(사용자가 콤보100으로
     // 트리거해놓고 전광판엔 0이 뜨는 버그로 발견 — 스폰은 계속 돌지만 판정만 유예).
     // V1422 C: 폭탄 든 두더지는 피하는 게 정답 — 시간초과로 들어가도 콤보 안 끊김(AI 도 폭탄 두더지는 피해서 콤보가 끊기던 원인)
-    if (!state.pausedByFever && tickResult.expired.some((e) => effectiveHitType(state.config, e.type) === 'mole' && e.timedOut && !e.bomb)) run.combo.onObstacleHit();
+    if (!state.pausedByFever && tickResult.expired.some((e) => effectiveHitType(state.config, e.type) === 'mole' && e.timedOut && !e.bomb && !e.good)) run.combo.onObstacleHit();
     // "의문사" 방지(사용자 지정) — 무적 중에 올라온 방해물은, 그 사이 무적이 끝나도
     // 계속 안전 취급되도록 스폰 순간에 낙인찍는다(spawn-scheduler.js 가 그대로 전달).
     if (alipunchInvincible()) {
@@ -2608,10 +2608,10 @@
 
   // 이 라운드의 '진짜 타겟'(역할반전이면 동물)이 살아 있는 구멍 — 타겟팅·AI 스킬 공용. 폭탄 든 두더지·가라앉는 중 제외.
   function liveTargetAt(id) {
-    return state.scheduler.getActivePops().find((q) => q.regionId === id && effectiveHitType(state.config, q.type) === 'mole' && !q.bombKind && !q.dying && !q.killed && !(q.sinkIn > 0));
+    return state.scheduler.getActivePops().find((q) => q.regionId === id && !q.good && effectiveHitType(state.config, q.type) === 'mole' && !q.bombKind && !q.dying && !q.killed && !(q.sinkIn > 0));
   }
   function liveObstacleAt(id) {
-    return state.scheduler.getActivePops().find((q) => q.regionId === id && effectiveHitType(state.config, q.type) === 'animal' && !q.bombKind && !q.dying && !q.killed && !(q.sinkIn > 0));
+    return state.scheduler.getActivePops().find((q) => q.regionId === id && (q.good || effectiveHitType(state.config, q.type) === 'animal') && !q.bombKind && !q.dying && !q.killed && !(q.sinkIn > 0));
   }
 
   function quakeRipple(originId, depth) {
@@ -2720,7 +2720,8 @@
 
     results.forEach((r) => {
       if (r.ignored) return; // 연타 쿨다운 중 타격 — 점수·연출·콤보 변화 없음 (헛방도 아님)
-      const effType = effectiveHitType(cfg, r.type);
+      // V1703 C: 일반 두더지(good)는 언제나 때리면 안 되는 방해물(색깔 두더지와 같은 처리: 하트-1, 콤보 리셋)
+      const effType = r.good ? 'animal' : effectiveHitType(cfg, r.type);
       // 폭탄(bombKind)은 항상 이 분기로 — V1430 C 사용자: 6라운드(reverseTarget)는 폭탄을 동물이 듦(두더지는 안 듦).
       if (effType === 'mole' || r.bombKind) {
         if (r.juggle) {
@@ -3589,7 +3590,7 @@
     window.__debugHittableMoleRegion = function () {
       if (!state || state.ended) return null;
       const p = state.scheduler.getActivePops().find((m) =>
-        m.type === 'mole' && !m.dying && !m.sinkIn && (m.hitCooldown || 0) <= 0);
+        m.type === 'mole' && !m.good && !m.dying && !m.sinkIn && (m.hitCooldown || 0) <= 0);
       return p ? p.regionId : null;
     };
     // 첫 방문/재방문 대화 테스트용.
