@@ -643,6 +643,8 @@
       }
       var ms = best.d * 1000;
       best.n.press = { grade: ms <= J.perfectMs ? 'PERFECT' : ms <= J.greatMs ? 'GREAT' : 'GOOD', lane: lane };
+      // V1702 C: 이번에 맞히면 10의 배수 콤보 → 뛰어오를 때부터 회전 시작(내려올 때까지 연결)
+      MG.RhythmBeachStunts.cue(m, st.combo + 1, t, 7 * CONFIG.jumpFrameMs / 1000, true);
     }
     function hit(n, lane) {
       n.state = 'hit'; n.hitAt = now(); if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); if (n.wind) n.wind.style.opacity = '0';
@@ -673,6 +675,8 @@
     function miss(lane, n) {
       if (n) { n.state = 'miss'; if (n.trail) n.trail.forEach(function (g) { g.style.opacity = '0'; }); if (n.wind) n.wind.style.opacity = '0'; }
       melody(false);
+      // 미리 건 10콤보 회전은 놓치면 취소(콤보가 끊겼으므로)
+      st.moles.forEach(function (mm) { if (mm && mm.beachStunt && mm.beachStunt.fromJump) mm.beachStunt = null; });
       st.cnt.MISS++; st.combo = 0; updateACombo(0,false); st.hp = Math.max(0, st.hp - 1);
       st.moles[lane].hurtAt = now(); st.moles[lane].beachStunt=null;
       showJudge(lane, 'MISS', 'miss'); hud();

@@ -2,11 +2,13 @@
 (function(root){'use strict';
  const MG=root.MoleGame=root.MoleGame||{},R=root.StudioRig,TAU=Math.PI*2,cache=new WeakMap();
  const clamp=x=>Math.max(0,Math.min(1,x)),ease=x=>{x=clamp(x);return x*x*x*(x*(x*6-15)+10)};
- function cue(mole,combo,time,duration){
+ function cue(mole,combo,time,duration,fromJump){
   if(!mole||!Number.isInteger(combo)||combo<=0||combo%10)return false;
-  const start=Math.max(time,mole.jumpAt+duration*.5),end=mole.jumpAt+duration;
+  // V1702 C: 10콤보째 노트는 뛰어오를 때 미리 걸어 둔 회전(올라갈 때부터 내려올 때까지)을 그대로 유지
+  const old=mole.beachStunt;if(!fromJump&&old&&old.jumpAt===mole.jumpAt&&old.combo===combo&&old.fromJump)return true;
+  const start=fromJump?mole.jumpAt:Math.max(time,mole.jumpAt+duration*.5),end=mole.jumpAt+duration;
   if(!Number.isFinite(start)||end-start<1/120)return false;
-  mole.beachStunt={jumpAt:mole.jumpAt,start,end,kind:combo%100===0?'both':combo%20===0?'flip':'coin',combo};return true;
+  mole.beachStunt={jumpAt:mole.jumpAt,start,end,kind:combo%100===0?'both':combo%20===0?'flip':'coin',combo,fromJump:!!fromJump};return true;
  }
  function sample(mole,time){
   const s=mole?.beachStunt;
