@@ -1,3 +1,6 @@
+# V1706 C DEPLOYED - 2026-11-15 (Claude) — island fixes
+- Boat: joystick now visible while rowing (home3d-ui setRowing no longer hides stick). Falling from the sky lands on island top surface (islands-walk.json 'top' grid incl. props); unwalkable spot → slip downhill (home3d.js slip state, pose Jump). Volcano base sunk into terrain; smoke = smoke_puff.glb drawn 6x animated in renderer (m.puff).
+
 # V1705 C DEPLOYED - 2026-11-15 (Claude) — 77851167 (V1704 C b402587a), live confirmed — FOUR ISLANDS
 - 3D home: east beach / west volcano / south jungle / north ice islands at ±48 (assets/home3d/islands/*.glb, built by review/build-four-islands.py in Blender; previews Desktop/동서남북_섬_시안). Renderer loads them async into environment with m.island → own light fog (uIsland), no shadow pass.
 - Boat (home3d.js): joystick steers (boatSteer → yaw toward stick, min speed 1.4), rowing adds speed; SEA_BLOCKS stop at centre(19.2)/islands(~13)/SEA_LIMIT 72. Near an island shore → '내리기' button (ui.setExit(label, keepStick)) → disembark() onto first walkable ground toward island centre. Back to boat = jump/fly onto deck.

@@ -406,6 +406,8 @@ float fog=uIsland?smoothstep(45.,120.,length(uEye-vWorld)/uFogK)*.55:smoothstep(
           seaMesh = { vao, count: sg.indices.length, indexed: true, color: [1, 1, 1, 1], floor: false, sign: null, sea: true }; }
         // V1704 C: 동서남북 섬(배경). 홈 준비를 막지 않게 뒤에서 불러와 붙임. 실패해도 홈은 그대로.
         for (const k of ['east', 'west', 'south', 'north']) load('assets/home3d/islands/island_' + k + '.glb').then((mdl) => { for (const i of R.instances(mdl)) environment.push(Object.assign(mesh(mdl, i.primitive), { world: i.world, tex: null, texPrim: null, island: k })); }).catch(() => {});
+          /* V1706 C 사용자: 화산 연기 움직임 — 연기 한 덩이를 6번 그림(분화구에서 올라가며 커졌다 사라짐) */
+          load('assets/home3d/islands/smoke_puff.glb').then((mdl) => { const i = R.instances(mdl)[0]; for (let k = 0; k < 6; k++) environment.push(Object.assign(mesh(mdl, i.primitive), { world: i.world, tex: null, texPrim: null, island: 'west', puff: k })); }).catch(() => {});
         {
           const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
           const pb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, pb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(18), gl.DYNAMIC_DRAW);
@@ -467,7 +469,8 @@ float fog=uIsland?smoothstep(45.,120.,length(uEye-vWorld)/uFogK)*.55:smoothstep(
         for (const m of environment) {
           if(m.energy) continue;
           gl.uniform1i(U.Island, m.island ? 1 : 0); /* V1704 C: 먼 섬은 안개를 멀리·약하게 */
-          const world = m.shopDoor ? shopDoorMatrix(m.world,doorOpen) : m.world;
+          let world = m.shopDoor ? shopDoorMatrix(m.world,doorOpen) : m.world;
+          if (m.puff !== undefined) { const ph = (now / 7 + m.puff / 6) % 1, s = (0.6 + 1.7 * ph) * Math.min(1, ph * 6, (1 - ph) * 3); world = R.transform({ translation: [-48 + ph * 3 + Math.sin(ph * 6 + m.puff) * 0.4, 9.2 + ph * 7, Math.cos(ph * 5 + m.puff) * 0.4], scale: [s, s, s] }); }
           if (m.gateGlow) {gl.uniform1i(U.Glow, 1);gl.uniform1i(U.Notes,!m.rhythmBars);
             const site=root.MoleGame.Home3DLayout.SITES.find(s=>s.id==='rhythm'),d=Math.hypot(site.x,site.z);gl.uniform4f(U.NoteGate,site.x,site.z,site.z/d,-site.x/d);}
           if(m.rhythmBars){gl.uniform1i(U.RhythmBars,1);gl.uniform1f(U.BarBase,m.world[13]);}

@@ -148,14 +148,14 @@ def mk(): bpy.ops.mesh.primitive_cone_add(vertices=40, radius1=6.2, radius2=1.6,
 cone = add(mk, (0, 0, 2.9 + 3.25 - .4), (0, 0, 0), (1, 1, 1), None, "volcano")
 random.seed(5)
 for v in cone.data.vertices:
-    if v.co.z < 3: v.co.x *= 1 + random.uniform(-.06, .06); v.co.y *= 1 + random.uniform(-.06, .06)
+    if v.co.z < 3: v.co.x *= 1 + random.uniform(-.06, .06); v.co.y *= 1 + random.uniform(-.06, .06); v.co.z = ground_z(t, v.co.x * 1.08, v.co.y * 1.08) - .5  # 밑둥을 땅 속까지(떠 보이지 않게)
 paint(cone, lambda p, n: srgb("#3b3836" if p.z > 7.6 else "#5a524b" if p.z > 5 else "#6c6259"))
 def mk(): bpy.ops.mesh.primitive_cylinder_add(vertices=24, radius=1.45, depth=.3)
 lava = add(mk, (0, 0, 8.45), (0, 0, 0), (1, 1, 1), "#ff5a1f", "lava")
 parts = [t, cone]
-for k in range(4):
-    def mk(): bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=.9 + k * .25)
-    parts.append(add(mk, (0.3 * k, -.2 * k, 9.4 + k * 1.1), (0, 0, 0), (1, 1, .8), "#b9b4ae", "smoke"))
+# 연기는 게임에서 움직이게(smoke_puff.glb 한 덩이를 렌더러가 여러 번 그림)
+def mk(): bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=1)
+puff = add(mk, (0, 0, 0), (0, 0, 0), (1, 1, .85), "#b9b4ae", "smoke_puff")
 for k, (x, y, s) in enumerate([(7.5, 1, 1.2), (-7, -2.5, 1), (2, -7.6, .9), (-3, 7.2, 1.3), (6, -5, .7)]):
     parts.append(rock((x, y, ground_z(t, x, y) + .2), s, k + 11, "#2f2c2a")); block("west", x, y, s * 1.05)
 v_main = join(parts, "Island_West_Volcano")
@@ -213,13 +213,26 @@ for k in ("east", "west", "south", "north"):
     bpy.ops.object.select_all(action='DESELECT'); islands[k].select_set(True)
     if k == "west": islands["west_lava"].select_set(True)
     bpy.ops.export_scene.gltf(filepath=os.path.join(OUT, f"island_{k}.glb"), export_format='GLB', use_selection=True, export_apply=True)
+bpy.ops.object.select_all(action='DESELECT'); puff.select_set(True)
+bpy.ops.export_scene.gltf(filepath=os.path.join(OUT, "smoke_puff.glb"), export_format='GLB', use_selection=True, export_apply=True)
+puff.hide_set(True); puff.hide_render = True
 print("FACES", {k: len(o.data.polygons) for k, o in islands.items()})
+# 위 표면 높이(소품 포함: 화산·나무·이글루 꼭대기) — 하늘에서 떨어질 때 착지·미끄러짐용
+bpy.context.view_layer.update(); dg = bpy.context.evaluated_depsgraph_get()
+for key, (x0, y0) in place.items():
+    W = WALK[key]; top = []
+    for iz in range(W["n"]):
+        for ix in range(W["n"]):
+            lx, lz = -W["half"] + ix * W["step"], -W["half"] + iz * W["step"]
+            hit, loc, nn, fi, ob, mx = bpy.context.scene.ray_cast(dg, Vector((x0 + lx, y0 - lz, 60)), Vector((0, 0, -1)))
+            top.append(round(loc.z, 3) if hit and ob and ob.name != "smoke_puff" else -9)
+    W["top"] = top
 # 걷기 자료(게임 좌표): 섬 중심 기준 lx=블렌더x, lz=-블렌더y. 높이 격자 0.5 간격, 물 위만(-0.25 초과) 걸을 수 있음
 import json
 walk = []
 for key, (x0, y0) in place.items():
     W = WALK[key]
-    walk.append({"id": key, "cx": x0, "cz": -y0, "half": W["half"], "step": W["step"], "n": W["n"], "h": W["h"],
+    walk.append({"id": key, "cx": x0, "cz": -y0, "half": W["half"], "step": W["step"], "n": W["n"], "h": W["h"], "top": W["top"],
                  "blocks": [[round(bx, 2), round(-by, 2), round(r, 2)] for bx, by, r in W["blocks"]]})
 json.dump({"islands": walk}, open(os.path.join(OUT, "islands-walk.json"), "w"))
 print("WALK", [(w["id"], w["cx"], w["cz"], len(w["blocks"])) for w in walk])

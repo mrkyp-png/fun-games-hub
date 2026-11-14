@@ -92,6 +92,7 @@
     let discoSpin = 0, discoLiftV = 0, discoT0 = -1, grip = 100, spinLeft = 12, bounceLeft = 3; /* discoT0 = 이번에 탄 시각(20초 도전) */ /* 디스코 팡팡: 더 도는 속도·튀는 속도 */
     let boatV = 0, rowSide = 1, wakeFx = [], wakeAt = 0; /* 배 속도(섬 둘레, 초당 거리)·물결 */
     let boatSteer = null; /* V1704 C: 방향키로 배 조종(배 위에서) */
+    let slip = null; /* V1706 C: 섬 비탈 미끄러짐 { y, v } */
     let dockIsland = null; /* V1705 C: 배가 섬 해안에 닿아 있으면 그 섬(내리기 버튼) */
     function disembark() { /* 섬 중심 쪽으로 걸을 수 있는 첫 땅에 내림 */
       const o = dockIsland, B = L.BOAT; if (!o || !onBoat) return;
@@ -112,7 +113,7 @@
     function overDeck(x, z) { const d = toDeck(x, z); return inDeck(d.u, d.w) ? d : null; }
     function resetToStart() { /* 처음 시작 구멍(인트로)으로 */
       st.boot(); Object.assign(view, { x: 0, z: 0, heading: 0, yaw: 0, pitch: 0.62 }); rise = 0; hop = null; jumpAt = -1; camK = 0; arcCam = 0; inside = null; wasNearArcade = false; walking = false; route = null;
-      air = null; drowning = null; onBoat = null; boardAt = -1; offer = null; if (ui) { ui.input.reset(); ui.setExit(null); ui.hideOffer(); } if (rd) rd.setSmoke([]);
+      air = null; slip = null; drowning = null; onBoat = null; boardAt = -1; offer = null; if (ui) { ui.input.reset(); ui.setExit(null); ui.hideOffer(); } if (rd) rd.setSmoke([]);
     }
     function splash(x, z) { /* 수면 아래로 잠긴 뒤 광장 중앙으로 복귀. 기존 하트 -1 유지. */
       if (drowning) return;
@@ -178,6 +179,16 @@
       }
       if (dt <= 0) return; // 흐른 시간 0인 프레임은 걷기 판단을 바꾸지 않음
       const len = Math.hypot(v.x, v.z), s = SPEED * dt / Math.max(1, len);
+      if (slip) { /* V1706 C 사용자: 섬 소품(화산·나무·이글루) 위에 떨어지면 비탈 따라 쭉 미끄러져 내려옴 */
+        const e = 0.3, T = (x, z) => Math.max(L.islandTop(x, z), L.groundHeight(x, z));
+        let gx = T(view.x - e, view.z) - T(view.x + e, view.z), gz = T(view.x, view.z - e) - T(view.x, view.z + e), gl = Math.hypot(gx, gz);
+        const isl = L.islandAt(view.x, view.z);
+        if (gl < 0.02 && isl) { gx = view.x - isl.cx; gz = view.z - isl.cz; gl = Math.hypot(gx, gz) || 1; } /* 평평한 꼭대기 = 섬 바깥쪽으로 */
+        slip.v = Math.min(9, slip.v + dt * 10); view.x += gx / gl * slip.v * dt; view.z += gz / gl * slip.v * dt; view.heading = Math.atan2(gx, gz);
+        slip.y = T(view.x, view.z); walking = false;
+        if (L.allowed(view.x, view.z) || !isl) { slip = null; if (!L.allowed(view.x, view.z)) { air = { y: Math.max(0, L.groundHeight(view.x, view.z)), vy: 0, flapAt: -9, jumpAt: -9 }; } }
+        return;
+      }
       if (air) { /* 공중: 막힘 없이 이동(섬 둘레 30 안), 떨어지다 땅·갑판·바다에 닿음 */
         const nx = view.x + v.x * s + (air.vx || 0) * dt, nz = view.z + v.z * s + (air.vz || 0) * dt; /* vx·vz = 팡팡에서 튕겨 나갈 때(V1661 C) */ /* V1635 C 사용자: 지구 끝까지 — 거리 제한 없음 */
         if (v.x || v.z) view.heading = Math.atan2(v.x, v.z); view.x = nx; view.z = nz; walking = false;
@@ -185,6 +196,8 @@
         if (air.vy < 0) {
           const dk = overDeck(view.x, view.z), deckY = dk ? deckWorld(dk.u, dk.w)[1] : -9;
           if (dk && air.y <= deckY && air.y > deckY - 0.6) { air = null; onBoat = { u: 0, w: 0 }; boardAt = time; return; } /* 갑판에 착지 → 가운데에 섬(V1661 C) */
+          { const top = Math.max(L.islandTop(view.x, view.z), L.islandAt(view.x, view.z) ? L.groundHeight(view.x, view.z) : -9); /* V1706 C 사용자: 섬은 통과 안 됨 — 위 표면에 닿으면 착지, 걸을 수 없는 곳이면 미끄러짐 */
+            if (top > 0.05 && air.y <= top) { air = null; if (!L.allowed(view.x, view.z)) slip = { y: top, v: 1.5 }; return; } }
           const rr = Math.hypot(view.x, view.z), land = L.allowed(view.x, view.z) || rr <= L.FENCE_OUT;
           if (land && air.y <= L.groundHeight(view.x,view.z)) { air = null; if (!L.allowed(view.x, view.z)) { if (rr > L.WALK_R) { const k = (L.WALK_R - 0.1) / rr; view.x *= k; view.z *= k; } if (!L.allowed(view.x, view.z)) { const p = L.slide({ x: 0, z: 0 }, view.x, view.z); view.x = p.x; view.z = p.z; } } return; } /* 땅에 착지(울타리 위면 섬 안쪽으로) */
           if (!land && air.y <= -.62+MG.Home3DRenderer.seaHeight(view.x,view.z,nowS())) { splash(view.x, view.z); return; } /* 실제 수면에 닿은 뒤 잠김 */
@@ -212,7 +225,7 @@
       if (drowning) return;
       if (st.state === 'EXPLORE' && !riding && !inside) { /* 날기: 첫 누름 = 뛰어오름, 공중에서 누를 때마다 짧은 팔 파닥 → 위로 */
         if (air) { air.vy = Math.max(air.vy, FLAP_V); air.flapAt = time; return; }
-        const y0 = onBoat ? deckWorld(onBoat.u, onBoat.w)[1] : L.groundHeight(view.x,view.z); onBoat = null; boardAt = -1;
+        const y0 = onBoat ? deckWorld(onBoat.u, onBoat.w)[1] : slip ? slip.y : L.groundHeight(view.x,view.z); onBoat = null; boardAt = -1; slip = null;
         air = { y: y0, vy: JUMP_V, flapAt: -9, jumpAt: time } /* 첫 점프 = 기존 Jump 동작(V1672 C) */; return;
       }
       if (jumping()) return;
@@ -228,6 +241,7 @@
     }
     // 두더지 높이·동작
     function pose() {
+      if(slip) return {clip:'Jump',t:.3,loop:false,y:slip.y}; /* V1706 C: 미끄러지는 중 */
       if(drowning) return {clip:'Jump',t:.3,loop:false,y:drowning.y-2.8*Math.min(1,Math.max(0,(time-drowning.at)/1.15))};
       if (st.state === 'INTRO' && rise < RISE_T) { // 구멍 아래(-1.4)에서 뛰어올라 구멍 안(HOLE_Y)에 안착
         const k = rise / RISE_T;
@@ -469,7 +483,7 @@
       root.FGH.I18N.onChange(() => { jumpLabel(); if (ready) { signsNow(); refreshArcade(true); if (!raf && api.renderAllowed()) wake(); } });
       document.addEventListener('visibilitychange', wake);
       rd.lost(() => { ready = false; stop(); ui.setLoading(ko() ? '3D 화면을 다시 불러와 주세요.' : 'Please reload the 3D plaza.'); });
-      fetch('assets/home3d/islands/islands-walk.json?v=1705').then((r) => r.json()).then((j) => L.setIslands(j.islands)).catch(() => {}); /* V1705 C: 동서남북 섬 걷기 자료 */
+      fetch('assets/home3d/islands/islands-walk.json?v=1706').then((r) => r.json()).then((j) => L.setIslands(j.islands)).catch(() => {}); /* V1705 C: 동서남북 섬 걷기 자료 */
       rd.boot(PLAZA_GLB, MOLE_GLB, 'assets/home3d/boat.glb', [ /* V1633 C: 디스코 팡팡(배치만) */
         { url: 'assets/home3d/disco-base.glb?v=1690-G', /* 내용 바뀐 모델 = 버전 붙여 폰이 새로 받게 */ world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
         { url: 'assets/home3d/disco-top.glb?v=1690-G', dyn: 'discoTop', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },

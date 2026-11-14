@@ -30,10 +30,11 @@
   let ISLANDS = []; const ISLAND_LAND = 0.05;
   function setIslands(list) { ISLANDS = Array.isArray(list) ? list : []; }
   function islandAt(x, z) { for (const i of ISLANDS) if (Math.abs(x - i.cx) < i.half && Math.abs(z - i.cz) < i.half) return i; return null; }
-  function islandHeight(i, x, z) {
-    const fx = (x - i.cx + i.half) / i.step, fz = (z - i.cz + i.half) / i.step, x0 = Math.floor(fx), z0 = Math.floor(fz);
+  function islandTop(x, z) { const i = islandAt(x, z); return i && i.top ? islandHeight(i, x, z, i.top) : -9; } /* V1706 C: 소품 포함 위 표면(화산·나무 꼭대기) */
+  function islandHeight(i, x, z, grid) {
+    const g = grid || i.h, fx = (x - i.cx + i.half) / i.step, fz = (z - i.cz + i.half) / i.step, x0 = Math.floor(fx), z0 = Math.floor(fz);
     if (x0 < 0 || z0 < 0 || x0 >= i.n - 1 || z0 >= i.n - 1) return -9;
-    const a = fx - x0, b = fz - z0, H = (xx, zz) => i.h[zz * i.n + xx];
+    const a = fx - x0, b = fz - z0, H = (xx, zz) => g[zz * i.n + xx];
     return (H(x0, z0) * (1 - a) + H(x0 + 1, z0) * a) * (1 - b) + (H(x0, z0 + 1) * (1 - a) + H(x0 + 1, z0 + 1) * a) * b;
   }
   function islandWalkable(i, x, z) { return islandHeight(i, x, z) > ISLAND_LAND && !i.blocks.some(([bx, bz, r]) => Math.hypot(x - i.cx - bx, z - i.cz - bz) < r + 0.35); }
@@ -153,7 +154,7 @@
     const a=angle+(travel-entryLength)/radius;
     return {x:cx+radius*Math.cos(a),y:cy+radius*Math.sin(a),rot:Math.atan2(Math.cos(a),-Math.sin(a)),speed,entrySeconds:entryLength/speed};
   }
-  const api = { setIslands, islandAt, islandHeight, ISLAND_R, WALK_R, FENCE_OUT, HOLE_R, SPAWN, SITES, RIDES, BOAT, BOARD, DISCO, BEACH, onBeach, groundHeight, ARCADE_K, ARCADE_HOLES, ARCADE_BUTTONS, ROUND_COLORS, pickHole, rideExit, nearestRide, entryPoint, doorPoint, doorApproach, doorCoordinates, crossedDoor, allowed, slide, nearest, pathVia, deepSwimPose };
+  const api = { setIslands, islandAt, islandHeight, islandTop, ISLAND_R, WALK_R, FENCE_OUT, HOLE_R, SPAWN, SITES, RIDES, BOAT, BOARD, DISCO, BEACH, onBeach, groundHeight, ARCADE_K, ARCADE_HOLES, ARCADE_BUTTONS, ROUND_COLORS, pickHole, rideExit, nearestRide, entryPoint, doorPoint, doorApproach, doorCoordinates, crossedDoor, allowed, slide, nearest, pathVia, deepSwimPose };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else { root.MoleGame = root.MoleGame || {}; root.MoleGame.Home3DLayout = api; }
 })(typeof window !== 'undefined' ? window : globalThis);

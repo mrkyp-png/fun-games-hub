@@ -169,8 +169,8 @@
       mailOpen: () => !mailPop.hidden,
       /* 한 번 지나가고 사라짐(V1659 C 사용자: 각각 10분에 한 번) */
       setDeep(kind, p) { const im = deepImg[kind]; if (!p) { im.hidden = true; return; } im.hidden = false; im.style.transform = 'translate(' + p.x + 'px,' + p.y + 'px) translate(-50%,-50%) rotate(' + p.rot + 'rad)'; im.style.opacity = p.op; if (p.w) im.style.width = p.w.toFixed(1) + 'px'; },
-      setRowing(on) { oarBtn.hidden = !on; stick.hidden = !!on || !spinBtn.hidden; },
-      setDiscoRide(on) { spinBtn.hidden = !on; bounceBtn.hidden = !on; stick.hidden = !!on || !oarBtn.hidden; },
+      setRowing(on) { oarBtn.hidden = !on; stick.hidden = !spinBtn.hidden; }, /* V1706 C: 배에서도 방향키(배 조종) */
+      setDiscoRide(on) { spinBtn.hidden = !on; bounceBtn.hidden = !on; stick.hidden = !!on; },
       setJumpLabel(text) { jumpBtn.setAttribute('aria-label', text); },
       showOffer(text, yes, no, cb) { offerTxt.textContent = text; offerYes.textContent = yes; offerNo.textContent = no; offerCb = cb; offer.hidden = false; },
       hideOffer() { offer.hidden = true; offerCb = null; },
