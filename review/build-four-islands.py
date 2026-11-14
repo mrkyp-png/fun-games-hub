@@ -49,7 +49,7 @@ def terrain(radius, height, seed, shape=None, bands=None, sides=144, rings=40): 
             else: sk = 1
             prof = (1 - t ** 2.2) * height * sk
             z = prof + .25 * height * noise.noise(Vector((x * .25 + seed, y * .25, 0))) * (1 - t)
-            if t > .92: z = -.9 * (t - .92) / .08  # 물 아래로 잠기는 가장자리
+            if t > .92: z = -3.2 * ((t - .92) / .08) ** .8  # 물 아래 깊이 잠기는 가장자리(바다 위에 떠 보이지 않게)
             verts[r][s] = bm.verts.new((x, y, z))
     for s in range(sides):
         bm.faces.new((top, verts[1][s], verts[1][(s + 1) % sides]))
@@ -148,9 +148,9 @@ def round_plaza(t, color, edge_hex):
     # 동그란 원형 광장 판(남·북): 평평한 땅 위에 매끈한 원판 + 테두리 띠
     h0 = ground_z(t, 0, 0)
     def mk(): bpy.ops.mesh.primitive_cylinder_add(vertices=72, radius=PLAZA_R + .25, depth=.3)
-    rim = add(mk, (0, 0, h0 - .15), (0, 0, 0), (1, 1, 1), edge_hex, "plaza_rim")
+    rim = add(mk, (0, 0, h0 - .09), (0, 0, 0), (1, 1, 1), edge_hex, "plaza_rim")
     def mk(): bpy.ops.mesh.primitive_cylinder_add(vertices=72, radius=PLAZA_R - .1, depth=.3)
-    top = add(mk, (0, 0, h0 - .12), (0, 0, 0), (1, 1, 1), color, "plaza")
+    top = add(mk, (0, 0, h0 - .05), (0, 0, 0), (1, 1, 1), color, "plaza")
     return [rim, top]
 def away(x, y, minr=PLAZA_R + 1.8):
     d = math.hypot(x, y) or 1
@@ -209,7 +209,7 @@ def crescent(x, y, a, t):
     return x * (1.15 if math.cos(a) > 0 else .95), y * k + (2.2 if math.cos(a) < -.2 else 0) * t, 1
 t = terrain(10, 2.6, 13, shape=crescent, bands=[(-9, "#e3cf97"), (.5, "#4f9a45"), (1.6, "#3e8638")])
 flatten(t, "#4f9a45", "#4f9a45")
-parts = [t] + round_plaza(t, "#d9c79a", "#a8875a"); random.seed(21); walk_begin("south", t)
+parts = [t] + round_plaza(t, "#d9c79a", "#a8875a"); random.seed(21); walk_begin("south", t); pad("south", 0, 0, PLAZA_R + .1, 1)  # 원판 위에 섬
 spots = [(-5.6, -.8, 0)]  # 큰 나무 자리 비워 둠(가운데 = 게임기)
 while len(spots) < 12:
     x, y = random.uniform(-8, 8), random.uniform(-7, 7)
@@ -230,7 +230,7 @@ islands["south"] = join(parts, "Island_South_Jungle")
 # ---- 북: 얼음섬 ----
 t = terrain(9.5, 2.0, 17, bands=[(-9, "#cfe7f2"), (.4, "#f4f8fb"), (1.5, "#ffffff")])
 flatten(t, "#f4f8fb", "#f4f8fb")
-parts = [t] + round_plaza(t, "#e3f1f8", "#8fc3e2"); random.seed(41); walk_begin("north", t)
+parts = [t] + round_plaza(t, "#e3f1f8", "#8fc3e2"); random.seed(41); walk_begin("north", t); pad("north", 0, 0, PLAZA_R + .1, 1)
 for k, (x, y, h, r) in enumerate([(-5.2, 2.2, 6.5, 2.4), (3.0, -5.0, 4.6, 1.8), (-4.4, -4.2, 3.8, 1.6), (.4, 6.0, 3.2, 1.3)]):  # 봉우리 = 가장자리
     def mk(): bpy.ops.mesh.primitive_cone_add(vertices=6, radius1=r, radius2=0, depth=h)
     z = ground_z(t, x, y)

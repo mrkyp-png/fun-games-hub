@@ -92,6 +92,7 @@
     let discoSpin = 0, discoLiftV = 0, discoT0 = -1, grip = 100, spinLeft = 12, bounceLeft = 3; /* discoT0 = 이번에 탄 시각(20초 도전) */ /* 디스코 팡팡: 더 도는 속도·튀는 속도 */
     let boatV = 0, rowSide = 1, wakeFx = [], wakeAt = 0; /* 배 속도(섬 둘레, 초당 거리)·물결 */
     let boatSteer = null; /* V1704 C: 방향키로 배 조종(배 위에서) */
+    let camGround = 0; /* V1708 C: 서 있는 땅 높이(카메라) */
     let slip = null; /* V1706 C: 섬 비탈 미끄러짐 { y, v } */
     let dockIsland = null; /* V1705 C: 배가 섬 해안에 닿아 있으면 그 섬(내리기 버튼) */
     function disembark() { /* 섬 중심 쪽으로 걸을 수 있는 첫 땅에 내림 */
@@ -387,6 +388,10 @@
         if (boardCam > 0.001) { const a = boardCam * boardCam * (3 - 2 * boardCam), dyw = Math.atan2(Math.sin(bs.faceYaw - cv.yaw), Math.cos(bs.faceYaw - cv.yaw)), d0 = cv.dist || 7.5, f0 = cv.fy || 1.35, x0 = cv.cx ?? cv.x, z0 = cv.cz ?? cv.z;
           cv = Object.assign({}, cv, { cx: x0 + (bs.x - x0) * a, cz: z0 + (bs.z - z0) * a, yaw: cv.yaw + dyw * a, pitch: cv.pitch + (0.1 - cv.pitch) * a, dist: d0 + (7.0 - d0) * a, fy: f0 + (L.BOARD.Y * L.BOARD.S - f0) * a }); } }
       camLift += ((air ? air.y : 0) - camLift) * Math.min(1, dt * 4); ui.setHeight(air ? air.y : 0); /* V1635 C 사용자: 높이 오를수록 카메라도 올라가고 멀어져 아래 건물이 작게 보임 */
+      { /* V1708 C 사용자: 화산 꼭대기·섬 언덕에 서 있으면 카메라도 그 높이(두더지를 비춤) */
+        const gy = air || onBoat ? 0 : slip ? slip.y : Math.max(0, L.groundHeight(view.x, view.z));
+        camGround += (gy - camGround) * Math.min(1, dt * 5); if (camGround > 0.02) cv = Object.assign({}, cv, { fy: (cv.fy || 1.35) + camGround });
+      }
       if (camLift > 0.05) cv = Object.assign({}, cv, { fy: (cv.fy || 1.35) + camLift, dist: (cv.dist || 7.5) + camLift * 0.9, pitch: Math.min(1.3, cv.pitch + camLift * 0.015), far: 80 + camLift * 4 });
       rd.render(cv, pose());
       if (ui && ui.setBoardHand) { /* 게시판 손: 카메라가 다 붙었을 때 가운데 칸 아래 */
@@ -483,7 +488,7 @@
       root.FGH.I18N.onChange(() => { jumpLabel(); if (ready) { signsNow(); refreshArcade(true); if (!raf && api.renderAllowed()) wake(); } });
       document.addEventListener('visibilitychange', wake);
       rd.lost(() => { ready = false; stop(); ui.setLoading(ko() ? '3D 화면을 다시 불러와 주세요.' : 'Please reload the 3D plaza.'); });
-      fetch('assets/home3d/islands/islands-walk.json?v=1707').then((r) => r.json()).then((j) => L.setIslands(j.islands)).catch(() => {}); /* V1705 C: 동서남북 섬 걷기 자료 */
+      fetch('assets/home3d/islands/islands-walk.json?v=1708').then((r) => r.json()).then((j) => L.setIslands(j.islands)).catch(() => {}); /* V1705 C: 동서남북 섬 걷기 자료 */
       rd.boot(PLAZA_GLB, MOLE_GLB, 'assets/home3d/boat.glb', [ /* V1633 C: 디스코 팡팡(배치만) */
         { url: 'assets/home3d/disco-base.glb?v=1690-G', /* 내용 바뀐 모델 = 버전 붙여 폰이 새로 받게 */ world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
         { url: 'assets/home3d/disco-top.glb?v=1690-G', dyn: 'discoTop', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },

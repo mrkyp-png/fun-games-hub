@@ -1,3 +1,6 @@
+# V1708 C DEPLOYED - 2026-11-15 (Claude) — island fixes
+- Island coast skirt sinks to -3.2 (no floating look); island shadow normal offset .2 (acne on slopes); south/north plaza discs raised (no z-fight) + walk pad on disc top; camera fy follows standing ground height (camGround) so summit view shows the mole. Volcano cave entrance still to be redone from a GPT Imagegen concept (user said current one is cheap).
+
 # V1707 C DEPLOYED - 2026-11-15 (Claude) — island shadows + game-machine spots
 - Static shadow map (1 map, 1s refresh) re-centres on an outer island when the mole is within 24 of it (draws only that island). Islands same size; centre plaza r3.5 flattened for a game machine: east = sand patch, south/north = round plaza discs; props moved to edges. West: volcano unchanged, cave entrance (dark arch + rock arch + lava glow) at volcano base facing home = game machine spot. islands-walk.json 'pads' (walkable overrides): cave front, volcano summit (stand at top height). Terrain denser (144x40).
 
