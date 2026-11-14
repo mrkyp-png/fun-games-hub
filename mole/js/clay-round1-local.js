@@ -9,14 +9,21 @@ function pickBehavior(){const i=Math.floor(Math.random()*5);return i<4?BEHAVIORS
 // 올라와 자리 잡은 뒤, 맞기 전·들어가기 전까지만 나쁜 두더지 동작. 맞으면 일반 두더지와 같음.
 function behaviorActor(m,now){
  if(!m._behavior||m.dying||m.hits>0||m._clayRestTime==null||now<m._clayRestTime)return null;
- return behaviorActors.get(m._behavior)||null;
+ const b=behaviorActors.get(m._behavior)||null;
+ if(b&&m._behRate==null){
+  // 뒤 라운드일수록 머무는 시간이 짧음 → 머무는 동안 동작 한 바퀴가 다 나오게 빠르게(원래보다 느려지진 않음)
+  const clip=b.clip&&b.runtime.animations.find(c=>c.name===b.clip),stay=(m._lifeAtSpawn??3)-(m._clayAppearDuration||.4)-.15;
+  m._behRate=clip?Math.max(1,clip.duration/Math.max(.35,stay)):1;
+ }
+ return b;
 }
+function behaviorTime(m,now){return (now-m._clayRestTime)*(m._behRate||1)}
 // 맞으면 소품이 무작위 방향으로 빙글 돌며 날아감(0.8초). 도둑 복면은 맞아도 머리에 그대로.
 const PROP_RE=/^(Bottle|Open bottle|Dark open|Curved cream|Alcohol|Cigarette|Ember|Landscape phone|Phone|Rear camera|Sack|Money)/,MASK_RE=/^(Thief mask|Mask |Eye hole patch|Angry brow|Round pupil|Eye highlight|Dazed ivory eye)/;
 const PROP_FLY=.8;
 function startPropFly(m){
  const b=m._behavior&&behaviorActors.get(m._behavior);if(!b||m._propFly||m._clayRestTime==null||clockTime<m._clayRestTime)return;
- const worlds=AP.pose(b.runtime,b.clip,clockTime-m._clayRestTime,true,null,clockTime,m._appearance||'mohawk'),a=Math.random()*Math.PI*2;
+ const worlds=AP.pose(b.runtime,b.clip,behaviorTime(m,clockTime),true,null,clockTime,m._appearance||'mohawk'),a=Math.random()*Math.PI*2;
  const ax=[Math.random()-.5,Math.random()-.5,Math.random()-.5],n=Math.hypot(...ax)||1;
  m._propFly={t0:clockTime,worlds,vel:[Math.cos(a)*3.2,4.6+Math.random()*1.4,1.2+Math.sin(a)*1.4],axis:ax.map(v=>v/n),spin:(Math.random()<.5?-1:1)*(10+Math.random()*6),depth:m.shownDepth};
 }
@@ -206,7 +213,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
    const motion=clipFor(m);
    const depth=sinkDepth(m);
    const act=behaviorActor(m,clockTime)||baseActor,{runtime,model,rimFlags}=act;
-   const worlds=act===baseActor?poseFor(runtime,m,motion):AP.pose(runtime,act.clip,clockTime-m._clayRestTime,true,null,clockTime,m._appearance||'mohawk'),palettes=new Map(),withdraw=withdrawProgress(m),instance=R.transform({translation:[0,motion.appearing?1.1*Math.sin(Math.PI*motion.progress):-3.4*depth/4,-(isBombCarrier(m)?.5:.4)*withdraw]});
+   const worlds=act===baseActor?poseFor(runtime,m,motion):AP.pose(runtime,act.clip,behaviorTime(m,clockTime),true,null,clockTime,m._appearance||'mohawk'),palettes=new Map(),withdraw=withdrawProgress(m),instance=R.transform({translation:[0,motion.appearing?1.1*Math.sin(Math.PI*motion.progress):-3.4*depth/4,-(isBombCarrier(m)?.5:.4)*withdraw]});
    const sx=lower?0:shake[0],sy=lower?0:shake[1];
    function bindActor(){
     gl.viewport(ox,oy,size,viewportHeight);gl.enable(gl.SCISSOR_TEST);gl.scissor(ox,oy,size,viewportHeight);
@@ -290,7 +297,7 @@ function renderPop(m){
  if(!active||!canRender(m))return false;
  if(!entries.has(m.el)){
   m._appearance=m.kind==='mole'?AP.random():null;
-  m._behavior=m.kind==='mole'&&!isBombCarrier(m)?pickBehavior():null;
+  m._behavior=m.kind==='mole'&&!isBombCarrier(m)?pickBehavior():null;m._lifeAtSpawn=m.remaining;m._behRate=null;
   m._clayBorn=clockTime;m._clayHits=0;m._clayHit=-10;
   m._clayAppearDuration=Math.max(.18,Math.min(.45,(m.remaining??2)*.28));entries.set(m.el,m);
  }
