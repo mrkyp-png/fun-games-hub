@@ -153,7 +153,7 @@
 // V1690 G: Sand beach, continuous ocean, combo turns and reactive hair; clear text-only signs, gentle warm entrance flow and corrected beach/water landing.
 // V1691 G: gold3D in original sprite boxes; hammer2D preserved; weapons in front of HUD; matched plaza label sizes.
 // V1692 G: matching gold clones, ImageGen enhancement lightning, smooth fur and physical rhythm entrance.
-const CACHE = 'mole-game-v1697-C';
+const CACHE = 'mole-game-v1698-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -1119,7 +1119,10 @@ self.addEventListener('fetch', (e) => {
       // V1333 C: 순간 네트워크 실패(동시 요청 한도 등)로 그림이 깨진 채 남지 않게 0.4초 뒤 한 번 더 받아 본다
       // 오프라인 + 캐시에 없음. undefined 를 반환하면 브라우저가 "인터넷 연결 없음" 페이지를 띄우므로 금지.
       if (e.request.mode === 'navigate') {
-        return (await caches.match('./index.html')) || (await caches.match('./')) || Response.error();
+        const fallback = (await caches.match('./index.html')) || (await caches.match('./'));
+        if (fallback) return fallback;
+        // V1698 C: 새 버전 직후엔 저장본이 비어 있음 → 5초 넘겨도 포기하지 말고 끝까지 받아 첫 화면을 띄움(ERR_FAILED 방지)
+        try { return await fetch(e.request, { cache: 'no-store' }); } catch (_) { return Response.error(); }
       }
       return Response.error();
     }
