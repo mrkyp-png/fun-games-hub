@@ -25,7 +25,10 @@ async function prepare(model,ids=styles){
  }
  g.buffers=[{byteLength:bin.length}];return {json:g,bin};
 }
-function materialColor(material,id){const p=palettes[id];if(!p)return material.pbrMetallicRoughness?.baseColorFactor||[1,1,1,1];return ['Clay warm caramel','Feet cocoa'].includes(material.name)?p.body:material.pbrMetallicRoughness?.baseColorFactor||[1,1,1,1]}
+// 주둥이: 원래 몸색 대비 주둥이 밝기 비율을 새 몸색에 그대로 적용(같은 계열의 연한 색)
+const baseBody=[0.68668532,0.51491767,0.31398872,1];
+function muzzleColor(material,body){const m=material.pbrMetallicRoughness?.baseColorFactor||[1,1,1,1];return [0,1,2].map(k=>Math.min(1,body[k]*m[k]/baseBody[k])).concat(m[3]??1)}
+function materialColor(material,id){const p=palettes[id];if(!p)return material.pbrMetallicRoughness?.baseColorFactor||[1,1,1,1];if(material.name==='Muzzle peach cream')return muzzleColor(material,p.body);return ['Clay warm caramel','Feet cocoa'].includes(material.name)?p.body:material.pbrMetallicRoughness?.baseColorFactor||[1,1,1,1]}
 function vertexColors(model,primitive,id){
  const index=primitive.attributes.COLOR_0;if(index===undefined)return null;const original=R.accessor(model,index),material=model.json.materials[primitive.material];
  if(material.name!=='Head smooth tone'||!palettes[id])return original;
