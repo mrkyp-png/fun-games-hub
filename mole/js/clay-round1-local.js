@@ -3,6 +3,23 @@
 const MG=root.MoleGame,R=root.StudioRig,AP=MG.MoleAppearances,base='assets/checkerboard-v1590/';
 let active=false,ready=false,loading=null,pending=false,generation=0,clockTime=0,lastClock=0,canvas,paint,queued=false;
 const entries=new Map();
+const BEHAVIORS=['drink','smoke','phone','thief'],behaviorActors=new Map();
+// 일반 두더지 자리: 기본·술·담배·휴대폰·도둑 5가지 중 무작위(폭탄 든 두더지는 폭탄 동작 유지)
+function pickBehavior(){const i=Math.floor(Math.random()*5);return i<4?BEHAVIORS[i]:null}
+// 올라와 자리 잡은 뒤, 맞기 전·들어가기 전까지만 나쁜 두더지 동작. 맞으면 일반 두더지와 같음.
+function behaviorActor(m,now){
+ if(!m._behavior||m.dying||m.hits>0||m._clayRestTime==null||now<m._clayRestTime)return null;
+ return behaviorActors.get(m._behavior)||null;
+}
+// 맞으면 소품이 무작위 방향으로 빙글 돌며 날아감(0.8초). 도둑 복면은 맞아도 머리에 그대로.
+const PROP_RE=/^(Bottle|Open bottle|Dark open|Curved cream|Alcohol|Cigarette|Ember|Landscape phone|Phone|Rear camera|Sack|Money)/,MASK_RE=/^(Thief mask|Mask |Eye hole patch|Angry brow|Round pupil|Eye highlight|Dazed ivory eye)/;
+const PROP_FLY=.8;
+function startPropFly(m){
+ const b=m._behavior&&behaviorActors.get(m._behavior);if(!b||m._propFly||m._clayRestTime==null||clockTime<m._clayRestTime)return;
+ const worlds=AP.pose(b.runtime,b.clip,clockTime-m._clayRestTime,true,null,clockTime,m._appearance||'mohawk'),a=Math.random()*Math.PI*2;
+ const ax=[Math.random()-.5,Math.random()-.5,Math.random()-.5],n=Math.hypot(...ax)||1;
+ m._propFly={t0:clockTime,worlds,vel:[Math.cos(a)*3.2,4.6+Math.random()*1.4,1.2+Math.sin(a)*1.4],axis:ax.map(v=>v/n),spin:(Math.random()<.5?-1:1)*(10+Math.random()*6),depth:m.shownDepth};
+}
 let boardShake=null,boardShakeRequest=null;
 function shakeNow(){return root.performance?root.performance.now():Date.now()}
 function stopBoardShake(){boardShakeRequest=null;if(boardShake){boardShake.animation.cancel();boardShake=null}}
@@ -125,7 +142,8 @@ async function initialize(){
  const board=document.getElementById('mole-board');canvas=document.createElement('canvas');canvas.className='clay-mole-canvas clay-mole-canvas--world';canvas.hidden=true;document.getElementById('game-screen').appendChild(canvas);
  const gl=canvas.getContext('webgl2',{antialias:true,alpha:true,premultipliedAlpha:true,stencil:true});if(!gl)throw Error('WebGL2 unavailable for local 3D trial');
  const response=await fetch('assets/characters-v1692/mole-game-smile.glb');if(!response.ok)throw Error('Mole model load failed');const model=await AP.prepare(R.parseGLB(await response.arrayBuffer())),runtime=R.prepare(model),draws=[];let estimatedGpuBytes=0;
- const joints=Math.max(1,...runtime.skins.map(s=>s.joints.length));if(joints*4+Math.ceil(joints/4)+24>gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS))throw Error('이 기기의 관절 셰이더 용량을 초과합니다.');
+ // 나쁜 두더지 모델은 관절 54개 → 셰이더 배열을 54로(54*4+14+24=254 ≤ WebGL2 최소 256)
+ const joints=Math.max(54,...runtime.skins.map(s=>s.joints.length));if(joints*4+Math.ceil(joints/4)+24>gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS))throw Error('이 기기의 관절 셰이더 용량을 초과합니다.');
  const vs=`#version 300 es
 precision highp float;in vec3 aPosition;in vec4 aColor;in vec3 aNormal;in vec2 aUV;in vec4 aJoints;in vec4 aWeights;uniform vec2 uOffset,uViewportY;uniform float uOutline;uniform mat4 uModel,uVP,uJoints[${joints}];uniform vec4 uRimJoint[${Math.ceil(joints/4)}];uniform bool uSkinned;out vec4 vColor;out float vOverRim;out vec3 vPosition,vNormal;out vec2 vUV;float rimFlag(float j){int i=int(j);return uRimJoint[i/4][i%4];}void main(){mat4 s=mat4(1.0);if(uSkinned)s=aWeights.x*uJoints[int(aJoints.x)]+aWeights.y*uJoints[int(aJoints.y)]+aWeights.z*uJoints[int(aJoints.z)]+aWeights.w*uJoints[int(aJoints.w)];vOverRim=uSkinned?aWeights.x*rimFlag(aJoints.x)+aWeights.y*rimFlag(aJoints.y)+aWeights.z*rimFlag(aJoints.z)+aWeights.w*rimFlag(aJoints.w):0.0;vec4 p=uModel*s*vec4(aPosition,1.0);p.xyz+=normalize(mat3(uModel)*mat3(s)*aNormal)*uOutline;vPosition=p.xyz;vNormal=mat3(uModel)*mat3(s)*aNormal;vUV=aUV;vColor=aColor;gl_Position=uVP*p;gl_Position.xy+=uOffset*gl_Position.w;gl_Position.y=gl_Position.y*uViewportY.x+uViewportY.y*gl_Position.w;}`;
  const fs=`#version 300 es
@@ -136,9 +154,10 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
  const attr=Object.fromEntries(['aPosition','aColor','aNormal','aUV','aJoints','aWeights'].map(n=>[n,gl.getAttribLocation(program,n)]));
  function buffer(values,target=gl.ARRAY_BUFFER){const b=gl.createBuffer();gl.bindBuffer(target,b);gl.bufferData(target,values,gl.STATIC_DRAW);estimatedGpuBytes+=values.byteLength;return b}
  function solid(pixel){const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array(pixel));gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);return t}
- const white=solid([255,255,255,255]),normalWhite=solid([128,128,255,255]),textureCache=new Map();
- async function texture(index){if(textureCache.has(index))return textureCache.get(index);const promise=(async()=>{const image=model.json.images[model.json.textures[index].source];if(image.bufferView===undefined)throw Error('부하 시험에는 GLB 내장 텍스처가 필요합니다.');const view=model.json.bufferViews[image.bufferView],blob=new Blob([model.bin.subarray(view.byteOffset||0,(view.byteOffset||0)+view.byteLength)],{type:image.mimeType||'image/png'}),bitmap=await createImageBitmap(blob,{colorSpaceConversion:'none',premultiplyAlpha:'none'});const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,bitmap);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.REPEAT);estimatedGpuBytes+=bitmap.width*bitmap.height*4;bitmap.close();return t})();textureCache.set(index,promise);return promise}
- const zero=(n,w)=>new Float32Array(n*w),g=model.json;
+ const white=solid([255,255,255,255]),normalWhite=solid([128,128,255,255]),textureCaches=new Map();
+ async function texture(index,model){if(!textureCaches.has(model))textureCaches.set(model,new Map());const textureCache=textureCaches.get(model);if(textureCache.has(index))return textureCache.get(index);const promise=(async()=>{const image=model.json.images[model.json.textures[index].source];if(image.bufferView===undefined)throw Error('부하 시험에는 GLB 내장 텍스처가 필요합니다.');const view=model.json.bufferViews[image.bufferView],blob=new Blob([model.bin.subarray(view.byteOffset||0,(view.byteOffset||0)+view.byteLength)],{type:image.mimeType||'image/png'}),bitmap=await createImageBitmap(blob,{colorSpaceConversion:'none',premultiplyAlpha:'none'});const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,bitmap);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.REPEAT);estimatedGpuBytes+=bitmap.width*bitmap.height*4;bitmap.close();return t})();textureCache.set(index,promise);return promise}
+ const zero=(n,w)=>new Float32Array(n*w);
+ async function makeDraws(model,draws){const g=model.json;
  for(let node=0;node<g.nodes.length;node++)if(g.nodes[node].mesh!==undefined)for(const p of g.meshes[g.nodes[node].mesh].primitives){
   if((p.mode??4)!==4)throw Error('삼각형 메시만 부하 시험을 지원합니다.');
   const positions=R.accessor(model,p.attributes.POSITION),n=positions.length/3,indices=p.indices===undefined?null:new Uint32Array(R.accessor(model,p.indices)),material=g.materials?.[p.material]||{},pbr=material.pbrMetallicRoughness||{};
@@ -147,12 +166,17 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
   const colorSize=p.attributes.COLOR_0===undefined?4:({VEC3:3,VEC4:4}[g.accessors[p.attributes.COLOR_0].type]);
   if(!colorSize||vertexColors.length!==n*colorSize)throw Error('Invalid vertex color layout');
   const colorVariants=material.name==='Head smooth tone'?Object.fromEntries(AP.styles.map(id=>[id,buffer(AP.vertexColors(model,p,id))])):null;
-  draws.push({node,count:n,material,colorVariants,appearance:AP.hairStyle(g.nodes[node]),vertexColors:buffer(vertexColors),colorSize,positions:buffer(positions),normals:buffer(p.attributes.NORMAL===undefined?zero(n,3):R.accessor(model,p.attributes.NORMAL)),uv:buffer(p.attributes.TEXCOORD_0===undefined?zero(n,2):R.accessor(model,p.attributes.TEXCOORD_0)),joints:buffer(p.attributes.JOINTS_0===undefined?zero(n,4):R.accessor(model,p.attributes.JOINTS_0)),weights:buffer(weights),indices:indices?buffer(indices,gl.ELEMENT_ARRAY_BUFFER):null,indexCount:indices?.length||0,materialName:material.name||'',color:pbr.baseColorFactor||[1,1,1,1],roughness:pbr.roughnessFactor??.5,base:pbr.baseColorTexture?await texture(pbr.baseColorTexture.index):white,normal:material.normalTexture?await texture(material.normalTexture.index):normalWhite,hasBase:!!pbr.baseColorTexture,hasNormal:!!material.normalTexture,normalScale:material.normalTexture?.scale??1,double:material.doubleSided});
+  draws.push({node,count:n,material,colorVariants,appearance:AP.hairStyle(g.nodes[node]),vertexColors:buffer(vertexColors),colorSize,positions:buffer(positions),normals:buffer(p.attributes.NORMAL===undefined?zero(n,3):R.accessor(model,p.attributes.NORMAL)),uv:buffer(p.attributes.TEXCOORD_0===undefined?zero(n,2):R.accessor(model,p.attributes.TEXCOORD_0)),joints:buffer(p.attributes.JOINTS_0===undefined?zero(n,4):R.accessor(model,p.attributes.JOINTS_0)),weights:buffer(weights),indices:indices?buffer(indices,gl.ELEMENT_ARRAY_BUFFER):null,indexCount:indices?.length||0,materialName:material.name||'',color:pbr.baseColorFactor||[1,1,1,1],roughness:pbr.roughnessFactor??.5,base:pbr.baseColorTexture?await texture(pbr.baseColorTexture.index,model):white,normal:material.normalTexture?await texture(material.normalTexture.index,model):normalWhite,hasBase:!!pbr.baseColorTexture,hasNormal:!!material.normalTexture,normalScale:material.normalTexture?.scale??1,double:material.doubleSided});
  }
+ return draws}
+ await makeDraws(model,draws);
 
  gl.enable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);gl.uniform1i(loc.uBase,0);gl.uniform1i(loc.uNormal,1);
  const rimResponse=await fetch(base+'floor-mask.webp');if(!rimResponse.ok)throw Error('Hole rim load failed');const rimBitmap=await createImageBitmap(await rimResponse.blob(),{colorSpaceConversion:'none',premultiplyAlpha:'none'}),rimTexture=gl.createTexture();gl.activeTexture(gl.TEXTURE0+2);gl.bindTexture(gl.TEXTURE_2D,rimTexture);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,rimBitmap);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);rimBitmap.close();gl.uniform1i(loc.uRim,2);
- const rimFlags=runtime.skins.map(skeleton=>{const flags=new Float32Array(Math.ceil(skeleton.joints.length/4)*4);skeleton.joints.forEach((j,i)=>{flags[i]=/^(UpperArm|Forearm|Hand|Finger[123]|Thumb)\.|^BombCarry$/.test(model.json.nodes[j].name||'')?1:0});return flags});
+ const flagsFor=(runtime,model)=>runtime.skins.map(skeleton=>{const flags=new Float32Array(Math.ceil(skeleton.joints.length/4)*4);skeleton.joints.forEach((j,i)=>{flags[i]=/^(UpperArm|Forearm|Hand|Finger[123]|Thumb)\.|^BombCarry$/.test(model.json.nodes[j].name||'')?1:0});return flags});
+ const baseActor={model,runtime,draws,rimFlags:flagsFor(runtime,model)};
+ // 나쁜 두더지(술·담배·휴대폰·도둑): 기본 두더지 준비 후 뒤에서 불러옴. 못 불러오면 일반 두더지로 나옴.
+ Promise.all(BEHAVIORS.map(async id=>{const r=await fetch('assets/characters-v1694/behavior-'+id+'.glb');if(!r.ok)throw Error('Behavior model '+id+' '+r.status);const raw=R.parseGLB(await r.arrayBuffer());raw.json.animations=raw.json.animations||[];const bm=await AP.prepare(raw),brt=R.prepare(bm),clip=brt.animations.find(c=>c.name==='Behavior');behaviorActors.set(id,{model:bm,runtime:brt,draws:await makeDraws(bm,[]),rimFlags:flagsFor(brt,bm),clip:clip?'Behavior':null})})).catch(e=>console.error('Behavior moles',e));
  function bind(b,id,size){gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.enableVertexAttribArray(id);gl.vertexAttribPointer(id,size,gl.FLOAT,false,0,0)}
  const angle=Math.PI/6,eye=[0,1+10*Math.sin(angle),10*Math.cos(angle)];
  gl.uniform3fv(loc.uEye,eye);
@@ -181,7 +205,8 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
    const ox=horizontal&&lower?size:0,oy=feverField&&!horizontal&&!lower?size:0;
    const motion=clipFor(m);
    const depth=sinkDepth(m);
-   const worlds=poseFor(runtime,m,motion),palettes=new Map(),withdraw=withdrawProgress(m),instance=R.transform({translation:[0,motion.appearing?1.1*Math.sin(Math.PI*motion.progress):-3.4*depth/4,-(isBombCarrier(m)?.5:.4)*withdraw]});
+   const act=behaviorActor(m,clockTime)||baseActor,{runtime,model,rimFlags}=act;
+   const worlds=act===baseActor?poseFor(runtime,m,motion):AP.pose(runtime,act.clip,clockTime-m._clayRestTime,true,null,clockTime,m._appearance||'mohawk'),palettes=new Map(),withdraw=withdrawProgress(m),instance=R.transform({translation:[0,motion.appearing?1.1*Math.sin(Math.PI*motion.progress):-3.4*depth/4,-(isBombCarrier(m)?.5:.4)*withdraw]});
    const sx=lower?0:shake[0],sy=lower?0:shake[1];
    function bindActor(){
     gl.viewport(ox,oy,size,viewportHeight);gl.enable(gl.SCISSOR_TEST);gl.scissor(ox,oy,size,viewportHeight);
@@ -190,13 +215,13 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
     gl.uniform2f(loc.uOffset,(x-.5)*2+sx/board.clientWidth*2,(.5-y-Math.cos(angle)*.2/span)*2-sy/board.clientWidth*2);gl.uniform4f(loc.uHole,ox+x*size+sx*pixelScale,oy+(1-y)*size-sy*pixelScale,135/418/gridSize*size,58/418/gridSize*size*boardAspect);
     gl.uniform1f(loc.uFlash,Math.max(0,Math.min(1,((m._clayFlashUntil||0)-clockTime)/.09))*.8);
    }
-   function drawMesh(d,outline=false){
+   function drawMesh(d,outline=false,matrix=null){
     const carriedObject=d.materialName.startsWith('Carry bomb ');
     // Only the bomb needs the stricter entrance mask. Keep the jumping body's
     // original above-rim visibility during takeoff and landing.
     gl.uniform1i(loc.uEntering,carriedObject&&!!motion.appearing);
-    if(!palettes.has(d.node))palettes.set(d.node,R.palette(runtime,worlds,d.node));const skin=palettes.get(d.node);
-    gl.uniformMatrix4fv(loc.uModel,false,R.multiply(instance,worlds[d.node]));gl.uniform1i(loc.uSkinned,!!skin);if(skin)gl.uniformMatrix4fv(loc.uJoints,false,skin);
+    if(!matrix&&!palettes.has(d.node))palettes.set(d.node,R.palette(runtime,worlds,d.node));const skin=matrix?null:palettes.get(d.node);
+    gl.uniformMatrix4fv(loc.uModel,false,matrix||R.multiply(instance,worlds[d.node]));gl.uniform1i(loc.uSkinned,!!skin);if(skin)gl.uniformMatrix4fv(loc.uJoints,false,skin);
     if(skin)gl.uniform4fv(loc.uRimJoint,rimFlags[model.json.nodes[d.node].skin]);
     const color=carriedObject&&d.materialName==='Carry bomb shell'&&m.bombKind==='strong'?[.68,.055,.04,1]:(m.kind==='animal'||m.kind==='bomb')&&d.materialName==='Clay warm caramel'?animalVariant(m.poseIndex).color:m.kind==='mole'?AP.materialColor(d.material,m._appearance||'mohawk'):d.color;
     gl.uniform4fv(loc.uColor,color);gl.uniform1f(loc.uRoughness,d.roughness);gl.uniform1i(loc.uHasBase,d.hasBase);gl.uniform1i(loc.uHasNormal,d.hasNormal);gl.uniform1f(loc.uNormalScale,d.normalScale);
@@ -207,12 +232,36 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
     if(d.indices){gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,d.indices);gl.drawElements(gl.TRIANGLES,d.indexCount,gl.UNSIGNED_INT,0)}else gl.drawArrays(gl.TRIANGLES,0,d.count);
    }
    bindActor();const props=[];
-   for(const d of draws){
+   for(const d of act.draws){
     if(d.appearance&&(m.kind!=='mole'||d.appearance!==(m._appearance||'mohawk')))continue;
+    // 도둑: 복면 눈 구멍으로 몸의 원래 갈색 눈썹이 비치지 않게
+    if(m._behavior==='thief'&&d.materialName==='Eyebrow')continue;
     const carriedObject=d.materialName.startsWith('Carry bomb '),meshName=model.json.nodes[d.node].name;
     if(meshName==='Mole_Carrier_Skin'&&!isBombCarrier(m)||meshName==='Mole_Clay_Skin'&&isBombCarrier(m))continue;
     if(carriedObject){if(isBombCarrier(m)&&!(m.dying&&m.killed))props.push(d);continue;}
     drawMesh(d);
+   }
+   const bActor=m._behavior&&behaviorActors.get(m._behavior);
+   if(bActor&&act===baseActor){
+    // 도둑: 맞아도 복면·눈썹을 일반 두더지 머리에 그대로 씌움
+    if(m._behavior==='thief'){
+     if(!bActor.maskOffsets){const rest=R.pose(bActor.runtime,null,0,false),hb=bActor.model.json.nodes.findIndex(n=>n.name==='Head'),inv=R.inverse(rest[hb]);bActor.maskOffsets=new Map(bActor.draws.filter(d=>MASK_RE.test(bActor.model.json.nodes[d.node].name||'')).map(d=>[d,R.multiply(inv,rest[d.node])]))}
+     const head=worlds[model.json.nodes.findIndex(n=>n.name==='Head')];
+     bActor.maskOffsets.forEach((off,d)=>drawMesh(d,false,R.multiply(instance,R.multiply(head,off))));
+    }
+    // 소품 날리기: 맞은 순간 자리에서 무작위 방향으로 포물선 + 회전
+    const fly=m._propFly,age=fly?clockTime-fly.t0:9;
+    if(fly&&age<PROP_FLY){
+     gl.uniform1i(loc.uForegroundProp,true);gl.uniform1i(loc.uJump,false);
+     const at=R.transform({translation:[0,-3.4*fly.depth/4,0]}),move=R.transform({translation:[fly.vel[0]*age,fly.vel[1]*age-7*age*age,fly.vel[2]*age]});
+     for(const d of bActor.draws){
+      if(!PROP_RE.test(bActor.model.json.nodes[d.node].name||''))continue;
+      const w=fly.worlds[d.node],c=[w[12],w[13],w[14]],ang=fly.spin*age,s=Math.sin(ang/2);
+      const rot=R.multiply(R.multiply(R.transform({translation:c}),R.transform({rotation:[fly.axis[0]*s,fly.axis[1]*s,fly.axis[2]*s,Math.cos(ang/2)]})),R.transform({translation:c.map(v=>-v)}));
+      drawMesh(d,false,R.multiply(R.multiply(move,at),R.multiply(rot,w)));
+     }
+     gl.uniform1i(loc.uForegroundProp,false);
+    }
    }
    if(props.length)foregroundBombs.push(()=>{
     bindActor();gl.uniform1i(loc.uForegroundProp,!m.dying&&!motion.appearing);gl.enable(gl.STENCIL_TEST);gl.stencilMask(0xff);gl.clearStencil(0);gl.clear(gl.STENCIL_BUFFER_BIT);
@@ -240,12 +289,14 @@ function wait(callback){if(ready)return false;if(pending)return true;pending=tru
 function renderPop(m){
  if(!active||!canRender(m))return false;
  if(!entries.has(m.el)){
-  m._appearance=m.kind==='mole'?(isBombCarrier(m)?'mohawk':AP.random()):null;
+  m._appearance=m.kind==='mole'?AP.random():null;
+  m._behavior=m.kind==='mole'&&!isBombCarrier(m)?pickBehavior():null;
   m._clayBorn=clockTime;m._clayHits=0;m._clayHit=-10;
   m._clayAppearDuration=Math.max(.18,Math.min(.45,(m.remaining??2)*.28));entries.set(m.el,m);
  }
  if(m.dying&&m._clayExitAt==null)m._clayExitAt=clockTime;
- if(m.hits!==m._clayHits){m._clayHits=m.hits;m._clayHit=clockTime}
+ if(m.hits!==m._clayHits){if(m.hits>0)startPropFly(m);m._clayHits=m.hits;m._clayHit=clockTime}
+ if(m.dying&&m.killed)startPropFly(m);
  m.img.style.visibility='hidden';if(m.bombEl)m.bombEl.style.display='none';return true;
 }
 
