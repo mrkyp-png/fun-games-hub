@@ -20,6 +20,9 @@ function glMock(){const v={draws:0,maxJointUpload:0,sources:[],finite:true};cons
  const moles=[];for(let i=0;i<10;i++){Math.random=()=>((i%5)+.5)/5;const m={el:{isConnected:true,style:{left:(10+i*8)+'%',top:'50%'}},img:{style:{}},kind:'mole',hits:0,shownDepth:0,remaining:5};game.renderPop(m);moles.push(m);seen[m._behavior||'normal']=(seen[m._behavior||'normal']||0)+1}
  Math.random=orig;
  assert.deepEqual(Object.keys(seen).sort(),['drink','normal','phone','smoke','thief']);
+ // 색깔 두더지(animal)도 5종 무작위
+ const animals=[];for(let i=0;i<5;i++){Math.random=()=>((i%5)+.5)/5;const a={el:{isConnected:true,style:{left:(15+i*15)+'%',top:'30%'}},img:{style:{}},kind:'animal',poseIndex:i,hits:0,shownDepth:0,remaining:5};game.renderPop(a);animals.push(a)}
+ Math.random=orig;assert.deepEqual(animals.map(a=>a._behavior||'normal').sort(),['drink','normal','phone','smoke','thief']);
  const bomb={el:{isConnected:true,style:{left:'50%',top:'50%'}},img:{style:{}},kind:'mole',bomb:true,hits:0,shownDepth:0};game.renderPop(bomb);
  assert.equal(bomb._behavior,null,'bomb carrier keeps bomb motion');assert(['mohawk','spiky','curly','forelock'].includes(bomb._appearance));
  // 올라온 뒤 시간 진행: 나쁜 두더지 동작으로 그려짐

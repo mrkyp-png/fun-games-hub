@@ -8,7 +8,8 @@ const BEHAVIORS=['drink','smoke','phone','thief'],behaviorActors=new Map();
 function pickBehavior(){const i=Math.floor(Math.random()*5);return i<4?BEHAVIORS[i]:null}
 // 올라와 자리 잡은 뒤, 맞기 전·들어가기 전까지만 나쁜 두더지 동작. 맞으면 일반 두더지와 같음.
 function behaviorActor(m,now){
- if(!m._behavior||m.dying||m.hits>0||m._clayRestTime==null||now<m._clayRestTime)return null;
+ // 맞거나(killed) 맞은 적 있으면 일반 두더지. 시간 끝나 들어갈 때(dying, 안 맞음)는 나쁜 두더지 그대로 내려감.
+ if(!m._behavior||m.killed||m.hits>0||m._clayRestTime==null||now<m._clayRestTime)return null;
  const b=behaviorActors.get(m._behavior)||null;
  if(b&&m._behRate==null){
   // 뒤 라운드일수록 머무는 시간이 짧음 → 머무는 동안 동작 한 바퀴가 다 나오게 빠르게(원래보다 느려지진 않음)
@@ -58,7 +59,11 @@ function setGridSize(n){gridSize=n===4?4:3;document.getElementById('game-screen'
 function setFeverField(value){feverField=!!value;if(!canvas)return;canvas.classList.toggle('clay-mole-canvas--field',feverField);document.getElementById('game-screen').appendChild(canvas)}
 // Species index is poseIndex %4 in the unchanged spawn scheduler.
 const animalVariants=[['rabbit','yellow','#FFCA52'],['tiger','green','#66C884'],['hippo','pink','#EF96B8'],['lion','charcoal','#50545C']].map(([species,id,hex])=>({species,id,hex,color:[1,3,5].map(i=>Math.pow(parseInt(hex.slice(i,i+2),16)/255,2.2)).concat(1)}));
-function animalVariant(index){const n=Number.isFinite(index)?Math.trunc(index):0;return animalVariants[((n%4)+4)%4]}
+function animalIndex(index){const n=Number.isFinite(index)?Math.trunc(index):0;return ((n%4)+4)%4}
+function animalVariant(index){return animalVariants[animalIndex(index)]}
+// 색깔 두더지: 몸·발·머리는 같은 색, 주둥이는 같은 색의 연한 톤
+function isColored(m){return m.kind==='animal'||m.kind==='bomb'}
+function coloredMaterial(m,name){const c=animalVariant(m.poseIndex).color;if(name==='Clay warm caramel'||name==='Feet cocoa')return c;if(name==='Muzzle peach cream')return [0,1,2].map(k=>c[k]+(1-c[k])*.4).concat(1);return null}
 function canRender(m){return m.kind==='mole'||m.kind==='animal'||m.kind==='bomb'}
 function isBombCarrier(m){return m.bomb||m.kind==='bomb'}
 function smooth(value){const t=Math.max(0,Math.min(1,value));return t*t*(3-2*t)}
@@ -173,7 +178,9 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
   const colorSize=p.attributes.COLOR_0===undefined?4:({VEC3:3,VEC4:4}[g.accessors[p.attributes.COLOR_0].type]);
   if(!colorSize||vertexColors.length!==n*colorSize)throw Error('Invalid vertex color layout');
   const colorVariants=material.name==='Head smooth tone'?Object.fromEntries(AP.styles.map(id=>[id,buffer(AP.vertexColors(model,p,id))])):null;
-  draws.push({node,count:n,material,colorVariants,appearance:AP.hairStyle(g.nodes[node]),vertexColors:buffer(vertexColors),colorSize,positions:buffer(positions),normals:buffer(p.attributes.NORMAL===undefined?zero(n,3):R.accessor(model,p.attributes.NORMAL)),uv:buffer(p.attributes.TEXCOORD_0===undefined?zero(n,2):R.accessor(model,p.attributes.TEXCOORD_0)),joints:buffer(p.attributes.JOINTS_0===undefined?zero(n,4):R.accessor(model,p.attributes.JOINTS_0)),weights:buffer(weights),indices:indices?buffer(indices,gl.ELEMENT_ARRAY_BUFFER):null,indexCount:indices?.length||0,materialName:material.name||'',color:pbr.baseColorFactor||[1,1,1,1],roughness:pbr.roughnessFactor??.5,base:pbr.baseColorTexture?await texture(pbr.baseColorTexture.index,model):white,normal:material.normalTexture?await texture(material.normalTexture.index,model):normalWhite,hasBase:!!pbr.baseColorTexture,hasNormal:!!material.normalTexture,normalScale:material.normalTexture?.scale??1,double:material.doubleSided});
+  // 색깔 두더지 머리: 원래 머리 정점색을 몸색 비율로 바꿈(AP.vertexColors 와 같은 방식)
+  const animalHead=material.name==='Head smooth tone'&&p.attributes.COLOR_0!==undefined?animalVariants.map(v=>{const old=g.materials.find(x=>x.name==='Clay warm caramel').pbrMetallicRoughness.baseColorFactor,r=new Float32Array(vertexColors);for(let i=0;i<r.length;i+=colorSize)for(let k=0;k<3;k++)r[i+k]=Math.min(1,Math.max(0,vertexColors[i+k]/old[k]*v.color[k]));return buffer(r)}):null;
+  draws.push({node,count:n,material,colorVariants,animalHead,appearance:AP.hairStyle(g.nodes[node]),vertexColors:buffer(vertexColors),colorSize,positions:buffer(positions),normals:buffer(p.attributes.NORMAL===undefined?zero(n,3):R.accessor(model,p.attributes.NORMAL)),uv:buffer(p.attributes.TEXCOORD_0===undefined?zero(n,2):R.accessor(model,p.attributes.TEXCOORD_0)),joints:buffer(p.attributes.JOINTS_0===undefined?zero(n,4):R.accessor(model,p.attributes.JOINTS_0)),weights:buffer(weights),indices:indices?buffer(indices,gl.ELEMENT_ARRAY_BUFFER):null,indexCount:indices?.length||0,materialName:material.name||'',color:pbr.baseColorFactor||[1,1,1,1],roughness:pbr.roughnessFactor??.5,base:pbr.baseColorTexture?await texture(pbr.baseColorTexture.index,model):white,normal:material.normalTexture?await texture(material.normalTexture.index,model):normalWhite,hasBase:!!pbr.baseColorTexture,hasNormal:!!material.normalTexture,normalScale:material.normalTexture?.scale??1,double:material.doubleSided});
  }
  return draws}
  await makeDraws(model,draws);
@@ -217,7 +224,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
    const sx=lower?0:shake[0],sy=lower?0:shake[1];
    function bindActor(){
     gl.viewport(ox,oy,size,viewportHeight);gl.enable(gl.SCISSOR_TEST);gl.scissor(ox,oy,size,viewportHeight);
-    gl.uniform1i(loc.uEntering,false);gl.uniform1i(loc.uForegroundProp,false);gl.uniform1i(loc.uJump,!!motion.appearing);gl.uniform1i(loc.uCarrying,!!isBombCarrier(m));
+    gl.uniform1i(loc.uEntering,false);gl.uniform1i(loc.uForegroundProp,false);gl.uniform1i(loc.uJump,!!motion.appearing);gl.uniform1i(loc.uCarrying,!!isBombCarrier(m)||act!==baseActor);
     // The same pixel anchor is restored for the final foreground prop pass.
     gl.uniform2f(loc.uOffset,(x-.5)*2+sx/board.clientWidth*2,(.5-y-Math.cos(angle)*.2/span)*2-sy/board.clientWidth*2);gl.uniform4f(loc.uHole,ox+x*size+sx*pixelScale,oy+(1-y)*size-sy*pixelScale,135/418/gridSize*size,58/418/gridSize*size*boardAspect);
     gl.uniform1f(loc.uFlash,Math.max(0,Math.min(1,((m._clayFlashUntil||0)-clockTime)/.09))*.8);
@@ -230,10 +237,10 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
     if(!matrix&&!palettes.has(d.node))palettes.set(d.node,R.palette(runtime,worlds,d.node));const skin=matrix?null:palettes.get(d.node);
     gl.uniformMatrix4fv(loc.uModel,false,matrix||R.multiply(instance,worlds[d.node]));gl.uniform1i(loc.uSkinned,!!skin);if(skin)gl.uniformMatrix4fv(loc.uJoints,false,skin);
     if(skin)gl.uniform4fv(loc.uRimJoint,rimFlags[model.json.nodes[d.node].skin]);
-    const color=carriedObject&&d.materialName==='Carry bomb shell'&&m.bombKind==='strong'?[.68,.055,.04,1]:(m.kind==='animal'||m.kind==='bomb')&&d.materialName==='Clay warm caramel'?animalVariant(m.poseIndex).color:m.kind==='mole'?AP.materialColor(d.material,m._appearance||'mohawk'):d.color;
+    const color=carriedObject&&d.materialName==='Carry bomb shell'&&m.bombKind==='strong'?[.68,.055,.04,1]:isColored(m)&&coloredMaterial(m,d.materialName)?coloredMaterial(m,d.materialName):m.kind==='mole'?AP.materialColor(d.material,m._appearance||'mohawk'):d.color;
     gl.uniform4fv(loc.uColor,color);gl.uniform1f(loc.uRoughness,d.roughness);gl.uniform1i(loc.uHasBase,d.hasBase);gl.uniform1i(loc.uHasNormal,d.hasNormal);gl.uniform1f(loc.uNormalScale,d.normalScale);
     d.double?gl.disable(gl.CULL_FACE):gl.enable(gl.CULL_FACE);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,d.base);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,d.normal);
-    bind(d.positions,attr.aPosition,3);bind(m.kind==='mole'&&d.colorVariants?d.colorVariants[m._appearance||'mohawk']:d.vertexColors,attr.aColor,d.colorSize);bind(d.normals,attr.aNormal,3);bind(d.uv,attr.aUV,2);bind(d.joints,attr.aJoints,4);bind(d.weights,attr.aWeights,4);
+    bind(d.positions,attr.aPosition,3);bind(m.kind==='mole'&&d.colorVariants?d.colorVariants[m._appearance||'mohawk']:isColored(m)&&d.animalHead?d.animalHead[animalIndex(m.poseIndex)]:d.vertexColors,attr.aColor,d.colorSize);bind(d.normals,attr.aNormal,3);bind(d.uv,attr.aUV,2);bind(d.joints,attr.aJoints,4);bind(d.weights,attr.aWeights,4);
     gl.uniform1f(loc.uOutline,outline?span/Math.max(1,board.clientWidth)*1.4:0);gl.uniform1i(loc.uOutlinePass,outline);
     if(outline){gl.enable(gl.CULL_FACE);gl.cullFace(gl.FRONT)}else gl.cullFace(gl.BACK);
     if(d.indices){gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,d.indices);gl.drawElements(gl.TRIANGLES,d.indexCount,gl.UNSIGNED_INT,0)}else gl.drawArrays(gl.TRIANGLES,0,d.count);
@@ -246,6 +253,14 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
     const carriedObject=d.materialName.startsWith('Carry bomb '),meshName=model.json.nodes[d.node].name;
     if(meshName==='Mole_Carrier_Skin'&&!isBombCarrier(m)||meshName==='Mole_Clay_Skin'&&isBombCarrier(m))continue;
     if(carriedObject){if(isBombCarrier(m)&&!(m.dying&&m.killed))props.push(d);continue;}
+    if(act!==baseActor&&PROP_RE.test(meshName||'')){
+     // 동작 중 소품은 구멍에 안 가려지게 앞에. 들어갈 때는 몸 쪽 뒤로 뺀 뒤(0.18초) 구멍에 가려지며 함께 내려감.
+     const w=m.dying?smooth((clockTime-(m._clayExitAt??clockTime))/.18):0;
+     gl.uniform1i(loc.uForegroundProp,!m.dying);
+     const base=R.multiply(instance,worlds[d.node]);
+     drawMesh(d,false,w?R.multiply(R.transform({translation:[0,-.3*w,-.9*w]}),base):base);
+     gl.uniform1i(loc.uForegroundProp,false);continue;
+    }
     drawMesh(d);
    }
    const bActor=m._behavior&&behaviorActors.get(m._behavior);
@@ -297,7 +312,7 @@ function renderPop(m){
  if(!active||!canRender(m))return false;
  if(!entries.has(m.el)){
   m._appearance=m.kind==='mole'?AP.random():null;
-  m._behavior=m.kind==='mole'&&!isBombCarrier(m)?pickBehavior():null;m._lifeAtSpawn=m.remaining;m._behRate=null;
+  m._behavior=(m.kind==='mole'||m.kind==='animal')&&!isBombCarrier(m)?pickBehavior():null;m._lifeAtSpawn=m.remaining;m._behRate=null;
   m._clayBorn=clockTime;m._clayHits=0;m._clayHit=-10;
   m._clayAppearDuration=Math.max(.18,Math.min(.45,(m.remaining??2)*.28));entries.set(m.el,m);
  }
