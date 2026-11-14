@@ -31,7 +31,7 @@ def add(fn_mesh, loc=(0, 0, 0), rot=(0, 0, 0), scale=(1, 1, 1), color=None, name
     if color: paint(o, color if callable(color) else solid(color))
     return o
 
-def terrain(radius, height, seed, shape=None, bands=None, sides=96, rings=24):
+def terrain(radius, height, seed, shape=None, bands=None, sides=144, rings=40):  # 촘촘하게(광장 가장자리 매끈)
     """둥근 섬: 해안선 노이즈 + 높이 프로필. bands=[(높이, 색)…] 높이별 색 띠"""
     bpy.ops.mesh.primitive_circle_add(vertices=sides, radius=1, fill_type='NOTHING')
     o = bpy.context.object; o.name = "terrain"
@@ -128,16 +128,45 @@ def walk_begin(key, t):
             hs.append(round(loc.z, 3) if hit else -9)
     WALK[key] = {"h": hs, "n": n, "step": step, "half": half, "blocks": []}
 def block(key, x, y, r): WALK[key]["blocks"].append((x, y, r))
+def pad(key, x, y, r, top=0): WALK[key].setdefault("pads", []).append((x, y, r, top))  # 막힘보다 우선: 설 수 있는 자리(top=1 이면 소품 꼭대기 높이)
+PLAZA_R = 3.5
+def flatten(t, color, edge_hex="#b9a27a"):
+    # 게임기 자리: 가운데 반지름 3.5 평평하게(가장자리 1.5 동안 원래 땅과 이어짐) + 광장 색
+    h0 = ground_z(t, 0, 0) * .8
+    for v in t.data.vertices:
+        d = math.hypot(v.co.x, v.co.y)
+        if d < PLAZA_R: v.co.z = h0
+        elif d < PLAZA_R + 2.5: k = (d - PLAZA_R) / 2.5; k = k * k * (3 - 2 * k); v.co.z = h0 * (1 - k) + v.co.z * k  # 부드럽게 이어짐
+    t.data.update()
+    me = t.data; col = me.color_attributes["Color"]; c = srgb(color); edge = srgb(edge_hex)
+    for poly in me.polygons:
+        for li in poly.loop_indices:
+            p = me.vertices[me.loops[li].vertex_index].co; d = math.hypot(p.x, p.y)
+            if d < PLAZA_R - .45: col.data[li].color = c
+            elif d < PLAZA_R: col.data[li].color = edge
+def round_plaza(t, color, edge_hex):
+    # 동그란 원형 광장 판(남·북): 평평한 땅 위에 매끈한 원판 + 테두리 띠
+    h0 = ground_z(t, 0, 0)
+    def mk(): bpy.ops.mesh.primitive_cylinder_add(vertices=72, radius=PLAZA_R + .25, depth=.3)
+    rim = add(mk, (0, 0, h0 - .15), (0, 0, 0), (1, 1, 1), edge_hex, "plaza_rim")
+    def mk(): bpy.ops.mesh.primitive_cylinder_add(vertices=72, radius=PLAZA_R - .1, depth=.3)
+    top = add(mk, (0, 0, h0 - .12), (0, 0, 0), (1, 1, 1), color, "plaza")
+    return [rim, top]
+def away(x, y, minr=PLAZA_R + 1.8):
+    d = math.hypot(x, y) or 1
+    return (x, y) if d >= minr else (x / d * minr, y / d * minr)
 # ---- 동: 해변섬 ----
 t = terrain(9, 2.2, 1, bands=[(-9, "#e9d29a"), (.55, "#f1dca6"), (.9, "#7cc463"), (1.7, "#5fae4e")])
+flatten(t, "#f3e3b8")
 parts = [t]; walk_begin("east", t)
-for i, (x, y, h, lean) in enumerate([(-1.5, 1.2, 5.2, .6), (1.8, -.6, 4.4, 2.6), (.3, -2.6, 4.8, 4.3)]):
+for i, (x, y, h, lean) in enumerate([(-5.4, 2.6, 5.2, .6), (-4.2, -4.0, 4.4, 2.6), (1.2, -5.8, 4.8, 4.3)]):  # 야자수 = 가장자리(가운데 게임기 자리)
     parts += palm((x, y, ground_z(t, x, y) - .1), h, lean, i + 1); block("east", x, y, .55)
-block("east", 4.6, 3.0, .35)
+ux, uy = 4.4, 4.4
+block("east", ux, uy, .35)
 def mk(): bpy.ops.mesh.primitive_cylinder_add(vertices=8, radius=.06, depth=2.4)
-pz = ground_z(t, 4.6, 3.0); parts.append(add(mk, (4.6, 3.0, pz + 1.1), (0, 0, 0), (1, 1, 1), "#f3f3f3", "pole"))
+pz = ground_z(t, ux, uy); parts.append(add(mk, (ux, uy, pz + 1.1), (0, 0, 0), (1, 1, 1), "#f3f3f3", "pole"))
 def mk(): bpy.ops.mesh.primitive_cone_add(vertices=12, radius1=1.5, radius2=.08, depth=.6)
-parts.append(add(mk, (4.6, 3.0, pz + 2.3), (0, 0, 0), (1, 1, 1), lambda p, n: srgb("#ff5b5b" if (math.atan2(p.y - 3, p.x - 4.6) * 6 / math.pi) % 2 < 1 else "#ffffff"), "umbrella"))
+parts.append(add(mk, (ux, uy, pz + 2.3), (0, 0, 0), (1, 1, 1), lambda p, n: srgb("#ff5b5b" if (math.atan2(p.y - uy, p.x - ux) * 6 / math.pi) % 2 < 1 else "#ffffff"), "umbrella"))
 for k, (x, y, s) in enumerate([(6.8, -2, .9), (-6.5, -3.4, .7), (-5.2, 4.8, 1.1), (3.2, 6.3, .6)]):
     parts.append(rock((x, y, ground_z(t, x, y) + .1), s, k + 3)); block("east", x, y, s * 1.05)
 islands["east"] = join(parts, "Island_East_Beach")
@@ -153,10 +182,23 @@ paint(cone, lambda p, n: srgb("#3b3836" if p.z > 7.6 else "#5a524b" if p.z > 5 e
 def mk(): bpy.ops.mesh.primitive_cylinder_add(vertices=24, radius=1.45, depth=.3)
 lava = add(mk, (0, 0, 8.45), (0, 0, 0), (1, 1, 1), "#ff5a1f", "lava")
 parts = [t, cone]
+# 동굴 입구(게임기 자리): 홈 쪽(+X) 화산 밑 옆구리 — 어두운 굴 + 용암색 테두리, 입구 앞·안쪽 = 설 수 있음
+cgz = ground_z(t, 6.6, 0)
+# 땅바닥에서 시작하는 굴: 화산 밑둥 겉면에 어두운 반원 굴 + 둘레 바위 아치 + 안쪽 바닥 용암빛
+hit, loc, nn, fi = cone.ray_cast(Vector((20, 0, cgz + .6)), Vector((-1, 0, 0)))
+sx = loc.x if hit else 5.8
+def mk(): bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=12, radius=1)
+parts.append(add(mk, (sx - .3, 0, cgz - .15), (0, 0, 0), (.75, 1.9, 2.5), "#120c0a", "cave"))
+for k in range(11):  # 바위 아치(반원)
+    a = math.pi * k / 10
+    parts.append(rock((sx + .1, math.cos(a) * 2.15, cgz - .15 + math.sin(a) * 2.65), .55 + .1 * math.sin(a * 3), 70 + k, "#3a322e"))
+def mk(): bpy.ops.mesh.primitive_cylinder_add(vertices=20, radius=1, depth=.08)
+parts.append(add(mk, (sx - .35, 0, cgz + .12), (0, 0, 0), (.55, 1.3, 1), "#ff7a2a", "cave_glow"))
+pad("west", 6.6, 0, 1.0); pad("west", 0, 0, 1.3, 1)  # 동굴 입구 앞 / 화산 꼭대기
 # 연기는 게임에서 움직이게(smoke_puff.glb 한 덩이를 렌더러가 여러 번 그림)
 def mk(): bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=1)
 puff = add(mk, (0, 0, 0), (0, 0, 0), (1, 1, .85), "#b9b4ae", "smoke_puff")
-for k, (x, y, s) in enumerate([(7.5, 1, 1.2), (-7, -2.5, 1), (2, -7.6, .9), (-3, 7.2, 1.3), (6, -5, .7)]):
+for k, (x, y, s) in enumerate([(7.0, 4.6, 1.2), (-7, -2.5, 1), (2, -7.6, .9), (-3, 7.2, 1.3), (6, -5, .7)]):
     parts.append(rock((x, y, ground_z(t, x, y) + .2), s, k + 11, "#2f2c2a")); block("west", x, y, s * 1.05)
 v_main = join(parts, "Island_West_Volcano")
 lava.data.materials.clear(); lava.data.materials.append(EMIT)
@@ -166,40 +208,43 @@ def crescent(x, y, a, t):
     k = .6 + .4 * (1 + math.cos(a)) / 2   # 한쪽이 들어간 초승달
     return x * (1.15 if math.cos(a) > 0 else .95), y * k + (2.2 if math.cos(a) < -.2 else 0) * t, 1
 t = terrain(10, 2.6, 13, shape=crescent, bands=[(-9, "#e3cf97"), (.5, "#4f9a45"), (1.6, "#3e8638")])
-parts = [t]; random.seed(21); walk_begin("south", t)
-spots = []
-while len(spots) < 11:
-    x, y = random.uniform(-7, 7), random.uniform(-6, 6)
+flatten(t, "#4f9a45", "#4f9a45")
+parts = [t] + round_plaza(t, "#d9c79a", "#a8875a"); random.seed(21); walk_begin("south", t)
+spots = [(-5.6, -.8, 0)]  # 큰 나무 자리 비워 둠(가운데 = 게임기)
+while len(spots) < 12:
+    x, y = random.uniform(-8, 8), random.uniform(-7, 7)
     z = ground_z(t, x, y)
-    if z > .6 and all((Vector((x, y)) - Vector(s[:2])).length > 2.2 for s in spots): spots.append((x, y, z))
+    if z > .6 and math.hypot(x, y) > PLAZA_R + 2 and all((Vector((x, y)) - Vector(s[:2])).length > 2.2 for s in spots): spots.append((x, y, z))
+spots = spots[1:]
 for k, (x, y, z) in enumerate(spots):
     hh, rr = random.uniform(1.6, 3.2), random.uniform(1.1, 1.7)
     parts += tree((x, y, z - .1), hh, rr, k + 30, random.choice(["#2f7d34", "#3f8f3f", "#2d6e2f"])); block("south", x, y, rr * .45)
-gx, gy = 0.5, 0.0; gz = ground_z(t, gx, gy)
+gx, gy = -5.6, -.8; gz = ground_z(t, gx, gy)
 parts += tree((gx, gy, gz - .2), 5.5, 2.8, 99, "#2a6b2c"); block("south", gx, gy, .9)
 for k in range(9):
     x, y = random.uniform(-7, 7), random.uniform(-6, 6); z = ground_z(t, x, y)
-    if z > .4:
+    if z > .4 and math.hypot(x, y) > PLAZA_R + 1:
         def mk(): bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1, radius=.7)
         parts.append(add(mk, (x, y, z + .25), (0, 0, k), (1, 1, .6), "#5fae4e", "bush"))
 islands["south"] = join(parts, "Island_South_Jungle")
 # ---- 북: 얼음섬 ----
 t = terrain(9.5, 2.0, 17, bands=[(-9, "#cfe7f2"), (.4, "#f4f8fb"), (1.5, "#ffffff")])
-parts = [t]; random.seed(41); walk_begin("north", t)
-for k, (x, y, h, r) in enumerate([(-1, 1, 6.5, 2.4), (2.6, -1.8, 4.6, 1.8), (-3.4, -2.6, 3.8, 1.6), (1.2, 3.4, 3.2, 1.3)]):
+flatten(t, "#f4f8fb", "#f4f8fb")
+parts = [t] + round_plaza(t, "#e3f1f8", "#8fc3e2"); random.seed(41); walk_begin("north", t)
+for k, (x, y, h, r) in enumerate([(-5.2, 2.2, 6.5, 2.4), (3.0, -5.0, 4.6, 1.8), (-4.4, -4.2, 3.8, 1.6), (.4, 6.0, 3.2, 1.3)]):  # 봉우리 = 가장자리
     def mk(): bpy.ops.mesh.primitive_cone_add(vertices=6, radius1=r, radius2=0, depth=h)
     z = ground_z(t, x, y)
     o = add(mk, (x, y, z + h / 2 - .3), (random.uniform(-.08, .08), random.uniform(-.08, .08), k), (1, 1, 1), None, "peak")
     paint(o, lambda p, n, z0=z, h0=h: srgb("#ffffff" if p.z > z0 + h0 * .55 else "#a9d6ee" if n.x + n.y > 0 else "#7fbfe4"))
     parts.append(o); block("north", x, y, r * .95)
-ix, iy = 4.4, 2.6; iz = ground_z(t, ix, iy); block("north", ix, iy, 1.5)
+ix, iy = 5.2, 2.6; iz = ground_z(t, ix, iy); block("north", ix, iy, 1.5)
 def mk(): bpy.ops.mesh.primitive_uv_sphere_add(segments=16, ring_count=10, radius=1.4)
 ig = add(mk, (ix, iy, iz), (0, 0, 0), (1, 1, .8), None, "igloo")
 paint(ig, lambda p, n: srgb("#e6f2f8" if int((p.z - iz) * 3.2) % 2 else "#f8fcff"))
 parts.append(ig)
 def mk(): bpy.ops.mesh.primitive_cylinder_add(vertices=12, radius=.45, depth=1.2)
 parts.append(add(mk, (ix - .9, iy - .9, iz + .3), (math.radians(90), 0, math.radians(-45)), (1, 1, 1), "#2f4a5a", "door"))
-for k, (x, y, s) in enumerate([(-6.5, 3, .9), (6.4, -3.6, 1.1), (-4.6, -6.2, .8), (3.6, 6.6, .7)]):
+for k, (x, y, s) in enumerate([(-7.6, -1, .9), (6.4, -3.6, 1.1), (-4.6, -6.2, .8), (3.6, 6.6, .7)]):
     o = rock((x, y, ground_z(t, x, y) + .1), s, k + 51, "#bfe2f3"); parts.append(o); block("north", x, y, s * 1.05)
 islands["north"] = join(parts, "Island_North_Ice")
 
@@ -233,7 +278,8 @@ walk = []
 for key, (x0, y0) in place.items():
     W = WALK[key]
     walk.append({"id": key, "cx": x0, "cz": -y0, "half": W["half"], "step": W["step"], "n": W["n"], "h": W["h"], "top": W["top"],
-                 "blocks": [[round(bx, 2), round(-by, 2), round(r, 2)] for bx, by, r in W["blocks"]]})
+                 "blocks": [[round(bx, 2), round(-by, 2), round(r, 2)] for bx, by, r in W["blocks"]],
+                 "pads": [[round(px, 2), round(-py, 2), round(r, 2), tp] for px, py, r, tp in W.get("pads", [])]})
 json.dump({"islands": walk}, open(os.path.join(OUT, "islands-walk.json"), "w"))
 print("WALK", [(w["id"], w["cx"], w["cz"], len(w["blocks"])) for w in walk])
 bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "four_islands.blend"))
@@ -256,5 +302,8 @@ def shot(path, loc, tgt, w=900, h=900, lens=35):
 shot(os.path.join(OUT, "0_전체_위에서.png"), (0, -40, 120), (0, 0, 0))
 names = {"east": "1_동_해변섬", "west": "2_서_화산섬", "south": "3_남_정글섬", "north": "4_북_얼음섬"}
 for k, (x, y) in place.items():
-    shot(os.path.join(OUT, names[k] + ".png"), (x + 14, y - 18, 11), (x, y, 2.2), 900, 700, 35)
+    shot(os.path.join(OUT, names[k] + ".png"), (x + 14, y - 18, 15), (x, y, 1.5), 900, 700, 35)
+shot(os.path.join(OUT, "5_서_동굴입구_정면.png"), (-D + 16, 0, 4), (-D + 5, 0, 1.6), 900, 700, 35)
+shot(os.path.join(OUT, "6_남_광장.png"), (5, -D + 11, 11), (0, -D, 1.5), 900, 700, 35)
+shot(os.path.join(OUT, "7_북_광장.png"), (5, D - 11, 11), (0, D, 1.5), 900, 700, 35)
 print("ISLANDS_DONE")

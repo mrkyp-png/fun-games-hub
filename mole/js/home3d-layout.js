@@ -25,7 +25,7 @@
   const BEACH = { cz: 4.3, r: 17.5, zmin: 14, surfaceY: -.3 };
   const FENCE_OUT = 16.2; /* V1636 C 사용자: 울타리(15.65) 걸어서 못 지나감 — 해변은 울타리 바깥만, 해변↔섬은 날아서 */
   function onBeach(x, z) { return z > BEACH.zmin && Math.hypot(x, z) > FENCE_OUT && Math.hypot(x, z - BEACH.cz) < BEACH.r; }
-  function groundHeight(x,z) { const isl = islandAt(x, z); if (isl) { const h = islandHeight(isl, x, z); if (h > ISLAND_LAND) return h; } return onBeach(x,z) ? BEACH.surfaceY : 0; }
+  function groundHeight(x,z) { const isl = islandAt(x, z); if (isl) { const pd = islandPad(isl, x, z); if (pd && pd[3] && isl.top) return islandHeight(isl, x, z, isl.top); const h = islandHeight(isl, x, z); if (h > ISLAND_LAND) return h; } return onBeach(x,z) ? BEACH.surfaceY : 0; }
   // V1705 C: 동서남북 섬 걷기 — islands-walk.json(블렌더에서 뽑은 지형 높이 격자 + 막힘 원). lx = x-cx, lz = z-cz
   let ISLANDS = []; const ISLAND_LAND = 0.05;
   function setIslands(list) { ISLANDS = Array.isArray(list) ? list : []; }
@@ -37,7 +37,8 @@
     const a = fx - x0, b = fz - z0, H = (xx, zz) => g[zz * i.n + xx];
     return (H(x0, z0) * (1 - a) + H(x0 + 1, z0) * a) * (1 - b) + (H(x0, z0 + 1) * (1 - a) + H(x0 + 1, z0 + 1) * a) * b;
   }
-  function islandWalkable(i, x, z) { return islandHeight(i, x, z) > ISLAND_LAND && !i.blocks.some(([bx, bz, r]) => Math.hypot(x - i.cx - bx, z - i.cz - bz) < r + 0.35); }
+  function islandPad(i, x, z) { return (i.pads || []).find(([px, pz, r]) => Math.hypot(x - i.cx - px, z - i.cz - pz) < r) || null; } /* V1707 C: 동굴 입구 앞·화산 꼭대기 = 설 수 있음 */
+  function islandWalkable(i, x, z) { if (islandPad(i, x, z)) return true; return islandHeight(i, x, z) > ISLAND_LAND && !i.blocks.some(([bx, bz, r]) => Math.hypot(x - i.cx - bx, z - i.cz - bz) < r + 0.35); }
 
   // 건물 앞(섬 중심 쪽) 진입 지점
   function entryPoint(s) {

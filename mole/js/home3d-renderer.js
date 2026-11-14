@@ -454,8 +454,10 @@ float fog=uIsland?smoothstep(45.,120.,length(uEye-vWorld)/uFogK)*.55:smoothstep(
         // 그림자: 해 쪽에서 섬 전체(반지름 16)를 내려다보는 직교 카메라. 섬·건물은 1초마다, 두더지·구름은 매 프레임
         if (now - staticAt > 1 || !staticVP) {
           staticAt = now;
-          staticVP = R.multiply(ortho(-21, 21, -21, 21, 1, 80), R.lookAt([sun[0] * 40, sun[1] * 40, sun[2] * 40], [0, 0, 0]));
-          shadowPass(shadowS, staticVP, () => { for (const m of environment) if (!m.sign && !m.texPrim && !m.screen && !m.gateGlow && !m.energy && !m.shopDoor && !m.island) draw(m, m.world, null); for (const rd of rides) draw(rd.base, rd.world, null); for (const pm of props) if ((pm.texBase || pm.plain) && pm.dyn !== 'discoTop') draw(pm, pm.world, null); }); /* V1665 C 사용자: 소품 그림자(움직이는 디스코 상판은 아래 두더지 그림자에서) */
+          /* V1707 C 사용자: 섬 그림자 — 두더지가 바깥 섬 근처면 그림자 범위를 그 섬으로 옮김(1장 그대로, 폰 부담 같음) */
+          const ISL = { east: [48, 0], west: [-48, 0], south: [0, 48], north: [0, -48] }, nearIsl = Object.keys(ISL).find((k) => Math.hypot(view.x - ISL[k][0], view.z - ISL[k][1]) < 24) || null, sc = nearIsl ? [ISL[nearIsl][0], 0, ISL[nearIsl][1]] : [0, 0, 0];
+          staticVP = R.multiply(ortho(-21, 21, -21, 21, 1, 80), R.lookAt([sc[0] + sun[0] * 40, sun[1] * 40, sc[2] + sun[2] * 40], sc));
+          shadowPass(shadowS, staticVP, () => { for (const m of environment) if (!m.sign && !m.texPrim && !m.screen && !m.gateGlow && !m.energy && !m.shopDoor && (!m.island || (m.island === nearIsl && m.puff === undefined))) draw(m, m.world, null); for (const rd of rides) draw(rd.base, rd.world, null); for (const pm of props) if ((pm.texBase || pm.plain) && pm.dyn !== 'discoTop') draw(pm, pm.world, null); }); /* V1665 C 사용자: 소품 그림자(움직이는 디스코 상판은 아래 두더지 그림자에서) */
         }
         const mc = [view.x, (pose.y || 0) + 0.8, view.z];
         const moleVP = R.multiply(ortho(-3.4, 3.4, -3.4, 3.4, 1, 60), R.lookAt([mc[0] + sun[0] * 30, mc[1] + sun[1] * 30, mc[2] + sun[2] * 30], mc));
