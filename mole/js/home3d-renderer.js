@@ -225,7 +225,7 @@ vec4 portalColor(vec2 uv,float t){
   vec3 mint=vec3(.53,.96,.85),ivory=vec3(.94,1.,.97);
   return vec4(mix(mint,ivory,max(flow,entry)*.78),strength);
 }
-in vec3 vWorld,vNormal;in vec4 vColor;in vec2 vUV;uniform vec4 uColor;uniform bool uFloor,uSign,uSea,uShadowPass,uSunDisc,uCloud,uActor,uGlow,uTexBase;uniform float uTime;uniform vec3 uSun;uniform mat4 uShadowVP,uShadowVPM;uniform highp sampler2DShadow uShadowS,uShadowM;uniform vec4 uClouds[5];uniform sampler2D uTex;uniform vec3 uEye;uniform vec2 uPlayer;uniform float uFogK;out vec4 frag;
+in vec3 vWorld,vNormal;in vec4 vColor;in vec2 vUV;uniform vec4 uColor;uniform bool uIsland,uFloor,uSign,uSea,uShadowPass,uSunDisc,uCloud,uActor,uGlow,uTexBase;uniform float uTime;uniform vec3 uSun;uniform mat4 uShadowVP,uShadowVPM;uniform highp sampler2DShadow uShadowS,uShadowM;uniform vec4 uClouds[5];uniform sampler2D uTex;uniform vec3 uEye;uniform vec2 uPlayer;uniform float uFogK;out vec4 frag;
 float vis(highp sampler2DShadow m,vec3 q,float px){float v=0.;for(int i=-1;i<=1;i++)for(int j=-1;j<=1;j++)v+=texture(m,vec3(q.xy+vec2(i,j)*px,q.z-.004));return v/9.;}
 vec3 lproj(mat4 M,vec3 p){vec4 sp=M*vec4(p,1.);return sp.xyz/sp.w*.5+.5;}
 bool inside(vec3 q){return q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z<1.;}
@@ -257,7 +257,7 @@ if(!uActor&&!uFloor&&!uTexBase){
   vec3 accents=mix(vec3(luminance),displayColor,1.27);
   displayColor=clamp(accents+vec3(.10,.067,.018)*warmth,0.,1.);
 }
-float fog=smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(displayColor,vec3(.45,.72,.94),fog),uColor.a*vColor.a);}`;
+float fog=uIsland?smoothstep(45.,120.,length(uEye-vWorld)/uFogK)*.55:smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(displayColor,vec3(.45,.72,.94),fog),uColor.a*vColor.a);}`;
 
   function create(canvas) {
     let boardPanels = [], boardTex = {}, props = [], boat = [], smoke = [], smokeBall = null, arcade = null, boss = null, modeBtn = [], glowDisc = [], glowHalo = [], screenTex = null, screenCanvas = null; // 두더지팡 게임기: 구멍 빛·구멍 두더지·화면 글자
@@ -277,7 +277,7 @@ float fog=smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(displayCol
       gl.linkProgram(program);
       if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw Error(gl.getProgramInfoLog(program));
       gl.useProgram(program);
-      U = {}; for (const k of ['VP', 'Model', 'Bones', 'Normal', 'Skin', 'Color', 'Floor', 'Sign', 'Tex', 'Eye', 'Player', 'Sea', 'Time', 'Sun', 'ShadowVP', 'ShadowS', 'ShadowM', 'ShadowPass', 'SunDisc', 'Cloud', 'Actor', 'ShadowVPM', 'Clouds', 'FogK', 'Glow', 'TexBase', 'Energy', 'RhythmBars', 'BarBase', 'RhythmSign', 'Tunnel', 'Glass', 'GlassOpen', 'GateAge', 'Notes', 'NoteGate', 'ExtraNote', 'ExtraNoteColor']) U[k] = gl.getUniformLocation(program, 'u' + k);
+      U = {}; for (const k of ['VP', 'Model', 'Bones', 'Normal', 'Skin', 'Color', 'Floor', 'Sign', 'Tex', 'Eye', 'Player', 'Sea', 'Time', 'Sun', 'ShadowVP', 'ShadowS', 'ShadowM', 'ShadowPass', 'SunDisc', 'Cloud', 'Actor', 'ShadowVPM', 'Clouds', 'FogK', 'Glow', 'TexBase', 'Energy', 'RhythmBars', 'BarBase', 'RhythmSign', 'Tunnel', 'Glass', 'GlassOpen', 'GateAge', 'Notes', 'NoteGate', 'ExtraNote', 'ExtraNoteColor', 'Island']) U[k] = gl.getUniformLocation(program, 'u' + k);
       A = {}; for (const k of ['Position', 'Normal', 'Color', 'Joints', 'Weights', 'UV']) A[k] = gl.getAttribLocation(program, 'a' + k);
       gl.enable(gl.DEPTH_TEST);
       // 해 쪽에서 본 깊이 지도: 섬·건물(1초마다 1024) / 두더지·구름(매 프레임 512) — 저사양 대비
@@ -404,6 +404,8 @@ float fog=smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(displayCol
           for (const [k, v] of [['Normal', [0, 1, 0, 0]], ['Color', [1, 1, 1, 1]], ['Joints', [0, 0, 0, 0]], ['Weights', [0, 0, 0, 0]], ['UV', [0, 0, 0, 0]]]) if (A[k] >= 0) { gl.disableVertexAttribArray(A[k]); gl.vertexAttrib4f(A[k], ...v); }
           const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, sg.indices, gl.STATIC_DRAW);
           seaMesh = { vao, count: sg.indices.length, indexed: true, color: [1, 1, 1, 1], floor: false, sign: null, sea: true }; }
+        // V1704 C: 동서남북 섬(배경). 홈 준비를 막지 않게 뒤에서 불러와 붙임. 실패해도 홈은 그대로.
+        for (const k of ['east', 'west', 'south', 'north']) load('assets/home3d/islands/island_' + k + '.glb').then((mdl) => { for (const i of R.instances(mdl)) environment.push(Object.assign(mesh(mdl, i.primitive), { world: i.world, tex: null, texPrim: null, island: k })); }).catch(() => {});
         {
           const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
           const pb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, pb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(18), gl.DYNAMIC_DRAW);
@@ -451,7 +453,7 @@ float fog=smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(displayCol
         if (now - staticAt > 1 || !staticVP) {
           staticAt = now;
           staticVP = R.multiply(ortho(-21, 21, -21, 21, 1, 80), R.lookAt([sun[0] * 40, sun[1] * 40, sun[2] * 40], [0, 0, 0]));
-          shadowPass(shadowS, staticVP, () => { for (const m of environment) if (!m.sign && !m.texPrim && !m.screen && !m.gateGlow && !m.energy && !m.shopDoor) draw(m, m.world, null); for (const rd of rides) draw(rd.base, rd.world, null); for (const pm of props) if ((pm.texBase || pm.plain) && pm.dyn !== 'discoTop') draw(pm, pm.world, null); }); /* V1665 C 사용자: 소품 그림자(움직이는 디스코 상판은 아래 두더지 그림자에서) */
+          shadowPass(shadowS, staticVP, () => { for (const m of environment) if (!m.sign && !m.texPrim && !m.screen && !m.gateGlow && !m.energy && !m.shopDoor && !m.island) draw(m, m.world, null); for (const rd of rides) draw(rd.base, rd.world, null); for (const pm of props) if ((pm.texBase || pm.plain) && pm.dyn !== 'discoTop') draw(pm, pm.world, null); }); /* V1665 C 사용자: 소품 그림자(움직이는 디스코 상판은 아래 두더지 그림자에서) */
         }
         const mc = [view.x, (pose.y || 0) + 0.8, view.z];
         const moleVP = R.multiply(ortho(-3.4, 3.4, -3.4, 3.4, 1, 60), R.lookAt([mc[0] + sun[0] * 30, mc[1] + sun[1] * 30, mc[2] + sun[2] * 30], mc));
@@ -464,6 +466,7 @@ float fog=smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(displayCol
         gl.activeTexture(gl.TEXTURE0);
         for (const m of environment) {
           if(m.energy) continue;
+          gl.uniform1i(U.Island, m.island ? 1 : 0); /* V1704 C: 먼 섬은 안개를 멀리·약하게 */
           const world = m.shopDoor ? shopDoorMatrix(m.world,doorOpen) : m.world;
           if (m.gateGlow) {gl.uniform1i(U.Glow, 1);gl.uniform1i(U.Notes,!m.rhythmBars);
             const site=root.MoleGame.Home3DLayout.SITES.find(s=>s.id==='rhythm'),d=Math.hypot(site.x,site.z);gl.uniform4f(U.NoteGate,site.x,site.z,site.z/d,-site.x/d);}
@@ -472,6 +475,7 @@ float fog=smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(displayCol
           if(m.rhythmBars)gl.uniform1i(U.RhythmBars,0);
           if (m.gateGlow) {gl.uniform1i(U.Glow, 0);gl.uniform1i(U.Notes,0);}
         }
+        gl.uniform1i(U.Island, 0);
         if(extraNotes){
           const site=root.MoleGame.Home3DLayout.SITES.find(s=>s.id==='rhythm'),d=Math.hypot(site.x,site.z),front=[-site.x/d,-site.z/d],right=[-front[1],front[0]],palette=[[.45,1.,.82],[1.,.56,.77],[1.,.91,.45]];
           gl.uniform1i(U.Glow,1);gl.uniform1i(U.ExtraNote,1);

@@ -91,6 +91,8 @@
     const deepLast = {}, deepRun = {}; /* 고래·메갈로돈: 마지막으로 다 돈 시각, 도는 중 시작 시각 */
     let discoSpin = 0, discoLiftV = 0, discoT0 = -1, grip = 100, spinLeft = 12, bounceLeft = 3; /* discoT0 = 이번에 탄 시각(20초 도전) */ /* 디스코 팡팡: 더 도는 속도·튀는 속도 */
     let boatV = 0, rowSide = 1, wakeFx = [], wakeAt = 0; /* 배 속도(섬 둘레, 초당 거리)·물결 */
+    let boatSteer = null; /* V1704 C: 방향키로 배 조종(배 위에서) */
+    const SEA_BLOCKS = [{ x: 0, z: 0, r: 19.2 }, { x: 48, z: 0, r: 13 }, { x: -48, z: 0, r: 13.5 }, { x: 0, z: 48, r: 13.5 }, { x: 0, z: -48, r: 13 }], SEA_LIMIT = 72; /* 중앙 섬·동서남북 섬(부딪히면 멈춤)·바다 끝 */
     let air = null, onBoat = null, boardAt = -1, offer = null, splashAt = -9, drowning = null;
     const G = 9.5, JUMP_V = 4.4, FLAP_V = 3.6, BOAT_STAY = 300, REWARD_GAP = 3600 * 1000, OFFER_T = 60, REWARD_KEY = 'mole.boatRewardAt';
     const nowS = () => performance.now() / 1000;
@@ -180,7 +182,7 @@
         }
         return;
       }
-      if (onBoat) { walking = false; return; } /* V1661 C 사용자: 배에 타면 두더지는 가만히(갑판 가운데, 걷기 없음, 바다에 안 떨어짐) */
+      if (onBoat) { walking = false; boatSteer = len > 0.05 ? { x: v.x / len * Math.min(1, len), z: v.z / len * Math.min(1, len) } : null; return; } /* V1661 C 사용자: 배에 타면 두더지는 가만히(갑판 가운데, 걷기 없음, 바다에 안 떨어짐) */ /* V1704 C: 방향키 = 배 조종 */
       if (onBoat) { /* (옛) 갑판 위 걷기 */
         const B = L.BOAT, a = deckWorld(onBoat.u, onBoat.w), d = toDeck(a[0] + v.x * s, a[2] + v.z * s);
         let nu = d.u, nw = d.w; if (!inDeck(nu, nw)) { const k = 1 / Math.sqrt((nu / B.U) ** 2 + (nw / B.W) ** 2); nu *= k; nw *= k; } walking = Math.hypot(nu - onBoat.u, nw - onBoat.w) > 0.0001;
@@ -282,9 +284,18 @@
       }
       else if (st.inputEnabled()) move(dt);
       { /* V1657 C 사용자: 노 젓기 — 섬 둘레 시계 방향, 손 떼면 서서히 멈춤, 속도 따라 배 뒤·옆 물결 */
-        const B = L.BOAT, RR = Math.hypot(0, 25.6);
+        const B = L.BOAT;
         boatV *= Math.exp(-dt * 0.55); if (boatV < 0.02) boatV = 0; B.kick *= Math.exp(-dt * 2.5);
-        B.theta -= boatV / RR * dt; B.x = RR * Math.sin(B.theta); B.z = RR * Math.cos(B.theta); B.yaw = B.theta;
+        /* V1704 C: 방향키 = 배가 그쪽으로 천천히 돌며 나아감(밀기만 해도 1.4), 노 = 더 빠르게. 앞 방향 = (-cos yaw, sin yaw)(예전 둘레 진행 방향과 같음) */
+        if (boatSteer && onBoat && !air) {
+          const want = Math.atan2(boatSteer.z, -boatSteer.x), d = Math.atan2(Math.sin(want - B.yaw), Math.cos(want - B.yaw));
+          B.yaw += d * Math.min(1, dt * 1.6); boatV = Math.max(boatV, 1.4 * Math.hypot(boatSteer.x, boatSteer.z));
+        }
+        boatSteer = null;
+        let nx = B.x - Math.cos(B.yaw) * boatV * dt, nz = B.z + Math.sin(B.yaw) * boatV * dt;
+        for (const o of SEA_BLOCKS) { const ox = nx - o.x, oz = nz - o.z, od = Math.hypot(ox, oz); if (od < o.r) { const k = o.r / (od || 1); nx = o.x + ox * k; nz = o.z + oz * k; boatV *= 0.3; } }
+        { const rr = Math.hypot(nx, nz); if (rr > SEA_LIMIT) { nx *= SEA_LIMIT / rr; nz *= SEA_LIMIT / rr; boatV *= 0.3; } }
+        B.x = nx; B.z = nz;
         if (boatV > 0.3 && time - wakeAt > 0.42 - Math.min(0.3, boatV * 0.06)) { wakeAt = time; const bm = boatM(); for (const [u, w, big] of [[2.65, 0, 1], [1.3, 1.45, 0], [1.3, -1.45, 0]]) { /* V1669 C 사용자: 뒤에서 보면 물보라가 너무 떨어짐 → 배 꼬리(2.45) 바로 뒤, 옆도 붙임 */ /* V1663 C 사용자: 뒤 = 예전처럼 크게(배 밖으로 더 뒤), 좌우 = 가운데보다 조금 뒤 */ /* V1663 C 사용자: 물결은 배 밖 옆·뒤만(선체 반폭 1.19·반길이 2.45 바깥, 뒤 = 배 기준 +x) */ const p = root.StudioRig.point(bm, [u / B.S, 0, w / B.S]); wakeFx.push({ x: p[0], z: p[2], at: time, s: Math.min(1, boatV / 3), big }); } }
         wakeFx = wakeFx.filter((q) => time - q.at < 1.8);
         if (rd && (wakeFx.length || boatV)) rd.setSmoke(wakeFx.map((q) => { const k = (time - q.at) / 1.8; return { x: q.x, y: -0.55, z: q.z, r: q.big ? 0.25 + k * 0.9 * (0.6 + q.s) : 0.15 + k * 0.35 * (0.6 + q.s), a: (q.big ? 0.55 : 0.5) * (1 - k) }; /* 물결 작게(사용자: 배 안에 안 보이게) */ }));
