@@ -12,27 +12,27 @@
    for(let i=0;i<(closed?count:count-1);i++)for(let j=0;j<N;j++){const a=base+i*N+j,b=base+i*N+(j+1)%N,c=base+(i+1)%count*N+j,e=base+(i+1)%count*N+(j+1)%N;indices.push(a,b,c,b,e,c);}
   }
   const frames=[];
-  for(let i=0;i<3;i++){const z=i*.59,half=.728-i*.012,bottom=.144,top=2.49,r=.12,path=[];for(const [cx,cy,start]of [[half-r,top-r,0],[-half+r,top-r,Math.PI/2],[-half+r,bottom+r,Math.PI],[half-r,bottom+r,Math.PI*1.5]])for(let j=0;j<9;j++){const a=start+j*Math.PI/16;path.push([cx+r*Math.cos(a),cy+r*Math.sin(a),z]);}tube(path,.013,i===0?.82:.67,true);frames.push({depth:z,width:half*2,bottom,top});}
+  for(let i=0;i<1;i++){const z=i*.59,half=.728-i*.012,bottom=.144,top=2.49,r=.12,path=[];for(const [cx,cy,start]of [[half-r,top-r,0],[-half+r,top-r,Math.PI/2],[-half+r,bottom+r,Math.PI],[half-r,bottom+r,Math.PI*1.5]])for(let j=0;j<9;j++){const a=start+j*Math.PI/16;path.push([cx+r*Math.cos(a),cy+r*Math.sin(a),z]);}tube(path,.013,i===0?.82:.67,true);frames.push({depth:z,width:half*2,bottom,top});}
   // Two flush floor guides; a short light segment travels inward, keeping the walking centre clear.
   // Recess both ends inside the outer/inner frame, including the tube radius.
-  const guideStart=frames[0].depth+.04,guideEnd=frames[2].depth-.04;
+  const guideStart=.04,guideEnd=1.14;
   for(const x of [-.51,.51]){const path=[];for(let i=0;i<=24;i++)path.push([x,.141,guideStart+(guideEnd-guideStart)*i/24]);tube(path,.012,.65,false);}
-  // Three pairs of glass leaves, ordered back to front for alpha blending.
+  // Single outer glass panel retracts below the floor; middle/inner doors removed.
   const field={positions:[],normals:[],colors:[],uvs:[],indices:[]};
-  for(let i=2;i>=0;i--)for(let side=0;side<2;side++){
-   const z=i*.59+.035,half=.728-i*.012,left=side===0?-half:0,rightEdge=side===0?0:half;
+  for(let i=0;i<1;i++){const side=0;
+   const z=i*.59+.035,half=.728-i*.012,left=-half,rightEdge=half;
    function solid(x0,x1,y0,y1,z0,z1,trim){
     const corners=[[x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0],[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]];
     for(const [ids,n,edge]of [[[0,1,2,3],[0,0,-1],0],[[5,4,7,6],[0,0,1],0],[[4,0,3,7],[-1,0,0],1],[[1,5,6,2],[1,0,0],1],[[3,2,6,7],[0,1,0],1],[[4,5,1,0],[0,-1,0],1]]){
      const base=field.positions.length/3;
-     for(const id of ids){const c=corners[id];field.positions.push(...point(c));field.normals.push(right[0]*n[0]-front[0]*n[2],n[1],right[1]*n[0]-front[1]*n[2]);field.colors.push(side,half,i/2,trim?2:edge);field.uvs.push((c[0]/half+1)/2,(c[1]-.16)/2.31);}
+     for(const id of ids){const c=corners[id];field.positions.push(...point(c));field.normals.push(right[0]*n[0]-front[0]*n[2],n[1],right[1]*n[0]-front[1]*n[2]);field.colors.push(side,half,i/2,trim?2:edge);field.uvs.push((c[0]/half+1)/2,(c[1]-.144)/2.346);}
      field.indices.push(base,base+1,base+2,base,base+2,base+3);
     }
    }
-   solid(left,rightEdge,.16,2.47,z-.025,z+.025,false);
-   // Three closely spaced, stepped solid trim rings travel with each leaf.
-   for(let ring=0;ring<3;ring++){
-    const inset=.006+ring*.015,w=.009,x0=left+inset,x1=rightEdge-inset,y0=.16+inset,y1=2.47-inset,thick=.037-ring*.004;
+   solid(left,rightEdge,.144,2.49,z-.025,z+.025,false);
+   // One continuous solid border: no decorative channels or gaps.
+   for(let ring=0;ring<1;ring++){
+    const w=.045,x0=left,x1=rightEdge,y0=.144,y1=2.49,thick=.037;
     solid(x0,x0+w,y0,y1,z-thick,z+thick,true);solid(x1-w,x1,y0,y1,z-thick,z+thick,true);
     solid(x0+w,x1-w,y0,y0+w,z-thick,z+thick,true);solid(x0+w,x1-w,y1-w,y1,z-thick,z+thick,true);
    }

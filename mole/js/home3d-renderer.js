@@ -195,7 +195,7 @@ in vec3 aPosition;in vec3 aNormal;in vec4 aColor;in vec4 aJoints;in vec4 aWeight
 uniform mat4 uVP,uModel,uBones[48];uniform mat3 uNormal;uniform bool uSkin,uSea,uRhythmBars;uniform float uTime,uBarBase;uniform bool uNotes,uGlass;uniform float uGlassOpen;uniform vec4 uNoteGate;
 out vec3 vWorld,vNormal;out vec4 vColor;out vec2 vUV;
 float seaH(vec2 p,float t){return .06*sin(.55*p.x+1.1*t)+.04*sin(.8*p.y-.9*t+1.3)+.02*sin(.37*(p.x+p.y)+1.7*t);}
-void main(){mat4 skin=mat4(1.);if(uSkin)skin=uBones[int(aJoints.x)]*aWeights.x+uBones[int(aJoints.y)]*aWeights.y+uBones[int(aJoints.z)]*aWeights.z+uBones[int(aJoints.w)]*aWeights.w;vec4 p=uModel*skin*vec4(aPosition,1.);if(uRhythmBars){float h=.68+.27*sin(uTime*.6981317008+aUV.x*4.*.9);p.y=uBarBase+(p.y-uBarBase)*h;}if(uGlass){float opened=clamp(uGlassOpen*1.6-aColor.b*.6,0.,1.);opened=opened*opened*(3.-2.*opened);p.xz+=uNoteGate.zw*(aColor.r*2.-1.)*aColor.g*1.06*opened;}
+void main(){mat4 skin=mat4(1.);if(uSkin)skin=uBones[int(aJoints.x)]*aWeights.x+uBones[int(aJoints.y)]*aWeights.y+uBones[int(aJoints.z)]*aWeights.z+uBones[int(aJoints.w)]*aWeights.w;vec4 p=uModel*skin*vec4(aPosition,1.);if(uRhythmBars){float h=.68+.27*sin(uTime*.6981317008+aUV.x*4.*.9);p.y=uBarBase+(p.y-uBarBase)*h;}if(uGlass){float opened=clamp(uGlassOpen,0.,1.);opened=opened*opened*(3.-2.*opened);p.y-=2.40*opened;}
 vec4 animatedColor=aColor;
 if(uNotes){float side=dot(p.xz-uNoteGate.xy,uNoteGate.zw);if(abs(side)>1.25&&p.y>1.85){
  float phase=uTime*3.4+(side>0.?1.25:0.);
@@ -231,9 +231,7 @@ vec3 lproj(mat4 M,vec3 p){vec4 sp=M*vec4(p,1.);return sp.xyz/sp.w*.5+.5;}
 bool inside(vec3 q){return q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z<1.;}
 float cloudVis(vec3 p){float v=1.;for(int i=0;i<5;i++){vec4 c=uClouds[i];float t=(c.y-p.y)/max(uSun.y,.2);vec2 q=p.xz+uSun.xz*t;float d=length((q-c.xz)/vec2(4.8,3.2))/c.w;v*=mix(.72,1.,smoothstep(.55,1.05,d));}return v;}
 void main(){if(uGlass){
- float opened=clamp(uGlassOpen*1.6-vColor.b*.6,0.,1.);opened=opened*opened*(3.-2.*opened);
- float slide=(vColor.r*2.-1.)*.53*opened;
- if(vUV.x+slide<0.||vUV.x+slide>1.)discard;
+ if(vWorld.y<.144)discard;
  vec3 normal=normalize(vNormal),eye=normalize(uEye-vWorld);
  float fresnel=pow(1.-abs(dot(normal,eye)),4.);
  float trim=step(1.5,vColor.a),edge=min(vColor.a,1.);
@@ -242,10 +240,10 @@ void main(){if(uGlass){
  vec3 tint=doorTint(vColor.b*2.,uTime);
  vec3 glass=tint*mix(1.,.72,edge)*daylight;
  glass=mix(glass,mix(tint,vec3(1.),.40),fresnel*.4)+vec3(.07)*reflection;
- vec3 frameBase=doorTint(vColor.b*2.,uTime);
+ vec3 frameBase=vec3(.94,.86,.69);
  vec3 frame=frameBase*(.60+.35*max(0.,dot(normal,uSun)))+vec3(.06)*reflection;
  frag=vec4(mix(glass,frame,trim),mix(mix(.085+fresnel*.18,.48,edge),1.,trim));return;
-}if(uTunnel){float daylight=.65+.30*abs(dot(normalize(vNormal),uSun));vec3 frameBase=doorTint(vUV.x<.23?0.:(vUV.x<.69?1.:2.),uTime);frag=vec4(frameBase*daylight,.85);return;}if(uEnergy){frag=portalColor(vUV,uTime);return;}if(uShadowPass){frag=vec4(1.);return;}if(uGlow){frag=vec4(uExtraNote?uExtraNoteColor:vColor.rgb,vColor.a);return;}if(uSunDisc){float rr=length(vUV-.5)*2.;if(rr>1.)discard;frag=vec4(mix(vec3(1.,.98,.88),vec3(1.,.92,.66),rr*rr),1.);return;}if(uCloud){vec3 cn=normalize(vNormal);float k=dot(cn,uSun)*.5+.5;vec3 c=mix(vec3(.82,.89,.98),vec3(1.,.99,.96),k)*mix(.9,1.,cn.y*.5+.5);float fog=smoothstep(40.,80.,length(uEye-vWorld)/uFogK);frag=vec4(mix(c,vec3(.45,.72,.94),fog*.6),1.);return;}vec3 n=normalize(vNormal),base=uTexBase?pow(texture(uTex,vUV).rgb,vec3(1.35)):uColor.rgb*vColor.rgb;float shadow=1.;
+}if(uTunnel){float daylight=.65+.30*abs(dot(normalize(vNormal),uSun));vec3 frameBase=vec3(.94,.86,.69);frag=vec4(frameBase*daylight,.85);return;}if(uEnergy){frag=portalColor(vUV,uTime);return;}if(uShadowPass){frag=vec4(1.);return;}if(uGlow){frag=vec4(uExtraNote?uExtraNoteColor:vColor.rgb,vColor.a);return;}if(uSunDisc){float rr=length(vUV-.5)*2.;if(rr>1.)discard;frag=vec4(mix(vec3(1.,.98,.88),vec3(1.,.92,.66),rr*rr),1.);return;}if(uCloud){vec3 cn=normalize(vNormal);float k=dot(cn,uSun)*.5+.5;vec3 c=mix(vec3(.82,.89,.98),vec3(1.,.99,.96),k)*mix(.9,1.,cn.y*.5+.5);float fog=smoothstep(40.,80.,length(uEye-vWorld)/uFogK);frag=vec4(mix(c,vec3(.45,.72,.94),fog*.6),1.);return;}vec3 n=normalize(vNormal),base=uTexBase?pow(texture(uTex,vUV).rgb,vec3(1.35)):uColor.rgb*vColor.rgb;float shadow=1.;
 if(uSea){vec2 p=vWorld.xz;float t=uTime;vec2 g=vec2(0.);const vec3 W[6]=vec3[6](vec3(.90,.42,.45),vec3(-.55,.83,.62),vec3(.20,-.98,.85),vec3(-.94,-.33,1.4),vec3(.70,.71,2.1),vec3(-.15,.99,3.0));for(int i=0;i<6;i++){vec2 dir=normalize(W[i].xy);float k=W[i].z,amp=.09/k;float ph=dot(dir,p)*k*1.3+t*sqrt(9.8*k)*.55+float(i)*1.7;g+=dir*cos(ph)*amp*k*1.3;}vec3 n=normalize(vec3(-g.x,1.,-g.y));vec3 V=normalize(uEye-vWorld),Ls=uSun;float d=min(length(p)-12.,length(p-vec2(0.,3.2))-13.6);vec3 deep=vec3(.05,.34,.64),shallow=vec3(.18,.69,.78),body=mix(shallow,deep,smoothstep(.5,9.,d));vec3 sky=mix(vec3(.65,.83,.98),vec3(.36,.66,.94),clamp(reflect(-V,n).y,0.,1.));float fres=.06+.94*pow(1.-max(0.,dot(n,V)),5.);vec3 c=mix(body,sky,fres);c+=vec3(1.,.97,.9)*pow(max(0.,dot(reflect(-Ls,n),V)),180.)*1.6;float foam=smoothstep(.9,0.,d)*(.6+.4*sin(d*6.-t*1.8+g.x*8.));c=mix(c,vec3(.96,.98,1.),clamp(foam,0.,1.)*.7);float fog=smoothstep(26.,62.,length(uEye-vWorld)/uFogK);frag=vec4(mix(clamp(c,0.,1.),vec3(.45,.72,.94),fog),1.);return;}
 if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec4 signPixel=texture(uTex,vUV);if(signPixel.a<.5)discard;vec3 c=signPixel.rgb;
 if(uRhythmSign){float mask=1.;
