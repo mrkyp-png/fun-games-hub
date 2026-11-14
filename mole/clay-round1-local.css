@@ -514,7 +514,7 @@
 #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-panel .ms-round .ms-label {
   font-size:clamp(3px,calc((var(--rail-depth) - 6px) * .35),12px);
 }
-#game-screen#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-panel :is(.hub-menu-ic,.ms-clock,.ms-heart-icon,.ms-trophy) {
+#game-screen#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-panel :is(.hub-menu-ic,.ms-clock,.ms-heart-icon,.ms-trophy,.ms-combo-icon) {
   width:var(--hud-icon-size); height:var(--hud-icon-size); max-width:var(--hud-icon-size); flex:0 0 auto;
 }
 #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-panel .ms-clock--clean {
@@ -522,6 +522,10 @@
 }
 #game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-panel .ms-time.is-low .ms-clock--clean { color:#c52626; }
 .ms-clock--clean .ms-clock-hand { transform-origin:12px 12px; }
+/* V1700 C: 홈 아이콘 옆 HOME 글자, COMBO 아이콘. 세로 화면에서 1열(HOME↔SCORE)·3열(시계↔COMBO) 아이콘·글자 시작점 맞춤 */
+#btn-back-to-hub .hud-home-text { display:none; }
+#game-screen#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail > #btn-back-to-hub .hud-home-text { display:block; }
+#game-screen#game-screen.clay-round-one.game-status-rails:not(.is-start) .hud-rail > #btn-back-to-hub { gap:3px; }
 
 /* All checker rounds use the former winter round's round fragments, matching
    the exact white or colored tile that produced them rather than the season. */

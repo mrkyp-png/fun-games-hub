@@ -21,7 +21,23 @@
         var width = natural * size / original;
         if (width > available) el.style.transform = 'scaleX(' + (available / width).toFixed(4) + ')';
       });
+      alignHomeCombo(horizontal);
     });
+  }
+  // V1700 C: 새로 넣은 HOME·COMBO 만 움직여, 원래 자리의 SCORE 트로피·시계 아이콘과 세로줄을 맞춤(원래 아이콘은 그대로)
+  function alignHomeCombo(horizontal) {
+    var q = function (s) { return document.querySelector('#hud-panel ' + s); };
+    var homeIc = q('#btn-back-to-hub .hub-menu-ic'), homeTx = q('#btn-back-to-hub .hud-home-text'), trophy = q('.ms-trophy'), scoreTx = trophy && trophy.parentNode.querySelector('.ms-label');
+    var comboIc = q('.ms-combo-icon'), comboTx = comboIc && comboIc.parentNode.querySelector('.ms-label'), clock = q('.ms-time .ms-clock');
+    [homeIc, homeTx, comboIc, comboTx].forEach(function (el) { if (el) el.style.translate = ''; });
+    if (homeTx && scoreTx) homeTx.style.fontSize = root.getComputedStyle(scoreTx).fontSize;
+    if (horizontal) return;
+    function shift(icon, text, target) {
+      if (!icon || !target) return;
+      var dx = target.getBoundingClientRect().left - icon.getBoundingClientRect().left;
+      [icon, text].forEach(function (el) { if (el) el.style.translate = dx.toFixed(1) + 'px 0'; });
+    }
+    shift(homeIc, homeTx, trophy); shift(comboIc, comboTx, clock);
   }
   function setText(el, value) {
     if (el && el.textContent !== value) { el.textContent = value; scheduleFit(); }

@@ -47,10 +47,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@700&family=Jua&family=Lilita+One&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../cosmic-theme.css">
 <link rel="stylesheet" href="../common/settings.css">
-<link rel="stylesheet" href="style.css?v=1699-C">
-<link rel="stylesheet" href="clay-round1-local.css?v=1699-C">
-<link rel="stylesheet" href="rhythm-buttons-v1568.css?v=1699-C">
-<link rel="stylesheet" href="rhythm-type-lighting-v1569.css?v=1699-C">
+<link rel="stylesheet" href="style.css?v=1700-C">
+<link rel="stylesheet" href="clay-round1-local.css?v=1700-C">
+<link rel="stylesheet" href="rhythm-buttons-v1568.css?v=1700-C">
+<link rel="stylesheet" href="rhythm-type-lighting-v1569.css?v=1700-C">
 <style>
   /* 로딩 스플래시 — style.css 로딩 전에도 바로 뜨게 인라인. */
   #splash {
@@ -309,7 +309,7 @@
 /* Extend only the original rope strips above the unchanged sign. */
 </style>
 <link rel="stylesheet" href="workshop-enhance.css?v=1524-opt1">
-<link rel="stylesheet" href="home3d.css?v=1699-C">
+<link rel="stylesheet" href="home3d.css?v=1700-C">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true"><defs><filter id="checkerboard-round-tint" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feColorMatrix id="checkerboard-round-matrix" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0"/></filter></defs></svg>
@@ -373,7 +373,7 @@
       <!-- 플레이 중 홈버튼 — 게임판 안에서 피버 전환과 함께 이동. -->
       <button id="btn-back-to-hub" class="icon-btn" aria-label="나가기" data-i18n-aria-label="common.back">
         <!-- 실제 플레이 중: 홈 아이콘(탭하면 라운드 나가고 홈으로, 사용자 지정 — 예전 ⊞ 더보기 아이콘 대체). -->
-        <svg class="hub-menu-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5M6 10v9h5v-5h2v5h5v-9"/></svg>
+        <svg class="hub-menu-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5M6 10v9h5v-5h2v5h5v-9"/></svg><span class="ms-label hud-home-text">HOME</span>
       </button>
       <img loading="lazy" decoding="async" id="mole-emoji-img" class="mole-board-layer" alt="">
       <canvas id="mole-reveal-canvas" class="mole-board-layer"></canvas>
@@ -389,7 +389,7 @@
       <!-- 게임 중 상단 상태판(V1315 C, 사용자 지정): 리듬팡 비치 상태판 박스 — SCORE·COMBO | 홈버튼(카메라 구멍 아래) | TIME·HEART -->
       <div id="mole-status" class="ms-status" aria-hidden="true">
         <div class="ms-box ms-score"><svg class="ms-ic ms-trophy" viewBox="0 0 24 24" aria-hidden="true"><path fill="#ffcf4a" d="M7 2h10v3h4v3a6 6 0 0 1-5.3 6 6 6 0 0 1-2.2 1.7V19H18v3H6v-3h4.5v-3.3A6 6 0 0 1 8.3 14 6 6 0 0 1 3 8V5h4V2Zm0 5H5v1a4 4 0 0 0 2.3 3.6A13 13 0 0 1 7 9V7Zm10 0v2a13 13 0 0 1-.3 2.6A4 4 0 0 0 19 8V7h-2Z"/></svg><span class="ms-label">SCORE</span><b id="hud-score" class="ms-val">0</b></div>
-        <div class="ms-box ms-combo"><span class="ms-label">COMBO</span><b id="hud-combo" class="ms-val">0</b></div>
+        <div class="ms-box ms-combo"><svg class="ms-ic ms-combo-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="#ff4b3e" d="M12 2c1 4 6 6.5 6 12a6 6 0 0 1-12 0c0-3 1.6-4.8 3-6 .2 2 1 3.2 2.3 3.7C11 8.5 10.8 5 12 2Z"/></svg><span class="ms-label">COMBO</span><b id="hud-combo" class="ms-val">0</b></div>
         <i></i>
         <div id="hud-time" class="ms-box ms-time"><svg class="ms-clock ms-clock--clean" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 12l5 3"/><path class="ms-clock-hand" d="M12 12V6"/></g></svg><span class="ms-label">TIME</span><b id="hud-time-val" class="ms-val">0:00</b></div>
         <div class="ms-box ms-heart"><svg class="ms-ic ms-heart-icon" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="hud-heart-fill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ff6262"/><stop offset="1" stop-color="#ef303b"/></linearGradient></defs><path fill="url(#hud-heart-fill)" d="M12 21S2 15.2 2 8.7A5.7 5.7 0 0 1 12 5a5.7 5.7 0 0 1 10 3.7C22 15.2 12 21 12 21Z"/></svg><span class="ms-label">HEART</span><b id="hud-hearts" class="ms-val">0</b></div>
@@ -893,7 +893,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1699 C</div>
+        <div id="build-tag" aria-hidden="true">V 1700 C</div>
       </div>
       <div id="invincible-countdown" class="invincible-countdown" aria-hidden="true" hidden></div>
     </div>
@@ -904,16 +904,16 @@
 
 <script src="../common/settings.js"></script>
 <script src="../common/i18n.js"></script>
-<script src="js/i18n-strings.js?v=1699-C"></script>
-<script src="js/screen-nav.js?v=1699-C"></script>
+<script src="js/i18n-strings.js?v=1700-C"></script>
+<script src="js/screen-nav.js?v=1700-C"></script>
 <script src="js/item-inventory.js"></script>
 <script src="js/economy.js"></script>
 <script src="js/ads.js"></script>
 <script src="js/levels.js"></script>
-<script src="js/progress.js?v=1699-C"></script>
+<script src="js/progress.js?v=1700-C"></script>
 <script src="js/rng.js"></script>
 <script src="js/combo-score.js"></script>
-<script src="js/grid-partition.js?v=1699-C"></script>
+<script src="js/grid-partition.js?v=1700-C"></script>
 <script src="js/spawn-scheduler.js"></script>
 <script src="js/mole-sprites.js?v=1541-C"></script>
 <script src="js/costume-teams.js"></script>
@@ -922,8 +922,8 @@
 <script src="js/face-detect.js"></script>
 <script src="js/face-maker.js?v=1532-C"></script>
 <script src="js/shop-scenery-v1486.js?v=1561-C"></script>
-<script src="js/shop-models-v1509.js?v=1699-C"></script>
-<script src="js/shop.js?v=1699-C"></script>
+<script src="js/shop-models-v1509.js?v=1700-C"></script>
+<script src="js/shop.js?v=1700-C"></script>
 <script src="js/daily.js?v=1529-C"></script>
 <script src="js/quest.js?v=1557-C"></script>
 <script>
@@ -1028,61 +1028,61 @@ window.FGH.rollOut = function (el, done) {
 };
 </script>
 <script src="js/workshop-enhance.js?v=1524-opt1"></script>
-<script src="js/workshop.js?v=1699-C"></script>
-<script src="js/shape-transition.js?v=1699-C"></script>
+<script src="js/workshop.js?v=1700-C"></script>
+<script src="js/shape-transition.js?v=1700-C"></script>
 <script src="js/rhythm-b-routes.js"></script>
 <script src="js/rhythm-b-flow.js"></script>
 <script src="js/rhythm-b-play.js"></script>
 <script src="js/rhythm-b.js"></script>
 <script src="js/rhythm-lyrics.js"></script>
-<script src="js/rhythm-beach-ocean.js?v=1699-C"></script>
-<script src="js/rhythm-beach.js?v=1699-C"></script>
+<script src="js/rhythm-beach-ocean.js?v=1700-C"></script>
+<script src="js/rhythm-beach.js?v=1700-C"></script>
 <script src="js/rhythm-status-art.js"></script>
 <script src="js/rhythm-status-fx.js"></script>
-<script src="js/rhythm.js?v=1699-C"></script>
+<script src="js/rhythm.js?v=1700-C"></script>
 <script src="js/rhythm-button-feedback-v1568.js?v=1568-G"></script>
-<script src="js/rhythm-type-lighting-v1569.js?v=1699-C"></script>
-<script src="js/score-screen.js?v=1699-C"></script>
+<script src="js/rhythm-type-lighting-v1569.js?v=1700-C"></script>
+<script src="js/score-screen.js?v=1700-C"></script>
 <script src="js/settings-screen.js?v=1527-C"></script>
-<script src="js/inventory-screen.js?v=1699-C"></script>
-<script src="js/mailbox-daily.js?v=1699-C"></script>
-<script src="js/mailbox.js?v=1699-C"></script>
-<script src="js/contact.js?v=1699-C"></script>
-<script src="js/clay-rig-math.js?v=1699-C"></script>
-<script src="js/clay-rig-runtime.js?v=1699-C"></script>
-<script src="js/mole-appearances.js?v=1699-C"></script>
-<script src="js/rhythm-beach-stunts.js?v=1699-C"></script>
-<script src="js/rhythm-beach-moles.js?v=1699-C"></script>
-<script src="js/rhythm-dance-beats.js?v=1699-C"></script>
-<script src="js/rhythm-type-mole.js?v=1699-C"></script>
-<script src="js/clay-round1-local.js?v=1699-C"></script>
-<script src="js/pop-elements.js?v=1699-C"></script>
-<script src="js/hole-layer.js?v=1699-C"></script>
-<script src="js/hit-fx.js?v=1699-C"></script>
-<script src="js/game-hammer-models.js?v=1699-C"></script>
-<script src="js/lane-hammer.js?v=1699-C"></script>
+<script src="js/inventory-screen.js?v=1700-C"></script>
+<script src="js/mailbox-daily.js?v=1700-C"></script>
+<script src="js/mailbox.js?v=1700-C"></script>
+<script src="js/contact.js?v=1700-C"></script>
+<script src="js/clay-rig-math.js?v=1700-C"></script>
+<script src="js/clay-rig-runtime.js?v=1700-C"></script>
+<script src="js/mole-appearances.js?v=1700-C"></script>
+<script src="js/rhythm-beach-stunts.js?v=1700-C"></script>
+<script src="js/rhythm-beach-moles.js?v=1700-C"></script>
+<script src="js/rhythm-dance-beats.js?v=1700-C"></script>
+<script src="js/rhythm-type-mole.js?v=1700-C"></script>
+<script src="js/clay-round1-local.js?v=1700-C"></script>
+<script src="js/pop-elements.js?v=1700-C"></script>
+<script src="js/hole-layer.js?v=1700-C"></script>
+<script src="js/hit-fx.js?v=1700-C"></script>
+<script src="js/game-hammer-models.js?v=1700-C"></script>
+<script src="js/lane-hammer.js?v=1700-C"></script>
 <script src="js/lane-cannon.js?v=1534-C"></script>
 <script src="js/game-cannon-model-v1509.js?v=1533-C"></script>
 <script src="js/lane-boxing.js"></script>
-<script src="js/weapon-pool.js?v=1699-C"></script>
-<script src="js/lane-controls.js?v=1699-C"></script>
+<script src="js/weapon-pool.js?v=1700-C"></script>
+<script src="js/lane-controls.js?v=1700-C"></script>
 <script src="js/region-reveal.js"></script>
-<script src="js/hud.js?v=1699-C"></script>
+<script src="js/hud.js?v=1700-C"></script>
 <script src="js/sky.js"></script>
-<script src="js/fever-field.js?v=1699-C"></script>
-<script src="js/home3d-layout.js?v=1699-C"></script>
-<script src="js/home3d-state.js?v=1699-C"></script>
-<script src="js/home3d-rhythm-tunnel.js?v=1699-C"></script>
-<script src="js/home3d-renderer.js?v=1699-C"></script>
-<script src="js/home3d-ui.js?v=1699-C"></script>
-<script src="js/home3d-signs.js?v=1699-C"></script>
-<script src="js/home3d-intro.js?v=1699-C"></script>
-<script src="js/home3d-text.js?v=1699-C"></script>
-<script src="js/home3d-board.js?v=1699-C"></script>
-<script src="js/home3d.js?v=1699-C"></script>
-<script src="js/game.js?v=1699-C"></script>
+<script src="js/fever-field.js?v=1700-C"></script>
+<script src="js/home3d-layout.js?v=1700-C"></script>
+<script src="js/home3d-state.js?v=1700-C"></script>
+<script src="js/home3d-rhythm-tunnel.js?v=1700-C"></script>
+<script src="js/home3d-renderer.js?v=1700-C"></script>
+<script src="js/home3d-ui.js?v=1700-C"></script>
+<script src="js/home3d-signs.js?v=1700-C"></script>
+<script src="js/home3d-intro.js?v=1700-C"></script>
+<script src="js/home3d-text.js?v=1700-C"></script>
+<script src="js/home3d-board.js?v=1700-C"></script>
+<script src="js/home3d.js?v=1700-C"></script>
+<script src="js/game.js?v=1700-C"></script>
 <script>window.FGH.I18N.applyStatic(document);</script>
-<script src="js/asset-loader-v1477.js?v=1699-C"></script>
+<script src="js/asset-loader-v1477.js?v=1700-C"></script>
 <script>
   // 로딩 스플래시 — 로딩이 끝나면 "화면을 눌러 시작". 그 탭(제스처)에서 game.js 의 window
   // pointerdown 리스너가 BGM 재생을 시작한다 → 브라우저 자동재생 차단 우회 = "로딩부터 브금".
@@ -1288,7 +1288,7 @@ window.FGH.rollOut = function (el, done) {
         var gate = window.__moleAssetGate;
         function waitForCurrentWorker(registration) {
           return new Promise(function (resolve, reject) {
-            var latest = 'v=1699-C';
+            var latest = 'v=1700-C';
             var done = false;
             var timer = setTimeout(function () { finish(); }, 25000);
             function finish(error) {
@@ -1315,7 +1315,7 @@ window.FGH.rollOut = function (el, done) {
           console.warn('Starting while service worker registration continues in background');
           if (gate) gate.resolveCache();
         }, 30000);
-        navigator.serviceWorker.register('sw.js?v=1699-C').then(waitForCurrentWorker).then(function () {
+        navigator.serviceWorker.register('sw.js?v=1700-C').then(waitForCurrentWorker).then(function () {
           clearTimeout(registrationTimer);
           if (gate) gate.resolveCache();
         }).catch(function (error) {
