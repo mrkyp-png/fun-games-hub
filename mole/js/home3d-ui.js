@@ -174,7 +174,7 @@
       setJumpLabel(text) { jumpBtn.setAttribute('aria-label', text); },
       showOffer(text, yes, no, cb) { offerTxt.textContent = text; offerYes.textContent = yes; offerNo.textContent = no; offerCb = cb; offer.hidden = false; },
       hideOffer() { offer.hidden = true; offerCb = null; },
-      setExit(label) { exitBtn.hidden = !label; exitBtn.textContent = label || ''; stick.hidden = !!label; if (label) resetAll(); },
+      setExit(label, keepStick) { exitBtn.hidden = !label; exitBtn.textContent = label || ''; stick.hidden = !!label && !keepStick; if (label && !keepStick) resetAll(); }, /* V1705 C: keepStick = 배 '내리기'는 조이스틱 유지 */
       setHud(v) { for (const k in vals) vals[k].textContent = v[k]; },
       // 작은 지도: 위 = 앞(-z). 섬·건물/사물 점·두더지 화살표
       setBadges(list) {

@@ -92,6 +92,15 @@
     let discoSpin = 0, discoLiftV = 0, discoT0 = -1, grip = 100, spinLeft = 12, bounceLeft = 3; /* discoT0 = 이번에 탄 시각(20초 도전) */ /* 디스코 팡팡: 더 도는 속도·튀는 속도 */
     let boatV = 0, rowSide = 1, wakeFx = [], wakeAt = 0; /* 배 속도(섬 둘레, 초당 거리)·물결 */
     let boatSteer = null; /* V1704 C: 방향키로 배 조종(배 위에서) */
+    let dockIsland = null; /* V1705 C: 배가 섬 해안에 닿아 있으면 그 섬(내리기 버튼) */
+    function disembark() { /* 섬 중심 쪽으로 걸을 수 있는 첫 땅에 내림 */
+      const o = dockIsland, B = L.BOAT; if (!o || !onBoat) return;
+      const d = Math.hypot(B.x - o.x, B.z - o.z) || 1, ux = (B.x - o.x) / d, uz = (B.z - o.z) / d;
+      for (let r = o.r - 0.6; r > 1; r -= 0.25) {
+        const x = o.x + ux * r, z = o.z + uz * r;
+        if (L.allowed(x, z)) { onBoat = null; boardAt = -1; air = null; view.x = x; view.z = z; view.heading = Math.atan2(o.x - x, o.z - z); dockIsland = null; if (ui) ui.setExit(null); return; }
+      }
+    }
     const SEA_BLOCKS = [{ x: 0, z: 0, r: 19.2 }, { x: 48, z: 0, r: 13 }, { x: -48, z: 0, r: 13.5 }, { x: 0, z: 48, r: 13.5 }, { x: 0, z: -48, r: 13 }], SEA_LIMIT = 72; /* 중앙 섬·동서남북 섬(부딪히면 멈춤)·바다 끝 */
     let air = null, onBoat = null, boardAt = -1, offer = null, splashAt = -9, drowning = null;
     const G = 9.5, JUMP_V = 4.4, FLAP_V = 3.6, BOAT_STAY = 300, REWARD_GAP = 3600 * 1000, OFFER_T = 60, REWARD_KEY = 'mole.boatRewardAt';
@@ -296,6 +305,10 @@
         for (const o of SEA_BLOCKS) { const ox = nx - o.x, oz = nz - o.z, od = Math.hypot(ox, oz); if (od < o.r) { const k = o.r / (od || 1); nx = o.x + ox * k; nz = o.z + oz * k; boatV *= 0.3; } }
         { const rr = Math.hypot(nx, nz); if (rr > SEA_LIMIT) { nx *= SEA_LIMIT / rr; nz *= SEA_LIMIT / rr; boatV *= 0.3; } }
         B.x = nx; B.z = nz;
+        { /* V1705 C: 섬 해안에 닿으면 '내리기' */
+          const dock = onBoat && !air ? SEA_BLOCKS.slice(1).find((o) => Math.hypot(B.x - o.x, B.z - o.z) < o.r + 0.8) || null : null;
+          if (dock !== dockIsland) { dockIsland = dock; if (ui) ui.setExit(dock ? (root.FGH.I18N.lang === 'ko' ? '내리기' : 'Get off') : null, true); }
+        }
         if (boatV > 0.3 && time - wakeAt > 0.42 - Math.min(0.3, boatV * 0.06)) { wakeAt = time; const bm = boatM(); for (const [u, w, big] of [[2.65, 0, 1], [1.3, 1.45, 0], [1.3, -1.45, 0]]) { /* V1669 C 사용자: 뒤에서 보면 물보라가 너무 떨어짐 → 배 꼬리(2.45) 바로 뒤, 옆도 붙임 */ /* V1663 C 사용자: 뒤 = 예전처럼 크게(배 밖으로 더 뒤), 좌우 = 가운데보다 조금 뒤 */ /* V1663 C 사용자: 물결은 배 밖 옆·뒤만(선체 반폭 1.19·반길이 2.45 바깥, 뒤 = 배 기준 +x) */ const p = root.StudioRig.point(bm, [u / B.S, 0, w / B.S]); wakeFx.push({ x: p[0], z: p[2], at: time, s: Math.min(1, boatV / 3), big }); } }
         wakeFx = wakeFx.filter((q) => time - q.at < 1.8);
         if (rd && (wakeFx.length || boatV)) rd.setSmoke(wakeFx.map((q) => { const k = (time - q.at) / 1.8; return { x: q.x, y: -0.55, z: q.z, r: q.big ? 0.25 + k * 0.9 * (0.6 + q.s) : 0.15 + k * 0.35 * (0.6 + q.s), a: (q.big ? 0.55 : 0.5) * (1 - k) }; /* 물결 작게(사용자: 배 안에 안 보이게) */ }));
@@ -436,7 +449,7 @@
         onMail() { if (!doorEntry && (st.state === 'INTRO' || st.inputEnabled())) { ui.input.reset(); ui.showMail(); } }, /* 대기 화면에서도 기존 CSS 메일 팝업 열기 */
         onMailChanged() { refreshHud(); badges = claimables(MG); ui.setMailDot(badges.includes('mail')); },
         onClose() { if (st.state === 'FEATURE') opts.homeAction('home'); },
-        onExit() { exitArcade(); },
+        onExit() { if (dockIsland && onBoat) disembark(); else exitArcade(); },
         onSpin() { if (riding === 'disco' && spinLeft > 0) { spinLeft--; discoSpin = Math.min(6, discoSpin + 0.6); grip -= 2; } }, /* V1667 C: 20초에 12번까지, 한 번 = 버티는 힘 -2 */ /* V1662 C: 잘 안 떨어지게 0.9 → 0.6 */ /* V1660 C: 팡팡 회전 버튼 = 누를수록 빨리 */
         onBounce() { if (riding === 'disco' && bounceLeft > 0 && L.DISCO.lift <= 0.01) { bounceLeft--; discoLiftV = 4.2; L.DISCO.glowBounce = 1.4; grip -= 6; } }, /* 20초에 3번까지, 한 번 = -6 */ /* 팡팡 점프 버튼 = 통 튀어 오름(땅에 있을 때) */
         onRow() { if (onBoat && !air) { boatV = Math.min(4.2, boatV + 0.7); MG.Home3DLayout.BOAT.kick = (rowSide = -rowSide) * 0.08; } }, /* V1657 C: 노 한 번 = 속도 +0.7(최대 4.2), 좌우로 번갈아 기울기 */
@@ -456,6 +469,7 @@
       root.FGH.I18N.onChange(() => { jumpLabel(); if (ready) { signsNow(); refreshArcade(true); if (!raf && api.renderAllowed()) wake(); } });
       document.addEventListener('visibilitychange', wake);
       rd.lost(() => { ready = false; stop(); ui.setLoading(ko() ? '3D 화면을 다시 불러와 주세요.' : 'Please reload the 3D plaza.'); });
+      fetch('assets/home3d/islands/islands-walk.json?v=1705').then((r) => r.json()).then((j) => L.setIslands(j.islands)).catch(() => {}); /* V1705 C: 동서남북 섬 걷기 자료 */
       rd.boot(PLAZA_GLB, MOLE_GLB, 'assets/home3d/boat.glb', [ /* V1633 C: 디스코 팡팡(배치만) */
         { url: 'assets/home3d/disco-base.glb?v=1690-G', /* 내용 바뀐 모델 = 버전 붙여 폰이 새로 받게 */ world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
         { url: 'assets/home3d/disco-top.glb?v=1690-G', dyn: 'discoTop', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },

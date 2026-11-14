@@ -25,7 +25,18 @@
   const BEACH = { cz: 4.3, r: 17.5, zmin: 14, surfaceY: -.3 };
   const FENCE_OUT = 16.2; /* V1636 C 사용자: 울타리(15.65) 걸어서 못 지나감 — 해변은 울타리 바깥만, 해변↔섬은 날아서 */
   function onBeach(x, z) { return z > BEACH.zmin && Math.hypot(x, z) > FENCE_OUT && Math.hypot(x, z - BEACH.cz) < BEACH.r; }
-  function groundHeight(x,z) { return onBeach(x,z) ? BEACH.surfaceY : 0; }
+  function groundHeight(x,z) { const isl = islandAt(x, z); if (isl) { const h = islandHeight(isl, x, z); if (h > ISLAND_LAND) return h; } return onBeach(x,z) ? BEACH.surfaceY : 0; }
+  // V1705 C: 동서남북 섬 걷기 — islands-walk.json(블렌더에서 뽑은 지형 높이 격자 + 막힘 원). lx = x-cx, lz = z-cz
+  let ISLANDS = []; const ISLAND_LAND = 0.05;
+  function setIslands(list) { ISLANDS = Array.isArray(list) ? list : []; }
+  function islandAt(x, z) { for (const i of ISLANDS) if (Math.abs(x - i.cx) < i.half && Math.abs(z - i.cz) < i.half) return i; return null; }
+  function islandHeight(i, x, z) {
+    const fx = (x - i.cx + i.half) / i.step, fz = (z - i.cz + i.half) / i.step, x0 = Math.floor(fx), z0 = Math.floor(fz);
+    if (x0 < 0 || z0 < 0 || x0 >= i.n - 1 || z0 >= i.n - 1) return -9;
+    const a = fx - x0, b = fz - z0, H = (xx, zz) => i.h[zz * i.n + xx];
+    return (H(x0, z0) * (1 - a) + H(x0 + 1, z0) * a) * (1 - b) + (H(x0, z0 + 1) * (1 - a) + H(x0 + 1, z0 + 1) * a) * b;
+  }
+  function islandWalkable(i, x, z) { return islandHeight(i, x, z) > ISLAND_LAND && !i.blocks.some(([bx, bz, r]) => Math.hypot(x - i.cx - bx, z - i.cz - bz) < r + 0.35); }
 
   // 건물 앞(섬 중심 쪽) 진입 지점
   function entryPoint(s) {
@@ -69,6 +80,7 @@
     return null;
   }
   function allowed(x, z) {
+    { const isl = islandAt(x, z); if (isl) return islandWalkable(isl, x, z); }
     if ((Math.hypot(x, z) > WALK_R && !onBeach(x, z)) || Math.hypot(x, z) < HOLE_R) return false;
     return !SITES.some((s) => {
       if(!s.halfWidth) return Math.hypot(x-s.x,z-s.z)<s.body;
@@ -141,7 +153,7 @@
     const a=angle+(travel-entryLength)/radius;
     return {x:cx+radius*Math.cos(a),y:cy+radius*Math.sin(a),rot:Math.atan2(Math.cos(a),-Math.sin(a)),speed,entrySeconds:entryLength/speed};
   }
-  const api = { ISLAND_R, WALK_R, FENCE_OUT, HOLE_R, SPAWN, SITES, RIDES, BOAT, BOARD, DISCO, BEACH, onBeach, groundHeight, ARCADE_K, ARCADE_HOLES, ARCADE_BUTTONS, ROUND_COLORS, pickHole, rideExit, nearestRide, entryPoint, doorPoint, doorApproach, doorCoordinates, crossedDoor, allowed, slide, nearest, pathVia, deepSwimPose };
+  const api = { setIslands, islandAt, islandHeight, ISLAND_R, WALK_R, FENCE_OUT, HOLE_R, SPAWN, SITES, RIDES, BOAT, BOARD, DISCO, BEACH, onBeach, groundHeight, ARCADE_K, ARCADE_HOLES, ARCADE_BUTTONS, ROUND_COLORS, pickHole, rideExit, nearestRide, entryPoint, doorPoint, doorApproach, doorCoordinates, crossedDoor, allowed, slide, nearest, pathVia, deepSwimPose };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else { root.MoleGame = root.MoleGame || {}; root.MoleGame.Home3DLayout = api; }
 })(typeof window !== 'undefined' ? window : globalThis);
