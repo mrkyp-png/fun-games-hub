@@ -1,3 +1,7 @@
+# V1713 C DEPLOYED - 2026-11-15 (Claude)
+- Bomb indicator on the dial pad: amateur unchanged (.5), normal opacity .22, pro hidden (clay-round1-local.css end).
+- Amateur R6 relay: next wave of 3 as soon as 1 mole of the current wave is caught (relayWave/relayCurrent), leftovers stay until timeout; no bomb moles (cfg.bombChance 0 at the end of updateLiveDifficulty + scheduler safety). Test: review/verify-relay-v1710.cjs.
+
 # V1712 C DEPLOYED - 2026-11-15 (Claude)
 - Cell shake animates the cell's hole art only (tile stays → no edge line). Normal (good) moles: GOOD_CHANCE 0.1 and excluded from activeCountOf (targets stay at the table). Smoke = cell-sized rounded square (no spill). Mission reward 1000 coins (coin icon to be replaced later). Deferred by user: unique miss penalties for phone/drink/thief.
 

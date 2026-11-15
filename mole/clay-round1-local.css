@@ -716,3 +716,7 @@
 #game-screen.clay-round-one:not(.is-start) :is(#mole-hammer-layer,#fever-weapon-layer,.game-hammer-models) {
   z-index:30;
 }
+
+/* V1713 C 사용자: 폭탄 두더지 버튼 표시 — 노말은 더 흐리게, 프로는 표시 안 함(아마추어는 그대로) */
+#game-screen.diff-mid .lane-bomb-indicator { opacity: .22 !important; }
+#game-screen.diff-legend .lane-bomb-indicator { display: none !important; }

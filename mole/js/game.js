@@ -1851,7 +1851,7 @@
     };
 
     if (amateur) { config.maxConcurrentAnimals = 0; config.maxConcurrentBombs = 0; }
-    if (config.relay) config.maxConcurrentMoles = 10; // V1710 C 사용자: 아마추어 = 색깔 두더지 없음
+    if (config.relay) { config.maxConcurrentMoles = 10; config.bombChance = 0; config.strongBombChance = 0; } // V1710 C 사용자: 아마추어 = 색깔 두더지 없음
     if (isWarmupRound()) { // v949: 노말·프로 1라운드(16구멍) 시작값 — 이후 updateLiveDifficulty 가 60초 동안 이어 올림
       const wu = WARMUP[currentLight()];
       config.maxConcurrentMoles = wu.moles[0]; config.popDuration = wu.pop[0];
@@ -2256,6 +2256,7 @@
       cfg.bombChance = ch >= 3 ? MG.interpolate(MG.BOMB_CHANCE_BY_ROUND, curveElapsed, total) : 0;
       cfg.strongBombChance = ch >= 4 ? MG.interpolate(MG.STRONG_BOMB_CHANCE_BY_ROUND, curveElapsed, total) : 0;
       if (currentLight() === 'easy') { cfg.maxConcurrentAnimals = 0; cfg.maxConcurrentBombs = 0; } // V1710 C 사용자: 아마추어는 색깔 두더지·폭탄 든 색깔 두더지 없음
+      if (cfg.relay) { cfg.bombChance = 0; cfg.strongBombChance = 0; } // V1713 C 사용자: 릴레이(아마추어 6라운드)는 폭탄 두더지 없음
     }
   }
 

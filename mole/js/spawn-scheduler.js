@@ -43,6 +43,7 @@
     const occupiedSpawnPointIds = new Set();
     let nextPopId = 0;
     let relayWait = 0.6; // V1710 C: 릴레이 첫 묶음 대기
+    let relayCurrent = 0; // V1713 C: 지금 묶음 번호
     const active = new Map(); // popId -> pop. 두더지 pop: { id, type:'mole', spawnPointId, regionId, x, y,
     //   remaining, hitsRequired(1|2|3), hitsTaken, poseIndex, hitCooldown, dying }
 
@@ -233,13 +234,18 @@
       // V1710 C 사용자: 릴레이(아마추어 6라운드) — 두더지 3마리씩 한 묶음. 묶음의 나쁜 두더지가 다 없어지면
       // (잡거나 놓쳐서) 0.3초 뒤 다음 3마리. 일반 두더지는 묶음당 최대 1마리, 남아 있어도 기다리지 않음.
       if (config.relay) {
-        const live = Array.from(active.values()).some((p) => p.type === 'mole' && !p.good && !p.bombKind && !p.dying && !(p.sinkIn > 0)); // 폭탄 든 두더지는 피하는 대상이라 기다리지 않음
-        if (live) relayWait = RELAY_GAP;
+        // V1713 C 사용자: 지금 묶음에서 1마리라도 잡으면(또는 다 놓치면) 다음 3마리. 남은 두더지는 제 시간까지 남음
+        const cur = Array.from(active.values()).filter((p) => p.type === 'mole' && p.relayWave === relayCurrent);
+        const caught = cur.some((p) => !p.good && (p.killed || p.sinkIn > 0));
+        const live = cur.some((p) => !p.good && !p.bombKind && !p.dying && !(p.sinkIn > 0));
+        if (!caught && live) relayWait = RELAY_GAP;
         else if ((relayWait -= dt) <= 0) {
-          let goods = 0;
+          let goods = 0; relayCurrent += 1;
           for (let i = 0; i < 3; i++) {
             const p = trySpawn('mole', true); if (!p) break;
+            if (p.bombKind) { p.bombKind = null; if (!p.behavior) p.behavior = ['drink', 'smoke', 'phone', 'thief'][Math.floor(Math.random() * 4)]; } // 릴레이는 폭탄 없음(만약을 위해)
             if (p.good && goods++ >= 1) { p.good = false; p.behavior = ['drink', 'smoke', 'phone', 'thief'][Math.floor(Math.random() * 4)]; }
+            p.relayWave = relayCurrent;
             spawned.push(p);
           }
           relayWait = RELAY_GAP;
