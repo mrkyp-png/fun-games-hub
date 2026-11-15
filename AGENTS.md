@@ -1,3 +1,6 @@
+# V1720 C DEPLOYED - 2026-11-15 (Claude)
+- Fever field: bad moles only (goodChance 0, noGolden, relay false in fever-field.js settings). Cause of 'fail during fever': normal moles in fever were tapped → hearts 0 → finish('lives').
+
 # V1719 C DEPLOYED - 2026-11-15 (Claude)
 - Success hero x1.5 (maxHeight 0.75 of overlay), hero wrap absolutely centred (padding-bottom 17%) so the score line stays above the popup; SUCCESS moved up (is-win padding-top 2.5%).
 

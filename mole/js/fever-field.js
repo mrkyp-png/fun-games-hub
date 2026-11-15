@@ -10,7 +10,7 @@
     const lower=upperPoints.map(sp=>({...sp,id:sp.id+count,regionId:sp.regionId+count}));
     const settings={...config,multiHit:false,fourHit:false,animalMultiHit:false,reverseTarget:false,dualTarget:false,
       maxConcurrentMoles:8,maxConcurrentAnimals:0,maxConcurrentBombs:0,maxConcurrentItems:0,
-      bombChance:0,strongBombChance:0,obstacles:false,shieldItems:false,cannonBurst:false};
+      bombChance:0,strongBombChance:0,obstacles:false,shieldItems:false,cannonBurst:false,goodChance:0,relay:false,noGolden:true}; // V1720 C 사용자: 피버타임엔 일반 두더지(치면 안 됨) 없음 — 마구 터치하다 하트 잃고 실패 뜨던 것
     const schedulers=[upperPoints,lower].map(spawnPoints=>MG.SpawnScheduler.create({
       regions:spawnPoints.map(sp=>({id:sp.regionId})),spawnPoints,config:settings,rng
     }));

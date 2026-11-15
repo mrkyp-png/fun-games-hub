@@ -159,7 +159,7 @@
           pop.good = pop.hitsRequired === 1 && roll < goodChance; // V1712 C 사용자: 일반 두더지 확률 낮춤(20% → 10%)
           if (!pop.good) pop.behavior = ['drink', 'smoke', 'phone', 'thief'][Math.min(3, Math.floor(Math.max(0, roll - goodChance) / ((1 - goodChance) / 4)))];
           // V1710 C 사용자: 황금 두더지 — 아주 가끔(3%, 1방짜리 나쁜 두더지 자리), 짧게 머묾·점수 5배·코인
-          if (!pop.good && isTarget(pop) && pop.hitsRequired === 1 && Math.random() < GOLDEN_CHANCE) { pop.golden = true; pop.behavior = null; } // 황금은 타격 대상일 때만
+          if (!pop.good && !config.noGolden && isTarget(pop) && pop.hitsRequired === 1 && Math.random() < GOLDEN_CHANCE) { pop.golden = true; pop.behavior = null; } // 황금은 타격 대상일 때만
         }
         pop.hitsTaken = 0;
         // 알리 펀치 [방어]: 내려가기(자연 만료) 전 0.1초 더 여유(기획서 §7, config.moleUpBonus).
