@@ -49,7 +49,8 @@ def terrain(radius, height, seed, shape=None, bands=None, sides=144, rings=40): 
             else: sk = 1
             prof = (1 - t ** 2.2) * height * sk
             z = prof + .25 * height * noise.noise(Vector((x * .25 + seed, y * .25, 0))) * (1 - t)
-            if t > .92: z = -3.2 * ((t - .92) / .08) ** .8  # 물 아래 깊이 잠기는 가장자리(바다 위에 떠 보이지 않게)
+            z -= 1.15 * t ** 3  # 바깥으로 갈수록 바다 높이(-0.6)까지 완만히 내려감(모래사장)
+            if t > .94: z -= 3.0 * ((t - .94) / .06) ** 1.2  # 물 아래 깊이 잠김(떠 보이지 않게)
             verts[r][s] = bm.verts.new((x, y, z))
     for s in range(sides):
         bm.faces.new((top, verts[1][s], verts[1][(s + 1) % sides]))
@@ -172,36 +173,42 @@ for k, (x, y, s) in enumerate([(6.8, -2, .9), (-6.5, -3.4, .7), (-5.2, 4.8, 1.1)
 islands["east"] = join(parts, "Island_East_Beach")
 # ---- 서: 화산섬 ----
 t = terrain(10, 3.0, 7, bands=[(-9, "#c9b58a"), (.4, "#6f6a62"), (1.4, "#55504a")])
-walk_begin("west", t); block("west", 0, 0, 6.5)
-def mk(): bpy.ops.mesh.primitive_cone_add(vertices=40, radius1=6.2, radius2=1.6, depth=6.5)
-cone = add(mk, (0, 0, 2.9 + 3.25 - .4), (0, 0, 0), (1, 1, 1), None, "volcano")
-random.seed(5)
-for v in cone.data.vertices:
-    if v.co.z < 3: v.co.x *= 1 + random.uniform(-.06, .06); v.co.y *= 1 + random.uniform(-.06, .06); v.co.z = ground_z(t, v.co.x * 1.08, v.co.y * 1.08) - .5  # 밑둥을 땅 속까지(떠 보이지 않게)
-paint(cone, lambda p, n: srgb("#3b3836" if p.z > 7.6 else "#5a524b" if p.z > 5 else "#6c6259"))
-def mk(): bpy.ops.mesh.primitive_cylinder_add(vertices=24, radius=1.45, depth=.3)
-lava = add(mk, (0, 0, 8.45), (0, 0, 0), (1, 1, 1), "#ff5a1f", "lava")
-parts = [t, cone]
-# 동굴 입구(게임기 자리): 홈 쪽(+X) 화산 밑 옆구리 — 어두운 굴 + 용암색 테두리, 입구 앞·안쪽 = 설 수 있음
-cgz = ground_z(t, 6.6, 0)
-# 땅바닥에서 시작하는 굴: 화산 밑둥 겉면에 어두운 반원 굴 + 둘레 바위 아치 + 안쪽 바닥 용암빛
-hit, loc, nn, fi = cone.ray_cast(Vector((20, 0, cgz + .6)), Vector((-1, 0, 0)))
-sx = loc.x if hit else 5.8
-def mk(): bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=12, radius=1)
-parts.append(add(mk, (sx - .3, 0, cgz - .15), (0, 0, 0), (.75, 1.9, 2.5), "#120c0a", "cave"))
-for k in range(11):  # 바위 아치(반원)
-    a = math.pi * k / 10
-    parts.append(rock((sx + .1, math.cos(a) * 2.15, cgz - .15 + math.sin(a) * 2.65), .55 + .1 * math.sin(a * 3), 70 + k, "#3a322e"))
-def mk(): bpy.ops.mesh.primitive_cylinder_add(vertices=20, radius=1, depth=.08)
-parts.append(add(mk, (sx - .35, 0, cgz + .12), (0, 0, 0), (.55, 1.3, 1), "#ff7a2a", "cave_glow"))
-pad("west", 6.6, 0, 1.0); pad("west", 0, 0, 1.3, 1)  # 동굴 입구 앞 / 화산 꼭대기
+walk_begin("west", t); block("west", 0, 0, 6.5); CAVE_X = 5.2
+# 화산 = GPT 시안(화산동굴입구_시안1) → TRELLIS 3D 모델(그림 텍스처). 동굴 입구가 홈 쪽(+X)을 보게 돌려 세움, 따로 내보냄(그림 있는 모델)
+bpy.ops.object.select_all(action='DESELECT')
+bpy.ops.import_scene.gltf(filepath=os.path.join(OUT, "trellis_volcano", "model.glb"))
+vms = [o for o in bpy.context.selected_objects if o.type == 'MESH']
+bpy.ops.object.select_all(action='DESELECT')
+for o in vms: o.select_set(True)
+bpy.context.view_layer.objects.active = vms[0]
+if len(vms) > 1: bpy.ops.object.join()
+vol = bpy.context.object; vol.name = "VolcanoCave"; vol.parent = None
+VS = 12.4
+# glTF 가져오기는 쿼터니언 모드라 XYZ 로 바꿔야 돌아감
+vol.rotation_mode = 'XYZ'; vol.rotation_euler = (0, 0, math.radians(-90)); vol.scale = (VS, VS, VS)
+bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+zmin = min(v.co.z for v in vol.data.vertices)
+vol.location = (0, 0, ground_z(t, 6.0, 0) - .35 - zmin); bpy.ops.object.transform_apply(location=True)
+for m in vol.data.materials:
+    if m and m.use_nodes:
+        for nd in m.node_tree.nodes:
+            if nd.type == 'TEX_IMAGE' and nd.image and nd.image.size[0] > 1024: nd.image.scale(1024, 1024)
+VZT = max(v.co.z for v in vol.data.vertices)
+print("VOLCANO top", round(VZT, 2), "faces", len(vol.data.polygons))
+prof = []
+for xx in [i * .5 for i in range(0, 17)]:
+    h, l, nn_, fi_ = vol.ray_cast(Vector((xx, 0, 40)), Vector((0, 0, -1)))
+    prof.append((xx, round(l.z, 2) if h else None, round(ground_z(t, xx, 0), 2)))
+print("PROFILE", prof)
+lava = vol
+parts = [t]
+pad("west", CAVE_X, 0, 1.1, 1); pad("west", 0, 0, 1.3, 1)  # 동굴 앞 돌 발판 / 화산 꼭대기(모델 위 높이)
 # 연기는 게임에서 움직이게(smoke_puff.glb 한 덩이를 렌더러가 여러 번 그림)
 def mk(): bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=1)
 puff = add(mk, (0, 0, 0), (0, 0, 0), (1, 1, .85), "#b9b4ae", "smoke_puff")
 for k, (x, y, s) in enumerate([(7.0, 4.6, 1.2), (-7, -2.5, 1), (2, -7.6, .9), (-3, 7.2, 1.3), (6, -5, .7)]):
     parts.append(rock((x, y, ground_z(t, x, y) + .2), s, k + 11, "#2f2c2a")); block("west", x, y, s * 1.05)
 v_main = join(parts, "Island_West_Volcano")
-lava.data.materials.clear(); lava.data.materials.append(EMIT)
 islands["west"] = v_main; islands["west_lava"] = lava
 # ---- 남: 정글섬(초승달) ----
 def crescent(x, y, a, t):
@@ -256,8 +263,9 @@ for k, (x, y) in place.items():
 islands["west_lava"].location = (-D, 0, 0)
 for k in ("east", "west", "south", "north"):
     bpy.ops.object.select_all(action='DESELECT'); islands[k].select_set(True)
-    if k == "west": islands["west_lava"].select_set(True)
     bpy.ops.export_scene.gltf(filepath=os.path.join(OUT, f"island_{k}.glb"), export_format='GLB', use_selection=True, export_apply=True)
+bpy.ops.object.select_all(action='DESELECT'); islands["west_lava"].select_set(True)
+bpy.ops.export_scene.gltf(filepath=os.path.join(OUT, "island_west_volcano.glb"), export_format='GLB', use_selection=True, export_apply=True, export_image_format='JPEG')
 bpy.ops.object.select_all(action='DESELECT'); puff.select_set(True)
 bpy.ops.export_scene.gltf(filepath=os.path.join(OUT, "smoke_puff.glb"), export_format='GLB', use_selection=True, export_apply=True)
 puff.hide_set(True); puff.hide_render = True

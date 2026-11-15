@@ -9,7 +9,7 @@
     const dist = (view.dist || 7.5) * (w < h ? 1 : 6.5 / 7.5), focus = [view.cx ?? view.x, view.fy || 1.35, view.cz ?? view.z]; /* cx·cz = 카메라만(두더지 위치와 따로) */ // dist·fy = 게임기 화면용(없으면 기본)
     const eye = [focus[0] + Math.sin(view.yaw) * Math.cos(view.pitch) * dist, focus[1] + Math.sin(view.pitch) * dist,
       focus[2] + Math.cos(view.yaw) * Math.cos(view.pitch) * dist];
-    return { eye, focus, vp: R.multiply(R.perspective(Math.PI / 3, w / h, 0.15, view.far || 80), R.lookAt(eye, focus)) };
+    return { eye, focus, vp: R.multiply(R.perspective(Math.PI / 3, w / h, 0.15, Math.max(170, view.far || 0)) /* V1709 C: 다른 섬에서 반대편 섬(약 100)까지 보이게 */, R.lookAt(eye, focus)) };
   }
   function project(m, p) {
     const w = m[3] * p[0] + m[7] * p[1] + m[11] * p[2] + m[15];
@@ -257,7 +257,7 @@ if(!uActor&&!uFloor&&!uTexBase){
   vec3 accents=mix(vec3(luminance),displayColor,1.27);
   displayColor=clamp(accents+vec3(.10,.067,.018)*warmth,0.,1.);
 }
-float fog=uIsland?smoothstep(45.,120.,length(uEye-vWorld)/uFogK)*.55:smoothstep(20.,46.,length(uEye-vWorld)/uFogK);frag=vec4(mix(displayColor,vec3(.45,.72,.94),fog),uColor.a*vColor.a);}`;
+float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displayColor,vec3(.45,.72,.94),fog),uColor.a*vColor.a);}`;
 
   function create(canvas) {
     let boardPanels = [], boardTex = {}, props = [], boat = [], smoke = [], smokeBall = null, arcade = null, boss = null, modeBtn = [], glowDisc = [], glowHalo = [], screenTex = null, screenCanvas = null; // 두더지팡 게임기: 구멍 빛·구멍 두더지·화면 글자
@@ -472,7 +472,7 @@ float fog=uIsland?smoothstep(45.,120.,length(uEye-vWorld)/uFogK)*.55:smoothstep(
           if(m.energy) continue;
           gl.uniform1i(U.Island, m.island ? 1 : 0); /* V1704 C: 먼 섬은 안개를 멀리·약하게 */
           let world = m.shopDoor ? shopDoorMatrix(m.world,doorOpen) : m.world;
-          if (m.puff !== undefined) { const ph = (now / 7 + m.puff / 6) % 1, s = (0.6 + 1.7 * ph) * Math.min(1, ph * 6, (1 - ph) * 3); world = R.transform({ translation: [-48 + ph * 3 + Math.sin(ph * 6 + m.puff) * 0.4, 9.2 + ph * 7, Math.cos(ph * 5 + m.puff) * 0.4], scale: [s, s, s] }); }
+          if (m.puff !== undefined) { const ph = (now / 7 + m.puff / 6) % 1, s = (0.6 + 1.7 * ph) * Math.min(1, ph * 6, (1 - ph) * 3); world = R.transform({ translation: [-48 + ph * 3 + Math.sin(ph * 6 + m.puff) * 0.4, 11.4 + ph * 7, Math.cos(ph * 5 + m.puff) * 0.4], scale: [s, s, s] }); }
           if (m.gateGlow) {gl.uniform1i(U.Glow, 1);gl.uniform1i(U.Notes,!m.rhythmBars);
             const site=root.MoleGame.Home3DLayout.SITES.find(s=>s.id==='rhythm'),d=Math.hypot(site.x,site.z);gl.uniform4f(U.NoteGate,site.x,site.z,site.z/d,-site.x/d);}
           if(m.rhythmBars){gl.uniform1i(U.RhythmBars,1);gl.uniform1f(U.BarBase,m.world[13]);}

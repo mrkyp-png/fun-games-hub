@@ -1,3 +1,7 @@
+# V1709 C DEPLOYED - 2026-11-15 (Claude) — volcano cave 3D, sea edge, fog, oar button
+- West volcano = GPT Imagegen concept (Desktop/동서남북_섬_시안/화산동굴입구_시안1.png) → TRELLIS GLB, scaled 12.4, cave facing home (+X), loaded as a textured prop (island_west_volcano.glb). Pads: cave step (5.2,0) and summit. Puff y 11.4. Back side has green/orange dot artefacts.
+- Island terrain slopes to sea level (z -= 1.15 t^3) then sinks. Environment fog unified: smoothstep(30,150)*.3 for all (centre plaza no longer fogged from islands); perspective far = max(170, view.far). Oar button moved to the right above jump (it covered the joystick).
+
 # V1708 C DEPLOYED - 2026-11-15 (Claude) — island fixes
 - Island coast skirt sinks to -3.2 (no floating look); island shadow normal offset .2 (acne on slopes); south/north plaza discs raised (no z-fight) + walk pad on disc top; camera fy follows standing ground height (camGround) so summit view shows the mole. Volcano cave entrance still to be redone from a GPT Imagegen concept (user said current one is cheap).
 
