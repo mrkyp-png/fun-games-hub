@@ -10616,3 +10616,10 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #win-choice .wc-next { background: #ef8a00; }
 #win-choice .wc-btn:active { transform: translateY(2px); box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .18); }
 @keyframes wc-in { from { opacity: 0; transform: translateX(-50%) translateY(18px) scale(.9); } to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); } }
+
+/* V1716 C 사용자: 성공 광선 = 무지개 없이 흰 빛줄기만 돌게(뒤 뿌연 게임판이 보이게) */
+#gameover-overlay .go-rays { background: repeating-conic-gradient(from 0deg at 50% 50%, rgba(255, 255, 255, .55) 0deg 4deg, transparent 4deg 13deg); }
+
+/* V1716 C 사용자: 담배 연기 투명도 30%(두더지 비침) — 두더지 그림 위 층(화면 고정 위치) */
+.hit-fx-smoke.hit-fx-smoke--top { position: fixed; z-index: 900; aspect-ratio: 1; opacity: .7; animation-name: hit-fx-smoke-top; }
+@keyframes hit-fx-smoke-top { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.6); } 12% { opacity: .7; transform: translate(-50%, -50%) scale(1); } 85% { opacity: .7; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); } }

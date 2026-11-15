@@ -155,8 +155,9 @@
           // V1703 C: 5마리 중 1마리는 '일반 두더지'(때리면 안 됨). 나머지 4는 나쁜 두더지(술·담배·휴대폰·도둑)=타겟.
           // 기존 rng 순서를 바꾸지 않도록 별도 난수(Math.random) 사용. 다타 두더지는 항상 나쁜 두더지(일반은 1방짜리만).
           const roll = Math.random();
-          pop.good = pop.hitsRequired === 1 && roll < GOOD_CHANCE; // V1712 C 사용자: 일반 두더지 확률 낮춤(20% → 10%)
-          if (!pop.good) pop.behavior = ['drink', 'smoke', 'phone', 'thief'][Math.min(3, Math.floor(Math.max(0, roll - GOOD_CHANCE) / ((1 - GOOD_CHANCE) / 4)))];
+          const goodChance = config.goodChance != null ? config.goodChance : GOOD_CHANCE; // V1716 C: 프로는 더 자주(15%)
+          pop.good = pop.hitsRequired === 1 && roll < goodChance; // V1712 C 사용자: 일반 두더지 확률 낮춤(20% → 10%)
+          if (!pop.good) pop.behavior = ['drink', 'smoke', 'phone', 'thief'][Math.min(3, Math.floor(Math.max(0, roll - goodChance) / ((1 - goodChance) / 4)))];
           // V1710 C 사용자: 황금 두더지 — 아주 가끔(3%, 1방짜리 나쁜 두더지 자리), 짧게 머묾·점수 5배·코인
           if (!pop.good && isTarget(pop) && pop.hitsRequired === 1 && Math.random() < GOLDEN_CHANCE) { pop.golden = true; pop.behavior = null; } // 황금은 타격 대상일 때만
         }

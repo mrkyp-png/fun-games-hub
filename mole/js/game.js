@@ -11,10 +11,10 @@
   const ROUND1_SECONDS = 60;      // 라운드1 (구 챕터1+2+3 병합, 3구간 연속)
   const ROUND_SECONDS_LONG = 60; // V1710 C 사용자: 라운드2~8도 60초(전체 60초). 난이도 곡선(40~140)은 60초 안에 그대로 지나감
   // V1710 C 사용자: 라운드별 동시 타격 대상 수(시작→끝, 60초 동안). 머무는 시간·방해물·폭탄은 기존 곡선 유지
-  const ROUND_TARGETS = { 2: [4, 6], 3: [5, 6], 4: [5, 7], 5: [6, 7], 6: [5, 7], 7: [6, 8], 8: [7, 8] }; // V1711 C 사용자: 아마추어도 증가(노말·프로보다는 1마리쯤 적게)
+  const ROUND_TARGETS = { 2: [3, 4], 3: [3, 4], 4: [3, 5], 5: [4, 5], 6: [3, 5], 7: [4, 5], 8: [4, 6] }; // V1716 C: 아마추어 9칸에 맞춤 // V1711 C 사용자: 아마추어도 증가(노말·프로보다는 1마리쯤 적게)
   // V1710 C 사용자: 60초로 줄어든 만큼 노말·프로는 더 많이(루즈하지 않게). 아마추어는 위 표 그대로(아이들 수준)
   const ROUND_TARGETS_HARD = { 2: [5, 7], 3: [6, 7], 4: [6, 8], 5: [7, 8], 6: [6, 8], 7: [7, 9], 8: [8, 9] };
-  function roundTargets(ch, elapsed) { const tb = currentLight() === 'easy' ? ROUND_TARGETS : ROUND_TARGETS_HARD; const t = tb[ch] || tb[2]; return Math.round(MG.interpolate(t, elapsed, ROUND_SECONDS_LONG)); }
+  function roundTargets(ch, elapsed) { const tb = currentLight() === 'easy' ? ROUND_TARGETS : ROUND_TARGETS_HARD; const t = tb[ch] || tb[2]; return Math.round(MG.interpolate(t, elapsed, ROUND_SECONDS_LONG)) + (currentLight() === 'legend' ? 1 : 0); } // V1716 C: 프로 +1
   // 난이도 10단계 키프레임은 원래 140초짜리 커브(§4) — 실플레이 100초를 앞 40초는 건너뛰고
   // 그 뒤 100초(40~140초 구간)만 쓴다(사용자: "너무 쉬워서 앞부분 40초는 빼도 될듯" → "총 100초
   // 유지, 난이도 커브만 앞당김"). 라운드 t=0 이 커브의 40초 지점에 대응.
@@ -23,16 +23,17 @@
   function roundSeconds() { return currentChapter() === 1 ? ROUND1_SECONDS : ROUND_SECONDS_LONG; }
   // v949(사용자 지정): 노말·프로 1라운드 = 16구멍 몸풀기(업그레이드 무기 사용 가능). 아마추어 1라운드만 9구멍 연습판.
   // 끝값 = 2라운드 시작값(두더지 약 5마리·머무는 시간)에 이어지게. 프로는 2~8라운드 머무는 시간 ×0.98(v950).
-  const PRO_POP_MULT = 0.98; // v950(사용자 지정): 프로 2라운드 시작 머무는 시간 = 2.2초(아마추어·노말 2.24초)
+  const PRO_POP_MULT = 1.5; const AMATEUR_POP_MULT = 2; const NORMAL_POP_MULT = 1.7; // V1716 C 사용자: 머무는 시간 아마추어 2배·노말 1.7배·프로 1.5배 // v950(사용자 지정): 프로 2라운드 시작 머무는 시간 = 2.2초(아마추어·노말 2.24초)
   const WARMUP = {
     mid: { moles: [3, 5], pop: [2.5, 2.3], multiHitAt: 20, animalsAt: 40 },
     legend: { moles: [4, 5], pop: [2.4, 2.2], multiHitAt: 0, animalsAt: 30 }
   };
   function isWarmupRound() { return currentChapter() === 1 && currentLight() !== 'easy'; }
-  function popMult() { return currentLight() === 'legend' ? PRO_POP_MULT : 1; }
+  function popMult() { return currentLight() === 'legend' ? PRO_POP_MULT : currentLight() === 'easy' ? AMATEUR_POP_MULT : NORMAL_POP_MULT; }
   // 챕터→라운드 재구조화(2026-09-17): 라운드1(구 챕터1~3 병합) = 9홀(3x3), 라운드2~8(구 챕터4~10) = 16홀(4x4).
   function isSmallBoardChapter() { return currentChapter() === 1 && currentLight() === 'easy'; }
-  function roundGridSize() { return isSmallBoardChapter() ? 3 : GRID_SIZE; }
+  function isAmateurBoard() { return currentLight() === 'easy'; } // V1716 C 사용자: 아마추어 = 전 라운드 9칸(3×3)·뿅망치 전용
+  function roundGridSize() { return isAmateurBoard() ? 3 : GRID_SIZE; }
   // 라운드별 시즌 — 1~2=봄, 3~4=여름, 5~6=가을, 7~8=겨울(사용자 지정). 보드 배경·구멍 이미지가 공유.
   function roundSeason() {
     const ch = currentChapter();
@@ -1721,7 +1722,7 @@
     // 챕터(그리드 안 바뀜=재생성 안 됨)에서, 확대 클래스가 안 지워진 채 남아 숫자키가 커 보이던
     // 버그 수정 — 라운드 진입 시 항상 원위치.
     if (sharedLaneControls) sharedLaneControls.setActiveNav(null);
-    ensureLaneControlsForChapter(isSmallBoardChapter()); // 실제 라운드 진행 중에만 9홀/숫자패드로 전환
+    ensureLaneControlsForChapter(isAmateurBoard()); // 실제 라운드 진행 중에만 9홀/숫자패드로 전환
     const laneButtonBar = document.getElementById('lane-button-bar');
     if (laneButtonBar) laneButtonBar.querySelectorAll('.lane-button').forEach((button) => {
       button.style.removeProperty('animation');
@@ -1756,7 +1757,7 @@
     // (spinChannelsIn 이 gs-laneskill 을 보고 통화 버튼도 같이 돌리므로 그 호출 전에 세팅해야 한다.)
     const wRaw = MG.ItemInventory.equippedWeapon();
     // 챕터1~3(9홀 튜토리얼)은 뿅망치만 사용(사용자 지정) — 보관창 장착값과 무관하게 강제.
-    const weapon = isSmallBoardChapter() ? 'hammer'
+    const weapon = isAmateurBoard() ? 'hammer'
       : (wRaw === 'cannon' ? 'cannon' : (wRaw === 'goldhammer' ? 'goldhammer'
         : (wRaw === 'alipunch' ? 'alipunch' : 'hammer')));
     const laneSkillZone = weapon !== 'hammer'; // 캐논·골드해머·알리펀치 = 통화버튼 스킬존(§8 포함)
@@ -1818,16 +1819,17 @@
       strongBombChance: (!isSmallBoardChapter() && ch >= 4) ? MG.interpolate(MG.STRONG_BOMB_CHANCE_BY_ROUND, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS) : 0,
       maxConcurrentItems: 0,   // 실드 아이템 스폰 삭제(사용자 지정, 2026-09-14)
       shieldItems: false,
-      popDuration: isSmallBoardChapter() ? 2.5 : MG.interpolate(MG.MOLE_DURATION, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS) * popMult(),
+      popDuration: isSmallBoardChapter() ? 2.5 * popMult() : MG.interpolate(MG.MOLE_DURATION, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS) * popMult(),
       molePoseCount: MG.MoleSprites.POSE_COUNT,
       obstacleCount: MG.MoleSprites.OBSTACLE_COUNT,
       obstacles: !isSmallBoardChapter(),  // 라운드1은 40초부터(updateLiveDifficulty), 라운드2~8은 항상
       multiHit: !isSmallBoardChapter(),   // 라운드1은 20초부터(updateLiveDifficulty), 라운드2~8은 항상
-      fourHit: !isSmallBoardChapter() && ch >= 5,      // 4타 두더지 — 라운드5~8(구챕터7~10)
+      fourHit: false, // V1716 C 사용자: 4타 두더지 삭제(2·3타면 충분)
       animalMultiHit: !isSmallBoardChapter() && ch === 6,  // 라운드6(구챕터8): 동물이 타겟이라 다타 동물 도입
       reverseTarget: reverseTarget,
       dualTarget: dualTarget,
       relay: amateur && ch === 6, // V1710 C 사용자: 아마추어 6라운드 = 3마리씩 릴레이
+      goodChance: currentLight() === 'legend' ? 0.15 : 0.1, // V1716 C 사용자: 프로는 일반 두더지 더 자주
       obstacleRatioBoost: (!isSmallBoardChapter() && ch === 8) ? 1.1 : 1,  // 라운드8(구챕터10): 방해물 스폰 빈도 10% 상향
       cannonBurst: weapon === 'cannon',   // 대포 연사 스킬 (2·3타 두더지 연타 확률 10%)
       burstBonus: (MG.Workshop ? MG.Workshop.weaponChanceBonus('cannon') : 0), // 제작소 강화 +단계×1%p(v750)
@@ -2212,7 +2214,7 @@
     if (isWarmupRound()) {
       const wu = WARMUP[currentLight()];
       cfg.maxConcurrentMoles = Math.round(MG.interpolate(wu.moles, elapsed, ROUND1_SECONDS));
-      cfg.popDuration = MG.interpolate(wu.pop, elapsed, ROUND1_SECONDS);
+      cfg.popDuration = MG.interpolate(wu.pop, elapsed, ROUND1_SECONDS) * popMult();
       cfg.multiHit = elapsed >= wu.multiHitAt;
       cfg.obstacles = elapsed >= wu.animalsAt;
       cfg.maxConcurrentAnimals = elapsed >= wu.animalsAt ? Math.round(MG.interpolate([0, 2], elapsed - wu.animalsAt, ROUND1_SECONDS - wu.animalsAt)) : 0;
@@ -2339,7 +2341,7 @@
       if (p.bombKind) bombRegions.set(p.regionId, p.bombKind);
     });
     for (let id = 0; id < GRID_SIZE * GRID_SIZE; id++) {
-      sharedLaneControls.setCellHot(id, moleRegions.has(id), safeAnimalRegions.has(id));
+      sharedLaneControls.setCellHot(id, false, false); // V1716 C 사용자: 버튼 알림(아마추어 불빛·노말 주황 숫자) 모두 삭제
       sharedLaneControls.setBombIndicator(id, bombRegions.get(id) || null);
     }
 
@@ -2364,7 +2366,6 @@
   const COIN_DROP = { thief: 1, golden: 5 };
   const RUSH_SECONDS = 10;
   const SMOKE_MS = 2000; // 담배 연기: 2초 동안 칸 가림
-  MG.SmokedRegions = MG.SmokedRegions || new Map(); // regionId → 가림 끝 시각(performance.now) — clay-round1-local.js 가 그 칸 두더지를 안 그림
   function comboTier(c) { return c >= 30 ? 2 : c >= 20 ? 1.5 : c >= 10 ? 1.2 : 1; }
   function isRush() { return !!(state && !state.feverEventActive && state.timeRemaining > 0 && state.timeRemaining <= RUSH_SECONDS); }
   function hitBonus(r) { return (r.golden ? 5 : (PERSONALITY_SCORE[r.behavior] || 1)) * (isRush() ? 2 : 1) * comboTier(run.combo.combo + 1); }
@@ -2431,14 +2432,13 @@
   function smokeCover(regionId) {
     const board = document.getElementById('mole-board'); if (!board) return;
     const g = roundGridSize(), id = regionId % (g * g), row = Math.floor(id / g), col = id % g;
-    const until = performance.now() + SMOKE_MS;
+    /* V1716 C 사용자: 연기 투명도 30% — 두더지는 그리고, 그 위(두더지 그림보다 위 층)에 반투명 연기를 칸 크기로 덮음 */
+    const br = board.getBoundingClientRect(), cw = br.width / g, ch = br.height / g;
     for (const [dr, dc] of [[0, 0], [0, -1], [0, 1], [-1, 0], [1, 0]]) {
       const r2 = row + dr, c2 = col + dc; if (r2 < 0 || c2 < 0 || r2 >= g || c2 >= g) continue;
-      /* V1710 C 사용자: 2초 동안 그 칸 두더지가 아예 안 보이게(그리기 자체를 숨김) + 진한 연기 */
-      const rid = r2 * g + c2 + (regionId - id); MG.SmokedRegions.set(rid, Math.max(MG.SmokedRegions.get(rid) || 0, until));
-      const d = document.createElement('div'); d.className = 'hit-fx-smoke';
-      d.style.left = ((c2 + 0.5) / g * 100) + '%'; d.style.top = ((r2 + 0.5) / g * 100) + '%'; d.style.setProperty('--g', g);
-      board.appendChild(d); setTimeout(() => d.remove(), SMOKE_MS + 150);
+      const d = document.createElement('div'); d.className = 'hit-fx-smoke hit-fx-smoke--top';
+      d.style.left = (br.left + (c2 + 0.5) * cw) + 'px'; d.style.top = (br.top + (r2 + 0.5) * ch) + 'px'; d.style.width = cw + 'px';
+      document.body.appendChild(d); setTimeout(() => d.remove(), SMOKE_MS + 150);
     }
   }
   function currentScoreMult() {
@@ -2896,7 +2896,7 @@
           MG.HitFx.punchStar(board, r.xFrac, r.yFrac);
           moleHits += 1;
         } else {
-          setRunLives(run.lives - 1);     // 동물 = 공유 생명 -1 (즉시 풀에 반영)
+          setRunLives(run.lives - (r.good && currentLight() === 'legend' ? 2 : 1));     // 동물 = 공유 생명 -1 (즉시 풀에 반영) / V1716 C: 프로에서 일반 두더지는 -2
           run.combo.onObstacleHit();
           MG.HitFx.obstacleHit(board, r.xFrac, r.yFrac, 'animal');
           if (r.good) funTextAt(board, r.xFrac, r.yFrac - 0.1, '💢'); // V1710 C 사용자: 일반 두더지를 잘못 치면 화남
@@ -3325,9 +3325,9 @@
         ov.classList.remove('win-fx-rays', 'win-fx-starpop');
         const starpop = ov.querySelector('.go-starpop');
         starpop.innerHTML = '';
-        if (Math.random() < 0.5) {
+        { // V1716 C 사용자: 무지개 색 삭제 — 흰 빛줄기만 도는 광선 + 별 터짐(매번 둘 다)
           ov.classList.add('win-fx-rays');
-        } else {
+
           ov.classList.add('win-fx-starpop');
           const N = 40;
           for (let i = 0; i < N; i++) {

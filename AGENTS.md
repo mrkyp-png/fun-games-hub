@@ -1,3 +1,10 @@
+# V1716 C DEPLOYED - 2026-11-15 (Claude) — mode split, no button hints
+- Success rays: white streaks only (rainbow conic removed; it covered the blurred board), always on with starpop.
+- Button hints removed in all modes (setCellHot(id,false,false)); bomb indicator rules unchanged.
+- Amateur = 3x3 board every round (isAmateurBoard → roundGridSize 3, hammer only, lane controls 9); ROUND_TARGETS for 9 holes. Stay multipliers popMult: amateur 2, normal 1.7, pro 1.5 (also R1 small 2.5*mult and warmup). Pro: targets +1, goodChance .15 (others .1, config.goodChance), hitting a normal mole -2 hearts.
+- Smoke: 70% opaque cloud above the mole canvas (fixed .hit-fx-smoke--top, z 900); moles are drawn (SmokedRegions removed).
+- 4-hit moles removed (fourHit false). Round 5/7 now have no new element.
+
 # V1715 C DEPLOYED - 2026-11-15 (Claude)
 - Game end: pink/yellow curtain removed (closeCurtain calls cb directly) → result appears at once over the blurred board. Success screen no longer auto-returns to the plaza (queueNextRoundWaiting removed); 5s later #win-choice popup above the dial pad: [홈 복귀] (ShapeTransition → showStartScreenNow) / [다음 라운드] (resets result overlay, startRound fresh direct; hidden when Progress.nextRound is null). Test: review/capture-win-choice-v1715.cjs.
 - Next: boss round with the base mohawk mole (x1.5, red in phase 3) — user asked to do success screen first; boss 4-view art at Desktop/보스두더지_트라이포 (user may use later).

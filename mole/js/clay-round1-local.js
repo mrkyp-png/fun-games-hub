@@ -227,8 +227,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
   if(!active)return;
   const foregroundBombs=[];
   entries.forEach((m,el)=>{
-   if(!el.isConnected){entries.delete(el);return}if(m.shownDepth>=3.999)return;
-   if(MG.SmokedRegions&&(MG.SmokedRegions.get(m.regionId)||0)>performance.now())return; // V1710 C 사용자: 담배 연기 2초 = 그 칸 두더지 안 보임
+   if(!el.isConnected){entries.delete(el);return}if(m.shownDepth>=3.999)return;
    if(m.dying&&m.killed&&m._clayKilledAt==null)m._clayKilledAt=clockTime;
    const x=parseFloat(el.style.left)/100,y=parseFloat(el.style.top)/100;
    const lower=feverField&&m.regionId>=gridSize*gridSize;
