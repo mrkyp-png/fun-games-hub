@@ -8,7 +8,7 @@ const puppeteer = require('puppeteer-core');
     await p.goto('http://localhost:8844/mole/index.html', { waitUntil: 'load' });
     await new Promise(r => setTimeout(r, 12000));
     await p.evaluate(() => { const s = document.getElementById('splash'); if (s) s.remove(); const h = document.getElementById('home3d'); if (h) h.remove(); window.__debugStartGame('easy', 1); });
-    await new Promise(r => setTimeout(r, 9000));
+    await new Promise(r => setTimeout(r, 1500)); await p.screenshot({ path: 'C:/Users/master/Desktop/재미요소_V1710/미션창.png' }); await new Promise(r => setTimeout(r, 13000));
     const res = await p.evaluate(async () => {
       const board = document.getElementById('mole-board'), MG = window.MoleGame;
       const seen = []; const orig = Element.prototype.animate; Element.prototype.animate = function (...a) { seen.push(this.id === 'mole-board' ? 'BOARD' : (this.dataset && this.dataset.region) || this.className); return orig.apply(this, a); };

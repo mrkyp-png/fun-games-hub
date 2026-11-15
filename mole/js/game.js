@@ -11,8 +11,10 @@
   const ROUND1_SECONDS = 60;      // 라운드1 (구 챕터1+2+3 병합, 3구간 연속)
   const ROUND_SECONDS_LONG = 60; // V1710 C 사용자: 라운드2~8도 60초(전체 60초). 난이도 곡선(40~140)은 60초 안에 그대로 지나감
   // V1710 C 사용자: 라운드별 동시 타격 대상 수(시작→끝, 60초 동안). 머무는 시간·방해물·폭탄은 기존 곡선 유지
-  const ROUND_TARGETS = { 2: [4, 5], 3: [4, 6], 4: [5, 6], 5: [5, 7], 6: [5, 7], 7: [6, 8], 8: [6, 8] };
-  function roundTargets(ch, elapsed) { const t = ROUND_TARGETS[ch] || ROUND_TARGETS[2]; return Math.round(MG.interpolate(t, elapsed, ROUND_SECONDS_LONG)); }
+  const ROUND_TARGETS = { 2: [4, 6], 3: [5, 6], 4: [5, 7], 5: [6, 7], 6: [5, 7], 7: [6, 8], 8: [7, 8] }; // V1711 C 사용자: 아마추어도 증가(노말·프로보다는 1마리쯤 적게)
+  // V1710 C 사용자: 60초로 줄어든 만큼 노말·프로는 더 많이(루즈하지 않게). 아마추어는 위 표 그대로(아이들 수준)
+  const ROUND_TARGETS_HARD = { 2: [5, 7], 3: [6, 7], 4: [6, 8], 5: [7, 8], 6: [6, 8], 7: [7, 9], 8: [8, 9] };
+  function roundTargets(ch, elapsed) { const tb = currentLight() === 'easy' ? ROUND_TARGETS : ROUND_TARGETS_HARD; const t = tb[ch] || tb[2]; return Math.round(MG.interpolate(t, elapsed, ROUND_SECONDS_LONG)); }
   // 난이도 10단계 키프레임은 원래 140초짜리 커브(§4) — 실플레이 100초를 앞 40초는 건너뛰고
   // 그 뒤 100초(40~140초 구간)만 쓴다(사용자: "너무 쉬워서 앞부분 40초는 빼도 될듯" → "총 100초
   // 유지, 난이도 커브만 앞당김"). 라운드 t=0 이 커브의 40초 지점에 대응.
@@ -2208,7 +2210,9 @@
     const introDelay = 250;
     setTimeout(() => {
       if (myGen !== sessionGen) return;
-      runCountdown(exitAndStart);
+      // V1710 C 사용자: 카운트다운 전에 미션을 화면 가운데 크게 3초
+      if (state && state.mission && !state.mission.shown) showMission(() => { if (myGen === sessionGen) runCountdown(exitAndStart); });
+      else runCountdown(exitAndStart);
     }, introDelay); // 홈 안내 여부와 무관하게 같은 지연 뒤 카운트다운을 시작한다.
   }
 
@@ -2259,6 +2263,7 @@
   function loop(now) {
     if (!state || state.ended || !run || !run.combo) return;
     if (state.paused) { lastTime = now; rafId = requestAnimationFrame(loop); return; } // 일시정지: 시간·스폰 정지, 루프만 유지
+    if (state.mission && !state.mission.shown && !state.feverEventActive) { missionIntro(); lastTime = now; rafId = requestAnimationFrame(loop); return; } // V1710 C 사용자: 미션을 3초 크게 보여 준 뒤 시작
     const rawDt = Math.min(0.1, (now - lastTime) / 1000);
     lastTime = now;
     // 히트스톱: 성공타 직후 잠깐 게임 시간을 멈춘다 (루프는 계속 돈다).
@@ -2307,6 +2312,7 @@
     // V1422 C: 폭탄 든 두더지는 피하는 게 정답 — 시간초과로 들어가도 콤보 안 끊김(AI 도 폭탄 두더지는 피해서 콤보가 끊기던 원인)
     if (!state.pausedByFever && tickResult.expired.some((e) => effectiveHitType(state.config, e.type) === 'mole' && e.timedOut && !e.bomb && !e.good)) run.combo.onObstacleHit();
     if (!state.pausedByFever) tickResult.expired.forEach((e) => { if (e.behavior === 'smoke' && e.timedOut) smokeCover(e.regionId); }); // V1710 C 사용자: 담배 두더지 놓치면 연기
+    tickResult.spawned.forEach((p) => { if (p.golden) goldenFx(p); }); // V1711 C 사용자: 황금 두더지 반짝임
     funTick();
     // "의문사" 방지(사용자 지정) — 무적 중에 올라온 방해물은, 그 사이 무적이 끝나도
     // 계속 안전 취급되도록 스폰 순간에 낙인찍는다(spawn-scheduler.js 가 그대로 전달).
@@ -2370,6 +2376,8 @@
   const PERSONALITY_SCORE = { thief: 2, phone: 0.5 };
   const COIN_DROP = { thief: 1, golden: 5 };
   const RUSH_SECONDS = 10;
+  const SMOKE_MS = 2000; // 담배 연기: 2초 동안 칸 가림
+  MG.SmokedRegions = MG.SmokedRegions || new Map(); // regionId → 가림 끝 시각(performance.now) — clay-round1-local.js 가 그 칸 두더지를 안 그림
   function comboTier(c) { return c >= 30 ? 2 : c >= 20 ? 1.5 : c >= 10 ? 1.2 : 1; }
   function isRush() { return !!(state && !state.feverEventActive && state.timeRemaining > 0 && state.timeRemaining <= RUSH_SECONDS); }
   function hitBonus(r) { return (r.golden ? 5 : (PERSONALITY_SCORE[r.behavior] || 1)) * (isRush() ? 2 : 1) * comboTier(run.combo.combo + 1); }
@@ -2399,21 +2407,51 @@
     if (!state || state.ended) return;
     const board = document.getElementById('mole-board'); if (!board) return;
     const elapsed = roundSeconds() - state.timeRemaining;
-    if (state.mission && !state.mission.shown && elapsed > 0.8) { state.mission.shown = true; MG.HitFx.skillWord(board, '🎯 ' + missionLabel(state.mission)); }
     const rush = isRush();
     if (rush && !state.rushOn) { state.rushOn = true; MG.HitFx.skillWord(board, I18N.lang === 'ko' ? '⚡ 러시! 점수 ×2' : '⚡ RUSH! Score ×2'); document.getElementById('game-screen')?.classList.add('gs-rush'); setBgmRate(1.15); }
     if (!rush && state.rushOn && state.timeRemaining > RUSH_SECONDS) { state.rushOn = false; document.getElementById('game-screen')?.classList.remove('gs-rush'); setBgmRate(1); }
   }
+  function showMission(done) { // 화면 가운데 크게 3초(카운트다운 전)
+    state.mission.shown = true;
+    const o = document.createElement('div'); o.id = 'mission-intro';
+    o.innerHTML = '<div class="mi-card"><div class="mi-tag">🎯 ' + (I18N.lang === 'ko' ? '미션' : 'MISSION') + '</div><div class="mi-text">' + missionLabel(state.mission) + '</div><div class="mi-reward">+' + MISSION_REWARD + '🪙</div></div>';
+    document.body.appendChild(o);
+    setTimeout(() => { o.remove(); done(); }, 3000);
+  }
+  function missionIntro() { // 카운트다운 없이 시작한 경우의 예비: 3초 동안 게임 멈춤
+    state.paused = true; state.missionHold = true; const st = state;
+    showMission(() => { if (st.missionHold) { st.missionHold = false; st.paused = false; } });
+  }
   function setBgmRate(k) { document.querySelectorAll('audio').forEach((a) => { try { a.playbackRate = k; } catch (e) { /* 무시 */ } }); } // 러시: 배경음 조금 빠르게
   function funTextAt(board, xFrac, yFrac, html) { const d = MG.HitFx.spawnAt && MG.HitFx.spawnAt(board, 'hit-fx-fun', xFrac, yFrac, html); return d; }
+  // V1711 C 사용자: 황금 두더지 — 나올 때 빛 고리 + 반짝이(머무는 동안), 등장 소리·"✨"
+  function goldenFx(p) {
+    const board = document.getElementById(p.regionId >= roundGridSize() ** 2 && state.feverField ? 'fever-hole-board' : 'mole-board'); if (!board) return;
+    const g = roundGridSize(), d = document.createElement('div'); d.className = 'hit-fx-golden';
+    d.style.left = (p.x * 100) + '%'; d.style.top = (p.y * 100) + '%'; d.style.setProperty('--g', g);
+    d.innerHTML = '<i></i><b>✦</b><b>✧</b><b>✦</b><b>✧</b><b>✦</b>';
+    board.appendChild(d);
+    const popId = p.id, t0 = performance.now();
+    (function watch() { // 두더지가 잡히거나 내려가면 바로 끔
+      const live = state && state.scheduler && state.scheduler.getActivePops().some((q) => q.id === popId && !q.dying && !(q.sinkIn > 0));
+      if (!live || performance.now() - t0 > 6000) { d.classList.add('is-out'); setTimeout(() => d.remove(), 250); return; }
+      setTimeout(watch, 120);
+    })();
+    funTextAt(board, p.x, p.y - 0.12, '✨');
+    if (MG.HitFx.hammerPop) MG.HitFx.hammerPop();
+  }
   // 담배 두더지를 놓치면 연기가 옆 칸(상하좌우)을 잠깐 가림
   function smokeCover(regionId) {
     const board = document.getElementById('mole-board'); if (!board) return;
     const g = roundGridSize(), id = regionId % (g * g), row = Math.floor(id / g), col = id % g;
+    const until = performance.now() + SMOKE_MS;
     for (const [dr, dc] of [[0, 0], [0, -1], [0, 1], [-1, 0], [1, 0]]) {
       const r2 = row + dr, c2 = col + dc; if (r2 < 0 || c2 < 0 || r2 >= g || c2 >= g) continue;
-      const d = MG.HitFx.spawnAt && MG.HitFx.spawnAt(board, 'hit-fx-smoke', (c2 + 0.5) / g, (r2 + 0.5) / g, '');
-      if (d) d.style.setProperty('--g', g);
+      /* V1710 C 사용자: 2초 동안 그 칸 두더지가 아예 안 보이게(그리기 자체를 숨김) + 진한 연기 */
+      const rid = r2 * g + c2 + (regionId - id); MG.SmokedRegions.set(rid, Math.max(MG.SmokedRegions.get(rid) || 0, until));
+      const d = document.createElement('div'); d.className = 'hit-fx-smoke';
+      d.style.left = ((c2 + 0.5) / g * 100) + '%'; d.style.top = ((r2 + 0.5) / g * 100) + '%'; d.style.setProperty('--g', g);
+      board.appendChild(d); setTimeout(() => d.remove(), SMOKE_MS + 150);
     }
   }
   function currentScoreMult() {

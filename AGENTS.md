@@ -1,3 +1,9 @@
+# V1711 C DEPLOYED - 2026-11-15 (Claude) — mission intro, stronger feedback, more moles
+- Mission shown before the countdown (showMission, #mission-intro, 3s, big centre card); fallback missionIntro pauses if no intro.
+- Cell shake x3 (clay shakeBoard k=3 when region); quake board shake unchanged. Smoke: 2s opaque cloud + MG.SmokedRegions hides moles in those cells (clay skips drawing).
+- Targets: amateur ROUND_TARGETS 2:[4,6]..8:[7,8]; normal/pro ROUND_TARGETS_HARD 2:[5,7]..8:[8,9]. Golden mole: halo + orbiting sparkles (.hit-fx-golden, behind the mole canvas), ✨ + pop sound on spawn.
+- User report 'coloured mole in amateur R1/fever' = most likely the new golden mole (amateur has animals 0 everywhere, fever field animals 0).
+
 # V1710 C DEPLOYED - 2026-11-15 (Claude) — game update (60s, fun features, amateur)
 - All rounds 60s; ROUND_TARGETS per round (2:[4,5]..8:[6,8]) for concurrent targets, stay-time curve unchanged (40~140 mapped into 60s).
 - Fun: personalities (thief stay .75/score x2/+1 coin, phone stay 1.4/x0.5, drink relocates once at half life, smoke miss covers cell+4 neighbours), golden mole 3% (x5, +5 coin, gold body via GOLD palette), last-10s rush x2 (+bgm 1.15, gold board glow), combo tiers 10/20/30 = x1.2/1.5/2, round missions (+30 coin), normal-mole 💢. Multipliers via combo.setMult per hit (points table untouched).

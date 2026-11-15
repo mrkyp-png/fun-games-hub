@@ -11,7 +11,7 @@
 #game-screen.clay-round-one:not(.is-start) #mole-board:has(#gameover-overlay:not([hidden])) #btn-back-to-hub { z-index:50; }
 #game-screen.clay-round-one:not(.is-start) #mole-board:has(#round-intro-overlay:not([hidden])) #btn-back-to-hub { z-index:50; }
 /* Board-level effects must stay above the raised actor stacking context. */
-#game-screen.clay-round-one #mole-board > :is(.rp-pang,.hit-fx-score,.hit-fx-burst,.hit-fx-clang,.hit-fx-clod,.hit-fx-dust,.hit-fx-ring,.hit-fx-star,.hit-fx-helmet,.hit-fx-blast-flash,.hit-fx-ash,.hit-fx-burstword,.hit-fx-powerup,.hit-fx-punch-star,.hit-fx-fun,.hit-fx-smoke) { z-index:20; }
+#game-screen.clay-round-one #mole-board > :is(.rp-pang,.hit-fx-score,.hit-fx-burst,.hit-fx-clang,.hit-fx-clod,.hit-fx-dust,.hit-fx-ring,.hit-fx-star,.hit-fx-helmet,.hit-fx-blast-flash,.hit-fx-ash,.hit-fx-burstword,.hit-fx-powerup,.hit-fx-punch-star,.hit-fx-fun,.hit-fx-smoke,.hit-fx-golden) { z-index:20; }
 #game-screen.clay-round-one #mole-board:has(:is(#round-intro-overlay,#gameover-overlay):not([hidden])) > :is(.rp-pang,[class^="hit-fx-"]) { visibility:hidden; }
 .clay-mole-canvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:512; }
 .clay-mole-canvas[hidden] { display:none; }

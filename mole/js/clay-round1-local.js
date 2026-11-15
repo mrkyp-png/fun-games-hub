@@ -51,9 +51,10 @@ function syncBoardShake(){
  if(boardShakeRequest){
   const {board,target,region,startedAt}=boardShakeRequest;stopBoardShake();
   board.classList.remove('mole-board--shake');
+  const k=region!=null?3:1; // V1710 C 사용자: 칸 흔들림 3배(판 전체 지진은 그대로)
   const animation=target.animate([
-   {transform:'translate(0, 0)'},{transform:'translate(-4px, 3px)'},
-   {transform:'translate(3px, -2px)'},{transform:'translate(-2px, 2px)'},
+   {transform:'translate(0, 0)'},{transform:'translate('+(-4*k)+'px, '+(3*k)+'px)'},
+   {transform:'translate('+(3*k)+'px, '+(-2*k)+'px)'},{transform:'translate('+(-2*k)+'px, '+(2*k)+'px)'},
    {transform:'translate(0, 0)'}
   ],{duration:200,easing:'ease-out',fill:'both'});
   // Never let the compositor advance the tiles beyond the canvas frame.
@@ -225,6 +226,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
   const foregroundBombs=[];
   entries.forEach((m,el)=>{
    if(!el.isConnected){entries.delete(el);return}if(m.shownDepth>=3.999)return;
+   if(MG.SmokedRegions&&(MG.SmokedRegions.get(m.regionId)||0)>performance.now())return; // V1710 C 사용자: 담배 연기 2초 = 그 칸 두더지 안 보임
    if(m.dying&&m.killed&&m._clayKilledAt==null)m._clayKilledAt=clockTime;
    const x=parseFloat(el.style.left)/100,y=parseFloat(el.style.top)/100;
    const lower=feverField&&m.regionId>=gridSize*gridSize;
