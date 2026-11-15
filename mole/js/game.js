@@ -784,21 +784,6 @@
   // 보이고, 노랑이 빠르게 따라잡아 앞질러서 최종 단색이 노랑이 된다.
   let winFxTimer = null; // 승리 화면 불꽃놀이 반복 스폰 — 화면 전환(닫힘) 시 clearInterval
   let nextRoundTimer = 0;
-  function queueNextRoundWaiting(destination, generation) {
-    clearTimeout(nextRoundTimer); nextRoundTimer = 0;
-    if (!destination) return;
-    nextRoundTimer = setTimeout(() => {
-      nextRoundTimer = 0;
-      const result = document.getElementById('gameover-overlay');
-      if (generation !== sessionGen || result.hidden || !result.classList.contains('is-win') || (screenNav && screenNav.current()) || window.__coverBusy) return;
-      const enter = () => {
-        if (generation !== sessionGen || result.hidden || (screenNav && screenNav.current()) || window.__coverBusy) return;
-        showStartScreenNow({skipFlash:true}); // V1621 C: 라운드 지도 삭제 → 광장(게임기 앞)으로 돌아와 깬 구멍을 봄
-      };
-      if (MG.ShapeTransition) MG.ShapeTransition.run(1, enter);
-      else enter();
-    }, 1200);
-  }
   let curtainPatternGen = 0;
   function restartCurtainPattern(overlay, reversed, duration) {
     const curtains = overlay.querySelectorAll('.ri-curtain');
@@ -1563,6 +1548,7 @@
     if (!(opts && opts.deferBgm) && !/\/bgm-home-\d/.test(currentBgm)) playScreenBgm('home');
     const go = document.getElementById('gameover-overlay');
     go.hidden = true; go.classList.remove('is-win', 'is-lose', 'is-sliding');
+    hideWinChoice(); // V1715 C: 성공 팝업도 닫음
     const cf = go.querySelector('.go-confetti'); if (cf) cf.innerHTML = '';
     const fwc = go.querySelector('.go-fireworks'); if (fwc) fwc.innerHTML = '';
     const spc = go.querySelector('.go-starpop'); if (spc) spc.innerHTML = '';
@@ -3232,20 +3218,9 @@
   // 색 역할을 반대로(분홍이 먼저 천천히, 노랑이 따라잡아 최종 노랑) 재생해 라운드
   // 전환(최종 분홍)과 구분(사용자 요청) — 목숨 소진 실패도 동일하게 적용.
   function closeCurtain(cb) {
-    const myGen = sessionGen;
-    const ri = document.getElementById('round-intro-overlay');
-    ri.classList.remove('is-opening');
-    ri.querySelector('.round-intro-title').textContent = '';
-    ri.querySelector('.round-intro-count').textContent = '';
-    ri.hidden = false;
-    ri.classList.add('has-mole'); // :not(.has-mole) 규칙이 패턴을 안 보이게 하므로 필요
+    // V1715 C 사용자: 게임 끝날 때 분홍 커튼 화면 삭제 — 바로 결과(뿌연 게임판 위)
     setHammerLayerVisible(false);
-    restartCurtainPattern(ri, true);
-    setTimeout(() => {
-      if (myGen !== sessionGen) return; // Discard stale result callback after leaving this session.
-      ri.classList.remove('has-mole');
-      cb();
-    }, 2300);
+    cb();
   }
 
   // 목숨 소진(라운드 도중) — 지금까지 친 점수까지 반영하고 최종 결과.
@@ -3452,7 +3427,33 @@
         }
       }
     }, 400); // 글자·하마 fly-in(0.4s) 끝난 뒤
-    queueNextRoundWaiting(next, sessionGen);
+    // V1715 C 사용자: 성공 화면은 계속 보여 줌(자동으로 광장에 안 돌아감). 5초 뒤 버튼판 위쪽에 [홈 복귀][다음 라운드] 창
+    if (win) { const gen = sessionGen; setTimeout(() => { if (gen === sessionGen && !ov.hidden && ov.classList.contains('is-win')) showWinChoice(!!next); }, 5000); }
+  }
+  function hideWinChoice() { const p = document.getElementById('win-choice'); if (p) p.remove(); }
+  function showWinChoice(hasNext) {
+    hideWinChoice();
+    const ko = I18N.lang === 'ko', bar = document.getElementById('lane-button-bar'), gs = document.getElementById('game-screen');
+    const p = document.createElement('div'); p.id = 'win-choice';
+    p.innerHTML = '<button type="button" class="wc-btn wc-home">' + (ko ? '홈 복귀' : 'Home') + '</button>' + (hasNext ? '<button type="button" class="wc-btn wc-next">' + (ko ? '다음 라운드' : 'Next round') + '</button>' : ''); // 다음 라운드가 없으면 홈 복귀만
+    (gs || document.body).appendChild(p);
+    if (bar) { const r = bar.getBoundingClientRect(), g = (gs || document.body).getBoundingClientRect(); p.style.top = Math.round(r.top - g.top + 10) + 'px'; }
+    p.querySelector('.wc-home').addEventListener('click', () => {
+      hideWinChoice();
+      const enter = () => showStartScreenNow({ skipFlash: true });
+      if (MG.ShapeTransition) MG.ShapeTransition.run(1, enter); else enter();
+    });
+    if (hasNext) p.querySelector('.wc-next').addEventListener('click', () => {
+      hideWinChoice();
+      if (MG.Economy.getHearts() <= 0) { showNoHeartModal(); return; }
+      const go = document.getElementById('gameover-overlay');
+      go.hidden = true; go.classList.remove('is-win', 'is-lose', 'is-sliding', 'win-fx-rays', 'win-fx-starpop');
+      ['.go-confetti', '.go-fireworks', '.go-starpop'].forEach((s) => { const el = go.querySelector(s); if (el) el.innerHTML = ''; });
+      if (winFxTimer) { clearInterval(winFxTimer); winFxTimer = null; }
+      setNavLock(true); playScreenBgm('game');
+      currentDiff = currentDifficulty(); applyDiffClass(currentDiff);
+      startRound({ fresh: true, direct: true }); // 다음 라운드(성공 때 이미 다음 칸으로 저장됨)
+    });
   }
 
   // 동시에 여러 버튼(멀티터치)을 누르면 화면이 핀치줌처럼 커지는 문제(사용자 리포트) — CSS

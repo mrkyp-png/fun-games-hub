@@ -1,3 +1,7 @@
+# V1715 C DEPLOYED - 2026-11-15 (Claude)
+- Game end: pink/yellow curtain removed (closeCurtain calls cb directly) → result appears at once over the blurred board. Success screen no longer auto-returns to the plaza (queueNextRoundWaiting removed); 5s later #win-choice popup above the dial pad: [홈 복귀] (ShapeTransition → showStartScreenNow) / [다음 라운드] (resets result overlay, startRound fresh direct; hidden when Progress.nextRound is null). Test: review/capture-win-choice-v1715.cjs.
+- Next: boss round with the base mohawk mole (x1.5, red in phase 3) — user asked to do success screen first; boss 4-view art at Desktop/보스두더지_트라이포 (user may use later).
+
 # V1714 C DEPLOYED - 2026-11-15 (Claude)
 - Personality effects/golden only for current-round targets (scheduler isTarget: R6 coloured, R8 both); coloured moles get a real behavior (prop) too; smoke only for target timeouts.
 - Success screen: 'SUCCESS' text, mohawk hero (game GLB, Jump + Smile, rendered by review/render-hero-anim.py → mole/assets/result/hero-jump.webp animated), result overlay background = blurred game board (backdrop-filter) for win and lose. Lose still sad hippo (user to decide).
