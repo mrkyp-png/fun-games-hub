@@ -1,3 +1,6 @@
+# V1719 C DEPLOYED - 2026-11-15 (Claude)
+- Success hero x1.5 (maxHeight 0.75 of overlay), hero wrap absolutely centred (padding-bottom 17%) so the score line stays above the popup; SUCCESS moved up (is-win padding-top 2.5%).
+
 # V1718 C DEPLOYED - 2026-11-15 (Claude)
 - Smoke never covers weapon cells (cannon/mjolnir 15, king punch 12+15): smokeCover skips regions not in state.spawnPoints.
 

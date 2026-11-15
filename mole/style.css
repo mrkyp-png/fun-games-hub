@@ -10627,3 +10627,11 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* V1717 C 사용자: 황금 두더지·콤보·코인 글자 = 두더지 그림(캔버스)보다 앞 — 화면 고정 위층 */
 .fx-top { position: fixed !important; z-index: 900 !important; pointer-events: none; }
 .hit-fx-golden.fx-top i { background: radial-gradient(circle, rgba(255, 220, 90, 0) 46%, rgba(255, 214, 60, .6) 58%, rgba(255, 190, 20, 0) 72%); }
+
+/* V1719 C 사용자: 성공 두더지 1.5배 */
+#gameover-overlay.is-win .go-hippo.go-hero { max-width: min(100vw, 450px); }
+/* V1719 C: 커진 성공 두더지는 게임판 가운데에 따로 띄움(아래로 밀려 팝업에 가리지 않게), SUCCESS 글자는 그 위에 */
+#gameover-overlay.is-win .go-hippo-wrap { position: absolute; inset: 0; z-index: 1; display: flex; align-items: center; justify-content: center; padding-bottom: 6%; pointer-events: none; }
+/* V1719 C 사용자: SUCCESS 글자 조금 위로, 두더지는 점수와 안 겹치게 위로 */
+#gameover-overlay.is-win { padding-top: 2.5%; }
+#gameover-overlay.is-win .go-hippo-wrap { padding-bottom: 17%; }
