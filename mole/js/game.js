@@ -2312,7 +2312,7 @@
     // 트리거해놓고 전광판엔 0이 뜨는 버그로 발견 — 스폰은 계속 돌지만 판정만 유예).
     // V1422 C: 폭탄 든 두더지는 피하는 게 정답 — 시간초과로 들어가도 콤보 안 끊김(AI 도 폭탄 두더지는 피해서 콤보가 끊기던 원인)
     if (!state.pausedByFever && tickResult.expired.some((e) => effectiveHitType(state.config, e.type) === 'mole' && e.timedOut && !e.bomb && !e.good)) run.combo.onObstacleHit();
-    if (!state.pausedByFever) tickResult.expired.forEach((e) => { if (e.behavior === 'smoke' && e.timedOut) smokeCover(e.regionId); }); // V1710 C 사용자: 담배 두더지 놓치면 연기
+    if (!state.pausedByFever) tickResult.expired.forEach((e) => { if (e.behavior === 'smoke' && e.timedOut && !e.good && effectiveHitType(state.config, e.type) === 'mole') smokeCover(e.regionId); /* V1713 C: 타격 대상일 때만 */ }); // V1710 C 사용자: 담배 두더지 놓치면 연기
     tickResult.spawned.forEach((p) => { if (p.golden) goldenFx(p); }); // V1711 C 사용자: 황금 두더지 반짝임
     funTick();
     // "의문사" 방지(사용자 지정) — 무적 중에 올라온 방해물은, 그 사이 무적이 끝나도
@@ -3317,10 +3317,12 @@
     // 하마 = 기쁨/슬픔 3포즈 중 랜덤 1개
     const poseN = 1 + Math.floor(Math.random() * 3);
     const hippo = document.getElementById('gameover-hippo');
-    hippo.src = 'assets/hippo/' + (win ? 'happy' : 'sad') + poseN + '.png';
+    // V1714 C 사용자: 성공 = 모히칸 두더지(게임 3D)가 웃으며 펄펄 뜀(움직이는 그림), 위 글자 SUCCESS. 실패는 기존 하마 그대로
+    hippo.src = win ? 'assets/result/hero-jump.webp?v=1714' : 'assets/hippo/sad' + poseN + '.png';
+    hippo.classList.toggle('go-hero', !!win);
 
     document.getElementById('gameover-reason').textContent =
-      I18N.t(win ? 'mole.result.success' : 'mole.result.fail');
+      win ? 'SUCCESS' : I18N.t('mole.result.fail');
     document.getElementById('gameover-score').textContent =
       I18N.t('mole.result.scoreVs', { n: total.toLocaleString(), t: prog.target.toLocaleString() });
     // 버튼 없음 — 성공/실패 둘 다 좌상단 ⊞ 로 홈. (광고는 유저 피로도 때문에 뺌.)
@@ -3340,7 +3342,7 @@
     ov.classList.remove('is-sliding');
     ov.hidden = false;
     // 하마 세로 크기 = 보드 높이의 40% (포즈마다 종횡비가 달라서 vh/% CSS 로는 머리가 잘렸음).
-    hippo.style.maxHeight = Math.round(ov.clientHeight * 0.4) + 'px';
+    hippo.style.maxHeight = Math.round(ov.clientHeight * (win ? 0.5 : 0.4)) + 'px'; // V1714 C: 성공 두더지는 조금 더 크게
 
     setTimeout(() => {
       if (win) {

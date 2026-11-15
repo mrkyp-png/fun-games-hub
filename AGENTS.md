@@ -1,3 +1,9 @@
+# V1714 C DEPLOYED - 2026-11-15 (Claude)
+- Personality effects/golden only for current-round targets (scheduler isTarget: R6 coloured, R8 both); coloured moles get a real behavior (prop) too; smoke only for target timeouts.
+- Success screen: 'SUCCESS' text, mohawk hero (game GLB, Jump + Smile, rendered by review/render-hero-anim.py → mole/assets/result/hero-jump.webp animated), result overlay background = blurred game board (backdrop-filter) for win and lose. Lose still sad hippo (user to decide).
+- Multi-hit (2/3/4) moles turn red after the first hit (clay isRed: m.multi && m.hits>0).
+- mole/scripts/test-spawn-scheduler.js concurrency assertion now ignores good moles; cooldown assertion still pre-existing failure.
+
 # V1713 C DEPLOYED - 2026-11-15 (Claude)
 - Bomb indicator on the dial pad: amateur unchanged (.5), normal opacity .22, pro hidden (clay-round1-local.css end).
 - Amateur R6 relay: next wave of 3 as soon as 1 mole of the current wave is caught (relayWave/relayCurrent), leftovers stay until timeout; no bomb moles (cfg.bombChance 0 at the end of updateLiveDifficulty + scheduler safety). Test: review/verify-relay-v1710.cjs.

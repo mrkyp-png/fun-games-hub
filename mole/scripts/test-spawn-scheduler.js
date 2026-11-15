@@ -18,7 +18,7 @@ function makeSpawnPoints(regionIds) {
   for (let t = 0; t < 200; t++) {
     scheduler.tick(0.1);
     const pops = scheduler.getActivePops();
-    assert.ok(pops.filter((p) => p.type === 'mole').length <= config.maxConcurrentMoles, 'mole concurrency must not exceed max');
+    assert.ok(pops.filter((p) => p.type === 'mole' && !p.good).length <= config.maxConcurrentMoles, 'mole concurrency must not exceed max'); // V1712 C: 일반 두더지(good)는 한도에서 뺌
     assert.ok(pops.filter((p) => p.type === 'animal').length <= config.maxConcurrentAnimals, 'animal concurrency must not exceed max');
   }
 }

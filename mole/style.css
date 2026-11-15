@@ -10600,3 +10600,11 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* V1712 C 사용자: 담배 연기는 칸 밖으로 안 나감 — 칸과 같은 크기 둥근 네모, 커지는 것도 칸 크기까지 */
 .hit-fx-smoke { width: calc(100% / var(--g, 4)); aspect-ratio: 1; border-radius: var(--cell-radius, 14px); overflow: hidden; background: radial-gradient(circle at 30% 32%, #fafafa 0 18%, transparent 19%), radial-gradient(circle at 70% 40%, #f3f3f3 0 20%, transparent 21%), radial-gradient(circle at 45% 70%, #f6f6f6 0 22%, transparent 23%), radial-gradient(circle at 50% 50%, #e2e2e2, #cfcfcf); box-shadow: inset 0 0 14px rgba(150, 150, 150, .6); animation: hit-fx-smoke-cell 2s ease-out forwards; }
 @keyframes hit-fx-smoke-cell { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.6); } 12% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 85% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1); } }
+
+/* V1714 C 사용자: 성공 = 모히칸 두더지가 펄펄 뜀(투명 움직이는 그림) — 하마보다 크게, 은색 외곽 글로우 대신 그림자만 */
+#gameover-overlay.is-win .go-hippo.go-hero { max-width: min(62vw, 260px); filter: drop-shadow(0 0 18px rgba(255, 255, 255, .9)) drop-shadow(0 10px 12px rgba(0, 0, 0, .16)); }
+
+/* V1714 C 사용자: 결과 화면 노란 배경 없앰 → 뒤 게임판을 뿌옇게(돋보임) */
+#gameover-overlay.is-win,
+#gameover-overlay.is-lose { background: rgba(255, 255, 255, .28); -webkit-backdrop-filter: blur(9px) saturate(.85); backdrop-filter: blur(9px) saturate(.85); }
+#gameover-overlay.is-win .go-hippo.go-hero { max-width: min(70vw, 300px); }

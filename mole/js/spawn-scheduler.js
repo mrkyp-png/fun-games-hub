@@ -26,6 +26,7 @@
   const STAY_MULT = { thief: 0.75, phone: 1.4 }; // V1710 C 사용자: 나쁜 두더지 성격 — 도둑은 빨리 도망, 휴대폰은 폰에 빠져 오래 머묾
   const GOLDEN_CHANCE = 0.03; // V1710 C 사용자: 황금 두더지 확률
   const GOOD_CHANCE = 0.1;    // V1712 C 사용자: 일반 두더지(때리면 안 됨) 확률 — 1방짜리 두더지 중
+  const BEHAVIORS = ['drink', 'smoke', 'phone', 'thief'];
   const RELAY_GAP = 0.3;      // V1710 C 사용자: 릴레이 묶음 사이 간격(초)
   const HIT_COOLDOWN = 0.12;  // 같은 두더지 연타 방지 간격 (초)
   const RETREAT_SEC = 0.6;    // 최종 타격/시간초과 후 "땅속으로 천천히 내려가는" 연출이 도는 시간
@@ -68,6 +69,8 @@
       return config.maxConcurrentBombs;
     }
 
+    // V1713 C 사용자: 지금 라운드의 타격 대상인가(성격 효과·황금은 대상에게만). 6라운드 = 색깔 두더지, 8라운드 = 둘 다
+    function isTarget(p) { if (p.good || p.bombKind) return false; if (p.type === 'mole') return !config.reverseTarget; if (p.type === 'animal') return !!(config.reverseTarget || config.dualTarget); return false; }
     function activeCountOf(type) {
       let n = 0;
       active.forEach((p) => { if (p.type === type && !p.good) n++; }); // V1712 C 사용자: 일반 두더지는 한도에서 뺌(칠 수 있는 두더지 수 유지)
@@ -155,12 +158,12 @@
           pop.good = pop.hitsRequired === 1 && roll < GOOD_CHANCE; // V1712 C 사용자: 일반 두더지 확률 낮춤(20% → 10%)
           if (!pop.good) pop.behavior = ['drink', 'smoke', 'phone', 'thief'][Math.min(3, Math.floor(Math.max(0, roll - GOOD_CHANCE) / ((1 - GOOD_CHANCE) / 4)))];
           // V1710 C 사용자: 황금 두더지 — 아주 가끔(3%, 1방짜리 나쁜 두더지 자리), 짧게 머묾·점수 5배·코인
-          if (!pop.good && pop.hitsRequired === 1 && Math.random() < GOLDEN_CHANCE) { pop.golden = true; pop.behavior = null; }
+          if (!pop.good && isTarget(pop) && pop.hitsRequired === 1 && Math.random() < GOLDEN_CHANCE) { pop.golden = true; pop.behavior = null; } // 황금은 타격 대상일 때만
         }
         pop.hitsTaken = 0;
         // 알리 펀치 [방어]: 내려가기(자연 만료) 전 0.1초 더 여유(기획서 §7, config.moleUpBonus).
         // 코스튬 효과(두더지 하강 딜레이, config.costumeUpBonus)는 무기 효과와 별개로 가산된다.
-        pop.remaining = config.popDuration * DURATION_MULT[pop.hitsRequired] * (pop.golden ? 0.7 : (STAY_MULT[pop.behavior] || 1)) + (config.moleUpBonus || 0) + (config.costumeUpBonus || 0); /* V1710 C: 성격별 머무는 시간(도둑 짧게·휴대폰 길게) */
+        pop.remaining = config.popDuration * DURATION_MULT[pop.hitsRequired] * (pop.golden ? 0.7 : (isTarget(pop) && STAY_MULT[pop.behavior] || 1)) + (config.moleUpBonus || 0) + (config.costumeUpBonus || 0); /* V1710 C: 성격별 머무는 시간(도둑 짧게·휴대폰 길게) */
         pop.life = pop.remaining;
       } else {
         pop.poseIndex = Math.floor(rng.next() * (config.obstacleCount || 5)); // 어느 동물인지
@@ -175,7 +178,8 @@
           pop.hitsRequired = pop.bombKind ? 1 : rollAnimalKind();
           pop.hitsTaken = 0;
           // 다타 동물도 두더지처럼 더 오래 떠 있어야 여러 번 때릴 시간이 생긴다.
-          pop.remaining = config.popDuration * (DURATION_MULT[pop.hitsRequired] || 1);
+          if (!pop.bombKind) pop.behavior = BEHAVIORS[Math.floor(Math.random() * 4)]; // V1713 C 사용자: 색깔 두더지도 소품(성격) — 효과는 타격 대상일 때만
+          pop.remaining = config.popDuration * (DURATION_MULT[pop.hitsRequired] || 1) * (isTarget(pop) && STAY_MULT[pop.behavior] || 1); pop.life = pop.remaining;
         }
       }
       pop.sinkIn = 0; // > 0 이면: 최종 타격을 맞았고 이 시간 뒤에 침몰(dying) 시작
@@ -200,10 +204,10 @@
       });
       // V1710 C 사용자: 술 두더지 — 머무는 시간 절반쯤 지나도 안 맞았으면 비틀거리며 옆(빈) 구멍으로 옮겨 감(1번)
       Array.from(active.values()).forEach((pop) => {
-        if (pop.behavior !== 'drink' || pop.wobbled || pop.dying || pop.sinkIn > 0 || pop.hitsTaken > 0 || !(pop.remaining < pop.life * 0.5) || pop.remaining < 0.6) return;
+        if (pop.behavior !== 'drink' || !isTarget(pop) || pop.wobbled || pop.dying || pop.sinkIn > 0 || pop.hitsTaken > 0 || !(pop.remaining < pop.life * 0.5) || pop.remaining < 0.6) return;
         pop.wobbled = true;
-        if (activeCountOf('mole') >= maxOf('mole')) return; // 동시 마릿수 한도를 넘지 않게(자리 없으면 그냥 제자리)
-        const free = candidateSpawnPointsFor('mole').filter((sp) => sp.id !== pop.spawnPointId);
+        if (activeCountOf(pop.type) >= maxOf(pop.type)) return; // 동시 마릿수 한도를 넘지 않게(자리 없으면 그냥 제자리)
+        const free = candidateSpawnPointsFor(pop.type).filter((sp) => sp.id !== pop.spawnPointId);
         if (!free.length) return;
         const sp = free.reduce((a, b) => (Math.hypot(b.x - pop.x, b.y - pop.y) < Math.hypot(a.x - pop.x, a.y - pop.y) ? b : a)); // 가까운 구멍
         const moved = Object.assign({}, pop, { id: nextPopId++, spawnPointId: sp.id, regionId: sp.regionId, col: sp.col, x: sp.x, y: sp.y, wobbled: true, remaining: pop.remaining + 0.3 });

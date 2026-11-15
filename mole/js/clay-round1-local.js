@@ -74,8 +74,10 @@ function animalIndex(index){const n=Number.isFinite(index)?Math.trunc(index):0;r
 function animalVariant(index){return animalVariants[animalIndex(index)]}
 // 색깔 두더지: 몸·발·머리는 같은 색, 주둥이는 같은 색의 연한 톤
 const GOLD=[1,.62,.08,1]; /* V1710 C 사용자: 황금 두더지 */
-function isColored(m){return m.kind==='animal'||m.kind==='bomb'||!!m.golden}
-function coloredMaterial(m,name){const c=m.golden?GOLD:animalVariant(m.poseIndex).color;if(name==='Clay warm caramel'||name==='Feet cocoa')return c;if(name==='Muzzle peach cream')return [0,1,2].map(k=>c[k]+(1-c[k])*.4).concat(1);return null}
+const MULTI_RED=[.78,.07,.05,1]; /* V1714 C 사용자: 2·3·4타 두더지 = 첫 타격(소품 날아감) 뒤부터 빨강 */
+function isRed(m){return !!m.multi&&(m.hits||0)>0}
+function isColored(m){return m.kind==='animal'||m.kind==='bomb'||!!m.golden||isRed(m)}
+function coloredMaterial(m,name){const c=m.golden?GOLD:isRed(m)?MULTI_RED:animalVariant(m.poseIndex).color;if(name==='Clay warm caramel'||name==='Feet cocoa')return c;if(name==='Muzzle peach cream')return [0,1,2].map(k=>c[k]+(1-c[k])*.4).concat(1);return null}
 function canRender(m){return m.kind==='mole'||m.kind==='animal'||m.kind==='bomb'}
 function isBombCarrier(m){return m.bomb||m.kind==='bomb'}
 function smooth(value){const t=Math.max(0,Math.min(1,value));return t*t*(3-2*t)}
@@ -192,7 +194,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
   if(!colorSize||vertexColors.length!==n*colorSize)throw Error('Invalid vertex color layout');
   const colorVariants=material.name==='Head smooth tone'?Object.fromEntries(AP.styles.map(id=>[id,buffer(AP.vertexColors(model,p,id))])):null;
   // 색깔 두더지 머리: 원래 머리 정점색을 몸색 비율로 바꿈(AP.vertexColors 와 같은 방식)
-  const animalHead=material.name==='Head smooth tone'&&p.attributes.COLOR_0!==undefined?animalVariants.concat([{color:GOLD}]).map(v=>{const old=g.materials.find(x=>x.name==='Clay warm caramel').pbrMetallicRoughness.baseColorFactor,r=new Float32Array(vertexColors);for(let i=0;i<r.length;i+=colorSize)for(let k=0;k<3;k++)r[i+k]=Math.min(1,Math.max(0,vertexColors[i+k]/old[k]*v.color[k]));return buffer(r)}):null;
+  const animalHead=material.name==='Head smooth tone'&&p.attributes.COLOR_0!==undefined?animalVariants.concat([{color:GOLD},{color:MULTI_RED}]).map(v=>{const old=g.materials.find(x=>x.name==='Clay warm caramel').pbrMetallicRoughness.baseColorFactor,r=new Float32Array(vertexColors);for(let i=0;i<r.length;i+=colorSize)for(let k=0;k<3;k++)r[i+k]=Math.min(1,Math.max(0,vertexColors[i+k]/old[k]*v.color[k]));return buffer(r)}):null;
   draws.push({node,count:n,material,colorVariants,animalHead,appearance:AP.hairStyle(g.nodes[node]),vertexColors:buffer(vertexColors),colorSize,positions:buffer(positions),normals:buffer(p.attributes.NORMAL===undefined?zero(n,3):R.accessor(model,p.attributes.NORMAL)),uv:buffer(p.attributes.TEXCOORD_0===undefined?zero(n,2):R.accessor(model,p.attributes.TEXCOORD_0)),joints:buffer(p.attributes.JOINTS_0===undefined?zero(n,4):R.accessor(model,p.attributes.JOINTS_0)),weights:buffer(weights),indices:indices?buffer(indices,gl.ELEMENT_ARRAY_BUFFER):null,indexCount:indices?.length||0,materialName:material.name||'',color:pbr.baseColorFactor||[1,1,1,1],roughness:pbr.roughnessFactor??.5,base:pbr.baseColorTexture?await texture(pbr.baseColorTexture.index,model):white,normal:material.normalTexture?await texture(material.normalTexture.index,model):normalWhite,hasBase:!!pbr.baseColorTexture,hasNormal:!!material.normalTexture,normalScale:material.normalTexture?.scale??1,double:material.doubleSided});
  }
  return draws}
@@ -255,7 +257,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
     const color=carriedObject&&d.materialName==='Carry bomb shell'&&m.bombKind==='strong'?[.68,.055,.04,1]:isColored(m)&&coloredMaterial(m,d.materialName)?coloredMaterial(m,d.materialName):m.kind==='mole'?AP.materialColor(d.material,'mohawk'):d.color;
     gl.uniform4fv(loc.uColor,color);gl.uniform1f(loc.uRoughness,d.roughness);gl.uniform1i(loc.uHasBase,d.hasBase);gl.uniform1i(loc.uHasNormal,d.hasNormal);gl.uniform1f(loc.uNormalScale,d.normalScale);
     d.double?gl.disable(gl.CULL_FACE):gl.enable(gl.CULL_FACE);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,d.base);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,d.normal);
-    bind(d.positions,attr.aPosition,3);bind(m.kind==='mole'&&d.colorVariants&&!m.golden?d.colorVariants.mohawk:isColored(m)&&d.animalHead?d.animalHead[m.golden?animalVariants.length:animalIndex(m.poseIndex)]:d.vertexColors,attr.aColor,d.colorSize);bind(d.normals,attr.aNormal,3);bind(d.uv,attr.aUV,2);bind(d.joints,attr.aJoints,4);bind(d.weights,attr.aWeights,4);
+    bind(d.positions,attr.aPosition,3);bind(m.kind==='mole'&&d.colorVariants&&!m.golden&&!isRed(m)?d.colorVariants.mohawk:isColored(m)&&d.animalHead?d.animalHead[m.golden?animalVariants.length:isRed(m)?animalVariants.length+1:animalIndex(m.poseIndex)]:d.vertexColors,attr.aColor,d.colorSize);bind(d.normals,attr.aNormal,3);bind(d.uv,attr.aUV,2);bind(d.joints,attr.aJoints,4);bind(d.weights,attr.aWeights,4);
     gl.uniform1f(loc.uOutline,outline?span/Math.max(1,board.clientWidth)*1.4:0);gl.uniform1i(loc.uOutlinePass,outline);
     if(outline){gl.enable(gl.CULL_FACE);gl.cullFace(gl.FRONT)}else gl.cullFace(gl.BACK);
     if(d.indices){gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,d.indices);gl.drawElements(gl.TRIANGLES,d.indexCount,gl.UNSIGNED_INT,0)}else gl.drawArrays(gl.TRIANGLES,0,d.count);
@@ -338,7 +340,7 @@ function renderPop(m){
  if(!entries.has(m.el)){
   m._appearance=m.kind==='mole'?AP.random():null;
   // V1703 C: 두더지는 게임 규칙이 정한 종류 그대로(일반=good 은 소품 없음, 나쁜=behavior). 색깔 두더지는 모양만 무작위.
-  m._behavior=isBombCarrier(m)?null:m.kind==='mole'?(m.good||m.golden?null:(m.behavior||pickBehavior())):m.kind==='animal'?pickBehavior():null;m._lifeAtSpawn=m.remaining;m._behRate=null;
+  m._behavior=isBombCarrier(m)?null:m.kind==='mole'?(m.good||m.golden?null:(m.behavior||pickBehavior())):m.kind==='animal'?(m.behavior||pickBehavior()):null;m._lifeAtSpawn=m.remaining;m._behRate=null;
   m._clayBorn=clockTime;m._clayHits=0;m._clayHit=-10;
   m._clayAppearDuration=Math.max(.18,Math.min(.45,(m.remaining??2)*.28));entries.set(m.el,m);
  }
