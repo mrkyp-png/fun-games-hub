@@ -3057,6 +3057,7 @@
       handleCell(16+Math.floor(fy*4)*4+Math.floor(fx*4));
     });
     document.getElementById('game-screen').classList.add('fever-field-active');
+    MG.ClayRoundOne.setGridSize(4); // V1726 C: 피버 판은 늘 4칸 줄 — 아마추어(3×3) 중이면 칸·두더지가 3칸 크기로 겹쳐 깨지던 것
     MG.ClayRoundOne.setFeverField(true);
   }
   function unmountFeverField() {
@@ -3071,6 +3072,7 @@
     state.holeLayer=MG.HoleLayer.create({container:document.getElementById('mole-hole-layer'),
       frontContainer:document.getElementById('mole-hole-front-layer'),spawnPoints:state.spawnPoints,gridSize:roundGridSize(),season:roundSeason()});
     document.getElementById('game-screen').classList.remove('fever-field-active');
+    MG.ClayRoundOne.setGridSize(roundGridSize()); // V1726 C: 피버 끝나면 원래 판 크기(아마추어 3·노말/프로 4)
     MG.ClayRoundOne.setFeverField(false);
   }
   function startFeverEvent() {
@@ -3314,7 +3316,12 @@
     const hippo = document.getElementById('gameover-hippo');
     // V1714 C 사용자: 성공 = 모히칸 두더지(게임 3D)가 웃으며 펄펄 뜀(움직이는 그림), 위 글자 SUCCESS. 실패는 기존 하마 그대로
     // V1721 C 사용자: 실패 = 모히칸 두더지가 고개를 푹 숙임(한 번 재생 후 멈춤). 같은 그림을 다시 보여 줘도 처음부터 재생되게 주소에 시각을 붙임
+    // V1726 C 사용자: 성공 화면에 지난번 실패 그림(고개 숙인 두더지)이 잠깐 보이던 것 — 새 그림이 준비될 때까지 숨김
+    hippo.style.visibility = 'hidden';
     hippo.src = win ? 'assets/result/hero-jump.webp?v=1714' : 'assets/result/hero-sad.webp?v=1721&t=' + Date.now();
+    { const want = hippo.src, show = () => { if (hippo.src === want) hippo.style.visibility = ''; };
+      if (hippo.decode) hippo.decode().then(show, show); else hippo.onload = show;
+      setTimeout(show, 1500); } // 그래도 늦으면 1.5초 뒤엔 보여 줌
     hippo.classList.add('go-hero');
 
     document.getElementById('gameover-reason').textContent =

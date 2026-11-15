@@ -26,7 +26,7 @@ for o in bpy.data.objects:
     if o.name.startswith('Bottle text en'): o.hide_render = True
 meshes = [o for o in bpy.data.objects if o.type == 'MESH' and not o.hide_render]
 cam = bpy.data.objects.new('cam', bpy.data.cameras.new('cam')); sc.collection.objects.link(cam); sc.camera = cam; cam.data.type = 'ORTHO'
-for i, k in enumerate([0.25, 0.5, 0.75]):
+for i, k in enumerate([0.05, 0.4, 0.75]):
     sc.frame_set(int(fr[0] + (fr[1] - fr[0]) * k)); bpy.context.view_layer.update()
     dg = bpy.context.evaluated_depsgraph_get(); mn = Vector((1e9,) * 3); mx = Vector((-1e9,) * 3)
     for o in meshes:

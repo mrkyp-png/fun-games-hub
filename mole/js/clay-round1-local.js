@@ -218,15 +218,16 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
   syncBoardShake();
   const dpr=Math.min(devicePixelRatio||1,1.5),size=Math.max(1,Math.round(board.clientWidth*dpr));
   const horizontal=feverField&&root.matchMedia('(orientation:landscape)').matches;
-  const headroom=Math.round(size*.16),viewportHeight=size+headroom;
+  /* V1726 C 사용자: 맨 아래 줄 두더지의 소품(콜라병 등)이 판 아래로 내려가면 버튼판 뒤로 숨던 것 — 캔버스를 아래로도 같은 만큼 늘려 버튼판 앞에 그림 */
+  const headroom=Math.round(size*.16),footroom=headroom,viewportHeight=size+headroom+footroom;
   const shake=boardShakeOffset(board),pixelScale=size/Math.max(1,board.clientWidth);
-  const width=size*(horizontal?2:1),height=size*(feverField&&!horizontal?2:1)+headroom;
+  const width=size*(horizontal?2:1),height=size*(feverField&&!horizontal?2:1)+headroom+footroom;
   if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height}
   gl.disable(gl.SCISSOR_TEST);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
   const span=10.2*gridSize/3;
   const projection=new Float32Array([2/span,0,0,0,0,2/span,0,0,0,0,-2/50,0,0,0,-1,1]);
   gl.uniformMatrix4fv(loc.uVP,false,R.multiply(projection,R.lookAt(eye,[0,1,0])));
-  gl.uniform2f(loc.uViewportY,size/viewportHeight,-headroom/viewportHeight);
+  gl.uniform2f(loc.uViewportY,size/viewportHeight,(footroom-headroom)/viewportHeight);
   const boardAspect=board.clientWidth/Math.max(1,board.clientHeight);
   gl.activeTexture(gl.TEXTURE0+2);gl.bindTexture(gl.TEXTURE_2D,rimTexture);gl.uniform1f(loc.uRimWidth,size/gridSize);gl.uniform1f(loc.uRimHeight,494/418/gridSize*size*boardAspect);
   if(!active)return;
@@ -247,7 +248,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
     gl.viewport(ox,oy,size,viewportHeight);gl.enable(gl.SCISSOR_TEST);gl.scissor(ox,oy,size,viewportHeight);
     gl.uniform1i(loc.uEntering,false);gl.uniform1i(loc.uForegroundProp,false);gl.uniform1i(loc.uJump,!!motion.appearing);gl.uniform1i(loc.uCarrying,!!isBombCarrier(m)||act!==baseActor);
     // The same pixel anchor is restored for the final foreground prop pass.
-    gl.uniform2f(loc.uOffset,(x-.5)*2+sx/board.clientWidth*2,(.5-y-Math.cos(angle)*.2/span)*2-sy/board.clientWidth*2);gl.uniform4f(loc.uHole,ox+x*size+sx*pixelScale,oy+(1-y)*size-sy*pixelScale,135/418/gridSize*size,58/418/gridSize*size*boardAspect);
+    gl.uniform2f(loc.uOffset,(x-.5)*2+sx/board.clientWidth*2,(.5-y-Math.cos(angle)*.2/span)*2-sy/board.clientWidth*2);gl.uniform4f(loc.uHole,ox+x*size+sx*pixelScale,oy+footroom+(1-y)*size-sy*pixelScale,135/418/gridSize*size,58/418/gridSize*size*boardAspect);
     gl.uniform1f(loc.uFlash,Math.max(0,Math.min(1,((m._clayFlashUntil||0)-clockTime)/.09))*.8);
    }
    function drawMesh(d,outline=false,matrix=null,holeOnly=false){

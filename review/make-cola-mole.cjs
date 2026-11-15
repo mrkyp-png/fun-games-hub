@@ -85,5 +85,16 @@ for (const key of ['ko', 'en']) {
   const mesh = g.meshes.push({ name: 'Bottle text ' + key, primitives: [{ attributes: { POSITION: addFloat(t.pos, 'VEC3', 34962, true), NORMAL: addFloat(t.nor, 'VEC3', 34962) }, indices: addIndex(t.idx), material: textMat }] }) - 1;
   addChild({ name: 'Bottle text ' + key, mesh });
 }
+// V1726 C 사용자: 눈동자는 평소 작게(0.6배), 병을 입에 대고 마시는 동안(1.5~3.85초, review/inspect-drink-anim.py 로 잰 때)만 지금 크기로 커짐
+{
+  const anim = g.animations.find((a) => a.name === 'Behavior'), SMALL = 0.6;
+  const keys = [[0, SMALL], [1.35, SMALL], [1.6, 1], [3.85, 1], [4.1, SMALL], [5.5, SMALL]];
+  for (const name of ['Round pupil 1', 'Round pupil -1']) {
+    const ni = nodeIndex(name), base = g.nodes[ni].scale, T = [], S = [];
+    keys.forEach(([t, k]) => { T.push(t); S.push(base[0] * k, base[1] * k, base[2]); });
+    const sampler = anim.samplers.push({ input: addFloat(T, 'SCALAR', null, true), output: addFloat(S, 'VEC3'), interpolation: 'LINEAR' }) - 1;
+    anim.channels.push({ sampler, target: { node: ni, path: 'scale' } });
+  }
+}
 write(OUT, g, bin);
 console.log('저장', OUT, bin.length);
