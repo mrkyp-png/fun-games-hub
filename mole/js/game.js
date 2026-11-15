@@ -3289,12 +3289,11 @@
       if (el) el.innerHTML = '';
     });
 
-    // 하마 = 기쁨/슬픔 3포즈 중 랜덤 1개
-    const poseN = 1 + Math.floor(Math.random() * 3);
     const hippo = document.getElementById('gameover-hippo');
     // V1714 C 사용자: 성공 = 모히칸 두더지(게임 3D)가 웃으며 펄펄 뜀(움직이는 그림), 위 글자 SUCCESS. 실패는 기존 하마 그대로
-    hippo.src = win ? 'assets/result/hero-jump.webp?v=1714' : 'assets/hippo/sad' + poseN + '.png';
-    hippo.classList.toggle('go-hero', !!win);
+    // V1721 C 사용자: 실패 = 모히칸 두더지가 고개를 푹 숙임(한 번 재생 후 멈춤). 같은 그림을 다시 보여 줘도 처음부터 재생되게 주소에 시각을 붙임
+    hippo.src = win ? 'assets/result/hero-jump.webp?v=1714' : 'assets/result/hero-sad.webp?v=1721&t=' + Date.now();
+    hippo.classList.add('go-hero');
 
     document.getElementById('gameover-reason').textContent =
       win ? 'SUCCESS' : I18N.t('mole.result.fail');
@@ -3317,7 +3316,7 @@
     ov.classList.remove('is-sliding');
     ov.hidden = false;
     // 하마 세로 크기 = 보드 높이의 40% (포즈마다 종횡비가 달라서 vh/% CSS 로는 머리가 잘렸음).
-    hippo.style.maxHeight = Math.round(ov.clientHeight * (win ? 0.75 : 0.4)) + 'px'; // V1719 C 사용자: 성공 두더지 1.5배 // V1714 C: 성공 두더지는 조금 더 크게
+    hippo.style.maxHeight = Math.round(ov.clientHeight * (win ? 0.75 : 0.6)) + 'px'; // V1719 C 사용자: 성공 두더지 1.5배 / V1721 C: 실패 두더지도 같은 크기 // V1714 C: 성공 두더지는 조금 더 크게
 
     setTimeout(() => {
       if (win) {

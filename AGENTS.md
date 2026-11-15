@@ -1,3 +1,7 @@
+# V1721 C DEPLOYED - 2026-11-15 (Claude)
+- Fail screen: mohawk hero bows his head (review/render-hero-sad.py: Idle pose + Head 38°/Body/arms bones, PainHit eyes) → mole/assets/result/hero-sad.webp (play once, ?t= cache-bust to replay). Hippo no longer used on results. Lose hero 0.6 of overlay height, centred (padding-bottom 1%).
+- User mentioned a 'yellow background' to delete — not found in result screens; ask where.
+
 # V1720 C DEPLOYED - 2026-11-15 (Claude)
 - Fever field: bad moles only (goodChance 0, noGolden, relay false in fever-field.js settings). Cause of 'fail during fever': normal moles in fever were tapped → hearts 0 → finish('lives').
 
