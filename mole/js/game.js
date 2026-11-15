@@ -1519,6 +1519,7 @@
     const feverBar=document.getElementById('lane-button-bar');
     if(feverBar){feverBar.style.transform='';feverBar.style.transition='';feverBar.querySelectorAll('.lane-button').forEach(b=>b.style.visibility='')}
     if (MG.ClayRoundOne) MG.ClayRoundOne.setActive(false);
+    document.getElementById('game-screen').classList.remove('gs-order'); orderCleanup(); // V1722 C: '순서대로 잡아라' 상태창·창 정리
     clearTimeout(nextRoundTimer); nextRoundTimer = 0;
     document.getElementById('game-screen').classList.remove('gs-intro');
     sessionGen++; // 진행 중이던 카운트다운/자동진행 타이머 무효화
@@ -1848,6 +1849,19 @@
     }
     const scheduler = MG.SpawnScheduler.create({ regions, spawnPoints, config, rng });
 
+    ensurePopElements();
+    sharedPopElements.clear();
+
+    const holeLayer = MG.HoleLayer.create({
+      container: document.getElementById('mole-hole-layer'),
+      frontContainer: document.getElementById('mole-hole-front-layer'),
+      spawnPoints, gridSize: roundGridSize(),
+      season: roundSeason()
+    });
+    return startRoundRest(opts, { clayRoundOne, myGen, weapon, laneSkillZone, regions, spawnPoints, scheduler, holeLayer, rng, config });
+  }
+  // V1722 C: 두더지 그림 관리(세션당 1번 생성) — '순서대로 잡아라'도 같은 것을 쓰도록 startRound 밖으로 꺼냄(내용 그대로)
+  function ensurePopElements() {
     if (!sharedPopElements) {
       sharedPopElements = MG.PopElements.create({
         container: document.getElementById('mole-pop-layer'),
@@ -1872,14 +1886,9 @@
         }
       });
     }
-    sharedPopElements.clear();
-
-    const holeLayer = MG.HoleLayer.create({
-      container: document.getElementById('mole-hole-layer'),
-      frontContainer: document.getElementById('mole-hole-front-layer'),
-      spawnPoints, gridSize: roundGridSize(),
-      season: roundSeason()
-    });
+  }
+  function startRoundRest(opts, ctx) {
+    const { myGen, weapon, laneSkillZone, regions, spawnPoints, scheduler, holeLayer, rng, config } = ctx;
 
     // 장착 무기 = 망치(기본) / 대포 스킨 / 골드해머(지진) / 알리 펀치(글러브 2개). 인터페이스 동일
     // (strike/update/home/clear/isBusy).
@@ -2535,6 +2544,7 @@
   function handleCell(regionId, hitOptions) {
     const source = hitOptions && hitOptions.source || 'player';
     recordInputTrace('handler', { regionId });
+    if (state && state.order) return orderHandleCell(regionId); // V1722 C: '순서대로 잡아라'는 전용 판정
     if (state && state.feverField) {
       if (state.ended || state.paused || state.feverTransitioning || state.feverResultShown || performance.now() >= state.feverEventUntil) return false;
       const point=state.spawnPoints.find(p=>p.regionId===regionId);
@@ -3273,6 +3283,18 @@
     // 10라운드 완주 + 목표 달성 = 승리(축하 연출 계속) / 아니면 실패(실패 연출).
     // 두 경우 다 아래 버튼은 "다시하기" 하나 (누르면 홈 화면).
     const win = reason === 'done' && prog.passed;
+    // Save the next unlocked position; after the success celebration, return to
+    // the plaza arcade machine automatically (V1621 C: round map removed) without starting another game.
+    const next = win ? MG.Progress.nextRound(chapter, light) : null;
+    if (next) {
+      // Persist the next waiting position without changing the completed result UI.
+      localStorage.setItem('mole.difficulty', next.light);
+      setChapter(next.chapter);
+    }
+    showResultOverlay(win, I18N.t('mole.result.scoreVs', { n: total.toLocaleString(), t: prog.target.toLocaleString() }), () => showWinChoice(!!next));
+  }
+  // V1722 C: 결과 화면 연출(내용 그대로) — '순서대로 잡아라'도 같은 화면을 쓰도록 finishFromRound 에서 꺼냄. onWinChoice = 성공 5초 뒤 창
+  function showResultOverlay(win, scoreText, onWinChoice) {
     const ov = document.getElementById('gameover-overlay');
     ov.classList.toggle('is-win', win);
     ov.classList.toggle('is-lose', !win);
@@ -3297,18 +3319,8 @@
 
     document.getElementById('gameover-reason').textContent =
       win ? 'SUCCESS' : I18N.t('mole.result.fail');
-    document.getElementById('gameover-score').textContent =
-      I18N.t('mole.result.scoreVs', { n: total.toLocaleString(), t: prog.target.toLocaleString() });
+    document.getElementById('gameover-score').textContent = scoreText;
     // 버튼 없음 — 성공/실패 둘 다 좌상단 ⊞ 로 홈. (광고는 유저 피로도 때문에 뺌.)
-
-    // Save the next unlocked position; after the success celebration, return to
-    // the plaza arcade machine automatically (V1621 C: round map removed) without starting another game.
-    const next = win ? MG.Progress.nextRound(chapter, light) : null;
-    if (next) {
-      // Persist the next waiting position without changing the completed result UI.
-      localStorage.setItem('mole.difficulty', next.light);
-      setChapter(next.chapter);
-    }
 
     // 커튼 오버레이는 결과 카드로 교체 (둘 다 z-index 10, ri 가 DOM 상 뒤라 안 치우면 위를 덮음).
     document.getElementById('round-intro-overlay').hidden = true;
@@ -3427,8 +3439,242 @@
       }
     }, 400); // 글자·하마 fly-in(0.4s) 끝난 뒤
     // V1715 C 사용자: 성공 화면은 계속 보여 줌(자동으로 광장에 안 돌아감). 5초 뒤 버튼판 위쪽에 [홈 복귀][다음 라운드] 창
-    if (win) { const gen = sessionGen; setTimeout(() => { if (gen === sessionGen && !ov.hidden && ov.classList.contains('is-win')) showWinChoice(!!next); }, 5000); }
+    if (win) { const gen = sessionGen; setTimeout(() => { if (gen === sessionGen && !ov.hidden && ov.classList.contains('is-win')) onWinChoice(); }, 5000); }
   }
+  // ---------- 순서대로 잡아라 (V1722 C) ----------
+  // 규칙·제시어·판정은 order-game.js, 여기는 화면 연결만. 기존 게임판·버튼판·두더지·뿅망치·결과 화면을 그대로 씀.
+  // 무기·스킬·피버·콤보 없음, 하트는 이 게임 전용 3개(공유 하트 안 씀).
+  function orderLang() { return I18N.lang === 'ko' ? 'ko' : 'en'; }
+  function beginOrderGame(round) {
+    if (gameStarting || state) return;
+    const mm = document.getElementById('more-menu');
+    if ((mm && !mm.hidden) || (screenNav && screenNav.current())) return;
+    gameStarting = true;
+    if (home3d) home3d.gameStarted();
+    setNavLock(true);
+    playScreenBgm('game');
+    startOrderRound(round);
+  }
+  function startOrderRound(round) {
+    unmountFeverField();
+    if (MG.ClayRoundOne && MG.ClayRoundOne.wait(() => startOrderRound(round))) return;
+    MG.ClayRoundOne.setActive(true);
+    MG.ClayRoundOne.setGridSize(GRID_SIZE);
+    sessionGen++;
+    gameStarting = false;
+    setNavLock(true);
+    if (sharedLaneControls) sharedLaneControls.setActiveNav(null);
+    ensureLaneControlsForChapter(false);
+    const bar = document.getElementById('lane-button-bar');
+    if (bar) bar.querySelectorAll('.lane-button').forEach((button) => { button.style.removeProperty('animation'); button.classList.remove('beat-textgrow'); });
+    if (sharedLaneControls) sharedLaneControls.setGameTextless(true);
+    applyRoundButtonPalette();
+    applyBoardTheme();
+    applyWeather();
+    const myGen = sessionGen;
+    run = { combo: MG.ComboScore.create(), lives: MG.OrderGame.CONFIG.hearts, comboMilestone: 0, shield: false };
+    updateShieldHud();
+    if (rafId) cancelAnimationFrame(rafId);
+    if (state && state.holeLayer) state.holeLayer.clear();
+    if (state && state.laneHammer) state.laneHammer.clear();
+    resetHot();
+    document.getElementById('board-start').hidden = true;
+    document.getElementById('gameover-overlay').hidden = true;
+    document.getElementById('game-screen').classList.remove('is-start');
+    const foldHinge = document.getElementById('fold-hinge');
+    if (foldHinge) foldHinge.style.visibility = 'hidden';
+    setCallLabel('game');
+    MG.roundWeapon = 'hammer';
+    syncEnhancementVisuals('hammer');
+    document.getElementById('game-screen').classList.remove('gs-laneskill', 'gs-alipunch');
+    skillSession = { weaponId: 'hammer', activeSkills: [], passiveApplied: [] };
+    applySkillSlots('hammer', false);
+    if (screenNav) screenNav.reset();
+    document.getElementById('more-menu').hidden = true;
+    applyBgm();
+    MG.HitFx.warmup();
+
+    const rng = { next: MG.RNG.mulberry32(MG.RNG.hashSeed('mole-order-' + round + '-' + Date.now())) };
+    const { regions, spawnPoints } = MG.GridPartition.partition({ gridSize: GRID_SIZE, checkerboard: true });
+    const order = MG.OrderGame.create({ spawnPoints, round, random: rng.next });
+    ensurePopElements();
+    sharedPopElements.clear();
+    const holeLayer = MG.HoleLayer.create({
+      container: document.getElementById('mole-hole-layer'),
+      frontContainer: document.getElementById('mole-hole-front-layer'),
+      spawnPoints, gridSize: GRID_SIZE, season: roundSeason()
+    });
+    if (MG.GameCannonModel) MG.GameCannonModel.releaseGPU();
+    if (MG.GameHammerModels) MG.GameHammerModels.releaseGPU();
+    // 동시 입력은 한 번에 하나만 망치가 맡고, 나머지는 연출 없이 판정만(분신 없음)
+    const laneHammer = MG.WeaponPool.create(MG.LaneHammer, { layer: document.getElementById('mole-hammer-layer'), weaponId: 'hammer', idle: 'bounce' }, { onOverflow: (x, y, onImpact) => { if (onImpact) onImpact(); } });
+    state = {
+      order, scheduler: order, config: {}, costumeStats: { safeRolls: 0, safeProcs: 0, doubleRolls: 0, doubleProcs: 0, doubleHits: 0 },
+      regions, spawnPoints, holeLayer, laneHammer, weapon: 'hammer', rng,
+      timeRemaining: MG.OrderGame.CONFIG.roundSeconds, mission: null, rushOn: false, aliClones: [], hitstopUntil: 0, quakeFxUntil: 0, alipunchInvincibleUntil: 0,
+      ended: false, paused: false, introActive: true,
+      feverEventDone: true, feverEventActive: false, pausedByFever: false, feverEventUntil: 0, feverTransitioning: false, feverResultShown: false
+    };
+    orderHudMount();
+    orderHud();
+    playRoundIntro(() => {
+      if (myGen !== sessionGen || !state || !state.order) return;
+      state.introActive = false;
+      setNavLock(false);
+      state.order.deploy();
+      lastTime = performance.now();
+      rafId = requestAnimationFrame(orderLoop);
+    }, {});
+  }
+  // 상태창: 첫째 줄 = HOME·ROUND·TIME·SCORE·HEART, 둘째 줄 전체 = 제시어(기존 SCORE·COMBO 줄 자리). 줄 높이·위치는 그대로
+  function orderHudMount() {
+    document.getElementById('game-screen').classList.add('gs-order');
+    const leading = document.getElementById('hud-leading'), trailing = document.getElementById('hud-trailing');
+    if (!leading || !trailing) return;
+    if (!document.getElementById('order-score')) {
+      const box = document.createElement('div'); box.id = 'order-score'; box.className = 'ms-box ms-round ms-order-score'; // ROUND 칸과 같은 모양(글자 위·숫자 아래)
+      box.innerHTML = '<span class="hud-copy"><span class="ms-label">SCORE</span><b id="order-score-val" class="ms-val">0</b></span>';
+      leading.insertBefore(box, leading.querySelector('.ms-heart'));
+    }
+    if (!document.getElementById('order-clues')) { const c = document.createElement('div'); c.id = 'order-clues'; trailing.appendChild(c); }
+  }
+  const ORDER_DOT = { red: '#E5483F', blue: '#4285E8', yellow: '#FFCA52', green: '#4DBB6E', purple: '#9B5FD8' };
+  function orderHud() {
+    if (!state || !state.order) return;
+    const o = state.order, m = o.mission();
+    MG.HUD.update({ round: o.round, lives: o.lives(), timeRemaining: state.timeRemaining, timeTotal: MG.OrderGame.CONFIG.roundSeconds, combo: 0, score: o.stats.score, modeLabel: orderLang() === 'ko' ? '순서대로 잡아라' : 'Catch in Order' });
+    const sv = document.getElementById('order-score-val'), txt = o.stats.score.toLocaleString();
+    if (sv && sv.textContent !== txt) sv.textContent = txt;
+    const box = document.getElementById('order-clues'); if (!box) return;
+    if (state.orderClues !== m.clues) { // 새 미션: 제시어 줄을 새로 그림
+      state.orderClues = m.clues; state.orderProgress = -1;
+      box.innerHTML = m.clues.map((c, i) => '<span class="oc-chip"><b>' + (i + 1) + '</b>' +
+        (c.notColor ? '<i class="oc-dot is-not" style="background:' + ORDER_DOT[c.notColor] + '"></i>' : '') +
+        (c.color ? '<i class="oc-dot" style="background:' + ORDER_DOT[c.color] + '"></i>' : '') +
+        MG.OrderGame.clueLabel(c, orderLang()) + '</span>').join('');
+    }
+    if (state.orderProgress !== m.progress) { // 진행 표시: 끝난 것 흐리게, 지금 칠 것 강조(줄이 넘치면 지금 것이 가운데로)
+      state.orderProgress = m.progress;
+      const chips = box.children;
+      for (let i = 0; i < chips.length; i++) { chips[i].classList.toggle('is-done', i < m.progress); chips[i].classList.toggle('is-now', i === m.progress); }
+      const now = chips[Math.min(m.progress, chips.length - 1)];
+      if (now) box.scrollLeft = Math.max(0, now.offsetLeft - (box.clientWidth - now.offsetWidth) / 2);
+    }
+  }
+  function orderLoop(now) {
+    if (!state || state.ended || !state.order) return;
+    if (state.paused) { lastTime = now; rafId = requestAnimationFrame(orderLoop); return; }
+    const dt = Math.min(0.1, (now - lastTime) / 1000);
+    lastTime = now;
+    state.timeRemaining -= dt; // 재배치 중에도 계속 흐름
+    if (state.timeRemaining <= 0) { state.timeRemaining = 0; orderHud(); orderEnd('done'); return; }
+    state.order.tick(dt);
+    state.laneHammer.update(dt);
+    if (state.ended) return;
+    syncPops();
+    orderHud();
+    rafId = requestAnimationFrame(orderLoop);
+  }
+  // 버튼 1번 = 판정 1번(order-game.js press). 눌린 구멍 테두리만 짧게 강조 — 레이저·파티클·화면 흔들림 없음
+  function orderHandleCell(regionId) {
+    if (!state || state.ended || state.introActive || state.paused) return false;
+    const st = state, o = st.order, r = o.press(regionId);
+    if (r.kind === 'ignored') return false;
+    const board = document.getElementById('mole-board'), cell = board.querySelector('.checkerboard-cell[data-region="' + regionId + '"]');
+    if (cell) { cell.classList.add('og-flash'); setTimeout(() => cell.classList.remove('og-flash'), 180); }
+    const frameKey = sharedPopElements.frameKeyAt ? sharedPopElements.frameKeyAt(regionId) : null;
+    st.laneHammer.strike(r.x, r.y, () => {
+      if (state !== st || st.ended) return;
+      o.impact(r.popId);
+      MG.HitFx.punch();
+      if (r.kind === 'correct') {
+        funTextAt(board, r.x, r.y - 0.08, '+' + r.points);
+        if (r.missionDone) MG.HitFx.skillWord(board, (orderLang() === 'ko' ? '미션 성공! +' : 'MISSION! +') + r.bonus);
+      } else if (r.kind === 'wrong') funTextAt(board, r.x, r.y - 0.08, '✖');
+      else { funTextAt(board, r.x, r.y - 0.1, '💢'); flashHud('hud-hearts'); }
+      syncPops();
+      orderHud();
+      if (o.lives() <= 0) orderEnd('lives');
+    }, frameKey, regionId);
+    return r.kind !== 'correct'; // 버튼 색: 정답 아니면 빨강(기존 버튼 효과 그대로)
+  }
+  function orderEnd(reason) {
+    if (!state || state.ended || !state.order) return;
+    state.ended = true;
+    sessionGen++;
+    if (rafId) cancelAnimationFrame(rafId);
+    if (state.laneHammer) state.laneHammer.home();
+    sharedPopElements.clear();
+    resetHot();
+    setNavLock(false);
+    const o = state.order, s = o.stats, rec = MG.OrderGame.record(o.round, s.score), ko = orderLang() === 'ko';
+    const win = rec.passed; // 목표 점수 달성 = 성공
+    showResultOverlay(win, '', () => showOrderChoice(o.round)); // 점수는 아래 기록 표에(겹침 방지)
+    const scoreLine = s.score.toLocaleString() + ' / ' + rec.target.toLocaleString();
+    const ov = document.getElementById('gameover-overlay');
+    orderCleanup();
+    const box = document.createElement('div'); box.id = 'order-result';
+    const rows = ko
+      ? [['ROUND ' + o.round + ' 점수 / 목표', scoreLine], ['성공 미션', s.missions], ['정답', s.hits], ['오답', s.wrong + s.goodHits], ['최고 점수', rec.best.toLocaleString() + (rec.newBest ? ' NEW' : '')]]
+      : [['ROUND ' + o.round + ' score / goal', scoreLine], ['Missions', s.missions], ['Correct', s.hits], ['Wrong', s.wrong + s.goodHits], ['Best', rec.best.toLocaleString() + (rec.newBest ? ' NEW' : '')]];
+    const unlock = o.round >= MG.OrderGame.MAX_ROUND ? '' : rec.unlockedNext ? (ko ? '🔓 ROUND ' + (o.round + 1) + ' 해금!' : '🔓 ROUND ' + (o.round + 1) + ' unlocked!')
+      : MG.OrderGame.load().unlocked > o.round ? (ko ? 'ROUND ' + (o.round + 1) + ' 열림' : 'ROUND ' + (o.round + 1) + ' open') : (ko ? '🔒 ' + rec.target.toLocaleString() + '점이면 다음 라운드' : '🔒 ' + rec.target.toLocaleString() + ' pts for next round');
+    box.innerHTML = rows.map(([k, v]) => '<span><i>' + k + '</i><b>' + v + '</b></span>').join('') + (unlock ? '<em>' + unlock + '</em>' : '');
+    ov.appendChild(box);
+    if (!win) { const gen = sessionGen; setTimeout(() => { if (gen === sessionGen && !ov.hidden) showOrderChoice(o.round); }, 3000); } // 실패도 3초 뒤 [홈 복귀][다시 하기]
+  }
+  function orderCleanup() { ['order-result', 'order-select'].forEach((id) => { const el = document.getElementById(id); if (el) el.remove(); }); }
+  function showOrderChoice(round) {
+    hideWinChoice();
+    const ko = orderLang() === 'ko', bar = document.getElementById('lane-button-bar'), gs = document.getElementById('game-screen');
+    const canNext = round < MG.OrderGame.MAX_ROUND && MG.OrderGame.load().unlocked > round;
+    const p = document.createElement('div'); p.id = 'win-choice'; p.className = 'wc-order';
+    p.innerHTML = '<button type="button" class="wc-btn wc-home">' + (ko ? '홈 복귀' : 'Home') + '</button><button type="button" class="wc-btn wc-retry">' + (ko ? '다시 하기' : 'Retry') + '</button>' +
+      (canNext ? '<button type="button" class="wc-btn wc-next">' + (ko ? '다음 라운드' : 'Next') + '</button>' : '');
+    gs.appendChild(p);
+    if (bar) { const r = bar.getBoundingClientRect(), g = gs.getBoundingClientRect(); p.style.top = Math.round(r.top - g.top - p.offsetHeight / 2) + 'px'; }
+    p.querySelector('.wc-home').addEventListener('click', () => {
+      hideWinChoice();
+      const enter = () => showStartScreenNow({ skipFlash: true });
+      if (MG.ShapeTransition) MG.ShapeTransition.run(1, enter); else enter();
+    });
+    const again = (n) => {
+      hideWinChoice(); orderCleanup();
+      const go = document.getElementById('gameover-overlay');
+      go.hidden = true; go.classList.remove('is-win', 'is-lose', 'is-sliding', 'win-fx-rays', 'win-fx-starpop', 'fail-fx-1', 'fail-fx-3', 'fail-fx-4', 'fail-fx-8');
+      ['.go-confetti', '.go-fireworks', '.go-starpop', '.fail-dust-layer', '.fail-heart-layer', '.fail-ash-layer'].forEach((sel) => { const el = go.querySelector(sel); if (el) el.innerHTML = ''; });
+      if (winFxTimer) { clearInterval(winFxTimer); winFxTimer = null; }
+      setHammerLayerVisible(true);
+      setNavLock(true); playScreenBgm('game');
+      startOrderRound(n);
+    };
+    p.querySelector('.wc-retry').addEventListener('click', () => again(round));
+    if (canNext) p.querySelector('.wc-next').addEventListener('click', () => again(round + 1));
+  }
+  // 광장 게임기 네 번째 버튼 → 라운드 선택 창(1~8, 잠긴 라운드는 앞 라운드 목표 점수 표시)
+  function showOrderSelect() {
+    if (navLocked || gameStarting || state || document.getElementById('order-select')) return false;
+    const OG = MG.OrderGame, s = OG.load(), ko = orderLang() === 'ko', gs = document.getElementById('game-screen');
+    const p = document.createElement('div'); p.id = 'order-select';
+    let cards = '';
+    for (let n = 1; n <= OG.MAX_ROUND; n++) {
+      const locked = n > s.unlocked, best = s.best[n] | 0;
+      cards += '<button type="button" class="os-round' + (locked ? ' is-locked' : '') + '" data-n="' + n + '"' + (locked ? ' disabled' : '') + '><b>ROUND ' + n + '</b><span>' +
+        (locked ? '🔒 ' + (n - 1) + 'R ' + OG.CONFIG.target[n - 1].toLocaleString() : (ko ? '제시어 ' : 'Clues ') + OG.CONFIG.clues[n] + ' · BEST ' + best.toLocaleString()) + '</span></button>';
+    }
+    p.innerHTML = '<div class="os-card"><button type="button" class="os-close" aria-label="close">✕</button><h3>' + (ko ? '순서대로 잡아라' : 'Catch in Order') + '</h3>' +
+      '<p class="os-sub">' + (ko ? '제시어 순서대로 나쁜 두더지를 잡아라! (90초)' : 'Catch the bad moles in the given order! (90s)') + '</p><div class="os-grid">' + cards + '</div></div>';
+    gs.appendChild(p);
+    ['pointerdown', 'pointermove', 'pointerup', 'touchstart', 'touchmove', 'touchend', 'mousedown', 'mouseup'].forEach((ev) => p.addEventListener(ev, (e) => e.stopPropagation())); // 뒤의 광장으로 입력이 새지 않게
+    p.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const b = e.target.closest('.os-round');
+      if (b && !b.disabled) { const n = Number(b.dataset.n); p.remove(); if (MG.ShapeTransition) MG.ShapeTransition.run(1, () => beginOrderGame(n)); else beginOrderGame(n); return; }
+      if (e.target.closest('.os-close') || e.target === p) p.remove();
+    });
+    return true;
+  }
+
   function hideWinChoice() { const p = document.getElementById('win-choice'); if (p) p.remove(); }
   function showWinChoice(hasNext) {
     hideWinChoice();
@@ -3602,6 +3848,9 @@
       startRound({ fresh: true });
     };
     window.__debugSetChapter = (n) => { setChapter(n); };
+    window.__debugStartOrder = (n) => { beginOrderGame(n || 1); }; // V1722 C: '순서대로 잡아라' 바로 시작
+    window.__debugOrder = () => (state && state.order ? { round: state.order.round, phase: state.order.phase(), lives: state.order.lives(), stats: state.order.stats, time: state.timeRemaining, mission: state.order.mission(), pops: state.order.getActivePops().map((p) => ({ regionId: p.regionId, traits: p.traits, dying: p.dying, hitAt: p.hitAt })) } : null);
+    window.__debugOrderSelect = () => showOrderSelect();
     window.__debugPlayStartIntro = () => { playStartIntro(() => {}); }; // beginGame() 이 거치는 타이핑 인트로만 단독 재생(테스트용)
     window.__debugUnlockAll = () => { localStorage.setItem('mole.unlockAll', '1'); };
     window.__debugProgress = () => ({
@@ -3735,6 +3984,7 @@
       // 게임기 모드 버튼: 라운드 지도와 같은 규칙(그 모드에서 열린 가장 높은 라운드로)
       setMode: (l) => { if (!l || !MG.Progress.isLightUnlocked(l)) return false; setDifficulty(l); setChapter(MG.Progress.maxChapterFor(l)); refreshChapterNav(); return true; },
       selectRound: (n) => { if (n < 1 || n > MG.Progress.maxChapterFor(currentLight())) return false; setChapter(n); refreshChapterNav(); return true; },
+      openOrder: () => showOrderSelect(), // V1722 C: 게임기 네 번째 버튼 = '순서대로 잡아라' 라운드 선택
       host: document.getElementById('game-screen'),
       hud: () => ({ coins: MG.Economy.formatK(MG.Economy.getCoins()), hearts: MG.Economy.formatK(MG.Economy.getHearts()), tickets: MG.Economy.formatK(MG.Economy.getTickets()) })
     });

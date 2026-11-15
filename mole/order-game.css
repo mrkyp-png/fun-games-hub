@@ -1,0 +1,60 @@
+/* V1722 C: '순서대로 잡아라' 전용 화면 — 상태창 둘째 줄(제시어), 구멍 테두리 강조, 라운드 선택 창, 결과 기록. 다른 게임에는 적용 안 됨(.gs-order / 전용 id) */
+
+/* 상태창: 첫째 줄에 SCORE 칸 추가, 둘째 줄(기존 SCORE·COMBO 자리)은 제시어 줄만 */
+#game-screen.gs-order #hud-trailing > :not(#order-clues) { display:none !important; }
+#game-screen.gs-order #order-clues {
+  flex:1 1 0; min-width:0; height:100%; display:flex; align-items:center; gap:5px;
+  box-sizing:border-box; padding:0 5px; overflow:hidden; scroll-behavior:smooth; pointer-events:none;
+}
+#order-clues .oc-chip {
+  flex:0 0 auto; display:flex; align-items:center; gap:4px; height:calc(100% - 8px); max-height:34px; padding:0 9px;
+  border-radius:999px; background:#e9ebe6; color:#6b6f76; box-shadow:inset 0 0 0 2px #c9ccc6;
+  font-family:'Jua','Malgun Gothic',sans-serif; font-size:15px; line-height:1; white-space:nowrap;
+}
+#order-clues .oc-chip > b { font-weight:400; font-size:11px; opacity:.6; }
+#order-clues .oc-chip.is-now { background:#ffd84a; color:#303237; box-shadow:inset 0 0 0 2px #303237; font-size:18px; }
+#order-clues .oc-chip.is-done { opacity:.4; text-decoration:line-through; }
+#order-clues .oc-dot { position:relative; flex:0 0 auto; width:13px; height:13px; border-radius:50%; box-shadow:inset 0 0 0 1.5px #303237; }
+#order-clues .oc-dot.is-not::after { content:""; position:absolute; left:-3px; right:-3px; top:5.5px; height:2.5px; border-radius:2px; background:#c52626; transform:rotate(-45deg); }
+
+/* 버튼을 누른 구멍: 테두리만 짧게 강조 */
+#game-screen.gs-order .checkerboard-cell.og-flash { outline:3px solid #ffd84a; outline-offset:-4px; }
+
+/* 결과 화면: 기록 표 */
+#order-result {
+  position:absolute; left:50%; bottom:13%; transform:translateX(-50%); z-index:5; width:min(94%,350px); box-sizing:border-box;
+  display:flex; flex-wrap:wrap; justify-content:center; gap:3px 8px; padding:6px 8px; border-radius:16px;
+  background:rgba(255,255,255,.86); border:3px solid #d6ad63; color:#303237; font-family:'Jua','Malgun Gothic',sans-serif; pointer-events:none;
+}
+#order-result span { display:flex; flex-direction:column; align-items:center; min-width:50px; line-height:1.1; }
+#order-result span:first-child { flex:1 0 100%; }
+#order-result span:first-child b { font-size:22px; }
+#order-result i { font-style:normal; font-size:11px; color:#7a6a4c; }
+#order-result b { font-weight:400; font-size:17px; }
+#order-result em { flex:1 0 100%; text-align:center; font-style:normal; font-size:15px; color:#2f7d4a; }
+
+/* 결과 뒤 선택 창: 버튼 3개까지 */
+#win-choice.wc-order { gap:7px; padding:10px; }
+#win-choice.wc-order .wc-btn { font-size:1.75rem; min-height:58px; padding:0 2px; }
+#win-choice .wc-retry { background:#e09a3c; }
+
+/* 라운드 선택 창(광장 게임기 네 번째 버튼) — 폭은 다른 창과 같게(--sq), 금색 테두리 */
+#order-select { position:absolute; inset:0; z-index:9000; display:flex; align-items:center; justify-content:center; background:rgba(20,26,40,.5); }
+#order-select .os-card {
+  position:relative; width:var(--sq, calc(100% - 22px)); max-width:calc(100% - 22px); box-sizing:border-box; padding:16px 12px 14px;
+  border-radius:22px; background:linear-gradient(180deg,#fff8e8,#ffe9bd); border:4px solid #d6ad63; box-shadow:0 12px 30px rgba(0,0,0,.35);
+  font-family:'Jua','Malgun Gothic',sans-serif; color:#4a3a22; text-align:center; animation:os-in .3s cubic-bezier(.2,1.4,.4,1) both;
+}
+@keyframes os-in { from { opacity:0; transform:scale(.9); } to { opacity:1; transform:none; } }
+#order-select h3 { margin:0; font-size:26px; font-weight:400; }
+#order-select .os-sub { margin:4px 0 10px; font-size:13px; color:#7a6a4c; }
+#order-select .os-close { position:absolute; top:8px; right:8px; width:34px; height:34px; border:0; border-radius:50%; background:#d6ad63; color:#fff; font-size:17px; line-height:1; cursor:pointer; }
+#order-select .os-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+#order-select .os-round {
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; min-height:58px; padding:6px 4px; border:0; border-radius:14px;
+  background:#4fae6a; color:#fff; font-family:inherit; cursor:pointer; box-shadow:inset 0 -5px 0 rgba(0,0,0,.18);
+}
+#order-select .os-round b { font-weight:400; font-size:19px; line-height:1; }
+#order-select .os-round span { font-size:12px; line-height:1; opacity:.95; }
+#order-select .os-round.is-locked { background:#b9b4a6; color:#f4f1e8; cursor:default; }
+#order-select .os-round:not(.is-locked):active { transform:translateY(2px); box-shadow:inset 0 -2px 0 rgba(0,0,0,.18); }

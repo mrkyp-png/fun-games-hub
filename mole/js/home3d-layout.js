@@ -117,8 +117,9 @@
   // 라운드별 게임 화면 색(실제 게임 화면 1~8라운드에서 뽑음, 2026-11-06)
   const ROUND_COLORS = ['#303237', '#8a3e40', '#9f6735', '#ab9337', '#428257', '#3d6ca1', '#4a4b82', '#774c94'];
   // 모드 버튼 3개(아마추어·노말·프로). 사용자: 아이보리 판을 앞으로 빼서(앞 끝 -0.96) 생긴 앞쪽 공간(-0.78)에 간격 넓혀 크게(사용자: 작으면 못 누름), 위를 봄
-  const MODE_COLORS = { easy: '#d99a3e', mid: '#6f8aa6', legend: '#8e6a8c' };
-  const ARCADE_BUTTONS = ['easy', 'mid', 'legend'].map((light, k) => ({ light, x: (-0.32 + k * 0.32) * ARCADE_K, y: DECK_Y + 0.005, z: -(9 - 0.78 * ARCADE_K), r: 0.09 * ARCADE_K, color: MODE_COLORS[light] }));
+  // V1722 C 사용자: 버튼 4개로(0.85배로 줄여 같은 폭에 고르게) — 제일 오른쪽 = '순서대로 잡아라'(order, 초록)
+  const MODE_COLORS = { easy: '#d99a3e', mid: '#6f8aa6', legend: '#8e6a8c', order: '#4fae6a' };
+  const ARCADE_BUTTONS = ['easy', 'mid', 'legend', 'order'].map((light, k) => ({ light, x: (-0.36 + k * 0.24) * ARCADE_K, y: DECK_Y + 0.005, z: -(9 - 0.78 * ARCADE_K), r: 0.0765 * ARCADE_K, color: MODE_COLORS[light] }));
   function pickHole(x, z) { return ARCADE_HOLES.find((h) => Math.hypot(x - h.x, z - h.z) <= h.r * 1.25) || null; }
   function nearestRide(x, z) { return RIDES.find((rd) => Math.hypot(x - rd.x, z - rd.z) - rd.body <= 0.6) || (Math.hypot(x - DISCO.x, z - DISCO.z) - DISCO.body <= 0.6 ? DISCO : null); } /* V1660 C: 디스코 팡팡 타기 */
 

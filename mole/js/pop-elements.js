@@ -94,6 +94,7 @@
       const m = {
         el, img, bombEl, kind: pop.type, poseIndex: pop.poseIndex || 0, regionId: pop.regionId,
         shownDepth: GONE_DEPTH, targetDepth: 0, shownFile: null, dying: false, remaining: pop.remaining,
+        tint: pop.tint == null ? null : pop.tint, appearance: pop.appearance || null, bald: !!pop.bald, // V1722 C '순서대로 잡아라': 몸 색·머리 모양 지정(다른 게임은 값 없음 = 기존 그대로)
         blast: false, punch: false, dyingFrom: 0, good: !!pop.good, behavior: pop.behavior || null, golden: !!pop.golden, multi: pop.type === 'mole' && pop.hitsRequired > 1, // V1714 C 사용자: 2·3·4타 두더지 = 빨강
         // 다타 동물(챕터8)만 빠끔 프레임 사용 — 아니면 등장(emerge) 애니메이션이 깊이값
         // 3→2→1→0 을 그냥 지나치기만 해도 빠끔 프레임을 스치며 "커졌다 작아지는" 것처럼

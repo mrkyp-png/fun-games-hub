@@ -80,9 +80,9 @@
       const cur = L.ARCADE_HOLES.find((h) => h.n === R0.chapter);
       const best = R0.get(R0.chapter).best, mode = t('mole.rm.mode.' + R0.light);
       const l1 = ko ? mode + ' ' + R0.chapter + '라운드' : mode + ' Round ' + R0.chapter, l2 = 'BEST ' + Number(best).toLocaleString('en-US');
-      const key = holes.map((h) => h.glow).join(',') + '|' + R0.chapter + '|' + l1 + '|' + l2 + '|' + L.ARCADE_BUTTONS.map((b) => +R0.unlocked(b.light)).join('');
+      const key = holes.map((h) => h.glow).join(',') + '|' + R0.chapter + '|' + l1 + '|' + l2 + '|' + L.ARCADE_BUTTONS.map((b) => +(b.light === 'order' || R0.unlocked(b.light))).join('');
       if (!force && key === arcadeKey) return;
-      const buttons = L.ARCADE_BUTTONS.map((b) => Object.assign({}, b, { unlocked: R0.unlocked(b.light), active: b.light === R0.light, pressed: 0 }));
+      const buttons = L.ARCADE_BUTTONS.map((b) => Object.assign({}, b, { unlocked: b.light === 'order' || R0.unlocked(b.light), active: b.light === R0.light, pressed: 0 })); // V1722 C: 네 번째(order) = '순서대로 잡아라', 항상 열림
       if (arcadeState && arcadeState.mole && cur && arcadeState.mole.n !== cur.n) popAt = time; // 다른 구멍으로 옮김 = 튀어나오기부터
       arcadeKey = key + '|' + buttons.map((b) => +b.unlocked).join('');
       arcadeState = { holes, mole: cur || null, buttons, flash: [] }; rd.setArcade(arcadeState); rd.setScreen(l1, l2);
@@ -412,7 +412,7 @@
         const st0 = time - seqAt, STEP = 0.2;
         arcadeState.flash = st0 >= 0 && st0 < STEP * 9 + 0.35 ? [1, 2, 3, 4, 5, 6, 7, 8, 0].filter((n, i) => st0 >= i * STEP && st0 < i * STEP + 0.35) : [];
         arcadeState.buttons.forEach((b, k) => { const pt = press && press.k === k ? time - press.at : -1; b.pressed = pt >= 0.14 && pt < 0.45 ? 1 : 0; });
-        if (press && !press.done && time - press.at >= 0.26) { press.done = true; if (opts.setMode && opts.setMode(press.light)) { refreshArcade(true); seqAt = time; } }
+        if (press && !press.done && time - press.at >= 0.26) { press.done = true; if (press.light === 'order') { if (opts.openOrder) opts.openOrder(); } /* V1722 C: 네 번째 버튼 = 라운드 선택 창 */ else if (opts.setMode && opts.setMode(press.light)) { refreshArcade(true); seqAt = time; } }
         if (press && time - press.at > 0.65) press = null;
         arcadeState.moleOn = !!(inside && inside.phase === 'in'); // 라운드 구멍 두더지 = 게임기 안에 들어왔을 때만
         if (arcadeState.mole) { // 게임과 같은 순서(clay-round1-local clipFor): Appear 0.4초 → RimSettle 0.22초 → RimIdle
