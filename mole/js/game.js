@@ -2386,7 +2386,7 @@
   const MISSION_REWARD = 1000; // V1712 C 사용자: 미션 성공 코인 1000
   function missionLabel(ms) {
     const ko = I18N.lang === 'ko';
-    const nm = { any: ko ? '나쁜 두더지' : 'bad moles', thief: ko ? '도둑 두더지' : 'thief moles', drink: ko ? '쥬스 두더지' : 'juice moles' /* V1724 C 사용자: 술 → 쥬스 */, smoke: ko ? '담배 두더지' : 'smoking moles', phone: ko ? '휴대폰 두더지' : 'phone moles' }[ms.kind];
+    const nm = { any: ko ? '나쁜 두더지' : 'bad moles', thief: ko ? '도둑 두더지' : 'thief moles', drink: ko ? '콜라 두더지' : 'cola moles' /* V1725 C 사용자: 술 → 콜라 */, smoke: ko ? '담배 두더지' : 'smoking moles', phone: ko ? '휴대폰 두더지' : 'phone moles' }[ms.kind];
     if (ms.kind === 'combo') return ko ? ms.n + ' 콤보 달성' : 'Reach ' + ms.n + ' combo';
     return ko ? nm + ' ' + ms.n + '마리 잡기' : 'Catch ' + ms.n + ' ' + nm;
   }

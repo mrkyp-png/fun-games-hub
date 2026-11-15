@@ -25,6 +25,8 @@ const PROP_SCALE=1.3,PROP_PIVOT={drink:'FrontHeldBottle',smoke:'Cigarette',thief
 function propSized(model,worlds,node,beh){const pn=PROP_PIVOT[beh];if(!pn)return worlds[node];if(model._propPivot===undefined)model._propPivot=model.json.nodes.findIndex(n=>n.name===pn);const w=worlds[model._propPivot];if(!w)return worlds[node];const P=[w[12],w[13],w[14]];return R.multiply(R.multiply(R.transform({translation:P,scale:[PROP_SCALE,PROP_SCALE,PROP_SCALE]}),R.transform({translation:P.map(v=>-v)})),worlds[node]);}
 const PROP_RE=/^(Bottle|Open bottle|Dark open|Curved cream|Alcohol|Cigarette|Ember|Landscape phone|Phone|Rear camera|Sack|Money)/,MASK_RE=/^(Thief mask|Mask |Eye hole patch|Angry brow|Round pupil|Eye highlight|Dazed ivory eye)/;
 const PROP_FLY=.8;
+/* V1725 C 사용자: 콜라병 글자 = 게임 언어에 맞는 것 하나만('Bottle text ko' / 'Bottle text en', 그 밖의 언어는 영어) */
+function otherLangText(name){const m=/^Bottle text (ko|en)$/.exec(name||'');if(!m)return false;const l=root.FGH&&root.FGH.I18N&&root.FGH.I18N.lang;return m[1]!==(l==='ko'?'ko':'en')}
 function startPropFly(m){
  const b=m._behavior&&behaviorActors.get(m._behavior);if(!b||m._propFly||m._clayRestTime==null||clockTime<m._clayRestTime)return;
  const worlds=AP.pose(b.runtime,b.clip,behaviorTime(m,clockTime),true,null,clockTime,m._appearance||'mohawk'),a=Math.random()*Math.PI*2;
@@ -208,7 +210,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
  const flagsFor=(runtime,model)=>runtime.skins.map(skeleton=>{const flags=new Float32Array(Math.ceil(skeleton.joints.length/4)*4);skeleton.joints.forEach((j,i)=>{flags[i]=/^(UpperArm|Forearm|Hand|Finger[123]|Thumb)\.|^BombCarry$/.test(model.json.nodes[j].name||'')?1:0});return flags});
  const baseActor={model,runtime,draws,rimFlags:flagsFor(runtime,model)};
  // 나쁜 두더지(술·담배·휴대폰·도둑): 기본 두더지 준비 후 뒤에서 불러옴. 못 불러오면 일반 두더지로 나옴.
- Promise.all(BEHAVIORS.map(async id=>{const r=await fetch(id==='drink'?'assets/characters-v1724/behavior-drink.glb':'assets/characters-v1694/behavior-'+id+'.glb') /* V1724 C 사용자: 술 두더지 → 쥬스 두더지(주황 병·동그란 눈·연분홍 볼, 동작 그대로) */;if(!r.ok)throw Error('Behavior model '+id+' '+r.status);const raw=R.parseGLB(await r.arrayBuffer());raw.json.animations=raw.json.animations||[];const bm=await AP.prepare(raw),brt=R.prepare(bm),clip=brt.animations.find(c=>c.name==='Behavior');behaviorActors.set(id,{model:bm,runtime:brt,draws:await makeDraws(bm,[]),rimFlags:flagsFor(brt,bm),clip:clip?'Behavior':null})})).catch(e=>console.error('Behavior moles',e));
+ Promise.all(BEHAVIORS.map(async id=>{const r=await fetch(id==='drink'?'assets/characters-v1725/behavior-drink.glb':'assets/characters-v1694/behavior-'+id+'.glb') /* V1724 C 사용자: 술 두더지 → 쥬스 두더지(주황 병·동그란 눈·연분홍 볼, 동작 그대로) */;if(!r.ok)throw Error('Behavior model '+id+' '+r.status);const raw=R.parseGLB(await r.arrayBuffer());raw.json.animations=raw.json.animations||[];const bm=await AP.prepare(raw),brt=R.prepare(bm),clip=brt.animations.find(c=>c.name==='Behavior');behaviorActors.set(id,{model:bm,runtime:brt,draws:await makeDraws(bm,[]),rimFlags:flagsFor(brt,bm),clip:clip?'Behavior':null})})).catch(e=>console.error('Behavior moles',e));
  function bind(b,id,size){gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.enableVertexAttribArray(id);gl.vertexAttribPointer(id,size,gl.FLOAT,false,0,0)}
  const angle=Math.PI/6,eye=[0,1+10*Math.sin(angle),10*Math.cos(angle)];
  gl.uniform3fv(loc.uEye,eye);
@@ -270,6 +272,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
     // 도둑: 복면 눈 구멍으로 몸의 원래 갈색 눈썹이 비치지 않게
     if(m._behavior==='thief'&&d.materialName==='Eyebrow')continue;
     const carriedObject=d.materialName.startsWith('Carry bomb '),meshName=model.json.nodes[d.node].name;
+    if(otherLangText(meshName))continue;
     if(meshName==='Mole_Carrier_Skin'&&!isBombCarrier(m)||meshName==='Mole_Clay_Skin'&&isBombCarrier(m))continue;
     if(carriedObject){if(isBombCarrier(m)&&!(m.dying&&m.killed))props.push(d);continue;}
     if(act!==baseActor&&PROP_RE.test(meshName||'')){
@@ -296,7 +299,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
      gl.uniform1i(loc.uForegroundProp,true);gl.uniform1i(loc.uJump,false);
      const at=R.transform({translation:[0,-3.4*fly.depth/4,0]}),move=R.transform({translation:[fly.vel[0]*age,fly.vel[1]*age-7*age*age,fly.vel[2]*age]});
      for(const d of bActor.draws){
-      if(!PROP_RE.test(bActor.model.json.nodes[d.node].name||''))continue;
+      if(!PROP_RE.test(bActor.model.json.nodes[d.node].name||'')||otherLangText(bActor.model.json.nodes[d.node].name))continue;
       const w=propSized(bActor.model,fly.worlds,d.node,m._behavior),c=[w[12],w[13],w[14]],ang=fly.spin*age,s=Math.sin(ang/2);
       const rot=R.multiply(R.multiply(R.transform({translation:c}),R.transform({rotation:[fly.axis[0]*s,fly.axis[1]*s,fly.axis[2]*s,Math.cos(ang/2)]})),R.transform({translation:c.map(v=>-v)}));
       drawMesh(d,false,R.multiply(R.multiply(move,at),R.multiply(rot,w)));
@@ -308,7 +311,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
      if(!m._exitWorlds)m._exitWorlds=AP.pose(bActor.runtime,bActor.clip,behaviorTime(m,m._clayExitAt??clockTime),true,null,clockTime,m._appearance||'mohawk');
      const w=smooth((clockTime-(m._clayExitAt??clockTime))/.18),pull=R.transform({translation:[0,-.4*w,-.9*w]});
      for(const d of bActor.draws){
-      if(!PROP_RE.test(bActor.model.json.nodes[d.node].name||''))continue;
+      if(!PROP_RE.test(bActor.model.json.nodes[d.node].name||'')||otherLangText(bActor.model.json.nodes[d.node].name))continue;
       drawMesh(d,false,R.multiply(instance,R.multiply(pull,propSized(bActor.model,m._exitWorlds,d.node,m._behavior))),true);
      }
      gl.uniform1i(loc.uEntering,false);
