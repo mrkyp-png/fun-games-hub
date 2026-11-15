@@ -1,3 +1,6 @@
+# V1718 C DEPLOYED - 2026-11-15 (Claude)
+- Smoke never covers weapon cells (cannon/mjolnir 15, king punch 12+15): smokeCover skips regions not in state.spawnPoints.
+
 # V1717 C DEPLOYED - 2026-11-15 (Claude)
 - Golden halo, skillWord (combo/golden/rush/mission words) and fun text (coins/💢) drawn above the mole canvas: HitFx.spawnTop (fixed, .fx-top z 900).
 - Win popup straddles the board/dial-pad border (top = bar.top - height/2); it covers the score line after it appears (user offered to move score up).
