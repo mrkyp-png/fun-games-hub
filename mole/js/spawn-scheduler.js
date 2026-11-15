@@ -25,6 +25,7 @@
   const DURATION_MULT = { 1: 1, 2: 1.7, 3: 2.4, 4: 3.1 };
   const STAY_MULT = { thief: 0.75, phone: 1.4 }; // V1710 C 사용자: 나쁜 두더지 성격 — 도둑은 빨리 도망, 휴대폰은 폰에 빠져 오래 머묾
   const GOLDEN_CHANCE = 0.03; // V1710 C 사용자: 황금 두더지 확률
+  const GOOD_CHANCE = 0.1;    // V1712 C 사용자: 일반 두더지(때리면 안 됨) 확률 — 1방짜리 두더지 중
   const RELAY_GAP = 0.3;      // V1710 C 사용자: 릴레이 묶음 사이 간격(초)
   const HIT_COOLDOWN = 0.12;  // 같은 두더지 연타 방지 간격 (초)
   const RETREAT_SEC = 0.6;    // 최종 타격/시간초과 후 "땅속으로 천천히 내려가는" 연출이 도는 시간
@@ -68,7 +69,7 @@
 
     function activeCountOf(type) {
       let n = 0;
-      active.forEach((p) => { if (p.type === type) n++; });
+      active.forEach((p) => { if (p.type === type && !p.good) n++; }); // V1712 C 사용자: 일반 두더지는 한도에서 뺌(칠 수 있는 두더지 수 유지)
       return n;
     }
 
@@ -150,8 +151,8 @@
           // V1703 C: 5마리 중 1마리는 '일반 두더지'(때리면 안 됨). 나머지 4는 나쁜 두더지(술·담배·휴대폰·도둑)=타겟.
           // 기존 rng 순서를 바꾸지 않도록 별도 난수(Math.random) 사용. 다타 두더지는 항상 나쁜 두더지(일반은 1방짜리만).
           const roll = Math.random();
-          pop.good = pop.hitsRequired === 1 && roll < 0.2;
-          if (!pop.good) pop.behavior = ['drink', 'smoke', 'phone', 'thief'][Math.min(3, Math.floor(Math.max(0, roll - 0.2) / 0.2))];
+          pop.good = pop.hitsRequired === 1 && roll < GOOD_CHANCE; // V1712 C 사용자: 일반 두더지 확률 낮춤(20% → 10%)
+          if (!pop.good) pop.behavior = ['drink', 'smoke', 'phone', 'thief'][Math.min(3, Math.floor(Math.max(0, roll - GOOD_CHANCE) / ((1 - GOOD_CHANCE) / 4)))];
           // V1710 C 사용자: 황금 두더지 — 아주 가끔(3%, 1방짜리 나쁜 두더지 자리), 짧게 머묾·점수 5배·코인
           if (!pop.good && pop.hitsRequired === 1 && Math.random() < GOLDEN_CHANCE) { pop.golden = true; pop.behavior = null; }
         }

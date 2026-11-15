@@ -2386,7 +2386,7 @@
     1: { kind: 'any', n: 15 }, 2: { kind: 'thief', n: 3 }, 3: { kind: 'drink', n: 4 }, 4: { kind: 'combo', n: 15 },
     5: { kind: 'smoke', n: 4 }, 6: { kind: 'phone', n: 5 }, 7: { kind: 'combo', n: 25 }, 8: { kind: 'any', n: 40 }
   };
-  const MISSION_REWARD = 30;
+  const MISSION_REWARD = 1000; // V1712 C 사용자: 미션 성공 코인 1000
   function missionLabel(ms) {
     const ko = I18N.lang === 'ko';
     const nm = { any: ko ? '나쁜 두더지' : 'bad moles', thief: ko ? '도둑 두더지' : 'thief moles', drink: ko ? '술 두더지' : 'drunk moles', smoke: ko ? '담배 두더지' : 'smoking moles', phone: ko ? '휴대폰 두더지' : 'phone moles' }[ms.kind];

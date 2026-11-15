@@ -1,3 +1,6 @@
+# V1712 C DEPLOYED - 2026-11-15 (Claude)
+- Cell shake animates the cell's hole art only (tile stays → no edge line). Normal (good) moles: GOOD_CHANCE 0.1 and excluded from activeCountOf (targets stay at the table). Smoke = cell-sized rounded square (no spill). Mission reward 1000 coins (coin icon to be replaced later). Deferred by user: unique miss penalties for phone/drink/thief.
+
 # V1711 C DEPLOYED - 2026-11-15 (Claude) — mission intro, stronger feedback, more moles
 - Mission shown before the countdown (showMission, #mission-intro, 3s, big centre card); fallback missionIntro pauses if no intro.
 - Cell shake x3 (clay shakeBoard k=3 when region); quake board shake unchanged. Smoke: 2s opaque cloud + MG.SmokedRegions hides moles in those cells (clay skips drawing).

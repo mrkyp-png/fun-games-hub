@@ -17,7 +17,7 @@ assert(golden.length > 0 && golden.every(p => p.hitsRequired === 1 && !p.behavio
 assert(golden.length / moles.length < 0.06, 'golden moles are rare: ' + (golden.length / moles.length).toFixed(3));
 assert(moles.some(p => p.behavior === 'drink' && p.wobbled), 'a drunk mole moved to another hole');
 const ratio = good.length / single.length;
-assert(ratio > .15 && ratio < .25, 'about 1 in 5 single-hit moles is normal: ' + ratio.toFixed(3));
+assert(ratio > .06 && ratio < .14, 'about 1 in 10 single-hit moles is normal (V1712 C): ' + ratio.toFixed(3));
 // 판정: 일반 두더지를 때리면 good:true, 영역 완성에 안 들어감
 const sch2 = create({ regions, spawnPoints, config, rng });
 let g = null; for (let t = 0; t < 2000 && !g; t++) { const { spawned } = sch2.tick(0.05); g = spawned.find(p => p.good); }

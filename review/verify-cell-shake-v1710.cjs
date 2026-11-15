@@ -11,7 +11,7 @@ const puppeteer = require('puppeteer-core');
     await new Promise(r => setTimeout(r, 1500)); await p.screenshot({ path: 'C:/Users/master/Desktop/재미요소_V1710/미션창.png' }); await new Promise(r => setTimeout(r, 13000));
     const res = await p.evaluate(async () => {
       const board = document.getElementById('mole-board'), MG = window.MoleGame;
-      const seen = []; const orig = Element.prototype.animate; Element.prototype.animate = function (...a) { seen.push(this.id === 'mole-board' ? 'BOARD' : (this.dataset && this.dataset.region) || this.className); return orig.apply(this, a); };
+      const seen = []; const orig = Element.prototype.animate; Element.prototype.animate = function (...a) { seen.push(this.id === 'mole-board' ? 'BOARD' : this.className === 'checkerboard-cell-art' ? 'ART' + this.parentElement.dataset.region : (this.dataset && this.dataset.region) || this.className); return orig.apply(this, a); };
       const out = {}; const br = board.getBoundingClientRect(); const cs = [...board.querySelectorAll('.checkerboard-cell')]; out.n = cs.length; out.fx = MG.HitFx.shake.toString().slice(0, 60); out.clay = MG.ClayRoundOne.shakeBoard.toString().slice(0, 50); out.board = [br.left, br.top, br.width, br.height].map(Math.round); out.c = cs.slice(0, 2).map(c => { const q = c.getBoundingClientRect(); return [c.dataset.region, q.left, q.top, q.width, q.height].map(v => Math.round(v)); });
       MG.HitFx.shake(board, 0.5, 0.3);
       await new Promise(r => setTimeout(r, 1500));

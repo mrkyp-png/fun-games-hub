@@ -42,7 +42,7 @@ function shakeBoard(board,xFrac,yFrac){
  if(Number.isFinite(xFrac)&&Number.isFinite(yFrac)){
   const r=board.getBoundingClientRect(),px=r.left+xFrac*r.width,py=r.top+yFrac*r.height;
   const cell=[...board.querySelectorAll('.checkerboard-cell')].find(c=>{const b=c.getBoundingClientRect();return px>=b.left&&px<=b.right&&py>=b.top&&py<=b.bottom});
-  if(cell){target=cell;region=Number(cell.dataset.region)}
+  if(cell){target=cell.querySelector('.checkerboard-cell-art')||cell;region=Number(cell.dataset.region)} // V1712 C 사용자: 칸 바탕은 그대로, 구멍 그림만 흔듦(가장자리 선 안 보이게)
  }
  // A hit can arrive after this frame's canvas draw. Queue the restart too.
  boardShakeRequest={board,target,region,startedAt:shakeNow()};return true;
