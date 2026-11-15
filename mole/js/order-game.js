@@ -17,6 +17,7 @@
     score: { single: 100, combo: 150, neg: 200, missionPerClue: 100 },
     target: [0, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500], // 라운드별 해금 목표 점수
     sinkSeconds: 0.6,             // 내려가는 시간
+    repairSinkSeconds: 0.2,       // 정답 보충용으로 바꿀 두더지는 빨리 내려감
     riseSeconds: 0.45,            // 올라와 자리 잡는 시간(이 뒤부터 입력 받음)
     impactTimeout: 0.5,           // 망치 도착 신호가 안 오면 강제로 맞은 것으로
     maxGenerateTries: 20
@@ -126,9 +127,17 @@
       const res = assign(rest, slots.map((h) => (live(h) ? h.pop.traits : h.next)));
       if (!res.unmatched.length) return;
       const used = new Set(slots.filter((_, i) => res.used[i]));
+      // V1723 C 사용자: 오답 뒤 정답 두더지가 1초쯤 없던 것 — 기다리지 않고 바로 올라오게
+      // ① 이미 비어 있는 구멍 = 즉시 / ② 정답 아닌 나쁜 두더지 = 빠르게(0.2초) 내려가고 그 자리에 / ③ 그래도 없으면 예전처럼 곧 비는 구멍
       res.unmatched.forEach((ci) => {
-        let h = holes.find((x) => !live(x) && !x.next && (!x.pop || x.pop.dying || x.pop.hitAt >= 0) && !x.keepGood);
-        if (!h) { h = holes.find((x) => live(x) && !x.pop.traits.good && !used.has(x)); if (!h) return; h.pop.dying = true; h.pop.goneAt = time + CONFIG.sinkSeconds; h.respawnAt = h.pop.goneAt; }
+        let h = holes.find((x) => !x.pop && x.respawnAt >= 0 && !x.next && !x.keepGood);
+        if (h) h.respawnAt = time;
+        else {
+          h = holes.find((x) => live(x) && !x.pop.traits.good && !used.has(x));
+          if (h) { h.pop.dying = true; h.pop.goneAt = time + CONFIG.repairSinkSeconds; h.respawnAt = h.pop.goneAt; }
+          else h = holes.find((x) => !live(x) && !x.next && (!x.pop || x.pop.dying || x.pop.hitAt >= 0) && !x.keepGood);
+        }
+        if (!h) return;
         h.next = answerFor(rest[ci], rnd); used.add(h);
       });
     }

@@ -3586,6 +3586,7 @@
     st.laneHammer.strike(r.x, r.y, () => {
       if (state !== st || st.ended) return;
       o.impact(r.popId);
+      MG.HitFx.shake(board, r.x, r.y); // V1723 C 사용자: 타격한 칸 흔들림(두더지팡과 같은 칸 흔들림)
       MG.HitFx.punch();
       if (r.kind === 'correct') {
         funTextAt(board, r.x, r.y - 0.08, '+' + r.points);

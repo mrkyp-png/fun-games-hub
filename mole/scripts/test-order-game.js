@@ -44,6 +44,11 @@ for (let round = 1; round <= 8; round++) {
     else { ok(r.kind === 'good' && s.lives() === livesBefore - 1 && s.mission().progress === progBefore, '착한 두더지 = 하트-1·진행도 유지'); }
     ok(s.press(target.regionId).kind === 'ignored', '같은 타격 중복 판정 없음');
     if (rnd() < 0.8) s.impact(r.popId); // 가끔 망치 신호가 안 와도(시간 초과) 진행되는지
+    if (r.kind === 'wrong') { // V1723 C: 오답 뒤 0.25초 안에 남은 제시어 정답이 모두 화면에 있음(올라오는 중 포함)
+      s.impact(r.popId); for (let w = 0; w < 5; w++) s.tick(0.05);
+      const mm = s.mission(), nowTraits = s.getActivePops().filter((p) => !p.dying && p.hitAt < 0).map((p) => p.traits);
+      ok(OG.assign(mm.clues.slice(mm.progress), nowTraits).unmatched.length === 0, round + 'R 오답 뒤 정답 바로 보충');
+    }
     if (r.missionDone) { ok(s.stats.missions === lastMissions + 1, '미션 성공 1번만'); ok(s.stats.score - lastScore >= r.bonus, '보너스 지급'); lastMissions = s.stats.missions; }
     lastScore = s.stats.score;
     // 교체가 끝날 때까지 돌린 뒤 남은 제시어가 전부 풀리는지
