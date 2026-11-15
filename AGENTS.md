@@ -1,3 +1,10 @@
+# V1710 C DEPLOYED - 2026-11-15 (Claude) — game update (60s, fun features, amateur)
+- All rounds 60s; ROUND_TARGETS per round (2:[4,5]..8:[6,8]) for concurrent targets, stay-time curve unchanged (40~140 mapped into 60s).
+- Fun: personalities (thief stay .75/score x2/+1 coin, phone stay 1.4/x0.5, drink relocates once at half life, smoke miss covers cell+4 neighbours), golden mole 3% (x5, +5 coin, gold body via GOLD palette), last-10s rush x2 (+bgm 1.15, gold board glow), combo tiers 10/20/30 = x1.2/1.5/2, round missions (+30 coin), normal-mole 💢. Multipliers via combo.setMult per hit (points table untouched).
+- Amateur: no coloured moles anywhere, R6 = relay (3 per wave, next wave 0.3s after bad moles gone, normal mole by probability max 1/wave; trySpawn(type, relay) ignores max).
+- Also: normal moles don't light the dial pad; props x1.3 (bottle/cigar/sack around grip, not phone); hit shakes only the hit cell (quake still whole board); outer islands lowered 0.7.
+- Tests: review/verify-good-moles-v1703.cjs (golden/drink added), verify-relay-v1710.cjs, verify-cell-shake-v1710.cjs. mole/scripts/test-spawn-scheduler.js cooldown assertion was already failing before.
+
 # V1709 C DEPLOYED - 2026-11-15 (Claude) — volcano cave 3D, sea edge, fog, oar button
 - West volcano = GPT Imagegen concept (Desktop/동서남북_섬_시안/화산동굴입구_시안1.png) → TRELLIS GLB, scaled 12.4, cave facing home (+X), loaded as a textured prop (island_west_volcano.glb). Pads: cave step (5.2,0) and summit. Puff y 11.4. Back side has green/orange dot artefacts.
 - Island terrain slopes to sea level (z -= 1.15 t^3) then sinks. Environment fog unified: smoothstep(30,150)*.3 for all (centre plaza no longer fogged from islands); perspective far = max(170, view.far). Oar button moved to the right above jump (it covered the joystick).

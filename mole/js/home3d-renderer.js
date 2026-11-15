@@ -472,7 +472,7 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
           if(m.energy) continue;
           gl.uniform1i(U.Island, m.island ? 1 : 0); /* V1704 C: 먼 섬은 안개를 멀리·약하게 */
           let world = m.shopDoor ? shopDoorMatrix(m.world,doorOpen) : m.world;
-          if (m.puff !== undefined) { const ph = (now / 7 + m.puff / 6) % 1, s = (0.6 + 1.7 * ph) * Math.min(1, ph * 6, (1 - ph) * 3); world = R.transform({ translation: [-48 + ph * 3 + Math.sin(ph * 6 + m.puff) * 0.4, 11.4 + ph * 7, Math.cos(ph * 5 + m.puff) * 0.4], scale: [s, s, s] }); }
+          if (m.puff !== undefined) { const ph = (now / 7 + m.puff / 6) % 1, s = (0.6 + 1.7 * ph) * Math.min(1, ph * 6, (1 - ph) * 3); world = R.transform({ translation: [-48 + ph * 3 + Math.sin(ph * 6 + m.puff) * 0.4, 10.7 + ph * 7, Math.cos(ph * 5 + m.puff) * 0.4], scale: [s, s, s] }); }
           if (m.gateGlow) {gl.uniform1i(U.Glow, 1);gl.uniform1i(U.Notes,!m.rhythmBars);
             const site=root.MoleGame.Home3DLayout.SITES.find(s=>s.id==='rhythm'),d=Math.hypot(site.x,site.z);gl.uniform4f(U.NoteGate,site.x,site.z,site.z/d,-site.x/d);}
           if(m.rhythmBars){gl.uniform1i(U.RhythmBars,1);gl.uniform1f(U.BarBase,m.world[13]);}

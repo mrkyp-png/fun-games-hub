@@ -257,10 +257,11 @@ islands["north"] = join(parts, "Island_North_Ice")
 
 # 배치: 홈(반지름16) 기준 거리 48, 동(+X) 서(-X) 남(-Y) 북(+Y) — 게임 좌표 변환은 적용 때 결정
 D = 48
+DROP = -.7  # 바깥 섬은 중앙 섬보다 0.7 낮게(바다에 잠겨 보이게, 사용자)
 place = {"east": (D, 0), "west": (-D, 0), "south": (0, -D), "north": (0, D)}
 for k, (x, y) in place.items():
-    o = islands[k]; o.location = (x, y, 0)
-islands["west_lava"].location = (-D, 0, 0)
+    o = islands[k]; o.location = (x, y, DROP)
+islands["west_lava"].location = (-D, 0, DROP)
 for k in ("east", "west", "south", "north"):
     bpy.ops.object.select_all(action='DESELECT'); islands[k].select_set(True)
     bpy.ops.export_scene.gltf(filepath=os.path.join(OUT, f"island_{k}.glb"), export_format='GLB', use_selection=True, export_apply=True)
@@ -285,7 +286,7 @@ import json
 walk = []
 for key, (x0, y0) in place.items():
     W = WALK[key]
-    walk.append({"id": key, "cx": x0, "cz": -y0, "half": W["half"], "step": W["step"], "n": W["n"], "h": W["h"], "top": W["top"],
+    walk.append({"id": key, "cx": x0, "cz": -y0, "half": W["half"], "step": W["step"], "n": W["n"], "h": [round(v + DROP, 3) if v > -9 else v for v in W["h"]], "top": W["top"],
                  "blocks": [[round(bx, 2), round(-by, 2), round(r, 2)] for bx, by, r in W["blocks"]],
                  "pads": [[round(px, 2), round(-py, 2), round(r, 2), tp] for px, py, r, tp in W.get("pads", [])]})
 json.dump({"islands": walk}, open(os.path.join(OUT, "islands-walk.json"), "w"))

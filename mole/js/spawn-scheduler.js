@@ -23,6 +23,9 @@
   const ANIMAL_TWO_HIT_CHANCE = 0.35;
   // 여러 번 때리려면 화면에 더 오래 떠 있어야 후반 레벨에서도 잡을 수 있다.
   const DURATION_MULT = { 1: 1, 2: 1.7, 3: 2.4, 4: 3.1 };
+  const STAY_MULT = { thief: 0.75, phone: 1.4 }; // V1710 C 사용자: 나쁜 두더지 성격 — 도둑은 빨리 도망, 휴대폰은 폰에 빠져 오래 머묾
+  const GOLDEN_CHANCE = 0.03; // V1710 C 사용자: 황금 두더지 확률
+  const RELAY_GAP = 0.3;      // V1710 C 사용자: 릴레이 묶음 사이 간격(초)
   const HIT_COOLDOWN = 0.12;  // 같은 두더지 연타 방지 간격 (초)
   const RETREAT_SEC = 0.6;    // 최종 타격/시간초과 후 "땅속으로 천천히 내려가는" 연출이 도는 시간
   const JUGGLE_VISIBLE_FRAC = 0.5; // 저글 보너스는 침몰 초반(두더지가 아직 눈에 보일 때)만 — 이후엔 명백한 헛방
@@ -38,6 +41,7 @@
     const completedRegions = new Set();
     const occupiedSpawnPointIds = new Set();
     let nextPopId = 0;
+    let relayWait = 0.6; // V1710 C: 릴레이 첫 묶음 대기
     const active = new Map(); // popId -> pop. 두더지 pop: { id, type:'mole', spawnPointId, regionId, x, y,
     //   remaining, hitsRequired(1|2|3), hitsTaken, poseIndex, hitCooldown, dying }
 
@@ -119,8 +123,8 @@
       return r < ANIMAL_THREE_HIT_CHANCE ? 3 : r < ANIMAL_TWO_HIT_CHANCE ? 2 : 1;
     }
 
-    function trySpawn(type) {
-      if (maxOf(type) <= 0 || activeCountOf(type) >= maxOf(type)) return null;
+    function trySpawn(type, relay) {
+      if (maxOf(type) <= 0 || (!relay && activeCountOf(type) >= maxOf(type))) return null; // V1710 C: 릴레이 묶음은 한도 대신 빈 구멍만 봄
       const candidates = candidateSpawnPointsFor(type);
       if (candidates.length === 0) return null;
       const sp = candidates[Math.floor(rng.next() * candidates.length)];
@@ -148,11 +152,14 @@
           const roll = Math.random();
           pop.good = pop.hitsRequired === 1 && roll < 0.2;
           if (!pop.good) pop.behavior = ['drink', 'smoke', 'phone', 'thief'][Math.min(3, Math.floor(Math.max(0, roll - 0.2) / 0.2))];
+          // V1710 C 사용자: 황금 두더지 — 아주 가끔(3%, 1방짜리 나쁜 두더지 자리), 짧게 머묾·점수 5배·코인
+          if (!pop.good && pop.hitsRequired === 1 && Math.random() < GOLDEN_CHANCE) { pop.golden = true; pop.behavior = null; }
         }
         pop.hitsTaken = 0;
         // 알리 펀치 [방어]: 내려가기(자연 만료) 전 0.1초 더 여유(기획서 §7, config.moleUpBonus).
         // 코스튬 효과(두더지 하강 딜레이, config.costumeUpBonus)는 무기 효과와 별개로 가산된다.
-        pop.remaining = config.popDuration * DURATION_MULT[pop.hitsRequired] + (config.moleUpBonus || 0) + (config.costumeUpBonus || 0);
+        pop.remaining = config.popDuration * DURATION_MULT[pop.hitsRequired] * (pop.golden ? 0.7 : (STAY_MULT[pop.behavior] || 1)) + (config.moleUpBonus || 0) + (config.costumeUpBonus || 0); /* V1710 C: 성격별 머무는 시간(도둑 짧게·휴대폰 길게) */
+        pop.life = pop.remaining;
       } else {
         pop.poseIndex = Math.floor(rng.next() * (config.obstacleCount || 5)); // 어느 동물인지
         if (type === 'animal') {
@@ -189,6 +196,18 @@
           if (pop.sinkIn <= 0) { pop.sinkIn = 0; pop.dying = true; pop.remaining = RETREAT_SEC; }
         }
       });
+      // V1710 C 사용자: 술 두더지 — 머무는 시간 절반쯤 지나도 안 맞았으면 비틀거리며 옆(빈) 구멍으로 옮겨 감(1번)
+      Array.from(active.values()).forEach((pop) => {
+        if (pop.behavior !== 'drink' || pop.wobbled || pop.dying || pop.sinkIn > 0 || pop.hitsTaken > 0 || !(pop.remaining < pop.life * 0.5) || pop.remaining < 0.6) return;
+        pop.wobbled = true;
+        if (activeCountOf('mole') >= maxOf('mole')) return; // 동시 마릿수 한도를 넘지 않게(자리 없으면 그냥 제자리)
+        const free = candidateSpawnPointsFor('mole').filter((sp) => sp.id !== pop.spawnPointId);
+        if (!free.length) return;
+        const sp = free.reduce((a, b) => (Math.hypot(b.x - pop.x, b.y - pop.y) < Math.hypot(a.x - pop.x, a.y - pop.y) ? b : a)); // 가까운 구멍
+        const moved = Object.assign({}, pop, { id: nextPopId++, spawnPointId: sp.id, regionId: sp.regionId, col: sp.col, x: sp.x, y: sp.y, wobbled: true, remaining: pop.remaining + 0.3 });
+        pop.dying = true; pop.relocated = true; pop.remaining = RETREAT_SEC; // 옛 자리는 내려감(시간초과 아님 → 콤보 유지)
+        active.set(moved.id, moved); occupiedSpawnPointIds.add(sp.id); spawned.push(moved);
+      });
       active.forEach((pop, id) => {
         if (pop.sinkIn > 0) return; // 타격 등록됨, 침몰 대기 중 — 자연 만료 로직 건너뜀
         if (pop.remaining > 0) return;
@@ -198,7 +217,7 @@
           pop.timedOut = true; // 처치 못 하고 시간초과로 내려감 (콤보 리셋 판정용 — game.js)
           pop.remaining = RETREAT_SEC;
         } else {
-          expired.push({ id, type: pop.type, timedOut: !!pop.timedOut, bomb: !!pop.bombKind, good: !!pop.good });
+          expired.push({ id, type: pop.type, timedOut: !!pop.timedOut, bomb: !!pop.bombKind, good: !!pop.good, behavior: pop.behavior || null, regionId: pop.regionId, relocated: !!pop.relocated });
         }
       });
       expired.forEach((e) => {
@@ -210,7 +229,23 @@
       // 난이도별 방해물 토글: config.obstacles === false 면 두더지만 (하수·고수).
       const spawnTypes = (config.obstacles === false) ? ['mole'] : ['mole', 'animal', 'bomb'];
       if (config.shieldItems) spawnTypes.push('item');
+      // V1710 C 사용자: 릴레이(아마추어 6라운드) — 두더지 3마리씩 한 묶음. 묶음의 나쁜 두더지가 다 없어지면
+      // (잡거나 놓쳐서) 0.3초 뒤 다음 3마리. 일반 두더지는 묶음당 최대 1마리, 남아 있어도 기다리지 않음.
+      if (config.relay) {
+        const live = Array.from(active.values()).some((p) => p.type === 'mole' && !p.good && !p.bombKind && !p.dying && !(p.sinkIn > 0)); // 폭탄 든 두더지는 피하는 대상이라 기다리지 않음
+        if (live) relayWait = RELAY_GAP;
+        else if ((relayWait -= dt) <= 0) {
+          let goods = 0;
+          for (let i = 0; i < 3; i++) {
+            const p = trySpawn('mole', true); if (!p) break;
+            if (p.good && goods++ >= 1) { p.good = false; p.behavior = ['drink', 'smoke', 'phone', 'thief'][Math.floor(Math.random() * 4)]; }
+            spawned.push(p);
+          }
+          relayWait = RELAY_GAP;
+        }
+      }
       spawnTypes.forEach((type) => {
+        if (type === 'mole' && config.relay) return; // 릴레이는 위에서 묶음으로만
         cooldown[type] -= dt;
         if (cooldown[type] <= 0) {
           const pop = trySpawn(type);
@@ -282,7 +317,7 @@
       // safeAlways = 이 동물/폭탄이 "무적 중에 올라온" 것이면, 무적이 그 사이 끝나서
       // 타격 시점엔 무적이 아니어도 계속 안전(사용자 지정 — "의문사 방지". game.js 가
       // 스폰 순간에 낙인찍음, spawn-scheduler 는 무적 여부를 모르니 그대로 전달만).
-      return { type: pop.type, regionId: pop.regionId, done: true, xFrac: pop.x, yFrac: pop.y, safe: !!pop.safeAlways, bombKind: pop.bombKind || null, good: !!pop.good };
+      return { type: pop.type, regionId: pop.regionId, done: true, xFrac: pop.x, yFrac: pop.y, safe: !!pop.safeAlways, bombKind: pop.bombKind || null, good: !!pop.good, behavior: pop.behavior || null, golden: !!pop.golden };
     }
 
     function resolveHit(popId, opts) {

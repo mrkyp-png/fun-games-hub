@@ -20,6 +20,9 @@ function behaviorActor(m,now){
 }
 function behaviorTime(m,now){return (now-m._clayRestTime)*(m._behRate||1)}
 // 맞으면 소품이 무작위 방향으로 빙글 돌며 날아감(0.8초). 도둑 복면은 맞아도 머리에 그대로.
+// V1710 C 사용자: 술병·시가·돈자루만 1.3배(손은 그대로) — 쥔 곳(묶음 노드 원점) 기준으로 키움. 휴대폰은 그대로
+const PROP_SCALE=1.3,PROP_PIVOT={drink:'FrontHeldBottle',smoke:'Cigarette',thief:'Money sack'};
+function propSized(model,worlds,node,beh){const pn=PROP_PIVOT[beh];if(!pn)return worlds[node];if(model._propPivot===undefined)model._propPivot=model.json.nodes.findIndex(n=>n.name===pn);const w=worlds[model._propPivot];if(!w)return worlds[node];const P=[w[12],w[13],w[14]];return R.multiply(R.multiply(R.transform({translation:P,scale:[PROP_SCALE,PROP_SCALE,PROP_SCALE]}),R.transform({translation:P.map(v=>-v)})),worlds[node]);}
 const PROP_RE=/^(Bottle|Open bottle|Dark open|Curved cream|Alcohol|Cigarette|Ember|Landscape phone|Phone|Rear camera|Sack|Money)/,MASK_RE=/^(Thief mask|Mask |Eye hole patch|Angry brow|Round pupil|Eye highlight|Dazed ivory eye)/;
 const PROP_FLY=.8;
 function startPropFly(m){
@@ -31,23 +34,30 @@ function startPropFly(m){
 let boardShake=null,boardShakeRequest=null;
 function shakeNow(){return root.performance?root.performance.now():Date.now()}
 function stopBoardShake(){boardShakeRequest=null;if(boardShake){boardShake.animation.cancel();boardShake=null}}
-function shakeBoard(board){
+function shakeBoard(board,xFrac,yFrac){
  if(!active||!ready||board!==document.getElementById('mole-board')||!board.animate)return false;
  cancelAnimationFrame(board._shakeRaf);
+ // V1710 C 사용자: 타격 위치(xFrac·yFrac)가 있으면 그 구멍 칸만 흔듦(칸 그림 + 그 칸 두더지). 없으면(지진 등) 판 전체
+ let target=board,region=null;
+ if(Number.isFinite(xFrac)&&Number.isFinite(yFrac)){
+  const r=board.getBoundingClientRect(),px=r.left+xFrac*r.width,py=r.top+yFrac*r.height;
+  const cell=[...board.querySelectorAll('.checkerboard-cell')].find(c=>{const b=c.getBoundingClientRect();return px>=b.left&&px<=b.right&&py>=b.top&&py<=b.bottom});
+  if(cell){target=cell;region=Number(cell.dataset.region)}
+ }
  // A hit can arrive after this frame's canvas draw. Queue the restart too.
- boardShakeRequest={board,startedAt:shakeNow()};return true;
+ boardShakeRequest={board,target,region,startedAt:shakeNow()};return true;
 }
 function syncBoardShake(){
  if(boardShakeRequest){
-  const {board,startedAt}=boardShakeRequest;stopBoardShake();
+  const {board,target,region,startedAt}=boardShakeRequest;stopBoardShake();
   board.classList.remove('mole-board--shake');
-  const animation=board.animate([
+  const animation=target.animate([
    {transform:'translate(0, 0)'},{transform:'translate(-4px, 3px)'},
    {transform:'translate(3px, -2px)'},{transform:'translate(-2px, 2px)'},
    {transform:'translate(0, 0)'}
   ],{duration:200,easing:'ease-out',fill:'both'});
   // Never let the compositor advance the tiles beyond the canvas frame.
-  animation.pause();animation.currentTime=0;boardShake={board,animation,startedAt};
+  animation.pause();animation.currentTime=0;boardShake={board,target,region,animation,startedAt};
  }
  if(!boardShake)return;
  const elapsed=Math.max(0,shakeNow()-boardShake.startedAt);
@@ -62,8 +72,9 @@ const animalVariants=[['rabbit','yellow','#FFCA52'],['tiger','green','#66C884'],
 function animalIndex(index){const n=Number.isFinite(index)?Math.trunc(index):0;return ((n%4)+4)%4}
 function animalVariant(index){return animalVariants[animalIndex(index)]}
 // 색깔 두더지: 몸·발·머리는 같은 색, 주둥이는 같은 색의 연한 톤
-function isColored(m){return m.kind==='animal'||m.kind==='bomb'}
-function coloredMaterial(m,name){const c=animalVariant(m.poseIndex).color;if(name==='Clay warm caramel'||name==='Feet cocoa')return c;if(name==='Muzzle peach cream')return [0,1,2].map(k=>c[k]+(1-c[k])*.4).concat(1);return null}
+const GOLD=[1,.62,.08,1]; /* V1710 C 사용자: 황금 두더지 */
+function isColored(m){return m.kind==='animal'||m.kind==='bomb'||!!m.golden}
+function coloredMaterial(m,name){const c=m.golden?GOLD:animalVariant(m.poseIndex).color;if(name==='Clay warm caramel'||name==='Feet cocoa')return c;if(name==='Muzzle peach cream')return [0,1,2].map(k=>c[k]+(1-c[k])*.4).concat(1);return null}
 function canRender(m){return m.kind==='mole'||m.kind==='animal'||m.kind==='bomb'}
 function isBombCarrier(m){return m.bomb||m.kind==='bomb'}
 function smooth(value){const t=Math.max(0,Math.min(1,value));return t*t*(3-2*t)}
@@ -75,6 +86,7 @@ function sinkDepth(m){
 // The tile artwork shakes in its own DOM layer; the world canvas must follow
 // the same translation, including its hole-occlusion coordinates.
 function boardShakeOffset(board){
+ if(boardShake&&boardShake.board===board&&boardShake.target!==board)board=boardShake.target; /* V1710 C: 칸 흔들림 = 그 칸 이동량 */
  const transform=root.getComputedStyle?root.getComputedStyle(board).transform:'none';
  const match=/^matrix(3d)?\(([^)]+)\)$/.exec(transform||'');if(!match)return [0,0];
  const values=match[2].split(',').map(Number),i=match[1]?12:4;
@@ -179,7 +191,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
   if(!colorSize||vertexColors.length!==n*colorSize)throw Error('Invalid vertex color layout');
   const colorVariants=material.name==='Head smooth tone'?Object.fromEntries(AP.styles.map(id=>[id,buffer(AP.vertexColors(model,p,id))])):null;
   // 색깔 두더지 머리: 원래 머리 정점색을 몸색 비율로 바꿈(AP.vertexColors 와 같은 방식)
-  const animalHead=material.name==='Head smooth tone'&&p.attributes.COLOR_0!==undefined?animalVariants.map(v=>{const old=g.materials.find(x=>x.name==='Clay warm caramel').pbrMetallicRoughness.baseColorFactor,r=new Float32Array(vertexColors);for(let i=0;i<r.length;i+=colorSize)for(let k=0;k<3;k++)r[i+k]=Math.min(1,Math.max(0,vertexColors[i+k]/old[k]*v.color[k]));return buffer(r)}):null;
+  const animalHead=material.name==='Head smooth tone'&&p.attributes.COLOR_0!==undefined?animalVariants.concat([{color:GOLD}]).map(v=>{const old=g.materials.find(x=>x.name==='Clay warm caramel').pbrMetallicRoughness.baseColorFactor,r=new Float32Array(vertexColors);for(let i=0;i<r.length;i+=colorSize)for(let k=0;k<3;k++)r[i+k]=Math.min(1,Math.max(0,vertexColors[i+k]/old[k]*v.color[k]));return buffer(r)}):null;
   draws.push({node,count:n,material,colorVariants,animalHead,appearance:AP.hairStyle(g.nodes[node]),vertexColors:buffer(vertexColors),colorSize,positions:buffer(positions),normals:buffer(p.attributes.NORMAL===undefined?zero(n,3):R.accessor(model,p.attributes.NORMAL)),uv:buffer(p.attributes.TEXCOORD_0===undefined?zero(n,2):R.accessor(model,p.attributes.TEXCOORD_0)),joints:buffer(p.attributes.JOINTS_0===undefined?zero(n,4):R.accessor(model,p.attributes.JOINTS_0)),weights:buffer(weights),indices:indices?buffer(indices,gl.ELEMENT_ARRAY_BUFFER):null,indexCount:indices?.length||0,materialName:material.name||'',color:pbr.baseColorFactor||[1,1,1,1],roughness:pbr.roughnessFactor??.5,base:pbr.baseColorTexture?await texture(pbr.baseColorTexture.index,model):white,normal:material.normalTexture?await texture(material.normalTexture.index,model):normalWhite,hasBase:!!pbr.baseColorTexture,hasNormal:!!material.normalTexture,normalScale:material.normalTexture?.scale??1,double:material.doubleSided});
  }
  return draws}
@@ -221,7 +233,8 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
    const depth=sinkDepth(m);
    const act=behaviorActor(m,clockTime)||baseActor,{runtime,model,rimFlags}=act;
    const worlds=act===baseActor?poseFor(runtime,m,motion):AP.pose(runtime,act.clip,behaviorTime(m,clockTime),true,null,clockTime,m._appearance||'mohawk'),palettes=new Map(),withdraw=withdrawProgress(m),instance=R.transform({translation:[0,motion.appearing?1.1*Math.sin(Math.PI*motion.progress):-3.4*depth/4,-(isBombCarrier(m)?.5:.4)*withdraw]});
-   const sx=lower?0:shake[0],sy=lower?0:shake[1];
+   const cellOnly=boardShake&&boardShake.region!=null,mine=!cellOnly||m.regionId===boardShake.region; /* V1710 C: 칸 흔들림이면 그 칸 두더지만 */
+   const sx=lower||!mine?0:shake[0],sy=lower||!mine?0:shake[1];
    function bindActor(){
     gl.viewport(ox,oy,size,viewportHeight);gl.enable(gl.SCISSOR_TEST);gl.scissor(ox,oy,size,viewportHeight);
     gl.uniform1i(loc.uEntering,false);gl.uniform1i(loc.uForegroundProp,false);gl.uniform1i(loc.uJump,!!motion.appearing);gl.uniform1i(loc.uCarrying,!!isBombCarrier(m)||act!==baseActor);
@@ -240,7 +253,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
     const color=carriedObject&&d.materialName==='Carry bomb shell'&&m.bombKind==='strong'?[.68,.055,.04,1]:isColored(m)&&coloredMaterial(m,d.materialName)?coloredMaterial(m,d.materialName):m.kind==='mole'?AP.materialColor(d.material,'mohawk'):d.color;
     gl.uniform4fv(loc.uColor,color);gl.uniform1f(loc.uRoughness,d.roughness);gl.uniform1i(loc.uHasBase,d.hasBase);gl.uniform1i(loc.uHasNormal,d.hasNormal);gl.uniform1f(loc.uNormalScale,d.normalScale);
     d.double?gl.disable(gl.CULL_FACE):gl.enable(gl.CULL_FACE);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,d.base);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,d.normal);
-    bind(d.positions,attr.aPosition,3);bind(m.kind==='mole'&&d.colorVariants?d.colorVariants.mohawk:isColored(m)&&d.animalHead?d.animalHead[animalIndex(m.poseIndex)]:d.vertexColors,attr.aColor,d.colorSize);bind(d.normals,attr.aNormal,3);bind(d.uv,attr.aUV,2);bind(d.joints,attr.aJoints,4);bind(d.weights,attr.aWeights,4);
+    bind(d.positions,attr.aPosition,3);bind(m.kind==='mole'&&d.colorVariants&&!m.golden?d.colorVariants.mohawk:isColored(m)&&d.animalHead?d.animalHead[m.golden?animalVariants.length:animalIndex(m.poseIndex)]:d.vertexColors,attr.aColor,d.colorSize);bind(d.normals,attr.aNormal,3);bind(d.uv,attr.aUV,2);bind(d.joints,attr.aJoints,4);bind(d.weights,attr.aWeights,4);
     gl.uniform1f(loc.uOutline,outline?span/Math.max(1,board.clientWidth)*1.4:0);gl.uniform1i(loc.uOutlinePass,outline);
     if(outline){gl.enable(gl.CULL_FACE);gl.cullFace(gl.FRONT)}else gl.cullFace(gl.BACK);
     if(d.indices){gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,d.indices);gl.drawElements(gl.TRIANGLES,d.indexCount,gl.UNSIGNED_INT,0)}else gl.drawArrays(gl.TRIANGLES,0,d.count);
@@ -257,7 +270,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
      // 동작 중 소품은 구멍에 안 가려지게 앞에. 들어갈 때는 몸 쪽 뒤로 뺀 뒤(0.18초) 구멍에 가려지며 함께 내려감.
      const w=m.dying?smooth((clockTime-(m._clayExitAt??clockTime))/.18):0;
      gl.uniform1i(loc.uForegroundProp,!m.dying);
-     const base=R.multiply(instance,worlds[d.node]);
+     const base=R.multiply(instance,propSized(model,worlds,d.node,m._behavior));
      drawMesh(d,false,w?R.multiply(R.transform({translation:[0,-.3*w,-.9*w]}),base):base);
      gl.uniform1i(loc.uForegroundProp,false);continue;
     }
@@ -278,7 +291,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
      const at=R.transform({translation:[0,-3.4*fly.depth/4,0]}),move=R.transform({translation:[fly.vel[0]*age,fly.vel[1]*age-7*age*age,fly.vel[2]*age]});
      for(const d of bActor.draws){
       if(!PROP_RE.test(bActor.model.json.nodes[d.node].name||''))continue;
-      const w=fly.worlds[d.node],c=[w[12],w[13],w[14]],ang=fly.spin*age,s=Math.sin(ang/2);
+      const w=propSized(bActor.model,fly.worlds,d.node,m._behavior),c=[w[12],w[13],w[14]],ang=fly.spin*age,s=Math.sin(ang/2);
       const rot=R.multiply(R.multiply(R.transform({translation:c}),R.transform({rotation:[fly.axis[0]*s,fly.axis[1]*s,fly.axis[2]*s,Math.cos(ang/2)]})),R.transform({translation:c.map(v=>-v)}));
       drawMesh(d,false,R.multiply(R.multiply(move,at),R.multiply(rot,w)));
      }
@@ -290,7 +303,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
      const w=smooth((clockTime-(m._clayExitAt??clockTime))/.18),pull=R.transform({translation:[0,-.4*w,-.9*w]});
      for(const d of bActor.draws){
       if(!PROP_RE.test(bActor.model.json.nodes[d.node].name||''))continue;
-      drawMesh(d,false,R.multiply(instance,R.multiply(pull,m._exitWorlds[d.node])),true);
+      drawMesh(d,false,R.multiply(instance,R.multiply(pull,propSized(bActor.model,m._exitWorlds,d.node,m._behavior))),true);
      }
      gl.uniform1i(loc.uEntering,false);
     }
@@ -323,7 +336,7 @@ function renderPop(m){
  if(!entries.has(m.el)){
   m._appearance=m.kind==='mole'?AP.random():null;
   // V1703 C: 두더지는 게임 규칙이 정한 종류 그대로(일반=good 은 소품 없음, 나쁜=behavior). 색깔 두더지는 모양만 무작위.
-  m._behavior=isBombCarrier(m)?null:m.kind==='mole'?(m.good?null:(m.behavior||pickBehavior())):m.kind==='animal'?pickBehavior():null;m._lifeAtSpawn=m.remaining;m._behRate=null;
+  m._behavior=isBombCarrier(m)?null:m.kind==='mole'?(m.good||m.golden?null:(m.behavior||pickBehavior())):m.kind==='animal'?pickBehavior():null;m._lifeAtSpawn=m.remaining;m._behRate=null;
   m._clayBorn=clockTime;m._clayHits=0;m._clayHit=-10;
   m._clayAppearDuration=Math.max(.18,Math.min(.45,(m.remaining??2)*.28));entries.set(m.el,m);
  }

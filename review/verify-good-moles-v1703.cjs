@@ -10,7 +10,12 @@ const moles = [];
 for (let t = 0; t < 4000 && moles.length < 3000; t++) { const { spawned } = sch.tick(0.05); spawned.forEach(p => { if (p.type === 'mole') moles.push(p); }); }
 const single = moles.filter(p => p.hitsRequired === 1), good = moles.filter(p => p.good);
 assert(good.every(p => p.hitsRequired === 1 && !p.behavior), 'good moles: single hit, no prop');
-assert(moles.filter(p => !p.good).every(p => ['drink', 'smoke', 'phone', 'thief'].includes(p.behavior)), 'non-good moles have a behavior');
+assert(moles.filter(p => !p.good && !p.golden).every(p => ['drink', 'smoke', 'phone', 'thief'].includes(p.behavior)), 'non-good moles have a behavior');
+// V1710 C: 황금 두더지 = 1방·소품 없음·드묾, 술 두더지는 한 번 옆 구멍으로 옮겨 감
+const golden = moles.filter(p => p.golden);
+assert(golden.length > 0 && golden.every(p => p.hitsRequired === 1 && !p.behavior && !p.good), 'golden moles: single hit, no prop');
+assert(golden.length / moles.length < 0.06, 'golden moles are rare: ' + (golden.length / moles.length).toFixed(3));
+assert(moles.some(p => p.behavior === 'drink' && p.wobbled), 'a drunk mole moved to another hole');
 const ratio = good.length / single.length;
 assert(ratio > .15 && ratio < .25, 'about 1 in 5 single-hit moles is normal: ' + ratio.toFixed(3));
 // 판정: 일반 두더지를 때리면 good:true, 영역 완성에 안 들어감

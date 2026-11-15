@@ -9,7 +9,10 @@
   const ALIPUNCH_INVINCIBLE_CHANCE = 0.2;   // 무적 발동 확률 (기획서 §7)
   const ALIPUNCH_INVINCIBLE_MS = 5000;      // 무적 지속시간
   const ROUND1_SECONDS = 60;      // 라운드1 (구 챕터1+2+3 병합, 3구간 연속)
-  const ROUND_SECONDS_LONG = 100; // 라운드2~8 실제 플레이 시간(사용자 지정, 원래 100초를 140초로 잘못 구현했던 것 수정)
+  const ROUND_SECONDS_LONG = 60; // V1710 C 사용자: 라운드2~8도 60초(전체 60초). 난이도 곡선(40~140)은 60초 안에 그대로 지나감
+  // V1710 C 사용자: 라운드별 동시 타격 대상 수(시작→끝, 60초 동안). 머무는 시간·방해물·폭탄은 기존 곡선 유지
+  const ROUND_TARGETS = { 2: [4, 5], 3: [4, 6], 4: [5, 6], 5: [5, 7], 6: [5, 7], 7: [6, 8], 8: [6, 8] };
+  function roundTargets(ch, elapsed) { const t = ROUND_TARGETS[ch] || ROUND_TARGETS[2]; return Math.round(MG.interpolate(t, elapsed, ROUND_SECONDS_LONG)); }
   // 난이도 10단계 키프레임은 원래 140초짜리 커브(§4) — 실플레이 100초를 앞 40초는 건너뛰고
   // 그 뒤 100초(40~140초 구간)만 쓴다(사용자: "너무 쉬워서 앞부분 40초는 빼도 될듯" → "총 100초
   // 유지, 난이도 커브만 앞당김"). 라운드 t=0 이 커브의 40초 지점에 대응.
@@ -1814,13 +1817,14 @@
     // 아래 별도 분기 + updateLiveDifficulty() 의 시간 기반 로직이 전담하므로 여기선 라운드2~8
     // 기준값(라운드 시작 순간, t=0)만 채운다 — 매 프레임 updateLiveDifficulty() 가 갱신한다.
     const ch = currentChapter();
-    const reverseTarget = ch === 6;              // 라운드6(구챕터8): 동물이 타겟, 두더지가 방해물
+    const amateur = currentLight() === 'easy'; // V1710 C 사용자: 아마추어 = 아이들도 하는 수준 — 색깔 두더지 없음(6라운드 목표 전환도 없음)
+    const reverseTarget = ch === 6 && !amateur;              // 라운드6(구챕터8): 동물이 타겟, 두더지가 방해물
     const dualTarget = ch === 8;                 // 라운드8(구챕터10): 두더지+동물 둘 다 타겟
     const config = {
       maxConcurrentMoles: isSmallBoardChapter() ? MG.SMALL_CHAPTER_MOLES[0]
-        : Math.round(MG.interpolate(reverseTarget ? MG.MAX_CONCURRENT_ANIMALS : MG.MAX_CONCURRENT_MOLES, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS)),
+        : (reverseTarget ? Math.round(MG.interpolate(MG.MAX_CONCURRENT_ANIMALS, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS)) : roundTargets(ch, 0)),
       maxConcurrentAnimals: isSmallBoardChapter() ? 0
-        : Math.round(MG.interpolate(reverseTarget ? MG.MAX_CONCURRENT_MOLES : MG.MAX_CONCURRENT_ANIMALS, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS)),
+        : (reverseTarget ? roundTargets(ch, 0) : Math.round(MG.interpolate(MG.MAX_CONCURRENT_ANIMALS, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS))),
       maxConcurrentBombs: (!isSmallBoardChapter() && ch === 6) ? Math.round(MG.interpolate(MG.MAX_CONCURRENT_BOMBS, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS)) : 0,
       bombChance: (!isSmallBoardChapter() && ch >= 3) ? MG.interpolate(MG.BOMB_CHANCE_BY_ROUND, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS) : 0,
       strongBombChance: (!isSmallBoardChapter() && ch >= 4) ? MG.interpolate(MG.STRONG_BOMB_CHANCE_BY_ROUND, DIFFICULTY_CURVE_OFFSET, DIFFICULTY_CURVE_SECONDS) : 0,
@@ -1835,6 +1839,7 @@
       animalMultiHit: !isSmallBoardChapter() && ch === 6,  // 라운드6(구챕터8): 동물이 타겟이라 다타 동물 도입
       reverseTarget: reverseTarget,
       dualTarget: dualTarget,
+      relay: amateur && ch === 6, // V1710 C 사용자: 아마추어 6라운드 = 3마리씩 릴레이
       obstacleRatioBoost: (!isSmallBoardChapter() && ch === 8) ? 1.1 : 1,  // 라운드8(구챕터10): 방해물 스폰 빈도 10% 상향
       cannonBurst: weapon === 'cannon',   // 대포 연사 스킬 (2·3타 두더지 연타 확률 10%)
       burstBonus: (MG.Workshop ? MG.Workshop.weaponChanceBonus('cannon') : 0), // 제작소 강화 +단계×1%p(v750)
@@ -1843,6 +1848,8 @@
       costumeUpBonus: MG.CostumeTeams.activeEffectValue() + (MG.PhotoStudio ? MG.PhotoStudio.gameSetEffectValue() : 0) // Equipped HOLD TIME plus unchanged photo-set rewards.
     };
 
+    if (amateur) { config.maxConcurrentAnimals = 0; config.maxConcurrentBombs = 0; }
+    if (config.relay) config.maxConcurrentMoles = 10; // V1710 C 사용자: 아마추어 = 색깔 두더지 없음
     if (isWarmupRound()) { // v949: 노말·프로 1라운드(16구멍) 시작값 — 이후 updateLiveDifficulty 가 60초 동안 이어 올림
       const wu = WARMUP[currentLight()];
       config.maxConcurrentMoles = wu.moles[0]; config.popDuration = wu.pop[0];
@@ -1983,6 +1990,8 @@
       costumeStats: { safeRolls: 0, safeProcs: 0, doubleRolls: 0, doubleProcs: 0, doubleHits: 0 },
       regions, spawnPoints, scheduler, holeLayer, laneHammer, weapon, rng, config, goldCloneOpts, createFeverWeapon,
       timeRemaining: roundSeconds(),
+      mission: MISSIONS[currentChapter()] ? Object.assign({ count: 0, done: false, shown: false }, MISSIONS[currentChapter()]) : null, // V1710 C 사용자: 라운드 미션
+      rushOn: false,
       aliClones: [], // 알리펀치 동시타격 분신 글러브들 — 메인 루프가 매 프레임 update() 돌려줘야 실제로 스윙한다.
       hitstopUntil: 0,
       quakeFxUntil: 0, // V1158: visible quake tail, extended by actual chained effects.
@@ -2223,16 +2232,18 @@
       cfg.maxConcurrentMoles = Math.round(MG.interpolate(MG.SMALL_CHAPTER_MOLES, elapsed, ROUND1_SECONDS));
       cfg.multiHit = elapsed >= 20;
       cfg.obstacles = elapsed >= 40;
-      cfg.maxConcurrentAnimals = elapsed >= 40 ? Math.round(MG.interpolate([0, 2], elapsed - 40, 20)) : 0;
+      cfg.maxConcurrentAnimals = 0; // V1710 C 사용자: 아마추어(9구멍 1라운드) = 색깔 두더지 없음
     } else {
       // 실플레이 100초를 원래 140초짜리 난이도 커브의 40~140초 구간에 매핑(위 상수 설명 참고) —
       // 앞 40초(너무 쉬운 구간)를 건너뛰고 그만큼 압축된 난이도로 시작한다.
-      const curveElapsed = elapsed + DIFFICULTY_CURVE_OFFSET;
+      const curveElapsed = DIFFICULTY_CURVE_OFFSET + elapsed * (DIFFICULTY_CURVE_SECONDS - DIFFICULTY_CURVE_OFFSET) / ROUND_SECONDS_LONG; // V1710 C: 60초에 곡선 40~140 전체
       const total = DIFFICULTY_CURVE_SECONDS;
       const ch = currentChapter();
       cfg.popDuration = MG.interpolate(MG.MOLE_DURATION, curveElapsed, total) * popMult(); // v949: 프로 배수(PRO_POP_MULT)
-      cfg.maxConcurrentMoles = Math.round(MG.interpolate(cfg.reverseTarget ? MG.MAX_CONCURRENT_ANIMALS : MG.MAX_CONCURRENT_MOLES, curveElapsed, total));
-      cfg.maxConcurrentAnimals = Math.round(MG.interpolate(cfg.reverseTarget ? MG.MAX_CONCURRENT_MOLES : MG.MAX_CONCURRENT_ANIMALS, curveElapsed, total));
+      const targets = roundTargets(ch, elapsed), others = Math.round(MG.interpolate(MG.MAX_CONCURRENT_ANIMALS, curveElapsed, total)); /* V1710 C: 라운드별 동시 타격 대상 수 */
+      cfg.maxConcurrentMoles = cfg.reverseTarget ? others : targets;
+      cfg.maxConcurrentAnimals = cfg.reverseTarget ? targets : others;
+      if (cfg.relay) cfg.maxConcurrentMoles = 10; // 릴레이: 묶음 3 + 내려가는 앞 묶음·남은 일반 두더지 여유
       // 게이팅은 currentChapter() 로 직접 판정(§4) — cfg 의 현재값(예: bombChance)으로 게이팅을
       // 판단하면 커브 자체가 0에서 시작하는 라운드(막 켜진 라운드3의 t=0)와 아예 꺼진 라운드를
       // 구분할 수 없어, 켜진 라운드가 라운드 내내 0에 고정되는 버그가 있었다(Puppeteer 로 실측 확인).
@@ -2240,6 +2251,7 @@
       cfg.maxConcurrentBombs = ch === 6 ? Math.round(MG.interpolate(MG.MAX_CONCURRENT_BOMBS, curveElapsed, total)) : 0;
       cfg.bombChance = ch >= 3 ? MG.interpolate(MG.BOMB_CHANCE_BY_ROUND, curveElapsed, total) : 0;
       cfg.strongBombChance = ch >= 4 ? MG.interpolate(MG.STRONG_BOMB_CHANCE_BY_ROUND, curveElapsed, total) : 0;
+      if (currentLight() === 'easy') { cfg.maxConcurrentAnimals = 0; cfg.maxConcurrentBombs = 0; } // V1710 C 사용자: 아마추어는 색깔 두더지·폭탄 든 색깔 두더지 없음
     }
   }
 
@@ -2294,6 +2306,8 @@
     // 트리거해놓고 전광판엔 0이 뜨는 버그로 발견 — 스폰은 계속 돌지만 판정만 유예).
     // V1422 C: 폭탄 든 두더지는 피하는 게 정답 — 시간초과로 들어가도 콤보 안 끊김(AI 도 폭탄 두더지는 피해서 콤보가 끊기던 원인)
     if (!state.pausedByFever && tickResult.expired.some((e) => effectiveHitType(state.config, e.type) === 'mole' && e.timedOut && !e.bomb && !e.good)) run.combo.onObstacleHit();
+    if (!state.pausedByFever) tickResult.expired.forEach((e) => { if (e.behavior === 'smoke' && e.timedOut) smokeCover(e.regionId); }); // V1710 C 사용자: 담배 두더지 놓치면 연기
+    funTick();
     // "의문사" 방지(사용자 지정) — 무적 중에 올라온 방해물은, 그 사이 무적이 끝나도
     // 계속 안전 취급되도록 스폰 순간에 낙인찍는다(spawn-scheduler.js 가 그대로 전달).
     if (alipunchInvincible()) {
@@ -2326,7 +2340,7 @@
       // hot 표시가 안 꺼져 "성공했는데 늦게 없어진다"는 지적(사용자 지정) — sinkIn>0(최종 타격은
       // 이미 등록됨, 침몰 대기 중)도 같이 걸러 타격 성공 즉시(다음 프레임) 꺼지게 한다.
       if (p.dying || p.sinkIn > 0) return;
-      const et = effectiveHitType(state.config, p.type);
+      const et = p.good ? 'animal' : effectiveHitType(state.config, p.type); /* V1710 C 사용자: 일반 두더지(때리면 안 됨)는 버튼판 불 안 켬 */
       if (et === 'mole') moleRegions.add(p.regionId);
       else if ((invincibleNow || p.safeAlways) && et === 'animal') { moleRegions.add(p.regionId); safeAnimalRegions.add(p.regionId); }
       if (p.bombKind) bombRegions.set(p.regionId, p.bombKind);
@@ -2350,6 +2364,57 @@
   // 켜지던 것과 동일 시점) 이후부터만, 라운드2~8은 항상 가능.
   function isFever() {
     return !!(run && run.combo.combo >= 50 && (currentChapter() !== 1 || (state && state.config && state.config.obstacles)));
+  }
+  // ---------- V1710 C 사용자: 재미 요소 6종 ----------
+  // 성격별 점수(도둑 ×2·휴대폰 ×0.5), 황금 ×5, 마지막 10초 러시 ×2, 콤보 단계(10/20/30 → ×1.2/×1.5/×2)
+  const PERSONALITY_SCORE = { thief: 2, phone: 0.5 };
+  const COIN_DROP = { thief: 1, golden: 5 };
+  const RUSH_SECONDS = 10;
+  function comboTier(c) { return c >= 30 ? 2 : c >= 20 ? 1.5 : c >= 10 ? 1.2 : 1; }
+  function isRush() { return !!(state && !state.feverEventActive && state.timeRemaining > 0 && state.timeRemaining <= RUSH_SECONDS); }
+  function hitBonus(r) { return (r.golden ? 5 : (PERSONALITY_SCORE[r.behavior] || 1)) * (isRush() ? 2 : 1) * comboTier(run.combo.combo + 1); }
+  // 라운드 미션: 라운드마다 작은 목표, 성공하면 코인
+  const MISSIONS = {
+    1: { kind: 'any', n: 15 }, 2: { kind: 'thief', n: 3 }, 3: { kind: 'drink', n: 4 }, 4: { kind: 'combo', n: 15 },
+    5: { kind: 'smoke', n: 4 }, 6: { kind: 'phone', n: 5 }, 7: { kind: 'combo', n: 25 }, 8: { kind: 'any', n: 40 }
+  };
+  const MISSION_REWARD = 30;
+  function missionLabel(ms) {
+    const ko = I18N.lang === 'ko';
+    const nm = { any: ko ? '나쁜 두더지' : 'bad moles', thief: ko ? '도둑 두더지' : 'thief moles', drink: ko ? '술 두더지' : 'drunk moles', smoke: ko ? '담배 두더지' : 'smoking moles', phone: ko ? '휴대폰 두더지' : 'phone moles' }[ms.kind];
+    if (ms.kind === 'combo') return ko ? ms.n + ' 콤보 달성' : 'Reach ' + ms.n + ' combo';
+    return ko ? nm + ' ' + ms.n + '마리 잡기' : 'Catch ' + ms.n + ' ' + nm;
+  }
+  function missionProgress(r) {
+    const ms = state && state.mission; if (!ms || ms.done) return;
+    if (ms.kind === 'combo') ms.count = Math.max(ms.count, run.combo.combo);
+    else if (r && (ms.kind === 'any' || r.behavior === ms.kind)) ms.count += 1;
+    if (ms.count >= ms.n) {
+      ms.done = true; MG.Economy.addCoins(MISSION_REWARD);
+      const board = document.getElementById('mole-board');
+      if (board) MG.HitFx.skillWord(board, (I18N.lang === 'ko' ? '미션 성공! +' : 'Mission clear! +') + MISSION_REWARD + '🪙');
+    }
+  }
+  function funTick() { // 루프에서 매 프레임: 미션 안내(시작 직후 1번)·러시 시작 알림
+    if (!state || state.ended) return;
+    const board = document.getElementById('mole-board'); if (!board) return;
+    const elapsed = roundSeconds() - state.timeRemaining;
+    if (state.mission && !state.mission.shown && elapsed > 0.8) { state.mission.shown = true; MG.HitFx.skillWord(board, '🎯 ' + missionLabel(state.mission)); }
+    const rush = isRush();
+    if (rush && !state.rushOn) { state.rushOn = true; MG.HitFx.skillWord(board, I18N.lang === 'ko' ? '⚡ 러시! 점수 ×2' : '⚡ RUSH! Score ×2'); document.getElementById('game-screen')?.classList.add('gs-rush'); setBgmRate(1.15); }
+    if (!rush && state.rushOn && state.timeRemaining > RUSH_SECONDS) { state.rushOn = false; document.getElementById('game-screen')?.classList.remove('gs-rush'); setBgmRate(1); }
+  }
+  function setBgmRate(k) { document.querySelectorAll('audio').forEach((a) => { try { a.playbackRate = k; } catch (e) { /* 무시 */ } }); } // 러시: 배경음 조금 빠르게
+  function funTextAt(board, xFrac, yFrac, html) { const d = MG.HitFx.spawnAt && MG.HitFx.spawnAt(board, 'hit-fx-fun', xFrac, yFrac, html); return d; }
+  // 담배 두더지를 놓치면 연기가 옆 칸(상하좌우)을 잠깐 가림
+  function smokeCover(regionId) {
+    const board = document.getElementById('mole-board'); if (!board) return;
+    const g = roundGridSize(), id = regionId % (g * g), row = Math.floor(id / g), col = id % g;
+    for (const [dr, dc] of [[0, 0], [0, -1], [0, 1], [-1, 0], [1, 0]]) {
+      const r2 = row + dr, c2 = col + dc; if (r2 < 0 || c2 < 0 || r2 >= g || c2 >= g) continue;
+      const d = MG.HitFx.spawnAt && MG.HitFx.spawnAt(board, 'hit-fx-smoke', (c2 + 0.5) / g, (r2 + 0.5) / g, '');
+      if (d) d.style.setProperty('--g', g);
+    }
   }
   function currentScoreMult() {
     const m = SCORE_MULT[currentDifficulty()] || SCORE_MULT.easy;
@@ -2758,15 +2823,24 @@
           flashHud('hud-hearts');
         } else if (r.done) {
           const before = run.combo.score;
+          run.combo.setMult(currentScoreMult() * hitBonus(r)); // V1710 C: 성격·황금·러시·콤보 단계 배율(이 한 마리에만)
           run.combo.onMoleHit();   // 스펙 §12 — 마리당 1콤보 (콤보·라이트·피버 배율은 setMult 로 이미 반영)
+          run.combo.setMult(currentScoreMult());
           MG.HitFx.scorePop(board, r.xFrac, r.yFrac, run.combo.score - before, r.regionId);
           checkComboLifeBonus();   // 콤보 100단위 넘기면 목숨 +1
+          { /* V1710 C 사용자: 도둑·황금 = 코인, 콤보 10/20/30 단계 알림, 미션 진행 */
+            const coin = r.golden ? COIN_DROP.golden : (COIN_DROP[r.behavior] || 0);
+            if (coin) { MG.Economy.addCoins(coin); funTextAt(board, r.xFrac, r.yFrac - 0.08, '+' + coin + '🪙'); }
+            if (r.golden) MG.HitFx.skillWord(board, I18N.lang === 'ko' ? '✨ 황금 두더지! ×5' : '✨ GOLDEN! ×5');
+            const c = run.combo.combo; if (c === 10 || c === 20 || c === 30) MG.HitFx.skillWord(board, c + ' COMBO! ×' + comboTier(c));
+            missionProgress(r);
+          }
           // 처치(마지막) 타격에만: 대포면 폭발 흩뿌림, 알리 펀치면 별 이펙트(피격연출은 pop-elements.js
           // m.punch 가 담당), 아니면 기존 타격. 중간타(빼꼼/모자)는 손 안 댐.
           if (state.weapon === 'cannon') {
             MG.HitFx.moleBlast(board, r.xFrac, r.yFrac);
           } else if (state.weapon === 'alipunch') {
-            MG.HitFx.shake(board);
+            MG.HitFx.shake(board, r.xFrac, r.yFrac);
             MG.HitFx.punch(); // 랜덤 타격음 (별 이펙트만으로는 소리가 안 남 — 버그 수정)
             MG.HitFx.punchStar(board, r.xFrac, r.yFrac);
             // [공격력] 무적 발동 확률 20%, 5초(§7).
@@ -2792,7 +2866,7 @@
           run.combo.onJuggle(JUGGLE_BONUS);
           MG.HitFx.scorePop(board, r.xFrac, r.yFrac, run.combo.score - before, r.regionId);
           checkComboLifeBonus();
-          MG.HitFx.shake(board);
+          MG.HitFx.shake(board, r.xFrac, r.yFrac);
           MG.HitFx.punch(); // 랜덤 타격음 — 두더지 처치와 동일한 연출
           MG.HitFx.punchStar(board, r.xFrac, r.yFrac);
           moleHits += 1;
@@ -2800,6 +2874,7 @@
           setRunLives(run.lives - 1);     // 동물 = 공유 생명 -1 (즉시 풀에 반영)
           run.combo.onObstacleHit();
           MG.HitFx.obstacleHit(board, r.xFrac, r.yFrac, 'animal');
+          if (r.good) funTextAt(board, r.xFrac, r.yFrac - 0.1, '💢'); // V1710 C 사용자: 일반 두더지를 잘못 치면 화남
           flashHud('hud-hearts');
         }
       } else if (effType === 'bomb') {
@@ -3095,7 +3170,7 @@
   // 더 이상 "다음 내부 라운드로 자동 이어가기"가 없다 — 시간이 다 되면 항상 결과 화면으로.
   function roundComplete() {
     if (!state || state.ended) return;
-    state.ended = true;
+    state.ended = true; if (state.rushOn) { state.rushOn = false; setBgmRate(1); document.getElementById('game-screen')?.classList.remove('gs-rush'); } // V1710 C: 러시 끝
     sessionGen++; // 직전 카운트다운 정리 타이머 무효화
     if (rafId) cancelAnimationFrame(rafId);
     if (state.laneHammer) state.laneHammer.home(); // 루프 멈추기 전 망치 대기위치로 스냅
@@ -3137,7 +3212,7 @@
   // 목숨 소진(라운드 도중) — 지금까지 친 점수까지 반영하고 최종 결과.
   function finish(reason) {
     if (!state || state.ended) return;
-    state.ended = true;
+    state.ended = true; if (state.rushOn) { state.rushOn = false; setBgmRate(1); document.getElementById('game-screen')?.classList.remove('gs-rush'); } // V1710 C: 러시 끝
     sessionGen++; // 직전 카운트다운 정리 타이머 무효화
     if (rafId) cancelAnimationFrame(rafId);
     if (state.laneHammer) state.laneHammer.home(); // 망치 대기위치로 스냅

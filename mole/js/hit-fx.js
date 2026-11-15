@@ -483,9 +483,9 @@
 
   // V1535 C: 떼고 두 프레임 뒤에 다시 붙여 매번 처음부터 재생(한 프레임 뒤면 브라우저가 뗀 상태를 못 봐 가끔만 흔들렸음).
   // offsetWidth 강제 배치 계산은 쓰지 않는다(V1534 C 성능 개선 유지).
-  function shake(boardEl) {
+  function shake(boardEl, xFrac, yFrac) { /* V1710 C 사용자: 위치를 주면 그 구멍 칸만 흔듦 */
     const clay = root.MoleGame && root.MoleGame.ClayRoundOne;
-    if (clay && clay.shakeBoard && clay.shakeBoard(boardEl)) return;
+    if (clay && clay.shakeBoard && clay.shakeBoard(boardEl, xFrac, yFrac)) return;
     boardEl.classList.remove('mole-board--shake');
     cancelAnimationFrame(boardEl._shakeRaf);
     boardEl._shakeRaf = requestAnimationFrame(() => { boardEl._shakeRaf = requestAnimationFrame(() => boardEl.classList.add('mole-board--shake')); });
@@ -655,7 +655,7 @@
   }
 
   function moleHit(boardEl, xFrac, yFrac, noWord) {
-    shake(boardEl);
+    shake(boardEl, xFrac, yFrac);
     if (!noWord) spawnAt(boardEl, 'hit-fx-burst', xFrac, yFrac, '<span>' + window.FGH.I18N.t('mole.fx.bam') + '</span>'); // 처치 땐 scorePop 의 PANG! 이 대신
     starBurst(boardEl, xFrac, yFrac);
     for (let i = 0; i < 5; i++) {
@@ -669,7 +669,7 @@
   // 대포 처치 — 두더지가 안 내려가고 그 자리에서 그을려 흔들리다 흩뿌리며 사라진다
   // (두더지 스프라이트 연출은 pop-elements.js, 여기선 명중 순간 번쩍 + 회재/불티 파편).
   function moleBlast(boardEl, xFrac, yFrac) {
-    shake(boardEl);
+    shake(boardEl, xFrac, yFrac);
     spawnAt(boardEl, 'hit-fx-blast-flash', xFrac, yFrac);
     const N = 14;
     for (let i = 0; i < N; i++) {
@@ -687,7 +687,7 @@
   // moleBlast 와 완전히 같되, 캐논 화염 이미지(cannon-fx2.png, 방사형이라 방향성 덜함) 한 장을
   // 얹는다. 두더지 그을림·흔들림·소멸은 pop-elements.js m.blast 가 그대로 담당.
   function bombBlast(boardEl, xFrac, yFrac) {
-    shake(boardEl);
+    shake(boardEl, xFrac, yFrac);
     spawnAt(boardEl, 'hit-fx-blast-flash', xFrac, yFrac);
     spawnAt(boardEl, 'hit-fx-bomb-flame', xFrac, yFrac);
     const N = 14;
@@ -712,14 +712,14 @@
 
   // 다타 두더지의 마지막이 아닌 타격 (빼꼼/모자 단계) — 처치는 아니지만 맞은 느낌을 준다.
   function moleTap(boardEl, xFrac, yFrac) {
-    shake(boardEl);
+    shake(boardEl, xFrac, yFrac);
     spawnAt(boardEl, 'hit-fx-burst', xFrac, yFrac, '<span>' + window.FGH.I18N.t('mole.fx.tap') + '</span>');
     vibrate(15);
     punch({ light: true }); // 처치 펀치보다 높고 가볍게 — "아직 안 죽음"
   }
 
   function obstacleHit(boardEl, xFrac, yFrac /*, kind */) {
-    shake(boardEl);
+    shake(boardEl, xFrac, yFrac);
     spawnAt(boardEl, 'hit-fx-clang', xFrac, yFrac, '<span>' + window.FGH.I18N.t('mole.fx.clang') + '</span>');
     vibrate([10, 25, 10]);
     tone(140, 'sawtooth');
@@ -929,7 +929,7 @@
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
-  const api = { moleHit, moleBlast, bombBlast, juggle, moleTap, obstacleHit, whiff, emerge, emergeSound, warmup, uiTap, typeTick, scorePop, burstWord, skillWord, starBurst, shake, quakeDust, quakeClone, targetLock, cannonClone, punchStar, powerUpWord, dopamineUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, fight, moleVoice };
+  const api = { spawnAt, moleHit, moleBlast, bombBlast, juggle, moleTap, obstacleHit, whiff, emerge, emergeSound, warmup, uiTap, typeTick, scorePop, burstWord, skillWord, starBurst, shake, quakeDust, quakeClone, targetLock, cannonClone, punchStar, powerUpWord, dopamineUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, fight, moleVoice };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);
 

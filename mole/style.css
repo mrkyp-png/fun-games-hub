@@ -10565,3 +10565,10 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 @media (orientation: landscape) and (min-width: 560px) {
   .inventory-cell { min-height: calc(clamp(44px, 15dvh, 65px) * var(--inventory-ui-scale)); }
 }
+
+/* V1710 C 사용자: 재미 요소 — 코인·화남 글자, 담배 연기(옆 칸 가림), 러시 테두리 */
+.hit-fx-fun { position: absolute; transform: translate(-50%, -50%); font-family: 'Dongle', 'Segoe UI', 'Malgun Gothic', sans-serif; font-weight: 800; font-size: 1.6rem; color: #fff; -webkit-text-stroke: 3px #3a2a12; paint-order: stroke fill; white-space: nowrap; pointer-events: none; z-index: 60; animation: hit-fx-fun-up .9s ease-out forwards; }
+@keyframes hit-fx-fun-up { 0% { opacity: 0; transform: translate(-50%, -30%) scale(.6); } 20% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); } 100% { opacity: 0; transform: translate(-50%, -110%) scale(1); } }
+.hit-fx-smoke { position: absolute; width: calc(100% / var(--g, 4) * 1.15); aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle at 40% 40%, rgba(235, 235, 235, .97), rgba(190, 190, 190, .9) 55%, rgba(170, 170, 170, 0) 72%); pointer-events: none; z-index: 55; animation: hit-fx-smoke 1.2s ease-out forwards; }
+@keyframes hit-fx-smoke { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.5); } 15% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 70% { opacity: .95; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.15); } }
+#game-screen.gs-rush #mole-board { box-shadow: 0 0 0 3px #ffcf33, 0 0 18px 4px rgba(255, 190, 0, .75); }
