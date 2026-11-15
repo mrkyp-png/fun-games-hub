@@ -1,3 +1,8 @@
+# V1717 C DEPLOYED - 2026-11-15 (Claude)
+- Golden halo, skillWord (combo/golden/rush/mission words) and fun text (coins/💢) drawn above the mole canvas: HitFx.spawnTop (fixed, .fx-top z 900).
+- Win popup straddles the board/dial-pad border (top = bar.top - height/2); it covers the score line after it appears (user offered to move score up).
+- Bomb indicator on the dial pad removed in all modes (setBombIndicator(id,null)).
+
 # V1716 C DEPLOYED - 2026-11-15 (Claude) — mode split, no button hints
 - Success rays: white streaks only (rainbow conic removed; it covered the blurred board), always on with starpop.
 - Button hints removed in all modes (setCellHot(id,false,false)); bomb indicator rules unchanged.

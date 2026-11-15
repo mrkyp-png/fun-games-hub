@@ -2342,7 +2342,7 @@
     });
     for (let id = 0; id < GRID_SIZE * GRID_SIZE; id++) {
       sharedLaneControls.setCellHot(id, false, false); // V1716 C 사용자: 버튼 알림(아마추어 불빛·노말 주황 숫자) 모두 삭제
-      sharedLaneControls.setBombIndicator(id, bombRegions.get(id) || null);
+      sharedLaneControls.setBombIndicator(id, null); // V1717 C 사용자: 버튼판 폭탄 표시도 삭제(모든 모드)
     }
 
     updateHUD();
@@ -2411,14 +2411,12 @@
     showMission(() => { if (st.missionHold) { st.missionHold = false; st.paused = false; } });
   }
   function setBgmRate(k) { document.querySelectorAll('audio').forEach((a) => { try { a.playbackRate = k; } catch (e) { /* 무시 */ } }); } // 러시: 배경음 조금 빠르게
-  function funTextAt(board, xFrac, yFrac, html) { const d = MG.HitFx.spawnAt && MG.HitFx.spawnAt(board, 'hit-fx-fun', xFrac, yFrac, html); return d; }
+  function funTextAt(board, xFrac, yFrac, html) { return MG.HitFx.spawnTop(board, 'hit-fx-fun', xFrac, yFrac, html); } // V1717 C: 두더지 그림보다 앞
   // V1711 C 사용자: 황금 두더지 — 나올 때 빛 고리 + 반짝이(머무는 동안), 등장 소리·"✨"
   function goldenFx(p) {
     const board = document.getElementById(p.regionId >= roundGridSize() ** 2 && state.feverField ? 'fever-hole-board' : 'mole-board'); if (!board) return;
-    const g = roundGridSize(), d = document.createElement('div'); d.className = 'hit-fx-golden';
-    d.style.left = (p.x * 100) + '%'; d.style.top = (p.y * 100) + '%'; d.style.setProperty('--g', g);
-    d.innerHTML = '<i></i><b>✦</b><b>✧</b><b>✦</b><b>✧</b><b>✦</b>';
-    board.appendChild(d);
+    const g = roundGridSize(), d = MG.HitFx.spawnTop(board, 'hit-fx-golden', p.x, p.y, '<i></i><b>✦</b><b>✧</b><b>✦</b><b>✧</b><b>✦</b>', 7000); // V1717 C 사용자: 두더지 그림보다 앞
+    d.style.width = (board.getBoundingClientRect().width / g * .95) + 'px'; d.style.setProperty('--g', g);
     const popId = p.id, t0 = performance.now();
     (function watch() { // 두더지가 잡히거나 내려가면 바로 끔
       const live = state && state.scheduler && state.scheduler.getActivePops().some((q) => q.id === popId && !q.dying && !(q.sinkIn > 0));
@@ -3437,7 +3435,7 @@
     const p = document.createElement('div'); p.id = 'win-choice';
     p.innerHTML = '<button type="button" class="wc-btn wc-home">' + (ko ? '홈 복귀' : 'Home') + '</button>' + (hasNext ? '<button type="button" class="wc-btn wc-next">' + (ko ? '다음 라운드' : 'Next round') + '</button>' : ''); // 다음 라운드가 없으면 홈 복귀만
     (gs || document.body).appendChild(p);
-    if (bar) { const r = bar.getBoundingClientRect(), g = (gs || document.body).getBoundingClientRect(); p.style.top = Math.round(r.top - g.top + 10) + 'px'; }
+    if (bar) { const r = bar.getBoundingClientRect(), g = (gs || document.body).getBoundingClientRect(); p.style.top = Math.round(r.top - g.top - p.offsetHeight / 2) + 'px'; } // V1717 C 사용자: 게임판·버튼판 경계선에 걸쳐 경계 가림
     p.querySelector('.wc-home').addEventListener('click', () => {
       hideWinChoice();
       const enter = () => showStartScreenNow({ skipFlash: true });

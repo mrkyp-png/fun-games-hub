@@ -762,7 +762,19 @@
   // 스킬 사용 플레이스홀더 연출 — 실제 게임 효과가 아직 정의되지 않은 스킬(빙결/골드2배/
   // 융단폭격/AI)용, 보드 중앙에 스킬 이름만 잠깐 띄운다("시스템만 먼저" 구현 — 사용자 확인).
   function skillWord(boardEl, text) {
-    return spawnAt(boardEl, 'hit-fx-burstword', 0.5, 0.42, text);
+    return spawnTop(boardEl, 'hit-fx-burstword', 0.5, 0.42, text); // V1717 C 사용자: 콤보·황금·러시 글자는 두더지 그림보다 앞
+  }
+  // V1717 C: 두더지 3D 그림(캔버스)보다 위층 — 화면 고정 위치로 게임판 좌표에 띄움
+  function spawnTop(boardEl, cls, xFrac, yFrac, html, life) {
+    const r = boardEl.getBoundingClientRect(), d = document.createElement('div');
+    d.className = cls + ' fx-top';
+    d.style.left = (r.left + xFrac * r.width) + 'px';
+    d.style.top = (r.top + yFrac * r.height) + 'px';
+    if (html) d.innerHTML = html;
+    document.body.appendChild(d);
+    d.addEventListener('animationend', () => { if (!life) d.remove(); }, { once: true });
+    setTimeout(() => d.remove(), life || 1200);
+    return d;
   }
 
   // 스킬 "타겟팅"(§54~58) — 실제 버튼보드의 타겟 구멍 위에 조준 링 + 타겟팅 원형 아이콘을
@@ -929,7 +941,7 @@
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
-  const api = { spawnAt, moleHit, moleBlast, bombBlast, juggle, moleTap, obstacleHit, whiff, emerge, emergeSound, warmup, uiTap, typeTick, scorePop, burstWord, skillWord, starBurst, shake, quakeDust, quakeClone, targetLock, cannonClone, punchStar, powerUpWord, dopamineUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, fight, moleVoice };
+  const api = { spawnAt, spawnTop, moleHit, moleBlast, bombBlast, juggle, moleTap, obstacleHit, whiff, emerge, emergeSound, warmup, uiTap, typeTick, scorePop, burstWord, skillWord, starBurst, shake, quakeDust, quakeClone, targetLock, cannonClone, punchStar, powerUpWord, dopamineUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, fight, moleVoice };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);
 
