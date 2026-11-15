@@ -203,8 +203,8 @@
   }
 
   const LABEL = {
-    ko: { red: '빨강', blue: '파랑', yellow: '노랑', green: '초록', purple: '보라', bald: '대머리', mohawk: '모히칸', curly: '파마', spiky: '가시', forelock: '한가닥', smoke: '담배', drink: '술', phone: '게임', thief: '도둑', not: ' 아닌' },
-    en: { red: 'Red', blue: 'Blue', yellow: 'Yellow', green: 'Green', purple: 'Purple', bald: 'Bald', mohawk: 'Mohawk', curly: 'Curly', spiky: 'Spiky', forelock: 'One hair', smoke: 'Smoker', drink: 'Drinker', phone: 'Gamer', thief: 'Thief', not: '' }
+    ko: { red: '빨강', blue: '파랑', yellow: '노랑', green: '초록', purple: '보라', bald: '대머리', mohawk: '모히칸', curly: '파마', spiky: '가시', forelock: '한가닥', smoke: '담배', drink: '쥬스', phone: '게임', thief: '도둑', not: ' 아닌' },
+    en: { red: 'Red', blue: 'Blue', yellow: 'Yellow', green: 'Green', purple: 'Purple', bald: 'Bald', mohawk: 'Mohawk', curly: 'Curly', spiky: 'Spiky', forelock: 'One hair', smoke: 'Smoker', drink: 'Juice', phone: 'Gamer', thief: 'Thief', not: '' }
   };
   function clueLabel(c, lang) {
     const L = LABEL[lang === 'ko' ? 'ko' : 'en'], ko = lang === 'ko', parts = [];
