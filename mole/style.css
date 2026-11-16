@@ -9586,7 +9586,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 :is(#shop-screen,#settings-screen,#mailbox-screen,#home3d) .shop-coin-choice-actions button[data-choice-action="confirm"],:is(#shop-screen,#settings-screen,#mailbox-screen,#home3d) .shop-coin-choice-actions button[data-choice-action="ok"] { background:linear-gradient(180deg,#74e389 0%,#47cc6a 46%,#2ea951 100%)!important; }
 :is(#shop-screen,#settings-screen,#mailbox-screen,#home3d) .shop-coin-choice-actions button[data-choice-action="cancel"] { background:linear-gradient(180deg,#ff8181 0%,#f04b4b 46%,#d83232 100%)!important; text-shadow:0 1px 1px rgba(100,15,15,.45)!important; box-shadow:0 4px 0 #9e2222,0 4px 1px rgba(0,0,0,.18),0 8px 10px rgba(0,0,0,.24),inset 0 2px 2px rgba(255,255,255,.72),inset 0 -3px 4px rgba(90,0,0,.36)!important; }
 /* User-requested content offset; the back button has its own independent position. */
-#shop-screen>.shop-banner,#shop-screen>.shop-cards-box,#shop-screen>.shop-tab-shell { top:-0.3cm!important; }
+#shop-screen>.shop-banner,#shop-screen>.shop-cards-box,#shop-screen>.shop-tab-shell { top:calc(-0.3cm - 20px)!important; } /* V1737 C 사용자: 간판을 지워 위 여백이 아래보다 40px 커짐 → 판 전체 20px 위로(위아래 가운데) */
 /* Four-hour shop scenery; cards, controls and popup stacking stay independent. */
 #shop-screen[data-shop-theme="night"] { background-color:#071436!important; }
 #shop-screen>.shop-scenery,#shop-screen>.shop-sky { position:absolute!important; inset:0!important; z-index:0!important; pointer-events:none!important; overflow:hidden!important; }

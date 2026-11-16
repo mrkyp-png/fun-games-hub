@@ -1,4 +1,7 @@
-# V1737 C DEPLOYED - 2026-11-16 (Claude)
+# V1738 C DEPLOYED - 2026-11-16 (Claude)
+- Shop panel (banner/cards/tab shell) top -0.3cm → calc(-0.3cm - 20px): user asked to centre it vertically (nameplate removed left ~40px extra on top on the PHONE). In the 390x844 headless capture the awning top clips slightly (phone app has more top inset) — deployed phone-first on user's choice; revert if the phone clips.
+
+# V1737 C DEPLOYED - 2026-11-16 (Claude) `24dbeced`
 - Phone check (user photo): shop balance ticket 1.8 → 1.45, toggle-box coin 1.3 → 1.12 (top +6px) — both overflowed their boxes on the phone (phone layout is larger than the 390px capture).
 
 # V1736 C DEPLOYED - 2026-11-16 (Claude) `5d212635`
