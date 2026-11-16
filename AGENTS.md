@@ -1,4 +1,8 @@
-# V1727 C DEPLOYED - 2026-11-16 (Claude)
+# V1728 C DEPLOYED - 2026-11-16 (Claude)
+- Main game: smoke mole → FART mole (user). clay-round1-local.js loads mole/assets/characters-v1727/behavior-smoke.glb (review/make-fart-mole.cjs, from v1694 smoke): turns around on landing, toot cloud from under the tail, turns back; right hand pinches the nose (cigar grip, middle finger curl = index), new > < eyes (Squeeze eye L/R — model had no eye mesh), face clouds orbit. behaviorTime: smoke plays 0~3s once, then loops 1.2~3.0 (no repeated spin). Miss cover = .hit-fx-smoke--fart (yellow-green). Mission name 방귀 두더지 / farting moles. Behaviour id stays 'smoke'.
+- Order game HUD: HOME text 9px !important (hud.js inlines SCORE size) and icon/text translate:none (hud.js aligns the icon to the trophy, which the order HUD hides → icon was pushed off the left).
+
+# V1727 C DEPLOYED - 2026-11-16 (Claude) `bbf6ba6b`
 - Order game ('순서대로 잡아라'): smoke trait → bomb mole (BEHAVIORS ['bomb','drink','phone','thief'], label 폭탄/Bomb). popFor sets bombKind 'normal' + fuse:true; pop-elements passes m.fuse. Tests 24,748 pass.
 - All games, bomb-carrying mole (clay-round1-local.js liftBomb): arms + bomb lifted 22° about the shoulder line so both hands hold the bomb's lower sides (was buried at the rim), palms tilted 30° to the bomb's curve, bomb hops every 0.5s (hands dip on catch). Surprised eyes: new base model mole/assets/characters-v1727/mole-game-smile.glb (review/make-bomb-surprise-eyes.cjs) adds 'Surprise ivory eye ±1' / 'Surprise pupil ±1' (pupil 0.6x) on Head, drawn only for bomb carriers; original Eye bones hidden for carriers (poseFor wrapper → poseForBase); brows raised + twitch. Fuse/tip excluded from the green outline pass.
 - Order game only (m.fuse): fuse flame at the tip (elongated, yellow↔orange flicker) + 4 small sparks rising.

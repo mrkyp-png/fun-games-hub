@@ -2386,7 +2386,7 @@
   const MISSION_REWARD = 1000; // V1712 C 사용자: 미션 성공 코인 1000
   function missionLabel(ms) {
     const ko = I18N.lang === 'ko';
-    const nm = { any: ko ? '나쁜 두더지' : 'bad moles', thief: ko ? '도둑 두더지' : 'thief moles', drink: ko ? '콜라 두더지' : 'cola moles' /* V1725 C 사용자: 술 → 콜라 */, smoke: ko ? '담배 두더지' : 'smoking moles', phone: ko ? '휴대폰 두더지' : 'phone moles' }[ms.kind];
+    const nm = { any: ko ? '나쁜 두더지' : 'bad moles', thief: ko ? '도둑 두더지' : 'thief moles', drink: ko ? '콜라 두더지' : 'cola moles' /* V1725 C 사용자: 술 → 콜라 */, smoke: ko ? '방귀 두더지' : 'farting moles' /* V1727 C 사용자: 담배 → 방귀 */, phone: ko ? '휴대폰 두더지' : 'phone moles' }[ms.kind];
     if (ms.kind === 'combo') return ko ? ms.n + ' 콤보 달성' : 'Reach ' + ms.n + ' combo';
     return ko ? nm + ' ' + ms.n + '마리 잡기' : 'Catch ' + ms.n + ' ' + nm;
   }
@@ -2445,7 +2445,7 @@
       const r2 = row + dr, c2 = col + dc; if (r2 < 0 || c2 < 0 || r2 >= g || c2 >= g) continue;
       const rid = r2 * g + c2 + (regionId - id); // V1717 C 사용자: 무기 자리(캐논·묠니르·킹판취 칸)는 구멍이 없으니 연기도 안 덮음
       if (state && state.spawnPoints && !state.spawnPoints.some((sp) => sp.regionId === rid)) continue;
-      const d = document.createElement('div'); d.className = 'hit-fx-smoke hit-fx-smoke--top';
+      const d = document.createElement('div'); d.className = 'hit-fx-smoke hit-fx-smoke--top hit-fx-smoke--fart'; // V1727 C 사용자: 담배 → 방귀(노란 초록 연기)
       d.style.left = (br.left + (c2 + 0.5) * cw) + 'px'; d.style.top = (br.top + (r2 + 0.5) * ch) + 'px'; d.style.width = cw + 'px';
       document.body.appendChild(d); setTimeout(() => d.remove(), SMOKE_MS + 150);
     }

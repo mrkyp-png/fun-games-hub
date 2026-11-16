@@ -18,6 +18,6 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     }
     console.log('폭탄', JSON.stringify((await p.evaluate(() => window.__debugOrder())).pops.filter((q) => q.traits.beh === 'bomb' && q.regionId < 12).map((q) => [q.regionId, q.traits.color, q.tint, q.bombKind])));
     for (let i = 0; i < 3; i++) { await wait(4000); const r = await p.evaluate((id) => { const c = document.querySelector('.checkerboard-cell[data-region="' + id + '"]'); const b = c.getBoundingClientRect(); return { x: b.left - 10, y: b.top - 40, width: b.width + 20, height: b.height + 50 }; }, cell); await p.screenshot({ path: `${OUT}/칸확대_${i + 1}.png`, clip: r }); }
-    console.log('오류', JSON.stringify(errs.slice(0, 3)));
+    await p.screenshot({ path: `${OUT}/상태창.png`, clip: { x: 0, y: 0, width: 390, height: 95 } }); console.log('오류', JSON.stringify(errs.slice(0, 3)));
   } finally { await b.close(); }
 })().catch((e) => { console.error(e); process.exitCode = 1; });
