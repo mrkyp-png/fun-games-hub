@@ -10665,11 +10665,11 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* V1734 C 사용자: 토글박스(상점 아래 탭)의 티켓 그림 키움 */
 #shop-screen [data-shop-tab="ticket"] .shop-tab-ico { margin-left:auto!important; margin-right:auto!important; } /* V1735 C 사용자: 탭 티켓 가운데 안 맞음 → 아이콘 자리를 탭 가운데로 */
 #shop-screen [data-shop-tab="ticket"] .shop-tab-ico img { object-fit:contain!important; object-position:50% 50%!important; scale:1.6; transform-origin:50% 50%; } /* 사용자: 총 1.6배 */
-#shop-screen [data-shop-tab="coin"] .shop-tab-ico img { scale:1.3; top:calc(50% + 9px)!important; left:calc(50% + 15px)!important; } /* V1735 C 사용자: 토글박스 코인 1.3배 — 그림 기준점(아이콘 칸 가운데)을 아래로 옮겨 위 테두리 안쪽에 */
+#shop-screen [data-shop-tab="coin"] .shop-tab-ico img { scale:1.12; top:calc(50% + 6px)!important; left:calc(50% + 15px)!important; } /* V1736 C 사용자: 1.3배는 폰에서 위 테두리 벗어남 */ /* V1735 C 사용자: 토글박스 코인 1.3배 — 그림 기준점(아이콘 칸 가운데)을 아래로 옮겨 위 테두리 안쪽에 */
 #shop-screen [data-shop-tab="ticket"] .shop-tab-ico img { top:calc(50% + 26px)!important; left:calc(50% + 27px)!important; } /* 티켓 1.6배도 같은 방법(왼쪽 테두리 넘지 않게 오른쪽으로 조금) */
 /* V1735 C 사용자: 상점 위 보유량 칸(코인·하트·티켓) 그림 확대 — 티켓 그림은 여백이 많아 더 키움 */
 #shop-screen .shop-owned-balance > img { max-height:34px!important; max-width:32%!important; scale:1.25; }
-#shop-screen .shop-owned-balance--ticket > img { scale:1.8; }
+#shop-screen .shop-owned-balance--ticket > img { scale:1.45; } /* V1736 C 사용자: 1.8배는 칸 벗어남 */
 /* V1735 C 사용자: 상점 스킬 그림 크게 */
 #shop-screen .shop-card-badge--hero .shop-skill-visual { scale:1.45; } /* 그림 칸 크기 규칙은 그대로 두고 통째로 1.45배 */
 /* V1735 C 사용자: 토글박스 하트 조금 키움, 티켓은 가운데 맞춘 뒤 다른 탭 그림 크기에 맞춤 */

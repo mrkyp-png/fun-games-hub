@@ -1,4 +1,7 @@
-# V1736 C DEPLOYED - 2026-11-16 (Claude)
+# V1737 C DEPLOYED - 2026-11-16 (Claude)
+- Phone check (user photo): shop balance ticket 1.8 → 1.45, toggle-box coin 1.3 → 1.12 (top +6px) — both overflowed their boxes on the phone (phone layout is larger than the 390px capture).
+
+# V1736 C DEPLOYED - 2026-11-16 (Claude) `5d212635`
 - Shop toggle-box (bottom tabs) icons: heart 1.15, coin 1.3, ticket 1.6. Tab icon img is position:absolute centred at the 106x84 .shop-tab-ico (top/left 50% + translate -50%) → enlarged icons were pushed up/left; fixed with top/left calc(50% + Npx) (coin +9/+15, ticket +26/+27). Measured with review/capture-screens-colors.cjs (prints tab/ico/img rects).
 - Shop top balance boxes: icons 1.25 (ticket 1.8). Skill product art (.shop-card-badge--hero .shop-skill-visual) scale 1.45.
 
