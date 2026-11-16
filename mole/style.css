@@ -10652,3 +10652,13 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #gameover-overlay .go-word { position: relative; z-index: 3; top: -34px; } /* V1730 C 사용자: 글자 조금 위로 — V1732 C 더 위로(-14 → -34px) */
 /* V1732 C 사용자: 점프할 때 두더지 둘레에 밝은 사각 영역(하얀 빛 번짐이 그려지는 범위가 폰에서 비침) → 하얀 빛 빼고 실패 두더지처럼 아래 그림자만 */
 #gameover-overlay.is-win .go-hippo.go-hero { filter: drop-shadow(0 10px 12px rgba(0, 0, 0, .18)); }
+/* V1733 C 사용자: 상점 화면 색을 스코어·일일·인벤토리에 맞춤 — 시장 배경 대신 광장이 흐리게 비침(인벤토리와 같음), 아래 탭 받침 청록 → 크림. 차양막(빨간 줄무늬)은 그대로 */
+#shop-screen>.shop-scenery,#shop-screen>.shop-sky { display:none!important; }
+#shop-screen { background:transparent!important; }
+#shop-screen .shop-tab-shell::after { background:#fff5d9!important; }
+#shop-screen>.shop-cards-box[data-pane]::after { background:linear-gradient(90deg,#fff1d0,#fff9e9 50%,#fff1d0)!important; } /* V1733 C: 칸별 하늘·초록·분홍 판 → 크림(인벤토리와 같게) */
+/* V1733 C 사용자: 차양막 위 상점 간판 삭제 */
+#shop-screen .shop-banner-nameplate { display:none!important; }
+/* V1733 C 사용자: 상점을 감싸는 메뉴 판(#more-menu 하늘색 바탕·흰 테두리) 삭제 — 상점이 열려 있을 때만 투명 */
+#game-screen:has(#shop-screen:not([hidden])) #more-menu { visibility:hidden; } /* 인벤토리·설정과 같은 방법 */
+#game-screen:has(#shop-screen:not([hidden])) #shop-screen { visibility:visible; }

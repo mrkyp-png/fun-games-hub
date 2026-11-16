@@ -408,7 +408,7 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
           return rawMesh(new Float32Array(P), new Float32Array(Nn), new Uint32Array(I), {}, new Float32Array(C));
         });
         /* V1732 C 사용자: 리듬팡 스피커 음파 — 납작한 고리(바깥 반지름 1, 앞 = +Z), 옅기 8단계 */
-        waveRings = Array.from({ length: 8 }, (_, lv) => { const N = 40, P = [], Nn = [], C = [], I = [], al = 0.6 * (1 - lv / 8);
+        waveRings = Array.from({ length: 8 }, (_, lv) => { const N = 40, P = [], Nn = [], C = [], I = [], al = 0.35 * (1 - lv / 8); /* V1733 C: 더 옅게 */
           for (let k = 0; k <= N; k++) { const a = 2 * Math.PI * k / N; for (const rr of [0.9, 1]) { P.push(Math.cos(a) * rr, Math.sin(a) * rr, 0); Nn.push(0, 0, 1); C.push(0.8, 1, 0.93, al); } if (k < N) { const b = k * 2; I.push(b, b + 2, b + 1, b + 1, b + 2, b + 3, b, b + 1, b + 2, b + 1, b + 3, b + 2); } }
           return rawMesh(new Float32Array(P), new Float32Array(Nn), new Uint32Array(I), {}, new Float32Array(C)); });
         environment = environment.filter((m) => !m.sea); // GLB 의 평평한 바다 판 대신 움직이는 격자
@@ -489,7 +489,7 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
           if (m.puff !== undefined) { const ph = (now / 7 + m.puff / 6) % 1, s = (0.6 + 1.7 * ph) * Math.min(1, ph * 6, (1 - ph) * 3); world = R.transform({ translation: [-48 + ph * 3 + Math.sin(ph * 6 + m.puff) * 0.4, 10.7 + ph * 7, Math.cos(ph * 5 + m.puff) * 0.4], scale: [s, s, s] }); }
           if (m.gateGlow) {gl.uniform1i(U.Glow, 1);gl.uniform1i(U.Notes,!m.rhythmBars);
             const site=root.MoleGame.Home3DLayout.SITES.find(s=>s.id==='rhythm'),d=Math.hypot(site.x,site.z);gl.uniform4f(U.NoteGate,site.x,site.z,site.z/d,-site.x/d);}
-          if (m.speaker) { const b = Math.max(0, Math.sin(now * Math.PI * 4)), k = 1 + 0.08 * b * b; world = R.multiply(world, R.transform({ scale: [k, k, k] })); } /* V1732 C 사용자: 리듬팡 스피커 쿵쿵(1초에 2번 커졌다 작아짐) */
+          if (m.speaker) { const b = Math.max(0, Math.sin(now * Math.PI * 1.2)), k = 1 + 0.05 * b * b; /* V1733 C: 쿵쿵도 느리고 작게(음파와 같은 박자) */ world = R.multiply(world, R.transform({ scale: [k, k, k] })); } /* V1732 C 사용자: 리듬팡 스피커 쿵쿵(1초에 2번 커졌다 작아짐) */
           if(m.rhythmBars){gl.uniform1i(U.RhythmBars,1);gl.uniform1f(U.BarBase,m.world[13]);}
           draw(m, world, null);
           if(m.rhythmBars)gl.uniform1i(U.RhythmBars,0);
@@ -499,7 +499,7 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
         { const sps = environment.filter((m) => m.speaker); /* V1732 C 사용자: 스피커에서 음파가 나감 — 쿵(1초에 2번)마다 고리가 생겨 커지며 옅어짐 */
           if (sps.length && waveRings.length) { const site = root.MoleGame.Home3DLayout.SITES.find((s) => s.id === 'rhythm'), d = Math.hypot(site.x, site.z), fx = -site.x / d, fz = -site.z / d, yaw = Math.atan2(fx, fz), q = [0, Math.sin(yaw / 2), 0, Math.cos(yaw / 2)];
             gl.uniform1i(U.Glow, 1); gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
-            for (const sp of sps) for (let j = 0; j < 2; j++) { const ph = (now * 2 + j * 0.5) % 1, out = 0.15 + ph * 0.9, rad = 0.7 + ph * 1.1; draw(waveRings[Math.min(7, Math.floor(ph * 8))], R.transform({ translation: [sp.world[12] + fx * out, sp.world[13], sp.world[14] + fz * out], rotation: q, scale: [rad, rad, 1] }), null); }
+            for (const sp of sps) for (let j = 0; j < 1; j++) { const ph = (now * 0.6) % 1, out = 0.15 + ph * 0.9, rad = 0.7 + ph * 1.1; /* V1733 C 사용자: 정신없음 → 음파 한 번에 1개, 약 1.7초마다 천천히 */ draw(waveRings[Math.min(7, Math.floor(ph * 8))], R.transform({ translation: [sp.world[12] + fx * out, sp.world[13], sp.world[14] + fz * out], rotation: q, scale: [rad, rad, 1] }), null); }
             gl.depthMask(true); gl.disable(gl.BLEND); gl.uniform1i(U.Glow, 0); } }
         if(extraNotes){
           const site=root.MoleGame.Home3DLayout.SITES.find(s=>s.id==='rhythm'),d=Math.hypot(site.x,site.z),front=[-site.x/d,-site.z/d],right=[-front[1],front[0]],palette=[[.45,1.,.82],[1.,.56,.77],[1.,.91,.45]];
