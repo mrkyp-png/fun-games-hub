@@ -46,7 +46,7 @@ smooth(body)
 
 # 민트 입구 테두리(아래는 열린 ㄷ자를 뒤집은 모양)
 rim = rbox('Boombox door rim', (DW + 0.42, 0.34, DH + 0.21), (0, FY - 0.06, (DH + 0.21) / 2), 0.16, MINT, 6); apply_all(rim)
-hole = rbox('cut', (DW, 1.0, DH * 2), (0, FY - 0.06, 0), 0.2, MINT, 6)
+hole = rbox('cut', (DW - 0.08, 1.0, (DH - 0.04) * 2), (0, FY - 0.06, 0), 0.2, MINT, 6)  # V1731 C 사용자: 테두리 안쪽이 몸통 구멍 벽과 같은 자리라 번져 보임(겹침 깜빡임) → 안쪽을 4cm 좁힘
 boolean(rim, hole); smooth(rim)
 
 # 스피커 2개: 큰 원판 + 가운데 고리 + 가운데 볼록

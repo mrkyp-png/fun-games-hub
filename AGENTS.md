@@ -1,4 +1,11 @@
-# V1731 C DEPLOYED - 2026-11-16 (Claude)
+# V1732 C DEPLOYED - 2026-11-16 (Claude)
+- Rhythm sign: canvas width = boombox plate (metrics width 1.0*scale) — was 1.92 → squashed. Drawn as candy text (brown outline + white inline) like the other signs.
+- Plaza signs shop / lightMode / rhythm: rainbow shimmer (rhythm effect) only on the saturated fill (uCandySign; saturation mask keeps outline). Board panel titles (candyBand rows): white glint sweep (uGlintOnly).
+- Boombox mint door rim inner face pulled in 4cm (was coplanar with the body hole → z-fighting smear). Plaza rebuilt with committed arcade-mole.glb.
+- Disco ride buttons back on the LEFT (spin bottom, bounce above): V1709's .h3-oar move-right rule now applies only to the boat oar.
+- review/check-home3d-boot.cjs = boot + shader check screenshot (one 404 is pre-existing).
+
+# V1731 C DEPLOYED - 2026-11-16 (Claude) `a3ebcf4c`
 - Order game result popup top = button board top - 80px (just below the success mole's feet).
 - Success hero (hero-jump.webp, mole is 2/3 of the fail mole in the image) scaled 1.5 (CSS scale, origin 50% 97% → feet stay) = fail mole size. Jump height in the webp unchanged (user said may reduce — not done).
 - Result word in front of the mole (z 3) and 14px higher (top:-14px), win and lose.

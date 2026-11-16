@@ -97,8 +97,9 @@
 #home3d .h3-boardhand.is-press{opacity:.9}
 @keyframes h3-hand-float{0%,100%{transform:rotate(-14deg) translateY(0)}50%{transform:rotate(-8deg) translateY(-12px)}}
 /* V1657 C 사용자: 배 노 버튼 = 오른쪽 버튼과 같은 아이보리, 왼쪽 조이스틱 자리 */
-#home3d .h3-oar{left:auto;right:max(22px,env(safe-area-inset-right));bottom:calc(max(26px,env(safe-area-inset-bottom)) + 128px)} /* V1709 C 사용자: 왼쪽 = 방향키(배 조종) → 노는 오른쪽 점프 버튼 위 */
-@media (orientation:landscape){#home3d .h3-oar{bottom:124px}}
+#home3d .h3-oar{right:auto;left:max(22px,env(safe-area-inset-left))} /* 디스코 팡팡 회전·점프 = 왼쪽(V1660 C) */
+#home3d .h3-oar:not(.h3-spin):not(.h3-bounce){left:auto;right:max(22px,env(safe-area-inset-right));bottom:calc(max(26px,env(safe-area-inset-bottom)) + 128px)} /* V1709 C 사용자: 배 노 버튼만 오른쪽 점프 버튼 위 — V1731 C: 디스코 버튼까지 오른쪽으로 끌려가 겹치던 것 고침 */
+@media (orientation:landscape){#home3d .h3-oar:not(.h3-spin):not(.h3-bounce){bottom:124px}}
 #home3d .h3-oar[hidden]{display:none!important}
 #home3d .h3-oar-ico{font-size:54px;line-height:1}
 #home3d .h3-oar:active{transform:scale(.92)}

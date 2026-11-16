@@ -209,7 +209,7 @@ if(uNotes){float side=dot(p.xz-uNoteGate.xy,uNoteGate.zw);if(abs(side)>1.25&&p.y
 vWorld=p.xyz;vNormal=normalize(uNormal*mat3(skin)*aNormal);if(uSea){float e=.2;p.y+=seaH(p.xz,uTime);float hx=seaH(p.xz+vec2(e,0.),uTime)-seaH(p.xz-vec2(e,0.),uTime),hz=seaH(p.xz+vec2(0.,e),uTime)-seaH(p.xz-vec2(0.,e),uTime);vNormal=normalize(vec3(-hx/(2.*e),1.,-hz/(2.*e)));vWorld=p.xyz;}vColor=animatedColor;vUV=aUV;gl_Position=uVP*p;}`;
   const FS = `#version 300 es
 precision highp float;
-uniform bool uEnergy,uRhythmSign,uTunnel,uGlass,uExtraNote;uniform vec3 uExtraNoteColor;uniform float uGateAge,uGlassOpen;
+uniform bool uCandySign,uGlintOnly;uniform vec2 uCandyBand;uniform bool uEnergy,uRhythmSign,uTunnel,uGlass,uExtraNote;uniform vec3 uExtraNoteColor;uniform float uGateAge,uGlassOpen;
 vec3 doorTint(float layer,float time){
  float phase=mod(layer+time/3.,3.);
  vec3 red=vec3(.98,.34,.30),orange=vec3(1.,.61,.23),yellow=vec3(1.,.88,.36);
@@ -249,6 +249,9 @@ if(uSign){if(dot(n,uEye-vWorld)<0.)discard;vec4 signPixel=texture(uTex,vUV);if(s
 if(uRhythmSign){float mask=1.;
 vec3 rainbow=.65+.35*cos(vec3(0.,2.1,4.2)+uTime*2.6+vUV.x*7.);float pulse=.85+.15*sin(uTime*4.+vUV.x*12.);
 float shimmer=pow(max(0.,1.-abs(fract(vUV.x-uTime*.45)*2.-1.)),14.);c=mix(c,clamp(rainbow*pulse+shimmer*.22,0.,1.),mask*.9);}
+if(uCandySign&&vUV.y>uCandyBand.x&&vUV.y<uCandyBand.y){float mx=max(c.r,max(c.g,c.b)),sat=mx-min(c.r,min(c.g,c.b));float mask=smoothstep(.22,.38,sat)*smoothstep(.5,.65,mx);/* V1731 C 사용자: 상점·두더지팡 = 리듬팡처럼 무지개 반짝, 게시판 제목 = 하얀 빛줄기가 지나감. 갈색 외곽선·흰 안선(채도 낮음)은 그대로 */
+if(uGlintOnly){float gx=fract(uTime*.3)*1.8-.4,gl=smoothstep(.1,0.,abs(vUV.x+(vUV.y-uCandyBand.x)*.5-gx));c=mix(c,vec3(1.),mask*gl*.8);}else{
+vec3 rainbow=.65+.35*cos(vec3(0.,2.1,4.2)+uTime*2.6+vUV.x*7.);float pulse=.85+.15*sin(uTime*4.+vUV.x*12.);float shimmer=pow(max(0.,1.-abs(fract(vUV.x-uTime*.45)*2.-1.)),14.);c=mix(c,clamp(rainbow*pulse+shimmer*.22,0.,1.),mask*.9);}}
 float k=max(0.,(dot(n,uSun)+.4)/1.4);frag=vec4(c*(.86+.14*k),1.);return;}if(uFloor){float tile=mod(floor(vWorld.x/1.5)+floor(vWorld.z/1.5),2.);base=mix(vec3(.99,.83,.56),vec3(.17,.23,.36),tile);}float key=max(0.,(dot(n,uSun)+.4)/1.4);float fill=max(0.,dot(n,normalize(vec3(.8,.4,-.5))));vec3 lit=base*(vec3(.39,.40,.43)+key*.62+fill*vec3(.08,.10,.13));vec3 h=normalize(normalize(uEye-vWorld)+uSun);lit+=vec3(.04)*pow(max(0.,dot(n,h)),14.);vec3 pw=vWorld+n*(uIsland?.2:.06);vec3 q=lproj(uShadowVP,pw);if(inside(q))shadow=vis(uShadowS,q,1./1024.);if(!uActor){vec3 qm=lproj(uShadowVPM,pw);if(inside(qm))shadow=min(shadow,vis(uShadowM,qm,1./512.));}lit*=mix(.62,1.,shadow)*cloudVis(vWorld);vec3 displayColor=pow(clamp(lit,0.,1.),vec3(1./2.2));
 if(!uActor&&!uFloor&&!uTexBase){
   // Score palette: clearer accent colors and warm cream in the highlights.
@@ -277,7 +280,7 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
       gl.linkProgram(program);
       if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw Error(gl.getProgramInfoLog(program));
       gl.useProgram(program);
-      U = {}; for (const k of ['VP', 'Model', 'Bones', 'Normal', 'Skin', 'Color', 'Floor', 'Sign', 'Tex', 'Eye', 'Player', 'Sea', 'Time', 'Sun', 'ShadowVP', 'ShadowS', 'ShadowM', 'ShadowPass', 'SunDisc', 'Cloud', 'Actor', 'ShadowVPM', 'Clouds', 'FogK', 'Glow', 'TexBase', 'Energy', 'RhythmBars', 'BarBase', 'RhythmSign', 'Tunnel', 'Glass', 'GlassOpen', 'GateAge', 'Notes', 'NoteGate', 'ExtraNote', 'ExtraNoteColor', 'Island']) U[k] = gl.getUniformLocation(program, 'u' + k);
+      U = {}; for (const k of ['CandySign', 'CandyBand', 'GlintOnly', 'VP', 'Model', 'Bones', 'Normal', 'Skin', 'Color', 'Floor', 'Sign', 'Tex', 'Eye', 'Player', 'Sea', 'Time', 'Sun', 'ShadowVP', 'ShadowS', 'ShadowM', 'ShadowPass', 'SunDisc', 'Cloud', 'Actor', 'ShadowVPM', 'Clouds', 'FogK', 'Glow', 'TexBase', 'Energy', 'RhythmBars', 'BarBase', 'RhythmSign', 'Tunnel', 'Glass', 'GlassOpen', 'GateAge', 'Notes', 'NoteGate', 'ExtraNote', 'ExtraNoteColor', 'Island']) U[k] = gl.getUniformLocation(program, 'u' + k);
       A = {}; for (const k of ['Position', 'Normal', 'Color', 'Joints', 'Weights', 'UV']) A[k] = gl.getAttribLocation(program, 'a' + k);
       gl.enable(gl.DEPTH_TEST);
       // 해 쪽에서 본 깊이 지도: 섬·건물(1초마다 1024) / 두더지·구름(매 프레임 512) — 저사양 대비
@@ -338,7 +341,7 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
       gl.bindVertexArray(m.vao);
       gl.uniformMatrix4fv(U.Model, false, world); gl.uniformMatrix3fv(U.Normal, false, R.normals(world));
       gl.uniform1i(U.Skin, !!bones); gl.uniform1i(U.Actor, !!bones); if (bones) gl.uniformMatrix4fv(U.Bones, false, bones);
-      gl.uniform1i(U.RhythmSign,m.sign==='rhythm');
+      gl.uniform1i(U.RhythmSign,false);gl.uniform1i(U.CandySign,m.sign==='shop'||m.sign==='lightMode'||m.sign==='rhythm'||!!m.candyBand); /* V1731 C: 리듬팡도 테두리 있는 사탕 글씨 → 무지개는 글자 안쪽에만(테두리 유지) */gl.uniform2f(U.CandyBand,...(m.candyBand||[0,1]));gl.uniform1i(U.GlintOnly,!!m.candyBand);
       gl.uniform1i(U.Floor, m.floor); gl.uniform1i(U.Sea, !!m.sea); gl.uniform4fv(U.Color, m.color);
       if (m.texBase) { gl.uniform1i(U.TexBase, 1); gl.uniform1i(U.Sign, 0); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, m.texBase); gl.uniform1i(U.Tex, 0); if (m.indexed) gl.drawElements(gl.TRIANGLES, m.count, gl.UNSIGNED_INT, 0); else gl.drawArrays(gl.TRIANGLES, 0, m.count); gl.uniform1i(U.TexBase, 0); return; } /* 그림 질감 + 보통 조명(Tripo 배) */
       const st = (m.sign && signs && signs.get(m.sign)) || m.tex || (m.screen && screenTex) || null;
@@ -589,7 +592,7 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
           buf([-hw, hh, 0, hw, hh, 0, hw, -hh, 0, -hw, -hh, 0], A.Position, 3); buf([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1], A.Normal, 3); buf([0, 0, 1, 0, 1, 1, 0, 1], A.UV, 2);
           for (const [k, v] of [['Color', [1, 1, 1, 1]], ['Joints', [0, 0, 0, 0]], ['Weights', [0, 0, 0, 0]]]) if (A[k] >= 0) { gl.disableVertexAttribArray(A[k]); gl.vertexAttrib4f(A[k], ...v); }
           const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array([0, 3, 1, 1, 3, 2]), gl.STATIC_DRAW);
-          return { kind: p.kind, world: p.world, mesh: { vao, count: 6, indexed: true, color: [1, 1, 1, 1], floor: false, sign: null, sea: false, tex: null } }; });
+          return { kind: p.kind, world: p.world, mesh: { vao, count: 6, indexed: true, color: [1, 1, 1, 1], floor: false, sign: null, sea: false, tex: null, candyBand: p.kind === 'score' ? [.08, .32] : [.24, .48] /* 제목 줄만 반짝(아래 글줄·빨간 점은 그대로) */ } }; });
       },
       drawBoard(data, page, ko) {
         if (!gl || !root.MoleGame.Home3DBoard) return;

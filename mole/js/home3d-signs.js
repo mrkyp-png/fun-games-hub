@@ -6,7 +6,7 @@
   function metrics(action){
     const layout=root.MoleGame?.Home3DLayout,scale=layout?.SITES.find(s=>s.action===action)?.scale||1.6;
     const fontHeight=.2*(layout?.ARCADE_K||2.84)*(96/160);
-    return {width:(action==='shop'?1.04:1.92)*scale,height:fontHeight/.72,fontHeight};
+    return {width:(action==='shop'?1.04:action==='rhythm'?1.0:1.92)*scale,height:fontHeight/.72,fontHeight}; /* V1731 C: 리듬팡 = 카세트 건물 명판 폭(1.6)에 맞춤(옛 폭 1.92 그대로면 글자가 옆으로 찌그러짐) */
   }
 
   function labelFor(site, lang, t) {
@@ -28,7 +28,7 @@
         let size=c.height*.72;
         const font=s=>T?T.fontOf(lang,s):'800 '+s+'px system-ui,sans-serif';g.font=font(size);
         if(g.measureText(text).width>c.width-40){size*=(c.width-40)/g.measureText(text).width;g.font=font(size);}
-        if(action==='shop'&&T&&g.createLinearGradient)T.candy(g,text,c.width/2,c.height/2,size,lang,c.width-40,COL.lightMode[0],COL.lightMode[1]);
+        if((action==='shop'||action==='rhythm')&&T&&g.createLinearGradient)T.candy(g,text,c.width/2,c.height/2,size,lang,c.width-40,COL.lightMode[0],COL.lightMode[1]); /* V1731 C 사용자: 리듬팡도 두더지팡처럼 테두리(갈색 외곽선·흰 안선) */
         else{g.fillStyle=action==='rhythm'?'#fff3b0':'#fff3d4';g.fillText(text,c.width/2,c.height/2);}
         return c;
       }
