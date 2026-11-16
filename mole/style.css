@@ -10678,3 +10678,5 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .hero-ad .hero-ad-icon { scale:1.5; transform-origin:100% 50%!important; }
 /* V1739 C 사용자: 실패 화면 '재도전' 빨간 원을 조금 아래로(두더지 얼굴·수염을 덜 가리게) */
 #gameover-overlay .fail-stamp { top: 50%; }
+/* V1740 C 사용자: '재도전' 글자 2배, 빨간색 */
+#gameover-overlay .fail-stamp { font-size: 2.6rem; color: #d43b3b; mix-blend-mode: normal; }

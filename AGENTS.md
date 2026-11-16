@@ -1,4 +1,10 @@
-# V1740 C DEPLOYED - 2026-11-16 (Claude)
+# V1741 C DEPLOYED - 2026-11-16 (Claude)
+- Row button colours also on normal/pro: applyButtonRowColors sets inline --fixed-cap-* (diff-mid/legend paint faces from --fixed-cap-*), not only --round-cap-*.
+- Carried/behaviour moles: arm vertices count as over-rim above y .55 (was .80) — cola mole left hand resting on the rim was clipped and looked small.
+- Fail stamp 재도전 text 2x (2.6rem) and red, blend normal.
+- In progress (not deployed): clay workshop duck + enhance duck/eggs (31 frames, Desktop/상점_새그림_시안/오리알, pedestal also clay).
+
+# V1740 C DEPLOYED - 2026-11-16 (Claude) `c097d90a`
 - Clay weapons via GPT redraw of the SAME 2D sprite (angle/size preserved, overlay-checked; Desktop/상점_새그림_시안/무기): mallet → assets/weapons/mallet-clay-v1739.png (lane-hammer, mole-sprites, screen-cover); King Punch idle/jab/straight/upper + mirrored jab → kingfist-*-clay-v1739.webp (lane-boxing, inventory/shop thumb), workshop pair w-alipunch-idle-clay-v1739.png. Invincible enlarge + gold filter are CSS on the glove img → unchanged. In-game King Punch not captured (debug weapon switch did not take).
 - Layering: .clay-mole-canvas--world z 16 → 27 (above HUD panel z25, below hammer layer z30) — moles/weapons in front of the scoreboard when jumping.
 - Mallet hit point AIM_DX .022 → .042 (0.2cm right).

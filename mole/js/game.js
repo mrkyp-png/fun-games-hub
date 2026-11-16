@@ -3186,6 +3186,9 @@
       el.style.setProperty('--round-cap-side', 'color-mix(in srgb,' + c + ' 75%,black)');
       el.style.setProperty('--round-cap-edge', 'color-mix(in srgb,' + c + ' 49%,black)');
       el.style.setProperty('--round-cap-rim', 'color-mix(in srgb,' + c + ' 80%,white)');
+      /* 노말·프로(diff-mid/legend)는 버튼 앞면을 --fixed-cap-* 로 칠함 → 같은 줄 색 */
+      el.style.setProperty('--fixed-cap-top', c); el.style.setProperty('--fixed-cap-side', 'color-mix(in srgb,' + c + ' 75%,black)');
+      el.style.setProperty('--fixed-cap-edge', 'color-mix(in srgb,' + c + ' 49%,black)'); el.style.setProperty('--fixed-cap-rim', 'color-mix(in srgb,' + c + ' 80%,white)');
     });
   }
   function updateInvincibleHud() {
