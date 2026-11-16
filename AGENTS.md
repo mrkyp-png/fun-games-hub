@@ -1,8 +1,9 @@
-# V1734 C DEPLOYED - 2026-11-16 (Claude)
+# V1734 C DEPLOYED - 2026-11-16 (Claude) `0212d73b`
 - CLAY currency art (user: move the game toward clay look; buttons/frames stay glossy). GPT Imagegen (Sprite Motion Studio) clay heart / paw-print coin / music ticket + bundles (coin piles 01/05/06/09, ticket stacks 02/08/11, heart jar, ticket tab composition, single ticket flat → rotated 30°) and yellow+cream awning. Sources: mole/assets/shop-clay-v1733/*.webp, concepts Desktop/상점_새그림_시안.
 - Applied by OVERWRITING the original files at the same canvas size, fitted into the old alpha bbox (layout/CSS untouched): shop-ui-v1450 (awning, 11-heart, heart-jar-full, ticket-icon), shop-ui-v1452 coin-option-*/coin-single/coin-stack-three/coin4-*, shop/mini-1..6, ui-approved-v1476 ticket-single/ticket-stack-02/08/11/14, daily item-*, home2 ic-coin/ic-heart/ic-ticket, quest ic-coin/ic-ticket, mailbox rw-heart. Originals in git (V1733).
 - Shop screen matched to inventory/score/daily: market scenery hidden, plaza blurred behind (home3d.css list), tab tray + product panels cream, nameplate above awning removed, #more-menu hidden while shop open (same as inventory/settings).
 - Rhythm speaker pulse/sound wave calmer: one ring every ~1.7s, alpha .35, pulse 5% at the same beat.
+- The 28 previously-untracked shop-ui-v1450 / ticket-stack-*-source files that V1734 accidentally added were removed from git again (user: 기존꺼는 없애); local files kept.
 - Next (user list): clay skills x3, weapons x4 + beach weapons, duck, eggs, costume tab icon (shape TBD; baseball costumes to be removed), quest icons, rhythm decorations.
 
 # V1733 C DEPLOYED - 2026-11-16 (Claude) `8f70241a`
