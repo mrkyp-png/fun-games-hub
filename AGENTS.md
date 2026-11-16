@@ -1,4 +1,9 @@
-# V1730 C DEPLOYED - 2026-11-16 (Claude)
+# V1731 C DEPLOYED - 2026-11-16 (Claude)
+- Order game result popup top = button board top - 80px (just below the success mole's feet).
+- Success hero (hero-jump.webp, mole is 2/3 of the fail mole in the image) scaled 1.5 (CSS scale, origin 50% 97% → feet stay) = fail mole size. Jump height in the webp unchanged (user said may reduce — not done).
+- Result word in front of the mole (z 3) and 14px higher (top:-14px), win and lose.
+
+# V1730 C DEPLOYED - 2026-11-16 (Claude) `88e900b4`
 - Rhythm Pang building = cassette boombox (user picked GPT concept Desktop/리듬팡건물_새시안/시안C_카세트오디오.png; built in Blender by review/build-rhythm-boombox.py → review/home3d-src/rhythm-boombox.glb). build-home-plaza.py rhythm_house imports it (vertices baked then scaled by 1/(1.6,.8,1.6) site scale, +.13 to line the door rim up with the existing glass door Energy_rhythm), keeps Energy_rhythm, RhythmBars (moved to the boombox inner wall), Sign_rhythm on the smaller plate (1.75 wide). GateGlow/club parts removed (verify-rhythm-gate.cjs updated). Plaza rebuilt with the COMMITTED arcade-mole.glb (local copy has someone else's uncommitted edit, restored after build).
 - home3d-renderer load(): abort only after 15s with NO data (was 15s total → 'signal is aborted without reason' on slow phones after deploy).
 - Fart mole v3 (characters-v1729): spins 180° while rising out of the hole (renderer spinUp during appear), toots on landing with big clouds from the hole, turns front 0.6~0.9, nose pinch from 0.9. No second jump.

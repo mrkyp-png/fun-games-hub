@@ -3642,7 +3642,7 @@
       (canNext ? '<button type="button" class="wc-btn wc-next">' + (ko ? '다음 라운드' : 'Next') + '</button>' : '');
     if (orderResultBox) p.prepend(orderResultBox);
     gs.appendChild(p);
-    if (bar) { const r = bar.getBoundingClientRect(), g = gs.getBoundingClientRect(); p.style.top = Math.round(r.top - g.top + 6) + 'px'; } // V1729 C 사용자: 두더지 안 가리게 버튼판 위로 내림(창 위끝 = 버튼판 위끝)
+    if (bar) { const r = bar.getBoundingClientRect(), g = gs.getBoundingClientRect(); p.style.top = Math.round(r.top - g.top - 80) + 'px'; } // V1730 C 사용자: 1번 — 버튼판 위끝보다 80px 위(성공 두더지 발 바로 아래, 두더지 안 가림)
     p.querySelector('.wc-home').addEventListener('click', () => {
       hideWinChoice();
       const enter = () => showStartScreenNow({ skipFlash: true });
