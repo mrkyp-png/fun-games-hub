@@ -143,3 +143,6 @@
 #home3d .h3-timer{display:flex;gap:14px;white-space:nowrap}
 #home3d .h3-timer i{font-style:normal;display:inline-block}
 #home3d .h3-timer .h3-t-spin{filter:grayscale(1) sepia(.35) brightness(1.1) contrast(.9)}
+/* V1734 C 사용자: 광장 재화 막대의 티켓 그림 키움 — 하트와 같은 비율(티켓 그림은 여백이 많아 1.8배가 하트 크기) */
+#home3d .h3-hud .h3-pill:nth-child(3) img{scale:1.8}
+#home3d .h3-hud .h3-pill:nth-child(1) img{scale:1.3} /* 코인도 하트 크기에 맞춤 */

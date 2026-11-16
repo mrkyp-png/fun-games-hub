@@ -153,7 +153,7 @@
 // V1690 G: Sand beach, continuous ocean, combo turns and reactive hair; clear text-only signs, gentle warm entrance flow and corrected beach/water landing.
 // V1691 G: gold3D in original sprite boxes; hammer2D preserved; weapons in front of HUD; matched plaza label sizes.
 // V1692 G: matching gold clones, ImageGen enhancement lightning, smooth fur and physical rhythm entrance.
-const CACHE = 'mole-game-v1734-C';
+const CACHE = 'mole-game-v1735-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -1081,7 +1081,8 @@ self.addEventListener('fetch', (e) => {
       if (cached) return cached;
       // The foreground queue watches byte progress and retries stalled transfers.
       // Do not abort a slow but healthy image response after a fixed duration.
-      const response = await fetch(e.request);
+      // V1734 C: 같은 이름으로 그림을 바꾸면(클레이 재화) 브라우저 HTTP 캐시가 옛 그림을 다시 넣음 → 새 버전에서 처음 받을 때는 서버에 바뀌었는지 확인(no-cache). 받은 뒤엔 이 캐시에서 바로 씀
+      const response = await fetch(new Request(e.request, { cache: 'no-cache' }));
       if (response && response.ok && (response.type === 'basic' || response.type === 'cors')) {
         const copy = response.clone();
         e.waitUntil(caches.open(CACHE).then((cache) => cache.put(e.request, copy)).catch(() => {}));

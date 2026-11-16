@@ -1,3 +1,9 @@
+# V1735 C DEPLOYED - 2026-11-16 (Claude)
+- Clay skills (GPT): shield / targeting / AI badges + triangle set overwrite skills/{shield,targeting,ai,targeting-v1403}.png and skills/shop-hd-v1484/*-clean.webp (same canvas, fitted to old bbox). Sources shop-clay-v1733/skill_*.webp.
+- sw.js image fetch: network request uses cache:'no-cache' (first fetch per SW version revalidates) — same-name art swaps (clay currency) no longer come back stale from the browser HTTP cache.
+- Plaza currency bar: coin img scale 1.3, ticket 1.8 (heart unchanged, user-picked). Shop tab ticket icon scale 1.3.
+- Mole game HUD heart stays the vector heart (user choice).
+
 # V1734 C DEPLOYED - 2026-11-16 (Claude) `0212d73b`
 - CLAY currency art (user: move the game toward clay look; buttons/frames stay glossy). GPT Imagegen (Sprite Motion Studio) clay heart / paw-print coin / music ticket + bundles (coin piles 01/05/06/09, ticket stacks 02/08/11, heart jar, ticket tab composition, single ticket flat → rotated 30°) and yellow+cream awning. Sources: mole/assets/shop-clay-v1733/*.webp, concepts Desktop/상점_새그림_시안.
 - Applied by OVERWRITING the original files at the same canvas size, fitted into the old alpha bbox (layout/CSS untouched): shop-ui-v1450 (awning, 11-heart, heart-jar-full, ticket-icon), shop-ui-v1452 coin-option-*/coin-single/coin-stack-three/coin4-*, shop/mini-1..6, ui-approved-v1476 ticket-single/ticket-stack-02/08/11/14, daily item-*, home2 ic-coin/ic-heart/ic-ticket, quest ic-coin/ic-ticket, mailbox rw-heart. Originals in git (V1733).
