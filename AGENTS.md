@@ -1,4 +1,8 @@
-# V1735 C DEPLOYED - 2026-11-16 (Claude)
+# V1736 C DEPLOYED - 2026-11-16 (Claude)
+- Shop toggle-box (bottom tabs) icons: heart 1.15, coin 1.3, ticket 1.6. Tab icon img is position:absolute centred at the 106x84 .shop-tab-ico (top/left 50% + translate -50%) → enlarged icons were pushed up/left; fixed with top/left calc(50% + Npx) (coin +9/+15, ticket +26/+27). Measured with review/capture-screens-colors.cjs (prints tab/ico/img rects).
+- Shop top balance boxes: icons 1.25 (ticket 1.8). Skill product art (.shop-card-badge--hero .shop-skill-visual) scale 1.45.
+
+# V1735 C DEPLOYED - 2026-11-16 (Claude) `2bcf2e24`
 - Clay skills (GPT): shield / targeting / AI badges + triangle set overwrite skills/{shield,targeting,ai,targeting-v1403}.png and skills/shop-hd-v1484/*-clean.webp (same canvas, fitted to old bbox). Sources shop-clay-v1733/skill_*.webp.
 - sw.js image fetch: network request uses cache:'no-cache' (first fetch per SW version revalidates) — same-name art swaps (clay currency) no longer come back stale from the browser HTTP cache.
 - Plaza currency bar: coin img scale 1.3, ticket 1.8 (heart unchanged, user-picked). Shop tab ticket icon scale 1.3.
