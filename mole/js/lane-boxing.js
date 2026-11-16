@@ -21,12 +21,12 @@
 
   const SPRITE = {
     // V1390 C 사용자: 빨간 만화 주먹 — 어퍼컷=2차 8번(315°)·스트레이트=1차 6번·잽=2차 4번(135°)·대기=1차 10번. 각도표는 그대로.
-    idle: 'assets/weapons/kingfist-idle-v1390.webp',
-    jab: 'assets/weapons/kingfist-jab-v1390.webp',
-    hookL: 'assets/weapons/kingfist-jab-v1390.webp',
-    hookR: 'assets/weapons/kingfist-jab-v1390.webp',
-    straight: 'assets/weapons/kingfist-straight-v1390.webp',
-    upper: 'assets/weapons/kingfist-upper-v1390.webp'
+    idle: 'assets/weapons/kingfist-idle-clay-v1739.webp',
+    jab: 'assets/weapons/kingfist-jab-clay-v1739.webp',
+    hookL: 'assets/weapons/kingfist-jab-clay-v1739.webp',
+    hookR: 'assets/weapons/kingfist-jab-clay-v1739.webp',
+    straight: 'assets/weapons/kingfist-straight-clay-v1739.webp',
+    upper: 'assets/weapons/kingfist-upper-clay-v1739.webp'
   };
   // 때린 뒤 대기위치로 복귀(true) vs 사라졌다 다시 나타남(false). 전부 복귀로 변경(사용자 지시).
   const RETURNS = { jab: true, straight: true, upper: true, hookL: true, hookR: true };

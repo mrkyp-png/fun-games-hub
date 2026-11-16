@@ -429,7 +429,7 @@
 /* Jumping actors can rise above the first row without changing the board/HUD fit. */
 .clay-mole-canvas--world {
   inset:auto; left:var(--board-left); top:calc(var(--layout-top) - var(--sq) * .16);
-  width:var(--sq); height:calc(var(--sq) * 1.32); z-index:16; /* V1726 C: 아래로도 .16(맨 아래 줄 소품이 버튼판 앞에) — clay-round1-local.js footroom 과 같게 */
+  width:var(--sq); height:calc(var(--sq) * 1.32); z-index:27; /* V1739 C 사용자: 두더지가 전광판(상태판 z25)보다 앞, 망치(z30)보다 뒤 — V1726 C: 아래로도 .16(맨 아래 줄 소품이 버튼판 앞에) — clay-round1-local.js footroom 과 같게 */
 }
 .clay-mole-canvas--world.clay-mole-canvas--field { width:var(--field-width); height:calc(var(--field-height) + var(--sq) * .32); }
 #game-screen:has(:is(#round-intro-overlay,#gameover-overlay,#fever-result-overlay):not([hidden])) .clay-mole-canvas--world { visibility:hidden; }

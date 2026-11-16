@@ -1346,7 +1346,7 @@
     const T = (x, y, s, r) => ({ transform: 'translate(' + x + 'px,' + y + 'px) rotate(' + (r || 0) + 'deg) scale(' + s + ')' });
     const sprite = (src, w) => { const i = document.createElement('img'); i.src = src; i.alt = ''; i.style.width = w + 'px'; i.style.marginLeft = (-w / 2) + 'px'; i.style.marginTop = (-w / 2) + 'px'; host.appendChild(i); return i; };
     // 뿅망치 = 게임 타격 동작 그대로(lane-hammer.js: 대기 → 조준 0.09초 -30도 → 내려찍기 0.045초 -82도), 크기 2배(사용자)
-    const h = document.createElement('img'); h.className = 'screen-cover-hammer'; h.alt = ''; h.src = 'assets/weapons/mallet-yaw10-rest15-v1379.png';
+    const h = document.createElement('img'); h.className = 'screen-cover-hammer'; h.alt = ''; h.src = 'assets/weapons/mallet-clay-v1739.png';
     h.style.width = (R.width * 0.272 * 2) + 'px'; host.appendChild(h);
     const Hw = R.width * 0.272 * 2, aimX = tx + Hw * 0.49, aimY = ty + Hw * 0.125, homeX = R.width * 0.9, homeY = R.height * 0.965 /* 망치 머리 = 전체 화면 정중앙. 타격 각도에서 머리는 그립 기준 (-0.49, -0.125)×망치폭 */;
     const put = (x, y, d, o) => { h.style.left = x + 'px'; h.style.top = y + 'px'; h.style.transform = 'translate(-33%,-83%) rotate(' + (d - 15) + 'deg)'; h.style.opacity = o; };
@@ -1716,6 +1716,7 @@
     if (clayRoundOne && MG.ClayRoundOne && MG.ClayRoundOne.wait(() => startRound(opts))) return;
     if (MG.ClayRoundOne) MG.ClayRoundOne.setActive(clayRoundOne);
     if (MG.ClayRoundOne) MG.ClayRoundOne.setGridSize(roundGridSize());
+    applyButtonRowColors(roundGridSize());
     sessionGen++;
     gameStarting = false; // 라운드 진입 성공 — 이후 재진입은 state 존재로 차단됨
     setNavLock(true); // 카운트다운 동안 ⊞ 잠금 (playRoundIntro onDone 에서 해제)
@@ -3072,7 +3073,7 @@
     state.holeLayer=MG.HoleLayer.create({container:document.getElementById('mole-hole-layer'),
       frontContainer:document.getElementById('mole-hole-front-layer'),spawnPoints:state.spawnPoints,gridSize:roundGridSize(),season:roundSeason()});
     document.getElementById('game-screen').classList.remove('fever-field-active');
-    MG.ClayRoundOne.setGridSize(roundGridSize()); // V1726 C: 피버 끝나면 원래 판 크기(아마추어 3·노말/프로 4)
+    applyButtonRowColors(roundGridSize()); MG.ClayRoundOne.setGridSize(roundGridSize()); // V1726 C: 피버 끝나면 원래 판 크기(아마추어 3·노말/프로 4)
     MG.ClayRoundOne.setFeverField(false);
   }
   function startFeverEvent() {
@@ -3173,7 +3174,22 @@
   // 알리 펀치 무적(§7) 표시 = 보드에 회전하는 파란 테두리 + 다이얼패드 중앙 카운트다운(5→1)
   // + 무적 중 두더지 하강 딜레이 보너스 0.1초 → 0.4초(기본 0.1 + 무적 중 0.3 추가).
   // 매 프레임 갱신, 시간 만료로 자동 해제.
+  /* V1739 C 사용자: 아래 버튼은 줄마다 다른 색(위치 짐작용) — 민트·하늘·라벤더·연두. 킹판취 금색·맞힘 분홍/빨강·주황과 겹치지 않게 */
+  const BUTTON_ROW_COLORS = ['#5FC8A0', '#5AA9E6', '#9F86DD', '#9CCB52'];
+  function applyButtonRowColors(g) {
+    const bar = document.getElementById('lane-button-bar'); if (!bar) return;
+    const btns = [...bar.querySelectorAll('.lane-button')];
+    btns.forEach((el, i) => {
+      const c = BUTTON_ROW_COLORS[Math.floor(i / Math.max(1, g)) % BUTTON_ROW_COLORS.length];
+      if (el.dataset.rowColor === c) return; el.dataset.rowColor = c;
+      el.style.setProperty('--round-cap-base', c);
+      el.style.setProperty('--round-cap-side', 'color-mix(in srgb,' + c + ' 75%,black)');
+      el.style.setProperty('--round-cap-edge', 'color-mix(in srgb,' + c + ' 49%,black)');
+      el.style.setProperty('--round-cap-rim', 'color-mix(in srgb,' + c + ' 80%,white)');
+    });
+  }
   function updateInvincibleHud() {
+    applyButtonRowColors(roundGridSize()); // 버튼이 새로 만들어져도 줄 색 유지(이미 칠한 버튼은 건너뜀)
     const on = alipunchInvincible();
     const b = document.getElementById('mole-board');
     if (b) b.classList.toggle('mole-board--invincible', on);

@@ -118,7 +118,7 @@
       return img;
     });
     const hammer = new Image();
-    hammer.src = 'assets/weapons/mallet-yaw10-rest15-v1379.png';
+    hammer.src = 'assets/weapons/mallet-clay-v1739.png';
     if (hammer.decode) hammer.decode().catch(function () {});
     preloadRefs.push(hammer);
     // V1400 C 사용자: 게임 입장 때 보드 배경이 늦게 떠 진한 청색이 보임 → 라운드 배경 그림도 미리 받아 디코드.

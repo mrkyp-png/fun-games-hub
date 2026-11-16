@@ -1,4 +1,12 @@
-# V1739 C DEPLOYED - 2026-11-16 (Claude)
+# V1740 C DEPLOYED - 2026-11-16 (Claude)
+- Clay weapons via GPT redraw of the SAME 2D sprite (angle/size preserved, overlay-checked; Desktop/상점_새그림_시안/무기): mallet → assets/weapons/mallet-clay-v1739.png (lane-hammer, mole-sprites, screen-cover); King Punch idle/jab/straight/upper + mirrored jab → kingfist-*-clay-v1739.webp (lane-boxing, inventory/shop thumb), workshop pair w-alipunch-idle-clay-v1739.png. Invincible enlarge + gold filter are CSS on the glove img → unchanged. In-game King Punch not captured (debug weapon switch did not take).
+- Layering: .clay-mole-canvas--world z 16 → 27 (above HUD panel z25, below hammer layer z30) — moles/weapons in front of the scoreboard when jumping.
+- Mallet hit point AIM_DX .022 → .042 (0.2cm right).
+- Bottom buttons: per-row colours mint #5FC8A0 / sky #5AA9E6 / lavender #9F86DD / lime #9CCB52 (applyButtonRowColors in game.js, sets --round-cap-* inline per button; re-applied each HUD update because buttons get rebuilt). Avoids King Punch gold, hit pink/red, old orange.
+- Fail stamp (재도전 ring) top 42% → 50%.
+- Skill notice on buttons was removed by user in V1716 (setCellHot false loop); user discussed restoring — undecided. ai/invincible countdown code intact; headless capture runs ~1fps so it could not be verified.
+
+# V1739 C DEPLOYED - 2026-11-16 (Claude) `888ee750`
 - Toggle-box coin left offset +15px → +5px (measured on the user's phone photo; the 390px capture needs a different offset).
 - Heart/coin ad cards: ad clapper icon scale 1.5 with transform-origin right-centre (stays inside the card, overlaps the heart/coin) — user: bigger ad icon = more ad views.
 

@@ -10676,3 +10676,5 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen [data-shop-tab="heart"] .shop-tab-ico img { scale:1.15; }
 /* V1738 C 사용자: 하트·코인 광고 카드의 광고 아이콘 1.5배 — 오른쪽 끝 기준으로 커져서(카드 안) 하트·코인과 겹쳐도 됨 */
 #shop-screen .hero-ad .hero-ad-icon { scale:1.5; transform-origin:100% 50%!important; }
+/* V1739 C 사용자: 실패 화면 '재도전' 빨간 원을 조금 아래로(두더지 얼굴·수염을 덜 가리게) */
+#gameover-overlay .fail-stamp { top: 50%; }

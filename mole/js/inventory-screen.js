@@ -22,7 +22,7 @@
       stats: [['Hole 16 → 15', 'Holes 16 → 15'],
               ['주변 두더지 지진 연타 15% (2·3타 두더지 소탕 포함)', '15% quake — chain-hits nearby moles (clears 2·3-hit moles too)'],
               ['-', '-']] },
-    { id: 'alipunch', name: '킹 판취', nameEn: 'King Punch', thumb: 'assets/weapons/kingfist-jab-mirror-v1390.webp', rarity: 'legend', skillSlots: 2,
+    { id: 'alipunch', name: '킹 판취', nameEn: 'King Punch', thumb: 'assets/weapons/kingfist-jab-mirror-clay-v1739.webp', rarity: 'legend', skillSlots: 2,
       desc: ['전설적인 복서의 강력한 글러브!\n고유 효과 발동 시 5초 동안 무적이 되어\n동물도 안전하게 타격할 수 있습니다.', 'A legendary boxer’s powerful gloves!\nThe special effect grants 5 seconds of\ninvincibility, allowing safe animal hits.'],
       stats: [['Hole 16 → 14', 'Holes 16 → 14'],
               ['무적 5초 확률 20% (모든 동물 타격 가능), 2·3타 두더지 소탕 포함', '20% chance — 5s invincibility (any animal is safe to hit), clears 2·3-hit moles'],

@@ -153,7 +153,7 @@
 // V1690 G: Sand beach, continuous ocean, combo turns and reactive hair; clear text-only signs, gentle warm entrance flow and corrected beach/water landing.
 // V1691 G: gold3D in original sprite boxes; hammer2D preserved; weapons in front of HUD; matched plaza label sizes.
 // V1692 G: matching gold clones, ImageGen enhancement lightning, smooth fur and physical rhythm entrance.
-const CACHE = 'mole-game-v1739-C';
+const CACHE = 'mole-game-v1740-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -312,7 +312,7 @@ const SHELL = [
   './assets/home2/btn-frame-sky-v1423.png',
   './assets/inventory/ui-v1379/pill-blue-w42-v1412.webp',
   './assets/inventory/ui-v1379/pill-blue-w65-v1412.webp',
-  './assets/workshop/w-alipunch-idle-v1406.png',
+  './assets/workshop/w-alipunch-idle-clay-v1739.png',
   './assets/workshop/ham-gold-v1407.webp',
   './assets/workshop/ham-gold-zap1-v1409.webp',
   './assets/workshop/ham-gold-zap2-v1409.webp',
@@ -361,7 +361,7 @@ const SHELL = [
   './assets/inventory/ui-v1379/grade-epic.webp',
   './assets/inventory/ui-v1379/grade-legend.webp',
   './assets/inventory/ui-v1379/approved-mallet.webp',
-  './assets/weapons/mallet-yaw10-rest15-v1379.png',
+  './assets/weapons/mallet-clay-v1739.png',
 
 
 
@@ -557,11 +557,11 @@ const SHELL = [
   './assets/weapons/cannon-intro-body-flip-nol-v1392.png',
   './assets/weapons/cannon-intro-wheel-nol-v1392.png',
   './assets/weapons/goldpaw-90-v1385.webp',
-  './assets/weapons/kingfist-idle-v1390.webp',
-  './assets/weapons/kingfist-jab-v1390.webp',
-  './assets/weapons/kingfist-jab-mirror-v1390.webp',
-  './assets/weapons/kingfist-straight-v1390.webp',
-  './assets/weapons/kingfist-upper-v1390.webp',
+  './assets/weapons/kingfist-idle-clay-v1739.webp',
+  './assets/weapons/kingfist-jab-clay-v1739.webp',
+  './assets/weapons/kingfist-jab-mirror-clay-v1739.webp',
+  './assets/weapons/kingfist-straight-clay-v1739.webp',
+  './assets/weapons/kingfist-upper-clay-v1739.webp',
   './assets/weapons/goldhammer.png',
   './assets/weapons/goldhammer-0.png',
   './assets/weapons/goldhammer-90.png',

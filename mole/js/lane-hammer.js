@@ -24,7 +24,7 @@
   const MALLET_BAKED_DEG = 15;         // V1380 C: 새 뿅망치 그림 자체가 시계방향 15도 기울어 있음 → 상쇄해 예전 각도 유지
   const CLAMP = -0.45;                 // grip 이 보드 가장자리에서 이만큼까지 나가도 됨 (- = 밖 허용)
                                        // 레이어가 보드 밖(클리핑 없음)이라 우측 끝 스윙이 다 보인다
-  const AIM_DX = 0.022;                // 타격점 미세보정: + = 오른쪽 (보드 폭 분수, 0.5mm ≈ 0.005 / 1cm ≈ 0.1)
+  const AIM_DX = 0.042;                // V1739 C 사용자: 타격점 0.2cm 오른쪽(0.022→0.042). 타격점 미세보정: + = 오른쪽 (보드 폭 분수, 0.5mm ≈ 0.005 / 1cm ≈ 0.1)
   const AIM_DY = -0.055;               // 프레임 미상(빈 구멍 헛스윙 등) 시 폴백
   // 두더지 프레임별 타격점 세로보정 (사용자 지정, 스폰점 대비 보드 높이 분수) — 망치가 그 프레임의 헬멧을 때린다.
   const AIM_DY_BY_FRAME = { full: -0.142, peek1: -0.076, peek2: -0.051, helmet: -0.031, mole2: -0.142, 'clay-mole': -0.158 }; // Clay: helmet crown at30deg, approved inside-hole anchor.
@@ -64,7 +64,7 @@
     const el = document.createElement('div');
     el.className = 'lane-hammer' + (cssClass ? ' ' + cssClass : '');
     const img = document.createElement('img');
-    img.src = sprite || 'assets/weapons/mallet-yaw10-rest15-v1379.png';
+    img.src = sprite || 'assets/weapons/mallet-clay-v1739.png';
     img.alt = '';
     el.appendChild(img);
     // 골드해머 보석 글로우 — 아이템보관창(.inv-gem-glow)엔 있었는데 게임화면엔 빠져있던 것 추가.
@@ -192,7 +192,7 @@
       // 않게 한다(고정 cm값이라 전엔 작게 줄여도 항상 위로 밀려 보였음 — 사용자 지적).
       phase = 'spin'; t = 0;
       fired = false;
-      const baseSrc = sprite || 'assets/weapons/mallet-yaw10-rest15-v1379.png';
+      const baseSrc = sprite || 'assets/weapons/mallet-clay-v1739.png';
       img.src = introSprite || 'assets/weapons/goldpaw-v1382.webp'; // V1382 C: 기본 골드 망치 입장 스프라이트
       // 그립점(56,72) 기준 확대·축소는 그립이 아닌 부분(머리 등)이 그만큼 옆으로 남아 별표
       // 중심에서 벗어나 보인다(사용자 지적) — 비행 중엔 스프라이트 정중앙(50,50)을 기준점으로
