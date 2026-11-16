@@ -3325,7 +3325,7 @@
     hippo.classList.add('go-hero');
 
     document.getElementById('gameover-reason').textContent =
-      win ? 'SUCCESS' : I18N.t('mole.result.fail');
+      win ? I18N.t('mole.result.success') : I18N.t('mole.result.fail'); // V1729 C 사용자: 성공·실패 둘 다 게임 언어대로(한국어 성공·실패 / 영어 Success·Fail)
     document.getElementById('gameover-score').textContent = scoreText;
     // 버튼 없음 — 성공/실패 둘 다 좌상단 ⊞ 로 홈. (광고는 유저 피로도 때문에 뺌.)
 
@@ -3626,11 +3626,12 @@
       ? [['ROUND ' + o.round + ' 점수 / 목표', scoreLine], ['성공 미션', s.missions], ['정답', s.hits], ['오답', s.wrong + s.goodHits], ['최고 점수', rec.best.toLocaleString() + (rec.newBest ? ' NEW' : '')]]
       : [['ROUND ' + o.round + ' score / goal', scoreLine], ['Missions', s.missions], ['Correct', s.hits], ['Wrong', s.wrong + s.goodHits], ['Best', rec.best.toLocaleString() + (rec.newBest ? ' NEW' : '')]];
     const unlock = o.round >= MG.OrderGame.MAX_ROUND ? '' : rec.unlockedNext ? (ko ? '🔓 ROUND ' + (o.round + 1) + ' 해금!' : '🔓 ROUND ' + (o.round + 1) + ' unlocked!')
-      : MG.OrderGame.load().unlocked > o.round ? (ko ? 'ROUND ' + (o.round + 1) + ' 열림' : 'ROUND ' + (o.round + 1) + ' open') : (ko ? '🔒 ' + rec.target.toLocaleString() + '점이면 다음 라운드' : '🔒 ' + rec.target.toLocaleString() + ' pts for next round');
+      : MG.OrderGame.load().unlocked > o.round ? '' /* V1729 C 사용자: 'ROUND N 열림' 삭제 */ : (ko ? '🔒 ' + rec.target.toLocaleString() + '점이면 다음 라운드' : '🔒 ' + rec.target.toLocaleString() + ' pts for next round');
     box.innerHTML = rows.map(([k, v]) => '<span><i>' + k + '</i><b>' + v + '</b></span>').join('') + (unlock ? '<em>' + unlock + '</em>' : '');
-    ov.appendChild(box);
+    orderResultBox = box; // V1729 C 사용자: 기록 표는 따로 띄우지 않고 아래 선택 창([홈][다시][다음]) 안에 합침
     if (!win) { const gen = sessionGen; setTimeout(() => { if (gen === sessionGen && !ov.hidden) showOrderChoice(o.round); }, 3000); } // 실패도 3초 뒤 [홈 복귀][다시 하기]
   }
+  let orderResultBox = null;
   function orderCleanup() { ['order-result', 'order-select'].forEach((id) => { const el = document.getElementById(id); if (el) el.remove(); }); }
   function showOrderChoice(round) {
     hideWinChoice();
@@ -3639,8 +3640,9 @@
     const p = document.createElement('div'); p.id = 'win-choice'; p.className = 'wc-order';
     p.innerHTML = '<button type="button" class="wc-btn wc-home">' + (ko ? '홈 복귀' : 'Home') + '</button><button type="button" class="wc-btn wc-retry">' + (ko ? '다시 하기' : 'Retry') + '</button>' +
       (canNext ? '<button type="button" class="wc-btn wc-next">' + (ko ? '다음 라운드' : 'Next') + '</button>' : '');
+    if (orderResultBox) p.prepend(orderResultBox);
     gs.appendChild(p);
-    if (bar) { const r = bar.getBoundingClientRect(), g = gs.getBoundingClientRect(); p.style.top = Math.round(r.top - g.top - p.offsetHeight / 2) + 'px'; }
+    if (bar) { const r = bar.getBoundingClientRect(), g = gs.getBoundingClientRect(); p.style.top = Math.round(r.top - g.top + 6) + 'px'; } // V1729 C 사용자: 두더지 안 가리게 버튼판 위로 내림(창 위끝 = 버튼판 위끝)
     p.querySelector('.wc-home').addEventListener('click', () => {
       hideWinChoice();
       const enter = () => showStartScreenNow({ skipFlash: true });

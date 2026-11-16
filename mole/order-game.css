@@ -34,7 +34,10 @@
 #order-result em { flex:1 0 100%; text-align:center; font-style:normal; font-size:15px; color:#2f7d4a; }
 
 /* 결과 뒤 선택 창: 버튼 3개까지 */
-#win-choice.wc-order { gap:7px; padding:10px; }
+#win-choice.wc-order { gap:7px; padding:10px; flex-wrap:wrap; }
+/* V1729 C 사용자: 기록 표 = 선택 창 윗줄(창 하나로 합침) */
+#win-choice.wc-order #order-result { position:static; transform:none; width:100%; flex:1 0 100%; border:0; border-radius:0; background:transparent; padding:0 0 4px; }
+#win-choice.wc-order .wc-btn { flex:1 1 0; }
 #win-choice.wc-order .wc-btn { font-size:1.75rem; min-height:58px; padding:0 2px; }
 #win-choice .wc-retry { background:#e09a3c; }
 

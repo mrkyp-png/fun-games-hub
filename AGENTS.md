@@ -1,4 +1,11 @@
-# V1729 C DEPLOYED - 2026-11-16 (Claude)
+# V1730 C DEPLOYED - 2026-11-16 (Claude)
+- Rhythm Pang building = cassette boombox (user picked GPT concept Desktop/리듬팡건물_새시안/시안C_카세트오디오.png; built in Blender by review/build-rhythm-boombox.py → review/home3d-src/rhythm-boombox.glb). build-home-plaza.py rhythm_house imports it (vertices baked then scaled by 1/(1.6,.8,1.6) site scale, +.13 to line the door rim up with the existing glass door Energy_rhythm), keeps Energy_rhythm, RhythmBars (moved to the boombox inner wall), Sign_rhythm on the smaller plate (1.75 wide). GateGlow/club parts removed (verify-rhythm-gate.cjs updated). Plaza rebuilt with the COMMITTED arcade-mole.glb (local copy has someone else's uncommitted edit, restored after build).
+- home3d-renderer load(): abort only after 15s with NO data (was 15s total → 'signal is aborted without reason' on slow phones after deploy).
+- Fart mole v3 (characters-v1729): spins 180° while rising out of the hole (renderer spinUp during appear), toots on landing with big clouds from the hole, turns front 0.6~0.9, nose pinch from 0.9. No second jump.
+- Result word: SUCCESS/FAIL via i18n (ko 성공/실패, en SUCCESS/FAIL).
+- Order game result: record table merged into the choice popup (top row), popup top = button board top (doesn't cover the mole), 'ROUND N 열림' line removed.
+
+# V1729 C DEPLOYED - 2026-11-16 (Claude) `b3ce8393`
 - Fart mole v2 (mole/assets/characters-v1728/behavior-smoke.glb, review/make-fart-mole.cjs; new folder for phone cache): crouch → high jump (+0.75) while turning around, toot at the peak, BIG clouds (0.68) rising out of the hole, land, turn back (1.25s), nose pinch from 1.25~1.5. Renderer loop for smoke = 1.5+(t-1.5)%1.5. Watch: top-row jump may clip into the HUD.
 - '나쁜 두더지' wording removed from screens: mission 'any' = 장난꾸러기 두더지 / prankster moles; order select subtitle = 제시어 순서대로 두더지를 잡아라! / Catch the moles in the given order!
 

@@ -7,7 +7,7 @@ const model=R.parseGLB(buffer.buffer.slice(buffer.byteOffset,buffer.byteOffset+b
 const energy=model.json.nodes.find(n=>n.name==='Energy_rhythm');
 const door=model.json.nodes.find(n=>n.name==='Door_shop');
 assert(energy&&door);assert(!door.rotation&&!door.scale,'Hinge uses world-up rotation');
-assert(model.json.nodes.some(n=>n.name==='GateGlow batch'));
+// V1729 C: 리듬팡 건물 = 카세트 오디오 — 예전 문 빛 장식(GateGlow) 없음
 assert(!model.json.nodes.some(n=>n.name.startsWith('Preview_')),'Reference bolts are not web meshes');
 const primitive=model.json.meshes[energy.mesh].primitives[0];
 assert(primitive.attributes.TEXCOORD_0!==undefined,'Energy shader has doorway UV coordinates');

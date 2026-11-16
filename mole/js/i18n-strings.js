@@ -445,8 +445,8 @@
       'mole.result.newBest': 'New best! {n}',
       'mole.result.best': 'Best {n}',
       'mole.result.pass': 'Passed!',
-      'mole.result.success': 'Success',
-      'mole.result.fail': 'Fail',
+      'mole.result.success': 'SUCCESS', // V1729 C 사용자: 대문자
+      'mole.result.fail': 'FAIL',
       'mole.chapter.soon': 'Coming soon',
       'mole.mode': 'Whack those moles!',
       'mole.tip.juggle': 'Hit 2 in a row for a 30pt bonus',

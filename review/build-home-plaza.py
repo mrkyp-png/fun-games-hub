@@ -191,30 +191,21 @@ def soft_light(name, color):
 GATE_CYAN=soft_light('Home gate cyan',(.48,.88,.96))
 GATE_PINK=soft_light('Home gate pink',(.98,.58,.79))
 
-def rhythm_house():  # 보라색 클럽만 남기고 실제 입구를 중앙에 둠
-    p = [closed_shell('Club closed shell',doorway_shell('Club', 3.2, M['violet'], -.9, 1.3))]
-    p += [box('Club roof cap', (0,.2,3.19), (2.7,2.3,.16), M['violet']),
-          box('Club strip cyan', (0,-.92,2.6), (2.4,.06,.14), M['neonC'], .02),
-          box('Club strip pink', (0,-.92,2.2), (2.4,.06,.14), M['neonM'], .02)]
-    for sx in (-.95, .95): p.append(cyl('Club speaker', (sx,-1.0,.45), .32,.9,M['violet'],20,.05))
-    # Real extruded musical notes mounted on the wall, with the doorway kept clear.
-    for x,z in [(-1.12,1.29),(-.91,1.34)]:
-        head=ball('GateGlow music note head',(x,-.98,z),.09,GATE_CYAN,(1,.4,.68));head.rotation_euler[1]=-.25;p.append(head)
-        p.append(box('GateGlow music note stem',(x+.055,-.98,z+.27),(.045,.055,.52),GATE_CYAN,.015))
-    beam=box('GateGlow music note beam',(-.96,-.98,1.85),(.25,.06,.065),GATE_CYAN,.015);beam.rotation_euler[1]=-.22;p.append(beam)
-    p.append(ball('GateGlow music note head R',(.98,-.98,1.29),.09,GATE_PINK,(1,.4,.68)))
-    p.append(box('GateGlow music note stem R',(1.035,-.98,1.56),(.045,.055,.54),GATE_PINK,.015))
-    flag=box('GateGlow music note flag R',(1.11,-.98,1.79),(.20,.06,.06),GATE_PINK,.02);flag.rotation_euler[1]=.6;p.append(flag)
-    # Thick rounded portal surrounds the existing opening; no panel across the walk path.
-    for sx in (-.58,.58):
-        p.append(box('Club gate pillar',(sx,-.99,.85),(.20,.30,1.70),M['violet'],.075))
-        p.append(box('GateGlow pillar',(sx,-1.15,.86),(.045,.035,1.39),GATE_CYAN if sx<0 else GATE_PINK,.015))
-    p.append(box('Club gate crown',(0,-.99,1.76),(1.36,.30,.24),M['violet'],.085))
-    p.append(box('GateGlow crown',(0,-1.15,1.79),(1.12,.035,.045),GATE_CYAN,.015))
-    # Five original inner rhythm bars share one draw, with per-bar UV animation metadata.
-    p.append(box('Club equalizer inset',(0,1.055,1.0),(.86,.045,.85),M['violet'],.06))
+def rhythm_house():  # V1729 C 사용자: 카세트 오디오(붐박스) 건물 — review/build-rhythm-boombox.py 로 만든 review/home3d-src/rhythm-boombox.glb(시안 Desktop/리듬팡건물_새시안). 유리문(Energy_rhythm)·간판은 그대로
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=str(ROOT / 'review/home3d-src/rhythm-boombox.glb'))
+    p = [o for o in bpy.data.objects if o not in before and o.type == 'MESH']
+    for o in list(bpy.data.objects):
+        if o not in before and o.type != 'MESH': bpy.data.objects.remove(o)
+    # 붐박스는 실제 크기(가로 5.8). 이 자리는 부모 배율 (1.6, .8, 1.6) 이라 그만큼 줄여 두고, 유리문(앞 y -0.9)에 문 테두리를 맞춤(+0.13)
+    # 부품의 회전·위치를 정점에 먼저 굳힌 뒤 줄임(회전된 스피커가 늘어나지 않게)
+    fit = Matrix.Diagonal((1 / 1.6, 1 / .8, 1 / 1.6, 1)) @ Matrix.Translation((0, .13, 0))
+    for o in p:
+        mw = o.matrix_world.copy(); o.parent = None
+        o.data.transform(fit @ mw); o.matrix_world = Matrix.Identity(4)
+    # 문 안쪽에서 움직이는 리듬 막대 5개(예전과 같음) — 붐박스 안쪽 벽(앞에서 1.7 들어간 곳) 바로 앞
     for i,h in enumerate([.29,.48,.62,.43,.32]):
-        bar=box('RhythmBars_'+str(i),((i-2)*.15,1.015,.67+h/2),(.075,.045,h),GATE_CYAN if i%2==0 else GATE_PINK,.025)
+        bar=box('RhythmBars_'+str(i),((i-2)*.15,.80,.67+h/2),(.075,.045,h),GATE_CYAN if i%2==0 else GATE_PINK,.025)
         for old_uv in list(bar.data.uv_layers):bar.data.uv_layers.remove(old_uv)
         uv=bar.data.uv_layers.new(name='Rhythm index')
         for point in uv.data:point.uv=(i/4,0)
@@ -228,16 +219,7 @@ def rhythm_house():  # 보라색 클럽만 남기고 실제 입구를 중앙에 
     shader.inputs['Alpha'].default_value=.30
     energy_material.surface_render_method='DITHERED'
     energy.data.materials.append(energy_material);p.append(energy)
-    # Blender-only reference bolts; the web shader animates equivalent paths on the plane.
-    for i in range(3):
-        curve=bpy.data.curves.new('Energy preview bolt','CURVE');curve.dimensions='3D';curve.bevel_depth=.009;curve.bevel_resolution=2
-        spline=curve.splines.new('POLY');spline.points.add(12)
-        for k,point in enumerate(spline.points):
-            x=-.46+.92*k/12;z=.36+i*.43+.065*math.sin(k*4.1+i*2)
-            point.co=(x,-1.132,z,1)
-        bolt=bpy.data.objects.new('Preview_energy_bolt',curve);bpy.context.collection.objects.link(bolt)
-        bolt.data.materials.append(GATE_CYAN if i%2==0 else GATE_PINK);p.append(bolt)
-    return p + sign('rhythm', 2.91, 1.92, .28, -.95)
+    return p + sign('rhythm', 3.08 / 1.6, 1.6 / 1.6, .36 / 1.6, -1.42)  # 글자판 = 입구 위 명판(가로 1.75) 안
 
 def shop_canopy():
     """Continuous curved striped canvas with a scalloped, thick front valance."""

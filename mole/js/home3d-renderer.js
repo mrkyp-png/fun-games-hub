@@ -359,9 +359,16 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
       return t;
     }
     async function load(url) {
-      const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 15000);
-      try { const r = await fetch(url, { signal: ctl.signal }); if (!r.ok) throw Error(r.status + ' ' + url); return R.parseGLB(await r.arrayBuffer()); }
-      finally { clearTimeout(timer); }
+      /* V1729 C 사용자: 느려도 끝까지 받음 — 15초 동안 데이터가 하나도 안 올 때만 중단(전체 15초 제한 → 배포 직후 느린 망에서 'signal is aborted' 실패) */
+      const ctl = new AbortController(); let timer = 0; const touch = () => { clearTimeout(timer); timer = setTimeout(() => ctl.abort(), 15000); };
+      try {
+        touch(); const r = await fetch(url, { signal: ctl.signal }); if (!r.ok) throw Error(r.status + ' ' + url);
+        if (!r.body || !r.body.getReader) return R.parseGLB(await r.arrayBuffer());
+        const reader = r.body.getReader(), parts = []; let size = 0;
+        for (;;) { touch(); const { done, value } = await reader.read(); if (done) break; parts.push(value); size += value.length; }
+        const all = new Uint8Array(size); let at = 0; for (const p of parts) { all.set(p, at); at += p.length; }
+        return R.parseGLB(all.buffer);
+      } finally { clearTimeout(timer); }
     }
     return {
       async boot(plazaUrl, moleUrl, boatUrl, propList) {

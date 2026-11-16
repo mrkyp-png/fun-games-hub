@@ -18,6 +18,8 @@ function behaviorActor(m,now){
  }
  return b;
 }
+/* V1729 C 사용자: 방귀 두더지는 구멍에서 올라오며 뒤로 돎(꼭대기 무렵 180°) — 착지 뒤 방귀 동작이 뒤를 본 채 이어받음 */
+function spinUp(m,motion){if(!motion.appearing||m._behavior!=='smoke'||m.dying)return R.transform({});const a=Math.PI*smooth(motion.progress/.6);return R.transform({rotation:[0,Math.sin(a/2),0,Math.cos(a/2)]})}
 function behaviorTime(m,now){const t=(now-m._clayRestTime)*(m._behRate||1);return m._behavior==='smoke'&&t>3?1.5+(t-1.5)%1.5:t} /* V1727 C: 방귀 두더지는 뒤돌아 뿡을 한 번만 */
 // 맞으면 소품이 무작위 방향으로 빙글 돌며 날아감(0.8초). 도둑 복면은 맞아도 머리에 그대로.
 // V1710 C 사용자: 술병·시가·돈자루만 1.3배(손은 그대로) — 쥔 곳(묶음 노드 원점) 기준으로 키움. 휴대폰은 그대로
@@ -244,7 +246,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
  const flagsFor=(runtime,model)=>runtime.skins.map(skeleton=>{const flags=new Float32Array(Math.ceil(skeleton.joints.length/4)*4);skeleton.joints.forEach((j,i)=>{flags[i]=/^(UpperArm|Forearm|Hand|Finger[123]|Thumb)\.|^BombCarry$/.test(model.json.nodes[j].name||'')?1:0});return flags});
  const baseActor={model,runtime,draws,rimFlags:flagsFor(runtime,model)};
  // 나쁜 두더지(술·담배·휴대폰·도둑): 기본 두더지 준비 후 뒤에서 불러옴. 못 불러오면 일반 두더지로 나옴.
- Promise.all(BEHAVIORS.map(async id=>{const r=await fetch(id==='drink'?'assets/characters-v1725/behavior-drink.glb':id==='smoke'?'assets/characters-v1728/behavior-smoke.glb' /* V1727 C 사용자: 담배 → 방귀 두더지 */:'assets/characters-v1694/behavior-'+id+'.glb') /* V1724 C 사용자: 술 두더지 → 쥬스 두더지(주황 병·동그란 눈·연분홍 볼, 동작 그대로) */;if(!r.ok)throw Error('Behavior model '+id+' '+r.status);const raw=R.parseGLB(await r.arrayBuffer());raw.json.animations=raw.json.animations||[];const bm=await AP.prepare(raw),brt=R.prepare(bm),clip=brt.animations.find(c=>c.name==='Behavior');behaviorActors.set(id,{model:bm,runtime:brt,draws:await makeDraws(bm,[]),rimFlags:flagsFor(brt,bm),clip:clip?'Behavior':null})})).catch(e=>console.error('Behavior moles',e));
+ Promise.all(BEHAVIORS.map(async id=>{const r=await fetch(id==='drink'?'assets/characters-v1725/behavior-drink.glb':id==='smoke'?'assets/characters-v1729/behavior-smoke.glb' /* V1727 C 사용자: 담배 → 방귀 두더지 */:'assets/characters-v1694/behavior-'+id+'.glb') /* V1724 C 사용자: 술 두더지 → 쥬스 두더지(주황 병·동그란 눈·연분홍 볼, 동작 그대로) */;if(!r.ok)throw Error('Behavior model '+id+' '+r.status);const raw=R.parseGLB(await r.arrayBuffer());raw.json.animations=raw.json.animations||[];const bm=await AP.prepare(raw),brt=R.prepare(bm),clip=brt.animations.find(c=>c.name==='Behavior');behaviorActors.set(id,{model:bm,runtime:brt,draws:await makeDraws(bm,[]),rimFlags:flagsFor(brt,bm),clip:clip?'Behavior':null})})).catch(e=>console.error('Behavior moles',e));
  function bind(b,id,size){gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.enableVertexAttribArray(id);gl.vertexAttribPointer(id,size,gl.FLOAT,false,0,0)}
  const angle=Math.PI/6,eye=[0,1+10*Math.sin(angle),10*Math.cos(angle)];
  gl.uniform3fv(loc.uEye,eye);
@@ -275,7 +277,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
    const motion=clipFor(m);
    const depth=sinkDepth(m);
    const act=behaviorActor(m,clockTime)||baseActor,{runtime,model,rimFlags}=act;
-   const worlds=act===baseActor?poseFor(runtime,m,motion):AP.pose(runtime,act.clip,behaviorTime(m,clockTime),true,null,clockTime,m._appearance||'mohawk'),palettes=new Map(),withdraw=withdrawProgress(m),instance=R.transform({translation:[0,motion.appearing?1.1*Math.sin(Math.PI*motion.progress):-3.4*depth/4,-(isBombCarrier(m)?.5:.4)*withdraw]});
+   const worlds=act===baseActor?poseFor(runtime,m,motion):AP.pose(runtime,act.clip,behaviorTime(m,clockTime),true,null,clockTime,m._appearance||'mohawk'),palettes=new Map(),withdraw=withdrawProgress(m),instance=R.multiply(R.transform({translation:[0,motion.appearing?1.1*Math.sin(Math.PI*motion.progress):-3.4*depth/4,-(isBombCarrier(m)?.5:.4)*withdraw]}),spinUp(m,motion));
    const cellOnly=boardShake&&boardShake.region!=null,mine=!cellOnly||m.regionId===boardShake.region; /* V1710 C: 칸 흔들림이면 그 칸 두더지만 */
    const sx=lower||!mine?0:shake[0],sy=lower||!mine?0:shake[1];
    function bindActor(){

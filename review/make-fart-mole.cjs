@@ -1,11 +1,11 @@
 // V1727 C 사용자: 담배 두더지 → 방귀 두더지. 원본 담배 두더지(v1694)에서 뼈·몸은 그대로, 부품·동작만 바꿈(GLB 직접 수정)
-//  0~1.1초: 올라오면 뒤로 홱 돌아(엉덩이가 앞) '뿡!' 방귀 구름 → 다시 앞으로 돌아 안착
-//  1.25초~: 오른손으로 코를 쥐고, 눈은 질끈(> <), 얼굴 둘레에 방귀 연기가 맴돎(렌더러가 1.5~3.0초 구간만 반복)
+//  올라오며 뒤로 돌아(렌더러) 착지 = 동작 0초: 엉덩이가 앞인 채 '뿡!' 큰 구름이 구멍에서 → 0.6~0.9초 앞으로
+//  0.9초~: 오른손으로 코를 쥐고, 눈은 질끈(> <), 얼굴 둘레에 방귀 연기가 맴돎(렌더러가 1.5~3.0초 구간만 반복)
 //  볼 = 기본 두더지 색, 시가·불씨·입 연기 고리 없음
 const fs = require('fs'), path = require('path');
 const A = path.join(__dirname, '..', 'mole', 'assets');
 const SRC = path.join(A, 'characters-v1694', 'behavior-smoke.glb');
-const OUT = path.join(A, 'characters-v1728', 'behavior-smoke.glb'); // V1728 C: 점프·큰 구름(폰 캐시 때문에 새 폴더)
+const OUT = path.join(A, 'characters-v1729', 'behavior-smoke.glb'); // V1729 C: 올라오며 돌기(폰 캐시 때문에 새 폴더)
 function read(f) { const b = fs.readFileSync(f), jl = b.readUInt32LE(12), json = JSON.parse(b.slice(20, 20 + jl).toString('utf8')), bo = 20 + jl; return { json, bin: b.slice(bo + 8, bo + 8 + b.readUInt32LE(bo)) }; }
 function write(f, json, bin) {
   const pad = (buf, c) => Buffer.concat([buf, Buffer.alloc((4 - buf.length % 4) % 4, c)]);
@@ -69,11 +69,11 @@ function keyAt(nodeIndex, pathName, frame) {
 
 // 몸 돌기: 0~0.35 뒤로(180°), 0.35~0.8 뒤 보고 뿡, 0.8~1.1 다시 앞으로(360°). 뿡 때 살짝 들썩
 const ROOT = idx('Root'), ROOT_T = firstKey(ROOT, 'translation');
-// V1728 C 사용자: 높게 점프하며 뒤로 돌고(0.12~0.45) 꼭대기에서 뿡 → 내려와(0.9) 다시 앞으로(0.95~1.25)
-const yaw = (t) => t < 0.12 ? 0 : t < 0.45 ? Math.PI * ease((t - 0.12) / 0.33) : t < 0.95 ? Math.PI : t < 1.25 ? Math.PI + Math.PI * ease((t - 0.95) / 0.3) : 2 * Math.PI;
+// V1729 C 사용자: 구멍에서 올라오면서 돌기(렌더러가 등장 중 180° 돌림) → 이 동작은 뒤를 본 채 시작: 착지하자마자 뿡(살짝 들썩) → 0.6~0.9 앞으로
+const yaw = (t) => t < 0.6 ? Math.PI : t < 0.9 ? Math.PI + Math.PI * ease((t - 0.6) / 0.3) : 2 * Math.PI;
 setTrack(ROOT, 'rotation', T.map((t) => qaxis([0, 1, 0], yaw(t))));
-const JUMP = 0.75;
-setTrack(ROOT, 'translation', T.map((t) => { const b = t < 0.12 ? -0.08 * Math.sin(Math.PI * t / 0.12) : t < 0.45 ? JUMP * (1 - Math.pow(1 - (t - 0.12) / 0.33, 2)) : t < 0.62 ? JUMP : t < 0.9 ? JUMP * (1 - Math.pow((t - 0.62) / 0.28, 2)) : t < 1.05 ? -0.07 * Math.sin(Math.PI * (t - 0.9) / 0.15) : 0; return [ROOT_T[0], ROOT_T[1] + b, ROOT_T[2]]; }));
+const HOP = 0.28;
+setTrack(ROOT, 'translation', T.map((t) => { const b = t >= 0.03 && t < 0.4 ? HOP * Math.sin(Math.PI * (t - 0.03) / 0.37) : t >= 0.9 && t < 1.05 ? -0.06 * Math.sin(Math.PI * (t - 0.9) / 0.15) : 0; return [ROOT_T[0], ROOT_T[1] + b, ROOT_T[2]]; }));
 
 // 오른손: 처음엔 가슴 앞(원래 시가 든 자세), 1.1~1.4초에 코로 가져가 쥠
 const HAND = idx('Hand.R'), UARM = idx('UpperArm.R'), SHOULDER = node('UpperArm.R').translation;
@@ -83,7 +83,7 @@ const GRIP = [-0.09, 0.39, 0.13];                               // 손가락 사
 const NOSE = [0, 1.22 + 0.27, 0.92 + 0.13];                     // 코끝(몸 기준)
 const H1 = sub(NOSE, qrot(QM, GRIP));
 const UNIT = len(sub(H0, SHOULDER)) / S0[1];                    // 팔 길이(배율 1일 때)
-const reach = (t) => ease((t - 1.25) / 0.25);
+const reach = (t) => ease((t - 0.9) / 0.25);
 const handPos = (t) => { const w = t > 1.5 ? 0.012 * Math.sin(2 * Math.PI * (t - 1.5) / 0.5) : 0; return add(mix(H0, H1, reach(t)), [0, w, 0]); };
 setTrack(HAND, 'translation', T.map(handPos));
 setTrack(HAND, 'rotation', T.map((t) => qslerp(Q0, QM, reach(t))));
@@ -117,7 +117,7 @@ setTrack(HEAD, 'rotation', T.map((t) => t < 1.5 ? [0, 0, 0, 1] : qaxis([0, 1, 0]
 const BURST = [0, 0.1, 0.35]; // V1728 C 사용자: 큰 방귀 구름이 구멍에서 솟아오름
 const burstDir = [[-0.5, 1.2, 0.3], [0.5, 1.3, 0.25], [-0.15, 1.7, 0.4], [0.25, 1.9, 0.2]];
 puffs.forEach((ni, k) => {
-  const t0 = 0.45 + k * 0.05;
+  const t0 = 0.03 + k * 0.05;
   const p = (t) => Math.max(0, Math.min(1, (t - t0) / 0.9));
   setTrack(ni, 'translation', T.map((t) => add(BURST, burstDir[k].map((v) => v * (0.25 + ease(p(t)) * 0.9)))));
   setTrack(ni, 'scale', T.map((t) => { const q = p(t), s = t < t0 ? 0 : q < 0.25 ? 0.68 * ease(q / 0.25) : 0.68 * (1 - ease((q - 0.25) / 0.75)) + 0.08 * (1 - q); return [s, s * 0.85, s]; }));
@@ -128,7 +128,7 @@ face.forEach((ni, k) => {
   const a0 = k / face.length * 2 * Math.PI, yo = [0.05, -0.25, 0.25, -0.1, 0.15, -0.3, 0.3][k], r = 0.95 + 0.08 * (k % 3);
   const pos = (t) => { const a = a0 + 2 * Math.PI * (t - 1.5) / 1.5; return [Math.sin(a) * r, HEADC[1] + yo + 0.06 * Math.sin(2 * Math.PI * (t - 1.5) / 0.75 + k), HEADC[2] + Math.cos(a) * r * 0.75]; };
   setTrack(ni, 'translation', T.map(pos));
-  setTrack(ni, 'scale', T.map((t) => { const grow = ease((t - 1.0 - k * 0.04) / 0.35), s = (0.2 + 0.05 * Math.sin(2 * Math.PI * (t - 1.5) / 0.75 + k * 1.7)) * grow; return [s, s * 0.9, s]; }));
+  setTrack(ni, 'scale', T.map((t) => { const grow = ease((t - 0.6 - k * 0.04) / 0.35), s = (0.2 + 0.05 * Math.sin(2 * Math.PI * (t - 1.5) / 0.75 + k * 1.7)) * grow; return [s, s * 0.9, s]; }));
 });
 // 쓰지 않는 부품 채널 정리(불씨·입 연기 고리)
 const gone = new Set(['Ember glow', 'Mouth smoke ring 0', 'Mouth smoke ring 1', 'Mouth smoke ring 2'].map(idx));
