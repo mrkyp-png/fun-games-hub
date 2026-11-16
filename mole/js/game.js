@@ -234,6 +234,17 @@
       diag = diag.slice(-6);
       try { localStorage.setItem('mole.diag', JSON.stringify(diag)); } catch (e) { /* 무시 */ }
     };
+    // Archive only the exact V1745 C Workshop-create failure after successful construction.
+    window.__clearRecoveredWorkshopError = () => {
+      const resolved = line => /reading ['"]create['"]/.test(line) && /@game\.js\?v=1745-C:4046\b/.test(line);
+      const removed = diag.filter(resolved);
+      if (!removed.length) return;
+      try {
+        localStorage.setItem('mole.diag.recoveredWorkshop1746G', JSON.stringify(removed));
+        diag = diag.filter(line => !resolved(line));
+        localStorage.setItem('mole.diag', JSON.stringify(diag));
+      } catch (e) { /* Preserve other diagnostics when storage is unavailable. */ }
+    };
     window.__saveDiag = saveDiag; // V1617 C: 시작 준비 진단(일일출석 파일 없음)용
     reportInputStall = function (phase, regionId) {
       const labels = {
@@ -3737,8 +3748,66 @@
   document.addEventListener('gesturestart', (e) => e.preventDefault());
   document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 
+  // WORKSHOP_STARTUP_RECOVERY_BEGIN
+  function workshopStartupReady() {
+    return !!(MG.ItemInventory && MG.WorkshopEnhance && typeof MG.WorkshopEnhance.create === 'function' &&
+      MG.Workshop && typeof MG.Workshop.create === 'function');
+  }
+  async function recoverWorkshopStartup() {
+    const modules = [
+      ['item-inventory.js', () => !!MG.ItemInventory],
+      ['workshop-enhance.js', () => !!(MG.WorkshopEnhance && typeof MG.WorkshopEnhance.create === 'function')],
+      ['workshop.js', () => !!(MG.Workshop && typeof MG.Workshop.create === 'function')]
+    ];
+    for (const [file, ready] of modules) {
+      if (ready()) continue;
+      let failure;
+      for (let attempt = 0; attempt < 2 && !ready(); attempt++) {
+        try {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            const original = Array.from(document.scripts).find(node => node.src && new URL(node.src, location.href).pathname.endsWith('/' + file));
+            const url = new URL(original ? original.src : 'js/' + file, location.href);
+            url.searchParams.set('_module_retry', Date.now() + '-' + attempt);
+            let timer;
+            const finish = error => {
+              clearTimeout(timer); script.onload = script.onerror = null; script.remove();
+              if (error) reject(error); else resolve();
+            };
+            script.onload = () => finish(ready() ? null : new Error(file + ': module did not initialize'));
+            script.onerror = () => finish(new Error(file + ': download failed'));
+            timer = setTimeout(() => finish(new Error(file + ': download timed out')), 12000);
+            script.src = url.href; document.head.appendChild(script);
+          });
+        } catch (error) { failure = error; }
+      }
+      if (!ready()) throw failure || new Error(file + ': module unavailable');
+    }
+  }
+  // WORKSHOP_STARTUP_RECOVERY_END
+
   // ---------- 초기화 ----------
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', function initializeGame() {
+    // Missing optional files must recover before their factories can interrupt startup.
+    if (!workshopStartupReady()) {
+      const ko = I18N.lang === 'ko';
+      const notice = document.createElement('div');
+      notice.id = 'startup-module-recovery'; notice.setAttribute('role', 'status');
+      notice.style.cssText = 'position:fixed;inset:0;z-index:10002;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:24px;box-sizing:border-box;background:#07182ee8;color:#fff;text-align:center;font:18px/1.5 sans-serif';
+      const message = document.createElement('div');
+      message.textContent = ko ? '게임 준비를 다시 시도하고 있습니다…' : 'Retrying game preparation…';
+      notice.appendChild(message); document.body.appendChild(notice);
+      recoverWorkshopStartup().then(() => { notice.remove(); setTimeout(initializeGame, 0); }, error => {
+        if (window.__saveDiag) window.__saveDiag('ERR WORKSHOP ' + error.message);
+        message.textContent = ko ? '게임 준비를 마치지 못했습니다. 연결을 확인하고 다시 시도해 주세요.' : 'Could not prepare the game. Check your connection and try again.';
+        const retry = document.createElement('button'); retry.type = 'button';
+        retry.textContent = ko ? '다시 시도' : 'Retry';
+        retry.style.cssText = 'display:flex;align-items:center;justify-content:center;min-width:140px;padding:12px 24px;border:0;border-radius:14px;font:inherit';
+        retry.addEventListener('click', () => { notice.remove(); initializeGame(); }, { once: true });
+        notice.appendChild(retry);
+      });
+      return;
+    }
     // 피버타임 전용 게임보드 직접 터치 — 평소엔 아무 리스너 없음(입력은 다이얼패드로만),
     // state.feverEventActive 일 때만 동작. handleCell()을 그대로 호출해 기존 타격 파이프라인
     // (콤보/점수/버스트/지진 전부 포함)을 그대로 재사용한다. #mole-board 는 세션 내내
@@ -4052,6 +4121,7 @@
       },
       onChange: () => { refreshBoardStats(); syncEnhancementVisuals(MG.roundWeapon || MG.ItemInventory.equippedWeapon()); if (moreMenu) moreMenu.refresh(); }
     });
+    if (window.__clearRecoveredWorkshopError) window.__clearRecoveredWorkshopError();
     // v894: 퀘스트·업적 화면
     const questScreen = MG.Quest.create({
       root: document.getElementById('quest-screen'),
