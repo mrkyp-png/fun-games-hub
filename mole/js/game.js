@@ -1722,12 +1722,6 @@
   }
 
   function startRound(opts) {
-    const guideMode = MG.GameGuide.modeFor(currentLight(), currentChapter());
-    if (!(opts && opts.guideAccepted) && MG.GameGuide.shouldShow()) {
-      const token = sessionGen;
-      MG.GameGuide.showRules({light:currentLight(),mode:guideMode,required:true,onDone:() => { if(token===sessionGen)startRound(Object.assign({},opts,{guideAccepted:true})); }});
-      return;
-    }
     unmountFeverField();
     const clayRoundOne = true;
     if (clayRoundOne && MG.ClayRoundOne && MG.ClayRoundOne.wait(() => startRound(opts))) return;
@@ -2026,13 +2020,19 @@
     };
 
     updateHUD();
-    playRoundIntro(() => {
-      if (myGen !== sessionGen || !state) return; // 그 사이 나가버림 — 이 콜백 무효
-      state.introActive = false;
-      setNavLock(false); // 라운드 실제 진행 → ⊞ 다시 활성
-      lastTime = performance.now();
-      rafId = requestAnimationFrame(loop);
-    }, { homeEntry: !!(opts && opts.fresh && !opts.direct) });
+    const beginRoundIntro = () => {
+      if (myGen !== sessionGen || !state) return;
+      playRoundIntro(() => {
+        if (myGen !== sessionGen || !state) return; // 그 사이 나가버림 — 이 콜백 무효
+        state.introActive = false;
+        setNavLock(false); // 라운드 실제 진행 → ⊞ 다시 활성
+        lastTime = performance.now();
+        rafId = requestAnimationFrame(loop);
+      }, { homeEntry: !!(opts && opts.fresh && !opts.direct) });
+    };
+    if (MG.GameGuide.shouldShow()) {
+      MG.GameGuide.showRules({light:currentLight(),mode:MG.GameGuide.modeFor(currentLight(),currentChapter()),required:true,onDone:beginRoundIntro});
+    } else beginRoundIntro();
   }
 
   // 모든 라운드(1~8): "라운드 N" 타이틀·음성 없이 바로 Ready → GO! 카운트다운(줌인 + 색상,
@@ -4094,7 +4094,8 @@
       startGame: () => {
         if (navLocked || gameStarting || state) return false;
         if (MG.Economy.getHearts() <= 0) { beginGame(true); return true; }
-        MG.ShapeTransition.run(1, () => beginGame(true));
+        if (MG.GameGuide.shouldShow()) beginGame(true);
+        else MG.ShapeTransition.run(1, () => beginGame(true));
         return true;
       },
       rounds: () => { const l = currentLight(); return { light: l, chapter: currentChapter(), get: (n) => MG.Progress.get(n, l), unlocked: (x) => MG.Progress.isLightUnlocked(x) }; },

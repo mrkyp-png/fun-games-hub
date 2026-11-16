@@ -1,7 +1,7 @@
 ﻿(function(root){'use strict';const MG=root.MoleGame,KEY='mole.gameRules.skip.v1';let current=null;
  const ko=()=>root.FGH.I18N.lang==='ko',t=(a,b)=>ko()?a:b;
  const names={smoke:['방귀 두더지','Farting mole'],thief:['도둑 두더지','Thief mole'],drink:['콜라 두더지','Cola mole'],phone:['게임 두더지','Gaming mole']};
- const bonus=()=>t('추가 보너스를 줘요.\n확률에 따라 아이템과 소모품을\n획득할 수 있어요.\n당첨 보상은 메일함으로 지급됩니다.','Golden moles give extra bonuses. You have a chance to receive items and consumables. Prize rewards are sent to your mailbox.');
+ const bonus=()=>t('추가 보너스를 줘요.\n확률에 따라 아이템과 소모품을\n획득할 수 있어요.\n당첨 보상은 메일함으로 지급됩니다.','Golden moles give bonuses.\nWin items and consumables\nbased on drop chances.\nRewards go to your mailbox.');
  function modeFor(light,round){return light!=='easy'&&round===6?'colored':light!=='easy'&&round===8?'mixed':'prankster';}
  function shouldShow(){try{return localStorage.getItem(KEY)!=='1';}catch(e){return true;}}
  function samplesFor(mode,kind){
