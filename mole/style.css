@@ -10680,3 +10680,6 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #gameover-overlay .fail-stamp { top: 50%; }
 /* V1740 C 사용자: '재도전' 글자 2배, 빨간색 */
 #gameover-overlay .fail-stamp { font-size: 2.6rem; color: #d43b3b; mix-blend-mode: normal; }
+/* V1743 C 사용자: 성공·실패 화면 두더지 20% 작게(성공은 1.5배 맞춤 그대로 → 1.2배, 실패 0.8배) — 발 위치 기준 */
+#gameover-overlay.is-win .go-hippo.go-hero { scale: 1.2; }
+#gameover-overlay.is-lose .go-hippo.go-hero { scale: .8; transform-origin: 50% 97%; }

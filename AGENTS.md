@@ -1,4 +1,7 @@
-# V1743 C DEPLOYED - 2026-11-16 (Claude)
+# V1744 C DEPLOYED - 2026-11-16 (Claude)
+- Result screens: success hero scale 1.5 → 1.2, fail hero scale .8 (origin 50% 97%, feet stay) — user: both 20% smaller.
+
+# V1743 C DEPLOYED - 2026-11-16 (Claude) `d63c4cd8`
 - Clay quest icons (GPT, same size/position, overwrite assets/quest): ic-pad, ic-trophy, ic-fire, ic-cal, ic-check, gift-red (also the daily-gift random box via QUEST_GIFT), gift-purple, sh-gold/silver/bronze/grey. Concepts Desktop/상점_새그림_시안/퀘스트.
 - Duck crown recolour fixed per frame: finds the shadow line under the crown (yellow-hue rows, centre 40-60%) instead of a fixed 20.5% height → head top no longer tinted (goose-clay-v1741 1..10 + idle).
 - Enhance scene: soft brown oval floor shadow under the pedestal (.ws-new-scene::before, workshop-enhance.css). Not captured (needs an owned weapon).
