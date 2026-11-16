@@ -1,4 +1,9 @@
-# V1744 C DEPLOYED - 2026-11-16 (Claude)
+# V1745 C DEPLOYED - 2026-11-16 (Claude)
+- Clay loading screen: GPT redraws (same layout) in assets/loading-clay-v1744/ (characters-4x band fitted to the old alpha bbox, front-panel fitted, stage-2x resized to old size); index.html + sw.js paths switched. Old v1573/v1574 kept.
+- Daily screen day-7 gift box scale 1.5 → 2.25.
+- Next: rhythm-pang decorations to clay; costume tab icon shape TBD.
+
+# V1744 C DEPLOYED - 2026-11-16 (Claude) `a9487a68`
 - Result screens: success hero scale 1.5 → 1.2, fail hero scale .8 (origin 50% 97%, feet stay) — user: both 20% smaller.
 
 # V1743 C DEPLOYED - 2026-11-16 (Claude) `d63c4cd8`

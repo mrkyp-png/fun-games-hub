@@ -31,9 +31,9 @@
 <meta name="color-scheme" content="light">
 <title data-i18n="mole.title">두더지팡!</title>
 <!-- Loading stage and performers are preloaded; the removed billboard is not required. -->
-<link rel="preload" as="image" href="assets/loading-v1573/stage-2x.webp">
-<link rel="preload" as="image" href="assets/loading-v1574/characters-4x.webp">
-<link rel="preload" as="image" href="assets/loading-v1574/front-panel.webp">
+<link rel="preload" as="image" href="assets/loading-clay-v1744/stage-2x.webp">
+<link rel="preload" as="image" href="assets/loading-clay-v1744/characters-4x.webp">
+<link rel="preload" as="image" href="assets/loading-clay-v1744/front-panel.webp">
 
 <link rel="preload" as="image" href="assets/home2/wide-purple.png">
 <link rel="manifest" href="manifest.json">
@@ -47,11 +47,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@700&family=Jua&family=Lilita+One&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../cosmic-theme.css">
 <link rel="stylesheet" href="../common/settings.css">
-<link rel="stylesheet" href="style.css?v=1744-C">
-<link rel="stylesheet" href="clay-round1-local.css?v=1744-C">
-<link rel="stylesheet" href="order-game.css?v=1744-C">
-<link rel="stylesheet" href="rhythm-buttons-v1568.css?v=1744-C">
-<link rel="stylesheet" href="rhythm-type-lighting-v1569.css?v=1744-C">
+<link rel="stylesheet" href="style.css?v=1745-C">
+<link rel="stylesheet" href="clay-round1-local.css?v=1745-C">
+<link rel="stylesheet" href="order-game.css?v=1745-C">
+<link rel="stylesheet" href="rhythm-buttons-v1568.css?v=1745-C">
+<link rel="stylesheet" href="rhythm-type-lighting-v1569.css?v=1745-C">
 <style>
   /* 로딩 스플래시 — style.css 로딩 전에도 바로 뜨게 인라인. */
   #splash {
@@ -209,7 +209,7 @@
   #splash { overflow:hidden; background:#020415; isolation:isolate; }
   #splash::before { content:none; }
   #splash::after { inset:0; width:auto; height:auto; background:linear-gradient(180deg,#01031799,transparent 38%,#02031644 62%,#020316d9); z-index:0; }
-  #splash .splash-stage { position:absolute; top:0; bottom:0; left:0; width:max(100vw,calc(100dvh * 2048 / 768)); background:url('assets/loading-v1573/stage-2x.webp') center/100% 100% no-repeat; z-index:-1; animation:splash-stage-pan 60s ease-in-out infinite alternate; will-change:transform; pointer-events:none; }
+  #splash .splash-stage { position:absolute; top:0; bottom:0; left:0; width:max(100vw,calc(100dvh * 2048 / 768)); background:url('assets/loading-clay-v1744/stage-2x.webp') center/100% 100% no-repeat; z-index:-1; animation:splash-stage-pan 60s ease-in-out infinite alternate; will-change:transform; pointer-events:none; }
   @keyframes splash-stage-pan { from { transform:translateX(calc(100vw - 100%)); } to { transform:translateX(0); } }
   #splash > img.splash-performers { left:0; right:0; top:45%; width:100%; max-height:none; height:auto; transform:none; z-index:1; }
   #splash .splash-hearts,#splash .splash-notes { inset:0; width:100%; height:100%; aspect-ratio:auto; transform:none; z-index:2; }
@@ -230,16 +230,16 @@
 /* V1162: original stage pixels stay aligned; only the plain lower face extends. */
 #splash { --front-drop:calc((100vw * 875 / 941 - 100vw * 470 / 1774) / 4); --front-top:calc(100vw * 860 / 941 + var(--front-drop)); --stage-width:max(112vw,calc(var(--front-top) * 941 / 860)); }
 #splash::after { content:none; }
-#splash .splash-stage { inset:0 auto auto 0; width:var(--stage-width); height:calc(var(--stage-width) * 860 / 941); background:url('assets/loading-v1573/stage-2x.webp') center top/100% calc(var(--stage-width) * 1672 / 941) no-repeat; animation:splash-stage-pan 18s ease-in-out infinite alternate; will-change:transform; }
+#splash .splash-stage { inset:0 auto auto 0; width:var(--stage-width); height:calc(var(--stage-width) * 860 / 941); background:url('assets/loading-clay-v1744/stage-2x.webp') center top/100% calc(var(--stage-width) * 1672 / 941) no-repeat; animation:splash-stage-pan 18s ease-in-out infinite alternate; will-change:transform; }
 #splash .splash-front-cap { position:absolute; left:0; right:0; top:var(--front-top); height:min(calc(100vw * 540 / 941),calc(100dvh - var(--front-top))); z-index:2; isolation:isolate; pointer-events:none; background:none; }
-#splash .splash-front-face { position:absolute; left:0; right:0; top:min(calc(var(--front-top) + 100vw * 540 / 941),100dvh); bottom:0; z-index:2; pointer-events:none; background:url('assets/loading-v1574/front-panel.webp') center bottom/100% calc(max(1px,(100dvh - var(--front-top) - 100vw * 540 / 941)) * 812 / 272) no-repeat; filter:brightness(.7); }
+#splash .splash-front-face { position:absolute; left:0; right:0; top:min(calc(var(--front-top) + 100vw * 540 / 941),100dvh); bottom:0; z-index:2; pointer-events:none; background:url('assets/loading-clay-v1744/front-panel.webp') center bottom/100% calc(max(1px,(100dvh - var(--front-top) - 100vw * 540 / 941)) * 812 / 272) no-repeat; filter:brightness(.7); }
 /* V1378 G: 로딩 배경 그림만 검정 30%를 겹쳐 어둡게. 앞쪽 로고·캐릭터·버튼·효과는 유지. */
 #splash .splash-stage {
-  background-image: linear-gradient(rgba(0,0,0,.3),rgba(0,0,0,.3)), url('assets/loading-v1573/stage-2x.webp');
+  background-image: linear-gradient(rgba(0,0,0,.3),rgba(0,0,0,.3)), url('assets/loading-clay-v1744/stage-2x.webp');
 }
 /* V1574 G: independent original foreground panel, above the characters. */
 #splash .splash-stage::before { content:""; position:absolute; left:0; right:0; top:calc(100% - 1px); height:calc(100vw * 76 / 941 + 1px); background:inherit; background-size:100% calc(var(--stage-width) * 1672 / 941); background-position:center calc(-1 * var(--stage-width) * 860 / 941 + 100vw * 76 / 941 + 1px); transform:scaleY(-1); pointer-events:none; }
-#splash .splash-front-cap::before { content:""; position:absolute; inset:0; z-index:-1; pointer-events:none; background:url('assets/loading-v1574/front-panel.webp') center top/100% auto no-repeat; filter:brightness(.7); }
+#splash .splash-front-cap::before { content:""; position:absolute; inset:0; z-index:-1; pointer-events:none; background:url('assets/loading-clay-v1744/front-panel.webp') center top/100% auto no-repeat; filter:brightness(.7); }
 /* User-provided transparent quartet, 90vw wide and 0.1cm below its previous position. */
 #splash > img.splash-performers { left:5%; right:auto; width:90%; top:calc(var(--front-top) + 100vw * 15 / 941 - 30vw + 0.1cm); clip-path:none; }
 #splash .splash-hearts i:nth-child(1) { left:18%!important; top:55vw!important; }
@@ -260,7 +260,7 @@
 /* Effects share the source coordinate system and the same moving parent. */
 #splash .splash-stage::after { content:""; position:absolute; inset:0; pointer-events:none; background:inherit; background-size:100% calc(var(--stage-width) * 1672 / 941); filter:brightness(1.65); mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20941%20860%22%20preserveAspectRatio%3D%22none%22%3E%3Cg%20fill%3D%22white%22%3E%3Cellipse%20cx%3D%2280.07%22%20cy%3D%2257.03%22%20rx%3D%2215.71%22%20ry%3D%227.96%22%20transform%3D%22rotate%28-26.97%2080.07%2057.03%29%22%20%2F%3E%3Cellipse%20cx%3D%22363.67%22%20cy%3D%2297.4%22%20rx%3D%2214.13%22%20ry%3D%227.51%22%20transform%3D%22rotate%28-18.59%20363.67%2097.4%29%22%20%2F%3E%3Cellipse%20cx%3D%22577.51%22%20cy%3D%2297.7%22%20rx%3D%2214.83%22%20ry%3D%227.99%22%20transform%3D%22rotate%2816.86%20577.51%2097.7%29%22%20%2F%3E%3Cellipse%20cx%3D%22861.12%22%20cy%3D%2257.05%22%20rx%3D%2215.39%22%20ry%3D%228.22%22%20transform%3D%22rotate%2826.64%20861.12%2057.05%29%22%20%2F%3E%3Cellipse%20cx%3D%22253.62%22%20cy%3D%22130.05%22%20rx%3D%2213.14%22%20ry%3D%226.93%22%20transform%3D%22rotate%28-21.27%20253.62%20130.05%29%22%20%2F%3E%3Cellipse%20cx%3D%22687.36%22%20cy%3D%22130.38%22%20rx%3D%2213.19%22%20ry%3D%226.86%22%20transform%3D%22rotate%2818.93%20687.36%20130.38%29%22%20%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") center/100% 100% no-repeat; animation:loading-lamps-breathe 4.8s ease-in-out infinite; }
 /* 배경을 상속하는 램프 효과에는 어두운 덮개를 복제하지 않음. */
-#splash .splash-stage::after { background-image: url('assets/loading-v1573/stage-2x.webp'); }
+#splash .splash-stage::after { background-image: url('assets/loading-clay-v1744/stage-2x.webp'); }
 @keyframes loading-lamps-breathe { 0%,100% { opacity:.08; } 50% { opacity:.85; } }
 #splash .loading-stage-lines { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; pointer-events:none; }
 #splash .loading-stage-lines ellipse { fill:none; stroke-width:12; stroke-linecap:round; stroke-dasharray:18 82; animation:loading-ring-flow 6s linear infinite; opacity:.7; }
@@ -309,12 +309,12 @@
 
 /* Extend only the original rope strips above the unchanged sign. */
 </style>
-<link rel="stylesheet" href="workshop-enhance.css?v=1744-C">
-<link rel="stylesheet" href="home3d.css?v=1744-C">
+<link rel="stylesheet" href="workshop-enhance.css?v=1745-C">
+<link rel="stylesheet" href="home3d.css?v=1745-C">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true"><defs><filter id="checkerboard-round-tint" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feColorMatrix id="checkerboard-round-matrix" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0"/></filter></defs></svg>
-<div id="splash" role="img" aria-label="두더지팡!"><div class="splash-stage" aria-hidden="true"><svg class="loading-equalizer" viewBox="0 0 941 860" preserveAspectRatio="none" aria-hidden="true"><defs><mask id="loading-meter-active"><rect class="loading-meter-column" x="407" y="603" width="11" height="50" fill="white" style="--meter-time:0.42s;--meter-delay:0.00s"/><rect class="loading-meter-column" x="420" y="570" width="14" height="83" fill="white" style="--meter-time:0.55s;--meter-delay:-0.21s"/><rect class="loading-meter-column" x="437" y="586" width="14" height="67" fill="white" style="--meter-time:0.68s;--meter-delay:-0.42s"/><rect class="loading-meter-column" x="453" y="557" width="15" height="96" fill="white" style="--meter-time:0.81s;--meter-delay:-0.63s"/><rect class="loading-meter-column" x="470" y="542" width="16" height="111" fill="white" style="--meter-time:0.94s;--meter-delay:-0.84s"/><rect class="loading-meter-column" x="488" y="570" width="16" height="83" fill="white" style="--meter-time:0.42s;--meter-delay:-1.05s"/><rect class="loading-meter-column" x="506" y="581" width="15" height="72" fill="white" style="--meter-time:0.55s;--meter-delay:-1.26s"/><rect class="loading-meter-column" x="523" y="596" width="11" height="57" fill="white" style="--meter-time:0.68s;--meter-delay:-1.47s"/></mask></defs><image href="assets/loading-v1573/stage-2x.webp" width="941" height="1672" mask="url(#loading-meter-active)" style="filter:brightness(1.45)"/></svg><svg class="loading-stage-lines" viewBox="0 0 941 860" preserveAspectRatio="none" aria-hidden="true"><defs><mask id="loading-trace-1" maskUnits="userSpaceOnUse" x="0" y="0" width="941" height="860"><ellipse cx="470.04" cy="600.05" rx="127.14" ry="116.39" transform="rotate(-0.36 470.04 600.05)" stroke="white" pathLength="100" style="animation-delay:-0s"/><ellipse cx="470.04" cy="600.05" rx="107" ry="97" transform="rotate(-0.36 470.04 600.05)" stroke="white" pathLength="100" style="animation-delay:-1s"/><ellipse cx="172.5" cy="566" rx="27.5" ry="37" transform="rotate(0 172.5 566)" stroke="white" pathLength="100" style="animation-delay:-2s"/><ellipse cx="171" cy="656" rx="29" ry="38" transform="rotate(0 171 656)" stroke="white" pathLength="100" style="animation-delay:-3s"/><ellipse cx="766.5" cy="566" rx="28.5" ry="37" transform="rotate(0 766.5 566)" stroke="white" pathLength="100" style="animation-delay:-4s"/><ellipse cx="768" cy="656" rx="30" ry="38" transform="rotate(0 768 656)" stroke="white" pathLength="100" style="animation-delay:-5s"/></mask></defs><image href="assets/loading-v1573/stage-2x.webp" x="0" y="0" width="941" height="1672" mask="url(#loading-trace-1)" style="filter:brightness(1.8);opacity:.9"/></svg></div><div class="splash-front-cap" aria-hidden="true"><svg class="loading-pad-glow" viewBox="0 0 941 540" preserveAspectRatio="none" aria-hidden="true"><defs><radialGradient id="loading-pad-light-0"><stop stop-color="#40d9ff" stop-opacity=".65"/><stop offset=".45" stop-color="#40d9ff" stop-opacity=".25"/><stop offset="1" stop-color="#40d9ff" stop-opacity="0"/></radialGradient><radialGradient id="loading-pad-light-1"><stop stop-color="#bc40f3" stop-opacity=".65"/><stop offset=".45" stop-color="#bc40f3" stop-opacity=".25"/><stop offset="1" stop-color="#bc40f3" stop-opacity="0"/></radialGradient><radialGradient id="loading-pad-light-2"><stop stop-color="#ffae23" stop-opacity=".65"/><stop offset=".45" stop-color="#ffae23" stop-opacity=".25"/><stop offset="1" stop-color="#ffae23" stop-opacity="0"/></radialGradient><radialGradient id="loading-pad-light-3"><stop stop-color="#f449bd" stop-opacity=".65"/><stop offset=".45" stop-color="#f449bd" stop-opacity=".25"/><stop offset="1" stop-color="#f449bd" stop-opacity="0"/></radialGradient></defs><ellipse cx="129.3" cy="100.39999999999998" rx="81.32000000000001" ry="35.0625" transform="rotate(-7.7 129.3 100.39999999999998)" class="pad-emission" fill="url(#loading-pad-light-0)" style="--pad-duration:3.74s;--pad-delay:0.0s"/><ellipse cx="356" cy="101.60000000000002" rx="77.12" ry="35.1375" transform="rotate(-2.7 356 101.60000000000002)" class="pad-emission" fill="url(#loading-pad-light-1)" style="--pad-duration:4.08s;--pad-delay:-0.5s"/><ellipse cx="583.4" cy="101.70000000000005" rx="76.76" ry="34.9875" transform="rotate(2.3 583.4 101.70000000000005)" class="pad-emission" fill="url(#loading-pad-light-2)" style="--pad-duration:4.42s;--pad-delay:-1.0s"/><ellipse cx="810.7" cy="101.39999999999998" rx="79.016" ry="33.847500000000004" transform="rotate(6.77 810.7 101.39999999999998)" class="pad-emission" fill="url(#loading-pad-light-3)" style="--pad-duration:4.76s;--pad-delay:-1.5s"/></svg><svg class="loading-stage-lines" viewBox="0 0 941 540" preserveAspectRatio="none" aria-hidden="true"><defs><mask id="loading-trace-2" maskUnits="userSpaceOnUse" x="0" y="0" width="941" height="540"><ellipse cx="129.3" cy="100.39999999999998" rx="101.65" ry="46.75" transform="rotate(-7.7 129.3 100.39999999999998)" stroke="white" pathLength="100" style="animation-delay:-0s"/><ellipse cx="356" cy="101.60000000000002" rx="96.4" ry="46.85" transform="rotate(-2.7 356 101.60000000000002)" stroke="white" pathLength="100" style="animation-delay:-1s"/><ellipse cx="583.4" cy="101.70000000000005" rx="95.95" ry="46.65" transform="rotate(2.3 583.4 101.70000000000005)" stroke="white" pathLength="100" style="animation-delay:-2s"/><ellipse cx="810.7" cy="101.39999999999998" rx="98.77" ry="45.13" transform="rotate(6.77 810.7 101.39999999999998)" stroke="white" pathLength="100" style="animation-delay:-3s"/></mask></defs><image href="assets/loading-v1574/front-panel.webp" x="0" y="0" width="941" height="812" mask="url(#loading-trace-2)" style="filter:brightness(1.8);opacity:.9"/></svg></div><div class="splash-front-face" aria-hidden="true"></div><img loading="lazy" decoding="async" class="splash-performers" src="assets/loading-v1574/characters-4x.webp" alt=""><svg class="splash-glasses" viewBox="0 0 2172 724" aria-hidden="true"><defs><linearGradient id="loading-glasses-shine"><stop stop-color="#c7f4ff" stop-opacity="0"/><stop offset=".45" stop-color="#d8f8ff" stop-opacity=".18"/><stop offset=".58" stop-color="#ffffff" stop-opacity=".75"/><stop offset="1" stop-color="#c7f4ff" stop-opacity="0"/></linearGradient><clipPath id="loading-glasses-0" clipPathUnits="userSpaceOnUse"><path d="M372 146 Q416 151 464 180 Q472 203 436 220 Q403 227 376 207 Q361 184 372 146 Z"/><path d="M516 203 Q556 204 596 224 Q594 259 567 273 Q540 280 519 250 Z"/></clipPath><clipPath id="loading-glasses-1" clipPathUnits="userSpaceOnUse"><path d="M815 184 Q851 187 890 205 Q910 219 895 238 Q877 253 847 246 Q815 240 811 216 Z"/><path d="M960 224 Q1000 219 1034 229 Q1036 266 1010 283 Q984 290 966 267 Z"/></clipPath><clipPath id="loading-glasses-2" clipPathUnits="userSpaceOnUse"><path d="M1224 158 Q1270 163 1321 188 Q1320 224 1288 233 Q1248 242 1230 220 Z"/><path d="M1360 208 Q1400 201 1438 212 L1441 228 Q1449 254 1420 268 Q1394 279 1373 255 Z"/></clipPath><clipPath id="loading-glasses-3" clipPathUnits="userSpaceOnUse"><path d="M1698 245 Q1730 236 1768 239 Q1780 272 1758 294 Q1725 301 1699 279 Z"/><path d="M1823 221 Q1872 199 1910 199 Q1922 237 1900 257 Q1850 280 1827 252 Z"/></clipPath></defs><g clip-path="url(#loading-glasses-0)"><g transform="translate(350 0)"><path class="splash-glasses-sweep" style="--glasses-delay:3s" d="M-80 100 L-25 100 L-115 340 L-170 340 Z" fill="url(#loading-glasses-shine)"/></g></g><g clip-path="url(#loading-glasses-1)"><g transform="translate(800 0)"><path class="splash-glasses-sweep" style="--glasses-delay:0s" d="M-80 100 L-25 100 L-115 340 L-170 340 Z" fill="url(#loading-glasses-shine)"/></g></g><g clip-path="url(#loading-glasses-2)"><g transform="translate(1200 0)"><path class="splash-glasses-sweep" style="--glasses-delay:0s" d="M-80 100 L-25 100 L-115 340 L-170 340 Z" fill="url(#loading-glasses-shine)"/></g></g><g clip-path="url(#loading-glasses-3)"><g transform="translate(1680 0)"><path class="splash-glasses-sweep" style="--glasses-delay:3s" d="M-80 100 L-25 100 L-115 340 L-170 340 Z" fill="url(#loading-glasses-shine)"/></g></g></svg><div class="splash-notes" aria-hidden="true"><svg width="0" height="0" style="position:absolute"><defs><symbol id="splash-note-single" viewBox="0 0 32 32"><path d="M13 5V24M13 5C14 12 25 8 23 17" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="9" cy="24" rx="5" ry="3.6" transform="rotate(-20 9 24)" fill="#000" stroke="#000" stroke-width="2.5"/><path d="M13 5V24M13 5C14 12 25 8 23 17" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="9" cy="24" rx="5" ry="3.6" transform="rotate(-20 9 24)" fill="currentColor"/></symbol><symbol id="splash-note-quarter" viewBox="0 0 32 32"><path d="M18 5V24" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="14" cy="24" rx="5" ry="3.6" transform="rotate(-20 14 24)" fill="#000" stroke="#000" stroke-width="2.5"/><path d="M18 5V24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="14" cy="24" rx="5" ry="3.6" transform="rotate(-20 14 24)" fill="currentColor"/></symbol><symbol id="splash-note-pair" viewBox="0 0 32 32"><path d="M12 8V25M27 4V21M12 8L27 4" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="8" cy="25" rx="5" ry="3.6" transform="rotate(-20 8 25)" fill="#000" stroke="#000" stroke-width="2.5"/><ellipse cx="23" cy="21" rx="5" ry="3.6" transform="rotate(-20 23 21)" fill="#000" stroke="#000" stroke-width="2.5"/><path d="M12 8V25M27 4V21M12 8L27 4" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="8" cy="25" rx="5" ry="3.6" transform="rotate(-20 8 25)" fill="currentColor"/><ellipse cx="23" cy="21" rx="5" ry="3.6" transform="rotate(-20 23 21)" fill="currentColor"/></symbol><symbol id="splash-note-double" viewBox="0 0 32 32"><path d="M12 8V25M27 4V21M12 8L27 4M12 13L27 9" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="8" cy="25" rx="5" ry="3.6" transform="rotate(-20 8 25)" fill="#000" stroke="#000" stroke-width="2.5"/><ellipse cx="23" cy="21" rx="5" ry="3.6" transform="rotate(-20 23 21)" fill="#000" stroke="#000" stroke-width="2.5"/><path d="M12 8V25M27 4V21M12 8L27 4M12 13L27 9" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="8" cy="25" rx="5" ry="3.6" transform="rotate(-20 8 25)" fill="currentColor"/><ellipse cx="23" cy="21" rx="5" ry="3.6" transform="rotate(-20 23 21)" fill="currentColor"/></symbol><symbol id="splash-note-triple" viewBox="0 0 32 32"><path d="M9 10V26M19 7V23M29 4V20M9 10L29 4" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="5" cy="26" rx="5" ry="3.6" transform="rotate(-20 5 26)" fill="#000" stroke="#000" stroke-width="2.5"/><ellipse cx="15" cy="23" rx="5" ry="3.6" transform="rotate(-20 15 23)" fill="#000" stroke="#000" stroke-width="2.5"/><ellipse cx="25" cy="20" rx="5" ry="3.6" transform="rotate(-20 25 20)" fill="#000" stroke="#000" stroke-width="2.5"/><path d="M9 10V26M19 7V23M29 4V20M9 10L29 4" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="5" cy="26" rx="5" ry="3.6" transform="rotate(-20 5 26)" fill="currentColor"/><ellipse cx="15" cy="23" rx="5" ry="3.6" transform="rotate(-20 15 23)" fill="currentColor"/><ellipse cx="25" cy="20" rx="5" ry="3.6" transform="rotate(-20 25 20)" fill="currentColor"/></symbol></defs></svg><svg class="splash-note" viewBox="0 0 32 32" style="left:15%;top:58%;color:#5cdeff;--note-duration:2.2s;--note-delay:0s"><use href="#splash-note-single"/></svg><svg class="splash-note" viewBox="0 0 32 32" style="left:85%;top:55%;color:#ff72b6;--note-duration:2.4s;--note-delay:-0.5s"><use href="#splash-note-quarter"/></svg><svg class="splash-note" viewBox="0 0 32 32" style="left:24%;top:74%;color:#ffda54;--note-duration:2.6s;--note-delay:-1s"><use href="#splash-note-pair"/></svg><svg class="splash-note" viewBox="0 0 32 32" style="left:68%;top:70%;color:#bb87ff;--note-duration:2.8s;--note-delay:-1.5s"><use href="#splash-note-double"/></svg><svg class="splash-note" viewBox="0 0 32 32" style="left:89%;top:91%;color:#67f2c5;--note-duration:3s;--note-delay:-2s"><use href="#splash-note-triple"/></svg></div><div class="splash-loading" role="status"><span class="splash-loading-label">로딩 중…</span><span class="splash-loading-track" aria-hidden="true"><span class="splash-loading-fill"></span></span></div></div><!-- v931: 광고판+캐릭터만 오려낸 그림 / v927(사용자 지정): 로딩 이미지 = 홈 아케이드 왼쪽 위 그림 -->
+<div id="splash" role="img" aria-label="두더지팡!"><div class="splash-stage" aria-hidden="true"><svg class="loading-equalizer" viewBox="0 0 941 860" preserveAspectRatio="none" aria-hidden="true"><defs><mask id="loading-meter-active"><rect class="loading-meter-column" x="407" y="603" width="11" height="50" fill="white" style="--meter-time:0.42s;--meter-delay:0.00s"/><rect class="loading-meter-column" x="420" y="570" width="14" height="83" fill="white" style="--meter-time:0.55s;--meter-delay:-0.21s"/><rect class="loading-meter-column" x="437" y="586" width="14" height="67" fill="white" style="--meter-time:0.68s;--meter-delay:-0.42s"/><rect class="loading-meter-column" x="453" y="557" width="15" height="96" fill="white" style="--meter-time:0.81s;--meter-delay:-0.63s"/><rect class="loading-meter-column" x="470" y="542" width="16" height="111" fill="white" style="--meter-time:0.94s;--meter-delay:-0.84s"/><rect class="loading-meter-column" x="488" y="570" width="16" height="83" fill="white" style="--meter-time:0.42s;--meter-delay:-1.05s"/><rect class="loading-meter-column" x="506" y="581" width="15" height="72" fill="white" style="--meter-time:0.55s;--meter-delay:-1.26s"/><rect class="loading-meter-column" x="523" y="596" width="11" height="57" fill="white" style="--meter-time:0.68s;--meter-delay:-1.47s"/></mask></defs><image href="assets/loading-clay-v1744/stage-2x.webp" width="941" height="1672" mask="url(#loading-meter-active)" style="filter:brightness(1.45)"/></svg><svg class="loading-stage-lines" viewBox="0 0 941 860" preserveAspectRatio="none" aria-hidden="true"><defs><mask id="loading-trace-1" maskUnits="userSpaceOnUse" x="0" y="0" width="941" height="860"><ellipse cx="470.04" cy="600.05" rx="127.14" ry="116.39" transform="rotate(-0.36 470.04 600.05)" stroke="white" pathLength="100" style="animation-delay:-0s"/><ellipse cx="470.04" cy="600.05" rx="107" ry="97" transform="rotate(-0.36 470.04 600.05)" stroke="white" pathLength="100" style="animation-delay:-1s"/><ellipse cx="172.5" cy="566" rx="27.5" ry="37" transform="rotate(0 172.5 566)" stroke="white" pathLength="100" style="animation-delay:-2s"/><ellipse cx="171" cy="656" rx="29" ry="38" transform="rotate(0 171 656)" stroke="white" pathLength="100" style="animation-delay:-3s"/><ellipse cx="766.5" cy="566" rx="28.5" ry="37" transform="rotate(0 766.5 566)" stroke="white" pathLength="100" style="animation-delay:-4s"/><ellipse cx="768" cy="656" rx="30" ry="38" transform="rotate(0 768 656)" stroke="white" pathLength="100" style="animation-delay:-5s"/></mask></defs><image href="assets/loading-clay-v1744/stage-2x.webp" x="0" y="0" width="941" height="1672" mask="url(#loading-trace-1)" style="filter:brightness(1.8);opacity:.9"/></svg></div><div class="splash-front-cap" aria-hidden="true"><svg class="loading-pad-glow" viewBox="0 0 941 540" preserveAspectRatio="none" aria-hidden="true"><defs><radialGradient id="loading-pad-light-0"><stop stop-color="#40d9ff" stop-opacity=".65"/><stop offset=".45" stop-color="#40d9ff" stop-opacity=".25"/><stop offset="1" stop-color="#40d9ff" stop-opacity="0"/></radialGradient><radialGradient id="loading-pad-light-1"><stop stop-color="#bc40f3" stop-opacity=".65"/><stop offset=".45" stop-color="#bc40f3" stop-opacity=".25"/><stop offset="1" stop-color="#bc40f3" stop-opacity="0"/></radialGradient><radialGradient id="loading-pad-light-2"><stop stop-color="#ffae23" stop-opacity=".65"/><stop offset=".45" stop-color="#ffae23" stop-opacity=".25"/><stop offset="1" stop-color="#ffae23" stop-opacity="0"/></radialGradient><radialGradient id="loading-pad-light-3"><stop stop-color="#f449bd" stop-opacity=".65"/><stop offset=".45" stop-color="#f449bd" stop-opacity=".25"/><stop offset="1" stop-color="#f449bd" stop-opacity="0"/></radialGradient></defs><ellipse cx="129.3" cy="100.39999999999998" rx="81.32000000000001" ry="35.0625" transform="rotate(-7.7 129.3 100.39999999999998)" class="pad-emission" fill="url(#loading-pad-light-0)" style="--pad-duration:3.74s;--pad-delay:0.0s"/><ellipse cx="356" cy="101.60000000000002" rx="77.12" ry="35.1375" transform="rotate(-2.7 356 101.60000000000002)" class="pad-emission" fill="url(#loading-pad-light-1)" style="--pad-duration:4.08s;--pad-delay:-0.5s"/><ellipse cx="583.4" cy="101.70000000000005" rx="76.76" ry="34.9875" transform="rotate(2.3 583.4 101.70000000000005)" class="pad-emission" fill="url(#loading-pad-light-2)" style="--pad-duration:4.42s;--pad-delay:-1.0s"/><ellipse cx="810.7" cy="101.39999999999998" rx="79.016" ry="33.847500000000004" transform="rotate(6.77 810.7 101.39999999999998)" class="pad-emission" fill="url(#loading-pad-light-3)" style="--pad-duration:4.76s;--pad-delay:-1.5s"/></svg><svg class="loading-stage-lines" viewBox="0 0 941 540" preserveAspectRatio="none" aria-hidden="true"><defs><mask id="loading-trace-2" maskUnits="userSpaceOnUse" x="0" y="0" width="941" height="540"><ellipse cx="129.3" cy="100.39999999999998" rx="101.65" ry="46.75" transform="rotate(-7.7 129.3 100.39999999999998)" stroke="white" pathLength="100" style="animation-delay:-0s"/><ellipse cx="356" cy="101.60000000000002" rx="96.4" ry="46.85" transform="rotate(-2.7 356 101.60000000000002)" stroke="white" pathLength="100" style="animation-delay:-1s"/><ellipse cx="583.4" cy="101.70000000000005" rx="95.95" ry="46.65" transform="rotate(2.3 583.4 101.70000000000005)" stroke="white" pathLength="100" style="animation-delay:-2s"/><ellipse cx="810.7" cy="101.39999999999998" rx="98.77" ry="45.13" transform="rotate(6.77 810.7 101.39999999999998)" stroke="white" pathLength="100" style="animation-delay:-3s"/></mask></defs><image href="assets/loading-clay-v1744/front-panel.webp" x="0" y="0" width="941" height="812" mask="url(#loading-trace-2)" style="filter:brightness(1.8);opacity:.9"/></svg></div><div class="splash-front-face" aria-hidden="true"></div><img loading="lazy" decoding="async" class="splash-performers" src="assets/loading-clay-v1744/characters-4x.webp" alt=""><svg class="splash-glasses" viewBox="0 0 2172 724" aria-hidden="true"><defs><linearGradient id="loading-glasses-shine"><stop stop-color="#c7f4ff" stop-opacity="0"/><stop offset=".45" stop-color="#d8f8ff" stop-opacity=".18"/><stop offset=".58" stop-color="#ffffff" stop-opacity=".75"/><stop offset="1" stop-color="#c7f4ff" stop-opacity="0"/></linearGradient><clipPath id="loading-glasses-0" clipPathUnits="userSpaceOnUse"><path d="M372 146 Q416 151 464 180 Q472 203 436 220 Q403 227 376 207 Q361 184 372 146 Z"/><path d="M516 203 Q556 204 596 224 Q594 259 567 273 Q540 280 519 250 Z"/></clipPath><clipPath id="loading-glasses-1" clipPathUnits="userSpaceOnUse"><path d="M815 184 Q851 187 890 205 Q910 219 895 238 Q877 253 847 246 Q815 240 811 216 Z"/><path d="M960 224 Q1000 219 1034 229 Q1036 266 1010 283 Q984 290 966 267 Z"/></clipPath><clipPath id="loading-glasses-2" clipPathUnits="userSpaceOnUse"><path d="M1224 158 Q1270 163 1321 188 Q1320 224 1288 233 Q1248 242 1230 220 Z"/><path d="M1360 208 Q1400 201 1438 212 L1441 228 Q1449 254 1420 268 Q1394 279 1373 255 Z"/></clipPath><clipPath id="loading-glasses-3" clipPathUnits="userSpaceOnUse"><path d="M1698 245 Q1730 236 1768 239 Q1780 272 1758 294 Q1725 301 1699 279 Z"/><path d="M1823 221 Q1872 199 1910 199 Q1922 237 1900 257 Q1850 280 1827 252 Z"/></clipPath></defs><g clip-path="url(#loading-glasses-0)"><g transform="translate(350 0)"><path class="splash-glasses-sweep" style="--glasses-delay:3s" d="M-80 100 L-25 100 L-115 340 L-170 340 Z" fill="url(#loading-glasses-shine)"/></g></g><g clip-path="url(#loading-glasses-1)"><g transform="translate(800 0)"><path class="splash-glasses-sweep" style="--glasses-delay:0s" d="M-80 100 L-25 100 L-115 340 L-170 340 Z" fill="url(#loading-glasses-shine)"/></g></g><g clip-path="url(#loading-glasses-2)"><g transform="translate(1200 0)"><path class="splash-glasses-sweep" style="--glasses-delay:0s" d="M-80 100 L-25 100 L-115 340 L-170 340 Z" fill="url(#loading-glasses-shine)"/></g></g><g clip-path="url(#loading-glasses-3)"><g transform="translate(1680 0)"><path class="splash-glasses-sweep" style="--glasses-delay:3s" d="M-80 100 L-25 100 L-115 340 L-170 340 Z" fill="url(#loading-glasses-shine)"/></g></g></svg><div class="splash-notes" aria-hidden="true"><svg width="0" height="0" style="position:absolute"><defs><symbol id="splash-note-single" viewBox="0 0 32 32"><path d="M13 5V24M13 5C14 12 25 8 23 17" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="9" cy="24" rx="5" ry="3.6" transform="rotate(-20 9 24)" fill="#000" stroke="#000" stroke-width="2.5"/><path d="M13 5V24M13 5C14 12 25 8 23 17" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="9" cy="24" rx="5" ry="3.6" transform="rotate(-20 9 24)" fill="currentColor"/></symbol><symbol id="splash-note-quarter" viewBox="0 0 32 32"><path d="M18 5V24" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="14" cy="24" rx="5" ry="3.6" transform="rotate(-20 14 24)" fill="#000" stroke="#000" stroke-width="2.5"/><path d="M18 5V24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="14" cy="24" rx="5" ry="3.6" transform="rotate(-20 14 24)" fill="currentColor"/></symbol><symbol id="splash-note-pair" viewBox="0 0 32 32"><path d="M12 8V25M27 4V21M12 8L27 4" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="8" cy="25" rx="5" ry="3.6" transform="rotate(-20 8 25)" fill="#000" stroke="#000" stroke-width="2.5"/><ellipse cx="23" cy="21" rx="5" ry="3.6" transform="rotate(-20 23 21)" fill="#000" stroke="#000" stroke-width="2.5"/><path d="M12 8V25M27 4V21M12 8L27 4" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="8" cy="25" rx="5" ry="3.6" transform="rotate(-20 8 25)" fill="currentColor"/><ellipse cx="23" cy="21" rx="5" ry="3.6" transform="rotate(-20 23 21)" fill="currentColor"/></symbol><symbol id="splash-note-double" viewBox="0 0 32 32"><path d="M12 8V25M27 4V21M12 8L27 4M12 13L27 9" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="8" cy="25" rx="5" ry="3.6" transform="rotate(-20 8 25)" fill="#000" stroke="#000" stroke-width="2.5"/><ellipse cx="23" cy="21" rx="5" ry="3.6" transform="rotate(-20 23 21)" fill="#000" stroke="#000" stroke-width="2.5"/><path d="M12 8V25M27 4V21M12 8L27 4M12 13L27 9" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="8" cy="25" rx="5" ry="3.6" transform="rotate(-20 8 25)" fill="currentColor"/><ellipse cx="23" cy="21" rx="5" ry="3.6" transform="rotate(-20 23 21)" fill="currentColor"/></symbol><symbol id="splash-note-triple" viewBox="0 0 32 32"><path d="M9 10V26M19 7V23M29 4V20M9 10L29 4" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="5" cy="26" rx="5" ry="3.6" transform="rotate(-20 5 26)" fill="#000" stroke="#000" stroke-width="2.5"/><ellipse cx="15" cy="23" rx="5" ry="3.6" transform="rotate(-20 15 23)" fill="#000" stroke="#000" stroke-width="2.5"/><ellipse cx="25" cy="20" rx="5" ry="3.6" transform="rotate(-20 25 20)" fill="#000" stroke="#000" stroke-width="2.5"/><path d="M9 10V26M19 7V23M29 4V20M9 10L29 4" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="5" cy="26" rx="5" ry="3.6" transform="rotate(-20 5 26)" fill="currentColor"/><ellipse cx="15" cy="23" rx="5" ry="3.6" transform="rotate(-20 15 23)" fill="currentColor"/><ellipse cx="25" cy="20" rx="5" ry="3.6" transform="rotate(-20 25 20)" fill="currentColor"/></symbol></defs></svg><svg class="splash-note" viewBox="0 0 32 32" style="left:15%;top:58%;color:#5cdeff;--note-duration:2.2s;--note-delay:0s"><use href="#splash-note-single"/></svg><svg class="splash-note" viewBox="0 0 32 32" style="left:85%;top:55%;color:#ff72b6;--note-duration:2.4s;--note-delay:-0.5s"><use href="#splash-note-quarter"/></svg><svg class="splash-note" viewBox="0 0 32 32" style="left:24%;top:74%;color:#ffda54;--note-duration:2.6s;--note-delay:-1s"><use href="#splash-note-pair"/></svg><svg class="splash-note" viewBox="0 0 32 32" style="left:68%;top:70%;color:#bb87ff;--note-duration:2.8s;--note-delay:-1.5s"><use href="#splash-note-double"/></svg><svg class="splash-note" viewBox="0 0 32 32" style="left:89%;top:91%;color:#67f2c5;--note-duration:3s;--note-delay:-2s"><use href="#splash-note-triple"/></svg></div><div class="splash-loading" role="status"><span class="splash-loading-label">로딩 중…</span><span class="splash-loading-track" aria-hidden="true"><span class="splash-loading-fill"></span></span></div></div><!-- v931: 광고판+캐릭터만 오려낸 그림 / v927(사용자 지정): 로딩 이미지 = 홈 아케이드 왼쪽 위 그림 -->
 <script>
   (function () { // V1470: 시작 화면 필수 이미지 3장을 실제로 decode한 뒤 표시
     var s = document.getElementById('splash'), done = false;
@@ -324,7 +324,7 @@
       var t = document.getElementById('build-tag');
       if (t && s) { var v = document.createElement('span'); v.className = 'splash-ver'; v.textContent = t.textContent; s.appendChild(v); }
     });
-    var requiredArt = ['assets/loading-v1573/stage-2x.webp', 'assets/loading-v1574/characters-4x.webp', 'assets/loading-v1574/front-panel.webp', 'assets/home2/wide-purple.png'];
+    var requiredArt = ['assets/loading-clay-v1744/stage-2x.webp', 'assets/loading-clay-v1744/characters-4x.webp', 'assets/loading-clay-v1744/front-panel.webp', 'assets/home2/wide-purple.png'];
     var requiredArtAttempts = 0;
     function loadArt(url) {
       return new Promise(function (resolve) {
@@ -894,7 +894,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1744 C</div>
+        <div id="build-tag" aria-hidden="true">V 1745 C</div>
       </div>
       <div id="invincible-countdown" class="invincible-countdown" aria-hidden="true" hidden></div>
     </div>
@@ -905,26 +905,26 @@
 
 <script src="../common/settings.js"></script>
 <script src="../common/i18n.js"></script>
-<script src="js/i18n-strings.js?v=1744-C"></script>
-<script src="js/screen-nav.js?v=1744-C"></script>
+<script src="js/i18n-strings.js?v=1745-C"></script>
+<script src="js/screen-nav.js?v=1745-C"></script>
 <script src="js/item-inventory.js"></script>
 <script src="js/economy.js"></script>
 <script src="js/ads.js"></script>
 <script src="js/levels.js"></script>
-<script src="js/progress.js?v=1744-C"></script>
+<script src="js/progress.js?v=1745-C"></script>
 <script src="js/rng.js"></script>
 <script src="js/combo-score.js"></script>
-<script src="js/grid-partition.js?v=1744-C"></script>
+<script src="js/grid-partition.js?v=1745-C"></script>
 <script src="js/spawn-scheduler.js"></script>
-<script src="js/mole-sprites.js?v=1744-C"></script>
+<script src="js/mole-sprites.js?v=1745-C"></script>
 <script src="js/costume-teams.js"></script>
 <script src="js/skills.js"></script>
 <script src="js/photo-studio.js"></script>
 <script src="js/face-detect.js"></script>
 <script src="js/face-maker.js?v=1532-C"></script>
 <script src="js/shop-scenery-v1486.js?v=1561-C"></script>
-<script src="js/shop-models-v1509.js?v=1744-C"></script>
-<script src="js/shop.js?v=1744-C"></script>
+<script src="js/shop-models-v1509.js?v=1745-C"></script>
+<script src="js/shop.js?v=1745-C"></script>
 <script src="js/daily.js?v=1529-C"></script>
 <script src="js/quest.js?v=1557-C"></script>
 <script>
@@ -1028,63 +1028,63 @@ window.FGH.rollOut = function (el, done) {
   }); }, 150);
 };
 </script>
-<script src="js/workshop-enhance.js?v=1744-C"></script>
-<script src="js/workshop.js?v=1744-C"></script>
-<script src="js/shape-transition.js?v=1744-C"></script>
+<script src="js/workshop-enhance.js?v=1745-C"></script>
+<script src="js/workshop.js?v=1745-C"></script>
+<script src="js/shape-transition.js?v=1745-C"></script>
 <script src="js/rhythm-b-routes.js"></script>
 <script src="js/rhythm-b-flow.js"></script>
 <script src="js/rhythm-b-play.js"></script>
 <script src="js/rhythm-b.js"></script>
 <script src="js/rhythm-lyrics.js"></script>
-<script src="js/rhythm-beach-ocean.js?v=1744-C"></script>
-<script src="js/rhythm-beach.js?v=1744-C"></script>
+<script src="js/rhythm-beach-ocean.js?v=1745-C"></script>
+<script src="js/rhythm-beach.js?v=1745-C"></script>
 <script src="js/rhythm-status-art.js"></script>
 <script src="js/rhythm-status-fx.js"></script>
-<script src="js/rhythm.js?v=1744-C"></script>
+<script src="js/rhythm.js?v=1745-C"></script>
 <script src="js/rhythm-button-feedback-v1568.js?v=1568-G"></script>
-<script src="js/rhythm-type-lighting-v1569.js?v=1744-C"></script>
-<script src="js/score-screen.js?v=1744-C"></script>
+<script src="js/rhythm-type-lighting-v1569.js?v=1745-C"></script>
+<script src="js/score-screen.js?v=1745-C"></script>
 <script src="js/settings-screen.js?v=1527-C"></script>
-<script src="js/inventory-screen.js?v=1744-C"></script>
-<script src="js/mailbox-daily.js?v=1744-C"></script>
-<script src="js/mailbox.js?v=1744-C"></script>
-<script src="js/contact.js?v=1744-C"></script>
-<script src="js/clay-rig-math.js?v=1744-C"></script>
-<script src="js/clay-rig-runtime.js?v=1744-C"></script>
-<script src="js/mole-appearances.js?v=1744-C"></script>
-<script src="js/rhythm-beach-stunts.js?v=1744-C"></script>
-<script src="js/rhythm-beach-moles.js?v=1744-C"></script>
-<script src="js/rhythm-dance-beats.js?v=1744-C"></script>
-<script src="js/rhythm-type-mole.js?v=1744-C"></script>
-<script src="js/clay-round1-local.js?v=1744-C"></script>
-<script src="js/pop-elements.js?v=1744-C"></script>
-<script src="js/hole-layer.js?v=1744-C"></script>
-<script src="js/hit-fx.js?v=1744-C"></script>
-<script src="js/game-hammer-models.js?v=1744-C"></script>
-<script src="js/lane-hammer.js?v=1744-C"></script>
+<script src="js/inventory-screen.js?v=1745-C"></script>
+<script src="js/mailbox-daily.js?v=1745-C"></script>
+<script src="js/mailbox.js?v=1745-C"></script>
+<script src="js/contact.js?v=1745-C"></script>
+<script src="js/clay-rig-math.js?v=1745-C"></script>
+<script src="js/clay-rig-runtime.js?v=1745-C"></script>
+<script src="js/mole-appearances.js?v=1745-C"></script>
+<script src="js/rhythm-beach-stunts.js?v=1745-C"></script>
+<script src="js/rhythm-beach-moles.js?v=1745-C"></script>
+<script src="js/rhythm-dance-beats.js?v=1745-C"></script>
+<script src="js/rhythm-type-mole.js?v=1745-C"></script>
+<script src="js/clay-round1-local.js?v=1745-C"></script>
+<script src="js/pop-elements.js?v=1745-C"></script>
+<script src="js/hole-layer.js?v=1745-C"></script>
+<script src="js/hit-fx.js?v=1745-C"></script>
+<script src="js/game-hammer-models.js?v=1745-C"></script>
+<script src="js/lane-hammer.js?v=1745-C"></script>
 <script src="js/lane-cannon.js?v=1534-C"></script>
 <script src="js/game-cannon-model-v1509.js?v=1533-C"></script>
 <script src="js/lane-boxing.js"></script>
-<script src="js/weapon-pool.js?v=1744-C"></script>
-<script src="js/lane-controls.js?v=1744-C"></script>
+<script src="js/weapon-pool.js?v=1745-C"></script>
+<script src="js/lane-controls.js?v=1745-C"></script>
 <script src="js/region-reveal.js"></script>
-<script src="js/hud.js?v=1744-C"></script>
+<script src="js/hud.js?v=1745-C"></script>
 <script src="js/sky.js"></script>
-<script src="js/fever-field.js?v=1744-C"></script>
-<script src="js/home3d-layout.js?v=1744-C"></script>
-<script src="js/home3d-state.js?v=1744-C"></script>
-<script src="js/home3d-rhythm-tunnel.js?v=1744-C"></script>
-<script src="js/home3d-renderer.js?v=1744-C"></script>
-<script src="js/home3d-ui.js?v=1744-C"></script>
-<script src="js/home3d-signs.js?v=1744-C"></script>
-<script src="js/home3d-intro.js?v=1744-C"></script>
-<script src="js/home3d-text.js?v=1744-C"></script>
-<script src="js/home3d-board.js?v=1744-C"></script>
-<script src="js/home3d.js?v=1744-C"></script>
-<script src="js/order-game.js?v=1744-C"></script>
-<script src="js/game.js?v=1744-C"></script>
+<script src="js/fever-field.js?v=1745-C"></script>
+<script src="js/home3d-layout.js?v=1745-C"></script>
+<script src="js/home3d-state.js?v=1745-C"></script>
+<script src="js/home3d-rhythm-tunnel.js?v=1745-C"></script>
+<script src="js/home3d-renderer.js?v=1745-C"></script>
+<script src="js/home3d-ui.js?v=1745-C"></script>
+<script src="js/home3d-signs.js?v=1745-C"></script>
+<script src="js/home3d-intro.js?v=1745-C"></script>
+<script src="js/home3d-text.js?v=1745-C"></script>
+<script src="js/home3d-board.js?v=1745-C"></script>
+<script src="js/home3d.js?v=1745-C"></script>
+<script src="js/order-game.js?v=1745-C"></script>
+<script src="js/game.js?v=1745-C"></script>
 <script>window.FGH.I18N.applyStatic(document);</script>
-<script src="js/asset-loader-v1477.js?v=1744-C"></script>
+<script src="js/asset-loader-v1477.js?v=1745-C"></script>
 <script>
   // 로딩 스플래시 — 로딩이 끝나면 "화면을 눌러 시작". 그 탭(제스처)에서 game.js 의 window
   // pointerdown 리스너가 BGM 재생을 시작한다 → 브라우저 자동재생 차단 우회 = "로딩부터 브금".
@@ -1208,8 +1208,8 @@ window.FGH.rollOut = function (el, done) {
     function preloadAllArt() {
       var label = s.querySelector('.splash-loading-label');
       var fill = s.querySelector('.splash-loading-fill');
-      var required = ['assets/home2/splash-art.webp', 'assets/loading-v1573/stage-2x.webp',
-        'assets/loading-v1574/characters-4x.webp', 'assets/loading-v1574/front-panel.webp', 'assets/home2/wide-purple.png'];
+      var required = ['assets/home2/splash-art.webp', 'assets/loading-clay-v1744/stage-2x.webp',
+        'assets/loading-clay-v1744/characters-4x.webp', 'assets/loading-clay-v1744/front-panel.webp', 'assets/home2/wide-purple.png'];
       required = required.concat(window.MoleAssetLoader.collect(document.body));
       window.__moleStartupAssets = required;
       window.addEventListener('mole-assets-updated', function () {
@@ -1242,8 +1242,8 @@ window.FGH.rollOut = function (el, done) {
       if (startupDecode) return startupDecode;
       // Optional home icons/pseudo-elements must never prevent entering the game.
       startupDecode = window.MoleAssetLoader.preparePaths([
-        'assets/loading-v1573/stage-2x.webp', 'assets/loading-v1574/characters-4x.webp',
-        'assets/loading-v1574/front-panel.webp', 'assets/home2/wide-purple.png'
+        'assets/loading-clay-v1744/stage-2x.webp', 'assets/loading-clay-v1744/characters-4x.webp',
+        'assets/loading-clay-v1744/front-panel.webp', 'assets/home2/wide-purple.png'
       ]).then(function () {
         s.dataset.startupDecoded = 'true'; resolveArtReady();
       }).catch(function () {
@@ -1290,7 +1290,7 @@ window.FGH.rollOut = function (el, done) {
         var gate = window.__moleAssetGate;
         function waitForCurrentWorker(registration) {
           return new Promise(function (resolve, reject) {
-            var latest = 'v=1744-C';
+            var latest = 'v=1745-C';
             var done = false;
             var timer = setTimeout(function () { finish(); }, 25000);
             function finish(error) {
@@ -1317,7 +1317,7 @@ window.FGH.rollOut = function (el, done) {
           console.warn('Starting while service worker registration continues in background');
           if (gate) gate.resolveCache();
         }, 30000);
-        navigator.serviceWorker.register('sw.js?v=1744-C').then(waitForCurrentWorker).then(function () {
+        navigator.serviceWorker.register('sw.js?v=1745-C').then(waitForCurrentWorker).then(function () {
           clearTimeout(registrationTimer);
           if (gate) gate.resolveCache();
         }).catch(function (error) {

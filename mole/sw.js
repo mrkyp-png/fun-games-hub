@@ -153,7 +153,7 @@
 // V1690 G: Sand beach, continuous ocean, combo turns and reactive hair; clear text-only signs, gentle warm entrance flow and corrected beach/water landing.
 // V1691 G: gold3D in original sprite boxes; hammer2D preserved; weapons in front of HUD; matched plaza label sizes.
 // V1692 G: matching gold clones, ImageGen enhancement lightning, smooth fur and physical rhythm entrance.
-const CACHE = 'mole-game-v1744-C';
+const CACHE = 'mole-game-v1745-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -448,9 +448,9 @@ const SHELL = [
   './assets/rhythm/ui-status-v1164/judgement.png',
   './assets/rhythm/ui-status-v1164/combo.png',
   './assets/rhythm/ui-status-v1164/time.png',
-  './assets/loading-v1573/stage-2x.webp',
-  './assets/loading-v1574/characters-4x.webp',
-  './assets/loading-v1574/front-panel.webp',
+  './assets/loading-clay-v1744/stage-2x.webp',
+  './assets/loading-clay-v1744/characters-4x.webp',
+  './assets/loading-clay-v1744/front-panel.webp',
   './audio/rp/meet-me-halfway.mp3',
   './audio/rp/meet-me-halfway.json',
   './assets/rhythm-b/button-face-v1120/face-0.svg',
