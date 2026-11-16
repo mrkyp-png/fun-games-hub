@@ -188,7 +188,7 @@
         };
         image.onerror = function () { finish(false); };
         image.fetchPriority = 'high';
-        image.src = A + 'goose-idle-original-aligned-v1499.webp';
+        image.src = A + 'goose-clay-v1741/goose-idle.webp'; // V1741 C: 클레이 오리
       });
       return idleGooseReady;
     }
@@ -599,7 +599,7 @@
     function preloadFrames() {
       if (framesReady) return framesReady;
       var list = [];
-      for (var i = 1; i <= 10; i++) list.push(A + 'goose-' + i + '.png');
+      for (var i = 1; i <= 10; i++) list.push(A + 'goose-clay-v1741/goose-' + i + '.png'); // V1741 C: 클레이 오리
       framesReady = Promise.all([MG.WorkshopEnhance.preload()].concat(list.map(function (u) {
         var im = new Image();
         var match = /\/goose-(\d+)\.png$/.exec(u);

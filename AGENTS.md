@@ -1,4 +1,9 @@
-# V1741 C DEPLOYED - 2026-11-16 (Claude)
+# V1742 C DEPLOYED - 2026-11-16 (Claude)
+- Clay workshop duck + enhance scene. NOTE: the live enhance scene uses assets/workshop/enhance-v1433 (egg-intact/first/growing/separated + pedestal-body/front + front-gem); egg-ok-*/egg-ng-* are OLD unused files. New copies in assets/workshop/enhance-clay-v1741/ (workshop-enhance.js A path); effects (rays/smoke/sparkle) copied unchanged.
+- egg-growing / egg-separated cracks are TRANSPARENT gaps (shards are cut along them) → made by punching the original alpha gaps into the clay intact egg (+ 2px edge from original), so crack positions are identical. egg-first = GPT clay (crack drawn).
+- Duck: assets/workshop/goose-clay-v1741/goose-1..10.png + goose-idle.webp (2x2 sheet, background-size 200%), crown recoloured slightly deeper gold (top 20.5% / middle 68% box, yellow hue only). workshop.js + index.html img + sw.js paths updated.
+
+# V1741 C DEPLOYED - 2026-11-16 (Claude) `d5add6d4`
 - Row button colours also on normal/pro: applyButtonRowColors sets inline --fixed-cap-* (diff-mid/legend paint faces from --fixed-cap-*), not only --round-cap-*.
 - Carried/behaviour moles: arm vertices count as over-rim above y .55 (was .80) — cola mole left hand resting on the rim was clipped and looked small.
 - Fail stamp 재도전 text 2x (2.6rem) and red, blend normal.
