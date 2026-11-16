@@ -1,4 +1,10 @@
-# V1732 C DEPLOYED - 2026-11-16 (Claude)
+# V1733 C DEPLOYED - 2026-11-16 (Claude)
+- Rhythm sign plane moved 4cm in front of the boombox plate (was coplanar → only top/bottom of the letters showed).
+- Rhythm speakers pulse (RhythmSpeaker L/R batch split out in build-home-plaza.py, origin at centre; renderer scales 1+.08*sin² twice a second) + sound-wave rings (8 alpha-level flat rings, Glow+blend, grow .7→1.8 in front of each speaker).
+- Order select close = shared red X (.game-close.game-close--dialog + icon-close-red.svg).
+- Success hero: new assets/result/hero-jump-v1732.webp (jump lift halved per frame), white glow filter removed (Android showed the glow layer as a light rectangle while jumping) → shadow only; result word top -34px.
+
+# V1732 C DEPLOYED - 2026-11-16 (Claude) `939e4483`
 - Rhythm sign: canvas width = boombox plate (metrics width 1.0*scale) — was 1.92 → squashed. Drawn as candy text (brown outline + white inline) like the other signs.
 - Plaza signs shop / lightMode / rhythm: rainbow shimmer (rhythm effect) only on the saturated fill (uCandySign; saturation mask keeps outline). Board panel titles (candyBand rows): white glint sweep (uGlintOnly).
 - Boombox mint door rim inner face pulled in 4cm (was coplanar with the body hole → z-fighting smear). Plaza rebuilt with committed arcade-mole.glb.

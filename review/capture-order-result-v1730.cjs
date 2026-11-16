@@ -38,7 +38,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     await p.waitForSelector('#win-choice .wc-next', { timeout: 90000 });
     await wait(3000);
     await p.screenshot({ path: OUT + '/결과_성공.png' });
-    console.log(await p.evaluate(() => document.elementsFromPoint(195, 158).slice(0, 6).map((e) => e.tagName + '#' + e.id + '.' + e.className + ' z=' + getComputedStyle(e).zIndex).join(' | ')));
+    for (let i = 1; i <= 4; i++) { await wait(900); await p.screenshot({ path: OUT + '/결과_성공_' + i + '.png' }); }
     console.log('ok');
   } finally { await b.close(); }
 })().catch((e) => { console.error(e); process.exitCode = 1; });

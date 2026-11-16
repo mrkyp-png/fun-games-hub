@@ -51,7 +51,7 @@
 @keyframes os-in { from { opacity:0; transform:scale(.9); } to { opacity:1; transform:none; } }
 #order-select h3 { margin:0; font-size:26px; font-weight:400; }
 #order-select .os-sub { margin:4px 0 10px; font-size:13px; color:#7a6a4c; }
-#order-select .os-close { position:absolute; top:8px; right:8px; width:34px; height:34px; border:0; border-radius:50%; background:#d6ad63; color:#fff; font-size:17px; line-height:1; cursor:pointer; }
+/* V1732 C 사용자: 닫기 = 게임 공용 빨간 X 버튼(.game-close, icon-close-red.svg) */
 #order-select .os-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 #order-select .os-round {
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; min-height:58px; padding:6px 4px; border:0; border-radius:14px;

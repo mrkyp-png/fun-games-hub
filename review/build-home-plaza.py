@@ -203,6 +203,8 @@ def rhythm_house():  # V1729 C 사용자: 카세트 오디오(붐박스) 건물 
     for o in p:
         mw = o.matrix_world.copy(); o.parent = None
         o.data.transform(fit @ mw); o.matrix_world = Matrix.Identity(4)
+        if o.name.startswith('Boombox speaker'):  # V1732 C 사용자: 스피커 울림 — 좌우 따로 떼어 웹에서 크기 맥박
+            o.name = 'RhythmSpeaker_' + ('L' if sum(v.co.x for v in o.data.vertices) < 0 else 'R')
     # 문 안쪽에서 움직이는 리듬 막대 5개(예전과 같음) — 붐박스 안쪽 벽(앞에서 1.7 들어간 곳) 바로 앞
     for i,h in enumerate([.29,.48,.62,.43,.32]):
         bar=box('RhythmBars_'+str(i),((i-2)*.15,.80,.67+h/2),(.075,.045,h),GATE_CYAN if i%2==0 else GATE_PINK,.025)
@@ -219,7 +221,7 @@ def rhythm_house():  # V1729 C 사용자: 카세트 오디오(붐박스) 건물 
     shader.inputs['Alpha'].default_value=.30
     energy_material.surface_render_method='DITHERED'
     energy.data.materials.append(energy_material);p.append(energy)
-    return p + sign('rhythm', 3.08 / 1.6, 1.6 / 1.6, .36 / 1.6, -1.42)  # 글자판 = 입구 위 명판(가로 1.75) 안
+    return p + sign('rhythm', 3.08 / 1.6, 1.6 / 1.6, .36 / 1.6, -1.47)  # 글자판 = 입구 위 명판(가로 1.75) 안, 명판 앞면보다 약 4cm 앞(같은 자리면 명판에 가려짐 — V1732 사용자 사진)
 
 def shop_canopy():
     """Continuous curved striped canvas with a scalloped, thick front valance."""
@@ -376,7 +378,7 @@ for o in list(bpy.context.scene.objects):
     o.data.color_attributes.active_color = ca
     o.data.materials.clear(); o.data.materials.append(CLAY)
     if o.name=='Door_shop':continue
-    group_name='RhythmBars' if o.name.startswith('RhythmBars_') else ('GateGlow' if o.name.startswith('GateGlow') else 'Home clay')
+    group_name='RhythmBars' if o.name.startswith('RhythmBars_') else ('GateGlow' if o.name.startswith('GateGlow') else ('RhythmSpeaker '+o.name[14] if o.name.startswith('RhythmSpeaker_') else 'Home clay'))
     groups.setdefault(group_name, []).append(o)
 for name, objs in groups.items():
     bpy.ops.object.select_all(action='DESELECT')
@@ -391,6 +393,10 @@ for o in bpy.context.scene.objects:
         bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
     elif o.name=='Door_shop':
         o.data.transform(Matrix.Translation(-door_hinge));o.location=door_hinge
+    elif o.name.startswith('RhythmSpeaker '):  # 원점 = 스피커 가운데(웹에서 그 자리 기준으로 커졌다 작아짐)
+        points=[o.matrix_world@v.co for v in o.data.vertices]
+        c=Vector(tuple((min(p[k] for p in points)+max(p[k] for p in points))/2 for k in range(3)))
+        o.data.transform(Matrix.Translation(-c));o.location=c
     elif o.name=='RhythmBars batch':
         points=[o.matrix_world@v.co for v in o.data.vertices]
         base=Vector(((min(v.x for v in points)+max(v.x for v in points))/2,

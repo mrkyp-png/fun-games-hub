@@ -263,7 +263,7 @@ if(!uActor&&!uFloor&&!uTexBase){
 float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displayColor,vec3(.45,.72,.94),fog),uColor.a*vColor.a);}`;
 
   function create(canvas) {
-    let boardPanels = [], boardTex = {}, props = [], boat = [], smoke = [], smokeBall = null, arcade = null, boss = null, modeBtn = [], glowDisc = [], glowHalo = [], screenTex = null, screenCanvas = null; // 두더지팡 게임기: 구멍 빛·구멍 두더지·화면 글자
+    let boardPanels = [], boardTex = {}, props = [], boat = [], smoke = [], smokeBall = null, arcade = null, boss = null, modeBtn = [], glowDisc = [], glowHalo = [], waveRings = [], screenTex = null, screenCanvas = null; // 두더지팡 게임기: 구멍 빛·구멍 두더지·화면 글자
     let gl, program, U, A, environment = [], actor = [], rig = null, smileFace = null, vp = null, signs = null, size = null, seaMesh = null, shadowS = null, shadowM = null, sunQuad = null, clouds = [], rides = [], staticAt = -9, staticVP = null, doorOpen = 0, doorAt = null, rhythmTunnel = null, rhythmField = null, extraNotes = null, gateEntryAt = -Infinity, gateNear = false, glassOpen = 0, glassAt = null;
     const resetSize = () => { size = null; };
     if (root.ResizeObserver) new ResizeObserver(resetSize).observe(canvas); else root.addEventListener('resize', resetSize);
@@ -382,7 +382,7 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
         for (const pr of propList || []) load(pr.url).then((mdl) => { const ins = R.instances(mdl); for (const i of ins) { const m = Object.assign(mesh(mdl, i.primitive), { world: R.multiply(pr.world, i.world), local: i.world, dyn: pr.dyn, texBase: null }); glbTexture(mdl, i.primitive).then((t) => { m.texBase = t; }).catch(() => { m.plain = true; }); props.push(m); } }).catch(() => {}); /* plain = 그림 없는 모델(재질 색) */
         if (boatModel) { boat = R.instances(boatModel).map((i) => Object.assign(mesh(boatModel, i.primitive), { world: i.world, texBase: null })); for (const b of boat) glbTexture(boatModel, R.instances(boatModel)[0].primitive).then((t) => { b.texBase = t; }).catch(() => {}); }
         // Sign_<action> 판 = 간판 글자 텍스처 자리
-        environment = R.instances(plaza).map((i) => Object.assign(mesh(plaza, i.primitive), { world: labelWorld(plaza,i), gateGlow: i.name.startsWith('GateGlow') || i.name === 'RhythmBars batch', rhythmBars: i.name === 'RhythmBars batch', energy: i.name === 'Energy_rhythm', shopDoor: i.name === 'Door_shop', sign: i.name.startsWith('Sign_') ? i.name.slice(5) : null, screen: i.name.startsWith('Screen_'), tex: null, texPrim: i.name.startsWith('Tex_') ? i.primitive : null }));
+        environment = R.instances(plaza).map((i) => Object.assign(mesh(plaza, i.primitive), { world: labelWorld(plaza,i), gateGlow: i.name.startsWith('GateGlow') || i.name === 'RhythmBars batch', rhythmBars: i.name === 'RhythmBars batch', speaker: i.name.startsWith('RhythmSpeaker'), energy: i.name === 'Energy_rhythm', shopDoor: i.name === 'Door_shop', sign: i.name.startsWith('Sign_') ? i.name.slice(5) : null, screen: i.name.startsWith('Screen_'), tex: null, texPrim: i.name.startsWith('Tex_') ? i.primitive : null }));
         {const tunnel=root.MoleGame.RhythmTunnel.geometry();rhythmTunnel=rawMesh(tunnel.positions,tunnel.normals,tunnel.indices,{},tunnel.colors,tunnel.uvs);rhythmField=rawMesh(tunnel.field.positions,tunnel.field.normals,tunnel.field.indices,{},tunnel.field.colors,tunnel.field.uvs);const ng=root.MoleGame.RhythmTunnel.noteGeometry();extraNotes=rawMesh(ng.positions,ng.normals,ng.indices,{});gateEntryAt=-Infinity;gateNear=false;glassOpen=0;glassAt=null;const site=root.MoleGame.Home3DLayout.SITES.find(s=>s.id==='rhythm'),d=Math.hypot(site.x,site.z);for(const m of environment)if(m.rhythmBars)m.world=R.multiply(R.transform({translation:[-site.x/d*.30,0,-site.z/d*.30]}),m.world);}
         // Tex_* = GLB 안 그림을 입힌 부품(뿅망치 야구공). 그림이 준비되면 입힘(그 전엔 정점색)
         for (const m of environment) if (m.texPrim) glbTexture(plaza, m.texPrim).then((t) => { m.tex = t; }).catch(() => {});
@@ -407,6 +407,10 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
           for (let k = 0; k <= N; k++) { const a = 2 * Math.PI * k / N; for (const [rr, y, al] of [[0.96, 0, 0.6], [1.12, 0.35, 0.28], [1.4, 1, 0]]) /* 위로 넓게 퍼지며 은은하게 사라짐(사용자) */ { P.push(Math.cos(a) * rr, y, Math.sin(a) * rr); Nn.push(0, 1, 0); C.push(...c, al); } if (k < N) { const b = k * 3; I.push(b, b + 3, b + 1, b + 1, b + 3, b + 4, b + 1, b + 4, b + 2, b + 2, b + 4, b + 5); } }
           return rawMesh(new Float32Array(P), new Float32Array(Nn), new Uint32Array(I), {}, new Float32Array(C));
         });
+        /* V1732 C 사용자: 리듬팡 스피커 음파 — 납작한 고리(바깥 반지름 1, 앞 = +Z), 옅기 8단계 */
+        waveRings = Array.from({ length: 8 }, (_, lv) => { const N = 40, P = [], Nn = [], C = [], I = [], al = 0.6 * (1 - lv / 8);
+          for (let k = 0; k <= N; k++) { const a = 2 * Math.PI * k / N; for (const rr of [0.9, 1]) { P.push(Math.cos(a) * rr, Math.sin(a) * rr, 0); Nn.push(0, 0, 1); C.push(0.8, 1, 0.93, al); } if (k < N) { const b = k * 2; I.push(b, b + 2, b + 1, b + 1, b + 2, b + 3, b, b + 1, b + 2, b + 1, b + 3, b + 2); } }
+          return rawMesh(new Float32Array(P), new Float32Array(Nn), new Uint32Array(I), {}, new Float32Array(C)); });
         environment = environment.filter((m) => !m.sea); // GLB 의 평평한 바다 판 대신 움직이는 격자
         { const sg = seaGrid(48, 60), vao = gl.createVertexArray(); gl.bindVertexArray(vao);
           const pb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, pb); gl.bufferData(gl.ARRAY_BUFFER, sg.positions, gl.STATIC_DRAW);
@@ -485,12 +489,18 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
           if (m.puff !== undefined) { const ph = (now / 7 + m.puff / 6) % 1, s = (0.6 + 1.7 * ph) * Math.min(1, ph * 6, (1 - ph) * 3); world = R.transform({ translation: [-48 + ph * 3 + Math.sin(ph * 6 + m.puff) * 0.4, 10.7 + ph * 7, Math.cos(ph * 5 + m.puff) * 0.4], scale: [s, s, s] }); }
           if (m.gateGlow) {gl.uniform1i(U.Glow, 1);gl.uniform1i(U.Notes,!m.rhythmBars);
             const site=root.MoleGame.Home3DLayout.SITES.find(s=>s.id==='rhythm'),d=Math.hypot(site.x,site.z);gl.uniform4f(U.NoteGate,site.x,site.z,site.z/d,-site.x/d);}
+          if (m.speaker) { const b = Math.max(0, Math.sin(now * Math.PI * 4)), k = 1 + 0.08 * b * b; world = R.multiply(world, R.transform({ scale: [k, k, k] })); } /* V1732 C 사용자: 리듬팡 스피커 쿵쿵(1초에 2번 커졌다 작아짐) */
           if(m.rhythmBars){gl.uniform1i(U.RhythmBars,1);gl.uniform1f(U.BarBase,m.world[13]);}
           draw(m, world, null);
           if(m.rhythmBars)gl.uniform1i(U.RhythmBars,0);
           if (m.gateGlow) {gl.uniform1i(U.Glow, 0);gl.uniform1i(U.Notes,0);}
         }
         gl.uniform1i(U.Island, 0);
+        { const sps = environment.filter((m) => m.speaker); /* V1732 C 사용자: 스피커에서 음파가 나감 — 쿵(1초에 2번)마다 고리가 생겨 커지며 옅어짐 */
+          if (sps.length && waveRings.length) { const site = root.MoleGame.Home3DLayout.SITES.find((s) => s.id === 'rhythm'), d = Math.hypot(site.x, site.z), fx = -site.x / d, fz = -site.z / d, yaw = Math.atan2(fx, fz), q = [0, Math.sin(yaw / 2), 0, Math.cos(yaw / 2)];
+            gl.uniform1i(U.Glow, 1); gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
+            for (const sp of sps) for (let j = 0; j < 2; j++) { const ph = (now * 2 + j * 0.5) % 1, out = 0.15 + ph * 0.9, rad = 0.7 + ph * 1.1; draw(waveRings[Math.min(7, Math.floor(ph * 8))], R.transform({ translation: [sp.world[12] + fx * out, sp.world[13], sp.world[14] + fz * out], rotation: q, scale: [rad, rad, 1] }), null); }
+            gl.depthMask(true); gl.disable(gl.BLEND); gl.uniform1i(U.Glow, 0); } }
         if(extraNotes){
           const site=root.MoleGame.Home3DLayout.SITES.find(s=>s.id==='rhythm'),d=Math.hypot(site.x,site.z),front=[-site.x/d,-site.z/d],right=[-front[1],front[0]],palette=[[.45,1.,.82],[1.,.56,.77],[1.,.91,.45]];
           gl.uniform1i(U.Glow,1);gl.uniform1i(U.ExtraNote,1);

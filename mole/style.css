@@ -10649,4 +10649,6 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* V1730 C 사용자: 성공 두더지 = 실패 두더지 크기(그림 속 두더지가 실패의 2/3 크기라 1.5배) — 발 위치 그대로, 위로 커짐(scale 속성: 날아오는 transform 애니와 안 겹침) */
 #gameover-overlay.is-win .go-hippo.go-hero { scale: 1.5; transform-origin: 50% 97%; }
 /* V1730 C 사용자: 성공·실패 글자는 두더지 앞(커진 두더지 머리에 가리지 않게) */
-#gameover-overlay .go-word { position: relative; z-index: 3; top: -14px; } /* V1730 C 사용자: 글자 조금 위로 */
+#gameover-overlay .go-word { position: relative; z-index: 3; top: -34px; } /* V1730 C 사용자: 글자 조금 위로 — V1732 C 더 위로(-14 → -34px) */
+/* V1732 C 사용자: 점프할 때 두더지 둘레에 밝은 사각 영역(하얀 빛 번짐이 그려지는 범위가 폰에서 비침) → 하얀 빛 빼고 실패 두더지처럼 아래 그림자만 */
+#gameover-overlay.is-win .go-hippo.go-hero { filter: drop-shadow(0 10px 12px rgba(0, 0, 0, .18)); }
