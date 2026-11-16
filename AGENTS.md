@@ -1,4 +1,16 @@
-# V1745 C DEPLOYED - 2026-11-16 (Claude)
+# ★ 남은 작업 (2026-11-16 Claude, V1745 C 기준) — 다음 에이전트는 여기부터
+사용자 방침: 게임 그림을 점점 '클레이(광택 없는 점토)'로 통일. 버튼·창 테두리·판은 지금 반짝이는 모양 유지.
+방법(검증됨): Sprite Motion Studio(바탕화면 '스프라이트, 3D 스튜디오/_internal', node studio.js image --ref 원본 --ref C:/Users/master/Desktop/상점_새그림_시안/clay_coin.png)로 "원본과 똑같이, 재질만 클레이" 다시 그림 → 원래 그림의 알파 범위(bbox)에 맞춰 같은 캔버스 크기로 저장 → 원본·새 그림 겹친 비교 그림을 사용자에게 먼저 보여 줌. 파일 이름이 같으면 폰 캐시 때문에 새 폴더/새 이름 권장(sw.js 는 V1735 부터 no-cache 로 받음).
+1. 리듬팡 화면 장식 클레이 — 비치·네온·곡 선택·타입 선택 화면 장식 목록부터 찾아서 사용자에게 보여 줄 것(앨범 그림은 바꿀지 확인).
+2. 코스튬 탭 아이콘 클레이 — 모양 미정(사용자 결정 필요: 옷걸이 옷 / 꾸미기 소품 / 다른 생각). 야구 코스튬(베어스·스타즈·컵스)은 사용자가 없앨 예정 → 그 작업은 사용자가 말할 때.
+3. 로딩 화면 앞 받침판: 보라·분홍 네온 버튼이 흰빛이 섞여 덜 선명 — 폰에서 어색하다고 하면 다시 그림.
+4. 디스코 팡팡 탈 때 위쪽 기록 막대(⏱·💪·숫자)가 오른쪽 편지 버튼과 겹침 — 미수정(사용자 확인 대기).
+5. 스킬 알림: 버튼판 스킬 그림·발동 색·남은 시간(AI·킹판취 무적) 표시를 '이전처럼 버튼에' 복귀하자고 사용자와 이야기함 → 원인 확인 중이었음. V1716 C 에서 사용자가 버튼 알림을 끄라고 했던 것(game.js setCellHot false 반복)과 충돌하니 범위를 사용자에게 다시 확인. ai-countdown / invincible-countdown 요소·코드는 남아 있음(캡처 환경 1fps 라 확인 못 함).
+6. 폰 확인 부탁 상태: 킹판취 클레이(무적 때 커지고 금색), 강화 장면(알 깨짐·받침대 그림자), 리듬팡 카세트 건물 스피커·음파.
+7. 보류: "노랑 가시 담배" 오판정(순서대로 잡아라에 담배가 없어져 재발 가능성 낮음), 보스 배틀(승인됨·미착수), 놓친 두더지 벌점, 미션 코인 그림.
+주의: 사용자에게 모든 답은 한국어 존댓말(영어 문장 금지 — 이번 세션에서 여러 번 영어로 답해 지적받음). 배포는 사용자가 '배포'라고 할 때만.
+
+# V1745 C DEPLOYED - 2026-11-16 (Claude) `dfdaaa57`
 - Clay loading screen: GPT redraws (same layout) in assets/loading-clay-v1744/ (characters-4x band fitted to the old alpha bbox, front-panel fitted, stage-2x resized to old size); index.html + sw.js paths switched. Old v1573/v1574 kept.
 - Daily screen day-7 gift box scale 1.5 → 2.25.
 - Next: rhythm-pang decorations to clay; costume tab icon shape TBD.
