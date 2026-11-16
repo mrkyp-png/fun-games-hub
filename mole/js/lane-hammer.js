@@ -177,7 +177,7 @@
       el.style.marginTop = phase === 'home' ? homeMT : '0'; // 대기 위치 세로 보정 (기본 0.2cm 아래)
       el.style.marginLeft = phase === 'home' ? '-0.2cm' : '0'; // V1408 C 사용자: 대기 위치만 폰 화면 기준 왼쪽 0.2cm(타격점 그대로)
       model3D?.update({phase,age:t});
-      el.style.opacity = !sprite && phase === 'home' ? '0.7' : '1'; // 대기 뿅망치만30% 투명, 공격/등장은 불투명.
+      el.style.opacity = !sprite && phase === 'home' ? '0.55' : '1'; // V1727 C 사용자: 대기 뿅망치 투명 30%→45%, 공격/등장은 불투명.
     }
 
     function isBusy() { return phase === 'fly' || phase === 'chop' || phase === 'rise'; }

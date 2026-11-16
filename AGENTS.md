@@ -1,3 +1,11 @@
+# V1727 C DEPLOYED - 2026-11-16 (Claude)
+- Order game ('순서대로 잡아라'): smoke trait → bomb mole (BEHAVIORS ['bomb','drink','phone','thief'], label 폭탄/Bomb). popFor sets bombKind 'normal' + fuse:true; pop-elements passes m.fuse. Tests 24,748 pass.
+- All games, bomb-carrying mole (clay-round1-local.js liftBomb): arms + bomb lifted 22° about the shoulder line so both hands hold the bomb's lower sides (was buried at the rim), palms tilted 30° to the bomb's curve, bomb hops every 0.5s (hands dip on catch). Surprised eyes: new base model mole/assets/characters-v1727/mole-game-smile.glb (review/make-bomb-surprise-eyes.cjs) adds 'Surprise ivory eye ±1' / 'Surprise pupil ±1' (pupil 0.6x) on Head, drawn only for bomb carriers; original Eye bones hidden for carriers (poseFor wrapper → poseForBase); brows raised + twitch. Fuse/tip excluded from the green outline pass.
+- Order game only (m.fuse): fuse flame at the tip (elongated, yellow↔orange flicker) + 4 small sparks rising.
+- Idle hammer opacity 0.7 → 0.55 (lane-hammer.js, user: 15% more transparent).
+- NOT used: mole/assets/characters-v1727/behavior-smoke.glb (fart mole: turn-around toot from under the tail, nose pinch, > < eyes, face clouds — review/make-fart-mole.cjs). User stopped it ("하지말자"); main game keeps the smoke mole. Not committed.
+- Still open: '노랑 가시 담배' wrong judgment report (order game now has no smoke trait).
+
 # V1721 C DEPLOYED - 2026-11-15 (Claude)
 - Fail screen: mohawk hero bows his head (review/render-hero-sad.py: Idle pose + Head 38°/Body/arms bones, PainHit eyes) → mole/assets/result/hero-sad.webp (play once, ?t= cache-bust to replay). Hippo no longer used on results. Lose hero 0.6 of overlay height, centred (padding-bottom 1%).
 - User mentioned a 'yellow background' to delete — not found in result screens; ask where.

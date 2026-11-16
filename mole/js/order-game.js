@@ -5,7 +5,7 @@
   // 게임판 16구멍에 두더지 16마리가 서 있고, 제시어 순서대로 버튼으로 잡는다. 화면 연결은 game.js.
   const COLORS = ['red', 'blue', 'yellow', 'green', 'purple'];
   const HAIRS = ['bald', 'mohawk', 'curly', 'spiky', 'forelock'];
-  const BEHAVIORS = ['smoke', 'drink', 'phone', 'thief'];
+  const BEHAVIORS = ['bomb', 'drink', 'phone', 'thief']; // V1727 C 사용자: 담배 대신 폭탄 두더지
   // 설정 표(밸런스 조정은 여기서)
   const CONFIG = {
     roundSeconds: 90,
@@ -111,7 +111,7 @@
     function popFor(hole, traits) {
       const hair = traits.hair === 'bald' ? 'mohawk' : traits.hair;
       return { id: nextId++, type: 'mole', x: hole.p.x, y: hole.p.y, regionId: hole.p.regionId, poseIndex: 0, remaining: 99, hitsRequired: 1, hitsTaken: 0,
-        dying: false, killed: false, good: traits.good, behavior: traits.beh, tint: traits.good ? null : COLORS.indexOf(traits.color), appearance: hair, bald: traits.hair === 'bald',
+        dying: false, killed: false, good: traits.good, behavior: traits.beh === 'bomb' ? null : traits.beh, bombKind: traits.beh === 'bomb' ? 'normal' : null, fuse: traits.beh === 'bomb', tint: traits.good ? null : COLORS.indexOf(traits.color), appearance: hair, bald: traits.hair === 'bald',
         traits, readyAt: time + CONFIG.riseSeconds, hitAt: -1, goneAt: -1 };
     }
     const live = (h) => h.pop && !h.pop.dying && h.pop.hitAt < 0;
@@ -203,8 +203,8 @@
   }
 
   const LABEL = {
-    ko: { red: '빨강', blue: '파랑', yellow: '노랑', green: '초록', purple: '보라', bald: '대머리', mohawk: '모히칸', curly: '파마', spiky: '가시', forelock: '한가닥', smoke: '담배', drink: '콜라', phone: '게임', thief: '도둑', not: ' 아닌' },
-    en: { red: 'Red', blue: 'Blue', yellow: 'Yellow', green: 'Green', purple: 'Purple', bald: 'Bald', mohawk: 'Mohawk', curly: 'Curly', spiky: 'Spiky', forelock: 'One hair', smoke: 'Smoker', drink: 'Cola', phone: 'Gamer', thief: 'Thief', not: '' }
+    ko: { red: '빨강', blue: '파랑', yellow: '노랑', green: '초록', purple: '보라', bald: '대머리', mohawk: '모히칸', curly: '파마', spiky: '가시', forelock: '한가닥', bomb: '폭탄', drink: '콜라', phone: '게임', thief: '도둑', not: ' 아닌' },
+    en: { red: 'Red', blue: 'Blue', yellow: 'Yellow', green: 'Green', purple: 'Purple', bald: 'Bald', mohawk: 'Mohawk', curly: 'Curly', spiky: 'Spiky', forelock: 'One hair', bomb: 'Bomb', drink: 'Cola', phone: 'Gamer', thief: 'Thief', not: '' }
   };
   function clueLabel(c, lang) {
     const L = LABEL[lang === 'ko' ? 'ko' : 'en'], ko = lang === 'ko', parts = [];

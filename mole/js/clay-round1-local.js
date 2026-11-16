@@ -138,8 +138,41 @@ function clipFor(m,now=clockTime){
  }
  return {clip:'Idle',time:now-m._clayBorn,loop:true};
 }
+/* V1727 C 사용자: 폭탄 든 두더지 = 두 팔·폭탄을 어깨 기준으로 들어 올려 손이 폭탄 아래 양옆을 잡게(테두리에 묻히지 않게) + 폭탄이 손 위에서 통통 튐(받을 때 손 살짝 내려감). 모든 게임 공통 */
+const BOMB_LIFT=22*Math.PI/180,BOMB_HAND_TILT=30*Math.PI/180,BOMB_HOP=.22,BOMB_HOP_SEC=.5;
+function liftBomb(runtime,moving,rest){
+ const nodes=runtime.model.json.nodes;
+ if(!runtime._bombLift){const f=n=>nodes.findIndex(x=>x.name===n);runtime._bombLift={l:f('UpperArm.L'),r:f('UpperArm.R'),bomb:f('BombCarry'),arms:nodes.map(n=>/^(UpperArm|Forearm|Hand|Finger[123]|Thumb)\./.test(n.name||''))}}
+ const L=runtime._bombLift;if(L.l<0||L.r<0||L.bomb<0)return moving;
+ const ramp=smooth(rest/.25),a=-BOMB_LIFT*ramp,P=[0,1,2].map(k=>(moving[L.l][12+k]+moving[L.r][12+k])/2);
+ const phase=(rest%BOMB_HOP_SEC)/BOMB_HOP_SEC,s=Math.sin(Math.PI*phase),hop=s*BOMB_HOP*ramp,dip=-.05*ramp*Math.pow(1-s,4);
+ const lift=R.multiply(R.multiply(R.transform({translation:P}),R.transform({rotation:[Math.sin(a/2),0,0,Math.cos(a/2)]})),R.transform({translation:P.map(v=>-v)}));
+ const hands=R.multiply(R.transform({translation:[0,dip,0]}),lift),bomb=R.multiply(R.transform({translation:[0,hop,0]}),lift);
+ const out=moving.map((matrix,i)=>i===L.bomb?R.multiply(bomb,matrix):L.arms[i]?R.multiply(hands,matrix):matrix);
+ // 손바닥을 폭탄 둥근 면에 맞게 안쪽으로 기울임(손목 기준, 앞뒤 축 회전)
+ for(const [side,sign] of [['L',-1],['R',1]]){
+  const hi=nodes.findIndex(n=>n.name==='Hand.'+side);if(hi<0)continue;
+  const H=[out[hi][12],out[hi][13],out[hi][14]],b=sign*BOMB_HAND_TILT*ramp;
+  const tilt=R.multiply(R.multiply(R.transform({translation:H}),R.transform({rotation:[0,0,Math.sin(b/2),Math.cos(b/2)]})),R.transform({translation:H.map(v=>-v)}));
+  nodes.forEach((n,i)=>{if(new RegExp('^(Hand|Finger[123]|Thumb)\\.'+side).test(n.name||''))out[i]=R.multiply(tilt,out[i])});
+ }
+ // V1727 C 사용자: 놀란 눈 = 눈썹 위로(흰자위·눈동자는 'Surprise ' 부품)
+ for(const side of ['L','R']){
+  const bi=nodes.findIndex(n=>n.name==='Brow.'+side);
+  /* V1727 C 사용자: 눈썹 실룩실룩(좌우 엇갈려 위아래로) */
+  if(bi>=0)out[bi]=R.multiply(R.transform({translation:[0,(.07+.06*Math.abs(Math.sin(rest*9+(side==='L'?0:1.3))))*ramp,0]}),out[bi]);
+ }
+ return out;
+}
+/* V1727 C 사용자: 폭탄 든 두더지 = 원래 검은 눈은 숨기고 흰자위 놀란 눈('Surprise ' 부품)만 */
 function poseFor(runtime,m,motion,now=clockTime){
- const expression=AP.face(runtime,m.kind!=='mole'||/^(PainHit|Hit)$/.test(motion.clip));
+ const out=poseForBase(runtime,m,motion,now);
+ if(!isBombCarrier(m)||m.dying&&m.killed)return out;
+ runtime.model.json.nodes.forEach((n,i)=>{if(/^Eye.[LR]$/.test(n.name||'')){const E=[out[i][12],out[i][13],out[i][14]];out[i]=R.multiply(R.multiply(R.transform({translation:E,scale:[.001,.001,.001]}),R.transform({translation:E.map(v=>-v)})),out[i])}});
+ return out;
+}
+function poseForBase(runtime,m,motion,now=clockTime){
+ const expression=AP.face(runtime,m.kind!=='mole'||isBombCarrier(m)||/^(PainHit|Hit)$/.test(motion.clip)); /* V1727 C 사용자: 폭탄 든 두더지 = 놀란 눈(뜬 눈) */
  const moving=AP.pose(runtime,motion.clip,Math.max(0,motion.time),motion.loop,expression,now,m._appearance||'mohawk');
  if(motion.appearing){
   const wave=Math.sin(Math.PI*motion.progress),body=runtime.model.json.nodes.findIndex(n=>n.name==='Body');
@@ -163,6 +196,7 @@ function poseFor(runtime,m,motion,now=clockTime){
   const hit=moving.map((matrix,i)=>/^(UpperArm|Forearm|Hand|Finger[123]|Thumb)\./.test(runtime.model.json.nodes[i].name||'')?R.multiply(delta,raised[i]):matrix);
   return m.dying?tuckArms(runtime,hit,withdrawProgress(m,now)):hit;
  }
+ if(isBombCarrier(m)&&!m.dying&&m._clayRestTime!=null)return liftBomb(runtime,moving,now-m._clayRestTime);
  if(!motion.clip.startsWith('Rim'))return m.dying&&!m.killed&&!isBombCarrier(m)?tuckArms(runtime,moving,withdrawProgress(m,now)):moving;
  // Rim motions own the arms only. Every body/head/helmet transform stays on
  // the original approved Idle animation, rather than moving the whole actor.
@@ -173,7 +207,7 @@ function poseFor(runtime,m,motion,now=clockTime){
 async function initialize(){
  const board=document.getElementById('mole-board');canvas=document.createElement('canvas');canvas.className='clay-mole-canvas clay-mole-canvas--world';canvas.hidden=true;document.getElementById('game-screen').appendChild(canvas);
  const gl=canvas.getContext('webgl2',{antialias:true,alpha:true,premultipliedAlpha:true,stencil:true});if(!gl)throw Error('WebGL2 unavailable for local 3D trial');
- const response=await fetch('assets/characters-v1692/mole-game-smile.glb');if(!response.ok)throw Error('Mole model load failed');const model=await AP.prepare(R.parseGLB(await response.arrayBuffer())),runtime=R.prepare(model),draws=[];let estimatedGpuBytes=0;
+ const response=await fetch('assets/characters-v1727/mole-game-smile.glb') /* V1727 C: 폭탄 든 두더지 놀란 눈 부품 추가 */;if(!response.ok)throw Error('Mole model load failed');const model=await AP.prepare(R.parseGLB(await response.arrayBuffer())),runtime=R.prepare(model),draws=[];let estimatedGpuBytes=0;
  // 나쁜 두더지 모델은 관절 54개 → 셰이더 배열을 54로(54*4+14+24=254 ≤ WebGL2 최소 256)
  const joints=Math.max(54,...runtime.skins.map(s=>s.joints.length));if(joints*4+Math.ceil(joints/4)+24>gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS))throw Error('이 기기의 관절 셰이더 용량을 초과합니다.');
  const vs=`#version 300 es
@@ -251,7 +285,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
     gl.uniform2f(loc.uOffset,(x-.5)*2+sx/board.clientWidth*2,(.5-y-Math.cos(angle)*.2/span)*2-sy/board.clientWidth*2);gl.uniform4f(loc.uHole,ox+x*size+sx*pixelScale,oy+footroom+(1-y)*size-sy*pixelScale,135/418/gridSize*size,58/418/gridSize*size*boardAspect);
     gl.uniform1f(loc.uFlash,Math.max(0,Math.min(1,((m._clayFlashUntil||0)-clockTime)/.09))*.8);
    }
-   function drawMesh(d,outline=false,matrix=null,holeOnly=false){
+   function drawMesh(d,outline=false,matrix=null,holeOnly=false,colorOverride=null){
     const carriedObject=d.materialName.startsWith('Carry bomb ');
     // Only the bomb needs the stricter entrance mask. Keep the jumping body's
     // original above-rim visibility during takeoff and landing.
@@ -259,7 +293,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
     if(!matrix&&!palettes.has(d.node))palettes.set(d.node,R.palette(runtime,worlds,d.node));const skin=matrix?null:palettes.get(d.node);
     gl.uniformMatrix4fv(loc.uModel,false,matrix||R.multiply(instance,worlds[d.node]));gl.uniform1i(loc.uSkinned,!!skin);if(skin)gl.uniformMatrix4fv(loc.uJoints,false,skin);
     if(skin)gl.uniform4fv(loc.uRimJoint,rimFlags[model.json.nodes[d.node].skin]);
-    const color=carriedObject&&d.materialName==='Carry bomb shell'&&m.bombKind==='strong'?[.68,.055,.04,1]:isColored(m)&&coloredMaterial(m,d.materialName)?coloredMaterial(m,d.materialName):m.kind==='mole'?AP.materialColor(d.material,'mohawk'):d.color;
+    const color=colorOverride?colorOverride:carriedObject&&d.materialName==='Carry bomb shell'&&m.bombKind==='strong'?[.68,.055,.04,1]:isColored(m)&&coloredMaterial(m,d.materialName)?coloredMaterial(m,d.materialName):m.kind==='mole'?AP.materialColor(d.material,'mohawk'):d.color;
     gl.uniform4fv(loc.uColor,color);gl.uniform1f(loc.uRoughness,d.roughness);gl.uniform1i(loc.uHasBase,d.hasBase);gl.uniform1i(loc.uHasNormal,d.hasNormal);gl.uniform1f(loc.uNormalScale,d.normalScale);
     d.double?gl.disable(gl.CULL_FACE):gl.enable(gl.CULL_FACE);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,d.base);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,d.normal);
     bind(d.positions,attr.aPosition,3);bind(m.kind==='mole'&&d.colorVariants&&!m.golden&&!isRed(m)&&!hasTint(m)?d.colorVariants.mohawk:isColored(m)&&d.animalHead?d.animalHead[m.golden?animalVariants.length:isRed(m)?animalVariants.length+1:hasTint(m)?animalVariants.length+2+m.tint:animalIndex(m.poseIndex)]:d.vertexColors,attr.aColor,d.colorSize);bind(d.normals,attr.aNormal,3);bind(d.uv,attr.aUV,2);bind(d.joints,attr.aJoints,4);bind(d.weights,attr.aWeights,4);
@@ -274,6 +308,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
     if(m._behavior==='thief'&&d.materialName==='Eyebrow')continue;
     const carriedObject=d.materialName.startsWith('Carry bomb '),meshName=model.json.nodes[d.node].name;
     if(otherLangText(meshName))continue;
+    if(/^Surprise /.test(meshName||'')&&!(isBombCarrier(m)&&!(m.dying&&m.killed)))continue; /* V1727 C: 놀란 눈은 폭탄 든 두더지만 */
     if(meshName==='Mole_Carrier_Skin'&&!isBombCarrier(m)||meshName==='Mole_Clay_Skin'&&isBombCarrier(m))continue;
     if(carriedObject){if(isBombCarrier(m)&&!(m.dying&&m.killed))props.push(d);continue;}
     if(act!==baseActor&&PROP_RE.test(meshName||'')){
@@ -326,7 +361,22 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
     gl.stencilFunc(gl.ALWAYS,1,0xff);gl.stencilOp(gl.KEEP,gl.KEEP,gl.REPLACE);
     props.forEach(d=>drawMesh(d));
     gl.stencilMask(0);gl.stencilFunc(gl.NOTEQUAL,1,0xff);gl.stencilOp(gl.KEEP,gl.KEEP,gl.KEEP);
-    props.forEach(d=>drawMesh(d,true));
+    props.forEach(d=>{if(!/^Carry bomb (fuse|tip)$/.test(d.materialName))drawMesh(d,true)}); /* V1727 C 사용자: 심지·불씨는 초록 테두리 없이(굵은 고리처럼 보임) */
+    /* V1727 C 사용자: '순서대로 잡아라' 폭탄 = 심지 끝 불꽃(노랑↔주황 반짝 + 불티). 심지 길이는 그대로 */
+    const tip=m.fuse&&!m.dying&&props.find(d=>d.materialName==='Carry bomb tip');
+    if(tip){
+     gl.disable(gl.STENCIL_TEST);gl.uniform1f(loc.uOutline,0);gl.uniform1i(loc.uOutlinePass,false);gl.cullFace(gl.BACK);
+     if(!palettes.has(tip.node))palettes.set(tip.node,R.palette(runtime,worlds,tip.node));
+     const skin=model.json.skins[model.json.nodes[tip.node].skin],j=skin.joints.findIndex(i=>model.json.nodes[i].name==='BombCarry');
+     if(j>=0){
+      const base=R.multiply(R.multiply(instance,worlds[tip.node]),palettes.get(tip.node).slice(j*16,j*16+16)),C=[.17,1.66,.9],t=clockTime;
+      const F=[.17,1.66,.9] /* 불꽃 = 심지 끝(주황 불씨 부품 자리) */,at=(off,k)=>{const v=Array.isArray(k)?k:[k,k,k];return R.multiply(R.multiply(R.transform({translation:off}),base),R.multiply(R.transform({translation:F,scale:v}),R.transform({translation:C.map(x=>-x)})))};
+      const f=.5+.5*Math.sin(t*31)*Math.sin(t*17+1);
+      drawMesh(tip,false,at([0,.05+.02*f,0],[1.5+.3*f,2.6+.9*f,1.5+.3*f]),false,[1,.35+.45*f,.04+.1*f,1]); /* 위로 길쭉한 불꽃 */
+      for(let i=0;i<4;i++){const p=((t+i*.11)%.44)/.44,a=i*1.9+Math.floor((t+i*.11)/.44)*2.4,r=.04+.16*p; /* 불티 = 불꽃에서 위로 작게 튐 */
+       drawMesh(tip,false,at([Math.cos(a)*r,.1+.28*p,Math.sin(a)*r*.5],1.0*(1-p)+.25),false,[1,.9,.35,1]);}
+     }
+    }
     gl.stencilMask(0xff);gl.disable(gl.STENCIL_TEST);gl.enable(gl.DEPTH_TEST);gl.depthMask(true);gl.cullFace(gl.BACK);
     gl.uniform1f(loc.uOutline,0);gl.uniform1i(loc.uOutlinePass,false);gl.uniform1i(loc.uForegroundProp,false);gl.uniform1i(loc.uEntering,false);
    });

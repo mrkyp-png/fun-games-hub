@@ -101,7 +101,7 @@
         // 보이는 버그가 있었음(사용자 보고, 챕터4).
         multiHitAnimal: pop.type === 'animal' && pop.hitsRequired > 1,
         // V1541 C: 두더지 맞은 표정 — hitsSeen(판정된 타수) → hitAt 뒤 hits(보이는 타수)로 반영, face = 1타 표정(1~3 무작위)
-        bomb: !!pop.bombKind, bombKind: pop.bombKind || null, hits: 0, hitsSeen: 0, hitAt: 0, face: 1 + Math.floor(Math.random() * 3),
+        bomb: !!pop.bombKind, bombKind: pop.bombKind || null, fuse: !!pop.fuse /* V1727 C: 순서대로 잡아라 폭탄 심지 불꽃 */, hits: 0, hitsSeen: 0, hitAt: 0, face: 1 + Math.floor(Math.random() * 3),
         emergePlayed: false // 전신으로 다 올라온 순간(사용자 지정) 스쿼시&스트레치 1회용 플래그
       };
       render(m);
