@@ -137,8 +137,15 @@
     for (let i = 0; i < n - 1; i++) for (let k = 0; k < seg; k++) { const a = i * (seg + 1) + k, b = a + seg + 1; I.push(a, b, a + 1, a + 1, b, b + 1); }
     return this.add(P, N, col, I);
   };
-  function arcadeButtonBrightness(button, time) {
-    return button.unlocked ? (button.active ? 1.12 : .92) * (.82 + .38 * (.5 + .5 * Math.sin(time * Math.PI * 1.4))) : .45;
+  function arcadeButtonBrightness(button, time=0) {
+    return !button.unlocked ? .45 : button.active ? .92 + .65 * (.5 + .5 * Math.sin(time * Math.PI * 1.4)) : .92;
+  }
+  function arcadeSelectionRingGeometry() {
+    const g=new Geo();
+    g.lathe([[1.22,.21],[1.25,.27],[1.31,.29],[1.37,.27],[1.40,.21],[1.37,.18],[1.25,.18],[1.22,.21]],[1,.86,.2,1],48);
+    const halo=new Geo(),p=[],n=[],colors=[],indices=[];
+    for(let k=0;k<=48;k++){const a=k*Math.PI/24;for(const [r,alpha] of [[1.16,0],[1.31,.42],[1.57,0]]){p.push(Math.cos(a)*r,.20,Math.sin(a)*r);n.push(0,1,0);colors.push(1,.8,.08,alpha);}if(k<48){const b=k*3;indices.push(b,b+3,b+1,b+1,b+3,b+4,b+1,b+4,b+2,b+2,b+4,b+5);}}
+    return {core:{positions:new Float32Array(g.p),normals:new Float32Array(g.n),indices:new Uint32Array(g.i),colors:new Float32Array(g.c)},halo:{positions:new Float32Array(p),normals:new Float32Array(n),indices:new Uint32Array(indices),colors:new Float32Array(colors)}};
   }
   // Rounded solid strokes sit on each hole floor in world space.
   function roundNumberGeometry(number) {
@@ -290,7 +297,7 @@ if(!uActor&&!uFloor&&!uTexBase){
 float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displayColor,vec3(.45,.72,.94),fog),uColor.a*vColor.a);}`;
 
   function create(canvas) {
-    let boardPanels = [], boardTex = {}, props = [], boat = [], smoke = [], smokeBall = null, arcade = null, boss = null, modeBtn = [], roundNumbers = [], glowDisc = [], glowHalo = [], waveRings = [], screenTex = null, screenCanvas = null; // 두더지팡 게임기: 구멍 빛·구멍 두더지·화면 글자
+    let boardPanels = [], boardTex = {}, props = [], boat = [], smoke = [], smokeBall = null, arcade = null, boss = null, modeBtn = [], modeSelectionRing = null, roundNumbers = [], glowDisc = [], glowHalo = [], waveRings = [], screenTex = null, screenCanvas = null; // 두더지팡 게임기: 구멍 빛·구멍 두더지·화면 글자
     let gl, program, U, A, environment = [], actor = [], rig = null, smileFace = null, vp = null, signs = null, size = null, seaMesh = null, shadowS = null, shadowM = null, sunQuad = null, clouds = [], rides = [], staticAt = -9, staticVP = null, doorOpen = 0, doorAt = null, rhythmTunnel = null, rhythmField = null, extraNotes = null, gateEntryAt = -Infinity, gateNear = false, glassOpen = 0, glassAt = null;
     const resetSize = () => { size = null; };
     if (root.ResizeObserver) new ResizeObserver(resetSize).observe(canvas); else root.addEventListener('resize', resetSize);
@@ -423,6 +430,7 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
         });
         { const sb = new Geo().ball(0, 0, 0, 1, [0.93, 0.92, 0.9, 1]); smokeBall = rawMesh(new Float32Array(sb.p), new Float32Array(sb.n), new Uint32Array(sb.i), {}, new Float32Array(sb.c)); }
         { const bp = bossPiece(); boss = rawMesh(new Float32Array(bp.p), new Float32Array(bp.n), new Uint32Array(bp.i), {}, new Float32Array(bp.c)); }
+        {const g=arcadeSelectionRingGeometry(),mk=q=>rawMesh(q.positions,q.normals,q.indices,{},q.colors);modeSelectionRing={core:mk(g.core),halo:mk(g.halo)};}
         roundNumbers = Array.from({length:8},(_,i)=>{const g=roundNumberGeometry(i+1);return rawMesh(g.positions,g.normals,g.indices,{},g.colors);});
         glowDisc = root.MoleGame.Home3DLayout.ROUND_COLORS.concat(['#f2d27a']).map((hex) => {
           const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255), hi = c.map((v) => v + (1 - v) * .85), N = 28, P = [0, 0, 0], Nn = [0, 1, 0], C = [...hi, 1], I = []; // 사용자: 아주 밝게
@@ -571,6 +579,13 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
             draw(mb.base, R.transform({ translation: [b.x, b.y, b.z], scale: [b.r, b.r, b.r] }), null); // 받침은 그대로
             draw(m, R.transform({ translation: [b.x, b.y - 0.22 * b.r * (b.pressed || 0), b.z], scale: [b.r, b.r, b.r] }), null); // 색 버튼만 쑥 들어감
             m.color = keep;
+            if(b.active&&b.unlocked&&modeSelectionRing){
+              const world=R.transform({translation:[b.x,b.y,b.z],scale:[b.r,b.r,b.r]});
+              gl.uniform1i(U.Glow,1);draw(modeSelectionRing.core,world,null);
+              gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);gl.disable(gl.CULL_FACE);
+              draw(modeSelectionRing.halo,world,null);
+              gl.depthMask(true);gl.disable(gl.BLEND);gl.uniform1i(U.Glow,0);
+            }
           });
           const mh = arcade.moleOn ? arcade.mole : null;
           if (mh) { // 지금 라운드 구멍: 두더지가 고개를 내밂(정면 = 섬 가운데 쪽 +z), 살짝 들썩
@@ -674,7 +689,7 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
     };
   }
 
-  const api = { create, boatMatrix, camera, project, rayFloor, rayPlane, pickSite, seaHeight, seaGrid, sunDir, SUN_PERIOD, cloudMesh, cloudPos, rideParts, rideMotion, shopDoorTarget, shopDoorStep, shopDoorMatrix, gateBarHeight, arcadeButtonBrightness, roundNumberGeometry };
+  const api = { create, boatMatrix, camera, project, rayFloor, rayPlane, pickSite, seaHeight, seaGrid, sunDir, SUN_PERIOD, cloudMesh, cloudPos, rideParts, rideMotion, shopDoorTarget, shopDoorStep, shopDoorMatrix, gateBarHeight, arcadeButtonBrightness, arcadeSelectionRingGeometry, roundNumberGeometry };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.MoleGame = root.MoleGame || {};
   root.MoleGame.Home3DRenderer = api;

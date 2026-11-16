@@ -1,4 +1,4 @@
-/* 3D 홈 묶음 — 기존 게임(game.js)과 연결. 기본으로 켜짐(?home3d=0 = 구형 홈).
+/* 3D home connects the shared game and feature screens.
    기능 열기는 기존 홈 버튼과 같은 homeAction(action) 을 그대로 부른다.
    화면은 #game-screen 안 z-index 30(기존 홈 버튼판 위, 기능 화면 아래)에 깔린다. */
 (function (root) {
@@ -9,7 +9,7 @@
 
   function create(opts) {
     const qs = new URLSearchParams(root.location.search);
-    if (qs.get('home3d') === '0') return null; // 정식 교체(V1614 C): 기본 = 3D 홈, ?home3d=0 = 구형 홈(비교용)
+    // The legacy 2D home is retired.
     const MG = root.MoleGame, L = MG.Home3DLayout;
     const st = MG.Home3DState.create({});
     st.boot(); // 앱 켤 때마다 첫 장면(INTRO = 구멍에서 뛰어올라 구멍 안에 안착, 점프로만 나옴)
@@ -34,6 +34,7 @@
         return true;
       },
       homeShown() {
+        opts.host.classList.remove('game-entry-pending');
         const fromGame = st.state === 'GAMEPLAY';
         const ok = st.homeShown();
         if (ok && fromGame) { // V1621 C 사용자: 게임이 끝나면 처음 시작 구멍으로 나옴
@@ -42,7 +43,8 @@
         if (ok) { if (ui) ui.setFeature(false); refreshHud(); show(true); wake(); }
         return ok;
       },
-      gameStarted() { const ok = st.gameStarted(); if (ok) { stop(); if (ui) ui.setFeature(false); show(false); } return ok; },
+      gameStarted(options) { const ok = st.gameStarted(); if (ok) { stop(); if (ui) ui.setFeature(false); const keep = !!(options && options.keepVisible); opts.host.classList.toggle('game-entry-pending',keep); if (!keep) show(false); } return ok; },
+      revealGame() { if (st.state === 'GAMEPLAY') { show(false); opts.host.classList.remove('game-entry-pending'); } },
       renderAllowed: () => st.state === 'INTRO' || st.state === 'EXPLORE',
       inputEnabled: () => st.inputEnabled(),
       saveView: (v) => st.saveView(v),
@@ -78,13 +80,12 @@
       const R0 = opts.rounds(), ko = root.FGH.I18N.lang === 'ko';
       const holes = L.ARCADE_HOLES.map((h) => Object.assign({}, h, { glow: h.n && R0.get(h.n).cleared ? h.n - 1 : -1 }));
       const cur = L.ARCADE_HOLES.find((h) => h.n === R0.chapter);
-      const orderSelected = !!document.getElementById('order-select'), order = orderSelected && MG.OrderGame.load();
-      const chapter = orderSelected ? order.unlocked : R0.chapter;
-      const best = orderSelected ? order.best[chapter] || 0 : R0.get(R0.chapter).best, mode = orderSelected ? (ko ? '순서대로 잡아라' : 'Catch in Order') : t('mole.rm.mode.' + R0.light);
+      const chapter = R0.chapter, best = R0.get(chapter).best;
+      const mode = R0.light === 'order' ? (ko ? '순서대로 잡아라' : 'Catch in Order') : t('mole.rm.mode.' + R0.light);
       const l1 = ko ? mode + ' ' + chapter + '라운드' : mode + ' Round ' + chapter, l2 = 'BEST ' + Number(best).toLocaleString('en-US');
       const key = holes.map((h) => h.glow).join(',') + '|' + R0.chapter + '|' + l1 + '|' + l2 + '|' + L.ARCADE_BUTTONS.map((b) => +(b.light === 'order' || R0.unlocked(b.light))).join('');
       if (!force && key === arcadeKey) return;
-      const buttons = L.ARCADE_BUTTONS.map((b) => Object.assign({}, b, { unlocked: b.light === 'order' || R0.unlocked(b.light), active: b.light === (orderSelected ? 'order' : R0.light), pressed: 0 })); // V1722 C: 네 번째(order) = '순서대로 잡아라', 항상 열림
+      const buttons = L.ARCADE_BUTTONS.map((b) => Object.assign({}, b, { unlocked: b.light === 'order' || R0.unlocked(b.light), active: b.light === R0.light, pressed: 0 })); // V1722 C: 네 번째(order) = '순서대로 잡아라', 항상 열림
       if (arcadeState && arcadeState.mole && cur && arcadeState.mole.n !== cur.n) popAt = time; // 다른 구멍으로 옮김 = 튀어나오기부터
       arcadeKey = key + '|' + buttons.map((b) => +b.unlocked).join('');
       arcadeState = { holes, mole: cur || null, buttons, flash: [] }; rd.setArcade(arcadeState); rd.setScreen(l1, l2);
@@ -414,7 +415,7 @@
         const st0 = time - seqAt, STEP = 0.2;
         arcadeState.flash = st0 >= 0 && st0 < STEP * 9 + 0.35 ? [1, 2, 3, 4, 5, 6, 7, 8, 0].filter((n, i) => st0 >= i * STEP && st0 < i * STEP + 0.35) : [];
         arcadeState.buttons.forEach((b, k) => { const pt = press && press.k === k ? time - press.at : -1; b.pressed = pt >= 0.14 && pt < 0.45 ? 1 : 0; });
-        if (press && !press.done && time - press.at >= 0.26) { press.done = true; if (press.light === 'order') { if (opts.openOrder) opts.openOrder(); refreshArcade(true); } /* V1722 C: 네 번째 버튼 = 라운드 선택 창 */ else if (opts.setMode && opts.setMode(press.light)) { refreshArcade(true); seqAt = time; } }
+        if (press && !press.done && time - press.at >= 0.26) { press.done = true; if (opts.setMode && opts.setMode(press.light)) { refreshArcade(true); seqAt = time; } }
         if (press && time - press.at > 0.65) press = null;
         arcadeState.moleOn = !!(inside && inside.phase === 'in'); // 라운드 구멍 두더지 = 게임기 안에 들어왔을 때만
         if (arcadeState.mole) { // 게임과 같은 순서(clay-round1-local clipFor): Appear 0.4초 → RimSettle 0.22초 → RimIdle

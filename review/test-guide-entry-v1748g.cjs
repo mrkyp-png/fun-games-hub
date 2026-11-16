@@ -8,12 +8,14 @@ const code = source.slice(gate, source.indexOf('\n  }', gate));
 function check(skip, stale) {
   let confirm, intros = 0, loops = 0;
   const state = {introActive:true};
-  const context = {myGen:1,sessionGen:1,state,opts:{fresh:true,direct:true},
+  let revealed=false;
+  const context = {myGen:1,sessionGen:1,state,opts:{fresh:true,direct:true},home3d:{revealGame(){assert(skip||confirm,'guide exists before home is hidden');revealed=true;}},
     currentLight:()=> 'mid',currentChapter:()=>1,
     MG:{GameGuide:{shouldShow:()=>!skip,modeFor:()=> 'prankster',showRules:options=>{confirm=options.onDone;}}},
     playRoundIntro:done=>{intros++;done();},setNavLock:()=>{},performance:{now:()=>100},
     requestAnimationFrame:()=>{loops++;return 1;},loop(){}};
   vm.createContext(context);vm.runInContext(code,context);
+  assert(revealed);
   assert.equal(intros,skip?1:0);
   if (!skip) {if(stale)context.sessionGen++;confirm();}
   assert.equal(intros,stale?0:1);assert.equal(loops,stale?0:1);

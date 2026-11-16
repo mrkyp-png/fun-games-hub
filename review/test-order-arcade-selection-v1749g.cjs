@@ -1,0 +1,18 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const source=fs.readFileSync('mole/js/game.js','utf8').replace(/\r\n/g,'\n');
+const a=source.indexOf('  let arcadeOrderRound = 0;'),b=source.indexOf('\n  }',source.indexOf('  function selectArcadeRound',a))+4;
+let chapter=2,light='mid';const saved={unlocked:4,best:{1:150,2:50,4:200}};
+const context={MG:{OrderGame:{load:()=>saved,MAX_ROUND:8,CONFIG:{target:[0,100,150,175,200,250,300,350,400]}},Progress:{get:n=>({best:n*10,cleared:n===1}),isLightUnlocked:l=>['easy','mid','order'].includes(l),maxChapterFor:()=>3}},currentLight:()=>light,currentChapter:()=>chapter,setChapter:n=>chapter=n,setDifficulty:l=>light=l,refreshChapterNav(){}};
+vm.createContext(context);vm.runInContext(source.slice(a,b),context);
+assert.equal(context.arcadeRounds().light,'mid');
+assert(context.selectArcadeMode('order'));assert.equal(context.arcadeRounds().light,'order');assert.equal(context.arcadeRounds().chapter,4);
+assert(context.selectArcadeRound(2));assert.equal(context.arcadeRounds().chapter,2);assert.equal(context.arcadeRounds().get(1).cleared,true);assert.equal(context.arcadeRounds().get(2).cleared,false);
+for(const n of [0,-1,1.5,5,9])assert(!context.selectArcadeRound(n),'reject locked/invalid round '+n);
+assert.equal(context.arcadeRounds().chapter,2);assert.equal(chapter,2);assert.equal(light,'mid','order selection does not overwrite normal mode progress');
+assert(!context.selectArcadeMode('legend'));assert.equal(context.arcadeRounds().light,'order');
+assert(context.selectArcadeMode('easy'));assert.equal(context.arcadeRounds().light,'easy');assert.equal(context.arcadeRounds().chapter,3);
+assert(context.selectArcadeRound(1));assert.equal(chapter,1);
+assert(!source.includes('showOrderSelect'));assert(!source.includes('order-select'));
+const home=fs.readFileSync('mole/js/home3d.js','utf8');assert(!home.includes('openOrder'));assert(!home.includes('order-select'));
+assert(source.includes('if (arcadeOrderRound) { beginOrderGame(arcadeOrderRound); return true; }'));
+console.log('PASS order mode uses arcade buttons/holes, unlocked round selection, separate mode progress, clear/BEST data, mode switching, direct order entry, popup code removed');

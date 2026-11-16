@@ -128,16 +128,7 @@ body { background: var(--lm-page); }
   }
 }
 /* 시작 화면 = 카톡풍 대화. 게임박스 안, 메신저 화면처럼 (키패드는 아래 그대로 보임). */
-.board-start {
-  display: flex;
-  flex-direction: column;
-  padding: 12px 4px 16px;   /* 좌우 12→4: 두더지·하마 아바타를 게임박스 가장자리에 더 붙임 (사용자 요청) */
-  z-index: 7;
-  background: var(--lm-chat);   /* 대화 홈 = 연한 웜그레이 (잔디는 플레이 중에만) — 이미지 로드 전 폴백 */
-  overflow: hidden;
-}
 /* Keep an empty area for the home redesign; game-round backgrounds are separate. */
-#game-screen.is-start #board-start { background:none; }
 #game-screen.is-start #mole-board { background:none!important; }
 #game-screen.is-start #mole-board { box-shadow:0 0 0 3px #ffffff,0 0 0 5px #7cc3e6,0 0 0 7px #f4fbff!important; }
 #game-screen.is-start #mole-board::before,
@@ -148,151 +139,6 @@ body { background: var(--lm-page); }
    가을→겨울)이 첫 화면 15초 대기 후부터 계속 위로 스크롤(사용자 지정, 2026-09-27). 맨 끝에
    아케이드 복제 페이지를 하나 더 붙여, 스크롤이 거기 닿는 순간 0%로 순간복귀해도 이음매가 안 보임
    (고전적 무한루프 기법). 페이지 안에서는 각 칸이 홈 BGM 비트에 맞춰 개별적으로 눌림. */
-#home-grid { position: absolute; inset: 0; overflow: hidden; }
-.hg-track { position: absolute; inset: 0; }
-/* 홈 화면이 실제로 드러난 시점(revealHomeScatter, index.html)부터 15초 뒤 JS가 이 클래스를
-   붙인다 — CSS animation-delay는 로딩/인트로 동안(화면이 안 보이는데도) 이미 타이머가 돌아
-   "나오자마자 벌써 스크롤 중"이 되는 문제가 있어 JS 트리거로 대체(사용자 지정: 나온 뒤 15초). */
-.hg-track.hg-scrolling { animation: hg-scroll 75s linear infinite; }
-.hg-page {
-  position: absolute; left: 0; right: 0; height: 100%;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  pointer-events: none;
-}
-.hg-page:nth-child(1) { top: 0%; }
-.hg-page:nth-child(2) { top: 100%; }
-.hg-page:nth-child(3) { top: 200%; }
-.hg-page:nth-child(4) { top: 300%; }
-.hg-page:nth-child(5) { top: 400%; }
-.hg-page:nth-child(6) { top: 500%; }
-@keyframes hg-scroll {
-  from { transform: translateY(0); }
-  to   { transform: translateY(-500%); }
-}
-.hg-cell { position: relative; overflow: hidden; background: #3a2414; } /* v969: 그림이 순간 비어도 하얗게 안 보이게 */
-/* 칸 구분(사용자 선택 샘플 4번: 안쪽 음영 + 은은한 네온선, v734) — 칸 사이는 띄우지 않고 경계만 살림 */
-.hg-cell::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
-  box-shadow: inset 0 0 0 1px rgba(150, 225, 255, 0.9), inset 0 0 7px rgba(120, 200, 255, 0.55), inset 0 0 18px 3px rgba(0, 0, 0, 0.5); }
-.hg-cell img {
-  /* 펄스로 scale(0.98)까지 줄어들어도 칸보다 항상 커서 배경이 비치지 않게 여유분(4%) 확보 */
-  position: absolute; inset: -2%; width: 104%; height: 104%;
-  object-fit: fill; display: block; /* A안(보드 직사각형) — 잘리지 않게 칸에 맞춰 늘림(사용자 선택 '가') */
-}
-/* 비트마다 몇 칸이 눌림 스케일(사용자 지정 — 히트 플래시는 "눈이 너무 아픔" 피드백으로 뺌).
-   작아지는 순간에 맞춰 무지개 그라데이션 테두리도 같이 떴다 사라짐(사용자 재요청). */
-.hg-cell img.is-press { animation: hg-cell-press-scale 0.35s ease; }
-/* 겨울 그림 중 야외 5장(2·3·5·6·9)에만 눈 내림(사용자 지정 v741). 번짐 없는 작은 점 타일을 아래로 흘림 —
-   두 겹(잔 눈송이 빠르게 / 큰 눈송이 느리게 + 살짝 옆으로), transform 만 애니메이션이라 가벼움. */
-.hg-snow { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
-.hg-snow::before, .hg-snow::after { content: ''; position: absolute; left: -40px; right: -40px; top: -80px; bottom: 0; }
-.hg-snow::before { background-image: radial-gradient(1.8px 1.8px at 69% 63%, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.79) 55%, rgba(255,255,255,0) 100%), radial-gradient(2.4px 2.4px at 81% 51%, rgba(255,255,255,0.93) 0%, rgba(255,255,255,0.80) 55%, rgba(255,255,255,0) 100%), radial-gradient(1.6px 1.6px at 37% 59%, rgba(255,255,255,0.86) 0%, rgba(255,255,255,0.87) 55%, rgba(255,255,255,0) 100%), radial-gradient(1.8px 1.8px at 23% 4%, rgba(255,255,255,1.00) 0%, rgba(255,255,255,0.86) 55%, rgba(255,255,255,0) 100%), radial-gradient(2.5px 2.5px at 62% 3%, rgba(255,255,255,0.90) 0%, rgba(255,255,255,0.83) 55%, rgba(255,255,255,0) 100%), radial-gradient(1.7px 1.7px at 95% 37%, rgba(255,255,255,0.87) 0%, rgba(255,255,255,0.88) 55%, rgba(255,255,255,0) 100%), radial-gradient(1.7px 1.7px at 93% 45%, rgba(255,255,255,0.93) 0%, rgba(255,255,255,0.81) 55%, rgba(255,255,255,0) 100%), radial-gradient(2.1px 2.1px at 19% 4%, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.80) 55%, rgba(255,255,255,0) 100%), radial-gradient(2.4px 2.4px at 21% 97%, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.87) 55%, rgba(255,255,255,0) 100%), radial-gradient(2.4px 2.4px at 58% 73%, rgba(255,255,255,0.87) 0%, rgba(255,255,255,0.83) 55%, rgba(255,255,255,0) 100%); background-size: 55px 45px; animation: hg-snow-a 3.2s linear infinite; }
-.hg-snow::after { background-image: radial-gradient(4.0px 4.0px at 20% 92%, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.82) 55%, rgba(255,255,255,0) 100%), radial-gradient(3.3px 3.3px at 45% 39%, rgba(255,255,255,1.00) 0%, rgba(255,255,255,0.82) 55%, rgba(255,255,255,0) 100%), radial-gradient(2.8px 2.8px at 9% 72%, rgba(255,255,255,1.00) 0%, rgba(255,255,255,0.83) 55%, rgba(255,255,255,0) 100%), radial-gradient(3.5px 3.5px at 55% 75%, rgba(255,255,255,0.88) 0%, rgba(255,255,255,0.85) 55%, rgba(255,255,255,0) 100%), radial-gradient(3.6px 3.6px at 62% 18%, rgba(255,255,255,0.88) 0%, rgba(255,255,255,0.81) 55%, rgba(255,255,255,0) 100%), radial-gradient(4.1px 4.1px at 35% 60%, rgba(255,255,255,0.90) 0%, rgba(255,255,255,0.78) 55%, rgba(255,255,255,0) 100%), radial-gradient(2.9px 2.9px at 81% 78%, rgba(255,255,255,0.91) 0%, rgba(255,255,255,0.86) 55%, rgba(255,255,255,0) 100%); background-size: 75px 80px; animation: hg-snow-b 6.5s linear infinite; }
-@keyframes hg-snow-a { to { transform: translate(0, 45px); } }
-@keyframes hg-snow-b { to { transform: translate(-35px, 80px); } }
-/* 봄 그림 5장(2·4·5·8·9)에 나비(사용자 지정 v741) — 작은 SVG 나비가 날개를 파닥이며(scaleX) 그림 안을 곡선으로
-   천천히 돌아다님. 나비마다 색·경로·속도가 다름. transform 만 애니메이션(가벼움). */
-.hg-bfly { position: absolute; left: 0; top: 0; width: 21%; aspect-ratio: 40 / 32; pointer-events: none; z-index: 1;
-  animation: hg-bfly-path-a 11s ease-in-out infinite; }
-/* 날갯짓(사용자 지정: 그림만 왔다갔다 X) — 왼/오른 날개를 따로 두고 몸통 축을 중심으로 3D 로 접었다 폈다(rotateY). */
-.hg-bfly { perspective: 60px; }
-.hg-bfly::before, .hg-bfly::after { content: ''; position: absolute; top: 0; bottom: 0; width: 50%;
-  background: var(--bfL) center / 100% 100% no-repeat; animation: hg-bfly-flap-l 0.22s ease-in-out infinite alternate; }
-.hg-bfly::before { left: 0; transform-origin: 100% 50%; }
-.hg-bfly::after { right: 0; background-image: var(--bfR); transform-origin: 0% 50%; animation-name: hg-bfly-flap-r; }
-.hg-bfly--p { --bfL: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 32'%3E%3Cg%3E%3Cpath d='M20 15C15 3 4 0 3 7c-1 6 7 9 17 9z' fill='%23ffb3d9' stroke='%235a3a2a' stroke-width='1.3'/%3E%3Cpath d='M20 17C13 18 7 24 10 29c3 3 9-4 10-11z' fill='%23ff7ab8' stroke='%235a3a2a' stroke-width='1.3'/%3E%3Ccircle cx='10' cy='8' r='2.3' fill='%23fff' opacity='.85'/%3E%3Crect x='18.6' y='9' width='1.4' height='16' rx='.7' fill='%235a3a2a'/%3E%3C/g%3E%3C/svg%3E"); --bfR: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 32'%3E%3Cg transform='translate%2820 0%29 scale%28-1 1%29'%3E%3Cpath d='M20 15C15 3 4 0 3 7c-1 6 7 9 17 9z' fill='%23ffb3d9' stroke='%235a3a2a' stroke-width='1.3'/%3E%3Cpath d='M20 17C13 18 7 24 10 29c3 3 9-4 10-11z' fill='%23ff7ab8' stroke='%235a3a2a' stroke-width='1.3'/%3E%3Ccircle cx='10' cy='8' r='2.3' fill='%23fff' opacity='.85'/%3E%3Crect x='18.6' y='9' width='1.4' height='16' rx='.7' fill='%235a3a2a'/%3E%3C/g%3E%3C/svg%3E"); }
-.hg-bfly--y { --bfL: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 32'%3E%3Cg%3E%3Cpath d='M20 15C15 3 4 0 3 7c-1 6 7 9 17 9z' fill='%23ffe26b' stroke='%235a3a2a' stroke-width='1.3'/%3E%3Cpath d='M20 17C13 18 7 24 10 29c3 3 9-4 10-11z' fill='%23ffb52e' stroke='%235a3a2a' stroke-width='1.3'/%3E%3Ccircle cx='10' cy='8' r='2.3' fill='%23fff' opacity='.85'/%3E%3Crect x='18.6' y='9' width='1.4' height='16' rx='.7' fill='%235a3a2a'/%3E%3C/g%3E%3C/svg%3E"); --bfR: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 32'%3E%3Cg transform='translate%2820 0%29 scale%28-1 1%29'%3E%3Cpath d='M20 15C15 3 4 0 3 7c-1 6 7 9 17 9z' fill='%23ffe26b' stroke='%235a3a2a' stroke-width='1.3'/%3E%3Cpath d='M20 17C13 18 7 24 10 29c3 3 9-4 10-11z' fill='%23ffb52e' stroke='%235a3a2a' stroke-width='1.3'/%3E%3Ccircle cx='10' cy='8' r='2.3' fill='%23fff' opacity='.85'/%3E%3Crect x='18.6' y='9' width='1.4' height='16' rx='.7' fill='%235a3a2a'/%3E%3C/g%3E%3C/svg%3E"); animation-name: hg-bfly-path-b; animation-duration: 13s; }
-.hg-bfly--b { --bfL: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 32'%3E%3Cg%3E%3Cpath d='M20 15C15 3 4 0 3 7c-1 6 7 9 17 9z' fill='%239fdcff' stroke='%235a3a2a' stroke-width='1.3'/%3E%3Cpath d='M20 17C13 18 7 24 10 29c3 3 9-4 10-11z' fill='%235aaeff' stroke='%235a3a2a' stroke-width='1.3'/%3E%3Ccircle cx='10' cy='8' r='2.3' fill='%23fff' opacity='.85'/%3E%3Crect x='18.6' y='9' width='1.4' height='16' rx='.7' fill='%235a3a2a'/%3E%3C/g%3E%3C/svg%3E"); --bfR: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 32'%3E%3Cg transform='translate%2820 0%29 scale%28-1 1%29'%3E%3Cpath d='M20 15C15 3 4 0 3 7c-1 6 7 9 17 9z' fill='%239fdcff' stroke='%235a3a2a' stroke-width='1.3'/%3E%3Cpath d='M20 17C13 18 7 24 10 29c3 3 9-4 10-11z' fill='%235aaeff' stroke='%235a3a2a' stroke-width='1.3'/%3E%3Ccircle cx='10' cy='8' r='2.3' fill='%23fff' opacity='.85'/%3E%3Crect x='18.6' y='9' width='1.4' height='16' rx='.7' fill='%235a3a2a'/%3E%3C/g%3E%3C/svg%3E"); animation-name: hg-bfly-path-c; animation-duration: 9.5s; }
-.hg-bfly--y::before, .hg-bfly--y::after { animation-duration: 0.26s; }
-.hg-bfly--b::before, .hg-bfly--b::after { animation-duration: 0.18s; }
-.hg-bfly--late { animation-delay: -5s; }
-@keyframes hg-bfly-flap-l { from { transform: rotateY(0deg); } to { transform: rotateY(72deg); } }
-@keyframes hg-bfly-flap-r { from { transform: rotateY(0deg); } to { transform: rotateY(-72deg); } }
-/* 가을 그림 5장(2·5·6·8·9)에 낙엽(사용자 지정 v741) — 단풍잎이 흔들리며 빙글빙글 떨어짐. 잎마다 색·위치·속도 다름. */
-.hg-leaf { position: absolute; top: 0; width: 13%; aspect-ratio: 1; pointer-events: none; z-index: 1;
-  background: var(--lf) center / contain no-repeat; animation: hg-leaf-fall 7s linear infinite; }
-.hg-leaf--o { --lf: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20.0 3.0 L22.2 11.3 L27.6 7.5 L25.3 14.2 L33.3 13.7 L26.0 18.0 L28.6 20.8 L24.4 21.2 L25.3 25.3 L21.9 23.7 L20.0 33.0 L17.8 24.7 L12.4 28.5 L14.7 21.8 L6.7 22.3 L14.0 18.0 L11.4 15.2 L15.6 14.8 L14.7 10.7 L18.1 12.3Z' fill='%23ff9a2e' stroke='%23a8480c' stroke-width='1.2' stroke-linejoin='round'/%3E%3Cpath d='M20 18V37M20 18L11 10M20 18L29 10M20 20L12 24M20 20L28 24' stroke='%23a8480c' stroke-width='1.2' fill='none'/%3E%3C/svg%3E"); }
-.hg-leaf--r { --lf: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20.0 3.0 L22.2 11.3 L27.6 7.5 L25.3 14.2 L33.3 13.7 L26.0 18.0 L28.6 20.8 L24.4 21.2 L25.3 25.3 L21.9 23.7 L20.0 33.0 L17.8 24.7 L12.4 28.5 L14.7 21.8 L6.7 22.3 L14.0 18.0 L11.4 15.2 L15.6 14.8 L14.7 10.7 L18.1 12.3Z' fill='%23e8452c' stroke='%238c1f10' stroke-width='1.2' stroke-linejoin='round'/%3E%3Cpath d='M20 18V37M20 18L11 10M20 18L29 10M20 20L12 24M20 20L28 24' stroke='%238c1f10' stroke-width='1.2' fill='none'/%3E%3C/svg%3E"); animation-duration: 8.5s; }
-.hg-leaf--y { --lf: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20.0 3.0 L22.2 11.3 L27.6 7.5 L25.3 14.2 L33.3 13.7 L26.0 18.0 L28.6 20.8 L24.4 21.2 L25.3 25.3 L21.9 23.7 L20.0 33.0 L17.8 24.7 L12.4 28.5 L14.7 21.8 L6.7 22.3 L14.0 18.0 L11.4 15.2 L15.6 14.8 L14.7 10.7 L18.1 12.3Z' fill='%23ffc93a' stroke='%23a8740c' stroke-width='1.2' stroke-linejoin='round'/%3E%3Cpath d='M20 18V37M20 18L11 10M20 18L29 10M20 20L12 24M20 20L28 24' stroke='%23a8740c' stroke-width='1.2' fill='none'/%3E%3C/svg%3E"); animation-duration: 6.2s; }
-.hg-leaf:nth-of-type(1) { left: 12%; animation-delay: -1s; }
-.hg-leaf:nth-of-type(2) { left: 52%; animation-delay: -4s; }
-.hg-leaf:nth-of-type(3) { left: 78%; animation-delay: -6.5s; }
-@keyframes hg-leaf-fall {
-  0%   { transform: translate(0, -130%) rotate(0deg); opacity: 0; }
-  8%   { opacity: 1; }
-  25%  { transform: translate(120%, 180%) rotate(90deg); }
-  50%  { transform: translate(-60%, 360%) rotate(200deg); }
-  75%  { transform: translate(110%, 560%) rotate(290deg); }
-  92%  { opacity: 1; }
-  100% { transform: translate(-30%, 790%) rotate(380deg); opacity: 0; }
-}
-/* 여름 워터파크 그림 3장(3·4·8, 화면에 고르게 흩어지게)에 물방울이 둥실 떠오르고 물 위가 반짝임(v742, 사용자 위임). */
-.hg-bub { position: absolute; bottom: 0; width: 10%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; z-index: 1;
-  /* 밝은 워터파크 배경에서도 보이게 — 하늘빛 도는 몸통 + 진한 테두리(번짐 없이) */
-  background: radial-gradient(circle at 32% 30%, #fff 0 13%, rgba(220, 245, 255, 0.35) 20% 60%, rgba(40, 150, 220, 0.9) 66% 71%, rgba(255, 255, 255, 0) 73%);
-  animation: hg-bub-rise 4.2s ease-in infinite; opacity: 0; }
-.hg-bub:nth-of-type(1) { left: 18%; animation-delay: -0.5s; }
-.hg-bub:nth-of-type(2) { left: 55%; width: 7%; animation-duration: 3.4s; animation-delay: -2.1s; }
-.hg-bub:nth-of-type(3) { left: 80%; width: 12%; animation-duration: 5.1s; animation-delay: -3.6s; }
-@keyframes hg-bub-rise {
-  0% { transform: translate(0, 0) scale(0.6); opacity: 0; } 12% { opacity: 1; }
-  50% { transform: translate(60%, -500%) scale(0.9); } 85% { opacity: 1; }
-  100% { transform: translate(-40%, -1000%) scale(1.05); opacity: 0; } }
-.hg-spark { position: absolute; width: 13%; aspect-ratio: 1; pointer-events: none; z-index: 1; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 0C11 7 13 9 20 10C13 11 11 13 10 20C9 13 7 11 0 10C7 9 9 7 10 0Z' fill='%23fffbe0' stroke='%23ffb300' stroke-width='0.9'/%3E%3C/svg%3E") center / contain no-repeat;
-  animation: hg-spark 2.6s ease-in-out infinite; opacity: 0; }
-.hg-spark:nth-of-type(4) { left: 26%; top: 72%; }
-.hg-spark:nth-of-type(5) { left: 66%; top: 80%; animation-delay: -1.3s; width: 10%; }
-@keyframes hg-spark { 0%, 60%, 100% { transform: scale(0) rotate(0deg); opacity: 0; } 75% { transform: scale(1) rotate(45deg); opacity: 1; } }
-/* 아케이드 그림 3장(1·6·8, 격자에 흩어지게)에 오락실 연출(사용자 지정 v745): 1=네온 반짝이, 6=음표 떠오름, 8=색종이. */
-.hg-spark--a { left: 8%; top: 12%; } .hg-spark--b { left: 80%; top: 8%; animation-delay: -0.9s; width: 10%; } .hg-spark--c { left: 70%; top: 44%; animation-delay: -1.8s; width: 9%; }
-.hg-note { position: absolute; bottom: 8%; font-style: normal; font-weight: 900; font-size: clamp(14px, 5vw, 22px); line-height: 1; pointer-events: none; z-index: 1;
-  -webkit-text-stroke: 1px rgba(40, 0, 60, 0.6); animation: hg-note-rise 3.6s ease-out infinite; opacity: 0; }
-.hg-note--a { left: 12%; color: #ff6fe0; }
-.hg-note--b { left: 46%; color: #57d9ff; animation-delay: -1.2s; animation-duration: 4.2s; }
-.hg-note--c { left: 76%; color: #ffe03a; animation-delay: -2.4s; }
-@keyframes hg-note-rise {
-  0% { transform: translate(0, 0) rotate(-12deg) scale(0.7); opacity: 0; } 15% { opacity: 1; }
-  50% { transform: translate(40%, -180%) rotate(12deg) scale(1); } 85% { opacity: 1; }
-  100% { transform: translate(-20%, -380%) rotate(-8deg) scale(1.1); opacity: 0; } }
-.hg-conf { position: absolute; top: 0; width: 3.2%; height: 6%; border-radius: 1px; pointer-events: none; z-index: 1;
-  animation: hg-conf-fall 4s linear infinite; }
-.hg-conf--1 { left: 36%; background: #ff4fd8; animation-duration: 3.8s; animation-delay: -3.6s; }
-.hg-conf--2 { left: 67%; background: #57d9ff; animation-duration: 3.5s; animation-delay: -0.3s; }
-.hg-conf--3 { left: 57%; background: #ffe03a; animation-duration: 4.3s; animation-delay: -1.4s; }
-.hg-conf--4 { left: 13%; background: #7dff8a; animation-duration: 3.6s; animation-delay: -2.7s; }
-.hg-conf--5 { left: 41%; background: #ff8a3d; animation-duration: 4.8s; animation-delay: -4.1s; }
-.hg-conf--6 { left: 39%; background: #b48bff; animation-duration: 3.6s; animation-delay: -4.6s; }
-@keyframes hg-conf-fall {
-  0% { transform: translate(0, -150%) rotate(0deg) rotateY(0deg); } 50% { transform: translate(180%, 700%) rotate(200deg) rotateY(180deg); }
-  100% { transform: translate(-80%, 1700%) rotate(400deg) rotateY(360deg); } }
-@keyframes hg-bfly-path-a {
-  0% { transform: translate(-30%, 320%) rotate(-10deg); } 25% { transform: translate(180%, 160%) rotate(12deg); }
-  50% { transform: translate(360%, 260%) rotate(-8deg); } 75% { transform: translate(250%, 60%) rotate(10deg); }
-  100% { transform: translate(-30%, 320%) rotate(-10deg); } }
-@keyframes hg-bfly-path-b {
-  0% { transform: translate(380%, 120%) rotate(8deg); } 30% { transform: translate(260%, 330%) rotate(-12deg); }
-  60% { transform: translate(40%, 180%) rotate(10deg); } 100% { transform: translate(380%, 120%) rotate(8deg); } }
-@keyframes hg-bfly-path-c {
-  0% { transform: translate(120%, 380%) rotate(-6deg); } 35% { transform: translate(330%, 340%) rotate(10deg); }
-  70% { transform: translate(300%, 200%) rotate(-10deg); } 100% { transform: translate(120%, 380%) rotate(-6deg); } }
-
-@keyframes hg-cell-press-scale {
-  0% { scale: 1 1; } 35% { scale: 0.98 0.98; } 65% { scale: 1.015 1.015; } 100% { scale: 1 1; }
-}
-.hg-cell::after {
-  content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none;
-  padding: 3px;
-  background: conic-gradient(from 0deg, #ff7a4d, #ffce33, #4ade80, #3b82f6, #a855f7, #ff7a4d);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0;
-}
-.hg-cell.is-press::after { animation: hg-cell-gradborder-fade 0.35s ease; }
-@keyframes hg-cell-gradborder-fade { 0% { opacity: 0; } 35% { opacity: 0.9; } 100% { opacity: 0; } }
-/* 메탈릭 샤인 스윕(사용자 지정, press-feel-options 후보 중 선택) — "능력치" 글자에만 적용
-   (챕터 글자는 제외, 사용자 지정). 대각선 빛이 은은하게 계속 흐름. */
 .inv-stat-h::after {
   content: '';
   position: absolute; inset: -40%;
@@ -310,104 +156,6 @@ body { background: var(--lm-page); }
    #mole-board 의 overflow:hidden 에 안 잘리게 형제로 두고, #game-screen 기준 좌표로 위치를
    맞춘다(--hud-h/--sq 는 #game-screen 에 정의됨). 버튼보드(.dialpad)는 전혀 건드리지 않음.
    assets/round-strip.png(2172x724, 3:1) 위에 8개 원형 버튼 + 양옆 삼각버튼을 실측 %좌표로 배치. */
-.round-strip {
-  display: none;
-  position: absolute; left: 50%;
-  width: var(--sq);
-  transform: translateX(-50%);
-  /* 보드 바닥선(hud-h + sq) 기준, 스트립 높이(sq/3)만큼 위로 올렸다가 0.5cm 다시 내려
-     "보드 안에 대부분 걸치고 바닥선 아래로 0.5cm만 넘치는" 모양을 만든다. */
-  top: calc(var(--hud-h) + var(--sqh) - (var(--sq) / 3) + 0.5cm);
-  aspect-ratio: 3 / 1;
-  background: url('assets/round-strip.png') center/100% 100% no-repeat;
-  z-index: 8;
-}
-/* 표시판(나무틀/ROUND 로고) 이 삼각버튼보다 앞에 나오도록(사용자 지정) — 같은 그림을 앞에
-   한 번 더 겹쳐, 삼각버튼이 투명 홀 밖으로 튀어나온 부분을 나무틀 그림이 덮게 한다. */
-.round-strip::after {
-  content: ''; position: absolute; inset: 0;
-  background: url('assets/round-strip.png') center/100% 100% no-repeat;
-  z-index: 9; pointer-events: none;
-}
-#game-screen.is-start .round-strip { display: block; }
-.round-strip [data-rs-round="1"] { left: 15.93%; }
-.round-strip [data-rs-round="2"] { left: 25.39%; }
-.round-strip [data-rs-round="3"] { left: 35.03%; }
-.round-strip [data-rs-round="4"] { left: 44.81%; }
-.round-strip [data-rs-round="5"] { left: 54.72%; }
-.round-strip [data-rs-round="6"] { left: 64.36%; }
-.round-strip [data-rs-round="7"] { left: 74.03%; }
-.round-strip [data-rs-round="8"] { left: 83.61%; }
-.rs-circle {
-  position: absolute; top: 65.61%;
-  width: 6.35%; aspect-ratio: 1 / 1;
-  transform: translate(-50%, -50%);
-  border: none; border-radius: 50%;
-  background: transparent;
-  padding: 0;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  color: #1c1006; font-size: 0.72rem; font-weight: 900; line-height: 1; letter-spacing: -0.03em;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
-  transition: transform 0.07s ease, filter 0.07s ease;
-  z-index: 10; /* 표시판 덮개(::after, z9) 위로 — 안 그러면 원 안 라운드 글씨(A1~A8)가 가려짐 */
-}
-.rs-circle:active { transform: translate(-50%, -50%) scale(0.88); }
-.rs-circle.is-locked { color: rgba(28, 16, 6, 0.4); pointer-events: none; }
-.rs-circle.is-current {
-  box-shadow: 0 0 6px 3px #ffce33, 0 0 14px 6px rgba(255, 206, 51, 0.55);
-  animation: rs-current-pulse 1.4s ease-in-out infinite;
-}
-@keyframes rs-current-pulse {
-  0%, 100% { box-shadow: 0 0 6px 3px #ffce33, 0 0 14px 6px rgba(255, 206, 51, 0.55); }
-  50%      { box-shadow: 0 0 9px 4px #ffe27a, 0 0 20px 9px rgba(255, 206, 51, 0.75); }
-}
-.rs-circle.rs-flare { animation: rs-current-pulse 1.4s ease-in-out infinite, rs-flare 0.85s ease-out; }
-@keyframes rs-flare {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  16%      { transform: translate(-50%, -50%) scale(1.35); }
-}
-
-/* 양옆 삼각 컷아웃(투명 구멍) 안에 딱 맞게 — 라운드 ◀▶ 이동 3D 버튼 */
-.rs-tri {
-  position: absolute; top: 62.22%;
-  width: 7.2%; height: 35%;
-  transform: translate(-50%, -50%);
-  border: none; padding: 0; cursor: pointer;
-  /* 밝은 노란 3D 버튼(사용자 지정: 갈색은 후짐, 눌림이 확실히 느껴지게). 삼각 구멍 대부분이 표시판
-     나무틀에 덮여 버튼 옆면(두께)은 안 보이므로, 버튼 자체 = 어두운 홈(well), ::before = 노란 면.
-     평소엔 면이 홈을 꽉 덮고(윗광택+아래 진한 테두리로 볼록), 누르면 면이 아래로 들어가며 작아져
-     둘레에 어두운 홈이 드러난다. 둘 다 같은 삼각형 clip-path 라 배경이 비치지 않음. */
-  background: radial-gradient(ellipse at 50% 40%, #6e4300, #2e1a00);
-  transition: transform 0.07s ease;
-}
-.rs-tri::before {
-  content: ''; position: absolute; inset: 0;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 36%),
-    linear-gradient(0deg, rgba(150, 80, 0, 0.55) 0%, rgba(150, 80, 0, 0) 22%),
-    linear-gradient(160deg, #fff4a8 0%, #ffd928 45%, #f5a800 100%);
-  transform-origin: 50% 50%;
-  transition: transform 0.07s ease, filter 0.07s ease;
-}
-.rs-tri--prev { left: 5.226%; }
-.rs-tri--prev, .rs-tri--prev::before { clip-path: polygon(100% 0%, 0% 50%, 100% 100%); }
-/* 모서리 빛광(사용자 지정) — 보이는 구멍의 세 꼭짓점(표시판 그림 실측) 안쪽에 반짝이는 하이라이트, 면과 함께 눌림 */
-.rs-tri--prev::before { background:
-    radial-gradient(circle at 30% 50%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.55) 5%, rgba(255, 255, 255, 0) 13%), radial-gradient(circle at 89% 25%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.55) 5%, rgba(255, 255, 255, 0) 13%), radial-gradient(circle at 89% 77%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.55) 5%, rgba(255, 255, 255, 0) 13%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 36%),
-    linear-gradient(0deg, rgba(150, 80, 0, 0.55) 0%, rgba(150, 80, 0, 0) 22%),
-    linear-gradient(160deg, #fff4a8 0%, #ffd928 45%, #f5a800 100%); }
-.rs-tri--next { left: 93.6%; } /* 구멍 왼쪽 밑변(x=904/1000)보다 버튼 밑변이 오른쪽(908)이라 왼쪽이 비어 보였음 → 0.8% 왼쪽으로 */
-.rs-tri--next, .rs-tri--next::before { clip-path: polygon(0% 0%, 100% 50%, 0% 100%); }
-.rs-tri--next::before { background:
-    radial-gradient(circle at 72% 50%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.55) 5%, rgba(255, 255, 255, 0) 13%), radial-gradient(circle at 12% 25%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.55) 5%, rgba(255, 255, 255, 0) 13%), radial-gradient(circle at 12% 77%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.55) 5%, rgba(255, 255, 255, 0) 13%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 36%),
-    linear-gradient(0deg, rgba(150, 80, 0, 0.55) 0%, rgba(150, 80, 0, 0) 22%),
-    linear-gradient(160deg, #fff4a8 0%, #ffd928 45%, #f5a800 100%); }
-/* 눌림: 노란 면이 홈 속으로 들어감(아래로 + 축소 + 어두워짐) → 둘레에 어두운 홈이 드러남 */
-.rs-tri:active::before { transform: translateY(5%) scale(0.8); filter: brightness(0.85); }
-
 #game-screen.is-start #mole-status,
 #game-screen.is-start #fever-badge,
 #game-screen.is-start #combo-heart-pop { display: none; }
@@ -1274,12 +1022,6 @@ body { background: var(--lm-page); }
 
 /* 승리 → 왼쪽 스와이프: 성공 카드는 왼쪽으로(#gameover-overlay.is-sliding),
    다음 챕터 홈 화면(#board-start)은 오른쪽에서 슬라이드 인. */
-#board-start.nc-enter {
-  z-index: 12;
-  transform: translateX(100%);
-  transition: transform 0.34s cubic-bezier(.4, 0, .3, 1);
-}
-#board-start.nc-enter.nc-enter--on { transform: translateX(0); }
 .nc-big { color: #fff; font-size: 2.4rem; font-weight: 900; letter-spacing: 0.04em; }
 .nc-sub { color: #b7b3cf; font-weight: 700; }
 .nc-back {

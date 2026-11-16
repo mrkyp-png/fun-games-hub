@@ -88,7 +88,10 @@ function coloredMaterial(m,name){const c=m.golden?GOLD:isRed(m)?MULTI_RED:hasTin
 function canRender(m){return m.kind==='mole'||m.kind==='animal'||m.kind==='bomb'}
 function isBombCarrier(m){return m.bomb||m.kind==='bomb'}
 function smooth(value){const t=Math.max(0,Math.min(1,value));return t*t*(3-2*t)}
+const BOMB_WITHDRAW_PART=.22;
+function exitDepthProgress(m){const from=Math.max(0,Math.min(3.99,m.dyingFrom??0));return Math.max(0,Math.min(1,(m.shownDepth-from)/(4-from)))}
 function sinkDepth(m){
+ if(m.dying&&isBombCarrier(m)){const from=Math.max(0,Math.min(3.99,m.dyingFrom??0));return from+(4-from)*smooth((exitDepthProgress(m)-BOMB_WITHDRAW_PART)/(1-BOMB_WITHDRAW_PART))}
  if(!m.dying||m.killed)return m.shownDepth;
  const from=Math.max(0,Math.min(3.99,m.dyingFrom??0));
  return from+(4-from)*smooth((m.shownDepth-from)/(4-from));
@@ -102,7 +105,7 @@ function boardShakeOffset(board){
  const values=match[2].split(',').map(Number),i=match[1]?12:4;
  return [values[i]||0,values[i+1]||0];
 }
-function withdrawProgress(m,now=clockTime){return m.dying?smooth((now-(m._clayExitAt??now))/.035):0}
+function withdrawProgress(m,now=clockTime){if(!m.dying)return 0;return isBombCarrier(m)?smooth(exitDepthProgress(m)/BOMB_WITHDRAW_PART):smooth((now-(m._clayExitAt??now))/.035)}
 function tuckArms(runtime,worlds,progress){
  if(!progress)return worlds;
  const posed=worlds.slice();

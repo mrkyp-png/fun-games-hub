@@ -167,10 +167,7 @@
     }
   }
 
-  // 홈 화면 게임판 자리(#board-start 뒤) — 원본 3x3 콜라주 구도를 유지한 9칸 그리드 페이지 5장
   // (아케이드→봄→여름→가을→겨울)이 첫 화면 15초 대기 후부터 계속 위로 스크롤(사용자 지정,
-  // 2026-09-27 — 페이지 전환식(CSS .hg-track 애니메이션)이라 여기선 비트 이펙트만 돌린다.
-  // is-start 아닐 땐 board-start 자체가 가려지므로 안 보임 — 루프는 그냥 항상 돌아도 무해.
   // V1328 C 폰 확인용 FPS 표시(임시 — 출시 직전 삭제). 0.5초마다 평균 FPS + 오류 기록(V1346 C: 최장ms·🐢 느린프레임 줄 삭제).
   let reportInputStall = function () {};
   (function fpsMeter() {
@@ -302,149 +299,6 @@
     } catch (err) { /* Never cancel or redirect an event. */ }
   }, { capture: true, passive: true });
 
-  function initHomeShowcase() {
-    initHomeShowcaseBeat();
-  }
-
-  // 재생 중인 홈 BGM(bgm-a/bgm-b 핑퐁) 을 Web Audio AnalyserNode 로 실시간 분석해 저음 에너지가
-  // 평균 대비 튈 때("비트")마다 작은 타일 하나를 랜덤 이미지로 팝 전환. 오디오 재생 자체(스피커
-  // 출력)는 analyser 를 거쳐 그대로 destination 에 연결해 끊기지 않는다.
-  let bgmAnalysers = null;
-  let bgmAudioCtx = null; // 자동재생 정책으로 suspended 상태일 수 있어 제스처마다 resume 재시도
-  function ensureBgmAnalysers() {
-    if (bgmAnalysers || !bgmEls || !bgmEls[0] || !bgmEls[1]) return;
-    try {
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      if (!Ctx) return;
-      const actx = new Ctx();
-      bgmAudioCtx = actx;
-      bgmAnalysers = bgmEls.map((el) => {
-        const src = actx.createMediaElementSource(el);
-        const an = actx.createAnalyser();
-        an.fftSize = 256;
-        src.connect(an);
-        an.connect(actx.destination); // 필수 — 안 붙이면 이 엘리먼트 소리가 스피커로 안 나감(버그 수정)
-        return { analyser: an, buf: new Uint8Array(an.frequencyBinCount) };
-      });
-      if (actx.state === 'suspended') actx.resume().catch(() => {});
-    } catch (e) { bgmAnalysers = null; bgmAudioCtx = null; } // 실패해도 큰 이미지 캐러셀은 그대로 동작
-  }
-  function resumeBgmAudioCtx() {
-    if (bgmAudioCtx && bgmAudioCtx.state === 'suspended') bgmAudioCtx.resume().catch(() => {});
-  }
-  // 스펙트럴 플럭스 온셋 감지 — "리듬에 안 맞고 딱딱 끊긴다"는 사용자 피드백으로 교체.
-  // 이전 방식(광대역 에너지가 자기 평균보다 큰가)은 곡의 전체 음량 굴곡만 따라가서 실제
-  // 음표 타격(어택) 시점과 안 맞았고, 1.1초 고정 폴백이 음악과 무관하게 계속 끼어들어
-  // 메트로놈처럼 딱딱해 보였음. 스펙트럴 플럭스는 "직전 프레임 대비 늘어난 주파수 성분의 합"
-  // 이라 타악기·신스 어택처럼 순간적으로 튀는 지점(=실제 박자)에서만 뾰족하게 반응한다.
-  let showcasePrevSpectrum = null;
-  function initHomeShowcaseBeat() {
-    function tick() {
-      requestAnimationFrame(tick);
-      if (home3d && document.getElementById('game-screen').classList.contains('home3d-on')) return; // 3D 홈 중엔 가려진 구형 홈 박자 효과 계산 생략(버벅임)
-      if (!bgmAnalysers) { ensureBgmAnalysers(); return; }
-      // bgm-a/b 핑퐁 중 실제 소리가 나는 채널만 채택 — 무음 채널을 같이 더하면 그 채널의
-      // 0값이 매 프레임 "감소"로 잡혀 플럭스 계산에 노이즈가 낌.
-      let buf = null;
-      bgmAnalysers.forEach((a) => {
-        a.analyser.getByteFrequencyData(a.buf);
-        let sum = 0;
-        for (let i = 0; i < a.buf.length; i++) sum += a.buf[i];
-        if (sum > 0) buf = a.buf;
-      });
-      if (!buf) return;
-      if (!showcasePrevSpectrum) { showcasePrevSpectrum = new Uint8Array(buf); return; }
-      let flux = 0;
-      const n = Math.min(48, buf.length); // 저음~중음 구간(타악기·베이스 어택 대부분 여기)
-      for (let i = 0; i < n; i++) {
-        const d = buf[i] - showcasePrevSpectrum[i];
-        if (d > 0) flux += d;
-        showcasePrevSpectrum[i] = buf[i];
-      }
-      // 평균을 천천히 반응하게 해야 "평소 수준"을 대표함 — 너무 빨리 쫓아가면(예: 0.9/0.1)
-      // 평균이 순간값을 계속 따라잡아 거의 매 프레임이 "평균보다 큼"을 통과해버려 최소
-      // 간격(220ms)마다 계속 터지는, 사실상 메트로놈과 다를 바 없는 결과가 났었음(실측 확인 —
-      // 간격이 260~280ms로 지나치게 균일).
-      showcaseAvgEnergy = showcaseAvgEnergy * 0.96 + flux * 0.04;
-      const now = performance.now();
-      const beatByAudio = flux > showcaseAvgEnergy * 2.2 && flux > 25 && now - showcaseLastBeat > 320;
-      // 곡이 한동안 너무 잠잠해도 완전히 멈춰 보이진 않게 드문 안전망만.
-      const beatByFallback = now - showcaseLastBeat > 1800;
-      if (document.body.classList.contains('rm-open')) return; // V1328 C: 광산지도가 덮고 있으면 뒤 홈 박자 효과 안 돌림
-      if (beatByAudio || beatByFallback) {
-        showcaseLastBeat = now;
-        pulseGridCells();
-        pulseDialPad(); // 다이얼패드 버튼들도 비트에 맞춰 커졌다 움직임(사용자 지정 — "축제 분위기")
-      }
-    }
-    requestAnimationFrame(tick);
-  }
-  let showcaseAvgEnergy = 0;
-  let showcaseLastBeat = 0;
-  // 현재 활성 페이지의 9칸 중 여러 개를 골라 비트마다 펄스(사용자 지정 — 화려한 변형 13종은
-  // "너무 산만함", 히트 플래시는 "눈이 너무 아픔" 피드백으로 빼고, 그라디언트 테두리도 "펄스
-  // 효과만" 요청으로 마저 빼서 눌림 스케일 하나만 유지).
-  function pulseGridCells() {
-    const grid = document.getElementById('home-grid');
-    if (!grid) return;
-    if (document.getElementById('game-screen').classList.contains('home-mine')) return; // v916: 광산 화면(페이드 중 포함)엔 아케이드 칸 펄스 안 함
-    const gridRect = grid.getBoundingClientRect();
-    // 연속 스크롤 중이라 "활성 페이지" 개념이 없음 — 지금 뷰포트에 걸쳐 있는 페이지(전환 중엔
-    // 2개)의 칸만 후보로 삼는다.
-    const visiblePages = Array.prototype.filter.call(document.querySelectorAll('.hg-page'), (p) => {
-      const r = p.getBoundingClientRect();
-      return r.bottom > gridRect.top && r.top < gridRect.bottom;
-    });
-    const cells = visiblePages.reduce((acc, p) => acc.concat(Array.prototype.slice.call(p.querySelectorAll('.hg-cell'))), []);
-    if (!cells.length) return;
-    const n = 2 + ((Math.random() * 3) | 0); // 2~4개, 동시에 움직여도 됨(사용자 지정)
-    for (let i = 0; i < n; i++) {
-      const cell = cells[(Math.random() * cells.length) | 0];
-      const img = cell.querySelector('img');
-      if (!img) continue;
-      cell.classList.remove('is-press');
-      img.classList.remove('is-press');
-      void img.offsetWidth;
-      cell.classList.add('is-press');
-      img.classList.add('is-press');
-    }
-  }
-
-  // 다이얼패드 버튼 전체가 비트마다 살짝 커지고 흔들리는 펄스(사용자 지정) — 홈 화면에서만
-  // (실제 라운드 플레이 중엔 타격 판정용 버튼이라 안 건드림).
-  // 항상 같이 트는 2종(사용자 지정 — 눌림 스케일 + 히트 플래시. 그라디언트 테두리는 버튼보드에는
-  // 적용 안 함, 사용자 지정) + 랜덤으로 하나 더 섞는 강조 변형(기존 팝/플래시/셰이크). 클래스
-  // 여러 개로는 animation 단축 속성이 충돌해서(위 style.css 주석 참고) JS 에서 직접 콤마로 이어
-  // 인라인 지정.
-  const LANE_ALWAYS = ['lane-press-scale 0.3s ease'];
-  // 'textgrow' 는 인라인 애니메이션이 아니라 버튼 안의 숫자/자막 span 에 붙는 클래스라 따로 처리
-  // (좌우 흔들림 대체, 사용자 지정).
-  const LANE_VARIANTS = ['lane-beat-pulse 0.4s ease-out', 'lane-attnflash 0.5s ease', 'textgrow'];
-  function pulseDialPad() {
-    if (!document.getElementById('game-screen').classList.contains('is-start')) return;
-    const bar = document.getElementById('lane-button-bar');
-    if (!bar) return;
-    // 전체가 한 번에 말고 버튼 몇 개만 각자 독립적으로 팝(사용자 지정). 시작(통화) 버튼은 제외
-    // (사용자 지정 — "시작 버튼은 기존 효과만", 골든 링 쉬머는 그대로 유지).
-    const btns = Array.prototype.filter.call(
-      bar.querySelectorAll('.lane-button'),
-      (b) => !b.classList.contains('lane-button--call')
-    );
-    if (!btns.length) return;
-    const n = 2 + ((Math.random() * 2) | 0); // 2~3개
-    for (let i = 0; i < n; i++) {
-      const b = btns[(Math.random() * btns.length) | 0];
-      const variant = LANE_VARIANTS[(Math.random() * LANE_VARIANTS.length) | 0];
-      const isTextgrow = variant === 'textgrow';
-      b.classList.remove('beat-textgrow');
-      b.style.animation = 'none';
-      void b.offsetWidth;
-      if (isTextgrow) b.classList.add('beat-textgrow');
-      b.style.animation = isTextgrow ? LANE_ALWAYS.join(', ') : LANE_ALWAYS.concat(variant).join(', ');
-    }
-  }
-
-  // 스코어 화면 좌상단 프로필 사진 — 기존 저장 사진과 같은 소스.
   function refreshHubAvatar() {
     const av = document.getElementById('hub-avatar');
     if (!av) return;
@@ -670,6 +524,32 @@
 
   // ---------- 더보기 메뉴 / 난이도 / 사람두더지 (독립앱 Phase 1) ----------
   let screenNav = null, moreMenu = null, faceMaker = null;
+  let home3d = null;
+  let arcadeOrderRound = 0;
+  function arcadeRounds() {
+    if (!arcadeOrderRound) {
+      const light = currentLight();
+      return {light,chapter:currentChapter(),get:n=>MG.Progress.get(n,light),unlocked:mode=>mode==='order'||MG.Progress.isLightUnlocked(mode)};
+    }
+    const OG = MG.OrderGame, saved = OG.load();
+    arcadeOrderRound = Math.min(arcadeOrderRound,saved.unlocked);
+    return {light:'order',chapter:arcadeOrderRound,get:n=>({best:saved.best[n]||0,cleared:(saved.best[n]||0)>=OG.CONFIG.target[n]}),unlocked:mode=>mode==='order'||MG.Progress.isLightUnlocked(mode)};
+  }
+  function selectArcadeMode(mode) {
+    if (mode === 'order') { arcadeOrderRound = MG.OrderGame.load().unlocked; return true; }
+    if (!mode || !MG.Progress.isLightUnlocked(mode)) return false;
+    arcadeOrderRound = 0;
+    setDifficulty(mode);setChapter(MG.Progress.maxChapterFor(mode));refreshChapterNav();return true;
+  }
+  function selectArcadeRound(round) {
+    if (!Number.isInteger(round)||round<1) return false;
+    if (arcadeOrderRound) {
+      if (round>MG.OrderGame.load().unlocked||round>MG.OrderGame.MAX_ROUND) return false;
+      arcadeOrderRound=round;return true;
+    }
+    if (round>MG.Progress.maxChapterFor(currentLight())) return false;
+    setChapter(round);refreshChapterNav();return true;
+  }
   let shop = null, daily = null, workshop = null, scoreScreen = null, settingsScreen = null, inventoryScreen = null;
   let currentDiff = 'easy';        // 현재 판 난이도
 
@@ -759,7 +639,7 @@
     // V1372 C 사용자: 두더지팡은 티켓 개념 없음 — 하트로만 진입(티켓은 리듬팡 전용)
     refreshChapterNav();
     gameStarting = true;
-    if (home3d) home3d.gameStarted();
+    if (home3d) home3d.gameStarted({ keepVisible: true });
     setNavLock(true); // 인트로~카운트다운 동안 ⊞ 잠금
     // ⚠️ 다이얼패드·게임판 전환은 전부 startRound() 에서 한 번에(원래대로) — beginGame() 에서
     // 미리 건드리는 시도를 여러 번 했다가("숫자만 먼저", "무기 구획선만 먼저" 등) 회전 애니메이션이
@@ -771,8 +651,7 @@
     currentDiff = currentDifficulty();
     applyDiffClass(currentDiff);
     preloadRoundMoles(); // 라운드1 플레이하는 동안 미리 받아둬야 라운드2 전환 때 안 늦음
-    if (direct) startRound({ fresh: true, direct: true });
-    else playStartIntro(() => startRound({ fresh: true }));
+    startRound({ fresh: true, direct: true });
   }
 
   // 라운드 전환 두더지 이미지 6장(텍스트 콜아웃 있던 2장 제외) — 늦게 로드되면 "라운드N" 글자만 먼저 뜨고 이미지가
@@ -836,86 +715,6 @@
   }
 
   // 글자 하나씩 타이핑, 다 치면 onTyped 호출. 글자가 보일 때마다 타자기 소리(공백 제외).
-  function typeText(el, text, onTyped) {
-    let i = 0;
-    (function step() {
-      el.textContent = text.slice(0, i);
-      const ch = text[i - 1];
-      if (i > 0 && ch && ch !== ' ') MG.HitFx.typeTick();
-      i++;
-      if (i <= text.length) setTimeout(step, 45);
-      else onTyped();
-    })();
-  }
-
-  // 라운드1 진입 전 한 번 — 커튼 패턴(노랑->분홍, 2.3s) 이 다 끝난 뒤 "챕터N" 타이핑,
-  // 이어서 "손을 풀어봅시다..." 타이핑, 끝나면 잠깐 멈췄다 커튼 오픈.
-  function playStartIntro(onDone) {
-    const myGen = sessionGen; // 인트로 도중 홈버튼/메뉴로 나가면 sessionGen 이 바뀌어 이 체인이 중단됨
-    const overlay = document.getElementById('start-intro-overlay');
-    const chapterNumEl = document.getElementById('si-chapter-num');
-    const chapterSubEl = document.getElementById('si-chapter-sub');
-    const tipEl = document.getElementById('si-tip-text');
-    const caretEl = document.getElementById('si-caret');
-    chapterNumEl.textContent = '';
-    chapterSubEl.textContent = '';
-    chapterSubEl.classList.remove('si-faceoff-in'); // 챕터8 전용 레이아웃 잔여 클래스 정리
-    tipEl.textContent = '';
-    caretEl.hidden = true; // 타이핑 시작 전엔 깜빡이는 커서도 같이 숨김(사용자 보고)
-    overlay.classList.remove('is-opening');
-    overlay.hidden = false;
-    document.getElementById('game-screen').classList.add('gs-intro'); // v952: ROUND 판·로고도 홈과 같이 사라짐
-    restartCurtainPattern(overlay, false, 1000); // v973(사용자 지정): 시작 → 챕터 글자까지 1초
-    setHammerLayerVisible(false);
-    // "챕터N : 부제" 한 줄이던 걸 두 줄로 쪼갬(1줄=챕터N, 2줄=부제) + 팁 문구를 3번째
-    // 줄로 - 총 3줄이 순서대로 타이핑(사용자 요청).
-    const fullChapter = chapterLabel(currentChapter());
-    const sepIdx = fullChapter.indexOf(' : ');
-    const chapterNum = sepIdx >= 0 ? fullChapter.slice(0, sepIdx) : fullChapter;
-    const chapterSub = sepIdx >= 0 ? fullChapter.slice(sepIdx + 3) : '';
-    // 챕터별 "내용 설명"(사용자 지정, 챕터2~10) — 없으면(챕터1) 기존 공용 팁 문구로 대체.
-    const chDesc = chapterDesc(currentChapter());
-    const fullTip = chDesc || I18N.t('mole.startintro.tip');
-    const aborted = () => myGen !== sessionGen;
-    setTimeout(() => {
-      if (aborted()) { overlay.hidden = true; overlay.classList.remove('is-opening'); return; }
-      typeText(chapterNumEl, chapterNum, () => {
-        if (aborted()) return;
-        // 라운드6(구챕터8) "소제목" = 텍스트가 아니라 [두더지 이미지] + FACE OFF + [토끼 이미지] 구성(사용자 지정).
-        const showSub = currentChapter() === 6
-          ? (cb) => {
-              chapterSubEl.innerHTML =
-                '<img class="si-faceoff-img" src="assets/moles/mole1.png" alt="">' +
-                '<b class="si-faceoff-txt">FACE OFF</b>' +
-                '<img class="si-faceoff-img" src="assets/moles/rabbit.png" alt="">';
-              chapterSubEl.classList.add('si-faceoff-in');
-              MG.HitFx.typeTick();
-              setTimeout(cb, 500); // 타이핑 대신 이미지 등장 — 다음 줄까지 비슷한 정도 대기
-            }
-          : (cb) => typeText(chapterSubEl, chapterSub, cb);
-        showSub(() => {
-          if (aborted()) return;
-          caretEl.hidden = false; // 이 줄 타이핑 시작하는 순간부터 커서 등장
-          typeText(tipEl, fullTip, () => {
-            if (aborted()) return;
-            setTimeout(() => {
-              if (aborted()) { overlay.hidden = true; overlay.classList.remove('is-opening'); return; }
-              overlay.classList.add('is-opening');
-              setHammerLayerVisible(true);
-              onDone();
-              setTimeout(() => {
-                overlay.hidden = true;
-                overlay.classList.remove('is-opening');
-              }, 300); // 커튼 transition(0.26s) 후 정리
-            }, 500); // 타이핑 끝난 뒤 잠깐 멈춤
-          });
-        });
-      });
-    }, 1000); // 커튼 패턴이 분홍으로 다 정리된 뒤에 타이핑 시작(v973: 2.3초 → 1초)
-  }
-
-  // ---------- 시작화면 초록 버튼: 탭=시작 / 꾹=종료 대기 / 다시 탭=종료창 ----------
-  // (홈 화면에서만. 게임 중엔 이 버튼은 15번 구멍 타격이라 handleCell 이 담당.)
   const armState = { armed: false, revertT: null };
   let setCallLabel = () => {}; // (mode) 'home' → "시작" / 'game' → "통화" (게임 중엔 15번 구멍 타격)
 
@@ -938,7 +737,6 @@
   // ⚠️ 홈 화면은 항상 기존 16버튼 다이얼러로 불변(사용자 지정) — 9홀/숫자패드는 실제
   // 라운드 진행(startRound) 중에만 적용. wantSmall 을 호출부가 명시적으로 넘긴다.
   let laneControlsIsSmall = null;
-  let home3d = null; // MG.Home3D 인스턴스(?home3d=0 이면 null)
   // 홈 화면 다이얼패드에 흡수된 더보기 기능(하트·코인·티켓·스코어·상점·홈·일일·퀘스트·친구·
   // 사진보관·아이템보관·설정·라이트모드) — 탭하면 그 화면/팝업으로. 인트로/카운트다운
   // 중(navLocked)엔 무시. 3D 홈(home3d.js)도 같은 함수로 연다. 무시/거절 = false.
@@ -1413,13 +1211,12 @@
       return;
     }
     var isStart = document.getElementById('game-screen').classList.contains('is-start');
-    var outEl = document.getElementById(isStart ? 'board-start' : 'mole-board');
+    var outEl = document.getElementById('mole-board');
     // V1357 C: 버튼판 말고 다른 곳(알림 팝업 등)에서 열어도 화면 상태(시작버튼 투명 등)가 맞게
     const navOf = { 'shop-screen': 'shop', 'mailbox-screen': 'mail', 'settings-screen': 'settings', 'inventory-screen': 'inventory' }[sub];
     if (navOf && sharedLaneControls) sharedLaneControls.setActiveNav(navOf);
     openMoreNow(sub); // more-menu 내용 준비(hidden=false 는 flipSwap 이 처리)
     flipSwap(outEl, document.getElementById('more-menu'));
-    // more-menu 가 보드 자리에 들어가는 구조라 — #board-start 만 숨겨서는 그 부모인
     // #mole-board(aspect-ratio 로 고정폭 유지) 가 빈 채로 자기 자리를 계속 차지해 more-menu 가
     // 그 아래로 밀려나고 다이얼패드가 화면 밖으로 밀려나는 버그가 생김. #mole-board 자체도
     // 같이 숨겨 그 자리를 비운다(홈 화면 진입 때만 — 실제 플레이 중 더보기는 게임판을 유지).
@@ -1428,11 +1225,7 @@
   function openMoreNow(sub) {
     // 백스톱: 시작 인트로(챕터 타이핑) 도중 어떻게든 메뉴가 열리면 대기 중이던 라운드 시작을
     // 취소하고 깨끗한 "더보기"만 연다. (평소엔 아래 navLock 으로 ⊞ 자체가 이 시간엔 안 먹힘.)
-    var si = document.getElementById('start-intro-overlay');
-    if (!state && si && !si.hidden) {
-      sessionGen++;
-      si.hidden = true; si.classList.remove('is-opening');
-    }
+
     // 진행 중이던 게임이 있으면(직접 일시정지했든 아니든) 상단 = "‹ 이어하기" + 칩 잠금.
     var resumable = !!(state && !state.ended);
     // 플레이 중(일시정지 아님)에 열면 게임을 멈춘다 (닫을 때 자동 재개).
@@ -1580,12 +1373,8 @@
     ri.hidden = true; ri.classList.remove('is-opening', 'is-bye');
     const byeEl = document.getElementById('bye-msg');
     if (byeEl) { byeEl.hidden = true; byeEl.textContent = ''; byeEl.onclick = null; }
-    const si = document.getElementById('start-intro-overlay');
-    if (si) { si.hidden = true; si.classList.remove('is-opening'); }
+
     setHammerLayerVisible(true);
-    document.getElementById('board-start').hidden = false;
-    // board-start는 #mole-board 의 자식 — 더보기(openMore)가 mole-board 자체를 hidden
-    // 처리해둔 상태일 수 있어(v166), 여기서도 같이 복구해야 board-start 가 0x0으로
     // 렌더링되지 않는다(키패드만 보이는 버그의 원인이었음).
     document.getElementById('mole-board').hidden = false;
     document.getElementById('game-screen').classList.add('is-start');
@@ -1602,62 +1391,11 @@
 
   // 라운드 표시(홈화면, 2026-09-27) — 원 8개(현재 라이트의 A/N/P 접두사 + 라운드번호),
   // 현재 라운드 글로우 + 해금 안 된 라운드 dim. mole.chapter 를 설정.
-  const ROUND_TIER_PREFIX = { easy: 'A', mid: 'N', legend: 'P' };
   function refreshChapterNav() {
-    const strip = document.getElementById('round-strip');
-    if (!strip) return;
-    const light = currentLight();
-    const maxCh = MG.Progress.maxChapterFor(light);
-    let ch = currentChapter();
-    if (ch > maxCh) { ch = maxCh; setChapter(ch); }
-    const prefix = ROUND_TIER_PREFIX[light] || 'A';
-    strip.querySelectorAll('[data-rs-round]').forEach((btn) => {
-      const n = parseInt(btn.getAttribute('data-rs-round'), 10);
-      btn.querySelector('[data-rs-label]').textContent = prefix + n;
-      btn.classList.toggle('is-locked', !MG.Progress.isUnlocked(n, light));
-      btn.classList.toggle('is-current', n === ch);
-    });
-    // 챕터 입장권 (2시간마다 +1, 입장 시 -1) — 다이얼패드 3번 버튼 카운터로 표시(사용자 지정).
-    if (sharedLaneControls) sharedLaneControls.setHudStat('tickets', MG.Economy.formatK(MG.Economy.getTickets()));
-  }
-  function wireChapterNav() {
-    const strip = document.getElementById('round-strip');
-    if (!strip) return;
-    strip.querySelectorAll('[data-rs-round]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const n = parseInt(btn.getAttribute('data-rs-round'), 10);
-        const light = currentLight();
-        if (!MG.Progress.isUnlocked(n, light)) return;
-        const before = currentChapter();
-        setChapter(n);
-        refreshChapterNav();
-        if (n !== before) {
-          btn.classList.remove('rs-flare'); void btn.offsetWidth; btn.classList.add('rs-flare');
-          setTimeout(() => btn.classList.remove('rs-flare'), 900);
-        }
-      });
-    });
-    // 양옆 삼각 버튼(투명 컷아웃 자리) — 라운드 글로우를 ◀▶ 로 한 칸씩 이동(사용자 지정).
-    const step = (d) => {
-      const maxCh = MG.Progress.maxChapterFor(currentLight());
-      const before = currentChapter();
-      const ch = Math.max(1, Math.min(maxCh, before + d));
-      setChapter(ch);
-      refreshChapterNav();
-      if (ch !== before) {
-        const cur = strip.querySelector('.rs-circle.is-current');
-        if (cur) {
-          cur.classList.remove('rs-flare'); void cur.offsetWidth; cur.classList.add('rs-flare');
-          setTimeout(() => cur.classList.remove('rs-flare'), 900);
-        }
-      }
-    };
-    strip.querySelector('[data-rs-round-prev]').addEventListener('click', () => step(-1));
-    strip.querySelector('[data-rs-round-next]').addEventListener('click', () => step(1));
+    const light = currentLight(), max = MG.Progress.maxChapterFor(light);
+    if (currentChapter() > max) setChapter(max);
   }
 
-
-  // 초록 버튼 롱프레스=종료 안내 말풍선 — 1회만.
   function maybeShowStartCoach() {
     const coach = document.querySelector('[data-start-coach]');
     if (!coach || localStorage.getItem('mole.startCoachSeen') === '1') return;
@@ -1759,8 +1497,6 @@
     resetHot();
 
     // 진입 경로별 설명 처리는 beginGame()에서 결정한다.
-    const boardStartEl = document.getElementById('board-start');
-    boardStartEl.hidden = true;
     document.getElementById('gameover-overlay').hidden = true;
     document.getElementById('game-screen').classList.remove('is-start');
     const foldHinge = document.getElementById('fold-hinge');
@@ -2033,6 +1769,7 @@
     if (MG.GameGuide.shouldShow()) {
       MG.GameGuide.showRules({light:currentLight(),mode:MG.GameGuide.modeFor(currentLight(),currentChapter()),required:true,onDone:beginRoundIntro});
     } else beginRoundIntro();
+    if (home3d) home3d.revealGame();
   }
 
   // 모든 라운드(1~8): "라운드 N" 타이틀·음성 없이 바로 Ready → GO! 카운트다운(줌인 + 색상,
@@ -3498,12 +3235,13 @@
     const mm = document.getElementById('more-menu');
     if ((mm && !mm.hidden) || (screenNav && screenNav.current())) return;
     gameStarting = true;
-    if (home3d) home3d.gameStarted();
+    if (home3d) home3d.gameStarted({ keepVisible: true });
     setNavLock(true);
     playScreenBgm('game');
     startOrderRound(round);
   }
   function startOrderRound(round) {
+    arcadeOrderRound = round;
     unmountFeverField();
     if (MG.ClayRoundOne && MG.ClayRoundOne.wait(() => startOrderRound(round))) return;
     MG.ClayRoundOne.setActive(true);
@@ -3527,7 +3265,6 @@
     if (state && state.holeLayer) state.holeLayer.clear();
     if (state && state.laneHammer) state.laneHammer.clear();
     resetHot();
-    document.getElementById('board-start').hidden = true;
     document.getElementById('gameover-overlay').hidden = true;
     document.getElementById('game-screen').classList.remove('is-start');
     const foldHinge = document.getElementById('fold-hinge');
@@ -3566,6 +3303,7 @@
     };
     orderHudMount();
     orderHud();
+    if (home3d) home3d.revealGame();
     playRoundIntro(() => {
       if (myGen !== sessionGen || !state || !state.order) return;
       state.introActive = false;
@@ -3675,7 +3413,7 @@
     if (!win) { const gen = sessionGen; setTimeout(() => { if (gen === sessionGen && !ov.hidden) showOrderChoice(o.round); }, 3000); } // 실패도 3초 뒤 [홈 복귀][다시 하기]
   }
   let orderResultBox = null;
-  function orderCleanup() { ['order-result', 'order-select'].forEach((id) => { const el = document.getElementById(id); if (el) el.remove(); }); }
+  function orderCleanup() { ['order-result'].forEach((id) => { const el = document.getElementById(id); if (el) el.remove(); }); }
   function showOrderChoice(round) {
     hideWinChoice();
     const ko = orderLang() === 'ko', bar = document.getElementById('lane-button-bar'), gs = document.getElementById('game-screen');
@@ -3705,29 +3443,6 @@
     if (canNext) p.querySelector('.wc-next').addEventListener('click', () => again(round + 1));
   }
   // 광장 게임기 네 번째 버튼 → 라운드 선택 창(1~8, 잠긴 라운드는 앞 라운드 목표 점수 표시)
-  function showOrderSelect() {
-    if (navLocked || gameStarting || state || document.getElementById('order-select')) return false;
-    const OG = MG.OrderGame, s = OG.load(), ko = orderLang() === 'ko', gs = document.getElementById('game-screen');
-    const p = document.createElement('div'); p.id = 'order-select';
-    let cards = '';
-    for (let n = 1; n <= OG.MAX_ROUND; n++) {
-      const locked = n > s.unlocked, best = s.best[n] | 0;
-      cards += '<button type="button" class="os-round' + (locked ? ' is-locked' : '') + '" data-n="' + n + '"' + (locked ? ' disabled' : '') + '><b>ROUND ' + n + '</b><span>' +
-        (locked ? '🔒 ' + (n - 1) + 'R ' + OG.CONFIG.target[n - 1].toLocaleString() : (ko ? '제시어 ' : 'Clues ') + OG.CONFIG.clues[n] + ' · BEST ' + best.toLocaleString()) + '</span></button>';
-    }
-    p.innerHTML = '<div class="os-card"><button type="button" class="os-close game-close game-close--dialog" aria-label="close"><img src="assets/score/icon-close-red.svg" alt=""></button><h3>' + (ko ? '순서대로 잡아라' : 'Catch in Order') + '</h3>' +
-      '<p class="os-sub">' + (ko ? '제시어 순서대로 두더지를 잡아라! (90초)' : 'Catch the moles in the given order! (90s)') /* V1728 C 사용자: '나쁜' 표현 없앰 */ + '</p><div class="os-grid">' + cards + '</div></div>';
-    gs.appendChild(p);
-    ['pointerdown', 'pointermove', 'pointerup', 'touchstart', 'touchmove', 'touchend', 'mousedown', 'mouseup'].forEach((ev) => p.addEventListener(ev, (e) => e.stopPropagation())); // 뒤의 광장으로 입력이 새지 않게
-    p.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const b = e.target.closest('.os-round');
-      if (b && !b.disabled) { const n = Number(b.dataset.n); p.remove(); if (MG.ShapeTransition) MG.ShapeTransition.run(1, () => beginOrderGame(n)); else beginOrderGame(n); return; }
-      if (e.target.closest('.os-close') || e.target === p) p.remove();
-    });
-    return true;
-  }
-
   function hideWinChoice() { const p = document.getElementById('win-choice'); if (p) p.remove(); }
   function showWinChoice(hasNext) {
     hideWinChoice();
@@ -3884,7 +3599,7 @@
     // 자동재생 정책에 막혔을 때 대비 — 모든 입력·버퍼완료·복귀 신호에서 applyBgm() 재시도.
     // 설치형 PWA 는 로딩 직후 재생이 허용되기도 해서 그 경우 첫 신호에 바로 시작된다.
     ['pointerdown', 'touchstart', 'click', 'keydown'].forEach((ev) =>
-      window.addEventListener(ev, () => { applyBgm(); resumeBgmAudioCtx(); }, { capture: true, passive: true }));
+      window.addEventListener(ev, () => { applyBgm(); }, { capture: true, passive: true }));
     window.addEventListener('pageshow', applyBgm);
     setTimeout(applyBgm, 400);
     // 앱이 "오래" 가려지면(유튜브 채널 이동·다른 앱 전환·화면 잠금) BGM 정지, 돌아오면 재개.
@@ -3915,8 +3630,6 @@
     // ensureLaneControlsForChapter(true) 로 9홀 숫자패드로 바꿨다가, 홈으로 돌아오면
     // showStartScreenNow() 가 다시 false 로 되돌린다.
     ensureLaneControlsForChapter(false, true); // false = 홈 기본값(16버튼), true = 최초 생성이라 무조건 실행
-    wireChapterNav();  // ◀ 챕터 N ▶ (열린 챕터 2개 이상일 때만 노출)
-    initHomeShowcase(); // 홈 화면 홍보 이미지 캐러셀(사용자 지정) — board-start 뒤에서 항상 순환
 
     migrateBest();
     wireMoreMenu();
@@ -3967,8 +3680,6 @@
     window.__debugSetChapter = (n) => { setChapter(n); };
     window.__debugStartOrder = (n) => { beginOrderGame(n || 1); }; // V1722 C: '순서대로 잡아라' 바로 시작
     window.__debugOrder = () => (state && state.order ? { round: state.order.round, phase: state.order.phase(), lives: state.order.lives(), stats: state.order.stats, time: state.timeRemaining, mission: state.order.mission(), pops: state.order.getActivePops().map((p) => ({ regionId: p.regionId, traits: p.traits, dying: p.dying, hitAt: p.hitAt })) } : null);
-    window.__debugOrderSelect = () => showOrderSelect();
-    window.__debugPlayStartIntro = () => { playStartIntro(() => {}); }; // beginGame() 이 거치는 타이핑 인트로만 단독 재생(테스트용)
     window.__debugUnlockAll = () => { localStorage.setItem('mole.unlockAll', '1'); };
     window.__debugProgress = () => ({
       chapter: currentChapter(), light: currentLight(),
@@ -4087,22 +3798,20 @@
       refreshBoardStats();
     };
     window.__debugExitApp = () => exitApp();
-    // 3D 홈 광장(기본, ?home3d=0 = 구형 홈) — 기능 열기는 기존 homeAction 그대로.
     if (MG.Home3D) home3d = MG.Home3D.create({
       homeAction,
       // V1619 C 사용자: 광장 두더지팡 게임기 = 라운드 지도 없이 바로 시작(하트 없으면 기존 안내창). 구멍 = 라운드 선택·진행 표시
       startGame: () => {
         if (navLocked || gameStarting || state) return false;
+        if (arcadeOrderRound) { beginOrderGame(arcadeOrderRound); return true; }
         if (MG.Economy.getHearts() <= 0) { beginGame(true); return true; }
         if (MG.GameGuide.shouldShow()) beginGame(true);
         else MG.ShapeTransition.run(1, () => beginGame(true));
         return true;
       },
-      rounds: () => { const l = currentLight(); return { light: l, chapter: currentChapter(), get: (n) => MG.Progress.get(n, l), unlocked: (x) => MG.Progress.isLightUnlocked(x) }; },
-      // 게임기 모드 버튼: 라운드 지도와 같은 규칙(그 모드에서 열린 가장 높은 라운드로)
-      setMode: (l) => { if (!l || !MG.Progress.isLightUnlocked(l)) return false; setDifficulty(l); setChapter(MG.Progress.maxChapterFor(l)); refreshChapterNav(); return true; },
-      selectRound: (n) => { if (n < 1 || n > MG.Progress.maxChapterFor(currentLight())) return false; setChapter(n); refreshChapterNav(); return true; },
-      openOrder: () => showOrderSelect(), // V1722 C: 게임기 네 번째 버튼 = '순서대로 잡아라' 라운드 선택
+      rounds: arcadeRounds,
+      setMode: selectArcadeMode,
+      selectRound: selectArcadeRound,
       host: document.getElementById('game-screen'),
       hud: () => ({ coins: MG.Economy.formatK(MG.Economy.getCoins()), hearts: MG.Economy.formatK(MG.Economy.getHearts()), tickets: MG.Economy.formatK(MG.Economy.getTickets()) })
     });

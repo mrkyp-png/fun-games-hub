@@ -47,12 +47,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@700&family=Jua&family=Lilita+One&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../cosmic-theme.css">
 <link rel="stylesheet" href="../common/settings.css">
-<link rel="stylesheet" href="style.css?v=1748-G">
-<link rel="stylesheet" href="clay-round1-local.css?v=1748-G">
-<link rel="stylesheet" href="order-game.css?v=1748-G">
-<link rel="stylesheet" href="game-guide.css?v=1748-G">
-<link rel="stylesheet" href="rhythm-buttons-v1568.css?v=1748-G">
-<link rel="stylesheet" href="rhythm-type-lighting-v1569.css?v=1748-G">
+<link rel="stylesheet" href="style.css?v=1749-G">
+<link rel="stylesheet" href="clay-round1-local.css?v=1749-G">
+<link rel="stylesheet" href="order-game.css?v=1749-G">
+<link rel="stylesheet" href="game-guide.css?v=1749-G">
+<link rel="stylesheet" href="rhythm-buttons-v1568.css?v=1749-G">
+<link rel="stylesheet" href="rhythm-type-lighting-v1569.css?v=1749-G">
 <style>
   /* 로딩 스플래시 — style.css 로딩 전에도 바로 뜨게 인라인. */
   #splash {
@@ -312,8 +312,8 @@
 
 /* Extend only the original rope strips above the unchanged sign. */
 </style>
-<link rel="stylesheet" href="workshop-enhance.css?v=1748-G">
-<link rel="stylesheet" href="home3d.css?v=1748-G">
+<link rel="stylesheet" href="workshop-enhance.css?v=1749-G">
+<link rel="stylesheet" href="home3d.css?v=1749-G">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true"><defs><filter id="checkerboard-round-tint" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feColorMatrix id="checkerboard-round-matrix" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0"/></filter></defs></svg>
@@ -403,12 +403,6 @@
       <div id="combo-heart-pop" class="combo-heart-pop" aria-hidden="true"></div>
       <!-- 하트/코인/티켓(예전 #board-stats·티켓뱃지)은 다이얼패드 1·2·3번 버튼 안으로 흡수(사용자 지정). -->
 
-      <!-- Empty upper area reserved for the home redesign; controls retain their layout. -->
-      <div id="board-start" class="board-panel board-start">
-        <!-- Reserved for the redesigned home artwork. -->
-
-      </div>
-
       <!-- 최종 결과 (10라운드 완주 또는 목숨 소진). 박스 없이 전체화면 연출 위에 직접.
            is-win = 광선+색종이+하마 축하 / is-lose = 빗줄기+하마 시무룩. -->
       <div id="gameover-overlay" class="overlay board-panel" hidden>
@@ -452,14 +446,6 @@
 
       <!-- 라운드 시작 카운트다운 (매 라운드: "라운드 N" → 3·2·1·시작!) -->
       <!-- 시작 버튼 누르면 라운드1 카운트다운 전에 한 번 — 챕터 이름 + 준비 문구 타이핑, 끝나면 커튼 오픈. -->
-      <div id="start-intro-overlay" class="overlay round-intro board-panel" hidden aria-hidden="true">
-        <div class="ri-curtain ri-curtain--l"></div>
-        <div class="ri-curtain ri-curtain--r"></div>
-        <div id="si-chapter-num" class="si-line1"></div>
-        <div id="si-chapter-sub" class="si-line2"></div>
-        <div class="si-line3"><span id="si-tip-text"></span><span id="si-caret" class="si-caret" aria-hidden="true" hidden></span></div>
-      </div>
-
       <div id="round-intro-overlay" class="overlay round-intro board-panel" hidden aria-hidden="true">
         <div class="ri-curtain ri-curtain--l"></div>
         <div class="ri-curtain ri-curtain--r"></div>
@@ -481,21 +467,6 @@
     <!-- 라운드 표시(2026-09-27, 사용자 지정: "게임화면(게임보드) 안에 아래쪽에 좌우를 맞춰서" +
          "입체감을 주려고 한다" — 보드 경계 아래로 살짝 넘치는 3D 느낌, 잘리면 안 됨) —
          #mole-board 형제로 두어 board의 overflow:hidden에 안 잘리게 함. 홈(is-start)에서만 노출. -->
-    <div id="round-strip" class="round-strip" aria-hidden="true">
-      <img loading="lazy" decoding="async" class="rs-head" src="assets/home2/round-head-2.png" alt=""><img loading="lazy" decoding="async" class="rs-bar" src="assets/home2/round-bar.png" alt="">
-      <button type="button" class="rs-tri rs-tri--prev" data-rs-round-prev aria-label="이전 라운드"></button>
-      <div class="rs-circles">
-        <button type="button" class="rs-circle" data-rs-round="1"><span data-rs-label></span></button>
-        <button type="button" class="rs-circle" data-rs-round="2"><span data-rs-label></span></button>
-        <button type="button" class="rs-circle" data-rs-round="3"><span data-rs-label></span></button>
-        <button type="button" class="rs-circle" data-rs-round="4"><span data-rs-label></span></button>
-        <button type="button" class="rs-circle" data-rs-round="5"><span data-rs-label></span></button>
-        <button type="button" class="rs-circle" data-rs-round="6"><span data-rs-label></span></button>
-        <button type="button" class="rs-circle" data-rs-round="7"><span data-rs-label></span></button>
-        <button type="button" class="rs-circle" data-rs-round="8"><span data-rs-label></span></button>
-      </div>
-      <button type="button" class="rs-tri rs-tri--next" data-rs-round-next aria-label="다음 라운드"></button>
-    </div>
     <!-- 더보기 메뉴 껍데기 — 화면 UI는 삭제(사용자 지정, 기능은 전부 다이얼패드로 이동).
          빈 컨테이너만 남김: 더보기 화면 열기/닫기(flipSwap)의 중간 전환 대상 + 일시정지
          북키핑(openMore/openMoreNow/closeMore)이 여전히 이 엘리먼트를 쓴다 — position:fixed 인데
@@ -898,7 +869,7 @@
         <!-- 배포 버전 표식(스크린샷으로 어느 버전인지 확인용) — 화면 좌하단에 두면 다른 UI에
              가려 잘 안 보인다는 사용자 지적으로, 하트 아이콘(다이얼패드 1번 칸) 바로 위로 이동. -->
         <div class="h2-preload" aria-hidden="true"></div><!-- v951: 게임 중 버튼 색(초록·노랑·빨강·분홍·회색) 미리 읽어 두기 — 처음 바뀔 때 깜빡임 방지 -->
-        <div id="build-tag" aria-hidden="true">V 1748 G</div>
+        <div id="build-tag" aria-hidden="true">V 1749 G</div>
       </div>
       <div id="invincible-countdown" class="invincible-countdown" aria-hidden="true" hidden></div>
     </div>
@@ -909,26 +880,26 @@
 
 <script src="../common/settings.js"></script>
 <script src="../common/i18n.js"></script>
-<script src="js/i18n-strings.js?v=1748-G"></script>
-<script src="js/screen-nav.js?v=1748-G"></script>
-<script src="js/item-inventory.js?v=1748-G"></script>
+<script src="js/i18n-strings.js?v=1749-G"></script>
+<script src="js/screen-nav.js?v=1749-G"></script>
+<script src="js/item-inventory.js?v=1749-G"></script>
 <script src="js/economy.js"></script>
 <script src="js/ads.js"></script>
 <script src="js/levels.js"></script>
-<script src="js/progress.js?v=1748-G"></script>
+<script src="js/progress.js?v=1749-G"></script>
 <script src="js/rng.js"></script>
 <script src="js/combo-score.js"></script>
-<script src="js/grid-partition.js?v=1748-G"></script>
+<script src="js/grid-partition.js?v=1749-G"></script>
 <script src="js/spawn-scheduler.js"></script>
-<script src="js/mole-sprites.js?v=1748-G"></script>
+<script src="js/mole-sprites.js?v=1749-G"></script>
 <script src="js/costume-teams.js"></script>
 <script src="js/skills.js"></script>
 <script src="js/photo-studio.js"></script>
 <script src="js/face-detect.js"></script>
 <script src="js/face-maker.js?v=1532-C"></script>
 <script src="js/shop-scenery-v1486.js?v=1561-C"></script>
-<script src="js/shop-models-v1509.js?v=1748-G"></script>
-<script src="js/shop.js?v=1748-G"></script>
+<script src="js/shop-models-v1509.js?v=1749-G"></script>
+<script src="js/shop.js?v=1749-G"></script>
 <script src="js/daily.js?v=1529-C"></script>
 <script src="js/quest.js?v=1557-C"></script>
 <script>
@@ -1032,66 +1003,66 @@ window.FGH.rollOut = function (el, done) {
   }); }, 150);
 };
 </script>
-<script src="js/workshop-enhance.js?v=1748-G"></script>
-<script src="js/workshop.js?v=1748-G"></script>
-<script src="js/shape-transition.js?v=1748-G"></script>
+<script src="js/workshop-enhance.js?v=1749-G"></script>
+<script src="js/workshop.js?v=1749-G"></script>
+<script src="js/shape-transition.js?v=1749-G"></script>
 <script src="js/rhythm-b-routes.js"></script>
 <script src="js/rhythm-b-flow.js"></script>
 <script src="js/rhythm-b-play.js"></script>
 <script src="js/rhythm-b.js"></script>
 <script src="js/rhythm-lyrics.js"></script>
-<script src="js/rhythm-beach-ocean.js?v=1748-G"></script>
-<script src="js/rhythm-beach.js?v=1748-G"></script>
+<script src="js/rhythm-beach-ocean.js?v=1749-G"></script>
+<script src="js/rhythm-beach.js?v=1749-G"></script>
 <script src="js/rhythm-status-art.js"></script>
 <script src="js/rhythm-status-fx.js"></script>
-<script src="js/rhythm.js?v=1748-G"></script>
+<script src="js/rhythm.js?v=1749-G"></script>
 <script src="js/rhythm-button-feedback-v1568.js?v=1568-G"></script>
-<script src="js/rhythm-type-lighting-v1569.js?v=1748-G"></script>
-<script src="js/score-screen.js?v=1748-G"></script>
+<script src="js/rhythm-type-lighting-v1569.js?v=1749-G"></script>
+<script src="js/score-screen.js?v=1749-G"></script>
 <script src="js/settings-screen.js?v=1527-C"></script>
-<script src="js/inventory-screen.js?v=1748-G"></script>
-<script src="js/mailbox-daily.js?v=1748-G"></script>
-<script src="js/mailbox.js?v=1748-G"></script>
-<script src="js/contact.js?v=1748-G"></script>
-<script src="js/clay-rig-math.js?v=1748-G"></script>
-<script src="js/clay-rig-runtime.js?v=1748-G"></script>
-<script src="js/mole-appearances.js?v=1748-G"></script>
-<script src="js/rhythm-beach-stunts.js?v=1748-G"></script>
-<script src="js/rhythm-beach-moles.js?v=1748-G"></script>
-<script src="js/rhythm-dance-beats.js?v=1748-G"></script>
-<script src="js/rhythm-type-mole.js?v=1748-G"></script>
-<script src="js/clay-round1-local.js?v=1748-G"></script>
-<script src="js/pop-elements.js?v=1748-G"></script>
-<script src="js/hole-layer.js?v=1748-G"></script>
-<script src="js/hit-fx.js?v=1748-G"></script>
-<script src="js/game-hammer-models.js?v=1748-G"></script>
-<script src="js/lane-hammer.js?v=1748-G"></script>
+<script src="js/inventory-screen.js?v=1749-G"></script>
+<script src="js/mailbox-daily.js?v=1749-G"></script>
+<script src="js/mailbox.js?v=1749-G"></script>
+<script src="js/contact.js?v=1749-G"></script>
+<script src="js/clay-rig-math.js?v=1749-G"></script>
+<script src="js/clay-rig-runtime.js?v=1749-G"></script>
+<script src="js/mole-appearances.js?v=1749-G"></script>
+<script src="js/rhythm-beach-stunts.js?v=1749-G"></script>
+<script src="js/rhythm-beach-moles.js?v=1749-G"></script>
+<script src="js/rhythm-dance-beats.js?v=1749-G"></script>
+<script src="js/rhythm-type-mole.js?v=1749-G"></script>
+<script src="js/clay-round1-local.js?v=1749-G"></script>
+<script src="js/pop-elements.js?v=1749-G"></script>
+<script src="js/hole-layer.js?v=1749-G"></script>
+<script src="js/hit-fx.js?v=1749-G"></script>
+<script src="js/game-hammer-models.js?v=1749-G"></script>
+<script src="js/lane-hammer.js?v=1749-G"></script>
 <script src="js/lane-cannon.js?v=1534-C"></script>
 <script src="js/game-cannon-model-v1509.js?v=1533-C"></script>
 <script src="js/lane-boxing.js"></script>
-<script src="js/weapon-pool.js?v=1748-G"></script>
-<script src="js/lane-controls.js?v=1748-G"></script>
+<script src="js/weapon-pool.js?v=1749-G"></script>
+<script src="js/lane-controls.js?v=1749-G"></script>
 <script src="js/region-reveal.js"></script>
-<script src="js/hud.js?v=1748-G"></script>
+<script src="js/hud.js?v=1749-G"></script>
 <script src="js/sky.js"></script>
-<script src="js/fever-field.js?v=1748-G"></script>
-<script src="js/home3d-layout.js?v=1748-G"></script>
-<script src="js/home3d-state.js?v=1748-G"></script>
-<script src="js/home3d-rhythm-tunnel.js?v=1748-G"></script>
-<script src="js/home3d-renderer.js?v=1748-G"></script>
-<script src="js/home3d-ui.js?v=1748-G"></script>
-<script src="js/home3d-signs.js?v=1748-G"></script>
-<script src="js/home3d-intro.js?v=1748-G"></script>
-<script src="js/home3d-text.js?v=1748-G"></script>
-<script src="js/home3d-board.js?v=1748-G"></script>
-<script src="js/home3d.js?v=1748-G"></script>
-<script src="js/order-game.js?v=1748-G"></script>
-<script src="js/golden-rewards.js?v=1748-G"></script>
-<script src="js/guide-actors.js?v=1748-G"></script>
-<script src="js/game-guide.js?v=1748-G"></script>
-<script src="js/game.js?v=1748-G"></script>
+<script src="js/fever-field.js?v=1749-G"></script>
+<script src="js/home3d-layout.js?v=1749-G"></script>
+<script src="js/home3d-state.js?v=1749-G"></script>
+<script src="js/home3d-rhythm-tunnel.js?v=1749-G"></script>
+<script src="js/home3d-renderer.js?v=1749-G"></script>
+<script src="js/home3d-ui.js?v=1749-G"></script>
+<script src="js/home3d-signs.js?v=1749-G"></script>
+<script src="js/home3d-intro.js?v=1749-G"></script>
+<script src="js/home3d-text.js?v=1749-G"></script>
+<script src="js/home3d-board.js?v=1749-G"></script>
+<script src="js/home3d.js?v=1749-G"></script>
+<script src="js/order-game.js?v=1749-G"></script>
+<script src="js/golden-rewards.js?v=1749-G"></script>
+<script src="js/guide-actors.js?v=1749-G"></script>
+<script src="js/game-guide.js?v=1749-G"></script>
+<script src="js/game.js?v=1749-G"></script>
 <script>window.FGH.I18N.applyStatic(document);</script>
-<script src="js/asset-loader-v1477.js?v=1748-G"></script>
+<script src="js/asset-loader-v1477.js?v=1749-G"></script>
 <script>
   // 로딩 스플래시 — 로딩이 끝나면 "화면을 눌러 시작". 그 탭(제스처)에서 game.js 의 window
   // pointerdown 리스너가 BGM 재생을 시작한다 → 브라우저 자동재생 차단 우회 = "로딩부터 브금".
@@ -1297,7 +1268,7 @@ window.FGH.rollOut = function (el, done) {
         var gate = window.__moleAssetGate;
         function waitForCurrentWorker(registration) {
           return new Promise(function (resolve, reject) {
-            var latest = 'v=1748-G';
+            var latest = 'v=1749-G';
             var done = false;
             var timer = setTimeout(function () { finish(); }, 25000);
             function finish(error) {
@@ -1324,7 +1295,7 @@ window.FGH.rollOut = function (el, done) {
           console.warn('Starting while service worker registration continues in background');
           if (gate) gate.resolveCache();
         }, 30000);
-        navigator.serviceWorker.register('sw.js?v=1748-G').then(waitForCurrentWorker).then(function () {
+        navigator.serviceWorker.register('sw.js?v=1749-G').then(waitForCurrentWorker).then(function () {
           clearTimeout(registrationTimer);
           if (gate) gate.resolveCache();
         }).catch(function (error) {
