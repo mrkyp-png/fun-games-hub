@@ -11,6 +11,8 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   await p.evaluate(() => { const s = document.getElementById('splash'); if (s) s.remove(); window.__debugOpenMore('shop-screen'); });
   await wait(25000);
   await p.screenshot({ path: OUT + '/shop-screen.png' });
+  await p.evaluate(() => { const t = document.querySelector('[data-shop-tab="coin"]'); if (t) t.click(); });
+  await wait(8000); await p.screenshot({ path: OUT + '/shop-coin.png' });
   await p.evaluate(() => { const t = document.querySelector('[data-shop-tabs] [data-tab="ticket"], [data-shop-tabs] button:nth-child(3)'); if (t) t.click(); });
   await wait(8000); await p.screenshot({ path: OUT + '/shop-ticket.png' });
   await p.evaluate(() => { const t = document.querySelector('[data-shop-tab="skill"]'); if (t) t.click(); });

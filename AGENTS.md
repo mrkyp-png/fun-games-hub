@@ -1,4 +1,8 @@
-# V1738 C DEPLOYED - 2026-11-16 (Claude)
+# V1739 C DEPLOYED - 2026-11-16 (Claude)
+- Toggle-box coin left offset +15px → +5px (measured on the user's phone photo; the 390px capture needs a different offset).
+- Heart/coin ad cards: ad clapper icon scale 1.5 with transform-origin right-centre (stays inside the card, overlaps the heart/coin) — user: bigger ad icon = more ad views.
+
+# V1738 C DEPLOYED - 2026-11-16 (Claude) `f10d2545`
 - Shop panel (banner/cards/tab shell) top -0.3cm → calc(-0.3cm - 20px): user asked to centre it vertically (nameplate removed left ~40px extra on top on the PHONE). In the 390x844 headless capture the awning top clips slightly (phone app has more top inset) — deployed phone-first on user's choice; revert if the phone clips.
 
 # V1737 C DEPLOYED - 2026-11-16 (Claude) `24dbeced`
