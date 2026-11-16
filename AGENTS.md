@@ -1,4 +1,9 @@
-# V1742 C DEPLOYED - 2026-11-16 (Claude)
+# V1743 C DEPLOYED - 2026-11-16 (Claude)
+- Clay quest icons (GPT, same size/position, overwrite assets/quest): ic-pad, ic-trophy, ic-fire, ic-cal, ic-check, gift-red (also the daily-gift random box via QUEST_GIFT), gift-purple, sh-gold/silver/bronze/grey. Concepts Desktop/상점_새그림_시안/퀘스트.
+- Duck crown recolour fixed per frame: finds the shadow line under the crown (yellow-hue rows, centre 40-60%) instead of a fixed 20.5% height → head top no longer tinted (goose-clay-v1741 1..10 + idle).
+- Enhance scene: soft brown oval floor shadow under the pedestal (.ws-new-scene::before, workshop-enhance.css). Not captured (needs an owned weapon).
+
+# V1742 C DEPLOYED - 2026-11-16 (Claude) `e7134811`
 - Clay workshop duck + enhance scene. NOTE: the live enhance scene uses assets/workshop/enhance-v1433 (egg-intact/first/growing/separated + pedestal-body/front + front-gem); egg-ok-*/egg-ng-* are OLD unused files. New copies in assets/workshop/enhance-clay-v1741/ (workshop-enhance.js A path); effects (rays/smoke/sparkle) copied unchanged.
 - egg-growing / egg-separated cracks are TRANSPARENT gaps (shards are cut along them) → made by punching the original alpha gaps into the clay intact egg (+ 2px edge from original), so crack positions are identical. egg-first = GPT clay (crack drawn).
 - Duck: assets/workshop/goose-clay-v1741/goose-1..10.png + goose-idle.webp (2x2 sheet, background-size 200%), crown recoloured slightly deeper gold (top 20.5% / middle 68% box, yellow hue only). workshop.js + index.html img + sw.js paths updated.
