@@ -1,4 +1,8 @@
-# V1728 C DEPLOYED - 2026-11-16 (Claude)
+# V1729 C DEPLOYED - 2026-11-16 (Claude)
+- Fart mole v2 (mole/assets/characters-v1728/behavior-smoke.glb, review/make-fart-mole.cjs; new folder for phone cache): crouch → high jump (+0.75) while turning around, toot at the peak, BIG clouds (0.68) rising out of the hole, land, turn back (1.25s), nose pinch from 1.25~1.5. Renderer loop for smoke = 1.5+(t-1.5)%1.5. Watch: top-row jump may clip into the HUD.
+- '나쁜 두더지' wording removed from screens: mission 'any' = 장난꾸러기 두더지 / prankster moles; order select subtitle = 제시어 순서대로 두더지를 잡아라! / Catch the moles in the given order!
+
+# V1728 C DEPLOYED - 2026-11-16 (Claude) `34ca1e21`
 - Main game: smoke mole → FART mole (user). clay-round1-local.js loads mole/assets/characters-v1727/behavior-smoke.glb (review/make-fart-mole.cjs, from v1694 smoke): turns around on landing, toot cloud from under the tail, turns back; right hand pinches the nose (cigar grip, middle finger curl = index), new > < eyes (Squeeze eye L/R — model had no eye mesh), face clouds orbit. behaviorTime: smoke plays 0~3s once, then loops 1.2~3.0 (no repeated spin). Miss cover = .hit-fx-smoke--fart (yellow-green). Mission name 방귀 두더지 / farting moles. Behaviour id stays 'smoke'.
 - Order game HUD: HOME text 9px !important (hud.js inlines SCORE size) and icon/text translate:none (hud.js aligns the icon to the trophy, which the order HUD hides → icon was pushed off the left).
 

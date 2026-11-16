@@ -2386,7 +2386,7 @@
   const MISSION_REWARD = 1000; // V1712 C 사용자: 미션 성공 코인 1000
   function missionLabel(ms) {
     const ko = I18N.lang === 'ko';
-    const nm = { any: ko ? '나쁜 두더지' : 'bad moles', thief: ko ? '도둑 두더지' : 'thief moles', drink: ko ? '콜라 두더지' : 'cola moles' /* V1725 C 사용자: 술 → 콜라 */, smoke: ko ? '방귀 두더지' : 'farting moles' /* V1727 C 사용자: 담배 → 방귀 */, phone: ko ? '휴대폰 두더지' : 'phone moles' }[ms.kind];
+    const nm = { any: ko ? '장난꾸러기 두더지' : 'prankster moles' /* V1728 C 사용자: '나쁜' 표현 없앰 */, thief: ko ? '도둑 두더지' : 'thief moles', drink: ko ? '콜라 두더지' : 'cola moles' /* V1725 C 사용자: 술 → 콜라 */, smoke: ko ? '방귀 두더지' : 'farting moles' /* V1727 C 사용자: 담배 → 방귀 */, phone: ko ? '휴대폰 두더지' : 'phone moles' }[ms.kind];
     if (ms.kind === 'combo') return ko ? ms.n + ' 콤보 달성' : 'Reach ' + ms.n + ' combo';
     return ko ? nm + ' ' + ms.n + '마리 잡기' : 'Catch ' + ms.n + ' ' + nm;
   }
@@ -3671,7 +3671,7 @@
         (locked ? '🔒 ' + (n - 1) + 'R ' + OG.CONFIG.target[n - 1].toLocaleString() : (ko ? '제시어 ' : 'Clues ') + OG.CONFIG.clues[n] + ' · BEST ' + best.toLocaleString()) + '</span></button>';
     }
     p.innerHTML = '<div class="os-card"><button type="button" class="os-close" aria-label="close">✕</button><h3>' + (ko ? '순서대로 잡아라' : 'Catch in Order') + '</h3>' +
-      '<p class="os-sub">' + (ko ? '제시어 순서대로 나쁜 두더지를 잡아라! (90초)' : 'Catch the bad moles in the given order! (90s)') + '</p><div class="os-grid">' + cards + '</div></div>';
+      '<p class="os-sub">' + (ko ? '제시어 순서대로 두더지를 잡아라! (90초)' : 'Catch the moles in the given order! (90s)') /* V1728 C 사용자: '나쁜' 표현 없앰 */ + '</p><div class="os-grid">' + cards + '</div></div>';
     gs.appendChild(p);
     ['pointerdown', 'pointermove', 'pointerup', 'touchstart', 'touchmove', 'touchend', 'mousedown', 'mouseup'].forEach((ev) => p.addEventListener(ev, (e) => e.stopPropagation())); // 뒤의 광장으로 입력이 새지 않게
     p.addEventListener('click', (e) => {

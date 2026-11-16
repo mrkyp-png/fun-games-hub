@@ -3,7 +3,7 @@ import bpy, math, sys
 from mathutils import Vector
 OUT = sys.argv[sys.argv.index('--') + 1]
 bpy.ops.wm.read_factory_settings(use_empty=True)
-bpy.ops.import_scene.gltf(filepath=r"C:\Users\master\Desktop\fun-games-hub\mole\assets\characters-v1727\behavior-smoke.glb")
+bpy.ops.import_scene.gltf(filepath=r"C:\Users\master\Desktop\fun-games-hub\mole\assets\characters-v1728\behavior-smoke.glb")
 act = bpy.data.actions['Behavior']
 for o in bpy.data.objects:
     if o.animation_data is None: o.animation_data_create()
@@ -18,8 +18,8 @@ sc.render.engine = 'BLENDER_EEVEE' if 'BLENDER_EEVEE' in [e.identifier for e in 
 sc.render.resolution_x = sc.render.resolution_y = 600
 w = bpy.data.worlds.new('w'); w.color = (0.85, 0.85, 0.85); sc.world = w
 cam = bpy.data.objects.new('c', bpy.data.cameras.new('c')); sc.collection.objects.link(cam); sc.camera = cam
-cam.data.type = 'ORTHO'; cam.data.ortho_scale = 1.4
-cam.location = (0.3, -8, 1.75); cam.rotation_euler = (Vector((0.3, 0, 1.75)) - cam.location).to_track_quat('-Z', 'Y').to_euler()
+cam.data.type = 'ORTHO'; cam.data.ortho_scale = 4.4
+cam.location = (0, -8, 1.8); cam.rotation_euler = (Vector((0, 0, 1.8)) - cam.location).to_track_quat('-Z', 'Y').to_euler()
 L = bpy.data.objects.new('l', bpy.data.lights.new('l', 'SUN')); L.data.energy = 4; L.rotation_euler = (math.radians(50), 0, math.radians(20)); sc.collection.objects.link(L)
-for t in (2.4,):
+for t in (0.75,):
     sc.frame_set(int(round(t * fps)) + 1); sc.render.filepath = '%s_%.2f.png' % (OUT, t); bpy.ops.render.render(write_still=True)
