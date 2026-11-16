@@ -80,7 +80,7 @@
         const tx = (v) => { const k = String(v || ''); const o = /^mole./.test(k) && root.FGH ? root.FGH.I18N.t(k) : k; return o === k && /^mole./.test(k) ? '' : o; }; /* 메일 제목·내용 = 번역 키(메일함 화면과 같게) */
         el('b', '', txt).textContent = tx(m.title); el('span', '', txt).textContent = tx(m.description);
         const rw = el('div', 'h3-mailrw', row);
-        if (REWARD_ICON[m.rewardType]) { const im = el('img', '', rw); im.src = REWARD_ICON[m.rewardType]; im.alt = ''; } else if (m.rewardType === 'gift') el('i', 'h3-mail-gift', rw);
+        if (m.rewardType === 'item' && MB.rewardIcon) { const im = el('img', '', rw); im.src = MB.rewardIcon(m); im.alt = ''; } else if (REWARD_ICON[m.rewardType]) { const im = el('img', '', rw); im.src = REWARD_ICON[m.rewardType]; im.alt = ''; } else if (m.rewardType === 'gift') el('i', 'h3-mail-gift', rw);
         if (m.rewardType && m.rewardType !== 'none') el('em', '', rw).textContent = '×' + (m.rewardAmount || 1);
         const bt = el('button', 'h3-mail-get', row); bt.type = 'button';
         bt.textContent = m.isClaimed ? (ko ? '받음' : 'Done') : (ko ? '받기' : 'Claim'); bt.disabled = !!m.isClaimed || !m.rewardType || m.rewardType === 'none';

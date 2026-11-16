@@ -26,6 +26,12 @@ html, body { touch-action: manipulation; }
 /* ── 밝은 모드 팔레트 — 삼성 기본 다이얼러(밝은) 레퍼런스: 깔끔한 흰색.
    Desktop/밝은모드.jpg 참고. 게임 플레이 보드(잔디밭)와 강조색은 그대로. ── */
 :root {
+  --popup-confirm-face: linear-gradient(180deg,#28ef58 0%,#08d53b 46%,#00ad2c 100%);
+  --popup-confirm-rim: linear-gradient(180deg,#baff80 0%,#45ec48 24%,#008a24 75%,#005d19 100%);
+  --popup-confirm-highlight: #aaff81;
+  --popup-cancel-face: linear-gradient(180deg,#ff8181 0%,#f04b4b 46%,#d83232 100%);
+  --popup-cancel-rim: linear-gradient(180deg,#ffd2d2,#ff9696 24%,#b72c2c 75%,#8f2020);
+  --popup-cancel-highlight: #ffd8d8;
   --popup-gold-border: 7px solid #d6ad63;
   --popup-gold-radius: 22px;
   --popup-gold-shadow: inset 0 0 0 3px #f6dfaa, 0 7px 18px rgba(55,30,5,.3);
@@ -9715,7 +9721,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 .fs-intro-list li > i { width: calc(var(--w) * 0.07); display: flex; justify-content: center; align-items: center; }
 .fs-intro-list li > span { flex: 1; min-width: 0; display: flex; justify-content: center; align-items: center; text-align: left; }
 /* Shared workshop frame, green shop purchase palette; keep every edge inside the card. */
-:is(#shop-screen,#settings-screen,#mailbox-screen,#home3d) .shop-card-btn.shop-buy-frame { display:flex!important; justify-content:center!important; align-items:center!important; background:none!important; border:0!important; border-image:none!important; border-radius:999px!important; padding:0!important; box-shadow:none!important; isolation:isolate; filter:none!important; --sr-edge:3px; --sr-radius:999px; --sr-face:linear-gradient(180deg,#28ef58 0%,#08d53b 46%,#00ad2c 100%); --sr-rim:linear-gradient(180deg,#baff80 0%,#45ec48 24%,#008a24 75%,#005d19 100%); --sr-highlight:#aaff81; --sr-outline:#005d19; }
+:is(#shop-screen,#settings-screen,#mailbox-screen,#home3d) .shop-card-btn.shop-buy-frame { display:flex!important; justify-content:center!important; align-items:center!important; background:none!important; border:0!important; border-image:none!important; border-radius:999px!important; padding:0!important; box-shadow:none!important; isolation:isolate; filter:none!important; --sr-edge:3px; --sr-radius:999px; --sr-face:var(--popup-confirm-face); --sr-rim:var(--popup-confirm-rim); --sr-highlight:var(--popup-confirm-highlight); --sr-outline:#005d19; }
 #shop-screen .shop-card:has(> .shop-buy-frame) { grid-template-rows:16% minmax(0,1fr) 24%!important; }
 :is(#shop-screen,#settings-screen,#mailbox-screen,#home3d) .shop-card-btn.shop-buy-frame:disabled { opacity:1!important; }
 #shop-screen .shop-card:has(.shop-card-badge--default-weapon) > .shop-buy-frame:active { transform:none!important; }
@@ -9734,7 +9740,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 :is(#shop-screen,#settings-screen,#mailbox-screen,#home3d) .shop-card-btn.shop-buy-frame--cancel { --sr-face:linear-gradient(180deg,#ff8181 0%,#f04b4b 46%,#d83232 100%); --sr-rim:linear-gradient(180deg,#ffd2d2,#ff9696 24%,#b72c2c 75%,#8f2020); --sr-highlight:#ffd8d8; --sr-outline:#8f2020; }
 :is(#shop-screen,#settings-screen,#mailbox-screen,#home3d) .shop-buy-frame--cancel:active:not(:disabled)::after { background-color:rgba(255,235,235,.18); box-shadow:inset 0 0 8px rgba(255,225,225,.9),inset 0 0 18px rgba(255,125,125,.38); }
 /* Inventory uses the workshop capsule frame with the original blue/state colors. */
-#inventory-screen .inv-action-frame { position:absolute; display:flex; justify-content:center; align-items:center; margin:0; padding:0; border:0; border-image:none; border-radius:999px; background:none!important; box-shadow:none!important; color:#fff; --sr-edge:8px; --sr-radius:999px; --sr-face:linear-gradient(180deg,#53caff 0%,#009eff 46%,#0063dc 100%); --sr-rim:linear-gradient(180deg,#d0f8ff 0%,#62ccff 24%,#185ab0 75%,#13487a 100%); --sr-highlight:#c8efff; --sr-outline:#13487a; }
+#inventory-screen .inv-action-frame, .mole-guide-label.inv-action-frame { position:absolute; display:flex; justify-content:center; align-items:center; margin:0; padding:0; border:0; border-image:none; border-radius:999px; background:none!important; box-shadow:none!important; color:#fff; --sr-edge:8px; --sr-radius:999px; --sr-face:linear-gradient(180deg,#53caff 0%,#009eff 46%,#0063dc 100%); --sr-rim:linear-gradient(180deg,#d0f8ff 0%,#62ccff 24%,#185ab0 75%,#13487a 100%); --sr-highlight:#c8efff; --sr-outline:#13487a; }
 #inventory-screen .inv-action-frame::before { display:block; }
 #inventory-screen .inv-action-frame > span { position:absolute; inset:0; display:flex; justify-content:center; align-items:center; margin:0; padding:0; line-height:1; font-size:inherit; white-space:nowrap; }
 #inventory-screen .ks-card > .inv-action-frame { left:8%; bottom:28px; width:84%; height:80px; font:46px/1 'Jua',sans-serif; }

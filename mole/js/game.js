@@ -1722,6 +1722,12 @@
   }
 
   function startRound(opts) {
+    const guideMode = MG.GameGuide.modeFor(currentLight(), currentChapter());
+    if (!(opts && opts.guideAccepted) && MG.GameGuide.shouldShow()) {
+      const token = sessionGen;
+      MG.GameGuide.showRules({light:currentLight(),mode:guideMode,required:true,onDone:() => { if(token===sessionGen)startRound(Object.assign({},opts,{guideAccepted:true})); }});
+      return;
+    }
     unmountFeverField();
     const clayRoundOne = true;
     if (clayRoundOne && MG.ClayRoundOne && MG.ClayRoundOne.wait(() => startRound(opts))) return;
@@ -2398,9 +2404,11 @@
   const MISSION_REWARD = 1000; // V1712 C 사용자: 미션 성공 코인 1000
   function missionLabel(ms) {
     const ko = I18N.lang === 'ko';
-    const nm = { any: ko ? '장난꾸러기 두더지' : 'prankster moles' /* V1728 C 사용자: '나쁜' 표현 없앰 */, thief: ko ? '도둑 두더지' : 'thief moles', drink: ko ? '콜라 두더지' : 'cola moles' /* V1725 C 사용자: 술 → 콜라 */, smoke: ko ? '방귀 두더지' : 'farting moles' /* V1727 C 사용자: 담배 → 방귀 */, phone: ko ? '휴대폰 두더지' : 'phone moles' }[ms.kind];
+    const nm = { any: ko ? '장난꾸러기 두더지' : 'prankster moles' /* V1728 C 사용자: '나쁜' 표현 없앰 */, thief: ko ? '도둑 두더지' : 'thief moles', drink: ko ? '콜라 두더지' : 'cola moles' /* V1725 C 사용자: 술 → 콜라 */, smoke: ko ? '방귀 두더지' : 'farting moles' /* V1727 C 사용자: 담배 → 방귀 */, phone: ko ? '게임 두더지' : 'gaming moles' }[ms.kind];
     if (ms.kind === 'combo') return ko ? ms.n + ' 콤보 달성' : 'Reach ' + ms.n + ' combo';
-    return ko ? nm + ' ' + ms.n + '마리 잡기' : 'Catch ' + ms.n + ' ' + nm;
+    const targetName = ms.kind === 'any' && state && state.config.dualTarget && currentLight() !== 'easy' ? (ko ? '대상 두더지' : 'target moles') : nm;
+    const colored = state && state.config.reverseTarget ? (ko ? '색깔 ' : 'colored ') : '';
+    return ko ? colored + targetName + ' ' + ms.n + '마리 잡기' : 'Catch ' + ms.n + ' ' + colored + targetName;
   }
   function missionProgress(r) {
     const ms = state && state.mission; if (!ms || ms.done) return;
@@ -2420,12 +2428,10 @@
     if (rush && !state.rushOn) { state.rushOn = true; MG.HitFx.skillWord(board, I18N.lang === 'ko' ? '⚡ 러시! 점수 ×2' : '⚡ RUSH! Score ×2'); document.getElementById('game-screen')?.classList.add('gs-rush'); setBgmRate(1.15); }
     if (!rush && state.rushOn && state.timeRemaining > RUSH_SECONDS) { state.rushOn = false; document.getElementById('game-screen')?.classList.remove('gs-rush'); setBgmRate(1); }
   }
-  function showMission(done) { // 화면 가운데 크게 3초(카운트다운 전)
-    state.mission.shown = true;
-    const o = document.createElement('div'); o.id = 'mission-intro';
-    o.innerHTML = '<div class="mi-card"><div class="mi-tag">🎯 ' + (I18N.lang === 'ko' ? '미션' : 'MISSION') + '</div><div class="mi-text">' + missionLabel(state.mission) + '</div><div class="mi-reward">+' + MISSION_REWARD + '🪙</div></div>';
-    document.body.appendChild(o);
-    setTimeout(() => { o.remove(); done(); }, 3000);
+  function showMission(done) {
+    const st = state, token = sessionGen; st.mission.shown = true;
+    MG.GameGuide.showMission({mission:st.mission,label:missionLabel(st.mission),reward:MISSION_REWARD,
+      mode:MG.GameGuide.modeFor(currentLight(),currentChapter()),onDone:() => { if(token===sessionGen&&state===st)done(); }});
   }
   function missionIntro() { // 카운트다운 없이 시작한 경우의 예비: 3초 동안 게임 멈춤
     state.paused = true; state.missionHold = true; const st = state;
@@ -2491,7 +2497,7 @@
       timeTotal: state.feverEventActive ? 20 : roundSeconds(),
       combo: run.combo.combo,
       score: run.combo.score, // 1라운드부터 누적 (콤보·점수 한 통)
-      modeLabel: chapterLabel(currentChapter()), // 게임화면 티커 맨 앞 = 현재 챕터 이름 ("두더지팡" 대체)
+      modeLabel: chapterLabel(currentChapter()) + (state.mission ? ' · ' + (I18N.lang === 'ko' ? '미션 ' : 'Mission ') + Math.min(state.mission.count,state.mission.n) + '/' + state.mission.n + (state.mission.done ? ' ✓' : '') : ''), // 게임화면 티커 맨 앞 = 현재 챕터 이름 ("두더지팡" 대체)
       chapterDesc: chapterDesc(currentChapter()) // 챕터2~10 안내문구 — 있으면 티커의 기존 팁 문구 대체(사용자 지정)
     });
     updateFeverHud();
@@ -2878,7 +2884,12 @@
           { /* V1710 C 사용자: 도둑·황금 = 코인, 콤보 10/20/30 단계 알림, 미션 진행 */
             const coin = r.golden ? COIN_DROP.golden : (COIN_DROP[r.behavior] || 0);
             if (coin) { MG.Economy.addCoins(coin); funTextAt(board, r.xFrac, r.yFrac - 0.08, '+' + coin + '🪙'); }
-            if (r.golden) MG.HitFx.skillWord(board, I18N.lang === 'ko' ? '✨ 황금 두더지! ×5' : '✨ GOLDEN! ×5');
+            if (r.golden) {
+              MG.HitFx.skillWord(board, I18N.lang === 'ko' ? '✨ 황금 두더지! ×5' : '✨ GOLDEN! ×5');
+              const loot = MG.GoldenRewards.award(r);
+              if (loot && !loot.error) MG.HitFx.skillWord(board, '🎁 ' + MG.GoldenRewards.name(loot,I18N.lang) + (I18N.lang === 'ko' ? ' 당첨! 메일함에 도착했습니다' : ' won! Sent to your mailbox'));
+              else if (loot && loot.error && window.__saveDiag) window.__saveDiag('ERR GOLDEN_REWARD ' + loot.error + ' ' + loot.reward.id);
+            }
             const c = run.combo.combo; if (c === 10 || c === 20 || c === 30) MG.HitFx.skillWord(board, c + ' COMBO! ×' + comboTier(c));
             missionProgress(r);
           }
@@ -3502,6 +3513,7 @@
     setNavLock(true);
     if (sharedLaneControls) sharedLaneControls.setActiveNav(null);
     ensureLaneControlsForChapter(false);
+    applyButtonRowColors(GRID_SIZE); // V1747 G: 순서 게임도 같은 4줄 색상 사용.
     const bar = document.getElementById('lane-button-bar');
     if (bar) bar.querySelectorAll('.lane-button').forEach((button) => { button.style.removeProperty('animation'); button.classList.remove('beat-textgrow'); });
     if (sharedLaneControls) sharedLaneControls.setGameTextless(true);
@@ -3580,6 +3592,7 @@
     if (!state || !state.order) return;
     const o = state.order, m = o.mission();
     MG.HUD.update({ round: o.round, lives: o.lives(), timeRemaining: state.timeRemaining, timeTotal: MG.OrderGame.CONFIG.roundSeconds, combo: 0, score: o.stats.score, modeLabel: orderLang() === 'ko' ? '순서대로 잡아라' : 'Catch in Order' });
+    applyButtonRowColors(GRID_SIZE); // 버튼 재생성 후에도 일반 게임의 줄 색 유지.
     const sv = document.getElementById('order-score-val'), txt = o.stats.score.toLocaleString();
     if (sv && sv.textContent !== txt) sv.textContent = txt;
     const box = document.getElementById('order-clues'); if (!box) return;
@@ -3750,14 +3763,20 @@
 
   // WORKSHOP_STARTUP_RECOVERY_BEGIN
   function workshopStartupReady() {
-    return !!(MG.ItemInventory && MG.WorkshopEnhance && typeof MG.WorkshopEnhance.create === 'function' &&
-      MG.Workshop && typeof MG.Workshop.create === 'function');
+    return !!(MG.ItemInventory && typeof MG.ItemInventory.grantOnce === 'function' && MG.WorkshopEnhance && typeof MG.WorkshopEnhance.create === 'function' &&
+      MG.Workshop && typeof MG.Workshop.create === 'function' &&
+      MG.GoldenRewards && typeof MG.GoldenRewards.award === 'function' &&
+      MG.GuideActors && typeof MG.GuideActors.mount === 'function' &&
+      MG.GameGuide && typeof MG.GameGuide.showRules === 'function');
   }
   async function recoverWorkshopStartup() {
     const modules = [
-      ['item-inventory.js', () => !!MG.ItemInventory],
+      ['item-inventory.js', () => !!(MG.ItemInventory && typeof MG.ItemInventory.grantOnce === 'function')],
       ['workshop-enhance.js', () => !!(MG.WorkshopEnhance && typeof MG.WorkshopEnhance.create === 'function')],
-      ['workshop.js', () => !!(MG.Workshop && typeof MG.Workshop.create === 'function')]
+      ['workshop.js', () => !!(MG.Workshop && typeof MG.Workshop.create === 'function')],
+      ['golden-rewards.js', () => !!(MG.GoldenRewards && typeof MG.GoldenRewards.award === 'function')],
+      ['guide-actors.js', () => !!(MG.GuideActors && typeof MG.GuideActors.mount === 'function')],
+      ['game-guide.js', () => !!(MG.GameGuide && typeof MG.GameGuide.showRules === 'function')]
     ];
     for (const [file, ready] of modules) {
       if (ready()) continue;
@@ -3798,7 +3817,7 @@
       message.textContent = ko ? '게임 준비를 다시 시도하고 있습니다…' : 'Retrying game preparation…';
       notice.appendChild(message); document.body.appendChild(notice);
       recoverWorkshopStartup().then(() => { notice.remove(); setTimeout(initializeGame, 0); }, error => {
-        if (window.__saveDiag) window.__saveDiag('ERR WORKSHOP ' + error.message);
+        if (window.__saveDiag) window.__saveDiag('ERR STARTUP_MODULE ' + error.message);
         message.textContent = ko ? '게임 준비를 마치지 못했습니다. 연결을 확인하고 다시 시도해 주세요.' : 'Could not prepare the game. Check your connection and try again.';
         const retry = document.createElement('button'); retry.type = 'button';
         retry.textContent = ko ? '다시 시도' : 'Retry';
@@ -4090,6 +4109,10 @@
 
   // 더보기 메뉴 + 하위 화면 모듈 인스턴스 생성·배선.
   function wireMoreMenu() {
+    const rulesButton = document.getElementById('open-game-rules');
+    const rulesButtonText = () => { if(rulesButton)rulesButton.textContent=I18N.lang==='ko'?'움직이는 두더지 규칙 다시 보기':'Watch the animated mole rules'; };
+    rulesButtonText(); I18N.onChange(rulesButtonText);
+    if(rulesButton)rulesButton.addEventListener('click',()=>MG.GameGuide.showRules({light:currentLight(),mode:MG.GameGuide.modeFor(currentLight(),currentChapter())}));
     screenNav = MG.ScreenNav.create({
       screens: ['face-maker', 'shop-screen', 'mailbox-screen', 'daily-screen', 'workshop-screen', 'score-screen', 'settings-screen', 'inventory-screen', 'help-screen', 'privacy-screen', 'quest-screen', 'friends-screen', 'light-popup', 'contact-screen']
     });

@@ -101,6 +101,14 @@
     var changes = {}, grants = {}; grants[id] = n; addGrants(changes, kind, grants);
     return commit(changes);
   }
+  // The claim marker and inventory changes share the same recoverable journal.
+  function grantOnce(kind, id, n, mailId) {
+    if (!ready || typeof mailId !== 'string' || !mailId || (kind === 'skill' ? SKILLS : ids(kind)).indexOf(id) === -1 || !Number.isSafeInteger(n) || n < 1) return false;
+    var marker = 'mole.items.received.mail.' + mailId;
+    try { if (read(marker) === '1') return true; } catch (e) { return false; }
+    var changes = {}, grants = {}; grants[id] = n; addGrants(changes, kind, grants); changes[marker] = '1';
+    return commit(changes);
+  }
   function purchase(sku) {
     var offer = CATALOG[sku];
     if (!ready) return { ok: false, reason: 'storage' };
@@ -143,7 +151,7 @@
   }
   initialize();
   root.MoleGame = root.MoleGame || {};
-  root.MoleGame.ItemInventory = { owns: owns, materials: materials, grant: grant, purchase: purchase,
+  root.MoleGame.ItemInventory = { owns: owns, materials: materials, grant: grant, grantOnce: grantOnce, purchase: purchase,
     equippedWeapon: equippedWeapon, equipWeapon: equipWeapon, enhance: enhance, COST: COST, RATE: RATE,
     offer: function (sku) { var o = CATALOG[sku]; return o ? JSON.parse(JSON.stringify(o)) : null; } };
 })(window);

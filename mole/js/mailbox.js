@@ -37,10 +37,13 @@
 
   function send(m) {
     var list = load(), now = Date.now();
+    if (m.id && list.some(function (old) { return old.id === m.id; })) return true;
     list.unshift({ id: m.id || ('m' + now + Math.floor(Math.random() * 1000)), title: m.title || '', description: m.description || '',
-      mailType: m.mailType || 'system', rewardType: m.rewardType || 'coin', rewardAmount: m.rewardAmount | 0,
+      mailType: m.mailType || 'system', rewardType: m.rewardType || 'coin', rewardAmount: m.rewardAmount | 0, rewardItem: m.rewardItem || null,
       isRead: false, isClaimed: false, createdAt: now, expireAt: m.expireAt || 0 });
-    save(list);
+    var saved = save(list);
+    if (saved && root.dispatchEvent && root.CustomEvent) root.dispatchEvent(new root.CustomEvent('mole-mailbox-change'));
+    return saved;
   }
   function list() { var now = Date.now(); return load().filter(function (m) { return !m.expireAt || m.expireAt > now; }); }
   // User-requested scroll samples: local browser only, once, preserving other mail.
@@ -65,6 +68,7 @@
   // 보상 지급 — 이미 받은 메일은 다시 주지 않음(명세 §7). gift = 액티브 스킬 아이템 무작위 1종.
   function grant(m) {
     var MG = root.MoleGame || {}, E = MG.Economy, S = MG.Skills, n = m.rewardAmount || 1;
+    if (m.rewardType === 'item') { var item = m.rewardItem; return !!(item && MG.ItemInventory && typeof MG.ItemInventory.grantOnce === 'function' && MG.ItemInventory.grantOnce(item.kind, item.id, n, m.id)); }
     if (m.rewardType === 'coin' && E) E.addCoins(n);
     else if (m.rewardType === 'ticket' && E) E.addTickets(n);
     else if (m.rewardType === 'heart' && E) E.addHearts(n);
@@ -72,8 +76,13 @@
   }
   function claim(id) {
     var l = load(), got = null;
-    l.forEach(function (m) { if (m.id === id && !m.isClaimed && (!m.expireAt || m.expireAt > Date.now())) { grant(m); m.isClaimed = true; m.isRead = true; got = m; } });
+    l.forEach(function (m) { if (m.id === id && !m.isClaimed && (!m.expireAt || m.expireAt > Date.now())) { if (m.rewardType === 'item') { if (!grant(m)) return; } else grant(m); m.isClaimed = true; m.isRead = true; got = m; } });
     save(l); return got;
+  }
+  function rewardIcon(m) {
+    var icons = { cannon:'assets/weapon-stills-v1509/cannon-front.png', goldhammer:'assets/weapon-stills-v1509/goldhammer-15.png', alipunch:'assets/workshop/w-alipunch-idle-clay-v1739.png', shield:'assets/skills/shield.png', targeting:'assets/skills/targeting.png', ai:'assets/skills/ai.png' };
+    if (m.rewardType === 'item') return icons[(m.rewardItem || {}).id] || 'assets/mailbox/rw-gift.png';
+    return m.rewardType === 'coin' ? 'assets/shop-ui-v1452/coin-option-05-bright20.png' : m.rewardType === 'ticket' ? 'assets/ui-approved-v1476/ticket-single.webp' : 'assets/mailbox/rw-' + m.rewardType + '.png';
   }
   function claimAll() { var got = []; list().forEach(function (m) { if (!m.isClaimed) { var g = claim(m.id); if (g) got.push(g); } }); return got; }
   function canDeleteRead(m) {
@@ -195,7 +204,7 @@
         c.innerHTML =
           '<div class="mb-env"><img src="assets/mailbox/' + (m.isClaimed ? 'env-read' : 'env-' + (SEALS[m.rewardType] || 'red')) + '.png" alt="">' + (m.isRead ? '' : '<i class="mb-dot"></i>') + '</div>' +
           '<div class="mb-txt"><b class="mb-title"></b><span class="mb-desc"></span><span class="mb-date"></span></div>' +
-          '<div class="mb-reward"><img src="' + (m.rewardType === 'coin' ? 'assets/shop-ui-v1452/coin-option-05-bright20.png' : m.rewardType === 'ticket' ? 'assets/ui-approved-v1476/ticket-single.webp' : 'assets/mailbox/rw-' + m.rewardType + '.png') + '" alt=""><span class="mb-amt"></span></div>' +
+          '<div class="mb-reward"><img src="' + rewardIcon(m) + '" alt=""><span class="mb-amt"></span></div>' +
           '<button type="button" class="mb-claim ws-action-frame mail-action-frame' + (m.isClaimed ? ' is-done' : '') + '"><span></span></button>';
         c.querySelector('.mb-title').textContent = tx(m.title);
         c.querySelector('.mb-desc').textContent = tx(m.description);
@@ -226,7 +235,7 @@
     return { show: function () { var dialog = el.querySelector('.mb-delete-dialog'); if (dialog) dialog.remove(); syncDailyRewards(); seedLocalScrollSamples(); listEl.scrollTop = 0; render(true); syncRemote(function (n) { if (n) render(false); }); } };
   }
 
-  var api = { syncRemote: syncRemote, syncDailyRewards:syncDailyRewards, send: send, list: list, unreadCount: unreadCount, markRead: markRead, claim: claim, claimAll: claimAll, deleteRead: deleteRead, createScreen: createScreen };
+  var api = { syncRemote: syncRemote, syncDailyRewards:syncDailyRewards, send: send, list: list, unreadCount: unreadCount, markRead: markRead, claim: claim, rewardIcon: rewardIcon, claimAll: claimAll, deleteRead: deleteRead, createScreen: createScreen };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.Mailbox = api; }
   if (root.MoleGame.DailyMail) {
     scheduleDailyRewards();
