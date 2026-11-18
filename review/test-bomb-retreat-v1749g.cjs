@@ -17,4 +17,16 @@ for(const killed of [false,true])for(const dyingFrom of [0,1,2.5])for(const type
 }
 assert.equal(C.withdrawProgress({kind:'mole',bomb:true,dying:false,shownDepth:0},1),0);
 assert.equal(C.sinkDepth({kind:'mole',dying:true,killed:true,shownDepth:1}),1,'ordinary hit exit unchanged');
+for(const killed of [false,true]){
+ const m={kind:'mole',bomb:true,dying:true,killed,dyingFrom:0,shownDepth:0,_clayExitAt:0};
+ let lastZ=0;
+ for(let step=0;step<=22;step++){
+  m.shownDepth=4*step/100;
+  const translation=C.retreatTranslation(m);
+  assert.equal(Math.abs(translation[1]),0,'rendered body keeps its height during backward motion');
+  assert(translation[2]<=lastZ);lastZ=translation[2];
+ }
+ assert(Math.abs(lastZ+.5)<1e-6,'original backward distance reached before descent');
+ m.shownDepth=2.4;const sinking=C.retreatTranslation(m);assert(sinking[1]<0);assert(Math.abs(sinking[2]+.5)<1e-6,'vertical descent keeps the original backward position');
+}
 console.log('PASS bomb backs into hole before descending, same path for hit/timeout and all carrier types, monotonic exit at all starting depths, ordinary hit exit unchanged');

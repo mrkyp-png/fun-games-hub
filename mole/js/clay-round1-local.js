@@ -88,7 +88,7 @@ function coloredMaterial(m,name){const c=m.golden?GOLD:isRed(m)?MULTI_RED:hasTin
 function canRender(m){return m.kind==='mole'||m.kind==='animal'||m.kind==='bomb'}
 function isBombCarrier(m){return m.bomb||m.kind==='bomb'}
 function smooth(value){const t=Math.max(0,Math.min(1,value));return t*t*(3-2*t)}
-const BOMB_WITHDRAW_PART=.22;
+const BOMB_WITHDRAW_PART=.22,BOMB_WITHDRAW_DISTANCE=.5;
 function exitDepthProgress(m){const from=Math.max(0,Math.min(3.99,m.dyingFrom??0));return Math.max(0,Math.min(1,(m.shownDepth-from)/(4-from)))}
 function sinkDepth(m){
  if(m.dying&&isBombCarrier(m)){const from=Math.max(0,Math.min(3.99,m.dyingFrom??0));return from+(4-from)*smooth((exitDepthProgress(m)-BOMB_WITHDRAW_PART)/(1-BOMB_WITHDRAW_PART))}
@@ -106,6 +106,7 @@ function boardShakeOffset(board){
  return [values[i]||0,values[i+1]||0];
 }
 function withdrawProgress(m,now=clockTime){if(!m.dying)return 0;return isBombCarrier(m)?smooth(exitDepthProgress(m)/BOMB_WITHDRAW_PART):smooth((now-(m._clayExitAt??now))/.035)}
+function retreatTranslation(m){return [0,-3.4*sinkDepth(m)/4,-(isBombCarrier(m)?BOMB_WITHDRAW_DISTANCE:.4)*withdrawProgress(m)]}
 function tuckArms(runtime,worlds,progress){
  if(!progress)return worlds;
  const posed=worlds.slice();
@@ -218,10 +219,10 @@ async function initialize(){
  const vs=`#version 300 es
 precision highp float;in vec3 aPosition;in vec4 aColor;in vec3 aNormal;in vec2 aUV;in vec4 aJoints;in vec4 aWeights;uniform vec2 uOffset,uViewportY;uniform float uOutline;uniform mat4 uModel,uVP,uJoints[${joints}];uniform vec4 uRimJoint[${Math.ceil(joints/4)}];uniform bool uSkinned;out vec4 vColor;out float vOverRim;out vec3 vPosition,vNormal;out vec2 vUV;float rimFlag(float j){int i=int(j);return uRimJoint[i/4][i%4];}void main(){mat4 s=mat4(1.0);if(uSkinned)s=aWeights.x*uJoints[int(aJoints.x)]+aWeights.y*uJoints[int(aJoints.y)]+aWeights.z*uJoints[int(aJoints.z)]+aWeights.w*uJoints[int(aJoints.w)];vOverRim=uSkinned?aWeights.x*rimFlag(aJoints.x)+aWeights.y*rimFlag(aJoints.y)+aWeights.z*rimFlag(aJoints.z)+aWeights.w*rimFlag(aJoints.w):0.0;vec4 p=uModel*s*vec4(aPosition,1.0);p.xyz+=normalize(mat3(uModel)*mat3(s)*aNormal)*uOutline;vPosition=p.xyz;vNormal=mat3(uModel)*mat3(s)*aNormal;vUV=aUV;vColor=aColor;gl_Position=uVP*p;gl_Position.xy+=uOffset*gl_Position.w;gl_Position.y=gl_Position.y*uViewportY.x+uViewportY.y*gl_Position.w;}`;
  const fs=`#version 300 es
-precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal;in vec2 vUV;uniform vec4 uHole;uniform vec4 uColor;uniform sampler2D uBase,uNormal,uRim;uniform float uRimWidth,uRimHeight;uniform bool uHasBase,uHasNormal,uJump,uCarrying,uOutlinePass,uForegroundProp,uEntering;uniform float uNormalScale,uFlash,uRoughness;uniform vec3 uEye;out vec4 color;void main(){vec2 hd=(gl_FragCoord.xy-uHole.xy)/uHole.zw;bool overRim=(!uEntering&&vOverRim>.5&&vPosition.y>(uCarrying?.55:1.10))||(uJump&&vPosition.y>1.0);float visibility=1.0;float hd2=dot(hd,hd);if(!uForegroundProp&&!overRim&&(uEntering||vPosition.y<1.0||gl_FragCoord.y<uHole.y)){float aa=max(fwidth(hd2),.001);visibility*=1.0-smoothstep(1.0-aa,1.0+aa,hd2);}vec2 rimUV=vec2(.5,278.0/494.0)+(gl_FragCoord.xy-uHole.xy)/vec2(uRimWidth,-uRimHeight);if(!uForegroundProp&&!overRim&&all(greaterThanEqual(rimUV,vec2(0.0)))&&all(lessThanEqual(rimUV,vec2(1.0))))visibility*=1.0-texture(uRim,rimUV).a;if(visibility<.001)discard;if(uOutlinePass){color=vec4(0.0,1.0,.2353,visibility);return;}vec4 tex=uHasBase?texture(uBase,vUV):vec4(1.0);if(tex.a*uColor.a<.05)discard;vec3 n=normalize(vNormal);if(!gl_FrontFacing)n=-n;if(uHasNormal){vec3 q1=dFdx(vPosition),q2=dFdy(vPosition);vec2 st1=dFdx(vUV),st2=dFdy(vUV);vec3 t=normalize(q1*st2.t-q2*st1.t);vec3 b=-normalize(cross(n,t));vec3 map=texture(uNormal,vUV).xyz*2.0-1.0;map.xy*=uNormalScale;n=normalize(mat3(t,b,n)*map);}vec3 base=uColor.rgb*vColor.rgb*(uHasBase?pow(tex.rgb,vec3(2.2)):vec3(1.0));base=mix(base,vec3(1.0),uFlash);vec3 l=normalize(vec3(-.4,.85,1.0)),v=normalize(uEye-vPosition),h=normalize(l+v);float d=max(dot(n,l),0.0),spec=pow(max(dot(n,h),0.0),mix(8.0,100.0,1.0-uRoughness))*.18;color=vec4(pow(max(base*(.4+.6*d)+vec3(spec),vec3(0.0)),vec3(1.0/2.2)),tex.a*uColor.a*visibility);}`;
+precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal;in vec2 vUV;uniform vec4 uHole;uniform vec4 uColor;uniform sampler2D uBase,uNormal,uRim;uniform float uRimWidth,uRimHeight;uniform bool uHasBase,uHasNormal,uJump,uCarrying,uOutlinePass,uForegroundProp,uEntering,uWithdrawing;uniform float uNormalScale,uFlash,uRoughness;uniform vec3 uEye;out vec4 color;void main(){vec2 hd=(gl_FragCoord.xy-uHole.xy)/uHole.zw;bool overRim=(!uEntering&&!uWithdrawing&&vOverRim>.5&&vPosition.y>(uCarrying?.55:1.10))||(uJump&&vPosition.y>1.0);float visibility=1.0;float hd2=dot(hd,hd);if(!uForegroundProp&&!overRim&&(uEntering||vPosition.y<1.0||gl_FragCoord.y<uHole.y)){float aa=max(fwidth(hd2),.001);visibility*=1.0-smoothstep(1.0-aa,1.0+aa,hd2);}vec2 rimUV=vec2(.5,278.0/494.0)+(gl_FragCoord.xy-uHole.xy)/vec2(uRimWidth,-uRimHeight);if(!uForegroundProp&&!overRim&&all(greaterThanEqual(rimUV,vec2(0.0)))&&all(lessThanEqual(rimUV,vec2(1.0))))visibility*=1.0-texture(uRim,rimUV).a;if(visibility<.001)discard;if(uOutlinePass){color=vec4(0.0,1.0,.2353,visibility);return;}vec4 tex=uHasBase?texture(uBase,vUV):vec4(1.0);if(tex.a*uColor.a<.05)discard;vec3 n=normalize(vNormal);if(!gl_FrontFacing)n=-n;if(uHasNormal){vec3 q1=dFdx(vPosition),q2=dFdy(vPosition);vec2 st1=dFdx(vUV),st2=dFdy(vUV);vec3 t=normalize(q1*st2.t-q2*st1.t);vec3 b=-normalize(cross(n,t));vec3 map=texture(uNormal,vUV).xyz*2.0-1.0;map.xy*=uNormalScale;n=normalize(mat3(t,b,n)*map);}vec3 base=uColor.rgb*vColor.rgb*(uHasBase?pow(tex.rgb,vec3(2.2)):vec3(1.0));base=mix(base,vec3(1.0),uFlash);vec3 l=normalize(vec3(-.4,.85,1.0)),v=normalize(uEye-vPosition),h=normalize(l+v);float d=max(dot(n,l),0.0),spec=pow(max(dot(n,h),0.0),mix(8.0,100.0,1.0-uRoughness))*.18;color=vec4(pow(max(base*(.4+.6*d)+vec3(spec),vec3(0.0)),vec3(1.0/2.2)),tex.a*uColor.a*visibility);}`;
  function shader(type,source){const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s}
  const program=gl.createProgram();gl.attachShader(program,shader(gl.VERTEX_SHADER,vs));gl.attachShader(program,shader(gl.FRAGMENT_SHADER,fs));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));gl.useProgram(program);
- const loc=Object.fromEntries(['uEntering','uForegroundProp','uCarrying','uOutlinePass','uOutline','uJump','uViewportY','uRimJoint','uRim','uRimWidth','uRimHeight','uOffset','uHole','uModel','uVP','uJoints','uSkinned','uColor','uBase','uNormal','uHasBase','uHasNormal','uNormalScale','uFlash','uRoughness','uEye'].map(n=>[n,gl.getUniformLocation(program,n==='uJoints'?'uJoints[0]':n==='uRimJoint'?'uRimJoint[0]':n)]));
+ const loc=Object.fromEntries(['uWithdrawing','uEntering','uForegroundProp','uCarrying','uOutlinePass','uOutline','uJump','uViewportY','uRimJoint','uRim','uRimWidth','uRimHeight','uOffset','uHole','uModel','uVP','uJoints','uSkinned','uColor','uBase','uNormal','uHasBase','uHasNormal','uNormalScale','uFlash','uRoughness','uEye'].map(n=>[n,gl.getUniformLocation(program,n==='uJoints'?'uJoints[0]':n==='uRimJoint'?'uRimJoint[0]':n)]));
  const attr=Object.fromEntries(['aPosition','aColor','aNormal','aUV','aJoints','aWeights'].map(n=>[n,gl.getAttribLocation(program,n)]));
  function buffer(values,target=gl.ARRAY_BUFFER){const b=gl.createBuffer();gl.bindBuffer(target,b);gl.bufferData(target,values,gl.STATIC_DRAW);estimatedGpuBytes+=values.byteLength;return b}
  function solid(pixel){const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array(pixel));gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);return t}
@@ -278,13 +279,13 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
    const lower=feverField&&m.regionId>=gridSize*gridSize;
    const ox=horizontal&&lower?size:0,oy=feverField&&!horizontal&&!lower?size:0;
    const motion=clipFor(m);
-   const depth=sinkDepth(m);
    const act=behaviorActor(m,clockTime)||baseActor,{runtime,model,rimFlags}=act;
-   const worlds=act===baseActor?poseFor(runtime,m,motion):AP.pose(runtime,act.clip,behaviorTime(m,clockTime),true,null,clockTime,m._appearance||'mohawk'),palettes=new Map(),withdraw=withdrawProgress(m),instance=R.multiply(R.transform({translation:[0,motion.appearing?1.1*Math.sin(Math.PI*motion.progress):-3.4*depth/4,-(isBombCarrier(m)?.5:.4)*withdraw]}),spinUp(m,motion));
+   const worlds=act===baseActor?poseFor(runtime,m,motion):AP.pose(runtime,act.clip,behaviorTime(m,clockTime),true,null,clockTime,m._appearance||'mohawk'),palettes=new Map(),withdraw=withdrawProgress(m),instance=R.multiply(R.transform({translation:motion.appearing?[0,1.1*Math.sin(Math.PI*motion.progress),0]:retreatTranslation(m)}),spinUp(m,motion));
    const cellOnly=boardShake&&boardShake.region!=null,mine=!cellOnly||m.regionId===boardShake.region; /* V1710 C: 칸 흔들림이면 그 칸 두더지만 */
    const sx=lower||!mine?0:shake[0],sy=lower||!mine?0:shake[1];
    function bindActor(){
     gl.viewport(ox,oy,size,viewportHeight);gl.enable(gl.SCISSOR_TEST);gl.scissor(ox,oy,size,viewportHeight);
+    gl.uniform1i(loc.uWithdrawing,isBombCarrier(m)&&m.dying);
     gl.uniform1i(loc.uEntering,false);gl.uniform1i(loc.uForegroundProp,false);gl.uniform1i(loc.uJump,!!motion.appearing);gl.uniform1i(loc.uCarrying,!!isBombCarrier(m)||act!==baseActor);
     // The same pixel anchor is restored for the final foreground prop pass.
     gl.uniform2f(loc.uOffset,(x-.5)*2+sx/board.clientWidth*2,(.5-y-Math.cos(angle)*.2/span)*2-sy/board.clientWidth*2);gl.uniform4f(loc.uHole,ox+x*size+sx*pixelScale,oy+footroom+(1-y)*size-sy*pixelScale,135/418/gridSize*size,58/418/gridSize*size*boardAspect);
@@ -383,7 +384,7 @@ precision highp float;in vec4 vColor;in float vOverRim;in vec3 vPosition,vNormal
      }
     }
     gl.stencilMask(0xff);gl.disable(gl.STENCIL_TEST);gl.enable(gl.DEPTH_TEST);gl.depthMask(true);gl.cullFace(gl.BACK);
-    gl.uniform1f(loc.uOutline,0);gl.uniform1i(loc.uOutlinePass,false);gl.uniform1i(loc.uForegroundProp,false);gl.uniform1i(loc.uEntering,false);
+    gl.uniform1f(loc.uOutline,0);gl.uniform1i(loc.uOutlinePass,false);gl.uniform1i(loc.uForegroundProp,false);gl.uniform1i(loc.uEntering,false);gl.uniform1i(loc.uWithdrawing,false);
    });
   });
   foregroundBombs.forEach(draw=>draw());
@@ -414,7 +415,7 @@ function renderPop(m){
 function clock(now){if(lastClock)clockTime+=Math.min(.05,Math.max(0,(now-lastClock)/1000));lastClock=now}
 function clear(){stopBoardShake();entries.clear();lastClock=0;if(paint)paint()}
 function flash(m){if(active&&canRender(m))m._clayFlashUntil=clockTime+.09}
-MG.ClayRoundOne={prepare,wait,setActive,setGridSize,setFeverField,getGridSize:()=>gridSize,renderPop,clock,clear,flash,animalVariant,canRender,clipFor,poseFor,sinkDepth,boardShakeOffset,shakeBoard,withdrawProgress,isActive:()=>active};
+MG.ClayRoundOne={prepare,wait,setActive,setGridSize,setFeverField,getGridSize:()=>gridSize,renderPop,clock,clear,flash,animalVariant,canRender,clipFor,poseFor,sinkDepth,retreatTranslation,boardShakeOffset,shakeBoard,withdrawProgress,isActive:()=>active};
 // Warm the actual model before the user starts round one; does not gate unrelated screens.
 setTimeout(()=>prepare().catch(e=>console.warn('Local clay prewarm',e)),0);
 })(window);
