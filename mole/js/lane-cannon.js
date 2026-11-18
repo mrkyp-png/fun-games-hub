@@ -334,5 +334,7 @@
   }
 
   const api = { create };
+  // Read-only shared timing; existing launch logic continues to use BALL_MS unchanged.
+  Object.defineProperty(api, 'FLIGHT_MS', { value: BALL_MS, enumerable: true });
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.LaneCannon = api; }
 })(typeof window !== 'undefined' ? window : null);

@@ -29,7 +29,7 @@
   function pickSite(vp, sites, px, py, w, h) {
     let best = null, bd = Infinity;
     for (const s of sites) {
-      const p = project(vp, [s.x, s.kind === 'building' ? 1.5 : 0.6, s.z]);
+      const p = project(vp, [s.x, (s.kind === 'building' ? 1.5 : 0.6)+(s.groundY||0), s.z]);
       if (!p) continue;
       const d = Math.hypot((p[0] + 1) / 2 * w - px, (1 - p[1]) / 2 * h - py);
       if (d < (s.kind === 'building' ? 56 : 40) && d < bd) { best = s; bd = d; }
@@ -413,7 +413,7 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
         let [plaza, mole, boatModel] = await Promise.all([load(plazaUrl), load(moleUrl), boatUrl ? load(boatUrl).catch(() => null) : null]);
         mole = root.MoleGame.MoleAppearances.paint(await root.MoleGame.MoleAppearances.prepare(mole,['mohawk']),'mohawk');
         /* 고정 소품(Tripo, 그림 질감): [{url, world}] — 디스코 팡팡 상판·받침 */
-        for (const pr of propList || []) load(pr.url).then((mdl) => { const ins = R.instances(mdl); for (const i of ins) { const m = Object.assign(mesh(mdl, i.primitive), { world: R.multiply(pr.world, i.world), local: i.world, dyn: pr.dyn, texBase: null }); glbTexture(mdl, i.primitive).then((t) => { m.texBase = t; }).catch(() => { m.plain = true; }); props.push(m); } }).catch(() => {}); /* plain = 그림 없는 모델(재질 색) */
+        for (const pr of propList || []) load(pr.url).then((mdl) => { const ins = R.instances(mdl); for (const i of ins) { const m = Object.assign(mesh(mdl, i.primitive), { world: R.multiply(pr.world, i.world), local: i.world, dyn: pr.dyn, sign: pr.signNode===i.name?pr.action:null, texBase: null }); glbTexture(mdl, i.primitive).then((t) => { m.texBase = t; }).catch(() => { m.plain = true; }); props.push(m); } }).catch(() => {}); /* plain = 그림 없는 모델(재질 색) */
         if (boatModel) { boat = R.instances(boatModel).map((i) => Object.assign(mesh(boatModel, i.primitive), { world: i.world, texBase: null })); for (const b of boat) glbTexture(boatModel, R.instances(boatModel)[0].primitive).then((t) => { b.texBase = t; }).catch(() => {}); }
         // Sign_<action> 판 = 간판 글자 텍스처 자리
         environment = R.instances(plaza).map((i) => Object.assign(mesh(plaza, i.primitive), { world: labelWorld(plaza,i), gateGlow: i.name.startsWith('GateGlow') || i.name === 'RhythmBars batch', rhythmBars: i.name === 'RhythmBars batch', speaker: i.name.startsWith('RhythmSpeaker'), energy: i.name === 'Energy_rhythm', shopDoor: i.name === 'Door_shop', sign: i.name.startsWith('Sign_') ? i.name.slice(5) : null, screen: i.name.startsWith('Screen_'), tex: null, texPrim: i.name.startsWith('Tex_') ? i.primitive : null }));

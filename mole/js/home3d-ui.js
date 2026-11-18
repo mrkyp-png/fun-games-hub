@@ -144,7 +144,7 @@
       canvas, input,
       show(on) { wrap.hidden = !on; host.classList.toggle('home3d-on', !!on); if (!on) resetAll(); },
       setFeature(on, label, feature) {
-        const hasOwnClose = ['score', 'daily', 'quest', 'inventory', 'shop', 'rhythm'].includes(feature);
+        const hasOwnClose = ['score', 'daily', 'quest', 'inventory', 'shop', 'rhythm', 'neonSnake', 'pangCannon'].includes(feature);
         if (on && hasOwnClose) close.remove();
         else if (close.parentNode !== wrap) wrap.appendChild(close);
         close.hidden = !on || hasOwnClose;

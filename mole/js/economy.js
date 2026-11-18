@@ -9,6 +9,7 @@
   var PRE_RELEASE_TEST_COINS = true;
   var TEST_STARTING_COINS = 10000000;
   var TEST_COINS_KEY = 'mole.dev.preReleaseCoins.v1';
+  var COIN_AWARD_JOURNAL = 'mole.coins.awardPending.v1';
   // 생명은 허브 공유 — 어떤 게임이든 이 생명으로 플레이한다.
   var K = { hearts: 'fgh.lives', heartsAt: 'fgh.livesAt', coins: 'mole.coins',
             tickets: 'mole.tickets', ticketsAt: 'mole.ticketsAt' };
@@ -48,7 +49,7 @@
       ls().setItem(TEST_COINS_KEY, 'done');
     } catch (e) { /* Unavailable storage must not prevent the game from starting. */ }
   }
-  initializeTestCoins();
+  if (recoverCoinAward()) initializeTestCoins();
 
   function _syncHearts() {
     var now = Date.now();
@@ -143,7 +144,33 @@
     return Math.max(0, TICKET_REGEN_MS - into);
   }
 
-  function getCoins() { return Math.max(0, readInt(K.coins, 0)); }
+  // Finish the coin/receipt transaction before any later coin read or mutation.
+  function recoverCoinAward() {
+    try {
+      if (!ls()) return false;
+      var raw = ls().getItem(COIN_AWARD_JOURNAL); if (!raw) return true;
+      var p = JSON.parse(raw);
+      if (!p || typeof p.id !== 'string' || !/^[a-zA-Z0-9:_-]{1,160}$/.test(p.id) || !Number.isSafeInteger(p.total) || p.total < 0 || !Number.isSafeInteger(p.amount) || p.amount < 0) return false;
+      var receipt = 'mole.coins.receipt.' + p.id;
+      if (ls().getItem(receipt) == null) {
+        ls().setItem(K.coins, String(p.total));
+        ls().setItem(receipt, String(p.amount));
+      }
+      ls().removeItem(COIN_AWARD_JOURNAL); return true;
+    } catch (e) { return false; }
+  }
+  function awardCoinsOnce(id, amount) {
+    if (typeof id !== 'string' || !/^[a-zA-Z0-9:_-]{1,160}$/.test(id) || !Number.isSafeInteger(amount) || amount < 0 || !recoverCoinAward()) return false;
+    try {
+      var receipt = 'mole.coins.receipt.' + id, old = ls().getItem(receipt);
+      if (old != null) return Number(old) === amount;
+      var total = Math.max(0, readInt(K.coins, 0)) + amount;
+      if (!Number.isSafeInteger(total)) return false;
+      ls().setItem(COIN_AWARD_JOURNAL, JSON.stringify({id:id,amount:amount,total:total}));
+      return recoverCoinAward();
+    } catch (e) { return false; }
+  }
+  function getCoins() { if (!ls()) return 0; if (!recoverCoinAward()) throw new Error('Coin storage recovery pending'); return Math.max(0, readInt(K.coins, 0)); }
   function addCoins(n) {
     var v = getCoins() + Math.max(0, n | 0);
     if (ls()) ls().setItem(K.coins, String(v));
@@ -174,7 +201,7 @@
     getRhythmBTickets: getRhythmBTickets, addRhythmBTickets: addRhythmBTickets,
     rhythmFreeToday: rhythmFreeToday, spendRhythmPlay: spendRhythmPlay, refundRhythmPlay: refundRhythmPlay,
     getTickets: getTickets, spendTicket: spendTicket, addTickets: addTickets, nextTicketMs: nextTicketMs,
-    getCoins: getCoins, addCoins: addCoins, spendCoins: spendCoins, formatK: formatK
+    getCoins: getCoins, addCoins: addCoins, spendCoins: spendCoins, formatK: formatK, awardCoinsOnce: awardCoinsOnce
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = { Economy: api };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.Economy = api; }

@@ -153,7 +153,7 @@
 // V1690 G: Sand beach, continuous ocean, combo turns and reactive hair; clear text-only signs, gentle warm entrance flow and corrected beach/water landing.
 // V1691 G: gold3D in original sprite boxes; hammer2D preserved; weapons in front of HUD; matched plaza label sizes.
 // V1692 G: matching gold clones, ImageGen enhancement lightning, smooth fur and physical rhythm entrance.
-const CACHE = 'mole-game-v1750-G';
+const CACHE = 'mole-game-v1751-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -1046,6 +1046,24 @@ const SHELL = [
   './js/guide-actors.js',
   './js/game-guide.js',
   './game-guide.css',
+  './neon-snake.css',
+  './js/neon-snake-core.js',
+  './js/neon-snake-input.js',
+  './js/neon-snake-store.js',
+  './js/neon-snake-renderer.js',
+  './js/neon-snake.js',
+  './pang-cannon.css',
+  './js/pang-cannon-config.js',
+  './js/pang-cannon-physics.js',
+  './js/pang-cannon-core.js',
+  './js/pang-cannon-store.js',
+  './js/pang-cannon-view-math.js',
+  './js/pang-cannon-shapes.js',
+  './js/pang-cannon-controls.js',
+  './js/pang-cannon-renderer.js',
+  './js/pang-cannon.js',
+  './assets/home3d/pang-cannon-sign.glb',
+  './assets/home3d/neon-snake-cabinet.glb',
   './js/game.js',
   './assets/workshop/clarity-v1434/panel.png',
   './assets/workshop/clarity-v1434/stage.png',

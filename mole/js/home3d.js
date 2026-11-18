@@ -429,7 +429,7 @@
       // 건물에 닿아 있으면 점프 버튼이 그 건물 터치 버튼으로(누르면 그 건물 화면). 스쳐 지나가도 자동 진입 없음
       nearRide = !riding && !near && st.inputEnabled() ? L.nearestRide(view.x, view.z) : null;
       const ko = root.FGH.I18N.lang === 'ko';
-      ui.setJumpMode(inside ? (inside.phase === 'in' ? (ko ? '시작' : 'Start') : null) : riding ? (ko ? '내리기' : 'Get off') : jumping() ? null : nearRide ? (ko ? '타기' : 'Ride') : near && st.inputEnabled() && near.action !== 'lightMode' ? (near.action === 'rhythm' ? (ko ? '시작' : 'Start') /* V1621 C 사용자: 리듬팡도 시작 버튼 */ : MG.Home3DSigns.labelFor(near, root.FGH.I18N.lang, t)) : null);
+      ui.setJumpMode(inside ? (inside.phase === 'in' ? (ko ? '시작' : 'Start') : null) : riding ? (ko ? '내리기' : 'Get off') : jumping() ? null : nearRide ? (ko ? '타기' : 'Ride') : near && st.inputEnabled() && near.action !== 'lightMode' ? (['rhythm','neonSnake','pangCannon'].includes(near.action) ? (ko ? '시작' : 'Start') /* V1621 C 사용자: 리듬팡도 시작 버튼 */ : MG.Home3DSigns.labelFor(near, root.FGH.I18N.lang, t)) : null);
       if (!raf) raf = requestAnimationFrame(frame); // 프레임 안에서 wake() 가 이미 예약했으면 두 번째 반복을 만들지 않음(겹치면 걷기 동작이 멈춤)
     }
 
@@ -493,6 +493,9 @@
       rd.lost(() => { ready = false; stop(); ui.setLoading(ko() ? '3D 화면을 다시 불러와 주세요.' : 'Please reload the 3D plaza.'); });
       fetch('assets/home3d/islands/islands-walk.json?v=1710').then((r) => r.json()).then((j) => L.setIslands(j.islands)).catch(() => {}); /* V1705 C: 동서남북 섬 걷기 자료 */
       rd.boot(PLAZA_GLB, MOLE_GLB, 'assets/home3d/boat.glb', [ /* V1633 C: 디스코 팡팡(배치만) */
+        (()=>{const s=L.SITES.find(x=>x.id==='pangCannon');return {url:'assets/shop-models-v1509/cannon-v1-batched-v1509.glb',world:root.StudioRig.transform({translation:[s.x,s.groundY,s.z]})};})(),
+        (()=>{const s=L.SITES.find(x=>x.id==='pangCannon');return {url:'assets/home3d/pang-cannon-sign.glb',action:s.action,signNode:'Sign_pangCannon',world:root.StudioRig.transform({translation:[s.x,s.groundY,s.z]})};})(),
+        (()=>{const s=L.SITES.find(x=>x.id==='neonSnake');return {url:'assets/home3d/neon-snake-cabinet.glb',action:s.action,signNode:'Sign_neonSnake',world:root.StudioRig.transform({translation:[s.x,s.groundY,s.z],rotation:[0,Math.sin(s.faceYaw/2),0,Math.cos(s.faceYaw/2)]})};})(),
         { url: 'assets/home3d/islands/island_west_volcano.glb', world: root.StudioRig.transform({}) }, /* V1709 C 사용자: 서쪽 섬 화산 = GPT 시안 → 3D(동굴 입구, 그림 텍스처) */
         { url: 'assets/home3d/disco-base.glb?v=1690-G', /* 내용 바뀐 모델 = 버전 붙여 폰이 새로 받게 */ world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
         { url: 'assets/home3d/disco-top.glb?v=1690-G', dyn: 'discoTop', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },

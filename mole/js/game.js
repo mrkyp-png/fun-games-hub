@@ -746,6 +746,18 @@
     if (action === 'home') { showStartScreen(); return; }
     if (action === 'profile') { editProfileAvatar(); return; }
     if (action === 'rhythm') { openRhythm(); return; } // 리듬팡(v807)
+    if (action === 'pangCannon') {
+      if(!MG.PangCannon) return false;
+      stopBgm();
+      MG.PangCannon.open({onClose:()=>{playScreenBgm('home');refreshBoardStats();if(home3d)home3d.homeShown();}}).catch(err=>{console.error('PANG PANG CANNON entry',err);playScreenBgm('home');if(home3d)home3d.homeShown();});
+      return true;
+    }
+    if (action === 'neonSnake') {
+      if(!MG.NeonSnake) return false;
+      stopBgm();
+      MG.NeonSnake.open({onClose:()=>{playScreenBgm('home');refreshBoardStats();if(home3d)home3d.homeShown();}}).catch(err=>{console.error('NEON SNAKE entry',err);playScreenBgm('home');if(home3d)home3d.homeShown();});
+      return true;
+    }
     // V1531 C 사용자: 두더지팡 그림은 GO 와 같이 홈일 때만 진입(메일함·설정·아이템이 위에 열려 있으면 무시).
     if (action === 'lightMode' && screenNav && screenNav.current()) return false;
     if (action === 'lightMode') { beginGame(); return; } // V1621 C: 라운드 지도 삭제 → 바로 시작

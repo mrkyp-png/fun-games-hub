@@ -3,7 +3,7 @@
 (function (root) {
   'use strict';
   // 광장 건물·사물 9개 + 톱니바퀴(settings)
-  const ACTIONS = ['lightMode', 'rhythm', 'shop', 'locker', 'inventory', 'score', 'mail', 'daily', 'quest', 'settings'];
+  const ACTIONS = ['lightMode', 'rhythm', 'neonSnake', 'pangCannon', 'shop', 'locker', 'inventory', 'score', 'mail', 'daily', 'quest', 'settings'];
 
   function create(opts) {
     const o = opts || {};

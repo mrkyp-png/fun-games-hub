@@ -4,12 +4,15 @@
   'use strict';
   const W = 512, H = 160;
   function metrics(action){
+    if(action==='pangCannon') return {width:2.9,height:.55,fontHeight:.35};
     const layout=root.MoleGame?.Home3DLayout,scale=layout?.SITES.find(s=>s.action===action)?.scale||1.6;
     const fontHeight=.2*(layout?.ARCADE_K||2.84)*(96/160);
     return {width:(action==='shop'?1.04:action==='rhythm'?1.0:1.92)*scale,height:fontHeight/.72,fontHeight}; /* V1731 C: 리듬팡 = 카세트 건물 명판 폭(1.6)에 맞춤(옛 폭 1.92 그대로면 글자가 옆으로 찌그러짐) */
   }
 
   function labelFor(site, lang, t) {
+    if(site.action==='pangCannon') return lang==='ko'?'팡팡캐논':'PANG PANG CANNON';
+    if(site.action==='neonSnake') return 'NEON SNAKE';
     const text=t(site.labelKey).replace(/\n/g, ' ');
     return site.action==='shop' && lang==='ko' ? text.replace('상점','상 점') : text;
   }
@@ -22,7 +25,7 @@
     function draw(text, action, lang) {
       const c = makeCanvas(); c.width = W; c.height = H;
       const g = c.getContext('2d'), T = root.MoleGame && root.MoleGame.Home3DText;
-      if(action==='shop'||action==='rhythm'){
+      if(action==='shop'||action==='rhythm'||action==='pangCannon'){
         const dimensions=metrics(action);c.width=1024;c.height=Math.round(1024*dimensions.height/dimensions.width);
         g.clearRect(0,0,c.width,c.height);g.shadowBlur=0;g.textAlign='center';g.textBaseline='middle';
         let size=c.height*.72;

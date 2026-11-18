@@ -11,7 +11,10 @@
     { id: 'rhythm', action: 'rhythm', labelKey: 'mole.pad.gameRhythm', x: -8, z: 2.5, ...B, body:2.32, scale:1.6, depthScale:.8, doorDepth:.72, halfWidth:2.08,halfDepth:.88 },
     { id: 'shop', action: 'shop', labelKey: 'mole.more.shop', x: -7, z: -5, ...B, body:2.4, scale:1.6, depthScale:.8, doorDepth:.88, halfWidth:2.08,halfDepth:.88 },
     /* V1650 C 사용자: 스코어 탑·선물상자·퀘스트 판 → 게시판 하나(스코어 탑 자리). 칸을 누르면 그 화면, 닿아서 발바닥 = 스코어 */
-    { id: 'board', action: 'score', labelKey: 'mole.pad.lblScore', x: 7, z: -5, ...B, body: 2.0, noSign: true }
+    { id: 'board', action: 'score', labelKey: 'mole.pad.lblScore', x: 7, z: -5, ...B, body: 2.0, noSign: true },
+    // User-assigned south island, on its existing central pad.
+    { id: 'neonSnake', action: 'neonSnake', labelKey: '', x: 0, z: 48, groundY: 1.48, island: 'south', ...B, body: .95 },
+    { id: 'pangCannon', action: 'pangCannon', labelKey: '', x: 0, z: -48, groundY: 1, island: 'north', ...B, body: 2.2 }
   ].map((s) => Object.assign(s, { faceYaw: Math.atan2(-s.x, -s.z) })); // 섬 중심을 바라봄
 
   // 놀이기구(장식, 들어갈 수 없음 — 나중에 미니게임 입구로 바꿀 수 있게 자리만): 디스코 팡팡·바이킹
@@ -82,7 +85,7 @@
     return null;
   }
   function allowed(x, z) {
-    { const isl = islandAt(x, z); if (isl) return islandWalkable(isl, x, z); }
+    { const isl = islandAt(x, z); if (isl) return islandWalkable(isl, x, z) && !SITES.some(s=>s.island&&Math.hypot(x-s.x,z-s.z)<s.body); }
     if ((Math.hypot(x, z) > WALK_R && !onBeach(x, z)) || Math.hypot(x, z) < HOLE_R) return false;
     return !SITES.some((s) => {
       if(!s.halfWidth) return Math.hypot(x-s.x,z-s.z)<s.body;
