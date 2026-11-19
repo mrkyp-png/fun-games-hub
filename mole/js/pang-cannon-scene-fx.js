@@ -23,7 +23,7 @@ vec3 sceneFar(){float t=sceneTime;vec2 p=W.xz;
  if(sceneTheme==6){float stars=step(.996,sceneHash(floor(p*.7+vec2(t*.08,0.))));return farTint*.35+vec3(stars)*(.7+.3*sin(t+p.x));}
  return farTint*(.92+.08*sin(p.x*.12+p.y*.1+t*.16));
 }
-vec3 sceneSky(){float horizon=clamp(W.y/180.,0.,1.);vec3 c=skyTint*(1.-.3*horizon);if(sceneTheme==0||sceneTheme==5||sceneTheme==7){float cloud=sin(W.x*.015+sceneTime*.04)+sin(W.y*.06+W.x*.008-sceneTime*.018);float mask=smoothstep(1.1,1.75,cloud);c=mix(c,sceneTheme==7?skyTint*.6:vec3(.94,.97,1.),mask*.7);}if(sceneTheme==6){vec2 grid=floor(W.xy*.3+vec2(sceneTime*.01,0.));float star=step(.992,sceneHash(grid));c+=vec3(star)*(.65+.35*sin(sceneTime+grid.x));}return c;}
+vec3 sceneSky(){float horizon=clamp(W.y/180.,0.,1.);vec3 c=skyTint*(1.-.3*horizon);if(sceneTheme==6){vec2 grid=floor(W.xy*.3+vec2(sceneTime*.01,0.));float star=step(.992,sceneHash(grid));c+=vec3(star)*(.65+.35*sin(sceneTime+grid.x));}return c;}
 `;
  function build(){const mesh=(p,n)=>({positions:new Float32Array(p),normals:new Float32Array(n)}),far=[],normals=[];for(let z=106;z<360;z+=4)for(let x=-300;x<300;x+=6)for(const [dx,dz]of [[0,0],[6,4],[6,0],[0,0],[0,4],[6,4]]){far.push(x+dx,-.18,z+dz);normals.push(0,1,0);}const weather=[],wn=[];for(let i=0;i<90;i++){const x=Math.sin(i*35.7)*25,y=(i*7.73)%70,z=5+(i*13.17)%95;for(const [dx,dy]of [[-.045,0],[.045,0],[.045,.8],[-.045,0],[.045,.8],[-.045,.8]]){weather.push(x+dx,y+dy,z);wn.push(0,0,-1);}}return{far:mesh(far,normals),sky:mesh([-800,-100,380,800,-100,380,800,300,380,-800,-100,380,800,300,380,-800,300,380],Array(6).fill([0,0,-1]).flat()),weather:mesh(weather,wn)};}
  const api={vertex,fragment,build};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.MoleGame.PangCannonSceneFx=api;

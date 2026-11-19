@@ -9,3 +9,7 @@
 
 /* Portrait combat: independent HUD rows and a thumb-sized bottom control area. */
 @media (orientation:portrait){.ppc-hud{inset:calc(10px + env(safe-area-inset-top,0px)) 12px auto;font-size:15px}.ppc-hud>div:first-child{align-items:flex-start;gap:2px;padding:7px 12px;flex-direction:column}.ppc-hearts{font-size:17px}.ppc-progress{top:66px;font-size:14px;padding:6px 15px}.ppc-pause{width:43px;height:43px}.ppc-boss-hud{top:115px;left:22%;right:22%}.ppc-reticle{width:58px;height:58px}.ppc-notice{left:12%;right:12%;top:25%;font-size:23px}.ppc-fire{font-size:24px!important}.ppc-skill img{max-width:100%;max-height:100%}.ppc-dialog{width:94%;padding:20px 16px}.ppc-result{font-size:13px}}
+
+.pang-cannon .ppc-progress{white-space:pre-line;line-height:1.25;text-align:center}.pang-cannon .ppc-skill{display:none}
+
+@media (orientation:portrait){.pang-cannon .ppc-progress{position:fixed;top:auto;bottom:calc(7px + env(safe-area-inset-bottom,0px));left:50%;width:34vw;max-width:160px;box-sizing:border-box;font-size:clamp(10px,2.8vw,12px);padding:5px 6px}}
