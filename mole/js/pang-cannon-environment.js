@@ -8,7 +8,7 @@
  function packed(d){return Object.fromEntries(Object.entries(d).map(([k,v])=>[k,new Float32Array(v)]));}
  function build(A){
   const snow=[.79,.89,.98],ice=[.025,.42,.68],dark=[.09,.15,.24],ground=data(),decor=data(),rock=data(),cap=data(),rim=data(),opening=data();
-  const holes=A.layout().holes;for(let z=-50;z<220;z+=1)for(let x=-200;x<200;x+=1)for(const tri of [[[0,0],[1,0],[1,1]],[[0,0],[1,1],[0,1]]]){const cx=x+tri.reduce((n,p)=>n+p[0],0)/3,cz=z+tri.reduce((n,p)=>n+p[1],0)/3;if(holes.some(h=>tri.some(([dx,dz])=>A.holeDistance(h,x+dx,z+dz)<h.radius*.70)))continue;for(const [dx,dz]of tri){const px=x+dx,pz=z+dz;vertex(ground,[px,A.heightAt(px,pz),pz],A.normalAt(px,pz),snow);}}
+  const holes=A.layout().holes;for(let z=-50;z<106;z+=1)for(let x=-200;x<200;x+=1)for(const tri of [[[0,0],[1,1],[1,0]],[[0,0],[0,1],[1,1]]]){const cx=x+tri.reduce((n,p)=>n+p[0],0)/3,cz=z+tri.reduce((n,p)=>n+p[1],0)/3;if(holes.some(h=>tri.some(([dx,dz])=>A.holeDistance(h,x+dx,z+dz)<h.radius*.70)))continue;for(const [dx,dz]of tri){const px=x+dx,pz=z+dz;vertex(ground,[px,A.heightAt(px,pz),pz],A.normalAt(px,pz),snow);}}
   const stone=Rock.build();rock.positions.push(...stone.mesh.positions);rock.normals.push(...stone.mesh.normals);rock.colors.push(...stone.mesh.colors);
   surface(cap,stone.point,16,64,[.95,.96,.9]);
   // Rounded snow lip closes the exposed edge, giving the snow real thickness.
