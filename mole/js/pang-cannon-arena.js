@@ -6,7 +6,7 @@
  const banks=[[-14,12,1.6,5,5],[14,8,1.4,5,4],[-15,41,1.5,6,5],[15,54,1.8,6,6],[-15,70,1.3,6,7],[16,86,1.5,7,6]].map(([x,z,h,rx,rz])=>({p:[x,0,z],h,rx,rz}));
  function snowHeight(x,z){let h=0;for(const b of banks)h+=b.h*Math.exp(-(((x-b.p[0])/b.rx)**2)-((z-b.p[2])/b.rz)**2);return h;}
  // Two entrances fit the enlarged normal mole; the distant large entrance fits the boss.
- const holeSites=C.scene.holeWorld.map(([x,z,innerRadius],id)=>{const p=[x,0,z];p[1]=snowHeight(p[0],p[2]);const direction=C.scene.lookAt.map((x,i)=>x-C.scene.eye[i]),len=Math.hypot(...direction),dir=direction.map(x=>x/len),depth=p.reduce((n,x,i)=>n+(x-C.scene.eye[i])*dir[i],0),shear=p[0]*dir[2]/depth,minAxis=Math.sqrt((2+shear*shear-Math.abs(shear)*Math.sqrt(shear*shear+4))/2);return{id,pos:p,innerRadius,shear,radius:innerRadius/.58/minAxis};});
+ const holeSites=C.scene.holeUV.map(([u,v,width],id)=>{const p=flatGround(u,v),camera=M.camera(C.scene.aspect),unit=Math.abs(M.project(camera.vp,[p[0]+1,0,p[2]])[0]-u),radius=width/(2*unit),direction=C.scene.lookAt.map((x,i)=>x-C.scene.eye[i]),len=Math.hypot(...direction),dir=direction.map(x=>x/len),depth=p.reduce((n,x,i)=>n+(x-C.scene.eye[i])*dir[i],0),shear=0;return{id,pos:p,innerRadius:radius*.58,shear,radius};});
  function holeDistance(h,x,z){const dz=z-h.pos[2];return Math.hypot(x-h.pos[0]-(h.shear||0)*dz,dz);}
  function holeMatrix(h){const r=h.radius;return new Float32Array([r,0,0,0,0,r,0,0,r*(h.shear||0),0,r,0,...h.pos,1]);}
  function heightAt(x,z){let h=snowHeight(x,z);for(const site of holeSites){const d=holeDistance(site,x,z)/site.radius;if(d>=1.45)continue;const t=Math.max(0,Math.min(1,(d-1.06)/.39)),blend=t*t*(3-2*t);h=site.pos[1]*(1-blend)+h*blend;}return h;}

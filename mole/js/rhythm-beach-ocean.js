@@ -60,5 +60,6 @@ void main(){
   function stop(){lastDraw=-Infinity;}
   return {resize,render,stop,dbg:()=>({ready,lost,failed,time:lastTime,width,height})};
  }
- root.MoleGame=root.MoleGame||{};root.MoleGame.RhythmBeachOcean={create};
-})(window);
+ root.MoleGame=root.MoleGame||{};root.MoleGame.RhythmBeachOcean={create,fragment:FS};
+ if(typeof module!=='undefined'&&module.exports)module.exports=root.MoleGame.RhythmBeachOcean;
+})(typeof window!=='undefined'?window:globalThis);
