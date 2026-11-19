@@ -552,6 +552,29 @@
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
+  // Fixed-cannon arcade: reuse the approved cannon pool without changing inventory.
+  // Warm at the Start gesture; while decoding, stay silent rather than substitute a sound.
+  function cannonSound(opts) {
+    if (sfxOff() || (typeof document !== 'undefined' && document.hidden)) return;
+    try {
+      const ctx = getCtx();
+      if (!ctx) return;
+      loadCannonBuffers(ctx);
+      if (opts && opts.warmup) { if (ctx.state === 'suspended') ctx.resume().catch(() => {}); return; }
+      if (!cannonBuffers || !cannonBuffers.length) return;
+      const light = !!(opts && opts.light);
+      whenReady(ctx, () => {
+        if (sfxOff() || (typeof document !== 'undefined' && document.hidden)) return;
+        const src = ctx.createBufferSource(), gain = ctx.createGain();
+        src.buffer = cannonBuffers[(Math.random() * cannonBuffers.length) | 0];
+        src.playbackRate.value = (light ? TAP_RATE : 1) * (1 + (Math.random() * 2 - 1) * HIT_PITCH_JITTER);
+        gain.gain.value = Math.max(.02, (light ? TAP_GAIN : HIT_GAIN) * (1 + (Math.random() * 2 - 1) * HIT_GAIN_JITTER));
+        src.connect(gain).connect(ctx.destination);
+        src.start();
+      });
+    } catch (e) { /* optional audio */ }
+  }
+
   function punchSynth(ctx, light) {
     try {
       const t = ctx.currentTime;
@@ -941,7 +964,7 @@
     } catch (e) { /* 오디오 불가 환경 무시 */ }
   }
 
-  const api = { spawnAt, spawnTop, moleHit, moleBlast, bombBlast, juggle, moleTap, obstacleHit, whiff, emerge, emergeSound, warmup, uiTap, typeTick, scorePop, burstWord, skillWord, starBurst, shake, quakeDust, quakeClone, targetLock, cannonClone, punchStar, powerUpWord, dopamineUpWord, punch, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, fight, moleVoice };
+  const api = { spawnAt, spawnTop, moleHit, moleBlast, bombBlast, juggle, moleTap, obstacleHit, whiff, emerge, emergeSound, warmup, uiTap, typeTick, scorePop, burstWord, skillWord, starBurst, shake, quakeDust, quakeClone, targetLock, cannonClone, punchStar, powerUpWord, dopamineUpWord, punch, cannonSound, punchVoice, hammerPop, cannonRotateClick, cannonWheelRoll, goldHammerSpin, roundAnnounce, fight, moleVoice };
   if (root) { root.MoleGame = root.MoleGame || {}; root.MoleGame.HitFx = api; }
 })(typeof window !== 'undefined' ? window : null);
 

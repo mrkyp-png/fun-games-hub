@@ -1,0 +1,13 @@
+/* The island rocks' rounded, perturbed icosphere construction, scoped to this arena. */
+(function(root){'use strict';
+ const sub=(a,b)=>a.map((x,i)=>x-b[i]),dot=(a,b)=>a.reduce((s,x,i)=>s+x*b[i],0),cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],unit=a=>{const n=Math.hypot(...a);return a.map(x=>x/n);};
+ function build(){const t=(1+Math.sqrt(5))/2;let points=[[-1,t,0],[1,t,0],[-1,-t,0],[1,-t,0],[0,-1,t],[0,1,t],[0,-1,-t],[0,1,-t],[t,0,-1],[t,0,1],[-t,0,-1],[-t,0,1]].map(unit),faces=[[0,11,5],[0,5,1],[0,1,7],[0,7,10],[0,10,11],[1,5,9],[5,11,4],[11,10,2],[10,7,6],[7,1,8],[3,9,4],[3,4,2],[3,2,6],[3,6,8],[3,8,9],[4,9,5],[2,4,11],[6,2,10],[8,6,7],[9,8,1]];
+  for(let k=0;k<2;k++){const cache=new Map(),mid=(a,b)=>{const key=[Math.min(a,b),Math.max(a,b)].join(':');if(cache.has(key))return cache.get(key);const id=points.length;points.push(unit(points[a].map((x,i)=>(x+points[b][i])/2)));cache.set(key,id);return id;},next=[];for(const [a,b,c]of faces){const ab=mid(a,b),bc=mid(b,c),ca=mid(c,a);next.push([a,ab,ca],[b,bc,ab],[c,ca,bc],[ab,bc,ca]);}faces=next;}
+  points=points.map((p,i)=>{const r=.93+.055*Math.sin(i*12.9898+3.7);return[p[0]*r*(1+.065*p[1]),p[1]*.98,p[2]*r];});
+  const normals=points.map(()=>[0,0,0]),faceNormals=faces.map(([a,b,c])=>unit(cross(sub(points[b],points[a]),sub(points[c],points[a]))));faces.forEach((f,i)=>f.forEach(id=>normals[id]=normals[id].map((x,k)=>x+faceNormals[i][k])));const smooth=normals.map(unit),positions=[],ns=[],colors=[];
+  faces.forEach((f,i)=>{for(const id of f){positions.push(...points[id]);ns.push(...unit(smooth[id].map((x,k)=>x*.7+faceNormals[i][k]*.3)));const shade=.92+.08*(points[id][1]+1)/2;colors.push(.115*shade,.16*shade,.23*shade,1);}});
+  function radius(d){let nearest=Infinity;for(const [i,j,k]of faces){const a=points[i],e1=sub(points[j],a),e2=sub(points[k],a),h=cross(d,e2),det=dot(e1,h);if(Math.abs(det)<1e-8)continue;const s=a.map(x=>-x),u=dot(s,h)/det;if(u<0||u>1)continue;const q=cross(s,e1),v=dot(d,q)/det;if(v<0||u+v>1)continue;const t=dot(e2,q)/det;if(t>0&&t<nearest)nearest=t;}return Number.isFinite(nearest)?nearest:1;}
+  return{mesh:{positions:new Float32Array(positions),normals:new Float32Array(ns),colors:new Float32Array(colors)},point(u,v){const a=u*Math.PI*2,b=v*(1.28+.11*Math.sin(a*5)+.04*Math.cos(a*3)),d=[Math.sin(b)*Math.cos(a),Math.cos(b),Math.sin(b)*Math.sin(a)],r=radius(d)*1.045;return[d[0]*r,d[1]*r+.055,d[2]*r];}};
+ }
+ const api={build};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.MoleGame.PangCannonRock=api;
+})(typeof window!=='undefined'?window:globalThis);
