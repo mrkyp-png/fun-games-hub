@@ -1,0 +1,8 @@
+/* Fixed camera calibration shared by rendered terrain, volumetric cover and combat. */
+(function(root){'use strict';const node=typeof module!=='undefined'&&module.exports,C=node?require('./pang-cannon-config'):root.MoleGame.PangCannonConfig,M=node?require('./pang-cannon-view-math'):root.MoleGame.PangCannonViewMath;
+ let cached;
+ function ground(u,v){const ray=M.ray(M.camera(C.scene.aspect),u,v),d=ray.to.map((x,i)=>x-ray.from[i]),t=-ray.from[1]/d[1];return ray.from.map((x,i)=>x+d[i]*t);}
+ function layout(){if(cached)return cached;const camera=M.camera(C.scene.aspect),descriptors=[{u:.200,base:.582,top:.332,width:.194},{u:.657,base:.477,top:.249,width:.178},{u:.409,base:.226,top:.106,width:.110},{u:.814,base:.277,top:.118,width:.132}],rocks=descriptors.map((d,id)=>{const p=ground(d.u,d.base);let lo=0,hi=40;for(let i=0;i<32;i++){const h=(lo+hi)/2;if(M.project(camera.vp,[p[0],h,p[2]])[1]>d.top)lo=h;else hi=h;}const height=(lo+hi)/2,du=Math.abs(M.project(camera.vp,[p[0]+1,height/2,p[2]])[0]-M.project(camera.vp,[p[0],height/2,p[2]])[0]),rx=d.width/2/du;return{id,kind:'rock',pos:p,baseX:p[0],half:[rx,height/2,rx*.45],moving:false,screen:d};}),holes=[{u:.17,v:.297,width:.116},{u:.817,v:.405,width:.135},{u:.733,v:.136,width:.074}].map((d,id)=>{const p=ground(d.u,d.v),du=Math.abs(M.project(camera.vp,[p[0]+1,0,p[2]])[0]-d.u);return{id,pos:p,radius:d.width/2/du};});cached={rocks,holes};return cached;}
+ function spawn(index){const uv=C.scene.spawnUV[index%C.scene.spawnUV.length];return ground(uv[0],uv[1]);}
+ const api={ground,layout,spawn};if(node)module.exports=api;else root.MoleGame.PangCannonArena=api;
+})(typeof window!=='undefined'?window:globalThis);

@@ -1,0 +1,6 @@
+{
+  "approvedConcept": "v14",
+  "environmentPlate": "imagegen clean plate from v14; characters, UI and weapon removed, four cover rocks and three holes preserved",
+  "technique": "Camera-projected baked environment material on a 3D terrain plane and aligned volumetric cover geometry; fixed camera. Characters, weapon, projectiles and cover depth are 3D.",
+  "noProceduralGrass": true
+}
