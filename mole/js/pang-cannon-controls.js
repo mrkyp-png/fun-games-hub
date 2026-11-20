@@ -23,7 +23,9 @@
   function setEnabled(on){enabled=!!on;if(!enabled)reset();}
   function setSkills(ids){for(const b of buttons)b.disabled=!ids.includes(b.dataset.skill);}
   function dispose(){if(disposed)return;disposed=true;observer?.disconnect();setEnabled(false);listeners.forEach(f=>f());for(const el of [move.el,aimStick.el,...buttons])el.remove();}
-  return{update,setEnabled,setSkills,reset,dispose,buttons,aim:()=>({...aim})};
+  // V1772 C: AI skill steers the reticle (eased toward a screen point).
+  function steerTo(u,v,k){aim.u=Math.max(.08,Math.min(.92,aim.u+(u-aim.u)*k));aim.v=Math.max(.08,Math.min(.82,aim.v+(v-aim.v)*k));}
+  return{update,setEnabled,setSkills,reset,dispose,steerTo,buttons,aim:()=>({...aim})};
  }
  root.MoleGame.PangCannonControls={create,layout};
 })(window);

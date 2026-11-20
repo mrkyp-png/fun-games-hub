@@ -97,7 +97,16 @@
 ■ 팡팡캐논 효과음 (V1763 C)
   - 라운드 시작 사이렌, 하트 1개 심장 소리: Web Audio 코드 합성음 (음원 파일 없음, 라이선스 불필요).
   - 먼 포격음: 위 cannon-boom1~8.mp3 를 작게·느리게 재생 (같은 라이선스).
-  - 팡팡캐논 배경음악 audio/pang-cannon/intro·battle·tense·victory·defeat.mp3 (V1767 C):
+  - 팡팡캐논 배경음악 V1772 C 교체 — 사용자가 Pixabay 에서 내려받아 제공(2026-11-20), Pixabay Content License
+    (상업 이용 무료·저작자 표기 불필요, https://pixabay.com/service/license-summary/). loudnorm I=-16·128kbps 재인코딩.
+      battle.mp3  = "Battle Drums" — atlasaudio (Pixabay 636771), 전체
+      tense.mp3   = "Intense" — nastelbom (Pixabay 453507), 전체
+      boss.mp3    = "Epic Music" — nastelbom (Pixabay 602452), 전체
+      intro.mp3   = "The Glorious Stride (Song 1)" — jean-paul-v (Pixabay 337674), 앞 6.5초+페이드
+      victory.mp3 = "Victory" — sonican (Pixabay 486914), 앞 7초+페이드
+      defeat.mp3  = 아래 V1767 C 합성곡 유지.
+    원본: 바탕화면 atlasaudio-battle-drums-636771.mp3 외 4개.
+  - (이전) 팡팡캐논 배경음악 audio/pang-cannon/intro·battle·tense·victory·defeat.mp3 (V1767 C):
     Claude 가 코드로 직접 작곡·합성(review/pang-cannon-music-v1767c/make_music.py — 사인파·노이즈 합성, 샘플·외부 음원 없음).
     라이선스 불필요(외부 저작물 미사용). loudnorm I=-16, 128kbps 로 인코딩. 사용자 지시로 팡팡캐논에서 기존 BGM(달빛축제)·두더지 목소리 제거.
 
