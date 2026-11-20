@@ -153,7 +153,7 @@
 // V1690 G: Sand beach, continuous ocean, combo turns and reactive hair; clear text-only signs, gentle warm entrance flow and corrected beach/water landing.
 // V1691 G: gold3D in original sprite boxes; hammer2D preserved; weapons in front of HUD; matched plaza label sizes.
 // V1692 G: matching gold clones, ImageGen enhancement lightning, smooth fur and physical rhythm entrance.
-const CACHE = 'mole-game-v1762-C';
+const CACHE = 'mole-game-v1763-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -1074,7 +1074,8 @@ const SHELL = [
   './js/pang-cannon-environment.js',
   './js/pang-cannon-scene-fx.js',
   './js/pang-cannon-background-moles.js',
-  './assets/pang-cannon/ice-v1758c/foreground.webp',
+  './assets/pang-cannon/ice-v1763c/foreground.webp',
+  './assets/pang-cannon/cannonball-v1763c.glb',
   './assets/shop-models-v1509/cannon-v1-clean-v1509.glb',
   './js/pang-cannon-throw.js',
   './js/pang-cannon-renderer.js',

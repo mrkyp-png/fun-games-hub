@@ -94,9 +94,27 @@
   라이선스: Pixabay Content License — 크레딧 표기 불필요이나 사용자 지정으로 기록.
   Sound Effect by David Dumais from Pixabay
 
+■ 팡팡캐논 효과음 (V1763 C)
+  - 라운드 시작 사이렌, 하트 1개 심장 소리: Web Audio 코드 합성음 (음원 파일 없음, 라이선스 불필요).
+  - 먼 포격음: 위 cannon-boom1~8.mp3 를 작게·느리게 재생 (같은 라이선스).
+  - 팡팡캐논 배경음악 audio/pang-cannon/intro·battle·tense·victory·defeat.mp3 : 사용자가 Pixabay 에서
+    골라 제공 예정. 들어오는 대로 곡명·제작자·주소·라이선스를 이 아래에 기록하고 설정 > 개인정보·라이센스에도 표기.
+
 =====================================
 이미지 출처 / 라이선스 (파일명은 오디오지만 자산 라이선스 기록을 한 곳에 모아둠)
 =====================================
+
+■ assets/pang-cannon/fx-v1763c/*  (팡팡캐논 V1763 C 효과 그림)
+  출처: OpenAI 이미지 생성(사용자 ChatGPT Plus 계정의 Codex CLI 내장 이미지 생성, Sprite Motion Studio) — 2026-11-20 생성.
+  라이선스: OpenAI 이용약관상 생성물의 권리는 사용자에게 귀속, 상업적 사용 허용.
+  파일: explosion-1~6(얼음 폭발), intercept-1~6(격추 폭발), frag-*(무기 파편, 생성 그림을 조각별로 자름),
+    muzzle-1~4·msmoke-1~4(포구 화염·연기), splash-1~5(물기둥), smoke-column-1~6(연기 기둥), pirate-flag-1~6(해적 깃발),
+    ice-wall(얼음 성벽).
+■ assets/pang-cannon/ice-v1763c/foreground.webp  (얼음 바닥)
+  출처: Blender 직접 제작(review/cannon-ice-blender-v1763c/make_ice.py). 색만 OpenAI 생성 그림(얼음 마당 시안)에서 추출.
+  원본: 바탕화면 "스프라이트, 3D 스튜디오/_internal/outputs/*pc-*" 폴더.
+■ assets/pang-cannon/ice-v1758c/foreground.webp, assets/pang-cannon/cannonball-v1763c.glb
+  출처: Blender 로 직접 제작(스크립트 review/cannon-ice-blender-v1758c/make_ice.py, review/cannonball-v1763c/make_ball.py). 외부 자산 없음.
 
 ■ assets/home-showcase/1.jpg ~ 28.jpg  (홈 화면 쇼케이스 — 큰 배경 순환 + 작은 타일)
   출처: Google Gemini 이미지 생성 (사용자 확인, 2026-09-17).
