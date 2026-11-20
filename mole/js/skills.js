@@ -68,6 +68,17 @@
     if (inv[id] === 0) unequipEverywhere(id);
     return true;
   }
+  // V1771 C: Pang Pang Cannon uses all three skills (shield included) without changing the main game's availability rule.
+  function consumeForMinigame(id) {
+    if (!skillById(id)) return false;
+    var inv = loadInventory();
+    var cur = inv[id] || 0;
+    if (cur <= 0) return false;
+    inv[id] = cur - 1;
+    if (!saveInventory(inv)) return false;
+    if (inv[id] === 0) unequipEverywhere(id);
+    return true;
+  }
 
   // ---- Loadouts (무기별 독립) ----
   function defaultLoadouts() {
@@ -176,7 +187,7 @@
   var api = {
     SKILLS: SKILLS, WEAPON_SLOTS: WEAPON_SLOTS,
     skillById: skillById, activeSkills: activeSkills, passiveSkills: passiveSkills, slotsFor: slotsFor, available: available,
-    getQuantity: getQuantity, addQuantity: addQuantity, consumeOne: consumeOne,
+    getQuantity: getQuantity, addQuantity: addQuantity, consumeOne: consumeOne, consumeForMinigame: consumeForMinigame,
     loadoutFor: loadoutFor, toggleEquip: toggleEquip, restore: restore,
     snapshotForGameStart: snapshotForGameStart
   };
