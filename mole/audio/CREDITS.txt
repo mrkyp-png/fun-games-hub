@@ -109,7 +109,7 @@
   라이선스: OpenAI 이용약관상 생성물의 권리는 사용자에게 귀속, 상업적 사용 허용.
   파일: explosion-1~6(얼음 폭발), intercept-1~6(격추 폭발), frag-*(무기 파편, 생성 그림을 조각별로 자름),
     muzzle-1~4·msmoke-1~4(포구 화염·연기), splash-1~5(물기둥), smoke-column-1~6(연기 기둥), pirate-flag-1~6(해적 깃발),
-    ice-wall(얼음 성벽).
+    ice-wall·ice-wall-fade(얼음 성벽, 아래 흐림·깃발 천 제거 가공), wall-flag-1~6(성벽 깃발 천 펄럭임).
 ■ assets/pang-cannon/ice-v1763c/foreground.webp  (얼음 바닥)
   출처: Blender 직접 제작(review/cannon-ice-blender-v1763c/make_ice.py). 색만 OpenAI 생성 그림(얼음 마당 시안)에서 추출.
   원본: 바탕화면 "스프라이트, 3D 스튜디오/_internal/outputs/*pc-*" 폴더.
