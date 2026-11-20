@@ -1,6 +1,6 @@
 /* PANG PANG CANNON v1.0. Confirmed rules and editable initial proposals are separate. */
 (function(root){'use strict';
- const proposals={bonusPoints:100,waveSize:12,waveCounts:[2,2,3,3,4,4,5,5],localRankingLimit:100,ratios:[[1,0,0],[1,0,0],[.7,.3,0],[.7,.3,0],[.5,.35,.15],[.5,.35,.15],[.35,.4,.25],[.35,.4,.25]],coins:{divisor:50,cap:500},skillCooldowns:{targeting:20,ai:40,shield:30},interceptPoints:{rocket:50,dynamite:50,'spiked-ball':50,'gold-capsule':50,bomb:50,cola:75,phone:75,snow:50,boomerang:50,disc:50,heart:50,sniper:50}};
+ const proposals={bonusPoints:100,waveSize:12,waveCounts:[2,2,3,3,4,4,5,5],localRankingLimit:100,ratios:[[1,0,0],[1,0,0],[.7,.3,0],[.7,.3,0],[.5,.35,.15],[.5,.35,.15],[.35,.4,.25],[.35,.4,.25]],coins:{divisor:50,cap:500},skillCooldowns:{targeting:.3,ai:40,shield:30},interceptPoints:{rocket:50,dynamite:50,'spiked-ball':50,'gold-capsule':50,bomb:50,cola:75,phone:75,snow:50,boomerang:50,disc:50,heart:50,sniper:50}};
  const counts=[24,24,36,36,48,48,60,60],caps=[2,2,3,3,4,4,5,5],intervals=[1.8,1.6,1.4,1.3,1.1,1,.85,.75];
  const rounds=counts.map((count,i)=>Object.freeze({round:i+1,count,projectileCap:caps[i],spawnMin:intervals[i],spawnMax:intervals[i]+.4,flightSeconds:[3,2.7,2.3,2][Math.floor(i/2)]*1.6}));
  // V1768 C: round clear = sink 50 boats in round 1 (+10 per round), then sink the boss in a 1-on-1 duel.

@@ -1,4 +1,325 @@
-# V1749 G 배포 승인 — 구형 홈 제거, 게임기 선택, 폭탄 퇴장 수정
+# V1773 C 배포 — 2026-11-21 (Claude)
+- 팡팡캐논 2라운드 야간 다듬기: 별 빛번짐+5개 중 1개 십자 반짝임(CSS), 탐조등 시작점=성벽 높이 62%(--tower 계산 pang-cannon.js), 바다 달빛 기둥 숨김(.ppc-moonglint display:none, 사용자 "일자라 이상"), 배·두더지·무기·포탄·캐논 외곽 약한 따뜻한 글로우(셰이더 nightRim, nightGlow .6, 2라운드만).
+- BGM 음량 MUSIC_VOL .35→.48. 타겟팅 쿨타임 20→.3초(사실상 없음, 두 번 눌림 방지). 캐논 포구 화염 2겹 알파 .7(투명도 30%).
+
+# V1772 C 배포 완료 — 2026-11-20 (Claude)
+- commit 10040974, Pages 44757271408 success, 공개 진입·음악 200. 다음 V1773.
+- 2라운드 야간(pang-cannon.js nightTick, .ppc-night 오버레이 z2: 남색 어둠+캐논 주변 밝음, 별46·달·달빛, 배 등불 DOM, 망루 탐조등, 조명탄 15~25초, 폭발·화염 시 nightPulse로 밝아짐). 음악=사용자 제공 Pixabay(battle atlasaudio / tense·boss nastelbom / intro jean-paul-v 6.5초 / victory sonican 7초), defeat는 합성 유지, boss 트랙 신설(보스전), 설정 라이선스 문구 갱신.
+- 스킬: 타겟팅=자동 1발, AI=10초 조준창이 목표로 미끄러짐(controls.steerTo)+일반 자동발사. 모든 탭에 이유 표시(쿨타임/카운트다운/실드 대기/개수 0). 실드 is-active 깜빡임(undefined toggle) 수정. 사용자 보고 "스킬 남았는데 안 써짐"은 PC 재현 안 됨 — 휴대폰 문구 확인 대기.
+
+# V1771 C 배포 완료 — 2026-11-20 (Claude)
+- commit 35707383, Pages 44750245156 success, 공개 진입 정상. 다음 V1772.
+- 스킬: 보유 수량 있는 3개 모두 버튼(아이콘 원 꽉 채움, 개수 배지), 1회 사용=1개 소모(Skills.consumeForMinigame 신설 — 본게임 shield available 규칙은 그대로), 쿨타임 proposals.skillCooldowns. 타겟팅=0.8초 자동 연사, AI=10초 자동 조준 사격(core.autoTarget 무기 우선→가장 가까운 배), 실드=대기→첫 피격 막고 1초 보호막(shieldArmed/shieldUntil). 폭발 연기 어둡게: intercept-*-dark/explosion-*-dark(review/fx-v1763c/darken_smoke.py).
+- 다음 작업(사용자 지시): 2라운드 야간 전투 — 밤하늘·별·달·어두운 바다·달빛 반사, 화면 어둡게+캐논 주변 밝게, 폭발·화염이 주변 밝힘, 적 배 등불, 망루 탐조등, 조명탄, 얼음·성벽 달빛.
+
+# V1770 C 배포 완료 — 2026-11-20 (Claude)
+- commit 4795b886, Pages 44747156616 success. 첫 확인 때 GitHub Pages 일시 503(fleet.js·msmoke-2)로 진입 실패 → 재확인 200·진입 정상. 다음 V1771.
+- 포구 fx를 renderer muzzleFx()로 이동(화면좌표 쿼드, 깊이 없음, 캐논 직전에 그림 → 포신이 항상 앞). 순서 연기(어두운 반투명 .42/.62α)→화염→화염2(작게·기울임). 1.3배, 포구 안 0.1cm. 얼음폭발·침몰 연기 .ppc-smoke-dark/.ppc-puff-dark 어두운 반투명.
+
+# V1769 C 배포 완료 — 2026-11-20 (Claude)
+- commit 938d1a41, Pages 44745927806 success, 공개 진입 정상(확인 중 다른 게임 그림 1개 일시 503, 무관). 다음 V1770. 사용자 "진짜 재미있다".
+- 성능: z>235 먼 배는 두더지 생략(투척 중 제외, 보스 제외), z>170 대기 두더지는 2프레임마다 포즈 계산(poseCache, 위치는 매 프레임 raw.mole), 진형/보스 시 일반 배 퇴장 2.5초, 깃발 카메라 역행렬 프레임당 1회. 물결은 사용자 지시로 유지.
+
+# V1768 C 배포 완료 — 2026-11-20 (Claude)
+- commit a4b0bf68, Pages 44745043867 success, 공개 진입 정상. 다음 V1769. 사용자 보고: 휴대폰 FPS가 30 수준까지 떨어지는 구간 있음(진형+일반 배 다수 추정) → 최적화 필요.
+- 라운드=격침 목표 C.sinkTarget(r)=40+10r(1R 50) 달성 → 다른 배 4초 퇴장, 보스(fleet 슬롯 54) 옆모습 좌→우 등장·좌우 순찰·가끔 화면 밖, 보스 투척 전부 3분열, 보스 격침 2.4초 뒤 ROUND_CLEAR. 무기 수 조건 삭제.
+- 12 전술(fleet TACTICS, 슬롯 24~53): line·flank·snake(1R) / fish·ram(2R) / crane 26척·battleline(3R) / cheomja·crossT(4R) / breakLine·fireship(5R) / wolfpack(6R). 새 전술 우선, 진형 끝 10초 뒤 다음. 진형 중 일반 배 퇴장, 끝나면 재입장(shifts). 기함(flagshipHp 5, 1.3배) 격침=진형 붕괴 +300. ram/fireship 도착 시 damagePlayer+폭발. 두더지 배와 함께 침몰. 포구 fx 앞 0.1cm.
+
+# V1767 C 배포 완료 — 2026-11-20 (Claude)
+- commit ef4eef16, Pages 44740671306 success, 공개 진입·audio/pang-cannon/*.mp3 200 확인. 다음 V1768.
+- 침몰: 작은 폭발 3연쇄(0.26s)→큰 폭발+물기둥+검은 연기, 두더지 바다로 점프(renderer drawMole), 거품 고리(foam), 보스=0.45s 슬로모(accum×.3)+흰 번쩍임. 폭발음 boom()=cannon-boom1~8 음량·피치 변화(격추·얼음폭발·배명중/침몰).
+- 팡팡캐논에서 기존 BGM(bgm-game-1 대체 재생)·두더지 목소리(moleVoice) 제거(사용자 지시). 새 음악 5곡 = Claude 코드 합성(review/pang-cannon-music-v1767c/make_music.py), 라이선스 불필요, CREDITS 기록.
+- 배 2배: fleet COUNT 24, BASE 10(라운드1 10척·2라운드 20·이후 최대 24). 투척 배수는 active/10(V1766 수준 유지). 격침 슬롯은 rules.boatRespawn 1.5초 뒤 새 배(Fleet.shifts), 보스 제외. 휴대폰 FPS 미확인(24척 부담 주의).
+
+# V1766 C 배포 완료 — 2026-11-20 (Claude)
+- commit 9b5294c0, Pages 44738489027 success, 공개 진입 정상(확인 중 round-announce-6.mp3 일시 503 1회, 이번 변경과 무관). 다음 V1767.
+- 배 격추: autoFire가 조준창 안 무기 없으면 배(갑판) 조준 → core.fire(target,…,boat) 도착 시 boatHit. 체력 rules.boatHp 3(+20/명중, 격침 +200), state.sunk[i]={at} 그 라운드 재등장 없음·투척 제외. 렌더: 피해 비례 기울기, 격침 2.2초 뒤집힘+가라앉음. 보스: rules.bossRounds [4,8] 슬롯0, 1.8배, hp15, z=200 고정 대기(fleet bossLife), 상단 .ppc-boss-hud 막대, +1000. 격추 파편 낙하 제거(퍼지며 사라짐).
+- 남은 과제: 배 12척 라운드 해적깃발 과밀(크기 축소 검토), 보스 전용 모델, 음악 파일, 스킬 기능, 철모/두건(마지막).
+
+# V1765 C 배포 완료 — 2026-11-20 (Claude)
+- commit 344f9877, Pages 44698295332 success, 공개 진입 정상. 다음 V1766.
+- 재시작 멈춤 수정(newGame에서 hitStopUntil/beatAt 초기화). 성벽=renderer iceWall() 화면좌표 쿼드(깊이 없음, 배·무기·캐논이 앞), ice-wall-fade.webp(아래 흐림 내장·빨간 천 제거)+wall-flag-1~6 펄럭임(좌→우 바람). 포구 화염 .17/연기 .16(두더지팡 크기). 격추 폭발 .357·14fps+CSS 페이드. 투척=활성배/5 배수로 cap↑·간격↓(core fleetFactor). 빗나간 포탄 물보라는 바다만(seaSpot: 배 위치면 배 앞 바다).
+
+# V1764 C 배포 완료 — 2026-11-20 (Claude)
+- commit 23aea32d, Pages 44694462408 success, 공개 진입 정상. 다음 V1765. 연기 기둥 z=355 수면(-0.18) 기준, 밑동 고정(lift=size*.482-.43, 사용자 미세조정 확정), 크기 26~88 다양.
+
+# V1763 C 배포 완료 — 2026-11-20 (Claude)
+- commit e4d552ea, Pages 44693391103 success, 공개 PangCannon.open() 시작창 정상. 다음 V1764.
+- GPT imagegen 클레이 효과 플립북(assets/pang-cannon/fx-v1763c): explosion 6(얼음 폭발, 화면폭 .45)·intercept 6+무기별 frag-*(격추)·muzzle/msmoke 4(포구, 매프레임 포신 따라감)·splash 5(빗나간 포탄 물기둥)·pirate-flag 6(배 뒤 중앙 깃대+봉 연장)·smoke-column 6(3D 장면 수평선 z≈355, 11초 주기로 나타남/사라짐, 밑동=수평선)·ice-wall(물가 성벽 DOM). Blender: cannonball-v1763c.glb(남색 공), ice-v1763c 바닥(매트 클레이 #9FD5F6 계열, 눈·금·테두리 없음, 먼 가장자리 직선).
+- 전쟁 연출: 라운드 사이렌 배너+빨간 테두리, 하트1 심장박동(합성음), 먼 포격 섬광, 투척 불꽃, 구멍 그을음. 구멍=라운드 끝까지 유지(최대32), 모양 다양, 반경1.3/.9. 배=라운드마다 2배(5→10→최대12 동시), 여정마다 다른 거리·대기 .3초.
+- 음악: TRACKS audio/pang-cannon/{intro,battle,tense,victory,defeat}.mp3 상황별 크로스페이드 — 파일 미입수(battle 없으면 bgm-game-1). 받으면 CREDITS.txt+설정 라이센스 표기.
+- 미사용 에셋(war-flag, smoke-column 단일, sandbags)은 배포 제외. 철모/두건=사용자 지시로 마지막(바탕화면 팡팡캐논_Tripo용).
+
+# V1762 C 배포 완료 — 2026-11-20 (Claude)
+- commit 786521b6, Pages 44679188208 success, 공개 사이트 PangCannon.open() 시작창 정상. 다음 V1763.
+- 효과(pang-cannon.js .ppc-fx): 포구=두더지팡 lane-cannon 3겹 fx1/fx4/fx5(기준각 -146.6/-163/-155.5, 포구 0.3cm 앞, 매 프레임 viewer.aim() muzzle/pivot 따라 재배치), 격추=burst.webp+sparkle4+smoke+‘+점수’+0.05초 hit-stop+조준창 번쩍, 얼음 폭발=burst+cannon-fx2(마스크)+smoke4+화면흔들림(맞으면 크게). 반동=renderer kick(): 캐논 전체 조준 반대 .35/.6/.95 무작위 + 포신 .22.
+- 얼음 구멍(사용자 ‘나’ 선택): 피한 무기 착지 z<19 → state.holes(r 2/미니1.4, 8초, 최대8), 셰이더 holes[8] 로 얼음 알파 구멍+깊은물+눈테두리, core.moveCannon 구멍 진입 차단(축별 미끄러짐). 라운드마다 초기화. HP는 캐논 피격만.
+- 배: fleetSeconds(라운드마다 0, 카운트다운에도 증가)로 빈 바다에서 1.4초 간격 입장, 수평선 355까지 가며 260 이후 35%까지 축소. 카운트다운 중에도 렌더.
+
+# V1761 C 배포 완료 — 2026-11-20 (Claude)
+- commit 85f82760, Pages 44674126531 success, 공개 build-tag 'V 1761 C', 공개 사이트 PangCannon.open() 시작창 정상(캐논 asset 404 없음). 다음 V1762.
+- 캐논 차체 방향 = 왼쪽 조이스틱 민 방향(state.cannonHeading → renderer steer, 프레임당 최대 .2rad, 멈추면 유지). view-math pose(…,bodyYaw)로 차체/포탑 분리: turretNames(파란 옆판2·빨간 축덮개2·노란 축2)+포신이 조준 방향으로 함께 회전, 옆판은 회전 시 앞뒤 45%(cheekShrink). 바퀴 회전은 차체 진행방향 기준.
+
+# V1760 C 긴급 배포 — 2026-11-20 (Claude)
+- V1759 C에서 팡팡캐논 진입 불가: 원본 캐논 cannon-v1-clean-v1509.glb 가 git 미추적(??)이라 공개 404 → 'Cannon scene asset 404'. 파일 추가+버전만 올림(코드 변경 없음). commit 802d96b0, Pages 44671420401 success. 공개 사이트에서 PangCannon.open() 시작창까지 확인.
+- 교훈: 새로 참조하는 에셋은 git status로 추적 여부 확인, 배포 후 공개 사이트에서 실제 진입 확인.
+
+# V1759 C 배포 완료 — 2026-11-20 (Claude)
+- 공개 V1759 C / 다음 V1760. commit 60772e00d302696096e36b0197150e1c45928dd0 (home3d·master·origin/master 일치). Pages 44666114681 completed/success, 공개 build-tag 'V 1759 C'. 휴대폰 실기기·FPS 미확인.
+- HUD 띠 노치여백 제거(top 8px). 무기 비행 y를 시작→목표 선형으로(바닥 아래로 꺼져 안 보이던 문제 해결, flight.position). 표적 괄호·+점수 명판 삭제.
+- 조작: 왼쪽 조이스틱=캐논 이동(core.moveCannon, 범위 rules.cannonZMin/ZMax/SideMargin), 오른쪽 조이스틱=조준창, 조준창 안에 무기 들어오면 자동발사(pang-cannon.js autoFire). 발사버튼 없음. 조이스틱 반투명, 스킬 3개=두 조이스틱 사이 아래 한 줄(기능 미구현).
+- 캐논 모델 cannon-v1-clean-v1509.glb(바퀴 노드 분리)로 교체, 이동거리만큼 바퀴 회전(view-math wheelOf, renderer wheelRoll). 상점 등은 batched 그대로.
+- 분열: 2라운드부터 모든 무기 30% 확률, 비행 45%에서 3개(가운데=목표, 양옆 ±4.5), 작은 무기 0.7배·+30점, processed는 부모만 셈(rules.cluster*). 로켓 좌우 S자(진폭3.2)+진행방향 머리(rocketHeading). 금캡슐(노란 알약) 삭제.
+- 배: fleet.life 주기26초(들어옴9·멈춤6·회전1.6·나감7.5·숨김), 멈춤/들어옴 중만 투척(core prepareThrow가 ready 배 선택), 배 아래 물결 고리 3개(renderer wake). 배 종류 목록 Config.boats(현재 swan 1종) — 새 배 = glb+한 줄(deck/draft/width). 두더지 MOLE_SCALE .15, 배 정중앙 갑판 위.
+- 2~8라운드 테마 삭제 → 모든 라운드 1라운드(빙판 해안). 다음: 배 3종(해적선·고무보트·통나무 뗏목) 이미지젠 시안→Tripo→Blender 정리, 스킬 기능, 기존 review 검사 갱신.
+
+# V1758 C 배포 완료 — 2026-11-20 (Claude)
+- 공개 V1758 C / 다음 신규 배포 V1759. commit 2171c7cff769c0e4bbedba47378c6148b58c320c (로컬 home3d·master·origin/master 일치). Pages 44651060574 completed/success. 공개 index build-tag 'V 1758 C', sw CACHE mole-game-v1758-C, ice-v1758c 200 확인. 휴대폰 실기기·FPS 미확인.
+- 팡팡캐논 UI: 위 띠 한 줄(하트·SCORE·ROUND·격추수·일시정지), 클레이 조준경, 날아오는 무기마다 빨간 모서리 괄호+금색 +점수 명판(.ppc-target, viewer.projectWorld). 조이스틱·FIRE·아래 라운드 알약 삭제. 사용자 승인 시안 = ChatGPT 생성 그림(해변 바닥 버전)이나 바닥은 사용자 지시로 얼음 유지.
+- 조작: 바다(화면 v<.62) 누르면 조준·떼면 발사, 얼음(v>=.62) 끌면 캐논 상하좌우·대각선 이동(두 손가락 동시 가능). 스킬 버튼 3개(오른쪽 아래, 그림 문자 임시) — 스킬 기능 미구현이라 비활성 표시.
+- 피하기: 무기는 던지는 순간 캐논 위치(state.cannon)를 목표로 비행(flight p.target). 착지 시 캐논과 거리>rules.cannonHitRadius(2.6)면 dodge(하트·콤보 유지), 아니면 기존 miss(하트-1·콤보0). 이동범위 rules.cannonZMin/ZMax/SideMargin, core.moveCannon. renderer setCannon/cannonStart/groundAt 추가.
+- 바닥: Blender 5.2 클레이 얼음판(게임 카메라 eye(0,28,-24)·세로화각68.02° 일치) 렌더 → assets/pang-cannon/ice-v1758c/foreground.webp, iceEdgeV=153/1132. 원본 review/cannon-ice-blender-v1758c/make_ice.py·ice_v1758c.blend. 사용자 지시로 빨간 위험선(cannonDefense) 화면 표시 삭제·물가 얼음조각 삭제.
+- 기존 review/test-*cannon*controls/ui 검사는 조이스틱·FIRE·무조건 miss 전제 → 새 규칙에 맞게 갱신 필요(미처리). AGENTS·review 무관 변경은 배포 제외.
+
+# V1757 G 배포 완료 — 2026-11-20
+- 사용자 최신 '배포'는 앞서 보여준 imagegen빙판시안 적용/게시 지시로 처리. 거부된타일빙판을그대로배포하지않고 새이미지젠clean/alpha plate제작해적용후게시완료.
+- 공개V1757G/다음V1758G. 원격master/로컬home3d/master/originmaster commit66fa6c493a682698549325c1055a4174a01ae0ab, tree258d574f680997dd659d3129ee0a06d93db1c01a. 제품10파일354481bytes blobSHA/tree일치. Pages44600788248 completed/success, build/deploy/report-build-status모두success. https://github.com/mrkyp-png/fun-games-hub/actions/runs/44600788248
+- imagegen내장 cleanplate/transparentcutout → stock assets/pang-cannon/ice-v1757/foreground.webp(941x1672/118032bytes), 원본alpha손실없음. Config.scene.iceEdgeV=.6046650717703349, assets.iceForeground추가. PBeach procedural iceSegment/tile제거, 실제imageRGBA를foreground에만합성(smoothstep0..97alpha로interioropaque). 바다FS는원본live그대로, upperimage/캐릭터/캐논/위험선이미지미사용(실제GL로render). 위험선code유지. 양선표면승인방향질감적용.
+- 이전정면boat/캐논포탄1.3/한팔Throw/위험선까지포함배포. 새throwJS및iceWebP명시포함. 앞모래홀/shore타깃삭제/수면draft.14clip/bob/tilt/수평선노이즈수정유지.
+- 버전반영후11검사 PASS: release-v1757g-checks.json. 실제IntelGPU shadercompile/link/8scene/120frames PASS, waterAnimatedBehindIce=true/iceLowerRegionStatic=true. 실제browserDOM/phone/FPS미검증. native검토UI없음/testautoaim.
+- review/deployment-v1757g.json / manifest / remotecommit / sync-remote-v1757g.py, cannon-v1757g-ice-deployment.md. Desktop 팡팡캐논_V1757G_배포검토.mp4 / 빙판적용.png / 배포보고.md. Prompt원문 review/cannon-ice-clean-prompt-v1757.txt, alpha원본review/cannon-ice-clean-alpha-v1757.png. raw비트맵/geometry/review/AGENTS/다른사용자dirty는배포제외.
+- 제품workingtree/index깨끗함. 무관user변경보존. 공개newcommit과localcanonical정확히동기화. 심지연소미완료/로켓pulse초기효과는상태변경없음.
+
+# 빙판 표현 사용자 거부 — 이미지젠 재질 시안 승인 대기
+- 최신사용자: '빙판이 뭐냐? 시발' → 이전 절차식 파란 타일/다각형선빙판이부족함인정. 이 proceduralice표현을사용자승인완료로간주하거나그대로배포금지.
+- 이미지젠 edit으로 실제현장nativeframe를참조해빙판재질시안생성. 두께/반투명푸른층/자연분기균열/서리/얼음테두리. Desktop 팡팡캐논_빙판_재질시안01.png, review/cannon-ice-material-concept01.png 및prompt txt. 이건승인용정지콘셉트이며실제게임수정/실바다움직임검증자료아님. 생성본은캐릭터까지미세변형되므로 전체씬을그대로게임배경으로쓰면안됨.
+- 아직미승인/제품미적용. 승인시이재질방향의foreground cleanplate를별도이미지젠제작(캐논/위험선/캐릭터/무기없음)하고빙판에만적용할것. 실제바다셰이더·5척원본boat/캐릭터·위험선코드는유지. 물을정지그림으로대체금지. 기존타일선제거해야함.
+- 공개V1756G/다음V1757G 유지. 이전미배포 정면boat/캐논포탄1.3/한팔투척/위험선코드는작업트리에있음. 승인전시안게임반영없음.
+
+# 정면배/캐논포탄+30%/빙판/한팔투척/위험선 — V1756 이후 미배포
+- 최신사용자5요청반영. Fleet 원본boat front=-X를캐논(0,z1.8)으로회전, mole로컬yaw상쇄하여얼굴도캐논방향유지. draft.14/waterclip/bob/tilt 유지. boatasset그대로.
+- Cannon scale:(5.7*.7*1.3)/nativeHeight=5.187/nativeHeight, V1756대비1.3. playerProjectileRadius자동포구연동1.3, 105ms/250ms유지.
+- 1R 모래사진샘플제거, pang-cannon-beach에proceduralclay빙판/크랙/밝은edge. actual비치바다FS유지. 기존photo로드제거(beachTexture=null). 첫라운드표시 빙판해안/ICY SHORE. 이미지젠미승인아트추가없음.
+- 새 pang-cannon-throw.js(원본runtime에scoped클립 CannonRightThrow). Idle기반좌측팔고정, RightUpperArm계층만Carry/ArmsUp조합, .6릴리스/.95복귀. 원본json불변, 다른게임영향없음. Renderer기본Idle, 준비/후속동작customclip, 손좌표그대로포물선source. index/preview/SW새JS등록.
+- 위험선은Config.scene.impactV(.73)에붉은/주황사선띠, 모든캐논지면표시. firstice함수와나머지paletteRole1바닥에만적용, 캐논/배/버튼안가림, popup/점멸없음.
+- test-cannon-front-ice-throw(원본좌팔안정/우팔상승복귀/정면bow+face/정확스케일/ice/line) PASS. core10/renderer8R3360miss+손상승/UI/precision/viewmath60/기존통합/BeachReuse PASS. actualIntelGPU8theme120frames shadercompile/link/render PASS. 브라우저/휴대폰/FPS미검증. native캡처는UI없음/testautoaim.
+- review/cannon-front-ice-throw-result.json/report.md, 최신네이티브snapshot/cannon-interception-gpu 갱신. Desktop 팡팡캐논_빙판_정면배_한팔투척_검토.mp4, 팡팡캐논_빙판_위험선_검토.png, 수정보고.md. 일부이전영상별칭최신으로갱신. checkpoint review/checkpoints/cannon-front-ice-20261120-040943/before.zip.
+- 공개V1756G/HEAD9b4db538db523ec843b013bb46d36c23f4fd1cb2 유지. 미배포/미커밋, 다음V1757G. 다음배포 신규throwJS명시포함(구prepare1756그대로사용금지:부모/파일수변경필요), tests현재추가front-ice-throw스크립트포함. review/AGENTS/원본geometry/Blender/영상/무관user수정제외. 심지연소미완료/로켓pulse초기효과유지.
+
+# V1756 G 배포 완료 — 2026-11-20
+- 사용자 배포 지시로 게시 완료. 공개 V1756 G, 다음 신규 배포 V1757 G.
+- 원격 master 및 로컬 home3d/master/origin/master: 9b4db538db523ec843b013bb46d36c23f4fd1cb2. tree ac943026690b2efba92710a99d996ebf06f7a537. 제품18파일 1,162,675바이트 Git blob SHA/전체tree 일치.
+- Pages 44590636384 completed/success; build/deploy/report-build-status 모두 success. https://github.com/mrkyp-png/fun-games-hub/actions/runs/44590636384
+- 배5척/배위두더지 .6초 준비·손투척, 실제3D5종, 1R 비치 실제바다/기존모래/구름없는하늘, 선체draft.14/수면clip/bob/tilt, 모래구멍및shore점프삭제, 수평선구름누출수정, 캐논50%축소/정밀조준 포함. 105ms/250ms/8라운드/기존정산 유지. 심지연소미완료/로켓pulse초기효과는배포완료로혼동금지.
+- 버전반영후 현행10개검사스크립트 PASS: release-v1756g-checks.json. 실제PC GPU8theme/120frames/cleanhorizon 증거기존검증확인. browserDOM/휴대폰/FPS미검증.
+- 신규stock pang-cannon-beach.js/fleet.js 및 assets/pang-cannon/projectiles-v1756/*.glb5개 포함. 기존RBO create/FS불변/readOnlyexport만추가. 광장boat/plaza본파일변경없음.
+- review/deployment-v1756g.json, release-v1756g-manifest.json, remote-commit-v1756g.json, sync-remote-v1756g.py. GitHub연결도구로업로드후로컬canonicalSHA expected-old ref동기화. 제품index/workingtree 깨끗함. 무관사용자review/AGENTS/대형geometry/PNG영상/Blender자료 배포제외·보존.
+
+# 구멍제거/배하강/둥둥/수평선노이즈 — 2026-11-20 미배포
+- 최신사용자: 모래구멍없애→모래5홀제거+shore점프타깃삭제. C.scene.holeUV/holeWorld=[], renderer홀draw/점프draw삭제, CoreadvanceBonus/bonusHit/보너스충돌/자동조준삭제. 기존bonus관련저장필드는0호환보존, 기록초기화없음. 준비/결과설명수정.
+- 배잠기게내려→Fleet.DRAFT .09→.14, sample.waterY반환, renderer각배clipPlane[0,1,0,-waterY]로수면아래선체가림. avatar는동일boat.mole행렬이므로함께하강, deck수면위검사. 물결bob/roll/pitch기존유지.
+- 수평선노이즈질문→원인확정: 바다horizonAlpha첫5px에서base사진의옛구름노출. PangBeach만undercolor를clear sky로하고shore근처.90~1에서만base모래혼합. 원본RBO FS/create 불변유지. renderer프레임의수평선6행 실제GPU색상가로편차0~2로흰구름노출없음검사.
+- core10그룹/UI/fleet/renderer8R3360miss+noholes/BeachReuse원본atlas+clip 검사PASS. 실제GPU8theme120frames 최신생성PASS. review/cannon-no-holes-waterline-result.json 및report.md. phone/browserDOM/FPS미검증. 영상실제GPU오프라인/UI제외/testautoaim.
+- Desktop 팡팡캐논_구멍제거_배수면_검토.mp4/png 및보고.md. 배경배수정/배5척동작 기존Desktop별칭도최신으로갱신. checkpoint review/checkpoints/cannon-no-holes-20261120-032328/before.zip, horizonbefore review/cannon-horizon-before.js.
+- 공개V1755G/HEAD3da516501f67376b2aee0b6521fa8c2894a82231 유지. 미배포/미커밋, 다음배포V1756G. 최신core test는12가아니라10(제거요청으로2개jump테스트폐기), rendererholes0/ascendingBonusTargetsfalse가맞음. 과거5holes/shore타깃복구금지. 심지연소미완료/로켓pulse초기효과는변경없음.
+
+# 1라운드 비치 배경 교체·배 텍스처 검토오류 수정 — 2026-11-20 미배포
+- 사용자 배경안바꾼것/배이상한이미지 항의→진행지시. 실제 비치 물결과 기존하늘/모래구도로 1R 전면교체. 새 pang-cannon-beach.js, 기존 rhythm-beach-ocean.js는fragment:FS 및Node export만추가(원래create/FS불변테스트). renderer 풀배경screenQuad 및같은배경을그리는depthfloor, M.camera 수평선계산/캐시, Arena 5holeUV 모래재배치. 2~8 기존테마유지(공용캐논카메라는비치구도에맞춰조정). 이미지젠 미승인시안 사용안함.
+- Beach.frame 원본1024x1536/shore942/cover와 .37stage규칙; layout은비치하단UI크기를식으로계산한참조배치, 실제브라우저DOM측정픽셀일치확인은아님. 코드재현과실브라우저구분필수.
+- 배 이상한이유확정: offline capture가 texture-ID.png 기존파일이있으면재사용해서예전눈덩이이미지가배에붙음. capture 텍스처파일명을내용SHA256으로변경+세션마다확인하여원본보장. 원본boat분홍/금색JPEG SHA256 7a03fdd506cd5d90788a53602c2375edbb9871387e02afb4f17b0d2bbfa729b8. 5척모두bytes일치검사PASS. renderer배색상pow1.35/lighting 및mipmap원본쪽맞춤. 광장원본boat/renderer/layout/plaza파일수정없음.
+- 바다sceneTime을state.combatSeconds로통일해 배/두더지와같은clock, 일시정지/재개countdown중점프방지. 실제손source들이apex보다아래서상승하는지검사추가. 실제geometrycapture~98.8MB 리뷰자료절대배포제외.
+- 검사 PASS: test-cannon-beach-reuse(원본바다코드/수평선/배atlas/dependencies), renderer8R336/0miss+공유시간+손상승, core12/fleet/UI합성DOM/precision/viewmath60/기존통합/공백. 실제Intel620 shadercompile/link/8장면/120프레임 GPU검증 PASS(clean exit0). 실브라우저DOM/휴대폰/FPS미검증. 영상UI없음/테스트자동조준.
+- verify-beach-plaza-v1690 전체는 오래된광장geometry스냅샷Home clay batch차이로FAIL(이번광장파일diff없음). 이걸PASS로보고금지. 새바다전용원본불변검사PASS로분리. 보고 review/cannon-beach-fixed-implementation.md / 결과cannon-beach-reuse-result.json.
+- Desktop 팡팡캐논_배경_배수정_검토.mp4/png 및 보고.md 저장. 기존Desktop 배5척동작영상/png도정상텍스처최신으로교체. 이전오류이미지 review/cannon-fleet-invalid-texture-review.png 보존, 승인근거로사용금지. native검토소스 cannon-interception-gpu는최신상태. checkpoint review/checkpoints/cannon-beach-fix-20261119-214111/before.zip.
+- 공개 V1755G/HEAD3da516501f67376b2aee0b6521fa8c2894a82231 유지. 다음명시배포V1756G. 아직배포지시없음. 신규fleet+beachJS와5GLB+RBO변경 index/SW정확히포함필요. review/AGENTS/무관사용자파일은제외. 심지연소등효과완료주장금지(현재로켓pulse초기효과만).
+
+# 배5척·두더지 투척 — V1755 이후 미배포
+- 최신 사용자: 중앙섬 배 활용해 지평선4~5개, 그위두더지가캐논에게무기던지는구조 구현. 실제 assets/home3d/boat.glb 원본바이트그대로5instance + mole47 원본헤어5종 재사용. 새 pang-cannon-fleet.js; core.pendingThrow .6초준비/5척roundrobin/포탄cap예약. renderer.throwOrigin이 실제skin Hand.R world좌표를 계산, F.source로정확히손에서발사. Fleet와손애니메이션은 state.combatSeconds공유, 일시정지/카운트다운동안동결.
+- 검토 GLB5종을 product assets/pang-cannon/projectiles-v1756로복사하고투척물에실연결: bomb/rocket/dynamite/spiked-ball/gold-capsule. old 비치4PNG/폰/콜라 로딩제거. 원본보존. 현재 모두기본50점, 임의황금추가보상없음. 로켓불길이pulse초기효과, 심지연소미구현.
+- index/preview: fleet가core보다먼저로드; SW fleet+5GLB추가. 기존50%축소/조준전용감도 유지. 신배경미승인/미적용. 비치실제구도와실제바다모듈공유는여전히미완료, 완료주장금지. 기존8theme유지.
+- test-cannon-fleet/핵심12/UI합성DOM/실제모델모의GL8R336격추0누락/precisionAim/기존통합/구문의존SW/원본boatbyte검사 PASS. 실제Intel620 GPU8theme/120frame/10초영상 PASS. 브라우저DOM/휴대폰/FPS 미검증. 테스트자동조준, native영상UI없음.
+- Desktop 팡팡캐논_배5척_투척동작_검토.mp4, 팡팡캐논_배5척_3D검토.png, 팡팡캐논_배5척_구현보고.md. review/cannon-fleet-implementation.md. checkpoint review/checkpoints/cannon-fleet-20261119-212641/before.zip. nativecapture기존interception-gpu폴더를현재fleet로갱신. 99MBgeometry 등review배포절대제외.
+- 공개V1755G/HEAD3da516501f67376b2aee0b6521fa8c2894a82231 유지. 새배포지시없음. 다음V1756G. 신규fleetJS 및5GLB 반드시명시포함, 무관한기존사용자변경/AGENTS/review스테이징금지. 현수정미커밋.
+
+# 3D 무기 5종 및 조준 감도 — V1755 이후 미배포
+- 사용자: 비치 기존 무기 말고 추천→폭탄/미니로켓/다이너마이트/가시철구/황금캡슐 추천. 이미지젠 제작 및 보고 지시. 실제 3D 입체물로 변경 지시. 5개 개별 imagegen 투명외형시안 + Blender 실제GLB 초안 생성. review/cannon-projectiles-3d-v1(5GLB/projectiles.blend/concepts/2각도렌더/manifest/REPORT/viewer). 게임 생성/타격에는 아직 새 5종 연결하지 않음. 황금보상 미확정. 5종GLB 검사통과, 실브라우저/폰미검증. 실제모델표면은 이미지젠 질감과 다름, 과장금지.
+- Desktop 팡팡캐논_3D무기5종_검토 폴더(모델/시안/보고), 팡팡캐논_실제3D무기5종_검토.png, 팡팡캐논_3D무기_회전검토.url. 로컬 http://localhost:8844/review/cannon-projectiles-3d-v1/viewer.html HTTP200. HTML 실제UI는 미검증.
+- 사용자 조준힘든이유 질문. 기존 Home3DUI입력의 속도형/노deadzone/normalized*.6으로 세로픽셀속도가 더빠름 발견. pang-cannon-controls.update만 수정: 반경10%deadzone, normalized길이 pow1.8정밀곡선, maxspeed=.72*min(viewport)px/sec를 X/Y각화면차원으로환산. 광장 원본입력 변경없음. test-cannon-precision-aim(3비율)/기존controls(10비율)/controller합성DOM 통과. 실터치감 미검증.
+- 이전 미배포 캐논50%축소/휴대폰콜라제거도 workingtree유지. 비치 실제바다공유/배경구도, 원반레이어 등 과제 여전히 미완료. 아직 배포지시없음, 공개V1755G/다음V1756G.
+
+# 비치 기준 재확인 및 바다 움직임 지적 — 미배포
+- 사용자가 옛 원본 이미지 비교에 강하게 항의. bg-beach-calm-v1164는 현재 실배경 전체가 아님: rhythm-beach.js가 .rp-a-sky CSS 및 RhythmBeachOcean WebGL을 위에 덮음. 비치 실제 핵심은 움직이는 바다, 사진/이미지젠 물결로 대체 금지. 이미지젠은 하늘/모래 배경 승인용에 한정. 아직 공용 실제바다 재사용을 팡팡캐논에 구현하지 않았음.
+- review/render-current-beach-layers.py: production ocean GLSL 실제 Intel GPU 실행 + CSS sky/기존 sand 레이어 오프라인 재현. current-beach-layers.png 및 current-beach-comparison.png. 브라우저 캡처가 아니며 예시 viewport390x844/stage390x620. 실제 stage 높이는 하단UI/가사/안전영역에 종속, .37은 전체화면이 아니라 stage 높이 기준. 무작정27% 고정 금지.
+- concept02.png는 current-beach-layers 참조 이미지젠 정지시안, 아직 미승인/미적용. 바다 움직임 구현자료가 아님. 사용자에게 비치 actual ocean code 재사용해야 한다고 설명함. 이전 concept01/비교01은 잘못된 기준이므로 적용 금지.
+- 실제브라우저 확인 시도 전turn: native Sky Edge 실행했지만 current URL confidence policy로 중단. screenshot 얻지 못함. 이를 실제화면검증으로 보고 금지. UI도구 우회 금지.
+
+# V1755 이후 사용자 수정 지시 — 미배포
+- 캐논 본체 현재 배포 V1755 대비 50% 축소: view-math scale 7.98→3.99, 포구/포탄도 자동 연동. 위치 유지.
+- 휴대폰/콜라병 제외: enemyWeapons 5종 snow/boomerang/disc/heart/bomb. renderer에서 두 GLB 로딩/렌더 제거. 원본 파일은 보존.
+- 비치게임 구도 먼저 맞출 것. 실제 rhythm stage horizon=.37H; 원본 배경 1024x1536 shore=942. 신배경 반드시 이미지젠 시안 허락 후 적용. Desktop 팡팡캐논_비치구도_배경시안01.png 생성, 아직 미승인/게임 미적용. 사용자 피드백에 따라 구도 먼저 조정. prompt review/cannon-beach-background-prompt.txt.
+- 원본 무기 표현 문제(별도 조명/회전, 원반 얼굴/눈덩이 레이어 누락) 지적받음. 아직 이 부분 수정 완료 아님. 준비 팝업 이유 설명만 했으며 삭제 지시/수정 없음.
+- checkpoint review/checkpoints/cannon-size-five-weapons-v1755g. 다음 배포 V1756 G, 현 공개 V1755 G 유지.
+
+# V1755 G 배포 완료 — 2026-11-19
+- 사용자 배포 지시로 게시 완료. 공개 V1755 G, 다음 신규 배포 V1756 G.
+- 원격 master 및 로컬 home3d/master/origin/master: 3da516501f67376b2aee0b6521fa8c2894a82231. tree 91846a77e3c91032426a2f4095b1088a2ff46940. 제품 13파일 SHA/전체 tree 일치.
+- Pages 44511204890 completed/success, build/deploy/report-build-status 모두 success. https://github.com/mrkyp-png/fun-games-hub/actions/runs/44511204890
+- 내려오는 무기 격추형, 비치 기준 7종 크기/포물선 궤적, 1라운드 5구멍/계속 상승하는 점프 타깃, 캐논 2배 및 중앙 위치, 스킬 버튼/바위/구름 제거. 105ms/250ms 및 8배경 유지.
+- 현행 22검사 및 PC GPU 검증 통과. 버전 반영 후 핵심12그룹/컨트롤러/기존연동 재검증 통과. 휴대폰 실기기/브라우저 DOM/음향/FPS 미검증.
+- review/deployment-v1755g.json, release-v1755g-manifest.json, remote-commit-v1755g.json에 기록. 제품 working tree/index 깨끗함. 무관한 기존 사용자 변경 및 모든 검토 자료 보존/배포 제외.
+
+# 팡팡캐논 격추형 전환 — 2026-11-19 로컬 미배포
+- 최신 확정: 비치처럼 수평선에서 포물선 상승 후 내려오는 무기를 맞히는 게임. 일반 두더지 접근/방어선/보스전 삭제. 처음 두더지 완전삭제 선택 뒤 사용자가 구멍 점프 타깃을 별도로 추가 지시: 1라운드5구멍(뒤3/앞2), 가끔 점프해 계속 상승, 못 맞히면 화면 위로 사라짐(복귀 없음). 접근형 적을 복구하지 말 것.
+- 7종 무기크기는 비치 실제 W*.132, 부메랑/원반×1.2, 상승 .22→1 동일. 내려올 때만 타격. 초기하강4.8초/후반3.2초. 점프타깃 기본100점(제안), 놓쳐도 무기 콤보/하트 영향없음.
+- 캐논 V1754대비×2, 원본색, 조이/FIRE 사이 조금위의 중앙 고정. 포구 맞춤 포탄/105ms/250ms 유지. 스킬3버튼/장착메뉴 제거, 보유/장착 데이터 보존. 비치 바위덩어리 제거, 모든 구름 제거.
+- 신규 pang-cannon-flight.js 및 background-moles.js, Core 격추형 교체. index/preview의 background-moles/flight는 Core보다 먼저 로딩. 8배경은 유지.
+- 현행22스크립트 PASS, 핵심12그룹, 실제모델포신+105ms 포탄8R ALL_CLEAR(테스트자동조준), Intel UHD620 실제GLES300/8배경/120프레임 렌더검증 PASS. 구형 접근·보스 테스트는 대체/이력목록 보존.
+- Desktop 팡팡캐논_무기격추_1라운드_PC검토.png, 팡팡캐논_무기격추_8라운드_PC검토.png, pang-cannon-interception-review.mp4. PC GPU 및 테스트용 자동조준, DOM UI 제외. 휴대폰/음향/FPS/실브라우저DOM 미검증. UI synthetic DOM 검증.
+- 자세한 내용 review/cannon-interception-implementation.md, checks/core-result/gpu-validation JSON. checkpoint review/checkpoints/cannon-interception-20261119-191654/before.zip. review/cannon-interception-core-source.js는 초기 이력으로 재복사 금지(현 core가 최신).
+- 공개V1754 G/HEAD3ceae3c25222deab183a84a4a81e935ef799bc1e 유지. 다음 신규배포V1755 G. 새 배포 지시 없음. 신규2JS 포함, review/WGL/geometry/AGENTS/검토자료 제외. 무관한 기존 사용자 review 변경 보존.
+
+# V1754 G 배포 완료 — 2026-11-19
+- 사용자 배포 지시로 게시 완료. 공개 V1754 G, 다음 신규 배포 V1755 G.
+- 원격 master/로컬 home3d/master/origin master 3ceae3c25222deab183a84a4a81e935ef799bc1e. tree fa6ae038439325847fc75fcb105a47daca6d007a. 제품13파일 blob SHA 및 전체 tree 일치.
+- Pages 44502964859 completed/success. build/deploy/report-build-status 모두 success. https://github.com/mrkyp-png/fun-games-hub/actions/runs/44502964859
+- 세로형 카메라/전장/HUD/큰 버튼, 비치→얼음→사막→동굴→화산→하늘→우주→폭풍바다 8개 배경 및 움직임, 상대 투척7종(비치4종+콜라병+휴대폰+폭탄), 적/보스 비행시간1.6배, 캐논 원본색/1753대비30%축소/실제포구에 맞는 포탄 반영. 105ms/250ms 단발 유지.
+- 26개 검사 통과. 버전반영 후 문법/포트레이트/컨트롤러/통합/공백검사 통과. Intel UHD620 실제GPU8장면/셰이더/배경움직임 검증 성공. 브라우저 DOM/휴대폰 조작/음향/FPS 미검증. 공개 페이지 직접HTTP 검증 불가, Pages 성공과 실기기 검증 구분.
+- 제품 working tree/index 깨끗함. 무관한 사용자 review 변경 보존. AGENTS/검토PNG/영상/Blender/WGL/대형geometry 배포 제외.
+- review/deployment-v1754g.json, release-v1754g-manifest.json, remote-commit-v1754g.json, sync-remote-v1754g.py. GitHub connector 배포, 로컬 canonical commit 정확히 복원/expected-old ref 동기화.
+
+# 팡팡캐논 세로형·8개 배경·7종 투척물 — 2026-11-19 로컬 미배포
+- 최신 사용자: 리듬팡 비치처럼 움직이는 배경, 세로형, 라운드마다 변경. 제안 순서 비치→얼음→사막→동굴→화산→하늘→우주→폭풍바다를 구성하라고 승인. 캐논 원본 색/포구 크기 포탄/현재 대비30% 축소 지시. 적 무기는 비치4종+콜라병+휴대폰+폭탄=7종 확인.
+- 코드 반영: 새 pang-cannon-themes.js/scene-fx.js, 세로 카메라/전장/시작12마리 비중첩/HUD/10개화면비 입력검사/가능한 전체화면 portrait lock. 실제 GLB 색 복원, 1753대비 캐논×.7, 원본 포구 반경.35를 읽어 포탄 스케일96% 연결. 기존105ms/250ms 유지. 휴대폰 원본GLB 소품 연결. 적/보스탄 비행시간×1.6.
+- 26개 자동검사 PASS. 후속 실제7종 생성/4.8초/portrait UI·통합 검사 PASS. 모의GL+실제모델8R ALL_CLEAR. 실제 Intel UHD620 WGL에서 GLES300 컴파일·링크·8개장면 렌더/움직임 픽셀검증 PASS. 정수precision 오류 실제GPU에서 발견·수정.
+- Desktop 팡팡캐논_세로_8라운드_배경검토.png 및 팡팡캐논_세로_비치_PC_GPU검토.png, pang-cannon-portrait-ocean-review.mp4. 실제 PC GPU 3D장면이며 브라우저 DOM/UI·휴대폰/FPS 검증 아님. 영상은 배경움직임만 보여주므로 캐릭터정지/UI제외.
+- 상세 review/pang-cannon-portrait-implementation.md, cannon-portrait-checks.json, cannon-portrait-gpu-validation.json. 체크포인트 review/checkpoints/cannon-portrait-20261119-184042/before.zip.
+- 공개 V1753 G/HEAD459cbae9d38b558d6ff9d0d4700381b6e2d8c747 유지. 다음 배포V1754 G. 새 배포지시없음. 다음 배포에 themes/scene-fx 신규JS 포함, review/WGL/대형geometry/AGENTS 제외. 기존 무관한 review 변경 보존.
+
+# V1753 G 배포 완료 — 2026-11-19
+- 사용자 지시로 게시 완료. 공개 V1753 G, 다음 신규 배포 V1754 G.
+- 원격 master/로컬 home3d/master/origin master 459cbae9d38b558d6ff9d0d4700381b6e2d8c747. tree 06d32a115d78f0551af3ca6cfdf881051d46dd59. 제품14파일 SHA/전체 tree 일치.
+- Pages 44496570060 completed/success. build/deploy/report-build-status 모두 success.
+- 클레이3D 배경/바위와 눈덮개/물웅덩이 전부삭제/캐논1.5배/두더지2배/포탄·무기2.5배/버튼·조준 확대/전체화면/기존음향/바위우회/크기에 맞는 구멍·기울기·잠복 반영. 기존105ms/0.25초 유지.
+- 25검증 최종통과. 버전반영 후 문법/통합/공백검사 통과. 제품 working tree/index 깨끗함. 무관한 사용자 review 변경 보존.
+- 실제 브라우저/GPU/휴대폰/실음향/FPS 미검증. 공개 HTTPS 직접확인은 TLS오류. Pages성공과 실플레이검증 구분.
+- review/deployment-v1753g.json, release-v1753g-manifest.json, remote-commit-v1753g.json, sync-remote-v1753g.py. GitHub connector 배포, 로컬 canonical commit/ref 동기화. AGENTS/검토이미지/Blender/geometry 배포 제외.
+
+# 추가 수정：구멍·엄폐·바위·캐논 — 2026-11-19 미배포
+
+- 플레이어 캐논 본체 1.5배. 실제 포신 끝의 발사 위치도 함께 변경. 기존 105ms 유지.
+- 앞뒤 물웅덩이 전부 제거.
+- 화산섬 제작 코드의 돌 구조(섭디비전 2 이코스피어 + 표면 변형)를 참고한 전용 3D 돌 추가: `mole/js/pang-cannon-rock.js`. 앞뒤 두께 .45→.78, 면 명암·굴곡 강화. 원본 화산섬 파일 변경 없음.
+- 눈 덮개는 돌의 실제 삼각형 표면에 맞춰 얹고, 가장자리에 두께 있는 둥근 눈 테두리 추가.
+- 구멍 3개를 돌·눈 덮개와 분리 배치. 일반 두더지용 2개(유효 입구 반경3.2), 뒤쪽 거대 두더지용 1개(6.4). 입구 주변 평탄화 및 원근 보정으로 우측 입구의 대각 기울기 제거. 입구/지면 절개/내부/충돌이 동일 변환 사용.
+- 걸어서 구멍을 가로지르는 경로 차단, 입장할 때만 목표 구멍 접근 허용. 입구를 넘어 중앙에 도착한 후 일반0.5초/보스0.65초 곡선으로 내려감. 구멍 바닥/앞 테두리의 실제 깊이로 가림. 지하 상태 공격 불가, 같은 구멍에서 복귀. 작은 구멍은 거대 두더지의 후보에서 제외.
+- 자동 검사 25개 최종 통과: `review/cannon-holes-rocks-checks.json`. 모의 GL 호환 검사에서 새 shear 필드 없는 시험 구멍에 NaN 발견 후 기본0 처리, 해당 검사 재실행 통과. 실패 이력과 재검증 기록 모두 JSON 보존.
+- 실제 메시 오프라인 렌더로 전체 배치와 반쯤 잠복한 몸의 가림 확인. 바탕화면 `팡팡캐논_클레이3D_구성검토.png`, `팡팡캐논_구멍은폐_구성검토.png`. 브라우저/DOM UI/휴대폰/FPS/소리 실기기 검증은 미실행.
+- 미배포. 공개 V1752 G 유지, 다음 명시 배포 V1753 G. 신규 rock/environment JS를 다음 배포에 포함. 체크포인트 `review/checkpoints/cannon-holes-rocks-20261119-170239/before.zip`.
+
+# 팡팡캐논 클레이 실제 3D 전환 및 피드백 수정 — 2026-11-19 미배포
+- 최신 사용자: 이미지젠 그림 배경 지적, 실제 3D 및 선명한 클레이 톤 지시. 이미지 배경 런타임 로딩/투영 제거, 신규 mole/js/pang-cannon-environment.js 실제 메시(눈 지형/바위/눈덮개/얼음둑/땅굴). index/preview/SW 등록. 원래 PNG는 파일만 보존.
+- 일반두더지 2배(이전보스크기), 보스 비율 유지; 포탄/적무기2.5배; 타겟2배; 조이스틱/FIRE/스킬 확대; 전체화면여백제거/카메라cover/안전영역 반영.
+- 바위 부피+회전한 몸 반경을 피하는 가시성그래프 경로; 뒤로 엄폐/가장자리 우회. 지형 높이/경사/발/자세/그림자/포탄 지면 연결; 잠복 깊이 확대. 신규 nav 모듈 아닌 Arena API로 포함.
+- 기존 HitFx 승인 캐논음2/3/4/6/7 및 두더지목소리 재사용. 제외boom1/펀치hit1·2/점프경고음 제거. shared HitFx에는 inventory 독립 cannonSound helper/export만 추가; 기존 punch 유지.
+- review/pang-cannon-feedback-checks.json 24스크립트 PASS. 마지막 환경형상 수정 후 renderer 8R ALL_CLEAR/0projectedDraw/controls/UI 재검증 PASS. nav316520접촉검사. 실제 GPU/폰/음향/FPS 미검증. 약234만삼각형221draw, 성능완료라고 과장금지.
+- Desktop 팡팡캐논_클레이3D_구성검토.png = 실제 렌더러 메시의 Blender 오프라인 검토, 브라우저/DOM UI 스크린샷 아님. 로컬 http://localhost:8844/review/pang-cannon-preview.html HTTP200.
+- 공개V1752 G/HEAD561729996624109ea8107872dfe9df98e4f0dd24 그대로, 다음 배포V1753 G. 새 배포지시 없음. 체크포인트 review/checkpoints/cannon-feedback-20261119-164048/before.zip.
+- 자세한 내용 review/cannon-clay-feedback-report.md. 기존 무관한 AGENTS/review 사용자 변경 보존. 새 환경JS untracked이므로 다음 명시배포 때 정확히 포함. 오프라인97MBgeometry/Blender/AGENTS/검토자료 배포제외.
+
+# V1752 G 배포 완료 — 2026-11-19
+- 사용자 배포 지시 완료. 공개 V1752 G, 다음 신규 배포 V1753 G.
+- 원격 master/로컬 home3d/master/origin master 561729996624109ea8107872dfe9df98e4f0dd24. tree 96396904c0dad1003f0c99e5a1f5b69c8b75d98c, 13개 제품 파일의 Git blob SHA 및 전체 tree 일치 확인. Pages 44479060978 completed/success, build/deploy/report-build-status 성공.
+- 배포범위: 팡팡캐논 가로16:9 클레이 얼음전장/엄폐바위4·구멍3/12마리동시등장/1라운드12×2차례/검은원본포탄105ms/라운드박스하나/스킬등간격. 라운드전체수는구현초기밸런스임. 이전35구멍경로완전폐기. 네온·공용코인·기존원본모델이번배포변경없음.
+- 배포 직전 V1752 G 상태 자동검사22개 통과, staged공백검사통과. 원격index 표시V1752 G/SW1752-G 확인. 실제브라우저/휴대폰실플레이·FPS는여전히미검증. 오프라인렌더와모의GL검사를실제화면통과로표현금지.
+- sourcePNG약2.1MB 및새Arena JS만필요자산포함. AGENTS/검토자료/67MBgeometrycapture/Blender씬/무관련review변경은배포제외. 미관련작업보존.
+- Git프록시연결막힘으로GitHubconnector사용. review/release-v1752g-manifest.json, deployment-v1752g.json, remote-commit-v1752g.json, sync-remote-v1752g.py. 현재기준으로아래미배포/다음1752기록은과거이력.
+
+# 팡팡캐논 v14 가로 클레이 얼음 전장 로컬 구현 — 2026-11-19 (미배포)
+- 사용자 최종 시안v14와 “진행” 승인 완료. 아래 과거 세로35구멍/승인대기 기록 폐기. 현재는가로16:9/얼음섬클레이/엄폐바위4/엄폐구멍3/지상접근/1회12마리/1라운드12×2=24 초안. 35구멍·필수잠복경로완전제거.
+- 실제코드연결 완료: 신규 pang-cannon-arena.js, assets/pang-cannon-v2/ice-arena-clay.png(이미지젠배경원화 약2.1MB). 배경은고정카메라에서지형면·입체바위·구멍에투영하는재질. 전부실시간조명으로그린3D라고과장금지. 캐릭터·캐논·포탄·가림·충돌은실3D.
+- 원본두더지5헤어/원본캐논모양보존, 캐논전용파랑금색재질. 기존cannon-ball.png 검은포탄과105ms/0.25초유지. 라운드박스하나, 스킬버튼FIRE같은반경35도등간격계산. 공용코인·Neon·기존원본모델변경안함.
+- 새동시최소10지시에옛최대3/첫8마리폐기. 현재동시12, 라운드총24/24/36/36/48/48/60/60은초기밸런스(사용자전체수확정아님), 보스기본설정유지. Round1일반투척없음/후반기존투척연결.
+- review/pang-cannon-v14-implementation.md 상세보고, pang-cannon-v14-final-checks.json 22스크립트통과/문법·공백통과. 8라운드원본모델포구/실비행포탄자동조준시뮬레이션ALL_CLEAR(실플레이아님). 테스트최신수치는 projectile-playthrough.json.
+- 실제renderer메시·본행렬·재질캡처를Blender오프라인렌더해서배치확인. Desktop/팡팡캐논_v14_실제3D구성_오프라인검토.png. 실제브라우저스크린샷아님/DOM UI미포함. 약208만삼각형209drawcalls/모바일FPS미측정. 브라우저실행spawn EPERM, 실GPU·폰터치·음성진동미검증. 자동통과를최종외관품질보장으로표현금지.
+- Desktop/팡팡캐논_v14_게임실행.url 생성. http://localhost:8844/review/pang-cannon-preview.html HTTP200, PC로컬용. 이번게임은미커밋·미배포. 공개1751G/다음배포1752G. 새배포요청없음. 사용자가이제실행본보고피드백할차례.
+- 작업전 checkpoint review/checkpoints/cannon-v14-20261119-155731/before.zip. 무관련review파일변경보존. 배포시AGENTS/검토자료/67MBgeometrycapture와Blender씬을제품에넣지말것.
+# 팡팡캐논 1라운드 재구성 — 2026-11-19 로컬·미배포
+- 사용자 이미지젠시안v6 및 “진행해/이게 라운드1이다” 승인. 세로9:16/하늘·큰앞장애물없음/35개3D구멍/원본잔디·캐릭터·대포/원근접근/8방향잠복이동/마지막줄경고후전신탈출·도보접근. 일반1라운드투척없음, 보스기본동작보존. 다른라운드새디자인미완료.
+- 변경7개 Cannon전용JS/CSS. 공용게임·Neon·재화파일수정안함. 기존105ms/0.25초 유지. checkpoint review/checkpoints/cannon-round1-20261119-134801/before.zip.
+- 자동검사22스크립트/JS문법/diff공백통과. 80seed경로/8방향/지하에서만위치변경/최종탈출/정지재개/세로projection/버튼비중첩5크기 확인. 실제브라우저·GPU·휴대폰·소리진동·FPS는미검증. CUA inventory browser host없음, completion_summary완료. 이를실화면검사로표현금지.
+- 상세 review/pang-cannon-round1-redesign.md. PC검토 http://localhost:8844/review/pang-cannon-preview.html HTTP200, 바탕화면 팡팡캐논_라운드1_실행.url. 현재캐릭터완주무피격최장52초는밸런스검토필요. 렌더링품질실검증전완료·배포로단정하지말것.
+- 공개는V1751G유지. 이번작업커밋·배포안함/사용자새배포지시필요. 다음배포V1752G. 기존무관review수정과AGENTS로컬기록유지.
+# V1751 G 배포 완료 (2026-11-19)
+
+- 사용자 배포 승인에 따라 북쪽 팡팡캐논·남쪽 NEON SNAKE 공개.
+- 원격 master/로컬 home3d/master: 9b28a2f24beb7cd5b662772a83f7822a216ae28d. tree fac01df230f86e9796c6680e97135ccd4d473156. 배포 소스 32개와 대용량 원본/압축 geometry 모두 Git blob SHA 일치 검증.
+- GitHub Pages 44357626816: completed/success. https://github.com/mrkyp-png/fun-games-hub/actions/runs/44357626816
+- 화면 표시·리소스 쿼리·SW 캐시 V1751 G / 1751-G. 다음 신규 배포 V1752 G.
+- 배포 직전 자동 검사21개 전부 통과, staged diff 공백검사 통과. 사용자 승인 기존105ms비행시간 적용.
+- 실제브라우저/GPU/휴대폰/소리/진동/FPS 실검증은 미실행. Computer Use는 Edge 현재URL확인불가로 중단. 직접공개페이지HTTP검사는 TLS오류로 미확인. Pages배포성공과 실제플레이검증 구분.
+- 실보상광고SDK없음: 가짜Ads.rewarded 사용안함, 광고이어하기 기본미제공. 온라인랭킹미연결, 로컬기록만. Neon 최대길이 모바일성능미측정. 전체명세완료로단정금지.
+- 기존 무관련 review 제작변경 보존. AGENTS/검토자료 배포제외. 후속 수정은 V1752 G, 배포에는 항상 버전갱신.
+- Git연결 프록시127.0.0.1 오류로 connector의 create_blob/tree/commit/update_ref 사용. 대용량파일은 node fs로524286바이트(3의배수)씩 base64읽고 functions내부에서합쳐create_blob, 출력금지/모든SHA대조. 로컬 index canonical 파일 review/deploy-v1751g-objects. 동기화 review/sync-remote-v1751g.py. 원격commit timezone +0900/+0900 및message말미개행없음 확인으로정확SHA복원후expectedold ref갱신.
+
+# 재시작 복구 후 최종 로컬 검사 (2026-11-18, 미배포)
+- 서버 재시작 후 파일 상태 확인하고 작업 이어감. Cannon 실제시간250ms 발사간격, 준비화면HUD초기화, 정지/결과 반복렌더 생략, 최초로딩캔버스기본색, 작은 가로게임박스/좁은화면 컨트롤 반응형 보강.
+- 땅굴 입장·재등장 중 지상노출은타격가능/완전지하만보호, 지면충돌선 추가. Core검사24개 그룹 통과. 일반처치수122+보스8=결과총130으로표시/저장. 북쪽입구body2.2로원본대포와간판기둥충돌범위포함.
+- 21개 검사스크립트 모두통과(review/pang-cannon-final-checks.json), 추가Neon gzip렌더검사통과. 전체Cannon실제포탄 시뮬레이션 최신 score29825, 일반122/보스8/총130, hearts3, combat286.73s, maxMoles3/maxEnemyShots2. 테스트전용자동조준/모의GL이며실제플레이통과아님.
+- 최신통합보고서 review/pang-cannon-v1.0-report.md. 기존 full-progress 의답변대기/화면미구현은과거이력. 포탄105ms승인완료/북쪽광장진입과전투UI코드등록완료. 광고SDK는없어실광고이어하기미연결, 가짜Ads.rewarded호출금지.
+- 실제브라우저검증여전히미완료. Sky창목록PC Edge가계속‘새탭’이고 browser host없음. 사용자는처음‘주소열었어요’라답했지만, 추가로 현재게임화면/새탭오류어느쪽인지async질문한뒤아직답없음. URL확인정책우회하지않고다른코드작업/검사를진행함. 현재알수없는브라우저에추측좌표입력금지.
+- 현재두게임PC검토URL HTTP200: /review/pang-cannon-preview.html, /review/neon-snake-preview.html (localhost:8844). 실제GPU/휴대폰/소리진동/FPS/전체기존게임실플레이 미검증. 미커밋·미배포, 공개1750G/다음1751G 유지. AGENTS는로컬용배포제외.
+
+# 팡팡캐논 105ms 승인 및 전투 화면 연결 (2026-11-18, 미배포)
+- 사용자가 “기존 105ms 비행시간 적용” 승인함. 아래 과거 기준 대기 기록을 대체. LaneCannon에 읽기전용 FLIGHT_MS=기존 BALL_MS export만 추가하고 발사 로직 원문 동일성 SHA 검사 통과. 새CannonCore는 실제 원본 포구→목표까지105ms, 연속충돌 및105ms수명. 일반/보스 동일.
+- pang-cannon.js 실제 컨트롤러, shapes.js 원본 기반 머리/몸체 bounds, 기존 3D대포/두더지/폭탄/콜라GLB, 해변4종PNG의3D투사체, 전투/스킬/일시정지/라운드/결과/정산 UI 연결. 전역실드보류 유지하고 명세대로 Cannon전용5초실드 허용(보유만, 소비X). 실제광고SDK없어 기본이어하기 비활성; 명시적provider옵션은 준비, 가짜Ads.rewarded 호출금지.
+- 북쪽 site와 기존대포/새sign.glb 및 main index/SW 의존성 등록함. 남쪽Neon유지. 공개1750G 유지, 다음1751G. 배포요청없음/커밋·배포안함. PC전체전투검토 http://localhost:8844/review/pang-cannon-preview.html . 기존 aim-preview는 여전히 조준 진단용만, 실제게임검토는 새URL.
+- 검사: Cannon core22/store9/viewmath60좌표/controls/renderer/UI/integration 통과. 원본모델 포구·충돌bounds + 실제날아가는포탄으로 8라운드ALL_CLEAR 시뮬레이션: score29775, kills122, hearts3, combat285.18s, maxMoles3. 테스트전용자동조준이며 실제GPU/폰조작통과를 뜻하지 않음. review/pang-cannon-projectile-playthrough.json.
+- 이전 턴 실제Edge실행성공했으나 get_window가현재URL정책확인불가로ComputerUse중단, 당시즉시final로종료. 사용자가이후“진행해”. 현재브라우저호스트는아직부재. 사용자에게 PC Edge 새URL직접열기요청했고 방금“주소를열었어요”응답받음. 이제 현재URL신뢰확인되는지 UI검증시도할차례. 실패시정책우회금지. 실제GPU/모바일/사운드/광장실제검증은 아직미실행.
+
+# 팡팡캐논 조준 화면 추가 진행 (2026-11-18, 미배포)
+- 사용자가 “진행하고 있는건가?”라고 물어, 속도 질문 답변 대기 중 멈췄던 사실을 밝히고 독립적인 실제 3D 대포/조준/화면 작업을 계속함. 포탄 정책 질문에는 아직 답변 없음. 시간 경과/진행 요청을 속도 방식의 승인으로 간주하지 않음.
+- 신규 pang-cannon-view-math/controls/renderer.js 및 pang-cannon.css, review/pang-cannon-aim-preview.html/js. 원본 대포 BarrelPitchPivot/25도 기본각/11메시 분리, 포구·조준 월드 좌표 일치. 기존 Home3DUI.createInput 재사용. renderer는 원본 cannon/mole GLB와 StudioRig 수학·스킨 사용. main index/광장에는 아직 등록 안 함.
+- 새 검사 view-math(3화면비/60조준점), renderer(실제GLB→모의GL, GPU버퍼 재사용/정리), controls(멀티포인터·홀드/취소·이벤트 정리·일반/작은 UI 클릭영역 비중첩) 통과. 실제 브라우저GPU/화면/폰은 미검증.
+- PC검토 http://localhost:8844/review/pang-cannon-aim-preview.html HEAD200. 조준만 검토하는 화면, FIRE는 정책 미확정으로 비활성. 완성형 전투 게임/광장 진입/배포 완료로 보고 금지. 상세 review/pang-cannon-v1-full-progress.md.
+
+# 섬 배치 사용자 확정 (2026-11-18)
+- NEON SNAKE=남쪽, 팡팡캐논=북쪽. 과거 임시 동쪽 배치 기록을 대체한다.
+- Neon site를 south `(0,48)`/groundY1.48로 이동. 기존 남쪽 중앙 패드 높이·진입·충돌 검사 통과. 실제 화면 확인은 아직 안 됨.
+- 팡팡캐논 config placement에 north `(0,-48)`/groundY1을 기록. 아직 게임 화면/광장 진입 연결 전이므로 유령 진입점은 추가하지 않음. 동/서 배치는 미지정. 미배포, 공개1750 G/다음1751 G 유지.
+
+# 팡팡캐논 v1.0 전체 명세 수신 — 로직 초안, 기준 확인 대기 (2026-11-18)
+- 사용자에게 0–40항 전체 명세 다시 받음. “팡팡캐논 명세 잘림”은 이제 과거 기록임. 최신 세부 상황 review/pang-cannon-v1-full-progress.md.
+- 실제 LaneCannon BALL_MS=105는 고정 비행시간이며 월드 속도 아님. 105ms 목표 도달 방식 허용 여부를 async 질문했고 아직 답변 없음. 제품 포탄 속도 임의 환산 금지. Ads.rewarded는 테스트 스텁이라 실제 광고로 승인 금지. 캐논 전용 실드 허용 여부도 질문 중이며 전역 실드 보류 유지.
+- 작업 전 review/checkpoints/pang-cannon-full-20261118-115103/에 tracked patch와 기존 Neon 신규 파일 ZIP/hash 보관. Neon/기타 무관한 작업 보존.
+- 새 독립 파일 pang-cannon-config/physics/core/store.js 준비. index/광장에 등록 안 함. 22개 순수 전투·충돌·설정 검사 및 9개 저장·스킬 검사 통과. 실제 3D 조작/실기기/광고/광장 연결/온라인 랭킹 아님. 테스트 fixture만 playerFlightSeconds=.105 주입. actualGameplayTested=false.
+- 제안값: 종류 비율/20·40·30초/코인공식은 명세 제안 분리. 기타 무기 및 sniper 격추50은 임시 설정. 일반 투척 궤적/월드 배치도 시뮬레이터 초안. 전용 기록키 mole.pangCannon.records.v1, 장착key mole.pangCannon.loadout.v1, 정산key mole.pangCannon.settlement.v1. 실제 보유량 읽기만, 아이템 소비 없음. 7개 실제 쓰기 중단 복구 검증. 로컬 랭킹100개는 제안, 온라인 연동 없음.
+- 다음은 명세 순서에 따라 기본 실제 3D 캐논/조준/사격 연결부터. 포탄 정책 답변 필요. 현재는 핵심 시뮬레이터 준비 단계이며 완성 게임으로 보고하지 말 것. 배포 요청 없음. 공개 V1750 G 유지, 다음 V1751 G. 거대 AGENTS는 배포 제외.
+
+# NEON SNAKE v1.1 로컬 구현 — 미배포 (2026-11-18)
+- 사용자 신규 범위: 동·서·남·북 각 섬에 미니게임 1개씩 총 4개. 종류는 사용자 명세로만 구현. 팡팡캐논 명세는 1.1 “거대 두”에서 잘렸고 나머지 2개 명세도 아직 없음. NEON SNAKE 전체 명세 수신 후 독립 구현. 배치 답변이 없어 동쪽 섬은 임시 위치라고 안내함.
+- 공개 V1750 G/9d09ce10114a5d29bae6540e7faa91c8c3ca9e51 유지. 새 배포 요청 없음. 다음 배포 V1751 G. 이번 작업 커밋/배포 안 함. 사용자는 V1750 폭탄 하강 수정 실제 확인 완료했음(아래 과거 ‘폰 미확인’보다 우선).
+- 작업 전 checkpoint/pang-cannon-20261118-100304 브랜치 및 review/checkpoints/pang-cannon-20261118-100304 패치 보관. 기존 무관한 review 작업/원본 에셋 보존.
+- 새 neon-snake-core/input/store/renderer/UI 모듈과 CSS, 원본 GLB에서 무손실로 준비한 geometry pack, 독립 게임기 소품 추가. 8개 경기장·규칙·80/100%·전용 기록/해금·공용 코인 WAL 정산 연결. 기존 공용 코인에는 awardCoinsOnce 최소 추가, 광장에는 action/site/소품 간판/높이·복귀 연결만 추가. 세부 파일/검증: review/neon-snake-v1.1-report.md.
+- 새 5개 자동 검사, gzip 경로, 기존 관련 회귀 10개 및 pre-release coins 검사 통과. 필수 60개 분류는 자동 54 통과/6 실기기·브라우저 미실행. 정산 쓰기 중단은 실제 실패 주입 7지점 모두 복구. 완주 시뮬레이션은 생성 후 먹이 이동 없이 8개(홀수 포함) 모두 100%, 테스트 전용 경로 탐색은 제품에 없음.
+- 실제 브라우저 연결 없음, headless Edge spawn EPERM, native Edge 실행 승인 시간 초과. 실제 GPU/폰 화면/터치/FPS/소리진동/광장 실제 출입/전체 게임 플레이 검증 안 됨. 완료로 단정 금지.
+- 최대 144마리 모의 GL 6 draw calls, 12,231,674 triangles. 곱슬 헤어 폴리곤 부담, 휴대폰 FPS 미측정. geometry.bin.gz 약11.1MB / 비압축 폴백30.5MB. 대용량 pack은 첫 공용 로딩 목록에 넣지 않고 게임 진입 때만 기존 asset-preparation 캐시 경로로 요청. 원본 두더지 파일 미수정. GPU 버퍼 이동 중 생성 없음.
+- 점수 관찰: 모든 경기장의 80% 최소 점수가 해금 목표보다 높아, 80% 클리어하면 점수 조건도 달성됨. 확정 수치는 변경하지 않음. 해금은 정상 종료 정산 시 확정하고 결과 화면에서 안내함.
+- 검토 http://localhost:8844/review/neon-snake-preview.html 및 geometry.json/bin.gz HEAD 200 확인. 원본 geometry 재생성: node review/build-neon-snake-geometry.cjs. 게임기: python review/build-neon-snake-cabinet.py.
+- 이 거대한 AGENTS.md는 계속 로컬 작업기록으로만 유지하고 향후 배포에 넣지 말 것. 원격 전송은 사용자 배포 요청 후 별도 처리.
+
+# V1750 G 배포 완료 — 폭탄 퇴장 시 구멍 턱 가림 수정
+- 원격 master 및 로컬 master/home3d SHA 9d09ce10114a5d29bae6540e7faa91c8c3ca9e51 일치. GitHub Pages 44211204142 completed/success 확인. Git 프록시 오류 대신 GitHub connector로 소스5개 업로드, 원격 tree f8748210f116b4a0e8277c4542b1072092e098d5가 검사한 로컬 tree와 같음 검증. 공개 V1750 G, 다음 신규 배포 V1751 G.
+- 이번 배포에는 큰 AGENTS.md 변경분을 제외하고 로컬 작업기록으로 유지. 게임 소스/테스트는 원격과 동일. 정확한 API 원격 commit 객체를 로컬에 저장하고 SHA 검증 후 branch ref만 동기화, 기존 미관련 작업 보존. 향후 사용자 수동 push 없이 connector 배포 가능.
+- 사용자 배포 승인. 표시/리소스 쿼리/SW 캐시1750-G로 갱신. 다음 신규 배포 V1751 G. 원격 master SHA와 Pages 성공 확인 후 배포 완료 기록.
+- 최신 정정(아래 거리확대 기록 대체): 사용자 원래 값 확인 요청에 git V1727/V1741 코드 확인. 폭탄 뒤이동 -.5, 일반 -.4, 기존 withdraw 시간 .035초가 있었음. 임의 확대1.1을 철회하고 거리.5/배포된 선이동구간22%로 복원. 요구한 선이동 후 하강 순서는 유지하고, 이번 수정의 핵심은 퇴장 중 턱 마스크 우회(overRim) 해제. 수치만 늘려 외관 해결로 단정하지 말 것. 실제 렌더 위치/마스크 회귀검사 통과, 폰 미확인.
+- 추가 사용자 보고: 구멍 턱을 뚫고 내려가는 듯함. 원인: 공용 shader의 carrier overRim 예외가 퇴장 중에도 팔/BombCarry를 턱 마스크보다 앞에 그림(.55 높이 기준). uWithdrawing을 폭탄 dying에만 켜 overRim 우회 해제, 실제 구멍 타원/턱 alpha 마스크 적용. 대기 중 폭탄 및 일반 두더지는 기존 처리 유지. props/녹색 외곽선에도 같은 uniform 적용. test-bomb-rim-occlusion-v1750g에서 실제 shader 식/바인딩을 평가한 회귀검사 통과. 실제 폰 외관 확인은 아직.
+- 사용자 폰에서 V1749 G의 뒤로 이동이 보이지 않는다고 보고. 기존 단계는 전체 침몰의22%(약0.13초), 뒤이동 .5로 짧고 작았음.
+- 폭탄 뒤로 이동을40%(약0.23초), 거리1.1로 확대. 높이를 유지한 채 뒤이동 완료 후 나머지60% 구간에 침몰. 실제 그리기의 instance 변환을 공용 retreatTranslation 함수로 묶고 테스트가 이 값까지 검증하도록 보강. 일반 두더지 퇴장 유지.
+- test-bomb-retreat-v1749g 검사 통과. 실제 렌더용 y고정/z이동 및 하강시z고정, phone390px/4grid 투영상 뒤이동15px 이상 검사 포함. 실제 기기 영상은 미확인. headless Edge 검증 시 spawn EPERM으로 실행 불가.
+- 공개 버전 V1749 G 유지. 다음 배포 V1750 G. 사용자 시각 확인 전 외관 검증 완료라고 표현하지 말 것.
+
+# V1749 G 배포 완료 — 구형 홈 제거, 게임기 선택, 폭탄 퇴장 수정
+- 원격 master SHA ec46013f89f7f02aec39c74905098f270e66ce29 일치. GitHub Pages 43965733365 completed/success 확인. 공개 버전 V1749 G, 다음 신규 배포 V1750 G. 실제 폰/GPU 동작은 별도 확인 필요.
 - 사용자 배포 승인. 표시/리소스 쿼리/SW 캐시를 1749-G로 갱신. 다음 신규 배포 V1750 G. 배포 완료는 원격 master SHA와 Pages 성공 확인 뒤 기록.
 - 폭탄 퇴장 추가 확정: 먼저 뒤로 물러나 구멍에 정렬한 뒤 내려감. 공용 clay renderer의 폭탄 퇴장 앞22%는 높이 유지하며 기존 뒤이동(-.5) 완료, 나머지78%에 수직 침몰. 타격/시간초과, 일반/순서 게임 모두 같은 경로 적용. 일반 두더지 퇴장은 유지. test-bomb-retreat-v1749g에서 전 경로/초기깊이 단조성/선후순서 통과. 실제 폰 영상 미확인.
 - 버튼 최신 지시가 아래 과거 지시를 대체: 선택 버튼 표면은 깜빡이고, 둘레 노란 발광 링은 계속 켜짐. 선택하지 않은 버튼은 원래 재질/밝기 .92 유지, 잠김 .45 유지. 링은 실제 버튼 받침에 맞는 둥근 입체 테두리+투명 가장자리 halo로 독립 렌더, active&&unlocked 하나에만 적용. 점멸은 표면 밝기에만 적용하며 링 지오메트리/색은 시간에 무관. arcade-markers 검사 보강 후 통과.
