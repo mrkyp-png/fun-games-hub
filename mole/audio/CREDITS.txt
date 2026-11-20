@@ -97,8 +97,9 @@
 ■ 팡팡캐논 효과음 (V1763 C)
   - 라운드 시작 사이렌, 하트 1개 심장 소리: Web Audio 코드 합성음 (음원 파일 없음, 라이선스 불필요).
   - 먼 포격음: 위 cannon-boom1~8.mp3 를 작게·느리게 재생 (같은 라이선스).
-  - 팡팡캐논 배경음악 audio/pang-cannon/intro·battle·tense·victory·defeat.mp3 : 사용자가 Pixabay 에서
-    골라 제공 예정. 들어오는 대로 곡명·제작자·주소·라이선스를 이 아래에 기록하고 설정 > 개인정보·라이센스에도 표기.
+  - 팡팡캐논 배경음악 audio/pang-cannon/intro·battle·tense·victory·defeat.mp3 (V1767 C):
+    Claude 가 코드로 직접 작곡·합성(review/pang-cannon-music-v1767c/make_music.py — 사인파·노이즈 합성, 샘플·외부 음원 없음).
+    라이선스 불필요(외부 저작물 미사용). loudnorm I=-16, 128kbps 로 인코딩. 사용자 지시로 팡팡캐논에서 기존 BGM(달빛축제)·두더지 목소리 제거.
 
 =====================================
 이미지 출처 / 라이선스 (파일명은 오디오지만 자산 라이선스 기록을 한 곳에 모아둠)
