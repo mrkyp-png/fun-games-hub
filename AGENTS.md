@@ -1,3 +1,11 @@
+# V1777 C 배포 — 2026-11-21 (Claude)
+- 팡팡캐논 야간: 어둠·별을 CSS 층에서 렌더러 셰이더로 이동(pang-cannon-beach.js nightLayer/nightStars/nightPost, main→main0 래핑, uniform nightA=(on,lit,cx,cy) ← MG.PangCannonNightFx). 별은 바다 배경 패스에만 더해져 배·연기·깃발 뒤. .ppc-night-dark/.ppc-night-sky 숨김.
+- 흔들림 때 밤 조명 층(night.el)도 같이 흔듦(탐조등 틈 제거).
+- 스킬 = 조이스틱 사이 맨 아래 한 줄, 조이스틱 105→96px(width*.246). 삼각형·부채꼴은 사용자 반려(화면 차지).
+- 조준창 = SVG 한 장(원+십자 4개+점, 둥근 끝) + SVG 조명 필터로 매끈한 둥근 관(정면, 위 빛). 겹쳐 쌓기 방식은 '아래서 본 관+줄무늬'라 반려.
+- flipbook: src 교체 대신 장 전부 겹쳐 두고 보이는 장만 바꿈(폰에서 타겟창 폭발이 첫 장만 보이던 문제). .ppc-fx img opacity:0 기본값 주의 → 인라인 opacity:1.
+- 남은 것: 앱 닫을 때 음악 정지·크롬 미디어 알림(미착수).
+
 # V1776 C 배포 — 2026-11-21 (Claude)
 - 북쪽 섬(팡팡캐논): 'pang-cannon-sign.glb' 간판 제거, 캐논 = 북쪽(yaw π) 기준 14초 주기 좌우 ±25° 살핌(home3d-renderer cannonLookMatrix, prop dyn 'cannonLook'). 정적 그림자는 기본 방향.
 - 칸 하나짜리 스코어 게시판 board-score.glb(review/build-board.py BOARD_ONE=1) — 원형판 밖 왼쪽 얼음 두 덩어리 사이(-5.0,-46.7), 원형판(0,-48)을 바라봄. home3d.js SCORE_BOARD2 + layout SITES 'board2'(닿으면 스코어). 칸 텍스처 = 광장 score 칸 공용.
