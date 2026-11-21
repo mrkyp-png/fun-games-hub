@@ -300,7 +300,7 @@ if(!uActor&&!uFloor&&!uTexBase){
 float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displayColor,vec3(.45,.72,.94),fog),uColor.a*vColor.a);}`;
 
   function create(canvas) {
-    let boardPanels = [], boardTex = {}, props = [], boat = [], smoke = [], smokeBall = null, arcade = null, boss = null, modeBtn = [], modeSelectionRing = null, roundNumbers = [], glowDisc = [], glowHalo = [], waveRings = [], screenTex = null, screenCanvas = null; // 두더지팡 게임기: 구멍 빛·구멍 두더지·화면 글자
+    let boardPanels = [], boardTex = {}, props = [], boat = [], smoke = [], smokeBall = null, arcade = null, boss = null, modeBtn = [], roundNumbers = [], glowDisc = [], glowHalo = [], waveRings = [], screenTex = null, screenCanvas = null; // 두더지팡 게임기: 구멍 빛·구멍 두더지·화면 글자
     let gl, program, U, A, environment = [], actor = [], rig = null, smileFace = null, vp = null, signs = null, size = null, seaMesh = null, shadowS = null, shadowM = null, sunQuad = null, clouds = [], rides = [], staticAt = -9, staticVP = null, doorOpen = 0, doorAt = null, rhythmTunnel = null, rhythmField = null, extraNotes = null, gateEntryAt = -Infinity, gateNear = false, glassOpen = 0, glassAt = null;
     const resetSize = () => { size = null; };
     if (root.ResizeObserver) new ResizeObserver(resetSize).observe(canvas); else root.addEventListener('resize', resetSize);
@@ -432,9 +432,7 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
           return { cap: mk(g), base: mk(h) };
         });
         { const sb = new Geo().ball(0, 0, 0, 1, [0.93, 0.92, 0.9, 1]); smokeBall = rawMesh(new Float32Array(sb.p), new Float32Array(sb.n), new Uint32Array(sb.i), {}, new Float32Array(sb.c)); }
-        { const bp = bossPiece(); boss = rawMesh(new Float32Array(bp.p), new Float32Array(bp.n), new Uint32Array(bp.i), {}, new Float32Array(bp.c)); }
-        {const g=arcadeSelectionRingGeometry(),mk=q=>rawMesh(q.positions,q.normals,q.indices,{},q.colors);modeSelectionRing={core:mk(g.core),halo:mk(g.halo)};}
-        roundNumbers = Array.from({length:8},(_,i)=>{const g=roundNumberGeometry(i+1);return rawMesh(g.positions,g.normals,g.indices,{},g.colors);});
+        { const bp = bossPiece(); boss = rawMesh(new Float32Array(bp.p), new Float32Array(bp.n), new Uint32Array(bp.i), {}, new Float32Array(bp.c)); }        roundNumbers = Array.from({length:8},(_,i)=>{const g=roundNumberGeometry(i+1);return rawMesh(g.positions,g.normals,g.indices,{},g.colors);});
         glowDisc = root.MoleGame.Home3DLayout.ROUND_COLORS.concat(['#f2d27a']).map((hex) => {
           const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255), hi = c.map((v) => v + (1 - v) * .85), N = 28, P = [0, 0, 0], Nn = [0, 1, 0], C = [...hi, 1], I = []; // 사용자: 아주 밝게
           for (let k = 0; k <= N; k++) { const a = 2 * Math.PI * k / N; P.push(Math.cos(a), 0, Math.sin(a)); Nn.push(0, 1, 0); C.push(...c.map((v) => Math.min(1, v * 1.35)), 1); if (k < N) I.push(0, k + 1, k + 2); }
@@ -567,10 +565,10 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
           { const cu = arcade.mole; if (cu && cu.n && glowDisc[8] && Math.sin(now * 7) > 0) draw(glowDisc[8], R.transform({ translation: [cu.x, cu.y - 0.30, cu.z], scale: [cu.r * 0.97, 1, cu.r * 0.97] }), null); }
           gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false); gl.disable(gl.CULL_FACE); // 색 그대로 반투명
           const pulse = 1 + 0.08 * Math.sin(now * 3);
-          for (const h of arcade.holes) if (h.glow >= 0 && glowHalo[h.glow]) draw(glowHalo[h.glow], R.transform({ translation: [h.x, h.y - 0.02, h.z], scale: [h.r, 0.9 * pulse, h.r] }), null);
+          for (const h of arcade.holes) if (h.glow >= 0 && glowHalo[h.glow]) draw(glowHalo[h.glow], R.transform({ translation: [h.x, h.y - 0.02, h.z], scale: [h.r, 0.45 * pulse, h.r] }), null); /* V1790 C 사용자: 클리어한 라운드 구멍에서 솟는 빛 높이 절반 */
           const cu = arcade.mole; /* 지금 라운드 구멍 = 깜빡깜빡(사용자: 안 깬 구멍과 구별) */
           const blinkOn = cu && cu.n && glowHalo[8] && Math.sin(now * 7) > 0; /* 밝은 금빛(라운드 색이 짙으면 안 보여서) */
-          if (blinkOn) draw(glowHalo[8], R.transform({ translation: [cu.x, cu.y - 0.02, cu.z], scale: [cu.r, 1.1, cu.r] }), null);
+          if (blinkOn) draw(glowHalo[8], R.transform({ translation: [cu.x, cu.y - 0.02, cu.z], scale: [cu.r, 0.55, cu.r] }), null); /* V1790 C 사용자: 위로 올라오는 빛 높이 절반(깜빡임 유지) */
           gl.depthMask(true); gl.disable(gl.BLEND);
           for (const fl of arcade.flash || []) { const h = arcade.holes.find((x) => x.n === fl), gi = fl === 0 ? 8 : fl - 1; if (h && glowDisc[gi]) draw(glowDisc[gi], R.transform({ translation: [h.x, h.y - 0.30, h.z], scale: [h.r * 0.97, 1, h.r * 0.97] }), null); }
           gl.uniform1i(U.Glow, 0);
@@ -579,16 +577,12 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
             const mb = modeBtn[k]; if (!mb) return; const m = mb.cap;
             const keep = m.color, dim = arcadeButtonBrightness(b, now);
             m.color = [dim, dim, dim, 1];
+            const sel = b.active && b.unlocked, keepB = mb.base.color; /* V1790 C 사용자: 고른 버튼 = 바깥 노란 고리 대신 버튼을 감싼 흰 받침이 노랗게 빛남(깜빡임) */
+            if (sel) { const pk = .5 + .5 * Math.sin(now * Math.PI * 1.4); mb.base.color = [1.12 + .12 * pk, .9 + .1 * pk, .2 + .08 * pk, 1]; }
             draw(mb.base, R.transform({ translation: [b.x, b.y, b.z], scale: [b.r, b.r, b.r] }), null); // 받침은 그대로
+            if (sel) mb.base.color = keepB;
             draw(m, R.transform({ translation: [b.x, b.y - 0.22 * b.r * (b.pressed || 0), b.z], scale: [b.r, b.r, b.r] }), null); // 색 버튼만 쑥 들어감
             m.color = keep;
-            if(b.active&&b.unlocked&&modeSelectionRing){
-              const world=R.transform({translation:[b.x,b.y,b.z],scale:[b.r,b.r,b.r]});
-              gl.uniform1i(U.Glow,1);draw(modeSelectionRing.core,world,null);
-              gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);gl.disable(gl.CULL_FACE);
-              draw(modeSelectionRing.halo,world,null);
-              gl.depthMask(true);gl.disable(gl.BLEND);gl.uniform1i(U.Glow,0);
-            }
           });
           const mh = arcade.moleOn ? arcade.mole : null;
           if (mh) { // 지금 라운드 구멍: 두더지가 고개를 내밂(정면 = 섬 가운데 쪽 +z), 살짝 들썩

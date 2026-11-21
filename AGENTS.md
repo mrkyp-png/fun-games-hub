@@ -1,4 +1,10 @@
-# V1789 C (로컬, 배포 전) — 2026-11-22 (Claude)
+# V1790 C (로컬, 배포 전) — 2026-11-22 (Claude)
+- 팡팡캐논 선택 버튼 전체(.ppc-action, 시작·라운드 선택·결과 창 등) = 편지함 '모두 받기'(shop-buy-frame) 모양·색: 초록 알약(--popup-confirm-face/rim/highlight, 테 3px+안쪽 1px 선), 흰 Jua 900 글씨, 누르면 안쪽 빛(pang-cannon.css).
+- 상점 간판 글자 아래 선: 문 위 벽 한 칸(plaza.blend 'Shop closed shell' 면 732)이 벽보다 .008 튀어나와 가장자리 조각이 선처럼 보임 → review/flatten-shop-lintel-v1790.cjs 로 plaza.glb 점 89개를 벽 깊이로(plaza.blend 는 그대로 — 다시 내보내면 되살아남), PLAZA_GLB ?v=1790-C.
+- 게임기 구멍에서 위로 올라오는 빛 높이 전부 절반: 클리어한 라운드(glowHalo .9→.45), 지금 라운드 깜빡이(1.1→.55, 깜빡임 유지).
+- 두더지팡 게임기 모드 버튼 4개: 고른 버튼 = 바깥 노란 고리(modeSelectionRing) 대신 버튼을 감싼 흰 받침(mb.base)이 노랗게(조명 그대로, 1.4Hz 밝기 깜빡임). ⚠️ uGlow 는 정점 색만 써서 uColor 무시 → 쓰지 말 것. arcadeSelectionRingGeometry 함수는 api 에 내보내져 있어 남겨 둠(그리기·생성만 삭제).
+
+# V1789 C 배포 — 2026-11-22 (Claude)
 - 사용자: 배를 쥔 다리가 안 보임(옆으로 뻗어 화면 밖) → 쥐는 동안 뒷다리를 머리 위·앞(화면 안)으로 돌려 세움(krRig aimAxis/aimAng: 쉴 때 끝 방향 → 크라켄 기준 (자기쪽 .45, 위 .6, 앞 .65), 잡기 .5초에 걸쳐, 던진 뒤 1.2초에 걸쳐 복귀).
 - 사용자: 배를 감은 채 던지기 → wrap = 다리 끝 40%(t .6~1)를 고리로 최대 5.5라디안 말음, 배 위치 = 고리(뼈 머리 7~12) 가운데(krHold). krTip 삭제.
 - 확인: 로컬 캡처에서 뒷다리가 가운데로 솟아 고리 안에 배를 감고 던짐.
