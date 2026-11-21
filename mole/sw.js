@@ -153,7 +153,7 @@
 // V1690 G: Sand beach, continuous ocean, combo turns and reactive hair; clear text-only signs, gentle warm entrance flow and corrected beach/water landing.
 // V1691 G: gold3D in original sprite boxes; hammer2D preserved; weapons in front of HUD; matched plaza label sizes.
 // V1692 G: matching gold clones, ImageGen enhancement lightning, smooth fur and physical rhythm entrance.
-const CACHE = 'mole-game-v1774-C';
+const CACHE = 'mole-game-v1775-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -948,6 +948,9 @@ const SHELL = [
   './audio/bgm-home-4.mp3',
   './audio/bgm-home-5.mp3',
   './audio/bgm-home-6.mp3',
+  './audio/bgm-home-7.mp3',
+  './audio/bgm-home-8.mp3',
+  './audio/bgm-home-9.mp3',
   './audio/rhythm-entry.mp3',
   './assets/home2/splash-art.webp',
   './audio/bgm-more.mp3',

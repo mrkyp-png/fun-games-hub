@@ -380,8 +380,8 @@
   // <audio> 2개를 핑퐁으로 써서 크로스페이드한다.
   let bgmEls = null;       // [<audio id="bgm-a">, <audio id="bgm-b">]
   let bgmActiveIdx = 0;    // 0|1 — 지금 "메인"인 쪽(재생 중이거나 재생하려는 쪽)
-  let currentBgm = 'audio/bgm-home-1.mp3'; // index.html 의 bgm-a 초기 src 와 일치
-  const HOME_BGM_COUNT = 6;
+  let currentBgm = 'audio/bgm-home-7.mp3'; // index.html 의 bgm-a 초기 src 와 일치 (V1775 C: 홈 = 7·8·9 Pixabay 3곡 순환, 1~6 은 네온스네이크용으로 남김)
+  const HOME_BGM_COUNT = 3;
   let homeBgmIdx = 0;
   let bgmWantPlay = false; // 지금 화면이 BGM 을 원하는가 (홈/더보기/게임 진입 시 true)
   let rhythmEntryBgmWantPlay = false;
@@ -497,7 +497,7 @@
   function playScreenBgm(screen) {
     if (!bgmEls) return;
     let file;
-    if (screen === 'home') { file = 'audio/bgm-home-' + (homeBgmIdx % HOME_BGM_COUNT + 1) + '.mp3'; homeBgmIdx++; }
+    if (screen === 'home') { file = 'audio/bgm-home-' + (homeBgmIdx % HOME_BGM_COUNT + 7) + '.mp3'; homeBgmIdx++; }
     else if (screen === 'game') { file = 'audio/bgm-game-1.mp3'; }
     else { file = 'audio/bgm-' + screen + '.mp3'; }
     const loop = (screen === 'more' || screen === 'game');

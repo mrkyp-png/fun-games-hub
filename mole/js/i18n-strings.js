@@ -391,7 +391,7 @@
       'mole.priv.h1': '사진',
       'mole.priv.p1': '사진은 이 기기 안에서만 처리돼요. 서버에 올리지 않아요. 저장되는 것은 얼굴을 원형으로 자른 이미지 한 장뿐이고, 기기에만 저장돼요(설정 → 데이터 초기화로 삭제).',
       'mole.priv.h2': '라이센스·크레딧',
-      'mole.priv.p2': '타격 효과음: 효과음ラボ(soundeffect-lab.info) — 상용 무료, 크레딧 불필요. BGM: CC0. 게임화면 BGM "달빛축제(Moonlight Festival)" — Music by NAVIG Sound Team. 라운드 음성 "Round One to Ten Deep Voice" by dersuperanton (freesound.org). 팡팡캐논 음악(Pixabay): "Battle Drums" atlasaudio, "Intense"·"Epic Music" nastelbom, "The Glorious Stride" jean-paul-v, "Victory" sonican.'
+      'mole.priv.p2': '타격 효과음: 효과음ラボ(soundeffect-lab.info) — 상용 무료, 크레딧 불필요. BGM: CC0. 게임화면 BGM "달빛축제(Moonlight Festival)" — Music by NAVIG Sound Team. 라운드 음성 "Round One to Ten Deep Voice" by dersuperanton (freesound.org). 팡팡캐논 음악(Pixabay): "Battle Drums" atlasaudio, "Intense"·"Epic Music" nastelbom, "The Glorious Stride" jean-paul-v, "Victory" sonican. 홈 음악(Pixabay): "Summer" sub_clair, "Puzzle & Casual Game Music" sounovamusic, "Bouncy Plant Parade" ncone.'
     },
     en: {
       'mole.title': 'Mole Pang!',
@@ -781,7 +781,7 @@
       'mole.priv.h1': 'Photos',
       'mole.priv.p1': 'Photos are processed on this device only, never uploaded. Only a circular face crop is stored, on the device (Settings → Reset data to delete).',
       'mole.priv.h2': 'Licenses & credits',
-      'mole.priv.p2': 'Hit SFX: Soundeffect-Lab (soundeffect-lab.info) — free for commercial use, no credit required. BGM: CC0. In-game BGM "Moonlight Festival" — Music by NAVIG Sound Team. Round-call voice "Round One to Ten Deep Voice" by dersuperanton (freesound.org). Pang Pang Cannon music (Pixabay): "Battle Drums" by atlasaudio, "Intense" and "Epic Music" by nastelbom, "The Glorious Stride" by jean-paul-v, "Victory" by sonican.'
+      'mole.priv.p2': 'Hit SFX: Soundeffect-Lab (soundeffect-lab.info) — free for commercial use, no credit required. BGM: CC0. In-game BGM "Moonlight Festival" — Music by NAVIG Sound Team. Round-call voice "Round One to Ten Deep Voice" by dersuperanton (freesound.org). Pang Pang Cannon music (Pixabay): "Battle Drums" by atlasaudio, "Intense" and "Epic Music" by nastelbom, "The Glorious Stride" by jean-paul-v, "Victory" by sonican. Home music (Pixabay): "Summer" by sub_clair, "Puzzle & Casual Game Music" by sounovamusic, "Bouncy Plant Parade" by ncone.'
     }
   });
 })(typeof window !== 'undefined' ? window : null);
