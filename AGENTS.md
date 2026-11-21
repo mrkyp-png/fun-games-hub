@@ -1,3 +1,11 @@
+# V1776 C 배포 — 2026-11-21 (Claude)
+- 북쪽 섬(팡팡캐논): 'pang-cannon-sign.glb' 간판 제거, 캐논 = 북쪽(yaw π) 기준 14초 주기 좌우 ±25° 살핌(home3d-renderer cannonLookMatrix, prop dyn 'cannonLook'). 정적 그림자는 기본 방향.
+- 칸 하나짜리 스코어 게시판 board-score.glb(review/build-board.py BOARD_ONE=1) — 원형판 밖 왼쪽 얼음 두 덩어리 사이(-5.0,-46.7), 원형판(0,-48)을 바라봄. home3d.js SCORE_BOARD2 + layout SITES 'board2'(닿으면 스코어). 칸 텍스처 = 광장 score 칸 공용.
+- home3d-board.js SCORE_GAMES 에 팡팡캐논 장(PangCannonStore.records().best, RankingSource 'pang_cannon').
+- 2라운드 전광판 바탕 투명도 더(.is-night .ppc-hud alpha .4).
+- quest.js 를 시작 전 재시도 목록(workshopStartupReady·recoverWorkshopStartup)에 추가 + 폰 진단 기록 'reading create @game.js?v=1774-C:3871' 1회 삭제.
+- 남은 것: 앱 닫을 때 음악 확실히 정지·크롬 미디어 알림(미착수).
+
 # V1775 C 배포 — 2026-11-21 (Claude)
 - 팡팡캐논: 로켓 그림 1.1배(판정 그대로), 흔들림 때 캔버스 살짝 확대(좌우 흰 틈 제거), 전광판 바탕 투명도 30%(글자 그대로).
 - 야간 탐조등: .ppc-beams 마스크 = 전체 − (성벽 그림 ∪ 깃발 2장) (mask-composite exclude,add,add,add — xor 만 쓰면 막대 겹침이 뚫려 밝아짐), 위치·크기는 nightTick 에서 렌더러 iceWall 좌표와 동일 계산. 시작점 벽 높이 60%.

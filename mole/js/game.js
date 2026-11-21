@@ -225,6 +225,14 @@
         localStorage.setItem('mole.diag.clearDailyCreate1618C', '1');
       }
     } catch (e) { /* Storage may be unavailable. */ }
+    // V1776 C 사용자: 'reading create'(game.js?v=1774-C:3871, 퀘스트 파일 못 받음) — quest.js 도 시작 전 재시도 목록에 넣어 처리 → 저장된 그 기록만 1회 지움
+    try {
+      if (!localStorage.getItem('mole.diag.clearQuestCreate1776C')) {
+        diag = diag.filter((line) => !(line.indexOf("(reading 'create')") >= 0 && line.indexOf('@game.js?v=1774-C:3871') >= 0));
+        localStorage.setItem('mole.diag', JSON.stringify(diag));
+        localStorage.setItem('mole.diag.clearQuestCreate1776C', '1');
+      }
+    } catch (e) { /* Storage may be unavailable. */ }
     try { if (!localStorage.getItem('mole.diag.clear1399C')) { diag = []; localStorage.setItem('mole.diag', '[]'); localStorage.setItem('mole.diag.clear1399C', '1'); } } catch (e) { /* 무시 */ }
     const saveDiag = (line) => {
       const d = new Date(); diag.push(String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ' ' + line);
@@ -3494,7 +3502,8 @@
       MG.Workshop && typeof MG.Workshop.create === 'function' &&
       MG.GoldenRewards && typeof MG.GoldenRewards.award === 'function' &&
       MG.GuideActors && typeof MG.GuideActors.mount === 'function' &&
-      MG.GameGuide && typeof MG.GameGuide.showRules === 'function');
+      MG.GameGuide && typeof MG.GameGuide.showRules === 'function' &&
+      MG.Quest && typeof MG.Quest.create === 'function');
   }
   async function recoverWorkshopStartup() {
     const modules = [
@@ -3503,7 +3512,8 @@
       ['workshop.js', () => !!(MG.Workshop && typeof MG.Workshop.create === 'function')],
       ['golden-rewards.js', () => !!(MG.GoldenRewards && typeof MG.GoldenRewards.award === 'function')],
       ['guide-actors.js', () => !!(MG.GuideActors && typeof MG.GuideActors.mount === 'function')],
-      ['game-guide.js', () => !!(MG.GameGuide && typeof MG.GameGuide.showRules === 'function')]
+      ['game-guide.js', () => !!(MG.GameGuide && typeof MG.GameGuide.showRules === 'function')],
+      ['quest.js', () => !!(MG.Quest && typeof MG.Quest.create === 'function')] /* V1776 C: 폰에서 퀘스트 파일 못 받아 시작 준비가 끊긴 사고 */
     ];
     for (const [file, ready] of modules) {
       if (ready()) continue;

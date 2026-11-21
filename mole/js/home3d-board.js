@@ -36,7 +36,12 @@
       return [['A', ko ? '리듬팡 비치' : 'Rhythm Beach'], ['B', ko ? '리듬팡 네온' : 'Rhythm Neon']].map(([type, title]) => {
         const song = songs.find((sg) => S.rpMyBest(type, sg.id)) || songs[0], mine = S.rpMyBest(type, song.id), list = S.RankingSource.top('rhythm_pang:' + type + ':' + song.id).slice();
         if (mine) list.push({ playerName: me, diff: mine.diff, grade: mine.grade, score: mine.score, isMe: true });
-        return { title, list, sort: (l) => l.slice().sort(S.rpCmp), scoreOf: (e) => e.score }; }); }
+        return { title, list, sort: (l) => l.slice().sort(S.rpCmp), scoreOf: (e) => e.score }; }); },
+    /* V1776 C 사용자: 팡팡캐논도 같은 스코어 칸에 한 장 */
+    (MG, S, ko, me) => { let rec = null; try { rec = MG.PangCannonStore && MG.PangCannonStore.records(); } catch (e) { rec = null; }
+      const list = S && S.RankingSource ? S.RankingSource.top('pang_cannon').slice() : [];
+      if (rec && rec.best) list.push({ playerName: me, score: rec.best.score, isMe: true });
+      return [{ title: ko ? '팡팡캐논' : 'Pang Cannon', list, sort: (l) => l.slice().sort((a, b) => (b.score || 0) - (a.score || 0)), scoreOf: (e) => e.score || 0 }]; }
   ];
   const ko = (pg) => /[가-힣]/.test(pg.title);
   function drawPanel(ctx, w, h, kind, p) {

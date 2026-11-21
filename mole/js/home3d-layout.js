@@ -14,7 +14,9 @@
     { id: 'board', action: 'score', labelKey: 'mole.pad.lblScore', x: 7, z: -5, ...B, body: 2.0, noSign: true },
     // User-assigned south island, on its existing central pad.
     { id: 'neonSnake', action: 'neonSnake', labelKey: '', x: 0, z: 48, groundY: 1.48, island: 'south', ...B, body: .95 },
-    { id: 'pangCannon', action: 'pangCannon', labelKey: '', x: 0, z: -48, groundY: 1, island: 'north', ...B, body: 2.2 }
+    { id: 'pangCannon', action: 'pangCannon', labelKey: '', x: 0, z: -48, groundY: 1, island: 'north', ...B, body: 2.2 },
+    /* V1776 C 사용자: 팡팡캐논 옆 스코어 게시판(칸 하나, home3d.js SCORE_BOARD2 와 같은 자리) — 닿으면 스코어 */
+    { id: 'board2', action: 'score', labelKey: 'mole.pad.lblScore', x: -5.0, z: -46.7, groundY: 1, island: 'north', ...B, body: .8, noSign: true }
   ].map((s) => Object.assign(s, { faceYaw: Math.atan2(-s.x, -s.z) })); // 섬 중심을 바라봄
 
   // 놀이기구(장식, 들어갈 수 없음 — 나중에 미니게임 입구로 바꿀 수 있게 자리만): 디스코 팡팡·바이킹

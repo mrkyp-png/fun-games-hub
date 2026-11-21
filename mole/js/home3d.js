@@ -67,7 +67,12 @@
     /* V1650 C 사용자: 게시판(스코어·일일·퀘스트) — 모델 자리·칸 6개(앞뒤)·내용 새로 그림(바뀔 때만), 스코어 칸은 4초마다 다음 장 */
     function boardWorld() { const s = L.SITES.find((x) => x.id === 'board'), S = L.BOARD.S, y = s.faceYaw;
       return root.StudioRig.transform({ translation: [s.x, 0, s.z], rotation: [0, Math.sin(y / 2), 0, Math.cos(y / 2)], scale: [S, S, S] }); }
+    /* V1776 C 사용자: 북쪽 섬 팡팡캐논 옆 = 같은 스코어 칸 하나짜리 게시판(일일·퀘스트 없음) */
+    const SCORE_BOARD2 = { x: -5.0, z: -46.7, y: 1 }; /* 원형판 밖, 왼쪽 얼음 덩어리 둘 사이(islands-walk 북쪽 섬 blocks), 이글루 반대쪽 */
+    function board2World() { const b = SCORE_BOARD2, S = L.BOARD.S, y = Math.atan2(0 - b.x, -48 - b.z); /* 사용자: 원형판(캐논, 0,-48)을 바라봄 */
+      return root.StudioRig.transform({ translation: [b.x, b.y, b.z], rotation: [0, Math.sin(y / 2), 0, Math.cos(y / 2)], scale: [S, S, S] }); }
     function boardPanels() { const B = L.BOARD, bw = boardWorld(), out = [];
+      for (const back of [false, true]) out.push({ kind: 'score', back, world: root.StudioRig.multiply(board2World(), root.StudioRig.transform({ translation: [0, B.Y, back ? -B.FACE : B.FACE], rotation: back ? [0, 1, 0, 0] : [0, 0, 0, 1] })), w: B.PANEL_W, h: B.PANEL_H });
       for (const kind of ['score', 'daily', 'quest']) for (const back of [false, true]) {
         const local = root.StudioRig.transform({ translation: [back ? -B.X[kind] : B.X[kind], B.Y, back ? -B.FACE : B.FACE], rotation: back ? [0, 1, 0, 0] : [0, 0, 0, 1] });
         out.push({ kind, back, world: root.StudioRig.multiply(bw, local), w: B.PANEL_W, h: B.PANEL_H }); }
@@ -493,13 +498,14 @@
       rd.lost(() => { ready = false; stop(); ui.setLoading(ko() ? '3D 화면을 다시 불러와 주세요.' : 'Please reload the 3D plaza.'); });
       fetch('assets/home3d/islands/islands-walk.json?v=1710').then((r) => r.json()).then((j) => L.setIslands(j.islands)).catch(() => {}); /* V1705 C: 동서남북 섬 걷기 자료 */
       rd.boot(PLAZA_GLB, MOLE_GLB, 'assets/home3d/boat.glb', [ /* V1633 C: 디스코 팡팡(배치만) */
-        (()=>{const s=L.SITES.find(x=>x.id==='pangCannon');return {url:'assets/shop-models-v1509/cannon-v1-batched-v1509.glb',world:root.StudioRig.transform({translation:[s.x,s.groundY,s.z]})};})(),
-        (()=>{const s=L.SITES.find(x=>x.id==='pangCannon');return {url:'assets/home3d/pang-cannon-sign.glb',action:s.action,signNode:'Sign_pangCannon',world:root.StudioRig.transform({translation:[s.x,s.groundY,s.z]})};})(),
+        /* V1776 C 사용자: 팡팡캐논 간판 삭제, 캐논 = 북쪽 바다를 보며 천천히 좌우 살핌(renderer cannonLook) */
+        (()=>{const s=L.SITES.find(x=>x.id==='pangCannon');return {url:'assets/shop-models-v1509/cannon-v1-batched-v1509.glb',dyn:'cannonLook',look:{x:s.x,y:s.groundY,z:s.z,yaw:Math.PI},world:root.StudioRig.transform({translation:[s.x,s.groundY,s.z],rotation:[0,1,0,0]})};})(),
         (()=>{const s=L.SITES.find(x=>x.id==='neonSnake');return {url:'assets/home3d/neon-snake-cabinet.glb',action:s.action,signNode:'Sign_neonSnake',world:root.StudioRig.transform({translation:[s.x,s.groundY,s.z],rotation:[0,Math.sin(s.faceYaw/2),0,Math.cos(s.faceYaw/2)]})};})(),
         { url: 'assets/home3d/islands/island_west_volcano.glb', world: root.StudioRig.transform({}) }, /* V1709 C 사용자: 서쪽 섬 화산 = GPT 시안 → 3D(동굴 입구, 그림 텍스처) */
         { url: 'assets/home3d/disco-base.glb?v=1690-G', /* 내용 바뀐 모델 = 버전 붙여 폰이 새로 받게 */ world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
         { url: 'assets/home3d/disco-top.glb?v=1690-G', dyn: 'discoTop', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },
-        { url: 'assets/home3d/board.glb?v=1690-G', world: boardWorld() }]).then(() => { /* V1650 C: 게시판 */
+        { url: 'assets/home3d/board.glb?v=1690-G', world: boardWorld() },
+        { url: 'assets/home3d/board-score.glb?v=1776-C', world: board2World() }]).then(() => { /* V1650 C: 게시판 */
         ready = true; readyAt = time; ui.setLoading(null); signsNow(); refreshArcade(true); rd.setBoard(boardPanels()); refreshBoard(true); if (MG.Home3DText) MG.Home3DText.ready().then(() => { signsNow(); refreshArcade(true); refreshBoard(true); wake(); }); /* V1653 C: 둥근 글씨체 준비되면 글자 다시 그림 */
         wake();
       }).catch((err) => { console.error('3D home:', err); ui.setLoading((ko() ? '3D 공간을 불러오지 못했습니다.' : 'Could not load the 3D plaza.') + ' (' + String(err && err.message || err).slice(0, 160) + ')'); });

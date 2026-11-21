@@ -208,7 +208,10 @@
   }
   // 움직임(아주 천천히가 아닌 놀이기구다운 속도): 디스코 = 빙글 돌며 들썩, 바이킹 = 좌우로 크게
   /* V1660 C: 디스코 팡팡 상판 자리(회전·기울기·튀기) — 받침 기둥 위 */
-  function discoTopMatrix() { const D = root.MoleGame.Home3DLayout.DISCO, s = D.topS, h = D.tilt || 0, a = D.tiltDir || 0, y = D.yaw || 0;
+  /* V1776 C: 홈 팡팡캐논 — 북쪽(바다)을 보다가 14초 주기로 왼쪽·오른쪽 약 25° 천천히 살핌(끝에서 잠깐 머묾) */
+function cannonLookMatrix(L) { const t = performance.now() / 1000, s = Math.sin(t * Math.PI * 2 / 14), y = L.yaw + 0.44 * Math.sign(s) * Math.pow(Math.abs(s), 0.6);
+  return R.transform({ translation: [L.x, L.y, L.z], rotation: [0, Math.sin(y / 2), 0, Math.cos(y / 2)] }); }
+function discoTopMatrix() { const D = root.MoleGame.Home3DLayout.DISCO, s = D.topS, h = D.tilt || 0, a = D.tiltDir || 0, y = D.yaw || 0;
     const ax = [Math.cos(a), 0, Math.sin(a)], qt = [ax[0] * Math.sin(h / 2), 0, ax[2] * Math.sin(h / 2), Math.cos(h / 2)], qy = [0, Math.sin(y / 2), 0, Math.cos(y / 2)];
     const q = [qt[3] * qy[0] + qt[0] * qy[3] + qt[1] * qy[2] - qt[2] * qy[1], qt[3] * qy[1] - qt[0] * qy[2] + qt[1] * qy[3] + qt[2] * qy[0], qt[3] * qy[2] + qt[0] * qy[1] - qt[1] * qy[0] + qt[2] * qy[3], qt[3] * qy[3] - qt[0] * qy[0] - qt[1] * qy[1] - qt[2] * qy[2]];
     return R.transform({ translation: [D.x, D.topY + (D.lift || 0), D.z], rotation: q, scale: [s, s, s] }); }
@@ -413,7 +416,7 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
         let [plaza, mole, boatModel] = await Promise.all([load(plazaUrl), load(moleUrl), boatUrl ? load(boatUrl).catch(() => null) : null]);
         mole = root.MoleGame.MoleAppearances.paint(await root.MoleGame.MoleAppearances.prepare(mole,['mohawk']),'mohawk');
         /* 고정 소품(Tripo, 그림 질감): [{url, world}] — 디스코 팡팡 상판·받침 */
-        for (const pr of propList || []) load(pr.url).then((mdl) => { const ins = R.instances(mdl); for (const i of ins) { const m = Object.assign(mesh(mdl, i.primitive), { world: R.multiply(pr.world, i.world), local: i.world, dyn: pr.dyn, sign: pr.signNode===i.name?pr.action:null, texBase: null }); glbTexture(mdl, i.primitive).then((t) => { m.texBase = t; }).catch(() => { m.plain = true; }); props.push(m); } }).catch(() => {}); /* plain = 그림 없는 모델(재질 색) */
+        for (const pr of propList || []) load(pr.url).then((mdl) => { const ins = R.instances(mdl); for (const i of ins) { const m = Object.assign(mesh(mdl, i.primitive), { world: R.multiply(pr.world, i.world), local: i.world, dyn: pr.dyn, look: pr.look, sign: pr.signNode===i.name?pr.action:null, texBase: null }); glbTexture(mdl, i.primitive).then((t) => { m.texBase = t; }).catch(() => { m.plain = true; }); props.push(m); } }).catch(() => {}); /* plain = 그림 없는 모델(재질 색) */
         if (boatModel) { boat = R.instances(boatModel).map((i) => Object.assign(mesh(boatModel, i.primitive), { world: i.world, texBase: null })); for (const b of boat) glbTexture(boatModel, R.instances(boatModel)[0].primitive).then((t) => { b.texBase = t; }).catch(() => {}); }
         // Sign_<action> 판 = 간판 글자 텍스처 자리
         environment = R.instances(plaza).map((i) => Object.assign(mesh(plaza, i.primitive), { world: labelWorld(plaza,i), gateGlow: i.name.startsWith('GateGlow') || i.name === 'RhythmBars batch', rhythmBars: i.name === 'RhythmBars batch', speaker: i.name.startsWith('RhythmSpeaker'), energy: i.name === 'Energy_rhythm', shopDoor: i.name === 'Door_shop', sign: i.name.startsWith('Sign_') ? i.name.slice(5) : null, screen: i.name.startsWith('Screen_'), tex: null, texPrim: i.name.startsWith('Tex_') ? i.primitive : null }));
@@ -551,7 +554,7 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
           draw(seaMesh, R.transform({ translation: [Math.round(cam.focus[0] / cell) * cell, 0, Math.round(cam.focus[2] / cell) * cell], scale: [sk, 1, sk] }), null); }
         { /* V1666 C 사용자: 디스코 팡팡 불빛 — 돌 때 위 금색 공, 튈 때 아래 노란 전구가 색색으로 빛남 */
           const D = root.MoleGame.Home3DLayout.DISCO, gs = Math.min(1, D.glowSpin || 0), gb = Math.min(1, D.glowBounce || 0), RB = [[1, .35, .5], [1, .7, .2], [1, .95, .3], [.4, 1, .5], [.35, .8, 1], [.75, .5, 1]];
-          for (const pm of props) { if (!(pm.texBase || pm.plain)) continue; const W = pm.dyn === 'discoTop' ? R.multiply(discoTopMatrix(), pm.local) : pm.world;
+          for (const pm of props) { if (!(pm.texBase || pm.plain)) continue; const W = pm.dyn === 'discoTop' ? R.multiply(discoTopMatrix(), pm.local) : pm.dyn === 'cannonLook' ? R.multiply(cannonLookMatrix(pm.look), pm.local) : pm.world;
             const st = /^(stud|bulb)([0-9]+)/.exec(pm.matName || ''), g = st ? (st[1] === 'stud' ? gs : gb) : 0;
             if (g > 0.02) { const n = +st[2], c = RB[(n + Math.floor(now * 6)) % RB.length], b = pm.color0 || (pm.color0 = pm.color.slice());
               gl.vertexAttrib4f(A.Color, b[0] + (c[0] - b[0]) * g, b[1] + (c[1] - b[1]) * g, b[2] + (c[2] - b[2]) * g, 1); gl.uniform1i(U.Glow, 1); draw(pm, W, null); gl.uniform1i(U.Glow, 0); gl.vertexAttrib4f(A.Color, 1, 1, 1, 1); }

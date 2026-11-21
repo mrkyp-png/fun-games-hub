@@ -12,8 +12,8 @@ def mat(name, hexrgb, rough=0.75):
     b = m.node_tree.nodes['Principled BSDF']
     b.inputs['Base Color'].default_value = (*[int(hexrgb[i:i + 2], 16) / 255 for i in (0, 2, 4)], 1); b.inputs['Roughness'].default_value = rough
     return m
-YEL, CREAM, PINK, BLUE, GREEN, PURP, STAR = (mat('board', 'f6d77a'), mat('cream', 'fff6e4'), mat('pink', 'f08a98'),
-    mat('blue', '7cc3ee'), mat('green', '86d6a4'), mat('purple', 'b99be6'), mat('star', 'ffcf3d', 0.5))
+YEL, CREAM, PINK, BLUE, GREEN, PURP, STAR = (mat('board', 'd6ad63'), mat('cream', 'fff5d9'), mat('pink', 'b479db'),
+    mat('blue', '509bdf'), mat('green', '6cc6a0'), mat('purple', '9d72e2'), mat('star', 'ffcf3d', 0.5))
 
 def box(name, loc, size, m, bev=0.02, seg=4):
     bpy.ops.mesh.primitive_cube_add(location=loc); o = bpy.context.object; o.name = name
@@ -40,12 +40,14 @@ def star(name, loc, r, depth, m):
 # 크기(게임 BOARD 와 같게)
 BW, BH, BD, BZ = 0.86, 0.36, 0.08, 0.54          # 판 폭·높이·두께·가운데 높이(V1653 C 사용자: 세로 화면 좌우 잘림 → 폭 0.98 → 0.86)
 PX, PW, PH = (-0.27, 0.0, 0.27), 0.25, 0.25       # 칸 가운데 x, 칸 바깥 폭·높이
+ONE = bool(os.environ.get('BOARD_ONE'))           # V1776 C 사용자: 팡팡캐논 섬 = 스코어 칸 하나만(일일·퀘스트 없음) → board-score.glb
+if ONE: BW, PX = 0.36, (0.0,)
 RIM = 0.022                                       # 칸 테두리 두께
 FACE = BD / 2 + 0.006 + 0.013 + 0.010   # 칸 크림 면 = 색 테두리(앞면 .059)보다 앞 — 테두리가 크림 판·글자를 가리던 것
 
 box('Board', (0, 0, BZ), (BW, BD, BH), YEL, bev=0.04, seg=6)
 for side in (-1, 1):
-    for x, m in zip(PX, (PINK, BLUE, GREEN)):
+    for x, m in zip(PX, (PINK,) if ONE else (PINK, BLUE, GREEN)):
         box('Rim', (x, side * (BD / 2 + 0.006), BZ), (PW, 0.026, PH), m, bev=0.012)
         box('Panel', (x, side * (FACE - 0.004), BZ), (PW - RIM * 2, 0.008, PH - RIM * 2), CREAM, bev=0.003, seg=2)
 # 지붕(분홍 둥근 띠) + 별
@@ -65,7 +67,7 @@ for o in sc.objects:
 bpy.ops.object.select_all(action='SELECT'); bpy.context.view_layer.objects.active = [o for o in sc.objects if o.type == 'MESH'][0]; bpy.ops.object.join()
 bpy.ops.object.shade_smooth_by_angle(angle=math.radians(35))
 tris = sum(len(p.vertices) - 2 for p in bpy.context.object.data.polygons)
-out = os.path.join(ROOT, 'mole/assets/home3d/board.glb')
+out = os.path.join(ROOT, 'mole/assets/home3d/board-score.glb' if ONE else 'mole/assets/home3d/board.glb')
 bpy.ops.export_scene.gltf(filepath=out, export_format='GLB', export_animations=False, export_apply=True)
 print('BOARD_READY tris', tris, 'FACE', round(FACE, 4), 'Y', BZ, 'PANEL', PW - RIM * 2, PH - RIM * 2)
 
