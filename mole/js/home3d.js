@@ -68,11 +68,14 @@
     function boardWorld() { const s = L.SITES.find((x) => x.id === 'board'), S = L.BOARD.S, y = s.faceYaw;
       return root.StudioRig.transform({ translation: [s.x, 0, s.z], rotation: [0, Math.sin(y / 2), 0, Math.cos(y / 2)], scale: [S, S, S] }); }
     /* V1776 C 사용자: 북쪽 섬 팡팡캐논 옆 = 같은 스코어 칸 하나짜리 게시판(일일·퀘스트 없음) */
-    const SCORE_BOARD2 = { x: -5.0, z: -46.7, y: 1 }; /* 원형판 밖, 왼쪽 얼음 덩어리 둘 사이(islands-walk 북쪽 섬 blocks), 이글루 반대쪽 */
+    const SCORE_BOARD2 = { x: -5.0, z: -46.7, y: 0.72 }; /* V1778 C: 떠 있던 것 → 그 자리 땅 높이(두 기둥 0.73~0.81) 에 맞춤 */ /* 원형판 밖, 왼쪽 얼음 덩어리 둘 사이(islands-walk 북쪽 섬 blocks), 이글루 반대쪽 */
     function board2World() { const b = SCORE_BOARD2, S = L.BOARD.S, y = Math.atan2(0 - b.x, -48 - b.z); /* 사용자: 원형판(캐논, 0,-48)을 바라봄 */
       return root.StudioRig.transform({ translation: [b.x, b.y, b.z], rotation: [0, Math.sin(y / 2), 0, Math.cos(y / 2)], scale: [S, S, S] }); }
+    /* V1778 C 사용자: 팡팡캐논 게시판에서 열면 스코어 화면의 팡팡캐논 탭부터 */
+    function openBoard(kind) { if (kind === 'pangScore') { MG.ScoreScreenStartTab = 'cannon'; kind = 'score'; } api.open(kind); }
+    function openSite(s) { if (s.id === 'board2') MG.ScoreScreenStartTab = 'cannon'; return api.open(s.action); }
     function boardPanels() { const B = L.BOARD, bw = boardWorld(), out = [];
-      for (const back of [false, true]) out.push({ kind: 'score', back, world: root.StudioRig.multiply(board2World(), root.StudioRig.transform({ translation: [0, B.Y, back ? -B.FACE : B.FACE], rotation: back ? [0, 1, 0, 0] : [0, 0, 0, 1] })), w: B.PANEL_W, h: B.PANEL_H });
+      for (const back of [false, true]) out.push({ kind: 'pangScore', back, world: root.StudioRig.multiply(board2World(), root.StudioRig.transform({ translation: [0, B.Y, back ? -B.FACE : B.FACE], rotation: back ? [0, 1, 0, 0] : [0, 0, 0, 1] })), w: B.PANEL_W, h: B.PANEL_H });
       for (const kind of ['score', 'daily', 'quest']) for (const back of [false, true]) {
         const local = root.StudioRig.transform({ translation: [back ? -B.X[kind] : B.X[kind], B.Y, back ? -B.FACE : B.FACE], rotation: back ? [0, 1, 0, 0] : [0, 0, 0, 1] });
         out.push({ kind, back, world: root.StudioRig.multiply(bw, local), w: B.PANEL_W, h: B.PANEL_H }); }
@@ -429,7 +432,7 @@
         }
       }
       if (riding) near = null;
-      if (!doorEntry && near && route && route.site === near && st.inputEnabled()) { route = null; if (near.action === 'lightMode' && opts.startGame) return; if (near.doorDepth) enterDoor(near); else { api.open(near.action); return; } }
+      if (!doorEntry && near && route && route.site === near && st.inputEnabled()) { route = null; if (near.action === 'lightMode' && opts.startGame) return; if (near.doorDepth) enterDoor(near); else { openSite(near); return; } }
       if (!doorEntry && near && near.doorDepth && walking && st.inputEnabled() && !air && !jumping() && L.crossedDoor(near,view.x,view.z)) enterDoor(near,true);
       // 건물에 닿아 있으면 점프 버튼이 그 건물 터치 버튼으로(누르면 그 건물 화면). 스쳐 지나가도 자동 진입 없음
       nearRide = !riding && !near && st.inputEnabled() ? L.nearestRide(view.x, view.z) : null;
@@ -464,9 +467,9 @@
               if (c.some((q) => !q)) continue; const xs = c.map((q) => (q[0] + 1) / 2 * w), ys = c.map((q) => (1 - q[1]) / 2 * h);
               const facing = (xs[1] - xs[0]) > 0; /* 앞면이 카메라 쪽일 때만 */
               if (facing && px >= Math.min(...xs) && px <= Math.max(...xs) && py >= Math.min(...ys) && py <= Math.max(...ys)) { /* 손이 그 칸으로 가서 누른 뒤 열림 */
-                const cx = xs.reduce((a, b) => a + b) / 4, cy = ys.reduce((a, b) => a + b) / 4; if (ui.pressBoardHand) ui.pressBoardHand({ x: cx, y: cy + (Math.max(...ys) - Math.min(...ys)) * 0.15 }, () => api.open(p.kind)); else api.open(p.kind); return; } } }
+                const cx = xs.reduce((a, b) => a + b) / 4, cy = ys.reduce((a, b) => a + b) / 4; if (ui.pressBoardHand) ui.pressBoardHand({ x: cx, y: cy + (Math.max(...ys) - Math.min(...ys)) * 0.15 }, () => openBoard(p.kind)); else openBoard(p.kind); return; } } }
           const site = MG.Home3DRenderer.pickSite(rd.vp(), L.SITES, px, py, w, h);
-          if (site && site === near) { if (site.action !== 'lightMode' || !opts.startGame) api.open(site.action); return; } // 게임기 몸통 터치 = 아무 일 없음(라운드 지도 안 씀) // 닿아 있는 건물을 터치 = 진입
+          if (site && site === near) { if (site.action !== 'lightMode' || !opts.startGame) openSite(site); return; } // 게임기 몸통 터치 = 아무 일 없음(라운드 지도 안 씀) // 닿아 있는 건물을 터치 = 진입
           if (site) { const e = L.entryPoint(site); route = { x: e.x, z: e.z, site, via: L.pathVia(view, e) }; return; }
           const p = MG.Home3DRenderer.rayFloor(root.StudioRig.inverse(rd.vp()), px / w * 2 - 1, 1 - py / h * 2);
           if (p && L.allowed(p.x, p.z)) route = { x: p.x, z: p.z, site: null, via: L.pathVia(view, p) };
@@ -485,7 +488,7 @@
           if (riding) { const rdd = riding === 'disco' ? L.DISCO : L.RIDES.find((x) => x.id === riding), e = L.rideExit(rdd); riding = null; view.x = e.x; view.z = e.z; view.heading = Math.atan2(-e.x, -e.z); jumpAt = time; return; } // 앞으로 뛰어내림
           if (nearRide && st.inputEnabled() && !jumping()) { riding = nearRide.id; route = null; ui.input.reset(); return; } // 뛰어올라 탐
           if (inside) { if (inside.phase === 'in' && st.inputEnabled()) opts.startGame(); return; } // 게임기 안 = 시작 // 사용자: 라운드 지도 없이 바로 시작
-          if (near && near.action !== 'lightMode' && st.inputEnabled() && !jumping()) { if(near.doorDepth) enterDoor(near); else api.open(near.action); return; } if (st.state === 'INTRO' || st.inputEnabled()) jump(); }
+          if (near && near.action !== 'lightMode' && st.inputEnabled() && !jumping()) { if(near.doorDepth) enterDoor(near); else openSite(near); return; } if (st.state === 'INTRO' || st.inputEnabled()) jump(); }
       });
       rd = MG.Home3DRenderer.create(ui.canvas);
       const ko = () => root.FGH.I18N.lang === 'ko';

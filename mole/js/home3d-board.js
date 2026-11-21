@@ -2,7 +2,7 @@
    게시판 3D 모델(사용자 Tripo)이 오면 renderer 가 이 그림을 칸 자리에 붙임. */
 (function (root) {
   'use strict';
-  const KINDS = ['score', 'daily', 'quest'];
+  const KINDS = ['score', 'daily', 'quest', 'pangScore']; /* pangScore = 북쪽 섬 팡팡캐논 게시판 전용(팡팡캐논 한 장만, V1778 C 사용자) */
   const RIM = { score: '#f2909c', daily: '#7cc3ee', quest: '#7fd6a6' };
 
   // 칸 3개 내용: { score|daily|quest: { title, line, dot } }
@@ -18,7 +18,9 @@
         mine: mi >= 0 ? { rank: mi + 1, score: n(scoreOf(all[mi])) } : null }; };
     const pages = [];
     for (const g of SCORE_GAMES) for (const pg of g(MG, S, ko, me, best)) pages.push(page(pg.title, pg.list, pg.sort, pg.scoreOf));
+    const pangPages = SCORE_GAMES[SCORE_GAMES.length - 1](MG, S, ko, me, best).map((pg) => page(pg.title, pg.list, pg.sort, pg.scoreOf));
     return {
+      pangScore: { title: ko ? '팡팡캐논' : 'Pang Cannon', pages: pangPages, dot: false },
       score: { title: ko ? '스코어' : 'Score', line: best ? (ko ? best.round + '라운드 · ' + n(best.score) + '점' : 'R' + best.round + ' · ' + n(best.score)) : (ko ? '첫 기록에 도전!' : 'Set a record!'), pages, dot: false },
       daily: { title: ko ? '일일 선물' : 'Daily Gift', line: daily ? (ko ? '오늘 선물 도착!' : 'Gift ready!') : (ko ? '내일 또 만나요' : 'See you tomorrow'), dot: daily },
       quest: { title: ko ? '퀘스트' : 'Quest', line: q > 0 ? (ko ? '보상 ' + q + '개 받기' : q + ' to claim') : (ko ? '도전 중' : 'In progress'), dot: q > 0 }
@@ -51,7 +53,7 @@
     if (p.bare) { ctx.fillStyle = '#fff8ea'; ctx.fillRect(0, 0, w, h); } /* 게시판 모델에 칸 테두리가 있음 → 크림만 */
     else { round(0, 0, w, h, r); ctx.fillStyle = RIM[kind]; ctx.fill(); round(pad, pad, w - pad * 2, h - pad * 2, r * 0.7); ctx.fillStyle = '#fff8ea'; ctx.fill(); }
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#6b4426';
-    const T = root.MoleGame && root.MoleGame.Home3DText, lang = p.lang || 'ko', CC = { score: ['#ff9db0', '#e2536f'], daily: ['#9ad6ff', '#3f8fd6'], quest: ['#9fe6b0', '#2fa35a'] }[kind];
+    const T = root.MoleGame && root.MoleGame.Home3DText, lang = p.lang || 'ko', CC = { score: ['#ff9db0', '#e2536f'], pangScore: ['#ff9db0', '#e2536f'], daily: ['#9ad6ff', '#3f8fd6'], quest: ['#9fe6b0', '#2fa35a'] }[kind];
     const title = (txt, y, s) => { if (T) T.candy(ctx, txt, w / 2, y, s, lang, w - pad * 4, CC[0], CC[1]); else ctx.fillText(txt, w / 2, y, w - pad * 4); };
     if (p.pages) { /* 스코어 칸: 지금 장(p.at) 제목 + 1위 + 내 순위(사용자 V1653 C: 1~5위 대신 2줄만 크게) */
       const pg = p.pages[(p.at || 0) % p.pages.length], k = ko(pg), fs = (q) => Math.round(h * q) + 'px Jua, system-ui, sans-serif', top = pg.rows[0];

@@ -115,7 +115,7 @@
     // V1367 C(사용자 지정): 리듬팡 탭 = 앨범 목록(앨범마다 비치·네온 버튼) → 누르면 그 곡·타입 랭킹(두더지팡과 같은 화면), ◀ 로 앨범 목록
     var view = { game: 'mole', type: 'B', song: -1 };
     function rhythmOpen() { return localStorage.getItem('mole.rp.entered') === '1'; } // 리듬팡에 들어가 본 적 있으면 해금
-    var moleTab = el.querySelector('[data-sr-game="mole"]'), rhythmTab = el.querySelector('[data-sr-game="rhythm"]'), rp = el.querySelector('[data-sr-rp]'), albums = el.querySelector('[data-sr-albums]');
+    var moleTab = el.querySelector('[data-sr-game="mole"]'), rhythmTab = el.querySelector('[data-sr-game="rhythm"]'), cannonTab = el.querySelector('[data-sr-game="cannon"]'), rp = el.querySelector('[data-sr-rp]'), albums = el.querySelector('[data-sr-albums]');
     function albumSrc(id) { return 'assets/rhythm/albums-v1568/' + id + '.webp?v=1568'; } // V1568 G: 리듬팡과 같은 768×768 앨범
     rpSongs().forEach(function (song, i) {
       var box = document.createElement('div'); box.className = 'sr-album';
@@ -153,8 +153,8 @@
       moleTab.querySelector('span').textContent = T('mole.pad.gameMole');
       albums.querySelectorAll('.sr-album-btn').forEach(function (b) { b.textContent = T(b.dataset.type === 'B' ? 'mole.score.neon' : 'mole.score.beach'); });
       var r = view.game === 'rhythm', list = r && view.song < 0;
-      moleTab.classList.toggle('sr-tab--on', !r); moleTab.classList.toggle('sr-tab--off', r);
-      rhythmTab.classList.toggle('sr-tab--on', r); rhythmTab.classList.toggle('sr-tab--off', !r);
+      if (cannonTab) cannonTab.querySelector('span').textContent = root.FGH.I18N.lang === 'ko' ? '팡팡캐논' : 'Pang Cannon';
+      [[moleTab, 'mole'], [rhythmTab, 'rhythm'], [cannonTab, 'cannon']].forEach(function (p) { if (!p[0]) return; var on = view.game === p[1]; p[0].classList.toggle('sr-tab--on', on); p[0].classList.toggle('sr-tab--off', !on); });
       el.classList.toggle('is-albums', list);
       albums.hidden = !list; rp.hidden = !r || list;
       if (list) requestAnimationFrame(fitAlbums);
@@ -165,7 +165,7 @@
         if (note) note.textContent = lock ? T('mole.rp.lock.need', { title: lock.needTitle }) : '';
         if (note) note.hidden = !lock;
       });
-      el.querySelector('[data-sr-rule]').textContent = T(r ? 'mole.score.ruleRp' : 'mole.score.rule');
+      el.querySelector('[data-sr-rule]').textContent = view.game === 'cannon' ? (root.FGH.I18N.lang === 'ko' ? '팡팡캐논 랭킹은 최고 점수를 기준으로 합니다!' : 'Pang Cannon ranks by best score!') : T(r ? 'mole.score.ruleRp' : 'mole.score.rule');
       fitInfoLine();
       if (r && !list) {
         var song = rpSongs()[view.song];
@@ -177,11 +177,12 @@
 
     }
     // 사용자 지정: 두더지팡·리듬팡 탭 누름 효과 — 폰에서 :active 가 잘 안 먹어 직접 클래스 토글(리듬팡 창 버튼과 같은 방식)
-    [moleTab, rhythmTab].forEach(function (t) {
+    [moleTab, rhythmTab, cannonTab].filter(Boolean).forEach(function (t) {
       t.addEventListener('pointerdown', function () { t.classList.add('is-press'); });
       ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { t.addEventListener(ev, function () { t.classList.remove('is-press'); }); });
     });
     moleTab.addEventListener('click', function () { if (view.game === 'mole') return; view.game = 'mole'; paintTabs(); render(); });
+    if (cannonTab) cannonTab.addEventListener('click', function () { if (view.game === 'cannon') return; view.game = 'cannon'; paintTabs(); render(); });
     rhythmTab.addEventListener('click', function () {
       if (!rhythmOpen()) { toast(T('mole.score.rhythmLocked')); return; }
       view.game = 'rhythm'; view.song = -1; paintTabs(); albums.scrollTop = 0;
@@ -215,8 +216,17 @@
       var norm = function (e) { return { playerName: e.playerName, avatar: e.avatar, pill: rpPill(e), cls: DIFF_CLASS[e.diff], score: e.score, isMe: e.isMe }; };
       return { sorted: t.all.map(norm), mine: me ? norm(me) : null, mineName: T('mole.pad.gameRhythm') + ' ' + T(view.type === 'B' ? 'mole.score.neon' : 'mole.score.beach') };
     }
+    // V1778 C 사용자: 팡팡캐논 탭 — 기록 = PangCannonStore(최고 점수·도달 라운드), 서버 랭킹 'pang_cannon'
+    function cannonBoard() {
+      var rec = null; try { rec = MG.PangCannonStore && MG.PangCannonStore.records(); } catch (e) { rec = null; }
+      var best = rec && rec.best, all = RankingSource.top('pang_cannon').slice();
+      if (best) all.push({ playerName: myName(), avatar: myAvatar(), round: best.round, score: best.score, isMe: true });
+      var norm = function (e) { return { playerName: e.playerName, avatar: e.avatar, pill: 'R' + (e.round || 1), cls: 'mid', score: e.score || 0, isMe: e.isMe }; };
+      all.sort(function (a, b) { return (b.score || 0) - (a.score || 0); });
+      return { sorted: all.map(norm), mine: best ? norm({ round: best.round, score: best.score }) : null, mineName: '팡팡캐논' };
+    }
     function render() {
-      var board = view.game === 'rhythm' ? rhythmBoard() : moleBoard(), me = board.mine;
+      var board = view.game === 'rhythm' ? rhythmBoard() : view.game === 'cannon' ? cannonBoard() : moleBoard(), me = board.mine;
       var sorted = board.sorted;
       var myRank = 0; sorted.forEach(function (e, i) { if (e.isMe) myRank = i + 1; });
       var list = sorted.slice(0, 10);
@@ -313,7 +323,7 @@
     var titleWrap = el.querySelector('.sr-title-wrap');
     if (titleWrap) fitObs.observe(titleWrap);
     function show() {
-      view.game = 'mole';
+      view.game = MG.ScoreScreenStartTab === 'cannon' ? 'cannon' : 'mole'; MG.ScoreScreenStartTab = null; /* 북쪽 섬 팡팡캐논 게시판에서 열면 팡팡캐논 탭부터 */
       paintTabs(); render();
       // 진입 — 양탄자가 위에서 아래로 펼쳐진 뒤 UI 등장
       timers.forEach(clearTimeout); timers = [];

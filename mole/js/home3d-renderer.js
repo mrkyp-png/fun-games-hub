@@ -649,7 +649,7 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
           buf([-hw, hh, 0, hw, hh, 0, hw, -hh, 0, -hw, -hh, 0], A.Position, 3); buf([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1], A.Normal, 3); buf([0, 0, 1, 0, 1, 1, 0, 1], A.UV, 2);
           for (const [k, v] of [['Color', [1, 1, 1, 1]], ['Joints', [0, 0, 0, 0]], ['Weights', [0, 0, 0, 0]]]) if (A[k] >= 0) { gl.disableVertexAttribArray(A[k]); gl.vertexAttrib4f(A[k], ...v); }
           const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array([0, 3, 1, 1, 3, 2]), gl.STATIC_DRAW);
-          return { kind: p.kind, world: p.world, mesh: { vao, count: 6, indexed: true, color: [1, 1, 1, 1], floor: false, sign: null, sea: false, tex: null, candyBand: p.kind === 'score' ? [.08, .32] : [.24, .48] /* 제목 줄만 반짝(아래 글줄·빨간 점은 그대로) */ } }; });
+          return { kind: p.kind, world: p.world, mesh: { vao, count: 6, indexed: true, color: [1, 1, 1, 1], floor: false, sign: null, sea: false, tex: null, candyBand: (p.kind === 'score' || p.kind === 'pangScore') ? [.08, .32] : [.24, .48] /* 제목 줄만 반짝(아래 글줄·빨간 점은 그대로) */ } }; });
       },
       drawBoard(data, page, ko) {
         if (!gl || !root.MoleGame.Home3DBoard) return;

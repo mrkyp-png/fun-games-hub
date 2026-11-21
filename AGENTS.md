@@ -1,3 +1,8 @@
+# V1778 C 배포 — 2026-11-21 (Claude)
+- 스코어 화면 탭 3개(두더지팡·리듬팡·팡팡캐논, .sr-tabs .sr-tab 폭 32.4% — 탭 틀은 CSS라 모서리 안 깨짐). 팡팡캐논 = cannonBoard(PangCannonStore best, RankingSource 'pang_cannon', 점수순, 배지 R+라운드). MG.ScoreScreenStartTab='cannon' 이면 그 탭부터(북쪽 섬 게시판·board2 사이트에서 열 때, home3d openBoard/openSite).
+- 북쪽 섬 게시판 = 'pangScore' 칸(팡팡캐논 한 장만), 높이 y .72(땅에 붙임). 광장 게시판은 모든 게임 넘김 유지.
+- 배 두더지 생략 거리 z>235 → z>330(사용자: 큰 화면에서도 빈 배로 보임, 먼 곳만 생략).
+
 # V1777 C 배포 — 2026-11-21 (Claude)
 - 팡팡캐논 야간: 어둠·별을 CSS 층에서 렌더러 셰이더로 이동(pang-cannon-beach.js nightLayer/nightStars/nightPost, main→main0 래핑, uniform nightA=(on,lit,cx,cy) ← MG.PangCannonNightFx). 별은 바다 배경 패스에만 더해져 배·연기·깃발 뒤. .ppc-night-dark/.ppc-night-sky 숨김.
 - 흔들림 때 밤 조명 층(night.el)도 같이 흔듦(탐조등 틈 제거).
