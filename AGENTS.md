@@ -1,3 +1,7 @@
+# V1779 C 배포 — 2026-11-21 (Claude)
+- 팡팡캐논 배 깃발: 기둥 = 뒷머리 가운데(모델 +x .42 = 뒤, -x = 백조 머리/앞) 갑판(y .2)부터, 아래 기둥 굵게(.075s)·주황(.78,.4,.13). 뒷머리가 화면 왼쪽이면 천을 왼쪽으로(좌우 뒤집음, sx) — 천이 배를 덮던 것. 침몰 땐 물 아래 잘림(groundPlane waterY) + 배 기울기만큼 깃발도 기욺.
+- 수평선 연기 기둥: 알파 .78→.5, 색 [1.1,1.13,1.2](먼 곳 흐림), 그림 6→2.5장/초.
+
 # V1778 C 배포 — 2026-11-21 (Claude)
 - 스코어 화면 탭 3개(두더지팡·리듬팡·팡팡캐논, .sr-tabs .sr-tab 폭 32.4% — 탭 틀은 CSS라 모서리 안 깨짐). 팡팡캐논 = cannonBoard(PangCannonStore best, RankingSource 'pang_cannon', 점수순, 배지 R+라운드). MG.ScoreScreenStartTab='cannon' 이면 그 탭부터(북쪽 섬 게시판·board2 사이트에서 열 때, home3d openBoard/openSite).
 - 북쪽 섬 게시판 = 'pangScore' 칸(팡팡캐논 한 장만), 높이 y .72(땅에 붙임). 광장 게시판은 모든 게임 넘김 유지.
