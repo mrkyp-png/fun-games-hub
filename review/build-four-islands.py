@@ -238,7 +238,7 @@ islands["south"] = join(parts, "Island_South_Jungle")
 t = terrain(9.5, 2.0, 17, bands=[(-9, "#cfe7f2"), (.4, "#f4f8fb"), (1.5, "#ffffff")])
 flatten(t, "#f4f8fb", "#f4f8fb")
 parts = [t] + round_plaza(t, "#e3f1f8", "#8fc3e2"); random.seed(41); walk_begin("north", t); pad("north", 0, 0, PLAZA_R + .1, 1)
-for k, (x, y, h, r) in enumerate([(-5.2, 2.2, 6.5, 2.4), (3.0, -5.0, 4.6, 1.8), (-4.4, -4.2, 3.8, 1.6), (.4, 6.0, 3.2, 1.3)]):  # 봉우리 = 가장자리
+for k, (x, y, h, r) in enumerate([(-5.2, 2.2, 6.5, 2.4), (3.0, -5.0, 4.6, 1.8), (-4.4, -4.2, 3.8, 1.6), (.4, 6.0, 3.2, 1.3)]):  # 봉우리 = 가장자리 (V1784 C: 게임 파일은 review/fix-north-peaks.py 로 왼쪽 산 바깥·작게, 밑동 낮춤 — 화산 원본이 없어 이 스크립트는 재실행 안 됨)
     def mk(): bpy.ops.mesh.primitive_cone_add(vertices=6, radius1=r, radius2=0, depth=h)
     z = ground_z(t, x, y)
     o = add(mk, (x, y, z + h / 2 - .3), (random.uniform(-.08, .08), random.uniform(-.08, .08), k), (1, 1, 1), None, "peak")

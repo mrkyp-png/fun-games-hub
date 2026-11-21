@@ -499,7 +499,7 @@
       root.FGH.I18N.onChange(() => { jumpLabel(); if (ready) { signsNow(); refreshArcade(true); if (!raf && api.renderAllowed()) wake(); } });
       document.addEventListener('visibilitychange', wake);
       rd.lost(() => { ready = false; stop(); ui.setLoading(ko() ? '3D 화면을 다시 불러와 주세요.' : 'Please reload the 3D plaza.'); });
-      fetch('assets/home3d/islands/islands-walk.json?v=1710').then((r) => r.json()).then((j) => L.setIslands(j.islands)).catch(() => {}); /* V1705 C: 동서남북 섬 걷기 자료 */
+      fetch('assets/home3d/islands/islands-walk.json?v=1784').then((r) => r.json()).then((j) => L.setIslands(j.islands)).catch(() => {}); /* V1705 C: 동서남북 섬 걷기 자료 */
       rd.boot(PLAZA_GLB, MOLE_GLB, 'assets/home3d/boat.glb', [ /* V1633 C: 디스코 팡팡(배치만) */
         /* V1776 C 사용자: 팡팡캐논 간판 삭제, 캐논 = 북쪽 바다를 보며 천천히 좌우 살핌(renderer cannonLook) */
         (()=>{const s=L.SITES.find(x=>x.id==='pangCannon');return {url:'assets/shop-models-v1509/cannon-v1-batched-v1509.glb',dyn:'cannonLook',look:{x:s.x,y:s.groundY,z:s.z,yaw:Math.PI},world:root.StudioRig.transform({translation:[s.x,s.groundY,s.z],rotation:[0,1,0,0]})};})(),

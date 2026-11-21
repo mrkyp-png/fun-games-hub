@@ -458,7 +458,7 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
           const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, sg.indices, gl.STATIC_DRAW);
           seaMesh = { vao, count: sg.indices.length, indexed: true, color: [1, 1, 1, 1], floor: false, sign: null, sea: true }; }
         // V1704 C: 동서남북 섬(배경). 홈 준비를 막지 않게 뒤에서 불러와 붙임. 실패해도 홈은 그대로.
-        for (const k of ['east', 'west', 'south', 'north']) load('assets/home3d/islands/island_' + k + '.glb').then((mdl) => { for (const i of R.instances(mdl)) environment.push(Object.assign(mesh(mdl, i.primitive), { world: i.world, tex: null, texPrim: null, island: k })); }).catch(() => {});
+        for (const k of ['east', 'west', 'south', 'north']) load('assets/home3d/islands/island_' + k + '.glb?v=1784').then((mdl) => { for (const i of R.instances(mdl)) environment.push(Object.assign(mesh(mdl, i.primitive), { world: i.world, tex: null, texPrim: null, island: k })); }).catch(() => {});
           /* V1706 C 사용자: 화산 연기 움직임 — 연기 한 덩이를 6번 그림(분화구에서 올라가며 커졌다 사라짐) */
           load('assets/home3d/islands/smoke_puff.glb').then((mdl) => { const i = R.instances(mdl)[0]; for (let k = 0; k < 6; k++) environment.push(Object.assign(mesh(mdl, i.primitive), { world: i.world, tex: null, texPrim: null, island: 'west', puff: k })); }).catch(() => {});
         {
