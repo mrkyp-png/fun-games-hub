@@ -41,6 +41,7 @@
           resetToStart();
         } else if (ok) { const v = st.view(); if (v) Object.assign(view, v); }
         if (ok) { if (ui) ui.setFeature(false); refreshHud(); show(true); wake(); }
+        else if (st.state === 'EXPLORE' || st.state === 'INTRO') { show(true); wake(); } /* V1788 C 사용자: 홈 복귀 때 이미 광장 상태인데 3D 홈이 숨겨져 있으면(하늘색 빈 게임판만 보이던 문제) 다시 보이게 */
         return ok;
       },
       gameStarted(options) { const ok = st.gameStarted(); if (ok) { stop(); if (ui) ui.setFeature(false); const keep = !!(options && options.keepVisible); opts.host.classList.toggle('game-entry-pending',keep); if (!keep) show(false); } return ok; },

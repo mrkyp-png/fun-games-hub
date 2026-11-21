@@ -1,4 +1,10 @@
-# V1787 C (로컬, 배포 전) — 2026-11-22 (Claude)
+# V1788 C (로컬, 배포 전) — 2026-11-22 (Claude)
+- 홈 하늘색 빈 게임판 문제(사용자 캡처: 3D 광장이 숨겨진 채 두더지팡 시작 전 게임 화면이 보임): 원인 = 3D 홈은 state GAMEPLAY/FEATURE 일 때만 homeShown 으로 다시 보임(home3d-state 28줄) → 이미 EXPLORE/INTRO 인데 숨겨진 경우 복구 안 됨. 조치 = home3d.homeShown 에서 그 경우 show(true)+wake(안전장치). 정확한 발생 순서는 미재현(공개 사이트 3회 정상).
+- 보스 타격 번쩍임: 라운드 보스배·잠수함·중간보스·크라켄이 맞거나(boatHit) 격침(boatSunk)되면 .3초 하얗게(renderer uniform hitFlash, bossHitAt/hitFx/flash, 셰이더 마지막에 mix). 크라켄 = 머리·다리 같이. 확인 = 크라켄만 화면 캡처(시험 전용 주입 scratchpad flash.cjs), 1~7라운드 보스는 같은 코드라 화면 미확인.
+- 알림 상자 겹침: '크라켄 바로' 때 '적 함대 접근!' 위에 '파이널 보스 출현!'이 같이 뜸 → warBanner 가 이전 .ppc-war 를 지우고 새 상자만(pang-cannon.js). 확인: 상자 1개.
+- 크라켄 던지기: 뒷다리(머리 뒤 6·7번, THROW_LEGS=[6,7])로 잡아 던짐. 배 크기 = 쥘 때 krBase*.6(다리 굵기 2~3배) → 날아오며 totalSeconds*.7 동안 실제 크기로 커짐(radiusForWeapon, 맞는 범위도 같이 커짐).
+
+# V1787 C 배포 — 2026-11-22 (Claude)
 - 사용자 결정: 구멍에 빠진 캐논 = 판 끝까지(현행 유지).
 - 야광 미사일배 = 진한 파랑(모든 라운드 2·4·5·7, 밤 포함): 셰이더 surface 10 에서 연두 칸을 vec3(.05,.14,.48)로 바꿈, 밤 약한 빛 삭제. 그림 파일(hull-neon.glb) 그대로.
 - 크라켄 다리 뼈대: review/rig-kraken-legs-v1787.py(블렌더) → assets/pang-cannon/boss-v1787c/kraken-rig.glb. 다리마다 뼈 12개(legK_b00..b11), 살 무게 = 뿌리에서 표면 따라 잰 거리로 이웃 뼈 2개. 노드 extras.kr_heads = 뼈 머리 13점(다리 로컬). ⚠️ 블렌더 내보내기는 살 좌표를 크라켄 기준으로 저장 → 뼈 행렬 = 다리 로컬 계산 × 노드 역행렬(krRig.invN).
