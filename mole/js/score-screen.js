@@ -116,7 +116,7 @@
     var view = { game: 'mole', type: 'B', song: -1 };
     function rhythmOpen() { return localStorage.getItem('mole.rp.entered') === '1'; } // 리듬팡에 들어가 본 적 있으면 해금
     var moleTab = el.querySelector('[data-sr-game="mole"]'), rhythmTab = el.querySelector('[data-sr-game="rhythm"]'), cannonTab = el.querySelector('[data-sr-game="cannon"]'), rp = el.querySelector('[data-sr-rp]'), albums = el.querySelector('[data-sr-albums]');
-    function albumSrc(id) { return 'assets/rhythm/albums-v1568/' + id + '.webp?v=1568'; } // V1568 G: 리듬팡과 같은 768×768 앨범
+    function albumSrc(id) { return 'assets/rhythm/albums-v1791/' + id + '.webp?v=1791'; } // V1568 G: 리듬팡과 같은 768×768 앨범
     rpSongs().forEach(function (song, i) {
       var box = document.createElement('div'); box.className = 'sr-album';
       box.innerHTML = '<img class="sr-album-img" alt=""><b class="sr-album-title"></b><span class="sr-album-btns"><button type="button" class="sr-album-btn sr-album-btn--a" data-type="A"></button><button type="button" class="sr-album-btn sr-album-btn--b" data-type="B"></button></span>';

@@ -153,7 +153,7 @@
 // V1690 G: Sand beach, continuous ocean, combo turns and reactive hair; clear text-only signs, gentle warm entrance flow and corrected beach/water landing.
 // V1691 G: gold3D in original sprite boxes; hammer2D preserved; weapons in front of HUD; matched plaza label sizes.
 // V1692 G: matching gold clones, ImageGen enhancement lightning, smooth fur and physical rhythm entrance.
-const CACHE = 'mole-game-v1790-C';
+const CACHE = 'mole-game-v1791-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -415,12 +415,12 @@ const SHELL = [
   './assets/rhythm/beach-target-v1250/target-3.svg',
   './assets/rhythm/beach-target-v1250/target-4.svg',
   './assets/rhythm/type-cyber-bg-clean-v1213.webp',
-  './assets/rhythm/albums-v1568/le-monde-attendra-demain.webp',
-  './assets/rhythm/albums-v1568/meet-me-halfway.webp',
-  './assets/rhythm/albums-v1568/paper-engine-ride.webp',
-  './assets/rhythm/albums-v1568/the-world-is-wide.webp',
-  './assets/rhythm/albums-v1568/be-my-destiny.webp',
-  './assets/rhythm/albums-v1568/take-this-night-around.webp',
+  './assets/rhythm/albums-v1791/le-monde-attendra-demain.webp',
+  './assets/rhythm/albums-v1791/meet-me-halfway.webp',
+  './assets/rhythm/albums-v1791/paper-engine-ride.webp',
+  './assets/rhythm/albums-v1791/the-world-is-wide.webp',
+  './assets/rhythm/albums-v1791/be-my-destiny.webp',
+  './assets/rhythm/albums-v1791/take-this-night-around.webp',
 
   './js/rhythm-lyrics.js',
   './audio/rp/le-monde-attendra-demain-lyrics.json',

@@ -122,7 +122,7 @@
       rhythmArtReady=Promise.all(waits);
       return rhythmArtReady;
     }
-    function albumOf(choice) { return choice.id==='fever2' ? 'assets/home2/mole-cap.png' : A+'albums-v1568/'+choice.id+'.webp?v=1568'; } // V1568 G: 스코어와 공통 768×768 앨범, 새 경로로 캐시 갱신
+    function albumOf(choice) { return choice.id==='fever2' ? 'assets/home2/mole-cap.png' : A+'albums-v1791/'+choice.id+'.webp?v=1791'; } // V1568 G: 스코어와 공통 768×768 앨범, 새 경로로 캐시 갱신
     function selectSong(choice){if(activeB)selectedBSong=choice;else selectedASong=choice;}
     // V1366 C: 리듬팡 티켓 — 시작할 때 1장(하루 첫 판 무료), 로딩 실패·취소면 돌려줌
     function paintTickets(){var E=MG.Economy;if(!E||!E.getTickets)return;var n=E.formatK(E.getTickets()); // V1372 C: 홈 티켓과 같은 수

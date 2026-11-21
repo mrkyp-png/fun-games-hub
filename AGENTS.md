@@ -1,4 +1,15 @@
-# V1790 C (로컬, 배포 전) — 2026-11-22 (Claude)
+# V1791 C (로컬, 배포 전) — 2026-11-22 (Claude)
+- 리듬팡 타입 선택·곡 선택·난이도 화면(실제 플레이·결과·일시정지 창은 그대로, 버튼 그대로): 사용자 '클레이톤·유아틱 X·지금 배경 구도 유지·위쪽 둥근 돔 삭제'.
+  - 배경 = 이미지젠(Sprite Motion Studio, 옛 type-cyber-bg 를 참고 그림으로 같은 구도·무광 남색+금빛, 돔 삭제) assets/rhythm/v1791/bg-stage.webp — rp-type-panel(.has-type-lighting 포함)·rb-song-modal·rp-select 배경.
+  - 큰 테두리 = 이미지젠 남색 무광+금색 안선 ui/v1791/frame-navy.png(review/make-rhythm-clay-frame-v1791.py: 여백 자르고 안쪽 남색 채움), border-image 120 / 26px. 꽃·잎·구름·별 모서리 장식(::after ctop/cbot) 없앰.
+  - 조명 2개 유지·새 그림: 받침·머리 3자세 이미지젠 → review/make-rhythm-lights-v1791.py 로 옛 칸 배치대로 assets/rhythm/type-lights-v1791/(mount, heads-six-poses), 빛줄기 안쪽에 비치는 stage-dark = 새 배경(파란 빛 원인), beams-four 금빛. rhythm-type-lighting-v1569.js base·?v=1791-C.
+  - BEACH/NEON 간판(곡 선택·난이도 창만) = ui/v1791/plaque-navy.png(p-plaque 는 일시정지·결과 창에 그대로). '난이도를 고르세요' 상자 = ui/v1791/sub-navy.png(별 없음).
+  - 곡 칸 = 남색(#1f2c4a→#151e35)·금갈색 테(#9c8456), 앨범 그림 테 = 금색 2px(#c9a465).
+  - 창이 떠 있으면 뒤 배경 뿌옇게: 타입·곡·난이도 = 배경 그림을 ::before 로 옮겨 blur(7px)(isolation), 일시정지·결과·게임 준비 중 = backdrop-filter blur(7px).
+  - 일시정지·결과·게임 준비 중 창도 같은 남색 테두리·모서리 장식 없음, 명판(p-plaque) 전부 plaque-navy 로(index.html 6곳, 반짝임 마스크 포함). ⚠️ 기본 .rx-card::after 는 border-width 70/90/100 이 있어 그림만 지우면 흰 테두리가 됨 → border:0 필수. 결과 창은 화면 확인 못 함(곡 끝까지 가야 뜸).
+- 앨범 6장 = 이미지젠 새 그림(캐릭터 없음, 곡 제목 분위기) assets/rhythm/albums-v1791/*.webp 768 — rhythm.js albumOf·score-screen.js albumSrc·sw.js 경로 교체(스코어 화면 공통).
+
+# V1790 C 배포 — 2026-11-22 (Claude)
 - 팡팡캐논 선택 버튼 전체(.ppc-action, 시작·라운드 선택·결과 창 등) = 편지함 '모두 받기'(shop-buy-frame) 모양·색: 초록 알약(--popup-confirm-face/rim/highlight, 테 3px+안쪽 1px 선), 흰 Jua 900 글씨, 누르면 안쪽 빛(pang-cannon.css).
 - 상점 간판 글자 아래 선: 문 위 벽 한 칸(plaza.blend 'Shop closed shell' 면 732)이 벽보다 .008 튀어나와 가장자리 조각이 선처럼 보임 → review/flatten-shop-lintel-v1790.cjs 로 plaza.glb 점 89개를 벽 깊이로(plaza.blend 는 그대로 — 다시 내보내면 되살아남), PLAZA_GLB ?v=1790-C.
 - 게임기 구멍에서 위로 올라오는 빛 높이 전부 절반: 클리어한 라운드(glowHalo .9→.45), 지금 라운드 깜빡이(1.1→.55, 깜빡임 유지).

@@ -7987,6 +7987,31 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen .rp-type-card h2 { margin: 0 0 4px; }
 #rhythm-screen .rp-type-card p { margin: 0 0 6px; }
 #rhythm-screen .rp-type-panel > .rp-type-card { margin-top: 0 !important; } /* 사용자: 위로 — 예전 가운데 정렬용 margin-top 해제 */
+/* V1791 C 사용자: 타입 선택·곡 선택·난이도 창 = 차분한 남색 무광 테두리(꽃·잎·구름·별 모서리 장식 없음, 이미지젠), 배경 = 같은 구도의 무광 무대(이미지젠). 버튼은 그대로 */
+#rhythm-screen .rx-card:not(.rx-card--res):not(.rx-card--pause).rp-type-card::before,
+#rhythm-screen .rx-card.rx-card--sel:not(.rp-type-card)::before,
+#rhythm-screen.is-type-b .rx-card.rx-card--sel::before { border-width: 26px !important; border-image: url('assets/rhythm/ui/v1791/frame-navy.png') 120 fill / 26px stretch !important; }
+#rhythm-screen .rx-card:not(.rx-card--res):not(.rx-card--pause).rp-type-card::after,
+#rhythm-screen .rx-card.rx-card--sel:not(.rp-type-card)::after { background: none !important; }
+/* V1791 C 사용자: 창(상자)이 떠 있을 때 뒤 배경은 뿌옇게 — 배경 그림은 ::before 로 옮겨 그것만 흐림(창·버튼·조명은 선명) */
+#rhythm-screen .rp-type-panel, #rhythm-screen .rp-type-panel.has-type-lighting,
+#rhythm-screen .rb-song-modal, #rhythm-screen .rp-select,
+#rhythm-screen.is-type-b .rb-song-modal, #rhythm-screen.is-type-b .rp-select { background: #141d33 !important; isolation: isolate; }
+#rhythm-screen .rp-type-panel::before, #rhythm-screen .rb-song-modal::before, #rhythm-screen .rp-select::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: url('assets/rhythm/v1791/bg-stage.webp') center / cover no-repeat; filter: blur(7px) brightness(.85); }
+/* V1791 C 사용자: '난이도를 고르세요' 상자 = 별 없는 남색 무광+금색 테(이미지젠), 앨범 칸 = 남색 배경·금갈색 테, 앨범 그림 테 = 은은한 금색 */
+#rhythm-screen .rx-sub { aspect-ratio: 2096 / 324; background-image: url('assets/rhythm/ui/v1791/sub-navy.png'); }
+#rhythm-screen .rb-song-choice { border-color: #9c8456 !important; background: linear-gradient(135deg, #1f2c4a, #151e35) !important; }
+#rhythm-screen .rb-song-album { border: 2px solid #c9a465 !important; }
+/* V1791 C 사용자 '팝업창은 더 있어요': 일시정지·결과·게임 준비 중 창도 같은 남색 테두리(모서리 꽃·잎 장식 없음), 창이 뜨면 뒤는 뿌옇게 */
+#rhythm-screen .rx-card.rx-card--res::before, #rhythm-screen .rx-card.rx-card--pause::before,
+#rhythm-screen.is-type-b .rx-card.rx-card--res::before, #rhythm-screen.is-type-b .rx-card.rx-card--pause::before,
+#rhythm-screen .rp-preloader .rx-card::before { content: ''; position: absolute; inset: 0 !important; z-index: 0; pointer-events: none; filter: none !important; border-style: solid !important;
+  border-width: 26px !important; border-image: url('assets/rhythm/ui/v1791/frame-navy.png') 120 fill / 26px stretch !important; background: none !important; }
+#rhythm-screen .rx-card.rx-card--res::after, #rhythm-screen .rx-card.rx-card--pause::after, #rhythm-screen .rp-preloader .rx-card::after { background: none !important; border-image: none !important; border: 0 !important; }
+#rhythm-screen .rp-preloader .rx-card:not(.rx-card--res):not(.rx-card--pause) { position: relative; isolation: isolate; padding-top: 30px; padding-bottom: 30px; } /* 사용자: 게임 준비 중 창 위아래 간격 같게(옛 꽃 장식 자리 140px 해제) */
+#rhythm-screen .rp-preloader .rx-card > * { position: relative; z-index: 1; }
+#rhythm-screen [data-rp-pause], #rhythm-screen [data-rp-result], #rhythm-screen .rp-preloader, #rhythm-screen.is-type-b .rp-preloader { background: rgba(12, 18, 34, .45) !important; -webkit-backdrop-filter: blur(7px); backdrop-filter: blur(7px); }
 
 /* V1372 C 사용자: 홈 화면 상단 라운드 표지판(ROUND A1~A8) 삭제 */
 #game-screen.is-start .round-strip { display: none !important; }

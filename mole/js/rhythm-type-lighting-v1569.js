@@ -1,7 +1,7 @@
 (function () {
   'use strict';
   var script = document.currentScript;
-  var base = new URL('../assets/rhythm/type-lights-v1569/', script.src);
+  var base = new URL('../assets/rhythm/type-lights-v1791/', script.src); // V1791 C 사용자: 조명 2개 유지, 받침·머리 = 새 그림(남색 무광+금색 테)
   var root = document.getElementById('rhythm-screen');
   var panel = root && root.querySelector('[data-rp-types]');
   if (!panel) return;
@@ -278,14 +278,14 @@
         });
       };
       img.onerror = reject;
-      img.src = new URL(key + '.webp?v=1570-G', base).href;
+      img.src = new URL(key + '.webp?v=1791-C', base).href;
     });
   })).then(function () {
     ready = true;
     // Geometry is initialized only after the hidden type-selection panel becomes visible.
     canvas.width = canvas.height = 0;
     panel.classList.add('has-type-lighting');
-    panel.style.setProperty('--rp-type-dark-stage', 'url("' + new URL('stage-dark.webp?v=1570-G', base).href + '")');
+    panel.style.setProperty('--rp-type-dark-stage', 'url("' + new URL('stage-dark.webp?v=1791-C', base).href + '")');
     sync();
   }).catch(function (error) {
     canvas.remove(); front.remove(); observer.disconnect();
