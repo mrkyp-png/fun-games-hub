@@ -49,7 +49,8 @@
   return{...base,u,z,dir:s<6?1:0,move:s<6?.9:.25};}
  // V1766 C: the boss boat sails straight in to z=200 in the middle lane and holds there (never turns back).
  // V1768 C: boss enters broadside from the left, then patrols left↔right (broadside duel). side = travel direction (+1 right / -1 left).
- function bossLife(time){const s=Math.max(0,time),E=5,z=185;let u,side;if(s<E){u=-.2+.7*ease(s/E);side=1;}else{const p=(s-E)*.4;u=.5+.6*Math.sin(p);side=Math.cos(p)>=0?1:-1;}return{u,z,far:355,turn:0,visible:true,move:.7,dir:0,side,type:0,ready:s>E*.7&&u>.06&&u<.94};}
+ // V1781 C 사용자: 먼 곳(300)에서 좌우로 오가며 점점 앞으로(150까지, 약 60초) 다가온다.
+ function bossLife(time){const s=Math.max(0,time),E=5,z=Math.max(150,300-2.5*s);let u,side;if(s<E){u=-.2+.7*ease(s/E);side=1;}else{const p=(s-E)*.4;u=.5+.6*Math.sin(p);side=Math.cos(p)>=0?1:-1;}return{u,z,far:355,turn:0,visible:true,move:.7,dir:0,side,type:0,ready:s>E*.7&&u>.06&&u<.94};}
  // V1767 C: a sunk slot restarts as a brand-new boat from the horizon (shifts[i] = round time it restarts).
  const shifts=[];
  const HIDDEN={u:.5,z:355,far:355,turn:0,visible:false,move:0,dir:0,type:0,ready:false};
