@@ -8738,7 +8738,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #game-screen.gs-weapon-enhanced .lc-ball { filter: var(--weapon-tint) var(--weapon-glow); }
 #game-screen.gs-weapon-enhanced .lane-boxing-glove img { filter: opacity(var(--glove-opacity, 1)) var(--glove-tint) var(--weapon-glow); }
 #game-screen .lane-boxing-glove--clone { --glove-opacity: .5; }
-#game-screen.gs-invincible .lane-boxing-glove img { filter: opacity(var(--glove-opacity, 1)) url("#game-enhance-glove-gold") var(--weapon-glow, brightness(1)); }
+#game-screen.gs-invincible .lane-boxing-glove img,
+#game-screen.gs-alipunch.gs-invincible .game-hammer-models { filter: opacity(var(--glove-opacity, 1)) url("#game-enhance-glove-gold") var(--weapon-glow, brightness(1)); }
 .ph3-stage .has-enh { filter: drop-shadow(0 0 6px var(--enh)) drop-shadow(0 0 16px var(--enh)); } /* 사진관은 Glow 그대로 */
 .enh-lv { position: absolute; right: 6%; top: 4%; z-index: 6; font-family: 'Jua', sans-serif; font-weight: 400; font-size: 64px; line-height: 1; color: #fff; -webkit-text-stroke: 10px #2a0b55; paint-order: stroke fill; pointer-events: none; }
 .cs-card > .enh-lv { right: 42px; top: 34px; font-size: 44px; -webkit-text-stroke: 8px #2a0b55; }
