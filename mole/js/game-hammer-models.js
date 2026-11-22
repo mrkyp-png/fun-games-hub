@@ -34,7 +34,7 @@ precision highp float;in vec3 vNormal,vSurface,vSurfaceNormal;in vec2 vUV;in flo
 float artwork(vec2 uv){vec4 p=texture(uLightning,fract(uv));return p.a*dot(p.rgb,vec3(.333333));}
 void main(){vec4 texel=uTextured?texture(uTexture,vUV):vec4(1.);float alpha=uColor.a*texel.a*vOpacity;if(alpha<.003)discard;vec3 n=normalize(vNormal),L=normalize(vec3(uShopGlove?-.4:-.45,uShopGlove?.85:.8,uShopGlove?.8:1.)),V=vec3(0.,0.,1.);if(!gl_FrontFacing)n=-n;vec3 fill=normalize(vec3(.8,.3,-.5));float light=max(0.,dot(n,L)),bounce=max(0.,dot(n,fill));vec3 base=uColor.rgb*pow(texel.rgb,vec3(2.2));float spec=pow(max(0.,dot(n,normalize(L+V))),mix(8.,64.,1.-max(uRoughness,.35)))*.48;float rim=pow(1.-max(0.,dot(n,V)),3.)*max(0.,dot(n,normalize(vec3(.8,.6,.2))))*(uShopGlove?0.:.12);vec3 color=base*(.62+.65*light+.25*bounce)+vec3(spec)+vec3(1.,.84,.48)*rim+uEmission;if(vFlash>.01){vec3 q=(vSurface-uModelLow)/uModelSpan;vec3 weights=pow(abs(normalize(vSurfaceNormal)),vec3(4.));weights/=max(.0001,weights.x+weights.y+weights.z);vec2 shift=vec2(mod(floor(uTime*12.5),4.)*.25,0.);float arc=dot(weights,vec3(artwork(q.yz+shift),artwork(q.xz+shift),artwork(q.xy+shift)));vec3 tint=pow(uLightningColor,vec3(2.2));color=mix(color,tint,clamp(arc*1.4,0.,.9))+tint*arc*.9;}frag=vec4(pow(clamp(color,0.,1.),vec3(1./2.2)),alpha);}`;
  function createScene(screen){
-  const canvas=document.createElement('canvas');canvas.className='game-hammer-models';canvas.setAttribute('aria-hidden','true');screen.appendChild(canvas);
+  const canvas=document.createElement('canvas');canvas.className='game-hammer-models';canvas.hidden=true;canvas.setAttribute('aria-hidden','true');screen.appendChild(canvas);
   const state={screen,canvas,entries:new Map(),models:new Map(),pending:new Map(),failedModels:new Set(),buffers:new Set(),vaos:new Set(),textures:new Set(),dead:false,lost:false,epoch:0,raf:0,last:-Infinity,key:'',gl:null,program:null,U:null,instanceBuffer:null,drawCalls:0};
   function initialize(){
    state.epoch++;state.lost=false;state.key='';state.last=-Infinity;state.buffers.clear();state.vaos.clear();state.textures.clear();
@@ -62,8 +62,12 @@ void main(){vec4 texel=uTextured?texture(uTexture,vUV):vec4(1.);float alpha=uCol
   }
   function ensure(id){if(state.models.has(id)||state.pending.has(id)||state.failedModels.has(id)||state.dead||state.lost)return;const promise=upload(id).catch(error=>{state.failedModels.add(id);console.warn('3D hammer: sprite fallback',error);}).finally(()=>{if(state.pending.get(id)===promise)state.pending.delete(id)});state.pending.set(id,promise);}
   function draw(now){
-   if(state.dead||state.lost)return false;if(document.hidden||!screen.isConnected||getComputedStyle(screen).display==='none'){canvas.hidden=true;return false;}if(now-state.last<1000/30-.5)return true;
-   const rect=screen.getBoundingClientRect(),w=screen.clientWidth,h=screen.clientHeight;if(!w||!h||!rect.width)return false;
+   if(state.dead||state.lost)return false;
+   if(now-state.last<1000/30-.5)return true;
+   // Reveal the resting image in the same animation frame that removes its old model.
+   for(const entry of state.entries.values())if(entry.selfImage&&!entry.packet)entry.el.classList.remove('gold-model-source');
+   if(document.hidden||!screen.isConnected||getComputedStyle(screen).display==='none'){canvas.hidden=true;state.key='';return false;}
+   const rect=screen.getBoundingClientRect(),w=screen.clientWidth,h=screen.clientHeight;if(!w||!h||!rect.width){canvas.hidden=true;state.key='';return false;}
    const level=MG.Workshop?.weaponLevel?.('goldhammer')||0,groups=new Map(),keys=[w,h,Math.min(root.devicePixelRatio||1,1.25),level],parents=new Map();for(const entry of state.entries.values())if(!entry.clone&&entry.el.isConnected)parents.set(entry.layer,entry);
    for(const entry of state.entries.values()){
     if(!entry.el.isConnected){state.entries.delete(entry.key);continue;}if(!entry.packet)continue;const model=state.models.get(entry.id);if(!model)continue;
@@ -95,7 +99,21 @@ void main(){vec4 texel=uTextured?texture(uTexture,vUV):vec4(1.);float alpha=uCol
  function create({el,layer,id,img,clone=false,selfImage=false}){
   const screen=el.closest('#game-screen');if((id!=='goldhammer'&&id!=='alipunch')||!screen||!MG.WeaponModels?.loadModel)return null;
   if(!shared||shared.dead||shared.screen!==screen){releaseGPU();shared=createScene(screen);}const state=shared,entry={key:++nextId,el,layer,id,img,clone,selfImage,packet:selfImage?{phase:'legacy-clone'}:null};state.entries.set(entry.key,entry);if(state.models.has(id))el.classList.add(selfImage?'gold-model-source':'has-hammer-model');if(!state.failed)state.ensure(id);
-  return {update(packet){if(state.dead)return;entry.packet=packet;if(!packet&&selfImage)el.classList.remove('gold-model-source');if(!state.failed)state.schedule();},clear(){state.entries.delete(entry.key);el.classList.remove('has-hammer-model','gold-model-source');state.key='';if(!state.entries.size){if(shared===state)releaseGPU();}else state.schedule();}};
+  return {
+   update(packet){
+    if(state.dead)return;
+    entry.packet=packet;
+    if(!packet&&selfImage){
+     if(state.canvas.hidden)el.classList.remove('gold-model-source');
+     else if(el.classList.contains('gold-model-source')){
+      state.last=-Infinity;
+      state.key='';
+     }
+    }
+    if(!state.failed)state.schedule();
+   },
+   clear(){state.entries.delete(entry.key);el.classList.remove('has-hammer-model','gold-model-source');state.key='';if(!state.entries.size){if(shared===state)releaseGPU();}else state.schedule();}
+  };
  }
  function releaseGPU(){const state=shared;if(!state)return;shared=null;state.dead=true;cancelAnimationFrame(state.raf);state.canvas.remove();const gl=state.gl;if(gl){for(const b of state.buffers)gl.deleteBuffer(b);for(const v of state.vaos)gl.deleteVertexArray(v);for(const t of state.textures)gl.deleteTexture(t);if(state.program)gl.deleteProgram(state.program);gl.getExtension('WEBGL_lose_context')?.loseContext();}state.buffers.clear();state.vaos.clear();state.textures.clear();state.entries.clear();}
  MG.GameHammerModels={create,releaseGPU,frameMatrix,lightningColor,viewMatrix:VIEW,ready:id=>id==='goldhammer'&&!!shared?.models.has(id),stats:()=>shared?{contexts:shared.failed?0:1,actors:shared.entries.size,models:shared.models.size,drawCalls:shared.drawCalls}: {contexts:0,actors:0,models:0,drawCalls:0}};
