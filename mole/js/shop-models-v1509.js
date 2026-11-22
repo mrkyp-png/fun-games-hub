@@ -74,7 +74,7 @@ async function create(host,id,index,options={}){
  if(host.closest('#shop-screen'))host.setAttribute('data-model-weapon',id);
  const canvas=document.createElement('canvas');canvas.className='shop-model-canvas';canvas.setAttribute('aria-label',id==='hammer'?'뿅망치 3D':id==='cannon'?'팡팡 캐논 3D':id==='alipunch'?'킹 판취 3D':'골드 묠니르 3D');
  host.appendChild(canvas);let gl=null,disposed=false,observer=null,visibility=null,releaseInit=null;
- const view={host,id,index,options,pose:{yaw:0,pitch:25,kick:0},inView:!('IntersectionObserver' in root),elapsed:0,lastSeen:performance.now(),lastFrame:0,width:0,height:0,draw(){},setPose(pose){Object.assign(this.pose,pose);this.draw(performance.now());},dispose(){if(disposed)return;disposed=true;views.delete(view);if(observer)observer.disconnect();if(visibility)visibility.disconnect();host.classList.remove('shop-model-ready');canvas.remove();gl?.getExtension('WEBGL_lose_context')?.loseContext();}};
+ const view={host,id,index,options,pose:{yaw:options.yaw??0,pitch:25,kick:0},inView:!('IntersectionObserver' in root),elapsed:0,lastSeen:performance.now(),lastFrame:0,width:0,height:0,draw(){},setPose(pose){Object.assign(this.pose,pose);this.draw(performance.now());},dispose(){if(disposed)return;disposed=true;views.delete(view);if(observer)observer.disconnect();if(visibility)visibility.disconnect();host.classList.remove('shop-model-ready');canvas.remove();gl?.getExtension('WEBGL_lose_context')?.loseContext();}};
  views.add(view);
  try{
   const model=await load(id);if(disposed||!host.isConnected){view.dispose();return;}
@@ -128,7 +128,7 @@ async function create(host,id,index,options={}){
   if(pawBox)host.dataset.modelPawParts=String(pawDraws.length);
   let nextAction=8000+index*1900+Math.random()*2200,actionStart=-Infinity,actionDirection=0,shots=0,lastQuarter=-1,lastGoldQuarter=-1;
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  view.animated=!reduced&&!options.external;
+  view.animated=!reduced&&!options.external&&!options.static;
   view.resize=function(){if(!disposed){measureCanvas(view,canvas);if(!options.external&&drawable(view))view.draw(performance.now());}};
   view.draw=function(time){
    if(disposed)return;
@@ -157,7 +157,7 @@ async function create(host,id,index,options={}){
    }
    let yaw=(id==='cannon'?Math.PI/2:.7)+phase,pitch=id==='cannon'?0:.22;
    if(inventory&&id==='cannon')yaw=inventoryCannonPose(elapsed).yaw;
-   if(options.manual||options.external){yaw=view.pose.yaw;pitch=view.pose.cameraPitch??(options.external?0:.1);}
+   if(options.manual||options.external){yaw=view.pose.yaw;pitch=view.pose.cameraPitch??(options.static?.22:options.external?0:.1);}
    let motion=identity();
    if(id==='cannon')motion=options.external?multiply(rotate([0,1,0],view.pose.bodyYaw||0),translation(0,0,-radius*.23*amount)):translation(0,0,-radius*.23*amount);
    else if(id==='goldhammer'&&amount)motion=multiply(multiply(translation(...pivot),rotate([1,0,0],amount*.36)),translation(...pivot.map(v=>-v))); // Front (+Z) face has no rubies.
@@ -243,9 +243,26 @@ function retryWithin(container){for(const host of container.querySelectorAll('[d
 function snapshot(preview){for(const v of views){const target=preview.querySelector('.shop-model-ready[data-model="'+v.host.dataset.model+'"] canvas');if(!target||!v.host.classList.contains('shop-model-ready'))continue;try{v.draw(performance.now());const img=document.createElement('img');img.className='shop-model-canvas shop-model-snapshot';img.alt='';img.src=v.host.querySelector('canvas').toDataURL('image/png');target.replaceWith(img);}catch(error){target.remove();preview.querySelector('[data-model="'+v.host.dataset.model+'"]')?.classList.remove('shop-model-ready');}}}
 function clear(){for(const v of [...views])if(v.host.closest('#shop-screen'))v.dispose();for(const host of dormant.keys())if(host.closest('#shop-screen'))dormant.delete(host);if(!views.size){if(frameId)cancelAnimationFrame(frameId);frameId=0;lastTick=0;}}
 function activateScreen(id){activeScreen=id;const now=performance.now();for(const v of [...views]){v.lastSeen=now;const screen=v.host.closest('#shop-screen,#inventory-screen,#workshop-screen,#game-screen');if(screen&&screen.id!==id&&!v.options.external&&!v.options.manual){dormant.set(v.host,{id:v.id,index:v.index,options:v.options,elapsed:v.elapsed});v.dispose();}}for(const [host,record] of [...dormant]){if(!host.isConnected){dormant.delete(host);continue;}if(host.closest('#shop-screen,#inventory-screen,#workshop-screen,#game-screen')?.id===id){dormant.delete(host);create(host,record.id,record.index,record.options).then(view=>{if(view){view.elapsed=record.elapsed;view.draw(performance.now());}});}}if(frameId){cancelAnimationFrame(frameId);frameId=0;}start();}
-function attach(cards,weapons,onFrame,retain){if(!retain)clear();const jobs=[],cardsList=cards.querySelectorAll('.shop-card--weapon-product');cardsList.forEach((card,index)=>{const id=weapons[index]?.id;if(!paths[id])return;const host=card.querySelector('.shop-card-img-box,.shop-card-badge--default-weapon');if(host)jobs.push(create(host,id,index,onFrame?{shopCaption:true,onFrame:bounds=>onFrame(host,bounds)}:{}));});return Promise.all(jobs);}
+function attach(cards,weapons,onFrame,retain){if(!retain)clear();const jobs=[],cardsList=cards.querySelectorAll('.shop-card--weapon-product');cardsList.forEach((card,index)=>{const id=weapons[index]?.id;if(!paths[id]||id==='alipunch')return;const host=card.querySelector('.shop-card-img-box,.shop-card-badge--default-weapon');if(host)jobs.push(create(host,id,index,onFrame?{shopCaption:true,onFrame:bounds=>onFrame(host,bounds)}:{}));});jobs.push(...attachGloves(cards));return Promise.all(jobs);}
+// 원본 그림의 동작은 유지하며 상점 재질과 조명을 공유한다.
+function attachGloves(container){
+ const jobs=[];for(const host of container.querySelectorAll('.king-glove:not([data-glove-mounted])')){
+  host.dataset.gloveMounted='true';jobs.push(create(host,'alipunch',0,{manual:true,static:true,yaw:Math.PI+.3}).then(view=>{
+   if(!view||!host.isConnected)return;
+   // 표면은 상점 셰이더로 한 번 렌더한다. 움직임은 기존 CSS가 맡아 GPU를 계속 점유하지 않는다.
+   const resize=view.resize;let captured=false;
+   view.resize=function(){
+    if(captured)return;resize();if(!host.clientWidth||!host.clientHeight)return;
+    view.draw(performance.now());const canvas=host.querySelector('canvas');if(!canvas)return;
+    const snapshot=document.createElement('img');snapshot.alt='';snapshot.className='shop-model-canvas shop-model-snapshot';
+    snapshot.onload=()=>host.dispatchEvent(new Event('king-glove-ready',{bubbles:true}));
+    snapshot.src=canvas.toDataURL('image/png');captured=true;view.dispose();host.appendChild(snapshot);host.classList.add('shop-model-ready');
+   };view.resize();
+  }));
+ }return jobs;
+}
 function activateShop(cards){for(const v of views)if(cards.contains(v.host)){v.lastSeen=performance.now();v.inView=true;v.resize?.();}start();}
 root.MoleGame=root.MoleGame||{};root.MoleGame.ShopModels={attach,clear,snapshot,activate:activateShop};
-root.MoleGame.WeaponModels={loadModel:load,create:(host,id,options={})=>createVisible(host,id,options),preload:()=>Promise.all(Object.keys(paths).map(load)),retryWithin,refreshWithin:refreshInventory,setActiveScreen:activateScreen,stats:()=>[...views].map(v=>({screen:v.host.closest('#shop-screen,#inventory-screen,#workshop-screen,#game-screen')?.id,animated:v.animated,drawable:!!drawable(v),frames:+v.host.dataset.modelFrame||0})),clearWithin:host=>{for(const v of [...views])if(host.contains(v.host))v.dispose();for(const element of dormant.keys())if(host.contains(element))dormant.delete(element);for(const [element,record] of waiting)if(host.contains(element)){record.observer.disconnect();record.resolve();waiting.delete(element);}}};
+root.MoleGame.WeaponModels={attachGloves,loadModel:load,create:(host,id,options={})=>createVisible(host,id,options),preload:()=>Promise.all(Object.keys(paths).map(load)),retryWithin,refreshWithin:refreshInventory,setActiveScreen:activateScreen,stats:()=>[...views].map(v=>({screen:v.host.closest('#shop-screen,#inventory-screen,#workshop-screen,#game-screen')?.id,animated:v.animated,drawable:!!drawable(v),frames:+v.host.dataset.modelFrame||0})),clearWithin:host=>{for(const v of [...views])if(host.contains(v.host))v.dispose();for(const element of dormant.keys())if(host.contains(element))dormant.delete(element);for(const [element,record] of waiting)if(host.contains(element)){record.observer.disconnect();record.resolve();waiting.delete(element);}}};
 new MutationObserver(()=>{for(const v of [...views])if(!v.host.isConnected)v.dispose();for(const host of dormant.keys())if(!host.isConnected)dormant.delete(host);for(const [host,record] of waiting)if(!host.isConnected){record.observer.disconnect();record.resolve();waiting.delete(host);}}).observe(document.body,{childList:true,subtree:true});
 })(window);

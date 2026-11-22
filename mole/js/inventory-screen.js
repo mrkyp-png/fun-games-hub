@@ -134,7 +134,10 @@
           art.style.setProperty('--enh', MG.Workshop.GLOW[item.level]);
         }
         var title = document.createElement('span'); title.className = 'inventory-item-name'; title.textContent = item.name;
-        cell.append(art, title);
+        if (active === 'weapon' && item.id === 'alipunch') {
+          var glove = document.createElement('span'); glove.className = 'king-glove inventory-king-glove';
+          glove.appendChild(art); cell.append(glove, title);
+        } else cell.append(art, title);
         if (item.level > 0) {
           var tag = document.createElement('small'); tag.className = 'inventory-enhance-level'; tag.textContent = '+' + item.level; cell.appendChild(tag);
         }
@@ -148,6 +151,7 @@
         var empty = document.createElement('span'); empty.className = 'inventory-cell inventory-slot'; empty.textContent = '+';
         empty.setAttribute('aria-hidden', 'true'); ownedGrid.appendChild(empty);
       }
+      MG.WeaponModels?.attachGloves?.(ownedGrid);
       requestAnimationFrame(fitOwnedLabels);
     }
     function syncPopupScale() {
@@ -321,8 +325,8 @@
       if (MG.WeaponModels && w.id !== 'alipunch') return '<div class="inv-weapon-model" data-model-weapon="' + w.id + '"><img alt="" src="' + w.thumb + '"></div>';
         // Weapon preview: two left jabs then a right cross. Skill effects remain separate.
       return w.id === 'alipunch'
-          ? '<div class="inv-thumb inv-thumb--pair"><img alt="" src="' + w.thumb + '">' +
-            '<img alt="" class="inv-thumb-mirror" src="' + w.thumb + '">' +
+          ? '<div class="inv-thumb inv-thumb--pair"><span class="king-glove"><img alt="" src="' + w.thumb + '"></span>' +
+            '<span class="king-glove inv-thumb-mirror"><img alt="" src="' + w.thumb + '"></span>' +
             (skillPreview ? '<span class="inv-bump-spark">✨</span><span class="inv-bump-word">POWER UP</span>' : '<span class="inv-combo-word inv-combo-word--jab" aria-hidden="true">JAB!</span><span class="inv-combo-word inv-combo-word--cross" aria-hidden="true">CROSS!</span>') + '</div>'
           // 캐논 강조 애니메이션(사용자 지시): 포신 반동 + 실제 게임 화염·연기 스프라이트 재사용.
           : w.id === 'cannon'
@@ -873,7 +877,7 @@
       }
       // Sample the rendered gloves: weapon jabs (2.8s) and skill bumps (4s)
       // retain their own clocks, easing, rotation, mirroring and floating motion.
-      var gloves = Array.from(page.querySelectorAll('.inv-thumb--pair > img'));
+      var gloves = Array.from(page.querySelectorAll('.inv-thumb--pair > .king-glove'));
       var floorOffset = 0;
       if (!page.classList.contains('ks-wpage') && gloves.length) {
         var gloveCenter = gloves.reduce(function (sum, glove) {
@@ -897,6 +901,7 @@
     }
     function attachWeaponModels() {
       if (!MG.WeaponModels) return;
+      MG.WeaponModels.attachGloves?.(body);
       body.querySelectorAll('[data-model-weapon]:not([data-model-mounted])').forEach(function (host) {
         var page = host.closest('.iw-page'), art=WEAPON_ART[host.dataset.modelWeapon];
         if (!page || !art || !host.isConnected) return;

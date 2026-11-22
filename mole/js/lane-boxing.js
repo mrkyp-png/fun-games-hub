@@ -42,7 +42,7 @@
   // V1391 C 사용자: 새 잽 그림(손등 135°)은 원본이 오른손 방향 → 잽 그림만 좌우 거울을 반대로.
   const FLIP_SWAP = { [SPRITE.jab]: true };
   function imgTransform(side, deg, src) {
-    const mirror = (side === 'R') !== !!FLIP_SWAP[src];
+    const mirror = (side === 'L') !== !!FLIP_SWAP[src];
     return mirror ? ('rotate(' + deg + 'deg) scaleX(-1)') : ('rotate(' + deg + 'deg)');
   }
   // 구멍별 이미지·각도 오버라이드(사용자 지시) — sprite/deg 중 있는 값만 스타일 기본값 대신 쓴다.

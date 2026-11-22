@@ -70,8 +70,8 @@
   // 왼쪽 이미지 거울상, 기존 무기 카드와 동일), 나머지는 이미지 1장.
   function weaponArt(w) {
     if (w.id === 'alipunch') {
-      return '<div class="shop-weapon-motion" data-shop-motion="alipunch"><div class="inv-thumb inv-thumb--pair"><img alt="" src="' + w.thumb + '">' +
-        '<img alt="" class="inv-thumb-mirror" src="' + w.thumb + '"><span class="inv-bump-spark">✨</span><span class="inv-bump-word">POWER UP</span></div></div>';
+      return '<div class="shop-weapon-motion" data-shop-motion="alipunch"><div class="inv-thumb inv-thumb--pair"><span class="king-glove"><img alt="" src="' + w.thumb + '"></span>' +
+        '<span class="king-glove inv-thumb-mirror"><img alt="" src="' + w.thumb + '"></span><span class="inv-bump-spark">✨</span><span class="inv-bump-word">POWER UP</span></div></div>';
     }
     return ''; // The other three weapons are rendered only by the 3D engine.
   }
@@ -331,9 +331,10 @@
       art.style.scale = String(scale);
     }
     var kingMotionBounds = null;
+    el.addEventListener('king-glove-ready', function () { kingMotionBounds = null; scheduleShopLayout(); });
     function measureKingMotion(unit) {
       if (kingMotionBounds) return kingMotionBounds;
-      var images = unit.querySelectorAll('.inv-thumb--pair > img');
+      var images = Array.from(unit.querySelectorAll('.inv-thumb--pair > .king-glove')).map(function (glove) { return glove.querySelector('.shop-model-snapshot') || glove.querySelector('img'); });
       if (images.length !== 2 || Array.from(images).some(function (img) { return !img.complete || !img.naturalWidth; })) {
         images.forEach(function (img) { if (!img._kingFit) { img._kingFit = true; img.addEventListener('load', function () { requestAnimationFrame(centerShopTabArt); }, { once:true }); } });
         return null;
@@ -341,8 +342,8 @@
       var canvas = document.createElement('canvas'), dpr = 4, pad = 30; canvas.width = 180 * dpr; canvas.height = 150 * dpr;
       var ctx = canvas.getContext('2d'); ctx.scale(dpr,dpr);
       [[0,0],[5,-6],[10,0]].forEach(function (move) { images.forEach(function (img,index) {
-        var w = img.clientWidth, h = img.clientHeight, fit = Math.min(w/img.naturalWidth,h/img.naturalHeight);
-        ctx.save(); ctx.translate(pad+img.offsetLeft+w/2,pad+img.offsetTop+h/2); ctx.rotate((index?-15:15)*Math.PI/180); if(index)ctx.scale(-1,1);ctx.translate(move[0],move[1]);ctx.drawImage(img,-img.naturalWidth*fit/2,-img.naturalHeight*fit/2,img.naturalWidth*fit,img.naturalHeight*fit);ctx.restore();
+        var glove = img.parentElement, w = glove.clientWidth, h = glove.clientHeight, fit = Math.min(w/img.naturalWidth,h/img.naturalHeight);
+        ctx.save(); ctx.translate(pad+glove.offsetLeft+w/2,pad+glove.offsetTop+h/2); ctx.rotate((index?-15:15)*Math.PI/180); if(index)ctx.scale(-1,1);ctx.translate(move[0],move[1]);ctx.scale(-1,1);ctx.drawImage(img,-img.naturalWidth*fit/2,-img.naturalHeight*fit/2,img.naturalWidth*fit,img.naturalHeight*fit);ctx.restore();
       }); });
       var pixels=ctx.getImageData(0,0,canvas.width,canvas.height).data,x0=canvas.width,y0=canvas.height,x1=0,y1=0;
       for(var y=0;y<canvas.height;y++)for(var x=0;x<canvas.width;x++)if(pixels[(y*canvas.width+x)*4+3]>64){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);}
@@ -359,7 +360,7 @@
         var size = unit.dataset.shopMotion === 'cannon' ? [105.5, 88] : [112, 88];
         if (unit.dataset.shopMotion === 'alipunch') {
           var card = unit.closest('.shop-card').getBoundingClientRect(), bounds = measureKingMotion(unit);
-          var scale = Math.min((card.width * 530 / 600 - 4) / (bounds?bounds.w:125.4),(rect.height-8)/(bounds?bounds.h:76));
+          var scale = Math.min((card.width * 530 / 600 - 4) / (bounds?bounds.w:125.4),(rect.height-8)/(bounds?bounds.h:76)) * .9;
           unit.style.setProperty('--shop-weapon-scale',scale);
           unit.style.setProperty('--shop-weapon-shift-x',bounds?(60-bounds.x)*scale+'px':'0px');
           unit.style.setProperty('--shop-weapon-shift-y',bounds?(44-bounds.y)*scale+'px':'0px');
@@ -781,8 +782,9 @@
         var weapon = WEAPONS.find(function (item) { return item.id === weaponId; });
         var label = english ? (round + (round === 1 ? 'st' : round === 2 ? 'nd' : 'rd') + ' purchase') : round + '회차';
         var weaponLabel = english ? weapon.nameEn : ({ cannon: '팡팡 캐논', goldhammer: '골드 묠니르', alipunch: '킹판취' }[weaponId] || weapon.name);
-        return '<div class="shop-coin-bulk-reward"><span class="shop-coin-bulk-step">' + label + '</span>' +
-          '<img src="' + (weaponId === 'cannon' ? 'assets/weapon-stills-v1509/cannon-hero.png' : weaponId === 'goldhammer' ? 'assets/weapon-stills-v1509/goldhammer-15.png' : weapon.thumb) + '" alt=""><span class="shop-coin-bulk-reward-name">' + weaponLabel + '</span></div>';
+        var rewardArt = weaponId === 'alipunch' ? '<span class="shop-coin-gloves"><span class="king-glove"><img src="' + weapon.thumb + '" alt=""></span><span class="king-glove"><img src="' + weapon.thumb + '" alt=""></span></span>' :
+          '<img src="' + (weaponId === 'cannon' ? 'assets/weapon-stills-v1509/cannon-hero.png' : 'assets/weapon-stills-v1509/goldhammer-15.png') + '" alt="">';
+        return '<div class="shop-coin-bulk-reward"><span class="shop-coin-bulk-step">' + label + '</span>' + rewardArt + '<span class="shop-coin-bulk-reward-name">' + weaponLabel + '</span></div>';
       }).join('');
       var bulkArt = '<div class="shop-coin-bulk-art">' +
         '<img class="shop-coin-bulk-pile" src="' + CURRENCY_ART + 'coin-option-09-bright20.png" alt="">' +
@@ -821,6 +823,7 @@
         onClick: function () { showCoinWeaponSelection(bulkCard, english); }
       });
       cardsEl.appendChild(bulkCard);
+      MG.WeaponModels?.attachGloves?.(bulkCard);
     }
 
     function renderTicketCards() {
@@ -1109,6 +1112,16 @@
       var needed = Math.max(king ? 8 : 4, artBottom - captionTop + 2);
       var allowed = Math.max(0, artTop - titleBottom - 2);
       var lift = Math.min(needed, allowed);
+      if (king) {
+        var goldHost = cardsEl.querySelector('.shop-card-img-box[data-model="goldhammer"]');
+        var goldBounds = goldHost && goldHost._shopWeaponBounds;
+        var goldRect = goldHost && goldHost.getBoundingClientRect();
+        var groundBottom = goldBounds ? goldRect.top + goldBounds.bottom * goldRect.height + (parseFloat(goldHost.style.getPropertyValue('--shop-weapon-lift')) || 0) : captionTop - 4;
+        // 두 글러브의 하단을 옆 묠니르와 맞추고 제목·설명 여백을 지킨다.
+        var shift = Math.min(groundBottom - artBottom, captionTop - artBottom - 2);
+        shift = Math.max(shift, titleBottom + 2 - artTop);
+        lift = -shift;
+      }
       host.style.setProperty('--shop-weapon-lift', -lift + 'px');
       if (king) host.style.setProperty('--shop-king-offset-y', -lift + 'px');
       host.style.setProperty('--shop-shadow-lift', -Math.max(lift, shadowBottom - captionTop + 2, 0) + 'px');

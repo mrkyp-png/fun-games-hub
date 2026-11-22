@@ -3875,10 +3875,10 @@ img.gold-model-source { visibility:hidden !important; }
 /* 알리 펀치 = 좌/우 글러브 한 쌍(오른쪽은 왼쪽 이미지 거울상, 실제 게임 배치와 동일). */
 /* 사용자 지시: 좌우 글러브 사이 0.2cm 간격, 왼쪽 시계 15도·오른쪽 반시계 15도(거울상 유지). */
 .inv-thumb--pair { position: relative; gap: 0.5cm; }
-.inv-thumb--pair img { max-width: 46%; }
+.inv-thumb--pair > :is(img,.king-glove) { max-width: 46%; }
 /* 강조 애니메이션(사용자 지시): 두 글러브가 4번 맞부딪히고(기존 2번에서 증가), 마지막에
    스파크+"POWER UP", 그 뒤 남은 시간 동안 대기위치(rest)에 멈춰 있음(타이밍 조정). */
-.inv-thumb--pair img:not(.inv-thumb-mirror) { animation: inv-bump-l 4s ease-in-out infinite; }
+.inv-thumb--pair > :is(img,.king-glove):not(.inv-thumb-mirror) { animation: inv-bump-l 4s ease-in-out infinite; }
 .inv-thumb-mirror { animation: inv-bump-r 4s ease-in-out infinite; }
 /* 곡선(아치) 궤적(사용자 지시) — 직선(translateX만)이 아니라 중간에 위로 살짝 뜨며 휘어진다. */
 @keyframes inv-bump-l {
@@ -8394,7 +8394,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .iw-weapon .inv-thumb > img:first-child { max-width: 100%; max-height: 100%; object-fit: contain; }
 .iw-weapon .inv-thumb--pair { gap: 8px; --kp-tilt: 4deg; } /* 사용자: 킹 판취가 진열장 밖으로 잘림 → 두 장갑 안쪽으로 더 기울여(15→28°) 폭 줄임 */
 .iw-page:not(.ks-wpage) .inv-thumb--pair { --kp-tilt: 19deg; } /* V1429 C 사용자: 무기 화면 킹판취 왼쪽 시계 15°·오른쪽 반시계 15° 더 */
-.iw-weapon .inv-thumb--pair > img { width: 52px; height: 88px; max-width: 52px; flex: none; object-fit: contain; }
+.iw-weapon .inv-thumb--pair > :is(img,.king-glove) { width: 52px; height: 88px; max-width: 52px; flex: none; object-fit: contain; }
 .iw-stage .iw-equip {
   position: absolute; left: 127px; top: 974px; width: 512px; height: 134px; margin: 0; padding: 0 25px;
   display: flex; align-items: center; justify-content: center; border: 0; border-image: none; border-radius: 70px;
@@ -9200,7 +9200,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-weapon-motion { position:absolute; left:50%; top:50%; width:120px; height:88px; transform:translate(calc(-50% + var(--shop-weapon-shift-x,0px)),calc(-50% + var(--shop-weapon-shift-y,0px) + var(--shop-king-offset-y,0px))) scale(var(--shop-weapon-scale,1)); pointer-events:none; }
 #shop-screen .shop-weapon-motion .inv-thumb { position:relative; width:120px; height:88px; }
 #shop-screen .shop-weapon-motion .inv-thumb--pair { gap:8px; --kp-tilt:15deg; }
-#shop-screen .shop-weapon-motion .inv-thumb--pair > img { flex:none; width:52px; height:88px; max-width:52px!important; }
+#shop-screen .shop-weapon-motion .inv-thumb--pair > :is(img,.king-glove) { flex:none; width:52px; height:88px; max-width:52px!important; }
 #shop-screen .shop-weapon-motion .inv-cannon-burn,#shop-screen .shop-weapon-motion .inv-cannon-smoke { left:calc(50% - 38.2px); top:19.9px; }
 #shop-screen .shop-weapon-motion .inv-cannon-word { left:44px; top:12px; }
 #shop-screen[hidden] .shop-weapon-motion * { animation-play-state:paused; }
@@ -9598,13 +9598,13 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #inventory-screen .iw-stage::after { left:calc(134px + var(--iw-floor-x,250px)); width:var(--iw-floor-width,300px); opacity:var(--iw-floor-opacity,.5); transform:translateX(-50%); animation:none; }
 #inventory-screen .ks-case:has(.iw-model-page)::after { left:var(--iw-floor-x,50%); width:var(--iw-floor-width,240px); margin-left:0; opacity:var(--iw-floor-opacity,.5); transform:translateX(-50%); animation:none; }
 /* Forward jabs keep each glove on its own side instead of bumping together. */
-#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > img { transform-origin:50% 70%; filter:drop-shadow(0 0 4px rgba(var(--iw-glow),.4)); }
+#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > :is(img,.king-glove) { transform-origin:50% 70%; filter:drop-shadow(0 0 4px rgba(var(--iw-glow),.4)); }
 #inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair { display:block; gap:0; }
-#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > img { position:absolute; top:0; margin:0; }
-#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > img:not(.inv-thumb-mirror) { left:var(--kp-left,6px); }
+#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > :is(img,.king-glove) { position:absolute; top:0; margin:0; }
+#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > :is(img,.king-glove):not(.inv-thumb-mirror) { left:var(--kp-left,6px); }
 #inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > .inv-thumb-mirror { left:var(--kp-right,53px); margin-left:0; }
 #inventory-screen .iw-page:not(.ks-wpage)[data-weapon="alipunch"] .iw-float { animation:none; }
-#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > img:not(.inv-thumb-mirror) { animation:iw-jab-left 2.8s ease-out infinite; }
+#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > :is(img,.king-glove):not(.inv-thumb-mirror) { animation:iw-jab-left 2.8s ease-out infinite; }
 #inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > .inv-thumb-mirror { animation:iw-jab-right 2.8s linear infinite; }
 @keyframes iw-jab-left { 0%,6%,20%,24%,38%,100% {transform:rotate(var(--kp-tilt,19deg));} 10%,12%,28%,30% {transform:translateY(-14px) rotate(var(--kp-tilt,19deg)) scale(1.08);} }
 /* Snap the angles; retract in 28ms and restore the resting angle without a pause. */
@@ -9622,7 +9622,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #inventory-screen .ks-case > .inv-king-floor { top:auto; bottom:40px; height:46px; z-index:2; }
 #inventory-screen .inv-king-floor > i { position:absolute; top:0; height:100%; border-radius:50%; transform:translateX(-50%); background:radial-gradient(ellipse,rgba(15,40,75,.7) 0%,rgba(15,40,75,.32) 45%,rgba(15,40,75,0) 72%); }
 @media(prefers-reduced-motion:reduce){#inventory-screen .iw-page:not(.ks-wpage) .inv-combo-word{animation:none;opacity:0;}}
-@media(prefers-reduced-motion:reduce){#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > img,#inventory-screen .iw-stage[data-display-weapon="alipunch"]::after{animation:none;}#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > img:not(.inv-thumb-mirror){transform:rotate(var(--kp-tilt,19deg));}#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > .inv-thumb-mirror{transform:rotate(calc(-1 * var(--kp-tilt,19deg))) scaleX(-1);}}
+@media(prefers-reduced-motion:reduce){#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > :is(img,.king-glove),#inventory-screen .iw-stage[data-display-weapon="alipunch"]::after{animation:none;}#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > :is(img,.king-glove):not(.inv-thumb-mirror){transform:rotate(var(--kp-tilt,19deg));}#inventory-screen .iw-page:not(.ks-wpage) .inv-thumb--pair > .inv-thumb-mirror{transform:rotate(calc(-1 * var(--kp-tilt,19deg))) scaleX(-1);}}
 .ws-item img[src*="weapon-stills-"] { position:absolute; left:var(--disc-x); top:var(--disc-y); height:85%; width:auto; max-width:94%; max-height:85%; translate:-50% -100%; transform-origin:50% 95%; }
 .ws-item img[src*="/cannon-front"] { animation:ws-cannon-recoil 1.4s ease-out infinite; }
 .ws-item img[src*="/goldhammer-15"] { animation:ws-model-gold-bounce 2.4s ease-in-out infinite; }
@@ -9712,7 +9712,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #inventory-screen .iw-model-page[data-weapon="goldhammer"] .shop-model-canvas { filter:none; }
 /* The level-aware parent supplies the compact glow; do not stack a wider base halo. */
 #inventory-screen .iw-preview-unit.has-enh .shop-model-canvas,
-#inventory-screen .iw-preview-unit.has-enh .inv-thumb--pair > img { filter:none; }
+#inventory-screen .iw-preview-unit.has-enh .inv-thumb--pair > :is(img,.king-glove) { filter:none; }
 
 /* V1529 C 사용자: 일일 화면 — 두더지 2마리 삭제, 아래 버튼 = 제작소 강화하기 버튼 틀(색 유지), 카드 상태 = 설정 알약 틀(색 유지),
    안내 문구 = 명판 안쪽 면(원본 y13~43) 위아래 가운데, 빛 테두리 = 전구 사이에서 잘라 이음매 없이 반복. */
@@ -10216,7 +10216,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* Inventory palette follows the score screen's cream, gold and pastel colors. */
 #inventory-screen.inventory-panel .iw-page::before { display:none; }
 #inventory-screen.inventory-panel .iw-model-page .shop-model-canvas,
-#inventory-screen.inventory-panel .iw-page:not(.ks-wpage) .inv-thumb--pair > img { filter:none; }
+#inventory-screen.inventory-panel .iw-page:not(.ks-wpage) .inv-thumb--pair > :is(img,.king-glove) { filter:none; }
 #inventory-screen.inventory-panel { color:#6b4426; }
 #inventory-screen .inventory-owned { background:#fff5d9; color:#6b4426; }
 #inventory-screen :is(.ks-card-name,.ks-card-desc,.cs-effect-txt,.cs-acquire,.iw-stat-label,.iw-stat-value) { color:#6b4426; }
@@ -10461,3 +10461,17 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #gameover-overlay.is-lose .go-hippo.go-hero { scale: .8; transform-origin: 50% 97%; }
 /* V1744 C 사용자: 일일 화면 7일째 선물 상자 1.5배 더(1.5 → 2.25) */
 #daily-screen .dr-card:nth-child(7) .dr-ico { scale: 2.25; }
+
+/* 킹판취: 그림만 좌우 반전한다. 컨테이너의 기존 타격 궤적은 유지한다. */
+.king-glove { position:relative; display:block; flex:none; width:52px; height:88px; }
+.king-glove > img,.king-glove > .shop-model-canvas { position:absolute; inset:0; width:100%; height:100%; max-width:none!important; max-height:none; object-fit:contain; transform:scaleX(-1); animation:none!important; pointer-events:none; }
+.king-glove.shop-model-ready > img:not(.shop-model-snapshot) { visibility:hidden; }
+#shop-screen .king-glove.shop-model-ready { overflow:visible!important; }
+#inventory-screen .inventory-king-glove { position:relative; flex:1 1 0; width:72%; height:0; min-height:0; }
+#inventory-screen .inventory-king-glove > img { filter:none; }
+#inventory-screen .king-glove > img,#shop-screen .king-glove > img { width:100%!important; height:100%!important; max-width:none!important; max-height:none!important; object-fit:contain!important; }
+#shop-screen .shop-coin-gloves { position:relative; display:flex; flex:1 1 0; width:94%; min-height:0; gap:0; }
+#shop-screen .shop-coin-gloves > .king-glove { width:50%; height:100%; }
+#shop-screen .shop-coin-gloves > .king-glove:last-child { transform:scaleX(-1); }
+
+#shop-screen .king-glove > img.shop-model-snapshot { transform:scaleX(-1)!important; }
