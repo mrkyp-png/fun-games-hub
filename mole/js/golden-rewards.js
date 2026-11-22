@@ -7,7 +7,7 @@
   Object.freeze({kind:'weapon',id:'alipunch',chance:0.00001}),
   Object.freeze({kind:'skill',ids:Object.freeze(['shield','targeting','ai']),chance:0.005})
  ]);
- const names={cannon:['팡팡 캐논','Pang Pang Cannon'],goldhammer:['골드 묠니르','Gold Mjolnir'],alipunch:['킹판취','King Punch'],shield:['보호막','Shield'],targeting:['타겟팅','Targeting'],ai:['AI','AI']};
+ const names={cannon:['팡팡 캐논','Pang Pang Cannon'],goldhammer:['골드 묠니르','Gold Mjolnir'],alipunch:['돌주먹','Stone Fist'],shield:['보호막','Shield'],targeting:['타겟팅','Targeting'],ai:['AI','AI']};
  function roll(random=Math.random){const value=random();if(!Number.isFinite(value)||value<0||value>=1)throw new RangeError('Loot random value must be in [0, 1)');let end=0;
   for(const entry of TABLE){end+=entry.chance;if(value<end){const id=entry.id||entry.ids[Math.min(entry.ids.length-1,Math.floor(random()*entry.ids.length))];return{kind:entry.kind,id,count:1};}}return null;
  }

@@ -8,8 +8,7 @@
   //
   // 펀치 스타일 5종(§3·§4): 잽/스트레이트 = 때리고 대기위치 복귀. 어퍼컷/라이트훅/레프트훅 =
   // 때리고 사라졌다가 짧게 쉬고 다시 나타남(코너가 계속 비어있지 않도록).
-  // 이미지는 3장만(§5): 잽·라이트훅·레프트훅·대기 = alipunch-jab.png(공용), 스트레이트 전용,
-  // 어퍼컷 전용.
+  // 대기는 승인된 상점 그림을 쓴다. 타격은 기존 자세별 그림과 3D 모델을 사용한다.
 
   const HOME_L = { x: 0.125, y: 0.88 }; // V1391 C 사용자: 맨 아래줄(0·#) 구멍 높이와 같게 — 잽이 직선으로(손잡이 끝 맞춤 0.921 은 대각선이 됨)
   const HOME_R = { x: 0.875, y: 0.88 };
@@ -18,26 +17,28 @@
   const GONE_FADE_SEC = 0.12;
   const GONE_HOLD_SEC = 0.16;
   const BACK_FADE_SEC = 0.16;
+  const IDLE_ROLL = 32;
+  const IDLE_SCALE = 1.04;
+  const IDLE_SHIFT_Y = -4;
 
   const SPRITE = {
-    // V1390 C 사용자: 빨간 만화 주먹 — 어퍼컷=2차 8번(315°)·스트레이트=1차 6번·잽=2차 4번(135°)·대기=1차 10번. 각도표는 그대로.
-    idle: 'assets/weapons/kingfist-idle-clay-v1739.webp',
-    jab: 'assets/weapons/kingfist-jab-clay-v1739.webp',
-    hookL: 'assets/weapons/kingfist-jab-clay-v1739.webp',
-    hookR: 'assets/weapons/kingfist-jab-clay-v1739.webp',
-    straight: 'assets/weapons/kingfist-straight-clay-v1739.webp',
-    upper: 'assets/weapons/kingfist-upper-clay-v1739.webp'
+    idle: 'assets/weapons/kingpunch-stone-idle.webp',
+    jab: 'assets/weapons/kingpunch-stone-jab.webp',
+    hookL: 'assets/weapons/kingpunch-stone-jab.webp',
+    hookR: 'assets/weapons/kingpunch-stone-jab.webp',
+    straight: 'assets/weapons/kingpunch-stone-straight.webp',
+    upper: 'assets/weapons/kingpunch-stone-upper.webp'
   };
   // 때린 뒤 대기위치로 복귀(true) vs 사라졌다 다시 나타남(false). 전부 복귀로 변경(사용자 지시).
   const RETURNS = { jab: true, straight: true, upper: true, hookL: true, hookR: true };
 
-  // 이미지 회전각(사용자 지시, 도) — 원본 이미지 기준. 대기(idle) = 항상 좌45도(시계)·우-45도(반시계,거울).
+  // 타격 이미지의 회전각(사용자 지시, 도) — 원본 이미지 기준.
   // 직선 움직임(스트레이트)과 세로(어퍼컷)는 원본 이미지 각도(0도) 그대로 사용 — 대기 각도 아님.
   // 잽은 좌측만 지정됨(시계 90도) → 우측은 대칭 가정(반시계 90도, 사용자 확인 전).
   // 훅(대각선)은 아직 지시 없음 — 대기 각도로 잠정.
   const ROT_BY_SIDE = {
-    L: { idle: 45, jab: 90, straight: 0, upper: 0, hookL: 45 },
-    R: { idle: -45, jab: -90, straight: 0, upper: 0, hookR: -45 }
+    L: { jab: 90, straight: 0, upper: 0, hookL: 45 },
+    R: { jab: -90, straight: 0, upper: 0, hookR: -45 }
   };
   // V1391 C 사용자: 새 잽 그림(손등 135°)은 원본이 오른손 방향 → 잽 그림만 좌우 거울을 반대로.
   const FLIP_SWAP = { [SPRITE.jab]: true };
@@ -88,16 +89,21 @@
     img.alt = '';
     el.appendChild(img);
     layer.appendChild(el);
-    // V1793 C 사용자: 킹판취 = 3D 빨간 챔피언 글러브 — 그림(img) 자리에 3D 를 그림(위치·회전·좌우 반전·크기는 지금 동작 그대로 따라감), 3D 실패 시 그림 그대로
+    // 타격 자세에서는 그림의 위치와 변환을 3D 모델이 따른다.
     const model3D = root.MoleGame && root.MoleGame.GameHammerModels ? root.MoleGame.GameHammerModels.create({ el: img, layer, img, id: 'alipunch', selfImage: true }) : null;
     const rotTable = ROT_BY_SIDE[side];
 
     function setPose(s, regionId) {
       const override = regionId != null ? REGION_OVERRIDE[regionId] : null;
-      const src = SPRITE[override && override.sprite ? override.sprite : s] || SPRITE.idle; // V1391 C: 각도만 지정된 구멍(6·8·9·10·11)이 대기 그림으로 빠지던 버그 — 대기/잽 그림이 같을 땐 안 보였음
+      const idle = s === 'idle';
+      const src = SPRITE[override?.sprite || s];
       if (img.getAttribute('src') !== src) img.setAttribute('src', src);
-      const deg = override ? override.deg : (rotTable[s] != null ? rotTable[s] : rotTable.idle);
-      img.style.transform = imgTransform(side, deg, src);
+      img.classList.toggle('lane-boxing-idle-art', idle);
+      if (idle) {
+        const sign = side === 'R' ? -1 : 1;
+        img.style.transform = `translateY(${IDLE_SHIFT_Y}%) rotate(${sign * IDLE_ROLL}deg) scale(${-sign * IDLE_SCALE}, ${IDLE_SCALE})`;
+      } else img.style.transform = imgTransform(side, override?.deg ?? rotTable[s], src);
+      model3D?.update(idle ? null : { phase: s });
     }
 
     let phase = 'idle'; // idle | reach | return | goneFade | goneHold | backFade

@@ -2,9 +2,9 @@
 (function(root){'use strict';
  const R=root.StudioRig,MG=root.MoleGame,assets=new Map();let shared=null,nextId=0;
  const VIEW=R.transform({rotation:[0,Math.sin(-5*Math.PI/12),0,Math.cos(-5*Math.PI/12)]});
- // V1793 C 사용자: 킹판취 = 3D 글러브(+Z = 손바닥·메달 쪽). 그림 자세대로 — 대기·어퍼 = 손바닥 쪽, 잽·스트레이트(손등 그림) = 손등 쪽, 둘 다 살짝 비스듬히
+ // 킹판취 타격 방향: 어퍼는 손바닥 쪽, 잽·스트레이트는 손등 쪽.
  const yawView=a=>R.transform({rotation:[0,Math.sin(a/2),0,Math.cos(a/2)]}),GLOVE_VIEW={front:yawView(.3),back:yawView(Math.PI+.3)};
- function viewOf(entry){if(entry.id!=='alipunch')return['h',VIEW];const k=/idle|jab|straight/.test(entry.el.getAttribute('src')||'')?'back':'front';return[k,GLOVE_VIEW[k]];}
+ function viewOf(entry){if(entry.id!=='alipunch')return['h',VIEW];const k=/jab|straight/.test(entry.el.getAttribute('src')||'')?'back':'front';return[k,GLOVE_VIEW[k]];}
  // Fit a rigid model inside the original sprite box, then inherit the box's existing CSS transform.
  // No target selection, flight path, swing angles, timing or return motion is calculated here.
  function frameMatrix(viewBounds,width,height,rect,cssTransform,rootRect,rootWidth,rootHeight,reference,view=VIEW){
@@ -77,7 +77,7 @@ void main(){vec4 texel=uTextured?texture(uTexture,vUV):vec4(1.);float alpha=uCol
     const mirror=matrix[0]*matrix[5]-matrix[1]*matrix[4]<0?1:0,gold=entry.id==='alipunch'&&screen.classList.contains('gs-invincible')?1:0;
     const alpha=opacity*(entry.id==='alipunch'&&entry.el.closest('.lane-boxing-glove--clone')?.5:1),flash=entry.id==='goldhammer'&&level>0&&(parent||entry).img?.dataset.zapOrig?1:0,key=modelId+':'+(entry.clone?'clone':'main')+':'+vk+':'+mirror+':'+gold;if(!groups.has(key))groups.set(key,{id:modelId,clone:entry.clone,view,mirror,gold,items:[]});groups.get(key).items.push([...matrix,alpha,flash]);keys.push(key,...matrix,alpha,flash,flash||gold?Math.floor(now/80):0);entry.el.classList.add(entry.selfImage?'gold-model-source':'has-hammer-model');
    }
-   canvas.hidden=!groups.size;if(!groups.size)return false;const key=keys.join(',');if(key===state.key)return true;state.key=key;state.last=now;
+   canvas.hidden=!groups.size;if(!groups.size){state.key='';state.drawCalls=0;return false;}const key=keys.join(',');if(key===state.key)return true;state.key=key;state.last=now;
    const gl=state.gl,dpr=Math.min(root.devicePixelRatio||1,1.25),pw=Math.round(w*dpr),ph=Math.round(h*dpr);if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph;}
    gl.viewport(0,0,pw,ph);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(state.program);const vp=R.identity();vp[0]=2/w;vp[5]=2/h;vp[10]=-1/2048;vp[12]=vp[13]=-1;gl.uniformMatrix4fv(state.U.VP,false,vp);gl.uniform1i(state.U.Texture,0);gl.uniform1f(state.U.Time,now/1000);state.drawCalls=0;
    gl.uniformMatrix4fv(state.U.View,false,VIEW);gl.uniform3fv(state.U.LightningColor,lightningColor(level));gl.uniform1i(state.U.Lightning,1);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,state.lightning);
@@ -96,7 +96,7 @@ void main(){vec4 texel=uTextured?texture(uTexture,vUV):vec4(1.);float alpha=uCol
  function create({el,layer,id,img,clone=false,selfImage=false}){
   const screen=el.closest('#game-screen');if((id!=='goldhammer'&&id!=='alipunch')||!screen||!MG.WeaponModels?.loadModel)return null;
   if(!shared||shared.dead||shared.screen!==screen){releaseGPU();shared=createScene(screen);}const state=shared,entry={key:++nextId,el,layer,id,img,clone,selfImage,packet:selfImage?{phase:'legacy-clone'}:null};state.entries.set(entry.key,entry);if(state.models.has(id))el.classList.add(selfImage?'gold-model-source':'has-hammer-model');if(!state.failed)state.ensure(id);
-  return {update(packet){if(state.dead)return;entry.packet=packet;if(!state.failed)state.schedule();},clear(){state.entries.delete(entry.key);el.classList.remove('has-hammer-model','gold-model-source');state.key='';if(!state.entries.size){if(shared===state)releaseGPU();}else state.schedule();}};
+  return {update(packet){if(state.dead)return;entry.packet=packet;if(!packet&&selfImage)el.classList.remove('gold-model-source');if(!state.failed)state.schedule();},clear(){state.entries.delete(entry.key);el.classList.remove('has-hammer-model','gold-model-source');state.key='';if(!state.entries.size){if(shared===state)releaseGPU();}else state.schedule();}};
  }
  function releaseGPU(){const state=shared;if(!state)return;shared=null;state.dead=true;cancelAnimationFrame(state.raf);state.canvas.remove();const gl=state.gl;if(gl){for(const b of state.buffers)gl.deleteBuffer(b);for(const v of state.vaos)gl.deleteVertexArray(v);for(const t of state.textures)gl.deleteTexture(t);if(state.program)gl.deleteProgram(state.program);gl.getExtension('WEBGL_lose_context')?.loseContext();}state.buffers.clear();state.vaos.clear();state.textures.clear();state.entries.clear();}
  MG.GameHammerModels={create,releaseGPU,frameMatrix,lightningColor,viewMatrix:VIEW,ready:id=>id==='goldhammer'&&!!shared?.models.has(id),stats:()=>shared?{contexts:shared.failed?0:1,actors:shared.entries.size,models:shared.models.size,drawCalls:shared.drawCalls}: {contexts:0,actors:0,models:0,drawCalls:0}};

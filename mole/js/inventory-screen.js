@@ -22,7 +22,7 @@
       stats: [['Hole 16 → 15', 'Holes 16 → 15'],
               ['주변 두더지 지진 연타 15% (2·3타 두더지 소탕 포함)', '15% quake — chain-hits nearby moles (clears 2·3-hit moles too)'],
               ['-', '-']] },
-    { id: 'alipunch', name: '킹 판취', nameEn: 'King Punch', thumb: 'assets/weapons/kingfist-3d-v1793.webp', rarity: 'legend', skillSlots: 2,
+    { id: 'alipunch', name: '돌주먹', nameEn: 'Stone Fist', thumb: 'assets/weapons/kingpunch-stone-idle.webp', rarity: 'legend', skillSlots: 2,
       desc: ['전설적인 복서의 강력한 글러브!\n고유 효과 발동 시 5초 동안 무적이 되어\n동물도 안전하게 타격할 수 있습니다.', 'A legendary boxer’s powerful gloves!\nThe special effect grants 5 seconds of\ninvincibility, allowing safe animal hits.'],
       stats: [['Hole 16 → 14', 'Holes 16 → 14'],
               ['무적 5초 확률 20% (모든 동물 타격 가능), 2·3타 두더지 소탕 포함', '20% chance — 5s invincibility (any animal is safe to hit), clears 2·3-hit moles'],
@@ -173,7 +173,9 @@
       var uiScale = syncPopupScale();
       var fontSize = Math.round(20 * uiScale), room = sample.clientWidth - 4;
       context.font = style.fontWeight + ' ' + fontSize + 'px ' + style.fontFamily;
-      while (fontSize > 10 && context.measureText(reference).width > room) {
+      while (fontSize > 10 && (context.measureText(reference).width > room || names.some(function (label) {
+        return label.clientWidth > 0 && context.measureText(label.textContent).width > label.clientWidth - 4;
+      }))) {
         context.font = style.fontWeight + ' ' + (--fontSize) + 'px ' + style.fontFamily;
       }
       names.forEach(function (label) { label.style.fontSize = fontSize + 'px'; });
@@ -321,6 +323,8 @@
     // V1403 C: 무기 화면·스킬 탭이 같은 무기 연출(애니메이션) 공유
     // Union of actual opaque model bounds over yaw, bounce, recoil and strike poses.
     var WEAPON_ART = {hammer:[89,84.5,-4.5,4.75],cannon:[81,84,0,-.5],goldhammer:[86,95,-4.5,4.5],alipunch:[88,63,0,0]};
+    var STONE_WEAPON_SCALE = 1.44;
+    var STONE_SKILL_SCALE = 1.68;
     function weaponThumbHtml(w, skillPreview) {
       if (MG.WeaponModels && w.id !== 'alipunch') return '<div class="inv-weapon-model" data-model-weapon="' + w.id + '"><img alt="" src="' + w.thumb + '"></div>';
         // Weapon preview: two left jabs then a right cross. Skill effects remain separate.
@@ -490,7 +494,7 @@
       var weaponScale = parseFloat(unit.style.getPropertyValue('--iw-weapon-scale')) || 1;
       var inset = Math.max(8, 2 / Math.max(stageScale, .01));
       // Mirror the two idle gloves around the display center and retain room for the cross.
-      var halfGap = Math.max(0, (page.clientWidth / 2 - inset) / (weaponScale / .9) - 29.12);
+      var halfGap = Math.max(23, (page.clientWidth / 2 - inset) / (weaponScale / .9) - 29.12);
       page.style.setProperty('--kp-left', (34 - halfGap) + 'px');
       page.style.setProperty('--kp-right', (34 + halfGap) + 'px');
       var grade = body.querySelector('.iw-grade');
@@ -526,7 +530,7 @@
         var a = art[page.dataset.weapon];
         var unit = page.querySelector('.iw-preview-unit');
         if (!a || !unit || !page.isConnected) return;
-        var sc = .9 * Math.min(440/a[0], 490/a[1]) * ({hammer:.9,cannon:1.15*.9,goldhammer:.9}[page.dataset.weapon]||1);
+        var sc = .9 * Math.min(440/a[0], 490/a[1]) * ({hammer:.9,cannon:1.15*.9,goldhammer:.9,alipunch:STONE_WEAPON_SCALE}[page.dataset.weapon]||1);
         unit.style.setProperty('--iw-weapon-scale', sc);
         page.style.setProperty('--iw-weapon-scale', sc); // 뒤 빛이 무기와 같은 거리로 움직이게
         var legacyThumb = page.querySelector('.inv-thumb');
@@ -653,7 +657,7 @@
       var en = I18N.lang === 'en';
       // 사용자: 스킬 탭 무기 = 무기 화면 무기와 세트(같은 연출·빛·바닥 그림자), 조금 작게.
       var a = weapon ? WEAPON_ART[weapon.id] : null;
-      var skillScale = weapon ? (weapon.id==='alipunch'?Math.min(440/a[0],490/a[1])*.62:Math.min(440/a[0],360/a[1])*(weapon.id==='cannon'?1.05:1)*.9) : 1;
+      var skillScale = weapon ? (weapon.id==='alipunch'?Math.min(440/a[0],490/a[1])*.62*STONE_SKILL_SCALE:Math.min(440/a[0],360/a[1])*(weapon.id==='cannon'?1.05:1)*.9) : 1;
       var thumb = weapon ? '<div class="iw-page ks-wpage" data-weapon="' + weapon.id + '" data-grade="' + weapon.rarity + '" style="--iw-weapon-scale:' + skillScale.toFixed(3) + '"><div class="iw-weapon"><div class="iw-preview-unit" style="--iw-weapon-scale:' + skillScale.toFixed(3) + '"><div class="iw-float">' + weaponThumbHtml(weapon, true) + '</div></div></div></div>' : '';
       var slotsHtml = '';
       for (var i = 0; i < Math.max(nSlots, 1); i++) {
@@ -878,8 +882,9 @@
       // Sample the rendered gloves: weapon jabs (2.8s) and skill bumps (4s)
       // retain their own clocks, easing, rotation, mirroring and floating motion.
       var gloves = Array.from(page.querySelectorAll('.inv-thumb--pair > .king-glove'));
+      var weaponFloor = !page.classList.contains('ks-wpage');
       var floorOffset = 0;
-      if (!page.classList.contains('ks-wpage') && gloves.length) {
+      if (weaponFloor && gloves.length) {
         var gloveCenter = gloves.reduce(function (sum, glove) {
           var bounds = glove.getBoundingClientRect();
           return sum + (bounds.left + bounds.width / 2 - rect.left) / displayScale;
@@ -891,8 +896,14 @@
         var unitScale = unitRect.width / unit.offsetWidth;
         var baseline = unitRect.top + unitRect.height / 2;
         var lift = Math.max(0, (baseline - (bounds.top + bounds.height / 2)) / Math.max(unitScale, .01));
-        shadow.style.left = ((bounds.left + bounds.width / 2 - rect.left) / displayScale + floorOffset) + 'px';
-        shadow.style.width = (bounds.width / displayScale * .72 * Math.max(.65, 1 - lift / 140)) + 'px';
+        var center = (bounds.left + bounds.width / 2 - rect.left) / displayScale + floorOffset - floor.offsetLeft;
+        var width = bounds.width / displayScale * .72 * Math.max(.65, 1 - lift / 140);
+        if (weaponFloor) {
+          center = Math.max(0, Math.min(floor.clientWidth, center));
+          width = Math.min(width, Math.max(0, 2 * Math.min(center, floor.clientWidth - center)));
+        }
+        shadow.style.left = center + 'px';
+        shadow.style.width = width + 'px';
         shadow.style.opacity = Math.max(.25, .5 - lift / 180);
       });
     }

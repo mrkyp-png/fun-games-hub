@@ -153,7 +153,7 @@
 // V1690 G: Sand beach, continuous ocean, combo turns and reactive hair; clear text-only signs, gentle warm entrance flow and corrected beach/water landing.
 // V1691 G: gold3D in original sprite boxes; hammer2D preserved; weapons in front of HUD; matched plaza label sizes.
 // V1692 G: matching gold clones, ImageGen enhancement lightning, smooth fur and physical rhythm entrance.
-const CACHE = 'mole-game-v1794-G';
+const CACHE = 'mole-game-v1795-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -243,10 +243,12 @@ const SHELL = [
   './assets/shop-models-v1509/hammer-v5-batched-v1509.glb',
   './assets/shop-models-v1509/goldhammer-v18-batched-v1520.glb',
   './assets/shop-models-v1509/cannon-v1-batched-v1509.glb',
+  './assets/shop-models-v1509/kingpunch-stone.glb',
   './assets/weapon-stills-v1509/cannon-hero.png',
   './assets/weapon-stills-v1509/cannon-front.png',
   './assets/weapon-stills-v1509/goldhammer-front.png',
   './assets/weapon-stills-v1509/goldhammer-15.png',
+  './assets/weapons/kingpunch-stone-pair.webp',
   './assets/workshop/goose-clay-v1741/goose-idle.webp',
   './assets/shop-ui-v1452/coin-option-01.png',
   './assets/score/bg-palace-bright-v1567.webp',
@@ -557,7 +559,10 @@ const SHELL = [
   './assets/weapons/cannon-intro-body-flip-nol-v1392.png',
   './assets/weapons/cannon-intro-wheel-nol-v1392.png',
   './assets/weapons/goldpaw-90-v1385.webp',
-  './assets/weapons/kingfist-idle-clay-v1739.webp',
+  './assets/weapons/kingpunch-stone-idle.webp',
+  './assets/weapons/kingpunch-stone-jab.webp',
+  './assets/weapons/kingpunch-stone-straight.webp',
+  './assets/weapons/kingpunch-stone-upper.webp',
   './assets/weapons/kingfist-jab-clay-v1739.webp',
   './assets/weapons/kingfist-jab-mirror-clay-v1739.webp',
   './assets/weapons/kingfist-straight-clay-v1739.webp',

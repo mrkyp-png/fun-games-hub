@@ -66,8 +66,7 @@
       '<img class="hero-ad-icon" alt="" src="assets/ui-approved-v1476/ad-icon.webp"></div>';
   }
 
-  // 무기 카드 이미지(하트 카드와 같은 리치 카드용) — 알리 판취만 좌/우 글러브 한 쌍(오른쪽은
-  // 왼쪽 이미지 거울상, 기존 무기 카드와 동일), 나머지는 이미지 1장.
+  // 킹판취는 좌우 글러브 그림을 사용하고, 나머지 무기는 3D로 렌더한다.
   function weaponArt(w) {
     if (w.id === 'alipunch') {
       return '<div class="shop-weapon-motion" data-shop-motion="alipunch"><div class="inv-thumb inv-thumb--pair"><span class="king-glove"><img alt="" src="' + w.thumb + '"></span>' +
@@ -85,7 +84,7 @@
     { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/inventory/ui-v1379/approved-mallet-redend-v1405.webp', price: null, coinPrice: null },
     { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1-nol-v1392.png', price: 10000, coinPrice: 100000 },
     { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldpaw-v1382.webp', price: 50000, coinPrice: 500000 },
-    { id: 'alipunch', name: '킹판취', nameEn: 'King Punch', thumb: 'assets/weapons/kingfist-3d-v1793.webp', price: 100000, coinPrice: 1000000 }
+    { id: 'alipunch', name: '돌주먹', nameEn: 'Stone Fist', thumb: 'assets/weapons/kingpunch-stone-idle.webp', price: 100000, coinPrice: 1000000 }
   ];
 
   function create(opts) {
@@ -341,13 +340,41 @@
       }
       var canvas = document.createElement('canvas'), dpr = 4, pad = 30; canvas.width = 180 * dpr; canvas.height = 150 * dpr;
       var ctx = canvas.getContext('2d'); ctx.scale(dpr,dpr);
-      [[0,0],[5,-6],[10,0]].forEach(function (move) { images.forEach(function (img,index) {
+      var pair = unit.querySelector('.inv-thumb--pair');
+      var tilt = parseFloat(getComputedStyle(pair).getPropertyValue('--kp-tilt')) || 30;
+      function drawMove(move) { images.forEach(function (img,index) {
         var glove = img.parentElement, w = glove.clientWidth, h = glove.clientHeight, fit = Math.min(w/img.naturalWidth,h/img.naturalHeight);
-        ctx.save(); ctx.translate(pad+glove.offsetLeft+w/2,pad+glove.offsetTop+h/2); ctx.rotate((index?-15:15)*Math.PI/180); if(index)ctx.scale(-1,1);ctx.translate(move[0],move[1]);ctx.scale(-1,1);ctx.drawImage(img,-img.naturalWidth*fit/2,-img.naturalHeight*fit/2,img.naturalWidth*fit,img.naturalHeight*fit);ctx.restore();
-      }); });
-      var pixels=ctx.getImageData(0,0,canvas.width,canvas.height).data,x0=canvas.width,y0=canvas.height,x1=0,y1=0;
-      for(var y=0;y<canvas.height;y++)for(var x=0;x<canvas.width;x++)if(pixels[(y*canvas.width+x)*4+3]>64){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);}
-      kingMotionBounds={w:(x1-x0+1)/dpr,h:(y1-y0+1)/dpr,x:(x0+x1+1)/dpr/2-pad,y:(y0+y1+1)/dpr/2-pad};return kingMotionBounds;
+        ctx.save();
+        ctx.translate(pad + glove.offsetLeft + w / 2, pad + glove.offsetTop + h / 2);
+        ctx.rotate((index ? -tilt : tilt) * Math.PI / 180);
+        if (index) ctx.scale(-1, 1);
+        ctx.translate(move[0], move[1]);
+        ctx.scale(-1, 1); // The shop swaps the artwork while keeping each slot's rotation.
+        ctx.drawImage(img, -img.naturalWidth * fit / 2, -img.naturalHeight * fit / 2, img.naturalWidth * fit, img.naturalHeight * fit);
+        ctx.restore();
+      }); }
+      function inkBounds() {
+        var pixels=ctx.getImageData(0,0,canvas.width,canvas.height).data,x0=canvas.width,y0=canvas.height,x1=0,y1=0;
+        for(var y=0;y<canvas.height;y++)for(var x=0;x<canvas.width;x++)if(pixels[(y*canvas.width+x)*4+3]>64){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);}
+        return {left:x0/dpr-pad, right:(x1+1)/dpr-pad, top:y0/dpr-pad, bottom:(y1+1)/dpr-pad};
+      }
+      drawMove([0,0]);
+      var resting = inkBounds();
+      drawMove([5,-6]);drawMove([10,0]);
+      var extent = inkBounds();
+      var movement = {left:extent.left,right:extent.right,top:extent.top,bottom:extent.bottom};
+      // 글러브뿐 아니라 마지막 충돌의 스파크·POWER UP 최대 크기도 포함한다.
+      [['.inv-bump-spark',1.6],['.inv-bump-word',1.05]].forEach(function (entry) {
+        var effect = unit.querySelector(entry[0]);
+        if (!effect) return;
+        var halfW = effect.offsetWidth * entry[1] / 2 + 2;
+        var halfH = effect.offsetHeight * entry[1] / 2 + 2;
+        extent.left = Math.min(extent.left, effect.offsetLeft - halfW);
+        extent.right = Math.max(extent.right, effect.offsetLeft + halfW);
+        extent.top = Math.min(extent.top, effect.offsetTop - halfH);
+        extent.bottom = Math.max(extent.bottom, effect.offsetTop + halfH);
+      });
+      kingMotionBounds={w:resting.right-resting.left,h:resting.bottom-resting.top,x:(resting.left+resting.right)/2,y:(resting.top+resting.bottom)/2,motion:extent,movement:movement};return kingMotionBounds;
     }
     function centerShopTabArt() {
       if (shopLayoutBlocked()) return;
@@ -359,11 +386,54 @@
         var rect = unit.parentElement.getBoundingClientRect();
         var size = unit.dataset.shopMotion === 'cannon' ? [105.5, 88] : [112, 88];
         if (unit.dataset.shopMotion === 'alipunch') {
-          var card = unit.closest('.shop-card').getBoundingClientRect(), bounds = measureKingMotion(unit);
-          var scale = Math.min((card.width * 530 / 600 - 4) / (bounds?bounds.w:125.4),(rect.height-8)/(bounds?bounds.h:76)) * .9;
+          var pairBox = unit.querySelector('.inv-thumb--pair');
+          if (pairBox && pairBox.style.gap) { pairBox.style.removeProperty('gap'); kingMotionBounds = null; }
+          var bounds = measureKingMotion(unit);
+          var goldHost = cardsEl.querySelector('.shop-card-img-box[data-model="goldhammer"]');
+          var goldBounds = goldHost && goldHost._shopWeaponBounds;
+          if (goldHost && goldHost._shopOpaqueBounds) {
+            var opaque = goldHost._shopOpaqueBounds;
+            goldBounds = {top:.5+(opaque.top-.5)*.95,bottom:.5+(opaque.bottom-.5)*.95};
+          }
+          var goldRect = goldHost && goldHost.getBoundingClientRect();
+          var goldLift = goldHost ? parseFloat(goldHost.style.getPropertyValue('--shop-weapon-lift')) || 0 : 0;
+          var targetTop = goldBounds ? goldRect.top + goldBounds.top * goldRect.height + goldLift : rect.top + 4;
+          var targetBottom = goldBounds ? goldRect.top + goldBounds.bottom * goldRect.height + goldLift : rect.bottom - 4;
+          var kingCard = unit.closest('.shop-card');
+          var kingTitle = kingCard.querySelector('.shop-card-name');
+          var kingHost = unit.closest('.shop-card-img-box');
+          var kingCaption = kingHost && kingHost.querySelector('.shop-weapon-caption');
+          var safeTop = kingTitle ? kingTitle.getBoundingClientRect().bottom + 6 : rect.top;
+          var safeBottom = kingCaption ? kingCaption.getBoundingClientRect().top - 6 : rect.bottom;
+          targetTop = Math.max(targetTop, safeTop);
+          targetBottom = Math.min(targetBottom, safeBottom);
+          var scale = (targetBottom - targetTop) / (bounds?bounds.h:76);
+          if (bounds) {
+            var upward = Math.max(0, bounds.y-bounds.h/2-bounds.movement.top) * scale;
+            var downward = Math.max(0, bounds.movement.bottom-bounds.y-bounds.h/2) * scale;
+            var motion = Math.max(0, Math.min(1, upward ? (targetTop-safeTop)/upward : 1, downward ? (safeBottom-targetBottom)/downward : 1));
+            var pair = unit.querySelectorAll('.king-glove');
+            var separation = pair.length === 2 ? pair[1].offsetLeft-pair[0].offsetLeft : 52;
+            var restingGap = Math.max(0, 2*separation-bounds.w);
+            motion = Math.min(motion, restingGap/(20*Math.cos(Math.PI/12)));
+            unit.style.setProperty('--kp-motion', motion);
+            unit.style.setProperty('--shop-king-fx-y', bounds.y+'px');
+            unit.style.setProperty('--shop-king-spark-size', bounds.h*.5+'px');
+          }
+          var cardRect = kingCard.getBoundingClientRect();
+          var artWidth = Math.max(1, cardRect.width * 530 / 600 - 4);
+          var motionWidth = bounds ? bounds.motion.right - bounds.motion.left : 125.4;
+          var scaleX = Math.min(scale, artWidth / motionWidth);
+          var artCenter = bounds ? (bounds.motion.left + bounds.motion.right) / 2 : 60;
+          var centerShiftX = cardRect.left + cardRect.width / 2 - (rect.left + rect.width / 2);
+          unit._shopGoldAligned = !!(goldBounds && bounds);
           unit.style.setProperty('--shop-weapon-scale',scale);
-          unit.style.setProperty('--shop-weapon-shift-x',bounds?(60-bounds.x)*scale+'px':'0px');
-          unit.style.setProperty('--shop-weapon-shift-y',bounds?(44-bounds.y)*scale+'px':'0px');
+          unit.style.setProperty('--shop-weapon-scale-x',scaleX);
+          unit.style.setProperty('--shop-weapon-shift-x', (centerShiftX + (60 - artCenter) * scaleX) + 'px');
+          var desiredCenter = bounds ? targetBottom - bounds.h * scale / 2 : (targetTop+targetBottom)/2;
+          var centerShift = unit._shopGoldAligned ? desiredCenter - (rect.top + rect.height / 2) : 0;
+          unit.style.setProperty('--shop-weapon-shift-y',(centerShift + (bounds?(44-bounds.y)*scale:0))+'px');
+          if (unit._shopGoldAligned) unit.parentElement.style.setProperty('--shop-king-offset-y','0px');
         } else unit.style.setProperty('--shop-weapon-scale', Math.min(rect.width * .82 / size[0], rect.height * .76 / size[1]));
       });
       el.querySelectorAll('.shop-tab-ico img').forEach(function (img) {
@@ -475,7 +545,7 @@
 
       function renderChoices() {
         var choices = WEAPONS.filter(function (weapon) { return weapon.id !== 'hammer'; }).map(function (weapon) {
-          var label = english ? weapon.nameEn : ({ cannon: '팡팡 캐논', goldhammer: '골드 묠니르', alipunch: '킹판취' }[weapon.id] || weapon.name);
+          var label = english ? weapon.nameEn : weapon.name;
           return '<button type="button" class="shop-coin-weapon-choice shop-coin-weapon-choice--dialog" data-coin-weapon="' + weapon.id + '"><img src="' + weapon.thumb + '" alt=""><span>' + label + '</span></button>';
         }).join('');
         card.innerHTML = '<b class="shop-coin-choice-message">' + (english ? 'Choose a bonus weapon' : '보너스 무기를 선택하세요') + '</b>' +
@@ -489,7 +559,7 @@
       }
 
       function renderWeaponConfirm(weapon) {
-        var label = english ? weapon.nameEn : ({ cannon: '팡팡 캐논', goldhammer: '골드 묠니르', alipunch: '킹판취' }[weapon.id] || weapon.name);
+        var label = english ? weapon.nameEn : weapon.name;
         var lastChar = label.charCodeAt(label.length - 1);
         var hasFinalConsonant = lastChar >= 0xAC00 && lastChar <= 0xD7A3 && (lastChar - 0xAC00) % 28 !== 0;
         var prompt = english ? 'Select ' + label + '?' : label + (hasFinalConsonant ? '을' : '를') + ' 선택하시겠습니까?';
@@ -777,13 +847,17 @@
     function renderCoinCards() {
       cardsEl.innerHTML = '';
       var english = I18N().lang === 'en';
+      var rewardImages = {
+        cannon: 'assets/weapon-stills-v1509/cannon-hero.png',
+        goldhammer: 'assets/weapon-stills-v1509/goldhammer-15.png',
+        alipunch: 'assets/weapons/kingpunch-stone-pair.webp'
+      };
       var bulkRounds = ['cannon', 'goldhammer', 'alipunch'].map(function (weaponId, index) {
         var round = index + 1;
         var weapon = WEAPONS.find(function (item) { return item.id === weaponId; });
         var label = english ? (round + (round === 1 ? 'st' : round === 2 ? 'nd' : 'rd') + ' purchase') : round + '회차';
-        var weaponLabel = english ? weapon.nameEn : ({ cannon: '팡팡 캐논', goldhammer: '골드 묠니르', alipunch: '킹판취' }[weaponId] || weapon.name);
-        var rewardArt = weaponId === 'alipunch' ? '<span class="shop-coin-gloves"><span class="king-glove"><img src="' + weapon.thumb + '" alt=""></span><span class="king-glove"><img src="' + weapon.thumb + '" alt=""></span></span>' :
-          '<img src="' + (weaponId === 'cannon' ? 'assets/weapon-stills-v1509/cannon-hero.png' : 'assets/weapon-stills-v1509/goldhammer-15.png') + '" alt="">';
+        var weaponLabel = english ? weapon.nameEn : weapon.name;
+        var rewardArt = '<img src="' + rewardImages[weaponId] + '" alt="">';
         return '<div class="shop-coin-bulk-reward"><span class="shop-coin-bulk-step">' + label + '</span>' + rewardArt + '<span class="shop-coin-bulk-reward-name">' + weaponLabel + '</span></div>';
       }).join('');
       var bulkArt = '<div class="shop-coin-bulk-art">' +
@@ -823,7 +897,6 @@
         onClick: function () { showCoinWeaponSelection(bulkCard, english); }
       });
       cardsEl.appendChild(bulkCard);
-      MG.WeaponModels?.attachGloves?.(bulkCard);
     }
 
     function renderTicketCards() {
@@ -1091,7 +1164,7 @@
           right: .5 + ((bounds.right == null ? 1 : bounds.right) - .5) * .95 };
       }
       var sizeKey = (host.classList.contains('shop-model-ready') ? 'model:' : 'image:') + host.offsetWidth + ':' + host.offsetHeight;
-      var old = host._shopWeaponBounds;
+      var old = king ? null : host._shopWeaponBounds;
       var envelope = old && old.key === sizeKey ? old : { key: sizeKey, top: bounds.top, bottom: bounds.bottom,
         left: bounds.left == null ? 0 : bounds.left, right: bounds.right == null ? 1 : bounds.right };
       var changed = !old || old.key !== sizeKey || bounds.top < envelope.top || bounds.bottom > envelope.bottom;
@@ -1112,7 +1185,11 @@
       var needed = Math.max(king ? 8 : 4, artBottom - captionTop + 2);
       var allowed = Math.max(0, artTop - titleBottom - 2);
       var lift = Math.min(needed, allowed);
-      if (king) {
+      var kingUnit = king && host.querySelector('[data-shop-motion="alipunch"]');
+      if (kingUnit && kingUnit._shopGoldAligned) {
+        // 크기와 중심을 이미 묠니르 상·하단에 맞췄으므로 별도로 아래로 이동하지 않는다.
+        lift = 0;
+      } else if (king) {
         var goldHost = cardsEl.querySelector('.shop-card-img-box[data-model="goldhammer"]');
         var goldBounds = goldHost && goldHost._shopWeaponBounds;
         var goldRect = goldHost && goldHost.getBoundingClientRect();
@@ -1137,6 +1214,7 @@
         shadow.style.bottom = 'auto';
         host.style.setProperty('--shop-shadow-lift', '0px');
         cardsEl.style.setProperty('--shop-shadow-ground-center', (envelope.shadowAnchor.y + shadowHeight / 2) / rect.height * 100 + '%');
+        if (changed) scheduleShopLayout();
       } else if (king && shadow) {
         // King Punch shares Mjolnir's fixed ground line; glove lifting is independent.
         shadow.style.left = '50%';
@@ -1159,7 +1237,8 @@
           if (!motionBounds || !host.offsetHeight || !host.offsetWidth) return;
           var scale = parseFloat(kingUnit.style.getPropertyValue('--shop-weapon-scale')) || 1;
           var halfHeight = motionBounds.h * scale / (2 * host.offsetHeight);
-          var halfWidth = motionBounds.w * scale / (2 * host.offsetWidth);
+          var scaleX = parseFloat(kingUnit.style.getPropertyValue('--shop-weapon-scale-x')) || scale;
+          var halfWidth = motionBounds.w * scaleX / (2 * host.offsetWidth);
           alignWeaponDisplay(host, { top: .5 - halfHeight, bottom: .5 + halfHeight, left: .5 - halfWidth, right: .5 + halfWidth }, true);
           return;
         }
