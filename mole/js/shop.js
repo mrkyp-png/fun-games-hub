@@ -342,7 +342,8 @@
       var ctx = canvas.getContext('2d'); ctx.scale(dpr,dpr);
       var pair = unit.querySelector('.inv-thumb--pair');
       var tilt = parseFloat(getComputedStyle(pair).getPropertyValue('--kp-tilt')) || 30;
-      function drawMove(move) { images.forEach(function (img,index) {
+      function drawMove(move, side) { images.forEach(function (img,index) {
+        if (side != null && side !== index) return;
         var glove = img.parentElement, w = glove.clientWidth, h = glove.clientHeight, fit = Math.min(w/img.naturalWidth,h/img.naturalHeight);
         ctx.save();
         ctx.translate(pad + glove.offsetLeft + w / 2, pad + glove.offsetTop + h / 2);
@@ -358,11 +359,20 @@
         for(var y=0;y<canvas.height;y++)for(var x=0;x<canvas.width;x++)if(pixels[(y*canvas.width+x)*4+3]>64){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);}
         return {left:x0/dpr-pad, right:(x1+1)/dpr-pad, top:y0/dpr-pad, bottom:(y1+1)/dpr-pad};
       }
-      drawMove([0,0]);
-      var resting = inkBounds();
+      drawMove([0,0], 0);
+      var leftRest = inkBounds();
+      ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+      drawMove([0,0], 1);
+      var rightRest = inkBounds();
+      var resting = {
+        left: Math.min(leftRest.left, rightRest.left),
+        right: Math.max(leftRest.right, rightRest.right),
+        top: Math.min(leftRest.top, rightRest.top),
+        bottom: Math.max(leftRest.bottom, rightRest.bottom)
+      };
+      drawMove([0,0], 0);
       drawMove([5,-6]);drawMove([10,0]);
       var extent = inkBounds();
-      var movement = {left:extent.left,right:extent.right,top:extent.top,bottom:extent.bottom};
       // 글러브뿐 아니라 마지막 충돌의 스파크·POWER UP 최대 크기도 포함한다.
       [['.inv-bump-spark',1.6],['.inv-bump-word',1.05]].forEach(function (entry) {
         var effect = unit.querySelector(entry[0]);
@@ -374,7 +384,7 @@
         extent.top = Math.min(extent.top, effect.offsetTop - halfH);
         extent.bottom = Math.max(extent.bottom, effect.offsetTop + halfH);
       });
-      kingMotionBounds={w:resting.right-resting.left,h:resting.bottom-resting.top,x:(resting.left+resting.right)/2,y:(resting.top+resting.bottom)/2,motion:extent,movement:movement};return kingMotionBounds;
+      kingMotionBounds={w:resting.right-resting.left,h:resting.bottom-resting.top,x:(resting.left+resting.right)/2,y:(resting.top+resting.bottom)/2,motion:extent,gap:Math.max(0,rightRest.left-leftRest.right)};return kingMotionBounds;
     }
     function centerShopTabArt() {
       if (shopLayoutBlocked()) return;
@@ -408,15 +418,16 @@
           targetTop = Math.max(targetTop, safeTop);
           targetBottom = Math.min(targetBottom, safeBottom);
           var scale = (targetBottom - targetTop) / (bounds?bounds.h:76);
-          if (bounds) {
-            var upward = Math.max(0, bounds.y-bounds.h/2-bounds.movement.top) * scale;
-            var downward = Math.max(0, bounds.movement.bottom-bounds.y-bounds.h/2) * scale;
-            var motion = Math.max(0, Math.min(1, upward ? (targetTop-safeTop)/upward : 1, downward ? (safeBottom-targetBottom)/downward : 1));
-            var pair = unit.querySelectorAll('.king-glove');
-            var separation = pair.length === 2 ? pair[1].offsetLeft-pair[0].offsetLeft : 52;
-            var restingGap = Math.max(0, 2*separation-bounds.w);
-            motion = Math.min(motion, restingGap/(20*Math.cos(Math.PI/12)));
+          if (bounds && scale > 0) {
+            var tilt = Math.PI / 6;
+            var contactX = 10 * Math.cos(tilt);
+            // Let the antialiased outlines meet at contact.
+            var motion = Math.min(1, (bounds.gap + .2) / (2 * contactX));
+            var arcY = (5 * Math.sin(tilt) - 6 * Math.cos(tilt)) * motion;
+            var contactY = 10 * Math.sin(tilt) * motion;
             unit.style.setProperty('--kp-motion', motion);
+            unit.style.setProperty('--kp-arc-offset-y', (Math.max(arcY, (safeTop - targetTop) / scale) - arcY) + 'px');
+            unit.style.setProperty('--kp-contact-offset-y', (Math.min(contactY, (safeBottom - targetBottom) / scale) - contactY) + 'px');
             unit.style.setProperty('--shop-king-fx-y', bounds.y+'px');
             unit.style.setProperty('--shop-king-spark-size', bounds.h*.5+'px');
           }

@@ -103,7 +103,11 @@
       upgrade.disabled = !target || !MG.Workshop.canEnhance(active, target) || !!opts.gameInProgress?.();
       var entries;
       if (active === 'weapon') {
-        var stills = { cannon: 'assets/weapon-stills-v1509/cannon-front.png', goldhammer: 'assets/weapon-stills-v1509/goldhammer-15.png' };
+        var stills = {
+          cannon: 'assets/weapon-stills-v1509/cannon-front.png',
+          goldhammer: 'assets/weapon-stills-v1509/goldhammer-15.png',
+          alipunch: 'assets/weapons/kingpunch-stone-pair.webp'
+        };
         entries = WEAPONS.filter(function (w) { return MG.ItemInventory.owns('weapon', w.id); }).map(function (w) {
           return { id: w.id, name: nameOf(w), art: stills[w.id] || w.thumb, level: MG.Workshop.weaponLevel(w.id), equipped: equipped() === w.id };
         });
@@ -129,15 +133,13 @@
         cell.setAttribute('aria-label', item.name + (item.equipped ? ' · ' + T('mole.inv.equipped') : ''));
         if (active !== 'skill') cell.setAttribute('aria-pressed', String(target === item.id));
         var art = document.createElement('img'); art.src = item.art; art.alt = '';
+        if (active === 'weapon' && item.id === 'alipunch') art.classList.add('inventory-stone-pair');
         if (active === 'weapon' && item.level > 0) {
           art.classList.add('has-enh');
           art.style.setProperty('--enh', MG.Workshop.GLOW[item.level]);
         }
         var title = document.createElement('span'); title.className = 'inventory-item-name'; title.textContent = item.name;
-        if (active === 'weapon' && item.id === 'alipunch') {
-          var glove = document.createElement('span'); glove.className = 'king-glove inventory-king-glove';
-          glove.appendChild(art); cell.append(glove, title);
-        } else cell.append(art, title);
+        cell.append(art, title);
         if (item.level > 0) {
           var tag = document.createElement('small'); tag.className = 'inventory-enhance-level'; tag.textContent = '+' + item.level; cell.appendChild(tag);
         }
@@ -151,7 +153,6 @@
         var empty = document.createElement('span'); empty.className = 'inventory-cell inventory-slot'; empty.textContent = '+';
         empty.setAttribute('aria-hidden', 'true'); ownedGrid.appendChild(empty);
       }
-      MG.WeaponModels?.attachGloves?.(ownedGrid);
       requestAnimationFrame(fitOwnedLabels);
     }
     function syncPopupScale() {
@@ -325,12 +326,13 @@
     var WEAPON_ART = {hammer:[89,84.5,-4.5,4.75],cannon:[81,84,0,-.5],goldhammer:[86,95,-4.5,4.5],alipunch:[88,63,0,0]};
     var STONE_WEAPON_SCALE = 1.44;
     var STONE_SKILL_SCALE = 1.68;
+    var STONE_DISPLAY_ART = 'assets/weapons/kingpunch-stone-display.webp';
     function weaponThumbHtml(w, skillPreview) {
       if (MG.WeaponModels && w.id !== 'alipunch') return '<div class="inv-weapon-model" data-model-weapon="' + w.id + '"><img alt="" src="' + w.thumb + '"></div>';
         // Weapon preview: two left jabs then a right cross. Skill effects remain separate.
       return w.id === 'alipunch'
-          ? '<div class="inv-thumb inv-thumb--pair"><span class="king-glove"><img alt="" src="' + w.thumb + '"></span>' +
-            '<span class="king-glove inv-thumb-mirror"><img alt="" src="' + w.thumb + '"></span>' +
+          ? '<div class="inv-thumb inv-thumb--pair"><span class="king-glove"><img alt="" src="' + STONE_DISPLAY_ART + '"></span>' +
+            '<span class="king-glove inv-thumb-mirror"><img alt="" src="' + STONE_DISPLAY_ART + '"></span>' +
             (skillPreview ? '<span class="inv-bump-spark">✨</span><span class="inv-bump-word">POWER UP</span>' : '<span class="inv-combo-word inv-combo-word--jab" aria-hidden="true">JAB!</span><span class="inv-combo-word inv-combo-word--cross" aria-hidden="true">CROSS!</span>') + '</div>'
           // 캐논 강조 애니메이션(사용자 지시): 포신 반동 + 실제 게임 화염·연기 스프라이트 재사용.
           : w.id === 'cannon'
@@ -497,15 +499,15 @@
       var halfGap = Math.max(23, (page.clientWidth / 2 - inset) / (weaponScale / .9) - 29.12);
       page.style.setProperty('--kp-left', (34 - halfGap) + 'px');
       page.style.setProperty('--kp-right', (34 + halfGap) + 'px');
-      var grade = body.querySelector('.iw-grade');
       var rect = unit.getBoundingClientRect(), displayScale = rect.height / Math.max(1, unit.clientHeight);
-      if (!grade || !displayScale) return;
-      var gradeRect = grade.getBoundingClientRect(), decoration = getComputedStyle(grade, '::before');
-      var gradeBottom = Math.max(gradeRect.bottom, gradeRect.top + ((parseFloat(decoration.top) || 0) + (parseFloat(decoration.height) || 0)) * stageScale);
-      var strikeTop = rect.top + (right.offsetTop + 9.73952) * displayScale;
-      var clearance = 3 + 4 * displayScale;
-      // Lower the fully extended cross slightly: 95% of the doubled upward stroke.
-      page.style.setProperty('--kp-straight-distance', (1.9 * Math.max(0, (strikeTop - gradeBottom - clearance) / displayScale)).toFixed(2) + 'px');
+      if (!displayScale) return;
+      // The straightened fist starts at y=25 before the cross's 1.12x extension.
+      var pivotY = right.clientHeight * .7;
+      var extendedTop = pivotY + (25 - pivotY) * 1.12;
+      var strikeTop = rect.top + (right.offsetTop + extendedTop) * displayScale;
+      var clearance = 11 + 4 * displayScale;
+      var roomToTop = Math.max(0, (strikeTop - page.getBoundingClientRect().top - clearance) / displayScale);
+      page.style.setProperty('--kp-straight-distance', Math.min(42, roomToTop).toFixed(2) + 'px');
     }
     function fitStage(mount, scaleProperty, bounds) {
       if (!mount || !body.clientWidth || !body.clientHeight) return 0;
@@ -898,10 +900,8 @@
         var lift = Math.max(0, (baseline - (bounds.top + bounds.height / 2)) / Math.max(unitScale, .01));
         var center = (bounds.left + bounds.width / 2 - rect.left) / displayScale + floorOffset - floor.offsetLeft;
         var width = bounds.width / displayScale * .72 * Math.max(.65, 1 - lift / 140);
-        if (weaponFloor) {
-          center = Math.max(0, Math.min(floor.clientWidth, center));
-          width = Math.min(width, Math.max(0, 2 * Math.min(center, floor.clientWidth - center)));
-        }
+        center = Math.max(0, Math.min(floor.clientWidth, center));
+        width = Math.min(width, Math.max(0, 2 * Math.min(center, floor.clientWidth - center)));
         shadow.style.left = center + 'px';
         shadow.style.width = width + 'px';
         shadow.style.opacity = Math.max(.25, .5 - lift / 180);
