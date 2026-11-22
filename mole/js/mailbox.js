@@ -80,7 +80,7 @@
     save(l); return got;
   }
   function rewardIcon(m) {
-    var icons = { cannon:'assets/weapon-stills-v1509/cannon-front.png', goldhammer:'assets/weapon-stills-v1509/goldhammer-15.png', alipunch:'assets/workshop/w-alipunch-idle-clay-v1739.png', shield:'assets/skills/shield.png', targeting:'assets/skills/targeting.png', ai:'assets/skills/ai.png' };
+    var icons = { cannon:'assets/weapon-stills-v1509/cannon-front.png', goldhammer:'assets/weapon-stills-v1509/goldhammer-15.png', alipunch:'assets/workshop/w-alipunch-3d-v1793.png', shield:'assets/skills/shield.png', targeting:'assets/skills/targeting.png', ai:'assets/skills/ai.png' };
     if (m.rewardType === 'item') return icons[(m.rewardItem || {}).id] || 'assets/mailbox/rw-gift.png';
     return m.rewardType === 'coin' ? 'assets/shop-ui-v1452/coin-option-05-bright20.png' : m.rewardType === 'ticket' ? 'assets/ui-approved-v1476/ticket-single.webp' : 'assets/mailbox/rw-' + m.rewardType + '.png';
   }

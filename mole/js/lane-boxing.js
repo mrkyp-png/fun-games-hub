@@ -88,6 +88,8 @@
     img.alt = '';
     el.appendChild(img);
     layer.appendChild(el);
+    // V1793 C 사용자: 킹판취 = 3D 빨간 챔피언 글러브 — 그림(img) 자리에 3D 를 그림(위치·회전·좌우 반전·크기는 지금 동작 그대로 따라감), 3D 실패 시 그림 그대로
+    const model3D = root.MoleGame && root.MoleGame.GameHammerModels ? root.MoleGame.GameHammerModels.create({ el: img, layer, img, id: 'alipunch', selfImage: true }) : null;
     const rotTable = ROT_BY_SIDE[side];
 
     function setPose(s, regionId) {
@@ -170,7 +172,7 @@
       paint();
     }
 
-    function clear() { el.remove(); }
+    function clear() { if (model3D) model3D.clear(); el.remove(); }
 
     setPose('idle'); // 최초 생성 시 회전/거울상 적용 (안 하면 img.style.transform 이 계속 비어있음)
     paint();

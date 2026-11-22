@@ -16,7 +16,7 @@ function lookAt(eye,target){const z=unit(eye.map((v,i)=>v-target[i])),x=unit(cro
 
 const accessorCaches=new WeakMap();function accessor(model,index){let cache=accessorCaches.get(model);if(!cache){cache=new Map();accessorCaches.set(model,cache);}if(!cache.has(index))cache.set(index,decodeAccessor(model,index));return cache.get(index);}
 
-const paths={hammer:'hammer-v5-batched-v1509.glb',cannon:'cannon-v1-batched-v1509.glb',goldhammer:'goldhammer-v18-batched-v1520.glb'};
+const paths={hammer:'hammer-v5-batched-v1509.glb',cannon:'cannon-v1-batched-v1509.glb',goldhammer:'goldhammer-v18-batched-v1520.glb',alipunch:'alipunch-glove-v1793.glb'/* V1793 C 사용자: 킹판취 = 3D 빨간 챔피언 글러브(Tripo, review/prep-alipunch-glove-v1793.py) */};
 const assets=new Map(),views=new Set(),dormant=new Map(),waiting=new Map();let frameId=0,lastTick=0,lastAction=-Infinity,activeScreen=null,initQueue=Promise.resolve();
 function reserveInit(){let unlock;const previous=initQueue;initQueue=new Promise(resolve=>{unlock=resolve;});return previous.then(()=>new Promise(resolve=>requestAnimationFrame(()=>resolve(unlock))));}
 function load(id){if(!assets.has(id)){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),9000);assets.set(id,fetch('assets/shop-models-v1509/'+paths[id],{signal:controller.signal}).then(r=>{if(!r.ok)throw Error('Model '+r.status);return r.arrayBuffer();}).then(parseGLB).catch(e=>{assets.delete(id);throw e;}).finally(()=>clearTimeout(timer)));}return assets.get(id);}
@@ -72,7 +72,7 @@ function measureCanvas(view,canvas){if(view.options.motion==='inventory'){const 
 root.addEventListener('resize',()=>{requestAnimationFrame(()=>{for(const v of views)v.resize?.();});});
 async function create(host,id,index,options={}){
  if(host.closest('#shop-screen'))host.setAttribute('data-model-weapon',id);
- const canvas=document.createElement('canvas');canvas.className='shop-model-canvas';canvas.setAttribute('aria-label',id==='hammer'?'뿅망치 3D':id==='cannon'?'팡팡 캐논 3D':'골드 묠니르 3D');
+ const canvas=document.createElement('canvas');canvas.className='shop-model-canvas';canvas.setAttribute('aria-label',id==='hammer'?'뿅망치 3D':id==='cannon'?'팡팡 캐논 3D':id==='alipunch'?'킹 판취 3D':'골드 묠니르 3D');
  host.appendChild(canvas);let gl=null,disposed=false,observer=null,visibility=null,releaseInit=null;
  const view={host,id,index,options,pose:{yaw:0,pitch:25,kick:0},inView:!('IntersectionObserver' in root),elapsed:0,lastSeen:performance.now(),lastFrame:0,width:0,height:0,draw(){},setPose(pose){Object.assign(this.pose,pose);this.draw(performance.now());},dispose(){if(disposed)return;disposed=true;views.delete(view);if(observer)observer.disconnect();if(visibility)visibility.disconnect();host.classList.remove('shop-model-ready');canvas.remove();gl?.getExtension('WEBGL_lose_context')?.loseContext();}};
  views.add(view);

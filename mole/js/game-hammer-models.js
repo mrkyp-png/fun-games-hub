@@ -2,9 +2,12 @@
 (function(root){'use strict';
  const R=root.StudioRig,MG=root.MoleGame,assets=new Map();let shared=null,nextId=0;
  const VIEW=R.transform({rotation:[0,Math.sin(-5*Math.PI/12),0,Math.cos(-5*Math.PI/12)]});
+ // V1793 C 사용자: 킹판취 = 3D 글러브(+Z = 손바닥·메달 쪽). 그림 자세대로 — 대기·어퍼 = 손바닥 쪽, 잽·스트레이트(손등 그림) = 손등 쪽, 둘 다 살짝 비스듬히
+ const yawView=a=>R.transform({rotation:[0,Math.sin(a/2),0,Math.cos(a/2)]}),GLOVE_VIEW={front:yawView(.3),back:yawView(Math.PI+.3)};
+ function viewOf(entry){if(entry.id!=='alipunch')return['h',VIEW];const k=/jab|straight/.test(entry.el.getAttribute('src')||'')?'back':'front';return[k,GLOVE_VIEW[k]];}
  // Fit a rigid model inside the original sprite box, then inherit the box's existing CSS transform.
  // No target selection, flight path, swing angles, timing or return motion is calculated here.
- function frameMatrix(viewBounds,width,height,rect,cssTransform,rootRect,rootWidth,rootHeight,reference){
+ function frameMatrix(viewBounds,width,height,rect,cssTransform,rootRect,rootWidth,rootHeight,reference,view=VIEW){
   const values=(cssTransform||'none').match(/matrix(3d)?\(([^)]+)\)/);let a=1,b=0,c=0,d=1;
   if(values){const v=values[2].split(',').map(Number);a=v[0];b=v[1];c=v[values[1]?4:2];d=v[values[1]?5:3];}
   const corners=[[0,0],[width,0],[0,height],[width,height]].map(([x,y])=>[a*x+c*y,b*x+d*y]),low=[0,1].map(i=>Math.min(...corners.map(v=>v[i]))),high=[0,1].map(i=>Math.max(...corners.map(v=>v[i])));
@@ -14,7 +17,7 @@
   if(reference){const cx=affine[12]+affine[0]*width/2+affine[4]*height/2,cy=affine[13]+affine[1]*width/2+affine[5]*height/2;
    const xs=(reference.scaleX||1)/Math.max(1e-8,Math.hypot(a,b)),ys=(reference.scaleY||1)/Math.max(1e-8,Math.hypot(c,d));affine[0]*=xs;affine[1]*=xs;affine[4]*=ys;affine[5]*=ys;width=reference.width;height=reference.height;affine[12]=cx-affine[0]*width/2-affine[4]*height/2;affine[13]=cy-affine[1]*width/2-affine[5]*height/2;}
   const scale=Math.min(width/(viewBounds.high[0]-viewBounds.low[0]),height/(viewBounds.high[1]-viewBounds.low[1]))*.98;
-  const fit=R.multiply(R.transform({translation:[width/2-scale*viewBounds.center[0],height/2-scale*viewBounds.center[1],0]}),R.multiply(R.transform({scale:[scale,scale,scale]}),VIEW));
+  const fit=R.multiply(R.transform({translation:[width/2-scale*viewBounds.center[0],height/2-scale*viewBounds.center[1],0]}),R.multiply(R.transform({scale:[scale,scale,scale]}),view));
   return R.multiply(affine,fit);
  }
  function load(id){if(!assets.has(id))assets.set(id,MG.WeaponModels.loadModel(id).catch(e=>{assets.delete(id);throw e}));return assets.get(id);}
@@ -55,7 +58,7 @@ void main(){vec4 texel=uTextured?texture(uTexture,vUV):vec4(1.);float alpha=uCol
     const indices=R.accessor(model,p.indices),ib=gl.createBuffer();state.buffers.add(ib);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint32Array(indices),gl.STATIC_DRAW);
     parts.push({vao,count:indices.length,world:item.world,texture:tex,color:pbr.baseColorFactor||[1,1,1,1],roughness:pbr.roughnessFactor??.5,emission:(mat.emissiveFactor||[0,0,0]).map(v=>v*(mat.extensions?.KHR_materials_emissive_strength?.emissiveStrength??1)),double:mat.doubleSided});
    }
-   if(!state.dead&&epoch===state.epoch){state.models.set(id,{parts,bounds:box,viewBounds});state.key='';schedule();}
+   if(!state.dead&&epoch===state.epoch){state.models.set(id,{parts,bounds:box,viewBounds,views:{h:viewBounds},boundsFor:(k,v)=>(state.models.get(id).views[k]||(state.models.get(id).views[k]=R.bounds(model,list.map(d=>({...d,world:R.multiply(v,d.world)})))))});state.key='';schedule();}
   }
   function ensure(id){if(state.models.has(id)||state.pending.has(id)||state.failedModels.has(id)||state.dead||state.lost)return;const promise=upload(id).catch(error=>{state.failedModels.add(id);console.warn('3D hammer: sprite fallback',error);}).finally(()=>{if(state.pending.get(id)===promise)state.pending.delete(id)});state.pending.set(id,promise);}
   function draw(now){
@@ -69,16 +72,18 @@ void main(){vec4 texel=uTextured?texture(uTexture,vUV):vec4(1.);float alpha=uCol
     const opacity=(parentStyle?(+parentStyle.opacity||0)*.7*Math.min(1,(+style.opacity||0)/.7):(+style.opacity||0))*(layerStyle.opacity===''?1:(+layerStyle.opacity||0));if(opacity<.002)continue;
     const width=entry.el.offsetWidth,height=entry.el.offsetHeight;if(!width||!height)continue;
     let reference;if(parent){const v=(parentStyle.transform||'').match(/matrix(3d)?\(([^)]+)\)/),n=v?v[2].split(',').map(Number):[1,0,0,1];reference={width:parent.el.offsetWidth,height:parent.el.offsetHeight,scaleX:Math.hypot(n[0],n[1]),scaleY:Math.hypot(n[v?.[1]?4:2],n[v?.[1]?5:3])};}
-    const er=entry.el.getBoundingClientRect(),matrix=frameMatrix(model.viewBounds,width,height,er,style.transform,rect,w,h,reference),modelId=entry.id;
-    const alpha=opacity,flash=level>0&&(parent||entry).img?.dataset.zapOrig?1:0,key=modelId+':'+(entry.clone?'clone':'main');if(!groups.has(key))groups.set(key,{id:modelId,clone:entry.clone,items:[]});groups.get(key).items.push([...matrix,alpha,flash]);keys.push(key,...matrix,alpha,flash,flash?Math.floor(now/80):0);entry.el.classList.add(entry.selfImage?'gold-model-source':'has-hammer-model');
+    const [vk,view]=viewOf(entry),er=entry.el.getBoundingClientRect(),matrix=frameMatrix(model.boundsFor(vk,view),width,height,er,style.transform,rect,w,h,reference,view),modelId=entry.id;
+    /* V1793 C: 킹판취 — 거울(그림 좌우 반전)이면 면 방향 뒤집기, 무적(gs-invincible) = 황금색, 분신 글러브 = 반투명 */
+    const mirror=matrix[0]*matrix[5]-matrix[1]*matrix[4]<0?1:0,gold=entry.id==='alipunch'&&screen.classList.contains('gs-invincible')?1:0;
+    const alpha=opacity*(entry.id==='alipunch'&&entry.el.closest('.lane-boxing-glove--clone')?.5:1),flash=entry.id==='goldhammer'&&level>0&&(parent||entry).img?.dataset.zapOrig?1:0,key=modelId+':'+(entry.clone?'clone':'main')+':'+vk+':'+mirror+':'+gold;if(!groups.has(key))groups.set(key,{id:modelId,clone:entry.clone,view,mirror,gold,items:[]});groups.get(key).items.push([...matrix,alpha,flash]);keys.push(key,...matrix,alpha,flash,flash||gold?Math.floor(now/80):0);entry.el.classList.add(entry.selfImage?'gold-model-source':'has-hammer-model');
    }
    canvas.hidden=!groups.size;if(!groups.size)return false;const key=keys.join(',');if(key===state.key)return true;state.key=key;state.last=now;
    const gl=state.gl,dpr=Math.min(root.devicePixelRatio||1,1.25),pw=Math.round(w*dpr),ph=Math.round(h*dpr);if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph;}
    gl.viewport(0,0,pw,ph);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(state.program);const vp=R.identity();vp[0]=2/w;vp[5]=2/h;vp[10]=-1/2048;vp[12]=vp[13]=-1;gl.uniformMatrix4fv(state.U.VP,false,vp);gl.uniform1i(state.U.Texture,0);gl.uniform1f(state.U.Time,now/1000);state.drawCalls=0;
    gl.uniformMatrix4fv(state.U.View,false,VIEW);gl.uniform3fv(state.U.LightningColor,lightningColor(level));gl.uniform1i(state.U.Lightning,1);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,state.lightning);
    const ordered=[...groups.values()].sort((a,b)=>+b.clone-+a.clone);let main=false;
-   for(const group of ordered){if(!group.clone&&!main){gl.clear(gl.DEPTH_BUFFER_BIT);main=true;}const model=state.models.get(group.id);gl.uniform3fv(state.U.ModelLow,model.bounds.low);gl.uniform3fv(state.U.ModelSpan,model.bounds.high.map((v,i)=>Math.max(.001,v-model.bounds.low[i])));gl.bindBuffer(gl.ARRAY_BUFFER,state.instanceBuffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(group.items.flat()),gl.DYNAMIC_DRAW);
-    for(const part of model.parts){gl.bindVertexArray(part.vao);if(part.double)gl.disable(gl.CULL_FACE);else gl.enable(gl.CULL_FACE);gl.uniformMatrix4fv(state.U.Part,false,part.world);gl.uniform4fv(state.U.Color,part.color);gl.uniform3fv(state.U.Emission,part.emission);gl.uniform1f(state.U.Roughness,part.roughness);gl.uniform1i(state.U.Textured,!!part.texture);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,part.texture);gl.drawElementsInstanced(gl.TRIANGLES,part.count,gl.UNSIGNED_INT,0,group.items.length);state.drawCalls++;}
+   for(const group of ordered){if(!group.clone&&!main){gl.clear(gl.DEPTH_BUFFER_BIT);main=true;}const model=state.models.get(group.id);gl.uniformMatrix4fv(state.U.View,false,group.view);gl.frontFace(group.mirror?gl.CW:gl.CCW);gl.uniform3fv(state.U.ModelLow,model.bounds.low);gl.uniform3fv(state.U.ModelSpan,model.bounds.high.map((v,i)=>Math.max(.001,v-model.bounds.low[i])));gl.bindBuffer(gl.ARRAY_BUFFER,state.instanceBuffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(group.items.flat()),gl.DYNAMIC_DRAW);
+    for(const part of model.parts){gl.bindVertexArray(part.vao);if(part.double)gl.disable(gl.CULL_FACE);else gl.enable(gl.CULL_FACE);gl.uniformMatrix4fv(state.U.Part,false,part.world);const gp=.5+.5*Math.sin(now/130);gl.uniform4fv(state.U.Color,group.gold?[part.color[0]*.3,part.color[1]*.3,part.color[2]*.3,part.color[3]]:part.color);gl.uniform3fv(state.U.Emission,group.gold?[.72+.12*gp,.5+.09*gp,.08+.03*gp]:part.emission);gl.uniform1f(state.U.Roughness,part.roughness);gl.uniform1i(state.U.Textured,!!part.texture);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,part.texture);gl.drawElementsInstanced(gl.TRIANGLES,part.count,gl.UNSIGNED_INT,0,group.items.length);state.drawCalls++;}
    }return true;
   }
   function schedule(){if(state.dead||state.raf)return;state.raf=requestAnimationFrame(function frame(now){state.raf=0;if(draw(now))schedule();});}
@@ -89,7 +94,7 @@ void main(){vec4 texel=uTextured?texture(uTexture,vUV):vec4(1.);float alpha=uCol
   return state;
  }
  function create({el,layer,id,img,clone=false,selfImage=false}){
-  const screen=el.closest('#game-screen');if(id!=='goldhammer'||!screen||!MG.WeaponModels?.loadModel)return null;
+  const screen=el.closest('#game-screen');if((id!=='goldhammer'&&id!=='alipunch')||!screen||!MG.WeaponModels?.loadModel)return null;
   if(!shared||shared.dead||shared.screen!==screen){releaseGPU();shared=createScene(screen);}const state=shared,entry={key:++nextId,el,layer,id,img,clone,selfImage,packet:selfImage?{phase:'legacy-clone'}:null};state.entries.set(entry.key,entry);if(state.models.has(id))el.classList.add(selfImage?'gold-model-source':'has-hammer-model');if(!state.failed)state.ensure(id);
   return {update(packet){if(state.dead)return;entry.packet=packet;if(!state.failed)state.schedule();},clear(){state.entries.delete(entry.key);el.classList.remove('has-hammer-model','gold-model-source');state.key='';if(!state.entries.size){if(shared===state)releaseGPU();}else state.schedule();}};
  }

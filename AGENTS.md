@@ -1,3 +1,11 @@
+# V1793 C 배포 — 2026-11-22 (Claude)
+- 사용자: 킹판취 무기 = 3D 빨간 챔피언 글러브(이미지젠 시안 → 사용자가 Tripo 로 3D, 바탕화면 red boxing glove 3d model.glb). 게임 = 진짜 3D(B), 메뉴 그림 = 3D 렌더.
+- 모델: review/prep-alipunch-glove-v1793.py → assets/shop-models-v1509/alipunch-glove-v1793.glb(텍스처 2048 JPEG, 0.63MB, glTF +Y 위·+Z 손바닥·메달).
+- 게임: game-hammer-models.js(황금 묠니르 3D 장치) 가 alipunch 도 받음 — lane-boxing.js makeGlove 에서 img 에 selfImage 로 붙임(위치·회전·거울·크기 = 기존 동작 그대로). 자세별 보는 방향 viewOf: 잽·스트레이트 그림 = 손등(GLOVE_VIEW.back), 그 외 = 손바닥(front), 둘 다 .3라디안 비스듬. 거울이면 gl.frontFace(CW). 무적(#game-screen.gs-invincible) = 황금(색 .3배 + 금빛 발광 깜빡임), 분신 글러브 반투명, 번개 효과는 goldhammer 만. 모델별 보는 방향 bounds 캐시(boundsFor).
+- 상점: shop-models-v1509.js paths 에 alipunch 추가 → 상점 카드 3D. 인벤토리는 킹판취만 원래 3D 제외(잽·크로스 연출) → 그림만 교체.
+- 메뉴 그림: review/render-alipunch-stills-v1793.py(블렌더 렌더) + make-alipunch-stills-v1793.py → weapons/kingfist-3d-v1793.webp(한 짝 손등, 인벤토리·상점), workshop/w-alipunch-3d-v1793.png(두 짝 메달 쪽, 제작소·우편함).
+- ⚠️ 시험: 아마추어(easy) 판은 무기 무관 뿅망치 강제 → localStorage mole.difficulty='mid', mole.weapon.owned=['alipunch'], mole.weapon='alipunch' 로 확인. 제작소 킹판취 선택 화면은 미확인.
+
 # V1792 C 배포 — 2026-11-22 (Claude)
 - 사용자: 크라켄이 배를 틈 없이 완전히 감싸기(방법 B 블렌더). review/build-kraken-coil-v1792.py → assets/pang-cannon/boss-v1792c/kraken-coil.glb(축 x·중심선 반지름 1·2.2바퀴, 재질 kr_red/kr_in/kr_suck = kraken-rig 그대로). config bossCannon.krakenCoil.
 - renderer: 쥐는 동안 배는 돌지 않고 긴 쪽(x)이 다리 고리 축을 관통(krHoldRot, projectile flight.rot), 배 위치 = 고리(뼈 머리 7~12) 가운데(V1789 자리), 다리 끝 40% 6.2라디안 고리 + 나선(krCoil)이 배 몸통 두 바퀴(coilFit = 배 4종 [폭 반, 높이 반] 블렌더 측정값, 잡는 .6초 동안 바깥에서 조여 듦).

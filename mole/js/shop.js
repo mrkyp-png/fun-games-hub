@@ -85,7 +85,7 @@
     { id: 'hammer', name: '뿅망치', nameEn: 'Mallet', thumb: 'assets/inventory/ui-v1379/approved-mallet-redend-v1405.webp', price: null, coinPrice: null },
     { id: 'cannon', name: '팡팡 캐논', nameEn: 'Pang Pang Cannon', thumb: 'assets/weapons/cannon-a1-nol-v1392.png', price: 10000, coinPrice: 100000 },
     { id: 'goldhammer', name: '골드 묠니르', nameEn: 'Gold Mjolnir', thumb: 'assets/weapons/goldpaw-v1382.webp', price: 50000, coinPrice: 500000 },
-    { id: 'alipunch', name: '킹판취', nameEn: 'King Punch', thumb: 'assets/weapons/kingfist-jab-mirror-clay-v1739.webp', price: 100000, coinPrice: 1000000 }
+    { id: 'alipunch', name: '킹판취', nameEn: 'King Punch', thumb: 'assets/weapons/kingfist-3d-v1793.webp', price: 100000, coinPrice: 1000000 }
   ];
 
   function create(opts) {
