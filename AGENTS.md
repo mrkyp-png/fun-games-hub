@@ -1,4 +1,10 @@
-# V1791 C (로컬, 배포 전) — 2026-11-22 (Claude)
+# V1792 C 배포 — 2026-11-22 (Claude)
+- 사용자: 크라켄이 배를 틈 없이 완전히 감싸기(방법 B 블렌더). review/build-kraken-coil-v1792.py → assets/pang-cannon/boss-v1792c/kraken-coil.glb(축 x·중심선 반지름 1·2.2바퀴, 재질 kr_red/kr_in/kr_suck = kraken-rig 그대로). config bossCannon.krakenCoil.
+- renderer: 쥐는 동안 배는 돌지 않고 긴 쪽(x)이 다리 고리 축을 관통(krHoldRot, projectile flight.rot), 배 위치 = 고리(뼈 머리 7~12) 가운데(V1789 자리), 다리 끝 40% 6.2라디안 고리 + 나선(krCoil)이 배 몸통 두 바퀴(coilFit = 배 4종 [폭 반, 높이 반] 블렌더 측정값, 잡는 .6초 동안 바깥에서 조여 듦).
+- 남은 문제(사용자에게 보고, 미해결): ① 나선·다리 빨강이 보스배·잠수함 빨강과 섞여 잘 안 보임 ② 쥔 위치가 화면 맨 위(체력 막대) — 다리 방향(dm)만 바꾸면 화면 밖으로 나감(2회 시도 후 되돌림). 제안: 나선에 노란 빨판/색 차이, 쥔 배 자리를 먼저 정하고 다리가 뻗게.
+- 시험 도구: 쥔 순간만 캡처 = scratchpad hold.cjs 방식(pang-cannon.js 받을 때만 game 을 window.__ppcGame 으로 꺼내 state.pendingThrow.age 확인).
+
+# V1791 C 배포 — 2026-11-22 (Claude)
 - 리듬팡 타입 선택·곡 선택·난이도 화면(실제 플레이·결과·일시정지 창은 그대로, 버튼 그대로): 사용자 '클레이톤·유아틱 X·지금 배경 구도 유지·위쪽 둥근 돔 삭제'.
   - 배경 = 이미지젠(Sprite Motion Studio, 옛 type-cyber-bg 를 참고 그림으로 같은 구도·무광 남색+금빛, 돔 삭제) assets/rhythm/v1791/bg-stage.webp — rp-type-panel(.has-type-lighting 포함)·rb-song-modal·rp-select 배경.
   - 큰 테두리 = 이미지젠 남색 무광+금색 안선 ui/v1791/frame-navy.png(review/make-rhythm-clay-frame-v1791.py: 여백 자르고 안쪽 남색 채움), border-image 120 / 26px. 꽃·잎·구름·별 모서리 장식(::after ctop/cbot) 없앰.
