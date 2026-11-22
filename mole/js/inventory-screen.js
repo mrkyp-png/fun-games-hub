@@ -133,7 +133,15 @@
         cell.setAttribute('aria-label', item.name + (item.equipped ? ' · ' + T('mole.inv.equipped') : ''));
         if (active !== 'skill') cell.setAttribute('aria-pressed', String(target === item.id));
         var art = document.createElement('img'); art.src = item.art; art.alt = '';
-        if (active === 'weapon' && item.id === 'alipunch') art.classList.add('inventory-stone-pair');
+        if (active === 'weapon' && item.id === 'alipunch') {
+          var pair = document.createElement('span');
+          pair.className = 'inventory-stone-pair';
+          var layout = document.createElement('span');
+          layout.className = 'inventory-stone-layout';
+          layout.append(art, art.cloneNode(false));
+          pair.appendChild(layout);
+          art = pair;
+        }
         if (active === 'weapon' && item.level > 0) {
           art.classList.add('has-enh');
           art.style.setProperty('--enh', MG.Workshop.GLOW[item.level]);
