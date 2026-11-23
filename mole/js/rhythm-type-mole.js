@@ -80,7 +80,8 @@
     if(!modelPromise)modelPromise=fetch(modelURL).then(response=>{if(!response.ok)throw Error('Rhythm mole model '+response.status);return response.arrayBuffer();}).then(R.parseGLB).then(model=>root.MoleGame.MoleAppearances.prepare(model,['mohawk'])).then(model=>root.MoleGame.MoleAppearances.paint(model,'mohawk')).catch(error=>{modelPromise=null;throw error;});
     return modelPromise;
   }
-  function makeRenderer(model){
+  function prepare(){return Promise.all([loadModel(),root.MoleGame.MoleAppearances.arcadeRepair()]);}
+  function makeRenderer(model,costume){
     const gl=canvas.getContext('webgl2',{alpha:true,antialias:true,premultipliedAlpha:true});
     if(!gl)throw Error('WebGL2 unavailable for rhythm stage mole');
     const rig=R.prepare(model),skin=rig.skins[0],jointCount=skin.joints.length,rootNode=model.json.nodes.findIndex(n=>n.name==='Root');
@@ -127,22 +128,24 @@ frag=vec4(pow(clamp(color,0.,1.),vec3(1./2.2)),1.);}`;
       gl.enableVertexAttribArray(A[name]);gl.vertexAttribPointer(A[name],width,gl.FLOAT,false,0,0);
     }
     const parts=[];
-    model.json.nodes.forEach((node,index)=>{
-      if((node.name!=='Mole_Clay_Skin'&&root.MoleGame.MoleAppearances.hairStyle(node)!=='mohawk')||node.mesh===undefined)return;
-      for(const primitive of model.json.meshes[node.mesh].primitives){
+    function addPart(source,primitive,index){
         const vao=gl.createVertexArray();vaos.push(vao);gl.bindVertexArray(vao);
         for(const [name,key,width] of [['Position','POSITION',3],['Normal','NORMAL',3],['Color','COLOR_0',4],['Joints','JOINTS_0',4],['Weights','WEIGHTS_0',4]]){
           const accessor=primitive.attributes[key];
-          if(accessor!==undefined)attribute(name,R.accessor(model,accessor),model.json.accessors[accessor].type==='VEC3'?3:width);
+          if(accessor!==undefined)attribute(name,R.accessor(source,accessor),source.json.accessors[accessor].type==='VEC3'?3:width);
         }
-        const indices=primitive.indices!==undefined?R.accessor(model,primitive.indices):null;
+        const indices=primitive.indices!==undefined?R.accessor(source,primitive.indices):null;
         if(indices){const buffer=gl.createBuffer();buffers.push(buffer);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,buffer);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint32Array(indices),gl.STATIC_DRAW);}
-        const material=model.json.materials[primitive.material];
-        parts.push({vao,node:index,indexed:!!indices,count:indices?indices.length:model.json.accessors[primitive.attributes.POSITION].count,
-          color:material.pbrMetallicRoughness.baseColorFactor||[1,1,1,1]});
-      }
+        const material=source.json.materials?.[primitive.material];
+        parts.push({vao,node:index,indexed:!!indices,count:indices?indices.length:source.json.accessors[primitive.attributes.POSITION].count,
+          color:material?.pbrMetallicRoughness?.baseColorFactor||[1,1,1,1]});
+    }
+    model.json.nodes.forEach((node,index)=>{
+      if((node.name!=='Mole_Clay_Skin'&&root.MoleGame.MoleAppearances.hairStyle(node)!=='mohawk')||node.mesh===undefined)return;
+      for(const primitive of model.json.meshes[node.mesh].primitives)addPart(model,primitive,index);
     });
     if(!parts.length)throw Error('Rhythm stage mole skin missing');
+    for(const {joint,primitive} of root.MoleGame.MoleAppearances.costumeParts(model,costume))addPart(costume,primitive,joint);
     const shadow=gl.createVertexArray();vaos.push(shadow);gl.bindVertexArray(shadow);
     attribute('Position',new Float32Array([-.85,.002,-.48,.85,.002,-.48,.85,.002,.48,-.85,.002,-.48,.85,.002,.48,-.85,.002,.48]),3);
     attribute('UV',new Float32Array([0,0,1,0,1,1,0,0,1,1,0,1]),2);
@@ -216,7 +219,7 @@ frag=vec4(pow(clamp(color,0.,1.),vec3(1./2.2)),1.);}`;
     panelWasVisible=panelVisible;stop();canvas.hidden=!visible();
     if(!visible())return;
     if(!renderer){
-      if(!loading)loading=loadModel().then(model=>{if(contextLost)return;renderer=makeRenderer(model);resize();sync();}).catch(error=>{canvas.hidden=true;releaseRing();console.warn('Rhythm stage mole unavailable; selection remains usable.',error);}).finally(()=>{loading=null;});
+      if(!loading)loading=prepare().then(([model,costume])=>{if(contextLost)return;renderer=makeRenderer(model,costume);resize();sync();}).catch(error=>{canvas.hidden=true;releaseRing();console.warn('Rhythm stage mole unavailable; selection remains usable.',error);}).finally(()=>{loading=null;});
       return;
     }
     resize();if(!reduced.matches)frame=requestAnimationFrame(tick);

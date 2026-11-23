@@ -5,34 +5,44 @@ function load(){if(!modelPromise)modelPromise=fetch('assets/characters-v1692/mol
 function create(stage){
  let canvas,gl,rig,parts=[],program,U,A,ready=false,loading=null,lost=false,geometry=null,lastHandError=0;
  const holeBase='assets/rhythm/beach-sand-hole-v1690/';
- function prepare(){if(ready&&!lost)return Promise.resolve(true);if(!loading)loading=Promise.all([load(),fetch(holeBase+'geometry.json').then(r=>{if(!r.ok)throw Error('Hole geometry '+r.status);return r.json()})]).then(([model,data])=>{geometry=data;return initialize(model)}).catch(e=>{loading=null;canvas?.remove();canvas=null;throw e});return loading}
- async function initialize(model){
+ function prepare(){if(ready&&!lost)return Promise.resolve(true);if(!loading)loading=Promise.all([load(),fetch(holeBase+'geometry.json').then(r=>{if(!r.ok)throw Error('Hole geometry '+r.status);return r.json()}),AP.arcadeRepair()]).then(([model,data,costume])=>{geometry=data;return initialize(model,costume)}).catch(e=>{loading=null;canvas?.remove();canvas=null;throw e});return loading}
+ async function initialize(model,costume){
   if(canvas)canvas.remove();parts=[];
   canvas=document.createElement('canvas');canvas.className='rp-beach-moles-3d';canvas.setAttribute('aria-hidden','true');canvas.hidden=true;
   canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();lost=true;ready=false;stop()});canvas.addEventListener('webglcontextrestored',()=>{lost=false;loading=null;prepare().catch(console.error)});
   gl=canvas.getContext('webgl2',{alpha:true,antialias:true,premultipliedAlpha:true});if(!gl)throw Error('WebGL2 is required for beach characters');rig=R.prepare(model);
   const joints=Math.max(...rig.skins.map(s=>s.joints.length));
   const vs=`#version 300 es
-precision highp float;in vec3 aPosition,aNormal;in vec4 aColor,aJoints,aWeights;in float aHand;uniform mat4 uModel,uVP,uBones[${joints}];out vec3 vNormal;out vec4 vColor;out float vHand;void main(){mat4 s=aWeights.x*uBones[int(aJoints.x)]+aWeights.y*uBones[int(aJoints.y)]+aWeights.z*uBones[int(aJoints.z)]+aWeights.w*uBones[int(aJoints.w)];vec4 p=uModel*s*vec4(aPosition,1.);vNormal=normalize(mat3(uModel)*mat3(s)*aNormal);vColor=aColor;vHand=aHand;gl_Position=uVP*p;}`;
+precision highp float;in vec3 aPosition,aNormal;in vec4 aColor,aJoints,aWeights;in float aHand;uniform mat4 uModel,uVP,uBones[${joints}];uniform bool uSkin;out vec3 vNormal;out vec4 vColor;out float vHand;void main(){mat4 s=mat4(1.);if(uSkin)s=aWeights.x*uBones[int(aJoints.x)]+aWeights.y*uBones[int(aJoints.y)]+aWeights.z*uBones[int(aJoints.z)]+aWeights.w*uBones[int(aJoints.w)];vec4 p=uModel*s*vec4(aPosition,1.);vNormal=normalize(mat3(uModel)*mat3(s)*aNormal);vColor=aColor;vHand=aHand;gl_Position=uVP*p;}`;
   const fs=`#version 300 es
 precision highp float;in vec3 vNormal;in vec4 vColor;in float vHand;uniform vec4 uColor,uHoleRect;uniform sampler2D uHoleMask,uHoleFront;uniform float uFlash,uHandsOnRim;out vec4 frag;void main(){vec2 uv=vec2((gl_FragCoord.x-uHoleRect.x)/uHoleRect.z,(uHoleRect.y-gl_FragCoord.y)/uHoleRect.w);if(uv.y>1.)discard;float cover=uv.y<0.?0.:texture(uHoleMask,clamp(uv,vec2(0.),vec2(1.))).a;float visibility=1.-cover*(1.-uHandsOnRim*step(.5,vHand));if(visibility<.001)discard;float d=max(dot(normalize(vNormal),normalize(vec3(-.4,.85,1.))),0.);vec3 base=uColor.rgb*vColor.rgb;base=mix(base,vec3(1.),uFlash);vec3 body=pow(max(base*(.42+.58*d),vec3(0.)),vec3(1./2.2));vec4 front=texture(uHoleFront,clamp(uv,vec2(0.),vec2(1.)));vec3 sand=front.rgb/max(front.a,.00001);frag=vec4(mix(body,sand,1.-visibility),uColor.a*vColor.a);}`;
   function shader(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s}
   program=gl.createProgram();const shaders=[shader(gl.VERTEX_SHADER,vs),shader(gl.FRAGMENT_SHADER,fs)];for(const s of shaders)gl.attachShader(program,s);gl.linkProgram(program);for(const s of shaders)gl.deleteShader(s);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));
-  U=Object.fromEntries(['Model','VP','Bones','Color','HoleRect','HoleMask','HoleFront','Flash','HandsOnRim'].map(n=>[n,gl.getUniformLocation(program,'u'+(n==='Bones'?'Bones[0]':n))]));A=Object.fromEntries(['Position','Normal','Color','Joints','Weights','Hand'].map(n=>[n,gl.getAttribLocation(program,'a'+n)]));
+  U=Object.fromEntries(['Model','VP','Bones','Skin','Color','HoleRect','HoleMask','HoleFront','Flash','HandsOnRim'].map(n=>[n,gl.getUniformLocation(program,'u'+(n==='Bones'?'Bones[0]':n))]));A=Object.fromEntries(['Position','Normal','Color','Joints','Weights','Hand'].map(n=>[n,gl.getAttribLocation(program,'a'+n)]));
   function attribute(name,data,width){const loc=A[name];if(loc<0)return null;const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,width,gl.FLOAT,false,0,0);return b}
-  model.json.nodes.forEach((node,index)=>{
-   if(node.mesh===undefined||(node.name!=='Mole_Clay_Skin'&&!AP.hairStyle(node)))return;
-   for(const p of model.json.meshes[node.mesh].primitives){
-    const vao=gl.createVertexArray();gl.bindVertexArray(vao);const n=model.json.accessors[p.attributes.POSITION].count;
-    for(const [name,key,width] of [['Position','POSITION',3],['Normal','NORMAL',3],['Joints','JOINTS_0',4],['Weights','WEIGHTS_0',4]])attribute(name,R.accessor(model,p.attributes[key]),width);
-    const jointValues=R.accessor(model,p.attributes.JOINTS_0),weightValues=R.accessor(model,p.attributes.WEIGHTS_0),skin=rig.skins[node.skin],handFlags=new Float32Array(n);for(let v=0;v<n;v++)for(let k=0;k<4;k++)if(/^(Hand|Finger[123]|Thumb)\./.test(model.json.nodes[skin.joints[jointValues[v*4+k]]].name))handFlags[v]+=weightValues[v*4+k];attribute('Hand',handFlags,1);
-    const colors=p.attributes.COLOR_0===undefined?new Float32Array(n*4).fill(1):R.accessor(model,p.attributes.COLOR_0),colorSize=p.attributes.COLOR_0===undefined?4:model.json.accessors[p.attributes.COLOR_0].type==='VEC3'?3:4;
-    const material=model.json.materials[p.material],colorBuffer=attribute('Color',colors,colorSize),variants={};
-    if(material.name==='Head smooth tone')for(const id of AP.styles)variants[id]=attribute('Color',AP.vertexColors(model,p,id),colorSize);
-    const indices=R.accessor(model,p.indices),ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint32Array(indices),gl.STATIC_DRAW);
-    parts.push({vao,node:index,count:indices.length,style:AP.hairStyle(node),material,colorBuffer,variants,colorSize});
+  function addPart(source,p,index,style,rigid=false){
+   const vao=gl.createVertexArray();gl.bindVertexArray(vao);const n=source.json.accessors[p.attributes.POSITION].count;
+   attribute('Position',R.accessor(source,p.attributes.POSITION),3);
+   attribute('Normal',R.accessor(source,p.attributes.NORMAL),3);
+   if(!rigid){
+    const joints=R.accessor(source,p.attributes.JOINTS_0),weights=R.accessor(source,p.attributes.WEIGHTS_0);
+    attribute('Joints',joints,4);attribute('Weights',weights,4);
+    const skin=rig.skins[model.json.nodes[index].skin],handFlags=new Float32Array(n);
+    for(let v=0;v<n;v++)for(let k=0;k<4;k++)if(/^(Hand|Finger[123]|Thumb)\./.test(model.json.nodes[skin.joints[joints[v*4+k]]].name))handFlags[v]+=weights[v*4+k];
+    attribute('Hand',handFlags,1);
    }
+   const colors=p.attributes.COLOR_0===undefined?new Float32Array(n*4).fill(1):R.accessor(source,p.attributes.COLOR_0),colorSize=p.attributes.COLOR_0===undefined?4:source.json.accessors[p.attributes.COLOR_0].type==='VEC3'?3:4;
+   const material=source.json.materials?.[p.material]||{},colorBuffer=attribute('Color',colors,colorSize),variants={};
+   if(material.name==='Head smooth tone')for(const id of AP.styles)variants[id]=attribute('Color',AP.vertexColors(source,p,id),colorSize);
+   const indices=R.accessor(source,p.indices),ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint32Array(indices),gl.STATIC_DRAW);
+   parts.push({vao,node:index,count:indices.length,style,material,colorBuffer,variants,colorSize,rigid});
+  }
+  model.json.nodes.forEach((node,index)=>{
+   const style=AP.hairStyle(node);
+   if(node.mesh===undefined||(node.name!=='Mole_Clay_Skin'&&!style))return;
+   for(const p of model.json.meshes[node.mesh].primitives)addPart(model,p,index,style);
   });
+  for(const {joint,primitive} of AP.costumeParts(model,costume))addPart(costume,primitive,joint,'mohawk',true);
   for(const [slot,file] of [[0,'hole-occlusion.png'],[1,'hole-front.png']]){
    const response=await fetch(holeBase+file);if(!response.ok)throw Error('Hole layer '+response.status);
    const bitmap=await createImageBitmap(await response.blob(),{colorSpaceConversion:'none',premultiplyAlpha:slot===1?'premultiply':'none'}),texture=gl.createTexture();
@@ -64,7 +74,8 @@ precision highp float;in vec3 vNormal;in vec4 vColor;in float vHand;uniform vec4
    if(armRest>.999)for(const side of ['L','R']){const hand=worlds[nodes.findIndex(n=>n.name==='Hand.'+side)],point=R.point(instance,Array.from(hand.slice(12,15))),u=Math.max(0,Math.min(geometry.width-1,(point[0]-rect.x)/rect.w*(geometry.width-1))),lo=Math.floor(u),hi=Math.min(geometry.width-1,lo+1),f=u-lo,target=rect.y+(geometry.frontCurvePixels[lo]*(1-f)+geometry.frontCurvePixels[hi]*f)/geometry.height*rect.h-scale*.04;lastHandError=Math.max(lastHandError,Math.abs((h-point[1])-target));}
    gl.enable(gl.SCISSOR_TEST);gl.scissor(Math.round(i*pw/4),0,Math.ceil(pw/4),ph);gl.uniform4fv(U.HoleRect,[rect.x*pw/layout.W,(layout.H-rect.y)*ph/layout.H,rect.w*pw/layout.W,rect.h*ph/layout.H]);gl.uniform1f(U.HandsOnRim,armRest);gl.uniform1f(U.Flash,clip==='PainHit'?Math.max(0,1-hurt/.15)*.25:0);
    for(const part of parts){if(part.style&&part.style!==id)continue;gl.bindVertexArray(part.vao);const b=part.variants[id]||part.colorBuffer;gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.vertexAttribPointer(A.Color,part.colorSize,gl.FLOAT,false,0,0);
-    gl.uniform4fv(U.Color,AP.materialColor(part.material,id));gl.uniformMatrix4fv(U.Model,false,R.multiply(instance,worlds[part.node]));gl.uniformMatrix4fv(U.Bones,false,R.palette(rig,worlds,part.node));gl.drawElements(gl.TRIANGLES,part.count,gl.UNSIGNED_INT,0);
+    gl.uniform4fv(U.Color,AP.materialColor(part.material,id));gl.uniformMatrix4fv(U.Model,false,R.multiply(instance,worlds[part.node]));
+    gl.uniform1i(U.Skin,!part.rigid);if(!part.rigid)gl.uniformMatrix4fv(U.Bones,false,R.palette(rig,worlds,part.node));gl.drawElements(gl.TRIANGLES,part.count,gl.UNSIGNED_INT,0);
    }
   }
   gl.disable(gl.SCISSOR_TEST);

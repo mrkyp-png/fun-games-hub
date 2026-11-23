@@ -301,7 +301,7 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
 
   function create(canvas) {
     let boardPanels = [], boardTex = {}, props = [], boat = [], smoke = [], smokeBall = null, arcade = null, boss = null, modeBtn = [], roundNumbers = [], glowDisc = [], glowHalo = [], waveRings = [], screenTex = null, screenCanvas = null; // 두더지팡 게임기: 구멍 빛·구멍 두더지·화면 글자
-    let gl, program, U, A, environment = [], actor = [], playerActor = [], rig = null, smileFace = null, vp = null, signs = null, size = null, seaMesh = null, shadowS = null, shadowM = null, sunQuad = null, clouds = [], rides = [], staticAt = -9, staticVP = null, doorOpen = 0, doorAt = null, rhythmTunnel = null, rhythmField = null, extraNotes = null, gateEntryAt = -Infinity, gateNear = false, glassOpen = 0, glassAt = null;
+    let gl, program, U, A, environment = [], actor = [], rig = null, smileFace = null, vp = null, signs = null, size = null, seaMesh = null, shadowS = null, shadowM = null, sunQuad = null, clouds = [], rides = [], staticAt = -9, staticVP = null, doorOpen = 0, doorAt = null, rhythmTunnel = null, rhythmField = null, extraNotes = null, gateEntryAt = -Infinity, gateNear = false, glassOpen = 0, glassAt = null;
     const resetSize = () => { size = null; };
     if (root.ResizeObserver) new ResizeObserver(resetSize).observe(canvas); else root.addEventListener('resize', resetSize);
     function shader(type, src) {
@@ -486,11 +486,8 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
           for (const p of mole.json.meshes[n.mesh].primitives) { const m = Object.assign(mesh(mole, p), { node }); actor.push(m); glbTexture(mole, p).then((t) => { m.texBase = t; }).catch(() => {}); } /* V1655 C: 신규 두더지 = 그림(텍스처) 색 */
         });
         if (!actor.length) throw Error('Mole skin missing');
-        // Keep the arcade cabinet mole on the uncostumed actor, even though it shares the player rig.
-        playerActor = actor.slice();
-        if (playerCostume) for (const { name, primitive } of R.instances(playerCostume)) {
-          const joint = mole.json.nodes.findIndex(n => n.name === name);
-          if (joint >= 0) playerActor.push(Object.assign(mesh(playerCostume, primitive), { node: joint }));
+        for (const { joint, primitive } of root.MoleGame.MoleAppearances.costumeParts(mole, playerCostume)) {
+          actor.push(Object.assign(mesh(playerCostume, primitive), { node: joint }));
         }
       },
       // 한 프레임 그리기. view={x,z,heading,yaw,pitch}, pose={clip, t, loop, y}(y=두더지 높이)
@@ -509,7 +506,7 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
         gl.uniform1f(U.Time, now % 10000); gl.uniform3fv(U.Sun, sun);
         const worlds = root.MoleGame.MoleAppearances.pose(rig, pose.clip, pose.t, pose.loop, smileFace, now);
         const inst = R.transform({ translation: [view.x, pose.y || 0, view.z], rotation: [0, Math.sin(view.heading / 2), 0, Math.cos(view.heading / 2)], scale: [0.65 * (pose.s ?? 1), 0.65 * (pose.s ?? 1), 0.65 * (pose.s ?? 1)] }); // pose.s = 크기(동전 구멍으로 빨려 듦)
-        const drawMole = () => { if (pose.s === 0) return; if (pose.fade) { gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); for (const m of playerActor) { m.color0 = m.color0 || m.color; m.color = [m.color0[0], m.color0[1], m.color0[2], m.color0[3] * (1 - pose.fade * 0.85)]; } } for (const m of playerActor) draw(m, R.multiply(inst, worlds[m.node]), R.palette(rig, worlds, m.node), true); if (pose.fade) { for (const m of playerActor) m.color = m.color0; gl.disable(gl.BLEND); } };
+        const drawMole = () => { if (pose.s === 0) return; if (pose.fade) { gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); for (const m of actor) { m.color0 = m.color0 || m.color; m.color = [m.color0[0], m.color0[1], m.color0[2], m.color0[3] * (1 - pose.fade * 0.85)]; } } for (const m of actor) draw(m, R.multiply(inst, worlds[m.node]), R.palette(rig, worlds, m.node), true); if (pose.fade) { for (const m of actor) m.color = m.color0; gl.disable(gl.BLEND); } };
         const drawClouds = () => { clouds.forEach((m, i) => { const c = cloudPos(i, now); gl.uniform1i(U.Cloud, 1); draw(m, R.transform({ translation: [c[0], c[1], c[2]], scale: [c[3], c[3], c[3]] }), null); gl.uniform1i(U.Cloud, 0); }); };
         // 그림자: 해 쪽에서 섬 전체(반지름 16)를 내려다보는 직교 카메라. 섬·건물은 1초마다, 두더지·구름은 매 프레임
         if (now - staticAt > 1 || !staticVP) {
@@ -598,7 +595,7 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
             const mp = mh.pose || { clip: 'RimIdle', t: now, loop: true }, w2 = root.MoleGame.MoleAppearances.pose(rig, mp.clip, mp.t, mp.loop, smileFace, now), sc = 0.31; // 게임과 같은 구멍 동작. 손 간격 2.16 × 0.31 ≈ 구멍 지름
             const jumpUp = mp.clip === 'Appear' ? 1.1 * Math.sin(Math.PI * Math.min(1, mp.t / 0.8)) : 0; // 게임: 튀어오를 때 1.1 위로
             const i2 = R.transform({ translation: [mh.x, mh.y - 1.2 * sc + jumpUp * sc, mh.z], scale: [sc, sc, sc] }); // 사용자: 대기 = 두 손이 구멍 턱에 얹힘(RimIdle 손 높이 1.2)
-            for (const m of actor) draw(m, R.multiply(i2, w2[m.node]), R.palette(rig, w2, m.node));
+            for (const m of actor) draw(m, R.multiply(i2, w2[m.node]), R.palette(rig, w2, m.node), true);
           }
         }
         drawMole(); drawClouds();

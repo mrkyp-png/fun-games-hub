@@ -39,8 +39,22 @@ function paint(model,id){
  const g=model.json;for(const mesh of g.meshes)for(const primitive of mesh.primitives){if(g.materials[primitive.material].name!=='Head smooth tone')continue;const original=g.accessors[primitive.attributes.COLOR_0],colors=vertexColors(model,primitive,id),offset=model.bin.length,next=new Uint8Array(offset+colors.byteLength);next.set(model.bin);next.set(new Uint8Array(colors.buffer),offset);model.bin=next;const vi=g.bufferViews.push({buffer:0,byteOffset:offset,byteLength:colors.byteLength,target:34962})-1;primitive.attributes.COLOR_0=g.accessors.push({bufferView:vi,componentType:5126,count:original.count,type:original.type})-1;}
  for(const m of g.materials)m.pbrMetallicRoughness={...m.pbrMetallicRoughness,baseColorFactor:materialColor(m,id)};g.buffers[0].byteLength=model.bin.length;return model;
 }
+let repairCostume;
+function arcadeRepair() {
+ if(!repairCostume)repairCostume=fetch('assets/home3d/mole-arcade-repair.glb')
+  .then(response=>{if(!response.ok)throw Error('Arcade repair costume '+response.status);return response.arrayBuffer();})
+  .then(R.parseGLB).catch(()=>{repairCostume=null;return null;});
+ return repairCostume;
+}
+function costumeParts(model,costume) {
+ if(!costume)return [];
+ return R.instances(costume).flatMap(({name,primitive})=>{
+  const joint=model.json.nodes.findIndex(node=>node.name===name);
+  return joint<0?[]:[{joint,primitive}];
+ });
+}
 const faces=new WeakMap();
 function face(runtime,hurt=false){if(!faces.has(runtime)){const clip=runtime.animations.find(c=>c.name==='Smile'),smile=clip?clip.tracks.filter(t=>{const name=runtime.model.json.nodes[t.node].name;return name==='Jaw'||/^(Brow|MouthCorner|HappyEye)\.[LR]$/.test(name)||(t.path==='scale'&&/^(Eye|PainEye)\.[LR]$/.test(name))}):[];const hidden=runtime.model.json.nodes.flatMap((n,i)=>/^HappyEye\.[LR]$/.test(n.name)?[{node:i,path:'scale',times:new Float32Array([0]),values:new Float32Array([0,0,0]),width:3}]:[]);faces.set(runtime,{smile,hidden})}return faces.get(runtime)[hurt?'hidden':'smile']}
 function pose(runtime,clip,time,loop,expression,windTime,id='mohawk'){return R.pose(runtime,clip,time,loop,expression,{animation:'HairWind_'+names[id],time:windTime})}
-MG.MoleAppearances={styles,palettes,random,load,prepare,paint,materialColor,vertexColors,hairStyle,face,pose};
+MG.MoleAppearances={styles,palettes,random,load,prepare,paint,materialColor,vertexColors,hairStyle,face,pose,arcadeRepair,costumeParts};
 })(window);
