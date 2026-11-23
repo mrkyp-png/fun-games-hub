@@ -17,6 +17,7 @@
     const IN = MG.Home3DIntro, HOLE_Y = -0.3, RISE_T = 0.8; // 구멍 안 높이, 등장 뛰어오르기 시간
     const view = { x: 0, z: 0, heading: 0, yaw: 0, pitch: 0.62 }; // 구멍 가운데, 정면(화면 쪽) — 뒤로 두더지팡 게임장
     let ui = null, rd = null, ready = false, raf = 0, last = 0, time = 0, walking = false, route = null, near = null;
+    let revealFrame = false;
     let rise = 0, hop = null, jumpAt = -1, readyAt = Infinity, badges = [], badgeAt = -9;
     let doorEntry = null;
     let riding = null, seatY = 0, nearRide = null; // 놀이기구에 탄 동안: 타는 놀이기구 id // rise: 등장 경과 / hop: 구멍 밖 착지 {from,to,t} / jumpAt: 점프 시작 time
@@ -28,6 +29,10 @@
         if (doorEntry) return false;
         st.saveView(returnView || view);
         if (!st.openFeature(action)) return false;
+        if (ready && (action === 'shop' || action === 'inventory')) {
+          ui.capture(target => rd.snapshot(target));
+          revealFrame = true;
+        }
         stop();
         if (ui) ui.setFeature(true, root.FGH.I18N.lang === 'ko' ? '닫기' : 'Close', action);
         // 기존 경로가 거절하면(전환 중 연타 등) 광장으로 되돌림
@@ -142,7 +147,7 @@
     function stop() { if (raf) cancelAnimationFrame(raf); raf = 0; route = null; if (ui) ui.setEnabled(false); }
     function wake() {
       if (!ui) return;
-      ui.setEnabled(st.state === 'INTRO' || st.inputEnabled()); // 구멍 안: 시점 회전·점프만(이동은 move 에서 막음)
+      ui.setEnabled(ready && (st.state === 'INTRO' || st.inputEnabled())); // 구멍 안: 시점 회전·점프만(이동은 move 에서 막음)
       last = 0;
       if (ready && !raf && api.renderAllowed() && !document.hidden) raf = requestAnimationFrame(frame);
     }
@@ -407,6 +412,7 @@
       }
       if (camLift > 0.05) cv = Object.assign({}, cv, { fy: (cv.fy || 1.35) + camLift, dist: (cv.dist || 7.5) + camLift * 0.9, pitch: Math.min(1.3, cv.pitch + camLift * 0.015), far: 80 + camLift * 4 });
       rd.render(cv, pose());
+      if (revealFrame && rd.active()) { revealFrame = false; ui.frameReady(); }
       if (ui && ui.setBoardHand) { /* 게시판 손: 카메라가 다 붙었을 때 가운데 칸 아래 */
         let hp = null; if (boardAim && boardCam > 0.3 && rd.vp()) { const c = document.querySelector('#home3d .h3-canvas'), B = L.BOARD, pm = boardPanels().find((p) => p.kind === 'daily' && !p.back), q = c && pm && MG.Home3DRenderer.project(rd.vp(), root.StudioRig.point(pm.world, [0, -B.PANEL_H * 0.62, 0]));
           if (q) { const r = c.getBoundingClientRect(); hp = { x: (q[0] + 1) / 2 * r.width, y: (1 - q[1]) / 2 * r.height }; } }
@@ -492,7 +498,6 @@
           if (inside) { if (inside.phase === 'in' && st.inputEnabled()) opts.startGame(); return; } // 게임기 안 = 시작 // 사용자: 라운드 지도 없이 바로 시작
           if (near && near.action !== 'lightMode' && st.inputEnabled() && !jumping()) { if(near.doorDepth) enterDoor(near); else openSite(near); return; } if (st.state === 'INTRO' || st.inputEnabled()) jump(); }
       });
-      rd = MG.Home3DRenderer.create(ui.canvas);
       const ko = () => root.FGH.I18N.lang === 'ko';
       ui.setLoading(ko() ? '3D 공간 준비 중…' : 'Preparing 3D plaza…');
       const jumpLabel = () => ui.setJumpLabel(ko() ? '점프' : 'Jump'); jumpLabel();
@@ -500,9 +505,8 @@
       const signsNow = () => rd.buildSigns(root.FGH.I18N.lang, L.SITES, t);
       root.FGH.I18N.onChange(() => { jumpLabel(); if (ready) { signsNow(); refreshArcade(true); if (!raf && api.renderAllowed()) wake(); } });
       document.addEventListener('visibilitychange', wake);
-      rd.lost(() => { ready = false; stop(); ui.setLoading(ko() ? '3D 화면을 다시 불러와 주세요.' : 'Please reload the 3D plaza.'); });
       fetch('assets/home3d/islands/islands-walk.json?v=1784').then((r) => r.json()).then((j) => L.setIslands(j.islands)).catch(() => {}); /* V1705 C: 동서남북 섬 걷기 자료 */
-      rd.boot(PLAZA_GLB, MOLE_GLB, 'assets/home3d/boat.glb', [ /* V1633 C: 디스코 팡팡(배치만) */
+      const props = [ /* V1633 C: 디스코 팡팡(배치만) */
         /* V1776 C 사용자: 팡팡캐논 간판 삭제, 캐논 = 북쪽 바다를 보며 천천히 좌우 살핌(renderer cannonLook) */
         (()=>{const s=L.SITES.find(x=>x.id==='pangCannon');return {url:'assets/shop-models-v1509/cannon-v1-batched-v1509.glb',dyn:'cannonLook',look:{x:s.x,y:s.groundY,z:s.z,yaw:Math.PI},world:root.StudioRig.transform({translation:[s.x,s.groundY,s.z],rotation:[0,1,0,0]})};})(),
         (()=>{const s=L.SITES.find(x=>x.id==='neonSnake');return {url:'assets/home3d/neon-snake-cabinet.glb',action:s.action,signNode:'Sign_neonSnake',world:root.StudioRig.transform({translation:[s.x,s.groundY,s.z],rotation:[0,Math.sin(s.faceYaw/2),0,Math.cos(s.faceYaw/2)]})};})(),
@@ -510,10 +514,71 @@
         { url: 'assets/home3d/disco-base.glb?v=1690-G', /* 내용 바뀐 모델 = 버전 붙여 폰이 새로 받게 */ world: root.StudioRig.transform({ translation: [L.DISCO.x, 0, L.DISCO.z], scale: [L.DISCO.baseS, L.DISCO.baseS, L.DISCO.baseS] }) },
         { url: 'assets/home3d/disco-top.glb?v=1690-G', dyn: 'discoTop', world: root.StudioRig.transform({ translation: [L.DISCO.x, L.DISCO.topY, L.DISCO.z], scale: [L.DISCO.topS, L.DISCO.topS, L.DISCO.topS] }) },
         { url: 'assets/home3d/board.glb?v=1690-G', world: boardWorld() },
-        { url: 'assets/home3d/board-score.glb?v=1776-C', world: board2World() }], PLAZA_COSTUME_GLB).then(() => { /* V1650 C: 게시판 */
-        ready = true; readyAt = time; ui.setLoading(null); signsNow(); refreshArcade(true); rd.setBoard(boardPanels()); refreshBoard(true); if (MG.Home3DText) MG.Home3DText.ready().then(() => { signsNow(); refreshArcade(true); refreshBoard(true); wake(); }); /* V1653 C: 둥근 글씨체 준비되면 글자 다시 그림 */
-        wake();
-      }).catch((err) => { console.error('3D home:', err); ui.setLoading((ko() ? '3D 공간을 불러오지 못했습니다.' : 'Could not load the 3D plaza.') + ' (' + String(err && err.message || err).slice(0, 160) + ')'); });
+        { url: 'assets/home3d/board-score.glb?v=1776-C', world: board2World() }];
+      let restoreTimer = 0, freshCanvas = false, booted = false;
+      function replaceRenderer() {
+        clearTimeout(restoreTimer);
+        freshCanvas = true;
+        rd?.retire(true);
+        const canvas = ui.replaceCanvas();
+        watchCanvas(canvas);
+        bootRenderer(canvas);
+      }
+      function offerRetry() {
+        ui.setRetry(ko() ? '광장 다시 열기' : 'Reopen plaza', replaceRenderer);
+      }
+      function watchCanvas(canvas) {
+        canvas.addEventListener('webglcontextlost', event => {
+          event.preventDefault();
+          if (canvas !== ui.canvas) return;
+          if (ready) freshCanvas = false;
+          ready = false;
+          rd?.retire();
+          rd = null;
+          stop();
+          ui.setLoading(null);
+          ui.recovering();
+          revealFrame = true;
+          clearTimeout(restoreTimer);
+          restoreTimer = setTimeout(() => {
+            if (freshCanvas) offerRetry();
+            else replaceRenderer();
+          }, 2000);
+        });
+        canvas.addEventListener('webglcontextrestored', () => {
+          if (canvas !== ui.canvas || rd) return;
+          clearTimeout(restoreTimer);
+          bootRenderer(canvas);
+        });
+      }
+      async function bootRenderer(canvas) {
+        const renderer = rd = MG.Home3DRenderer.create(canvas);
+        ui.setRetry(null);
+        try {
+          await renderer.boot(PLAZA_GLB, MOLE_GLB, 'assets/home3d/boat.glb', props, PLAZA_COSTUME_GLB);
+          if (rd !== renderer || !renderer.active()) return;
+          signsNow();
+          refreshArcade(true);
+          renderer.setBoard(boardPanels());
+          refreshBoard(true);
+          if (!booted) readyAt = time;
+          booted = ready = true;
+          ui.setLoading(null);
+          wake();
+          if (MG.Home3DText) MG.Home3DText.ready().then(() => {
+            if (rd !== renderer || !ready) return;
+            signsNow(); refreshArcade(true); refreshBoard(true); wake();
+          });
+        } catch (err) {
+          if (rd !== renderer) return;
+          renderer.retire();
+          console.error('3D home:', err);
+          ui.setLoading(null);
+          offerRetry();
+        }
+      }
+      watchCanvas(ui.canvas);
+      bootRenderer(ui.canvas);
     }
     return api;
   }

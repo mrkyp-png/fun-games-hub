@@ -20,8 +20,27 @@
   function resize(){const rect=host.getBoundingClientRect(),style=root.getComputedStyle?.(host),safe=side=>parseFloat(style?.getPropertyValue('--ppc-safe-'+side))||0,d=layout(rect.width||800,rect.height||450,{left:safe('left'),right:safe('right'),bottom:safe('bottom')});place(move.el,d.move);place(aimStick.el,d.aim);buttons.forEach((el,i)=>place(el,d.skills[i]));paint(move);paint(aimStick);}
   listen(root,'resize',resize);const observer=root.ResizeObserver?new root.ResizeObserver(resize):null;observer?.observe(host);resize();
   listen(root,'blur',()=>{reset();options.onBlur?.();});listen(document,'visibilitychange',()=>{if(document.hidden){reset();options.onBlur?.();}});
-  const curve=(x,y)=>{const l=Math.hypot(x,y),dead=.1;if(l<=dead)return 0;return Math.pow(Math.min(1,(l-dead)/(1-dead)),1.6)/l;};
-  function update(dt){if(!enabled||disposed)return{...aim};const rect=host.getBoundingClientRect(),width=Math.max(1,rect.width||800),height=Math.max(1,rect.height||450),k=curve(aimStick.x,aimStick.y);if(k){const step=Math.min(width,height)*.85*Math.max(0,dt)*k;aim.u=Math.max(.08,Math.min(.92,aim.u+aimStick.x*step/width));aim.v=Math.max(.08,Math.min(.82,aim.v+aimStick.y*step/height));}const m=curve(move.x,move.y);if(m){const step=width*.5*Math.max(0,dt)*m;options.onMove?.(move.x*step,move.y*step);}return{...aim};}
+  function curve(x,y,dead,exponent){
+   const magnitude=Math.hypot(x,y);
+   if(magnitude<=dead)return 0;
+   return Math.pow(Math.min(1,(magnitude-dead)/(1-dead)),exponent)/magnitude;
+  }
+  function update(dt){
+   if(!enabled||disposed)return{...aim};
+   const rect=host.getBoundingClientRect(),width=Math.max(1,rect.width||800),height=Math.max(1,rect.height||450);
+   const aimGain=curve(aimStick.x,aimStick.y,.055,1.1);
+   if(aimGain){
+    const step=Math.min(width,height)*.85*Math.max(0,dt)*aimGain;
+    aim.u=Math.max(.08,Math.min(.92,aim.u+aimStick.x*step/width));
+    aim.v=Math.max(.08,Math.min(.82,aim.v+aimStick.y*step/height));
+   }
+   const moveGain=curve(move.x,move.y,.1,1.6);
+   if(moveGain){
+    const step=width*.5*Math.max(0,dt)*moveGain;
+    options.onMove?.(move.x*step,move.y*step);
+   }
+   return{...aim};
+  }
   function setEnabled(on){enabled=!!on;if(!enabled)reset();}
   function setSkills(ids){for(const b of buttons)b.disabled=!ids.includes(b.dataset.skill);}
   function dispose(){if(disposed)return;disposed=true;observer?.disconnect();setEnabled(false);listeners.forEach(f=>f());for(const el of [move.el,aimStick.el,...buttons])el.remove();}

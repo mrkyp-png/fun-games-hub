@@ -154,6 +154,7 @@
           art.classList.add('has-enh');
           art.style.setProperty('--enh', MG.Workshop.GLOW[item.level]);
         }
+        art.classList.add('inventory-item-art');
         var title = document.createElement('span'); title.className = 'inventory-item-name'; title.textContent = item.name;
         cell.append(art, title);
         if (item.level > 0) {
@@ -707,7 +708,9 @@
     }
     function fitSkillStage() {
       var mount = body.querySelector('.ks-mount');
-      if (!fitStage(mount, '--ks-scale', [118, 1160, 166, 1108])) return;
+      // The selected costume card's yellow outline extends 7 stage pixels past the card.
+      var bounds = active === 'costume' ? [109, 1169, 166, 1119] : [118, 1160, 166, 1108];
+      if (!fitStage(mount, '--ks-scale', bounds)) return;
       var ctx = document.createElement('canvas').getContext('2d');
       mount.querySelectorAll('.ks-card-desc').forEach(function (label) {
         label.style.fontSize = '30px'; ctx.font = getComputedStyle(label).font;

@@ -302,8 +302,11 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
   function create(canvas) {
     let boardPanels = [], boardTex = {}, props = [], boat = [], smoke = [], smokeBall = null, arcade = null, boss = null, modeBtn = [], roundNumbers = [], glowDisc = [], glowHalo = [], waveRings = [], screenTex = null, screenCanvas = null; // 두더지팡 게임기: 구멍 빛·구멍 두더지·화면 글자
     let gl, program, U, A, environment = [], actor = [], rig = null, smileFace = null, vp = null, signs = null, size = null, seaMesh = null, shadowS = null, shadowM = null, sunQuad = null, clouds = [], rides = [], staticAt = -9, staticVP = null, doorOpen = 0, doorAt = null, rhythmTunnel = null, rhythmField = null, extraNotes = null, gateEntryAt = -Infinity, gateNear = false, glassOpen = 0, glassAt = null;
+    let retired = false, lastView, lastPose;
     const resetSize = () => { size = null; };
-    if (root.ResizeObserver) new ResizeObserver(resetSize).observe(canvas); else root.addEventListener('resize', resetSize);
+    const observer = root.ResizeObserver ? new root.ResizeObserver(resetSize) : null;
+    if (observer) observer.observe(canvas); else root.addEventListener('resize', resetSize);
+    function active() { return !retired && !!gl && !gl.isContextLost(); }
     function shader(type, src) {
       const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
       if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw Error(gl.getShaderInfoLog(s));
@@ -392,11 +395,14 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
       if (!bv) throw Error('no texture');
       const bytes = model.bin.subarray(bv.byteOffset || 0, (bv.byteOffset || 0) + bv.byteLength);
       const bmp = await createImageBitmap(new Blob([bytes], { type: img.mimeType || 'image/png' }));
-      const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bmp); gl.generateMipmap(gl.TEXTURE_2D);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-      return t;
+      try {
+        if (!active()) throw Error('Plaza renderer unavailable');
+        const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bmp); gl.generateMipmap(gl.TEXTURE_2D);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+        return t;
+      } finally { bmp.close(); }
     }
     async function load(url) {
       /* V1729 C 사용자: 느려도 끝까지 받음 — 15초 동안 데이터가 하나도 안 올 때만 중단(전체 15초 제한 → 배포 직후 느린 망에서 'signal is aborted' 실패) */
@@ -417,9 +423,12 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
           load(plazaUrl), load(moleUrl), boatUrl ? load(boatUrl).catch(() => null) : null,
           playerCostumeUrl ? load(playerCostumeUrl).catch(() => null) : null,
         ]);
-        mole = root.MoleGame.MoleAppearances.paint(await root.MoleGame.MoleAppearances.prepare(mole,['mohawk']),'mohawk');
+        const appearance = root.MoleGame.MoleAppearances;
+        mole = await appearance.prepare(mole, ['mohawk']);
+        if (!active()) throw Error('Plaza renderer unavailable');
+        mole = appearance.paint(mole, 'mohawk');
         /* 고정 소품(Tripo, 그림 질감): [{url, world}] — 디스코 팡팡 상판·받침 */
-        for (const pr of propList || []) load(pr.url).then((mdl) => { const ins = R.instances(mdl); for (const i of ins) { const m = Object.assign(mesh(mdl, i.primitive), { world: R.multiply(pr.world, i.world), local: i.world, dyn: pr.dyn, look: pr.look, sign: pr.signNode===i.name?pr.action:null, texBase: null }); glbTexture(mdl, i.primitive).then((t) => { m.texBase = t; }).catch(() => { m.plain = true; }); props.push(m); } }).catch(() => {}); /* plain = 그림 없는 모델(재질 색) */
+        for (const pr of propList || []) load(pr.url).then((mdl) => { if (!active()) return; const ins = R.instances(mdl); for (const i of ins) { const m = Object.assign(mesh(mdl, i.primitive), { world: R.multiply(pr.world, i.world), local: i.world, dyn: pr.dyn, look: pr.look, sign: pr.signNode===i.name?pr.action:null, texBase: null }); glbTexture(mdl, i.primitive).then((t) => { m.texBase = t; }).catch(() => { m.plain = true; }); props.push(m); } }).catch(() => {}); /* plain = 그림 없는 모델(재질 색) */
         if (boatModel) { boat = R.instances(boatModel).map((i) => Object.assign(mesh(boatModel, i.primitive), { world: i.world, texBase: null })); for (const b of boat) glbTexture(boatModel, R.instances(boatModel)[0].primitive).then((t) => { b.texBase = t; }).catch(() => {}); }
         // Sign_<action> 판 = 간판 글자 텍스처 자리
         environment = R.instances(plaza).map((i) => Object.assign(mesh(plaza, i.primitive), { world: labelWorld(plaza,i), gateGlow: i.name.startsWith('GateGlow') || i.name === 'RhythmBars batch', rhythmBars: i.name === 'RhythmBars batch', speaker: i.name.startsWith('RhythmSpeaker'), energy: i.name === 'Energy_rhythm', shopDoor: i.name === 'Door_shop', sign: i.name.startsWith('Sign_') ? i.name.slice(5) : null, screen: i.name.startsWith('Screen_'), tex: null, texPrim: i.name.startsWith('Tex_') ? i.primitive : null }));
@@ -459,9 +468,9 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
           const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, sg.indices, gl.STATIC_DRAW);
           seaMesh = { vao, count: sg.indices.length, indexed: true, color: [1, 1, 1, 1], floor: false, sign: null, sea: true }; }
         // V1704 C: 동서남북 섬(배경). 홈 준비를 막지 않게 뒤에서 불러와 붙임. 실패해도 홈은 그대로.
-        for (const k of ['east', 'west', 'south', 'north']) load('assets/home3d/islands/island_' + k + '.glb?v=1784').then((mdl) => { for (const i of R.instances(mdl)) environment.push(Object.assign(mesh(mdl, i.primitive), { world: i.world, tex: null, texPrim: null, island: k })); }).catch(() => {});
+        for (const k of ['east', 'west', 'south', 'north']) load('assets/home3d/islands/island_' + k + '.glb?v=1784').then((mdl) => { if (!active()) return; for (const i of R.instances(mdl)) environment.push(Object.assign(mesh(mdl, i.primitive), { world: i.world, tex: null, texPrim: null, island: k })); }).catch(() => {});
           /* V1706 C 사용자: 화산 연기 움직임 — 연기 한 덩이를 6번 그림(분화구에서 올라가며 커졌다 사라짐) */
-          load('assets/home3d/islands/smoke_puff.glb').then((mdl) => { const i = R.instances(mdl)[0]; for (let k = 0; k < 6; k++) environment.push(Object.assign(mesh(mdl, i.primitive), { world: i.world, tex: null, texPrim: null, island: 'west', puff: k })); }).catch(() => {});
+          load('assets/home3d/islands/smoke_puff.glb').then((mdl) => { if (!active()) return; const i = R.instances(mdl)[0]; for (let k = 0; k < 6; k++) environment.push(Object.assign(mesh(mdl, i.primitive), { world: i.world, tex: null, texPrim: null, island: 'west', puff: k })); }).catch(() => {});
         {
           const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
           const pb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, pb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(18), gl.DYNAMIC_DRAW);
@@ -492,6 +501,8 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
       },
       // 한 프레임 그리기. view={x,z,heading,yaw,pitch}, pose={clip, t, loop, y}(y=두더지 높이)
       render(view, pose) {
+        if (!active()) return;
+        lastView = view; lastPose = pose;
         // 화면 크기는 바뀔 때만 읽음(매 프레임 배치 계산 방지), 해상도는 1.25배까지(저사양 폰)
         if (!size) { const b = canvas.getBoundingClientRect(), dpr = Math.min(root.devicePixelRatio || 1, 1.25); size = { cw: b.width, ch: b.height, w: Math.max(1, Math.round(b.width * dpr)), h: Math.max(1, Math.round(b.height * dpr)) }; }
         const w = size.w, h = size.h;
@@ -688,7 +699,23 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
       },
       vp: () => vp,
       size: () => size, // {cw,ch} = CSS 픽셀 크기(터치·버튼 위치 계산용)
-      lost(cb) { canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); cb(); }); }
+      snapshot(target) {
+        const context = target.getContext('2d');
+        if (!context || !active() || !lastView || !size?.cw || !size?.ch) return false;
+        this.render(lastView, lastPose);
+        if (!active()) return false;
+        const scale = Math.min(1, 480 / Math.max(canvas.width, canvas.height));
+        target.width = Math.max(1, Math.round(canvas.width * scale));
+        target.height = Math.max(1, Math.round(canvas.height * scale));
+        context.drawImage(canvas, 0, 0, target.width, target.height);
+        return true;
+      },
+      active,
+      retire(release = false) {
+        retired = true;
+        if (observer) observer.disconnect(); else root.removeEventListener('resize', resetSize);
+        if (release && gl && !gl.isContextLost()) gl.getExtension('WEBGL_lose_context')?.loseContext();
+      }
     };
   }
 

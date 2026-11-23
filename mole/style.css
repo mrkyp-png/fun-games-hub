@@ -10269,7 +10269,13 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #inventory-screen[data-tab="weapon"] .inventory-stone-layout > img + img {
   top:calc(160 / 423 * 100%); left:calc(-64 / 442 * 100%); clip-path:inset(0 0 0 50%);
 }
-.inventory-item-name { flex: none; box-sizing: border-box; max-width: 100%; width: 100%; margin-top: auto; padding: 0 2px; font-size: 20px; line-height: 1.05; white-space: normal; overflow-wrap: anywhere; }
+#inventory-screen .inventory-grid .inventory-cell > .inventory-item-art {
+  position: absolute; top: 50%; left: 50%; translate: -50% -50%;
+  height: calc(100% - 2 * max(15px, calc(20px * var(--inventory-ui-scale))));
+  max-height: none;
+}
+.inventory-item-name { position: absolute; bottom: 4px; left: 0; box-sizing: border-box; width: 100%; padding: 0 2px; font-size: 20px; line-height: 1.05; white-space: normal; overflow-wrap: anywhere; }
+.inventory-cell[aria-pressed="true"] .inventory-item-name { bottom: 3px; }
 .inventory-cell small { position: absolute; top: 2px; right: 2px; box-sizing: border-box; max-width: calc(100% - 4px); padding: 0; color: #5b2ca0; font-size: 23px; font-weight: 900; line-height: 1; white-space: nowrap; overflow: hidden; }
 .inventory-slot { color: #8291aa; font-size: clamp(21px,6vw,32px); }
 

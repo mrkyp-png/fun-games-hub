@@ -35,7 +35,7 @@
   function create(host, opts) {
     const input = createInput();
     const wrap = el('section', 'h3-home', host); wrap.id = 'home3d'; wrap.hidden = true;
-    const canvas = el('canvas', 'h3-canvas', wrap);
+    let canvas = el('canvas', 'h3-canvas', wrap), still = null;
     /* V1658 C 사용자: 1000m 고래·2000m 메갈로돈 — 바다 아래 실루엣이 화면 모서리에서 헤엄쳐 지나감 */
     /* V1660 C 사용자: 섬 둘레를 10분에 한 바퀴 — 화면 자리는 home3d.js 가 매 프레임 계산 */
     const deep = el('div', 'h3-deep', wrap); const deepImg = {};
@@ -107,6 +107,7 @@
     spinBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); if (opts.onSpin) opts.onSpin(); });
     bounceBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); if (opts.onBounce) opts.onBounce(); });
     const loading = el('div', 'h3-loading', wrap); loading.setAttribute('role', 'status');
+    const retry = el('button', 'h3-loading h3-retry', wrap); retry.type = 'button'; retry.hidden = true;
     // 설정·아이템·메일함은 자체 닫기 없이 아래 다이얼패드로 닫던 화면 — 광장이 그 자리를 덮으므로 대신 닫기
     const close = el('button', 'h3-close', wrap); close.type = 'button'; close.hidden = true;
     // 게임기 안(구멍판 화면)에서 조이스틱 자리 = 나가기(V1621 C 사용자)
@@ -118,10 +119,13 @@
     stick.addEventListener('pointermove', (e) => { input.stickMove(e.pointerId, ...stickXY(e)); drawKnob(); });
     for (const t of ['pointerup', 'pointercancel', 'lostpointercapture']) stick.addEventListener(t, (e) => { input.stickUp(e.pointerId); drawKnob(); });
 
-    canvas.addEventListener('pointerdown', (e) => { if (input.lookDown(e.pointerId, e.clientX, e.clientY)) canvas.setPointerCapture(e.pointerId); });
-    canvas.addEventListener('pointermove', (e) => { const d = input.lookMove(e.pointerId, e.clientX, e.clientY); if (d.dyaw || d.dpitch) opts.onLook(d); });
-    canvas.addEventListener('pointerup', (e) => { const tap = input.lookUp(e.pointerId, e.clientX, e.clientY); if (tap) { const b = canvas.getBoundingClientRect(); opts.onTap(tap.x - b.left, tap.y - b.top, b.width, b.height); } });
-    for (const t of ['pointercancel', 'lostpointercapture']) canvas.addEventListener(t, (e) => input.lookUp(e.pointerId, 0, 0));
+    function bindCanvas(target) {
+      target.addEventListener('pointerdown', (e) => { if (input.lookDown(e.pointerId, e.clientX, e.clientY)) target.setPointerCapture(e.pointerId); });
+      target.addEventListener('pointermove', (e) => { const d = input.lookMove(e.pointerId, e.clientX, e.clientY); if (d.dyaw || d.dpitch) opts.onLook(d); });
+      target.addEventListener('pointerup', (e) => { const tap = input.lookUp(e.pointerId, e.clientX, e.clientY); if (tap) { const b = target.getBoundingClientRect(); opts.onTap(tap.x - b.left, tap.y - b.top, b.width, b.height); } });
+      for (const t of ['pointercancel', 'lostpointercapture']) target.addEventListener(t, (e) => input.lookUp(e.pointerId, 0, 0));
+    }
+    bindCanvas(canvas);
     function resetAll() { input.reset(); drawKnob(); }
     root.addEventListener('blur', resetAll);
     document.addEventListener('visibilitychange', resetAll);
@@ -141,7 +145,32 @@
     jumpBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); opts.onJump(); });
 
     return {
-      canvas, input,
+      get canvas() { return canvas; }, input,
+      replaceCanvas() {
+        const next = canvas.cloneNode(false);
+        canvas.replaceWith(next);
+        canvas = next;
+        bindCanvas(next);
+        resetAll();
+        return next;
+      },
+      capture(copy) {
+        if (!still) {
+          still = document.createElement('canvas');
+          still.className = 'h3-canvas h3-still';
+          still.style.pointerEvents = 'none';
+          still.setAttribute('aria-hidden', 'true');
+          canvas.after(still);
+        }
+        still.hidden = true;
+        if (!copy(still)) { still.remove(); still = null; }
+      },
+      recovering() { canvas.style.visibility = 'hidden'; if (still) still.hidden = false; },
+      frameReady() {
+        canvas.style.visibility = '';
+        if (still) { still.remove(); still = null; }
+      },
+      setRetry(label, callback) { retry.hidden = !callback; retry.textContent = label || ''; retry.onclick = callback || null; },
       show(on) { wrap.hidden = !on; host.classList.toggle('home3d-on', !!on); if (!on) resetAll(); },
       setFeature(on, label, feature) {
         const hasOwnClose = ['score', 'daily', 'quest', 'inventory', 'shop', 'rhythm', 'neonSnake', 'pangCannon'].includes(feature);

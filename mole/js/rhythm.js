@@ -940,9 +940,9 @@
     function pushInGame(modal) {
       // V1585: diagonal wipe entry, matching the other former glitch routes.
       modal.hidden = true;
-      // V 1113 G: keep B's opaque screen fixed while only its board enters.
-      var entryTarget = activeB ? $('[data-rp-b] .rb-board') : el;
-      if (activeB) el.classList.remove('diagonal-wipe-in');
+      // Keep the full-screen background in place while the game surface enters.
+      var entryTarget = activeB ? $('[data-rp-b] .rb-board') : stage;
+      el.classList.remove('diagonal-wipe-in');
       replay(entryTarget,'diagonal-wipe-in');
       setTimeout(function () { entryTarget.classList.remove('diagonal-wipe-in'); }, 420);
     }
