@@ -301,7 +301,7 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
 
   function create(canvas) {
     let boardPanels = [], boardTex = {}, props = [], boat = [], smoke = [], smokeBall = null, arcade = null, boss = null, modeBtn = [], roundNumbers = [], glowDisc = [], glowHalo = [], waveRings = [], screenTex = null, screenCanvas = null; // 두더지팡 게임기: 구멍 빛·구멍 두더지·화면 글자
-    let gl, program, U, A, environment = [], actor = [], rig = null, smileFace = null, vp = null, signs = null, size = null, seaMesh = null, shadowS = null, shadowM = null, sunQuad = null, clouds = [], rides = [], staticAt = -9, staticVP = null, doorOpen = 0, doorAt = null, rhythmTunnel = null, rhythmField = null, extraNotes = null, gateEntryAt = -Infinity, gateNear = false, glassOpen = 0, glassAt = null;
+    let gl, program, U, A, environment = [], actor = [], playerActor = [], rig = null, smileFace = null, vp = null, signs = null, size = null, seaMesh = null, shadowS = null, shadowM = null, sunQuad = null, clouds = [], rides = [], staticAt = -9, staticVP = null, doorOpen = 0, doorAt = null, rhythmTunnel = null, rhythmField = null, extraNotes = null, gateEntryAt = -Infinity, gateNear = false, glassOpen = 0, glassAt = null;
     const resetSize = () => { size = null; };
     if (root.ResizeObserver) new ResizeObserver(resetSize).observe(canvas); else root.addEventListener('resize', resetSize);
     function shader(type, src) {
@@ -374,10 +374,10 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
       const color = (material.pbrMetallicRoughness && material.pbrMetallicRoughness.baseColorFactor) || [1, 1, 1, 1];
       return { vao, count, indexed, color, matName: material.name || '', floor: material.name === 'Hub checker floor', sea: material.name === 'Home sea' };
     }
-    function draw(m, world, bones) {
+    function draw(m, world, bones, isActor = !!bones) {
       gl.bindVertexArray(m.vao);
       gl.uniformMatrix4fv(U.Model, false, world); gl.uniformMatrix3fv(U.Normal, false, R.normals(world));
-      gl.uniform1i(U.Skin, !!bones); gl.uniform1i(U.Actor, !!bones); if (bones) gl.uniformMatrix4fv(U.Bones, false, bones);
+      gl.uniform1i(U.Skin, !!bones); gl.uniform1i(U.Actor, isActor); if (bones) gl.uniformMatrix4fv(U.Bones, false, bones);
       gl.uniform1i(U.RhythmSign,false);gl.uniform1i(U.CandySign,m.sign==='shop'||m.sign==='lightMode'||m.sign==='rhythm'||!!m.candyBand); /* V1731 C: 리듬팡도 테두리 있는 사탕 글씨 → 무지개는 글자 안쪽에만(테두리 유지) */gl.uniform2f(U.CandyBand,...(m.candyBand||[0,1]));gl.uniform1i(U.GlintOnly,!!m.candyBand);
       gl.uniform1i(U.Floor, m.floor); gl.uniform1i(U.Sea, !!m.sea); gl.uniform4fv(U.Color, m.color);
       if (m.texBase) { gl.uniform1i(U.TexBase, 1); gl.uniform1i(U.Sign, 0); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, m.texBase); gl.uniform1i(U.Tex, 0); if (m.indexed) gl.drawElements(gl.TRIANGLES, m.count, gl.UNSIGNED_INT, 0); else gl.drawArrays(gl.TRIANGLES, 0, m.count); gl.uniform1i(U.TexBase, 0); return; } /* 그림 질감 + 보통 조명(Tripo 배) */
@@ -411,9 +411,12 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
       } finally { clearTimeout(timer); }
     }
     return {
-      async boot(plazaUrl, moleUrl, boatUrl, propList) {
+      async boot(plazaUrl, moleUrl, boatUrl, propList, playerCostumeUrl) {
         setup();
-        let [plaza, mole, boatModel] = await Promise.all([load(plazaUrl), load(moleUrl), boatUrl ? load(boatUrl).catch(() => null) : null]);
+        let [plaza, mole, boatModel, playerCostume] = await Promise.all([
+          load(plazaUrl), load(moleUrl), boatUrl ? load(boatUrl).catch(() => null) : null,
+          playerCostumeUrl ? load(playerCostumeUrl).catch(() => null) : null,
+        ]);
         mole = root.MoleGame.MoleAppearances.paint(await root.MoleGame.MoleAppearances.prepare(mole,['mohawk']),'mohawk');
         /* 고정 소품(Tripo, 그림 질감): [{url, world}] — 디스코 팡팡 상판·받침 */
         for (const pr of propList || []) load(pr.url).then((mdl) => { const ins = R.instances(mdl); for (const i of ins) { const m = Object.assign(mesh(mdl, i.primitive), { world: R.multiply(pr.world, i.world), local: i.world, dyn: pr.dyn, look: pr.look, sign: pr.signNode===i.name?pr.action:null, texBase: null }); glbTexture(mdl, i.primitive).then((t) => { m.texBase = t; }).catch(() => { m.plain = true; }); props.push(m); } }).catch(() => {}); /* plain = 그림 없는 모델(재질 색) */
@@ -483,6 +486,12 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
           for (const p of mole.json.meshes[n.mesh].primitives) { const m = Object.assign(mesh(mole, p), { node }); actor.push(m); glbTexture(mole, p).then((t) => { m.texBase = t; }).catch(() => {}); } /* V1655 C: 신규 두더지 = 그림(텍스처) 색 */
         });
         if (!actor.length) throw Error('Mole skin missing');
+        // Keep the arcade cabinet mole on the uncostumed actor, even though it shares the player rig.
+        playerActor = actor.slice();
+        if (playerCostume) for (const { name, primitive } of R.instances(playerCostume)) {
+          const joint = mole.json.nodes.findIndex(n => n.name === name);
+          if (joint >= 0) playerActor.push(Object.assign(mesh(playerCostume, primitive), { node: joint }));
+        }
       },
       // 한 프레임 그리기. view={x,z,heading,yaw,pitch}, pose={clip, t, loop, y}(y=두더지 높이)
       render(view, pose) {
@@ -500,7 +509,7 @@ float fog=smoothstep(30.,150.,length(uEye-vWorld)/uFogK)*.3;frag=vec4(mix(displa
         gl.uniform1f(U.Time, now % 10000); gl.uniform3fv(U.Sun, sun);
         const worlds = root.MoleGame.MoleAppearances.pose(rig, pose.clip, pose.t, pose.loop, smileFace, now);
         const inst = R.transform({ translation: [view.x, pose.y || 0, view.z], rotation: [0, Math.sin(view.heading / 2), 0, Math.cos(view.heading / 2)], scale: [0.65 * (pose.s ?? 1), 0.65 * (pose.s ?? 1), 0.65 * (pose.s ?? 1)] }); // pose.s = 크기(동전 구멍으로 빨려 듦)
-        const drawMole = () => { if (pose.s === 0) return; if (pose.fade) { gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); for (const m of actor) { m.color0 = m.color0 || m.color; m.color = [m.color0[0], m.color0[1], m.color0[2], m.color0[3] * (1 - pose.fade * 0.85)]; } } for (const m of actor) draw(m, R.multiply(inst, worlds[m.node]), R.palette(rig, worlds, m.node)); if (pose.fade) { for (const m of actor) m.color = m.color0; gl.disable(gl.BLEND); } };
+        const drawMole = () => { if (pose.s === 0) return; if (pose.fade) { gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); for (const m of playerActor) { m.color0 = m.color0 || m.color; m.color = [m.color0[0], m.color0[1], m.color0[2], m.color0[3] * (1 - pose.fade * 0.85)]; } } for (const m of playerActor) draw(m, R.multiply(inst, worlds[m.node]), R.palette(rig, worlds, m.node), true); if (pose.fade) { for (const m of playerActor) m.color = m.color0; gl.disable(gl.BLEND); } };
         const drawClouds = () => { clouds.forEach((m, i) => { const c = cloudPos(i, now); gl.uniform1i(U.Cloud, 1); draw(m, R.transform({ translation: [c[0], c[1], c[2]], scale: [c[3], c[3], c[3]] }), null); gl.uniform1i(U.Cloud, 0); }); };
         // 그림자: 해 쪽에서 섬 전체(반지름 16)를 내려다보는 직교 카메라. 섬·건물은 1초마다, 두더지·구름은 매 프레임
         if (now - staticAt > 1 || !staticVP) {
