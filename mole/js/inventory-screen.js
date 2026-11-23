@@ -516,14 +516,14 @@
       var halfGap = Math.max(23, (page.clientWidth / 2 - inset) / (weaponScale / .9) - 29.12);
       page.style.setProperty('--kp-left', (34 - halfGap) + 'px');
       page.style.setProperty('--kp-right', (34 + halfGap) + 'px');
-      var rect = unit.getBoundingClientRect(), displayScale = rect.height / Math.max(1, unit.clientHeight);
-      if (!displayScale) return;
+      if (!unit.clientHeight || !page.clientHeight) return;
       // The straightened fist starts at y=25 before the cross's 1.12x extension.
       var pivotY = right.clientHeight * .7;
       var extendedTop = pivotY + (25 - pivotY) * 1.12;
-      var strikeTop = rect.top + (right.offsetTop + extendedTop) * displayScale;
-      var clearance = 11 + 4 * displayScale;
-      var roomToTop = Math.max(0, (strikeTop - page.getBoundingClientRect().top - clearance) / displayScale);
+      // Work in the display's layout coordinates, independent of the workshop exit transform.
+      var strikeTop = unit.offsetTop + (right.offsetTop + extendedTop - unit.clientHeight / 2) * weaponScale;
+      var clearance = 11 / stageScale + 4 * weaponScale;
+      var roomToTop = Math.max(0, (strikeTop - clearance) / weaponScale);
       page.style.setProperty('--kp-straight-distance', Math.min(42, roomToTop).toFixed(2) + 'px');
     }
     function fitStage(mount, scaleProperty, bounds) {

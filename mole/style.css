@@ -9296,7 +9296,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-card--weapon-product .shop-weapon-shadow-host--king>.shop-card-badge--hero { translate:none; }
 #shop-screen .shop-card--weapon-product .shop-card-img-box[data-model="goldhammer"]>.shop-model-canvas { scale:.95; transform-origin:50% 50%; }
 #shop-screen .shop-costume-set-art { position:absolute; left:50%; top:50%; width:94%; height:92%; transform:translate(-50%,-50%); }
-#shop-screen .shop-costume-visual--set .shop-costume-set-art { width:100%; height:100%; }
+#shop-screen .shop-costume-visual--set .shop-costume-set-art { top:57%; width:100%; height:100%; }
 #shop-screen .shop-costume-set-art::before {
   content:''; position:absolute; inset:0; pointer-events:none; border-radius:50%;
   background:radial-gradient(ellipse at 46% 44%,rgba(255,240,179,.92),rgba(255,207,105,.42) 42%,transparent 72%);
@@ -9644,7 +9644,7 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
   0%,49%,100% {transform:rotate(calc(-1 * var(--kp-tilt,19deg))) scaleX(-1);}
   40% {transform:rotate(calc(-1 * var(--kp-tilt,19deg))) scaleX(-1);animation-timing-function:steps(1,start);}
   41% {transform:translateX(-2px) rotate(0deg) scaleX(-1);}
-  44%,47% {transform:translate(-4px, calc(-1 * var(--kp-straight-distance,48px))) rotate(0deg) scaleX(-1) scale(1.12);}
+  44%,47% {transform:translate(-4px, calc(-1 * var(--kp-straight-distance,18px))) rotate(0deg) scaleX(-1) scale(1.12);}
   48% {transform:translateX(-2px) rotate(0deg) scaleX(-1);animation-timing-function:steps(1,start);}
 }
 #inventory-screen .iw-page:not(.ks-wpage) .inv-combo-word { position:absolute; left:60px; top:30px; width:100px; margin-left:-50px; display:flex; justify-content:center; align-items:center; color:#f0fdff; font:900 12px/1.1 'Jua',sans-serif; -webkit-text-stroke:.4px #17495b; text-shadow:0 1px 1px #17495b; opacity:0; pointer-events:none; z-index:3; }

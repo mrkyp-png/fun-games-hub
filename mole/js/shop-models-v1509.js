@@ -20,6 +20,30 @@ const paths={hammer:'hammer-v5-batched-v1509.glb',cannon:'cannon-v1-batched-v150
 const costumes=new Set(['hold-time','safe-chance','double-hit']);
 const wornCostumes=new Set([...costumes].map(id=>id+'-worn'));
 const assets=new Map(),views=new Set(),dormant=new Map(),waiting=new Map();let frameId=0,lastTick=0,lastAction=-Infinity,activeScreen=null,initQueue=Promise.resolve();
+const contextOptions={alpha:true,antialias:true,premultipliedAlpha:false,preserveDrawingBuffer:false,powerPreference:'low-power'};
+let shopSurface=null;
+function useShopSurface(view){
+ if(!shopSurface){
+  const canvas=document.createElement('canvas'),gl=canvas.getContext('webgl',contextOptions);
+  if(!gl)throw Error('WebGL unavailable');
+  const surface={canvas,gl,users:new Set()};
+  canvas.addEventListener('webglcontextlost',()=>{
+   if(shopSurface!==surface)return;
+   shopSurface=null;
+   for(const user of [...surface.users])park(user);
+  });
+  shopSurface=surface;
+ }
+ shopSurface.users.add(view);
+ return shopSurface;
+}
+function releaseShopSurface(surface,view){
+ surface.users.delete(view);
+ if(surface===shopSurface&&!surface.users.size){
+  shopSurface=null;
+  surface.gl.getExtension('WEBGL_lose_context')?.loseContext();
+ }
+}
 function reserveInit(){let unlock;const previous=initQueue;initQueue=new Promise(resolve=>{unlock=resolve;});return previous.then(()=>new Promise(resolve=>requestAnimationFrame(()=>resolve(unlock))));}
 function load(id){if(!assets.has(id)){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),wornCostumes.has(id)?15000:9000);const url=costumes.has(id)||wornCostumes.has(id)?'assets/costume-preview/'+id+'.glb':'assets/shop-models-v1509/'+paths[id];assets.set(id,fetch(url,{signal:controller.signal}).then(r=>{if(!r.ok)throw Error('Model '+r.status);return r.arrayBuffer();}).then(parseGLB).catch(e=>{assets.delete(id);throw e;}).finally(()=>clearTimeout(timer)));}return assets.get(id);}
 function translation(x,y,z){const m=identity();m[12]=x;m[13]=y;m[14]=z;return m;}
@@ -79,13 +103,22 @@ async function create(host,id,index,options={}){
  if(!costume&&host.closest('#shop-screen'))host.setAttribute('data-model-weapon',id);
  const canvas=document.createElement('canvas');canvas.className='shop-model-canvas';canvas.setAttribute('aria-label',id==='hammer'?'뿅망치 3D':id==='cannon'?'팡팡 캐논 3D':id==='alipunch'?'돌주먹 3D':'골드 묠니르 3D');
  if(costume)canvas.setAttribute('aria-label',host.dataset.costumeLabel||host.getAttribute('aria-label')||'3D');
- host.appendChild(canvas);let gl=null,disposed=false,observer=null,visibility=null,releaseInit=null;
- const view={host,id,index,options,pose:{yaw:options.yaw??0,pitch:25,kick:0},inView:!('IntersectionObserver' in root),elapsed:0,lastSeen:performance.now(),lastFrame:0,width:0,height:0,draw(){},setPose(pose){Object.assign(this.pose,pose);this.draw(performance.now());},dispose(){if(disposed)return;disposed=true;views.delete(view);if(observer)observer.disconnect();if(visibility)visibility.disconnect();host.classList.remove('shop-model-ready');canvas.remove();gl?.getExtension('WEBGL_lose_context')?.loseContext();}};
+ host.appendChild(canvas);let gl=null,disposed=false,observer=null,visibility=null,releaseInit=null,shared=null,paintCanvas=null;
+ const view={host,id,index,options,pose:{yaw:options.yaw??0,pitch:25,kick:0},inView:!('IntersectionObserver' in root),elapsed:0,lastSeen:performance.now(),lastFrame:0,width:0,height:0,draw(){},setPose(pose){Object.assign(this.pose,pose);this.draw(performance.now());},dispose(){if(disposed)return;disposed=true;views.delete(view);if(observer)observer.disconnect();if(visibility)visibility.disconnect();host.classList.remove('shop-model-ready');canvas.remove();if(shared)releaseShopSurface(shared,view);else gl?.getExtension('WEBGL_lose_context')?.loseContext();}};
  views.add(view);
  try{
   const model=await load(id);if(disposed||!host.isConnected){view.dispose();return;}
   releaseInit=await reserveInit();if(disposed||!host.isConnected){view.dispose();return;}
-  gl=canvas.getContext('webgl',{alpha:true,antialias:true,premultipliedAlpha:false,preserveDrawingBuffer:false,powerPreference:'low-power'});if(!gl)throw Error('WebGL unavailable');
+  if(host.closest('#shop-screen')&&!options.external){
+   paintCanvas=canvas.getContext('2d');
+   if(!paintCanvas)throw Error('Canvas unavailable');
+   shared=useShopSurface(view);
+   gl=shared.gl;
+  }else{
+   gl=canvas.getContext('webgl',contextOptions);
+   if(!gl)throw Error('WebGL unavailable');
+   canvas.addEventListener('webglcontextlost',()=>{if(!disposed)park(view);});
+  }
   const list=model._previewInstances||(model._previewInstances=instances(model)),box=model._previewBounds||(model._previewBounds=bounds(model,list)),radius=box.radius||1;
   const vertex='attribute vec3 aPosition;attribute vec3 aNormal;attribute vec2 aUV;attribute vec4 aColor;uniform mat4 uModel;uniform mat4 uVP;uniform mat3 uNormal;varying vec3 vPosition;varying vec3 vNormal;varying vec2 vUV;varying vec4 vColor;void main(){vec4 p=uModel*vec4(aPosition,1.0);vPosition=p.xyz;vNormal=normalize(uNormal*aNormal);vUV=aUV;vColor=aColor;gl_Position=uVP*p;}';
   const fragment='precision highp float;varying vec3 vPosition;varying vec3 vNormal;varying vec2 vUV;varying vec4 vColor;uniform vec4 uColor;uniform sampler2D uTexture;uniform bool uTextured;uniform float uRoughness;uniform float uCutoff;uniform vec3 uEye;uniform vec3 uEmission;void main(){vec4 t=uTextured?texture2D(uTexture,vUV):vec4(1.0);float alpha=t.a*uColor.a*vColor.a;if(alpha<uCutoff)discard;vec3 base=uColor.rgb*vColor.rgb*(uTextured?pow(t.rgb,vec3(2.2)):vec3(1.0));vec3 n=normalize(vNormal);if(!gl_FrontFacing)n=-n;vec3 l=normalize(vec3(-0.4,0.85,0.8)),fill=normalize(vec3(0.8,0.3,-0.5)),v=normalize(uEye-vPosition),h=normalize(l+v);float diffuse=max(dot(n,l),0.0),d2=max(dot(n,fill),0.0),spec=pow(max(dot(n,h),0.0),mix(8.0,64.0,1.0-max(uRoughness,0.35)))*0.48;vec3 c=base*(0.62+0.65*diffuse+0.25*d2)+vec3(spec)+uEmission;gl_FragColor=vec4(pow(max(c,vec3(0.0)),vec3(1.0/2.2)),alpha);}';
@@ -107,7 +140,7 @@ async function create(host,id,index,options={}){
    draws.push({name:item.name,world:item.world,slotGlow:item.name==='Right recessed bright yellow glowing capsule floor',normalMatrix:normals(item.world),positions:buffer(position),normals:buffer(normal),uv:buffer(uv),paint:paint===null?null:buffer(accessor(model,paint)),paintSize:paint!==null&&g.accessors[paint].type==='VEC3'?3:4,count,indices,indexType,indexCount,mode:p.mode??4,color,emission:(mat.emissiveFactor||[0,0,0]).map(v=>v*(mat.extensions?.KHR_materials_emissive_strength?.emissiveStrength??1)),roughness:pbr.roughnessFactor??.5,double:mat.doubleSided,alpha:mat.alphaMode||'OPAQUE',cutoff:mat.alphaMode==='MASK'?(mat.alphaCutoff??.5):0,texture:pbr.baseColorTexture?await texture(pbr.baseColorTexture.index):white,textured:!!pbr.baseColorTexture});
   }
 
-  gl.enable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.uniform1i(loc.uTexture,0);
+  gl.useProgram(program);gl.enable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.uniform1i(loc.uTexture,0);
   function bind(b,id,size){gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.enableVertexAttribArray(id);gl.vertexAttribPointer(id,size,gl.FLOAT,false,0,0);}
   function bindPart(d){bind(d.positions,attr.aPosition,3);bind(d.normals,attr.aNormal,3);bind(d.uv,attr.aUV,2);if(d.paint)bind(d.paint,attr.aColor,d.paintSize);else gl.disableVertexAttribArray(attr.aColor);if(d.indices)gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,d.indices);}
 
@@ -145,6 +178,11 @@ async function create(host,id,index,options={}){
    const inventory=options.motion==='inventory',pixelScale=Math.min(dpr,cap/Math.max(1,view.width,view.height));
    const w=Math.max(1,Math.min(cap,Math.round(view.width*pixelScale))),h=Math.max(1,Math.min(cap,Math.round(view.height*pixelScale)));
    if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
+   if(shared){
+    if(shared.canvas.width!==w)shared.canvas.width=w;
+    if(shared.canvas.height!==h)shared.canvas.height=h;
+    gl.useProgram(program);
+   }
    gl.viewport(0,0,w,h);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
    const elapsed=view.elapsed;
    const automatic=!options.manual&&!options.external;
@@ -232,6 +270,10 @@ async function create(host,id,index,options={}){
     for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(rgba[(y*w+x)*4+3]>32){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);}
     if(x1>=x0){host._shopOpaqueBounds={left:x0/w,right:(x1+1)/w,top:1-(y1+1)/h,bottom:1-y0/h};host._shopOpaqueSize=w+':'+h;}
    }
+   if(shared){
+    paintCanvas.clearRect(0,0,w,h);
+    paintCanvas.drawImage(shared.canvas,0,0);
+   }
    if((inventory||options.manual||options.shopCaption)&&options.onFrame){const matrix=multiply(vp,motion),points=[];for(const x of [box.low[0],box.high[0]])for(const y of [box.low[1],box.high[1]])for(const z of [box.low[2],box.high[2]])points.push(projectPoint(matrix,[x,y,z]));options.onFrame({left:Math.min(...points.map(p=>p.x)),right:Math.max(...points.map(p=>p.x)),top:Math.min(...points.map(p=>p.y)),bottom:Math.max(...points.map(p=>p.y)),hop:+host.dataset.modelHop||0,recoil:amount});}
   };
   host.classList.add('shop-model-ready');host.dataset.model=id;view.elapsed=0;view.lastSeen=performance.now();measureCanvas(view,canvas);view.draw(view.lastSeen);
@@ -264,10 +306,64 @@ function refreshInventory(host){
  start();
 }
 function retryWithin(container){for(const host of container.querySelectorAll('[data-model-error]')){const record=host._moleModelDefinition;if(!record)continue;delete host.dataset.modelError;createVisible(host,record.id,record.options).catch(()=>{});}}
-function snapshot(preview){for(const v of views){const target=preview.querySelector('.shop-model-ready[data-model="'+v.host.dataset.model+'"] canvas');if(!target||!v.host.classList.contains('shop-model-ready'))continue;try{v.draw(performance.now());const img=document.createElement('img');img.className='shop-model-canvas shop-model-snapshot';img.alt='';img.src=v.host.querySelector('canvas').toDataURL('image/png');target.replaceWith(img);}catch(error){target.remove();preview.querySelector('[data-model="'+v.host.dataset.model+'"]')?.classList.remove('shop-model-ready');}}}
+function snapshot(preview){
+ for(const v of views){
+  const setMatch=v.options.setPiece?'[data-costume-set-item]':':not([data-costume-set-item])';
+  const host=preview.querySelector('.shop-model-ready[data-model="'+v.id+'"]'+setMatch),target=host?.querySelector('canvas');
+  if(!target||!v.host.classList.contains('shop-model-ready'))continue;
+  try{
+   v.draw(performance.now());
+   const img=document.createElement('img');img.className='shop-model-canvas shop-model-snapshot';img.alt='';
+   img.src=v.host.querySelector('canvas').toDataURL('image/png');target.replaceWith(img);
+  }catch(error){target.remove();host.classList.remove('shop-model-ready');}
+ }
+}
 function clear(){for(const v of [...views])if(v.host.closest('#shop-screen'))v.dispose();for(const host of dormant.keys())if(host.closest('#shop-screen'))dormant.delete(host);if(!views.size){if(frameId)cancelAnimationFrame(frameId);frameId=0;lastTick=0;}}
-function activateScreen(id){activeScreen=id;const now=performance.now();for(const v of [...views]){v.lastSeen=now;const screen=v.host.closest('#shop-screen,#inventory-screen,#workshop-screen,#game-screen');if(screen&&screen.id!==id&&!v.options.external&&!v.options.manual){dormant.set(v.host,{id:v.id,index:v.index,options:v.options,elapsed:v.elapsed});v.dispose();}}for(const [host,record] of [...dormant]){if(!host.isConnected){dormant.delete(host);continue;}if(host.closest('#shop-screen,#inventory-screen,#workshop-screen,#game-screen')?.id===id){dormant.delete(host);create(host,record.id,record.index,record.options).then(view=>{if(view){view.elapsed=record.elapsed;view.draw(performance.now());}});}}if(frameId){cancelAnimationFrame(frameId);frameId=0;}start();}
-function attach(cards,weapons,onFrame,retain){if(!retain)clear();const jobs=[],cardsList=cards.querySelectorAll('.shop-card--weapon-product');cardsList.forEach((card,index)=>{const id=weapons[index]?.id;if(!paths[id]||id==='alipunch')return;const host=card.querySelector('.shop-card-img-box,.shop-card-badge--default-weapon');if(host)jobs.push(create(host,id,index,onFrame?{shopCaption:true,onFrame:bounds=>onFrame(host,bounds)}:{}));});jobs.push(...attachGloves(cards));return Promise.all(jobs);}
+function park(view){
+ const {host,id,index,options,elapsed}=view;
+ if(options.manual)delete host.dataset.gloveMounted;
+ else dormant.set(host,{id,index,options,elapsed});
+ view.dispose();
+}
+function resume(host,record){
+ dormant.delete(host);
+ delete host.dataset.modelError;
+ create(host,record.id,record.index,record.options).then(view=>{
+  if(view){view.elapsed=record.elapsed;view.draw(performance.now());}
+  else if(host.isConnected&&!dormant.has(host))dormant.set(host,record);
+ });
+}
+function activateScreen(id){
+ activeScreen=id;
+ const now=performance.now();
+ for(const v of [...views]){
+  v.lastSeen=now;
+  const screen=v.host.closest('#shop-screen,#inventory-screen,#workshop-screen,#game-screen');
+  if(screen&&screen.id!==id&&!v.options.external&&(!v.options.manual||screen.id==='shop-screen'))park(v);
+ }
+ for(const [host,record] of [...dormant]){
+  if(!host.isConnected){dormant.delete(host);continue;}
+  if(host.closest('#shop-screen,#inventory-screen,#workshop-screen,#game-screen')?.id===id&&!host.closest('.shop-pane-staged'))resume(host,record);
+ }
+ if(frameId){cancelAnimationFrame(frameId);frameId=0;}
+ start();
+}
+function attach(cards,weapons,onFrame,retain){
+ if(!retain)clear();
+ const jobs=[], staged=cards.classList.contains('shop-pane-staged');
+ cards.querySelectorAll('.shop-card--weapon-product').forEach((card,index)=>{
+  const id=weapons[index]?.id;
+  const host=card.querySelector('.shop-card-img-box,.shop-card-badge--default-weapon');
+  if(!host||!paths[id]||id==='alipunch')return;
+  const options=onFrame?{shopCaption:true,onFrame:bounds=>onFrame(host,bounds)}:{};
+  if(staged){
+   dormant.set(host,{id,index,options,elapsed:0});
+   load(id).catch(()=>{});
+  }else jobs.push(create(host,id,index,options));
+ });
+ if(!staged)jobs.push(...attachGloves(cards));
+ return Promise.all(jobs);
+}
 // 원본 그림의 동작은 유지하며 상점 재질과 조명을 공유한다.
 function attachGloves(container){
  const yaw = 155 * Math.PI / 180;
@@ -288,11 +384,15 @@ function attachGloves(container){
  }return jobs;
 }
 function activateShop(cards){
+ // Staged tabs keep their data and fallback artwork, freeing contexts for the visible tab.
+ for(const v of [...views])if(v.host.closest('#shop-screen')&&!cards.contains(v.host)&&v.host.closest('.shop-pane-staged'))park(v);
+ for(const [host,record] of [...dormant])if(cards.contains(host))resume(host,record);
+ if(cards.querySelector('.shop-card--weapon-product'))attachGloves(cards);
  for(const host of cards.querySelectorAll('[data-shop-costume-model]:not([data-costume-mounted])')){
   host.dataset.costumeMounted='true';
   delete host.dataset.modelError;
   create(host,host.dataset.shopCostumeModel,0,{maxPixels:384,setPiece:host.hasAttribute('data-costume-set-item')}).then(view=>{
-   if(!view&&host.isConnected)delete host.dataset.costumeMounted;
+   if(!view&&host.isConnected&&!dormant.has(host))delete host.dataset.costumeMounted;
   });
  }
  for(const v of views)if(cards.contains(v.host)){v.lastSeen=performance.now();v.inView=true;v.resize?.();}

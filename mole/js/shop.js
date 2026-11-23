@@ -980,7 +980,6 @@
         ready.then(function (value) { clearTimeout(timeout); resolve(value); }, function (error) { clearTimeout(timeout); reject(error); });
       }).then(function () {
         if (!element.isConnected) throw new Error('Pane cancelled');
-        if (id === 'weapon' && element.querySelector('[data-model-error]')) throw new Error('Weapon preparation failed');
         element.dataset.paneReady = 'true';
       }).catch(function (error) { pane.error = error; throw error; });
       pane.ready.catch(function () {});
