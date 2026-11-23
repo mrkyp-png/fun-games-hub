@@ -963,14 +963,13 @@
     if (!state || state.ended || state.introActive) return;
     const it = slotsArr[i];
     if (!it) return;
+    if (it.id === 'shield' && (!run || run.shield)) return;
     if (!MG.Skills.consumeOne(it.id)) return; // 수량 0 — 실패(음수 방지, §81)
     if (MG.Skills.getQuantity(it.id) <= 0) slotsArr[i] = null;
     rerender();
     runSkillEffect(it.id);
   }
 
-  // 타겟팅만 실제 연출/효과(§54~59) — 나머지 4개는 게임 내 실제 효과가 아직 미정의(사용자
-  // 확인: "시스템만 먼저") → 소비/UI만 실제로 동작, 화면엔 플레이스홀더 이름만 표시.
   const AI_SKILL_MS = 10000; // 사용자: AI 스킬 10초
   const AI_HIT_GAP_MS = 90; // V1422 C 사용자: 빨리 쳐서 다 잡게(분신 망치가 겹친 타격을 받아줌)
   // AI 자동 공격 — 메인 루프가 매 프레임 호출. 진짜 타겟 하나를 골라 실제 탭과 같은 handleCell 로 친다(무기 연출·점수·콤보 동일).
@@ -988,10 +987,9 @@
   }
   function runSkillEffect(id) {
     if (id === 'targeting') { activateTargeting(); return; }
-    // V1403 C 사용자: 실드도 장착형 — 누르면 실드(폭탄 1번 방어) 켜짐, 실드 아이템과 같은 효과.
     // V1405 C 사용자: AI = 20초 동안 자동 공격, 남은 시간은 다이얼패드 가운데 카운트다운(킹 판취 무적처럼).
     if (id === 'ai' && state) { state.aiUntil = performance.now() + AI_SKILL_MS; state.aiNextAt = 0; return; }
-    if (id === 'shield' && run) { run.shield = true; const sb = document.getElementById('mole-board'); if (sb) sb.classList.add('mole-board--shielded'); }
+    if (id === 'shield' && run) { run.shield = 'skill'; updateShieldHud(); }
     const board = document.getElementById('mole-board');
     const skill = MG.Skills.skillById(id);
     if (board && skill) MG.HitFx.skillWord(board, I18N.lang === 'en' ? skill.nameEn : skill.nameKo);
@@ -2585,6 +2583,12 @@
     return type;
   }
 
+  function blockBombHit(board, hit) {
+    run.shield = false;
+    MG.HitFx.juggle(board, hit.xFrac, hit.yFrac);
+    updateShieldHud();
+  }
+
   function onHammerImpact(hitXFrac, hitYFrac, results, opts) {
     recordInputTrace('impact', { regionId: opts && opts.regionId });
     if (!state || state.ended || !run || !run.combo) return;
@@ -2618,6 +2622,11 @@
               recordInputTrace('costume-safe-chance', { kind: r.bombKind, regionId: r.regionId });
               return;
             }
+          }
+          // The equipped skill also covers carried bombs. Apply it after SAFE CHANCE.
+          if (run.shield === 'skill') {
+            blockBombHit(board, r);
+            return;
           }
           // 폭탄 든 두더지(2026-09-14 확정) — 점수 없이 페널티만. 일반 하트-1, 강력 하트-2.
           // 챕터8(reverseTarget)은 두더지 자체가 장애물이라 기본 장애물 페널티(-1)가 폭탄
@@ -2671,7 +2680,7 @@
           MG.HitFx.moleTap(board, r.xFrac, r.yFrac);
         }
       } else if (effType === 'item') {
-        run.shield = true;              // 실드 아이템 획득 — 폭탄 1회 방어
+        if (!run.shield) run.shield = true; // Keep an armed skill's carried-bomb protection.
         MG.HitFx.moleHit(board, r.xFrac, r.yFrac);
         flashHud('hud-hearts');
         updateShieldHud();
@@ -2701,9 +2710,7 @@
           MG.HitFx.juggle(board, r.xFrac, r.yFrac);
           moleHits += 1;
         } else if (run.shield) {               // 실드가 폭탄을 막는다 (페널티 무효)
-          run.shield = false;
-          MG.HitFx.juggle(board, r.xFrac, r.yFrac); // "방어!" 느낌의 가벼운 연출
-          updateShieldHud();
+          blockBombHit(board, r);
         } else {
           state.timeRemaining = Math.max(0, state.timeRemaining - 3); // 스펙 §8
           flashHud('hud-time'); // 시간 −3 — 상태판 TIME 칸을 잠깐 번쩍

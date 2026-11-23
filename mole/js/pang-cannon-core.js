@@ -48,7 +48,23 @@
   function resolve(){if(state.phase==='GAME_OVER'||state.hearts<=0)return;if(state.bossCleared&&state.fleetSeconds>=state.bossClearAt+2.4){clearShots();state.bonusMoles.forEach(m=>m.alive=false);state.hearts=Math.min(3,state.hearts+1);event('roundClear',{round:state.round,score:state.score-state.roundStartScore});if(state.round===8){state.finalResult='ALL_CLEAR';phase('ALL_CLEAR');}else phase('ROUND_CLEAR');}}
   function step(dt){if(!Number.isFinite(dt)||dt<0||dt>.05)throw Error('Use bounded fixed simulation steps');if(state.phase==='COUNTDOWN'){state.fleetSeconds=(state.fleetSeconds||0)+dt;state.countdown=Math.max(0,state.countdown-dt);if(state.countdown<=1e-8)phase('NORMAL_COMBAT');return;}if(!COMBAT.has(state.phase))return;state.combatSeconds+=dt;state.fleetSeconds=(state.fleetSeconds||0)+dt;tickSkills(dt);tactics();for(const k in state.sunk){const i=+k;if(Fleet.isBoss(i)||Fleet.isTactic(i)||state.bossPhase||state.fleetSeconds<state.sunk[k].at+C.rules.boatRespawn)continue;delete state.sunk[k];state.boatHp[i]=C.rules.boatHp;Fleet.shifts[i]=state.fleetSeconds;}krakenSlam();if(state.holes.length&&state.holes[0].until<=state.combatSeconds)state.holes=state.holes.filter(h=>h.until>state.combatSeconds);state.hurtRemaining=Math.max(0,state.hurtRemaining-dt);state.fireRemaining=Math.max(0,state.fireRemaining-dt);state.spawnRemaining=Math.max(0,state.spawnRemaining-dt);if(state.phase==='NORMAL_COMBAT'&&!state.bossCleared&&!state.spawnRemaining&&live().length<cap())prepareThrow();advanceThrow(dt);advanceShots(dt);resolve();}
   function autoTarget(){const p=live().filter(p=>p.age>=p.launchSeconds&&!state.playerShots.some(s=>s.alive&&s.targetId===p.id)).sort((a,b)=>(a.totalSeconds-a.age)-(b.totalSeconds-b.age))[0];if(!p)return null;const lead=typeof options.playerFlightSeconds==='function'?options.playerFlightSeconds([0,2,1.8],p.pos):options.playerFlightSeconds;if(!(lead>0))return null;return{target:F.position(p,Math.min(p.totalSeconds,p.age+lead)),id:p.id};}
-  function moveCannon(x,z){if(!Number.isFinite(x)||!Number.isFinite(z))return false;if(state.trapped)return false;/* V1786 C 사용자: 큰 구멍에 빠진 캐논은 못 움직임 */const r=C.rules,cz=Math.max(r.cannonZMin,Math.min(r.cannonZMax,z)),half=Math.max(0,8.7+(cz+5.3)*.29-r.cannonSideMargin),nx=Math.max(-half,Math.min(half,x)),blocked=h=>Math.hypot(h.x-nx,h.z-cz)<h.r+r.cannonBodyRadius;if(state.holes.some(blocked)){const sx=state.holes.some(h=>Math.hypot(h.x-nx,h.z-state.cannon[2])<h.r+r.cannonBodyRadius),sz=state.holes.some(h=>Math.hypot(h.x-state.cannon[0],h.z-cz)<h.r+r.cannonBodyRadius);if(!sx)state.cannon[0]=nx;else if(!sz)state.cannon[2]=cz;return false;}state.cannon[0]=nx;state.cannon[2]=cz;return true;}
+  function moveCannon(x,z){
+   if(!Number.isFinite(x)||!Number.isFinite(z)||state.trapped)return false;
+   const [fromX,,fromZ]=state.cannon,r=C.rules;
+   const targetZ=Math.max(r.cannonZMin,Math.min(r.cannonZMax,z));
+   const half=Math.max(0,8.7+(targetZ+5.3)*.29-r.cannonSideMargin);
+   const targetX=Math.max(-half,Math.min(half,x));
+   const blocked=(px,pz)=>state.holes.some(h=>Math.hypot(h.x-px,h.z-pz)<h.r+r.cannonBodyRadius);
+   const destinationClear=!blocked(targetX,targetZ);
+   let nextX=fromX,nextZ=fromZ;
+   if(destinationClear){nextX=targetX;nextZ=targetZ;}
+   else if(!blocked(targetX,fromZ))nextX=targetX;
+   else if(!blocked(fromX,targetZ))nextZ=targetZ;
+   state.cannon[0]=nextX;state.cannon[2]=nextZ;
+   const dx=nextX-fromX,dz=nextZ-fromZ;
+   if(Math.hypot(dx,dz)>1e-6)state.cannonHeading=Math.atan2(dx,dz);
+   return destinationClear;
+  }
   function pause(){if(!COMBAT.has(state.phase)&&state.phase!=='COUNTDOWN')return false;phase('PAUSED');return true;}
   function resume(){if(state.phase!=='PAUSED')return false;state.countdown=3;phase('COUNTDOWN');return true;}
   function nextRound(){if(state.phase!=='ROUND_CLEAR')return false;beginRound(state.round+1);return true;}

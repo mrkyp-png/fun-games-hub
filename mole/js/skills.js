@@ -9,7 +9,7 @@
   // V1403 C 사용자: 스킬은 실드·타겟팅·AI 3개만, 전부 장착형(액티브). 패시브 없음.
   // (빙결·골드2배·융단폭격·피버타임 증가는 목록에서 제외 — 그림 파일은 남겨 둠)
   var SKILLS = [
-    { id: 'shield', type: 'ACTIVE', nameKo: '실드', nameEn: 'Shield', icon: 'assets/skills/shield.png', descKo: '폭탄 어택 클리어 1회', descEn: 'Clears one bomb attack' },
+    { id: 'shield', type: 'ACTIVE', nameKo: '실드', nameEn: 'Shield', icon: 'assets/skills/shield.png', descKo: '폭탄 오타격 1회 방어', descEn: 'Blocks one mistaken bomb hit' },
     { id: 'targeting', type: 'ACTIVE', nameKo: '타겟팅', nameEn: 'Targeting', icon: 'assets/skills/targeting-v1403.png', descKo: '타겟팅 샷 1회', descEn: 'Targeting shot once' },
     { id: 'ai', type: 'ACTIVE', nameKo: 'AI', nameEn: 'AI', icon: 'assets/skills/ai.png', descKo: 'AI 히트 러시 10초', descEn: 'AI hit rush for 10s' }
   ];
@@ -23,7 +23,7 @@
 
   // Real acquisition starts at zero; existing demo quantities migrate in ItemInventory.
   var DEFAULT_INVENTORY = {};
-  function available(id) { return id === 'targeting' || id === 'ai'; } // Shield setup deferred by user.
+  function available(id) { return !!skillById(id); }
   function ownsWeapon(id) { return !!(root && root.MoleGame.ItemInventory.owns('weapon', id)); }
 
   function skillById(id) {
@@ -68,7 +68,7 @@
     if (inv[id] === 0) unequipEverywhere(id);
     return true;
   }
-  // V1771 C: Pang Pang Cannon uses all three skills (shield included) without changing the main game's availability rule.
+  // Minigames consume from the same inventory without a weapon loadout.
   function consumeForMinigame(id) {
     if (!skillById(id)) return false;
     var inv = loadInventory();
@@ -86,7 +86,7 @@
     Object.keys(WEAPON_SLOTS).forEach(function (w) { out[w] = { activeSkills: [], passiveSkills: [] }; });
     return out;
   }
-  function loadLoadouts() {
+  function loadLoadouts(excludedSkill) {
     var raw;
     try { raw = JSON.parse(localStorage.getItem(K_LOADOUTS)); } catch (e) { raw = null; }
     var out = defaultLoadouts();
@@ -94,20 +94,20 @@
       Object.keys(out).forEach(function (w) {
         var slots = slotsFor(w);
         var src = raw[w] || {};
-        out[w].activeSkills = sanitizeList(src.activeSkills, 'ACTIVE', slots.active);
-        out[w].passiveSkills = sanitizeList(src.passiveSkills, 'PASSIVE', slots.passive);
+        out[w].activeSkills = sanitizeList(src.activeSkills, 'ACTIVE', slots.active, excludedSkill);
+        out[w].passiveSkills = sanitizeList(src.passiveSkills, 'PASSIVE', slots.passive, excludedSkill);
       });
     }
     return out;
   }
   // 저장된 값 중 유효하지 않은 스킬 id·타입 불일치·중복·슬롯초과는 안전하게 걸러낸다(§80 예외 처리).
-  function sanitizeList(arr, type, maxSlots) {
+  function sanitizeList(arr, type, maxSlots, excludedSkill) {
     if (!Array.isArray(arr)) return [];
     var seen = {};
     var out = [];
     arr.forEach(function (id) {
       var s = skillById(id);
-      if (!s || !available(id) || getQuantity(id) <= 0 || s.type !== type || seen[id] || out.length >= maxSlots) return;
+      if (!s || id === excludedSkill || !available(id) || getQuantity(id) <= 0 || s.type !== type || seen[id] || out.length >= maxSlots) return;
       seen[id] = true;
       out.push(id);
     });
@@ -149,15 +149,7 @@
   }
   // 수량이 0이 된 스킬은 모든 무기의 Loadout에서 자동 해제(§33, §62).
   function unequipEverywhere(skillId) {
-    var all = loadLoadouts();
-    var changed = false;
-    Object.keys(all).forEach(function (w) {
-      ['activeSkills', 'passiveSkills'].forEach(function (field) {
-        var idx = all[w][field].indexOf(skillId);
-        if (idx > -1) { all[w][field].splice(idx, 1); changed = true; }
-      });
-    });
-    if (changed) saveLoadouts(all);
+    saveLoadouts(loadLoadouts(skillId));
   }
   // 복원 — 현재 무기 하나만 빈 Loadout으로. Inventory 환불 아님(§50~51).
   // type('ACTIVE'|'PASSIVE') 지정 시 그쪽 슬롯만 복원(사용자 지정: 액티브/패시브 박스마다

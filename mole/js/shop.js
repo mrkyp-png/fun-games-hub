@@ -765,7 +765,7 @@
     function renderSkillCards() {
       var english = I18N().lang === 'en';
       var descriptions = {
-        shield: { quantity: 10, ko: '폭탄 어택 클리어 1회', en: 'Clears one bomb attack', setKo: '실드 x15', setEn: 'Shield x15' },
+        shield: { quantity: 10, ko: '폭탄 오타격 1회 방어', en: 'Blocks one mistaken bomb hit', setKo: '실드 x15', setEn: 'Shield x15' },
         targeting: { quantity: 30, ko: '타겟팅 샷 1회', en: 'Targeting shot once', setKo: '타겟팅 x35', setEn: 'Targeting x35' },
         ai: { quantity: 10, ko: 'AI 히트 러시 10초', en: 'AI hit rush for 10s', setKo: 'AI x12', setEn: 'AI x12' }
       };
