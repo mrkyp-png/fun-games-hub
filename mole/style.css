@@ -7405,6 +7405,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* V1167: one timed lyric line; no blur, new render loop, or per-frame text replacement. */
 .rp-lyrics { position:absolute; top:calc(env(safe-area-inset-top,0px) + 3px); left:12px; right:64px; height:24px; line-height:24px; overflow:hidden; z-index:25; pointer-events:none; color:#fff; font-family:'Jua',sans-serif; font-size:clamp(12px,3.8vw,16px); text-align:center; text-shadow:0 1px 2px #000; }
 .rp-lyrics[hidden] { display:none; }
+#rhythm-screen:has(> [data-rp-pause]:not([hidden])) > .rp-lyrics { visibility:hidden; }
 .rp-lyrics-text { display:inline-block; white-space:nowrap; max-width:none; }
 #rhythm-screen.is-type-b .rp-lyrics { left:18px; right:18px; }
 

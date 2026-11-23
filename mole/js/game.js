@@ -1323,7 +1323,24 @@
     if (gameScreen) gameScreen.classList.add('hinge-hidden-by-nav');
     if (hinge) hinge.style.visibility = 'hidden';
     // v840(사용자 지정): 리듬팡 진입·홈 복귀도 글리치
-    if (!rhythm) rhythm = window.__rhythm = MG.Rhythm.create({ root: el, onEntryMusic: setRhythmEntryBgm, onClose: (why, cleanup) => { (window.FGH.wipeOriginal || window.FGH.rollOut)(el, () => { el.hidden = true; if (cleanup) cleanup(); if (gameScreen) gameScreen.classList.remove('hinge-hidden-by-nav'); if (hinge) hinge.style.visibility = gameScreen && gameScreen.classList.contains('is-start') ? 'visible' : 'hidden'; playScreenBgm('home'); refreshBoardStats(); if (home3d) home3d.homeShown(); }); } });
+    if (!rhythm) rhythm = window.__rhythm = MG.Rhythm.create({
+      root: el,
+      onEntryMusic: setRhythmEntryBgm,
+      onClose: (why, cleanup) => {
+        const revealPlaza = () => (window.FGH.wipeOriginal || window.FGH.rollOut)(el, () => {
+          el.hidden = true;
+          if (cleanup) cleanup();
+          if (gameScreen) gameScreen.classList.remove('hinge-hidden-by-nav');
+          if (hinge) hinge.style.visibility = gameScreen && gameScreen.classList.contains('is-start') ? 'visible' : 'hidden';
+          playScreenBgm('home');
+          refreshBoardStats();
+        });
+        if (!home3d) { revealPlaza(); return; }
+        // Restore the saved plaza camera while RhythmPang still covers the screen.
+        home3d.homeShown();
+        requestAnimationFrame(revealPlaza);
+      }
+    });
     stopBgm();
     rhythm.open();
     // V1561 C 사용자: 리듬팡도 그림이 다 준비되면 한 번에

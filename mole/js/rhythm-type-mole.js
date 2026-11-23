@@ -3,6 +3,8 @@
   'use strict';
   const DESIGN={width:941,height:1672,stageX:470.5,stageY:1460,pixelsPerUnit:112};
   const WALK=3,ALIGN=.35,TURN=2.4;
+  const VARIATION_BEATS=8, FREESTYLE_INSERT_BEAT=8, FREESTYLE_BEATS=32;
+  const VARIATIONS=['DanceSideStep','DanceArmWave'];
   const smooth=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
   function sequence(time,reduced){
     time=Math.max(0,time);
@@ -31,8 +33,83 @@
   }
   function dancePose(beat,start,reduced){
     if(reduced||start===null||beat<start)return null;
-    const age=Math.max(0,beat-start);
-    return {phase:'dance',z:0,scale:.78,heading:0,clip:'DanceFreestyle',clipTime:(age%32)/2};
+    const added=VARIATION_BEATS*VARIATIONS.length;
+    const age=(beat-start)%(FREESTYLE_BEATS+added);
+    const variation=Math.floor((age-FREESTYLE_INSERT_BEAT)/VARIATION_BEATS);
+    const clip=VARIATIONS[variation]||'DanceFreestyle';
+    const clipTime=VARIATIONS[variation]?(age-FREESTYLE_INSERT_BEAT-variation*VARIATION_BEATS)/2:
+      (age<FREESTYLE_INSERT_BEAT?age:age-added)/2;
+    return {phase:'dance',z:0,scale:.78,heading:0,clip,clipTime};
+  }
+  function addDanceVariations(rig,R){
+    const freestyle=rig.animations.find(clip=>clip.name==='DanceFreestyle');
+    if(!freestyle)return;
+    const duration=VARIATION_BEATS/2, fps=24;
+    const times=Float32Array.from({length:duration*fps+1},(_,frame)=>frame/fps);
+    const sides=[['.L',1],['.R',-1]];
+    const nodes=new Map(rig.model.json.nodes.map((node,index)=>[node.name,index]));
+    for(const [variant,name] of VARIATIONS.entries()){
+      const tracks=freestyle.tracks.map(track=>{
+        const rest=R.sample(track,FREESTYLE_INSERT_BEAT/2);
+        const values=new Float32Array(times.length*track.width);
+        for(let frame=0;frame<times.length;frame++)values.set(rest,frame*track.width);
+        return {...track,times,values,interpolation:'LINEAR'};
+      });
+      const channels=new Map(tracks.map(track=>[track.node+':'+track.path,track]));
+      const channel=(bone,path)=>channels.get(nodes.get(bone)+':'+path);
+      rig.animations.push({name,duration,tracks});
+      for(let frame=1;frame<times.length-1;frame++){
+        const beat=times[frame]*2;
+        const fade=smooth(Math.min(beat,VARIATION_BEATS-beat)/.65);
+        const sway=Math.sin(beat*Math.PI/2), step=Math.sin(beat*Math.PI);
+        const pulse=step*step;
+        function shift(bone,x,y,z){
+          const values=channel(bone,'translation').values, i=frame*3;
+          values[i]+=x*fade; values[i+1]+=y*fade; values[i+2]+=z*fade;
+        }
+        function turn(bone,axis,angle){
+          const values=channel(bone,'rotation').values, i=frame*4;
+          const ax=Math.sin(angle*fade/2), w=Math.cos(angle*fade/2);
+          const [x,y,z]=[axis===0?ax:0,axis===1?ax:0,axis===2?ax:0];
+          const [a,b,c,d]=values.subarray(i,i+4);
+          values.set([w*a+x*d+y*c-z*b,w*b-x*c+y*d+z*a,w*c+x*b-y*a+z*d,w*d-x*a-y*b-z*c],i);
+        }
+        if(variant===0){
+          // Alternating crossing steps with a compact shoulder sway.
+          shift('Root',.36*sway,0,0);
+          turn('Body',2,-.21*sway);
+          turn('Head',2,.13*sway);
+          turn('Body',1,.24*step);
+          for(const [side,sign] of sides){
+            const swing=Math.max(0,sign*step);
+            shift('Foot'+side,.51*sign*swing,.24*swing,.20*swing);
+            turn('Foot'+side,1,sign*.34*swing);
+            turn('UpperArm'+side,2,-sign*(.18+.75*swing));
+            turn('UpperArm'+side,1,sign*.65*swing);
+          }
+        }else{
+          // A rising arm wave with a two-beat weight shift and head nods.
+          shift('Body',.09*sway,.12*pulse,0);
+          turn('Body',2,.16*sway);
+          turn('Head',0,.18*step);
+          turn('Head',2,-.12*sway);
+          for(const [side,sign] of sides){
+            const swing=sign*sway;
+            turn('UpperArm'+side,2,-sign*(.83+.38*swing+.16*pulse));
+            turn('UpperArm'+side,1,sign*(.39-.22*swing));
+            turn('Hand'+side,1,sign*.38*step);
+            shift('Foot'+side,-.06*sign*swing,.09*Math.max(0,sign*step),0);
+          }
+        }
+      }
+      for(let frame=1;frame<times.length-1;frame++){
+        const pose=R.pose(rig,name,times[frame],false);
+        for(const [side] of sides){
+          const raised=pose[nodes.get('Hand'+side)][13]-pose[nodes.get('UpperArm'+side)][13];
+          channel('Armpit'+side,'scale').values.fill(smooth((raised-.22)/.14),frame*3,frame*3+3);
+        }
+      }
+    }
   }
   function placement(width,height){
     const scale=Math.max(width/DESIGN.width,height/DESIGN.height);
@@ -52,7 +129,7 @@
     const [px,py,width,height]=beam.rect,[ux,uy,ax,ay]=beam.axes,dx=x-px,dy=y-py;
     return [(dx*uy-dy*ux)/width+ax,(dx*ux+dy*uy)/height+ay];
   }
-  const api={sequence,ringOffset,beatAt,dancePose,placement,beamUniforms,beamUV,DESIGN,duration:WALK+ALIGN+TURN};
+  const api={sequence,ringOffset,beatAt,dancePose,addDanceVariations,placement,beamUniforms,beamUV,DESIGN,duration:WALK+ALIGN+TURN};
   if(typeof module!=='undefined'&&module.exports){module.exports=api;return;}
   const screen=root.document.getElementById('rhythm-screen'),panel=screen&&screen.querySelector('[data-rp-types]');
   if(!panel||!root.StudioRig)return;
@@ -85,6 +162,7 @@
     const gl=canvas.getContext('webgl2',{alpha:true,antialias:true,premultipliedAlpha:true});
     if(!gl)throw Error('WebGL2 unavailable for rhythm stage mole');
     const rig=R.prepare(model),skin=rig.skins[0],jointCount=skin.joints.length,rootNode=model.json.nodes.findIndex(n=>n.name==='Root');
+    addDanceVariations(rig,R);
     const smile=rig.animations.find(clip=>clip.name==='Smile');
     const face=smile&&smile.tracks.filter(track=>{const name=model.json.nodes[track.node].name;return name==='Jaw'||/^(Brow|MouthCorner|HappyEye)\.[LR]$/.test(name)||(track.path==='scale'&&/^(Eye|PainEye)\.[LR]$/.test(name));});
     const vertex=`#version 300 es
