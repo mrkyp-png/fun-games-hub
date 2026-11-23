@@ -831,28 +831,27 @@
     function renderCostumeCards() {
       var teams = MG.CostumeTeams.teams();
       var english = I18N().lang === 'en';
-      function outfit(id) { return 'assets/costume/outfit-' + id + '.png'; }
+      function outfit(team) { return MG.CostumeTeams.previewArt(team, 'outfit'); }
       function costumeArt(art, isSet, team) {
-        if (team === 'blue_bears' || team === 'mount_stars') {
-          art = art.replace('shop-costume-outfit"', 'shop-costume-outfit shop-costume-outfit--split"') +
-            '<img class="shop-costume-hat shop-costume-hat--' + team + '" alt="" src="' + outfit(team) + '">';
-        }
         return '<div class="shop-costume-product" data-shop-team="' + (team || 'set') + '"><div class="shop-costume-visual' + (isSet ? ' shop-costume-visual--set' : '') + '">' + art + '</div>' +
           '<p class="shop-costume-effect"><span>' + (isSet ? T('mole.cos.setEffects') : MG.CostumeTeams.effectLabel(team)) + '</span> <b>' +
           (isSet ? '' : MG.CostumeTeams.formatEffectValue(team, 0)) + '</b></p></div>';
       }
-      var allCostumes = '<div class="shop-costume-set-art">' + teams.map(function (team, index) {
-        if (team.id === 'blue_bears') return '<span class="shop-costume-set-piece shop-costume-set-piece--' + index + '">' +
-          '<img class="shop-costume-set-body shop-costume-outfit--split" alt="" src="' + outfit(team.id) + '">' +
-          '<img class="shop-costume-hat shop-costume-hat--blue_bears" alt="" src="' + outfit(team.id) + '"></span>';
-        return '<img class="shop-costume-set-piece shop-costume-set-piece--' + index + '" alt="" src="' + outfit(team.id) + '">';
+      var allCostumes = '<div class="shop-costume-set-art">' + teams.map(function (team) {
+        var label = (english ? team.nameEn : team.nameKo) + ' 3D';
+        return '<div class="shop-costume-set-piece" data-costume-set-item="' + team.preview +
+          '" data-shop-costume-model="' + team.preview + '" data-costume-label="' + label + '"></div>';
       }).join('') + '</div>';
-      renderPendingProducts([
-        { sku: 'costume.blue_bears', nameKo: '블루 베어스', nameEn: 'Blue Bears', art: costumeArt('<img class="shop-sale-item shop-costume-outfit" alt="" src="' + outfit('blue_bears') + '">', false, 'blue_bears'), coinPrice: 100000, previewImages: [outfit('blue_bears')] },
-        { sku: 'costume.mount_stars', nameKo: '마운트 스타즈', nameEn: 'Mount Stars', art: costumeArt('<img class="shop-sale-item shop-costume-outfit" alt="" src="' + outfit('mount_stars') + '">', false, 'mount_stars'), coinPrice: 100000, previewImages: [outfit('mount_stars')] },
-        { sku: 'costume.cloud_cups', nameKo: '클라우드 컵스', nameEn: 'Cloud Cups', art: costumeArt('<img class="shop-sale-item shop-costume-outfit" alt="" src="' + outfit('cloud_cups') + '">', false, 'cloud_cups'), coinPrice: 100000, previewImages: [outfit('cloud_cups')] },
-        { sku: 'costume.set', nameKo: '코스튬 세트', nameEn: 'Costume set', art: costumeArt(allCostumes, true), coinPrice: 250000, previewImages: teams.map(function (team) { return outfit(team.id); }) }
-      ], 'shop-card--costume', { hideCoinLabel: true, onPreview: showProductPurchase });
+      var products = teams.map(function (team) {
+        var label = (english ? team.nameEn : team.nameKo) + ' 3D';
+        var preview = '<div class="shop-costume-model" data-shop-costume-model="' + team.preview + '" data-costume-label="' + label + '">' +
+          '<img class="shop-costume-fallback" alt="" src="' + outfit(team) + '"></div>';
+        return { sku: 'costume.' + team.id, nameKo: team.nameKo, nameEn: team.nameEn,
+          art: costumeArt(preview, false, team.id), coinPrice: MG.ItemInventory.offer('costume.' + team.id).price };
+      });
+      products.push({ sku: 'costume.set', nameKo: '코스튬 세트', nameEn: 'Costume set', art: costumeArt(allCostumes, true),
+        coinPrice: MG.ItemInventory.offer('costume.set').price });
+      renderPendingProducts(products, 'shop-card--costume', { hideCoinLabel: true, onPreview: showProductPurchase });
     }
 
     function renderCoinCards() {
@@ -981,7 +980,7 @@
         ready.then(function (value) { clearTimeout(timeout); resolve(value); }, function (error) { clearTimeout(timeout); reject(error); });
       }).then(function () {
         if (!element.isConnected) throw new Error('Pane cancelled');
-        if (element.querySelector('[data-model-error]')) throw new Error('Weapon preparation failed');
+        if (id === 'weapon' && element.querySelector('[data-model-error]')) throw new Error('Weapon preparation failed');
         element.dataset.paneReady = 'true';
       }).catch(function (error) { pane.error = error; throw error; });
       pane.ready.catch(function () {});

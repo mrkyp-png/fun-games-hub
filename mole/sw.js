@@ -153,7 +153,7 @@
 // V1690 G: Sand beach, continuous ocean, combo turns and reactive hair; clear text-only signs, gentle warm entrance flow and corrected beach/water landing.
 // V1691 G: gold3D in original sprite boxes; hammer2D preserved; weapons in front of HUD; matched plaza label sizes.
 // V1692 G: matching gold clones, ImageGen enhancement lightning, smooth fur and physical rhythm entrance.
-const CACHE = 'mole-game-v1800-G';
+const CACHE = 'mole-game-v1801-G';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -340,6 +340,15 @@ const SHELL = [
   './assets/costume/outfit-blue_bears.png',
   './assets/costume/outfit-mount_stars.png',
   './assets/costume/outfit-cloud_cups.png',
+  './assets/costume-preview/hold-time.glb',
+  './assets/costume-preview/hold-time-outfit.png',
+  './assets/costume-preview/hold-time-worn.png',
+  './assets/costume-preview/safe-chance.glb',
+  './assets/costume-preview/safe-chance-outfit.png',
+  './assets/costume-preview/safe-chance-worn.png',
+  './assets/costume-preview/double-hit.glb',
+  './assets/costume-preview/double-hit-outfit.png',
+  './assets/costume-preview/double-hit-worn.png',
   './assets/inventory/ui-v1379/approved-mallet-redend-v1405.webp',
   './assets/inventory/skill-v1403/tab-cream.webp',
   './assets/inventory/skill-v1403/tab-orange.webp',

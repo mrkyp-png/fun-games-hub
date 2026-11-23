@@ -2621,14 +2621,11 @@ img.gold-model-source { visibility:hidden !important; }
 .ws-item--l b { right: auto; left: 2%; } /* V1409 C 사용자: 강화 수치(+0)는 왼쪽 표기 */
 /* The target level belongs to the cabinet glass (right edge 520, top edge 30), not its item. */
 #workshop-screen .ws-stage > [data-ws-target-lv] { position:absolute; left:auto; bottom:auto; right:calc((1 - 520 / 1632) * 100% + 4px); top:calc(var(--w) * -0.035 + var(--w) * 507 / 857 * 30 / 964 + 4px); z-index:5; font-size:4.5cqw; font-weight:900; color:#fff; -webkit-text-stroke:2px #2a0b55; paint-order:stroke fill; line-height:1; pointer-events:none; }
-/* Proposed costume-only foot-anchor placement. */
-#workshop-screen .ws-item img[src*="assets/costume/char-"] { position:absolute; height:100%; width:auto; max-width:none; max-height:none; left:var(--disc-x); top:var(--disc-y); translate:calc(-100% * var(--foot-x)) calc(-100% * var(--foot-y)); }
-#workshop-screen .ws-pcard .ws-pick-img img[src*="assets/costume/char-"] { position:absolute; height:100%; width:auto; max-width:none; max-height:none; left:49.5%; top:100%; translate:calc(-100% * var(--foot-x)) calc(-100% * var(--foot-y)); }
+/* The shared costume portraits use the same center and foot line. */
+#workshop-screen .ws-item img[src*="assets/costume-preview/"][src$="-worn.png"] { position:absolute; height:100%; width:auto; max-width:100%; left:var(--disc-x); top:var(--disc-y); translate:-50% -88.8%; object-position:center bottom; }
+#workshop-screen .ws-pcard .ws-pick-img img[src*="assets/costume-preview/"][src$="-worn.png"] { position:absolute; height:100%; width:auto; max-width:100%; left:49.5%; top:100%; translate:-50% -88.8%; object-position:center bottom; }
 #workshop-screen [data-ws-target] { --disc-x:50.89285714%; --disc-y:90.22831301%; }
 #workshop-screen [data-ws-mat] { --disc-x:49.10714286%; --disc-y:90.22831301%; }
-#workshop-screen img[src*="char-blue_bears-v1406"] { --foot-x:0.41712962962962963; --foot-y:0.9833333333333333; }
-#workshop-screen img[src*="char-mount_stars-v1406"] { --foot-x:0.5209466811751904; --foot-y:0.9833333333333333; }
-#workshop-screen img[src*="char-cloud_cups-v1406"] { --foot-x:0.5414521112255407; --foot-y:0.9840277777777777; }
 
 /* 재료 칸 = 버튼(탭 → 재료 선택 팝업). 선택 전엔 빈 칸 + ＋ 표시(v758) */
 .ws-item--r { cursor: pointer; }
@@ -8607,6 +8604,10 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .cs-hero { position: absolute; inset: 14% 14% 13%; /* 사용자: 진열장 안쪽에서 벗어남 → 줄임 */ display: flex; align-items: flex-end; justify-content: center; z-index: 1; }
 .cs-hero-img { position: relative; height: 100%; display: block; transform: translateX(var(--feet, 0%)); }
 .cs-hero-img img { height: 100%; width: auto; display: block; }
+#inventory-screen .cs-stage .cs-hero { inset: 9% 10% 7%; }
+#inventory-screen .cs-stage .cs-hero-img { width: 100%; min-width: 0; }
+#inventory-screen :is(.cs-hero-img,[data-inv-outfit]) > .shop-model-canvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+#inventory-screen .cs-stage .ks-case::after { bottom:11.4%; height:4.5%; }
 .cs-info .ks-slot-pill { width: 440px; }
 .cs-team { font-size: 50px; color: #fff; text-shadow: 0 3px #0b3f8c; white-space: nowrap; }
 .cs-effect { position: absolute; left: 40px; right: 40px; top: 160px; height: 190px; display: flex; align-items: center; gap: 18px; padding: 0 46px 0 40px; background: url('assets/inventory/skill-v1403/countbox.webp') center / 100% 100% no-repeat; }
@@ -8773,6 +8774,13 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* Costume inventory cards show the standalone outfits; the display case keeps its mole animation. */
 .cs-stage .cs-card .cs-card-char { display: flex; justify-content: center; width: 92%; max-width: 92%; height: 330px; margin-top: 12px; }
 .cs-stage .cs-card .cs-card-char .cs-outfit { width: 100%; height: 100%; object-fit: contain; }
+#inventory-screen[data-tab="costume"] .cs-card .cs-card-char { width:98%; max-width:98%; overflow:hidden; }
+#inventory-screen[data-tab="costume"] .cs-card .cs-card-char::before {
+  display:block; inset:6% 0 3%; width:auto; border-radius:0; transform:none;
+  background:radial-gradient(ellipse,rgba(255,224,154,.72),rgba(255,224,154,.22) 45%,transparent 73%);
+}
+#inventory-screen[data-tab="costume"] .cs-card .cs-card-char::after { bottom:5%; height:6%; }
+#inventory-screen[data-tab="costume"] .cs-card .cs-outfit { position:relative; display:block; filter:drop-shadow(0 1px 2px rgba(93,46,13,.25)); }
 
 /* Keep game button frames stationary on press, hit, and miss (9-hole/16-hole share these selectors). */
 #game-screen:not(.is-start) .lane-button:active,
@@ -9251,6 +9259,12 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-costume-product { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.4em; font-size:3.1cqw; container-type:size; }
 #shop-screen .shop-costume-visual { position:relative; flex:none; width:82%; height:calc(100cqh - 2.2em); }
 #shop-screen .shop-costume-visual--set { width:94%; }
+#shop-screen .shop-costume-model { position:absolute; inset:0; }
+#shop-screen .shop-card--sale .shop-costume-model > .shop-costume-fallback {
+  position:absolute!important; inset:0!important; width:100%!important; height:100%!important;
+  max-width:100%!important; max-height:100%!important; margin:0!important; object-fit:contain!important;
+  transform:none!important; pointer-events:none;
+}
 #shop-screen .shop-costume-product { --team-light:#7db6ff; isolation:isolate; }
 #shop-screen .shop-costume-product[data-shop-team="mount_stars"] { --team-light:#ff9b86; }
 #shop-screen .shop-costume-product[data-shop-team="cloud_cups"] { --team-light:#a9edb3; }
@@ -9283,11 +9297,21 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-card--weapon-product .shop-card-img-box[data-model="goldhammer"]>.shop-model-canvas { scale:.95; transform-origin:50% 50%; }
 #shop-screen .shop-costume-set-art { position:absolute; left:50%; top:50%; width:94%; height:92%; transform:translate(-50%,-50%); }
 #shop-screen .shop-costume-visual--set .shop-costume-set-art { width:100%; height:100%; }
-#shop-screen .shop-costume-set-art .shop-costume-set-piece { position:absolute; width:53%; height:72%; object-fit:contain!important; }
-#shop-screen .shop-card--sale .shop-costume-set-piece > .shop-costume-set-body { position:absolute!important; inset:0!important; display:block!important; width:100%!important; height:100%!important; max-width:100%!important; max-height:100%!important; margin:0!important; object-fit:contain!important; transform:none!important; }
-#shop-screen .shop-costume-set-piece--0 { left:0; top:0; z-index:1; }
-#shop-screen .shop-costume-set-piece--1 { right:0; top:0; z-index:1; }
-#shop-screen .shop-costume-set-piece--2 { left:23.5%; bottom:0; z-index:2; }
+#shop-screen .shop-costume-set-art::before {
+  content:''; position:absolute; inset:0; pointer-events:none; border-radius:50%;
+  background:radial-gradient(ellipse at 46% 44%,rgba(255,240,179,.92),rgba(255,207,105,.42) 42%,transparent 72%);
+}
+#shop-screen .shop-costume-set-art .shop-costume-set-piece {
+  position:absolute; inset:auto; top:4%; width:49%; height:74%; max-width:none; max-height:none;
+  object-fit:contain!important; object-position:center bottom; margin:0;
+  z-index:1; filter:drop-shadow(0 .12em .19em rgba(93,53,27,.27));
+}
+#shop-screen .shop-costume-set-piece[data-costume-set-item="hold-time"] { left:0; }
+#shop-screen .shop-costume-set-piece[data-costume-set-item="safe-chance"] { right:0; }
+#shop-screen .shop-costume-set-art .shop-costume-set-piece[data-costume-set-item="double-hit"] {
+  left:5%; top:auto; bottom:30%; width:90%; height:60%; z-index:2;
+  filter:drop-shadow(0 .17em .18em rgba(86,42,19,.46)) drop-shadow(0 0 .09em rgba(255,241,186,.7));
+}
 #shop-screen .shop-card--costume .shop-card-btn,#shop-screen .shop-card--skill .shop-card-btn { container-type:size; }
 #shop-screen .shop-card--costume .shop-price-group,#shop-screen .shop-card--skill .shop-price-group { --price-icon-width:32cqw!important; --price-icon-height:100cqh!important; }
 #shop-screen .shop-card--costume .shop-card-btn::before { background:none!important; border:0 solid transparent!important; border-image:url('assets/inventory/ui-v1379/equip-pill-transparent.webp') 0 128 fill / 0 calc(100cqh * 128 / 134) / 0 stretch!important; border-radius:0!important; overflow:visible!important; }
@@ -10223,6 +10247,15 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 .inventory-cell.is-equipped[aria-pressed="true"] { border-color: #ecad24; }
 .inventory-cell img { flex: 1 1 0; min-height: 0; width: 80%; height: 80%; max-height: 80%; object-fit: contain; }
 #inventory-screen[data-tab="weapon"] .inventory-cell img { width:72%; height:72%; max-height:72%; }
+#inventory-screen[data-tab="costume"] button.inventory-cell { isolation:isolate; overflow:hidden; }
+#inventory-screen[data-tab="costume"] button.inventory-cell::before {
+  content:''; position:absolute; inset:0 0 19%; z-index:-1; pointer-events:none;
+  background:radial-gradient(ellipse,rgba(255,218,137,.76),rgba(255,231,169,.31) 52%,transparent 76%);
+}
+#inventory-screen[data-tab="costume"] .inventory-costume-model {
+  position:relative; display:block; flex:1 1 0; width:100%; min-height:0;
+  filter:drop-shadow(0 1px 1px rgba(100,65,29,.28));
+}
 .inventory-stone-pair { position:relative; flex:1 1 0; min-height:0; width:94%; container-type:size; }
 .inventory-stone-layout {
   position:absolute; top:50%; left:50%; translate:-50% -50%;

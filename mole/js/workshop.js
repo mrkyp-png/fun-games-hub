@@ -55,7 +55,8 @@
     });
     // v784(사용자 지정): 5팀 전부 표시(미보유 = 클라우드 컵스 등도 목록에 — 합성은 보유해야 가능)
     return MG.CostumeTeams.teams().map(function (t) {
-      return { id: t.id, ko: t.nameKo, en: t.nameEn, owned: MG.CostumeTeams.owns(t.id), img: 'assets/costume/char-' + t.id + '-v1406.webp', done: 'assets/costume/char-' + t.id + '-v1406.webp' }; // V1406 C 사용자: 확대 그림
+      var portrait = MG.CostumeTeams.previewArt(t, 'worn');
+      return { id: t.id, ko: t.nameKo, en: t.nameEn, owned: MG.CostumeTeams.owns(t.id), img: portrait, done: portrait };
     });
   }
   function canEnhance(kind, id) {

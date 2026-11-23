@@ -37,7 +37,6 @@
     egg.appendChild(strikeAnchor);
     var shards = scene.querySelectorAll('.ws-new-shard'), subjectWindow = scene.querySelector('.ws-new-subject-window');
     var subject = scene.querySelector('.ws-new-subject');
-    var subjectAnchorX = 50;
     var insideSmoke = scene.querySelectorAll('.ws-new-smoke img');
     var host = el.querySelector('[data-ws-res-glow]'), item = el.querySelector('[data-ws-res-img]');
     var resultItemTemplate = item.cloneNode(false);
@@ -78,11 +77,10 @@
     function prepare(onClick, source) {
       reset(); clickAction = onClick; scene.hidden = false; egg.hidden = true;
       subject.src = source || '';
-      subjectAnchorX = source && source.indexOf('char-blue_bears-v1406') >= 0 ? 44.4 : 50;
-      subject.className = subjectAnchorX < 50 ? 'ws-new-subject is-blue-bears' : 'ws-new-subject';
+      subject.className = 'ws-new-subject';
       subjectWindow.classList.remove('is-open');
       subjectWindow.style.transform = '';
-      subject.style.opacity = '0'; subject.style.transform = 'translate(-' + subjectAnchorX + '%, -50%) scale(.595)'; subject.style.filter = '';
+      subject.style.opacity = '0'; subject.style.transform = 'translate(-50%, -50%) scale(.595)'; subject.style.filter = '';
       insideSmoke.forEach(function (im) { im.style.opacity = '0'; });
       egg.style.transform = ''; egg.style.filter = '';
       phases.forEach(function (im, i) { im.style.opacity = i === 0 ? '1' : '0'; });
@@ -146,7 +144,7 @@
         var growth = ease((effectT - 3.5) / .2), verdict = growth;
         var innerVisibility = blackEggRescue ? .24 + .44 * ease((t - .68) / .24) : .68;
         subject.style.opacity = innerVisibility + .32 * growth;
-        subject.style.transform = 'translate(-' + subjectAnchorX + '%, -50%) scale(' + (.595 + .405 * growth) + ')';
+        subject.style.transform = 'translate(-50%, -50%) scale(' + (.595 + .405 * growth) + ')';
         if (effectT >= 3.5) subjectWindow.classList.add('is-open');
         var brightness = 1 + 1.05 * (1 - verdict) - (success ? 0 : .37 * verdict), glowCore = (2 + 4 * (1 - verdict));
         var glowColor = 'rgba(255,248,213,' + (.98 * (1 - verdict)) + ')';
@@ -173,13 +171,7 @@
       var from = subject.getBoundingClientRect();
       subject.getAnimations().forEach(function (animation) { animation.cancel(); });
       var placeholder = item, to = placeholder.getBoundingClientRect(), hostRect = host.getBoundingClientRect();
-      var isBears = subject.classList.contains('is-blue-bears');
       var targetLeft = to.left;
-      if (isBears) {
-        var imageRatio = subject.naturalWidth && subject.naturalHeight ? subject.naturalWidth / subject.naturalHeight : .75;
-        var contentWidthRatio = Math.min(1, imageRatio / (to.width / to.height));
-        targetLeft += to.width * contentWidthRatio * (0.5 - 0.4171);
-      }
       // Keep the same image node and give it the exact result-slot box before moving it.
       // This prevents the inner image's scene-relative 82% sizing from snapping to its
       // natural image size during the handoff.

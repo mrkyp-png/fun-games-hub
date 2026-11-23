@@ -87,7 +87,6 @@
       if (active === 'weapon') {
         goTo(WEAPONS.findIndex(function (w) { return w.id === item.id; }));
       } else if (active === 'costume') {
-        costumeDrop = costumeSelectedId !== item.id;
         costumeSelectedId = item.id;
         renderCostumes();
       } else {
@@ -113,7 +112,7 @@
         });
       } else if (active === 'costume') {
         entries = MG.CostumeTeams.teams().filter(function (team) { return MG.CostumeTeams.owns(team.id); }).map(function (team) {
-          return { id: team.id, name: I18N.lang === 'en' ? team.nameEn : team.nameKo, art: 'assets/costume/outfit-' + team.id + '.png', level: MG.CostumeTeams.enhanceLevel(team.id), equipped: MG.CostumeTeams.equippedId() === team.id };
+          return { id: team.id, name: I18N.lang === 'en' ? team.nameEn : team.nameKo, model: team.preview, level: MG.CostumeTeams.enhanceLevel(team.id), equipped: MG.CostumeTeams.equippedId() === team.id };
         });
       } else {
         var weapon = WEAPONS[pageIdx] && WEAPONS[pageIdx].id;
@@ -125,6 +124,7 @@
       var key = JSON.stringify([active, target, entries]);
       if (key === ownedGridKey) return;
       ownedGridKey = key;
+      var outfitHosts = new Map(Array.from(ownedGrid.querySelectorAll('[data-inv-outfit]'), function (host) { return [host.dataset.invOutfit, host]; }));
       ownedGrid.replaceChildren();
       entries.forEach(function (item) {
         var cell = document.createElement('button');
@@ -132,7 +132,15 @@
         cell.classList.toggle('is-equipped', item.equipped);
         cell.setAttribute('aria-label', item.name + (item.equipped ? ' · ' + T('mole.inv.equipped') : ''));
         if (active !== 'skill') cell.setAttribute('aria-pressed', String(target === item.id));
-        var art = document.createElement('img'); art.src = item.art; art.alt = '';
+        var art;
+        if (item.model) {
+          art = outfitHosts.get(item.model) || document.createElement('span');
+          art.className = 'inventory-costume-model' + (art.classList.contains('shop-model-ready') ? ' shop-model-ready' : '');
+          art.dataset.invOutfit = item.model;
+          art.dataset.costumeLabel = item.name + ' 3D';
+        } else {
+          art = document.createElement('img'); art.src = item.art; art.alt = '';
+        }
         if (active === 'weapon' && item.id === 'alipunch') {
           var pair = document.createElement('span');
           pair.className = 'inventory-stone-pair';
@@ -161,6 +169,7 @@
         var empty = document.createElement('span'); empty.className = 'inventory-cell inventory-slot'; empty.textContent = '+';
         empty.setAttribute('aria-hidden', 'true'); ownedGrid.appendChild(empty);
       }
+      if (active === 'costume') MG.CostumeModels?.attachOutfits(ownedGrid);
       requestAnimationFrame(fitOwnedLabels);
     }
     function syncPopupScale() {
@@ -568,7 +577,6 @@
     // 무기 탭과 달리 페이지네이션(점/화살표) 없이 카드 줄만 가로 스크롤한다.
     // V1405 C 사용자: 코스튬 탭 개편(시안 A) — 스킬 탭과 같은 큰 테두리·판 구성.
     // 위 = 고른 팀 진열장(캐릭터 크게, 위아래 둥실) + 팀 이름·효과·획득, 아래 = 팀 카드 3장(착용 버튼).
-    var costumeDrop = false; // 팀을 바꿨을 때만 천장에서 떨어지는 연출
     function costumeEffectIcon(id) {
       var type = MG.CostumeTeams.effectInfo(id).type;
       if (type === 'HOLD_TIME') return '<img class="cs-effect-icon" alt="" src="assets/costume/clock.png">';
@@ -584,28 +592,29 @@
       var equippedId = MG.CostumeTeams.equippedId();
       if (!costumeSelectedId || !MG.CostumeTeams.teamById(costumeSelectedId)) costumeSelectedId = equippedId || MG.CostumeTeams.teams()[0].id;
       var en = I18N.lang === 'en';
-      var CH = function (id) { return 'assets/costume/char-' + id + '-v1406.webp'; };
-      // 눈 감은 그림(같은 자리·크기)을 위에 겹쳐 두고 아주 잠깐만 보여 깜빡임
-      var CHB = function (id) { return '<img alt="" src="' + CH(id) + '"><img class="cs-blink" alt="" src="assets/costume/char-' + id + '-blink-v1406.webp">'; };
-      var OUTFIT = { blue_bears: 'assets/costume/outfit-blue_bears.png', mount_stars: 'assets/costume/outfit-mount_stars.png', cloud_cups: 'assets/costume/outfit-cloud_cups.png' };
-      // 사용자: 위 진열장 캐릭터는 양발 기준 좌우 가운데(그림마다 양발 가운데가 달라 그만큼 옮김)
-      var FEET = { blue_bears: 7.92, mount_stars: -2.39, cloud_cups: -4.63 };
       var sel = MG.CostumeTeams.teamById(costumeSelectedId);
+      var outfitHosts = new Map(Array.from(body.querySelectorAll('[data-inv-outfit]'), function (host) { return [host.dataset.invOutfit, host]; }));
       var cards = MG.CostumeTeams.teams().map(function (t) {
         var owned = MG.CostumeTeams.owns(t.id);
         return '<div class="ks-card cs-card' + (t.id === costumeSelectedId ? ' is-sel' : '') + (owned ? '' : ' is-locked') + '" data-cs-pick="' + t.id + '" data-team="' + t.id + '">' +
-          '<span class="cs-card-char"><img class="cs-outfit" alt="" src="' + OUTFIT[t.id] + '"></span>' +
+          '<span class="cs-card-char"><span class="cs-outfit" data-inv-outfit="' + t.preview + '" data-costume-label="' + (en ? t.nameEn : t.nameKo) + ' 3D"></span></span>' +
           '<button type="button" class="ks-equip ks-press ws-action-frame inv-action-frame' + (owned && t.id === equippedId ? ' is-on' : '') + '" data-cs-equip="' + t.id + '"><span></span></button></div>';
       }).join('');
       body.innerHTML = '<div class="ks-mount"><div class="ks-stage cs-stage">' +
         '<div class="ks-name"></div>' +
-        '<div class="ks-case' + (costumeDrop ? ' is-drop' : '') + '"><div class="cs-ceil"></div><div class="cs-clip"><div class="cs-hero"><span class="cs-hero-img" data-team="' + sel.id + '" style="--feet:' + (FEET[sel.id] || 0) + '%">' + CHB(sel.id) + '</span></div></div></div>' +
+        '<div class="ks-case"><div class="cs-ceil"></div><div class="cs-clip"><div class="cs-hero"><span class="cs-hero-img" data-team="' + sel.id + '" data-costume-label="' + (en ? sel.nameEn : sel.nameKo) + ' 3D"></span></div></div></div>' +
         '<div class="ks-slotpanel cs-info"><div class="ks-slot-pill"><span class="cs-team"></span></div>' +
           '<div class="cs-effect">' + costumeEffectIcon(sel.id) + '<span class="cs-effect-txt"></span></div>' +
           '<div class="cs-acquire"></div></div>' +
         '<div class="ks-cards">' + cards + '</div></div></div>';
-      costumeDrop = false;
       var stage = body.querySelector('.ks-stage');
+      stage.querySelectorAll('[data-inv-outfit]').forEach(function (host) {
+        var existing = outfitHosts.get(host.dataset.invOutfit);
+        if (existing) {
+          existing.dataset.costumeLabel = host.dataset.costumeLabel;
+          host.replaceWith(existing);
+        }
+      });
       stage.querySelector('.ks-name').textContent = en ? 'Costume' : '코스튬';
       stage.querySelector('.cs-team').textContent = en ? sel.nameEn : sel.nameKo;
       stage.querySelector('.cs-effect-txt').innerHTML = '';
@@ -622,35 +631,18 @@
         c.addEventListener('click', function (e) {
           if (!owned) return; // 사용자: 미보유 팀은 눌러도 위 진열장 안 바뀜(떨어지는 연출도 없음)
           var change = costumeSelectedId !== t.id;
-          if (e.target.closest('[data-cs-equip]') && owned && !isOn && !locked) { MG.CostumeTeams.equip(t.id); costumeSelectedId = t.id; costumeDrop = change; renderCostumes(); return; }
-          if (change) { costumeSelectedId = t.id; costumeDrop = true; renderCostumes(); }
+          if (e.target.closest('[data-cs-equip]') && owned && !isOn && !locked) { MG.CostumeTeams.equip(t.id); costumeSelectedId = t.id; renderCostumes(); return; }
+          if (change) { costumeSelectedId = t.id; renderCostumes(); }
         });
       });
       stage.querySelectorAll('.ks-press').forEach(function (b) {
         b.addEventListener('pointerdown', function () { if (!b.classList.contains('is-off')) b.classList.add('is-down'); });
         ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { b.addEventListener(ev, function () { b.classList.remove('is-down'); }); });
       });
-      startCostumeBlink();
       fitSkillStage();
+      MG.CostumeModels?.create(stage.querySelector('.cs-hero-img'), sel.preview);
+      MG.CostumeModels?.attachOutfits(stage);
       renderOwnedGrid();
-    }
-    // 2~4초마다 무작위 캐릭터 하나가 0.1초 깜빡(가끔 두 번 연속). 코스튬 탭을 떠나면 멈춤.
-    var blinkTimer = null;
-    function startCostumeBlink() {
-      clearTimeout(blinkTimer);
-      (function next() {
-        blinkTimer = setTimeout(function () {
-          if (active !== 'costume') return;
-          var els = body.querySelectorAll('.cs-hero-img');
-          if (!els.length) return;
-          var el = els[Math.floor(Math.random() * els.length)];
-          var twice = Math.random() < 0.3;
-          el.classList.add('is-blink');
-          setTimeout(function () { el.classList.remove('is-blink');
-            if (twice) setTimeout(function () { el.classList.add('is-blink'); setTimeout(function () { el.classList.remove('is-blink'); }, 90); }, 120); }, 90);
-          next();
-        }, 2000 + Math.random() * 2000);
-      })();
     }
 
     // V1403 C 사용자: 스킬 탭 전면 개편(시안 1번 정사각) — 무기 화면 큰 테두리 그대로, 안쪽만 새 UI.

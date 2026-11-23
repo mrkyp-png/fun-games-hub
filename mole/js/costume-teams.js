@@ -5,11 +5,11 @@
   var K_EQUIPPED = 'mole.costume.equipped';
   var K_LEVEL = 'mole.costume.level.'; // + id
 
-  // V1405 C 사용자: 5팀 → 3팀(베어스·스타즈·컵스). 레드 윙스·선 자이언츠 삭제(그림 파일은 남겨둠).
+  // Keep the former team IDs for purchases, ownership, and enhancement levels.
   var TEAMS = [
-    { id: 'blue_bears', nameKo: '블루 베어스', nameEn: 'Blue Bears', effect: 'HOLD_TIME' },
-    { id: 'mount_stars', nameKo: '마운트 스타즈', nameEn: 'Mount Stars', effect: 'SAFE_CHANCE' },
-    { id: 'cloud_cups', nameKo: '클라우드 컵스', nameEn: 'Cloud Cups', effect: 'DOUBLE_HIT' }
+    { id: 'blue_bears', nameKo: '타임 키퍼', nameEn: 'Time Keeper', effect: 'HOLD_TIME', preview: 'hold-time' },
+    { id: 'mount_stars', nameKo: '세이프 찬스', nameEn: 'Safe Chance', effect: 'SAFE_CHANCE', preview: 'safe-chance' },
+    { id: 'cloud_cups', nameKo: '연타 도장 사범', nameEn: 'Dojo Instructor', effect: 'DOUBLE_HIT', preview: 'double-hit' }
   ];
 
   var EFFECT_TYPE = 'HOLD_TIME';
@@ -24,6 +24,7 @@
 
   function teams() { return TEAMS.slice(); }
   function teamById(id) { return TEAMS.filter(function (t) { return t.id === id; })[0] || null; }
+  function previewArt(team, view) { return 'assets/costume-preview/' + team.preview + '-' + view + '.png'; }
 
   // Shop acquisition and workshop materials share ItemInventory; demo saves migrate once.
   function ownedIds() {
@@ -81,7 +82,7 @@
 
   var api = {
     TEAMS: TEAMS, EFFECT_TYPE: EFFECT_TYPE, BASE_EFFECT_VALUE: BASE_EFFECT_VALUE, MAX_UPGRADE_LEVEL: MAX_UPGRADE_LEVEL,
-    teams: teams, teamById: teamById, owns: owns, equippedId: equippedId, equip: equip,
+    teams: teams, teamById: teamById, previewArt: previewArt, owns: owns, equippedId: equippedId, equip: equip,
     upgradeLevel: upgradeLevel, enhanceLevel: enhanceLevel, setEnhanceLevel: setEnhanceLevel, effectValue: effectValue, activeEffectValue: activeEffectValue,
     EFFECTS: EFFECTS, DOUBLE_HIT_UPGRADE_STEP: DOUBLE_HIT_UPGRADE_STEP, effectInfo: effectInfo, effectLabel: effectLabel, formatEffectValue: formatEffectValue, activeEffects: activeEffects
   };

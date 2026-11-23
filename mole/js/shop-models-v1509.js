@@ -17,9 +17,11 @@ function lookAt(eye,target){const z=unit(eye.map((v,i)=>v-target[i])),x=unit(cro
 const accessorCaches=new WeakMap();function accessor(model,index){let cache=accessorCaches.get(model);if(!cache){cache=new Map();accessorCaches.set(model,cache);}if(!cache.has(index))cache.set(index,decodeAccessor(model,index));return cache.get(index);}
 
 const paths={hammer:'hammer-v5-batched-v1509.glb',cannon:'cannon-v1-batched-v1509.glb',goldhammer:'goldhammer-v18-batched-v1520.glb',alipunch:'kingpunch-stone.glb'};
+const costumes=new Set(['hold-time','safe-chance','double-hit']);
+const wornCostumes=new Set([...costumes].map(id=>id+'-worn'));
 const assets=new Map(),views=new Set(),dormant=new Map(),waiting=new Map();let frameId=0,lastTick=0,lastAction=-Infinity,activeScreen=null,initQueue=Promise.resolve();
 function reserveInit(){let unlock;const previous=initQueue;initQueue=new Promise(resolve=>{unlock=resolve;});return previous.then(()=>new Promise(resolve=>requestAnimationFrame(()=>resolve(unlock))));}
-function load(id){if(!assets.has(id)){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),9000);assets.set(id,fetch('assets/shop-models-v1509/'+paths[id],{signal:controller.signal}).then(r=>{if(!r.ok)throw Error('Model '+r.status);return r.arrayBuffer();}).then(parseGLB).catch(e=>{assets.delete(id);throw e;}).finally(()=>clearTimeout(timer)));}return assets.get(id);}
+function load(id){if(!assets.has(id)){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),wornCostumes.has(id)?15000:9000);const url=costumes.has(id)||wornCostumes.has(id)?'assets/costume-preview/'+id+'.glb':'assets/shop-models-v1509/'+paths[id];assets.set(id,fetch(url,{signal:controller.signal}).then(r=>{if(!r.ok)throw Error('Model '+r.status);return r.arrayBuffer();}).then(parseGLB).catch(e=>{assets.delete(id);throw e;}).finally(()=>clearTimeout(timer)));}return assets.get(id);}
 function translation(x,y,z){const m=identity();m[12]=x;m[13]=y;m[14]=z;return m;}
 function rotate(axis,angle){const [x,y,z]=unit(axis),c=Math.cos(angle),s=Math.sin(angle),t=1-c;return new Float32Array([t*x*x+c,t*x*y+s*z,t*x*z-s*y,0,t*x*y-s*z,t*y*y+c,t*y*z+s*x,0,t*x*z+s*y,t*y*z-s*x,t*z*z+c,0,0,0,0,1]);}
 function scaleMatrix(x,y,z){const m=identity();m[0]=x;m[5]=y;m[10]=z;return m;}
@@ -71,8 +73,12 @@ function start(){if(!frameId&&[...views].some(v=>v.animated&&drawable(v)))frameI
 function measureCanvas(view,canvas){if(view.options.motion==='inventory'){const rect=canvas.getBoundingClientRect();if(rect.width>0&&rect.height>0){view.width=rect.width;view.height=rect.height;}view.aspect=canvas.clientWidth/Math.max(1,canvas.clientHeight);return;}let factor=1;if(!view.options.external)for(let node=canvas.parentElement;node&&node!==document.body;node=node.parentElement){const value=getComputedStyle(node).transform;if(value&&value!=='none'){const m=new DOMMatrixReadOnly(value);factor*=Math.max(Math.hypot(m.a,m.b),Math.hypot(m.c,m.d));}}view.width=canvas.clientWidth*factor;view.height=canvas.clientHeight*factor;}
 root.addEventListener('resize',()=>{requestAnimationFrame(()=>{for(const v of views)v.resize?.();});});
 async function create(host,id,index,options={}){
- if(host.closest('#shop-screen'))host.setAttribute('data-model-weapon',id);
+ const worn=wornCostumes.has(id),costume=worn||costumes.has(id);
+ const setPiece=options.setPiece, setForeground=setPiece&&id==='double-hit';
+ const outfit=options.inventoryPiece;
+ if(!costume&&host.closest('#shop-screen'))host.setAttribute('data-model-weapon',id);
  const canvas=document.createElement('canvas');canvas.className='shop-model-canvas';canvas.setAttribute('aria-label',id==='hammer'?'뿅망치 3D':id==='cannon'?'팡팡 캐논 3D':id==='alipunch'?'돌주먹 3D':'골드 묠니르 3D');
+ if(costume)canvas.setAttribute('aria-label',host.dataset.costumeLabel||host.getAttribute('aria-label')||'3D');
  host.appendChild(canvas);let gl=null,disposed=false,observer=null,visibility=null,releaseInit=null;
  const view={host,id,index,options,pose:{yaw:options.yaw??0,pitch:25,kick:0},inView:!('IntersectionObserver' in root),elapsed:0,lastSeen:performance.now(),lastFrame:0,width:0,height:0,draw(){},setPose(pose){Object.assign(this.pose,pose);this.draw(performance.now());},dispose(){if(disposed)return;disposed=true;views.delete(view);if(observer)observer.disconnect();if(visibility)visibility.disconnect();host.classList.remove('shop-model-ready');canvas.remove();gl?.getExtension('WEBGL_lose_context')?.loseContext();}};
  views.add(view);
@@ -81,12 +87,13 @@ async function create(host,id,index,options={}){
   releaseInit=await reserveInit();if(disposed||!host.isConnected){view.dispose();return;}
   gl=canvas.getContext('webgl',{alpha:true,antialias:true,premultipliedAlpha:false,preserveDrawingBuffer:false,powerPreference:'low-power'});if(!gl)throw Error('WebGL unavailable');
   const list=model._previewInstances||(model._previewInstances=instances(model)),box=model._previewBounds||(model._previewBounds=bounds(model,list)),radius=box.radius||1;
-  const vertex='attribute vec3 aPosition;attribute vec3 aNormal;attribute vec2 aUV;uniform mat4 uModel;uniform mat4 uVP;uniform mat3 uNormal;varying vec3 vPosition;varying vec3 vNormal;varying vec2 vUV;void main(){vec4 p=uModel*vec4(aPosition,1.0);vPosition=p.xyz;vNormal=normalize(uNormal*aNormal);vUV=aUV;gl_Position=uVP*p;}';
-  const fragment='precision highp float;varying vec3 vPosition;varying vec3 vNormal;varying vec2 vUV;uniform vec4 uColor;uniform sampler2D uTexture;uniform bool uTextured;uniform float uRoughness;uniform float uCutoff;uniform vec3 uEye;uniform vec3 uEmission;void main(){vec4 t=uTextured?texture2D(uTexture,vUV):vec4(1.0);float alpha=t.a*uColor.a;if(alpha<uCutoff)discard;vec3 base=uColor.rgb*(uTextured?pow(t.rgb,vec3(2.2)):vec3(1.0));vec3 n=normalize(vNormal);if(!gl_FrontFacing)n=-n;vec3 l=normalize(vec3(-0.4,0.85,0.8)),fill=normalize(vec3(0.8,0.3,-0.5)),v=normalize(uEye-vPosition),h=normalize(l+v);float diffuse=max(dot(n,l),0.0),d2=max(dot(n,fill),0.0),spec=pow(max(dot(n,h),0.0),mix(8.0,64.0,1.0-max(uRoughness,0.35)))*0.48;vec3 c=base*(0.62+0.65*diffuse+0.25*d2)+vec3(spec)+uEmission;gl_FragColor=vec4(pow(max(c,vec3(0.0)),vec3(1.0/2.2)),alpha);}';
+  const vertex='attribute vec3 aPosition;attribute vec3 aNormal;attribute vec2 aUV;attribute vec4 aColor;uniform mat4 uModel;uniform mat4 uVP;uniform mat3 uNormal;varying vec3 vPosition;varying vec3 vNormal;varying vec2 vUV;varying vec4 vColor;void main(){vec4 p=uModel*vec4(aPosition,1.0);vPosition=p.xyz;vNormal=normalize(uNormal*aNormal);vUV=aUV;vColor=aColor;gl_Position=uVP*p;}';
+  const fragment='precision highp float;varying vec3 vPosition;varying vec3 vNormal;varying vec2 vUV;varying vec4 vColor;uniform vec4 uColor;uniform sampler2D uTexture;uniform bool uTextured;uniform float uRoughness;uniform float uCutoff;uniform vec3 uEye;uniform vec3 uEmission;void main(){vec4 t=uTextured?texture2D(uTexture,vUV):vec4(1.0);float alpha=t.a*uColor.a*vColor.a;if(alpha<uCutoff)discard;vec3 base=uColor.rgb*vColor.rgb*(uTextured?pow(t.rgb,vec3(2.2)):vec3(1.0));vec3 n=normalize(vNormal);if(!gl_FrontFacing)n=-n;vec3 l=normalize(vec3(-0.4,0.85,0.8)),fill=normalize(vec3(0.8,0.3,-0.5)),v=normalize(uEye-vPosition),h=normalize(l+v);float diffuse=max(dot(n,l),0.0),d2=max(dot(n,fill),0.0),spec=pow(max(dot(n,h),0.0),mix(8.0,64.0,1.0-max(uRoughness,0.35)))*0.48;vec3 c=base*(0.62+0.65*diffuse+0.25*d2)+vec3(spec)+uEmission;gl_FragColor=vec4(pow(max(c,vec3(0.0)),vec3(1.0/2.2)),alpha);}';
   function shader(type,source){const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));return s;}
   const program=gl.createProgram();gl.attachShader(program,shader(gl.VERTEX_SHADER,vertex));gl.attachShader(program,shader(gl.FRAGMENT_SHADER,fragment));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error('3D 그래픽 초기화 실패');gl.useProgram(program);
   const loc={};for(const n of ['uModel','uVP','uNormal','uColor','uTexture','uTextured','uRoughness','uCutoff','uEye','uEmission'])loc[n]=gl.getUniformLocation(program,n);
-  const attr={};for(const n of ['aPosition','aNormal','aUV'])attr[n]=gl.getAttribLocation(program,n);
+  const attr={};for(const n of ['aPosition','aNormal','aUV','aColor'])attr[n]=gl.getAttribLocation(program,n);
+  gl.vertexAttrib4f(attr.aColor,1,1,1,1);
   const uint32=gl.getExtension('OES_element_index_uint');
   const uploadedBuffers=new WeakMap();function buffer(values,target=gl.ARRAY_BUFFER){let cache=uploadedBuffers.get(values);if(!cache){cache=new Map();uploadedBuffers.set(values,cache);}if(cache.has(target))return cache.get(target);const b=gl.createBuffer();gl.bindBuffer(target,b);gl.bufferData(target,values,gl.STATIC_DRAW);cache.set(target,b);return b;}
   const textures=new Map();
@@ -96,15 +103,17 @@ async function create(host,id,index,options={}){
   for(const item of list){const p=item.primitive,g=model.json,position=accessor(model,p.attributes.POSITION),count=position.length/3,normal=p.attributes.NORMAL===undefined?new Float32Array(count*3):accessor(model,p.attributes.NORMAL),uv=p.attributes.TEXCOORD_0===undefined?new Float32Array(count*2):accessor(model,p.attributes.TEXCOORD_0);if(p.attributes.NORMAL===undefined)for(let i=0;i<count;i++)normal[i*3+1]=1;
    const mat=g.materials?.[p.material]||{},pbr=mat.pbrMetallicRoughness||{},color=pbr.baseColorFactor||[1,1,1,1];let indices=null,indexType=gl.UNSIGNED_SHORT,indexCount=0;
    if(p.indices!==undefined){const data=accessor(model,p.indices);let max=0;for(const v of data)max=Math.max(max,v);if(max>65535&&!uint32)throw new Error('이 브라우저는 큰 메시를 표시하지 못합니다.');const typed=max>65535?new Uint32Array(data):new Uint16Array(data);indexType=max>65535?gl.UNSIGNED_INT:gl.UNSIGNED_SHORT;indexCount=typed.length;indices=buffer(typed,gl.ELEMENT_ARRAY_BUFFER);}
-   draws.push({name:item.name,world:item.world,slotGlow:item.name==='Right recessed bright yellow glowing capsule floor',normalMatrix:normals(item.world),positions:buffer(position),normals:buffer(normal),uv:buffer(uv),count,indices,indexType,indexCount,mode:p.mode??4,color,emission:(mat.emissiveFactor||[0,0,0]).map(v=>v*(mat.extensions?.KHR_materials_emissive_strength?.emissiveStrength??1)),roughness:pbr.roughnessFactor??.5,double:mat.doubleSided,alpha:mat.alphaMode||'OPAQUE',cutoff:mat.alphaMode==='MASK'?(mat.alphaCutoff??.5):0,texture:pbr.baseColorTexture?await texture(pbr.baseColorTexture.index):white,textured:!!pbr.baseColorTexture});
+   const paint=worn&&p.attributes.COLOR_0!==undefined?p.attributes.COLOR_0:null;
+   draws.push({name:item.name,world:item.world,slotGlow:item.name==='Right recessed bright yellow glowing capsule floor',normalMatrix:normals(item.world),positions:buffer(position),normals:buffer(normal),uv:buffer(uv),paint:paint===null?null:buffer(accessor(model,paint)),paintSize:paint!==null&&g.accessors[paint].type==='VEC3'?3:4,count,indices,indexType,indexCount,mode:p.mode??4,color,emission:(mat.emissiveFactor||[0,0,0]).map(v=>v*(mat.extensions?.KHR_materials_emissive_strength?.emissiveStrength??1)),roughness:pbr.roughnessFactor??.5,double:mat.doubleSided,alpha:mat.alphaMode||'OPAQUE',cutoff:mat.alphaMode==='MASK'?(mat.alphaCutoff??.5):0,texture:pbr.baseColorTexture?await texture(pbr.baseColorTexture.index):white,textured:!!pbr.baseColorTexture});
   }
 
   gl.enable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.uniform1i(loc.uTexture,0);
   function bind(b,id,size){gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.enableVertexAttribArray(id);gl.vertexAttribPointer(id,size,gl.FLOAT,false,0,0);}
+  function bindPart(d){bind(d.positions,attr.aPosition,3);bind(d.normals,attr.aNormal,3);bind(d.uv,attr.aUV,2);if(d.paint)bind(d.paint,attr.aColor,d.paintSize);else gl.disableVertexAttribArray(attr.aColor);if(d.indices)gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,d.indices);}
 
   // Keep the exact geometry/shader; cache vertex bindings on browsers that support VAOs.
   const vao=gl.getExtension('OES_vertex_array_object');
-  if(vao){for(const d of draws){d.vao=vao.createVertexArrayOES();vao.bindVertexArrayOES(d.vao);bind(d.positions,attr.aPosition,3);bind(d.normals,attr.aNormal,3);bind(d.uv,attr.aUV,2);if(d.indices)gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,d.indices);}vao.bindVertexArrayOES(null);}
+  if(vao){for(const d of draws){d.vao=vao.createVertexArrayOES();vao.bindVertexArrayOES(d.vao);bindPart(d);}vao.bindVertexArrayOES(null);}
   if(disposed||!host.isConnected){view.dispose();return;}
   const height=box.high[1]-box.low[1],pivot=[box.center[0],box.low[1]+height*.08,box.center[2]];
   // Reference video: keep the axle/chassis center fixed, not the asymmetric muzzle bounds.
@@ -149,13 +158,14 @@ async function create(host,id,index,options={}){
    const duration=id==='cannon'?200:id==='goldhammer'?300:1100,progress=(elapsed-actionStart)/duration;
    const amount=options.external?view.pose.kick:progress>=0&&progress<1?(id!=='hammer'?(progress<.2?progress/.2:Math.pow((1-progress)/.8,2)):Math.sin(Math.PI*progress)):0;
    // Cannon reference: level side -> rear -> opposite side -> muzzle, one turn in 20s.
-   let phase=reduced?0:elapsed*Math.PI*2/20000;
+   let phase=reduced?0:elapsed*Math.PI*2/(costume?14000:20000);
    if(id==='cannon'&&!reduced&&automatic){
     const quarter=Math.floor(elapsed/5000),age=elapsed-quarter*5000;
     // Hold the exact cardinal through the 200ms recoil, then traverse the next quadrant.
     phase=(quarter+Math.max(0,age-200)/4800)*Math.PI/2;
    }
-   let yaw=(id==='cannon'?Math.PI/2:.7)+phase,pitch=id==='cannon'?0:.22;
+   let yaw=setPiece||outfit?(setPiece?.26:.16)*Math.sin(phase*2):(worn?0:costume?.37:id==='cannon'?Math.PI/2:.7)+phase;
+   let pitch=worn||setPiece||outfit?0:costume?.13:id==='cannon'?0:.22;
    if(inventory&&id==='cannon')yaw=inventoryCannonPose(elapsed).yaw;
    if(options.manual||options.external){yaw=view.pose.yaw;pitch=view.pose.cameraPitch??(options.static?.22:options.external?0:.1);}
    let motion=identity();
@@ -179,8 +189,15 @@ async function create(host,id,index,options={}){
    if(barrelPivot){const angle=(25-view.pose.pitch)*Math.PI/180;barrelMotion=multiply(motion,multiply(multiply(translation(...barrelPivot),rotate([1,0,0],angle)),translation(...barrelPivot.map(v=>-v))));}
    if(id!=='hammer'){host.style.setProperty('--shop-shadow-scale',String(1+amount*.06));host.style.setProperty('--shop-shadow-opacity',String(.32+amount*.08));}
    const aspect=inventory?(view.aspect||120/110):view.width/Math.max(1,view.height),fov=Math.PI/5,limit=2*Math.atan(Math.tan(fov/2)*Math.min(1,aspect));
-   const distance=radius/Math.sin(limit/2)*.9,target=turnCenter,eye=[target[0]+Math.sin(yaw)*Math.cos(pitch)*distance,target[1]+Math.sin(pitch)*distance,target[2]+Math.cos(yaw)*Math.cos(pitch)*distance];
-   const vp=multiply(options.external?orthographic(radius*.8,aspect,Math.max(radius*.1,distance-radius*2),distance+radius*2):perspective(fov,aspect,Math.max(radius*.1,distance-radius*2),distance+radius*2),lookAt(eye,target));
+   const distance=radius/Math.sin(limit/2)*(id==='double-hit'?.74:costume?.96:.9);
+   const verticalFit=setPiece?(setForeground?.56:.62):.623;
+   const framed=worn||setPiece||outfit;
+   const half=framed?Math.max(height*verticalFit,Math.hypot(box.high[0]-box.low[0],box.high[2]-box.low[2])*.54/aspect,outfit?1.72/aspect:0):radius*.8;
+   const centerY=setPiece?(setForeground?box.low[1]+half*.92:box.high[1]-half*.74):box.low[1]+half*(outfit?.48:.84);
+   const target=framed?[turnCenter[0],centerY,turnCenter[2]]:turnCenter;
+   const eye=[target[0]+Math.sin(yaw)*Math.cos(pitch)*distance,target[1]+Math.sin(pitch)*distance,target[2]+Math.cos(yaw)*Math.cos(pitch)*distance];
+   const near=Math.max(radius*.1,distance-radius*2),far=distance+radius*2;
+   const vp=multiply(options.external||framed?orthographic(half,aspect,near,far):perspective(fov,aspect,near,far),lookAt(eye,target));
    if(workshopFace){const matrix=multiply(vp,motion),p=workshopFace.point,c=workshopHandle.center;
     view.strikeContact={point:projectPoint(matrix,p),world:p,
      handleTop:projectPoint(matrix,[c[0],workshopHandle.high[1],c[2]]),handleEnd:projectPoint(matrix,[c[0],workshopHandle.low[1],c[2]])};}
@@ -190,8 +207,8 @@ async function create(host,id,index,options={}){
    const pawAge=elapsed-actionStart-60,pawTime=pawAge/480;
    const pawActive=!!pawBox&&!reduced&&pawTime>=0&&pawTime<1;
    const pawFlash=pawActive&&pawAge<150;
-   function drawPart(d,world,color,emission,normal){if(d.double)gl.disable(gl.CULL_FACE);else gl.enable(gl.CULL_FACE);gl.uniformMatrix4fv(loc.uModel,false,world);gl.uniformMatrix3fv(loc.uNormal,false,normal||normals(world));gl.uniform4fv(loc.uColor,color);gl.uniform3fv(loc.uEmission,emission);gl.uniform1f(loc.uRoughness,d.roughness);gl.uniform1f(loc.uCutoff,d.cutoff);gl.uniform1i(loc.uTextured,d.textured);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,d.texture);if(vao)vao.bindVertexArrayOES(d.vao);else{bind(d.positions,attr.aPosition,3);bind(d.normals,attr.aNormal,3);bind(d.uv,attr.aUV,2);if(d.indices)gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,d.indices);}if(d.indices)gl.drawElements(d.mode,d.indexCount,d.indexType,0);else gl.drawArrays(d.mode,0,d.count);}
-   const staticPose=id==='goldhammer'&&!inventory&&!options.roll&&!amount,staticNormals=staticPose||id==='cannon'&&!options.roll&&!options.external;
+   function drawPart(d,world,color,emission,normal){if(d.double)gl.disable(gl.CULL_FACE);else gl.enable(gl.CULL_FACE);gl.uniformMatrix4fv(loc.uModel,false,world);gl.uniformMatrix3fv(loc.uNormal,false,normal||normals(world));gl.uniform4fv(loc.uColor,color);gl.uniform3fv(loc.uEmission,emission);gl.uniform1f(loc.uRoughness,d.roughness);gl.uniform1f(loc.uCutoff,d.cutoff);gl.uniform1i(loc.uTextured,d.textured);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,d.texture);if(vao)vao.bindVertexArrayOES(d.vao);else bindPart(d);if(d.indices)gl.drawElements(d.mode,d.indexCount,d.indexType,0);else gl.drawArrays(d.mode,0,d.count);}
+   const staticPose=costume||id==='goldhammer'&&!inventory&&!options.roll&&!amount,staticNormals=staticPose||id==='cannon'&&!options.roll&&!options.external;
    for(const d of draws){const red=pawFlash&&pawDraws.includes(d),barrel=barrelMotion&&barrelNames.has(d.name);drawPart(d,staticPose?d.world:multiply(barrel?barrelMotion:motion,d.world),red?[.9,.008,.015,1]:d.color,red?[.42,.005,.008]:id==='goldhammer'&&d.slotGlow?[.8*slotLight,.5*slotLight,.015]:d.emission,staticNormals&&!barrel?d.normalMatrix:null);}
    if(muzzleBase){const matrix=multiply(vp,barrelMotion),end=muzzleBase.map((n,i)=>n+(n-barrelPivot[i])*.2),tip=projectPoint(matrix,end);view.muzzle=projectPoint(matrix,muzzleBase);view.breech=projectPoint(vp,barrelPivot);view.projectedAim=Math.atan2(tip.y-view.muzzle.y,tip.x-view.muzzle.x)*180/Math.PI;}
    if(pawActive){
@@ -270,8 +287,27 @@ function attachGloves(container){
   }));
  }return jobs;
 }
-function activateShop(cards){for(const v of views)if(cards.contains(v.host)){v.lastSeen=performance.now();v.inView=true;v.resize?.();}start();}
+function activateShop(cards){
+ for(const host of cards.querySelectorAll('[data-shop-costume-model]:not([data-costume-mounted])')){
+  host.dataset.costumeMounted='true';
+  delete host.dataset.modelError;
+  create(host,host.dataset.shopCostumeModel,0,{maxPixels:384,setPiece:host.hasAttribute('data-costume-set-item')}).then(view=>{
+   if(!view&&host.isConnected)delete host.dataset.costumeMounted;
+  });
+ }
+ for(const v of views)if(cards.contains(v.host)){v.lastSeen=performance.now();v.inView=true;v.resize?.();}
+ start();
+}
+function attachInventoryOutfits(container){
+ for(const host of container.querySelectorAll('[data-inv-outfit]:not([data-costume-mounted])')){
+  host.dataset.costumeMounted='true';
+  create(host,host.dataset.invOutfit,0,{maxPixels:256,inventoryPiece:true}).then(view=>{
+   if(!view&&host.isConnected)delete host.dataset.costumeMounted;
+  });
+ }
+}
 root.MoleGame=root.MoleGame||{};root.MoleGame.ShopModels={attach,clear,snapshot,activate:activateShop};
+root.MoleGame.CostumeModels={attachOutfits:attachInventoryOutfits,create:(host,id)=>createVisible(host,id+'-worn',{motion:'inventory',maxPixels:512})};
 root.MoleGame.WeaponModels={attachGloves,loadModel:load,create:(host,id,options={})=>createVisible(host,id,options),preload:()=>Promise.all(Object.keys(paths).map(load)),retryWithin,refreshWithin:refreshInventory,setActiveScreen:activateScreen,stats:()=>[...views].map(v=>({screen:v.host.closest('#shop-screen,#inventory-screen,#workshop-screen,#game-screen')?.id,animated:v.animated,drawable:!!drawable(v),frames:+v.host.dataset.modelFrame||0})),clearWithin:host=>{for(const v of [...views])if(host.contains(v.host))v.dispose();for(const element of dormant.keys())if(host.contains(element))dormant.delete(element);for(const [element,record] of waiting)if(host.contains(element)){record.observer.disconnect();record.resolve();waiting.delete(element);}}};
 new MutationObserver(()=>{for(const v of [...views])if(!v.host.isConnected)v.dispose();for(const host of dormant.keys())if(!host.isConnected)dormant.delete(host);for(const [host,record] of waiting)if(!host.isConnected){record.observer.disconnect();record.resolve();waiting.delete(host);}}).observe(document.body,{childList:true,subtree:true});
 })(window);
