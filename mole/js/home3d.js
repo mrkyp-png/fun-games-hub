@@ -3,7 +3,7 @@
    화면은 #game-screen 안 z-index 30(기존 홈 버튼판 위, 기능 화면 아래)에 깔린다. */
 (function (root) {
   'use strict';
-  const PLAZA_GLB = 'assets/home3d/plaza.glb?v=1790-C'; // review/build-home-plaza.py (V1790 C: review/flatten-shop-lintel-v1790.cjs 로 상점 문 위 턱 평평하게)
+  const PLAZA_GLB = 'assets/home3d/plaza.glb?v=1807-C'; // review/build-home-plaza.py (V1807 C: 뿅망치 빨간 머리 면 수 0.15→0.6, 만든 뒤 아래 후처리 다시 적용) (V1790 C: review/flatten-shop-lintel-v1790.cjs 로 상점 문 위 턱 평평하게)
   const MOLE_GLB = 'assets/characters-v1692/mole-clay-v47-smile.glb'; /* V1671 C: + Flap 동작·겨털 위치 */ /* V1670 C 사용자 확정: v44 손 다듬기(손가락 가늘게·손등 90%·손 133%·손가락 바깥으로·가운데 120%·앞 손가락 107%, review/slim-mole-thumb.py) */ // /* V1656 C 사용자: 기존 두더지로 되돌림(신규 Tripo 두더지는 노이즈·배 없음) — 기존 두더지를 다듬기로 */
   const PLAZA_COSTUME_GLB = 'assets/home3d/mole-arcade-repair.glb';
   const SPEED = 2.8;

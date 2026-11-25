@@ -104,7 +104,7 @@ for o in imp:
     elif 'center sleeve' in o.name:
         ratio = 1.0    # 야구공 뒤 몸통: 줄이면 야구공 앞으로 하늘색 줄이 비집고 나옴(사용자 지적)
     elif 'striking bell' in o.name:
-        ratio = 0.15   # 큰 빨간 머리만 많이 줄임
+        ratio = 0.6    # V1807 C 사용자: 광장 뿅망치 빨간 머리 찌그러짐 → 0.15 에서 올림
     else:
         ratio = 0.45   # 작은 둥근 부품(손잡이 끝·띠·연결부)은 덜 줄여 울퉁불퉁 노이즈 없게
     md = o.modifiers.new('light', 'DECIMATE'); md.ratio = ratio
