@@ -158,7 +158,8 @@
 // V1809 C: inventory page flicker fix, 3D hammer owned cell, costume sizes, double-hit gloves front, mailbox claimed cleanup after 5 min.
 // V1810 C: shop costume sizes matched and centered, Time Keeper front view with cape sway.
 // V1811 C: start hole ripple fix, one armpit hair strand each side, Time Keeper cape/watch motion.
-const CACHE = 'mole-game-v1811-C';
+// V1812 C: Rhythm Pang beach moles 2-4 outfits (Time Keeper, Dojo with gloves, Safe Chance), finger tweaks, lane hand clipping fix.
+const CACHE = 'mole-game-v1812-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.

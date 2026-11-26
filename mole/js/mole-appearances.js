@@ -46,6 +46,9 @@ function arcadeRepair() {
   .then(R.parseGLB).catch(()=>{repairCostume=null;return null;});
  return repairCostume;
 }
+// V1812 C: 리듬팡 비치 2~4번 두더지 복장(뼈 고정 부품, review/beach-costumes/export.cjs)
+const wornCostumes=new Map();
+function wornCostume(id){if(!wornCostumes.has(id))wornCostumes.set(id,fetch('assets/home3d/mole-costume-'+id+'.glb').then(r=>{if(!r.ok)throw Error('Costume '+id+' '+r.status);return r.arrayBuffer();}).then(R.parseGLB).catch(()=>{wornCostumes.delete(id);return null;}));return wornCostumes.get(id);}
 function costumeParts(model,costume) {
  if(!costume)return [];
  return R.instances(costume).flatMap(({name,primitive})=>{
@@ -56,5 +59,5 @@ function costumeParts(model,costume) {
 const faces=new WeakMap();
 function face(runtime,hurt=false){if(!faces.has(runtime)){const clip=runtime.animations.find(c=>c.name==='Smile'),smile=clip?clip.tracks.filter(t=>{const name=runtime.model.json.nodes[t.node].name;return name==='Jaw'||/^(Brow|MouthCorner|HappyEye)\.[LR]$/.test(name)||(t.path==='scale'&&/^(Eye|PainEye)\.[LR]$/.test(name))}):[];const hidden=runtime.model.json.nodes.flatMap((n,i)=>/^HappyEye\.[LR]$/.test(n.name)?[{node:i,path:'scale',times:new Float32Array([0]),values:new Float32Array([0,0,0]),width:3}]:[]);faces.set(runtime,{smile,hidden})}return faces.get(runtime)[hurt?'hidden':'smile']}
 function pose(runtime,clip,time,loop,expression,windTime,id='mohawk'){return R.pose(runtime,clip,time,loop,expression,{animation:'HairWind_'+names[id],time:windTime})}
-MG.MoleAppearances={styles,palettes,random,load,prepare,paint,materialColor,vertexColors,hairStyle,face,pose,arcadeRepair,costumeParts};
+MG.MoleAppearances={styles,palettes,random,load,prepare,paint,materialColor,vertexColors,hairStyle,face,pose,arcadeRepair,wornCostume,costumeParts};
 })(window);

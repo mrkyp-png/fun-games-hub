@@ -5,12 +5,12 @@ function load(){if(!modelPromise)modelPromise=fetch('assets/characters-v1692/mol
 function create(stage){
  let canvas,gl,rig,parts=[],program,U,A,ready=false,loading=null,lost=false,geometry=null,lastHandError=0;
  const holeBase='assets/rhythm/beach-sand-hole-v1690/';
- function prepare(){if(ready&&!lost)return Promise.resolve(true);if(!loading)loading=Promise.all([load(),fetch(holeBase+'geometry.json').then(r=>{if(!r.ok)throw Error('Hole geometry '+r.status);return r.json()}),AP.arcadeRepair()]).then(([model,data,costume])=>{geometry=data;return initialize(model,costume)}).catch(e=>{loading=null;canvas?.remove();canvas=null;throw e});return loading}
- async function initialize(model,costume){
+ function prepare(){if(ready&&!lost)return Promise.resolve(true);if(!loading)loading=Promise.all([load(),fetch(holeBase+'geometry.json').then(r=>{if(!r.ok)throw Error('Hole geometry '+r.status);return r.json()}),AP.arcadeRepair(),AP.wornCostume('hold-time'),AP.wornCostume('double-hit'),AP.wornCostume('safe-chance')]).then(([model,data,costume,...others])=>{geometry=data;return initialize(model,costume,others)}).catch(e=>{loading=null;canvas?.remove();canvas=null;throw e});return loading}
+ async function initialize(model,costume,others=[]){
   if(canvas)canvas.remove();parts=[];
   canvas=document.createElement('canvas');canvas.className='rp-beach-moles-3d';canvas.setAttribute('aria-hidden','true');canvas.hidden=true;
   canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();lost=true;ready=false;stop()});canvas.addEventListener('webglcontextrestored',()=>{lost=false;loading=null;prepare().catch(console.error)});
-  gl=canvas.getContext('webgl2',{alpha:true,antialias:true,premultipliedAlpha:true});if(!gl)throw Error('WebGL2 is required for beach characters');rig=R.prepare(model);
+  gl=canvas.getContext('webgl2',{alpha:true,antialias:true,premultipliedAlpha:true});if(!gl)throw Error('WebGL2 is required for beach characters');rig=R.prepare(model);fingerAxes=knuckleAxes(rig);armRestPose=restArms(rig);
   const joints=Math.max(...rig.skins.map(s=>s.joints.length));
   const vs=`#version 300 es
 precision highp float;in vec3 aPosition,aNormal;in vec4 aColor,aJoints,aWeights;in float aHand;uniform mat4 uModel,uVP,uBones[${joints}];uniform bool uSkin;out vec3 vNormal;out vec4 vColor;out float vHand;void main(){mat4 s=mat4(1.);if(uSkin)s=aWeights.x*uBones[int(aJoints.x)]+aWeights.y*uBones[int(aJoints.y)]+aWeights.z*uBones[int(aJoints.z)]+aWeights.w*uBones[int(aJoints.w)];vec4 p=uModel*s*vec4(aPosition,1.);vNormal=normalize(mat3(uModel)*mat3(s)*aNormal);vColor=aColor;vHand=aHand;gl_Position=uVP*p;}`;
@@ -28,7 +28,8 @@ precision highp float;in vec3 vNormal;in vec4 vColor;in float vHand;uniform vec4
     const joints=R.accessor(source,p.attributes.JOINTS_0),weights=R.accessor(source,p.attributes.WEIGHTS_0);
     attribute('Joints',joints,4);attribute('Weights',weights,4);
     const skin=rig.skins[model.json.nodes[index].skin],handFlags=new Float32Array(n);
-    for(let v=0;v<n;v++)for(let k=0;k<4;k++)if(/^(Hand|Finger[123]|Thumb)\./.test(model.json.nodes[skin.joints[joints[v*4+k]]].name))handFlags[v]+=weights[v*4+k];
+    if(source!==model&&p.attributes._HAND!==undefined)handFlags.set(R.accessor(source,p.attributes._HAND)); // 도복 소매 끝(커프)만 손처럼 턱 앞에
+    if(source===model)for(let v=0;v<n;v++)for(let k=0;k<4;k++)if(/^(Hand|Finger[123]|Thumb)\./.test(model.json.nodes[skin.joints[joints[v*4+k]]].name))handFlags[v]+=weights[v*4+k]; // 옷은 손 예외 없음(모래 턱 뒤로 가려짐)
     attribute('Hand',handFlags,1);
    }
    const colors=p.attributes.COLOR_0===undefined?new Float32Array(n*4).fill(1):R.accessor(source,p.attributes.COLOR_0),colorSize=p.attributes.COLOR_0===undefined?4:source.json.accessors[p.attributes.COLOR_0].type==='VEC3'?3:4;
@@ -43,6 +44,9 @@ precision highp float;in vec3 vNormal;in vec4 vColor;in float vHand;uniform vec4
    for(const p of model.json.meshes[node.mesh].primitives)addPart(model,p,index,style);
   });
   for(const {joint,primitive} of AP.costumeParts(model,costume))addPart(costume,primitive,joint,'mohawk',true);
+  // V1812 C 사용자: 2번 타임 키퍼, 3번 연타 도장 사범, 4번 세이프 찬스
+  // 옷 점마다 두더지 몸 뼈 가중치(소매=팔, 이마띠=머리) → 두더지 몸과 같은 스킨으로 그림
+  const skinNode=model.json.nodes.findIndex(n=>n.name==='Mole_Clay_Skin');others.forEach((worn,k)=>{if(worn&&skinNode>=0)for(const {primitive} of R.instances(worn))addPart(worn,primitive,skinNode,AP.styles[k+1]);});
   for(const [slot,file] of [[0,'hole-occlusion.png'],[1,'hole-front.png']]){
    const response=await fetch(holeBase+file);if(!response.ok)throw Error('Hole layer '+response.status);
    const bitmap=await createImageBitmap(await response.blob(),{colorSpaceConversion:'none',premultiplyAlpha:slot===1?'premultiply':'none'}),texture=gl.createTexture();
@@ -52,6 +56,13 @@ precision highp float;in vec3 vNormal;in vec4 vColor;in float vHand;uniform vec4
   gl.useProgram(program);gl.uniform1i(U.HoleMask,0);gl.uniform1i(U.HoleFront,1);
   gl.enable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);stage.classList.add('rp-use-3d');ready=true;return true;
  }
+ let MIDDLE_LEN=1.3,ARM_LIFT=-.52,FINGER_DOWN=.35,fingerAxes=new Map(),armRestPose=null;
+ function restArms(rig){const nodes=rig.model.json.nodes,sk=rig.skins[0],rest=n=>{const j=sk.joints.indexOf(n);return j<0?null:R.inverse(sk.inverseBind.subarray(j*16,j*16+16));},body=nodes.findIndex(n=>n.name==='Body'),bi=R.inverse(rest(body)),out=new Map();nodes.forEach((n,k)=>{if(/^(UpperArm|Forearm|Hand|Finger[123]|Thumb)\.[LR]$/.test(n.name||'')){const m=rest(k);if(m)out.set(k,R.multiply(bi,m));}});return out;}
+ // 손가락 굽힘 축 = 손가락 1~3이 나란한 손마디 줄(기본 자세) → 손가락 뼈 자기 좌표로 바꿔 둠. 손 위치는 그대로.
+ function knuckleAxes(rig){const nodes=rig.model.json.nodes,sk=rig.skins[0],out=new Map(),rest=name=>{const node=nodes.findIndex(n=>n.name===name),j=sk.joints.indexOf(node);return j<0?null:{node,m:R.inverse(sk.inverseBind.subarray(j*16,j*16+16))};};
+  for(const side of ['L','R']){const a=rest('Finger1.'+side),c=rest('Finger3.'+side);if(!a||!c)continue;let d=[c.m[12]-a.m[12],c.m[13]-a.m[13],c.m[14]-a.m[14]];const l=Math.hypot(...d);d=d.map(v=>v/l);
+   for(const k of [1,2,3]){const f=rest('Finger'+k+'.'+side);if(!f)continue;const m=f.m,sx=Math.hypot(m[0],m[1],m[2]),sy=Math.hypot(m[4],m[5],m[6]),sz=Math.hypot(m[8],m[9],m[10]),loc=[(m[0]*d[0]+m[1]*d[1]+m[2]*d[2])/sx,(m[4]*d[0]+m[5]*d[1]+m[6]*d[2])/sy,(m[8]*d[0]+m[9]*d[1]+m[10]*d[2])/sz],ll=Math.hypot(...loc);out.set(f.node,loc.map(v=>v/ll));}}
+  return out;}
  function render(time,layout,heads,moles,jumpDuration=.42){
   if(!ready||lost||document.hidden)return;
   lastHandError=0;
@@ -70,9 +81,15 @@ precision highp float;in vec3 vNormal;in vec4 vColor;in float vHand;uniform vec4
    for(const side of ['L','R']){const hand=R.multiply(bodyDelta,rimWorlds[nodes.findIndex(n=>n.name==='Hand.'+side)]),x=head.x+scale*(hand[12]-anchor[0]),u=Math.max(0,Math.min(geometry.width-1,(x-rect.x)/rect.w*(geometry.width-1))),lo=Math.floor(u),hi=Math.min(geometry.width-1,lo+1),f=u-lo,edge=geometry.frontCurvePixels[lo]*(1-f)+geometry.frontCurvePixels[hi]*f,target=rect.y+edge/geometry.height*rect.h-scale*.04;offsets[side]=target-(head.y+scale*(anchor[1]-hand[13]));}
    const offset=(offsets.L+offsets.R)/2;
    nodes.forEach((n,k)=>{const match=/^(UpperArm|Forearm|Hand|Finger[123]|Thumb)\.([LR])$/.exec(n.name||'');if(!match||armRest<=0)return;const rim=R.multiply(bodyDelta,rimWorlds[k]);rim[13]-=(offsets[match[2]]-offset)/scale;worlds[k]=new Float32Array(worlds[k].map((v,c)=>v+(rim[c]-v)*armRest));});
+   // V1812 C 사용자: 3번(도복) 두더지는 팔 뼈만 기본 자세(몸통 기준)로 → 손이 권투 글러브 안
+   if(i===2&&armRestPose)for(const [k,m0] of armRestPose){const sd=nodes[k].name.slice(-1),sh=armRestPose.get(nodes.findIndex(n=>n.name==='UpperArm.'+sd)),p=[sh[12],sh[13],sh[14]],a=(sd==='L'?-1:1)*ARM_LIFT,lift=R.multiply(R.multiply(R.transform({translation:p}),R.transform({rotation:[0,Math.sin(a/2),0,Math.cos(a/2)]})),R.transform({translation:p.map(v=>-v)})),m=R.multiply(lift,m0);worlds[k]=/^(Hand|Finger[123]|Thumb)\./.test(nodes[k].name)?R.multiply(R.multiply(worlds[bodyNode],m),R.transform({scale:[0,0,0]})):R.multiply(worlds[bodyNode],m);} // 사용자: 손 없어도 됨(글러브가 대신), 인벤토리 그림처럼 팔 옆으로 들어 글러브가 모래 위
+   // V1812 C 사용자: 손가락이 조금 들려 보임 → 손가락 뼈만 아래로 살짝 굽힘(턱 잡은 자세일 때)
+   if(armRest>0&&i!==2)for(const [k,ax] of fingerAxes){const s=Math.sin(FINGER_DOWN*armRest/2);worlds[k]=R.multiply(worlds[k],R.transform({rotation:[ax[0]*s,ax[1]*s,ax[2]*s,Math.cos(FINGER_DOWN*armRest/2)]}));}
+   // V1812 C 사용자: 가운데 손가락(Finger2)이 짧음 → 길이 방향(뼈 Y)으로 늘림
+   if(i!==2)nodes.forEach((n,k)=>{if(/^Finger2\.[LR]$/.test(n.name||''))worlds[k]=R.multiply(worlds[k],R.transform({scale:[1,MIDDLE_LEN,1]}));});
    const baseInstance=R.transform({translation:[head.x-scale*anchor[0],h-head.y-scale*anchor[1]-offset*rest,-scale*anchor[2]],scale:[scale,scale,scale]}),instance=FX.turn(baseInstance,R.point(worlds[bodyNode],[0,.2,0]),stunt);
    if(armRest>.999)for(const side of ['L','R']){const hand=worlds[nodes.findIndex(n=>n.name==='Hand.'+side)],point=R.point(instance,Array.from(hand.slice(12,15))),u=Math.max(0,Math.min(geometry.width-1,(point[0]-rect.x)/rect.w*(geometry.width-1))),lo=Math.floor(u),hi=Math.min(geometry.width-1,lo+1),f=u-lo,target=rect.y+(geometry.frontCurvePixels[lo]*(1-f)+geometry.frontCurvePixels[hi]*f)/geometry.height*rect.h-scale*.04;lastHandError=Math.max(lastHandError,Math.abs((h-point[1])-target));}
-   gl.enable(gl.SCISSOR_TEST);gl.scissor(Math.round(i*pw/4),0,Math.ceil(pw/4),ph);gl.uniform4fv(U.HoleRect,[rect.x*pw/layout.W,(layout.H-rect.y)*ph/layout.H,rect.w*pw/layout.W,rect.h*ph/layout.H]);gl.uniform1f(U.HandsOnRim,armRest);gl.uniform1f(U.Flash,clip==='PainHit'?Math.max(0,1-hurt/.15)*.25:0);
+   gl.enable(gl.SCISSOR_TEST);{const pad=Math.round(pw*.03);/* 사용자: 옆 칸으로 살짝 넘어간 손이 칼로 자른 듯 잘리지 않게 네 마리 모두 */gl.scissor(Math.round(i*pw/4)-pad,0,Math.ceil(pw/4)+pad*2,ph);}gl.uniform4fv(U.HoleRect,[rect.x*pw/layout.W,(layout.H-rect.y)*ph/layout.H,rect.w*pw/layout.W,rect.h*ph/layout.H]);gl.uniform1f(U.HandsOnRim,armRest);gl.uniform1f(U.Flash,clip==='PainHit'?Math.max(0,1-hurt/.15)*.25:0);
    for(const part of parts){if(part.style&&part.style!==id)continue;gl.bindVertexArray(part.vao);const b=part.variants[id]||part.colorBuffer;gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.vertexAttribPointer(A.Color,part.colorSize,gl.FLOAT,false,0,0);
     gl.uniform4fv(U.Color,AP.materialColor(part.material,id));gl.uniformMatrix4fv(U.Model,false,R.multiply(instance,worlds[part.node]));
     gl.uniform1i(U.Skin,!part.rigid);if(!part.rigid)gl.uniformMatrix4fv(U.Bones,false,R.palette(rig,worlds,part.node));gl.drawElements(gl.TRIANGLES,part.count,gl.UNSIGNED_INT,0);
