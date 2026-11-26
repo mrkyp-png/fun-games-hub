@@ -622,24 +622,31 @@
     function skillQty(id){ return MG.Skills ? MG.Skills.getQuantity(id) : 0; }
     function syncSkills(){
       var playing = !!(st && !st.over && !st.paused && !activeB && (!st.playAt || ctx.currentTime >= st.playAt));
-      skillBtns.forEach(function(b){ var id=b.dataset.rpSkill, q=skillQty(id), on=id==='shield'?!!(st&&st.shieldArmed):id==='ai'?!!(st&&st.aiUntil&&now()<st.aiUntil):false;
-        b.disabled = !playing || q<=0 || on; b.classList.toggle('is-on', on); b.dataset.qty = q; });
+      skillBtns.forEach(function(b){ var id=b.dataset.rpSkill, q=skillQty(id), on=id==='shield'?!!(st&&st.shieldArmed):id==='ai'?!!(st&&st.aiUntil&&now()<st.aiUntil):false, cd=st&&st.cd&&st.cd[id]?Math.ceil(st.cd[id]-now()):0;
+        if(cd<0)cd=0; b.disabled = !playing || q<=0 || on || cd>0; b.classList.toggle('is-on', on); b.dataset.qty = q;
+        var c=b.querySelector('.rp-skill-cd'); if(!c){c=document.createElement('span');c.className='rp-skill-cd';b.appendChild(c);} c.textContent = (!on&&cd>0)?String(cd):''; c.hidden = !(!on&&cd>0); });
     }
     function useSkill(id){
       if (!st || st.over || st.paused || activeB || (st.playAt && ctx.currentTime < st.playAt)) return;
       var t = now();
+      st.cd = st.cd || {}; if (st.cd[id] && t < st.cd[id]) return; // V1814 C 사용자: 실드·AI 쿨타임 10초
       if (id === 'shield' && st.shieldArmed) return;
       if (id === 'ai' && st.aiUntil && t < st.aiUntil) return;
       var target = null;
       if (id === 'targeting') { st.notes.forEach(function(n){ if (n.state==='live' && t >= n.spawnTime && (!target || n.targetTime < target.targetTime)) target = n; }); if (!target) return; }
       if (!MG.Skills || !MG.Skills.consumeForMinigame(id)) { syncSkills(); return; }
-      if (id === 'shield') st.shieldArmed = true;
-      else if (id === 'ai') st.aiUntil = t + 10;
+      if (id === 'shield') { st.shieldArmed = true; st.cd.shield = t + 10; skillToast('🛡 SHIELD ON'); }
+      else if (id === 'ai') { st.aiUntil = t + 10; st.cd.ai = t + 20; }
       else { target.press = { grade: 'PERFECT', lane: target.targetLane }; hit(target, target.targetLane); }
       try { if (root.FGH && root.FGH.Settings && root.FGH.Settings.vibrate) root.FGH.Settings.vibrate(60); } catch (e) { /* 무시 */ }
       syncSkills();
     }
     skillBtns.forEach(function(b){ b.addEventListener('click', function(){ useSkill(b.dataset.rpSkill); }); });
+    // V1814 C 사용자: 일시정지 안 눌림(아래 줄이 위를 덮음) → 스킬 줄 넷째 칸을 누르면 일시정지
+    var pauseSlot=el.querySelector('.rp-skill-slot-pause');if(pauseSlot)pauseSlot.addEventListener('click',function(){var pb=$('[data-rp-pausebtn]');if(pb)pb.click();});
+    // V1814 C 사용자: AI 발동 중 바다에 남은 시간
+    var skillToastEl=document.createElement('div');skillToastEl.className='rp-skill-toast';stage.appendChild(skillToastEl);function skillToast(s){skillToastEl.textContent=s;replay(skillToastEl,'is-on');}
+    var aiTimer=document.createElement('div');aiTimer.className='rp-ai-timer';aiTimer.hidden=true;stage.appendChild(aiTimer);
     setInterval(function(){ if (!el.hidden) syncSkills(); }, 250);
     function press(lane, lag) {
       if (!st || st.over || st.paused || now() < 0 || (st.playAt && ctx.currentTime < st.playAt)) return;
@@ -702,7 +709,7 @@
       // 미리 건 10콤보 회전은 놓치면 취소(콤보가 끊겼으므로)
       st.moles.forEach(function (mm) { if (mm && mm.beachStunt && mm.beachStunt.fromJump) mm.beachStunt = null; });
       // V1813 C 사용자: 실드 = 실패 1회 콤보 유지
-      if (st.shieldArmed) { st.shieldArmed = false; st.cnt.MISS++; syncSkills(); st.moles[lane].hurtAt = now(); showJudge(lane, 'SHIELD', 'great'); hud(); return; }
+      if (st.shieldArmed) { st.shieldArmed = false; st.cnt.MISS++; syncSkills(); st.moles[lane].hurtAt = now(); skillToast('🛡 SHIELD! COMBO KEEP'); hud(); return; }
       st.cnt.MISS++; st.combo = 0; updateACombo(0,false); st.hp = Math.max(0, st.hp - 1);
       st.moles[lane].hurtAt = now(); st.moles[lane].beachStunt=null;
       showJudge(lane, 'MISS', 'miss'); hud();
@@ -779,6 +786,7 @@
       }
       beachMoles.render(t,L,heads,st.moles,7*CONFIG.jumpFrameMs/1000);
       // V1813 C 사용자: AI 스킬 10초 = 무기가 올 때 맞춰 자동 점프
+      if (st.aiUntil && t < st.aiUntil) { var aiLeft=Math.ceil(st.aiUntil - t); if (aiTimer.dataset.v !== String(aiLeft)) { aiTimer.dataset.v = String(aiLeft); aiTimer.textContent = String(aiLeft); } aiTimer.hidden = false; } else if (!aiTimer.hidden) { aiTimer.hidden = true; aiTimer.dataset.v = ''; }
       if (st.aiUntil && t < st.aiUntil) { var lead=(CONFIG.apexFrame + 0.5) * CONFIG.jumpFrameMs / 1000; st.notes.forEach(function (n) { if (n.state === 'live' && !n.aiPressed && t >= n.targetTime - lead - 0.008) { n.aiPressed = true; press(n.targetLane); } }); } else if (st.aiUntil) { st.aiUntil = 0; syncSkills(); }
       // V1170: activate in spawn order; keep waiting/retired sprites out of rendering.
       while(st.spawnCursor<st.renderQueue.length&&t>=st.renderQueue[st.spawnCursor].spawnTime-LAUNCH)st.activeNotes.push(st.renderQueue[st.spawnCursor++]);
