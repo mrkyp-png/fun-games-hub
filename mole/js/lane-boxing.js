@@ -103,7 +103,7 @@
         const sign = side === 'R' ? -1 : 1;
         img.style.transform = `translateY(${IDLE_SHIFT_Y}%) rotate(${sign * IDLE_ROLL}deg) scale(${-sign * IDLE_SCALE}, ${IDLE_SCALE})`;
       } else img.style.transform = imgTransform(side, override?.deg ?? rotTable[s], src);
-      model3D?.update(idle ? null : { phase: s });
+      model3D?.update({ phase: s }); // V1808 C 사용자: 대기도 3D(V1795 G 의 대기 그림 표시 제거)
     }
 
     let phase = 'idle'; // idle | reach | return | goneFade | goneHold | backFade

@@ -3,8 +3,8 @@
  const R=root.StudioRig,MG=root.MoleGame,assets=new Map();let shared=null,nextId=0;
  const VIEW=R.transform({rotation:[0,Math.sin(-5*Math.PI/12),0,Math.cos(-5*Math.PI/12)]});
  // 킹판취 타격 방향: 어퍼는 손바닥 쪽, 잽·스트레이트는 손등 쪽.
- const yawView=a=>R.transform({rotation:[0,Math.sin(a/2),0,Math.cos(a/2)]}),GLOVE_VIEW={front:yawView(.3),back:yawView(Math.PI+.3)};
- function viewOf(entry){if(entry.id!=='alipunch')return['h',VIEW];const k=/jab|straight/.test(entry.el.getAttribute('src')||'')?'back':'front';return[k,GLOVE_VIEW[k]];}
+ const yawView=a=>R.transform({rotation:[0,Math.sin(a/2),0,Math.cos(a/2)]}),GLOVE_VIEW={front:yawView(.3),back:yawView(Math.PI+.3),idle:yawView(2.6)}; // V1808 C 사용자: 대기 3D 각도(시험 중 사용자 선택)
+ function viewOf(entry){if(entry.id!=='alipunch')return['h',VIEW];const src=entry.el.getAttribute('src')||'',k=/idle/.test(src)?'idle':/jab|straight/.test(src)?'back':'front';return[k,GLOVE_VIEW[k]];}
  // Fit a rigid model inside the original sprite box, then inherit the box's existing CSS transform.
  // No target selection, flight path, swing angles, timing or return motion is calculated here.
  function frameMatrix(viewBounds,width,height,rect,cssTransform,rootRect,rootWidth,rootHeight,reference,view=VIEW){
@@ -68,7 +68,7 @@ void main(){vec4 texel=uTextured?texture(uTexture,vUV):vec4(1.);float alpha=uCol
    for(const entry of state.entries.values())if(entry.selfImage&&!entry.packet)entry.el.classList.remove('gold-model-source');
    if(document.hidden||!screen.isConnected||getComputedStyle(screen).display==='none'){canvas.hidden=true;state.key='';return false;}
    const rect=screen.getBoundingClientRect(),w=screen.clientWidth,h=screen.clientHeight;if(!w||!h||!rect.width){canvas.hidden=true;state.key='';return false;}
-   const level=MG.Workshop?.weaponLevel?.('goldhammer')||0,groups=new Map(),keys=[w,h,Math.min(root.devicePixelRatio||1,1.25),level],parents=new Map();for(const entry of state.entries.values())if(!entry.clone&&entry.el.isConnected)parents.set(entry.layer,entry);
+   const level=MG.Workshop?.weaponLevel?.('goldhammer')||0,groups=new Map(),keys=[w,h,Math.min(root.devicePixelRatio||1,2),level],parents=new Map();for(const entry of state.entries.values())if(!entry.clone&&entry.el.isConnected)parents.set(entry.layer,entry);
    for(const entry of state.entries.values()){
     if(!entry.el.isConnected){state.entries.delete(entry.key);continue;}if(!entry.packet)continue;const model=state.models.get(entry.id);if(!model)continue;
     const style=getComputedStyle(entry.el),layerStyle=getComputedStyle(entry.layer);if((style.visibility==='hidden'&&!entry.selfImage)||layerStyle.visibility==='hidden'||layerStyle.display==='none')continue;
@@ -81,7 +81,7 @@ void main(){vec4 texel=uTextured?texture(uTexture,vUV):vec4(1.);float alpha=uCol
     const alpha=opacity*(entry.id==='alipunch'&&entry.el.closest('.lane-boxing-glove--clone')?.5:1),flash=entry.id==='goldhammer'&&level>0&&(parent||entry).img?.dataset.zapOrig?1:0,key=modelId+':'+(entry.clone?'clone':'main')+':'+vk+':'+mirror;if(!groups.has(key))groups.set(key,{id:modelId,clone:entry.clone,view,mirror,items:[]});groups.get(key).items.push([...matrix,alpha,flash]);keys.push(key,...matrix,alpha,flash,flash?Math.floor(now/80):0);entry.el.classList.add(entry.selfImage?'gold-model-source':'has-hammer-model');
    }
    canvas.hidden=!groups.size;if(!groups.size){state.key='';state.drawCalls=0;return false;}const key=keys.join(',');if(key===state.key)return true;state.key=key;state.last=now;
-   const gl=state.gl,dpr=Math.min(root.devicePixelRatio||1,1.25),pw=Math.round(w*dpr),ph=Math.round(h*dpr);if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph;}
+   const gl=state.gl,dpr=Math.min(root.devicePixelRatio||1,2),pw=Math.round(w*dpr),ph=Math.round(h*dpr);if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph;}
    gl.viewport(0,0,pw,ph);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(state.program);const vp=R.identity();vp[0]=2/w;vp[5]=2/h;vp[10]=-1/2048;vp[12]=vp[13]=-1;gl.uniformMatrix4fv(state.U.VP,false,vp);gl.uniform1i(state.U.Texture,0);gl.uniform1f(state.U.Time,now/1000);state.drawCalls=0;
    gl.uniformMatrix4fv(state.U.View,false,VIEW);gl.uniform3fv(state.U.LightningColor,lightningColor(level));gl.uniform1i(state.U.Lightning,1);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,state.lightning);
    const ordered=[...groups.values()].sort((a,b)=>+b.clone-+a.clone);let main=false;

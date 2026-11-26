@@ -96,6 +96,7 @@
         else if (card && !card.disabled) card.focus();
       }
     }
+    var stonePair = null;
     function renderOwnedGrid() {
       var target = enhancementTarget();
       upgrade.hidden = active === 'skill';
@@ -142,13 +143,21 @@
           art = document.createElement('img'); art.src = item.art; art.alt = '';
         }
         if (active === 'weapon' && item.id === 'alipunch') {
-          var pair = document.createElement('span');
-          pair.className = 'inventory-stone-pair';
-          var layout = document.createElement('span');
-          layout.className = 'inventory-stone-layout';
-          layout.append(art, art.cloneNode(false));
-          pair.appendChild(layout);
-          art = pair;
+          // V1808 C 사용자: 두 짝 사진 대신 3D 주먹 두 개(한 번 만든 3D 를 다시 그릴 때도 재사용)
+          if (!stonePair) {
+            stonePair = document.createElement('span');
+            var layout = document.createElement('span');
+            layout.className = 'inventory-stone-layout';
+            for (var g = 0; g < 2; g++) {
+              var glove = document.createElement('span');
+              glove.className = 'king-glove inventory-stone-glove';
+              var still = document.createElement('img'); still.alt = ''; still.src = 'assets/weapons/kingpunch-stone-display.webp';
+              glove.appendChild(still); layout.appendChild(glove);
+            }
+            stonePair.appendChild(layout);
+          }
+          stonePair.className = 'inventory-stone-pair'; stonePair.style.removeProperty('--enh');
+          art = stonePair;
         }
         if (active === 'weapon' && item.level > 0) {
           art.classList.add('has-enh');
@@ -171,6 +180,7 @@
         empty.setAttribute('aria-hidden', 'true'); ownedGrid.appendChild(empty);
       }
       if (active === 'costume') MG.CostumeModels?.attachOutfits(ownedGrid);
+      if (active === 'weapon') MG.WeaponModels?.attachGloves?.(ownedGrid);
       requestAnimationFrame(fitOwnedLabels);
     }
     function syncPopupScale() {

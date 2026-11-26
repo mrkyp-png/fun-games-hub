@@ -8732,6 +8732,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* V1415 C 사용자: 제작소 강화 수치·Glow (무기·스킬·코스튬, 사진관은 Glow 만) */
 .has-enh { filter: drop-shadow(0 0 1px var(--enh)) drop-shadow(0 0 1px var(--enh)) drop-shadow(0 0 .5px var(--enh)); }
 #game-screen.gs-weapon-enhanced { --weapon-glow: drop-shadow(0 0 1px var(--weapon-enh)) drop-shadow(0 0 1px var(--weapon-enh)) drop-shadow(0 0 .5px var(--weapon-enh)); }
+/* V1808 C 사용자: 돌주먹 강화 빛 = 안쪽 얇고 진하게 + 바깥 부드럽게 퍼짐(위쪽 가장자리 어둡게 보이던 것) */
+#game-screen.gs-alipunch.gs-weapon-enhanced { --weapon-glow: drop-shadow(0 0 1px var(--weapon-enh)) drop-shadow(0 0 1px var(--weapon-enh)) drop-shadow(0 0 3px var(--weapon-enh)); }
 #game-screen.gs-weapon-enhanced .is-enhance-zap { --gold-zap-tint: var(--lightning-tint); }
 /* V1581: match workshop/inventory; do not glow an already blurred cast shadow. */
 #game-screen.gs-weapon-enhanced .lane-hammer--gold > img { filter: var(--gold-zap-tint, brightness(1)) var(--weapon-glow) !important; }
@@ -10262,13 +10264,13 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
   position:absolute; top:50%; left:50%; translate:-50% -50%;
   width:min(100cqw, calc(100cqh * 442 / 423)); aspect-ratio:442 / 423;
 }
-/* Keep the original stones and separate the two halves of the 506 × 263 artwork. */
-#inventory-screen[data-tab="weapon"] .inventory-stone-layout > img {
-  position:absolute; top:0; left:0; width:calc(506 / 442 * 100%); height:auto;
-  max-width:none; max-height:none; clip-path:inset(0 50% 0 0);
+/* V1808 C: 3D 주먹 두 개 — 예전 두 짝 사진(506×263)의 왼쪽 반 = 왼쪽 위, 오른쪽 반 = 오른쪽 아래 자리 */
+#inventory-screen .inventory-stone-layout > .inventory-stone-glove {
+  position:absolute; width:78%; height:auto; aspect-ratio:52 / 88; translate:-50% -50%;
+  left:28.6%; top:31%; rotate:var(--stone-cell-tilt,30deg);
 }
-#inventory-screen[data-tab="weapon"] .inventory-stone-layout > img + img {
-  top:calc(160 / 423 * 100%); left:calc(-64 / 442 * 100%); clip-path:inset(0 0 0 50%);
+#inventory-screen .inventory-stone-layout > .inventory-stone-glove + .inventory-stone-glove {
+  left:71.3%; top:68.8%; rotate:calc(-1 * var(--stone-cell-tilt,30deg)); scale:-1 1;
 }
 #inventory-screen .inventory-grid .inventory-cell > .inventory-item-art {
   position: absolute; top: 50%; left: 50%; translate: -50% -50%;

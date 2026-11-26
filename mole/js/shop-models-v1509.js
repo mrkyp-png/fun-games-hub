@@ -133,10 +133,10 @@ async function create(host,id,index,options={}){
   }
   const list=model._previewInstances||(model._previewInstances=instances(model)),box=model._previewBounds||(model._previewBounds=bounds(model,list)),radius=box.radius||1;
   const vertex='attribute vec3 aPosition;attribute vec3 aNormal;attribute vec2 aUV;attribute vec4 aColor;uniform mat4 uModel;uniform mat4 uVP;uniform mat3 uNormal;uniform vec2 uBlink;varying vec3 vPosition;varying vec3 vNormal;varying vec2 vUV;varying vec4 vColor;void main(){vec3 pos=aPosition;pos.y=uBlink.x+(pos.y-uBlink.x)*uBlink.y;vec3 n=aNormal;n.y/=uBlink.y;vec4 p=uModel*vec4(pos,1.0);vPosition=p.xyz;vNormal=normalize(uNormal*n);vUV=aUV;vColor=aColor;gl_Position=uVP*p;}';
-  const fragment='precision highp float;varying vec3 vPosition;varying vec3 vNormal;varying vec2 vUV;varying vec4 vColor;uniform vec4 uColor;uniform sampler2D uTexture;uniform bool uTextured;uniform float uRoughness;uniform float uCutoff;uniform vec3 uEye;uniform vec3 uEmission;void main(){vec4 t=uTextured?texture2D(uTexture,vUV):vec4(1.0);float alpha=t.a*uColor.a*vColor.a;if(alpha<uCutoff)discard;vec3 base=uColor.rgb*vColor.rgb*(uTextured?pow(t.rgb,vec3(2.2)):vec3(1.0));vec3 n=normalize(vNormal);if(!gl_FrontFacing)n=-n;vec3 l=normalize(vec3(-0.4,0.85,0.8)),fill=normalize(vec3(0.8,0.3,-0.5)),v=normalize(uEye-vPosition),h=normalize(l+v);float diffuse=max(dot(n,l),0.0),d2=max(dot(n,fill),0.0),spec=pow(max(dot(n,h),0.0),mix(8.0,64.0,1.0-max(uRoughness,0.35)))*0.48;vec3 c=base*(0.62+0.65*diffuse+0.25*d2)+vec3(spec)+uEmission;gl_FragColor=vec4(pow(max(c,vec3(0.0)),vec3(1.0/2.2)),alpha);}';
+  const fragment='precision highp float;varying vec3 vPosition;varying vec3 vNormal;varying vec2 vUV;varying vec4 vColor;uniform vec4 uColor;uniform sampler2D uTexture;uniform bool uTextured;uniform float uRoughness;uniform float uCutoff;uniform vec3 uEye;uniform vec3 uEmission;uniform float uLS;uniform float uLY;vec3 ry(vec3 a){float c=cos(uLY),s=sin(uLY);return vec3(c*a.x+s*a.z,a.y,-s*a.x+c*a.z);}void main(){vec4 t=uTextured?texture2D(uTexture,vUV):vec4(1.0);float alpha=t.a*uColor.a*vColor.a;if(alpha<uCutoff)discard;vec3 base=uColor.rgb*vColor.rgb*(uTextured?pow(t.rgb,vec3(2.2)):vec3(1.0));vec3 n=normalize(vNormal);if(!gl_FrontFacing)n=-n;vec3 l=normalize(ry(vec3(-0.4,0.85,0.8))),fill=normalize(ry(vec3(0.8,0.3,-0.5))),v=normalize(uEye-vPosition),h=normalize(l+v);float diffuse=max(dot(n,l),0.0),d2=max(dot(n,fill),0.0),spec=pow(max(dot(n,h),0.0),mix(8.0,64.0,1.0-max(uRoughness,0.35)))*(uLS);vec3 c=base*(0.62+0.65*diffuse+0.25*d2)+vec3(spec)+uEmission;gl_FragColor=vec4(pow(max(c,vec3(0.0)),vec3(1.0/2.2)),alpha);}';
   function shader(type,source){const s=keep(gl.createShader(type),'deleteShader');gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));return s;}
   const program=keep(gl.createProgram(),'deleteProgram');gl.attachShader(program,shader(gl.VERTEX_SHADER,vertex));gl.attachShader(program,shader(gl.FRAGMENT_SHADER,fragment));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error('3D 그래픽 초기화 실패');gl.useProgram(program);
-  const loc={};for(const n of ['uModel','uVP','uNormal','uBlink','uColor','uTexture','uTextured','uRoughness','uCutoff','uEye','uEmission'])loc[n]=gl.getUniformLocation(program,n);
+  const loc={};for(const n of ['uModel','uVP','uNormal','uBlink','uColor','uTexture','uTextured','uRoughness','uCutoff','uEye','uEmission','uLY','uLS'])loc[n]=gl.getUniformLocation(program,n);
   const attr={};for(const n of ['aPosition','aNormal','aUV','aColor'])attr[n]=gl.getAttribLocation(program,n);
   gl.vertexAttrib4f(attr.aColor,1,1,1,1);
   const uint32=gl.getExtension('OES_element_index_uint');
@@ -188,7 +188,7 @@ async function create(host,id,index,options={}){
   view.resize=function(){if(!disposed){measureCanvas(view,canvas);if(!options.external&&drawable(view))view.draw(performance.now());}};
   view.draw=function(time){
    if(disposed)return;
-   const dpr=Math.min(Math.max(devicePixelRatio||1,2),2.5),cap=options.maxPixels||512;
+   const dpr=Math.min(Math.max(devicePixelRatio||1,2),options.hiDpr?3:2.5),cap=options.maxPixels||512;
    const inventory=options.motion==='inventory',pixelScale=Math.min(dpr,cap/Math.max(1,view.width,view.height));
    const w=Math.max(1,Math.min(cap,Math.round(view.width*pixelScale))),h=Math.max(1,Math.min(cap,Math.round(view.height*pixelScale)));
    if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
@@ -256,7 +256,7 @@ async function create(host,id,index,options={}){
     view.strikeContact={point:projectPoint(matrix,p),world:p,
      handleTop:projectPoint(matrix,[c[0],workshopHandle.high[1],c[2]]),handleEnd:projectPoint(matrix,[c[0],workshopHandle.low[1],c[2]])};}
    if(options.external){const forward=unit(target.map((n,i)=>n-eye[i])),right=unit(cross(forward,[0,1,0])),up=cross(right,forward);view.camera={eye,forward,right,up,half:radius*.8,aspect};}
-   gl.uniformMatrix4fv(loc.uVP,false,vp);gl.uniform3fv(loc.uEye,eye);
+   gl.uniformMatrix4fv(loc.uVP,false,vp);gl.uniform3fv(loc.uEye,eye);gl.uniform1f(loc.uLS,id==='alipunch'?.08:.48);gl.uniform1f(loc.uLY,id==='alipunch'?yaw:0);
    gl.uniform2f(loc.uBlink,0,1);
    const blinkTime=(elapsed%3900-3000)/210;
    const eyeHeight=worn&&!reduced&&blinkTime>0&&blinkTime<1?1-.92*Math.sin(Math.PI*blinkTime)**2:1;
@@ -393,7 +393,7 @@ function attach(cards,weapons,onFrame,retain){
 function attachGloves(container){
  const yaw = 155 * Math.PI / 180;
  const jobs=[];for(const host of container.querySelectorAll('.king-glove:not([data-glove-mounted])')){
-  host.dataset.gloveMounted='true';jobs.push(create(host,'alipunch',0,{manual:true,static:true,yaw}).then(view=>{
+  host.dataset.gloveMounted='true';jobs.push(create(host,'alipunch',0,{manual:true,static:true,yaw,maxPixels:1024,hiDpr:true}) /* V1808 C 사용자: 돌주먹 고해상도(⑥) */.then(view=>{
    if(!view||!host.isConnected)return;
    view.pose.cameraPitch=0;
    // 표면은 상점 셰이더로 한 번 렌더한다. 움직임은 기존 CSS가 맡아 GPU를 계속 점유하지 않는다.
