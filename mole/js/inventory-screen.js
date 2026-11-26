@@ -96,7 +96,7 @@
         else if (card && !card.disabled) card.focus();
       }
     }
-    var stonePair = null;
+    var stonePair = null, hammerCell = null;
     function renderOwnedGrid() {
       var target = enhancementTarget();
       upgrade.hidden = active === 'skill';
@@ -158,6 +158,15 @@
           }
           stonePair.className = 'inventory-stone-pair'; stonePair.style.removeProperty('--enh');
           art = stonePair;
+        }
+        if (active === 'weapon' && item.id === 'hammer' && MG.WeaponModels) {
+          // V1809 C 사용자: 보유 칸 뿅망치도 3D(멈춘 모습, 한 번 만든 3D 재사용)
+          if (!hammerCell) {
+            hammerCell = document.createElement('span');
+            MG.WeaponModels.create(hammerCell, 'hammer', { static: true, maxPixels: 512, hiDpr: true });
+          }
+          hammerCell.className = 'inventory-hammer-model';
+          art = hammerCell;
         }
         if (active === 'weapon' && item.level > 0) {
           art.classList.add('has-enh');
@@ -224,12 +233,15 @@
       for (var size = 56; size > 32 && (wSignEl.scrollWidth > wSignEl.clientWidth || wSignEl.scrollHeight > wSignEl.clientHeight); size--) wSignEl.style.fontSize = (size - 1) + 'px';
     }
     function grid() { return body.querySelector('.iw-pages, .inv-grid'); }
+    var scrollTarget = -1;
     function goTo(idx) {
       var g = grid(); if (!g) return;
       var n = g.children.length;
       pageIdx = Math.max(0, Math.min(idx, n - 1));
       var target = g.children[pageIdx];
       if (target) {
+        if (Math.abs(g.scrollLeft - target.offsetLeft) > 1) scrollTarget = pageIdx; // V1809 C 사용자: 미끄러지는 동안 지나가는 페이지(미보유 등)를 표시하지 않음
+        g.addEventListener('pointerdown', function () { scrollTarget = -1; }, { once: true });
         g.scrollTo({ left: target.offsetLeft, behavior: 'smooth' });
         syncDots();
       }
@@ -319,6 +331,7 @@
       var g = grid(); if (!g || e.target !== g || !g.children.length) return;
       var idx = Math.round(g.scrollLeft / g.clientWidth);
       idx = Math.max(0, Math.min(idx, g.children.length - 1));
+      if (scrollTarget >= 0) { if (idx === scrollTarget) scrollTarget = -1; else { queueWeaponRefresh(); return; } }
       if (idx !== pageIdx) {
         pageIdx = idx;
         syncDots();

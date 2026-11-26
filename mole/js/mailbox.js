@@ -76,7 +76,7 @@
   }
   function claim(id) {
     var l = load(), got = null;
-    l.forEach(function (m) { if (m.id === id && !m.isClaimed && (!m.expireAt || m.expireAt > Date.now())) { if (m.rewardType === 'item') { if (!grant(m)) return; } else grant(m); m.isClaimed = true; m.isRead = true; got = m; } });
+    l.forEach(function (m) { if (m.id === id && !m.isClaimed && (!m.expireAt || m.expireAt > Date.now())) { if (m.rewardType === 'item') { if (!grant(m)) return; } else grant(m); m.isClaimed = true; m.isRead = true; m.claimedAt = Date.now(); got = m; } });
     save(l); return got;
   }
   function rewardIcon(m) {
@@ -85,6 +85,13 @@
     return m.rewardType === 'coin' ? 'assets/shop-ui-v1452/coin-option-05-bright20.png' : m.rewardType === 'ticket' ? 'assets/ui-approved-v1476/ticket-single.webp' : 'assets/mailbox/rw-' + m.rewardType + '.png';
   }
   function claimAll() { var got = []; list().forEach(function (m) { if (!m.isClaimed) { var g = claim(m.id); if (g) got.push(g); } }); return got; }
+  // V1809 C 사용자: 받은 편지는 5분 뒤 편지함을 열 때 정리(받은 시각 없는 예전 수령 편지도 정리). 재지급·재생성 없음(일일=마지막 시각 이후만, 원격=GOT_KEY).
+  var CLAIMED_KEEP_MS = 5 * 60000;
+  function pruneClaimed() {
+    var all = load(), now = Date.now();
+    var kept = all.filter(function (m) { return !m.isClaimed || (m.claimedAt && now - m.claimedAt < CLAIMED_KEEP_MS); });
+    if (kept.length !== all.length) save(kept);
+  }
   function canDeleteRead(m) {
     return !!m.isRead && (!!m.isClaimed || !m.rewardType || m.rewardType === 'none');
   }
@@ -232,7 +239,7 @@
       });
     }
     if (root.addEventListener) root.addEventListener('mole-mailbox-change', function () { if (!el.hidden) render(false); });
-    return { show: function () { var dialog = el.querySelector('.mb-delete-dialog'); if (dialog) dialog.remove(); syncDailyRewards(); seedLocalScrollSamples(); listEl.scrollTop = 0; render(true); syncRemote(function (n) { if (n) render(false); }); } };
+    return { show: function () { var dialog = el.querySelector('.mb-delete-dialog'); if (dialog) dialog.remove(); syncDailyRewards(); seedLocalScrollSamples(); pruneClaimed(); listEl.scrollTop = 0; render(true); syncRemote(function (n) { if (n) render(false); }); } };
   }
 
   var api = { syncRemote: syncRemote, syncDailyRewards:syncDailyRewards, send: send, list: list, unreadCount: unreadCount, markRead: markRead, claim: claim, rewardIcon: rewardIcon, claimAll: claimAll, deleteRead: deleteRead, createScreen: createScreen };

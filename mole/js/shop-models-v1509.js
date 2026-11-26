@@ -250,6 +250,8 @@ async function create(host,id,index,options={}){
    const eye=[target[0]+Math.sin(yaw)*Math.cos(pitch)*distance,target[1]+Math.sin(pitch)*distance,target[2]+Math.cos(yaw)*Math.cos(pitch)*distance];
    const near=Math.max(radius*.1,distance-radius*2),far=distance+radius*2;
    const projection=options.external||framed?orthographic(half,aspect,near,far):perspective(fov,aspect,near,far);
+   // V1809 C 사용자: 코스튬 아이템 크게 — options.zoom 만큼 키우되, 모델 상자가 그림 칸 90%를 넘지 않게 상한(도는 상점은 한 바퀴 전체, 나머지는 지금 각도), 지금보다 작아지지는 않음
+   if(options.zoom){if(view._fitAspect!==aspect){let e=0;for(let k=0;k<(framed?1:8);k++){const a=yaw+k*Math.PI/4,ey=[target[0]+Math.sin(a)*Math.cos(pitch)*distance,target[1]+Math.sin(pitch)*distance,target[2]+Math.cos(a)*Math.cos(pitch)*distance],m=multiply(projection,lookAt(ey,target));const c=box.center,pts=[];for(const y of [box.low[1],box.high[1]])if(framed){for(const x of [box.low[0],box.high[0]])for(const z of [box.low[2],box.high[2]])pts.push([x,y,z]);}else pts.push([box.low[0],y,c[2]],[box.high[0],y,c[2]],[c[0],y,box.low[2]],[c[0],y,box.high[2]]);for(const pt of pts){const q=projectPoint(m,pt);e=Math.max(e,Math.abs(q.x-.5),Math.abs(q.y-.5));}}view._fit=Math.max(1,Math.min(options.zoom,.45/Math.max(e,.01)))*(options.rel||1);view._fitAspect=aspect;}projection[0]*=view._fit;projection[5]*=view._fit;}
    if(outfit)projection[5]*=1.12;
    const vp=multiply(projection,lookAt(eye,target));
    if(workshopFace){const matrix=multiply(vp,motion),p=workshopFace.point,c=workshopHandle.center;
@@ -416,17 +418,21 @@ function activateShop(cards){
  for(const host of cards.querySelectorAll('[data-shop-costume-model]:not([data-costume-mounted])')){
   host.dataset.costumeMounted='true';
   delete host.dataset.modelError;
-  create(host,host.dataset.shopCostumeModel,0,{maxPixels:384,setPiece:host.hasAttribute('data-costume-set-item')}).then(view=>{
+  create(host,host.dataset.shopCostumeModel,0,{maxPixels:384,setPiece:host.hasAttribute('data-costume-set-item'),zoom:host.hasAttribute('data-costume-set-item')?0:costumeZoom(host.dataset.shopCostumeModel),rel:costumeRel(host.dataset.shopCostumeModel,true)}).then(view=>{
    if(!view&&host.isConnected&&!dormant.has(host))delete host.dataset.costumeMounted;
   });
  }
  for(const v of views)if(cards.contains(v.host)){v.lastSeen=performance.now();v.inView=true;v.resize?.();}
  start();
 }
+// V1809 C 사용자: 코스튬 아이템 크게(타임 키퍼=홀드 타임은 1.3배 더), 상한은 draw 의 칸 맞춤
+function costumeZoom(id){return id==='hold-time'?3*1.3:3;}
+// V1809 C 사용자: 몸통 기준으로 세이프 찬스와 크기 맞춤(캡처 보며 조정), 상점은 더 크게
+function costumeRel(id,shop){return shop?({'hold-time':1.35,'safe-chance':1.2,'double-hit':1.2})[id]||1:({'hold-time':.8})[id]||1;}
 function attachInventoryOutfits(container){
  for(const host of container.querySelectorAll('[data-inv-outfit]:not([data-costume-mounted])')){
   host.dataset.costumeMounted='true';
-  create(host,host.dataset.invOutfit,0,{maxPixels:256,inventoryPiece:true}).then(view=>{
+  create(host,host.dataset.invOutfit,0,{maxPixels:256,inventoryPiece:true,zoom:costumeZoom(host.dataset.invOutfit),rel:costumeRel(host.dataset.invOutfit,false)}).then(view=>{
    if(!view&&host.isConnected)delete host.dataset.costumeMounted;
   });
  }

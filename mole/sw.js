@@ -155,7 +155,8 @@
 // V1692 G: matching gold clones, ImageGen enhancement lightning, smooth fur and physical rhythm entrance.
 // V1807 C: plaza arcade mallet red head smoother (decimate 0.15 -> 0.6).
 // V1808 C: stone fist idle in 3D (picked angle), 2x game 3D resolution, softer enhance glow; shop/inventory stone fist hi-res matte with camera-facing light; owned cell uses 3D pair.
-const CACHE = 'mole-game-v1808-C';
+// V1809 C: inventory page flicker fix, 3D hammer owned cell, costume sizes, double-hit gloves front, mailbox claimed cleanup after 5 min.
+const CACHE = 'mole-game-v1809-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
