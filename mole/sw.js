@@ -161,7 +161,8 @@
 // V1812 C: Rhythm Pang beach moles 2-4 outfits (Time Keeper, Dojo with gloves, Safe Chance), finger tweaks, lane hand clipping fix.
 // V1813 C: beach idle life, top status, beach skills (shield/targeting/AI), 3D buttons.
 // V1814 C: beach skills cooldown/AI timer, layout, surprised eyes, dojo jump arms.
-const CACHE = 'mole-game-v1814-C';
+// V1815 C: beach status on horizon (50%), hands stay on rim when hit.
+const CACHE = 'mole-game-v1815-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.

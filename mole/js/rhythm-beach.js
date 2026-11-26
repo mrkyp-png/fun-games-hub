@@ -10,6 +10,7 @@
    const w=screen.clientWidth,h=screen.clientHeight,scale=Math.max(w/1024,h/1536),offset=(h-1536*scale)/2;
    const shore=offset+942*scale,horizon=Math.max(0,Math.min(shore-1,weaponHorizon??h*.37)),waterHeight=Math.max(1,shore-horizon);
    sky.style.height=Math.max(0,horizon+1)+'px';sea.style.top=horizon+'px';sea.style.height=waterHeight+'px';ocean.resize(w,waterHeight);
+   screen.style.setProperty('--rp-horizon',horizon.toFixed(1)+'px'); // V1815 C 사용자: SCORE·COMBO·TIME 을 수평선 바로 위에
    if(running)ocean.render(reduced.matches?0:lastTime,true);
   }
   function stopGulls(){gullMotions.forEach(animation=>animation.cancel());gullMotions.clear();gulls.forEach(gull=>{gull.style.opacity='0';gull.style.transform='';});}

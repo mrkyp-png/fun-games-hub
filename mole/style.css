@@ -7304,7 +7304,8 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen:not(.is-type-b) .rp-bottom { padding-top:0; }
 #rhythm-screen:not(.is-type-b) .rp-a-status { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:3px; margin-bottom:5px; }
 /* V1813 C 사용자: 비치 상태판 4칸을 크기 그대로 맨 위로(아래 빈 곳은 스킬 버튼 자리), 일시정지는 그 아래 오른쪽 */
-#rhythm-screen:not(.is-type-b) .rp-a-status { position:fixed; top:4px; /* 사용자: 폰 상단(노치·상태표시 구역)까지 올림 — 안전영역 여백 없이 */ left:3px; right:3px; margin:0; z-index:4; }
+#rhythm-screen:not(.is-type-b) .rp-a-status { opacity:.5; translate:0 calc(-100% - 4px); } /* V1815 C 사용자: 수평선 바로 위 + 투명도 50%(30%에서 20% 더) */
+#rhythm-screen:not(.is-type-b) .rp-a-status { position:fixed; top:var(--rp-horizon,67px); /* 사용자: 폰 상단(노치·상태표시 구역)까지 올림 — 안전영역 여백 없이 */ left:3px; right:3px; margin:0; z-index:4; }
 #rhythm-screen:not(.is-type-b) .rp-a-status-item { aspect-ratio:2.15; }
 #rhythm-screen:not(.is-type-b) .rp-a-status-item::before { display:none; }
 /* 사용자: 네 묶음(아이콘+글자+숫자) 좌우 간격 똑같이 — 실제 화면 측정값으로 각 칸을 옆으로 옮김 */

@@ -89,7 +89,7 @@ precision highp float;in vec3 vNormal;in vec4 vColor;in float vHand;uniform vec4
     m.sway=(m.sway||0)+.16*wind;m.bend=(m.bend||0)+.06*wind;if(id==='curly'){m.wigLift=Math.max(m.wigLift||0,.001);m.wigRoll=(m.wigRoll||0)+.05*wind;}
     FX.hair(rig,worlds,id,m);}
    const stunt=clip==='PainHit'?{active:false}:FX.sample(state,time);
-   const smooth=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)},rest=stunt.active?0:jumping?1-smooth(Math.min(dt,jumpDuration-dt)/(jumpDuration/7)):1,armRest=clip==='PainHit'?0:rest,offsets={};
+   const smooth=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)},rest=stunt.active?0:jumping?1-smooth(Math.min(dt,jumpDuration-dt)/(jumpDuration/7)):1,armRest=rest,/* V1815 C 사용자: 무기에 맞아도(PainHit) 손은 구멍 턱에 그대로 — 모래 뒤로 숨으면 화면 깨진 것 같음 */offsets={};
    for(const side of ['L','R']){const hand=R.multiply(bodyDelta,rimWorlds[nodes.findIndex(n=>n.name==='Hand.'+side)]),x=head.x+scale*(hand[12]-anchor[0]),u=Math.max(0,Math.min(geometry.width-1,(x-rect.x)/rect.w*(geometry.width-1))),lo=Math.floor(u),hi=Math.min(geometry.width-1,lo+1),f=u-lo,edge=geometry.frontCurvePixels[lo]*(1-f)+geometry.frontCurvePixels[hi]*f,target=rect.y+edge/geometry.height*rect.h-scale*.04;offsets[side]=target-(head.y+scale*(anchor[1]-hand[13]));}
    const offset=(offsets.L+offsets.R)/2;
    nodes.forEach((n,k)=>{const match=/^(UpperArm|Forearm|Hand|Finger[123]|Thumb)\.([LR])$/.exec(n.name||'');if(!match||armRest<=0)return;const rim=R.multiply(bodyDelta,rimWorlds[k]);rim[13]-=(offsets[match[2]]-offset)/scale;worlds[k]=new Float32Array(worlds[k].map((v,c)=>v+(rim[c]-v)*armRest));});
