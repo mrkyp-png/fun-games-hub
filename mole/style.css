@@ -9263,6 +9263,10 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-costume-visual { position:relative; flex:none; width:82%; height:calc(100cqh - 2.2em); }
 #shop-screen .shop-costume-visual--set { width:94%; }
 #shop-screen .shop-costume-model { position:absolute; inset:0; }
+/* V1810 C 사용자: 망토·조끼·도복 몸통을 그림 칸 위아래 가운데로(측정한 몸통 중심 기준) */
+#shop-screen .shop-costume-model[data-shop-costume-model="hold-time"]:not([data-costume-set-item]) > canvas { translate:0 16px; }
+#shop-screen .shop-costume-model[data-shop-costume-model="safe-chance"]:not([data-costume-set-item]) > canvas { translate:0 4px; }
+#shop-screen .shop-costume-model[data-shop-costume-model="double-hit"]:not([data-costume-set-item]) > canvas { translate:0 7px; }
 #shop-screen .shop-card--sale .shop-costume-model > .shop-costume-fallback {
   position:absolute!important; inset:0!important; width:100%!important; height:100%!important;
   max-width:100%!important; max-height:100%!important; margin:0!important; object-fit:contain!important;

@@ -220,7 +220,11 @@ async function create(host,id,index,options={}){
    let pitch=worn||setPiece||outfit?0:costume?.13:id==='cannon'?0:.22;
    if(inventory&&id==='cannon')yaw=inventoryCannonPose(elapsed).yaw;
    if(options.manual||options.external){yaw=view.pose.yaw;pitch=view.pose.cameraPitch??(options.static?.22:options.external?0:.1);}
+   // V1810 C 사용자: 상점 단독 타임 키퍼 = 회전 없이 정면, 망토가 윗부분을 축으로 좌우로 흔들림
+   const keeperSway=id==='hold-time'&&costume&&!worn&&!setPiece&&!outfit;
+   if(keeperSway)yaw=0;
    let motion=identity();
+   if(keeperSway&&!reduced){const top=[box.center[0],box.high[1],box.center[2]];motion=multiply(multiply(translation(...top),multiply(rotate([0,0,1],.09*Math.sin(elapsed/380)),rotate([1,0,0],.04*Math.sin(elapsed/520)))),translation(...top.map(v=>-v)));}
    if(id==='cannon')motion=options.external?multiply(rotate([0,1,0],view.pose.bodyYaw||0),translation(0,0,-radius*.23*amount)):translation(0,0,-radius*.23*amount);
    else if(id==='goldhammer'&&amount)motion=multiply(multiply(translation(...pivot),rotate([1,0,0],amount*.36)),translation(...pivot.map(v=>-v))); // Front (+Z) face has no rubies.
    else if(amount)motion=multiply(multiply(translation(...pivot),rotate([Math.cos(actionDirection),0,Math.sin(actionDirection)],amount*.24)),translation(...pivot.map(v=>-v)));
@@ -251,7 +255,7 @@ async function create(host,id,index,options={}){
    const near=Math.max(radius*.1,distance-radius*2),far=distance+radius*2;
    const projection=options.external||framed?orthographic(half,aspect,near,far):perspective(fov,aspect,near,far);
    // V1809 C 사용자: 코스튬 아이템 크게 — options.zoom 만큼 키우되, 모델 상자가 그림 칸 90%를 넘지 않게 상한(도는 상점은 한 바퀴 전체, 나머지는 지금 각도), 지금보다 작아지지는 않음
-   if(options.zoom){if(view._fitAspect!==aspect){let e=0;for(let k=0;k<(framed?1:8);k++){const a=yaw+k*Math.PI/4,ey=[target[0]+Math.sin(a)*Math.cos(pitch)*distance,target[1]+Math.sin(pitch)*distance,target[2]+Math.cos(a)*Math.cos(pitch)*distance],m=multiply(projection,lookAt(ey,target));const c=box.center,pts=[];for(const y of [box.low[1],box.high[1]])if(framed){for(const x of [box.low[0],box.high[0]])for(const z of [box.low[2],box.high[2]])pts.push([x,y,z]);}else pts.push([box.low[0],y,c[2]],[box.high[0],y,c[2]],[c[0],y,box.low[2]],[c[0],y,box.high[2]]);for(const pt of pts){const q=projectPoint(m,pt);e=Math.max(e,Math.abs(q.x-.5),Math.abs(q.y-.5));}}view._fit=Math.max(1,Math.min(options.zoom,.45/Math.max(e,.01)))*(options.rel||1);view._fitAspect=aspect;}projection[0]*=view._fit;projection[5]*=view._fit;}
+   if(options.zoom){if(view._fitAspect!==aspect){let e=0,ec=0,y0=1,y1=0; /* ec = 대각선까지(비스듬히 돌 때도 카드 안) */for(let k=0;k<(framed||keeperSway?1:8);k++){const a=yaw+k*Math.PI/4,ey=[target[0]+Math.sin(a)*Math.cos(pitch)*distance,target[1]+Math.sin(pitch)*distance,target[2]+Math.cos(a)*Math.cos(pitch)*distance],m=multiply(projection,lookAt(ey,target));const c=box.center,pts=[];for(const y of [box.low[1],box.high[1]])if(framed){for(const x of [box.low[0],box.high[0]])for(const z of [box.low[2],box.high[2]])pts.push([x,y,z]);}else pts.push([box.low[0],y,c[2]],[box.high[0],y,c[2]],[c[0],y,box.low[2]],[c[0],y,box.high[2]]);for(const pt of pts){const q=projectPoint(m,pt);e=Math.max(e,Math.abs(q.x-.5),Math.abs(q.y-.5));y0=Math.min(y0,q.y);y1=Math.max(y1,q.y);}if(!framed&&!keeperSway)for(const x of [box.low[0],box.high[0]])for(const y of [box.low[1],box.high[1]])for(const z of [box.low[2],box.high[2]]){const q=projectPoint(m,[x,y,z]);ec=Math.max(ec,Math.abs(q.x-.5),Math.abs(q.y-.5));y0=Math.min(y0,q.y);y1=Math.max(y1,q.y);}}view._fit=options.uniformFit?(keeperSway?options.uniformFit*.84*1.1*1.05/Math.max(e,.01):options.uniformFit/Math.max(e,ec,.01)):Math.min(Math.max(1,Math.min(options.zoom,.45/Math.max(e,.01)))*(options.rel||1),ec?(options.capFill||.6)/ec:Infinity);view._offY=options.uniformFit?-view._fit*(1-y0-y1):0;view._fitAspect=aspect;}projection[0]*=view._fit;projection[5]*=view._fit;if(view._offY){const o=view._offY;projection[1]+=o*projection[3];projection[5]+=o*projection[7];projection[9]+=o*projection[11];projection[13]+=o*projection[15];}}
    if(outfit)projection[5]*=1.12;
    const vp=multiply(projection,lookAt(eye,target));
    if(workshopFace){const matrix=multiply(vp,motion),p=workshopFace.point,c=workshopHandle.center;
@@ -418,7 +422,7 @@ function activateShop(cards){
  for(const host of cards.querySelectorAll('[data-shop-costume-model]:not([data-costume-mounted])')){
   host.dataset.costumeMounted='true';
   delete host.dataset.modelError;
-  create(host,host.dataset.shopCostumeModel,0,{maxPixels:384,setPiece:host.hasAttribute('data-costume-set-item'),zoom:host.hasAttribute('data-costume-set-item')?0:costumeZoom(host.dataset.shopCostumeModel),rel:costumeRel(host.dataset.shopCostumeModel,true)}).then(view=>{
+  create(host,host.dataset.shopCostumeModel,0,{maxPixels:384,setPiece:host.hasAttribute('data-costume-set-item'),zoom:host.hasAttribute('data-costume-set-item')?0:costumeZoom(host.dataset.shopCostumeModel),uniformFit:.6}).then(view=>{
    if(!view&&host.isConnected&&!dormant.has(host))delete host.dataset.costumeMounted;
   });
  }
@@ -428,7 +432,7 @@ function activateShop(cards){
 // V1809 C 사용자: 코스튬 아이템 크게(타임 키퍼=홀드 타임은 1.3배 더), 상한은 draw 의 칸 맞춤
 function costumeZoom(id){return id==='hold-time'?3*1.3:3;}
 // V1809 C 사용자: 몸통 기준으로 세이프 찬스와 크기 맞춤(캡처 보며 조정), 상점은 더 크게
-function costumeRel(id,shop){return shop?({'hold-time':1.35,'safe-chance':1.2,'double-hit':1.2})[id]||1:({'hold-time':.8})[id]||1;}
+function costumeRel(id,shop){return shop?1:({'hold-time':.8})[id]||1;}
 function attachInventoryOutfits(container){
  for(const host of container.querySelectorAll('[data-inv-outfit]:not([data-costume-mounted])')){
   host.dataset.costumeMounted='true';
