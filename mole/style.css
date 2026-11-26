@@ -7303,6 +7303,52 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 /* V1164 G: Rhythm A status panels between stage and square controls. */
 #rhythm-screen:not(.is-type-b) .rp-bottom { padding-top:0; }
 #rhythm-screen:not(.is-type-b) .rp-a-status { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:3px; margin-bottom:5px; }
+/* V1813 C 사용자: 비치 상태판 4칸을 크기 그대로 맨 위로(아래 빈 곳은 스킬 버튼 자리), 일시정지는 그 아래 오른쪽 */
+#rhythm-screen:not(.is-type-b) .rp-a-status { position:fixed; top:calc(env(safe-area-inset-top, 0px) + 4px); left:3px; right:3px; margin:0; z-index:4; }
+#rhythm-screen:not(.is-type-b) .rp-a-status-item { aspect-ratio:2.15; }
+#rhythm-screen:not(.is-type-b) .rp-a-status-item::before { display:none; }
+/* 사용자: 네 묶음(아이콘+글자+숫자) 좌우 간격 똑같이 — 실제 화면 측정값으로 각 칸을 옆으로 옮김 */
+/* 사용자: 판정이 레인 아래와 중복 → 맨 위 JUDGEMENT 제거, SCORE·COMBO·TIME 3칸 */
+#rhythm-screen:not(.is-type-b) .rp-a-status { grid-template-columns:repeat(3,minmax(0,1fr)); }
+#rhythm-screen:not(.is-type-b) .rp-a-status-judgement { display:none; }
+#rhythm-screen:not(.is-type-b) .rp-a-status-label { font-size:clamp(12px,3.8vw,17px); top:14%; }
+#rhythm-screen:not(.is-type-b) .rp-a-status-value,#rhythm-screen:not(.is-type-b) .rp-a-status-item.rp-a-status-time .rp-a-status-value { left:34%; right:7%; }
+#rhythm-screen:not(.is-type-b) .rp-a-status-item.rp-a-status-time .rp-a-status-label { left:34%; right:7%; }
+#rhythm-screen:not(.is-type-b) .rp-a-status-item.rp-a-status-time .rp-a-status-label,#rhythm-screen:not(.is-type-b) .rp-a-status-item.rp-a-status-time .rp-a-status-value { translate:-3.87vw 0; } /* 사용자: 숫자를 글자(SCORE·COMBO·TIME) 바로 아래 가운데로 */ /* 사용자: SCORE·COMBO·TIME 글자 크게 */
+#rhythm-screen:not(.is-type-b) .rp-a-status-score { translate:2.97vw 0; }
+#rhythm-screen:not(.is-type-b) .rp-a-status-combo { translate:4.44vw 0; }
+#rhythm-screen:not(.is-type-b) .rp-a-status-time { translate:5.12vw 0; }
+/* 사용자: 아이콘↔글자 간격 세 칸 모두 6px(측정값) */
+#rhythm-screen:not(.is-type-b) .rp-a-status-score > .rp-status-art { translate:3.03vw 0; }
+#rhythm-screen:not(.is-type-b) .rp-a-status-combo > .rp-status-art { translate:-1.23vw 0; }
+#rhythm-screen:not(.is-type-b) .rp-a-status-time .rp-a-clock { translate:-.41vw 0; }
+/* 사용자: 숫자·아이콘 1.2배(글자는 그대로) */
+#rhythm-screen:not(.is-type-b) .rp-a-status-value { font-size:clamp(18px,5.5vw,26px); }
+#rhythm-screen:not(.is-type-b) .rp-a-status-judgement .rp-a-status-value { font-size:clamp(16px,4.8vw,23px); }
+#rhythm-screen:not(.is-type-b) .rp-a-status-score > .rp-status-art { transform:scale(1.2); transform-origin:22% 37%; }
+#rhythm-screen:not(.is-type-b) .rp-a-status-judgement > .rp-status-art { transform:scale(1.2); transform-origin:21% 38%; }
+#rhythm-screen:not(.is-type-b) .rp-a-status-combo > .rp-status-art { transform:scale(1.2); transform-origin:25% 44%; }
+#rhythm-screen:not(.is-type-b) .rp-a-clock { transform:scale(1.2); transform-origin:50% 50%; }
+#rhythm-screen:not(.is-type-b) .rp-a-status-time::after,#rhythm-screen:not(.is-type-b) .rp-a-status-time > .rp-status-art { display:none; } /* 사용자: TIME 오른쪽 갈매기 빼기(시계는 따로 그림) */ /* 사용자: 상태판 박스 틀은 지우고 아이콘·글자·숫자만 */ /* 사용자: 위 상태판은 위아래만 줄임(폭 그대로) */
+/* 점프 버튼 아래 한 줄: 스킬 3개 + 일시정지, 모두 같은 크기(일시정지 버튼은 넷째 칸 위에 고정) */
+.rp-skillbar { display:none; }
+#rhythm-screen:not(.is-type-b) .rp-skillbar { --rp-skill-size:calc((100vw - 6px) / 4 - 12px); display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); justify-items:center; align-items:center; height:calc(var(--rp-skill-size) + 6px); margin-top:6px; }
+.rp-skill { width:var(--rp-skill-size,52px); height:var(--rp-skill-size,52px); border-width:4px; padding:0; overflow:hidden; border-radius:50%; border:3px solid #57d9ff; background:radial-gradient(circle at 50% 35%,#2f86d8,#123c86); box-shadow:0 3px 0 #0b2456,inset 0 2px 2px rgba(255,255,255,.4); padding:6px; display:flex; align-items:center; justify-content:center; }
+.rp-skill img { width:150%; height:150%; max-width:none; object-fit:cover; pointer-events:none; } /* 사용자: 스킬 아이콘이 버튼을 꽉 채움 */
+.rp-skill:disabled { filter:saturate(.55) brightness(.9); opacity:.85; }
+.rp-skill { position:relative; cursor:pointer; overflow:visible; }
+.rp-skill img { border-radius:50%; }
+.rp-skill::after { content:attr(data-qty); position:absolute; right:-2px; bottom:-2px; min-width:22px; height:22px; padding:0 4px; box-sizing:border-box; border-radius:11px; background:#0f2a66; border:2px solid #ffd45c; color:#fff; font:13px/18px 'Lilita One','Jua',sans-serif; text-align:center; }
+/* 사용자: 스킬·일시정지 = 둥근 원통 누름 버튼(윗면 원 그대로 + 아래 진한 옆면 띠 + 크림 받침 링), 누르면 쑥 들어감 */
+#rhythm-screen:not(.is-type-b) .rp-skillbar { height:calc(var(--rp-skill-size) + 22px); align-items:start; padding-top:2px; }
+#rhythm-screen:not(.is-type-b) .rp-skill,#rhythm-screen:not(.is-type-b) .rp-pausebtn { --side:#0d3474; translate:0 0; transition:translate .07s,box-shadow .07s;
+  box-shadow:0 9px 0 0 var(--side),0 9px 0 4px #fff1d4,0 12px 0 5px #b48a4c,0 14px 8px 4px rgba(60,40,10,.35); }
+#rhythm-screen:not(.is-type-b) .rp-pausebtn { --side:#0b2a5e; }
+#rhythm-screen:not(.is-type-b) .rp-skill:active:not(:disabled),#rhythm-screen:not(.is-type-b) .rp-pausebtn:active { translate:0 7px;
+  box-shadow:0 2px 0 0 var(--side),0 2px 0 4px #fff1d4,0 5px 0 5px #b48a4c,0 7px 6px 4px rgba(60,40,10,.35); }
+.rp-skill.is-on { filter:none; opacity:1; box-shadow:0 0 0 3px #fff7a8,0 0 18px 6px #ffe45a; animation:rp-skill-on .8s ease-in-out infinite alternate; }
+@keyframes rp-skill-on { from { transform:scale(1); } to { transform:scale(1.06); } }
+#rhythm-screen:not(.is-type-b) .rp-pausebtn { --s:calc((100vw - 6px) / 4 - 12px); position:fixed; top:auto; width:var(--s); height:var(--s); border-width:4px; bottom:calc(env(safe-area-inset-bottom, 0px) + 10px + 20px); right:calc(3px + (100vw - 6px) / 8 - var(--s) / 2); z-index:5; font-size:calc(var(--s) * .4); }
 .rp-a-status-item { position:relative; min-width:0; aspect-ratio:1.55; background-position:center; background-size:118% 118%; background-repeat:no-repeat; color:#fff; pointer-events:none; }
 .rp-a-status-score { background-image:url('assets/rhythm/ui-status-v1164/score.png'); --rp-status-color:#7edfff; }
 .rp-a-status-judgement { background-image:url('assets/rhythm/ui-status-v1164/judgement.png'); --rp-status-color:#ff80f0; }
@@ -9007,6 +9053,14 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen:not(.is-type-b) .rp-btn.is-beach-spring .rp-beach-face,
 #rhythm-screen:not(.is-type-b) .rp-btn.is-beach-spring .rp-a-triangle { animation: rp-beach-cap-spring 220ms linear; }
 #rhythm-screen:not(.is-type-b) .rp-btn.is-beach-spring .rp-beach-face img { animation: rp-beach-cap-side 220ms linear; }
+/* V1813 C 사용자: 점프 버튼 옆면 두껍게(9→17px) + 더 깊게 눌림 — 큰 블록이 솟은 느낌 */
+#rhythm-screen:not(.is-type-b) .rp-btns { translate: 0 -12px; margin-bottom: 12px; }
+#rhythm-screen:not(.is-type-b) .rp-btn .rp-beach-face img { filter: drop-shadow(0 17px 0 var(--beach-depth)) drop-shadow(0 2px 0 var(--beach-edge)); }
+#rhythm-screen:not(.is-type-b) .rp-btn.is-beach-spring .rp-beach-face,
+#rhythm-screen:not(.is-type-b) .rp-btn.is-beach-spring .rp-a-triangle { animation: rp-beach-cap-spring2 240ms linear; }
+#rhythm-screen:not(.is-type-b) .rp-btn.is-beach-spring .rp-beach-face img { animation: rp-beach-cap-side2 240ms linear; }
+@keyframes rp-beach-cap-spring2 { 0%,100% { transform: translateY(-4px); } 20%,32% { transform: translateY(10px); } 62% { transform: translateY(-7px); } 82% { transform: translateY(-3px); } }
+@keyframes rp-beach-cap-side2 { 0%,100% { filter: drop-shadow(0 17px 0 var(--beach-depth)) drop-shadow(0 2px 0 var(--beach-edge)); } 20%,32% { filter: drop-shadow(0 3px 0 var(--beach-depth)) drop-shadow(0 2px 0 var(--beach-edge)); } 62% { filter: drop-shadow(0 20px 0 var(--beach-depth)) drop-shadow(0 2px 0 var(--beach-edge)); } 82% { filter: drop-shadow(0 16px 0 var(--beach-depth)) drop-shadow(0 2px 0 var(--beach-edge)); } }
 @keyframes rp-beach-cap-spring {
   0%,100% { transform: translateY(-4px); }
   20%,30% { transform: translateY(3px); }

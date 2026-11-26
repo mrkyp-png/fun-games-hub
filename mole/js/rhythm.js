@@ -604,7 +604,7 @@
         if (melBuf) { s2 = ctx.createBufferSource(); s2.buffer = melBuf; melGain = ctx.createGain(); melGain.gain.value = 1; s2.connect(melGain); melGain.connect(gameMusicGain); s2.start(musicAt); }
         src = { stop: function (w) { s1.stop(w); if (s2) s2.stop(w); } };
         resetBoss(); clearAGauge();
-        beachVisual.start(song&&song.bpm);
+        beachVisual.start(song&&song.bpm); beachMoles.setBeat(song); // V1813 C: 두더지 박자 끄덕임
         statusJudge.textContent = 'READY'; statusSeconds = -1; updateStatusTime(0);
         hud(); // (무기 풀은 위에서 생성 — 여기서 비우지 않음)
         el.querySelector('[data-rp-result]').hidden = true;
@@ -617,6 +617,30 @@
 
     // 버튼 → 점프. 리듬 판정은 "두더지가 최고점에 닿는 시각" 기준(입력 시각 + 최고점까지 시간).
     function clearButtonWaves(){buttonWaves.forEach(function(a){if(a)a.cancel();});buttonWaves=[];}
+    // V1813 C 사용자: 비치 스킬 3종(두더지팡 스킬 아이템을 1개씩 사용) — 실드·타겟팅·AI
+    var skillBtns = Array.from(el.querySelectorAll('[data-rp-skill]'));
+    function skillQty(id){ return MG.Skills ? MG.Skills.getQuantity(id) : 0; }
+    function syncSkills(){
+      var playing = !!(st && !st.over && !st.paused && !activeB && (!st.playAt || ctx.currentTime >= st.playAt));
+      skillBtns.forEach(function(b){ var id=b.dataset.rpSkill, q=skillQty(id), on=id==='shield'?!!(st&&st.shieldArmed):id==='ai'?!!(st&&st.aiUntil&&now()<st.aiUntil):false;
+        b.disabled = !playing || q<=0 || on; b.classList.toggle('is-on', on); b.dataset.qty = q; });
+    }
+    function useSkill(id){
+      if (!st || st.over || st.paused || activeB || (st.playAt && ctx.currentTime < st.playAt)) return;
+      var t = now();
+      if (id === 'shield' && st.shieldArmed) return;
+      if (id === 'ai' && st.aiUntil && t < st.aiUntil) return;
+      var target = null;
+      if (id === 'targeting') { st.notes.forEach(function(n){ if (n.state==='live' && t >= n.spawnTime && (!target || n.targetTime < target.targetTime)) target = n; }); if (!target) return; }
+      if (!MG.Skills || !MG.Skills.consumeForMinigame(id)) { syncSkills(); return; }
+      if (id === 'shield') st.shieldArmed = true;
+      else if (id === 'ai') st.aiUntil = t + 10;
+      else { target.press = { grade: 'PERFECT', lane: target.targetLane }; hit(target, target.targetLane); }
+      try { if (root.FGH && root.FGH.Settings && root.FGH.Settings.vibrate) root.FGH.Settings.vibrate(60); } catch (e) { /* 무시 */ }
+      syncSkills();
+    }
+    skillBtns.forEach(function(b){ b.addEventListener('click', function(){ useSkill(b.dataset.rpSkill); }); });
+    setInterval(function(){ if (!el.hidden) syncSkills(); }, 250);
     function press(lane, lag) {
       if (!st || st.over || st.paused || now() < 0 || (st.playAt && ctx.currentTime < st.playAt)) return;
       if(btnEls&&btnEls[lane])replay(btnEls[lane],'is-press-fx');
@@ -677,6 +701,8 @@
       melody(false);
       // 미리 건 10콤보 회전은 놓치면 취소(콤보가 끊겼으므로)
       st.moles.forEach(function (mm) { if (mm && mm.beachStunt && mm.beachStunt.fromJump) mm.beachStunt = null; });
+      // V1813 C 사용자: 실드 = 실패 1회 콤보 유지
+      if (st.shieldArmed) { st.shieldArmed = false; st.cnt.MISS++; syncSkills(); st.moles[lane].hurtAt = now(); showJudge(lane, 'SHIELD', 'great'); hud(); return; }
       st.cnt.MISS++; st.combo = 0; updateACombo(0,false); st.hp = Math.max(0, st.hp - 1);
       st.moles[lane].hurtAt = now(); st.moles[lane].beachStunt=null;
       showJudge(lane, 'MISS', 'miss'); hud();
@@ -752,6 +778,8 @@
         headAt(i,f,heads[i].h);heads[i].jumping=f>0&&f<6;
       }
       beachMoles.render(t,L,heads,st.moles,7*CONFIG.jumpFrameMs/1000);
+      // V1813 C 사용자: AI 스킬 10초 = 무기가 올 때 맞춰 자동 점프
+      if (st.aiUntil && t < st.aiUntil) { var lead=(CONFIG.apexFrame + 0.5) * CONFIG.jumpFrameMs / 1000; st.notes.forEach(function (n) { if (n.state === 'live' && !n.aiPressed && t >= n.targetTime - lead - 0.008) { n.aiPressed = true; press(n.targetLane); } }); } else if (st.aiUntil) { st.aiUntil = 0; syncSkills(); }
       // V1170: activate in spawn order; keep waiting/retired sprites out of rendering.
       while(st.spawnCursor<st.renderQueue.length&&t>=st.renderQueue[st.spawnCursor].spawnTime-LAUNCH)st.activeNotes.push(st.renderQueue[st.spawnCursor++]);
       // 무기

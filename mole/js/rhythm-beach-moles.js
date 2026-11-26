@@ -10,7 +10,7 @@ function create(stage){
   if(canvas)canvas.remove();parts=[];
   canvas=document.createElement('canvas');canvas.className='rp-beach-moles-3d';canvas.setAttribute('aria-hidden','true');canvas.hidden=true;
   canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();lost=true;ready=false;stop()});canvas.addEventListener('webglcontextrestored',()=>{lost=false;loading=null;prepare().catch(console.error)});
-  gl=canvas.getContext('webgl2',{alpha:true,antialias:true,premultipliedAlpha:true});if(!gl)throw Error('WebGL2 is required for beach characters');rig=R.prepare(model);fingerAxes=knuckleAxes(rig);armRestPose=restArms(rig);
+  gl=canvas.getContext('webgl2',{alpha:true,antialias:true,premultipliedAlpha:true});if(!gl)throw Error('WebGL2 is required for beach characters');rig=R.prepare(model);fingerAxes=knuckleAxes(rig);{const nodes=rig.model.json.nodes,h=nodes.findIndex(n=>n.name==='Head'),walk=k=>{headTree.push(k);for(const c of nodes[k].children||[])walk(c);};headTree=[];if(h>=0)walk(h);eyeBones=nodes.map((n,k)=>[k,n.name]).filter(([,n])=>/^Eye\.[LR]$/.test(n||''));browBones=nodes.map((n,k)=>/^Brow\.[LR]$/.test(n.name||'')?k:-1).filter(k=>k>=0);}armRestPose=restArms(rig);
   const joints=Math.max(...rig.skins.map(s=>s.joints.length));
   const vs=`#version 300 es
 precision highp float;in vec3 aPosition,aNormal;in vec4 aColor,aJoints,aWeights;in float aHand;uniform mat4 uModel,uVP,uBones[${joints}];uniform bool uSkin;out vec3 vNormal;out vec4 vColor;out float vHand;void main(){mat4 s=mat4(1.);if(uSkin)s=aWeights.x*uBones[int(aJoints.x)]+aWeights.y*uBones[int(aJoints.y)]+aWeights.z*uBones[int(aJoints.z)]+aWeights.w*uBones[int(aJoints.w)];vec4 p=uModel*s*vec4(aPosition,1.);vNormal=normalize(mat3(uModel)*mat3(s)*aNormal);vColor=aColor;vHand=aHand;gl_Position=uVP*p;}`;
@@ -56,6 +56,10 @@ precision highp float;in vec3 vNormal;in vec4 vColor;in float vHand;uniform vec4
   gl.useProgram(program);gl.uniform1i(U.HoleMask,0);gl.uniform1i(U.HoleFront,1);
   gl.enable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);stage.classList.add('rp-use-3d');ready=true;return true;
  }
+ let headTree=[],eyeBones=[],browBones=[],beat={bpm:83,first:.232,beats:null};
+ // V1813 C: 곡 박자(rhythm.js 가 곡 시작 때 setBeat)로 끄덕임 세기 0~1
+ function setBeat(song){beat={bpm:Number(song&&song.bpm)||83,first:Number.isFinite(song&&song.firstBeat)?song.firstBeat:.232,beats:song&&Array.isArray(song.beats)?song.beats:null};}
+ function beatPulse(t){let at;if(beat.beats&&beat.beats.length){let lo=0,hi=beat.beats.length-1;if(t<beat.beats[0])return 0;while(lo<hi){const m=(lo+hi+1)>>1;if(beat.beats[m]<=t)lo=m;else hi=m-1;}at=beat.beats[lo];}else{const p=60/beat.bpm;if(t<beat.first)return 0;at=beat.first+Math.floor((t-beat.first)/p)*p;}const d=t-at;return d<.09?d/.09:Math.exp(-(d-.09)/.14);}
  let MIDDLE_LEN=1.3,ARM_LIFT=-.52,FINGER_DOWN=.35,fingerAxes=new Map(),armRestPose=null;
  function restArms(rig){const nodes=rig.model.json.nodes,sk=rig.skins[0],rest=n=>{const j=sk.joints.indexOf(n);return j<0?null:R.inverse(sk.inverseBind.subarray(j*16,j*16+16));},body=nodes.findIndex(n=>n.name==='Body'),bi=R.inverse(rest(body)),out=new Map();nodes.forEach((n,k)=>{if(/^(UpperArm|Forearm|Hand|Finger[123]|Thumb)\.[LR]$/.test(n.name||'')){const m=rest(k);if(m)out.set(k,R.multiply(bi,m));}});return out;}
  // 손가락 굽힘 축 = 손가락 1~3이 나란한 손마디 줄(기본 자세) → 손가락 뼈 자기 좌표로 바꿔 둠. 손 위치는 그대로.
@@ -74,8 +78,13 @@ precision highp float;in vec3 vNormal;in vec4 vColor;in float vHand;uniform vec4
   for(let i=0;i<4;i++){
    const id=AP.styles[i],state=moles[i],dt=time-state.jumpAt,hurt=time-state.hurtAt,jumping=dt>=0&&dt<jumpDuration;
    const clip=hurt>=0&&hurt<.45?'PainHit':jumping?'Jump':'Idle',duration=rig.animations.find(a=>a.name===clip)?.duration||1,clipTime=clip==='Jump'?dt/jumpDuration*duration:clip==='PainHit'?hurt+.22:Math.max(0,time);
-   const worlds=AP.pose(rig,clip,clipTime,clip==='Idle',AP.face(rig,clip==='PainHit'),Math.max(0,time),id),head=heads[i].h||heads[i],scale=head.r/.80,anchor=R.point(worlds[headNode],[0,.57,0]),rect=layout.holeRects[i],bodyDelta=R.multiply(worlds[bodyNode],rimBodyInverse);
-   FX.hair(rig,worlds,id,FX.hairMotion(time,state.jumpAt,jumpDuration,id));
+   // V1813 C 사용자: 대기 표정 — 웃는 눈(^^) 사이사이 뜬 눈+깜빡임, 점프는 놀란 눈(크게 뜬 눈+눈썹 올림)
+   const cyc=((time+i*2.3)%9+9)%9,openEyes=clip==='PainHit'||jumping||(clip==='Idle'&&cyc>6);
+   const worlds=AP.pose(rig,clip,clipTime,clip==='Idle',AP.face(rig,openEyes),Math.max(0,time),id),head=heads[i].h||heads[i],scale=head.r/.80,anchor=R.point(worlds[headNode],[0,.57,0]),rect=layout.holeRects[i],bodyDelta=R.multiply(worlds[bodyNode],rimBodyInverse);
+   // V1813 C 사용자: 대기 중에도 머리카락이 바닷바람에 좌우로 흔들림(점프 흔들림에 더함, 두더지마다 박자 다르게)
+   {const m=FX.hairMotion(time,state.jumpAt,jumpDuration,id),gust=.6+.4*Math.sin(time*.37+i*2.1),wind=(Math.sin(time*2.3+i*1.4)+.35*Math.sin(time*5.1+i))*gust;
+    m.sway=(m.sway||0)+.16*wind;m.bend=(m.bend||0)+.06*wind;if(id==='curly'){m.wigLift=Math.max(m.wigLift||0,.001);m.wigRoll=(m.wigRoll||0)+.05*wind;}
+    FX.hair(rig,worlds,id,m);}
    const stunt=clip==='PainHit'?{active:false}:FX.sample(state,time);
    const smooth=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)},rest=stunt.active?0:jumping?1-smooth(Math.min(dt,jumpDuration-dt)/(jumpDuration/7)):1,armRest=clip==='PainHit'?0:rest,offsets={};
    for(const side of ['L','R']){const hand=R.multiply(bodyDelta,rimWorlds[nodes.findIndex(n=>n.name==='Hand.'+side)]),x=head.x+scale*(hand[12]-anchor[0]),u=Math.max(0,Math.min(geometry.width-1,(x-rect.x)/rect.w*(geometry.width-1))),lo=Math.floor(u),hi=Math.min(geometry.width-1,lo+1),f=u-lo,edge=geometry.frontCurvePixels[lo]*(1-f)+geometry.frontCurvePixels[hi]*f,target=rect.y+edge/geometry.height*rect.h-scale*.04;offsets[side]=target-(head.y+scale*(anchor[1]-hand[13]));}
@@ -87,6 +96,19 @@ precision highp float;in vec3 vNormal;in vec4 vColor;in float vHand;uniform vec4
    if(armRest>0&&i!==2)for(const [k,ax] of fingerAxes){const s=Math.sin(FINGER_DOWN*armRest/2);worlds[k]=R.multiply(worlds[k],R.transform({rotation:[ax[0]*s,ax[1]*s,ax[2]*s,Math.cos(FINGER_DOWN*armRest/2)]}));}
    // V1812 C 사용자: 가운데 손가락(Finger2)이 짧음 → 길이 방향(뼈 Y)으로 늘림
    if(i!==2)nodes.forEach((n,k)=>{if(/^Finger2\.[LR]$/.test(n.name||''))worlds[k]=R.multiply(worlds[k],R.transform({scale:[1,MIDDLE_LEN,1]}));});
+   // V1813 C 사용자: 대기 중 생동감 — 박자 끄덕임 + 숨쉬기 + 두리번(머리와 그 아래 뼈만, 손은 턱 그대로)
+   if(clip!=='PainHit'){
+    const idleW=clip==='Idle'&&!stunt.active?1:0,bp=beatPulse(time),nod=idleW*(.07*bp*(i%2?.8:1)),look=idleW*(.16*Math.sin(time*.45+i*1.9)+.08*Math.sin(time*1.1+i));
+    const hp=R.point(worlds[headNode],[0,0,0]),about=r=>R.multiply(R.multiply(R.transform({translation:hp}),R.transform({rotation:r})),R.transform({translation:hp.map(v=>-v)}));
+    const turn=R.multiply(about([0,Math.sin(look/2),0,Math.cos(look/2)]),about([Math.sin(nod/2),0,0,Math.cos(nod/2)]));
+    if(nod||look)for(const k of headTree)worlds[k]=R.multiply(turn,worlds[k]);
+    if(idleW){const br=1+.018*Math.sin(time*2.2+i*1.3);worlds[bodyNode]=R.multiply(worlds[bodyNode],R.transform({scale:[br,1+(br-1)*.5,br]}));}
+   }
+   if(openEyes&&clip!=='PainHit'){
+    const surprise=jumping?1:0,blinkT=((time+i*1.7)%3+3)%3,blink=!jumping&&blinkT<.12?.12:1;
+    for(const [k,n] of eyeBones)worlds[k]=R.multiply(worlds[k],R.transform({scale:[1+.35*surprise,(1+.35*surprise)*blink,1+.35*surprise]}));
+    if(surprise)for(const k of browBones)worlds[k]=R.multiply(R.transform({translation:[0,.07,0]}),worlds[k]);
+   }
    const baseInstance=R.transform({translation:[head.x-scale*anchor[0],h-head.y-scale*anchor[1]-offset*rest,-scale*anchor[2]],scale:[scale,scale,scale]}),instance=FX.turn(baseInstance,R.point(worlds[bodyNode],[0,.2,0]),stunt);
    if(armRest>.999)for(const side of ['L','R']){const hand=worlds[nodes.findIndex(n=>n.name==='Hand.'+side)],point=R.point(instance,Array.from(hand.slice(12,15))),u=Math.max(0,Math.min(geometry.width-1,(point[0]-rect.x)/rect.w*(geometry.width-1))),lo=Math.floor(u),hi=Math.min(geometry.width-1,lo+1),f=u-lo,target=rect.y+(geometry.frontCurvePixels[lo]*(1-f)+geometry.frontCurvePixels[hi]*f)/geometry.height*rect.h-scale*.04;lastHandError=Math.max(lastHandError,Math.abs((h-point[1])-target));}
    gl.enable(gl.SCISSOR_TEST);{const pad=Math.round(pw*.03);/* 사용자: 옆 칸으로 살짝 넘어간 손이 칼로 자른 듯 잘리지 않게 네 마리 모두 */gl.scissor(Math.round(i*pw/4)-pad,0,Math.ceil(pw/4)+pad*2,ph);}gl.uniform4fv(U.HoleRect,[rect.x*pw/layout.W,(layout.H-rect.y)*ph/layout.H,rect.w*pw/layout.W,rect.h*ph/layout.H]);gl.uniform1f(U.HandsOnRim,armRest);gl.uniform1f(U.Flash,clip==='PainHit'?Math.max(0,1-hurt/.15)*.25:0);
@@ -98,7 +120,7 @@ precision highp float;in vec3 vNormal;in vec4 vColor;in float vHand;uniform vec4
   gl.disable(gl.SCISSOR_TEST);
  }
  function stop(){if(canvas)canvas.hidden=true;stage.classList.remove('rp-3d-ready')}
- return {prepare,render,stop,holeGeometry:()=>geometry,dbg:()=>({ready,lost,styles:AP.styles.slice(),contexts:canvas?1:0,maxRestingHandError:lastHandError})};
+ return {prepare,render,stop,setBeat,holeGeometry:()=>geometry,dbg:()=>({ready,lost,styles:AP.styles.slice(),contexts:canvas?1:0,maxRestingHandError:lastHandError})};
 }
 MG.RhythmBeachMoles={create};
 })(window);
