@@ -7304,7 +7304,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen:not(.is-type-b) .rp-bottom { padding-top:0; }
 #rhythm-screen:not(.is-type-b) .rp-a-status { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:3px; margin-bottom:5px; }
 /* V1813 C 사용자: 비치 상태판 4칸을 크기 그대로 맨 위로(아래 빈 곳은 스킬 버튼 자리), 일시정지는 그 아래 오른쪽 */
-#rhythm-screen:not(.is-type-b) .rp-a-status { opacity:.5; translate:0 calc(-100% - 4px); } /* V1815 C 사용자: 수평선 바로 위 + 투명도 50%(30%에서 20% 더) */
+#rhythm-screen:not(.is-type-b) .rp-a-status { opacity:.3; translate:0 calc(-100% - 4px); } /* V1815 C 사용자: 수평선 바로 위 / V1816 C: 투명도 70%(50%에서 20% 더) */
 #rhythm-screen:not(.is-type-b) .rp-a-status { position:fixed; top:var(--rp-horizon,67px); /* 사용자: 폰 상단(노치·상태표시 구역)까지 올림 — 안전영역 여백 없이 */ left:3px; right:3px; margin:0; z-index:4; }
 #rhythm-screen:not(.is-type-b) .rp-a-status-item { aspect-ratio:2.15; }
 #rhythm-screen:not(.is-type-b) .rp-a-status-item::before { display:none; }
@@ -7839,6 +7839,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen .rp-ticket-badge--select, #rhythm-screen .rp-ticket-badge--types { display: flex; position: relative; top: auto; right: auto; align-self: center; margin-top: 6px; } /* 난이도·타입 선택 = 홈 버튼 아래 */
 #rhythm-screen .rp-ticket-badge--songs { display: flex; position: relative; top: auto; right: auto; height: 40px; align-self: center; margin-top: 6px; } /* 곡 선택 = 버튼 줄 아래 좌우 가운데(위아래 낮게) */
 #rhythm-screen .rp-ticket-badge--songs img { height: 33px; }
+#rhythm-screen .rp-ticket-badge--types > *, #rhythm-screen .rp-ticket-badge--select > * { translate:-6.5px 0; } #rhythm-screen .rp-ticket-badge--songs > * { translate:-5.5px 0; } /* 곡·난이도 선택(비치·네온 같음)도 */ /* V1816 C 사용자: 타입 선택 티켓 박스 안쪽 좌우 가운데(티켓 그림 왼쪽 투명 여백만큼 보정) */
 
 /* V1367 C 스코어 리듬팡 탭: 진입하면 해금, 비치·네온 × 곡별 순위(난이도 P>N>A → 등급 → 점수) */
 .sr-tab--off > span:not(.sr-tab-txt) { font-size: calc(var(--w) * 0.044); font-weight: 900; color: #c9d4ee; margin-right: 0; }
@@ -9514,7 +9515,8 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #face-studio .fs-back.game-back { top: 8px; left: 8px; }
 #rhythm-screen [data-rp-songs-back].game-back, #rhythm-screen [data-rp-song-back].game-back { position:fixed!important; top:8px!important; left:8px!important; right:auto!important; bottom:auto!important; margin:0!important; z-index:30; }
 /* V1814 C 사용자: 곡 선택 뒤로(X) 버튼은 네모 창 안 왼쪽 위 가장자리(테두리와 겹치지 않게) */
-#rhythm-screen [data-rp-songs-back].game-back { top:46px!important; left:30px!important; }
+#rhythm-screen [data-rp-songs-back].game-back { top:45px!important; left:30px!important; } /* 금색 안쪽 테두리에서 위·왼쪽 똑같이 10px */
+#rhythm-screen [data-rp-song-back].game-back { top:90px!important; left:30px!important; } /* V1816 C 사용자: 난이도 선택 X 도 창 안 왼쪽 위 */
 #game-screen.is-start .h2-balance-text { position:absolute; inset:0 4% 0 30%; display:flex; justify-content:center; align-items:center; }
 #game-screen.is-start .h2-pill--no-plus .h2-balance-text .lane-hud-n { position:absolute; inset:0; display:flex; justify-content:center; align-items:center; margin:0; padding:0; line-height:1; white-space:nowrap; font-size:clamp(14px,4.8vw,26px); }
 
