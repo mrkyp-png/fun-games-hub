@@ -157,7 +157,8 @@
 // V1808 C: stone fist idle in 3D (picked angle), 2x game 3D resolution, softer enhance glow; shop/inventory stone fist hi-res matte with camera-facing light; owned cell uses 3D pair.
 // V1809 C: inventory page flicker fix, 3D hammer owned cell, costume sizes, double-hit gloves front, mailbox claimed cleanup after 5 min.
 // V1810 C: shop costume sizes matched and centered, Time Keeper front view with cape sway.
-const CACHE = 'mole-game-v1810-C';
+// V1811 C: start hole ripple fix, one armpit hair strand each side, Time Keeper cape/watch motion.
+const CACHE = 'mole-game-v1811-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
