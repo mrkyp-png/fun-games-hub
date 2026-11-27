@@ -4,7 +4,7 @@
   function create(opts) {
     const board = opts.root.querySelector('.rb-board');
     const buttonXs = [[26, 326], [326, 626], [626, 926]];
-    const buttonYs = [[1136, 1436], [1436, 1736], [1736, 2036]];
+    const buttonYs = [[1168, 1468], [1468, 1768], [1768, 2068]]; // V1830 C 사용자: 아래 버튼 9개를 상태판 아래선~테두리 아래선 가운데로(32 내림)
     const pressSurfaces = [];
     const reducedMotion=root.matchMedia('(prefers-reduced-motion: reduce)');
     const movingSurfaces=[],releaseFrames=[];
@@ -122,10 +122,10 @@
         // V1337 C: 누를 때마다 fitPressPulses()(11번 위치 측정+9개 클립 경로 재작성 → 강제 레이아웃·전체 다시 그리기) 하던 것 제거 — 크기 바뀔 때만 ResizeObserver 가 갱신
         reboundAnimations[i].forEach(a=>a.cancel());reboundAnimations[i].length=0;
         cap.src='assets/rhythm-b/button-face-v1120/face-'+i+'.svg';
-        surfaces.forEach(el => el.classList.add('is-pressed'));if(flowFx)flowFx.press(i,true);
+        surfaces.forEach(el => el.classList.add('is-pressed'));const dance=board.classList.contains('rb-dance-mode');/* V1830 C 사용자: 새 방식은 기판 안 흐름·파동 없음(FPS) */if(flowFx&&!dance)flowFx.press(i,true);
         if(flowSurfaces[i])flowSurfaces[i].classList.add('is-pressed');
         if(pulseAnimations[i]) pulseAnimations[i].cancel();
-        pulseAnimations[i]=pulse.animate(pressWaveFrames[i],pressWaveTiming);
+        if(!dance)pulseAnimations[i]=pulse.animate(pressWaveFrames[i],pressWaveTiming);
         if (play) {const occupied=play.hasCharacter(i),grade=play.press(i,lag);if(grade!==undefined&&laserFx&&(grade||!board.classList.contains('rb-dance-mode')))laserFx.emit(i,occupied);/* V1829 C 사용자: 새 방식은 맞혔을 때만 레이저(실패·빈 누름은 안 쏨, FPS) */}
       }
       function up() {
@@ -177,7 +177,7 @@
     const defs=document.createElementNS(ns,'defs');pulseDefs.appendChild(defs);opts.root.appendChild(pulseDefs);
     pressPulses.forEach((pulse,i)=>{const clip=document.createElementNS(ns,'clipPath');clip.id='rb-press-wave-clip-'+i;clip.setAttribute('clipPathUnits','userSpaceOnUse');const path=document.createElementNS(ns,'path');path.setAttribute('clip-rule','evenodd');clip.appendChild(path);defs.appendChild(clip);pulseClips.push(path);const layer=document.createElement('div');layer.className='rb-existing-pulse-layer';layer.setAttribute('aria-hidden','true');layer.style.clipPath='url(#'+clip.id+')';pulse.classList.add('rb-circuit-pulse--extended');pulse.style.setProperty('--button-color',colors[i]);layer.appendChild(pulse);opts.root.appendChild(layer);pulseLayers.push(layer);});
     function fitPressPulses(){
-      const rb=opts.root.getBoundingClientRect(),bb=board.getBoundingClientRect(),unit=bb.width/952,lower=bb.top-rb.top+1136*unit;
+      const rb=opts.root.getBoundingClientRect(),bb=board.getBoundingClientRect(),unit=bb.width/952,lower=bb.top-rb.top+1168*unit;
       const left=12+24*(rb.width-24)/952,right=rb.width-left,bottom=rb.height-12-24*(rb.height-24)/2078;
       const cores=Array.from(board.querySelectorAll('.rb-button-core'),e=>{const b=e.getBoundingClientRect();return {x:b.left-rb.left+b.width*133.5/268,y:b.top-rb.top+b.height/2,r:b.width*48/268};});
       pressPulses.forEach((pulse,i)=>{const cx=cores[i].x,cy=cores[i].y,size=304*.9*unit;
@@ -241,7 +241,7 @@
       prepare: prepareAssets,
       open(difficulty, options) {
         rippleFx.stop();laserFx.stop();clearSpawnWaves();running = true; board.classList.add('rb-wire-running'); paused = false; board.classList.remove('is-paused'); releaseAll();
-        flowFx.start();rippleFx.prepare();
+        if(!board.classList.contains('rb-dance-mode')){flowFx.start();rippleFx.prepare();}
         return play.start(difficulty || 'EASY', options);
       },
       stop() {

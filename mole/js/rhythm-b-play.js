@@ -95,7 +95,7 @@
   const startShade=document.createElement('div');startShade.className='rb-start-shade';startShade.hidden=true;startShade.setAttribute('aria-hidden','true');hud.appendChild(startShade);
   function animateEffect(el,keyframes,duration,done){const a=el.animate(keyframes,{duration,easing:'ease-out'});effects.add(a);a.onfinish=()=>{effects.delete(a);if(done)done();};a.oncancel=()=>effects.delete(a);return a;}
   const powerWords={};const powerAnimations={};
-  for(const kind of ['combo',...Array.from({length:9},(_,i)=>'perfect-'+i)]){const word=document.createElement('span'),perfect=kind.startsWith('perfect-');word.className='rb-power-word rb-power-word--'+(perfect?'perfect':'combo');word.hidden=true;word.setAttribute('aria-hidden','true');if(perfect){const lane=Number(kind.slice(8));word.dataset.lane=lane;word.style.left=((176+(lane%3)*300)/952*100)+'%';word.style.top=((1196+Math.floor(lane/3)*300)/2078*100)+'%';}board.appendChild(word);powerWords[kind]=word;}
+  for(const kind of ['combo',...Array.from({length:9},(_,i)=>'perfect-'+i)]){const word=document.createElement('span'),perfect=kind.startsWith('perfect-');word.className='rb-power-word rb-power-word--'+(perfect?'perfect':'combo');word.hidden=true;word.setAttribute('aria-hidden','true');if(perfect){const lane=Number(kind.slice(8));word.dataset.lane=lane;word.style.left=((176+(lane%3)*300)/952*100)+'%';word.style.top=((1228+Math.floor(lane/3)*300)/2078*100)+'%';}board.appendChild(word);powerWords[kind]=word;}
   function showPowerWord(kind,text,color){
    const word=powerWords[kind];if(powerAnimations[kind])powerAnimations[kind].cancel();
    word.textContent=text;word.style.color=color;word.hidden=false;
@@ -125,7 +125,7 @@
   const perfectArcs=Array.from({length:9},(_,lane)=>{const el=document.createElement('span');el.className='rb-perfect-arcs';el.setAttribute('aria-hidden','true');el.style.left=((176+(lane%3)*300)/952*100)+'%';el.style.top=((176+Math.floor(lane/3)*300)/2078*100)+'%';el.style.setProperty('--arc-color',colors[lane]);el.innerHTML='<i></i><i></i>';board.appendChild(el);return el;});
   const perfectArcAnimations=perfectArcs.map(el=>Array.from(el.children,(node,index)=>{const a=node.animate([{transform:'rotate('+(index?110:-70)+'deg) scale(.45)',opacity:0},{transform:'rotate('+(index?150:-110)+'deg) scale(1)',opacity:.9,offset:.22},{transform:'rotate('+(index?190:-150)+'deg) scale(1.18)',opacity:0}],{duration:460,easing:'ease-out',fill:'none'});a.pause();a.currentTime=0;return a;}));
   function successEffect(n,t,grade){
-   {const dz=dancersOn();if(dz){dz.hit(n,grade,t);const wave=spaceWaves[n.lane];if(wave&&!spaceReduced.matches){if(waveAnimations[n.lane])waveAnimations[n.lane].cancel();waveAnimations[n.lane]=animateEffect(wave,[{transform:'scale(.08)',opacity:0,offset:0},{transform:'scale(.3)',opacity:.9,offset:.2},{transform:'scale(1)',opacity:0,offset:1}],420);}return;}} /* V1826 C: 새 방식은 숨겨진 예전 캐릭터 날리기·고리 계산 안 함 */
+   {const dz=dancersOn();if(dz){dz.hit(n,grade,t);return;}} /* V1830 C 사용자: 새 방식은 파동 없음 */ /* V1826 C: 새 방식은 숨겨진 예전 캐릭터 날리기·고리 계산 안 함 */
    ensureNoteVisual(n);placeNote(n,(t-n.spawnTime)/rules.diffs[state.diff].travel);
    n.ring.hidden=true;n.el.classList.add('is-hit-out');showNoteVisual(n);
    const wave=spaceWaves[n.lane];if(wave&&!spaceReduced.matches){if(waveAnimations[n.lane])waveAnimations[n.lane].cancel();waveAnimations[n.lane]=animateEffect(wave,[{transform:'scale(.08)',opacity:0,offset:0},{transform:'scale(.3)',opacity:.9,offset:.2},{transform:'scale(1)',opacity:0,offset:1}],420);}

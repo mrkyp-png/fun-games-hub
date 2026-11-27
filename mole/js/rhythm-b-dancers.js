@@ -27,8 +27,8 @@
    const bw = board.clientWidth, bh = board.clientHeight; if (!bw) return; const used = new Set(), want = new Map();
    targets.sort((a, b) => b.level - a.level);
    for (const tg of targets) { const cx = (26 + (tg.lane % 3) * 300 + 150) / 952 * bw; let best = -1, bd = 1e9; fixtures.forEach((f, i) => { if (used.has(i)) return; const d = Math.abs(f.x * bw - cx); if (d < bd) { bd = d; best = i; } }); if (best < 0) break; used.add(best); const py = (26 + Math.floor(tg.lane / 3) * 300 + 262) / 2078 * bh, ay = -.0044 * bh, dx = cx - fixtures[best].x * bw, dy = py - ay; want.set(best, { angle: -Math.atan2(dx, dy) * 180 / Math.PI, op: tg.level, len: Math.hypot(dx, dy) / .757, color: LANE_COLORS[tg.lane] }); } /* V1827 C 사용자: 조명 렌즈 = 빛 꼭짓점, 빛 끝 = 두더지 발판(바닥 자국) */
-   fixtures.forEach((f, i) => { const w = want.get(i), angle = w ? w.angle : f.aim + 10 * Math.sin(t * .8 + i * 1.7), op = w ? w.op : 0;
-    const a = angle.toFixed(1) + 'deg', o = op.toFixed(2); if (f.angle !== a) { f.angle = a; f.beam.style.rotate = a; f.fix.style.rotate = a; } if (f.op !== o) { f.op = o; f.beam.style.opacity = o; } if (w) { const L = Math.round(w.len) + 'px'; if (f.len !== L) { f.len = L; f.beam.style.height = L; } if (f.color !== w.color) { f.color = w.color; f.beam.style.setProperty('--beam-color', w.color); } } }); /* 조명 색 = 비추는 칸 버튼 색 */
+   fixtures.forEach((f, i) => { const w = want.get(i), angle = w ? w.angle : (f.lastAngle ?? f.aim), op = w ? w.op : 0; if (w) f.lastAngle = w.angle; /* V1830 C 사용자 FPS: 쉬는 조명은 멈춤 */
+    const a = angle.toFixed(1) + 'deg', o = op.toFixed(2); if (f.angle !== a) { f.angle = a; f.beam.style.rotate = a; f.fix.style.rotate = a; } if (f.op !== o) { f.op = o; f.beam.style.opacity = o; const vis = op > .005 ? 'visible' : 'hidden'; if (f.vis !== vis) { f.vis = vis; f.beam.style.visibility = vis; } } /* 꺼진 빛줄기는 그리지 않음 */ if (w) { const L = Math.round(w.len) + 'px'; if (f.len !== L) { f.len = L; f.beam.style.height = L; } if (f.color !== w.color) { f.color = w.color; f.beam.style.setProperty('--beam-color', w.color); } } }); /* 조명 색 = 비추는 칸 버튼 색 */
   }
   let shownStage = -1, gridKey = '';
   function stageFor(combo) { return combo >= 50 ? 3 : combo >= 30 ? 2 : combo >= 10 ? 1 : 0; }
@@ -36,12 +36,12 @@
    const br = board.getBoundingClientRect(), hits = board.querySelectorAll('.rb-hit'); if (!br.width || hits.length < 9) return;
    const key = br.width + 'x' + br.height; if (key === gridKey) return; gridKey = key;
    hits.forEach((h, i) => { const r = h.getBoundingClientRect(), c = grid.children[i]; c.style.left = ((r.left - br.left) / br.width * 100) + '%'; c.style.top = ((r.top - br.top) / br.height * 100) + '%'; c.style.width = (r.width / br.width * 100) + '%'; c.style.height = (r.height / br.height * 100) + '%'; });
-  }  let gl = null, ready = false, R = null, AP = null, rig = null, parts = [], U = {}, A = {}, failed = false, lastMove = -1;
+  }  let gl = null, glc = null, ctx2 = null, ready = false, R = null, AP = null, rig = null, parts = [], U = {}, A = {}, failed = false, lastMove = -1;
   const live = new Map(); // note id -> {n, lane, move, hitAt, grade, missAt}
   async function init() {
    R = root.StudioRig; AP = MG.MoleAppearances; const TM = MG.RhythmTypeMole;
    if (!R || !AP || !TM) throw Error('3D runtime missing');
-   gl = canvas.getContext('webgl2', { alpha: true, antialias: true, premultipliedAlpha: true }); if (!gl) throw Error('WebGL2 unavailable');
+   glc = document.createElement('canvas'); gl = glc.getContext('webgl2', { alpha: true, antialias: true, premultipliedAlpha: true }); if (!gl) throw Error('WebGL2 unavailable'); ctx2 = canvas.getContext('2d');
    const buf = await (await fetch('assets/characters-v1692/mole-rhythm-dance-v2.glb')).arrayBuffer();
    const model = await AP.prepare(R.parseGLB(buf), [STYLE]), worn = await AP.wornCostume(COSTUME);
    rig = R.prepare(model); TM.addDanceVariations(rig, R);
@@ -73,7 +73,7 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
    model.json.nodes.forEach((n, i) => { if (n.mesh === undefined) return; const h = AP.hairStyle(n); if (n.name !== 'Mole_Clay_Skin' && h !== STYLE) return; for (const p of model.json.meshes[n.mesh].primitives) add(model, p, i, STYLE, null, h === STYLE ? HAIR : null); });
    if (worn) for (const { primitive } of R.instances(worn)) add(worn, primitive, skinNode, null, clothMap);
    gl.enable(gl.DEPTH_TEST); gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-   partNodes = [...new Set(parts.map(p => p.node))]; ready = true; warmCache();
+   partNodes = [...new Set(parts.map(p => p.node))]; ready = true;
   }
   // V1826 C 사용자: HARD FPS — 춤·대기 자세(뼈 48개)를 1/60초 간격으로 미리 계산해 두고 꺼내 씀(3D 화질 그대로, 매 프레임 계산 없음)
   let partNodes = []; const poseCache = new Map();
@@ -81,17 +81,15 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
    let f = Math.round(time * 60); if (clip === 'Idle') f %= 120; const key = clip + '|' + f; let e = poseCache.get(key); if (e) return e;
    const ws = AP.pose(rig, clip, f / 60, true, null, f / 60, STYLE); e = new Map(); for (const node of partNodes) e.set(node, { world: ws[node], pal: R.palette(rig, ws, node) }); poseCache.set(key, e); return e;
   }
-  function warmCache() { const jobs = []; for (let f = 0; f < 120; f++) jobs.push(['Idle', f / 60]); for (const [clip, start] of MOVES) for (let f = 0; f <= 66; f++) jobs.push([clip, start + f / 60]); (function step() { const end = Math.min(jobs.length, 24); for (let i = 0; i < end; i++) { const [c, tm] = jobs.shift(); cachedPose(c, tm); } if (jobs.length) setTimeout(step, 0); })(); }
   const loading = init().catch(e => { failed = true; console.warn('Neon dancers unavailable', e); });
   const LANE_COLORS = ['#086aff', '#ff1529', '#ffc400', '#05e52e', '#a500ff', '#ff0099', '#ff7900', '#00cfff', '#a65121']; // V1828 C 사용자: 아래 버튼 색과 같게
-  const hex = c => { const n = parseInt(c.slice(1), 16); return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255]; };
   function pickMove(n) { if (n.danceMove != null) return n.danceMove; let m = Math.floor(Math.random() * MOVES.length); if (m === lastMove) m = (m + 1) % MOVES.length; lastMove = m; return m; }
   function track(n) { if (!live.has(n.id)) live.set(n.id, { n, lane: n.lane, move: -1 }); return live.get(n.id); }
   // 같은 박자 동시 노트는 같은 춤(단체 춤)
   const chordMoves = new Map();
   function hit(n, grade, t) { const d = track(n); d.hitAt = t; d.grade = grade; const key = n.targetTime.toFixed(3); if (!chordMoves.has(key)) chordMoves.set(key, pickMove(n)); d.move = chordMoves.get(key); }
   function miss(n, t) { const d = track(n); d.missAt = t; }
-  function clear() { shownStage = -1; board.dataset.danceStage = '0'; live.clear(); chordMoves.clear(); spots.forEach(s => { s.style.opacity = '0'; }); if (gl) { gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); } }
+  function clear() { shownStage = -1; board.dataset.danceStage = '0'; live.clear(); chordMoves.clear(); spots.forEach(s => { s.style.opacity = '0'; }); if (ctx2) ctx2.clearRect(0, 0, canvas.width, canvas.height); }
   const ease = x => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
   // 매 프레임: 다가오는 노트(박자 0.5초 전부터)·춤추는 노트를 그림
   // V1824 C 사용자: 춤 빠르기를 곡 박자에 맞춤 — 맞힌 뒤 1박 동안 춤 2박 분량을 재생(튕기는 순간이 박자에 떨어짐)
@@ -113,24 +111,38 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
    for (let i = 0; i < 9; i++) { const v = Math.min(1, spotLevel[i]); const s = spots[i]; const o = v.toFixed(2); if (s.style.opacity !== o) { s.style.opacity = o; s.style.setProperty('--spot-color', LANE_COLORS[i]); floors[i].style.setProperty('--lit', o); } }
    aimFixtures(t, targets);
    if (!ready || failed) return;
-   const bw = board.clientWidth, bh = board.clientHeight, dpr = Math.min(root.devicePixelRatio || 1, 1.25), /* V1829 C: 폰 FPS — 다른 3D 화면과 같은 1.25 */ ch = bh * 936 / 2078;
+   const bw = board.clientWidth, bh = board.clientHeight, dpr = Math.min(root.devicePixelRatio || 1, 1.25), ch = bh * 936 / 2078;
    const w = Math.round(bw * dpr), h = Math.round(ch * dpr); if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
-   gl.viewport(0, 0, w, h); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); if (!list.length) return;
-   const cell = 300 / 952 * w, cam = R.lookAt([0, 1.2, 8], [0, 1.1, 0]);
+   ctx2.clearRect(0, 0, w, h); if (!list.length) return;
+   const cell = 300 / 952 * w; ensureSprites(cell);
    for (const m of list) {
-    const cx = (26 + (m.lane % 3) * 300 + 150) / 952 * w, cy = h - (26 + Math.floor(m.lane / 3) * 300 + 150) / 952 * w;
-    gl.clear(gl.DEPTH_BUFFER_BIT);
-    const P = R.identity(), ppu = cell / 3.2; P[0] = 2 * ppu / w; P[5] = 2 * ppu / h; P[10] = -2 / 50; P[12] = 2 * cx / w - 1; P[13] = 2 * cy / h - 1; /* 카메라 기준점(두더지 몸 가운데 높이)을 칸 가운데에 */
-    gl.uniformMatrix4fv(U.VP, false, R.multiply(P, cam));
-    const pose = cachedPose(m.clip, m.time), inst = R.multiply(R.transform({ rotation: [0, 0, Math.sin(m.tilt / 2), Math.cos(m.tilt / 2)] }), R.transform({ scale: [SIZE * m.scale, SIZE * m.scale, SIZE * m.scale] }));
-    gl.uniform1f(U.Light, m.light); gl.uniform1f(U.Alpha, m.alpha); gl.uniform3fv(U.Tint, hex(LANE_COLORS[m.lane]));
-    // V1827 C 사용자: 사라질 때(반투명) 몸 안쪽 면·뒤쪽 부품이 비쳐 줄무늬로 깨져 보임 → 먼저 깊이만 그려 맨 앞 면만 남기고, 그 면에만 색을 반투명으로 칠함
-    const drawAll = () => { let lastNode = -1;
-     for (const pt of parts) { gl.bindVertexArray(pt.vao); if (pt.node !== lastNode) { lastNode = pt.node; const e = pose.get(pt.node), mm = R.multiply(inst, e.world); gl.uniformMatrix4fv(U.Model, false, mm); gl.uniformMatrix3fv(U.Normal, false, R.normals(mm)); gl.uniform1i(U.Skin, !!e.pal); if (e.pal) gl.uniformMatrix4fv(U.Bones, false, e.pal); } gl.uniform4fv(U.Color, pt.color); gl.drawElements(gl.TRIANGLES, pt.count, gl.UNSIGNED_INT, 0); } };
-    if (m.alpha < .995) { gl.colorMask(false, false, false, false); drawAll(); gl.colorMask(true, true, true, true); gl.depthFunc(gl.LEQUAL); drawAll(); gl.depthFunc(gl.LESS); } else drawAll();
+    const sp = sprite(m.clip, m.time); if (!sp) continue;
+    const cx = (26 + (m.lane % 3) * 300 + 150) / 952 * w, cy = (26 + Math.floor(m.lane / 3) * 300 + 150) / 952 * w, feet = FEET * cell;
+    ctx2.save(); ctx2.translate(cx, cy + feet); if (m.tilt) ctx2.rotate(-m.tilt); if (m.scale !== 1) ctx2.scale(m.scale, m.scale);
+    ctx2.globalAlpha = Math.max(0, Math.min(1, m.alpha * Math.min(1, m.light))); ctx2.drawImage(sp, -spriteS / 2, -spriteS / 2 - feet);
+    if (m.light > 1) { ctx2.globalCompositeOperation = 'lighter'; ctx2.globalAlpha = Math.min(1, m.alpha * (m.light - 1) * .6); ctx2.drawImage(sp, -spriteS / 2, -spriteS / 2 - feet); }
+    ctx2.restore();
    }
   }
-  return { render, hit, miss, clear, loading, ready: () => ready };
+  // V1830 C 사용자 FPS: 두더지를 매 화면 3D 로 새로 그리지 않음 — 휴대폰에서 같은 3D·같은 선명도로 장면마다 한 번만 그려 두고(초당 24장 분량) 붙여 씀
+  const FPS_S = 24, FEET = .344; let spriteS = 0, spriteCell = 0; const sprites = new Map(); let warmJobs = null;
+  function ensureSprites(cell) {
+   const S = Math.round(cell * 1.35); if (S === spriteS) return; spriteS = S; spriteCell = cell; sprites.clear(); glc.width = glc.height = S;
+   warmJobs = []; for (let f = 0; f < 2 * FPS_S; f++) warmJobs.push(['Idle', f]); for (const [clip, start] of MOVES) { const f0 = Math.round(start * FPS_S); for (let f = f0; f <= f0 + Math.ceil(1.15 * FPS_S); f++) warmJobs.push([clip, f]); }
+   (function step() { if (!warmJobs || !warmJobs.length) return; const deadline = performance.now() + 6; while (warmJobs.length && performance.now() < deadline) { const [c, fr] = warmJobs.shift(); makeSprite(c, fr); } if (warmJobs.length) setTimeout(step, 16); })();
+  }
+  function frameOf(clip, time) { let fr = Math.round(time * FPS_S); if (clip === 'Idle') fr = ((fr % (2 * FPS_S)) + 2 * FPS_S) % (2 * FPS_S); return fr; }
+  function sprite(clip, time) { const fr = frameOf(clip, time); return sprites.get(clip + '|' + fr) || makeSprite(clip, fr); }
+  function makeSprite(clip, fr) {
+   const key = clip + '|' + fr; let c = sprites.get(key); if (c) return c; const S = spriteS; if (!S) return null;
+   gl.viewport(0, 0, S, S); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+   const P = R.identity(), ppu = spriteCell / 3.2; P[0] = 2 * ppu / S; P[5] = 2 * ppu / S; P[10] = -2 / 50; P[12] = 0; P[13] = 0;
+   gl.uniformMatrix4fv(U.VP, false, R.multiply(P, R.lookAt([0, 1.2, 8], [0, 1.1, 0])));
+   const pose = cachedPose(clip, fr / FPS_S), inst = R.transform({ scale: [SIZE, SIZE, SIZE] });
+   gl.uniform1f(U.Light, 1); gl.uniform1f(U.Alpha, 1); gl.uniform3fv(U.Tint, [0, 0, 0]); let lastNode = -1;
+   for (const pt of parts) { gl.bindVertexArray(pt.vao); if (pt.node !== lastNode) { lastNode = pt.node; const e = pose.get(pt.node), mm = R.multiply(inst, e.world); gl.uniformMatrix4fv(U.Model, false, mm); gl.uniformMatrix3fv(U.Normal, false, R.normals(mm)); gl.uniform1i(U.Skin, !!e.pal); if (e.pal) gl.uniformMatrix4fv(U.Bones, false, e.pal); } gl.uniform4fv(U.Color, pt.color); gl.drawElements(gl.TRIANGLES, pt.count, gl.UNSIGNED_INT, 0); }
+   c = document.createElement('canvas'); c.width = c.height = S; c.getContext('2d').drawImage(glc, 0, 0); sprites.set(key, c); return c;
+  }  return { render, hit, miss, clear, loading, ready: () => ready };
  }
  MG.RhythmBDancers = { create };
 })(window);
