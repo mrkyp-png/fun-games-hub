@@ -5,7 +5,9 @@
  function create(opts) {
   const board=opts.board, hud=opts.root;
   // V1166: B-only 10% wider GREAT/GOOD windows; PERFECT and shared A rules stay intact.
-  const diffs=Object.fromEntries(Object.entries(opts.rules.diffs).map(([key,value])=>[key,{...value,judge:{...value.judge,greatMs:value.judge.greatMs*121/100,goodMs:value.judge.goodMs*121/100}}]));
+  // V1835 C 사용자: 새 방식(춤 두더지)이 너무 어려움 → GREAT·GOOD 판정 범위를 1.25배 더 넓힘(PERFECT 는 그대로)
+  const WIDE=/[?&]neon2=0\b/.test(root.location.search)?1:1.25;
+  const diffs=Object.fromEntries(Object.entries(opts.rules.diffs).map(([key,value])=>[key,{...value,judge:{...value.judge,greatMs:value.judge.greatMs*121/100*WIDE,goodMs:value.judge.goodMs*121/100*WIDE}}]));
   const rules={...opts.rules,diffs,grade(ms,difficulty){const J=diffs[difficulty].judge;return ms<=J.perfectMs?'PERFECT':ms<=J.greatMs?'GREAT':ms<=J.goodMs?'GOOD':null;}};
   const reducedMotion=root.matchMedia('(prefers-reduced-motion: reduce)'),shadeSteps=[.9,.58,0];
   let boardWidth=board.clientWidth;new ResizeObserver(()=>{boardWidth=board.clientWidth;}).observe(board);
