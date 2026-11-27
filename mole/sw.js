@@ -165,7 +165,8 @@
 // V1816 C: status 70% transparent, back buttons in panel corner, ticket badge centered.
 // V1817 C: difficulty X in card, lyrics short-gap hold, skill press sink.
 // V1818 C: type-select 4 colored stage lights (2 beside camera hole).
-const CACHE = 'mole-game-v1818-C';
+// V1819 C: type-select dancing friends (spiky/curly), soft floor-limited stage light.
+const CACHE = 'mole-game-v1819-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.

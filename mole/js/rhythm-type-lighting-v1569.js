@@ -59,6 +59,19 @@
   var maskCtx = mask.getContext('2d');
   var lit = document.createElement('canvas');
   var litCtx = lit.getContext('2d');
+  // V1819 C 사용자: 빛이 아래 원판 밖으로 안 넘어가게 — 원판 모양(타원)을 따라 부드럽게 사라짐(직선 자르기 금지)
+  var FLOOR = { x: 470, y: 1428, rx: 430, ry: 92 };
+  var floorMask = document.createElement('canvas'), colorLayer = document.createElement('canvas'), colorCtx = colorLayer.getContext('2d');
+  function buildFloorMask() {
+    floorMask.width = canvas.width; floorMask.height = canvas.height;
+    var fc = floorMask.getContext('2d'); fc.setTransform(scale, 0, 0, scale, ox, oy);
+    var top = fc.createLinearGradient(0, FLOOR.y - 40, 0, FLOOR.y + 30); top.addColorStop(0, '#fff'); top.addColorStop(1, 'rgba(255,255,255,0)');
+    fc.fillStyle = top; fc.fillRect(-500, -500, W + 1000, FLOOR.y + 530);
+    fc.save(); fc.translate(FLOOR.x, FLOOR.y); fc.scale(1, FLOOR.ry / FLOOR.rx);
+    var g = fc.createRadialGradient(0, 0, 0, 0, 0, FLOOR.rx); g.addColorStop(0, '#fff'); g.addColorStop(.72, '#fff'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    fc.fillStyle = g; fc.beginPath(); fc.arc(0, 0, FLOOR.rx, 0, Math.PI * 2); fc.fill(); fc.restore();
+  }
+  function fadeFloor(c) { c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = 'destination-in'; c.drawImage(floorMask, 0, 0); c.restore(); }
   var W = 941, H = 1672, scale = 1, ox = 0, oy = 0;
   var ready = false, frame = 0, lastDraw = -100, elapsed = 0, previous = 0;
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -107,6 +120,7 @@
     if (canvas.width === width && canvas.height === height && lit.width === width) return;
     canvas.width = front.width = mask.width = lit.width = width;
     canvas.height = front.height = mask.height = lit.height = height;
+    colorLayer.width = width; colorLayer.height = height;
     scale = Math.max(width / W, height / H);
     ox = (width - W * scale) / 2;
     oy = (height - H * scale) / 2;
@@ -138,7 +152,7 @@
   }
 
   function drawBeam(c, state, opacity) {
-    var sprite = state.lamp.color && c === ctx ? tinted(state.lamp.color) : images['beams-four'];
+    var sprite = state.lamp.color && c === colorCtx ? tinted(state.lamp.color) : images['beams-four'];
     var sw = sprite.width / 2, sh = sprite.height / 2;
     var cell = state.lamp.beam;
     var anchor = calibration.beams[cell];
@@ -220,6 +234,8 @@
     setDesignTransform(maskCtx);
     // The beam alpha reveals a brighter copy of this SAME backdrop. Only hit areas brighten.
     states.forEach(function (state) { drawBeam(maskCtx, state, .8); });
+    if (floorMask.width !== canvas.width || floorMask.height !== canvas.height || floorMask._s !== scale) { buildFloorMask(); floorMask._s = scale; }
+    fadeFloor(maskCtx);
     maskCtx.setTransform(1, 0, 0, 1, 0, 0);
     maskCtx.globalCompositeOperation = 'source-in';
     maskCtx.drawImage(lit, 0, 0);
@@ -228,8 +244,12 @@
     setDesignTransform(ctx);
     setDesignTransform(frontCtx);
     states.forEach(function (state) { drawBeam(frontCtx, state, .2); });
+    fadeFloor(frontCtx);
+    clear(colorCtx); setDesignTransform(colorCtx);
+    states.forEach(function (state) { if (state.lamp.color) drawBeam(colorCtx, state, .7); });
+    fadeFloor(colorCtx);
     ctx.save(); ctx.globalCompositeOperation = 'screen';
-    states.forEach(function (state) { if (state.lamp.color) drawBeam(ctx, state, .7); }); // 사용자: 밝은 분홍·밝은 라벤더
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(colorLayer, 0, 0); ctx.restore(); // 사용자: 밝은 색 빛(원판 모양으로 사라짐)
     states.forEach(function (state) {
       drawStar(ctx, state.lamp.beam === 0 ? 4 : 5, state.targetX, state.targetY,
         state.width * 1.25, 75, .33 * state.intensity);
