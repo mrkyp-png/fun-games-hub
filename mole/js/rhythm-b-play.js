@@ -58,6 +58,9 @@
   }
   const colors=['#086aff','#ff1529','#ffc400','#05e52e','#a500ff','#ff0099','#ff7900','#00cfff','#a65121'];
   // V 1155 G: visual slots are reusable; chart notes and judgement remain independent.
+  // V1824 C 네온 새 방식 시험판(?neon2=1): 위 판 3D 춤 두더지 + 앞 스포트. 판정·채보는 그대로
+  const DANCE_MODE=/[?&]neon2=1\b/.test(root.location.search);let dancers=null;
+  function dancersOn(){if(!DANCE_MODE)return null;if(!dancers&&MG.RhythmBDancers){dancers=MG.RhythmBDancers.create(board);board.classList.add('rb-dance-mode');}return dancers;}
   const notePools=Array.from({length:9},()=>[]),visibleNotes=[];
   function createNoteVisual(lane){
    const el=document.createElement('div');el.className='rb-note';el.setAttribute('aria-hidden','true');el.hidden=true;
@@ -121,6 +124,7 @@
   const perfectArcs=Array.from({length:9},(_,lane)=>{const el=document.createElement('span');el.className='rb-perfect-arcs';el.setAttribute('aria-hidden','true');el.style.left=((176+(lane%3)*300)/952*100)+'%';el.style.top=((176+Math.floor(lane/3)*300)/2078*100)+'%';el.style.setProperty('--arc-color',colors[lane]);el.innerHTML='<i></i><i></i>';board.appendChild(el);return el;});
   const perfectArcAnimations=perfectArcs.map(el=>Array.from(el.children,(node,index)=>{const a=node.animate([{transform:'rotate('+(index?110:-70)+'deg) scale(.45)',opacity:0},{transform:'rotate('+(index?150:-110)+'deg) scale(1)',opacity:.9,offset:.22},{transform:'rotate('+(index?190:-150)+'deg) scale(1.18)',opacity:0}],{duration:460,easing:'ease-out',fill:'none'});a.pause();a.currentTime=0;return a;}));
   function successEffect(n,t,grade){
+   {const dz=dancersOn();if(dz)dz.hit(n,grade,t);}
    ensureNoteVisual(n);placeNote(n,(t-n.spawnTime)/rules.diffs[state.diff].travel);
    n.ring.hidden=true;n.el.classList.add('is-hit-out');showNoteVisual(n);
    const wave=spaceWaves[n.lane];if(wave&&!spaceReduced.matches){if(waveAnimations[n.lane])waveAnimations[n.lane].cancel();waveAnimations[n.lane]=animateEffect(wave,[{transform:'scale(.08)',opacity:0,offset:0},{transform:'scale(.3)',opacity:.9,offset:.2},{transform:'scale(1)',opacity:0,offset:1}],420);}
@@ -236,7 +240,7 @@
   }
   function stopAudio(){hitSources.forEach(s=>{try{s.stop();}catch(e){}});hitSources.clear();sources.forEach(s=>{try{s.stop();}catch(e){}});sources=[];melodyGain=null;}
   function clearRings(){visibleNotes.length=0;for(const pool of notePools)for(const slot of pool){if(slot.owner)releaseNoteVisual(slot.owner);else{slot.el.hidden=true;slot.el.remove();}}}
-  function stop(){if(opts.onStop)opts.onStop();generation++;cancelAnimationFrame(frame);frame=0;stopAudio();clearEffects();clearRings();clearLights();clearCues();resetSpace();updateProgress(0);updateCombo(0,true);state=null;error.hidden=true;}
+  function stop(){if(dancers)dancers.clear();if(opts.onStop)opts.onStop();generation++;cancelAnimationFrame(frame);frame=0;stopAudio();clearEffects();clearRings();clearLights();clearCues();resetSpace();updateProgress(0);updateCombo(0,true);state=null;error.hidden=true;}
   function finish(clear){
    if(!state||state.ended)return;
    if(clear)updateProgress(1);
@@ -246,7 +250,7 @@
   function miss(note){
    if(!state||state.ended)return;
    if(!note||note.state!=='pending')return;
-   note.state='miss';releaseNoteVisual(note);darkenLane(note.lane);if(opts.onNoteEnd)opts.onNoteEnd(note.lane);
+   note.state='miss';{const dz=dancersOn();if(dz)dz.miss(note,time());}releaseNoteVisual(note);darkenLane(note.lane);if(opts.onNoteEnd)opts.onNoteEnd(note.lane);
    state.cnt.MISS++;state.combo=0;muteMelody(false);label('MISS','MISS');updateHud();
    showTiming('MISS');
   }
@@ -309,6 +313,7 @@
    const goodWindow=D.judge.goodMs/1000;
    for(let lane=0;lane<9;lane++){const notes=state.notesByLane[lane];let cursor=state.laserCursors[lane];while(cursor<notes.length&&(notes[cursor].state!=='pending'||t>notes[cursor].targetTime+goodWindow))cursor++;state.laserCursors[lane]=cursor;}
     if(!state.ended&&t>=0)updateCues(t);
+   {const dz=dancersOn();if(dz&&!state.ended)dz.render(t,state.notes,state.renderCursor,state.bpm);}
    if(!state.ended&&t>=state.duration)finish(true);
    if(!state.ended)frame=requestAnimationFrame(tick);
   }
