@@ -10685,3 +10685,8 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 .rb-board.rb-dance-mode .rb-stage-floor { width:calc(100% * 230 / 952) !important; aspect-ratio:1 !important; border-radius:0 !important; box-shadow:none !important; background-color:transparent !important; background-position:center !important; background-size:contain !important; background-repeat:no-repeat !important; transform:perspective(500px) rotateX(64deg); opacity:calc(.15 + var(--lit, 0) * .85); filter:brightness(calc(.75 + var(--lit, 0) * .6)); transition:opacity .12s linear, filter .12s linear; /* 사용자: 평소 아주 옅게(15%), 조명 받으면 밝게, 두더지 사라지면 다시 옅게 */ }
 /* V1828 C 사용자: 두더지 둘레 원형 색 후광 없앰(밝기 신호는 발판·조명이 맡음) */
 .rb-board.rb-dance-mode .rb-dance-spot { display:none !important; }
+/* V1829 C 사용자: 폰 30fps 아래 — 휴대폰에서 비싼 합성(겹쳐 밝게 섞기)·필터를 빼고, 투명도·회전만 바뀌게(그래픽 칩이 바로 처리) */
+.rb-board.rb-dance-mode .rb-stage-beam { mix-blend-mode:normal !important; filter:none !important; will-change:rotate, opacity; }
+.rb-board.rb-dance-mode .rb-stage-fixture { filter:none !important; will-change:rotate; }
+.rb-board.rb-dance-mode .rb-stage-floor { filter:none !important; transition:opacity .12s linear !important; will-change:opacity; }
+.rb-board.rb-dance-mode .rb-stage-haze { will-change:opacity; }

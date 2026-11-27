@@ -126,7 +126,7 @@
         if(flowSurfaces[i])flowSurfaces[i].classList.add('is-pressed');
         if(pulseAnimations[i]) pulseAnimations[i].cancel();
         pulseAnimations[i]=pulse.animate(pressWaveFrames[i],pressWaveTiming);
-        if (play) {const occupied=play.hasCharacter(i),grade=play.press(i,lag);if(grade!==undefined&&laserFx)laserFx.emit(i,occupied);}
+        if (play) {const occupied=play.hasCharacter(i),grade=play.press(i,lag);if(grade!==undefined&&laserFx&&(grade||!board.classList.contains('rb-dance-mode')))laserFx.emit(i,occupied);/* V1829 C 사용자: 새 방식은 맞혔을 때만 레이저(실패·빈 누름은 안 쏨, FPS) */}
       }
       function up() {
         if(!hit.classList.contains('is-pressed'))return;
