@@ -105,43 +105,46 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
     else if (d.missAt != null || n.state === 'miss') { if (d.missAt == null) d.missAt = t; const k = (t - d.missAt) / MISS_OUT; if (k >= 1) { live.delete(id); continue; } alpha = .8 * (1 - k); light = .45; tilt = .35 * ease(k) * (n.lane % 2 ? 1 : -1); time = t; }
     else if (n.state === 'pending') { const u = ease((t - (n.targetTime - LEAD)) / LEAD); alpha = .35 + .65 * u; light = .35 + .8 * Math.max(0, 1 - Math.abs(t - n.targetTime) / .12) * .9 + .25 * u; time = t; spotLevel[d.lane] = Math.max(spotLevel[d.lane], .18 + .5 * u + (Math.abs(t - n.targetTime) < .1 ? .4 : 0)); }
     else { live.delete(id); continue; }
-    list.push({ lane: d.lane, alpha, light, clip, time, scale, tilt });
+    list.push({ lane: d.lane, alpha, light, clip, time, scale, tilt, lit: d.hitAt != null ? 1 - (t - d.hitAt) / danceLen : d.missAt != null ? 0 : Math.max(0, Math.min(1, .3 + .7 * Math.max(0, (t - (n.targetTime - LEAD)) / LEAD))) });
     targets.push({ lane: d.lane, level: d.hitAt != null ? .55 * alpha : d.missAt != null ? .15 * alpha : (.18 + .32 * Math.max(0, (t - (n.targetTime - LEAD)) / LEAD) + (Math.abs(t - n.targetTime) < .1 ? .2 : 0)) });
    }
    for (let i = 0; i < 9; i++) { const v = Math.min(1, spotLevel[i]); const s = spots[i]; const o = v.toFixed(2); if (s.style.opacity !== o) { s.style.opacity = o; s.style.setProperty('--spot-color', LANE_COLORS[i]); floors[i].style.setProperty('--lit', o); } }
    aimFixtures(t, targets);
    if (!ready || failed) return;
-   const bw = board.clientWidth, bh = board.clientHeight, dpr = Math.min(root.devicePixelRatio || 1, 1.25), ch = bh * 936 / 2078;
+   const bw = board.clientWidth, bh = board.clientHeight, dpr = Math.min(root.devicePixelRatio || 1, 2), ch = bh * 936 / 2078; /* V1831 C 사용자: 흐림 → 휴대폰 선명도(최대 2배) */
    const w = Math.round(bw * dpr), h = Math.round(ch * dpr); if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
    ctx2.clearRect(0, 0, w, h); if (!list.length) return;
    const cell = 300 / 952 * w; ensureSprites(cell);
    for (const m of list) {
     const sp = sprite(m.clip, m.time); if (!sp) continue;
-    const cx = (26 + (m.lane % 3) * 300 + 150) / 952 * w, cy = (26 + Math.floor(m.lane / 3) * 300 + 150) / 952 * w, feet = FEET * cell;
+    const cx = (26 + (m.lane % 3) * 300 + 150) / 952 * w, cy = (26 + Math.floor(m.lane / 3) * 300 + 150) / 952 * w, feet = FEET * cell, ox = -spriteW / 2, oy = -TOP * cell - feet;
     ctx2.save(); ctx2.translate(cx, cy + feet); if (m.tilt) ctx2.rotate(-m.tilt); if (m.scale !== 1) ctx2.scale(m.scale, m.scale);
-    ctx2.globalAlpha = Math.max(0, Math.min(1, m.alpha * Math.min(1, m.light))); ctx2.drawImage(sp, -spriteS / 2, -spriteS / 2 - feet);
-    if (m.light > 1) { ctx2.globalCompositeOperation = 'lighter'; ctx2.globalAlpha = Math.min(1, m.alpha * (m.light - 1) * .6); ctx2.drawImage(sp, -spriteS / 2, -spriteS / 2 - feet); }
+    ctx2.globalAlpha = Math.max(0, Math.min(1, m.alpha * Math.min(1, m.light))); ctx2.drawImage(sp, ox, oy);
+    // V1831 C 사용자: 조명이 비추면 두더지가 그 칸 색 빛으로 물듦(두더지 모양 안에만 색을 칠해 덧씌움)
+    const glow = m.lit * m.alpha; if (glow > .02) { tintCtx.globalCompositeOperation = 'copy'; tintCtx.globalAlpha = 1; tintCtx.drawImage(sp, 0, 0); tintCtx.globalCompositeOperation = 'source-atop'; tintCtx.fillStyle = LANE_COLORS[m.lane]; tintCtx.fillRect(0, 0, spriteW, spriteH); ctx2.globalCompositeOperation = 'lighter'; ctx2.globalAlpha = Math.min(1, glow * .28); ctx2.drawImage(tintC, ox, oy); }
+    if (m.light > 1) { ctx2.globalCompositeOperation = 'lighter'; ctx2.globalAlpha = Math.min(1, m.alpha * (m.light - 1) * .6); ctx2.drawImage(sp, ox, oy); }
     ctx2.restore();
    }
   }
-  // V1830 C 사용자 FPS: 두더지를 매 화면 3D 로 새로 그리지 않음 — 휴대폰에서 같은 3D·같은 선명도로 장면마다 한 번만 그려 두고(초당 24장 분량) 붙여 씀
-  const FPS_S = 24, FEET = .344; let spriteS = 0, spriteCell = 0; const sprites = new Map(); let warmJobs = null;
+  // V1830 C 사용자 FPS: 두더지를 매 화면 3D 로 새로 그리지 않음 — 휴대폰에서 같은 3D 로 장면마다 한 번만 그려 두고(초당 20장 분량) 붙여 씀
+  // V1831 C: 휴대폰 선명도로 그리되 두더지 둘레 빈 공간은 잘라냄(가로 0.9칸 × 세로 0.95칸) — 메모리 절약
+  const FPS_S = 20, FEET = .344, TOP = .5, CW = .9, CH = .95; let spriteW = 0, spriteH = 0, spriteCell = 0; const sprites = new Map(); let warmJobs = null;
+  const tintC = document.createElement('canvas'), tintCtx = tintC.getContext('2d');
   function ensureSprites(cell) {
-   const S = Math.round(cell * 1.35); if (S === spriteS) return; spriteS = S; spriteCell = cell; sprites.clear(); glc.width = glc.height = S;
+   const W = Math.round(cell * CW), H = Math.round(cell * CH); if (W === spriteW && H === spriteH) return; spriteW = W; spriteH = H; spriteCell = cell; sprites.clear(); glc.width = W; glc.height = H; tintC.width = W; tintC.height = H;
    warmJobs = []; for (let f = 0; f < 2 * FPS_S; f++) warmJobs.push(['Idle', f]); for (const [clip, start] of MOVES) { const f0 = Math.round(start * FPS_S); for (let f = f0; f <= f0 + Math.ceil(1.15 * FPS_S); f++) warmJobs.push([clip, f]); }
    (function step() { if (!warmJobs || !warmJobs.length) return; const deadline = performance.now() + 6; while (warmJobs.length && performance.now() < deadline) { const [c, fr] = warmJobs.shift(); makeSprite(c, fr); } if (warmJobs.length) setTimeout(step, 16); })();
-  }
-  function frameOf(clip, time) { let fr = Math.round(time * FPS_S); if (clip === 'Idle') fr = ((fr % (2 * FPS_S)) + 2 * FPS_S) % (2 * FPS_S); return fr; }
+  }  function frameOf(clip, time) { let fr = Math.round(time * FPS_S); if (clip === 'Idle') fr = ((fr % (2 * FPS_S)) + 2 * FPS_S) % (2 * FPS_S); return fr; }
   function sprite(clip, time) { const fr = frameOf(clip, time); return sprites.get(clip + '|' + fr) || makeSprite(clip, fr); }
   function makeSprite(clip, fr) {
-   const key = clip + '|' + fr; let c = sprites.get(key); if (c) return c; const S = spriteS; if (!S) return null;
-   gl.viewport(0, 0, S, S); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-   const P = R.identity(), ppu = spriteCell / 3.2; P[0] = 2 * ppu / S; P[5] = 2 * ppu / S; P[10] = -2 / 50; P[12] = 0; P[13] = 0;
+   const key = clip + '|' + fr; let c = sprites.get(key); if (c) return c; const W = spriteW, H = spriteH; if (!W) return null;
+   gl.viewport(0, 0, W, H); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+   const P = R.identity(), ppu = spriteCell / 3.2; P[0] = 2 * ppu / W; P[5] = 2 * ppu / H; P[10] = -2 / 50; P[12] = 0; P[13] = 2 * (H - TOP * spriteCell) / H - 1; /* 몸 가운데 = 위에서 0.5칸 */
    gl.uniformMatrix4fv(U.VP, false, R.multiply(P, R.lookAt([0, 1.2, 8], [0, 1.1, 0])));
    const pose = cachedPose(clip, fr / FPS_S), inst = R.transform({ scale: [SIZE, SIZE, SIZE] });
    gl.uniform1f(U.Light, 1); gl.uniform1f(U.Alpha, 1); gl.uniform3fv(U.Tint, [0, 0, 0]); let lastNode = -1;
    for (const pt of parts) { gl.bindVertexArray(pt.vao); if (pt.node !== lastNode) { lastNode = pt.node; const e = pose.get(pt.node), mm = R.multiply(inst, e.world); gl.uniformMatrix4fv(U.Model, false, mm); gl.uniformMatrix3fv(U.Normal, false, R.normals(mm)); gl.uniform1i(U.Skin, !!e.pal); if (e.pal) gl.uniformMatrix4fv(U.Bones, false, e.pal); } gl.uniform4fv(U.Color, pt.color); gl.drawElements(gl.TRIANGLES, pt.count, gl.UNSIGNED_INT, 0); }
-   c = document.createElement('canvas'); c.width = c.height = S; c.getContext('2d').drawImage(glc, 0, 0); sprites.set(key, c); return c;
+   c = document.createElement('canvas'); c.width = W; c.height = H; c.getContext('2d').drawImage(glc, 0, 0); sprites.set(key, c); return c;
   }  return { render, hit, miss, clear, loading, ready: () => ready };
  }
  MG.RhythmBDancers = { create };

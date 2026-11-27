@@ -177,7 +177,8 @@
 // V1828 C: neon spotlight colors = button colors, no mole halo.
 // V1829 C: neon laser only on hits, lighter stage effects.
 // V1830 C: neon pre-rendered moles, idle lights off, bottom buttons centered, no flow/waves.
-const CACHE = 'mole-game-v1830-C';
+// V1831 C: sharper neon mole sprites, spotlight tint.
+const CACHE = 'mole-game-v1831-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
