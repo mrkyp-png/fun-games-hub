@@ -171,7 +171,8 @@
 // V1822 C: neon lyrics under rhythm bar, inner board up 15px, pressed-pad ripple centered, MISS no rise, image retry and image carry-over between versions.
 // V1823 C: type-select moles lit by all four colored spotlights.
 // V1824 C: neon dancing-mole prototype (?neon2=1).
-const CACHE = 'mole-game-v1824-C';
+// V1825 C: neon dancing-mole mode is now the default (?neon2=0 = old).
+const CACHE = 'mole-game-v1825-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.

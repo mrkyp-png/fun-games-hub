@@ -59,7 +59,8 @@
   const colors=['#086aff','#ff1529','#ffc400','#05e52e','#a500ff','#ff0099','#ff7900','#00cfff','#a65121'];
   // V 1155 G: visual slots are reusable; chart notes and judgement remain independent.
   // V1824 C 네온 새 방식 시험판(?neon2=1): 위 판 3D 춤 두더지 + 앞 스포트. 판정·채보는 그대로
-  const DANCE_MODE=/[?&]neon2=1\b/.test(root.location.search);let dancers=null;
+  /* V1825 C 사용자: 새 방식이 기본. 예전 방식으로 되돌리려면 DANCE_MODE 를 false 로(주소 ?neon2=0 이면 예전 방식) */
+  const DANCE_MODE=!/[?&]neon2=0\b/.test(root.location.search);let dancers=null;
   function dancersOn(){if(!DANCE_MODE)return null;if(!dancers&&MG.RhythmBDancers){dancers=MG.RhythmBDancers.create(board);board.classList.add('rb-dance-mode');}return dancers;}
   const notePools=Array.from({length:9},()=>[]),visibleNotes=[];
   function createNoteVisual(lane){
