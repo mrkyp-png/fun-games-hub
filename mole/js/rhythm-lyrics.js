@@ -31,7 +31,8 @@
    if(!cues.length)return;
    if(time<lastTime){cursor=-1;beatCursor=-1;lastPulse=-Infinity;cancelBeat();}lastTime=time;
    while(cursor+1<cues.length&&cues[cursor+1].start<=time)cursor++;
-   const index=cursor>=0&&time<cues[cursor].end?cursor:-1;
+   // V1817 C 사용자: 가사가 나왔다 안 나왔다 함 → 줄 사이 짧은 빈 시간(1.5초 미만)은 앞 줄을 그대로 보여줌, 긴 간주만 숨김
+   const index=cursor>=0&&(time<cues[cursor].end||(cursor+1<cues.length&&cues[cursor+1].start-cues[cursor].end<1.5))?cursor:-1;
    if(beats){while(beatCursor+1<beats.length&&beats[beatCursor+1]<=time)beatCursor++;}
    const beat=beats?beatCursor:Math.floor((time-firstBeat)/(60/bpm));
    const at=beats?beats[beatCursor]:firstBeat+beat*60/bpm;

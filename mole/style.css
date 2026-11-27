@@ -7354,10 +7354,10 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 .rp-skill-toast.is-on { animation:rp-skill-toast 1.2s ease-out both; }
 @keyframes rp-skill-toast { 0% { opacity:0; transform:scale(.6); } 15% { opacity:1; transform:scale(1.1); } 30% { transform:scale(1); } 80% { opacity:1; } 100% { opacity:0; transform:translateY(-14px); } } /* V1814 C 사용자: 점프 버튼과 스킬 줄 간격 줄여 게임 영역(구멍 위치) 원래대로 */
 #rhythm-screen:not(.is-type-b) .rp-skill,#rhythm-screen:not(.is-type-b) .rp-pausebtn { --side:rgba(13,52,116,.7); translate:0 0; transition:translate .07s,box-shadow .07s;
-  box-shadow:0 9px 0 0 var(--side),0 9px 0 4px rgba(255,241,212,.7),0 12px 0 5px rgba(180,138,76,.7),0 14px 8px 4px rgba(60,40,10,.35); }
+  box-shadow:0 9px 0 0 var(--side),0 9px 0 4px rgba(255,241,212,.4),0 12px 0 5px rgba(180,138,76,.4),0 14px 8px 4px rgba(60,40,10,.35); }
 #rhythm-screen:not(.is-type-b) .rp-pausebtn { --side:rgba(11,42,94,.7); } /* 사용자: 스킬 버튼 아래 남청색 옆면·베이지 테두리 투명도 30% */
-#rhythm-screen:not(.is-type-b) .rp-skill:active:not(:disabled),#rhythm-screen:not(.is-type-b) .rp-pausebtn:active { translate:0 7px;
-  box-shadow:0 2px 0 0 var(--side),0 2px 0 4px rgba(255,241,212,.7),0 5px 0 5px rgba(180,138,76,.7),0 7px 6px 4px rgba(60,40,10,.35); }
+#rhythm-screen:not(.is-type-b) .rp-skill:active:not(:disabled),#rhythm-screen:not(.is-type-b) .rp-pausebtn:active { translate:0 9px;
+  box-shadow:0 0 0 0 var(--side),0 0 0 4px rgba(255,241,212,.4),0 3px 0 5px rgba(180,138,76,.4),0 5px 6px 4px rgba(60,40,10,.35); } /* V1817 C 사용자: 꾹 누르면 테두리 안에 쏙(틈 없이) */
 .rp-skill.is-on { filter:none; opacity:1; box-shadow:0 0 0 3px #fff7a8,0 0 18px 6px #ffe45a; animation:rp-skill-on .8s ease-in-out infinite alternate; }
 @keyframes rp-skill-on { from { transform:scale(1); } to { transform:scale(1.06); } }
 #rhythm-screen:not(.is-type-b) .rp-pausebtn { --s:calc((100vw - 6px) / 4 - 12px); position:fixed; top:auto; width:var(--s); height:var(--s); border-width:4px; bottom:calc(env(safe-area-inset-bottom, 0px) + 16px); right:calc(3px + (100vw - 6px) / 8 - var(--s) / 2); z-index:5; font-size:calc(var(--s) * .4); }
@@ -9071,7 +9071,7 @@ img { -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; }
 #rhythm-screen:not(.is-type-b) .rp-btn.is-beach-spring .rp-beach-face img { animation: rp-beach-cap-side 220ms linear; }
 /* V1813 C 사용자: 점프 버튼 옆면 두껍게(9→17px) + 더 깊게 눌림 — 큰 블록이 솟은 느낌 */
 #rhythm-screen:not(.is-type-b) .rp-btns { translate: 0 -16px; margin-bottom: 16px; }
-#rhythm-screen:not(.is-type-b) .rp-a-timing-gauge { translate: 0 -4px; } /* 사용자: 리듬 바·점프 버튼 아주 약간(4px) 위로 — 스킬 버튼과 겹침 */
+#rhythm-screen:not(.is-type-b) .rp-a-timing-gauge { translate: 0 -6px; } /* V1817 C 사용자: 2px 더 위로 */ /* 사용자: 리듬 바·점프 버튼 아주 약간(4px) 위로 — 스킬 버튼과 겹침 */
 #rhythm-screen:not(.is-type-b) .rp-btn .rp-beach-face img { filter: drop-shadow(0 6px 0 var(--beach-depth)) drop-shadow(0 2px 0 var(--beach-edge)); } /* 사용자: 옆면 얇게 17→6px(스킬 줄과 안 겹치게) */
 #rhythm-screen:not(.is-type-b) .rp-btn.is-beach-spring .rp-beach-face,
 #rhythm-screen:not(.is-type-b) .rp-btn.is-beach-spring .rp-a-triangle { animation: rp-beach-cap-spring2 240ms linear; }
@@ -9517,6 +9517,8 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 /* V1814 C 사용자: 곡 선택 뒤로(X) 버튼은 네모 창 안 왼쪽 위 가장자리(테두리와 겹치지 않게) */
 #rhythm-screen [data-rp-songs-back].game-back { top:45px!important; left:30px!important; } /* 금색 안쪽 테두리에서 위·왼쪽 똑같이 10px */
 #rhythm-screen [data-rp-song-back].game-back { top:90px!important; left:30px!important; } /* V1816 C 사용자: 난이도 선택 X 도 창 안 왼쪽 위 */
+#rhythm-screen .rx-card--sel { position:relative; }
+#rhythm-screen .rx-card--sel > [data-rp-song-back].game-back { position:absolute!important; top:21px!important; left:20px!important; } /* V1817 C: 창 기준(금색 테두리에서 위·왼쪽 10px) */
 #game-screen.is-start .h2-balance-text { position:absolute; inset:0 4% 0 30%; display:flex; justify-content:center; align-items:center; }
 #game-screen.is-start .h2-pill--no-plus .h2-balance-text .lane-hud-n { position:absolute; inset:0; display:flex; justify-content:center; align-items:center; margin:0; padding:0; line-height:1; white-space:nowrap; font-size:clamp(14px,4.8vw,26px); }
 

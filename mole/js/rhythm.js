@@ -1037,6 +1037,8 @@
       showSongs();
     });
     $('[data-rp-song-back]').addEventListener('click', showSongs);
+    // V1817 C 사용자: 난이도 선택 X = 창 안 왼쪽 위 가장자리(휴대폰 높이마다 창 위치가 달라 창 안에 넣어 창 기준으로 붙임)
+    (function () { var sb = $('[data-rp-song-back]'), sc = sb && sb.parentNode.querySelector('.rx-card--sel'); if (sc) sc.appendChild(sb); })();
     $('[data-rp-songs-back]').addEventListener('click', showTypes);
     $('[data-rp-songs-home]').addEventListener('click', function () { close(); });
     $('[data-rp-types-home]').addEventListener('click', function () { close(); });
