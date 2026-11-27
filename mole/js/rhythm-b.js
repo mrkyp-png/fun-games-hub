@@ -190,7 +190,7 @@
     }
     const pulseResize=new ResizeObserver(fitPressPulses);pulseResize.observe(opts.root);pulseResize.observe(board);fitPressPulses();
     const upperGlow = document.createElement('img'); upperGlow.className = 'rb-upper-glow'; upperGlow.alt = ''; upperGlow.src = 'assets/rhythm-b/upper-uniform-glow.png'; board.appendChild(upperGlow);
-    for(const y of [936,1118]){const line=document.createElement('div');line.className='rb-zone-divider';line.setAttribute('aria-hidden','true');line.style.top=(y/2078*100)+'%';board.appendChild(line);}
+    for(const y of [936,1138]){/* V1822 C 사용자: 아래 줄을 내려 리듬 바 아래로 가사 자리(누를 때 나오는 기판 버튼 위까지만) */const line=document.createElement('div');line.className='rb-zone-divider';line.setAttribute('aria-hidden','true');line.style.top=(y/2078*100)+'%';board.appendChild(line);}
     const score = document.createElement('div'); score.className = 'rb-status rb-status--score';
     score.innerHTML = '<small>SCORE</small><b data-rb-score>000000</b>'; place(score, 176, 991, 248, 90);
     const judge = document.createElement('div'); judge.className = 'rb-status rb-status--judge';

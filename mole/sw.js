@@ -168,7 +168,8 @@
 // V1819 C: type-select dancing friends (spiky/curly), soft floor-limited stage light.
 // V1820 C: style/script keep fetching on timeout (no old buttons), friend tweaks.
 // V1821 C: type-select Hop/Twist/Robot dances.
-const CACHE = 'mole-game-v1821-C';
+// V1822 C: neon lyrics under rhythm bar, inner board up 15px, pressed-pad ripple centered, MISS no rise, image retry and image carry-over between versions.
+const CACHE = 'mole-game-v1822-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -1138,9 +1139,25 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
-      .then(() => self.clients.claim())
+    // V1822 C 사용자: 새 버전마다 저장해 둔 그림까지 다 지워서, 처음 열 때 그림을 새로 받다 깨지는 일이 반복됨
+    // → 지우기 전에 예전 저장본의 그림(png·jpg·webp·svg·glb 등)은 새 저장본으로 옮겨 둠(코드·모양 파일은 옮기지 않음)
+    (async () => {
+      const keys = await caches.keys(), next = await caches.open(CACHE);
+      for (const k of keys) {
+        if (k === CACHE) continue;
+        try {
+          const old = await caches.open(k);
+          for (const r of await old.keys()) {
+            if (!/\.(png|jpe?g|webp|gif|svg|glb|mp3|ogg|woff2?)(?:$|\?)/i.test(r.url)) continue;
+            if (await next.match(r)) continue;
+            const res = await old.match(r);
+            if (res) await next.put(r, res);
+          }
+        } catch (_) {}
+        await caches.delete(k);
+      }
+      await self.clients.claim();
+    })()
   );
 });
 
@@ -1156,7 +1173,13 @@ self.addEventListener('fetch', (e) => {
       // The foreground queue watches byte progress and retries stalled transfers.
       // Do not abort a slow but healthy image response after a fixed duration.
       // V1734 C: 같은 이름으로 그림을 바꾸면(클레이 재화) 브라우저 HTTP 캐시가 옛 그림을 다시 넣음 → 새 버전에서 처음 받을 때는 서버에 바뀌었는지 확인(no-cache). 받은 뒤엔 이 캐시에서 바로 씀
-      const response = await fetch(new Request(e.request, { cache: 'no-cache' }));
+      // V1822 C 사용자: 새 버전 직후(저장본 빔) 그림 받기가 한 번 실패하면 깨진 그림으로 남았음 → 잠깐 뒤 두 번까지 다시 받음
+      let response;
+      for (let attempt = 0; ; attempt++) {
+        try { response = await fetch(new Request(e.request, { cache: 'no-cache' })); if (response.ok || attempt >= 2) break; }
+        catch (err) { if (attempt >= 2) throw err; }
+        await new Promise((r) => setTimeout(r, attempt ? 1200 : 400));
+      }
       if (response && response.ok && (response.type === 'basic' || response.type === 'cors')) {
         const copy = response.clone();
         e.waitUntil(caches.open(CACHE).then((cache) => cache.put(e.request, copy)).catch(() => {}));

@@ -10632,3 +10632,13 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #shop-screen .shop-weapon-motion[data-shop-motion="alipunch"] .inv-bump-word { top:var(--shop-king-fx-y,50%); line-height:1; }
 /* 좌우 글러브 그림을 바꾸고 칸의 기울기와 타격 동작은 유지한다. */
 #shop-screen .shop-weapon-motion[data-shop-motion="alipunch"] .king-glove > img { transform:scaleX(-1)!important; }
+/* V1822 C 사용자: 네온 — RHYTHM 글자는 리듬 바 안, 가사는 리듬 바 아래 줄(내린 아래 줄 위)로 */
+#rhythm-screen.is-type-b .rb-timing-gauge .rb-timing-caption--center { top:34%; transform:translate(-50%,-50%); }
+#rhythm-screen.is-type-b .rp-lyrics.rp-lyrics--neon-hud { height:17px; line-height:17px; z-index:6; font-size:14px!important; } /* 사용자: 글자 작게, 리듬 글자 있던 줄에 */
+#rhythm-screen.is-type-b .rp-lyrics.rp-lyrics--neon-hud * { font-size:inherit!important; line-height:inherit!important; }
+/* V1822 C 사용자: 가사가 위에서 빠져 위 여유가 큼 → 테두리는 그대로, 안쪽 판 전체를 15px 위로(위·아래 여유 같게) */
+#rhythm-screen.is-type-b .rb-board { position:relative; top:-15px; }
+/* V1822 C 사용자: 아래 버튼 누르면 나오는 기판 그림의 동그란 원은 약간(오른쪽 2%·아래 11%) 내려가 있음 → 누른 동안 안쪽 작은 원(시작점)도 그만큼 옮겨 가운데 맞춤 */
+#rhythm-screen.is-type-b .rb-button-cap.is-pressed + .rb-button-core + .rb-spawn-ripple { translate:2.3% 10.9%; }
+/* V1822 C 사용자: MISS 는 위로 튀어 JUDGEMENT 글자에 겹쳤음 → 제자리에서만 살짝 번쩍(위로 안 뜀) */
+#rhythm-screen .rb-status--judge[data-grade=MISS] { --judge-peak:1.15; --judge-rise:0px; }
