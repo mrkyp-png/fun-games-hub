@@ -110,8 +110,8 @@
       const reflection=document.createElement('div');reflection.className='rb-circuit-reflection';reflection.setAttribute('aria-hidden','true');reflection.style.cssText=circuit.style.cssText;reflection.style.setProperty('--button-color',colors[i]);reflection.innerHTML='<span class="rb-circuit-outward"></span>';board.appendChild(reflection);
       const lens=document.createElement('div');lens.className='rb-button-lens';lens.setAttribute('aria-hidden','true');lens.style.cssText=circuit.style.cssText;lens.style.setProperty('--glass-color',colors[i]);lens.style.setProperty('--glass-image','url("assets/rhythm-b/glass-lower-v1109/lower-'+i+'.png")');lens.innerHTML='<span class="rb-glass-dome"><span class="rb-glass-spin"></span></span>';board.appendChild(lens);
       const floor=document.createElement('img');floor.className='rb-button-floor-press';floor.alt='';floor.src='assets/rhythm-b/button-base-v1118/press-'+i+([2,6,8].includes(i)?'-v1833':'')+'.svg';place(floor,buttonCx,buttonCy+16,296,320);
-      const base=document.createElement('img');base.className='rb-button-base';base.alt='';base.src='assets/rhythm-b/button-base-v1118/base-'+i+'.svg';place(base,buttonCx,buttonCy+16,296,320);
-      const cap=document.createElement('img');cap.className='rb-button-cap';cap.alt='';cap.src='assets/rhythm-b/button-face-v1124/face-'+i+'.svg';place(cap,buttonCx,buttonCy,268);
+      const base=document.createElement('img');base.className='rb-button-base';base.alt='';base.src='assets/rhythm-b/button-base-v1118/base-'+i+([2,6,8].includes(i)?'-v1833':'')+'.svg';place(base,buttonCx,buttonCy+16,296,320);
+      const cap=document.createElement('img');cap.className='rb-button-cap';cap.alt='';cap.src='assets/rhythm-b/button-face-v1124/face-'+i+([2,6,8].includes(i)?'-v1833':'')+'.svg';place(cap,buttonCx,buttonCy,268);
       const core=document.createElement('img');core.className='rb-button-core';core.alt='';core.src='assets/rhythm-b/upper-core-v1124/core-'+i+'.svg';place(core,buttonCx,buttonCy,268);
       hit.addEventListener('focus',()=>core.classList.toggle('is-key-focused',hit.matches(':focus-visible')));hit.addEventListener('blur',()=>core.classList.remove('is-key-focused'));
       const spawnRing=document.createElement('span');spawnRing.className='rb-spawn-ripple';spawnRing.hidden=true;spawnRing.setAttribute('aria-hidden','true');spawnRing.style.setProperty('--button-color',colors[i]);spawnRing.innerHTML='<svg viewBox="0 0 94 94" aria-hidden="true"><circle cx="47" cy="47" r="0" fill="none" stroke="'+colors[i]+'" stroke-width="4"/></svg>';place(spawnRing,buttonCx-.5,buttonCy,94);spawnWaves.push(spawnRing);spawnCircles.push(spawnRing.querySelector('circle'));
@@ -121,7 +121,7 @@
         if (!running || paused) return;
         // V1337 C: 누를 때마다 fitPressPulses()(11번 위치 측정+9개 클립 경로 재작성 → 강제 레이아웃·전체 다시 그리기) 하던 것 제거 — 크기 바뀔 때만 ResizeObserver 가 갱신
         reboundAnimations[i].forEach(a=>a.cancel());reboundAnimations[i].length=0;
-        cap.src='assets/rhythm-b/button-face-v1120/face-'+i+'.svg';
+        cap.src='assets/rhythm-b/button-face-v1120/face-'+i+([2,6,8].includes(i)?'-v1833':'')+'.svg';
         surfaces.forEach(el => el.classList.add('is-pressed'));const dance=board.classList.contains('rb-dance-mode');/* V1830 C 사용자: 새 방식은 기판 안 흐름·파동 없음(FPS) */if(flowFx&&!dance)flowFx.press(i,true);
         if(flowSurfaces[i])flowSurfaces[i].classList.add('is-pressed');
         if(pulseAnimations[i]) pulseAnimations[i].cancel();
@@ -131,7 +131,7 @@
       function up() {
         if(!hit.classList.contains('is-pressed'))return;
         for(let j=0;j<moving.length;j++)from[j]=getComputedStyle(moving[j]).transform;
-        cap.src='assets/rhythm-b/button-face-v1124/face-'+i+'.svg';if(flowFx)flowFx.press(i,false);
+        cap.src='assets/rhythm-b/button-face-v1124/face-'+i+([2,6,8].includes(i)?'-v1833':'')+'.svg';if(flowFx)flowFx.press(i,false);
         surfaces.forEach(el=>el.classList.remove('is-pressed'));if(flowSurfaces[i])flowSurfaces[i].classList.remove('is-pressed');
         if(!reducedMotion.matches){const animations=reboundAnimations[i];animations.length=0;for(let j=0;j<moving.length;j++){releaseFrames[i][j][0].transform=from[j];animations.push(moving[j].animate(releaseFrames[i][j],releaseTiming));}}
       }
@@ -202,7 +202,7 @@
     pauseButton.innerHTML = '<span class="rb-pause-face" aria-hidden="true">II</span>';
     pauseButton.addEventListener('click', () => opts.onPause());
     place(pauseButton, 876, 1027, 86, 86);
-    function releaseAll() { if(flowFx)for(let i=0;i<9;i++)flowFx.press(i,false);board.querySelectorAll('.rb-button-cap').forEach((el,i)=>{el.src='assets/rhythm-b/button-face-v1124/face-'+i+'.svg';});pressSurfaces.forEach(el => el.classList.remove('is-pressed')); clearShakes(); pulseAnimations.forEach(a=>{if(a)a.cancel();}); pulseAnimations.fill(null); reboundAnimations.forEach(list=>{list.forEach(a=>a.cancel());list.length=0;}); }
+    function releaseAll() { if(flowFx)for(let i=0;i<9;i++)flowFx.press(i,false);board.querySelectorAll('.rb-button-cap').forEach((el,i)=>{el.src='assets/rhythm-b/button-face-v1124/face-'+i+([2,6,8].includes(i)?'-v1833':'')+'.svg';});pressSurfaces.forEach(el => el.classList.remove('is-pressed')); clearShakes(); pulseAnimations.forEach(a=>{if(a)a.cancel();}); pulseAnimations.fill(null); reboundAnimations.forEach(list=>{list.forEach(a=>a.cancel());list.length=0;}); }
     flowFx = root.MoleGame.RhythmBFlow.create({ board, colors });
     rippleFx=root.MoleGame.RhythmBRipple.create({root:opts.root,board,colors});
     laserFx=root.MoleGame.RhythmBLaser.create({board,colors,hasCharacter:lane=>miniSurfaces[lane].classList.contains('is-note-active')});
@@ -215,7 +215,7 @@
     function prepareAssets() {
       if (artReady) return artReady;
       const urls = new Set(Array.from(board.querySelectorAll('img'), img => img.src));
-      [...colors.map((_,i)=>'button-face-v1120/face-'+i+'.svg'),'mini-user.png', 'pause-options.png', 'character/hoverboard-v1260/frame-00.png', 'character/hoverboard-v1260/frame-01.png', ...colors.map((_, i) => 'note-inner-line-' + i + '.png'), ...colors.map((_,i)=>'glass-lower-v1109/lower-'+i+'.png')].forEach(name => urls.add('assets/rhythm-b/' + name));
+      [...colors.map((_,i)=>'button-face-v1120/face-'+i+([2,6,8].includes(i)?'-v1833':'')+'.svg'),'mini-user.png', 'pause-options.png', 'character/hoverboard-v1260/frame-00.png', 'character/hoverboard-v1260/frame-01.png', ...colors.map((_, i) => 'note-inner-line-' + i + '.png'), ...colors.map((_,i)=>'glass-lower-v1109/lower-'+i+'.png')].forEach(name => urls.add('assets/rhythm-b/' + name));
       artReady = Promise.all(Array.from(urls, src => new Promise((resolve, reject) => {
         const img = new Image(); artImages.push(img);
         img.onload = () => img.decode().then(resolve, reject);

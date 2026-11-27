@@ -180,7 +180,8 @@
 // V1831 C: sharper neon mole sprites, spotlight tint.
 // V1832 C: neon chord gold, later turns dimmed.
 // V1833 C: neon lane colors mint/white/lavender.
-const CACHE = 'mole-game-v1833-C';
+// V1834 C: neon inner button rings match new lane colors.
+const CACHE = 'mole-game-v1834-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
