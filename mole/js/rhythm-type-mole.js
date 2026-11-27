@@ -4,7 +4,7 @@
   const DESIGN={width:941,height:1672,stageX:470.5,stageY:1460,pixelsPerUnit:112};
   const WALK=3,ALIGN=.35,TURN=2.4;
   const VARIATION_BEATS=8, FREESTYLE_INSERT_BEAT=8, FREESTYLE_BEATS=32;
-  const VARIATIONS=['DanceSideStep','DanceArmWave'];
+  const VARIATIONS=['DanceSideStep','DanceArmWave','DanceHop','DanceTwist','DanceRobot']; // V1821 C 사용자: 통통 점프·허리 트위스트·로봇 춤 추가
   const smooth=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
   function sequence(time,reduced){
     time=Math.max(0,time);
@@ -87,6 +87,27 @@
             turn('UpperArm'+side,2,-sign*(.18+.75*swing));
             turn('UpperArm'+side,1,sign*.65*swing);
           }
+        }else if(variant===2){
+          // 통통 점프: 박자마다 제자리 뜀, 두 손을 위로 번갈아 찌름
+          const hop=Math.abs(Math.sin(beat*Math.PI)),up=Math.floor(beat)%2?1:-1;
+          shift('Root',0,.32*hop,0);turn('Head',0,-.12*hop);
+          for(const [side,sign] of sides){const punch=sign===up?hop:0;
+            turn('UpperArm'+side,2,-sign*(.35+1.75*punch));turn('UpperArm'+side,1,sign*.25*punch);
+            shift('Foot'+side,0,.10*hop,0);}
+        }else if(variant===3){
+          // 허리 트위스트: 몸통 좌우 비틀기 + 팔 앞뒤 펌프
+          turn('Body',1,.55*sway);turn('Head',1,-.30*sway);shift('Body',0,.05*pulse,0);
+          for(const [side,sign] of sides){
+            turn('UpperArm'+side,2,-sign*.55);turn('UpperArm'+side,0,.85*sign*sway);
+            shift('Foot'+side,0,.07*Math.max(0,sign*sway),0);}
+        }else if(variant===4){
+          // 로봇 춤: 팔을 직각으로 꺾어 박자마다 딱딱 끊어 움직임
+          const q=Math.floor(beat)%4,snap=smooth((beat%1)/.18),poseOf=k=>[[1,-1],[-1,1],[1,1],[-1,-1]][k];
+          const now=poseOf(q),prev=poseOf((q+3)%4),mix=i=>prev[i]+(now[i]-prev[i])*snap;
+          turn('Head',1,.32*mix(0));turn('Body',1,.12*mix(0));
+          for(const [side,sign] of sides){const k=sign>0?mix(0):mix(1);
+            turn('UpperArm'+side,2,-sign*1.25);turn('UpperArm'+side,0,.55*k);
+            turn('Forearm'+side,2,-sign*1.35);turn('Hand'+side,2,sign*.3*k);}
         }else{
           // A rising arm wave with a two-beat weight shift and head nods.
           shift('Body',.09*sway,.12*pulse,0);

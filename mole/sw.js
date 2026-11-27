@@ -167,7 +167,8 @@
 // V1818 C: type-select 4 colored stage lights (2 beside camera hole).
 // V1819 C: type-select dancing friends (spiky/curly), soft floor-limited stage light.
 // V1820 C: style/script keep fetching on timeout (no old buttons), friend tweaks.
-const CACHE = 'mole-game-v1820-C';
+// V1821 C: type-select Hop/Twist/Robot dances.
+const CACHE = 'mole-game-v1821-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
