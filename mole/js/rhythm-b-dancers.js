@@ -26,7 +26,7 @@
   function aimFixtures(t, targets) {
    const bw = board.clientWidth, bh = board.clientHeight; if (!bw) return; const used = new Set(), want = new Map();
    targets.sort((a, b) => b.level - a.level);
-   for (const tg of targets) { const cx = (26 + (tg.lane % 3) * 300 + 150) / 952 * bw; let best = -1, bd = 1e9; fixtures.forEach((f, i) => { if (used.has(i)) return; const d = Math.abs(f.x * bw - cx); if (d < bd) { bd = d; best = i; } }); if (best < 0) break; used.add(best); const py = (26 + Math.floor(tg.lane / 3) * 300 + 262) / 2078 * bh, ay = -.0044 * bh, dx = cx - fixtures[best].x * bw, dy = py - ay; want.set(best, { angle: -Math.atan2(dx, dy) * 180 / Math.PI, op: tg.level, len: Math.hypot(dx, dy) / .757, color: LANE_COLORS[tg.lane] }); } /* V1827 C 사용자: 조명 렌즈 = 빛 꼭짓점, 빛 끝 = 두더지 발판(바닥 자국) */
+   for (const tg of targets) { const cx = (26 + (tg.lane % 3) * 300 + 150) / 952 * bw; let best = -1, bd = 1e9; fixtures.forEach((f, i) => { if (used.has(i)) return; const d = Math.abs(f.x * bw - cx); if (d < bd) { bd = d; best = i; } }); if (best < 0) break; used.add(best); const py = (26 + Math.floor(tg.lane / 3) * 300 + 262) / 2078 * bh, ay = -.0044 * bh, dx = cx - fixtures[best].x * bw, dy = py - ay; want.set(best, { angle: -Math.atan2(dx, dy) * 180 / Math.PI, op: tg.level, len: Math.hypot(dx, dy) / .757, color: tg.color }); } /* V1827 C 사용자: 조명 렌즈 = 빛 꼭짓점, 빛 끝 = 두더지 발판(바닥 자국) */
    fixtures.forEach((f, i) => { const w = want.get(i), angle = w ? w.angle : (f.lastAngle ?? f.aim), op = w ? w.op : 0; if (w) f.lastAngle = w.angle; /* V1830 C 사용자 FPS: 쉬는 조명은 멈춤 */
     const a = angle.toFixed(1) + 'deg', o = op.toFixed(2); if (f.angle !== a) { f.angle = a; f.beam.style.rotate = a; f.fix.style.rotate = a; } if (f.op !== o) { f.op = o; f.beam.style.opacity = o; const vis = op > .005 ? 'visible' : 'hidden'; if (f.vis !== vis) { f.vis = vis; f.beam.style.visibility = vis; } } /* 꺼진 빛줄기는 그리지 않음 */ if (w) { const L = Math.round(w.len) + 'px'; if (f.len !== L) { f.len = L; f.beam.style.height = L; } if (f.color !== w.color) { f.color = w.color; f.beam.style.setProperty('--beam-color', w.color); } } }); /* 조명 색 = 비추는 칸 버튼 색 */
   }
@@ -82,6 +82,7 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
    const ws = AP.pose(rig, clip, f / 60, true, null, f / 60, STYLE); e = new Map(); for (const node of partNodes) e.set(node, { world: ws[node], pal: R.palette(rig, ws, node) }); poseCache.set(key, e); return e;
   }
   const loading = init().catch(e => { failed = true; console.warn('Neon dancers unavailable', e); });
+  const GOLD = '#ffe07a'; // V1832 C 사용자: 동시 출현 색
   const LANE_COLORS = ['#086aff', '#ff1529', '#ffc400', '#05e52e', '#a500ff', '#ff0099', '#ff7900', '#00cfff', '#a65121']; // V1828 C 사용자: 아래 버튼 색과 같게
   function pickMove(n) { if (n.danceMove != null) return n.danceMove; let m = Math.floor(Math.random() * MOVES.length); if (m === lastMove) m = (m + 1) % MOVES.length; lastMove = m; return m; }
   function track(n) { if (!live.has(n.id)) live.set(n.id, { n, lane: n.lane, move: -1 }); return live.get(n.id); }
@@ -99,16 +100,22 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
    for (let id = renderCursor; id < notes.length; id++) { const n = notes[id]; if (n.targetTime - LEAD > t) break; if (n.state === 'pending') track(n); }
    const spotLevel = new Float32Array(9);
    const list = [], targets = [];
+   // V1832 C 사용자: 순서대로 오는 것과 동시 출현 구분 — 아직 안 누른 두더지를 박자 순으로 차례(0=지금 누를 것), 다음 차례는 흐리게. 같은 박자(동시)는 조명·발판·두더지 빛 모두 금색(연결선은 지저분해서 뺌)
+   const times = []; for (const d of live.values()) if (d.hitAt == null && d.missAt == null && d.n.state === 'pending') times.push(+d.n.targetTime.toFixed(3)); const order = [...new Set(times)].sort((a, b) => a - b);
+   const rankOf = n => Math.max(0, order.indexOf(+n.targetTime.toFixed(3))), RANK_ALPHA = [1, .42, .2], RANK_LIGHT = [1, .3, .12];
+   const isChord = n => (n.chordSize || 1) >= 2, colorOf = d => isChord(d.n) ? GOLD : LANE_COLORS[d.lane]; const padGold = new Uint8Array(9);
    for (const [id, d] of live) {
     const n = d.n; let alpha, light, clip = 'Idle', time = 0, scale = 1, tilt = 0;
     if (d.hitAt != null) { const k = (t - d.hitAt) / danceLen; if (k >= 1) { live.delete(id); continue; } const mv = MOVES[d.move]; clip = mv[0]; time = mv[1] + (t - d.hitAt) * rate; alpha = 1 - ease((k - .2) / .8); light = 1.15; scale = 1 + .08 * Math.sin(Math.min(1, k * 2) * Math.PI); spotLevel[d.lane] = Math.max(spotLevel[d.lane], 1 - k); }
     else if (d.missAt != null || n.state === 'miss') { if (d.missAt == null) d.missAt = t; const k = (t - d.missAt) / MISS_OUT; if (k >= 1) { live.delete(id); continue; } alpha = .8 * (1 - k); light = .45; tilt = .35 * ease(k) * (n.lane % 2 ? 1 : -1); time = t; }
-    else if (n.state === 'pending') { const u = ease((t - (n.targetTime - LEAD)) / LEAD); alpha = .35 + .65 * u; light = .35 + .8 * Math.max(0, 1 - Math.abs(t - n.targetTime) / .12) * .9 + .25 * u; time = t; spotLevel[d.lane] = Math.max(spotLevel[d.lane], .18 + .5 * u + (Math.abs(t - n.targetTime) < .1 ? .4 : 0)); }
+    else if (n.state === 'pending') { const u = ease((t - (n.targetTime - LEAD)) / LEAD), rk = Math.min(2, rankOf(n)); alpha = (.35 + .65 * u) * RANK_ALPHA[rk]; light = .35 + .8 * Math.max(0, 1 - Math.abs(t - n.targetTime) / .12) * .9 + .25 * u; time = t; spotLevel[d.lane] = Math.max(spotLevel[d.lane], .18 + .5 * u + (Math.abs(t - n.targetTime) < .1 ? .4 : 0)); }
     else { live.delete(id); continue; }
-    list.push({ lane: d.lane, alpha, light, clip, time, scale, tilt, lit: d.hitAt != null ? 1 - (t - d.hitAt) / danceLen : d.missAt != null ? 0 : Math.max(0, Math.min(1, .3 + .7 * Math.max(0, (t - (n.targetTime - LEAD)) / LEAD))) });
-    targets.push({ lane: d.lane, level: d.hitAt != null ? .55 * alpha : d.missAt != null ? .15 * alpha : (.18 + .32 * Math.max(0, (t - (n.targetTime - LEAD)) / LEAD) + (Math.abs(t - n.targetTime) < .1 ? .2 : 0)) });
+    if (isChord(n)) padGold[d.lane] = 1;
+    list.push({ lane: d.lane, color: colorOf(d), alpha, light, clip, time, scale, tilt, lit: d.hitAt != null ? 1 - (t - d.hitAt) / danceLen : d.missAt != null ? 0 : Math.max(0, Math.min(1, .3 + .7 * Math.max(0, (t - (n.targetTime - LEAD)) / LEAD))) });
+    targets.push({ lane: d.lane, color: colorOf(d), level: d.hitAt != null ? .55 * alpha : d.missAt != null ? .15 * alpha : (.18 + .32 * Math.max(0, (t - (n.targetTime - LEAD)) / LEAD) + (Math.abs(t - n.targetTime) < .1 ? .2 : 0)) * RANK_LIGHT[Math.min(2, rankOf(n))] });
    }
    for (let i = 0; i < 9; i++) { const v = Math.min(1, spotLevel[i]); const s = spots[i]; const o = v.toFixed(2); if (s.style.opacity !== o) { s.style.opacity = o; s.style.setProperty('--spot-color', LANE_COLORS[i]); floors[i].style.setProperty('--lit', o); } }
+   for (let i = 0; i < 9; i++) { const g = padGold[i] ? 'gold' : 'lane'; if (floors[i].dataset.tone !== g) { floors[i].dataset.tone = g; floors[i].style.backgroundImage = 'url("assets/rhythm-b/circuit-rim-' + (padGold[i] ? 2 : i) + '.svg")'; } } /* 동시 출현 발판 = 금색 회로판 */
    aimFixtures(t, targets);
    if (!ready || failed) return;
    const bw = board.clientWidth, bh = board.clientHeight, dpr = Math.min(root.devicePixelRatio || 1, 2), ch = bh * 936 / 2078; /* V1831 C 사용자: 흐림 → 휴대폰 선명도(최대 2배) */
@@ -121,7 +128,7 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
     ctx2.save(); ctx2.translate(cx, cy + feet); if (m.tilt) ctx2.rotate(-m.tilt); if (m.scale !== 1) ctx2.scale(m.scale, m.scale);
     ctx2.globalAlpha = Math.max(0, Math.min(1, m.alpha * Math.min(1, m.light))); ctx2.drawImage(sp, ox, oy);
     // V1831 C 사용자: 조명이 비추면 두더지가 그 칸 색 빛으로 물듦(두더지 모양 안에만 색을 칠해 덧씌움)
-    const glow = m.lit * m.alpha; if (glow > .02) { tintCtx.globalCompositeOperation = 'copy'; tintCtx.globalAlpha = 1; tintCtx.drawImage(sp, 0, 0); tintCtx.globalCompositeOperation = 'source-atop'; tintCtx.fillStyle = LANE_COLORS[m.lane]; tintCtx.fillRect(0, 0, spriteW, spriteH); ctx2.globalCompositeOperation = 'lighter'; ctx2.globalAlpha = Math.min(1, glow * .28); ctx2.drawImage(tintC, ox, oy); }
+    const glow = m.lit * m.alpha; if (glow > .02) { tintCtx.globalCompositeOperation = 'copy'; tintCtx.globalAlpha = 1; tintCtx.drawImage(sp, 0, 0); tintCtx.globalCompositeOperation = 'source-atop'; tintCtx.fillStyle = m.color; tintCtx.fillRect(0, 0, spriteW, spriteH); ctx2.globalCompositeOperation = 'lighter'; ctx2.globalAlpha = Math.min(1, glow * .28); ctx2.drawImage(tintC, ox, oy); }
     if (m.light > 1) { ctx2.globalCompositeOperation = 'lighter'; ctx2.globalAlpha = Math.min(1, m.alpha * (m.light - 1) * .6); ctx2.drawImage(sp, ox, oy); }
     ctx2.restore();
    }
