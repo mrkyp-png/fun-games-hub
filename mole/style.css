@@ -10644,7 +10644,9 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 #rhythm-screen .rb-status--judge[data-grade=MISS] { --judge-peak:1.15; --judge-rise:0px; }
 /* V1824 C 네온 새 방식 시험판(?neon2=1): 위 원·고리·아래 유리 버튼 숨김(누를 때 기판만), 3D 춤 두더지 + 앞 스포트 */
 .rb-board.rb-dance-mode .rb-note, .rb-board.rb-dance-mode .rb-circuit--hologram, .rb-board.rb-dance-mode .rb-holo-light, .rb-board.rb-dance-mode .rb-mini, .rb-board.rb-dance-mode .rb-perfect-arcs, .rb-board.rb-dance-mode .rb-spawn-ripple,
-.rb-board.rb-dance-mode .rb-circuit--glass, .rb-board.rb-dance-mode .rb-button-core, .rb-board.rb-dance-mode .rb-button-lens, .rb-board.rb-dance-mode .rb-circuit-reflection, .rb-board.rb-dance-mode .rb-pang { display:none !important; }
+.rb-board.rb-dance-mode .rb-button-core, .rb-board.rb-dance-mode .rb-pang, .rb-board.rb-dance-mode .rb-button-lens, .rb-board.rb-dance-mode .rb-circuit-reflection { display:none !important; } /* V1826 C 사용자: 아래 기판 버튼(누를 때)은 나와야 함 — 기판·렌즈·반사는 숨기지 않음 */
 .rb-dancers { position:absolute; left:0; top:0; width:100%; height:calc(100% * 936 / 2078); z-index:5; pointer-events:none; }
 .rb-dance-spot { position:absolute; width:calc(100% * 290 / 952); aspect-ratio:1; translate:-50% -50%; z-index:3; pointer-events:none; opacity:0; border-radius:50%; background:radial-gradient(circle at 50% 55%, color-mix(in srgb, var(--spot-color,#fff) 55%, #fff) 0%, color-mix(in srgb, var(--spot-color,#fff) 70%, transparent) 30%, transparent 68%); }
 .rb-board:not(.rb-dance-mode) .rb-dance-spot { display:none; }
+/* V1826 C 사용자: 새 방식 아래 버튼 = 평소엔 안 보이고(검은 구슬 없음) 누를 때만 기판 */
+.rb-board.rb-dance-mode .rb-circuit--glass:not(.is-pressed), .rb-board.rb-dance-mode .rb-hit--glass .rb-press-face { opacity:0 !important; }

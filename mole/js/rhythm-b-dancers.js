@@ -46,8 +46,16 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
    if (A.Color >= 0) gl.vertexAttrib4f(A.Color, 1, 1, 1, 1);
    model.json.nodes.forEach((n, i) => { if (n.mesh === undefined) return; const h = AP.hairStyle(n); if (n.name !== 'Mole_Clay_Skin' && h !== STYLE) return; for (const p of model.json.meshes[n.mesh].primitives) add(model, p, i, STYLE, null, h === STYLE ? HAIR : null); });
    if (worn) for (const { primitive } of R.instances(worn)) add(worn, primitive, skinNode, null, clothMap);
-   gl.enable(gl.DEPTH_TEST); gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA); ready = true;
+   gl.enable(gl.DEPTH_TEST); gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+   partNodes = [...new Set(parts.map(p => p.node))]; ready = true; warmCache();
   }
+  // V1826 C 사용자: HARD FPS — 춤·대기 자세(뼈 48개)를 1/60초 간격으로 미리 계산해 두고 꺼내 씀(3D 화질 그대로, 매 프레임 계산 없음)
+  let partNodes = []; const poseCache = new Map();
+  function cachedPose(clip, time) {
+   let f = Math.round(time * 60); if (clip === 'Idle') f %= 120; const key = clip + '|' + f; let e = poseCache.get(key); if (e) return e;
+   const ws = AP.pose(rig, clip, f / 60, true, null, f / 60, STYLE); e = new Map(); for (const node of partNodes) e.set(node, { world: ws[node], pal: R.palette(rig, ws, node) }); poseCache.set(key, e); return e;
+  }
+  function warmCache() { const jobs = []; for (let f = 0; f < 120; f++) jobs.push(['Idle', f / 60]); for (const [clip, start] of MOVES) for (let f = 0; f <= 66; f++) jobs.push([clip, start + f / 60]); (function step() { const end = Math.min(jobs.length, 24); for (let i = 0; i < end; i++) { const [c, tm] = jobs.shift(); cachedPose(c, tm); } if (jobs.length) setTimeout(step, 0); })(); }
   const loading = init().catch(e => { failed = true; console.warn('Neon dancers unavailable', e); });
   const LANE_COLORS = ['#3d7bff', '#ff3048', '#ffd21a', '#2be35a', '#a43bff', '#ff2d9a', '#ff8a1c', '#21d6ff', '#c2683a'];
   const hex = c => { const n = parseInt(c.slice(1), 16); return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255]; };
@@ -76,7 +84,7 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
    }
    for (let i = 0; i < 9; i++) { const v = Math.min(1, spotLevel[i]); const s = spots[i]; const o = v.toFixed(2); if (s.style.opacity !== o) { s.style.opacity = o; s.style.setProperty('--spot-color', LANE_COLORS[i]); } }
    if (!ready || failed) return;
-   const bw = board.clientWidth, bh = board.clientHeight, dpr = Math.min(root.devicePixelRatio || 1, 2), ch = bh * 936 / 2078;
+   const bw = board.clientWidth, bh = board.clientHeight, dpr = Math.min(root.devicePixelRatio || 1, 1.5), ch = bh * 936 / 2078;
    const w = Math.round(bw * dpr), h = Math.round(ch * dpr); if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
    gl.viewport(0, 0, w, h); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); if (!list.length) return;
    const cell = 300 / 952 * w, cam = R.lookAt([0, 1.2, 8], [0, 1.1, 0]);
@@ -85,9 +93,10 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
     gl.clear(gl.DEPTH_BUFFER_BIT);
     const P = R.identity(), ppu = cell / 3.2; P[0] = 2 * ppu / w; P[5] = 2 * ppu / h; P[10] = -2 / 50; P[12] = 2 * cx / w - 1; P[13] = 2 * cy / h - 1; /* 카메라 기준점(두더지 몸 가운데 높이)을 칸 가운데에 */
     gl.uniformMatrix4fv(U.VP, false, R.multiply(P, cam));
-    const ws = AP.pose(rig, m.clip, m.time, true, null, m.time, STYLE), inst = R.multiply(R.transform({ rotation: [0, 0, Math.sin(m.tilt / 2), Math.cos(m.tilt / 2)] }), R.transform({ scale: [.78 * m.scale, .78 * m.scale, .78 * m.scale] }));
+    const pose = cachedPose(m.clip, m.time), inst = R.multiply(R.transform({ rotation: [0, 0, Math.sin(m.tilt / 2), Math.cos(m.tilt / 2)] }), R.transform({ scale: [.78 * m.scale, .78 * m.scale, .78 * m.scale] }));
     gl.uniform1f(U.Light, m.light); gl.uniform1f(U.Alpha, m.alpha); gl.uniform3fv(U.Tint, hex(LANE_COLORS[m.lane]));
-    for (const pt of parts) { gl.bindVertexArray(pt.vao); const mm = R.multiply(inst, ws[pt.node]), b = R.palette(rig, ws, pt.node); gl.uniformMatrix4fv(U.Model, false, mm); gl.uniformMatrix3fv(U.Normal, false, R.normals(mm)); gl.uniform4fv(U.Color, pt.color); gl.uniform1i(U.Skin, !!b); if (b) gl.uniformMatrix4fv(U.Bones, false, b); gl.drawElements(gl.TRIANGLES, pt.count, gl.UNSIGNED_INT, 0); }
+    let lastNode = -1;
+    for (const pt of parts) { gl.bindVertexArray(pt.vao); if (pt.node !== lastNode) { lastNode = pt.node; const e = pose.get(pt.node), mm = R.multiply(inst, e.world); gl.uniformMatrix4fv(U.Model, false, mm); gl.uniformMatrix3fv(U.Normal, false, R.normals(mm)); gl.uniform1i(U.Skin, !!e.pal); if (e.pal) gl.uniformMatrix4fv(U.Bones, false, e.pal); } gl.uniform4fv(U.Color, pt.color); gl.drawElements(gl.TRIANGLES, pt.count, gl.UNSIGNED_INT, 0); }
    }
   }
   return { render, hit, miss, clear, loading, ready: () => ready };

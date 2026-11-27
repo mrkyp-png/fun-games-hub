@@ -125,7 +125,7 @@
   const perfectArcs=Array.from({length:9},(_,lane)=>{const el=document.createElement('span');el.className='rb-perfect-arcs';el.setAttribute('aria-hidden','true');el.style.left=((176+(lane%3)*300)/952*100)+'%';el.style.top=((176+Math.floor(lane/3)*300)/2078*100)+'%';el.style.setProperty('--arc-color',colors[lane]);el.innerHTML='<i></i><i></i>';board.appendChild(el);return el;});
   const perfectArcAnimations=perfectArcs.map(el=>Array.from(el.children,(node,index)=>{const a=node.animate([{transform:'rotate('+(index?110:-70)+'deg) scale(.45)',opacity:0},{transform:'rotate('+(index?150:-110)+'deg) scale(1)',opacity:.9,offset:.22},{transform:'rotate('+(index?190:-150)+'deg) scale(1.18)',opacity:0}],{duration:460,easing:'ease-out',fill:'none'});a.pause();a.currentTime=0;return a;}));
   function successEffect(n,t,grade){
-   {const dz=dancersOn();if(dz)dz.hit(n,grade,t);}
+   {const dz=dancersOn();if(dz){dz.hit(n,grade,t);const wave=spaceWaves[n.lane];if(wave&&!spaceReduced.matches){if(waveAnimations[n.lane])waveAnimations[n.lane].cancel();waveAnimations[n.lane]=animateEffect(wave,[{transform:'scale(.08)',opacity:0,offset:0},{transform:'scale(.3)',opacity:.9,offset:.2},{transform:'scale(1)',opacity:0,offset:1}],420);}return;}} /* V1826 C: 새 방식은 숨겨진 예전 캐릭터 날리기·고리 계산 안 함 */
    ensureNoteVisual(n);placeNote(n,(t-n.spawnTime)/rules.diffs[state.diff].travel);
    n.ring.hidden=true;n.el.classList.add('is-hit-out');showNoteVisual(n);
    const wave=spaceWaves[n.lane];if(wave&&!spaceReduced.matches){if(waveAnimations[n.lane])waveAnimations[n.lane].cancel();waveAnimations[n.lane]=animateEffect(wave,[{transform:'scale(.08)',opacity:0,offset:0},{transform:'scale(.3)',opacity:.9,offset:.2},{transform:'scale(1)',opacity:0,offset:1}],420);}
@@ -308,12 +308,13 @@
     const n=state.notes[id];if(state.ended)break;
     if(n.state!=='pending')continue;
     if(t>n.targetTime+D.judge.goodMs/1000){miss(n);continue;}
+    if(DANCE_MODE){if(t<n.spawnTime&&state.renderOrdered)break;continue;}/* V1826 C: 새 방식은 예전 고리·캐릭터 위치 계산 생략(두더지는 dancers 가 그림) */
     if(t>=n.spawnTime){const appearing=!n.visualActive;ensureNoteVisual(n);if(appearing&&opts.onNoteSpawn)opts.onNoteSpawn(n.lane);placeNote(n,(t-n.spawnTime)/D.travel);if(appearing)showNoteVisual(n);}else if(state.renderOrdered)break;
    }
    while(state.renderCursor<state.notes.length&&state.notes[state.renderCursor].state!=='pending')state.renderCursor++;
    const goodWindow=D.judge.goodMs/1000;
    for(let lane=0;lane<9;lane++){const notes=state.notesByLane[lane];let cursor=state.laserCursors[lane];while(cursor<notes.length&&(notes[cursor].state!=='pending'||t>notes[cursor].targetTime+goodWindow))cursor++;state.laserCursors[lane]=cursor;}
-    if(!state.ended&&t>=0)updateCues(t);
+    if(!state.ended&&t>=0&&!DANCE_MODE)updateCues(t);
    {const dz=dancersOn();if(dz&&!state.ended)dz.render(t,state.notes,state.renderCursor,state.bpm);}
    if(!state.ended&&t>=state.duration)finish(true);
    if(!state.ended)frame=requestAnimationFrame(tick);
