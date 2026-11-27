@@ -158,7 +158,7 @@
     return modelPromise;
   }
   // V1819 C 사용자: 브금 첫 바퀴 끝 무렵 좌우에서 가시머리(타임 키퍼)·파마머리(세이프 찬스)가 걸어와 모히칸 뒤 좌우에 서고, 두 번째 바퀴부터 같이 춤
-  const AP=root.MoleGame.MoleAppearances,FRIENDS=[{style:'spiky',costume:'hold-time',side:-1},{style:'curly',costume:'safe-chance',side:1}];
+  const AP=root.MoleGame.MoleAppearances,FRIENDS=[{style:'spiky',costume:'hold-time',side:-1,hair:[.80,.02,.02,1]},{style:'curly',costume:'safe-chance',side:1,hair:[.02,.12,.85,1]}]; // 사용자: 머리색 가시=빨강, 파마=파랑 원색(이 화면만)
   function loadFriends(){return Promise.all([fetch(modelURL).then(r=>{if(!r.ok)throw Error('friends '+r.status);return r.arrayBuffer();}).then(R.parseGLB).then(m=>AP.prepare(m,FRIENDS.map(f=>f.style))),...FRIENDS.map(f=>AP.wornCostume(f.costume))]).catch(error=>{console.warn('Rhythm stage friends unavailable',error);return null;});}
   function prepare(){return Promise.all([loadModel(),AP.arcadeRepair(),loadFriends()]);}
   function makeRenderer(model,costume,friends){
@@ -209,13 +209,15 @@ frag=vec4(pow(clamp(color,0.,1.),vec3(1./2.2)),1.);}`;
       gl.enableVertexAttribArray(A[name]);gl.vertexAttribPointer(A[name],width,gl.FLOAT,false,0,0);
     }
     const parts=[];
-    function addPart(source,primitive,index,style,list=parts,jointMap=null){
+    function addPart(source,primitive,index,style,list=parts,jointMap=null,dropJoint=-1){
         const vao=gl.createVertexArray();vaos.push(vao);gl.bindVertexArray(vao);
         for(const [name,key,width] of [['Position','POSITION',3],['Normal','NORMAL',3],['Color','COLOR_0',4],['Joints','JOINTS_0',4],['Weights','WEIGHTS_0',4]]){
           const accessor=primitive.attributes[key];
           if(accessor!==undefined)attribute(name,jointMap&&name==='Joints'?Float32Array.from(R.accessor(source,accessor),v=>jointMap[v]??v):style&&name==='Color'?(AP.vertexColors(source,primitive,style)||R.accessor(source,accessor)):R.accessor(source,accessor),source.json.accessors[accessor].type==='VEC3'?3:width);
         }
-        const indices=primitive.indices!==undefined?R.accessor(source,primitive.indices):null;
+        let indices=primitive.indices!==undefined?R.accessor(source,primitive.indices):null;
+        // 사용자: 타입 선택 화면 파마머리는 안경 없음 → 머리 뼈에 붙은 높은 점(고글)이 있는 삼각형 빼기(목깃은 남김)
+        if(indices&&dropJoint>=0){const P=R.accessor(source,primitive.attributes.POSITION),J=R.accessor(source,primitive.attributes.JOINTS_0),Wt=R.accessor(source,primitive.attributes.WEIGHTS_0),gone=v=>{let b=0;for(let q=1;q<4;q++)if(Wt[v*4+q]>Wt[v*4+b])b=q;return J[v*4+b]===dropJoint&&P[v*3+1]>1.95;},keep=[];for(let t=0;t<indices.length;t+=3)if(!gone(indices[t])&&!gone(indices[t+1])&&!gone(indices[t+2]))keep.push(indices[t],indices[t+1],indices[t+2]);indices=keep;}
         if(indices){const buffer=gl.createBuffer();buffers.push(buffer);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,buffer);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint32Array(indices),gl.STATIC_DRAW);}
         const material=source.json.materials?.[primitive.material];
         list.push({vao,node:index,indexed:!!indices,count:indices?indices.length:source.json.accessors[primitive.attributes.POSITION].count,
@@ -235,8 +237,8 @@ frag=vec4(pow(clamp(color,0.,1.),vec3(1./2.2)),1.);}`;
       // 사용자: 세이프 찬스 조끼가 팔 올릴 때 늘어남 → 옷(소매 없음)은 팔 뼈 대신 몸통 뼈를 따라감
       const jn=skin2>=0?model2.json.skins[model2.json.nodes[skin2].skin].joints.map(n=>model2.json.nodes[n].name):[],bodyJ=jn.indexOf('Body'),clothMap=bodyJ<0?null:jn.map((name,i)=>/^(UpperArm|Forearm|Hand|Finger|Thumb|Armpit)/.test(name)?bodyJ:i);
       FRIENDS.forEach((f,k)=>{const list=friendParts[f.style]=[];
-        model2.json.nodes.forEach((node,index)=>{if(node.mesh===undefined)return;const hair=AP.hairStyle(node);if(node.name!=='Mole_Clay_Skin'&&hair!==f.style)return;for(const primitive of model2.json.meshes[node.mesh].primitives)addPart(model2,primitive,index,f.style,list);});
-        if(worn[k]&&skin2>=0)for(const {primitive} of R.instances(worn[k]))addPart(worn[k],primitive,skin2,null,list,clothMap);});
+        model2.json.nodes.forEach((node,index)=>{if(node.mesh===undefined)return;const hair=AP.hairStyle(node);if(node.name!=='Mole_Clay_Skin'&&hair!==f.style)return;for(const primitive of model2.json.meshes[node.mesh].primitives){addPart(model2,primitive,index,f.style,list);if(hair===f.style&&f.hair)list[list.length-1].color=f.hair;}});
+        if(worn[k]&&skin2>=0)for(const {primitive} of R.instances(worn[k]))addPart(worn[k],primitive,skin2,null,list,clothMap,f.style==='curly'?jn.indexOf('Head'):-1);});
     }
     const shadow=gl.createVertexArray();vaos.push(shadow);gl.bindVertexArray(shadow);
     attribute('Position',new Float32Array([-.85,.002,-.48,.85,.002,-.48,.85,.002,.48,-.85,.002,-.48,.85,.002,.48,-.85,.002,.48]),3);
@@ -307,7 +309,7 @@ frag=vec4(pow(clamp(color,0.,1.),vec3(1./2.2)),1.);}`;
   const FRIEND_WALK=4.5,FRIEND_IN=5.5,FRIEND_X=1.85,FRIEND_Z=-1.5,FRIEND_FROM=4.3;
   function songClock(time){const audio=document.getElementById('rhythm-entry-bgm');if(audio&&!audio.paused&&Number.isFinite(audio.currentTime))return {t:audio.currentTime,loops:musicLoops};return {t:time%beatMap.duration,loops:Math.floor(time/beatMap.duration)};}
   function friendState(time,side,main){
-    const c=songClock(time),scale=.78*.95,/* 사용자: 뒤 두더지 = 앞 두더지의 95% */home={x:side*FRIEND_X,z:FRIEND_Z,scale};
+    const c=songClock(time),scale=.78*.95*.9,/* 사용자: 뒤 두더지 = 앞의 95% → 10% 더 작게 */home={x:side*FRIEND_X,z:FRIEND_Z,scale};
     if(c.loops>=1)return main.phase==='dance'?{...home,phase:'dance',heading:0,clip:main.clip,clipTime:main.clipTime}:{...home,phase:'idle',heading:0,clip:'Idle',clipTime:time};
     const start=beatMap.duration-FRIEND_IN;if(c.t<start)return null;
     const k=(c.t-start)/FRIEND_WALK;

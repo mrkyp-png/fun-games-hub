@@ -166,7 +166,8 @@
 // V1817 C: difficulty X in card, lyrics short-gap hold, skill press sink.
 // V1818 C: type-select 4 colored stage lights (2 beside camera hole).
 // V1819 C: type-select dancing friends (spiky/curly), soft floor-limited stage light.
-const CACHE = 'mole-game-v1819-C';
+// V1820 C: style/script keep fetching on timeout (no old buttons), friend tweaks.
+const CACHE = 'mole-game-v1820-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
@@ -1203,6 +1204,10 @@ self.addEventListener('fetch', (e) => {
       if (cached) return cached;
       // V1333 C: 순간 네트워크 실패(동시 요청 한도 등)로 그림이 깨진 채 남지 않게 0.4초 뒤 한 번 더 받아 본다
       // 오프라인 + 캐시에 없음. undefined 를 반환하면 브라우저가 "인터넷 연결 없음" 페이지를 띄우므로 금지.
+      // V1820 C 사용자: 새 버전 직후(저장본 비어 있음) 버튼 모양 css 가 5초를 넘기면 빠진 채로 떠서 몇 달 전 버튼이 보였음 → 코드·모양 파일은 포기하지 말고 끝까지 받음
+      if (e.request.destination === 'style' || e.request.destination === 'script') {
+        try { return await fetch(e.request, { cache: 'no-store' }); } catch (_) { return Response.error(); }
+      }
       if (e.request.mode === 'navigate') {
         const fallback = (await caches.match('./index.html')) || (await caches.match('./'));
         if (fallback) return fallback;
