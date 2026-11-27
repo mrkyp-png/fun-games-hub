@@ -60,7 +60,7 @@
   // V 1155 G: visual slots are reusable; chart notes and judgement remain independent.
   // V1824 C 네온 새 방식 시험판(?neon2=1): 위 판 3D 춤 두더지 + 앞 스포트. 판정·채보는 그대로
   /* V1825 C 사용자: 새 방식이 기본. 예전 방식으로 되돌리려면 DANCE_MODE 를 false 로(주소 ?neon2=0 이면 예전 방식) */
-  const DANCE_MODE=!/[?&]neon2=0\b/.test(root.location.search);let dancers=null;
+  const DANCE_MODE=!/[?&]neon2=0\b/.test(root.location.search);let dancers=null;if(DANCE_MODE)board.classList.add('rb-dance-mode');/* V1827 C 사용자: 게임 진입 때 예전 색 원·검은 원이 잠깐 보임 → 판이 만들어질 때부터 새 방식 표시 */
   function dancersOn(){if(!DANCE_MODE)return null;if(!dancers&&MG.RhythmBDancers){dancers=MG.RhythmBDancers.create(board);board.classList.add('rb-dance-mode');}return dancers;}
   const notePools=Array.from({length:9},()=>[]),visibleNotes=[];
   function createNoteVisual(lane){
@@ -315,12 +315,12 @@
    const goodWindow=D.judge.goodMs/1000;
    for(let lane=0;lane<9;lane++){const notes=state.notesByLane[lane];let cursor=state.laserCursors[lane];while(cursor<notes.length&&(notes[cursor].state!=='pending'||t>notes[cursor].targetTime+goodWindow))cursor++;state.laserCursors[lane]=cursor;}
     if(!state.ended&&t>=0&&!DANCE_MODE)updateCues(t);
-   {const dz=dancersOn();if(dz&&!state.ended)dz.render(t,state.notes,state.renderCursor,state.bpm);}
+   {const dz=dancersOn();if(dz&&!state.ended)dz.render(t,state.notes,state.renderCursor,state.bpm,state.combo);}
    if(!state.ended&&t>=state.duration)finish(true);
    if(!state.ended)frame=requestAnimationFrame(tick);
   }
   async function start(diff,options){
-   stop();const token=generation;error.hidden=true;label('LOADING');startShade.hidden=false;startShade.style.opacity='.9';
+   stop();dancersOn();/* V1827 C 사용자: 시작할 때 예전 원이 잠깐 보이던 것 — 새 방식 표시를 시작 즉시 켬 */const token=generation;error.hidden=true;label('LOADING');startShade.hidden=false;startShade.style.opacity='.9';
    state={diff,practice:!!(options&&options.practice),notes:[],score:0,combo:0,maxCombo:0,cnt:{PERFECT:0,GREAT:0,GOOD:0,MISS:0},paused:false,ended:false,loading:true,t0:Infinity,lat:0,count:null,startPhase:-1,renderCursor:0,renderOrdered:true,pressCursors:Array(9).fill(0),laserCursors:Array(9).fill(0),activeVisualsByLane:Array(9).fill(0)};updateHud();
    try{
     const [data]=await Promise.all([opts.loadSong(),opts.prepareAssets?opts.prepareAssets():Promise.resolve()]);if(token!==generation)return false;

@@ -3,14 +3,40 @@
 (function (root) {
  'use strict';
  const MG = root.MoleGame = root.MoleGame || {};
- const LEAD = .5, MISS_OUT = .3, STYLE = 'spiky', COSTUME = 'hold-time', HAIR = [.80, .02, .02, 1];
+ const LEAD = .5, MISS_OUT = .3, SIZE = .78 * .9 /* V1827 C 사용자: 두더지 조금 작게(발 위치는 그대로) */, STYLE = 'spiky', COSTUME = 'hold-time', HAIR = [.80, .02, .02, 1];
  // 춤 조각: [클립, 시작 시각] — 0.45초 동안 2배 빠르게(0.9초 분량)
  const MOVES = [['DanceFreestyle', 1.0], ['DanceFreestyle', 6.0], ['DanceArmWave', 1.0], ['DanceHop', .5], ['DanceTwist', .5], ['DanceRobot', .5]]; // 시작 = 춤 박자 정수(클립 0.5초 = 1박)
  function create(board) {
   const canvas = document.createElement('canvas'); canvas.className = 'rb-dancers'; canvas.setAttribute('aria-hidden', 'true'); board.appendChild(canvas);
   const spots = Array.from({ length: 9 }, (_, lane) => { const el = document.createElement('i'); el.className = 'rb-dance-spot'; el.setAttribute('aria-hidden', 'true');
    el.style.left = ((26 + (lane % 3) * 300 + 150) / 952 * 100) + '%'; el.style.top = ((26 + Math.floor(lane / 3) * 300 + 150) / 2078 * 100) + '%'; board.appendChild(el); return el; });
-  let gl = null, ready = false, R = null, AP = null, rig = null, parts = [], U = {}, A = {}, failed = false, lastMove = -1;
+  // V1827 C 사용자 에셋 ①②③: 무대 바닥 자국(위 9칸)·아래 칸 옅은 선, 위쪽 무대 조명 기구, 콤보 단계별 무대(10 빛줄기·30 연기·50 쓸기)
+  const LIGHTS = 'assets/rhythm/type-lights-v1791/';
+  const floors = Array.from({ length: 9 }, (_, lane) => { const el = document.createElement('i'); el.className = 'rb-stage-floor'; el.setAttribute('aria-hidden', 'true');
+   el.style.left = ((26 + (lane % 3) * 300 + 150) / 952 * 100) + '%'; el.style.top = ((26 + Math.floor(lane / 3) * 300 + 262) / 2078 * 100) + '%'; el.style.backgroundImage = 'url("assets/rhythm-b/circuit-rim-' + lane + '.svg")'; /* V1827 C 사용자: 발판 = 아래 기판 버튼 그림을 눕힌 것 */ board.appendChild(el); return el; });
+  const grid = document.createElement('div'); grid.className = 'rb-stage-grid'; grid.setAttribute('aria-hidden', 'true'); for (let i = 0; i < 9; i++) grid.appendChild(document.createElement('i')); board.appendChild(grid);
+  const haze = document.createElement('div'); haze.className = 'rb-stage-haze'; haze.setAttribute('aria-hidden', 'true'); board.appendChild(haze);
+  const FIX = [[.10, '#4fd8ff', -14], [.30, '#ff5cc8', 8], [.50, '#b48cff', -6], [.70, '#ff5cc8', 12], [.90, '#4fd8ff', -10]];
+  const fixtures = FIX.map(([x, color, aim], i) => {
+   const beam = document.createElement('i'); beam.className = 'rb-stage-beam'; beam.setAttribute('aria-hidden', 'true'); beam.style.left = (x * 100) + '%'; beam.style.setProperty('--beam-color', color); beam.style.setProperty('--beam-aim', aim + 'deg'); beam.style.setProperty('--beam-delay', (-i * .7) + 's'); board.appendChild(beam);
+   const fix = document.createElement('i'); fix.className = 'rb-stage-fixture'; fix.setAttribute('aria-hidden', 'true'); fix.style.left = (x * 100) + '%'; fix.style.setProperty('--beam-aim', aim + 'deg'); fix.style.setProperty('--beam-delay', (-i * .7) + 's'); fix.style.setProperty('--lights', 'url("' + LIGHTS + 'mount.webp?v=1791-C")'); fix.style.setProperty('--heads', 'url("' + LIGHTS + 'heads-six-poses.webp?v=1791-C")'); board.appendChild(fix);
+   beam.style.setProperty('--beams', 'url("' + LIGHTS + 'beams-four.webp?v=1791-C")'); return { beam, fix, x, aim, angle: null, op: null };
+  });
+  // V1827 C 사용자: 조명은 나타난 두더지를 비췄다가 두더지가 사라지면 꺼짐 — 두더지마다 가까운 빈 조명이 고개를 돌려 비춤
+  function aimFixtures(t, targets) {
+   const bw = board.clientWidth, bh = board.clientHeight; if (!bw) return; const used = new Set(), want = new Map();
+   targets.sort((a, b) => b.level - a.level);
+   for (const tg of targets) { const cx = (26 + (tg.lane % 3) * 300 + 150) / 952 * bw; let best = -1, bd = 1e9; fixtures.forEach((f, i) => { if (used.has(i)) return; const d = Math.abs(f.x * bw - cx); if (d < bd) { bd = d; best = i; } }); if (best < 0) break; used.add(best); const py = (26 + Math.floor(tg.lane / 3) * 300 + 262) / 2078 * bh, ay = -.0044 * bh, dx = cx - fixtures[best].x * bw, dy = py - ay; want.set(best, { angle: -Math.atan2(dx, dy) * 180 / Math.PI, op: tg.level, len: Math.hypot(dx, dy) / .757 }); } /* V1827 C 사용자: 조명 렌즈 = 빛 꼭짓점, 빛 끝 = 두더지 발판(바닥 자국) */
+   fixtures.forEach((f, i) => { const w = want.get(i), angle = w ? w.angle : f.aim + 10 * Math.sin(t * .8 + i * 1.7), op = w ? w.op : 0;
+    const a = angle.toFixed(1) + 'deg', o = op.toFixed(2); if (f.angle !== a) { f.angle = a; f.beam.style.rotate = a; f.fix.style.rotate = a; } if (f.op !== o) { f.op = o; f.beam.style.opacity = o; } if (w) { const L = Math.round(w.len) + 'px'; if (f.len !== L) { f.len = L; f.beam.style.height = L; } } });
+  }
+  let shownStage = -1, gridKey = '';
+  function stageFor(combo) { return combo >= 50 ? 3 : combo >= 30 ? 2 : combo >= 10 ? 1 : 0; }
+  function layoutGrid() {
+   const br = board.getBoundingClientRect(), hits = board.querySelectorAll('.rb-hit'); if (!br.width || hits.length < 9) return;
+   const key = br.width + 'x' + br.height; if (key === gridKey) return; gridKey = key;
+   hits.forEach((h, i) => { const r = h.getBoundingClientRect(), c = grid.children[i]; c.style.left = ((r.left - br.left) / br.width * 100) + '%'; c.style.top = ((r.top - br.top) / br.height * 100) + '%'; c.style.width = (r.width / br.width * 100) + '%'; c.style.height = (r.height / br.height * 100) + '%'; });
+  }  let gl = null, ready = false, R = null, AP = null, rig = null, parts = [], U = {}, A = {}, failed = false, lastMove = -1;
   const live = new Map(); // note id -> {n, lane, move, hitAt, grade, missAt}
   async function init() {
    R = root.StudioRig; AP = MG.MoleAppearances; const TM = MG.RhythmTypeMole;
@@ -65,15 +91,16 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
   const chordMoves = new Map();
   function hit(n, grade, t) { const d = track(n); d.hitAt = t; d.grade = grade; const key = n.targetTime.toFixed(3); if (!chordMoves.has(key)) chordMoves.set(key, pickMove(n)); d.move = chordMoves.get(key); }
   function miss(n, t) { const d = track(n); d.missAt = t; }
-  function clear() { live.clear(); chordMoves.clear(); spots.forEach(s => { s.style.opacity = '0'; }); if (gl) { gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); } }
+  function clear() { shownStage = -1; board.dataset.danceStage = '0'; live.clear(); chordMoves.clear(); spots.forEach(s => { s.style.opacity = '0'; }); if (gl) { gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); } }
   const ease = x => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
   // 매 프레임: 다가오는 노트(박자 0.5초 전부터)·춤추는 노트를 그림
   // V1824 C 사용자: 춤 빠르기를 곡 박자에 맞춤 — 맞힌 뒤 1박 동안 춤 2박 분량을 재생(튕기는 순간이 박자에 떨어짐)
-  function render(t, notes, renderCursor, bpm) {
+  function render(t, notes, renderCursor, bpm, combo) {
+   { const st = stageFor(combo || 0); if (st !== shownStage) { shownStage = st; board.dataset.danceStage = String(st); } layoutGrid(); }
    const beat = 60 / (bpm || 120), danceLen = Math.max(.32, Math.min(.55, beat)), rate = 1 / beat;
    for (let id = renderCursor; id < notes.length; id++) { const n = notes[id]; if (n.targetTime - LEAD > t) break; if (n.state === 'pending') track(n); }
    const spotLevel = new Float32Array(9);
-   const list = [];
+   const list = [], targets = [];
    for (const [id, d] of live) {
     const n = d.n; let alpha, light, clip = 'Idle', time = 0, scale = 1, tilt = 0;
     if (d.hitAt != null) { const k = (t - d.hitAt) / danceLen; if (k >= 1) { live.delete(id); continue; } const mv = MOVES[d.move]; clip = mv[0]; time = mv[1] + (t - d.hitAt) * rate; alpha = 1 - ease((k - .2) / .8); light = 1.15; scale = 1 + .08 * Math.sin(Math.min(1, k * 2) * Math.PI); spotLevel[d.lane] = Math.max(spotLevel[d.lane], 1 - k); }
@@ -81,8 +108,10 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
     else if (n.state === 'pending') { const u = ease((t - (n.targetTime - LEAD)) / LEAD); alpha = .35 + .65 * u; light = .35 + .8 * Math.max(0, 1 - Math.abs(t - n.targetTime) / .12) * .9 + .25 * u; time = t; spotLevel[d.lane] = Math.max(spotLevel[d.lane], .18 + .5 * u + (Math.abs(t - n.targetTime) < .1 ? .4 : 0)); }
     else { live.delete(id); continue; }
     list.push({ lane: d.lane, alpha, light, clip, time, scale, tilt });
+    targets.push({ lane: d.lane, level: d.hitAt != null ? .55 * alpha : d.missAt != null ? .15 * alpha : (.18 + .32 * Math.max(0, (t - (n.targetTime - LEAD)) / LEAD) + (Math.abs(t - n.targetTime) < .1 ? .2 : 0)) });
    }
-   for (let i = 0; i < 9; i++) { const v = Math.min(1, spotLevel[i]); const s = spots[i]; const o = v.toFixed(2); if (s.style.opacity !== o) { s.style.opacity = o; s.style.setProperty('--spot-color', LANE_COLORS[i]); } }
+   for (let i = 0; i < 9; i++) { const v = Math.min(1, spotLevel[i]); const s = spots[i]; const o = v.toFixed(2); if (s.style.opacity !== o) { s.style.opacity = o; s.style.setProperty('--spot-color', LANE_COLORS[i]); floors[i].style.setProperty('--lit', o); } }
+   aimFixtures(t, targets);
    if (!ready || failed) return;
    const bw = board.clientWidth, bh = board.clientHeight, dpr = Math.min(root.devicePixelRatio || 1, 1.5), ch = bh * 936 / 2078;
    const w = Math.round(bw * dpr), h = Math.round(ch * dpr); if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
@@ -93,10 +122,12 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
     gl.clear(gl.DEPTH_BUFFER_BIT);
     const P = R.identity(), ppu = cell / 3.2; P[0] = 2 * ppu / w; P[5] = 2 * ppu / h; P[10] = -2 / 50; P[12] = 2 * cx / w - 1; P[13] = 2 * cy / h - 1; /* 카메라 기준점(두더지 몸 가운데 높이)을 칸 가운데에 */
     gl.uniformMatrix4fv(U.VP, false, R.multiply(P, cam));
-    const pose = cachedPose(m.clip, m.time), inst = R.multiply(R.transform({ rotation: [0, 0, Math.sin(m.tilt / 2), Math.cos(m.tilt / 2)] }), R.transform({ scale: [.78 * m.scale, .78 * m.scale, .78 * m.scale] }));
+    const pose = cachedPose(m.clip, m.time), inst = R.multiply(R.transform({ rotation: [0, 0, Math.sin(m.tilt / 2), Math.cos(m.tilt / 2)] }), R.transform({ scale: [SIZE * m.scale, SIZE * m.scale, SIZE * m.scale] }));
     gl.uniform1f(U.Light, m.light); gl.uniform1f(U.Alpha, m.alpha); gl.uniform3fv(U.Tint, hex(LANE_COLORS[m.lane]));
-    let lastNode = -1;
-    for (const pt of parts) { gl.bindVertexArray(pt.vao); if (pt.node !== lastNode) { lastNode = pt.node; const e = pose.get(pt.node), mm = R.multiply(inst, e.world); gl.uniformMatrix4fv(U.Model, false, mm); gl.uniformMatrix3fv(U.Normal, false, R.normals(mm)); gl.uniform1i(U.Skin, !!e.pal); if (e.pal) gl.uniformMatrix4fv(U.Bones, false, e.pal); } gl.uniform4fv(U.Color, pt.color); gl.drawElements(gl.TRIANGLES, pt.count, gl.UNSIGNED_INT, 0); }
+    // V1827 C 사용자: 사라질 때(반투명) 몸 안쪽 면·뒤쪽 부품이 비쳐 줄무늬로 깨져 보임 → 먼저 깊이만 그려 맨 앞 면만 남기고, 그 면에만 색을 반투명으로 칠함
+    const drawAll = () => { let lastNode = -1;
+     for (const pt of parts) { gl.bindVertexArray(pt.vao); if (pt.node !== lastNode) { lastNode = pt.node; const e = pose.get(pt.node), mm = R.multiply(inst, e.world); gl.uniformMatrix4fv(U.Model, false, mm); gl.uniformMatrix3fv(U.Normal, false, R.normals(mm)); gl.uniform1i(U.Skin, !!e.pal); if (e.pal) gl.uniformMatrix4fv(U.Bones, false, e.pal); } gl.uniform4fv(U.Color, pt.color); gl.drawElements(gl.TRIANGLES, pt.count, gl.UNSIGNED_INT, 0); } };
+    if (m.alpha < .995) { gl.colorMask(false, false, false, false); drawAll(); gl.colorMask(true, true, true, true); gl.depthFunc(gl.LEQUAL); drawAll(); gl.depthFunc(gl.LESS); } else drawAll();
    }
   }
   return { render, hit, miss, clear, loading, ready: () => ready };

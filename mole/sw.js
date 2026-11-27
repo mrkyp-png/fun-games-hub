@@ -173,7 +173,8 @@
 // V1824 C: neon dancing-mole prototype (?neon2=1).
 // V1825 C: neon dancing-mole mode is now the default (?neon2=0 = old).
 // V1826 C: lighter neon dance mode, pressed pads visible.
-const CACHE = 'mole-game-v1826-C';
+// V1827 C: neon dance stage lights, pads, combo stage.
+const CACHE = 'mole-game-v1827-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.

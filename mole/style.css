@@ -10649,4 +10649,37 @@ img[src$="/ticket-single.webp"] { object-fit: contain !important; object-positio
 .rb-dance-spot { position:absolute; width:calc(100% * 290 / 952); aspect-ratio:1; translate:-50% -50%; z-index:3; pointer-events:none; opacity:0; border-radius:50%; background:radial-gradient(circle at 50% 55%, color-mix(in srgb, var(--spot-color,#fff) 55%, #fff) 0%, color-mix(in srgb, var(--spot-color,#fff) 70%, transparent) 30%, transparent 68%); }
 .rb-board:not(.rb-dance-mode) .rb-dance-spot { display:none; }
 /* V1826 C 사용자: 새 방식 아래 버튼 = 평소엔 안 보이고(검은 구슬 없음) 누를 때만 기판 */
-.rb-board.rb-dance-mode .rb-circuit--glass:not(.is-pressed), .rb-board.rb-dance-mode .rb-hit--glass .rb-press-face { opacity:0 !important; }
+.rb-board.rb-dance-mode .rb-hit--glass .rb-press-face { opacity:0 !important; }
+.rb-board.rb-dance-mode .rb-circuit--glass:not(.is-pressed) { opacity:.15 !important; } /* 사용자: 아래 버튼 위치가 안 보임 → 위 발판처럼 아주 옅게, 누르면 밝게 */
+/* V1827 C 사용자: 새 방식 — 콤보 배경의 칸 구멍(검은 원) 없앰 */
+.rb-board.rb-dance-mode .rb-combo-background { mask:none !important; -webkit-mask:none !important; }
+/* ① 무대 바닥 자국(위 9칸, 두더지 발밑) · 아래 칸 아주 옅은 선 */
+.rb-stage-floor, .rb-stage-grid, .rb-stage-haze, .rb-stage-beam, .rb-stage-fixture { display:none; }
+.rb-board.rb-dance-mode .rb-stage-floor { display:block; position:absolute; width:calc(100% * 200 / 952); aspect-ratio:3.4; translate:-50% -50%; z-index:2; pointer-events:none; border-radius:50%; background:radial-gradient(closest-side, rgba(120,170,255,.16), rgba(120,170,255,.06) 60%, transparent); box-shadow:0 0 0 1px rgba(140,190,255,.10) inset; }
+.rb-board.rb-dance-mode .rb-stage-grid { display:block; position:absolute; inset:0; z-index:2; pointer-events:none; }
+.rb-stage-grid > i { position:absolute; box-sizing:border-box; border:1px solid rgba(120,190,255,.10); border-radius:14%; }
+/* ② 위쪽 무대 조명 기구(타입 선택 화면 조명 그림 재사용) */
+.rb-board.rb-dance-mode .rb-stage-fixture { display:block; position:absolute; top:0; width:calc(100% * 56 / 952); aspect-ratio:1; translate:-50% -88%; z-index:6; /* 사용자: 조명은 테두리 쪽으로 더 붙임 */ pointer-events:none; background:var(--heads) 50% 100% / 300% 200% no-repeat; filter:brightness(.55); transition:filter .4s; }
+.rb-board.rb-dance-mode[data-dance-stage]:not([data-dance-stage="0"]) .rb-stage-fixture { filter:brightness(1.05) drop-shadow(0 4px 6px rgba(255,255,255,.35)); }
+/* ③ 콤보 무대: 10 빛줄기 켬, 30 연기, 50 빛줄기가 무대를 쓸고 다님 */
+.rb-board.rb-dance-mode .rb-stage-beam { display:block; position:absolute; top:0%; width:calc(100% * 230 / 952); height:calc(100% * 900 / 2078); translate:-52.7% -16%; transform-origin:52.7% 16%; /* V1827 C 사용자: 빛줄기 꼭짓점(그림 위 16%·가로 52.7%)을 조명 렌즈에 붙임 */ rotate:var(--beam-aim); z-index:1; pointer-events:none; background:var(--beam-color); mask:var(--beams) 0 0 / 200% 200% no-repeat; -webkit-mask:var(--beams) 0 0 / 200% 200% no-repeat; mix-blend-mode:screen; opacity:0; transition:opacity .45s; }
+.rb-board.rb-dance-mode[data-dance-stage="1"] .rb-stage-beam { opacity:.22; }
+.rb-board.rb-dance-mode[data-dance-stage="2"] .rb-stage-beam { opacity:.30; }
+.rb-board.rb-dance-mode[data-dance-stage="3"] .rb-stage-beam { opacity:.36; }
+/* V1827 C 사용자: 조명은 늘 각도를 바꿔 움직임(고정 금지) — 조명 기구 머리와 빛줄기가 같이 돎, 50콤보는 더 빠르고 넓게 */
+.rb-board.rb-dance-mode .rb-stage-beam, .rb-board.rb-dance-mode .rb-stage-fixture { animation:rb-beam-sweep 3.2s ease-in-out var(--beam-delay) infinite alternate; }
+.rb-board.rb-dance-mode .rb-stage-fixture { transform-origin:50% 0%; }
+.rb-board.rb-dance-mode[data-dance-stage="3"] .rb-stage-beam, .rb-board.rb-dance-mode[data-dance-stage="3"] .rb-stage-fixture { animation:rb-beam-sweep-wide 1.6s ease-in-out var(--beam-delay) infinite alternate; }
+@keyframes rb-beam-sweep { from { rotate:calc(var(--beam-aim) - 16deg); } to { rotate:calc(var(--beam-aim) + 16deg); } }
+@keyframes rb-beam-sweep-wide { from { rotate:calc(var(--beam-aim) - 26deg); } to { rotate:calc(var(--beam-aim) + 26deg); } }
+.rb-board.rb-dance-mode .rb-stage-haze { display:block; position:absolute; left:0; right:0; top:0; height:calc(100% * 936 / 2078); z-index:1; pointer-events:none; opacity:0; transition:opacity .8s; background:radial-gradient(ellipse 60% 30% at 20% 30%, rgba(255,92,200,.16), transparent 70%), radial-gradient(ellipse 60% 30% at 80% 55%, rgba(79,216,255,.14), transparent 70%), radial-gradient(ellipse 70% 25% at 50% 85%, rgba(180,140,255,.12), transparent 70%); }
+.rb-board.rb-dance-mode[data-dance-stage="2"] .rb-stage-haze, .rb-board.rb-dance-mode[data-dance-stage="3"] .rb-stage-haze { opacity:1; }
+@media (prefers-reduced-motion: reduce) { .rb-board.rb-dance-mode .rb-stage-beam, .rb-board.rb-dance-mode .rb-stage-fixture { animation:none !important; } }
+/* V1827 C 사용자: 조명 각도·밝기는 두더지를 따라 코드가 정함(자동 흔들기 끔). 콤보 단계는 빛 세기만 키움 */
+.rb-board.rb-dance-mode .rb-stage-beam, .rb-board.rb-dance-mode .rb-stage-fixture { animation:none !important; transition:rotate .12s ease-out, opacity .1s linear; }
+.rb-board.rb-dance-mode[data-dance-stage="1"] .rb-stage-beam { filter:brightness(1.25); } .rb-board.rb-dance-mode[data-dance-stage="2"] .rb-stage-beam { filter:brightness(1.5); } .rb-board.rb-dance-mode[data-dance-stage="3"] .rb-stage-beam { filter:brightness(1.8); }
+/* V1827 C 사용자: 조명 렌즈(머리 그림 가로 50%·세로 71.6%) = 회전 중심 = 빛 꼭짓점(판 위 -0.44%) — 셋이 항상 한 점 */
+.rb-board.rb-dance-mode .rb-stage-fixture { transform-origin:50% 71.6% !important; }
+.rb-board.rb-dance-mode .rb-stage-beam { top:-0.44% !important; }
+/* V1827 C 사용자: 무대 발판 = 아래 기판(팔각 회로판) 그림을 눕힘. 평소 어둡게, 두더지·조명이 오면 밝아짐 */
+.rb-board.rb-dance-mode .rb-stage-floor { width:calc(100% * 230 / 952) !important; aspect-ratio:1 !important; border-radius:0 !important; box-shadow:none !important; background-color:transparent !important; background-position:center !important; background-size:contain !important; background-repeat:no-repeat !important; transform:perspective(500px) rotateX(64deg); opacity:calc(.15 + var(--lit, 0) * .85); filter:brightness(calc(.75 + var(--lit, 0) * .6)); transition:opacity .12s linear, filter .12s linear; /* 사용자: 평소 아주 옅게(15%), 조명 받으면 밝게, 두더지 사라지면 다시 옅게 */ }
