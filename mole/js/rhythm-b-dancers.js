@@ -26,9 +26,9 @@
   function aimFixtures(t, targets) {
    const bw = board.clientWidth, bh = board.clientHeight; if (!bw) return; const used = new Set(), want = new Map();
    targets.sort((a, b) => b.level - a.level);
-   for (const tg of targets) { const cx = (26 + (tg.lane % 3) * 300 + 150) / 952 * bw; let best = -1, bd = 1e9; fixtures.forEach((f, i) => { if (used.has(i)) return; const d = Math.abs(f.x * bw - cx); if (d < bd) { bd = d; best = i; } }); if (best < 0) break; used.add(best); const py = (26 + Math.floor(tg.lane / 3) * 300 + 262) / 2078 * bh, ay = -.0044 * bh, dx = cx - fixtures[best].x * bw, dy = py - ay; want.set(best, { angle: -Math.atan2(dx, dy) * 180 / Math.PI, op: tg.level, len: Math.hypot(dx, dy) / .757 }); } /* V1827 C 사용자: 조명 렌즈 = 빛 꼭짓점, 빛 끝 = 두더지 발판(바닥 자국) */
+   for (const tg of targets) { const cx = (26 + (tg.lane % 3) * 300 + 150) / 952 * bw; let best = -1, bd = 1e9; fixtures.forEach((f, i) => { if (used.has(i)) return; const d = Math.abs(f.x * bw - cx); if (d < bd) { bd = d; best = i; } }); if (best < 0) break; used.add(best); const py = (26 + Math.floor(tg.lane / 3) * 300 + 262) / 2078 * bh, ay = -.0044 * bh, dx = cx - fixtures[best].x * bw, dy = py - ay; want.set(best, { angle: -Math.atan2(dx, dy) * 180 / Math.PI, op: tg.level, len: Math.hypot(dx, dy) / .757, color: LANE_COLORS[tg.lane] }); } /* V1827 C 사용자: 조명 렌즈 = 빛 꼭짓점, 빛 끝 = 두더지 발판(바닥 자국) */
    fixtures.forEach((f, i) => { const w = want.get(i), angle = w ? w.angle : f.aim + 10 * Math.sin(t * .8 + i * 1.7), op = w ? w.op : 0;
-    const a = angle.toFixed(1) + 'deg', o = op.toFixed(2); if (f.angle !== a) { f.angle = a; f.beam.style.rotate = a; f.fix.style.rotate = a; } if (f.op !== o) { f.op = o; f.beam.style.opacity = o; } if (w) { const L = Math.round(w.len) + 'px'; if (f.len !== L) { f.len = L; f.beam.style.height = L; } } });
+    const a = angle.toFixed(1) + 'deg', o = op.toFixed(2); if (f.angle !== a) { f.angle = a; f.beam.style.rotate = a; f.fix.style.rotate = a; } if (f.op !== o) { f.op = o; f.beam.style.opacity = o; } if (w) { const L = Math.round(w.len) + 'px'; if (f.len !== L) { f.len = L; f.beam.style.height = L; } if (f.color !== w.color) { f.color = w.color; f.beam.style.setProperty('--beam-color', w.color); } } }); /* 조명 색 = 비추는 칸 버튼 색 */
   }
   let shownStage = -1, gridKey = '';
   function stageFor(combo) { return combo >= 50 ? 3 : combo >= 30 ? 2 : combo >= 10 ? 1 : 0; }
@@ -83,7 +83,7 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
   }
   function warmCache() { const jobs = []; for (let f = 0; f < 120; f++) jobs.push(['Idle', f / 60]); for (const [clip, start] of MOVES) for (let f = 0; f <= 66; f++) jobs.push([clip, start + f / 60]); (function step() { const end = Math.min(jobs.length, 24); for (let i = 0; i < end; i++) { const [c, tm] = jobs.shift(); cachedPose(c, tm); } if (jobs.length) setTimeout(step, 0); })(); }
   const loading = init().catch(e => { failed = true; console.warn('Neon dancers unavailable', e); });
-  const LANE_COLORS = ['#3d7bff', '#ff3048', '#ffd21a', '#2be35a', '#a43bff', '#ff2d9a', '#ff8a1c', '#21d6ff', '#c2683a'];
+  const LANE_COLORS = ['#086aff', '#ff1529', '#ffc400', '#05e52e', '#a500ff', '#ff0099', '#ff7900', '#00cfff', '#a65121']; // V1828 C 사용자: 아래 버튼 색과 같게
   const hex = c => { const n = parseInt(c.slice(1), 16); return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255]; };
   function pickMove(n) { if (n.danceMove != null) return n.danceMove; let m = Math.floor(Math.random() * MOVES.length); if (m === lastMove) m = (m + 1) % MOVES.length; lastMove = m; return m; }
   function track(n) { if (!live.has(n.id)) live.set(n.id, { n, lane: n.lane, move: -1 }); return live.get(n.id); }
