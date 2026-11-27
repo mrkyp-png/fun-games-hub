@@ -65,8 +65,11 @@
   var images = {}, renderedLights = null;
   var keys = ['stage-dark', 'mount', 'heads-six-poses', 'beams-four', 'stars-eight'];
   var lamps = [
-    { x: 98, y: 98, phase: 0, speed: .27, beam: 0, star: 1 },
-    { x: 842, y: 98, phase: 2.1, speed: .22, beam: 2, star: 3 }
+    { x: 98, y: 98, phase: 0, speed: .27, beam: 0, star: 1, color: '#9be8ff' } /* V1818 C 사용자: 가장자리도 밝은 색(하늘) */,
+    { x: 842, y: 98, phase: 2.1, speed: .22, beam: 2, star: 3, color: '#fff0a0' } /* 밝은 노랑 */,
+    // V1818 C 사용자: 휴대폰 카메라 구멍 양옆(위쪽 가운데)에 2개 추가(분홍·보라). 겹치지 않게 왼쪽 것은 왼쪽 반만(가장 오른쪽=바로 아래), 오른쪽 것은 오른쪽 반만 훑음. 두더지 몸 빛(앞 2개만)은 그대로
+    { x: 437, y: 44, phase: 4.2, speed: .35, beam: 1, star: 1, cx: 287, amp: 150, color: '#ff8fd8' },
+    { x: 504, y: 44, phase: 1.0, speed: .31, beam: 3, star: 3, cx: 654, amp: 150, color: '#c9a6ff' }
   ];
   // Measured on the shipped WebP atlases, in CELL pixels (not sheet pixels).
   // Each bright lens center, beam apex and lens highlight shares one emitter point.
@@ -116,7 +119,8 @@
   }
 
   function lampState(lamp, t, index) {
-    var targetX = index === 0
+    var targetX = lamp.cx != null ? lamp.cx + lamp.amp * Math.sin(t * lamp.speed + lamp.phase)
+      : index === 0
       ? 545 + 295 * Math.sin(t * lamp.speed + lamp.phase)
       : 395 + 305 * Math.sin(t * lamp.speed + lamp.phase);
     var targetY = 1455 + 65 * Math.sin(t * .19 + index * 2.2);
@@ -134,7 +138,7 @@
   }
 
   function drawBeam(c, state, opacity) {
-    var sprite = images['beams-four'];
+    var sprite = state.lamp.color && c === ctx ? tinted(state.lamp.color) : images['beams-four'];
     var sw = sprite.width / 2, sh = sprite.height / 2;
     var cell = state.lamp.beam;
     var anchor = calibration.beams[cell];
@@ -151,6 +155,15 @@
     c.drawImage(sprite, (cell % 2) * sw, Math.floor(cell / 2) * sh, sw, sh,
       -state.width * apexX, -height * apexY, state.width, height);
     c.restore();
+  }
+
+  // V1818 C: 색 빛줄기 = 빛 그림에 색을 입힌 사본(한 번만 만들어 둠). 휴대폰 사파리도 되게 filter 대신 합성으로.
+  var tintCache = {};
+  function tinted(color) {
+    if (tintCache[color]) return tintCache[color];
+    var src = images['beams-four'], t = document.createElement('canvas'); t.width = src.width; t.height = src.height;
+    var tc = t.getContext('2d'); tc.drawImage(src, 0, 0); tc.globalCompositeOperation = 'source-atop'; tc.globalAlpha = .85; tc.fillStyle = color; tc.fillRect(0, 0, t.width, t.height);
+    return (tintCache[color] = t);
   }
 
   function drawStar(c, cell, x, y, width, height, opacity) {
@@ -216,6 +229,7 @@
     setDesignTransform(frontCtx);
     states.forEach(function (state) { drawBeam(frontCtx, state, .2); });
     ctx.save(); ctx.globalCompositeOperation = 'screen';
+    states.forEach(function (state) { if (state.lamp.color) drawBeam(ctx, state, .7); }); // 사용자: 밝은 분홍·밝은 라벤더
     states.forEach(function (state) {
       drawStar(ctx, state.lamp.beam === 0 ? 4 : 5, state.targetX, state.targetY,
         state.width * 1.25, 75, .33 * state.intensity);
