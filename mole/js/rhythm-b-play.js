@@ -56,7 +56,7 @@
    source.buffer=buffer;gain.gain.value=.72;gain.gain.setValueAtTime(.72,when+Math.max(0,buffer.duration-tail));gain.gain.linearRampToValueAtTime(0,when+buffer.duration);
    source.connect(gain);gain.connect(context.destination);source.start(when);source.stop(when+buffer.duration);sources.push(source);
   }
-  const colors=['#086aff','#ff1529','#ffc400','#05e52e','#a500ff','#ff0099','#ff7900','#00cfff','#a65121'];
+  const colors=['#086aff','#ff1529','#00ffc0','#05e52e','#a500ff','#ff0099','#eef3ff','#00cfff','#c3a8ff'];/* V1833 C */
   // V 1155 G: visual slots are reusable; chart notes and judgement remain independent.
   // V1824 C 네온 새 방식 시험판(?neon2=1): 위 판 3D 춤 두더지 + 앞 스포트. 판정·채보는 그대로
   /* V1825 C 사용자: 새 방식이 기본. 예전 방식으로 되돌리려면 DANCE_MODE 를 false 로(주소 ?neon2=0 이면 예전 방식) */

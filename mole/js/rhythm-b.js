@@ -46,7 +46,7 @@
       img.className = 'rb-circuit'; img.alt = '';
       if (!lower) { img.classList.add('rb-circuit--hologram'); img.style.filter = 'url(#rb-circuit-tint-' + index + ')'; }
       if (lower) img.classList.add('rb-circuit--glass'); // V1336 C: 색·밝기(×1.15)는 레인별 SVG(circuit-rim-N.svg)에 구움 — CSS url() 필터 제거
-      img.src = lower ? 'assets/rhythm-b/circuit-rim-' + index + '.svg' : 'assets/rhythm-b/circuit-thin.svg';
+      img.src = lower ? 'assets/rhythm-b/circuit-rim-' + index + ([2,6,8].includes(index)?'-v1833':'') + '.svg' : 'assets/rhythm-b/circuit-thin.svg';
       // V 1038 G: high-opacity straight body edges, excluding all four protrusions.
       // Source body [64,63,1228,1179] maps to an exact 244x244 square.
       const body = lower ? 268 : 244;
@@ -65,7 +65,7 @@
     frame.className = 'rb-skeleton'; frame.alt = root.FGH.I18N.t('mole.rp.b.frame');
     frame.src = 'assets/rhythm-b/skeleton-uniform.png'; board.appendChild(frame);
     // V 1027 G: 확정된 뼈대/회로판 위에만 추가. 소형판 원본 파일은 분리하지 않는다.
-    const colors = ['#086aff', '#ff1529', '#ffc400', '#05e52e', '#a500ff', '#ff0099', '#ff7900', '#00cfff', '#a65121'];
+    const colors = ['#086aff', '#ff1529', '#00ffc0', '#05e52e', '#a500ff', '#ff0099', '#eef3ff', '#00cfff', '#c3a8ff']; // V1833 C 사용자: 노랑·주황·갈색이 금색(동시 출현)과 헷갈림 → 민트·흰색·라벤더
     const tintDefs = document.createElementNS(ns, 'svg');
     tintDefs.setAttribute('width', '0'); tintDefs.setAttribute('height', '0'); tintDefs.setAttribute('aria-hidden', 'true'); tintDefs.style.position = 'absolute';
     tintDefs.innerHTML = '<defs>' + colors.map((color, i) => {
@@ -109,7 +109,7 @@
       circuit.style.setProperty('--button-color', colors[i]);
       const reflection=document.createElement('div');reflection.className='rb-circuit-reflection';reflection.setAttribute('aria-hidden','true');reflection.style.cssText=circuit.style.cssText;reflection.style.setProperty('--button-color',colors[i]);reflection.innerHTML='<span class="rb-circuit-outward"></span>';board.appendChild(reflection);
       const lens=document.createElement('div');lens.className='rb-button-lens';lens.setAttribute('aria-hidden','true');lens.style.cssText=circuit.style.cssText;lens.style.setProperty('--glass-color',colors[i]);lens.style.setProperty('--glass-image','url("assets/rhythm-b/glass-lower-v1109/lower-'+i+'.png")');lens.innerHTML='<span class="rb-glass-dome"><span class="rb-glass-spin"></span></span>';board.appendChild(lens);
-      const floor=document.createElement('img');floor.className='rb-button-floor-press';floor.alt='';floor.src='assets/rhythm-b/button-base-v1118/press-'+i+'.svg';place(floor,buttonCx,buttonCy+16,296,320);
+      const floor=document.createElement('img');floor.className='rb-button-floor-press';floor.alt='';floor.src='assets/rhythm-b/button-base-v1118/press-'+i+([2,6,8].includes(i)?'-v1833':'')+'.svg';place(floor,buttonCx,buttonCy+16,296,320);
       const base=document.createElement('img');base.className='rb-button-base';base.alt='';base.src='assets/rhythm-b/button-base-v1118/base-'+i+'.svg';place(base,buttonCx,buttonCy+16,296,320);
       const cap=document.createElement('img');cap.className='rb-button-cap';cap.alt='';cap.src='assets/rhythm-b/button-face-v1124/face-'+i+'.svg';place(cap,buttonCx,buttonCy,268);
       const core=document.createElement('img');core.className='rb-button-core';core.alt='';core.src='assets/rhythm-b/upper-core-v1124/core-'+i+'.svg';place(core,buttonCx,buttonCy,268);

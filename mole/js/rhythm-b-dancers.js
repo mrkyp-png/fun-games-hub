@@ -13,7 +13,7 @@
   // V1827 C 사용자 에셋 ①②③: 무대 바닥 자국(위 9칸)·아래 칸 옅은 선, 위쪽 무대 조명 기구, 콤보 단계별 무대(10 빛줄기·30 연기·50 쓸기)
   const LIGHTS = 'assets/rhythm/type-lights-v1791/';
   const floors = Array.from({ length: 9 }, (_, lane) => { const el = document.createElement('i'); el.className = 'rb-stage-floor'; el.setAttribute('aria-hidden', 'true');
-   el.style.left = ((26 + (lane % 3) * 300 + 150) / 952 * 100) + '%'; el.style.top = ((26 + Math.floor(lane / 3) * 300 + 262) / 2078 * 100) + '%'; el.style.backgroundImage = 'url("assets/rhythm-b/circuit-rim-' + lane + '.svg")'; /* V1827 C 사용자: 발판 = 아래 기판 버튼 그림을 눕힌 것 */ board.appendChild(el); return el; });
+   el.style.left = ((26 + (lane % 3) * 300 + 150) / 952 * 100) + '%'; el.style.top = ((26 + Math.floor(lane / 3) * 300 + 262) / 2078 * 100) + '%'; el.style.backgroundImage = 'url("assets/rhythm-b/circuit-rim-' + lane + ([2, 6, 8].includes(lane) ? '-v1833' : '') + '.svg")'; /* V1827 C 사용자: 발판 = 아래 기판 버튼 그림을 눕힌 것 */ board.appendChild(el); return el; });
   const grid = document.createElement('div'); grid.className = 'rb-stage-grid'; grid.setAttribute('aria-hidden', 'true'); for (let i = 0; i < 9; i++) grid.appendChild(document.createElement('i')); board.appendChild(grid);
   const haze = document.createElement('div'); haze.className = 'rb-stage-haze'; haze.setAttribute('aria-hidden', 'true'); board.appendChild(haze);
   const FIX = [[.10, '#4fd8ff', -14], [.30, '#ff5cc8', 8], [.50, '#b48cff', -6], [.70, '#ff5cc8', 12], [.90, '#4fd8ff', -10]];
@@ -83,7 +83,7 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
   }
   const loading = init().catch(e => { failed = true; console.warn('Neon dancers unavailable', e); });
   const GOLD = '#ffe07a'; // V1832 C 사용자: 동시 출현 색
-  const LANE_COLORS = ['#086aff', '#ff1529', '#ffc400', '#05e52e', '#a500ff', '#ff0099', '#ff7900', '#00cfff', '#a65121']; // V1828 C 사용자: 아래 버튼 색과 같게
+  const LANE_COLORS = ['#086aff', '#ff1529', '#00ffc0', '#05e52e', '#a500ff', '#ff0099', '#eef3ff', '#00cfff', '#c3a8ff']; // V1828 C 사용자: 아래 버튼 색과 같게
   function pickMove(n) { if (n.danceMove != null) return n.danceMove; let m = Math.floor(Math.random() * MOVES.length); if (m === lastMove) m = (m + 1) % MOVES.length; lastMove = m; return m; }
   function track(n) { if (!live.has(n.id)) live.set(n.id, { n, lane: n.lane, move: -1 }); return live.get(n.id); }
   // 같은 박자 동시 노트는 같은 춤(단체 춤)
@@ -115,7 +115,7 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
     targets.push({ lane: d.lane, color: colorOf(d), level: d.hitAt != null ? .55 * alpha : d.missAt != null ? .15 * alpha : (.18 + .32 * Math.max(0, (t - (n.targetTime - LEAD)) / LEAD) + (Math.abs(t - n.targetTime) < .1 ? .2 : 0)) * RANK_LIGHT[Math.min(2, rankOf(n))] });
    }
    for (let i = 0; i < 9; i++) { const v = Math.min(1, spotLevel[i]); const s = spots[i]; const o = v.toFixed(2); if (s.style.opacity !== o) { s.style.opacity = o; s.style.setProperty('--spot-color', LANE_COLORS[i]); floors[i].style.setProperty('--lit', o); } }
-   for (let i = 0; i < 9; i++) { const g = padGold[i] ? 'gold' : 'lane'; if (floors[i].dataset.tone !== g) { floors[i].dataset.tone = g; floors[i].style.backgroundImage = 'url("assets/rhythm-b/circuit-rim-' + (padGold[i] ? 2 : i) + '.svg")'; } } /* 동시 출현 발판 = 금색 회로판 */
+   for (let i = 0; i < 9; i++) { const g = padGold[i] ? 'gold' : 'lane'; if (floors[i].dataset.tone !== g) { floors[i].dataset.tone = g; floors[i].style.backgroundImage = 'url("assets/rhythm-b/' + (padGold[i] ? 'circuit-rim-2' : 'circuit-rim-' + i + ([2, 6, 8].includes(i) ? '-v1833' : '')) + '.svg")'; } } /* 동시 출현 발판 = 금색 회로판 */
    aimFixtures(t, targets);
    if (!ready || failed) return;
    const bw = board.clientWidth, bh = board.clientHeight, dpr = Math.min(root.devicePixelRatio || 1, 2), ch = bh * 936 / 2078; /* V1831 C 사용자: 흐림 → 휴대폰 선명도(최대 2배) */
