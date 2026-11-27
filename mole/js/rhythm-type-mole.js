@@ -138,12 +138,14 @@
       y:(height-DESIGN.height*scale)/2+DESIGN.stageY*scale};
   }
   function beamUniforms(frame){
-    return frame.states.slice(0,2).map(state=>{
+    // V1823 C 사용자: 조명 4개 모두 두더지에 닿으면 밝아지고, 각 조명 색이 몸에 비침
+    const hex=c=>{const n=parseInt(String(c||'#ffffff').slice(1),16);return [((n>>16)&255)/255,((n>>8)&255)/255,(n&255)/255];};
+    return frame.states.slice(0,4).map(state=>{
       const anchor=frame.calibration.beams[state.lamp.beam],cell=frame.calibration.beamCell;
       const apexX=anchor[0]/cell[0],apexY=anchor[1]/cell[1],height=state.distance/(anchor[2]/cell[1]-apexY);
       return {rect:[state.x,state.y,state.width,height],axes:[Math.cos(state.angle),Math.sin(state.angle),apexX,apexY],
         cell:[state.lamp.beam%2,Math.floor(state.lamp.beam/2),state.intensity,0],
-        emitter:[(state.x-DESIGN.stageX)/DESIGN.pixelsPerUnit,(DESIGN.stageY-state.y)/DESIGN.pixelsPerUnit,4]};
+        emitter:[(state.x-DESIGN.stageX)/DESIGN.pixelsPerUnit,(DESIGN.stageY-state.y)/DESIGN.pixelsPerUnit,4],color:hex(state.lamp.color)};
     });
   }
   function beamUV(beam,x,y){
@@ -198,22 +200,22 @@ void main(){mat4 s=mat4(1.);if(uSkin)s=aWeights.x*uBones[int(aJoints.x)]+aWeight
 vec4 p=uModel*s*vec4(aPosition,1.);vWorld=p.xyz;vNormal=normalize(uNormal*mat3(s)*aNormal);vColor=aColor;vUV=aUV;gl_Position=uVP*p;}`;
     const fragment=`#version 300 es
 precision highp float;in vec3 vNormal,vWorld;in vec4 vColor;in vec2 vUV;uniform vec4 uColor;uniform bool uShadow,uBeamReady;
-uniform sampler2D uBeamTexture;uniform vec4 uBeamRects[2],uBeamAxes[2],uBeamCells[2],uCanvasFit;uniform vec3 uEmitters[2];out vec4 frag;
+uniform sampler2D uBeamTexture;uniform vec4 uBeamRects[4],uBeamAxes[4],uBeamCells[4],uCanvasFit;uniform vec3 uEmitters[4],uBeamColors[4];uniform int uBeamCount;out vec4 frag;
 void main(){if(uShadow){float r=length(vUV*2.-1.);frag=vec4(0.,0.,.03,(1.-smoothstep(.1,1.,r))*.34);return;}
 vec3 n=normalize(vNormal);float key=max(0.,dot(n,normalize(vec3(-.4,.85,.65))));float rim=max(0.,dot(n,normalize(vec3(.75,.35,-.65))));
 vec3 color=uColor.rgb*vColor.rgb*(.40+key*.63)+vec3(.035,.055,.10)*rim;
 if(uBeamReady){
   vec2 pixel=vec2(gl_FragCoord.x,uCanvasFit.w-gl_FragCoord.y),design=(pixel-uCanvasFit.yz)/uCanvasFit.x;
-  for(int i=0;i<2;i++){
+  for(int i=0;i<4;i++){if(i>=uBeamCount)break;
     vec2 delta=design-uBeamRects[i].xy,axis=uBeamAxes[i].xy;
     vec2 local=vec2(dot(delta,vec2(axis.y,-axis.x)),dot(delta,axis));
     vec2 uv=local/uBeamRects[i].zw+uBeamAxes[i].zw;
     if(local.y<0.||any(lessThan(uv,vec2(0.)))||any(greaterThan(uv,vec2(1.))))continue;
-    vec4 light=texture(uBeamTexture,(uv+uBeamCells[i].xy)*.5);
-    float hit=light.a*uBeamCells[i].z*.8;
+    vec4 light=texture(uBeamTexture,(uv+uBeamCells[i].xy)*.5);light.rgb=uBeamColors[i]*max(.7,dot(light.rgb,vec3(.3333))*1.6);
+    float hit=min(1.,light.a*uBeamCells[i].z*1.6);
     vec3 direction=normalize(uEmitters[i]-vWorld);float diffuse=max(0.,dot(n,direction));
     vec3 halfVector=normalize(direction+normalize(vec3(0.,3.,8.)-vWorld));
-    color+=uColor.rgb*vColor.rgb*light.rgb*hit*(.24+diffuse*1.25)+light.rgb*hit*.10*pow(max(0.,dot(n,halfVector)),20.);
+    color+=uColor.rgb*vColor.rgb*light.rgb*hit*(.24+diffuse*1.25)+light.rgb*hit*(.22+.10*pow(max(0.,dot(n,halfVector)),20.));
   }
 }
 frag=vec4(pow(clamp(color,0.,1.),vec3(1./2.2)),1.);}`;
@@ -222,7 +224,7 @@ frag=vec4(pow(clamp(color,0.,1.),vec3(1./2.2)),1.);}`;
     gl.attachShader(program,vs);gl.attachShader(program,fs);gl.linkProgram(program);gl.deleteShader(vs);gl.deleteShader(fs);
     if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));
     const U={},A={},buffers=[],vaos=[];
-    for(const name of ['Model','VP','Bones','Normal','Skin','Color','Shadow','BeamReady','BeamTexture','BeamRects','BeamAxes','BeamCells','Emitters','CanvasFit'])U[name]=gl.getUniformLocation(program,'u'+(['Bones','BeamRects','BeamAxes','BeamCells','Emitters'].includes(name)?name+'[0]':name));
+    for(const name of ['Model','VP','Bones','Normal','Skin','Color','Shadow','BeamReady','BeamTexture','BeamRects','BeamAxes','BeamCells','Emitters','BeamColors','BeamCount','CanvasFit'])U[name]=gl.getUniformLocation(program,'u'+(['Bones','BeamRects','BeamAxes','BeamCells','Emitters','BeamColors'].includes(name)?name+'[0]':name));
     for(const name of ['Position','Normal','Color','Joints','Weights','UV'])A[name]=gl.getAttribLocation(program,'a'+name);
     function attribute(name,data,width){
       if(A[name]<0)return;
@@ -286,7 +288,7 @@ frag=vec4(pow(clamp(color,0.,1.),vec3(1./2.2)),1.);}`;
           }
           const beams=beamUniforms(lightFrame);
           gl.uniform4fv(U.BeamRects,new Float32Array(beams.flatMap(b=>b.rect)));gl.uniform4fv(U.BeamAxes,new Float32Array(beams.flatMap(b=>b.axes)));
-          gl.uniform4fv(U.BeamCells,new Float32Array(beams.flatMap(b=>b.cell)));gl.uniform3fv(U.Emitters,new Float32Array(beams.flatMap(b=>b.emitter)));
+          gl.uniform4fv(U.BeamCells,new Float32Array(beams.flatMap(b=>b.cell)));gl.uniform3fv(U.Emitters,new Float32Array(beams.flatMap(b=>b.emitter)));gl.uniform3fv(U.BeamColors,new Float32Array(beams.flatMap(b=>b.color)));gl.uniform1i(U.BeamCount,beams.length);
           gl.uniform4f(U.CanvasFit,fit.scale,(w-DESIGN.width*fit.scale)/2,(h-DESIGN.height*fit.scale)/2,h);gl.uniform1i(U.BeamTexture,0);
         }
         projection[0]=2*pixels/w;projection[5]=2*pixels/h;projection[10]=-2/50;
