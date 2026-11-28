@@ -111,7 +111,7 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
     else if (n.state === 'pending') { const u = ease((t - (n.targetTime - LEAD)) / LEAD), rk = Math.min(2, rankOf(n)); alpha = (.35 + .65 * u) * RANK_ALPHA[rk]; light = .35 + .8 * Math.max(0, 1 - Math.abs(t - n.targetTime) / .12) * .9 + .25 * u; time = t; spotLevel[d.lane] = Math.max(spotLevel[d.lane], .18 + .5 * u + (Math.abs(t - n.targetTime) < .1 ? .4 : 0)); }
     else { live.delete(id); continue; }
     if (isChord(n)) padGold[d.lane] = 1;
-    list.push({ lane: d.lane, color: colorOf(d), alpha, light, clip, time, scale, tilt, lit: d.hitAt != null ? 1 - (t - d.hitAt) / danceLen : d.missAt != null ? 0 : Math.max(0, Math.min(1, .3 + .7 * Math.max(0, (t - (n.targetTime - LEAD)) / LEAD))) });
+    list.push({ lane: d.lane, color: colorOf(d), fading: d.hitAt != null || d.missAt != null, alpha, light, clip, time, scale, tilt, lit: d.hitAt != null ? 1 - (t - d.hitAt) / danceLen : d.missAt != null ? 0 : Math.max(0, Math.min(1, .3 + .7 * Math.max(0, (t - (n.targetTime - LEAD)) / LEAD))) });
     targets.push({ lane: d.lane, color: colorOf(d), level: d.hitAt != null ? .55 * alpha : d.missAt != null ? .15 * alpha : (.18 + .32 * Math.max(0, (t - (n.targetTime - LEAD)) / LEAD) + (Math.abs(t - n.targetTime) < .1 ? .2 : 0)) * RANK_LIGHT[Math.min(2, rankOf(n))] });
    }
    for (let i = 0; i < 9; i++) { const v = Math.min(1, spotLevel[i]); const s = spots[i]; const o = v.toFixed(2); if (s.style.opacity !== o) { s.style.opacity = o; s.style.setProperty('--spot-color', LANE_COLORS[i]); floors[i].style.setProperty('--lit', o); } }
@@ -126,7 +126,10 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
     const sp = sprite(m.clip, m.time); if (!sp) continue;
     const cx = (26 + (m.lane % 3) * 300 + 150) / 952 * w, cy = (26 + Math.floor(m.lane / 3) * 300 + 150) / 952 * w, feet = FEET * cell, ox = -spriteW / 2, oy = -TOP * cell - feet;
     ctx2.save(); ctx2.translate(cx, cy + feet); if (m.tilt) ctx2.rotate(-m.tilt); if (m.scale !== 1) ctx2.scale(m.scale, m.scale);
-    ctx2.globalAlpha = Math.max(0, Math.min(1, m.alpha * Math.min(1, m.light))); ctx2.drawImage(sp, ox, oy);
+    // V1840 C 사용자: 발판이 두더지 앞에 보임 — 나타나는 두더지·다음 차례 두더지를 반투명(뒤 발판이 비침) 대신 불투명하게 그리고 어둡게만 함. 사라질 때만 투명
+    const vis = Math.max(0, Math.min(1, m.alpha * Math.min(1, m.light)));
+    if (m.fading) { ctx2.globalAlpha = vis; ctx2.drawImage(sp, ox, oy); }
+    else { ctx2.globalAlpha = 1; ctx2.drawImage(sp, ox, oy); if (vis < .99) { tintCtx.globalCompositeOperation = 'copy'; tintCtx.globalAlpha = 1; tintCtx.drawImage(sp, 0, 0); tintCtx.globalCompositeOperation = 'source-atop'; tintCtx.fillStyle = '#05060c'; tintCtx.fillRect(0, 0, spriteW, spriteH); ctx2.globalAlpha = (1 - vis) * .9; ctx2.drawImage(tintC, ox, oy); } }
     // V1839 C 사용자: 조명 방식만 V1830 으로 복귀 — 두더지 몸에 칸 색 물들임 없음(선명도·금색·차례·칸 색은 유지)
     if (m.light > 1) { ctx2.globalCompositeOperation = 'lighter'; ctx2.globalAlpha = Math.min(1, m.alpha * (m.light - 1) * .6); ctx2.drawImage(sp, ox, oy); }
     ctx2.restore();

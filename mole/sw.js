@@ -186,7 +186,8 @@
 // V1837 C: neon side light outer edges only.
 // V1838 C: neon mole lighting reverted to V1835.
 // V1839 C: neon mole lighting back to V1830.
-const CACHE = 'mole-game-v1839-C';
+// V1840 C: neon pads behind opaque moles.
+const CACHE = 'mole-game-v1840-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
