@@ -51,7 +51,7 @@ precision highp float;in vec3 aPosition,aNormal;in vec4 aColor,aJoints,aWeights;
 void main(){mat4 s=mat4(1.);if(uSkin)s=aWeights.x*uBones[int(aJoints.x)]+aWeights.y*uBones[int(aJoints.y)]+aWeights.z*uBones[int(aJoints.z)]+aWeights.w*uBones[int(aJoints.w)];vec4 p=uModel*s*vec4(aPosition,1.);vNormal=normalize(uNormal*mat3(s)*aNormal);vColor=aColor;gl_Position=uVP*p;}`;
    const fs = `#version 300 es
 precision highp float;in vec3 vNormal;in vec4 vColor;uniform vec4 uColor;uniform float uLight,uAlpha,uRim;uniform vec3 uTint;out vec4 frag;
-void main(){vec3 n=normalize(vNormal);if(uRim>.5){/* V1836 C 사용자: 양옆에 살짝 빛 — 몸이 좌우로 돌아가는 가장자리(|n.x| 큰 곳)만, 앞면·얼굴은 0 */float e=smoothstep(.6,.97,abs(n.x))*.5;frag=vec4(vec3(e),e);return;}float key=max(0.,dot(n,normalize(vec3(0.,.35,1.))));float rim=max(0.,dot(n,normalize(vec3(.6,.4,-.7))));
+void main(){vec3 n=normalize(vNormal);if(uRim>.5){/* V1836 C 사용자: 양옆에 살짝 빛 — 몸이 좌우로 돌아가는 가장자리(|n.x| 큰 곳)만, 앞면·얼굴은 0 */float e=smoothstep(.4,.95,abs(n.x))*.6;frag=vec4(vec3(e),e);return;}float key=max(0.,dot(n,normalize(vec3(0.,.35,1.))));float rim=max(0.,dot(n,normalize(vec3(.6,.4,-.7))));
 vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,1.),vec3(1./2.2));frag=vec4(c*uAlpha,uAlpha);}`;
    const sh = (t, s) => { const x = gl.createShader(t); gl.shaderSource(x, s); gl.compileShader(x); if (!gl.getShaderParameter(x, gl.COMPILE_STATUS)) throw Error(gl.getShaderInfoLog(x)); return x; };
    const pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(pr); gl.useProgram(pr);
@@ -129,7 +129,8 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
     ctx2.globalAlpha = Math.max(0, Math.min(1, m.alpha * Math.min(1, m.light))); ctx2.drawImage(sp, ox, oy);
     // V1831 C 사용자: 조명이 비추면 두더지가 그 칸 색 빛으로 물듦(두더지 모양 안에만 색을 칠해 덧씌움)
     // V1836 C 사용자: 조명 빛은 예전 3D 처럼 몸 옆 가장자리로 빛이 들어오는 정도 — 3D 로 미리 그린 옆빛(림) 모양에 칸 색을 입혀 은은하게 더함
-    const glow = m.alpha, rimSp = glow > .02 ? rimSprite(m.clip, m.time) : null; /* 예전처럼 항상 칸 색 옆빛 */ if (rimSp) { tintCtx.globalCompositeOperation = 'copy'; tintCtx.globalAlpha = 1; tintCtx.drawImage(rimSp, 0, 0, spriteW, spriteH); tintCtx.globalCompositeOperation = 'source-atop'; tintCtx.fillStyle = m.color; tintCtx.fillRect(0, 0, spriteW, spriteH); ctx2.globalCompositeOperation = 'lighter'; ctx2.globalAlpha = Math.min(1, glow); /* 사용자: 빛이 살짝 들어오는 정도 */ ctx2.drawImage(tintC, ox, oy); }
+    const glow = m.alpha, rimSp = glow > .02 ? rimSprite(m.clip, m.time) : null; /* 예전처럼 항상 칸 색 옆빛 */ if (rimSp) { /* V1837 C 사용자: 안쪽 선(팔·배 주름) 없이 양옆 바깥 가장자리만 — 모양을 좌우로 민 두 개가 겹치는 안쪽을 지움 */ const k = Math.max(2, Math.round(spriteW * .08)); innerCtx.globalCompositeOperation = 'copy'; innerCtx.drawImage(sp, -k, 0); innerCtx.globalCompositeOperation = 'destination-in'; innerCtx.drawImage(sp, k, 0);
+     tintCtx.globalCompositeOperation = 'copy'; tintCtx.globalAlpha = 1; tintCtx.drawImage(rimSp, 0, 0, spriteW, spriteH); tintCtx.globalCompositeOperation = 'destination-out'; tintCtx.drawImage(innerC, 0, 0); tintCtx.globalCompositeOperation = 'source-atop'; tintCtx.fillStyle = m.color; tintCtx.fillRect(0, 0, spriteW, spriteH); ctx2.globalCompositeOperation = 'lighter'; ctx2.globalAlpha = Math.min(1, glow); /* 사용자: 빛이 살짝 들어오는 정도 */ ctx2.drawImage(tintC, ox, oy); }
     if (m.light > 1) { ctx2.globalCompositeOperation = 'lighter'; ctx2.globalAlpha = Math.min(1, m.alpha * (m.light - 1) * .25); ctx2.drawImage(sp, ox, oy); } /* V1836 C: 하얗게 뜨지 않게 약하게 */
     ctx2.restore();
    }
@@ -137,9 +138,9 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
   // V1830 C 사용자 FPS: 두더지를 매 화면 3D 로 새로 그리지 않음 — 휴대폰에서 같은 3D 로 장면마다 한 번만 그려 두고(초당 20장 분량) 붙여 씀
   // V1831 C: 휴대폰 선명도로 그리되 두더지 둘레 빈 공간은 잘라냄(가로 0.9칸 × 세로 0.95칸) — 메모리 절약
   const FPS_S = 20, FEET = .344, TOP = .5, CW = .9, CH = .95; let spriteW = 0, spriteH = 0, spriteCell = 0; const sprites = new Map(); let warmJobs = null;
-  const tintC = document.createElement('canvas'), tintCtx = tintC.getContext('2d');
+  const tintC = document.createElement('canvas'), tintCtx = tintC.getContext('2d'); const innerC = document.createElement('canvas'), innerCtx = innerC.getContext('2d');
   function ensureSprites(cell) {
-   const W = Math.round(cell * CW), H = Math.round(cell * CH); if (W === spriteW && H === spriteH) return; spriteW = W; spriteH = H; spriteCell = cell; sprites.clear(); rims.clear(); glc.width = W; glc.height = H; tintC.width = W; tintC.height = H;
+   const W = Math.round(cell * CW), H = Math.round(cell * CH); if (W === spriteW && H === spriteH) return; spriteW = W; spriteH = H; spriteCell = cell; sprites.clear(); rims.clear(); glc.width = W; glc.height = H; tintC.width = W; tintC.height = H; innerC.width = W; innerC.height = H;
    warmJobs = []; for (let f = 0; f < 2 * FPS_S; f++) warmJobs.push(['Idle', f]); for (const [clip, start] of MOVES) { const f0 = Math.round(start * FPS_S); for (let f = f0; f <= f0 + Math.ceil(1.15 * FPS_S); f++) warmJobs.push([clip, f]); }
    (function step() { if (!warmJobs || !warmJobs.length) return; const deadline = performance.now() + 6; while (warmJobs.length && performance.now() < deadline) { const [c, fr] = warmJobs.shift(); makeSprite(c, fr); } if (warmJobs.length) setTimeout(step, 16); })();
   }  // 옆빛 모양 그림(메모리 아끼려 반 해상도, 부드러운 빛이라 차이 없음) — 필요할 때 한 번 그려 보관
