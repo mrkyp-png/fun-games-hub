@@ -69,6 +69,7 @@ function vestLift(runtime,worlds,clip,factor,higherArm=false){ // higherArm: 두
  const up=R.transform({translation:[0,lift,0]});return {lift,worlds:worlds.map((w,i)=>r.moved[i]?R.multiply(up,w):w)}; // 몸통과 그 아래 뼈(머리 쪽 제외)만 올림 → 고글 등 머리 부품은 그대로
 }
 // V1844 C 사용자: 일자 눈썹 = 곧은 직선 — 눈썹 점을 좌우 위치별 가운데 선이 한 높이가 되게 위아래로 옮김(두께 그대로). 'Eyebrow' 재질 부품의 새 위치 배열
+const BROW_DROP=.04; // V1845 C 사용자: 일자 눈썹 아래로 좀(고글에 닿지 않게)
 function straightBrow(model,primitive){
  const P=R.accessor(model,primitive.attributes.POSITION),out=new Float32Array(P),N=24;
  for(const side of [1,-1]){
@@ -78,7 +79,7 @@ function straightBrow(model,primitive){
   for(const v of idx){const b=bin(P[v*3]);mn[b]=Math.min(mn[b],P[v*3+1]);mx[b]=Math.max(mx[b],P[v*3+1]);}
   const mid=mn.map((a,b)=>Number.isFinite(a)?(a+mx[b])/2:null),known=mid.map((m,b)=>m===null?null:b).filter(b=>b!==null),avg=known.reduce((s,b)=>s+mid[b],0)/known.length;
   const center=x=>{const t=Math.max(known[0],Math.min(known[known.length-1],(x-lo)/span*N-.5));let a=known[0],c=known[known.length-1];for(const b of known){if(b<=t)a=b;if(b>=t){c=b;break;}}return a===c?mid[a]:mid[a]+(mid[c]-mid[a])*(t-a)/(c-a);};
-  for(const v of idx)out[v*3+1]=P[v*3+1]-center(P[v*3])+avg;
+  for(const v of idx)out[v*3+1]=P[v*3+1]-center(P[v*3])+avg-BROW_DROP;
  }
  return out;
 }
