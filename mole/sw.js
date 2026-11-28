@@ -190,7 +190,8 @@
 // V1841 C: plaza repair vest 0.1cm lower, lifts with elbows.
 // V1842 C: vest lift on flap x0.7, rhythm entry dance and beach jump.
 // V1843 C: dance vest lift by higher elbow (orange 0.7, safe chance 0.45), safe chance vest rigid like orange.
-const CACHE = 'mole-game-v1843-C';
+// V1844 C: dance hop vest by higher arm, time keeper necklace like vests, straight/angry brows.
+const CACHE = 'mole-game-v1844-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.

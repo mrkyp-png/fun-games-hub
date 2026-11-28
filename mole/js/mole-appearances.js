@@ -68,6 +68,32 @@ function vestLift(runtime,worlds,clip,factor,higherArm=false){ // higherArm: 두
  if(!lift)return {lift,worlds};
  const up=R.transform({translation:[0,lift,0]});return {lift,worlds:worlds.map((w,i)=>r.moved[i]?R.multiply(up,w):w)}; // 몸통과 그 아래 뼈(머리 쪽 제외)만 올림 → 고글 등 머리 부품은 그대로
 }
+// V1844 C 사용자: 일자 눈썹 = 곧은 직선 — 눈썹 점을 좌우 위치별 가운데 선이 한 높이가 되게 위아래로 옮김(두께 그대로). 'Eyebrow' 재질 부품의 새 위치 배열
+function straightBrow(model,primitive){
+ const P=R.accessor(model,primitive.attributes.POSITION),out=new Float32Array(P),N=24;
+ for(const side of [1,-1]){
+  const idx=[];for(let v=0;v<P.length/3;v++)if((P[v*3]>=0?1:-1)===side)idx.push(v);if(!idx.length)continue;
+  let lo=Infinity,hi=-Infinity;for(const v of idx){lo=Math.min(lo,P[v*3]);hi=Math.max(hi,P[v*3]);}
+  const span=hi-lo||1,bin=x=>Math.min(N-1,Math.floor((x-lo)/span*N)),mn=new Array(N).fill(Infinity),mx=new Array(N).fill(-Infinity);
+  for(const v of idx){const b=bin(P[v*3]);mn[b]=Math.min(mn[b],P[v*3+1]);mx[b]=Math.max(mx[b],P[v*3+1]);}
+  const mid=mn.map((a,b)=>Number.isFinite(a)?(a+mx[b])/2:null),known=mid.map((m,b)=>m===null?null:b).filter(b=>b!==null),avg=known.reduce((s,b)=>s+mid[b],0)/known.length;
+  const center=x=>{const t=Math.max(known[0],Math.min(known[known.length-1],(x-lo)/span*N-.5));let a=known[0],c=known[known.length-1];for(const b of known){if(b<=t)a=b;if(b>=t){c=b;break;}}return a===c?mid[a]:mid[a]+(mid[c]-mid[a])*(t-a)/(c-a);};
+  for(const v of idx)out[v*3+1]=P[v*3+1]-center(P[v*3])+avg;
+ }
+ return out;
+}
+// V1844 C 사용자: 'angry' 화난 눈썹(안쪽 끝을 아래로 기울임). 머리가 움직인 만큼 따라감
+const BROW_ANGRY=.38,browIds=new WeakMap();
+function browShape(runtime,worlds,kind){
+ if(!browIds.has(runtime)){const nodes=runtime.model.json.nodes,at=n=>nodes.findIndex(x=>x.name===n),head=at('Head');browIds.set(runtime,{head,rest:head<0?null:R.pose(runtime,null,0,false)[head],brows:[at('Brow.L'),at('Brow.R')].filter(i=>i>=0)});}
+ const {head,rest,brows}=browIds.get(runtime);if(head<0||!kind)return worlds;
+ const H=R.multiply(worlds[head],R.inverse(rest)),Hi=R.inverse(H); // 머리가 휴식 자세에서 움직인 만큼 — 그 안에서는 두더지 좌표(위 Y·앞 Z·옆 X)
+ for(const k of brows){const local=R.multiply(Hi,worlds[k]),p=[local[12],local[13],local[14]],side=p[0]>=0?1:-1;
+  const shape=R.transform({rotation:[0,0,Math.sin(side*BROW_ANGRY/2),Math.cos(side*BROW_ANGRY/2)]});
+  const about=R.multiply(R.multiply(R.transform({translation:p}),shape),R.transform({translation:p.map(v=>-v)}));
+  worlds[k]=R.multiply(H,R.multiply(about,local));}
+ return worlds;
+}
 // V1843 C 사용자: 세이프찬스 조끼도 주황 조끼와 똑같이 — 머리 위쪽 점(고글, 높이 1.95 위·머리 뼈 위주)은 머리 뼈, 나머지는 몸통 뼈에 딱 붙임(팔·머리 무게가 섞여 늘어나던 것 제거)
 function rigidWorn(model,worn){
  if(!worn)return worn;const names=model.json.skins[0].joints.map(n=>model.json.nodes[n].name),body=names.indexOf('Body'),head=names.indexOf('Head');if(body<0||head<0)return worn;
@@ -83,5 +109,5 @@ function rigidWorn(model,worn){
 const faces=new WeakMap();
 function face(runtime,hurt=false){if(!faces.has(runtime)){const clip=runtime.animations.find(c=>c.name==='Smile'),smile=clip?clip.tracks.filter(t=>{const name=runtime.model.json.nodes[t.node].name;return name==='Jaw'||/^(Brow|MouthCorner|HappyEye)\.[LR]$/.test(name)||(t.path==='scale'&&/^(Eye|PainEye)\.[LR]$/.test(name))}):[];const hidden=runtime.model.json.nodes.flatMap((n,i)=>/^HappyEye\.[LR]$/.test(n.name)?[{node:i,path:'scale',times:new Float32Array([0]),values:new Float32Array([0,0,0]),width:3}]:[]);faces.set(runtime,{smile,hidden})}return faces.get(runtime)[hurt?'hidden':'smile']}
 function pose(runtime,clip,time,loop,expression,windTime,id='mohawk'){return R.pose(runtime,clip,time,loop,expression,{animation:'HairWind_'+names[id],time:windTime})}
-MG.MoleAppearances={styles,palettes,random,load,prepare,paint,materialColor,vertexColors,hairStyle,face,pose,arcadeRepair,wornCostume,costumeParts,vestLift,rigidWorn};
+MG.MoleAppearances={styles,palettes,random,load,prepare,paint,materialColor,vertexColors,hairStyle,face,pose,arcadeRepair,wornCostume,costumeParts,vestLift,rigidWorn,browShape,straightBrow};
 })(window);

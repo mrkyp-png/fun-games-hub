@@ -236,7 +236,8 @@ frag=vec4(pow(clamp(color,0.,1.),vec3(1./2.2)),1.);}`;
         const vao=gl.createVertexArray();vaos.push(vao);gl.bindVertexArray(vao);
         for(const [name,key,width] of [['Position','POSITION',3],['Normal','NORMAL',3],['Color','COLOR_0',4],['Joints','JOINTS_0',4],['Weights','WEIGHTS_0',4]]){
           const accessor=primitive.attributes[key];
-          if(accessor!==undefined)attribute(name,jointMap&&name==='Joints'?Float32Array.from(R.accessor(source,accessor),v=>jointMap[v]??v):style&&name==='Color'?(AP.vertexColors(source,primitive,style)||R.accessor(source,accessor)):R.accessor(source,accessor),source.json.accessors[accessor].type==='VEC3'?3:width);
+          if(accessor!==undefined&&name==='Position'&&list===parts&&source===model&&source.json.materials?.[primitive.material]?.name==='Eyebrow')attribute(name,AP.straightBrow(source,primitive),3); /* V1844 C 사용자: 앞쪽(주황 조끼) 두더지 = 곧은 일자 눈썹 */
+          else if(accessor!==undefined)attribute(name,jointMap&&name==='Joints'?Float32Array.from(R.accessor(source,accessor),v=>jointMap[v]??v):style&&name==='Color'?(AP.vertexColors(source,primitive,style)||R.accessor(source,accessor)):R.accessor(source,accessor),source.json.accessors[accessor].type==='VEC3'?3:width);
         }
         let indices=primitive.indices!==undefined?R.accessor(source,primitive.indices):null;
         // 사용자: 타입 선택 화면 파마머리는 안경 없음 → 머리 뼈에 붙은 높은 점(고글)이 있는 삼각형 빼기(목깃은 남김)
@@ -261,8 +262,8 @@ frag=vec4(pow(clamp(color,0.,1.),vec3(1./2.2)),1.);}`;
       const jn=skin2>=0?model2.json.skins[model2.json.nodes[skin2].skin].joints.map(n=>model2.json.nodes[n].name):[],bodyJ=jn.indexOf('Body'),clothMap=bodyJ<0?null:jn.map((name,i)=>/^(UpperArm|Forearm|Hand|Finger|Thumb|Armpit)/.test(name)?bodyJ:i);
       FRIENDS.forEach((f,k)=>{const list=friendParts[f.style]=[];
         model2.json.nodes.forEach((node,index)=>{if(node.mesh===undefined)return;const hair=AP.hairStyle(node);if(node.name!=='Mole_Clay_Skin'&&hair!==f.style)return;for(const primitive of model2.json.meshes[node.mesh].primitives){addPart(model2,primitive,index,f.style,list);if(hair===f.style&&f.hair)list[list.length-1].color=f.hair;}});
-        if(f.costume==='safe-chance')worn[k]=AP.rigidWorn(model2,worn[k]);
-        if(worn[k]&&skin2>=0)for(const {primitive} of R.instances(worn[k])){addPart(worn[k],primitive,skin2,null,list,clothMap,f.style==='curly'?jn.indexOf('Head'):-1);list[list.length-1].vest=f.costume==='safe-chance';}});/* V1842 C: 세이프찬스 조끼만 팔 따라 올림(홀드타임 망토 제외) */
+        worn[k]=AP.rigidWorn(model2,worn[k]); /* V1844 C 사용자: 타임키퍼 목걸이 줄도 조끼와 같은 기준(몸통 고정 + 팔 따라 위로) */
+        if(worn[k]&&skin2>=0)for(const {primitive} of R.instances(worn[k])){addPart(worn[k],primitive,skin2,null,list,clothMap,f.style==='curly'?jn.indexOf('Head'):-1);list[list.length-1].vest=true;}});/* V1842 C: 세이프찬스 조끼만 팔 따라 올림(홀드타임 망토 제외) */
     }
     const shadow=gl.createVertexArray();vaos.push(shadow);gl.bindVertexArray(shadow);
     attribute('Position',new Float32Array([-.85,.002,-.48,.85,.002,-.48,.85,.002,.48,-.85,.002,-.48,.85,.002,.48,-.85,.002,.48]),3);
@@ -313,7 +314,7 @@ frag=vec4(pow(clamp(color,0.,1.),vec3(1./2.2)),1.);}`;
         const floor=R.transform({translation:[0,0,state.z],scale:[state.scale,1,state.scale]});
         gl.uniformMatrix4fv(U.Model,false,floor);gl.uniformMatrix3fv(U.Normal,false,R.normals(floor));gl.drawArrays(gl.TRIANGLES,0,6);gl.uniform1i(U.Shadow,0);
         /* V1842 C 사용자: 광장 조끼 기준 — 점프(통통 점프)는 팔꿈치 높이 0.5배 / V1843 C 사용자: 한 손·두 손 드는 춤은 더 높이 든 팔꿈치 기준 0.45배(0.3에서 더 올림) */
-        const vestWorlds=(rigX,ws,clip,dance=.45)=>{const hop=/Jump|Hop/.test(clip||'');return AP.vestLift(rigX,ws,clip,hop?.5:dance,!hop).worlds;}; /* V1843 C 사용자: 주황 조끼는 팔 다 올릴 때 세이프찬스 높이까지 → 손 드는 춤 0.6 */
+        const vestWorlds=(rigX,ws,clip,dance=.45)=>{const hop=/Jump|Hop/.test(clip||'');return AP.vestLift(rigX,ws,clip,hop?Math.max(.6,dance):dance,true).worlds;}; /* V1844 C 사용자: 춤 통통 점프도 팔 제일 높이 들면 조끼 더 — 더 높이 든 팔 기준, 주황 0.7·세이프찬스 0.6 */ /* V1843 C 사용자: 주황 조끼는 팔 다 올릴 때 세이프찬스 높이까지 → 손 드는 춤 0.6 */
         function drawParts(list,inst,rigX,ws,vws=ws){for(const part of list){
           const pw=part.vest?vws:ws;gl.bindVertexArray(part.vao);const matrix=R.multiply(inst,pw[part.node]),bones=R.palette(rigX,pw,part.node);
           gl.uniformMatrix4fv(U.Model,false,matrix);gl.uniformMatrix3fv(U.Normal,false,R.normals(matrix));gl.uniform4fv(U.Color,part.color);
@@ -326,6 +327,7 @@ frag=vec4(pow(clamp(color,0.,1.),vec3(1./2.2)),1.);}`;
           const inst=R.transform({translation:[fs.x,.105*fs.scale,fs.z],rotation:[0,Math.sin(fs.heading/2),0,Math.cos(fs.heading/2)],scale:[fs.scale,fs.scale,fs.scale]});
           gl.bindVertexArray(shadow);gl.uniform1i(U.Shadow,1);gl.uniform1i(U.Skin,0);const fl=R.transform({translation:[fs.x,0,fs.z],scale:[fs.scale,1,fs.scale]});
           gl.uniformMatrix4fv(U.Model,false,fl);gl.uniformMatrix3fv(U.Normal,false,R.normals(fl));gl.drawArrays(gl.TRIANGLES,0,6);gl.uniform1i(U.Shadow,0);
+          if(f.style==='spiky')AP.browShape(rig2,ws,'angry'); /* V1844 C 사용자: 왼쪽 타임키퍼 = 화난 눈썹 */
           drawParts(friendParts[f.style],inst,rig2,ws,vestWorlds(rig2,ws,fs.clip));});
       },
       dispose(){for(const b of buffers)gl.deleteBuffer(b);for(const v of vaos)gl.deleteVertexArray(v);gl.deleteTexture(beamTexture);gl.deleteProgram(program);}
