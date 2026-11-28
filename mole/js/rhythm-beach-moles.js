@@ -48,7 +48,7 @@ precision highp float;in vec3 vNormal;in vec4 vColor;in float vHand;uniform vec4
   // 옷 점마다 두더지 몸 뼈 가중치(소매=팔, 이마띠=머리) → 두더지 몸과 같은 스킨으로 그림
   // V1814 C 사용자: 점프 = 두더지팡 놀란 눈(흰자위+눈동자 'Surprise' 부품, 머리 뼈에 고정)
   if(surprise){const head=model.json.nodes.findIndex(n=>n.name==='Head');surprise.json.nodes.forEach(n=>{if(!/^Surprise /.test(n.name||'')||n.mesh===undefined)return;for(const p of surprise.json.meshes[n.mesh].primitives){addPart(surprise,p,head,null,true);const part=parts[parts.length-1];part.surprise=true;part.local=R.transform({translation:n.translation||[0,0,0],rotation:n.rotation||[0,0,0,1],scale:n.scale||[1,1,1]});}});}
-  const skinNode=model.json.nodes.findIndex(n=>n.name==='Mole_Clay_Skin');others.forEach((worn,k)=>{if(worn&&skinNode>=0)for(const {primitive} of R.instances(worn)){addPart(worn,primitive,skinNode,AP.styles[k+1]);parts[parts.length-1].vest=k===2;}}); // V1842 C: others = [홀드타임 망토, 연타 도복, 세이프찬스 조끼] — 조끼(세이프찬스)만 점프 때 올림
+  const skinNode=model.json.nodes.findIndex(n=>n.name==='Mole_Clay_Skin');others.forEach((worn,k)=>{if(k===2)worn=AP.rigidWorn(model,worn);if(worn&&skinNode>=0)for(const {primitive} of R.instances(worn)){addPart(worn,primitive,skinNode,AP.styles[k+1]);parts[parts.length-1].vest=k===2;}}); // V1842 C: others = [홀드타임 망토, 연타 도복, 세이프찬스 조끼] — 조끼(세이프찬스)만 점프 때 올림
   for(const [slot,file] of [[0,'hole-occlusion.png'],[1,'hole-front.png']]){
    const response=await fetch(holeBase+file);if(!response.ok)throw Error('Hole layer '+response.status);
    const bitmap=await createImageBitmap(await response.blob(),{colorSpaceConversion:'none',premultiplyAlpha:slot===1?'premultiply':'none'}),texture=gl.createTexture();

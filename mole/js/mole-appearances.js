@@ -58,17 +58,30 @@ function costumeParts(model,costume) {
 }
 // V1842 C 사용자: 광장 조끼 기준 — 팔꿈치(Forearm 평균)가 몸통보다 올라간 만큼(점프 0.5배·날갯짓 0.7배) 조끼를 모양 그대로 위로
 const liftRest=new WeakMap();
-function vestLift(runtime,worlds,clip,factor){
+function vestLift(runtime,worlds,clip,factor,higherArm=false){ // higherArm: 두 팔꿈치 평균 대신 더 높은 쪽(한 손만 들어도 올라감, V1843 C 춤)
  if(!liftRest.has(runtime)){const nodes=runtime.model.json.nodes,at=n=>nodes.findIndex(x=>x.name===n),ids=[at('Body'),at('Forearm.L'),at('Forearm.R')],rest=R.pose(runtime,null,0,false),parent=new Int32Array(nodes.length).fill(-1);nodes.forEach((n,i)=>(n.children||[]).forEach(c=>parent[c]=i));
   const under=(i,top)=>{for(;i>=0;i=parent[i])if(i===top)return true;return false},head=at('Head');
   liftRest.set(runtime,ids.every(i=>i>=0)?{ids,base:(rest[ids[1]][13]+rest[ids[2]][13])/2-rest[ids[0]][13],moved:nodes.map((n,i)=>under(i,ids[0])&&!under(i,head))}:null);}
  const r=liftRest.get(runtime);if(!r)return {lift:0,worlds};
- const lift=(factor??(clip==='Flap'?.7:.5))*Math.max(0,(worlds[r.ids[1]][13]+worlds[r.ids[2]][13])/2-worlds[r.ids[0]][13]-r.base);
+ const elbow=higherArm?Math.max(worlds[r.ids[1]][13],worlds[r.ids[2]][13]):(worlds[r.ids[1]][13]+worlds[r.ids[2]][13])/2;
+ const lift=(factor??(clip==='Flap'?.7:.5))*Math.max(0,elbow-worlds[r.ids[0]][13]-r.base);
  if(!lift)return {lift,worlds};
  const up=R.transform({translation:[0,lift,0]});return {lift,worlds:worlds.map((w,i)=>r.moved[i]?R.multiply(up,w):w)}; // 몸통과 그 아래 뼈(머리 쪽 제외)만 올림 → 고글 등 머리 부품은 그대로
+}
+// V1843 C 사용자: 세이프찬스 조끼도 주황 조끼와 똑같이 — 머리 위쪽 점(고글, 높이 1.95 위·머리 뼈 위주)은 머리 뼈, 나머지는 몸통 뼈에 딱 붙임(팔·머리 무게가 섞여 늘어나던 것 제거)
+function rigidWorn(model,worn){
+ if(!worn)return worn;const names=model.json.skins[0].joints.map(n=>model.json.nodes[n].name),body=names.indexOf('Body'),head=names.indexOf('Head');if(body<0||head<0)return worn;
+ const g=JSON.parse(JSON.stringify(worn.json));let bin=worn.bin;
+ const add=(data,count)=>{const off=bin.length,next=new Uint8Array(off+data.byteLength);next.set(bin);next.set(new Uint8Array(data.buffer),off);bin=next;const view=g.bufferViews.push({buffer:0,byteOffset:off,byteLength:data.byteLength,target:34962})-1;return g.accessors.push({bufferView:view,componentType:5126,count,type:'VEC4'})-1;};
+ for(const mesh of g.meshes)for(const p of mesh.primitives){
+  const J=R.accessor(worn,p.attributes.JOINTS_0),W=R.accessor(worn,p.attributes.WEIGHTS_0),P=R.accessor(worn,p.attributes.POSITION),n=W.length/4,nj=new Float32Array(n*4),nw=new Float32Array(n*4);
+  for(let v=0;v<n;v++){let b=0;for(let k=1;k<4;k++)if(W[v*4+k]>W[v*4+b])b=k;nj[v*4]=J[v*4+b]===head&&P[v*3+1]>1.95?head:body;nw[v*4]=1;}
+  p.attributes.JOINTS_0=add(nj,n);p.attributes.WEIGHTS_0=add(nw,n);
+ }
+ g.buffers=[{byteLength:bin.length}];return {json:g,bin};
 }
 const faces=new WeakMap();
 function face(runtime,hurt=false){if(!faces.has(runtime)){const clip=runtime.animations.find(c=>c.name==='Smile'),smile=clip?clip.tracks.filter(t=>{const name=runtime.model.json.nodes[t.node].name;return name==='Jaw'||/^(Brow|MouthCorner|HappyEye)\.[LR]$/.test(name)||(t.path==='scale'&&/^(Eye|PainEye)\.[LR]$/.test(name))}):[];const hidden=runtime.model.json.nodes.flatMap((n,i)=>/^HappyEye\.[LR]$/.test(n.name)?[{node:i,path:'scale',times:new Float32Array([0]),values:new Float32Array([0,0,0]),width:3}]:[]);faces.set(runtime,{smile,hidden})}return faces.get(runtime)[hurt?'hidden':'smile']}
 function pose(runtime,clip,time,loop,expression,windTime,id='mohawk'){return R.pose(runtime,clip,time,loop,expression,{animation:'HairWind_'+names[id],time:windTime})}
-MG.MoleAppearances={styles,palettes,random,load,prepare,paint,materialColor,vertexColors,hairStyle,face,pose,arcadeRepair,wornCostume,costumeParts,vestLift};
+MG.MoleAppearances={styles,palettes,random,load,prepare,paint,materialColor,vertexColors,hairStyle,face,pose,arcadeRepair,wornCostume,costumeParts,vestLift,rigidWorn};
 })(window);
