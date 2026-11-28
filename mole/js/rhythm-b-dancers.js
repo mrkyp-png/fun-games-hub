@@ -50,12 +50,12 @@
 precision highp float;in vec3 aPosition,aNormal;in vec4 aColor,aJoints,aWeights;uniform mat4 uModel,uVP,uBones[${J}];uniform mat3 uNormal;uniform bool uSkin;out vec3 vNormal;out vec4 vColor;
 void main(){mat4 s=mat4(1.);if(uSkin)s=aWeights.x*uBones[int(aJoints.x)]+aWeights.y*uBones[int(aJoints.y)]+aWeights.z*uBones[int(aJoints.z)]+aWeights.w*uBones[int(aJoints.w)];vec4 p=uModel*s*vec4(aPosition,1.);vNormal=normalize(uNormal*mat3(s)*aNormal);vColor=aColor;gl_Position=uVP*p;}`;
    const fs = `#version 300 es
-precision highp float;in vec3 vNormal;in vec4 vColor;uniform vec4 uColor;uniform float uLight,uAlpha;uniform vec3 uTint;out vec4 frag;
-void main(){vec3 n=normalize(vNormal);float key=max(0.,dot(n,normalize(vec3(0.,.35,1.))));float rim=max(0.,dot(n,normalize(vec3(.6,.4,-.7))));
+precision highp float;in vec3 vNormal;in vec4 vColor;uniform vec4 uColor;uniform float uLight,uAlpha,uRim;uniform vec3 uTint;out vec4 frag;
+void main(){vec3 n=normalize(vNormal);if(uRim>.5){/* V1836 C 사용자: 양옆에 살짝 빛 — 몸이 좌우로 돌아가는 가장자리(|n.x| 큰 곳)만, 앞면·얼굴은 0 */float e=smoothstep(.6,.97,abs(n.x))*.5;frag=vec4(vec3(e),e);return;}float key=max(0.,dot(n,normalize(vec3(0.,.35,1.))));float rim=max(0.,dot(n,normalize(vec3(.6,.4,-.7))));
 vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,1.),vec3(1./2.2));frag=vec4(c*uAlpha,uAlpha);}`;
    const sh = (t, s) => { const x = gl.createShader(t); gl.shaderSource(x, s); gl.compileShader(x); if (!gl.getShaderParameter(x, gl.COMPILE_STATUS)) throw Error(gl.getShaderInfoLog(x)); return x; };
    const pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(pr); gl.useProgram(pr);
-   for (const n of ['Model', 'VP', 'Normal', 'Skin', 'Color', 'Light', 'Alpha', 'Tint']) U[n] = gl.getUniformLocation(pr, 'u' + n); U.Bones = gl.getUniformLocation(pr, 'uBones[0]');
+   for (const n of ['Model', 'VP', 'Normal', 'Skin', 'Color', 'Light', 'Alpha', 'Tint', 'Rim']) U[n] = gl.getUniformLocation(pr, 'u' + n); U.Bones = gl.getUniformLocation(pr, 'uBones[0]');
    for (const n of ['Position', 'Normal', 'Color', 'Joints', 'Weights']) A[n] = gl.getAttribLocation(pr, 'a' + n);
    const skinNode = model.json.nodes.findIndex(n => n.name === 'Mole_Clay_Skin');
    const jn = model.json.skins[model.json.nodes[skinNode].skin].joints.map(n => model.json.nodes[n].name), bodyJ = jn.indexOf('Body'), clothMap = jn.map((nm, i) => /^(UpperArm|Forearm|Hand|Finger|Thumb|Armpit)/.test(nm) ? bodyJ : i);
@@ -67,7 +67,7 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
      const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, d instanceof Float32Array ? d : new Float32Array(d), gl.STATIC_DRAW); gl.enableVertexAttribArray(A[name]); gl.vertexAttribPointer(A[name], source.json.accessors[a].type === 'VEC3' ? 3 : w, gl.FLOAT, false, 0, 0);
     }
     const idx = R.accessor(source, p.indices), ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(idx), gl.STATIC_DRAW);
-    const mat = source.json.materials?.[p.material]; parts.push({ vao, node, count: idx.length, color: color || (style && mat ? AP.materialColor(mat, style) : mat?.pbrMetallicRoughness?.baseColorFactor || [1, 1, 1, 1]) });
+    const mat = source.json.materials?.[p.material]; parts.push({ vao, node, count: idx.length, face: /eye|smile|teeth|tongue|brow|squeez|mouth|jaw|pupil|lash|lid/i.test(mat?.name || ''), color: color || (style && mat ? AP.materialColor(mat, style) : mat?.pbrMetallicRoughness?.baseColorFactor || [1, 1, 1, 1]) });
    }
    if (A.Color >= 0) gl.vertexAttrib4f(A.Color, 1, 1, 1, 1);
    model.json.nodes.forEach((n, i) => { if (n.mesh === undefined) return; const h = AP.hairStyle(n); if (n.name !== 'Mole_Clay_Skin' && h !== STYLE) return; for (const p of model.json.meshes[n.mesh].primitives) add(model, p, i, STYLE, null, h === STYLE ? HAIR : null); });
@@ -128,8 +128,9 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
     ctx2.save(); ctx2.translate(cx, cy + feet); if (m.tilt) ctx2.rotate(-m.tilt); if (m.scale !== 1) ctx2.scale(m.scale, m.scale);
     ctx2.globalAlpha = Math.max(0, Math.min(1, m.alpha * Math.min(1, m.light))); ctx2.drawImage(sp, ox, oy);
     // V1831 C 사용자: 조명이 비추면 두더지가 그 칸 색 빛으로 물듦(두더지 모양 안에만 색을 칠해 덧씌움)
-    const glow = m.lit * m.alpha; if (glow > .02) { tintCtx.globalCompositeOperation = 'copy'; tintCtx.globalAlpha = 1; tintCtx.drawImage(sp, 0, 0); tintCtx.globalCompositeOperation = 'source-atop'; tintCtx.fillStyle = m.color; tintCtx.fillRect(0, 0, spriteW, spriteH); ctx2.globalCompositeOperation = 'lighter'; ctx2.globalAlpha = Math.min(1, glow * .28); ctx2.drawImage(tintC, ox, oy); }
-    if (m.light > 1) { ctx2.globalCompositeOperation = 'lighter'; ctx2.globalAlpha = Math.min(1, m.alpha * (m.light - 1) * .6); ctx2.drawImage(sp, ox, oy); }
+    // V1836 C 사용자: 조명 빛은 예전 3D 처럼 몸 옆 가장자리로 빛이 들어오는 정도 — 3D 로 미리 그린 옆빛(림) 모양에 칸 색을 입혀 은은하게 더함
+    const glow = m.alpha, rimSp = glow > .02 ? rimSprite(m.clip, m.time) : null; /* 예전처럼 항상 칸 색 옆빛 */ if (rimSp) { tintCtx.globalCompositeOperation = 'copy'; tintCtx.globalAlpha = 1; tintCtx.drawImage(rimSp, 0, 0, spriteW, spriteH); tintCtx.globalCompositeOperation = 'source-atop'; tintCtx.fillStyle = m.color; tintCtx.fillRect(0, 0, spriteW, spriteH); ctx2.globalCompositeOperation = 'lighter'; ctx2.globalAlpha = Math.min(1, glow); /* 사용자: 빛이 살짝 들어오는 정도 */ ctx2.drawImage(tintC, ox, oy); }
+    if (m.light > 1) { ctx2.globalCompositeOperation = 'lighter'; ctx2.globalAlpha = Math.min(1, m.alpha * (m.light - 1) * .25); ctx2.drawImage(sp, ox, oy); } /* V1836 C: 하얗게 뜨지 않게 약하게 */
     ctx2.restore();
    }
   }
@@ -138,9 +139,20 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
   const FPS_S = 20, FEET = .344, TOP = .5, CW = .9, CH = .95; let spriteW = 0, spriteH = 0, spriteCell = 0; const sprites = new Map(); let warmJobs = null;
   const tintC = document.createElement('canvas'), tintCtx = tintC.getContext('2d');
   function ensureSprites(cell) {
-   const W = Math.round(cell * CW), H = Math.round(cell * CH); if (W === spriteW && H === spriteH) return; spriteW = W; spriteH = H; spriteCell = cell; sprites.clear(); glc.width = W; glc.height = H; tintC.width = W; tintC.height = H;
+   const W = Math.round(cell * CW), H = Math.round(cell * CH); if (W === spriteW && H === spriteH) return; spriteW = W; spriteH = H; spriteCell = cell; sprites.clear(); rims.clear(); glc.width = W; glc.height = H; tintC.width = W; tintC.height = H;
    warmJobs = []; for (let f = 0; f < 2 * FPS_S; f++) warmJobs.push(['Idle', f]); for (const [clip, start] of MOVES) { const f0 = Math.round(start * FPS_S); for (let f = f0; f <= f0 + Math.ceil(1.15 * FPS_S); f++) warmJobs.push([clip, f]); }
    (function step() { if (!warmJobs || !warmJobs.length) return; const deadline = performance.now() + 6; while (warmJobs.length && performance.now() < deadline) { const [c, fr] = warmJobs.shift(); makeSprite(c, fr); } if (warmJobs.length) setTimeout(step, 16); })();
+  }  // 옆빛 모양 그림(메모리 아끼려 반 해상도, 부드러운 빛이라 차이 없음) — 필요할 때 한 번 그려 보관
+  const rims = new Map();
+  function rimSprite(clip, time) {
+   const fr = frameOf(clip, time), key = clip + '|' + fr; let c = rims.get(key); if (c) return c; const W = spriteW, H = spriteH; if (!W) return null;
+   gl.viewport(0, 0, W, H); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+   const P = R.identity(), ppu = spriteCell / 3.2; P[0] = 2 * ppu / W; P[5] = 2 * ppu / H; P[10] = -2 / 50; P[12] = 0; P[13] = 2 * (H - TOP * spriteCell) / H - 1;
+   gl.uniformMatrix4fv(U.VP, false, R.multiply(P, R.lookAt([0, 1.2, 8], [0, 1.1, 0])));
+   const pose = cachedPose(clip, fr / FPS_S), inst = R.transform({ scale: [SIZE, SIZE, SIZE] }); gl.uniform1f(U.Rim, 1); let lastNode = -1;
+   /* V1836 C 사용자: 얼굴에 띠·그림자 — 눈·입 같은 얼굴 부품은 옆빛에서 빼고, 가려지는 깊이만 그림 */
+   for (const pt of parts) { gl.bindVertexArray(pt.vao); gl.colorMask(!pt.face, !pt.face, !pt.face, !pt.face); if (pt.node !== lastNode) { lastNode = pt.node; const e = pose.get(pt.node), mm = R.multiply(inst, e.world); gl.uniformMatrix4fv(U.Model, false, mm); gl.uniformMatrix3fv(U.Normal, false, R.normals(mm)); gl.uniform1i(U.Skin, !!e.pal); if (e.pal) gl.uniformMatrix4fv(U.Bones, false, e.pal); } gl.uniform4fv(U.Color, pt.color); gl.drawElements(gl.TRIANGLES, pt.count, gl.UNSIGNED_INT, 0); }
+   gl.colorMask(true, true, true, true); gl.uniform1f(U.Rim, 0); c = document.createElement('canvas'); c.width = W; c.height = H; c.getContext('2d').drawImage(glc, 0, 0); /* 줄무늬 방지: 원래 해상도 */ rims.set(key, c); return c;
   }  function frameOf(clip, time) { let fr = Math.round(time * FPS_S); if (clip === 'Idle') fr = ((fr % (2 * FPS_S)) + 2 * FPS_S) % (2 * FPS_S); return fr; }
   function sprite(clip, time) { const fr = frameOf(clip, time); return sprites.get(clip + '|' + fr) || makeSprite(clip, fr); }
   function makeSprite(clip, fr) {
