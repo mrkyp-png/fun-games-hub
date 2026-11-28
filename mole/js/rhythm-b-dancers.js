@@ -127,8 +127,7 @@ vec3 c=uColor.rgb*vColor.rgb*(.30+key*.80)*uLight+uTint*rim*.6;c=pow(clamp(c,0.,
     const cx = (26 + (m.lane % 3) * 300 + 150) / 952 * w, cy = (26 + Math.floor(m.lane / 3) * 300 + 150) / 952 * w, feet = FEET * cell, ox = -spriteW / 2, oy = -TOP * cell - feet;
     ctx2.save(); ctx2.translate(cx, cy + feet); if (m.tilt) ctx2.rotate(-m.tilt); if (m.scale !== 1) ctx2.scale(m.scale, m.scale);
     ctx2.globalAlpha = Math.max(0, Math.min(1, m.alpha * Math.min(1, m.light))); ctx2.drawImage(sp, ox, oy);
-    // V1831 C 사용자: 조명이 비추면 두더지가 그 칸 색 빛으로 물듦(두더지 모양 안에만 색을 칠해 덧씌움)
-    const glow = m.lit * m.alpha; if (glow > .02) { tintCtx.globalCompositeOperation = 'copy'; tintCtx.globalAlpha = 1; tintCtx.drawImage(sp, 0, 0); tintCtx.globalCompositeOperation = 'source-atop'; tintCtx.fillStyle = m.color; tintCtx.fillRect(0, 0, spriteW, spriteH); ctx2.globalCompositeOperation = 'lighter'; ctx2.globalAlpha = Math.min(1, glow * .28); ctx2.drawImage(tintC, ox, oy); }
+    // V1839 C 사용자: 조명 방식만 V1830 으로 복귀 — 두더지 몸에 칸 색 물들임 없음(선명도·금색·차례·칸 색은 유지)
     if (m.light > 1) { ctx2.globalCompositeOperation = 'lighter'; ctx2.globalAlpha = Math.min(1, m.alpha * (m.light - 1) * .6); ctx2.drawImage(sp, ox, oy); }
     ctx2.restore();
    }
