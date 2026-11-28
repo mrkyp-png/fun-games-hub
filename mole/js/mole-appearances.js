@@ -56,8 +56,19 @@ function costumeParts(model,costume) {
   return joint<0?[]:[{joint,primitive}];
  });
 }
+// V1842 C 사용자: 광장 조끼 기준 — 팔꿈치(Forearm 평균)가 몸통보다 올라간 만큼(점프 0.5배·날갯짓 0.7배) 조끼를 모양 그대로 위로
+const liftRest=new WeakMap();
+function vestLift(runtime,worlds,clip,factor){
+ if(!liftRest.has(runtime)){const nodes=runtime.model.json.nodes,at=n=>nodes.findIndex(x=>x.name===n),ids=[at('Body'),at('Forearm.L'),at('Forearm.R')],rest=R.pose(runtime,null,0,false),parent=new Int32Array(nodes.length).fill(-1);nodes.forEach((n,i)=>(n.children||[]).forEach(c=>parent[c]=i));
+  const under=(i,top)=>{for(;i>=0;i=parent[i])if(i===top)return true;return false},head=at('Head');
+  liftRest.set(runtime,ids.every(i=>i>=0)?{ids,base:(rest[ids[1]][13]+rest[ids[2]][13])/2-rest[ids[0]][13],moved:nodes.map((n,i)=>under(i,ids[0])&&!under(i,head))}:null);}
+ const r=liftRest.get(runtime);if(!r)return {lift:0,worlds};
+ const lift=(factor??(clip==='Flap'?.7:.5))*Math.max(0,(worlds[r.ids[1]][13]+worlds[r.ids[2]][13])/2-worlds[r.ids[0]][13]-r.base);
+ if(!lift)return {lift,worlds};
+ const up=R.transform({translation:[0,lift,0]});return {lift,worlds:worlds.map((w,i)=>r.moved[i]?R.multiply(up,w):w)}; // 몸통과 그 아래 뼈(머리 쪽 제외)만 올림 → 고글 등 머리 부품은 그대로
+}
 const faces=new WeakMap();
 function face(runtime,hurt=false){if(!faces.has(runtime)){const clip=runtime.animations.find(c=>c.name==='Smile'),smile=clip?clip.tracks.filter(t=>{const name=runtime.model.json.nodes[t.node].name;return name==='Jaw'||/^(Brow|MouthCorner|HappyEye)\.[LR]$/.test(name)||(t.path==='scale'&&/^(Eye|PainEye)\.[LR]$/.test(name))}):[];const hidden=runtime.model.json.nodes.flatMap((n,i)=>/^HappyEye\.[LR]$/.test(n.name)?[{node:i,path:'scale',times:new Float32Array([0]),values:new Float32Array([0,0,0]),width:3}]:[]);faces.set(runtime,{smile,hidden})}return faces.get(runtime)[hurt?'hidden':'smile']}
 function pose(runtime,clip,time,loop,expression,windTime,id='mohawk'){return R.pose(runtime,clip,time,loop,expression,{animation:'HairWind_'+names[id],time:windTime})}
-MG.MoleAppearances={styles,palettes,random,load,prepare,paint,materialColor,vertexColors,hairStyle,face,pose,arcadeRepair,wornCostume,costumeParts};
+MG.MoleAppearances={styles,palettes,random,load,prepare,paint,materialColor,vertexColors,hairStyle,face,pose,arcadeRepair,wornCostume,costumeParts,vestLift};
 })(window);

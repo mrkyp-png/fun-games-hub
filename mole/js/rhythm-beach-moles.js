@@ -43,12 +43,12 @@ precision highp float;in vec3 vNormal;in vec4 vColor;in float vHand;uniform vec4
    if(node.mesh===undefined||(node.name!=='Mole_Clay_Skin'&&!style))return;
    for(const p of model.json.meshes[node.mesh].primitives)addPart(model,p,index,style);
   });
-  for(const {joint,primitive} of AP.costumeParts(model,costume))addPart(costume,primitive,joint,'mohawk',true);
+  for(const {joint,primitive} of AP.costumeParts(model,costume)){addPart(costume,primitive,joint,'mohawk',true);parts[parts.length-1].vest=model.json.nodes[joint].name==='Body';} // V1842 C: 주황 조끼(몸통 부품)만 점프 때 올림
   // V1812 C 사용자: 2번 타임 키퍼, 3번 연타 도장 사범, 4번 세이프 찬스
   // 옷 점마다 두더지 몸 뼈 가중치(소매=팔, 이마띠=머리) → 두더지 몸과 같은 스킨으로 그림
   // V1814 C 사용자: 점프 = 두더지팡 놀란 눈(흰자위+눈동자 'Surprise' 부품, 머리 뼈에 고정)
   if(surprise){const head=model.json.nodes.findIndex(n=>n.name==='Head');surprise.json.nodes.forEach(n=>{if(!/^Surprise /.test(n.name||'')||n.mesh===undefined)return;for(const p of surprise.json.meshes[n.mesh].primitives){addPart(surprise,p,head,null,true);const part=parts[parts.length-1];part.surprise=true;part.local=R.transform({translation:n.translation||[0,0,0],rotation:n.rotation||[0,0,0,1],scale:n.scale||[1,1,1]});}});}
-  const skinNode=model.json.nodes.findIndex(n=>n.name==='Mole_Clay_Skin');others.forEach((worn,k)=>{if(worn&&skinNode>=0)for(const {primitive} of R.instances(worn))addPart(worn,primitive,skinNode,AP.styles[k+1]);});
+  const skinNode=model.json.nodes.findIndex(n=>n.name==='Mole_Clay_Skin');others.forEach((worn,k)=>{if(worn&&skinNode>=0)for(const {primitive} of R.instances(worn)){addPart(worn,primitive,skinNode,AP.styles[k+1]);parts[parts.length-1].vest=k===2;}}); // V1842 C: others = [홀드타임 망토, 연타 도복, 세이프찬스 조끼] — 조끼(세이프찬스)만 점프 때 올림
   for(const [slot,file] of [[0,'hole-occlusion.png'],[1,'hole-front.png']]){
    const response=await fetch(holeBase+file);if(!response.ok)throw Error('Hole layer '+response.status);
    const bitmap=await createImageBitmap(await response.blob(),{colorSpaceConversion:'none',premultiplyAlpha:slot===1?'premultiply':'none'}),texture=gl.createTexture();
@@ -117,7 +117,8 @@ precision highp float;in vec3 vNormal;in vec4 vColor;in float vHand;uniform vec4
    const baseInstance=R.transform({translation:[head.x-scale*anchor[0],h-head.y-scale*anchor[1]-offset*rest,-scale*anchor[2]],scale:[scale,scale,scale]}),instance=FX.turn(baseInstance,R.point(worlds[bodyNode],[0,.2,0]),stunt);
    if(armRest>.999)for(const side of ['L','R']){const hand=worlds[nodes.findIndex(n=>n.name==='Hand.'+side)],point=R.point(instance,Array.from(hand.slice(12,15))),u=Math.max(0,Math.min(geometry.width-1,(point[0]-rect.x)/rect.w*(geometry.width-1))),lo=Math.floor(u),hi=Math.min(geometry.width-1,lo+1),f=u-lo,target=rect.y+(geometry.frontCurvePixels[lo]*(1-f)+geometry.frontCurvePixels[hi]*f)/geometry.height*rect.h-scale*.04;lastHandError=Math.max(lastHandError,Math.abs((h-point[1])-target));}
    gl.enable(gl.SCISSOR_TEST);{const pad=Math.round(pw*.03);/* 사용자: 옆 칸으로 살짝 넘어간 손이 칼로 자른 듯 잘리지 않게 네 마리 모두 */gl.scissor(Math.round(i*pw/4)-pad,0,Math.ceil(pw/4)+pad*2,ph);}gl.uniform4fv(U.HoleRect,[rect.x*pw/layout.W,(layout.H-rect.y)*ph/layout.H,rect.w*pw/layout.W,rect.h*ph/layout.H]);gl.uniform1f(U.HandsOnRim,armRest);gl.uniform1f(U.Flash,clip==='PainHit'?Math.max(0,1-hurt/.15)*.25:0);
-   for(const part of parts){if(part.style&&part.style!==id)continue;if(part.surprise!==undefined&&part.surprise!==jumping)continue;if(jumping&&/^(Eye espresso|Clay squeezed eyes)$/.test(part.material.name||''))continue;gl.bindVertexArray(part.vao);const b=part.variants[id]||part.colorBuffer;gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.vertexAttribPointer(A.Color,part.colorSize,gl.FLOAT,false,0,0);
+   const worldsBase=worlds,vestWorlds=jumping?AP.vestLift(rig,worlds,clip).worlds:worlds; // V1842 C 사용자: 광장 조끼 기준 — 점프 때 팔꿈치 높이 따라 조끼만 위로
+   for(const part of parts){if(part.style&&part.style!==id)continue;const worlds=part.vest?vestWorlds:worldsBase;if(part.surprise!==undefined&&part.surprise!==jumping)continue;if(jumping&&/^(Eye espresso|Clay squeezed eyes)$/.test(part.material.name||''))continue;gl.bindVertexArray(part.vao);const b=part.variants[id]||part.colorBuffer;gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.vertexAttribPointer(A.Color,part.colorSize,gl.FLOAT,false,0,0);
     gl.uniform4fv(U.Color,AP.materialColor(part.material,id));gl.uniformMatrix4fv(U.Model,false,part.local?R.multiply(instance,R.multiply(worlds[part.node],part.local)):R.multiply(instance,worlds[part.node]));
     gl.uniform1i(U.Skin,!part.rigid);if(!part.rigid)gl.uniformMatrix4fv(U.Bones,false,R.palette(rig,worlds,part.node));gl.drawElements(gl.TRIANGLES,part.count,gl.UNSIGNED_INT,0);
    }

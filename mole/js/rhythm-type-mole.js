@@ -251,7 +251,7 @@ frag=vec4(pow(clamp(color,0.,1.),vec3(1./2.2)),1.);}`;
       for(const primitive of model.json.meshes[node.mesh].primitives)addPart(model,primitive,index);
     });
     if(!parts.length)throw Error('Rhythm stage mole skin missing');
-    for(const {joint,primitive} of root.MoleGame.MoleAppearances.costumeParts(model,costume))addPart(costume,primitive,joint);
+    for(const {joint,primitive} of root.MoleGame.MoleAppearances.costumeParts(model,costume)){addPart(costume,primitive,joint);parts[parts.length-1].vest=model.json.nodes[joint].name==='Body';} // V1842 C: 주황 조끼(몸통 부품)만 팔 따라 올림
     // 친구 두더지: 같은 춤 모델(머리 2종 붙임)을 따로 준비, 몸색·머리·복장은 머리 모양별로
     let rig2=null;const friendParts={};
     if(friends){
@@ -261,7 +261,7 @@ frag=vec4(pow(clamp(color,0.,1.),vec3(1./2.2)),1.);}`;
       const jn=skin2>=0?model2.json.skins[model2.json.nodes[skin2].skin].joints.map(n=>model2.json.nodes[n].name):[],bodyJ=jn.indexOf('Body'),clothMap=bodyJ<0?null:jn.map((name,i)=>/^(UpperArm|Forearm|Hand|Finger|Thumb|Armpit)/.test(name)?bodyJ:i);
       FRIENDS.forEach((f,k)=>{const list=friendParts[f.style]=[];
         model2.json.nodes.forEach((node,index)=>{if(node.mesh===undefined)return;const hair=AP.hairStyle(node);if(node.name!=='Mole_Clay_Skin'&&hair!==f.style)return;for(const primitive of model2.json.meshes[node.mesh].primitives){addPart(model2,primitive,index,f.style,list);if(hair===f.style&&f.hair)list[list.length-1].color=f.hair;}});
-        if(worn[k]&&skin2>=0)for(const {primitive} of R.instances(worn[k]))addPart(worn[k],primitive,skin2,null,list,clothMap,f.style==='curly'?jn.indexOf('Head'):-1);});
+        if(worn[k]&&skin2>=0)for(const {primitive} of R.instances(worn[k])){addPart(worn[k],primitive,skin2,null,list,clothMap,f.style==='curly'?jn.indexOf('Head'):-1);list[list.length-1].vest=f.costume==='safe-chance';}});/* V1842 C: 세이프찬스 조끼만 팔 따라 올림(홀드타임 망토 제외) */
     }
     const shadow=gl.createVertexArray();vaos.push(shadow);gl.bindVertexArray(shadow);
     attribute('Position',new Float32Array([-.85,.002,-.48,.85,.002,-.48,.85,.002,.48,-.85,.002,-.48,.85,.002,.48,-.85,.002,.48]),3);
@@ -311,19 +311,21 @@ frag=vec4(pow(clamp(color,0.,1.),vec3(1./2.2)),1.);}`;
         gl.bindVertexArray(shadow);gl.uniform1i(U.Shadow,1);gl.uniform1i(U.Skin,0);
         const floor=R.transform({translation:[0,0,state.z],scale:[state.scale,1,state.scale]});
         gl.uniformMatrix4fv(U.Model,false,floor);gl.uniformMatrix3fv(U.Normal,false,R.normals(floor));gl.drawArrays(gl.TRIANGLES,0,6);gl.uniform1i(U.Shadow,0);
-        function drawParts(list,inst,rigX,ws){for(const part of list){
-          gl.bindVertexArray(part.vao);const matrix=R.multiply(inst,ws[part.node]),bones=R.palette(rigX,ws,part.node);
+        /* V1842 C 사용자: 광장 조끼 기준 — 점프(통통 점프)는 팔꿈치 높이 0.5배, 팔을 양옆으로 드는 춤은 약간(0.3배) 조끼만 위로 */
+        const vestWorlds=(rigX,ws,clip)=>AP.vestLift(rigX,ws,clip,/Jump|Hop/.test(clip||'')?.5:.3).worlds;
+        function drawParts(list,inst,rigX,ws,vws=ws){for(const part of list){
+          const pw=part.vest?vws:ws;gl.bindVertexArray(part.vao);const matrix=R.multiply(inst,pw[part.node]),bones=R.palette(rigX,pw,part.node);
           gl.uniformMatrix4fv(U.Model,false,matrix);gl.uniformMatrix3fv(U.Normal,false,R.normals(matrix));gl.uniform4fv(U.Color,part.color);
           gl.uniform1i(U.Skin,!!bones);if(bones)gl.uniformMatrix4fv(U.Bones,false,bones);
           if(part.indexed)gl.drawElements(gl.TRIANGLES,part.count,gl.UNSIGNED_INT,0);else gl.drawArrays(gl.TRIANGLES,0,part.count);
         }}
-        drawParts(parts,instance,rig,worlds);
+        drawParts(parts,instance,rig,worlds,vestWorlds(rig,worlds,state.clip));
         if(rig2&&!reduce)FRIENDS.forEach(f=>{const fs=friendState(time,f.side,state);if(!fs)return;
           const ws=AP.pose(rig2,fs.clip,fs.clipTime,true,fs.phase==='dance'?null:AP.face(rig2,false),time,f.style);
           const inst=R.transform({translation:[fs.x,.105*fs.scale,fs.z],rotation:[0,Math.sin(fs.heading/2),0,Math.cos(fs.heading/2)],scale:[fs.scale,fs.scale,fs.scale]});
           gl.bindVertexArray(shadow);gl.uniform1i(U.Shadow,1);gl.uniform1i(U.Skin,0);const fl=R.transform({translation:[fs.x,0,fs.z],scale:[fs.scale,1,fs.scale]});
           gl.uniformMatrix4fv(U.Model,false,fl);gl.uniformMatrix3fv(U.Normal,false,R.normals(fl));gl.drawArrays(gl.TRIANGLES,0,6);gl.uniform1i(U.Shadow,0);
-          drawParts(friendParts[f.style],inst,rig2,ws);});
+          drawParts(friendParts[f.style],inst,rig2,ws,vestWorlds(rig2,ws,fs.clip));});
       },
       dispose(){for(const b of buffers)gl.deleteBuffer(b);for(const v of vaos)gl.deleteVertexArray(v);gl.deleteTexture(beamTexture);gl.deleteProgram(program);}
     };

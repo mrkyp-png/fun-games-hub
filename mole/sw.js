@@ -188,7 +188,8 @@
 // V1839 C: neon mole lighting back to V1830.
 // V1840 C: neon pads behind opaque moles.
 // V1841 C: plaza repair vest 0.1cm lower, lifts with elbows.
-const CACHE = 'mole-game-v1841-C';
+// V1842 C: vest lift on flap x0.7, rhythm entry dance and beach jump.
+const CACHE = 'mole-game-v1842-C';
 
 // 화면별 BGM(audio/bgm-*.mp3)은 v275 부터 SHELL 에 포함 — 기본 켜짐(v272)이라 항상 필요하고,
 // 캐시가 안 돼 있으면 오프라인/느린망에서 재생 실패했음.
